@@ -52,7 +52,11 @@ SOFTWARE.
 
 #define GK_BackSpace		XK_BackSpace
 #define GK_Tab			XK_Tab
-#define GK_BackTab		XK_ISO_Left_Tab
+#ifndef XK_ISO_Left_Tab
+# define GK_BackTab		XK_Tab
+#else
+# define GK_BackTab		XK_ISO_Left_Tab
+#endif
 #define GK_Linefeed		XK_Linefeed	
 #define GK_Clear		XK_Clear	
 #define GK_Return		XK_Return	

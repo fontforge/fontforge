@@ -2839,7 +2839,7 @@ void FontInfo(SplineFont *sf) {
     mgcd[2].gd.handle_controlevent = GFI_Cancel;
     mgcd[2].creator = GButtonCreate;
 
-    mgcd[3].gd.pos.x = 2; mgcd[3].gd.pos.y = 2;
+    mgcd[3].gd.pos.x = 2; mgcd[3].gd.pos.y = 4;
     mgcd[3].gd.pos.width = pos.width-4; mgcd[3].gd.pos.height = pos.height-2;
     mgcd[3].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
     mgcd[3].creator = GGroupCreate;

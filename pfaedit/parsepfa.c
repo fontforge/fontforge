@@ -594,6 +594,7 @@ static struct fontdict *MakeEmptyFont(void) {
     ret->private = gcalloc(1,sizeof(struct private));
     ret->private->subrs = gcalloc(1,sizeof(struct pschars));
     ret->private->private = gcalloc(1,sizeof(struct psdict));
+    ret->private->leniv = 4;
     ret->encoding_name = em_none;
     ret->fontinfo->fstype = -1;
 return( ret );
@@ -1423,9 +1424,11 @@ static void figurecids(struct fontparse *fp,FILE *temp) {
     for ( i=0; i<fd->cidcnt; ++i ) {
 	if ( fd->cidlens[i]== 0 )
 	    fd->cidstrs[i] = NULL;
-	else
+	else {
 	    fd->cidstrs[i] = readt1str(temp,offsets[i],fd->cidlens[i],
 		    fd->fds[fd->cidfds[i]]->private->leniv);
+	    fd->cidlens[i] -= fd->fds[fd->cidfds[i]]->private->leniv;
+	}
 	GProgressNext();
     }
     free(offsets);

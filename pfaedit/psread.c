@@ -1931,6 +1931,9 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 		    fprintf(stderr, "No previous point on path in flex operator in %s\n", name );
 		sp = 0;
 	      break;
+	      default:
+		fprintf( stderr, "Uninterpreted opcode 12,%d in %s\n", v, name );
+	      break;
 	    }
 	} else switch ( v ) {
 	  case 1: /* hstem */
@@ -1940,7 +1943,8 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 		ret->width = stack[0];
 		base=1;
 	    }
-	    if ( sp-base<2 ) fprintf(stderr, "Stack underflow on hstem in %s\n", name );
+	    if ( sp-base<2 )
+		fprintf(stderr, "Stack underflow on hstem in %s\n", name );
 	    /* stack[0] is absolute y for start of horizontal hint */
 	    /*	(actually relative to the y specified as lsidebearing y in sbw*/
 	    /* stack[1] is relative y for height of hint zone */
@@ -2204,6 +2208,9 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 		type1 = pcstack[pcsp].type1;
 		len = pcstack[pcsp].len;
 	    }
+	  break;
+	  default:
+	    fprintf( stderr, "Uninterpreted opcode %d in %s\n", v, name );
 	  break;
 	}
     }

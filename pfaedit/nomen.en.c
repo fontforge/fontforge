@@ -513,7 +513,7 @@ static char mnemonic_MidLine ='M';
 static char *str_XHeight ="X-Height";
 static char mnemonic_XHeight ='X';
     /* TTF Names */
-static char *str_Styles = "Styles";
+static char *str_Styles = "Styles (SubFamily)";
 static char *str_UniqueID = "UniqueID";
 static char *str_Version = "Version";
 static char mnemonic_Version = 'V';
@@ -531,7 +531,7 @@ static char *str_OTFStyles = "Preferred Styles";
 static char *str_CompatableFull = "Compatable Full";
 static char *str_SampleText = "Sample Text";
 static char *str_TranslateStyle = "Translate Style";
-    /* Language list */
+    /* MS Language list */
 /* Language & Country (where applicable) in the native language if I can find */
 /*  it, in english if I can't. Followed by the 2char language _ 2char country */
 /* (again country isn't always applicable. Should basque be ES, FR? */

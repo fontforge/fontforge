@@ -331,6 +331,12 @@ static void _GXDraw_FindVisual(GXDisplay *gdisp) {
     for ( first = true; ; ) {
 	/* I want not only the number of meaningful bits in a pixel (which is the */
 	/*  depth) but also the number of bits in pixel when writing an image */
+	/* I wish I knew how to do this without diving into hidden X structures */
+#ifndef XK_ISO_Left_Tab
+	/* X11R5 (which doesn't define Left_Tab) doesn't define _XPrivDisplay */
+	/*  either. The information just lives in the display structure */
+# define _XPrivDisplay struct Display *
+#endif
 	gdisp->pixel_size = gdisp->depth;
 	for ( i=0; i<((_XPrivDisplay) display)->nformats; ++i ) {
 	    sf = &((_XPrivDisplay) display)->pixmap_format[i];

@@ -192,6 +192,8 @@ return;
 	else if ( strncmp(pt,"*",1)==0 ) ++cnt;
 	pt = next;
     }
+    if ( cnt==0 )
+return;
 
     if ( rcur+cnt>=rmax ) {
 	if ( rmax==0 )

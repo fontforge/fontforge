@@ -202,8 +202,11 @@ static void AddEdge(EdgeList *es, Spline *sp, real tmin, real tmax ) {
     e->last_opos = e->last_mpos = -2;
     e->tmin = tmin; e->tmax = tmax;
 
-    if ( e->mmin<0 || e->mmin>=e->mmax )
-	GDrawIError("Probably not serious, but we've got a zero length spline in AddEdge");
+    if ( e->mmin<0 || e->mmin>=e->mmax ) {
+	/*GDrawIError("Probably not serious, but we've got a zero length spline in AddEdge in %s",es->sc==NULL?<nameless>:es->sc->name);*/
+	free(e);
+return;
+    }
 
     if ( es->sc!=NULL ) for ( hint=es->hhints; hint!=NULL; hint=hint->next ) {
 	if ( hint->adjustb ) {

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 30-Aug-2001 -->
+  <!-- AP: Last modified: 6-Sep-2001 -->
   <TITLE>Frequently Asked Questions</TITLE>
 </HEAD>
 <BODY>
@@ -41,7 +41,10 @@
     <A HREF="#minify-iconify">Why does my window get iconified when I want to
     minify the view?</A>
   <LI>
-    <A HREF="#no-mu">Why isn't there a "mu" character in my greek font?</A>
+    <A HREF="#no-mu">Why isn't there a character named "mu" in my greek font?</A>
+  <LI>
+    <A HREF="#no-copy-names">Why doesn't Edit-&gt;Copy copy character names as
+    well as glyph info?</A>
 </UL>
 <P>
   <HR>
@@ -57,8 +60,8 @@
 	of fonts. New fonts are always being created to reflect the esthetics of
 	the times.
       <LI>
-	Computer font technology is constantly changing. A format for a font that
-	was useful 10 years ago may not be so now.
+	Computer font technology is constantly changing. A font-format that was useful
+	10 years ago may not be so now.
       <LI>
 	Even if you are satisfied with the fonts that do exist they may not be complete
 	<UL>
@@ -87,10 +90,10 @@
   <DT>
     <A NAME="flex-hints"><B>How do I make Pfaedit use flex hints?</B></A>
   <DD>
-    PfaEdit will now generate flex hints in situations where it is appropriate
-    to do so. You don't need to do anything. If flex hints are used then the
-    necessary subroutines will be added to the font. If they are not needed then
-    the subroutines will not be added.
+    PfaEdit will generate flex hints in situations where it is appropriate to
+    do so. You don't need to do anything. If flex hints are used then the necessary
+    subroutines will be added to the font. If they are not needed then the
+    subroutines will not be added.
   <DT>
     <A NAME="fuzzy"><B>My characters are all perfectly hinted, why do some stems
     have different widths (or appear fuzzy, or fade away completely)?</B></A>
@@ -100,7 +103,8 @@
     difficulties with counter-clockwise paths and produced stems of different
     widths when they should be the same, or fuzzy stems, or even nothing at all.
     The solution to this is to run Element-&gt;Correct Direction on all your
-    characters before generating a font.
+    characters before generating a font.<BR>
+    But sometimes the poor rasterizer just can't do the right thing...
   <DT>
     <A NAME="new-name"><B>How do I add a character with a new name?</B></A>
   <DD>
@@ -148,11 +152,11 @@
     Both PostScript and TrueType define a file format and a glyph format. OpenType
     uses the TrueType file format with a PostScript glyph format (actually OpenType
     includes the TrueType glyph format as well, but the OpenType definition says
-    they should still be called TrueType fonts so I ignore that aspect).
+    such fonts should still be called TrueType fonts so I ignore that aspect).
     <P>
     The PostScript used in OpenType is slightly different from that used in .pfa
-    and .pfb files. They are Type1 fonts while OpenType uses Type2 fonts. Type2
-    is almost a superset of Type1 with a few minor changes and many extensions.
+    and .pfb files. pfa/b files are Type1 fonts while OpenType uses Type2 fonts.
+    Type2 is almost a superset of Type1 with a few minor changes and many extensions.
     Adobe's extensions to Type1 (flex hints, hint substitution, counter hints)
     by using subroutines have been added to Type2 as direct instructions.
   <DT>
@@ -180,7 +184,7 @@
     I'm a total novice with TeX. I am told that TeX (or some part of the TeX
     chain, dvips perhaps) expects fonts to be encoded in TeX base Encoding --
     sometimes called "Adobe Standard" by the TeX docs, but it isn't it's TeX
-    base. So if you are having printing problems, missing glyphs, etc. Try changing
+    base. So if you are having printing problems, missing glyphs, etc. try changing
     the encoding of your font to TeX Base (Go to Element-&gt;Font Info, select
     the Encoding tab, select TeX Base from the pulldown list).
   <DT>
@@ -191,7 +195,7 @@
     PfaEdit. So you can't use meta-middle-click to minify a character, you have
     to use the View menu-&gt;Zoom Out instead.
   <DT>
-    <A NAME="no-mu">Why isn't there a "mu" character in my greek font?</A>
+    <A NAME="no-mu">Why isn't there a character named "mu" in my greek font?</A>
   <DD>
     Adobe was thinking more of backwards compatability than sense when they assigned
     the names of the greek letters in their unicode encoding. Thus the name "mu"
@@ -202,7 +206,17 @@
     <P>
     In a half-hearted attempt to get around this problem I have caused PfaEdit
     to generate characters with names "mu", "uni00B5" and "uni03BC" whenever
-    either U+00B5 or U+03BC is defined.
+    either U+00B5 or U+03BC is defined (and similarly for Omega and Delta).
+  <DT>
+    <A NAME="no-copy-names">Why doesn't Edit-&gt;Copy copy character names as
+    well as glyph info?</A>
+  <DD>
+    Firstly because I believe that any attempt to copy a character's name will
+    almost certainly be better done by defining a custom
+    <A HREF="fontinfo.html#Encoding">encoding</A>.<BR>
+    Secondly because most of the time you don't want the name copied.<BR>
+    Thirdly because it is esthetically better that copy should only work with
+    data and not meta-data.
 </DL>
 <P>
 <P ALIGN=Center>

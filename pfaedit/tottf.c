@@ -877,14 +877,14 @@ static unichar_t uniranges[][2] = {
     { 0x250, 0x2af },
     { 0x2b0, 0x2ff },
     { 0x300, 0x36f },
-    { 0x370, 0x3cf },
-    { 0x3d0, 0x3ff },
+    { 0x370, 0x3ff },
+    { 0,0 },		/* Obsolete */
     { 0x400, 0x4ff },
     { 0x530, 0x58f },
     { 0x590, 0x5ff },
-    { 0,0 },		/* Supposed to be hebrew extended, but I can't find that */
+    { 0,0 },		/* Obsolete */
     { 0x600, 0x6ff },
-    { 0,0 },
+    { 0,0 },		/* Obsolete */
     { 0x900, 0x97f },
     { 0x980, 0x9ff },
     { 0xa00, 0xa7f },
@@ -896,8 +896,8 @@ static unichar_t uniranges[][2] = {
     { 0xd00, 0xd7f },
     { 0xe00, 0xe7f },
     { 0xe80, 0xeff },		/* bit 25, lao */
-    { 0x10c0, 0x10ff },
-    { 0x10a0, 0x10bf },
+    { 0x10a0, 0x10ff },
+    { 0, 0 },			/* bit 27, obsolete */
     { 0x1100, 0x11ff },
     { 0x1e00, 0x1eff },
     { 0x1f00, 0x1fff },		/* bit 30, greek extended */
@@ -922,7 +922,7 @@ static unichar_t uniranges[][2] = {
     { 0x3000, 0x303f },
     { 0x3040, 0x309f },
     { 0x30a0, 0x30ff },		/* bit 50 katakana */
-    { 0x3100, 0x312f },
+    { 0x3100, 0x312f },			/* Also includes 3180-31AF */
     { 0x3130, 0x318f },
     { 0x3190, 0x31ff },
     { 0x3200, 0x32ff },
@@ -930,8 +930,8 @@ static unichar_t uniranges[][2] = {
     { 0xac00, 0xd7af },		/* bit 56 Hangul */
     { 0, 0 },			/* subranges */
     { 0, 0 },			/* subranges */
-    { 0x4e00, 0x9fff },		/* bit 59, CJK */
-    { 0, 0 },			/* bit 60, private use */
+    { 0x3400, 0x9fff },		/* bit 59, CJK */ /* also 2E80-29FF */
+    { 0xE000, 0xF8FF },		/* bit 60, private use */
     { 0xf900, 0xfaff },
     { 0xfb00, 0xfb4f },
     { 0xfb50, 0xfdff },
@@ -942,6 +942,20 @@ static unichar_t uniranges[][2] = {
     { 0xfe70, 0xfeef },
     { 0xff00, 0xffef },
     { 0xfff0, 0xffff },
+    { 0x0f00, 0x0fff },		/* bit 70 tibetan */
+    { 0x0700, 0x074f },
+    { 0x0780, 0x07Bf },
+    { 0x0D80, 0x0Dbf },
+    { 0x1000, 0x109f },
+    { 0x1200, 0x12ff },		/* bit 75 ethiopic */
+    { 0x13A0, 0x13ff },
+    { 0x1400, 0x167f },
+    { 0x1680, 0x169f },
+    { 0x16A0, 0x16ff },
+    { 0x1780, 0x17ff },		/* bit 80 khmer */
+    { 0x1800, 0x18af },
+    { 0x2800, 0x28ff },
+    { 0xA000, 0xa4af },		/* bit 83, Yi & Yi radicals */
     { 0xffff, 0xffff}
 };
 

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 5-Sep-2001 -->
+  <!-- AP: Last modified: 9-Sep-2001 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -66,8 +66,8 @@ know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-010905.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 5-Sept-2001
+    <A HREF="pfaedit-010908.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 8-Sept-2001
   <LI>
     <A HREF="pfaedit-solaris-010901.tgz">Download pfaedit Solaris 8.0
     </A>executable Version: 1-Sept-2001
@@ -89,19 +89,19 @@ know when you do</A>.
 <P>
 You can download a <A HREF="pfaedit-010905-1.src.rpm">source RPM</A>: Version:
 5-Sept-2001<BR>
-Or you can download the following three packages. Version: 5-Sept-2001
+Or you can download the following three packages. Version: 8-Sept-2001
 <UL>
   <LI>
-    <A HREF="libgunicode-010808.tgz">Unicode library source</A> (8-August-2001)<BR>
+    <A HREF="libgunicode-010908.tgz">Unicode library source</A> (8-Sept-2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGUnicode/index.html">docs</A>
   <LI>
-    <A HREF="libgdraw-010905.tgz">Unicode widget library source</A>
-    (5-Sept-2001)<BR>
+    <A HREF="libgdraw-010908.tgz">Unicode widget library source</A>
+    (8-Sept-2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
   <LI>
-    <A HREF="pfaedit_src-010905.tgz">Pfaedit source</A> (5-Sept-2001)<BR>
+    <A HREF="pfaedit_src-010908.tgz">Pfaedit source</A> (8-Sept-2001)<BR>
     -- <A HREF="overview.html">docs</A>
   <LI>
     If you want to do autotracing around character images you should also download
@@ -186,19 +186,41 @@ bitmap fonts that pfaedit uses
 </H2>
 <UL>
   <LI>
+    8-Sept-2001
+    <UL>
+      <LI>
+	Font View Paste has changed slightly. If the copy buffer contains more than
+	one character, and the selection is exactly one character, then the selection
+	will be changed so that it will exactly fit the copy buffer.
+      <LI>
+	Also Font View Copy will copy the hints of the character.
+      <LI>
+	Fixed a bug with reading CID keyed Type1 fonts
+      <LI>
+	cleaned up some compilation problems on older systems (I hope)
+      <LI>
+	Inserted Olaf's bug fix in gresource.c
+      <LI>
+	Cleaned up behavior on zero-length splines
+    </UL>
+  <LI>
     5-Sept-2001
     <UL>
       <LI>
 	Ug. yesterday's install changes weren't complete. I forgot to remove the
 	old files from /usr/local/bin so pfaedit used out of data translation tables
-	and things looked confused for non-English users.
+	and things looked confused for non-English users. Also libgunicode had an
+	old version of some header files so there were compilation problems if this
+	was tar x'ed last (the other packages had the correct headers).
       <LI>
 	Also I posted a bad libgdraw source.
       <LI>
 	And got the dates wrong.
+      <LI>
+	Added a tiny bit of German to the ui (hope it's right)
     </UL>
   <LI>
-    4-Sept-2001
+    4-Sept-2001 (but posted as 5-Sept-2001)
     <UL>
       <LI>
 	Menubar should be redrawn properly after a resize now.
@@ -1798,6 +1820,15 @@ The following people have helped debug pfaedit. Many thanks!
     Gerhard Schellhorn
   <LI>
     MinGyoon
+  <LI>
+    Olaf Rogalsky
+  <LI>
+    Baruch Even
+  <LI>
+    Volker Gering<BR>
+    &nbsp;
+  <LI>
+    And many others!
 </UL>
 <P>
 PfaEdit was inspired by AltSys's

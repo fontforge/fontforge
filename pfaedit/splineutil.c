@@ -45,7 +45,7 @@
 /*  into splinefont.h after the (or instead of) the definition of chunkalloc()*/
 
 #ifndef chunkalloc
-#define ALLOC_CHUNK	1
+#define ALLOC_CHUNK	100
 #define CHUNK_MAX	100
 
 #if ALLOC_CHUNK>1

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 3-Aug-2001 -->
+  <!-- AP: Last modified: 6-Sep-2001 -->
   <TITLE>The Edit Menu</TITLE>
 </HEAD>
 <BODY>
@@ -81,14 +81,14 @@ in text fields.
   <DT>
     <A NAME="Copy">Copy</A>
   <DD>
-    In the font view this command puts the foreground of all selected characters
-    into the clipboard. Depending on the setting of <A HREF="#From">Copy From</A>
-    it will either refer all characters (bitmap and outline) corresponding to
-    this entry, or just the character being displayed.
+    In the font view this command puts the foreground and hints of all selected
+    characters into the clipboard. Depending on the setting of <A HREF="#From">Copy
+    From</A> it will either refer all characters (bitmap and outline) corresponding
+    to this entry, or just the character being displayed.
     <P>
     In the Outline View this will copy any selected points, References, or Images
-    into the clipboard. If there is no selection everything will go into the
-    clipboard.
+    into the clipboard. If there is no selection everything in the current layer
+    will go into the clipboard.
     <P>
     In the Bitmap View this will copy the selection into the clipboard, if there
     is no selection everything is copied.
@@ -122,15 +122,18 @@ in text fields.
     will be repeated until all selected characters have had something pasted
     in them (that is if characters A and B were selected when the copy happened
     and now characters C, D and E are selected, the C will get A, D will get
-    B and E will also get A). If the clipboard contains outline information then
-    that information will go into the character outline regardless of the setting
-    of Copy From. If the clipboard contains a bitmap and the display is set to
-    outline then the bitmap is pasted into the bitmap font it was copied from
-    (ie. the one with the same pixel size), if the clipboard contains a bitmap
-    and the display is set to a bitmap then the bitmap will be pasted into the
-    currently displayed font. If the clipboard contains a bitmap of a size which
-    does not exist in our database, then you will be asked if you want to create
-    a bitmap font to put the bitmap into.
+    B and E will also get A). If exactly one character is selected but the clipboard
+    contains more that one character, the the selection will be extended so that
+    enough characters are selected that something may be pasted in each. <BR>
+    If the clipboard contains outline information then that information will
+    go into the character outline regardless of the setting of Copy From. If
+    the clipboard contains a bitmap and the display is set to outline then the
+    bitmap is pasted into the bitmap font it was copied from (ie. the one with
+    the same pixel size), if the clipboard contains a bitmap and the display
+    is set to a bitmap then the bitmap will be pasted into the currently displayed
+    font. If the clipboard contains a bitmap of a size which does not exist in
+    our database, then you will be asked if you want to create a bitmap font
+    to put the bitmap into.
     <P>
     In the Outline View this command will paste whatever is in the clipboard
     to the current editing layer.
