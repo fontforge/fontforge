@@ -34,6 +34,21 @@
  unfortunately this site does not contain all the macintosh encodings
  so we leave some blank
 */
+/* Response (indirectly) from charsets@apple.com when asked about the missing
+ encodings:
+
+    > I don't believe any of those additional scripts are actually
+    > defined as character encodings. He can safely ignore anything
+    > that's not in the Apple folder on the Unicode site.
+    >
+    > I monitor charsets@apple.com and don't recall seeing any e-mail
+    > on this subject. It's possible it got lost in the voluminous
+    > spam the address receives.
+    >
+    > Deborah
+ I find this perplexing (unless the script is defined but unused, how can
+ it fail to have a defined encoding), but will accept it.
+*/
 
 /* Macintosh 1 byte encodings */
 static unichar_t arabic[256] = {
