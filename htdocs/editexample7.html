@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Jan-2003 -->
-  <!-- AP: Last modified: 8-Apr-2003 -->
+  <!-- AP: Last modified: 12-Apr-2003 -->
   <TITLE>Final cleanup</TITLE>
 </HEAD>
 <BODY>
@@ -38,6 +38,8 @@
   <LI>
     <A HREF="editexample7.html#checking">Checking your font</A>
   <LI>
+    <A HREF="#Bitmaps">Bitmaps</A>
+  <LI>
     <A HREF="editexample7.html#generating">Generating it</A>
   <LI>
     <A HREF="editexample7.html#Families">Font Families</A>
@@ -56,12 +58,42 @@ check it for inconsistencies. PfaEdit has a command,
 find many common problems.
 <P>
 Simply select all the characters in the font and then bring up the Find Problems
-dialog. This dialog will search for many different kinds of potential problems.
-Be warned though: Not everything it reports as a problem is a real problem,
-some may be an element of the font's design that PfaEdit does not expect.
+dialog. Be warned though: Not everything it reports as a problem is a real
+problem, some may be an element of the font's design that PfaEdit does not
+expect.
 <P>
-I find it best just to check for a few related kinds of problems at once,
-otherwise switching between different kinds of problems can be distracting.
+The dialog can search for problems like:
+<UL>
+  <LI>
+    Stems which are close to but not exactly some standard value.
+  <LI>
+    Points which are close to but not exactly some standard height
+  <LI>
+    Paths which are almost but not quite vertical or horizontal
+  <LI>
+    Control points which are in unlikely places
+  <LI>
+    Points which are almost but not quite on a hint
+  <LI>
+    ...
+</UL>
+<P>
+I find it best just to check for a similar problems at a time, otherwise
+switching between different kinds of problems can be distracting.
+<H2>
+  <A NAME="Bitmaps">Bitmaps</A>
+</H2>
+<P>
+At this point you might want some bitmaps to go with the postscript (this
+is not compulsory). Go to <CODE>Element-&gt;Bitmaps Available</CODE> and
+select the pixel sizes you want bitmaps in (Note, that on X and MS windows
+pixel sizes often do not correspond exactly to point sizes. You can then
+use the bitmap editor (<CODE>File-&gt;Open Bitmap</CODE>) to clean up the
+bitmaps, or you can generate your bitmap fonts and then
+<A HREF="http://clr.nmsu.edu/~mleisher/download.html">use someone else's
+bitmap editor to clean them up</A>.
+<P>
+<IMG SRC="BitmapView.png" WIDTH="254" HEIGHT="273">
 <H2>
   <A NAME="generating">Generating</A> a font
 </H2>

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Jan-2003 -->
-  <!-- AP: Last modified: 8-Apr-2003 -->
+  <!-- AP: Last modified: 14-Apr-2003 -->
   <TITLE>Using PfaEdit with TeX</TITLE>
 </HEAD>
 <BODY>
@@ -20,8 +20,7 @@ bitmap from that, autotrace it and generate an outline font.
 It can read kerning information from a ".tfm" file.
 <P>
 The <A HREF="Encodings.ps.gz">encodings</A> file has a number of standard
-TeX encodings built in to it. (One annoyance: TeX expects the Euro glyph
-to be named "euro", while Adobe says it should be named "Euro").
+TeX encodings built in to it.
 <P>
 For large CJK truetype fonts it can read a sub-font definition file as defined
 in the ttf2tfm man page and <A HREF="generate.html">generate</A> a series
@@ -40,7 +39,10 @@ just moving the font file to some standard directory you must:
   <LI>
     &lt;configure TeX so that it is prepared for local additions&gt;
   <LI>
-    Rename the font file so that the filename is in a format TeX understands
+    Rename the font file so that the filename is in a format TeX
+    understands<BR>
+    (I'm told this isn't required, but I couldn't get things to work without
+    doing this. Perhaps I have an old system. Perhaps I didn't try hard enough)
   <LI>
     Create several helper files that TeX will use for its own purposes
   <LI>
@@ -50,11 +52,15 @@ just moving the font file to some standard directory you must:
   <LI>
     Optionally: Move the package file into its own directory
   <LI>
-    Update dvips's configuration files so that it knows where to look for the
-    postscript fonts
-  <LI>
-    Optionally: Update pdftex's configuration files so that it knows where to
-    look too.
+    Use the updmap script or manually:
+    <UL>
+      <LI>
+	Update dvips's configuration files so that it knows where to look for the
+	postscript fonts
+      <LI>
+	Optionally: Update pdftex's configuration files so that it knows where to
+	look too.
+    </UL>
 </UL>
 <P>
 I suggest that before you read further you look at the following resources
@@ -71,9 +77,9 @@ on the web:
     <A HREF="http://www.mamster.net/tex/latex-fontfaq-amster-burton.pdf">the
     LaTeX font-faq</A>.
   <LI>
-    TeX is still worried about the old 8 character limitation on DOS filenames.
-    This means that the tools I was using don't accept understandable filenames
-    instead they require a format described in
+    Old versions of TeX (ie. mine) are still worried about the old 8 character
+    limitation on DOS filenames. This means that the tools I was using don't
+    accept understandable filenames instead they require a format described in
     <A HREF="http://www.tug.org/fontname/html/index.html">TeX font file naming
     conventions</A>. If you are creating your own fonts this boils down to:
     <UL>
@@ -88,7 +94,9 @@ on the web:
       <LI>
 	the last two letters should be "8a" (which means your font is in Adobe Standard
 	Encoding. And your font <EM>must be</EM> in that encoding or things don't
-	work).
+	work).<BR>
+	(Again I am told that you can use any encoding as long as you register it
+	with TeX. I was unable to get this to work. But my system is out of date)
     </UL>
   <LI>
     Finally
@@ -114,6 +122,10 @@ on the web:
     I've not tried to work with truetype fonts, but here's a document that talks
     about it to some extent. <A HREF="http://www.radamir.com/tex/ttf-tex.htm">LaTeX
     and TTF</A>
+  <LI>
+    If you are interested in the basics, here's the documentation on
+    <A HREF="http://www.ctan.org/tex-archive/fonts/utilities/fontinst/doc/fontinst.ps">fontinst</A>
+    itself.
   <LI>
     I don't know how to deal with cyrillic (except that cyrillic T2 encodings
     are called 6a), greek or CJK fonts yet.

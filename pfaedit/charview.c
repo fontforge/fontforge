@@ -56,8 +56,88 @@ struct cvshows CVShows = {
 	1,		/* show family blues too */
 	1		/* show anchor points */
 };
+static Color pointcol = 0xff0000;
+static Color firstpointcol = 0x707000;
+static Color extremepointcol = 0xc00080;
 Color nextcpcol = 0x007090;
 Color prevcpcol = 0xff00ff;
+static Color selectedcpcol = 0xffffff;
+static Color coordcol = 0x808080;
+static Color widthcol = 0x000000;
+static Color widthselcol = 0x00ff00;
+static Color widthgridfitcol = 0x009800;
+static Color lcaretcol = 0x909040;
+static Color rastercol = 0xa0a0a0;
+static Color rastergridcol = 0xb0b0ff;
+static Color italiccoordcol = 0x909090;
+static Color metricslabelcol = 0x00000;
+static Color hintlabelcol = 0x00ffff;
+static Color bluevalstipplecol = 0x8080ff;
+static Color fambluestipplecol = 0xff7070;
+static Color mdhintcol = 0xe04040;
+static Color dhintcol = 0xd0a0a0;
+static Color hhintcol = 0xa0d0a0;
+static Color vhintcol = 0xc0c0ff;
+static Color conflicthintcol = 0x00ffff;
+static Color hhintactivecol = 0x00a000;
+static Color vhintactivecol = 0x0000ff;
+static Color anchorcol = 0x0040ff;
+static Color templateoutlinecol = 0x009800;
+static Color oldoutlinecol = 0x008000;
+static Color transformorigincol = 0x000000;
+static Color guideoutlinecol = 0x808080;
+static Color gridfitoutlinecol = 0x009800;
+static Color backoutlinecol = 0x009800;
+static Color foreoutlinecol = 0x000000;
+static Color backimagecol = 0x707070;
+static Color fillcol = 0x707070;
+static Color tracecol = 0x008000;
+
+static int cvcolsinited = false;
+
+static void CVColInit( void ) {
+    GResStruct cvcolors[] = {
+	{ "PointColor", rt_color, &pointcol },
+	{ "FirstPointColor", rt_color, &firstpointcol },
+	{ "ExtremePointColor", rt_color, &extremepointcol },
+	{ "NextCPColor", rt_color, &nextcpcol },
+	{ "PrevCPColor", rt_color, &prevcpcol },
+	{ "SelectedCPColor", rt_color, &selectedcpcol },
+	{ "CoordinateLineColor", rt_color, &coordcol },
+	{ "WidthColor", rt_color, &widthcol },
+	{ "WidthSelColor", rt_color, &widthselcol },
+	{ "GridFitWidthColor", rt_color, &widthgridfitcol },
+	{ "LigatureCaretColor", rt_color, &lcaretcol },
+	{ "RasterColor", rt_color, &rastercol },
+	{ "RasterGridColor", rt_color, &rastergridcol },
+	{ "ItalicCoordColor", rt_color, &italiccoordcol },
+	{ "MetricsLabelColor", rt_color, &metricslabelcol },
+	{ "HintLabelColor", rt_color, &hintlabelcol },
+	{ "BlueValuesStippledColor", rt_color, &bluevalstipplecol },
+	{ "FamilyBlueStippledColor", rt_color, &fambluestipplecol },
+	{ "MDHintColor", rt_color, &mdhintcol },
+	{ "DHintColor", rt_color, &dhintcol },
+	{ "HHintColor", rt_color, &hhintcol },
+	{ "VHintColor", rt_color, &vhintcol },
+	{ "ConflictHintColor", rt_color, &conflicthintcol },
+	{ "HHintActiveColor", rt_color, &hhintactivecol },
+	{ "VHintActiveColor", rt_color, &vhintactivecol },
+	{ "AnchorColor", rt_color, &anchorcol },
+	{ "TemplateOutlineColor", rt_color, &templateoutlinecol },
+	{ "OldOutlineColor", rt_color, &oldoutlinecol },
+	{ "TransformOriginColor", rt_color, &transformorigincol },
+	{ "GuideOutlineColor", rt_color, &guideoutlinecol },
+	{ "GridFitOutlineColor", rt_color, &gridfitoutlinecol },
+	{ "BackgroundOutlineColor", rt_color, &backoutlinecol },
+	{ "ForegroundOutlineColor", rt_color, &foreoutlinecol },
+	{ "BackgroundImageColor", rt_color, &backimagecol },
+	{ "FillColor", rt_color, &fillcol },
+	{ "TraceColor", rt_color, &tracecol },
+	{ NULL }
+    };
+    GResourceFind( cvcolors, "CharView.");
+}
+
 
 GDevEventMask input_em[] = {
 	/* Event masks for wacom devices */
@@ -340,14 +420,14 @@ return( head );
 static void DrawPoint(CharView *cv, GWindow pixmap, SplinePoint *sp, SplineSet *spl) {
     GRect r;
     int x, y, cx, cy;
-    Color col = sp==spl->first ? 0x707000 : 0xff0000, subcol;
+    Color col = sp==spl->first ? firstpointcol : pointcol, subcol;
     int pnum;
     char buf[12]; unichar_t ubuf[12];
 
     if ( cv->markextrema && !sp->nonextcp && !sp->noprevcp &&
 	    ((sp->nextcp.x==sp->me.x && sp->prevcp.x==sp->me.x) ||
 	     (sp->nextcp.y==sp->me.y && sp->prevcp.y==sp->me.y)) )
-	 col = 0xc00080;
+	 col = extremepointcol;
 
     x =  cv->xoff + rint(sp->me.x*cv->scale);
     y = -cv->yoff + cv->height - rint(sp->me.y*cv->scale);
@@ -364,7 +444,7 @@ return;
 	    if ( iscurrent && cv->p.nextcp ) {
 		r.x = cx-3; r.y = cy-3; r.width = r.height = 7;
 		GDrawFillRect(pixmap,&r, nextcpcol);
-		subcol = 0xffffff;
+		subcol = selectedcpcol;
 	    }
 	    GDrawDrawLine(pixmap,x,y,cx,cy, nextcpcol);
 	    GDrawDrawLine(pixmap,cx-3,cy-3,cx+3,cy+3,subcol);
@@ -402,7 +482,7 @@ return;
 	    if ( iscurrent && cv->p.prevcp ) {
 		r.x = cx-3; r.y = cy-3; r.width = r.height = 7;
 		GDrawFillRect(pixmap,&r, prevcpcol);
-		subcol = 0xffffff;
+		subcol = selectedcpcol;
 	    }
 	    GDrawDrawLine(pixmap,x,y,cx,cy, prevcpcol);
 	    GDrawDrawLine(pixmap,cx-3,cy-3,cx+3,cy+3,subcol);
@@ -536,9 +616,9 @@ void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
 static void CVDrawTemplates(CharView *cv,GWindow pixmap,SplineChar *template,DRect *clip) {
     RefChar *r;
 
-    CVDrawSplineSet(cv,pixmap,template->splines,0x009800,false,clip);
+    CVDrawSplineSet(cv,pixmap,template->splines,templateoutlinecol,false,clip);
     for ( r=template->refs; r!=NULL; r=r->next )
-	CVDrawSplineSet(cv,pixmap,r->splines,0x009800,false,clip);
+	CVDrawSplineSet(cv,pixmap,r->splines,templateoutlinecol,false,clip);
 }
 
 static void CVShowDHint(CharView *cv, GWindow pixmap, DStemInfo *dstem) {
@@ -654,7 +734,7 @@ return;		/* Offscreen */
 	}
     }
     clipped[j++] = clipped[0];
-    GDrawFillPoly(pixmap,clipped,j,0xd0a0a0);
+    GDrawFillPoly(pixmap,clipped,j,dhintcol);
 }
 
 static void CVShowMinimumDistance(CharView *cv, GWindow pixmap,MinimumDistance *md) {
@@ -684,16 +764,16 @@ return;
 	y1 = y2-8;
     if ( md->x ) {
 	ya = (y1+y2)/2;
-	GDrawDrawArrow(pixmap, x1,ya, x2,ya, 2, 0xe04040);
+	GDrawDrawArrow(pixmap, x1,ya, x2,ya, 2, mdhintcol);
 	GDrawSetDashedLine(pixmap,5,5,off);
-	GDrawDrawLine(pixmap, x1,ya, x1,y1, 0xe04040);
-	GDrawDrawLine(pixmap, x2,ya, x2,y2, 0xe04040);
+	GDrawDrawLine(pixmap, x1,ya, x1,y1, mdhintcol);
+	GDrawDrawLine(pixmap, x2,ya, x2,y2, mdhintcol);
     } else {
 	xa = (x1+x2)/2;
-	GDrawDrawArrow(pixmap, xa,y1, xa,y2, 2, 0xe04040);
+	GDrawDrawArrow(pixmap, xa,y1, xa,y2, 2, mdhintcol);
 	GDrawSetDashedLine(pixmap,5,5,off);
-	GDrawDrawLine(pixmap, xa,y1, x1,y1, 0xe04040);
-	GDrawDrawLine(pixmap, xa,y2, x2,y2, 0xe04040);
+	GDrawDrawLine(pixmap, xa,y1, x1,y1, mdhintcol);
+	GDrawDrawLine(pixmap, xa,y2, x2,y2, mdhintcol);
     }
     GDrawSetDashedLine(pixmap,0,0,0);
 }
@@ -767,13 +847,13 @@ return;
 	if ( first>-20 && first<cv->height+20 ) {
 	    dtou( ubuf, blues[i]);
 	    len = GDrawGetTextWidth(pixmap,ubuf,-1,NULL);
-	    GDrawDrawText(pixmap,cv->width-len-5,first-3,ubuf,-1,NULL,0x00ffff);
+	    GDrawDrawText(pixmap,cv->width-len-5,first-3,ubuf,-1,NULL,hintlabelcol);
 	} else
 	    len = 0;
 	if ( other>-20 && other<cv->height+20 ) {
 	    dtou( ubuf, blues[i+1]-blues[i]);
 	    len2 = GDrawGetTextWidth(pixmap,ubuf,-1,NULL);
-	    GDrawDrawText(pixmap,cv->width-len-5-len2-5,other+cv->sas-3,ubuf,-1,NULL,0x00ffff);
+	    GDrawDrawText(pixmap,cv->width-len-5-len2-5,other+cv->sas-3,ubuf,-1,NULL,hintlabelcol);
 	}
     }
 }
@@ -794,10 +874,10 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
     GDrawSetFont(pixmap,cv->small);
     blues = PSDictHasEntry(private,"BlueValues"); others = PSDictHasEntry(private,"OtherBlues");
     if ( cv->showblues && (blues!=NULL || others!=NULL))
-	CVDrawBlues(cv,pixmap,blues,others,0x8080ff);
+	CVDrawBlues(cv,pixmap,blues,others,bluevalstipplecol);
     blues = PSDictHasEntry(private,"FamilyBlues"); others = PSDictHasEntry(private,"FamilyOtherBlues");
     if ( cv->showfamilyblues && (blues!=NULL || others!=NULL))
-	CVDrawBlues(cv,pixmap,blues,others,0xff7070);
+	CVDrawBlues(cv,pixmap,blues,others,fambluestipplecol);
 
     if ( cv->showdhints ) for ( dstem = cv->sc->dstem; dstem!=NULL; dstem = dstem->next ) {
 	CVShowDHint(cv,pixmap,dstem);
@@ -813,7 +893,7 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
 		r.y = -cv->yoff + cv->height - rint((hint->start+hint->width)*cv->scale);
 		r.height = rint(hint->width*cv->scale)+1;
 	    }
-	    col = hint->active ? 0x00a000 : 0xa0d0a0;
+	    col = hint->active ? hhintactivecol : hhintcol;
 	    /* XRectangles are shorts! */
 	    if ( r.y<32767 && r.y+r.height>-32768 ) {
 		if ( r.y<-32768 ) {
@@ -831,7 +911,7 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
 		    }
 		}
 	    }
-	    col = hint->hasconflicts? 0x00ffff : col;
+	    col = hint->hasconflicts? conflicthintcol : col;
 	    if ( r.y>=0 && r.y<=cv->height )
 		GDrawDrawLine(pixmap,0,r.y,cv->width,r.y,col);
 	    if ( r.y+r.height>=0 && r.y+r.height<=cv->width )
@@ -842,7 +922,7 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
 	    if ( r.y>-20 && r.y<cv->height+20 ) {
 		dtou( ubuf, hint->start);
 		len = GDrawGetTextWidth(pixmap,ubuf,-1,NULL);
-		GDrawDrawText(pixmap,cv->width-len-5,r.y,ubuf,-1,NULL,0x00ffff);
+		GDrawDrawText(pixmap,cv->width-len-5,r.y,ubuf,-1,NULL,hintlabelcol);
 	    } else
 		len = 0;
 	    r.y = -cv->yoff + cv->height - rint((hint->start+hint->width)*cv->scale);
@@ -850,7 +930,7 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
 	    if ( r.y>-20 && r.y<cv->height+20 ) {
 		dtou( ubuf, hint->width);
 		len2 = GDrawGetTextWidth(pixmap,ubuf,-1,NULL);
-		GDrawDrawText(pixmap,cv->width-len-5-len2-5,r.y,ubuf,-1,NULL,0x00ffff);
+		GDrawDrawText(pixmap,cv->width-len-5-len2-5,r.y,ubuf,-1,NULL,hintlabelcol);
 	    }
 	}
     }
@@ -864,7 +944,7 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
 		r.x = cv->xoff + rint(hint->start*cv->scale);
 		r.width = rint(hint->width*cv->scale)+1;
 	    }
-	    col = hint->active ? 0x0000ff : 0xc0c0ff;
+	    col = hint->active ? vhintactivecol : vhintcol;
 	    if ( r.x<32767 && r.x+r.width>-32768 ) {
 		if ( r.x<-32768 ) {
 		    r.width -= (-32768-r.x);
@@ -881,7 +961,7 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
 		    }
 		}
 	    }
-	    col = hint->hasconflicts? 0x00ffff : col;
+	    col = hint->hasconflicts? conflicthintcol : col;
 	    if ( r.x>=0 && r.x<=cv->width )
 		GDrawDrawLine(pixmap,r.x,0,r.x,cv->height,col);
 	    if ( r.x+r.width>=0 && r.x+r.width<=cv->width )
@@ -892,14 +972,14 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
 		dtou( ubuf, hint->start);
 		len = GDrawGetTextWidth(pixmap,ubuf,-1,NULL);
 		r.x += ( hint->width>0 ) ? 3 : -len-3;
-		GDrawDrawText(pixmap,r.x,cv->sas+3,ubuf,-1,NULL,0x00ffff);
+		GDrawDrawText(pixmap,r.x,cv->sas+3,ubuf,-1,NULL,hintlabelcol);
 	    }
 	    r.x = cv->xoff + rint((hint->start+hint->width)*cv->scale);
 	    if ( r.x>-60 && r.x<cv->width+20 ) {
 		dtou( ubuf, hint->width);
 		len = GDrawGetTextWidth(pixmap,ubuf,-1,NULL);
 		r.x += ( hint->width>0 ) ? -len-3 : 3;
-		GDrawDrawText(pixmap,r.x,cv->sas+cv->sfh+3,ubuf,-1,NULL,0x00ffff);
+		GDrawDrawText(pixmap,r.x,cv->sas+cv->sfh+3,ubuf,-1,NULL,hintlabelcol);
 	    }
 	}
     }
@@ -927,7 +1007,7 @@ return;
 
 void DrawAnchorPoint(GWindow pixmap,int x, int y,int selected) {
     GPoint gp[9];
-    Color col = 0x0040ff;
+    Color col = anchorcol;
 
     gp[0].x = x-1; gp[0].y = y-1;
     gp[1].x = x;   gp[1].y = y-6;
@@ -946,7 +1026,7 @@ void DrawAnchorPoint(GWindow pixmap,int x, int y,int selected) {
 
 static void CVDrawAnchorPoints(CharView *cv,GWindow pixmap) {
     int x,y, len, sel;
-    Color col = 0x0040ff;
+    Color col = anchorcol;
     AnchorPoint *ap;
     char buf[10];
     unichar_t *name, ubuf[30];
@@ -1024,18 +1104,18 @@ static void DrawOldState(CharView *cv, GWindow pixmap, Undoes *undo, DRect *clip
     if ( undo==NULL )
 return;
 
-    CVDrawSplineSet(cv,pixmap,undo->u.state.splines,0x008000,false,clip);
+    CVDrawSplineSet(cv,pixmap,undo->u.state.splines,oldoutlinecol,false,clip);
     for ( refs=undo->u.state.refs; refs!=NULL; refs=refs->next )
 	if ( refs->splines!=NULL )
-	    CVDrawSplineSet(cv,pixmap,refs->splines,0x008000,false,clip);
+	    CVDrawSplineSet(cv,pixmap,refs->splines,oldoutlinecol,false,clip);
     /* Don't do images... */
 }
     
 static void DrawTransOrigin(CharView *cv, GWindow pixmap) {
     int x = rint(cv->p.cx*cv->scale) + cv->xoff, y = cv->height-cv->yoff-rint(cv->p.cy*cv->scale);
 
-    GDrawDrawLine(pixmap,x-4,y,x+4,y,0x000000);
-    GDrawDrawLine(pixmap,x,y-4,x,y+4,0x000000);
+    GDrawDrawLine(pixmap,x-4,y,x+4,y,transformorigincol);
+    GDrawDrawLine(pixmap,x,y-4,x,y+4,transformorigincol);
 }
 
 static void DrawVLine(CharView *cv,GWindow pixmap,real pos,Color fg, int flags) {
@@ -1046,13 +1126,13 @@ static void DrawVLine(CharView *cv,GWindow pixmap,real pos,Color fg, int flags) 
 	if ( x>-400 && x<cv->width+400 ) {
 	    dtou( ubuf, pos);
 	    GDrawSetFont(pixmap,cv->small);
-	    GDrawDrawText(pixmap,x+5,cv->sas+3,ubuf,-1,NULL,0x00000);
+	    GDrawDrawText(pixmap,x+5,cv->sas+3,ubuf,-1,NULL,metricslabelcol);
 	}
     }
     if ( ItalicConstrained && cv->sc->parent->italicangle!=0 ) {
 	double s = sin(-cv->sc->parent->italicangle*3.1415926535897932/180.);
 	int xoff = rint(8096*s);
-	DrawLine(cv,pixmap,pos-xoff,-8096,pos+xoff,8096,0x909090);
+	DrawLine(cv,pixmap,pos-xoff,-8096,pos+xoff,8096,italiccoordcol);
     }
 }
 
@@ -1096,18 +1176,18 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	    GDrawDrawPixmap(pixmap,cv->backimgs,&r,0,0);
 	}
 	if ( cv->showgrids || cv->drawmode==dm_grid ) {
-	    CVDrawSplineSet(cv,pixmap,cv->fv->sf->gridsplines,0x808080,
+	    CVDrawSplineSet(cv,pixmap,cv->fv->sf->gridsplines,guideoutlinecol,
 		    cv->showpoints && cv->drawmode==dm_grid,&clip);
 	}
 	if ( cv->showhmetrics ) {
-	    DrawVLine(cv,pixmap,0,0x808080,false);
-	    DrawLine(cv,pixmap,-8096,0,8096,0,0x808080);
-	    DrawLine(cv,pixmap,-8096,sf->ascent,8096,sf->ascent,0x808080);
-	    DrawLine(cv,pixmap,-8096,-sf->descent,8096,-sf->descent,0x808080);
+	    DrawVLine(cv,pixmap,0,coordcol,false);
+	    DrawLine(cv,pixmap,-8096,0,8096,0,coordcol);
+	    DrawLine(cv,pixmap,-8096,sf->ascent,8096,sf->ascent,coordcol);
+	    DrawLine(cv,pixmap,-8096,-sf->descent,8096,-sf->descent,coordcol);
 	}
 	if ( cv->showvmetrics ) {
-	    DrawLine(cv,pixmap,(sf->ascent+sf->descent)/2,-8096,(sf->ascent+sf->descent)/2,8096,0x808080);
-	    DrawLine(cv,pixmap,-8096,sf->vertical_origin,8096,sf->vertical_origin,0x808080);
+	    DrawLine(cv,pixmap,(sf->ascent+sf->descent)/2,-8096,(sf->ascent+sf->descent)/2,8096,coordcol);
+	    DrawLine(cv,pixmap,-8096,sf->vertical_origin,8096,sf->vertical_origin,coordcol);
 	}
 
 	if ( cv->showback || cv->drawmode==dm_back )
@@ -1115,8 +1195,10 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	if (( cv->showfore || cv->drawmode==dm_fore ) && cv->showfilled ) {
 	    /* Wrong order, I know. But it is useful to have the background */
 	    /*  visible on top of the fill... */
+	    cv->gi.u.image->clut->clut[1] = fillcol;
 	    GDrawDrawImage(pixmap, &cv->gi, NULL, cv->xoff + cv->filled->xmin,
 		    -cv->yoff + cv->height-cv->filled->ymax);
+	    cv->gi.u.image->clut->clut[1] = backimagecol;
 	}
     } else {
 	/* Draw FreeType Results */
@@ -1133,7 +1215,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 			if ( cv->raster->bitmap[i*cv->raster->bytes_per_row+(j>>3)] & (1<<(7-(j&7))) ) {
 			    pixel.x = (j+cv->raster->lb)*grid_spacing*cv->scale + cv->xoff;
 			    pixel.y = cv->height-cv->yoff - rint((cv->raster->as-i)*grid_spacing*cv->scale);
-			    GDrawFillRect(pixmap,&pixel,0xa0a0a0);
+			    GDrawFillRect(pixmap,&pixel,rastercol);
 			}
 		    }
 		}
@@ -1141,10 +1223,10 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 
 	    for ( i = floor( clip.x/grid_spacing ), max = ceil((clip.x+clip.width)/grid_spacing);
 		    i<=max; ++i )
-		DrawLine(cv,pixmap,i*grid_spacing,-32768,i*grid_spacing,32767,i==0?0x808080:0xb0b0ff);
+		DrawLine(cv,pixmap,i*grid_spacing,-32768,i*grid_spacing,32767,i==0?coordcol:rastergridcol);
 	    for ( i = floor( clip.y/grid_spacing ), max = ceil((clip.y+clip.height)/grid_spacing);
 		    i<=max; ++i )
-		DrawLine(cv,pixmap,-32768,i*grid_spacing,32767,i*grid_spacing,i==0?0x808080:0xb0b0ff);
+		DrawLine(cv,pixmap,-32768,i*grid_spacing,32767,i*grid_spacing,i==0?coordcol:rastergridcol);
 	    if ( grid_spacing*cv->scale>=7 ) {
 		for ( i = floor( clip.x/grid_spacing ), max = ceil((clip.x+clip.width)/grid_spacing);
 			i<=max; ++i )
@@ -1152,13 +1234,13 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 			    j<=jmax; ++j ) {
 			int x = (i+.5)*grid_spacing*cv->scale + cv->xoff;
 			int y = cv->height-cv->yoff - rint((j+.5)*grid_spacing*cv->scale);
-			GDrawDrawLine(pixmap,x-2,y,x+2,y,0xb0b0ff);
-			GDrawDrawLine(pixmap,x,y-2,x,y+2,0xb0b0ff);
+			GDrawDrawLine(pixmap,x-2,y,x+2,y,rastergridcol);
+			GDrawDrawLine(pixmap,x,y-2,x,y+2,rastergridcol);
 		    }
 	    }
 	}
 	if ( cv->showback ) {
-	    CVDrawSplineSet(cv,pixmap,cv->gridfit,0x009800,
+	    CVDrawSplineSet(cv,pixmap,cv->gridfit,gridfitoutlinecol,
 		    cv->showpoints,&clip);
 	}
     }
@@ -1172,7 +1254,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	    /*  is to draw to pixmap, dump pixmap a bit earlier */
 	    /* Then when we moved the fill image around, we had to deal with the */
 	    /*  images before the fill... */
-	    CVDrawSplineSet(cv,pixmap,cv->sc->backgroundsplines,0x009800,
+	    CVDrawSplineSet(cv,pixmap,cv->sc->backgroundsplines,backoutlinecol,
 		    cv->showpoints && cv->drawmode==dm_back,&clip);
 	    if ( cv->template1!=NULL )
 		CVDrawTemplates(cv,pixmap,cv->template1,&clip);
@@ -1185,39 +1267,39 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	CVDrawAnchorPoints(cv,pixmap);
 	for ( rf=cv->sc->refs; rf!=NULL; rf = rf->next ) {
 	    CVDrawRefName(cv,pixmap,rf,0);
-	    CVDrawSplineSet(cv,pixmap,rf->splines,0,false,&clip);
+	    CVDrawSplineSet(cv,pixmap,rf->splines,foreoutlinecol,false,&clip);
 	    if ( rf->selected )
 		CVDrawBB(cv,pixmap,&rf->bb);
 	}
 
-	CVDrawSplineSet(cv,pixmap,cv->sc->splines,0,
+	CVDrawSplineSet(cv,pixmap,cv->sc->splines,foreoutlinecol,
 		cv->showpoints && cv->drawmode==dm_fore,&clip);
     }
 
     if ( cv->freehand.current_trace!=NULL )
-	CVDrawSplineSet(cv,pixmap,cv->freehand.current_trace,0x008000,
+	CVDrawSplineSet(cv,pixmap,cv->freehand.current_trace,tracecol,
 		false,&clip);
 
     if ( cv->showhmetrics && cv->searcher==NULL ) {
-	DrawVLine(cv,pixmap,cv->sc->width,(!cv->inactive && cv->widthsel)?0x00ff00:0x0,true);
+	DrawVLine(cv,pixmap,cv->sc->width,(!cv->inactive && cv->widthsel)?widthselcol:widthcol,true);
 	for ( pst=cv->sc->possub; pst!=NULL && pst->type!=pst_lcaret; pst=pst->next );
 	if ( pst!=NULL ) {
 	    for ( i=0; i<pst->u.lcaret.cnt; ++i )
-		DrawVLine(cv,pixmap,pst->u.lcaret.carets[i],0x909040,true);
+		DrawVLine(cv,pixmap,pst->u.lcaret.carets[i],lcaretcol,true);
 	}
 	if ( cv->show_ft_results || cv->dv!=NULL )
-	    DrawVLine(cv,pixmap,cv->ft_gridfitwidth,0x009800,true);
+	    DrawVLine(cv,pixmap,cv->ft_gridfitwidth,widthgridfitcol,true);
     }
     if ( cv->showvmetrics ) {
 	int len, y = -cv->yoff + cv->height - rint((sf->vertical_origin-cv->sc->vwidth)*cv->scale);
 	DrawLine(cv,pixmap,-32768,sf->vertical_origin-cv->sc->vwidth,
 			    32767,sf->vertical_origin-cv->sc->vwidth,
-		(!cv->inactive && cv->vwidthsel)?0x00ff00:0x0);
+		(!cv->inactive && cv->vwidthsel)?widthselcol:widthcol);
 	if ( y>-40 && y<cv->height+40 ) {
 	    dtou( ubuf, cv->sc->vwidth);
 	    GDrawSetFont(pixmap,cv->small);
 	    len = GDrawGetTextWidth(pixmap,ubuf,-1,NULL);
-	    GDrawDrawText(pixmap,cv->width-len-5,y,ubuf,-1,NULL,0x00ffff);
+	    GDrawDrawText(pixmap,cv->width-len-5,y,ubuf,-1,NULL,metricslabelcol);
 	}
     }
 
@@ -5784,6 +5866,9 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv) {
     static unichar_t fixed[] = { 'f','i','x','e','d',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t', '\0' };
     static unichar_t *infofamily=NULL;
 
+    if ( !cvcolsinited )
+	CVColInit();
+
     cv->sc = sc;
     cv->scale = .5;
     cv->xoff = cv->yoff = 20;
@@ -5870,7 +5955,7 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv) {
     cv->gi.u.image->clut->trans_index = cv->gi.u.image->trans = 0;
     cv->gi.u.image->clut->clut_len = 2;
     cv->gi.u.image->clut->clut[0] = 0xffffff;
-    cv->gi.u.image->clut->clut[1] = 0x707070;
+    cv->gi.u.image->clut->clut[1] = backimagecol;
     cv->b1_tool = cvt_pointer; cv->cb1_tool = cvt_pointer;
     cv->b2_tool = cvt_magnify; cv->cb2_tool = cvt_ruler;
     cv->s1_tool = cvt_freehand; cv->s2_tool = cvt_pen;

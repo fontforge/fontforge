@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Jan-2003 -->
-  <!-- AP: Last modified: 8-Apr-2003 -->
+  <!-- AP: Last modified: 11-Apr-2003 -->
   <TITLE>Building accented characters</TITLE>
 </HEAD>
 <BODY>
@@ -90,10 +90,10 @@ in this range which are not accented, and they will remain blank).
 PfaEdit has a heuristic for positioning accents (most accents are centered
 over the highest point of the character), sometimes this will produce bad
 results (if the one of the two stems of "u" is slightly taller than the other
-the accent will be placed over it rather than centered over the character),
+the accent will be placed over it rather than being centered over the character),
 so you should be prepared to look at your accented characters after creating
-them. You may need to adjust one or two (or you may need to redesign your
-base characters slightly).
+them. You may need to adjust one or two (or you may even want to redesign
+your base characters slightly).
 <H2>
   <A NAME="ligature">Creating</A> a ligature
 </H2>
@@ -112,15 +112,17 @@ This makes it slightly easier (at least in latin) to design a ligature.
   </CAPTION>
   <TR>
     <TD><P ALIGN=Center>
-      <IMG SRC="ffi-refs.png" ALT="ffi ligature as references" WIDTH="156" HEIGHT="295"></TD>
+      <IMG SRC="ffi-refs.png" ALT="ffi ligature as references" WIDTH="154" HEIGHT="277"></TD>
     <TD><P ALIGN=Center>
-      <IMG SRC="ffi-unlink.png" WIDTH="156" HEIGHT="295" ALT="ffi after unlinking references"></TD>
+      <IMG SRC="ffi-unlink.png" WIDTH="154" HEIGHT="277" ALT="ffi after unlinking references"></TD>
     <TD><P ALIGN=Center>
-      <IMG SRC="ffi-moved.png" WIDTH="156" HEIGHT="295" ALT="ffi after lowering first f"></TD>
+      <IMG SRC="ffi-moved.png" WIDTH="154" HEIGHT="277" ALT="ffi after lowering first f"></TD>
     <TD><P ALIGN=Center>
-      <IMG SRC="ffi-rmoverlap.png" WIDTH="156" HEIGHT="295" ALT="ffi after doing remove overlap"></TD>
+      <IMG SRC="ffi-rmoverlap.png" ALT="ffi after doing remove overlap" WIDTH="154"
+	  HEIGHT="277"></TD>
     <TD><P ALIGN=Center>
-      <IMG SRC="ffi-caret.png" WIDTH="156" HEIGHT="295" ALT="ffi after adjusting ligature carets"></TD>
+      <IMG SRC="ffi-caret.png" ALT="ffi after adjusting ligature carets" WIDTH="154"
+	  HEIGHT="277"></TD>
   </TR>
   <TR VALIGN="Top">
     <TD>Use the <A HREF="elementmenu.html#CharInfo">Element -&gt; Char Info</A>
@@ -140,7 +142,7 @@ This makes it slightly easier (at least in latin) to design a ligature.
 <P>
 Some word processors will allow the editing caret to be placed inside a ligature
 (with a caret position between each component of the ligature). This means
-that the user of that word processor does not need to know they s/he is dealing
+that the user of that word processor does not need to know s/he is dealing
 with a ligature and sees behavior very similar to what s/he would see if
 the components were present. But if the word processor is to be able to do
 this it must have some information from the font designer giving the locations
@@ -166,7 +168,7 @@ and 0D15 then name it "uni0D15_uni0D4D_uni0D15".
 Once you have named your ligature, and inserted its components (with Build
 Composite), you probably want to open the character,
 <A HREF="editmenu.html#Unlink">Unlink your References</A> and edit them to
-make a pleasing shape.
+make a pleasing shape (as above).
 <P>
 <IMG SRC="charinfo-akhn.png" WIDTH="307" HEIGHT="401" ALT="Char Info for Akhand ligature type"
     ALIGN="Right">Finally you should check that PfaEdit has marked your character
