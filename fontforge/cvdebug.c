@@ -489,6 +489,13 @@ static void DVFigureNewState(DebugView *dv,TT_ExecContext exc) {
     } else
 	IIScrollTo(&dv->ii,exc->IP,true);
 
+    /* We might ask for a fractional number of pixels for an em. Freetype */
+    /*  isn't going to give us that, it rounds. Rather than guess how it does */
+    /*  that, let's just ask it... */
+    /* The exact size is: cv->ft_pointsize*cv->ft_dpi/72.0 */
+    /* Rounded size is:   exc->size.x_ppem (or y_ppem) */
+    if ( exc!=NULL )
+	dv->scale = (cv->sc->parent->ascent+cv->sc->parent->descent)/((double) exc->size->metrics.x_ppem) / (1<<6);
     if ( cv!=NULL && cv->coderange!=range ) {
 	cv->coderange = range;
 	CVInfoDraw(cv,cv->gw);
@@ -1450,7 +1457,7 @@ void CVDebugReInit(CharView *cv,int restart_debug,int dbg_fpgm) {
     int i;
 
     if ( restart_debug )
-	scale = (cv->sc->parent->ascent+cv->sc->parent->descent)/(cv->ft_pointsize*cv->ft_dpi/72.0) / (1<<6);
+	scale = (cv->sc->parent->ascent+cv->sc->parent->descent)/(rint(cv->ft_pointsize*cv->ft_dpi/72.0)) / (1<<6);
     if ( !restart_debug ) {
 	CVDebugFree(dv);
     } else if ( dv==NULL ) {
