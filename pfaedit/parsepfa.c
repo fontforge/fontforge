@@ -863,7 +863,15 @@ static void AddValue(struct fontparse *fp, struct psdict *dict, char *line, char
 	ContinueValue(fp,dict,endtok);
 return;
     }
-    while ( pt-1>endtok && isspace(pt[-1])) --pt;
+    forever {
+	while ( pt-1>endtok && isspace(pt[-1])) --pt;
+	if ( pt-8>endtok && strncmp(pt-8,"noaccess",8)==0 )
+	    pt -= 8;
+	else if ( pt-8>endtok && strncmp(pt-8,"readonly",8)==0 )
+	    pt -= 8;
+	else
+	    break;
+    }
     dict->values[dict->next] = copyn(endtok,pt-endtok);
     ++dict->next;
 }
