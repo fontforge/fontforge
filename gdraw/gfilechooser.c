@@ -605,6 +605,7 @@ void GFileChooserConnectButtons(GGadget *g,GGadget *ok, GGadget *filter) {
 
 void GFileChooserSetFilterText(GGadget *g,const unichar_t *wildcard) {
     GFileChooser *gfc = (GFileChooser *) g;
+    free(gfc->wildcard);
     gfc->wildcard = u_copy(wildcard);
 }
 
@@ -664,6 +665,9 @@ return;
 	free(dir);
     } else if ( pt==NULL ) {
 	GGadgetSetTitle(&gfc->name->g,tit);
+	curdir = GFileChooserGetCurDir(gfc,-1);
+	GFileChooserScanDir(gfc,curdir);
+	free(curdir);
     } else {
 	curdir = GFileChooserGetCurDir(gfc,-1);
 	temp = u_copyn(tit,pt-tit);
