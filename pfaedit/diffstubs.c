@@ -40,6 +40,7 @@ void SCGuessHHintInstancesList(SplineChar *sc) { }
 void SCGuessVHintInstancesList(SplineChar *sc) { }
 int StemListAnyConflicts(StemInfo *stems) { return 0 ; }
 int getAdobeEnc(char *name) { return -1; }
+GDisplay *screen_display=NULL;
 
 /* ************************************************************************** */
 /* And some routines we actually do need */
