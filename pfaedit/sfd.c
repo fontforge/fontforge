@@ -1797,8 +1797,8 @@ return( NULL );
 		getint(sfd,&temp);
 		liga->flags = temp;
 		while ( (ch=getc(sfd))==' ' || ch=='\t' );
-	    } else if ( liga->type==pst_ligature )
-		liga->flags |= pst_ignorecombiningmarks;
+	    } else
+		liga->flags = PSTDefaultFlags(liga->type,sc);
 	    if ( isdigit(ch)) {
 		int temp;
 		ungetc(ch,sfd);
@@ -2450,8 +2450,11 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 		    int temp;
 		    getint(sfd,&temp);
 		    an->flags = temp;
-		} else if ( an->feature_tag==CHR('c','u','r','s'))
+		}
+#if 0
+		else if ( an->feature_tag==CHR('c','u','r','s'))
 		    an->flags = pst_ignorecombiningmarks;
+#endif
 		while ( (ch=getc(sfd))==' ' || ch=='\t' );
 		ungetc(ch,sfd);
 		if ( isdigit(ch)) {

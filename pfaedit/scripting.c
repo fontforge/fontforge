@@ -2428,13 +2428,8 @@ static void bAddATT(Context *c) {
 
     sc = GetOneSelChar(c);
 
-    if ( c->a.vals[4].u.ival == -1 ) {
-	temp.flags = 0;
-	if ( SCRightToLeft(sc))
-	    temp.flags = pst_r2l;
-	if ( temp.type==pst_ligature )
-	    temp.flags |= pst_ignorecombiningmarks;
-    }
+    if ( c->a.vals[4].u.ival == -1 )
+	temp.flags = PSTDefaultFlags(temp.type,sc);
 
     ustr = uc_copy(c->a.vals[2].u.sval);
     temp.script_lang_index = SFAddScriptLangRecord(sc->parent,SRParse(ustr));

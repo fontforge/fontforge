@@ -2249,6 +2249,44 @@ return( ret==0 );
 return( true );
 }
 
+static int UnicodeContainsCombiners(int uni) {
+    const unichar_t *alt;
+
+    if ( uni<0 || uni>0xffff )
+return( -1 );
+    if ( iscombining(uni))
+return( true );
+
+    if ( !isdecompositionnormative(uni) || unicode_alternates[uni>>8]==NULL )
+return( false );
+    alt = unicode_alternates[uni>>8][uni&0xff];
+    if ( alt==NULL )
+return( false );
+    while ( *alt ) {
+	if ( UnicodeContainsCombiners(*alt))
+return( true );
+	++alt;
+    }
+return( false );
+}
+
+uint16 PSTDefaultFlags(enum possub_type type,SplineChar *sc ) {
+    uint16 flags = 0;
+
+    if ( sc!=NULL ) {
+	if ( SCRightToLeft(sc))
+	    flags = pst_r2l;
+	if ( type==pst_ligature ) {
+	    int script = SCScriptFromUnicode(sc);
+	    if ( script==CHR('h','e','b','r') || script==CHR('a','r','a','b')) {
+		if ( !UnicodeContainsCombiners(sc->unicodeenc))
+		    flags |= pst_ignorecombiningmarks;
+	    }
+	}
+    }
+return( flags );
+}
+
 static void CI_DoNew(CharInfo *ci, unichar_t *def) {
     int len, i, sel;
     GTextInfo **old, **new;
@@ -2257,8 +2295,8 @@ static void CI_DoNew(CharInfo *ci, unichar_t *def) {
     uint16 flags=0;
 
     sel = GTabSetGetSel(GWidgetGetControl(ci->gw,CID_Tabs))-2;
-    if ( sel==pst_ligature-1 )
-	flags = pst_ignorecombiningmarks;
+    flags = PSTDefaultFlags(sel+1,ci->sc);
+
     newname = sel==0 
 	    ? AskPosTag(newstrings[sel],def,0,flags,-1,pst_tags[sel],ci->sc->parent,ci->sc)
 	    : AskNameTag(newstrings[sel],def,0,flags,-1,pst_tags[sel],ci->sc->parent,ci->sc,-1);
@@ -3288,7 +3326,7 @@ static PST *LigDefaultList(SplineChar *sc, uint32 tag) {
 	break;
 	    lig = chunkalloc(sizeof(PST));
 	    lig->tag = LigTagFromUnicode(sc->unicodeenc);
-	    lig->flags = pst_ignorecombiningmarks;
+	    lig->flags = PSTDefaultFlags(pst_ligature,sc);
 	    lig->script_lang_index = SFAddScriptLangIndex(sc->parent,
 			SCScriptFromUnicode(sc),DEFAULT_LANG);
 	    lig->type = pst_ligature;
