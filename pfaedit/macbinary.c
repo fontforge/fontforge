@@ -1032,7 +1032,11 @@ return( 0 );
     DumpResourceMap(res,resources,format);
     free( resources[0].res );
 	
-    header.macfilename = buffer;
+    header.macfilename = galloc(strlen(filename)+strlen(buffer)+1);
+    strcpy(header.macfilename,filename);
+    pt = strrchr(header.macfilename,'/');
+    if ( pt==NULL ) pt=header.macfilename-1;
+    strcpy(pt+1,buffer);
 	/* Adobe uses a creator of ASPF (Adobe Systems Postscript Font I assume) */
 	/* Fontographer uses ACp1 (Altsys Corp. Postscript type 1???) */
 	/* Both include an FREF, BNDL, ICON* and comment */
