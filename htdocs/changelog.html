@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 23-May-2004 -->
+  <!-- AP: Last modified: 29-May-2004 -->
   <TITLE>Change log for FontForge</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,41 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    29-May-2004
+    <UL>
+      <LI>
+	The MergeKern scripting command didn't have the capabilities of its menu
+	counterpart.
+      <LI>
+	Enhance the pattern matching capabilities on font names when loading kerning
+	information from a mac FOND (there is no place in the FOND that names the
+	styles, so best we can do is make reasonable guesses).
+      <LI>
+	When editing quadratic fonts (truetype), changing the type of a point to
+	be a tangent caused the previous control point to be set the to same location
+	as the next control point. Bleah.
+      <LI>
+	New versions of libpng will not automagically load libz when they are loaded.
+	Needed a patch to load libz manually.
+      <LI>
+	Fixed a couple of bugs in contextual / chaining dialog.
+      <LI>
+	When reading PostScript arrays FF failed to parse negative numbers properly.
+      <LI>
+	Make it an error (which it should be) to create a mac postscript resource
+	file without also generating an NFNT.
+      <LI>
+	Warn that NFNTs don't work under OS/X, warn that POST resources are probably
+	depreciated.
+      <LI>
+	WinAscent/Descent were being saved incorrectly in sfd files, leading to bad
+	WinAscent/Descent in t/otf OS/2 tables.
+      <LI>
+	Crash in ExpandStroke from a NaN when try to intersect parallel lines
+      <LI>
+	Improved Merge a little bit for quadratic splines
+    </UL>
   <LI>
     23-May-2004
     <UL>
