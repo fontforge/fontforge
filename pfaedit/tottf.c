@@ -307,9 +307,9 @@ return( LinearSpline(ps,start,tmax));
 	/*  pretend it's right */
 	start->prev->splines[0].b += ps->to->me.x-start->me.x;
 	start->prev->splines[1].b += ps->to->me.y-start->me.y;
-	start->prevcp.x += end.x-start->me.x;
-	start->prevcp.y += end.y-start->me.y;
-	start->me = end;
+	start->prevcp.x += rend.x-start->me.x;
+	start->prevcp.y += rend.y-start->me.y;
+	start->me = rend;
 return( start );
     }
 
@@ -6112,7 +6112,6 @@ static int Needs816Enc(struct alltabs *at, SplineFont *sf) {
     uint16 tempglyphs[256];
     uint32 macpos;
     int enccnt;
-    /* This only works for big5, johab */
     int base, lbase, basebound, subheadcnt, planesize, plane0size;
     int base2, base2bound;
 
@@ -6158,15 +6157,20 @@ return( false );
     i=0;
     if ( base2!=-1 ) {
 	for ( i=basebound; i<base2 && i<sf->charcnt; ++i )
-	    if ( SCWorthOutputting(sf->chars[i]))
+	    if ( sf->chars[i]!=NULL && (i==0 || (i==13 && sf->chars[i]->ttf_glyph==2)))
+	continue;	/* Ignore .notdef, nonmarking return */
+	    else if ( SCWorthOutputting(sf->chars[i]))
 	break;
 	if ( i==base2 || i==sf->charcnt )
 	    i = 0;
     }
-    if ( i==0 )
+    if ( i==0 ) {
 	for ( i=0; i<base && i<sf->charcnt; ++i )
-	    if ( SCWorthOutputting(sf->chars[i]))
+	    if ( sf->chars[i]!=NULL && (i==0 || (i==13 && sf->chars[i]->ttf_glyph==2)))
+	continue;
+	    else if ( SCWorthOutputting(sf->chars[i]))
 	break;
+    }
     if ( i==base || i==sf->charcnt )
 return( false );		/* Doesn't have the single byte entries */
 	/* Can use the normal 16 bit encoding scheme */
@@ -6247,6 +6251,8 @@ return( false );		/* Doesn't have the single byte entries */
 	    for ( k=0; k<planesize; ++k )
 		if ( tempglyphs[k]==0 && glyphs[plane0size+(i-1)*planesize+k]==0 )
 		    /* Still matches */;
+		else if ( tempglyphs[k]==0 || glyphs[plane0size+(i-1)*planesize+k]==0 )
+	    break;  /* Doesn't match */
 		else if ( delta==0 )
 		    delta = (uint16) (tempglyphs[k]-glyphs[plane0size+(i-1)*planesize+k]);
 		else if ( tempglyphs[k]==(uint16) (glyphs[plane0size+(i-1)*planesize+k]+delta) )
