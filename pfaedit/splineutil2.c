@@ -398,10 +398,10 @@ return( ApproximateSplineFromPoints(from,to,mid,cnt) );
     m[5][0] = m[5][3] = 0;
 
     /* At this point the matrix looks like:
-     1 ? ? 0 0 0
+     1 1 1 0 0 0
      0 ? ? 0 0 0
      0 0 ? 0 0 ?
-     0 0 0 1 ? ?
+     0 0 0 1 1 1
      0 0 0 0 ? ?
      0 ? ? 0 ? ?
     */
@@ -491,7 +491,7 @@ return( ApproximateSplineFromPoints(from,to,mid,cnt) );
 	v[4] -= m[4][5]*v[5];
 	v[3] -= m[3][5]*v[5];
 	v[2] -= m[2][5]*v[5];
-	m[4][5] = m[3][5] = m[2][5] = 0;
+	m[4][5] = m[3][5] = m[2][5] = 0; m[5][5] = 1;
     }
 
     /* At this point the matrix looks like:
@@ -519,6 +519,9 @@ return( ApproximateSplineFromPoints(from,to,mid,cnt) );
 	/* Well these aren't reasonable values. I assume a rounding error */
 	/*  caused us to miss a divide by zero check. Just throw out the */
 	/*  results and leave the control points as they were */
+	/* Hmm. I don't see any rounding errors. Maybe the problem just has */
+	/*  no good solution */
+#if 0
 	fprintf( stderr, "Possible divide by zero problem, please send a copy of the current font\n" );
 	fprintf( stderr, " the name of the character you were working on to gww@silcom.com\n" );
 	fprintf( stderr, "From: (%g,%g) nextcp: (%g,%g) prevcp: (%g,%g) To: (%g,%g)\nVia: ",
@@ -529,6 +532,7 @@ return( ApproximateSplineFromPoints(from,to,mid,cnt) );
 	for ( i=0; i<cnt; ++i )
 	    fprintf( stderr, "(%g,%g,%g) ", mid[i].x, mid[i].y, mid[i].t );
 	fprintf( stderr, "\n");
+#endif
     } else if ( v[2]*(n->x-from->me.x) + v[5]*(n->y-from->me.y)>=0 &&
 	    (prevcp.x-to->me.x)*(p->x-to->me.x) + (prevcp.y-to->me.y)*(p->y-to->me.y)>=0 ) {
 	from->nextcp.x = from->me.x + v[2]/3;
