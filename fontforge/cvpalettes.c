@@ -43,6 +43,7 @@ static GPoint cvtoolsoff = { -9999 }, cvlayersoff = { -9999 }, bvlayersoff = { -
 static int palettesmoved=0;
 int palettes_docked=0;
 int palettes_fixed=1;
+static enum cvtools tools[cvt_max+1] = { cvt_none };
 
 static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c','a','l','i','b','a','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
 static GFont *font;
@@ -173,10 +174,11 @@ static int popupsres[] = { _STR_Pointer, _STR_PopMag,
 			            _STR_PopRectElipse, _STR_PopPolyStar};
 static int editablelayers[] = { _STR_Fore, _STR_Back, _STR_Grid };
 int rectelipse=0, polystar=0, regular_star=1;
-int center_out = false;
+int center_out[2] = { false, true };
 float rr_radius=0;
 int ps_pointcnt=6;
 float star_percent=1.7320508;	/* Regular 6 pointed star */
+static real raddiam_x = 20, raddiam_y = 20, rotate_by=0;
 static StrokeInfo expand = { 25, lj_round, lc_butt, si_centerline,
 	    /* toobigwarn */  true,
 	    /* removeexternal */ false,
@@ -191,7 +193,7 @@ return( rr_radius );
 }
 
 int CVRectElipseCenter(void) {
-return( center_out );
+return( center_out[rectelipse] );
 }
 
 int CVPolyStarPoints(void) {
@@ -217,31 +219,87 @@ struct ask_info {
     int *co;
     GGadget *rb1;
     GGadget *reg;
-    int isint;
+    GGadget *pts;
+    int ispolystar;
+    int haspos;
     int lab;
+    CharView *cv;
 };
 #define CID_ValText		1001
 #define CID_PointPercent	1002
+#define CID_CentCornLab		1003
+#define CID_CentCornX		1004
+#define CID_CentCornY		1005
+#define CID_RadDiamLab		1006
+#define CID_RadDiamX		1007
+#define CID_RadDiamY		1008
+#define CID_Angle		1009
+
+static void FakeShapeEvents(CharView *cv) {
+    GEvent event;
+    real trans[6];
+
+    cv->active_tool = rectelipse ? cvt_elipse : cvt_rect;
+    GDrawSetCursor(cv->v,tools[cv->active_tool]);
+    GDrawSetCursor(cvtools,tools[cv->active_tool]);
+    cv->showing_tool = cv->active_tool;
+
+    memset(&event,0,sizeof(event));
+    event.type = et_mousedown;
+    CVMouseDownShape(cv,&event);
+    cv->info.x += raddiam_x;
+    cv->info.y += raddiam_y;
+    CVMouseMoveShape(cv);
+    CVMouseUpShape(cv);
+    if ( raddiam_x!=0 && raddiam_y!=0 && rotate_by!=0 ) {
+	trans[0] = trans[3] = cos ( rotate_by*3.1415926535897932/180. );
+	trans[1] = sin( rotate_by*3.1415926535897932/180. );
+	trans[2] = -trans[1];
+	trans[4] = -cv->p.x*trans[0] - cv->p.y*trans[2] + cv->p.x;
+	trans[5] = -cv->p.x*trans[1] - cv->p.y*trans[3] + cv->p.y;
+	SplinePointListTransform(cv->layerheads[cv->drawmode]->splines,trans,false);
+	SCUpdateAll(cv->sc);
+    }
+    cv->active_tool = cvt_none;
+}
 
 static int TA_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct ask_info *d = GDrawGetUserData(GGadgetGetWindow(g));
 	real val, val2=0;
 	int err=0;
-	if ( d->isint ) {
+	int re = !GGadgetIsChecked(d->rb1);
+	if ( d->ispolystar ) {
 	    val = GetIntR(d->gw,CID_ValText,d->lab,&err);
 	    if ( !(regular_star = GGadgetIsChecked(d->reg)))
 		val2 = GetRealR(d->gw,CID_PointPercent,_STR_SizeOfPoints,&err);
 	} else {
 	    val = GetRealR(d->gw,CID_ValText,d->lab,&err);
-	    *(d->co) = !GGadgetIsChecked(d->reg);
+	    d->co[re] = !GGadgetIsChecked(d->reg);
 	}
 	if ( err )
 return( true );
+	if ( d->haspos ) {
+	    real x,y, radx,rady, ang;
+	    x = GetIntR(d->gw,CID_CentCornX,_STR_X,&err);
+	    y = GetIntR(d->gw,CID_CentCornY,_STR_Y,&err);
+	    radx = GetIntR(d->gw,CID_RadDiamX,_STR_Radius,&err);
+	    rady = GetIntR(d->gw,CID_RadDiamY,_STR_Radius,&err);
+	    ang = GetIntR(d->gw,CID_Angle,_STR_Angle,&err);
+	    if ( err )
+return( true );
+	    d->cv->p.x = d->cv->info.x = x;
+	    d->cv->p.y = d->cv->info.y = y;
+	    raddiam_x = radx; raddiam_y = rady;
+	    rotate_by = ang;
+	    rectelipse = re;
+	    *d->val = val;
+	    FakeShapeEvents(d->cv);
+	}
 	*d->val = val;
-	d->ret = !GGadgetIsChecked(d->rb1);
+	d->ret = re;
 	d->done = true;
-	if ( !regular_star && d->isint )
+	if ( !regular_star && d->ispolystar )
 	    star_percent = val2/100;
 	SavePrefs();
     }
@@ -252,6 +310,31 @@ static int TA_Cancel(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct ask_info *d = GDrawGetUserData(GGadgetGetWindow(g));
 	d->done = true;
+    }
+return( true );
+}
+
+static int TA_CenRadChange(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	struct ask_info *d = GDrawGetUserData(GGadgetGetWindow(g));
+	int is_bb = GGadgetIsChecked(d->reg);
+	GGadgetSetTitle(GWidgetGetControl(d->gw,CID_CentCornLab),
+		GStringGetResource(is_bb ? _STR_Corner : _STR_Center_,NULL));
+	GGadgetSetTitle(GWidgetGetControl(d->gw,CID_RadDiamLab),
+		GStringGetResource(is_bb ? _STR_Diameter : _STR_Radius,NULL));
+    }
+return( true );
+}
+
+static int TA_RadChange(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	struct ask_info *d = GDrawGetUserData(GGadgetGetWindow(g));
+	int is_ellipse = !GGadgetIsChecked(d->rb1);
+	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_ValText), !is_ellipse );
+	GGadgetSetChecked(d->reg,!center_out[is_ellipse]);
+	GGadgetSetChecked(d->pts,center_out[is_ellipse]);
+	if ( d->haspos )
+	    TA_CenRadChange(g,e);
     }
 return( true );
 }
@@ -267,21 +350,28 @@ static int toolask_e_h(GWindow gw, GEvent *event) {
 return( event->type!=et_char );
 }
 
-static int Ask(int rb1, int rb2, int rb, int lab, real *val, int *co, int isint ) {
+static int Ask(int rb1, int rb2, int rb, int lab, real *val, int *co,
+	int ispolystar, CharView *cv ) {
     struct ask_info d;
     char buffer[20], buf[20];
+    char cenx[20], ceny[20], radx[20], rady[20], angle[20];
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[11];
-    GTextInfo label[11];
-    int off = isint?15:0;
+    GGadgetCreateData gcd[19];
+    GTextInfo label[19];
+    int off = ((ispolystar&1)?15:0) + ((ispolystar&2)?84:0);
+    int haspos = (ispolystar&2)?1:0;
+
+    ispolystar &= 1;
 
     d.done = false;
     d.ret = rb;
     d.val = val;
     d.co = co;
-    d.isint = isint;
+    d.ispolystar = ispolystar;
+    d.haspos = haspos;
     d.lab = lab;
+    d.cv = cv;
 
 	memset(&wattrs,0,sizeof(wattrs));
 	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
@@ -309,7 +399,7 @@ static int Ask(int rb1, int rb2, int rb, int lab, real *val, int *co, int isint 
 	label[1].text = (unichar_t *) rb2;
 	label[1].text_in_resource = true;
 	gcd[1].gd.label = &label[1];
-	gcd[1].gd.pos.x = isint?65:75; gcd[1].gd.pos.y = 5; 
+	gcd[1].gd.pos.x = ispolystar?65:75; gcd[1].gd.pos.y = 5; 
 	gcd[1].gd.flags = gg_enabled|gg_visible | (rb==1?gg_cb_on:0);
 	gcd[1].creator = GRadioCreate;
 
@@ -349,7 +439,7 @@ static int Ask(int rb1, int rb2, int rb, int lab, real *val, int *co, int isint 
 	gcd[5].gd.handle_controlevent = TA_Cancel;
 	gcd[5].creator = GButtonCreate;
 
-	if ( isint ) {
+	if ( ispolystar ) {
 	    label[6].text = (unichar_t *) _STR_Regular;
 	    label[6].text_in_resource = true;
 	    gcd[6].gd.label = &label[6];
@@ -384,19 +474,117 @@ static int Ask(int rb1, int rb2, int rb, int lab, real *val, int *co, int isint 
 	    label[6].text_in_resource = true;
 	    gcd[6].gd.label = &label[6];
 	    gcd[6].gd.pos.x = 5; gcd[6].gd.pos.y = 65; 
-	    gcd[6].gd.flags = gg_enabled|gg_visible | (*co==0?gg_cb_on:0);
+	    gcd[6].gd.flags = gg_enabled|gg_visible | (co[rb]==0?gg_cb_on:0);
 	    gcd[6].creator = GRadioCreate;
 
 	    label[7].text = (unichar_t *) _STR_CenterOut;
 	    label[7].text_in_resource = true;
 	    gcd[7].gd.label = &label[7];
 	    gcd[7].gd.pos.x = 90; gcd[7].gd.pos.y = 65; 
-	    gcd[7].gd.flags = gg_enabled|gg_visible | (*co==1?gg_cb_on:0);
+	    gcd[7].gd.flags = gg_enabled|gg_visible | (co[rb]==1?gg_cb_on:0);
 	    gcd[7].creator = GRadioCreate;
+
+	    if ( rb )
+		gcd[3].gd.flags = gg_visible;
+	    gcd[0].gd.handle_controlevent = TA_RadChange;
+	    gcd[1].gd.handle_controlevent = TA_RadChange;
+
+	    if ( haspos ) {
+		gcd[6].gd.handle_controlevent = TA_CenRadChange;
+		gcd[7].gd.handle_controlevent = TA_CenRadChange;
+
+		label[8].text = (unichar_t *) _STR_X;
+		label[8].text_in_resource = true;
+		gcd[8].gd.label = &label[8];
+		gcd[8].gd.pos.x = 70; gcd[8].gd.pos.y = gcd[7].gd.pos.y+15;
+		gcd[8].gd.flags = gg_enabled|gg_visible;
+		gcd[8].creator = GLabelCreate;
+
+		label[9].text = (unichar_t *) _STR_Y;
+		label[9].text_in_resource = true;
+		gcd[9].gd.label = &label[9];
+		gcd[9].gd.pos.x = 120; gcd[9].gd.pos.y = gcd[8].gd.pos.y;
+		gcd[9].gd.flags = gg_enabled|gg_visible;
+		gcd[9].creator = GLabelCreate;
+
+		label[10].text = (unichar_t *) (co[rb] ? _STR_Center_ : _STR_Corner );
+		label[10].text_in_resource = true;
+		gcd[10].gd.label = &label[10];
+		gcd[10].gd.pos.x = 5; gcd[10].gd.pos.y = gcd[8].gd.pos.y+17;
+		gcd[10].gd.flags = gg_enabled|gg_visible;
+		gcd[10].gd.cid = CID_CentCornLab;
+		gcd[10].creator = GLabelCreate;
+
+		sprintf( cenx, "%g", cv->info.x );
+		label[11].text = (unichar_t *) cenx;
+		label[11].text_is_1byte = true;
+		gcd[11].gd.label = &label[11];
+		gcd[11].gd.pos.x = 60; gcd[11].gd.pos.y = gcd[10].gd.pos.y-4;
+		gcd[11].gd.pos.width = 40;
+		gcd[11].gd.flags = gg_enabled|gg_visible;
+		gcd[11].gd.cid = CID_CentCornX;
+		gcd[11].creator = GTextFieldCreate;
+
+		sprintf( ceny, "%g", cv->info.y );
+		label[12].text = (unichar_t *) ceny;
+		label[12].text_is_1byte = true;
+		gcd[12].gd.label = &label[12];
+		gcd[12].gd.pos.x = 110; gcd[12].gd.pos.y = gcd[11].gd.pos.y;
+		gcd[12].gd.pos.width = gcd[11].gd.pos.width;
+		gcd[12].gd.flags = gg_enabled|gg_visible;
+		gcd[12].gd.cid = CID_CentCornY;
+		gcd[12].creator = GTextFieldCreate;
+
+		label[13].text = (unichar_t *) (co[rb] ? _STR_Radius : _STR_Diameter );
+		label[13].text_in_resource = true;
+		gcd[13].gd.label = &label[13];
+		gcd[13].gd.pos.x = 5; gcd[13].gd.pos.y = gcd[10].gd.pos.y+24;
+		gcd[13].gd.flags = gg_enabled|gg_visible;
+		gcd[13].gd.cid = CID_RadDiamLab;
+		gcd[13].creator = GLabelCreate;
+
+		sprintf( radx, "%g", raddiam_x );
+		label[14].text = (unichar_t *) radx;
+		label[14].text_is_1byte = true;
+		gcd[14].gd.label = &label[14];
+		gcd[14].gd.pos.x = gcd[11].gd.pos.x; gcd[14].gd.pos.y = gcd[13].gd.pos.y-4;
+		gcd[14].gd.pos.width = gcd[11].gd.pos.width;
+		gcd[14].gd.flags = gg_enabled|gg_visible;
+		gcd[14].gd.cid = CID_RadDiamX;
+		gcd[14].creator = GTextFieldCreate;
+
+		sprintf( rady, "%g", raddiam_y );
+		label[15].text = (unichar_t *) rady;
+		label[15].text_is_1byte = true;
+		gcd[15].gd.label = &label[15];
+		gcd[15].gd.pos.x = gcd[12].gd.pos.x; gcd[15].gd.pos.y = gcd[14].gd.pos.y;
+		gcd[15].gd.pos.width = gcd[11].gd.pos.width;
+		gcd[15].gd.flags = gg_enabled|gg_visible;
+		gcd[15].gd.cid = CID_RadDiamY;
+		gcd[15].creator = GTextFieldCreate;
+
+		label[16].text = (unichar_t *) _STR_Angle;
+		label[16].text_in_resource = true;
+		gcd[16].gd.label = &label[16];
+		gcd[16].gd.pos.x = 5; gcd[16].gd.pos.y = gcd[13].gd.pos.y+24;
+		gcd[16].gd.flags = gg_enabled|gg_visible;
+		gcd[16].creator = GLabelCreate;
+
+		sprintf( angle, "%g", rotate_by );
+		label[17].text = (unichar_t *) angle;
+		label[17].text_is_1byte = true;
+		gcd[17].gd.label = &label[17];
+		gcd[17].gd.pos.x = 60; gcd[17].gd.pos.y = gcd[16].gd.pos.y-4;
+		gcd[17].gd.pos.width = gcd[11].gd.pos.width;
+		gcd[17].gd.flags = gg_enabled|gg_visible;
+		gcd[17].gd.cid = CID_Angle;
+		gcd[17].creator = GTextFieldCreate;
+	    }
 	}
 	GGadgetsCreate(d.gw,gcd);
     d.rb1 = gcd[0].ret;
     d.reg = gcd[6].ret;
+    d.pts = gcd[7].ret;
 
     GWidgetHidePalettes();
     GDrawSetVisible(d.gw,true);
@@ -408,15 +596,21 @@ return( d.ret );
 
 static void CVRectElipse(CharView *cv) {
     rectelipse = Ask(_STR_Rectangle,_STR_Elipse,rectelipse,
-	    _STR_RRRad,&rr_radius,&center_out,false);
+	    _STR_RRRad,&rr_radius,center_out,false, cv);
+    GDrawRequestExpose(cvtools,NULL,false);
+}
+
+void CVRectEllipsePosDlg(CharView *cv) {
+    rectelipse = Ask(_STR_Rectangle,_STR_Elipse,rectelipse,
+	    _STR_RRRad,&rr_radius,center_out,2, cv);
     GDrawRequestExpose(cvtools,NULL,false);
 }
 
 static void CVPolyStar(CharView *cv) {
     real temp = ps_pointcnt;
-    int foo;
+    int foo[2];
     polystar = Ask(_STR_Polygon,_STR_Star,polystar,
-	    _STR_NumPSVert,&temp,&foo,true);
+	    _STR_NumPSVert,&temp,foo,true, cv);
     ps_pointcnt = temp;
 }
 
@@ -510,7 +704,6 @@ return( event->u.chr.state & ~bit );
 
 void CVToolsSetCursor(CharView *cv, int state, char *device) {
     int shouldshow;
-    static enum cvtools tools[cvt_max+1] = { cvt_none };
     int cntrl;
 
     if ( tools[0] == cvt_none ) {

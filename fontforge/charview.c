@@ -2592,7 +2592,7 @@ return;
 	CVMouseDownKnife(cv);
       break;
       case cvt_rect: case cvt_elipse: case cvt_poly: case cvt_star:
-	CVMouseDownShape(cv);
+	CVMouseDownShape(cv,event);
       break;
     }
 }
@@ -4318,6 +4318,7 @@ static void CVSelectContours(CharView *cv,struct gmenuitem *mi) {
 	    }
 	}
     }
+    SCUpdateAll(cv->sc);
 }
 
 static void CVMenuSelectContours(GWindow gw,struct gmenuitem *mi,GEvent *e) {

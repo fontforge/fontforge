@@ -64,12 +64,18 @@ static SplinePoint *SPMakeTo(BasePoint *base,int pt, SplinePoint *from,int order
 return( to );
 }
 
-void CVMouseDownShape(CharView *cv) {
+void CVMouseDownShape(CharView *cv,GEvent *event) {
     real radius = CVRoundRectRadius(); int points = CVPolyStarPoints();
     SplinePoint *last;
     int i;
     int order2 = cv->sc->parent->order2;
     struct shapedescrip *ellipse;
+
+    if ( event->u.mouse.clicks==2 &&
+	    (cv->active_tool == cvt_rect || cv->active_tool == cvt_elipse)) {
+	CVRectEllipsePosDlg(cv);
+return;
+    }
 
     CVClearSel(cv);
     CVPreserveState(cv);
@@ -295,7 +301,17 @@ return;
 }
 
 void CVMouseUpShape(CharView *cv) {
-    if ( cv->active_tool==cvt_rect || cv->active_tool==cvt_elipse ) {
+    SplinePoint *first, *second;
+
+    if ( cv->active_shape==NULL )
+return;
+
+    first = cv->active_shape->first; second = first->next->to;
+    if ( first->me.x == second->me.x && first->me.y == second->me.y ) {
+	/* Remove this shape, it will be selected */
+	cv->layerheads[cv->drawmode]->splines = SplinePointListRemoveSelected(cv->sc,
+		cv->layerheads[cv->drawmode]->splines);
+    } else if ( cv->active_tool==cvt_rect || cv->active_tool==cvt_elipse ) {
 	if ( !SplinePointListIsClockwise(cv->active_shape))
 	    SplineSetReverse(cv->active_shape);
     }
