@@ -3448,7 +3448,7 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 	    /* no name */
 	    if ( !notdefwarned ) {
 		notdefwarned = true;
-		fprintf( stderr, "Glyph %d is called \".notdef\", a signularly inept choice of name.\nPfaEdit will rename it.\n", i );
+		fprintf( stderr, "Glyph %d is called \".notdef\", a singularly inept choice of name (only glyph 0\n may be called .notdef)\nPfaEdit will rename it.\n", i );
 	    }
 	    free(info->chars[i]->name);
 	    info->chars[i]->name = NULL;
@@ -3565,6 +3565,8 @@ static void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 	    /* format 3, horizontal kerning data (as classes limited to 256 entries) not perpendicular */
 	    /*  OpenType's spec doesn't document this */
 	    fseek(ttf,len-header_size,SEEK_CUR);
+    fprintf( stderr, "This font has a format 3 kerning table. I've never seen that and don't know\nhow to parse it. Could you send a copy of %s to gww@silcom.com?\nThanks!\n",
+	info->fontname );
 	} else {
 	    fseek(ttf,len-header_size,SEEK_CUR);
 	}
