@@ -823,6 +823,8 @@ void GGadgetSetFont(GGadget *g,GFont *font) {
 }
 
 GFont *GGadgetGetFont(GGadget *g) {
+    if ( g==NULL )
+return( _ggadget_default_font );
     if ( g->funcs->get_font!=NULL )
 return( (g->funcs->get_font)(g) );
 
