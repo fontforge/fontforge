@@ -2688,10 +2688,10 @@ static StemInfo *CheckForGhostHints(StemInfo *stems,SplineChar *sc) {
 		break;
 		}
 		if ( i!=bd.bluecnt ) {
-		    if ( spline->from->me.y+20 > b.maxy )
-			width = 21;
-		    else if ( spline->from->me.y-21 < b.miny )
+		    if ( spline->from->me.y+21 > b.maxy )
 			width = 20;
+		    else if ( spline->from->me.y-20 < b.miny )
+			width = 21;
 		    else {
 			for ( sp2= spline->from->prev->from; sp2!=spline->from && sp2->me.y==spline->from->me.y; sp2=sp2->prev->from );
 			width = (sp2->me.y > spline->from->me.y)?21:20;
