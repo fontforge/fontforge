@@ -1,5 +1,5 @@
 Name:        pfaedit
-Version:     020910
+Version:     030730
 Release:     1
 Summary:     A PostScript font editor
 Copyright:   BSD
@@ -10,14 +10,14 @@ Url:         http://pfaedit.sourceforge.net/
 Vendor:      George Williams <gww@silcom.com>, Scott Pakin <pakin@uiuc.edu>
 Prefix:      /usr
 BuildRoot:   /var/tmp/%{name}-%{version}
-BuildPreReq: libpng-devel, libungif-devel
-#BuildPreReq: libjpeg-devel, libtiff-devel, libpng-devel, libungif-devel, freetype
+BuildPreReq: libpng-devel, libungif-devel, libxml2
+#BuildPreReq: libjpeg-devel, libtiff-devel, libpng-devel, libungif-devel, freetype, libxml2
 
 %description
 PfaEdit allows you to edit outline and bitmap fonts.  You can create
 new ones or modify old ones.  It is also a font format converter and
 can convert among PostScript (ASCII & binary Type 1, some Type 3s,
-some Type 0s), TrueType, OpenType (Type2) and CID-keyed fonts.
+some Type 0s), TrueType, OpenType (Type2), CID-keyed and SVG fonts.
 
 %prep
 %setup -T -b 0 -n pfaedit
