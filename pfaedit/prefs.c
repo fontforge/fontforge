@@ -108,6 +108,57 @@ return( NULL );
 return( prefs );
 }
 
+static char *getPfaEditShareDir(void) {
+    static char *sharedir=NULL;
+    static int set=false;
+    char *pt;
+    int len;
+
+    if ( set )
+return( sharedir );
+
+    set = true;
+    pt = strstr(GResourceProgramDir,"/bin");
+    if ( pt==NULL )
+return( NULL );
+    len = (pt-GResourceProgramDir)+strlen("/share/pfaedit")+1;
+    sharedir = galloc(len);
+    strncpy(sharedir,GResourceProgramDir,pt-GResourceProgramDir);
+    strcpy(sharedir+(pt-GResourceProgramDir),"/share/pfaedit");
+return( sharedir );
+}
+
+static int CheckLangDir(char *full,int sizefull,char *dir, const char *loc) {
+    char buffer[100];
+
+    if ( loc==NULL || dir==NULL )
+return(false);
+
+    strcpy(buffer,"pfaedit.");
+    strcat(buffer,loc);
+    strcat(buffer,".ui");
+
+    /*first look for full locale string (pfaedit.en_us.iso8859-1.ui) */
+    GFileBuildName(dir,buffer,full,sizefull);
+    /* Look for language_territory */
+    if ( GFileExists(full))
+return( true );
+    if ( strlen(loc)>5 ) {
+	strcpy(buffer+13,".ui");
+	GFileBuildName(dir,buffer,full,sizefull);
+	if ( GFileExists(full))
+return( true );
+    }
+    /* Look for language */
+    if ( strlen(loc)>2 ) {
+	strcpy(buffer+10,".ui");
+	GFileBuildName(dir,buffer,full,sizefull);
+	if ( GFileExists(full))
+return( true );
+    }
+return( false );
+}
+
 static void CheckLang(void) {
     /*const char *loc = setlocale(LC_MESSAGES,NULL);*/ /* This always returns "C" for me, even when it shouldn't be */
     const char *loc = getenv("LC_ALL");
@@ -122,34 +173,10 @@ return;
     strcpy(buffer,"pfaedit.");
     strcat(buffer,loc);
     strcat(buffer,".ui");
-    GFileBuildName(GResourceProgramDir,buffer,full,sizeof(full));
-    /* Look for language_territory */
-    if ( !GFileExists(full) && strlen(loc)>5 ) {
-	strcpy(buffer+13,".ui");
-	GFileBuildName(GResourceProgramDir,buffer,full,sizeof(full));
-    }
-    /* Look for language */
-    if ( !GFileExists(full) && strlen(loc)>2 ) {
-	strcpy(buffer+10,".ui");
-	GFileBuildName(GResourceProgramDir,buffer,full,sizeof(full));
-    }
-    if ( !GFileExists(full)) {
-	strcpy(buffer,"pfaedit.");
-	strcat(buffer,loc);
-	strcat(buffer,".ui");
-	GFileBuildName("/usr/share/pfaedit",buffer,full,sizeof(full));
-	if ( !GFileExists(full) && strlen(loc)>5 ) {
-	    strcpy(buffer+13,".ui");
-	    GFileBuildName(GResourceProgramDir,buffer,full,sizeof(full));
-	}
-	/* Look for language */
-	if ( !GFileExists(full) && strlen(loc)>2 ) {
-	    strcpy(buffer+10,".ui");
-	    GFileBuildName(GResourceProgramDir,buffer,full,sizeof(full));
-	}
-	if ( !GFileExists(full))
+    if ( !CheckLangDir(full,sizeof(full),GResourceProgramDir,loc) &&
+	    !CheckLangDir(full,sizeof(full),getPfaEditShareDir(),loc) &&
+	    !CheckLangDir(full,sizeof(full),"/usr/share/pfaedit",loc) )
 return;
-    }
 
     GStringSetResourceFile(full);
 }

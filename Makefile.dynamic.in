@@ -5,7 +5,7 @@ bindir = @bindir@
 libdir = @libdir@
 mandir = @mandir@
 includedir = @includedir@
-sharedir = /usr/share/pfaedit
+sharedir = $(prefix)/share/pfaedit
 
 top_builddir = .
 
@@ -45,4 +45,4 @@ install: $(sharedir)
 	ln -s libgunicode.so.1 $(libdir)/libgunicode.so
 
 $(sharedir):
-	mkdir $(sharedir)
+	mkdir -p $(sharedir)
