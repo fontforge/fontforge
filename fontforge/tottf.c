@@ -3715,6 +3715,7 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
     struct macname *mn;
     struct other_names *on, *onn;
     NamTab nt;
+    struct otfname *otfn;
 
     memset(&nt,0,sizeof(nt));
     nt.encoding_name = sf->encoding_name;
@@ -3757,6 +3758,11 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
 	    AddMacName(&nt,mn,on->strid);
 	onn = on->next;
 	chunkfree(on,sizeof(*on));
+    }
+    /* Wow, the GPOS 'size' feature uses the name table in a very mac-like way*/
+    if ( at->fontstyle_name_strid!=0 && sf->fontstyle_name!=NULL ) {
+	for ( otfn = sf->fontstyle_name; otfn!=NULL; otfn = otfn->next )
+	    AddEncodedName(&nt,otfn->name,otfn->lang,at->fontstyle_name_strid);
     }
 
     qsort(nt.entries,nt.cur,sizeof(NameEntry),compare_entry);
@@ -4895,6 +4901,7 @@ return( false );
 	    ttf_dumpkerns(at,sf);		/* everybody supports a mimimal kern table */
     
 	dumpnames(at,sf,format);		/* Must be after dumpmorx which may create extra names */
+						/* GPOS 'size' can also create names */
 	redoos2(at);
     }
     if ( format!=ff_otf && format!=ff_otfcid && format!=ff_none ) {

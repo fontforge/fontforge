@@ -4494,6 +4494,16 @@ void ASMFree(ASM *sm) {
     }
 }
 
+void OtfNameListFree(struct otfname *on) {
+    struct otfname *on_next;
+
+    for ( ; on!=NULL; on = on_next ) {
+	on_next = on->next;
+	free(on->name);
+	chunkfree(on,sizeof(*on));
+    }
+}
+
 void SplineFontFree(SplineFont *sf) {
     int i;
     BDFFont *bdf, *bnext;
@@ -4543,6 +4553,7 @@ return;
     FPSTFree(sf->possub);
     ASMFree(sf->sm);
     free(sf->gentags.tagtype);
+    OtfNameListFree(sf->fontstyle_name);
     free(sf);
 }
 

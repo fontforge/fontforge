@@ -1940,13 +1940,47 @@ return;		/* Don't understand this format type */
     free(bcoverage);
 }
 
+static void readttfsizeparameters(FILE *ttf,int32 pos,struct ttfinfo *info) {
+    int32 here;
+    /* Both of the two fonts I've seen that contain a 'size' feature */
+    /*  have multiple features all of which point to the same parameter */
+    /*  area. Odd. */
+
+    if ( info->last_size_pos==pos )
+return;
+
+    if ( info->last_size_pos!=0 ) {
+	fprintf( stderr, "This font" );
+	if ( info->fontname!=NULL )
+	    fprintf( stderr, ", %s,", info->fontname );
+	fprintf( stderr, " has multiple GPOS 'size' features. I'm not sure how to interpret that. I shall pick one arbetrarily.\n" );
+return;
+    }
+
+    here = ftell(ttf);
+    fseek(ttf,pos,SEEK_SET);
+    info->last_size_pos = pos;
+    info->design_size = getushort(ttf);
+    info->fontstyle_id = getushort(ttf);
+    info->fontstyle_name = FindAllLangEntries(ttf,info,getushort(ttf));
+    info->design_range_bottom = getushort(ttf);
+    info->design_range_top = getushort(ttf);
+    fseek(ttf,here,SEEK_SET);
+
+#if 0
+ printf( "pos=%d  size=%g, range=(%g,%g] id=%d name=%d\n", pos,
+	 info->design_size/10.0, info->design_range_bottom/10.0, info->design_range_top/10.0,
+	 info->fontstyle_id, info->fontstyle_name );
+#endif
+}
+
 static struct feature *readttffeatures(FILE *ttf,int32 pos,int isgpos, struct ttfinfo *info) {
     /* read the features table returning an array containing all interesting */
     /*  features */
     int cnt;
-    uint32 tag;
     int i,j;
     struct feature *features;
+    int parameters;
 
     fseek(ttf,pos,SEEK_SET);
     cnt = getushort(ttf);
@@ -1956,13 +1990,15 @@ return( NULL );
     info->feats[isgpos] = galloc((3*cnt+1)*sizeof(uint32));
     info->feats[isgpos][0] = 0;
     for ( i=0; i<cnt; ++i ) {
-	features[i].tag = tag = getlong(ttf);
+	features[i].tag = getlong(ttf);
 	features[i].offset = getushort(ttf);
     }
 
     for ( i=0; i<cnt; ++i ) {
 	fseek(ttf,pos+features[i].offset,SEEK_SET);
-	/* feature parameters = */ getushort(ttf);
+	parameters = getushort(ttf);
+	if ( features[i].tag==CHR('s','i','z','e') && parameters!=0 )
+	    readttfsizeparameters(ttf,pos+parameters,info);
 	features[i].lcnt = getushort(ttf);
 	features[i].lookups = galloc(features[i].lcnt*sizeof(uint16));
 	for ( j=0; j<features[i].lcnt; ++j )

@@ -393,6 +393,14 @@ struct macname {
     char *name;		/* Not a unicode string, uninterpreted mac encoded string */
 };
 
+/* Wow, the GPOS 'size' feature stores a string in the name table just as mac */
+/*  features do */
+struct otfname {
+    struct otfname *next;
+    uint16 lang;	/* windows language code */
+    unichar_t *name;
+};
+
 typedef struct macfeat {
     struct macfeat *next;
     uint16 feature;
@@ -989,7 +997,6 @@ typedef struct splinefont {
     struct kernclasslistdlg *kcld, *vkcld;
     struct texdata {
 	enum { tex_unset, tex_text, tex_math, tex_mathext } type;
-	int32 designsize;
 	int32 params[22];		/* param[6] has different meanings in normal and math fonts */
     } texdata;
     struct gentagtype {
@@ -1007,6 +1014,16 @@ typedef struct splinefont {
     int16 macstyle;
     int16 sli_cnt;
     char *fondname;			/* For use in generating mac families */
+    /* from the GPOS 'size' feature. design_size, etc. are measured in tenths of a point */
+    /*  bottom is exclusive, top is inclusive */
+    /*  if any field is 0, it is undefined. All may be undefined, All may be */
+    /*  defined, or design_size may be defined without any of the others */
+    /*  but we can't define the range without defining the other junk */
+    /*  Name must contain an English language name, may contain others */
+    uint16 design_size;
+    uint16 fontstyle_id;
+    struct otfname *fontstyle_name;
+    uint16 design_range_bottom, design_range_top;
 } SplineFont;
 
 /* I am going to simplify my life and not encourage intermediate designs */
@@ -1259,6 +1276,7 @@ extern void SplineCharListsFree(struct splinecharlist *dlist);
 extern void SplineCharFreeContents(SplineChar *sc);
 extern void SplineCharFree(SplineChar *sc);
 extern void SplineFontFree(SplineFont *sf);
+extern void OtfNameListFree(struct otfname *on);
 extern void MMSetFreeContents(MMSet *mm);
 extern void MMSetFree(MMSet *mm);
 extern void SFRemoveUndoes(SplineFont *sf,uint8 *selected);

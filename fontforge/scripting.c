@@ -2126,7 +2126,7 @@ static void bSetTeXParams(Context *c) {
       break;
     }
     c->curfv->sf->texdata.type = c->a.vals[1].u.ival;
-    c->curfv->sf->texdata.designsize = c->a.vals[2].u.ival<<20;
+    c->curfv->sf->design_size = c->a.vals[2].u.ival*10;
     /* slant is a percentage */
     c->curfv->sf->texdata.params[0] = ((double) c->a.vals[3].u.ival)*(1<<20)/100.0;
     for ( i=1; i<c->a.argc-3; ++i )

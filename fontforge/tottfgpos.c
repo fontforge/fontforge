@@ -63,6 +63,7 @@ struct feature {
     struct sl { uint32 script, lang; struct sl *next; } *sl;	/* More than one script/lang may use this feature */
     int feature_cnt;
     struct feature *feature_next;
+    int is_size;		/* Must be treated separately, no lookups, needs params */
 };
 
 struct tagflaglang {
@@ -2988,6 +2989,9 @@ return( features );
 static int FeatureScriptLangMatch(struct feature *l,uint32 script,uint32 lang) {
     struct sl *sl;
 
+    if ( l->is_size )			/* Size feature should be referenced by each script/lang combo */
+return( true );				/* I guess */
+
     for ( sl = l->sl; sl!=NULL; sl = sl->next )
 	if ( sl->script == script && sl->lang == lang )
 return( true );
@@ -3227,13 +3231,27 @@ static void AddSliToFeature(struct feature *f,SplineFont *sf,int sli) {
 	IError("Impossible script lang in AddSliToFeature" );
 }
 
+static struct feature *CreateSizeFeature(SplineFont *sf,int fcnt) {
+    /* The GPOS 'size' feature is like no other. */
+    /* It has no lookups */
+    /* it has parameter data */
+    /* it is associated with every script/lang combo. */
+    struct feature *f;
+
+    f = chunkalloc(sizeof(struct feature));
+    f->feature_tag = CHR('s','i','z','e');
+    f->feature_cnt = fcnt++;
+    f->is_size = true;
+return( f );
+}
+
 /* Now we have a set of lookups. Each of which is used by some colection of */
 /*  scripts and languages. We need to turn this around so that we know for */
 /*  each script what lookups it uses, and we must also merge all lookups of */
 /*  a given tag into one feature per script/lang. Of course some lookup */
 /*  combinations may be shared by several script/lang settings and we should */
 /*  use the same feature when possible */
-static struct feature *CoalesceLookups(SplineFont *sf, struct lookup *lookups) {
+static struct feature *CoalesceLookups(SplineFont *sf, struct lookup *lookups,int is_gpos) {
     struct lookup *l, *last;
     int cnt, lcnt, allsame;
     struct slusage *slu=NULL;
@@ -3241,10 +3259,21 @@ static struct feature *CoalesceLookups(SplineFont *sf, struct lookup *lookups) {
     struct feature *fhead = NULL, *flast=NULL, *f;
     int lang, s, pos, which, tot;
     int fcnt = 0;
+    int added_size = false;
 
     for ( ; lookups!=NULL; lookups = last->feature_next ) {
 	cnt = lcnt = 0;
 	allsame = true;
+	if ( !added_size && is_gpos && CHR('s','i','z','e')<l->feature_tag &&
+		sf->design_size!=0 ) {
+	    f = CreateSizeFeature(sf,fcnt++);
+	    if ( flast==NULL )
+		fhead = f;
+	    else
+		flast->feature_next = f;
+	    flast = f;
+	    added_size = true;
+	}
 	for ( l=lookups; l!=NULL && l->feature_tag==lookups->feature_tag; l = l->feature_next ) {
 	    last = l;
 	    ++cnt;
@@ -3324,6 +3353,13 @@ static struct feature *CoalesceLookups(SplineFont *sf, struct lookup *lookups) {
 		free(slu[pos].u.usedarr);
 	}
     }
+    if ( !added_size && is_gpos && sf->design_size!=0 ) {
+	f = CreateSizeFeature(sf,fcnt++);
+	if ( flast==NULL )
+	    fhead = f;
+	else
+	    flast->feature_next = f;
+    }
     if ( slumax!=0 )
 	free(slu);
 return( fhead );
@@ -3398,6 +3434,7 @@ static FILE *dumpg___info(struct alltabs *at, SplineFont *sf,int is_gpos) {
     int lc;
     SplineFont *master;
     int lc_warned=false;
+    int32 size_params_loc, size_params_ptr;
 
     lfile = tmpfile();
     if ( is_gpos ) {
@@ -3417,7 +3454,7 @@ return( NULL );
     lfile2 = tmpfile();
     features_ordered = orderlookups(&lookups,ord,lfile2,lfile,nested,!is_gpos);
     lfile = lfile2;
-    features = CoalesceLookups(sf,features_ordered);
+    features = CoalesceLookups(sf,features_ordered,is_gpos);
 
     master = ( sf->cidmaster ) ? sf->cidmaster : ( sf->mm ) ? sf->mm->normal : sf;
     for ( i=0; master->script_lang[i]!=NULL; ++i );
@@ -3471,11 +3508,33 @@ return( NULL );
 	offset += 4+2*f->lcnt;
     }
     /* for each feature, one feature table */
+    size_params_ptr = 0;
     for ( f=features; f!=NULL; f=f->feature_next ) {
+	if ( f->is_size ) size_params_ptr = ftell(g___);
 	putshort(g___,0);		/* No feature params */
 	putshort(g___,f->lcnt);		/* this many lookups */
 	for ( i=0; i<f->lcnt; ++i )
 	    putshort(g___,f->lookups[i]->lookup_cnt);	/* index of each lookup */
+    }
+    if ( size_params_ptr!=0 ) {
+	size_params_loc = ftell(g___);
+	fseek(g___,size_params_ptr,SEEK_SET);
+	putshort(g___,size_params_loc-feature_list_table_start);
+	fseek(g___,size_params_loc,SEEK_SET);
+	putshort(g___,sf->design_size);
+	if ( sf->fontstyle_id!=0 || sf->fontstyle_name!=NULL ||
+		sf->design_range_bottom!=0 || sf->design_range_top!=0 ) {
+	    putshort(g___,sf->fontstyle_id);
+	    at->fontstyle_name_strid = at->next_strid++;
+	    putshort(g___,at->fontstyle_name_strid);
+	    putshort(g___,sf->design_range_bottom);
+	    putshort(g___,sf->design_range_top);
+	} else {
+	    putshort(g___,0);
+	    putshort(g___,0);
+	    putshort(g___,0);
+	    putshort(g___,0);
+	}
     }
     /* And that should finish all the features */
     for ( f=features; f!=NULL; f=fnext ) {
