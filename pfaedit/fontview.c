@@ -1510,8 +1510,8 @@ static void FVMenuCopyFeatureToFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void FVMenuRemoveAllFeatures(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    SFRemoveThisFeatureTag(fv->sf,0xffffffff,SLI_UNKNOWN,-1);
-    FVRemoveKerns(fv);
+    if ( !SFRemoveThisFeatureTag(fv->sf,0xffffffff,SLI_UNKNOWN,-1))
+	GWidgetErrorR(_STR_NoFeaturesRemoved,_STR_NoFeaturesRemoved);
 }
 
 static void FVMenuRemoveFeatures(GWindow gw,struct gmenuitem *mi,GEvent *e) {

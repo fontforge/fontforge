@@ -97,12 +97,14 @@ int SFRemoveThisFeatureTag(SplineFont *sf, uint32 tag, int sli, int flags) {
     /* if tag==0xffffffff treat as a wildcard (will match any tag) */
     /* if sli==SLI_UNKNOWN treat as a wildcard */
     /* if flags==-1 treat as a wildcard */
-    int i,k;
+    int i,j,k;
     SplineChar *sc;
     PST *prev, *pst, *next;
     FPST *fprev, *fpst, *fnext;
     ASM *sprev, *sm, *snext;
     AnchorClass *ac, *aprev, *anext;
+    KernPair *kp, *kprev, *knext;
+    KernClass *kc, *cprev, *cnext;
     SplineFont *_sf;
     int any = false;
 
@@ -130,6 +132,52 @@ int SFRemoveThisFeatureTag(SplineFont *sf, uint32 tag, int sli, int flags) {
 	}
 	++k;
     } while ( k<_sf->subfontcnt );
+
+    for ( j=0; j<2; ++j ) {
+	if ( tag==0xffffffff ||
+		((tag==CHR('k','e','r','n') && j==0) ||
+		 (tag==CHR('v','k','r','n') && j==1))) {
+	    k = 0;
+	    do {
+		sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[k];
+		for ( i=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
+		    for ( kprev=NULL, kp = j==0 ? sc->kerns : sc->vkerns ; kp!=NULL; kp = knext ) {
+			knext = kp->next;
+			if ( ( sli==SLI_UNKNOWN || sli==kp->sli ) &&
+				( flags==-1 || flags==kp->flags )) {
+			    if ( kprev!=NULL )
+				kprev->next = knext;
+			    else if ( j==0 )
+				sc->kerns = knext;
+			    else
+				sc->vkerns = knext;
+			    kp->next = NULL;
+			    KernPairsFree(kp);
+			    any = true;
+			} else
+			    kprev = kp;
+		    }
+		}
+		++k;
+	    } while ( k<_sf->subfontcnt );
+	}
+	for ( cprev=NULL, kc = j==0 ? _sf->kerns : _sf->vkerns ; kc!=NULL; kc = cnext ) {
+	    cnext = kc->next;
+	    if ( ( sli==SLI_UNKNOWN || sli==kc->sli ) &&
+		    ( flags==-1 || flags==kc->flags )) {
+		if ( cprev!=NULL )
+		    cprev->next = cnext;
+		else if ( j==0 )
+		    _sf->kerns = cnext;
+		else
+		    _sf->vkerns = cnext;
+		kc->next = NULL;
+		KernClassListFree(kc);
+		any = true;
+	    } else
+		cprev = kc;
+	}
+    }
 
     for ( fprev = NULL, fpst = _sf->possub; fpst!=NULL; fpst=fnext ) {
 	fnext = fpst->next;
@@ -436,6 +484,34 @@ return;
     tosc->anchor = newap;
 }
 
+static int SF_SCAddKP(SplineFont *tosf,SplineChar *sc,KernPair *kp,
+	SplineFont *fromsf, int isvkern) {
+    SplineChar *tosc, *tosecond;
+    int to_index = SFFindChar(tosf,sc->unicodeenc,sc->name);
+    int second_index = SFFindChar(tosf,kp->sc->unicodeenc,kp->sc->name);
+    KernPair *newkp;
+
+    if ( to_index==-1 || second_index==-1 )
+return(false);
+    tosc = SCDuplicate(SFMakeChar(tosf,to_index));
+    tosecond = SCDuplicate(SFMakeChar(tosf,second_index));
+    if ( tosc==NULL || tosecond==NULL )
+return(false);
+
+    newkp = chunkalloc(sizeof(AnchorPoint));
+    *newkp = *kp;
+    newkp->sc = tosecond;
+    newkp->sli = SFConvertSLI(fromsf,kp->sli,tosf);
+    if ( isvkern ) {
+	newkp->next = tosc->vkerns;
+	tosc->vkerns = newkp;
+    } else {
+	newkp->next = tosc->kerns;
+	tosc->kerns = newkp;
+    }
+return(true);
+}
+
 static void SF_AddAnchor(SplineFont *tosf,AnchorClass *ac, struct copycontext *cc,
 	SplineFont *fromsf) {
     AnchorClass *newac;
@@ -479,6 +555,29 @@ static void SF_AddAnchor(SplineFont *tosf,AnchorClass *ac, struct copycontext *c
 	}
 	++k;
     } while ( k<fromsf->subfontcnt );
+}
+
+static void SF_AddKernClass(SplineFont *tosf,KernClass *kc, struct copycontext *cc,
+	SplineFont *fromsf, int isvkern) {
+    KernClass *newkc;
+
+    newkc = chunkalloc(sizeof(KernClass));
+    *newkc = *kc;
+    /* can't be nested */
+    newkc->sli = SFConvertSLI(fromsf,kc->sli,tosf);
+    tosf->changed = true;
+    if ( isvkern ) {
+	newkc->next = tosf->vkerns;
+	tosf->vkerns = newkc;
+    } else {
+	newkc->next = tosf->kerns;
+	tosf->kerns = newkc;
+    }
+
+    newkc->firsts = ClassCopy(newkc->first_cnt,newkc->firsts);
+    newkc->seconds = ClassCopy(newkc->second_cnt,newkc->seconds);
+    newkc->offsets = galloc(newkc->first_cnt*newkc->first_cnt*sizeof(int16));
+    memcpy(newkc->offsets,kc->offsets,newkc->first_cnt*newkc->first_cnt*sizeof(int16));
 }
 
 static void SF_AddFPST(SplineFont *tosf,FPST *fpst, struct copycontext *cc, SplineFont *fromsf) {
@@ -603,13 +702,15 @@ static int _SFCopyTheseFeaturesToSF(SplineFont *_sf, uint32 tag, int sli, int fl
     /* if tag==0xffffffff treat as a wildcard (will match any tag) */
     /* if sli==SLI_UNKNOWN treat as a wildcard */
     /* if flags==-1 treat as a wildcard */
-    int i,k;
+    int i,j,k;
     SplineChar *sc;
     PST *pst;
     SplineFont *sf;
     FPST *fpst;
     ASM *sm;
     AnchorClass *ac;
+    KernPair *kp;
+    KernClass *kc;
     int any = false;
 
     k = 0;
@@ -634,6 +735,34 @@ static int _SFCopyTheseFeaturesToSF(SplineFont *_sf, uint32 tag, int sli, int fl
 		( flags==-1 || flags==ac->flags )) {
 	    SF_AddAnchor(tosf,ac,cc,_sf);
 	    any = true;
+	}
+    }
+
+    for ( j=0; j<2; ++j ) {
+	if ( tag==0xffffffff ||
+		((tag==CHR('k','e','r','n') && j==0) ||
+		 (tag==CHR('v','k','r','n') && j==1))) {
+	    k = 0;
+	    do {
+		sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[k];
+		for ( i=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
+		    for ( kp = j==0 ? sc->kerns : sc->vkerns ; kp!=NULL; kp = kp->next ) {
+			if ( ( sli==SLI_UNKNOWN || sli==kp->sli ) &&
+				( flags==-1 || flags==kp->flags )) {
+			    if ( SF_SCAddKP(tosf,sc,kp,_sf,j) )
+				any = true;
+			}
+		    }
+		}
+		++k;
+	    } while ( k<_sf->subfontcnt );
+	}
+	for ( kc = j==0 ? _sf->kerns : _sf->vkerns ; kc!=NULL; kc = kc->next ) {
+	    if ( ( sli==SLI_UNKNOWN || sli==kc->sli ) &&
+		    ( flags==-1 || flags==kc->flags )) {
+		SF_AddKernClass(tosf,kc,cc,_sf,j);
+		any = true;
+	    }
 	}
     }
 
