@@ -89,6 +89,7 @@ static uint32 scripts[][15] = {
 /* Katakana */	{ CHR('k','a','n','a'), 0x3040, 0x30ff, 0xff60, 0xff9f },
 /* Khmer */	{ CHR('k','h','m','r'), 0x1780, 0x17ff },
 /* Kannada */	{ CHR('k','n','d','a'), 0x0c80, 0x0cff },
+/* Kharosthi */	{ CHR('k','h','a','r'), 0x10a00, 0x10a5f },
 /* Latin */	{ CHR('l','a','t','n'), 0x0041, 0x005a, 0x0061, 0x007a,
 	0x00c0, 0x02af, 0x1d00, 0x1eff, 0xfb00, 0xfb0f, 0xff00, 0xff5f, 0, 0 },
 /* Lao */	{ CHR('l','a','o',' '), 0x0e80, 0x0eff },
