@@ -430,8 +430,12 @@ return( -1 );
 	    } else if ( pf->type == pr_string || pf->type == pr_file ) {
 		if ( val1->type!=v_str || val2!=NULL )
 return( -1 );
-		free( *((char **) (pf->val)));
-		*((char **) (pf->val)) = copy( val1->u.sval );
+		if ( pf->set ) {
+		    pf->set( val1->u.sval );
+		} else {
+		    free( *((char **) (pf->val)));
+		    *((char **) (pf->val)) = copy( val1->u.sval );
+		}
 	    } else if ( pf->type == pr_encoding ) {
 		if ( val2!=NULL )
 return( -1 );
@@ -723,46 +727,6 @@ return( enc );
 }
 #endif
 
-static unichar_t *utf8_copy(char *src) {
-    unichar_t *ret = galloc((strlen(src)+1)*sizeof(unichar_t)), *pt=ret;
-
-    while ( *src!='\0' ) {
-	int ch1, ch2;
-	ch1 = *src++;
-	if ( ch1<=0x7f )
-	    *pt++ = ch1;
-	else if ( (ch1&0xf0)==0xc0 ) {
-	    *pt++ = (ch1&0x1f)<<6 | (*src++&0x3f);
-	} else {
-	    ch2 = *src++;
-	    *pt++ = (ch1&0xf)<<6 | ((ch2&0x3f)<<6) | (*src++&0x3f);
-	}
-    }
-    *pt = '\0';
-return( ret );
-}
-
-static char *cutf8_copy(unichar_t *src) {
-    char *ret = galloc(3*u_strlen(src)+1), *pt=ret;
-
-    while ( *src!='\0' ) {
-	int ch;
-	ch = *src++;
-	if ( ch<=0x7f )
-	    *pt++ = ch;
-	else if ( ch<0x03ff ) {
-	    *pt++ = 0xc0|(ch>>6);
-	    *pt++ = 0x80|(ch&0x3f);
-	} else {
-	    *pt++ = 0xe0|(ch>>12);
-	    *pt++ = 0x80|((ch>>6)&0x3f);
-	    *pt++ = 0x80|(ch&0x3f);
-	}
-    }
-    *pt = '\0';
-return( ret );
-}
-
 static void ParseMacMapping(char *pt,struct macsettingname *ms) {
     char *end;
 
@@ -870,7 +834,7 @@ return;
 	    else if ( strncmp(line,"MenuScript:",strlen("MenuScript:"))==0 && ms<SCRIPT_MENU_MAX )
 		script_filenames[ms++] = copy(pt);
 	    else if ( strncmp(line,"MenuName:",strlen("MenuName:"))==0 && mn<SCRIPT_MENU_MAX )
-		script_menu_names[mn++] = utf8_copy(pt);
+		script_menu_names[mn++] = utf82u_copy(pt);
 	    else if ( strncmp(line,"MacMapCnt:",strlen("MacSetCnt:"))==0 ) {
 		sscanf( pt, "%d", &msc );
 		msp = 0;
@@ -967,7 +931,7 @@ return;
 	fprintf( p, "Recent:\t%s\n", RecentFiles[i]);
     for ( i=0; i<SCRIPT_MENU_MAX && script_filenames[i]!=NULL; ++i ) {
 	fprintf( p, "MenuScript:\t%s\n", script_filenames[i]);
-	fprintf( p, "MenuName:\t%s\n", temp = cutf8_copy(script_menu_names[i]));
+	fprintf( p, "MenuName:\t%s\n", temp = u2utf8_copy(script_menu_names[i]));
 	free(temp);
     }
     if ( user_macfeat_otftag!=NULL && UserSettingsDiffer()) {
@@ -1717,7 +1681,7 @@ void DoPrefs(void) {
 
     for ( i=0; i<SCRIPT_MENU_MAX; ++i ) {
 	sgcd[sgc].gd.pos.x = 8; sgcd[sgc].gd.pos.y = y2;
-	sgcd[sgc].gd.flags = gg_visible | gg_enabled;
+	sgcd[sgc].gd.flags = gg_visible | gg_enabled | gg_text_xim;
 	slabel[sgc].text = script_menu_names[i]==NULL?nullstr:script_menu_names[i];
 	sgcd[sgc].gd.label = &slabel[sgc];
 	sgcd[sgc].gd.cid = i+8000;
