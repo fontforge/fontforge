@@ -553,7 +553,8 @@ return( true ); /* Do Nothing, nothing selectable */
 	    GListClearSel(gl);
 	    gl->ti[pos]->selected = true;
 	    gl->start = gl->end = pos;
-	} else if ( event->u.mouse.state&ksm_control ) {
+	} else if ( event->u.mouse.state&ksm_control ||
+		((event->u.mouse.state&ksm_shift) && gl->ti[pos]->selected)) {
 	    gl->ti[pos]->selected = !gl->ti[pos]->selected;
 	    gl->start = gl->end = pos;
 	} else if ( event->u.mouse.state&ksm_shift ) {
