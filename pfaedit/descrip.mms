@@ -133,3 +133,6 @@ nonlineartrans.obj : nonlineartrans.c
 effects.obj : effects.c
 histograms.obj : histograms.c
 ttfspecial.obj : ttfspecial.c
+svg.obj : svg.c
+parsettfatt.obj : parsettfatt.c
+contextchain.obj : contextchain.c
