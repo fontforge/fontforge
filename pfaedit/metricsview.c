@@ -1589,8 +1589,10 @@ static void MVMenuRound2Int(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     for ( i=mv->charcnt-1; i>=0; --i )
 	if ( mv->perchar[i].selected )
     break;
-    if ( i!=-1 )
+    if ( i!=-1 ) {
+	SCPreserveState(mv->perchar[i].sc,false);
 	SCRound2Int( mv->perchar[i].sc);
+    }
 }
 
 static void MVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {

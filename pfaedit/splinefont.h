@@ -976,7 +976,7 @@ extern char *PSDictHasEntry(struct psdict *dict, char *key);
 extern int PSDictRemoveEntry(struct psdict *dict, char *key);
 extern int PSDictChangeEntry(struct psdict *dict, char *key, char *newval);
 
-extern void SplineSetsRound2Int(SplineSet *spl,int order2);
+extern void SplineSetsRound2Int(SplineSet *spl);
 extern void SCRound2Int(SplineChar *sc);
 extern int hascomposing(SplineFont *sf,int u,SplineChar *sc);
 #if 0

@@ -4118,7 +4118,7 @@ void CVTransFunc(CharView *cv,real transform[6], enum fvtrans_flags flags) {
 
     SplinePointListTransform(*cv->heads[cv->drawmode],transform,!anysel);
     if ( flags&fvt_round_to_int )
-	SplineSetsRound2Int(*cv->heads[cv->drawmode],cv->sc->parent->order2);
+	SplineSetsRound2Int(*cv->heads[cv->drawmode]);
     if ( cv->drawmode==dm_back ) {
 	for ( img = cv->sc->backimages; img!=NULL; img=img->next )
 	    if ( img->selected || !anysel ) {
@@ -4213,15 +4213,14 @@ static void SplinePointRound(SplinePoint *sp) {
     sp->prevcp.y = rint(sp->prevcp.y);
 }
 
-void SplineSetsRound2Int(SplineSet *spl,int order2) {
+void SplineSetsRound2Int(SplineSet *spl) {
     SplinePoint *sp;
-    void (*refigure)(Spline *) = order2 ? SplineRefigure2 : SplineRefigure3;
 
     for ( ; spl!=NULL; spl=spl->next ) {
 	for ( sp=spl->first; ; ) {
 	    SplinePointRound(sp);
 	    if ( sp->prev!=NULL )
-		refigure(sp->prev);
+		SplineRefigure(sp->prev);
 	    if ( sp->next==NULL )
 	break;
 	    sp = sp->next->to;
@@ -4229,29 +4228,80 @@ void SplineSetsRound2Int(SplineSet *spl,int order2) {
 	break;
 	}
 	if ( spl->first->prev!=NULL )
-	    refigure(spl->first->prev);
+	    SplineRefigure(spl->first->prev);
+    }
+}
+
+static void SplineSetsChangeCoord(SplineSet *spl,real old, real new,int isy) {
+    SplinePoint *sp;
+
+    for ( ; spl!=NULL; spl=spl->next ) {
+	for ( sp=spl->first; ; ) {
+	    if ( isy ) {
+		if ( RealNear(sp->me.y,old) ) {
+		    if ( RealNear(sp->nextcp.y,old))
+			sp->nextcp.y = new;
+		    else
+			sp->nextcp.y += new-sp->me.y;
+		    if ( RealNear(sp->prevcp.y,old))
+			sp->prevcp.y = new;
+		    else
+			sp->prevcp.y += new-sp->me.y;
+		    sp->me.y = new;
+		    /* we expect to be called before SplineSetRound2Int and will */
+		    /*  allow it to do any SplineRefigures */
+		}
+	    } else {
+		if ( RealNear(sp->me.x,old) ) {
+		    if ( RealNear(sp->nextcp.x,old))
+			sp->nextcp.x = new;
+		    else
+			sp->nextcp.x += new-sp->me.x;
+		    if ( RealNear(sp->prevcp.x,old))
+			sp->prevcp.x = new;
+		    else
+			sp->prevcp.x += new-sp->me.x;
+		    sp->me.x = new;
+		}
+	    }
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==spl->first )
+	break;
+	}
+	if ( spl->first->prev!=NULL )
+	    SplineRefigure(spl->first->prev);
     }
 }
 
 void SCRound2Int(SplineChar *sc) {
     RefChar *r;
     StemInfo *stems;
+    real old, new;
 
-    SCPreserveState(sc,false);
-    SplineSetsRound2Int(sc->splines,sc->parent->order2);
+    for ( stems = sc->hstem; stems!=NULL; stems=stems->next ) {
+	old = stems->start+stems->width;
+	stems->start = rint(stems->start);
+	stems->width = rint(stems->width);
+	new = stems->start+stems->width;
+	if ( old!=new )
+	    SplineSetsChangeCoord(sc->splines,old,new,true);
+    }
+    for ( stems = sc->vstem; stems!=NULL; stems=stems->next ) {
+	old = stems->start+stems->width;
+	stems->start = rint(stems->start);
+	stems->width = rint(stems->width);
+	new = stems->start+stems->width;
+	if ( old!=new )
+	    SplineSetsChangeCoord(sc->splines,old,new,false);
+    }
+
+    SplineSetsRound2Int(sc->splines);
     for ( r=sc->refs; r!=NULL; r=r->next ) {
 	r->transform[4] = rint(r->transform[4]);
 	r->transform[5] = rint(r->transform[5]);
-    }
-    for ( stems = sc->hstem; stems!=NULL; stems=stems->next ) {
-	real temp = rint(stems->start+stems->width);
-	stems->start = rint(stems->start);
-	stems->width = temp-stems->start;
-    }
-    for ( stems = sc->vstem; stems!=NULL; stems=stems->next ) {
-	real temp = rint(stems->start+stems->width);
-	stems->start = rint(stems->start);
-	stems->width = temp-stems->start;
+	SplineSetFindBounds(r->splines,&r->bb);
     }
     SCCharChangedUpdate(sc);
 }

@@ -1452,8 +1452,6 @@ void FVTrans(FontView *fv,SplineChar *sc,real transform[6], char *sel,
 	if ( flags&fvt_dontsetwidth ) sc->widthset = widthset;
     }
     SplinePointListTransform(sc->splines,transform,true);
-    if ( flags&fvt_round_to_int )
-	SplineSetsRound2Int(sc->splines,sc->parent->order2);
     for ( refs = sc->refs; refs!=NULL; refs=refs->next ) {
 	if ( sel!=NULL && sel[refs->sc->enc] ) {
 	    /* if the character referred to is selected then it's going to */
@@ -1492,16 +1490,14 @@ void FVTrans(FontView *fv,SplineChar *sc,real transform[6], char *sel,
 			transform[5];
 	    memcpy(refs->transform,t,sizeof(t));
 	}
-	if ( flags&fvt_round_to_int ) {
-	    refs->transform[4] = rint( refs->transform[4] );
-	    refs->transform[5] = rint( refs->transform[5] );
-	}
 	SplineSetFindBounds(refs->splines,&refs->bb);
     }
     if ( transform[1]==0 && transform[2]==0 ) {
 	TransHints(sc->hstem,transform[3],transform[5],transform[0],transform[4],flags&fvt_round_to_int);
 	TransHints(sc->vstem,transform[0],transform[4],transform[3],transform[5],flags&fvt_round_to_int);
     }
+    if ( flags&fvt_round_to_int )
+	SCRound2Int(sc);
     if ( transform[0]==1 && transform[3]==1 && transform[1]==0 &&
 	    transform[2]==0 && transform[5]==0 &&
 	    transform[4]!=0 && 
@@ -1792,6 +1788,7 @@ static void FVRound2Int(FontView *fv) {
     GProgressStartIndicatorR(10,_STR_Rounding,_STR_Rounding,0,cnt,1);
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
+	SCPreserveState(fv->sf->chars[i],false);
 	SCRound2Int( fv->sf->chars[i]);
 	if ( !GProgressNext())
     break;
