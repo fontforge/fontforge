@@ -60,7 +60,7 @@ static void (*_png_read_end)(png_structp,png_infop);
 static int loadpng() {
     /* Oops someone might have libpng without libz. If we try to load libpng */
     /*  first we crash and burn horribly, so... */
-    if ( dlopen("libz" SO_EXT,RTLD_LAZY)==NULL ) {
+    if ( dlopen("libz" SO_EXT,RTLD_GLOBAL|RTLD_LAZY)==NULL ) {
 	GDrawIError("%s", dlerror());
 return( 0 );
     }
