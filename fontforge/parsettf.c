@@ -3662,7 +3662,7 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 	    }
 
 	    /* if we are only loading bitmaps, we can get holes in our data */
-	    for ( i=0; i<258; ++i ) if ( indexes[i]!=0 || i==0 ) if ( info->chars[indexes[i]]!=NULL ) {
+	    for ( i=0; i<258; ++i ) if ( indexes[i]!=0 || i==0 ) if ( indexes[i]<info->glyph_cnt && info->chars[indexes[i]]!=NULL ) {
 		info->chars[indexes[i]]->name = copy(ttfstandardnames[i]);
 		if ( info->chars[indexes[i]]->unicodeenc==-1 )
 		    info->chars[indexes[i]]->unicodeenc = cmapEncFromName(info,ttfstandardnames[i],indexes[i]);
@@ -3677,7 +3677,7 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 		for ( j=0; j<len; ++j )
 		    nm[j] = getc(ttf);
 		nm[j] = '\0';
-		if ( info->chars[indexes[i]]!=NULL ) {
+		if ( indexes[i]<info->glyph_cnt && info->chars[indexes[i]]!=NULL ) {
 		    info->chars[indexes[i]]->name = nm;
 		    if ( info->chars[indexes[i]]->unicodeenc==-1 )
 			info->chars[indexes[i]]->unicodeenc = cmapEncFromName(info,nm,indexes[i]);
