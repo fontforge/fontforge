@@ -221,6 +221,7 @@ static uint16 *getClassDefTable(FILE *ttf, int classdef_offset, int cnt) {
     int format, i, j;
     uint16 start, glyphcnt, rangecnt, end, class;
     uint16 *glist=NULL;
+    int warned = false;
 
     fseek(ttf, classdef_offset, SEEK_SET);
     glist = gcalloc(cnt,sizeof(uint16));	/* Class 0 is default */
@@ -242,11 +243,24 @@ static uint16 *getClassDefTable(FILE *ttf, int classdef_offset, int cnt) {
 	    if ( start>end || end>=cnt )
 		fprintf( stderr, "Bad class def table. Glyph range %d-%d out of range [0,%d)\n", start, end, cnt );
 	    class = getushort(ttf);
-	    for ( j=start; j<=end; ++j )
+	    for ( j=start; j<=end; ++j ) if ( j<cnt )
 		glist[j] = class;
 	}
     } else
 	fprintf( stderr, "Unknown class table format: %d\n", format );
+
+    /* Do another validity test */
+    for ( i=0; i<cnt; ++i ) {
+	if ( glist[i]>=cnt+1 ) {
+	    if ( !warned ) {
+		fprintf( stderr, "Nonsensical class assigned to a glyph-- class=%d is too big. Glyph=%d\n",
+			glist[i], i );
+		warned = true;
+	    }
+	    glist[i] = 0;
+	}
+    }
+
 return glist;
 }
 
