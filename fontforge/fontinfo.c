@@ -1909,7 +1909,13 @@ static int _SFForceEncoding(SplineFont *sf,Encoding *new_map) {
     int enc_cnt=256,i;
     BDFFont *bdf;
 
-    if ( sf->encoding_name==new_map )
+    /* Normally we base our encoding process on unicode code points. */
+    /*  but encodings like AdobeStandard are more interested in names than */
+    /*  code points. It is perfectly possible to have a font properly */
+    /*  encoded by code point which is not properly encoded by name */
+    /*  (might have f_i where it should have fi). So even if it's got */
+    /*  the right encoding, we still may want to force the names */
+    if ( sf->encoding_name==new_map && new_map->psnames==NULL )
 return(false);
     if ( new_map->is_custom || new_map->is_compact ) {
 	sf->encoding_name=&custom;	/* Custom, it's whatever's there */
@@ -2066,6 +2072,12 @@ return(false);
     sf->remap = NULL;
     sf->encodingchanged = true;
     sf->compacted = false;
+
+    /* Make sure we end up with the right names in encodings where the */
+    /*  glyph names are important (not just the right unicode code points) */
+    if ( target==NULL && new_map!=NULL && new_map->psnames )
+	_SFForceEncoding(sf,new_map);
+
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
 	SCRefreshTitles(sf->chars[i]);
