@@ -146,6 +146,7 @@ struct ttfinfo {
     AnchorClass *ahead, *alast;
 
     uint32 mort_subs_tag;
+    uint16 *morx_classes;
 };
 
 struct tabdir {

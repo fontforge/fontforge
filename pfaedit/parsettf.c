@@ -4787,6 +4787,256 @@ static void mort_apply_value(struct ttfinfo *info, int gfirst, int glast,FILE *t
 	TTF_SetMortSubs(info,i, gnum );
 }
 
+static void mortclass_apply_values(struct ttfinfo *info, int gfirst, int glast,FILE *ttf) {
+    int i;
+
+    for ( i=gfirst; i<=glast; ++i )
+	info->morx_classes[i] = getushort(ttf);
+}
+
+static void mortclass_apply_value(struct ttfinfo *info, int gfirst, int glast,FILE *ttf) {
+    uint16 class;
+    int i;
+
+    class = getushort(ttf);
+
+    for ( i=gfirst; i<=glast; ++i )
+	info->morx_classes[i] = class;
+}
+
+static int32 memlong(uint8 *data,int offset) {
+    int ch1 = data[offset], ch2 = data[offset+1], ch3 = data[offset+2], ch4 = data[offset+3];
+return( (ch1<<24)|(ch2<<16)|(ch3<<8)|ch4 );
+}
+
+static int memushort(uint8 *data,int offset) {
+    int ch1 = data[offset], ch2 = data[offset+1];
+return( (ch1<<8)|ch2 );
+}
+
+#define MAX_LIG_COMP	16
+struct statemachine {
+    uint8 *data;
+    int length;
+    uint32 nClasses;
+    uint32 classOffset, stateOffset, entryOffset, ligActOff, compOff, ligOff;
+    uint16 *classes;
+    uint16 lig_comp_classes[MAX_LIG_COMP];
+    uint16 lig_comp_glyphs[MAX_LIG_COMP];
+    int lcp;
+    uint8 *states_in_use;
+    int smax;
+    struct ttfinfo *info;
+};
+
+static void mort_figure_ligatures(struct statemachine *sm, int lcp, int off, int32 lig_offset) {
+    uint32 lig;
+    int i, j, lig_glyph;
+    PST *pst;
+    int len;
+
+    if ( lcp<0 || off+3>sm->length )
+return;
+
+    lig = memlong(sm->data,off);
+    off += sizeof(long);
+
+    for ( i=0; i<sm->info->glyph_cnt; ++i ) if ( sm->classes[i]==sm->lig_comp_classes[lcp] ) {
+	sm->lig_comp_glyphs[lcp] = i;
+	lig_offset += memushort(sm->data,2*( ((((int32) lig)<<2)>>2) + i ) );
+	if ( lig&0xc0000000 ) {
+	    if ( lig_offset+3 > sm->length ) {
+		fprintf( stderr, "Invalid ligature offset\n" );
+    break;
+	    }
+	    lig_glyph = memushort(sm->data,lig_offset);
+	    if ( lig_glyph>=sm->info->glyph_cnt ) {
+		fprintf(stderr, "Attempt to make a ligature for glyph %d out of " );
+		for ( j=lcp; j<sm->lcp; ++j )
+		    fprintf(stderr,"%d ",sm->lig_comp_glyphs[j]);
+		fprintf(stderr,"\n");
+	    } else {
+		for ( len=0, j=lcp; j<sm->lcp; ++j )
+		    len += strlen(sm->info->chars[sm->lig_comp_glyphs[j]]->name)+1;
+		pst = chunkalloc(sizeof(PST));
+		pst->type = pst_ligature;
+		pst->tag = sm->info->mort_subs_tag;
+		pst->u.lig.components = galloc(len);
+		*pst->u.lig.components = '\0';
+		for ( j=lcp; j<sm->lcp; ++j ) {
+		    strcat(pst->u.lig.components,sm->info->chars[sm->lig_comp_glyphs[j]]->name);
+		    if ( j!=sm->lcp-1 )
+			strcat(pst->u.lig.components," ");
+		}
+		pst->u.lig.lig = sm->info->chars[lig_glyph];
+		pst->next = sm->info->chars[lig_glyph]->possub;
+		sm->info->chars[lig_glyph]->possub = pst;
+	    }
+	} else
+	    mort_figure_ligatures(sm,lcp-1,off,lig_offset);
+	lig_offset -= memushort(sm->data,2*( ((((int32) lig)<<2)>>2) + i ) );
+    }
+}
+
+static void follow_mort_state(struct statemachine *sm,int offset,int class) {
+    int state = (offset-sm->stateOffset)/sm->nClasses;
+    int class_top, class_bottom;
+
+    if ( state<0 || state>=sm->smax || sm->states_in_use[state] || sm->lcp>=MAX_LIG_COMP )
+return;
+    sm->states_in_use[state] = true;
+
+    if ( class==-1 ) { class_bottom = 0; class_top = sm->nClasses; }
+    else { class_bottom = class; class_top = class+1; }
+    for ( class=class_bottom; class<class_top; ++class ) {
+	int ent = sm->data[offset+class];
+	int newState = memushort(sm->data,sm->entryOffset+4*ent);
+	int flags = memushort(sm->data,sm->entryOffset+4*ent+2);
+	if ( flags&0x8000 )	/* Set component */
+	    sm->lig_comp_classes[sm->lcp++] = class;
+	if ( flags&0x3fff ) {
+	    mort_figure_ligatures(sm, sm->lcp-1, flags & 0x3fff, 0);
+	} else if ( flags&0x8000 )
+	    follow_mort_state(sm,newState,(flags&0x4000)?class:-1);
+	if ( flags&0x8000 )
+	    --sm->lcp;
+    }
+    sm->states_in_use[state] = false;
+}
+
+static void morx_figure_ligatures(struct statemachine *sm, int lcp, int ligindex, int32 lig_offset) {
+    uint32 lig;
+    int i, j, lig_glyph;
+    PST *pst;
+    int len;
+
+    if ( lcp<0 || sm->ligActOff+4*ligindex+3>sm->length )
+return;
+
+    lig = memlong(sm->data,sm->ligActOff+4*ligindex);
+    ++ligindex;
+
+    for ( i=0; i<sm->info->glyph_cnt; ++i ) if ( sm->classes[i]==sm->lig_comp_classes[lcp] ) {
+	sm->lig_comp_glyphs[lcp] = i;
+	lig_offset += memushort(sm->data,sm->compOff + 2*( ((((int32) lig)<<2)>>2) + i ) );
+	if ( lig&0xc0000000 ) {
+	    if ( sm->ligOff+2*lig_offset+3 > sm->length ) {
+		fprintf( stderr, "Invalid ligature offset\n" );
+    break;
+	    }
+	    lig_glyph = memushort(sm->data,sm->ligOff+2*lig_offset);
+	    if ( lig_glyph>=sm->info->glyph_cnt ) {
+		fprintf(stderr, "Attempt to make a ligature for glyph %d out of " );
+		for ( j=lcp; j<sm->lcp; ++j )
+		    fprintf(stderr,"%d ",sm->lig_comp_glyphs[j]);
+		fprintf(stderr,"\n");
+	    } else {
+		for ( len=0, j=lcp; j<sm->lcp; ++j )
+		    len += strlen(sm->info->chars[sm->lig_comp_glyphs[j]]->name)+1;
+		pst = chunkalloc(sizeof(PST));
+		pst->type = pst_ligature;
+		pst->tag = sm->info->mort_subs_tag;
+		pst->u.lig.components = galloc(len);
+		*pst->u.lig.components = '\0';
+		for ( j=lcp; j<sm->lcp; ++j ) {
+		    strcat(pst->u.lig.components,sm->info->chars[sm->lig_comp_glyphs[j]]->name);
+		    if ( j!=sm->lcp-1 )
+			strcat(pst->u.lig.components," ");
+		}
+		pst->u.lig.lig = sm->info->chars[lig_glyph];
+		pst->next = sm->info->chars[lig_glyph]->possub;
+		sm->info->chars[lig_glyph]->possub = pst;
+	    }
+	} else
+	    morx_figure_ligatures(sm,lcp-1,ligindex,lig_offset);
+	lig_offset -= memushort(sm->data,sm->compOff + 2*( ((((int32) lig)<<2)>>2) + i ) );
+    }
+}
+
+static void follow_morx_state(struct statemachine *sm,int state,int class) {
+    int class_top, class_bottom;
+
+    if ( state<0 || state>=sm->smax || sm->states_in_use[state] || sm->lcp>=MAX_LIG_COMP )
+return;
+    sm->states_in_use[state] = true;
+
+    if ( class==-1 ) { class_bottom = 0; class_top = sm->nClasses; }
+    else { class_bottom = class; class_top = class+1; }
+    for ( class=class_bottom; class<class_top; ++class ) {
+	int ent = memushort(sm->data, sm->stateOffset + 2*(state*sm->nClasses+class) );
+	int newState = memushort(sm->data,sm->entryOffset+6*ent);
+	int flags = memushort(sm->data,sm->entryOffset+6*ent+2);
+	int ligindex = memushort(sm->data,sm->entryOffset+6*ent+4);
+	if ( flags&0x8000 )	/* Set component */
+	    sm->lig_comp_classes[sm->lcp++] = class;
+	if ( flags&0x2000 ) {
+	    morx_figure_ligatures(sm, sm->lcp-1, ligindex, 0);
+	} else if ( flags&0x8000 )
+	    follow_morx_state(sm,newState,(flags&0x4000)?class:-1);
+	if ( flags&0x8000 )
+	    --sm->lcp;
+    }
+    sm->states_in_use[state] = false;
+}
+
+static void readttf_mortx_lig(FILE *ttf,struct ttfinfo *info,int ismorx,uint32 base,uint32 length) {
+    uint32 here;
+    struct statemachine sm;
+    int first, cnt, i;
+
+    memset(&sm,0,sizeof(sm));
+    sm.info = info;
+    here = ftell(ttf);
+    length -= here-base;
+    sm.data = galloc(length);
+    sm.length = length;
+    if ( fread(sm.data,1,length,ttf)!=length ) {
+	free(sm.data);
+	fprintf( stderr, "Bad mort ligature table. Not long enough\n");
+return;
+    }
+    fseek(ttf,here,SEEK_SET);
+    if ( ismorx ) {
+	sm.nClasses = memlong(sm.data,0);
+	sm.classOffset = memlong(sm.data,sizeof(long));
+	sm.stateOffset = memlong(sm.data,2*sizeof(long));
+	sm.entryOffset = memlong(sm.data,3*sizeof(long));
+	sm.ligActOff = memlong(sm.data,4*sizeof(long));
+	sm.compOff = memlong(sm.data,5*sizeof(long));
+	sm.ligOff = memlong(sm.data,6*sizeof(long));
+	fseek(ttf,here+sm.classOffset,SEEK_SET);
+	sm.classes = info->morx_classes = galloc(info->glyph_cnt*sizeof(uint16));
+	for ( i=0; i<info->glyph_cnt; ++i )
+	    sm.classes[i] = 1;			/* Out of bounds */
+	readttf_applelookup(ttf,info,here,
+		mortclass_apply_values,mortclass_apply_value,NULL,NULL);
+	sm.smax = length/(2*sm.nClasses);
+	sm.states_in_use = gcalloc(sm.smax,sizeof(uint8));
+	follow_morx_state(&sm,0,-1);
+    } else {
+	sm.nClasses = memushort(sm.data,0);
+	sm.classOffset = memushort(sm.data,sizeof(uint16));
+	sm.stateOffset = memushort(sm.data,2*sizeof(uint16));
+	sm.entryOffset = memushort(sm.data,3*sizeof(uint16));
+	sm.ligActOff = memushort(sm.data,4*sizeof(uint16));
+	sm.compOff = memushort(sm.data,5*sizeof(uint16));
+	sm.ligOff = memushort(sm.data,6*sizeof(uint16));
+	sm.classes = galloc(info->glyph_cnt*sizeof(uint16));
+	for ( i=0; i<info->glyph_cnt; ++i )
+	    sm.classes[i] = 1;			/* Out of bounds */
+	first = memushort(sm.data,sm.classOffset);
+	cnt = memushort(sm.data,sm.classOffset+sizeof(uint16));
+	for ( i=0; i<cnt; ++i )
+	    sm.classes[first+i] = sm.data[sm.classOffset+2*sizeof(uint16)+i];
+	sm.smax = length/sm.nClasses;
+	sm.states_in_use = gcalloc(sm.smax,sizeof(uint8));
+	follow_mort_state(&sm,sm.stateOffset,-1);
+    }
+    free(sm.data);
+    free(sm.states_in_use);
+    free(sm.classes);
+}
+
 static uint32 readmortchain(FILE *ttf,struct ttfinfo *info, uint32 base, int ismorx) {
     uint32 chain_len, nfeatures, nsubtables;
     uint32 enable_flags, disable_flags, flags;
@@ -4835,6 +5085,7 @@ return( chain_len );
 	flags = getlong(ttf);
 	for ( j=k-1; j>=0 && !(flags&tmf[j].enable_flags); --j );
 	if ( j>=0 ) {
+	    info->mort_subs_tag = tmf[j].tag;
 	    switch( coverage&0xff ) {
 	      case 0:
 		/* Indic rearangement */
@@ -4842,17 +5093,16 @@ return( chain_len );
 	      case 1:
 		/* contextual glyph substitution */
 	      break;
-	      case 2:
-		/* ligature substitution */
+	      case 2:	/* ligature substitution */
+		readttf_mortx_lig(ttf,info,ismorx,here,length);
 	      break;
-	      case 4:
-		info->mort_subs_tag = tmf[j].tag;
+	      case 4:	/* non-contextual glyph substitutions */
 		/* Another case of that isn't specified in the docs */
 		/* It seems unlikely that (in morx at least!) the base for */
 		/*  offsets in the lookup table should be the start of the */
 		/*  mor[tx] table, it would make more sense for it to be the*/
 		/*  start of the lookup table instead (for format 4 lookups) */
-		readttf_applelookup(ttf,info,base,
+		readttf_applelookup(ttf,info,here,
 			mort_apply_values,mort_apply_value,NULL,NULL);
 	      break;
 	      case 5:
@@ -5340,7 +5590,8 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 	}
     }
     TTF_PSDupsDefault(sf);
-    if ( info->gsub_start==0 ) {		/* Get default ligature values, etc. */
+    if ( info->gsub_start==0 && info->mort_start==0 && info->morx_start==0 ) {
+	/* Get default ligature values, etc. */
 	for ( i=0; i<sf->subfontcnt; ++i ) {
 	    if ( sf->chars[i]!=NULL )		/* Might be null in ttc files */
 		SCLigDefault(sf->chars[i]);
