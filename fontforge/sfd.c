@@ -967,6 +967,26 @@ static void SFDDumpLangName(FILE *sfd, struct ttflangname *ln) {
     putc('\n',sfd);
 }
 
+static void SFDDumpDesignSize(FILE *sfd, SplineFont *sf) {
+    struct otfname *on;
+
+    if ( sf->design_size==0 )
+return;
+
+    fprintf( sfd, "DesignSize: %d", sf->design_size );
+    if ( sf->fontstyle_id!=0 || sf->fontstyle_name!=NULL ||
+	    sf->design_range_bottom!=0 || sf->design_range_top!=0 ) {
+	fprintf( sfd, " %d-%d %d",
+		sf->design_range_bottom, sf->design_range_top,
+		sf->fontstyle_id );
+	for ( on=sf->fontstyle_name; on!=NULL; on=on->next ) {
+	    fprintf( sfd, " %d ", on->lang );
+	    SFDDumpUTF7Str(sfd, on->name);
+	}
+    }
+    putc('\n',sfd);
+}
+
 static void putstring(FILE *sfd, char *header, char *body) {
     fprintf( sfd, "%s", header );
     while ( *body ) {
@@ -1355,6 +1375,8 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 	SFDDumpTtfTable(sfd,tab);
     for ( ln = sf->names; ln!=NULL; ln=ln->next )
 	SFDDumpLangName(sfd,ln);
+    if ( sf->design_size!=0 )
+	SFDDumpDesignSize(sfd,sf);
     if ( sf->subfontcnt!=0 ) {
 	/* CID fonts have no encodings, they have registry info instead */
 	fprintf(sfd, "Registry: %s\n", sf->cidregistry );
@@ -1401,7 +1423,7 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 	SFDDumpSplineSet(sfd,sf->grid.splines);
     }
     if ( sf->texdata.type!=tex_unset ) {
-	fprintf(sfd, "TeXData: %d %d", sf->texdata.type, sf->texdata.designsize );
+	fprintf(sfd, "TeXData: %d %d", sf->texdata.type, ((sf->design_size<<19)+2)/5 );
 	for ( i=0; i<22; ++i )
 	    fprintf(sfd, " %d", sf->texdata.params[i]);
 	putc('\n',sfd);
@@ -3118,7 +3140,7 @@ static void SFDGetSubrs(FILE *sfd,SplineFont *sf) {
     for ( i=0; i<tot; ++i )
 	Dec85(&dec);
 }
-    
+
 static struct ttflangname *SFDGetLangName(FILE *sfd,struct ttflangname *old) {
     struct ttflangname *cur = gcalloc(1,sizeof(struct ttflangname)), *prev;
     int i;
@@ -3131,6 +3153,34 @@ return( cur );
     for ( prev = old; prev->next !=NULL; prev = prev->next );
     prev->next = cur;
 return( old );
+}
+
+static void SFDGetDesignSize(FILE *sfd,SplineFont *sf) {
+    int ch;
+    struct otfname *cur;
+
+    getsint(sfd,(int16 *) &sf->design_size);
+    while ( (ch=getc(sfd))==' ' );
+    ungetc(ch,sfd);
+    if ( isdigit(ch)) {
+	getsint(sfd,(int16 *) &sf->design_range_bottom);
+	while ( (ch=getc(sfd))==' ' );
+	if ( ch!='-' )
+	    ungetc(ch,sfd);
+	getsint(sfd,(int16 *) &sf->design_range_top);
+	getsint(sfd,(int16 *) &sf->fontstyle_id);
+	forever {
+	    while ( (ch=getc(sfd))==' ' );
+	    ungetc(ch,sfd);
+	    if ( !isdigit(ch))
+	break;
+	    cur = chunkalloc(sizeof(struct otfname));
+	    cur->next = sf->fontstyle_name;
+	    sf->fontstyle_name = cur;
+	    getsint(sfd,(int16 *) &cur->lang);
+	    cur->name = SFDReadUTF7Str(sfd);
+	}
+    }
 }
 
 static Encoding *SFDGetEncoding(FILE *sfd, char *tok, SplineFont *sf) {
@@ -3652,6 +3702,8 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    sf->pfminfo.pfmset = true;
 	} else if ( strmatch(tok,"LangName:")==0 ) {
 	    sf->names = SFDGetLangName(sfd,sf->names);
+	} else if ( strmatch(tok,"DesignSize:")==0 ) {
+	    SFDGetDesignSize(sfd,sf);
 	} else if ( strmatch(tok,"PfmWeight:")==0 || strmatch(tok,"TTFWeight:")==0 ) {
 	    getsint(sfd,&sf->pfminfo.weight);
 	    sf->pfminfo.pfmset = true;
@@ -3932,7 +3984,8 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    int temp;
 	    getint(sfd,&temp);
 	    sf->texdata.type = temp;
-	    getint(sfd,&sf->texdata.designsize);
+	    getint(sfd,&sf->design_size);
+	    sf->design_size = (5*sf->design_size+(1<<18))>>19;
 	    for ( i=0; i<22; ++i )
 		getint(sfd,&sf->texdata.params[i]);
 	} else if ( strmatch(tok,"AnchorClass:")==0 ) {

@@ -428,7 +428,7 @@ return( 0 );
     ext = gcalloc(esize,sizeof(int32));
     ictab = gcalloc(italic_size,sizeof(int32));
     fseek( file,(6+1)*sizeof(int32),SEEK_SET);
-    sf->texdata.designsize = getlong(file);
+    sf->design_size = (5*getlong(file)+(1<<18))>>19;	/* TeX stores as <<20, adobe in decipoints */
     fseek( file,
 	    (6+head_len+(last-first+1)+width_size+height_size+depth_size)*sizeof(int32),
 	    SEEK_SET);
@@ -2020,7 +2020,6 @@ return;
     QuickBlues(sf,&bd);
 
     memset(sf->texdata.params,0,sizeof(sf->texdata.params));
-    sf->texdata.designsize = 10<<20;			/* Default to 10pt */
     sf->texdata.params[0] = rint( -sin(sf->italicangle)*(1<<20) );	/* slant */
     sf->texdata.params[1] = spacew;			/* space */
     sf->texdata.params[2] = rint(spacew/2);		/* stretch_space */
@@ -2079,7 +2078,8 @@ int TfmSplineFont(FILE *tfm, SplineFont *sf, int formattype) {
 
     memset(&header,0,sizeof(header));
     header.checksum = 0;		/* don't check checksum (I don't know how to calculate it) */
-    header.design_size = sf->texdata.designsize;
+    header.design_size = ((sf->design_size<<19)+2)/5;
+    if ( header.design_size==0 ) header.design_size = 10<<20;
     encname=NULL;
     /* These first two encoding names appear magic to txtopl */
     /* I tried checking the encodings were correct, name by name, but */

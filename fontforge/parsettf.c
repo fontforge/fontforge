@@ -1021,6 +1021,39 @@ return( NULL );
 return( ret );
 }
 
+struct otfname *FindAllLangEntries(FILE *ttf, struct ttfinfo *info, int id ) {
+    /* Look for all entries with string id under windows platform */
+    int32 here = ftell(ttf);
+    int i, cnt, tableoff;
+    int platform, specific, language, name, str_len, stroff;
+    struct otfname *head=NULL, *cur;
+
+    if ( info->copyright_start!=0 && id!=0 ) {
+	fseek(ttf,info->copyright_start,SEEK_SET);
+	/* format selector = */ getushort(ttf);
+	cnt = getushort(ttf);
+	tableoff = info->copyright_start+getushort(ttf);
+	for ( i=0; i<cnt; ++i ) {
+	    platform = getushort(ttf);
+	    specific = getushort(ttf);
+	    language = getushort(ttf);
+	    name = getushort(ttf);
+	    str_len = getushort(ttf);
+	    stroff = getushort(ttf);
+
+	    if ( platform==3 && name==id ) {
+		cur = chunkalloc(sizeof(struct otfname));
+		cur->next = head;
+		head = cur;
+		cur->lang = language;
+		cur->name = _readencstring(ttf,tableoff+stroff,str_len,platform,specific,language);
+	    }
+	}
+	fseek(ttf,here,SEEK_SET);
+    }
+return( head );
+}
+
 static struct macname *reversemacnames(struct macname *mn) {
     struct macname *next, *prev=NULL;
 
@@ -4700,6 +4733,12 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     sf->onlybitmaps = info->onlystrikes;
     sf->order2 = info->to_order2;
     sf->comments = info->fontcomments;
+
+    sf->design_size = info->design_size;
+    sf->design_range_bottom = info->design_range_bottom;
+    sf->design_range_top = info->design_range_top;
+    sf->fontstyle_id = info->fontstyle_id;
+    sf->fontstyle_name = info->fontstyle_name;
 
     if ( info->fd!=NULL ) {		/* Special hack for type42 fonts */
 	sf->fontname = copy(info->fd->fontname);

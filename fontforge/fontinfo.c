@@ -971,10 +971,18 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_TeXText		8001
 #define CID_TeXMath		8002
 #define CID_TeXMathExt		8003
-#define CID_DesignSize		8004
 #define CID_MoreParams		8005
 #define CID_TeXExtraSpLabel	8006
 #define CID_TeX			8007	/* through 8014 */
+
+#define CID_DesignSize		8301
+#define CID_DesignBottom	8302
+#define CID_DesignTop		8303
+#define CID_StyleID		8304
+#define CID_StyleName		8305
+#define CID_StyleNameNew	8306
+#define CID_StyleNameDel	8307
+#define CID_StyleNameRename	8308
 
 #define CID_ContextClasses	9001	/* Variants at +n*100 */
 #define CID_ContextNew		9002
@@ -2810,6 +2818,259 @@ static unichar_t *GFI_AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16
 return( newname );
 }
 
+static unichar_t *OtfNameToText(int lang, const unichar_t *name) {
+    const unichar_t *langname;
+    static const unichar_t nullstr[] = { 0 };
+    unichar_t *text;
+    int i;
+
+    for ( i=sizeof(mslanguages)/sizeof(mslanguages[0])-1; i>=0 ; --i )
+	if ( mslanguages[i].userdata == (void *) lang )
+    break;
+    if ( i==-1 )
+	langname = nullstr;
+    else
+	langname = GStringGetResource((intpt) (mslanguages[i].text),NULL);
+
+    text = galloc((u_strlen(langname)+u_strlen(name)+4)*sizeof(unichar_t));
+    u_strcpy(text,name);
+    uc_strcat(text," | ");
+    u_strcat(text,langname);
+return( text );
+}
+
+static GTextInfo **StyleNames(struct otfname *otfn) {
+    int cnt;
+    struct otfname *on;
+    GTextInfo **tis;
+
+    for ( cnt=0, on=otfn; on!=NULL; on=on->next )
+	++cnt;
+    tis = galloc((cnt+1)*sizeof(GTextInfo *));
+    for ( cnt=0, on=otfn; on!=NULL; on=on->next, ++cnt ) {
+	tis[cnt] = gcalloc(1,sizeof(GTextInfo));
+	tis[cnt]->fg = tis[cnt]->bg = COLOR_DEFAULT;
+	tis[cnt]->userdata = (void *) (intpt) otfn->lang;
+	tis[cnt]->text = OtfNameToText(on->lang,on->name);
+    }
+    tis[cnt] = gcalloc(1,sizeof(GTextInfo));
+return( tis );
+}
+
+static struct otfname *OtfNameFromStyleNames(GGadget *list) {
+    int len, i;
+    GTextInfo **old = GGadgetGetList(list,&len);
+    struct otfname *head=NULL, *last, *cur;
+    unichar_t *pt;
+
+    for ( i=0; i<len; ++i ) {
+	cur = chunkalloc(sizeof(struct otfname));
+	cur->lang = (intpt) old[i]->userdata;
+	pt = uc_strstr(old[i]->text," | ");
+	cur->name = u_copyn(old[i]->text,pt-old[i]->text);
+	if ( head==NULL )
+	    head = cur;
+	else
+	    last->next = cur;
+	last = cur;
+    }
+return( head );
+}
+
+static int sn_e_h(GWindow gw, GEvent *event) {
+
+    if ( event->type==et_close ) {
+	int *d = GDrawGetUserData(gw);
+	*d = true;
+    } else if ( event->type == et_char ) {
+return( false );
+    } else if ( event->type==et_controlevent && event->u.control.subtype == et_buttonactivate ) {
+	int *d = GDrawGetUserData(gw);
+	*d = GGadgetGetCid(event->u.control.g)+1;
+    }
+return( true );
+}
+
+static void AskForLangName(GGadget *list,int sel) {
+    int len, i;
+    GTextInfo **old = GGadgetGetList(list,&len);
+    unichar_t *name, *pt;
+    int lang_index;
+    GGadgetCreateData gcd[7];
+    GTextInfo label[5];
+    GRect pos;
+    GWindow gw;
+    GWindowAttrs wattrs;
+    int done = 0;
+    int k;
+    GTextInfo **ti;
+
+    if ( sel==-1 ) {
+	for ( i=0; i<len; ++i )
+	    if ( old[i]->userdata == (void *) 0x409 )
+	break;
+	if ( i==len ) {
+	    for ( i=sizeof(mslanguages)/sizeof(mslanguages[0])-1; i>=0 ; --i )
+		if ( mslanguages[i].userdata == (void *) 0x409 )
+	    break;
+	    lang_index = i;
+	} else {
+	    for ( lang_index=sizeof(mslanguages)/sizeof(mslanguages[0])-1; lang_index>=0 ; --lang_index ) {
+		for ( i=0; i<len; ++i )
+		    if ( mslanguages[lang_index].userdata == old[i]->userdata )
+		break;
+		if ( i==len )
+	    break;
+	    }
+	}
+	if ( lang_index < 0 )
+	    lang_index = 0;
+	name = uc_copy("");
+    } else {
+	for ( lang_index=sizeof(mslanguages)/sizeof(mslanguages[0])-1; lang_index>=0 ; --lang_index )
+	    if ( mslanguages[lang_index].userdata == old[sel]->userdata )
+	break;
+	if ( lang_index < 0 )
+	    lang_index = 0;
+	pt = uc_strstr(old[sel]->text," | ");
+	name = u_copyn(old[sel]->text,pt-old[sel]->text);
+    }
+
+    memset(gcd,0,sizeof(gcd));
+    memset(label,0,sizeof(label));
+
+    gcd[0].gd.pos.x = 7; gcd[0].gd.pos.y = 7;
+    gcd[0].gd.flags = gg_visible | gg_enabled | gg_list_alphabetic;
+    gcd[0].gd.cid = CID_Language;
+    gcd[0].gd.u.list = mslanguages;
+    gcd[0].creator = GListButtonCreate;
+    for ( i=0; mslanguages[i].text!=NULL; ++i )
+	mslanguages[i].selected = false;
+    mslanguages[lang_index].selected = true;
+
+    k = 1;
+    label[k].text = (unichar_t *) _STR_Name;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+30;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k++].creator = GLabelCreate;
+
+    label[k].text = name;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 50; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-4;
+    gcd[k].gd.pos.width = 122;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.cid = CID_StyleName;
+    gcd[k++].creator = GTextFieldCreate;
+
+    gcd[k].gd.pos.x = 25-3; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+30;
+    gcd[k].gd.pos.width = -1; gcd[k].gd.pos.height = 0;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_default;
+    label[k].text = (unichar_t *) _STR_OK;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.cid = true;
+    gcd[k++].creator = GButtonCreate;
+
+    gcd[k].gd.pos.x = -25; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+3;
+    gcd[k].gd.pos.width = -1; gcd[k].gd.pos.height = 0;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    label[k].text = (unichar_t *) _STR_Cancel;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.cid = false;
+    gcd[k++].creator = GButtonCreate;
+
+    memset(&wattrs,0,sizeof(wattrs));
+    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+    wattrs.event_masks = ~(1<<et_charup);
+    wattrs.is_dlg = true;
+    wattrs.restrict_input_to_me = 1;
+    wattrs.undercursor = 1;
+    wattrs.cursor = ct_pointer;
+    wattrs.window_title = GStringGetResource(_STR_StyleName,NULL);
+    pos.x = pos.y = 0;
+    pos.width =GDrawPointsToPixels(NULL,GGadgetScale(180));
+    pos.height = GDrawPointsToPixels(NULL,2*26+45);
+    gw = GDrawCreateTopWindow(NULL,&pos,sn_e_h,&done,&wattrs);
+
+    GGadgetsCreate(gw,gcd);
+    free(name);
+    ti = GGadgetGetList(gcd[0].ret,&len);
+    for ( i=0; i<len; ++i )
+	if ( ti[i]->userdata == mslanguages[lang_index].userdata ) {
+	    GGadgetSelectOneListItem(gcd[0].ret,i);
+    break;
+	}
+    GDrawSetVisible(gw,true);
+
+    while ( !done )
+	GDrawProcessOneEvent(NULL);
+
+    if ( done==2 ) {
+	lang_index = GGadgetGetFirstListSelectedItem(gcd[0].ret);
+	name = OtfNameToText((intpt) ti[lang_index]->userdata,
+		_GGadgetGetTitle(GWidgetGetControl(gw,CID_StyleName)));
+	if ( sel==-1 )
+	    GListAppendLine(list,name,false)->userdata =
+		    ti[lang_index]->userdata;
+	else
+	    GListChangeLine(list,sel,name)->userdata =
+		    ti[lang_index]->userdata;
+	free(name);
+    }
+
+    GDrawDestroyWindow(gw);
+}
+
+static int GFI_StyleNameNew(GGadget *g, GEvent *e) {
+    GGadget *list;
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	list = GWidgetGetControl(GGadgetGetWindow(g),CID_StyleName);
+	AskForLangName(list,-1);
+    }
+return( true );
+}
+
+static int GFI_StyleNameDel(GGadget *g, GEvent *e) {
+    GGadget *list;
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	list = GWidgetGetControl(GGadgetGetWindow(g),CID_StyleName);
+	GListDelSelected(list);
+	GGadgetSetEnabled(GWidgetGetControl(GGadgetGetWindow(g),CID_StyleNameDel),false);
+	GGadgetSetEnabled(GWidgetGetControl(GGadgetGetWindow(g),CID_StyleNameRename),false);
+    }
+return( true );
+}
+
+static int GFI_StyleNameRename(GGadget *g, GEvent *e) {
+    GGadget *list;
+    int sel;
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	list = GWidgetGetControl(GGadgetGetWindow(g),CID_StyleName);
+	if ( (sel=GGadgetGetFirstListSelectedItem(list))==-1 )
+return( true );
+	AskForLangName(list,sel);
+    }
+return( true );
+}
+
+static int GFI_StyleNameSelChanged(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
+	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+	int sel = GGadgetGetFirstListSelectedItem(g);
+	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_StyleNameDel),sel!=-1);
+	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_StyleNameRename),sel!=-1);
+    } else if ( e->type==et_controlevent && e->u.control.subtype == et_listdoubleclick ) {
+	e->u.control.subtype = et_buttonactivate;
+	GFI_StyleNameRename(g,e);
+    }
+return( true );
+}
+
 static int GFI_AnchorNew(GGadget *g, GEvent *e) {
     int len, i;
     GTextInfo **old, **new;
@@ -4337,7 +4598,6 @@ static int ParseTeX(struct gfi_data *d) {
 	val = GetRealR(d->gw,CID_TeX+i,texparams[i],&err);
 	d->texdata.params[i] = rint( val/em * (1<<20) );
     }
-    d->texdata.designsize = rint( GetRealR(d->gw,CID_DesignSize,_STR_DesignSize,&err) * (1<<20) );
     if ( GGadgetIsChecked(GWidgetGetControl(d->gw,CID_TeXText)) )
 	d->texdata.type = tex_text;
     else if ( GGadgetIsChecked(GWidgetGetControl(d->gw,CID_TeXMath)) )
@@ -4446,6 +4706,7 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	GTextInfo *pfmfam, *fstype;
 	int32 len;
 	GTextInfo **ti;
+	int design_size, size_top, size_bottom, styleid;
 #ifdef FONTFORGE_CONFIG_TYPE3
 	int multilayer = false;
 #endif
@@ -4492,7 +4753,13 @@ return( true );
 	des = GetIntR(gw,CID_Descent,_STR_Descent,&err);
 	nchar = GetIntR(gw,CID_NChars,_STR_NumGlyphs,&err);
 	uniqueid = GetIntR(gw,CID_UniqueID,_STR_UniqueID,&err);
+	design_size = rint(10*GetRealR(gw,CID_DesignSize,_STR_DesignSize,&err));
+	size_bottom = rint(10*GetRealR(gw,CID_DesignBottom,_STR_Bottom,&err));
+	size_top = rint(10*GetRealR(gw,CID_DesignTop,_STR_Top,&err));
+	styleid = GetIntR(gw,CID_StyleID,_STR_StyleId,&err);
 	force_enc = GGadgetIsChecked(GWidgetGetControl(gw,CID_ForceEncoding));
+	if ( err )
+return(true);
 	if ( sf->subfontcnt!=0 )
 	    cidversion = GetRealR(gw,CID_Version,_STR_Version,&err);
 	if ( vmetrics )
@@ -4512,12 +4779,12 @@ return( true );
 	    winascent  = GetIntR(gw,CID_WinAscent,winaoff ? _STR_WinAscentOff : _STR_WinAscent,&err);
 	    windescent = GetIntR(gw,CID_WinDescent,windoff ? _STR_WinDescentOff : _STR_WinDescent,&err);
 	}
+	if ( err )
+return(true);
 	if ( d->tex_set ) {
 	    if ( !ParseTeX(d))
 return( true );
 	}
-	if ( err )
-return(true);
 	if ( as+des>16384 || des<0 || as<0 ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_Badascentdescent,_STR_Badascentdescentn);
@@ -4598,6 +4865,13 @@ return(true);
 	    free(sf->xuid);
 	    sf->xuid = *txt=='\0'?NULL:cu_copy(txt);
 	}
+
+	OtfNameListFree(sf->fontstyle_name);
+	sf->fontstyle_name = OtfNameFromStyleNames(GWidgetGetControl(gw,CID_StyleName));
+	sf->design_size = design_size;
+	sf->design_range_bottom = size_bottom;
+	sf->design_range_top = size_top;
+	sf->fontstyle_id = styleid;
 
 	txt = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Notice));
 	free(sf->copyright); sf->copyright = cu_copy(txt);
@@ -5007,11 +5281,7 @@ return( true );
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	wattrs.window_title = GStringGetResource(_STR_MoreParams,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	wattrs.window_title = _("More Params");
-#endif
 	pos.x = pos.y = 0;
 	pos.width =GDrawPointsToPixels(NULL,GGadgetScale(180));
 	pos.height = GDrawPointsToPixels(NULL,tot*26+60);
@@ -5113,10 +5383,6 @@ static void DefaultTeX(struct gfi_data *d) {
 	d->texdata = sf->texdata;
     }
 
-    sprintf( buffer,"%g", d->texdata.designsize/(double) (1<<20));
-    uc_strcpy(ubuf,buffer);
-    GGadgetSetTitle(GWidgetGetControl(d->gw,CID_DesignSize),ubuf);
-
     for ( i=0; i<7; ++i ) {
 	sprintf( buffer,"%g", d->texdata.params[i]*(sf->ascent+sf->descent)/(double) (1<<20));
 	uc_strcpy(ubuf,buffer);
@@ -5202,18 +5468,19 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GTabInfo aspects[15], conaspects[7], smaspects[5];
+    GTabInfo aspects[16], conaspects[7], smaspects[5];
     GGadgetCreateData mgcd[10], ngcd[13], egcd[14], psgcd[24], tngcd[7],
 	pgcd[8], vgcd[22], pangcd[22], comgcd[3], atgcd[7], txgcd[23],
 	congcd[3], csubgcd[fpst_max-pst_contextpos][6], smgcd[3], smsubgcd[4][6],
-	mfgcd[8], mcgcd[8];
+	mfgcd[8], mcgcd[8], szgcd[19];
     GTextInfo mlabel[10], nlabel[13], elabel[14], pslabel[24], tnlabel[7],
 	plabel[8], vlabel[22], panlabel[22], comlabel[3], atlabel[7], txlabel[23],
 	csublabel[fpst_max-pst_contextpos][6], smsublabel[4][6],
-	mflabel[8], mclabel[8], *list;
+	mflabel[8], mclabel[8], *list, szlabel[17];
     struct gfi_data *d;
     char iabuf[20], upbuf[20], uwbuf[20], asbuf[20], dsbuf[20], ncbuf[20],
 	    vbuf[20], uibuf[12], regbuf[100], vorig[20], embuf[20];
+    char dszbuf[20], dsbbuf[20], dstbuf[21], sibuf[20];
     int i,k;
     int mcs;
     Encoding *item;
@@ -5386,8 +5653,7 @@ return;
 
     egcd[0].gd.pos.x = 12; egcd[0].gd.pos.y = 12;
     egcd[0].gd.flags = gg_visible | gg_enabled;
-    egcd[0].gd.mnemonic = 'E';
-    elabel[0].text = (unichar_t *) _STR_Encoding;
+    elabel[0].text = (unichar_t *) _STR_Encoding2;
     elabel[0].text_in_resource = true;
     egcd[0].gd.label = &elabel[0];
     egcd[0].creator = GLabelCreate;
@@ -6332,28 +6598,11 @@ return;
     txlabel[k].text = (unichar_t *) _STR_TeXMathExt;
     txlabel[k].text_in_resource = true;
     txgcd[k].gd.label = &txlabel[k];
-    txgcd[k].gd.pos.x = 150; txgcd[k].gd.pos.y = txgcd[k-1].gd.pos.y;
+    txgcd[k].gd.pos.x = 155; txgcd[k].gd.pos.y = txgcd[k-1].gd.pos.y;
     txgcd[k].gd.flags = gg_visible | gg_enabled;
     txgcd[k].gd.cid = CID_TeXMathExt;
     txgcd[k].gd.handle_controlevent = GFI_TeXChanged;
     txgcd[k++].creator = GRadioCreate;
-
-    txlabel[k].text = (unichar_t *) _STR_DesignSize;
-    txlabel[k].text_in_resource = true;
-    txgcd[k].gd.label = &txlabel[k];
-    txgcd[k].gd.pos.x = 10; txgcd[k].gd.pos.y = txgcd[k-2].gd.pos.y+26;
-    txgcd[k].gd.flags = gg_visible | gg_enabled;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    txgcd[k].gd.popup_msg = GStringGetResource(_STR_DesignSizePopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    txgcd[k].gd.popup_msg = _("The size (in points) for which this face was designed");
-#endif
-    txgcd[k++].creator = GLabelCreate;
-
-    txgcd[k].gd.pos.x = 70; txgcd[k].gd.pos.y = txgcd[k-1].gd.pos.y-4;
-    txgcd[k].gd.flags = gg_visible | gg_enabled;
-    txgcd[k].gd.cid = CID_DesignSize;
-    txgcd[k++].creator = GTextFieldCreate;
 
     for ( i=0; texparams[i]!=0; ++i ) {
 	txlabel[k].text = (unichar_t *) texparams[i];
@@ -6379,6 +6628,153 @@ return;
     txgcd[k].gd.handle_controlevent = GFI_MoreParams;
     txgcd[k].gd.cid = CID_MoreParams;
     txgcd[k++].creator = GButtonCreate;
+
+
+/******************************************************************************/
+    memset(&szlabel,0,sizeof(szlabel));
+    memset(&szgcd,0,sizeof(szgcd));
+
+    k=0;
+
+    szlabel[k].text = (unichar_t *) _STR_DesignSize;
+    szlabel[k].text_in_resource = true;
+    szgcd[k].gd.label = &szlabel[k];
+    szgcd[k].gd.pos.x = 10; szgcd[k].gd.pos.y = 9;
+    szgcd[k].gd.flags = gg_visible | gg_enabled;
+    szgcd[k].gd.popup_msg = GStringGetResource(_STR_DesignSizePopup,NULL);
+    szgcd[k++].creator = GLabelCreate;
+
+    sprintf(dszbuf, "%.1f", sf->design_size/10.0);
+    szlabel[k].text = (unichar_t *) dszbuf;
+    szlabel[k].text_is_1byte = true;
+    szgcd[k].gd.label = &szlabel[k];
+    szgcd[k].gd.pos.x = 70; szgcd[k].gd.pos.y = szgcd[k-1].gd.pos.y-4;
+    szgcd[k].gd.pos.width = 60;
+    szgcd[k].gd.flags = gg_visible | gg_enabled;
+    szgcd[k].gd.cid = CID_DesignSize;
+    szgcd[k++].creator = GTextFieldCreate;
+
+    szlabel[k].text = (unichar_t *) _STR_PointsNoC;
+    szlabel[k].text_in_resource = true;
+    szgcd[k].gd.label = &szlabel[k];
+    szgcd[k].gd.pos.x = 134; szgcd[k].gd.pos.y = szgcd[k-2].gd.pos.y;
+    szgcd[k].gd.flags = gg_visible | gg_enabled;
+    szgcd[k].gd.popup_msg = GStringGetResource(_STR_DesignSizePopup,NULL);
+    szgcd[k++].creator = GLabelCreate;
+
+    szlabel[k].text = (unichar_t *) _STR_DesignRange;
+    szlabel[k].text_in_resource = true;
+    szgcd[k].gd.label = &szlabel[k];
+    szgcd[k].gd.pos.x = 14; szgcd[k].gd.pos.y = szgcd[k-2].gd.pos.y+24;
+    szgcd[k].gd.flags = gg_visible | gg_enabled;
+    szgcd[k].gd.popup_msg = GStringGetResource(_STR_DesignRangePopup,NULL);
+    szgcd[k++].creator = GLabelCreate;
+
+    szgcd[k].gd.pos.x = 8; szgcd[k].gd.pos.y = GDrawPointsToPixels(NULL,szgcd[k-1].gd.pos.y+6);
+    szgcd[k].gd.pos.width = pos.width-32; szgcd[k].gd.pos.height = GDrawPointsToPixels(NULL,36);
+    szgcd[k].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
+    szgcd[k++].creator = GGroupCreate;
+
+    szlabel[k].text = (unichar_t *) _STR_BottomC;
+    szlabel[k].text_in_resource = true;
+    szgcd[k].gd.label = &szlabel[k];
+    szgcd[k].gd.pos.x = 14; szgcd[k].gd.pos.y = szgcd[k-2].gd.pos.y+18;
+    szgcd[k].gd.flags = gg_visible | gg_enabled;
+    szgcd[k].gd.popup_msg = GStringGetResource(_STR_DesignRangePopup,NULL);
+    szgcd[k++].creator = GLabelCreate;
+
+    sprintf(dsbbuf, "%.1f", sf->design_range_bottom/10.0);
+    szlabel[k].text = (unichar_t *) dsbbuf;
+    szlabel[k].text_is_1byte = true;
+    szgcd[k].gd.label = &szlabel[k];
+    szgcd[k].gd.pos.x = 70; szgcd[k].gd.pos.y = szgcd[k-1].gd.pos.y-4;
+    szgcd[k].gd.pos.width = 60;
+    szgcd[k].gd.flags = gg_visible | gg_enabled;
+    szgcd[k].gd.cid = CID_DesignBottom;
+    szgcd[k++].creator = GTextFieldCreate;
+
+    szlabel[k].text = (unichar_t *) _STR_TopC;
+    szlabel[k].text_in_resource = true;
+    szgcd[k].gd.label = &szlabel[k];
+    szgcd[k].gd.pos.x = 140; szgcd[k].gd.pos.y = szgcd[k-2].gd.pos.y;
+    szgcd[k].gd.flags = gg_visible | gg_enabled;
+    szgcd[k].gd.popup_msg = GStringGetResource(_STR_DesignRangePopup,NULL);
+    szgcd[k++].creator = GLabelCreate;
+
+    sprintf(dstbuf, "%.1f", sf->design_range_top/10.0);
+    szlabel[k].text = (unichar_t *) dstbuf;
+    szlabel[k].text_is_1byte = true;
+    szgcd[k].gd.label = &szlabel[k];
+    szgcd[k].gd.pos.x = 180; szgcd[k].gd.pos.y = szgcd[k-1].gd.pos.y-4;
+    szgcd[k].gd.pos.width = 60;
+    szgcd[k].gd.flags = gg_visible | gg_enabled;
+    szgcd[k].gd.cid = CID_DesignTop;
+    szgcd[k++].creator = GTextFieldCreate;
+
+    szlabel[k].text = (unichar_t *) _STR_StyleId;
+    szlabel[k].text_in_resource = true;
+    szgcd[k].gd.label = &szlabel[k];
+    szgcd[k].gd.pos.x = 14; szgcd[k].gd.pos.y = GDrawPixelsToPoints(NULL,szgcd[k-5].gd.pos.y+szgcd[k-5].gd.pos.height)+10;
+    szgcd[k].gd.flags = gg_visible | gg_enabled;
+    szgcd[k].gd.popup_msg = GStringGetResource(_STR_StyleIdPopup,NULL);
+    szgcd[k++].creator = GLabelCreate;
+
+    sprintf(sibuf, "%d", sf->fontstyle_id);
+    szlabel[k].text = (unichar_t *) sibuf;
+    szlabel[k].text_is_1byte = true;
+    szgcd[k].gd.label = &szlabel[k];
+    szgcd[k].gd.pos.x = 70; szgcd[k].gd.pos.y = szgcd[k-1].gd.pos.y-4;
+    szgcd[k].gd.pos.width = 60;
+    szgcd[k].gd.flags = gg_visible | gg_enabled;
+    szgcd[k].gd.cid = CID_StyleID;
+    szgcd[k++].creator = GTextFieldCreate;
+
+    szlabel[k].text = (unichar_t *) _STR_StyleName;
+    szlabel[k].text_in_resource = true;
+    szgcd[k].gd.label = &szlabel[k];
+    szgcd[k].gd.pos.x = 14; szgcd[k].gd.pos.y = szgcd[k-2].gd.pos.y+22;
+    szgcd[k].gd.flags = gg_visible | gg_enabled;
+    szgcd[k].gd.popup_msg = GStringGetResource(_STR_StyleNamePopup,NULL);
+    szgcd[k++].creator = GLabelCreate;
+
+    szgcd[k].gd.pos.x = 10; szgcd[k].gd.pos.y = szgcd[k-1].gd.pos.y+14;
+    szgcd[k].gd.pos.width = ngcd[7].gd.pos.width; szgcd[k].gd.pos.height = 100;
+    szgcd[k].gd.flags = gg_visible | gg_enabled | gg_list_alphabetic;
+    szgcd[k].gd.cid = CID_StyleName;
+    szgcd[k].gd.handle_controlevent = GFI_StyleNameSelChanged;
+    szgcd[k++].creator = GListCreate;
+
+    szgcd[k].gd.pos.x = 10; szgcd[k].gd.pos.y = szgcd[k-1].gd.pos.y+szgcd[k-1].gd.pos.height+4;
+    szgcd[k].gd.pos.width = -1;
+    szgcd[k].gd.flags = gg_visible | gg_enabled;
+    szlabel[k].text = (unichar_t *) _STR_NewDDD;
+    szlabel[k].text_in_resource = true;
+    szgcd[k].gd.label = &szlabel[k];
+    szgcd[k].gd.cid = CID_StyleNameNew;
+    szgcd[k].gd.handle_controlevent = GFI_StyleNameNew;
+    szgcd[k++].creator = GButtonCreate;
+
+    szgcd[k].gd.pos.x = 20+GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor);
+    szgcd[k].gd.pos.y = szgcd[k-1].gd.pos.y;
+    szgcd[k].gd.pos.width = -1;
+    szgcd[k].gd.flags = gg_visible;
+    szlabel[k].text = (unichar_t *) _STR_Delete;
+    szlabel[k].text_in_resource = true;
+    szgcd[k].gd.label = &szlabel[k];
+    szgcd[k].gd.cid = CID_StyleNameDel;
+    szgcd[k].gd.handle_controlevent = GFI_StyleNameDel;
+    szgcd[k++].creator = GButtonCreate;
+
+    szgcd[k].gd.pos.x = 10 + 2*(10+GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor));
+    szgcd[k].gd.pos.y = szgcd[k-1].gd.pos.y;
+    szgcd[k].gd.pos.width = -1;
+    szgcd[k].gd.flags = gg_visible;
+    szlabel[k].text = (unichar_t *) _STR_EditDDD;
+    szlabel[k].text_in_resource = true;
+    szgcd[k].gd.label = &szlabel[k];
+    szgcd[k].gd.cid = CID_StyleNameRename;
+    szgcd[k].gd.handle_controlevent = GFI_StyleNameRename;
+    szgcd[k++].creator = GButtonCreate;
 
 /******************************************************************************/
     memset(&csublabel,0,sizeof(csublabel));
@@ -6629,6 +7025,10 @@ return;
     aspects[i].text_in_resource = true;
     aspects[i++].gcd = txgcd;
 
+    aspects[i].text = (unichar_t *) _STR_SizeNoC;
+    aspects[i].text_in_resource = true;
+    aspects[i++].gcd = szgcd;
+
     aspects[i].text = (unichar_t *) _STR_Comment;
     aspects[i].text_in_resource = true;
     aspects[i++].gcd = comgcd;
@@ -6713,6 +7113,7 @@ return;
     GWidgetIndicateFocusGadget(ngcd[1].ret);
     ProcessListSel(d);
     GFI_AspectChange(mgcd[0].ret,NULL);
+    GGadgetSetList(GWidgetGetControl(gw,CID_StyleName),StyleNames(sf->fontstyle_name),false);
 
     GWidgetHidePalettes();
     GDrawSetVisible(gw,true);

@@ -234,6 +234,11 @@ struct ttfinfo {
 	uint32 offset;
 	int len;
     } *savetab;
+    int32 last_size_pos;
+    uint16 design_size;
+    uint16 fontstyle_id;
+    struct otfname *fontstyle_name;
+    uint16 design_range_bottom, design_range_top;
 };
 
 #define MAX_TAB	48
@@ -586,6 +591,7 @@ struct alltabs {
     int next_lookup;	/* for doing nested lookups in contextual features */
     short *gn_sid;
     enum fontformat format;
+    int fontstyle_name_strid;	/* For GPOS 'size' */
 };
 
 struct subhead { uint16 first, cnt, delta, rangeoff; };	/* a sub header in 8/16 cmap table */
@@ -698,3 +704,4 @@ extern void readttfgdef(FILE *ttf,struct ttfinfo *info);
 extern void VariationFree(struct ttfinfo *info);
 extern void readttfvariations(struct ttfinfo *info, FILE *ttf);
 
+extern struct otfname *FindAllLangEntries(FILE *ttf, struct ttfinfo *info, int id );
