@@ -592,7 +592,7 @@ static void dumpgposkerndata(FILE *gpos,SplineFont *sf,int sli,
     }
 }
 
-static uint16 *ClassesFromNames(SplineFont *sf,char **classnames,int class_cnt,
+uint16 *ClassesFromNames(SplineFont *sf,char **classnames,int class_cnt,
 	int numGlyphs, SplineChar ***glyphs) {
     uint16 *class;
     int i;

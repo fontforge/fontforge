@@ -989,7 +989,7 @@ void SFKernPrepare(SplineFont *sf) {
 	    }
 	}
 	KCSfree(first,kc->first_cnt);
-	KCSfree(last,kc->first_cnt);
+	KCSfree(last,kc->second_cnt);
     }
 }
 

@@ -3494,11 +3494,63 @@ return( j );
 return( j );
 }
 
+static uint16 *getAppleClassTable(FILE *ttf, int classdef_offset, int cnt, int sub, int div) {
+    uint16 *class = gcalloc(cnt,sizeof(uint16));
+    int first, i, n;
+    /* Apple stores its class tables as containing offsets. I find it hard to */
+    /*  think that way and convert them to indeces (by subtracting off a base */
+    /*  offset and dividing by the item's size) before doing anything else */
+
+    fseek(ttf,classdef_offset,SEEK_SET);
+    first = getushort(ttf);
+    n = getushort(ttf);
+    if ( first+n+1>=cnt )
+	fprintf( stderr, "Bad Apple Kern Class\n" );
+    for ( i=0; i<=n && i+first<cnt; ++i )
+	class[first+i] = (getushort(ttf)-sub)/div;
+return( class );
+}
+
+static char **ClassToNames(struct ttfinfo *info,int class_cnt,uint16 *class,int glyph_cnt) {
+    char **ret = galloc(class_cnt*sizeof(char *));
+    int *lens = gcalloc(class_cnt,sizeof(int));
+    int i;
+
+    ret[0] = NULL;
+    for ( i=0 ; i<glyph_cnt; ++i ) if ( class[i]!=0 && info->chars[i]!=NULL && class[i]<class_cnt )
+	lens[class[i]] += strlen(info->chars[i]->name)+1;
+    for ( i=1; i<class_cnt ; ++i )
+	ret[i] = galloc(lens[i]+1);
+    memset(lens,0,class_cnt*sizeof(int));
+    for ( i=0 ; i<glyph_cnt; ++i ) if ( class[i]!=0 && info->chars[i]!=NULL ) {
+	if ( class[i]<class_cnt ) {
+	    strcpy(ret[class[i]]+lens[class[i]], info->chars[i]->name );
+	    lens[class[i]] += strlen(info->chars[i]->name)+1;
+	    ret[class[i]][lens[class[i]]-1] = ' ';
+	} else
+	    fprintf( stderr, "Class index out of range in kerning class\n" );
+    }
+    for ( i=1; i<class_cnt ; ++i )
+	if ( lens[i]==0 )
+	    ret[i][0] = '\0';
+	else
+	    ret[i][lens[i]-1] = '\0';
+    free(lens);
+return( ret );
+}
+
+/* Apple's docs imply that kerning info is always provided left to right, even*/
+/*  for right to left scripts. If that be so then we need code in here to reverse */
+/*  the order of the characters for right to left since pfaedit's convention */
+/*  is to follow writing order rather than to go left to right */
 static void readttfkerns(FILE *ttf,struct ttfinfo *info) {
     int tabcnt, len, coverage,i,j, npairs, version, format, flags_good;
-    int left, right, offset;
+    int left, right, offset, array, rowWidth;
     int header_size;
     KernPair *kp;
+    KernClass *kc;
+    uint32 begin_table;
+    uint16 *class1, *class2;
 
     fseek(ttf,info->kern_start,SEEK_SET);
     version = getushort(ttf);
@@ -3509,6 +3561,7 @@ static void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 	tabcnt = getlong(ttf);
     }
     for ( i=0; i<tabcnt; ++i ) {
+	begin_table = ftell(ttf);
 	if ( version==0 ) {
 	    /* version = */ getushort(ttf);
 	    len = getushort(ttf);
@@ -3558,9 +3611,37 @@ static void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 	    /*  OTF says class indeces are stored, Apple says byte offsets into array */
 	    /*  Apple says offsets are stored in uint8, otf says indeces are in uint16 */
 	    /* Bleah!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
-    fprintf( stderr, "This font has a format 2 kerning table. I've never seen that and don't know\nhow to parse it. Could you send a copy of %s to gww@silcom.com?\nThanks!\n",
-	info->fontname );
-	    fseek(ttf,len-header_size,SEEK_CUR);
+	    /*  Ah. Apple's docs are incorrect. the values stored are uint16 offsets */
+	    rowWidth = getushort(ttf);
+	    left = getushort(ttf);
+	    right = getushort(ttf);
+	    array = getushort(ttf);
+	    if ( info->khead==NULL )
+		info->khead = kc = chunkalloc(sizeof(KernClass));
+	    else
+		kc = info->klast->next = chunkalloc(sizeof(KernClass));
+	    info->klast = kc;
+	    kc->second_cnt = rowWidth/sizeof(uint16);
+	    class1 = getAppleClassTable(ttf, begin_table+left, info->glyph_cnt, array, rowWidth );
+	    class2 = getAppleClassTable(ttf, begin_table+right, info->glyph_cnt, 0, sizeof(uint16) );
+	    for ( i=0; i<info->glyph_cnt; ++i ) {
+		if ( class1[i]!=0 ) {
+		    kc->sli = SLIFromInfo(info,info->chars[i],DEFAULT_LANG);
+	    break;
+		}
+	    }
+	    for ( i=0; i<info->glyph_cnt; ++i )
+		if ( class1[i]>kc->first_cnt )
+		    kc->first_cnt = class1[i];
+	    ++ kc->first_cnt;
+	    kc->offsets = galloc(kc->first_cnt*kc->second_cnt*sizeof(int16));
+	    kc->firsts = ClassToNames(info,kc->first_cnt,class1,info->glyph_cnt);
+	    kc->seconds = ClassToNames(info,kc->second_cnt,class2,info->glyph_cnt);
+	    fseek(ttf,begin_table+array,SEEK_SET);
+	    for ( i=0; i<kc->first_cnt*kc->second_cnt; ++i )
+		kc->offsets[i] = getushort(ttf);
+	    free(class1); free(class2);
+	    fseek(ttf,begin_table+len,SEEK_SET);
 	} else if ( flags_good && format==3 ) {
 	    /* format 3, horizontal kerning data (as classes limited to 256 entries) not perpendicular */
 	    /*  OpenType's spec doesn't document this */
@@ -3680,31 +3761,6 @@ static uint16 *getClassDefTable(FILE *ttf, int classdef_offset, int cnt) {
 	}
     }
 return glist;
-}
-
-static char **ClassToNames(struct ttfinfo *info,int class_cnt,uint16 *class,int glyph_cnt) {
-    char **ret = galloc(class_cnt*sizeof(char *));
-    int *lens = gcalloc(class_cnt,sizeof(int));
-    int i;
-
-    ret[0] = NULL;
-    for ( i=0 ; i<glyph_cnt; ++i ) if ( class[i]!=0 && info->chars[i]!=NULL )
-	lens[class[i]] += strlen(info->chars[i]->name)+1;
-    for ( i=1; i<class_cnt ; ++i )
-	ret[i] = galloc(lens[i]+1);
-    memset(lens,0,class_cnt*sizeof(int));
-    for ( i=0 ; i<glyph_cnt; ++i ) if ( class[i]!=0 && info->chars[i]!=NULL ) {
-	strcpy(ret[class[i]]+lens[class[i]], info->chars[i]->name );
-	lens[class[i]] += strlen(info->chars[i]->name)+1;
-	ret[class[i]][lens[class[i]]-1] = ' ';
-    }
-    for ( i=1; i<class_cnt ; ++i )
-	if ( lens[i]==0 )
-	    ret[i][0] = '\0';
-	else
-	    ret[i][lens[i]-1] = '\0';
-    free(lens);
-return( ret );
 }
 
 static void readvaluerecord(struct valuerecord *vr,int vf,FILE *ttf) {
@@ -5272,6 +5328,7 @@ struct statemachine {
     uint8 *states_in_use;
     int smax;
     struct ttfinfo *info;
+    int cnt;
 };
 
 static void mort_figure_ligatures(struct statemachine *sm, int lcp, int off, int32 lig_offset) {
@@ -5343,6 +5400,12 @@ static void follow_mort_state(struct statemachine *sm,int offset,int class) {
 
     if ( state<0 || state>=sm->smax || sm->states_in_use[state] || sm->lcp>=MAX_LIG_COMP )
 return;
+    ++ sm->cnt;
+    if ( sm->cnt>=10000 ) {
+	if ( sm->cnt==10000 )
+	    fprintf(stderr,"In an attempt to process the ligatures of this font, I've concluded\nthat the state machine in Apple's mort/morx table is\n(like the learned constable) too cunning to be understood.\nI shall give up on it. Your ligatures may be incomplete.\n" );
+return;
+    }
     sm->states_in_use[state] = true;
 
     if ( class==-1 ) { class_bottom = 0; class_top = sm->nClasses; }
