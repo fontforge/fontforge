@@ -2872,7 +2872,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 		} else
 		    info->inuse[table[i]] = 1;
 	} else if ( format==4 ) {
-	    if ( enc==em_symbol ) enc=em_unicode;
+	    if ( enc==em_symbol ) { enc=em_unicode; info->twobytesymbol=true;}
 	    segCount = getushort(ttf)/2;
 	    /* searchRange = */ getushort(ttf);
 	    /* entrySelector = */ getushort(ttf);
@@ -3776,6 +3776,50 @@ static void SFAddDups(SplineFont *sf,struct dup *dups) {
     sf->charcnt += cnt;
 }
 
+static void SymbolFixup(struct ttfinfo *info) {
+    SplineChar *lo[256], *hi[256], *sc, **chars;
+    int extras=0, i, uenc;
+
+    memset(lo,0,sizeof(lo));
+    memset(hi,0,sizeof(hi));
+    lo[0] = info->chars[0];
+    for ( i=1; i<info->glyph_cnt; ++i ) if ( (sc = info->chars[i])!=NULL ) {
+	if ( sc->enc>0 && sc->enc<0xff )
+	    lo[sc->enc] = sc;
+	else if ( sc->enc>=0xf000 && sc->enc<=0xf0ff )
+	    hi[sc->enc-0xf000] = sc;
+	else if ( sc->enc!=0 )
+return;		/* Leave it as it is, it isn't a real symbol encoding */
+    }
+    extras = 0;
+    for ( i=1; i<info->glyph_cnt; ++i ) if ( (sc = info->chars[i])!=NULL ) {
+	if ( sc->enc==0 )
+	    sc->enc = 256 + extras++;
+    }
+    for ( i=0; i<256; ++i ) {
+	if ( hi[i]!=NULL && lo[i]!=NULL ) {
+	    lo[i]->enc = 256+extras++;
+	    hi[i]->enc -= 0xf000;
+	} else if ( hi[i]!=NULL )
+	    hi[i]->enc -= 0xf000;
+    }
+    chars = gcalloc(256+extras,sizeof(SplineChar *));
+    for ( i=0; i<info->glyph_cnt; ++i ) if ( (sc = info->chars[i])!=NULL ) {
+	chars[sc->enc] = sc;
+	uenc = UnicodeNameLookup(sc->name);
+	if ( uenc!=-1 )
+	    sc->unicodeenc = uenc;
+    }
+    if ( chars[0x41]!=NULL && chars[0x41]->name!=NULL && strcmp(chars[0x41]->name,"Alpha")==0 )
+	info->encoding_name = em_symbol;
+    else
+	info->encoding_name = em_none;
+    free(info->chars);
+    info->chars = chars;
+    info->glyph_cnt = 256+extras;
+    info->is_onebyte = true;
+}
+
 static void CheckEncoding(struct ttfinfo *info) {
     const uint16 *table;
     static const uint16 *choices[] = { unicode_from_MacSymbol, unicode_from_mac, 
@@ -3936,6 +3980,9 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     if ( info->encoding_name == em_symbol || info->encoding_name == em_mac )
 	/* Don't trust those encodings */
 	CheckEncoding(info);
+    if ( info->twobytesymbol )
+	/* rework ms symbol encodings */
+	SymbolFixup(info);
     sf->encoding_name = em_none;
     sf->cidregistry = info->cidregistry;
     sf->ordering = info->ordering;

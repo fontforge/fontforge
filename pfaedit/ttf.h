@@ -44,6 +44,8 @@ struct ttfinfo {
     int glyph_cnt;		/* from maxp table (or cff table) */
     unsigned int index_to_loc_is_long:1;	/* in head table */
     unsigned int is_ttc:1;			/* Is it a font collection? */
+    unsigned int is_onebyte:1;			/* Is it a one byte encoding? */
+    unsigned int twobytesymbol:1;		/* it had a symbol encoding which we converted to unicode */
     /* Mac fonts platform=0/1, platform specific enc id, roman=0, english is lang code 0 */
     /* iso platform=2, platform specific enc id, latin1=0/2, no language */
     /* microsoft platform=3, platform specific enc id, 1, english is lang code 0x??09 */

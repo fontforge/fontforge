@@ -6183,10 +6183,29 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
     table[9] = 3;
 
     if ( format==ff_ttfsym || sf->encoding_name==em_symbol ) {
+	int acnt=0, pcnt=0;
+	for ( i=0; i<sf->charcnt; ++i ) {
+	    if ( sf->chars[i]!=&notdef && sf->chars[i]!=&nonmarkingreturn &&
+		    sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 &&
+		    !SCIsNotdef(sf->chars[i],-1) && i<=0xffff ) {
+		if ( i>=0xf000 && i<=0xf0ff )
+		    ++acnt;
+		else if ( i>=0x20 && i<=0xff )
+		    ++pcnt;
+	    }
+	}
+	alreadyprivate = pcnt>acnt;
 	memset(table,'\0',sizeof(table));
-	for ( i=0; i<sf->charcnt && i<256; ++i )
-	    if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 )
-		table[sf->chars[i]->enc] = sf->chars[i]->ttf_glyph;
+	if ( !alreadyprivate ) {
+	    for ( i=0; i<sf->charcnt && i<256; ++i )
+		if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 )
+		    table[sf->chars[i]->enc] = sf->chars[i]->ttf_glyph;
+	} else {
+	    for ( i=0xf000; i<=0xf0ff && i<sf->charcnt; ++i )
+		if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 &&
+			sf->chars[i]->ttf_glyph<256 )
+		    table[sf->chars[i]->enc-0xf000] = sf->chars[i]->ttf_glyph;
+	}
 	table[0] = table[8] = table[13] = table[29] = 1;
 	table[9] = 3;
 	/* if the user has read in a ttf symbol file then it will already have */
