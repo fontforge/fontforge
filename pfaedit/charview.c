@@ -3305,6 +3305,7 @@ return( true );
 #define MID_CopyVWidth	2126
 #define MID_Join	2127
 #define MID_CopyGridFit	2128
+#define MID_Elide	2129
 #define MID_Clockwise	2201
 #define MID_Counter	2202
 #define MID_GetInfo	2203
@@ -4109,16 +4110,9 @@ static void cv_edlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 	  break;
 	  case MID_Merge:
 	    mi->ti.disabled = !anypoints;
-	    free(mi->ti.text);
-	    if ( e==NULL || !(e->u.mouse.state&ksm_shift) ) {
-		mi->ti.text = u_copy(GStringGetResource(_STR_Merge,NULL));
-		mi->short_mask = ksm_control;
-		mi->invoke = is_cv ? CVMerge : SVMerge;
-	    } else {
-		mi->ti.text = u_copy(GStringGetResource(_STR_Elide,NULL));
-		mi->short_mask = (ksm_control|ksm_meta);
-		mi->invoke = is_cv ? CVElide : SVElide;
-	    }
+	  break;
+	  case MID_Elide:
+	    mi->ti.disabled = !anypoints;
 	  break;
 	  case MID_Clear: case MID_Cut: /*case MID_Copy:*/
 	    /* If nothing is selected, copy copies everything */
@@ -5535,6 +5529,7 @@ static GMenuItem edlist[] = {
     { { (unichar_t *) _STR_Paste, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, 'V', ksm_control, NULL, NULL, CVPaste, MID_Paste },
     { { (unichar_t *) _STR_Clear, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'l' }, GK_Delete, 0, NULL, NULL, CVClear, MID_Clear },
     { { (unichar_t *) _STR_Merge, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, 'M', ksm_control, NULL, NULL, CVMerge, MID_Merge },
+    { { (unichar_t *) _STR_Elide, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, 'M', ksm_meta|ksm_control, NULL, NULL, CVElide, MID_Elide },
     { { (unichar_t *) _STR_Join, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'J' }, 'J', ksm_control|ksm_shift, NULL, NULL, CVJoin, MID_Join },
     { { (unichar_t *) _STR_CopyFgToBg, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, 'C', ksm_control|ksm_shift, NULL, NULL, CVCopyFgBg, MID_CopyFgToBg },
     { { (unichar_t *) _STR_CopyGridFit, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuCopyGridFit, MID_CopyGridFit },
@@ -6318,6 +6313,7 @@ static GMenuItem sv_edlist[] = {
     { { (unichar_t *) _STR_Paste, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, 'V', ksm_control, NULL, NULL, SVPaste, MID_Paste },
     { { (unichar_t *) _STR_Clear, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'l' }, GK_Delete, 0, NULL, NULL, SVClear, MID_Clear },
     { { (unichar_t *) _STR_Merge, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, 'M', ksm_control, NULL, NULL, SVMerge, MID_Merge },
+    { { (unichar_t *) _STR_Elide, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'E' }, 'M', ksm_meta|ksm_control, NULL, NULL, SVElide, MID_Elide },
     { { (unichar_t *) _STR_Join, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'J' }, 'J', ksm_control|ksm_shift, NULL, NULL, SVJoin, MID_Join },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Select, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, 0, ksm_control, sv_sllist, sv_sllistcheck },
