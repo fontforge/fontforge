@@ -2359,9 +2359,13 @@ return( event );
 	cv->p.cx = base->me.x;
 	if ( !(event->u.mouse.state&ksm_meta) &&
 		ItalicConstrained && cv->sc->parent->italicangle!=0 ) {
-	    cv->p.cx -= tan(cv->sc->parent->italicangle*3.1415926535897932/180)*
+	    double off = tan(cv->sc->parent->italicangle*3.1415926535897932/180)*
 		    (cv->p.cy-base->me.y);
-	    cv->p.x = fake->u.mouse.x = cv->xoff + rint(cv->p.cx*cv->scale);
+	    double aoff = off<0 ? -off : off;
+	    if ( dx>=aoff*cv->scale/2 && (event->u.mouse.x-basex<0)!=(off<0) ) {
+		cv->p.cx -= off;
+		cv->p.x = fake->u.mouse.x = cv->xoff + rint(cv->p.cx*cv->scale);
+	    }
 	}
     } else if ( dx >= 2*dy ) {
 	fake->u.mouse.y = basey;
@@ -2917,9 +2921,13 @@ return;
 		p.x = fake.u.mouse.x = basex;
 		p.cx = cv->p.constrain.x;
 		if ( ItalicConstrained && cv->sc->parent->italicangle!=0 ) {
-		    p.cx -= tan(cv->sc->parent->italicangle*3.1415926535897932/180)*
+		    double off = tan(cv->sc->parent->italicangle*3.1415926535897932/180)*
 			    (p.cy-cv->p.constrain.y);
-		    p.x = fake.u.mouse.x = cv->xoff + rint(p.cx*cv->scale);
+		    double aoff = off<0 ? -off : off;
+		    if ( dx>=aoff*cv->scale/2 && (event->u.mouse.x-basex<0)!=(off<0) ) {
+			p.cx -= off;
+			p.x = fake.u.mouse.x = cv->xoff + rint(p.cx*cv->scale);
+		    }
 		}
 	    } else if ( dx >= 2*dy ) {
 		p.y = fake.u.mouse.y = basey;
