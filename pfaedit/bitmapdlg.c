@@ -452,54 +452,58 @@ static unichar_t *GenText(int32 *sizes,real scale) {
 return( uret );
 }
 
+static void _CB_TextChange(CreateBitmapData *bd, GGadget *g) {
+    int cid = (int) GGadgetGetCid(g);
+    unichar_t *val;
+    int err=false;
+    int32 *sizes = ParseList(bd->gw,cid,&err,false);
+    int ncid;
+    int system = GetSystem(bd->gw);
+    int scale;
+
+    if ( err )
+return;
+    for ( ncid=CID_Pixel; ncid<=CID_100; ++ncid ) if ( ncid!=cid ) {
+	if ( ncid==CID_Pixel )
+	    scale = 72;
+	else if ( ncid==CID_75 )
+	    scale = system==CID_X?75: system==CID_Win?96 : 72;
+	else
+	    scale = system==CID_X?100: system==CID_Win?120 : 100;
+	val = GenText(sizes,72./scale);
+	GGadgetSetTitle(GWidgetGetControl(bd->gw,ncid),val);
+	free(val);
+    }
+    free(sizes);
+return;
+}
+
 static int CB_TextChange(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
 	CreateBitmapData *bd = GDrawGetUserData(GGadgetGetWindow(g));
-	int cid = (int) GGadgetGetCid(g);
-	unichar_t *val;
-	int err=false;
-	int32 *sizes = ParseList(bd->gw,cid,&err,false);
-	int ncid;
-	int system = GetSystem(bd->gw);
-	int scale;
-
-	if ( err )
-return( true );
-	for ( ncid=CID_Pixel; ncid<=CID_100; ++ncid ) if ( ncid!=cid ) {
-	    if ( ncid==CID_Pixel )
-		scale = 72;
-	    else if ( ncid==CID_75 )
-		scale = system==CID_X?75: system==CID_Win?96 : 72;
-	    else
-		scale = system==CID_X?100: system==CID_Win?120 : 100;
-	    val = GenText(sizes,72./scale);
-	    GGadgetSetTitle(GWidgetGetControl(bd->gw,ncid),val);
-	    free(val);
-	}
-	free(sizes);
+	_CB_TextChange(bd,g);
     }
 return( true );
+}
+
+static void _CB_SystemChange(CreateBitmapData *bd) {
+    int system = GetSystem(bd->gw);
+    GGadgetSetTitle(GWidgetGetControl(bd->gw,CID_75Lab),
+	    GStringGetResource(system==CID_X?_STR_PointSizes75:
+			       system==CID_Win?_STR_PointSizes96:
+					       _STR_PointSizes72,NULL));
+    GGadgetSetTitle(GWidgetGetControl(bd->gw,CID_100Lab),
+	    GStringGetResource(system==CID_Win?_STR_PointSizes120:
+					       _STR_PointSizes100,NULL));
+    GGadgetSetEnabled(GWidgetGetControl(bd->gw,CID_100Lab),system!=CID_Mac);
+    GGadgetSetEnabled(GWidgetGetControl(bd->gw,CID_100),system!=CID_Mac);
+    _CB_TextChange(bd,GWidgetGetControl(bd->gw,CID_Pixel));
 }
 
 static int CB_SystemChange(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
 	CreateBitmapData *bd = GDrawGetUserData(GGadgetGetWindow(g));
-	int system = (int) GGadgetGetCid(g);
-	GEvent temp;
-	GGadgetSetTitle(GWidgetGetControl(bd->gw,CID_75Lab),
-		GStringGetResource(system==CID_X?_STR_PointSizes75:
-				   system==CID_Win?_STR_PointSizes96:
-						   _STR_PointSizes72,NULL));
-	GGadgetSetTitle(GWidgetGetControl(bd->gw,CID_100Lab),
-		GStringGetResource(system==CID_Win?_STR_PointSizes120:
-						   _STR_PointSizes100,NULL));
-	GGadgetSetEnabled(GWidgetGetControl(bd->gw,CID_100Lab),system!=CID_Mac);
-	GGadgetSetEnabled(GWidgetGetControl(bd->gw,CID_100),system!=CID_Mac);
-	temp = *e;
-	temp.u.control.subtype = et_textchanged;
-	temp.u.control.g = GWidgetGetControl(bd->gw,CID_Pixel);
-	temp.u.control.u.tf_changed.from_pulldown = -1;
-	CB_TextChange(temp.u.control.g, &temp);
+	_CB_SystemChange(bd);
     }
 return( true );
 }
@@ -744,6 +748,7 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
 
     GGadgetsCreate(bd.gw,gcd);
     which[lastwhich].selected = false;
+    _CB_SystemChange(&bd);
 
     GWidgetHidePalettes();
     GDrawSetVisible(bd.gw,true);
