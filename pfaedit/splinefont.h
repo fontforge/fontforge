@@ -689,6 +689,7 @@ extern SplineFont *SFReadMacBinary(char *filename);
 extern SplineFont *LoadSplineFont(char *filename);
 extern SplineFont *ReadSplineFont(char *filename);	/* Don't use this, use LoadSF instead */
 
+extern const char *UnicodeRange(int unienc);
 extern SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i);
 extern SplineChar *SFMakeChar(SplineFont *sf,int i);
 extern char *LigDefaultStr(int uni, char *name);

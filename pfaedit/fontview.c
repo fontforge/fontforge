@@ -3249,6 +3249,389 @@ static void FVChar(FontView *fv,GEvent *event) {
 	FVChangeChar(fv,i);
     }
 }
+const char *UnicodeRange(int unienc) {
+    char *ret;
+
+    ret = "Unencoded Unicode";
+    if ( unienc<0 )
+	/* Done */;
+    else if ( unienc<0x10000 ) {
+	ret = "Unencoded BMP Unicode";
+	if ( unienc<0x2000 ) {
+	    ret = "Unencoded Alphabetic";
+	    if ( unienc<32 )
+		ret = "Control Character";
+	    else if ( unienc<0x7f )
+		ret = "Basic Latin";
+	    else if ( unienc==0x7f )
+		ret = "Delete Character";
+	    else if ( unienc<0xa0 )
+		ret = "C1 Control Characters";
+	    else if ( unienc<0x100 )
+		ret = "Latin-1 Supplement";
+	    else if ( unienc<0x180 )
+		ret = "Latin Extended-A";
+	    else if ( unienc<0x250 )
+		ret = "Latin Extended-B";
+	    else if ( unienc<0x2b0 )
+		ret = "IPA Extensions";
+	    else if ( unienc<0x300 )
+		ret = "Spacing Modifier Letters";
+	    else if ( unienc<0x370 )
+		ret = "Combining Diacritical Marks";
+	    else if ( unienc<0x400 )
+		ret = "Greek";
+	    else if ( unienc<0x500 )
+		ret = "Cyrillic";
+	    else if ( unienc<0x530 )
+		ret = "Cyrillic Supplement";
+	    else if ( unienc<0x590 )
+		ret = "Armenian";
+	    else if ( unienc<0x600 )
+		ret = "Hebrew";
+	    else if ( unienc<0x700 )
+		ret = "Arabic";
+	    else if ( unienc<0x750 )
+		ret = "Syriac";
+	    else if ( unienc<0x780 )
+		ret = "N'ko";
+	    else if ( unienc<0x7c0 )
+		ret = "Thaana";
+	    else if ( unienc<0x800 )
+		ret = "Avestan";
+	    else if ( unienc<0x820 )
+		ret = "Phoenician";
+	    else if ( unienc<0x840 )
+		ret = "Aramaic";
+	    else if ( unienc<0x880 )
+		ret = "Pahlavi";
+	    else if ( unienc<0x8b0 )
+		ret = "Tifinagh";
+	    else if ( unienc<0x8d0 )
+		ret = "Samaritan";
+	    else if ( unienc<0x900 )
+		ret = "Mandaic";
+	    else if ( unienc<0x980 )
+		ret = "Devangari";
+	    else if ( unienc<0xa00 )
+		ret = "Bengali";
+	    else if ( unienc<0xa80 )
+		ret = "Gurmukhi";
+	    else if ( unienc<0xb00 )
+		ret = "Gujarati";
+	    else if ( unienc<0xb80 )
+		ret = "Oriya";
+	    else if ( unienc<0xc00 )
+		ret = "Tamil";
+	    else if ( unienc<0xc80 )
+		ret = "Telugu";
+	    else if ( unienc<0xd00 )
+		ret = "Kannada";
+	    else if ( unienc<0xd80 )
+		ret = "Malayalam";
+	    else if ( unienc<0xe00 )
+		ret = "Sinhala";
+	    else if ( unienc<0xe80 )
+		ret = "Thai";
+	    else if ( unienc<0xf00 )
+		ret = "Lao";
+	    else if ( unienc<0x1000 )
+		ret = "Tibetan";
+	    else if ( unienc<0x10a0 )
+		ret = "Myanmar";
+	    else if ( unienc<0x1100 )
+		ret = "Georgian";
+	    else if ( unienc<0x1160 )
+		ret = "Hangul Jamo, Choseong";
+	    else if ( unienc<0x11a8 )
+		ret = "Hangul Jamo, Jungseong";
+	    else if ( unienc<0x1200 )
+		ret = "Hangul Jamo, Jongseong";
+	    else if ( unienc<0x1380 )
+		ret = "Ethiopic";
+	    else if ( unienc<0x13a0 )
+		ret = "Ethiopic Extended";
+	    else if ( unienc<0x1400 )
+		ret = "Cherokee";
+	    else if ( unienc<0x1680 )
+		ret = "Unified Canadian Aboriginal Syllabics";
+	    else if ( unienc<0x16a0 )
+		ret = "Ogham";
+	    else if ( unienc<0x1700 )
+		ret = "Runic";
+	    else if ( unienc<0x1720 )
+		ret = "Tagalog";
+	    else if ( unienc<0x1740 )
+		ret = "Hanunóo";
+	    else if ( unienc<0x1760 )
+		ret = "Buhid";
+	    else if ( unienc<0x1780 )
+		ret = "Tagbanwa";
+	    else if ( unienc<0x1800 )
+		ret = "Khmer";
+	    else if ( unienc<0x18b0 )
+		ret = "Mongolian";
+	    else if ( unienc<0x1900 )
+		ret = "Cham";
+	    else if ( unienc<0x1950 )
+		ret = "Limbu";
+	    else if ( unienc<0x1980 )
+		ret = "Tai Le";
+	    else if ( unienc<0x19d0 )
+		ret = "Viêt Thái";
+	    else if ( unienc<0x1a00 )
+		/* Not defined */;
+	    else if ( unienc<0x1a60 )
+		ret = "New Tai Lu";
+	    else if ( unienc<0x1a80 )
+		/* Not defined */;
+	    else if ( unienc<0x1ae0 )
+		ret = "Lanna";
+	    else if ( unienc<0x1b00 )
+		/* Not defined */;
+	    else if ( unienc<0x1b40 )
+		ret = "Batak";
+	    else if ( unienc<0x1b60 )
+		ret = "Buginese";
+	    else if ( unienc<0x1b80 )
+		/* Not defined */;
+	    else if ( unienc<0x1bd0 )
+		ret = "Javanese";
+	    else if ( unienc<0x1c00 )
+		/* Not Defined */;
+	    else if ( unienc<0x1c60 )
+		ret = "Meithei/Manipuri";
+	    else if ( unienc<0x1c80 )
+		/* Not defined */;
+	    else if ( unienc<0x1cc0 )
+		ret = "Lepcha";
+	    else if ( unienc<0x1d00 )
+		ret = "Kayah Li";
+	    else if ( unienc<0x1e00 )
+		ret = "Latin Extended-C";
+	    else if ( unienc<0x1f00 )
+		ret = "Latin Extended Additional";
+	    else
+		ret = "Greek Extended";
+	} else if ( unienc<0x3000 ) {
+	    ret = "Unencoded Symbolic";
+	    if ( unienc<0x2070 )
+		ret = "General Puntuation";
+	    else if ( unienc<0x20a0 )
+		ret = "Super and Sub scripts";
+	    else if ( unienc<0x20d0 )
+		ret = "Currency Symbols";
+	    else if ( unienc<0x2100 )
+		ret = "Combining marks for Symbols";
+	    else if ( unienc<0x2150 )
+		ret = "Letterlike Symbols";
+	    else if ( unienc<0x2190 )
+		ret = "Number Forms";
+	    else if ( unienc<0x2200 )
+		ret = "Arrows";
+	    else if ( unienc<0x2300 )
+		ret = "Mathematical Symbols";
+	    else if ( unienc<0x2400 )
+		ret = "Technical Symbols";
+	    else if ( unienc<0x2440 )
+		ret = "Control Pictures";
+	    else if ( unienc<0x2460 )
+		ret = "OCR";
+	    else if ( unienc<0x2500 )
+		ret = "Enclosed Alphanumerics";
+	    else if ( unienc<0x2580 )
+		ret = "Box Drawing";
+	    else if ( unienc<0x25a0 )
+		ret = "Block Elements";
+	    else if ( unienc<0x2600 )
+		ret = "Geometric Shapes";
+	    else if ( unienc<0x2700 )
+		ret = "Miscellaneous Symbols";
+	    else if ( unienc<0x27c0 )
+		ret = "Zapf Dingbats";
+	    else if ( unienc<0x27e0 )
+		ret = "Miscellaneous Math Symbols-A";
+	    else if ( unienc<0x2800 )
+		ret = "Supplemental Arrows-A";
+	    else if ( unienc<0x2900 )
+		ret = "Braille Patterns";
+	    else if ( unienc<0x2980 )
+		ret = "Supplemental Arrows-B";
+	    else if ( unienc<0x2a00 )
+		ret = "Miscellaneous Math Symbols-B";
+	    else if ( unienc<0x2b00 )
+		ret = "Supplemental Math Operators";
+	    else if ( unienc<0x2c00 )
+		ret = "Supplemental Symbols";
+	    else if ( unienc<0x2c40 )
+		ret = "Coptic";
+	    else if ( unienc<0x2c70 )
+		ret = "Hungarian Runic";
+	    else if ( unienc<0x2c80 )
+		/* Not defined */;
+	    else if ( unienc<0x2ce0 )
+		ret = "Glagolitic";
+	    else if ( unienc<0x2d00 )
+		/* Not Defined */;
+	    else if ( unienc<0x2d60 )
+		ret = "Ethiopic Extended";
+	    else if ( unienc<0x2d80 )
+		/* Not defined */;
+	    else if ( unienc<0x2db0 )
+		ret = "Ol Cemet'";
+	    else if ( unienc<0x2de0 )
+		ret = "Sorang Sng.";
+	    else if ( unienc<0x2e00 )
+		/* Not defined */;
+	    else if ( unienc<0x2e40 )
+		ret = "Siloti Nagri";
+	    else if ( unienc<0x2e80 )
+		ret = "Varang Kshiti";
+	    else if ( unienc<0x2f00 )
+		ret = "CJK Radicals";
+	    else if ( unienc<0x2fe0 )
+		ret = "Kanqxi Radicals";
+	    else if ( unienc>0x2ff0 )
+		ret = "IDC";
+	} else if ( unienc<0x3400 ) {
+	    ret = "CJK Phonetics and Symbols";
+	    if ( unienc<0x3040 )
+		ret = "CJK Symbols and Punctuation";
+	    else if ( unienc<0x30a0 )
+		ret = "Hiragana";
+	    else if ( unienc<0x3100 )
+		ret = "Katakana";
+	    else if ( unienc<0x3130 )
+		ret = "Bopomofo";
+	    else if ( unienc<0x3190 )
+		ret = "Hangul Compatibility Jamo";
+	    else if ( unienc<0x31a0 )
+		ret = "Kanbun";
+	    else if ( unienc<0x3200 )
+		/* Not Defined */;
+	    else if ( unienc<0x3300 )
+		ret = "Enclosed CJK Letters and Months";
+	    else if ( unienc<0x3400 )
+		ret = "CJK Compatibility";
+	} else if ( unienc<0x4e00 ) {
+	    ret = "CJK Unified Ideographs Extension A";
+	    if ( unienc>=0x4db0 )
+		ret = "Yijing Hexagram Symbols";
+	} else if ( unienc<0xa000 ) {
+	    ret = "CJK Unified Ideographs";
+	} else if ( unienc<0xac00 ) {
+	    ret = "Yi";
+	    if ( unienc>=0xa490 && unienc<0xa4b0 )
+		ret = "Yi Radicals";
+	    else if ( unienc>=0xa500 && unienc<0xa730 )
+		ret = "Yi Extensions";
+	    else if ( unienc>=0xa900 && unienc<0xa940 )
+		ret = "Pahawh Hmong";
+	    else if ( unienc>=0xa980 && unienc<0xa9d0 )
+		ret = "Chakma";
+	    else if ( unienc>=0xaa00 && unienc<0xaa60 )
+		ret = "Newari";
+	    else if ( unienc>=0xaa80 && unienc<0xaad0 )
+		ret = "Siddham";
+	    else if ( unienc>=0xab00 && unienc<0xab60 )
+		ret = "'Phags-pa";
+	} else if ( unienc<0xd7a3 ) {
+	    ret = "Hangul Syllable";
+	} else if ( unienc<0xd800 ) {
+	} else if ( unienc<0xdc00 ) {
+	    ret = "High Surrogate";
+	    if ( unienc<0xdb80 )
+		ret = "Non Private Use High Surrogate";
+	    else
+		ret = "Private Use High Surrogate";
+	} else if ( unienc<0xe000 ) {
+	    ret = "Low Surrogate";
+	} else if ( unienc<0xf900 ) {
+	    ret = "Private/Corporate Use";
+	    if ( unienc>0xf500 )
+		ret = "Corporate Use";
+	    else if ( unienc<0xe500 )
+		ret = "Private Use";
+	} else if ( unienc<0xfb00 ) {
+	    ret = "CJK Compatibility Ideographs";
+	} else if ( unienc<0xfb50 ) {
+	    ret = "Alphabetic Presentation Forms";
+	    if ( unienc<0xfb06 )
+		ret = "Latin Ligatures";
+	    else if ( unienc>=0xfb13 && unienc<=0xfb17 )
+		ret = "Armenian ligatures";
+	    else if ( unienc>=0xfb1e )
+		ret = "Hebrew Ligatures/Pointed Letters";
+	} else if ( unienc<0xfe00 ) {
+	    ret = "Arabic Presentation Forms A";
+	} else if ( unienc<0xfe20 ) {
+	} else if ( unienc<0xfe30 ) {
+	    ret = "Combining half marks";
+	} else if ( unienc<0xfe50 ) {
+	    ret = "CJK Compatibility Forms";
+	} else if ( unienc<0xfe70 ) {
+	    ret = "Small Form Variants";
+	} else if ( unienc<0xff00 ) {
+	    ret = "Arabic Presentation Forms B";
+	} else if ( unienc<0xffef ) {
+	    ret = "Half and Full Width Forms";
+	} else if ( unienc<0xfffe ) {
+	    ret = "Specials";
+	} else if ( unienc==0xfffe )
+	    ret = "Not a Unicode Character";
+	else
+	    ret = "Signature Mark";
+    } else if ( unienc<0x20000 ) {
+	ret = "Supplementary Multilingual Plane";
+	if ( unienc<0x10300 ) {
+	    ret = "Aegean scripts";
+	} else if ( unienc<0x10800 ) {
+	    ret = "Alphabetic and syllabic LTR scripts";
+	} else if ( unienc<0x11000 ) {
+	    ret = "Alphabetic and syllabic RTL scripts";
+	} else if ( unienc<0x11800 ) {
+	    ret = "Brahmic scripts";
+	} else if ( unienc<0x12000 ) {
+	    ret = "African and other syllabic scripts";
+	} else if ( unienc<0x12800 ) {
+	    ret = "Scripts for invented languages";
+	    if ( unienc<0x12080 )
+		ret = "Tengwar (Tolkien Elvish)";
+	    else if ( unienc<0x12100 )
+		ret = "Cirth (Tolkien Runic)";
+	    else if ( unienc>=0x12200 && unienc<0x12500 )
+		ret = "Blissymbols";
+	} else if ( unienc<0x13000 ) {
+	    ret = "Cuneiform and other Near Eastern Scripts";
+	} else if ( unienc<0x13800 ) {
+	    ret = "Undeciphered scripts";
+	} else if ( unienc<0x14000 ) {
+	    ret = "North American ideographs and pictograms";
+	} else if ( unienc<0x16c00 ) {
+	    ret = "Egyptian and Mayan hieroglyphs";
+	} else if ( unienc<0x17000 ) {
+	    ret = "Sumerian pictograms";
+	} else if ( unienc<0x1b600 ) {
+	    ret = "Large Asian Scripts";
+	} else if ( unienc>=0x1d000 && unienc<=0x1ffd )
+	    ret = "Notational systems";
+    } else if ( unienc<0x30000 ) {
+	ret = "Supplimental Ideographic Plane";
+	if ( unienc<0x2a700 )
+	    ret = "CJK Unified Ideographs Extension B";
+	else if ( unienc>=0x2f800 && unienc<0x2fa20 )
+	    ret = "CJK Compatibility Ideographs Supplement";
+    } else if ( unienc>=0xe0000 && unienc<0xf0000 ) {
+	ret = "Supplementary Special-purpose Plane";
+	if ( unienc<0xe0080 )
+	    ret = "Tag characters";
+	else if ( unienc>= 0xe0110 && unienc<0xe01ff )
+	    ret = "Variation Selectors";
+    } else if ( unienc>=0x210000 && unienc<0x310000 ) {
+	ret = "Private Use Area-B";
+    }
+return( ret );
+}
 
 void SCPreparePopup(GWindow gw,SplineChar *sc) {
     static unichar_t space[310];
@@ -3300,18 +3683,7 @@ return;
 	    upos=='\n'				? "LineFeed":
 	    upos=='\f'				? "FormFeed":
 	    upos=='\33'				? "Escape":
-	    upos<160				? "Control Char":
-	    upos>=0x3400 && upos<=0x4db5	? "CJK Ideograph Extension A":
-	    upos>=0x4E00 && upos<=0x9FA5	? "CJK Ideograph":
-	    upos>=0xAC00 && upos<=0xD7A3	? "Hangul Syllable":
-	    upos>=0xD800 && upos<=0xDB7F	? "Non Private Use High Surrogate":
-	    upos>=0xDB80 && upos<=0xDBFF	? "Private Use High Surrogate":
-	    upos>=0xDC00 && upos<=0xDFFF	? "Low Surrogate":
-	    upos>=0xE000 && upos<=0xF8FF	? "Private Use":
-	    upos>=0x10000 && upos<=0x1ffff	? "Supplemental Multilingual" :
-	    upos>=0x20000 && upos<=0x2ffff	? "Supplemental Ideographic" :
-	    upos>=0xe0000 && upos<=0xeffff	? "Supplemental Special-purpose" :
-					      "Unencoded Unicode" );
+	    	UnicodeRange(upos));
 	uc_strcpy(space,cspace);
     }
     GGadgetPreparePopup(gw,space);
