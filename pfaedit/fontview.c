@@ -2339,6 +2339,7 @@ return;
 
 void FVRegenChar(FontView *fv,SplineChar *sc) {
     struct splinecharlist *dlist;
+    MetricsView *mv;
 
     sc->changedsincelasthinted = true;
     BDFCharFree(fv->filled->chars[sc->enc]);
@@ -2351,10 +2352,9 @@ void FVRegenChar(FontView *fv,SplineChar *sc) {
     BDFCharFree(fv->filled->chars[sc->enc]);
     fv->filled->chars[sc->enc] = bdfc;
 #endif
-#if 0		/* FVRefreshChar does this for us */
+		/* FVRefreshChar does NOT do this for us */
     for ( mv=fv->metrics; mv!=NULL; mv=mv->next )
 	MVRegenChar(mv,sc);
-#endif
 
     FVRefreshChar(fv,fv->filled,sc->enc);
 
@@ -2796,8 +2796,11 @@ static void FVChar(FontView *fv,GEvent *event) {
 
 void SCPreparePopup(GWindow gw,SplineChar *sc) {
     static unichar_t space[200];
-    char cspace[60];
+    char cspace[80];
     int upos;
+    static char *chosung[] = { "G", "GG", "N", "D", "DD", "L", "M", "B", "BB", "S", "SS", "", "J", "JJ", "C", "K", "T", "P", "H", NULL };
+    static char *jungsung[] = { "A", "AE", "YA", "YAE", "EO", "E", "YEO", "YE", "O", "WA", "WAE", "OE", "YO", "U", "WEO", "WE", "WI", "YU", "EU", "YI", "I", NULL };
+    static char *jongsung[] = { "", "G", "GG", "GS", "N", "NJ", "NH", "D", "L", "LG", "LM", "LB", "LS", "LT", "LP", "LH", "M", "B", "BS", "S", "SS", "NG", "J", "C", "K", "T", "P", "H", NULL };
 
     if ( sc->unicodeenc!=-1 )
 	upos = sc->unicodeenc;
@@ -2812,6 +2815,13 @@ return;
 	sprintf( cspace, "%04x \"%.25s\" ", upos, sc->name==NULL?"":sc->name );
 	uc_strcpy(space,cspace);
 	u_strcat(space,UnicodeCharacterNames[upos>>8][upos&0xff]);
+    } else if ( upos>=0xAC00 && upos<=0xD7A3 ) {
+	sprintf( cspace, "%04x \"%.25s\" Hangul Syllable %s%s%s",
+		upos, sc->name==NULL?"":sc->name,
+		chosung[(upos-0xAC00)/(21*28)],
+		jungsung[(upos-0xAC00)/28%21],
+		jongsung[(upos-0xAC00)%28] );
+	uc_strcpy(space,cspace);
     } else {
 	sprintf( cspace, "%04x \"%.25s\" %.20s", upos, sc->name==NULL?"":sc->name,
 	    upos=='\0'				? "Null":
