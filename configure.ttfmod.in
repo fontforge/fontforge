@@ -13,9 +13,13 @@ AC_SEARCH_LIBS(inet_aton, resolv) dnl some systems have this in libc
 dnl Is there a better way to search for the freetype2 includes?
 dnl Is there a better way to add a directory to the include path?
 
-AC_CHECK_FILE(/usr/include/freetype2,CFLAGS="$CFLAGS -I/usr/include/freetype2/",[
-AC_CHECK_FILE(/usr/local/include/freetype2,CFLAGS="$CFLAGS -I/usr/local/include -I/usr/local/include/freetype2/",[
-AC_CHECK_FILE(/usr/X11R6/include/freetype2,CFLAGS="$CFLAGS -I/usr/X11R6/include -I/usr/X11R6/include/freetype2/",)])])
+FreeType2_IncRoot=
+AC_CHECK_FILE(/usr/include/freetype2,[CFLAGS="$CFLAGS -I/usr/include/freetype2/"
+FreeType2_IncRoot=/usr/include/freetype2],[
+AC_CHECK_FILE(/usr/local/include/freetype2,[CFLAGS="$CFLAGS -I/usr/local/include -I/usr/local/include/freetype2/"
+FreeType2_IncRoot=/usr/local/include/freetype2],[
+AC_CHECK_FILE(/usr/X11R6/include/freetype2,[CFLAGS="$CFLAGS -I/usr/X11R6/include -I/usr/X11R6/include/freetype2/"
+FreeType2_IncRoot=/usr/X11R6/include/freetype2],)])])
 
 has_bytecode=no
 dnl check for freetype. If it doesn't exist then turn off
@@ -52,10 +56,24 @@ dnl The peculiar use of brackets in the grep expr is because m4 strips out
 dnl  one set of brackets as a quote character or something.
 dnl I hope this works with all versions of sh...
 
+ has_goodft2sources="yes"
  if test "$FreeType2_TT_SRC_DIR" = "" >/dev/null 2>&1 ; then
   echo -n "trying to find the freetype source directory (be patient)..."
-  FreeType2_TT_SRC_DIR=`find / -name ttobjs.h -print 2>/dev/null |grep '[freetype[^/\]*2[^/\]*/src/truetype/ttobjs.h]' | sort -r | head -n 1 | sed -e 's/ttobjs.h//'`
-  export FreeType2_TT_SRC_DIR
+  FreeType2_TT_SRC_DIRs=`find / -name ttobjs.h -print 2>/dev/null |grep '[freetype[^/\]*2[^/\]*/src/truetype/ttobjs.h]' | sort -r | sed -e 's/ttobjs.h//'`
+  FreeType2_TT_SRC_DIR=
+  for dir in $FreeType2_TT_SRC_DIRs; do
+   if cmp -s ${dir}../../include/freetype/freetype.h ${FreeType2_IncRoot}/freetype/freetype.h >/dev/null 2>&1 ; then
+    FreeType2_TT_SRC_DIR=$dir
+  break
+   fi
+  done
+  if test "$FreeType2_TT_SRC_DIR" = "" >/dev/null 2>&1 ; then
+   for dir in $FreeType2_TT_SRC_DIRs; do
+    has_goodft2sources="no"
+    FreeType2_TT_SRC_DIR=$dir
+   break
+   done
+  fi
   if test "$FreeType2_TT_SRC_DIR" = "" >/dev/null 2>&1 ; then
    echo " " no
   else
@@ -98,16 +116,21 @@ elif test "has_ft2sources" = "no" >/dev/null 2>&1 ; then
  echo " *  http://freetype.sf.net/ (you might not need to rebuild	 *"
  echo " * the library if there isn't too much of a version mismatch)     *"
  echo " ******************************************************************"
-else
+elif test "has_goodft2sources" = "no" >/dev/null 2>&1 ; then
  echo " ******************************************************************"
- echo " * this configure script has picked a freetype source directory   *"
- echo " * more or less at random. It may not match what you have         *"
- echo " * installed on your machine. If it does not set                  *"
+ echo " * this configure script has picked a freetype source directory	 *"
+ echo " * more or less at random.					 *"
+ echo " * " $FreeType2_TT_SRC_DIR "		 *"
+ echo " * It may not match what you have installed on your machine. If   *"
+ echo " * it does not set				                 *"
  echo " *           FreeType2_TT_SRC_DIR                                 *"
  echo " * to point to the directory <freetype-root>/src/truetype).       *"
  echo " ******************************************************************"
 fi
 
 echo Configuration defines: $DEFS
+if test "$FreeType2_TT_SRC_DIR" \!= "" >/dev/null 2>&1 ; then
+ echo FreeType sources: $FreeType2_TT_SRC_DIR
+fi
 
 dnl EOF
