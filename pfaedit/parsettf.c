@@ -1067,11 +1067,16 @@ static void readttfcompositglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, 
 	    fprintf( stderr, "TTF IError: I don't understand Apple's scaled offsets. Please send me a copy\n" );
 	    fprintf( stderr, "  of whatever ttf file you are loading. Thanks.  gww@silcom.com\n" );
 	}
-	if ( head==NULL )
-	    head = cur;
-	else
-	    last->next = cur;
-	last = cur;
+	if ( cur->local_enc>=info->glyph_cnt ) {
+	    fprintf(stderr, "Glyph %d attempts to reference glyph %d which is outside the font\n", sc->enc, cur->local_enc );
+	    chunkfree(cur,sizeof(*cur));
+	} else {
+	    if ( head==NULL )
+		head = cur;
+	    else
+		last->next = cur;
+	    last = cur;
+	}
 	if ( feof(ttf)) {
 	    fprintf(stderr, "Reached end of file when reading composit glyph\n" );
     break;
@@ -1084,7 +1089,7 @@ static void readttfcompositglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, 
     sc->refs = head;
 }
 
-static SplineChar *readttfglyph(FILE *ttf,struct ttfinfo *info,int start, int end) {
+static SplineChar *readttfglyph(FILE *ttf,struct ttfinfo *info,int start, int end,int enc) {
     int path_cnt;
     SplineChar *sc = chunkalloc(sizeof(SplineChar));
 
@@ -1103,10 +1108,12 @@ return( sc );
     /* ymin = */ getushort(ttf);
     /* xmax = */ getushort(ttf);
     /* ymax = */ sc->lsidebearing = getushort(ttf);
+    sc->enc = enc;
     if ( path_cnt>=0 )
 	readttfsimpleglyph(ttf,info,sc,path_cnt);
     else
 	readttfcompositglyph(ttf,info,sc,info->glyph_start+end);
+    sc->enc = 0;
 return( sc );
 }
 
@@ -1132,7 +1139,7 @@ static void readttfglyphs(FILE *ttf,struct ttfinfo *info) {
     if ( !info->is_ttc ) {
 	/* read all the glyphs */
 	for ( i=0; i<info->glyph_cnt ; ++i ) {
-	    info->chars[i] = readttfglyph(ttf,info,goffsets[i],goffsets[i+1]);
+	    info->chars[i] = readttfglyph(ttf,info,goffsets[i],goffsets[i+1],i);
 	    GProgressNext();
 	}
     } else {
@@ -1146,7 +1153,7 @@ static void readttfglyphs(FILE *ttf,struct ttfinfo *info) {
 	    anyread = false;
 	    for ( i=0; i<info->glyph_cnt ; ++i ) {
 		if ( info->inuse[i] && info->chars[i]==NULL ) {
-		    info->chars[i] = readttfglyph(ttf,info,goffsets[i],goffsets[i+1]);
+		    info->chars[i] = readttfglyph(ttf,info,goffsets[i],goffsets[i+1],i);
 		    GProgressNext();
 		    anyread = info->chars[i]!=NULL;
 		}
@@ -3674,6 +3681,7 @@ return( true );
 static SplineChar *SFMakeDupRef(SplineFont *sf, int local_enc, struct dup *dup) {
     SplineChar *sc = chunkalloc(sizeof(SplineChar));
     RefChar *ref = chunkalloc(sizeof(RefChar));
+    char buffer[40];
 
     sc->enc = local_enc;
     sc->unicodeenc = dup->uni;
@@ -3681,16 +3689,25 @@ static SplineChar *SFMakeDupRef(SplineFont *sf, int local_enc, struct dup *dup) 
     sc->vwidth = dup->sc->vwidth;
     sc->refs = ref;
     sc->parent = sf;
-    if ( dup->uni>=0 && dup->uni<0x10000 && psunicodenames[dup->uni]!=NULL )
+    if ( dup->uni>=0 && dup->uni<0x10000 && psunicodenames[dup->uni]!=NULL ) {
 	sc->name = copy(psunicodenames[dup->enc]);
-    else {
-	char buffer[10];
-	if ( dup->uni>=0 )
+	if ( strcmp(sc->name,dup->sc->name)==0 ) {
+	    free(dup->sc->name);
+	    if ( dup->sc->unicodeenc>=0 )
+		sprintf( buffer, "uni%04X", dup->sc->unicodeenc );
+	    else if ( dup->sc->enc!=0 )
+		sprintf( buffer, "nounicode_%x", dup->sc->enc);
+	    else
+		sprintf( buffer, "unencoded_%d", local_enc );
+	    dup->sc->name = copy(buffer);
+	}
+    } else {
+	if ( dup->uni>=0 && dup->uni!=dup->sc->unicodeenc )
 	    sprintf( buffer, "uni%04X", dup->uni);
 	else if ( dup->enc!=0 )
 	    sprintf( buffer, "nounicode_%x", dup->enc);
 	else
-		sprintf( buffer, "unencoded_%d", local_enc );
+	    sprintf( buffer, "unencoded_%d", local_enc );
 	sc->name = copy(buffer);
     }
 
