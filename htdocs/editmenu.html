@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 6-May-2001 -->
+  <!-- AP: Last modified: 3-Aug-2001 -->
   <TITLE>The Edit Menu</TITLE>
 </HEAD>
 <BODY>
@@ -43,6 +43,8 @@ in text fields.
       <LI>
 	<A HREF="#Displayed">Displayed Font</A>
     </UL>
+  <LI>
+    <A HREF="#Remove-Undoes">Remove Undoes</A>
 </UL>
 <P>
 <DL>
@@ -176,6 +178,22 @@ in text fields.
     This also controls the behavior of the
     <A HREF="elementmenu.html#Transform">Transform</A> and
     <A HREF="elementmenu.html#Accented">Build Accented</A> character commands.
+  <DT>
+    <A NAME="Remove-Undoes">Remove Undoes</A>
+  <DD>
+    Not available in the Metrics View. This allows you to free up some of the
+    memory PfaEdit is currently squandering on keeping track of Undoes (and Redoes).
+    Obviously this command cannot be undone.
+    <UL>
+      <LI>
+	In the Outline Character view this will free up all undoes/redoes in the
+	current edit mode
+      <LI>
+	In the Bitmap Character view this will free up all bitmap undoes/redoes
+      <LI>
+	In the Font View this will free up all undoes/redoes in all selected characters,
+	outline and bitmap, background and foreground.
+    </UL>
 </DL>
 <P>
 <H2>
@@ -196,6 +214,8 @@ in text fields.
     <A HREF="viewmenu.html">View</A>
   <LI>
     <A HREF="metricsmenu.html">Metrics</A>
+  <LI>
+    <A HREF="cidmenu.html">CID</A>
   <LI>
     <A HREF="windowmenu.html">Window</A>
 </UL>

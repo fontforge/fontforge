@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 19-Jul-2001 -->
+  <!-- AP: Last modified: 4-Aug-2001 -->
   <TITLE>Font Info</TITLE>
 </HEAD>
 <BODY>
@@ -14,8 +14,10 @@
 <P>
 The Font Info dialog is available from all views. It allows you to name your
 font, to set its <A HREF="fontview.html#Encodings">encoding</A> and various
-other useful bits of information. The dialog is composed of 7 different sub
-dialogs.
+other useful bits of information. In a <A HREF="fontview.html#CID">CID keyed
+font</A>, there is a <A HREF="cidmenu.html#FontInfo">seperate command</A>
+to access the information for the font as a whole, the dialog looks the same.
+The dialog is composed of 7 different sub dialogs.
 <H2>
   <A NAME="Names">Names</A>
 </H2>
@@ -31,6 +33,9 @@ look at the <A HREF="#TTF-Names">TTF Names</A> Section.
 <P>
 The copyright field can contain whatever you want to put there, but it's
 a good place to put a copyright.
+<P>
+In most fonts the version field is a string (and so has minimal constraints
+on it), but in CID keyed fonts it must be a floating point number.
 <H2>
   <IMG SRC="fontinfo-encoding.png" WIDTH="369" HEIGHT="472" ALIGN="Right"><A
       NAME="Encoding">Encoding</A>
@@ -47,6 +52,10 @@ and it may be hard to guess how many will be used. But if you have changed
 the encoding but not altered the "Number of Characters" box, then the value
 in the Number box will be ignored and the correct number will come from the
 encoding process.
+<P>
+In a CID keyed font you are not allowed to change the encoding (in essence
+because there is none), but the dialog will show you the
+Registry/Ordering/Supplement for this font.
 <P>
   <HR>
 <H3>
@@ -69,7 +78,8 @@ PfaEdit knows about the following encodings by default:
     ISO-8859-4 (Latin4) -- Northern European (Estonian, Latvian, Lithuanian,
     Greenlandic, Lappish)
   <LI>
-    ISO-8859-9 (Latin5) -- Turkish
+    <IMG SRC="fontinfo-cid.png" WIDTH="369" HEIGHT="472" ALIGN="Right">ISO-8859-9
+    (Latin5) -- Turkish
   <LI>
     ISO-8859-10 (Latin6) -- Nordic (reworking of Latin4&amp;Latin1)
   <LI>
@@ -255,7 +265,15 @@ If you have set the XUID preference entry then PfaEdit will assign values
 to all new fonts (by appending a number unique to this font to the end of
 your preference item). Adobe recommends that the XUID be changed every time
 the font is changed, so each time you generate a postscript font, that font's
-XUID (if present) will be incremented by 1. <BR Clear=ALL>
+XUID (if present) will be incremented by 1 (This incrementing does not happen
+in CID-keyed fonts, where the XUID behavior is too complex for this simple
+trick).
+<P>
+The UniqueID field is an older convention for the same purpose as XUID. If
+you do not fill in this field then PfaEdit will pick a random number for
+you in the allowable range. If you have talked to Adobe and been assigned
+a real UniqueID then you may use this field, otherwise leave it
+blank.<BR Clear=ALL>
 <H2>
   <A NAME="Private">Private</A> -- <SMALL>(font-wide postscript hinting)</SMALL>
 </H2>

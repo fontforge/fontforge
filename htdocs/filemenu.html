@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 10-Dec-2000 -->
-  <!-- AP: Last modified: 10-Jun-2001 -->
+  <!-- AP: Last modified: 3-Aug-2001 -->
   <TITLE>The File Menu</TITLE>
 </HEAD>
 <BODY>
@@ -165,6 +165,10 @@
 	with Unicode or one of the CJK encodings. Type0 fonts can have up to 65536
 	characters in them (as opposed to 256 for Type1s and Type3s).
       <LI>
+	PostScript CID font, this is only available if your font is a
+	<A HREF="cidmenu.html">CID font</A>. This produces a font in the old Type1
+	CID format. You probably want to use the OpenType CID format...
+      <LI>
 	True Type. The instructions (hinting) are probably not very good. No diagonal
 	stems are hinted. Instructing is based on the hints used for postscript,
 	with some additional work done for serifs, and some recognition that all
@@ -177,6 +181,9 @@
 	fonts are no different from plain True Type fonts, so they might as well
 	just be called True Type. So by Open Type I mean Open Type with a CFF Postscript
 	Type 2 font inside it.
+      <LI>
+	Open Type CID, This is only available if your font is a
+	<A HREF="cidmenu.html">CID font</A>. It procudes an OpenType CID-keyed font.
       <LI>
 	None
     </UL>
@@ -202,7 +209,15 @@
     encoding for the first 256 positions. Postscript fonts are generated in whatever
     encoding the font is using (expect you take a two byte encoding and generate
     a Type1 font (rather than a Type0) then only the first few characters will
-    be encoded).
+    be encoded).<BR>
+    PS CID and OpenType CID are saved with no encoding. The encodings live in
+    seperate cmap files which are available from
+    <A HREF="http://www.adobe.com/products/acrobat/acrrasianfontpack.html">adobe</A>
+    (and perhaps other font vendors).<BR>
+    If you save a CID font with a format other than PS CID or OpenType CID, then
+    only the currenly displayed subfont will be saved, with the current meaningless
+    character ordering (I suppose this is useful if you wish to extract a sub-font
+    from a CID font).
   <DT>
     <A NAME="Revert">Revert</A>
   <DD>
@@ -245,7 +260,8 @@
     Not available in the bitmap view. Allows you to print out all the characters
     in the font, a text sample of the font, or specific characters at a very
     large scale.<BR>
-    See the section on <A HREF="print.html">printing</A> for more information.
+    See the section on <A HREF="print.html">printing</A> for more
+    information.<BR>
   <DT>
     <A NAME="prefs">Preferences...</A>
   <DD>
@@ -307,6 +323,8 @@
     <A HREF="viewmenu.html">View</A>
   <LI>
     <A HREF="metricsmenu.html">Metrics</A>
+  <LI>
+    <A HREF="cidmenu.html">CID</A>
   <LI>
     <A HREF="windowmenu.html">Window</A>
 </UL>

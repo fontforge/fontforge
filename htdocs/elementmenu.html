@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 26-Jul-2001 -->
+  <!-- AP: Last modified: 3-Aug-2001 -->
   <TITLE>The Element Menu</TITLE>
 </HEAD>
 <BODY>
@@ -83,7 +83,11 @@ This menu is not present in the Metrics View.
   <DT>
     <A NAME="Font">Font</A> Info
   <DD>
-    In all views this brings up the <A HREF="fontinfo.html">Font Info dialog</A>.
+    In all views this brings up the <A HREF="fontinfo.html">Font Info
+    dialog</A>.<BR>
+    CID keyed fonts can set inforation on the CID font as a whole (rather than
+    just the current sub-font, which is what this command does) from
+    <A HREF="cidmenu.html#FontInfo">CID-&gt;CID Font Info</A>.
   <DT>
     Get/Char <A NAME="Info">Info</A>
   <DD>
@@ -117,7 +121,9 @@ This menu is not present in the Metrics View.
     <P>
     Normally the new characters are created by rasterizing the outline font,
     but if you are only editing bitmaps (with no outline font) then the new
-    characters will be created by scaling the font displayed in the font view.
+    characters will be created by scaling the font displayed in the font view.<BR>
+    In CID keyed fonts there will not be a set of bitmaps for each sub font,
+    instead the entire complex of sub-fonts share bitmaps.
   <DT>
     <A NAME="Regenerate">Regenerate</A> Bitmaps...
   <DD>
@@ -395,6 +401,8 @@ This menu is not present in the Metrics View.
     <A HREF="viewmenu.html">View</A>
   <LI>
     <A HREF="metricsmenu.html">Metrics</A>
+  <LI>
+    <A HREF="cidmenu.html">CID</A>
   <LI>
     <A HREF="windowmenu.html">Window</A>
 </UL>

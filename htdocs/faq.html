@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 15-Jul-2001 -->
+  <!-- AP: Last modified: 29-Jul-2001 -->
   <TITLE>Frequently Asked Questions</TITLE>
 </HEAD>
 <BODY>
@@ -13,11 +13,17 @@
 <P>
 <UL>
   <LI>
+    <A HREF="#font-editor">Why a font editor, aren't there enough fonts
+    already?</A>
+  <LI>
     <A HREF="#widget-set">Why is PfaEdit based on a non-standard widget set?</A>
   <LI>
     <A HREF="#hint-subs">How do I make it use hint substitution?</A>
   <LI>
     <A HREF="#flex-hints">How do I make it use flex hints?</A>
+  <LI>
+    <A HREF="#fuzzy">My characters are all perfectly hinted, why do some stems
+    have different widths (or appear fuzzy, or fade away completely)?</A>
   <LI>
     <A HREF="#new-name">How do I add a character with a new name?</A>
   <LI>
@@ -30,11 +36,35 @@
     <A HREF="#save-no-change">After I generate a font and quit, why does PfaEdit
     ask if I want to save the font? I didn't change anything.</A>
   <LI>
-    <A HREF="TeX">Why doesn't TeX work with my fonts?</A>
+    <A HREF="#TeX">Why doesn't TeX work with my fonts?</A>
 </UL>
 <P>
   <HR>
 <DL>
+  <DT>
+    <A NAME="font-editor"><B>Why a font editor, aren't there enough fonts
+    already?</B></A>
+  <DD>
+    Well... no. Otherwise I wouldn't be writing this.
+    <OL>
+      <LI>
+	Traditionally each new style of art and architecture has an associated style
+	of fonts. New fonts are always being created to reflect the esthetics of
+	the times.
+      <LI>
+	Computer font technology is constantly changing. A format for a font that
+	was useful 10 years ago may not be so now.
+      <LI>
+	Even if you are satisfied with the fonts that do exist they may not be complete
+	<UL>
+	  <LI>
+	    Missing ligatures
+	  <LI>
+	    Missing accented characters
+	  <LI>
+	    No matching cyrillic or greek characters
+	</UL>
+    </OL>
   <DT>
     <A NAME="widget-set"><B>Why is PfaEdit based on a non-standard widget
     set?</B></A>
@@ -56,6 +86,16 @@
     to do so. You don't need to do anything. If flex hints are used then the
     necessary subroutines will be added to the font. If they are not needed then
     the subroutines will not be added.
+  <DT>
+    <A NAME="fuzzy"><B>My characters are all perfectly hinted, why do some stems
+    have different widths (or appear fuzzy, or fade away completely)?</B></A>
+  <DD>
+    Both PostScript and TrueType require that characters be drawn in a clockwise
+    fashion. Some rasterizers don't care. But other rasterizers will have
+    difficulties with counter-clockwise paths and produced stems of different
+    widths when they should be the same, or fuzzy stems, or even nothing at all.
+    The solution to this is to run Element-&gt;Correct Direction on all your
+    characters before generating a font.
   <DT>
     <A NAME="new-name"><B>How do I add a character with a new name?</B></A>
   <DD>

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 28-Jun-2001 -->
-  <!-- AP: Last modified: 25-Jul-2001 -->
+  <!-- AP: Last modified: 4-Aug-2001 -->
   <TITLE>Finding common font problems automagically</TITLE>
 </HEAD>
 <BODY>
@@ -10,7 +10,7 @@
   Finding common font problems automagically
 </H1>
 <P>
-<IMG SRC="findprobs.png" WIDTH="276" HEIGHT="429" ALIGN="Right">Nobody is
+<IMG SRC="findprobs.png" WIDTH="276" HEIGHT="502" ALIGN="Right">Nobody is
 perfect.
 <P>
 Well, I'm not.
@@ -161,7 +161,20 @@ hinted characters which are not clockwise. This command will detect whether
 this constraint is violated. It does not correct the problem (as
 <CODE>Element-&gt;Correct Direction</CODE> would).
 <P>
-Currently the command will report the same error many times if you do not
-fix the problem. That's sort of a bug, but I don't see an easy way around
+Currently the command will report the same error several times if you do
+not fix the problem. That's sort of a bug, but I don't see an easy way around
 it yet.
+  <HR>
+<P>
+If your font is a CID keyed font you will also get:
+<P>
+<STRONG><BIG>Check for CIDs defined twice</BIG></STRONG>
+<P>
+Looks through the font set to see if there are any CIDs which have valid
+glyphs in two or more fonts.
+<P>
+<STRONG><BIG>Check for undefined CIDs</BIG></STRONG>
+<P>
+Looks for CIDs which have no glyphs defined for them in any font. This is
+a fairly common occurance in CID fonts, so use this with caution.
 </BODY></HTML>

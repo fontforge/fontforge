@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 23-Feb-2001 -->
+  <!-- AP: Last modified: 30-Jul-2001 -->
   <TITLE>Spline Font Database File Format</TITLE>
 </HEAD>
 <BODY>
@@ -32,9 +32,10 @@ UnderlinePosition: -133
 UnderlineWidth: 20
 Ascent: 800
 Descent: 200
-Encoding: -1
 DisplaySize: 24
 AntiAlias: 1
+XUID: 3 18 21
+Encoding: -1
 </PRE>
 </BLOCKQUOTE>
 <P>
@@ -67,15 +68,52 @@ is the encoding, this is an enum some of whose values are:
     28 -- Unicode
 </UL>
 <P>
-Then
+We also support user defined encodings, these are listed not as a number
+but as a string that names the encoding. CID fonts have no encodings, instead
+they have
 <BLOCKQUOTE>
-  <PRE>BeginChars: 285
+  <PRE>Registry: Adobe
+Ordering: japan1
+Supplement: 4
 </PRE>
 </BLOCKQUOTE>
 <P>
-This means that the font has room for 285 characters, not necessarily that
-285 characters follow (there may be some holes, for example the control
-characters are generally omitted). A character looks like:
+Some fonts will have some TrueType information in them too (look at the
+<A HREF="http://www.microsoft.com/typography/tt/tt.htm">truetype spec</A>
+for the meanings of these).
+<BLOCKQUOTE>
+  <PRE>FSType: 4
+PFMFamily: 17
+TTFWeight: 400
+TTFWidth: 5
+Panose: 2 0 5 3 0 0 0 0 0 0
+</PRE>
+</BLOCKQUOTE>
+<P>
+The <CODE>LangName</CODE> entries represent the TrueType names table the
+number represents the language and is followed by a list of strings encoded
+in UTF-7. The first string corresponds to ID=0 (Copyright), the second to
+ID=1 (Family), ... trailing empty strings will be omitted. In the American
+English language (1033) section, if one of these names exactly matches the
+equivalent postscript item then that name will be omitted (this makes it
+easier to handle updates, users only have to change the copyright in one
+place)
+<BLOCKQUOTE>
+  <PRE>
+LangName: 1033 "" "" "Regular" "GWW:Caliban Regular: Version 1.0" "" "Version 1.0"
+LangName: 1032 "" "" "+A5oDsQ09A78DvQ05A7oDrAAA"
+</PRE>
+</BLOCKQUOTE>
+<P>
+Then for non-CID fonts:
+<BLOCKQUOTE>
+  <PRE>BeginChars: 285 253
+</PRE>
+</BLOCKQUOTE>
+<P>
+This means that the font has room for 285 characters and that there are a
+total of 253 defined (usually control characters are not defined). A character
+looks like:
 <BLOCKQUOTE>
   <PRE>StartChar: exclam
 Encoding: 33 33
@@ -159,12 +197,19 @@ follows a bunch of binary data encoded using Adobe's Encode85 filter. These
 data contain all the colors in the color table followed by a dump of the
 image pixel data.
 <P>
-If a character has been read in from a type1 font, and you have not changed
-the character then it will have a <CODE>OrigType1</CODE> entry as well. This
-is the original (unencoded) string describing the character read in from
-the font. It is followed by a number indicating the length of the string,
-and then followed (on a new line) by the string encoded in the Encode85 filter
-above. It will be followed by an <CODE>EndType1</CODE> line.
+There may be a Grid entry near the top of the font, this specifies the splines
+to be drawn in the grid layer for the font, and looks like any other splineset:
+<BLOCKQUOTE>
+  <PRE>Grid
+678 -168 m 5
+ -40 -168 l 5
+-678 729 m 1
+ 1452 729 l 1
+-678 525 m 1
+ 1452 525 l 1
+EndSplineSet
+</PRE>
+</BLOCKQUOTE>
 <P>
 After all the outline characters have been described there is an EndChars
 entry and then follow any bitmap fonts:
@@ -218,6 +263,23 @@ with the name of the entry, is followed by a number (containing the length
 of the entry's value) and then then entry's value. The value may contain
 new lines. There will be a newline after the value. The private list is ended
 by an <CODE>EndPrivate</CODE> keyword.
+<P>
+A CID font is saved slighlty differently. It begins with the normal font
+header which contains the information in the top level CID font dictionary.
+As mentioned above this will include special keys that specify the CID charset
+(registry, ordering, supplement). It will also include:
+<BLOCKQUOTE>
+  <PRE>CIDVersion: 2.0
+BeginSubFonts: 5 8318
+</PRE>
+</BLOCKQUOTE>
+<P>
+The <CODE>CIDVersion</CODE> is self-explanitory. The
+<CODE>BeginSubFonts</CODE> line says that there are 5 subfonts the largest
+of which contains slots for 8318 characters (again some of these may not
+be defined). This will be followed by a list of the subfonts (dumped out
+just like normal fonts) and their characters. Only the top level font will
+contain any bitmap characters.
 <H2>
   Autosave Format
 </H2>

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 26-Jul-2001 -->
+  <!-- AP: Last modified: 4-Aug-2001 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -29,6 +29,8 @@ Contents
 	<A HREF="index.html#binary">Binary</A>
       <LI>
 	<A HREF="index.html#source">Source</A>
+      <LI>
+	<A HREF="#cidmaps">Helper files for editing CID keyed fonts</A>
       <LI>
 	<A HREF="index.html#suggested-fonts">Suggested fonts</A>
       <LI>
@@ -59,8 +61,8 @@ know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-010726.tgz">Download pfaedit linux-i386 Debian
-    </A><A NAME="downloads">executable</A> Version: 26-July-2001
+    <A HREF="pfaedit-010804.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 04-August-2001
   <LI>
     <A HREF="pfaedit-solaris-010624.tgz">Download pfaedit Solaris 8.0
     </A>executable Version: 24-June-2001
@@ -72,6 +74,9 @@ know when you do</A>.
     If you want to do autotracing around character images you should also download
     Martin Weber's <A HREF="http://sourceforge.net/projects/autotrace/">autotrace
     program.</A>
+  <LI>
+    If you want to edit CID keyed fonts you need these
+    <A HREF="cidmaps.tgz">character set descriptions</A>.
 </UL>
 <H2>
   <A NAME="source">Source</A> distribution
@@ -79,24 +84,27 @@ know when you do</A>.
 <P>
 You can download a <A HREF="pfaedit-010628-1.src.rpm">source RPM</A>: Version:
 28-June-2001<BR>
-Or you can download the following three packages. Version: 25-July-2001
+Or you can download the following three packages. Version: 4-August-2001
 <UL>
   <LI>
-    <A HREF="libgunicode-010722.tgz">Unicode library source</A> (22-July-2001)<BR>
+    <A HREF="libgunicode-010804.tgz">Unicode library source</A> (4-August-2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGUnicode/index.html">docs</A>
   <LI>
-    <A HREF="libgdraw-010726.tgz">Unicode widget library source</A>
-    (26-July-2001)<BR>
+    <A HREF="libgdraw-010804.tgz">Unicode widget library source</A>
+    (4-August-2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
   <LI>
-    <A HREF="pfaedit_src-010726.tgz">Pfaedit source</A> (26-July-2001)<BR>
+    <A HREF="pfaedit_src-010804.tgz">Pfaedit source</A> (4-August-2001)<BR>
     -- <A HREF="overview.html">docs</A>
   <LI>
     If you want to do autotracing around character images you should also download
     Martin Weber's <A HREF="http://sourceforge.net/projects/autotrace/">autotrace
     program.</A>
+  <LI>
+    If you want to edit CID keyed fonts you need these
+    <A HREF="cidmaps.tgz">character set descriptions</A>.
 </UL>
 <P>
 PfaEdit has been ported to the following systems (at some point in its life)
@@ -111,6 +119,13 @@ PfaEdit has been ported to the following systems (at some point in its life)
     FreeBsd
   <LI>
     NetBsd
+</UL>
+<P>
+If you are editing <A NAME="cidmaps">CID keyed fonts </A>you should pull
+down the following file
+<UL>
+  <LI>
+    <A HREF="cidmaps.tgz">cidmaps.tgz</A>
 </UL>
 <P>
 <A NAME="suggested-fonts">You</A> might also want to pull down some unicode
@@ -166,11 +181,35 @@ bitmap fonts that pfaedit uses
 </H2>
 <UL>
   <LI>
+    ???
+    <UL>
+      <LI>
+	Eek. FontInfo-&gt;Panose,TTF Values never got stored into the font.
+      <LI>
+	Also added access to Version, and UniqueID
+      <LI>
+	Was given a TTf font with no fontname. This caused a crash. PfaEdit now assigns
+	a fontname if the font doesn't provide one.
+      <LI>
+	Added support (well ability to read) for SJIS, Big5 and Wansung TTF encodings
+	(platform=3, specific=2,3,5)
+      <LI>
+	After playing with large asian fonts I am now making (minimal) attempts to
+	conserve memory and have changed all my doubles to floats (it's configurable
+	of course, but default is float).
+      <LI>
+	Fixed a number of bugs in open type output
+      <LI>
+	Was using out of date Korean-&gt;Unicode conversion. Should be fixed now.
+      <LI>
+	Initial support for <A HREF="cidmenu.html">CID keyed fonts</A>.
+    </UL>
+  <LI>
     26-July-2001
     <UL>
       <LI>
-	Added a constrain points command to align a collection of points, or to center
-	one point between two others.
+	Added a constrain points command to align a collection of points, or to space
+	points evenly on a line.
     </UL>
   <LI>
     25-July-2001
@@ -1669,7 +1708,10 @@ Other font links
     downloadable fonts</A>
   <LI>
     <A HREF="ftp://ftp.ora.com/pub/examples/nutshell/ujip/adobe/samples/">Downloadable
-    CJK fonts</A>
+    PS CID CJK fonts</A> (this site also has cmap files)
+  <LI>
+    <A HREF="http://www.adobe.com/products/acrobat/acrrasianfontpack.html">Downloadable
+    OTF CID CJK fonts</A> (this site also has cmap files)
 </UL>
 <H2>
   Unicode

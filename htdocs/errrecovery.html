@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 17-Dec-2000 -->
-  <!-- AP: Last modified: 17-Jun-2001 -->
+  <!-- AP: Last modified: 3-Aug-2001 -->
   <TITLE>Error Recovery</TITLE>
 </HEAD>
 <BODY>
@@ -21,6 +21,19 @@ When PfaEdit starts up it checks this directory, and if it finds anything
 there it attempts to apply those changes to the original font. So if PfaEdit
 crashes, or if your machine crashes, the next time you start PfaEdit it will
 figure out what you were doing and recover it as best it can.
+<P>
+When editing CID-keyed fonts there are a few potential gotchas:
+<UL>
+  <LI>
+    PfaEdit does not keep track of gross changes (like adding or removing a sub
+    font)
+  <LI>
+    PfaEdit does not keep track of which sub font a change occurred in, instead
+    at recovery time it will look for a subfont that is contains a character
+    at the CID that was changed. In almost all cases this will be right, but
+    if you add characters or if you have two sub-fonts defining the same CID,
+    PfaEdit may guess wrong.
+</UL>
 <P>
 <P ALIGN=Center>
 -- <A HREF="locale.html">Prev</A> -- <A HREF="overview.html">TOC</A> --

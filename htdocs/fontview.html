@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 24-Jul-2001 -->
+  <!-- AP: Last modified: 3-Aug-2001 -->
   <TITLE>The Font View</TITLE>
 </HEAD>
 <BODY>
@@ -23,7 +23,7 @@ to generate but look nicer (<A HREF="AA-Comparison.html">Comparison</A>).
 If you look at a bitmap version of the font, and it does not contain a character
 for which there is an outline character (ie. the font needs its bitmaps
 regenerated) then the missing character will be outlined in red to bring
-it to your attention more easily. 
+it to your attention more easily.
 <P>
 Small bitmap fonts will be magnified. If the pixelsize of the font is less
 than 10 it will be shown 3 times normal size, if less than 20 twice normal
@@ -133,6 +133,12 @@ encoding and another. I try to follow those encoding specified by the Unicode
 consortium. I notice that the Symbol encoding used by Microsoft differs from
 the Unicode one (usually just be substituting synonyms, Omega for Ohm sign
 for instance).
+<P>
+CID fonts (see <A HREF="#CID">below</A>) have no encodings. Instead they
+are designed to be associated with one or several cmap files which provide
+encodings in a general way. cmap files are beyond the scope of PfaEdit. Adobe
+has defined many which are freely
+<A HREF="http://www.adobe.com/products/acrobat/acrrasianfontpack.html">available</A>.
 <H3>
   <A NAME="Unicode">Unicode</A> (ISO 10646)
 </H3>
@@ -155,6 +161,62 @@ PfaEdit does not use PostScript's ISOLatin1 Encoding vector, instead it uses
 the first 256 code positions of the unicode encoding vector (slightly modified
 by me to conform to Unicode conventions rather than PostScript. So I include
 nobreak space and the soft-hyphen)..
+<H2>
+  <A NAME="CID">CID keyed fonts</A>
+</H2>
+<P>
+The standard mechanisms the postscript provides work reasonably well for
+alphabets and syllibaries, but the massive number of characters needed for
+CJK (Chinese, Japanese or Korean) fonts require more complex fonts. Adobe's
+current solution is the CID-keyed font, a font consisting of several subfonts
+each a collection of glyph descriptions with no encoding imposed on them
+and no names given to them.
+<P>
+If PfaEdit loads in a CID keyed font it will enable a special menu called
+<A HREF="cidmenu.html">CID</A> which (among other things) displays the list
+of all the sub-fonts in the font. When it starts up PfaEdit will pick
+(practically at random) a sub-font to display in the font view. You may change
+which font is displayed by the CID menu.
+<P>
+The CID menu also allows you to turn a normal font into a CID keyed font.
+It creates a collection containing just the original font (you may add other
+fonts, or blank fonts, later). But before it can create a collection PfaEdit
+needs to know what character set you will be using. A character set is just
+a collection of characters, and you may define your own if you wish (but
+if you do you have to define your own cmap files, etc and it's probably not
+worth it). Adobe has defined character sets for Japanese (actually there
+are two, one corresponding to JIS208 and one to JIS212), Korean (Wansung),
+Traditional Chinese (Big5) and Simplified Chinese (GB2312). Although these
+character sets are based on the standards mentioned, they each have many
+additional characters. I have defined one further charset for unicode. PfaEdit
+does not have these character sets built in to it, each must be loaded the
+first time it is used. I provide one file for each of the above character
+sets, they have an extension of ".cidmap", and you may download them all
+<A HREF="cidmaps.tgz">from here</A>.
+<P>
+Adobe identifies each character set by a three values: a registry, an ordering
+and a supplement. The registry is the name of the organization that is defining
+the character set (Adobe calls itself Adobe), an ordering identifies the
+character set (Japan1, Korea1, etc.) and the supplement indicates how many
+times the ordering has been revised. Characters may only be added to an ordering,
+never removed, so an old font will be perfectly described by a newer character
+set, while a new font described by an old character set will have some
+unattainable characters. So a full cidmap name will look like:<BR>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+Adobe-Japan1-4.cidmap<BR>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Adobe-Korea1-2.cidmap
+<P>
+<FONT COLOR="Red"><STRONG><BIG>Warning:</BIG></STRONG></FONT> CID keyed fonts
+(actually any CJK font) use massive amounts of memory. I am able to work
+on many of them (but not all) on my 256M machine with 384M of swap space.
+TrueType fonts tend to use more memory when converted to PostScript (which
+is essentially what PfaEdit does when it reads in a TrueType font) than would
+a native PostScript font for the same thing.
+<P>
+The <A HREF="editmenu.html#Remove-Undoes">Remove Undoes </A>command will
+allow you to free up memory if you think you may be running short. PfaEdit
+is not always able to protect itself against running out of memory, sometimes
+the OS just sends it a SIGKILL signal.
 <P>
 <P ALIGN=Center>
 -- <A HREF="editexample.html">Prev</A> -- <A HREF="overview.html">TOC</A>
