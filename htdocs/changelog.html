@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 22-Nov-2004 -->
+  <!-- AP: Last modified: 3-Dec-2004 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -12,7 +12,70 @@
 </H1>
 <UL>
   <LI>
-    ???
+    3-Dec-2004
+    <UL>
+      <LI>
+	If a cff file contained unencoded glyphs then ff would crash when loading
+	it.
+      <LI>
+	When converting from cubic to quadratic splines, ff would sometimes produce
+	a line when it should have found a spline
+      <LI>
+	During debugging of a ttf glyph, show what rasterization would produce if
+	the current splines were used (highlight pixels which change)
+      <LI>
+	The debugger windows didn't always say "&lt;empty&gt;" when they should have.
+      <LI>
+	The debugger would often crash the second time we closed its window
+      <LI>
+	Asking for the script (as latin, greek, cyrillic...) of ".notdef" caused
+	us to look at unallocated memory.
+      <LI>
+	We weren't labelling control points in the debugger
+      <LI>
+	debugger and grid fitter for tt fonts showed curved splines as lines
+      <LI>
+	Kerning pairs did not get scaled when changing em-size
+      <LI>
+	Add a preference for turning off automatic gotos as the user types in the
+	glyph window
+      <LI>
+	Add a command to the glyph window to toggle between the two most recent glyphs
+	used in that window (a mini history)
+      <LI>
+	Improved the points debugger window to show
+	<UL>
+	  <LI>
+	    implied points
+	  <LI>
+	    whether a point is on or off the curve (normal or control)
+	  <LI>
+	    added a scroll bar
+	</UL>
+      <LI>
+	Provide info on debugging points as mouse moves over them.
+      <LI>
+	Fix (an innocuous) reference to unallocated memory
+      <LI>
+	Added ability to insert an uninterpreted table into an SFNT
+	<UL>
+	  <LI>
+	    New preference item: PreserveTables which lists a comma seperated set of
+	    table tags which are to be loaded from SFNT files without interpretation
+	    (Note if ff thinks it understands a table it will parse it rather than preserving
+	    it)
+	  <LI>
+	    Scripting command LoadTableFromFile("tag ","filename")
+	  <LI>
+	    Scripting command SaveTableToFile("tag ","filename")
+	  <LI>
+	    Scripting command RemovePreservedTable("tag ")
+	  <LI>
+	    Scripting command HasPreservedTable("tag ")
+	</UL>
+    </UL>
+  <LI>
+    22-Nov-2004
     <UL>
       <LI>
 	Kevin Schoedel suggests a new scripting command DrawsSomething()

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 2-Sep-2002 -->
-  <!-- AP: Last modified: 13-Oct-2004 -->
+  <!-- AP: Last modified: 3-Dec-2004 -->
   <TITLE>Preferences Dialog</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -18,13 +18,6 @@
   <DD>
     Whether glyphs should be automagically hinted before a bitmap glyph is generated
     (improves the quality of the bitmap)
-  <DT>
-    <A NAME="LocalEncoding">LocalEncoding</A>
-  <DD>
-    The default encoding used by the operating system (ie. text that is pasted
-    into fontforge will be assumed to be in this encoding). If you select "Default"
-    here, fontforge will attempt to guess the correct encoding by looking at:
-    LC_MESSAGES, LC_ALL, LANG environment variables.
   <DT>
     <A NAME="NewCharset">NewCharset</A>
   <DD>
@@ -136,8 +129,14 @@
     drawn around them. The criteria for flex hints are given on pages 72-73 of
     Adobe's
     <A HREF="http://partners.adobe.com/asn/developer/PDFS/TN/T1_SPEC.PDF">T1_Spec.pdf</A>.
-    This setting can be used to show you when those criteria are not
-    met.<BR Clear=all>
+    This setting can be used to show you when those criteria are not met.
+  <DT>
+    <A NAME="GlyphAutoGoto">GlyphAutoGoto</A>
+  <DD>
+    In the glyph window this controls how ff behaves when the user types a normal
+    character. If this is On then when a normal character is typed the glyph
+    window will shift to display that character, if Off typed characters will
+    be ignored.<BR Clear=all>
 </DL>
 <DL>
   <DT>
@@ -214,7 +213,15 @@
     <A NAME="AlwaysGenApple">AlwaysGenApple</A>
   <DD>
     If you always want to generate Apple style TTF fonts (and never windows ones)
-    then select this item.<BR Clear=ALL>
+    then select this item.
+  <DT>
+    <A NAME="PreserveTables">PreserveTables</A>
+  <DD>
+    A string containing a list of 4 letter table tags separated by commas. When
+    loading an SFNT (ttf/otf) file, any table in the font with one of these tags
+    will be preserved without interpretation. (Note: If FontForge thinks it
+    understands the table it will parse it rather than preserving
+    it).<BR Clear=ALL>
 </DL>
 <DL>
   <DT>

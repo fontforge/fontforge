@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 21-Jan-2001 -->
-  <!-- AP: Last modified: 28-Sep-2004 -->
+  <!-- AP: Last modified: 3-Dec-2004 -->
   <TITLE>X Resources</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -143,12 +143,22 @@ then the program will look at it.
     <CODE>fontforge.CharView.RasterColor</CODE>
   <DD>
     Sets the color used to draw the pixels of a rasterized bitmap (if
-    <CODE>View-&gt;Show Grid Fit</CODE> is on)
+    <CODE>View-&gt;Show Grid Fit</CODE> or <CODE>Hints-&gt;Debug</CODE> is on)
+  <DT>
+    <CODE>fontforge.CharView.RasterNewColor</CODE>
+  <DD>
+    Sets the color used to draw the pixels of a rasterized bitmap if they have
+    recently been turned on (if <CODE>Hints-&gt;Debug</CODE> is on)
+  <DT>
+    <CODE>fontforge.CharView.RasterOldColor</CODE>
+  <DD>
+    Sets the color used to draw the pixels of a rasterized bitmap f they have
+    recently been turned off (if <CODE>Hints-&gt;Debug</CODE> is on)
   <DT>
     <CODE>fontforge.CharView.RasterGridColor</CODE>
   <DD>
     Sets the color used to draw the pixel grid used by the rasterizer (if
-    <CODE>View-&gt;Show Grid Fit</CODE> is on)
+    <CODE>View-&gt;Show Grid Fit</CODE> or <CODE>Hints-&gt;Debug</CODE> is on)
   <DT>
     <CODE>fontforge.CharView.ItalicCoordColor</CODE>
   <DD>
