@@ -1314,7 +1314,7 @@ return( features );
 	}
     }
     for ( i=0; i<cnt; ++i ) {
-	if ( !all[i]->needsOff && all[i]->mf!=NULL ) {
+	if ( all[i]->mf!=NULL && all[i]->mf->ismutex && !all[i]->needsOff ) {
 	    /* mutexes with just 2 choices don't always follow the rule that 0 is off */
 	    if (i==cnt-1 || all[i]->featureType!=all[i+1]->featureType )
 		all[i]->singleMutex = true;
@@ -1340,19 +1340,6 @@ return( features );
     features = all[0];
     free( all );
 return( features );
-}
-	
-static struct feature *reversefeatures(struct feature *cur) {
-    struct feature *n, *p;
-
-    p = NULL;
-    while ( cur!=NULL ) {
-	n = cur->next;
-	cur->next = p;
-	p = cur;
-	cur = n;
-    }
-return( p );
 }
 
 static void aat_dumpfeat(struct alltabs *at, SplineFont *sf, struct feature *feature) {

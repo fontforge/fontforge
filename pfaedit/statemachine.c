@@ -1722,6 +1722,10 @@ return( false );
 	if ( GGadgetIsChecked(GWidgetGetControl(smd->editgw,CID_Flag1000)) ) flags |= 0x1000;
 	if ( GGadgetIsChecked(GWidgetGetControl(smd->editgw,CID_Flag0800)) ) flags |= 0x0800;
 	if ( GGadgetIsChecked(GWidgetGetControl(smd->editgw,CID_Flag0400)) ) flags |= 0x0400;
+
+	if ( !CCD_NameListCheck(smd->sf,GGadgetGetTitle(GWidgetGetControl(smd->editgw,CID_InsMark)),false,_STR_MissingGlyphName))
+return( false );
+
 	mins = copy_count(smd->editgw,CID_InsMark,&cnt);
 	if ( cnt>31 ) {
 	    GWidgetErrorR(_STR_TooManyGlyphs,_STR_AtMost31Glyphs);
@@ -1729,6 +1733,9 @@ return( false );
 return( false );
 	}
 	flags |= cnt<<5;
+
+	if ( !CCD_NameListCheck(smd->sf,GGadgetGetTitle(GWidgetGetControl(smd->editgw,CID_InsCur)),false,_STR_MissingGlyphName))
+return( false );
 	cins = copy_count(smd->editgw,CID_InsCur,&cnt);
 	if ( cnt>31 ) {
 	    GWidgetErrorR(_STR_TooManyGlyphs,_STR_AtMost31Glyphs);

@@ -3286,6 +3286,7 @@ static unichar_t *str_UpArrow = { 'U', 'p', 0x2191, 0 };
 static unichar_t mnemonic_UpArrow = 'U';
 static unichar_t str_DownArrow = { 0x2193, 'D','o','w','n', 0 }
 static unichar_t mnemonic_DownArrow = 'D';
+static char *str_MissingGlyphName = "Missing Glyph Name";
     /* typographic features dlgs */
 static char *str_NoFeaturesRemoved = "No Features Removed";
 static char *str_NoFeaturesCopied = "No Features Copied";
