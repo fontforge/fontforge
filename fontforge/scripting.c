@@ -3107,6 +3107,51 @@ static void bAddExtrema(Context *c) {
     FVFakeMenus(c->curfv,102);
 }
 
+static void SCMakeLine(SplineChar *sc) {
+    int ly;
+    SplinePointList *spl;
+    SplinePoint *sp;
+    int changed = false;
+
+    for ( ly = ly_fore; ly<sc->layer_cnt; ly++ ) {
+	for ( spl = sc->layers[ly].splines; spl!=NULL; spl = spl->next ) {
+	    for ( sp=spl->first; ; ) {
+		if (!sp->nonextcp || !sp->noprevcp ) {
+		    if ( !changed ) {
+			SCPreserveState( sc,false );
+			changed = false;
+		    }
+		    sp->prevcp = sp->me;
+		    sp->noprevcp = true;
+		    if ( sp->prev )
+			SplineRefigure(sp->prev);
+		    sp->nextcp = sp->me;
+		    sp->nonextcp = true;
+		    if ( sp->next )
+			SplineRefigure(sp->next);
+		}
+		sp->pointtype = pt_corner;
+		if ( sp->next==NULL )
+	    break;
+		sp = sp->next->to;
+		if ( sp==spl->first )
+	    break;
+	    }
+	}
+    }
+    if ( changed )
+	SCCharChangedUpdate(sc);
+}
+
+static void bMakeLine(Context *c) {
+    int i;
+    SplineFont *sf = c->curfv->sf;
+
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && c->curfv->selected[i] ) {
+	SCMakeLine( sf->chars[i] );
+    }
+}
+
 static void bRoundToInt(Context *c) {
     real factor = 1.0;
     int i;
@@ -4795,6 +4840,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "Outline", bOutline },
     { "Shadow", bShadow },
     { "Wireframe", bWireframe },
+    { "MakeLine", bMakeLine },
     { "RemoveOverlap", bRemoveOverlap },
     { "OverlapIntersect", bOverlapIntersect },
     { "FindIntersections", bFindIntersections },
