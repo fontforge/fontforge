@@ -777,7 +777,8 @@ void CVToolsSetCursor(CharView *cv, int state, char *device) {
 	shouldshow = cvt_minify;
     if ( shouldshow!=cv->showing_tool ) {
 	GDrawSetCursor(cv->v,tools[shouldshow]);
-	GDrawSetCursor(cvtools,tools[shouldshow]);
+	if ( cvtools!=NULL )	/* Might happen if window owning docked palette destroyed */
+	    GDrawSetCursor(cvtools,tools[shouldshow]);
 	cv->showing_tool = shouldshow;
     }
 
