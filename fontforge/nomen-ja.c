@@ -2462,11 +2462,10 @@ static char *str_BadEncFormat = "¥¨¥ó¥³¡¼¥Ç¥£¥ó¥°¥Õ¥¡¥¤¥ë¤Î¥Õ¥©¡¼¥Ş¥Ã¥È¤¬ÉÔÀµ¤Ç¤
 static char *str_PleaseNameEnc = "¤³¤Î¥¨¥ó¥³¡¼¥Ç¥£¥ó¥°¤ËÌ¾Á°¤ò¤Ä¤±¤Æ¤¯¤À¤µ¤¤.";
 /* Either insert first, second or third, or the number followed by the "th" string (5th, 6th, etc.) */
 /* Please name the %d/first/second/third encoding in this file" */
-static char *str_PleaseNameEncPre = "¤³¤Î¥Õ¥¡¥¤¥ëÆâ¤Î";
-static char *str_PleaseNameEncPost = "¤Î¥¨¥ó¥³¡¼¥Ç¥£¥ó¥°¤ËÌ¾Á°¤ò¤Ä¤±¤Æ¤¯¤À¤µ¤¤.";
+static char *str_PleaseNameEncNamed = "¤³¤Î¥Õ¥¡¥¤¥ëÆâ¤Î%s¤Î¥¨¥ó¥³¡¼¥Ç¥£¥ó¥°¤ËÌ¾Á°¤ò¤Ä¤±¤Æ¤¯¤À¤µ¤¤.";
+static char *str_PleaseNameEncNumeric = "¤³¤Î¥Õ¥¡¥¤¥ëÆâ¤Î%dÈÖÌÜ¤Î¥¨¥ó¥³¡¼¥Ç¥£¥ó¥°¤ËÌ¾Á°¤ò¤Ä¤±¤Æ¤¯¤À¤µ¤¤.";
 static char *str_Second = "2ÈÖÌÜ";
 static char *str_Third = "3ÈÖÌÜ";
-static char *str_th = "ÈÖÌÜ";
 static char *str_RemoveEncoding = "¥¨¥ó¥³¡¼¥Ç¥£¥ó¥°¤òºï½ü";
 static char *str_LoadEncoding = "¥¨¥ó¥³¡¼¥Ç¥£¥ó¥°¤òÆÉ¤ß¹ş¤à";
 static char *str_AdobePUA = "Adobe¸ø³«¤Î³°»úÄêµÁ";
