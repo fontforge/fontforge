@@ -2875,7 +2875,8 @@ return;
 	    }
 	    lig_glyph = memushort(sm->data,lig_offset);
 	    if ( lig_glyph>=sm->info->glyph_cnt ) {
-		fprintf(stderr, "Attempt to make a ligature for glyph %d out of " );
+		fprintf(stderr, "Attempt to make a ligature for glyph %d out of ",
+			lig_glyph );
 		for ( j=lcp; j<sm->lcp; ++j )
 		    fprintf(stderr,"%d ",sm->lig_comp_glyphs[j]);
 		fprintf(stderr,"\n");
@@ -2977,7 +2978,8 @@ return;
 	    }
 	    lig_glyph = memushort(sm->data,sm->ligOff+2*lig_offset);
 	    if ( lig_glyph>=sm->info->glyph_cnt ) {
-		fprintf(stderr, "Attempt to make a ligature for glyph %d out of " );
+		fprintf(stderr, "Attempt to make a ligature for glyph %d out of ",
+			lig_glyph );
 		for ( j=lcp; j<sm->lcp; ++j )
 		    fprintf(stderr,"%d ",sm->lig_comp_glyphs[j]);
 		fprintf(stderr,"\n");

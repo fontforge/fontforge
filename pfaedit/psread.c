@@ -2476,8 +2476,10 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 		    int index = stack[--sp];
 		    if ( index<0 || sp<index+1 )
 			fprintf( stderr, "Index out of range in %s\n", name );
-		    else
-			stack[sp++] = stack[sp-index-1];
+		    else {
+			stack[sp] = stack[sp-index-1];
+			++sp;
+		    }
 		}
 	      break;
 	      case 30: /* roll */

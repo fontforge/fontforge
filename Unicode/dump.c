@@ -74,7 +74,7 @@ static void dumpalphas(FILE *output, FILE *header) {
     char buffer[200];
 
     fprintf(output, "#include <chardata.h>\n\n" );
-    fprintf(output, "const char c_allzeros[256] = { 0 };\n\n" );
+    fprintf(output, "const unsigned char c_allzeros[256] = { 0 };\n\n" );
 
     for ( k=0; k<256; ++k ) table[k] = NULL;
 
@@ -90,7 +90,7 @@ static void dumpalphas(FILE *output, FILE *header) {
 	    while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
 		if ( buffer[0]=='#' )
 	    continue;
-		sscanf(buffer, "0x%lx 0x%lx", &_orig, &_unicode);
+		sscanf(buffer, "0x%lx 0x%lx", (unsigned long *) &_orig, (unsigned long *) &_unicode);
 		unicode[_orig] = _unicode;
 		if ( table[_unicode>>8]==NULL ) {
 		    plane = table[_unicode>>8] = calloc(256,1);
@@ -359,11 +359,11 @@ static void dumpjis(FILE *output,FILE *header) {
 	continue;
 	    _unicode = getnth(buffer,22);
 	    if ( _unicode==-1 ) {
-		fprintf( stderr, "Eh? JIS 208-1997 %x is unencoded\n", _orig );
+		fprintf( stderr, "Eh? JIS 208-1997 %lx is unencoded\n", _orig );
 	continue;
 	    }
 	    if ( _unicode>0xffff ) {
-		fprintf( stderr, "Eh? JIS 208-1997 %x is outside of BMP\n", _orig );
+		fprintf( stderr, "Eh? JIS 208-1997 %lx is outside of BMP\n", _orig );
 	continue;
 	    }
 	    if ( table[_unicode>>8]==NULL )
@@ -372,7 +372,7 @@ static void dumpjis(FILE *output,FILE *header) {
 	    _orig -= 0x2121;
 	    _orig = (_orig>>8)*94 + (_orig&0xff);
 	    if ( _orig>=94*94 )
-		fprintf( stderr, "Attempt to index with %d\n", _orig );
+		fprintf( stderr, "Attempt to index with %ld\n", _orig );
 	    else {
 		unicode208[_orig] = _unicode;
 		if ( used[_unicode>>8]==NULL ) {
@@ -398,11 +398,11 @@ static void dumpjis(FILE *output,FILE *header) {
 	continue;
 	    _unicode = getnth(buffer,7);
 	    if ( _unicode==-1 ) {
-		fprintf( stderr, "Eh? JIS 212-1990 %x is unencoded\n", _orig );
+		fprintf( stderr, "Eh? JIS 212-1990 %lx is unencoded\n", _orig );
 	continue;
 	    }
 	    if ( _unicode>0xffff ) {
-		fprintf( stderr, "Eh? JIS 212-1990 %x is out of BMP %x\n", _orig, _unicode );
+		fprintf( stderr, "Eh? JIS 212-1990 %lx is out of BMP U+%lx\n", _orig, _unicode );
 	continue;
 	    }
 	    if ( table[_unicode>>8]==NULL )
@@ -410,11 +410,11 @@ static void dumpjis(FILE *output,FILE *header) {
 	    if ( table[_unicode>>8][_unicode&0xff]==0 )
 		table[_unicode>>8][_unicode&0xff] = _orig|0x8000;
 	    else
-		fprintf( stderr, "JIS clash at JIS212 %x, unicode %x\n", _orig, _unicode );	/* there are said to be a few of these, I'll just always map to 208 */
+		fprintf( stderr, "JIS clash at JIS212 %lx, unicode %lx\n", _orig, _unicode );	/* there are said to be a few of these, I'll just always map to 208 */
 	    _orig -= 0x2121;
 	    _orig = (_orig>>8)*94 + (_orig&0xff);
 	    if ( _orig>=94*94 )
-		fprintf( stderr, "Attempt to index JIS212 with %d\n", _orig );
+		fprintf( stderr, "Attempt to index JIS212 with %ld\n", _orig );
 	    else {
 		unicode212[_orig] = _unicode;
 		if ( used[_unicode>>8]==NULL ) {
@@ -470,9 +470,9 @@ static void dumpjis(FILE *output,FILE *header) {
 	else
 	    fprintf( output, "    u_allzeros,\n" );
     fprintf( output, "};\n\n" );
-    fprintf( header, "extern struct charmap2 jis_from_unicode;\n", cjknames[j]);
+    fprintf( header, "extern struct charmap2 jis_from_unicode;\n" );
     fprintf( output, "struct charmap2 jis_from_unicode = { %d, %d, (unsigned short **) jis_from_unicode_, (unsigned short *) unicode_from_%s };\n\n",
-	    first, last, cjknames[j], cjknames[j]);
+	    first, last, cjknames[j]);
 
     for ( k=first; k<=last; ++k )
 	free(table[k]);
@@ -519,11 +519,11 @@ static void dumpbig5(FILE *output,FILE *header) {
 		    _unicode = 0x2574;
 	    }
 	    if ( _unicode==-1 ) {
-		fprintf( stderr, "Eh? BIG5 %x is unencoded\n", _orig );
+		fprintf( stderr, "Eh? BIG5 %lx is unencoded\n", _orig );
 	continue;
 	    }
 	    if ( _unicode>0xffff ) {
-		fprintf( stderr, "Eh? BIG5 %x is out of BMP %x\n", _orig, _unicode );
+		fprintf( stderr, "Eh? BIG5 %lx is out of BMP U+%lx\n", _orig, _unicode );
 	continue;
 	    }
 	    unicode[_orig-0xa100] = _unicode;
@@ -600,12 +600,12 @@ static void dumpbig5hkscs(FILE *output,FILE *header) {
 	while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
 	    if ( buffer[0]=='#' )
 	continue;
-	    if ( sscanf( buffer, "U+%x: %x", &_unicode, &_orig )!=2 )
+	    if ( sscanf( buffer, "U+%lx: %lx", (unsigned long *) &_unicode, (unsigned long *) &_orig )!=2 )
 	continue;
 	    if ( _orig<0x8140 )
 	continue;
 	    if ( _unicode==-1 ) {
-		fprintf( stderr, "Eh? BIG5HKSCS %x is unencoded\n", _orig );
+		fprintf( stderr, "Eh? BIG5HKSCS %lx is unencoded\n", _orig );
 	continue;
 	    }
 	    unicode[_orig-0x8100] = _unicode;
@@ -688,16 +688,16 @@ static void dumpWansung(FILE *output,FILE *header) {
 		_unicode = getnth(buffer,11);
 		if ( _unicode==-1 ) {
 		    if ( _orig>=0x2121 && (_orig&0xff)>=0x21 && _orig<=0x7e7e && (_orig&0xff)<=0x7e )
-			fprintf( stderr, "Eh? Wansung %x is unencoded\n", _orig );
+			fprintf( stderr, "Eh? Wansung %lx is unencoded\n", _orig );
 		    else if ( _johab>=0x8431 && _johab<=0xf9fe )
-			fprintf( stderr, "Eh? Johab %x is unencoded\n", _johab );
+			fprintf( stderr, "Eh? Johab %lx is unencoded\n", _johab );
 	    continue;
 		}
 		if ( _unicode>0xffff ) {
 		    if ( _orig>=0x2121 && (_orig&0xff)>=0x21 && _orig<=0x7e7e && (_orig&0xff)<=0x7e )
-			fprintf( stderr, "Eh? Wansung %x is out of BMP %x\n", _orig, _unicode );
+			fprintf( stderr, "Eh? Wansung %lx is out of BMP U+%lx\n", _orig, _unicode );
 		    else if ( _johab>=0x8431 && _johab<=0xf9fe )
-			fprintf( stderr, "Eh? Johab %x is out of BMP %x\n", _johab, _unicode );
+			fprintf( stderr, "Eh? Johab %lx is out of BMP U+%lx\n", _johab, _unicode );
 	    continue;
 		}
 		if ( _orig>=0x2121 && (_orig&0xff)>=0x21 && _orig<=0x7e7e && (_orig&0xff)<=0x7e ) {
@@ -847,11 +847,11 @@ static void dumpgb2312(FILE *output,FILE *header) {
 	    continue;
 		_unicode = getnth(buffer,14);
 		if ( _unicode==-1 ) {
-		    fprintf( stderr, "Eh? GB2312-80 %x is unencoded\n", _orig );
+		    fprintf( stderr, "Eh? GB2312-80 %lx is unencoded\n", _orig );
 	    continue;
 		}
 		if ( _unicode>0xffff ) {
-		    fprintf( stderr, "Eh? GB2312-80 %x is out of BMP %x\n", _orig, _unicode );
+		    fprintf( stderr, "Eh? GB2312-80 %lx is out of BMP U+%lx\n", _orig, _unicode );
 	    continue;
 		}
 		if ( table[_unicode>>8]==NULL )
@@ -926,7 +926,7 @@ static void dumpcjks(FILE *output,FILE *header) {
 }
 
 static void dumptrans(FILE *output, FILE *header) {
-    long *plane;
+    unsigned long *plane;
     int k, i;
 
     fprintf(output, "static const unsigned long l_allzeros[256] = { 0 };\n" );
@@ -935,10 +935,10 @@ static void dumptrans(FILE *output, FILE *header) {
 	    plane = used[k];
 	    fprintf( output, "static const unsigned long unicode_backtrans_%x[] = {\n", k );
 	    for ( i=0; i<256-8; i+=8 )
-		fprintf( output, "  0x%06x, 0x%06x, 0x%06x, 0x%06x, 0x%06x, 0x%06x, 0x%06x, 0x%06x,\n",
+		fprintf( output, "  0x%06lx, 0x%06lx, 0x%06lx, 0x%06lx, 0x%06lx, 0x%06lx, 0x%06lx, 0x%06lx,\n",
 			plane[i], plane[i+1], plane[i+2], plane[i+3],
 			plane[i+4], plane[i+5], plane[i+6], plane[i+7]);
-	    fprintf( output, "  0x%06x, 0x%06x, 0x%06x, 0x%06x, 0x%06x, 0x%06x, 0x%06x, 0x%06x\n};\n\n",
+	    fprintf( output, "  0x%06lx, 0x%06lx, 0x%06lx, 0x%06lx, 0x%06lx, 0x%06lx, 0x%06lx, 0x%06lx\n};\n\n",
 			plane[i], plane[i+1], plane[i+2], plane[i+3],
 			plane[i+4], plane[i+5], plane[i+6], plane[i+7]);
 	}

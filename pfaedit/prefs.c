@@ -106,9 +106,9 @@ int updateflex = false;
 
 extern int rectelipse, polystar, regular_star;	/* from cvpalettes.c */
 extern int center_out;				/* from cvpalettes.c */
-extern real rr_radius;				/* from cvpalettes.c */
+extern float rr_radius;				/* from cvpalettes.c */
 extern int ps_pointcnt;				/* from cvpalettes.c */
-extern real star_percent;			/* from cvpalettes.c */
+extern float star_percent;			/* from cvpalettes.c */
 
 static int pointless;
 
@@ -247,7 +247,7 @@ static GTextInfo localencodingtypes[] = {
 enum pref_types { pr_int, pr_real, pr_bool, pr_enum, pr_encoding, pr_string, pr_file };
 struct enums { char *name; int value; };
 
-struct enums fvsize_enums[] = { NULL };
+struct enums fvsize_enums[] = { {NULL} };
 
 static struct prefs_list {
     char *name;
@@ -740,7 +740,7 @@ return;
 	}
 	switch ( pl->type ) {
 	  case pr_encoding:
-	    if ( sscanf( pt, "%d", pl->val )!=1 ) {
+	    if ( sscanf( pt, "%d", (int *) pl->val )!=1 ) {
 		Encoding *item;
 		for ( item = enclist; item!=NULL && strcmp(item->enc_name,pt)!=0; item = item->next );
 		if ( item==NULL )
@@ -750,10 +750,10 @@ return;
 	    }
 	  break;
 	  case pr_bool: case pr_int:
-	    sscanf( pt, "%d", pl->val );
+	    sscanf( pt, "%d", (int *) pl->val );
 	  break;
 	  case pr_real:
-	    sscanf( pt, "%f", pl->val );
+	    sscanf( pt, "%f", (float *) pl->val );
 	  break;
 	  case pr_string: case pr_file:
 	    if ( *pt=='\0' ) pt=NULL;
@@ -829,7 +829,7 @@ return;
 	for ( i=0; user_macfeat_otftag[i].otf_tag!=0; ++i );
 	fprintf( p, "MacMapCnt: %d\n", i );
 	for ( i=0; user_macfeat_otftag[i].otf_tag!=0; ++i ) {
-	    fprintf( p, "MacMapping: %d,%d %c%c%c%c \"%s\"\n",
+	    fprintf( p, "MacMapping: %d,%d %c%c%c%c\n",
 		    user_macfeat_otftag[i].mac_feature_type,
 		    user_macfeat_otftag[i].mac_feature_setting,
 			user_macfeat_otftag[i].otf_tag>>24,

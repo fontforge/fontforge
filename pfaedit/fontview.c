@@ -4183,7 +4183,7 @@ static GImage *UniGetRotatedGlyph(SplineFont *sf, SplineChar *sc,int uni) {
 
     if ( uni!=-1 )
 	/* Do nothing */;
-    else if ( sscanf(sc->name,"vertuni%x", &uni)!=1 &&
+    else if ( sscanf(sc->name,"vertuni%x", (unsigned *) &uni)!=1 &&
 	    (sscanf( sc->name, "cid-%d", &cid)==1 ||
 	     sscanf( sc->name, "vertcid_%d", &cid)==1 ||	/* Obsolete names */
 	     sscanf( sc->name, "cid_%d", &cid)==1 )) {
@@ -4461,11 +4461,11 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		    }
 		} else if ( strncmp(sc->name,"hwuni",5)==0 ) {
 		    int uni=-1;
-		    sscanf(sc->name,"hwuni%x", &uni );
+		    sscanf(sc->name,"hwuni%x", (unsigned *) &uni );
 		    if ( uni!=-1 ) buf[0] = uni;
 		} else if ( strncmp(sc->name,"italicuni",9)==0 ) {
 		    int uni=-1;
-		    sscanf(sc->name,"italicuni%x", &uni );
+		    sscanf(sc->name,"italicuni%x", (unsigned *) &uni );
 		    if ( uni!=-1 ) { buf[0] = uni; italic=true; }
 		    fg = 0x000000;
 		} else if ( strncmp(sc->name,"vertcid_",8)==0 ||

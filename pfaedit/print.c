@@ -507,7 +507,7 @@ static void SCPrintPage(PI *pi,SplineChar *sc) {
 	endpage(pi);
     ++pi->page;
     fprintf(pi->out,"%%%%Page: %d %d\n", pi->page, pi->page );
-    fprintf(pi->out,"%%%%PageResources: font Times-Bold\n", pi->sf->fontname );
+    fprintf(pi->out,"%%%%PageResources: font Times-Bold\n" );
     fprintf(pi->out,"save mark\n" );
 
     SplineCharFindBounds(sc,&b);

@@ -313,7 +313,7 @@ static void PrintVal(Val *val) {
     else if ( val->type==v_void )
 	printf( "<void>");
     else
-	printf( "<???>");
+	printf( "<???>");	/* ANSI might thing this a trigraph */
 }
 
 static void bPrint(Context *c) {
@@ -1513,7 +1513,7 @@ static void bReencode(Context *c) {
 	    }
     }
     if ( new_map==em_unknown && strstart(c->a.vals[1].u.sval,"unicode-plane-")!=NULL ) {
-	int plane=0;
+	unsigned plane=0;
 	sscanf( c->a.vals[1].u.sval,"unicode-plane-%x", &plane );
 	if ( plane==0 ) new_map = em_unicode;
 	else new_map = em_unicodeplanes+plane;
@@ -3535,7 +3535,7 @@ static void docall(Context *c,char *name,Val *val) {
 		else if ( args[i].type == v_void )
 		    printf( "<void>");
 		else
-		    printf( "<???>");
+		    printf( "<???>");	/* ANSI might thing this a trigraph */
 	    }
 	    printf(")\n");
 	}

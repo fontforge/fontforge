@@ -1,6 +1,6 @@
 #include <chardata.h>
 
-const char c_allzeros[256] = { 0 };
+const unsigned char c_allzeros[256] = { 0 };
 
 const unichar_t unicode_from_i8859_1[] = {
   0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007,

@@ -118,7 +118,8 @@ static Encoding *ParseConsortiumEncodingFile(FILE *file) {
 
     while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
 	if ( ishexdigit(buffer[0]) ) {
-	    if ( sscanf(buffer, "%x %x", &enc, &unienc)==2 && enc<1024 && enc>=0 ) {
+	    if ( sscanf(buffer, "%x %x", (unsigned *) &enc, (unsigned *) &unienc)==2 &&
+		    enc<1024 && enc>=0 ) {
 		encs[enc] = unienc;
 		if ( enc>max ) max = enc;
 	    }
@@ -685,7 +686,7 @@ static struct cidmap *LoadMapFromFile(char *file,char *registry,char *ordering,
 	ret->unicode = gcalloc(ret->namemax+1,sizeof(uint32));
 	ret->name = gcalloc(ret->namemax+1,sizeof(char *));
 	while ( 1 ) {
-	    cnt=fscanf( f, "%d..%d %x", &cid1, &cid2, &uni );
+	    cnt=fscanf( f, "%d..%d %x", &cid1, &cid2, (unsigned *) &uni );
 	    if ( cnt<=0 )
 	break;
 	    if ( cid1>ret->namemax )
@@ -695,7 +696,7 @@ static struct cidmap *LoadMapFromFile(char *file,char *registry,char *ordering,
 		for ( i=cid1; i<=cid2; ++i )
 		    ret->unicode[i] = uni++;
 	    } else if ( cnt==1 ) {
-		if ( fscanf(f,"%x", &uni )==1 )
+		if ( fscanf(f,"%x", (unsigned *) &uni )==1 )
 		    ret->unicode[cid1] = uni;
 		else if ( fscanf(f," /%s", name )==1 )
 		    ret->name[cid1] = copy(name);
@@ -1279,7 +1280,7 @@ return(NULL);
     new->familyname = copy(cidmaster->familyname);
     new->weight = copy(cidmaster->weight);
     new->copyright = copy(cidmaster->copyright);
-    sprintf(buffer,"%d", cidmaster->cidversion);
+    sprintf(buffer,"%g", cidmaster->cidversion);
     new->version = copy(buffer);
     new->italicangle = cidmaster->italicangle;
     new->upos = cidmaster->upos;
@@ -1596,7 +1597,8 @@ return( false );
     newchars = galloc(cnt*sizeof(SplineChar *));
     for ( i=cnt=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
 	newchars[cnt] = sf->chars[i];
-	newchars[cnt]->enc = cnt++;
+	newchars[cnt]->enc = cnt;
+	++cnt;
     }
     free(sf->chars);
     sf->chars = newchars;

@@ -142,7 +142,7 @@ $ pfaedit -new
  Creates a new font
 $ pfaedit -nosplash
  (No splash screen in case you have a very slow X connection)
-$ pfaedit font.pfa font2.pfb font3.ttf font4.otf font4.sfd
+$ pfaedit font.pfa font2.pfb font3.ttf font4.otf font4.sfd font5.svg
  Opens those fonts (sfd files are pfaedit's own spline font database files)
 $ pfaedit
  Brings up a file picker dlg.

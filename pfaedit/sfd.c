@@ -2511,7 +2511,7 @@ static void SFDParseChainContext(FILE *sfd,SplineFont *sf,FPST *fpst, char *tok)
     fpst->format = strmatch(tok,"glyph")==0 ? pst_glyphs :
 		    strmatch(tok,"class")==0 ? pst_class :
 		    strmatch(tok,"coverage")==0 ? pst_coverage : pst_reversecoverage;
-    fscanf(sfd, "%hd %hd", &fpst->flags, &fpst->script_lang_index );
+    fscanf(sfd, "%hu %hu", &fpst->flags, &fpst->script_lang_index );
     while ( (ch=getc(sfd))==' ' || ch=='\t' );
     if ( ch=='\'' ) {
 	fpst->tag = getc(sfd)<<24;
@@ -2521,7 +2521,7 @@ static void SFDParseChainContext(FILE *sfd,SplineFont *sf,FPST *fpst, char *tok)
 	getc(sfd);	/* Final quote */
     } else
 	ungetc(ch,sfd);
-    fscanf(sfd, "%hd %hd %hd %hd", &fpst->nccnt, &fpst->bccnt, &fpst->fccnt, &fpst->rule_cnt );
+    fscanf(sfd, "%hu %hu %hu %hu", &fpst->nccnt, &fpst->bccnt, &fpst->fccnt, &fpst->rule_cnt );
     if ( fpst->nccnt!=0 || fpst->bccnt!=0 || fpst->fccnt!=0 ) {
 	fpst->nclass = galloc(fpst->nccnt*sizeof(char *));
 	if ( fpst->nccnt!=0 ) fpst->nclass[0] = NULL;

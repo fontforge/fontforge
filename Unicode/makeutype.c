@@ -94,8 +94,8 @@ unsigned short mytoupper[MAXC];
 unsigned short mytotitle[MAXC];
 unsigned char mynumericvalue[MAXC];
 unsigned short mymirror[MAXC];
-unsigned long flags[MAXC];
-unsigned long flags2[MAXC];
+unsigned int flags[MAXC];
+unsigned int flags2[MAXC];
 unichar_t alts[MAXC][MAXA+1];
 
 static void FigureAlternates(unichar_t index, char *apt, int normative) {
@@ -549,7 +549,7 @@ static void dump() {
     fprintf( header, "extern const unsigned short ____toupper[];\n" );
     fprintf( header, "extern const unsigned short ____totitle[];\n" );
     fprintf( header, "extern const unsigned short ____tomirror[];\n" );
-    fprintf( header, "extern const signed char ____digitval[];\n" );
+    fprintf( header, "extern const unsigned char ____digitval[];\n" );
     fprintf( header, "extern const unsigned long ____utype[];\n\n" );
     fprintf( header, "extern const unsigned long ____utype2[];\n\n" );
 
@@ -630,7 +630,7 @@ static void dump() {
 	} else
 	    fprintf( data, "\n ");
     }
-    fprintf( data, "const signed char ____digitval[] = { 0,\n " );
+    fprintf( data, "const unsigned char ____digitval[] = { 0,\n " );
     for ( i=0; i<MAXC; i+=j ) {
 	for ( j=0; j<8 && i+j<MAXC-1; ++j )
 	    fprintf(data, " 0x%02x,", mynumericvalue[i+j]);

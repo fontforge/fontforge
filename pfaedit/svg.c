@@ -2163,10 +2163,12 @@ return( NULL );
     cnt = 0;
     for ( kids = font->children; kids!=NULL; kids=kids->next ) {
 	if ( _xmlStrcmp(kids->name,(const xmlChar *) "missing-glyph")==0 ) {
-	    sf->chars[cnt++] = SVGParseMissing(sf,kids,defh,defv,cnt);
+	    sf->chars[cnt] = SVGParseMissing(sf,kids,defh,defv,cnt);
+	    cnt++;
 	    GProgressNext();
 	} else if ( _xmlStrcmp(kids->name,(const xmlChar *) "glyph")==0 ) {
-	    sf->chars[cnt++] = SVGParseGlyph(sf,kids,defh,defv,cnt);
+	    sf->chars[cnt] = SVGParseGlyph(sf,kids,defh,defv,cnt);
+	    cnt++;
 	    GProgressNext();
 	}
     }

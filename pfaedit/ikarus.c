@@ -464,7 +464,8 @@ static void IkarusReadChar(SplineChar *sc,FILE *file) {
     IkarusNameFromURWNumber(sc,number);
     following = getushort(file);
     if ( following!=0 )
-	fprintf( stderr, "This character (%d) has a following part (%d). I'm not sure what that means, please send me (gww@silcom.com) a copy of this font so I can test with it.\n" );
+	fprintf( stderr, "This character (%d) has a following part (%d). I'm not sure what that means, please send me (gww@silcom.com) a copy of this font so I can test with it.\n",
+		sc->enc, following );
     for ( i=3; i<n ; ++i )
 	getushort(file);	/* Just in case the name section is bigger now */
 
@@ -625,7 +626,7 @@ return( NULL );
 		(ch1=='v' && ch2=='s') || (ch1=='v' && ch2=='e') || 
 		(ch1=='s' && ch2=='c') || (ch1=='s' && ch2=='n') || 
 		(ch1=='b' && ch2=='i') || (ch1=='g' && isdigit(ch2)))
-	    fprintf( stderr, "This is probably a valid URW font, but it is in a format (%c%c) which PfaEdit\ndoes not support. PfaEdit only supports 'IK' format fonts.\n" );
+	    fprintf( stderr, "This is probably a valid URW font, but it is in a format (%c%c) which PfaEdit\ndoes not support. PfaEdit only supports 'IK' format fonts.\n", ch1, ch2 );
 	else if ( ch1==0 && ch2==0 && ilen==55 )
 	    fprintf( stderr, "This looks like an ikarus format which I have seen examples of, but for which\nI have no documentation. PfaEdit does not support it yet.\n" );
 	fclose(file);

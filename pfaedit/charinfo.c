@@ -3947,7 +3947,7 @@ char *AdobeLigatureFormat(char *name) {
 	pt = name+3;
 	components = galloc(1); *components = '\0';
 	while ( *pt ) {
-	    if ( sscanf(pt,"%4x", &uni )==0 ) {
+	    if ( sscanf(pt,"%4x", (unsigned *) &uni )==0 ) {
 		free(components); components = NULL;
 	break;
 	    }

@@ -126,7 +126,7 @@ return( 0 );
 	    *ept = ch;
 	    off = strtol(ept,NULL,10);
 	    KPInsert(sc1,sc2,off,isv);
-	} else if ( sscanf( buffer, "C %*d ; WX %*d ; N %.40s ; B %*d %*d %*d %*d ; L %.40s %.40s",
+	} else if ( sscanf( buffer, "C %*d ; WX %*d ; N %40s ; B %*d %*d %*d %*d ; L %40s %40s",
 		name, second, lig)==3 ) {
 	    sc1 = SFFindName(sf,lig);
 	    sc2 = SFFindName(sf,name);

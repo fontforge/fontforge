@@ -80,7 +80,7 @@ return;
     GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0); y += dv->ii.fh;
     sprintf( buffer, " rp2: %d", exc->GS.rp2 ); uc_strcpy(ubuffer,buffer);
     GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0); y += dv->ii.fh;
-    sprintf( buffer, "loop: %d", exc->GS.loop ); uc_strcpy(ubuffer,buffer);
+    sprintf( buffer, "loop: %ld", exc->GS.loop ); uc_strcpy(ubuffer,buffer);
     GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0); y += dv->ii.fh;
     y+=2;
 
@@ -159,7 +159,7 @@ return;
     GDrawSetFont(pixmap,dv->ii.gfont);
     y = 3+dv->ii.as;
     for ( i=exc->top-1; i>=0; --i ) {
-	sprintf(buffer, "%3d: %3d (%.2f)", i, exc->stack[i], exc->stack[i]/64.0 );
+	sprintf(buffer, "%3d: %3ld (%.2f)", i, exc->stack[i], exc->stack[i]/64.0 );
 	uc_strcpy(ubuffer,buffer);
 	GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0);
 	if ( y>event->u.expose.rect.y+event->u.expose.rect.height )
@@ -184,7 +184,7 @@ return;
     GDrawSetFont(pixmap,dv->ii.gfont);
     y = 3+dv->ii.as;
     for ( i=0; i<exc->storeSize; ++i ) {
-	sprintf(buffer, "%3d: %3d (%.2f)", i, exc->storage[i], exc->storage[i]/64.0 );
+	sprintf(buffer, "%3d: %3ld (%.2f)", i, exc->storage[i], exc->storage[i]/64.0 );
 	uc_strcpy(ubuffer,buffer);
 	GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0);
 	if ( y>event->u.expose.rect.y+event->u.expose.rect.height )

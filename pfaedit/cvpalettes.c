@@ -165,9 +165,9 @@ static int popupsres[] = { _STR_Pointer, _STR_PopMag,
 static int editablelayers[] = { _STR_Fore, _STR_Back, _STR_Grid };
 int rectelipse=0, polystar=0, regular_star=1;
 int center_out = false;
-real rr_radius=0;
+float rr_radius=0;
 int ps_pointcnt=6;
-real star_percent=1.7320508;	/* Regular 6 pointed star */
+float star_percent=1.7320508;	/* Regular 6 pointed star */
 static StrokeInfo expand = { 25, lj_round, lc_butt, si_centerline,
 	    /* toobigwarn */  true,
 	    /* removeexternal */ false,

@@ -1332,8 +1332,8 @@ return( 0 );
 
     fseek(binary,0,SEEK_END);
     len = ftell(binary);
-    sprintf( buffer, "(Binary) %d StartData ", len );
-    fprintf( out, "%%%%BeginData: %d Binary Bytes\n", len+strlen(buffer));
+    sprintf( buffer, "(Binary) %ld StartData ", len );
+    fprintf( out, "%%%%BeginData: %ld Binary Bytes\n", (long) (len+strlen(buffer)));
     fprintf( out, buffer );
 
     fseek(binary,0,SEEK_SET);

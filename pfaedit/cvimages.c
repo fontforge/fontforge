@@ -577,7 +577,7 @@ static SplineSet * slurpspline(FILE *fig,SplineChar *sc, SplineSet *sofar) {
     xs.s = galloc((cnt+1)*sizeof(real));
     xs.closed = (sub&1);
     for ( i=0; i<cnt; ++i )
-	fscanf(fig,"%lf",&xs.s[i]);
+	fscanf(fig,"%f",&xs.s[i]);
     /* the spec says that the last point of a closed path will duplicate the */
     /* first, but it doesn't seem to */
     if ( xs.closed && ( !RealNear(xs.cp[cnt-1].x,xs.cp[0].x) ||

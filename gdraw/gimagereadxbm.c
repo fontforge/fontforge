@@ -57,7 +57,7 @@ return NULL;
     for ( i=0; i<height; ++i ) {
 	scanline = base->data + i*base->bytes_per_line;
 	for ( j=0; j<base->bytes_per_line; ++j ) {
-	    fscanf(file," 0x%x",&pixels);
+	    fscanf(file," 0x%x",(unsigned *) &pixels);
 	    val = pixels; val2=0;
 	    for ( k=0; k<8 ; ++k ) {
 		if ( (val&(1<<k)) )

@@ -1087,7 +1087,7 @@ return( 0 );
     if ( cc>=b->charcnt )
 	BDFCharFree(bc);
     if ( ftell(pk)!=char_end ) {
-	fprintf( stderr, "The character, %d, was not read properly (or pk file is in bad format)\n At %d should be %d, off by %d\n", cc, ftell(pk), char_end, ftell(pk)-char_end );
+	fprintf( stderr, "The character, %d, was not read properly (or pk file is in bad format)\n At %ld should be %d, off by %ld\n", cc, ftell(pk), char_end, ftell(pk)-char_end );
 	fseek(pk,char_end,SEEK_SET);
     }
  /* printf( "\n" ); */
@@ -1865,7 +1865,7 @@ static BDFFont *_SFImportBDF(SplineFont *sf, char *filename,int ispk, int toback
 	{ "gz", "gunzip", "gzip" },
 	{ "bz2", "bunzip2", "bzip2" },
 	{ "Z", "gunzip", "compress" },
-	NULL
+	{ NULL }
     };
     int i;
     char *pt, *temp=NULL;

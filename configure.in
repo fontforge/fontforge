@@ -37,6 +37,11 @@ AC_DEFINE(__CygWin,1)
 AC_DEFINE(NODYNAMIC)
 gww_nodynamic="yes"
 gww_needsstatic="yes"
+
+dnl Although present on my cygwin system the Xi library does not load
+dnl and crashes gdb if we attempt to use it.
+
+AC_DEFINE(_NO_XINPUT)
  ;;
 esac
 

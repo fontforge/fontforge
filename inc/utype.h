@@ -51,7 +51,7 @@ extern const unsigned short ____tolower[];
 extern const unsigned short ____toupper[];
 extern const unsigned short ____totitle[];
 extern const unsigned short ____tomirror[];
-extern const signed char ____digitval[];
+extern const unsigned char ____digitval[];
 extern const unsigned long ____utype[];
 
 extern const unsigned long ____utype2[];

@@ -7287,6 +7287,12 @@ _ACEOF
 
 gww_nodynamic="yes"
 gww_needsstatic="yes"
+
+
+cat >>confdefs.h <<\_ACEOF
+#define _NO_XINPUT 1
+_ACEOF
+
  ;;
 esac
 

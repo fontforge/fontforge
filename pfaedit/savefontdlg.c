@@ -264,7 +264,7 @@ return( false );
     while ( i<256 ) {
 	fprintf( enc, " /.notdef" );
 	if ( (i&0xf0)==0 )
-	    fprintf( enc, "\t\t% 0x%02x", i );
+	    fprintf( enc, "\t\t%% 0x%02x", i );
 	putc('\n',enc);
 	++i;
     }

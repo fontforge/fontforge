@@ -958,18 +958,18 @@ return( predefn[i].value );
 
     if ( sscanf(name,"rgb(%d,%d,%d)", &r, &g, &b )==3 ||
 	    sscanf(name,"%d %d %d", &r, &g, &b )==3 ||
-	    sscanf(name,"%x %x %x", &r, &g, &b )==3 ||
-	    (strlen(name)==7 && sscanf(name,"#%2x%2x%2x", &r, &g, &b )==3) ) {
+	    sscanf(name,"%x %x %x", (unsigned *) &r, (unsigned *) &g, (unsigned *) &b )==3 ||
+	    (strlen(name)==7 && sscanf(name,"#%2x%2x%2x", (unsigned *) &r, (unsigned *) &g, (unsigned *) &b )==3) ) {
 	if ( r>255 ) r=255; else if ( r<0 ) r=0;
 	if ( g>255 ) g=255; else if ( g<0 ) g=0;
 	if ( b>255 ) b=255; else if ( b<0 ) b=0;
 return( ((long) r<<16) | (g<<8) | b );
-    } else if ( (strlen(name)==4 && sscanf(name,"#%1x%1x%1x", &r, &g, &b )==3) ) {
+    } else if ( (strlen(name)==4 && sscanf(name,"#%1x%1x%1x", (unsigned *) &r, (unsigned *) &g, (unsigned *) &b )==3) ) {
 	if ( r>15 ) r=15; else if ( r<0 ) r=0;
 	if ( g>15 ) g=15; else if ( g<0 ) g=0;
 	if ( b>15 ) b=15; else if ( b<0 ) b=0;
 return( ((long) (r*0x110000)) | (g*0x1100) | (b*0x11) );
-    } else if ( (strlen(name)==17 && sscanf(name,"#%4x%4x%4x", &r, &g, &b )==3) ) {
+    } else if ( (strlen(name)==17 && sscanf(name,"#%4x%4x%4x", (unsigned *) &r, (unsigned *) &g, (unsigned *) &b )==3) ) {
 	r>>=8; g>>=8; b>>=8;
 	if ( r>255 ) r=255; else if ( r<0 ) r=0;
 	if ( g>255 ) g=255; else if ( g<0 ) g=0;
