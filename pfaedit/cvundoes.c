@@ -1494,15 +1494,25 @@ return;
 /*  refer to the glyphs in the new font. So the width should refer to the */
 /*  width of the glyphs in the new font as well */
 static int PasteGuessCorrectWidth(SplineFont *sf,Undoes *paster,int *vwidth) {
-    RefChar *ref;
+    RefChar *ref, *base=NULL;
 
     if ( paster->u.state.vwidth == paster->u.state.copied_from->ascent+paster->u.state.copied_from->descent )
 	*vwidth = sf->ascent+sf->descent;
     for ( ref=paster->u.state.refs; ref!=NULL; ref=ref->next ) {
-	SplineChar *sc = FindCharacter(sf,ref);
-	if ( sc==NULL || sc->unicodeenc==-1 || sc->unicodeenc>=0x10000 ||
-		!isalpha(sc->unicodeenc) || iscombining(sc->unicodeenc) )
-    continue;
+	if ( ref->unicode_enc!=-1 && ref->unicode_enc<0x10000 &&
+		isalpha(ref->unicode_enc) && !iscombining(ref->unicode_enc) &&
+		ref->transform[0]==1 && ref->transform[3]==1 &&
+		ref->transform[1]==0 && ref->transform[2]==0 &&
+		ref->transform[4]==0 && ref->transform[5]==0 ) {
+	    if ( base!=NULL ) {
+		base= NULL;
+    break;
+	    }
+	    base = ref;
+	}
+    }
+    if ( base!=NULL ) {
+	SplineChar *sc = FindCharacter(sf,base);
 	*vwidth = sc->vwidth;
 return( sc->width );
     }
