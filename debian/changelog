@@ -1,3 +1,17 @@
+pfaedit (0.0.20020210-1) unstable; urgency=low
+
+  * New upstream version
+    + Fix crash when generating postscript from arial.ttf
+    + Changes to bitmap dialogs to allow more control over dpi
+    + Use freetype to generate bitmaps 
+    + Added a scripting abilities
+    + Load the help documents locally instead of going to the homepage
+    + Fix a bug that caused to be used as the help browser, not it *does*
+      check for the existence of the browser.
+  * Actually make use of the loading of help documents locally.
+
+ -- Baruch Even <baruch@debian.org>  Sun, 10 Feb 2002 12:03:26 +0200
+
 pfaedit (0.0.20020206-1) unstable; urgency=low
 
   * New upstream version
