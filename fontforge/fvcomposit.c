@@ -114,6 +114,22 @@ static const unichar_t accents[][4] = {
     { 0xffff }
 };
 
+static const char *uc_accent_names[] = {
+    "Grave",
+    "Acute",
+    "Circumflex",
+    "Tilde",
+    "Macron",
+    "Overline",
+    "Breve",
+    "Dotaccent",
+    "Diaeresis",
+    NULL,
+    "Ring",
+    "Acute",
+    "Caron"
+};
+
 /* greek accents */
 /* because of accent unification I can't use the same glyphs for greek and */
 /*  latin accents. Annoying. So when unicode decomposes a greek letter to */
@@ -1138,6 +1154,66 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
     } else
 	ach = ch;
     rsc = findchar(sf,ach);
+    /* Look to see if there are upper case variants of the accents available */
+    if ( isupper(basech) || (basech>=0x400 && basech<=0x52f) ) {
+	char *uc_accent = copyn(rsc->name,strlen(rsc->name)+10);
+	SplineChar *test = NULL;
+	char buffer[80];
+	char *suffix;
+
+	if ( basech>=0x400 && basech<=0x52f ) {
+	    if ( isupper(basech) )
+		suffix = "cyrcap";
+	    else
+		suffix = "cyr";
+	} else
+	    suffix = "cap";
+
+	if ( test==NULL ) {
+	    apt = accents[ch-BottomAccent]; end = apt+sizeof(accents[0])/sizeof(accents[0][0]);
+	    while ( test==NULL && apt<end ) {
+		if ( psunicodenames[*apt]!=NULL )
+		    sprintf( buffer,"%.70s.%s", psunicodenames[*apt], suffix);
+		else
+		    sprintf( buffer,"uni%04X.%s", *apt, suffix);
+		if ( (test = SFGetChar(sf,-1,buffer))!=NULL )
+		    rsc = test;
+		++apt;
+	    }
+	}
+	if ( test==NULL ) {
+	    apt = accents[ch-BottomAccent]; end = apt+sizeof(accents[0])/sizeof(accents[0][0]);
+	    while ( test==NULL && apt<end ) {
+		if ( psunicodenames[*apt]!=NULL ) {
+		    sprintf( buffer,"%.70s", psunicodenames[*apt]);
+		    if ( islower(buffer[0])) {
+			buffer[0] = toupper(buffer[0]);
+			if ( (test = SFGetChar(sf,-1,buffer))!=NULL )
+			    rsc = test;
+		    }
+		}
+		++apt;
+	    }
+	}
+	if ( ch>=BottomAccent && ch<BottomAccent+sizeof(uc_accent_names)/sizeof(uc_accent_names[0]) &&
+		uc_accent_names[ch-BottomAccent]!=NULL && isupper(basech))
+	    if ( (test = SFGetChar(sf,-1,uc_accent_names[ch-BottomAccent]))!=NULL )
+		rsc = test;
+	if ( test==NULL && islower(*uc_accent) && isupper(basech)) {
+	    *uc_accent = toupper(*uc_accent);
+	    if ( (test=SFGetChar(sf,-1,uc_accent))!=NULL )
+		rsc = test;
+	}
+	if ( test==NULL ) {
+	    *uc_accent = *sc->name;
+	    strcat(uc_accent,".");
+	    strcat(uc_accent,suffix);
+	    if ( (test=SFGetChar(sf,-1,uc_accent))!=NULL )
+		rsc = test;
+	}
+	free(uc_accent);
+    }
+
     SplineCharFindSlantedBounds(rsc,&rbb,ia);
     if ( ch==0x328 || ch==0x327 ) {	/* cedilla and ogonek */
 	SCFindTopBounds(rsc,&rbb,ia);
