@@ -4666,6 +4666,8 @@ PST *AddSubs(PST *last,uint32 tag,char *name,uint16 flags,
 	uint16 sli,SplineChar *sc) {
     PST *sub = chunkalloc(sizeof(PST));
     sub->tag = tag;
+    if ( tag<CHR(' ',' ',' ',' ') || tag>0x7f000000 )
+	sub->macfeature = true;
     sub->flags = flags;
     sub->type = pst_substitution;
     if ( sli==SLI_UNKNOWN )
