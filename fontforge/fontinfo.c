@@ -6480,8 +6480,8 @@ return;
 		GDrawPointsToPixels(NULL,mgcd[1].gd.pos.y)+offset);
 	GGadgetGetSize(mgcd[2].ret,&temp);
 	GGadgetMove(mgcd[2].ret,temp.x, temp.y+offset);
-	GGadgetResize(mgcd[3].ret,GDrawPointsToPixels(NULL,mgcd[3].gd.pos.width),
-		GDrawPointsToPixels(NULL,mgcd[3].gd.pos.height)+offset);
+	GGadgetResize(mgcd[3].ret,mgcd[3].gd.pos.width,
+		mgcd[3].gd.pos.height+offset);
     }
     GWidgetIndicateFocusGadget(ngcd[1].ret);
     ProcessListSel(d);
