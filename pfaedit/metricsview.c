@@ -33,6 +33,7 @@
 #include <math.h>
 
 static int mv_antialias = true;
+static double mv_scales[] = { 1.0, 2.0/3.0, .5, 1.0/3.0, .25, .2, 1.0/6.0 };
 
 static void MVExpose(MetricsView *mv, GWindow pixmap, GEvent *event) {
     GRect old, *clip, r, old2;
@@ -64,7 +65,7 @@ return;
 	GDrawPopClip(pixmap,&old);
 return;
     }
-    ybase = mv->topend + 2 + (mv->pixelsize * sf->ascent / (sf->ascent+sf->descent));
+    ybase = mv->topend + 2 + (mv->pixelsize/mv_scales[mv->scale_index] * sf->ascent / (sf->ascent+sf->descent));
     if ( mv->showgrid )
 	GDrawDrawLine(pixmap,0,ybase,mv->width,ybase,0x808080);
 
@@ -564,7 +565,7 @@ static void MVMakeLabels(MetricsView *mv) {
 
     mv->mwidth = 60;
     mv->displayend = mv->height- mv->sbh - 5*(mv->fh+4);
-    mv->pixelsize = mv->displayend - mv->topend - 4;
+    mv->pixelsize = mv_scales[mv->scale_index]*(mv->displayend - mv->topend - 4);
 
     label.text = (unichar_t *) "Name:";
     label.text_is_1byte = true;
@@ -947,6 +948,8 @@ return( true );
 }
 
 
+#define MID_ZoomIn	2002
+#define MID_ZoomOut	2003
 #define MID_Next	2005
 #define MID_Prev	2006
 #define MID_Outline	2007
@@ -1563,6 +1566,21 @@ static void MVMenuAnchorPairs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SFShowKernPairs(mv->fv->sf,NULL,mi->ti.userdata);
 }
 
+static void MVMenuScale(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+
+    if ( mi->mid==MID_ZoomIn ) {
+	if ( --mv->scale_index<0 ) mv->scale_index = 0;
+    } else {
+	if ( ++mv->scale_index >= sizeof(mv_scales)/sizeof(mv_scales[0]) )
+	    mv->scale_index = sizeof(mv_scales)/sizeof(mv_scales[0])-1;
+    }
+
+    mv->pixelsize = mv_scales[mv->scale_index]*(mv->displayend - mv->topend - 4);
+    MVReRasterize(mv);
+    GDrawRequestExpose(mv->gw,NULL,true);
+}
+
 static void MVMenuChangeChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     SplineFont *sf = mv->fv->sf;
@@ -1795,6 +1813,9 @@ static void cblistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 }
 
 static GMenuItem vwlist[] = {
+    { { (unichar_t *) _STR_Zoomout, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'o' }, '-', ksm_control|ksm_meta, NULL, NULL, MVMenuScale, MID_ZoomOut },
+    { { (unichar_t *) _STR_Zoomin, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'i' }, '+', ksm_shift|ksm_control|ksm_meta, NULL, NULL, MVMenuScale, MID_ZoomIn },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_NextChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'N' }, ']', ksm_control, NULL, NULL, MVMenuChangeChar, MID_Next },
     { { (unichar_t *) _STR_PrevChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '[', ksm_control, NULL, NULL, MVMenuChangeChar, MID_Prev },
     { { (unichar_t *) _STR_NextDefChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'D' }, ']', ksm_control|ksm_meta, NULL, NULL, MVMenuChangeChar, MID_NextDef },
@@ -1973,17 +1994,26 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	}
 
     for ( i=0; vwlist[i].mid!=MID_Outline; ++i )
-	if ( vwlist[i].mid==MID_ShowGrid ) {
+	switch ( vwlist[i].mid ) {
+	  case MID_ZoomIn:
+	    vwlist[i].ti.disabled = mv->bdf!=NULL || mv->scale_index==0;
+	  break;
+	  case MID_ZoomOut:
+	    vwlist[i].ti.disabled = mv->bdf!=NULL || mv->scale_index>=sizeof(mv_scales)/sizeof(mv_scales[0])-1;
+	  break;
+	  case MID_ShowGrid:
 	    vwlist[i].ti.text = (unichar_t *) GStringGetResource(mv->showgrid?_STR_Hidegrid:_STR_Showgrid,NULL);
 	    vwlist[i].ti.text_in_resource = false;
-	} else if ( vwlist[i].mid==MID_AntiAlias ) {
+	  break;
+	  case MID_AntiAlias:
 	    vwlist[i].ti.checked = mv->antialias;
 	    vwlist[i].ti.disabled = mv->bdf!=NULL;
-	} else if ( vwlist[i].mid==MID_FindInFontView ||
-		    vwlist[i].mid==MID_Next ||
-		    vwlist[i].mid==MID_Prev ||
-		    vwlist[i].mid==MID_NextDef ||
-		    vwlist[i].mid==MID_PrevDef ) {
+	  break;
+	  case MID_FindInFontView:
+	  case MID_Next:
+	  case MID_Prev:
+	  case MID_NextDef:
+	  case MID_PrevDef:
 	    vwlist[i].ti.disabled = !aselection;
 	}
     base = i+1;
@@ -2052,7 +2082,7 @@ return;
     mv->displayend = event->u.resize.size.height - (mv->height-mv->displayend);
     mv->height = event->u.resize.size.height;
 
-    mv->pixelsize = mv->displayend - mv->topend - 4;
+    mv->pixelsize = mv_scales[mv->scale_index]*(mv->displayend - mv->topend - 4);
 
     for ( i=0; i<mv->max; ++i ) if ( mv->perchar[i].width!=NULL ) {
 	GGadgetMove(mv->perchar[i].name,mv->perchar[i].mx,mv->displayend+2);
@@ -2123,7 +2153,7 @@ return;
     }
 
     event->u.mouse.x += mv->xoff;
-    ybase = mv->topend + 2 + (mv->pixelsize * mv->fv->sf->ascent /
+    ybase = mv->topend + 2 + (mv->pixelsize/mv_scales[mv->scale_index] * mv->fv->sf->ascent /
 	    (mv->fv->sf->ascent+mv->fv->sf->descent));
     within = -1;
     for ( i=0; i<mv->charcnt; ++i ) {

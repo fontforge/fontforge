@@ -271,6 +271,7 @@ typedef struct metricsview {
     unsigned int showgrid: 1;
     unsigned int antialias: 1;
     int cursor;
+    int scale_index;
 } MetricsView;
 
 enum fv_metrics { fvm_baseline=1, fvm_origin=2, fvm_advanceat=4, fvm_advanceto=8 };
