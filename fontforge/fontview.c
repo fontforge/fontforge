@@ -1570,7 +1570,9 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void FVMenuCharInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     int pos = FVAnyCharSelected(fv);
-    if ( pos<0 || fv->cidmaster!=NULL )
+    if ( pos<0 )
+return;
+    if ( fv->cidmaster!=NULL && fv->sf->chars[pos]==NULL )
 return;
     SFMakeChar(fv->sf,pos);
     SCCharInfo(fv->sf->chars[pos]);
@@ -2681,7 +2683,8 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
 	  case MID_CharInfo:
-	    mi->ti.disabled = anychars<0 /*|| fv->cidmaster!=NULL*/;
+	    mi->ti.disabled = anychars<0 ||
+		    (fv->cidmaster!=NULL && fv->sf->chars[anychars]==NULL);
 	  break;
 	  case MID_ShowDependents:
 	    mi->ti.disabled = anychars<0 || fv->sf->chars[anychars]==NULL ||
