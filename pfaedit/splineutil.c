@@ -261,7 +261,7 @@ void ImageListsFree(ImageList *imgs) {
 
     while ( imgs!=NULL ) {
 	inext = imgs->next;
-	free(imgs);
+	chunkfree(imgs,sizeof(ImageList));
 	imgs = inext;
     }
 }
