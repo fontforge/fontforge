@@ -53,10 +53,11 @@ struct node {
 struct att_dlg {
     unsigned int done: 1;
     struct node *tables;
-    int open_cnt, lines_page, off_top, bmargin;
+    int open_cnt, lines_page, off_top, off_left, page_width, bmargin;
+    int maxl;
     SplineFont *sf;
     GWindow gw,v;
-    GGadget *vsb, *cancel;
+    GGadget *vsb, *hsb, *cancel;
     int fh, as;
     GFont *font;
     struct node *current;
@@ -712,26 +713,35 @@ static void BuildTop(struct att_dlg *att) {
     att->current = tables;
 }
 
-static int _SizeCnt(struct att_dlg *att,struct node *node, int lpos) {
-    int i;
+static int _SizeCnt(struct att_dlg *att,struct node *node, int lpos,int depth) {
+    int i, len;
 
     node->lpos = lpos++;
+    len = 5+8*depth+ att->as + 5 + GDrawGetTextWidth(att->v,node->label,-1,NULL);
+    if ( len>att->maxl ) att->maxl = len;
+
     if ( node->open ) {
 	if ( !node->children_checked && node->build!=NULL ) {
 	    (node->build)(node,att);
 	    node->children_checked = true;
 	}
 	for ( i=0; i<node->cnt; ++i )
-	    lpos = _SizeCnt(att,&node->children[i],lpos);
+	    lpos = _SizeCnt(att,&node->children[i],lpos,depth+1);
     }
 return( lpos );
 }
 
 static int SizeCnt(struct att_dlg *att,struct node *node, int lpos) {
+    att->maxl = 0;
+    GDrawSetFont(att->v,att->font);
     while ( node->label ) {
-	lpos = _SizeCnt(att,node,lpos);
+	lpos = _SizeCnt(att,node,lpos,0);
 	++node;
     }
+
+    GScrollBarSetBounds(att->vsb,0,lpos,att->lines_page);
+    GScrollBarSetBounds(att->hsb,0,att->maxl,att->page_width);
+    att->open_cnt = lpos;
 return( lpos );
 }
 
@@ -795,7 +805,7 @@ static void AttExpose(struct att_dlg *att,GWindow pixmap,GRect *rect) {
     GDrawSetFont(pixmap,att->font);
     while ( node!=NULL ) {
 	r.y = y-att->as+1;
-	r.x = 5+8*depth;
+	r.x = 5+8*depth - att->off_left;
 	fg = node==att->current ? 0xff0000 : 0x000000;
 	if ( node->build || node->children ) {
 	    GDrawDrawRect(pixmap,&r,fg);
@@ -848,20 +858,14 @@ return;
     l = (event->u.mouse.y/att->fh);
     depth=0;
     node = NodeFindLPos(att->tables,l+att->off_top,&depth);
+    ATTChangeCurrent(att,node);
     if ( event->u.mouse.y > l*att->fh+att->as ||
 	    event->u.mouse.x<5+8*depth ||
-	    event->u.mouse.x>=5+8*depth+att->as || node==NULL ) {
-	ATTChangeCurrent(att,node);
+	    event->u.mouse.x>=5+8*depth+att->as || node==NULL )
 return;			/* Not in +/- rectangle */
-    }
-    if ( event->u.mouse.x<5+8*depth || event->u.mouse.x>=5+8*depth+att->as || node==NULL )
-return;
     node->open = !node->open;
-    att->current = node;
 
     cnt = SizeCnt(att,att->tables,0);
-    GScrollBarSetBounds(att->vsb,0,cnt,att->lines_page);
-    att->open_cnt = cnt;
 
     r.x = 0; r.width = 3000;
     r.y = l*att->fh; r.height = 3000;
@@ -906,6 +910,45 @@ static void AttScroll(struct att_dlg *att,struct sbevent *sb) {
     }
 }
 
+
+static void AttHScroll(struct att_dlg *att,struct sbevent *sb) {
+    int newpos = att->off_left;
+
+    switch( sb->type ) {
+      case et_sb_top:
+        newpos = 0;
+      break;
+      case et_sb_uppage:
+        newpos -= att->page_width;
+      break;
+      case et_sb_up:
+        --newpos;
+      break;
+      case et_sb_down:
+        ++newpos;
+      break;
+      case et_sb_downpage:
+        newpos += att->page_width;
+      break;
+      case et_sb_bottom:
+        newpos = att->maxl-att->page_width;
+      break;
+      case et_sb_thumb:
+      case et_sb_thumbrelease:
+        newpos = sb->pos;
+      break;
+    }
+    if ( newpos>att->maxl-att->page_width )
+        newpos = att->maxl-att->page_width;
+    if ( newpos<0 ) newpos =0;
+    if ( newpos!=att->off_left ) {
+	int diff = newpos-att->off_left;
+	att->off_left = newpos;
+	GScrollBarSetPos(att->hsb,att->off_left);
+	GDrawScroll(att->v,NULL,-diff,0);
+    }
+}
+
 static void AttResize(struct att_dlg *att,GEvent *event) {
     GRect size, wsize;
     int lcnt;
@@ -913,19 +956,23 @@ static void AttResize(struct att_dlg *att,GEvent *event) {
 
     GDrawGetSize(att->gw,&size);
     lcnt = (size.height-att->bmargin)/att->fh;
-    GGadgetResize(att->vsb,sbsize,lcnt*att->fh+2);
+    GGadgetResize(att->vsb,sbsize,lcnt*att->fh);
     GGadgetMove(att->vsb,size.width-sbsize,0);
-    GDrawResize(att->v,size.width-sbsize-1,lcnt*att->fh);
+    GGadgetResize(att->hsb,size.width-sbsize,sbsize);
+    GGadgetMove(att->hsb,0,lcnt*att->fh);
+    GDrawResize(att->v,size.width-sbsize,lcnt*att->fh);
+    att->page_width = size.width-sbsize;
     att->lines_page = lcnt;
     GScrollBarSetBounds(att->vsb,0,att->open_cnt,att->lines_page);
+    GScrollBarSetBounds(att->vsb,0,att->maxl,att->page_width);
 
     GGadgetGetSize(att->cancel,&wsize);
-    GGadgetMove(att->cancel,(size.width-wsize.width)/2,lcnt*att->fh+2+5);
+    GGadgetMove(att->cancel,(size.width-wsize.width)/2,lcnt*att->fh+sbsize+5);
     GDrawRequestExpose(att->v,NULL,true);
     GDrawRequestExpose(att->gw,NULL,true);
 }
 
-static int ATTChar(struct att_dlg *att,GEvent *event) {
+static int AttChar(struct att_dlg *att,GEvent *event) {
     int depth = 0;
 
     switch (event->u.chr.keysym) {
@@ -985,7 +1032,7 @@ return( GGadgetDispatchEvent(att->vsb,event));
 	AttExpose(att,gw,&event->u.expose.rect);
       break;
       case et_char:
-return( ATTChar(att,event));
+return( AttChar(att,event));
       case et_mouseup:
 	AttMouse(att,event);
       break;
@@ -1005,7 +1052,7 @@ return( GGadgetDispatchEvent(att->vsb,event));
       case et_expose:
       break;
       case et_char:
-return( ATTChar(att,event));
+return( AttChar(att,event));
       break;
       case et_resize:
 	if ( event->u.resize.sized )
@@ -1014,7 +1061,10 @@ return( ATTChar(att,event));
       case et_controlevent:
 	switch ( event->u.control.subtype ) {
 	  case et_scrollbarchange:
-	    AttScroll(att,&event->u.control.u.sb);
+	    if ( event->u.control.g == att->vsb )
+		AttScroll(att,&event->u.control.u.sb);
+	    else
+		AttHScroll(att,&event->u.control.u.sb);
 	  break;
 	  case et_buttonactivate:
 	    att->done = true;
@@ -1065,37 +1115,46 @@ void ShowAtt(SplineFont *sf) {
     GDrawFontMetrics(att.font,&as,&ds,&ld);
     att.fh = as+ds; att.as = as;
 
-    att.bmargin = GDrawPointsToPixels(NULL,32);
+    att.bmargin = GDrawPointsToPixels(NULL,32)+sbsize;
 
     att.lines_page = (pos.height-att.bmargin)/att.fh;
-    wattrs.mask = wam_events|wam_cursor|wam_bordwidth|wam_bordcol;
+    att.page_width = pos.width-sbsize;
+    wattrs.mask = wam_events|wam_cursor/*|wam_bordwidth|wam_bordcol*/;
     wattrs.border_width = 1;
     wattrs.border_color = 0x000000;
     pos.x = 0; pos.y = 0;
-    pos.width -= sbsize+1; pos.height = att.lines_page*att.fh;
+    pos.width -= sbsize; pos.height = att.lines_page*att.fh;
     att.v = GWidgetCreateSubWindow(att.gw,&pos,attv_e_h,&att,&wattrs);
     GDrawSetVisible(att.v,true);
 
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
 
-    gcd[0].gd.pos.x = pos.width+1; gcd[0].gd.pos.y = 0;
+    gcd[0].gd.pos.x = pos.width; gcd[0].gd.pos.y = 0;
     gcd[0].gd.pos.width = sbsize;
-    gcd[0].gd.pos.height = pos.height+2;
+    gcd[0].gd.pos.height = pos.height;
     gcd[0].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels | gg_sb_vert;
     gcd[0].creator = GScrollBarCreate;
 
-    gcd[1].gd.pos.width = GIntGetResource(_NUM_Buttonsize);
-    gcd[1].gd.pos.x = (pos.width+sbsize-gcd[1].gd.pos.width)/2; gcd[1].gd.pos.y = pos.height+5;
-    gcd[1].gd.flags = gg_visible | gg_enabled | gg_but_default | gg_but_cancel | gg_pos_in_pixels;
-    label[1].text = (unichar_t *) _STR_OK;
-    label[1].text_in_resource = true;
-    gcd[1].gd.label = &label[1];
-    gcd[1].creator = GButtonCreate;
+    gcd[1].gd.pos.x = 0; gcd[1].gd.pos.y = pos.height;
+    gcd[1].gd.pos.height = sbsize;
+    gcd[1].gd.pos.width = pos.width;
+    gcd[1].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels;
+    gcd[1].creator = GScrollBarCreate;
+
+    gcd[2].gd.pos.width = GIntGetResource(_NUM_Buttonsize);
+    gcd[2].gd.pos.x = (pos.width+sbsize-gcd[2].gd.pos.width)/2;
+    gcd[2].gd.pos.y = pos.height+sbsize+5;
+    gcd[2].gd.flags = gg_visible | gg_enabled | gg_but_default | gg_but_cancel | gg_pos_in_pixels;
+    label[2].text = (unichar_t *) _STR_OK;
+    label[2].text_in_resource = true;
+    gcd[2].gd.label = &label[2];
+    gcd[2].creator = GButtonCreate;
 
     GGadgetsCreate(att.gw,gcd);
     att.vsb = gcd[0].ret;
-    att.cancel = gcd[1].ret;
+    att.hsb = gcd[1].ret;
+    att.cancel = gcd[2].ret;
 
     BuildTop(&att);
     att.open_cnt = SizeCnt(&att,att.tables,0);
