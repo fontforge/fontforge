@@ -932,41 +932,32 @@ void SplinePointCatagorize(SplinePoint *sp) {
 	sp->pointtype = sp->nonextcp ? pt_corner : pt_curve;
     } else if ( sp->nonextcp && sp->noprevcp ) {
 	;
-    } else if ( !sp->nonextcp && !sp->noprevcp ) {
-	if ( RealWithin(sp->nextcp.y,sp->prevcp.y,.1) && RealWithin(sp->nextcp.y,sp->me.y,.1) ) {
-	    if ( (sp->nextcp.x-sp->me.x<0 && sp->me.x-sp->prevcp.x<0) ||
-		    (sp->nextcp.x-sp->me.x>0 && sp->me.x-sp->prevcp.x>0))
-		sp->pointtype = pt_curve;
-	} else if ( sp->nextcp.x!=sp->prevcp.x ) {
-	    real slope = (sp->nextcp.y-sp->prevcp.y)/(sp->nextcp.x-sp->prevcp.x);
-	    real y = slope*(sp->me.x-sp->prevcp.x) + sp->prevcp.y - sp->me.y;
-	    if ( y<1 && y>-1 )
-		sp->pointtype = pt_curve;
-	    else if ( sp->nextcp.y!=sp->prevcp.y ) {
-		real x;
-		slope = (sp->nextcp.x-sp->prevcp.x)/(sp->nextcp.y-sp->prevcp.y);
-		x = slope*(sp->me.y-sp->prevcp.y) + sp->prevcp.x - sp->me.x;
-		if ( x<1 && x>-1 )
-		    sp->pointtype = pt_curve;
-	    } else if ( sp->me.y == sp->nextcp.y )
-		sp->pointtype = pt_curve;
-	} else if ( sp->me.x == sp->nextcp.x )
+    } else {
+	BasePoint ndir, ncdir, pdir, pcdir;
+	double nlen, nclen, plen, pclen;
+
+	ncdir.x = sp->nextcp.x - sp->me.x; ncdir.y = sp->nextcp.y - sp->me.y;
+	pcdir.x = sp->prevcp.x - sp->me.x; pcdir.y = sp->prevcp.y - sp->me.y;
+	ndir.x = ndir.y = pdir.x = pdir.y = 0;
+	if ( sp->next!=NULL ) {
+	    ndir.x = sp->next->to->me.x - sp->me.x; ndir.y = sp->next->to->me.y - sp->me.y;
+	}
+	if ( sp->prev!=NULL ) {
+	    pdir.x = sp->prev->from->me.x - sp->me.x; pdir.y = sp->prev->from->me.y - sp->me.y;
+	}
+	nclen = sqrt(ncdir.x*ncdir.x + ncdir.y*ncdir.y);
+	pclen = sqrt(pcdir.x*pcdir.x + pcdir.y*pcdir.y);
+	nlen = sqrt(ndir.x*ndir.x + ndir.y*ndir.y);
+	plen = sqrt(pdir.x*pdir.x + pdir.y*pdir.y);
+	if ( nclen!=0 ) { ncdir.x /= nclen; ncdir.y /= nclen; }
+	if ( pclen!=0 ) { pcdir.x /= pclen; pcdir.y /= pclen; }
+	if ( nlen!=0 ) { ndir.x /= nlen; ndir.y /= nlen; }
+	if ( plen!=0 ) { pdir.x /= plen; pdir.y /= plen; }
+	if ( nclen!=0 && pclen!=0 && ncdir.x*pcdir.x+ncdir.y*pcdir.y<-.95 )
 	    sp->pointtype = pt_curve;
-    } else if ( sp->nonextcp && (sp->me.x!=sp->next->to->me.x || sp->me.y!=sp->next->to->me.y)) {
-	if ( sp->next->to->me.x!=sp->prevcp.x ) {
-	    real slope = (sp->next->to->me.y-sp->prevcp.y)/(sp->next->to->me.x-sp->prevcp.x);
-	    real y = slope*(sp->me.x-sp->prevcp.x) + sp->prevcp.y - sp->me.y;
-	    if ( y<1 && y>-1 )
-		sp->pointtype = pt_tangent;
-	} else if ( sp->me.x == sp->prevcp.x )
-	    sp->pointtype = pt_tangent;
-    } else if ( sp->noprevcp && (sp->me.x!=sp->prev->from->me.x || sp->me.y!=sp->prev->from->me.y)) {
-	if ( sp->nextcp.x!=sp->prev->from->me.x ) {
-	    real slope = (sp->nextcp.y-sp->prev->from->me.y)/(sp->nextcp.x-sp->prev->from->me.x);
-	    real y = slope*(sp->me.x-sp->prev->from->me.x) + sp->prev->from->me.y - sp->me.y;
-	    if ( y<1 && y>-1 )
-		sp->pointtype = pt_tangent;
-	} else if ( sp->me.x == sp->nextcp.x )
+	else if (( nclen!=0 || plen!=0 ) &&
+		(nclen==0 || ncdir.x*pdir.x+ncdir.y*pdir.y<-.95 ) &&
+		(pclen==0 || ndir.x*pcdir.x+ndir.y*pcdir.y<-.95 ))
 	    sp->pointtype = pt_tangent;
     }
 }
@@ -2643,7 +2634,22 @@ static int _CubicSolve(Spline1D *sp,double ts[3]) {
     int i=0;
 
     ts[0] = ts[1] = ts[2] = -999999;
-    if ( sp->a!=0 ) {
+    if ( sp->d==0 && sp->a!=0 ) {
+	/* one of the roots is 0, the other two are the soln of a quadratic */
+	ts[0] = 0;
+	if ( sp->c==0 ) {
+	    ts[1] = -sp->b/sp->a;	/* two zero roots */
+	} else {
+	    temp = sp->b*sp->b-4*sp->a*sp->c;
+	    if ( RealNear(temp,0))
+		ts[1] = -sp->b/(2*sp->a);
+	    else if ( temp>=0 ) {
+		temp = sqrt(temp);
+		ts[1] = (-sp->b+temp)/(2*sp->a);
+		ts[2] = (-sp->b-temp)/(2*sp->a);
+	    }
+	}
+    } else if ( sp->a!=0 ) {
     /* http://www.m-a.org.uk/eb/mg/mg077ch.pdf */
     /* this nifty solution to the cubic neatly avoids complex arithmatic */
 	xN = -sp->b/(3*sp->a);
@@ -2697,18 +2703,22 @@ return(false);		/* All roots imaginary */
     } else {
 	/* If it's a point then either everything is a solution, or nothing */
     }
-return( ts[0]!=-1 );
+return( ts[0]!=-999999 );
 }
 
 int CubicSolve(Spline1D *sp,double ts[3]) {
     double t;
+    int i;
     /* This routine gives us all solutions between [0,1] with -1 as an error flag */
+    /* http://mathforum.org/dr.math/faq/faq.cubic.equations.html */
 
     if ( !_CubicSolve(sp,ts)) {
 	ts[0] = ts[1] = ts[2] = -1;
 return( false );
     }
 
+    for ( i=0; i<3; ++i )
+	if ( ts[i]==-999999 ) ts[i] = -1;
     if (ts[0]>1.0001 || ts[0]<-.0001 ) ts[0] = -1;
     else if ( ts[0]<0 ) ts[0] = 0; else if ( ts[0]>1 ) ts[0] = 1;
     if (ts[1]>1.0001 || ts[1]<-.0001 ) ts[1] = -1;
@@ -2731,13 +2741,48 @@ return( false );
 return( true );
 }
 
-static int QuarticSolve(Quartic *q,double ts[4]) {
-    Quartic work;
+static int QuarticAlternate(Quartic *q,double ts[4],double offset) {
     Spline1D sp;
-    double zs[3];
-    double sq, a, b, c, d, e, f;
+    double zs[3], h, j, temp;
     int i;
 
+    sp.a = 1; sp.b = 2*q->c; sp.c = q->c*q->c-4*q->e;
+     sp.d = q->d*q->d;
+    if ( !_CubicSolve(&sp,zs))
+return(-1);
+    for ( i=0; i<3; ++i )
+	if ( zs[i]>0 )
+    break;
+    if ( i>=3 )
+return( -1 );
+    h = sqrt(zs[i]);
+    j = (q->c+zs[i]-q->d/h)/2;
+
+    /* Now the roots of q are the roots of y^2+hy+j and y^2-hy+(q->e)/j */
+    i = 0;
+    temp = h*h-4*j;
+    if ( temp>=0 ) {
+	temp = sqrt(temp);
+	ts[i++] = (-h+temp)/2 - offset;
+	ts[i++] = (-h-temp)/2 - offset;
+    }
+    temp = h*h-4*q->e/j;
+    if ( temp>=0 ) {
+	temp = sqrt(temp);
+	ts[i++] = (h+temp)/2 - offset;
+	ts[i++] = (h-temp)/2 - offset;
+    }
+return( i );
+}
+
+static int _QuarticSolve(Quartic *q,double ts[4]) {
+    Quartic work;
+    double zs[3], pq[2], r;
+    double f,offset;
+    Spline1D sp;
+    int i,j;
+
+    ts[0] = ts[1] = ts[2] = ts[3] = -1;
     if ( RealNear(q->a,0) ) {
 	/* I got a quadratic here once so this can happen ... */
 	i = 0;
@@ -2756,9 +2801,20 @@ static int QuarticSolve(Quartic *q,double ts[4]) {
 	} else {
 	    sp.a = q->b; sp.b = q->c; sp.c = q->d; sp.d = q->e;
 	    ts[3] = -1;
-return( CubicSolve(&sp,ts));
+	    if ( !CubicSolve(&sp,ts))
+return( -1 );
+	    for ( i=0; i<3 && ts[i]!=-1; ++i );
 	}
+    } else if ( RealNear(q->e,0)) {
+	sp.a = q->a; sp.b = q->b; sp.c = q->c; sp.d = q->d;
+	CubicSolve(&sp,ts);
+	for ( i=0; i<3 && ts[i]!=-1; ++i );
+	ts[i++] = 0;
     } else {
+	/* http://mathforum.org/dr.math/faq/faq.cubic.equations.html */
+	/* divide by q->a, substitute t=s - q->b/4 */
+	offset = q->b/(4*q->a);
+
 	work.a = 1;
 	work.b = 0;
 	work.c = (q->c-3*q->b*q->b/(8*q->a))/q->a;
@@ -2766,70 +2822,91 @@ return( CubicSolve(&sp,ts));
 	work.e = (-3*q->b*q->b*q->b*q->b/(256*q->a*q->a*q->a) + (q->b*q->b*q->c)/(16*q->a*q->a) -
 		q->b*q->d/(4*q->a) + q->e)/q->a;
 
-	if ( RealNear(work.e,0))
-	    work.e = 0;
-	if ( work.e<0 )		/* I hope this means no real roots, my cubic solver doesn't deal with complex coef */
+	if ( RealNear(work.e,0)) {
+	    sp.a = work.a; sp.b = work.b; sp.c = work.c; sp.d = work.d;
+	    CubicSolve(&sp,ts);
+	    for ( i=0; i<3 && ts[i]!=-1; ++i );
+	    ts[i++] = 0;
+	    for ( j=0; j<i; ++j )
+		ts[j] -= offset;
+	} else if ( RealNear(work.d,0)) {
+	    /* now we have a quadratic in s^2 */
+	    double b24ac = work.c*work.c - 4*work.e, t1, t2;
+	    if ( b24ac<0 && b24ac>-.0001 ) b24ac = 0;
+	    if ( b24ac < 0 )	/* All roots imaginary */
 return( -1 );
-	sq = sqrt(work.e);
-	sp.a = 8;
-	sp.b = 24*sq-4*work.c;
-	sp.c = 16*work.e-8*sq*work.c;
-	sp.d = -work.d*work.d;
-	if ( !_CubicSolve(&sp,zs) )
+	    b24ac = sqrt(b24ac);
+	    t1 = (-work.c + b24ac)/2;
+	    t2 = (-work.c - b24ac)/2;
+	    i = 0;
+	    if ( t1>0 ) {
+		ts[0] = sqrt(t1);
+		ts[1] = -ts[0];
+		i=2;
+	    } else if ( t1>-.0001 )
+		ts[i++] = 0;
+	    if ( t2>0 ) {
+		ts[i++] = sqrt(t2);
+		ts[i] = -ts[i-1];
+		++i;
+	    } else if ( t2>-.0001 )
+		ts[i++] = 0;
+	    for ( j=0; j<i ; ++j )
+		ts[j] -= offset;
+	    if ( i==0 )
 return( -1 );
-	a=2*sq-work.c+2*zs[0];
-	b= -work.d;
-	c= zs[0]*(zs[0]+2*sq);
-	if ( RealNear(c,0))
-	    c = 0;
-	if ( c<0 )
-return( -1 );
-	if ( !RealNear(b*b-4*a*c,0) )
-	    IError("Failure in quartic");
+	} else {
+	    sp.a = 1;
+	    sp.b = work.c/2;
+	    sp.c = (work.c*work.c-4*work.e)/16;
+	    sp.d = work.d*work.d/64;
+	    if ( !_CubicSolve(&sp,zs) )
+return( QuarticAlternate(&work,ts,offset));
 
-	b = -sqrt(a);
-	c = sq+zs[0]-sqrt(c);
-	a = 1;
-	i = 0;
-	f = q->b/(4*q->a);
-	if ( b*b-4*c>= 0 ) {
-	    sq = sqrt(b*b-4*c);
-	    ts[i++] = (-b+sq)/2-f;
-	    if ( sq!=0 )
-		ts[i++] = (-b-sq)/2-f; 
-	}
-	/* Now the a,b,c polynomial above must be offset by f before it can */
-	/*  represent the roots of q */
-	c += f*f + b*f;
-	b += 2*f;
-
-	    /* Now divide the original spline by this quadratic, and we will get */
-	    /*  another quadratic with the other two roots */
-	d = q->a;
-	work.b = q->b-d*b;
-	work.c = q->c-d*c;
-	e = work.b;
-	work.c -= e*b;
-	work.d = q->d-e*c;
-	f = work.c;
-	if ( !RealNear(work.d-f*b,0) || !RealNear(q->e-f*c,0))
-	    IError("Polynomial division failed");
-	if ( e*e-4*d*f >= 0 ) {
-	    sq = sqrt(e*e-4*d*f);
-	    ts[i++] = (-e+sq)/(2*d);
-	    if ( sq!=0 )
-		ts[i++] = (-e-sq)/(2*d);
+	    j = 0;
+	    for ( i=0; zs[i]!=-999999; ++i )
+		if ( zs[i]>0 ) {
+		    pq[j++] = zs[i];
+		    if ( j==2 )
+	    break;
+		}
+	    if ( j!=2 )
+return( QuarticAlternate(&work,ts,offset));
+	    pq[0] = sqrt(pq[0]);
+	    pq[1] = sqrt(pq[1]);
+	    r = -work.d/(8 * pq[0] *pq[1]);
+	    ts[0] = pq[0]+pq[1]+r - offset;
+	    ts[1] = pq[0]-pq[1]-r - offset;
+	    ts[2] = -pq[0]+pq[1]-r - offset;
+	    ts[3] = -pq[0]-pq[1]+r - offset;
+	    i = 4;
 	}
     }
-    while ( i<4 ) ts[i++] = -1;
-    for ( i=0; i<4 && ts[i]!=-1; ++i ) {
-	if ( ts[i]<-.001 || ts[i]>1.001 ) ts[i]=-1;
-	else if ( ts[i]<0 ) ts[i] = 0; else if ( ts[i]>1 ) ts[i] = 1;
+return( i );
+}
+
+static int QuarticSolve(Quartic *q,double ts[4]) {
+    int i,j,k;
+
+    if ( _QuarticSolve(q,ts)==-1 )
+return( -1 );
+
+    for ( i=0; i<4 && ts[i]!=-999999; ++i ) {
+	if ( ts[i]>-.0001 && ts[i]<0 ) ts[i] = 0;
+	if ( ts[i]>1.0 && ts[i]<1.0001 ) ts[i] = 1;
+	if ( ts[i]>1.0 || ts[i]<0 ) ts[i] = -999999;
     }
-    if ( ts[2]==-1 ) { ts[2]= ts[3]; ts[3] = -1; }
-    if ( ts[1]==-1 ) { ts[1]= ts[2]; ts[2] = ts[3]; ts[3] = -1; }
-    if ( ts[0]==-1 ) { ts[0]= ts[1]; ts[1]= ts[2]; ts[2] = ts[3]; ts[3] = -1; }
-return( ts[0]!=-1 );
+    for ( i=3; i>=0 && ts[i]==-999999; --i );
+    if ( i==-1 )
+return( -1 );
+    for ( j=i ; j>=0 ; --j ) {
+	if ( ts[j]<0 ) {
+	    for ( k=j+1; k<=i; ++k )
+		ts[k-1] = ts[k];
+	    ts[i--] = -999999;
+	}
+    }
+return(i+1);
 }
 
 double SplineSolve(Spline1D *sp, real tmin, real tmax, real sought,real err) {

@@ -1043,52 +1043,6 @@ static TPoint *SplinesFigureTPsBetween(SplinePoint *from, SplinePoint *to,
 return( tp );
 }
 
-static void FixupCurveTanPoints(SplinePoint *from,SplinePoint *to,
-        BasePoint *fncp, BasePoint *tpcp) {
-
-    /* if the control points don't match the point types then change the */
-    /*  point types. I used to try changing the point types, but the results */
-    /*  weren't good */
-    if ( from->pointtype!=pt_corner && !from->nonextcp ) {
-        fncp->x -= from->me.x; fncp->y -= from->me.y;
-        if ( fncp->x==0 && fncp->y==0 ) {
-            if ( from->pointtype == pt_tangent && from->prev!=NULL ) {
-                fncp->x = from->me.x-from->prev->from->me.x;
-                fncp->y = from->me.y-from->prev->from->me.y;
-            } else if ( from->pointtype == pt_curve && !from->noprevcp ) {
-                fncp->x = from->me.x-from->prevcp.x;
-                fncp->y = from->me.y-from->prevcp.y;
-            }
-        }
-        if ( fncp->x!=0 || fncp->y!=0 ) {
-            if ( !RealNear(atan2(fncp->y,fncp->x),
-                    atan2(from->nextcp.y-from->me.y,from->nextcp.x-from->me.x)) )
-                from->pointtype = pt_corner;
-        }
-    }
-    if ( to->pointtype!=pt_corner && !to->noprevcp ) {
-        tpcp->x -= to->me.x; tpcp->y -= to->me.y;
-        if ( tpcp->x==0 && tpcp->y==0 ) {
-            if ( to->pointtype == pt_tangent && to->next!=NULL ) {
-                tpcp->x = to->me.x-to->next->to->me.x;
-                tpcp->y = to->me.y-to->next->to->me.y;
-            } else if ( to->pointtype == pt_curve && !to->nonextcp ) {
-                tpcp->x = to->me.x-to->nextcp.x;
-                tpcp->y = to->me.y-to->nextcp.y;
-            }
-        }
-        if ( tpcp->x!=0 || tpcp->y!=0 ) {
-            if ( !RealNear(atan2(tpcp->y,tpcp->x),
-                    atan2(to->prevcp.y-to->me.y,to->prevcp.x-to->me.x)) )
-                to->pointtype = pt_corner;
-        }
-    }
-    if ( from->pointtype==pt_tangent )
-        SplineCharTangentPrevCP(from);
-    if ( to->pointtype==pt_tangent )
-        SplineCharTangentNextCP(to);
-}
-
 static void SplinesRemoveBetween(SplineChar *sc, SplinePoint *from, SplinePoint *to,int type) {
     int tot;
     TPoint *tp;
@@ -1116,8 +1070,7 @@ static void SplinesRemoveBetween(SplineChar *sc, SplinePoint *from, SplinePoint 
 	sp = np->next;
 	SplinePointMDFree(sc,np);
     }
-    if ( type==0 && !order2 )
-	FixupCurveTanPoints(from,to,&fncp,&tpcp);
+    
     free(tp);
 
     SplinePointCatagorize(from);
@@ -1254,6 +1207,118 @@ void SSRemoveStupidControlPoints(SplineSet *base) {
 
     for (spl=base; spl!=NULL; spl=spl->next )
 	RemoveStupidControlPoints(spl);
+}
+
+static void OverlapClusterCpAngles(SplineSet *spl,double within) {
+    double len, nlen, plen;
+    double startoff, endoff;
+    SplinePoint *sp, *nsp, *psp;
+    BasePoint *nbp, *pbp;
+    BasePoint pdir, ndir, fpdir, fndir;
+    int nbad, pbad;
+
+    /* If we have a junction point (right mid of 3) where the two splines */
+    /*  are almost, but not quite moving in the same direction as they go */
+    /*  away from the point, and if there is a tiny overlap because of this */
+    /*  "almost" same, then we will probably get a bit confused in remove */
+    /*  overlap */
+
+    for ( sp = spl->first; ; ) {
+	if ( sp->next==NULL )
+    break;
+	nsp = sp->next->to;
+	if (( !sp->nonextcp || !sp->noprevcp ) && sp->prev!=NULL ) {
+	    psp = sp->prev->from; 
+	    nbp = !sp->nonextcp ? &sp->nextcp : !nsp->noprevcp ? &nsp->prevcp : &nsp->me;
+	    pbp = !sp->noprevcp ? &sp->prevcp : !psp->nonextcp ? &psp->nextcp : &psp->me;
+
+	    pdir.x = pbp->x-sp->me.x; pdir.y = pbp->y-sp->me.y;
+	    ndir.x = nbp->x-sp->me.x; ndir.y = nbp->y-sp->me.y;
+	    fpdir.x = psp->me.x-sp->me.x; fpdir.y = psp->me.y-sp->me.y;
+	    fndir.x = nsp->me.x-sp->me.x; fndir.y = nsp->me.y-sp->me.y;
+
+	    plen = sqrt(pdir.x*pdir.x+pdir.y*pdir.y);
+	    if ( plen!=0 ) {
+		pdir.x /= plen; pdir.y /= plen;
+	    }
+
+	    nlen = sqrt(ndir.x*ndir.x+ndir.y*ndir.y);
+	    if ( nlen!=0 ) {
+		ndir.x /= nlen; ndir.y /= nlen;
+	    }
+
+	    nbad = pbad = false;
+	    if ( !sp->nonextcp && plen!=0 && nlen!=0 ) {
+		len = sqrt(fndir.x*fndir.x+fndir.y*fndir.y);
+		if ( len!=0 ) {
+		    fndir.x /= len; fndir.y /= len;
+		    startoff = ndir.x*pdir.y - ndir.y*pdir.x;
+		    endoff = fndir.x*pdir.y - fndir.y*pdir.x;
+		    if (( (startoff<0 && endoff>0) || (startoff>0 && endoff<0)) &&
+			    startoff > -within && startoff < within )
+			nbad = true;
+		}
+	    }
+	    if ( !sp->noprevcp && plen!=0 && nlen!=0 ) {
+		len = sqrt(fpdir.x*fpdir.x+fpdir.y*fpdir.y);
+		if ( len!=0 ) {
+		    fpdir.x /= len; fpdir.y /= len;
+		    startoff = pdir.x*ndir.y - pdir.y*ndir.x;
+		    endoff = fpdir.x*ndir.y - fpdir.y*ndir.x;
+		    if (( (startoff<0 && endoff>0) || (startoff>0 && endoff<0)) &&
+			    startoff > -within && startoff < within )
+			pbad = true;
+		}
+	    }
+	    if ( nbad && pbad ) {
+		if ( ndir.x==0 || ndir.y==0 )
+		    nbad = false;
+		else if ( pdir.x==0 || pdir.y==0 )
+		    pbad = false;
+	    }
+	    if ( nbad && pbad ) {
+		if ( ndir.x*pdir.x + ndir.y*pdir.y > 0 ) {
+		    ndir.x = pdir.x = (ndir.x + pdir.x)/2;
+		    ndir.y = pdir.y = (ndir.x + pdir.x)/2;
+		} else {
+		    ndir.x = (ndir.x - pdir.x)/2;
+		    ndir.y = (ndir.y - pdir.y)/2;
+		    pdir.x = -ndir.x; pdir.y = -ndir.y;
+		}
+		sp->nextcp.x = sp->me.x + nlen*ndir.x;
+		sp->nextcp.y = sp->me.y + nlen*ndir.y;
+		sp->prevcp.x = sp->me.x + plen*pdir.x;
+		sp->prevcp.y = sp->me.y + plen*pdir.y;
+		SplineRefigure(sp->next); SplineRefigure(sp->prev);
+	    } else if ( nbad ) {
+		if ( ndir.x*pdir.x + ndir.y*pdir.y < 0 ) {
+		    pdir.x = -pdir.x;
+		    pdir.y = -pdir.y;
+		}
+		sp->nextcp.x = sp->me.x + nlen*pdir.x;
+		sp->nextcp.y = sp->me.y + nlen*pdir.y;
+		SplineRefigure(sp->next);
+	    } else if ( pbad ) {
+		if ( ndir.x*pdir.x + ndir.y*pdir.y < 0 ) {
+		    ndir.x = -ndir.x;
+		    ndir.y = -ndir.y;
+		}
+		sp->prevcp.x = sp->me.x + plen*ndir.x;
+		sp->prevcp.y = sp->me.y + plen*ndir.y;
+		SplineRefigure(sp->prev);
+	    }
+	}
+	if ( nsp==spl->first )
+    break;
+	sp = nsp;
+    }
+}
+
+void SSOverlapClusterCpAngles(SplineSet *base,double within) {
+    SplineSet *spl;
+
+    for (spl=base; spl!=NULL; spl=spl->next )
+	OverlapClusterCpAngles(spl,within);
 }
 
 static SplinePointList *SplinePointListMerge(SplineChar *sc, SplinePointList *spl,int type) {
@@ -1415,7 +1480,7 @@ static int SplinesRemoveBetweenMaybe(SplineChar *sc,
     TPoint *tp, *tp2;
     BasePoint test;
     int good;
-    BasePoint fncp, tpcp, fncp2, tpcp2;
+    BasePoint fncp, tpcp;
     int fpt, tpt;
     int order2 = from->next->order2;
 
@@ -1434,7 +1499,6 @@ return( false );
 	ApproximateSplineFromPointsSlopes(from,to,tp,tot-1,order2);
     else {
 	ApproximateSplineFromPoints(from,to,tp,tot-1,order2);
-	FixupCurveTanPoints(from,to,&fncp2,&tpcp2);
     }
 
     i = tot;
@@ -1634,7 +1698,7 @@ static void SPLForceLines(SplineChar *sc,SplineSet *ss,double bump_size) {
 	    unit.x /= len; unit.y /= len;
 	    do {
 		any = false;
-		if ( s->from->prev!=NULL ) {
+		if ( s->from->prev!=NULL && s->from->prev!=s ) {
 		    sp = s->from->prev->from;
 		    len2 = sqrt((sp->me.x-s->from->me.x)*(sp->me.x-s->from->me.x) + (sp->me.y-s->from->me.y)*(sp->me.y-s->from->me.y));
 		    diff = (sp->me.x-s->from->me.x)*unit.y - (sp->me.y-s->from->me.y)*unit.x;
@@ -1656,9 +1720,18 @@ static void SPLForceLines(SplineChar *sc,SplineSet *ss,double bump_size) {
 			    SplineRefigure(sp->prev);
 			sp->pointtype = pt_corner;
 			any = true;
+
+			/* We must recalculate the length each time, we */
+			/*  might have shortened it. */
+			unit.x = s->to->me.x-s->from->me.x;
+			unit.y = s->to->me.y-s->from->me.y;
+			len = sqrt(unit.x*unit.x + unit.y*unit.y);
+			if ( len<minlen )
+	    break;
+			unit.x /= len; unit.y /= len;
 		    }
 		}
-		if ( s->to->next!=NULL ) {
+		if ( s->to->next!=NULL && s->to->next!=s ) {
 		    sp = s->to->next->to;
 		    /* If the next spline is a longer line than we are, then don't */
 		    /*  merge it to us, rather merge us into it next time through the loop */
@@ -1683,6 +1756,13 @@ static void SPLForceLines(SplineChar *sc,SplineSet *ss,double bump_size) {
 			    SplineRefigure(sp->next);
 			sp->pointtype = pt_corner;
 			any = true;
+
+			unit.x = s->to->me.x-s->from->me.x;
+			unit.y = s->to->me.y-s->from->me.y;
+			len = sqrt(unit.x*unit.x + unit.y*unit.y);
+			if ( len<minlen )
+	    break;
+			unit.x /= len; unit.y /= len;
 		    }
 		}
 	    } while ( any );
@@ -1853,6 +1933,8 @@ return;		/* Ignore any splines which are just dots */
 		/* nsp is something we don't want to remove */
 		if ( nsp==sp )
 	break;
+		else if ( sp->next->to == nsp )
+	      goto nogood;		/* Nothing to remove */
 		if ( SplinesRemoveBetweenMaybe(sc,sp,nsp,smpl->flags,smpl->err)) {
 		    if ( spl->last==spl->first )
 			spl->last = spl->first = sp;	/* We know this point didn't get removed */

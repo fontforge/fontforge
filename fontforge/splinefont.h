@@ -1390,6 +1390,7 @@ extern int SplineInSplineSet(Spline *spline, SplineSet *spl);
 extern int SSPointWithin(SplineSet *spl,BasePoint *pt);
 extern SplineSet *SSRemoveZeroLengthSplines(SplineSet *base);
 extern void SSRemoveStupidControlPoints(SplineSet *base);
+extern void SSOverlapClusterCpAngles(SplineSet *base,double within);
 extern void SplineCharMerge(SplineChar *sc,SplineSet **head,int type);
 extern void SPLNearlyHvCps(SplineChar *sc,SplineSet *ss,double err);
 extern void SPLNearlyHvLines(SplineChar *sc,SplineSet *ss,double err);
