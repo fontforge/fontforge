@@ -4253,7 +4253,7 @@ return( NULL );
 	int ok = false;
 	FILE *test = fopen(filename,"r");
 	if ( test!=NULL ) {
-	    if ( getc(test)=='%' ) ok = true;
+	    /*if ( getc(test)=='%' )*/ ok = true;
 	    fclose(test);
 	}
 	if ( !ok ) {
