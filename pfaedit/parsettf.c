@@ -3938,6 +3938,7 @@ return;
 	    info->chars[glyphs[i]]->script = lookup->script;
     }
     free(vr);
+    free(glyphs);
 }
 
 static void gposExtensionSubTable(FILE *ttf, int stoffset,
@@ -4074,6 +4075,7 @@ return;
 	}
     }
     free(glyph2s);
+    free(glyphs);
 }
 
 /* Multiple and alternate substitution lookups have the same format */
@@ -4153,6 +4155,7 @@ return;
 	    }
 	}
     }
+    free(glyphs);
     free(glyph2s);
     free(offsets);
 }
