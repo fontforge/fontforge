@@ -4178,19 +4178,47 @@ void FVShowFilled(FontView *fv) {
 void FVMetricsCenter(FontView *fv,int docenter) {
     int i;
     DBounds bb;
+    IBounds ib;
     real transform[6];
+    BVTFunc bvts[2];
+    BDFFont *bdf;
 
     transform[0] = transform[3] = 1.0;
     transform[1] = transform[2] = transform[5] = 0.0;
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
-	SplineChar *sc = fv->sf->chars[i];
-	SplineCharFindBounds(sc,&bb);
-	if ( docenter )
-	    transform[4] = (sc->width-(bb.maxx-bb.minx))/2 - bb.minx;
-	else
-	    transform[4] = (sc->width-(bb.maxx-bb.minx))/3 - bb.minx;
-	if ( transform[4]!=0 )
-	    FVTrans(fv,sc,transform,NULL,fvt_dontmovewidth);
+    bvts[1].func = bvt_none;
+    bvts[0].func = bvt_transmove; bvts[0].y = 0;
+    if ( !fv->sf->onlybitmaps ) {
+	for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
+	    SplineChar *sc = fv->sf->chars[i];
+	    SplineCharFindBounds(sc,&bb);
+	    if ( docenter )
+		transform[4] = (sc->width-(bb.maxx-bb.minx))/2 - bb.minx;
+	    else
+		transform[4] = (sc->width-(bb.maxx-bb.minx))/3 - bb.minx;
+	    if ( transform[4]!=0 ) {
+		FVTrans(fv,sc,transform,NULL,fvt_dontmovewidth);
+		bvts[0].x = transform[4];
+		for ( bdf = fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next ) if ( bdf->chars[i]!=NULL )
+		    BCTrans(bdf,bdf->chars[i],bvts,fv);
+	    }
+	}
+    } else {
+	double scale = (fv->sf->ascent+fv->sf->descent)/(double) (fv->show->pixelsize);
+	for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
+	    BDFChar *bc = fv->show->chars[i];
+	    if ( bc==NULL ) bc = BDFMakeChar(fv->show,i);
+	    BDFCharFindBounds(bc,&ib);
+	    if ( docenter )
+		transform[4] = scale * ((bc->width-(ib.maxx-ib.minx))/2 - ib.minx);
+	    else
+		transform[4] = scale * ((bc->width-(ib.maxx-ib.minx))/3 - ib.minx);
+	    if ( transform[4]!=0 ) {
+		FVTrans(fv,fv->sf->chars[i],transform,NULL,fvt_dontmovewidth);
+		bvts[0].x = transform[4];
+		for ( bdf = fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next ) if ( bdf->chars[i]!=NULL )
+		    BCTrans(bdf,bdf->chars[i],bvts,fv);
+	    }
+	}
     }
 }
 

@@ -180,6 +180,11 @@ typedef struct dbounds {
     real miny, maxy;
 } DBounds;
 
+typedef struct ibounds {
+    int minx, maxx;
+    int miny, maxy;
+} IBounds;
+
 typedef struct bluedata {
     real xheight, xheighttop;		/* height of "x" and "o" (u,v,w,x,y,z) */
     real caph, caphtop;			/* height of "I" and "O" */
@@ -1355,6 +1360,7 @@ extern int BDFDepth(BDFFont *bdf);
 extern BDFChar *BDFPieceMeal(BDFFont *bdf, int index);
 enum piecemeal_flags { pf_antialias=1, pf_bbsized=2 };
 extern BDFFont *SplineFontPieceMeal(SplineFont *sf,int pixelsize,int flags,void *freetype_context);
+extern void BDFCharFindBounds(BDFChar *bc,IBounds *bb);
 extern BDFFont *BitmapFontScaleTo(BDFFont *old, int to);
 extern void BDFCharFree(BDFChar *bdfc);
 extern void BDFFontFree(BDFFont *bdf);
