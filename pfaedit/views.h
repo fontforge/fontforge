@@ -813,6 +813,12 @@ extern void PfaEditSetFallback(void);
 extern void RecentFilesRemember(char *filename);
 extern int GetPrefs(char *name,Val *val);		/* for scripting */
 extern int SetPrefs(char *name,Val *val1, Val *val2);	/* for scripting */
+extern void GListAddStr(GGadget *list,unichar_t *str, void *ud);
+extern void GListReplaceStr(GGadget *list,int index, unichar_t *str, void *ud);
+extern void GCDFillMacFeat(GGadgetCreateData *mfgcd,GTextInfo *mflabels, int width,
+	MacFeat *all, int fromprefs);
+extern int UserFeaturesDiffer(void);
+extern void Prefs_ReplaceMacFeatures(GGadget *list);
 
 extern void FVAutoTrace(FontView *fv,int ask);
 extern void SCAutoTrace(SplineChar *sc,GWindow v,int ask);

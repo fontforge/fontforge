@@ -556,19 +556,13 @@ extern int SLIHasDefault(SplineFont *sf,int sli);
 extern int FPSTisMacable(SplineFont *sf, FPST *fpst);
 extern uint32 MacFeatureToOTTag(int featureType,int featureSetting);
 extern int OTTagToMacFeature(uint32 tag, int *featureType,int *featureSetting);
-extern char *FeatureNameFromType(int featureType);
 extern uint16 *props_array(SplineFont *sf,int numGlyphs);
 extern int haslrbounds(SplineChar *sc, PST **left, PST **right);
 
 extern struct macsettingname {
     int mac_feature_type;
     int mac_feature_setting;
-    int off_setting;
-    unsigned int ismutex: 1;
-    unsigned int defaultOn: 1;
     uint32 otf_tag;
-    char *on_name;
-    char *off_name;
 } macfeat_otftag[], *user_macfeat_otftag;
 
     /* TrueType instructions */

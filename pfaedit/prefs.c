@@ -100,7 +100,8 @@ int alwaysgenapple = false;
 int alwaysgenopentype = true;
 #endif
 char *helpdir;
-extern MacFeat *default_mac_feature_map;	/* from macenc.c */
+extern MacFeat *default_mac_feature_map,	/* from macenc.c */
+		*user_mac_feature_map;
 int updateflex = false;
 
 extern int rectelipse, polystar, regular_star;	/* from cvpalettes.c */
@@ -112,151 +113,69 @@ extern real star_percent;			/* from cvpalettes.c */
 static int pointless;
 
 #define CID_Features	101
-#define CID_Settings	102
 #define CID_FeatureDel	103
-#define CID_SettingDel	104
 #define CID_FeatureEdit	105
-#define CID_SettingEdit	106
+
+#define CID_Mapping	102
+#define CID_MappingDel	104
+#define CID_MappingEdit	106
 
 /* ************************************************************************** */
 /* *****************************    mac data    ***************************** */
 /* ************************************************************************** */
 
-static struct macfeaturenames {
-    int mac_feature_type;
-    char *feature_name;
-} feature_type_to_name[] = {
-    { 0, "All Features" },
-    { 1, "Ligatures" },
-    { 2, "Cursive Connection" },
-    { 3, "Letter Case" },
-    { 4, "Vertical Substitution" },
-    { 5, "Linguistic Rearrangement" },
-    { 6, "Number Spacing" },
-    { 8, "Smart Swash" },
-    { 9, "Diacritics" },
-    { 10, "Vertical Position" },
-    { 11, "Fractions" },
-    { 13, "Overlapping Characters" },
-    { 14, "Typographic Extras" },
-    { 15, "Mathematical Extras" },
-    { 16, "Ornament Sets" },
-    { 17, "Character Alternates" },
-    { 18, "Design Complexity" },
-    { 19, "Style Options" },
-    { 20, "Character Shape" },
-    { 21, "Number Case" },
-    { 22, "Text Spacing" },
-    { 23, "Transliteration" },
-    { 24, "Annotation" },
-    { 25, "Kana Spacing" },
-    { 26, "Ideographic Spacing" },
-    { 27, "Unicode Decomposition" },
-    { 103, "CJK Roman Spacing" },
-    { -1, NULL }
-}, *user_feature_type_to_name;
-
-static void UserFeaturesFree(void) {
-    int i;
-
-    if ( user_feature_type_to_name==NULL )
-return;
-
-    for ( i=0; user_feature_type_to_name[i].feature_name!=NULL ; ++i )
-	free( user_feature_type_to_name[i].feature_name );
-    free( user_feature_type_to_name );
-    user_feature_type_to_name = NULL;
-}
-
-static int UserFeaturesDiffer(void) {
-    int i,j;
-
-    if ( user_feature_type_to_name==NULL )
-return( false );
-
-    for ( i=0; user_feature_type_to_name[i].feature_name!=NULL; ++i );
-    for ( j=0; feature_type_to_name[j].feature_name!=NULL; ++j );
-    if ( i!=j )
-return( true );
-    for ( i=0; user_feature_type_to_name[i].feature_name!=NULL; ++i ) {
-	for ( j=0; feature_type_to_name[j].feature_name!=NULL; ++j ) {
-	    if ( feature_type_to_name[j].mac_feature_type==
-		    user_feature_type_to_name[i].mac_feature_type )
-	break;
-	}
-	if ( feature_type_to_name[j].feature_name==NULL ||
-		strcmp(feature_type_to_name[j].feature_name,
-			user_feature_type_to_name[i].feature_name)!=0 )
-return( true );
-    }
-return( false );
-}
-
 struct macsettingname macfeat_otftag[] = {
-    { 1, 0, 1, 0, 1, CHR('r','l','i','g'), "Required Ligatures", "No Required Ligatures" },	/* Required ligatures */
-    { 1, 2, 3, 0, 1, CHR('l','i','g','a'), "Common Ligatures", "No Common Ligatures" },	/* Common ligatures */
-    { 1, 4, 5, 0, 0, CHR('d','l','i','g'), "Rare Ligatures", "No Rare Ligatures" },	/* rare ligatures => discretionary */
-    { 1, 4, 5, 0, 0, CHR('h','l','i','g'), "Rare Ligatures", "No Rare Ligatures" },	/* rare ligatures => historic */
-    { 1, 4, 5, 0, 0, CHR('a','l','i','g'), "Rare Ligatures", "No Rare Ligatures" },	/* rare ligatures => historic */
-    { 1, 6, 7, 0, 0, CHR('M','L','O','G'), "Logos", "No Logos" },
-    { 1, 8, 9, 0, 0, CHR('M','R','E','B'), "Rebus Pictures", "No Rebus Pictures" },
-    { 1, 10, 11, 0, 0, CHR('M','D','L','G'), "Diphthong Ligatures", "No Diphthong Ligatures" },
-    { 1, 12, 13, 0, 0, CHR('M','S','L','G'), "Square Ligatures", "No Square Ligatures" },
-    { 1, 14, 15, 0, 0, CHR('M','A','L','G'), "Abbreviated Square Ligatures", "No Abbreviated Square Ligatures" },
+    { 1, 0, CHR('r','l','i','g') },	/* Required ligatures */
+    { 1, 2, CHR('l','i','g','a') },	/* Common ligatures */
+    { 1, 4, CHR('d','l','i','g') },	/* rare ligatures => discretionary */
+#if 0
+    { 1, 4, CHR('h','l','i','g') },	/* rare ligatures => historic */
+    { 1, 4, CHR('a','l','i','g') },	/* rare ligatures => historic */
+#endif
     /* 2, 1, partially connected cursive */
-    { 2, 2, 0, 0, 1, CHR('i','s','o','l'), "Full Cursive Connection", "No Cursive Connection" },	/* Arabic forms */
-    { 2, 2, 0, 0, 1, CHR('c','a','l','t'), "Full Cursive Connection", "No Cursive Connection" },	/* Arabic forms */
+    { 2, 2, CHR('i','s','o','l') },	/* Arabic forms */
+    { 2, 2, CHR('c','a','l','t') },	/* ??? */
     /* 3, 2, all caps */
     /* 3, 3, all lower */
-    { 3, 4, 0, 1, 0, CHR('s','m','c','p'), "Small Caps", "Upper and Lower Case" },	/* small caps */
+    { 3, 4, CHR('s','m','c','p') },	/* small caps */
     /* 3, 4, initial caps */
     /* 3, 5, initial caps, small caps */
-    { 4, 0, 1, 0, 1, CHR('v','r','t','2'), "Vertical Forms", "No Vertical Forms" },	/* vertical forms => vertical rotation */
-    { 4, 0, 1, 0, 1, CHR('v','k','n','a'), "Vertical Forms", "No Vertical Forms" },	/* vertical forms => vertical kana */
-    { 6, 0, 1, 1, 0, CHR('t','n','u','m'), "Monospaced Numbers", "Proportional Numbers" },	/* monospace numbers => Tabular numbers */
-    { 8, 0, 1, 0, 1, CHR('M','S','W','I'), "Word Initial Swash", "No Word Initial Swash" },
-    { 8, 2, 3, 0, 1, CHR('M','S','W','F'), "Word Final Swash", "No Word Final Swash" },
-    { 8, 4, 5, 0, 1, CHR('M','S','L','I'), "Line Initial Swash", "No Line Initial Swash" },
-    { 8, 6, 7, 0, 1, CHR('M','S','L','F'), "Line Final Swash", "No Line Final Swash" },
-    { 8, 8, 9, 0, 0, CHR('M','S','N','F'), "Non-Final Swash", "No Non-Final Swash" },
-    { 10, 1, 0, 1, 0, CHR('s','u','p','s'), "Superscript", "Normal Position" },	/* superior vertical position => superscript */
-    { 10, 3, 0, 1, 0, CHR('s','u','p','s'), "Superscript", "Normal Position" },	/* ordinal vertical position => superscript */
-    { 10, 2, 0, 1, 0, CHR('s','u','b','s'), "Subscript", "Normal Position" },	/* inferior vertical position => subscript */
-    { 11, 1, 0, 1, 1, CHR('f','r','a','c'), "Fraction Ligatures", "No Fractions" },	/* vertical fraction => fraction ligature */
-    { 16, 1, 0, 1, 0, CHR('o','r','n','m'), "Dingbats", "No Ornaments" },	/* vertical fraction => fraction ligature */
-    { 20, 0, -1, 1, 0, CHR('t','r','a','d'), "Traditional Characters", NULL },	/* tradictional characters => traditional forms */
-    { 20, 0, -1, 1, 0, CHR('t','n','a','m'), "Traditional Characters", NULL },	/* tradictional characters => traditional names */
-    { 20, 1, 0, 1, 0, CHR('s','m','p','l'), "Simplified Characters", "Traditional Characters" },	/* simplified characters */
-    { 20, 2, -1, 1, 0, CHR('j','p','7','8'), "JIS 1978 Characters", NULL },	/* jis 1978 */
-    { 20, 3, -1, 1, 0, CHR('j','p','8','3'), "JIS 1983 Characters", NULL },	/* jis 1983 */
-    { 20, 4, -1, 1, 0, CHR('j','p','9','0'), "JIS 1990 Characters", NULL },	/* jis 1990 */
-    { 21, 0, 1, 1, 0, CHR('o','n','u','m'), "Lower Case Number", "Upper Case Number" },	/* lower case number => old style numbers */
-    { 22, 0, -1, 1, 1, CHR('p','w','i','d'), "Proportional Text", NULL },	/* proportional text => proportional widths */
-    { 22, 1, 0, 1, 0, CHR('M','W','I','D'), "Monospace Text", "Proportional Text" },	/* proportional text => proportional widths */
-    { 22, 2, 0, 1, 0, CHR('h','w','i','d'), "Half Width Text", "Proportional Text" },	/* half width text => half widths */
-    { 22, 3, 0, 1, 0, CHR('f','w','i','d'), "Full Width Text", "Proportional Text" },	/* full width text => full widths */
-    { 25, 0, -1, 1, 1, CHR('f','w','i','d'), "Full Width Kana", NULL },	/* full width kana => full widths */
-    { 25, 1, 0, 0, 1, CHR('p','w','i','d'), "Proportional Kana", "Full Width Kana"  },	/* proportional kana => proportional widths */
-    { 26, 0, -1, 1, 1, CHR('f','w','i','d'), "Full Width Ideograph", NULL },	/* full width ideograph => full widths */
-    { 26, 1, 0, 1, 0, CHR('p','w','i','d'), "Proportional Ideograph", "Full Width Ideograph" },	/* proportional ideograph => proportional widths */
-    { 27, 1, 0, 0, 1, CHR('M','U','C','M'), "Compose", "Off" },	/* Unicode decomposition */
-    { 103, 0, -1, 1, 1, CHR('h','w','i','d'), "Half Width CJK Roman", NULL },	/* half width cjk roman => half widths */
-    { 103, 1, 0, 1, 0, CHR('p','w','i','d'), "Proportional CJK Roman", "Half Width CJK Roman"  },	/* proportional cjk roman => proportional widths */
-    { 103, 2, 0, 1, 0, CHR('M','W','I','D'), "Monospace CJK Roman", "Half Width CJK Roman" },	/* proportional text => proportional widths */
-    { 103, 3, 0, 1, 0, CHR('f','w','i','d'), "Full Width CJK Roman", "Half Width CJK Roman" },	/* full width cjk roman => full widths */
+    { 4, 0, CHR('v','r','t','2') },	/* vertical forms => vertical rotation */
+#if 0
+    { 4, 0, CHR('v','k','n','a') },	/* vertical forms => vertical kana */
+#endif
+    { 6, 0, CHR('t','n','u','m') },	/* monospace numbers => Tabular numbers */
+    { 10, 1, CHR('s','u','p','s') },	/* superior vertical position => superscript */
+    { 10, 2, CHR('s','u','b','s') },	/* inferior vertical position => subscript */
+#if 0
+    { 10, 3, CHR('s','u','p','s') },	/* ordinal vertical position => superscript */
+#endif
+    { 11, 1, CHR('f','r','a','c') },	/* vertical fraction => fraction ligature */
+    { 16, 1, CHR('o','r','n','m') },	/* vertical fraction => fraction ligature */
+    { 20, 0, CHR('t','r','a','d') },	/* traditional characters => traditional forms */
+#if 0
+    { 20, 0, CHR('t','n','a','m') },	/* traditional characters => traditional names */
+#endif
+    { 20, 1, CHR('s','m','p','l') },	/* simplified characters */
+    { 20, 2, CHR('j','p','7','8') },	/* jis 1978 */
+    { 20, 3, CHR('j','p','8','3') },	/* jis 1983 */
+    { 20, 4, CHR('j','p','9','0') },	/* jis 1990 */
+    { 21, 0, CHR('o','n','u','m') },	/* lower case number => old style numbers */
+    { 22, 0, CHR('p','w','i','d') },	/* proportional text => proportional widths */
+    { 22, 2, CHR('h','w','i','d') },	/* half width text => half widths */
+    { 22, 3, CHR('f','w','i','d') },	/* full width text => full widths */
+    { 25, 0, CHR('f','w','i','d') },	/* full width kana => full widths */
+    { 25, 1, CHR('p','w','i','d') },	/* proportional kana => proportional widths */
+    { 26, 0, CHR('f','w','i','d') },	/* full width ideograph => full widths */
+    { 26, 1, CHR('p','w','i','d') },	/* proportional ideograph => proportional widths */
+    { 103, 0, CHR('h','w','i','d') },	/* half width cjk roman => half widths */
+    { 103, 1, CHR('p','w','i','d') },	/* proportional cjk roman => proportional widths */
+    { 103, 3, CHR('f','w','i','d') },	/* full width cjk roman => full widths */
     { 0, 0, 0 }
 }, *user_macfeat_otftag;
 
 static void UserSettingsFree(void) {
-    int i;
 
-    if ( user_macfeat_otftag==NULL )
-return;
-
-    for ( i=0; user_macfeat_otftag[i].on_name!=NULL ; ++i ) {
-	free( user_macfeat_otftag[i].on_name );
-	free( user_macfeat_otftag[i].off_name );
-    }
     free( user_macfeat_otftag );
     user_macfeat_otftag = NULL;
 }
@@ -267,31 +186,21 @@ static int UserSettingsDiffer(void) {
     if ( user_macfeat_otftag==NULL )
 return( false );
 
-    for ( i=0; user_macfeat_otftag[i].on_name!=NULL; ++i );
-    for ( j=0; macfeat_otftag[j].on_name!=NULL; ++j );
+    for ( i=0; user_macfeat_otftag[i].otf_tag!=0; ++i );
+    for ( j=0; macfeat_otftag[j].otf_tag!=0; ++j );
     if ( i!=j )
 return( true );
-    for ( i=0; user_macfeat_otftag[i].on_name!=NULL; ++i ) {
-	for ( j=0; macfeat_otftag[j].on_name!=NULL; ++j ) {
-	    if ( macfeat_otftag[j].mac_feature_type==
+    for ( i=0; user_macfeat_otftag[i].otf_tag!=0; ++i ) {
+	for ( j=0; macfeat_otftag[j].otf_tag!=0; ++j ) {
+	    if ( macfeat_otftag[j].mac_feature_type ==
 		    user_macfeat_otftag[i].mac_feature_type &&
-		    macfeat_otftag[j].mac_feature_setting==
-		    user_macfeat_otftag[i].mac_feature_setting )
+		    macfeat_otftag[j].mac_feature_setting ==
+		    user_macfeat_otftag[i].mac_feature_setting &&
+		    macfeat_otftag[j].otf_tag ==
+		    user_macfeat_otftag[i].otf_tag )
 	break;
 	}
-	if ( macfeat_otftag[j].on_name==NULL ||
-		strcmp(macfeat_otftag[j].on_name,
-			user_macfeat_otftag[i].on_name)!=0 ||
-		macfeat_otftag[j].otf_tag!=user_macfeat_otftag[i].otf_tag ||
-		macfeat_otftag[j].off_setting!=user_macfeat_otftag[i].off_setting ||
-		macfeat_otftag[j].ismutex!=user_macfeat_otftag[i].ismutex ||
-		macfeat_otftag[j].defaultOn!=user_macfeat_otftag[i].defaultOn )
-return( true );
-	if ( macfeat_otftag[j].off_name==NULL && user_macfeat_otftag[i].off_name==NULL )
-	    /* Good */;
-	else if ( macfeat_otftag[j].off_name==NULL || user_macfeat_otftag[i].off_name==NULL ||
-		strcmp(macfeat_otftag[j].off_name,
-			user_macfeat_otftag[i].off_name)!=0 )
+	if ( macfeat_otftag[j].otf_tag==0 )
 return( true );
     }
 return( false );
@@ -769,7 +678,7 @@ static char *cutf8_copy(unichar_t *src) {
 return( ret );
 }
 
-static void ParseMacSetting(char *pt,struct macsettingname *ms) {
+static void ParseMacMapping(char *pt,struct macsettingname *ms) {
     char *end;
 
     ms->mac_feature_type = strtol(pt,&end,10);
@@ -781,25 +690,6 @@ static void ParseMacSetting(char *pt,struct macsettingname *ms) {
 	((end[1]&0xff)<<16) |
 	((end[2]&0xff)<<8) |
 	(end[3]&0xff);
-    end += 4;
-    while ( *end==' ' ) ++end;
-    if ( *end=='"' ) ++end;
-    for ( pt=end; *pt && *pt!='"'; ++pt );
-    ms->on_name = copyn(end,pt-end);
-    if ( *pt=='"' ) ++pt;
-
-    ms->off_setting = strtol(pt,&end,10);
-    while ( *end==' ' ) ++end;
-    if ( *end=='"' ) ++end;
-    for ( pt=end; *pt && *pt!='"'; ++pt );
-    if ( pt!=end )
-	ms->off_name = copyn(end,pt-end);
-    else
-	ms->off_name = NULL;
-    if ( *pt=='"' ) ++pt;
-    if ( *pt==' ' ) ++pt;
-    if ( *pt++ == 'm' ) ms->ismutex = true;
-    if ( *pt++ == 'd' ) ms->defaultOn = true;
 }
 
 static void ParseNewMacFeature(FILE *p,char *line) {
@@ -807,6 +697,9 @@ static void ParseNewMacFeature(FILE *p,char *line) {
     line[strlen("MacFeat:")] ='\0';
     default_mac_feature_map = SFDParseMacFeatures(p,line);
     fseek(p,-strlen(line),SEEK_CUR);
+    if ( user_mac_feature_map!=NULL )
+	MacFeatListFree(user_mac_feature_map);
+    user_mac_feature_map = default_mac_feature_map;
 }
 
 static void DefaultXUID(void) {
@@ -851,8 +744,8 @@ void LoadPrefs(void) {
     FILE *p;
     char line[1100];
     int i, j, ri=0, mn=0, ms=0;
-    int mfp=0, mfc=0, msp=0, msc=0;
-    char *pt, *end;
+    int msp=0, msc=0;
+    char *pt;
     struct prefs_list *pl;
 
     PfaEditSetFallback();
@@ -892,21 +785,12 @@ return;
 		script_filenames[ms++] = copy(pt);
 	    else if ( strncmp(line,"MenuName:",strlen("MenuName:"))==0 && mn<SCRIPT_MENU_MAX )
 		script_menu_names[mn++] = utf8_copy(pt);
-	    else if ( strncmp(line,"MacFeatCnt:",strlen("MacFeatCnt:"))==0 ) {
-		sscanf( pt, "%d", &mfc );
-		mfp = 0;
-		user_feature_type_to_name = gcalloc(mfc+1,sizeof(struct macfeaturenames));
-	    } else if ( strncmp(line,"MacFeature:",strlen("MacFeature:"))==0 && mfp<mfc ) {
-		user_feature_type_to_name[mfp].mac_feature_type =
-			strtol(pt,&end,10);
-		for ( pt=end; *pt==' '; ++pt );
-		user_feature_type_to_name[mfp++].feature_name = copy(pt);
-	    } else if ( strncmp(line,"MacSetCnt:",strlen("MacSetCnt:"))==0 ) {
+	    else if ( strncmp(line,"MacMapCnt:",strlen("MacSetCnt:"))==0 ) {
 		sscanf( pt, "%d", &msc );
 		msp = 0;
 		user_macfeat_otftag = gcalloc(msc+1,sizeof(struct macsettingname));
-	    } else if ( strncmp(line,"MacSetting:",strlen("MacSetting:"))==0 && msp<msc ) {
-		ParseMacSetting(pt,&user_macfeat_otftag[msp++]);
+	    } else if ( strncmp(line,"MacMapping:",strlen("MacMapping:"))==0 && msp<msc ) {
+		ParseMacMapping(pt,&user_macfeat_otftag[msp++]);
 	    } else if ( strncmp(line,"MacFeat:",strlen("MacFeat:"))==0 ) {
 		ParseNewMacFeature(p,line);
 	    }
@@ -1000,35 +884,22 @@ return;
 	fprintf( p, "MenuName:\t%s\n", temp = cutf8_copy(script_menu_names[i]));
 	free(temp);
     }
-    if ( user_feature_type_to_name!=NULL && UserFeaturesDiffer()) {
-	for ( i=0; user_feature_type_to_name[i].feature_name!=NULL; ++i );
-	fprintf( p, "MacFeatCnt: %d\n", i );
-	for ( i=0; user_feature_type_to_name[i].feature_name!=NULL; ++i ) {
-	    fprintf( p, "MacFeature: %d %s\n",
-		    user_feature_type_to_name[i].mac_feature_type,
-		    user_feature_type_to_name[i].feature_name );
-	}
-    }
     if ( user_macfeat_otftag!=NULL && UserSettingsDiffer()) {
-	for ( i=0; user_macfeat_otftag[i].on_name!=NULL; ++i );
-	fprintf( p, "MacSetCnt: %d\n", i );
-	for ( i=0; user_macfeat_otftag[i].on_name!=NULL; ++i ) {
-	    fprintf( p, "MacSetting: %d,%d %c%c%c%c \"%s\" %d \"%s\" %c%c\n",
+	for ( i=0; user_macfeat_otftag[i].otf_tag!=0; ++i );
+	fprintf( p, "MacMapCnt: %d\n", i );
+	for ( i=0; user_macfeat_otftag[i].otf_tag!=0; ++i ) {
+	    fprintf( p, "MacMapping: %d,%d %c%c%c%c \"%s\"\n",
 		    user_macfeat_otftag[i].mac_feature_type,
 		    user_macfeat_otftag[i].mac_feature_setting,
 			user_macfeat_otftag[i].otf_tag>>24,
 			(user_macfeat_otftag[i].otf_tag>>16)&0xff,
 			(user_macfeat_otftag[i].otf_tag>>8)&0xff,
-			user_macfeat_otftag[i].otf_tag&0xff,
-		    user_macfeat_otftag[i].on_name,
-		    user_macfeat_otftag[i].off_setting,
-		    user_macfeat_otftag[i].off_name ? user_macfeat_otftag[i].off_name : "",
-		    user_macfeat_otftag[i].ismutex ? 'm' : ' ',
-		    user_macfeat_otftag[i].defaultOn ? 'd' : ' ');
+			user_macfeat_otftag[i].otf_tag&0xff );
 	}
     }
 
-    SFDDumpMacFeat(p,default_mac_feature_map);
+    if ( UserFeaturesDiffer())
+	SFDDumpMacFeat(p,default_mac_feature_map);
 
     fclose(p);
 }
@@ -1070,34 +941,27 @@ return(true);
 return( true );
 }
 
-static GTextInfo *Pref_SettingsList(void) {
-    struct macsettingname *msn = user_macfeat_otftag ? user_macfeat_otftag : macfeat_otftag;
+static GTextInfo *Pref_MappingList(int use_user) {
+    struct macsettingname *msn = use_user && user_macfeat_otftag!=NULL ?
+	    user_macfeat_otftag :
+	    macfeat_otftag;
     GTextInfo *ti;
-    int i, len, max=0;
-    char *str;
+    int i;
+    char buf[60];
 
-    for ( i=0; msn[i].on_name!=NULL; ++i ) {
-	len = strlen( msn[i].on_name) + (msn[i].off_name?strlen(msn[i].off_name):0) ;
-	if ( len>max ) max = len;
-    }
+    for ( i=0; msn[i].otf_tag!=0; ++i );
     ti = gcalloc(i+1,sizeof( GTextInfo ));
 
-    str = galloc(70+max);
-    for ( i=0; msn[i].on_name!=NULL; ++i ) {
-	sprintf(str,"%3d,%2d %c%c%c%c \"%s\" %d \"%s\" %c%c",
+    for ( i=0; msn[i].otf_tag!=0; ++i ) {
+	sprintf(buf,"%3d,%2d %c%c%c%c",
 	    msn[i].mac_feature_type, msn[i].mac_feature_setting,
-	    msn[i].otf_tag>>24, (msn[i].otf_tag>>16)&0xff, (msn[i].otf_tag>>8)&0xff, msn[i].otf_tag&0xff,
-	    msn[i].on_name,
-	    msn[i].off_setting, msn[i].off_name?msn[i].off_name:"",
-	    msn[i].ismutex ? 'm':' ', msn[i].defaultOn? 'd': ' ');
-	ti[i].text = galloc(((len = strlen(str)+1))*sizeof(unichar_t));
-	encoding2u_strncpy(ti[i].text,str,len,e_mac);
+	    msn[i].otf_tag>>24, (msn[i].otf_tag>>16)&0xff, (msn[i].otf_tag>>8)&0xff, msn[i].otf_tag&0xff );
+	ti[i].text = uc_copy(buf);
     }
-    free(str);
 return( ti );
 }
 
-static void GListAddStr(GGadget *list,char *str) {
+void GListAddStr(GGadget *list,unichar_t *str, void *ud) {
     int32 i,len;
     GTextInfo **ti = GGadgetGetList(list,&len);
     GTextInfo **replace = galloc((len+2)*sizeof(GTextInfo *));
@@ -1110,17 +974,16 @@ static void GListAddStr(GGadget *list,char *str) {
     }
     replace[i] = gcalloc(1,sizeof(GTextInfo));
     replace[i]->fg = replace[i]->bg = COLOR_DEFAULT;
-    replace[i]->text = galloc((strlen(str)+1)*sizeof(unichar_t));
-    encoding2u_strncpy(replace[i]->text,str,strlen(str)+1,e_mac);
+    replace[i]->text = str;
+    replace[i]->userdata = ud;
     GGadgetSetList(list,replace,false);
 }
 
-static void GListReplaceStr(GGadget *list,int index, char *str) {
+void GListReplaceStr(GGadget *list,int index, unichar_t *str, void *ud) {
     int32 i,len;
     GTextInfo **ti = GGadgetGetList(list,&len);
     GTextInfo **replace = galloc((len+2)*sizeof(GTextInfo *));
 
-    replace[len+1] = gcalloc(1,sizeof(GTextInfo));
     for ( i=0; i<len; ++i ) {
 	replace[i] = galloc(sizeof(GTextInfo));
 	*replace[i] = *ti[i];
@@ -1128,8 +991,8 @@ static void GListReplaceStr(GGadget *list,int index, char *str) {
 	    replace[i]->text = u_copy(ti[i]->text);
     }
     replace[i] = gcalloc(1,sizeof(GTextInfo));
-    replace[index]->text = galloc((strlen(str)+1)*sizeof(unichar_t));
-    encoding2u_strncpy(replace[index]->text,str,strlen(str)+1,e_mac);
+    replace[index]->text = str;
+    replace[index]->userdata = ud;
     GGadgetSetList(list,replace,false);
 }
 
@@ -1139,17 +1002,12 @@ struct setdata {
     GGadget *flist;
     GGadget *feature;
     GGadget *set_code;
-    GGadget *set_name;
-    GGadget *off_code;
-    GGadget *off_name;
-    GGadget *def;
-    GGadget *mutex;
     GGadget *otf;
     GGadget *ok;
     GGadget *cancel;
     int index;
     int done;
-    char *ret;
+    unichar_t *ret;
 };
 
 static int set_e_h(GWindow gw, GEvent *event) {
@@ -1158,9 +1016,9 @@ static int set_e_h(GWindow gw, GEvent *event) {
     int32 len;
     GTextInfo **ti;
     const unichar_t *ret1; unichar_t *end;
-    int on, off, feat, val1, val2;
-    char *on_name, *off_name;
+    int on, feat, val1, val2;
     unichar_t ubuf[4];
+    char buf[40];
 
     if ( event->type==et_close ) {
 	sd->done = true;
@@ -1176,12 +1034,6 @@ return( false );
 	} else if ( event->u.control.g == sd->ok ) {
 	    ret1 = _GGadgetGetTitle(sd->set_code);
 	    on = u_strtol(ret1,&end,10);
-	    if ( *end!='\0' ) {
-		GWidgetErrorR(_STR_BadNumber,_STR_BadNumber);
-return( true );
-	    }
-	    ret1 = _GGadgetGetTitle(sd->off_code);
-	    off = u_strtol(ret1,&end,10);
 	    if ( *end!='\0' ) {
 		GWidgetErrorR(_STR_BadNumber,_STR_BadNumber);
 return( true );
@@ -1217,50 +1069,25 @@ return( true );
 		GWidgetErrorR(_STR_TagTooLong,_STR_FeatureTagTooLong);
 return( true );
 	    }
-
-	    ret1 = _GGadgetGetTitle(sd->set_name);
-	    if ( *ret1=='\0' ) {
-		GWidgetErrorR(_STR_BadName,_STR_BadName);
-return( true );
-	    }
-	    len = u_strlen(ret1);
-	    on_name = galloc(len+1);
-	    u2encoding_strncpy(on_name,ret1,len+1,e_mac);
-
-	    ret1 = _GGadgetGetTitle(sd->off_name);
-	    if ( *ret1=='\0' && off!=-1 ) {
-		GWidgetErrorR(_STR_BadName,_STR_OffNameNull);
-		free(on_name);
-return( true );
-	    }
-	    len = u_strlen(ret1);
-	    off_name = galloc(len+1);
-	    u2encoding_strncpy(off_name,ret1,len+1,e_mac);
-	    
-	    sd->ret = galloc( strlen(on_name)+strlen(off_name)+70 );
-	    sprintf(sd->ret,"%3d,%2d %c%c%c%c \"%s\" %d \"%s\" %c%c",
+	    sprintf(buf,"%3d,%2d %c%c%c%c",
 		    feat, on,
-		    ubuf[0], ubuf[1], ubuf[2], ubuf[3],
-		    on_name,
-		    off, off_name,
-		    GGadgetIsChecked(sd->mutex) ? 'm':' ',
-		    GGadgetIsChecked(sd->def)? 'd': ' ');
+		    ubuf[0], ubuf[1], ubuf[2], ubuf[3]);
 	    sd->done = true;
-	    free(on_name); free(off_name);
+	    sd->ret = uc_copy(buf);
 	}
     }
 return( true );
 }
     
-static char *AskSetting(struct macsettingname *temp,GGadget *list, int index,GGadget *flist) {
+static unichar_t *AskSetting(struct macsettingname *temp,GGadget *list, int index,GGadget *flist) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[17];
     GTextInfo label[17];
     struct setdata sd;
-    char buf[20], buf2[20];
-    unichar_t *ubuf, *ubuf2, ubuf3[6];
+    char buf[20];
+    unichar_t ubuf3[6];
     int32 len, i;
     GTextInfo **ti;
 
@@ -1275,10 +1102,10 @@ static char *AskSetting(struct macsettingname *temp,GGadget *list, int index,GGa
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.window_title = GStringGetResource(_STR_Setting,NULL);
+    wattrs.window_title = GStringGetResource(_STR_MappingB,NULL);
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,240));
-    pos.height = GDrawPointsToPixels(NULL,160);
+    pos.height = GDrawPointsToPixels(NULL,90);
     gw = GDrawCreateTopWindow(NULL,&pos,set_e_h,&sd,&wattrs);
     sd.gw = gw;
 
@@ -1296,7 +1123,7 @@ static char *AskSetting(struct macsettingname *temp,GGadget *list, int index,GGa
     gcd[1].gd.flags = gg_enabled|gg_visible;
     gcd[1].creator = GListButtonCreate;
 
-    label[2].text = (unichar_t *) _STR_Code;
+    label[2].text = (unichar_t *) _STR_Setting;
     label[2].text_in_resource = true;
     gcd[2].gd.label = &label[2];
     gcd[2].gd.pos.x = 5; gcd[2].gd.pos.y = gcd[0].gd.pos.y+24;
@@ -1307,118 +1134,45 @@ static char *AskSetting(struct macsettingname *temp,GGadget *list, int index,GGa
     label[3].text = (unichar_t *) buf;
     label[3].text_is_1byte = true;
     gcd[3].gd.label = &label[3];
-    gcd[3].gd.pos.x = 40; gcd[3].gd.pos.y = gcd[2].gd.pos.y-4; gcd[3].gd.pos.width = 50;
+    gcd[3].gd.pos.x = 55; gcd[3].gd.pos.y = gcd[2].gd.pos.y-4; gcd[3].gd.pos.width = 50;
     gcd[3].gd.flags = gg_enabled|gg_visible;
     gcd[3].creator = GTextFieldCreate;
 
-    label[4].text = (unichar_t *) _STR_Name;
+    label[4].text = (unichar_t *) _STR_TagC;
     label[4].text_in_resource = true;
     gcd[4].gd.label = &label[4];
-    gcd[4].gd.pos.x = 100; gcd[4].gd.pos.y = gcd[2].gd.pos.y;
+    gcd[4].gd.pos.x = 5; gcd[4].gd.pos.y = gcd[3].gd.pos.y+22; 
     gcd[4].gd.flags = gg_enabled|gg_visible;
     gcd[4].creator = GLabelCreate;
 
-    ubuf = NULL;
-    if ( temp->on_name ) {
-	len = strlen( temp->on_name );
-	ubuf = galloc((len+1)*sizeof(unichar_t));
-	encoding2u_strncpy(ubuf,temp->on_name,len+1,e_mac);
-	label[5].text = ubuf;
-	gcd[5].gd.label = &label[5];
-    }
-    gcd[5].gd.pos.x = 140; gcd[5].gd.pos.y = gcd[3].gd.pos.y;
+    ubuf3[0] = temp->otf_tag>>24; ubuf3[1] = (temp->otf_tag>>16)&0xff; ubuf3[2] = (temp->otf_tag>>8)&0xff; ubuf3[3] = temp->otf_tag&0xff; ubuf3[4] = 0;
+    label[5].text = ubuf3;
+    gcd[5].gd.label = &label[5];
+    gcd[5].gd.pos.x = 40; gcd[5].gd.pos.y = gcd[4].gd.pos.y-4; gcd[5].gd.pos.width = 50;
     gcd[5].gd.flags = gg_enabled|gg_visible;
+    /*gcd[5].gd.u.list = tags;*/
     gcd[5].creator = GTextFieldCreate;
 
-    label[6].text = (unichar_t *) _STR_Off;
+    gcd[6].gd.pos.x = 13-3; gcd[6].gd.pos.y = gcd[5].gd.pos.y+30;
+    gcd[6].gd.pos.width = -1; gcd[6].gd.pos.height = 0;
+    gcd[6].gd.flags = gg_visible | gg_enabled | gg_but_default;
+    label[6].text = (unichar_t *) _STR_OK;
     label[6].text_in_resource = true;
     gcd[6].gd.label = &label[6];
-    gcd[6].gd.pos.x = 5; gcd[6].gd.pos.y = gcd[2].gd.pos.y+24;
-    gcd[6].gd.flags = gg_enabled|gg_visible;
-    gcd[6].creator = GLabelCreate;
+    /*gcd[6].gd.handle_controlevent = Prefs_Ok;*/
+    gcd[6].creator = GButtonCreate;
 
-    sprintf( buf2, "%d", temp->off_setting );
-    label[7].text = (unichar_t *) buf2;
-    label[7].text_is_1byte = true;
+    gcd[7].gd.pos.x = -13; gcd[7].gd.pos.y = gcd[7-1].gd.pos.y+3;
+    gcd[7].gd.pos.width = -1; gcd[7].gd.pos.height = 0;
+    gcd[7].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    label[7].text = (unichar_t *) _STR_Cancel;
+    label[7].text_in_resource = true;
     gcd[7].gd.label = &label[7];
-    gcd[7].gd.pos.x = 40; gcd[7].gd.pos.y = gcd[6].gd.pos.y-4; gcd[7].gd.pos.width = 50;
-    gcd[7].gd.flags = gg_enabled|gg_visible;
-    gcd[7].creator = GTextFieldCreate;
-
-    label[8].text = (unichar_t *) "";
-    label[8].text_is_1byte = true;
-    gcd[8].gd.label = &label[8];
-    gcd[8].gd.pos.x = 100; gcd[8].gd.pos.y = gcd[6].gd.pos.y;
-    gcd[8].gd.flags = gg_enabled|gg_visible;
-    gcd[8].creator = GLabelCreate;
-
-    ubuf2 = NULL;
-    if ( temp->off_name ) {
-	len = strlen( temp->off_name );
-	ubuf2 = galloc((len+1)*sizeof(unichar_t));
-	encoding2u_strncpy(ubuf2,temp->off_name,len+1,e_mac);
-	label[9].text = ubuf2;
-	gcd[9].gd.label = &label[9];
-    }
-    gcd[9].gd.pos.x = 140; gcd[9].gd.pos.y = gcd[7].gd.pos.y;
-    gcd[9].gd.flags = gg_enabled|gg_visible;
-    gcd[9].creator = GTextFieldCreate;
-
-    label[10].text = (unichar_t *) _STR_Default;
-    label[10].text_in_resource = true;
-    gcd[10].gd.label = &label[10];
-    gcd[10].gd.pos.x = 20; gcd[10].gd.pos.y = gcd[6].gd.pos.y+20;
-    gcd[10].gd.flags = gg_enabled|gg_visible|(temp->defaultOn?gg_cb_on:0);
-    gcd[10].creator = GCheckBoxCreate;
-
-    label[11].text = (unichar_t *) _STR_Mutex;
-    label[11].text_in_resource = true;
-    gcd[11].gd.label = &label[11];
-    gcd[11].gd.pos.x = 80; gcd[11].gd.pos.y = gcd[10].gd.pos.y;
-    gcd[11].gd.flags = gg_enabled|gg_visible|(temp->ismutex?gg_cb_on:0);
-    gcd[11].creator = GCheckBoxCreate;
-
-    label[12].text = (unichar_t *) _STR_TagC;
-    label[12].text_in_resource = true;
-    gcd[12].gd.label = &label[12];
-    gcd[12].gd.pos.x = 5; gcd[12].gd.pos.y = gcd[11].gd.pos.y+22; 
-    gcd[12].gd.flags = gg_enabled|gg_visible;
-    gcd[12].creator = GLabelCreate;
-
-    ubuf3[0] = temp->otf_tag>>24; ubuf3[1] = (temp->otf_tag>>16)&0xff; ubuf3[2] = (temp->otf_tag>>8)&0xff; ubuf3[3] = temp->otf_tag&0xff; ubuf3[4] = 0;
-    label[13].text = ubuf3;
-    gcd[13].gd.label = &label[13];
-    gcd[13].gd.pos.x = 40; gcd[13].gd.pos.y = gcd[12].gd.pos.y-4; gcd[13].gd.pos.width = 50;
-    gcd[13].gd.flags = gg_enabled|gg_visible;
-    /*gcd[13].gd.u.list = tags;*/
-    gcd[13].creator = GTextFieldCreate;
-
-    gcd[14].gd.pos.x = 13-3; gcd[14].gd.pos.y = gcd[13].gd.pos.y+30;
-    gcd[14].gd.pos.width = -1; gcd[14].gd.pos.height = 0;
-    gcd[14].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[14].text = (unichar_t *) _STR_OK;
-    label[14].text_in_resource = true;
-    gcd[14].gd.label = &label[14];
-    /*gcd[14].gd.handle_controlevent = Prefs_Ok;*/
-    gcd[14].creator = GButtonCreate;
-
-    gcd[15].gd.pos.x = -13; gcd[15].gd.pos.y = gcd[15-1].gd.pos.y+3;
-    gcd[15].gd.pos.width = -1; gcd[15].gd.pos.height = 0;
-    gcd[15].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[15].text = (unichar_t *) _STR_Cancel;
-    label[15].text_in_resource = true;
-    gcd[15].gd.label = &label[15];
-    /*gcd[15].gd.handle_controlevent = Prefs_Cancel;*/
-    gcd[15].creator = GButtonCreate;
+    gcd[7].creator = GButtonCreate;
 
     GGadgetsCreate(gw,gcd);
     sd.feature = gcd[1].ret;
     sd.set_code = gcd[3].ret;
-    sd.set_name = gcd[5].ret;
-    sd.off_code = gcd[7].ret;
-    sd.off_name = gcd[9].ret;
-    sd.def = gcd[10].ret;
-    sd.mutex = gcd[11].ret;
     sd.otf = gcd[13].ret;
     sd.ok = gcd[14].ret;
     sd.cancel = gcd[15].ret;
@@ -1439,7 +1193,6 @@ static char *AskSetting(struct macsettingname *temp,GGadget *list, int index,GGa
 	GDrawProcessOneEvent(NULL);
     GDrawDestroyWindow(gw);
 
-    free(temp->on_name ); free(temp->off_name); free(ubuf); free(ubuf2);
 return( sd.ret );
 }
 
@@ -1448,57 +1201,55 @@ static void ChangeSetting(GGadget *list,int index,GGadget *flist) {
     int32 len;
     GTextInfo **ti = GGadgetGetList(list,&len);
     char *str;
+    unichar_t *ustr;
 
-    len = u_strlen(ti[index]->text);
-    str = galloc(len+3);
-    u2encoding_strncpy(str,ti[index]->text,len+1,e_mac);
-    ParseMacSetting(str,&temp);
+    str = cu_copy(ti[index]->text);
+    ParseMacMapping(str,&temp);
     free(str);
-    if ( (str=AskSetting(&temp,list,index,flist))==NULL )
+    if ( (ustr=AskSetting(&temp,list,index,flist))==NULL )
 return;
-    GListReplaceStr(list,index,str);
+    GListReplaceStr(list,index,ustr,NULL);
 }
 
-static int Pref_NewSet(GGadget *g, GEvent *e) {
+static int Pref_NewMapping(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	GWindow gw = GGadgetGetWindow(g);
-	GGadget *list = GWidgetGetControl(gw,CID_Settings);
+	GGadget *list = GWidgetGetControl(gw,CID_Mapping);
 	GGadget *flist = GWidgetGetControl(GDrawGetParentWindow(gw),CID_Features);
 	struct macsettingname temp;
-	char *str;
+	unichar_t *str;
 
 	memset(&temp,0,sizeof(temp));
 	temp.mac_feature_type = -1;
-	temp.off_setting = 1;
 	if ( (str=AskSetting(&temp,list,-1,flist))==NULL )
 return( true );
-	GListAddStr(list,str);
+	GListAddStr(list,str,NULL);
 	free(str);
     }
 return( true );
 }
 
-static int Pref_DelSet(GGadget *g, GEvent *e) {
+static int Pref_DelMapping(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	GWindow gw = GGadgetGetWindow(g);
-	GListDelSelected(GWidgetGetControl(gw,CID_Settings));
-	GGadgetSetEnabled(GWidgetGetControl(gw,CID_SettingDel),false);
-	GGadgetSetEnabled(GWidgetGetControl(gw,CID_SettingEdit),false);
+	GListDelSelected(GWidgetGetControl(gw,CID_Mapping));
+	GGadgetSetEnabled(GWidgetGetControl(gw,CID_MappingDel),false);
+	GGadgetSetEnabled(GWidgetGetControl(gw,CID_MappingEdit),false);
     }
 return( true );
 }
 
-static int Pref_EditSet(GGadget *g, GEvent *e) {
+static int Pref_EditMapping(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	GWindow gw = GDrawGetParentWindow(GGadgetGetWindow(g));
-	GGadget *list = GWidgetGetControl(gw,CID_Settings);
+	GGadget *list = GWidgetGetControl(gw,CID_Mapping);
 	GGadget *flist = GWidgetGetControl(gw,CID_Features);
 	ChangeSetting(list,GGadgetGetFirstListSelectedItem(list),flist);
     }
 return( true );
 }
 
-static int Pref_SettingSel(GGadget *g, GEvent *e) {
+static int Pref_MappingSel(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
 	int32 len;
 	GTextInfo **ti = GGadgetGetList(g,&len);
@@ -1506,8 +1257,8 @@ static int Pref_SettingSel(GGadget *g, GEvent *e) {
 	int i, sel_cnt=0;
 	for ( i=0; i<len; ++i )
 	    if ( ti[i]->selected ) ++sel_cnt;
-	GGadgetSetEnabled(GWidgetGetControl(gw,CID_SettingDel),sel_cnt!=0);
-	GGadgetSetEnabled(GWidgetGetControl(gw,CID_SettingEdit),sel_cnt==1);
+	GGadgetSetEnabled(GWidgetGetControl(gw,CID_MappingDel),sel_cnt!=0);
+	GGadgetSetEnabled(GWidgetGetControl(gw,CID_MappingEdit),sel_cnt==1);
     } else if ( e->type==et_controlevent && e->u.control.subtype == et_listdoubleclick ) {
 	GGadget *flist = GWidgetGetControl( GDrawGetParentWindow(GGadgetGetWindow(g)),CID_Features);
 	ChangeSetting(g,e->u.control.u.list.changed_index!=-1?e->u.control.u.list.changed_index:
@@ -1516,262 +1267,16 @@ static int Pref_SettingSel(GGadget *g, GEvent *e) {
 return( true );
 }
 
-static GTextInfo *Pref_FeaturesList(void) {
-    struct macfeaturenames *mfn = user_feature_type_to_name ? user_feature_type_to_name : feature_type_to_name;
-    GTextInfo *ti;
-    int i, len, max=0;
-    char *str;
-
-    for ( i=0; mfn[i].feature_name!=NULL; ++i ) {
-	len = strlen( mfn[i].feature_name);
-	if ( len>max ) max = len;
-    }
-    ti = gcalloc(i+1,sizeof( GTextInfo ));
-
-    str = galloc(30+len);
-    for ( i=0; mfn[i].feature_name!=NULL; ++i ) {
-	sprintf(str,"%3d %s", mfn[i].mac_feature_type, mfn[i].feature_name);
-	ti[i].text = galloc(((len = strlen(str)+1))*sizeof(unichar_t));
-	encoding2u_strncpy(ti[i].text,str,len,e_mac);
-    }
-    free(str);
-return( ti );
-}
-
-struct featdata {
-    GWindow gw;
-    GGadget *list;
-    GGadget *code;
-    GGadget *name;
-    GGadget *ok;
-    GGadget *cancel;
-    int index;
-    int done;
-    char *ret;
-};
-
-static int feat_e_h(GWindow gw, GEvent *event) {
-    struct featdata *fd = GDrawGetUserData(gw);
-    int i;
-    int32 len;
-    GTextInfo **ti;
-    const unichar_t *ret1; unichar_t *end;
-    int val1, val2;
-    char buf[20];
-
-    if ( event->type==et_close ) {
-	fd->done = true;
-    } else if ( event->type==et_char ) {
-	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("prefs.html#Features");
-return( true );
-	}
-return( false );
-    } else if ( event->type==et_controlevent && event->u.control.subtype == et_buttonactivate ) {
-	if ( event->u.control.g == fd->cancel ) {
-	    fd->done = true;
-	} else if ( event->u.control.g == fd->ok ) {
-	    ret1 = _GGadgetGetTitle(fd->code);
-	    val1 = u_strtol(ret1,&end,10);
-	    if ( *end!='\0' ) {
-		GWidgetErrorR(_STR_BadNumber,_STR_BadNumber);
-return( true );
-	    }
-	    ti = GGadgetGetList(fd->list,&len);
-	    for ( i=0; i<len; ++i ) if ( i!=fd->index ) {
-		val2 = u_strtol(ti[i]->text,NULL,10);
-		if ( val2==val1 ) {
-		    GWidgetErrorR(_STR_ThisFeatureCodeIsAlreadyUsed,_STR_ThisFeatureCodeIsAlreadyUsed);
-return( true );
-		}
-	    }
-	    ret1 = _GGadgetGetTitle(fd->name);
-	    if ( *ret1=='\0' ) {
-		GWidgetErrorR(_STR_BadName,_STR_BadName);
-return( true );
-	    }
-	    sprintf(buf,"%3d", val1);
-	    len = u_strlen(ret1);
-	    fd->ret = galloc( strlen(buf)+len+3 );
-	    strcpy(fd->ret,buf);
-	    strcat(fd->ret," ");
-	    i = strlen(fd->ret);
-	    u2encoding_strncpy(fd->ret+i,ret1,len+1,e_mac);
-	    fd->done = true;
-	}
-    }
-return( true );
-}
-
-static char *AskFeature(struct macfeaturenames *temp,GGadget *list, int index) {
-    GRect pos;
-    GWindow gw;
-    GWindowAttrs wattrs;
-    GGadgetCreateData gcd[8];
-    GTextInfo label[8];
-    struct featdata fd;
-    char buf[20];
-    unichar_t *ubuf;
-    int len;
-
-    memset(&fd,0,sizeof(fd));
-    fd.list = list;
-    fd.index = index;
-
-    memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_restrict;
-    wattrs.event_masks = ~(1<<et_charup);
-    wattrs.restrict_input_to_me = 1;
-    wattrs.undercursor = 1;
-    wattrs.cursor = ct_pointer;
-    wattrs.window_title = GStringGetResource(_STR_Feature,NULL);
-    pos.x = pos.y = 0;
-    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,150));
-    pos.height = GDrawPointsToPixels(NULL,92);
-    gw = GDrawCreateTopWindow(NULL,&pos,feat_e_h,&fd,&wattrs);
-    fd.gw = gw;
-
-    memset(gcd,0,sizeof(gcd));
-    memset(label,0,sizeof(label));
-
-    label[0].text = (unichar_t *) _STR_Code;
-    label[0].text_in_resource = true;
-    gcd[0].gd.label = &label[0];
-    gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5+4;
-    gcd[0].gd.flags = gg_enabled|gg_visible;
-    gcd[0].creator = GLabelCreate;
-
-    sprintf( buf, "%d", temp->mac_feature_type );
-    label[1].text = (unichar_t *) buf;
-    label[1].text_is_1byte = true;
-    gcd[1].gd.label = &label[1];
-    gcd[1].gd.pos.x = 40; gcd[1].gd.pos.y = 5;
-    gcd[1].gd.flags = gg_enabled|gg_visible;
-    gcd[1].creator = GTextFieldCreate;
-
-    label[2].text = (unichar_t *) _STR_Name;
-    label[2].text_in_resource = true;
-    gcd[2].gd.label = &label[2];
-    gcd[2].gd.pos.x = 5; gcd[2].gd.pos.y = gcd[0].gd.pos.y+24;
-    gcd[2].gd.flags = gg_enabled|gg_visible;
-    gcd[2].creator = GLabelCreate;
-
-    ubuf = NULL;
-    if ( temp->feature_name ) {
-	len = strlen( temp->feature_name );
-	ubuf = galloc((len+1)*sizeof(unichar_t));
-	encoding2u_strncpy(ubuf,temp->feature_name,len+1,e_mac);
-	label[3].text = ubuf;
-	gcd[3].gd.label = &label[3];
-    }
-    gcd[3].gd.pos.x = 40; gcd[3].gd.pos.y = gcd[2].gd.pos.y-4;
-    gcd[3].gd.flags = gg_enabled|gg_visible;
-    gcd[3].creator = GTextFieldCreate;
-
-    gcd[4].gd.pos.x = 13-3; gcd[4].gd.pos.y = gcd[3].gd.pos.y+30;
-    gcd[4].gd.pos.width = -1; gcd[4].gd.pos.height = 0;
-    gcd[4].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[4].text = (unichar_t *) _STR_OK;
-    label[4].text_in_resource = true;
-    gcd[4].gd.label = &label[4];
-    /*gcd[4].gd.handle_controlevent = Prefs_Ok;*/
-    gcd[4].creator = GButtonCreate;
-
-    gcd[5].gd.pos.x = -13; gcd[5].gd.pos.y = gcd[5-1].gd.pos.y+3;
-    gcd[5].gd.pos.width = -1; gcd[5].gd.pos.height = 0;
-    gcd[5].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[5].text = (unichar_t *) _STR_Cancel;
-    label[5].text_in_resource = true;
-    gcd[5].gd.label = &label[5];
-    /*gcd[5].gd.handle_controlevent = Prefs_Cancel;*/
-    gcd[5].creator = GButtonCreate;
-
-    GGadgetsCreate(gw,gcd);
-    fd.code = gcd[1].ret;
-    fd.name = gcd[3].ret;
-    fd.ok = gcd[4].ret;
-    fd.cancel = gcd[5].ret;
-    GDrawSetVisible(gw,true);
-    GWidgetIndicateFocusGadget(gcd[1].ret);
-    while ( !fd.done )
-	GDrawProcessOneEvent(NULL);
-    GDrawDestroyWindow(gw);
-
-    free(temp->feature_name ); free(ubuf);
-return( fd.ret );
-}
-
-static void ChangeFeature(GGadget *list,int index) {
-    struct macfeaturenames temp;
-    int32 len, l;
-    GTextInfo **ti = GGadgetGetList(list,&len);
-    unichar_t *end;
-    char *str;
-
-    temp.mac_feature_type = u_strtol(ti[index]->text,&end,10);
-    l = u_strlen(end);
-    temp.feature_name = galloc(l);
-    u2encoding_strncpy(temp.feature_name,end+1,l,e_mac);
-    if ( (str=AskFeature(&temp,list,index))==NULL )
-return;
-    GListReplaceStr(list,index,str);
-}
-
-static int Pref_NewFeat(GGadget *g, GEvent *e) {
+static int Pref_DefaultMapping(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	GWindow gw = GGadgetGetWindow(g);
-	int32 len;
-	GGadget *list = GWidgetGetControl(gw,CID_Features);
-	GTextInfo **ti = GGadgetGetList(list,&len);
-	struct macfeaturenames temp;
-	char *str;
-	int i, expected=0, val;
-	for ( i=0; i<len; ++i ) {
-	    val = u_strtol(ti[i]->text,NULL,10);
-	    if ( val!=expected )
-	break;
-	    ++expected;
-	}
-	temp.mac_feature_type = expected;
-	temp.feature_name = copy("");
-	if ( (str=AskFeature(&temp,list,-1))==NULL )
-return( true );
-	GListAddStr(list,str);
-    }
-return( true );
-}
+	GGadget *list = GWidgetGetControl(GGadgetGetWindow(g),CID_Mapping);
+	GTextInfo *ti, **arr;
+	uint16 cnt;
 
-static int Pref_DelFeat(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	GWindow gw = GGadgetGetWindow(g);
-	GListDelSelected(GWidgetGetControl(gw,CID_Features));
-	GGadgetSetEnabled(GWidgetGetControl(gw,CID_FeatureDel),false);
-	GGadgetSetEnabled(GWidgetGetControl(gw,CID_FeatureEdit),false);
-    }
-return( true );
-}
-
-static int Pref_EditFeat(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	GGadget *list = GWidgetGetControl(GGadgetGetWindow(g),CID_Features);
-	ChangeFeature(list,GGadgetGetFirstListSelectedItem(list));
-    }
-return( true );
-}
-
-static int Pref_FeatureSel(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
-	int32 len;
-	GTextInfo **ti = GGadgetGetList(g,&len);
-	GWindow gw = GGadgetGetWindow(g);
-	int i, sel_cnt=0;
-	for ( i=0; i<len; ++i )
-	    if ( ti[i]->selected ) ++sel_cnt;
-	GGadgetSetEnabled(GWidgetGetControl(gw,CID_FeatureDel),sel_cnt!=0);
-	GGadgetSetEnabled(GWidgetGetControl(gw,CID_FeatureEdit),sel_cnt==1);
-    } else if ( e->type==et_controlevent && e->u.control.subtype == et_listdoubleclick ) {
-	ChangeFeature(g,e->u.control.u.list.changed_index!=-1?e->u.control.u.list.changed_index:
-		GGadgetGetFirstListSelectedItem(g));
+	ti = Pref_MappingList(false);
+	arr = GTextInfoArrayFromList(ti,&cnt);
+	GGadgetSetList(list,arr,false);
+	GTextInfoListFree(ti);
     }
 return( true );
 }
@@ -1788,7 +1293,6 @@ static int Prefs_Ok(GGadget *g, GEvent *e) {
     struct prefs_list *pl;
     GTextInfo **list;
     int len, maxl, t;
-    unichar_t *end;
     char *str;
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
@@ -1888,23 +1392,10 @@ return( true );
 	    script_filenames[i] = u2def_copy(scripts[i]);
 	}
 
-	list = GGadgetGetList(GWidgetGetControl(gw,CID_Features),&len);
-	UserFeaturesFree();
-	user_feature_type_to_name = galloc((len+1)*sizeof(struct macfeaturenames));
-	user_feature_type_to_name[len].feature_name = NULL;
-	user_feature_type_to_name[len].mac_feature_type = -1;
-	for ( i=0; i<len; ++i ) {
-	    user_feature_type_to_name[i].mac_feature_type = u_strtol(list[i]->text,&end,10);
-	    while ( *end==' ' ) ++end;
-	    user_feature_type_to_name[i].feature_name = galloc(u_strlen(end)+2);
-	    u2encoding_strncpy(user_feature_type_to_name[i].feature_name,end,u_strlen(end)+1,
-		e_mac);
-	}
-
-	list = GGadgetGetList(GWidgetGetControl(gw,CID_Settings),&len);
+	list = GGadgetGetList(GWidgetGetControl(gw,CID_Mapping),&len);
 	UserSettingsFree();
 	user_macfeat_otftag = galloc((len+1)*sizeof(struct macsettingname));
-	user_macfeat_otftag[len].on_name = NULL;
+	user_macfeat_otftag[len].otf_tag = 0;
 	maxl = 0;
 	for ( i=0; i<len; ++i ) {
 	    t = u_strlen(list[i]->text);
@@ -1913,9 +1404,11 @@ return( true );
 	str = galloc(maxl+3);
 	for ( i=0; i<len; ++i ) {
 	    u2encoding_strncpy(str,list[i]->text,maxl+1,e_mac);
-	    ParseMacSetting(str,&user_macfeat_otftag[i]);
+	    ParseMacMapping(str,&user_macfeat_otftag[i]);
 	}
 	free(str);
+
+	Prefs_ReplaceMacFeatures(GWidgetGetControl(gw,CID_Features));
 
 	if ( xuid!=NULL ) {
 	    char *pt;
@@ -1942,6 +1435,8 @@ return( true );
 static int Prefs_Cancel(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct pref_data *p = GDrawGetUserData(GGadgetGetWindow(g));
+	MacFeatListFree(GGadgetGetUserData((GWidgetGetControl(
+		GGadgetGetWindow(g),CID_Features))));
 	p->done = true;
     }
 return( true );
@@ -1951,6 +1446,7 @@ static int e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
 	struct pref_data *p = GDrawGetUserData(gw);
 	p->done = true;
+	MacFeatListFree(GGadgetGetUserData((GWidgetGetControl(gw,CID_Features))));
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
 	    help("prefs.html");
@@ -1965,8 +1461,8 @@ void DoPrefs(void) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData *pgcd, gcd[5], sgcd[45], mgcd[3], mfgcd[8], msgcd[8];
-    GTextInfo *plabel, **list, label[5], slabel[45], *plabels[10], mflabels[8], mslabels[8];
+    GGadgetCreateData *pgcd, gcd[5], sgcd[45], mgcd[3], mfgcd[9], msgcd[9];
+    GTextInfo *plabel, **list, label[5], slabel[45], *plabels[10], mflabels[9], mslabels[9];
     GTabInfo aspects[9], subaspects[3];
     struct pref_data p;
     int i, gc, sgc, j, k, line, line_max, llen, y, y2, ii;
@@ -2016,53 +1512,16 @@ void DoPrefs(void) {
     memset(&mflabels,0,sizeof(mflabels));
     memset(&mslabels,0,sizeof(mslabels));
 
-    sgc = 0;
-
-    mfgcd[sgc].gd.pos.x = 6; mfgcd[sgc].gd.pos.y = 6;
-    mfgcd[sgc].gd.pos.width = 250; mfgcd[sgc].gd.pos.height = 16*12+10;
-    mfgcd[sgc].gd.flags = gg_visible | gg_enabled | gg_list_alphabetic | gg_list_multiplesel;
-    mfgcd[sgc].gd.cid = CID_Features;
-    mfgcd[sgc].gd.u.list = Pref_FeaturesList();
-    mfgcd[sgc].gd.handle_controlevent = Pref_FeatureSel;
-    mfgcd[sgc++].creator = GListCreate;
-
-    mfgcd[sgc].gd.pos.x = 6; mfgcd[sgc].gd.pos.y = mfgcd[sgc-1].gd.pos.y+mfgcd[sgc-1].gd.pos.height+10;
-    mfgcd[sgc].gd.flags = gg_visible | gg_enabled;
-    mflabels[sgc].text = (unichar_t *) _STR_NewDDD;
-    mflabels[sgc].text_in_resource = true;
-    mfgcd[sgc].gd.label = &mflabels[sgc];
-    /*mfgcd[sgc].gd.cid = CID_AnchorRename;*/
-    mfgcd[sgc].gd.handle_controlevent = Pref_NewFeat;
-    mfgcd[sgc++].creator = GButtonCreate;
-
-    mfgcd[sgc].gd.pos.x = mfgcd[sgc-1].gd.pos.x+20+GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor);
-    mfgcd[sgc].gd.pos.y = mfgcd[sgc-1].gd.pos.y;
-    mfgcd[sgc].gd.flags = gg_visible ;
-    mflabels[sgc].text = (unichar_t *) _STR_Delete;
-    mflabels[sgc].text_in_resource = true;
-    mfgcd[sgc].gd.label = &mflabels[sgc];
-    mfgcd[sgc].gd.cid = CID_FeatureDel;
-    mfgcd[sgc].gd.handle_controlevent = Pref_DelFeat;
-    mfgcd[sgc++].creator = GButtonCreate;
-
-    mfgcd[sgc].gd.pos.x = mfgcd[sgc-1].gd.pos.x+20+GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor);
-    mfgcd[sgc].gd.pos.y = mfgcd[sgc-1].gd.pos.y;
-    mfgcd[sgc].gd.flags = gg_visible ;
-    mflabels[sgc].text = (unichar_t *) _STR_EditDDD;
-    mflabels[sgc].text_in_resource = true;
-    mfgcd[sgc].gd.label = &mflabels[sgc];
-    mfgcd[sgc].gd.cid = CID_FeatureEdit;
-    mfgcd[sgc].gd.handle_controlevent = Pref_EditFeat;
-    mfgcd[sgc++].creator = GButtonCreate;
+    GCDFillMacFeat(mfgcd,mflabels,250,default_mac_feature_map, true);
 
     sgc = 0;
 
     msgcd[sgc].gd.pos.x = 6; msgcd[sgc].gd.pos.y = 6;
     msgcd[sgc].gd.pos.width = 250; msgcd[sgc].gd.pos.height = 16*12+10;
     msgcd[sgc].gd.flags = gg_visible | gg_enabled | gg_list_alphabetic | gg_list_multiplesel;
-    msgcd[sgc].gd.cid = CID_Settings;
-    msgcd[sgc].gd.u.list = Pref_SettingsList();
-    msgcd[sgc].gd.handle_controlevent = Pref_SettingSel;
+    msgcd[sgc].gd.cid = CID_Mapping;
+    msgcd[sgc].gd.u.list = Pref_MappingList(true);
+    msgcd[sgc].gd.handle_controlevent = Pref_MappingSel;
     msgcd[sgc++].creator = GListCreate;
 
     msgcd[sgc].gd.pos.x = 6; msgcd[sgc].gd.pos.y = msgcd[sgc-1].gd.pos.y+msgcd[sgc-1].gd.pos.height+10;
@@ -2071,27 +1530,36 @@ void DoPrefs(void) {
     mslabels[sgc].text_in_resource = true;
     msgcd[sgc].gd.label = &mslabels[sgc];
     /*msgcd[sgc].gd.cid = CID_AnchorRename;*/
-    msgcd[sgc].gd.handle_controlevent = Pref_NewSet;
+    msgcd[sgc].gd.handle_controlevent = Pref_NewMapping;
     msgcd[sgc++].creator = GButtonCreate;
 
-    msgcd[sgc].gd.pos.x = msgcd[sgc-1].gd.pos.x+20+GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor);
+    msgcd[sgc].gd.pos.x = msgcd[sgc-1].gd.pos.x+10+GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor);
     msgcd[sgc].gd.pos.y = msgcd[sgc-1].gd.pos.y;
     msgcd[sgc].gd.flags = gg_visible ;
     mslabels[sgc].text = (unichar_t *) _STR_Delete;
     mslabels[sgc].text_in_resource = true;
     msgcd[sgc].gd.label = &mslabels[sgc];
-    msgcd[sgc].gd.cid = CID_SettingDel;
-    msgcd[sgc].gd.handle_controlevent = Pref_DelSet;
+    msgcd[sgc].gd.cid = CID_MappingDel;
+    msgcd[sgc].gd.handle_controlevent = Pref_DelMapping;
     msgcd[sgc++].creator = GButtonCreate;
 
-    msgcd[sgc].gd.pos.x = msgcd[sgc-1].gd.pos.x+20+GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor);
+    msgcd[sgc].gd.pos.x = msgcd[sgc-1].gd.pos.x+10+GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor);
     msgcd[sgc].gd.pos.y = msgcd[sgc-1].gd.pos.y;
     msgcd[sgc].gd.flags = gg_visible ;
     mslabels[sgc].text = (unichar_t *) _STR_EditDDD;
     mslabels[sgc].text_in_resource = true;
     msgcd[sgc].gd.label = &mslabels[sgc];
-    msgcd[sgc].gd.cid = CID_SettingEdit;
-    msgcd[sgc].gd.handle_controlevent = Pref_EditSet;
+    msgcd[sgc].gd.cid = CID_MappingEdit;
+    msgcd[sgc].gd.handle_controlevent = Pref_EditMapping;
+    msgcd[sgc++].creator = GButtonCreate;
+
+    msgcd[sgc].gd.pos.x = msgcd[sgc-1].gd.pos.x+10+GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor);
+    msgcd[sgc].gd.pos.y = msgcd[sgc-1].gd.pos.y;
+    msgcd[sgc].gd.flags = gg_visible | gg_enabled;
+    mslabels[sgc].text = (unichar_t *) _STR_Default;
+    mslabels[sgc].text_in_resource = true;
+    msgcd[sgc].gd.label = &mslabels[sgc];
+    msgcd[sgc].gd.handle_controlevent = Pref_DefaultMapping;
     msgcd[sgc++].creator = GButtonCreate;
 
     sgc = 0;
@@ -2292,7 +1760,7 @@ void DoPrefs(void) {
     subaspects[0].text_in_resource = true;
     subaspects[0].gcd = mfgcd;
 
-    subaspects[1].text = (unichar_t *) _STR_Settings;
+    subaspects[1].text = (unichar_t *) _STR_MappingB;
     subaspects[1].text_in_resource = true;
     subaspects[1].gcd = msgcd;
 
@@ -2347,6 +1815,9 @@ void DoPrefs(void) {
     gcd[0].gd.pos.height = y-4;
 
     GGadgetsCreate(gw,gcd);
+    GTextInfoListFree(mfgcd[0].gd.u.list);
+    GTextInfoListFree(msgcd[0].gd.u.list);
+    
     memset(&rq,0,sizeof(rq));
     rq.family_name = monospace;
     rq.point_size = 12;
@@ -2354,8 +1825,6 @@ void DoPrefs(void) {
     font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
     GGadgetSetFont(mfgcd[0].ret,font);
     GGadgetSetFont(msgcd[0].ret,font);
-    GTextInfoListFree(mfgcd[0].gd.u.list);
-    GTextInfoListFree(msgcd[0].gd.u.list);
     if ( y!=pos.height )
 	GDrawResize(gw,pos.width,y );
 
@@ -2423,15 +1892,4 @@ void RecentFilesRemember(char *filename) {
 	RecentFiles[0] = copy(filename);
     }
     SavePrefs();
-}
-
-char *FeatureNameFromType(int featureType) {
-    int i;
-    struct macfeaturenames *mfn = user_feature_type_to_name ? user_feature_type_to_name : feature_type_to_name;
-
-    for ( i=0; mfn[i].feature_name!=NULL; ++i )
-	if ( mfn[i].mac_feature_type==featureType )
-return( mfn[i].feature_name );
-
-return( "Unknown Feature" );
 }

@@ -6143,11 +6143,15 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv) {
     int sbsize;
     FontRequest rq;
     int as, ds, ld;
+    extern int updateflex;
     static unichar_t fixed[] = { 'f','i','x','e','d',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t', '\0' };
     static unichar_t *infofamily=NULL;
 
     if ( !cvcolsinited )
 	CVColInit();
+
+    if ( sc->views==NULL && updateflex )
+	SplineCharIsFlexible(sc);
 
     cv->sc = sc;
     cv->scale = .5;

@@ -24,7 +24,8 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "pfaedit.h"
+#include "pfaeditui.h"
+#include <gkeysym.h>
 #include <ustring.h>
 
 /*
@@ -1083,6 +1084,9 @@ unichar_t *MacStrToUnicode(const char *str,int macenc,int maclang) {
     unichar_t *ret, *table, *rpt;
     const uint8 *ustr = (uint8 *) str;
 
+    if ( str==NULL )
+return( NULL );
+
     if ( macenc==sm_japanese || macenc==sm_korean || macenc==sm_tradchinese ||
 	    macenc == sm_simpchinese ) {
 	ret = galloc((strlen(str)+1)*sizeof(unichar_t));
@@ -1123,6 +1127,9 @@ char *UnicodeToMacStr(const unichar_t *ustr,int macenc,int maclang) {
     char *ret, *rpt;
     const unichar_t *table;
     int i;
+
+    if ( ustr==NULL )
+return( NULL );
 
     if ( macenc==sm_japanese || macenc==sm_korean || macenc==sm_tradchinese ||
 	    macenc == sm_simpchinese ) {
@@ -1834,4 +1841,1347 @@ static MacFeat fs_features[] = {
 	 { NULL }
 };
 
-MacFeat *default_mac_feature_map = &fs_features[26];
+MacFeat *default_mac_feature_map = &fs_features[26],
+	*builtin_mac_feature_map=&fs_features[26],
+	*user_mac_feature_map;
+
+static int MacNamesDiffer(struct macname *mn, struct macname *mn2) {
+
+    for ( ; mn!=NULL && mn2!=NULL; mn=mn->next, mn2 = mn2->next ) {
+	if ( mn->lang != mn2->lang || mn->enc!=mn2->enc ||
+		strcmp(mn->name,mn2->name)!=0 )
+return( true );
+    }
+    if ( mn==mn2 )		/* Both NULL */
+return( false );
+
+return( true );
+}
+
+static int MacSettingsDiffer(struct macsetting *ms, struct macsetting *ms2) {
+
+    for ( ; ms!=NULL && ms2!=NULL; ms=ms->next, ms2 = ms2->next ) {
+	if ( ms->setting != ms2->setting ||
+		ms->initially_enabled != ms2->initially_enabled ||
+		MacNamesDiffer(ms->setname,ms2->setname) )
+return( true );
+    }
+    if ( ms==ms2 )		/* Both NULL */
+return( false );
+
+return( true );
+}
+
+int UserFeaturesDiffer(void) {
+    MacFeat *mf, *mf2;
+    if ( user_mac_feature_map==NULL )
+return( false );
+    for ( mf=builtin_mac_feature_map, mf2=user_mac_feature_map;
+	    mf!=NULL && mf2!=NULL; mf=mf->next, mf2 = mf2->next ) {
+	if ( mf->feature != mf2->feature || mf->ismutex != mf2->ismutex ||
+		mf->default_setting != mf2->default_setting ||
+		MacNamesDiffer(mf->featname,mf2->featname) ||
+		MacSettingsDiffer(mf->settings,mf2->settings))
+return( true );
+    }
+    if ( mf==mf2 )		/* Both NULL */
+return( false );
+
+return( true );
+}
+
+static struct macname *MacNameCopy(struct macname *mn) {
+    struct macname *head=NULL, *last, *cur;
+
+    while ( mn!=NULL ) {
+	cur = chunkalloc(sizeof(struct macname));
+	cur->enc = mn->enc;
+	cur->lang = mn->lang;
+	cur->name = copy(mn->name);
+	if ( head==NULL )
+	    head = cur;
+	else
+	    last->next = cur;
+	last = cur;
+	mn = mn->next;
+    }
+return( head );
+}
+
+static struct macsetting *MacSettingCopy(struct macsetting *ms) {
+    struct macsetting *head=NULL, *last, *cur;
+
+    while ( ms!=NULL ) {
+	cur = chunkalloc(sizeof(struct macsetting));
+	cur->setting = ms->setting;
+	cur->setname = MacNameCopy(ms->setname);
+	cur->initially_enabled = ms->initially_enabled;
+	if ( head==NULL )
+	    head = cur;
+	else
+	    last->next = cur;
+	last = cur;
+	ms = ms->next;
+    }
+return( head );
+}
+
+static MacFeat *MacFeatCopy(MacFeat *mf) {
+    MacFeat *head=NULL, *last, *cur;
+
+    while ( mf!=NULL ) {
+	cur = chunkalloc(sizeof(MacFeat));
+	cur->feature = mf->feature;
+	cur->featname = MacNameCopy(mf->featname);
+	cur->settings = MacSettingCopy(mf->settings);
+	cur->ismutex = mf->ismutex;
+	cur->default_setting = mf->default_setting;
+	if ( head==NULL )
+	    head = cur;
+	else
+	    last->next = cur;
+	last = cur;
+	mf = mf->next;
+    }
+return( head );
+}
+
+/* ************************************************************************** */
+static GTextInfo maclanguages[] = {
+    { (unichar_t *) _STR_MacEnglish, NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacFrench, NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacGerman, NULL, 0, 0, (void *) 2, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacItalian, NULL, 0, 0, (void *) 3, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacDutch, NULL, 0, 0, (void *) 4, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacSwedish, NULL, 0, 0, (void *) 5, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacSpanish, NULL, 0, 0, (void *) 6, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacDanish, NULL, 0, 0, (void *) 7, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacPortuguese, NULL, 0, 0, (void *) 8, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacNorwegian, NULL, 0, 0, (void *) 9, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacHebrew, NULL, 0, 0, (void *) 10, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacJapanese, NULL, 0, 0, (void *) 11, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacArabic, NULL, 0, 0, (void *) 12, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacFinnish, NULL, 0, 0, (void *) 13, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacGreek, NULL, 0, 0, (void *) 14, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacIcelandic, NULL, 0, 0, (void *) 15, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacMaltese, NULL, 0, 0, (void *) 16, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacTurkish, NULL, 0, 0, (void *) 17, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacCroatian, NULL, 0, 0, (void *) 18, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacTraditionalChinese, NULL, 0, 0, (void *) 19, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacUrdu, NULL, 0, 0, (void *) 20, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacHindi, NULL, 0, 0, (void *) 21, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacThai, NULL, 0, 0, (void *) 22, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacKorean, NULL, 0, 0, (void *) 23, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacLithuanian, NULL, 0, 0, (void *) 24, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacPolish, NULL, 0, 0, (void *) 25, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacHungarian, NULL, 0, 0, (void *) 26, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacEstonian, NULL, 0, 0, (void *) 27, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacLatvian, NULL, 0, 0, (void *) 28, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacSami, NULL, 0, 0, (void *) 29, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacFaroese, NULL, 0, 0, (void *) 30, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacFarsi, NULL, 0, 0, (void *) 31, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacRussian, NULL, 0, 0, (void *) 32, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacSimplifiedChinese, NULL, 0, 0, (void *) 33, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacFlemish, NULL, 0, 0, (void *) 34, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacIrish, NULL, 0, 0, (void *) 35, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacAlbanian, NULL, 0, 0, (void *) 36, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacRomanian, NULL, 0, 0, (void *) 37, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacCzech, NULL, 0, 0, (void *) 38, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacSlovak, NULL, 0, 0, (void *) 39, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacSlovenian, NULL, 0, 0, (void *) 40, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacYiddish, NULL, 0, 0, (void *) 41, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacSerbian, NULL, 0, 0, (void *) 42, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacMacedonian, NULL, 0, 0, (void *) 43, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacBulgarian, NULL, 0, 0, (void *) 44, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacUkrainian, NULL, 0, 0, (void *) 45, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacByelorussian, NULL, 0, 0, (void *) 46, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacUzbek, NULL, 0, 0, (void *) 47, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacKazakh, NULL, 0, 0, (void *) 48, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacAxerbaijaniC, NULL, 0, 0, (void *) 49, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacAxerbaijaniA, NULL, 0, 0, (void *) 50, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacArmenian, NULL, 0, 0, (void *) 51, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacGeorgian, NULL, 0, 0, (void *) 52, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacMoldavian, NULL, 0, 0, (void *) 53, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacKirghiz, NULL, 0, 0, (void *) 54, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacTajiki, NULL, 0, 0, (void *) 55, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacTurkmen, NULL, 0, 0, (void *) 56, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacMongolianM, NULL, 0, 0, (void *) 57, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacMongolianC, NULL, 0, 0, (void *) 58, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacPashto, NULL, 0, 0, (void *) 59, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacKurdish, NULL, 0, 0, (void *) 60, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacKashmiri, NULL, 0, 0, (void *) 61, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacSindhi, NULL, 0, 0, (void *) 62, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacTibetan, NULL, 0, 0, (void *) 63, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacNepali, NULL, 0, 0, (void *) 64, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacSanskrit, NULL, 0, 0, (void *) 65, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacMarathi, NULL, 0, 0, (void *) 66, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacBengali, NULL, 0, 0, (void *) 67, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacAssamese, NULL, 0, 0, (void *) 68, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacGujarati, NULL, 0, 0, (void *) 69, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacPunjabi, NULL, 0, 0, (void *) 70, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacOriya, NULL, 0, 0, (void *) 71, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacMalayalam, NULL, 0, 0, (void *) 72, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacKannada, NULL, 0, 0, (void *) 73, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacTamil, NULL, 0, 0, (void *) 74, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacTelugu, NULL, 0, 0, (void *) 75, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacSinhalese, NULL, 0, 0, (void *) 76, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacBurmese, NULL, 0, 0, (void *) 77, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacKhmer, NULL, 0, 0, (void *) 78, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacLao, NULL, 0, 0, (void *) 79, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacVietnamese, NULL, 0, 0, (void *) 80, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacIndonesian, NULL, 0, 0, (void *) 81, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacTagalog, NULL, 0, 0, (void *) 82, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacMalayR, NULL, 0, 0, (void *) 83, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacMalayA, NULL, 0, 0, (void *) 84, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacAmharic, NULL, 0, 0, (void *) 85, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacTigrinya, NULL, 0, 0, (void *) 86, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacGalla, NULL, 0, 0, (void *) 87, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacSomali, NULL, 0, 0, (void *) 88, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacSwahili, NULL, 0, 0, (void *) 89, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacKinyarwanda, NULL, 0, 0, (void *) 90, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacRundi, NULL, 0, 0, (void *) 91, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacNyanja, NULL, 0, 0, (void *) 92, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacMalagasy, NULL, 0, 0, (void *) 93, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacEsperanto, NULL, 0, 0, (void *) 94, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacWelsh, NULL, 0, 0, (void *) 128, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacBasque, NULL, 0, 0, (void *) 129, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacCatalan, NULL, 0, 0, (void *) 130, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacLatinLang, NULL, 0, 0, (void *) 131, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacQuechua, NULL, 0, 0, (void *) 132, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacGuarani, NULL, 0, 0, (void *) 133, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacAymara, NULL, 0, 0, (void *) 134, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacTatar, NULL, 0, 0, (void *) 135, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacUighur, NULL, 0, 0, (void *) 136, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacDzongkha, NULL, 0, 0, (void *) 137, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacJavanese, NULL, 0, 0, (void *) 138, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacSundanese, NULL, 0, 0, (void *) 139, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacGalician, NULL, 0, 0, (void *) 140, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacAfrikaans, NULL, 0, 0, (void *) 141, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacBreton, NULL, 0, 0, (void *) 142, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacInuktitut, NULL, 0, 0, (void *) 143, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacScottish, NULL, 0, 0, (void *) 144, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacManx, NULL, 0, 0, (void *) 145, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacIrishDot, NULL, 0, 0, (void *) 146, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacTongan, NULL, 0, 0, (void *) 147, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacGreekPolytonic, NULL, 0, 0, (void *) 148, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacGreenlandic, NULL, 0, 0, (void *) 149, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacAzebaijani, NULL, 0, 0, (void *) 150, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { NULL }};
+
+#define CID_Features	101
+#define CID_FeatureDel	103
+#define CID_FeatureEdit	105
+
+#define CID_Settings	101
+#define CID_SettingDel	103
+#define CID_SettingEdit	105
+
+#define CID_NameList	201
+#define CID_NameDel	203
+#define CID_NameEdit	205
+
+#define CID_Cancel	300
+#define CID_OK		301
+#define CID_Id		302
+#define CID_Name	303
+#define CID_Language	304
+#define CID_On		305
+#define CID_Mutex	306
+
+static unichar_t spacer[] = { 0x2003, 0x21d2, 0x2003, 0 };
+
+static GTextInfo *Pref_MacNamesList(struct macname *all) {
+    GTextInfo *ti;
+    int i, j;
+    struct macname *mn;
+    unichar_t *temp, *full;
+
+    for ( i=0, mn=all; mn!=NULL; mn=mn->next, ++i );
+    ti = gcalloc(i+1,sizeof( GTextInfo ));
+
+    for ( i=0, mn=all; mn!=NULL; mn=mn->next, ++i ) {
+	temp = MacStrToUnicode(mn->name,mn->enc,mn->lang);
+	for ( j=0 ; maclanguages[j].text!=0; ++j )
+	    if ( maclanguages[j].userdata == (void *) (intpt) (mn->lang ))
+	break;
+	if ( maclanguages[j].text!=0 ) {
+	    const unichar_t *lang = GStringGetResource((int) maclanguages[j].text,NULL );
+	    full = galloc((u_strlen(lang)+u_strlen(temp)+6)*sizeof(unichar_t));
+	    u_strcpy(full,lang);
+	} else {
+	    char *hunh = "???";
+	    full = galloc((strlen(hunh)+u_strlen(temp)+6)*sizeof(unichar_t));
+	    uc_strcpy(full,hunh);
+	}
+	u_strcat(full,spacer);
+	u_strcat(full,temp);
+	free(temp);
+	ti[i].text = full;
+	ti[i].userdata = (void *) mn;
+    }
+return( ti );
+}
+
+static GTextInfo *Pref_SettingsList(struct macsetting *all) {
+    GTextInfo *ti;
+    int i;
+    struct macsetting *ms;
+    unichar_t *temp, *full;
+    char buf[20];
+
+    for ( i=0, ms=all; ms!=NULL; ms=ms->next, ++i );
+    ti = gcalloc(i+1,sizeof( GTextInfo ));
+
+    for ( i=0, ms=all; ms!=NULL; ms=ms->next, ++i ) {
+	temp = PickNameFromMacName(ms->setname);
+	sprintf(buf,"%3d ", ms->setting);
+	full = galloc((strlen(buf)+u_strlen(temp)+1)*sizeof(unichar_t));
+	uc_strcpy(full,buf);
+	u_strcat(full,temp);
+	free(temp);
+	ti[i].text = full;
+	ti[i].userdata = ms;
+    }
+return( ti );
+}
+
+static GTextInfo *Pref_FeaturesList(MacFeat *all) {
+    GTextInfo *ti;
+    int i;
+    MacFeat *mf;
+    unichar_t *temp, *full;
+    char buf[20];
+
+    for ( i=0, mf=all; mf!=NULL; mf=mf->next, ++i );
+    ti = gcalloc(i+1,sizeof( GTextInfo ));
+
+    for ( i=0, mf=all; mf!=NULL; mf=mf->next, ++i ) {
+	temp = PickNameFromMacName(mf->featname);
+	sprintf(buf,"%3d ", mf->feature);
+	full = galloc((strlen(buf)+u_strlen(temp)+1)*sizeof(unichar_t));
+	uc_strcpy(full,buf);
+	u_strcat(full,temp);
+	free(temp);
+	ti[i].text = full;
+	ti[i].userdata = mf;
+    }
+return( ti );
+}
+
+struct namedata {
+    GWindow gw;
+    int index;
+    int done;
+    struct macname *all, *changing;
+    GGadget *namelist;		/* Not in this dlg, in the dlg which created us */
+};
+
+static int name_e_h(GWindow gw, GEvent *event) {
+    struct namedata *nd = GDrawGetUserData(gw);
+    int i;
+    int32 len;
+    GTextInfo **ti, *sel;
+    const unichar_t *ret1; unichar_t *full, *temp;
+    int val1, val2;
+    struct macname *mn;
+    int language;
+
+    if ( event->type==et_close ) {
+	nd->done = true;
+	if ( nd->index==-1 )
+	    MacNameListFree(nd->changing);
+    } else if ( event->type==et_char ) {
+	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
+	    help("prefs.html#Features");
+return( true );
+	}
+return( false );
+    } else if ( event->type==et_controlevent && event->u.control.subtype == et_buttonactivate ) {
+	if ( GGadgetGetCid(event->u.control.g) == CID_Cancel ) {
+	    nd->done = true;
+	    if ( nd->index==-1 )
+		MacNameListFree(nd->changing);
+	} else if ( GGadgetGetCid(event->u.control.g) == CID_OK ) {
+	    sel = GGadgetGetListItemSelected(GWidgetGetControl(nd->gw,CID_Language));
+	    language = nd->changing->lang;
+	    if ( sel!=NULL )
+		language = (int) sel->userdata;
+	    else if ( nd->index==-1 ) {
+		GWidgetErrorR(_STR_BadLanguage,_STR_BadLanguage);
+return( true );
+	    }	/* Otherwise use the original language, it might not be one we recognize */
+	    if ( language != nd->changing->lang )
+		nd->changing->enc = MacEncFromMacLang(language);
+	    nd->changing->lang = language;
+	    val1 = (nd->changing->enc<<16) | nd->changing->lang;
+	    ret1 = _GGadgetGetTitle(GWidgetGetControl(nd->gw,CID_Name));
+	    free(nd->changing->name);
+	    nd->changing->name = UnicodeToMacStr(ret1,nd->changing->enc,nd->changing->lang);
+
+	    ti = GGadgetGetList(nd->namelist,&len);
+	    for ( i=0; i<len; ++i ) if ( i!=nd->index ) {
+		val2 = (((struct macname *) (ti[i]->userdata))->enc<<16) |
+			(((struct macname *) (ti[i]->userdata))->lang);
+		if ( val2==val1 ) {
+		    GWidgetErrorR(_STR_ThisFeatureCodeIsAlreadyUsed,_STR_ThisFeatureCodeIsAlreadyUsed);
+return( true );
+		}
+	    }
+
+	    temp = MacStrToUnicode(nd->changing->name,nd->changing->enc,nd->changing->lang);
+	    if ( sel!=NULL ) {
+		const unichar_t *lang = sel->text;
+		full = galloc((u_strlen(lang)+u_strlen(temp)+6)*sizeof(unichar_t));
+		u_strcpy(full,lang);
+	    } else {
+		char *hunh = "???";
+		full = galloc((strlen(hunh)+u_strlen(temp)+6)*sizeof(unichar_t));
+		uc_strcpy(full,hunh);
+	    }
+	    u_strcat(full,spacer);
+	    u_strcat(full,temp);
+
+	    if ( nd->index==-1 )
+		GListAddStr(nd->namelist,full,nd->changing);
+	    else {
+		GListReplaceStr(nd->namelist,nd->index,full,nd->changing);
+		if ( nd->all==nd->changing )
+		    nd->all = nd->changing->next;
+		else {
+		    for ( mn=nd->all ; mn!=NULL && mn->next!=nd->changing; mn=mn->next );
+		    if ( mn!=NULL ) mn->next = nd->changing->next;
+		}
+	    }
+	    nd->changing->next = NULL;
+	    if ( nd->all==NULL || val1< ((nd->all->enc<<16)|nd->all->lang) ) {
+		nd->changing->next = nd->all;
+		nd->all = nd->changing;
+	    } else {
+		for ( mn=nd->all; mn->next!=NULL && ((mn->next->enc<<16)|mn->next->lang)<val1; mn=mn->next );
+		nd->changing->next = mn->next;
+		mn->next = nd->changing;
+	    }
+	    GGadgetSetUserData(nd->namelist,nd->all);
+	    nd->done = true;
+	}
+    }
+return( true );
+}
+
+static char *AskName(struct macname *changing,struct macname *all,GGadget *list, int index) {
+    GRect pos;
+    GWindow gw;
+    GWindowAttrs wattrs;
+    GGadgetCreateData gcd[8];
+    GTextInfo label[8];
+    struct namedata nd;
+    int i;
+
+    memset(&nd,0,sizeof(nd));
+    nd.namelist = list;
+    nd.index = index;
+    nd.changing = changing;
+    nd.all = all;
+
+    memset(&wattrs,0,sizeof(wattrs));
+    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_restrict;
+    wattrs.event_masks = ~(1<<et_charup);
+    wattrs.restrict_input_to_me = 1;
+    wattrs.undercursor = 1;
+    wattrs.cursor = ct_pointer;
+    wattrs.window_title = GStringGetResource(_STR_Setting,NULL);
+    pos.x = pos.y = 0;
+    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,270));
+    pos.height = GDrawPointsToPixels(NULL,98);
+    gw = GDrawCreateTopWindow(NULL,&pos,name_e_h,&nd,&wattrs);
+    nd.gw = gw;
+
+    memset(gcd,0,sizeof(gcd));
+    memset(label,0,sizeof(label));
+
+    label[0].text = (unichar_t *) _STR_LanguageC;
+    label[0].text_in_resource = true;
+    gcd[0].gd.label = &label[0];
+    gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5+4;
+    gcd[0].gd.flags = gg_enabled|gg_visible;
+    gcd[0].creator = GLabelCreate;
+
+    gcd[1].gd.pos.x = 60; gcd[1].gd.pos.y = 5;
+    gcd[1].gd.pos.width = 200;
+    gcd[1].gd.flags = gg_enabled|gg_visible | gg_list_alphabetic;
+    gcd[1].gd.u.list = maclanguages;
+    gcd[1].gd.cid = CID_Language;
+    gcd[1].creator = GListButtonCreate;
+
+    for ( i=0; maclanguages[i].text!=NULL; ++i ) {
+	if ( maclanguages[i].userdata == (void *) (intpt) (changing->lang) )
+	    maclanguages[i].selected = true;
+	else
+	    maclanguages[i].selected = false;
+    }
+
+    label[2].text = (unichar_t *) _STR_Name;
+    label[2].text_in_resource = true;
+    gcd[2].gd.label = &label[2];
+    gcd[2].gd.pos.x = 5; gcd[2].gd.pos.y = gcd[0].gd.pos.y+28;
+    gcd[2].gd.flags = gg_enabled|gg_visible;
+    gcd[2].creator = GLabelCreate;
+
+    label[3].text = MacStrToUnicode(changing->name,changing->enc,changing->lang);
+    gcd[3].gd.label = changing->name==NULL ? NULL : &label[3];
+    gcd[3].gd.pos.x = gcd[1].gd.pos.x; gcd[3].gd.pos.y = gcd[2].gd.pos.y-4;
+    gcd[3].gd.pos.width = 200;
+    gcd[3].gd.flags = gg_enabled|gg_visible;
+    gcd[3].gd.cid = CID_Name;
+    gcd[3].creator = GTextFieldCreate;
+
+    i = 4;
+
+    gcd[i].gd.pos.x = 13-3; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+30;
+    gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
+    gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_default;
+    label[i].text = (unichar_t *) _STR_OK;
+    label[i].text_in_resource = true;
+    gcd[i].gd.label = &label[i];
+    gcd[i].gd.cid = CID_OK;
+    /*gcd[i].gd.handle_controlevent = Prefs_Ok;*/
+    gcd[i++].creator = GButtonCreate;
+
+    gcd[i].gd.pos.x = -13; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+3;
+    gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
+    gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    label[i].text = (unichar_t *) _STR_Cancel;
+    label[i].text_in_resource = true;
+    gcd[i].gd.label = &label[i];
+    gcd[i].gd.cid = CID_Cancel;
+    gcd[i].creator = GButtonCreate;
+
+    GGadgetsCreate(gw,gcd);
+    GDrawSetVisible(gw,true);
+    GWidgetIndicateFocusGadget(gcd[1].ret);
+    while ( !nd.done )
+	GDrawProcessOneEvent(NULL);
+    GDrawDestroyWindow(gw);
+return( false );
+}
+
+static void ChangeName(GGadget *list,int index) {
+    struct macname *mn = GGadgetGetListItemSelected(list)->userdata,
+		    *all = GGadgetGetUserData(list);
+
+    AskName(mn,all,list,index);
+}
+
+static int Pref_NewName(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	GWindow gw = GGadgetGetWindow(g);
+	GGadget *list = GWidgetGetControl(gw,CID_NameList);
+	struct macname *new, *all;
+
+	all = GGadgetGetUserData(list);
+	new = chunkalloc(sizeof(struct macname));
+	new->lang = -1;
+	AskName(new,all,list,-1);
+    }
+return( true );
+}
+
+static int Pref_DelName(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct macname *mn, *p, *all, *next;
+	GWindow gw = GGadgetGetWindow(g);
+	GGadget *list = GWidgetGetControl(gw,CID_NameList);
+	int32 len;
+	GTextInfo **ti = GGadgetGetList(list,&len);
+	int i;
+
+	all = GGadgetGetUserData(list);
+	for ( mn = all, p=NULL; mn!=NULL; mn = next ) {
+	    next = mn->next;
+	    for ( i=len-1; i>=0; --i ) {
+		if ( ti[i]->selected && ti[i]->userdata==mn )
+	    break;
+	    }
+	    if ( i>=0 ) {
+		if ( p==NULL )
+		    all = next;
+		else
+		    p->next = next;
+		mn->next = NULL;
+		MacNameListFree(mn);
+	    } else
+		p = mn;
+	}
+	GGadgetSetUserData(list,all);
+	GListDelSelected(list);
+	GGadgetSetEnabled(GWidgetGetControl(gw,CID_NameDel),false);
+	GGadgetSetEnabled(GWidgetGetControl(gw,CID_NameEdit),false);
+    }
+return( true );
+}
+
+static int Pref_EditName(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	GGadget *list = GWidgetGetControl(GGadgetGetWindow(g),CID_NameList);
+	ChangeName(list,GGadgetGetFirstListSelectedItem(list));
+    }
+return( true );
+}
+
+static int Pref_NameSel(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
+	int32 len;
+	GTextInfo **ti = GGadgetGetList(g,&len);
+	GWindow gw = GGadgetGetWindow(g);
+	int i, sel_cnt=0;
+	for ( i=0; i<len; ++i )
+	    if ( ti[i]->selected ) ++sel_cnt;
+	GGadgetSetEnabled(GWidgetGetControl(gw,CID_NameDel),sel_cnt!=0);
+	GGadgetSetEnabled(GWidgetGetControl(gw,CID_NameEdit),sel_cnt==1);
+    } else if ( e->type==et_controlevent && e->u.control.subtype == et_listdoubleclick ) {
+	ChangeName(g,e->u.control.u.list.changed_index!=-1?e->u.control.u.list.changed_index:
+		GGadgetGetFirstListSelectedItem(g));
+    }
+return( true );
+}
+
+static int GCDBuildNames(GGadgetCreateData *gcd,GTextInfo *label,int pos,struct macname *names) {
+
+    gcd[pos].gd.pos.x = 6; gcd[pos].gd.pos.y = pos==0 ? 6 : gcd[pos-1].gd.pos.y+14;
+    gcd[pos].gd.pos.width = 250; gcd[pos].gd.pos.height = 5*12+10;
+    gcd[pos].gd.flags = gg_visible | gg_enabled | gg_list_alphabetic | gg_list_multiplesel;
+    gcd[pos].gd.cid = CID_NameList;
+    gcd[pos].data = names = MacNameCopy(names);
+    gcd[pos].gd.u.list = Pref_MacNamesList(names);
+    gcd[pos].gd.handle_controlevent = Pref_NameSel;
+    gcd[pos++].creator = GListCreate;
+
+    gcd[pos].gd.pos.x = 6; gcd[pos].gd.pos.y = gcd[pos-1].gd.pos.y+gcd[pos-1].gd.pos.height+10;
+    gcd[pos].gd.flags = gg_visible | gg_enabled;
+    label[pos].text = (unichar_t *) _STR_NewDDD;
+    label[pos].text_in_resource = true;
+    gcd[pos].gd.label = &label[pos];
+    gcd[pos].gd.handle_controlevent = Pref_NewName;
+    gcd[pos++].creator = GButtonCreate;
+
+    gcd[pos].gd.pos.x = gcd[pos-1].gd.pos.x+20+GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor);
+    gcd[pos].gd.pos.y = gcd[pos-1].gd.pos.y;
+    gcd[pos].gd.flags = gg_visible ;
+    label[pos].text = (unichar_t *) _STR_Delete;
+    label[pos].text_in_resource = true;
+    gcd[pos].gd.label = &label[pos];
+    gcd[pos].gd.cid = CID_NameDel;
+    gcd[pos].gd.handle_controlevent = Pref_DelName;
+    gcd[pos++].creator = GButtonCreate;
+
+    gcd[pos].gd.pos.x = gcd[pos-1].gd.pos.x+20+GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor);
+    gcd[pos].gd.pos.y = gcd[pos-1].gd.pos.y;
+    gcd[pos].gd.flags = gg_visible ;
+    label[pos].text = (unichar_t *) _STR_EditDDD;
+    label[pos].text_in_resource = true;
+    gcd[pos].gd.label = &label[pos];
+    gcd[pos].gd.cid = CID_NameEdit;
+    gcd[pos].gd.handle_controlevent = Pref_EditName;
+    gcd[pos++].creator = GButtonCreate;
+
+return( pos );
+}
+
+struct setdata {
+    GWindow gw;
+    int index;
+    int done;
+    struct macsetting *all, *changing;
+    GGadget *settinglist;		/* Not in this dlg, in the dlg which created us */
+};
+
+static int set_e_h(GWindow gw, GEvent *event) {
+    struct setdata *sd = GDrawGetUserData(gw);
+    int i;
+    int32 len;
+    GTextInfo **ti;
+    const unichar_t *ret1; unichar_t *end, *temp, *res;
+    int val1, val2;
+    char buf[20];
+    struct macsetting *ms;
+
+    if ( event->type==et_close ) {
+	sd->done = true;
+	MacNameListFree(GGadgetGetUserData(GWidgetGetControl(sd->gw,CID_NameList)));
+	if ( sd->index==-1 )
+	    MacSettingListFree(sd->changing);
+    } else if ( event->type==et_char ) {
+	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
+	    help("prefs.html#Settings");
+return( true );
+	}
+return( false );
+    } else if ( event->type==et_controlevent && event->u.control.subtype == et_buttonactivate ) {
+	if ( GGadgetGetCid(event->u.control.g) == CID_Cancel ) {
+	    sd->done = true;
+	    MacNameListFree(GGadgetGetUserData(GWidgetGetControl(sd->gw,CID_NameList)));
+	    if ( sd->index==-1 )
+		MacSettingListFree(sd->changing);
+	} else if ( GGadgetGetCid(event->u.control.g) == CID_OK ) {
+	    ret1 = _GGadgetGetTitle(GWidgetGetControl(sd->gw,CID_Id));
+	    val1 = u_strtol(ret1,&end,10);
+	    if ( *end!='\0' ) {
+		GWidgetErrorR(_STR_BadNumber,_STR_BadNumber);
+return( true );
+	    }
+	    ti = GGadgetGetList(sd->settinglist,&len);
+	    for ( i=0; i<len; ++i ) if ( i!=sd->index ) {
+		val2 = ((struct macsetting *) (ti[i]->userdata))->setting;
+		if ( val2==val1 ) {
+		    GWidgetErrorR(_STR_ThisSettingIsAlreadyUsed,_STR_ThisSettingIsAlreadyUsed);
+return( true );
+		}
+	    }
+	    MacNameListFree(sd->changing->setname);
+	    sd->changing->setname = GGadgetGetUserData(GWidgetGetControl(sd->gw,CID_NameList));
+	    sd->changing->setting = val1;
+	    sd->changing->initially_enabled = GGadgetIsChecked(GWidgetGetControl(sd->gw,CID_On));
+
+	    sprintf(buf,"%3d ", val1);
+	    temp = PickNameFromMacName(sd->changing->setname);
+	    len = u_strlen(temp);
+	    res = galloc( (strlen(buf)+len+3)*sizeof(unichar_t) );
+	    uc_strcpy(res,buf);
+	    u_strcat(res,temp);
+	    free(temp);
+
+	    if ( sd->index==-1 )
+		GListAddStr(sd->settinglist,res,sd->changing);
+	    else {
+		GListReplaceStr(sd->settinglist,sd->index,res,sd->changing);
+		if ( sd->all==sd->changing )
+		    sd->all = sd->changing->next;
+		else {
+		    for ( ms=sd->all ; ms!=NULL && ms->next!=sd->changing; ms=ms->next );
+		    if ( ms!=NULL ) ms->next = sd->changing->next;
+		}
+	    }
+	    sd->changing->next = NULL;
+	    if ( sd->all==NULL || sd->changing->setting<sd->all->setting ) {
+		sd->changing->next = sd->all;
+		sd->all = sd->changing;
+	    } else {
+		for ( ms=sd->all; ms->next!=NULL && ms->next->setting<sd->changing->setting; ms=ms->next );
+		sd->changing->next = ms->next;
+		ms->next = sd->changing;
+	    }
+	    GGadgetSetUserData(sd->settinglist,sd->all);
+	    sd->done = true;
+	}
+    }
+return( true );
+}
+
+static char *AskSetting(struct macsetting *changing,struct macsetting *all,
+	GGadget *list, int index) {
+    GRect pos;
+    GWindow gw;
+    GWindowAttrs wattrs;
+    GGadgetCreateData gcd[12];
+    GTextInfo label[12];
+    struct setdata sd;
+    char buf[20];
+    int i;
+
+    memset(&sd,0,sizeof(sd));
+    sd.settinglist = list;
+    sd.index = index;
+    sd.changing = changing;
+    sd.all = all;
+
+    memset(&wattrs,0,sizeof(wattrs));
+    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_restrict;
+    wattrs.event_masks = ~(1<<et_charup);
+    wattrs.restrict_input_to_me = 1;
+    wattrs.undercursor = 1;
+    wattrs.cursor = ct_pointer;
+    wattrs.window_title = GStringGetResource(_STR_Setting,NULL);
+    pos.x = pos.y = 0;
+    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,270));
+    pos.height = GDrawPointsToPixels(NULL,193);
+    gw = GDrawCreateTopWindow(NULL,&pos,set_e_h,&sd,&wattrs);
+    sd.gw = gw;
+
+    memset(gcd,0,sizeof(gcd));
+    memset(label,0,sizeof(label));
+
+    label[0].text = (unichar_t *) _STR_SettingId;
+    label[0].text_in_resource = true;
+    gcd[0].gd.label = &label[0];
+    gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5+4;
+    gcd[0].gd.flags = gg_enabled|gg_visible;
+    gcd[0].creator = GLabelCreate;
+
+    sprintf( buf, "%d", changing->setting );
+    label[1].text = (unichar_t *) buf;
+    label[1].text_is_1byte = true;
+    gcd[1].gd.label = &label[1];
+    gcd[1].gd.pos.x = 60; gcd[1].gd.pos.y = 5; gcd[1].gd.pos.width = 40;
+    gcd[1].gd.flags = gg_enabled|gg_visible;
+    gcd[1].gd.cid = CID_Id;
+    gcd[1].creator = GTextFieldCreate;
+
+    label[2].text = (unichar_t *) _STR_Enabled;
+    label[2].text_in_resource = true;
+    gcd[2].gd.label = &label[2];
+    gcd[2].gd.pos.x = 110; gcd[2].gd.pos.y = 5;
+    gcd[2].gd.flags = gg_enabled|gg_visible | (changing->initially_enabled?gg_cb_on:0);
+    gcd[2].gd.cid = CID_On;
+    gcd[2].creator = GCheckBoxCreate;
+
+    label[3].text = (unichar_t *) _STR_Name;
+    label[3].text_in_resource = true;
+    gcd[3].gd.label = &label[3];
+    gcd[3].gd.pos.x = 5; gcd[3].gd.pos.y = 5+24;
+    gcd[3].gd.flags = gg_enabled|gg_visible;
+    gcd[3].creator = GLabelCreate;
+
+
+    i = GCDBuildNames(gcd,label,4,changing->setname);
+
+    gcd[i].gd.pos.x = 13-3; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+35;
+    gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
+    gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_default;
+    label[i].text = (unichar_t *) _STR_OK;
+    label[i].text_in_resource = true;
+    gcd[i].gd.label = &label[i];
+    gcd[i].gd.cid = CID_OK;
+    /*gcd[i].gd.handle_controlevent = Prefs_Ok;*/
+    gcd[i++].creator = GButtonCreate;
+
+    gcd[i].gd.pos.x = -13; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+3;
+    gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
+    gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    label[i].text = (unichar_t *) _STR_Cancel;
+    label[i].text_in_resource = true;
+    gcd[i].gd.label = &label[i];
+    gcd[i].gd.cid = CID_Cancel;
+    gcd[i].creator = GButtonCreate;
+
+    GGadgetsCreate(gw,gcd);
+    GTextInfoListFree(gcd[4].gd.u.list);
+
+    GDrawSetVisible(gw,true);
+    GWidgetIndicateFocusGadget(gcd[1].ret);
+    while ( !sd.done )
+	GDrawProcessOneEvent(NULL);
+    GDrawDestroyWindow(gw);
+
+return( false );
+}
+
+static void ChangeSetting(GGadget *list,int index) {
+    struct macsetting *ms = GGadgetGetListItemSelected(list)->userdata,
+		    *all = GGadgetGetUserData(list);
+
+    AskSetting(ms,all,list,index);
+}
+
+static int Pref_NewSetting(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	GWindow gw = GGadgetGetWindow(g);
+	GGadget *list = GWidgetGetControl(gw,CID_Settings);
+	struct macsetting *new, *ms, *all;
+	int expected=0;
+
+	all = GGadgetGetUserData(list);
+	if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_Mutex)) ) {
+	    for ( ms=all; ms!=NULL; ms=ms->next ) {
+		if ( ms->setting!=expected )
+	    break;
+		++expected;
+	    }
+	} else {
+	    for ( ms=all; ms!=NULL; ms=ms->next ) {
+		if ( ms->setting&1 )	/* Shouldn't be any odd settings for non-mutex */
+	    continue;
+		if ( ms->setting!=expected )
+	    break;
+		expected += 2;
+	    }
+	}
+	new = chunkalloc(sizeof(struct macsetting));
+	new->setting = expected;
+	AskSetting(new,all,list,-1);
+    }
+return( true );
+}
+
+static int Pref_DelSetting(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct macsetting *ms, *p, *all, *next;
+	GWindow gw = GGadgetGetWindow(g);
+	GGadget *list = GWidgetGetControl(gw,CID_Settings);
+	int32 len;
+	GTextInfo **ti = GGadgetGetList(list,&len);
+	int i;
+
+	all = GGadgetGetUserData(list);
+	for ( ms = all, p=NULL; ms!=NULL; ms = next ) {
+	    next = ms->next;
+	    for ( i=len-1; i>=0; --i ) {
+		if ( ti[i]->selected && ti[i]->userdata==ms )
+	    break;
+	    }
+	    if ( i>=0 ) {
+		if ( p==NULL )
+		    all = next;
+		else
+		    p->next = next;
+		ms->next = NULL;
+		MacSettingListFree(ms);
+	    } else
+		p = ms;
+	}
+	GGadgetSetUserData(list,all);
+	GListDelSelected(list);
+	GGadgetSetEnabled(GWidgetGetControl(gw,CID_SettingDel),false);
+	GGadgetSetEnabled(GWidgetGetControl(gw,CID_SettingEdit),false);
+    }
+return( true );
+}
+
+static int Pref_EditSetting(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	GGadget *list = GWidgetGetControl(GGadgetGetWindow(g),CID_Settings);
+	ChangeSetting(list,GGadgetGetFirstListSelectedItem(list));
+    }
+return( true );
+}
+
+static int Pref_SettingSel(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
+	int32 len;
+	GTextInfo **ti = GGadgetGetList(g,&len);
+	GWindow gw = GGadgetGetWindow(g);
+	int i, sel_cnt=0;
+	for ( i=0; i<len; ++i )
+	    if ( ti[i]->selected ) ++sel_cnt;
+	GGadgetSetEnabled(GWidgetGetControl(gw,CID_SettingDel),sel_cnt!=0);
+	GGadgetSetEnabled(GWidgetGetControl(gw,CID_SettingEdit),sel_cnt==1);
+    } else if ( e->type==et_controlevent && e->u.control.subtype == et_listdoubleclick ) {
+	ChangeSetting(g,e->u.control.u.list.changed_index!=-1?e->u.control.u.list.changed_index:
+		GGadgetGetFirstListSelectedItem(g));
+    }
+return( true );
+}
+
+struct featdata {
+    GWindow gw;
+    int index;
+    int done;
+    MacFeat *all, *changing;
+    GGadget *featurelist;		/* Not in this dlg, in the dlg which created us */
+};
+
+static int feat_e_h(GWindow gw, GEvent *event) {
+    struct featdata *fd = GDrawGetUserData(gw);
+    int i;
+    int32 len;
+    GTextInfo **ti;
+    const unichar_t *ret1; unichar_t *end, *temp, *res;
+    int val1, val2;
+    char buf[20];
+    MacFeat *mf;
+
+    if ( event->type==et_close ) {
+	fd->done = true;
+	if ( fd->index==-1 )
+	    MacFeatListFree(fd->changing);
+	MacSettingListFree(GGadgetGetUserData(GWidgetGetControl(fd->gw,CID_Settings)));
+	MacNameListFree(GGadgetGetUserData(GWidgetGetControl(fd->gw,CID_NameList)));
+    } else if ( event->type==et_char ) {
+	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
+	    help("prefs.html#Features");
+return( true );
+	}
+return( false );
+    } else if ( event->type==et_controlevent && event->u.control.subtype == et_buttonactivate ) {
+	if ( GGadgetGetCid(event->u.control.g) == CID_Cancel ) {
+	    fd->done = true;
+	    if ( fd->index==-1 )
+		MacFeatListFree(fd->changing);
+	    MacSettingListFree(GGadgetGetUserData(GWidgetGetControl(fd->gw,CID_Settings)));
+	    MacNameListFree(GGadgetGetUserData(GWidgetGetControl(fd->gw,CID_NameList)));
+	} else if ( GGadgetGetCid(event->u.control.g) == CID_OK ) {
+	    ret1 = _GGadgetGetTitle(GWidgetGetControl(fd->gw,CID_Id));
+	    val1 = u_strtol(ret1,&end,10);
+	    if ( *end!='\0' ) {
+		GWidgetErrorR(_STR_BadNumber,_STR_BadNumber);
+return( true );
+	    }
+	    ti = GGadgetGetList(fd->featurelist,&len);
+	    for ( i=0; i<len; ++i ) if ( i!=fd->index ) {
+		val2 = ((MacFeat *) (ti[i]->userdata))->feature;
+		if ( val2==val1 ) {
+		    GWidgetErrorR(_STR_ThisFeatureCodeIsAlreadyUsed,_STR_ThisFeatureCodeIsAlreadyUsed);
+return( true );
+		}
+	    }
+	    MacSettingListFree(fd->changing->settings);
+	    MacNameListFree(fd->changing->featname);
+	    fd->changing->featname = GGadgetGetUserData(GWidgetGetControl(fd->gw,CID_NameList));
+	    fd->changing->settings = GGadgetGetUserData(GWidgetGetControl(fd->gw,CID_Settings));
+	    fd->changing->ismutex = GGadgetIsChecked(GWidgetGetControl(fd->gw,CID_Mutex));
+	    if ( fd->changing->ismutex ) {
+		struct macsetting *ms;
+		for ( i=0, ms = fd->changing->settings; ms!=NULL && !ms->initially_enabled; ms = ms->next, ++i );
+		if ( ms==NULL ) i = 0;
+		fd->changing->default_setting = i;
+		if ( ms!=NULL ) {
+		    for ( ms=ms->next ; ms!=NULL; ms = ms->next )
+			ms->initially_enabled = false;
+		}
+	    }
+
+	    sprintf(buf,"%3d ", val1);
+	    temp = PickNameFromMacName(fd->changing->featname);
+	    len = u_strlen(temp);
+	    res = galloc( (strlen(buf)+len+3)*sizeof(unichar_t) );
+	    uc_strcpy(res,buf);
+	    u_strcat(res,temp);
+	    free(temp);
+
+	    if ( fd->index==-1 )
+		GListAddStr(fd->featurelist,res,fd->changing);
+	    else {
+		GListReplaceStr(fd->featurelist,fd->index,res,fd->changing);
+		if ( fd->all==fd->changing )
+		    fd->all = fd->changing->next;
+		else {
+		    for ( mf=fd->all ; mf!=NULL && mf->next!=fd->changing; mf=mf->next );
+		    if ( mf!=NULL ) mf->next = fd->changing->next;
+		}
+	    }
+	    fd->changing->next = NULL;
+	    if ( fd->all==NULL || fd->changing->feature<fd->all->feature ) {
+		fd->changing->next = fd->all;
+		fd->all = fd->changing;
+	    } else {
+		for ( mf=fd->all; mf->next!=NULL && mf->next->feature<fd->changing->feature; mf=mf->next );
+		fd->changing->next = mf->next;
+		mf->next = fd->changing;
+	    }
+	    GGadgetSetUserData(fd->featurelist,fd->all);
+	    fd->done = true;
+	}
+    }
+return( true );
+}
+
+static char *AskFeature(MacFeat *changing,MacFeat *all,GGadget *list, int index) {
+    GRect pos;
+    GWindow gw;
+    GWindowAttrs wattrs;
+    GGadgetCreateData gcd[16];
+    GTextInfo label[16], *freeme;
+    struct featdata fd;
+    char buf[20];
+    int i;
+
+    memset(&fd,0,sizeof(fd));
+    fd.featurelist = list;
+    fd.index = index;
+    fd.changing = changing;
+    fd.all = all;
+
+    memset(&wattrs,0,sizeof(wattrs));
+    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_restrict;
+    wattrs.event_masks = ~(1<<et_charup);
+    wattrs.restrict_input_to_me = 1;
+    wattrs.undercursor = 1;
+    wattrs.cursor = ct_pointer;
+    wattrs.window_title = GStringGetResource(_STR_Feature,NULL);
+    pos.x = pos.y = 0;
+    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,265));
+    pos.height = GDrawPointsToPixels(NULL,353);
+    gw = GDrawCreateTopWindow(NULL,&pos,feat_e_h,&fd,&wattrs);
+    fd.gw = gw;
+
+    memset(gcd,0,sizeof(gcd));
+    memset(label,0,sizeof(label));
+
+    label[0].text = (unichar_t *) _STR_FeatureId;
+    label[0].text_in_resource = true;
+    gcd[0].gd.label = &label[0];
+    gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5+4;
+    gcd[0].gd.flags = gg_enabled|gg_visible;
+    gcd[0].creator = GLabelCreate;
+
+    sprintf( buf, "%d", changing->feature );
+    label[1].text = (unichar_t *) buf;
+    label[1].text_is_1byte = true;
+    gcd[1].gd.label = &label[1];
+    gcd[1].gd.pos.x = 60; gcd[1].gd.pos.y = 5; gcd[1].gd.pos.width = 40;
+    gcd[1].gd.flags = gg_enabled|gg_visible;
+    gcd[1].gd.cid = CID_Id;
+    gcd[1].creator = GTextFieldCreate;
+
+    label[2].text = (unichar_t *) _STR_MutuallyExclusive;
+    label[2].text_in_resource = true;
+    gcd[2].gd.label = &label[2];
+    gcd[2].gd.pos.x = 105; gcd[2].gd.pos.y = 5+4;
+    gcd[2].gd.flags = gg_enabled|gg_visible | (changing->ismutex?gg_cb_on:0);
+    gcd[2].gd.cid = CID_Mutex;
+    gcd[2].creator = GCheckBoxCreate;
+
+    label[3].text = (unichar_t *) _STR_Name;
+    label[3].text_in_resource = true;
+    gcd[3].gd.label = &label[3];
+    gcd[3].gd.pos.x = 5; gcd[3].gd.pos.y = 5+24;
+    gcd[3].gd.flags = gg_enabled|gg_visible;
+    gcd[3].creator = GLabelCreate;
+
+    i = GCDBuildNames(gcd,label,4,changing->featname);
+
+    label[i].text = (unichar_t *) _STR_Settings;
+    label[i].text_in_resource = true;
+    gcd[i].gd.label = &label[i];
+    gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+35;
+    gcd[i].gd.flags = gg_enabled|gg_visible;
+    gcd[i++].creator = GLabelCreate;
+
+    gcd[i].gd.pos.x = 6; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+14;
+    gcd[i].gd.pos.width = 250; gcd[i].gd.pos.height = 8*12+10;
+    gcd[i].gd.flags = gg_visible | gg_enabled | gg_list_alphabetic | gg_list_multiplesel;
+    gcd[i].gd.cid = CID_Settings;
+    gcd[i].data = MacSettingCopy(changing->settings);
+    gcd[i].gd.u.list = freeme = Pref_SettingsList(gcd[i].data);
+    gcd[i].gd.handle_controlevent = Pref_SettingSel;
+    gcd[i++].creator = GListCreate;
+
+    gcd[i].gd.pos.x = 6; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+gcd[i-1].gd.pos.height+10;
+    gcd[i].gd.flags = gg_visible | gg_enabled;
+    label[i].text = (unichar_t *) _STR_NewDDD;
+    label[i].text_in_resource = true;
+    gcd[i].gd.label = &label[i];
+    gcd[i].gd.handle_controlevent = Pref_NewSetting;
+    gcd[i++].creator = GButtonCreate;
+
+    gcd[i].gd.pos.x = gcd[i-1].gd.pos.x+20+GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor);
+    gcd[i].gd.pos.y = gcd[i-1].gd.pos.y;
+    gcd[i].gd.flags = gg_visible ;
+    label[i].text = (unichar_t *) _STR_Delete;
+    label[i].text_in_resource = true;
+    gcd[i].gd.label = &label[i];
+    gcd[i].gd.cid = CID_SettingDel;
+    gcd[i].gd.handle_controlevent = Pref_DelSetting;
+    gcd[i++].creator = GButtonCreate;
+
+    gcd[i].gd.pos.x = gcd[i-1].gd.pos.x+20+GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor);
+    gcd[i].gd.pos.y = gcd[i-1].gd.pos.y;
+    gcd[i].gd.flags = gg_visible ;
+    label[i].text = (unichar_t *) _STR_EditDDD;
+    label[i].text_in_resource = true;
+    gcd[i].gd.label = &label[i];
+    gcd[i].gd.cid = CID_SettingEdit;
+    gcd[i].gd.handle_controlevent = Pref_EditSetting;
+    gcd[i++].creator = GButtonCreate;
+
+    gcd[i].gd.pos.x = 13-3; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+30;
+    gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
+    gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_default;
+    label[i].text = (unichar_t *) _STR_OK;
+    label[i].text_in_resource = true;
+    gcd[i].gd.label = &label[i];
+    gcd[i].gd.cid = CID_OK;
+    /*gcd[i].gd.handle_controlevent = Prefs_Ok;*/
+    gcd[i++].creator = GButtonCreate;
+
+    gcd[i].gd.pos.x = -13; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+3;
+    gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
+    gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    label[i].text = (unichar_t *) _STR_Cancel;
+    label[i].text_in_resource = true;
+    gcd[i].gd.label = &label[i];
+    gcd[i].gd.cid = CID_Cancel;
+    gcd[i].creator = GButtonCreate;
+
+    GGadgetsCreate(gw,gcd);
+    GTextInfoListFree(gcd[4].gd.u.list);
+    GTextInfoListFree(freeme);
+
+    GDrawSetVisible(gw,true);
+    GWidgetIndicateFocusGadget(gcd[1].ret);
+    while ( !fd.done )
+	GDrawProcessOneEvent(NULL);
+    GDrawDestroyWindow(gw);
+
+return( false );
+}
+
+static void ChangeFeature(GGadget *list,int index) {
+    MacFeat *mf = GGadgetGetListItemSelected(list)->userdata,
+	    *all = GGadgetGetUserData(list);
+
+    AskFeature(mf,all,list,index);
+}
+
+static int Pref_NewFeat(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	GWindow gw = GGadgetGetWindow(g);
+	GGadget *list = GWidgetGetControl(gw,CID_Features);
+	MacFeat *new, *mf, *all;
+	int expected=0;
+
+	all = GGadgetGetUserData(list);
+	for ( mf=all; mf!=NULL; mf=mf->next ) {
+	    if ( mf->feature!=expected )
+	break;
+	    ++expected;
+	}
+	new = chunkalloc(sizeof(MacFeat));
+	new->feature = expected;
+	AskFeature(new,all,list,-1);
+    }
+return( true );
+}
+
+static int Pref_DelFeat(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	MacFeat *mf, *p, *all, *next;
+	GWindow gw = GGadgetGetWindow(g);
+	GGadget *list = GWidgetGetControl(gw,CID_Features);
+	int32 len;
+	GTextInfo **ti = GGadgetGetList(list,&len);
+	int i;
+
+	all = GGadgetGetUserData(list);
+	for ( mf = all, p=NULL; mf!=NULL; mf = next ) {
+	    next = mf->next;
+	    for ( i=len-1; i>=0; --i ) {
+		if ( ti[i]->selected && ti[i]->userdata==mf )
+	    break;
+	    }
+	    if ( i>=0 ) {
+		if ( p==NULL )
+		    all = next;
+		else
+		    p->next = next;
+		mf->next = NULL;
+		MacFeatListFree(mf);
+	    } else
+		p = mf;
+	}
+	GGadgetSetUserData(list,all);
+	GListDelSelected(list);
+	GGadgetSetEnabled(GWidgetGetControl(gw,CID_FeatureDel),false);
+	GGadgetSetEnabled(GWidgetGetControl(gw,CID_FeatureEdit),false);
+    }
+return( true );
+}
+
+static int Pref_EditFeat(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	GGadget *list = GWidgetGetControl(GGadgetGetWindow(g),CID_Features);
+	ChangeFeature(list,GGadgetGetFirstListSelectedItem(list));
+    }
+return( true );
+}
+
+static int Pref_FeatureSel(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
+	int32 len;
+	GTextInfo **ti = GGadgetGetList(g,&len);
+	GWindow gw = GGadgetGetWindow(g);
+	int i, sel_cnt=0;
+	for ( i=0; i<len; ++i )
+	    if ( ti[i]->selected ) ++sel_cnt;
+	GGadgetSetEnabled(GWidgetGetControl(gw,CID_FeatureDel),sel_cnt!=0);
+	GGadgetSetEnabled(GWidgetGetControl(gw,CID_FeatureEdit),sel_cnt==1);
+    } else if ( e->type==et_controlevent && e->u.control.subtype == et_listdoubleclick ) {
+	ChangeFeature(g,e->u.control.u.list.changed_index!=-1?e->u.control.u.list.changed_index:
+		GGadgetGetFirstListSelectedItem(g));
+    }
+return( true );
+}
+
+static int Pref_DefaultFeat(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	GGadget *list = GWidgetGetControl(GGadgetGetWindow(g),CID_Features);
+	int inprefs = (intpt) GGadgetGetUserData(g);
+	GTextInfo *ti, **arr;
+	uint16 cnt;
+	/* In preferences the default is the built in data. */
+	/* in a font the default is the preference data (which might be built in or might not) */
+	MacFeat *def = inprefs ? builtin_mac_feature_map : default_mac_feature_map;
+
+	def = MacFeatCopy(def);
+	MacFeatListFree(GGadgetGetUserData(list));
+	GGadgetSetUserData(list,def);
+	ti = Pref_FeaturesList(def);
+	arr = GTextInfoArrayFromList(ti,&cnt);
+	GGadgetSetList(list,arr,false);
+	GTextInfoListFree(ti);
+    }
+return( true );
+}
+
+void GCDFillMacFeat(GGadgetCreateData *mfgcd,GTextInfo *mflabels, int width,
+	MacFeat *all, int fromprefs) {
+    int sgc;
+
+    all = MacFeatCopy(all);
+
+    sgc = 0;
+
+    mfgcd[sgc].gd.pos.x = 6; mfgcd[sgc].gd.pos.y = 6;
+    mfgcd[sgc].gd.pos.width = 250; mfgcd[sgc].gd.pos.height = 16*12+10;
+    mfgcd[sgc].gd.flags = gg_visible | gg_enabled | gg_list_alphabetic | gg_list_multiplesel;
+    mfgcd[sgc].gd.cid = CID_Features;
+    mfgcd[sgc].gd.u.list = Pref_FeaturesList(all);
+    mfgcd[sgc].gd.handle_controlevent = Pref_FeatureSel;
+    mfgcd[sgc].data = all;
+    mfgcd[sgc++].creator = GListCreate;
+
+    mfgcd[sgc].gd.pos.x = 6; mfgcd[sgc].gd.pos.y = mfgcd[sgc-1].gd.pos.y+mfgcd[sgc-1].gd.pos.height+10;
+    mfgcd[sgc].gd.flags = gg_visible | gg_enabled;
+    mflabels[sgc].text = (unichar_t *) _STR_NewDDD;
+    mflabels[sgc].text_in_resource = true;
+    mfgcd[sgc].gd.label = &mflabels[sgc];
+    /*mfgcd[sgc].gd.cid = CID_AnchorRename;*/
+    mfgcd[sgc].gd.handle_controlevent = Pref_NewFeat;
+    mfgcd[sgc++].creator = GButtonCreate;
+
+    mfgcd[sgc].gd.pos.x = mfgcd[sgc-1].gd.pos.x+10+GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor);
+    mfgcd[sgc].gd.pos.y = mfgcd[sgc-1].gd.pos.y;
+    mfgcd[sgc].gd.flags = gg_visible ;
+    mflabels[sgc].text = (unichar_t *) _STR_Delete;
+    mflabels[sgc].text_in_resource = true;
+    mfgcd[sgc].gd.label = &mflabels[sgc];
+    mfgcd[sgc].gd.cid = CID_FeatureDel;
+    mfgcd[sgc].gd.handle_controlevent = Pref_DelFeat;
+    mfgcd[sgc++].creator = GButtonCreate;
+
+    mfgcd[sgc].gd.pos.x = mfgcd[sgc-1].gd.pos.x+10+GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor);
+    mfgcd[sgc].gd.pos.y = mfgcd[sgc-1].gd.pos.y;
+    mfgcd[sgc].gd.flags = gg_visible ;
+    mflabels[sgc].text = (unichar_t *) _STR_EditDDD;
+    mflabels[sgc].text_in_resource = true;
+    mfgcd[sgc].gd.label = &mflabels[sgc];
+    mfgcd[sgc].gd.cid = CID_FeatureEdit;
+    mfgcd[sgc].gd.handle_controlevent = Pref_EditFeat;
+    mfgcd[sgc++].creator = GButtonCreate;
+
+    mfgcd[sgc].gd.pos.x = mfgcd[sgc-1].gd.pos.x+10+GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor);
+    mfgcd[sgc].gd.pos.y = mfgcd[sgc-1].gd.pos.y;
+    mfgcd[sgc].gd.flags = gg_visible|gg_enabled ;
+    mflabels[sgc].text = (unichar_t *) _STR_Default;
+    mflabels[sgc].text_in_resource = true;
+    mfgcd[sgc].gd.label = &mflabels[sgc];
+    mfgcd[sgc].gd.handle_controlevent = Pref_DefaultFeat;
+    mfgcd[sgc].data = (void *) (intpt) fromprefs;
+    mfgcd[sgc++].creator = GButtonCreate;
+}
+
+void Prefs_ReplaceMacFeatures(GGadget *list) {
+    MacFeatListFree(user_mac_feature_map);
+    user_mac_feature_map = GGadgetGetUserData(list);
+    default_mac_feature_map = user_mac_feature_map;
+}
+    
