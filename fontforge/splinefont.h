@@ -1431,6 +1431,7 @@ extern int SCSetMetaData(SplineChar *sc,char *name,int unienc,const unichar_t *c
 
 extern enum uni_interp interp_from_encoding(Encoding *enc,enum uni_interp interp);
 extern const char *EncName(Encoding *encname);
+extern const char*FindUCS2Name(void);
 extern Encoding *FindOrMakeEncoding(const char *name);
 extern void SFDDumpMacFeat(FILE *sfd,MacFeat *mf);
 extern MacFeat *SFDParseMacFeatures(FILE *sfd, char *tok);

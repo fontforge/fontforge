@@ -118,6 +118,55 @@ static Encoding adobestd = { "AdobeStandard", 256, unicode_from_adobestd, AdobeS
 static Encoding symbol = { "Symbol", 256, unicode_from_MacSymbol, NULL, &adobestd,1, 1, 1, 1, 0, 0, 1, 0, 0, 0 };
 Encoding *enclist = &symbol;
 
+const char *FindUCS2Name(void) {
+    /* Iconv and libiconv use different names for UCS2. Just great. Perhaps */
+    /*  different versions of each use still different names? */
+    /* Even worse, both accept UCS-2, but under iconv it means native byte */
+    /*  ordering and under libiconv it means big-endian */
+    iconv_t test;
+    static char *goodname = NULL;
+    static char *names[] = { "UCS-2", "UCS-2-INTERNAL", "UCS2", "ISO-10646/UCS2", "UNICODE", NULL };
+    static char *namesle[] = { "UCS-2LE", "UNICODELITTLE", NULL };
+    static char *namesbe[] = { "UCS-2BE", "UNICODEBIG", NULL };
+    char **testnames;
+    int i;
+    union {
+	short s;
+	char c[2];
+    } u;
+
+    if ( goodname!=NULL )
+return( goodname );
+
+    u.c[0] = 0x1; u.c[1] = 0x2;
+    if ( u.s==0x201 ) {		/* Little endian */
+	testnames = namesle;
+    } else {
+	testnames = namesbe;
+    }
+    for ( i=0; testnames[i]!=NULL; ++i ) {
+	test = iconv_open(testnames[i],"ISO-8859-1");
+	if ( test!=(iconv_t) -1 ) {
+	    iconv_close(test);
+	    goodname = testnames[i];
+return( goodname );
+	}
+    }
+
+    for ( i=0; names[i]!=NULL; ++i ) {
+	test = iconv_open(names[i],"ISO-8859-1");
+	if ( test!=(iconv_t) -1 ) {
+	    iconv_close(test);
+	    goodname = names[i];
+return( goodname );
+	}
+    }
+
+    IError( "I can't figure out your version of iconv(). I need a name for the UCS2 encoding and I can't find one. Bye.");
+    exit( 1 );
+return( NULL );
+}
+
 static int TryEscape( Encoding *enc,char *escape_sequence ) {
     char from[20], ucs2[20];
     size_t fromlen, tolen;
@@ -216,10 +265,10 @@ return( &unicodefull );
 
     memset(&temp,0,sizeof(temp));
     temp.builtin = true;
-    temp.tounicode = iconv_open("UCS2",iconv_name);
+    temp.tounicode = iconv_open(FindUCS2Name(),iconv_name);
     if ( temp.tounicode==(iconv_t) -1 )
 return( NULL );			/* Iconv doesn't recognize this name */
-    temp.fromunicode = iconv_open(iconv_name,"UCS2");
+    temp.fromunicode = iconv_open(iconv_name,FindUCS2Name());
 
     memset(good,0,sizeof(good));
     any = false; all = true;
