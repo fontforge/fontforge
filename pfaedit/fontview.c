@@ -909,13 +909,15 @@ void SCClearAll(SplineChar *sc) {
     if ( sc==NULL )
 return;
     if ( sc->splines==NULL && sc->refs==NULL && !sc->widthset &&
-	    sc->hstem==NULL && sc->vstem==NULL && !copymetadata )
+	    sc->hstem==NULL && sc->vstem==NULL &&
+	    (!copymetadata ||
+		(sc->unicodeenc==-1 && strcmp(sc->name,".notdef")==0)))
 return;
     SCPreserveState(sc,2);
     if ( copymetadata ) {
 	sc->unicodeenc = -1;
 	free(sc->name);
-	sc->name = ".notdef";
+	sc->name = copy(".notdef");
     }
     sc->widthset = false;
     sc->width = sc->parent->ascent+sc->parent->descent;
@@ -3289,7 +3291,10 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i) {
 	    else if ( dummy->unicodeenc==0xa0 )
 		dummy->name = "nonbreakingspace";
 	    else {
-		sprintf( namebuf, "uni%04X", dummy->unicodeenc);
+		if ( dummy->unicodeenc>=0x10000 )
+		    sprintf( namebuf, "u%04X", dummy->unicodeenc);
+		else
+		    sprintf( namebuf, "uni%04X", dummy->unicodeenc);
 		dummy->name = namebuf;
 	    }
 	}
@@ -3676,6 +3681,9 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		    char *end;
 		    if ( n==7 && sc->name[0]=='u' && sc->name[1]=='n' && sc->name[2]=='i' &&
 			    (i=strtol(sc->name+3,&end,16), end-sc->name==7))
+			buf[0] = i;
+		    else if ( n>=5 && n<=7 && sc->name[0]=='u' &&
+			    (i=strtol(sc->name+1,&end,16), end-sc->name==n))
 			buf[0] = i;
 		    else for ( i=0; i<psunicodenames_cnt; ++i )
 			if ( psunicodenames[i]!=NULL && strncmp(sc->name,psunicodenames[i],n)==0 &&
