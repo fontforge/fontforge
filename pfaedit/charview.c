@@ -2233,9 +2233,61 @@ static void CVDoSnaps(CharView *cv, FindSel *fs) {
 #endif
 }
 
+static int _CVTestSelectFromEvent(CharView *cv,FindSel *fs) {
+    PressedOn temp;
+
+    if ( !InSplineSet(fs,*cv->heads[cv->drawmode])) {
+	if ( cv->drawmode==dm_fore) {
+	    RefChar *rf;
+	    temp = cv->p;
+	    fs->p = &temp;
+	    fs->seek_controls = false;
+	    for ( rf=cv->sc->refs; rf!=NULL; rf = rf->next ) {
+		if ( InSplineSet(fs,rf->splines)) {
+		    cv->p.ref = rf;
+		    cv->p.anysel = true;
+	    break;
+		}
+	    }
+	    if ( cv->showanchor && !cv->p.anysel ) {
+		AnchorPoint *ap, *found=NULL;
+		/* I do this pecular search because: */
+		/*	1) I expect there to be lots of times we get multiple */
+		/*     anchors at the same location */
+		/*  2) The anchor points are drawn so that the bottommost */
+		/*	   is displayed */
+		for ( ap=cv->sc->anchor; ap!=NULL; ap=ap->next )
+		    if ( fs->xl<=ap->me.x && fs->xh>=ap->me.x &&
+			    fs->yl<=ap->me.y && fs->yh >= ap->me.y )
+			found = ap;
+		if ( found!=NULL ) {
+		    cv->p.ap = found;
+		    cv->p.anysel = true;
+		}
+	    }
+	} else if ( cv->drawmode==dm_back ) {
+	    ImageList *img;
+	    for ( img = cv->sc->backimages; img!=NULL; img=img->next ) {
+		if ( InImage(fs,img)) {
+		    cv->p.img = img;
+		    cv->p.anysel = true;
+	    break;
+		}
+	    }
+	}
+    }
+return( cv->p.anysel );
+}
+
+int CVTestSelectFromEvent(CharView *cv,GEvent *event) {
+    FindSel fs;
+
+    SetFS(&fs,&cv->p,cv,event);
+return( _CVTestSelectFromEvent(cv,&fs));
+}
+
 static void CVMouseDown(CharView *cv, GEvent *event ) {
     FindSel fs;
-    PressedOn temp;
     GEvent fake;
 
     if ( event->u.mouse.button==2 && event->u.mouse.device!=NULL &&
@@ -2261,46 +2313,7 @@ return;
 	fs.select_controls = true;
 	if ( event->u.mouse.state&ksm_meta ) fs.seek_controls = true;
 	cv->lastselpt = NULL;
-	if ( !InSplineSet(&fs,*cv->heads[cv->drawmode])) {
-	    if ( cv->drawmode==dm_fore) {
-		RefChar *rf;
-		temp = cv->p;
-		fs.p = &temp;
-		fs.seek_controls = false;
-		for ( rf=cv->sc->refs; rf!=NULL; rf = rf->next ) {
-		    if ( InSplineSet(&fs,rf->splines)) {
-			cv->p.ref = rf;
-			cv->p.anysel = true;
-		break;
-		    }
-		}
-		if ( cv->showanchor && !cv->p.anysel ) {
-		    AnchorPoint *ap, *found=NULL;
-		    /* I do this pecular search because: */
-		    /*	1) I expect there to be lots of times we get multiple */
-		    /*     anchors at the same location */
-		    /*  2) The anchor points are drawn so that the bottommost */
-		    /*	   is displayed */
-		    for ( ap=cv->sc->anchor; ap!=NULL; ap=ap->next )
-			if ( fs.xl<=ap->me.x && fs.xh>=ap->me.x &&
-				fs.yl<=ap->me.y && fs.yh >= ap->me.y )
-			    found = ap;
-		    if ( found!=NULL ) {
-			cv->p.ap = found;
-			cv->p.anysel = true;
-		    }
-		}
-	    } else if ( cv->drawmode==dm_back ) {
-		ImageList *img;
-		for ( img = cv->sc->backimages; img!=NULL; img=img->next ) {
-		    if ( InImage(&fs,img)) {
-			cv->p.img = img;
-			cv->p.anysel = true;
-		break;
-		    }
-		}
-	    }
-	}
+	_CVTestSelectFromEvent(cv,&fs);
 	fs.p = &cv->p;
     } else if ( cv->active_tool == cvt_curve || cv->active_tool == cvt_corner ||
 	    cv->active_tool == cvt_tangent || cv->active_tool == cvt_pen ) {

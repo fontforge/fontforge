@@ -645,6 +645,7 @@ extern void SCAppendPosSub(SplineChar *sc,enum possub_type type, char **d);
 extern void SCCharInfo(SplineChar *sc);
 extern void CharInfoDestroy(struct charinfo *ci);
 extern void CVGetInfo(CharView *cv);
+extern void CVPGetInfo(CharView *cv);
 extern void SCRefBy(SplineChar *sc);
 extern void ApGetInfo(CharView *cv, AnchorPoint *ap);
 extern AnchorClass *AnchorClassUnused(SplineChar *sc,int *waslig);
@@ -660,6 +661,7 @@ extern void CVMergeSplineSets(CharView *cv, SplinePoint *active, SplineSet *acti
 extern void CVChar(CharView *cv, GEvent *event );
 extern void CVAdjustControl(CharView *cv,BasePoint *cp, BasePoint *to);
 extern int  CVMoveSelection(CharView *cv, real dx, real dy);
+extern int  CVTestSelectFromEvent(CharView *cv,GEvent *event);
 extern void CVMouseDownPoint(CharView *cv);
 extern void CVMouseMovePoint(CharView *cv,PressedOn *);
 extern void CVMouseMovePen(CharView *cv, PressedOn *p);

@@ -1659,6 +1659,18 @@ void CVGetInfo(CharView *cv) {
 	PointGetInfo(cv,sp,spl);
 }
 
+void CVPGetInfo(CharView *cv) {
+
+    if ( cv->p.ref!=NULL )
+	RefGetInfo(cv,cv->p.ref);
+    else if ( cv->p.img!=NULL )
+	ImgGetInfo(cv,cv->p.img);
+    else if ( cv->p.ap!=NULL )
+	ApGetInfo(cv,cv->p.ap);
+    else if ( cv->p.sp!=NULL )
+	PointGetInfo(cv,cv->p.sp,cv->p.spl);
+}
+
 void SCRefBy(SplineChar *sc) {
     static int buts[] = { _STR_Show, _STR_Cancel };
     int cnt,i,tot=0;

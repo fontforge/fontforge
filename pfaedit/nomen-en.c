@@ -205,6 +205,7 @@ static char str_Findprobs[] = "Find Problems...";
 static unichar_t mnemonic_Findprobs[] = 'o';
 static char str_Getinfo[] = "Get Info...";
 static unichar_t mnemonic_Getinfo[] = 'I';
+static char str_OpenReference[] = "Open Reference";
 static char str_ShowDependents[] = "Show Dependents...";
 static unichar_t mnemonic_ShowDependents[] = 'h';
 static char str_Bitmapsavail[] = "Bitmaps Available...";
