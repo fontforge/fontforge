@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 16-Feb-2002 -->
+  <!-- AP: Last modified: 8-Apr-2002 -->
   <TITLE>The Edit Menu</TITLE>
 </HEAD>
 <BODY>
@@ -79,21 +79,24 @@ in text fields.
     <A HREF="#Remove-Undoes">Remove Undoes</A>
 </UL>
 <P>
+<FONT COLOR="Red"><STRONG><SMALL>NOTE</SMALL></STRONG></FONT>: In the metrics
+view this menu will be disabled when one of the text fields has the focus.
+<P>
 <DL>
   <DT>
     <A NAME="Undo">Undo</A>
   <DD>
-    This command is not available in the font view.
-    <P>
     In the outline view and the bitmap view this will undo the last command.
-    Up to twelve commands may be undone (after that they get thrown away)
+    Up to twelve commands may be undone (after that they get thrown away)<BR>
+    In the font and metrics views, this does NOT undo the last command. It undoes
+    the last operation on all selected characters.
   <DT>
     <A NAME="Redo">Redo</A>
   <DD>
-    This command is not available in the font view.
-    <P>
     In the outline view and the bitmap view this will redo the last command undone.
-    Up to twelve commands may be redone (after that they get thrown away)
+    Up to twelve commands may be redone (after that they get thrown away)<BR>
+    In the font and metrics views, this does NOT undo the last command. It undoes
+    the last operation on all selected characters.
   <DT>
     <A NAME="Cut">Cut</A>
   <DD>
@@ -287,7 +290,6 @@ in text fields.
   <DT>
     <A NAME="Unlink">Unlink</A> Reference
   <DD>
-    Only available in the Outline View and only when in the foreground layer.
     This will remove a referenced character and replace it with the splines and
     points that make it up.
   <DT>

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 11-Feb-2002 -->
+  <!-- AP: Last modified: 8-Apr-2002 -->
   <TITLE>The Element Menu</TITLE>
 </HEAD>
 <BODY>
@@ -100,25 +100,25 @@ This menu is not present in the Metrics View.
     In the outline view this brings up <A HREF="getinfo.html">one of four different
     dialogs</A> (Point Info, Image Info, Reference Info or Character Info) depending
     on what is selected.<BR>
-    In the font and bitmap view this only brings up the
+    In the other views this only brings up the
     <A HREF="getinfo.html#Character">Character Info dialog</A>.
   <DT>
     Show <A NAME="Dependencies">Dependencies</A>
   <DD>
-    This dialog is only available in the font and outline character views. It
-    shows you what characters contain a reference to the current character. You
-    can open a window looking at any of the dependent characters by selecting
-    that character and pressing the [Show] button.
+    This dialog is not available in the bitmap view. It shows you what characters
+    contain a reference to the current character. You can open a window looking
+    at any of the dependent characters by selecting that character and pressing
+    the [Show] button.
   <DT>
     Find <A NAME="Problems">Problems</A>...
   <DD>
-    This command is only present in the font view and the outline character view
-    and will search for several common problems. In the character view it will
-    select anything that needs to be fixed, in the font view it will check all
-    selected characters and if any have problems will open them and select the
-    problems. It will post a message telling you of each problem found. It brings
-    up the <A HREF="problems.html">Find Problem</A> dialog to let you choose
-    what problems to look for.
+    This command is not present in the bitmap view. It will search for several
+    common problems. In the character view it will select anything that needs
+    to be fixed, in the font view it will check all selected characters and if
+    any have problems will open them and select the problems. It will post a
+    message telling you of each problem found. It brings up the
+    <A HREF="problems.html">Find Problem</A> dialog to let you choose what problems
+    to look for.
   <DT>
     <A NAME="Bitmaps">Bitmaps</A> Available...
   <DD>
@@ -250,10 +250,10 @@ This menu is not present in the Metrics View.
   <DT>
     <A NAME="Expand">Expand</A> Stroke...
   <DD>
-    Only in the font and outline views. In the font view it applies to all foreground
-    splines in all selected characters. In the outline view it applies to all
-    paths that have at least one point selected (or if no points are selected
-    then it applies to all paths).<BR>
+    Not in the bitmap view. In the font view it applies to all foreground splines
+    in all selected characters. In the outline view it applies to all paths that
+    have at least one point selected (or if no points are selected then it applies
+    to all paths).<BR>
     <IMG SRC="twolines.png" WIDTH="247" HEIGHT="247">
     <IMG SRC="expandedlines.png" WIDTH="247" HEIGHT="247"><BR>
     Above is a simple example of what expand stroke can do. It takes the two
@@ -267,9 +267,9 @@ This menu is not present in the Metrics View.
   <DT>
     <A NAME="Remove">Remove</A> Overlap
   <DD>
-    Only in the font and outline views. If two closed paths intersect then there
-    will be overlap. This will get rid of it, leaving one closed path behind.
-    (if the path directions are wonky, strange things result).<BR>
+    Not in the bitmap view. If two closed paths intersect then there will be
+    overlap. This will get rid of it, leaving one closed path behind. (if the
+    path directions are wonky, strange things result).<BR>
     <IMG SRC="expandedlines.png" WIDTH="247" HEIGHT="247">
     <IMG SRC="overlappedlines.png" WIDTH="247" HEIGHT="247"><BR>
     This command is probably the buggiest in PfaEdit. So before PfaEdit invokes
@@ -279,11 +279,11 @@ This menu is not present in the Metrics View.
   <DT>
     <A NAME="Simplify">Simplify</A>
   <DD>
-    Only in the font and outline views. If you have lots of points on a path,
-    some of which do not materially add to the path's shape, then this command
-    will remove the extraneous points. (It will not remove points where the slope
-    at the point is horizontal or vertical as postscript likes to have these
-    points present).
+    Not in the bitmap view. If you have lots of points on a path, some of which
+    do not materially add to the path's shape, then this command will remove
+    the extraneous points. (It will not remove points where the slope at the
+    point is horizontal or vertical as postscript likes to have these points
+    present).
   <DT>
     Simplify More
   <DD>
@@ -299,11 +299,11 @@ This menu is not present in the Metrics View.
   <DT>
     <A NAME="Add-Extrema">Add Extrema</A>
   <DD>
-    Only in the font and outline views. In the font view (or if nothing is selected
-    in the outline view) it will look at each spline in the character and find
-    where the extrema are and insert points at those locations (assuming there
-    aren't points there already). If there are points selected in the outline
-    view then it will only work on splines which are between two selected points.
+    Not in the bitmap view. In the font view (or if nothing is selected in the
+    outline view) it will look at each spline in the character and find where
+    the extrema are and insert points at those locations (assuming there aren't
+    points there already). If there are points selected in the outline view then
+    it will only work on splines which are between two selected points.
   <DT>
     <A NAME="MetaFont">MetaFont</A>...
   <DD>
@@ -401,13 +401,13 @@ This menu is not present in the Metrics View.
   <DT>
     <A NAME="Round">Round</A> to Int
   <DD>
-    Only in the font and outline views. PfaEdit stores point locations as real
-    numbers (ie. it retains fractional values). TrueType and PostScript Type1
-    only support integral values (Well with vast effort Type1 fonts can be made
-    to support real numbers but PfaEdit doesn't), so when generating the font
-    points are rounded to integral values. Open Type allows real numbers easily.
-    But they make the font file bigger. This command will round all selected
-    locations to the closest integer.
+    Not in the bitmap view. PfaEdit stores point locations as real numbers (ie.
+    it retains fractional values). TrueType and PostScript Type1 only support
+    integral values (Well with vast effort Type1 fonts can be made to support
+    real numbers but PfaEdit doesn't), so when generating the font points are
+    rounded to integral values. Open Type allows real numbers easily. But they
+    make the font file bigger. This command will round all selected locations
+    to the closest integer.
   <DT>
     <A NAME="Clockwise">Clockwise</A>
   <DD>
@@ -422,14 +422,14 @@ This menu is not present in the Metrics View.
   <DT>
     <A NAME="Correct">Correct</A> Direction
   <DD>
-    Only in the outline view. Sets the direction of outermost paths to be clockwise.
+    Not in the bitmap view. Sets the direction of outermost paths to be clockwise.
     The next path crossed will be made counter-clockwise, the next clockwise,
     etc.<BR>
     This command may produce unexpected results if two splines cross.
   <DT>
     Build <A NAME="Accented">Accented/Composite</A> Char
   <DD>
-    Only in the font and outline views.
+    Not in the bitmap view.
     <P>
     If the shift key is not depressed when selecting the menu item this will
     only build accented letters, if the shift key is depressed it will build

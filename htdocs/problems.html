@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 28-Jun-2001 -->
-  <!-- AP: Last modified: 16-Dec-2001 -->
+  <!-- AP: Last modified: 8-Apr-2002 -->
   <TITLE>Finding common font problems automagically</TITLE>
 </HEAD>
 <BODY>
@@ -19,25 +19,24 @@ When you draw you characters you are likely to make some minor errors, like
 having stems with slightly different widths in different characters, or having
 lines which aren't quite vertical or...
 <P>
-PfaEdit's Find Problems command can help track down some common errors. It
-won't fix things for you (who knows, some of the so-called "problems" might
-actually be what you wanted), but it will point things out to you that you
-should look at.
+PfaEdit's Find Problems command can help track down some common errors. In
+some cases it will be able to fix things for you, but it won't do so without
+your permission (who knows, some of the so-called "problems" might actually
+be what you wanted), but it will point things out to you that you should
+look at.
 <P>
-This command works either in the font view or the outline view. In the font
-view it will examine all selected characters for errors, and if it finds
-any open a window looking at the character and post a (non-modal) dialog
-saying what the error is. You may then correct the problem and press the
-[Next] button in the dialog when you are done, or you may stop the command
-with the [Stop] button. Behavior in the outline view is similar, except that
-it only refers to that one character.
-<P>
-Normally after finding an error PfaEdit will post a dialog explaining what's
-wrong (and sometimes what it expected to find and what it actually did find).
-But if you find that time consuming, you can ask that PfaEdit simply open
-the characters which might have problems and selecting those bits that should
-be looked at. (I may take this out, it's how things used to work. Seems silly
-now).
+This command works either in the font view, the outline view or the metrics
+view. In the font view it will examine all selected characters for errors,
+and if it finds anything open a window looking at the character and post
+a (non-modal) dialog saying what the error is. You may then correct the problem
+and press the [Next] button in the dialog when you are done, or you may stop
+the command with the [Stop] button. Some errors PfaEdit will be able to fix
+automagically, and if so there will be a [Fix] button in this dlg
+(<FONT COLOR="Red"><SMALL><STRONG>NOTE</STRONG></SMALL></FONT>: You should
+not assume that all problems are in fact errors. Some "problems" may be intended
+peculiarities of the font design. Don't just blindly press the [Fix] button).
+Behavior in the outline and metrics views is similar, except that only one
+character is searched for problems.
 <P>
 PfaEdit can detect the following potential problems:
 <P>
@@ -115,8 +114,8 @@ is far outside of what is reasonable and is probably not where it should
 be. This will check for such points.
 <P>
 Technically it will search for all control points, which when projected onto
-the line between the two end points lie outside of the segment between the
-two.<BR Clear=all>
+the line between the two end points of the spline lie outside of the segment
+between the two.<BR Clear=all>
 <P>
 <BIG><STRONG>Hints controlling no points</STRONG></BIG>
 <P>
@@ -142,30 +141,29 @@ recommended by adobe anyway
 <STRONG><BIG>Points near hint edges</BIG></STRONG>
 <P>
 If you have a character like "H" where the main vertical stems are broken
-by the cross bar, it is all two easy to make the top part of the stem a slightly
-different width than the bottom. Now the hinting process figures out all
-the stems. So this command, in essence, is looking for points which are slightly
+by the cross bar, it is all too easy to make the top part of the stem a slightly
+different width than the bottom. (The hinting process figures out all the
+stems.) So this command, in essence, is looking for points which are slightly
 off from a stem. (again, near is defined at the bottom of the dlg). If PfaEdit
 finds such a point it selects it, stops, and allows you to fix it up.
 <P>
 <BIG><STRONG>Hint width near [val]</STRONG></BIG>
 <P>
-Usually one wants many of the characters to have a consstant stem width,
-and this command will check that all stems near the indicated value are that
+Usually one wants many of the characters to have a constant stem width, and
+this command will check that all stems near the indicated value are that
 value (again near is defined at the bottom of the page). If PfaEdit finds
 a bad stem it will select it, stop and allow you to fix things.
 <P>
 <BIG><STRONG>Path Direction</STRONG></BIG>
 <P>
 Both PostScript and TrueType require that paths be traced in a clockwise
-fashion. This usually doesn't matter, but ghostview will get confused by
-hinted characters which are not clockwise. This command will detect whether
-this constraint is violated. It does not correct the problem (as
-<CODE>Element-&gt;Correct Direction</CODE> would).
+fashion. This sometimes doesn't matter, but many rasterizers do a better
+job if this rule is obeyed. This command will detect whether this constraint
+is violated. 
 <P>
 Currently the command will report the same error several times if you do
 not fix the problem. That's sort of a bug, but I don't see an easy way around
-it yet. 
+it yet.
 <H3>
   <STRONG>Flipped References</STRONG>
 </H3>
@@ -173,7 +171,7 @@ it yet.
 As above PostScript and TrueType like clockwise paths. If you have a flipped
 reference then either the reference or the original character will be drawn
 with a counter-clockwise path. To fix it you should Edit-&gt;Unlink the reference
-and Element-&gt;Correct Direction.
+and Element-&gt;Correct Direction. 
   <HR>
 <P>
 If your font is a CID keyed font you will also get:
