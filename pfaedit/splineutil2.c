@@ -300,10 +300,14 @@ static void CleanupDir(BasePoint *newcp,BasePoint *oldcp,BasePoint *base) {
     orig = atan2(oldcp->y-base->y,oldcp->x-base->x);
     new  = atan2(newcp->y-base->y,newcp->x-base->x);
     if ( !RealNearish(orig,new)) {
-	double len = sqrt((newcp->x-base->x)*(newcp->x-base->x) + (newcp->y-base->y)*(newcp->y-base->y));
-	newcp->x = len*cos(orig); newcp->y = len*sin(orig);
-	if ( newcp->x<1e-6 && newcp->x>-1e-6 ) newcp->x = 0;
-	if ( newcp->y<1e-6 && newcp->y>-1e-6 ) newcp->y = 0;
+	double c = cos(orig), s = sin(orig);
+	/*double len = sqrt((newcp->x-base->x)*(newcp->x-base->x) + (newcp->y-base->y)*(newcp->y-base->y));*/
+	/* use dot product rather than length */
+	double len;
+	if ( c<1e-6 && c>-1e-6 ) { c=0; if ( s<0 ) s=-1; else s=1; }
+	if ( s<1e-6 && s>-1e-6 ) { s=0; if ( c<0 ) c=-1; else c=1; }
+	len = (newcp->x-base->x)*c + (newcp->y-base->y)*s;
+	newcp->x = len*c; newcp->y = len*s;
 	if ( newcp->x*(oldcp->x-base->x) + newcp->x*(oldcp->y-base->y)<0 ) {
 	    GDrawIError( "Control points in wrong direction" );
 	    newcp->x = -newcp->x; newcp->y = -newcp->y;
