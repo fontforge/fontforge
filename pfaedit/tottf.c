@@ -4449,7 +4449,8 @@ static int initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
     } else if ( format==ff_none && at->msbitmaps ) {
 	AssignTTFGlyph(sf,bsizes);
 	aborted = !dumpcffhmtx(at,sf,true);
-	dumpnoglyphs(sf,&at->gi);
+	if ( !at->otbbitmaps )
+	    dumpnoglyphs(sf,&at->gi);
     } else {
 	struct ttf_table *tab;
 	/* There's a typo in Adobe's docs, and the instructions in these tables*/
@@ -4494,7 +4495,7 @@ return( false );
     setos2(&at->os2,at,sf,format);	/* should precede kern/ligature output */
     if ( at->gi.glyph_len<0x20000 )
 	at->head.locais32 = 0;
-    if ( at->msbitmaps )
+    if ( bsizes!=NULL && format==ff_none && !at->applemode )
 	dummyloca(at);
     else if ( format!=ff_otf && format!=ff_otfcid && (format!=ff_none || (bsizes!=NULL && !at->applemode && at->opentypemode)) )
 	redoloca(at);
@@ -4712,7 +4713,8 @@ return( false );
 	at->tabdir.tabs[i++].length = at->lcarlen;
     }
 
-    if ( format!=ff_otf && format!=ff_otfcid && (format!=ff_none || at->msbitmaps )) {
+    if ( format!=ff_otf && format!=ff_otfcid && (format!=ff_none ||
+	    (at->msbitmaps && bf!=bf_otb) )) {
 	at->tabdir.tabs[i].tag = CHR('l','o','c','a');
 	at->tabdir.tabs[i].data = at->loca;
 	at->tabdir.tabs[i++].length = at->localen;
