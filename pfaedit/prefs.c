@@ -87,6 +87,11 @@ static char *xdefs_filename;
 int new_em_size = 1000;
 int new_fonts_are_order2 = false;
 int loaded_fonts_same_as_new = false;
+#if __Mac
+int alwaysgenapple = true;
+#else
+int alwaysgenapple = false;
+#endif
 
 
 static int pointless;
@@ -360,13 +365,14 @@ static struct prefs_list {
 	{ NULL }
 },
  generate_list[] = {
-	{ "FoundryName", pr_string, &BDFFoundry, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupFN },
-	{ "TTFFoundry", pr_string, &TTFFoundry, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupTFN },
-	{ "XUID-Base", pr_string, &xuid, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupXU },
-	{ "AskBDFResolution", pr_bool, &ask_user_for_resolution, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupBR },
+	{ "FoundryName", pr_string, &BDFFoundry, NULL, NULL, 'F', NULL, 0, _STR_PrefsPopupFN },
+	{ "TTFFoundry", pr_string, &TTFFoundry, NULL, NULL, 'T', NULL, 0, _STR_PrefsPopupTFN },
+	{ "XUID-Base", pr_string, &xuid, NULL, NULL, 'X', NULL, 0, _STR_PrefsPopupXU },
+	{ "AskBDFResolution", pr_bool, &ask_user_for_resolution, NULL, NULL, 'B', NULL, 0, _STR_PrefsPopupBR },
 	{ "DumpGlyphMap", pr_bool, &glyph_2_name_map, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupG2N },
-	{ "PreferCJKEncodings", pr_bool, &prefer_cjk_encodings, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupPCE },
-	{ "HintForGen", pr_bool, &autohint_before_generate, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupAHG },
+	{ "PreferCJKEncodings", pr_bool, &prefer_cjk_encodings, NULL, NULL, 'C', NULL, 0, _STR_PrefsPopupPCE },
+	{ "HintForGen", pr_bool, &autohint_before_generate, NULL, NULL, 'H', NULL, 0, _STR_PrefsPopupAHG },
+	{ "AlwaysGenApple", pr_bool, &alwaysgenapple, NULL, NULL, 'A', NULL, 0, _STR_PrefsPopupAGA },
 	{ NULL }
 },
  hidden_list[] = {

@@ -113,6 +113,7 @@ static int oldafmstate = -1, oldpfmstate = false;
 int oldpsstate = true, oldttfhintstate = false;
 int oldformatstate = ff_pfb;
 int oldbitmapstate = 0;
+extern int alwaysgenapple;
 static int oldttfapplestate;		/* Value is currently irrelevant */
 
 static const char *pfaeditflag = "SplineFontDB:";
@@ -1479,7 +1480,7 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 	GGadgetSetVisible(d->ttfapple,!set);
 	if ( !set ) {
 	    if ( format==ff_ttfdfont || format==ff_otfdfont || format==ff_otfciddfont ||
-		    format==ff_ttfmacbin )
+		    format==ff_ttfmacbin || alwaysgenapple )
 		GGadgetSetChecked(d->ttfapple,true);
 	    else if ( format!=ff_none )
 		GGadgetSetChecked(d->ttfapple,false);
@@ -1586,7 +1587,7 @@ static int GFD_BitmapFormat(GGadget *g, GEvent *e) {
 			bf!=bf_none);
 	}
 	BitmapName(d);
-	if ( bf==bf_sfnt_dfont )
+	if ( bf==bf_sfnt_dfont || alwaysgenapple )
 	    GGadgetSetChecked(d->ttfapple,true);
 	else if ( bf==bf_ttf )
 	    GGadgetSetChecked(d->ttfapple,false);
@@ -1938,7 +1939,8 @@ return( 0 );
 	    ofs==ff_ttfdfont || ofs==ff_otfdfont || ofs==ff_otfciddfont ||
 	    ofs==ff_otfcid || ofs==ff_ttfmacbin || ofs==ff_none ) {
 	gcd[10].gd.flags &= ~gg_visible;
-	if ( ofs==ff_ttfmacbin || ofs==ff_ttfdfont || ofs==ff_otfdfont ||
+	if ( alwaysgenapple ||
+		ofs==ff_ttfmacbin || ofs==ff_ttfdfont || ofs==ff_otfdfont ||
 		ofs==ff_otfciddfont || family || (ofs==ff_none && old==bf_sfnt_dfont))
 	    gcd[13].gd.flags |= gg_cb_on;
 	else
