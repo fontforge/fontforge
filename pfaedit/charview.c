@@ -3718,6 +3718,7 @@ return( true );
 #define MID_SelectAnchors	2131
 #define MID_FirstPtNextCont	2132
 #define MID_Contours	2133
+#define MID_SelectHM	2134
 #define MID_Clockwise	2201
 #define MID_Counter	2202
 #define MID_GetInfo	2203
@@ -4579,6 +4580,39 @@ static void CVSelectVWidth(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 return;
     cv->vwidthsel = !cv->widthsel;
     cv->oldvwidth = cv->sc->vwidth;
+    SCUpdateAll(cv->sc);
+}
+
+static void CVSelectHM(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    SplinePoint *sp; SplineSet *spl; RefChar *r; ImageList *im;
+    int exactlyone = CVOneThingSel(cv,&sp,&spl,&r,&im,NULL);
+
+    if ( !exactlyone || sp==NULL || sp->hintmask == NULL || spl==NULL )
+return;
+    while ( sp!=NULL ) {
+	if ( sp->prev==NULL )
+    break;
+	sp = sp->prev->from;
+	if ( sp == spl->first )
+    break;
+	if ( sp->hintmask!=NULL )
+ goto done;
+	sp->selected = true;
+    }
+    for ( spl = spl->next; spl!=NULL; spl = spl->next ) {
+	for ( sp=spl->first; sp!=NULL;  ) {
+	    if ( sp->hintmask!=NULL )
+ goto done;
+	    sp->selected = true;
+	    if ( sp->prev==NULL )
+	break;
+	    sp = sp->prev->from;
+	    if ( sp == spl->first )
+	break;
+	}
+    }
+ done:
     SCUpdateAll(cv->sc);
 }
 
@@ -6107,7 +6141,7 @@ static void cv_sllistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 	  case MID_NextPt: case MID_PrevPt:
 	  case MID_NextCP: case MID_PrevCP:
 	  case MID_FirstPtNextCont:
-	    mi->ti.disabled = !exactlyone;
+	    mi->ti.disabled = !exactlyone || sp==NULL;
 	  break;
 	  case MID_FirstPt: case MID_Contours:
 	    mi->ti.disabled = cv->layerheads[cv->drawmode]->splines==NULL;
@@ -6125,6 +6159,9 @@ static void cv_sllistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 		free(mi->ti.text);
 		mi->ti.text = u_copy(GStringGetResource(cv->vwidthsel?_STR_DeselectVWidth:_STR_SelectVWidth,NULL));
 	    }
+	  break;
+	  case MID_SelectHM:
+	    mi->ti.disabled = !exactlyone || sp==NULL || sp->hintmask==NULL;
 	  break;
 	}
     }
@@ -6345,6 +6382,8 @@ static GMenuItem sllist[] = {
     { { (unichar_t *) _STR_SelectAnchors, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'c' }, '\0', ksm_control, NULL, NULL, CVSelectAll, MID_SelectAnchors },
     { { (unichar_t *) _STR_SelectWidth, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'W' }, '\0', ksm_control, NULL, NULL, CVSelectWidth, MID_SelectWidth },
     { { (unichar_t *) _STR_SelectVWidth, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'V' }, '\0', ksm_shift|ksm_control, NULL, NULL, CVSelectVWidth, MID_SelectVWidth },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_SelectHMAffected, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'V' }, '\0', ksm_shift|ksm_control, NULL, NULL, CVSelectHM, MID_SelectHM },
     { NULL }
 };
 

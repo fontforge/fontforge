@@ -154,6 +154,7 @@ static char str_SelectAllPoints = "Select All Points & Refs";
 static char mnemonic_SelectAllPoints = 'P';
 static char str_SelectAnchors = "Select Anchors";
 static char mnemonic_SelectAnchors = 'c';
+static char str_SelectHMAffected = "Select Points Affected by HM";
 static char str_SelectByATT[] = "Select By ATT...";
 static unichar_t mnemonic_SelectByATT[] = 'T';
 static char str_FirstPoint[] = "First Point";
