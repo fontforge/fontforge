@@ -901,7 +901,7 @@ static void FigureFullMetricsEnd(SplineFont *sf,struct glyphinfo *gi) {
     } else {
 	for ( i=maxc-1; i>0; --i ) {
 	    for ( j=0; j<sf->subfontcnt; ++j )
-		if ( sf->subfonts[j]->chars[i]!=NULL )
+		if ( i<sf->subfonts[j]->charcnt && sf->subfonts[j]->chars[i]!=NULL )
 	    break;
 	    if ( j<sf->subfontcnt && SCWorthOutputting(sf->subfonts[j]->chars[i]))
 	break;
@@ -938,7 +938,7 @@ static void FigureFullMetricsEnd(SplineFont *sf,struct glyphinfo *gi) {
 	    vwidth = sf->subfonts[j]->chars[i]->vwidth;
 	    for ( --i; i>0; --i ) {
 		for ( j=0; j<sf->subfontcnt; ++j )
-		    if ( sf->subfonts[j]->chars[i]!=NULL )
+		    if ( i<sf->subfonts[j]->charcnt && sf->subfonts[j]->chars[i]!=NULL )
 		break;
 		if ( j<sf->subfontcnt && SCWorthOutputting(sf->subfonts[j]->chars[i])) {
 		    if ( sf->subfonts[j]->chars[i]->width!=width )
@@ -951,7 +951,7 @@ static void FigureFullMetricsEnd(SplineFont *sf,struct glyphinfo *gi) {
 	    if ( sf->hasvmetrics ) {
 		for ( i=lastv-1; i>0; --i ) {
 		    for ( j=0; j<sf->subfontcnt; ++j )
-			if ( sf->subfonts[j]->chars[i]!=NULL )
+			if ( i<sf->subfonts[j]->charcnt && sf->subfonts[j]->chars[i]!=NULL )
 		    break;
 		    if ( j<sf->subfontcnt && SCWorthOutputting(sf->subfonts[j]->chars[i])) {
 			if ( sf->chars[i]->vwidth!=vwidth )
