@@ -1368,6 +1368,7 @@ extern SplineFont *ReadSplineFont(char *filename,enum openflags);	/* Don't use t
 extern uint16 _MacStyleCode( char *styles, SplineFont *sf, uint16 *psstyle );
 extern uint16 MacStyleCode( SplineFont *sf, uint16 *psstyle );
 extern SplineFont *SFReadIkarus(char *fontname);
+extern char **GetFontNames(char *filename);
 extern char **NamesReadSFD(char *filename);
 extern char **NamesReadTTF(char *filename);
 extern char **NamesReadCFF(char *filename);

@@ -26,15 +26,18 @@
  */
 #include <stdlib.h>
 #include <string.h>
-#include "gdraw.h"
-#include "gwidget.h"
-#include "ggadget.h"
+#include <ustring.h>
+#include <gdraw.h>
+#include <gwidget.h>
+#include <ggadget.h>
 #include "pfaeditui.h"
 
 struct gfc_data {
     int done;
     unichar_t *ret;
     GGadget *gfc;
+    int filename_popup_pos;
+    unichar_t *lastpopupfontname;
 };
 
 static int GFD_Ok(GGadget *g, GEvent *e) {
@@ -64,6 +67,60 @@ static int GFD_Cancel(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static int WithinList(struct gfc_data *d,GEvent *event) {
+    GRect size;
+    GGadget *list;
+    int32 pos;
+    unichar_t *ufile;
+    char *file, **fontnames;
+    int cnt, len;
+    unichar_t *msg;
+
+    if ( event->type!=et_mousemove )
+return( false );
+
+    GFileChooserGetChildren(d->gfc,NULL, &list, NULL);
+    if ( list==NULL )
+return( false );
+    GGadgetGetSize(list,&size);
+    if ( event->u.mouse.x < size.x || event->u.mouse.y <size.y ||
+	    event->u.mouse.x >= size.x+size.width ||
+	    event->u.mouse.y >= size.y+size.width )
+return( false );
+    pos = GListIndexFromY(list,event->u.mouse.y);
+    if ( pos == d->filename_popup_pos )
+return( pos!=-1 );
+    if ( pos==-1 || GFileChooserPosIsDir(d->gfc,pos)) {
+	d->filename_popup_pos = -1;
+return( pos!=-1 );
+    }
+    ufile = GFileChooserFileNameOfPos(d->gfc,pos);
+    if ( ufile==NULL )
+return( true );
+    file = u2def_copy(ufile);
+
+    fontnames = GetFontNames(file);
+    if ( fontnames==NULL || fontnames[0]==NULL )
+	msg = uc_copy( "???" );
+    else {
+	len = 0;
+	for ( cnt=0; fontnames[cnt]!=NULL; ++cnt )
+	    len += strlen(fontnames[cnt])+1;
+	msg = galloc((len+2)*sizeof(unichar_t));
+	len = 0;
+	for ( cnt=0; fontnames[cnt]!=NULL; ++cnt ) {
+	    uc_strcpy(msg+len,fontnames[cnt]);
+	    len += strlen(fontnames[cnt]);
+	    msg[len++] = '\n';
+	}
+	msg[len-1] = '\0';
+    }
+    GGadgetPreparePopup(GGadgetGetWindow(d->gfc),msg);
+    free(d->lastpopupfontname);
+    d->lastpopupfontname = msg;
+return( true );
+}
+
 static int e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
 	struct gfc_data *d = GDrawGetUserData(gw);
@@ -76,7 +133,8 @@ return( false );
     } else if ( event->type == et_mousemove ||
 	    (event->type==et_mousedown && event->u.mouse.button==3 )) {
 	struct gfc_data *d = GDrawGetUserData(gw);
-	GFileChooserPopupCheck(d->gfc,event);
+	if ( !WithinList(d,event) )
+	    GFileChooserPopupCheck(d->gfc,event);
     } else if (( event->type==et_mouseup || event->type==et_mousedown ) &&
 	    (event->u.mouse.button==4 || event->u.mouse.button==5) ) {
 	struct gfc_data *d = GDrawGetUserData(gw);
@@ -96,6 +154,7 @@ unichar_t *FVOpenFont(const unichar_t *title, const unichar_t *defaultfile,
     GTextInfo label[5];
     struct gfc_data d;
     int bs = GIntGetResource(_NUM_Buttonsize), bsbigger, totwid, spacing;
+    GGadget *tf; 
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_restrict;
@@ -184,9 +243,8 @@ unichar_t *FVOpenFont(const unichar_t *title, const unichar_t *defaultfile,
     GFileChooserConnectButtons(gcd[0].ret,gcd[1].ret,gcd[filter].ret);
     GFileChooserSetFilterText(gcd[0].ret,initial_filter);
     GFileChooserSetMimetypes(gcd[0].ret,mimetypes);
+    GFileChooserGetChildren(gcd[0].ret,NULL, NULL, &tf);
     if ( RecentFiles[0]!=NULL ) {
-	GGadget *tf; 
-	GFileChooserGetChildren(gcd[0].ret,NULL, NULL, &tf);
 	GGadgetSetList(tf,GTextInfoFromChars(RecentFiles,RECENT_MAX),false);
     }
     GGadgetSetTitle(gcd[0].ret,defaultfile);
@@ -202,5 +260,6 @@ unichar_t *FVOpenFont(const unichar_t *title, const unichar_t *defaultfile,
     GDrawProcessPendingEvents(NULL);		/* Give the window a chance to vanish... */
     GDrawSync(NULL);
     GDrawProcessPendingEvents(NULL);		/* Give the window a chance to vanish... */
+    free( d.lastpopupfontname );
 return(d.ret);
 }
