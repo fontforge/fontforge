@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 11-Aug-2004 -->
+  <!-- AP: Last modified: 30-Sep-2004 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -733,15 +733,12 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
 </PRE>
     </BLOCKQUOTE>
   <DT>
-    Import(filename)
+    Import(filename[,toback[,flags]])
   <DD>
     Either imports a bitmap font into the database, or imports background image[s]
     into various characters. There may be one or two arguments. The first must
     be a string representing a filename. The extension of the file determines
-    how the import proceeds. If present the second argument must be an integer,
-    if the first argument is a bitmap font then the second argument controls
-    whether it is imported into the bitmap list (0) or to fill up the backgrounds
-    of characters (1).
+    how the import proceeds.
     <UL>
       <LI>
 	If the extension is ".bdf" then a bdf font will be imported
@@ -767,10 +764,29 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
 	    into the background of the second selected character, ...
 	</UL>
       <LI>
-	Finally if the extension is "eps" then an encapsulated postscript file will
-	be merged into the foreground. The file may be specified as for images (except
-	the extension should be "eps" rather than an image extension). FontForge
-	is very limited in its ability to read eps files.
+	If the extension is "eps" then an encapsulated postscript file will be merged
+	into the foreground. The file may be specified as for images (except the
+	extension should be "eps" rather than an image extension). FontForge is limited
+	in its ability to read eps files.
+      <LI>
+	If the extension is "svg" then an svg file will be read into the foreground.
+    </UL>
+    <P>
+    If present the second argument must be an integer, if the first argument
+    is a bitmap font then the second argument controls whether it is imported
+    into the bitmap list (0) or to fill up the backgrounds of characters (1).
+    For eps and svg files this argument controls whether the splines are added
+    to the foreground or the background layer of the glyph.
+    <P>
+    If there is a third argument it must also be an integer and provides a set
+    of flags controling the behavior of importing an EPS file.
+    <UL>
+      <LI>
+	8 =&gt; correct direction
+      <LI>
+	4 =&gt; attempt to handle TeX erasers (stroking with a white pen)
+      <LI>
+	2 =&gt; remove overlap
     </UL>
   <DT>
     Export(format[,bitmap-size])
@@ -1300,7 +1316,8 @@ ApplySubstitution("*","*","vrt2")
 	with four arguments they will be scaled differently about the specified center
     </UL>
   <DT>
-    Skew(angle[,ox,oy])
+    Skew(angle[,ox,oy])<BR>
+    Skew(angle-num,angle-denom[,ox,oy])
   <DD>
     All selected characters will be skewed by the given angle.
   <DT>
