@@ -245,6 +245,7 @@ void aat_dumplcar(struct alltabs *at, SplineFont *sf) {
 		for ( l=0; l<pst->u.lcaret.cnt; ++l )
 		    putshort(lcar,pst->u.lcaret.carets[l]);
 	    }
+	    last = i;
 	    for ( j=i+1, ++tot; j<sf->charcnt; ++j ) if ( sf->chars[j]!=NULL && sf->chars[j]->ttf_glyph!=-1 ) {
 		if ( (pst = haslcaret(sf->chars[j]))== NULL )
 	    break;
@@ -284,7 +285,7 @@ return;
 	    putshort(lcar,6*l);
 	    putshort(lcar,j);
 	    putshort(lcar,6*(seg_cnt-l));
-	    offset = 6*2 + seg_cnt*6 + 6;
+	    offset = 4+7*2 + seg_cnt*6 + 6;
 	} else if ( k==1 ) {		/* flag entry */
 	    putshort(lcar,0xffff);
 	    putshort(lcar,0xffff);
