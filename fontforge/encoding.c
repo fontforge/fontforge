@@ -504,6 +504,31 @@ struct cidmap {
 
 static struct cidmap *cidmaps = NULL;
 
+int CIDFromName(char *name,SplineFont *cidmaster) {
+    /* We've had various conventions for encoding a cid inside a name */
+    /* I'm primarily interested in this when the name is something like */
+    /*  Japan1.504.vert */
+    /* which tells me that the current glyph is the rotated version of */
+    /*  cid 504 */
+    /* Other convention "cid-504.vert" */
+    int len = strlen( cidmaster->ordering );
+    int cid;
+    char *end;
+
+    if ( strncmp(name,cidmaster->ordering,len)==0 ) {
+	if ( name[len]=='.' ) ++len;
+    } else if ( strncmp(name,"cid-",4)==0 ) {
+	len = 4;
+    }
+    cid = strtol(name+len,&end,10);
+    if ( end==name+len )
+return( -1 );
+    if ( *end!='.' && *end!='\0' )
+return( -1 );
+
+return ( cid );
+}
+
 int CID2Uni(struct cidmap *map,int cid) {
     unsigned int uni;
 
@@ -538,7 +563,7 @@ int CID2NameEnc(struct cidmap *map,int cid, char *buffer, int len) {
 	else
 	    sprintf(buffer,"u%04X", enc);
     } else
-	sprintf(buffer,"%s-%d", map->ordering, cid);
+	sprintf(buffer,"%s.%d", map->ordering, cid);
 #else
     if ( map==NULL )
 	snprintf(buffer,len,"cid-%d", cid);
@@ -556,7 +581,7 @@ int CID2NameEnc(struct cidmap *map,int cid, char *buffer, int len) {
 	else
 	    snprintf(buffer,len,"u%04X", enc);
     } else
-	snprintf(buffer,len,"%s-%d", map->ordering, cid);
+	snprintf(buffer,len,"%s.%d", map->ordering, cid);
 #endif
 return( enc );
 }

@@ -657,15 +657,15 @@ return( true );
 
 int SFIsRotatable(SplineFont *sf,SplineChar *sc) {
     char *end;
+    int cid;
 
     if ( sf->cidmaster!=NULL && strncmp(sc->name,"vertcid_",8)==0 ) {
-	int cid = strtol(sc->name+8,&end,10);
+	cid = strtol(sc->name+8,&end,10);
 	if ( *end=='\0' && SFHasCID(sf,cid)!=-1)
 return( true );
-    } else if ( sf->cidmaster!=NULL &&
-	    (strncmp(sc->name,"cid-",4)==0 && strstr(sc->name,".vert")!=NULL) ) {
-	int cid = strtol(sc->name+4,&end,10);
-	if ( *end=='.' && SFHasCID(sf,cid)!=-1)
+    } else if ( sf->cidmaster!=NULL && strstr(sc->name,".vert")!=NULL &&
+	    (cid = CIDFromName(sc->name,sf->cidmaster))!= -1 ) {
+	if ( SFHasCID(sf,cid)!=-1)
 return( true );
     } else if ( strncmp(sc->name,"vertuni",7)==0 && strlen(sc->name)==11 ) {
 	int uni = strtol(sc->name+7,&end,16);
@@ -1646,10 +1646,9 @@ static void DoRotation(SplineFont *sf,SplineChar *sc,int copybmp,FontView *fv) {
 	if ( *end!='\0' || (j=SFHasCID(sf,cid))==-1)
 return;		/* Can't happen */
 	scbase = sf->cidmaster->subfonts[j]->chars[cid];
-    } else if ( sf->cidmaster!=NULL &&
-	    (strncmp(sc->name,"cid-",4)==0 && strstr(sc->name,".vert")!=NULL) ) {
-	cid = strtol(sc->name+4,&end,10);
-	if ( *end!='.' || (j=SFHasCID(sf,cid))==-1)
+    } else if ( sf->cidmaster!=NULL && strstr(sc->name,".vert")!=NULL &&
+	    (cid = CIDFromName(sc->name,sf->cidmaster))!= -1 ) {
+	if ( (j=SFHasCID(sf,cid))==-1)
 return;		/* Can't happen */
 	scbase = sf->cidmaster->subfonts[j]->chars[cid];
     } else {

@@ -4700,16 +4700,18 @@ static GImage *UniGetRotatedGlyph(SplineFont *sf, SplineChar *sc,int uni) {
     GRect r;
     unichar_t buf[2];
     GImage *unrot, *rot;
+    SplineFont *cm = sf->cidmaster;
 
     if ( uni!=-1 )
 	/* Do nothing */;
     else if ( sscanf(sc->name,"vertuni%x", (unsigned *) &uni)==1 )
 	/* All done */;
-    else if ( sf->cidmaster!=NULL &&
-	    (sscanf( sc->name, "cid-%d", &cid)==1 ||
-	     sscanf( sc->name, "vertcid_%d", &cid)==1 ||	/* Obsolete names */
+    else if ( cm!=NULL &&
+	    ((cid=CIDFromName(sc->name,cm))!=-1 ||
+	     sscanf( sc->name, "cid-%d", &cid)==1 ||		/* Obsolete names */
+	     sscanf( sc->name, "vertcid_%d", &cid)==1 ||
 	     sscanf( sc->name, "cid_%d", &cid)==1 )) {
-	uni = CID2Uni(FindCidMap(sf->cidmaster->cidregistry,sf->cidmaster->ordering,sf->cidmaster->supplement,sf->cidmaster),
+	uni = CID2Uni(FindCidMap(cm->cidregistry,cm->ordering,cm->supplement,cm),
 		cid);
     }
     if ( uni&0x10000 ) uni -= 0x10000;		/* Bug in some old cidmap files */
@@ -4949,19 +4951,16 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		if ( pt!=NULL ) {
 		    int i, n = pt-sc->name;
 		    char *end;
+		    SplineFont *cm = fv->sf->cidmaster;
 		    if ( n==7 && sc->name[0]=='u' && sc->name[1]=='n' && sc->name[2]=='i' &&
 			    (i=strtol(sc->name+3,&end,16), end-sc->name==7))
 			buf[0] = i;
 		    else if ( n>=5 && n<=7 && sc->name[0]=='u' &&
 			    (i=strtol(sc->name+1,&end,16), end-sc->name==n))
 			buf[0] = i;
-		    else if ( sc->name[0]=='c' && sc->name[1]=='i' && sc->name[2]=='d' &&
-			    fv->sf->cidmaster!=NULL &&
-			    (i=strtol(sc->name+3,&end,10), end-sc->name==n)) {
-			SplineFont *cidmaster = fv->sf->cidmaster;
+		    else if ( cm!=NULL && (i=CIDFromName(sc->name,cm))!=-1 ) {
 			int uni;
-			if ( i<0 ) i= -i;
-			uni = CID2Uni(FindCidMap(cidmaster->cidregistry,cidmaster->ordering,cidmaster->supplement,cidmaster),
+			uni = CID2Uni(FindCidMap(cm->cidregistry,cm->ordering,cm->supplement,cm),
 				i);
 			if ( uni!=-1 )
 			    buf[0] = uni;
