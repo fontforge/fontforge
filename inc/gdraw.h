@@ -345,6 +345,8 @@ typedef struct gdeveventmask {
     char *device_name;
 } GDevEventMask;
 
+enum gzoom_flags { gzf_pos=1, gzf_size=2 };
+
 typedef int (*GDrawEH)(GWindow,GEvent *);
 
 extern unichar_t *GDrawKeysyms[];
@@ -367,6 +369,7 @@ extern GCursor GDrawCreateCursor(GWindow src,GWindow mask,Color fg,Color bg,
 	int16 x, int16 y );
 extern void GDrawDestroyWindow(GWindow w);
 extern void GDrawDestroyCursor(GDisplay *gdisp, GCursor ct);
+extern void GDrawSetZoom(GWindow w, GRect *zoomsize, enum gzoom_flags);
 extern void GDrawSetWindowBorder(GWindow w, int width, Color color);
 extern int  GDrawSetDither(GDisplay *gdisp, int dither);
 extern void GDrawReparentWindow(GWindow child,GWindow newparent, int x,int y);

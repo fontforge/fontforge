@@ -1093,14 +1093,14 @@ return( NULL );
 	    gfree(pt);
 	}
 	s_h.x = pos->x; s_h.y = pos->y;
-	s_h.width = pos->width; s_h.height = pos->height;
+	s_h.base_width = s_h.width = pos->width; s_h.base_height = s_h.height = pos->height;
 	s_h.min_width = s_h.max_width = s_h.width;
 	s_h.min_height = s_h.max_height = s_h.height;
-	s_h.flags = PPosition | PSize;
+	s_h.flags = PPosition | PSize | PBaseSize;
 	if (( (wattrs->mask&wam_positioned) && wattrs->positioned ) ||
 		((wattrs->mask&wam_centered) && wattrs->centered ) ||
 		((wattrs->mask&wam_undercursor) && wattrs->undercursor )) {
-	    s_h.flags = USPosition | USSize;
+	    s_h.flags = USPosition | USSize | PBaseSize;
 	    nw->was_positioned = true;
 	}
 	if ( (wattrs->mask&wam_noresize) && wattrs->noresize )
@@ -1144,6 +1144,30 @@ return( _GXDraw_CreateWindow((GXDisplay *) gdisp,NULL,pos,eh,user_data, wattrs))
 static GWindow GXDrawCreateSubWindow(GWindow w, GRect *pos,
 	int (*eh)(GWindow,GEvent *), void *user_data, GWindowAttrs *wattrs) {
 return( _GXDraw_CreateWindow(((GXWindow) w)->display,(GXWindow) w,pos,eh,user_data, wattrs));
+}
+
+static void GXDrawSetZoom(GWindow w, GRect *pos, enum gzoom_flags flags) {
+    XSizeHints zoom, normal;
+    Display *display = ((GXWindow) w)->display->display;
+    long supplied_return;
+
+    memset(&zoom,0,sizeof(zoom));
+    if ( flags&gzf_pos ) {
+	zoom.x = pos->x;
+	zoom.y = pos->y;
+	zoom.flags = PPosition;
+    }
+    if ( flags&gzf_size ) {
+	zoom.width = zoom.base_width = zoom.max_width = pos->width;
+	zoom.height = zoom.base_height = zoom.max_height = pos->height;
+	zoom.flags |= PSize | PBaseSize | PMaxSize;
+	XGetWMNormalHints(display,((GXWindow) w)->w,&normal,&supplied_return);
+	normal.flags |= PMaxSize;
+	normal.max_width = pos->width;
+	normal.max_height = pos->height;
+	XSetWMNormalHints(display,((GXWindow) w)->w,&normal);
+    }
+    XSetWMSizeHints(display,((GXWindow) w)->w,&zoom,XA_WM_ZOOM_HINTS);
 }
 
 static GWindow GXDrawCreatePixmap(GDisplay *gdisp, uint16 width, uint16 height) {
@@ -3885,6 +3909,7 @@ static struct displayfuncs xfuncs = {
     GXDrawCreateCursor,
     GXDrawDestroyWindow,
     GXDestroyCursor,
+    GXDrawSetZoom,
     GXDrawSetWindowBorder,
     GXSetDither,
 

@@ -79,6 +79,10 @@ static GCursor PSDrawCreateCursor(GWindow src,GWindow mask,Color fg,Color bg,
 return 0;
 }
 
+static void PSSetZoom(GWindow w,GRect *r, enum gzoom_flags flags ) {
+    fprintf( stderr, "SetZoom not implemented for postscript\n" );
+}
+
 static void PSDestroyCursor(GDisplay *gdisp,GCursor ct ) {
     fprintf( stderr, "DestroyCursor not implemented for postscript\n" );
 }
@@ -1254,6 +1258,7 @@ static struct displayfuncs psfuncs = {
     PSDrawCreateCursor,
     PSDrawDestroyWindow,
     PSDestroyCursor,
+    PSSetZoom,
     PSSetWindowBorder,
     PSSetDither,
 

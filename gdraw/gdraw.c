@@ -108,6 +108,10 @@ void GDrawDestroyWindow(GWindow w) {
     (w->display->funcs->destroyWindow)(w);
 }
 
+void GDrawSetZoom(GWindow w,GRect *zoom, enum gzoom_flags flags) {
+    (w->display->funcs->setZoom)(w,zoom,flags);
+}
+
 void GDrawDestroyCursor(GDisplay *gdisp, GCursor ct) {
     if ( gdisp==NULL ) gdisp = screen_display;
     (gdisp->funcs->destroyCursor)(gdisp,ct);
