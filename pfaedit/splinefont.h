@@ -695,7 +695,7 @@ extern AnchorPoint *APAnchorClassMerge(AnchorPoint *anchors,AnchorClass *into,An
 extern void AnchorClassMerge(SplineFont *sf,AnchorClass *into,AnchorClass *from);
 extern void AnchorClassesFree(AnchorClass *kp);
 extern AnchorClass *AnchorClassMatch(SplineChar *sc1,SplineChar *sc2,
-	AnchorClass *restrict, AnchorPoint **_ap1,AnchorPoint **_ap2 );
+	AnchorClass *restrict_, AnchorPoint **_ap1,AnchorPoint **_ap2 );
 extern AnchorClass *AnchorClassMkMkMatch(SplineChar *sc1,SplineChar *sc2,
 	AnchorPoint **_ap1,AnchorPoint **_ap2 );
 extern AnchorClass *AnchorClassCursMatch(SplineChar *sc1,SplineChar *sc2,

@@ -13,12 +13,11 @@ pfaedit_OBJECTS =  alignment.obj,autohint.obj,autosave.obj,autowidth.obj,\
  splinesaveafm.obj,splinestroke.obj,splineutil.obj,splineutil2.obj,stamp.obj,\
  start.obj,tottf.obj,transform.obj,uiutil.obj,utils.obj,windowmenu.obj, \
  zapfnomen.obj,othersubrs.obj,autotrace.obj,openfontdlg.obj,encoding.obj,print.obj,\
- problems.obj,pfaedit-ui-en.obj,crctab.obj,macbinary.obj,scripting.obj,\
- freetype.obj,gotodlg.obj,search.obj tottfgpos.obj charinfo.obj
+ problems.obj,pfaedit-ui-en.obj,crctab.obj,macbinary.obj,scripting.obj
  
 pfaedit_OBJECTS2=displayfonts.obj,combinations.obj,sftextfield.obj,ikarus.obj,\
-        cvfreehand.obj,cvhand.obj,simplifydlg.obj,winfonts.obj
-
+        cvfreehand.obj,cvhand.obj,simplifydlg.obj,winfonts.obj,freetype.obj,\
+	gotodlg.obj,search.obj,tottfgpos.obj,charinfo.obj
 
 pfaedit.exe : nomen.h $(pfaedit_OBJECTS) $(pfaedit_OBJECTS2)
         library/create tmp.olb $(pfaedit_OBJECTS)

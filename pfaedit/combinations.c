@@ -281,12 +281,12 @@ return;
     KPSortEm(kpd,sb_first);
 }
 
-AnchorClass *AnchorClassMatch(SplineChar *sc1,SplineChar *sc2,AnchorClass *restrict,
+AnchorClass *AnchorClassMatch(SplineChar *sc1,SplineChar *sc2,AnchorClass *restrict_,
 	AnchorPoint **_ap1,AnchorPoint **_ap2 ) {
     AnchorPoint *ap1, *ap2;
 
-    for ( ap1=sc1->anchor; ap1!=NULL ; ap1=ap1->next ) if ( restrict==(AnchorClass *) -1 || ap1->anchor==restrict ) {
-	for ( ap2=sc2->anchor; ap2!=NULL; ap2=ap2->next ) if ( restrict==(AnchorClass *) -1 || ap2->anchor==restrict ) {
+    for ( ap1=sc1->anchor; ap1!=NULL ; ap1=ap1->next ) if ( restrict_==(AnchorClass *) -1 || ap1->anchor==restrict_ ) {
+	for ( ap2=sc2->anchor; ap2!=NULL; ap2=ap2->next ) if ( restrict_==(AnchorClass *) -1 || ap2->anchor==restrict_ ) {
 	    if ( ap1->anchor==ap2->anchor &&
 #if 1
 		    ((ap1->type>=at_basechar && ap1->type<=at_basemark && ap2->type==at_mark) ||

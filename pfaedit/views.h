@@ -310,6 +310,7 @@ typedef struct fontview {
     unsigned int showvmetrics: 4;
     unsigned int drag_and_drop: 1;
     unsigned int has_dd_no_cursor: 1;
+    unsigned int any_dd_events_sent: 1;
     int16 magnify;
     SplineFont *cidmaster;
     int32 *mapping;	/* an array mapping grid cells (0=upper left) to font indeces (enc, 0=NUL) */
