@@ -1105,7 +1105,7 @@ static unichar_t *AskSetting(struct macsettingname *temp,GGadget *list, int inde
     wattrs.window_title = GStringGetResource(_STR_MappingB,NULL);
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,240));
-    pos.height = GDrawPointsToPixels(NULL,90);
+    pos.height = GDrawPointsToPixels(NULL,120);
     gw = GDrawCreateTopWindow(NULL,&pos,set_e_h,&sd,&wattrs);
     sd.gw = gw;
 
@@ -1126,7 +1126,7 @@ static unichar_t *AskSetting(struct macsettingname *temp,GGadget *list, int inde
     label[2].text = (unichar_t *) _STR_Setting;
     label[2].text_in_resource = true;
     gcd[2].gd.label = &label[2];
-    gcd[2].gd.pos.x = 5; gcd[2].gd.pos.y = gcd[0].gd.pos.y+24;
+    gcd[2].gd.pos.x = 5; gcd[2].gd.pos.y = gcd[0].gd.pos.y+26;
     gcd[2].gd.flags = gg_enabled|gg_visible;
     gcd[2].creator = GLabelCreate;
 
@@ -1134,21 +1134,21 @@ static unichar_t *AskSetting(struct macsettingname *temp,GGadget *list, int inde
     label[3].text = (unichar_t *) buf;
     label[3].text_is_1byte = true;
     gcd[3].gd.label = &label[3];
-    gcd[3].gd.pos.x = 55; gcd[3].gd.pos.y = gcd[2].gd.pos.y-4; gcd[3].gd.pos.width = 50;
+    gcd[3].gd.pos.x = gcd[1].gd.pos.x; gcd[3].gd.pos.y = gcd[2].gd.pos.y-4; gcd[3].gd.pos.width = 50;
     gcd[3].gd.flags = gg_enabled|gg_visible;
     gcd[3].creator = GTextFieldCreate;
 
     label[4].text = (unichar_t *) _STR_TagC;
     label[4].text_in_resource = true;
     gcd[4].gd.label = &label[4];
-    gcd[4].gd.pos.x = 5; gcd[4].gd.pos.y = gcd[3].gd.pos.y+22; 
+    gcd[4].gd.pos.x = 5; gcd[4].gd.pos.y = gcd[3].gd.pos.y+26; 
     gcd[4].gd.flags = gg_enabled|gg_visible;
     gcd[4].creator = GLabelCreate;
 
     ubuf3[0] = temp->otf_tag>>24; ubuf3[1] = (temp->otf_tag>>16)&0xff; ubuf3[2] = (temp->otf_tag>>8)&0xff; ubuf3[3] = temp->otf_tag&0xff; ubuf3[4] = 0;
     label[5].text = ubuf3;
     gcd[5].gd.label = &label[5];
-    gcd[5].gd.pos.x = 40; gcd[5].gd.pos.y = gcd[4].gd.pos.y-4; gcd[5].gd.pos.width = 50;
+    gcd[5].gd.pos.x = gcd[3].gd.pos.x; gcd[5].gd.pos.y = gcd[4].gd.pos.y-4; gcd[5].gd.pos.width = 50;
     gcd[5].gd.flags = gg_enabled|gg_visible;
     /*gcd[5].gd.u.list = tags;*/
     gcd[5].creator = GTextFieldCreate;

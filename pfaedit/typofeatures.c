@@ -30,6 +30,810 @@
 #include <ustring.h>
 #include <gkeysym.h>
 
+enum possub_type SFGTagUsed(struct gentagtype *gentags,uint32 tag) {
+    int i;
+
+    for ( i=0; i<gentags->tt_cur; ++i )
+	if ( gentags->tagtype[i].tag==tag )
+return( gentags->tagtype[i].type );
+
+return( pst_null );
+}
+
+uint32 SFGenerateNewFeatureTag(struct gentagtype *gentags,enum possub_type type,
+	uint32 suggested_tag) {
+    char buf[8],tbuf[8];
+    int i,j,k,l;
+
+    if ( gentags->tt_cur >= gentags->tt_max ) {
+	if ( gentags->tt_cur==0 ) {
+	    gentags->tagtype = galloc((gentags->tt_max=32)*sizeof(uint8));
+	} else {
+	    gentags->tt_max += 32;
+	    gentags->tagtype = grealloc(gentags->tagtype,gentags->tt_max*sizeof(uint8));
+	}
+    }
+    for ( i=0; i<gentags->tt_cur && gentags->tagtype[i].type!=pst_null; ++i );
+    if ( i==gentags->tt_cur ) ++gentags->tt_cur;
+    if ( suggested_tag==0 ) {
+	sprintf(buf, i<1000 ? "G%03d" : "%04d", i );
+	gentags->tagtype[i].type = type;
+	gentags->tagtype[i].tag = CHR(buf[0],buf[1],buf[2],buf[3]);
+    } else {
+	j = 0;
+	tbuf[0] = suggested_tag>>24;
+	tbuf[1] = (suggested_tag>>16)&0xff;
+	tbuf[2] = (suggested_tag>>8)&0xff;
+	tbuf[3] = suggested_tag&0xff;
+	while ( SFGTagUsed(gentags,suggested_tag)!=pst_null ) {
+	    sprintf(buf,"%d",j++);
+	    k = strlen(buf);
+	    for ( l=0; l<k; ++l )
+		tbuf[3-l] = buf[k-l-1];
+	    suggested_tag = CHR(tbuf[0],tbuf[1],tbuf[2],tbuf[3]);
+	}
+	gentags->tagtype[i].type = type;
+	gentags->tagtype[i].tag = suggested_tag;
+    }
+return( gentags->tagtype[i].tag );
+}
+
+void SFFreeGenerateFeatureTag(struct gentagtype *gentags,uint32 tag) {
+    int i;
+
+    for ( i=0; i<gentags->tt_cur; ++i )
+	if ( gentags->tagtype[i].tag==tag )
+    break;
+    if ( i==gentags->tt_cur-1 )
+	--gentags->tt_cur;
+    else if ( i<gentags->tt_cur ) {
+	gentags->tagtype[i].type = pst_null;
+	gentags->tagtype[i].tag = CHR(' ',' ',' ',' ');
+    } else
+	GDrawIError("Attempt to free an invalid generated tag" );
+}
+
+int SFRemoveThisFeatureTag(SplineFont *sf, uint32 tag, int sli, int flags) {
+    /* if tag==0xffffffff treat as a wildcard (will match any tag) */
+    /* if sli==SLI_UNKNOWN treat as a wildcard */
+    /* if flags==-1 treat as a wildcard */
+    int i,k;
+    SplineChar *sc;
+    PST *prev, *pst, *next;
+    FPST *fprev, *fpst, *fnext;
+    ASM *sprev, *sm, *snext;
+    AnchorClass *ac, *aprev, *anext;
+    SplineFont *_sf;
+    int any = false;
+
+    if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
+    _sf = sf;
+    k = 0;
+    do {
+	sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[k];
+	for ( i=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
+	    for ( prev= NULL, pst = sc->possub; pst!=NULL; pst=next ) {
+		next = pst->next;
+		if ( ( tag==0xffffffff || tag==pst->tag ) &&
+			( sli==SLI_UNKNOWN || sli==pst->script_lang_index ) &&
+			( flags==-1 || flags==pst->flags )) {
+		    if ( prev == NULL )
+			sc->possub = next;
+		    else
+			prev->next = next;
+		    pst->next = NULL;
+		    PSTFree(pst);
+		    any = true;
+		} else
+		    prev = pst;
+	    }
+	}
+	++k;
+    } while ( k<_sf->subfontcnt );
+
+    for ( fprev = NULL, fpst = _sf->possub; fpst!=NULL; fpst=fnext ) {
+	fnext = fpst->next;
+	if ( ( tag==0xffffffff || tag==fpst->tag ) &&
+		( sli==SLI_UNKNOWN || sli==fpst->script_lang_index ) &&
+		( flags==-1 || flags==fpst->flags )) {
+	    if ( fprev == NULL )
+		sf->possub = fnext;
+	    else
+		fprev->next = fnext;
+	    fpst->next = NULL;
+	    FPSTFree(fpst);
+	    any = true;
+	} else
+	    fprev = fpst;
+    }
+
+    for ( aprev=NULL, ac=sf->anchor; ac!=NULL; ac=anext ) {
+	anext = ac->next;
+	if ( ( tag==0xffffffff || tag==ac->feature_tag ) &&
+		( sli==SLI_UNKNOWN || sli==ac->script_lang_index ) &&
+		( flags==-1 || flags==ac->flags )) {
+	    SFRemoveAnchorClass(sf,ac);
+	    any = true;
+	} else
+	    aprev = ac;
+    }
+
+    if ( tag!=0xffffffff || (sli==SLI_UNKNOWN && flags==-1)) {
+	int macflags;
+	if ( flags==-1 ) macflags = -1;
+	else if ( flags&pst_r2l ) macflags |= asm_descending;
+	else macflags = 0;
+	for ( sprev = NULL, sm = _sf->sm; sm!=NULL; sm=snext ) {
+	    snext = sm->next;
+	    if ( ( tag==0xffffffff || tag==((sm->feature<<16)|sm->setting) ) &&
+		    ( macflags==-1 || macflags==sm->flags )) {
+		if ( sprev == NULL )
+		    sf->sm = snext;
+		else
+		    sprev->next = snext;
+		sm->next = NULL;
+		ASMFree(sm);
+		any = true;
+	    } else
+		sprev = sm;
+	}
+    }
+    if ( any )
+	_sf->changed = true;
+return( any );
+}
+
+void RemoveGeneratedTagsAbove(SplineFont *sf, int old_top) {
+    int k;
+
+    if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
+    for ( k=sf->gentags.tt_cur-1; k>=old_top; --k )
+	SFRemoveThisFeatureTag(sf, sf->gentags.tagtype[k].tag, SLI_NESTED, -1);
+    if ( old_top<sf->gentags.tt_cur )
+	sf->gentags.tt_cur = old_top;
+}
+
+int SFRenameTheseFeatureTags(SplineFont *sf, uint32 tag, int sli, int flags,
+	uint32 totag, int tosli, int toflags, int ismac) {
+    /* if tag==0xffffffff treat as a wildcard (will match any tag) */
+    /* if sli==SLI_UNKNOWN treat as a wildcard */
+    /* if flags==-1 treat as a wildcard */
+    int i,k;
+    SplineChar *sc;
+    PST *pst;
+    SplineFont *_sf;
+    FPST *fpst;
+    AnchorClass *ac;
+    ASM *sm;
+    int any = false;
+
+    if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
+    _sf = sf;
+    k = 0;
+    do {
+	sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[k];
+	for ( i=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
+	    for ( pst = sc->possub; pst!=NULL; pst=pst->next ) {
+		if ( ( tag==0xffffffff || tag==pst->tag ) &&
+			( sli==SLI_UNKNOWN || sli==pst->script_lang_index ) &&
+			( flags==-1 || flags==pst->flags )) {
+		    if ( totag!=0xffffffff ) {
+			pst->tag = totag;
+			pst->macfeature = ismac;
+		    }
+		    if ( tosli!=SLI_UNKNOWN )
+			pst->script_lang_index = sli;
+		    if ( toflags!=-1 )
+			pst->flags = flags;
+		    any = true;
+		}
+	    }
+	}
+	++k;
+    } while ( k<_sf->subfontcnt );
+
+    if ( !ismac ) {
+	for ( fpst = _sf->possub; fpst!=NULL; fpst=fpst->next ) {
+	    if ( ( tag==0xffffffff || tag==fpst->tag ) &&
+		    ( sli==SLI_UNKNOWN || sli==fpst->script_lang_index ) &&
+		    ( flags==-1 || flags==fpst->flags )) {
+		if ( totag!=0xffffffff )
+		    fpst->tag = totag;
+		if ( tosli!=SLI_UNKNOWN )
+		    fpst->script_lang_index = sli;
+		if ( toflags!=-1 )
+		    fpst->flags = toflags;
+		any = true;
+	    }
+	}
+
+	for ( ac=sf->anchor; ac!=NULL; ac=ac->next ) {
+	    if ( ( tag==0xffffffff || tag==ac->feature_tag ) &&
+		    ( sli==SLI_UNKNOWN || sli==ac->script_lang_index ) &&
+		    ( flags==-1 || flags==ac->flags )) {
+		if ( totag!=0xffffffff )
+		    ac->feature_tag = totag;
+		if ( tosli!=SLI_UNKNOWN )
+		    ac->script_lang_index = sli;
+		if ( toflags!=-1 )
+		    ac->flags = toflags;
+		any = true;
+	    }
+	}
+    }
+
+    if ( ismac && ( tag!=0xffffffff || (sli==SLI_UNKNOWN && flags==-1))) {
+	int macflags;
+	if ( flags==-1 ) macflags = -1;
+	else if ( flags&pst_r2l ) macflags |= asm_descending;
+	else macflags = 0;
+	for ( sm = _sf->sm; sm!=NULL; sm=sm->next ) {
+	    if ( ( tag==0xffffffff || tag==((sm->feature<<16)|sm->setting) ) &&
+		    ( macflags==-1 || macflags==sm->flags )) {
+		if ( totag!=0xffffffff ) {
+		    sm->feature = totag>>16;
+		    sm->setting = totag&0xffff;
+		}
+		if ( toflags!=-1 ) {
+		    if ( toflags&pst_r2l )
+			sm->flags = asm_descending;
+		    else
+			sm->flags = 0;
+		}
+		any = true;
+	    }
+	}
+    }
+    if ( any )
+	_sf->changed = true;
+return( any );
+}
+
+struct copycontext {
+    uint32 *nested_map;
+    int *from_merge;
+    int *to_merge;
+    int mcur;
+};
+
+static int SFConvertSLI(SplineFont *fromsf,int sli,SplineFont *tosf) {
+    int i,j,k;
+    struct script_record *from_sr, *to_sr;
+
+    if ( sli==SLI_NESTED )
+return( SLI_NESTED );
+    from_sr = fromsf->script_lang[sli];
+    if ( tosf->script_lang!=NULL ) {
+	for ( i=0; tosf->script_lang[i]!=NULL; ++i ) {
+	    struct script_record *to_sr = tosf->script_lang[i];
+	    for ( j=0; to_sr[j].script!=0 && from_sr[j].script!=0 ; ++j ) {
+		if ( to_sr[j].script!=from_sr[j].script )
+	    break;
+		for ( k=0; to_sr[j].langs[k]!=0 && from_sr[j].langs[k]!=0; ++k ) {
+		    if ( to_sr[j].langs[k]!=from_sr[j].langs[k] )
+		break;
+		}
+		if ( to_sr[j].langs[k]!=0 || from_sr[j].langs[k]!=0 )
+	    break;
+	    }
+	    if ( to_sr[j].script==0 && from_sr[j].script==0 )
+return( i );
+	}
+    }
+    if ( tosf->script_lang==NULL ) {
+	tosf->script_lang = gcalloc(2,sizeof(struct script_record *));
+	i = 0;
+    } else {
+	tosf->script_lang = grealloc(tosf->script_lang,(i+2)*sizeof(struct script_record *));
+	tosf->script_lang[i+1] = NULL;
+    }
+    for ( j=0; from_sr[j].script!=0 ; ++j );
+    tosf->script_lang[i] = to_sr = gcalloc(j+1,sizeof(struct script_record));
+    for ( j=0; from_sr[j].script!=0 ; ++j ) {
+	to_sr[j].script = from_sr[j].script;
+	for ( k=0; from_sr[j].langs[k]!=0; ++k );
+	to_sr[j].langs = galloc((k+1)*sizeof(uint32));
+	for ( k=0; from_sr[j].langs[k]!=0; ++k )
+	    to_sr[j].langs[k] = from_sr[j].langs[k];
+	to_sr[j].langs[k] = 0;
+    }
+return( i );
+}
+
+static uint32 ConvertNestedTag(SplineFont *tosf, SplineFont *fromsf,uint32 *nested_map, uint32 tag) {
+    int i;
+
+    for ( i=0; i<fromsf->gentags.tt_cur; ++i ) {
+	if ( fromsf->gentags.tagtype[i].type!=pst_null && fromsf->gentags.tagtype[i].tag==tag )
+    break;
+    }
+    if ( i==fromsf->gentags.tt_cur )		/* Can't happen */
+return( tag );
+
+    if ( nested_map[i]!=0 )
+return( nested_map[i]);
+
+    nested_map[i] = SFGenerateNewFeatureTag(&tosf->gentags,
+	    fromsf->gentags.tagtype[i].type,
+	    isdigit(tag&0xff)? 0 : tag );
+    /* If the name ends in a digit, it is probably one of our generated tags */
+    /*  in which case we should rename it to match the sequence of generated */
+    /*  tags in the new font. If it doesn't end in a digit it is a user      */
+    /*  supplied name and we should just pass it on */
+return( nested_map[i] );
+}
+
+static char **ClassCopy(int class_cnt,char **classes) {
+    char **newclasses;
+    int i;
+
+    if ( classes==NULL || class_cnt==0 )
+return( NULL );
+    newclasses = galloc(class_cnt*sizeof(char *));
+    for ( i=0; i<class_cnt; ++i )
+	newclasses[i] = copy(classes[i]);
+return( newclasses );
+}
+
+static int _SFCopyTheseFeaturesToSF(SplineFont *_sf, uint32 tag, int sli, int flags,
+	SplineFont *tosf, struct copycontext *cc);
+
+static int SF_SCAddPST(SplineFont *tosf,SplineChar *sc,PST *pst,
+	struct copycontext *cc, SplineFont *fromsf) {
+    SplineChar *tosc;
+    int to_index = SFFindChar(tosf,sc->unicodeenc,sc->name);
+    PST *newpst;
+
+    if ( to_index==-1 )
+return( false );
+    tosc = SCDuplicate(SFMakeChar(tosf,to_index));
+    if ( tosc==NULL )
+return( false );
+
+    newpst = chunkalloc(sizeof(PST));
+    *newpst = *pst;
+    if ( pst->script_lang_index == SLI_NESTED )
+	newpst->tag = ConvertNestedTag(tosf, fromsf,cc->nested_map, pst->tag);
+    newpst->script_lang_index = SFConvertSLI(fromsf,pst->script_lang_index,tosf);
+    newpst->next = tosc->possub;
+    tosc->possub = newpst;
+    tosf->changed = true;
+
+    switch( newpst->type ) {
+      case pst_pair:
+	newpst->u.pair.paired = copy(pst->u.pair.paired);
+	newpst->u.pair.vr = chunkalloc(sizeof(struct vr [2]));
+	memcpy(newpst->u.pair.vr,pst->u.pair.vr,sizeof(struct vr [2]));
+      break;
+      case pst_ligature:
+	newpst->u.lig.lig = tosc;
+	/* Fall through */
+      case pst_substitution:
+      case pst_alternate:
+      case pst_multiple:
+	newpst->u.subs.variant = copy(pst->u.subs.variant);
+      break;
+    }
+return( true );
+}
+
+static void SF_SCAddAP(SplineFont *tosf,SplineChar *sc,AnchorPoint *ap,
+	SplineFont *fromsf, AnchorClass *newac) {
+    SplineChar *tosc;
+    int to_index = SFFindChar(tosf,sc->unicodeenc,sc->name);
+    AnchorPoint *newap;
+
+    if ( to_index==-1 )
+return;
+    tosc = SCDuplicate(SFMakeChar(tosf,to_index));
+    if ( tosc==NULL )
+return;
+
+    newap = chunkalloc(sizeof(AnchorPoint));
+    *newap = *ap;
+    newap->anchor = newac;
+    newap->next = tosc->anchor;
+    tosc->anchor = newap;
+}
+
+static void SF_AddAnchor(SplineFont *tosf,AnchorClass *ac, struct copycontext *cc,
+	SplineFont *fromsf) {
+    AnchorClass *newac;
+    int i, k;
+    SplineFont *sf;
+    SplineChar *sc;
+    AnchorPoint *ap;
+
+    for ( i=0; i<cc->mcur && cc->from_merge[i]!=ac->merge_with; ++i );
+    if ( i==cc->mcur ) {
+	AnchorClass *ac2;
+	int max = 0;
+	for ( ac2=tosf->anchor; ac2!=NULL; ac2=ac2->next )
+	    if ( max<ac2->merge_with )
+		max = ac2->merge_with;
+	cc->from_merge[i] = ac->merge_with;
+	cc->to_merge[i] = max+1;
+	++cc->mcur;
+    }
+
+    newac = chunkalloc(sizeof(AnchorClass));
+    *newac = *ac;
+    if ( ac->script_lang_index == SLI_NESTED )
+	newac->feature_tag = ConvertNestedTag(tosf, fromsf,cc->nested_map, ac->feature_tag);
+    newac->name = u_copy(ac->name);
+    newac->script_lang_index = SFConvertSLI(fromsf,ac->script_lang_index,tosf);
+    tosf->changed = true;
+    newac->next = tosf->anchor;
+    tosf->anchor = newac;
+    newac->merge_with = cc->to_merge[i];
+
+    k = 0;
+    do {
+	sf = fromsf->subfonts==NULL ? fromsf : fromsf->subfonts[k];
+	for ( i=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
+	    for ( ap = sc->anchor; ap!=NULL; ap=ap->next ) {
+		if ( ap->anchor==ac ) {
+		    SF_SCAddAP(tosf,sc,ap, fromsf,newac);
+		}
+	    }
+	}
+	++k;
+    } while ( k<fromsf->subfontcnt );
+}
+
+static void SF_AddFPST(SplineFont *tosf,FPST *fpst, struct copycontext *cc, SplineFont *fromsf) {
+    FPST *newfpst;
+    int i, j, k, cur;
+    uint32 *fromtags, *totags;
+
+    newfpst = chunkalloc(sizeof(FPST));
+    *newfpst = *fpst;
+    if ( fpst->script_lang_index == SLI_NESTED )
+	newfpst->tag = ConvertNestedTag(tosf, fromsf,cc->nested_map, fpst->tag);
+    newfpst->script_lang_index = SFConvertSLI(fromsf,fpst->script_lang_index,tosf);
+    tosf->changed = true;
+    newfpst->next = tosf->possub;
+    tosf->possub = newfpst;
+
+    newfpst->nclass = ClassCopy(newfpst->nccnt,newfpst->nclass);
+    newfpst->bclass = ClassCopy(newfpst->bccnt,newfpst->bclass);
+    newfpst->fclass = ClassCopy(newfpst->fccnt,newfpst->fclass);
+
+    newfpst->rules = galloc(newfpst->rule_cnt*sizeof(struct fpst_rule));
+    memcpy(newfpst->rules,fpst->rules,newfpst->rule_cnt*sizeof(struct fpst_rule));
+
+    fromtags = galloc(fromsf->gentags.tt_cur*sizeof(uint32));
+    totags = galloc(fromsf->gentags.tt_cur*sizeof(uint32));
+    cur = 0;
+    for ( i=0; i<newfpst->rule_cnt; ++i ) {
+	struct fpst_rule *r = &newfpst->rules[i], *oldr = &fpst->rules[i];
+
+	r->lookups = galloc(r->lookup_cnt*sizeof(struct seqlookup));
+	memcpy(r->lookups,oldr->lookups,r->lookup_cnt*sizeof(struct seqlookup));
+	for ( k=0; k<r->lookup_cnt; ++k ) {
+	    for ( j=0 ; j<cur; ++j )
+		if ( fromtags[j] == r->lookups[k].lookup_tag )
+	    break;
+	    if ( j==cur ) {
+		fromtags[cur] = r->lookups[k].lookup_tag;
+		totags[cur++] = ConvertNestedTag(tosf, fromsf,cc->nested_map, r->lookups[k].lookup_tag);
+	    }
+	    r->lookups[k].lookup_tag = totags[j];
+	}
+
+	switch ( newfpst->format ) {
+	  case pst_glyphs:
+	    r->u.glyph.names = copy( r->u.glyph.names );
+	    r->u.glyph.back = copy( r->u.glyph.back );
+	    r->u.glyph.fore = copy( r->u.glyph.fore );
+	  break;
+	  case pst_class:
+	    r->u.class.nclasses = galloc( r->u.class.ncnt*sizeof(uint16));
+	    memcpy(r->u.class.nclasses,oldr->u.class.nclasses, r->u.class.ncnt*sizeof(uint16));
+	    r->u.class.bclasses = galloc( r->u.class.bcnt*sizeof(uint16));
+	    memcpy(r->u.class.bclasses,oldr->u.class.bclasses, r->u.class.ncnt*sizeof(uint16));
+	    r->u.class.fclasses = galloc( r->u.class.fcnt*sizeof(uint16));
+	    memcpy(r->u.class.fclasses,oldr->u.class.fclasses, r->u.class.fcnt*sizeof(uint16));
+	  break;
+	  case pst_coverage:
+	    r->u.coverage.ncovers = ClassCopy( r->u.coverage.ncnt, r->u.coverage.ncovers );
+	    r->u.coverage.bcovers = ClassCopy( r->u.coverage.bcnt, r->u.coverage.bcovers );
+	    r->u.coverage.fcovers = ClassCopy( r->u.coverage.fcnt, r->u.coverage.fcovers );
+	  break;
+	  case pst_reversecoverage:
+	    r->u.rcoverage.ncovers = ClassCopy( r->u.rcoverage.always1, r->u.rcoverage.ncovers );
+	    r->u.rcoverage.bcovers = ClassCopy( r->u.rcoverage.bcnt, r->u.rcoverage.bcovers );
+	    r->u.rcoverage.fcovers = ClassCopy( r->u.rcoverage.fcnt, r->u.rcoverage.fcovers );
+	    r->u.rcoverage.replacements = copy( r->u.rcoverage.replacements );
+	  break;
+	}
+    }
+    for ( j=0; j<cur; ++j )
+	_SFCopyTheseFeaturesToSF(fromsf,fromtags[j],SLI_NESTED,-1,tosf,cc);
+    free(totags); free(fromtags);
+}
+
+static void SF_AddASM(SplineFont *tosf,ASM *sm, struct copycontext *cc, SplineFont *fromsf) {
+    ASM *newsm;
+    int i, j, k, cur;
+    uint32 *fromtags, *totags;
+
+    newsm = chunkalloc(sizeof(ASM));
+    *newsm = *sm;
+    newsm->next = tosf->sm;
+    tosf->sm = newsm;
+    tosf->changed = true;
+    newsm->classes = ClassCopy(newsm->class_cnt, newsm->classes);
+    newsm->state = galloc(newsm->class_cnt*newsm->state_cnt*sizeof(struct asm_state));
+    memcpy(newsm->state,sm->state,
+	    newsm->class_cnt*newsm->state_cnt*sizeof(struct asm_state));
+    if ( newsm->type == asm_insert ) {
+	for ( i=0; i<newsm->class_cnt*newsm->state_cnt; ++i ) {
+	    struct asm_state *this = &newsm->state[i];
+	    this->u.insert.mark_ins = copy(this->u.insert.mark_ins);
+	    this->u.insert.cur_ins = copy(this->u.insert.cur_ins);
+	}
+    } else if ( newsm->type == asm_context ) {
+	fromtags = gcalloc(newsm->class_cnt*newsm->state_cnt,sizeof(uint32));
+	totags = gcalloc(newsm->class_cnt*newsm->state_cnt,sizeof(uint32));
+	cur = 0;
+	for ( i=0; i<newsm->class_cnt*newsm->state_cnt; ++i ) {
+	    for ( k=0; k<2; ++k ) {
+		uint32 *tagpt = &(&newsm->state[i].u.context.mark_tag)[k];
+		if ( *tagpt==0 )
+	    continue;
+		for ( j=0 ; j<cur; ++j )
+		    if ( fromtags[j] == *tagpt )
+		break;
+		if ( j==cur ) {
+		    fromtags[cur] = *tagpt;
+		    totags[cur++] = ConvertNestedTag(tosf, fromsf,cc->nested_map, *tagpt);
+		}
+		*tagpt = totags[j];
+	    }
+	}
+	for ( j=0; j<cur; ++j )
+	    _SFCopyTheseFeaturesToSF(fromsf,fromtags[j],SLI_NESTED,-1,tosf,cc);
+	free(totags); free(fromtags);
+    }
+}
+
+static int _SFCopyTheseFeaturesToSF(SplineFont *_sf, uint32 tag, int sli, int flags,
+	SplineFont *tosf, struct copycontext *cc) {
+    /* if tag==0xffffffff treat as a wildcard (will match any tag) */
+    /* if sli==SLI_UNKNOWN treat as a wildcard */
+    /* if flags==-1 treat as a wildcard */
+    int i,k;
+    SplineChar *sc;
+    PST *pst;
+    SplineFont *sf;
+    FPST *fpst;
+    ASM *sm;
+    AnchorClass *ac;
+    int any = false;
+
+    k = 0;
+    do {
+	sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[k];
+	for ( i=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
+	    for ( pst = sc->possub; pst!=NULL; pst=pst->next ) {
+		if ( ( tag==0xffffffff || tag==pst->tag ) &&
+			( sli==SLI_UNKNOWN || sli==pst->script_lang_index ) &&
+			( flags==-1 || flags==pst->flags )) {
+		    if ( SF_SCAddPST(tosf,sc,pst, cc,_sf))
+			any = true;
+		}
+	    }
+	}
+	++k;
+    } while ( k<_sf->subfontcnt );
+
+    for ( ac=sf->anchor; ac!=NULL; ac=ac->next ) {
+	if ( ( tag==0xffffffff || tag==ac->feature_tag ) &&
+		( sli==SLI_UNKNOWN || sli==ac->script_lang_index ) &&
+		( flags==-1 || flags==ac->flags )) {
+	    SF_AddAnchor(tosf,ac,cc,_sf);
+	    any = true;
+	}
+    }
+
+    for ( fpst = _sf->possub; fpst!=NULL; fpst=fpst->next ) {
+	if ( ( tag==0xffffffff || tag==fpst->tag ) &&
+		( sli==SLI_UNKNOWN || sli==fpst->script_lang_index ) &&
+		( flags==-1 || flags==fpst->flags )) {
+	    SF_AddFPST(tosf,fpst, cc,_sf);
+	    any = true;
+	}
+    }
+
+    if ( tag!=0xffffffff || (sli==SLI_UNKNOWN && flags==-1) ) {
+	int macflags;
+	if ( flags==-1 ) macflags = -1;
+	else if ( flags&pst_r2l ) macflags |= asm_descending;
+	else macflags = 0;
+	for ( sm = _sf->sm; sm!=NULL; sm=sm->next ) {
+	    if ( ( tag==0xffffffff || tag==((sm->feature<<16)|sm->setting) ) &&
+		    ( macflags==-1 || macflags==sm->flags )) {
+		SF_AddASM(tosf,sm, cc,_sf);
+		any = true;
+	    }
+	}
+    }
+return( any );
+}
+
+int SFCopyTheseFeaturesToSF(SplineFont *sf, uint32 tag, int sli, int flags,
+	SplineFont *tosf) {
+    /* if tag==0xffffffff treat as a wildcard (will match any tag) */
+    /* if sli==SLI_UNKNOWN treat as a wildcard */
+    /* if flags==-1 treat as a wildcard */
+    struct copycontext cc;
+    int any;
+    int i;
+    AnchorClass *ac;
+
+    if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
+    if ( tosf->cidmaster!=NULL ) tosf = tosf->cidmaster;
+    for ( ac=sf->anchor, i=0; ac!=NULL; ++i, ac=ac->next );
+    cc.nested_map = gcalloc(sf->gentags.tt_cur,sizeof(uint32));
+    cc.from_merge = galloc(i*sizeof(int));
+    cc.to_merge = galloc(i*sizeof(int));
+    cc.mcur = i;
+    any = _SFCopyTheseFeaturesToSF(sf,tag,sli,flags,tosf,&cc);
+    free(cc.nested_map); free(cc.from_merge); free(cc.to_merge);
+    if ( any )
+	tosf->changed = true;
+return( any );
+}
+
+int SFRemoveUnusedNestedFeatures(SplineFont *sf) {
+    uint8 *used;
+    int i,j,k;
+    FPST *fpst;
+    ASM *sm;
+    int any = false;
+
+    if ( sf->cidmaster ) sf = sf->cidmaster;
+    used = gcalloc(sf->gentags.tt_cur,sizeof(uint8));
+
+    for ( fpst=sf->possub; fpst!=NULL; fpst=fpst->next ) {
+	for ( i=0; i<fpst->rule_cnt; ++i ) {
+	    struct fpst_rule *r = &fpst->rules[i];
+	    for ( j=0; j<r->lookup_cnt; ++j ) {
+		for ( k=0; k<sf->gentags.tt_cur; ++k ) {
+		    if ( r->lookups[j].lookup_tag == sf->gentags.tagtype[k].tag ) {
+			used[k] = true;
+		break;
+		    }
+		}
+	    }
+	}
+    }
+    for ( sm = sf->sm; sm!=NULL; sm=sm->next ) if ( sm->type == asm_context ) {
+	for ( i=0; i<sm->state_cnt*sm->class_cnt; ++i ) {
+	    for ( j=0; j<2; ++j ) {
+		uint32 tag = (&sm->state[i].u.context.mark_tag)[j];
+		for ( k=0; k<sf->gentags.tt_cur; ++k ) {
+		    if ( sf->gentags.tagtype[k].tag == tag ) {
+			used[k] = true;
+		break;
+		    }
+		}
+	    }
+	}
+    }
+
+    for ( i=0; i<sf->gentags.tt_cur; ++i ) if ( !used[i] && sf->gentags.tagtype[i].type!=pst_null ) {
+	if ( SFRemoveThisFeatureTag(sf,sf->gentags.tagtype[i].tag,SLI_NESTED,-1))
+	    any = true;
+	sf->gentags.tagtype[i].type = pst_null;
+    }
+    free(used);
+    if ( any )
+	sf->changed = true;
+return( any );
+}
+
+static int typematch(int tagtype, int searchtype) {
+return( tagtype==searchtype ||
+		    (searchtype==fpst_max &&
+			(tagtype==pst_position ||
+			 tagtype==pst_pair ||
+			 tagtype==pst_kerning ||
+			 tagtype==pst_vkerning ||
+			 tagtype==pst_anchors ||
+			 tagtype==pst_contextpos ||
+			 tagtype==pst_chainpos )) ||
+		    (searchtype==fpst_max+1 &&
+			(tagtype==pst_substitution ||
+			 tagtype==pst_alternate ||
+			 tagtype==pst_multiple ||
+			 tagtype==pst_ligature ||
+			 tagtype==pst_contextsub ||
+			 tagtype==pst_chainsub ||
+			 tagtype==pst_reversesub )) );
+}
+
+GTextInfo **SFGenTagListFromType(struct gentagtype *gentags,enum possub_type type) {
+    int len, i;
+    GTextInfo **ti;
+    char buf[8];
+
+    if ( type>=pst_lcaret && type<fpst_max && type!=pst_anchors )
+	len=0;		/* Each FPST, etc. represents one lookup, can't duplicate it */
+			/*  AnchorClasses can merge, so several make one lookup */
+    else {
+	len = 0;
+	for ( i=0; i<gentags->tt_cur; ++i )
+	    if ( typematch(gentags->tagtype[i].type,type))
+		++len;
+    }
+
+    ti = galloc((len+1)*sizeof(GTextInfo *));
+    ti[len] = gcalloc(1,sizeof(GTextInfo));
+    buf[4] = 0;
+    if ( type<pst_lcaret || type>=fpst_max ) {
+	len = 0;
+	for ( i=0; i<gentags->tt_cur; ++i )
+	    if ( typematch(gentags->tagtype[i].type,type) ) {
+		sprintf( buf, "%c%c%c%c",
+			gentags->tagtype[i].tag>>24,
+			(gentags->tagtype[i].tag>>16)&0xff,
+			(gentags->tagtype[i].tag>>8)&0xff,
+			gentags->tagtype[i].tag&0xff );
+		ti[len] = gcalloc(1,sizeof(GTextInfo));
+		ti[len]->userdata = (void *) gentags->tagtype[i].tag;
+		ti[len]->text = uc_copy(buf);
+		ti[len]->fg = ti[len]->bg = COLOR_DEFAULT;
+		++len;
+	    }
+    }
+return( ti );
+}
+
+int SFHasNestedLookupWithTag(SplineFont *sf,uint32 tag,int ispos) {
+    FPST *fpst;
+    AnchorClass *ac;
+    int i,type,start,end;
+    PST *pst;
+
+    for ( fpst=sf->possub; fpst!=NULL; fpst = fpst->next ) {
+	if ((( ispos && (fpst->type==pst_contextpos || fpst->type==pst_chainpos)) ||
+		(!ispos && (fpst->type==pst_contextsub || fpst->type==pst_chainsub || fpst->type==pst_reversesub ))) &&
+		fpst->script_lang_index==SLI_NESTED && fpst->tag==tag )
+return( true );
+    }
+
+    if ( ispos ) {
+	for ( ac=sf->anchor; ac!=NULL; ac=ac->next )
+	    if ( ac->feature_tag==tag && ac->script_lang_index==SLI_NESTED )
+return( true );
+    }
+
+    if ( ispos ) {
+	start = pst_position;
+	end = pst_pair;
+    } else {
+	start = pst_substitution;
+	end = pst_ligature;
+    }
+    for ( type=start; type<=end; ++type ) {
+	for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL ) {
+	    for ( pst = sf->chars[i]->possub; pst!=NULL; pst=pst->next ) {
+		if ( pst->type==type &&
+			pst->script_lang_index == SLI_NESTED &&
+			pst->tag == tag )
+return( true );
+	    }
+	}
+    }
+return( false );
+}
+
+/* ************************************************************************** */
+/* ************************ Feature selection dialogs *********************** */
+/* ************************************************************************** */
+
 enum selectfeaturedlg_type { sfd_remove, sfd_retag, sfd_copyto };
 
 struct sf_dlg {
@@ -375,7 +1179,7 @@ static int sfd_e_h(GWindow gw, GEvent *event) {
       break;
       case et_char:
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("elementmenu.html#RemoveFeature");
+	    help("typofeat.html");
 return( true );
 	}
 return( false );
