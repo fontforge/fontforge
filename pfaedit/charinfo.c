@@ -578,6 +578,7 @@ GTextInfo simplesubs_tags[] = {
     { (unichar_t *) _STR_OldstyleFigures, NULL, 0, 0, (void *) CHR('o','n','u','m'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_Ornaments, NULL, 0, 0, (void *) CHR('o','r','n','m'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_PetiteCaps, NULL, 0, 0, (void *) CHR('p','c','a','p'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_PropNumbers, NULL, 0, 0, (void *) CHR('p','n','u','m'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_PropWidth, NULL, 0, 0, (void *) CHR('p','w','i','d'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_QuartWidths, NULL, 0, 0, (void *) CHR('q','w','i','d'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_R2LAlt, NULL, 0, 0, (void *) CHR('r','t','l','a'), NULL, false, false, false, false, false, false, false, true },
@@ -2613,7 +2614,7 @@ return( false );
 	}
     }
     sc->unicodeenc = unienc;
-    if ( strcmp(name,sc->name)!=0 ) {
+    if ( sc->name==NULL || strcmp(name,sc->name)!=0 ) {
 	free(sc->name);
 	sc->name = copy(name);
 	sc->namechanged = true;
