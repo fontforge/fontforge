@@ -298,9 +298,13 @@ current)
 	removed some debugging code inadvertantly left in after the rle fix.
       <LI>
 	Added support for <A HREF="xim.html">X Input Methods</A> (to do CJK character
-	input properly)
+	input properly)<BR>
+	This only works if X_HAVE_UTF8_STRING is defined -- an XFree 4.0.2 extension
+	(ie. not on solaris)
       <LI>
 	Added a possible fix to a resizing problem for some window managers.
+      <LI>
+	Added CIDFlattenByCMap function to scripting.
     </UL>
   <LI>
     30-July-2002
