@@ -1712,7 +1712,7 @@ return;		/* Ignore any splines which are just dots */
 		break;
 	      goto nogood;
 		    }
-		    if ( SPisExtremum(nsp))
+		    if ( SPisExtremum(nsp) || nsp==spl->first)
 		break;
 		}
 		/* nsp is something we don't want to remove */
@@ -2030,7 +2030,11 @@ SplineFont *SplineFontEmpty(void) {
     SplineFont *sf;
     sf = gcalloc(1,sizeof(SplineFont));
     sf->pfminfo.fstype = -1;
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     sf->encoding_name = em_none;
+#else
+    sf->encoding_name = em_none;
+#endif
     sf->top_enc = -1;
     sf->macstyle = -1;
     sf->desired_row_cnt = 4; sf->desired_col_cnt = 16;
@@ -2046,7 +2050,11 @@ SplineFont *SplineFontEmpty(void) {
 return( sf );
 }
 
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
 SplineFont *SplineFontBlank(int encoding_name,int charcnt) {
+#else
+SplineFont *SplineFontBlank(Encoding *encoding_name,int charcnt) {
+#endif
     SplineFont *sf;
     char buffer[200];
     time_t now;
@@ -2093,6 +2101,7 @@ SplineFont *SplineFontNew(void) {
     int enclen=256;
     Encoding *item=NULL;
 
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     if ( default_encoding>=em_base ) {
 	for ( item=enclist; item!=NULL && item->enc_num!=default_encoding; item=item->next );
 	if ( item==NULL )
@@ -2130,61 +2139,13 @@ SplineFont *SplineFontNew(void) {
 	enclen = item->char_cnt;
     } else
 	;
+#else
+    enclen = default_encoding->char_cnt;
+#endif
 
     sf = SplineFontBlank(default_encoding,enclen);
     sf->onlybitmaps = true;
     sf->new = true;
-#if 0
-    for ( i=0; i<enclen && i<256; ++i ) {
-	SplineChar *sc = sf->chars[i] = SplineCharCreate();
-	sc->vwidth = sf->ascent+sf->descent;
-	if ( default_encoding>=em_unicodeplanes && default_encoding<=em_unicodeplanesmax )
-	    uenc = i+ ((default_encoding-em_unicodeplanes)<<16);
-	else if ( table==NULL )
-	    uenc = i;
-	else if ( tlen==94*94 ) {
-	    if ( i<0x2121 || i>0x7e7e || (i&0xff)<0x21 || (i&0xff)>0x7e )
-		uenc = -1;
-	    else
-		uenc = table[((i>>8)-0x21)*94+((i&0xff)-0x21)];
-	} else if ( tlen==0x10000-0xa100 || tlen == 0x10000-0x8400 ) {
-	    uenc = ( i<160 )?i : -1;	/* deal with single byte encoding of big5 */
-	} else if ( tlen==257 ) {		/* sjis */
-	    if ( i<0x80 ) uenc = i;
-	    else if ( i>=0xa1 && i<=0xdf )
-		uenc = unicode_from_jis201[i];
-	    else uenc = -1;
-	} else
-	    uenc = table[i];
-	sc->enc = i;
-	sc->unicodeenc = uenc;
-	name = uenc<=0?".notdef":psunicodenames[uenc];
-	if ( uenc==-1 && item!=NULL && item->psnames!=NULL && item->psnames[i]!=NULL )
-	    name = item->psnames[i];
-	if ( name==NULL ) {
-	    if ( uenc==0xa0 )
-		name = "nonbreakingspace";
-	    else if ( uenc==0x2d )
-		name = "hyphen-minus";
-	    else if ( uenc==0xad )
-		name = "softhyphen";
-	    else if ( uenc<32 || (uenc>0x7e && uenc<0xa0))
-		name = ".notdef";
-	    else {
-		if ( uenc<0x10000 )
-		    sprintf(buf,"uni%04X", uenc );
-		else
-		    sprintf(buf,"u%04X", uenc );
-		name = buf;
-	    }
-	}
-	sc->name = copy(name);
-	sc->width = sf->ascent+sf->descent;
-	sc->lsidebearing = 0;
-	sc->parent = sf;
-	SCLigDefault(sc);
-    }
-#endif
     sf->order2 = new_fonts_are_order2;
 return( sf );
 }
