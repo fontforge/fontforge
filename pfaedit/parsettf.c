@@ -3389,7 +3389,7 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
     /*  meaningful ids. That is A.15,3 isn't very readable */
     for ( i=info->glyph_cnt-1; i>=0 ; --i )
 	if ( info->chars[i]!=NULL && info->chars[i]->name==NULL )
-    continue;
+    break;
     if ( i>=0 && info->gsub_start!=0 )
 	GuessNamesFromGSUB(ttf,info);
 
@@ -4086,6 +4086,9 @@ static void gsubMultipleSubTable(FILE *ttf, int stoffset, struct ttfinfo *info,
     char *pt;
     int bad;
 
+    if ( justinuse==git_findnames )
+return;
+
     format=getushort(ttf);
     if ( format!=1 )	/* Unknown subtable format */
 return;
@@ -4191,14 +4194,12 @@ return;
 	    for ( k=1; k<cc; ++k ) {
 		lig_glyphs[k] = getushort(ttf);
 		if ( lig_glyphs[k]>=info->glyph_cnt ) {
-		    if ( !justinuse )
+		    if ( justinuse==git_normal )
 			fprintf( stderr, "Bad ligature component glyph %d not less than %d (in ligature %d)\n",
 				lig_glyphs[k], info->glyph_cnt, lig );
 		    lig_glyphs[k] = 0;
 		}
 	    }
-	    for ( k=len=0; k<cc; ++k )
-		len += strlen(info->chars[lig_glyphs[k]]->name)+1;
 	    if ( justinuse==git_justinuse ) {
 		info->inuse[lig] = 1;
 		for ( k=0; k<cc; ++k )
@@ -4216,11 +4217,13 @@ return;
 		    }
 		    if ( k==cc ) {
 			char *str = galloc(len+6), *pt;
-			char tag[4];
+			char tag[5];
 			tag[0] = lookup->tag>>24;
 			if ( (tag[1] = (lookup->tag>>16)&0xff)==' ' ) tag[1] = '\0';
 			if ( (tag[2] = (lookup->tag>>8)&0xff)==' ' ) tag[2] = '\0';
 			if ( (tag[3] = (lookup->tag)&0xff)==' ' ) tag[3] = '\0';
+			tag[4] = '\0';
+			*str='\0';
 			for ( k=0; k<cc; ++k ) {
 			    strcat(str,info->chars[lig_glyphs[k]]->name);
 			    strcat(str,"_");
@@ -4232,6 +4235,8 @@ return;
 		    }
 		}
 	    } else if ( info->chars[lig]!=NULL ) {
+		for ( k=len=0; k<cc; ++k )
+		    len += strlen(info->chars[lig_glyphs[k]]->name)+1;
 		liga = chunkalloc(sizeof(PST));
 		liga->type = pst_ligature;
 		liga->tag = lookup->tag;
@@ -4443,66 +4448,7 @@ static void tagTtfFeaturesWithScript(FILE *ttf,uint32 script_pos,struct feature 
     free(scripts);
 }
 
-static void ProcessGSUB(FILE *ttf,struct ttfinfo *info,int inusetype) {
-    int i, j, lu_cnt, lu_type, cnt, st;
-    uint16 *lu_offsets, *st_offsets;
-    int32 base, lookup_start;
-    int32 script_off, feature_off;
-
-    base = info->gsub_start;
-    fseek(ttf,base,SEEK_SET);
-    /* version = */ getlong(ttf);
-    script_off = getushort(ttf);
-    feature_off = getushort(ttf);
-    lookup_start = base+getushort(ttf);
-    
-    fseek(ttf,lookup_start,SEEK_SET);
-
-    lu_cnt = getushort(ttf);
-    lu_offsets = galloc(lu_cnt*sizeof(uint16));
-    for ( i=0; i<lu_cnt; ++i )
-	lu_offsets[i] = getushort(ttf);
-    for ( i=0; i<lu_cnt; ++i ) {
-	fseek(ttf,lookup_start+lu_offsets[i],SEEK_SET);
-	lu_type = getushort(ttf);
-	/* flags =*/ getushort(ttf);
-	cnt = getushort(ttf);
-	st_offsets = galloc(cnt*sizeof(uint16));
-	for ( j=0; j<cnt; ++j )
-	    st_offsets[j] = getushort(ttf);
-	for ( j=0; j<cnt; ++j ) {
-	    fseek(ttf,st = lookup_start+lu_offsets[i]+st_offsets[j],SEEK_SET);
-	    switch ( lu_type ) {
-	      case 1:
-		gsubSimpleSubTable(ttf,st,info,NULL,inusetype);
-	      break;
-	      case 2: case 3:	/* Multiple and alternate have same format, different semantics */
-		if ( inusetype!=2 )
-		    gsubMultipleSubTable(ttf,st,info,NULL,lu_type,inusetype);
-	      break;
-	      case 4:
-		gsubLigatureSubTable(ttf,st,info,NULL,inusetype);
-	      break;
-/* Any cases added here also need to go in the gsubExtensionSubTable and readttfgsubUsed */
-	      case 7:
-		gsubExtensionSubTable(ttf,st,info,NULL,inusetype);
-	      break;
-	    }
-	}
-	free(st_offsets);
-    }
-    free(lu_offsets);
-}
-
-static void readttfgsubUsed(FILE *ttf,struct ttfinfo *info) {
-    ProcessGSUB(ttf,info,git_justinuse);
-}
-
-static void GuessNamesFromGSUB(FILE *ttf,struct ttfinfo *info) {
-    ProcessGSUB(ttf,info,git_findnames);
-}
-
-static void readttfgpossub(FILE *ttf,struct ttfinfo *info,int gpos) {
+static void ProcessGPOSGSUB(FILE *ttf,struct ttfinfo *info,int gpos,int inusetype) {
     int i, j, k, lu_cnt, lu_type, cnt, st;
     uint16 *lu_offsets, *st_offsets;
     int32 base, lookup_start;
@@ -4568,17 +4514,17 @@ return;
 	    } else {
 		switch ( lu_type ) {
 		  case 1:
-		    gsubSimpleSubTable(ttf,st,info,&lookups[k],false);
+		    gsubSimpleSubTable(ttf,st,info,&lookups[k],inusetype);
 		  break;
 		  case 2: case 3:	/* Multiple and alternate have same format, different semantics */
-		    gsubMultipleSubTable(ttf,st,info,&lookups[k],lu_type,false);
+		    gsubMultipleSubTable(ttf,st,info,&lookups[k],lu_type,inusetype);
 		  break;
 		  case 4:
-		    gsubLigatureSubTable(ttf,st,info,&lookups[k],false);
+		    gsubLigatureSubTable(ttf,st,info,&lookups[k],inusetype);
 		  break;
 /* Any cases added here also need to go in the gsubExtensionSubTable and readttfgsubUsed */
 		  case 7:
-		    gsubExtensionSubTable(ttf,st,info,&lookups[k],false);
+		    gsubExtensionSubTable(ttf,st,info,&lookups[k],inusetype);
 		  break;
 		}
 	    }
@@ -4587,6 +4533,18 @@ return;
     }
     free(lu_offsets);
     free(lookups);
+}
+
+static void readttfgsubUsed(FILE *ttf,struct ttfinfo *info) {
+    ProcessGPOSGSUB(ttf,info,false,git_justinuse);
+}
+
+static void GuessNamesFromGSUB(FILE *ttf,struct ttfinfo *info) {
+    ProcessGPOSGSUB(ttf,info,false,git_findnames);
+}
+
+static void readttfgpossub(FILE *ttf,struct ttfinfo *info,int gpos) {
+    ProcessGPOSGSUB(ttf,info,gpos,git_normal);
 }
 
 static void readttfgdef(FILE *ttf,struct ttfinfo *info) {
@@ -4630,7 +4588,7 @@ return;
 	caret_base = ftell(ttf);
 	pst->u.lcaret.cnt = getushort(ttf);
 	if ( pst->u.lcaret.carets!=NULL ) free(pst->u.lcaret.carets);
-	offsets = galloc(pst->u.lcaret.cnt*sizeof(int16));
+	offsets = galloc(pst->u.lcaret.cnt*sizeof(uint16));
 	for ( j=0; j<pst->u.lcaret.cnt; ++j )
 	    offsets[j] = getushort(ttf);
 	pst->u.lcaret.carets = galloc(pst->u.lcaret.cnt*sizeof(int16));
@@ -4638,12 +4596,12 @@ return;
 	    fseek(ttf,caret_base+offsets[j],SEEK_SET);
 	    format=getushort(ttf);
 	    if ( format==1 ) {
-		pst->u.lcaret.carets[i] = getushort(ttf);
+		pst->u.lcaret.carets[j] = getushort(ttf);
 	    } else if ( format==2 ) {
-		pst->u.lcaret.carets[i] = 0;
+		pst->u.lcaret.carets[j] = 0;
 		/* point = */ getushort(ttf);
 	    } else if ( format==3 ) {
-		pst->u.lcaret.carets[i] = getushort(ttf);
+		pst->u.lcaret.carets[j] = getushort(ttf);
 		/* in device table = */ getushort(ttf);
 	    } else {
 		fprintf( stderr, "!!!! Unknown caret format %d !!!!\n", format );
