@@ -848,6 +848,8 @@ return;					/* Nothing changed */
 	}
     /* the change happened between i and ei, and between pt and ept */
     oldx = mv->perchar[i].dx;
+    if ( mv->perchar[i].show->xmin<0 )
+	oldx += mv->perchar[i].show->xmin;	/* Beware of negative lbearing */
     if ( i!=0 && oldx > mv->perchar[i-1].dx + mv->perchar[i-1].dwidth ) /* without kern */
 	oldx = mv->perchar[i-1].dx + mv->perchar[i-1].dwidth;
     if ( ei==i && ept==pt )
@@ -903,9 +905,12 @@ return;					/* Nothing changed */
 	free(hold);
     }
     r.x = mv->perchar[i].dx;
+    if ( mv->perchar[i].show->xmin<0 )
+	r.x += mv->perchar[i].show->xmin;		/* Beware of negative lbearing */
     if ( i!=0 && r.x > mv->perchar[i-1].dx + mv->perchar[i-1].dwidth ) /* without kern */
 	r.x = mv->perchar[i-1].dx + mv->perchar[i-1].dwidth;
     if ( r.x>oldx ) r.x = oldx;
+    if ( i==0 ) r.x = 0;
     r.width = mv->width;
     if ( direction_change || mv->right_to_left )
 	r.x = 0;
