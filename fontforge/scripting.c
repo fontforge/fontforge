@@ -703,7 +703,7 @@ static void bUtf8(Context *c) {
 static void bOrd(Context *c) {
     if ( c->a.argc!=2 && c->a.argc!=3 )
 	error( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type!=v_str || ( c->a.argc==3 && c->a.vals[1].type!=v_int ))
+    else if ( c->a.vals[1].type!=v_str || ( c->a.argc==3 && c->a.vals[2].type!=v_int ))
 	error( c, "Bad type for argument" );
     if ( c->a.argc==3 ) {
 	if ( c->a.vals[2].u.ival<0 || c->a.vals[2].u.ival>strlen( c->a.vals[1].u.sval ))
