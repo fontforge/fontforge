@@ -2629,7 +2629,7 @@ int SCNumberPoints(SplineChar *sc) {
 		    if ( sp->nextcpindex!=startcnt || !starts_with_cp )
 			sp->nextcpindex = pnum++;
 		} else if ( (instrs==NULL || sp->nextcpindex==0xfffe) && !sp->nonextcp ) {
-		    if ( sp->next==NULL || sp->next->to!=ss->first )
+		    if ( sp->next!=NULL )
 			sp->nextcpindex = pnum++;
 		} else
 		    sp->nextcpindex = 0xffff;
@@ -2690,7 +2690,7 @@ return( false );
 		    (sp->nextcp.y+sp->prevcp.y)/2 == sp->me.y;
 	    if ( sp->ttfindex==0xffff && skipit )
 		/* Doesn't count */;
-	    else if ( sp->ttfindex!=pnum || skipit )
+	    else if ( sp->ttfindex!=pnum )
 return( false );
 	    else
 		++pnum;
