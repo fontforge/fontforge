@@ -2594,7 +2594,12 @@ return( ghosts );
 
 static StemInfo *CheckForGhostHints(StemInfo *stems,SplineChar *sc) {
     /* PostScript doesn't allow a hint to stretch from one alignment zone to */
-    /*  another. (Alignment zones are the things in bluevalues). This means */
+    /*  another. (Alignment zones are the things in bluevalues).  */
+    /* Oops, I got this wrong. PS doesn't allow a hint to start in a bottom */
+    /*  zone and stretch to a top zone. Everything in OtherBlues is a bottom */
+    /*  zone. The baseline entry in BlueValues is also a bottom zone. Every- */
+    /*  thing else in BlueValues is a top-zone. */
+    /* This means */
     /*  that we can't define a horizontal stem hint which stretches from */
     /*  the baseline to the top of a capital I, or the x-height of lower i */
     /*  If we find any such hints we must remove them, and replace them with */
@@ -2605,7 +2610,7 @@ static StemInfo *CheckForGhostHints(StemInfo *stems,SplineChar *sc) {
     SplineSet *spl;
     Spline *spline, *first;
     SplinePoint *sp;
-    real base, width, toobig = (sc->parent->ascent+sc->parent->descent)/2;
+    real base, width/*, toobig = (sc->parent->ascent+sc->parent->descent)/2*/;
     int i,startfound, widthfound;
 
     /* Get the alignment zones */
@@ -2618,7 +2623,7 @@ static StemInfo *CheckForGhostHints(StemInfo *stems,SplineChar *sc) {
     /* However, there are counter-examples. in Garamond-Pro the "T" character */
     /*  has a horizontal stem at the top which stretches between two adjacent */
     /*  bluezones. Removing it is wrong. Um... Thanks Adobe */
-    /* I'd guess the "big" check is more important */
+    /* I misunderstood. Both of these were top-zones */
     for ( prev=NULL, s=stems; s!=NULL; s=snext ) {
 	snext = s->next;
 	startfound = widthfound = -1;
@@ -2628,9 +2633,8 @@ static StemInfo *CheckForGhostHints(StemInfo *stems,SplineChar *sc) {
 	    else if ( s->start+s->width>=bd.blues[i][0]-1 && s->start+s->width<=bd.blues[i][1]+1 )
 		widthfound = i;
 	}
-	if ( startfound!=-1 && widthfound!=-1 && 
-		(startfound+1==widthfound || startfound==widthfound+1) &&
-		s->width<toobig )
+	if ( startfound!=-1 && widthfound!=-1 &&
+		( s->start>0 || s->start+s->width<=0 ))
 	    startfound = widthfound = -1;
 	if ( startfound!=-1 && widthfound!=-1 ) {
 	    if ( prev==NULL )
