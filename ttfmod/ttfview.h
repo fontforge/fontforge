@@ -99,6 +99,7 @@ typedef struct fontview /* : tableview */ {
 struct charshows {
     unsigned int instrpane: 1;		/* Show the character's instructions */
     unsigned int glosspane: 1;		/* Show our gloss on instructions */
+    unsigned int addr: 1;		/* Show addresses in the instructions */
     unsigned int fore: 1;		/* Show the character's splines */
     unsigned int grid: 1;		/* Show grid lines */
 #if TT_CONFIG_OPTION_BYTECODE_INTERPRETER
@@ -131,6 +132,8 @@ struct instrinfo {
     unsigned int changed: 1;
     unsigned int showaddr: 1;
     unsigned int showhex: 1;
+    unsigned int mousedown: 1;
+    void (*selection_callback)(struct instrinfo *);
 };
 
 typedef struct charview {
@@ -210,12 +213,16 @@ void metricsCreateEditor(Table *tab,TtfView *tfv);
 void gaspCreateEditor(Table *tab,TtfView *tfv);
 void fontCreateEditor(Table *tab,TtfView *tfv);		/* glyph, loca */
 
+void InstrModCreate(struct instrinfo *ii);
+
 int CVClose(CharView *cv);
 void charCreateEditor(ConicFont *cf,int glyph);
 
 void instr_scroll(struct instrinfo *ii,struct sbevent *sb);
+void instr_mousedown(struct instrinfo *ii,int pos);
 void instr_mousemove(struct instrinfo *ii,int pos);
 void instr_expose(struct instrinfo *ii,GWindow pixmap,GRect *rect);
+int IIChar(struct instrinfo *ii,GEvent *ch);
 void instr_typify(struct instrinfo *instrinfo);
 void instrhelpsetup(void);
 

@@ -38,6 +38,7 @@ extern unichar_t *instrhelppopup[256];
 struct charshows charshows = {
     true,		/* Instruction pane */
     TT_CONFIG_OPTION_BYTECODE_DEBUG,	/* gloss pane */
+    false,		/* hide instruction addresses */
     true,		/* show original splines */
     true,		/* show grid lines */
 #if TT_CONFIG_OPTION_BYTECODE_INTERPRETER
@@ -74,6 +75,7 @@ struct charshows charshows = {
 #define MID_HideGridFit	2214
 #define MID_HideRaster	2215
 #define MID_HideTwilight	2216
+#define MID_HideAddr	2217
 
 int CVClose(CharView *cv) {
     if ( cv->destroyed )
@@ -1196,13 +1198,22 @@ static int cv_iv_e_h(GWindow gw, GEvent *event) {
       case et_expose:
 	instr_expose(ii,gw,&event->u.expose.rect);
       break;
-      case et_char:
-	CVChar(cv,event);
-      break;
+      case et_char: {
+	if ( !IIChar(ii,event))
+	    CVChar(cv,event);
+      } break;
       case et_mousemove: case et_mousedown: case et_mouseup:
 	GGadgetEndPopup();
 	if ( event->type==et_mousemove )
 	    instr_mousemove(ii,event->u.mouse.y);
+	else if ( event->type==et_mousedown ) {
+	    instr_mousedown(ii,event->u.mouse.y);
+	    if ( event->u.mouse.clicks==2 )
+		InstrModCreate(ii);
+	} else {
+	    instr_mousemove(ii,event->u.mouse.y);
+	    ii->mousedown = false;
+	}
       break;
       case et_timer:
       break;
@@ -1211,6 +1222,40 @@ static int cv_iv_e_h(GWindow gw, GEvent *event) {
     }
 return( true );
 }
+
+#if TT_CONFIG_OPTION_BYTECODE_DEBUG
+static void cv_ii_selection_callback(struct instrinfo *ii) {
+    CharView *cv = (CharView *) ( ((int8 *) ii) - (int) (int8 *) &((CharView *) NULL)->instrinfo );
+    int i, off;
+    int newgpos = -1;
+    uint8 *pc;
+    struct ttfactions *acts;
+
+    if ( ii->isel_pos == -1 )
+	newgpos = -1;
+    else {
+	for ( i=off=0; i<ii->isel_pos; ++i, ++off )
+	    if ( ii->instrdata->bts[off]==bt_wordlo || ii->instrdata->bts[off]==bt_wordhi )
+		++off;
+	pc = ii->instrdata->instrs+off;
+	for ( i=0, acts=ii->acts; acts!=NULL && acts->instr!=pc; ++i )
+	    acts = acts->acts;
+	if ( acts==NULL ) i = -1;
+	newgpos = i;
+    }
+    if ( newgpos!=ii->gsel_pos ) {
+	ii->gsel_pos = newgpos;
+	if ( newgpos<cv->gvpos || newgpos>=cv->gvpos+(ii->vheight-2*EDGE_SPACING)/ii->fh ) {
+	    cv->gvpos = ii->act_cnt-(ii->vheight-2*EDGE_SPACING)/(3*ii->fh);
+	    if ( cv->gvpos>=ii->act_cnt-(ii->vheight-2*EDGE_SPACING)/ii->fh )
+		cv->gvpos=ii->act_cnt-(ii->vheight-2*EDGE_SPACING)/ii->fh-1;
+	    if ( cv->gvpos<0 ) cv->gvpos = 0;
+	    GScrollBarSetPos(cv->gvsb,cv->gvpos);
+	}
+	GDrawRequestExpose(cv->glossv,NULL,false);
+    }
+}
+#endif
 
 static int cv_gv_e_h(GWindow gw, GEvent *event) {
 #if TT_CONFIG_OPTION_BYTECODE_DEBUG
@@ -1290,7 +1335,6 @@ static int cv_gv_e_h(GWindow gw, GEvent *event) {
 	GGadgetEndPopup();
 	ii = &cv->instrinfo;
 	ii->gsel_pos = (event->u.mouse.y-2)/cv->fh + cv->gvpos;
-	ii->isel_pos = -1;
 	for ( i=0, acts=ii->acts; acts!=NULL && i<ii->gsel_pos; ++i )
 	    acts = acts->acts;
 	sp = NULL;
@@ -1470,6 +1514,10 @@ static void CVMenuShowHide(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  break;
 # endif
 #endif
+	  case MID_HideAddr:
+	    cv->show.addr = cv->instrinfo.showaddr = charshows.addr = !cv->show.addr;
+	    GDrawRequestExpose(cv->instrinfo.v,NULL,false);
+return;
 	}
 	GDrawRequestExpose(cv->v,NULL,false);
     }
@@ -1540,6 +1588,10 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  break;
 # endif
 #endif
+	  case MID_HideAddr:
+	    free(mi->ti.text);
+	    mi->ti.text = u_copy(GStringGetResource(cv->show.addr?_STR_HideAddress: _STR_ShowAddress,NULL));
+	  break;
 	}
     }
 }
@@ -1583,6 +1635,7 @@ static GMenuItem vwlist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_ShowFore, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control, NULL, NULL, CVMenuShowHide, MID_HideSplines },
     { { (unichar_t *) _STR_ShowInstrs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control, NULL, NULL, CVMenuShowHide, MID_HideInstrs },
+    { { (unichar_t *) _STR_ShowAddress, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control, NULL, NULL, CVMenuShowHide, MID_HideAddr },
 #if TT_CONFIG_OPTION_BYTECODE_DEBUG
     { { (unichar_t *) _STR_ShowGloss, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control, NULL, NULL, CVMenuShowHide, MID_HideGloss },
 #endif
@@ -1636,6 +1689,7 @@ return;
     cv->next = cv->cc->views;
     cv->cc->views = cv;
     cv->show = charshows;
+    cv->instrinfo.showaddr = charshows.addr;
 
     sprintf(buf,"Glyph: %d ", glyph);
     uc_strcpy(title, buf);
@@ -1730,6 +1784,7 @@ return;
 
 #if TT_CONFIG_OPTION_BYTECODE_INTERPRETER
     FreeType_GridFitChar(cv);
+    cv->instrinfo.selection_callback = cv_ii_selection_callback;
 #endif
 #if TT_CONFIG_OPTION_BYTECODE_DEBUG
     cv->instrinfo.gsel_pos = -1;

@@ -210,22 +210,22 @@ const char *instrs[] = {
     "UnknownAD",
     "UnknownAE",
     "UnknownAF",
-    "PUSHB [1]",
-    "PUSHB [2]",
-    "PUSHB [3]",
-    "PUSHB [4]",
-    "PUSHB [5]",
-    "PUSHB [6]",
-    "PUSHB [7]",
-    "PUSHB [8]",
-    "PUSHW [1]",
-    "PUSHW [2]",
-    "PUSHW [3]",
-    "PUSHW [4]",
-    "PUSHW [5]",
-    "PUSHW [6]",
-    "PUSHW [7]",
-    "PUSHW [8]",
+    "PUSHB 1",
+    "PUSHB 2",
+    "PUSHB 3",
+    "PUSHB 4",
+    "PUSHB 5",
+    "PUSHB 6",
+    "PUSHB 7",
+    "PUSHB 8",
+    "PUSHW 1",
+    "PUSHW 2",
+    "PUSHW 3",
+    "PUSHW 4",
+    "PUSHW 5",
+    "PUSHW 6",
+    "PUSHW 7",
+    "PUSHW 8",
     "MDRP[grey]",
     "MDRP[black]",
     "MDRP[white]",
@@ -391,7 +391,7 @@ return;
     ihadd(0x19,"Round To Half Grid\nSets the round state (round to closest .5 not int)");
     ihadd(0x7c,"Round Up To Grid\nSets the round state");
     ihadd(0x77,"Super 45\260 ROUND\nToo complicated. Look it up");
-    ihadd(0x7e,"Set ANGle Weight\nPops an int, and sets the angle\nweight state variable to it");
+    ihadd(0x7e,"Set ANGle Weight\nPops an int, and sets the angle\nweight state variable to it\nObsolete");
     ihadd(0x85,"SCAN conversion ConTRoL\nPops a number which sets the\ndropout control mode");
     ihadd(0x8d,"SCANTYPE\nPops number which sets which scan\nconversion rules to use");
     ihadd(0x48,"Sets Coordinate From Stack using projection & freedom vectors\nPops a coordinate 26.6 and a point\nMoves point to given coordinate");
@@ -617,10 +617,30 @@ void instr_expose(struct instrinfo *ii,GWindow pixmap,GRect *rect) {
     }
 }
 
+void instr_mousedown(struct instrinfo *ii,int pos) {
+    int i;
+
+    pos = (pos-2)/ii->fh + ii->lpos;
+    if ( pos>=ii->lheight )
+	pos = -1;
+
+    if ( i!=ii->isel_pos ) {
+	ii->isel_pos=pos;
+	GDrawRequestExpose(ii->v,NULL,false);
+	if ( ii->selection_callback!=NULL )
+	    (ii->selection_callback)(ii);
+    }
+}
+
 void instr_mousemove(struct instrinfo *ii,int pos) {
     int i,y;
     static unichar_t buffer[1025];
     const unichar_t *msg;
+
+    if ( ii->mousedown ) {
+	instr_mousedown(ii,y);
+return;
+    }
 
     pos = ((pos-2)/ii->fh) * ii->fh + 2;
 
@@ -740,6 +760,37 @@ static void InstrViewFree(InstrView *iv) {
     free(iv);
 }
 
+int IIChar(struct instrinfo *ii,GEvent *event) {
+    int pos = ii->isel_pos;
+
+    if ( event->u.chr.keysym == GK_Up || event->u.chr.keysym == GK_KP_Up )
+	--pos;
+    else if ( event->u.chr.keysym == GK_Down || event->u.chr.keysym == GK_KP_Down )
+	++pos;
+    else if ( event->u.chr.keysym == GK_Home || event->u.chr.keysym == GK_KP_Home ||
+	    event->u.chr.keysym == GK_Begin || event->u.chr.keysym == GK_KP_Begin )
+	pos = 0;
+    else if ( event->u.chr.keysym == GK_End || event->u.chr.keysym == GK_KP_End ) {
+	pos = ii->lheight-1;
+    } else
+return( false );
+    if ( pos==-2 ) pos = -1;
+    if ( pos!=ii->isel_pos ) {
+	ii->isel_pos = pos;
+	if ( pos!=-1 && (pos<ii->lpos || pos>=ii->lpos+ii->vheight/ii->fh )) {
+	    ii->lpos = pos-(ii->vheight/(3*ii->fh));
+	    if ( ii->lpos>=ii->lheight-ii->vheight/ii->fh )
+		ii->lpos = ii->lheight-ii->vheight/ii->fh-1;
+	    if ( ii->lpos<0 ) ii->lpos = 0;
+	    GScrollBarSetPos(ii->vsb,ii->lpos);
+	}
+	GDrawRequestExpose(ii->v,NULL,false);
+	if ( ii->selection_callback!=NULL )
+	    (ii->selection_callback)(ii);
+    }
+return( true );
+}
+
 static int iv_v_e_h(GWindow gw, GEvent *event) {
     InstrView *iv = (InstrView *) GDrawGetUserData(gw);
     struct instrinfo *ii = &iv->instrinfo;
@@ -749,13 +800,23 @@ static int iv_v_e_h(GWindow gw, GEvent *event) {
 	instr_expose(ii,gw,&event->u.expose.rect);
       break;
       case et_char:
-	if ( event->u.chr.keysym == GK_Help || event->u.chr.keysym == GK_F1 )
+	if ( IIChar(ii,event))
+	    /* All Done */;
+	else if ( event->u.chr.keysym == GK_Help || event->u.chr.keysym == GK_F1 )
 	    TableHelp(iv->table->name);
       break;
       case et_mousemove: case et_mousedown: case et_mouseup:
 	GGadgetEndPopup();
 	if ( event->type==et_mousemove )
 	    instr_mousemove(ii,event->u.mouse.y);
+	else if ( event->type==et_mousedown ) {
+	    instr_mousedown(ii,event->u.mouse.y);
+	    if ( event->u.mouse.clicks==2 )
+		InstrModCreate(ii);
+	} else {
+	    instr_mousemove(ii,event->u.mouse.y);
+	    ii->mousedown = false;
+	}
       break;
       case et_timer:
       break;
