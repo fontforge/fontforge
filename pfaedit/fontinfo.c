@@ -1694,7 +1694,7 @@ static char *_GetModifiers(char *fontname, char *familyname) {
 	    else
 	break;
 	}
-	if ( *fpt=='\0' )
+	if ( *fpt=='\0' && *pt!='\0' )
 	    fpt = pt;
 	else
 	    fpt = NULL;
@@ -1748,7 +1748,7 @@ static const unichar_t *_uGetModifiers(const unichar_t *fontname, const unichar_
 	    else
 	break;
 	}
-	if ( *fpt=='\0' )
+	if ( *fpt=='\0' && *pt!='\0' )
 	    fpt = pt;
 	else
 	    fpt = NULL;
