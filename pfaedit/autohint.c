@@ -1307,12 +1307,15 @@ static int AreNearlyParallel(EI *apt,EI *e) {
     DStemInfo d;
     real x,y,len, len1,len2;
     BasePoint top, bottom;
+    double scale, slope;
 
     if ( !MakeDStem(&d,apt,e))
 return( false );
 
-    if( !RealApprox((d.leftedgetop.y-d.leftedgebottom.y)/(d.leftedgetop.x-d.leftedgebottom.x),
-	    (d.rightedgetop.y-d.rightedgebottom.y)/(d.rightedgetop.x-d.rightedgebottom.x)) )
+    scale = (d.rightedgetop.y-d.rightedgebottom.y)/(d.leftedgetop.y-d.leftedgebottom.y);
+    slope = (d.leftedgetop.y-d.leftedgebottom.y)/(d.leftedgetop.x-d.leftedgebottom.x);
+    if ( !RealWithin(d.rightedgetop.x,d.rightedgebottom.x+(d.leftedgetop.x-d.leftedgebottom.x)*scale,10) &&
+	    !RealWithin(d.rightedgetop.y,d.rightedgebottom.y+slope*(d.rightedgetop.x-d.rightedgebottom.x),12) )
 return( false );
 
     /* Now check that the two segments have considerable overlap */

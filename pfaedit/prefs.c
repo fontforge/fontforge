@@ -41,6 +41,7 @@ int autohint_before_rasterize = 1;
 int ItalicConstrained=true;
 int accent_offset = 4;
 float arrowAmount=1;
+float snapdistance=3.5;
 char *BDFFoundry=NULL;
 char *xuid=NULL;
 char *RecentFiles[RECENT_MAX] = { NULL };
@@ -117,6 +118,7 @@ static struct prefs_list {
 	{ "OnlyCopyDisplayed", pr_bool, &onlycopydisplayed, NULL, NULL, '\0', NULL, 1 },
 	{ "CopyMetaData", pr_bool, &copymetadata, NULL, NULL, '\0', NULL, 1 },
 	{ "ArrowMoveSize", pr_real, &arrowAmount, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupAA },
+	{ "SnapDistance", pr_real, &snapdistance, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupSD },
 	{ NULL }
 },
  oldnames[] = {

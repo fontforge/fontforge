@@ -82,6 +82,11 @@ return( true );
 return( false );
 }
 
+int RealWithin(real a,real b,real fudge) {
+
+return( b>=a-fudge && b<=a+fudge );
+}
+
 int SplineIsLinear(Spline *spline) {
     real t1,t2;
     int ret;
@@ -1842,6 +1847,7 @@ return( -1 );		/* Open paths, (open paths with only one point are a special case
 return( ret );
 }
 
+#if 0
 void SFFigureGrid(SplineFont *sf) {
     /* Look for any horizontal/vertical lines in the grid splineset */
     int hsnaps[40], hcnt=0, vsnaps[40], vcnt=0, i;
@@ -1887,3 +1893,4 @@ void SFFigureGrid(SplineFont *sf) {
 	sf->vsnaps[vcnt] = 0x80000000;
     }
 }
+#endif

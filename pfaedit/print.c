@@ -1451,9 +1451,9 @@ static unichar_t _simple1[] = { ' ','A',' ','q','u','i','c','k',' ','b',
 static unichar_t _simple2[] = { 'F','e','w',' ','z','e','b','r','a','s',' ','v',
 	'a','l','i','d','a','t','e',' ','m','y',' ','p','a','r','a','d','o','x',
 	',',' ','q','u','o','t','h',' ','J','a','c','k',' ','X','e','n','o', 0 };
-static unichar_t _simple3[] = { 'f','l','y','g','a','n','d','e',' ','b','ä','c',
-	'k','a','s','i','n','e','r',' ','s','ö','k','a',' ','h','w','i','l','a',
-	' ','p','å',' ','m','j','u','k','a',' ','t','u','v','o','r',  '\0' };
+static unichar_t _simple3[] = { 'f','l','y','g','a','n','d','e',' ','b',(uint8)(uint8)'ä','c',
+	'k','a','s','i','n','e','r',' ','s',(uint8)(uint8)'ö','k','a',' ','h','w','i','l','a',
+	' ','p',(uint8)'å',' ','m','j','u','k','a',' ','t','u','v','o','r',  '\0' };
 static unichar_t _simple4[] = { ' ','A',' ','q','u','i','c','k',' ','b',
 	'r','o','w','n',' ','v','i','x','e','n',' ','j','u','m','p','s',' ','f','o',
 	'r',' ','t','h','e',' ','l','a','z','y',' ','d','o','g','.',  '\0' };
@@ -1509,72 +1509,72 @@ static unichar_t _donquixote[] = { ' ','E','n',' ','u','n',' ','l','u','g','a','
 	' ','c','u','y','o',' ','n','o','m','b','r','e',' ','n','o',' ','q',
 	'u','i','e','r','o',' ','a','c','o','r','d','a','r','m','e',',',' ',
 	'n','o',' ','h','a',' ','m','u','c','h','o',' ','t','i','e','m','p',
-	'o',' ','q','u','e',' ','v','i','v','í','a',' ','u','n',' ','h','i',
+	'o',' ','q','u','e',' ','v','i','v',(uint8)'í','a',' ','u','n',' ','h','i',
 	'd','a','l','g','o',' ','d','e',' ','l','o','s',' ','d','e',' ','l',
 	'a','n','z','a',' ','e','n',' ','a','s','t','i','l','l','e','r','o',
 	',',' ','a','d','a','r','g','a',' ','a','n','t','i','g','u','a',',',
-	' ','r','o','c','í','n',' ','f','l','a','c','o',' ','y',' ','g','a',
+	' ','r','o','c',(uint8)'í','n',' ','f','l','a','c','o',' ','y',' ','g','a',
 	'l','g','o',' ','c','o','r','r','e','d','o','r','.',  '\0' };
 static unichar_t *donquixote[] = { _donquixote, NULL };
 /* German */
 static unichar_t _faust1[] = { 'I','h','r',' ','n','a','h','t',' ','e','u','c',
 	'h',' ','w','i','e','d','e','r',',',' ','s','c','h','w','a','n','k',
 	'e','n','d','e',' ','G','e','s','t','a','l','t','e','n',',',  '\0'};
-static unichar_t _faust2[] = { 'D','i','e',' ','f','r','ü','h',' ','s','i','c',
-	'h',' ','e','i','n','s','t',' ','d','e','m',' ','t','r','ü','b','e',
+static unichar_t _faust2[] = { 'D','i','e',' ','f','r',(uint8)'ü','h',' ','s','i','c',
+	'h',' ','e','i','n','s','t',' ','d','e','m',' ','t','r',(uint8)'ü','b','e',
 	'n',' ','B','l','i','c','k',' ','g','e','z','e','i','g','t','.',  '\0' };
 static unichar_t _faust3[] = { 'V','e','r','s','u','c','h',' ','i','c','h',' ',
 	'w','o','h','l',',',' ','e','u','c','h',' ','d','i','e','s','m','a',
 	'l',' ','f','e','s','t','z','u','h','a','l','t','e','n','?',  '\0'};
-static unichar_t _faust4[] = { 'F','ü','h','l',' ','i','c','h',' ','m','e','i',
+static unichar_t _faust4[] = { 'F',(uint8)'ü','h','l',' ','i','c','h',' ','m','e','i',
 	'n',' ','H','e','r','z',' ','n','o','c','h',' ','j','e','n','e','m',
 	' ','W','a','h','n',' ','g','e','n','e','i','g','t','?',  '\0' };
-static unichar_t _faust5[] = { 'I','h','r',' ','d','r','ä','n','g','t',' ','e',
+static unichar_t _faust5[] = { 'I','h','r',' ','d','r',(uint8)'ä','n','g','t',' ','e',
 	'u','c','h',' ','z','u','!',' ','N','u','n',' ','g','u','t',',',' ','s'
-	,'o',' ','m','ö','g','t',' ','i','h','r',' ','w','a','l','t','e','n',
+	,'o',' ','m',(uint8)'ö','g','t',' ','i','h','r',' ','w','a','l','t','e','n',
 	',',  '\0'};
 static unichar_t _faust6[] = { 'W','i','e',' ','i','h','r',' ','a','u','s',' ',
 	'D','u','n','s','t',' ','u','n','d',' ','N','e','b','e','l',' ','u',
 	'm',' ','m','i','c','h',' ','s','t','e','i','g','t',';',  '\0'};
 static unichar_t _faust7[] = { 'M','e','i','n',' ','B','u','s','e','n',' ','f',
-	'ü','h','l','t',' ','s','i','c','h',' ','j','u','g','e','n','d','l',
-	'i','c','h',' ','e','r','s','c','h','ü','t','t','e','r','t',  '\0' };
+	(uint8)'ü','h','l','t',' ','s','i','c','h',' ','j','u','g','e','n','d','l',
+	'i','c','h',' ','e','r','s','c','h',(uint8)'ü','t','t','e','r','t',  '\0' };
 static unichar_t _faust8[] = { 'V','o','m',' ','Z','a','u','b','e','r','h','a',
 	'u','c','h',',',' ','d','e','r',' ','e','u','r','e','n',' ','Z','u',
 	'g',' ','u','m','w','i','t','t','e','r','t','.',  '\0' };
 static unichar_t *faust[] = { _faust1, _faust2, _faust3, _faust4, _faust5,
 	_faust6, _faust7, _faust8, NULL };
 /* Anglo Saxon */
-static unichar_t _beorwulf1[] = { 'H','w','æ','t',',',' ','w','e',' ','G','a',
+static unichar_t _beorwulf1[] = { 'H','w',(uint8)'æ','t',',',' ','w','e',' ','G','a',
 	'r','-','D','e','n','a',' ',' ','i','n',' ','g','e','a','r','d','a',
 	'g','u','m',  '\0' };
-static unichar_t _beorwulf1_5[] = {'þ','e','o','d','c','y','n','i','n','g','a',' ',' ',
-	'þ','r','y','m',' ','g','e','f','r','u','n','o','n',',',  '\0' };
-static unichar_t _beorwulf2[] = { 'h','u',' ','ð','a',' ','æ','þ','e','l','i',
+static unichar_t _beorwulf1_5[] = {(uint8)'þ','e','o','d','c','y','n','i','n','g','a',' ',' ',
+	(uint8)'þ','r','y','m',' ','g','e','f','r','u','n','o','n',',',  '\0' };
+static unichar_t _beorwulf2[] = { 'h','u',' ',(uint8)'ð','a',' ',(uint8)'æ',(uint8)'þ','e','l','i',
 	'n','g','a','s',' ',' ','e','l','l','e','n',' ','f','r','e','m','e',
 	'd','o','n','.',  '\0' };
 static unichar_t _beorwulf3[] = { ' ','O','f','t',' ','S','c','y','l','d',' ',
-	'S','c','e','f','i','n','g',' ',' ','s','c','e','a','þ','e','n','a',
-	' ','þ','r','e','a','t','u','m',',',  '\0' };
-static unichar_t _beorwulf4[] = { 'm','o','n','e','g','u','m',' ','m','æ','g',
-	'þ','u','m',' ',' ','m','e','o','d','o','s','e','t','l','a',' ','o',
+	'S','c','e','f','i','n','g',' ',' ','s','c','e','a',(uint8)'þ','e','n','a',
+	' ',(uint8)'þ','r','e','a','t','u','m',',',  '\0' };
+static unichar_t _beorwulf4[] = { 'm','o','n','e','g','u','m',' ','m',(uint8)'æ','g',
+	(uint8)'þ','u','m',' ',' ','m','e','o','d','o','s','e','t','l','a',' ','o',
 	'f','t','e','a','h',';',  '\0' };
 static unichar_t _beorwulf5[] = { 'e','g','s','o','d','e',' ','E','o','r','l',
-	'e','.',' ',' ','S','y','ð','ð','a','n',' ','æ','r','e','s','t',' ',
-	'w','e','a','r','ð',  '\0' };
+	'e','.',' ',' ','S','y',(uint8)'ð',(uint8)'ð','a','n',' ',(uint8)'æ','r','e','s','t',' ',
+	'w','e','a','r',(uint8)'ð',  '\0' };
 static unichar_t _beorwulf6[] = { 'f','e','a','s','c','e','a','f','t',' ','f',
-	'u','n','d','e','n',',',' ',' ','(','h','e',' ','þ','æ','s',' ','f',
+	'u','n','d','e','n',',',' ',' ','(','h','e',' ',(uint8)'þ',(uint8)'æ','s',' ','f',
 	'r','o','f','r','e',' ','g','e','b','a','d',')',  '\0' };
 static unichar_t _beorwulf7[] = { 'w','e','o','x',' ','u','n','d','e','r',' ',
-	'w','o','l','c','n','u','m',',',' ',' ','w','e','o','r','ð','m','y',
-	'n','d','u','m',' ','þ','a','h',',',  '\0' };
-static unichar_t _beorwulf8[] = { 'o','ð','þ','æ','t',' ','h','i','m',' ','æ',
-	'g','h','w','y','l','e',' ',' ','þ','a','r','a',' ','y','m','b','s',
+	'w','o','l','c','n','u','m',',',' ',' ','w','e','o','r',(uint8)'ð','m','y',
+	'n','d','u','m',' ',(uint8)'þ','a','h',',',  '\0' };
+static unichar_t _beorwulf8[] = { 'o',(uint8)'ð',(uint8)'þ',(uint8)'æ','t',' ','h','i','m',' ',(uint8)'æ',
+	'g','h','w','y','l','e',' ',' ',(uint8)'þ','a','r','a',' ','y','m','b','s',
 	'i','t','t','e','n','d','r','a',  '\0' };
 static unichar_t _beorwulf9[] = { 'o','f','e','r',' ','h','r','o','n','r','a',
 	'd','e',' ',' ','h','y','a','n',' ','s','c','o','l','d','e',',',  '\0'};
 static unichar_t _beorwulf10[] = { 'g','o','m','b','a','n',' ','g','y','l','d',
-	'a','n',':',' ','þ','æ','t',' ','w','æ','s',' ','g','o','d',' ','c',
+	'a','n',':',' ',(uint8)'þ',(uint8)'æ','t',' ','w',(uint8)'æ','s',' ','g','o','d',' ','c',
 	'y','n','i','n','g','!',  '\0' };
 static unichar_t *beorwulf[] = { _beorwulf1, _beorwulf1_5, _beorwulf2, _beorwulf3,
 	_beorwulf4,  _beorwulf5, _beorwulf6, _beorwulf7, _beorwulf8,
@@ -1586,11 +1586,11 @@ static unichar_t _inferno1[] = { ' ','N','e','l',' ','m','e','z','z','o',' ',
 static unichar_t _inferno2[] = { 'm','i',' ','r','i','t','r','o','v','a','i',
 	' ','p','e','r',' ','u','n','a',' ','s','o','l','v','a',' ',
 	'o','b','s','c','u','r','a',',',  '\0' };
-static unichar_t _inferno3[] = { 'c','h','é',' ','l','a',' ','d','i','r','i',
+static unichar_t _inferno3[] = { 'c','h',(uint8)'é',' ','l','a',' ','d','i','r','i',
 	't','t','a',' ','v','i','a',' ','e','r','a',' ','s','m','a','r','r',
 	'i','t','a','.',  '\0' };
 static unichar_t _inferno4[] = { ' ','A','n','i',' ','q','u','a','n','t','o',
-	' ','a',' ','d','i','r',' ','q','u','a','l',' ','e','r','a',' ','è',
+	' ','a',' ','d','i','r',' ','q','u','a','l',' ','e','r','a',' ',(uint8)'è',
 	' ','c','o','s','a',' ','d','u','r','a',  '\0' };
 static unichar_t _inferno5[] = { 'e','s','t','a',' ','s','e','l','v','a',' ',
 	's','e','l','v','a','g','g','i','a',' ','e',' ','a','s','p','r','a',' ',
@@ -1623,23 +1623,23 @@ static unichar_t *debello[] = { _debello1, NULL };
 /* French */
 static unichar_t _pheadra1[] = { 'L','e',' ','d','e','s','s','e','i','n',' ',
 	'e','n',' ','e','s','t',' ','p','r','i','s',':',' ','j','e',' ','p',
-	'a','r','s',',',' ','c','h','e','r',' ','T','h','é','r','a','m','è','n'
+	'a','r','s',',',' ','c','h','e','r',' ','T','h',(uint8)'é','r','a','m',(uint8)'è','n'
 	,'e',',',  '\0' };
 static unichar_t _pheadra2[] = { 'E','t',' ','q','u','i','t','t','e',' ','l',
-	'e',' ','s','é','j','o','u','r',' ','d','e',' ','l',0x0027,'a','i','m',
-	'a','b','l','e',' ','T','r','é','z','è','n','e','.',  '\0' };
+	'e',' ','s',(uint8)'é','j','o','u','r',' ','d','e',' ','l',0x0027,'a','i','m',
+	'a','b','l','e',' ','T','r',(uint8)'é','z',(uint8)'è','n','e','.',  '\0' };
 static unichar_t _pheadra3[] = { 'D','a','n','s',' ','l','e',' ','d','o','u',
 	't','e',' ','m','o','r','t','e','l',' ','d','o','n','t',' ','j','e',
-	' ','s','u','i','s',' ','a','g','i','t','é',',',  '\0' };
+	' ','s','u','i','s',' ','a','g','i','t',(uint8)'é',',',  '\0' };
 static unichar_t _pheadra4[] = { 'J','e',' ','c','o','m','m','e','n','c','e',
-	' ','à',' ','r','o','u','g','i','r',' ','d','e',' ','m','o','n',' ',
-	'o','i','s','i','v','e','t','é','.',  '\0' };
+	' ',(uint8)'à',' ','r','o','u','g','i','r',' ','d','e',' ','m','o','n',' ',
+	'o','i','s','i','v','e','t',(uint8)'é','.',  '\0' };
 static unichar_t _pheadra5[] = { 'D','e','p','u','i','s',' ','p','l','u','s',
-	' ','d','e',' ','s','i','x',' ','m','o','i','s',' ','é','l','o','i',
-	'g','n','é',' ','d','e',' ','m','o','n',' ','p','è','r','e',',',  '\0' };
+	' ','d','e',' ','s','i','x',' ','m','o','i','s',' ',(uint8)'é','l','o','i',
+	'g','n',(uint8)'é',' ','d','e',' ','m','o','n',' ','p',(uint8)'è','r','e',',',  '\0' };
 static unichar_t _pheadra6[] = { 'J',0x0027,'i','g','n','o','r','e',' ','l',
 	'e',' ','d','e','s','t','i','n',' ','d',0x0027,'u','n','e',' ','t',
-	'ê','t','e',' ','s','i',' ','c','h','è','r','e',';',  '\0' };
+	(uint8)'ê','t','e',' ','s','i',' ','c','h',(uint8)'è','r','e',';',  '\0' };
 static unichar_t _pheadra7[] = { 'J',0x0027,'i','g','n','o','r','e',' ','j',
 	'u','s','q','u',0x0027,'a','u','x',' ','l','i','e','u','x',' ','q',
 	'u','i',' ','l','e',' ','p','e','u','v','e','n','t',' ','c','a','c',
@@ -1724,7 +1724,7 @@ static unichar_t *hebrew[] = { _seder1, _seder2, NULL };
 /* Renaisance English with period ligatures */
 static unichar_t _muchado[] = {' ','B','u','t',' ','t','i','l','l',' ','a','l',
 	'l',' ','g','r','a','c','e','s',' ','b','e',' ','i','n',' ','o','n','e'
-	,' ','w','o','m','a','n',',',' ','o','n','e',' ','w','o','m','ã',' ',
+	,' ','w','o','m','a','n',',',' ','o','n','e',' ','w','o','m',(uint8)'ã',' ',
 	0x017f,'h','a','l',' ','n','o','t',' ','c','o','m',' ','i','n',' ','m',
 	'y',' ','g','r','a','c','e',':',' ','r','i','c','h',' ',0x017f,'h',
 	'e',' ',0x017f,'h','a','l','l',' ','b','e',' ','t','h','a','t','s',
@@ -1742,7 +1742,7 @@ static unichar_t _mabinogion[] = {' ','G','a','n',' ','f','o','d',' ','A','r',
     'n',' ','u','n','i','o','n',' ','f','e','l',' ','y',' ','d','i','g','w',
     'y','d','d',' ','y','n',' ','y',' ','l','l','a','w','y','s','g','r','i',
     'f','a','u',',',' ','a','c',' ','f','e','l','l','y',' ','y','n',' ','c',
-    'y','f','a','r','f','o','d',' ','â',' ','g','o','f','y','n',' ','y','r',
+    'y','f','a','r','f','o','d',' ',(uint8)'â',' ','g','o','f','y','n',' ','y','r',
     ' ','y','s','g','o','l','h','a','i','g',',',' ','b','e','r','n','a','i',
     's',' ','m','a','i',' ','g','w','e','l','l',' ','m','e','w','n',' ','l',
     'l','a','w','l','y','f','r',' ','f','e','l',' ','h','w','n',' ','o','e',
@@ -1753,26 +1753,26 @@ static unichar_t _mabinogion[] = {' ','G','a','n',' ','f','o','d',' ','A','r',
     'g','r','a','f','f','.',  '\0'};
 static unichar_t *mabinogion[] = { _mabinogion, NULL };
 /* Czech */
-static unichar_t _goodsoldier1[] = {' ',0x201e,'T','a','k',' ','n','á','m',
+static unichar_t _goodsoldier1[] = {' ',0x201e,'T','a','k',' ','n',(uint8)'á','m',
     ' ','z','a','b','i','l','i',' ','F','e','r','d','i','n','a','n','d','a',
     ',',0x201c,' ',0x0159,'e','k','l','a',' ','p','o','s','l','u','h','o','v',
     'a',0x010d,'k','a',' ','p','a','n','u',' ',0x0160,'v','e','j','k','o','v',
-    'i',',',' ','k','t','e','r','ý',' ','o','p','u','s','t','i','v',' ','p',
-    0x0159,'e','d',' ','l','é','t','y',' ','v','o','j','e','n','s','k','o',
+    'i',',',' ','k','t','e','r',(uint8)'ý',' ','o','p','u','s','t','i','v',' ','p',
+    0x0159,'e','d',' ','l',(uint8)'é','t','y',' ','v','o','j','e','n','s','k','o',
     'u',' ','s','l','u',0x017e,'b','u',',',' ','k','d','y',0x017e,' ','b','y',
     'l',' ','d','e','f','i','n','i','t','i','v','n',0x011b,' ','p','r','o',
-    'h','l','á',0x0161,'e','n',' ','v','o','j','e','n','s','k','o','u',' ',
-    'l','é','k','a',0x0159,'s','k','o','u',' ','k','o','m','i','s','í',' ',
+    'h','l',(uint8)'á',0x0161,'e','n',' ','v','o','j','e','n','s','k','o','u',' ',
+    'l',(uint8)'é','k','a',0x0159,'s','k','o','u',' ','k','o','m','i','s',(uint8)'í',' ',
     'z','a',' ','b','l','b','a',',',' ',0x017e,'i','v','i','l',' ','s','e',
     ' ','p','r','o','d','e','j','e','m',' ','p','s',0x016f,',',' ','o',0x0161,
-    'k','l','i','v','ý','c','h',' ','n','e',0x010d,'i','s','t','o','k','r',
-    'e','v','n','ý','c','h',' ','o','b','l','u','d',',',' ','k','t','e','r',
-    'ý','m',' ','p','a','d',0x011b,'l','a','l',' ','r','o','d','o','k','m',
+    'k','l','i','v',(uint8)'ý','c','h',' ','n','e',0x010d,'i','s','t','o','k','r',
+    'e','v','n',(uint8)'ý','c','h',' ','o','b','l','u','d',',',' ','k','t','e','r',
+    (uint8)'ý','m',' ','p','a','d',0x011b,'l','a','l',' ','r','o','d','o','k','m',
     'e','n','y','.',  '\0'};
 static unichar_t _goodsoldier2[] = {' ','K','r','o','m',0x011b,' ','t','o','h',
-    'o','t','o',' ','z','a','m',0x011b,'s','t','n','á','n','í',' ','b','y','l',
+    'o','t','o',' ','z','a','m',0x011b,'s','t','n',(uint8)'á','n',(uint8)'í',' ','b','y','l',
     ' ','s','t','i',0x017e,'e','n',' ','r','e','v','m','a','t','i','s','m','e',
-    'm',' ','a',' ','m','a','z','a','l',' ','s','i',' ','p','r','á','v',0x011b,
+    'm',' ','a',' ','m','a','z','a','l',' ','s','i',' ','p','r',(uint8)'á','v',0x011b,
     ' ','k','o','l','e','n','a',' ','o','p','o','d','e','l','d','o','k','e',
     'm','.',  '\0'};
 static unichar_t *goodsoldier[] = { _goodsoldier1, _goodsoldier2, NULL };
@@ -1806,11 +1806,11 @@ static unichar_t _polish[] = {' ','J',0x0119,'z','y','k',' ','p','r','a','s',
     'a',' ','t','y','m',' ','i','s','t','n','i','a',0x0142,'y',' ','w',' ',
     'n','i','m',' ','(','w',' ','z','a','k','r','e','s','i','e',' ','f','l',
     'e','k','s','j','i',' ','r','z','e','c','z','o','w','n','i','k','a',')',
-    ' ','r','ó',0x017c,'n','e',' ','«','o','d','m','i','a','n','y','»',',',
+    ' ','r',(uint8)'ó',0x017c,'n','e',' ',(uint8)'«','o','d','m','i','a','n','y',(uint8)'»',',',
     ' ','c','z','y','l','i',' ','t','y','p','y',' ','d','e','k','l','i','n',
     'a','c','y','j','n','e','.',' ','I','m',' ','d','a','w','n','i','e','j',
     ' ','w',' ','c','z','a','s','i','e',',',' ','t','y','m',' ','o','w','e',
-    ' ','r','ó',0x017c,'n','i','c','e',' ','d','e','k','l','i','n','a','c',
+    ' ','r',(uint8)'ó',0x017c,'n','i','c','e',' ','d','e','k','l','i','n','a','c',
     'y','j','n','e',' ','m','i','a',0x0142,'y',' ','m','n','i','e','j','s',
     'z','y',' ','z','w','i',0x0105,'z','e','k',' ','z',' ','s','e','m','a',
     'n','t','y','k',0x0105,' ','r','z','e','c','z','o','w','n','i','k','a',
@@ -1885,6 +1885,11 @@ static unichar_t *hangulsijo[] = { _hangulsijo1, _hangulsijo2, _hangulsijo3,
     _hangulsijo4, _hangulsijo5, _hangulsijo6, _hangulsijo7, _hangulsijo8,
     _hangulsijo9, NULL };
 /* Chinese traditional */
+/* Laautzyy */
+static unichar_t _YihKing1[] = { 0x9053, 0x53ef, 0x9053, 0x975e, 0x5e38, 0x9053, 0xff0c, 0 };
+static unichar_t _YihKing2[] = { 0x540d, 0x53ef, 0x540d, 0x975e, 0x5e38, 0x540d, 0x3002, 0 };
+static unichar_t *YihKing[] = { _YihKing1, _YihKing2, NULL };
+
 static unichar_t _LiiBair1[] = { 0x5c07, 0x9032, 0x9152,  0 };
 static unichar_t _LiiBair2[] = { 0 };
 static unichar_t _LiiBair3[] = { 0x541b, 0x4e0d, 0x898b, ' ', 0x9ec3, 0x6cb3, 0x4e4b, 0x6c34, 0x5929, 0x4e0a, 0x4f86, ' ', 0x5954, 0x6d41, 0x5230, 0x6d77, 0x4e0d, 0x5fa9, 0x56de,  0 };
@@ -1970,26 +1975,26 @@ static unichar_t _georgianjohn2[] = { 0x10d4, 0x10e1, 0x10d4, ' ',
     '\0' };
 static unichar_t *georgianjohn[] = { _georgianjohn1, _georgianjohn2, NULL };
 /* icelandic */
-static unichar_t _icelandicjohn1[] = { 'Í',' ','u','p','p','h','a','f','i',' ',
-	'v','a','r',' ','O','r','ð','i','ð',' ','o','g',' ','O','r','ð','i',
-	'ð',' ','v','a','r',' ','h','j','à',' ','G','u','ð','i',',',' ','o',
-	'g',' ','O','r','ð','i','ð',' ','v','a','r',' ','G','u','ð','i','.',
+static unichar_t _icelandicjohn1[] = { (uint8)'Í',' ','u','p','p','h','a','f','i',' ',
+	'v','a','r',' ','O','r',(uint8)'ð','i',(uint8)'ð',' ','o','g',' ','O','r',(uint8)'ð','i',
+	(uint8)'ð',' ','v','a','r',' ','h','j',(uint8)'à',' ','G','u',(uint8)'ð','i',',',' ','o',
+	'g',' ','O','r',(uint8)'ð','i',(uint8)'ð',' ','v','a','r',' ','G','u',(uint8)'ð','i','.',
 	'\0'};
-static unichar_t _icelandicjohn2[] = { 'Þ','a','ð',' ','v','a','r',' ','í',
-	' ','u','p','p','h','a','f','i',' ','h','j','á',' ','G','u','ð','i',
+static unichar_t _icelandicjohn2[] = { (uint8)'Þ','a',(uint8)'ð',' ','v','a','r',' ',(uint8)'í',
+	' ','u','p','p','h','a','f','i',' ','h','j',(uint8)'á',' ','G','u',(uint8)'ð','i',
 	'.',  '\0' };
 static unichar_t *icelandicjohn[] = { _icelandicjohn1, _icelandicjohn2, NULL };
 /* irish */
-static unichar_t _irishjohn1[] = { 'B','h','í',' ','a','n',' ','B','r','i',
+static unichar_t _irishjohn1[] = { 'B','h',(uint8)'í',' ','a','n',' ','B','r','i',
 	'a','t','h','a','r','(','I',')',' ','a','n','n',' ','i',' ','d','t',
-	'ú','s',' ','b','á','i','r','e',' ','a','g','u','s',' ','b','h','í',
-	' ','a','n',' ','B','r','i','a','t','h','a','r',' ','i','n',' ','é',
+	(uint8)'ú','s',' ','b',(uint8)'á','i','r','e',' ','a','g','u','s',' ','b','h',(uint8)'í',
+	' ','a','n',' ','B','r','i','a','t','h','a','r',' ','i','n',' ',(uint8)'é',
 	'i','n','e','a','c','h','t',' ','l','e',' ','D','i','a',',',' ','a',
 	'g','u','s',' ','b','a',' ','D','h','i','a',' ','a','n',' ','B','r',
 	'i','a','t','h','a','r','.',  '\0'};
-static unichar_t _irishjohn2[] = { 'B','h','í',' ','s','é',' ','a','n','n',
-	' ','i',' ','d','t','ú','s',' ','b','á','i','r','e',' ','i','n',' ',
-	'é','i','n','e','a','c','h','t',' ','l','e',' ','D','i','a','.',  '\0'};
+static unichar_t _irishjohn2[] = { 'B','h',(uint8)'í',' ','s',(uint8)'é',' ','a','n','n',
+	' ','i',' ','d','t',(uint8)'ú','s',' ','b',(uint8)'á','i','r','e',' ','i','n',' ',
+	(uint8)'é','i','n','e','a','c','h','t',' ','l','e',' ','D','i','a','.',  '\0'};
 static unichar_t *irishjohn[] = { _irishjohn1, _irishjohn2, NULL };
 /* norwegian */
 static unichar_t _norwegianjohn1[] = { 'I',' ','b','e','g','y','n','n','e','l','s','e','n',' ','v','a','r',' ','O','r','d','e','t',',',' ','O','r','d','e','t',' ','v','a','r',' ','h','o','s',' ','G','u','d',',',' ','o','g',' ','O','r','d','e','t',' ','v','a','r',' ','G','u','d','.',  '\0' };
@@ -2051,7 +2056,7 @@ static unichar_t *thaijohn[] = { _thaijohn1, NULL };
 /* I've omitted cornish. no interesting letters. no current speakers */
 
 static unichar_t **sample[] = { simple, simplecyrill, faust, pheadra, antigone,
-	annakarenena, debello, hebrew, hangulsijo, LiiBair, donquixote, inferno, beorwulf, muchado,
+	annakarenena, debello, hebrew, hangulsijo, YihKing, LiiBair, donquixote, inferno, beorwulf, muchado,
 	mabinogion, goodsoldier, macedonian, bulgarian, belorussianjohn,
 	churchjohn,
 	lithuanian, polish, slovene, irishjohn, basquejohn, portjohn,
@@ -2065,17 +2070,18 @@ static int AllChars( SplineFont *sf, unichar_t *str) {
     /* The accented characters above get sign-extended, which is wrong for */
     /*  unicode. Just truncate them. We won't use any characters in the 0xff00 */
     /*  area anyway so this is safe */
+    /* We now do use characters in the 0xff00 so we can't do that any more */
 
     if ( sf->encoding_name==em_unicode ) {
 	while ( (ch = *str)!='\0' ) {
-	    if ( (ch&0xff00)==0xff00 ) ch &= 0xff;
+	    /*if ( (ch&0xff00)==0xff00 ) ch &= 0xff;*/
 	    if ( !SCWorthOutputting(sf->chars[ch]))
 return( false );
 	    ++str;
 	}
     } else if ( sf->subfontcnt==0 ) {
 	while ( (ch = *str)!='\0' ) {
-	    if ( (ch&0xff00)==0xff00 ) ch &= 0xff;
+	    /*if ( (ch&0xff00)==0xff00 ) ch &= 0xff;*/
 	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
 		if ( sf->chars[i]->unicodeenc == ch )
 	    break;
@@ -2089,7 +2095,7 @@ return( false );
 	for ( i=0; i<sf->subfontcnt; ++i )
 	    if ( sf->subfonts[i]->charcnt>max ) max = sf->subfonts[i]->charcnt;
 	while ( (ch = *str)!='\0' ) {
-	    if ( (ch&0xff00)==0xff00 ) ch &= 0xff;
+	    /*if ( (ch&0xff00)==0xff00 ) ch &= 0xff;*/
 	    for ( i=0; i<max; ++i ) {
 		for ( j=0; j<sf->subfontcnt; ++j )
 		    if ( i<sf->subfonts[j]->charcnt && sf->subfonts[j]->chars[i]!=NULL )
@@ -2110,7 +2116,7 @@ static void u_stupidstrcpy( unichar_t *pt1, unichar_t *pt2 ) {
     int ch;
 
     while ( (ch = *pt2++)!='\0' ) {
-	if ( (ch&0xff00) == 0xff00 ) ch &= 0xff;
+	/*if ( (ch&0xff00) == 0xff00 ) ch &= 0xff;*/
 	*pt1 ++ = ch;
     }
     *pt1++ = '\0';

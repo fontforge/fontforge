@@ -393,6 +393,10 @@ int TrueCharState(GEvent *event) {
 	bit = ksm_control;
     else if ( keysym == GK_Caps_Lock || keysym == GK_Shift_Lock )
 	bit = ksm_capslock;
+    else if ( keysym == GK_Super_L || keysym == GK_Super_L )
+	bit = ksm_super;
+    else if ( keysym == GK_Hyper_L || keysym == GK_Hyper_L )
+	bit = ksm_hyper;
     else
 return( event->u.chr.state );
 
@@ -431,9 +435,9 @@ void CVToolsSetCursor(CharView *cv, int state) {
 	shouldshow = cv->active_tool;
     else if ( cv->pressed_display!=cvt_none )
 	shouldshow = cv->pressed_display;
-    else if ( (state&ksm_control) && (state&ksm_button2) )
+    else if ( (state&ksm_control) && (state&(ksm_button2|ksm_super)) )
 	shouldshow = cv->cb2_tool;
-    else if ( (state&ksm_button2) )
+    else if ( (state&(ksm_button2|ksm_super)) )
 	shouldshow = cv->b2_tool;
     else if ( (state&ksm_control) )
 	shouldshow = cv->cb1_tool;
@@ -1206,9 +1210,9 @@ void BVToolsSetCursor(BitmapView *bv, int state) {
 	shouldshow = bv->active_tool;
     else if ( bv->pressed_display!=bvt_none )
 	shouldshow = bv->pressed_display;
-    else if ( (state&ksm_control) && (state&ksm_button2) )
+    else if ( (state&ksm_control) && (state&(ksm_button2|ksm_super)) )
 	shouldshow = bv->cb2_tool;
-    else if ( (state&ksm_button2) )
+    else if ( (state&(ksm_button2|ksm_super)) )
 	shouldshow = bv->b2_tool;
     else if ( (state&ksm_control) )
 	shouldshow = bv->cb1_tool;

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 5-Jan-2002 -->
+  <!-- AP: Last modified: 7-Jan-2002 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -72,8 +72,8 @@ you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-020104.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 4-Jan-2002
+    <A HREF="pfaedit-020107.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 7-Jan-2002
   <LI>
     <A HREF="pfaedit-solaris-020102.tgz">Download pfaedit Solaris 8.0
     </A>executable Version: 2-Jan-2002
@@ -105,22 +105,22 @@ If you want to edit CID keyed fonts you probably need these
 <P>
 You can download a <A HREF="pfaedit-011219-1.src.rpm">source RPM</A>: Version:
 19-Dec-2001<BR>
-Or you can download the following three packages. Version: 4-Jan-2002
+Or you can download the following three packages. Version: 7-Jan-2002
 <UL>
   <LI>
-    <A HREF="libgunicode-020104.tgz">Unicode library source</A> (4-Jan-2002)<BR>
+    <A HREF="libgunicode-020107.tgz">Unicode library source</A> (7-Jan-2002)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGUnicode/index.html">docs</A>
   <LI>
-    <A HREF="libgdraw-020104.tgz">Unicode widget library source</A>
-    (4-Jan-2002)<BR>
+    <A HREF="libgdraw-020107.tgz">Unicode widget library source</A>
+    (7-Jan-2002)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
   <LI>
-    <A HREF="pfaedit_src-020104.tgz">Pfaedit source</A> (4-Jan-2002)<BR>
+    <A HREF="pfaedit_src-020107.tgz">Pfaedit source</A> (7-Jan-2002)<BR>
     -- <A HREF="overview.html">docs</A>
   <LI>
-    <A HREF="pfaedit_full-020104.tgz">All three bundled together </A>(4-Jan-2002)
+    <A HREF="pfaedit_full-020107.tgz">All three bundled together </A>(7-Jan-2002)
 </UL>
 <P>
 If you want to do autotracing around character images you should also download
@@ -230,6 +230,31 @@ up into one <A HREF="pfaedit_htdocs-011116.tgz">tgz file</A> 16-Nov-2001.
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    7 Jan 2002
+    <UL>
+      <LI>
+	Added a traditional chinese sample
+      <LI>
+	In the metrics view, the kerning offset was not rescaled when the size of
+	the window changed.
+      <LI>
+	Added a preference item to control the amount by which the arrow keys move
+	selected points
+      <LI>
+	Changed the behavior of the grid layer so that now points will snap to any
+	spline in the grid layer, not just horizontal and vertical splines
+      <LI>
+	Added a preference item to control this snap distance.
+      <LI>
+	Added a couple new outline display sizes to the fontview
+      <LI>
+	Use the "super" modifer to simulate a mouses middle button. If the super
+	key (the one with a windows flag on it on pc keyboards) is depressed then
+	any mouse click will be treated as if it were mouse button 2 that was used.
+      <LI>
+	Minor improvements in truetype hinting
+    </UL>
   <LI>
     4 Jan 2002
     <UL>

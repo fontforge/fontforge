@@ -680,6 +680,8 @@ static void FVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_Prev	2007
 #define MID_NextDef	2012
 #define MID_PrevDef	2013
+#define MID_72	2014
+#define MID_96	2015
 #define MID_CharInfo	2201
 #define MID_FindProblems 2216
 #define MID_MetaFont	2217
@@ -1461,6 +1463,10 @@ static void FVMenuSize(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	default_fv_font_size = dspsize = 36;
     else if ( mi->mid == MID_48 )
 	default_fv_font_size = dspsize = 48;
+    else if ( mi->mid == MID_72 )
+	default_fv_font_size = dspsize = 72;
+    else if ( mi->mid == MID_96 )
+	default_fv_font_size = dspsize = 96;
     else {
 	default_fv_antialias = fv->antialias = !fv->antialias;
 	fv->sf->display_antialias = fv->antialias;
@@ -2188,6 +2194,8 @@ static GMenuItem vwlist[] = {
     { { (unichar_t *) _STR_24, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, '2' }, '2', ksm_control, NULL, NULL, FVMenuSize, MID_24 },
     { { (unichar_t *) _STR_36, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, '3' }, '3', ksm_control, NULL, NULL, FVMenuSize, MID_36 },
     { { (unichar_t *) _STR_48, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, '4' }, '4', ksm_control, NULL, NULL, FVMenuSize, MID_48 },
+    { { (unichar_t *) _STR_72, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, '4' }, '7', ksm_control, NULL, NULL, FVMenuSize, MID_72 },
+    { { (unichar_t *) _STR_96, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, '4' }, '9', ksm_control, NULL, NULL, FVMenuSize, MID_96 },
     { { (unichar_t *) _STR_Antialias, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'A' }, '5', ksm_control, NULL, NULL, FVMenuSize, MID_AntiAlias },
     { NULL },			/* Some extra room to show bitmaps */
     { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL },
@@ -2258,6 +2266,14 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 	  break;
 	  case MID_48:
 	    mi->ti.checked = (fv->show!=NULL && fv->show==fv->filled && fv->show->pixelsize==48);
+	    mi->ti.disabled = fv->sf->onlybitmaps && fv->show!=fv->filled;
+	  break;
+	  case MID_72:
+	    mi->ti.checked = (fv->show!=NULL && fv->show==fv->filled && fv->show->pixelsize==72);
+	    mi->ti.disabled = fv->sf->onlybitmaps && fv->show!=fv->filled;
+	  break;
+	  case MID_96:
+	    mi->ti.checked = (fv->show!=NULL && fv->show==fv->filled && fv->show->pixelsize==96);
 	    mi->ti.disabled = fv->sf->onlybitmaps && fv->show!=fv->filled;
 	  break;
 	  case MID_AntiAlias:

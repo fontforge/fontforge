@@ -1561,7 +1561,9 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    sf->cidversion = temp;
 	} else if ( strmatch(tok,"Grid")==0 ) {
 	    sf->gridsplines = SFDGetSplineSet(sfd);
+#if 0
 	    SFFigureGrid(sf);
+#endif
 	} else if ( strmatch(tok,"BeginPrivate:")==0 ) {
 	    SFDGetPrivate(sfd,sf);
 	} else if ( strmatch(tok,"BeginSubrs:")==0 ) {	/* leave in so we don't croak on old sfd files */

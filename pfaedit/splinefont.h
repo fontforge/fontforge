@@ -353,6 +353,7 @@ typedef struct minimumdistance {
     /*  to control metrics... */
     SplinePoint *sp1, *sp2;
     unsigned int x: 1;
+    unsigned int done: 1;
     struct minimumdistance *next;
 } MinimumDistance;
 
@@ -436,7 +437,9 @@ typedef struct splinefont {
     enum charset encoding_name;
     SplinePointList *gridsplines;
     Undoes *gundoes, *gredoes;
+#if 0
     int *hsnaps, *vsnaps;
+#endif
     BDFFont *bitmaps;
     char *origname;		/* filename of font file (ie. if not an sfd) */
     char *autosavename;
@@ -521,6 +524,7 @@ extern void ttfdumpbitmap(SplineFont *sf,struct alltabs *at,real *sizes);
 extern int RealNear(real a,real b);
 extern int RealNearish(real a,real b);
 extern int RealApprox(real a,real b);
+extern int RealWithin(real a,real b,real fudge);
 
 extern void LineListFree(LineList *ll);
 extern void LinearApproxFree(LinearApprox *la);
@@ -731,7 +735,9 @@ extern int PSDictChangeEntry(struct psdict *dict, char *key, char *newval);
 
 extern void SCRound2Int(SplineChar *sc,struct fontview *);
 extern int hascomposing(SplineFont *sf,int u);
+#if 0
 extern void SFFigureGrid(SplineFont *sf);
+#endif
 
 struct cidmap;			/* private structure to encoding.c */
 extern int CID2NameEnc(struct cidmap *map,int cid, char *buffer, int len);

@@ -2457,8 +2457,10 @@ return;
     free(sf->origname);
     free(sf->autosavename);
     free(sf->version);
+#if 0
     free(sf->hsnaps);
     free(sf->vsnaps);
+#endif
     SplinePointListFree(sf->gridsplines);
     UndoesFree(sf->gundoes);
     UndoesFree(sf->gredoes);

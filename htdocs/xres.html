@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 21-Jan-2001 -->
-  <!-- AP: Last modified: 30-Dec-2001 -->
+  <!-- AP: Last modified: 5-Jan-2002 -->
   <TITLE>X Resources</TITLE>
 </HEAD>
 <BODY>
@@ -67,6 +67,26 @@ then the program will look at it.
     An integer (milliseconds)<BR>
     The maximum amount of time allowed between two clicks for them to be considered
     a double (triple, etc.) click.
+  <DT>
+    <CODE>Gdraw.MultiClickWiggle</CODE>
+  <DD>
+    An integer (pixels)<BR>
+    The maximum number of pixels the mouse is allowed to move between two clicks
+    and have them still be considered a double click.
+  <DT>
+    <CODE>Gdraw.TwoButtonFixup</CODE>
+  <DD>
+    A boolean<BR>
+    On a windows keyboard use the modifier key with the flag on it to simulate
+    mouse button 2 (middle button). If this key is depressed when a mouse button
+    is pressed or released then pretend it was button 2 that was pressed or release.
+  <DT>
+    <CODE>Gdraw.MacOSXCmd</CODE>
+  <DD>
+    A boolean<BR>
+    On Mac OS X the user will probably expect to use the Command (apple, cloverleaf)
+    key to control the menu (rather than the Control key). If this is set then
+    the command key will be mapped to the control key internally.
   <DT>
     <CODE>Gdraw.MultiClickWiggle</CODE>
   <DD>

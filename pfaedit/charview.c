@@ -1443,6 +1443,7 @@ return( fs->p->anysel );
 }
 
 static void SetFS( FindSel *fs, PressedOn *p, CharView *cv, GEvent *event) {
+    extern float snapdistance;
 
     memset(p,'\0',sizeof(PressedOn));
     p->pressed = true;
@@ -1455,7 +1456,7 @@ static void SetFS( FindSel *fs, PressedOn *p, CharView *cv, GEvent *event) {
     p->cx = (event->u.mouse.x-cv->xoff)/cv->scale;
     p->cy = (cv->height-event->u.mouse.y-cv->yoff)/cv->scale;
 
-    fs->fudge = 3.5/cv->scale;		/* 3.5 pixel fudge */
+    fs->fudge = snapdistance/cv->scale;		/* 3.5 pixel fudge */
     fs->xl = p->cx - fs->fudge;
     fs->xh = p->cx + fs->fudge;
     fs->yl = p->cy - fs->fudge;
@@ -1519,6 +1520,32 @@ static void CVSetConstrainPoint(CharView *cv, GEvent *event) {
 static void CVDoSnaps(CharView *cv, FindSel *fs) {
     PressedOn *p = fs->p;
 
+#if 1
+    if ( cv->drawmode!=dm_grid && *cv->heads[dm_grid]!=NULL ) {
+	PressedOn temp;
+	int oldseek = fs->seek_controls;
+	temp = *p;
+	fs->p = &temp;
+	fs->seek_controls = false;
+	if ( InSplineSet( fs, *cv->heads[dm_grid])) {
+	    if ( temp.spline!=NULL ) {
+		p->cx = ((temp.spline->splines[0].a*temp.t+
+			    temp.spline->splines[0].b)*temp.t+
+			    temp.spline->splines[0].c)*temp.t+
+			    temp.spline->splines[0].d;
+		p->cy = ((temp.spline->splines[1].a*temp.t+
+			    temp.spline->splines[1].b)*temp.t+
+			    temp.spline->splines[1].c)*temp.t+
+			    temp.spline->splines[1].d;
+	    } else if ( temp.sp!=NULL ) {
+		p->cx = temp.sp->me.x;
+		p->cy = temp.sp->me.y;
+	    }
+	}
+	fs->p = p;
+	fs->seek_controls = oldseek;
+    }
+#endif
     if ( p->cx>-fs->fudge && p->cx<fs->fudge )
 	p->cx = 0;
     else if ( p->cx>cv->sc->width-fs->fudge && p->cx<cv->sc->width+fs->fudge &&
@@ -1526,6 +1553,7 @@ static void CVDoSnaps(CharView *cv, FindSel *fs) {
 	p->cx = cv->sc->width;
     else if ( cv->p.width && p->cx>cv->p.cx-fs->fudge && p->cx<cv->p.cx+fs->fudge )
 	p->cx = cv->p.cx;		/* cx contains the old width */
+#if 0
     else if ( cv->sc->parent->hsnaps!=NULL && cv->drawmode!=dm_grid ) {
 	int i, *hsnaps = cv->sc->parent->hsnaps;
 	for ( i=0; hsnaps[i]!=0x80000000; ++i ) {
@@ -1535,8 +1563,10 @@ static void CVDoSnaps(CharView *cv, FindSel *fs) {
 	    }
 	}
     }
+#endif
     if ( p->cy>-fs->fudge && p->cy<fs->fudge )
 	p->cy = 0;
+#if 0
     else if ( cv->sc->parent->vsnaps!=NULL && cv->drawmode!=dm_grid ) {
 	int i, *vsnaps = cv->sc->parent->vsnaps;
 	for ( i=0; vsnaps[i]!=0x80000000; ++i ) {
@@ -1546,6 +1576,7 @@ static void CVDoSnaps(CharView *cv, FindSel *fs) {
 	    }
 	}
     }
+#endif
 }
 
 static void CVMouseDown(CharView *cv, GEvent *event ) {
@@ -1600,11 +1631,11 @@ return;
     } else if ( cv->active_tool == cvt_curve || cv->active_tool == cvt_corner ||
 	    cv->active_tool == cvt_tangent || cv->active_tool == cvt_pen ) {
 	InSplineSet(&fs,*cv->heads[cv->drawmode]);
-	if ( fs.p->sp==NULL )
+	if ( fs.p->sp==NULL && fs.p->spline==NULL )
 	    CVDoSnaps(cv,&fs);
     } else {
 	NearSplineSetPoints(&fs,*cv->heads[cv->drawmode]);
-	if ( fs.p->sp==NULL )
+	if ( fs.p->sp==NULL && fs.p->spline==NULL )
 	    CVDoSnaps(cv,&fs);
     }
 
@@ -1659,7 +1690,9 @@ void CVSetCharChanged(CharView *cv,int changed) {
 	    cv->fv->sf->changed = true;
 	    if ( cv->fv->cidmaster!=NULL )
 		cv->fv->cidmaster->changed = true;
+#if 0
 	    SFFigureGrid(cv->fv->sf);
+#endif
 	}
     } else {
 	if ( cv->drawmode==dm_fore )
