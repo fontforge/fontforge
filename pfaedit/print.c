@@ -276,6 +276,7 @@ static void dump_prologue(PI *pi) {
 }
 
 static int PIDownloadFont(PI *pi) {
+    int is_mm = pi->sf->mm!=NULL && MMValid(pi->sf->mm,false);
 
     pi->fontfile = tmpfile();
     if ( pi->fontfile==NULL ) {
@@ -285,7 +286,11 @@ return(false);
     GProgressStartIndicatorR(10,_STR_PrintingFont,_STR_PrintingFont,
 	    _STR_GeneratingPostscriptFont,pi->sf->charcnt,1);
     GProgressEnableStop(false);
-    if ( !_WritePSFont(pi->fontfile,pi->sf,pi->iscid?ff_cid:pi->twobyte?ff_ptype0:ff_pfa,0)) {
+    if ( !_WritePSFont(pi->fontfile,pi->sf,
+		is_mm?ff_mma:
+		pi->iscid?ff_cid:
+		pi->twobyte?ff_ptype0:
+		ff_pfa,0)) {
 	GProgressEndIndicator();
 	GWidgetErrorR(_STR_FailedGenPost,_STR_FailedGenPost );
 	fclose(pi->fontfile);

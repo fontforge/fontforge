@@ -1216,9 +1216,9 @@ return( false );
 	if ( scs[j]->refs!=NULL && scs[j]->refs->next==NULL )
 	    r3 = r2;		/* Space, not offset */
 	else if ( swap )
-	    r3 = RefFindAdobe(scs[j]->refs->next,&t3);
-	else
 	    r3 = RefFindAdobe(scs[j]->refs,&t3);
+	else
+	    r3 = RefFindAdobe(scs[j]->refs->next,&t3);
 
 	b.minx = myround(b.minx,round);
 	data[j][0] = b.minx;
@@ -1250,7 +1250,7 @@ return( false );		/* It's empty. that's easy. */
 }
 
 static int SCNeedsSubsPts(SplineChar *sc,enum fontformat format) {
-    if ( format!=ff_mm || sc->parent->mm==NULL ) {
+    if ( (format!=ff_mma && format!=ff_mmb) || sc->parent->mm==NULL ) {
 	if ( !sc->hconflicts && !sc->vconflicts )
 return( false );		/* No conflicts, no swap-over points needed */
 return( _SCNeedsSubsPts(sc));
@@ -1282,7 +1282,7 @@ static unsigned char *SplineChar2PS(SplineChar *sc,int *len,int round,int iscjk,
     if ( !(flags&ps_flag_nohints) && SCNeedsSubsPts(sc,format))
 	SCFigureHintMasks(sc);
 
-    if ( format==ff_mm && mm!=NULL ) {
+    if ( (format==ff_mma || format==ff_mmb) && mm!=NULL ) {
 	instance_count = mm->instance_count;
 	if ( instance_count>16 )
 	    instance_count = 16;
@@ -1380,7 +1380,7 @@ static void CvtSimpleHints(GrowBuf *gb, SplineChar *sc,BasePoint *startend,
     SplineChar *scs[MmMax];
     BasePoint current[MmMax];
 
-    if ( format==ff_mm && mm!=NULL ) {
+    if ( (format==ff_mma || format==ff_mmb) && mm!=NULL ) {
 	instance_count = mm->instance_count;
 	if ( instance_count>16 )
 	    instance_count = 16;
@@ -1467,7 +1467,7 @@ static void SplineFont2Subrs1(SplineFont *sf,int round, int iscjk,
     uint8 *temp;
     int len;
     GrowBuf gb;
-    MMSet *mm = format==ff_mm ? sf->mm : NULL;
+    MMSet *mm = (format==ff_mma || format==ff_mmb) ? sf->mm : NULL;
     int instance_count = mm!=NULL ? mm->instance_count : 1;
 
     for ( i=cnt=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL )
@@ -1631,7 +1631,7 @@ struct pschars *SplineFont2Chrs(SplineFont *sf, int iscjk,
     GrowBuf gb;
     int round = (flags&ps_flag_round)? true : false;
 
-    if ( format==ff_mm && mm!=NULL ) {
+    if ( (format==ff_mma || format==ff_mmb) && mm!=NULL ) {
 	instance_count = mm->instance_count;
 	sf = mm->instances[0];
 	fixed = 0;

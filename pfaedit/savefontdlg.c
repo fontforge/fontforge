@@ -78,13 +78,13 @@ struct gfc_data {
 };
 
 #if __Mac
-static char *extensions[] = { ".pfa", ".pfb", "", ".mult", ".pfb", ".ps", ".ps",
+static char *extensions[] = { ".pfa", ".pfb", "", ".mult", ".pfa", ".pfb", ".ps", ".ps",
 	".cid", ".cff", ".cid.cff",
 	".ttf", ".ttf", ".suit", ".dfont", ".otf", ".otf.dfont", ".otf",
 	".otf.dfont", ".svg", NULL };
 static char *bitmapextensions[] = { ".*bdf", ".ttf", ".dfont", ".bmap", ".dfont", ".*fnt", ".otb", ".none", NULL };
 #else
-static char *extensions[] = { ".pfa", ".pfb", ".bin", ".mult", ".pfb", ".ps", ".ps",
+static char *extensions[] = { ".pfa", ".pfb", ".bin", ".mult", ".pfa", ".pfb", ".ps", ".ps",
 	".cid", ".cff", ".cid.cff",
 	".ttf", ".ttf", ".ttf.bin", ".dfont", ".otf", ".otf.dfont", ".otf",
 	".otf.dfont", ".svg", NULL };
@@ -99,7 +99,8 @@ static GTextInfo formattypes[] = {
     { (unichar_t *) "PS Type 1 (MacBin)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
 #endif
     { (unichar_t *) "PS Type 1 (Multiple)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "PS Multiple Master", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) "PS Multiple Master(A)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) "PS Multiple Master(B)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "PS Type 3", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "PS Type 0", NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "PS CID", NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
@@ -1570,7 +1571,7 @@ return( WriteMultiplePSFont(sf,newname,sizes,res,NULL));
 	int bmap = oldbitmapstate;
 	if ( bmap==bf_otb ) bmap = bt_none;
 	switch ( oldformatstate ) {
-	  case ff_mm:
+	  case ff_mma: case ff_mmb:
 	    sf = sf->mm->instances[0];
 	  case ff_pfa: case ff_pfb: case ff_ptype3: case ff_ptype0:
 	  case ff_cid:
@@ -1711,6 +1712,10 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	i = ff_ttfsym;
     else if ( end-filename>8 && strmatch(end-strlen(".cid.cff"),".cid.cff")==0 )
 	i = ff_cffcid;
+    else if ( end-filename>7 && strmatch(end-strlen(".mm.pfa"),".mm.pfa")==0 )
+	i = ff_mma;
+    else if ( end-filename>7 && strmatch(end-strlen(".mm.pfb"),".mm.pfb")==0 )
+	i = ff_mmb;
     if ( extensions[i]==NULL ) {
 	for ( i=0; bitmaps[i]!=NULL; ++i ) {
 	    if ( end-filename>strlen(bitmaps[i]) &&
@@ -2446,25 +2451,26 @@ return( 0 );
 	formattypes[i].disabled = sf->onlybitmaps;
     formattypes[ff_ptype0].disabled = sf->onlybitmaps ||
 	    ( sf->encoding_name<em_jis208 && sf->encoding_name>=em_base);
-    formattypes[ff_mm].disabled = sf->mm==NULL || !MMValid(sf->mm,false);
+    formattypes[ff_mma].disabled = formattypes[ff_mmb].disabled =
+	     sf->mm==NULL || !MMValid(sf->mm,false);
     formattypes[ff_cffcid].disabled = sf->cidmaster==NULL;
     formattypes[ff_cid].disabled = sf->cidmaster==NULL;
     formattypes[ff_otfcid].disabled = sf->cidmaster==NULL;
     formattypes[ff_otfciddfont].disabled = sf->cidmaster==NULL;
     ofs = oldformatstate;
     if (( ofs==ff_ptype0 && formattypes[ff_ptype0].disabled ) ||
-	    (ofs==ff_mm && sf->mm==NULL) ||
+	    ((ofs==ff_mma || ofs==ff_mmb) && sf->mm==NULL) ||
 	    ((ofs==ff_cid || ofs==ff_cffcid || ofs==ff_otfcid || ofs==ff_otfciddfont) && formattypes[ff_cid].disabled))
 	ofs = ff_pfb;
     else if ( (ofs!=ff_cid && ofs!=ff_cffcid && ofs!=ff_otfcid && ofs!=ff_otfciddfont) && sf->cidmaster!=NULL )
 	ofs = ff_otfcid;
-    else if ( !formattypes[ff_mm].disabled )
-	ofs = ff_mm;
+    else if ( !formattypes[ff_mmb].disabled )
+	ofs = ff_mmb;
     if ( sf->onlybitmaps )
 	ofs = ff_none;
     if ( family ) {
 	if ( ofs==ff_pfa || ofs==ff_pfb || ofs==ff_multiple || ofs==ff_ptype3 ||
-		ofs==ff_ptype0 || ofs==ff_mm )
+		ofs==ff_ptype0 || ofs==ff_mma || ofs==ff_mmb )
 	    ofs = ff_pfbmacbin;
 	else if ( ofs==ff_cid || ofs==ff_otfcid || ofs==ff_cffcid )
 	    ofs = ff_otfciddfont;
@@ -2474,7 +2480,8 @@ return( 0 );
 	    ofs = ff_otfdfont;
 	formattypes[ff_pfa].disabled = true;
 	formattypes[ff_pfb].disabled = true;
-	formattypes[ff_mm].disabled = true;
+	formattypes[ff_mma].disabled = true;
+	formattypes[ff_mmb].disabled = true;
 	formattypes[ff_multiple].disabled = true;
 	formattypes[ff_ptype3].disabled = true;
 	formattypes[ff_ptype0].disabled = true;

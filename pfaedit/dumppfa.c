@@ -655,7 +655,7 @@ static int dumpprivatestuff(void (*dumpchar)(int ch,void *data), void *data,
     int iscjk;
     struct pschars *subrs, *chars;
     char *ND="def";
-    MMSet *mm = format==ff_mm ? sf->mm : NULL;
+    MMSet *mm = (format==ff_mma || format==ff_mmb)? sf->mm : NULL;
 
     if ( incid==NULL ) {
 	flex_max = SplineFontIsFlexible(sf,flags);
@@ -857,7 +857,7 @@ static void dumpfontinfo(void (*dumpchar)(int ch,void *data), void *data, Spline
 	++cnt;		/* descent */
 #endif
     }
-    if ( format==ff_mm )
+    if ( format==ff_mma || format==ff_mmb )
 	cnt += 3;
 
     dumpf(dumpchar,data,"/FontInfo %d dict dup begin\n", cnt );
@@ -898,7 +898,7 @@ static void dumpfontinfo(void (*dumpchar)(int ch,void *data), void *data, Spline
 	dumpf(dumpchar,data," /descent %d def\n", sf->descent );
 #endif
     }
-    if ( format==ff_mm ) {
+    if ( format==ff_mma || format==ff_mmb ) {
 	MMSet *mm = sf->mm;
 	int j,k;
 
@@ -991,7 +991,7 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
 	++cnt;		/* chars */
     }
     if ( sf->xuid!=NULL ) ++cnt;
-    if ( format==ff_mm )
+    if ( format==ff_mma || format==ff_mmb )
 	cnt += 7;
 
     if ( sf->uniqueid==0 )
@@ -1027,7 +1027,7 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
 	    SFIncrementXUID(sf);
     }
     dumpf(dumpchar,data,"/PaintType %d def\n", 0/*fd->painttype*/ );
-    if ( format==ff_mm ) {
+    if ( format==ff_mma || format==ff_mmb ) {
 	MMSet *mm = sf->mm;
 	int j,k;
 	DBounds mb[16];
@@ -1131,7 +1131,7 @@ static void dumpencodedstuff(void (*dumpchar)(int ch,void *data), void *data,
     struct fileencryptdata fed;
     void (*func)(int ch,void *data);
 
-    func = startfileencoding(dumpchar,data,&fed,format==ff_pfb);
+    func = startfileencoding(dumpchar,data,&fed,format==ff_pfb || format==ff_mmb);
     dumpprivatestuff(func,&fed,sf,NULL,flags,format);
     if ( format==ff_ptype0 ) {
 	dumpstr(func,&fed, "/" );
@@ -1176,7 +1176,7 @@ static void dumpfontdict(FILE *out, SplineFont *sf, int format, int flags ) {
 /*  binary/ascii flag where 1=>ascii, 2=>binary, 3=>eof??, the next four */
 /*  are a count of bytes between this header and the next one. First byte */
 /*  is least significant */
-    if ( format==ff_pfb ) {
+    if ( format==ff_pfb || format==ff_mmb ) {
 	FILE *temp;
 	temp = tmpfile();
 	dumpinitialascii((DumpChar) fputc,temp,sf,format );
@@ -1572,7 +1572,7 @@ int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format,int flags) {
 
     /* make sure that all reals get output with '.' for decimal points */
     oldloc = setlocale(LC_NUMERIC,"C");
-    if ( format==ff_mm && sf->mm!=NULL )
+    if ( (format==ff_mma || format==ff_mmb) && sf->mm!=NULL )
 	sf = sf->mm->normal;
     if ( format==ff_cid )
 	err = !dumpcidstuff(out,sf->subfontcnt>0?sf:sf->cidmaster,flags);
