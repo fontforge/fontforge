@@ -1983,7 +1983,7 @@ void _GXDraw_ImageMagnified(GWindow _w, GImage *image, GRect *magsrc,
 	XImage *xi;
 	/* Mono images are easy, because all X servers (no matter what their */
 	/*  depth) support 1 bit bitmaps */
-	/* Sadly, they do it so slowly as to be unusable... */
+	/* Sadly, they often do it so slowly as to be unusable... */
 	xi = gdraw_1_on_1_mag(gdisp,image,width,height,magsrc);
 	gdraw_xbitmap(gw,xi,base->clut,base->trans,
 		&temp,x+magsrc->x,y+magsrc->y);

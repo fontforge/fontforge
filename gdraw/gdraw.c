@@ -451,18 +451,27 @@ void GDrawTilePixmap(GWindow w, GWindow pixmap, GRect *src, int32 x, int32 y) {
 void GDrawDrawImageMagnified(GWindow w, GImage *img, GRect *dest, int32 x, int32 y,
 	int32 width, int32 height) {
     GRect temp;
+    struct _GImage *base = img->list_len==0?img->u.image:img->u.images[0];
 
+    if ( base->width==width && base->height==height ) {
+	/* Not magnified after all */
+	if ( dest==NULL )
+	    GDrawDrawImage(w,img,NULL,x,y);
+	else
+	    GDrawDrawImage(w,img,dest,x+dest->x,y+dest->y);
+return;
+    }
     if ( dest==NULL ) {
 	temp.x = temp.y = 0;
 	temp.width = width; temp.height = height;
 	dest = &temp;
     } else if ( dest->x<0 || dest->y<0 ||
-	    dest->x+dest->width > x+width || dest->y+dest->height > y+height ) {
+	    dest->x+dest->width > width || dest->y+dest->height > height ) {
 	temp = *dest;
 	if ( temp.x<0 ) { temp.width += temp.x; temp.x = 0; }
 	if ( temp.y<0 ) { temp.height += temp.y; temp.y = 0; }
-	if ( temp.x+temp.width>x+width ) temp.width = x+width-temp.x;
-	if ( temp.y+temp.height>y+height ) temp.height = y+height-temp.y;
+	if ( temp.x+temp.width>width ) temp.width = width-temp.x;
+	if ( temp.y+temp.height>height ) temp.height = height-temp.y;
 	dest = &temp;
     }
     (w->display->funcs->drawImageMag)(w,img,dest,x,y, width, height);

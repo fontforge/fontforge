@@ -703,13 +703,22 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
 }
 
 static void DrawImageList(CharView *cv,GWindow pixmap,ImageList *backimages) {
+    GRect size, temp;
+    int x,y;
+
+    GDrawGetSize(pixmap,&size);
+
     while ( backimages!=NULL ) {
 	struct _GImage *base = backimages->image->list_len==0?
 		backimages->image->u.image:backimages->image->u.images[0];
 
-	GDrawDrawImageMagnified(pixmap, backimages->image, NULL,
-		(int) (cv->xoff + rint(backimages->xoff * cv->scale)),
-		(int) (-cv->yoff + cv->height - rint(backimages->yoff*cv->scale)),
+	temp = size;
+	x = (int) (cv->xoff + rint(backimages->xoff * cv->scale));
+	y = (int) (-cv->yoff + cv->height - rint(backimages->yoff*cv->scale));
+	temp.x -= x; temp.y -= y;
+
+	GDrawDrawImageMagnified(pixmap, backimages->image, &temp,
+		x,y,
 		(int) rint((base->width*backimages->xscale*cv->scale)),
 		(int) rint((base->height*backimages->yscale*cv->scale)));
 	backimages = backimages->next;
