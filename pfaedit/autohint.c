@@ -2239,7 +2239,6 @@ static StemInfo *StemRemoveWideConflictingHintsContainingLittleOnes(StemInfo *st
 return( head );
 }
 
-#if 0
 static StemInfo *StemRemoveConflictingBigHint(StemInfo *stems,real big) {
     /* In "I" we may have a hint that runs from the top of the character to */
     /*  the bottom (especially if the serif is slightly curved), if it's the */
@@ -2261,7 +2260,7 @@ static StemInfo *StemRemoveConflictingBigHint(StemInfo *stems,real big) {
 	    p = stems;
 	stems = n;
     }
-
+#if 0
     /* if we have a hint which controls no points, conflicts with another hint*/
     /*  and contains the other hint completely then remove it */
     for ( p=NULL, stems=head; stems!=NULL; stems = n ) {
@@ -2286,10 +2285,9 @@ static StemInfo *StemRemoveConflictingBigHint(StemInfo *stems,real big) {
 	} else
 	    p = stems;
     }
-
+#endif
 return( head );
 }
-#endif
 
 HintInstance *HICopyTrans(HintInstance *hi, real mul, real offset) {
     HintInstance *first=NULL, *last, *cur, *p;
@@ -2414,7 +2412,7 @@ static StemInfo *CheckForGhostHints(StemInfo *stems,SplineChar *sc) {
     SplineSet *spl;
     Spline *spline, *first;
     SplinePoint *sp;
-    real base, width;
+    real base, width, toobig = (sc->parent->ascent+sc->parent->descent)/2;
     int i,startfound, widthfound;
 
     /* Get the alignment zones */
@@ -2425,7 +2423,7 @@ static StemInfo *CheckForGhostHints(StemInfo *stems,SplineChar *sc) {
     /*  example on "E" where we don't need any ghosts from the big stem because*/
     /*  the narrow stems provide the hints that PS needs */
     /* However, there are counter-examples. in Garamond-Pro the "T" character */
-    /*  has a horizontal stem a the top which stretches between two adjacent */
+    /*  has a horizontal stem at the top which stretches between two adjacent */
     /*  bluezones. Removing it is wrong. Um... Thanks Adobe */
     /* I'd guess the "big" check is more important */
     for ( prev=NULL, s=stems; s!=NULL; s=snext ) {
@@ -2438,7 +2436,8 @@ static StemInfo *CheckForGhostHints(StemInfo *stems,SplineChar *sc) {
 		widthfound = i;
 	}
 	if ( startfound!=-1 && widthfound!=-1 && 
-		(startfound+1==widthfound || startfound==widthfound+1))
+		(startfound+1==widthfound || startfound==widthfound+1) &&
+		s->width<toobig )
 	    startfound = widthfound = -1;
 	if ( startfound!=-1 && widthfound!=-1 ) {
 	    if ( prev==NULL )
@@ -2638,7 +2637,8 @@ static StemInfo *SCFindStems(EIList *el, int major, int removeOverlaps,DStemInfo
 	stems = StemRemoveWideConflictingHintsContainingLittleOnes(stems);
 	if ( major==0 )
 	    stems = CheckForGhostHints(stems,el->sc);
-#if 0	/* Should be done by WiderThanLong now, and done better */
+		/* Should be done by WiderThanLong now, and done better */
+		/* Nope. There are some fonts where these hints are longer than wide but still should go. */
 	if ( StemListAnyConflicts(stems) ) {
 	    real big = (el->coordmax[1-major]-el->coordmin[1-major])*.40;
 	    char *pt;
@@ -2655,7 +2655,6 @@ static StemInfo *SCFindStems(EIList *el, int major, int removeOverlaps,DStemInfo
 	    /*  anyway after adding hints from References */
 	}
 	/*stems = StemRemoveConflictingHintsWithoutPoints(stems);*/ /* Too extreme */
-#endif
     }
     if ( dstems!=NULL )
 	*dstems = DStemPrune( *dstems );
