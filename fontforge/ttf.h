@@ -443,6 +443,7 @@ struct glyphinfo {
     int flags;
     int fixed_width;
     int32 *bsizes;
+    unsigned int dovariations: 1;
     unsigned int onlybitmaps: 1;
     unsigned int has_instrs: 1;
     SplineFont *sf;
@@ -535,6 +536,14 @@ struct alltabs {
     int morxlen;
     FILE *pfed;
     int pfedlen;
+    FILE *gvar;
+    int gvarlen;
+    FILE *fvar;
+    int fvarlen;
+    FILE *cvar;
+    int cvarlen;
+    FILE *avar;
+    int avarlen;
     int defwid, nomwid;
     int sidcnt;
     int lenpos;
@@ -547,12 +556,15 @@ struct alltabs {
     unsigned int msbitmaps: 1;
     unsigned int otbbitmaps: 1;
     unsigned int isotf: 1;
+    unsigned int dovariations: 1;	/* Output Apple *var tables (for mm fonts) */
     unsigned int error: 1;
     struct glyphinfo gi;
     int isfixed;
     struct fd2data *fds;
+    int next_strid;
 
     struct feat_name { int strid; struct macname *mn, *smn; } *feat_name;
+    struct other_names { int strid; struct macname *mn; struct other_names *next; } *other_names;
     struct macname2 *ordered_feat;
 
     int next_lookup;	/* for doing nested lookups in contextual features */
@@ -588,6 +600,8 @@ struct contexttree {
 };
 
 
+extern int ttfFixupRef(SplineChar **chars,int i);
+
     /* Open type Advanced Typography Tables */
 extern void otf_orderlangs(SplineFont *sf);
 extern void otf_dumpgpos(struct alltabs *at, SplineFont *sf);
@@ -610,6 +624,12 @@ extern uint32 MacFeatureToOTTag(int featureType,int featureSetting);
 extern int OTTagToMacFeature(uint32 tag, int *featureType,int *featureSetting);
 extern uint16 *props_array(SplineFont *sf,int numGlyphs);
 extern int haslrbounds(SplineChar *sc, PST **left, PST **right);
+
+    /* Apple variation tables */
+extern int ContourPtNumMatch(MMSet *mm, int enc);
+extern int16 **SCFindDeltas(MMSet *mm, int enc, int *_ptcnt);
+extern int16 **CvtFindDeltas(MMSet *mm, int *_ptcnt);
+extern void ttf_dumpvariations(struct alltabs *at, SplineFont *sf);
 
 extern struct macsettingname {
     int mac_feature_type;
@@ -661,3 +681,4 @@ extern void readttfgdef(FILE *ttf,struct ttfinfo *info);
 
 extern void VariationFree(struct ttfinfo *info);
 extern void readttfvariations(struct ttfinfo *info, FILE *ttf);
+

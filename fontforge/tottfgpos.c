@@ -234,6 +234,7 @@ return( ScriptFromUnicode( uni,sf ));
 return( DEFAULT_SCRIPT );
 
     if ( sf->cidmaster ) sf=sf->cidmaster;
+    else if ( sf->mm!=NULL ) sf=sf->mm->normal;
     for ( i=0; i<2; ++i ) {
 	for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
 	    if ( pst->script_lang_index!=SLI_UNKNOWN &&
@@ -259,8 +260,8 @@ return( ScriptIsRightToLeft(SCScriptFromUnicode(sc)));
 int SLIContainsR2L(SplineFont *sf,int sli) {
     struct script_record *sr;
 
-    if ( sf->cidmaster!=NULL )
-	sf = sf->cidmaster;
+    if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
+    else if ( sf->mm!=NULL ) sf=sf->mm->normal;
     sr = sf->script_lang[sli];
 return( ScriptIsRightToLeft(sr[0].script) );
 }
@@ -2665,6 +2666,7 @@ static void dump_script_table(FILE *g___,SplineFont *sf,
 
     memset(touched,0,lc);
     if ( sf->cidmaster ) sf = sf->cidmaster;
+    else if ( sf->mm!=NULL ) sf=sf->mm->normal;
     for ( i=0; sf->script_lang[i]!=NULL; ++i ) if ( used[i] ) {
 	for ( j=0; sf->script_lang[i][j].script!=0 &&
 		sf->script_lang[i][j].script!=script; ++j );
@@ -3058,7 +3060,7 @@ return( NULL );
     lfile = lfile2;
     features = CoalesceLookups(sf,features_ordered);
 
-    master = ( sf->cidmaster ) ? sf->cidmaster : sf;
+    master = ( sf->cidmaster ) ? sf->cidmaster : ( sf->mm ) ? sf->mm->normal : sf;
     for ( i=0; master->script_lang[i]!=NULL; ++i );
     used = gcalloc(i,1);
     for ( l=lookups; l!=NULL; l=l->next )
@@ -3308,6 +3310,7 @@ void otf_dumpgdef(struct alltabs *at, SplineFont *_sf) {
     SplineFont *sf;
 
     if ( _sf->cidmaster ) _sf = _sf->cidmaster;
+    else if ( _sf->mm!=NULL ) _sf=_sf->mm->normal;
 
     glyphs = NULL;
     for ( k=0; k<2; ++k ) {
@@ -3731,6 +3734,7 @@ void otf_orderlangs(SplineFont *sf) {
     int i,j,k,l, len,max;
 
     if ( sf->cidmaster!=NULL ) sf=sf->cidmaster;
+    else if ( sf->mm!=NULL ) sf=sf->mm->normal;
     if ( sf->script_lang==NULL )
 return;
 

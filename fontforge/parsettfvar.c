@@ -176,6 +176,7 @@ return;
 static SplineChar **InfoCopyGlyphs(struct ttfinfo *info) {
     SplineChar **chars = galloc(info->glyph_cnt*sizeof(SplineChar *));
     int i;
+    RefChar *r;
 
     for ( i=0; i<info->glyph_cnt; ++i ) {
 	if ( info->chars[i]==NULL )
@@ -183,9 +184,15 @@ static SplineChar **InfoCopyGlyphs(struct ttfinfo *info) {
 	else {
 	    chars[i] = SplineCharCopy(info->chars[i],NULL);
 	    PSTFree(chars[i]->possub); chars[i]->possub = NULL;
+	    for ( r=chars[i]->layers[ly_fore].refs; r!=NULL; r=r->next )
+		r->sc = NULL;
 	    chars[i]->changed = false;
+	    chars[i]->ticked = false;
 	}
     }
+
+    for ( i=0; i<info->glyph_cnt; ++i )
+	ttfFixupRef(chars,i);
 return( chars );
 }
 

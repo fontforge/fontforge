@@ -551,6 +551,7 @@ return( true );
 return( false );
 
     if ( sf->cidmaster!=NULL ) sf=sf->cidmaster;
+    else if ( sf->mm!=NULL ) sf=sf->mm->normal;
 
     if ( sf->script_lang==NULL ) {
 	GDrawIError("How can there be ligatures with no script/lang list?");

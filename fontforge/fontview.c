@@ -491,7 +491,10 @@ return( true );
 	for ( i=0; i<mm->instance_count; ++i )
 	    if ( sf->mm->instances[i]->changed )
 return( true );
-	/* Changes to the blended font aren't real */
+	/* Changes to the blended font aren't real (for adobe fonts) */
+	if ( mm->apple && mm->normal->changed )
+return( true );
+
 return( false );
     } else
 return( sf->changed );
@@ -1626,6 +1629,7 @@ return;
     sli = u_strtol(upt,&end,10);
     while ( *end==' ' ) ++end;
 
+    if ( *end=='.' ) ++end;
     suffix = cu_copy(end);
     free(usuffix);
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i])
@@ -2266,15 +2270,17 @@ return;
 }
 
 void FVApplySubstitution(FontView *fv,uint32 script, uint32 lang, uint32 tag) {
-    SplineFont *sf = fv->sf;
+    SplineFont *sf = fv->sf, *sf_sl=sf;
     SplineChar *sc, *replacement;
     PST *pst;
     int i;
 
+    if ( sf_sl->cidmaster!=NULL ) sf_sl = sf_sl->cidmaster;
+    else if ( sf_sl->mm!=NULL ) sf_sl = sf_sl->mm->normal;
     for ( i=0; i<sf->charcnt; ++i ) if ( fv->selected[i] && (sc=sf->chars[i])!=NULL ) {
 	for ( pst = sc->possub; pst!=NULL; pst=pst->next ) {
 	    if ( pst->type==pst_substitution && pst->tag==tag &&
-		    ScriptLangMatch(sf->script_lang[pst->script_lang_index],script,lang))
+		    ScriptLangMatch(sf_sl->script_lang[pst->script_lang_index],script,lang))
 	break;
 	}
 	if ( pst!=NULL ) {

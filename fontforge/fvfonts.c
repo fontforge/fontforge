@@ -73,7 +73,9 @@ static int FixupSLI(int sli,SplineFont *from,SplineChar *sc) {
     if ( from==NULL )
 return( SFAddScriptLangIndex(to,SCScriptFromUnicode(sc),DEFAULT_LANG));
     if ( from->cidmaster ) from = from->cidmaster;
+    else if ( from->mm!=NULL ) from = from->mm->normal;
     if ( to->cidmaster ) to = to->cidmaster;
+    else if ( to->mm!=NULL ) to = to->mm->normal;
     if ( from==to )
 return( sli );
 
@@ -175,6 +177,10 @@ SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into) {
     nsc->layers[ly_back].images = NULL;
     nsc->layers[ly_fore].undoes = nsc->layers[ly_back].undoes = NULL;
     nsc->layers[ly_fore].redoes = nsc->layers[ly_back].redoes = NULL;
+    if ( nsc->ttf_instrs_len!=0 ) {
+	nsc->ttf_instrs = galloc(nsc->ttf_instrs_len);
+	memcpy(nsc->ttf_instrs,sc->ttf_instrs,nsc->ttf_instrs_len);
+    }
     nsc->kerns = NULL;
     nsc->possub = PSTCopy(nsc->possub,nsc,sc->parent);
     if ( sc->parent!=NULL && into->order2!=sc->parent->order2 )

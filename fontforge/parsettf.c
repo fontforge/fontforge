@@ -3814,36 +3814,36 @@ return;
     rf->transform[5] = sofar.y-inref.y;
 }
 
-static int ttfFixupRef(struct ttfinfo *info,int i) {
+int ttfFixupRef(SplineChar **chars,int i) {
     RefChar *ref, *prev, *next;
 
-    if ( info->chars[i]==NULL )		/* Can happen in ttc files */
+    if ( chars[i]==NULL )		/* Can happen in ttc files */
 return( false );
-    if ( info->chars[i]->ticked )
+    if ( chars[i]->ticked )
 return( false );
-    info->chars[i]->ticked = true;
+    chars[i]->ticked = true;
     prev = NULL;
-    for ( ref=info->chars[i]->layers[ly_fore].refs; ref!=NULL; ref=next ) {
+    for ( ref=chars[i]->layers[ly_fore].refs; ref!=NULL; ref=next ) {
 	if ( ref->sc!=NULL )
     break;				/* Already done */
 	next = ref->next;
-	if ( !ttfFixupRef(info,ref->local_enc)) {
+	if ( !ttfFixupRef(chars,ref->local_enc)) {
 	    if ( prev==NULL )
-		info->chars[i]->layers[ly_fore].refs = next;
+		chars[i]->layers[ly_fore].refs = next;
 	    else
 		prev->next = next;
 	    free(ref);
 	} else {
-	    ref->sc = info->chars[ref->local_enc];
+	    ref->sc = chars[ref->local_enc];
 	    ref->adobe_enc = getAdobeEnc(ref->sc->name);
 	    if ( ref->point_match )
-		ttfPointMatch(info->chars[i],ref);
-	    SCReinstanciateRefChar(info->chars[i],ref);
-	    SCMakeDependent(info->chars[i],ref->sc);
+		ttfPointMatch(chars[i],ref);
+	    SCReinstanciateRefChar(chars[i],ref);
+	    SCMakeDependent(chars[i],ref->sc);
 	    prev = ref;
 	}
     }
-    info->chars[i]->ticked = false;
+    chars[i]->ticked = false;
 return( true );
 }
 
@@ -3852,7 +3852,7 @@ static void ttfFixupReferences(struct ttfinfo *info) {
 
     GProgressChangeLine2R(_STR_FixingupReferences);
     for ( i=0; i<info->glyph_cnt; ++i ) {
-	ttfFixupRef(info,i);
+	ttfFixupRef(info->chars,i);
 	GProgressNext();
     }
     GProgressNextStage();
@@ -4223,6 +4223,7 @@ static SplineFont *SFFromTuple(SplineFont *basesf,struct variations *v,int tuple
 	MMSet *mm, struct ttfinfo *info) {
     SplineFont *sf;
     int i;
+    RefChar *r;
 
     sf = SplineFontEmpty();
     sf->display_size = basesf->display_size;
@@ -4244,11 +4245,23 @@ static SplineFont *SFFromTuple(SplineFont *basesf,struct variations *v,int tuple
     sf->mm = mm;
     sf->charcnt = basesf->charcnt;
     sf->chars = gcalloc(sf->charcnt,sizeof(SplineChar *));
-    for ( i=0; i<sf->charcnt; ++i ) if ( basesf->chars[i]!=NULL && basesf->chars[i]->orig_pos<info->glyph_cnt ) {
-	sf->chars[i] = v->tuples[tuple].chars[basesf->chars[i]->orig_pos];
-	sf->chars[i]->enc = i;
-	sf->chars[i]->parent = sf;
+    sf->order2 = true;
+    for ( i=0; i<sf->charcnt; ++i ) if ( basesf->chars[i]!=NULL ) {
+	if ( SCDuplicate(basesf->chars[i])!=basesf->chars[i] ) {
+	    SplineChar *dsc = SCDuplicate(basesf->chars[i]);
+	    sf->chars[i] = MakeDupRef(v->tuples[tuple].chars[dsc->orig_pos],i,basesf->chars[i]->unicodeenc);
+	    sf->chars[i]->parent = sf;
+	} else if ( basesf->chars[i]->orig_pos<info->glyph_cnt ) {
+	    sf->chars[i] = v->tuples[tuple].chars[basesf->chars[i]->orig_pos];
+	    sf->chars[i]->enc = i;
+	    sf->chars[i]->parent = sf;
+	}
     }
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	for ( r=sf->chars[i]->layers[ly_fore].refs; r!=NULL; r=r->next )
+	    SCReinstanciateRefChar(sf->chars[i],r);
+    }
+
     sf->ttf_tables = v->tuples[tuple].cvt;
 
     free(v->tuples[tuple].chars);
@@ -4304,8 +4317,6 @@ static void MMFillFromVAR(SplineFont *sf, struct ttfinfo *info) {
 	}
 	mm->axismaps[i].axisnames = MacNameCopy(FindMacName(info, v->axes[i].nameid));
     }
-    for ( i=0; i<mm->instance_count; ++i )
-	mm->instances[i] = SFFromTuple(sf,v,i,mm,info);
     mm->named_instance_count = v->instance_count;
     mm->named_instances = galloc(v->instance_count*sizeof(struct named_instance));
     for ( i=0; i<v->instance_count; ++i ) {
@@ -4313,6 +4324,8 @@ static void MMFillFromVAR(SplineFont *sf, struct ttfinfo *info) {
 	v->instances[i].coords = NULL;
 	mm->named_instances[i].names = MacNameCopy(FindMacName(info, v->instances[i].nameid));
     }
+    for ( i=0; i<mm->instance_count; ++i )
+	mm->instances[i] = SFFromTuple(sf,v,i,mm,info);
     VariationFree(info);
 }
 

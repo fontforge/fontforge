@@ -117,6 +117,9 @@ static GTextInfo **KCSLIArray(SplineFont *sf,int isv) {
     KernClass *kc, *head = isv ? sf->vkerns : sf->kerns;
     GTextInfo **ti;
 
+    if ( sf->cidmaster!=NULL ) sf=sf->cidmaster;
+    else if ( sf->mm!=NULL ) sf = sf->mm->normal;
+
     for ( kc=head, cnt=0; kc!=NULL; kc=kc->next, ++cnt );
     ti = gcalloc(cnt+1,sizeof(GTextInfo*));
     for ( kc=head, cnt=0; kc!=NULL; kc=kc->next, ++cnt ) {
@@ -132,6 +135,9 @@ static GTextInfo *KCSLIList(SplineFont *sf,int isv) {
     int cnt;
     KernClass *kc, *head = isv ? sf->vkerns : sf->kerns;
     GTextInfo *ti;
+
+    if ( sf->cidmaster!=NULL ) sf=sf->cidmaster;
+    else if ( sf->mm!=NULL ) sf = sf->mm->normal;
 
     for ( kc=head, cnt=0; kc!=NULL; kc=kc->next, ++cnt );
     ti = gcalloc(cnt+1,sizeof(GTextInfo));
@@ -616,13 +622,17 @@ static void KCD_EditOffset(KernClassDlg *kcd) {
 static int KC_Sli(GGadget *g, GEvent *e) {
     KernClassDlg *kcd;
     int sli;
+    SplineFont *sf = kcd->kcld->sf;
+
+    if ( sf->mm!=NULL ) sf = sf->mm->normal;
+    else if ( sf->cidmaster!=NULL ) sf=sf->cidmaster;
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
 	kcd = GDrawGetUserData(GGadgetGetWindow(g));
 	sli = GGadgetGetFirstListSelectedItem(g);
-	if ( kcd->kcld->sf->script_lang==NULL ||
-		kcd->kcld->sf->script_lang[sli]==NULL )
-	    ScriptLangList(kcd->kcld->sf,g,kcd->orig!=NULL?kcd->orig->sli:0);
+	if ( sf->script_lang==NULL ||
+		sf->script_lang[sli]==NULL )
+	    ScriptLangList(sf,g,kcd->orig!=NULL?kcd->orig->sli:0);
     }
 return( true );
 }
@@ -630,6 +640,7 @@ return( true );
 static int KC_OK(GGadget *g, GEvent *e) {
     static int flag_cid[] = { CID_R2L, CID_IgnBase, CID_IgnLig, CID_IgnMark, 0 };
     static int flag_bits[] = { pst_r2l, pst_ignorebaseglyphs, pst_ignoreligatures, pst_ignorecombiningmarks };
+    SplineFont *sf;
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	KernClassDlg *kcd = GDrawGetUserData(GGadgetGetWindow(g));
@@ -640,13 +651,17 @@ static int KC_OK(GGadget *g, GEvent *e) {
 	int32 len;
 	GTextInfo **ti;
 
+	sf = kcd->kcld->sf;
+	if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
+	else if ( sf->mm!=NULL ) sf = sf->mm->normal;
+
 	if ( GDrawIsVisible(kcd->cw))
 return( KCD_Next(g,e));
 	else if ( GDrawIsVisible(kcd->kw))
 return( KCD_Next2(g,e));
 
-	if ( kcd->kcld->sf->script_lang==NULL || sli<0 ||
-		kcd->kcld->sf->script_lang[sli]==NULL ) {
+	if ( sf->script_lang==NULL || sli<0 ||
+		sf->script_lang[sli]==NULL ) {
 	    GWidgetErrorR(_STR_SelectAScript,_STR_SelectAScript);
 return( true );
 	}
@@ -687,6 +702,7 @@ return( true );
 	    if ( GGadgetIsChecked(GWidgetGetControl(kcd->gw,flag_cid[i])))
 		kc->flags |= flag_bits[i];
 	kcd->kcld->sf->changed = true;
+	sf->changed = true;
 
 	GDrawDestroyWindow(kcd->gw);
     }

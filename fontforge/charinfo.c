@@ -806,6 +806,8 @@ int SFAddScriptLangIndex(SplineFont *sf,uint32 script,uint32 lang) {
     int i;
 
     if ( sf->cidmaster ) sf = sf->cidmaster;
+    else if ( sf->mm!=NULL ) sf=sf->mm->normal;
+
     if ( script==0 ) script=DEFAULT_SCRIPT;
     if ( lang==0 ) lang=DEFAULT_LANG;
     if ( sf->script_lang==NULL )
@@ -857,6 +859,7 @@ static void SFGuessScriptList(SplineFont *sf) {
     }
 
     if ( sf->cidmaster ) sf = sf->cidmaster;
+    else if ( sf->mm!=NULL ) sf=sf->mm->normal;
     if ( sf->script_lang!=NULL )
 return;
     sf->script_lang = gcalloc(2,sizeof(struct script_record *));
@@ -898,6 +901,7 @@ int SFFindScriptLangRecord(SplineFont *sf,struct script_record *sr) {
     int i;
 
     if ( sf->cidmaster ) sf = sf->cidmaster;
+    else if ( sf->mm!=NULL ) sf=sf->mm->normal;
     if ( sf->script_lang==NULL )
 return( -1 );
     for ( i=0; sf->script_lang[i]!=NULL; ++i ) {
@@ -911,6 +915,7 @@ int SFAddScriptLangRecord(SplineFont *sf,struct script_record *sr) {
     int i;
 
     if ( sf->cidmaster ) sf = sf->cidmaster;
+    else if ( sf->mm!=NULL ) sf=sf->mm->normal;
     if ( sf->script_lang==NULL )
 	sf->script_lang = gcalloc(2,sizeof(struct script_record *));
     for ( i=0; sf->script_lang[i]!=NULL; ++i ) {
@@ -961,6 +966,7 @@ int SCDefaultSLI(SplineFont *sf, SplineChar *default_script) {
     PST *pst;
 
     if ( sf->cidmaster ) sf = sf->cidmaster;
+    else if ( sf->mm!=NULL ) sf=sf->mm->normal;
 
     /* Try to guess a reasonable default */
     if ( default_script==(SplineChar *) -1 ) {
@@ -1022,6 +1028,7 @@ return( def_sli );
 int SLICount(SplineFont *sf) {
     int i = 0;
     if ( sf->cidmaster ) sf = sf->cidmaster;
+    else if ( sf->mm!=NULL ) sf=sf->mm->normal;
     if ( sf->script_lang!=NULL )
 	for ( i=0; sf->script_lang[i]!=NULL; ++i );
 return( i );
@@ -1036,6 +1043,7 @@ GTextInfo *SFLangList(SplineFont *sf,int addfinal,SplineChar *default_script) {
     int def_sli;
 
     if ( sf->cidmaster ) sf = sf->cidmaster;
+    else if ( sf->mm!=NULL ) sf=sf->mm->normal;
     def_sli = SCDefaultSLI(sf,default_script);
 
     i = 0;
@@ -1067,6 +1075,7 @@ GTextInfo **SFLangArray(SplineFont *sf,int addfinal) {
     GTextInfo **ti;
 
     if ( sf->cidmaster ) sf = sf->cidmaster;
+    else if ( sf->mm!=NULL ) sf=sf->mm->normal;
     for ( i=0; sf->script_lang[i]!=NULL; ++i );
     ti = gcalloc(i+4,sizeof( GTextInfo * ));
     for ( i=0; sf->script_lang[i]!=NULL; ++i ) {
@@ -1856,6 +1865,7 @@ GTextInfo *AddMacFeatures(GTextInfo *opentype,enum possub_type type,SplineFont *
 return( opentype );
 
     if ( sf->cidmaster ) sf = sf->cidmaster;
+    else if ( sf->mm!=NULL ) sf=sf->mm->normal;
 
     cnt = 0;		/* Yes, I want it outside, look at the end of the loop */
     for ( i=0; i<2; ++i ) {
@@ -3554,6 +3564,7 @@ static unichar_t *SLICheck(SplineChar *sc,unichar_t *data) {
     /*  it was copied from us */
     new = sli;
     if ( sf->cidmaster ) sf = sf->cidmaster;
+    else if ( sf->mm!=NULL ) sf=sf->mm->normal;
     if ( sf->script_lang==NULL )
 	new = SFAddScriptLangIndex(sf,SCScriptFromUnicode(sc),DEFAULT_LANG);
     else {
@@ -4413,8 +4424,12 @@ static SplineChar *SuffixCheck(SplineChar *sc,char *suffix) {
 
     if ( *suffix=='.' ) ++suffix;
     if ( sf->cidmaster!=NULL ) {
-	sprintf( namebuf, "cid-%d.%s", sc->enc, suffix );
+	sprintf( namebuf, "%s.%d.%s", sf->cidmaster->ordering, sc->enc, suffix );
 	alt = SFGetChar(sf,-1,namebuf);
+	if ( alt==NULL ) {
+	    sprintf( namebuf, "cid-%d.%s", sc->enc, suffix );
+	    alt = SFGetChar(sf,-1,namebuf);
+	}
     }
     if ( alt==NULL && sc->unicodeenc!=-1 ) {
 	sprintf( namebuf, "uni%04X.%s", sc->unicodeenc, suffix );
