@@ -68,7 +68,11 @@ static void (*_png_read_image)(png_structp,png_bytep*);
 static void (*_png_read_end)(png_structp,png_infop);
 
 static int loadpng() {
+#  if !defined(_LIBPNG12)
     libpng = dlopen("libpng.so",RTLD_LAZY);
+#  else		/* After version 1.2.1 (I think) dynamic libpng is called libpng12 */
+    libpng = dlopen("libpng12.so",RTLD_LAZY);
+#  endif
     if ( libpng==NULL ) {
 	GDrawIError("%s", dlerror());
 return( 0 );
@@ -166,8 +170,7 @@ return( NULL );
     if (info_ptr->color_type == PNG_COLOR_TYPE_RGB)
 	_png_set_filler(png_ptr, '\0', PNG_FILLER_BEFORE);
 
-    if ( (info_ptr->color_type==PNG_COLOR_TYPE_GRAY || info_ptr->color_type==PNG_COLOR_TYPE_PALETTE ) &&
-	    info_ptr->bit_depth == 1 ) {
+    if ( info_ptr->color_type==PNG_COLOR_TYPE_GRAY && info_ptr->bit_depth == 1 ) {
 	ret = GImageCreate(it_mono,info_ptr->width,info_ptr->height);
     } else if ( info_ptr->color_type==PNG_COLOR_TYPE_GRAY || info_ptr->color_type==PNG_COLOR_TYPE_GRAY_ALPHA ) {
 	GClut *clut;
@@ -181,7 +184,8 @@ return( NULL );
 	ret = GImageCreate(it_true,info_ptr->width,info_ptr->height);
     else {
 	GClut *clut;
-	ret = GImageCreate(it_index,info_ptr->width,info_ptr->height);
+	ret = GImageCreate(info_ptr->bit_depth != 1? it_index : it_mono,
+		info_ptr->width,info_ptr->height);
 	clut = ret->u.image->clut;
 	clut->is_grey = true;
 	clut->clut_len = info_ptr->num_palette;
