@@ -865,10 +865,8 @@ static char str_Dontsave[] = "Non salvare";
 static unichar_t mnemonic_Dontsave[] = 'D';
 static char str_Fontchange[] = "Font modificato";
 /* Font %.70s in file %.70s has been changed.\nDo you want to save it? */
-static char str_Fontchangepre[] = "Il font ";
-static char str_Fontchangemid[] = " nel file ";
-static char str_Fontchangepost[] = " è stato modificato.\012Lo vuoi salvare?";
-static char str_Fontchangerevertpost[] = " è stato modificato.\012Ritornado perderai tutte le modifiche.\012Vuoi veramente ritornare?";
+static char str_FontChangedMsg[] = "Il font %1$.40hs nel file %2$.40hs è stato modificato.\012Lo vuoi salvare?";
+static char str_FontChangedRevertMsg[] = "Il font %1$.40hs nel file %2$.40hs è stato modificato.\012Ritornado perderai tutte le modifiche.\012Vuoi veramente ritornare?";
     /* General messages from fontview.c */
 static char str_Revert[] = "Ritornare";
 static unichar_t mnemonic_Revert[] = 'R';

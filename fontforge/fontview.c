@@ -278,7 +278,6 @@ static void FVFlattenAllBitmapSelections(FontView *fv) {
 }
 
 static int AskChanged(SplineFont *sf) {
-    unichar_t ubuf[300];
     int ret;
     static int buts[] = { _STR_Save, _STR_Dontsave, _STR_Cancel, 0 };
     char *filename, *fontname;
@@ -294,28 +293,17 @@ static int AskChanged(SplineFont *sf) {
 	filename = sf->origname;
     if ( filename==NULL ) filename = "untitled.sfd";
     filename = GFileNameTail(filename);
-    u_strcpy(ubuf, GStringGetResource( _STR_Fontchangepre,NULL ));
-    uc_strncat(ubuf,fontname, 70);
-    u_strcat(ubuf, GStringGetResource( _STR_Fontchangemid,NULL ));
-    uc_strncat(ubuf,filename, 70);
-    u_strcat(ubuf, GStringGetResource( _STR_Fontchangepost,NULL ));
-    ret = GWidgetAskR_( _STR_Fontchange,buts,0,2,ubuf);
+    ret = GWidgetAskR( _STR_Fontchange,buts,0,2,_STR_FontChangedMsg,fontname,filename);
 return( ret );
 }
 
 static int RevertAskChanged(char *fontname,char *filename) {
-    unichar_t ubuf[350];
     int ret;
     static int buts[] = { _STR_Revert, _STR_Cancel, 0 };
 
     if ( filename==NULL ) filename = "untitled.sfd";
     filename = GFileNameTail(filename);
-    u_strcpy(ubuf, GStringGetResource( _STR_Fontchangepre,NULL ));
-    uc_strncat(ubuf,fontname, 70);
-    u_strcat(ubuf, GStringGetResource( _STR_Fontchangemid,NULL ));
-    uc_strncat(ubuf,filename, 70);
-    u_strcat(ubuf, GStringGetResource( _STR_Fontchangerevertpost,NULL ));
-    ret = GWidgetAskR_( _STR_Fontchange,buts,0,1,ubuf);
+    ret = GWidgetAskR( _STR_Fontchange,buts,0,1,_STR_FontChangedRevertMsg,fontname,filename);
 return( ret==0 );
 }
 
