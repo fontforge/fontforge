@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 30-Jul-2004 -->
+  <!-- AP: Last modified: 8-Aug-2004 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -1332,14 +1332,16 @@ ApplySubstitution("*","*","vrt2")
     ExpandStroke(width)<BR>
     ExpandStroke(width,line cap, line join)<BR>
     ExpandStroke(width,line cap, line join,0,removeinternal /external flag)<BR>
-    ExpandStroke(width,calligraphic-angle,height-numerator,height-denom)
+    ExpandStroke(width,calligraphic-angle,height-numerator,height-denom)<BR>
+    ExpandStroke(width,calligraphic-angle,height-numerator,height-denom, 0, remove
+    internal/external flag)
   <DD>
     In the first format a line cap of "butt" and line join of "round" are
     implied.<BR>
     A value of 1 for remove internal/external will remove the internal contour,
     a value of 2 will remove the external contour.<BR>
-    The first three calls simulate the PostScript "stroke" command, the final
-    call simulates a caligraphic pen.
+    The first three calls simulate the PostScript "stroke" command, the two final
+    simulate a caligraphic pen.
     <DL>
       <DT>
 	Width
@@ -1369,6 +1371,13 @@ ApplySubstitution("*","*","vrt2")
 	height = numerator * width / denominator<BR>
 	(the scripting language only deals in integers, so when fractions are needed
 	this kludge is used)
+      <DT>
+	remove internal/external contour flags
+      <DD>
+	1 =&gt; remove internal contour<BR>
+	2=&gt; remove external contour<BR>
+	(you may not remove both contours)<BR>
+	4 =&gt; run remove overlap on result (buggy)
     </DL>
   <DT>
     Outline(width)
@@ -1546,7 +1555,7 @@ ApplySubstitution("*","*","vrt2")
     Loads other-font-name, and extracts any characters from it which are not
     in the current font and moves them to the current font. The flags argument
     is the same as that for Open. Currently the only relevant flag is to say
-    that you do have a license to use a font with fstype=2. 
+    that you do have a license to use a font with fstype=2.
   <DT>
     InterpolateFonts(percentage,other-font-name[,flags])
   <DD>
