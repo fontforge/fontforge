@@ -295,6 +295,9 @@ static void tfmDoLigKern(SplineFont *sf, int enc, int lk_index,
     if ( enc>=sf->charcnt || (sc1=sf->chars[enc])==NULL )
 return;
 
+    if ( ligkerntab[lk_index*4+0]>128 )		/* Special case to get big indeces */
+	lk_index = 256*ligkerntab[lk_index*4+2] + ligkerntab[lk_index*4+3];
+
     while ( 1 ) {
 	enc2 = ligkerntab[lk_index*4+1];
 	if ( enc2>=sf->charcnt || (sc2=sf->chars[enc2])==NULL )
@@ -1866,14 +1869,14 @@ int TfmSplineFont(FILE *tfm, SplineFont *sf, int formattype) {
     char *full=NULL, *encname;
     int i;
     DBounds b;
-    struct ligkern *ligkerns[256], *lk;
+    struct ligkern *ligkerns[256], *lk, *lknext;
     double widths[257], heights[257], depths[257], italics[257];
     uint8 tags[256], lkindex[256];
     int former[256];
     int charlistindex[257], extensions[257], extenindex[257];
     int widthindex[257], heightindex[257], depthindex[257], italicindex[257];
     double *kerns;
-    int widcnt, hcnt, dcnt, icnt, kcnt, lkcnt, pcnt, ecnt;
+    int widcnt, hcnt, dcnt, icnt, kcnt, lkcnt, pcnt, ecnt, sccnt;
     int first, last;
     KernPair *kp;
     LigList *l;
@@ -2006,28 +2009,62 @@ int TfmSplineFont(FILE *tfm, SplineFont *sf, int formattype) {
 	else if ( charlistindex[i]!=-1 )
 	    tags[i] = 2;
     }
+    for ( i=sccnt=0; i<256 && i<sf->charcnt; ++i )
+	if ( ligkerns[i]!=NULL )
+	    ++sccnt;
+    if ( sccnt>=128 )	/* We need to use the special extension mechanism */
+	lkcnt += sccnt;
     lkarray = galloc(lkcnt*sizeof(uint32));
     memset(former,-1,sizeof(former));
     memset(lkindex,0,sizeof(lkindex));
-    lkcnt = 0;
-    do {
-	any = false;
+    if ( sccnt<128 ) {
+	lkcnt = 0;
+	do {
+	    any = false;
+	    for ( i=0; i<256; ++i ) if ( ligkerns[i]!=NULL ) {
+		lk = ligkerns[i];
+		ligkerns[i] = lk->next;
+		if ( former[i]==-1 )
+		    lkindex[i] = lkcnt;
+		else {
+		    lkarray[former[i]] |= (lkcnt-former[i]-1)<<24;
+		    if ( lkcnt-former[i]-1 >= 128 )
+			fprintf( stderr, "Internal error generating lig/kern array, jump too far.\n" );
+		}
+		former[i] = lkcnt;
+		lkarray[lkcnt++] = ((lk->next==NULL?128:0)<<24) |
+				    (lk->other_char<<16) |
+				    (lk->op<<8) |
+				    lk->remainder;
+		free( lk );
+		any = true;
+	    }
+	} while ( any );
+    } else {
+	int lkcnt2 = sccnt;
+	lkcnt = 0;
 	for ( i=0; i<256; ++i ) if ( ligkerns[i]!=NULL ) {
-	    lk = ligkerns[i];
-	    ligkerns[i] = lk->next;
-	    if ( former[i]!=-1 )
-		lkarray[former[i]] |= (lkcnt-former[i]-1)<<24;
-	    else
-		lkindex[i] = lkcnt;
-	    former[i] = lkcnt;
-	    lkarray[lkcnt++] = ((lk->next==NULL?128:0)<<24) |
-				(lk->other_char<<16) |
-			        (lk->op<<8) |
-			        lk->remainder;
-	    free( lk );
-	    any = true;
+	    lkindex[i] = lkcnt;
+	    /* long pointer into big ligkern array */
+	    lkarray[lkcnt++] = (129<<24) |
+				(0<<16) |
+			        lkcnt2;
+	    for ( lk = ligkerns[i]; lk!=NULL; lk=lknext ) {
+		lknext = lk->next;
+		/* Here we will always skip to the next record, so the	*/
+		/* skip_byte will always be 0 (well, or 128 for stop)	*/
+		former[i] = lkcnt;
+		lkarray[lkcnt2++] = ((lknext==NULL?128:0)<<24) |
+				    (lk->other_char<<16) |
+				    (lk->op<<8) |
+				    lk->remainder;
+		free( lk );
+	    }
 	}
-    } while ( any );
+	if ( lkcnt>sccnt )
+	    fprintf( stderr, "Internal error, lig/kern mixup\n" );
+	lkcnt = lkcnt2;
+    }
 
 /* Now output the file */
 	/* Table of contents */
