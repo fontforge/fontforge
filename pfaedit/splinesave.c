@@ -749,6 +749,11 @@ static void _moveto(GrowBuf *gb,BasePoint *current,BasePoint *to,
 	/* we're already here */ /* Yes, but sometimes a move is required anyway */
     } else
 #endif
+    if ( round ) {
+	temp.x = rint(to->x);
+	temp.y = rint(to->y);
+	to = &temp;
+    }
     if ( current->x==to->x ) {
 	AddNumber(gb,to->y-current->y,round);
 	*(gb->pt)++ = line ? 7 : 4;		/* v move/line to */
@@ -759,11 +764,6 @@ static void _moveto(GrowBuf *gb,BasePoint *current,BasePoint *to,
 	AddNumber(gb,to->x-current->x,round);
 	AddNumber(gb,to->y-current->y,round);
 	*(gb->pt)++ = line ? 5 : 21;		/* r move/line to */
-    }
-    if ( round ) {
-	temp.x = rint(to->x);
-	temp.y = rint(to->y);
-	to = &temp;
     }
     *current = *to;
 }
