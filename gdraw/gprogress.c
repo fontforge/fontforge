@@ -262,10 +262,14 @@ return;
     current = old->prev;
     
     old->dying = true;
-    GDrawSync(NULL);		/* the X server sometimes crashes if we: */
-	/* Create a window */
-	/* map it */
-	/* but destroy it before the server can send us the map notify event */
+    /* the X server sometimes crashes if we: */
+	    /* Create a window */
+	    /* map it */
+	    /* but destroy it before the server can send us the map notify event */
+	    /* next three lines seem to deal with it */
+	GDrawSetVisible(old->gw,false);
+	GDrawSync(NULL);
+	GDrawProcessPendingEvents(NULL);
     GDrawDestroyWindow(old->gw);
     /* GProgressTimeCheck();*/	/* This caused X to crash... Why would I do it anyway? */
     GDrawSync(NULL);
