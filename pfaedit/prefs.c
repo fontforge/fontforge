@@ -34,6 +34,9 @@
 #include <sys/types.h>
 #include <dirent.h>
 #include <locale.h>
+#include <time.h>
+#include <sys/time.h>
+#include <stdlib.h>
 
 int adjustwidth = true;
 int adjustlbearing = true;
@@ -468,6 +471,26 @@ static char *cutf8_copy(unichar_t *src) {
 return( ret );
 }
 
+static void DefaultXUID(void) {
+    /* Adobe has assigned PfaEdit a base XUID of 1021. Each new user is going */
+    /*  to get a couple of random numbers appended to that, hoping that will */
+    /*  make for a fairly safe system. */
+    int r1, r2;
+    char buffer[50];
+    struct timeval tv;
+
+    gettimeofday(&tv,NULL);
+    srand(tv.tv_usec);
+    do {
+	r1 = rand()&0x3ff;
+    } while ( r1==0 );		/* I reserve "0" for me! */
+    gettimeofday(&tv,NULL);
+    srandom(tv.tv_usec+1);
+    r2 = random();
+    sprintf( buffer, "1021 %d %d", r1, r2 );
+    xuid = copy(buffer);
+}
+
 void LoadPrefs(void) {
     char *prefs = getPfaEditPrefs();
     FILE *p;
@@ -481,10 +504,10 @@ void LoadPrefs(void) {
     CheckLang();
     GreekHack();
 
-    if ( prefs==NULL )
+    if ( prefs==NULL || (p=fopen(prefs,"r"))==NULL ) {
+	DefaultXUID();
 return;
-    if ( (p=fopen(prefs,"r"))==NULL )
-return;
+    }
     while ( fgets(line,sizeof(line),p)!=NULL ) {
 	if ( *line=='#' )
     continue;
