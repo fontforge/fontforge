@@ -25,7 +25,7 @@ LIBS = $(X_LIBS) ../libgdraw.la ../libgunicode.la \
     $(X_PRE_LIBS) -lX11 $(X_EXTRA_LIBS) @LIBS@ -L/usr/lib -lm
 
 ttfmod: $(ttfmod_OBJECTS)
-	$(LIBTOOL) $(CC) -o ttfmod $(ttfmod_OBJECTS) $(LIBS)
+	$(LIBTOOL) $(CC) -o ttfmod $(ttfmod_OBJECTS) stamp.c $(LIBS)
 
 clean:
 	-rm -f *.o ttfmod

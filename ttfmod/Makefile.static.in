@@ -20,7 +20,7 @@ LIBS = -L../libs $(X_LIBS) ../libs/libgdraw.a ../libs/libgunicode.a \
     $(X_PRE_LIBS) -lX11 $(X_EXTRA_LIBS) @LIBS@ -L/usr/lib -lm
 
 ttfmod: $(ttfmod_OBJECTS)
-	$(CC) -o ttfmod $(ttfmod_OBJECTS) $(LIBS)
+	$(CC) -o ttfmod $(ttfmod_OBJECTS) stamp.c $(LIBS)
 
 clean:
 	-rm -f *.o ttfmod
