@@ -31,7 +31,7 @@
 #include "errno.h"
 
 #ifndef NODYNAMIC
-# include <dlfcn.h>
+# include <dynamic.h>
 #endif
 
 struct stdfuncs _GIO_stdfuncs = {
@@ -63,7 +63,7 @@ static unichar_t err501[] = { ' ','N','o','t',' ','I','m','p','l','e','m','e','n
 
 static int AddProtocol(unichar_t *prefix,int len) {
     char lib[300], buffer[1400];
-    void *handle;
+    DL_CONST void *handle;
     void (*init)(void *,struct stdfuncs *,int);
 
     if ( plen>=pmax ) {
@@ -86,7 +86,7 @@ return( false );
 #else
 	strcpy(lib,"libgio");
 	cu_strncat(lib,prefix,len);
-	strcat(lib,".so");
+	strcat(lib,SO_EXT);
 	if ( (handle = dlopen(lib,RTLD_LAZY))==NULL ) {
 	    sprintf(buffer,"%s/%s",GResourceProgramDir,lib);
 	    if ( (handle = dlopen(buffer,RTLD_LAZY))==NULL )

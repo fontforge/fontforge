@@ -35,7 +35,7 @@
 #include <chardata.h>
 #include <gresource.h>
 #if !defined(_NO_LIBUNINAMESLIST) && !defined(_STATIC_LIBUNINAMESLIST) && !defined(NODYNAMIC)
-#  include <dlfcn.h>
+#  include <dynamic.h>
 #endif
 
 struct unicode_nameannot {
@@ -343,12 +343,12 @@ static void inituninameannot(void) {
     extern const struct unicode_nameannot * const * const UnicodeNameAnnot[];
     _UnicodeNameAnnot = UnicodeNameAnnot;
 #else
-    void *libuninames=NULL;
+    DL_CONST void *libuninames=NULL;
 # ifdef LIBDIR
-    libuninames = dlopen( LIBDIR "/libuninameslist.so",RTLD_LAZY);
+    libuninames = dlopen( LIBDIR "/libuninameslist" SO_EXT,RTLD_LAZY);
 # endif
     if ( libuninames==NULL )
-	libuninames = dlopen( "libuninameslist.so",RTLD_LAZY);
+	libuninames = dlopen( "libuninameslist" SO_EXT,RTLD_LAZY);
     if ( libuninames!=NULL )
 	_UnicodeNameAnnot = dlsym(libuninames,"UnicodeNameAnnot");
 #endif
