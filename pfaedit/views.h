@@ -475,6 +475,7 @@ extern void FVRegenChar(FontView *fv,SplineChar *sc);
 extern int _FVMenuSave(FontView *fv);
 extern int _FVMenuSaveAs(FontView *fv);
 extern int _FVMenuGenerate(FontView *fv,int family);
+extern void SCClearBackground(SplineChar *sc);
 extern char *GetPostscriptFontName(char *defdir,int mult);
 extern void MenuPrefs(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuSaveAll(GWindow base,struct gmenuitem *mi,GEvent *e);

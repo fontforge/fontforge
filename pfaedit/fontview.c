@@ -1074,7 +1074,7 @@ return;
     SCCharChangedUpdate(sc);
 }
 
-static void SCClearBackground(SplineChar *sc) {
+void SCClearBackground(SplineChar *sc) {
 
     if ( sc==NULL )
 return;
