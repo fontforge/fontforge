@@ -1296,10 +1296,11 @@ return( true );
     }
     if ( sc->unicodeenc==-1 ) {
 	if ( SCIsNotdef(sc,-1) && !(used[0]&1) &&
-		(table[0]==0 || new_map==em_sjis || new_map==em_wansung ||
+		((table!=NULL && table[0]==0) || (item!=NULL && item->unicode[0]==0) ||
+		 new_map==em_sjis || new_map==em_wansung ||
 		 new_map==em_johab || new_map==em_jisgb ||
 		 new_map==em_big5 || new_map==em_big5hkscs)) {
-	    if ( table[0]==0 )
+	    if ( (table!=NULL && table[0]==0) || (item!=NULL && item->unicode[0]==0) )
 		used[0] |= 1;
 return( true );			/* .notdef goes to encoding 0 */
 	} else if ( item!=NULL && item->psnames!=NULL ) {
