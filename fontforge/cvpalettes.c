@@ -39,7 +39,9 @@ float star_percent=1.7320508;	/* Regular 6 pointed star */
 #include "splinefont.h"
 #include <ustring.h>
 #include <utype.h>
+#include <gresource.h>
 
+extern void *font_cvt(char *val, void *def);
 extern GDevEventMask input_em[];
 extern const int input_em_cnt;
 
@@ -1704,9 +1706,17 @@ GWindow CVMakeLayers(CharView *cv) {
     GGadgetCreateData gcd[25];
     GTextInfo label[25];
     static GBox radio_box = { bt_none, bs_rect, 0, 0, 0, 0, 0,0,0,0, COLOR_DEFAULT,COLOR_DEFAULT };
-    GFont *font;
+    static GFont *radio_font = (GFont *) -1;
+    GFont *font = NULL;
     FontRequest rq;
     int i, base;
+
+    if ( radio_font == (GFont *) -1 ) {
+	extern FontInstance *_GGadgetInitDefaultBox(char *class,GBox *box, FontInstance *deffont);
+	GBox junk;
+	memset(&junk,0,sizeof(junk));
+	radio_font = _GGadgetInitDefaultBox("GRadio.",&junk,NULL);
+    }
 
     if ( cvlayers!=NULL )
 return( cvlayers );
@@ -1734,11 +1744,15 @@ return( cvlayers );
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
 
-    memset(&rq,'\0',sizeof(rq));
-    rq.family_name = helv;
-    rq.point_size = -12;
-    rq.weight = 400;
-    font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(cvlayers),&rq);
+    if ( radio_font != NULL )
+	font = radio_font;
+    if (font == NULL) {
+        memset(&rq,'\0',sizeof(rq));
+	rq.family_name = helv;
+	rq.point_size = -12;
+	rq.weight = 400;
+	GDrawInstanciateFont(GDrawGetDisplayOfWindow(cvlayers),&rq);
+    }
     for ( i=0; i<sizeof(label)/sizeof(label[0]); ++i )
 	label[i].font = font;
 
