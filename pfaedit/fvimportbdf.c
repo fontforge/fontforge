@@ -139,9 +139,9 @@ static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b) {
 	    if ( i!=-1 )
 		SFMakeChar(sf,i);
 	}
-	if ( sf->onlybitmaps && sf->bitmaps==b && b->next==NULL &&
+	if ( sf->onlybitmaps && sf->bitmaps==b && b->next==NULL && i!=-1 &&
 		i!=enc && enc!=-1 && (enc>=b->charcnt || b->chars[enc]==NULL)) {
-	    i = enc;
+	    i = -1;
 	    if ( !sf->dupnamewarn ) {
 		GWidgetErrorR(_STR_DuplicateName,_STR_DuplicateCharName,name);
 		sf->dupnamewarn = true;
