@@ -141,6 +141,14 @@ return;
 	((struct chunk *) item)->next = chunklists[size>>3];
 	chunklists[size>>3] = (struct chunk *) item;
     } else {
+#ifdef LOCAL_DEBUG
+	if ( (char *) (chunklists[size>>2]) == (char *) item ||
+		( ((char *) (chunklists[size>>2]))<(char *) item &&
+		  ((char *) (chunklists[size>>2]))+size>(char *) item) ||
+		( ((char *) (chunklists[size>>2]))>(char *) item &&
+		  ((char *) (chunklists[size>>2]))<((char *) item)+size))
+	      GDrawIError( "Memory mixup. Chunk list is wrong!!!" );
+#endif
 	((struct chunk *) item)->next = chunklists[size>>2];
 #  ifdef FLAG
 	if ( size>=sizeof(struct chunk2))
@@ -2836,7 +2844,7 @@ void TableOrdersFree(struct table_ordering *ord) {
     for ( ; ord!=NULL; ord = onext ) {
 	onext = ord->next;
 	free(ord->ordered_features);
-	chunkfree(ord,sizeof(AnchorClass));
+	chunkfree(ord,sizeof(struct table_ordering));
     }
 }
 
