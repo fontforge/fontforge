@@ -278,6 +278,8 @@ static char str_SpaceRegions[] = "Espaciar regiones...";
 static unichar_t mnemonic_SpaceRegions[] = 'R';
 static char str_MakeParallel[] = "Poner en paralelo...";
 static unichar_t mnemonic_MakeParallel[] = 'P';
+static char str_Round_Menu = "Redondear";
+static char mnemonic_Round_Menu = 'd';
 static char str_Round2int[] = "Redondear a entero";
 static unichar_t mnemonic_Round2int[] = 'd';
 static char str_Order = "Ordenar";
@@ -2912,6 +2914,8 @@ static char *str_TransformKernClass = "Transformar clases de interletraje";
 static char mnemonic_TransformKernClass = 'C';
 static char *str_TransformSimplePosPair = "Transformar funciones de posición y pares de interletraje";
 static char mnemonic_TransformSimplePosPair = 'K';
+static char str_RoundToInt[] = "Redondear a entero";
+static unichar_t mnemonic_RoundToInt[] = 'R';
 static char *str_Warning = "Advertencia";
 static char *str_RotateSkewWarning = "Tras rotar o inclinar un carácter es probable que deba hacer Elemento->Añadir extremos";
     /* scripting */

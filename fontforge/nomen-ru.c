@@ -1831,6 +1831,8 @@ static char *str_FlipDDD = "Отразить...";
 static char *str_SkewDDD = "Наклонить...";
 static char *str_TransformBackground = "Преобразовывать фон тоже";
 static char mnemonic_TransformBackground = 'B';
+static char str_RoundToInt[] = "Округлить";
+static unichar_t mnemonic_RoundToInt[] = 'd';
 static char *str_Warning = "Внимание";
 static char *str_RotateSkewWarning = "После поворота или наклона символа возможно надо использовать \"Элемент->Добавить экстремум\"";
     /* scripting */
