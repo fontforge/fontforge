@@ -38,6 +38,21 @@
 /*  font whose stems were filled with celtic knotwork, for example */
 
 
+/* I thought it would be fun to write a generalized non linear transformation */
+/*  routine. I'm not sure that it's very useful though. It can be used to do  */
+/*  perspective transformations and such				      */
+/*									      */
+/* #define PFAEDIT_CONFIG_NONLINEAR					      */
+/*									      */
+/* This command takes two strings which specify general expressions in x and y*/
+/*  and applies the specified transformations to the splines.  Note: Each     */
+/*  spline is transformed into a new spline, but some transformations require */
+/*  that a spline be broken into components and each of those transformed eg: */
+/*  "x' = x, y' = y+sin(x)" would not produce anything useful when applied to */
+/*  a long line segment like [0,100]···[100,100], but if that were broken up */
+/*  into sub-segments each pi long the results would be much better */
+
+
 /* There used to be a property _XFREE86_GLYPH_RANGES (in bdf/pcf) fonts which */
 /*  gave a quick view about what glyphs were in a bdf font. From what I gather*/
 /*  this property has been dropped because it was redundant.  If you would    */
