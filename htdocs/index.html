@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 1-Dec-2001 -->
+  <!-- AP: Last modified: 3-Dec-2001 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -71,8 +71,8 @@ know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-011201.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 1-Dec-2001
+    <A HREF="pfaedit-011203.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 3-Dec-2001
   <LI>
     <A HREF="pfaedit-solaris-011102.tgz">Download pfaedit Solaris 8.0
     </A>executable Version: 2-Nov-2001
@@ -107,22 +107,22 @@ If you want to edit CID keyed fonts you need these
 <P>
 You can download a <A HREF="pfaedit-011201-1.src.rpm">source RPM</A>: Version:
 1-Dec-2001<BR>
-Or you can download the following three packages. Version: 1-Dec-2001
+Or you can download the following three packages. Version: 3-Dec-2001
 <UL>
   <LI>
-    <A HREF="libgunicode-011123.tgz">Unicode library source</A> (23-Nov-2001)<BR>
+    <A HREF="libgunicode-011203.tgz">Unicode library source</A> (3-Dec-2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGUnicode/index.html">docs</A>
   <LI>
-    <A HREF="libgdraw-011201.tgz">Unicode widget library source</A>
-    (1-Dec-2001)<BR>
+    <A HREF="libgdraw-011203.tgz">Unicode widget library source</A>
+    (3-Dec-2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
   <LI>
-    <A HREF="pfaedit_src-011201.tgz">Pfaedit source</A> (1-Dec-2001)<BR>
+    <A HREF="pfaedit_src-011203.tgz">Pfaedit source</A> (3-Dec-2001)<BR>
     -- <A HREF="overview.html">docs</A>
   <LI>
-    <A HREF="pfaedit_full-011201.tgz">All three bundled together </A>(1-Dec-2001)
+    <A HREF="pfaedit_full-011203.tgz">All three bundled together </A>(3-Dec-2001)
 </UL>
 <P>
 If you want to do autotracing around character images you should also download
@@ -233,6 +233,35 @@ up into one <A HREF="pfaedit_htdocs-011116.tgz">tgz file</A> 16-Nov-2001.
 </H2>
 <UL>
   <LI>
+    3-Dec-2001
+    <UL>
+      <LI>
+	Merge Kern Info dlg crashed if you cancelled it.
+      <LI>
+	The encoding tables in the cmap are supposed to be ordered by platform and
+	mine were not.
+      <LI>
+	PfaEdit would crash when writing out very large copyright notices
+	<UL>
+	  <LI>
+	    I lifted the 2000 character restriction on copyright strings.
+	</UL>
+      <LI>
+	If there were more than 2 lines of tabs in a TabSet then clicking on a tab
+	would often cause the wrong pane to appear.
+      <LI>
+	Cleaned up Font Info a bit so it looks better with the Russian translations.
+      <LI>
+	Fixed a memory leak when generating a truetype font with an encoding other
+	than unicode.
+      <LI>
+	Fixed a crash when generating a truetype font which referenced characters
+	with encodings bigger than 65535.
+      <LI>
+	Added a patch from Ulrich, PfaEdit now reads class based kerning from the
+	GPOS table.
+    </UL>
+  <LI>
     1-Dec-2001
     <UL>
       <LI>
@@ -242,6 +271,9 @@ up into one <A HREF="pfaedit_htdocs-011116.tgz">tgz file</A> 16-Nov-2001.
 	were the Control key (So users may exit PfaEdit with Command-Q as they expect).
       <LI>
 	Another bug reading in flex hints from OTF. Fixed by Ulrich Klauer.
+      <LI>
+	PfaEdit had problems with drawing images when there was an endian mismatch
+	between the X server and the machine running pfaedit.
     </UL>
   <LI>
     27-Nov-2001
