@@ -32,6 +32,7 @@ AC_DEFINE(_Keyboard,2)
 AC_DEFINE(_BrokenBitmapImages)
 AC_DEFINE(_ModKeysAutoRepeat)
 AC_DEFINE(__CygWin,1)
+AC_DEFINE(NODYNAMIC)
 gww_nodynamic="yes"
 gww_needsstatic="yes"
  ;;
@@ -121,6 +122,9 @@ if test "$gww_nodynamic" = "yes"; then
  if test "$ac_cv_lib_freetype_FT_New_Face" = "yes"; then
   STATIC_LIBS="$STATIC_LIBS -lfreetype"
  fi
+ AC_CHECK_LIB(uninameslist, UnicodeNameAnnot, [
+   STATIC_LIBS="$STATIC_LIBS -luninameslist"
+   AC_DEFINE(_STATIC_LIBUNINAMESLIST) ] , AC_DEFINE(_NO_LIBUNINAMESLIST))
 fi
 
 test -d libs || mkdir libs
