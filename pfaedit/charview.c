@@ -2538,6 +2538,53 @@ static void CVTimer(CharView *cv,GEvent *event) {
     }
 }
 
+static void CVDrop(CharView *cv,GEvent *event) {
+    /* We should get a list of character names. Add each as a RefChar */
+    int32 len;
+    int ch, first = true;
+    char *start, *pt, *cnames;
+    SplineChar *rsc;
+    RefChar *new;
+
+    if ( cv->drawmode!=dm_fore ) {
+	GWidgetErrorR(_STR_NotForeground,_STR_RefsOnlyFore);
+return;
+    }
+    if ( !GDrawSelectionHasType(cv->gw,sn_drag_and_drop,"STRING"))
+return;
+    cnames = GDrawRequestSelection(cv->gw,sn_drag_and_drop,"STRING",&len);
+    if ( cnames==NULL )
+return;
+
+    start = cnames;
+    while ( *start ) {
+	while ( *start==' ' ) ++start;
+	if ( *start=='\0' )
+    break;
+	for ( pt=start; *pt && *pt!=' '; ++pt );
+	ch = *pt; *pt = '\0';
+	if ( (rsc=SFGetChar(cv->sc->parent,-1,start))!=NULL && rsc!=cv->sc ) {
+	    if ( first ) {
+		CVPreserveState(cv);
+		first =false;
+	    }
+	    new = chunkalloc(sizeof(RefChar));
+	    new->transform[0] = new->transform[3] = 1.0;
+	    new->splines = NULL;
+	    new->sc = rsc;
+	    new->next = cv->sc->refs;
+	    cv->sc->refs = new;
+	    SCReinstanciateRefChar(cv->sc,new);
+	    SCMakeDependent(cv->sc,rsc);
+	}
+	*pt = ch;
+	start = pt;
+    }
+
+    free(cnames);
+    CVCharChangedUpdate(cv);
+}
+
 static int v_e_h(GWindow gw, GEvent *event) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
@@ -2574,6 +2621,9 @@ static int v_e_h(GWindow gw, GEvent *event) {
       break;
       case et_timer:
 	CVTimer(cv,event);
+      break;
+      case et_drop:
+	CVDrop(cv,event);
       break;
       case et_focus:
 	if ( event->u.focus.gained_focus ) {
@@ -2979,6 +3029,9 @@ static int cv_e_h(GWindow gw, GEvent *event) {
       case et_mousemove:
 	if ( event->u.mouse.y>cv->mbh )
 	    SCPreparePopup(cv->gw,cv->sc);
+      break;
+      case et_drop:
+	CVDrop(cv,event);
       break;
       case et_focus:
 	if ( event->u.focus.gained_focus ) {

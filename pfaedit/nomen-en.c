@@ -1348,6 +1348,8 @@ static char *str_GlyphHasRefs = "Problems With References";
 static char *str_GlyphHasRefsQuestion = "The character, %.40hs, contained references, but the font's encoding has changed. I will probably not be able to map those references to the correct locations. If I proceed some references may be lost and others may link to incorrect characters. Do you want to proceed anyway?"
 static char *str_NameChanged = "Glyph Name Changed";
 static char *str_NameChangedGlyph = "The the name of character %.40hs has changed. This is what I use to find the glyph in the file, so I cannot revert this character.\n(You will not be warned for subsequent characters)"
+static char *str_NotForeground = "Not Foreground"
+static char *str_RefsOnlyFore = "References may be dragged only to the foreground layer"
     /* CV Export */
 static char *str_PixelSizeQ = "Pixel size?";
 static char *str_PixelSize = "Pixel size:";
