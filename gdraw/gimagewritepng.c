@@ -52,6 +52,12 @@ static void (*_png_write_image)(png_structp,png_bytep*);
 static void (*_png_write_end)(png_structp,png_infop);
 
 static int loadpng() {
+    /* Oops someone might have libpng without libz. If we try to load libpng */
+    /*  first we crash and burn horribly, so... */
+    if ( dlopen("z" SO_EXT,RTLD_LAZY)==NULL ) {
+	GDrawIError("%s", dlerror());
+return( 0 );
+    }
 #  if !defined(_LIBPNG12)
     libpng = dlopen("libpng" SO_EXT,RTLD_LAZY);
 #  else		/* After version 1.2.1 (I think) dynamic libpng is called libpng12 */
