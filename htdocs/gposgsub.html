@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 29-Dec-2002 -->
-  <!-- AP: Last modified: 1-Feb-2003 -->
+  <!-- AP: Last modified: 8-Feb-2003 -->
   <TITLE>Advanced Typography tables</TITLE>
 </HEAD>
 <BODY>
@@ -14,8 +14,8 @@ These differ between OpenType and Apple. My support for Apple is minimal
 as yet. My support for OpenType is not complete.
 <UL>
   <LI>
-    <A HREF="#opentype">The <B><CODE>GPOS</CODE></B> and
-    <B><CODE>GSUB</CODE></B> opentype tables</A>
+    <A HREF="#opentype">The <B><CODE>GPOS</CODE></B>,
+    <B><CODE>GSUB</CODE></B> and <B><CODE>GDEF</CODE></B> opentype tables</A>
   <LI>
     <A HREF="#AAT">Apple Advanced Typography</A>
 </UL>
@@ -67,9 +67,9 @@ information between pairs of glyphs and 'init' which will transform one set
 of glyphs to another when those glyphs are at the beginning of a word.
 <P>
 PfaEdit does not support the full range of possibilities inherent in these
-two tables.
+tables.
 <H3>
-  The <B><CODE>GPOS</CODE></B> table
+  The <B><CODE><A NAME="GPOS">GPOS</A></CODE></B> table
 </H3>
 <P>
 PfaEdit will read the following sub tables of the GPOS table:
@@ -159,8 +159,8 @@ PfaEdit will read the following sub tables of the GPOS table:
     <TD>extension positioning</TD>
     <TD>This is used to allow for a GPOS table which is bigger than 64k. Its
       use should be quite invisible to the font designer</TD>
-    <TD>PfaEdit should support this sub-table but I haven't seen a font containing
-      it to check.</TD>
+    <TD>PfaEdit should support this sub-table but I haven't seen a font big enough
+      to need it to test.</TD>
   </TR>
   <TR>
     <TD>10+</TD>
@@ -176,7 +176,7 @@ for some features that use these menus. See
 <A HREF="elementmenu.html#DefaultATT">Element-&gt;Default ATT</A> command
 for that.
 <H3>
-  The <B><CODE>GSUB</CODE></B> table
+  The <B><CODE><A NAME="GSUB">GSUB</A></CODE></B> table
 </H3>
 <P>
 PfaEdit will read the following sub tables of the GSUB table:
@@ -218,8 +218,8 @@ PfaEdit will read the following sub tables of the GSUB table:
     <TD>ligature substitution</TD>
     <TD>This sub-table allows the font designer to replace a string of characters
       with another glyph. A common example is a ligature where the string
-      <IMG SRC="f+i.png" WIDTH=24 HEIGHT=25> is replaced by the
-      <IMG SRC="fi.png" WIDTH=20 HEIGHT=25> ligature.</TD>
+      <IMG SRC="f+i.png" WIDTH="24" HEIGHT="25" ALIGN="Middle"> is replaced by
+      the <IMG SRC="fi.png" WIDTH="20" HEIGHT="25" ALIGN="Middle"> ligature.</TD>
     <TD>These can be created with the <A HREF="charinfo.html">Element-&gt;Char
       Info</A>-&gt;Ligature command.</TD>
   </TR>
@@ -241,8 +241,8 @@ PfaEdit will read the following sub tables of the GSUB table:
     <TD>extension positioning</TD>
     <TD>This is used to allow for a GSUB table which is bigger than 64k. Its
       use should be quite invisible to the font designer</TD>
-    <TD>PfaEdit should support this sub-table but I haven't seen a font containing
-      it to check.</TD>
+    <TD>PfaEdit should support this sub-table but I haven't seen a font big enough
+      to need it to test.</TD>
   </TR>
   <TR>
     <TD>8</TD>
@@ -268,7 +268,7 @@ PfaEdit can produce some of these tables, but the text layout/word processing
 program used has to look up the tables and do the actual work of rearranging
 the glyphs.
 <H3>
-  The <B><CODE>GDEF </CODE></B>table
+  The <B><CODE><A NAME="GDEF">GDEF</A> </CODE></B>table
 </H3>
 <P>
 PfaEdit will read ligature carets out of a GDEF table.
@@ -282,12 +282,9 @@ It will generate a GDEF table containing a glyph class definition sub-table
 PfaEdit will current read and produce (if Apple mode is set in font generation)
 the following tables:
 <TABLE BORDER CELLPADDING="2">
-  <TR>
-    <TD><CODE>'kern'</CODE></TD>
-    <TD>kerning table</TD>
-    <TD>PfaEdit will read pairwise horizontal kerning</TD>
-    <TD>PfaEdit will produce this if the font contains kerning data</TD>
-  </TR>
+  <CAPTION>
+    Apple tables corresponding vaguely to <A HREF="#GDEF">GDEF</A>
+  </CAPTION>
   <TR>
     <TD><CODE>'lcar'</CODE></TD>
     <TD>ligature caret table</TD>
@@ -304,7 +301,194 @@ the following tables:
   </TR>
 </TABLE>
 <P>
-More useful tables may follow.
+<TABLE BORDER CELLPADDING="2">
+  <CAPTION>
+    Apple tables corresponding vaguely to <A HREF="#GPOS">GPOS</A>
+  </CAPTION>
+  <TR>
+    <TD><CODE>'kern'</CODE></TD>
+    <TD>kerning table</TD>
+    <TD>PfaEdit will read pairwise horizontal kerning</TD>
+    <TD>PfaEdit will produce this if the font contains kerning data</TD>
+  </TR>
+  <TR>
+    <TD><CODE>'opbd'</CODE></TD>
+    <TD>Optical bounds table</TD>
+    <TD>PfaEdit will read optical bounds</TD>
+    <TD>PfaEdit will produce this table if the user has specified right and left
+      bounds</TD>
+  </TR>
+</TABLE>
+<P>
+<P>
+PfaEdit has minimal support now for the <CODE>'mort'</CODE> and
+<CODE>'morx'</CODE> tables (Glyph metamorphasis and extended glyph metamorphasis
+tables). These correspond vaguely to the <A HREF="#GSUB">GSUB</A> table.
+Note: Currently only feature type/setting combinations which correspond directly
+to an open type feature are saved.
+<TABLE BORDER CELLPADDING="2">
+  <CAPTION>
+    Sub tables of <CODE>'mort'</CODE> or <CODE>'morx'</CODE> currently supported
+  </CAPTION>
+  <TR>
+    <TD>0</TD>
+    <TD>Indic style rearrangement</TD>
+    <TD>Not supported</TD>
+    <TD>Not supported</TD>
+  </TR>
+  <TR>
+    <TD>1</TD>
+    <TD>contextual glyph substitution</TD>
+    <TD>Not supported</TD>
+    <TD>Not supported</TD>
+  </TR>
+  <TR>
+    <TD>2</TD>
+    <TD>ligature substitution</TD>
+    <TD>PfaEdit can read these and stores them as opentype ligatures</TD>
+    <TD>PfaEdit will output this sub-table if the font contains supported ligatures.</TD>
+  </TR>
+  <TR>
+    <TD>4</TD>
+    <TD>non-contextual glyph substitution</TD>
+    <TD>PfaEdit can read these and stores them as opentype simple substitutions</TD>
+    <TD>PfaEdit will output this sub-table if the font contains supported
+      substitutions.</TD>
+  </TR>
+  <TR>
+    <TD>5</TD>
+    <TD>contextual glyph insertion</TD>
+    <TD>Not supported</TD>
+    <TD>Not supported</TD>
+  </TR>
+</TABLE>
+<P>
+<P>
+<TABLE BORDER CELLPADDING="2">
+  <CAPTION>
+    Correspondances between Apple and OpenType features<BR>
+    (that I support)
+  </CAPTION>
+  <TR>
+    <TH>Apple Feature Setting</TH>
+    <TH>OpenType Feature Name</TH>
+    <TH>OpenType Tag</TH>
+  </TR>
+  <TR>
+    <TD>Required Ligatures</TD>
+    <TD>Required Ligatures</TD>
+    <TD>rlig</TD>
+  </TR>
+  <TR>
+    <TD>Common Ligatures</TD>
+    <TD>Standard Ligatures</TD>
+    <TD>liga</TD>
+  </TR>
+  <TR>
+    <TD>Rare Ligatures</TD>
+    <TD>Discretionary/Historic Ligs.</TD>
+    <TD>dlig/hlig</TD>
+  </TR>
+  <TR>
+    <TD>Logo Ligatures</TD>
+    <TD></TD>
+    <TD>MLOG<A HREF="#mine">*</A></TD>
+  </TR>
+  <TR>
+    <TD>Rebus Pictures</TD>
+    <TD></TD>
+    <TD>MREB<A HREF="#mine">*</A></TD>
+  </TR>
+  <TR>
+    <TD>Diphthong Ligatures</TD>
+    <TD></TD>
+    <TD>MDLG<A HREF="#mine">*</A></TD>
+  </TR>
+  <TR>
+    <TD>Square Ligatures</TD>
+    <TD></TD>
+    <TD>MSLG<A HREF="#mine">*</A></TD>
+  </TR>
+  <TR>
+    <TD>Abbrev. Square Ligatures</TD>
+    <TD></TD>
+    <TD>MALG<A HREF="#mine">*</A></TD>
+  </TR>
+  <TR>
+    <TD>Fractions</TD>
+    <TD>Fractions</TD>
+    <TD>frac</TD>
+  </TR>
+  <TR>
+    <TD COLSPAN=3>
+	<HR>
+    </TD>
+  </TR>
+  <TR>
+    <TD>Vertical Forms</TD>
+    <TD>Vertical Rotation 2</TD>
+    <TD>vrt2</TD>
+  </TR>
+  <TR>
+    <TD>Monospace numbers</TD>
+    <TD>Tabular numbers</TD>
+    <TD>tnum</TD>
+  </TR>
+  <TR>
+    <TD>Superscript</TD>
+    <TD>Superscript</TD>
+    <TD>sups</TD>
+  </TR>
+  <TR>
+    <TD>Subscript</TD>
+    <TD>Subscript</TD>
+    <TD>subs</TD>
+  </TR>
+  <TR>
+    <TD>Proportional Text</TD>
+    <TD>Proportional Widths</TD>
+    <TD>pwid</TD>
+  </TR>
+  <TR>
+    <TD>Half-width Text</TD>
+    <TD>Half Width</TD>
+    <TD>hwid</TD>
+  </TR>
+  <TR>
+    <TD>Full-width Text</TD>
+    <TD>Full Width</TD>
+    <TD>fwid</TD>
+  </TR>
+  <TR>
+    <TD>Traditional Characters</TD>
+    <TD>Traditional</TD>
+    <TD>trad</TD>
+  </TR>
+  <TR>
+    <TD>Simplified Characters</TD>
+    <TD>Simplified</TD>
+    <TD>smpl</TD>
+  </TR>
+  <TR>
+    <TD>JIS 1978 Characters</TD>
+    <TD>JIS 1978 Characters</TD>
+    <TD>jp78</TD>
+  </TR>
+  <TR>
+    <TD>JIS 1983 Characters</TD>
+    <TD>JIS 1983 Characters</TD>
+    <TD>jp83</TD>
+  </TR>
+  <TR>
+    <TD>JIS 1990 Characters</TD>
+    <TD>JIS 1990 Characters</TD>
+    <TD>jp90</TD>
+  </TR>
+</TABLE>
+<P>
+<A NAME="mine">*</A> Tags which are entirely in upper case have been added
+by me. They do not correspond to any known opentype tag, and are used solely
+for supporting macintoys.
 <P>
 <P ALIGN=Center>
 -- <A HREF="generate.html">Prev</A> -- <A HREF="overview.html">TOC</A> --

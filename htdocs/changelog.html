@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 1-Feb-2003 -->
+  <!-- AP: Last modified: 8-Feb-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,29 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    ??-Feb-2003
+    <UL>
+      <LI>
+	Support for Apple's 'opbd' (Optical Bounds) table
+      <LI>
+	Support for reading some features in non-contextual glyph and ligature sub-tables
+	of the 'mort' or 'morx' tables.
+      <LI>
+	Support for writing those features in non-contextual glyph and ligature
+	sub-tables of 'morx'.
+      <LI>
+	added char info to the fontview popup.
+      <LI>
+	the scripting command Generate (and GenerateFamily) would generate truetype
+	.dfont files when asked to generate otf dfont files.
+      <LI>
+	Add ClearHints scripting command
+      <LI>
+	Add access to preference items from scripting (via: $&lt;prefname&gt;,
+	GetPref("&lt;prefname&gt;"),
+	SetPref("&lt;prefname&gt;",&lt;value&gt;)
+    </UL>
   <LI>
     01-Feb-2003
     <UL>

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 27-Jan-2003 -->
+  <!-- AP: Last modified: 8-Feb-2003 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -336,6 +336,10 @@ to (some) already existing ones)
   <LI>
     <CODE>$version</CODE> returns a string containing the current version of
     pfaedit. This should look something like "020817".
+  <LI>
+    <CODE>$</CODE>&lt;Preference Item&gt; (for example <CODE>$AutoHint</CODE>)
+    allows you to examine the value of that preference item (to set it use
+    <CODE><A HREF="#SetPref">SetPref</A></CODE>)
 </UL>
 <P>
 The following example will perform an action on all loaded fonts:
@@ -424,6 +428,20 @@ a[4][0] = "Nested array";
   <DD>
     Parses as much of str as possible and returns the offset to the first character
     that could not be parsed. 
+  <DT>
+    GetPref(str)
+  <DD>
+    Gets the value of the preference item whose name is contained in str. Only
+    boolean, integer, real, string and file preference items may be returned.
+    Boolean and real items are returned with integer type and file items are
+    returned with string type.
+  <DT>
+    SetPrefs(str,val[,val2])
+  <DD>
+    Sets the value of the preference item whose name is containted in str. If
+    the preference item has a real type then a second argument may be passed
+    and the value set will be val/val2.
+  <DT>
       <HR>
   <DT>
     Open(filename[,flags])
@@ -974,6 +992,9 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
       <HR>
   <DT>
     AutoHint()
+  <DD>
+  <DT>
+    ClearHints()
   <DD>
   <DT>
     SetWidth(width)
