@@ -632,12 +632,12 @@ void CIDFindBounds(SplineFont *cidmaster,DBounds *bounds) {
 
     sf = cidmaster->subfonts[0];
     SplineFontFindBounds(sf,bounds);
-    factor = 1000/(sf->ascent+sf->descent);
+    factor = 1000.0/(sf->ascent+sf->descent);
     bounds->maxx *= factor; bounds->minx *= factor; bounds->miny *= factor; bounds->maxy *= factor;
     for ( i=1; i<cidmaster->subfontcnt; ++i ) {
 	sf = cidmaster->subfonts[i];
 	SplineFontFindBounds(sf,&b);
-	factor = 1000/(sf->ascent+sf->descent);
+	factor = 1000.0/(sf->ascent+sf->descent);
 	b.maxx *= factor; b.minx *= factor; b.miny *= factor; b.maxy *= factor;
 	if ( b.maxx>bounds->maxx ) bounds->maxx = b.maxx;
 	if ( b.maxy>bounds->maxy ) bounds->maxy = b.maxy;
