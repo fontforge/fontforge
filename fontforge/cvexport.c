@@ -38,6 +38,42 @@
 #include <utype.h>
 #endif
 
+static void EpsGeneratePreview(FILE *eps,SplineChar *sc,DBounds *b) {
+    double scale, temp;
+    int pixelsize, depth;
+    BDFChar *bdfc;
+    int i,j;
+
+    /* Try for a preview that fits within a 72x72 box */
+    if ( b->maxx==b->minx || b->maxy==b->miny )
+return;
+    scale = 72.0/(b->maxx-b->minx);
+    temp = 72.0/(b->maxy-b->miny);
+    if ( temp<scale ) scale = temp;
+    pixelsize = rint((sc->parent->ascent+sc->parent->descent)*scale);
+    scale = pixelsize/(double) (sc->parent->ascent+sc->parent->descent);
+
+    depth = 4;
+    bdfc = SplineCharFreeTypeRasterizeNoHints(sc,pixelsize,4);
+    if ( bdfc==NULL )
+	bdfc = SplineCharAntiAlias(sc,pixelsize,4);
+    if ( bdfc==NULL )
+return;
+
+    fprintf(eps,"%%%%BeginPreview: %d %d %d %d\n",
+	    bdfc->xmax-bdfc->xmin+1, bdfc->ymax-bdfc->ymin+1, depth, bdfc->ymax-bdfc->ymin+1 );
+    for ( i=0; i<=bdfc->ymax-bdfc->ymin; ++i ) {
+	putc('%',eps);
+	for ( j=0; j<=bdfc->xmax-bdfc->xmin; ++j )
+	    fprintf(eps,"%X",bdfc->bitmap[i*bdfc->bytes_per_line+j]);
+	if ( !((bdfc->xmax-bdfc->xmin)&1) )
+	    putc('0',eps);
+	putc('\n',eps);
+    }
+    BDFCharFree(bdfc);
+    fprintf(eps,"%%%%EndPreview\n" );
+}
+
 int _ExportEPS(FILE *eps,SplineChar *sc) {
     DBounds b;
     time_t now;
@@ -61,6 +97,7 @@ int _ExportEPS(FILE *eps,SplineChar *sc) {
     fprintf( eps, "%%%%CreationDate: %d:%02d %d-%d-%d\n", tm->tm_hour, tm->tm_min,
 	    tm->tm_mday, tm->tm_mon+1, 1900+tm->tm_year );
     fprintf( eps, "%%%%EndComments\n" );
+    EpsGeneratePreview(eps,sc,&b);
     fprintf( eps, "%%%%EndProlog\n" );
     fprintf( eps, "%%%%Page \"%s\" 1\n", sc->name );
 
