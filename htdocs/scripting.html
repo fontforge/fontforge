@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 2-Mar-2004 -->
+  <!-- AP: Last modified: 8-Mar-2004 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
 </HEAD>
 <BODY>
@@ -552,7 +552,8 @@ a[4][0] = "Nested array";
 	Note: you must also create a bitmap font in NFNT format or the mac will not
 	recognize your postscript font.
       <LI>
-	mult (splits a big font up into multiple pfb fonts each with 256 characters)
+	%s.pfb/%s.pfa (splits a big font up into multiple pfb fonts each with 256
+	characters)
       <LI>
 	mm.pfa (multiple master font in ascii format)
       <LI>
@@ -1654,7 +1655,14 @@ ApplySubstitution("*","*","vrt2")
     is just like SetFontNames except it works on the top level cid font rather
     than the current font).
   <DT>
+    CIDFlatten()
+  <DD>
+    Flattens a cid-keyed font.
+  <DT>
     CIDFlattenByCMap(cmap-filename)
+  <DD>
+    Flattens a cid-keyed font, producing a font encoded with the result of the
+    CMAP file.
   <DT>
     ConvertToCID(registry, ordering, supplement)
   <DD>

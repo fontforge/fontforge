@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 2-Mar-2004 -->
+  <!-- AP: Last modified: 21-Mar-2004 -->
   <TITLE>Change log for FontForge</TITLE>
 </HEAD>
 <BODY>
@@ -11,650 +11,95 @@
 </H1>
 <UL>
   <LI>
+    ???
+    <UL>
+      <LI>
+	When flattening a CID file fontforge lost track of the script/lang list (and
+	other things) which caused bugs when dealing with substitutions
+      <LI>
+	When saving multiply, fontforge could free a fonts hash table several times
+      <LI>
+	When flattening by a CMAP file from a script fontforge could crash
+      <LI>
+	Added a CIDFlatten command to scripting.
+      <LI>
+	The "cleanup of OS/2" on 29-Feb actually broke WinAscent/Descent
+      <LI>
+	When loading a mac unicode string from the 'name' table, fontforge failed
+	to convert the language correctly.
+      <LI>
+	When loading a mac contextual substitution statemachine, fontforge made
+	eggregious errors in guessing to what glyphs were usable for a substitution
+	of the marked glyph.
+      <LI>
+	Added the current encoding to the font's window title (also display a flag
+	to show whether the font has been changed)
+      <LI>
+	When moving points around on an order2 contour fontforge could end up with
+	bad control points and would then produce annoying internal errors alterting
+	the user to this fact.
+      <LI>
+	The CID Flatten commands did not work when the view was compacted.
+      <LI>
+	CharInfo had been deliberately disabled in CID fonts
+      <LI>
+	Show ATT didn't work with CID keyed fonts
+      <LI>
+	The preference mapping between mac and opentype small caps features was wrong.
+      <LI>
+	Werner found a strange bug in splinefill that I can't reproduce (and can't
+	understand how it could happen) but the fix appears obvious.
+      <LI>
+	Add a command to show what glyphs use the current glyph in a substitution
+	(so "A.swash" would show that "A" used it, and "i" would show that "fi" used
+	it).
+      <LI>
+	Changed the extension shown in the Generate Fonts dlg for multiple saves
+	to ".pfb". Put in a %s to make it obvious that more will be added to the
+	name. Support people who want .pfa fonts too.
+      <LI>
+	The dialog for adding/editing correspondances between mac feature/settings
+	and opentype features never went away.
+      <LI>
+	Disable the Default ATT menu if no char is selected in the fontview.
+      <LI>
+	FontForge sometimes had trouble drawing the correct rotated glyph in cid
+	fonts on the display lines of the fontview.
+      <LI>
+	Changed the way names used in cidmap files, so there are new cidmap files
+	now.
+      <LI>
+	The ShowAtt dialog could overwrite itself if there were enough aats in it.
+	(and at one point the vertical scroll bar was set to the bounds of the horizontal
+	scroll bar)
+      <LI>
+	Still getting the windows ascent/descent wrong. This time in CID keyed fonts.
+      <LI>
+	Add some new language translations for things like "Bold" (dutch, swedish,
+	norwegian)
+      <LI>
+	Dragging and dropping a char from the font view into the char info dlg (to
+	create a substitution) created a crash instead.
+      <LI>
+	Support more of postscript in the interpretter
+      <LI>
+	Our svg fonts pointed to a not-yet-existing dtd file
+      <LI>
+	Support for Apple's distorable fonts (sort of like truetype multi-master
+	fonts)
+      <LI>
+	new command in MM menu: Blend to new font
+    </UL>
+  <LI>
     2-Mar-2004
     <UL>
       <LI>
-	Change to fontforge.
-	</UL>
-  <LI>
-    1-Mar-2004
-    <UL>
-      <LI>
-	The Check directions option of Find Problems caused multilayer mode to crash.
-      <LI>
-	Expand stroke would produce counter-clockwise paths when given an open contour
-	and asked to fill it with a circular (or elliptical) pen
-      <LI>
-	Try to do a better job of guessing the correct direction of a path in an
-	eps file (or a type3 or svg font)
-      <LI>
-	FontForge would crash when editing in the grid layer
-      <LI>
-	When the control key is down, make the scroll wheel do a magnify/minify.
-      <LI>
-	Various cosmetic changes to find problems
-	<OL>
-	  <LI>
-	    Specify that "nearness" is measured in em-units
-	  <LI>
-	    change "refs deeper than" to "refs nested deeper than"
-	  <LI>
-	    make check dir be on by default
-	</OL>
-      <LI>
-	Put in more comments about fontforge. We now have a domain under
-	<A HREF="http://fontforge.sf.net/">fontforge</A>, future releases will be
-	found there.
-    </UL>
-  <LI>
-    29-Feb-2004
-    <UL>
-      <LI>
-	FontForge could crash if given a bad 'cmap' subtable
-      <LI>
-	Clean up generation of OS/2 a bit
-      <LI>
-	Pass motion events to windows even when a dlg is active (so that the mouse
-	location will be shown in an outline window when the Point info dlg is active).
-      <LI>
-	Put in a comment about changing to FontForge in the copyright notice the
-	program prints at start up.
-      <LI>
-	The "preflight" script on the mac had problems if the program had never been
-	installed before
-    </UL>
-  <LI>
-    27-Feb-2004
-    <UL>
-      <LI>
-	Redid the way menus respond to arrow keys
-      <LI>
-	a multilayer enabled FontForge would crash when editing a normal font.
-    </UL>
-  <LI>
-    24-Feb-2004
-    <UL>
-      <LI>
-	Remove the AddHint command and replace it with AddHHint and AddVHint.
-      <LI>
-	FontForge would crash when generating a mac family with NFNT bitmaps.
-      <LI>
-	Added support of exporting a character into PDF format.
-      <LI>
-	Oh dear, I was figuring out hintmasks in the wrong direction (because PS
-	splines get reversed before output, so I now reverse them during the hintmask
-	calculation too).
-      <LI>
-	At Werner's suggestion, added code to show what hints are currently active
-	at a point.
-      <LI>
-	At Werner's suggestion added code to show what points are affected by a hintmask
-      <LI>
-	Added support for real editing of type3 (and svg) fonts. Support for editing
-	stroked paths, different fill colors, multiple stroke/fill operations, etc.
-	Because this involves a lot of extra overhead it is wrong for people who
-	want to edit CJK fonts, so this mode is off by default. It may be turned
-	on by
-	<BLOCKQUOTE>
-	  <PRE>$ configure --with-multilayer
-</PRE>
-	</BLOCKQUOTE>
-      <LI>
-	FontForge failed to interpret h/vstem3 commands properly when building a
-	hintmask (when reading a type1 font with hint substitution)
-    </UL>
-  <LI>
-    11-Feb-2004
-    <UL>
-      <LI>
-	FontForge would crash when saving a non-multi master font.
-      <LI>
-	Adding new scripting commands ClearCharCounterMasks, SetCharCounterMask
-    </UL>
-  <LI>
-    10-Feb-2004
-    <UL>
-      <LI>
-	FontForge could produce bad tfm files.
-      <LI>
-	Added CheckForAnchorClass scripting command
-      <LI>
-	Added SetFontHasVerticalMetrics scripting command.
-      <LI>
-	FontForge would crash if asked to generate a contextual lookup which refered
-	to a lookup which only was activated by a character(s) which was not worth
-	outputting.
-      <LI>
-	FontForge did the wrong thing when evaluating the PostScript "index" command
-	(it returned the wrong value from the stack (stack index off by one))
-      <LI>
-	Added support for the PostScript "for" loop.
-      <LI>
-	I have created a simple (1 axis) Multiple Master Type1 font with FontForge.
-	It works with both ghostview and freetype.
-      <LI>
-	FontForge would crash when generating a ttf file from an sfd file which contain
-	an invalid script/lang index. Put in code to warn user about this, and in
-	some cases to correct it.
-      <LI>
-	FontForge had problems reading sfd files in the old point count format, this
-	meant we still got bad point count errors.
-      <LI>
-	FontForge wrote bad sfd files if there were countermasks (all the countours
-	of the glyph would be lost)
-      <LI>
-	I finally figured out why FontForge kept crashing when palettes were docked
-	and an outline view was closed.
-      <LI>
-	Fixed various crashes in Interpolate fonts
-      <LI>
-	FontForge had problems with using subroutines to express references in PostScript
-	(introduced 30-Jan)
-      <LI>
-	Added a new scripting commands AddHint and ReplaceCharCounterMasks.
-    </UL>
-  <LI>
-    4-Feb-2004
-    <UL>
-      <LI>
-	Make it illegal to select both "Condense" and "Extend" in the mac style.
-    </UL>
-  <LI>
-    3-Feb-2004
-    <UL>
-      <LI>
-	Point Info dlg crashed on the mac
-      <LI>
-	Add UI control over Mac Style through the Font Info dlg
-      <LI>
-	more prep work for mm fonts
-    </UL>
-  <LI>
-    2-Feb-2004
-    <UL>
-      <LI>
-	Generating a postscript font from a database with quadratic splines didn't
-	work
-      <LI>
-	FontForge crashed on a font with two /CharStrings entries
-      <LI>
-	Small tweak to menubar behavior given left/right arrow (for Werner)
-      <LI>
-	Composite glyphs created with seac (type1) had the wrong transformation for
-	the accent.
-      <LI>
-	more prep work for mm fonts
-      <LI>
-	Still have problems with ttf point counts
-      <LI>
-	If a user loaded a ttf file and made it monospace and then generated it as
-	ttf, all gyphs except the .notdef had an advance width of 0
-    </UL>
-  <LI>
-    1-Feb-2004
-    <UL>
-      <LI>
-	sfd reader had a bug. Went into an infinite loop if a hintmask contained
-	any of the characters [a-fA-F].
-    </UL>
-  <LI>
-    31-Jan-2004
-    <UL>
-      <LI>
-	In Type2 output, when putting a glyph into a subroutine, if that glyph had
-	no conflicts but had a hintmask fontforge produced a bad font (which crashed
-	FontForge when it tried to read it in).
-      <LI>
-	configure script still wasn't working on solaris (or mac with libiconv probably)
-    </UL>
-  <LI>
-    30-Jan-2004
-    <UL>
-      <LI>
-	The kerning state machine addition broke the indic state machine dialog
-      <LI>
-	The mac docs claim that the 'feat' table should be sorted by feature id.
-	But if you do this WorldText can't find features. All Apple fonts seem to
-	be sorted by the order the features are used in the 'morx' table's chains.
-	WorldText works if you do this.
-      <LI>
-	Yannis proposed several extensions to the State Machine editor, most notably
-	the ability to move the edit dialog with Up/Down/Left/Right buttons.
-      <LI>
-	I had the feature settings for Linguistic Rearrangement and Vertical Subs.
-	reversed.
-      <LI>
-	In some cases I wasn't outputting anything to turn a feature off.
-      <LI>
-	Fixed many problems with kerning state machine dlg
-      <LI>
-	Fixed several problems with insertion state machines
-      <LI>
-	Fixed several problems with reading in state machines.
-      <LI>
-	Added SetMacStyle() to give the user control over how mac families are built.
-      <LI>
-	Added a fflush after doing Print()s in scripting
-      <LI>
-	FontForge would crash when given an extremely long real number in a cff
-	dictionary (in this case the font itself was in error)
-      <LI>
-	FontForge did not copy a bitmap character's width when it copied the bitmap.
-      <LI>
-	Char Info didn't handle pairwise positioning properly.
-      <LI>
-	Some more pangrams from
-	<A HREF="http://shair.net/misc/txt/pangram.en">http://shair.net/misc/txt/pangram.en</A>
-	(link provided by David Shaal)
-      <LI>
-	My old approach to hint substitution caused problems with multiple master
-	fonts. So now I keep track of which points are substitution points and what
-	the hint masks are at those points. There is a new command which will
-	automatically figure out these points, and the user may control them directly
-	through Point Info (Element-&gt;Get Info). At the same time I figured I might
-	as well do the same thing for counter masks, so FontForge will read counter
-	masks in from otf file (I did not implement this for type1s), there is a
-	new command to try and make a guess as to what they should be, and the user
-	may control them directly through Element-&gt;Char Info. (new scripting commands,
-	SubstitutionPoints() and AutoCounter() do the obvious).
-      <LI>
-	Added a Hints-&gt;Don't AutoHint command to mark a character as having hints
-	the user likes which should not be modified until the user explicitly calls
-	AutoHint(). (and a matching scripting command).
-      <LI>
-	Added ability to control whether a PostScript font (type1&amp;type2) is output
-	with rounding.
-      <LI>
-	FontForge could generate a bad 'post' table for bitmap only fonts.
-      <LI>
-	FontForge didn't allow you to create two pairwise positioning items with
-	the same tag.
-      <LI>
-	Hungarian names for mac features and for some standard names like "Bold",
-	etc. provided by Laszlo Karoly.
-      <LI>
-	Pierre HANSER noticed that if FontForge mapped a single glyph to two encodings
-	then bitmap generation through freetype got confused.
-      <LI>
-	If a font contained a non-.notdef character at encoding 0, then generating
-	an opentype font from it had a fair chance of crashing.
-      <LI>
-	Added a couple of new select menu items: Select-&gt;Contours, Select-&gt;First
-	Point, Next Contour
-      <LI>
-	Added a new sub-menu to allow ordering contours within a glyph. This is almost
-	totally useless (the final look of the character should not be affected by
-	the order in which the contours are drawn), but for multiple master fonts,
-	the contour list must have the same ordering in corresponding glyphs.
-    </UL>
-  <LI>
-    11-Jan-2003
-    <UL>
-      <LI>
-	A patch for reading broken mac tables got lost. I've reinstated it.
-    </UL>
-  <LI>
-    10-Jan-2003
-    <UL>
-      <LI>
-	FontForge would crash when asked to use the truetype debugger on fpgm
-      <LI>
-	FontForge always coloured the background of debugger windows grey.
-      <LI>
-	The Points window did not show any points.
-      <LI>
-	Changed the Points window and the character view to show whether a point
-	has a watch point set on it.
-      <LI>
-	Display the code range ('fpgm'/'prep'/Glyph) in the character's info line
-	when debugging.
-      <LI>
-	When creating a 'fpgm'/'prep' table we created one with some garbage instructions
-	in it.
-      <LI>
-	Somehow I neglected to put in a dlg for editing the 'cvt ' table. This has
-	been rectified.
-      <LI>
-	There was a bug in the postscript interpreter (the thing used for reading
-	.eps files and type3 fonts) and transforming a point by a matrix with diagonal
-	entries (rotation, skew, etc.) gave the wrong value.
-      <LI>
-	Added code to preserve more of the PS graphic state when eps file does a
-	gsave
-      <LI>
-	Merge Fonts would crash when merging a font with references into an empty
-	font
-      <LI>
-	I wasn't providing default values for width/weight classes in the OS/2 table
-      <LI>
-	The bitmap dlg could write one byte beyond the area allocated in some cases.
-      <LI>
-	Changed the outline character popup menu to include an Add Anchor Point entry
-      <LI>
-	The Ligature index wasn't correctly enabled in some cases.
-      <LI>
-	Add little arrows near the first point of each contour (in the outline character
-	view) showing the direction of the contour.
-      <LI>
-	The mac's interpretation of the CFF spec is very picky, but correct. If a
-	font contained no references then FontForge would generate an empty subroutine
-	index. This is wrong. There should be no subroutine index, rather than an
-	empty one. (Strangely, global subroutines have the reverse requirement. Stupid).
-	Now if there are no references, then FontForge will not generate a local
-	subroutine index.
-      <LI>
-	Yannis Haralambous has corrected the French UI.
-      <LI>
-	Three new scripting commands: AddAnchorClass, AddAnchorPoint, RemoveAnchorClass
-      <LI>
-	Show ATT did not show glyph classes properly.
-      <LI>
-	Made scripting dlg be resizable.
-      <LI>
-	Save As &amp; Import dlgs looked bad in French. Various other improvements
-	to make things look better on non-english systems.
-      <LI>
-	Added the ability to set the glyph class from Char Info.
-      <LI>
-	FontsInFile did not work on pfb files (nor on cff)
-      <LI>
-	Opening a mac resource file with multiple FONDs from a script would crash.
-      <LI>
-	In Font Info-&gt;TTF Names the languages now appear in unicode ordering no
-	matter what the locale (used to be the langs were in alphabetical ordering
-	for English, even if they were actually French)
-    </UL>
-  <LI>
-    2-Jan-2004
-    <UL>
-      <LI>
-	More accurate round joints in stroking.
-      <LI>
-	Better approximations to splines which turn through 180 degrees or more
-      <LI>
-	Support for reading cff files.
-      <LI>
-	Yet more problems counting ttf points
-      <LI>
-	Update copyright notices.
-      <LI>
-	Add code to protect FontForge against reading bad Apple lookup tables (I
-	think the Zapfino.dfont that ships with 10.3 has two bad lookups, but perhaps
-	I just don't understand them).
-      <LI>
-	Try harder to avoid using 'DFLT' script when coming up with a default script
-	for glyphs with no inate script.
-      <LI>
-	Add a Find Problems to detect 'DFLT'
-      <LI>
-	I've been generating bad Simple Positioning subtables for GPOS all along.
-      <LI>
-	Be pickier about what glyph names I let the user choose.
-      <LI>
-	On cygwin (perhaps elsewhere, but I was never able to find the bug elsewhere)
-	if you invoked one command from the menu while another was still executing,
-	then fontforge would probably crash.
-      <LI>
-	Support for reading and writing bare cff files.
-      <LI>
-	Build Accents crashed when asked to build accented chars for iacute, etc.
-	in a font without dotlessi.
-    </UL>
-  <LI>
-    28-Dec-2003
-    <UL>
-      <LI>
-	RemoveATT scripting command didn't work if the third argument were "*"
-      <LI>
-	FontForge's clipping in the character view left something to be desired.
-      <LI>
-	Make Meta-Arrow move selected points by 10 times what Arrow would move them
-	by.
-      <LI>
-	Grabbed the feature ordering for GPOS/GSUB specified on the
-	<A HREF="http://www.microsoft.com/typography/specs/default.htm">microsoft
-	site</A> and taught it to FontForge.
-      <LI>
-	Change the Point Info dlg
-	<UL>
-	  <LI>
-	    to allow the user to control the point type from there.
-	  <LI>
-	    to enforce constaints on control points (ie. the control points of a curve
-	    point must be in line with the point itself)
-	  <LI>
-	    by adding an alternated mode of entering data, by distance and angle (rather
-	    than just offset)
-	</UL>
-      <LI>
-	Some MF fonts have glyph names with characters which aren't allowed in PostScript
-	names
-      <LI>
-	FontForge failed to set widthset when it read in glyphs from a windows FNT
-	(FON) file. This meant that some glyphs might be ignored.
-      <LI>
-	The context chaining dialog had a bad test for valid glyph names and complained
-	about any name containing digits
-      <LI>
-	The histogram dlg would crash if the mouse moved across it when the window
-	was so wide that it could contain more stem widths than were actually in
-	use.
-      <LI>
-	Added three commands to the metrics view view menu to allow users to insert
-	glyphs by name or encoding.
-      <LI>
-	Yannis points out that afm files produced on fonts with vertical metrics
-	did not contain "WY" values (vertical advance width), also that the vkerns
-	in the file actually contained the values of horizontal kerns.
-      <LI>
-	The 'kern' table did not contain pairwise vertical kerns (it did contain
-	vertical kerning by class).
-      <LI>
-	The View-&gt;Substitutions sub menu of the metricsview was not being cleared
-	properly if the current glyph had no substitutions.
-      <LI>
-	Yannis wants the View-&gt;Substitutions menu to have a way to return to the
-	original glyph.
-      <LI>
-	Yannis points out that the metricsview in vertical mode changed the top side
-	bearing in an unexpected way. Also the vertical advance width did not refresh
-	the display properly.
-      <LI>
-	Thanks to David Opstad, I now have an example of a format 1 kerning table
-	and have extended FontForge to support kerning by state machine.
-      <LI>
-	The code for generating and loading otb (OpenType bitmap) fonts was broken.
-      <LI>
-	And the code for generating my own wierd bitmap only fonts for windows had
-	some flaws too (different flaws).
-      <LI>
-	If I typed a character into a fontview (or char view) and the font did not
-	contain the character, fontforge would not select that slot that encoded
-	the character, even if the character was in the encoding.
-      <LI>
-	When loading a ps type3 font, make sure that the glyph name is available
-	when parsing glyphs so we can produce reasonable error msgs. (mostly this
-	means "Spline stroke is too big"
-      <LI>
-	Only generate Spline stroke too big errors once per font.
-      <LI>
-	Adam Goode tells me that the format 12 (32bit unicode) cmap was wrong, and
-	provided a patch to fix it.
-      <LI>
-	Pretty much rewrote the stroking command from scratch.
-      <LI>
-	Merge fonts would crash when merging in a font containing either a ligature
-	caret or a nested lookup.
-      <LI>
-	Made FontForge cognizant of the proposed unicode dotlessj character (0237),
-	it will now use either this or the dotlessj in adobe's private use area
-	(depending on which is in the font)
-      <LI>
-	FontForge would crash when trying to build an accented character based on
-	inverted breve in pala.ttf
-	<UL>
-	  <LI>
-	    It wrongly considered pala.ttf to be slightly italic (.0005&#176;)
-	  <LI>
-	    It would crash when doing this in an italic font
-	</UL>
-	<P>
-	  <HR>
-      <LI>
-	When importing postscript (type3 fonts, eps files) counter-clockwise paths
-	which are both stroked and filled cause problems
-      <LI>
-	Changed the version stamp of otb fonts from 'OTTO' to 1.0
-    </UL>
-  <LI>
-    10-Dec-2003
-    <UL>
-      <LI>
-	When there were multiple features with the same tag (different scripts with
-	'kern' for instance) FontForge would produce multiple copies of the same
-	lookup instead of different lookups.
-      <LI>
-	FontForge was not setting the right to left lookup flag bit properly for
-	hebrew (and presumably arabic) kerning
-      <LI>
-	Remove overlap was coalescing some splines that it should not have.
-      <LI>
-	Typo in expand stroke meant that some round line joins were really weird
-    </UL>
-  <LI>
-    5-Dec-2003
-    <UL>
-      <LI>
-	When changing the ascent/descent with fontinfo or scaletoem some of the OS/2
-	fields did not get updated properly.
-      <LI>
-	The OS/2 TypoDescent field was set positive instead of negative.
-      <LI>
-	Added two scripting functions SetTTFName and GetTTFName to give scripts access
-	to the truetype names as well as the PS ones
-      <LI>
-	Patch from Kazuyuki. SetPanose didn't work when argument was an array.
-      <LI>
-	New French translations from Pierre
-      <LI>
-	$copyright didn't return the correct thing (Patch from Giuseppe Ghibo)
-      <LI>
-	Kerning pair data for non-ASCII unicode characters did not get output properly
-	into SVG fonts
-      <LI>
-	The AddATT scripting command did not add ligatures correctly leading to problems
-	when time came to generate a font.
-    </UL>
-  <LI>
-    23-Nov-2003
-    <UL>
-      <LI>
-	FontForge would crash if given an encoding for the locale which it didn't
-	understand
-      <LI>
-	Center/Thirds in width from the font view would change the width
-      <LI>
-	There was a synchronization problem and the truetype debugger window could
-	deadlock
-      <LI>
-	FontForge failed to read a Contextual (but not Contextual chaining) Coverage
-	lookup properly.
-    </UL>
-  <LI>
-    10-Nov-2003
-    <UL>
-      <LI>
-	FontForge was crashing when loading a bitmap font with encoded characters
-	outside the range specified by the encoding (ie. a character 0x10000 in a
-	unicode BMP font).
-      <LI>
-	Fixes for several memory leaks provided by Kazuki Ohta
-      <LI>
-	Slight improvements to the View-&gt;Combinations-&gt;Ligature dlg
-    </UL>
-  <LI>
-    8-Nov-2003
-    <UL>
-      <LI>
-	Bug introduced 6-Nov, FontForge generated a bad 'loca' table when outputing
-	a ttf outline font with bitmaps.
-      <LI>
-	FontForge was getting the truetype point number wrong when reading outlines
-	from an sfd file.
-      <LI>
-	If the loca table was 2 or 4 bytes long, FontForge failed to warn about a
-	bad glyph count.
-      <LI>
-	FontForge got confused if two truetype glyphs had the same name.
-      <LI>
-	When dumping out embedded ttf bitmaps, FontForge got confused by the extra
-	glyphs (.null and return) and generated garbage.
-      <LI>
-	Make View-&gt;Combinations-&gt;ligature dlg a bit better for non-latin glyphs
-    </UL>
-  <LI>
-    6-Nov-2003
-    <UL>
-      <LI>
-	The clut used for drawing anti-alias bitmaps in the metrics view was wrong.
-      <LI>
-	In a bitmap only ttf file, FontForge was usually producing bad line spacing
-	data as far as the mac was concerned.
-      <LI>
-	When importing bitmaps into an empty font, we might as well change to font
-	view to show the bitmaps rather than the empty outline data.
-      <LI>
-	If glyph 0 was selected in the fontview then the File-&gt;Open Outline command
-	was disabled.
-      <LI>
-	With a user defined encoding we were again getting occasional crashes.
-	(introduced by my work on bitmaps)
-      <LI>
-	On certain glyphs, the optimizer introduced an slight error when calculating
-	a spline's coefficients from its control point. Even though this error was
-	on the order of 7e-8 it was enough that the rasterizer produced grossly incorrect
-	results. I have pulled the relevant routine out into its own file which is
-	now compiled by itself without optimization.
-    </UL>
-  <LI>
-    4-Nov-2003
-    <UL>
-      <LI>
-	When FontForge removes glyphs with Font Info-&gt;Encoding-&gt;Number of
-	characters, it will now run through the font and remove any ligatures,
-	substitutions, etc. refering to non-existant glyph names.
-      <LI>
-	Some improvements to remove overlap.
-      <LI>
-	Added a warning message so that when user attempts to output a ttf file where
-	no characters have unicode encodings, then the user at least gets warned
-	that the result will probably not work. For fonts with fewer than 256 glyphs
-	it will offer the choice of a symbol encoding.
-      <LI>
-	If a reference were copied in the outline character view and pasted into
-	the font view, fontforge would crash.
-      <LI>
-	the expand stroke patch on 29-Sept broke caligraphic and elipse modes.
-      <LI>
-	The mouse's scroll wheel did not work in the metrics view.
-      <LI>
-	The metrics view resized very slowly under window managers which do continuous
-	resizing.
-      <LI>
-	Give the magnifying glass's rectangle mode a threshold so that it doesn't
-	resize tiny rectangles which are really caused by mouse gitter.
-      <LI>
-	Attempt to set a zoom size for character and bitmap windows, but modern window
-	managers don't seem to support the old protocol, and I can't find docs on
-	a new version.
-      <LI>
-	Was not converting filenames to unicode properly for the open/generate progress
-	dlgs.
-      <LI>
-	FontForge would crash when attempting to draw a character for which in had
-	no (X11) glyph when doing bidirectional text.
+	Changed name from pfaedit to fontforge
     </UL>
   <LI>
     <A HREF="oldchangelog.html">Earlier Changes </A>
+  <LI>
+    <A HREF="pfaeditchangelog.html">Changes to PfaEdit (predeccessor to
+    FontForge)</A>
 </UL>
 </BODY></HTML>
