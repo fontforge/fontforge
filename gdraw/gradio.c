@@ -484,7 +484,7 @@ void GGadgetSetChecked(GGadget *g, int ison) {
 	    }
 	}
     }
-    gr->ison = ison;
+    gr->ison = ison?1:0;
     _ggadget_redraw(g);
 }
 
