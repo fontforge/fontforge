@@ -1838,7 +1838,9 @@ static int32 ComposeCharacter(GWindow gw, struct font_instance *fi,
 	    sc==NULL && !(mods->mods&tm_upper) ) {
 	unichar_t ch = (*text=='i') ? 0x131 : 0xf6be;
 	afd = PickAccentFont(fi,fd,ch, &accent);
-	if ( afd==NULL )
+	if ( afd!=NULL && afd->info==NULL )
+	    (gw->display->funcs->loadFontMetrics)(gw->display,afd);
+	if ( afd==NULL || afd->info==NULL )
 	    afd = fd;
 	else
 	    pt = &accent;
