@@ -106,20 +106,24 @@ return( true );
 	ret = RealNear(spline->from->me.x,spline->from->nextcp.x) &&
 	    RealNear(spline->from->me.x,spline->to->prevcp.x) &&
 	    ((spline->from->nextcp.y >= spline->from->me.y &&
-	      spline->from->nextcp.y <= spline->to->prevcp.y &&
+	      spline->from->nextcp.y <= spline->to->me.y &&
+	      spline->to->prevcp.y >= spline->from->me.y &&
 	      spline->to->prevcp.y <= spline->to->me.y ) ||
 	     (spline->from->nextcp.y <= spline->from->me.y &&
-	      spline->from->nextcp.y >= spline->to->prevcp.y &&
+	      spline->from->nextcp.y >= spline->to->me.y &&
+	      spline->to->prevcp.y <= spline->from->me.y &&
 	      spline->to->prevcp.y >= spline->to->me.y ));
     /* Horizontal lines */
     } else if ( RealNear(spline->from->me.y,spline->to->me.y) ) {
 	ret = RealNear(spline->from->me.y,spline->from->nextcp.y) &&
 	    RealNear(spline->from->me.y,spline->to->prevcp.y) &&
 	    ((spline->from->nextcp.x >= spline->from->me.x &&
-	      spline->from->nextcp.x <= spline->to->prevcp.x &&
+	      spline->from->nextcp.x <= spline->to->me.x &&
+	      spline->to->prevcp.x >= spline->from->me.x &&
 	      spline->to->prevcp.x <= spline->to->me.x) ||
 	     (spline->from->nextcp.x <= spline->from->me.x &&
-	      spline->from->nextcp.x >= spline->to->prevcp.x &&
+	      spline->from->nextcp.x >= spline->to->me.x &&
+	      spline->to->prevcp.x <= spline->from->me.x &&
 	      spline->to->prevcp.x >= spline->to->me.x));
     } else {
 	ret = true;
