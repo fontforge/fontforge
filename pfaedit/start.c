@@ -27,6 +27,7 @@
 #include "pfaeditui.h"
 #include "gfile.h"
 #include "gresource.h"
+#include <time.h>
 #include <sys/time.h>
 #include <locale.h>
 #include <unistd.h>
@@ -53,31 +54,40 @@ static void initadobeenc(void) {
     }
 }
 
+static void doversion(void) {
+    extern const char *source_version_str;
+    printf( "pfaedit %s\n", source_version_str );
+exit(0);
+}
+
 static void _dousage(void) {
-    fprintf( stderr, "pfaedit [options] [fontfiles]\n" );
-    fprintf( stderr, "\t-new\t\t\t (creates a new font)\n" );
+    printf( "pfaedit [options] [fontfiles]\n" );
+    printf( "\t-new\t\t\t (creates a new font)\n" );
 #if HANYANG
-    fprintf( stderr, "\t-newkorean\t\t (creates a new korean font)\n" );
+    printf( "\t-newkorean\t\t (creates a new korean font)\n" );
 #endif
-    fprintf( stderr, "\t-recover none|auto|clean (control error recovery)\n" );
-    fprintf( stderr, "\t-nosplash\t\t (no splash screen)\n" );
-    fprintf( stderr, "\t-display display-name\t (sets the X display)\n" );
-    fprintf( stderr, "\t-depth val\t\t (sets the display depth if possible)\n" );
-    fprintf( stderr, "\t-vc val\t\t\t (sets the visual class if possible)\n" );
-    fprintf( stderr, "\t-sync\t\t\t (syncs the display, debugging)\n" );
-    fprintf( stderr, "\t-keyboard\tibm|mac|sun|ppc\t (generates appropriate hotkeys in menus)\n" );
+    printf( "\t-recover none|auto|clean (control error recovery)\n" );
+    printf( "\t-nosplash\t\t (no splash screen)\n" );
+    printf( "\t-display display-name\t (sets the X display)\n" );
+    printf( "\t-depth val\t\t (sets the display depth if possible)\n" );
+    printf( "\t-vc val\t\t\t (sets the visual class if possible)\n" );
+    printf( "\t-sync\t\t\t (syncs the display, debugging)\n" );
+    printf( "\t-keyboard ibm|mac|sun|ppc  (generates appropriate hotkeys in menus)\n" );
 #if MyMemory
-    fprintf( stderr, "\t-memory\t\t\t (turns on memory checks, debugging)\n" );
+    printf( "\t-memory\t\t\t (turns on memory checks, debugging)\n" );
 #endif
-    fprintf( stderr, "\t-usage\t\t\t (displays this message, and exits)\n" );
-    fprintf( stderr, "\t-help\t\t\t (displays this message, invokes a browser)\n\t\t\t\t(Using the BROWSER environment variable)\n" );
-    fprintf( stderr, "\n" );
-    fprintf( stderr, "pfaedit will read postscript (pfa, pfb, ps, cid), opentype (otf),\n" );
-    fprintf( stderr, "\ttruetype (ttf) and bdf fonts. It will also read it's own format\n" );
-    fprintf( stderr, "\tsfd files.\n\n" );
-    fprintf( stderr, "If no fontfiles are specified (and -new is not either and there's nothing\n" );
-    fprintf( stderr, "\tto recover) then pfaedit will produce an open font dlg.\n\n" );
-    fprintf( stderr, "For more information see:\n\thttp://pfaedit.sourceforge.net/\n" );
+    printf( "\t-usage\t\t\t (displays this message, and exits)\n" );
+    printf( "\t-help\t\t\t (displays this message, invokes a browser)\n\t\t\t\t  (Using the BROWSER environment variable)\n" );
+    printf( "\t-version\t\t (prints the version of pfaedit and exits)\n" );
+    printf( "\n" );
+    printf( "pfaedit will read postscript (pfa, pfb, ps, cid), opentype (otf),\n" );
+    printf( "\ttruetype (ttf,ttc), macintosh resource fonts (dfont,bin,hqx),\n" );
+    printf( "\tand bdf and pcf fonts. It will also read it's own format --\n" );
+    printf( "\tsfd files.\n" );
+    printf( "If no fontfiles are specified (and -new is not either and there's nothing\n" );
+    printf( "\tto recover) then pfaedit will produce an open font dlg.\n\n" );
+    printf( "For more information see:\n\thttp://pfaedit.sourceforge.net/\n" );
+    printf( "Send bug reports to:\tgww@silcom.com\n" );
 }
 
 static void dousage(void) {
@@ -238,7 +248,7 @@ int main( int argc, char **argv ) {
     int i;
     GRect pos;
     GWindowAttrs wattrs;
-    extern const char *link_time_str;
+    extern const char *source_modtime_str;
     int splash = 1;
     int any;
     char *display = NULL;
@@ -249,7 +259,7 @@ int main( int argc, char **argv ) {
 
 
     fprintf( stderr, "Copyright \251 2000-2002 by George Williams.\n Executable based on sources from %s.\n",
-	    link_time_str );
+	    source_modtime_str );
     setlocale(LC_ALL,"");
     localeinfo = *localeconv();
     if ( *localeinfo.thousands_sep=='\0' ) {
@@ -302,6 +312,8 @@ int main( int argc, char **argv ) {
 	    dohelp();
 	else if ( strcmp(pt,"-usage")==0 )
 	    dousage();
+	else if ( strcmp(pt,"-version")==0 )
+	    doversion();
     }
     initadobeenc();
     initrand();
