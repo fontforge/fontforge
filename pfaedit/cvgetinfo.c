@@ -391,7 +391,12 @@ static int IsAnchorClassUsed(SplineChar *sc,AnchorClass *an) {
 		sawentry = true;
 	    else if ( ap->type==at_cexit )
 		sawexit = true;
-	    else if ( ap->type!=at_baselig )
+	    else if ( an->feature_tag==CHR('m','k','m','k') ) {
+		if ( ap->type==at_basemark )
+		    sawexit = true;
+		else
+		    sawentry = true;
+	    } else if ( ap->type!=at_baselig )
 return( -1 );
 	    else if ( waslig<ap->lig_index+1 )
 		waslig = ap->lig_index+1;
@@ -407,21 +412,26 @@ return( waslig );
 }
 
 AnchorClass *AnchorClassUnused(SplineChar *sc,int *waslig) {
-    AnchorClass *an;
-    int val;
+    AnchorClass *an, *maybe;
+    int val, maybelig;
     /* Are there any anchors with this name? If so can't reuse it */
     /*  unless they are ligature anchores */
     /*  or 'curs' anchors, which allow exactly two points (entry, exit) */
+    /*  or 'mkmk' anchors, which allow exactly a mark to be both a base and an attach */
 
-    *waslig = false;
+    *waslig = false; maybelig = false; maybe = NULL;
     for ( an=sc->parent->anchor; an!=NULL; an=an->next ) {
 	val = IsAnchorClassUsed(sc,an);
-	if ( val!=-1 ) {
+	if ( val>=0 ) {
 	    *waslig = val;
 return( an );
+	} else if ( val!=-1 && maybe==NULL ) {
+	    maybe = an;
+	    maybelig = val;
 	}
     }
-return( NULL );
+    *waslig = maybelig;
+return( maybe );
 }
 
 static AnchorPoint *AnchorPointNew(CharView *cv) {
@@ -440,7 +450,9 @@ return(NULL);
     ap->me.y = cv->p.cy; /* cv->p.cy = 0; */
     ap->type = at_basechar;
     for ( pst = cv->sc->possub; pst!=NULL && pst->type!=pst_ligature; pst=pst->next );
-    if ( waslig==-2 )
+    if ( waslig<-1 && an->feature_tag==CHR('m','k','m','k') ) {
+	ap->type = waslig==-2 ? at_basemark : at_mark;
+    } else if ( waslig==-2 )
 	ap->type = at_cexit;
     else if ( waslig==-3 || an->feature_tag==CHR('c','u','r','s'))
 	ap->type = at_centry;
@@ -518,6 +530,9 @@ static void AI_DisplayClass(GIData *ci,AnchorPoint *ap) {
     } else if ( !enable_mkmk && !curs && ap->type==at_basemark ) {
 	GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_BaseChar),true);
 	ap->type = at_basechar;
+    } else if ( curs && ap->type!=at_centry && ap->type!=at_cexit ) {
+	GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_CursEntry),true);
+	ap->type = at_centry;
     }
 
     memset(saw,0,sizeof(saw));
@@ -534,6 +549,29 @@ static void AI_DisplayClass(GIData *ci,AnchorPoint *ap) {
 	GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_Mark),!saw[at_mark]);
 	if ( saw[at_basechar]) GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_BaseChar),false);
 	if ( saw[at_basemark]) GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_BaseMark),false);
+    }
+}
+
+static void AI_DisplayRadio(GIData *ci,enum anchor_type type) {
+    switch ( type ) {
+      case at_mark:
+	GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_Mark),true);
+      break;
+      case at_basechar:
+	GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_BaseChar),true);
+      break;
+      case at_baselig:
+	GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_BaseLig),true);
+      break;
+      case at_basemark:
+	GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_BaseMark),true);
+      break;
+      case at_centry:
+	GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_CursEntry),true);
+      break;
+      case at_cexit:
+	GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_CursExit),true);
+      break;
     }
 }
 
@@ -560,27 +598,7 @@ static void AI_Display(GIData *ci,AnchorPoint *ap) {
     GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_Prev),ci->sc->anchor!=ap);
 
     AI_DisplayClass(ci,ap);
-
-    switch ( ap->type ) {
-      case at_mark:
-	GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_Mark),true);
-      break;
-      case at_basechar:
-	GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_BaseChar),true);
-      break;
-      case at_baselig:
-	GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_BaseLig),true);
-      break;
-      case at_basemark:
-	GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_BaseMark),true);
-      break;
-      case at_centry:
-	GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_CursEntry),true);
-      break;
-      case at_cexit:
-	GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_CursExit),true);
-      break;
-    }
+    AI_DisplayRadio(ci,ap->type);
 
     AI_SelectList(ci,ap);
     SCUpdateAll(ci->sc);
@@ -748,28 +766,73 @@ static int AI_ANameChanged(GGadget *g, GEvent *e) {
 	GTextInfo *ti = GGadgetGetListItemSelected(g);
 	AnchorClass *an = ti->userdata;
 	int bad=0, max=0;
+	int iscurs, ismkmk;
+	int ntype;
+	int sawentry, sawexit;
 
 	if ( an==ci->ap->anchor )
 return( true );			/* No op */
+#if 0
 	if ( an->feature_tag==CHR('c','u','r','s') || ci->ap->anchor->feature_tag==CHR('c','u','r','s')) {
 	    GWidgetErrorR(_STR_BadClass,_STR_AnchorClassCurs);
 return( true );
 	}
+#endif
+	iscurs = an->feature_tag==CHR('c','u','r','s');
+	ismkmk = an->feature_tag==CHR('m','k','m','k');
+	ntype = ci->ap->type;
+	if ( iscurs ) {
+	    if ( ntype!=at_centry && ntype!=at_cexit )
+		ntype = at_centry;
+	} else if ( ismkmk ) {
+	    if ( ntype!=at_basemark && ntype!=at_mark )
+		ntype = at_basemark;
+	} else if ( ntype==at_centry || ntype==at_cexit || ntype==at_basemark ) {
+	    PST *pst;
+	    for ( pst = ci->sc->possub; pst!=NULL && pst->type!=pst_ligature; pst=pst->next );
+	    if ( ci->sc->unicodeenc!=-1 && ci->sc->unicodeenc<0x10000 &&
+		    iscombining(ci->sc->unicodeenc))
+		ntype = at_mark;
+	    else if ( pst!=NULL )
+		ntype = at_baselig;
+	    else
+		ntype = at_basechar;
+	}
+	sawentry = sawexit = false;
 	for ( ap=ci->sc->anchor; ap!=NULL; ap = ap->next ) {
 	    if ( ap!=ci->ap && ap->anchor==an ) {
-		if ( ap->type!=at_baselig || ci->ap->type!=at_baselig )
+		if ( iscurs ) {
+		    if ( ap->type == at_centry ) sawentry = true;
+		    else if ( ap->type== at_cexit ) sawexit = true;
+		} else if ( ismkmk ) {
+		    if ( ap->type == at_mark ) sawentry = true;
+		    else if ( ap->type== at_basemark ) sawexit = true;
+		} else {
+		    if ( ap->type!=at_baselig || ci->ap->type!=at_baselig )
 	break;
-		if ( ap->lig_index==ci->ap->lig_index )
-		    bad = true;
-		else if ( ap->lig_index>max )
-		    max = ap->lig_index;
+		    if ( ap->lig_index==ci->ap->lig_index )
+			bad = true;
+		    else if ( ap->lig_index>max )
+			max = ap->lig_index;
+		}
 	    }
 	}
-	if ( ap!=NULL ) {
-	    AI_SelectList(ci,ap);
+	if ( ap!=NULL || (sawentry && sawexit)) {
+	    AI_SelectList(ci,ci->ap);
 	    GWidgetErrorR(_STR_ClassUsed,_STR_AnchorClassUsed);
 	} else {
 	    ci->ap->anchor = an;
+	    if ( iscurs ) {
+		if ( sawentry ) ntype = at_cexit;
+		else if ( sawexit ) ntype = at_centry;
+	    } else if ( ismkmk ) {
+		if ( sawentry ) ntype = at_basemark;
+		else if ( sawexit ) ntype = at_mark;
+	    }
+	    if ( ci->ap->type!=ntype ) {
+		ci->ap->type = ntype;
+		AI_DisplayRadio(ci,ntype);
+	    }
 	    if ( ci->ap->type!=at_baselig )
 		ci->ap->lig_index = 0;
 	    else if ( bad )
