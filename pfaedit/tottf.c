@@ -237,8 +237,8 @@ static SplinePoint *_ttfapprox(Spline *ps,real tmin, real tmax, SplinePoint *sta
     SplinePoint *sp;
     real cx, cy;
     Spline ttf;
-    int cnt = -1;
-    BasePoint end, dend;
+    int cnt = -1, forceit;
+    BasePoint end, rend, dend;
 
     if ( RealNearish(ps->splines[0].a,0) && RealNearish(ps->splines[1].a,0) ) {
 	/* Already Quadratic, just need to find the control point */
@@ -267,8 +267,10 @@ static SplinePoint *_ttfapprox(Spline *ps,real tmin, real tmax, SplinePoint *sta
 return( sp );
     }
 
-    end.x = rint( ((ps->splines[0].a*tmax+ps->splines[0].b)*tmax+ps->splines[0].c)*tmax + ps->splines[0].d );
-    end.y = rint( ((ps->splines[1].a*tmax+ps->splines[1].b)*tmax+ps->splines[1].c)*tmax + ps->splines[1].d );
+    rend.x = ((ps->splines[0].a*tmax+ps->splines[0].b)*tmax+ps->splines[0].c)*tmax + ps->splines[0].d;
+    rend.y = ((ps->splines[1].a*tmax+ps->splines[1].b)*tmax+ps->splines[1].c)*tmax + ps->splines[1].d;
+    end.x = rint( rend.x );
+    end.y = rint( rend.y );
     dend.x = (3*ps->splines[0].a*tmax+2*ps->splines[0].b)*tmax+ps->splines[0].c;
     dend.y = (3*ps->splines[1].a*tmax+2*ps->splines[1].b)*tmax+ps->splines[1].c;
     memset(&ttf,'\0',sizeof(ttf));
@@ -305,12 +307,15 @@ return( LinearSpline(ps,start,tmax));
 	/*  pretend it's right */
 	start->prev->splines[0].b += ps->to->me.x-start->me.x;
 	start->prev->splines[1].b += ps->to->me.y-start->me.y;
-	/* should I fix up the control point? I hope it won't matter much */
-	start->me = ps->to->me;
+	start->prevcp.x += end.x-start->me.x;
+	start->prevcp.y += end.y-start->me.y;
+	start->me = end;
 return( start );
     }
 
     dt = (tmax-tmin)/ddim;
+    forceit = false;
+ force_end:
     for ( t=tmax; t>tmin+dt/128; t-= dt ) {		/* dt/128 is a hack to avoid rounding errors */
 	x = ((ps->splines[0].a*t+ps->splines[0].b)*t+ps->splines[0].c)*t+ps->splines[0].d;
 	y = ((ps->splines[1].a*t+ps->splines[1].b)*t+ps->splines[1].c)*t+ps->splines[1].d;
@@ -365,8 +370,13 @@ return( sp );
 	ttf.splines[1].d = ymin;
 	ttf.splines[1].c = 2*(cy-ymin);
 	ttf.splines[1].b = ymin+y-2*cy;
-	if ( comparespline(ps,&ttf,tmin,t) ) {
+	if ( forceit || comparespline(ps,&ttf,tmin,t) ) {
+	    if ( !forceit && (rend.x-x)*(rend.x-x)+(rend.y-y)*(rend.y-y)<4*4 ) {
+		forceit = true;
+ goto force_end;
+	    }
 	    sp = MakeQuadSpline(start,&ttf,x,y,t,ps->to);
+	    forceit = false;
 /* Without these two lines we would turn out the cps for cubic splines */
 /*  (what postscript uses). With the lines we get the cp for the quadratic */
 /* So with them we've got the wrong cps for cubic splines and can't manipulate*/
@@ -391,6 +401,9 @@ return( sp );
 }
 
 static SplinePoint *ttfapprox(Spline *ps,real tmin, real tmax, SplinePoint *start) {
+#if 0
+/* Hmm. With my algorithem, checking for points of inflection actually makes */
+/*  things worse. It uses more points and the splines don't join as nicely */
     real inflect[2];
     int i=0;
     /* no points of inflection in quad splines */
@@ -422,6 +435,7 @@ static SplinePoint *ttfapprox(Spline *ps,real tmin, real tmax, SplinePoint *star
 	    tmin = inflect[1];
 	}
     }
+#endif
 return( _ttfapprox(ps,tmin,tmax,start));
 }
 
