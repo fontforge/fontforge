@@ -2335,6 +2335,10 @@ static void handlename(Context *c,Val *val) {
 	    } else if ( strcmp(name,"$trace")==0 ) {
 		val->type = v_lval;
 		val->u.lval = &c->trace;
+	    } else if ( strcmp(name,"$version")==0 ) {
+		extern const char *source_version_str;
+		val->type = v_str;
+		val->u.sval = copy(source_version_str);
 	    }
 	} else if ( *name=='@' ) {
 	    if ( c->curfv==NULL ) error(c,"No current font");
@@ -2926,6 +2930,27 @@ static void statement(Context *c) {
 	error( c, "Unterminated statement" );
 }
 
+static FILE *CopyNonSeekableFile(FILE *former) {
+    int ch = '\n';
+    FILE *temp = tmpfile();
+    int istty = isatty(fileno(former)) && former==stdin;
+
+    if ( temp==NULL )
+return( former );
+    while ( 1 ) {
+	if ( ch=='\n' && istty )
+	    printf( "> " );
+	ch = getc(former);
+	if ( ch==EOF )
+    break;
+	putc(ch,temp);
+    }
+    if ( istty )
+	printf( "\n" );
+    rewind(temp);
+return( temp );
+}
+
 static void ProcessScript(int argc, char *argv[], FILE *script) {
     int i,j;
     Context c;
@@ -2945,13 +2970,18 @@ static void ProcessScript(int argc, char *argv[], FILE *script) {
 	c.a.vals[j-i].u.sval = copy(argv[j]);
     }
     c.return_val.type = v_void;
-    if ( script==NULL ) {
+    if ( script!=NULL ) {
+	c.filename = "<stdin>";
+	c.script = script;
+    } else if ( i<argc && strcmp(argv[i],"-")!=0 ) {
 	c.filename = argv[i];
 	c.script = fopen(c.filename,"r");
     } else {
 	c.filename = "<stdin>";
-	c.script = script;
+	c.script = stdin;
     }
+    if ( c.script!=NULL && ftell(c.script)==-1 )
+	c.script = CopyNonSeekableFile(c.script);
     if ( c.script==NULL )
 	error(&c, "No such file");
     else {
@@ -2972,7 +3002,7 @@ static void ProcessScript(int argc, char *argv[], FILE *script) {
 static void _CheckIsScript(int argc, char *argv[]) {
     if ( argc==1 )
 return;
-    if ( strcmp(argv[1],"-script")==0 && argc>2 )
+    if ( strcmp(argv[1],"-script")==0 )
 	ProcessScript(argc, argv,NULL);
     if ( access(argv[1],X_OK|R_OK)==0 ) {
 	FILE *temp = fopen(argv[1],"r");
