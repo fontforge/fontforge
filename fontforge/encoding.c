@@ -1726,3 +1726,24 @@ return( false );
     SFRestoreNearTop(sf);
 return( true );
 }
+
+char *SFEncodingName(SplineFont *sf) {
+    char buffer[130];
+
+    if ( sf->cidmaster!=NULL )
+	sf = sf->cidmaster;
+    if ( sf->subfontcnt!=0 ) {
+	sprintf( buffer, "%.50s-%.50s-%d", sf->cidregistry, sf->ordering, sf->supplement );
+return( copy( buffer ));
+    }
+    switch ( sf->encoding_name ) {
+      case em_custom:
+return( copy( "Custom" ));
+      case em_compacted:
+return( copy( "Compacted" ));
+      case em_original:
+return( copy( "Original" ));
+      default:
+return( copy( EncodingName(sf->encoding_name)));
+    }
+}

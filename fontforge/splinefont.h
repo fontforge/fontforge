@@ -1317,6 +1317,7 @@ extern int AfmSplineFont(FILE *afm, SplineFont *sf,int formattype);
 extern int PfmSplineFont(FILE *pfm, SplineFont *sf,int type0);
 extern int TfmSplineFont(FILE *afm, SplineFont *sf,int formattype);
 extern char *EncodingName(int map);
+extern char *SFEncodingName(SplineFont *sf);
 extern void SFLigaturePrepare(SplineFont *sf);
 extern void SFLigatureCleanup(SplineFont *sf);
 extern void SFKernPrepare(SplineFont *sf,int isv);
