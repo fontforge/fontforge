@@ -627,7 +627,7 @@ return( false );
 	ch = *pt;
 	if ( !haschar(sf,ch)) {
 	    if ( ch>=BottomAccent && ch<=TopAccent ) {
-		apt = accents[ch-BottomAccent]; end = apt+3;
+		apt = accents[ch-BottomAccent]; end = apt+sizeof(accents[0])/sizeof(accents[0][0]);
 		while ( apt<end && *apt && !haschar(sf,*apt)) ++apt;
 		if ( apt==end || *apt=='\0' ) {
 		    /* check for caron */
@@ -697,6 +697,7 @@ int hascomposing(SplineFont *sf,int u,SplineChar *sc) {
     if ( upt!=NULL ) {
 	while ( *upt ) {
 	    if ( iscombining(*upt) || *upt==0xb7 ||	/* b7, centered dot is used as a combining accent for Ldot */
+		    *upt==0x0384 ||	/* tonos */
 		    *upt==0x0385 ||	/* dieresis/tonos */
 		    *upt==0x1ffe || *upt==0x1fbf || *upt==0x1fcf || *upt==0x1fdf ||
 		    *upt==0x1fbd || *upt==0x1fef || *upt==0x1fc0 || *upt==0x1fc1 ||
@@ -1111,7 +1112,7 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
     /* cedilla on lower "g" becomes a turned comma above it */
     if ( ch==0x327 && basech=='g' && haschar(sf,0x312))
 	ch = 0x312;
-    apt = accents[ch-BottomAccent]; end = apt+3;
+    apt = accents[ch-BottomAccent]; end = apt+sizeof(accents[0])/sizeof(accents[0][0]);
     if ( ch>=BottomAccent && ch<=TopAccent ) {
 	while ( *apt && apt<end && !haschar(sf,*apt)) ++apt;
 	if ( *apt!='\0' && apt<end )
@@ -1229,7 +1230,8 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
 	else if ( isupper(basech) && ch==0x1fbe )
 	    pos = ____RIGHT;
 	else if ( ch==0x1fcd || ch==0x1fdd || ch==0x1fce || ch==0x1fde ||
-		 ch==0x1ffe || ch==0x1fbf || ch==0x1fcf || ch==0x1fdf )
+		 ch==0x1ffe || ch==0x1fbf || ch==0x1fcf || ch==0x1fdf ||
+		 ch==0x384 )
 	    pos = ____ABOVE;
     } else if ( (basech==0x1ffe || basech==0x1fbf) && (ch==0x301 || ch==0x300))
 	pos = ____RIGHT;
@@ -1921,7 +1923,7 @@ return;
 	if ( !SCMakeBaseReference(sc,sf,ch,copybmp) )
 return;
 	while ( iscombining(*pt) || (ch!='l' && *pt==0xb7) ||	/* b7, centered dot is used as a combining accent for Ldot but as a lig for ldot */
-		*pt==0x385 || (*pt>=0x1fbd && *pt<=0x1fff ))	/* Special greek accents */
+		*pt==0x384 || *pt==0x385 || (*pt>=0x1fbd && *pt<=0x1fff ))	/* Special greek accents */
 	    SCCenterAccent(sc,sf,*pt++,copybmp,ia, ch);
 	while ( *pt )
 	    SCPutRefAfter(sc,sf,*pt++,copybmp);
