@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 14-Dec-2004 -->
+  <!-- AP: Last modified: 22-Mar-2005 -->
   <TITLE>Outline Glyph View</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -210,13 +210,15 @@ constrained to be along the ItalicAngle.
 If you move the mouse to the bounding box of a selected image or reference
 glyph and drag it then you will scale that object.
 <P>
-If you move the mouse to the <A NAME="set-width">width</A> line, then dragging
-it will change the width of the current glyph. If there are any bitmaps of
-this glyph then their widths will also be updated. If there are any other
-glyphs which depend on this glyph (ie. include this glyph as a reference)
-and their width was the same as the glyph's, then their widths will also
-be updated (so if you change the width of A, then the width of &Agrave;,
-&Aacute;, &Acirc;, &Atilde;, &Auml; and &Aring; might also be changed).
+If you move the mouse to the <A NAME="set-width">advance width</A> line,
+then dragging it will change the width of the current glyph. If there are
+any bitmaps of this glyph then their widths will also be updated. If there
+are any other glyphs which depend on this glyph (ie. include this glyph as
+a reference) and their width was the same as the glyph's, then their widths
+will also be updated (so if you change the width of A, then the width of
+&Agrave;, &Aacute;, &Acirc;, &Atilde;, &Auml; and &Aring; might also be changed).
+If you are displaying vertical metrics (in a font that has them), then you
+can use the same technique to modify the vertical advance.
 <P>
 It is also possible to use the arrow keys to move selected items around.
 Each arrow will move the selection one em-unit (this can be changed in

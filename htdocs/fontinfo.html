@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 26-Jan-2005 -->
+  <!-- AP: Last modified: 22-Mar-2005 -->
   <TITLE>Font Info</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -364,6 +364,9 @@ The underline position and height provide a program using this font a hint
 as to where it should place a line if it wants to underline text printed
 in this font.
 <P>
+<FONT COLOR="Red"><SMALL><STRONG>NOTE:</STRONG></SMALL></FONT> Adobe now
+says that both XUID and UniqueID are unnecessary.
+<P>
 The XUID field is a collection of numbers separated by spaces and enclosed
 in brackets. This allows you to specify the extended unique ID of the font.
 If you have set the XUID preference entry then FontForge will assign values
@@ -372,7 +375,7 @@ your preference item). Adobe recommends that the XUID be changed every time
 the font is changed, so each time you generate a postscript font, that font's
 XUID (if present) will be incremented by 1 (This incrementing does not happen
 in CID-keyed fonts, where the XUID behavior is too complex for this simple
-trick). (The XUID field is only meaningful in PostScript fonts)
+trick). (The XUID field is only meaningful in PostScript fonts).
 <P>
 The UniqueID field is an older convention for the same purpose as XUID. If
 you do not fill in this field then FontForge will pick a random number for
@@ -542,7 +545,13 @@ font then the original order will be maintained. As you add more features
 they will appear at the bottom of the list (which may not be appropriate).
 You may select a feature name and use the buttons to move it up and down
 in the list. Things at the top of the list are executed first, things at
-the bottom last.<BR CLEAR=ALL>
+the bottom last.
+<P>
+<FONT COLOR="Red"><STRONG>Caveat: </STRONG></FONT>Although the OpenType spec
+claims that the execution of features (actually lookups) will be ordered
+by their appearence in the lookup table, MicroSoft claims that they will
+apply features in the order that they think best. So the order specified
+in the font may be ignored.<BR CLEAR=ALL>
 <H2>
   <IMG SRC="fontinfo-ttfname.png" WIDTH="369" HEIGHT="472" ALIGN="Right"><A
       NAME="TTF-Names">TTF Names</A>
@@ -794,7 +803,7 @@ languages.
     <TD>K&ouml;zepes</TD>
     <TD>S&ouml;t&eacute;tes</TD>
     <TD>Fekete</TD>
-    <TD><!--D&amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;#x151;lt-->
+    <TD><!--D&amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;#x151;lt-->
       Do"lt</TD>
     <TD>D&ouml;nt&ouml;tt</TD>
     <TD>Keskeny</TD>
@@ -852,7 +861,7 @@ docs</A>. Better information is available from
 These entries are only meaningful for TrueType, OpenType and SVG
 fonts.<BR Clear=All>
 <H2>
-  <IMG SRC="fontinfo-tex.png" WIDTH="376" HEIGHT="544" ALIGN="Right"><A NAME="TeX">TeX</A>
+  <IMG SRC="fontinfo-tex.png" WIDTH="376" HEIGHT="600" ALIGN="Right"><A NAME="TeX">TeX</A>
 </H2>
 <P>
 This allows you to set the TeX font parameters (which are described in Appendix
@@ -1003,7 +1012,13 @@ you to change the contents of the feature.
 <P>
 Contextual/chaining tables are only meaningful when generating a truetype
 (ttf or otf) like font with OpenType tables (in a few cases they can be converted
-into Apple Advanced Typography tables too).<BR CLEAR=ALL>
+into Apple Advanced Typography tables too).
+<P>
+<FONT COLOR="Red"><STRONG>Caveat:
+</STRONG></FONT><A HREF="http://www.microsoft.com/typography/specs/default.htm">Uniscribe</A>
+only implements a limited set of features for any given script, please check
+to make sure a feature will be turned on before investing time in
+it.<BR CLEAR=ALL>
 <H2>
   <IMG SRC="fontinfo-macstyle.png" WIDTH="376" HEIGHT="608" ALIGN="Right" ALT="Font Info Mac Styles">
   <A NAME="Mac-Style">Mac Style</A> &amp; FOND

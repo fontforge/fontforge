@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 26-Jan-2005 -->
+  <!-- AP: Last modified: 15-Mar-2005 -->
   <TITLE>Frequently Asked Questions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -16,7 +16,9 @@
   Frequently Asked Questions<BR>
   <SMALL>(or many of the questions I've been asked so far)</SMALL>
 </H1>
-<P>
+<H2>
+  General questions about FontForge
+</H2>
 <UL>
   <LI>
     <A HREF="#font-editor">Why a font editor, aren't there enough fonts
@@ -32,6 +34,11 @@
 	<A HREF="#C-plus-plus">Why isn't FontForge written in C++? (or <I>Why C++
 	is not my favorite language</I>)</A>
     </UL>
+</UL>
+<H2>
+  General questions about fonts
+</H2>
+<UL>
   <LI>
     <A HREF="#legal">Is it legal to modify a font? Is it ethical?</A>
   <LI>
@@ -41,6 +48,11 @@
       <LI>
 	<A HREF="#linespace">How do I set the line spacing on a font?</A>
     </UL>
+</UL>
+<H2>
+  Using FontForge &amp; Installing fonts on various systems
+</H2>
+<UL>
   <LI>
     <A HREF="#font-install">How do I install the fonts once I've made them?</A>
   <LI>
@@ -62,11 +74,29 @@
 	<A HREF="faq.html#Bad-Windows-Fonts">Why don't my fonts work on windows?</A>
     </UL>
   <LI>
-    <A HREF="#Missing-Refs">When I load an otf or a type1 font most of my references
-    have been replaced by inline copies. How do I get my references back?</A>
+    <A HREF="#otf-diffs">I generated an opentype (or truetype) font and windows
+    wouldn't install it. Why not?</A>
+</UL>
+<H2>
+  Font Conversions
+</H2>
+<UL>
   <LI>
-    <A HREF="#kern-info">Does FontForge read in the old kerning information from
-    fonts?</A>
+    <A HREF="faq.html#outline-conversion">Converting from one outline format
+    to another</A>
+  <LI>
+    <A HREF="faq.html#bitmap-conversion">Converting from one bitmap format to
+    another</A>
+  <LI>
+    <A HREF="#outline-bitmap">Converting from an outline format to a bitmap</A>
+  <LI>
+    <A HREF="faq.html#bitmap-outline">Converting from a bitmap format to an
+    outline</A>
+</UL>
+<H2>
+  Questions about Hints and TrueType Instructions
+</H2>
+<UL>
   <LI>
     <A HREF="#hint-subs">How do I make it use hint substitution?</A>
   <LI>
@@ -79,8 +109,60 @@
     <A HREF="#fuzzy">My glyphs are all perfectly hinted, why do some stems have
     different widths (or appear fuzzy, or fade away completely)?</A>
   <LI>
+    <A HREF="#ttf-degrade">I loaded a ttf font, made a few changes and generated
+    a new font. The changed glyphs don't look anywhere near as nice as the originals.
+    Why?</A>
+</UL>
+<H2>
+  Questions about <A HREF="bibliography.html" TARGET="_top">Font Formats</A>
+</H2>
+<UL>
+  <LI>
+    <A HREF="faq.html#Open-difference">What's the difference between OpenType
+    and PostScript (or TrueType) fonts?</A>
+  <LI>
+    <A HREF="#cidmaps">What on earth are the cidmap files, and should I care
+    about them?</A>
+    <UL>
+      <LI>
+	<A TARGET="_top" HREF="cidmenu.html#CID">(What is a CID-keyed font?)</A>
+    </UL>
+  <LI>
+    <A HREF="faq.html#TeX">Why doesn't TeX work with my fonts?</A>
+    <UL>
+      <LI>
+	<A HREF="#mf-files">Why doesn't FontForge let me edit an '.mf' file?</A>
+    </UL>
+  <LI>
+    <A HREF="#Open-size">Why isn't my Open Type font much smaller than the .pfb
+    file?</A>
+  <LI>
+    <A HREF="#Missing-Refs">When I load an otf or a type1 font most of my references
+    have been replaced by inline copies. How do I get my references back?</A>
+  <LI>
+    <A HREF="#kern-info">Does FontForge read in the old kerning information from
+    fonts?</A>
+  <LI>
     <A HREF="#mensis">How do I set a particular bit in the OS/2 table (or any
     other)?</A>
+</UL>
+<H2>
+  Mathematical questions
+</H2>
+<UL>
+  <LI>
+    <A HREF="#simplify">Does the simplify command lose accuracy?</A>
+  <LI>
+    <A HREF="#cubic-quadratic">How does FontForge convert a cubic spline into
+    a quadratic spline for truetype?</A>
+  <LI>
+    <A HREF="#quadratic-cubic">How does FontForge convert a quadratic spline
+    into a cubic (when reading truetype)?</A>
+</UL>
+<H2>
+  Random questions
+</H2>
+<UL>
   <LI>
     <A HREF="#monospace">How do I mark a font as monospaced?</A>
   <LI>
@@ -88,20 +170,8 @@
   <LI>
     <A HREF="#new-name">How do I add a glyph with a new name?</A>
   <LI>
-    <A HREF="#Open-size">Why isn't my Open Type font much smaller than the .pfb
-    file?</A>
-  <LI>
-    <A HREF="faq.html#Open-difference">What's the difference between OpenType
-    and PostScript (or TrueType) fonts?</A>
-  <LI>
     <A HREF="#save-no-change">After I generate a font and quit, why does FontForge
     ask if I want to save the font? I didn't change anything.</A>
-  <LI>
-    <A HREF="faq.html#TeX">Why doesn't TeX work with my fonts?</A>
-    <UL>
-      <LI>
-	<A HREF="#mf-files">Why doesn't FontForge let me edit an '.mf' file?</A>
-    </UL>
   <LI>
     <A HREF="#minify-iconify">Why does my window get iconified when I want to
     minify the view?</A>
@@ -115,29 +185,7 @@
     <A HREF="#copy-names">Why does Edit-&gt;Paste complain about name
     duplication?</A>
   <LI>
-    <A HREF="#cidmaps">What on earth are the cidmap files, and should I care
-    about them?</A>
-    <UL>
-      <LI>
-	<A TARGET="_top" HREF="cidmenu.html#CID">(What is a CID-keyed font?)</A>
-    </UL>
-  <LI>
-    <A HREF="#simplify">Does the simplify command lose accuracy?</A>
-  <LI>
-    <A HREF="#cubic-quadratic">How does FontForge convert a cubic spline into
-    a quadratic spline for truetype?</A>
-  <LI>
-    <A HREF="#quadratic-cubic">How does FontForge convert a quadratic spline
-    into a cubic (when reading truetype)?</A>
-  <LI>
     <A HREF="faq.html#default-char">How do I set the default glyph of a font?</A>
-  <LI>
-    <A HREF="#ttf-degrade">I loaded a ttf font, made a few changes and generated
-    a new font. The changed glyphs don't look anywhere near as nice as the originals.
-    Why?</A>
-  <LI>
-    <A HREF="#otf-diffs">I generated an opentype (or truetype) font and windows
-    wouldn't install it. Why not?</A>
   <LI>
     <A HREF="#mingliu">I looked at kaiu.ttf or mingliu.ttf and the outlines looked
     nothing like the correct glyphs. What's wrong?</A>
@@ -355,9 +403,9 @@
     <UL>
       <LI>
 	For Type1 fonts there is no way to set the line spacing. Applications will
-	often take the values specified in the fonts bounding box and use those to
-	set the line spacing. This is a really bad idea on their part, but it is
-	common practice.
+	often take the values specified in the font's bounding box and use those
+	to set the line spacing. This is a really bad idea on their part, but it
+	is common practice.
       <LI>
 	For True/Open Type fonts the answer is complicated.
 	<UL>
@@ -378,9 +426,9 @@
 	    box, but in some cases needs to be bigger.
 	    <P>
 	    (The clipping region should be bigger than the bounding box if a GPOS lookup
-	    could move a glyph so that it extended beyond the bounding box. I'm not sure
-	    how this applies to cursive positioning in Urdu where GPOS lookups can make
-	    lines arbetrarily tall)
+	    could move a glyph so that it extended beyond the bounding box (mark to base
+	    is likely to cause problems). I'm not sure how this applies to cursive
+	    positioning in Urdu where GPOS lookups can make lines arbetrarily tall)
 	  <LI>
 	    On linux<BR>
 	    I don't know that there is a general consensus. An application will probably
@@ -491,7 +539,8 @@ $ xset fp+ `pwd`
 	<STRONG><A NAME="Windows-Install">Windows</A></STRONG>
       <DD>
 	You install truetype fonts on windows by dropping them into the \Windows\Fonts
-	directory on your machine. <BR>
+	directory on your machine. You may need to set the execute permission bit
+	on the font before installing it.<BR>
 	<FONT COLOR="Red"><STRONG>Do <BIG>NOT</BIG> generate the font directly into
 	\Windows\Fonts</STRONG></FONT>, this doesn't seem to work (at least on under
 	my XP machine). You must generate the font into another directory and drag
@@ -500,10 +549,7 @@ $ xset fp+ `pwd`
 	and follow its instructions.<BR>
 	If you want to install opentype fonts then on old systems (before windows
 	2000, I think) you need to install ATM, on more recent systems opentype should
-	work the same way truetype does.<BR>
-	I don't know how to install a bdf font. I'd look for a utility to convert
-	bdf files to FON files and then drop the FON files into \Windows\Fonts. Or
-	generate a bitmap-only truetype font.
+	work the same way truetype does.
       <DT>
 	<STRONG><A NAME="OS9-Install">Macintosh OS 9</A></STRONG>
       <DD>
@@ -526,12 +572,12 @@ $ xset fp+ `pwd`
 	directory, or in the user's appropriate fonts sub-directory
 	(<CODE>~/Library/Fonts</CODE>).<BR>
 	Either a resource font (unwrapped from its macbinary wrapper) or a dfont
-	may be used. I'm not sure whether postscript Type1 resource fonts work, but
-	OpenType dfonts do (so if you want to use Postscript use OpenType). You can
-	also use straight ttf and otf files (ie. the same file you might use on Unix
-	or MS).<BR>
+	may be used. You can also use straight ttf and otf files (ie. the same file
+	you might use on Unix or MS).<BR>
 	As far as I can tell the old NFNT bitmap resources do not work on my OS 10.2.
-	If you want to use bitmap fonts wrap them up in a ttf file or an sfnt.
+	If you want to use bitmap fonts wrap them up in a ttf file or an sfnt. However
+	if you want to use a Type1 resource font, you must generate a (useless) bitmap
+	font and install them both.
     </DL>
   <DT>
     <A NAME="Bad-Windows-Install"><B>Why won't FontForge's fonts install on some
@@ -841,7 +887,7 @@ MANPATH=${MANPATH:-}:/usr/local/man ; export MANPATH
       <DT>
 	<B>Mac resource files containing FOND resources.</B>
       <DD>
-	The mac stores kerning information in the <A NAME="FOND-kern">FOND</A> resource
+	The mac stored kerning information in the <A NAME="FOND-kern">FOND</A> resource
 	associated with a bitmap font (it is not stored in the file with the postscript
 	font). If you wish kerning data for a mac postscript font, you must find
 	a font file containing a bitmap font with the same family and style as the
@@ -850,6 +896,69 @@ MANPATH=${MANPATH:-}:/usr/local/man ; export MANPATH
 	<A TARGET="_top" HREF="filemenu.html#Merge-kern">File-&gt;Merge Kern Info</A>
 	menu command.
     </DL>
+  <DT>
+    <B><A NAME="outline-conversion">How do I convert from one outline format
+    to another?</A></B>
+  <DD>
+    This is easy, simply open an existing font, and then use
+    <A HREF="generate.html" TARGET="_top">Element-&gt;Generate Fonts </A>to generate
+    the desired output.
+  <DT>
+    <B><A NAME="bitmap-conversion">How do I convert from one bitmap format to
+    another?</A></B>
+  <DD>
+    This is also easy, open a bitmap font, and then use
+    <A HREF="generate.html" TARGET="_top">Element-&gt;Generate Fonts</A> to generate
+    the desired output.
+  <DT>
+    <B><A NAME="outline-bitmap">How do I convert from an outline format to a
+    bitmap format?</A></B>
+  <DD>
+    Load the outline font. Then use
+    <A HREF="elementmenu.html#Bitmaps" TARGET="_top">Element-&gt;Bitmaps
+    Available</A> to generate bitmap strike(s) of the appropriate size(s). This
+    process is called rasterization, at small pixel sizes it is difficult for
+    a computer to do well. You might be advised to examine the results of the
+    rasterization in the <A HREF="bitmapview.html" TARGET="_top">bitmap window</A>
+    (with <A HREF="windowmenu.html#Bitmap" TARGET="_top">Window-&gt;Open Bitmap
+    Window</A>), possibly fixup the bitmap as you go. Then when done select
+    <A HREF="generate.html" TARGET="_top">Element-&gt;Generate Fonts</A>, turn
+    off outline font generation (unless you also want an outline font, of course),
+    and select the desired bitmap format.
+  <DT>
+    <B><A NAME="bitmap-outline">How do I convert from a bitmap format to an outline
+    format?</A></B>
+  <DD>
+    Unless you have a very large bitmap font (such as a TeX font) the following
+    procedure will not produce good results.
+    <UL>
+      <LI>
+	Before you do anything else make sure you have either the
+	<A HREF="autotrace.html" TARGET="_top">potrace or autotrace programs
+	</A>installed on your system
+	  <HR>
+      <LI>
+	Create a new font
+      <LI>
+	Use the <A HREF="filemenu.html#Import" TARGET="_top">File-&gt;Import
+	</A>command to import your bitmap font into this new font
+	<UL>
+	  <LI>
+	    Be sure to check the <CODE>[] Into Background</CODE> checkbox
+	</UL>
+      <LI>
+	Edit-&gt;Select All
+      <LI>
+	Element-&gt;Autotrace
+      <LI>
+	Element-&gt;Add Extrema
+      <LI>
+	Element-&gt;Simplify<BR>
+	At this point you will probably want to look at your outline glyphs and clean
+	them up.
+      <LI>
+	File-&gt;Generate Fonts
+    </UL>
   <DT>
     <A NAME="hint-subs"><B>How do I make FontForge use hint substitution?</B></A>
   <DD>

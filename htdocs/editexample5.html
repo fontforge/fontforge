@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Jan-2003 -->
-  <!-- AP: Last modified: 13-Oct-2004 -->
+  <!-- AP: Last modified: 21-Mar-2005 -->
   <TITLE>Examining and controling metrics and kerning</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -32,6 +32,9 @@
     <UL>
       <LI>
 	<A HREF="#Vertical">Vertical metrics</A>
+      <LI>
+	<A HREF="editexample5.html#baseline">Setting the baseline to baseline spacing
+	of a font</A>
     </UL>
   <LI>
     <A HREF="editexample5.html#Kerning">Kerning</A>
@@ -39,6 +42,8 @@
     <A HREF="editexample6.html#Variants">Glyph variants</A>
   <LI>
     <A HREF="editexample6.html#Marks">Anchoring marks</A>
+  <LI>
+    <A HREF="editexample6-5.html#Conditional">Conditional features</A>
   <LI>
     <A HREF="editexample7.html#checking">Checking your font</A>
   <LI>
@@ -106,6 +111,55 @@ palette.
 <P>
 You should now see a vertical advance line somewhere underneath your glyph.
 You may drag this line just as you would the horizontal advance (width) line.
+<H3>
+  Setting the <A NAME="baseline">baseline</A> to baseline spacing of a font.
+</H3>
+<P>
+You might imagine that there would be an easy way to set this seemingly important
+quantity. Unfortunately there is not.
+<DL>
+  <DT>
+    In a PostScript Type1 font (or bare CFF font)
+  <DD>
+    There is no way to set this value.<BR>
+    At all, ever.<BR>
+    In traditional typography the inter-line spacing is 1em (which in FontForge
+    is the ascent+descent of a font). Some applications will use this. Other
+    applications will use the font's bounding box (summing the maximum ascender
+    height with the minimum descender depth) -- a very bad, but very common approach.
+  <DT>
+    In a TrueType or OpenType font
+  <DD>
+    Unfortunately this depends on the platform
+    <DL>
+      <DT>
+	Mac
+      <DD>
+	On a mac the baseline to baseline spacing is determined again by the bounding
+	box values of the font, specified in the 'hhea' table, possibly modified
+	by a linegap (Which you can set in FontForge with
+	<A HREF="fontinfo.html">Element-&gt;FontInfo-&gt;TTF Values</A>.
+      <DT>
+	On Windows
+      <DD>
+	According to the OpenType spec, the baseline to baseline distance is set
+	by the values of Typographic Ascent and Descent of the 'OS/2' table. These
+	are the Ascent and Descent values of FontForge -- they generally sum to 1em
+	and are equivalent to the traditional unleaded default.<BR>
+	Again this may be modified by a linegap field.<BR>
+	Unfortunately Windows programs rarely follow the standard (which I expect
+	doesn't supprise anyone), and generally they will use the font's bounding
+	box as specified in the Win Ascent/Descent fields of the 'OS/2' table.
+      <DT>
+	On linux/unix
+      <DD>
+	I doubt there is any standard behavior. Unix apps will probably choose one
+	of the above.
+    </DL>
+</DL>
+<P>
+Typographically ept applications will allow users to adjust baseline to baseline
+spacing, so the default value may not be all that relevant.
 <H2>
   <A NAME="Kerning">Kerning</A>
 </H2>
