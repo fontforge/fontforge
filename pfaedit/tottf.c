@@ -5817,6 +5817,10 @@ void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf) {
 	dummy->names[ttf_postscriptname] = uc_copy(sf->fontname);
 }
 
+/* There's an inconsistancy here. Apple's docs say there most be only one */
+/*  nameid==6 and that name must be ascii (presumably plat=1, spec=0, lang=0) */
+/* The opentype docs say there must be two (psl=1,0,0 & psl=3,1,0x409) any */
+/*  others are to be ignored */
 static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format) {
     int pos=0,i,j;
     struct ttflangname dummy, *cur, *useng;
