@@ -395,7 +395,7 @@ return( enc );
 	    }
 	} else {
 	    if ( enc==-1 ) {
-		uni = UniFromName(name);
+		uni = UniFromName(name,sf->uni_interp,sf->encoding_name);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 		if ( uni<0 ) {
 		    for ( i=0; specialnames[i].name!=NULL; ++i )

@@ -1854,7 +1854,7 @@ static void _SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext 
 	sf->chars[i]->orig_pos = k;
 	sf->chars[i]->vwidth = sf->ascent+sf->descent;
 	sf->chars[i]->enc = i;
-	sf->chars[i]->unicodeenc = UniFromName(encoding[i]);
+	sf->chars[i]->unicodeenc = UniFromName(encoding[i],sf->uni_interp,sf->encoding_name);
 	sf->chars[i]->parent = sf;
 	SCLigDefault(sf->chars[i]);		/* Also reads from AFM file, but it probably doesn't exist */
 #if defined(FONTFORGE_CONFIG_GDRAW)

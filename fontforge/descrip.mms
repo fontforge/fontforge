@@ -22,7 +22,7 @@ fontforge_OBJECTS2=displayfonts.obj,combinations.obj,sftextfield.obj,ikarus.obj,
 	cvdebug.obj,showatt.obj,kernclass.obj,nonlineartrans.obj,effects.obj,\
 	histograms.obj,ttfspecial.obj,svg.obj,parsettfatt.obj,contextchain.obj,\
 	macenc.obj,statemachine.obj,typofeatures.obj,splinerefigure.obj,mm.obj,\
-	parsettfvar.obj,tottfvar.obj
+	parsettfvar.obj,tottfvar.obj,pua.obj
 
 fontforge.exe : nomen.h $(fontforge_OBJECTS) $(fontforge_OBJECTS2) xlib.opt
         library/create tmp.olb $(fontforge_OBJECTS)

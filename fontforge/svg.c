@@ -1968,7 +1968,7 @@ static SplineChar *SVGParseGlyphArgs(xmlNodePtr glyph,int defh, int defv) {
     }
     if ( glyphname!=NULL ) {
 	if ( sc->unicodeenc==-1 )
-	    sc->unicodeenc = UniFromName((char *) glyphname);
+	    sc->unicodeenc = UniFromName((char *) glyphname,ui_none,em_custom);
 	sc->name = copy((char *) glyphname);
 	_xmlFree(glyphname);
     } else if ( orientation!=NULL && *orientation=='v' && sc->unicodeenc!=-1 ) {

@@ -616,7 +616,7 @@ static void bUnicodeFromName(Context *c) {
     else if ( c->a.vals[1].type!=v_str )
 	error( c, "Bad type for argument" );
     c->return_val.type = v_int;
-    c->return_val.u.ival = UniFromName(c->a.vals[1].u.sval);
+    c->return_val.u.ival = UniFromName(c->a.vals[1].u.sval,ui_none,em_custom);
 }
 
 static void bChr(Context *c) {
@@ -2668,6 +2668,12 @@ static void bBuildAccented(Context *c) {
     FVBuildAccent(c->curfv,true);
 }
 
+static void bBuildDuplicate(Context *c) {
+    if ( c->a.argc!=1 )
+	error( c, "Wrong number of arguments");
+    FVBuildDuplicate(c->curfv);
+}
+
 static void bMergeFonts(Context *c) {
     SplineFont *sf;
     int openflags=0;
@@ -3982,6 +3988,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "BuildComposit", bBuildComposit },
     { "BuildComposite", bBuildComposit },
     { "BuildAccented", bBuildAccented },
+    { "BuildDuplicate", bBuildDuplicate },
     { "ReplaceWithReference", bReplaceOutlineWithReference },
     { "InterpolateFonts", bInterpolateFonts },
     { "MergeFonts", bMergeFonts },

@@ -628,6 +628,7 @@ extern void NonLinearDlg(FontView *fv,struct charview *cv);
 extern void FVPointOfView(FontView *fv,struct pov_data *);
 extern void CVYPerspective(CharView *cv,double x_vanish, double y_vanish);
 extern void FVBuildAccent(FontView *fv,int onlyaccents);
+extern void FVBuildDuplicate(FontView *fv);
 extern void FVChangeChar(FontView *fv,int encoding);
 extern void SCClearContents(SplineChar *sc);
 extern void SCClearAll(SplineChar *sc);
