@@ -1083,3 +1083,7 @@ return(NULL);
     _GWidget_SetPopupOwner(owner);
 return( popup );
 }
+
+int GListIndexFromY(GGadget *g,int y) {
+return( GListIndexFromPos( (GList *) g, y ));
+}

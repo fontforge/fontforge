@@ -105,6 +105,8 @@ typedef struct ggadget *GGadgetSet;
 
 enum sb_type { sb_upline, sb_downline, sb_uppage, sb_downpage, sb_track, sb_trackrelease };
 
+typedef int (*GGadgetHandler)(GGadget *,GEvent *);
+
 typedef struct ggadgetdata {
     GRect pos;
     GBox *box;
@@ -139,7 +141,7 @@ typedef struct ggadgetdata {
 	gg_text_xim = gg_tabset_scroll
 	} flags;
     const unichar_t *popup_msg;		/* Brief help message */
-    int (*handle_controlevent)(GGadget *, GEvent *);
+    GGadgetHandler handle_controlevent;
 } GGadgetData;
 
 typedef struct ggadgetcreatedata {
@@ -220,6 +222,8 @@ void GGadgetSetFont(GGadget *g,GFont *font);
 GFont *GGadgetGetFont(GGadget *g);
 int GGadgetEditCmd(GGadget *g,enum editor_commands cmd);
 int GGadgetActiveGadgetEditCmd(GWindow gw,enum editor_commands cmd);
+void GGadgetSetHandler(GGadget *g, GGadgetHandler handler);
+GGadgetHandler GGadgetGetHandler(GGadget *g);
 
 void GTextFieldSelect(GGadget *g,int sel_start, int sel_end);
 void GTextFieldShow(GGadget *g,int pos);
@@ -239,6 +243,8 @@ void GGadgetSetListOrderer(GGadget *g,int (*orderer)(const void *, const void *)
 
 void GGadgetSetChecked(GGadget *g, int ison);
 int GGadgetIsChecked(GGadget *g);
+
+int GListIndexFromY(GGadget *g,int y);
 
 int GTabSetGetSel(GGadget *g);
 void GTabSetSetSel(GGadget *g,int sel);
@@ -274,6 +280,8 @@ GFileChooserFilterType GFileChooserGetFilterFunc(GGadget *g);
 void GFileChooserSetMimetypes(GGadget *g,unichar_t **mimetypes);
 unichar_t **GFileChooserGetMimetypes(GGadget *g);
 void GFileChooserGetChildren(GGadget *g,GGadget **pulldown, GGadget **list, GGadget **tf);
+int GFileChooserPosIsDir(GGadget *g, int pos);
+unichar_t *GFileChooserFileNameOfPos(GGadget *g, int pos);
 
 extern void GGadgetPreparePopup(GWindow base,const unichar_t *msg);
 extern void GGadgetPreparePopupR(GWindow base,int msg);

@@ -1023,3 +1023,31 @@ void GFileChooserGetChildren(GGadget *g,GGadget **pulldown, GGadget **list, GGad
     if ( tf!=NULL )	  *tf = &gfc->name->g;
     if ( list!=NULL )	  *list = &gfc->files->g;
 }
+
+int GFileChooserPosIsDir(GGadget *g, int pos) {
+    GFileChooser *gfc = (GFileChooser *)g;
+    GGadget *list = &gfc->files->g;
+    GTextInfo *ti;
+
+    ti = GGadgetGetListItem(list,pos);
+    if ( ti==NULL )
+return( false );
+
+return( ti->checked );
+}
+
+unichar_t *GFileChooserFileNameOfPos(GGadget *g, int pos) {
+    GFileChooser *gfc = (GFileChooser *)g;
+    GGadget *list = &gfc->files->g;
+    GTextInfo *ti;
+    unichar_t *curdir, *file;
+
+    ti = GGadgetGetListItem(list,pos);
+    if ( ti==NULL )
+return( NULL );
+
+    curdir = GFileChooserGetCurDir(gfc,-1);
+    file = u_GFileAppendFile(curdir,ti->text,false);
+    free(curdir);
+return( file );
+}

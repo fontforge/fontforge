@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 9-May-2004 -->
+  <!-- AP: Last modified: 20-May-2004 -->
   <TITLE>The Edit Menu</TITLE>
 </HEAD>
 <BODY>
@@ -37,6 +37,8 @@ in text fields.
     <A HREF="#Paste">Paste</A>
   <LI>
     <A HREF="#PasteInto">Paste Into</A>
+  <LI>
+    <A HREF="#PasteAfter"><SMALL>Paste After</SMALL></A>
   <LI>
     <A HREF="#SameGlyphAs">Same Glyph As</A>
   <LI>
@@ -272,6 +274,17 @@ view this menu will be disabled when one of the text fields has the focus.
   <DD>
     Only available in the fontview. Just like Paste, except it does not clear
     the contents of the character before adding to it.
+  <DT>
+    <A NAME="PasteAfter">Paste After</A>
+  <DD>
+    Only available in the fontview. Pastes the contents of the clipboard into
+    the selected glyph, shifts it over by the advance width, and then adds the
+    advance width of the character in the clip to this glyph. Essentially this
+    makes it easy to build up words. (If the font has vertical metrics, then
+    glyphs will be stacked vertically. If the glyph is right to left then the
+    clipboard will be added on the left).
+    <P>
+    This command is not present unless you modify configure-pfaedit.h
   <DT>
     <A NAME="SameGlyphAs">Same Glyph As</A>
   <DD>

@@ -107,7 +107,7 @@ struct ggadget {
     enum gadget_state {gs_invisible, gs_disabled, gs_enabled, gs_active,
 	    gs_focused, gs_pressedactive } state;
     unichar_t *popup_msg;
-    int (*handle_controlevent)(GGadget *, GEvent *);
+    GGadgetHandler handle_controlevent;
 };
 
 typedef struct ggadget GLine;

@@ -681,7 +681,7 @@ static FontView *FVAppend(FontView *fv) {
 return( fv );
 }
 
-static char **GetFontNames(char *filename) {
+char **GetFontNames(char *filename) {
     FILE *foo = fopen(filename,"r");
     char **ret = NULL;
 

@@ -864,6 +864,14 @@ return( (g->funcs->get_font)(g) );
 return( NULL );
 }
 
+void GGadgetSetHandler(GGadget *g, GGadgetHandler handler) {
+    g->handle_controlevent = handler;
+}
+
+GGadgetHandler GGadgetGetHandler(GGadget *g) {
+return( g->handle_controlevent );
+}
+
 void GGadgetClearList(GGadget *g) {
     if ( g->funcs->clear_list!=NULL )
 	(g->funcs->clear_list)(g);
