@@ -2234,6 +2234,7 @@ SplineFont *SFReadSVG(char *filename, int flags) {
     SplineFont *sf;
     char *temp=filename, *pt, *lparen;
     char *oldloc;
+    char *chosenname = NULL;
 
     if ( !libxml_init_base()) {
 	fprintf( stderr, "Can't find libxml2.\n" );
@@ -2262,8 +2263,15 @@ return( NULL );
 return( NULL );
     }
     font = fonts[0];
-    if ( fonts[1]!=NULL )
+    if ( fonts[1]!=NULL ) {
+	xmlChar *name;
 	font = SVGPickFont(fonts,filename);
+	name = _xmlGetProp(font,(xmlChar *) "id");
+	if ( name!=NULL ) {
+	    chosenname = cu_copy(utf82u_copy((char *) name));
+	    _xmlFree(name);
+	}
+    }
     free(fonts);
     oldloc = setlocale(LC_NUMERIC,"C");
     sf = SVGParseFont(font);
@@ -2273,6 +2281,7 @@ return( NULL );
     if ( sf!=NULL ) {
 	sf->order2 = SFFindOrder(sf);
 	SFSetOrder(sf,sf->order2);
+	sf->chosenname = chosenname;
     }
 return( sf );
 }

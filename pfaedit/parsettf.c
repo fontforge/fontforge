@@ -401,7 +401,7 @@ return( NULL );
 return( _readencstring(ttf,stringoffset+fullstr,fulllen,fullenc));
 }
 
-static int PickTTFFont(FILE *ttf,char *filename) {
+static int PickTTFFont(FILE *ttf,char *filename,char **chosenname) {
     int32 *offsets, cnt, i, choice, j;
     unichar_t **names;
     char *pt, *lparen;
@@ -442,8 +442,10 @@ return( true );
 	choice = 0;
     else
 	choice = GWidgetChoicesR(_STR_PickFont,(const unichar_t **) names,j,0,_STR_MultipleFontsPick);
-    if ( choice!=-1 )
+    if ( choice!=-1 ) {
 	fseek(ttf,offsets[choice],SEEK_SET);
+	*chosenname = cu_copy(names[choice]);
+    }
     for ( i=0; i<j; ++i )
 	free(names[i]);
     free(names);
@@ -467,7 +469,8 @@ static int PickCFFFont(char **fontnames) {
 return( choice );
 }
 
-static int readttfheader(FILE *ttf, struct ttfinfo *info,char *filename) {
+static int readttfheader(FILE *ttf, struct ttfinfo *info,char *filename,
+	char **choosenname) {
     int i;
     int tag, checksum, offset, length, version;
 
@@ -475,7 +478,7 @@ static int readttfheader(FILE *ttf, struct ttfinfo *info,char *filename) {
     if ( version==CHR('t','t','c','f')) {
 	/* TrueType font collection */
 	info->is_ttc = true;
-	if ( !PickTTFFont(ttf,filename))
+	if ( !PickTTFFont(ttf,filename,choosenname))
 return( 0 );
 	/* If they picked a font, then we should be left pointing at the */
 	/*  start of the Table Directory for that font */
@@ -3598,7 +3601,7 @@ static int readttf(FILE *ttf, struct ttfinfo *info, char *filename) {
     char *oldloc;
 
     GProgressChangeStages(3);
-    if ( !readttfheader(ttf,info,filename)) {
+    if ( !readttfheader(ttf,info,filename,&info->chosenname)) {
 return( 0 );
     }
     oldloc = setlocale(LC_NUMERIC,"C");		/* TrueType doesn't need this but opentype dictionaries do */
@@ -3905,6 +3908,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     sf->fontname = info->fontname;
     sf->fullname = info->fullname;
     sf->familyname = info->familyname;
+    sf->chosenname = info->chosenname;
     sf->onlybitmaps = info->onlystrikes;
     sf->order2 = info->to_order2;
     sf->comments = info->fontcomments;

@@ -5614,9 +5614,17 @@ return( NULL );
 	free(fullname);
     GProgressEndIndicator();
 
-    if ( sf!=NULL )
-	sf->origname = copy(filename);
-    else if ( !GFileExists(filename) )
+    if ( sf!=NULL ) {
+	if ( sf->chosenname!=NULL && strippedname!=filename ) {
+	    sf->origname = galloc(strlen(filename)+strlen(sf->chosenname)+8);
+	    strcpy(sf->origname,filename);
+	    strcat(sf->origname,"(");
+	    strcat(sf->origname,sf->chosenname);
+	    strcat(sf->origname,")");
+	} else
+	    sf->origname = copy(filename);
+	free( sf->chosenname ); sf->chosenname = NULL;
+    } else if ( !GFileExists(filename) )
 	GWidgetErrorR(_STR_CouldntOpenFontTitle,_STR_NoSuchFontFile,GFileNameTail(filename));
     else if ( !GFileReadable(filename) )
 	GWidgetErrorR(_STR_CouldntOpenFontTitle,_STR_FontFileNotReadable,GFileNameTail(filename));

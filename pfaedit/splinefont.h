@@ -715,6 +715,7 @@ typedef struct splinefont {
 	} *tagtype;
     } gentags;
     FPST *possub;
+    char *chosenname;			/* Set for files with multiple fonts in them */
 } SplineFont;
 
 /* mac styles. Useful idea we'll just steal it */

@@ -173,6 +173,7 @@ struct ttfinfo {
     struct ttf_table *tabs;
     FPST *possub;
     struct gentagtype gentags;
+    char *chosenname;
 };
 
 struct tabdir {

@@ -1866,7 +1866,7 @@ static SplineFont *SearchTtfResources(FILE *f,long rlistpos,int subcnt,long rdat
     int rname = -1;
     int ch1, ch2;
     int len, i, rlen, ilen;
-    /* I think (hope) the sfnt resource is just a copy of the ttf file */
+    /* The sfnt resource is just a copy of the ttf file */
     char *buffer=NULL;
     int max = 0;
     FILE *ttf;
@@ -1874,6 +1874,7 @@ static SplineFont *SearchTtfResources(FILE *f,long rlistpos,int subcnt,long rdat
     int which = 0;
     unichar_t **names;
     char *pt,*lparen;
+    char *chosenname=NULL;
 
     fseek(f,rlistpos,SEEK_SET);
     if ( subcnt>1 || (flags&ttf_onlynames) ) {
@@ -1922,6 +1923,8 @@ return( (SplineFont *) ret );
 	    which = 0;
 	else
 	    which = GWidgetChoicesR(_STR_PickFont,(const unichar_t **) names,subcnt,0,_STR_MultipleFontsPick);
+	if ( lparen==NULL && which!=-1 )
+	    chosenname = cu_copy(names[which]);
 	for ( i=0; i<subcnt; ++i )
 	    free(names[i]);
 	free(names);
@@ -1970,10 +1973,12 @@ return( (SplineFont *) ret );
 	if ( sf!=NULL ) {
 	    free(buffer);
 	    fseek(f,start,SEEK_SET);
+	    if ( sf->chosenname==NULL ) sf->chosenname = chosenname;
 return( sf );
 	}
 	fseek(f,here,SEEK_SET);
     }
+    free(chosenname);
     free(buffer);
     fseek(f,start,SEEK_SET);
 return( NULL );
