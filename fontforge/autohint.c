@@ -2138,6 +2138,8 @@ return( NULL );
 	    StemInfoFree(sn);
 	    s->next = t;
 	    sn = t;
+	    if ( t==NULL )
+    break;
 	}
     }
 return( stems );
