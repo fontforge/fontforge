@@ -764,7 +764,7 @@ return( !empty_bad );
 return( false );
 	if ( first && isdigit(*ret) )
 return( false );
-	first = !isspace(*ret);
+	first = isspace(*ret);
 	if ( *ret=='(' || *ret=='[' || *ret=='{' || *ret=='<' ||
 		*ret==')' || *ret==']' || *ret=='}' || *ret=='>' ||
 		*ret=='%' || *ret=='/' )
