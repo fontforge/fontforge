@@ -471,8 +471,15 @@ static void dumpgposkerndata(FILE *gpos,SplineFont *sf,uint32 script,
     putshort(gpos,1);		/* format 1 of the pair adjustment subtable */
     coverage_pos = ftell(gpos);
     putshort(gpos,0);		/* offset to coverage table */
-    putshort(gpos,0x0004);	/* Alter XAdvance of first character */
-    putshort(gpos,0x0000);	/* leave second char alone */
+    if ( script==CHR('a','r','a','b') || script==CHR('h','e','b','r') ) {
+	/* Right to left kerns modify the second character's width */
+	/*  this doesn't make sense to me, but who am I to argue */
+	putshort(gpos,0x0000);	/* leave first char alone */
+	putshort(gpos,0x0004);	/* Alter XAdvance of second character */
+    } else {
+	putshort(gpos,0x0004);	/* Alter XAdvance of first character */
+	putshort(gpos,0x0000);	/* leave second char alone */
+    }
     putshort(gpos,cnt);
     next_val_pos = ftell(gpos);
     if ( glyphs!=NULL )

@@ -3522,7 +3522,10 @@ return;
 		glyph2 = getushort(ttf);
 		readvaluerecord(&vr1,vf1,ttf);
 		readvaluerecord(&vr2,vf2,ttf);
-		addKernPair(info, glyphs[i], glyph2, vr1.xadvance+vr2.xplacement);
+		if ( lookup->flags&1 )	/* R2L */
+		    addKernPair(info, glyphs[i], glyph2, vr2.xadvance+vr1.xplacement);
+		else
+		    addKernPair(info, glyphs[i], glyph2, vr1.xadvance+vr2.xplacement);
 	    }
 	}
 	free(ps_offsets); free(glyphs);
@@ -3539,7 +3542,10 @@ return;
 	    for ( j=0; j<c2_cnt; ++j) {
 		readvaluerecord(&vr1,vf1,ttf);
 		readvaluerecord(&vr2,vf2,ttf);
-		offset = vr1.xadvance+vr2.xplacement;
+		if ( lookup->flags&1 )	/* R2L */
+		    offset = vr2.xadvance+vr1.xplacement;
+		else
+		    offset = vr1.xadvance+vr2.xplacement;
 		if( offset!=0 )
 		    for ( k=0; k<info->glyph_cnt; ++k )
 			if ( class1[k]==i )
