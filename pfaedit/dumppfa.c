@@ -39,6 +39,8 @@
 #include "psfont.h"
 #include "splinefont.h"
 
+extern int autohint_before_generate;
+
 typedef void (*DumpChar)(int ch,void *data);
 struct fileencryptdata {
     DumpChar olddump;
@@ -552,7 +554,7 @@ return( false );
 	isbold = true;
 
     GProgressChangeStages(2+2-hasblue);
-    if ( SFNeedsAutoHint(sf)) {
+    if ( autohint_before_generate && SFNeedsAutoHint(sf)) {
 	GProgressChangeLine1R(_STR_AutoHintingFont);
 	SplineFontAutoHint(sf);
     }

@@ -42,6 +42,7 @@ int adjustwidth = true;
 int adjustlbearing = true;
 int default_encoding = em_iso8859_1;
 int autohint_before_rasterize = 1;
+int autohint_before_generate = 1;
 int ItalicConstrained=true;
 int accent_offset = 6;
 int GraveAcuteCenterBottom = 1;
@@ -169,6 +170,7 @@ static struct prefs_list {
 	{ "AskBDFResolution", pr_bool, &ask_user_for_resolution, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupBR },
 	{ "DumpGlyphMap", pr_bool, &glyph_2_name_map, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupG2N },
 	{ "PreferCJKEncodings", pr_bool, &prefer_cjk_encodings, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupPCE },
+	{ "HintForGen", pr_bool, &autohint_before_generate, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupAHG },
 	{ NULL }
 },
  hidden_list[] = {

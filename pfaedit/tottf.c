@@ -37,6 +37,7 @@
 #include "ttf.h"
 
 int glyph_2_name_map=0;
+extern int autohint_before_generate;
 
 /* This file produces a ttf file given a splinefont. The most interesting thing*/
 /*  it does is to figure out a quadratic approximation to the cubic splines */
@@ -3182,7 +3183,8 @@ static void dumpcomposite(SplineChar *sc, RefChar *refs, struct glyphinfo *gi) {
     RefChar *ref;
     int any = false;
 
-    if ( sc->changedsincelasthinted && !sc->manualhints )
+    if ( autohint_before_generate && sc->changedsincelasthinted &&
+	    !sc->manualhints )
 	if ( !(gi->flags&ttf_flag_nohints) )
 	    SplineCharAutoHint(sc,true);
 
@@ -3302,7 +3304,7 @@ return;
 
     gi->loca[gi->next_glyph++] = ftell(gi->glyphs);
 
-    if ( sc->changedsincelasthinted && !sc->manualhints )
+    if ( autohint_before_generate && sc->changedsincelasthinted && !sc->manualhints )
 	if ( !(gi->flags&ttf_flag_nohints) )
 	    SplineCharAutoHint(sc,true);
     initforinstrs(sc);
@@ -3859,10 +3861,12 @@ static void dumpcffprivate(SplineFont *sf,struct alltabs *at,int subfont) {
     hasblue = PSDictHasEntry(sf->private,"BlueValues")!=NULL;
     hash = PSDictHasEntry(sf->private,"StdHW")!=NULL;
     hasv = PSDictHasEntry(sf->private,"StdVW")!=NULL;
-    GProgressChangeStages(3+!hasblue);
-    GProgressChangeLine1R(_STR_AutoHintingFont);
-    SplineFontAutoHint(sf);
-    GProgressNextStage();
+    GProgressChangeStages(2+autohint_before_generate+!hasblue);
+    if ( autohint_before_generate ) {
+	GProgressChangeLine1R(_STR_AutoHintingFont);
+	SplineFontAutoHint(sf);
+	GProgressNextStage();
+    }
 
     if ( !hasblue ) {
 	FindBlues(sf,bluevalues,otherblues);
