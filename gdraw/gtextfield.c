@@ -653,6 +653,99 @@ static int GTForePos(GTextField *gt,int pos, int ismeta) {
 return( newpos );
 }
 
+static unichar_t *FileToUString(char *filename,int max) {
+    FILE *file;
+    int ch, ch2;
+    int format=0;
+    unichar_t *space, *upt, *end;
+
+    file = fopen( filename,"r" );
+    if ( file==NULL )
+return( NULL );
+    ch = getc(file); ch2 = getc(file);
+    if ( ch==0xfe && ch2==0xff )
+	format = 1;		/* normal ucs2 */
+    else if ( ch==0xff && ch2==0xfe )
+	format = 2;		/* byte-swapped ucs2 */
+    else
+	rewind(file);
+    space = upt = galloc((max+1)*sizeof(unichar_t));
+    end = space+max;
+    if ( format!=0 ) {
+	while ( upt<end ) {
+	    ch = getc(file); ch2 = getc(file);
+	    if ( ch2==EOF )
+	break;
+	    if ( format==1 )
+		*upt ++ = (ch<<8)|ch2;
+	    else
+		*upt ++ = (ch2<<8)|ch;
+	}
+    } else {
+	char buffer[400];
+	while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
+	    def2u_strncpy(upt,buffer,end-upt);
+	    upt += u_strlen(upt);
+	}
+    }
+    *upt = '\0';
+    fclose(file);
+return( space );
+}
+
+static unichar_t txt[] = { '*','.','t','x','t',  '\0' };
+static unichar_t errort[] = { 'C','o','u','l','d',' ','n','o','t',' ','o','p','e','n',  '\0' };
+static unichar_t error[] = { 'C','o','u','l','d',' ','n','o','t',' ','o','p','e','n',' ','%','.','1','0','0','h','s',  '\0' };
+
+static void GTextFieldImport(GTextField *gt) {
+    unichar_t *ret = GWidgetOpenFile(GStringGetResource(_STR_Open,NULL),NULL,
+	    txt,NULL,NULL);
+    char *cret;
+    unichar_t *str;
+
+    if ( ret==NULL )
+return;
+    cret = u2def_copy(ret);
+    free(ret);
+    str = FileToUString(cret,65536);
+    if ( str==NULL ) {
+	GWidgetError(errort,error,cret);
+	free(cret);
+return;
+    }
+    free(cret);
+    GTextField_Replace(gt,str);
+    free(str);
+}
+
+static void GTextFieldSave(GTextField *gt) {
+    unichar_t *ret = GWidgetSaveAsFile(GStringGetResource(_STR_Save,NULL),NULL,
+	    txt,NULL,NULL);
+    char *cret;
+    FILE *file;
+    unichar_t *pt;
+
+    if ( ret==NULL )
+return;
+    cret = u2def_copy(ret);
+    free(ret);
+    file = fopen(cret,"w");
+    if ( file==NULL ) {
+	GWidgetError(errort,error,cret);
+	free(cret);
+return;
+    }
+    free(cret);
+
+    putc(0xfeff>>8,file);		/* Zero width something or other. Marks this as unicode */
+    putc(0xfeff&0xff,file);
+    for ( pt = gt->text ; *pt; ++pt ) {
+	putc(*pt>>8,file);
+	putc(*pt&0xff,file);
+    }
+    fclose(file);
+}
+
 static int GTextFieldDoChange(GTextField *gt, GEvent *event) {
     int ss = gt->sel_start, se = gt->sel_end;
     int pos, l, xpos, sel;
@@ -863,16 +956,23 @@ return( false );
 return( true );
 	    }
 	  break;
-	  case 'I': case 'i':
-	    if ( !( event->u.chr.state&ksm_control ) )
-return( false );
-	    /* fall through into tab case */
 	  case GK_Tab:
 	    if ( gt->accepts_tabs ) {
 		GTextField_Replace(gt,tabstr);
 return( true );
 	    }
 	  break;
+	  case 's': case 'S':
+	    if ( !( event->u.chr.state&ksm_control ) )
+return( false );
+	    GTextFieldSave(gt);
+return( 2 );
+	  break;
+	  case 'I': case 'i':
+	    if ( !( event->u.chr.state&ksm_control ) )
+return( false );
+	    GTextFieldImport(gt);
+return( true );
 	}
     } else {
 	GTextField_Replace(gt,event->u.chr.chars);
@@ -1342,6 +1442,8 @@ return( false );
     }
 
     switch ( GTextFieldDoChange(gt,event)) {
+      case 2:
+      break;
       case true:
 	GTextFieldChanged(gt,-1);
       break;

@@ -48,8 +48,9 @@ typedef struct printinfo {
     MetricsView *mv;
     SplineFont *sf;
     SplineChar *sc;
-    enum printtype { pt_fontdisplay, pt_chars, pt_fontsample } pt;
+    enum printtype { pt_fontdisplay, pt_chars, pt_multisize, pt_fontsample } pt;
     int pointsize;
+    int32 *pointsizes;
     int extrahspace, extravspace;
     FILE *out;
     FILE *fontfile;
@@ -562,10 +563,14 @@ static void samplestartpage(PI *pi ) {
     fprintf(pi->out,"%%%%PageResources: font %s\n", pi->sf->fontname );
     fprintf(pi->out,"save mark\n" );
     fprintf(pi->out,"MyFontDict /Times-Bold__12 get setfont\n" );
-    fprintf(pi->out,"(Sample Text from %s) 80 758 n_show\n", pi->sf->fullname );
+    if ( pi->pt==pt_fontsample )
+	fprintf(pi->out,"(Sample Text from %s) 80 758 n_show\n", pi->sf->fullname );
+    else
+	fprintf(pi->out,"(Sample Sizes of %s) 80 758 n_show\n", pi->sf->fullname );
     fprintf(pi->out,"40 %d translate\n", pi->pageheight-34-
 	    pi->pointsize*pi->sf->ascent/(pi->sf->ascent+pi->sf->descent) );
-    fprintf(pi->out,"MyFontDict /%s get setfont\n", pi->psfontname );
+    fprintf(pi->out,"/%s findfont %d scalefont setfont\n", pi->sf->fontname,
+	    pi->pointsize);
 
     pi->ypos = -30;
 }
@@ -806,7 +811,7 @@ return( bilen );
 static void PIFontSample(PI *pi,unichar_t *sample) {
     unichar_t *pt, *base, *ept, *end, *temp;
     GBiText bi;
-    int bilen;
+    int bilen, i;
     int xstart;
 
 #if 0
@@ -825,39 +830,96 @@ return;
 
     memset(&bi,'\0',sizeof(bi)); bilen = 0;
 
+    if ( !PIDownloadFont(pi))
+return;
+    for ( i=0; pi->pointsizes[i]!=0; ++i ) {
+	pi->pointsize = pi->pointsizes[i];
+	pi->extravspace = pi->pointsize/6;
+	pi->scale = pi->pointsize/(real) (pi->sf->ascent+pi->sf->descent);
+	if ( i==0 || pi->ypos - pi->pointsize-36 < -(pi->pageheight-90) )
+	    samplestartpage(pi);
+	else {
+	    fprintf(pi->out,"/%s findfont %d scalefont setfont\n", pi->sf->fontname,
+		    pi->pointsize);
+	    pi->ypos -= 36;
+	}
+
+	pt = sample;
+	do {
+	    if ( ( ept = u_strchr(pt,'\n'))==NULL )
+		ept = pt+u_strlen(pt);
+	    bilen = SetupBiText(&bi,pt,ept,bilen);
+	    base = pt;
+	    while ( pt<=ept ) {
+		end = PIFindEnd(pi,pt,ept);
+		if ( end!=ept && !isbreakbetweenok(*end,end[1]) ) {
+		    for ( temp=end; temp>pt && !isbreakbetweenok(*temp,temp[1]); --temp );
+		    if ( temp==pt )
+			for ( temp=end; temp<ept && !isbreakbetweenok(*temp,temp[1]); ++temp );
+		    end = temp;
+		}
+		GDrawBiText2(&bi,pt-base,end-base);
+		if ( !bi.base_right_to_left )
+		    xstart = 20;
+		else
+		    xstart = 20+pi->pagewidth-100-PIFindLen(pi,pt,end);
+		PIDumpChars(pi,bi.text+(pt-base),bi.text+(end-base),xstart);
+		if ( *end=='\0' )
+       goto break_2_loops;
+		pt = end+1;
+	    }
+	} while ( *ept!='\0' );
+       break_2_loops:;
+    }
+
+    dump_trailer(pi);
+}
+
+/* ************************************************************************** */
+/* ************************** Code for multi size *************************** */
+/* ************************************************************************** */
+static double pointsizes[] = { 36, 24, 20, 18, 16, 13, 14, 13, 12, 11, 10, 9, 8, 7.5, 7, 6.5, 6, 5.5, 5, 4.5, 4.2, 4, 0 };
+
+static void SCPrintSizes(PI *pi,SplineChar *sc) {
+    int xstart = 10, i;
+
+    if ( !SCWorthOutputting(sc))
+return;
+    if ( pi->ypos - pi->pointsize < -(pi->pageheight-90) && pi->ypos!=-30 ) {
+	samplestartpage(pi);
+    }
+    fprintf(pi->out,"%d %d moveto ", xstart, pi->ypos );
+    for ( i=0; pointsizes[i]!=0; ++i ) {
+	fprintf(pi->out,"/%s findfont %g scalefont setfont\n  <", pi->sf->fontname,
+		pointsizes[i]);
+	outputchar(pi,sc);
+	fprintf( pi->out, "> show\n" );
+    }
+    pi->ypos -= pi->pointsize+pi->extravspace;
+}
+
+static void PIMultiSize(PI *pi) {
+    int i;
+
+    pi->pointsize = pointsizes[0];
     pi->extravspace = pi->pointsize/6;
     if ( !PIDownloadFont(pi))
 return;
-    pi->scale = pi->pointsize/(real) (pi->sf->ascent+pi->sf->descent);
 
     samplestartpage(pi);
-    pt = sample;
-    do {
-	if ( ( ept = u_strchr(pt,'\n'))==NULL )
-	    ept = pt+u_strlen(pt);
-	bilen = SetupBiText(&bi,pt,ept,bilen);
-	base = pt;
-	while ( pt<=ept ) {
-	    end = PIFindEnd(pi,pt,ept);
-	    if ( end!=ept && !isbreakbetweenok(*end,end[1]) ) {
-		for ( temp=end; temp>pt && !isbreakbetweenok(*temp,temp[1]); --temp );
-		if ( temp==pt )
-		    for ( temp=end; temp<ept && !isbreakbetweenok(*temp,temp[1]); ++temp );
-		end = temp;
-	    }
-	    GDrawBiText2(&bi,pt-base,end-base);
-	    if ( !bi.base_right_to_left )
-		xstart = 20;
-	    else
-		xstart = 20+pi->pagewidth-100-PIFindLen(pi,pt,end);
-	    PIDumpChars(pi,bi.text+(pt-base),bi.text+(end-base),xstart);
-	    if ( *end=='\0' )
-   goto break_2_loops;
-	    pt = end+1;
-	}
-    } while ( *ept!='\0' );
-   break_2_loops:;
-	
+
+    if ( pi->fv!=NULL ) {
+	for ( i=0; i<pi->sf->charcnt; ++i )
+	    if ( pi->fv->selected[i] && SCWorthOutputting(pi->sf->chars[i]) )
+		SCPrintSizes(pi,pi->sf->chars[i]);
+    } else if ( pi->sc!=NULL )
+	SCPrintSizes(pi,pi->sc);
+    else {
+	for ( i=0; i<pi->mv->charcnt; ++i )
+	    if ( SCWorthOutputting(pi->mv->perchar[i].sc))
+		SCPrintSizes(pi,pi->mv->perchar[i].sc);
+    }
+
     dump_trailer(pi);
 }
 
@@ -1386,11 +1448,12 @@ static void QueueIt(PI *pi) {
 
 #define CID_Display	1001
 #define CID_Chars	1002
-#define	CID_Sample	1003
-#define CID_PSLab	1004
-#define	CID_PointSize	1005
-#define CID_SmpLab	1006
-#define CID_SampleText	1007
+#define	CID_MultiSize	1003
+#define	CID_Sample	1004
+#define CID_PSLab	1005
+#define	CID_PointSize	1006
+#define CID_SmpLab	1007
+#define CID_SampleText	1008
 
 static void PRT_SetEnabled(PI *pi) {
     int enable_ps, enable_sample;
@@ -1418,11 +1481,23 @@ static int PRT_OK(GGadget *g, GEvent *e) {
 
 	pi->pt = GGadgetIsChecked(GWidgetGetControl(pi->gw,CID_Chars))? pt_chars:
 		GGadgetIsChecked(GWidgetGetControl(pi->gw,CID_Sample))? pt_fontsample:
+		GGadgetIsChecked(GWidgetGetControl(pi->gw,CID_MultiSize))? pt_multisize:
 		pt_fontdisplay;
-	if ( pi->pt!=pt_chars ) {
-	    pi->pointsize = GetIntR(pi->gw,CID_PointSize,_STR_Pointsize,&err);
+	if ( pi->pt==pt_fontdisplay || pi->pt==pt_fontsample ) {
+	    if ( pi->pt==pt_fontdisplay )
+		pi->pointsize = GetIntR(pi->gw,CID_PointSize,_STR_Pointsize,&err);
+	    else {
+		pi->pointsizes = ParseBitmapSizes(GWidgetGetControl(pi->gw,CID_PointSize),
+			_STR_Pointsize,&err);
+		if ( pi->pointsizes!=NULL )
+		    pi->pointsize = pi->pointsizes[0];
+	    }
 	    if ( err )
 return(true);
+	    if ( pi->pointsize<1 || pi->pointsize>200 ) {
+		GWidgetErrorR(_STR_InvalidPointsize,_STR_InvalidPointsize);
+return(true);
+	    }
 	}
 	if ( pi->printtype==pt_unknown )
 	    if ( !PageSetup(pi))
@@ -1464,6 +1539,8 @@ return(true);
 	    PIFontDisplay(pi);
 	else if ( pi->pt==pt_fontsample )
 	    PIFontSample(pi,sample);
+	else if ( pi->pt==pt_multisize )
+	    PIMultiSize(pi);
 	else
 	    PIChars(pi);
 	rewind(pi->out);
@@ -2395,8 +2472,8 @@ return( gcalloc(1,sizeof(unichar_t)));
 void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[12];
-    GTextInfo label[12];
+    GGadgetCreateData gcd[13];
+    GTextInfo label[13];
     int di = fv!=NULL?0:sc!=NULL?1:2;
     PI pi;
     int cnt;
@@ -2432,7 +2509,7 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     wattrs.window_title = GStringGetResource(_STR_Print,NULL);
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,310);
-    pos.height = GDrawPointsToPixels(NULL,310);
+    pos.height = GDrawPointsToPixels(NULL,330);
     pi.gw = GDrawCreateTopWindow(NULL,&pos,e_h,&pi,&wattrs);
 
     memset(&label,0,sizeof(label));
@@ -2446,6 +2523,7 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     gcd[0].gd.flags = gg_visible | gg_enabled;
     gcd[0].gd.cid = CID_Display;
     gcd[0].gd.handle_controlevent = PRT_RadioSet;
+    gcd[0].gd.popup_msg = GStringGetResource(_STR_FullFontPopup,NULL);
     gcd[0].creator = GRadioCreate;
 
     cnt = 1;
@@ -2461,105 +2539,118 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     gcd[1].gd.flags = (cnt==0 ? gg_visible : (gg_visible | gg_enabled));
     gcd[1].gd.cid = CID_Chars;
     gcd[1].gd.handle_controlevent = PRT_RadioSet;
+    gcd[1].gd.popup_msg = GStringGetResource(_STR_FullPageCharPopup,NULL);
     gcd[1].creator = GRadioCreate;
 
-    label[2].text = (unichar_t *) _STR_SampleText;
+    label[2].text = (unichar_t *) (cnt==1?_STR_MultiSizeChar:_STR_MultiSizeChars);
     label[2].text_in_resource = true;
     gcd[2].gd.label = &label[2];
-    gcd[2].gd.mnemonic = 'S';
+    gcd[2].gd.mnemonic = 'M';
     gcd[2].gd.pos.x = gcd[0].gd.pos.x; gcd[2].gd.pos.y = 18+gcd[1].gd.pos.y; 
-    gcd[2].gd.flags = gg_visible | gg_enabled;
-    gcd[2].gd.cid = CID_Sample;
+    gcd[2].gd.flags = gcd[1].gd.flags;
+    gcd[2].gd.cid = CID_MultiSize;
     gcd[2].gd.handle_controlevent = PRT_RadioSet;
+    gcd[2].gd.popup_msg = GStringGetResource(_STR_MultiSizeCharPopup,NULL);
     gcd[2].creator = GRadioCreate;
-    /*if ( pi.iscid ) gcd[2].gd.flags = gg_visible;*/
+
+    label[3].text = (unichar_t *) _STR_SampleText;
+    label[3].text_in_resource = true;
+    gcd[3].gd.label = &label[3];
+    gcd[3].gd.mnemonic = 'S';
+    gcd[3].gd.pos.x = gcd[0].gd.pos.x; gcd[3].gd.pos.y = 18+gcd[2].gd.pos.y; 
+    gcd[3].gd.flags = gg_visible | gg_enabled;
+    gcd[3].gd.cid = CID_Sample;
+    gcd[3].gd.handle_controlevent = PRT_RadioSet;
+    gcd[3].gd.popup_msg = GStringGetResource(_STR_SampleTextPopup,NULL);
+    gcd[3].creator = GRadioCreate;
+    /*if ( pi.iscid ) gcd[3].gd.flags = gg_visible;*/
 
     if ( pdefs[di].pt==pt_chars && cnt==0 )
 	pdefs[di].pt = (fv!=NULL?pt_fontdisplay:pt_fontsample);
     gcd[pdefs[di].pt].gd.flags |= gg_cb_on;
 
 
-    label[3].text = (unichar_t *) _STR_Pointsize;
-    label[3].text_in_resource = true;
-    gcd[3].gd.label = &label[3];
-    gcd[3].gd.mnemonic = 'P';
-    gcd[3].gd.pos.x = 5; gcd[3].gd.pos.y = 22+gcd[2].gd.pos.y+6; 
-    gcd[3].gd.flags = gg_visible | gg_enabled;
-    gcd[3].gd.cid = CID_PSLab;
-    gcd[3].creator = GLabelCreate;
-
-    sprintf(buf,"%d",pi.pointsize);
-    label[4].text = (unichar_t *) buf;
-    label[4].text_is_1byte = true;
+    label[4].text = (unichar_t *) _STR_Pointsize;
+    label[4].text_in_resource = true;
     gcd[4].gd.label = &label[4];
     gcd[4].gd.mnemonic = 'P';
-    gcd[4].gd.pos.x = 60; gcd[4].gd.pos.y = gcd[3].gd.pos.y-6;
-    gcd[4].gd.pos.width = 60;
+    gcd[4].gd.pos.x = 5; gcd[4].gd.pos.y = 22+gcd[3].gd.pos.y+6; 
     gcd[4].gd.flags = gg_visible | gg_enabled;
-    gcd[4].gd.cid = CID_PointSize;
-    gcd[4].creator = GTextFieldCreate;
+    gcd[4].gd.cid = CID_PSLab;
+    gcd[4].creator = GLabelCreate;
 
-
-    label[5].text = (unichar_t *) _STR_SampleTextC;
-    label[5].text_in_resource = true;
+    sprintf(buf,"%d",pi.pointsize);
+    label[5].text = (unichar_t *) buf;
+    label[5].text_is_1byte = true;
     gcd[5].gd.label = &label[5];
-    gcd[5].gd.mnemonic = 'T';
-    gcd[5].gd.pos.x = 5; gcd[5].gd.pos.y = 30+gcd[4].gd.pos.y;
+    gcd[5].gd.mnemonic = 'P';
+    gcd[5].gd.pos.x = 60; gcd[5].gd.pos.y = gcd[4].gd.pos.y-6;
+    gcd[5].gd.pos.width = 60;
     gcd[5].gd.flags = gg_visible | gg_enabled;
-    gcd[5].gd.cid = CID_SmpLab;
-    gcd[5].creator = GLabelCreate;
+    gcd[5].gd.cid = CID_PointSize;
+    gcd[5].creator = GTextFieldCreate;
 
-    label[6].text = pdefs[di].text;
-    if ( label[6].text==NULL || pi.sf->encoding_name!=pdefs[di].last_cs )
-	label[6].text = BuildDef(pi.sf,pi.twobyte);
+
+    label[6].text = (unichar_t *) _STR_SampleTextC;
+    label[6].text_in_resource = true;
     gcd[6].gd.label = &label[6];
     gcd[6].gd.mnemonic = 'T';
-    gcd[6].gd.pos.x = 5; gcd[6].gd.pos.y = 13+gcd[5].gd.pos.y; 
-    gcd[6].gd.pos.width = 300; gcd[6].gd.pos.height = 160; 
-    gcd[6].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap | gg_text_xim;
-    gcd[6].gd.cid = CID_SampleText;
-    gcd[6].creator = GTextAreaCreate;
+    gcd[6].gd.pos.x = 5; gcd[6].gd.pos.y = 30+gcd[5].gd.pos.y;
+    gcd[6].gd.flags = gg_visible | gg_enabled;
+    gcd[6].gd.cid = CID_SmpLab;
+    gcd[6].creator = GLabelCreate;
 
-
-    gcd[7].gd.pos.x = 235; gcd[7].gd.pos.y = 12;
-    gcd[7].gd.pos.width = -1; gcd[7].gd.pos.height = 0;
-    gcd[7].gd.flags = gg_visible | gg_enabled ;
-    label[7].text = (unichar_t *) _STR_Setup;
-    label[7].text_in_resource = true;
-    gcd[7].gd.mnemonic = 'e';
+    label[7].text = pdefs[di].text;
+    if ( label[7].text==NULL || pi.sf->encoding_name!=pdefs[di].last_cs )
+	label[7].text = BuildDef(pi.sf,pi.twobyte);
     gcd[7].gd.label = &label[7];
-    gcd[7].gd.handle_controlevent = PRT_Setup;
-    gcd[7].creator = GButtonCreate;
+    gcd[7].gd.mnemonic = 'T';
+    gcd[7].gd.pos.x = 5; gcd[7].gd.pos.y = 13+gcd[6].gd.pos.y; 
+    gcd[7].gd.pos.width = 300; gcd[7].gd.pos.height = 160; 
+    gcd[7].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap | gg_text_xim;
+    gcd[7].gd.cid = CID_SampleText;
+    gcd[7].creator = GTextAreaCreate;
 
 
-    gcd[8].gd.pos.x = 30-3; gcd[8].gd.pos.y = gcd[6].gd.pos.y+gcd[6].gd.pos.height+6;
+    gcd[8].gd.pos.x = 235; gcd[8].gd.pos.y = 12;
     gcd[8].gd.pos.width = -1; gcd[8].gd.pos.height = 0;
-    gcd[8].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[8].text = (unichar_t *) _STR_OK;
+    gcd[8].gd.flags = gg_visible | gg_enabled ;
+    label[8].text = (unichar_t *) _STR_Setup;
     label[8].text_in_resource = true;
-    gcd[8].gd.mnemonic = 'O';
+    gcd[8].gd.mnemonic = 'e';
     gcd[8].gd.label = &label[8];
-    gcd[8].gd.handle_controlevent = PRT_OK;
+    gcd[8].gd.handle_controlevent = PRT_Setup;
     gcd[8].creator = GButtonCreate;
 
-    gcd[9].gd.pos.x = 310-GIntGetResource(_NUM_Buttonsize)-30; gcd[9].gd.pos.y = gcd[8].gd.pos.y+3;
+
+    gcd[9].gd.pos.x = 30-3; gcd[9].gd.pos.y = gcd[7].gd.pos.y+gcd[7].gd.pos.height+6;
     gcd[9].gd.pos.width = -1; gcd[9].gd.pos.height = 0;
-    gcd[9].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[9].text = (unichar_t *) _STR_Cancel;
+    gcd[9].gd.flags = gg_visible | gg_enabled | gg_but_default;
+    label[9].text = (unichar_t *) _STR_OK;
     label[9].text_in_resource = true;
+    gcd[9].gd.mnemonic = 'O';
     gcd[9].gd.label = &label[9];
-    gcd[9].gd.mnemonic = 'C';
-    gcd[9].gd.handle_controlevent = PRT_Cancel;
+    gcd[9].gd.handle_controlevent = PRT_OK;
     gcd[9].creator = GButtonCreate;
 
-    gcd[10].gd.pos.x = 2; gcd[10].gd.pos.y = 2;
-    gcd[10].gd.pos.width = pos.width-4; gcd[10].gd.pos.height = pos.height-2;
-    gcd[10].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
-    gcd[10].creator = GGroupCreate;
+    gcd[10].gd.pos.x = 310-GIntGetResource(_NUM_Buttonsize)-30; gcd[10].gd.pos.y = gcd[9].gd.pos.y+3;
+    gcd[10].gd.pos.width = -1; gcd[10].gd.pos.height = 0;
+    gcd[10].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    label[10].text = (unichar_t *) _STR_Cancel;
+    label[10].text_in_resource = true;
+    gcd[10].gd.label = &label[10];
+    gcd[10].gd.mnemonic = 'C';
+    gcd[10].gd.handle_controlevent = PRT_Cancel;
+    gcd[10].creator = GButtonCreate;
+
+    gcd[11].gd.pos.x = 2; gcd[11].gd.pos.y = 2;
+    gcd[11].gd.pos.width = pos.width-4; gcd[11].gd.pos.height = pos.height-2;
+    gcd[11].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
+    gcd[11].creator = GGroupCreate;
 
     GGadgetsCreate(pi.gw,gcd);
-    if ( label[6].text != pdefs[di].text )
-	free( label[6].text );
+    if ( label[7].text != pdefs[di].text )
+	free( label[7].text );
     PRT_SetEnabled(&pi);
     GDrawSetVisible(pi.gw,true);
     while ( !pi.done )

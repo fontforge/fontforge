@@ -109,7 +109,7 @@ int oldbitmapstate = 0;
 static const char *pfaeditflag = "SplineFontDB:";
 
 
-static int32 *ParseBitmapSizes(GGadget *g,int *err) {
+int32 *ParseBitmapSizes(GGadget *g,int msg,int *err) {
     const unichar_t *val = _GGadgetGetTitle(g), *pt; unichar_t *end, *end2;
     int i;
     int32 *sizes;
@@ -128,14 +128,16 @@ static int32 *ParseBitmapSizes(GGadget *g,int *err) {
 
     for ( i=0, pt = val; *pt!='\0' ; ) {
 	sizes[i]=rint(u_strtod(pt,&end));
-	if ( *end!='@' )
+	if ( msg!=_STR_PixelList )
+	    /* No bit depth allowed */;
+	else if ( *end!='@' )
 	    sizes[i] |= 0x10000;
 	else
 	    sizes[i] |= (u_strtol(end+1,&end,10)<<16);
 	if ( sizes[i]>0 ) ++i;
 	if ( *end!=' ' && *end!=',' && *end!='\0' ) {
 	    free(sizes);
-	    ProtestR(_STR_PixelList);
+	    ProtestR(msg);
 	    *err = true;
 return( NULL );
 	}
@@ -1123,7 +1125,7 @@ return;
     }
     oldbitmapstate = GGadgetGetFirstListSelectedItem(d->bmptype);
     if ( oldbitmapstate!=bf_none )
-	sizes = ParseBitmapSizes(d->bmpsizes,&err);
+	sizes = ParseBitmapSizes(d->bmpsizes,_STR_PixelList,&err);
 
     oldafmstate = GGadgetIsChecked(d->doafm);
     oldpfmstate = GGadgetIsChecked(d->dopfm);

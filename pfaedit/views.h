@@ -377,6 +377,7 @@ extern void MenuHelp(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuAbout(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuNew(GWindow gw,struct gmenuitem *mi,GEvent *e);
 extern void MergeKernInfo(SplineFont *sf);
+extern int32 *ParseBitmapSizes(GGadget *g,int msg,int *err);
 extern int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype,
 	int fmflags,int res, char *subfontdirectory);
 extern int FontMenuGeneratePostscript(SplineFont *sf);
