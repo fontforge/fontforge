@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 27-Oct-2004 -->
+  <!-- AP: Last modified: 15-Jan-2005 -->
   <TITLE>Font Info</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -36,6 +36,8 @@ The dialog is composed of many different sub dialogs.
     <A HREF="fontinfo.html#Panose">Panose</A>
   <LI>
     <A HREF="fontinfo.html#TeX">TeX</A>
+  <LI>
+    <A HREF="#Size">Size</A>
   <LI>
     <A HREF="fontinfo.html#Comment">Comment</A>
   <LI>
@@ -789,7 +791,7 @@ languages.
     <TD>K&ouml;zepes</TD>
     <TD>S&ouml;t&eacute;tes</TD>
     <TD>Fekete</TD>
-    <TD><!--D&amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;#x151;lt-->
+    <TD><!--D&amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;#x151;lt-->
       Do"lt</TD>
     <TD>D&ouml;nt&ouml;tt</TD>
     <TD>Keskeny</TD>
@@ -861,6 +863,56 @@ unreasonable</STRONG></FONT>.
 <P>
 These values are stored in tfm files (should you generate a tfm file with
 your font).<BR Clear=All>
+<H2>
+  <IMG SRC="fontinfo-size.png" ALIGN="Right" WIDTH="376" HEIGHT="601"><A NAME="Size">Size</A>
+</H2>
+<P>
+This allows you to set the design size of a font, the design range, and provide
+a style name for this class of font.
+<P>
+In tradtional typography every point size of a given font would be slightly
+different -- generally small point sizes would have proportionally more
+white-space around the glyph and wider stems inside the glyph. This made
+small point sizes more readable than they would otherwise be. Conversely
+large pointsizes would tend to have less white space around them, otherwise
+the letters would appear too far apart.
+<P>
+<A HREF="multiplemaster.html">Multi-master fonts</A> provide one method to
+avoid this problem. This dialog provides another. Suppose you have a series
+of font-faces designed for different point-sizes.
+<TABLE CELLPADDING="2">
+  <TR>
+    <TD>Ambrosia-Regular-Small</TD>
+    <TD>&lt;9pt</TD>
+  </TR>
+  <TR>
+    <TD>Ambrosia-Regular-Text</TD>
+    <TD>9-13pt</TD>
+  </TR>
+  <TR>
+    <TD>Ambrosia-Regular-Heading</TD>
+    <TD>14-23pt</TD>
+  </TR>
+  <TR>
+    <TD>Ambrosia-Regular-Display</TD>
+    <TD>&gt;=24pt</TD>
+  </TR>
+</TABLE>
+<P>
+Then you would fill in this dialog to allow the font system to figure out
+which font was appropriate for which point size. The dialog displays the
+font's optimal size -- it's design size, and the point range within which
+it can be used.
+<P>
+In the example above all the different fonts would have the same "Style-ID"
+this is an arbetrary number that links all fonts with this ID together (all
+fonts in the same family, that is). However, Ambrosia-Italic-Text would have
+a different Style ID. All fonts with the same Style ID should have the same
+Style Name. Note that font names are now something like
+"Ambrosia-Regular-Heading" -- the user should not be subjected to that
+complication, as far as s/he is concerned there is just a font called
+"Ambrosia-Regular" and all four of the above fonts are just instances of
+it. So the Style Name of all four fonts above should be "Regular"<BR Clear=All>
 <H2>
   <IMG SRC="fontinfo-comment.png" WIDTH="369" HEIGHT="506" ALIGN="Right"><A
       NAME="Comment">Comment</A>
