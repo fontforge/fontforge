@@ -1297,14 +1297,12 @@ static void SCRegenDependents(SplineChar *sc) {
 }
 
 static void CVUpdateInfo(CharView *cv, GEvent *event) {
-    GRect r;
 
     cv->info_within = true;
     cv->e.x = event->u.mouse.x; cv->e.y = event->u.mouse.y;
     cv->info.x = (event->u.mouse.x-cv->xoff)/cv->scale;
     cv->info.y = (cv->height-event->u.mouse.y-cv->yoff)/cv->scale;
-    r.x = 0; r.y = cv->mbh; r.width = cv->width+100; r.height = cv->height+cv->infoh;
-    GDrawRequestExpose(cv->gw,&r,false);
+    CVInfoDraw(cv,cv->gw);
 }
 
 static void CVNewScale(CharView *cv) {
