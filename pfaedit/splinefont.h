@@ -876,6 +876,9 @@ extern void SplinePointNextCPChanged2(SplinePoint *sp, int fixprev);
 extern int IntersectLines(BasePoint *inter,
 	BasePoint *line1_1, BasePoint *line1_2,
 	BasePoint *line2_1, BasePoint *line2_2);
+extern int IntersectLinesClip(BasePoint *inter,
+	BasePoint *line1_1, BasePoint *line1_2,
+	BasePoint *line2_1, BasePoint *line2_2);
 
 extern SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc);
 extern SplineSet *SplineSetRemoveOverlap(SplineSet *base,int justintersect);

@@ -550,6 +550,7 @@ SplineSet *SSPSApprox(SplineSet *ss) {
 	if ( ret->last!=ret->first ) {
 	    ret->first->prevcp = ret->last->prevcp;
 	    ret->first->noprevcp = ret->last->noprevcp;
+	    ret->first->prev = ret->last->prev;
 	    ret->last->prev->to = ret->first;
 	    SplinePointFree(ret->last);
 	    ret->last = ret->first;
@@ -785,6 +786,13 @@ void SplineRefigureFixup(Spline *spline) {
 return;
     }
     from = spline->from; to = spline->to;
+
+    unit.x = from->nextcp.x-from->me.x;
+    unit.y = from->nextcp.y-from->me.y;
+    len = sqrt(unit.x*unit.x + unit.y*unit.y);
+    if ( len!=0 )
+	unit.x /= len; unit.y /= len;
+
     if ( from->nextcpdef && to->prevcpdef ) switch ( from->pointtype*3+to->pointtype ) {
       case pt_corner*3+pt_corner:
       case pt_corner*3+pt_tangent:
@@ -823,19 +831,19 @@ return;
 	    toff.x = to->me.x + (to->me.x-from->me.x)+(to->me.y-from->me.y);
 	    toff.y = to->me.y - (to->me.x-from->me.x)+(to->me.y-from->me.y);
 	}
-	if ( IntersectLines(&from->nextcp,&foff,&from->me,&toff,&to->me)) {
+	if ( IntersectLinesClip(&from->nextcp,&foff,&from->me,&toff,&to->me)) {
 	    from->nonextcp = to->noprevcp = false;
 	    to->prevcp = from->nextcp;
 	    if ( from->pointtype==pt_curve && !from->noprevcp && from->prev!=NULL ) {
 		prev = from->prev->from;
-		if ( IntersectLines(&from->prevcp,&from->nextcp,&from->me,&prev->nextcp,&prev->me)) {
+		if ( IntersectLinesClip(&from->prevcp,&from->nextcp,&from->me,&prev->nextcp,&prev->me)) {
 		    prev->nextcp = from->prevcp;
 		    SplineRefigure2(from->prev);
 		}
 	    }
 	    if ( to->pointtype==pt_curve && !to->nonextcp && to->next!=NULL ) {
 		next = to->next->to;
-		if ( IntersectLines(&to->nextcp,&to->prevcp,&to->me,&next->prevcp,&next->me)) {
+		if ( IntersectLinesClip(&to->nextcp,&to->prevcp,&to->me,&next->prevcp,&next->me)) {
 		    next->prevcp = to->nextcp;
 		    SplineRefigure(to->next);
 		}
@@ -855,50 +863,23 @@ return;
 		if ( new.x-from->prevcp.x<-1 || new.x-from->prevcp.x>1 ||
 			 new.y-from->prevcp.y<-1 || new.y-from->prevcp.y>1 ) {
 		    if ( from->prev!=NULL && (prev = from->prev->from)!=NULL &&
-			    IntersectLines(&from->prevcp,&new,&from->me,&prev->nextcp,&prev->me)) {
+			    IntersectLinesClip(&from->prevcp,&new,&from->me,&prev->nextcp,&prev->me)) {
 			prev->nextcp = from->prevcp;
 			SplineRefigure2(from->prev);
 		    } else
 			from->prevcp = new;
 		}
 	    }
-#if 0
-	} else if ( from->pointtype==pt_curve && !from->noprevcp && !from->nonextcp ) {
-	    /* Make sure the control points are on a line containing the point itself */
-	    unit.x = from->nextcp.x-from->prevcp.x;
-	    unit.y = from->nextcp.y-from->prevcp.y;
-	    len = sqrt(unit.x*unit.x + unit.y*unit.y);
-	    if ( len!=0 ) {
-		unit.x /= len; unit.y /= len;
-		proj = (from->nextcp.x-from->me.x)*unit.x + (from->nextcp.y-from->me.y)*unit.y;
-		new.x = proj*unit.x + from->me.x; new.y = proj*unit.y + from->me.y;
-		if ( new.x-from->nextcp.x<-1 || new.x-from->nextcp.x>1 ||
-			new.y-from->nextcp.y<-1 || new.y-from->nextcp.y>1 ) {
-		    if ( IntersectLines(&from->nextcp,&new,&from->me,&to->prevcp,&to->me))
-			to->prevcp = from->nextcp;
-		}
-		proj = (from->prevcp.x-from->me.x)*unit.x + (from->prevcp.y-from->me.y)*unit.y;
-		new.x = proj*unit.x + from->me.x; new.y = proj*unit.y + from->me.y;
-		if ( new.x-from->prevcp.x<-1 || new.x-from->prevcp.x>1 ||
-			new.y-from->prevcp.y<-1 || new.y-from->prevcp.y>1 ) {
-		    prev = from->prev->from;
-		    if ( IntersectLines(&from->prevcp,&new,&from->me,&prev->nextcp,&prev->me)) {
-			prev->nextcp = from->prevcp;
-			SplineRefigure2(from->prev);
-		    }
-		}
-	    }
-#endif
 	} else if ( from->pointtype==pt_tangent ) {
 	    if ( from->prev!=NULL ) {
 		prev = from->prev->from;
 		if ( !from->noprevcp && !prev->nonextcp &&
-			IntersectLines(&from->prevcp,&to->me,&from->me,&prev->nextcp,&prev->me)) {
+			IntersectLinesClip(&from->prevcp,&to->me,&from->me,&prev->nextcp,&prev->me)) {
 		    prev->nextcp = from->prevcp;
 		    SplineRefigure2(from->prev);
 		}
 		if ( !from->nonextcp && !to->noprevcp &&
-			IntersectLines(&from->nextcp,&prev->me,&from->me,&to->prevcp,&to->me))
+			IntersectLinesClip(&from->nextcp,&prev->me,&from->me,&to->prevcp,&to->me))
 		    to->prevcp = from->nextcp;
 	    }
 	}
@@ -913,52 +894,23 @@ return;
 		if ( new.x-to->nextcp.x<-1 || new.x-to->nextcp.x>1 ||
 			new.y-to->nextcp.y<-1 || new.y-to->nextcp.y>1 ) {
 		    if ( to->next!=NULL && (next = to->next->to)!=NULL &&
-			    IntersectLines(&to->nextcp,&new,&to->me,&next->prevcp,&next->me)) {
+			    IntersectLinesClip(&to->nextcp,&new,&to->me,&next->prevcp,&next->me)) {
 			next->prevcp = to->nextcp;
 			SplineRefigure2(to->next);
 		    } else
 			to->nextcp = new;
 		}
 	    }
-#if 0
-	} else if ( to->pointtype==pt_curve && !to->nonextcp && !to->noprevcp ) {
-	    /* Make sure the control points are on a line containing the point itself */
-	    unit.x = to->prevcp.x-to->nextcp.x;
-	    unit.y = to->prevcp.y-to->nextcp.y;
-	    len = sqrt(unit.x*unit.x + unit.y*unit.y);
-	    if ( len!=0 ) {
-		unit.x /= len; unit.y /= len;
-		proj = (to->prevcp.x-to->me.x)*unit.x + (to->prevcp.y-to->me.y)*unit.y;
-		new.x = proj*unit.x + to->me.x; new.y = proj*unit.y + to->me.y;
-		if ( new.x-to->prevcp.x<-1 || new.x-to->prevcp.x>1 ||
-			new.y-to->prevcp.y<-1 || new.y-to->prevcp.y>1 ) {
-		    if ( IntersectLines(&to->prevcp,&new,&to->me,&from->nextcp,&from->me))
-			from->nextcp = to->prevcp;
-		}
-		proj = (to->nextcp.x-to->me.x)*unit.x + (to->nextcp.y-to->me.y)*unit.y;
-		new.x = proj*unit.x + to->me.x; new.y = proj*unit.y + to->me.y;
-		if ( new.x-to->nextcp.x<-1 || new.x-to->nextcp.x>1 ||
-			new.y-to->nextcp.y<-1 || new.y-to->nextcp.y>1 ) {
-		    if ( to->next!=NULL ) {
-			next = to->next->to;
-			if ( IntersectLines(&to->nextcp,&new,&to->me,&next->prevcp,&next->me)) {
-			    next->prevcp = to->nextcp;
-			    SplineRefigure2(to->next);
-			}
-		    }
-		}
-	    }
-#endif
 	} else if ( to->pointtype==pt_tangent ) {
 	    if ( to->next!=NULL ) {
 		next = to->next->to;
 		if ( !to->nonextcp && !next->noprevcp &&
-			IntersectLines(&to->nextcp,&from->me,&to->me,&next->prevcp,&next->me)) {
+			IntersectLinesClip(&to->nextcp,&from->me,&to->me,&next->prevcp,&next->me)) {
 		    next->prevcp = to->nextcp;
 		    SplineRefigure2(to->next);
 		}
 		if ( !from->nonextcp && !to->noprevcp &&
-			IntersectLines(&from->nextcp,&next->me,&to->me,&from->nextcp,&from->me))
+			IntersectLinesClip(&from->nextcp,&next->me,&to->me,&from->nextcp,&from->me))
 		    to->prevcp = from->nextcp;
 	    }
 	}
@@ -972,7 +924,7 @@ return;
 	from->nonextcp = to->noprevcp = true;
     } else if ( from->nonextcp || to->noprevcp || from->nextcp.x!=to->prevcp.x ||
 	    from->nextcp.y!=to->prevcp.y ) {
-	if ( !IntersectLines(&from->nextcp,
+	if ( !IntersectLinesClip(&from->nextcp,
 		(from->pointtype==pt_tangent && from->prev!=NULL)?&from->prev->from->me:&from->nextcp, &from->me,
 		(to->pointtype==pt_tangent && to->next!=NULL)?&to->next->to->me:&to->prevcp, &to->me)) {
 	    from->nextcp.x = (from->me.x+to->me.x)/2;
@@ -1038,6 +990,32 @@ return( false );
 	}
 return( true );
     }
+}
+
+int IntersectLinesClip(BasePoint *inter,
+	BasePoint *line1_1, BasePoint *line1_2,
+	BasePoint *line2_1, BasePoint *line2_2) {
+    BasePoint old = *inter, unit;
+    double len, val;
+
+    if ( !IntersectLines(inter,line1_1,line1_2,line2_1,line2_2))
+return( false );
+    else {
+	unit.x = line2_2->x-line1_2->x;
+	unit.y = line2_2->y-line1_2->y;
+	len = sqrt(unit.x*unit.x + unit.y*unit.y);
+	if ( len==0 )
+return( false );
+	else {
+	    unit.x /= len; unit.y /= len;
+	    val = unit.x*(inter->x-line1_2->x) + unit.y*(inter->y-line1_2->y);
+	    if ( val<=0 || val>=len ) {
+		*inter = old;
+return( false );
+	    }
+	}
+    }
+return( true );
 }
     
 void SplinePointPrevCPChanged2(SplinePoint *sp, int fixnext) {
