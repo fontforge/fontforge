@@ -582,6 +582,7 @@ static void DoIntersections(SplineTList *me,IntersectionList *ilist) {
     }
 
     tbase = 0;
+    lastspline = me->spline;
     to = me->spline->to;		/* The spline will change as we bisect*/
 			    /* it, but the end point remains fixed and we can */
 			    /* use that to figure out what spline we should be*/
@@ -592,13 +593,13 @@ static void DoIntersections(SplineTList *me,IntersectionList *ilist) {
 	t = (cur->tl->t-tbase)/(1.0-tbase);
 	test.x = ((to->prev->splines[0].a*t+to->prev->splines[0].b)*t+to->prev->splines[0].c)*t + to->prev->splines[0].d;
 	test.y = ((to->prev->splines[1].a*t+to->prev->splines[1].b)*t+to->prev->splines[1].c)*t + to->prev->splines[1].d;
-	if ( to->prev->from->me.x>test.x-.5 && to->prev->from->me.x<test.x+.5 &&
-		to->prev->from->me.y>test.y-.5 && to->prev->from->me.y<test.y+.5 ) {
+	if ( to->prev->from->me.x>test.x-.005 && to->prev->from->me.x<test.x+.005 &&
+		to->prev->from->me.y>test.y-.005 && to->prev->from->me.y<test.y+.005 ) {
 	    /* if the intersection occurs at an end point then we don't need */
 	    /*  to cut the spline in two */
 	    sp = to->prev->from;
 	    t = 0;
-	} else if ( to->me.x>test.x-.5 && to->me.x<test.x+.5 && to->me.y>test.y-.5 && to->me.y<test.y+.5 ) {
+	} else if ( to->me.x>test.x-.005 && to->me.x<test.x+.005 && to->me.y>test.y-.005 && to->me.y<test.y+.005 ) {
 	    sp = to;
 	    t = 1;
 	} else {
@@ -615,6 +616,7 @@ static void DoIntersections(SplineTList *me,IntersectionList *ilist) {
 	SplineRefigure(sp->next);
 	if ( t==0 || t==1 ) {
 	    /* Why don't we want to attach both sp->prev, sp->next to the intersect? */
+	    /*  Because when we get to the next spline we'll do it for the other one */
 	    AddSpline(cur->tl->inter,to->prev);
 	} else {
 	    AddSplines(cur->tl->inter,sp->prev,sp->next);
