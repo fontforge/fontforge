@@ -65,7 +65,7 @@ static const unichar_t accents[][3] = {
     { 0 },			/* left tack */
     { 0 },			/* right tack */
     { 0 },			/* left angle */
-    { ',' },			/* horn */
+    { 0 },			/* horn, sometimes comma but only if nothing better */
     { 0 },			/* half ring */
     { 0x2d4 },			/* up tack */
     { 0x2d5 },			/* down tack */
@@ -476,7 +476,9 @@ return( false );
 		    if ( (ch == 0x30c || ch == 0x32c ) &&
 			    (haschar(sf,0x302) || haschar(sf,0x2c6) || haschar(sf,'^')) )
 			/* It's ok */;
-		    if ( (ch != 0x32f && ch != 0x311 ) || !haschar(sf,0x2d8))
+		    if ( ch==0x31b && haschar(sf,','))
+			ch = ',';
+		    else if ( (ch != 0x32f && ch != 0x311 ) || !haschar(sf,0x2d8))
 return( false );
 		    else
 			ch = 0x2d8;
@@ -780,7 +782,7 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
     int invert = false;
     SplineChar *rsc;
     real transform[6];
-    DBounds bb, rbb;
+    DBounds bb, rbb, bbb;
     real xoff, yoff;
     extern int accent_offset;	/* in prefs.c */
     real spacing = (sf->ascent+sf->descent)*accent_offset/100;
@@ -788,7 +790,16 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
     int ixoff, iyoff, ispacing, pos;
     BDFFont *bdf;
     real ybase, italicoff;
+    const unichar_t *temp;
+    SplineChar *basersc;
+    int baserch = basech;
 
+    /* When we center an accent on Uhorn, we don't really want it centered */
+    /*  on the combination, we want it centered on "U". So if basech is itself*/
+    /*  a combo, find what it is based on */
+    if ( (temp = SFGetAlternate(sf,basech))!=NULL && haschar(sf,*temp))
+	baserch = *temp;
+    
     /* cedilla on lower "g" becomes a turned comma above it */
     if ( ch==0x327 && basech=='g' && haschar(sf,0x312))
 	ch = 0x312;
@@ -798,6 +809,8 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
 	    ach = *apt;
 	else if ( haschar(sf,ch))
 	    ach = ch;
+	else if ( ch==0x31b && haschar(sf,','))
+	    ach = ',';
 	else if (( ch == 0x32f || ch == 0x311 ) && haschar(sf,0x2d8)) {
 	    ach = 0x2d8;
 	    invert = true;
@@ -824,7 +837,21 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
     else if ( basech=='A' && ch==0x30a )
 	/* Again, a tiny bit of overlap is usual for Aring */
 	rbb.miny += (rbb.maxy-rbb.miny)/30;
+    if ( ia!=0 || ( basersc = findchar(sf,baserch))==NULL )
+	basersc = sc;
     ybase = SplineCharFindSlantedBounds(sc,&bb,ia);
+    if ( ia==0 ) {
+	ybase = SplineCharFindSlantedBounds(basersc,&bbb,ia);
+	if ( ____utype2[1+ch]&(____ABOVE|____BELOW) ) {
+	    bbb.maxy = bb.maxy;
+	    bbb.miny = bb.miny;
+	}
+	if ( ____utype2[1+ch]&(____RIGHT|____LEFT) ) {
+	    bbb.maxx = bb.maxx;
+	    bbb.minx = bb.minx;
+	}
+	bb = bbb;
+    }
     if ( basech>=0x1f20 && basech<=0x1f27 && ch==0x345 ) {
 	bb.miny = 0;		/* ypogegrammeni rides below baseline, not below bottom stem */
 	bb.minx -= (bb.maxx-bb.minx)/3;	/* Should also be centered on left stem of eta, but I don't know how to do that..., hence this hack */
@@ -898,9 +925,9 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
 	if ( !sf->serifcheck ) SFHasSerifs(sf);
 	if ( sf->issans ) {
 	    if ( pos&____ABOVE )
-		ybase = SCFindTopXRange(sc,&bb,ia);
+		ybase = SCFindTopXRange(basersc,&bb,ia);
 	    else if ( pos&____BELOW )
-		ybase = SCFindBottomXRange(sc,&bb,ia);
+		ybase = SCFindBottomXRange(basersc,&bb,ia);
 	}
     }
     if ( isupper(basech) && ch==0x342)	/* While this guy rides above PSILI on left */
@@ -932,6 +959,8 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
     transform[4] = xoff;
     if ( invert ) transform[5] -= yoff; else transform[5] += yoff;
     _SCAddRef(sc,rsc,transform);
+    if ( pos&____RIGHT )
+	SCSynchronizeWidth(sc,sc->width + rbb.maxx-rbb.minx+spacing,sc->width,sf->fv);
 
     if ( copybmp ) {
 	for ( bdf=sf->cidmaster?sf->cidmaster->bitmaps:sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
