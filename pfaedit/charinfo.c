@@ -2247,7 +2247,8 @@ static unichar_t *uc_copy_sli_check(SplineChar *sc,char *data) {
     /* We've got a string. Don't know what font it came from, can't really */
     /*  make the sli right. Best we can do is insure against crashes and hope */
     /*  it was copied from us */
-    new = sli = strtol(data+9,&end,10);
+    new = sli = strtol(data+10,&end,10);
+    if ( sf->cidmaster ) sf = sf->cidmaster;
     if ( sf->script_lang==NULL )
 	new = SFAddScriptLangIndex(sf,SCScriptFromUnicode(sc),DEFAULT_LANG);
     else {
