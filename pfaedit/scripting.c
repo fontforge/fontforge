@@ -1352,14 +1352,18 @@ static void bSetUnicodeValue(Context *c) {
 }
 
 static void bSetCharColor(Context *c) {
+    SplineFont *sf = c->curfv->sf;
     SplineChar *sc;
+    int i;
 
     if ( c->a.argc!=2 )
 	error( c, "Wrong number of arguments");
     else if ( c->a.vals[1].type!=v_int )
 	error(c,"Bad argument type");
-    sc = GetOneSelChar(c);
-    sc->color = c->a.vals[1].u.ival;
+    for ( i=0; i<sf->charcnt; ++i ) if ( c->curfv->selected[i] ) {
+	sc = SFMakeChar(sf,i);
+	sc->color = c->a.vals[1].u.ival;
+    }
     c->curfv->sf->changed = true;
 }
 
