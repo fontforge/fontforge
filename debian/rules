@@ -58,7 +58,7 @@ install: build
 	# Add here commands to install the package into debian/pfaedit.
 	$(MAKE) install prefix=$(CURDIR)/debian/pfaedit/usr sharedir=$(CURDIR)/debian/pfaedit/usr/share/pfaedit
 	cp `find htdocs -maxdepth 1 -type f` $(CURDIR)/debian/pfaedit/usr/share/doc/pfaedit/html
-	cp cidmaps/*.cidmap $(CURDIR)/debian/pfaedit/usr/share/pfaedit
+	#cp cidmaps/*.cidmap $(CURDIR)/debian/pfaedit/usr/share/pfaedit
 
 
 # Build architecture-independent files here.

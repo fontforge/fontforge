@@ -1,3 +1,12 @@
+pfaedit (0.0.20020416-1) unstable; urgency=low
+
+  * New upstream version
+    + Added support for Arabic forms in GSUB table
+    + Fix problems under KDE desktop
+  * Remove recommendation on libtiff3 which doesn't exists
+
+ -- Baruch Even <baruch@debian.org>  Fri, 26 Apr 2002 17:33:59 +0300
+
 pfaedit (0.0.20020312-1) unstable; urgency=low
 
   * New upstream version (Closes: bug#139183)

@@ -8,7 +8,7 @@ Standards-Version: 3.5.6
 Package: pfaedit
 Architecture: any
 Depends: ${shlibs:Depends}
-Recommends: libjpeg62, libtiff3g | libtiff3, libpng2, libungif4g, libfreetype6
+Recommends: libjpeg62, libtiff3g, libpng2, libungif4g, libfreetype6
 Suggests: autotrace
 Description: Font Editor for PS, TrueType and OpenType fonts
  PfaEdit allows you to edit outline and bitmap fonts.  You can create
