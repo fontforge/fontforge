@@ -28,11 +28,19 @@
 #include <math.h>
 #include <ustring.h>
 
+BasePoint last_ruler_offset[2] = { {0,0}, {0,0} };
+
 static void RulerText(CharView *cv, unichar_t *ubuf) {
     char buf[60];
     real xoff = cv->info.x-cv->p.cx, yoff = cv->info.y-cv->p.cy;
 
-    if ( !cv->p.pressed )	/* Give current location accurately */
+    if ( cv->autonomous_ruler_w ) {
+	xoff = last_ruler_offset[0].x;
+	yoff = last_ruler_offset[0].y;
+    }
+
+    if ( !cv->autonomous_ruler_w && !cv->p.pressed )
+	/* Give current location accurately */
 	sprintf( buf, "%f,%f", cv->info.x, cv->info.y);
     else			/* Give displacement from press point */
 	sprintf( buf, "%.1f %.0f\260 (%.0f,%.0f)", sqrt(xoff*xoff+yoff*yoff),
@@ -74,6 +82,9 @@ static int ruler_e_h(GWindow gw, GEvent *event) {
 	if ( RulerText2(cv,ubuf))
 	    GDrawDrawText(gw,2,cv->rfh+cv->ras+2,ubuf,-1,NULL,0x000000);
       break;
+      case et_mousedown:
+	cv->autonomous_ruler_w = false;
+      break;
     }
 return( true );
 }
@@ -93,7 +104,7 @@ static void RulerPlace(CharView *cv, GEvent *event) {
     if ( cv->ruler_w==NULL ) {
 	memset(&wattrs,0,sizeof(wattrs));
 	wattrs.mask = wam_events|wam_cursor|wam_positioned|wam_nodecor|wam_backcol|wam_bordwidth;
-	wattrs.event_masks = (1<<et_expose)|(1<<et_resize);
+	wattrs.event_masks = (1<<et_expose)|(1<<et_resize)|(1<<et_mousedown);
 	wattrs.cursor = ct_mypointer;
 	wattrs.background_color = 0xe0e0c0;
 	wattrs.nodecoration = 1;
@@ -130,11 +141,16 @@ static void RulerPlace(CharView *cv, GEvent *event) {
 
 void CVMouseDownRuler(CharView *cv, GEvent *event) {
 
+    cv->autonomous_ruler_w = false;
+
     RulerPlace(cv,event);
     GDrawSetVisible(cv->ruler_w,true);
 }
 
 void CVMouseMoveRuler(CharView *cv, GEvent *event) {
+    if ( cv->autonomous_ruler_w )
+return;
+
     if ( !cv->p.pressed && !(event->u.mouse.state&ksm_meta) ) {
 	if ( cv->ruler_w!=NULL && GDrawIsVisible(cv->ruler_w)) {
 	    GDrawDestroyWindow(cv->ruler_w);
@@ -154,6 +170,16 @@ return;
 
 void CVMouseUpRuler(CharView *cv, GEvent *event) {
     if ( cv->ruler_w!=NULL ) {
+
+	last_ruler_offset[1] = last_ruler_offset[0];
+	last_ruler_offset[0].x = cv->info.x-cv->p.cx;
+	last_ruler_offset[0].y = cv->info.y-cv->p.cy;
+
+	if ( event->u.mouse.state & ksm_meta ) {
+	    cv->autonomous_ruler_w = true;
+return;
+	}
+
 	GDrawDestroyWindow(cv->ruler_w);
 	cv->ruler_w = NULL;
     }

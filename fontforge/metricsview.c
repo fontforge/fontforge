@@ -1923,7 +1923,7 @@ static void MVMenuTransform(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	if ( mv->perchar[i].selected )
     break;
     if ( i!=-1 )
-	TransformDlgCreate( mv->perchar[i].sc,MVTransFunc,getorigin,true );
+	TransformDlgCreate( mv->perchar[i].sc,MVTransFunc,getorigin,true,cvt_none );
 }
 
 static void MVMenuStroke(GWindow gw,struct gmenuitem *mi,GEvent *e) {

@@ -5166,10 +5166,15 @@ static void transfunc(void *d,real transform[6],int otype,BVTFunc *bvts,
     CVCharChangedUpdate(cv);
 }
 
+void CVDoTransform(CharView *cv, enum cvtools cvt ) {
+    int anysel = CVAnySel(cv,NULL,NULL,NULL,NULL);
+    TransformDlgCreate(cv,transfunc,getorigin,!anysel && cv->drawmode==dm_fore,
+	cvt);
+}
+
 static void CVMenuTransform(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    int anysel = CVAnySel(cv,NULL,NULL,NULL,NULL);
-    TransformDlgCreate(cv,transfunc,getorigin,!anysel && cv->drawmode==dm_fore);
+    CVDoTransform(cv,cvt_none);
 }
 
 #ifdef FONTFORGE_CONFIG_NONLINEAR
@@ -7242,6 +7247,10 @@ return( cv );
 
 void CharViewFree(CharView *cv) {
     BDFCharFree(cv->filled);
+    if ( cv->ruler_w ) {
+	GDrawDestroyWindow(cv->ruler_w);
+	cv->ruler_w = NULL;
+    }
     free(cv->gi.u.image->clut);
     free(cv->gi.u.image);
 #if HANYANG
@@ -7492,7 +7501,8 @@ static void SVMenuTransform(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SearchView *sv = (SearchView *) GDrawGetUserData(gw);
     CharView *cv = sv->cv_srch.inactive ? &sv->cv_rpl : &sv->cv_srch;
     int anysel = CVAnySel(cv,NULL,NULL,NULL,NULL);
-    TransformDlgCreate(cv,transfunc,getorigin,!anysel && cv->drawmode==dm_fore);
+    TransformDlgCreate(cv,transfunc,getorigin,!anysel && cv->drawmode==dm_fore,
+	cvt_none);
 }
 
 static void SVMenuStroke(GWindow gw,struct gmenuitem *mi,GEvent *e) {
