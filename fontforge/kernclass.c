@@ -620,15 +620,17 @@ static void KCD_EditOffset(KernClassDlg *kcd) {
 /* ************************************************************************** */
 
 static int KC_Sli(GGadget *g, GEvent *e) {
-    KernClassDlg *kcd;
+    KernClassDlg *kcd = GDrawGetUserData(GGadgetGetWindow(g));
     int sli;
-    SplineFont *sf = kcd->kcld->sf;
-
-    if ( sf->mm!=NULL ) sf = sf->mm->normal;
-    else if ( sf->cidmaster!=NULL ) sf=sf->cidmaster;
+    SplineFont *sf;
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
 	kcd = GDrawGetUserData(GGadgetGetWindow(g));
+
+	sf = kcd->kcld->sf;
+	if ( sf->mm!=NULL ) sf = sf->mm->normal;
+	else if ( sf->cidmaster!=NULL ) sf=sf->cidmaster;
+
 	sli = GGadgetGetFirstListSelectedItem(g);
 	if ( sf->script_lang==NULL ||
 		sf->script_lang[sli]==NULL )
