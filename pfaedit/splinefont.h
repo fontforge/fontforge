@@ -374,7 +374,7 @@ typedef struct undoes {
 	int lbearing;	/* used by ut_lbearing */
 	int rbearing;	/* used by ut_rbearing */
 	struct {
-	    /*int16 width;*/	/* width should be controled by postscript */
+	    int16 width;	/* width should be controled by postscript, but people don't like that */
 	    int16 xmin,xmax,ymin,ymax;
 	    int16 bytes_per_line;
 	    int16 pixelsize;

@@ -645,7 +645,7 @@ return(NULL);
     undo = chunkalloc(sizeof(Undoes));
 
     undo->undotype = ut_bitmap;
-    /*undo->u.bmpstate.width = bc->width;*/
+    undo->u.bmpstate.width = bc->width;
     undo->u.bmpstate.xmin = bc->xmin;
     undo->u.bmpstate.xmax = bc->xmax;
     undo->u.bmpstate.ymin = bc->ymin;
@@ -862,7 +862,7 @@ static void BCUndoAct(BDFChar *bc,Undoes *undo) {
 	uint8 *b;
 	int temp;
 	BDFFloat *sel;
-	/*temp = bc->width; bc->width = undo->u.bmpstate.width; undo->u.bmpstate.width = temp;*/
+	temp = bc->width; bc->width = undo->u.bmpstate.width; undo->u.bmpstate.width = temp;
 	temp = bc->xmin; bc->xmin = undo->u.bmpstate.xmin; undo->u.bmpstate.xmin = temp;
 	temp = bc->xmax; bc->xmax = undo->u.bmpstate.xmax; undo->u.bmpstate.xmax = temp;
 	temp = bc->ymin; bc->ymin = undo->u.bmpstate.ymin; undo->u.bmpstate.ymin = temp;
@@ -1635,7 +1635,8 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear) {
       case ut_noop:
       break;
       case ut_state: case ut_statehint: case ut_statename:
-	sc->parent->onlybitmaps = false;
+	if ( paster->u.state.splines!=NULL || paster->u.state.refs!=NULL )
+	    sc->parent->onlybitmaps = false;
 	SCPreserveState(sc,paster->undotype==ut_statehint);
 	width = paster->u.state.width;
 	vwidth = paster->u.state.vwidth;
@@ -1643,7 +1644,8 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear) {
 		paster->u.state.splines==NULL &&
 		paster->u.state.refs!=NULL )
 	    width = PasteGuessCorrectWidth(sc->parent,paster,&vwidth);
-	SCSynchronizeWidth(sc,width,sc->width,fv);
+	if ( !sc->parent->onlybitmaps )
+	    SCSynchronizeWidth(sc,width,sc->width,fv);
 	sc->vwidth = vwidth;
 	if ( doclear ) {
 	    SplinePointListsFree(sc->splines);
@@ -1947,7 +1949,7 @@ static Undoes *BCCopyAll(BDFChar *bc,int pixelsize, int depth) {
 	cur->undotype = ut_noop;
     else {
 	cur->undotype = ut_bitmap;
-	/*cur->u.bmpstate.width = bc->width;*/
+	cur->u.bmpstate.width = bc->width;
 	cur->u.bmpstate.xmin = bc->xmin;
 	cur->u.bmpstate.xmax = bc->xmax;
 	cur->u.bmpstate.ymin = bc->ymin;
@@ -1988,6 +1990,7 @@ static void _PasteToBC(BDFChar *bc,int pixelsize, int depth, Undoes *paster, int
 	BCFlattenFloat(bc);
 	BCCompressBitmap(bc);
 	bc->selection = BDFFloatConvert(paster->u.bmpstate.selection,depth,paster->u.bmpstate.depth);
+	bc->width = paster->u.bmpstate.width;
 	BCCharChangedUpdate(bc);
       break;
       case ut_composit:
