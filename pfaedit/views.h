@@ -171,6 +171,7 @@ typedef struct charview {
 	struct tracedata *head, *last;	/* for the freehand tool */
 	SplinePointList *current_trace;
 	int ignore_wobble;		/* Ignore wiggles smaller than this */
+	int skip_cnt;
     } freehand;
     GTimer *pressed;
     GWindow backimgs;

@@ -65,6 +65,7 @@ static void TraceDataFree(TraceData *td) {
 
 static void TraceDataFromEvent(CharView *cv, GEvent *event) {
     TraceData *new;
+    int skiplast;
 
     if ( cv->freehand.head!=NULL &&
 	    cv->freehand.last->here.x==(event->u.mouse.x-cv->xoff)/cv->scale &&
@@ -76,14 +77,32 @@ static void TraceDataFromEvent(CharView *cv, GEvent *event) {
 return;
     }
 
-    new = chunkalloc(sizeof(TraceData));
+    /* I sometimes seem to get events out of order on the wacom */
+    skiplast = false;
+    if ( cv->freehand.last!=NULL && cv->freehand.last->prev!=NULL ) {
+	int x = (event->u.mouse.x-cv->xoff)/cv->scale;
+	int y = (cv->height-event->u.mouse.y-cv->yoff)/cv->scale;
+	TraceData *bad = cv->freehand.last, *base = bad->prev;
 
-    if ( cv->freehand.head==NULL )
-	cv->freehand.head = cv->freehand.last = new;
+	if ( ((bad->here.x < x-15 && bad->here.x < base->here.x-15) ||
+		(bad->here.x > x+15 && bad->here.x > base->here.x+15)) &&
+	     ((bad->here.y < y-15 && bad->here.y < base->here.y-15) ||
+		(bad->here.y > y+15 && bad->here.y > base->here.y+15)) )
+	    skiplast = true;
+    }
+
+    if ( skiplast )
+	new = cv->freehand.last;
     else {
-	cv->freehand.last->next = new;
-	new->prev = cv->freehand.last;
-	cv->freehand.last = new;
+	new = chunkalloc(sizeof(TraceData));
+
+	if ( cv->freehand.head==NULL )
+	    cv->freehand.head = cv->freehand.last = new;
+	else {
+	    cv->freehand.last->next = new;
+	    new->prev = cv->freehand.last;
+	    cv->freehand.last = new;
+	}
     }
 
     new->here.x = (event->u.mouse.x-cv->xoff)/cv->scale;
@@ -93,6 +112,12 @@ return;
     new->xtilt = event->u.mouse.xtilt;
     new->ytilt = event->u.mouse.ytilt;
     new->wasconstrained = (event->u.mouse.state&ksm_shift)?1:0;
+#if 0
+ printf( "(%d,%d) (%g,%g) %d %d\n", event->u.mouse.x, event->u.mouse.y,
+  new->here.x, new->here.y, new->pressure, new->time );
+ if ( new->prev!=NULL && new->time<new->prev->time )
+   printf( "\tAh ha!\n" );
+#endif
     if ( new->wasconstrained &&
 	    ( new->prev==NULL || !new->prev->wasconstrained))
 	new->constrained_corner = true;
@@ -566,7 +591,7 @@ static SplineSet *TraceCurve(CharView *cv) {
 		    cur->pointtype = pt_curve;
 		else
 		    cur->pointtype = pt_tangent;
-		SPAverageCps(cur);
+		SPWeightedAverageCps(cur);
 		while ( pt!=NULL && pt->num<cur->ptindex ) pt=pt->next;
 		if ( pt!=NULL && pt->extremum!=e_none )
 		    MakeExtremum(cur,pt->extremum);
@@ -695,30 +720,115 @@ return;
     SplineRefigure(trace->first->prev);
 }
 
+struct statistics {
+    double xmean, ymean, xsd, ysd;
+    int cnt;
+};
+
+static void TraceStatistics(TraceData *mid,struct statistics *stats) {
+    int i, cnt;
+    TraceData *test;
+    double x, x2, y, y2;
+
+    x = x2 = y = y2 = 0;
+    cnt = 0;
+
+    for ( test=mid->prev, i=0; test!=NULL && i<5; test=test->prev, ++i ) {
+	x += test->here.x;
+	x2 += test->here.x*test->here.x;
+	y += test->here.y;
+	y2 += test->here.y*test->here.y;
+	++cnt;
+    }
+    for ( test=mid->next, i=0; test!=NULL && i<5; test=test->next, ++i ) {
+	x += test->here.x;
+	x2 += test->here.x*test->here.x;
+	y += test->here.y;
+	y2 += test->here.y*test->here.y;
+	++cnt;
+    }
+    stats->cnt = cnt;
+    if ( cnt==0 || cnt==1 ) {
+	stats->xmean = mid->here.x;
+	stats->ymean = mid->here.y;
+	stats->xsd = stats->ysd = 1;
+    } else {
+	stats->xmean = x/cnt;
+	stats->ymean = y/cnt;
+	stats->xsd = sqrt(x2-x*x/cnt)/(cnt-1);
+	stats->ysd = sqrt(x2-x*x/cnt)/(cnt-1);
+    }
+}
+
+static void TraceDataCleanup(CharView *cv) {
+    TraceData *mid, *next, *prev;
+    struct statistics stats;
+
+    for ( mid = cv->freehand.head; mid!=NULL; mid=next ) {
+	next = mid->next;
+	TraceStatistics(mid,&stats);
+	if (( mid->here.x < stats.xmean-3*stats.xsd ||
+		mid->here.x > stats.xmean+3*stats.xsd ||
+		mid->here.y < stats.ymean-3*stats.ysd ||
+		mid->here.y > stats.ymean+3*stats.ysd ) &&
+		next!=NULL && mid->prev!=NULL ) {
+	    prev = mid->prev;
+	    prev->next = next;
+	    next->prev = prev;
+	    chunkfree(mid,sizeof(TraceData));
+	}
+    }
+}
+
 void CVMouseDownFreeHand(CharView *cv, GEvent *event) {
     TraceDataFree(cv->freehand.head);
     cv->freehand.head = cv->freehand.last = NULL;
     cv->freehand.current_trace = NULL;
     TraceDataFromEvent(cv,event);
+
+    cv->freehand.current_trace = chunkalloc(sizeof(SplinePointList));
+    cv->freehand.current_trace->first = cv->freehand.current_trace->last =
+	    SplinePointCreate(cv->freehand.head->here.x,cv->freehand.head->here.y);
 }
 
 void CVMouseMoveFreeHand(CharView *cv, GEvent *event) {
+    double dx, dy;
+    SplinePoint *last;
+    BasePoint *here;
+
     TraceDataFromEvent(cv,event);
-    SplinePointListsFree(cv->freehand.current_trace);
-    cv->freehand.current_trace = TraceCurve(cv);
-    GDrawRequestExpose(cv->v,NULL,false);
+    /* I used to do the full processing here to get an path. But that took */
+    /*  too long to process them and we appeared to get events out of order */
+    /*  from the wacom tablet */
+    last = cv->freehand.current_trace->last;
+    here = &cv->freehand.last->here;
+    if ( (dx=here->x-last->me.x)<0 ) dx = -dx;
+    if ( (dy=here->y-last->me.y)<0 ) dy = -dy;
+    if ( (dx+dy)*cv->scale > 4 ) {
+	SplineMake(last,SplinePointCreate(here->x,here->y));
+	cv->freehand.current_trace->last = last->next->to;
+	GDrawRequestExpose(cv->v,NULL,false);
+    }
 }
 
 void CVMouseUpFreeHand(CharView *cv, GEvent *event) {
 
+    TraceDataCleanup(cv);
+
     if ( event->u.chr.state&ksm_meta )
 	TraceDataClose(cv,event);
+    else {
+	SplinePointListsFree(cv->freehand.current_trace);
+	cv->freehand.current_trace = TraceCurve(cv);
+    }
     if ( cv->freehand.current_trace!=NULL ) {
+#if 0
 	SplinePointListSimplify(cv->sc,cv->freehand.current_trace,
 		sf_ignoreextremum,.75/cv->scale);
 	SplineCharAddExtrema(cv->freehand.current_trace,false);
 	SplinePointListSimplify(cv->sc,cv->freehand.current_trace,
 		sf_normal,.75/cv->scale);
+#endif
 	CVPreserveState(cv);
 	if ( CVFreeHandInfo()->centerline ) {
 	    cv->freehand.current_trace->next = *cv->heads[cv->drawmode];
@@ -741,4 +851,35 @@ void CVMouseUpFreeHand(CharView *cv, GEvent *event) {
     TraceDataFree(cv->freehand.head);
     cv->freehand.head = cv->freehand.last = NULL;
     CVCharChangedUpdate(cv);
+    fflush( stdout );
 }
+
+#if 0
+void RepeatFromFile(CharView *cv) {
+    FILE *foo = fopen("mousemove","r");
+    /*char buffer[100];*/
+    GEvent e;
+    int x,y,p;
+
+    if ( foo==NULL )
+return;
+
+    memset(&e,0,sizeof(e));
+
+    e.w = cv->v;
+    e.type = et_mousedown;
+    fscanf(foo,"(%d,%d) (%*g,%*g) %d\n", &x, &y, &p);
+    e.u.mouse.x = x; e.u.mouse.y = y; e.u.mouse.pressure = p;
+    CVMouseDownFreeHand(cv,&e);
+
+    e.type = et_mousemove;
+    while ( fscanf(foo,"(%d,%d) (%*g,%*g) %d\n", &x, &y, &p)==3 ) {
+	e.u.mouse.x = x; e.u.mouse.y = y; e.u.mouse.pressure = p;
+	CVMouseMoveFreeHand(cv,&e);
+    }
+
+    e.type = et_mouseup;
+    CVMouseUpFreeHand(cv,&e);
+    fclose(foo);
+}
+#endif

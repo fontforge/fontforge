@@ -1425,6 +1425,11 @@ return;
 	__malloc_debug(0);
     }
 #endif
+#if 0
+    if ( event->u.chr.keysym == GK_F4 ) {
+	RepeatFromFile(cv);
+    }
+#endif
 
     CVPaletteActivate(cv);
     CVToolsSetCursor(cv,TrueCharState(event),NULL);

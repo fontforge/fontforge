@@ -637,7 +637,7 @@ return( ssplus );
 		    SplineMake(m_to,m_from);
 		} else {
 		    m_from = m_to;
-		    SplineExpand(spline,ts[j-1],-(ts[j-1]-ts[j-2])/20.,si,&p,&m);
+		    SplineExpand(spline,ts[j-1],(ts[j-1]-ts[j-2])/20.,si,&p,&m);
 		    p_from = SplinePointCreate(p.x,p.y);
 		    p_from->pointtype = pt_tangent;
 		    SplineMake(p_from,p_to);
@@ -653,8 +653,8 @@ return( ssplus );
 		    m_to = SplinePointCreate(m.x,m.y);
 		    m_to->pointtype = pt_tangent;
 		} else {
-		    SplineExpand(spline,ts[j],-(ts[j+1]-ts[j-1])/20.,si,&p,&temp);
 		    SplineExpand(spline,ts[j],(ts[j+1]-ts[j-1])/20.,si,&p,&m);
+		    SplineExpand(spline,ts[j],-(ts[j+1]-ts[j-1])/20.,si,&p,&temp);
 		    p_to = SplinePointCreate(p.x,p.y);
 		    p_to->pointtype = pt_tangent;
 		    m_to = SplinePointCreate((m.x+temp.x)/2,(m.y+temp.y)/2);
@@ -662,7 +662,7 @@ return( ssplus );
 		}
 		ApproximateSplineFromPoints(p_to,p_from,pmids,4);
 		ApproximateSplineFromPoints(m_from,m_to,mmids,4);
-		if ( m_from!=minus )
+		if ( m_from!=minus && m_from->pointtype!=pt_corner )
 		    m_from->pointtype = pt_tangent;
 	    }
 	} else {

@@ -230,7 +230,10 @@ static void _SplineFontSetUnChanged(SplineFont *sf) {
     sf->changed = false;
     SFClearAutoSave(sf);
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
-	sf->chars[i]->changed = false;
+	if ( sf->chars[i]->changed ) {
+	    sf->chars[i]->changed = false;
+	    SCRefreshTitles(sf->chars[i]);
+	}
     for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next )
 	for ( i=0; i<bdf->charcnt; ++i ) if ( bdf->chars[i]!=NULL )
 	    bdf->chars[i]->changed = false;
