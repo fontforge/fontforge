@@ -559,7 +559,8 @@ static void samplestartpage(PI *pi ) {
     fprintf(pi->out,"save mark\n" );
     fprintf(pi->out,"MyFontDict /Times-Bold__12 get setfont\n" );
     fprintf(pi->out,"(Sample Text from %s) 80 758 n_show\n", pi->sf->fullname );
-    fprintf(pi->out,"40 %d translate\n", pi->pageheight-54 );
+    fprintf(pi->out,"40 %d translate\n", pi->pageheight-34-
+	    pi->pointsize*pi->sf->ascent/(pi->sf->ascent+pi->sf->descent) );
     fprintf(pi->out,"MyFontDict /%s get setfont\n", pi->psfontname );
 
     pi->ypos = -30;
@@ -750,7 +751,7 @@ static void PIDumpChars(PI *pi, unichar_t *pt, unichar_t *ept, int xstart) {
     unichar_t *npt;
     int off;
 
-    if ( pi->ypos - pi->pointsize < -(pi->pageheight-90) ) {
+    if ( pi->ypos - pi->pointsize < -(pi->pageheight-90) && pi->ypos!=-30 ) {
 	samplestartpage(pi);
     }
     fprintf(pi->out,"%d %d moveto ", xstart, pi->ypos );	/* 20 for left->right */
@@ -1352,7 +1353,7 @@ static void QueueIt(PI *pi) {
 		argv[i++] = start;
 	}
 	argv[i] = NULL;
- for ( i=0; argv[i]!=NULL; ++i ) printf( "%s ", argv[i]); printf("\n" );
+ /*for ( i=0; argv[i]!=NULL; ++i ) printf( "%s ", argv[i]); printf("\n" );*/
 	execvp(argv[0],argv);
 	if ( pi->printtype == pt_ghostview ) {
 	    argv[0] = "gv";
