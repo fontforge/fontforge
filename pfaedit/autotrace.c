@@ -175,7 +175,7 @@ return( head );
 static int mytempnam(char *buffer) {
     char *dir;
     int fd;
-    char *old;
+    /* char *old; */
 
     if ( (dir=getenv("TMPDIR"))!=NULL )
 	strcpy(buffer,dir);
@@ -186,11 +186,13 @@ static int mytempnam(char *buffer) {
 	strcpy(buffer,P_tmpdir);
     strcat(buffer,"/PfaEdXXXXXX");
     fd = mkstemp(buffer);
+#if 0
     old = copy(buffer);
     strcat(buffer,".bmp");
     if ( rename(old,buffer)==-1 )
 	strcpy(buffer,old);
     free(old);
+#endif
 return( fd );
 }
 
@@ -267,11 +269,11 @@ return;
 	ac = 0;
 	arglist[ac++] = prog;
 	if ( ispotrace ) {
-	    /* If I use the long names (--cleartext, --output) potrace hangs) */
+	    /* If I use the long names (--cleartext) potrace hangs) */
 	    /*  version 1.1 */
 	    arglist[ac++] = "-c";
-	    arglist[ac++] = "-o";		/* output to stdout */
-	    arglist[ac++] = "-";
+	    arglist[ac++] = "--output=-";		/* output to stdout */
+	    arglist[ac++] = "--eps";
 	} else {
 	    arglist[ac++] = "--output-format=eps";
 	    arglist[ac++] = "--input-format=BMP";
