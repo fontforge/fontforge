@@ -3905,6 +3905,7 @@ return( NULL );
 	putlong(format12,j);		/* end char code */
 	putlong(format12,sc->ttf_glyph);
 	++group;
+	i=j;				/* move to the start of the next group */
     }
     *ucs4len = ftell(format12);
     fseek(format12,4,SEEK_SET);
