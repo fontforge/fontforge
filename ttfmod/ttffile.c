@@ -27,6 +27,8 @@
 #include "ttfmod.h"
 #include <ustring.h>
 #include <chardata.h>
+#include <charset.h>
+#include <math.h>
 
 int getushort(FILE *ttf) {
     int ch1 = getc(ttf);
@@ -52,6 +54,16 @@ real getfixed(FILE *ttf) {
     /* This oddity may be needed to deal with the first 16 bits being signed */
     /*  and the low-order bits unsigned */
 return( (real) (val>>16) + (mant/65536.0) );
+}
+
+/* In table version numbers, the high order nibble of mantissa is in bcd, not hex */
+/* I've no idea whether the lower order nibbles should be bcd or hex */
+/* But let's assume some consistancy... */
+real getvfixed(FILE *ttf) {
+    int32 val = getlong(ttf);
+    int mant = val&0xffff;
+    mant = ((mant&0xf000)>>12)*1000 + ((mant&0xf00)>>8)*100 + ((mant&0xf0)>>4)*10 + (mant&0xf);
+return( (real) (val>>16) + (mant/10000.0) );
 }
 
 real get2dot14(FILE *ttf) {
@@ -100,12 +112,83 @@ real tgetfixed(Table *tab,int pos) {
 return( (real) (val>>16) + (mant/65536.0) );
 }
 
+/* In table version numbers, the high order nibble of mantissa is in bcd, not hex */
+/* I've no idea whether the lower order nibbles should be bcd or hex */
+/* But let's assume some consistancy... */
+real tgetvfixed(Table *tab,int pos) {
+    int32 val = tgetlong(tab,pos);
+    int mant = val&0xffff;
+    mant = ((mant&0xf000)>>12)*1000 + ((mant&0xf00)>>8)*100 + ((mant&0xf0)>>4)*10 + (mant&0xf);
+return( (real) (val>>16) + (mant/10000.0) );
+}
+
 real tget2dot14(Table *tab,int pos) {
     int32 val = tgetushort(tab,pos);
     int mant = val&0x3fff;
     /* This oddity may be needed to deal with the first 2 bits being signed */
     /*  and the low-order bits unsigned */
 return( (real) ((val<<16)>>(16+14)) + (mant/16384.0) );
+}
+
+int ptgetushort(uint8 *data) {
+    int ch1 = data[0];
+    int ch2 = data[1];
+return( (ch1<<8)|ch2 );
+}
+
+int32 ptgetlong(uint8 *data) {
+    int ch1 = data[0];
+    int ch2 = data[1];
+    int ch3 = data[2];
+    int ch4 = data[3];
+return( (ch1<<24)|(ch2<<16)|(ch3<<8)|ch4 );
+}
+
+real ptgetfixed(uint8 *data) {
+    int32 val = ptgetlong(data);
+    int mant = val&0xffff;
+    /* This oddity may be needed to deal with the first 16 bits being signed */
+    /*  and the low-order bits unsigned */
+return( (real) (val>>16) + (mant/65536.0) );
+}
+
+real ptgetvfixed(uint8 *data) {
+    int32 val = ptgetlong(data);
+    int mant = val&0xffff;
+    mant = ((mant&0xf000)>>12)*1000 + ((mant&0xf00)>>8)*100 + ((mant&0xf0)>>4)*10 + (mant&0xf);
+return( (real) (val>>16) + (mant/10000.0) );
+}
+
+void ptputushort(uint8 *data, uint16 val) {
+    data[0] = (val>>8);
+    data[1] = val&0xff;
+}
+
+void ptputlong(uint8 *data, uint32 val) {
+    data[0] = (val>>24);
+    data[1] = (val>>16)&0xff;
+    data[2] = (val>>8)&0xff;
+    data[3] = val&0xff;
+}
+
+void ptputfixed(uint8 *data,real val) {
+    int ints = floor(val);
+    int mant = (val-ints)*65536;
+    int ival = (ints<<16) | mant;
+    ptputlong(data,ival);
+}
+
+void ptputvfixed(uint8 *data,real val) {
+    int ints = floor(val);
+    int mant = (val-ints)*10000;
+    int ival = ints<<16;
+
+    ival |= (mant/1000)<<12;
+    ival |= (mant/100%10)<<8;
+    ival |= (mant/10%10)<<4;
+    ival |= (mant%10);
+    
+    ptputlong(data,ival);
 }
 
 static unichar_t *_readustring(FILE *ttf,int offset,int len) {
@@ -129,7 +212,7 @@ static int TTFGetGlyphCnt(FILE *ttf,TtfFont *tf) {
     int i, val;
 
     for ( i=0; i<tf->tbl_cnt; ++i )
-	if ( tf->tbls[i]->name == CHR('n','a','m','e'))
+	if ( tf->tbls[i]->name == CHR('m','a','x','p'))
     break;
     if ( i==tf->tbl_cnt )
 return( 0 );
@@ -137,7 +220,7 @@ return( 0 );
     fseek(ttf,tf->tbls[i]->start+4,SEEK_SET);
     val = getushort(ttf);
     fseek(ttf,pos,SEEK_SET);
-return(pos);
+return(val);
 }
 
 static unichar_t *TTFGetFontName(FILE *ttf,TtfFont *tf) {
@@ -191,21 +274,36 @@ return( NULL );
 return( _readustring(ttf,stringoffset+fullstr,fulllen));
 }
 
+static void free_enctabledata(void *_data) {
+    struct enctab *enc, *next;
+
+    for ( enc=_data; enc!=NULL; enc = next ) {
+	next = enc->next;
+	free(enc->enc);
+	if ( enc->uenc!=enc->enc )	/* Unicode fonts can share enc and uenc */
+	    free(enc->uenc);
+	free(enc);
+    }
+}
+
+static void write_enctabledata(FILE *tottf,Table *cmap) {
+    /* !!!! */
+}
+
 static void readttfencodings(FILE *ttf,struct ttffont *font) {
     int i,j;
     int nencs, version;
-    enum charset enc = em_none;
-    int platform, specific;
-    int offset, encoff=0;
-    int format, len;
+    int len;
     uint16 table[256];
     int segCount;
     uint16 *endchars, *startchars, *delta, *rangeOffset, *glyphs;
     int index;
-    int mod = 0;
     Table *tab;
-    unichar_t *trans=NULL;
+    const unichar_t *trans=NULL;
+    struct enctab *enc, *last=NULL, *best=NULL;
+    int bestval=0;
 
+/* find the cmap (encoding) table */
     for ( i=0; i<font->tbl_cnt; ++i )
 	if ( font->tbls[i]->name == CHR('c','m','a','p'))
     break;
@@ -213,49 +311,39 @@ static void readttfencodings(FILE *ttf,struct ttffont *font) {
 return;
     tab = font->tbls[i];
 
+/* Find out what encodings are defined and where they live */
     fseek(ttf,tab->start,SEEK_SET);
     version = getushort(ttf);
     nencs = getushort(ttf);
     for ( i=0; i<nencs; ++i ) {
-	platform = getushort(ttf);
-	specific = getushort(ttf);
-	offset = getlong(ttf);
-	if ( platform==3 && specific==1 ) {
-	    enc = em_unicode;
-	    encoff = offset;
-	    mod = 0;
-	} else if ( platform==3 && specific==0 && enc==em_none ) {
-	    /* Only select symbol if we don't have something better */
-	    enc = em_symbol;
-	    encoff = offset;
-	    trans = unicode_from_MacSymbol;
-	} else if ( platform==1 && specific==0 && enc!=em_unicode ) {
-	    enc = em_mac;
-	    encoff = offset;
-	    trans = unicode_from_mac;
-	} else if ( platform==3 && (specific==2 || specific==3 || specific==5) && enc!=em_unicode ) {
-	    enc = specific==2? em_ksc5601 : specific==5 ? em_jis208 : em_unicode;
-	    mod = specific;
-	    encoff = offset;
-	}
+	enc = gcalloc(1,sizeof(struct enctab));
+	enc->platform = getushort(ttf);
+	enc->specific = getushort(ttf);
+	enc->offset = getlong(ttf);
+	if ( last==NULL )
+	    tab->table_data = enc;
+	else
+	    last->next = enc;
+	last = enc;
     }
-    if ( enc!=em_none ) {
-	font->enc_glyph_cnt = font->glyph_cnt;
-	font->unicode_enc = gcalloc(font->enc_glyph_cnt,sizeof(unichar_t));
-	font->enc = gcalloc(font->enc_glyph_cnt,sizeof(unichar_t));
-	fseek(ttf,tab->start+encoff,SEEK_SET);
-	format = getushort(ttf);
-	len = getushort(ttf);
-	/* language = */ getushort(ttf);
-	if ( format==0 ) {
+    tab->free_tabledata = free_enctabledata;
+    tab->write_tabledata = write_enctabledata;
+
+/* read in each encoding table (presuming we understand it) */
+    for ( enc = tab->table_data; enc!=NULL; enc=enc->next ) {
+	enc->cnt = font->glyph_cnt;
+	enc->enc = galloc(enc->cnt*sizeof(unichar_t));
+	memset(enc->enc,'\377',enc->cnt*sizeof(unichar_t));
+	fseek(ttf,tab->start+enc->offset,SEEK_SET);
+	enc->format = getushort(ttf);
+	enc->len = getushort(ttf);
+	enc->language = getushort(ttf);		/* or version for ms */
+	if ( enc->format==0 ) {
 	    for ( i=0; i<len-6; ++i )
 		table[i] = getc(ttf);
-	    for ( i=0; i<256 && i<info->glyph_cnt && i<len-6; ++i ) {
-		font->enc[table[i]] = i;
-		if ( trans!=NULL )
-		    font->unicode_enc[table[i]] = trans[i];
-	    
-	} else if ( format==4 ) {
+	    for ( i=0; i<256 && table[i]<enc->cnt && i<enc->len-6; ++i )
+		enc->enc[table[i]] = i;
+	} else if ( enc->format==4 ) {
 	    segCount = getushort(ttf)/2;
 	    /* searchRange = */ getushort(ttf);
 	    /* entrySelector = */ getushort(ttf);
@@ -274,7 +362,7 @@ return;
 	    rangeOffset = galloc(segCount*sizeof(uint16));
 	    for ( i=0; i<segCount; ++i )
 		rangeOffset[i] = getushort(ttf);
-	    len -= 8*sizeof(uint16) +
+	    len = enc->len- 8*sizeof(uint16) +
 		    4*segCount*sizeof(uint16);
 	    /* that's the amount of space left in the subtable and it must */
 	    /*  be filled with glyphIDs */
@@ -286,10 +374,8 @@ return;
 		    /* Done */;
 		else if ( rangeOffset[i]==0 ) {
 		    for ( j=startchars[i]; j<=endchars[i]; ++j ) {
-			if ( font->enc[(uint16) (j+delta[i])]==0 ) {
-			    font->unicode_enc[(uint16) (j+delta[i])]->unicodeenc = modenc(j,mod);
-			    font->enc[(uint16) (j+delta[i])] = j;
-			}
+			if ( enc->enc[(uint16) (j+delta[i])]==0xffff )
+			    enc->enc[(uint16) (j+delta[i])] = j;	/* Only use first enc, may be several */
 		    }
 		} else if ( rangeOffset[i]!=0xffff ) {
 		    /* It isn't explicitly mentioned by a rangeOffset of 0xffff*/
@@ -299,10 +385,8 @@ return;
 					    j-startchars[i] ];
 			if ( index!=0 ) {
 			    index = (unsigned short) (index+delta[i]);
-			    if ( info->chars[index]->unicodeenc==-1 ) {
-				font->unicode_enc[index] = modenc(j,mod);
-				font->enc[index] = j;
-			    }
+			    if ( index>=enc->cnt ) GDrawIError( "Bad index" );
+			    else if ( enc->enc[index]==0xffff ) enc->enc[index] = j;
 			}
 		    }
 		}
@@ -312,24 +396,173 @@ return;
 	    free(delta);
 	    free(startchars);
 	    free(endchars);
-	} else if ( format==6 ) {
+	} else if ( enc->format==6 ) {
 	    /* Apple's unicode format */
 	    int first, count;
 	    first = getushort(ttf);
 	    count = getushort(ttf);
 	    for ( i=0; i<count; ++i ) {
 		j = getushort(ttf);
-		font->enc[j] = first+i;
-		font->unicode_enc[j] = first+i;
+		enc->enc[j] = first+i;
 	    }
-	} else if ( format==2 ) {
-	    GDrawIError("I don't support mixed 8/16 bit characters (no shit jis for me)");
-	} else if ( format==8 ) {
-	    GDrawIError("I don't support mixed 16/32 bit characters (no unicode surogates)");
-	} else if ( format==10 || format==12 ) {
-	    GDrawIError("I don't support 32 bit characters");
+	} else {
+	    free(enc->enc); enc->enc=NULL;
+	    if ( enc->format==2 ) {
+		fprintf(stderr,"I don't support mixed 8/16 bit characters (no shit jis for me)");
+	    } else if ( enc->format==8 ) {
+		fprintf(stderr,"I don't support mixed 16/32 bit characters (no unicode surogates)");
+	    } else if ( enc->format==10 || enc->format==12 ) {
+		fprintf(stderr,"I don't support 32 bit characters");
+	    } else {
+		fprintf(stderr,"I don't understand this format type at all in a cmap table %d\n", enc->format );
+	    }
 	}
     }
+
+/* Convert each table to unicode (if we can) */
+    for ( enc = tab->table_data; enc!=NULL; enc=enc->next ) if ( enc->enc!=NULL ) {
+	enum charset type = em_none;
+	switch ( enc->platform ) {
+	  case 0: /* Unicode */
+	  case 2: /* Obsolete ISO 10646 */
+	    type = em_unicode;
+	    /* the various specific values say what version of unicode. I'm not */
+	    /* keeping track of that (no mapping table of unicode1->3) */
+	    /* except for CJK it's mostly just extensions */
+	  break;
+	  case 1:
+	    switch ( enc->specific ) {
+	      case 0: type = em_mac; break;	/* Mac Roman */
+	      /* 1, Japanese */
+	      /* 2, Trad Chinese */
+	      /* 3, Korean */
+	      /* 4, Arabic */
+	      /* 5, Hebrew */
+	      /* 6, Greek */
+	      /* 7, Russian */
+	      /* 8, RSymbol */
+	      /* 9, Devanagari */
+	      /* 10, Gurmukhi */
+	      /* 11, Gujarati */
+	      /* 12, Oriya */
+	      /* 13, Bengali */
+	      /* 14, Tamil */
+	      /* 15, Telugu */
+	      /* 16, Kannada */
+	      /* 17, Malayalam */
+	      /* 18, Sinhalese */
+	      /* 19, Burmese */
+	      /* 20, Khmer */
+	      /* 21, Thai */
+	      /* 22, Laotian */
+	      /* 23, Georgian */
+	      /* 24, Armenian */
+	      /* 25, Simplified Chinese */
+	      /* 26, Tibetan */
+	      /* 27, Mongolian */
+	      /* 28, Geez */
+	      /* 29, Slavic */
+	      /* 30, Vietnamese */
+	      /* 31, Sindhi */
+	    }
+	  break;
+	  case 3:		/* MS */
+	    switch ( enc->specific ) {
+	      case 0: type = em_symbol; break;
+	      case 1: type = em_unicode; break;
+	      case 2: type = em_jis208; break;
+	      case 3: type = em_big5; break;
+	      /* 4, PRC */
+	      case 5: type = em_ksc5601; break;
+	      /* 6, Johab */
+	      case 10: type = em_unicode; break;	/* 4byte iso10646 */
+	    }
+	  break;
+	}
+	if ( type==em_unicode )
+	    enc->uenc = enc->enc;
+	else if ( type!=em_none ) {
+	    enc->uenc = galloc(enc->cnt*sizeof(unichar_t));
+	    memset(enc->uenc,'\377',enc->cnt*sizeof(unichar_t));
+	    trans = NULL;
+	    if ( type==em_mac )
+		trans = unicode_from_mac;
+	    else if ( type==em_symbol )
+		trans = unicode_from_MacSymbol;
+	    for ( i=0; i<enc->cnt; ++i ) if ( enc->enc[i]!=0xffff ) {
+		if ( trans!=NULL )
+		    enc->uenc[i] = trans[enc->enc[i]];
+		else if ( type==em_big5 ) {
+		    if ( enc->enc[i]>0xa100 )
+			enc->uenc[i] = unicode_from_big5[enc->enc[i]-0xa100];
+		    else if ( enc->enc[i]>0x100 )
+			enc->uenc[i] = 0xffff;
+		    else
+			enc->uenc[i] = enc->enc[i];
+		} else if ( type == em_ksc5601 ) {
+		    int val = enc->enc[i];
+		    if ( val>0xa1a1 ) {
+			val -= 0xa1a1;
+			val = (val>>8)*94 + (val&0xff);
+			val = unicode_from_ksc5601[val];
+			if ( val==0 ) val = -1;
+		    } else if ( val>0x100 )
+			val = -1;
+		    enc->uenc[i] = val;
+		} else if ( type==em_jis208 ) {
+		    int val = enc->enc[i];
+		    if ( val<=127 ) {
+			/* Latin */
+			if ( val=='\\' ) val = 0xa5;	/* Yen */
+		    } else if ( val>=161 && val<=223 ) {
+			/* Katakana */
+			val = unicode_from_jis201[val];
+		    } else {
+			int ch1 = val>>8, ch2 = val&0xff;
+			if ( ch1 >= 129 && ch1<= 159 )
+			    ch1 -= 112;
+			else
+			    ch1 -= 176;
+			ch1 <<= 1;
+			if ( ch2>=159 )
+			    ch2-= 126;
+			else if ( ch2>127 ) {
+			    --ch1;
+			    ch2 -= 32;
+			} else {
+			    --ch1;
+			    ch2 -= 31;
+			}
+			val = unicode_from_jis208[(ch1-0x21)*94+(ch2-0x21)];
+		    }
+		    enc->uenc[i] = val;
+		} else {
+		    GDrawIError("Eh? Unsupported encoding %d", type );
+		}
+	    }
+	}
+    }
+
+/* Find the best table we can */
+    for ( enc = tab->table_data; enc!=NULL; enc=enc->next ) {
+	if ( enc->uenc==NULL )
+	    /* Unparseable, unuseable */;
+	else if (( enc->platform==3 && enc->specific==1 ) ||	/* MS Unicode */
+		(enc->platform==0 && (enc->specific==0 || enc->specific==3))) {	/* Apple unicode */
+	    bestval = 3;
+	    best = enc;
+	} else if ( enc->platform==3 && enc->specific==0 && best==NULL ) {
+	    /* Only select symbol if we don't have something better */
+	    best = enc;
+	    bestval = 1;
+	} else if ( ((enc->platform==1 && enc->specific==0 ) || enc->platform==3 ) &&
+		bestval!=3 ) {
+	    /* Mac 8bit/CJK if no unicode */
+	    best = enc;
+	    bestval = 2;
+	}
+    }
+    font->enc = best;
 }
 
 static Table *readtablehead(FILE *ttf,TtfFile *f) {
@@ -345,8 +578,17 @@ static Table *readtablehead(FILE *ttf,TtfFile *f) {
     for ( i=0; i<f->font_cnt && f->fonts[i]!=NULL; ++i ) {
 	for ( j=0; j<f->fonts[i]->tbl_cnt; ++j ) {
 	    table = f->fonts[i]->tbls[j];
-	    if ( table->name==name && table->start==offset && table->len==length )
+	    if ( table->start==offset && table->len==length ) {
+		if ( table->name==name )
 return( table );
+		/* EBDT/bdat, EBLC/bloc use the same structure and could share tables */
+		for ( i=0; i<sizeof(table->othernames)/sizeof(table->othernames[0]); ++i ) {
+		    if ( table->othernames[i]==name || table->othernames[i]==0 ) {
+			table->othernames[i] = name;
+return( table );
+		    }
+		}
+	    }
 	}
     }
 
@@ -374,7 +616,7 @@ static TtfFont *_readttfheader(FILE *ttf,TtfFile *f) {
 	tf->tbls[i] = readtablehead(ttf,f);
     tf->fontname = TTFGetFontName(ttf,tf);
     tf->glyph_cnt = TTFGetGlyphCnt(ttf,tf);
-    readttfencodings(ttf,font);
+    readttfencodings(ttf,tf);
 return( tf );
 }
 

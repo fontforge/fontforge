@@ -40,4 +40,6 @@
 extern char *RecentFiles[RECENT_MAX];
 
 extern char *getPfaEditDir(char *buffer);
+
+extern char *psunicodenames[];
 #endif

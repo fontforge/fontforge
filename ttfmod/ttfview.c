@@ -58,15 +58,17 @@ static struct tableinfo {
     void (*createviewer)(Table *,TtfView *);
     char *helppage;
 } tableinfo[] = {
+/* "Required" TrueType tables (except sometimes (ie. OpenType, bitmap only, etc.)) */
     { CHR('c','m','a','p'), _STR_Tbl_cmap, NULL, "http://partners.adobe.com/asn/developer/opentype/cmap.html" },
     { CHR('g','l','y','f'), _STR_Tbl_glyf, NULL, "http://partners.adobe.com/asn/developer/opentype/glyf.html" },
-    { CHR('h','e','a','d'), _STR_Tbl_head, NULL, "http://partners.adobe.com/asn/developer/opentype/head.html" },
-    { CHR('h','h','e','a'), _STR_Tbl_hhea, NULL, "http://partners.adobe.com/asn/developer/opentype/hhea.html" },
+    { CHR('h','e','a','d'), _STR_Tbl_head, headCreateEditor, "http://partners.adobe.com/asn/developer/opentype/head.html" },
+    { CHR('h','h','e','a'), _STR_Tbl_hhea, _heaCreateEditor, "http://partners.adobe.com/asn/developer/opentype/hhea.html" },
     { CHR('h','m','t','x'), _STR_Tbl_hmtx, metricsCreateEditor, "http://partners.adobe.com/asn/developer/opentype/hmtx.html" },
     { CHR('m','a','x','p'), _STR_Tbl_maxp, maxpCreateEditor, "http://partners.adobe.com/asn/developer/opentype/maxp.html" },
     { CHR('n','a','m','e'), _STR_Tbl_name, NULL, "http://partners.adobe.com/asn/developer/opentype/name.html" },
     { CHR('O','S','/','2'), _STR_Tbl_OS2 , OS2CreateEditor, "http://partners.adobe.com/asn/developer/opentype/os2.html" },
-    { CHR('p','o','s','t'), _STR_Tbl_post, NULL, "http://partners.adobe.com/asn/developer/opentype/post.html" },
+    { CHR('p','o','s','t'), _STR_Tbl_post, postCreateEditor, "http://partners.adobe.com/asn/developer/opentype/post.html" },
+/* Other MS/Adobe/Apple tables */
     { CHR('c','v','t',' '), _STR_Tbl_cvt , shortCreateEditor, "http://partners.adobe.com/asn/developer/opentype/cvt.html" },
     { CHR('E','B','D','T'), _STR_Tbl_EBDT, NULL, "http://partners.adobe.com/asn/developer/opentype/ebdt.html" },
     { CHR('E','B','L','C'), _STR_Tbl_EBLC, NULL, "http://partners.adobe.com/asn/developer/opentype/eblc.html" },
@@ -79,10 +81,10 @@ static struct tableinfo {
     { CHR('p','r','e','p'), _STR_Tbl_prep, instrCreateEditor, "http://partners.adobe.com/asn/developer/opentype/prep.html" },
     { CHR('P','C','L','T'), _STR_Tbl_PCLT, NULL, "http://partners.adobe.com/asn/developer/opentype/pclt.html" },
     { CHR('V','D','M','X'), _STR_Tbl_VDMX, NULL, "http://partners.adobe.com/asn/developer/opentype/vdmx.html" },
-    { CHR('v','h','e','a'), _STR_Tbl_vhea, NULL, "http://partners.adobe.com/asn/developer/opentype/vhea.html" },
+    { CHR('v','h','e','a'), _STR_Tbl_vhea, _heaCreateEditor, "http://partners.adobe.com/asn/developer/opentype/vhea.html" },
     { CHR('v','m','t','x'), _STR_Tbl_vmtx, metricsCreateEditor, "http://partners.adobe.com/asn/developer/opentype/vmtx.html" },
     { CHR('C','F','F',' '), _STR_Tbl_CFF , NULL, "http://partners.adobe.com/asn/developer/opentype/cff.html" },
-    { CHR('f','v','a','r'), _STR_Tbl_fvar, NULL, "http://partners.adobe.com/asn/developer/opentype/tablist.html" },
+/*    { CHR('f','v','a','r'), _STR_Tbl_fvar, NULL, "http://partners.adobe.com/asn/developer/opentype/tablist.html" }, */
     { CHR('M','M','S','D'), _STR_Tbl_MMSD, NULL, "http://partners.adobe.com/asn/developer/opentype/tablist.html" },
     { CHR('M','M','F','X'), _STR_Tbl_MMFX, NULL, "http://partners.adobe.com/asn/developer/opentype/tablist.html" },
     { CHR('B','A','S','E'), _STR_Tbl_BASE, NULL, "http://partners.adobe.com/asn/developer/opentype/base.html" },
@@ -92,6 +94,28 @@ static struct tableinfo {
     { CHR('J','S','T','F'), _STR_Tbl_JSTF, NULL, "http://partners.adobe.com/asn/developer/opentype/jstf.html" },
     { CHR('D','S','I','G'), _STR_Tbl_DSIG, NULL, "http://partners.adobe.com/asn/developer/opentype/dsig.html" },
     { CHR('V','O','R','G'), _STR_Tbl_VORG, NULL, "http://partners.adobe.com/asn/developer/opentype/vorg.html" },
+/* Apple only (GX?) tables */
+    { CHR('a','c','n','t'), _STR_Tbl_acnt, NULL, "http://fonts.apple.com/TTRefMan/RM06/Chap6acnt.html" },
+    { CHR('a','v','a','r'), _STR_Tbl_avar, NULL, "http://fonts.apple.com/TTRefMan/RM06/Chap6avar.html" },
+    { CHR('b','d','a','t'), _STR_Tbl_bdat, NULL, "http://fonts.apple.com/TTRefMan/RM06/Chap6bdat.html" },
+    { CHR('b','h','e','d'), _STR_Tbl_bhed, headCreateEditor, "http://fonts.apple.com/TTRefMan/RM06/Chap6bhed.html" },
+    { CHR('b','l','o','c'), _STR_Tbl_bloc, NULL, "http://fonts.apple.com/TTRefMan/RM06/Chap6bloc.html" },
+    { CHR('b','s','l','n'), _STR_Tbl_bsln, NULL, "http://fonts.apple.com/TTRefMan/RM06/Chap6bsln.html" },
+    { CHR('c','v','a','r'), _STR_Tbl_cvar, NULL, "http://fonts.apple.com/TTRefMan/RM06/Chap6cvar.html" },
+    { CHR('f','d','s','c'), _STR_Tbl_fdsc, NULL, "http://fonts.apple.com/TTRefMan/RM06/Chap6fdsc.html" },
+    { CHR('f','e','a','t'), _STR_Tbl_feat, NULL, "http://fonts.apple.com/TTRefMan/RM06/Chap6feat.html" },
+    { CHR('f','m','t','x'), _STR_Tbl_fmtx, NULL, "http://fonts.apple.com/TTRefMan/RM06/Chap6fmtx.html" },
+    { CHR('f','v','a','r'), _STR_Tbl_fvar, NULL, "http://fonts.apple.com/TTRefMan/RM06/Chap6fvar.html" },
+    { CHR('g','v','a','r'), _STR_Tbl_gvar, NULL, "http://fonts.apple.com/TTRefMan/RM06/Chap6gvar.html" },
+    { CHR('h','s','t','y'), _STR_Tbl_hsty, NULL, "http://fonts.apple.com/TTRefMan/RM06/Chap6hsty.html" },
+    { CHR('j','u','s','t'), _STR_Tbl_just, NULL, "http://fonts.apple.com/TTRefMan/RM06/Chap6just.html" },
+    { CHR('l','c','a','r'), _STR_Tbl_lcar, NULL, "http://fonts.apple.com/TTRefMan/RM06/Chap6lcar.html" },
+    { CHR('m','o','r','t'), _STR_Tbl_mort, NULL, "http://fonts.apple.com/TTRefMan/RM06/Chap6mort.html" },
+    { CHR('m','o','r','x'), _STR_Tbl_morx, NULL, "http://fonts.apple.com/TTRefMan/RM06/Chap6morx.html" },
+    { CHR('o','p','b','d'), _STR_Tbl_opbd, NULL, "http://fonts.apple.com/TTRefMan/RM06/Chap6opbd.html" },
+    { CHR('p','r','o','p'), _STR_Tbl_prop, NULL, "http://fonts.apple.com/TTRefMan/RM06/Chap6prop.html" },
+    { CHR('t','r','a','k'), _STR_Tbl_trak, NULL, "http://fonts.apple.com/TTRefMan/RM06/Chap6trak.html" },
+    { CHR('Z','a','p','f'), _STR_Tbl_Zapf, NULL, "http://fonts.apple.com/TTRefMan/RM06/Chap6Zapf.html" },
     { 0 }
 };
 
@@ -248,8 +272,13 @@ static int _TFVMenuClose(TtfView *tfv) {
     /* Check for changes !!!! */
     for ( i=0; i<tfv->ttf->font_cnt; ++i ) {
 	for ( j=0; j<tfv->ttf->fonts[i]->tbl_cnt; ++j )
-	    if ( tfv->ttf->fonts[i]->tbls[j]->tv!=NULL )
+	    if ( !tfv->ttf->fonts[i]->tbls[j]->destroyed &&
+		    tfv->ttf->fonts[i]->tbls[j]->tv!=NULL ) {
+		/* same table may be referenced by several fonts */
+		/* or in the case of EBDT, and bdat by the same font */
+		tfv->ttf->fonts[i]->tbls[j]->destroyed = true;
 		GDrawDestroyWindow(tfv->ttf->fonts[i]->tbls[j]->tv->gw);
+	    }
     }
     GDrawDestroyWindow(tfv->gw);
 return( 1 );
@@ -315,7 +344,7 @@ static GMenuItem edlist[] = {
     { { (unichar_t *) _STR_Copy, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, 'C', ksm_control, NULL, NULL, NULL, MID_Copy },
     { { (unichar_t *) _STR_Paste, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, 'V', ksm_control, NULL, NULL, NULL, MID_Paste },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_Selectall, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 0, 1, 0, 'A' }, 'A', ksm_control, NULL, NULL, NULL },
+    { { (unichar_t *) _STR_SelectAll, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 0, 1, 0, 'A' }, 'A', ksm_control, NULL, NULL, NULL },
     { NULL }
 };
 
@@ -376,9 +405,10 @@ return;
 	    GDrawRequestExpose(tfv->v,NULL,false);
 	}
 	if ( tab!=NULL && e->u.mouse.clicks==2 ) {
-	    if ( tab->tv!=NULL )
+	    if ( tab->tv!=NULL ) {
+		GDrawSetVisible(tab->tv->gw,true);
 		GDrawRaise(tab->tv->gw);
-	    else if ( tableinfo[k].createviewer==NULL ||
+	    } else if ( tableinfo[k].createviewer==NULL ||
 		    (e->u.mouse.state&(ksm_control|ksm_meta)) )
 		binaryCreateEditor(tab,tfv);
 	    else

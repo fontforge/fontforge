@@ -65,8 +65,60 @@ typedef struct maxpview /* : tableview */ {
 } MaxpView;
 
 static int maxp_processdata(TableView *tv) {
-    MaxpView *mv = (MaxpView *) tv;
-    /* Do changes!!! */
+    int err = false;
+    real version;
+    int gc, points, contours,cpoints,ccontours,zones,tpoints,store,fdefs,idefs,
+	sel,sinstrs,cinstrs,cdepth;
+    uint8 *data;
+    int len;
+
+    version = GetRealR(tv->gw,CID_Version,_STR_Version,&err);
+    gc = GetIntR(tv->gw,CID_Glyphs,_STR_Glyphs,&err);
+    len = 6;
+    if ( version>=1 ) {
+	points = GetIntR(tv->gw,CID_Points,_STR_Points,&err);
+	contours = GetIntR(tv->gw,CID_Contours,_STR_Contours,&err);
+	cpoints = GetIntR(tv->gw,CID_CPoints,_STR_CompositPoints,&err);
+	ccontours = GetIntR(tv->gw,CID_CContours,_STR_CompositContours,&err);
+	zones = GetIntR(tv->gw,CID_Zones,_STR_Zones,&err);
+	tpoints = GetIntR(tv->gw,CID_TPoints,_STR_TwilightPoints,&err);
+	store = GetIntR(tv->gw,CID_Storage,_STR_Storage,&err);
+	fdefs = GetIntR(tv->gw,CID_FDefs,_STR_FDEFs,&err);
+	idefs = GetIntR(tv->gw,CID_IDefs,_STR_IDEFs,&err);
+	sel = GetIntR(tv->gw,CID_SEl,_STR_StackElements,&err);
+	sinstrs = GetIntR(tv->gw,CID_SOI,_STR_SizeOfInstructions,&err);
+	cinstrs = GetIntR(tv->gw,CID_CEl,_STR_ComponentElements,&err);
+	cdepth = GetIntR(tv->gw,CID_CDepth,_STR_ComponentDepth,&err);
+	len = 32;
+    }
+    if ( err )
+return( false );
+    data = galloc(len);
+    ptputvfixed(data,version);
+    ptputushort(data+4,gc);
+    if ( version>=1 ) {
+	ptputushort(data+6,points);
+	ptputushort(data+8,contours);
+	ptputushort(data+10,cpoints);
+	ptputushort(data+12,ccontours);
+	ptputushort(data+14,zones);
+	ptputushort(data+16,tpoints);
+	ptputushort(data+18,store);
+	ptputushort(data+20,fdefs);
+	ptputushort(data+22,idefs);
+	ptputushort(data+24,sel);
+	ptputushort(data+26,sinstrs);
+	ptputushort(data+28,cinstrs);
+	ptputushort(data+30,cdepth);
+    }
+    free(tv->table->data);
+    tv->table->data = data;
+    tv->table->newlen = len;
+    if ( !tv->table->changed ) {
+	tv->table->changed = true;
+	tv->table->container->changed = true;
+	GDrawRequestExpose(tv->owner->v,NULL,false);
+    }
 return( true );
 }
 
@@ -97,22 +149,22 @@ return( true );
 
 static int Maxp_Cancel(GGadget *g, GEvent *e) {
     GWindow gw;
-    MaxpView *mv;
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	gw = GGadgetGetWindow(g);
-	mv = GDrawGetUserData(gw);
-	maxp_close((TableView *) mv);
+	GDrawDestroyWindow(gw);
     }
 return( true );
 }
 
 static int Maxp_OK(GGadget *g, GEvent *e) {
     GWindow gw;
+    MaxpView *mv;
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	gw = GGadgetGetWindow(g);
-	GDrawDestroyWindow(gw);
+	mv = GDrawGetUserData(gw);
+	maxp_close((TableView *) mv);
     }
 return( true );
 }
@@ -183,10 +235,8 @@ void maxpCreateEditor(Table *tab,TtfView *tfv) {
     gcd[0].gd.flags = gg_enabled|gg_visible;
     gcd[0].creator = GLabelCreate;
 
-    if ( (short_table=(tgetlong(tab,0)==0x5000)) )
-	sprintf(version,"%g", .5);		/* Get decimal point right for locale */
-    else
-	sprintf( version, "%.4g", tgetfixed(tab,0) );
+    short_table = tgetvfixed(tab,0)==.5;
+    sprintf( version, "%.4g", tgetvfixed(tab,0) );
     pointfive[0] = localeinfo.decimal_point[0];
     label[1].text = (unichar_t *) version;
     label[1].text_is_1byte = true;
@@ -474,7 +524,7 @@ void maxpCreateEditor(Table *tab,TtfView *tfv) {
     gcd[i++].creator = GButtonCreate;
 
     gcd[i].gd.pos.x = 2; gcd[i].gd.pos.y = 2;
-    gcd[i].gd.pos.width = pos.width-4; gcd[i].gd.pos.height = pos.height-2;
+    gcd[i].gd.pos.width = pos.width-4; gcd[i].gd.pos.height = pos.height-4;
     gcd[i].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
     gcd[i].creator = GGroupCreate;
 

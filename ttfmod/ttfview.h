@@ -79,8 +79,11 @@ void WindowMenuBuild(GWindow base,struct gmenuitem *mi,GEvent *e);
 int RecentFilesAny(void);
 void MenuRecentBuild(GWindow base,struct gmenuitem *mi,GEvent *e);
 
+void headCreateEditor(Table *tab,TtfView *tfv);
 void maxpCreateEditor(Table *tab,TtfView *tfv);
+void postCreateEditor(Table *tab,TtfView *tfv);
 void OS2CreateEditor(Table *tab,TtfView *tfv);
+void _heaCreateEditor(Table *tab,TtfView *tfv);
 void instrCreateEditor(Table *tab,TtfView *tfv);
 void binaryCreateEditor(Table *tab,TtfView *tfv);
 void shortCreateEditor(Table *tab,TtfView *tfv);

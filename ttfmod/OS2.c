@@ -403,13 +403,14 @@ static GTextInfo codepagelist[] = {
     { NULL }};
 
 #define CID_Version		1000
-#define CID_AvgWidth		1001
 #define CID_WeightClass		1002
 #define CID_WeightClassL	1003
 #define CID_WidthClass		1004
 #define CID_WidthClassL		1005
 #define CID_FSType		1006
 #define CID_FSTypeL		1007
+#define CID_NoSubsetting	1106
+#define CID_OnlyBitmaps		1107
 #define CID_IBMFamily		1008
 #define CID_IBMFamilyL		1009
 #define CID_Vendor		1010
@@ -446,6 +447,7 @@ static GTextInfo codepagelist[] = {
 #define CID_CodePageRanges	5006
 #define CID_CodePageList	5007
 
+#define CID_AvgWidth		1001
 #define CID_TypoAscender	6001
 #define CID_TypoDescender	6002
 #define CID_TypoLineGap		6003
@@ -563,21 +565,26 @@ return( true );
 static int OS2_TypeChange(GGadget *g, GEvent *e) {
     GWindow gw = GDrawGetParentWindow(GGadgetGetWindow(g));
     const unichar_t *ret;
-    int val;
+    int val, index;
     GTextInfo *sel;
     char buffer[8]; unichar_t ub[8];
 
     if ( GGadgetGetCid(g)==CID_FSType ) {
 	ret = _GGadgetGetTitle(g);
 	val = u_strtol(ret,NULL,16);
-	if ( val&8 ) val = 2;
-	else if ( val&4 ) val=1;
-	else if ( val&2 ) val=0;
-	else val = 3;
-	GGadgetSelectOneListItem(GWidgetGetControl(gw,CID_FSTypeL),val);
+	if ( val&8 ) index = 2;
+	else if ( val&4 ) index=1;
+	else if ( val&2 ) index=0;
+	else index = 3;
+	GGadgetSelectOneListItem(GWidgetGetControl(gw,CID_FSTypeL),index);
+	GGadgetSetChecked(GWidgetGetControl(gw,CID_NoSubsetting),val&0x100?1:0);
+	GGadgetSetChecked(GWidgetGetControl(gw,CID_OnlyBitmaps),val&0x200?1:0);
     } else {
-	sel = GGadgetGetListItemSelected(g);
-	sprintf(buffer,"%x", (int) (sel->userdata));
+	sel = GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_FSTypeL));
+	val = (int) (sel->userdata);
+	if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_NoSubsetting))) val |=0x100;
+	if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_OnlyBitmaps))) val |=0x200;
+	sprintf(buffer,"%x", val);
 	uc_strcpy(ub,buffer);
 	GGadgetSetTitle(GWidgetGetControl(gw,CID_FSType),ub);
     }
@@ -816,7 +823,7 @@ void OS2CreateEditor(Table *tab,TtfView *tfv) {
     GWindow gw;
     GWindowAttrs wattrs;
     GTabInfo aspects[8];
-    GGadgetCreateData mgcd[6], ggcd[24], pangcd[22], agcd[24], cgcd[24], tgcd[24];
+    GGadgetCreateData mgcd[6], ggcd[24], pangcd[22], agcd[24], cgcd[24], tgcd[26];
     GTextInfo mlabel[6], glabel[24], panlabel[22], alabel[24], clabel[24], tlabel[25];
     static unichar_t title[60] = { 'O', 'S', '/', '2', ' ',  '\0' };
     char version[8], avgwidth[8], weight[8], width[8], type[8], aligns[9][8],
@@ -875,95 +882,101 @@ void OS2CreateEditor(Table *tab,TtfView *tfv) {
     ggcd[1].creator = GListFieldCreate;
 
     ggcd[2].gd.pos.x = 10; ggcd[2].gd.pos.y = ggcd[1].gd.pos.y+24+6;
-    glabel[2].text = (unichar_t *) _STR_AvgWidth;
+    glabel[2].text = (unichar_t *) _STR_WeightClass;
     glabel[2].text_in_resource = true;
     ggcd[2].gd.label = &glabel[2];
     ggcd[2].gd.flags = gg_visible | gg_enabled;
     ggcd[2].creator = GLabelCreate;
 
-    sprintf( avgwidth, "%d", tgetushort(tab,2) );
-    glabel[3].text = (unichar_t *) avgwidth;
+    sprintf( weight, "%d", tgetushort(tab,4) );
+    glabel[3].text = (unichar_t *) weight;
     glabel[3].text_is_1byte = true;
     ggcd[3].gd.label = &glabel[3];
-    ggcd[3].gd.pos.x = 80; ggcd[3].gd.pos.y = ggcd[2].gd.pos.y-6;
+    ggcd[3].gd.pos.x = 80; ggcd[3].gd.pos.y = ggcd[2].gd.pos.y-6; ggcd[3].gd.pos.width = 60;
     ggcd[3].gd.flags = gg_enabled|gg_visible;
-    ggcd[3].gd.cid = CID_AvgWidth;
+    ggcd[3].gd.cid = CID_WeightClass;
+    ggcd[3].gd.handle_controlevent = OS2_WeightChange;
     ggcd[3].creator = GTextFieldCreate;
 
-    ggcd[4].gd.pos.x = 10; ggcd[4].gd.pos.y = ggcd[3].gd.pos.y+24+6;
-    glabel[4].text = (unichar_t *) _STR_WeightClass;
-    glabel[4].text_in_resource = true;
-    ggcd[4].gd.label = &glabel[4];
+    ggcd[4].gd.pos.x = 150; ggcd[4].gd.pos.y = ggcd[3].gd.pos.y;
     ggcd[4].gd.flags = gg_visible | gg_enabled;
-    ggcd[4].creator = GLabelCreate;
-
-    sprintf( weight, "%d", tgetushort(tab,4) );
-    glabel[5].text = (unichar_t *) weight;
-    glabel[5].text_is_1byte = true;
-    ggcd[5].gd.label = &glabel[5];
-    ggcd[5].gd.pos.x = 80; ggcd[5].gd.pos.y = ggcd[4].gd.pos.y-6; ggcd[5].gd.pos.width = 60;
-    ggcd[5].gd.flags = gg_enabled|gg_visible;
-    ggcd[5].gd.cid = CID_WeightClass;
-    ggcd[5].gd.handle_controlevent = OS2_WeightChange;
-    ggcd[5].creator = GTextFieldCreate;
-
-    ggcd[6].gd.pos.x = 150; ggcd[6].gd.pos.y = ggcd[5].gd.pos.y;
-    ggcd[6].gd.flags = gg_visible | gg_enabled;
-    ggcd[6].gd.cid = CID_WeightClassL;
-    ggcd[6].gd.u.list = weightclass;
-    ggcd[6].gd.handle_controlevent = OS2_WeightChange;
-    ggcd[6].creator = GListButtonCreate;
+    ggcd[4].gd.cid = CID_WeightClassL;
+    ggcd[4].gd.u.list = weightclass;
+    ggcd[4].gd.handle_controlevent = OS2_WeightChange;
+    ggcd[4].creator = GListButtonCreate;
     temp = (tgetushort(tab,4)+50)/100 - 1;
     if ( temp<0 ) temp = 0; else if ( temp>8 ) temp=8;
     for ( i=0; weightclass[i].text!=NULL; ++i )
 	weightclass[i].selected = i==temp;
 
-    ggcd[7].gd.pos.x = 10; ggcd[7].gd.pos.y = ggcd[5].gd.pos.y+24+6;
-    glabel[7].text = (unichar_t *) _STR_WidthClass;
-    glabel[7].text_in_resource = true;
-    ggcd[7].gd.label = &glabel[7];
-    ggcd[7].gd.flags = gg_visible | gg_enabled;
-    ggcd[7].creator = GLabelCreate;
+    ggcd[5].gd.pos.x = 10; ggcd[5].gd.pos.y = ggcd[3].gd.pos.y+24+6;
+    glabel[5].text = (unichar_t *) _STR_WidthClass;
+    glabel[5].text_in_resource = true;
+    ggcd[5].gd.label = &glabel[5];
+    ggcd[5].gd.flags = gg_visible | gg_enabled;
+    ggcd[5].creator = GLabelCreate;
 
     sprintf( width, "%d", temp=tgetushort(tab,6) );
-    glabel[8].text = (unichar_t *) width;
-    glabel[8].text_is_1byte = true;
-    ggcd[8].gd.label = &glabel[8];
-    ggcd[8].gd.pos.x = 80; ggcd[8].gd.pos.y = ggcd[7].gd.pos.y-6; ggcd[8].gd.pos.width = 60;
-    ggcd[8].gd.flags = gg_enabled|gg_visible;
-    ggcd[8].gd.cid = CID_WidthClass;
-    ggcd[8].gd.handle_controlevent = OS2_WidthChange;
-    ggcd[8].creator = GTextFieldCreate;
+    glabel[6].text = (unichar_t *) width;
+    glabel[6].text_is_1byte = true;
+    ggcd[6].gd.label = &glabel[6];
+    ggcd[6].gd.pos.x = 80; ggcd[6].gd.pos.y = ggcd[5].gd.pos.y-6; ggcd[6].gd.pos.width = 60;
+    ggcd[6].gd.flags = gg_enabled|gg_visible;
+    ggcd[6].gd.cid = CID_WidthClass;
+    ggcd[6].gd.handle_controlevent = OS2_WidthChange;
+    ggcd[6].creator = GTextFieldCreate;
 
-    ggcd[9].gd.pos.x = 150; ggcd[9].gd.pos.y = ggcd[8].gd.pos.y; ggcd[9].gd.pos.width = 140;
-    ggcd[9].gd.flags = gg_visible | gg_enabled;
-    ggcd[9].gd.cid = CID_WidthClassL;
-    ggcd[9].gd.u.list = widthclass;
-    ggcd[9].gd.handle_controlevent = OS2_WidthChange;
-    ggcd[9].creator = GListButtonCreate;
+    ggcd[7].gd.pos.x = 150; ggcd[7].gd.pos.y = ggcd[6].gd.pos.y; ggcd[7].gd.pos.width = 140;
+    ggcd[7].gd.flags = gg_visible | gg_enabled;
+    ggcd[7].gd.cid = CID_WidthClassL;
+    ggcd[7].gd.u.list = widthclass;
+    ggcd[7].gd.handle_controlevent = OS2_WidthChange;
+    ggcd[7].creator = GListButtonCreate;
     if ( temp<1 ) temp = 1; else if ( temp>9 ) temp=9;
     for ( i=0; widthclass[i].text!=NULL; ++i )
 	widthclass[i].selected = i==temp-1;
 
-    ggcd[10].gd.pos.x = 10; ggcd[10].gd.pos.y = ggcd[8].gd.pos.y+24+6;
-    glabel[10].text = (unichar_t *) _STR_Embeddable;
+    ggcd[8].gd.pos.x = 10; ggcd[8].gd.pos.y = ggcd[6].gd.pos.y+24+6;
+    glabel[8].text = (unichar_t *) _STR_Embeddable;
+    glabel[8].text_in_resource = true;
+    ggcd[8].gd.label = &glabel[8];
+    ggcd[8].gd.flags = gg_visible | gg_enabled;
+    ggcd[8].gd.popup_msg = GStringGetResource(_STR_EmbeddablePopup,NULL);
+    ggcd[8].creator = GLabelCreate;
+
+    sprintf( type, "%x", temp=tgetushort(tab,8) );
+    glabel[9].text = (unichar_t *) type;
+    glabel[9].text_is_1byte = true;
+    ggcd[9].gd.label = &glabel[9];
+    ggcd[9].gd.pos.x = 80; ggcd[9].gd.pos.y = ggcd[8].gd.pos.y-6; ggcd[9].gd.pos.width = 60;
+    ggcd[9].gd.flags = gg_enabled|gg_visible;
+    ggcd[9].gd.cid = CID_FSType;
+    ggcd[9].gd.handle_controlevent = OS2_TypeChange;
+    ggcd[9].creator = GTextFieldCreate;
+
+    ggcd[10].gd.pos.x = 20; ggcd[10].gd.pos.y = ggcd[9].gd.pos.y+24;
+    glabel[10].text = (unichar_t *) _STR_NoSubsetting;
     glabel[10].text_in_resource = true;
     ggcd[10].gd.label = &glabel[10];
     ggcd[10].gd.flags = gg_visible | gg_enabled;
-    ggcd[10].gd.popup_msg = GStringGetResource(_STR_EmbeddablePopup,NULL);
-    ggcd[10].creator = GLabelCreate;
+    if ( temp&0x100 )  ggcd[10].gd.flags |= gg_cb_on;
+    ggcd[10].gd.popup_msg = GStringGetResource(_STR_NoSubsettingPopup,NULL);
+    ggcd[10].gd.cid = CID_NoSubsetting;
+    ggcd[10].gd.handle_controlevent = OS2_TypeChange;
+    ggcd[10].creator = GCheckBoxCreate;
 
-    sprintf( type, "%x", temp=tgetushort(tab,8) );
-    glabel[11].text = (unichar_t *) type;
-    glabel[11].text_is_1byte = true;
+    ggcd[11].gd.pos.x = 110; ggcd[11].gd.pos.y = ggcd[9].gd.pos.y+24;
+    glabel[11].text = (unichar_t *) _STR_OnlyBitmaps;
+    glabel[11].text_in_resource = true;
     ggcd[11].gd.label = &glabel[11];
-    ggcd[11].gd.pos.x = 80; ggcd[11].gd.pos.y = ggcd[10].gd.pos.y-6; ggcd[11].gd.pos.width = 60;
-    ggcd[11].gd.flags = gg_enabled|gg_visible;
-    ggcd[11].gd.cid = CID_FSType;
+    ggcd[11].gd.flags = gg_visible | gg_enabled;
+    if ( temp&0x200 )  ggcd[11].gd.flags |= gg_cb_on;
+    ggcd[11].gd.popup_msg = GStringGetResource(_STR_OnlyBitmapsPopup,NULL);
+    ggcd[11].gd.cid = CID_OnlyBitmaps;
     ggcd[11].gd.handle_controlevent = OS2_TypeChange;
-    ggcd[11].creator = GTextFieldCreate;
+    ggcd[11].creator = GCheckBoxCreate;
 
-    ggcd[12].gd.pos.x = 150; ggcd[12].gd.pos.y = ggcd[11].gd.pos.y; ggcd[12].gd.pos.width = ggcd[9].gd.pos.width;
+    ggcd[12].gd.pos.x = 150; ggcd[12].gd.pos.y = ggcd[9].gd.pos.y; ggcd[12].gd.pos.width = ggcd[7].gd.pos.width;
     ggcd[12].gd.flags = gg_visible | gg_enabled;
     ggcd[12].gd.cid = CID_FSTypeL;
     ggcd[12].gd.u.list = fstype;
@@ -993,7 +1006,7 @@ void OS2CreateEditor(Table *tab,TtfView *tfv) {
     ggcd[14].gd.handle_controlevent = OS2_FamilyChange;
     ggcd[14].creator = GTextFieldCreate;
 
-    ggcd[15].gd.pos.x = 150; ggcd[15].gd.pos.y = ggcd[14].gd.pos.y; ggcd[15].gd.pos.width = ggcd[9].gd.pos.width;
+    ggcd[15].gd.pos.x = 150; ggcd[15].gd.pos.y = ggcd[14].gd.pos.y; ggcd[15].gd.pos.width = ggcd[7].gd.pos.width;
     ggcd[15].gd.flags = gg_visible | gg_enabled;
     ggcd[15].gd.cid = CID_IBMFamilyL;
     ggcd[15].gd.u.list = ibmfamily;
@@ -1302,7 +1315,23 @@ void OS2CreateEditor(Table *tab,TtfView *tfv) {
     memset(&tlabel,0,sizeof(tlabel));
     memset(&tgcd,0,sizeof(tgcd));
 
-    tgcd[0].gd.pos.x = 10; tgcd[0].gd.pos.y = 12;
+    tgcd[22].gd.pos.x = 10; tgcd[22].gd.pos.y = 12;
+    tlabel[22].text = (unichar_t *) _STR_AvgWidth;
+    tlabel[22].text_in_resource = true;
+    tgcd[22].gd.label = &tlabel[22];
+    tgcd[22].gd.flags = gg_visible | gg_enabled;
+    tgcd[22].creator = GLabelCreate;
+
+    sprintf( avgwidth, "%d", tgetushort(tab,2) );
+    tlabel[23].text = (unichar_t *) avgwidth;
+    tlabel[23].text_is_1byte = true;
+    tgcd[23].gd.label = &tlabel[23];
+    tgcd[23].gd.pos.x = 82; tgcd[23].gd.pos.y = tgcd[22].gd.pos.y-6;
+    tgcd[23].gd.flags = gg_enabled|gg_visible;
+    tgcd[23].gd.cid = CID_AvgWidth;
+    tgcd[23].creator = GTextFieldCreate;
+
+    tgcd[0].gd.pos.x = 10; tgcd[0].gd.pos.y = tgcd[22].gd.pos.y+24;
     tlabel[0].text = (unichar_t *) _STR_TypoAscender;
     tlabel[0].text_in_resource = true;
     tgcd[0].gd.label = &tlabel[0];
@@ -1313,7 +1342,7 @@ void OS2CreateEditor(Table *tab,TtfView *tfv) {
     tlabel[1].text = (unichar_t *) asndr;
     tlabel[1].text_is_1byte = true;
     tgcd[1].gd.label = &tlabel[1];
-    tgcd[1].gd.pos.x = 80; tgcd[1].gd.pos.y = tgcd[0].gd.pos.y-6; tgcd[1].gd.pos.width = 60;
+    tgcd[1].gd.pos.x = 82; tgcd[1].gd.pos.y = tgcd[0].gd.pos.y-6; tgcd[1].gd.pos.width = 60;
     tgcd[1].gd.flags = gg_enabled|gg_visible;
     tgcd[1].gd.cid = CID_TypoAscender;
     tgcd[1].creator = GTextFieldCreate;
@@ -1486,6 +1515,8 @@ void OS2CreateEditor(Table *tab,TtfView *tfv) {
     tgcd[21].gd.flags = gg_enabled|gg_visible;
     tgcd[21].gd.cid = CID_MaxContext;
     tgcd[21].creator = GTextFieldCreate;
+
+    /* 22&23 added at top */
 
     if ( vnum==0 || vnum==1 ) {
 	xh[0] = ch[0] = mcontext[0] = bc[0] = dc[0] = _bc[0] = _dc[0] = '\0';

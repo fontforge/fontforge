@@ -36,6 +36,22 @@
 # define real	float
 #endif
 
+#define CHAR_UNDEF	0xffff
+struct enctab {
+    int platform, specific, offset;
+    int format, len, language;
+	/* MS says this is a version, apple/adobe says a language. */
+	/* MBZ for ms platform, apple,adobe says 0 is "language independant" */
+    int cnt;
+    unichar_t *uenc;		/* map from glyph num => unicode */
+    unichar_t *enc;		/* map from glyph num => char sequence */
+    struct enctab *next;
+};
+
+/* The EBDT and bdat tags could reasonable point to the same table */
+/* as could EBLC and bloc. Why haven't Apple and MS used the same tag? */
+/* they use the same formats... */
+/* The same table may be used by several fonts */
 typedef struct table {
     int32 name;
     int32 start;
@@ -43,14 +59,18 @@ typedef struct table {
     int32 newlen;			/* actual length, but data will be */
     uint8 *data;			/*  padded out to 32bit boundary with 0*/
     int32 oldchecksum;
-    unsigned int changed: 1;
+    int32 othernames[4];		/* for bdat/EBDT etc. */
+    unsigned int changed: 1;		/* someone has changed either data or table_data */
+    unsigned int td_changed: 1;		/* it's table_data that has changed */
     unsigned int special: 1;		/* loca, hmtx, glyph all are bound together */
+    unsigned int destroyed: 1;		/* window has been destroyed */
     struct ttffile *container;
     /* No pointer to the font, because a given table may be part of several */
     /*  different fonts in a ttc */
     struct tableview *tv;
     void *table_data;
     void (*free_tabledata)(void *);
+    void (*write_tabledata)(FILE *ttf,struct table *tab);
 } Table;
     
 typedef struct ttffont {
@@ -58,9 +78,8 @@ typedef struct ttffont {
     int32 version;
     int tbl_cnt, tbl_max;
     Table **tbls;
-    int32 glyph_cnt, enc_glyph_cnt;
-    uint16 *unicode_enc;
-    uint16 *enc;
+    int32 glyph_cnt;
+    struct enctab *enc;
     struct ttffile *container;
     unsigned int expanded: 1;		/* should be in TtfView */
 } TtfFont;
@@ -78,12 +97,23 @@ typedef struct ttffile {
 extern int getushort(FILE *ttf);
 extern int32 getlong(FILE *ttf);
 extern real getfixed(FILE *ttf);
+extern real getvfixed(FILE *ttf);		/* Reads table version numbers which are some weird (undocumented) bcd format */
 extern real get2dot14(FILE *ttf);
 void TableFillup(Table *tbl);
 int tgetushort(Table *tab,int pos);
 int32 tgetlong(Table *tab,int pos);
 real tgetfixed(Table *tab,int pos);
+real tgetvfixed(Table *tab,int pos);
 real tget2dot14(Table *tab,int pos);
+int ptgetushort(uint8 *data);
+int32 ptgetlong(uint8 *data);
+real ptgetfixed(uint8 *data);
+real ptgetvfixed(uint8 *data);
+void ptputushort(uint8 *data, uint16 val);
+void ptputlong(uint8 *data, uint32 val);
+void ptputfixed(uint8 *data,real val);
+void ptputvfixed(uint8 *data,real val);
+
 extern TtfFile *ReadTtfFont(char *filename);
 extern TtfFile *LoadTtfFont(char *filename);
 

@@ -32,17 +32,19 @@
 #include "gwidget.h"
 #include "ggadget.h"
 #include "ttfview.h"
+#include <time.h>
 
 extern TtfView *tfv_list;
 extern GWindow ttf_icon;
 
 extern void InitCursors(void);
 
-extern real GetReal(GWindow gw,int cid,char *name,int *err);
-extern int GetInt(GWindow gw,int cid,char *name,int *err);
-extern void Protest(char *label);
+extern void TimeTToQuad(time_t t, uint32 date[2]);
 extern real GetRealR(GWindow gw,int cid,int namer,int *err);
 extern int GetIntR(GWindow gw,int cid,int namer,int *err);
+extern int GetHexR(GWindow gw,int cid,int namer,int *err);
+extern int GetListR(GWindow gw,int cid,int namer,int *err);
+extern void GetDateR(GWindow gw,int cid,int namer,uint32 date[2], int *err);
 extern void ProtestR(int labelr);
 
 #endif

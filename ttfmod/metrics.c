@@ -43,12 +43,12 @@ typedef struct metricmview /* : tableview */ {
     struct ttfview *owner;
 /* instrs specials */
     GGadget *mb, *vsb;
-    int16 lpos, lheight;
+    int lpos, lheight;
     int16 as, fh;
     int16 vheight, vwidth;
     int16 mbh, sbw;
     GFont *gfont, *ifont;
-    int16 chrlen, addrend;
+    int chrlen, addrend;
     int longmetricscnt;
     int lastwidth;
 } MetricsView;
@@ -104,6 +104,7 @@ return;
     GScrollBarSetBounds(mv->vsb,0,mv->lheight,mv->vheight/mv->fh);
     if ( mv->lpos + mv->vheight/mv->fh > mv->lheight )
 	mv->lpos = mv->lheight-mv->vheight/mv->fh;
+    if ( mv->lpos<0 ) mv->lpos = 0;
     GScrollBarSetPos(mv->vsb,mv->lpos);
 }
 
@@ -111,12 +112,13 @@ static void metrics_expose(MetricsView *mv,GWindow pixmap,GRect *rect) {
     int low, high;
     int x,y;
     Table *table = mv->table;
-    char cval[8], caddr[8]; unichar_t uval[8], uaddr[8];
+    char cval[8], caddr[8]; unichar_t uval[8], uaddr[12];
     int index, bearing_x;
+    int col;
 
     GDrawSetFont(pixmap,mv->gfont);
 
-    low = ( (rect->y-EDGE_SPACER)/mv->fh ) * mv->fh +2;
+    low = ( (rect->y-EDGE_SPACER)/mv->fh ) * mv->fh +EDGE_SPACER;
     high = ( (rect->y+rect->height+mv->fh-1-EDGE_SPACER)/mv->fh ) * mv->fh +EDGE_SPACER;
     if ( high>mv->vheight-EDGE_SPACER ) high = mv->vheight-EDGE_SPACER;
 
@@ -129,8 +131,20 @@ static void metrics_expose(MetricsView *mv,GWindow pixmap,GRect *rect) {
     for ( ; y<=high && index<mv->lheight; ++index ) {
 	sprintf( caddr, "%d", index );
 	uc_strcpy(uaddr,caddr);
+	col = 0x000000;
+	if ( mv->font->enc!=NULL ) {
+	    int p = strlen(caddr);
+	    uaddr[p] = ' ';
+	    if ( mv->font->enc->uenc[index]!=0xffff )
+		uaddr[p+1] = mv->font->enc->uenc[index];
+	    else {
+		uaddr[p+1] = '?';
+		col = 0xff0000;
+	    }
+	    uaddr[p+2] = '\0';
+	}
 	x = mv->addrend - ADDR_SPACER - GDrawGetTextWidth(pixmap,uaddr,-1,NULL);
-	GDrawDrawText(pixmap,x,y+mv->as,uaddr,-1,NULL,0x000000);
+	GDrawDrawText(pixmap,x,y+mv->as,uaddr,-1,NULL,col);
 
 	if ( index<mv->longmetricscnt ) {
 	    sprintf( cval, "%d", (short) tgetushort(table,4*index) );
@@ -155,7 +169,31 @@ static void metrics_expose(MetricsView *mv,GWindow pixmap,GRect *rect) {
 }
 
 static void metrics_mousemove(MetricsView *mv,int pos) {
-    /*GGadgetPreparePopup(mv->gw,msg);*/
+    int index = (mv->lpos+(pos-EDGE_SPACER)/mv->fh);
+    char buffer[20];
+    static unichar_t ubuf[60];
+
+    if ( mv->font->enc!=NULL && index>=0 && index<mv->font->enc->cnt ) {
+	int val = mv->font->enc->uenc[index];
+	if ( index==0 )
+	    uc_strcpy(ubuf,".notdef");
+	if ( val==0xffff ) {
+	    if ( index==0 )
+		uc_strcpy(ubuf,".notdef");
+	    else if ( index==1 )
+		uc_strcpy(ubuf,".null");
+	    else if ( index==2 )
+		uc_strcpy(ubuf,"nonmarkingreturn");
+	    else
+		uc_strcpy(ubuf,"???");	/* No idea */
+	} else if ( psunicodenames[val]!=NULL ) {
+	    uc_strcpy(ubuf,psunicodenames[val]);
+	} else {
+	    sprintf( buffer, "uni%04X", val );
+	    uc_strcpy(ubuf,buffer);
+	}
+	GGadgetPreparePopup(mv->gw,ubuf);
+    }
 }
 
 static void fllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -322,7 +360,7 @@ static GMenuItem edlist[] = {
     { { (unichar_t *) _STR_Copy, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, 'C', ksm_control, NULL, NULL, NULL, MID_Copy },
     { { (unichar_t *) _STR_Paste, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, 'V', ksm_control, NULL, NULL, NULL, MID_Paste },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_Selectall, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 0, 1, 0, 'A' }, 'A', ksm_control, NULL, NULL, NULL },
+    { { (unichar_t *) _STR_SelectAll, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 0, 1, 0, 'A' }, 'A', ksm_control, NULL, NULL, NULL },
     { NULL }
 };
 
@@ -441,7 +479,7 @@ void metricsCreateEditor(Table *tab,TtfView *tfv) {
     mv->lastwidth = tgetushort(tab,(mv->longmetricscnt-1)*4);
 
     mv->chrlen = numlen = GDrawGetTextWidth(mv->v,num,1,NULL);
-    mv->addrend = 6*numlen + ADDR_SPACER + EDGE_SPACER;
+    mv->addrend = 8*numlen + ADDR_SPACER + EDGE_SPACER;
 
     lh = mv->lheight = mv->longmetricscnt + (tab->newlen-mv->longmetricscnt*4)/2;
     if ( lh>39 ) lh = 39;
