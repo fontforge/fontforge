@@ -122,6 +122,8 @@ struct ttfinfo {
     int prep_length;
     int prop_start;
 
+    int pfed_start;		/* My Table! PfaEdit */
+
     unsigned int *glyph_unicode;
     char **glyph_names;
     struct dup *dups;
@@ -187,7 +189,6 @@ static double long2fixed(int32 val) {
 return( (double) (val>>16) + (mant/65536.0) );
 }
 
-#if 0
 static double get2dot14(FILE *ttf) {
     int32 val = getushort(ttf);
     int mant = val&0x3fff;
@@ -195,7 +196,6 @@ static double get2dot14(FILE *ttf) {
     /*  and the low-order bits unsigned */
 return( (double) ((val<<16)>>(16+14)) + (mant/16384.0) );
 }
-#endif
 
 static int32 filecheck(FILE *file, int start, int len) {
     uint32 sum = 0, chunk;
@@ -214,10 +214,10 @@ return( sum );
 #define CHR(ch1,ch2,ch3,ch4) (((ch1)<<24)|((ch2)<<16)|((ch3)<<8)|(ch4))
 
 static int readttfheader(FILE *ttf, FILE *util, struct ttfinfo *info) {
-    int i;
-    int tag, checksum, offset, length, sr, es, rs; uint32 v;
-    int e_sr, e_es, e_rs;
+    int i, j;
+    int tag, checksum, offset, length, sr, es, rs, v;
     double version;
+    struct tab { uint32 tag, offset, len; } *tables;
 
     v = getlong(ttf);
     if ( v==CHR('t','t','c','f')) {
@@ -239,31 +239,10 @@ return(true);
     rs = getushort(ttf);
     if ( v==CHR('O','T','T','O'))
 	printf( "version='OTTO', " );
-    else if ( v==CHR('t','r','u','e'))
-	printf( "version='true', " );
-    else if ( v==CHR('S','p','l','i')) {
-	fprintf(stderr, "This looks like one of pfaedit's spline font databases, and not a truetype font.\n" );
-exit ( 1 );
-    } else if ( v==CHR('%','!','P','S')) {
-	fprintf(stderr, "This looks like a postscript (pfa) file, and not a truetype font.\n" );
-exit ( 1 );
-    } else if ( v>=0x80000000 && info->numtables==0 ) {
-	fprintf(stderr, "This looks like a postscript (pfb) file, and not a truetype font.\n" );
-exit ( 1 );
-    } else if ( v==CHR('t','y','p','1')) {
-	fprintf(stderr, "This is apple's embedding of a type1 font in a truetype file. I don't know how to parse it. I'd like a copy to look at if you don't mind sending me one... gww@silcom.com\n" );
-exit ( 1 );
-    } else
+    else
 	printf( "version=%g, ", version );
     printf( "numtables=%d, searchRange=%d entrySel=%d rangeshift=%d\n",
 	    info->numtables, sr, es, rs);
-    e_sr = (info->numtables<8?4:info->numtables<16?8:info->numtables<32?16:info->numtables<64?32:64)*16;
-    e_es = (info->numtables<8?2:info->numtables<16?3:info->numtables<32?4:info->numtables<64?5:6);
-    e_rs = info->numtables*16-e_sr;
-    if ( e_sr!=sr || e_es!=es || e_rs!=rs )
-	printf( "!!!! Unexpected values for binsearch header. Based on the number of tables I\n!!!!! expect searchRange=%d (not %d), entrySel=%d (not %d) rangeShift=%d (not %d)\n",
-		e_sr, sr, e_es, es, e_rs, rs );
-    
 /* The one example I have of a ttc file has the file checksum set to: 0xdcd07d3e */
 /*  I don't know if that's magic or not (docs don't say), but it vaguely follows */
 /*  the same pattern as 0xb1b0afba so it might be */
@@ -271,11 +250,13 @@ exit ( 1 );
     printf( "File Checksum =%x (should be 0xb1b0afba), diff=%x\n",
 	    filecheck(util,0,-1), 0xb1b0afba-filecheck(util,0,-1));
 
+    tables = malloc(info->numtables*sizeof(struct tab));
+
     for ( i=0; i<info->numtables; ++i ) {
-	tag = getlong(ttf);
+	tables[i].tag = tag = getlong(ttf);
 	checksum = getlong(ttf);
-	offset = getlong(ttf);
-	length = getlong(ttf);
+	tables[i].offset = offset = getlong(ttf);
+	tables[i].len = length = getlong(ttf);
  printf( "%c%c%c%c checksum=%x actual=%x diff=%x offset=%d len=%d\n",
 	     tag>>24, (tag>>16)&0xff, (tag>>8)&0xff, tag&0xff,
 	     checksum, filecheck(util,offset,length), checksum-filecheck(util,offset,length),
@@ -388,8 +369,23 @@ exit ( 1 );
 	  case CHR('p','r','o','p'):
 	    info->prop_start = offset;
 	  break;
+	  case CHR('P','f','E','d'):
+	    info->pfed_start = offset;
+	  break;
 	}
     }
+
+    for ( i=0; i<info->numtables; ++i ) for ( j=i+1; j<info->numtables; ++j ) {
+	if (( tables[i].offset>tables[j].offset && tables[j].offset+tables[j].len>tables[i].offset) ||
+		(tables[i].offset<tables[j].offset && tables[i].offset+tables[i].len>tables[j].offset )) {
+	    fprintf( stderr, "Tables overlap\n\t%c%c%c%c starting at %d for %d bytes\n\t%c%c%c%c starting at %d for %d bytes\n",
+		    tables[i].tag>>24, (tables[i].tag>>16)&0xff, (tables[i].tag>>8)&0xff, tables[i].tag&0xff,
+		    tables[i].offset, tables[i].len,
+		    tables[j].tag>>24, (tables[j].tag>>16)&0xff, (tables[j].tag>>8)&0xff, tables[j].tag&0xff,
+		    tables[j].offset, tables[j].len );
+	}
+    }
+
     if ( (info->encoding_start!=0 && info->glyph_start==0 && info->head_start!=0 &&
 	    info->hhea_start!=0 && info->hmetrics_start!=0 && info->glyphlocations_start == 0 &&
 	    info->maxp_start!=0 && info->copyright_start!=0 && info->postscript_start!=0 &&
@@ -482,7 +478,7 @@ static void readttfhhead(FILE *ttf, FILE *util, struct ttfinfo *info) {
 }
 
 static char *getttfname(FILE *util, struct ttfinfo *info, int nameid) {
-    int nrec, taboff, stroff, strlen, platform;
+    int nrec, taboff, stroff, strlen;
     int i,j,id;
 
     fseek(util,info->copyright_start,SEEK_SET);
@@ -490,13 +486,13 @@ static char *getttfname(FILE *util, struct ttfinfo *info, int nameid) {
     nrec=getushort(util);
     taboff=getushort(util);
     for ( i=0; i<nrec; ++i ) {
-	platform = getushort(util);
+	/* Platform */ getushort(util);
 	/* plat spec encoding */ getushort(util);
 	/* language */ getushort(util);
 	id=getushort(util);
 	strlen=getushort(util);
 	stroff=getushort(util);
-	if ( platform==1 && id==nameid ) {
+	if ( id==nameid ) {
 	    char *ret = malloc(strlen+2);	/* In case it's unicode */
 	    fseek(util,info->copyright_start+taboff+stroff,SEEK_SET);
 	    for ( j=0; j<strlen; ++j )
@@ -2105,9 +2101,6 @@ static void showfeaturelist(FILE *ttf,int feature_start ) {
 		feature_record_names[i]&0xff);
 	printf( "\t  Feature Parameters Offset=%d\n", getushort(ttf));
 	printf( "\t  Lookup Count = %d\n", lu_cnt = getushort(ttf));
-	if ( i+1<cnt && feature_record_offsets[i]<feature_record_offsets[i+1] &&
-		feature_record_offsets[i]+4+2*lu_cnt>feature_record_offsets[i+1] )
-	    printf( "!!!! Bad lookup count. More lookups than there is space for!!!!\n" );
 	lu_offsets = malloc(lu_cnt*sizeof(uint16));
 	for ( j=0; j<lu_cnt; ++j ) {
 	    printf( "\t   Lookup List Offset[%d] = %d\n", j,
@@ -2247,10 +2240,8 @@ static void gposPairSubTable(FILE *ttf, int which, int stoffset, struct ttfinfo 
 	    printf( "\t    PairCnt=%d\n", pair_cnt = getushort(ttf));
 	    for ( j=0; j<pair_cnt; ++j ) {
 		int glyph2 = getushort(ttf);
-		printf( "\t\tGlyph %d (%s) -> %d (%s)\n", glyphs[i],
-			glyphs[i]>=info->glyph_cnt ? "!!!! Bad Glyph !!!!" : info->glyph_names==NULL? "" : info->glyph_names[glyphs[i]],
-			glyph2,
-			glyph2>=info->glyph_cnt ? "!!!! Bad Glyph !!!!" : info->glyph_names == NULL ? "" : info->glyph_names[glyph2]);
+		printf( "\t\tGlyph %d (%s) -> %d (%s)\n", glyphs[i], info->glyph_names==NULL? "" : info->glyph_names[glyphs[i]],
+			glyph2, info->glyph_names == NULL || glyphs[i]>=info->glyph_cnt? "" : info->glyph_names[glyph2]);
 		readvaluerecord(vf1,ttf,"First");
 		readvaluerecord(vf2,ttf,"Second");
 	    }
@@ -2274,10 +2265,8 @@ static void gsubSingleSubTable(FILE *ttf, int which, int stoffset, struct ttfinf
 	glyphs = showCoverageTable(ttf,stoffset+coverage);
 	printf( "\t   Which means ...\n" );
 	for ( i=0; glyphs[i]!=0xffff; ++i )
-	    printf( "\t\tGlyph %d (%s) -> %d (%s)\n", glyphs[i],
-		    glyphs[i]>=info->glyph_cnt ? "!!! Bad glyph !!!" : info->glyph_names == NULL ? "" : info->glyph_names[glyphs[i]],
-		    (uint16) (glyphs[i]+delta),
-		    (uint16) (glyphs[i]+delta)>=info->glyph_cnt ? "!!! Bad glyph !!!" : info->glyph_names == NULL ? "" : info->glyph_names[(uint16) (glyphs[i]+delta)]);
+	    printf( "\t\tGlyph %d (%s) -> %d (%s)\n", glyphs[i], info->glyph_names == NULL ? "" : info->glyph_names==NULL? "" : info->glyph_names[glyphs[i]],
+		    (uint16) (glyphs[i]+delta), info->glyph_names == NULL ? "" : info->glyph_names[(uint16) (glyphs[i]+delta)]);
     } else {
 	int here;
 	printf( "\t   Count=%d\n", cnt = getushort(ttf));
@@ -2286,10 +2275,8 @@ static void gsubSingleSubTable(FILE *ttf, int which, int stoffset, struct ttfinf
 	fseek(ttf,here,SEEK_SET);
 	for ( i=0; i<cnt; ++i ) {
 	    int val = getushort(ttf);
-	    printf( "\t\tGlyph %d (%s) -> %d (%s)\n", glyphs[i],
-		    glyphs[i]>=info->glyph_cnt ? "!!! Bad glyph !!!" : info->glyph_names == NULL ? "" : info->glyph_names[glyphs[i]],
-		    val,
-		    val >= info->glyph_cnt ? "!!! Bad glyph !!!" : info->glyph_names == NULL ? "" : info->glyph_names[val]);
+	    printf( "\t\tGlyph %d (%s) -> %d (%s)\n", glyphs[i], info->glyph_names==NULL? "" : info->glyph_names[glyphs[i]],
+		    val, info->glyph_names == NULL ? "" : info->glyph_names[val]);
 	}
     }
     
@@ -2310,12 +2297,12 @@ static void gsubMultipleSubTable(FILE *ttf, int which, int stoffset, struct ttfi
     glyphs = showCoverageTable(ttf,stoffset+coverage);
     for ( i=0; i<cnt; ++i ) {
 	fseek(ttf,stoffset+seq_offsets[i],SEEK_SET);
-	printf( "\t    Glyph sequence[%d] for glyph %d (%s)\n", i, glyphs[i], glyphs[i]>=info->glyph_cnt ? "!!!! Bad Glyph !!!!" : info->glyph_names == NULL ? "" : info->glyph_names[glyphs[i]]);
+	printf( "\t    Glyph sequence[%d] for glyph %d (%s)\n", i, glyphs[i], info->glyph_names == NULL ? "" : info->glyph_names[glyphs[i]]);
 	printf( "\t     Count=%d\n", glyph_cnt = getushort(ttf));
-	printf( "\t     Glyph %d (%s) -> ", glyphs[i], glyphs[i]>=info->glyph_cnt ? "!!!! Bad Glyph !!!!" : info->glyph_names == NULL ? "" : info->glyph_names[glyphs[i]] );
+	printf( "\t     Glyph %d (%s) -> ", glyphs[i], info->glyph_names == NULL ? "" : info->glyph_names[glyphs[i]] );
 	for ( j=0; j<glyph_cnt; ++j ) {
 	    int de = getushort(ttf);
-	    printf( "%d (%s) ", de, de>=info->glyph_cnt ? "!!!! Bad Glyph !!!!" : info->glyph_names == NULL ? "" : info->glyph_names[de]);
+	    printf( "%d (%s) ", de, info->glyph_names == NULL ? "" : info->glyph_names[de]);
 	}
 	putchar('\n');
     }
@@ -2337,12 +2324,12 @@ static void gsubAlternateSubTable(FILE *ttf, int which, int stoffset, struct ttf
     glyphs = showCoverageTable(ttf,stoffset+coverage);
     for ( i=0; i<cnt; ++i ) {
 	fseek(ttf,stoffset+seq_offsets[i],SEEK_SET);
-	printf( "\t    Glyph alternates[%d] for glyph %d (%s)\n", i, glyphs[i], glyphs[i]>=info->glyph_cnt ? "!!!! Bad Glyph !!!!" : info->glyph_names == NULL ? "" : info->glyph_names[glyphs[i]]);
+	printf( "\t    Glyph alternates[%d] for glyph %d (%s)\n", i, glyphs[i], info->glyph_names == NULL ? "" : info->glyph_names[glyphs[i]]);
 	printf( "\t     Count=%d\n", glyph_cnt = getushort(ttf));
-	printf( "\t     Glyph %d (%s) -> ", glyphs[i], glyphs[i]>=info->glyph_cnt ? "!!!! Bad Glyph !!!!" : info->glyph_names == NULL ? "" : info->glyph_names[glyphs[i]] );
+	printf( "\t     Glyph %d (%s) -> ", glyphs[i], info->glyph_names == NULL ? "" : info->glyph_names[glyphs[i]] );
 	for ( j=0; j<glyph_cnt; ++j ) {
 	    int de = getushort(ttf);
-	    printf( "%d (%s) | ", de, de>=info->glyph_cnt ? "!!!! Bad Glyph !!!!" : info->glyph_names == NULL ? "" : info->glyph_names[de]);
+	    printf( "%d (%s) | ", de, info->glyph_names == NULL ? "" : info->glyph_names[de]);
 	}
 	putchar('\n');
     }
@@ -2364,7 +2351,7 @@ static void gsubLigatureSubTable(FILE *ttf, int which, int stoffset, struct ttfi
     glyphs = showCoverageTable(ttf,stoffset+coverage);
     for ( i=0; i<cnt; ++i ) {
 	fseek(ttf,stoffset+ls_offsets[i],SEEK_SET);
-	printf( "\t    Ligature Set[%d] for glyph %d %s\n", i, glyphs[i], glyphs[i]>=info->glyph_cnt ? "!!!! Bad Glyph !!!!" : info->glyph_names == NULL ? "" : info->glyph_names[glyphs[i]]);
+	printf( "\t    Ligature Set[%d] for glyph %d %s\n", i, glyphs[i], info->glyph_names == NULL ? "" : info->glyph_names[glyphs[i]]);
 	printf( "\t     Count=%d\n", lig_cnt = getushort(ttf));
 	lig_offsets = malloc(lig_cnt*sizeof(uint16));
 	for ( j=0; j<lig_cnt; ++j )
@@ -2373,11 +2360,11 @@ static void gsubLigatureSubTable(FILE *ttf, int which, int stoffset, struct ttfi
 	    fseek(ttf,stoffset+ls_offsets[i]+lig_offsets[j],SEEK_SET);
 	    gl = getushort(ttf);
 	    printf( "\t     Ligature glyph %d (%s) <- %d (%s) ",
-		    gl, gl>=info->glyph_cnt ? "!!!! Bad Glyph !!!!" : info->glyph_names == NULL ? "" : info->glyph_names[gl], glyphs[i], glyphs[i]>=info->glyph_cnt ? "!!!! Bad Glyph !!!!" : info->glyph_names == NULL ? "" : info->glyph_names[glyphs[i]]);
+		    gl, info->glyph_names == NULL ? "" : info->glyph_names[gl], glyphs[i], info->glyph_names == NULL ? "" : info->glyph_names[glyphs[i]]);
 	    cc = getushort(ttf);
 	    for ( k=1; k<cc; ++k ) {
 		gl = getushort(ttf);
-		printf( "%d (%s) ", gl, gl>=info->glyph_cnt ? "!!!! Bad Glyph !!!!" : info->glyph_names == NULL ? "" : info->glyph_names[gl]);
+		printf( "%d (%s) ", gl, info->glyph_names == NULL ? "" : info->glyph_names[gl]);
 	    }
 	    putchar('\n');
 	}
@@ -2499,7 +2486,7 @@ static void gdefshowglyphclassdef(FILE *ttf,int offset,struct ttfinfo *info) {
     glist = getClassDefTable(ttf,offset,info->glyph_cnt);
     for ( i=0; i<info->glyph_cnt; ++i ) if ( glist[i]>0 && glist[i]<max_class ) {
 	printf( "\t  Glyph %d (%s) is a %s\n", i,
-		i>=info->glyph_cnt ? "!!!! Bad Glyph !!!!" : info->glyph_names!=NULL ? info->glyph_names[i] : "",
+		info->glyph_names!=NULL ? info->glyph_names[i] : "",
 		classes[glist[i]]);
     }
     free(glist);
@@ -2507,8 +2494,7 @@ static void gdefshowglyphclassdef(FILE *ttf,int offset,struct ttfinfo *info) {
 
 static void gdefshowligcaretlist(FILE *ttf,int offset,struct ttfinfo *info) {
     int coverage, cnt, i, j, cc, format;
-    uint16 *lc_offsets, *glyphs, *offsets;
-    uint32 caret_base;
+    uint16 *lc_offsets, *glyphs;
 
     fseek(ttf,offset,SEEK_SET);
     printf( "  Ligature Caret List\n" );
@@ -2521,14 +2507,9 @@ static void gdefshowligcaretlist(FILE *ttf,int offset,struct ttfinfo *info) {
     for ( i=0; i<cnt; ++i ) {
 	fseek(ttf,offset+lc_offsets[i],SEEK_SET);
 	printf("\t    Carets for glyph %d (%s)\n", glyphs[i],
-		glyphs[i]>=info->glyph_cnt ? "!!! Bad Glyph !!!" : info->glyph_names==NULL ? "" : info->glyph_names[glyphs[i]]);
-	caret_base = ftell(ttf);
+		info->glyph_names==NULL || glyphs[i]>=info->glyph_cnt ? "" : info->glyph_names[glyphs[i]]);
 	printf("\t     Count = %d\n", cc = getushort(ttf));
-	offsets = malloc(cc*sizeof(uint16));
-	for ( j=0; j<cc; ++j )
-	    offsets[j] = getushort(ttf);
 	for ( j=0; j<cc; ++j ) {
-	    fseek(ttf,caret_base+offsets[j],SEEK_SET);
 	    format=getushort(ttf);
 	    if ( format==1 ) {
 		printf("\t\tCaret[%d] at %d\n", j, (short) getushort(ttf));
@@ -2560,58 +2541,13 @@ static void readttfgdef(FILE *ttf, FILE *util, struct ttfinfo *info) {
     if ( lco!=0 ) gdefshowligcaretlist(ttf,info->gdef_start+lco,info);
 }
 
-static void readttfkern(FILE *ttf, FILE *util, struct ttfinfo *info) {
-    int version, ntables;
-    int header_size, len, coverage, i;
-
-    fseek(ttf,info->kern_start,SEEK_SET);
-    printf( "\nkern table (at %d)\n", info->kern_start );
-    version = getushort(ttf);
-    if ( version!=0 ) {
-	fseek(ttf,info->kern_start,SEEK_SET);
-	version = getlong(ttf);
-	ntables = getlong(ttf);
-	printf( "\t version=%g (Apple format)\n\t num_tables=%d\n", ((double) version)/65536., ntables);
-	header_size = 8;
-    } else {
-	ntables = getushort(ttf);
-	printf( "\t version=%d (Old style)\n\t num_tables=%d\n", version, ntables);
-	header_size = 6;
-    }
-    for ( i=0; i<ntables; ++i ) {
-	if ( version==0 ) {
-	    printf( "\t Sub-table %d, version=%d\n", i, getushort(ttf));
-	    len = getushort(ttf);
-	    coverage = getushort(ttf);
-	    printf( "\t  len=%d coverage=%x %s%s%s%s format=%d\n", len, coverage,
-		    ( coverage&1 ) ? "Horizontal": "Vertical",
-		    ( coverage&2 ) ? " Minimum" : "",
-		    ( coverage&4 ) ? " cross-stream" : "",
-		    ( coverage&8 ) ? " override" : "",
-		    ( coverage>>8 ));
-	    if ( (coverage&0xff)==2 ) fprintf(stderr, "!!! Format 2 here!!!!\n" );
-	} else {
-	    len = getlong(ttf);
-	    coverage = getushort(ttf);
-	    printf( "\t  len=%d coverage=%x %s%s%s format=%d\n", len, coverage,
-		    ( coverage&0x8000 ) ? "Vertical": "Horizontal",
-		    ( coverage&0x4000 ) ? " cross-stream" : "",
-		    ( coverage&0x2000 ) ? " kern-variation" : "",
-		    ( coverage&0xff ));
-	    if ( (coverage&0xff)==2 ) fprintf(stderr, "!!! Format 2 here!!!!\n" );
-	    printf( "\t  tuple index=%d\n", getushort(ttf));
-	}
-	fseek(ttf,len-header_size,SEEK_CUR);
-    }
-}
-
 static void readttffontdescription(FILE *ttf, FILE *util, struct ttfinfo *info) {
     int n, i;
     uint32 tag, lval;
     double val;
 
     fseek(ttf,info->fdsc_start,SEEK_SET);
-    printf( "\nfdsc table (at %d) (font description)\n", info->fdsc_start );
+    printf( "\nfdsc table (at %d) (feature names)\n", info->fdsc_start );
     printf( "\t version=%g\n", getfixed(ttf));
     n = getushort(ttf);
     printf( "\t number of descriptions=%d\n", n);
@@ -3025,19 +2961,18 @@ static int showbinsearchheader(FILE *ttf) {
 return( cnt );
 }
 
-static void show_applelookuptable(FILE *ttf,struct ttfinfo *info,void (*show)(FILE *,struct ttfinfo *)) {
+static void show_applelookuptable(FILE *ttf,struct ttfinfo *info,uint32 base,void (*show)(FILE *,struct ttfinfo *)) {
     int i, j;
     int format;
     int first, last, cnt, glyph, data_offset;
     uint32 here;
-    uint32 base = ftell(ttf);
 
     printf( "\t Lookup table format=%d ", format = getushort(ttf));
     switch ( format ) {
       case 0:
 	printf( "Simple array\n" );
 	for ( i=0; i<info->glyph_cnt; ++i ) {
-	    printf( "Glyph %d (%s)=", i, i>=info->glyph_cnt ? "!!!! Bad Glyph !!!!" : info->glyph_names!=NULL ? info->glyph_names[i]: "" );
+	    printf( "Glyph %d (%s)=", i, info->glyph_names!=NULL ? info->glyph_names[i]: "" );
 	    show( ttf,info );
 	}
       break;
@@ -3049,10 +2984,10 @@ static void show_applelookuptable(FILE *ttf,struct ttfinfo *info,void (*show)(FI
 	    first = getushort(ttf);
 	    printf( "All glyphs between %d (%s) and %d (%s)=",
 		    first, 
-		    first>=info->glyph_cnt ? "!!!! Bad Glyph !!!!" : info->glyph_names!=NULL ?
+		    info->glyph_names!=NULL && first<info->glyph_cnt ?
 		     info->glyph_names[first]: "",
 		    last, 
-		    last>=info->glyph_cnt ? "!!!! Bad Glyph !!!!" : info->glyph_names!=NULL ?
+		    info->glyph_names!=NULL && last<info->glyph_cnt ?
 		     info->glyph_names[last]: "" );
 	    show( ttf,info );
 	}
@@ -3070,7 +3005,7 @@ static void show_applelookuptable(FILE *ttf,struct ttfinfo *info,void (*show)(FI
 		    i, first, last, data_offset );
 	    for ( j=first; j<=last; ++j ) {
 		printf( "Glyph %d (%s)=", j,
-			j>=info->glyph_cnt ? "!!!! Bad Glyph !!!!" : info->glyph_names!=NULL ?
+			info->glyph_names!=NULL && j<info->glyph_cnt ?
 			 info->glyph_names[j]: "" );
 		show( ttf,info );
 	    }
@@ -3083,7 +3018,7 @@ static void show_applelookuptable(FILE *ttf,struct ttfinfo *info,void (*show)(FI
 	for ( i=0; i<cnt; ++i ) {
 	    glyph = getushort(ttf);
 	    printf( "Glyph %d (%s)=", glyph,
-		    glyph>=info->glyph_cnt ? "!!!! Bad Glyph !!!!" : info->glyph_names!=NULL ?
+		    info->glyph_names!=NULL && glyph<info->glyph_cnt ?
 		     info->glyph_names[glyph]: "" );
 	    show( ttf,info );
 	}
@@ -3094,8 +3029,8 @@ static void show_applelookuptable(FILE *ttf,struct ttfinfo *info,void (*show)(FI
 	cnt = getushort(ttf);
 	for ( i=0; i<cnt; ++i ) {
 	    printf( "Glyph %d (%s)=", i+first,
-		    i+first>=info->glyph_cnt ? "!!!! Bad Glyph !!!!" : info->glyph_names!=NULL ?
-		     info->glyph_names[i+first]: "" );
+		    info->glyph_names!=NULL && i+first<info->glyph_cnt ?
+		     info->glyph_names[i+glyph]: "" );
 	    show( ttf,info );
 	}
       break;
@@ -3127,10 +3062,7 @@ struct statetable {
     uint8 *classes;
     uint8 *state_table;	/* state_table[nstates][nclasses], each entry is an */
 	/* index into the following array */
-    uint16 *state_table2;	/* morx version. States are have 2 byte entries */
-    uint16 *classes2;
     uint8 *transitions;
-    uint32 extra_offsets[3];
 };
 
 static void show_statetable(struct statetable *st, struct ttfinfo *info, FILE *ttf,
@@ -3144,13 +3076,13 @@ static void show_statetable(struct statetable *st, struct ttfinfo *info, FILE *t
     printf( "\t  num entries = %d (derived)\n", st->nentries );
     printf( "\t  entry size = %d (derived)\n", st->entry_size );
     printf( "\t  first classified glyph = %d (%s), glyph_cnt=%d\n", st->first_glyph,
-	    st->first_glyph>=info->glyph_cnt ? "!!!! Bad Glyph !!!!" : info->glyph_names!=NULL?info->glyph_names[st->first_glyph]:"",
+	    info->glyph_names!=NULL?info->glyph_names[st->first_glyph]:"<nameless>",
 	    st->nglyphs);
     if ( info->glyph_names!=NULL ) {
 	for ( i=0; i<st->nglyphs; ++i )
 	    printf( "\t   Glyph %4d -> Class %d (%s)\n",
 		    st->first_glyph+i, st->classes[i],
-		    st->first_glyph+i>=info->glyph_cnt ? "!!!! Bad Glyph !!!!" : info->glyph_names[st->first_glyph+i]);
+		    info->glyph_names[st->first_glyph+i]);
     } else {
 	for ( i=0; i<st->nglyphs; ++i )
 	    printf( "\t   Glyph %4d -> Class %d\n",
@@ -3185,63 +3117,261 @@ static void show_statetable(struct statetable *st, struct ttfinfo *info, FILE *t
     printf( "\n" );
 }
 
-static void show_statetablex(struct statetable *st, struct ttfinfo *info, FILE *ttf,
-	void (*entry_print)(uint8 *entry,struct statetable *st,struct ttfinfo *info,FILE *ttf)) {
-    int i, j;
-    uint8 *pt;
+static struct statetable *read_statetable(FILE *ttf, int ent_extras) {
+    struct statetable *st = calloc(1,sizeof(struct statetable));
+    uint32 here = ftell(ttf);
+    int nclasses, class_off, state_off, entry_off;
+    int state_max, ent_max, old_state_max, old_ent_max;
+    int i, j, ent, new_state, ent_size;
 
-    printf( "\t State table\n" );
-    printf( "\t  num classes = %d\n", st->nclasses );
-    printf( "\t  num states = %d (derived)\n", st->nstates );
-    printf( "\t  num entries = %d (derived)\n", st->nentries );
-    printf( "\t  entry size = %d (derived)\n", st->entry_size );
-    for ( i=0; i<info->glyph_cnt ; ++i ) if ( st->classes2[i]!=1 ) {
-	if ( info->glyph_names!=NULL ) {
-	    printf( "\t   Glyph %4d -> Class %d (%s)\n",
-		    i, st->classes2[i],
-		    i>=info->glyph_cnt ? "!!!! Bad Glyph !!!!" : info->glyph_names[i]);
-	} else {
-	    printf( "\t   Glyph %4d -> Class %d\n",
-		    i, st->classes2[i] );
+    st->state_start = here;
+
+    nclasses = getushort(ttf);	/* Number of bytes per state in state subtable, equal to number of classes */
+    class_off = getushort(ttf);
+    state_off = getushort(ttf);
+    entry_off = getushort(ttf);
+    st->nclasses = nclasses;
+    st->state_offset = state_off;
+
+	/* parse class subtable */
+    fseek(ttf,here+class_off,SEEK_SET);
+    st->first_glyph = getushort(ttf);
+    st->nglyphs = getushort(ttf);
+    st->classes = malloc(st->nglyphs);
+    fread(st->classes,1,st->nglyphs,ttf);
+
+    /* The size of an entry is variable. There are 2 short fields at the begin-*/
+    /*  ning of all entries. There may be some number of shorts following these*/
+    /*  used for indexing special tables. */
+    ent_size = 4 + 2*ent_extras;
+    st->entry_size = ent_size;
+    st->entry_extras = ent_extras;
+
+    /* Apple does not provide a way of figuring out the size of either of the */
+    /*  state or entry tables, so we must parse both as we go and try to work */
+    /*  out the maximum values... */
+    /* There are always at least 2 states defined. Parse them and find what */
+    /*  is the biggest entry they use, then parse those entries and find what */
+    /*  is the biggest state they use, and then repeat until we don't find any*/
+    /*  more states or entries */
+    old_state_max = 0; old_ent_max = 0;
+    state_max = 2; ent_max = 0;
+    while ( old_state_max!=state_max ) {
+	i = old_state_max*nclasses;
+	fseek(ttf,here+state_off+i,SEEK_SET);
+	old_state_max = state_max;
+	for ( ; i<state_max*nclasses; ++i ) {
+	    ent = getc(ttf);
+	    if ( ent+1 > ent_max )
+		ent_max = ent+1;
+	}
+	if ( ent_max==old_ent_max )		/* Nothing more */
+    break;
+	fseek(ttf,here+entry_off+old_ent_max*ent_size,SEEK_SET);
+	i = old_ent_max;
+	old_ent_max = ent_max;
+	for ( ; i<ent_max; ++i ) {
+	    new_state = (getushort(ttf)-state_off)/nclasses;
+	    /* flags = */ getushort(ttf);
+	    for ( j=0; j<ent_extras; ++j )
+		/* glyphOffsets[j] = */ getushort(ttf);
+	    if ( new_state+1>state_max )
+		state_max = new_state+1;
 	}
     }
 
-    /* Mapping from state x class => transition entry */
-    printf( "Classes:  " );
-    for ( j=0; j<st->nclasses; ++j )
-	printf( "%4d", j );
-    printf( "\n" );
-    for ( i=0; i<st->nstates; ++i ) {
-	printf( "State %2d: ", i );
-	for ( j=0; j<st->nclasses; ++j )
-	    printf( "%4d", st->state_table2[i*st->nclasses+j]);
-	printf( "\n" );
-    }
+    st->nstates = state_max;
+    st->nentries = ent_max;
+    
+    fseek(ttf,here+state_off,SEEK_SET);
+    /* an array of arrays of state transitions, each represented by one byte */
+    /*  which is an index into the Entry subtable, which comes next. */
+    /* One dimension is the number of states, and the other the */
+    /*  number of classes (classes vary faster than states) */
+    /* The first two states are predefined, 0 is start of text, 1 start of line*/
+    st->state_table = malloc(st->nstates*st->nclasses);
+    fread(st->state_table,1,st->nstates*st->nclasses,ttf);
 
-    /* Transition entries */
-    for ( i=0; i<st->nentries; ++i ) {
-	pt = st->transitions + i*st->entry_size;
-	printf( "\t  Transition Entry %d\n", i );
-	printf( "\t   New State %d\n", ((pt[0]<<8)|pt[1]) );
-	if ( entry_print!=NULL )
-	    entry_print(pt,st,info,ttf);
-	else {
-	    printf( "\t   Flags %04x\n", (pt[2]<<8)|pt[3] );
-	    for ( j=0; j<st->entry_extras; ++j )
-		printf( "\t   GlyphOffset[%d] = %d\n", j, (pt[2*j+4]<<8)|pt[2*j+5]);
-	}
-    }
-    printf( "\n" );
+	/* parse the entry subtable */
+    fseek(ttf,here+entry_off,SEEK_SET);
+    st->transitions = malloc(st->nentries*st->entry_size);
+    fread(st->transitions,1,st->nentries*st->entry_size,ttf);
+return( st );
 }
 
-static void readttf_applelookup(FILE *ttf,struct ttfinfo *info,
+static void free_statetable(struct statetable *st) {
+    if ( st==NULL )
+return;
+    free( st->state_table );
+    free( st->transitions );
+    free( st->classes );
+    free( st );
+}
+
+static void show_indicflags(uint8 *entry,struct statetable *st,struct ttfinfo *info,FILE *ttf) {
+    int flags = (entry[2]<<8)|entry[3];
+
+    printf( "\t   Flags %04x ", flags );
+    if ( flags&0x8000 )
+	printf( "Mark First | ");
+    if ( flags&0x2000 )
+	printf( "Mark Last | " );
+    if ( flags&0x4000 )
+	printf( "Don't Advance Glyph " );
+    else
+	printf( "Advance Glyph       " );
+    switch( flags&0xf ) {
+      case 0 :
+	printf( "No action\n" );
+      break;
+      case 1 :
+	printf( "Ax => xA\n" );
+      break;
+      case 2 :
+	printf( "xD => Dx\n" );
+      break;
+      case 3 :
+	printf( "AxD => DxA\n" );
+      break;
+      case 4 :
+	printf( "ABx => xAB\n" );
+      break;
+      case 5 :
+	printf( "ABx => xBA\n" );
+      break;
+      case 6 :
+	printf( "xCD => CDx\n" );
+      break;
+      case 7 :
+	printf( "xCD => DCx\n" );
+      break;
+      case 8 :
+	printf( "AxCD => CDxA\n" );
+      break;
+      case 9 :
+	printf( "AxCD => DCxA\n" );
+      break;
+      case 10 :
+	printf( "ABxD => DxAB\n" );
+      break;
+      case 11 :
+	printf( "ABxD => DxBA\n" );
+      break;
+      case 12 :
+	printf( "ABxCD => CDxAB\n" );
+      break;
+      case 13 :
+	printf( "ABxCD => CDxBA\n" );
+      break;
+      case 14 :
+	printf( "ABxCD => DCxAB\n" );
+      break;
+      case 15 :
+	printf( "ABxCD => DCxBA\n" );
+      break;
+    }
+}
+
+static void readttfmort_indic(FILE *ttf, FILE *util, struct ttfinfo *info, int stab_len) {
+    struct statetable *st;
+
+    st = read_statetable(ttf,0);
+    show_statetable(st, info, ttf, show_indicflags);
+    free_statetable(st);
+}
+
+static void show_contextflags(uint8 *entry,struct statetable *st,struct ttfinfo *info, FILE *ttf) {
+    int flags = (entry[2]<<8)|entry[3];
+    int mark_offset = (entry[4]<<8)|entry[5];
+    int cur_offset = (entry[6]<<8)|entry[7];
+    int i, sub;
+
+    printf( "\t   Flags %04x ", flags );
+    if ( flags&0x8000 )
+	printf( "Set Mark | ");
+    if ( flags&0x4000 )
+	printf( "Don't Advance Glyph\n" );
+    else
+	printf( "Advance Glyph\n" );
+/* I hope this is right, docs leave much to the imagination */
+/* I am printing stuff out as though I had each per-glyph table had the */
+/*  full range of classified glyphs. They don't, of course, but there is */
+/*  no way to tell what entries are appropriate without analizing the state */
+/*  machine and figuring out just which glyphs can get us here. Way too hard */
+    printf( "\t   Offset to substitution table for marked glyph: %d\n", mark_offset );
+    if ( mark_offset!=0 ) {
+	fseek(ttf,2*(mark_offset+st->first_glyph)+st->state_start,SEEK_SET);
+	for ( i=0; i<st->nglyphs; ++i ) {
+	    printf( "\t    Glyph %d ", st->first_glyph+i );
+	    if ( info->glyph_names!=NULL )
+		printf( "%s ", info->glyph_names[st->first_glyph+i]);
+	    sub = getushort(ttf);
+	    printf( "-> Glyph %d ", sub );
+	    if ( info->glyph_names!=NULL )
+		printf( "%s ", info->glyph_names[sub]);
+	}
+    }
+    printf( "\t   Offset to substitution table for current glyph: %d\n", cur_offset );
+    if ( cur_offset!=0 ) {
+	fseek(ttf,2*(cur_offset+st->first_glyph)+st->state_start,SEEK_SET);
+	for ( i=0; i<st->nglyphs; ++i ) {
+	    printf( "\t    Glyph %d ", st->first_glyph+i );
+	    if ( info->glyph_names!=NULL )
+		printf( "%s ", info->glyph_names[st->first_glyph+i]);
+	    sub = getushort(ttf);
+	    printf( "-> Glyph %d ", sub );
+	    if ( info->glyph_names!=NULL )
+		printf( "%s ", info->glyph_names[sub]);
+	}
+    }
+}
+
+static void readttfmort_context(FILE *ttf, FILE *util, struct ttfinfo *info, int stab_len) {
+    struct statetable *st;
+
+    st = read_statetable(ttf,2);
+    show_statetable(st, info, ttf, show_contextflags);
+    free_statetable(st);
+}
+
+static void show_ligflags(uint8 *entry,struct statetable *st,struct ttfinfo *info, FILE *ttf) {
+    int flags = (entry[2]<<8)|entry[3];
+    uint32 val;
+
+    printf( "\t   Flags %04x ", flags );
+    if ( flags&0x8000 )
+	printf( "Set Component | ");
+    if ( flags&0x4000 )
+	printf( "Don't Advance Glyph " );
+    else
+	printf( "Advance Glyph       " );
+    printf( "Offset=%d\n", flags&0x3fff );
+    if ( (flags&0x3fff)==0 )
+return;
+
+    fseek(ttf,st->state_start+(flags&0x3fff),SEEK_SET);
+    do {
+	val = getlong(ttf);
+	printf( "\t    lig action %08x %s offset=%d\n", val,
+		(val&0x80000000)?"last (& store)": 
+		(val&0x40000000)?"store": "delete",
+		(((int32)val)<<2)>>2 );		/* Sign extend */
+	/* I think we take 2 * (glyph_id-st->first_glyph + offset) + state_start */
+	/*  we get the ?ushort? at this file address and we add it to an */
+	/*  accumulated total. When we finally get to a store (or last) */
+	/*  we take this accumulated total and ?look it up in the ligature */
+	/*  table? to get a glyph index which is the ligature itself. */
+	/* Maybe. */
+    } while ( !(val&0x80000000) );
+}
+
+static void readttf_applelookup(FILE *ttf,struct ttfinfo *info,uint32 base,
 	void (*apply_values)(struct ttfinfo *info, int gfirst, int glast,FILE *ttf),
 	void (*apply_value)(struct ttfinfo *info, int gfirst, int glast,FILE *ttf),
 	void (*apply_default)(struct ttfinfo *info, int gfirst, int glast,void *def),
 	void *def) {
     int format, i, first, last, data_off, cnt, prev;
     uint32 here;
-    uint32 base = ftell(ttf);
 
     switch ( format = getushort(ttf)) {
       case 0:	/* Simple array */
@@ -3313,6 +3443,21 @@ static void readttf_applelookup(FILE *ttf,struct ttfinfo *info,
     }
 }
 
+static void readttfmort_lig(FILE *ttf, FILE *util, struct ttfinfo *info, int stab_len) {
+    struct statetable *st;
+
+    st = read_statetable(ttf,0);
+    show_statetable(st, info, ttf, show_ligflags);
+    free_statetable(st);
+}
+
+static void mort_noncontextualsubs_glyph( FILE *ttf, struct ttfinfo *info ) {
+    int gnum = getushort(ttf);
+
+    printf( " Glyph %d (%s)\n", gnum, info->glyph_names!=NULL && gnum<=info->glyph_cnt ?
+	    info->glyph_names[gnum]: "" );
+}
+
 static void mortclass_apply_values(struct ttfinfo *info, int gfirst, int glast,FILE *ttf) {
     int i;
 
@@ -3330,378 +3475,6 @@ static void mortclass_apply_value(struct ttfinfo *info, int gfirst, int glast,FI
 	info->morx_classes[i] = class;
 }
 
-static struct statetable *read_statetable(FILE *ttf, int ent_extras, int ismorx, struct ttfinfo *info) {
-    struct statetable *st = calloc(1,sizeof(struct statetable));
-    uint32 here = ftell(ttf);
-    int nclasses, class_off, state_off, entry_off;
-    int state_max, ent_max, old_state_max, old_ent_max;
-    int i, j, ent, new_state, ent_size;
-
-    st->state_start = here;
-
-    if ( ismorx ) {
-	nclasses = getlong(ttf);
-	class_off = getlong(ttf);
-	state_off = getlong(ttf);
-	entry_off = getlong(ttf);
-	st->extra_offsets[0] = getlong(ttf);
-	st->extra_offsets[1] = getlong(ttf);
-	st->extra_offsets[2] = getlong(ttf);
-    } else {
-	nclasses = getushort(ttf);	/* Number of bytes per state in state subtable, equal to number of classes */
-	class_off = getushort(ttf);
-	state_off = getushort(ttf);
-	entry_off = getushort(ttf);
-	st->extra_offsets[0] = getushort(ttf);
-	st->extra_offsets[1] = getushort(ttf);
-	st->extra_offsets[2] = getushort(ttf);
-    }
-    st->nclasses = nclasses;
-    st->state_offset = state_off;
-
-	/* parse class subtable */
-    fseek(ttf,here+class_off,SEEK_SET);
-    if ( ismorx ) {
-	st->classes2 = info->morx_classes = malloc(info->glyph_cnt*sizeof(uint16));
-	for ( i=0; i<info->glyph_cnt; ++i )
-	    st->classes2[i] = 1;			/* Out of bounds */
-	readttf_applelookup(ttf,info,
-		mortclass_apply_values,mortclass_apply_value,NULL,NULL);
-    } else {
-	st->first_glyph = getushort(ttf);
-	st->nglyphs = getushort(ttf);
-	st->classes = malloc(st->nglyphs);
-	fread(st->classes,1,st->nglyphs,ttf);
-    }
-
-    /* The size of an entry is variable. There are 2 short fields at the begin-*/
-    /*  ning of all entries. There may be some number of shorts following these*/
-    /*  used for indexing special tables. */
-    ent_size = 4 + 2*ent_extras;
-    st->entry_size = ent_size;
-    st->entry_extras = ent_extras;
-
-    /* Apple does not provide a way of figuring out the size of either of the */
-    /*  state or entry tables, so we must parse both as we go and try to work */
-    /*  out the maximum values... */
-    /* There are always at least 2 states defined. Parse them and find what */
-    /*  is the biggest entry they use, then parse those entries and find what */
-    /*  is the biggest state they use, and then repeat until we don't find any*/
-    /*  more states or entries */
-    old_state_max = 0; old_ent_max = 0;
-    state_max = 2; ent_max = 0;
-    while ( old_state_max!=state_max ) {
-	i = old_state_max*nclasses;
-	fseek(ttf,here+state_off+(ismorx?i*sizeof(uint16):i),SEEK_SET);
-	old_state_max = state_max;
-	for ( ; i<state_max*nclasses; ++i ) {
-	    ent = ismorx ? getushort(ttf) : getc(ttf);
-	    if ( ent+1 > ent_max )
-		ent_max = ent+1;
-	}
-	if ( ent_max==old_ent_max )		/* Nothing more */
-    break;
-	fseek(ttf,here+entry_off+old_ent_max*ent_size,SEEK_SET);
-	i = old_ent_max;
-	old_ent_max = ent_max;
-	for ( ; i<ent_max; ++i ) {
-	    new_state = getushort(ttf);
-	    if ( !ismorx )
-		new_state = (new_state-state_off)/nclasses;
-	    /* flags = */ getushort(ttf);
-	    for ( j=0; j<ent_extras; ++j )
-		/* glyphOffsets[j] = */ getushort(ttf);
-	    if ( new_state+1>state_max )
-		state_max = new_state+1;
-	}
-    }
-
-    st->nstates = state_max;
-    st->nentries = ent_max;
-    
-    fseek(ttf,here+state_off,SEEK_SET);
-    /* an array of arrays of state transitions, each represented by one byte */
-    /*  which is an index into the Entry subtable, which comes next. */
-    /* One dimension is the number of states, and the other the */
-    /*  number of classes (classes vary faster than states) */
-    /* The first two states are predefined, 0 is start of text, 1 start of line*/
-    if ( ismorx ) {
-	st->state_table2 = malloc(st->nstates*st->nclasses*sizeof(uint16));
-	for ( i=0; i<st->nstates*st->nclasses; ++i )
-	    st->state_table2[i] = getushort(ttf);
-    } else {
-	st->state_table = malloc(st->nstates*st->nclasses);
-	fread(st->state_table,1,st->nstates*st->nclasses,ttf);
-    }
-
-	/* parse the entry subtable */
-    fseek(ttf,here+entry_off,SEEK_SET);
-    st->transitions = malloc(st->nentries*st->entry_size);
-    fread(st->transitions,1,st->nentries*st->entry_size,ttf);
-return( st );
-}
-
-static void free_statetable(struct statetable *st) {
-    if ( st==NULL )
-return;
-    free( st->state_table );
-    free( st->state_table2 );
-    free( st->transitions );
-    free( st->classes );
-    free( st->classes2 );
-    free( st );
-}
-
-static void show_indicflags(uint8 *entry,struct statetable *st,struct ttfinfo *info,FILE *ttf) {
-    int flags = (entry[2]<<8)|entry[3];
-
-    printf( "\t   Flags %04x ", flags );
-    if ( flags&0x8000 )
-	printf( "Mark First | ");
-    if ( flags&0x2000 )
-	printf( "Mark Last | " );
-    if ( flags&0x4000 )
-	printf( "Don't Advance Glyph " );
-    else
-	printf( "Advance Glyph       " );
-    switch( flags&0xf ) {
-      case 0 :
-	printf( "No action\n" );
-      break;
-      case 1 :
-	printf( "Ax => xA\n" );
-      break;
-      case 2 :
-	printf( "xD => Dx\n" );
-      break;
-      case 3 :
-	printf( "AxD => DxA\n" );
-      break;
-      case 4 :
-	printf( "ABx => xAB\n" );
-      break;
-      case 5 :
-	printf( "ABx => xBA\n" );
-      break;
-      case 6 :
-	printf( "xCD => CDx\n" );
-      break;
-      case 7 :
-	printf( "xCD => DCx\n" );
-      break;
-      case 8 :
-	printf( "AxCD => CDxA\n" );
-      break;
-      case 9 :
-	printf( "AxCD => DCxA\n" );
-      break;
-      case 10 :
-	printf( "ABxD => DxAB\n" );
-      break;
-      case 11 :
-	printf( "ABxD => DxBA\n" );
-      break;
-      case 12 :
-	printf( "ABxCD => CDxAB\n" );
-      break;
-      case 13 :
-	printf( "ABxCD => CDxBA\n" );
-      break;
-      case 14 :
-	printf( "ABxCD => DCxAB\n" );
-      break;
-      case 15 :
-	printf( "ABxCD => DCxBA\n" );
-      break;
-    }
-}
-
-static void readttfmort_indic(FILE *ttf, FILE *util, struct ttfinfo *info, int stab_len) {
-    struct statetable *st;
-
-    st = read_statetable(ttf,0,false,info);
-    show_statetable(st, info, ttf, show_indicflags);
-    free_statetable(st);
-}
-
-static void readttfmorx_indic(FILE *ttf, FILE *util, struct ttfinfo *info, int stab_len) {
-    struct statetable *st;
-
-    st = read_statetable(ttf,2,true,info);
-    show_statetablex(st, info, ttf, show_indicflags);
-    free_statetable(st);
-}
-
-static void show_contextflags(uint8 *entry,struct statetable *st,struct ttfinfo *info, FILE *ttf) {
-    int flags = (entry[2]<<8)|entry[3];
-/* the docs say this is unsigned, but that appears not to be the case */
-    int mark_offset = (int16) ((entry[4]<<8)|entry[5]);
-    int cur_offset = (int16) ((entry[6]<<8)|entry[7]);
-    int i, sub;
-
-    printf( "\t   Flags %04x ", flags );
-    if ( flags&0x8000 )
-	printf( "Set Mark | ");
-    if ( flags&0x4000 )
-	printf( "Don't Advance Glyph\n" );
-    else
-	printf( "Advance Glyph\n" );
-/* I hope this is right, docs leave much to the imagination */
-/* (apple does not document the "per-glyph substitution table" used by the */
-/*  contextual glyph substitution sub-table. */
-/* My initial assumption is that there is essentially an big array with one */
-/*  entry for every glyph indicating what glyph it will be replaced with */
-/*  Since not all glyphs would be valid the tables are probably trimmed and */
-/*  the offsets proporting to point to it actually point to garbarge until */
-/*  adjusted by the appropriate glyph indeces */
-/* user will need to look at the table carefully to try and guess what is */
-/*  meaningful and what isn't */
-    if ( mark_offset!=0 || cur_offset!=0 ) {
-	printf( "!!!! Caveat !!!! I am printing out entries that look as though they might\n" );
-	printf( "!!!! be meaningful, but that is no guarantee. Examine them carefully to\n" );
-	printf( "!!!! find those sections which are actually used.\n" );
-    }
-    printf( "\t   Offset to substitution table for marked glyph: %d\n", mark_offset );
-    if ( mark_offset!=0 ) {
-	fseek(ttf,2*(mark_offset+st->first_glyph)+st->state_start,SEEK_SET);
-	for ( i=0; i<st->nglyphs; ++i ) {
-	    sub = getushort(ttf);
-	    if ( sub==0 || (sub>=info->glyph_cnt && sub!=0xffff) )
-	continue;
-	    printf( "\t    Glyph %d ", st->first_glyph+i );
-	    if ( st->first_glyph+i>=info->glyph_cnt )
-		printf( "!!! Bad Glyph !!! " );
-	    else if ( info->glyph_names!=NULL )
-		printf( "%s ", info->glyph_names[st->first_glyph+i]);
-	    if ( sub==0xffff )
-		printf( "-> Deleted" );
-	    else {
-		printf( "-> Glyph %d ", sub );
-		if ( sub>=info->glyph_cnt )
-		    printf( "!!! Bad Glyph !!! " );
-		else if ( info->glyph_names!=NULL )
-		    printf( "%s", info->glyph_names[sub]);
-	    }
-	    putchar('\n');
-	}
-    }
-    printf( "\t   Offset to substitution table for current glyph: %d\n", cur_offset );
-    if ( cur_offset!=0 ) {
-	fseek(ttf,2*(cur_offset+st->first_glyph)+st->state_start,SEEK_SET);
-	for ( i=0; i<st->nglyphs; ++i ) {
-	    sub = getushort(ttf);
-	    if ( sub==0 || (sub>=info->glyph_cnt && sub!=0xffff) )
-	continue;
-	    printf( "\t    Glyph %d ", st->first_glyph+i );
-	    if ( st->first_glyph+i>=info->glyph_cnt )
-		printf( "!!! Bad Glyph !!! " );
-	    else if ( info->glyph_names!=NULL )
-		printf( "%s ", info->glyph_names[st->first_glyph+i]);
-	    if ( sub==0xffff )
-		printf( "-> Deleted" );
-	    else {
-		printf( "-> Glyph %d ", sub );
-		if ( sub>=info->glyph_cnt )
-		    printf( "!!! Bad Glyph !!! " );
-		else if ( info->glyph_names!=NULL )
-		    printf( "%s", info->glyph_names[sub]);
-	    }
-	    putchar('\n');
-	}
-    }
-}
-
-static void readttfmort_context(FILE *ttf, FILE *util, struct ttfinfo *info, int stab_len) {
-    struct statetable *st;
-
-    st = read_statetable(ttf,2,false,info);
-    show_statetable(st, info, ttf, show_contextflags);
-    free_statetable(st);
-}
-
-static void mort_noncontextualsubs_glyph( FILE *ttf, struct ttfinfo *info ) {
-    int gnum = getushort(ttf);
-
-    printf( " Glyph %d (%s)\n", gnum,
-	    gnum>=info->glyph_cnt ? "!!!! Bad Glyph !!!!" : info->glyph_names!=NULL ?
-	    info->glyph_names[gnum]: "" );
-}
-
-static void show_contextflagsx(uint8 *entry,struct statetable *st,struct ttfinfo *info, FILE *ttf) {
-    int flags = (entry[2]<<8)|entry[3];
-    int mark_index = ((entry[4]<<8)|entry[5]);
-    int cur_index = ((entry[6]<<8)|entry[7]);
-
-    printf( "\t   Flags %04x ", flags );
-    if ( flags&0x8000 )
-	printf( "Set Mark | ");
-    if ( flags&0x4000 )
-	printf( "Don't Advance Glyph\n" );
-    else
-	printf( "Advance Glyph\n" );
-    printf( "\t   Index to substitution table for marked glyph: %d\n", mark_index );
-    if ( mark_index!=0xffff ) {
-	fseek(ttf,st->state_start+st->extra_offsets[0]+4*mark_index,SEEK_SET);
-	fseek(ttf,st->state_start+st->extra_offsets[0]+getlong(ttf),SEEK_SET);
-	show_applelookuptable(ttf,info,
-		mort_noncontextualsubs_glyph);
-    }
-    printf( "\t   Offset to substitution table for current glyph: %d\n", cur_index );
-    if ( cur_index!=0xffff ) {
-	fseek(ttf,st->state_start+st->extra_offsets[0]+4*cur_index,SEEK_SET);
-	fseek(ttf,st->state_start+st->extra_offsets[0]+getlong(ttf),SEEK_SET);
-	show_applelookuptable(ttf,info,
-		mort_noncontextualsubs_glyph);
-    }
-}
-
-static void readttfmorx_context(FILE *ttf, FILE *util, struct ttfinfo *info, int stab_len) {
-    struct statetable *st;
-
-    st = read_statetable(ttf,2,true,info);
-    show_statetablex(st, info, ttf, show_contextflagsx);
-    free_statetable(st);
-}
-
-static void show_ligflags(uint8 *entry,struct statetable *st,struct ttfinfo *info, FILE *ttf) {
-    int flags = (entry[2]<<8)|entry[3];
-    uint32 val;
-
-    printf( "\t   Flags %04x ", flags );
-    if ( flags&0x8000 )
-	printf( "Set Component | ");
-    if ( flags&0x4000 )
-	printf( "Don't Advance Glyph " );
-    else
-	printf( "Advance Glyph       " );
-    printf( "Offset=%d\n", flags&0x3fff );
-    if ( (flags&0x3fff)==0 )
-return;
-
-    fseek(ttf,st->state_start+(flags&0x3fff),SEEK_SET);
-    do {
-	val = getlong(ttf);
-	printf( "\t    lig action %08x %s offset=%d\n", val,
-		(val&0x80000000)?"last (& store)": 
-		(val&0x40000000)?"store": "delete",
-		(((int32)val)<<2)>>2 );		/* Sign extend */
-	/* I think we take 2 * (glyph_id-st->first_glyph + offset) + state_start */
-	/*  we get the ?ushort? at this file address and we add it to an */
-	/*  accumulated total. When we finally get to a store (or last) */
-	/*  we take this accumulated total and ?look it up in the ligature */
-	/*  table? to get a glyph index which is the ligature itself. */
-	/* Maybe. */
-    } while ( !(val&0x80000000) );
-}
-
-static void readttfmort_lig(FILE *ttf, FILE *util, struct ttfinfo *info, int stab_len) {
-    struct statetable *st;
-
-    st = read_statetable(ttf,0,false,info);
-    show_statetable(st, info, ttf, show_ligflags);
-    free_statetable(st);
-}
-
 static int32 memlong(uint8 *data,int offset) {
     int ch1 = data[offset], ch2 = data[offset+1], ch3 = data[offset+2], ch4 = data[offset+3];
 return( (ch1<<24)|(ch2<<16)|(ch3<<8)|ch4 );
@@ -3715,7 +3488,6 @@ return( (ch1<<8)|ch2 );
 #define MAX_LIG_COMP	16
 struct statemachine {
     uint8 *data;
-    int length;
     uint32 nClasses;
     uint32 classOffset, stateOffset, entryOffset, ligActOff, compOff, ligOff;
     uint16 *classes;
@@ -3731,7 +3503,7 @@ static void mort_figure_ligatures(struct statemachine *sm, int lcp, int off, int
     uint32 lig;
     int i, j, lig_glyph;
 
-    if ( lcp<0 || off+3>sm->length )
+    if ( lcp<0 )
 return;
 
     lig = memlong(sm->data,off);
@@ -3741,26 +3513,21 @@ return;
 	sm->lig_comp_glyphs[lcp] = i;
 	lig_offset += memushort(sm->data,2*( ((((int32) lig)<<2)>>2) + i ) );
 	if ( lig&0xc0000000 ) {
-	    if ( lig_offset+1 > sm->length ) {
-		fprintf( stderr, "Invalid ligature offset\n" );
-    break;
-	    }
 	    lig_glyph = memushort(sm->data,lig_offset);
 	    if ( lig_glyph>=sm->info->glyph_cnt ) {
-		fprintf(stderr, "Attempt to make a ligature for glyph %d out of ", lig_glyph );
+		fprintf(stderr, "Attempt to make a ligature for glyph %d out of " );
 		for ( j=lcp; j<sm->lcp; ++j )
 		    fprintf(stderr,"%d ",sm->lig_comp_glyphs[j]);
 		fprintf(stderr,"\n");
 	    } else {
 		printf( "\t\tGlyph %d (%s) is a ligature of:\n",
-			lig_glyph, lig_glyph>=sm->info->glyph_cnt ? "!!!! Bad Glyph !!!!" : sm->info->glyph_names!=NULL ? sm->info->glyph_names[lig_glyph] : "" );
+			lig_glyph, sm->info->glyph_names!=NULL ? sm->info->glyph_names[lig_glyph] : "" );
 		for ( j=lcp; j<sm->lcp; ++j )
 		    printf( "\t\t\t%d (%s)\n", sm->lig_comp_glyphs[j],
-			    sm->lig_comp_glyphs[j]>=sm->info->glyph_cnt ? "!!!! Bad Glyph !!!!" : sm->info->glyph_names!=NULL ? sm->info->glyph_names[sm->lig_comp_glyphs[j]] : "" );
+			    sm->info->glyph_names!=NULL ? sm->info->glyph_names[sm->lig_comp_glyphs[j]] : "" );
 	    }
 	} else
 	    mort_figure_ligatures(sm,lcp-1,off,lig_offset);
-	lig_offset -= memushort(sm->data,2*( ((((int32) lig)<<2)>>2) + i ) );
     }
 }
 
@@ -3794,7 +3561,7 @@ static void morx_figure_ligatures(struct statemachine *sm, int lcp, int ligindex
     uint32 lig;
     int i, j, lig_glyph;
 
-    if ( lcp<0 || sm->ligActOff+4*ligindex+3>sm->length )
+    if ( lcp<0 )
 return;
 
     lig = memlong(sm->data,sm->ligActOff+4*ligindex);
@@ -3804,10 +3571,6 @@ return;
 	sm->lig_comp_glyphs[lcp] = i;
 	lig_offset += memushort(sm->data,sm->compOff + 2*( ((((int32) lig)<<2)>>2) + i ) );
 	if ( lig&0xc0000000 ) {
-	    if ( sm->ligOff+2*lig_offset+1 > sm->length ) {
-		fprintf( stderr, "Invalid ligature offset\n" );
-    break;
-	    }
 	    lig_glyph = memushort(sm->data,sm->ligOff+2*lig_offset);
 	    if ( lig_glyph>=sm->info->glyph_cnt ) {
 		fprintf(stderr, "Attempt to make a ligature for glyph %d out of " );
@@ -3816,14 +3579,13 @@ return;
 		fprintf(stderr,"\n");
 	    } else {
 		printf( "\t\tGlyph %d (%s) is a ligature of:\n",
-			lig_glyph, lig_glyph>=sm->info->glyph_cnt ? "!!!! Bad Glyph !!!!" : sm->info->glyph_names!=NULL ? sm->info->glyph_names[lig_glyph] : "" );
+			lig_glyph, sm->info->glyph_names!=NULL ? sm->info->glyph_names[lig_glyph] : "" );
 		for ( j=lcp; j<sm->lcp; ++j )
 		    printf( "\t\t\t%d (%s)\n", sm->lig_comp_glyphs[j],
-			    sm->lig_comp_glyphs[j]>=sm->info->glyph_cnt ? "!!!! Bad Glyph !!!!" : sm->info->glyph_names!=NULL ? sm->info->glyph_names[sm->lig_comp_glyphs[j]] : "" );
+			    sm->info->glyph_names!=NULL ? sm->info->glyph_names[sm->lig_comp_glyphs[j]] : "" );
 	    }
 	} else
 	    morx_figure_ligatures(sm,lcp-1,ligindex,lig_offset);
-	lig_offset -= memushort(sm->data,sm->compOff + 2*( ((((int32) lig)<<2)>>2) + i ) );
     }
 }
 
@@ -3863,7 +3625,6 @@ static void readttf_mortx_lig(FILE *ttf,struct ttfinfo *info,int ismorx,uint32 b
     here = ftell(ttf);
     length -= here-base;
     sm.data = malloc(length);
-    sm.length = length;
     if ( fread(sm.data,1,length,ttf)!=length ) {
 	free(sm.data);
 	fprintf( stderr, "Bad mort ligature table. Not long enough\n");
@@ -3882,7 +3643,7 @@ return;
 	sm.classes = info->morx_classes = malloc(info->glyph_cnt*sizeof(uint16));
 	for ( i=0; i<info->glyph_cnt; ++i )
 	    sm.classes[i] = 1;			/* Out of bounds */
-	readttf_applelookup(ttf,info,
+	readttf_applelookup(ttf,info,here,
 		mortclass_apply_values,mortclass_apply_value,NULL,NULL);
 	sm.smax = length/(2*sm.nClasses);
 	sm.states_in_use = calloc(sm.smax,sizeof(uint8));
@@ -3933,8 +3694,8 @@ static void readttfmetamorph(FILE *ttf, FILE *util, struct ttfinfo *info) {
 	chain_start = ftell(ttf);
 	printf( "\t  default flags=%lx\n", getlong(ttf));
 	printf( "\t  chain length=%ld\n", (long) (len = getlong(ttf)));
-	printf( "\t  number Feature Entries=%d\n", nf = ismorx ? getlong(ttf) : getushort(ttf));
-	printf( "\t  number Subtables=%d\n", ns = ismorx ? getlong(ttf) : getushort(ttf));
+	printf( "\t  number Feature Entries=%d\n", nf = getushort(ttf));
+	printf( "\t  number Subtables=%d\n", ns = getushort(ttf));
 	for ( j=k=0; j<nf; ++j ) {
 	    printf( "\t  For Feature %d of Chain %d\n", j, i );
 	    printf( "\t   Feature Type=%d ", type = getushort(ttf));
@@ -3955,14 +3716,8 @@ static void readttfmetamorph(FILE *ttf, FILE *util, struct ttfinfo *info) {
 	}
 	for ( j=0; j<ns; ++j ) {
 	    stab_start = ftell(ttf);
-	    if ( ismorx ) {
-		stab_len = getlong(ttf);
-		coverage = getlong(ttf);
-	    } else {
-		stab_len = getushort(ttf);
-		coverage = getushort(ttf);
-		coverage = ((coverage&0xe000)<<16) | (coverage&7);	/* convert to morx format */
-	    }
+	    stab_len = getushort(ttf);
+	    coverage = getushort(ttf);
 	    flags = getlong(ttf);
 	    for ( l=0; l<k; ++l )
 		if ( masks[l]==flags )
@@ -3975,29 +3730,25 @@ static void readttfmetamorph(FILE *ttf, FILE *util, struct ttfinfo *info) {
 	    else
 		printf( "\n" );
 	    printf( "\t  Length = %d\n", stab_len );
-	    printf( "\t  Coverage = %08x, Apply=%s Search=%s\n\t\tType=%s\n",
+	    printf( "\t  Coverage = %04x, Apply=%s Search=%s\n\t\tType=%s\n",
 		coverage,
-		(coverage&0x20000000) ? "Always" : (coverage&0x80000000) ? "Vertical" : "Horizontal",
-		(coverage&0x40000000) ? "Descending (?Right2Left?)" : "Ascending (?Left2Right?)",
-		(coverage&0xff)==0 ? "Indic rearrangement" :
-		(coverage&0xff)==1 ? "contextual glyph substitution" :
-		(coverage&0xff)==2 ? "Ligature substitution" :
-		(coverage&0xff)==4 ? "non-contextual glyph substitution" :
-		(coverage&0xff)==5 ? "contextual glyph insertion" :
+		(coverage&0x2000) ? "Always" : (coverage&0x8000) ? "Vertical" : "Horizontal",
+		(coverage&0x4000) ? "Descending" : "Ascending",
+		(coverage&0x7)==0 ? "Indic rearrangement" :
+		(coverage&0x7)==1 ? "contextual glyph substitution" :
+		(coverage&0x7)==2 ? "Ligature substitution" :
+		(coverage&0x7)==4 ? "non-contextual glyph substitution" :
+		(coverage&0x7)==5 ? "contextual glyph insertion" :
 		    "Unknown" );
 	    printf( "\t  Flags=%08lx\n", (long) flags );
 	    switch( (coverage&0x7) ) {
 	      case 0:
 		if ( !ismorx )
 		    readttfmort_indic(ttf,util,info,stab_len);
-		else
-		    readttfmorx_indic(ttf,util,info,stab_len);
 	      break;
 	      case 1:
 		if ( !ismorx )
 		    readttfmort_context(ttf,util,info,stab_len);
-		else
-		    readttfmorx_context(ttf,util,info,stab_len);
 	      break;
 	      case 2:
 		readttf_mortx_lig(ttf,info,ismorx,stab_start,stab_len);
@@ -4005,7 +3756,7 @@ static void readttfmetamorph(FILE *ttf, FILE *util, struct ttfinfo *info) {
 		    readttfmort_lig(ttf,util,info,stab_len);
 	      break;
 	      case 4:
-		show_applelookuptable(ttf,info,
+		show_applelookuptable(ttf,info,stab_start,
 			mort_noncontextualsubs_glyph);
 	      break;
 	      case 5:
@@ -4056,7 +3807,7 @@ static void readttfappleprop(FILE *ttf, FILE *util, struct ttfinfo *info) {
     printf( "\t has lookup data=%d\n", getushort(ttf));
     printf( "\t default properties=" );
     showagproperties( getushort(ttf));
-    show_applelookuptable(ttf,info,prop_show);
+    show_applelookuptable(ttf,info,info->prop_start,prop_show);
 }
 
 static void lcar_show( FILE *ttf, struct ttfinfo *info ) {
@@ -4078,7 +3829,7 @@ static void readttfapplelcar(FILE *ttf, FILE *util, struct ttfinfo *info) {
     printf( "\nlcar table (at %d) (Ligature carets)\n", info->lcar_start );
     printf( "\t version=%g\n", getfixed(ttf));
     printf( "\t data are points=%d\n", getushort(ttf));
-    show_applelookuptable(ttf,info,lcar_show);
+    show_applelookuptable(ttf,info,info->lcar_start,lcar_show);
 }
 
 static void opbd_show( FILE *ttf, struct ttfinfo *info ) {
@@ -4101,7 +3852,7 @@ static void readttfappleopbd(FILE *ttf, FILE *util, struct ttfinfo *info) {
     printf( "\nopbd table (at %d) (Optical Bounds)\n", info->opbd_start );
     printf( "\t version=%g\n", getfixed(ttf));
     printf( "\t data are points=%d\n", getushort(ttf));
-    show_applelookuptable(ttf,info,opbd_show);
+    show_applelookuptable(ttf,info,info->opbd_start,opbd_show);
 }
 
 static void readttfgasp(FILE *ttf, FILE *util, struct ttfinfo *info) {
@@ -4134,7 +3885,127 @@ static void readttfgasp(FILE *ttf, FILE *util, struct ttfinfo *info) {
     }
 }
 
-#if 0
+static void pfed_readfontcomment(FILE *ttf,struct ttfinfo *info,uint32 base) {
+    int len, ch, i;
+    char *pt, *end;
+
+    fseek(ttf,base,SEEK_SET);
+    printf( "\t   'PfEd'-'fcmt' sub-table\n" );
+    printf( "\t    Version=%d\n", getushort(ttf) );
+    printf( "\t    String length=%d\n", len = getushort(ttf) );
+    printf( "\t      \"");
+    for ( i=0; i<len; ++i ) {
+	ch = getushort(ttf);
+	putchar(ch);
+	if ( ch=='\n' )
+	    printf( "\t      ");
+    }
+    printf("\"\n\n");
+}
+
+static void ReadUnicodeStr(FILE *ttf,uint32 offset,int len) {
+    int i;
+
+    fseek(ttf,offset,SEEK_SET);
+    /* It's really stored as unicode, but it's usually ASCII, and all I've got */
+    /*  in a terminal is ASCII output */
+    for ( i=0; i<len/2; ++i )
+	putchar(getushort(ttf));
+}
+    
+static void pfed_readglyphcomments(FILE *ttf,struct ttfinfo *info,uint32 base) {
+    int n, i, j;
+    struct grange { int start, end; uint32 offset; } *grange;
+    uint32 offset, next;
+
+    fseek(ttf,base,SEEK_SET);
+    printf( "\t   'PfEd'-'cmnt' sub-table\n" );
+    printf( "\t    Version=%d\n", getushort(ttf) );
+    printf( "\t    Range count=%d\n", n = getushort(ttf) );
+    grange = malloc(n*sizeof(struct grange));
+    for ( i=0; i<n; ++i ) {
+	grange[i].start = getushort(ttf);
+	grange[i].end = getushort(ttf);
+	grange[i].offset = getlong(ttf);
+	printf( "\t    Start Glyph Id=%d, End=%d, offset=%d\n",
+		grange[i].start, grange[i].end, grange[i].offset );
+	if ( grange[i].start>grange[i].end || grange[i].end>info->glyph_cnt ) {
+	    fprintf( stderr, "Bad glyph range specified in glyph comment subtable of PfEd table\n" );
+	    grange[i].start = 1; grange[i].end = 0;
+	}
+    }
+    for ( i=0; i<n; ++i ) {
+	for ( j=grange[i].start; j<=grange[i].end; ++j ) {
+	    fseek( ttf,base+grange[i].offset+(j-grange[i].start)*sizeof(uint32),SEEK_SET);
+	    offset = getlong(ttf);
+	    next = getlong(ttf);
+	    printf( "\t   Glyph %d comment \"", j );
+	    ReadUnicodeStr(ttf,base+offset,next-offset);
+	    printf( "\"\n" );
+	}
+    }
+    free(grange);
+    printf( "\n" );
+}
+
+static void pfed_readcolours(FILE *ttf,struct ttfinfo *info,uint32 base) {
+    int n, i, j, start, end;
+    uint32 col;
+
+    fseek(ttf,base,SEEK_SET);
+    printf( "\t   'PfEd'-'cmnt' sub-table\n" );
+    printf( "\t    Version=%d\n", getushort(ttf) );
+    printf( "\t    Range count=%d\n", n = getushort(ttf) );
+    for ( i=0; i<n; ++i ) {
+	start = getushort(ttf);
+	end = getushort(ttf);
+	col = getlong(ttf);
+	if ( start>end || end>info->glyph_cnt )
+	    fprintf( stderr, "Bad glyph range specified in colour subtable of PfEd table\n" );
+	else
+	    printf( "\t    Start Glyph Id=%d, End=%d, Color=%x\n",
+		    start, end, col );
+    }
+    printf("\n");
+}
+
+static void readttfpfed(FILE *ttf, FILE *util, struct ttfinfo *info) {
+    int n, i;
+    int tag, offset;
+    struct tagoff { uint32 tag, offset; } tagoff[40];
+
+    fseek(ttf,info->pfed_start,SEEK_SET);
+    printf( "\nPfEd table (at %d) (PfaEdit table)\n", info->pfed_start );
+    printf( "\t version=%08x\n", getlong(ttf));
+    printf( "\t Number of PfaEdit subtables=%d\n", n = getlong(ttf));
+    for ( i=0; i<n; ++i ) {
+	tag = getlong(ttf);
+	offset = getlong(ttf);
+	printf("\t  '%c%c%c%c' sub-table at %d\n",
+		tag>>24, (tag>>16)&0xff, (tag>>8)&0xff, tag&0xff,
+		offset );
+	if ( i<40 ) {
+	    tagoff[i].tag = tag;
+	    tagoff[i].offset = offset;
+	}
+    }
+    for ( i=0; i<n && i<40; ++i )  switch ( tagoff[i].tag ) {
+      case CHR('f','c','m','t'):
+	pfed_readfontcomment(ttf,info,info->pfed_start+tagoff[i].offset);
+      break;
+      case CHR('c','m','n','t'):
+	pfed_readglyphcomments(ttf,info,info->pfed_start+tagoff[i].offset);
+      break;
+      case CHR('c','o','l','r'):
+	pfed_readcolours(ttf,info,info->pfed_start+tagoff[i].offset);
+      break;
+      default:
+	fprintf( stderr, "Unknown subtable '%c%c%c%c' in 'PfEd' table, ignored\n",
+		tagoff[i].tag>>24, (tagoff[i].tag>>16)&0xff, (tagoff[i].tag>>8)&0xff, tagoff[i].tag&0xff );
+      break;
+    }
+}
+
 static void readtablebytes(FILE *ttf, int start, int len, char *string) {
     int i;
 
@@ -4147,7 +4018,6 @@ return;
 	printf( "0x%x, ", getc(ttf));
     printf("\n");
 }
-#endif
 
 static void readtableinstr(FILE *ttf, int start, int len, char *string) {
     int i, j, ch, n, ch1, ch2;
@@ -5368,6 +5238,21 @@ static int readttfbitmaps(FILE *ttf,FILE *util, struct ttfinfo *info) {
 return( 1 );
 }
 
+static int readttfloca(FILE *ttf,FILE *util, struct ttfinfo *info) {
+    int cnt,i, num;
+    long here, offset, size;
+
+    fseek(ttf,info->glyphlocations_start,SEEK_SET);
+    printf( "\nGlyph location data (at %d for %d bytes)\n", info->glyphlocations_start, info->loca_length);
+    if ( info->index_to_loc_is_long ) {
+	for ( i=0; i<info->loca_length/4; ++i )
+	    printf( "\tGlyph %d starts at %x\n", i, getlong(ttf));
+    } else {
+	for ( i=0; i<info->loca_length/2; ++i )
+	    printf( "\tGlyph %d starts at %x\n", i, getushort(ttf));
+    }
+}
+
 static void readit(FILE *ttf, FILE *util) {
     struct ttfinfo info;
     int i;
@@ -5392,6 +5277,8 @@ return;
 	readttfgasp(ttf,util,&info);
     readttfencodings(ttf,util,&info);
     readttfpost(ttf,util,&info);
+    if ( info.glyphlocations_start!=0 )
+	readttfloca(ttf,util,&info);
     readttfcvt(ttf,util,&info);
     if ( info.cff_start!=0 )
 	readcff(ttf,util,&info);
@@ -5399,8 +5286,6 @@ return;
 	readttfgsub(ttf,util,&info);
     if ( info.gpos_start!=0 )
 	readttfgpos(ttf,util,&info);
-    if ( info.kern_start!=0 )
-	readttfkern(ttf,util,&info);
     if ( info.gdef_start!=0 )
 	readttfgdef(ttf,util,&info);
     if ( info.bitmaploc_start!=0 && info.bitmapdata_start!=0 )
@@ -5421,6 +5306,8 @@ return;
 	readttfapplelcar(ttf,util,&info);
     if ( info.opbd_start!=0 )
 	readttfappleopbd(ttf,util,&info);
+    if ( info.pfed_start!=0 )
+	readttfpfed(ttf,util,&info);
 }
 
 int main(int argc, char **argv) {
