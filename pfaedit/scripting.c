@@ -2015,8 +2015,8 @@ static void handlename(Context *c,Val *val) {
 		val->type = v_int;
 		val->u.ival = c->a.argc;
 	    } else if ( strcmp(name,"$argv")==0 ) {
-		c->argsval.type = v_arr;
-		c->argsval.u.aval = &c->a;
+		val->type = v_arr;
+		val->u.aval = &c->a;
 	    } else if ( strcmp(name,"$curfont")==0 || strcmp(name,"$nextfont")==0 ||
 		    strcmp(name,"$firstfont")==0 ) {
 		if ( strcmp(name,"$firstfont")==0 ) {
