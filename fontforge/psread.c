@@ -2937,7 +2937,7 @@ static void SCInterpretPS(FILE *ps,SplineChar *sc, int *flags) {
     SCAppendEntityLayers(sc,ec.splines);
     if ( sc->layer_cnt==1 ) ++sc->layer_cnt;
 #else
-    sc->layers[ly_fore].splines = SplinesFromEntityChar(&ec,flags);
+    sc->layers[ly_fore].splines = SplinesFromEntityChar(&ec,flags,false);
 #endif
     sc->layers[ly_fore].refs = revrefs(ec.refs);
     free(wrapper.top);
