@@ -6180,10 +6180,11 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
 	    table[i] = sc->ttf_glyph;
     }
     table[0] = table[8] = table[13] = table[29] = 1;
-    table[9] = 3;
+    table[9] = table[32];
 
     if ( format==ff_ttfsym || sf->encoding_name==em_symbol ) {
 	int acnt=0, pcnt=0;
+	int space = table[32];
 	for ( i=0; i<sf->charcnt; ++i ) {
 	    if ( sf->chars[i]!=&notdef && sf->chars[i]!=&nonmarkingreturn &&
 		    sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 &&
@@ -6207,7 +6208,7 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
 		    table[sf->chars[i]->enc-0xf000] = sf->chars[i]->ttf_glyph;
 	}
 	table[0] = table[8] = table[13] = table[29] = 1;
-	table[9] = 3;
+	table[9] = space;
 	/* if the user has read in a ttf symbol file then it will already have */
 	/*  the right private use encoding, and we don't want to mess it up. */
 	/*  The alreadyprivate flag should detect this case */
