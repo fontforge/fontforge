@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 7-May-2003 -->
+  <!-- AP: Last modified: 9-May-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,26 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    9-May-2003
+    <UL>
+      <LI>
+	Apple's 'lcar' (ligature caret) table was being generated incorrectly
+      <LI>
+	Another bug in point numbering
+      <LI>
+	Make "Slanted" a synonym for Oblique.
+    </UL>
+  <LI>
+    8-May-2003
+    <UL>
+      <LI>
+	PfaEdit did not recognize "filename(fontname)" notation for loading a specific
+	font from a resource fork of a mac file.
+      <LI>
+	PfaEdit crashed on the mac when generating a GPOS table. There was an
+	uninitialized variable there, left behind be recent changes. Removed.
+    </UL>
   <LI>
     7-May-2003
     <UL>
@@ -27,6 +47,9 @@
 	Show ATT now displays something meaningful for marks
       <LI>
 	Some general Anchor Class clean up.
+      <LI>
+	Was not setting bits in the CodePage[1] field of the OS/2 table for all the
+	weird MS specific encodings. It seems I should do that.
     </UL>
   <LI>
     6-May-2003
