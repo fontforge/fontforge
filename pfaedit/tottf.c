@@ -354,18 +354,20 @@ return( sp );
 	  }
     continue;
 	}
-	if ( t==tmax && dxdt==0 )
-	    unforceable = true;
 	if ( dxdt==0 )
 	    cx=x;
 	else if ( dxdtmin==0 )
 	    cx=xmin;
 	else
 	    cx = -(ymin-(dydtmin/dxdtmin)*xmin-y+(dydt/dxdt)*x)/(dydtmin/dxdtmin-dydt/dxdt);
-	if ( dxdt ==0 )
-	    cy = y;
+	if ( dydt==0 )
+	    cy=y;
+	else if ( dydtmin==0 )
+	    cy=ymin;
 	else
-	    cy = (dydt/dxdt)*(cx-x)+y;
+	    cy = -(xmin-(dxdtmin/dydtmin)*ymin-x+(dxdt/dydt)*y)/(dxdtmin/dydtmin-dxdt/dydt);
+	if ( t==tmax && ((cy==y && cx==x) || (cy==ymin && cx==xmin)) )
+	    unforceable = true;
 	/* Make the quadratic spline from (xmin,ymin) through (cx,cy) to (x,y)*/
 	ttf.splines[0].d = xmin;
 	ttf.splines[0].c = 2*(cx-xmin);
