@@ -44,6 +44,7 @@ typedef struct gidata {
     AnchorPoint *oldaps;
     GWindow gw;
     int done, first, changed;
+    int prevchanged, nextchanged;
 } GIData;
 
 #define CID_BaseX	2001
@@ -1218,6 +1219,52 @@ return( false );
 return( true );
 }
 
+static void PIFillup(GIData *ci, int except_cid);
+
+static void PI_FigureNext(GIData *ci) {
+    if ( ci->prevchanged ) {
+	SplinePoint *cursp = ci->cursp;
+	if ( !ci->sc->parent->order2 && cursp->pointtype==pt_curve ) {
+	    double dx, dy, len, len2;
+	    dx = cursp->prevcp.x - cursp->me.x;
+	    dy = cursp->prevcp.y - cursp->me.y;
+	    len = sqrt(dx*dx+dy*dy);
+	    if ( len!=0 ) {
+		len2 = sqrt((cursp->nextcp.x-cursp->me.x)*(cursp->nextcp.x-cursp->me.x)+
+			(cursp->nextcp.y-cursp->me.y)*(cursp->nextcp.y-cursp->me.y));
+		cursp->nextcp.x=cursp->me.x-dx*len2/len;
+		cursp->nextcp.y=cursp->me.y-dy*len2/len;
+		SplineRefigure(cursp->next);
+		CVCharChangedUpdate(ci->cv);
+		PIFillup(ci,-1);
+	    }
+	}
+    }
+    ci->prevchanged = false;
+}
+
+static void PI_FigurePrev(GIData *ci) {
+    if ( ci->nextchanged ) {
+	SplinePoint *cursp = ci->cursp;
+	if ( !ci->sc->parent->order2 && cursp->pointtype==pt_curve ) {
+	    double dx, dy, len, len2;
+	    dx = cursp->nextcp.x - cursp->me.x;
+	    dy = cursp->nextcp.y - cursp->me.y;
+	    len = sqrt(dx*dx+dy*dy);
+	    if ( len!=0 ) {
+		len2 = sqrt((cursp->prevcp.x-cursp->me.x)*(cursp->prevcp.x-cursp->me.x)+
+			(cursp->prevcp.y-cursp->me.y)*(cursp->prevcp.y-cursp->me.y));
+		cursp->prevcp.x=cursp->me.x-dx*len2/len;
+		cursp->prevcp.y=cursp->me.y-dy*len2/len;
+		SplineRefigure(cursp->prev);
+		CVCharChangedUpdate(ci->cv);
+		PIFillup(ci,-1);
+	    }
+	}
+    }
+    ci->nextchanged = false;
+}
+
 static int PI_Cancel(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	PI_DoCancel( GDrawGetUserData(GGadgetGetWindow(g)));
@@ -1228,6 +1275,10 @@ return( true );
 static int PI_Ok(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+
+	PI_FigureNext(ci);
+	PI_FigurePrev(ci);
+
 	ci->done = true;
 	/* All the work has been done as we've gone along */
     }
@@ -1309,6 +1360,10 @@ static int PI_Next(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
 	CharView *cv = ci->cv;
+
+	PI_FigureNext(ci);
+	PI_FigurePrev(ci);
+	
 	ci->cursp->selected = false;
 	if ( ci->cursp->next!=NULL && ci->cursp->next->to!=ci->curspl->first )
 	    ci->cursp = ci->cursp->next->to;
@@ -1332,6 +1387,10 @@ static int PI_Prev(GGadget *g, GEvent *e) {
 	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
 	CharView *cv = ci->cv;
 	SplinePointList *spl;
+
+	PI_FigureNext(ci);
+	PI_FigurePrev(ci);
+
 	ci->cursp->selected = false;
 	
 	if ( ci->cursp!=ci->curspl->first ) {
@@ -1381,6 +1440,12 @@ return( true );
 	    SplineRefigure(cursp->prev);
 	CVCharChangedUpdate(ci->cv);
 	PIFillup(ci,GGadgetGetCid(g));
+    } else if ( e->type==et_controlevent &&
+	    e->u.control.subtype == et_textfocuschanged &&
+	    e->u.control.u.tf_focus.gained_focus ) {
+	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	PI_FigureNext(ci);
+	PI_FigurePrev(ci);
     }
 return( true );
 }
@@ -1388,7 +1453,7 @@ return( true );
 static int PI_NextChanged(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
 	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
-	real dx=0, dy=0, len, len2;
+	real dx=0, dy=0;
 	int err=false;
 	SplinePoint *cursp = ci->cursp;
 
@@ -1401,21 +1466,10 @@ return( true );
 	cursp->nextcp.x += dx;
 	cursp->nextcp.y += dy;
 	cursp->nonextcp = false;
+	ci->nextchanged = true;
 	if (( dx>.1 || dx<-.1 || dy>.1 || dy<-.1 ) && cursp->nextcpdef ) {
 	    cursp->nextcpdef = false;
 	    GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_NextDef), false );
-	}
-	if ( !ci->sc->parent->order2 && cursp->pointtype==pt_curve ) {
-	    dx = cursp->nextcp.x - cursp->me.x;
-	    dy = cursp->nextcp.y - cursp->me.y;
-	    len = sqrt(dx*dx+dy*dy);
-	    if ( len!=0 ) {
-		len2 = sqrt((cursp->prevcp.x-cursp->me.x)*(cursp->prevcp.x-cursp->me.x)+
-			(cursp->prevcp.y-cursp->me.y)*(cursp->prevcp.y-cursp->me.y));
-		cursp->prevcp.x=cursp->me.x-dx*len2/len;
-		cursp->prevcp.y=cursp->me.y-dy*len2/len;
-		SplineRefigure(cursp->prev);
-	    }
 	}
 	if ( ci->sc->parent->order2 )
 	    SplinePointNextCPChanged2(cursp,false);
@@ -1423,6 +1477,11 @@ return( true );
 	    SplineRefigure3(cursp->next);
 	CVCharChangedUpdate(ci->cv);
 	PIFillup(ci,GGadgetGetCid(g));
+    } else if ( e->type==et_controlevent &&
+	    e->u.control.subtype == et_textfocuschanged &&
+	    e->u.control.u.tf_focus.gained_focus ) {
+	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	PI_FigureNext(ci);
     }
 return( true );
 }
@@ -1430,7 +1489,7 @@ return( true );
 static int PI_PrevChanged(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
 	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
-	real dx=0, dy=0, len, len2;
+	real dx=0, dy=0;
 	int err=false;
 	SplinePoint *cursp = ci->cursp;
 
@@ -1443,21 +1502,10 @@ return( true );
 	cursp->prevcp.x += dx;
 	cursp->prevcp.y += dy;
 	cursp->noprevcp = false;
+	ci->prevchanged = true;
 	if (( dx>.1 || dx<-.1 || dy>.1 || dy<-.1 ) && cursp->prevcpdef ) {
 	    cursp->prevcpdef = false;
 	    GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_PrevDef), false );
-	}
-	if ( !ci->sc->parent->order2 && cursp->pointtype==pt_curve ) {
-	    dx = cursp->prevcp.x - cursp->me.x;
-	    dy = cursp->prevcp.y - cursp->me.y;
-	    len = sqrt(dx*dx+dy*dy);
-	    if ( len!=0 ) {
-		len2 = sqrt((cursp->nextcp.x-cursp->me.x)*(cursp->nextcp.x-cursp->me.x)+
-			(cursp->nextcp.y-cursp->me.y)*(cursp->nextcp.y-cursp->me.y));
-		cursp->nextcp.x=cursp->me.x-dx*len2/len;
-		cursp->nextcp.y=cursp->me.y-dy*len2/len;
-		SplineRefigure(cursp->next);
-	    }
 	}
 	if ( ci->sc->parent->order2 )
 	    SplinePointPrevCPChanged2(cursp,false);
@@ -1465,6 +1513,11 @@ return( true );
 	    SplineRefigure(cursp->prev);
 	CVCharChangedUpdate(ci->cv);
 	PIFillup(ci,GGadgetGetCid(g));
+    } else if ( e->type==et_controlevent &&
+	    e->u.control.subtype == et_textfocuschanged &&
+	    e->u.control.u.tf_focus.gained_focus ) {
+	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	PI_FigurePrev(ci);
     }
 return( true );
 }
