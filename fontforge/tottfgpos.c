@@ -3321,7 +3321,7 @@ void otf_dumpgdef(struct alltabs *at, SplineFont *_sf) {
     /* All my example fonts contain a ligature caret list subtable, which is */
     /*  empty. Odd, but perhaps important */
     PST *pst;
-    int i,j,k,l, lcnt,cmax, needsclass;
+    int i,j,k, lcnt,cmax, needsclass;
     int pos, offset;
     int cnt, start, last, lastval;
     SplineChar **glyphs, *sc;
@@ -3334,28 +3334,24 @@ void otf_dumpgdef(struct alltabs *at, SplineFont *_sf) {
     for ( k=0; k<2; ++k ) {
 	lcnt = 0;
 	needsclass = false;
-	l = 0;
-	do {
-	    sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[l];
-	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 ) {
-		if ( sf->chars[i]->glyph_class!=0 || gdefclass(sf->chars[i])!=1 )
-		    needsclass = true;
-		for ( pst=sf->chars[i]->possub; pst!=NULL; pst=pst->next ) {
-		    if ( pst->type == pst_lcaret ) {
-			for ( j=pst->u.lcaret.cnt-1; j>=0; --j )
-			    if ( pst->u.lcaret.carets[j]!=0 )
-			break;
-			if ( j!=-1 )
-		break;
-		    }
-		}
-		if ( pst!=NULL ) {
-		    if ( glyphs!=NULL ) glyphs[lcnt] = sf->chars[i];
-		    ++lcnt;
+	sf = _sf;
+	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 ) {
+	    if ( sf->chars[i]->glyph_class!=0 || gdefclass(sf->chars[i])!=1 )
+		needsclass = true;
+	    for ( pst=sf->chars[i]->possub; pst!=NULL; pst=pst->next ) {
+		if ( pst->type == pst_lcaret ) {
+		    for ( j=pst->u.lcaret.cnt-1; j>=0; --j )
+			if ( pst->u.lcaret.carets[j]!=0 )
+		    break;
+		    if ( j!=-1 )
+	    break;
 		}
 	    }
-	    ++l;
-	} while ( l<_sf->subfontcnt );
+	    if ( pst!=NULL ) {
+		if ( glyphs!=NULL ) glyphs[lcnt] = sf->chars[i];
+		++lcnt;
+	    }
+	}
 	if ( lcnt==0 )
     break;
 	if ( glyphs!=NULL )
@@ -3377,43 +3373,19 @@ return;					/* No anchor positioning, no ligature carets */
 	/* Mark shouldn't conflict with anything */
 	/* Ligature is more important than Base */
 	/* Component is not used */
-	cmax = 0;
-	l = 0;
-	do {
-	    sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[l];
-	    if ( cmax<sf->charcnt ) cmax = sf->charcnt;
-	    ++l;
-	} while ( l<_sf->subfontcnt );
+	cmax = _sf->charcnt;
 #if 1		/* ttx can't seem to support class format type 1 so let's output type 2 */
 	for ( j=0; j<2; ++j ) {
 	    cnt = 0;
 	    for ( i=0; i<cmax; ++i ) {
-		l = 0;
-		sc = NULL;
-		do {
-		    sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[l];
-		    if ( i<sf->charcnt && sf->chars[i]!=NULL ) {
-			sc = sf->chars[i];
-		break;
-		    }
-		    ++l;
-		} while ( l<_sf->subfontcnt );
+		sc = _sf->chars[i];
 		if ( sc!=NULL && sc->ttf_glyph!=-1 ) {
-		    lastval = gdefclass(sf->chars[i]);
+		    lastval = gdefclass(sc);
 		    start = last = i;
-		    for ( ; i<sf->charcnt; ++i ) {
-			l = 0;
-			sc = NULL;
-			do {
-			    sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[l];
-			    if ( i<sf->charcnt && sf->chars[i]!=NULL ) {
-				sc = sf->chars[i];
-			break;
-			    }
-			    ++l;
-			} while ( l<_sf->subfontcnt );
+		    for ( ; i<cmax; ++i ) {
+			sc = _sf->chars[i];
 			if (sc!=NULL && sc->ttf_glyph!=-1 ) {
-			    if ( gdefclass(sf->chars[i])!=lastval )
+			    if ( gdefclass(sc)!=lastval )
 		    break;
 			    last = i;
 			}
@@ -3421,8 +3393,8 @@ return;					/* No anchor positioning, no ligature carets */
 		    --i;
 		    if ( lastval!=0 ) {
 			if ( j==1 ) {
-			    putshort(at->gdef,sf->chars[start]->ttf_glyph);
-			    putshort(at->gdef,sf->chars[last]->ttf_glyph);
+			    putshort(at->gdef,_sf->chars[start]->ttf_glyph);
+			    putshort(at->gdef,_sf->chars[last]->ttf_glyph);
 			    putshort(at->gdef,lastval);
 			}
 			++cnt;
