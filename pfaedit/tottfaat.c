@@ -193,7 +193,7 @@ return;
 	    putshort(lcar,6*l);
 	    putshort(lcar,j);
 	    putshort(lcar,6*(seg_cnt-l));
-	    offset = 4+7*2 + seg_cnt*6 + 6;
+	    offset = 6*2 + seg_cnt*6 + 6;
 	} else if ( k==1 ) {		/* flag entry */
 	    putshort(lcar,0xffff);
 	    putshort(lcar,0xffff);
@@ -243,7 +243,7 @@ static void morxfeaturesfree(struct feature *features) {
     }
 }
 
-static void morx_lookupmap(FILE *temp,SplineChar **glyphs,uint16 *maps,int gcnt, int basis) {
+static void morx_lookupmap(FILE *temp,SplineChar **glyphs,uint16 *maps,int gcnt) {
     int i, j, k, l, seg_cnt, tot, last, offset;
     /* We do four passes. The first just calculates how much space we will need (if any) */
     /*  the second provides the top-level lookup table structure */
@@ -285,7 +285,7 @@ return;
 	    putshort(temp,6*l);
 	    putshort(temp,j);
 	    putshort(temp,6*(seg_cnt-l));
-	    offset = basis + 6*2 + seg_cnt*6 + 6;
+	    offset = 6*2 + seg_cnt*6 + 6;
 	} else if ( k==1 ) {		/* flag entry */
 	    putshort(temp,0xffff);
 	    putshort(temp,0xffff);
@@ -295,7 +295,7 @@ return;
 }
 
 static void morx_dumpSubsFeature(FILE *temp,SplineChar **glyphs,uint16 *maps,int gcnt) {
-    morx_lookupmap(temp,glyphs,maps,gcnt,0);
+    morx_lookupmap(temp,glyphs,maps,gcnt);
 }
 
 static struct feature *aat_dumpmorx_substitutions(struct alltabs *at, SplineFont *sf,
@@ -429,7 +429,7 @@ static void morx_dumpLigaFeature(FILE *temp,SplineChar **glyphs,int gcnt,
     putlong(temp,0);
     putlong(temp,0);
     putlong(temp,0);
-    morx_lookupmap(temp,cglyphs,map,k,7*sizeof(uint32));	/* dump the class lookup table */
+    morx_lookupmap(temp,cglyphs,map,k);	/* dump the class lookup table */
     free( cglyphs ); free( map );
     here = ftell(temp);
     fseek(temp,start+2*sizeof(uint32),SEEK_SET);
@@ -982,7 +982,7 @@ return;
 	    putshort(opbd,6*l);
 	    putshort(opbd,j);
 	    putshort(opbd,6*(seg_cnt-l));
-	    offset = 4+7*2 + seg_cnt*6 + 6;
+	    offset = 6*2 + seg_cnt*6 + 6;
 	} else if ( k==1 ) {		/* flag entry */
 	    putshort(opbd,0xffff);
 	    putshort(opbd,0xffff);
@@ -1061,8 +1061,8 @@ static uint16 *props_array(SplineFont *sf,struct alltabs *at) {
 		    bsc->ttf_glyph!=-1 && bsc->ttf_glyph-sc->ttf_glyph>-8 && bsc->ttf_glyph-sc->ttf_glyph<8 ) {
 		isbracket = true;
 		offset = bsc->ttf_glyph-sc->ttf_glyph;
+		doit = true;
 	    }
-	    doit = true;
 	}
 	if ( sc->script==CHR('a','r','a','b') || sc->script==CHR('h','e','b','r') ) {
 	    /* Apple docs say attached right. So for r2l scripts we look for */

@@ -4605,6 +4605,9 @@ static void sethhead(struct hhead *hhead,struct hhead *vhead,struct alltabs *at,
     hhead->maxwidth = width;
     hhead->minlsb = at->head.xmin;
     hhead->minrsb = rbearing;
+    /* Apple's ftxvalidator says the the min sidebearing should be 0 even if it isn't */
+    if ( hhead->minlsb>0 ) hhead->minlsb = 0;
+    if ( hhead->minrsb>0 ) hhead->minrsb = 0;
     hhead->maxextent = at->head.xmax;
     hhead->caretSlopeRise = 1;
 
@@ -6227,6 +6230,7 @@ static int initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
     SFDefaultOS2Info(&sf->pfminfo,sf,sf->fontname);
 
     memset(at,'\0',sizeof(struct alltabs));
+    at->gi.xmin = at->gi.ymin = 15000;
     if ( bf!=bf_ttf && bf!=bf_sfnt_dfont)
 	bsizes = NULL;
     if ( bsizes!=NULL ) {
@@ -6317,7 +6321,7 @@ return( false );
 
     if ( format==ff_otf || format==ff_otfcid ) {
 	at->tabdir.version = CHR('O','T','T','O');
-    } else if ( format==ff_none ) {
+    } else if ( at->applemode ) {
 	at->tabdir.version = CHR('t','r','u','e');
     } else {
 	at->tabdir.version = 0x00010000;

@@ -4466,13 +4466,14 @@ return;
     free(glyphs);
 }
 
-static void readttf_applelookup(FILE *ttf,struct ttfinfo *info,uint32 base,
+static void readttf_applelookup(FILE *ttf,struct ttfinfo *info,
 	void (*apply_values)(struct ttfinfo *info, int gfirst, int glast,FILE *ttf),
 	void (*apply_value)(struct ttfinfo *info, int gfirst, int glast,FILE *ttf),
 	void (*apply_default)(struct ttfinfo *info, int gfirst, int glast,void *def),
 	void *def) {
     int format, i, first, last, data_off, cnt, prev;
     uint32 here;
+    uint32 base = ftell(ttf);
 
     switch ( format = getushort(ttf)) {
       case 0:	/* Simple array */
@@ -4606,7 +4607,7 @@ static void readttfprop(FILE *ttf,struct ttfinfo *info) {
     /* version = */ getlong(ttf);
     /* format = */ getushort(ttf);
     def = getushort(ttf);
-    readttf_applelookup(ttf,info,info->prop_start,
+    readttf_applelookup(ttf,info,
 	    prop_apply_values,prop_apply_value,
 	    prop_apply_default,(void *) def);
 }
@@ -4659,7 +4660,7 @@ static void readttflcar(FILE *ttf,struct ttfinfo *info) {
     /* version = */ getlong(ttf);
     if ( getushort(ttf)!=0 )	/* A format type of 1 has the caret locations */
 return;				/*  indicated by points */
-    readttf_applelookup(ttf,info,info->lcar_start,
+    readttf_applelookup(ttf,info,
 	    lcar_apply_values,lcar_apply_value,NULL,NULL);
 }
 
@@ -4739,7 +4740,7 @@ static void readttfopbd(FILE *ttf,struct ttfinfo *info) {
     /* version = */ getlong(ttf);
     if ( getushort(ttf)!=0 )	/* A format type of 1 has the bounds */
 return;				/*  indicated by points */
-    readttf_applelookup(ttf,info,info->opbd_start,
+    readttf_applelookup(ttf,info,
 	    opbd_apply_values,opbd_apply_value,NULL,NULL);
 }
 
@@ -5031,7 +5032,7 @@ return;
 	sm.classes = info->morx_classes = galloc(info->glyph_cnt*sizeof(uint16));
 	for ( i=0; i<info->glyph_cnt; ++i )
 	    sm.classes[i] = 1;			/* Out of bounds */
-	readttf_applelookup(ttf,info,here,
+	readttf_applelookup(ttf,info,
 		mortclass_apply_values,mortclass_apply_value,NULL,NULL);
 	sm.smax = length/(2*sm.nClasses);
 	sm.states_in_use = gcalloc(sm.smax,sizeof(uint8));
@@ -5125,7 +5126,7 @@ return( chain_len );
 		/*  offsets in the lookup table should be the start of the */
 		/*  mor[tx] table, it would make more sense for it to be the*/
 		/*  start of the lookup table instead (for format 4 lookups) */
-		readttf_applelookup(ttf,info,ftell(ttf),
+		readttf_applelookup(ttf,info,
 			mort_apply_values,mort_apply_value,NULL,NULL);
 	      break;
 	      case 5:
