@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 3-Mar-2003 -->
+  <!-- AP: Last modified: 5-Apr-2003 -->
   <TITLE>Frequently Asked Questions</TITLE>
 </HEAD>
 <BODY>
@@ -262,7 +262,7 @@
     font you've got:
     <DL>
       <DT>
-	<STRONG>Unix &amp; X</STRONG> (but not KDE)
+	<STRONG>Unix &amp; X</STRONG> (<A NAME="X-Install">but</A> not KDE)
       <DD>
 	I'd suggest that you look at the
 	<A TARGET="_top" HREF="http://www.linuxdoc.org/HOWTO/Font-HOWTO.html">linux
@@ -347,7 +347,14 @@ $ xset fp+ `pwd`
 	never did figure out how to get it to install ghostview fonts. (I experimented
 	with version 0.9.2)
       <DT>
-	<STRONG>Windows</STRONG>
+	<STRONG>TeX</STRONG>
+      <DD>
+	TeX has its own (platform independant) system for installing fonts. I've
+	described my experiences so far
+	<A HREF="PfaEdit-TeX.html#TeX-Install" TARGET="_top">elsewhere in this
+	document</A>.
+      <DT>
+	<STRONG><A NAME="Windows-Install">Windows</A></STRONG>
       <DD>
 	You install truetype fonts on windows by dropping them into the \Windows\Fonts
 	directory on your machine.<BR>
@@ -360,7 +367,7 @@ $ xset fp+ `pwd`
 	bdf files to FON files and then drop the FON files into \Windows\Fonts. Or
 	generate a bitmap-only truetype font.
       <DT>
-	<STRONG>Macintosh OS 9</STRONG>
+	<STRONG><A NAME="OS9-Install">Macintosh OS 9</A></STRONG>
       <DD>
 	Oh dear. The mac sticks fonts into resource forks and wraps them up in its
 	own headers. Mac fonts aren't compatible with anybody else's. PfaEdit can
@@ -374,7 +381,7 @@ $ xset fp+ `pwd`
 	Once you've converted your fonts you just drop them into the System Folder
 	and they should be available after that.
       <DT>
-	<STRONG>Macintosh OS X</STRONG>
+	<STRONG><A NAME="OSX-Install">Macintosh OS X</A></STRONG>
       <DD>
 	On OS/X fonts should be placed either in the top-level Library/Fonts directory
 	(By default <CODE>/Mac OS X/Library/Fonts/</CODE>), in the System/Library/Fonts

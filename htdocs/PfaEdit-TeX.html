@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Jan-2003 -->
-  <!-- AP: Last modified: 27-Jan-2003 -->
+  <!-- AP: Last modified: 5-Apr-2003 -->
   <TITLE>Using PfaEdit with TeX</TITLE>
 </HEAD>
 <BODY>
@@ -47,6 +47,8 @@
     <A HREF="scriptnotes.html#Special">Notes on various scripts</A>
   <LI>
     <A HREF="PfaEdit-TeX.html#TeX">PfaEdit and TeX</A>
+  <LI>
+    <A HREF="#TeX-Install">Installing a type1 (pfb) postscript font for TeX.</A>
 </UL>
 <H2>
   <A NAME="TeX">PfaEdit and TeX</A>
@@ -62,12 +64,205 @@ bitmap from that, autotrace it and generate an outline font.
 It can read kerning information from a ".tfm" file.
 <P>
 The <A HREF="Encodings.ps.gz">encodings</A> file has a number of standard
-TeX encodings built in to it.
+TeX encodings built in to it. (One annoyance: TeX expects the Euro glyph
+to be named "euro", while Adobe says it should be named "Euro").
 <P>
 For large CJK truetype fonts it can read a sub-font definition file as defined
 in the ttf2tfm man page and <A HREF="generate.html">generate</A> a series
 of postscript type-1 fonts based on those two.
+<H3>
+  <A NAME="TeX-Install">Installing a type1 (pfb) postscript font for TeX</A>
+</H3>
 <P>
+I am a novice TeX/LaTeX user so my comments should be taken with a grain
+of salt. I did manage to get this process to work on my own system.
+<P>
+Installing a PostScript font for TeX is more complicated than one would hope
+(and so far I've only figured out how to install a latin font). Instead of
+just moving the font file to some standard directory you must:
+<UL>
+  <LI>
+    &lt;configure TeX so that it is prepared for local additions&gt;
+  <LI>
+    Rename the font file so that the filename is in a format TeX understands
+  <LI>
+    Create several helper files that TeX will use for its own purposes
+  <LI>
+    Move each file type into its own special directory
+  <LI>
+    Optionally: Create a package file to make it easy for LaTeX to find the font
+  <LI>
+    Optionally: Move the package file into its own directory
+  <LI>
+    Update dvips's configuration files so that it knows where to look for the
+    postscript fonts
+  <LI>
+    Optionally: Update pdftex's configuration files so that it knows where to
+    look too.
+</UL>
+<P>
+I suggest that before you read further you look at the following resources
+on the web:
+<UL>
+  <LI>
+    It is possible to add your fonts to the standard TeX directory structure,
+    but the TeX guru's frown on this as it makes updating TeX difficult. They
+    suggest instead that you make all your changes in some parallel directory
+    and provide they instructions on how to go about doing this at:
+    <A HREF="http://www.ctan.org/installationadvice/">Installation advice for
+    TeX fonts and directories</A>. They also provide an example of a font
+    installation but that is better explained in
+    <A HREF="http://www.mamster.net/tex/latex-fontfaq-amster-burton.pdf">the
+    LaTeX font-faq</A>.
+  <LI>
+    TeX is still worried about the old 8 character limitation on DOS filenames.
+    This means that the tools I was using don't accept understandable filenames
+    instead they require a format described in
+    <A HREF="http://www.tug.org/fontname/html/index.html">TeX font file naming
+    conventions</A>. If you are creating your own fonts this boils down to:
+    <UL>
+      <LI>
+	the first letter of the font should be "f" (which means the font wasn't made
+	by one of the big-name font vendors)
+      <LI>
+	the next two letters are some abbreviation of the family-name for your font
+      <LI>
+	the next letter (or two) should be "r" for a roman font, "i" for italic,
+	"o" for oblique, "b" for bold, and "bi" for bold italic
+      <LI>
+	the last two letters should be "8a" (which means your font is in Adobe Standard
+	Encoding. And your font <EM>must be</EM> in that encoding or things don't
+	work).
+    </UL>
+  <LI>
+    Finally
+    <A HREF="http://www.mamster.net/tex/latex-fontfaq-amster-burton.pdf">the
+    LaTeX font-faq</A> describes the gory details of how to go about installing
+    the font. It's only (minor) drawback is that it assumes you are installing
+    a font from Adobe. That is easily glossed over it means that:
+    <UL>
+      <LI>
+	fonts from Adobe should have font names begining with "p" rather than "f".
+      <LI>
+	the translation from adobe's font-families to 2 character abbreviations has
+	already been done, when using an adobe font you look the family up in a table
+	to get the 2 character abbreviation, when creating your own font you make
+	up your own.
+      <LI>
+	the vendor directory for adobe is "adobe", but the vendor directory for fonts
+	you make should be "public"
+      <LI>
+	(I hope these comments will make sense after you've read the above links)
+    </UL>
+  <LI>
+    I've not tried to work with truetype fonts, but here's a document that talks
+    about it to some extent. <A HREF="http://www.radamir.com/tex/ttf-tex.htm">LaTeX
+    and TTF</A>
+  <LI>
+    I don't know how to deal with cyrillic, greek or CJK fonts yet.
+  <LI>
+    Here's some info on how to use fonts once they are installed:
+    <A HREF="http://www-h.eng.cam.ac.uk/help/tpl/textprocessing/fonts.html">LaTeX
+    and fonts</A>
+</UL>
+<P>
+<P>
+I did the following:
+<UL>
+  <LI>
+    I created a directory structure as described in
+    <A HREF="http://www.ctan.org/installationadvice/">Installation advice</A>
+    (and also in
+    <A HREF="http://www.mamster.net/tex/latex-fontfaq-amster-burton.pdf">the
+    LaTeX font-faq</A>).
+  <LI>
+    I made a font (which I will call Cupola), initially I encoded it with the
+    TeX Base Encoding (this was to make sure I had all the characters I needed)
+  <LI>
+    Then just before generating it I reencoded it into Adobe Standard Encoding
+    (because TeX's fontinst routine expects that)
+  <LI>
+    I generated the font naming it "fcur8a.pfb" which means:
+    <UL>
+      <LI>
+	f -- made by a small font vendor, public domain, etc.
+      <LI>
+	cu -- abbreviation for the family name "Cupola"
+      <LI>
+	r -- roman face
+      <LI>
+	8a -- Adobe Standard Encoding
+    </UL>
+  <LI>
+    I applied the following script:
+    <PRE>#!/bin/bash
+# You will need to change the next two lines to suit your font.
+# You may need to change the two after that as well.
+BASE=fcu
+PACKAGE=cupola
+VENDOR=public
+LOCALTEXMF=/usr/local/share/texmf
+
+# remove any old files that might be lying around and might confuse us later on
+csh -c "rm fi.tex *.mtx *.pl *.vpl"
+
+# create a little script to get TeX to create various useful files it needs
+echo "\\input fontinst.sty" &gt;fi.tex
+echo "\\latinfamily{$BASE}{}" &gt;&gt;fi.tex
+echo "\\bye" &gt;&gt;fi.tex
+
+#execute that script
+tex fi
+
+# But we need to do a bit more processing on some of those files
+for file in *.pl ; do
+pltotf $file
+done
+for file in *.vpl ; do
+vptovf $file
+done
+
+# Get rid of stuff we don't need any more
+rm fi.tex *.mtx *.pl *.vpl
+
+# create the directories we need for the various components
+mkdir -p $LOCALTEXMF/fonts/type1/$VENDOR/$PACKAGE \
+	$LOCALTEXMF/fonts/afm/$VENDOR/$PACKAGE \
+	$LOCALTEXMF/fonts/tfm/$VENDOR/$PACKAGE \
+	$LOCALTEXMF/fonts/vf/$VENDOR/$PACKAGE \
+	$LOCALTEXMF/tex/latex/$VENDOR/$PACKAGE
+
+# move everything into its expected directory
+cp $BASE*.pfb $LOCALTEXMF/fonts/type1/$VENDOR/$PACKAGE
+cp $BASE*.afm $LOCALTEXMF/fonts/afm/$VENDOR/$PACKAGE
+mv $BASE*.tfm $LOCALTEXMF/fonts/tfm/$VENDOR/$PACKAGE
+mv $BASE*.vf $LOCALTEXMF/fonts/vf/$VENDOR/$PACKAGE
+mv *$BASE*.fd $LOCALTEXMF/tex/latex/$VENDOR/$PACKAGE
+
+# finally create the LaTeX package for this font (and put it in the right place)
+echo "\\ProvidesPackage{$PACKAGE}" &gt; $LOCALTEXMF/tex/latex/$VENDOR/$PACKAGE/$PACKAGE.sty
+echo "\\renewcommand{\\rmdefault}{$BASE}" &gt;&gt; $LOCALTEXMF/tex/latex/$VENDOR/$PACKAGE/$PACKAGE.sty
+echo "\\endinput" &gt;&gt; $LOCALTEXMF/tex/latex/$VENDOR/$PACKAGE/$PACKAGE.sty
+
+# but updating the map files required a bit more knowlege than this script has
+# so I left that to be done by hand
+echo "*********************************************************************"
+echo You need to create your own map files
+echo One should be called $LOCALTEXMF/dvips/config/$BASE.map and should
+echo " contain a line for each file in the family. One might look like this:"
+echo "${BASE}r8a $PACKAGE-Regular \"TexBase1Encoding ReEncodeFont\" &lt;8r.enc &lt;${BASE}r8a.pfb"
+echo Then change the config.ps file by looking for the location defining the
+echo " standard map file and adding:"
+echo "p +$BASE.map"
+echo " after it."
+echo Then go to $LOCALTEXMF/pdftex/config/
+echo Make a copy "(or a link)" of $LOCALTEXMF/dvips/config/$BASE.map
+echo and edit pdftex.cfg and insert
+echo "p +$BASE.map"
+echo at the appropriate place in it too.
+</PRE>
+  <LI>
+</UL>
 <P ALIGN=Center>
 -- <A HREF="scriptnotes.html">Prev</A> -- <A HREF="overview.html">TOC</A>
 -- <A HREF="fontview.html">Next</A> --
