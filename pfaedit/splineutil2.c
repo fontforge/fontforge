@@ -1200,9 +1200,12 @@ static void SplinesRemoveBetween(SplineChar *sc, SplinePoint *from, SplinePoint 
     free(tp);
 }
 
-
 static void RemoveZeroLengthSplines(SplineSet *spl, int onlyselected) {
     SplinePoint *curp, *next, *prev;
+
+    if ( spl->first->next!=NULL && spl->first->next->to==spl->first &&
+	    spl->first->nonextcp && spl->first->noprevcp )
+return;
 
     for ( curp = spl->first, prev=NULL; curp!=NULL ; curp=next ) {
 	next = NULL;
@@ -1243,11 +1246,25 @@ static void RemoveZeroLengthSplines(SplineSet *spl, int onlyselected) {
      }
 }
 
-void SSRemoveZeroLengthSplines(SplineSet *base) {
-    SplineSet *spl;
+SplineSet *SSRemoveZeroLengthSplines(SplineSet *base) {
+    SplineSet *spl, *prev, *next;
 
-    for ( spl=base; spl!=NULL; spl=spl->next )
-	RemoveZeroLengthSplines(spl,false);
+    for ( prev = NULL, spl=base; spl!=NULL; spl=next ) {
+	next = spl->next;
+	if ( spl->first->next!=NULL && spl->first->next->to==spl->first &&
+		spl->first->nonextcp && spl->first->noprevcp ) {
+	    if ( prev==NULL )
+		base = next;
+	    else
+		prev->next = next;
+	    spl->next = NULL;
+	    SplinePointListFree(spl);
+	} else {
+	    RemoveZeroLengthSplines(spl,false);
+	    prev = spl;
+	}
+    }
+return( base );
 }
 
 static SplinePointList *SplinePointListMerge(SplineChar *sc, SplinePointList *spl,int type) {
@@ -1262,6 +1279,9 @@ static SplinePointList *SplinePointListMerge(SplineChar *sc, SplinePointList *sp
 	if ( !spline->to->selected ) all = false;
 	if ( first==NULL ) first = spline;
     }
+    if ( spl->first->next!=NULL && spl->first->next->to==spl->first &&
+	    spl->first->nonextcp && spl->first->noprevcp )
+	all = true;		/* Merge away any splines which are just dots */
     if ( all )
 return( NULL );			/* Some one else should free it and reorder the spline set list */
     RemoveZeroLengthSplines(spl,true);
@@ -1614,6 +1634,9 @@ void SplinePointListSimplify(SplineChar *sc,SplinePointList *spl,
 
     if ( spl==NULL )
 return;
+    if ( spl->first->next!=NULL && spl->first->next->to==spl->first &&
+	    spl->first->nonextcp && spl->first->noprevcp )
+return;		/* Ignore any splines which are just dots */
 
     RemoveZeroLengthSplines(spl,false);
 

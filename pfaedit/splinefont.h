@@ -1067,7 +1067,7 @@ extern int SplineIsLinear(Spline *spline);
 extern int SplineIsLinearMake(Spline *spline);
 extern int SplineInSplineSet(Spline *spline, SplineSet *spl);
 extern int SSPointWithin(SplineSet *spl,BasePoint *pt);
-extern void SSRemoveZeroLengthSplines(SplineSet *base);
+extern SplineSet *SSRemoveZeroLengthSplines(SplineSet *base);
 extern void SplineCharMerge(SplineChar *sc,SplineSet **head,int type);
 extern void SplinePointListSimplify(SplineChar *sc,SplinePointList *spl,
 	struct simplifyinfo *smpl);
