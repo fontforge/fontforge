@@ -2298,7 +2298,7 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 	gcd[5].gd.flags = gg_enabled|gg_visible;
 	gcd[5].gd.u.list = SFLangList(sf,title==_STR_SuffixToTag?7:3,default_script);
 	j = script_lang_index;
-	if ( script_lang_index!=-1 ) {
+	if ( script_lang_index!=-1 && script_lang_index!=65535 ) {
 	    for ( i=0; gcd[5].gd.u.list[i].text!=NULL; ++i )
 		gcd[5].gd.u.list[i].selected = false;
 	    if ( script_lang_index==SLI_NESTED ) {
@@ -2316,6 +2316,7 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 	    }
 	    j = script_lang_index;
 	}
+	if ( j<0 || j>65500 ) j=0;
 	gcd[5].gd.label = &gcd[5].gd.u.list[j];
 	gcd[5].gd.cid = CID_ACD_Sli;
 	gcd[5].creator = GListButtonCreate;
