@@ -1,0 +1,9 @@
+#!/bin/csh
+rm -f *.{c,h,1,ui} *~
+foreach file ( ~/myfonts/ttfmod/*.{c,1,ui} ~/myfonts/ttfmod/[^p]*.h )
+ln $file
+end
+rm -f psunicodenames.c showttf.c _nom*.c *.en.old* pfaedit-ui.en.c
+ln ~/myfonts/bin/psunicodenames.c
+ln -s ttfmodui.h pfaeditui.h
+#cp ~/myfonts/pfaedit/makefile .

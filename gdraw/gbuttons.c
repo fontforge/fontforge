@@ -649,6 +649,7 @@ return;
     e.w = g->base;
     e.u.control.subtype = et_listselected;
     e.u.control.g = g;
+    e.u.control.u.list.from_mouse = true;
     if ( gl->g.handle_controlevent != NULL )
 	(gl->g.handle_controlevent)(&gl->g,&e);
     else

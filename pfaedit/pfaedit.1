@@ -1,5 +1,5 @@
-.\"	man page for pfaedit by tom harvey
-.Dd January 7, 2001
+.\"	man page for pfaedit by tom harvey, subsequently modified by george
+.Dd September 5, 2001
 .Dt PFAEDIT 1
 .Os
 .Sh NAME
@@ -8,30 +8,37 @@
 .Sh SYNOPSIS
 .Nm
 .Op Fl new
+.Op Fl recover={none|auto|clean}
 .Nm ""
 .Ar fontname
 .Sh DESCRIPTION
 .Nm
 allows you to create and modify PostScript fonts. You can save fonts in
-several different PostScript formats as well as TrueType and OpenType,
-and generate bitmaps.
+several different PostScript formats as well as TrueType, OpenType and CID-keyed fonts.
+It will also generate bitmaps.
 .Pp
 If the
 .Fl new
 flag is specified, a new PostScript font with the ISO 8859-1 encoding (the
-international encoding standard for western Europe will be created, and the
-standard for most X fonts) and open a font view which will allow you to edit
-that font.
+international encoding standard for western Europe, and the
+standard for most X fonts) will be created.
+.Pp
+If the
+.Fl recover
+flag is specified, you can control PfaEdit's crash recovery mechanism \(em just
+in case the crash recovery itself causes problems. -recover=none will not attempt
+to recover from crashes on this run, while -recover=clean will delete any
+recovery information.
 .Pp
 If a
 .Ar fontname
 is given,
 .Nm
-will open a font view looking at the font you selected. This may be a binary
+will open a font view looking at each font you selected. This may be a binary
 or ascii PostScript type1 font (.pfa or .pfb extensions) or one of pfaedit's
 spline font database files (.sfd extension), or even a PostScript type 0 font
 (.ps extension, though the encoding will probably be lost here), a true type
-font (.ttf), or an opentype font (.otf) or a bitmap font (.bdf).
+font (.ttf), an opentype font (.otf), a CID-keyed font or a bitmap font (.bdf).
 .Pp
 Without flags or arguments,
 .Nm
@@ -43,6 +50,10 @@ appropriate font file, or create a new one.
 .It Pa ~/.PfaEdit/autosave/
 crash recovery directory
 .El
+.Bl -tag -width /usr/share/pfaedit/*.ui -compact
+.It Pa /usr/share/pfaedit/*.ui
+translations for the user interface
+.El
 .\" .Sh EXAMPLES
 .\" .Sh DIAGNOSTICS
 .Sh SEE ALSO
@@ -52,5 +63,5 @@ The pfaedit user manual, at
 .\" .Sh HISTORY
 .Sh AUTHOR
 George Williams
-.\" .Sh BUGS
+.Sh BUGS
 No doubt many. But unknown.

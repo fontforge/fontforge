@@ -491,19 +491,13 @@ return(true);
     gfc = (GFileChooser *) GGadgetGetUserData(gl);
     ti = GGadgetGetListItem(gl,apos);
     if ( e->u.control.subtype==et_listselected && cnt==1 ) {
-#if 0
-	/* Nope, doesn't work. Goal is to remember first filename. But it */
-	/*  screws up because it never clears the filename when we hit a */
-	/*  non-directory. But if we do that then we don't know what the first*/
-	/*  filename was. (example typing into list box) */
-	/* Solution: A seperate field holding the first filename initialized */
-	/*  when typing starts, cleared when it ends. Copied to lastname when */
-	/*  we get directories, cleared from lastname when we get nondirs. Also*/
-	/*  need to check for null string in the title. (if null string don't */
-	/*  copy) */
-	if ( ti->checked /* it's a directory */ && gfc->lastname==NULL )
+	/* Nope, quite doesn't work. Goal is to remember first filename. But */
+	/*  if user types into the list box we'll (probably) get several diff*/
+	/*  filenames before we hit the directory. So we just ignore the typ-*/
+	/*  ing case for now. */
+	if ( ti->checked /* it's a directory */ && e->u.control.u.list.from_mouse &&
+		gfc->lastname==NULL )
 	    gfc->lastname = GGadgetGetTitle(&gfc->name->g);
-#endif
 	if ( ti->checked ) {
 	    unichar_t *val = galloc((u_strlen(ti->text)+2)*sizeof(unichar_t));
 	    u_strcpy(val,ti->text);

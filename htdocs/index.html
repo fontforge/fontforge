@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 31-Aug-2001 -->
+  <!-- AP: Last modified: 5-Sep-2001 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -66,14 +66,14 @@ know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-010831.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 31-August-2001
+    <A HREF="pfaedit-010905.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 5-Sept-2001
   <LI>
-    <A HREF="pfaedit-solaris-010624.tgz">Download pfaedit Solaris 8.0
-    </A>executable Version: 24-June-2001
+    <A HREF="pfaedit-solaris-010901.tgz">Download pfaedit Solaris 8.0
+    </A>executable Version: 1-Sept-2001
   <LI>
-    <A HREF="pfaedit-010808-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
-    Version: 8-August-2001<BR>
+    <A HREF="pfaedit-010905-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
+    Version: 5-Sept-2001<BR>
     &nbsp;
   <LI>
     If you want to do autotracing around character images you should also download
@@ -87,21 +87,21 @@ know when you do</A>.
   <A NAME="source">Source</A> distribution
 </H2>
 <P>
-You can download a <A HREF="pfaedit-010808-1.src.rpm">source RPM</A>: Version:
-8-August-2001<BR>
-Or you can download the following three packages. Version: 31-August-2001
+You can download a <A HREF="pfaedit-010905-1.src.rpm">source RPM</A>: Version:
+5-Sept-2001<BR>
+Or you can download the following three packages. Version: 5-Sept-2001
 <UL>
   <LI>
     <A HREF="libgunicode-010808.tgz">Unicode library source</A> (8-August-2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGUnicode/index.html">docs</A>
   <LI>
-    <A HREF="libgdraw-010830.tgz">Unicode widget library source</A>
-    (30-August-2001)<BR>
+    <A HREF="libgdraw-010905.tgz">Unicode widget library source</A>
+    (5-Sept-2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
   <LI>
-    <A HREF="pfaedit_src-010831.tgz">Pfaedit source</A> (31-August-2001)<BR>
+    <A HREF="pfaedit_src-010905.tgz">Pfaedit source</A> (5-Sept-2001)<BR>
     -- <A HREF="overview.html">docs</A>
   <LI>
     If you want to do autotracing around character images you should also download
@@ -115,7 +115,7 @@ Or you can download the following three packages. Version: 31-August-2001
 PfaEdit has been ported to the following systems (at some point in its life)
 <UL>
   <LI>
-    Linux (obviously, various, but I think all 386 based)
+    Linux (obviously, various, 386&amp;spark so far)
   <LI>
     Solaris
   <LI>
@@ -185,6 +185,34 @@ bitmap fonts that pfaedit uses
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    5-Sept-2001
+    <UL>
+      <LI>
+	Menubar should be redrawn properly after a resize now.
+      <LI>
+	File chooser should be smarter about retaining filenames after changing
+	directories.
+      <LI>
+	Various fixes to support URW's odd habit of abbreviating everything to 4
+	characters (ie. recognize "obli" for "oblique", and "medi" for "medium")
+      <LI>
+	Fixed a crash bug in postscript generation when character 0 was deemed worth
+	outputting
+      <LI>
+	Tweaked XHeight calculation to look for greek/cyrillic "x"
+      <LI>
+	Changed install process to put user-interface files into /usr/share/pfaedit
+	instead of into the bin directory.
+    </UL>
+  <LI>
+    1-Sept-2001
+    <UL>
+      <LI>
+	Small fixes to (my implementation of) Adobe Standard Encoding.
+      <LI>
+	Small tweaks to get things to compile on solaris again.
+    </UL>
   <LI>
     31-August-2001
     <UL>
@@ -1756,6 +1784,8 @@ The following people have helped debug pfaedit. Many thanks!
     Sivan Toledo
   <LI>
     Gerhard Schellhorn
+  <LI>
+    MinGyoon
 </UL>
 <P>
 PfaEdit was inspired by AltSys's
@@ -1810,6 +1840,9 @@ now placed in graceful retirement by MacroMedia.
 	<A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5177.Type2.pdf">Type2</A>
       <LI>
 	<A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5176.CFF.pdf">CFF</A>
+      <LI>
+	<A HREF="http://partners.adobe.com/asn/developer/opentype/">Adobe's version
+	of file format</A>
       <LI>
 	<A HREF="http://partners.adobe.com/asn/developer/opentype/appendices/ttoreg.html">script
 	&amp; language names for GSUB table</A>

@@ -134,6 +134,9 @@ return;
 	GFileBuildName(GResourceProgramDir,buffer,full,sizeof(full));
     }
     if ( !GFileExists(full)) {
+	strcpy(buffer,"pfaedit.");
+	strcat(buffer,loc);
+	strcat(buffer,".ui");
 	GFileBuildName("/usr/share/pfaedit",buffer,full,sizeof(full));
 	if ( !GFileExists(full) && strlen(loc)>5 ) {
 	    strcpy(buffer+13,".ui");

@@ -530,7 +530,7 @@ char *GetPostscriptFontName(int mult) {
     static unichar_t wild[] = { '*', '.', '{', 'p','f','a',',','p','f','b',',','s','f','d',',','t','t','f',',','b','d','f',',','o','t','f',',','p','f','3',',','t','t','c','}', 
 	     '{','.','g','z',',','.','Z',',','.','b','z','2',',','}',  '\0' };
     unichar_t *ret = FVOpenFont(GStringGetResource(_STR_OpenPostscript,NULL),
-	    NULL,wild,NULL,mult);
+	    NULL,wild,NULL,mult,true);
     char *temp = cu_copy(ret);
 
     free(ret);

@@ -1,0 +1,18 @@
+navidoc 1.0
+graph=1
+nametype=2
+title=
+style=
+template=
+Pages:
+"changelog.html" Up="" Style="" Title="Change Log for TtfMod" Type="text/html" 1
+"index.html" Up="" Style="" Title="TtfMod -- A TrueType® Font Modifier" Type="text/html" 1
+Ghosts:
+Refs:
+"changelog.html"
+"index.html"
+	2 "ttfsplash2.png"
+	1 "index.html"
+	1 "../index.html"
+	1 "changelog.html"
+	0 "../overview.html"

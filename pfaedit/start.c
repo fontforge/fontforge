@@ -98,7 +98,6 @@ static void BuildCharHook(GDisplay *gd) {
 }
 
 extern GImage splashimage;
-static unichar_t title[] = { 'P', 'f', 'a', 'E', 'd', 'i', 't',  '\0' };
 static GWindow splashw;
 static GTimer *autosave_timer, *splasht;
 struct delayed_event {
@@ -231,7 +230,7 @@ int main( int argc, char **argv ) {
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.positioned = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.window_title = title;
+    wattrs.window_title = GStringGetResource(_STR_PfaEdit,NULL);
     wattrs.border_width = 2;
     wattrs.is_dlg = true;
     pos.x = pos.y = 200;

@@ -27,6 +27,7 @@
 #include "pfaedit.h"
 #include "splinefont.h"
 #include <gdraw.h>			/* for the defn of GClut for greymaps */
+#include <ustring.h>
 
 #define MAX_WIDTH	200
 
@@ -50,9 +51,11 @@ static void decomposename(BDFFont *font, char *fontname, char *family_name, char
 	/* Assume it's a fontographer type name */
 	strcpy(slant,"R");
 	strcpy(squeeze,"Normal");
-	if (( ital = strstr(fontname,"Italic"))!=NULL || ( ital = strstr(fontname,"italic"))!=NULL)
+/* Sigh. I don't use "Italic" and "Oblique" because urw truncates these to 4 */
+/*  characters each. */
+	if (( ital = strstrmatch(fontname,"Ital"))!=NULL )
 	    strcpy(slant,"I");
-	else if (( ital = strstr(fontname,"Oblique"))!=NULL || ( ital = strstr(fontname,"oblique"))!=NULL )
+	else if (( ital = strstr(fontname,"Obli"))!=NULL )
 	    strcpy(slant,"O");
     
 	if (( bold = strstr(fontname,"Bold"))==NULL &&
@@ -61,7 +64,7 @@ static void decomposename(BDFFont *font, char *fontname, char *family_name, char
 		( bold = strstr(fontname,"Black"))==NULL &&
 		( bold = strstr(fontname,"Roman"))==NULL &&
 		( bold = strstr(fontname,"Book"))==NULL &&
-		( bold = strstr(fontname,"Medium"))==NULL );
+		( bold = strstr(fontname,"Medi"))==NULL );	/* Again, URW */
     
 	if (( style = strstr(fontname,"Sans"))==NULL );
 	if ((compress = strstr(fontname,"Extended"))==NULL &&

@@ -5,6 +5,7 @@ bindir = @bindir@
 libdir = @libdir@
 mandir = @mandir@
 includedir = @includedir@
+sharedir = /usr/share/pfaedit
 
 top_builddir = .
 

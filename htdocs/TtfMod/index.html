@@ -1,0 +1,67 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 3-Sep-2001 -->
+  <!-- AP: Last modified: 5-Sep-2001 -->
+  <TITLE>TtfMod -- A TrueType&reg; Font Modifier</TITLE>
+</HEAD>
+<BODY>
+<H1 Align=Center>
+  TtfMod<BR>
+  <SMALL>A TrueType&reg; Font Modifier</SMALL>
+</H1>
+<H2>
+  <IMG SRC="ttfsplash2.png" WIDTH="360" HEIGHT="330" ALIGN="Right">Table of
+  Contents
+</H2>
+<UL>
+  <LI>
+    <A HREF="#Overview">Overview</A>
+    <UL>
+      <LI>
+	<A HREF="#TTFontView">TrueType Font View</A>
+    </UL>
+  <LI>
+    <A HREF="../index.html">Downloads</A>
+  <LI>
+    <A HREF="changelog.html">Change Log</A>
+</UL>
+<H3>
+  <A NAME="Overview">Overview</A>
+</H3>
+<P>
+TtfMod is not a font creation program, look at
+<A HREF="../overview.html">PfaEdit</A> for that. It is designed as a companion
+program to PfaEdit, to take an existing TrueType (OpenType, TrueType Collection)
+file and allow you to edit some of the tables. This is primarily to provide
+access to certain features of TrueType that would be awkward to fold into
+PfaEdit's UI, specifically TrueType instructing (hinting). (And perhaps it
+will help me figure out why PfaEdit's TrueType instructing is so bad).
+<H3>
+  <A NAME="TTFontView">TrueType Font View</A>
+</H3>
+<P>
+This window shows you all the tables in the truetype file. It also shows
+you where those tables start and how big they are (that's probably useless
+information in almost all cases). Double clicking on a table will bring up
+a table editor to allow you to modify that particular table. Double clicking
+with the control key down will bring up a bare hex editor. Not all tables
+are editable (yet), and some tables are tightly connected so you can't edit
+one without editing the other (for example the loca and glyp tables are bound
+together).
+<P>
+If you move the cursor onto one of the tables and leave it there, a popup
+will appear giving a better explanation of the table than the often cryptic
+four character name.
+<P>
+<FONT COLOR="Red"><STRONG><SMALL>NOTE: </SMALL></STRONG></FONT> TTF tables
+are often intricately interconnected. Be careful about changing things that
+affect other tables. ttfmod will not fix up the others. For example: don't
+change the Glyph Count field in the 'maxp' table or you will confuse almost
+every other table.
+<P>
+No access will be provided to the CFF table of an opentype font. This is
+essentially postscript data and is better viewed from PfaEdit.
+<P>
+In a ttc file (A TrueType collection file) there may be more than one font.
+</BODY></HTML>

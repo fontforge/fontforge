@@ -122,11 +122,15 @@ Pages:
 "Constrain2_1.png" Up="" Style="" Title="" Type="image/png" 1
 "Constrain2_2.png" Up="" Style="" Title="" Type="image/png" 1
 "cidmenu.html" Up="" Style="" Title="Please title this page. (cidmenu.html in PfaEdit)" Type="text/html" 1
+"TtfMod" Up="" Style="" Title="" Type="application/x-navidoc" 1
 Ghosts:
 "http://sourceforge.net/projects/autotrace/" Up="" Style="" Title="" Type="text/html" 0
 Refs:
 "index.html"
-	1 "libgdraw-010830.tgz"
+	0 "pfaedit-010905-1.src.rpm"
+	1 "pfaedit-010905-1.i386.rpm"
+	1 "http://partners.adobe.com/asn/developer/opentype/"
+	1 "pfaedit-solaris-010901.tgz"
 	1 "http://www.adobe.com/print/postscript/pdfs/PLRM.pdf"
 	1 "http://partners.adobe.com/asn/developer/pdfs/tn/5014.CMap_CIDFont_Spec.pdf"
 	1 "cidmaps.tgz"
@@ -205,18 +209,16 @@ Refs:
 	1 "mailto:gww@silcom.com"
 	1 "MetaFont.html"
 	1 "overview.html"
-	1 "pfaedit-solaris-010624.tgz"
 	5 "problems.html"
 	2 "sfds"
 	1 "sfds/index.html"
 	1 "http://www.adobe.com/products/acrobat/acrrasianfontpack.html"
 	1 "cidmenu.html"
-	1 "pfaedit-010808-1.i386.rpm"
 	1 "libgunicode-010808.tgz"
-	0 "pfaedit-010808-1.src.rpm"
 	1 "http://www.microsoft.com/typography/otspec/default.htm"
-	1 "pfaedit_src-010830.tgz"
-	1 "pfaedit-010830.tgz"
+	1 "pfaedit-010905.tgz"
+	1 "libgdraw-010905.tgz"
+	1 "pfaedit_src-010905.tgz"
 "overview.html"
 	2 "fontview-cid.png"
 	5 "cidmenu.html"
@@ -649,3 +651,4 @@ Refs:
 	5 "pointmenu.html"
 	5 "editmenu.html"
 	5 "filemenu.html"
+"TtfMod"

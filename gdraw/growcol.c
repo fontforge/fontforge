@@ -39,6 +39,7 @@ static void GRowColSelected(GRowCol *l) {
     e.w = l->g.base;
     e.u.control.subtype = et_listselected;
     e.u.control.g = &l->g;
+    e.u.control.u.list.from_mouse = false;
     if ( l->g.handle_controlevent != NULL )
 	(l->g.handle_controlevent)(&l->g,&e);
     else

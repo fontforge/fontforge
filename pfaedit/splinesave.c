@@ -1471,7 +1471,6 @@ struct pschars *SplineFont2Chrs(SplineFont *sf, int round, int iscjk,
 	    (sf->chars[0]->splines!=NULL || sf->chars[0]->widthset) &&
 	     sf->chars[0]->refs==NULL && strcmp(sf->chars[0]->name,".notdef")==0 ) {
 	    chrs->values[0] = SplineChar2PS(sf->chars[0],&chrs->lens[0],round,iscjk,subrs,NULL);
-	i = 1;
     } else {
 	int w = sf->ascent+sf->descent; char *pt = notdefentry;
 	*pt++ = '\213';		/* 0 */
@@ -1499,7 +1498,7 @@ struct pschars *SplineFont2Chrs(SplineFont *sf, int round, int iscjk,
 	chrs->values[0] = (unsigned char *) copyn(notdefentry,pt-notdefentry);	/* 0 <w> hsbw endchar */
 	chrs->lens[0] = pt-notdefentry;
     }
-    cnt = 1;
+    i = cnt = 1;
     for ( ; i<sf->charcnt; ++i ) {
 	if ( SCWorthOutputting(sf->chars[i]) ) {
 	    chrs->keys[cnt] = copy(sf->chars[i]->name);

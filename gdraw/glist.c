@@ -34,13 +34,14 @@
 static int GListTypeTime = 500;			/* half a second between keystrokes */
 static int GListScrollTime = 500;		/* half a second between scrolls when mouse out of listbox */
 
-static void GListSelected(GList *l) {
+static void GListSelected(GList *l,int frommouse) {
     GEvent e;
 
     e.type = et_controlevent;
     e.w = l->g.base;
     e.u.control.subtype = et_listselected;
     e.u.control.g = &l->g;
+    e.u.control.u.list.from_mouse = frommouse;
     if ( l->g.handle_controlevent != NULL )
 	(l->g.handle_controlevent)(&l->g,&e);
     else
@@ -541,7 +542,7 @@ return( true ); /* Do Nothing, nothing selectable */
 	    if ( event->u.mouse.clicks==2 )
 		GListDoubleClick(gl);
 	    else
-		GListSelected(gl);
+		GListSelected(gl,true);
 	}
     } else
 return( false );
@@ -657,7 +658,7 @@ return( true );
 	refresh = GListAnyOtherSels(gl,sel) || !wassel;
 	GListSelectOne(&gl->g,sel);
 	if ( refresh )
-	    GListSelected(gl);
+	    GListSelected(gl,false);
     }
     if ( loff!=0x80000000 || xoff!=0x80000000 ) {
 	if ( loff==0x80000000 ) loff = 0;

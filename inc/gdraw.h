@@ -244,6 +244,9 @@ typedef struct gevent {
 		struct {
 		    int clicks;
 		} button;
+		struct {
+		    int from_mouse;
+		} list;
 	    } u;
 	} control;
 	struct {

@@ -607,6 +607,7 @@ static char *str_SavingPFM = "Saving PFM File";
 static char *str_SavingBitmapFonts = "Saving Bitmap Font(s)";
 static char *str_NotCID = "Not a CID format";
 static char *str_NotCIDOk = "You are attempting to save a CID font in a non-CID format. This is ok, but it means that only the current sub-font will be saved.\nIs that what you want?";
+static char *str_PixelList = "Pixel List";
     /* Goto character ... */
 static char str_Badnumberin[] = "Bad Number in ";
 static char str_Enternameofchar[] = "Enter the name of a character in the font";
@@ -682,6 +683,28 @@ static char *str_PointInfo = "Point Info";
 static char *str_ImageInfo = "Image Info";
 static char *str_ReferenceInfo = "Reference Info";
 static char *str_Dependents = "Dependents";
+static char *str_Offset = "Offset";
+static char *str_BaseX = "Base X";
+static char *str_BaseY = "Base Y";
+static char *str_NextCP = "Next CP:";
+static char *str_NextCPX = "Next CP X";
+static char *str_NextCPY = "Next CP Y";
+static char *str_PrevCP = "Prev CP:";
+static char *str_PrevCPX = "Prev CP X";
+static char *str_PrevCPY = "Prev CP Y";
+static char *str_UnicodeName = "Unicode Name:";
+static char mnemonic_UnicodeName = 'N';
+static char *str_UnicodeValue = "Unicode Value:";
+static char mnemonic_UnicodeValue = 'V';
+static char *str_UnicodeChar = "Unicode Char:";
+static char mnemonic_UnicodeChar = 'h';
+static char *str_SetFromName = "Set From Name";
+static char mnemonic_SetFromName = 'a';
+static char *str_SetFromValue = "Set From Value";
+static char mnemonic_SetFromValue = 'u';
+static char *str_Ligature = "Ligature:";
+static char mnemonic_Ligature = 'L';
+static char *str_TransformedBy = "Transformed by:";
     /* Import */
 static char str_Duppixelsize[] = "Duplicate pixelsize";
 /* "The font database already contains a bitmap\nfont with this pixelsize (%d)\nDo you want to overwrite it?" */
@@ -1050,5 +1073,7 @@ static char *str_Saving = "Saving...";
 static char *str_SavingDb = "Saving Spline Font Database";
 static char *str_SavingOutlines = "Saving Outlines";
 static char *str_SavingBitmaps = "Saving Bitmaps";
+    /* start.c */
+static char *str_PfaEdit = "PfaEdit";
 
 static int num_buttonsize = 55;

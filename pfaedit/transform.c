@@ -455,7 +455,6 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
     GGadgetCreateData gcd[5];
     GTextInfo label[5];
     static TransData td;
-    static unichar_t title[] = { 'T','r','a','n','s','f','o','r','m','.','.','.',  '\0' };
     int i, len;
     GGadget *orig;
     BasePoint junk;
@@ -473,7 +472,7 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
-	wattrs.window_title = title;
+	wattrs.window_title = GStringGetResource(_STR_Transform,NULL);
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width =GDrawPointsToPixels(NULL,TBlock_Width);

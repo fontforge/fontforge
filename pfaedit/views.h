@@ -456,7 +456,7 @@ extern char *FindAutoTraceName(void);
 extern char *ProgramExists(char *prog,char *buffer);
 
 extern unichar_t *FVOpenFont(const unichar_t *title, const unichar_t *defaultfile,
-	const unichar_t *initial_filter, unichar_t **mimetypes,int mult);
+	const unichar_t *initial_filter, unichar_t **mimetypes,int mult,int newok);
 
 extern void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv);
 

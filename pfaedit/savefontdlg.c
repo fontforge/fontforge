@@ -92,7 +92,7 @@ static real *ParseBitmapSizes(GGadget *g,int *err) {
 	if ( sizes[i]>0 ) ++i;
 	if ( *end!=' ' && *end!=',' && *end!='\0' ) {
 	    free(sizes);
-	    Protest("Pixel List");
+	    ProtestR(_STR_PixelList);
 	    *err = true;
 return( NULL );
 	}

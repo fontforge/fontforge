@@ -2887,11 +2887,14 @@ static void sethead(struct head *head,SplineFont *_sf) {
     head->magicNum = 0x5f0f3cf5;
     head->flags = 3;		/* baseline at 0, lsbline at 0 */
     head->emunits = sf->ascent+sf->descent;
+/* Many of the following style names are truncated because that's what URW */
+/*  does. Only 4 characters for each style. Hence "obli" rather than "oblique"*/
     if ( sf->weight!=NULL && (strstrmatch(sf->weight,"bold")!=NULL ||
-		strstrmatch(sf->weight,"black")!=NULL ))
+		strstrmatch(sf->weight,"demi")!=NULL ||
+		strstrmatch(sf->weight,"blac")!=NULL ))
 	head->macstyle |= 1;
-    if ( sf->fontname!=NULL && (strstrmatch(sf->fontname,"italic")!=NULL ||
-		strstrmatch(sf->fontname,"oblique")!=NULL ))
+    if ( sf->fontname!=NULL && (strstrmatch(sf->fontname,"ital")!=NULL ||
+		strstrmatch(sf->fontname,"obli")!=NULL ))
 	head->macstyle |= 2;
     head->lowestreadable = 8;
     head->locais32 = 1;
@@ -3036,6 +3039,13 @@ void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *_sf,char *fontname) {
 	} else if ( strstrmatch(fontname,"light")!=NULL ) {
 	    pfminfo->weight = 300;
 	    pfminfo->panose[2] = 4;
+/* urw uses 4 character abreviations */
+	} else if ( strstrmatch(fontname,"demi")!=NULL ) {
+	    pfminfo->weight = 600;
+	    pfminfo->panose[2] = 7;
+	} else if ( strstrmatch(fontname,"medi")!=NULL ) {
+	    pfminfo->weight = 500;
+	    pfminfo->panose[2] = 6;
 	}
 
 	pfminfo->width = 5;
@@ -3125,6 +3135,11 @@ static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *_sf,
 	++k;
     } while ( k<_sf->subfontcnt );
     sf = _sf;
+
+    if ( BDFFoundry!=NULL && strcmp(BDFFoundry,"PfaEdit")!=0 )
+	strncpy(os2->achVendID,BDFFoundry,4);
+    else
+	memcpy(os2->achVendID,"PfEd",4);
 
     if ( cnt1==27 )
 	os2->avgCharWid = avg1/cnt1;

@@ -114,7 +114,7 @@ static int ParseUValue(GWindow gw, int cid, int minusoneok) {
     if ( val==-1 && minusoneok )
 return( -1 );
     if ( *end || val<0 || val>65535 ) {
-	Protest( "Unicode Value" );
+	ProtestR( _STR_UnicodeValue );
 return( -2 );
     }
 return( val );
@@ -470,8 +470,8 @@ void SCGetInfo(SplineChar *sc, int nextprev) {
 	memset(&gcd,0,sizeof(gcd));
 	memset(&label,0,sizeof(label));
 
-	label[0].text = (unichar_t *) "Unicode Name:";
-	label[0].text_is_1byte = true;
+	label[0].text = (unichar_t *) _STR_UnicodeName;
+	label[0].text_in_resource = true;
 	gcd[0].gd.label = &label[0];
 	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5+6; 
 	gcd[0].gd.flags = gg_enabled|gg_visible;
@@ -484,8 +484,8 @@ void SCGetInfo(SplineChar *sc, int nextprev) {
 	gcd[1].gd.cid = CID_UName;
 	gcd[1].creator = GTextFieldCreate;
 
-	label[2].text = (unichar_t *) "Unicode Value:";
-	label[2].text_is_1byte = true;
+	label[2].text = (unichar_t *) _STR_UnicodeValue;
+	label[2].text_in_resource = true;
 	gcd[2].gd.label = &label[2];
 	gcd[2].gd.pos.x = 5; gcd[2].gd.pos.y = 31+6; 
 	gcd[2].gd.flags = gg_enabled|gg_visible;
@@ -498,8 +498,8 @@ void SCGetInfo(SplineChar *sc, int nextprev) {
 	gcd[3].gd.cid = CID_UValue;
 	gcd[3].creator = GTextFieldCreate;
 
-	label[4].text = (unichar_t *) "Unicode Char:";
-	label[4].text_is_1byte = true;
+	label[4].text = (unichar_t *) _STR_UnicodeChar;
+	label[4].text_in_resource = true;
 	gcd[4].gd.label = &label[4];
 	gcd[4].gd.pos.x = 5; gcd[4].gd.pos.y = 57+6; 
 	gcd[4].gd.flags = gg_enabled|gg_visible;
@@ -515,8 +515,8 @@ void SCGetInfo(SplineChar *sc, int nextprev) {
 
 	gcd[6].gd.pos.x = 12; gcd[6].gd.pos.y = 87;
 	gcd[6].gd.flags = gg_visible | gg_enabled;
-	label[6].text = (unichar_t *) "Set From Name";
-	label[6].text_is_1byte = true;
+	label[6].text = (unichar_t *) _STR_SetFromName;
+	label[6].text_in_resource = true;
 	gcd[6].gd.mnemonic = 'a';
 	gcd[6].gd.label = &label[6];
 	gcd[6].gd.handle_controlevent = CI_SName;
@@ -524,8 +524,8 @@ void SCGetInfo(SplineChar *sc, int nextprev) {
 
 	gcd[7].gd.pos.x = 107; gcd[7].gd.pos.y = 87;
 	gcd[7].gd.flags = gg_visible | gg_enabled;
-	label[7].text = (unichar_t *) "Set From Value";
-	label[7].text_is_1byte = true;
+	label[7].text = (unichar_t *) _STR_SetFromValue;
+	label[7].text_in_resource = true;
 	gcd[7].gd.mnemonic = 'l';
 	gcd[7].gd.label = &label[7];
 	gcd[7].gd.handle_controlevent = CI_SValue;
@@ -534,8 +534,8 @@ void SCGetInfo(SplineChar *sc, int nextprev) {
 	gcd[8].gd.pos.x = 40; gcd[8].gd.pos.y = CI_Height-32-32;
 	gcd[8].gd.pos.width = -1; gcd[8].gd.pos.height = 0;
 	gcd[8].gd.flags = gg_visible | gg_enabled ;
-	label[8].text = (unichar_t *) "< Prev";
-	label[8].text_is_1byte = true;
+	label[8].text = (unichar_t *) _STR_PrevArrow;
+	label[8].text_in_resource = true;
 	gcd[8].gd.mnemonic = 'P';
 	gcd[8].gd.label = &label[8];
 	gcd[8].gd.handle_controlevent = CI_NextPrev;
@@ -545,8 +545,8 @@ void SCGetInfo(SplineChar *sc, int nextprev) {
 	gcd[9].gd.pos.x = CI_Width-GIntGetResource(_NUM_Buttonsize)-40; gcd[9].gd.pos.y = CI_Height-32-32;
 	gcd[9].gd.pos.width = -1; gcd[9].gd.pos.height = 0;
 	gcd[9].gd.flags = gg_visible | gg_enabled ;
-	label[9].text = (unichar_t *) "Next >";
-	label[9].text_is_1byte = true;
+	label[9].text = (unichar_t *) _STR_NextArrow;
+	label[9].text_in_resource = true;
 	gcd[9].gd.label = &label[9];
 	gcd[9].gd.mnemonic = 'N';
 	gcd[9].gd.handle_controlevent = CI_NextPrev;
@@ -584,8 +584,8 @@ void SCGetInfo(SplineChar *sc, int nextprev) {
 	gcd[13].gd.flags = gg_visible | gg_enabled;
 	gcd[13].creator = GLineCreate;
 
-	label[14].text = (unichar_t *) "Ligature:";
-	label[14].text_is_1byte = true;
+	label[14].text = (unichar_t *) _STR_Ligature;
+	label[14].text_in_resource = true;
 	gcd[14].gd.label = &label[14];
 	gcd[14].gd.pos.x = 5; gcd[14].gd.pos.y = CI_Height-32-32-6-26+6; 
 	gcd[14].gd.flags = gg_enabled|gg_visible;
@@ -655,8 +655,8 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	gcd[0].gd.flags = gg_enabled|gg_visible;
 	gcd[0].creator = GLabelCreate;
 
-	label[1].text = (unichar_t *) "Transformed by:";
-	label[1].text_is_1byte = true;
+	label[1].text = (unichar_t *) _STR_TransformedBy;
+	label[1].text_in_resource = true;
 	gcd[1].gd.label = &label[1];
 	gcd[1].gd.pos.x = 5; gcd[1].gd.pos.y = 19; 
 	gcd[1].gd.flags = gg_enabled|gg_visible;
@@ -925,9 +925,9 @@ static int PI_BaseChanged(GGadget *g, GEvent *e) {
 	SplinePoint *cursp = ci->cursp;
 
 	if ( GGadgetGetCid(g)==CID_BaseX )
-	    dx = GetReal(ci->gw,CID_BaseX,"Base X",&err)-cursp->me.x;
+	    dx = GetRealR(ci->gw,CID_BaseX,_STR_BaseX,&err)-cursp->me.x;
 	else
-	    dy = GetReal(ci->gw,CID_BaseY,"Base Y",&err)-cursp->me.y;
+	    dy = GetRealR(ci->gw,CID_BaseY,_STR_BaseY,&err)-cursp->me.y;
 	if ( (dx==0 && dy==0) || err )
 return( true );
 	cursp->me.x += dx;
@@ -954,9 +954,9 @@ static int PI_NextChanged(GGadget *g, GEvent *e) {
 	SplinePoint *cursp = ci->cursp;
 
 	if ( GGadgetGetCid(g)==CID_NextXOff )
-	    dx = GetReal(ci->gw,CID_NextXOff,"Next CP X",&err)-(cursp->nextcp.x-cursp->me.x);
+	    dx = GetRealR(ci->gw,CID_NextXOff,_STR_NextCPX,&err)-(cursp->nextcp.x-cursp->me.x);
 	else
-	    dy = GetReal(ci->gw,CID_NextYOff,"Next CP Y",&err)-(cursp->nextcp.y-cursp->me.y);
+	    dy = GetRealR(ci->gw,CID_NextYOff,_STR_NextCPY,&err)-(cursp->nextcp.y-cursp->me.y);
 	if ( (dx==0 && dy==0) || err )
 return( true );
 	cursp->nextcp.x += dx;
@@ -978,9 +978,9 @@ static int PI_PrevChanged(GGadget *g, GEvent *e) {
 	SplinePoint *cursp = ci->cursp;
 
 	if ( GGadgetGetCid(g)==CID_PrevXOff )
-	    dx = GetReal(ci->gw,CID_PrevXOff,"Prev CP X",&err)-(cursp->prevcp.x-cursp->me.x);
+	    dx = GetRealR(ci->gw,CID_PrevXOff,_STR_PrevCPX,&err)-(cursp->prevcp.x-cursp->me.x);
 	else
-	    dy = GetReal(ci->gw,CID_PrevYOff,"Prev CP Y",&err)-(cursp->prevcp.y-cursp->me.y);
+	    dy = GetRealR(ci->gw,CID_PrevYOff,_STR_PrevCPY,&err)-(cursp->prevcp.y-cursp->me.y);
 	if ( (dx==0 && dy==0) || err )
 return( true );
 	cursp->prevcp.x += dx;
@@ -1024,8 +1024,8 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	memset(&gcd,0,sizeof(gcd));
 	memset(&label,0,sizeof(label));
 
-	label[0].text = (unichar_t *) "Base:";
-	label[0].text_is_1byte = true;
+	label[0].text = (unichar_t *) _STR_Base;
+	label[0].text_in_resource = true;
 	gcd[0].gd.label = &label[0];
 	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5+6; 
 	gcd[0].gd.flags = gg_enabled|gg_visible;
@@ -1043,8 +1043,8 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[2].gd.handle_controlevent = PI_BaseChanged;
 	gcd[2].creator = GTextFieldCreate;
 
-	label[3].text = (unichar_t *) "Next CP:";
-	label[3].text_is_1byte = true;
+	label[3].text = (unichar_t *) _STR_NextCP;
+	label[3].text_in_resource = true;
 	gcd[3].gd.label = &label[3];
 	gcd[3].gd.pos.x = 9; gcd[3].gd.pos.y = 35; 
 	gcd[3].gd.flags = gg_enabled|gg_visible;
@@ -1067,8 +1067,8 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[6].gd.handle_controlevent = PI_NextChanged;
 	gcd[6].creator = GTextFieldCreate;
 
-	label[7].text = (unichar_t *) "Prev CP:";
-	label[7].text_is_1byte = true;
+	label[7].text = (unichar_t *) _STR_PrevCP;
+	label[7].text_in_resource = true;
 	gcd[7].gd.label = &label[7];
 	gcd[7].gd.pos.x = gcd[3].gd.pos.x; gcd[7].gd.pos.y = 82; 
 	gcd[7].gd.flags = gg_enabled|gg_visible;
@@ -1094,8 +1094,8 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[11].gd.pos.x = (PI_Width-2*50-10)/2; gcd[11].gd.pos.y = 127;
 	gcd[11].gd.pos.width = 50; gcd[11].gd.pos.height = 0;
 	gcd[11].gd.flags = gg_visible | gg_enabled;
-	label[11].text = (unichar_t *) "< Prev";
-	label[11].text_is_1byte = true;
+	label[11].text = (unichar_t *) _STR_PrevArrow;
+	label[11].text_in_resource = true;
 	gcd[11].gd.mnemonic = 'P';
 	gcd[11].gd.label = &label[11];
 	gcd[11].gd.handle_controlevent = PI_Prev;
@@ -1104,8 +1104,8 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[12].gd.pos.x = PI_Width-50-(PI_Width-2*50-10)/2; gcd[12].gd.pos.y = gcd[11].gd.pos.y;
 	gcd[12].gd.pos.width = 50; gcd[12].gd.pos.height = 0;
 	gcd[12].gd.flags = gg_visible | gg_enabled;
-	label[12].text = (unichar_t *) "Next >";
-	label[12].text_is_1byte = true;
+	label[12].text = (unichar_t *) _STR_NextArrow;
+	label[12].text_in_resource = true;
 	gcd[12].gd.label = &label[12];
 	gcd[12].gd.mnemonic = 'N';
 	gcd[12].gd.handle_controlevent = PI_Next;
@@ -1151,14 +1151,14 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[18].gd.flags = gg_enabled | gg_visible;
 	gcd[18].creator = GGroupCreate;
 
-	label[19].text = (unichar_t *) "Offset";
-	label[19].text_is_1byte = true;
+	label[19].text = (unichar_t *) _STR_Offset;
+	label[19].text_in_resource = true;
 	gcd[19].gd.label = &label[19];
 	gcd[19].gd.pos.x = gcd[3].gd.pos.x+10; gcd[19].gd.pos.y = gcd[5].gd.pos.y+6; 
 	gcd[19].gd.flags = gg_enabled|gg_visible;
 	gcd[19].creator = GLabelCreate;
 
-	label[20].text = (unichar_t *) "Offset";
+	label[20].text = (unichar_t *) _STR_Offset;
 	label[20].text_is_1byte = true;
 	gcd[20].gd.label = &label[20];
 	gcd[20].gd.pos.x = gcd[3].gd.pos.x+10; gcd[20].gd.pos.y = gcd[9].gd.pos.y+6; 

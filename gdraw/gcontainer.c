@@ -570,6 +570,7 @@ return( _GWidget_TopLevel_Key(gw,gw,event));
 	if ( td->gmenubar!=NULL ) {
 	    GGadgetGetSize(td->gmenubar,&r);
 	    GGadgetResize(td->gmenubar,event->u.resize.size.width,r.height);
+	    GGadgetRedraw(td->gmenubar);
 	} /* status line, toolbar, etc. */
 	if ( td->palettes!=NULL && event->u.resize.moved ) {
 	    GTopLevelD *palette;

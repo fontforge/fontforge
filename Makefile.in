@@ -5,6 +5,7 @@ bindir = @bindir@
 libdir = @libdir@
 mandir = @mandir@
 includedir = @includedir@
+sharedir = /usr/share/pfaedit
 
 top_builddir = .
 
@@ -25,8 +26,11 @@ clean:
 cleaner:
 	-rm -f gdraw/*.o pfaedit/*.o Unicode/*.o gdraw/Makefile pfaedit/Makefile Unicode/Makefile
 
-install:
+install: $(sharedir)
 # You may need to be root to do the install
 	cp pfaedit/pfaedit $(bindir)
-	cp pfaedit/pfaedit.*.ui $(bindir)
+	cp pfaedit/pfaedit.*.ui $(sharedir)
 	cp pfaedit/pfaedit.1 $(mandir)/man1
+
+$(sharedir):
+	mkdir $(sharedir)

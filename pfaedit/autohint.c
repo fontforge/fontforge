@@ -315,8 +315,8 @@ void QuickBlues(SplineFont *_sf, BlueData *bd) {
 	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
 	    int enc = sf->chars[i]->unicodeenc;
 	    if ( enc=='I' || enc=='O' || enc=='x' || enc=='o' || enc=='p' || enc=='l' ||
-		    enc==0x399 || enc==0x39f || enc==0x3ba || enc==0x3bf || enc==0x3c1 || enc==0x3be ||
-		    enc==0x41f || enc==0x41e || enc==0x43e || enc==0x43f || enc==0x440 || enc==0x452 ) {
+		    enc==0x399 || enc==0x39f || enc==0x3ba || enc==0x3bf || enc==0x3c1 || enc==0x3be || enc==0x3c7 ||
+		    enc==0x41f || enc==0x41e || enc==0x43e || enc==0x43f || enc==0x440 || enc==0x452 || enc==0x445 ) {
 		t = sf->chars[i];
 		while ( t->splines==NULL && t->refs!=NULL )
 		    t = t->refs->sc;
@@ -338,6 +338,7 @@ void QuickBlues(SplineFont *_sf, BlueData *bd) {
 			if ( enc==0x41f ) caph = max;
 			else if ( enc==0x41e ) caphtop = max;
 			else if ( enc==0x43f && xheight<0 ) xheight = max;
+			else if ( enc==0x445 && xheight<0 ) xheight = max;
 			else if ( enc==0x43e ) xheighttop = max;
 			else if ( enc==0x452 && ascent<0 ) ascent = max;
 			else if ( enc==0x440 && descent>0 ) descent = min;
@@ -345,6 +346,7 @@ void QuickBlues(SplineFont *_sf, BlueData *bd) {
 			if ( enc==0x399 ) caph = max;
 			else if ( enc==0x39f ) caphtop = max;
 			else if ( enc==0x3ba && xheight<0 ) xheight = max;
+			else if ( enc==0x3c7 && xheight<0 ) xheight = max;
 			else if ( enc==0x3bf ) xheighttop = max;
 			else if ( enc==0x3be && ascent<0 ) ascent = max;
 			else if ( enc==0x3c1 && descent>0 ) descent = min;

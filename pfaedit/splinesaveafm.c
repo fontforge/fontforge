@@ -325,15 +325,25 @@ int AfmSplineFont(FILE *afm, SplineFont *sf, int formattype) {
 	    sc = sf->chars[i];
 	if ( sc!=NULL ) {
 	    if ( sc->unicodeenc=='I' || sc->unicodeenc=='x' ||
-		    sc->unicodeenc=='p' || sc->unicodeenc=='l' ) {
+		    sc->unicodeenc=='p' || sc->unicodeenc=='l' ||
+		    sc->unicodeenc==0x399 || sc->unicodeenc==0x3c7 ||
+		    sc->unicodeenc==0x3c1 ||
+		    sc->unicodeenc==0x406 || sc->unicodeenc==0x445 ||
+		    sc->unicodeenc==0x440 ) {
 		SplineCharFindBounds(sc,&b);
 		if ( sc->unicodeenc=='I' )
 		    caph = b.maxy;
+		else if ( caph==0 && (sc->unicodeenc==0x399 || sc->unicodeenc==0x406))
+		    caph = b.maxy;
 		else if ( sc->unicodeenc=='x' )
 		    xh = b.maxy;
-		else if ( sc->unicodeenc=='l' )
+		else if ( xh==0 && (sc->unicodeenc==0x3c7 || sc->unicodeenc==0x445))
+		    xh = b.maxy;
+		else if ( sc->unicodeenc=='l' )	/* can't find a good equivalent in greek/cyrillic */
 		    ash = b.maxy;
-		else
+		else if ( sc->unicodeenc=='p' )
+		    dsh = b.miny;
+		else if ( dsh==0 && (sc->unicodeenc==0x3c1 || sc->unicodeenc==0x440))
 		    dsh = b.miny;
 	    }
 	    if ( SCWorthOutputting(sc) || (iscid && i==0 && sc!=NULL)) 
@@ -587,9 +597,10 @@ int PfmSplineFont(FILE *pfm, SplineFont *sf, int type0) {
     if ( caph==0 ) caph = ash;
     putlshort(sf->ascent+sf->descent-caph-dsh,pfm);	/* Internal leading */
     putlshort(0/*(sf->ascent+sf->descent)/8*/,pfm);	/* External leading */
+/* I don't check for "italic" and "oblique" because URW truncates them to 4 characters */
     putc(sf->italicangle!=0 ||
-	    strstrmatch(sf->fontname,"italic")!=NULL ||
-	    strstrmatch(sf->fontname,"oblique")!=NULL,pfm);	/* is italic */
+	    strstrmatch(sf->fontname,"ital")!=NULL ||
+	    strstrmatch(sf->fontname,"obli")!=NULL,pfm);	/* is italic */
     putc(0,pfm);			/* underline */
     putc(0,pfm);			/* strikeout */
     putlshort(sf->pfminfo.weight,pfm);	/* weight */
