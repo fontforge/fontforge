@@ -298,7 +298,7 @@ Spline *ApproximateSplineFromPointsSlopes(SplinePoint *from, SplinePoint *to,
     int i;
     real v[6], m[6][6];
     Spline *spline;
-    BasePoint prevcp;
+    BasePoint prevcp, *p, *n;
 
     /* If the two end-points are corner points then allow the slope to vary */
     /* Or if one end-point is a tangent but the point defining the tangent's */
@@ -466,6 +466,8 @@ return( ApproximateSplineFromPoints(from,to,mid,cnt) );
     /*  worse) */
     prevcp.x = from->me.x + v[2]/3 + (v[2]+v[1])/3;
     prevcp.y = from->me.y + v[5]/3 + (v[5]+v[4])/3;
+    n = from->nonextcp ? &to->me : &from->nextcp;
+    p = to->noprevcp ? &from->me : &to->prevcp;
     if ( prevcp.x > 65536 || prevcp.x < -65536 || prevcp.y > 65536 || prevcp.y < -65536 ||
 	    v[2] > 185536 || v[2] < -185536 || v[5] > 185536 || v[5] < -185536 ) {
 	/* Well these aren't reasonable values. I assume a rounding error */
@@ -481,8 +483,8 @@ return( ApproximateSplineFromPoints(from,to,mid,cnt) );
 	for ( i=0; i<cnt; ++i )
 	    fprintf( stderr, "(%g,%g,%g) ", mid[i].x, mid[i].y, mid[i].t );
 	fprintf( stderr, "\n");
-    } else if ( v[2]*(from->nextcp.x-from->me.x) + v[5]*(from->nextcp.y-from->me.y)>=0 &&
-	    (prevcp.x-to->me.x)*(to->prevcp.x-to->me.x) + (prevcp.y-to->me.y)*(to->prevcp.y-to->me.y)>=0 ) {
+    } else if ( v[2]*(n->x-from->me.x) + v[5]*(n->y-from->me.y)>=0 &&
+	    (prevcp.x-to->me.x)*(p->x-to->me.x) + (prevcp.y-to->me.y)*(p->y-to->me.y)>=0 ) {
 	from->nextcp.x = from->me.x + v[2]/3;
 	from->nextcp.y = from->me.y + v[5]/3;
 	from->nonextcp = v[2]==0 && v[5]==0;
@@ -506,6 +508,7 @@ Spline *ApproximateSplineFromPoints(SplinePoint *from, SplinePoint *to,
     int i;
     real vx[3], vy[3], m[3][3];
     Spline *spline;
+    BasePoint nextcp, prevcp;
 
     t = t2 = t3 = t4 = 1;
     x = from->me.x+to->me.x; y = from->me.y+to->me.y;
@@ -571,11 +574,24 @@ Spline *ApproximateSplineFromPoints(SplinePoint *from, SplinePoint *to,
     vy[2] -= m[2][2]*vy[0];		/* This is ay */
     /* m[2][2] = 0; */
 
-    from->nextcp.x = from->me.x + vx[0]/3;
-    from->nextcp.y = from->me.y + vy[0]/3;
-    to->prevcp.x = from->nextcp.x + (vx[0]+vx[1])/3;
-    to->prevcp.y = from->nextcp.y + (vy[0]+vy[1])/3;
-    from->nonextcp = to->noprevcp = false;
+    nextcp.x = from->me.x + vx[0]/3;
+    nextcp.y = from->me.y + vy[0]/3;
+    prevcp.x = nextcp.x + (vx[0]+vx[1])/3;
+    prevcp.y = nextcp.y + (vy[0]+vy[1])/3;
+    if ( vx[0]*(to->me.x-from->me.x) + vy[0]*(to->me.y-from->me.y)>=0 ) {
+	from->nextcp = nextcp;
+	from->nonextcp = false;
+    } else {
+	from->nextcp = from->me;
+	from->nonextcp = true;
+    }
+    if ( (prevcp.x-to->me.x)*(from->me.x-to->me.x) + (prevcp.y-to->me.y)*(from->me.y-to->me.y)>=0 ) {
+	to->prevcp = prevcp;
+	to->noprevcp = false;
+    } else {
+	to->prevcp = to->me;
+	to->noprevcp = true;
+    }
     spline = SplineMake(from,to);
     if ( SplineIsLinear(spline)) {
 	spline->islinear = from->nonextcp = to->noprevcp = true;
