@@ -2487,12 +2487,13 @@ static void GXDrawSyncThread(GDisplay *gd, void (*func)(void *), void *data) {
 #endif
 }
 
-static void GXDrawProcessTimerEvent(GXDisplay *gdisp,GTimer *timer) {
+static int GXDrawProcessTimerEvent(GXDisplay *gdisp,GTimer *timer) {
     struct gevent gevent;
     GWindow o;
+    int ret = false;
 
     if ( timer->active )
-return;
+return( false );
     timer->active = true;
     for ( o = timer->owner; o!=NULL && !o->is_dying; o=o->parent );
     if ( timer->owner!=NULL && timer->owner->eh!=NULL && o==NULL ) {
@@ -2504,6 +2505,7 @@ return;
 	    /* If this routine calls something that checks events then */
 	    /*  without the active flag above we'd loop forever half-invoking*/
 	    /*  this timer */
+	ret = true;
     }
     if ( GTimerInList(gdisp,timer)) {		/* carefull, they might have cancelled it */
 	timer->active = false;
@@ -2511,7 +2513,9 @@ return;
 	    GXDrawCancelTimer(timer);
 	else
 	    GTimerReinstall(gdisp,timer);
+	ret = true;
     }
+return(ret);
 }
 
 static void GXDrawCheckPendingTimers(GXDisplay *gdisp) {
@@ -2524,7 +2528,8 @@ static void GXDrawCheckPendingTimers(GXDisplay *gdisp) {
 	if ( timer->time_sec>tv.tv_sec ||
 		(timer->time_sec == tv.tv_sec && timer->time_usec>tv.tv_usec ))
     break;
-	GXDrawProcessTimerEvent(gdisp,timer);
+	if ( GXDrawProcessTimerEvent(gdisp,timer))
+    break;
     }
 }
 
