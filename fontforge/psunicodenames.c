@@ -65548,6 +65548,7 @@ const struct psaltnames  {
     char *name;
     int unicode;
     int provenance;		/* 1=> Adobe PUA, 2=>AMS PUA, 3=>TeX */
+		/* (1 also includes my additions to PUA for greek smallcaps) */
 } psaltuninames[] = {
 /* These names are those that Adobe says people should use */
 /* in their naming conventions file, but which they do not */
@@ -65940,6 +65941,7 @@ const struct psaltnames  {
 	{ "dasia_perispomeni", 0x1fdf },
 	{ "dialytika_varia", 0x1fed },
 	{ "dialytika_oxia", 0x1fee },
+/* My addition of greek small caps */
 	{ "alpha.sc", 0xf500, 1 },
 	{ "beta.sc", 0xf501, 1 },
 	{ "gamma.sc", 0xf502, 1 },
@@ -65966,6 +65968,10 @@ const struct psaltnames  {
 	{ "omega.sc", 0xf518, 1 },
 	{ "iotadieresis.sc", 0xf519, 1 },
 	{ "upsilondieresis.sc", 0xf51a, 1 },
+	{ "alphaiota.sc", 0xf51b, 1 },
+	{ "etaiota.sc", 0xf51c, 1 },
+	{ "omegaiota.sc", 0xf51d, 1 },
+	{ "prosgegrammeni.sc", 0xf51e, 1 },
 /* These names are from adobe's glyphlist (glyphlist.txt) */
 /*  http://partners.adobe.com/asn/tech/type/glyphlist.txt */
 	{ "AEmacron", 0x01e2 },
