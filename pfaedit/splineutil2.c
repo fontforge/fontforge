@@ -1529,12 +1529,12 @@ static int SPLSmoothControlPoints(SplineSet *ss,double tan_bounds,int vert_check
 		/* If we're next to a line, we must extend the line. No choice */
 		if ( sp->nonextcp ) {
 		    if ( len<len2 )
-	continue;
+    goto nextpt;
 		    found = true;
 		    unit2 = unit;
 		} else if ( sp->noprevcp ) {
 		    if ( len2<len )
-	continue;
+    goto nextpt;
 		    found = true;
 		} else if ( !found ) {
 		    unit2.x = (unit.x*len + unit2.x*len2)/(len+len2);
@@ -1552,6 +1552,7 @@ static int SPLSmoothControlPoints(SplineSet *ss,double tan_bounds,int vert_check
 		changed = true;
 	    }
 	}
+    nextpt:
 	if ( sp->next==NULL )
     break;
 	sp = sp->next->to;
