@@ -218,6 +218,7 @@ return;
 	free(t1);
     }
 #if __Mac
+# if 0
     /* Starting a Mac application is weird... system() can't do it */
     /* Thanks to Edward H. Trager giving me an example... */
     if ( strstr(browser,".app")!=NULL ) {
@@ -234,6 +235,16 @@ return;
 	system(temp);
 	GWidgetPostNoticeR(_STR_LeaveX,_STR_LeaveXLong);
     } else {
+# else
+    /* This seems a bit easier... Thanks to riggle */
+    if ( strstr(browser,".app")!=NULL ) {
+	strcpy(browser,"open");
+	temp = galloc(strlen(browser) + strlen(fullspec) + 20);
+	sprintf( temp, "%s %s &", browser, fullspec );
+	system(temp);
+	GWidgetPostNoticeR(_STR_LeaveX,_STR_LeaveXLong);
+    } else {
+# endif
 #endif
     temp = galloc(strlen(browser) + strlen(fullspec) + 20);
     sprintf( temp, "%s %s &", browser, fullspec );
