@@ -78,13 +78,13 @@ struct gfc_data {
 };
 
 #if __Mac
-static char *extensions[] = { ".pfa", ".pfb", "", ".mult", ".pfa", ".pfb", ".pt3", ".ps",
+static char *extensions[] = { ".pfa", ".pfb", "", "%s.pfb", ".pfa", ".pfb", ".pt3", ".ps",
 	".cid", ".cff", ".cid.cff",
 	".ttf", ".ttf", ".suit", ".dfont", ".otf", ".otf.dfont", ".otf",
 	".otf.dfont", ".svg", NULL };
 static char *bitmapextensions[] = { ".*bdf", ".ttf", ".dfont", ".bmap", ".dfont", ".*fnt", ".otb", ".none", NULL };
 #else
-static char *extensions[] = { ".pfa", ".pfb", ".bin", ".mult", ".pfa", ".pfb", ".pt3", ".ps",
+static char *extensions[] = { ".pfa", ".pfb", ".bin", "%s.pfb", ".pfa", ".pfb", ".pt3", ".ps",
 	".cid", ".cff", ".cid.cff",
 	".ttf", ".ttf", ".ttf.bin", ".dfont", ".otf", ".otf.dfont", ".otf",
 	".otf.dfont", ".svg", NULL };
@@ -1425,6 +1425,7 @@ static int SaveSubFont(SplineFont *sf,char *newname,int32 *sizes,int res,
     int err = 0;
     unichar_t *ufile;
     SplineFont *parents[256];
+    enum fontformat subtype = strstr(newname,".pfa")!=NULL ? ff_pfa : ff_pfb ;
 
     temp = *sf;
     temp.encoding_name = em_none;
@@ -1515,7 +1516,7 @@ return( 0 );
     strcpy(temp.fullname,sf->fullname);
     strcat(temp.fullname," ");
     strcat(temp.fullname,names[subfont]);
-    strcat(spt,".pfb");
+    strcat(spt,subtype==ff_pfb ? ".pfb" : ".pfa" );
     GProgressChangeLine2(ufile=uc_copy(filename)); free(ufile);
 
     if ( sf->xuid!=NULL ) {
@@ -1530,7 +1531,7 @@ return( 0 );
 	strcat(pt,"]");
     }
 
-    err = !WritePSFont(filename,&temp,ff_pfb,old_ps_flags);
+    err = !WritePSFont(filename,&temp,subtype,old_ps_flags);
     if ( err )
 	GWidgetErrorR(_STR_Savefailedtitle,_STR_Savefailedtitle);
     if ( !err && (old_ps_flags&ps_flag_afm) && GProgressNextStage()) {
@@ -1570,6 +1571,14 @@ static int WriteMultiplePSFont(SplineFont *sf,char *newname,int32 *sizes,
     unichar_t *path;
     int i;
     char **names;
+    char *pt;
+
+    pt = strrchr(newname,'.');
+    if ( pt==NULL ||
+	    (strcmp(pt,".pfa")!=0 && strcmp(pt,".pfb")!=0 && strcmp(pt,".mult")!=0)) {
+	GWidgetErrorR(_STR_BadExtension,_STR_MustBeType1);
+return( 0 );
+    }
 
     if ( wernerfilename==NULL ) {
 	wernerfilename = GetWernerSFDFile(sf);
@@ -1803,6 +1812,10 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	i = ff_mma;
     else if ( end-filename>7 && strmatch(end-strlen(".mm.pfb"),".mm.pfb")==0 )
 	i = ff_mmb;
+    else if ( end-filename>7 && strmatch(end-strlen(".mult"),".mult")==0 )
+	i = ff_multiple;
+    else if (( i==ff_pfa || i==ff_pfb ) && strstr(filename,"%s")!=NULL )
+	i = ff_multiple;
     if ( extensions[i]==NULL ) {
 	for ( i=0; bitmaps[i]!=NULL; ++i ) {
 	    if ( end-filename>strlen(bitmaps[i]) &&
@@ -2206,6 +2219,7 @@ return;
     if ( uc_strcmp(pt-5, ".bmap.bin" )==0 ) pt -= 5;
     if ( uc_strcmp(pt-4, ".ttf.bin" )==0 ) pt -= 4;
     if ( uc_strcmp(pt-4, ".otf.dfont" )==0 ) pt -= 4;
+    if ( uc_strncmp(pt-2, "%s", 2 )==0 ) pt -= 2;
     uc_strcpy(pt,bitmapextensions[bf]);
     GGadgetSetTitle(d->gfc,dup);
     free(dup);
@@ -2244,6 +2258,7 @@ return( true );
 	if ( uc_strcmp(pt-5, ".bmap.bin" )==0 ) pt -= 5;
 	if ( uc_strcmp(pt-4, ".ttf.bin" )==0 ) pt -= 4;
 	if ( uc_strcmp(pt-4, ".otf.dfont" )==0 ) pt -= 4;
+	if ( uc_strncmp(pt-2, "%s", 2 )==0 ) pt -= 2;
 	uc_strcpy(pt,extensions[format]);
 	GGadgetSetTitle(d->gfc,dup);
 	free(dup);
