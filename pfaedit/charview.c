@@ -1412,6 +1412,9 @@ return;
 	    CVMerge(cv->gw,NULL,NULL);
     } else if ( event->u.chr.keysym == GK_Shift_L || event->u.chr.keysym == GK_Shift_R ) {
 	CVFakeMove(cv, event);
+    } else if ( (event->u.chr.state&ksm_meta) &&
+	    !(event->u.chr.state&(ksm_control|ksm_shift)) ) {
+	CVPaletteMnemonicCheck(event);
     } else if ( !(event->u.chr.state&(ksm_control|ksm_meta)) &&
 	    event->u.chr.keysym == GK_BackSpace ) {
 	/* Menu does delete */

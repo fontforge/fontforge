@@ -28,7 +28,8 @@
 #include <gkeysym.h>
 #include <math.h>
 #include "splinefont.h"
-#include "ustring.h"
+#include <ustring.h>
+#include <utype.h>
 
 extern GDevEventMask input_em[];
 extern const int input_em_cnt;
@@ -827,6 +828,43 @@ return( true );
       break;
     }
 return( true );
+}
+
+int CVPaletteMnemonicCheck(GEvent *event) {
+    static struct strmatch { int str; int cid; } strmatch[] = {
+	{ _STR_Fore, CID_EFore },
+	{ _STR_Back, CID_EBack },
+	{ _STR_Grid, CID_EGrid },
+	{ 0 }
+    };
+    unichar_t mn, mnc;
+    int i;
+    const unichar_t *foo;
+    GGadget *g;
+    GEvent fake;
+
+    if ( cvlayers==NULL )
+return( false );
+
+    for ( i=0; strmatch[i].str!=0 ; ++i ) {
+	foo = GStringGetResource(strmatch[i].str,&mn);
+	mnc = mn;
+	if ( islower(mn)) mnc = toupper(mn);
+	else if ( isupper(mn)) mnc = tolower(mn);
+	if ( event->u.chr.chars[0]==mn || event->u.chr.chars[0]==mnc ) {
+	    g = GWidgetGetControl(cvlayers,strmatch[i].cid);
+	    if ( !GGadgetIsChecked(g)) {
+		GGadgetSetChecked(g,true);
+		fake.type = et_controlevent;
+		fake.w = cvlayers;
+		fake.u.control.subtype = et_radiochanged;
+		fake.u.control.g = g;
+		cvlayers_e_h(cvlayers,&fake);
+	    }
+return( true );
+	}
+    }
+return( false );
 }
 
 GWindow CVMakeLayers(CharView *cv) {

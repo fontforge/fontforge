@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 25-Nov-2002 -->
+  <!-- AP: Last modified: 3-Dec-2002 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,39 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    ?-Dec-2002
+    <UL>
+      <LI>
+	Fixed a crash in menus, if the cursor was moved from a submenu (a cascaded menu)
+	to the menubar without passing through the main menu then a crash would
+	happen.
+      <LI>
+	Fixed a crash when generating postscript fonts.
+      <LI>
+	Oops. Bug in work of 2-Dec. The character named "u" was treated as
+	uXXXX and given unicode U+0000 rather than U+0075.
+      <LI>
+	It is now possible to switch between editing layers in the outline character
+	view by using the mnemonics displayed in the layers palette (even if the
+	layers palette is hidden).
+    </UL>
+  <LI>
+    2-Dec-2002
+    <UL>
+      <LI>
+	If the fontview were only one line high PfaEdit would not scroll to the
+	selected character properly.
+      <LI>
+	Adobe has released a new version of their glyph naming conventions.
+	In particular they provide names for code points outside of the bmp.
+	Danilo Sagan points out that they also allow for alternate glyph names.
+	(specified in the <A HREF="http://partners.adobe.com/asn/developer/type/otfdk/main.html">FDK</A>).
+     <LI>
+	Remove the PFAEDIT_PI1 environment variable.
+     <LI>
+	Cut and Paste bug fixed when clearing metadata.
+    </UL>
   <LI>
     25-Nov-2002
     <UL>

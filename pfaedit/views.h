@@ -444,6 +444,7 @@ extern GWindow CVMakeTools(CharView *cv);
 extern GWindow CVMakeLayers(CharView *cv);
 extern GWindow BVMakeTools(BitmapView *bv);
 extern GWindow BVMakeLayers(BitmapView *bv);
+extern int CVPaletteMnemonicCheck(GEvent *event);
 extern real CVRoundRectRadius(void);
 extern real CVStarRatio(void);
 extern int CVPolyStarPoints(void);
