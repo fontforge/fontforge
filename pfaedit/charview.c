@@ -642,6 +642,37 @@ return;
     GDrawDrawLine(pixmap, ix1,iy1, ix2,iy2, fg );
 }
 
+static void DrawDirection(CharView *cv,GWindow pixmap, SplinePoint *sp) {
+    BasePoint dir, *other;
+    double len;
+    int x,y,xe,ye;
+
+    if ( sp->next==NULL )
+return;
+
+    x = cv->xoff + rint(sp->me.x*cv->scale);
+    y = -cv->yoff + cv->height - rint(sp->me.y*cv->scale);
+    if ( x<0 || y<0 || x>cv->width || y>cv->width )
+return;
+
+    if ( sp->nonextcp )
+	other = &sp->next->to->me;
+    else
+	other = &sp->nextcp;
+    dir.x = other->x-sp->me.x;
+    dir.y = sp->me.y-other->y;		/* screen coordinates are the mirror of user coords */
+    len = sqrt(dir.x*dir.x + dir.y*dir.y);
+    dir.x /= len; dir.y /= len;
+
+    x += rint(5*dir.y);
+    y -= rint(5*dir.x);
+    xe = x + rint(7*dir.x);
+    ye = y + rint(7*dir.y);
+    GDrawDrawLine(pixmap,x,y,xe,ye,firstpointcol);
+    GDrawDrawLine(pixmap,xe,ye,xe+rint(2*(dir.y-dir.x)),ye+rint(2*(-dir.y-dir.x)), firstpointcol);
+    GDrawDrawLine(pixmap,xe,ye,xe+rint(2*(-dir.y-dir.x)),ye+rint(2*(dir.x-dir.y)), firstpointcol);
+}
+
 void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
 	Color fg, int dopoints, DRect *clip ) {
     Spline *spline, *first;
@@ -654,6 +685,7 @@ void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
 	GPointList *gpl = MakePoly(cv,spl), *cur;
 	if ( dopoints ) {
 	    first = NULL;
+	    DrawDirection(cv,pixmap,spl->first);
 	    for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
 		DrawPoint(cv,pixmap,spline->from,spl);
 		if ( first==NULL ) first = spline;
