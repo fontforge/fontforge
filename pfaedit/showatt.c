@@ -1405,7 +1405,7 @@ static void BuildGdefs(struct node *node,struct att_dlg *att) {
 	    sc = NULL;
 	    do {
 		sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[l];
-		if ( l<sf->charcnt && sf->chars[l]!=NULL ) {
+		if ( l<sf->charcnt && sf->chars[i]!=NULL ) {
 		    sc = sf->chars[i];
 	    break;
 		}
