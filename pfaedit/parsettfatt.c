@@ -3769,19 +3769,10 @@ void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 	    /*  OpenType's spec doesn't document this */
 	    /*  I shan't support it */
 	    fseek(ttf,len-header_size,SEEK_CUR);
-	    fprintf( stderr, "This font has a format 1 kerning table (a state machine).\nPfaEdit doesn't parse these\nSorry.\n" );
-	} else if ( flags_good && format==2 ) {
-	    /* format 2, horizontal kerning data (as classes) not perpendicular */
-	    /*  OpenType's spec documents this, but says windows won't support it */
-	    /*  OpenType's spec also contradicts Apple's as to the data stored */
-	    /*  OTF says class indeces are stored, Apple says byte offsets into array */
-	    /*  Apple says offsets are stored in uint8, otf says indeces are in uint16 */
-	    /* Bleah!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
-	    /*  Ah. Apple's docs are incorrect. the values stored are uint16 offsets */
-	    rowWidth = getushort(ttf);
-	    left = getushort(ttf);
-	    right = getushort(ttf);
-	    array = getushort(ttf);
+	    fprintf( stderr, "This font has a format 1 kerning table (a state machine).\nPfaEdit doesn't parse these\nCould you send a copy of %s to gww@silcom.com?  Thanks.\n",
+		info->fontname );
+	} else if ( flags_good && (format==2 || format==3 )) {
+	    /* two class based formats */
 	    if ( isv ) {
 		if ( info->khead==NULL )
 		    info->vkhead = kc = chunkalloc(sizeof(KernClass));
@@ -3795,35 +3786,68 @@ void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 		    kc = info->klast->next = chunkalloc(sizeof(KernClass));
 		info->klast = kc;
 	    }
-	    kc->second_cnt = rowWidth/sizeof(uint16);
-	    class1 = getAppleClassTable(ttf, begin_table+left, info->glyph_cnt, array, rowWidth );
-	    class2 = getAppleClassTable(ttf, begin_table+right, info->glyph_cnt, 0, sizeof(uint16) );
+	    if ( format==2 ) {
+		/* format 2, horizontal kerning data (as classes) not perpendicular */
+		/*  OpenType's spec documents this, but says windows won't support it */
+		/*  OpenType's spec also contradicts Apple's as to the data stored */
+		/*  OTF says class indeces are stored, Apple says byte offsets into array */
+		/*  Apple says offsets are stored in uint8, otf says indeces are in uint16 */
+		/* Bleah!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
+		/*  Ah. Apple's docs are incorrect. the values stored are uint16 offsets */
+		rowWidth = getushort(ttf);
+		left = getushort(ttf);
+		right = getushort(ttf);
+		array = getushort(ttf);
+		kc->second_cnt = rowWidth/sizeof(uint16);
+		class1 = getAppleClassTable(ttf, begin_table+left, info->glyph_cnt, array, rowWidth );
+		class2 = getAppleClassTable(ttf, begin_table+right, info->glyph_cnt, 0, sizeof(uint16) );
+		for ( i=0; i<info->glyph_cnt; ++i )
+		    if ( class1[i]>kc->first_cnt )
+			kc->first_cnt = class1[i];
+		++ kc->first_cnt;
+		kc->offsets = galloc(kc->first_cnt*kc->second_cnt*sizeof(int16));
+		fseek(ttf,begin_table+array,SEEK_SET);
+		for ( i=0; i<kc->first_cnt*kc->second_cnt; ++i )
+		    kc->offsets[i] = getushort(ttf);
+	    } else {
+		/* format 3, horizontal kerning data (as classes limited to 256 entries) */
+		/*  OpenType's spec doesn't document this */
+		int gc, kv, flags;
+		int16 *kvs;
+		gc = getushort(ttf);
+		kv = getc(ttf);
+		kc->first_cnt = getc(ttf);
+		kc->second_cnt = getc(ttf);
+		flags = getc(ttf);
+		if ( gc!=info->glyph_cnt )
+		    fprintf( stderr, "Kerning subtable 3 says the glyph count is %d, but maxp says %d\n",
+			    gc, info->glyph_cnt );
+		class1 = gcalloc(gc>info->glyph_cnt?gc:info->glyph_cnt,sizeof(uint16));
+		class2 = gcalloc(gc>info->glyph_cnt?gc:info->glyph_cnt,sizeof(uint16));
+		kvs = galloc(kv*sizeof(int16));
+		kc->offsets = galloc(kc->first_cnt*kc->second_cnt*sizeof(int16));
+		for ( i=0; i<kv; ++i )
+		    kvs[i] = (int16) getushort(ttf);
+		for ( i=0; i<kc->first_cnt; ++i )
+		    class1[i] = getc(ttf);
+		for ( i=0; i<kc->second_cnt; ++i )
+		    class2[i] = getc(ttf);
+		for ( i=0; i<kc->first_cnt*kc->second_cnt; ++i )
+		    kc->offsets[i] = kvs[getc(ttf)];
+		free(kvs);
+	    }
+	    kc->firsts = ClassToNames(info,kc->first_cnt,class1,info->glyph_cnt);
+	    kc->seconds = ClassToNames(info,kc->second_cnt,class2,info->glyph_cnt);
 	    for ( i=0; i<info->glyph_cnt; ++i ) {
 		if ( class1[i]!=0 ) {
 		    kc->sli = SLIFromInfo(info,info->chars[i],DEFAULT_LANG);
 	    break;
 		}
 	    }
-	    for ( i=0; i<info->glyph_cnt; ++i )
-		if ( class1[i]>kc->first_cnt )
-		    kc->first_cnt = class1[i];
-	    ++ kc->first_cnt;
-	    kc->offsets = galloc(kc->first_cnt*kc->second_cnt*sizeof(int16));
-	    kc->firsts = ClassToNames(info,kc->first_cnt,class1,info->glyph_cnt);
-	    kc->seconds = ClassToNames(info,kc->second_cnt,class2,info->glyph_cnt);
-	    fseek(ttf,begin_table+array,SEEK_SET);
-	    for ( i=0; i<kc->first_cnt*kc->second_cnt; ++i )
-		kc->offsets[i] = getushort(ttf);
 	    free(class1); free(class2);
 	    fseek(ttf,begin_table+len,SEEK_SET);
 	} else if ( flags_good && format==3 ) {
-	    /* format 3, horizontal kerning data (as classes limited to 256 entries) not perpendicular */
-	    /*  OpenType's spec doesn't document this */
 	    fseek(ttf,len-header_size,SEEK_CUR);
-#if 0		/* I've got an example now, SkiaRegular.ttf */
-    fprintf( stderr, "This font has a format 3 kerning table. I've never seen that and don't know\nhow to parse it. Could you send a copy of %s to gww@silcom.com?\nThanks!\n",
-	info->fontname );
-#endif
 	} else {
 	    fseek(ttf,len-header_size,SEEK_CUR);
 	}
