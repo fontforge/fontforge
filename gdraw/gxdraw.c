@@ -2495,7 +2495,7 @@ static void GXDrawProcessTimerEvent(GXDisplay *gdisp,GTimer *timer) {
 return;
     timer->active = true;
     for ( o = timer->owner; o!=NULL && !o->is_dying; o=o->parent );
-    if ( timer->owner->eh!=NULL && o==NULL ) {
+    if ( timer->owner!=NULL && timer->owner->eh!=NULL && o==NULL ) {
 	gevent.type = et_timer;
 	gevent.w = timer->owner;
 	gevent.u.timer.timer = timer;
