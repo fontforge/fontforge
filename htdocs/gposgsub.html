@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 29-Dec-2002 -->
-  <!-- AP: Last modified: 29-Dec-2002 -->
+  <!-- AP: Last modified: 31-Dec-2002 -->
   <TITLE>The GPOS and GSUB opentype tables</TITLE>
 </HEAD>
 <BODY>
@@ -32,6 +32,18 @@ The kerning sub-table
 PfaEdit will read kerning information from the GPOS table, also from afm and tfm files
 and macintoy FOND resources. Users can create and modify kerning with the
 <A HREF="metricsview.html">metrics view.</A>
+</TD></TR>
+<TR>
+<TD>
+<CODE>'curs'</CODE>
+</TD><TD>
+Cursive Positioning
+</TD><TD>
+PfaEdit will read anchor points from the GPOS table. I am not aware of any
+way to provide this information with type1 fonts.
+Users can create and modify anchor points in the
+<A HREF="charview.html">character view.</A>
+<P>This table joins characters in cursive style writing.
 </TD></TR>
 <TR>
 <TD>

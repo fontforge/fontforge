@@ -398,14 +398,14 @@ static void AnchorClassDecompose(SplineFont *sf,AnchorClass *ac,
     /* Run through the font finding all characters with this anchor class */
     /*  and distributing in the four possible anchor types */
     int i,j;
-    struct sclist { int cnt; SplineChar **glyphs; } heads[4];
+    struct sclist { int cnt; SplineChar **glyphs; } heads[at_max];
     AnchorPoint *test;
 
     memset(heads,0,sizeof(heads));
     for ( j=0; j<2; ++j ) {
 	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
 	    for ( test=sf->chars[i]->anchor; test!=NULL && test->anchor!=ac; test=test->next );
-	    if ( test!=NULL ) {
+	    if ( test!=NULL && test->type!=at_centry && test->type!=at_cexit ) {
 		if ( heads[test->type].glyphs!=NULL )
 		    heads[test->type].glyphs[heads[test->type].cnt] = sf->chars[i];
 		++heads[test->type].cnt;
@@ -427,10 +427,61 @@ static void AnchorClassDecompose(SplineFont *sf,AnchorClass *ac,
     *mkmk = heads[at_basemark].glyphs;
 }
 
+static SplineChar **EntryExitDecompose(SplineFont *sf,AnchorClass *ac) {
+    /* Run through the font finding all characters with this anchor class */
+    int i,j, cnt;
+    SplineChar **array;
+    AnchorPoint *test;
+
+    array=NULL;
+    for ( j=0; j<2; ++j ) {
+	cnt = 0;
+	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	    for ( test=sf->chars[i]->anchor; test!=NULL && test->anchor!=ac; test=test->next );
+	    if ( test!=NULL && (test->type==at_centry || test->type==at_cexit )) {
+		if ( array!=NULL )
+		    array[cnt] = sf->chars[i];
+		++cnt;
+	    }
+	}
+	if ( cnt==0 )
+return( NULL );
+	if ( j==1 )
+    break;
+	array = galloc((cnt+1)*sizeof(SplineChar *));
+	array[cnt] = NULL;
+    }
+return( array );
+}
+
+static SplineChar **GlyphsOfScript(SplineChar **base,int first) {
+    int cnt, k;
+    SplineChar **glyphs;
+
+    glyphs = NULL;
+    while ( 1 ) {
+	cnt = 1;
+	for ( k=first+1; base[k]!=NULL; ++k ) if ( base[first]->script==base[k]->script ) {
+	    if ( glyphs!=NULL ) {
+		glyphs[cnt] = base[k];
+		base[k]->ticked = true;
+	    }
+	    ++cnt;
+	}
+	if ( glyphs!=NULL )
+    break;
+	glyphs = galloc((cnt+1)*sizeof(SplineChar *));
+	glyphs[0] = base[first];
+	glyphs[cnt] = NULL;
+    }
+return( glyphs );
+}
+
 static void AnchorGuessContext(SplineFont *sf,struct alltabs *at) {
     int i;
     int maxbase=0, maxmark=0, basec, markc;
     AnchorPoint *ap;
+    int hascursive = 0;
 
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i] ) {
 	basec = markc = 0;
@@ -439,12 +490,16 @@ static void AnchorGuessContext(SplineFont *sf,struct alltabs *at) {
 		++markc;
 	    else if ( ap->type==at_basechar || ap->type==at_baselig )
 		++basec;
+	    else if ( ap->type==at_centry )
+		hascursive = true;
 	if ( basec>maxbase ) maxbase = basec;
 	if ( markc>maxmark ) maxmark = markc;
     }
 
     if ( maxbase*(maxmark+1)>at->os2.maxContext )
 	at->os2.maxContext = maxbase*(maxmark+1);
+    if ( hascursive && at->os2.maxContext<2 )
+	at->os2.maxContext=2;
 }
 
 static void dumpcoveragetable(FILE *gpos,SplineChar **glyphs) {
@@ -561,6 +616,78 @@ static void dumpgposkerndata(FILE *gpos,SplineFont *sf,uint32 script,
     }
 }
 
+static struct lookup *dumpgposCursiveAttach(FILE *gpos,AnchorClass *ac,
+	SplineFont *sf, struct lookup *lookups) {
+    struct lookup *new;
+    SplineChar **entryexit = EntryExitDecompose(sf,ac), **glyphs;
+    int i,cnt, offset,j;
+    AnchorPoint *ap, *entry, *exit;
+    uint32 coverage_offset;
+
+    if ( entryexit==NULL )
+return( lookups );
+
+    for ( i=0; entryexit[i]!=NULL; ++i )
+	entryexit[i]->ticked = false;
+    for ( i=0; entryexit[i]!=NULL; ++i ) if ( !entryexit[i]->ticked ) {
+	glyphs = GlyphsOfScript(entryexit,i);
+	for ( cnt=0; glyphs[cnt]!=NULL; ++cnt );
+	new = chunkalloc(sizeof(struct lookup));
+	new->script = glyphs[0]->script;
+	new->feature_tag = ac->feature_tag;
+	new->lookup_type = 3;		/* Cursive positioning */
+	new->offset = ftell(gpos);
+	new->next = lookups;
+	lookups = new;
+
+	putshort(gpos,1);	/* format 1 for this subtable */
+	putshort(gpos,0);	/* Fill in later, offset to coverage table */
+	putshort(gpos,cnt);	/* number of glyphs */
+
+	offset = 6+2*2*cnt;
+	for ( j=0; j<cnt; ++j ) {
+	    entry = exit = NULL;
+	    for ( ap=glyphs[j]->anchor; ap!=NULL; ap=ap->next ) {
+		if ( ap->anchor==ac && ap->type==at_centry ) entry = ap;
+		if ( ap->anchor==ac && ap->type==at_cexit ) exit = ap;
+	    }
+	    if ( entry!=NULL ) {
+		putshort(gpos,offset);
+		offset += 6;
+	    } else
+		putshort(gpos,0);
+	    if ( exit!=NULL ) {
+		putshort(gpos,offset);
+		offset += 6;
+	    } else
+		putshort(gpos,0);
+	}
+	for ( j=0; j<cnt; ++j ) {
+	    entry = exit = NULL;
+	    for ( ap=glyphs[j]->anchor; ap!=NULL; ap=ap->next ) {
+		if ( ap->anchor==ac && ap->type==at_centry ) entry = ap;
+		if ( ap->anchor==ac && ap->type==at_cexit ) exit = ap;
+	    }
+	    if ( entry!=NULL ) {
+		putshort(gpos,1);		/* Anchor format 1 */
+		putshort(gpos,entry->me.x);	/* X coord of attachment */
+		putshort(gpos,entry->me.y);	/* Y coord of attachment */
+	    }
+	    if ( exit!=NULL ) {
+		putshort(gpos,1);		/* Anchor format 1 */
+		putshort(gpos,exit->me.x);	/* X coord of attachment */
+		putshort(gpos,exit->me.y);	/* Y coord of attachment */
+	    }
+	}
+	coverage_offset = ftell(gpos);
+	dumpcoveragetable(gpos,glyphs);
+	fseek(gpos,new->offset+2,SEEK_SET);
+	putshort(gpos,coverage_offset-new->offset);
+	fseek(gpos,0,SEEK_END);
+    }
+return( lookups );
+}
+
 static struct lookup *dumpgposAnchorData(FILE *gpos,AnchorClass *ac,
 	enum anchor_type at,
 	SplineChar **marks,SplineChar **base,struct lookup *lookups) {
@@ -573,22 +700,8 @@ static struct lookup *dumpgposAnchorData(FILE *gpos,AnchorClass *ac,
     for ( i=0; base[i]!=NULL; ++i )
 	base[i]->ticked = false;
     for ( i=0; base[i]!=NULL; ++i ) if ( !base[i]->ticked ) {
-	glyphs = NULL;
-	while ( 1 ) {
-	    cnt = 1;
-	    for ( k=i+1; base[k]!=NULL; ++k ) if ( base[i]->script==base[k]->script ) {
-		if ( glyphs!=NULL ) {
-		    glyphs[cnt] = base[k];
-		    base[k]->ticked = true;
-		}
-		++cnt;
-	    }
-	    if ( glyphs!=NULL )
-	break;
-	    glyphs = galloc((cnt+1)*sizeof(SplineChar *));
-	    glyphs[0] = base[i];
-	    glyphs[cnt] = NULL;
-	}
+	glyphs = GlyphsOfScript(base,i);
+	for ( cnt=0; glyphs[cnt]!=NULL; ++cnt );
 	new = chunkalloc(sizeof(struct lookup));
 	new->script = glyphs[0]->script;
 	new->feature_tag = ac->feature_tag;
@@ -830,17 +943,21 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
     /* Every Anchor Class gets its own lookup (and may get several if it has */
     /*  different anchor types or scripts) */
     for ( ac=sf->anchor; ac!=NULL; ac = ac->next ) {
-	AnchorClassDecompose(sf,ac,&marks,&base,&lig,&mkmk);
-	if ( marks!=NULL && base!=NULL )
-	    lookups = dumpgposAnchorData(lfile,ac,at_basechar,marks,base,lookups);
-	if ( marks!=NULL && lig!=NULL )
-	    lookups = dumpgposAnchorData(lfile,ac,at_baselig,marks,lig,lookups);
-	if ( marks!=NULL && mkmk!=NULL )
-	    lookups = dumpgposAnchorData(lfile,ac,at_basemark,marks,mkmk,lookups);
-	free(marks);
-	free(base);
-	free(lig);
-	free(mkmk);
+	if ( ac->feature_tag==CHR('c','u','r','s') )
+	    lookups = dumpgposCursiveAttach(lfile,ac,sf,lookups);
+	else {
+	    AnchorClassDecompose(sf,ac,&marks,&base,&lig,&mkmk);
+	    if ( marks!=NULL && base!=NULL )
+		lookups = dumpgposAnchorData(lfile,ac,at_basechar,marks,base,lookups);
+	    if ( marks!=NULL && lig!=NULL )
+		lookups = dumpgposAnchorData(lfile,ac,at_baselig,marks,lig,lookups);
+	    if ( marks!=NULL && mkmk!=NULL )
+		lookups = dumpgposAnchorData(lfile,ac,at_basemark,marks,mkmk,lookups);
+	    free(marks);
+	    free(base);
+	    free(lig);
+	    free(mkmk);
+	}
     }
     if ( sf->anchor )
 	AnchorGuessContext(sf,at);
@@ -856,6 +973,7 @@ static struct lookup *GSUBfigureLookups(FILE *lfile,SplineFont *sf,
     /*		dlig -- discretionary ligatures			   */
     /*		hlig -- historical ligatures			   */
     /*		frac -- maps "3/4" to ¾				   */
+    /* and many more ligature tables I'm not going to mention */
     /*		???? -- user defined ligature subtable		   */
     /*		vrt2 -- Vertical rotation (for vertical latin)	   */
     /*		init -- Initial forms (arabic, long-s)		   */
@@ -1044,6 +1162,8 @@ static int FeatureIndex( uint32 tag ) {
 
     switch ( tag ) {
 /* GSUB ordering */
+      case CHR('c','c','m','p'):	/* Must be first? */
+return( -1 );
       case CHR('i','n','i','t'): case CHR('m','e','d','i'): case CHR('f','i','n','a'): case CHR('i','s','o','l'):
       case CHR('h','i','n','i'): case CHR('h','m','e','d'):
 return( 0 );
@@ -1054,14 +1174,22 @@ return( 2 );
       case CHR('l','i','g','a'): case CHR('r','l','i','g'):
       case CHR('d','l','i','g'): case CHR('h','l','i','g'):
       case CHR('f','r','a','c'):
+      case CHR('a','b','v','s'): case CHR('a','f','r','c'):
+      case CHR('a','k','h','n'): case CHR('b','l','w','f'):
+      case CHR('b','l','w','s'):
+      case CHR('h','a','l','f'): case CHR('h','a','l','n'):
+      case CHR('l','j','m','o'): case CHR('v','j','m','o'):
+      case CHR('n','u','k','f'): case CHR('v','a','t','u'):
 return( 3 );
 /* GPOS ordering */
-      case CHR('m','k','m','k'):
+      case CHR('c','u','r','s'):
 return( 0 );
-      case CHR('m','a','r','k'): case CHR('a','b','v','m'): case CHR('b','l','w','m'):
+      case CHR('m','k','m','k'):
 return( 1 );
-      case CHR('k','e','r','n'):
+      case CHR('m','a','r','k'): case CHR('a','b','v','m'): case CHR('b','l','w','m'):
 return( 2 );
+      case CHR('k','e','r','n'):
+return( 3 );
 /* Unknown things come last */
       default:
 return( 100 );

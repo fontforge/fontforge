@@ -1365,9 +1365,14 @@ return;
     for ( ap=anchor; ap!=NULL; ap=next ) {
 	next = ap->next;
 	for ( test=sc->anchor; test!=NULL; test=test->next )
-	    if ( test->anchor==ap->anchor &&
-		    (test->type!=at_baselig || ap->type!=at_baselig || test->lig_index==ap->lig_index) )
+	    if ( test->anchor==ap->anchor ) {
+		if (( test->type==at_centry && ap->type==at_cexit) ||
+			(test->type==at_cexit && ap->type==at_centry))
+		    /* It's ok */;
+		else if ( test->type!=at_baselig || ap->type!=at_baselig ||
+			test->lig_index==ap->lig_index )
 	break;
+	    }
 	if ( test!=NULL ) {
 	    GWidgetErrorR(_STR_DupAnchor,_STR_DupAnchorIn,test->anchor->name,sc->name);
 	    if ( prev==NULL )

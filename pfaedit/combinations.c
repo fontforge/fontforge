@@ -283,26 +283,21 @@ AnchorClass *AnchorClassMatch(SplineChar *sc1,SplineChar *sc2,AnchorClass *restr
 	AnchorPoint **_ap1,AnchorPoint **_ap2 ) {
     AnchorPoint *ap1, *ap2;
 
-    if ( restrict!=(AnchorClass *) -1 ) {
-	for ( ap1=sc1->anchor; ap1!=NULL && ap1->anchor!=restrict; ap1=ap1->next );
-	for ( ap2=sc2->anchor; ap2!=NULL && ap2->anchor!=restrict; ap2=ap2->next );
-	if ( ap1!=NULL && ap2!=NULL &&
-		((ap1->type==at_mark && ap2->type!=at_mark) ||
-		 (ap1->type!=at_mark && ap2->type==at_mark))) {
-	     *_ap1 = ap1;
-	     *_ap2 = ap2;
-return( restrict );
-	}
-    } else {
-	for ( ap1=sc1->anchor; ap1!=NULL ; ap1=ap1->next ) {
-	    for ( ap2=sc2->anchor; ap2!=NULL; ap2=ap2->next ) {
-		if ( ap1->anchor==ap2->anchor &&
-			((ap1->type==at_mark && ap2->type!=at_mark) ||
-			 (ap1->type!=at_mark && ap2->type==at_mark))) {
-		     *_ap1 = ap1;
-		     *_ap2 = ap2;
+    for ( ap1=sc1->anchor; ap1!=NULL ; ap1=ap1->next ) if ( restrict==(AnchorClass *) -1 || ap1->anchor==restrict ) {
+	for ( ap2=sc2->anchor; ap2!=NULL; ap2=ap2->next ) if ( restrict==(AnchorClass *) -1 || ap2->anchor==restrict ) {
+	    if ( ap1->anchor==ap2->anchor &&
+#if 1
+		    ((ap1->type>=at_basechar && ap1->type<=at_basemark && ap2->type==at_mark) ||
+		     (ap1->type==at_cexit && ap2->type==at_centry) )) {
+#else
+		    ((ap1->type==at_mark && ap2->type>=at_basechar && ap2->type<=at_basemark) ||
+		     (ap1->type>=at_basechar && ap1->type<=at_basemark && ap2->type==at_mark) ||
+		     (ap1->type==at_cexit && ap2->type==at_centry) ||
+		     (ap1->type==at_centry && ap2->type==at_cexit) )) {
+#endif
+		 *_ap1 = ap1;
+		 *_ap2 = ap2;
 return( ap1->anchor );
-		}
 	    }
 	}
     }
@@ -326,6 +321,23 @@ return( ap1->anchor );
 return( NULL );
 }
 
+AnchorClass *AnchorClassCursMatch(SplineChar *sc1,SplineChar *sc2,
+	AnchorPoint **_ap1,AnchorPoint **_ap2 ) {
+    AnchorPoint *ap1, *ap2;
+
+    for ( ap1=sc1->anchor; ap1!=NULL ; ap1=ap1->next ) {
+	for ( ap2=sc2->anchor; ap2!=NULL; ap2=ap2->next ) {
+	    if ( ap1->anchor==ap2->anchor &&
+		    ap1->type==at_cexit && ap2->type==at_centry)  {
+		 *_ap1 = ap1;
+		 *_ap2 = ap2;
+return( ap1->anchor );
+	    }
+	}
+    }
+return( NULL );
+}
+
 static void KPBuildAnchorList(KPData *kpd) {
     int i, j, cnt;
     AnchorClass *ac;
@@ -337,16 +349,20 @@ static void KPBuildAnchorList(KPData *kpd) {
 	while ( 1 ) {
 	    cnt = 0;
 	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-		if ( (ac = AnchorClassMatch(kpd->sc,sf->chars[i],kpd->ac,&ap1,&ap2)) ) {
+		if ( (ac = AnchorClassMatch(kpd->sc,sf->chars[i],kpd->ac,&ap1,&ap2)) ||
+			(ac = AnchorClassMatch(sf->chars[i],kpd->sc,kpd->ac,&ap1,&ap2)) ) {
 		    if ( kpd->kerns!=NULL ) {
 			struct kerns *k = &kpd->kerns[cnt];
-			if ( ap1->type!=at_mark ) {
+			switch ( ap1->type ) {
+			  case at_cexit: case at_basechar: case at_baselig: case at_basemark:
 			    k->first = kpd->sc;
 			    k->second = sf->chars[i];
-			} else {
+			  break;
+			  case at_centry: case at_mark:
 			    k->first = sf->chars[i];
 			    k->second = kpd->sc;
 			    temp = ap1; ap1=ap2; ap2=temp;
+			  break;
 			}
 			CheckLeftRight(k);
 			if ( k->r2l ) {
@@ -377,18 +393,12 @@ return;
 		    if ( temp==NULL )
 	    continue;
 		}
-		for ( j=i+1; j<sf->charcnt; ++j ) if ( sf->chars[j]!=NULL ) {
+		for ( j=0; j<sf->charcnt; ++j ) if ( sf->chars[j]!=NULL ) {
 		    if ( (ac = AnchorClassMatch(sf->chars[i],sf->chars[j],kpd->ac,&ap1,&ap2)) ) {
 			if ( kpd->kerns!=NULL ) {
 			    struct kerns *k = &kpd->kerns[cnt];
-			    if ( ap1->type!=at_mark ) {
-				k->first = sf->chars[i];
-				k->second = sf->chars[j];
-			    } else {
-				k->first = sf->chars[j];
-				k->second = sf->chars[i];
-				temp = ap1; ap1=ap2; ap2=temp;
-			    }
+			    k->first = sf->chars[i];
+			    k->second = sf->chars[j];
 			    CheckLeftRight(k);
 			    if ( k->r2l ) {
 				SplineCharQuickBounds(k->second,&bb);

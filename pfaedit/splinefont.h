@@ -129,7 +129,7 @@ typedef struct anchorclass {
     struct anchorclass *next;
 } AnchorClass;
 
-enum anchor_type { at_mark, at_basechar, at_baselig, at_basemark };
+enum anchor_type { at_mark, at_basechar, at_baselig, at_basemark, at_centry, at_cexit, at_max };
 typedef struct anchorpoint {
     AnchorClass *anchor;
     BasePoint me;
@@ -677,6 +677,8 @@ extern void AnchorClassesFree(AnchorClass *kp);
 extern AnchorClass *AnchorClassMatch(SplineChar *sc1,SplineChar *sc2,
 	AnchorClass *restrict, AnchorPoint **_ap1,AnchorPoint **_ap2 );
 extern AnchorClass *AnchorClassMkMkMatch(SplineChar *sc1,SplineChar *sc2,
+	AnchorPoint **_ap1,AnchorPoint **_ap2 );
+extern AnchorClass *AnchorClassCursMatch(SplineChar *sc1,SplineChar *sc2,
 	AnchorPoint **_ap1,AnchorPoint **_ap2 );
 extern void LigatureFree(Ligature *lig);
 extern StemInfo *StemInfoCopy(StemInfo *h);

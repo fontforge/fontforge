@@ -764,11 +764,12 @@ AnchorPos *AnchorPositioning(SplineChar *sc,unichar_t *ustr,SplineChar **sstr ) 
     AnchorPoint *ap, *map;
     SplineChar *mark;
 
-    for ( ap=sc->anchor; ap!=NULL && ap->type==at_mark; ap=ap->next );
+    /* Must have at least one non-mark anchor */
+    for ( ap=sc->anchor; ap!=NULL && (ap->type==at_mark || ap->type==at_centry); ap=ap->next );
     if ( ap==NULL )
 return( NULL );
     for ( ap=sc->anchor; ap!=NULL; ap=ap->next )
-	ap->ticked = ap->type==at_mark;
+	ap->ticked = (ap->type==at_mark || ap->type==at_centry);
 
     apt = apos = aend = NULL;
     while ( 1 ) {
@@ -784,9 +785,10 @@ return( NULL );
 	/* We don't handle the case of a mark having two different basemark anchors */
 	/*  which are both in use */
 	if ( apt!=NULL ) for ( atest=apt-1; atest>=apos; --atest ) if ( !atest->ticked ) {
-	    for ( ap=atest->sc->anchor; ap!=NULL; ap=ap->next ) if ( ap->type==at_basemark ) {
+	    for ( ap=atest->sc->anchor; ap!=NULL; ap=ap->next ) if ( ap->type==at_basemark || ap->type==at_cexit ) {
 		for ( map=mark->anchor; map!=NULL; map=map->next )
-		    if ( map->type==at_mark && map->anchor==ap->anchor )
+		    if (( map->type==at_mark || map->type==at_centry) &&
+			    map->anchor==ap->anchor )
 		break;
 		if ( map!=NULL )
 	    break;
@@ -797,7 +799,10 @@ return( NULL );
 	if ( map==NULL ) {
 	    for ( ap=sc->anchor; ap!=NULL; ap=ap->next ) if ( !ap->ticked ) {
 		for ( map=mark->anchor; map!=NULL; map=map->next )
-		    if ( map->type==at_mark && map->anchor==ap->anchor )
+		    if ( ap->type==at_cexit ) {
+			if ( map->type==at_centry )
+		break;
+		    } else if ( map->type==at_mark && map->anchor==ap->anchor )
 		break;
 		if ( map!=NULL )
 	    break;

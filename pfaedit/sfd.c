@@ -321,6 +321,8 @@ static void SFDDumpAnchorPoints(FILE *sfd,SplineChar *sc) {
 	SFDDumpUTF7Str(sfd,ap->anchor->name);
 	fprintf( sfd, "%g %g %s %d\n",
 		ap->me.x, ap->me.y,
+		ap->type==at_centry ? "entry" :
+		ap->type==at_cexit ? "exit" :
 		ap->type==at_mark ? "mark" :
 		ap->type==at_basechar ? "basechar" :
 		ap->type==at_baselig ? "baselig" : "basemark",
@@ -1419,6 +1421,10 @@ static AnchorPoint *SFDReadAnchorPoints(FILE *sfd,SplineChar *sc,AnchorPoint *la
 	    ap->type = at_baselig;
 	else if ( strcmp(tok,"basemark")==0 )
 	    ap->type = at_basemark;
+	else if ( strcmp(tok,"entry")==0 )
+	    ap->type = at_centry;
+	else if ( strcmp(tok,"exit")==0 )
+	    ap->type = at_cexit;
     }
     getint(sfd,&ap->lig_index);
     if ( ap->anchor==NULL || ap->type==-1 ) {

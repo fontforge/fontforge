@@ -76,11 +76,13 @@ typedef struct gidata {
 #define CID_BaseChar	3005
 #define CID_BaseLig	3006
 #define CID_BaseMark	3007
-#define CID_LigIndex	3008
-#define CID_Next	3009
-#define CID_Prev	3010
-#define CID_Delete	3011
-#define CID_New		3012
+#define CID_CursEntry	3008
+#define CID_CursExit	3009
+#define CID_LigIndex	3010
+#define CID_Next	3011
+#define CID_Prev	3012
+#define CID_Delete	3013
+#define CID_New		3014
 
 #define CI_Width	218
 #define CI_Height	242
@@ -95,7 +97,7 @@ typedef struct gidata {
 #define PI_Height	200
 
 #define AI_Width	160
-#define AI_Height	220
+#define AI_Height	234
 
 static GTextInfo std_colors[] = {
     { (unichar_t *) _STR_Default, &def_image, 0, 0, (void *) COLOR_DEFAULT, NULL, false, true, false, false, false, false, false, true },
@@ -1517,16 +1519,26 @@ static void ImgGetInfo(CharView *cv, ImageList *img) {
 
 static int IsAnchorClassUsed(SplineChar *sc,AnchorClass *an) {
     AnchorPoint *ap;
-    int waslig=0;
+    int waslig=0, sawentry=0, sawexit=0;
 
     for ( ap=sc->anchor; ap!=NULL; ap=ap->next ) {
 	if ( ap->anchor==an ) {
-	    if ( ap->type!=at_baselig )
+	    if ( ap->type==at_centry )
+		sawentry = true;
+	    else if ( ap->type==at_cexit )
+		sawexit = true;
+	    else if ( ap->type!=at_baselig )
 return( -1 );
 	    else if ( waslig<ap->lig_index+1 )
 		waslig = ap->lig_index+1;
 	}
     }
+    if ( sawentry && sawexit )
+return( -1 );
+    else if ( sawentry )
+return( -2 );
+    else if ( sawexit )
+return( -3 );
 return( waslig );
 }
 
@@ -1535,12 +1547,13 @@ AnchorClass *AnchorClassUnused(SplineChar *sc,int *waslig) {
     int val;
     /* Are there any anchors with this name? If so can't reuse it */
     /*  unless they are ligature anchores */
+    /*  or 'curs' anchors, which allow exactly two points (entry, exit) */
 
     *waslig = false;
     for ( an=sc->parent->anchor; an!=NULL; an=an->next ) {
 	val = IsAnchorClassUsed(sc,an);
 	if ( val!=-1 ) {
-	    if ( val>0 ) *waslig = val;
+	    *waslig = val;
 return( an );
 	}
     }
@@ -1561,7 +1574,11 @@ return(NULL);
     ap->me.x = cv->p.cx; /* cv->p.cx = 0; */
     ap->me.y = cv->p.cy; /* cv->p.cy = 0; */
     ap->type = at_basechar;
-    if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 &&
+    if ( waslig==-2 )
+	ap->type = at_cexit;
+    else if ( waslig==-3 || an->feature_tag==CHR('c','u','r','s'))
+	ap->type = at_centry;
+    else if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 &&
 	    iscombining(sc->unicodeenc))
 	ap->type = at_mark;
     else if ( an->feature_tag==CHR('m','k','m','k') )
@@ -1586,20 +1603,39 @@ static void AI_SelectList(GIData *ci,AnchorPoint *ap) {
 
 static void AI_DisplayClass(GIData *ci,AnchorPoint *ap) {
     AnchorClass *ac = ap->anchor;
+    int curs = ac->feature_tag==CHR('c','u','r','s');
     int enable_mkmk = ac->feature_tag!=CHR('m','a','r','k') && ac->feature_tag!=CHR('a','b','v','m') &&
-	    ac->feature_tag!=CHR('b','l','w','m');
+	    ac->feature_tag!=CHR('b','l','w','m') && !curs;
     int enable_mark = ac->feature_tag!=CHR('m','k','m','k');
+    AnchorPoint *aps;
+    int saw[at_max];
 
-    GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_BaseChar),enable_mark);
-    GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_BaseLig),enable_mark);
-    GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_BaseMark),enable_mkmk);
+    GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_BaseChar),enable_mark && !curs);
+    GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_BaseLig),enable_mark && !curs);
+    GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_BaseMark),enable_mkmk && !curs);
 
-    if ( !enable_mark && (ap->type==at_basechar || ap->type==at_baselig)) {
+    if ( !enable_mark && !curs && (ap->type==at_basechar || ap->type==at_baselig)) {
 	GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_BaseMark),true);
 	ap->type = at_basemark;
-    } else if ( !enable_mark && ap->type==at_basemark ) {
+    } else if ( !enable_mkmk && !curs && ap->type==at_basemark ) {
 	GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_BaseChar),true);
 	ap->type = at_basechar;
+    }
+
+    memset(saw,0,sizeof(saw));
+    for ( aps=ci->sc->anchor; aps!=NULL; aps=aps->next ) if ( aps!=ap ) {
+	if ( aps->anchor==ac ) saw[aps->type] = true;
+    }
+    if ( curs ) {
+	GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_CursEntry),!saw[at_centry]);
+	GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_CursExit),!saw[at_cexit]);
+	GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_Mark),false);
+    } else {
+	GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_CursEntry),false);
+	GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_CursExit),false);
+	GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_Mark),!saw[at_mark]);
+	if ( saw[at_basechar]) GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_BaseChar),false);
+	if ( saw[at_basemark]) GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_BaseMark),false);
     }
 }
 
@@ -1639,6 +1675,12 @@ static void AI_Display(GIData *ci,AnchorPoint *ap) {
       break;
       case at_basemark:
 	GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_BaseMark),true);
+      break;
+      case at_centry:
+	GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_CursEntry),true);
+      break;
+      case at_cexit:
+	GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_CursExit),true);
       break;
     }
 
@@ -1734,6 +1776,10 @@ static int AI_TypeChanged(GGadget *g, GEvent *e) {
 	    ap->type = at_baselig;
 	else if ( GGadgetIsChecked(GWidgetGetControl(ci->gw,CID_BaseMark)) )
 	    ap->type = at_basemark;
+	else if ( GGadgetIsChecked(GWidgetGetControl(ci->gw,CID_CursEntry)) )
+	    ap->type = at_centry;
+	else if ( GGadgetIsChecked(GWidgetGetControl(ci->gw,CID_CursExit)) )
+	    ap->type = at_cexit;
 	GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_LigIndex),ap->type==at_baselig);
     }
 return( true );
@@ -1806,6 +1852,12 @@ static int AI_ANameChanged(GGadget *g, GEvent *e) {
 	AnchorClass *an = ti->userdata;
 	int bad=0, max=0;
 
+	if ( an==ci->ap->anchor )
+return( true );			/* No op */
+	if ( an->feature_tag==CHR('c','u','r','s') || ci->ap->anchor->feature_tag==CHR('c','u','r','s')) {
+	    GWidgetErrorR(_STR_BadClass,_STR_AnchorClassCurs);
+return( true );
+	}
 	for ( ap=ci->sc->anchor; ap!=NULL; ap = ap->next ) {
 	    if ( ap!=ci->ap && ap->anchor==an ) {
 		if ( ap->type!=at_baselig || ci->ap->type!=at_baselig )
@@ -1899,8 +1951,8 @@ void ApGetInfo(CharView *cv, AnchorPoint *ap) {
     static GIData gi;
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[20];
-    GTextInfo label[20];
+    GGadgetCreateData gcd[22];
+    GTextInfo label[22];
     int j;
 
     memset(&gi,0,sizeof(gi));
@@ -2014,6 +2066,26 @@ return;
 	gcd[j].gd.pos.x = gcd[j-2].gd.pos.x; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y;
 	gcd[j].gd.flags = gg_enabled|gg_visible;
 	gcd[j].gd.cid = CID_BaseMark;
+	gcd[j].gd.handle_controlevent = AI_TypeChanged;
+	gcd[j].creator = GRadioCreate;
+	++j;
+
+	label[j].text = (unichar_t *) _STR_CursiveEntry;
+	label[j].text_in_resource = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = gcd[j-2].gd.pos.x; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+14;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.cid = CID_CursEntry;
+	gcd[j].gd.handle_controlevent = AI_TypeChanged;
+	gcd[j].creator = GRadioCreate;
+	++j;
+
+	label[j].text = (unichar_t *) _STR_CursiveExit;
+	label[j].text_in_resource = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = gcd[j-2].gd.pos.x; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.cid = CID_CursExit;
 	gcd[j].gd.handle_controlevent = AI_TypeChanged;
 	gcd[j].creator = GRadioCreate;
 	++j;

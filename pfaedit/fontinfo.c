@@ -429,6 +429,7 @@ static GTextInfo mark_tags[] = {
     { (unichar_t *) _STR_Blwm, NULL, 0, 0, (void *) CHR('b','l','w','m'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_MarkT, NULL, 0, 0, (void *) CHR('m','a','r','k'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_Mkmk, NULL, 0, 0, (void *) CHR('m','k','m','k'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Curs, NULL, 0, 0, (void *) CHR('c','u','r','s'), NULL, false, false, false, false, false, false, false, true },
     { NULL }
 };
 
@@ -2042,8 +2043,9 @@ return;
 	sc = d->sf->chars[i];
 	for ( ap = sc->anchor; ap!=NULL ; ap=ap->next ) {
 	    if ( ap->anchor==ac &&
-		    ((index==0 && ap->type==at_mark) ||
-		     (index==1 && ap->type!=at_mark)))
+		    ((index==0 && (ap->type==at_mark || ap->type==at_centry)) ||
+		     (index==1 && (ap->type==at_basechar || ap->type==at_baselig ||
+				     ap->type==at_basemark || ap->type==at_cexit))))
 	break;
 	}
 	if ( ap!=NULL )
@@ -2124,7 +2126,19 @@ static int GFI_AnchorNew(GGadget *g, GEvent *e) {
 	    }
 	    if ( i<len ) {
 		GWidgetErrorR(_STR_DuplicateName,_STR_DuplicateName);
+		free(newname);
 return( false );
+	    }
+	    if ( uc_strncmp(newname,"curs",4)==0 ) {
+		for ( i=0; i<len; ++i ) {
+		    if ( uc_strncmp(old[i]->text,"curs",4)==0 )
+		break;
+		}
+		if ( i<len ) {
+		    GWidgetErrorR(_STR_OnlyOne,_STR_OnlyOneCurs);
+		    free(newname);
+return( false );
+		}
 	    }
 	    new = gcalloc(len+2,sizeof(GTextInfo *));
 	    for ( i=0; i<len; ++i ) {
@@ -2177,6 +2191,12 @@ return( true );
 	newname = AskNameTag(_STR_EditAnchorClass,ti->text,0);
 	if ( newname!=NULL ) {
 	    old = GGadgetGetList(list,&len);
+	    if (( uc_strncmp(newname,"curs",4)==0 && uc_strncmp(ti->text,"curs",4)!=0 ) ||
+		    ( uc_strncmp(newname,"curs",4)!=0 && uc_strncmp(ti->text,"curs",4)==0 )) {
+		GWidgetErrorR(_STR_CantChange,_STR_CantChangeCurs);
+		free(newname);
+return( false );
+	    }
 	    for ( i=0; i<len; ++i ) if ( old[i]!=ti ) {
 		if ( u_strcmp(old[i]->text,newname)==0 )
 	    break;
@@ -2188,6 +2208,7 @@ return( true );
 		}
 		if ( i<len ) {
 		    GWidgetErrorR(_STR_DuplicateName,_STR_DupAnchorClassNotTag,newname);
+		    free(newname);
 return( false );
 		}
 	    } else {

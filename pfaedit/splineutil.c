@@ -2630,8 +2630,8 @@ static AnchorPoint *AnchorPointsRemoveName(AnchorPoint *alist,AnchorClass *an) {
 	    else
 		prev->next = next;
 	    chunkfree(ap,sizeof(AnchorPoint));
-	    if ( ap->type!=at_baselig )
-		next = NULL;		/* Names only occur once, unless it's a ligature */
+	    if ( ap->type==at_mark || ap->type==at_basechar || ap->type==at_basemark )
+		next = NULL;		/* Names only occur once, unless it's a ligature or cursive */
 	} else
 	    prev = ap;
     }

@@ -3526,6 +3526,69 @@ return;
     }
 }
 
+static void gposCursiveSubTable(FILE *ttf, int stoffset, struct ttfinfo *info,uint32 tag) {
+    int coverage, cnt, format, i;
+    struct ee_offsets { int entry, exit; } *offsets;
+    uint16 *glyphs;
+    AnchorClass *class;
+    AnchorPoint *ap;
+    SplineChar *sc;
+
+    format=getushort(ttf);
+    if ( format!=1 )	/* Unknown subtable format */
+return;
+    coverage = getushort(ttf);
+    cnt = getushort(ttf);
+    if ( cnt==0 )
+return;
+    offsets = galloc(cnt*sizeof(struct ee_offsets));
+    for ( i=0; i<cnt; ++i ) {
+	offsets[i].entry = getushort(ttf);
+	offsets[i].exit  = getushort(ttf);
+    }
+    glyphs = getCoverageTable(ttf,stoffset+coverage);
+
+    class = chunkalloc(sizeof(AnchorClass));
+    class->name = uc_copy("Cursive");
+    class->feature_tag = tag;
+    if ( info->ahead==NULL )
+	info->ahead = class;
+    else
+	info->alast->next = class;
+    info->alast = class;
+
+    for ( i=0; i<cnt; ++i ) {
+	sc = info->chars[glyphs[i]];
+	if ( offsets[i].entry!=0 ) {
+	    ap = chunkalloc(sizeof(AnchorPoint));
+	    ap->anchor = class;
+	    fseek(ttf,stoffset+offsets[i].entry,SEEK_SET);
+	    /* All anchor types have the same initial 3 entries, and I only care */
+	    /*  about two of them, so I can ignore all the complexities of the */
+	    /*  format type */
+	    /* format = */ getushort(ttf);
+	    ap->me.x = (int16) getushort(ttf);
+	    ap->me.y = (int16) getushort(ttf);
+	    ap->type = at_centry;
+	    ap->next = sc->anchor;
+	    sc->anchor = ap;
+	}
+	if ( offsets[i].exit!=0 ) {
+	    ap = chunkalloc(sizeof(AnchorPoint));
+	    ap->anchor = class;
+	    fseek(ttf,stoffset+offsets[i].exit,SEEK_SET);
+	    /* format = */ getushort(ttf);
+	    ap->me.x = (int16) getushort(ttf);
+	    ap->me.y = (int16) getushort(ttf);
+	    ap->type = at_cexit;
+	    ap->next = sc->anchor;
+	    sc->anchor = ap;
+	}
+    }
+    free(offsets);
+    free(glyphs);
+}
+
 static AnchorClass **MarkGlyphsProcessMarks(FILE *ttf,int markoffset,
 	struct ttfinfo *info,struct lookup *lookup,uint16 *markglyphs,int classcnt) {
     AnchorClass **classes = gcalloc(classcnt,sizeof(AnchorClass *)), *ac;
@@ -3800,6 +3863,7 @@ return( NULL );
 		features[i].type = fe_curs;
 		++j;
 	    }
+	  break;
 	  case CHR('k','e','r','n'):
 	    if ( isgpos ) {
 		features[i].type = fe_kern;
@@ -3991,6 +4055,10 @@ return;
 	      case fe_kern:
 		if ( gpos && lu_type==2 )
 		    gposKernSubTable(ttf,st,info);
+	      break;
+	      case fe_curs:
+		if ( gpos && lu_type==3 )
+		    gposCursiveSubTable(ttf,st,info,lookups[k].tag);
 	      break;
 	      case fe_mark:
 		  if ( gpos && lu_type>=4 && lu_type<=6 )

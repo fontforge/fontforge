@@ -926,9 +926,13 @@ return;
 		GDrawDrawPoly(pixmap,gp,9,col);
 	    else
 		GDrawFillPoly(pixmap,gp,9,col);
-	    if ( ap->type!=at_baselig )
+	    if ( ap->type==at_basechar || ap->type==at_mark || ap->type==at_basemark )
 		name = ap->anchor->name;
-	    else {
+	    else if ( ap->type==at_centry || ap->type==at_cexit ) {
+		u_strncpy(ubuf,ap->anchor->name,20);
+		uc_strcat(ubuf,ap->type==at_centry ? " Entry" : " Exit" );
+		name = ubuf;
+	    } else if ( ap->type==at_baselig ) {
 		u_strncpy(ubuf,ap->anchor->name,20);
 		sprintf(buf,"#%d", ap->lig_index);
 		uc_strcat(ubuf,buf);

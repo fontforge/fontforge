@@ -1144,8 +1144,10 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
     transform[1] = transform[2] = transform[4] = transform[5] = 0;
 
     if ( sc->refs!=NULL && sc->refs->next!=NULL &&
-	    AnchorClassMkMkMatch(sc->refs->sc,rsc,&ap1,&ap2)!=NULL ) {
+	    (AnchorClassMkMkMatch(sc->refs->sc,rsc,&ap1,&ap2)!=NULL ||
+	     AnchorClassCursMatch(sc->refs->sc,rsc,&ap1,&ap2)!=NULL) ) {
 	/* Do we have a mark to mark attachment to the last anchor we added? */
+	/*  (or a cursive exit to entry match?) */
 	/*  If so then figure offsets relative to it. */
 	xoff = ap1->me.x-ap2->me.x + sc->refs->transform[4];
 	yoff = ap1->me.y-ap2->me.y + sc->refs->transform[5];
