@@ -145,6 +145,7 @@ struct font_data;
 struct displayfuncs {
     void (*init)(GDisplay *);
     void (*term)(GDisplay *);
+    void *(*nativeDisplay)(GDisplay *);
 
     GWindow (*createTopWindow)(GDisplay *, GRect *pos, int (*eh)(GWindow,GEvent *), void *user_data, GWindowAttrs *);
     GWindow (*createSubWindow)(GWindow, GRect *pos, int (*eh)(GWindow,GEvent *), void *user_data, GWindowAttrs *);
@@ -227,6 +228,7 @@ struct displayfuncs {
     void (*eventLoop)(GDisplay *);
     void (*postEvent)(GEvent *e);
     void (*postDragEvent)(GWindow w,GEvent *mouse,enum event_type et);
+    int  (*requestDeviceEvents)(GWindow w,int devcnt,struct gdeveventmask *de);
 
     GTimer *(*requestTimer)(GWindow w,int32 time_from_now,int32 frequency, void *userdata);
     void (*cancelTimer)(GTimer *timer);

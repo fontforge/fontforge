@@ -34,6 +34,10 @@
 # include <X11/X.h>
 # include <X11/Xlib.h>
 # include <X11/Xutil.h>
+# ifndef _NO_XINPUT
+#  include <X11/extensions/XInput.h>
+#  include <X11/extensions/XI.h>
+# endif
 #endif
 
 #ifndef NOTHREADS
@@ -184,6 +188,8 @@ typedef struct gxdisplay /* : GDisplay */ {
     unsigned int endian_mismatch: 1;
     unsigned int macosx_cmd: 1;		/* if set then map state=0x20 to control */
     unsigned int twobmouse_win: 1;	/* if set then map state=0x40 to mouse button 2 */
+    unsigned int devicesinit: 1;	/* the devices structure has been initialized. Else call XListInputDevices */
+    unsigned int expecting_core_event: 1;/* when we move an input extension device we generally get two events, one for the device, one later for the core device. eat the core event */
     struct gcstate gcstate[2];			/* 0 is state for normal images, 1 for bitmap (pixmaps) */
     Display *display;
     Window root;
@@ -235,6 +241,13 @@ typedef struct gxdisplay /* : GDisplay */ {
     int16 desired_depth, desired_vc, desired_cm;
     XIM im;				/* Input method for current locale */
     XFontSet def_im_fontset;
+    struct inputdevices {
+	char *name;
+	int devid;
+	XDevice *dev;
+	int event_types[5];	/* mousemove, mousedown, mouseup, char, charup */
+    } *inputdevices;
+    int n_inputdevices;
 } GXDisplay;
 
 #define Pixel32(gdisp,col) Pixel16(gdisp,col)

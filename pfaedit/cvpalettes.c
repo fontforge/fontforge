@@ -30,6 +30,9 @@
 #include "splinefont.h"
 #include "ustring.h"
 
+extern GDevEventMask input_em[];
+extern const int input_em_cnt;
+
 static int cvvisible[2] = { 1, 1}, bvvisible[3]= { 1,1,1 };
 static GWindow cvlayers, cvtools, bvlayers, bvtools, bvshades;
 static GPoint cvtoolsoff = { -9999 }, cvlayersoff = { -9999 }, bvlayersoff = { -9999 }, bvtoolsoff = { -9999 }, bvshadesoff = { -9999 };
@@ -448,7 +451,7 @@ return( event->u.chr.state | bit );
 return( event->u.chr.state & ~bit );
 }
 
-void CVToolsSetCursor(CharView *cv, int state) {
+void CVToolsSetCursor(CharView *cv, int state, char *device) {
     int shouldshow;
     static enum cvtools tools[cvt_max+1] = { cvt_none };
     int cntrl;
@@ -477,14 +480,22 @@ void CVToolsSetCursor(CharView *cv, int state) {
 	shouldshow = cv->active_tool;
     else if ( cv->pressed_display!=cvt_none )
 	shouldshow = cv->pressed_display;
-    else if ( (state&ksm_control) && (state&(ksm_button2|ksm_super)) )
-	shouldshow = cv->cb2_tool;
-    else if ( (state&(ksm_button2|ksm_super)) )
-	shouldshow = cv->b2_tool;
-    else if ( (state&ksm_control) )
-	shouldshow = cv->cb1_tool;
-    else
-	shouldshow = cv->b1_tool;
+    else if ( device==NULL ) {
+	if ( (state&ksm_control) && (state&(ksm_button2|ksm_super)) )
+	    shouldshow = cv->cb2_tool;
+	else if ( (state&(ksm_button2|ksm_super)) )
+	    shouldshow = cv->b2_tool;
+	else if ( (state&ksm_control) )
+	    shouldshow = cv->cb1_tool;
+	else
+	    shouldshow = cv->b1_tool;
+    } else if ( strcmp(device,"eraser")==0 )
+	shouldshow = cvt_knife;
+    else if ( strcmp(device,"stylus")==0 )
+	shouldshow = cvt_pen;
+    else if ( strcmp(device,"Mouse1")==0 ) {
+	shouldshow = cvt_curve;
+    }
     if ( shouldshow==cvt_magnify && (state&ksm_meta))
 	shouldshow = cvt_minify;
     if ( shouldshow!=cv->showing_tool ) {
@@ -493,10 +504,12 @@ void CVToolsSetCursor(CharView *cv, int state) {
 	cv->showing_tool = shouldshow;
     }
 
-    cntrl = (state&ksm_control)?1:0;
-    if ( cntrl != cv->cntrldown ) {
-	cv->cntrldown = cntrl;
-	GDrawRequestExpose(cvtools,NULL,false);
+    if ( device==NULL ) {
+	cntrl = (state&ksm_control)?1:0;
+	if ( cntrl != cv->cntrldown ) {
+	    cv->cntrldown = cntrl;
+	    GDrawRequestExpose(cvtools,NULL,false);
+	}
     }
 }
 
@@ -553,7 +566,7 @@ static void ToolsMouse(CharView *cv, GEvent *event) {
 	GDrawRequestExpose(cvtools,NULL,false);
 	event->u.chr.state &= ~(1<<(7+event->u.mouse.button));
     }
-    CVToolsSetCursor(cv,event->u.chr.state);
+    CVToolsSetCursor(cv,event->u.mouse.state,event->u.mouse.device);
 }
 
 static void PostCharToWindow(GWindow to, GEvent *e) {
@@ -592,7 +605,7 @@ return( true );
       break;
       case et_crossing:
 	cv->pressed_display = cvt_none;
-	CVToolsSetCursor(cv,event->u.mouse.state);
+	CVToolsSetCursor(cv,event->u.mouse.state,NULL);
       break;
       case et_char: case et_charup:
 	if ( cv->had_control != ((event->u.chr.state&ksm_control)?1:0) )
@@ -631,6 +644,10 @@ return( cvtools );
 	r.x = r.y = 0;
     cvtools = CreatePalette( cv->gw, &r, cvtools_e_h, cv, &wattrs, cv->v );
 
+    if ( GDrawRequestDeviceEvents(cvtools,input_em_cnt,input_em)>0 ) {
+	/* Success! They've got a wacom tablet */
+    }
+
     memset(&rq,0,sizeof(rq));
     rq.family_name = helv;
     rq.point_size = -10;
@@ -659,7 +676,7 @@ static void CVPopupInvoked(GWindow v, GMenuItem *mi, GEvent *e) {
 	    GDrawRequestExpose(cvtools,NULL,false);
 	}
     }
-    CVToolsSetCursor(cv,cv->had_control?ksm_control:0);
+    CVToolsSetCursor(cv,cv->had_control?ksm_control:0,NULL);
 }
 
 void CVToolsPopup(CharView *cv, GEvent *event) {
@@ -1079,7 +1096,7 @@ void CVPaletteActivate(CharView *cv) {
 	GDrawSetVisible(cvlayers,cvvisible[0]);
 	if ( cvvisible[1]) {
 	    cv->showing_tool = cvt_none;
-	    CVToolsSetCursor(cv,0);
+	    CVToolsSetCursor(cv,0,NULL);
 	    GDrawRequestExpose(cvtools,NULL,false);
 	}
 	if ( cvvisible[0])

@@ -50,6 +50,10 @@ static void PSDrawInit(GDisplay *gdisp) {
 static void PSDrawTerm(GDisplay *gdisp) {
 }
 
+static void *PSDrawNativeDisplay(GDisplay *gdisp) {
+return( NULL );
+}
+
 static GWindow PSDrawCreateSubWindow(GWindow w, GRect *pos,
 	int (*eh)(GWindow,GEvent *), void *user_data, GWindowAttrs *wattrs) {
     fprintf( stderr, "CreateSubWindow not implemented for postscript\n" );
@@ -244,6 +248,10 @@ static void PSDrawPostEvent(GEvent *e) {
 }
 
 static void PSDrawPostDragEvent(GWindow w,GEvent *mouse,enum event_type et) {
+}
+
+static int  PSDrawRequestDeviceEvents(GWindow w,int devcnt,struct gdeveventmask *de) {
+return( 0 );
 }
 
 static GImage *_PSDraw_CopyScreenToImage(GWindow w, GRect *rect) {
@@ -1232,6 +1240,7 @@ static void PSDrawDestroyWindow(GWindow w) {
 static struct displayfuncs psfuncs = {
     PSDrawInit,
     PSDrawTerm,
+    PSDrawNativeDisplay,
 
     PSDrawCreateTopWindow,
     PSDrawCreateSubWindow,
@@ -1312,6 +1321,7 @@ static struct displayfuncs psfuncs = {
     PSDrawEventLoop,
     PSDrawPostEvent,
     PSDrawPostDragEvent,
+    PSDrawRequestDeviceEvents,
 
     PSDrawRequestTimer,
     PSDrawCancelTimer,

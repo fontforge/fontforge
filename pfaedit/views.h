@@ -438,7 +438,7 @@ extern real CVStarRatio(void);
 extern int CVPolyStarPoints(void);
 extern int TrueCharState(GEvent *event);
 extern void BVToolsSetCursor(BitmapView *bv, int state);
-extern void CVToolsSetCursor(CharView *cv, int state);
+extern void CVToolsSetCursor(CharView *cv, int state,char *device);
 extern void CVToolsPopup(CharView *cv, GEvent *event);
 extern void BVToolsPopup(BitmapView *bv, GEvent *event);
 extern int CVPaletteIsVisible(CharView *cv,int which);

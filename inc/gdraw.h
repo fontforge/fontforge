@@ -185,14 +185,17 @@ typedef struct gevent {
 	struct {
 	    uint16 state;
 	    int16 x,y;
+	    char *device;		/* for wacom devices */
 	    uint16 keysym;
 	    unichar_t chars[_GD_EVT_CHRLEN];
 	} chr;
 	struct {
 	    int16 state;
 	    int16 x,y;
+	    char *device;		/* for wacom devices */
 	    int16 button;
 	    int16 clicks;
+	    int pressure, xtilt, ytilt;
 	} mouse;
 	struct {
 	    GRect rect;
@@ -209,6 +212,7 @@ typedef struct gevent {
 	struct {
 	    int16 state;
 	    int16 x,y;
+	    char *device;		/* for wacom devices */
 	    unsigned int entered: 1;
 	} crossing;
 	struct {
@@ -326,12 +330,18 @@ typedef struct gprinter_attrs {
     uint16 start_page, end_page;	/* Ignored by printer routines, for programmer */
 } GPrinterAttrs;
 
+typedef struct gdeveventmask {
+    int event_mask;
+    char *device_name;
+} GDevEventMask;
+
 typedef int (*GDrawEH)(GWindow,GEvent *);
 
 extern unichar_t *GDrawKeysyms[];
 extern GDisplay *screen_display, *printer_display;
 
 extern void GDrawCreateDisplays(char *displayname,char *programname);
+extern void *GDrawNativeDisplay(GDisplay *);
 extern void GDrawTerm(GDisplay *disp);
 
 extern int GDrawGetRes(GWindow gw);
@@ -482,6 +492,8 @@ extern void GPrinterNextPage(GWindow w);
 extern int  GPrinterEndJob(GWindow w,int cancel);
 
 extern void GDrawSetBuildCharHooks(void (*hook)(GDisplay *), void (*inshook)(GDisplay *,unichar_t));
+
+extern int GDrawRequestDeviceEvents(GWindow w,int devcnt,struct gdeveventmask *de);
 
 extern void GDrawFatalError(const char *fmt,...);
 extern void GDrawIError(const char *fmt,...);

@@ -49,9 +49,9 @@
 enum cm_type { cmt_default=-1, cmt_current, cmt_copy, cmt_private };
 
 #ifndef X_DISPLAY_MISSING
-#include <X11/Xatom.h>
-#include <X11/keysym.h>
-#include <X11/cursorfont.h>
+# include <X11/Xatom.h>
+# include <X11/keysym.h>
+# include <X11/cursorfont.h>
 
 /*#define GREEK_BUG	1*/
 
@@ -899,6 +899,10 @@ static void GXDrawInit(GDisplay *gdisp) {
 }
 
 static void GXDrawTerm(GDisplay *gdisp) {
+}
+
+static void *GXDrawNativeDisplay(GDisplay *gdisp) {
+return( ((GXDisplay *) gdisp)->display );
 }
 
 static GGC *_GXDraw_NewGGC() {
@@ -2635,6 +2639,9 @@ static void dispatchEvent(GXDisplay *gdisp, XEvent *event) {
     Status status;
     KeySym keysym; int len;
     GPoint p;
+    int expecting_core = gdisp->expecting_core_event;
+
+    gdisp->expecting_core_event = false;
 
     if ( XFindContext(gdisp->display,event->xany.window,gdisp->mycontext,(void *) &ret)==0 )
 	gw = (GWindow) ret;
@@ -2720,6 +2727,10 @@ return;
 	}
       break;
       case ButtonPress: case ButtonRelease: case MotionNotify:
+	if ( expecting_core && gdisp->last_event_time==event->xbutton.time )
+      break; /* core event is a duplicate of device event */
+	     /*  (only it's not quite a duplicate, often it's a few pixels */
+	     /*  off from the device location */
 	if ( event->type==ButtonPress )
 	    gdisp->grab_window = gw;
 	else if ( gdisp->grab_window!=NULL ) {
@@ -2746,6 +2757,7 @@ return;
 	gevent.u.mouse.x = event->xbutton.x;
 	gevent.u.mouse.y = event->xbutton.y;
 	gevent.u.mouse.button = event->xbutton.button;
+	gevent.u.mouse.device = NULL;
 	if ( (event->xbutton.state&0x40) && gdisp->twobmouse_win )
 	    gevent.u.mouse.button = 2;
 	if ( event->type == MotionNotify ) {
@@ -2806,6 +2818,7 @@ return;
 	gevent.u.crossing.y = event->xcrossing.y;
 	gevent.u.crossing.state = event->xcrossing.state;
 	gevent.u.crossing.entered = event->type==EnterNotify;
+	gevent.u.crossing.device = NULL;
       break;
       case ConfigureNotify:
 	gevent.type = et_resize;
@@ -2898,6 +2911,63 @@ return;
 	    gw->parent = gparent;
 	    gw->is_toplevel = (GXWindow) gparent==gdisp->groot;
 	}
+      break;
+      case MappingNotify:
+	XRefreshKeyboardMapping((XMappingEvent *) event);
+      break;
+      default:
+#ifndef _NO_XINPUT
+        if ( event->type>=LASTEvent ) {	/* An XInput event */
+	    int i,j;
+	    static int types[5] = { et_mousemove, et_mousedown, et_mouseup, et_char, et_charup };
+	    for ( i=0 ; i<gdisp->n_inputdevices; ++i ) {
+		if ( ((XDeviceButtonEvent *) event)->deviceid==gdisp->inputdevices[i].devid ) { 
+		    for ( j=0; j<5; ++j )
+			if ( event->type==gdisp->inputdevices[i].event_types[j] ) {
+			    gevent.type = types[j];
+	    goto found;
+			}
+		}
+	    }
+	    found: ;
+	    if ( gevent.type != et_noevent ) {
+		gdisp->last_event_time = ((XDeviceButtonEvent *) event)->time;
+		gevent.u.mouse.device = gdisp->inputdevices[i].name;	/* Same place in key and mouse events */
+		if ( j>3 ) {	/* Key event */
+		    gevent.u.chr.state = ((XDeviceKeyEvent *) event)->device_state;
+		    gevent.u.chr.x = ((XDeviceKeyEvent *) event)->x;
+		    gevent.u.chr.y = ((XDeviceKeyEvent *) event)->y;
+		    gevent.u.chr.keysym = ((XDeviceKeyEvent *) event)->keycode;
+		    gevent.u.chr.chars[0] = 0;
+		    if ( ((XDeviceKeyEvent *) event)->first_axis!=0 )
+			gevent.type = et_noevent;	/* Repeat of previous event to add more axes */
+		} else {
+		    gevent.u.mouse.state = ((XDeviceButtonEvent *) event)->device_state;
+		    gevent.u.mouse.x = ((XDeviceButtonEvent *) event)->x;
+		    gevent.u.mouse.y = ((XDeviceButtonEvent *) event)->y;
+		    gdisp->expecting_core_event = true;
+		    if ( j!=0 ) {
+			gevent.u.mouse.button = ((XDeviceButtonEvent *) event)->button;
+			if ( ((XDeviceButtonEvent *) event)->first_axis!=0 )
+			    gevent.type = et_noevent;	/* Repeat of previous event to add more axes */
+			if ( ((XDeviceButtonEvent *) event)->axes_count==6 ) {
+			    gevent.u.mouse.pressure = ((XDeviceButtonEvent *) event)->axis_data[5];
+			    gevent.u.mouse.xtilt = ((XDeviceButtonEvent *) event)->axis_data[3];
+			    gevent.u.mouse.ytilt = ((XDeviceButtonEvent *) event)->axis_data[4];
+			}
+		    } else {
+			if ( ((XDeviceMotionEvent *) event)->first_axis!=0 )
+			    gevent.type = et_noevent;	/* Repeat of previous event to add more axes */
+			if ( ((XDeviceMotionEvent *) event)->axes_count==6 ) {
+			    gevent.u.mouse.pressure = ((XDeviceMotionEvent *) event)->axis_data[5];
+			    gevent.u.mouse.xtilt = ((XDeviceMotionEvent *) event)->axis_data[3];
+			    gevent.u.mouse.ytilt = ((XDeviceMotionEvent *) event)->axis_data[4];
+			}
+		    }
+		}
+	    }
+	}
+#endif
       break;
     }
     if ( gevent.type != et_noevent && gw!=NULL && gw->eh!=NULL )
@@ -3125,6 +3195,83 @@ return;
 	gdisp->last_dd.rx = x;
 	gdisp->last_dd.ry = y;
     }
+}
+
+static int GXDrawRequestDeviceEvents(GWindow w,int devcnt,struct gdeveventmask *de) {
+#ifndef _NO_XINPUT
+    GXDisplay *gdisp = (GXDisplay *) (w->display);
+    int i,j,k,cnt,foo, availdevcnt;
+    XEventClass *classes;
+
+    if ( !gdisp->devicesinit ) {
+	int ndevs=0;
+	XDeviceInfo *devs = XListInputDevices(gdisp->display,&ndevs);
+	gdisp->devicesinit = true;
+	if ( ndevs==0 )
+return( 0 );
+	gdisp->inputdevices = gcalloc(ndevs+1,sizeof(struct inputdevices));
+	for ( i=0; i<ndevs; ++i ) {
+	    gdisp->inputdevices[i].name = copy(devs[i].name);
+	    gdisp->inputdevices[i].devid = devs[i].id;
+	}
+	gdisp->n_inputdevices = ndevs;
+    }
+    classes = NULL;
+    for ( k=0; k<2; ++k ) {
+	cnt=availdevcnt=0;
+	for ( j=0; de[j].device_name!=NULL; ++j ) {
+	    for ( i=0; i<gdisp->n_inputdevices; ++i )
+		if ( strcmp(de[j].device_name,gdisp->inputdevices[i].name)==0 )
+	    break;
+	    if ( i<gdisp->n_inputdevices ) {
+		++availdevcnt;
+		if ( gdisp->inputdevices[i].dev==NULL )
+		    gdisp->inputdevices[i].dev = XOpenDevice(gdisp->display,gdisp->inputdevices[i].devid);
+		if ( gdisp->inputdevices[i].dev!=NULL ) {
+		    if ( de[j].event_mask & (1<<et_mousemove) ) {
+			if ( classes!=NULL )
+			    DeviceMotionNotify(gdisp->inputdevices[i].dev,gdisp->inputdevices[i].event_types[0],classes[cnt]);
+			++cnt;
+		    }
+		    if ( de[j].event_mask & (1<<et_mousedown) ) {
+			if ( classes!=NULL )
+			    DeviceButtonPress(gdisp->inputdevices[i].dev,gdisp->inputdevices[i].event_types[1],classes[cnt]);
+			++cnt;
+		    }
+		    if ( de[j].event_mask & (1<<et_mouseup) ) {
+			if ( classes!=NULL )
+			    DeviceButtonRelease(gdisp->inputdevices[i].dev,gdisp->inputdevices[i].event_types[2],classes[cnt]);
+			++cnt;
+		    }
+		    if ( (de[j].event_mask & (1<<et_mousedown)) && (de[j].event_mask & (1<<et_mouseup)) ) {
+			if ( classes!=NULL )
+			    DeviceButtonPressGrab(gdisp->inputdevices[i].dev,foo,classes[cnt]);
+			++cnt;
+		    }
+		    if ( de[j].event_mask & (1<<et_char) ) {
+			if ( classes!=NULL )
+			    DeviceKeyPress(gdisp->inputdevices[i].dev,foo,classes[cnt]);
+			++cnt;
+		    }
+		    if ( de[j].event_mask & (1<<et_charup) ) {
+			if ( classes!=NULL )
+			    DeviceKeyRelease(gdisp->inputdevices[i].dev,foo,classes[cnt]);
+			++cnt;
+		    }
+		}
+	    }
+	}
+	if ( cnt==0 )
+return(0);
+	if ( k==0 )
+	    classes = galloc(cnt*sizeof(XEventClass));
+    }
+    XSelectExtensionEvent(gdisp->display,((GXWindow) w)->w,classes,cnt);
+    free(classes);
+return( availdevcnt );
+#else
+return( 0 );
+#endif
 }
 
 static Bool exposeornotify(Display *d,XEvent *e,XPointer arg) {
@@ -3638,6 +3785,7 @@ return( false );
 static struct displayfuncs xfuncs = {
     GXDrawInit,
     GXDrawTerm,
+    GXDrawNativeDisplay,
 
     GXDrawCreateTopWindow,
     GXDrawCreateSubWindow,
@@ -3718,6 +3866,7 @@ static struct displayfuncs xfuncs = {
     GXDrawEventLoop,
     GXDrawPostEvent,
     GXDrawPostDragEvent,
+    GXDrawRequestDeviceEvents,
 
     GXDrawRequestTimer,
     GXDrawCancelTimer,

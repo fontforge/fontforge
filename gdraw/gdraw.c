@@ -653,6 +653,10 @@ int GPrinterEndJob(GWindow w,int cancel) {
 return( (w->display->funcs->endJob)(w,cancel) );
 }
 
+int GDrawRequestDeviceEvents(GWindow w,int devcnt,struct gdeveventmask *de) {
+return( (w->display->funcs->requestDeviceEvents)(w,devcnt,de) );
+}
+
 void GDrawSetBuildCharHooks(void (*hook)(GDisplay *),void (*inshook)(GDisplay *,unichar_t)) {
     _GDraw_BuildCharHook = hook;
     _GDraw_InsCharHook = inshook;
@@ -744,4 +748,13 @@ void GDrawCreateDisplays(char *displayname,char *programname) {
 	fprintf( stderr, "Could not open screen\n" );
 exit(1);
     }
+}
+
+void *GDrawNativeDisplay(GDisplay *gdisp) {
+    if ( gdisp==NULL )
+	gdisp=screen_display;
+    if ( gdisp==NULL )
+return( NULL );
+
+return( (gdisp->funcs->nativeDisplay)(gdisp) );
 }

@@ -58,6 +58,15 @@ struct cvshows CVShows = {
 Color nextcpcol = 0x007090;
 Color prevcpcol = 0xff00ff;
 
+GDevEventMask input_em[] = {
+	/* Event masks for wacom devices */
+    { et_mousemove|et_mousedown|et_mouseup, "Mouse1" },
+    { et_mousemove|et_mousedown|et_mouseup|et_char, "stylus" },
+    { et_mousemove|et_mousedown|et_mouseup, "eraser" },
+    { 0, NULL }
+};
+const int input_em_cnt = sizeof(input_em)/sizeof(input_em[0])-1;
+
 /* Positions on the info line */
 #define RPT_BASE	5		/* Place to draw the pointer icon */
 #define RPT_DATA	13		/* x,y text after above */
@@ -1344,7 +1353,7 @@ void CVChar(CharView *cv, GEvent *event ) {
 	    GDrawCancelTimer(cv->autorpt); cv->autorpt = NULL;
 	    if ( cv->keysym == event->u.chr.keysym )	/* It's an autorepeat, ignore it */
 return;
-	    CVToolsSetCursor(cv,cv->oldstate);
+	    CVToolsSetCursor(cv,cv->oldstate,NULL);
 	}
 #endif
 
@@ -1359,7 +1368,7 @@ return;
 #endif
 
     CVPaletteActivate(cv);
-    CVToolsSetCursor(cv,TrueCharState(event));
+    CVToolsSetCursor(cv,TrueCharState(event),NULL);
     if ( event->u.chr.keysym=='s' &&
 	    (event->u.chr.state&ksm_control) &&
 	    (event->u.chr.state&ksm_meta) )
@@ -1503,7 +1512,7 @@ static void CVCharUp(CharView *cv, GEvent *event ) {
 	    event->u.chr.keysym == GK_Hyper_L || event->u.chr.keysym == GK_Hyper_R ) {
 	if ( cv->autorpt!=NULL ) {
 	    GDrawCancelTimer(cv->autorpt);
-	    CVToolsSetCursor(cv,cv->oldstate);
+	    CVToolsSetCursor(cv,cv->oldstate,NULL);
 	}
 	cv->keysym = event->u.chr.keysym;
 	cv->oldstate = TrueCharState(event);
@@ -1511,12 +1520,12 @@ static void CVCharUp(CharView *cv, GEvent *event ) {
     } else {
 	if ( cv->autorpt!=NULL ) {
 	    GDrawCancelTimer(cv->autorpt); cv->autorpt=NULL;
-	    CVToolsSetCursor(cv,cv->oldstate);
+	    CVToolsSetCursor(cv,cv->oldstate,NULL);
 	}
-	CVToolsSetCursor(cv,TrueCharState(event));
+	CVToolsSetCursor(cv,TrueCharState(event),NULL);
     }
 #else
-    CVToolsSetCursor(cv,TrueCharState(event));
+    CVToolsSetCursor(cv,TrueCharState(event),NULL);
 #endif
 }
 
@@ -1632,7 +1641,7 @@ void CVInfoDraw(CharView *cv, GWindow pixmap ) {
 }
 
 static void CVCrossing(CharView *cv, GEvent *event ) {
-    CVToolsSetCursor(cv,event->u.mouse.state);
+    CVToolsSetCursor(cv,event->u.mouse.state,event->u.mouse.device);
     cv->info_within = event->u.crossing.entered;
     cv->info.x = (event->u.crossing.x-cv->xoff)/cv->scale;
     cv->info.y = (cv->height-event->u.crossing.y-cv->yoff)/cv->scale;
@@ -1892,7 +1901,7 @@ static void CVMouseDown(CharView *cv, GEvent *event ) {
 	CVToolsPopup(cv,event);
 return;
     }
-    CVToolsSetCursor(cv,event->u.mouse.state|(1<<(7+event->u.mouse.button)) );
+    CVToolsSetCursor(cv,event->u.mouse.state|(1<<(7+event->u.mouse.button)), event->u.mouse.device );
     cv->active_tool = cv->showing_tool;
     cv->needsrasterize = false;
     cv->recentchange = false;
@@ -2083,6 +2092,12 @@ static void CVMouseMove(CharView *cv, GEvent *event ) {
     PressedOn p;
     FindSel fs;
     GEvent fake;
+
+ printf( "dev=%s (%d,%d) 0x%x\n", event->u.mouse.device!=NULL?event->u.mouse.device:"<None>",
+     event->u.mouse.x, event->u.mouse.y, event->u.mouse.state);
+
+    if ( event->u.mouse.device!=NULL )
+	CVToolsSetCursor(cv,event->u.mouse.state,event->u.mouse.device);
 
     if ( !cv->p.pressed ) {
 	CVUpdateInfo(cv, event);
@@ -2286,7 +2301,7 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
       break;
     }
     cv->active_tool = cvt_none;
-    CVToolsSetCursor(cv,event->u.mouse.state&~(1<<(7+event->u.mouse.button)));		/* X still has the buttons set in the state, even though we just released them. I don't want em */
+    CVToolsSetCursor(cv,event->u.mouse.state&~(1<<(7+event->u.mouse.button)),event->u.mouse.device);		/* X still has the buttons set in the state, even though we just released them. I don't want em */
     cv->p.pressed = false;
     if ( cv->needsrasterize || cv->recentchange )
 	CVCharChangedUpdate(cv);
@@ -2320,7 +2335,7 @@ static void CVTimer(CharView *cv,GEvent *event) {
 	/* Under cygwin the modifier keys auto repeat, they don't under normal X */
     } else if ( cv->autorpt==event->u.timer.timer ) {
 	cv->autorpt = NULL;
-	CVToolsSetCursor(cv,cv->oldstate);
+	CVToolsSetCursor(cv,cv->oldstate,NULL);
 #endif
     }
 }
@@ -4930,6 +4945,10 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv) {
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
     cv->v = GWidgetCreateSubWindow(cv->gw,&pos,v_e_h,cv,&wattrs);
+
+    if ( GDrawRequestDeviceEvents(cv->v,input_em_cnt,input_em)>0 ) {
+	/* Success! They've got a wacom tablet */
+    }
 
     if ( infofamily==NULL ) {
 	infofamily = uc_copy(GResourceFindString("CharView.InfoFamily"));
