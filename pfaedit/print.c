@@ -974,6 +974,7 @@ return( true );
 	pagewidth = pgwidth; pageheight = pgheight;
 
 	pi->done = true;
+	SavePrefs();
     }
 return( true );
 }
