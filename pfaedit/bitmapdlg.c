@@ -718,6 +718,7 @@ int BitmapControl(FontView *fv,real *sizes,int isavail) {
     bd.fv = fv;
     bd.sf = fv->sf;
     bd.isavail = isavail;
+    bd.which = bd_selected;
     BitmapsDoIt(&bd,sizes,hasFreeType());
 return( bd.done );
 }
