@@ -1682,7 +1682,7 @@ static int mgAsk(struct problems *p,char **_str,char *str, char *end,uint32 tag,
     }
 
     if ( which == mg_pst ) {
-	if ( !pst->macfeature )
+	if ( pst->macfeature )
 	    u_snprintf(buffer,sizeof(buffer)/sizeof(buffer[0]),
 		    GStringGetResource(_STR_GlyphMacPSTTag,NULL),
 		    sc->name, pstnames[pst->type],
@@ -1865,7 +1865,7 @@ static int StrMissingGlyph(struct problems *p,char **_str,SplineChar *sc,int whi
     int found = false;
     SplineFont *sf = p->fv!=NULL ? p->fv->sf : p->cv!=NULL ? p->cv->sc->parent : p->msc->parent;
     SplineChar *ssc;
-    int changed;
+    int changed=false;
 
     if ( str==NULL )
 return( false );
@@ -1879,7 +1879,7 @@ return( false );
 	ssc = SFGetChar(sf,-1,str);
 	*end = ch;
 	if ( ssc==NULL ) {
-	    off = str-*_str;
+	    off = end-*_str;
 	    if ( (new = missinglookup(p,str))!=NULL ) {
 		mgreplace(_str, str,end, new, sc, which==mg_pst ? data : NULL);
 		changed = true;
@@ -1894,6 +1894,7 @@ return( false );
 		    for ( test = sc->possub; test!=NULL && test!=data; test=test->next );
 		    if ( test==NULL )		/* Entire pst was removed */
 return( true );
+		    *_str = test->u.subs.variant;
 		}
 		end = *_str+off;
 	    }
