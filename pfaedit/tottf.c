@@ -3038,6 +3038,9 @@ void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf) {
 /*  nameid==6 and that name must be ascii (presumably plat=1, spec=0, lang=0) */
 /* The opentype docs say there must be two (psl=1,0,0 & psl=3,1,0x409) any */
 /*  others are to be ignored */
+/* If we are generating both ot and apple then set as per apple, I think apple */
+/*  fails to load the font if their conventions aren't followed, but I don't */
+/*  think windows does */
 static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format) {
     int pos=0,i,j;
     struct ttflangname dummy, *cur, *useng;
@@ -4124,7 +4127,7 @@ return( out );
 
 static int initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
 	int32 *bsizes, enum bitmapformat bf,int flags) {
-    int i, j, pos, aborted;
+    int i, j, pos, aborted, ebdtpos, eblcpos;
     BDFFont *bdf;
 
     if ( sf->encoding_name == em_symbol && format==ff_ttf )
@@ -4152,7 +4155,8 @@ static int initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
 	if ( i==0 ) bsizes=NULL;
     }
     at->applemode = (flags&ttf_flag_applemode)?1:0;
-    at->msbitmaps = bsizes!=NULL && !at->applemode;
+    at->opentypemode = (flags&ttf_flag_otmode)?1:0;
+    at->msbitmaps = bsizes!=NULL && !at->applemode && at->opentypemode;
     at->otbbitmaps = bsizes!=NULL && bf==bf_otb;
     at->gi.onlybitmaps = format==ff_none;
     at->gi.flags = flags;
@@ -4190,7 +4194,7 @@ static int initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
 	aborted = !dumpglyphs(sf,&at->gi);
     if ( bsizes!=NULL && !aborted )
 	ttfdumpbitmap(sf,at,bsizes);
-    if ( bsizes!=NULL && format==ff_none && at->msbitmaps )
+    if ( bsizes!=NULL && format==ff_none && !at->applemode )
 	ttfdumpbitmapscaling(sf,at,bsizes);
     if ( aborted ) {
 	AbortTTF(at,sf);
@@ -4208,7 +4212,7 @@ return( false );
 	at->head.locais32 = 0;
     if ( at->otbbitmaps )
 	dummyloca(at);
-    else if ( format!=ff_otf && format!=ff_otfcid && (format!=ff_none || at->msbitmaps) )
+    else if ( format!=ff_otf && format!=ff_otfcid && (format!=ff_none || (bsizes!=NULL && !at->applemode && at->opentypemode)) )
 	redoloca(at);
     redohead(at);
     redohhead(at,false);
@@ -4217,12 +4221,14 @@ return( false );
 	redovorg(at);		/* I know, VORG is only meaningful in a otf font and I dump it out in ttf too. Well, it will help ME read the font back in, and it won't bother anyone else. So there. */
     }
     redomaxp(at,format);
-    if ( !at->applemode ) {
+
+    if ( at->opentypemode ) {
 	otf_orderlangs(sf);
 	otf_dumpgpos(at,sf);
 	otf_dumpgsub(at,sf);
 	otf_dumpgdef(at,sf);
-    } else {
+    }
+    if ( at->applemode ) {
 	aat_dumpacnt(at,sf);		/* Placeholder for now */
 	ttf_dumpkerns(at,sf);
 	aat_dumplcar(at,sf);
@@ -4230,6 +4236,9 @@ return( false );
 	aat_dumpopbd(at,sf);
 	aat_dumpprop(at,sf);
     }
+    if ( !at->applemode && !at->opentypemode )
+	ttf_dumpkerns(at,sf);		/* everybody supports a mimimal kern table */
+
     dumpnames(at,sf,format);		/* Must be after dumpmorx which may create extra names */
     redoos2(at);
     if ( format!=ff_otf && format!=ff_otfcid && format!=ff_none ) {
@@ -4246,7 +4255,7 @@ return( false );
 
     if ( format==ff_otf || format==ff_otfcid || bf==bf_otb ) {
 	at->tabdir.version = CHR('O','T','T','O');
-    } else if ( at->applemode ) {
+    } else if ( at->applemode && !at->opentypemode ) {
 	at->tabdir.version = CHR('t','r','u','e');
     } else {
 	at->tabdir.version = 0x00010000;
@@ -4263,7 +4272,8 @@ return( false );
 	pos += ((at->cfflen+3)>>2)<<2;
     }
 
-    if ( at->bdat!=NULL && at->msbitmaps ) {
+    if ( at->bdat!=NULL && at->opentypemode ) {
+	ebdtpos = i;
 	at->tabdir.tabs[i].tag = CHR('E','B','D','T');
 	at->tabdir.tabs[i].checksum = filecheck(at->bdat);
 	at->tabdir.tabs[i].offset = pos;
@@ -4271,7 +4281,8 @@ return( false );
 	pos += ((at->bdatlen+3)>>2)<<2;
     }
 
-    if ( at->bloc!=NULL && at->msbitmaps ) {
+    if ( at->bloc!=NULL && at->opentypemode ) {
+	eblcpos = i;
 	at->tabdir.tabs[i].tag = CHR('E','B','L','C');
 	at->tabdir.tabs[i].checksum = filecheck(at->bloc);
 	at->tabdir.tabs[i].offset = pos;
@@ -4341,15 +4352,21 @@ return( false );
 	pos += ((at->acntlen+3)>>2)<<2;
     }
 
-    if ( at->bdat!=NULL && !at->msbitmaps ) {
+    if ( at->bdat!=NULL && at->applemode ) {
 	at->tabdir.tabs[i].tag = CHR('b','d','a','t');
-	at->tabdir.tabs[i].checksum = filecheck(at->bdat);
-	at->tabdir.tabs[i].offset = pos;
-	at->tabdir.tabs[i++].length = at->bdatlen;
-	pos += ((at->bdatlen+3)>>2)<<2;
+	if ( !at->opentypemode ) {
+	    at->tabdir.tabs[i].checksum = filecheck(at->bdat);
+	    at->tabdir.tabs[i].offset = pos;
+	    at->tabdir.tabs[i++].length = at->bdatlen;
+	    pos += ((at->bdatlen+3)>>2)<<2;
+	} else {
+	    at->tabdir.tabs[i].checksum = at->tabdir.tabs[ebdtpos].checksum;
+	    at->tabdir.tabs[i].offset = at->tabdir.tabs[ebdtpos].offset;
+	    at->tabdir.tabs[i++].length = at->tabdir.tabs[ebdtpos].length;
+	}
     }
 
-    if ( format==ff_none && !at->msbitmaps ) {
+    if ( format==ff_none && at->applemode ) {
 	/* Bitmap only fonts get a bhed table rather than a head */
 	at->tabdir.tabs[i].tag = CHR('b','h','e','d');
 	at->tabdir.tabs[i].checksum = filecheck(at->headf);
@@ -4358,12 +4375,18 @@ return( false );
 	pos += ((at->headlen+3)>>2)<<2;
     }
 
-    if ( at->bloc!=NULL && !at->msbitmaps ) {
+    if ( at->bloc!=NULL && at->applemode ) {
 	at->tabdir.tabs[i].tag = CHR('b','l','o','c');
-	at->tabdir.tabs[i].checksum = filecheck(at->bloc);
-	at->tabdir.tabs[i].offset = pos;
-	at->tabdir.tabs[i++].length = at->bloclen;
-	pos += ((at->bloclen+3)>>2)<<2;
+	if ( !at->opentypemode ) {
+	    at->tabdir.tabs[i].checksum = filecheck(at->bloc);
+	    at->tabdir.tabs[i].offset = pos;
+	    at->tabdir.tabs[i++].length = at->bloclen;
+	    pos += ((at->bloclen+3)>>2)<<2;
+	} else {
+	    at->tabdir.tabs[i].checksum = at->tabdir.tabs[eblcpos].checksum;
+	    at->tabdir.tabs[i].offset = at->tabdir.tabs[eblcpos].offset;
+	    at->tabdir.tabs[i++].length = at->tabdir.tabs[eblcpos].length;
+	}
     }
 
     at->tabdir.tabs[i].tag = CHR('c','m','a','p');
@@ -4372,8 +4395,8 @@ return( false );
     at->tabdir.tabs[i++].length = at->cmaplen;
     pos += ((at->cmaplen+3)>>2)<<2;
 
-    if ( format!=ff_otf && format!=ff_otfcid && (format!=ff_none || at->msbitmaps) ) {
-	if ( format!=ff_none && at->cvtf!=NULL ) {
+    if ( format!=ff_otf && format!=ff_otfcid && format!=ff_none ) {
+	if ( at->cvtf!=NULL ) {
 	    at->tabdir.tabs[i].tag = CHR('c','v','t',' ');
 	    at->tabdir.tabs[i].checksum = filecheck(at->cvtf);
 	    at->tabdir.tabs[i].offset = pos;
@@ -4390,7 +4413,7 @@ return( false );
 	pos += ((at->featlen+3)>>2)<<2;
     }
 
-    if ( format!=ff_otf && format!=ff_otfcid && (format!=ff_none || at->msbitmaps) ) {
+    if ( format!=ff_otf && format!=ff_otfcid && format!=ff_none ) {
 	if ( at->fpgmf!=NULL ) {
 	    at->tabdir.tabs[i].tag = CHR('f','p','g','m');
 	    at->tabdir.tabs[i].checksum = filecheck(at->fpgmf);
@@ -4414,7 +4437,7 @@ return( false );
 	pos += ((at->gi.glyph_len+3)>>2)<<2;
     }
 
-    if ( format!=ff_none || at->msbitmaps ) {
+    if ( format!=ff_none || !at->applemode ) {
 	at->tabdir.tabs[i].tag = CHR('h','e','a','d');
 	at->tabdir.tabs[i].checksum = filecheck(at->headf);
 	at->tabdir.tabs[i].offset = pos;
@@ -4450,7 +4473,7 @@ return( false );
 	pos += ((at->lcarlen+3)>>2)<<2;
     }
 
-    if ( format!=ff_otf && format!=ff_otfcid  && (format!=ff_none || at->msbitmaps) ) {
+    if ( format!=ff_otf && format!=ff_otfcid && (format!=ff_none || at->msbitmaps )) {
 	at->tabdir.tabs[i].tag = CHR('l','o','c','a');
 	at->tabdir.tabs[i].checksum = filecheck(at->loca);
 	at->tabdir.tabs[i].offset = pos;
@@ -4492,7 +4515,7 @@ return( false );
     at->tabdir.tabs[i++].length = at->postlen;
     pos += ((at->postlen+3)>>2)<<2;
 
-    if ( format!=ff_otf && format!=ff_otfcid && (format!=ff_none || at->msbitmaps) ) {
+    if ( format!=ff_otf && format!=ff_otfcid && format!=ff_none ) {
 	if ( at->prepf!=NULL ) {
 	    at->tabdir.tabs[i].tag = CHR('p','r','e','p');
 	    at->tabdir.tabs[i].checksum = filecheck(at->prepf);
@@ -4526,6 +4549,9 @@ return( false );
     if ( i>=sizeof(at->tabdir.tabs)/sizeof(at->tabdir.tabs[0]))
 	GDrawIError("Miscalculation of number of tables needed. Up sizeof tabs array in struct tabdir" );
 
+    if ( i>sizeof(at->tabdir.tabs)/sizeof(at->tabdir.tabs[0]) )
+	GDrawIError( "Too many truetype tables. PfaEdit will probably crash" );
+
     at->tabdir.numtab = i;
     at->tabdir.searchRange = (i<16?8:i<32?16:i<64?32:64)*16;
     at->tabdir.entrySel = (i<16?3:i<32?4:i<64?5:6);
@@ -4555,7 +4581,7 @@ static void dumpttf(FILE *ttf,struct alltabs *at, enum fontformat format) {
     i=0;
     if ( format==ff_otf || format==ff_otfcid)
 	if ( !ttfcopyfile(ttf,at->cfff,at->tabdir.tabs[i++].offset)) at->error = true;
-    if ( at->bdat!=NULL && at->msbitmaps ) {
+    if ( at->bdat!=NULL && at->opentypemode ) {
 	if ( !ttfcopyfile(ttf,at->bdat,at->tabdir.tabs[i++].offset)) at->error = true;
 	if ( !ttfcopyfile(ttf,at->bloc,at->tabdir.tabs[i++].offset)) at->error = true;
     }
@@ -4574,31 +4600,34 @@ static void dumpttf(FILE *ttf,struct alltabs *at, enum fontformat format) {
 	if ( !ttfcopyfile(ttf,at->vorgf,at->tabdir.tabs[i++].offset)) at->error = true;
     if ( at->acnt!=NULL )
 	if ( !ttfcopyfile(ttf,at->acnt,at->tabdir.tabs[i++].offset)) at->error = true;
-    if ( at->bdat!=NULL && !at->msbitmaps ) {
-	if ( !ttfcopyfile(ttf,at->bdat,at->tabdir.tabs[i++].offset)) at->error = true;
-	if ( format==ff_none ) {
-	    head_index = i;
-	    if ( !ttfcopyfile(ttf,at->headf,at->tabdir.tabs[i++].offset)) at->error = true;
+    if ( at->bdat!=NULL ) {
+	if ( !at->opentypemode ) {
+	    if ( !ttfcopyfile(ttf,at->bdat,at->tabdir.tabs[i++].offset)) at->error = true;
+	    if ( format==ff_none ) {
+		head_index = i;
+		if ( !ttfcopyfile(ttf,at->headf,at->tabdir.tabs[i++].offset)) at->error = true;
+	    }
+	    if ( !ttfcopyfile(ttf,at->bloc,at->tabdir.tabs[i++].offset)) at->error = true;
+	} else if ( at->applemode ) {	/* If both apple and opentype we'll already have copied the tables */
+	    i += 2;
 	}
-	if ( !ttfcopyfile(ttf,at->bloc,at->tabdir.tabs[i++].offset)) at->error = true;
     }
     if ( !ttfcopyfile(ttf,at->cmap,at->tabdir.tabs[i++].offset)) at->error = true;
-    if ( format!=ff_otf && format!= ff_otfcid && (format!=ff_none || at->msbitmaps) ) {
-	if ( format!=ff_none && at->cvtf!=NULL ) {
+    if ( format!=ff_otf && format!= ff_otfcid && format!=ff_none ) {
+	if ( at->cvtf!=NULL ) {
 	    if ( !ttfcopyfile(ttf,at->cvtf,at->tabdir.tabs[i++].offset)) at->error = true;
 	}
     }
     if ( at->feat!=NULL )
 	if ( !ttfcopyfile(ttf,at->feat,at->tabdir.tabs[i++].offset)) at->error = true;
     if ( format!=ff_otf && format!= ff_otfcid && (format!=ff_none || at->msbitmaps) ) {
-	if ( at->fpgmf!=NULL ) {
+	if ( at->fpgmf!=NULL )
 	    if ( !ttfcopyfile(ttf,at->fpgmf,at->tabdir.tabs[i++].offset)) at->error = true;
-	}
 	if ( at->gaspf!=NULL )
 	    if ( !ttfcopyfile(ttf,at->gaspf,at->tabdir.tabs[i++].offset)) at->error = true;
 	if ( !ttfcopyfile(ttf,at->gi.glyphs,at->tabdir.tabs[i++].offset)) at->error = true;
     }
-    if ( format!=ff_none || at->msbitmaps ) {
+    if ( format!=ff_none || !at->applemode ) {
 	head_index = i;
 	if ( !ttfcopyfile(ttf,at->headf,at->tabdir.tabs[i++].offset)) at->error = true;
     }
@@ -4608,7 +4637,7 @@ static void dumpttf(FILE *ttf,struct alltabs *at, enum fontformat format) {
 	if ( !ttfcopyfile(ttf,at->kern,at->tabdir.tabs[i++].offset)) at->error = true;
     if ( at->lcar!=NULL )
 	if ( !ttfcopyfile(ttf,at->lcar,at->tabdir.tabs[i++].offset)) at->error = true;
-    if ( format!=ff_otf && format!=ff_otfcid && (format!=ff_none || at->msbitmaps) )
+    if ( format!=ff_otf && format!=ff_otfcid && (format!=ff_none || at->msbitmaps ))
 	if ( !ttfcopyfile(ttf,at->loca,at->tabdir.tabs[i++].offset)) at->error = true;
     if ( !ttfcopyfile(ttf,at->maxpf,at->tabdir.tabs[i++].offset)) at->error = true;
     if ( at->morx!=NULL )
@@ -4617,8 +4646,10 @@ static void dumpttf(FILE *ttf,struct alltabs *at, enum fontformat format) {
     if ( at->opbd!=NULL )
 	if ( !ttfcopyfile(ttf,at->opbd,at->tabdir.tabs[i++].offset)) at->error = true;
     if ( !ttfcopyfile(ttf,at->post,at->tabdir.tabs[i++].offset)) at->error = true;
-    if ( at->prepf!=NULL )
-	if ( !ttfcopyfile(ttf,at->prepf,at->tabdir.tabs[i++].offset)) at->error = true;
+    if ( format!=ff_otf && format!=ff_otfcid && format!=ff_none ) {
+	if ( at->prepf!=NULL )
+	    if ( !ttfcopyfile(ttf,at->prepf,at->tabdir.tabs[i++].offset)) at->error = true;
+    }
     if ( at->prop!=NULL )
 	if ( !ttfcopyfile(ttf,at->prop,at->tabdir.tabs[i++].offset)) at->error = true;
     if ( at->vheadf!=NULL ) {

@@ -186,7 +186,7 @@ struct tabdir {
 	uint32 checksum;/* for table */
 	uint32 offset;	/* to start of table in file */
 	uint32 length;
-    } tabs[27];		/* room for all the above tables */
+    } tabs[32];		/* room for all the above tables */
 };
 
 struct glyphhead {
@@ -489,6 +489,8 @@ struct alltabs {
     unsigned int sidlongoffset: 1;
     unsigned int cfflongoffset: 1;
     unsigned int applemode: 1;		/* Where apple & ms differ do things apple's way (bitmaps, name table PostScript) */
+    unsigned int opentypemode: 1;	/* Where apple & ms differ do things opentype's way (bitmaps, name table PostScript) */
+	    /* If both are set then try to generate both types of tables. Some things can't be fudged though (name table postscript) */
     unsigned int msbitmaps: 1;
     unsigned int otbbitmaps: 1;
     unsigned int isotf: 1;

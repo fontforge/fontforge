@@ -53,6 +53,7 @@
 #define CID_TTF_PfEdComments	1104
 #define CID_TTF_PfEdColors	1105
 #define CID_TTF_PfEd		1106
+#define CID_TTF_OpenTypeMode	1107
 
 
 struct gfc_data {
@@ -134,15 +135,15 @@ static GTextInfo bitmaptypes[] = {
 int old_ttf_flags = ttf_flag_applemode;
 int old_otf_flags = ttf_flag_applemode;
 #else
-int old_ttf_flags = 0;
-int old_otf_flags = 0;
+int old_ttf_flags = ttf_flag_otmode;
+int old_otf_flags = ttf_flag_otmode;
 #endif
 int old_ps_flags = ps_flag_afm;
 int old_psotb_flags = ps_flag_afm;
 
 int oldformatstate = ff_pfb;
 int oldbitmapstate = 0;
-extern int alwaysgenapple;
+extern int alwaysgenapple, alwaysgenopentype;
 
 static const char *pfaeditflag = "SplineFontDB:";
 
@@ -359,6 +360,8 @@ return( false );
 		    d->ttf_flags |= ttf_flag_shortps;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_AppleMode)) )
 		    d->ttf_flags |= ttf_flag_applemode;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_OpenTypeMode)) )
+		    d->ttf_flags |= ttf_flag_otmode;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdComments)) )
 		    d->ttf_flags |= ttf_flag_pfed_comments;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdColors)) )
@@ -369,6 +372,8 @@ return( false );
 		    d->otf_flags |= ttf_flag_shortps;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_AppleMode)) )
 		    d->otf_flags |= ttf_flag_applemode;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_OpenTypeMode)) )
+		    d->otf_flags |= ttf_flag_otmode;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdComments)) )
 		    d->otf_flags |= ttf_flag_pfed_comments;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdColors)) )
@@ -435,6 +440,14 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
 	GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_AppleMode),true);
     else
 	GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_AppleMode),false);
+    if ( which==0 )	/* Postscript */
+	GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_OpenTypeMode),false);
+    else if ( !alwaysgenopentype &&
+	    (fs==ff_ttfmacbin || fs==ff_ttfdfont || fs==ff_otfdfont ||
+	     fs==ff_otfciddfont || d->family || (fs==ff_none && bf==bf_sfnt_dfont)))
+	GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_OpenTypeMode),false);
+    else
+	GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_OpenTypeMode),true);
 
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_PfEdComments),flags&ttf_flag_pfed_comments);
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_PfEdColors),flags&ttf_flag_pfed_colors);
@@ -457,6 +470,7 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_Hints),which==1);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_ShortPS),which!=0);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_AppleMode),which!=0 && which!=3);
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_OpenTypeMode),which!=0 && which!=3);
 
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_PfEd),which!=0);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_PfEdComments),which!=0);
@@ -464,15 +478,15 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
 }
 
 #define OPT_Width	230
-#define OPT_Height	177
+#define OPT_Height	191
 
 static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     int flags;
     int k,group,group2;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[21];
-    GTextInfo label[21];
+    GGadgetCreateData gcd[22];
+    GTextInfo label[22];
     GRect pos;
 
     d->sod_done = false;
@@ -588,7 +602,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
 
     group2 = k;
     gcd[k].gd.pos.x = 4; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+4;
-    gcd[k].gd.pos.width = OPT_Width-8; gcd[k].gd.pos.height = 58;
+    gcd[k].gd.pos.width = OPT_Width-8; gcd[k].gd.pos.height = 72;
     gcd[k].gd.flags = gg_enabled | gg_visible ;
     gcd[k++].creator = GGroupCreate;
 
@@ -619,7 +633,16 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.cid = CID_TTF_AppleMode;
     gcd[k++].creator = GCheckBoxCreate;
 
-    gcd[k].gd.pos.x = gcd[group+5].gd.pos.x; gcd[k].gd.pos.y = gcd[k-3].gd.pos.y;
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
+    gcd[k].gd.flags = gg_visible ;
+    label[k].text = (unichar_t *) _STR_OpenTypeMode;
+    label[k].text_in_resource = true;
+    gcd[k].gd.popup_msg = GStringGetResource(_STR_OpenTypeModePopup,NULL);
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.cid = CID_TTF_OpenTypeMode;
+    gcd[k++].creator = GCheckBoxCreate;
+
+    gcd[k].gd.pos.x = gcd[group+5].gd.pos.x; gcd[k].gd.pos.y = gcd[k-4].gd.pos.y;
     gcd[k].gd.flags = gg_visible ;
     label[k].text = (unichar_t *) _STR_PfaEditTable;
     label[k].text_in_resource = true;
@@ -628,7 +651,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.cid = CID_TTF_PfEd;
     gcd[k++].creator = GLabelCreate;
 
-    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x+2; gcd[k].gd.pos.y = gcd[k-3].gd.pos.y;
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x+2; gcd[k].gd.pos.y = gcd[k-4].gd.pos.y;
     gcd[k].gd.flags = gg_visible ;
     label[k].text = (unichar_t *) _STR_PfEdComments;
     label[k].text_in_resource = true;
@@ -637,7 +660,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.cid = CID_TTF_PfEdComments;
     gcd[k++].creator = GCheckBoxCreate;
 
-    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-3].gd.pos.y;
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-4].gd.pos.y;
     gcd[k].gd.flags = gg_visible ;
     label[k].text = (unichar_t *) _STR_PfEdColors;
     label[k].text_in_resource = true;
@@ -1691,8 +1714,10 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	    if ( fmflags&4 ) old_ttf_flags |= ttf_flag_shortps;
 	    if ( fmflags&8 ) old_ttf_flags |= ttf_flag_nohints;
 	    if ( fmflags&0x10 ) old_ttf_flags |= ttf_flag_applemode;
+	    else old_ttf_flags |= ttf_flag_otmode;
 	    if ( fmflags&0x20 ) old_ttf_flags |= ttf_flag_pfed_comments;
 	    if ( fmflags&0x40 ) old_ttf_flags |= ttf_flag_pfed_colors;
+	    if ( fmflags&0x80 ) old_ttf_flags |= ttf_flag_applemode|ttf_flag_otmode;
 	} else {
 	    old_otf_flags = 0;
 		/* Applicable postscript flags */
@@ -1702,10 +1727,12 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	    if ( fmflags&0x40000 ) old_otf_flags |= ps_flag_noflex;
 	    if ( fmflags&0x80000 ) old_otf_flags |= ps_flag_nohints;
 		/* Applicable truetype flags */
-	    if ( fmflags&4 ) old_ttf_flags |= ttf_flag_shortps;
-	    if ( fmflags&0x10 ) old_ttf_flags |= ttf_flag_applemode;
-	    if ( fmflags&0x20 ) old_ttf_flags |= ttf_flag_pfed_comments;
-	    if ( fmflags&0x40 ) old_ttf_flags |= ttf_flag_pfed_colors;
+	    if ( fmflags&4 ) old_otf_flags |= ttf_flag_shortps;
+	    if ( fmflags&0x10 ) old_otf_flags |= ttf_flag_applemode;
+	    else old_otf_flags |= ttf_flag_otmode;
+	    if ( fmflags&0x20 ) old_otf_flags |= ttf_flag_pfed_comments;
+	    if ( fmflags&0x40 ) old_otf_flags |= ttf_flag_pfed_colors;
+	    if ( fmflags&0x80 ) old_otf_flags |= ttf_flag_applemode|ttf_flag_otmode;
 	}
     }
 
@@ -2191,6 +2218,13 @@ int SFGenerateFont(SplineFont *sf,int family) {
     } else {
 	old_ttf_flags &= ~ttf_flag_applemode;
 	old_otf_flags &= ~ttf_flag_applemode;
+    }
+    if ( alwaysgenopentype ) {
+	old_ttf_flags |= ttf_flag_otmode;
+	old_otf_flags |= ttf_flag_otmode;
+    } else {
+	old_ttf_flags &= ~ttf_flag_otmode;
+	old_otf_flags &= ~ttf_flag_otmode;
     }
     if ( family ) {
 	/* I could just disable the menu item, but I think it's a bit confusing*/

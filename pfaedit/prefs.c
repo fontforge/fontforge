@@ -93,8 +93,10 @@ int new_fonts_are_order2 = false;
 int loaded_fonts_same_as_new = false;
 #if __Mac
 int alwaysgenapple = true;
+int alwaysgenopentype = false;
 #else
 int alwaysgenapple = false;
+int alwaysgenopentype = true;
 #endif
 char *helpdir;
 
@@ -391,6 +393,7 @@ static struct prefs_list {
 	{ "PreferCJKEncodings", pr_bool, &prefer_cjk_encodings, NULL, NULL, 'C', NULL, 0, _STR_PrefsPopupPCE },
 	{ "HintForGen", pr_bool, &autohint_before_generate, NULL, NULL, 'H', NULL, 0, _STR_PrefsPopupAHG },
 	{ "AlwaysGenApple", pr_bool, &alwaysgenapple, NULL, NULL, 'A', NULL, 0, _STR_PrefsPopupAGA },
+	{ "AlwaysGenOpenType", pr_bool, &alwaysgenopentype, NULL, NULL, 'A', NULL, 0, _STR_PrefsPopupAGO },
 	{ NULL }
 },
  hidden_list[] = {
