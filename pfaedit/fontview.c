@@ -1625,6 +1625,11 @@ return;
     }
 }
 
+void FVChangeDisplayBitmap(FontView *fv,BDFFont *bdf) {
+    FVChangeDisplayFont(fv,bdf);
+    fv->sf->display_size = fv->show->pixelsize;
+}
+
 static void FVMenuSize(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw), *fvs, *fvss;
     int dspsize = fv->filled->pixelsize;
@@ -1681,8 +1686,7 @@ static void FVMenuShowBitmap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     BDFFont *bdf = mi->ti.userdata;
 
-    FVChangeDisplayFont(fv,bdf);		/* Let's not change any of the others */
-    fv->sf->display_size = fv->show->pixelsize;
+    FVChangeDisplayBitmap(fv,bdf);		/* Let's not change any of the others */
 }
 
 void FVShowFilled(FontView *fv) {

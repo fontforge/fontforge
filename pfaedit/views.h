@@ -383,6 +383,7 @@ extern void SFPrivateInfo(SplineFont *sf);
 extern void FontViewReformatAll(SplineFont *sf);
 extern void FontViewReformatOne(FontView *fv);
 extern void FVShowFilled(FontView *fv);
+extern void FVChangeDisplayBitmap(FontView *fv,BDFFont *bdf);
 extern void SCPreparePopup(GWindow gw,SplineChar *sc);
 extern void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts,
 	int dobackground );

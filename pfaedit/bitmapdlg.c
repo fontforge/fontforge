@@ -105,6 +105,7 @@ void SFOrderBitmapList(SplineFont *sf) {
 
 static void SFRemoveUnwantedBitmaps(SplineFont *sf,int32 *sizes) {
     BDFFont *bdf, *prev, *next;
+    FontView *fv;
     int i;
 
     for ( prev = NULL, bdf=sf->bitmaps; bdf!=NULL; bdf = next ) {
@@ -116,8 +117,14 @@ static void SFRemoveUnwantedBitmaps(SplineFont *sf,int32 *sizes) {
 		sf->bitmaps = next;
 	    else
 		prev->next = next;
-	    if ( sf->fv!=NULL && sf->fv->show==bdf )
-		FVShowFilled(sf->fv);
+	    for ( fv=sf->fv; fv!=NULL; fv=fv->nextsame ) {
+		if ( fv->show==bdf ) {
+		    if ( sf->onlybitmaps )
+			FVChangeDisplayBitmap(fv,sf->bitmaps);
+		    else
+			FVShowFilled(sf->fv);
+		}
+	    }
 	    RemoveBDFWindows(bdf);
 	    BDFFontFree(bdf);
 	    sf->changed = true;
@@ -158,17 +165,20 @@ static void SFFigureBitmaps(SplineFont *sf,int32 *sizes,int usefreetype) {
 }
 
 static void FVScaleBitmaps(FontView *fv,int32 *sizes) {
-    BDFFont *bdf;
+    BDFFont *bdf, *scale;
     int i, cnt=0, warned = false;
 
     for ( i=0; sizes[i]!=0 ; ++i ) if ( sizes[i]>0 )
 	++cnt;
+    scale = fv->show;
+    if ( scale->clut!=NULL )
+	for ( scale = fv->sf->bitmaps; scale->next!=NULL; scale=scale->next );
     GProgressStartIndicatorR(10,_STR_ScalingBitmaps,_STR_ScalingBitmaps,0,cnt,1);
 
-    SFRemoveUnwantedBitmaps(fv->sf,sizes);
-
     for ( i=0; sizes[i]!=0 ; ++i ) if ( sizes[i]>0 && (sizes[i]>>16)==1 ) {
-	bdf = BitmapFontScaleTo(fv->show,sizes[i]&0xffff);
+	bdf = BitmapFontScaleTo(scale,sizes[i]&0xffff);
+	if ( bdf==NULL )
+    continue;
 	bdf->next = fv->sf->bitmaps;
 	fv->sf->bitmaps = bdf;
 	fv->sf->changed = true;
@@ -182,6 +192,8 @@ static void FVScaleBitmaps(FontView *fv,int32 *sizes) {
 
     /* Order the list */
     SFOrderBitmapList(fv->sf);
+
+    SFRemoveUnwantedBitmaps(fv->sf,sizes);
 }
 
 static void ReplaceBDFC(SplineFont *sf,int32 *sizes,int enc,void *freetypecontext) {
