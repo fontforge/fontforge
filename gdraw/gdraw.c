@@ -126,6 +126,8 @@ void GDrawSetVisible(GWindow w, int visible) {
 }
 
 int GDrawIsVisible(GWindow w) {
+    if ( w==NULL )
+return( false );
     while ( w!=NULL && ( w->is_visible || w->is_pixmap ))
 	w = w->parent;
 return( w==NULL );
