@@ -889,7 +889,7 @@ static void MVSelectAll(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void MVMenuFontInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
-    FontMenuFontInfo(mv->fv->sf,mv->fv);
+    DelayEvent(FontMenuFontInfo,mv->fv);
 }
 
 static void MVMenuPrivateInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {

@@ -2224,7 +2224,7 @@ static void fllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void CVMenuFontInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    FontMenuFontInfo(cv->fv->sf,cv->fv);
+    DelayEvent(FontMenuFontInfo,cv->fv);
 }
 
 static void CVMenuPrivateInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {

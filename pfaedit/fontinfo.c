@@ -151,11 +151,11 @@ static void RemoveSplineChar(SplineFont *sf, int enc) {
     RefChar *refs, *rnext;
 
     if ( sc!=NULL ) {
-	for ( cv = sc->views; cv!=NULL; cv=next ) {
-	    next = cv->next;
-	    GDrawDestroyWindow(cv->gw);
-	}
 	if ( sc->views ) {
+	    for ( cv = sc->views; cv!=NULL; cv=next ) {
+		next = cv->next;
+		GDrawDestroyWindow(cv->gw);
+	    }
 	    GDrawSync(NULL);
 	    GDrawProcessPendingEvents(NULL);
 	    GDrawSync(NULL);
@@ -184,11 +184,11 @@ static void RemoveSplineChar(SplineFont *sf, int enc) {
     for ( bdf=sf->bitmaps; bdf!=NULL; bdf = bdf->next ) {
 	if ( (bfc = bdf->chars[enc])!= NULL ) {
 	    bdf->chars[enc] = NULL;
-	    for ( bv= bfc->views; bv!=NULL; bv=bvnext ) {
-		bvnext = bv->next;
-		GDrawDestroyWindow(bv->gw);
-	    }
-	    if ( bfc->views ) {
+	    if ( bfc->views!=NULL ) {
+		for ( bv= bfc->views; bv!=NULL; bv=bvnext ) {
+		    bvnext = bv->next;
+		    GDrawDestroyWindow(bv->gw);
+		}
 		GDrawSync(NULL);
 		GDrawProcessPendingEvents(NULL);
 		GDrawSync(NULL);
@@ -345,6 +345,7 @@ return( true );
 static int AddDelChars(SplineFont *sf, int nchars) {
     int i;
     BDFFont *bdf;
+    MetricsView *mv, *mnext;
 
     if ( nchars==sf->charcnt )
 return( false );
@@ -382,6 +383,16 @@ return( false );
 	    bdf->charcnt = nchars;
 	}
     } else {
+	if ( sf->fv->metrics!=NULL ) {
+	    for ( mv=sf->fv->metrics; mv!=NULL; mv = mnext ) {
+		mnext = mv->next;
+		GDrawDestroyWindow(mv->gw);
+	    }
+	    GDrawSync(NULL);
+	    GDrawProcessPendingEvents(NULL);
+	    GDrawSync(NULL);
+	    GDrawProcessPendingEvents(NULL);
+	}
 	for ( i=nchars; i<sf->charcnt; ++i ) {
 	    RemoveSplineChar(sf,i);
 	}
@@ -666,6 +677,7 @@ return( true );
 	}
 	if ( nchar<sf->charcnt && AskTooFew())
 return(true);
+	GDrawSetCursor(gw,ct_watch);
 	SetFontName(gw,sf);
 	txt = _GGadgetGetTitle(GWidgetGetControl(gw,CID_XUID));
 	free(sf->xuid); sf->xuid = *txt=='\0'?NULL:cu_copy(txt);
@@ -744,7 +756,9 @@ static int e_h(GWindow gw, GEvent *event) {
 return( event->type!=et_char );
 }
 
-void FontMenuFontInfo(SplineFont *sf,FontView *fv) {
+void FontMenuFontInfo(void *_fv) {
+    FontView *fv = (FontView *) _fv;
+    SplineFont *sf = fv->sf;
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;

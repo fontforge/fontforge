@@ -1093,7 +1093,7 @@ static void BVSelectAll(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void BVMenuFontInfo(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
-    FontMenuFontInfo(bv->fv->sf,bv->fv);
+    DelayEvent(FontMenuFontInfo,bv->fv);
 }
 
 static void BVMenuPrivateInfo(GWindow gw,struct gmenuitem *mi,GEvent *g) {

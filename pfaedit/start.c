@@ -67,7 +67,27 @@ static void BuildCharHook(GDisplay *gd) {
 extern GImage splashimage;
 static unichar_t title[] = { 'P', 'f', 'a', 'E', 'd', 'i', 't',  '\0' };
 static GWindow splashw;
-static GTimer *autosave_timer;
+static GTimer *autosave_timer, *splasht;
+struct delayed_event {
+    void *data;
+    void (*func)(void *);
+};
+
+void DelayEvent(void (*func)(void *), void *data) {
+    struct delayed_event *info = gcalloc(1,sizeof(struct delayed_event));
+
+    info->data = data;
+    info->func = func;
+    GDrawRequestTimer(splashw,100,0,info);
+}
+
+static void DoDelayedEvents(GEvent *event) {
+    GTimer *t = event->u.timer.timer;
+    struct delayed_event *info = (struct delayed_event *) (event->u.timer.userdata);
+
+    (info->func)(info->data);
+    GDrawCancelTimer(t);
+}
 
 static int splash_e_h(GWindow gw, GEvent *event) {
     static int splash_cnt;
@@ -81,15 +101,19 @@ static int splash_e_h(GWindow gw, GEvent *event) {
 	splash_cnt = 0;
     } else if ( event->type == et_timer && event->u.timer.timer==autosave_timer ) {
 	DoAutoSaves();
-    } else if ( event->type == et_timer ) {
+    } else if ( event->type == et_timer && event->u.timer.timer==splasht ) {
 	if ( ++splash_cnt==1 )
 	    GDrawResize(gw,splashimage.u.image->width,splashimage.u.image->height-20);
 	else if ( splash_cnt==2 )
 	    GDrawResize(gw,splashimage.u.image->width,splashimage.u.image->height);
-	else if ( splash_cnt>=7 )
+	else if ( splash_cnt>=7 ) {
 	    GDrawSetVisible(gw,false);
+	    GDrawCancelTimer(splasht);
+	}
+    } else if ( event->type == et_timer ) {
+	DoDelayedEvents(event);
     } else if ( event->type==et_char || event->type==et_mousedown ||
-	    event->type == et_timer || event->type==et_close )
+	    event->type==et_close )
 	GDrawSetVisible(gw,false);
 return( true );
 }
@@ -159,7 +183,7 @@ int main( int argc, char **argv ) {
 	GDrawProcessPendingEvents(NULL);
 	InitCursors();
 	GDrawProcessPendingEvents(NULL);
-	GDrawRequestTimer(splashw,1000,1000,NULL);
+	splasht = GDrawRequestTimer(splashw,1000,1000,NULL);
     } else
 	InitCursors();
     autosave_timer=GDrawRequestTimer(splashw,60*1000,30*1000,NULL);

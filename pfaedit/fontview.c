@@ -370,7 +370,7 @@ void MenuNew(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void FVMenuClose(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 
-    _FVMenuClose(fv);
+    DelayEvent((void (*)(void *)) _FVMenuClose, fv);
 }
 
 void FVRevert(FontView *fv) {
@@ -462,7 +462,7 @@ void MenuPrefs(GWindow base,struct gmenuitem *mi,GEvent *e) {
     DoPrefs();
 }
 
-void MenuExit(GWindow base,struct gmenuitem *mi,GEvent *e) {
+static void _MenuExit(void *junk) {
     FontView *fv, *next;
 
     for ( fv = fv_list; fv!=NULL; fv = next ) {
@@ -471,6 +471,10 @@ void MenuExit(GWindow base,struct gmenuitem *mi,GEvent *e) {
 return;
     }
     exit(0);
+}
+
+void MenuExit(GWindow base,struct gmenuitem *mi,GEvent *e) {
+    DelayEvent(_MenuExit,NULL);
 }
 
 char *GetPostscriptFontName(int mult) {
@@ -579,7 +583,7 @@ static void FVMenuOpenMetrics(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void FVMenuFontInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    FontMenuFontInfo(fv->sf,fv);
+    FontMenuFontInfo(fv);
 }
 
 static void FVMenuPrivateInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
