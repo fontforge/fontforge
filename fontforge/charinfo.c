@@ -4538,7 +4538,7 @@ int UniFromName(const char *name,enum uni_interp interp,Encoding *encname) {
 	    break;
 		}
 	}
-    } else if ( name[1]=='\0' )
+    } else if ( name[0]!='\0' && name[1]=='\0' )
 	i = ((unsigned char *) name)[0];
     if ( i==-1 ) {
 	if ( !psnamesinited )
