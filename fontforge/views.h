@@ -737,14 +737,14 @@ extern void CVMergeSplineSets(CharView *cv, SplinePoint *active, SplineSet *acti
 	SplinePoint *merge, SplineSet *mergess);
 extern void CVChar(CharView *cv, GEvent *event );
 extern void CVAdjustControl(CharView *cv,BasePoint *cp, BasePoint *to);
-extern int  CVMoveSelection(CharView *cv, real dx, real dy);
+extern int  CVMoveSelection(CharView *cv, real dx, real dy, uint32 input_state);
 extern int  CVTestSelectFromEvent(CharView *cv,GEvent *event);
 extern void CVMouseDownPoint(CharView *cv);
 extern void CVMouseMovePoint(CharView *cv,PressedOn *);
 extern void CVMouseMovePen(CharView *cv, PressedOn *p);
 extern void CVMouseUpPoint(CharView *cv,GEvent *event);
 extern void CVMouseUpPointer(CharView *cv );
-extern int  CVMouseMovePointer(CharView *cv );
+extern int  CVMouseMovePointer(CharView *cv, GEvent *event);
 extern void CVMouseDownPointer(CharView *cv, FindSel *fs, GEvent *event);
 extern void CVCheckResizeCursors(CharView *cv);
 extern void CVMouseDownRuler(CharView *cv, GEvent *event);

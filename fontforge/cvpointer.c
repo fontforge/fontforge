@@ -870,7 +870,7 @@ return( cnt>0 && stop_at_join );
 }
 
 /* Move the selection and return whether we did a merge */
-int CVMoveSelection(CharView *cv, real dx, real dy) {
+int CVMoveSelection(CharView *cv, real dx, real dy, uint32 input_state) {
     real transform[6];
     RefChar *refs;
     ImageList *img;
@@ -921,6 +921,9 @@ return(false);
 	    cv->sc->vwidth = 0;
     }
     CVSetCharChanged(cv,true);
+    if ( input_state&ksm_meta )
+return( false );			/* Don't merge if the meta key is down */
+
 return( CVCheckMerges( cv ));
 }
 
@@ -942,7 +945,7 @@ static int CVExpandEdge(CharView *cv) {
 return( true );
 }
 
-int CVMouseMovePointer(CharView *cv ) {
+int CVMouseMovePointer(CharView *cv, GEvent *event) {
     int needsupdate = false;
     int did_a_merge = false;
 
@@ -996,7 +999,9 @@ return( false );
 	needsupdate = true;
     } else {
 	if ( !cv->recentchange ) CVPreserveState(cv);
-	did_a_merge = CVMoveSelection(cv,cv->info.x-cv->last_c.x,cv->info.y-cv->last_c.y);
+	did_a_merge = CVMoveSelection(cv,
+		cv->info.x-cv->last_c.x,cv->info.y-cv->last_c.y,
+		event->u.mouse.state);
 	needsupdate = true;
     }
     if ( needsupdate )
