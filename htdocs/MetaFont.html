@@ -1,0 +1,157 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 23-Jun-2001 -->
+  <!-- AP: Last modified: 23-Jun-2001 -->
+  <TITLE>MetaFont -- Standard Transformations on Fonts</TITLE>
+</HEAD>
+<BODY>
+<H1 ALIGN=Center>
+  MetaFont<BR>
+  Standard Transformations on Fonts
+</H1>
+<H3>
+  Bold
+</H3>
+<P>
+Bold fonts have thicker stems and are slightly more extended than normal
+fonts. In Knuth's Computers &amp; Typesetting, the bold fonts have a stem
+width that is approximately 1.6 (1.68(at 12pt)-1.5(at 5pt)) times the stem
+width of the normal font. This is very similar to the 1.75 suggested by
+Microsoft's ratio of 700/400 (700 being the numeric weight of a bold font,
+and 400 being the numeric weight of a normal font).
+<P>
+In Knuth's Computer Modern Bold Extended Roman, the "m" character is extended
+to 1.15 times the width of the "m" in Computer Modern Roman, and the x-height
+is 1.03 times higher.
+<H3>
+  Point Size
+</H3>
+<P>
+Traditionally, as the point-size decreases the boldness (thickness of the
+stems) increases slightly. Most computer vector fonts do not show this change.
+In Knuth's Computer Modern fonts:
+<TABLE CELLPADDING="2">
+  <CAPTION>
+    Stem width, scaled by point size
+  </CAPTION>
+  <TR>
+    <TD></TD>
+    <TH>17pt</TH>
+    <TH>12pt</TH>
+    <TH>10pt</TH>
+    <TH>9pt</TH>
+    <TH>8pt</TH>
+    <TH>7pt</TH>
+    <TH>6pt</TH>
+    <TH>5pt</TH>
+  </TR>
+  <TR>
+    <TH>cmr</TH>
+    <TD>1.9</TD>
+    <TD>2.3</TD>
+    <TD>2.5</TD>
+    <TD>2.67</TD>
+    <TD>2.75</TD>
+    <TD>2.85</TD>
+    <TD>3</TD>
+    <TD>3.2</TD>
+    <TD>Computer Modern Roman</TD>
+  </TR>
+  <TR>
+    <TH>cmti</TH>
+    <TD></TD>
+    <TD>2.17</TD>
+    <TD>2.3</TD>
+    <TD>2.44</TD>
+    <TD>2.5</TD>
+    <TD>2.64</TD>
+    <TD></TD>
+    <TD></TD>
+    <TD>Computer Modern Text Italic</TD>
+  </TR>
+  <TR>
+    <TH>cmbx</TH>
+    <TD></TD>
+    <TD>3.9</TD>
+    <TD>4.1</TD>
+    <TD>4.2</TD>
+    <TD>4.37</TD>
+    <TD>4.57</TD>
+    <TD>4.67</TD>
+    <TD>4.8</TD>
+    <TD>Computer Modern Bold Extended</TD>
+  </TR>
+  <TR>
+    <TH>cmtt</TH>
+    <TD></TD>
+    <TD>2.3</TD>
+    <TD>2.5</TD>
+    <TD>2.67</TD>
+    <TD>2.75</TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD>
+    <TD>Computer Modern Typewriter</TD>
+  </TR>
+  <TR>
+    <TH>cmss</TH>
+    <TD>2.71</TD>
+    <TD>2.75</TD>
+    <TD>2.8</TD>
+    <TD>3</TD>
+    <TD>3.12</TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD>
+    <TD>Computer Modern Sans Serif</TD>
+  </TR>
+  <TR>
+    <TH>cmssi</TH>
+    <TD></TD>
+    <TD></TD>
+    <TD>2.8</TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD>
+    <TD>Computer Modern Slanted Sans Serif</TD>
+  </TR>
+</TABLE>
+<H3>
+  Italic
+</H3>
+<P>
+The Italic transformation contains at least three parts: A change in the
+letterforms of the lowercase letters, a skew, and a condensation. In Knuth's
+Computer Modern Text Italic, the condensation is about .91. The glyphs are
+skewed by 14&#186;.
+<P>
+<IMG SRC="ItalicComp.png" WIDTH="368" HEIGHT="48"> <SMALL>(These glyphs have
+been deskewed to display the shape transformation better.)</SMALL>
+<P>
+This is not a complete list, but it shows most of the salient features of
+such a transformation. The "g" character will often have a different shape
+as well.
+<H3>
+  Oblique
+</H3>
+<P>
+The Oblique transformation is a simple skew, in Computer Modern Slanted Sans
+Serif it is 9.5&#186;.
+<H3>
+  Extended/Condensed
+</H3>
+<P>
+In these two transformations the stem width is held constant but the horizontal
+counter sizes and side bearings are increased (or decreased for condensed).
+<H3>
+  Modern/Old Style
+</H3>
+<P>
+In Old Style fonts numerals tended to be lower-case, the x-height tended
+to be less than half the ascent, and the cap-height tended to be visibly
+smaller than the ascent.
+<P>
+</BODY></HTML>
