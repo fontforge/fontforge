@@ -4104,6 +4104,19 @@ static int ParseTeX(struct gfi_data *d) {
 return( !err );
 }
 
+static int ttfmultuniqueids(SplineFont *sf,struct gfi_data *d) {
+    struct ttflangname *tln;
+    int found = false;
+
+    for ( tln = d->names_set ? d->names : sf->names; tln!=NULL; tln=tln->next )
+	if ( tln->names[ttf_uniqueid]!=NULL ) {
+	    if ( found )
+return( true );
+	    found = true;
+	}
+return( false );
+}
+
 static int ttfuniqueidmatch(SplineFont *sf,struct gfi_data *d) {
     struct ttflangname *tln, *dtln;
 
@@ -4204,6 +4217,10 @@ return( true );
 	if ( d->smd )
 	    SMD_Close(d->smd);
 
+	if ( ttfmultuniqueids(sf,d)) {
+	    GWidgetErrorR(_STR_TooManyUniqueIDs,_STR_UniqueIDMustBeUnique);
+return( true );
+	}
 	txt = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Family));
 	if ( !isalpha(*txt)) {
 	    BadFamily();
