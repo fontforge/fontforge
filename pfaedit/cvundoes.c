@@ -1224,6 +1224,24 @@ void CopySelected(CharView *cv) {
     XClipCheckEps();
 }
 
+void CVCopyGridFit(CharView *cv) {
+    SplineChar *sc = cv->sc;
+
+    if ( cv->gridfit==NULL )
+return;
+
+    CopyBufferFreeGrab();
+
+    copybuffer.undotype = ut_state;
+    copybuffer.was_order2 = sc->parent->order2;
+    copybuffer.u.state.width = cv->ft_gridfitwidth;
+    copybuffer.u.state.vwidth = sc->vwidth;
+    copybuffer.u.state.splines = SplinePointListCopy(cv->gridfit);
+    copybuffer.u.state.copied_from = cv->sc->parent;
+
+    XClipCheckEps();
+}
+
 static Undoes *SCCopyAll(SplineChar *sc,int full) {
     Undoes *cur;
     RefChar *ref;

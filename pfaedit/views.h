@@ -652,6 +652,7 @@ extern int CopyContainsBitmap(void);
 extern char **CopyGetPosSubData(enum possub_type *type);
 extern void CopyReference(SplineChar *sc);
 extern void CopySelected(CharView *cv);
+extern void CVCopyGridFit(CharView *cv);
 extern void SCCopyWidth(SplineChar *sc,enum undotype);
 extern void CopyWidth(CharView *cv,enum undotype);
 extern void PasteToCV(CharView *cv);

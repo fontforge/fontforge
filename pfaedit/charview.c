@@ -3267,6 +3267,7 @@ return( true );
 #define MID_CopyRBearing	2125
 #define MID_CopyVWidth	2126
 #define MID_Join	2127
+#define MID_CopyGridFit	2128
 #define MID_Clockwise	2201
 #define MID_Counter	2202
 #define MID_GetInfo	2203
@@ -3836,6 +3837,11 @@ static void CVCopyRef(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CopyReference(cv->sc);
 }
 
+static void CVMenuCopyGridFit(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    CVCopyGridFit(cv);
+}
+
 static void CVCopyWidth(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     if ( mi->mid==MID_CopyVWidth && !cv->sc->parent->hasvmetrics )
@@ -4078,6 +4084,9 @@ static void cv_edlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 	  break;
 	  case MID_CopyFgToBg:
 	    mi->ti.disabled = cv->sc->splines==NULL;
+	  break;
+	  case MID_CopyGridFit:
+	    mi->ti.disabled = cv->gridfit==NULL;
 	  break;
 	  case MID_Paste:
 	    mi->ti.disabled = !CopyContainsSomething() &&
@@ -5475,6 +5484,7 @@ static GMenuItem edlist[] = {
     { { (unichar_t *) _STR_Merge, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, 'M', ksm_control, NULL, NULL, CVMerge, MID_Merge },
     { { (unichar_t *) _STR_Join, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'J' }, 'J', ksm_control|ksm_shift, NULL, NULL, CVJoin, MID_Join },
     { { (unichar_t *) _STR_CopyFgToBg, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, 'C', ksm_control|ksm_shift, NULL, NULL, CVCopyFgBg, MID_CopyFgToBg },
+    { { (unichar_t *) _STR_CopyGridFit, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuCopyGridFit, MID_CopyGridFit },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Select, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, 0, ksm_control, sllist, sllistcheck },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},

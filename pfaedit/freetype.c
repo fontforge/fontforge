@@ -120,6 +120,10 @@ static FT_Error (*_FT_Render_Glyph)( FT_GlyphSlot, int);
 static FT_Error (*_FT_Outline_Decompose)(FT_Outline *, const FT_Outline_Funcs *,void *);
 
 #if FREETYPE_HAS_DEBUGGER
+# include "ttobjs.h"
+# include "ttdriver.h"
+# include "ttinterp.h"
+
 static FT_Module (*_FT_Get_Module)(FT_Library, const char *);
 static void (*_FT_Set_Debug_Hook)(FT_Library, FT_UInt, FT_DebugHook_Func);
 static FT_Error (*_TT_RunIns)( TT_ExecContext );
@@ -493,8 +497,9 @@ static void FT_ClosePath(struct ft_context *context) {
 		context->cpl->first->me.y != context->last->me.y )
 	    SplineMake(context->last,context->cpl->first,context->order2);
 	else {
-	    context->cpl->first->prevcp = context->last->nextcp;
+	    context->cpl->first->prevcp = context->last->prevcp;
 	    context->last->prev->to = context->cpl->first;
+	    context->cpl->first->prev = context->last->prev;
 	    SplinePointFree(context->last);
 	}
 	context->cpl->last = context->cpl->first;
