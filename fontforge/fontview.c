@@ -7625,6 +7625,8 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		    break;
 			}
 		    }
+		} else if ( uni>=0xe0020 && uni<=0xe0007e ) {
+		    buf[0] = uni-0xe0000;	/* A map of Ascii for language names */
 #if HANYANG
 		} else if ( sc->compositionunit ) {
 		    if ( sc->jamo<19 )
