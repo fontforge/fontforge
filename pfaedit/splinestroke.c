@@ -738,6 +738,8 @@ return( ssplus );
 	    SplinePointListFree(ssplus);
 	    ssplus = ssminus;
 	} else {
+	    SplineSetReverse(ssplus);
+	    SplineSetReverse(ssminus);
 	    ssplus->next = ssminus;
 	    /* I used to do a splineset correct dir here on both, but */
 	    /*  that doesn't work always if a contour self intersects */

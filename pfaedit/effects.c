@@ -354,9 +354,12 @@ void OutlineDlg(FontView *fv, CharView *cv,MetricsView *mv,int isinline) {
     GDrawSetVisible(gw,false);
 }
 
-static SplineSet *SpMove(SplinePoint *sp,real offset,SplineSet *cur,SplineSet *lines) {
+static SplineSet *SpMove(SplinePoint *sp,real offset,
+	SplineSet *cur,SplineSet *lines,
+	SplineSet *spl) {
     SplinePoint *new;
     SplineSet *line;
+    BasePoint test;
 
     new = chunkalloc(sizeof(SplinePoint));
     *new = *sp;
@@ -371,13 +374,20 @@ static SplineSet *SpMove(SplinePoint *sp,real offset,SplineSet *cur,SplineSet *l
 	SplineMake(cur->last,new,sp->next->order2);
     cur->last = new;
 
-    line = chunkalloc(sizeof(SplineSet));
-    line->first = SplinePointCreate(sp->me.x,sp->me.y);
-    line->last = SplinePointCreate(new->me.x,new->me.y);
-    SplineMake(line->first,line->last,sp->next->order2);
-    line->next = lines;
+    /* Does the line segment we want to create immediately move inside of the */
+    /*  main contour? If so we aren't interested in it */
+    test = sp->me;
+    ++test.x;
+    if ( !SSPointWithin(spl,&test)) {
+	line = chunkalloc(sizeof(SplineSet));
+	line->first = SplinePointCreate(sp->me.x,sp->me.y);
+	line->last = SplinePointCreate(new->me.x,new->me.y);
+	SplineMake(line->first,line->last,sp->next->order2);
+	line->next = lines;
+	lines = line;
+    }
 
-return( line );
+return( lines );
 }
 
 static void OrientEdges(SplineSet *base,SplineChar *sc) {
@@ -434,7 +444,7 @@ static void OrientEdges(SplineSet *base,SplineChar *sc) {
 }
 
 static SplineSet *AddVerticalExtremaAndMove(SplineSet *base,real shadow_length,
-	int wireframe,SplineChar *sc) {
+	int wireframe,SplineChar *sc,SplineSet **_lines) {
     SplineSet *spl, *head=NULL, *last=NULL, *cur, *lines=NULL;
     Spline *s, *first;
     SplinePoint *sp, *found, *new;
@@ -527,7 +537,7 @@ return(NULL);
 	    for ( sp=spl->first; sp->prev->rightedge || !sp->next->rightedge ; sp = sp->next->to );
 	    for ( found = sp; ; ) {
 		if ( sp->next->rightedge && sp->prev->rightedge ) {
-		    lines = SpMove(sp,shadow_length,cur,lines);
+		    lines = SpMove(sp,shadow_length,cur,lines,base);
 		} else if ( sp->next->rightedge ) {
 		    cur = chunkalloc(sizeof(SplineSet));
 		    if ( last==NULL )
@@ -535,35 +545,19 @@ return(NULL);
 		    else
 			last->next = cur;
 		    last = cur;
-		    lines = SpMove(sp,shadow_length,cur,lines);
+		    lines = SpMove(sp,shadow_length,cur,lines,base);
 		} else if ( sp->prev->rightedge ) {
-		    lines = SpMove(sp,shadow_length,cur,lines);
+		    lines = SpMove(sp,shadow_length,cur,lines,base);
 		    cur = NULL;
 		}
 		sp = sp->next->to;
 		if ( sp==found )
 	    break;
 	    }
-	    last->next = lines;
+	    *_lines = lines;
 	}
     }
 return( head );
-}
-
-static void SSSelectAll(SplineSet *spl,int select) {
-    SplinePoint *sp;
-
-    while ( spl!=NULL ) {
-	for ( sp=spl->first; ; ) {
-	    sp->selected = select;
-	    if ( sp->next==NULL )
-	break;
-	    sp = sp->next->to;
-	    if ( sp==spl->first )
-	break;
-	}
-	spl = spl->next;
-    }
 }
 
 static void SSCleanup(SplineSet *spl) {
@@ -642,11 +636,305 @@ static void SSCleanup(SplineSet *spl) {
     }
 }
 
+static double IntersectLine(Spline *spline1,Spline *spline2) {
+    double t1s[10], t2s[10];
+    BasePoint pts[9];
+    double mint=1;
+    int i;
+
+    if ( !SplinesIntersect(spline1,spline2,pts,t1s,t2s))
+return( -1 );
+    for ( i=0; i<10 && t1s[i]!=-1; ++i ) {
+	if ( t1s[i]<.001 && t1s[i]>.999 )
+	    /* Too close to end point, ignore it */;
+	else if ( t1s[i]<mint )
+	    mint = t1s[i];
+    }
+    if ( mint == 1 )
+return( -1 );
+
+return( mint );
+}
+
+static int ClipLineTo3D(Spline *line,SplineSet *spl) {
+    double t= -1, cur;
+    Spline *s, *first;
+
+    while ( spl!=NULL ) {
+	first = NULL;
+	for ( s = spl->first->next; s!=NULL && s!=first ; s = s->to->next ) {
+	    cur = IntersectLine(line,s);
+	    if ( cur>.001 && (t==-1 || cur<t))
+		t = cur;
+	    if ( first==NULL ) first = s;
+	}
+	spl = spl->next;
+    }
+    if ( t!=-1 ) {
+	SplinePoint *from = line->from;
+	SplineBisect(line,t);
+	line = from->next;
+	SplinePointFree(line->to->next->to);
+	SplineFree(line->to->next);
+	line->to->next = NULL;
+return( true );
+    }
+return( false );
+}
+
+/* finds all intersections between this spline and all the other splines in the */
+/*  character */
+static double *BottomFindIntersections(Spline *bottom,SplineSet *lines,SplineSet *spl) {
+    double *ts;
+    int tcnt, tmax;
+    double t1s[26], t2s[26];
+    BasePoint pts[25];
+    Spline *first, *s;
+    int i,j;
+
+    tmax = 100;
+    ts = galloc(tmax*sizeof(double));
+    tcnt = 0;
+
+    while ( spl!=NULL ) {
+	first = NULL;
+	for ( s = spl->first->next; s!=NULL && s!=first ; s = s->to->next ) {
+	    if ( SplinesIntersect(bottom,s,pts,t1s,t2s)) {
+		for ( i=0; i<25 && t1s[i]!=-1; ++i ) if ( t2s[i]>.001 && t2s[i]<.999 ) {
+		    if ( tcnt>=tmax ) {
+			tmax += 100;
+			ts = grealloc(ts,tmax*sizeof(double));
+		    }
+		    ts[tcnt++] = t1s[i];
+		}
+	    }
+	    if ( first==NULL ) first = s;
+	}
+	spl = spl->next;
+    }
+    while ( lines!=NULL ) {
+	first = NULL;
+	for ( s = lines->first->next; s!=NULL && s!=first ; s = s->to->next ) {
+	    if ( SplinesIntersect(bottom,s,pts,t1s,t2s)) {
+		for ( i=0; i<25 && t1s[i]!=-1; ++i ) if ( t2s[i]>.001 && t2s[i]<.999 ) {
+		    if ( tcnt>=tmax ) {
+			tmax += 100;
+			ts = grealloc(ts,tmax*sizeof(double));
+		    }
+		    ts[tcnt++] = t1s[i];
+		}
+	    }
+	    if ( first==NULL ) first = s;
+	}
+	lines = lines->next;
+    }
+    if ( tcnt==0 ) {
+	free(ts);
+return( NULL );
+    }
+    for ( i=0; i<tcnt; ++i ) for ( j=i+1; j<tcnt; ++j ) {
+	if ( ts[i]>ts[j] ) {
+	    double temp = ts[i];
+	    ts[i] = ts[j];
+	    ts[j] = temp;
+	}
+    }
+    for ( i=j=1; i<tcnt; ++i )
+	if ( ts[i]!=ts[i-1] )
+	    ts[j++] = ts[i];
+    ts[j] = -1;
+return( ts );
+}
+
+static int LineAtPointCompletes(SplineSet *lines,BasePoint *pt) {
+    while ( lines!=NULL ) {
+	if ( lines->last->me.x==pt->x && lines->last->me.y==pt->y )
+return( true );
+	lines = lines->next;
+    }
+return( false );
+}
+
+static SplinePoint *SplinePointMidCreate(Spline *s,double t) {
+return( SplinePointCreate(
+	((s->splines[0].a*t+s->splines[0].b)*t+s->splines[0].c)*t+s->splines[0].d,
+	((s->splines[1].a*t+s->splines[1].b)*t+s->splines[1].c)*t+s->splines[1].d
+    ));
+}
+
+static int MidLineCompetes(Spline *s,double t,double shadow_length,SplineSet *spl) {
+    SplinePoint *to = SplinePointMidCreate(s,t);
+    SplinePoint *from = SplinePointCreate(to->me.x-shadow_length,to->me.y);
+    Spline *line = SplineMake(from,to,s->order2);
+    int ret;
+
+    ret = ClipLineTo3D(line,spl);
+    SplinePointFree(line->to);		/* This might not be the same as to */
+    SplinePointFree(line->from);	/* This will be the same as from */
+    SplineFree(line);
+return( !ret );
+}
+
+static void SplineComplete(SplineSet *cur,Spline *s,double t_of_from,double t_of_to) {
+    SplinePoint *to;
+    double dt = t_of_to-t_of_from;
+    Spline1D x,y;
+    /* Very similar to SplineBisect */
+
+    to = SplinePointMidCreate(s,t_of_to);
+
+    x.d = cur->last->me.x;
+    x.c = dt*(s->splines[0].c + t_of_from*(2*s->splines[0].b + 3*s->splines[0].a*t_of_from));
+    x.b = dt*dt*(s->splines[0].b + 3*s->splines[0].a*t_of_from);
+    x.a = dt*dt*dt*s->splines[0].a;
+    cur->last->nextcp.x = x.c/3 + x.d;
+    to->prevcp.x = cur->last->nextcp.x + (x.b+x.c)/3;
+
+    y.d = cur->last->me.y;
+    y.c = dt*(s->splines[1].c + t_of_from*(2*s->splines[1].b + 3*s->splines[1].a*t_of_from));
+    y.b = dt*dt*(s->splines[1].b + 3*s->splines[1].a*t_of_from);
+    y.a = dt*dt*dt*s->splines[1].a;
+    cur->last->nextcp.y = y.c/3 + y.d;
+    to->prevcp.y = cur->last->nextcp.y + (y.b+y.c)/3;
+    to->noprevcp = cur->last->nonextcp = false;
+
+    SplineMake(cur->last,to,s->order2);
+    cur->last = to;
+}
+
+/* I wish I did not need this routine, but unfortunately my remove overlap */
+/*  gets very confused by two splines which are parrallel, and without this */
+/*  fixup we get a lot of those at the edges */
+static SplineSet *MergeLinesToBottoms(SplineSet *bottoms,SplineSet *lines) {
+    SplineSet *prev, *l;
+
+    while ( bottoms!=NULL ) {
+	for ( prev=NULL, l=lines;
+		l!=NULL && (l->last->me.x!=bottoms->first->me.x || l->last->me.y!=bottoms->first->me.y);
+		prev=l, l=l->next );
+	if ( l!=NULL ) {
+	    if ( prev==NULL )
+		lines = l->next;
+	    else
+		prev->next = l->next;
+	    SplineMake(l->first,bottoms->first,l->first->next->order2);
+	    bottoms->first = l->first;
+	    SplineFree(l->last->prev);
+	    SplinePointFree(l->last);
+	    chunkfree(l,sizeof(*l));
+	}
+	for ( prev=NULL, l=lines;
+		l!=NULL && (l->last->me.x!=bottoms->last->me.x || l->last->me.y!=bottoms->last->me.y);
+		prev=l, l=l->next );
+	if ( l!=NULL ) {
+	    if ( prev==NULL )
+		lines = l->next;
+	    else
+		prev->next = l->next;
+	    SplineMake(bottoms->last,l->first,l->first->next->order2);
+	    bottoms->last = l->first;
+	    l->first->next = NULL;
+	    SplineFree(l->last->prev);
+	    SplinePointFree(l->last);
+	    chunkfree(l,sizeof(*l));
+	}
+	bottoms = bottoms->next;
+    }
+return( lines );
+}
+
+static SplineSet *ClipBottomTo3D(SplineSet *bottom,SplineSet *lines,SplineSet *spl,
+	double shadow_length) {
+    SplineSet *head=NULL, *last=NULL, *cur, *next;
+    Spline *s;
+    double *ts;
+    SplinePoint *sp;
+    int i;
+
+    while ( bottom!=NULL ) {
+	next = bottom->next;
+	cur = NULL;
+	for ( s=bottom->first->next; s!=NULL ; s = s->to->next ) {
+	    if ( LineAtPointCompletes(lines,&s->from->me) && cur==NULL ) {
+		cur = chunkalloc(sizeof(SplineSet));
+		cur->first = cur->last = SplinePointCreate(s->from->me.x,s->from->me.y);
+		if ( head==NULL )
+		    head = cur;
+		else
+		    last->next = cur;
+		last = cur;
+	    }
+	    ts = BottomFindIntersections(s,lines,spl);
+	    if ( ts==NULL || ts[0]==-1 ) {
+		if ( cur!=NULL ) {
+		    cur->last->nextcp = s->from->nextcp;
+		    cur->last->nextcpdef = s->from->nextcpdef;
+		    cur->last->nonextcp = s->from->nonextcp;
+		    sp = SplinePointCreate(s->to->me.x,s->to->me.y);
+		    sp->prevcp = s->to->prevcp;
+		    sp->prevcpdef = s->to->prevcpdef;
+		    sp->noprevcp = s->to->prevcpdef;
+		    SplineMake(cur->last,sp,s->order2);
+		    cur->last = sp;
+		}
+	    } else {
+		i = 0;
+		if ( cur!=NULL ) {
+		    SplineComplete(cur,s,0,ts[0]);
+		    cur = NULL;
+		    i=1;
+		}
+		while ( ts[i]!=-1 ) {
+		    double tend = ts[i+1]==-1 ? 1 : ts[i+1];
+		    if ( MidLineCompetes(s,(ts[i]+tend)/2,shadow_length,spl)) {
+			cur = chunkalloc(sizeof(SplineSet));
+			cur->first = cur->last = SplinePointMidCreate(s,ts[i]);
+			if ( head==NULL )
+			    head = cur;
+			else
+			    last->next = cur;
+			last = cur;
+			SplineComplete(cur,s,ts[i],tend);
+			if ( ts[i+1]==-1 )
+		break;
+			cur = NULL;
+			i += 2;
+		    } else
+			++i;
+		}
+		free(ts);
+	    }
+	}
+	SplinePointListFree(bottom);
+	bottom = next;
+    }
+return( head );
+}
+    
+static SplineSet *ClipTo3D(SplineSet *bottoms,SplineSet *lines,SplineSet *spl,
+	double shadow_length) {
+    SplineSet *temp;
+    SplineSet *head;
+
+    for ( temp=lines; temp!=NULL; temp=temp->next ) {
+	ClipLineTo3D(temp->first->next,spl);
+	temp->last = temp->first->next->to;
+    }
+    head = ClipBottomTo3D(bottoms,lines,spl,shadow_length);
+    lines = MergeLinesToBottoms(head,lines);
+    if ( lines!=NULL ) {
+	for ( temp=lines; temp->next!=NULL; temp=temp->next);
+	temp->next = head;
+return( lines );
+    } else
+return( head );
+}
+
 static SplineSet *SSShadow(SplineSet *spl,real angle, real outline_width,
 	real shadow_length,SplineChar *sc, int wireframe) {
     real trans[6];
     StrokeInfo si;
-    SplineSet *internal, *temp, *frame, *fatframe, *outline, *mask;
+    SplineSet *internal, *temp, *bottom, *fatframe, *lines;
     int isfore = spl==sc->splines;
 
     if ( spl==NULL )
@@ -671,39 +959,25 @@ return( NULL );
 	SplineSetsAntiCorrect(internal);
     }
 
-    frame = AddVerticalExtremaAndMove(spl,shadow_length,wireframe,sc);
+    bottom = AddVerticalExtremaAndMove(spl,shadow_length,wireframe,sc,&lines);
     if ( !wireframe ) 
 	spl = SplineSetRemoveOverlap(sc,spl,over_remove);	/* yes, spl, NOT frame. frame is always NULL if !wireframe */
     else {
+	lines = ClipTo3D(bottom,lines,spl,shadow_length);
+	for ( temp=spl; temp->next!=NULL; temp=temp->next);
+	temp->next = lines;
 	if ( outline_width!=0 ) {
 	    memset(&si,0,sizeof(si));
 	    si.radius = outline_width/2;
-	    fatframe = SSStroke(frame,&si,sc);
-	    SplinePointListsFree(frame); frame = fatframe;
-	    outline = SSStroke(spl,&si,sc);
-	    SSSelectAll(frame,false);
-	    si.radius = outline_width/3;
-	    si.removeinternal = true;
-	    mask = SSStroke(spl,&si,sc);
-	    SSSelectAll(mask,true);
-	    for ( temp=mask; temp->next!=NULL; temp=temp->next);
-	    temp->next = frame;
-return( mask );
-	    frame = SplineSetRemoveOverlap(sc,mask,over_exclude);
+	    si.removeoverlapifneeded = true;
+	    si.cap = lc_round;
+	    fatframe = SSStroke(spl,&si,sc);
+	    SplinePointListsFree(spl);
 #if 0
-	    SplinePointListsFree(spl);
-	    for ( temp=outline; temp->next!=NULL; temp=temp->next);
-	    temp->next = frame;
-	    spl = SplineSetRemoveOverlap(sc,outline,over_remove);
+	    spl = SplineSetRemoveOverlap(sc,fatframe,over_remove);
 #else
-	    SplinePointListsFree(spl);
-	    for ( temp=outline; temp->next!=NULL; temp=temp->next);
-	    temp->next = frame;
-	    spl = outline;
+	    spl = fatframe;
 #endif
-	} else {
-	    for ( temp=spl; temp->next!=NULL; temp=temp->next);
-	    temp->next = frame;
 	}
     }
 

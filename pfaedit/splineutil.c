@@ -2848,8 +2848,8 @@ static int Crossings(Spline *s,BasePoint *pt) {
 	x = ((s->splines[0].a*t+s->splines[0].b)*t+s->splines[0].c)*t+s->splines[0].d;
 	if ( x>=pt->x )		/* Things on the edge are not inside */
     continue;
-	if (( RealApprox(t,ext[i]) && SplineAtMinMax(&s->splines[1],ext[i]) ) ||
-		( RealApprox(t,ext[i+1]) && SplineAtMinMax(&s->splines[1],ext[i+1]) ))
+	if (( ext[i]!=0 && RealApprox(t,ext[i]) && SplineAtMinMax(&s->splines[1],ext[i]) ) ||
+		( ext[i+1]!=1 && RealApprox(t,ext[i+1]) && SplineAtMinMax(&s->splines[1],ext[i+1]) ))
     continue;			/* Min/Max points don't add to count */
 	if (( RealApprox(t,0) && SplinePrevMinMax(s,yi1>yi) ) ||
 		( RealApprox(t,1) && SplineNextMinMax(s,yi1>yi) ))
