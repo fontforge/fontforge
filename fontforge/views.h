@@ -567,6 +567,7 @@ typedef struct searchview {
     unsigned int rplallenabled: 1;
     unsigned int rplenabled: 1;
     unsigned int showsfindnext: 1;
+    unsigned int replacewithref: 1;
     SplineSet *matched_spl;
     SplinePoint *matched_sp, *last_sp;
     real matched_rot, matched_scale;
