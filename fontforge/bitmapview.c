@@ -766,6 +766,7 @@ static void BVMouseDown(BitmapView *bv, GEvent *event) {
     int ny;
     BDFChar *bc = bv->bc;
     BDFFloat *sel;
+    int color_under_cursor;
 
     if ( event->u.mouse.button==2 && event->u.mouse.device!=NULL &&
 	    strcmp(event->u.mouse.device,"stylus")==0 )
@@ -779,20 +780,23 @@ return;
     bv->active_tool = bv->showing_tool;
     bv->pressed_x = x; bv->pressed_y = y;
     bv->info_x = x; bv->info_y = y;
+    ny = bc->ymax-y;
+    if ( x<bc->xmin || x>bc->xmax || ny<0 || ny>bc->ymax-bc->ymin )
+	color_under_cursor = 0;
+    else if ( bc->byte_data )
+	color_under_cursor = bc->bitmap[(bc->ymax-y)*bc->bytes_per_line + x-bc->xmin] *
+		255/((1<<BDFDepth(bv->bdf))-1);
+    else
+	color_under_cursor = bc->bitmap[(bc->ymax-y)*bc->bytes_per_line + (x-bc->xmin)/8]&(0x80>>((x-bc->xmin)&7)) *
+		255;
+    BVPaletteColorUnderChange(bv,color_under_cursor);
     bv->event_x = event->u.mouse.x; bv->event_y = event->u.mouse.y;
     bv->recentchange = false;
     switch ( bv->active_tool ) {
       case bvt_eyedropper:
-	if ( bc->byte_data ) {
-	    ny = bc->ymax-y;
-	    if ( x>=bc->xmin && x<=bc->xmax && ny>=0 && ny<=bc->ymax-bc->ymin )
-		bv->color = bc->bitmap[(bc->ymax-y)*bc->bytes_per_line + x-bc->xmin] *
-			255/((1<<BDFDepth(bv->bdf))-1);
-	    else
-		bv->color = 0;
-	    /* Store color as a number between 0 and 255 no matter what the clut size is */
-	    BVPaletteColorChange(bv);
-	}
+	bv->color = color_under_cursor;
+	/* Store color as a number between 0 and 255 no matter what the clut size is */
+	BVPaletteColorChange(bv);
       break;
       case bvt_pencil: case bvt_line:
       case bvt_rect: case bvt_filledrect:
@@ -844,9 +848,20 @@ static void BVMouseMove(BitmapView *bv, GEvent *event) {
     int newx, newy;
     int fh = bv->bdf->ascent+bv->bdf->descent;
     BDFChar *bc = bv->bc;
+    int color_under_cursor, ny;
 
     bv->info_x = x; bv->info_y = y;
+    ny = bc->ymax-y;
+    if ( x<bc->xmin || x>bc->xmax || ny<0 || ny>bc->ymax-bc->ymin )
+	color_under_cursor = 0;
+    else if ( bc->byte_data )
+	color_under_cursor = bc->bitmap[(bc->ymax-y)*bc->bytes_per_line + x-bc->xmin] *
+		255/((1<<BDFDepth(bv->bdf))-1);
+    else
+	color_under_cursor = bc->bitmap[(bc->ymax-y)*bc->bytes_per_line + (x-bc->xmin)/8]&(0x80>>((x-bc->xmin)&7)) *
+		255;
     BVShowInfo(bv);
+    BVPaletteColorUnderChange(bv,color_under_cursor);
     if ( bv->active_tool==bvt_none )
 return;			/* Not pressed */
     switch ( bv->active_tool ) {

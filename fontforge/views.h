@@ -366,7 +366,8 @@ typedef struct bitmapview {
     int keysym, oldstate;
 # endif
 #endif
-    int color;			/* for greyscale fonts */
+    int color;			/* for greyscale fonts (between 0,255) */
+    int color_under_cursor;
 } BitmapView;
 
 struct aplist { AnchorPoint *ap; int connected_to, selected; struct aplist *next; };
@@ -890,6 +891,7 @@ extern void BVPaletteSetVisible(BitmapView *bv,int which,int visible);
 extern void BVPaletteActivate(BitmapView *bv);
 extern void BVPalettesHideIfMine(BitmapView *bv);
 extern void BVPaletteColorChange(BitmapView *bv);
+extern void BVPaletteColorUnderChange(BitmapView *bv,int color);
 extern void BVPaletteChangedChar(BitmapView *bv);
 extern void CVPaletteDeactivate(void);
 extern void PalettesChangeDocking(void);
