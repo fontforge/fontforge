@@ -27,6 +27,7 @@
 #include "pfaedit.h"
 #include "splinefont.h"
 #include <math.h>
+#include <gwidget.h>
 
 typedef struct joininfo {
     SplinePoint *from, *to;
