@@ -3965,7 +3965,7 @@ return;
     if ( justinuse ) {
 	for ( i=0; glyphs[i]!=0xffff; ++i ) if ( glyphs[i]<info->glyph_cnt ) {
 	    info->inuse[glyphs[i]]= true;
-	    which = format==1 ? glyphs[i]+delta : glyph2s[i];
+	    which = format==1 ? (uint16) (glyphs[i]+delta) : glyph2s[i];
 	    info->inuse[which]= true;
 	}
     } else {
