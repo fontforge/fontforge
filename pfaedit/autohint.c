@@ -1110,7 +1110,7 @@ static StemInfo *StemAddBrief(StemInfo *stems,EI *apt,EI *e,
 
     new = StemsFind(stems,apt,e,major);
     if ( new==NULL ) {
-return;
+return( stems );
     } else if ( new->where==NULL ) {
 	stems = StemInsert(stems,new);
     } else if ( new->reordered )
@@ -3698,7 +3698,7 @@ void FindVStems( SplineFont *sf, real snaps[12], real cnt[12]) {
     FigureStems(sf,snaps,cnt,0);
 }
 
-static int SplineCharIsFlexible(SplineChar *sc, int blueshift) {
+static int _SplineCharIsFlexible(SplineChar *sc, int blueshift) {
     /* Need two splines
 	outer endpoints have same x (or y) values
 	inner point must be less than 20 horizontal (v) units from the outer points
@@ -3775,6 +3775,20 @@ static int SplineCharIsFlexible(SplineChar *sc, int blueshift) {
 return( max );
 }
 
+int SplineCharIsFlexible(SplineChar *sc) {
+    char *pt;
+    int blueshift;
+
+    pt = PSDictHasEntry(sc->parent->private,"BlueShift");
+    blueshift = 7;		/* use default value here */
+    if ( pt!=NULL ) {
+	blueshift = strtol(pt,NULL,10);
+	if ( blueshift>21 ) blueshift = 21;
+    } else if ( PSDictHasEntry(sc->parent->private,"BlueValues")!=NULL )
+	blueshift = 7;
+return( _SplineCharIsFlexible(sc,blueshift));
+}
+
 static void SCUnflex(SplineChar *sc) {
     SplineSet *spl;
     SplinePoint *sp;
@@ -3820,7 +3834,7 @@ return( 0 );
 
     for ( i=0; i<sf->charcnt; ++i )
 	if ( sf->chars[i]!=NULL ) {
-	    val = SplineCharIsFlexible(sf->chars[i],blueshift);
+	    val = _SplineCharIsFlexible(sf->chars[i],blueshift);
 	    if ( val>max ) max = val;
 	}
 return( max );

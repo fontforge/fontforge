@@ -80,6 +80,8 @@ static Color mdhintcol = 0xe04040;
 static Color dhintcol = 0xd0a0a0;
 static Color hhintcol = 0xa0d0a0;
 static Color vhintcol = 0xc0c0ff;
+static Color hflexhintcol = 0x00ff00;
+static Color vflexhintcol = 0x00ff00;
 static Color conflicthintcol = 0x00ffff;
 static Color hhintactivecol = 0x00a000;
 static Color vhintactivecol = 0x0000ff;
@@ -123,6 +125,8 @@ static void CVColInit( void ) {
 	{ "DHintColor", rt_color, &dhintcol },
 	{ "HHintColor", rt_color, &hhintcol },
 	{ "VHintColor", rt_color, &vhintcol },
+	{ "HFlexHintColor", rt_color, &hflexhintcol },
+	{ "VFlexHintColor", rt_color, &vflexhintcol },
 	{ "ConflictHintColor", rt_color, &conflicthintcol },
 	{ "HHintActiveColor", rt_color, &hhintactivecol },
 	{ "VHintActiveColor", rt_color, &vhintactivecol },
@@ -573,6 +577,11 @@ return;
 	r.width = r.height = 11;
 	GDrawDrawElipse(pixmap,&r,col);
     }
+    if (( sp->flexx && cv->showhhints ) || (sp->flexy && cv->showvhints)) {
+	r.x = x-5; r.y = y-5;
+	r.width = r.height = 11;
+	GDrawDrawElipse(pixmap,&r,sp->flexx ? hflexhintcol : vflexhintcol );
+    }
 }
 
 static void DrawLine(CharView *cv, GWindow pixmap,
@@ -880,6 +889,8 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
     struct psdict *private = cv->sc->parent->private;
     unichar_t ubuf[8];
     int len, len2;
+    SplinePoint *sp;
+    SplineSet *spl;
 
     GDrawSetFont(pixmap,cv->small);
     blues = PSDictHasEntry(private,"BlueValues"); others = PSDictHasEntry(private,"OtherBlues");
@@ -997,6 +1008,34 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
 
     for ( md=cv->sc->md; md!=NULL; md=md->next )
 	CVShowMinimumDistance(cv, pixmap,md);
+
+    if ( cv->showvhints || cv->showhhints ) {
+	for ( spl=cv->sc->splines; spl!=NULL; spl=spl->next ) {
+	    if ( spl->first->prev!=NULL ) for ( sp=spl->first ; ; ) {
+		if ( cv->showhhints && sp->flexx ) {
+		    double x,y,end;
+		    x = cv->xoff + rint(sp->me.x*cv->scale);
+		    y = -cv->yoff + cv->height - rint(sp->me.y*cv->scale);
+		    end = cv->xoff + rint(sp->next->to->me.x*cv->scale);
+		    if ( x>-4096 && x<32767 && y>-4096 && y<32767 ) {
+			GDrawDrawLine(pixmap,x,y,end,y,hflexhintcol);
+		    }
+		}
+		if ( cv->showvhints && sp->flexy ) {
+		    double x,y,end;
+		    x = cv->xoff + rint(sp->me.x*cv->scale);
+		    y = -cv->yoff + cv->height - rint(sp->me.y*cv->scale);
+		    end = -cv->yoff + cv->height - rint(sp->next->to->me.y*cv->scale);
+		    if ( x>-4096 && x<32767 && y>-4096 && y<32767 ) {
+			GDrawDrawLine(pixmap,x,y,x,end,vflexhintcol);
+		    }
+		}
+		sp = sp->next->to;
+		if ( sp==spl->first )
+	    break;
+	    }
+	}
+    }
 }
 
 static void CVDrawRefName(CharView *cv,GWindow pixmap,RefChar *ref,int fg) {
@@ -1589,6 +1628,7 @@ return;
 void CVChangeSC(CharView *cv, SplineChar *sc ) {
     unichar_t *title;
     unichar_t ubuf[300];
+    extern int updateflex;
 
     CVDebugFree(cv->dv);
 
@@ -1604,6 +1644,8 @@ void CVChangeSC(CharView *cv, SplineChar *sc ) {
 
     CVUnlinkView(cv);
     cv->p.nextcp = cv->p.prevcp = cv->widthsel = cv->vwidthsel = false;
+    if ( sc->views==NULL && updateflex )
+	SplineCharIsFlexible(sc);
     cv->sc = sc;
     cv->next = sc->views;
     sc->views = cv;
@@ -2521,6 +2563,7 @@ void SCClearSelPt(SplineChar *sc) {
 
 void _SCCharChangedUpdate(SplineChar *sc,int changed) {
     SplineFont *sf = sc->parent;
+    extern int updateflex;
 
     sc->changed_since_autosave = true;
     if ( sc->changed!=changed ) {
@@ -2541,6 +2584,8 @@ void _SCCharChangedUpdate(SplineChar *sc,int changed) {
 	sf->cidmaster->changed = sf->cidmaster->changed_since_autosave =
 		sf->cidmaster->changed_since_xuidchanged = true;
     SCRegenDependents(sc);		/* All chars linked to this one need to get the new splines */
+    if ( updateflex && sc->views!=NULL )
+	SplineCharIsFlexible(sc);
     SCUpdateAll(sc);
     SCRegenFills(sc);
     if ( sf->fv!=NULL )
@@ -2552,9 +2597,13 @@ void SCCharChangedUpdate(SplineChar *sc) {
 }
 
 void _CVCharChangedUpdate(CharView *cv,int changed) {
+    extern int updateflex;
+
     CVSetCharChanged(cv,changed);
     if ( cv->needsrasterize ) {
 	SCRegenDependents(cv->sc);		/* All chars linked to this one need to get the new splines */
+	if ( updateflex )
+	    SplineCharIsFlexible(cv->sc);
 	SCUpdateAll(cv->sc);
 	SCRegenFills(cv->sc);
 	FVRegenChar(cv->fv,cv->sc);

@@ -101,6 +101,7 @@ int alwaysgenopentype = true;
 #endif
 char *helpdir;
 extern MacFeat *default_mac_feature_map;	/* from macenc.c */
+int updateflex = false;
 
 extern int rectelipse, polystar, regular_star;	/* from cvpalettes.c */
 extern int center_out;				/* from cvpalettes.c */
@@ -370,6 +371,7 @@ static struct prefs_list {
 	{ "CopyMetaData", pr_bool, &copymetadata, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupCMD },
 	{ "UndoDepth", pr_int, &maxundoes, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupUndo },
 	{ "StopAtJoin", pr_bool, &stop_at_join, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupSAJ },
+	{ "UpdateFlex", pr_bool, &updateflex, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupUF },
 	{ NULL }
 },
   accent_list[] = {

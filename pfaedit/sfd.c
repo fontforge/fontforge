@@ -276,7 +276,7 @@ static void SFDDumpSplineSet(FILE *sfd,SplineSet *spl) {
 	    fprintf(sfd, "%d\n", sp->pointtype|(sp->selected<<2)|
 			(sp->nextcpdef<<3)|(sp->prevcpdef<<4)|
 			(sp->roundx<<5)|(sp->roundy<<6)|
-			(sp->ttfindex==0xffff?(1<<7):0));
+			(sp->ttfindex==0xffff?(1<<7):0) );
 	    if ( sp==first )
 	break;
 	    if ( first==NULL ) first = sp;
@@ -1609,6 +1609,10 @@ static SplineSet *SFDGetSplineSet(SplineFont *sf,FILE *sfd) {
 		pt->ttfindex = 0xffff;
 	    else
 		pt->ttfindex = ttfindex++;
+#if 0
+	    pt->flexx = val&0x100?1:0;
+	    pt->flexy = val&0x200?1:0;
+#endif
 	}
     }
     if ( cur!=NULL )

@@ -1133,6 +1133,7 @@ extern void FindBlues( SplineFont *sf, real blues[14], real otherblues[10]);
 extern void QuickBlues(SplineFont *sf, BlueData *bd);
 extern void FindHStems( SplineFont *sf, real snaps[12], real cnt[12]);
 extern void FindVStems( SplineFont *sf, real snaps[12], real cnt[12]);
+extern int SplineCharIsFlexible(SplineChar *sc);
 extern void SCGuessHHintInstancesAndAdd(SplineChar *sc, StemInfo *stem, real guess1, real guess2);
 extern void SCGuessVHintInstancesAndAdd(SplineChar *sc, StemInfo *stem, real guess1, real guess2);
 extern void SCGuessHHintInstancesList(SplineChar *sc);
