@@ -29,11 +29,13 @@
 
 
 void CVMouseDownHand(CharView *cv) {
+    cv->handscroll_base.x = cv->p.x;
+    cv->handscroll_base.y = cv->p.y;
 }
 
 void CVMouseMoveHand(CharView *cv, GEvent *event) {
-    cv->xoff += event->u.mouse.x-cv->p.x; cv->p.x = event->u.mouse.x;
-    cv->yoff -= event->u.mouse.y-cv->p.y; cv->p.y = event->u.mouse.y;
+    cv->xoff += event->u.mouse.x-cv->handscroll_base.x; cv->handscroll_base.x = event->u.mouse.x;
+    cv->yoff -= event->u.mouse.y-cv->handscroll_base.y; cv->handscroll_base.y = event->u.mouse.y;
     GScrollBarSetPos(cv->hsb,-cv->xoff);
     GScrollBarSetPos(cv->vsb,cv->yoff-cv->height);
     GDrawRequestExpose(cv->v,NULL,false);

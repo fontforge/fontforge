@@ -160,6 +160,7 @@ typedef struct charview {
     int8 showing_tool, pressed_tool, pressed_display, had_control, active_tool;
     SplinePointList *active_spl;
     SplinePoint *active_sp;
+    IPoint handscroll_base;
     GWindow ruler_w;
     uint16 rfh, ras;
     GFont *rfont;
@@ -185,6 +186,8 @@ typedef struct charview {
 #if _ModKeysAutoRepeat
     GTimer *autorpt;
     int keysym, oldstate;
+    int oldkeyx, oldkeyy;
+    GWindow oldkeyw;
 #endif
     struct searchview *searcher;	/* The sv within which this view is embedded (if it is) */
     GIC *gic;

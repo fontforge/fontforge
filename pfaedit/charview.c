@@ -1348,6 +1348,25 @@ static void SVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e);
 static void SVMenuSimplifyMore(GWindow gw,struct gmenuitem *mi,GEvent *e);
 
 
+static void CVFakeMove(CharView *cv, GEvent *event) {
+    GEvent e;
+
+    memset(&e,0,sizeof(e));
+    e.type = et_mousemove;
+    e.w = cv->v;
+    if ( event->w!=cv->v ) {
+	GPoint p;
+	p.x = event->u.chr.x; p.y = event->u.chr.y;
+	GDrawTranslateCoordinates(event->w,cv->v,&p);
+	event->u.chr.x = p.x; event->u.chr.y = p.y;
+    }
+    e.u.mouse.state = TrueCharState(event);
+    e.u.mouse.x = event->u.chr.x;
+    e.u.mouse.y = event->u.chr.y;
+    e.u.mouse.device = NULL;
+    CVMouseMove(cv,&e);
+}
+
 void CVChar(CharView *cv, GEvent *event ) {
     extern float arrowAmount;
 
@@ -1392,19 +1411,7 @@ return;
 	else
 	    CVMerge(cv->gw,NULL,NULL);
     } else if ( event->u.chr.keysym == GK_Shift_L || event->u.chr.keysym == GK_Shift_R ) {
-	GEvent e;
-	e.type = et_mousemove;
-	e.w = cv->v;
-	if ( event->w!=cv->v ) {
-	    GPoint p;
-	    p.x = event->u.chr.x; p.y = event->u.chr.y;
-	    GDrawTranslateCoordinates(event->w,cv->v,&p);
-	    event->u.chr.x = p.x; event->u.chr.y = p.y;
-	}
-	e.u.mouse.state = TrueCharState(event);
-	e.u.mouse.x = event->u.chr.x;
-	e.u.mouse.y = event->u.chr.y;
-	CVMouseMove(cv,&e);
+	CVFakeMove(cv, event);
     } else if ( !(event->u.chr.state&(ksm_control|ksm_meta)) &&
 	    event->u.chr.keysym == GK_BackSpace ) {
 	/* Menu does delete */
@@ -1519,6 +1526,9 @@ static void CVCharUp(CharView *cv, GEvent *event ) {
 	    CVToolsSetCursor(cv,cv->oldstate,NULL);
 	}
 	cv->keysym = event->u.chr.keysym;
+	cv->oldkeyx = event->u.chr.x;
+	cv->oldkeyy = event->u.chr.y;
+	cv->oldkeyw = event->w;
 	cv->oldstate = TrueCharState(event);
 	cv->autorpt = GDrawRequestTimer(cv->v,100,0,NULL);
     } else {
@@ -1530,6 +1540,8 @@ static void CVCharUp(CharView *cv, GEvent *event ) {
     }
 #else
     CVToolsSetCursor(cv,TrueCharState(event),NULL);
+    if ( event->u.chr.keysym == GK_Shift_L || event->u.chr.keysym == GK_Shift_R )
+	CVFakeMove(cv, event);
 #endif
 }
 
@@ -2119,7 +2131,9 @@ return;
     }
 
     SetFS(&fs,&p,cv,event);
-    if ( (event->u.mouse.state&ksm_shift) && !cv->p.rubberbanding ) {
+    if ( cv->active_tool == cvt_freehand )
+	/* freehand does it's own kind of constraining */;
+    else if ( (event->u.mouse.state&ksm_shift) && !cv->p.rubberbanding ) {
 	/* Constrained */
 
 	fake.u.mouse = event->u.mouse;
@@ -2139,8 +2153,8 @@ return;
 	    p.y = fake.u.mouse.y = -cv->yoff + cv->height - rint(p.cy*cv->scale);
 	} else {
 	    /* Constrain mouse to hor/vert/45 from base point */
-	    int basex =  cv->xoff + rint(cv->p.constrain.x*cv->scale);
-	    int basey = -cv->yoff + cv->height - rint(cv->p.constrain.y*cv->scale);
+	    int basex = cv->active_tool!=cvt_hand ? cv->xoff + rint(cv->p.constrain.x*cv->scale) : cv->p.x;
+	    int basey = cv->active_tool!=cvt_hand ?-cv->yoff + cv->height - rint(cv->p.constrain.y*cv->scale) : cv->p.y;
 	    int dx= event->u.mouse.x-basex, dy = event->u.mouse.y-basey;
 	    int sign = dx*dy<0?-1:1;
 
@@ -2170,7 +2184,9 @@ return;
     /* If we've changed the character (recentchange is true) we want to */
     /*  snap to the original location, otherwise we'll keep snapping to the */
     /*  current point as it moves across the screen (jerkily) */
-    if ( !cv->joinvalid || !CheckPoint(&fs,&cv->joinpos,NULL)) {
+    if ( cv->active_tool == cvt_hand || cv->active_tool == cvt_freehand )
+	/* Don't snap to points */;
+    else if ( !cv->joinvalid || !CheckPoint(&fs,&cv->joinpos,NULL)) {
 	SplinePointList *spl;
 	spl = *cv->heads[cv->drawmode];
 	if ( cv->recentchange && cv->active_tool==cvt_pointer &&
@@ -2360,6 +2376,14 @@ static void CVTimer(CharView *cv,GEvent *event) {
     } else if ( cv->autorpt==event->u.timer.timer ) {
 	cv->autorpt = NULL;
 	CVToolsSetCursor(cv,cv->oldstate,NULL);
+	if ( cv->keysym==GK_Shift_L || cv->keysym == GK_Shift_R ) {
+	    GEvent e;
+	    e.w = cv->oldkeyw;
+	    e.u.chr.keysym = cv->keysym;
+	    e.u.chr.x = cv->oldkeyx;
+	    e.u.chr.y = cv->oldkeyy;
+	    CVFakeMove(cv,&e);
+	}
 #endif
     }
 }

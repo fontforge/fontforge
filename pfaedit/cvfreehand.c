@@ -48,6 +48,8 @@ typedef struct tracedata {
     unsigned int extremum: 3;
     unsigned int use_as_pt: 1;
     unsigned int online: 1;
+    unsigned int wasconstrained: 1;
+    unsigned int constrained_corner: 1;
     uint16 num;
 } TraceData;
 
@@ -62,7 +64,19 @@ static void TraceDataFree(TraceData *td) {
 }
 
 static void TraceDataFromEvent(CharView *cv, GEvent *event) {
-    TraceData *new = chunkalloc(sizeof(TraceData));
+    TraceData *new;
+
+    if ( cv->freehand.head!=NULL &&
+	    cv->freehand.last->here.x==(event->u.mouse.x-cv->xoff)/cv->scale &&
+	    cv->freehand.last->here.y==(cv->height-event->u.mouse.y-cv->yoff)/cv->scale ) {
+	/* Has not moved */
+	int constrained = (event->u.mouse.state&ksm_shift)?1:0;
+	if ( constrained != cv->freehand.last->wasconstrained )
+	    cv->freehand.last->constrained_corner = true;
+return;
+    }
+
+    new = chunkalloc(sizeof(TraceData));
 
     if ( cv->freehand.head==NULL )
 	cv->freehand.head = cv->freehand.last = new;
@@ -78,6 +92,12 @@ static void TraceDataFromEvent(CharView *cv, GEvent *event) {
     new->pressure = event->u.mouse.pressure;
     new->xtilt = event->u.mouse.xtilt;
     new->ytilt = event->u.mouse.ytilt;
+    new->wasconstrained = (event->u.mouse.state&ksm_shift)?1:0;
+    if ( new->wasconstrained &&
+	    ( new->prev==NULL || !new->prev->wasconstrained))
+	new->constrained_corner = true;
+    else if ( new->prev!=NULL && !new->wasconstrained && new->prev->wasconstrained )
+	new->prev->constrained_corner = true;
 }
 
 static int TraceGoodLine(TraceData *base,TraceData *end) {
@@ -115,18 +135,24 @@ static TraceData *TraceLineCheck(TraceData *base) {
     TraceData *pt, *end, *last_good;
     int cnt;
 
-    if ( base->next==NULL || base->next->next==NULL || base->next->next->next==NULL )
+    if ( base->next==NULL || base->next->next==NULL || base->next->next->next==NULL ||
+	    base->wasconstrained )
 return( base );
 
-    for ( end=base->next, cnt=0; end->next!=NULL; end=end->next, ++cnt )
+    for ( end=base->next, cnt=0; end->next!=NULL; end=end->next, ++cnt ) {
 	if ( (end->x-base->x)*(end->x-base->x) + (end->y-base->y)*(end->y-base->y)>=
 		min_line_len*min_line_len  &&
 		cnt>=min_line_cnt )
     break;
+	if ( end->wasconstrained )
+return( base );
+    }
 
     last_good = NULL;
     while ( TraceGoodLine(base,end) ) {
 	last_good = end;
+	if ( end->wasconstrained )
+    break;
 	end = end->next;
 	if ( end==NULL )
     break;
@@ -217,6 +243,106 @@ return( type );
 return( type );
 }
 
+static TraceData *TraceNextPoint(TraceData *pt) {
+    if ( pt==NULL )
+return( NULL );
+    for ( pt=pt->next; pt!=NULL && !pt->use_as_pt ; pt=pt->next );
+return( pt );
+}
+
+static void TraceMassage(TraceData *head, TraceData *end) {
+    TraceData *pt, *npt, *last, *nnpt;
+    /* Look for corners that are too close together */
+    /* Paired tangents that might better be a single curve */
+    /* tangent corner tangent that might better be a single curve */
+
+    for ( pt=head ; pt!=NULL ; pt=npt ) {
+	npt = TraceNextPoint(pt);
+	forever {
+	    nnpt = TraceNextPoint(npt);
+	    if ( nnpt!=NULL &&
+		    ((pt->x==npt->x && npt->x==nnpt->x) ||
+		     (pt->y==npt->y && npt->y==nnpt->y)) &&
+		    (pt->next == npt || pt->next->online) ) {
+		/*npt->online = true;*/
+		npt->use_as_pt = false;
+	    } else if ( nnpt==NULL && npt!=NULL && (pt->x==npt->x || pt->y==npt->y) &&
+		    (pt->next == npt || pt->next->online) ) {
+		pt->use_as_pt = false;
+	    } else
+	break;
+	    npt = nnpt;
+	}
+    }
+
+    /* Remove very short segments */
+    if ( head && head->next ) {
+	for ( pt=head->next; pt!=NULL && pt->use_as_pt && !pt->constrained_corner; pt = pt->next )
+	    pt->use_as_pt = false;
+	for ( pt=head->next ; pt->next!=NULL ; pt=pt->next ) {
+	    if ( pt->use_as_pt && pt->next->use_as_pt && !pt->constrained_corner )
+		pt->use_as_pt = false;
+	}
+    }
+    for ( pt=head ; pt!=NULL ; pt=npt ) {
+	npt = pt;
+	forever {
+	    npt = TraceNextPoint(pt);
+	    if ( npt == NULL || npt->constrained_corner )
+	break;
+	    if ( (npt->x-pt->x)*(npt->x-pt->x) + (npt->y-pt->y)*(npt->y-pt->y)<4 )
+		npt->use_as_pt = false;
+	    else
+	break;
+	}
+    }
+
+    last = NULL;
+    for ( pt=head ; pt!=NULL ; pt=pt->next ) {
+	if ( pt->use_as_pt && pt->next!=NULL && pt->next->online && !pt->next->wasconstrained &&
+		pt->prev!=NULL && !pt->prev->online ) {
+	    npt = TraceNextPoint(pt);
+	    if ( npt->wasconstrained )
+		/* Leave it */;
+	    else if ( npt->next!=NULL && !npt->next->online ) {
+		/* We've got two adjacent tangents */
+		nnpt = TraceNextPoint(npt);
+		if ( last!=NULL && nnpt!=NULL ) {
+		    int lencur = (npt->x-pt->x)*(npt->x-pt->x) + (npt->y-pt->y)*(npt->y-pt->y);
+		    int lennext = (nnpt->x-npt->x)*(nnpt->x-npt->x) + (nnpt->y-npt->y)*(nnpt->y-npt->y);
+		    int lenprev = (npt->x-pt->x)*(npt->x-pt->x) + (npt->y-pt->y)*(npt->y-pt->y);
+		    if ( lencur<16*lennext || lencur<16*lenprev ) {
+			/* Probably better done as one point */
+			int which = (pt->num+npt->num)/2;
+			forever {
+			    pt->online = pt->use_as_pt = false;
+			    if ( pt->num==which )
+				pt->use_as_pt = true;
+			    if ( pt==npt )
+			break;
+			    pt = pt->next;
+			}
+		    }
+		}
+	    } else if ( (nnpt = TraceNextPoint(npt))!=NULL &&
+		    nnpt->next && !nnpt->next->online ) {
+		/* We've got tangent corner tangent */
+		forever {
+		    pt->online = pt->use_as_pt = false;
+		    if ( pt==nnpt )
+		break;
+		    pt = pt->next;
+		}
+		pt = npt;
+		pt->use_as_pt = true;
+	    }
+	}
+	if ( pt->use_as_pt )
+	    last = pt;
+    }
+    head->use_as_pt = end->use_as_pt = true;
+}
+
 static SplineSet *TraceCurve(CharView *cv) {
     TraceData *head = cv->freehand.head, *pt, *base, *e;
     SplineSet *spl;
@@ -234,7 +360,8 @@ static SplineSet *TraceCurve(CharView *cv) {
     cnt = 0;
     for ( pt=head; pt!=NULL; pt = pt->next ) {
 	pt->extremum = e_none;
-	pt->use_as_pt = pt->online = false;
+	pt->online = pt->wasconstrained;
+	pt->use_as_pt = pt->constrained_corner;
 	/* We recalculate x,y because we might have autoscrolled the window */
 	pt->x =  cv->xoff + rint(pt->here.x*cv->scale);
 	pt->y = -cv->yoff + cv->height - rint(pt->here.y*cv->scale);
@@ -265,6 +392,8 @@ static SplineSet *TraceCurve(CharView *cv) {
 	    base = e;
 	}
     }
+
+    TraceMassage(head,cv->freehand.last);
 
     /* Calculate the mids array */
     mids = galloc(cnt*sizeof(TPoint));
