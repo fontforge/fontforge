@@ -3194,7 +3194,7 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
 	}
     }
     if ( at->applemode ) {
-	for ( lang=1; lang<256; ++lang ) {		/* Have to order my mac language code now */
+	for ( lang=1; lang<255; ++lang ) {		/* Have to order my mac language code now */
 	    for ( cur=sf->names; cur!=NULL; cur=cur->next )
 		    if ( cur->lang!=0x409 && CanEncodingWinLangAsMac(cur->lang) &&
 			    WinLangToMac(cur->lang)==lang ) {
@@ -3332,7 +3332,7 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
 	    dumpstr(at->name,at->feat_name[i].name);
     }
     if ( at->applemode ) {
-	for ( lang=1; lang<256; ++lang ) {		/* Have to order my mac language code now */
+	for ( lang=1; lang<255; ++lang ) {		/* Have to order my mac language code now */
 	    for ( cur=sf->names; cur!=NULL; cur=cur->next )
 		    if ( cur->lang!=0x409 && CanEncodingWinLangAsMac(cur->lang) &&
 			    WinLangToMac(cur->lang)==lang ) {

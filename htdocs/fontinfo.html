@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 17-Aug-2003 -->
+  <!-- AP: Last modified: 3-Sep-2003 -->
   <TITLE>Font Info</TITLE>
 </HEAD>
 <BODY>
@@ -35,8 +35,11 @@ The copyright field can contain whatever you want to put there, but it's
 a good place to put a copyright.
 <P>
 In most fonts the version field is a string (and so has minimal constraints
-on it), but in CID keyed fonts it must be a floating point
-number.<BR Clear=ALL>
+on it), but in CID keyed fonts it must be a floating point number.
+<P>
+Many of these names are similar to the english names of the TTF Names section.
+If nothing is specified in that section then the names specified here will
+be used by default in ttf files.<BR Clear=ALL>
 <H2>
   <IMG SRC="fontinfo-encoding.png" WIDTH="369" HEIGHT="472" ALIGN="Right"><A
       NAME="Encoding">Encoding</A>
@@ -67,6 +70,10 @@ encoding process.
 In a CID keyed font you are not allowed to change the encoding (in essence
 because there is none), but the dialog will show you the
 Registry/Ordering/Supplement for this font.
+<P>
+Not all font formats support all encodings. SVG fonts will always be output
+in a unicode encoding, truetype fonts in either unicode or one of the CJK
+encodings, type1 fonts only support single byte encodings, etc.
 <P>
   <HR>
 <H3>
@@ -302,12 +309,13 @@ your preference item). Adobe recommends that the XUID be changed every time
 the font is changed, so each time you generate a postscript font, that font's
 XUID (if present) will be incremented by 1 (This incrementing does not happen
 in CID-keyed fonts, where the XUID behavior is too complex for this simple
-trick).
+trick). (The XUID field is only meaningfull in PostScript fonts)
 <P>
 The UniqueID field is an older convention for the same purpose as XUID. If
 you do not fill in this field then PfaEdit will pick a random number for
 you in the allowable range. If you have talked to Adobe and been assigned
-a real UniqueID then you may use this field, otherwise leave it blank.
+a real UniqueID then you may use this field, otherwise leave it blank. (The
+UniqueID field is only meaningfull in PostScript fonts)
 <P>
 If you want your font to have <A NAME="vertical">vertical</A> metrics (generally
 this means you are working on a CJK font) then check the <CODE>[*] Has Vertical
@@ -389,7 +397,9 @@ value. The UniqueID key represents the font's Unique postscript ID. If you
 provide a value here then PfaEdit will copy it into the UniqueID field in
 the Font Dictionary. If you do not provide a UniqueID here, PfaEdit will
 generate a random one itself (this is different from True Type's UniqueID.
-They perform the same function but are formatted differently).<BR CLEAR=ALL>
+They perform the same function but are formatted differently).
+<P>
+These entries are only meaningfull for PostScript fonts.<BR CLEAR=ALL>
 <H2>
   <IMG SRC="fontinfo-ttfvals.png" WIDTH="376" HEIGHT="544" ALIGN="Right"><A
       NAME="TTF-Values">TTF Values</A>
@@ -423,7 +433,11 @@ You can also specify the default line gap, or leading between lines.
 <P>
 And if your font has vertical metrics enabled (See General above) you will
 be able to set the default spacing between vertical columns of text. (the
-equivalent to LineGap in vertical text).<BR Clear=ALL>
+equivalent to LineGap in vertical text).
+<P>
+These entries are only meaningful in TrueType and OpenType fonts (though
+the Embeddable entry (generally called FSType) will be set on CID keyed fonts
+even if they are not in an OpenType wrapper.<BR Clear=ALL>
 <H3>
   <CODE><A NAME="Order"><IMG SRC="GSUB-Order.png" WIDTH="185" HEIGHT="294"
       ALIGN="Right">GSUB/morx</A></CODE> Ordering
@@ -547,11 +561,11 @@ type docs</A>, but they apply to
 <A HREF="http://partners.adobe.com/asn/tech/type/opentype/recom.jsp">open
 type</A> as well.
 <P>
-These settings specify strings for the windows platform. PfaEdit doesn't
-really support the macintosh platform very well (because I don't know how
-to make the mac do Unicode). It will, however, generate two additional string
-sets by taking the american english entries and creating a "Mactintosh English"
-and an "Apple Unicode (2.0)" set.
+These settings specify strings for the windows platform. If you specify []
+Apple Mode when generating the font it will also generate equivalent entries
+for the mac (It will, always, generate two additional string sets by taking
+the american english entries and creating a "Mactintosh English" and an "Apple
+Unicode (2.0)" set even if you don't specify [] Apple Mode).
 <P>
 Generally fonts will have a fairly complete set of strings in the American
 English entry, with the Style string (and nothing else) translated into different
@@ -634,6 +648,21 @@ languages.
     <TD>Kontur</TD>
   </TR>
   <TR>
+    <TH>Hungarian</TH>
+    <TD>Normàl</TD>
+    <TD>Kövér</TD>
+    <TD>FélkövérKövér</TD>
+    <TD>Világos</TD>
+    <TD>Közepes</TD>
+    <TD>Sötétes</TD>
+    <TD>Fekete</TD>
+    <TD><!--D&#x151;lt-->Do"lt</TD>
+    <TD>Döntött</TD>
+    <TD>Keskeny</TD>
+    <TD>Széles</TD>
+    <TD>Kontúros</TD>
+  </TR>
+  <TR>
     <TH>Russian<BR>
       <SMALL>(koi8r)</SMALL></TH>
     <TD></TD>
@@ -665,6 +694,8 @@ style entries) then after you press the "Translate Style" button PfaEdit
 will generate "GrasItalique" for French, "FettKursiv" for German,
 "&Ouml;&Eacute;&Ograve;&Icirc;&Ugrave;&Ecirc;&euml;&Otilde;&Ograve;&Oacute;&Eacute;&#215;&Icirc;&Ugrave;&Ecirc;"
 for Russian and "NigritaCursiva" for Spanish.
+<P>
+These names are only meaningful for TrueType and OpenType fonts.
 <H2>
   <IMG SRC="fontinfo-panose.png" WIDTH="369" HEIGHT="472" ALIGN="Right"><A
       NAME="Panose">Panose</A>
@@ -676,8 +707,10 @@ typed them in as specified in the
 <A HREF="http://fonts.apple.com/TTRefMan/RM06/Chap6OS2.html">true type
 docs</A>. Better information is available from
 <A HREF="http://www.agfamonotype.com/hardware/pan1.asp">AGFA</A> and
-<A HREF="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/gdi/fontext_48aa.asp">MS</A>.<BR
-    Clear=All>
+<A HREF="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/gdi/fontext_48aa.asp">MS</A>.
+<P>
+These entries are only meaningfull for TrueType, OpenType and SVG
+fonts.<BR Clear=All>
 <H2>
   <IMG SRC="fontinfo-tex.png" WIDTH="376" HEIGHT="544" ALIGN="Right"><A NAME="TeX">TeX</A>
 </H2>
@@ -689,7 +722,10 @@ math extension fonts. The later two have additional parameters which are
 accessable through the [More Params] button. The default values for the Math
 parameters are probably reasonable. <FONT COLOR="Red"><STRONG>The default
 values for the Math Extension parameters are probably
-unreasonable</STRONG></FONT>.<BR Clear=All>
+unreasonable</STRONG></FONT>.
+<P>
+These values are stored in tfm files (should you generate a tfm file with
+your font).<BR Clear=All>
 <H2>
   <IMG SRC="fontinfo-comment.png" WIDTH="369" HEIGHT="506" ALIGN="Right"><A
       NAME="Comment">Comment</A>
@@ -698,6 +734,9 @@ unreasonable</STRONG></FONT>.<BR Clear=All>
 This allows you to keep track of arbetrary comments inside your font database.
 It does not correspond to any postscript or truetype entity. It is intended
 to store a changelog for the font itself, but could be used for other purposes...
+<P>
+Various font formats allow a random comment to be place in the font, but
+no format makes use of it. This is primarily to be used inside PfaEdit.
 <P>
 <BR Clear=ALL>
 <H2>
@@ -746,7 +785,10 @@ to associate the two together by having them "Merge With" each other.
 <P>
 PfaEdit recognizes a special feature tag ' RQD' to indicate that this feature
 is required for the given script/language. Such a feature will always be
-applied. <BR Clear=ALL>
+applied.
+<P>
+Anchor classes are only meaningful when generating a truetype (ttf or otf)
+like font with OpenType tables.<BR Clear=ALL>
 <H2>
   <A NAME="Contextual">Contextual</A>
 </H2>
@@ -766,7 +808,11 @@ the contents of the feature.
 <P>
 The [Edit] button will allow you to change the tags, script and flags (it
 corresponds to the first part of [New]) and the [Edit Data] button allows
-you to change the contents of the feature. <BR CLEAR=ALL>
+you to change the contents of the feature.
+<P>
+Contextual/chaining tables are only meaningful when generating a truetype
+(ttf or otf) like font with OpenType tables (in a few cases they can be converted
+into Apple Advanced Typography tables too).<BR CLEAR=ALL>
 <P>
 See Also:
 <UL>
@@ -774,6 +820,8 @@ See Also:
     <A HREF="charinfo.html">The char info dialog</A>
   <LI>
     <A HREF="getinfo.html">The get info dialogs</A>
+  <LI>
+    <A HREF="contextchain.html">The contextual / chaining dialog</A>
 </UL>
 <P ALIGN=Center>
 -- <A HREF="elementmenu.html">Prev</A> -- <A HREF="overview.html">TOC</A>

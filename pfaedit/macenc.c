@@ -657,7 +657,7 @@ static uint8 _MacScriptFromLanguage[] = {
 	sm_slavic,		/* Slovak */
 /*40*/	sm_slavic,		/* Slovenian */
 	sm_roman,		/* Yiddish */
-	sm_cyrillic,		/* Serbian (???) */
+	sm_cyrillic,		/* Serbian */
 	sm_cyrillic,		/* Macedonian */
 	sm_cyrillic,		/* Bulgarian */
 	sm_cyrillic,		/* Ukrainian */

@@ -79,6 +79,16 @@ return( NULL );
 		--n;
 	    }
 	  break;
+	  case e_jisgb:
+	    while ( *from && n>0 ) {
+		if ( *from>=0xa1 && from[1]>=0xa1 ) {
+		    *upt++ = unicode_from_gb2312[ (*from-0xa1)*94+(from[1]-0xa1) ];
+		    from += 2;
+		} else
+		    *upt++ = *from++;
+		--n;
+	    }
+	  break;
 	  case e_sjis:
 	    while ( *from && n>0 ) {
 		if ( *from<127 || ( *from>=161 && *from<=223 )) {
@@ -207,6 +217,22 @@ return( NULL );
 		    --n;
 		} else if ( highch>=ksc5601_from_unicode.first && highch<=ksc5601_from_unicode.last &&
 			(plane = ksc5601_from_unicode.table[highch-ksc5601_from_unicode.first])!=NULL &&
+			(ch=plane[*ufrom&0xff])!=0 ) {
+		    *pt++ = (ch>>8) + 0x80;
+		    *pt++ = (ch&0xff) + 0x80;
+		    n -= 2;
+		}
+		ufrom ++;
+	    }
+	  break;
+	  case e_jisgb:
+	    while ( *ufrom && n>0 ) {
+		int highch = *ufrom>>8, ch;
+		if ( *ufrom<0x80 ) {
+		    *pt++ = *ufrom;
+		    --n;
+		} else if ( highch>=gb2312_from_unicode.first && highch<=gb2312_from_unicode.last &&
+			(plane = gb2312_from_unicode.table[highch-gb2312_from_unicode.first])!=NULL &&
 			(ch=plane[*ufrom&0xff])!=0 ) {
 		    *pt++ = (ch>>8) + 0x80;
 		    *pt++ = (ch&0xff) + 0x80;
