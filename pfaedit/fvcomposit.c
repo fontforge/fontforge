@@ -653,7 +653,7 @@ int SFIsRotatable(SplineFont *sf,SplineChar *sc) {
 	if ( *end=='\0' && SFHasCID(sf,cid)!=-1)
 return( true );
     } else if ( sf->cidmaster!=NULL &&
-	    (strncmp(sc->name,"cid_",4)==0 && strstr(sc->name,".vert")!=NULL) ) {
+	    (strncmp(sc->name,"cid-",4)==0 && strstr(sc->name,".vert")!=NULL) ) {
 	int cid = strtol(sc->name+4,&end,10);
 	if ( *end=='.' && SFHasCID(sf,cid)!=-1)
 return( true );
@@ -669,6 +669,14 @@ return( true );
 	int uni = strtol(sc->name+1,&end,16);
 	if ( *end=='.' && SFCIDFindExistingChar(sf,uni,NULL)!=-1 )
 return( true );
+    } else if ( strstr(sc->name,".vert")!=NULL || strstr(sc->name,".vrt2")!=NULL) {
+	int ret;
+	char *temp;
+	end = strchr(sc->name,'.');
+	temp = copyn(sc->name,end-sc->name);
+	ret = SFFindExistingChar(sf,-1,temp)!=-1;
+	free(temp);
+return( ret );
     }
 return( false );
 }
@@ -1620,22 +1628,47 @@ static void DoRotation(SplineFont *sf,SplineChar *sc,int copybmp,FontView *fv) {
     SplineSet *last, *temp;
     RefChar *ref;
     BDFFont *bdf;
+    char *end;
+    int j,cid;
 
     if ( sf->cidmaster!=NULL && strncmp(sc->name,"vertcid_",8)==0 ) {
-	char *end;
-	int cid = strtol(sc->name+8,&end,10), j;
+	cid = strtol(sc->name+8,&end,10), j;
 	if ( *end!='\0' || (j=SFHasCID(sf,cid))==-1)
 return;		/* Can't happen */
 	scbase = sf->cidmaster->subfonts[j]->chars[cid];
-    } else if ( strncmp(sc->name,"vertuni",7)==0 && strlen(sc->name)==11 ) {
-	char *end;
-	int uni = strtol(sc->name+7,&end,16), index;
-	if ( *end!='\0' || (index = SFCIDFindExistingChar(sf,uni,NULL))==-1 )
+    } else if ( sf->cidmaster!=NULL &&
+	    (strncmp(sc->name,"cid-",4)==0 && strstr(sc->name,".vert")!=NULL) ) {
+	cid = strtol(sc->name+4,&end,10);
+	if ( *end!='.' || (j=SFHasCID(sf,cid))==-1)
 return;		/* Can't happen */
+	scbase = sf->cidmaster->subfonts[j]->chars[cid];
+    } else {
+	if ( strncmp(sc->name,"vertuni",7)==0 && strlen(sc->name)==11 ) {
+	    char *end;
+	    int uni = strtol(sc->name+7,&end,16), index;
+	    if ( *end!='\0' || (index = SFCIDFindExistingChar(sf,uni,NULL))==-1 )
+return;		/* Can't happen */
+	} else if ( strncmp(sc->name,"uni",3)==0 && strstr(sc->name,".vert")!=NULL ) {
+	    int uni = strtol(sc->name+3,&end,16);
+	    if ( *end!='.' || (cid = SFCIDFindExistingChar(sf,uni,NULL))==-1 )
+return;
+	} else if ( sc->name[0]=='u' && strstr(sc->name,".vert")!=NULL ) {
+	    int uni = strtol(sc->name+1,&end,16);
+	    if ( *end!='.' || (cid = SFCIDFindExistingChar(sf,uni,NULL))==-1 )
+return;
+	} else if ( strstr(sc->name,".vert")!=NULL || strstr(sc->name,".vrt2")!=NULL) {
+	    char *temp;
+	    end = strchr(sc->name,'.');
+	    temp = copyn(sc->name,end-sc->name);
+	    cid = SFFindExistingChar(sf,-1,temp);
+	    free(temp);
+	    if ( cid==-1 )
+return;
+	}
 	if ( sf->cidmaster==NULL )
-	    scbase = sf->chars[index];
+	    scbase = sf->chars[cid];
 	else
-	    scbase = sf->cidmaster->subfonts[SFHasCID(sf,index)]->chars[index];
+	    scbase = sf->cidmaster->subfonts[SFHasCID(sf,cid)]->chars[cid];
     }
 
     if ( scbase->parent->vertical_origin==0 )
