@@ -39,14 +39,22 @@ static int shift_on_press = 0;
 static FontInstance *label_font = NULL;
 static int gbutton_inited = false;
 
-static void GButtonInvoked(GButton *b,int click) {
+static void GButtonInvoked(GButton *b,GEvent *ev) {
     GEvent e;
 
     e.type = et_controlevent;
     e.w = b->g.base;
     e.u.control.subtype = et_buttonactivate;
     e.u.control.g = &b->g;
-    e.u.control.u.button.clicks = click;
+    if ( ev!=NULL && ev->type==et_mouseup ) {
+	e.u.control.u.button.clicks = ev->u.mouse.clicks;
+	e.u.control.u.button.button = ev->u.mouse.button;
+	e.u.control.u.button.state = ev->u.mouse.state;
+    } else {
+	e.u.control.u.button.clicks = 0;
+	e.u.control.u.button.button = 0;
+	e.u.control.u.button.state = 0;
+    }
     if ( b->g.handle_controlevent != NULL )
 	(b->g.handle_controlevent)(&b->g,&e);
     else
@@ -178,19 +186,15 @@ return( true );
     if ( event->type == et_crossing ) {
 	if ( gb->within && !event->u.crossing.entered )
 	    gb->within = false;
-    } else if ( gb->pressed && event->type!=et_mousemove ) {
-	if ( event->type == et_mousedown ) /* They pressed 2 buttons? */
-	    gb->pressed = false;
-	else if ( GGadgetWithin(g,event->u.mouse.x,event->u.mouse.y)) {
+    } else if ( gb->pressed && event->type==et_mouseup ) {
+	if ( GGadgetWithin(g,event->u.mouse.x,event->u.mouse.y)) {
 	    if ( event->type == et_mouseup ) {
 		gb->pressed = false;
-		GButtonInvoked(gb,event->u.mouse.clicks);
+		GButtonInvoked(gb,event);
 	    } else
 		gb->within = false;
-	} else if ( event->type == et_mouseup )
+	} else
 	    gb->pressed = false;
-	else
-	    gb->within = true;
     } else if ( event->type == et_mousedown &&
 	    GGadgetWithin(g,event->u.mouse.x,event->u.mouse.y)) {
 	gb->pressed = true;
@@ -225,7 +229,7 @@ return( true );
     }
 
     if ( event->u.chr.chars[0]==' ' ) {
-	GButtonInvoked(gb,0);
+	GButtonInvoked(gb,NULL);
 return( true );
     }
 return(false);
@@ -239,7 +243,7 @@ return(false);
 
     if ( event->u.focus.mnemonic_focus==mf_shortcut ||
 	    event->u.focus.mnemonic_focus==mf_mnemonic ) {
-	GButtonInvoked(gb,0);
+	GButtonInvoked(gb,NULL);
 return( true );
     }
 return( true );

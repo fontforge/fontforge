@@ -264,6 +264,7 @@ typedef struct gevent {
 		} tf_changed;
 		struct {
 		    int clicks;
+		    int16 button, state;
 		} button;
 		struct {
 		    int from_mouse, changed_index;
