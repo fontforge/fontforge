@@ -156,12 +156,13 @@ typedef struct debugview {
     GWindow dv, v;
     struct instrdata id;
     struct instrinfo ii;
-    /* Windows for twilight points, cvt, registers, stack, storage */
     int dwidth, toph;
     struct charview *cv;
     double scale;
+    /* Windows for twilight points, cvt, registers, stack, storage */
     GWindow points, points_v, cvt, regs, stack, storage;
-    int pts_head;
+    int pts_head, cvt_offtop;
+    GGadget *cvtsb;
 } DebugView;
 
 enum dv_coderange { cr_none=0, cr_fpgm, cr_prep, cr_glyph };	/* cleverly chosen to match ttobjs.h */
