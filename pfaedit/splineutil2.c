@@ -2701,7 +2701,8 @@ return( -1 );		/* Open paths, (open paths with only one point are a special case
 	active = EIActiveEdgesRefigure(&el,active,i,1,&change);
 	if ( el.ordered[i]!=NULL || el.ends[i] || waschange || change ) {
 	    waschange = change;
-	    maybe = active->up;
+	    if ( active!=NULL )
+		maybe = active->up;
     continue;			/* Just too hard to get the edges sorted when we are at a start vertex */
 	}
 	waschange = change;
