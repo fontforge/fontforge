@@ -39,6 +39,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#ifdef HAVE_IEEEFP_H
+# include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
+#endif
 
 static int verbose = -1;
 int no_windowing_ui = false;
@@ -864,6 +867,156 @@ static void bRound(Context *c) {
 	error( c, "Bad type for argument" );
     c->return_val.type = v_int;
     c->return_val.u.ival = rint( c->a.vals[1].u.fval );
+}
+
+static void bIsNan(Context *c) {
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type!=v_real )
+	error( c, "Bad type for argument" );
+    c->return_val.type = v_int;
+    c->return_val.u.ival = isnan( c->a.vals[1].u.fval );
+}
+
+static void bIsFinite(Context *c) {
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type!=v_real )
+	error( c, "Bad type for argument" );
+    c->return_val.type = v_int;
+    c->return_val.u.ival = finite( c->a.vals[1].u.fval );
+}
+
+static void bSqrt(Context *c) {
+    double val;
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type==v_real )
+	val = c->a.vals[1].u.fval;
+    else if ( c->a.vals[1].type==v_int )
+	val = c->a.vals[1].u.ival;
+    else
+	error( c, "Bad type for argument" );
+    c->return_val.type = v_real;
+    c->return_val.u.fval = sqrt( val );
+}
+
+static void bExp(Context *c) {
+    double val;
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type==v_real )
+	val = c->a.vals[1].u.fval;
+    else if ( c->a.vals[1].type==v_int )
+	val = c->a.vals[1].u.ival;
+    else
+	error( c, "Bad type for argument" );
+    c->return_val.type = v_real;
+    c->return_val.u.fval = exp( val );
+}
+
+static void bLog(Context *c) {
+    double val;
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type==v_real )
+	val = c->a.vals[1].u.fval;
+    else if ( c->a.vals[1].type==v_int )
+	val = c->a.vals[1].u.ival;
+    else
+	error( c, "Bad type for argument" );
+    c->return_val.type = v_real;
+    c->return_val.u.fval = log( val );
+}
+
+static void bPow(Context *c) {
+    double val1, val2;
+
+    if ( c->a.argc!=3 )
+	error( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type==v_real )
+	val1 = c->a.vals[1].u.fval;
+    else if ( c->a.vals[1].type==v_int )
+	val1 = c->a.vals[1].u.ival;
+    else
+	error( c, "Bad type for argument" );
+    if ( c->a.vals[2].type==v_real )
+	val2 = c->a.vals[2].u.fval;
+    else if ( c->a.vals[2].type==v_int )
+	val2 = c->a.vals[2].u.ival;
+    else
+	error( c, "Bad type for argument" );
+    c->return_val.type = v_real;
+    c->return_val.u.fval = pow( val1, val2 );
+}
+
+static void bSin(Context *c) {
+    double val;
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type==v_real )
+	val = c->a.vals[1].u.fval;
+    else if ( c->a.vals[1].type==v_int )
+	val = c->a.vals[1].u.ival;
+    else
+	error( c, "Bad type for argument" );
+    c->return_val.type = v_real;
+    c->return_val.u.fval = sin( val );
+}
+
+static void bCos(Context *c) {
+    double val;
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type==v_real )
+	val = c->a.vals[1].u.fval;
+    else if ( c->a.vals[1].type==v_int )
+	val = c->a.vals[1].u.ival;
+    else
+	error( c, "Bad type for argument" );
+    c->return_val.type = v_real;
+    c->return_val.u.fval = cos( val );
+}
+
+static void bTan(Context *c) {
+    double val;
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type==v_real )
+	val = c->a.vals[1].u.fval;
+    else if ( c->a.vals[1].type==v_int )
+	val = c->a.vals[1].u.ival;
+    else
+	error( c, "Bad type for argument" );
+    c->return_val.type = v_real;
+    c->return_val.u.fval = tan( val );
+}
+
+static void bATan2(Context *c) {
+    double val1, val2;
+
+    if ( c->a.argc!=3 )
+	error( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type==v_real )
+	val1 = c->a.vals[1].u.fval;
+    else if ( c->a.vals[1].type==v_int )
+	val1 = c->a.vals[1].u.ival;
+    else
+	error( c, "Bad type for argument" );
+    if ( c->a.vals[2].type==v_real )
+	val2 = c->a.vals[2].u.fval;
+    else if ( c->a.vals[2].type==v_int )
+	val2 = c->a.vals[2].u.ival;
+    else
+	error( c, "Bad type for argument" );
+    c->return_val.type = v_real;
+    c->return_val.u.fval = atan2( val1, val2 );
 }
 
 static void bRand(Context *c) {
@@ -4753,6 +4906,16 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "Floor", bFloor, 1 },
     { "Ceil", bCeil, 1 },
     { "Round", bRound, 1 },
+    { "IsNan", bIsNan, 1 },
+    { "IsFinite", bIsFinite, 1 },
+    { "Sqrt", bSqrt, 1 },
+    { "Exp", bExp, 1 },
+    { "Log", bLog, 1 },
+    { "Pow", bPow, 1 },
+    { "Sin", bSin, 1 },
+    { "Cos", bCos, 1 },
+    { "Tan", bTan, 1 },
+    { "ATan2", bATan2, 1 },
     { "Utf8", bUtf8, 1 },
     { "Rand", bRand, 1 },
     { "FileAccess", bFileAccess, 1 },
