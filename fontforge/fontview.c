@@ -6999,7 +6999,6 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i) {
 #ifdef FONTFORGE_CONFIG_TYPE3
     static Layer layers[2];
 #endif
-    Encoding *item=NULL;
     int j;
 
     memset(dummy,'\0',sizeof(*dummy));
@@ -7030,8 +7029,8 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i) {
 
     if ( sf->cidmaster!=NULL )
 	dummy->name = namebuf;
-    else if ( item!=NULL && item->psnames!=NULL )
-	dummy->name = item->psnames[i];
+    else if ( sf->encoding_name->psnames!=NULL && sf->encoding_name->psnames[i]!=NULL )
+	dummy->name = sf->encoding_name->psnames[i];
     else
 	dummy->name = StdGlyphName(namebuf,dummy->unicodeenc,sf->uni_interp);
     if ( dummy->name==NULL ) {
