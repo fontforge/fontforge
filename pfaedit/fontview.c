@@ -85,7 +85,7 @@ void FVToggleCharChanged(SplineChar *sc) {
 return;
     if ( fv->sf!=sc->parent )		/* Can happen in CID fonts if char's parent is not currently active */
 return;
-    if ( fv->v==NULL )			/* Can happen in scripts */
+    if ( fv->v==NULL || fv->colcnt==0 )	/* Can happen in scripts */
 return;
     for ( ; fv!=NULL ; fv = fv->nextsame ) {
 	pos = sc->enc;
@@ -115,7 +115,7 @@ return;
 static void FVToggleCharSelected(FontView *fv,int enc) {
     int i, j;
 
-    if ( fv->v==NULL )			/* Can happen in scripts */
+    if ( fv->v==NULL || fv->colcnt==0 )	/* Can happen in scripts */
 return;
 
     i = enc / fv->colcnt;
@@ -1875,7 +1875,7 @@ static void FVMenuInterpFonts(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void FVScrollToChar(FontView *fv,int i) {
 
-    if ( fv->v==NULL )			/* Can happen in scripts */
+    if ( fv->v==NULL || fv->colcnt==0 )	/* Can happen in scripts */
 return;
 
     if ( i!=-1 ) {
@@ -3439,7 +3439,7 @@ void FVRefreshChar(FontView *fv,BDFFont *bdf,int enc) {
     int i, j;
     MetricsView *mv;
 
-    if ( fv->v==NULL )			/* Can happen in scripts */
+    if ( fv->v==NULL || fv->colcnt==0 )	/* Can happen in scripts */
 return;
 
     for ( fv=fv->sf->fv; fv!=NULL; fv = fv->nextsame ) {
@@ -4785,7 +4785,7 @@ void FontViewReformatOne(FontView *fv) {
     BDFFont *new;
     FontView *fvs;
 
-    if ( fv->v==NULL )			/* Can happen in scripts */
+    if ( fv->v==NULL || fv->colcnt==0 )	/* Can happen in scripts */
 return;
 
     GDrawSetCursor(fv->v,ct_watch);
@@ -4817,7 +4817,7 @@ void FontViewReformatAll(SplineFont *sf) {
     BDFFont *new, *old;
     FontView *fvs, *fv;
 
-    if ( sf->fv->v==NULL )			/* Can happen in scripts */
+    if ( sf->fv->v==NULL || sf->fv->colcnt==0 )			/* Can happen in scripts */
 return;
 
     for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame )
