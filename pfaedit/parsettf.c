@@ -1996,6 +1996,14 @@ return;
     privateadd(private,key,copy(buf));
 }
 
+static void privateaddintarray(struct psdict *private,char *key,int val) {
+    char buf[10];
+    if ( val==0 )
+return;
+    sprintf( buf,"[%d]", val );
+    privateadd(private,key,copy(buf));
+}
+
 static void privateaddreal(struct psdict *private,char *key,real val) {
     char buf[10];
     if ( val==0 )
@@ -2019,8 +2027,8 @@ static void cffprivatefillup(struct psdict *private, struct topdicts *dict) {
     privateaddreal(private,"BlueScale",dict->bluescale);
     privateaddreal(private,"BlueShift",dict->blueshift);
     privateaddreal(private,"BlueFuzz",dict->bluefuzz);
-    privateaddint(private,"StdHW",dict->stdhw);
-    privateaddint(private,"StdVW",dict->stdvw);
+    privateaddintarray(private,"StdHW",dict->stdhw);
+    privateaddintarray(private,"StdVW",dict->stdvw);
     privateadd(private,"SnapStemH",
 	    realarray2str(dict->stemsnaph,sizeof(dict->stemsnaph)/sizeof(dict->stemsnaph[0])));
     privateadd(private,"SnapStemV",
