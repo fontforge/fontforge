@@ -114,6 +114,7 @@ GTextInfo interpretations[] = {
     { (unichar_t *) _STR_MacTraditionalChinese, NULL, 0, 0, (void *) ui_trad_chinese, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_MacSimplifiedChinese, NULL, 0, 0, (void *) ui_simp_chinese, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_MacKorean, NULL, 0, 0, (void *) ui_korean, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_AMSPUA, NULL, 0, 0, (void *) ui_ams, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { NULL }};
 GTextInfo macstyles[] = {
     { (unichar_t *) _STR_Bold, NULL, 0, 0, (void *) sf_bold, NULL, 0, 0, 0, 0, 0, 0, 0, 1},

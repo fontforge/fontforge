@@ -818,7 +818,7 @@ struct ttflangname {
 
 struct remap { uint32 firstenc, lastenc; int32 infont; };
 enum uni_interp { ui_unset= -1, ui_none, ui_adobe, ui_greek, ui_japanese,
-	ui_trad_chinese, ui_simp_chinese, ui_korean };
+	ui_trad_chinese, ui_simp_chinese, ui_korean, ui_ams };
 
 typedef struct splinefont {
     char *fontname, *fullname, *familyname, *weight;
