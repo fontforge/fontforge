@@ -194,7 +194,8 @@ return( DEFAULT_SCRIPT );
     if ( sc->unicodeenc!=-1 )
 return( ScriptFromUnicode( sc->unicodeenc,sf ));
 
-    for ( pt=sc->name; *pt!='\0' && *pt!='_' && *pt!='.'; ++pt );
+    pt = sc->name;
+    if ( *pt ) for ( ++pt; *pt!='\0' && *pt!='_' && *pt!='.'; ++pt );
     if ( *pt!='\0' ) {
 	char *str = copyn(sc->name,pt-sc->name);
 	int uni = sf==NULL ? UniFromName(str,ui_none,&custom) :
