@@ -8274,7 +8274,7 @@ return;
 	} else {
 	    BDFFont *bdf = fv->show;
 	    if ( bdf->chars[pos]==NULL )
-		bdf->chars[pos] = SplineCharRasterize(sc,bdf->pixelsize);
+		bdf->chars[pos] = BDFMakeChar(bdf,pos);
 	    BitmapViewCreate(bdf->chars[pos],bdf,fv);
 	}
     } else if ( event->type == et_mousemove ) {
