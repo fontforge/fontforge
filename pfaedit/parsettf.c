@@ -1091,7 +1091,7 @@ static void readttfcompositglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, 
 
 static SplineChar *readttfglyph(FILE *ttf,struct ttfinfo *info,int start, int end,int enc) {
     int path_cnt;
-    SplineChar *sc = chunkalloc(sizeof(SplineChar));
+    SplineChar *sc = SplineCharCreate();
 
     sc->unicodeenc = -1;
     sc->vwidth = info->emsize;
@@ -3679,7 +3679,7 @@ return( true );
 }
 
 static SplineChar *SFMakeDupRef(SplineFont *sf, int local_enc, struct dup *dup) {
-    SplineChar *sc = chunkalloc(sizeof(SplineChar));
+    SplineChar *sc = SplineCharCreate();
     RefChar *ref = chunkalloc(sizeof(RefChar));
     char buffer[40];
 

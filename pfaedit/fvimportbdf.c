@@ -127,7 +127,7 @@ static void MakeEncChar(SplineFont *sf,int enc,char *name) {
     ExtendSF(sf,enc,false);
 
     if ( sf->chars[enc]==NULL ) {
-	sf->chars[enc] = chunkalloc(sizeof(SplineChar));
+	sf->chars[enc] = SplineCharCreate();
 	sf->chars[enc]->parent = sf;
 	sf->chars[enc]->width = sf->chars[enc]->vwidth = sf->ascent+sf->descent;
     }

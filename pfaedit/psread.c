@@ -1406,7 +1406,7 @@ void PSFontInterpretPS(FILE *ps,struct charprocs *cp) {
     while ( (tok = nextpstoken(&wrapper,&dval,tokbuf,sizeof(tokbuf)))!=pt_eof && tok!=pt_end ) {
 	if ( tok==pt_namelit ) {
 	    if ( cp->next<cp->cnt ) {
-		sc = chunkalloc(sizeof(SplineChar));
+		sc = SplineCharCreate();
 		cp->keys[cp->next] = copy(tokbuf);
 		cp->values[cp->next++] = sc;
 		SCInterpretPS(ps,sc);
@@ -1555,7 +1555,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 	struct pschars *subrs, struct pschars *gsubrs, const char *name) {
     real stack[50]; int sp=0, v;		/* Type1 stack is about 25 long, Type2 stack is 48 */
     real transient[32];
-    SplineChar *ret = chunkalloc(sizeof(SplineChar));
+    SplineChar *ret = SplineCharCreate();
     SplinePointList *cur=NULL, *oldcur=NULL;
     RefChar *r1, *r2, *rlast=NULL;
     BasePoint current, oldcurrent;

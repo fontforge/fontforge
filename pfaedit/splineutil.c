@@ -2464,6 +2464,12 @@ void TTFLangNamesFree(struct ttflangname *l) {
     }
 }
 
+SplineChar *SplineCharCreate(void) {
+    SplineChar *sc = chunkalloc(sizeof(SplineChar));
+    sc->color = COLOR_DEFAULT;
+return( sc );
+}
+
 void SplineCharFree(SplineChar *sc) {
     struct splinecharlist *dlist, *dnext;
 

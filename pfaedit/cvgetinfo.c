@@ -51,6 +51,8 @@ typedef struct gidata {
 #define CID_Cancel	1005
 #define CID_ComponentMsg	1006
 #define CID_Components	1007
+#define CID_Comment	1008
+#define CID_Color	1009
 
 #define CID_BaseX	2001
 #define CID_BaseY	2002
@@ -64,7 +66,7 @@ typedef struct gidata {
 #define CID_PrevDef	2010
 
 #define CI_Width	200
-#define CI_Height	249
+#define CI_Height	375
 
 #define RI_Width	215
 #define RI_Height	110
@@ -74,6 +76,114 @@ typedef struct gidata {
 
 #define PI_Width	218
 #define PI_Height	200
+
+static uint8 image_data[] = {
+    0x00, 0x00,
+    0x7f, 0xfe,
+    0x7f, 0xfe,
+    0x7f, 0xfe,
+    0x7f, 0xfe,
+    0x7f, 0xfe,
+    0x7f, 0xfe,
+    0x7f, 0xfe,
+    0x7f, 0xfe,
+    0x7f, 0xfe,
+    0x7f, 0xfe,
+    0x00, 0x00,
+};
+static GClut def_clut = { 2, 0, 1,
+    0x0, 0xb0b0b0 };
+static struct _GImage def_base = {
+    it_mono,
+    0,16,12,2,
+    (uint8 *) image_data,
+    &def_clut,
+    1
+};
+static GClut red_clut = { 2, 0, -1,
+    0x0, 0xff0000 };
+static struct _GImage red_base = {
+    it_mono,
+    0,16,12,2,
+    (uint8 *) image_data,
+    &red_clut,
+    -1
+};
+static GClut blue_clut = { 2, 0, -1,
+    0x0, 0x0000ff };
+static struct _GImage blue_base = {
+    it_mono,
+    0,16,12,2,
+    (uint8 *) image_data,
+    &blue_clut,
+    -1
+};
+static GClut green_clut = { 2, 0, -1,
+    0x0, 0x00ff00 };
+static struct _GImage green_base = {
+    it_mono,
+    0,16,12,2,
+    (uint8 *) image_data,
+    &green_clut,
+    -1
+};
+static GClut magenta_clut = { 2, 0, -1,
+    0x0, 0xff00ff };
+static struct _GImage magenta_base = {
+    it_mono,
+    0,16,12,2,
+    (uint8 *) image_data,
+    &magenta_clut,
+    -1
+};
+static GClut cyan_clut = { 2, 0, -1,
+    0x0, 0x00ffff };
+static struct _GImage cyan_base = {
+    it_mono,
+    0,16,12,2,
+    (uint8 *) image_data,
+    &cyan_clut,
+    -1
+};
+static GClut yellow_clut = { 2, 0, -1,
+    0x0, 0xffff00 };
+static struct _GImage yellow_base = {
+    it_mono,
+    0,16,12,2,
+    (uint8 *) image_data,
+    &yellow_clut,
+    -1
+};
+static GClut white_clut = { 2, 0, -1,
+    0x0, 0xffffff };
+static struct _GImage white_base = {
+    it_mono,
+    0,16,12,2,
+    (uint8 *) image_data,
+    &white_clut,
+    -1
+};
+static GImage def_image = { 0, &def_base };
+static GImage red_image = { 0, &red_base };
+static GImage blue_image = { 0, &blue_base };
+static GImage green_image = { 0, &green_base };
+static GImage magenta_image = { 0, &magenta_base };
+static GImage yellow_image = { 0, &yellow_base };
+static GImage cyan_image = { 0, &cyan_base };
+static GImage white_image = { 0, &white_base };
+
+static GTextInfo std_colors[] = {
+    { (void *) _STR_Default, &def_image, 0, 0, (void *) COLOR_DEFAULT, NULL, false, true, false, false, false, false, false, true },
+    { NULL, &white_image, 0, 0, (void *) 0xffffff, NULL, false, true },
+    { NULL, &red_image, 0, 0, (void *) 0xff0000, NULL, false, true },
+    { NULL, &green_image, 0, 0, (void *) 0x00ff00, NULL, false, true },
+    { NULL, &blue_image, 0, 0, (void *) 0x0000ff, NULL, false, true },
+    { NULL, &yellow_image, 0, 0, (void *) 0xffff00, NULL, false, true },
+    { NULL, &cyan_image, 0, 0, (void *) 0x00ffff, NULL, false, true },
+    { NULL, &magenta_image, 0, 0, (void *) 0xff00ff, NULL, false, true },
+    { NULL, NULL }
+};
+
 
 static int MultipleValues(char *name, int local) {
     unichar_t ubuf[200]; char buffer[10];
@@ -269,6 +379,7 @@ static int _CI_OK(GIData *ci) {
     int val;
     int ret;
     char *lig, *name;
+    const unichar_t *comment;
 
     val = ParseUValue(ci->gw,CID_UValue,true,ci->sc->parent);
     if ( val==-2 )
@@ -278,6 +389,15 @@ return( false );
     ret = SCSetMetaData(ci->sc,name,val,lig);
     free(name);
     free(lig);
+    if ( ret ) {
+	comment = _GGadgetGetTitle(GWidgetGetControl(ci->gw,CID_Comment));
+	free(ci->sc->comment); ci->sc->comment = NULL;
+	if ( *comment!='\0' )
+	    ci->sc->comment = u_copy(comment);
+	val = GGadgetGetFirstListSelectedItem(GWidgetGetControl(ci->gw,CID_Color));
+	if ( val!=-1 )
+	    ci->sc->color = (int) (std_colors[val].userdata);
+    }
 return( ret );
 }
 
@@ -404,6 +524,7 @@ static void CIFillup(GIData *ci) {
     char buffer[10];
     unichar_t ubuf[2];
     const unichar_t *bits;
+    int i;
 
     GGadgetSetEnabled(GWidgetGetControl(ci->gw,-1),sc->enc>0);
     GGadgetSetEnabled(GWidgetGetControl(ci->gw,1),sc->enc<sf->charcnt-1);
@@ -450,6 +571,14 @@ static void CIFillup(GIData *ci) {
 	upt[-1] = '\0';
 	GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_Components),temp);
 	free(temp);
+    }
+    ubuf[0] = '\0';
+    GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_Comment),
+	    sc->comment?sc->comment:ubuf);
+    GGadgetSelectOneListItem(GWidgetGetControl(ci->gw,CID_Color),0);
+    for ( i=0; std_colors[i].image!=NULL; ++i ) {
+	if ( std_colors[i].userdata == (void *) sc->color )
+	    GGadgetSelectOneListItem(GWidgetGetControl(ci->gw,CID_Color),i);
     }
 }
 
@@ -505,8 +634,8 @@ void SCGetInfo(SplineChar *sc, int nextprev) {
     static GIData gi;
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[21];
-    GTextInfo label[21];
+    GGadgetCreateData gcd[25];
+    GTextInfo label[25];
 
     gi.sc = sc;
     gi.done = false;
@@ -642,42 +771,75 @@ void SCGetInfo(SplineChar *sc, int nextprev) {
 	gcd[13].gd.flags = gg_visible | gg_enabled;
 	gcd[13].creator = GLineCreate;
 
-	label[14].text = (unichar_t *) _STR_Ligature;
-	label[14].text_in_resource = true;
-	gcd[14].gd.label = &label[14];
-	gcd[14].gd.pos.x = 5; gcd[14].gd.pos.y = CI_Height-32-32-6-26+6-30; 
-	gcd[14].gd.flags = gg_enabled|gg_visible;
-	gcd[14].gd.mnemonic = 'L';
-	gcd[14].gd.popup_msg = GStringGetResource(_STR_Ligpop,NULL);
-	gcd[14].creator = GLabelCreate;
+	gcd[14].gd.pos.x = 5; gcd[14].gd.pos.y = gcd[7].gd.pos.y+30;
+	gcd[14].gd.pos.width = CI_Width-10;
+	gcd[14].gd.flags = gg_visible | gg_enabled;
+	gcd[14].creator = GLineCreate;
 
-	gcd[15].gd.pos.x = 85; gcd[15].gd.pos.y = CI_Height-32-32-6-26-30;
+	label[15].text = (unichar_t *) _STR_Comment;
+	label[15].text_in_resource = true;
+	gcd[15].gd.label = &label[15];
+	gcd[15].gd.pos.x = 5; gcd[15].gd.pos.y = gcd[14].gd.pos.y+5; 
 	gcd[15].gd.flags = gg_enabled|gg_visible;
-	gcd[15].gd.mnemonic = 'L';
-	gcd[15].gd.cid = CID_Ligature;
-	gcd[15].gd.popup_msg = GStringGetResource(_STR_Ligpop,NULL);
-	gcd[15].creator = GTextFieldCreate;
+	gcd[15].creator = GLabelCreate;
 
-	gcd[16].gd.pos.x = 5; gcd[16].gd.pos.y = CI_Height-32-32-8-27;
+	gcd[16].gd.pos.x = 5; gcd[16].gd.pos.y = gcd[15].gd.pos.y+13;
 	gcd[16].gd.pos.width = CI_Width-10;
-	gcd[16].gd.flags = gg_visible | gg_enabled;
-	gcd[16].creator = GLineCreate;
+	gcd[16].gd.pos.height = GDrawPointsToPixels(NULL,4*12+6);
+	gcd[16].gd.flags = gg_enabled|gg_visible|gg_textarea_wrap;
+	gcd[16].gd.cid = CID_Comment;
+	gcd[16].creator = GTextAreaCreate;
 
-	label[17].text = (unichar_t *) _STR_AccentedComponents;
+	label[17].text = (unichar_t *) _STR_Color;
 	label[17].text_in_resource = true;
 	gcd[17].gd.label = &label[17];
-	gcd[17].gd.pos.x = 5; gcd[17].gd.pos.y = CI_Height-32-32-6-24; 
+	gcd[17].gd.pos.x = 5; gcd[17].gd.pos.y = gcd[16].gd.pos.y+gcd[16].gd.pos.height+5+6; 
 	gcd[17].gd.flags = gg_enabled|gg_visible;
-	gcd[17].gd.cid = CID_ComponentMsg;
-	/*gcd[17].gd.popup_msg = GStringGetResource(_STR_Ligpop,NULL);*/
 	gcd[17].creator = GLabelCreate;
 
-	gcd[18].gd.pos.x = 5; gcd[18].gd.pos.y = CI_Height-32-32-6-12;
-	gcd[18].gd.pos.width = CI_Width-10;
+	gcd[18].gd.pos.x = gcd[3].gd.pos.x; gcd[18].gd.pos.y = gcd[17].gd.pos.y-6;
+	gcd[18].gd.pos.width = gcd[3].gd.pos.width;
 	gcd[18].gd.flags = gg_enabled|gg_visible;
-	gcd[18].gd.cid = CID_Components;
-	/*gcd[18].gd.popup_msg = GStringGetResource(_STR_Ligpop,NULL);*/
-	gcd[18].creator = GLabelCreate;
+	gcd[18].gd.cid = CID_Color;
+	gcd[18].gd.u.list = std_colors;
+	gcd[18].creator = GListButtonCreate;
+
+	label[19].text = (unichar_t *) _STR_Ligature;
+	label[19].text_in_resource = true;
+	gcd[19].gd.label = &label[19];
+	gcd[19].gd.pos.x = 5; gcd[19].gd.pos.y = CI_Height-32-32-6-26+6-30; 
+	gcd[19].gd.flags = gg_enabled|gg_visible;
+	gcd[19].gd.mnemonic = 'L';
+	gcd[19].gd.popup_msg = GStringGetResource(_STR_Ligpop,NULL);
+	gcd[19].creator = GLabelCreate;
+
+	gcd[20].gd.pos.x = 85; gcd[20].gd.pos.y = CI_Height-32-32-6-26-30;
+	gcd[20].gd.flags = gg_enabled|gg_visible;
+	gcd[20].gd.mnemonic = 'L';
+	gcd[20].gd.cid = CID_Ligature;
+	gcd[20].gd.popup_msg = GStringGetResource(_STR_Ligpop,NULL);
+	gcd[20].creator = GTextFieldCreate;
+
+	gcd[21].gd.pos.x = 5; gcd[21].gd.pos.y = CI_Height-32-32-8-27;
+	gcd[21].gd.pos.width = CI_Width-10;
+	gcd[21].gd.flags = gg_visible | gg_enabled;
+	gcd[21].creator = GLineCreate;
+
+	label[22].text = (unichar_t *) _STR_AccentedComponents;
+	label[22].text_in_resource = true;
+	gcd[22].gd.label = &label[22];
+	gcd[22].gd.pos.x = 5; gcd[22].gd.pos.y = CI_Height-32-32-6-24; 
+	gcd[22].gd.flags = gg_enabled|gg_visible;
+	gcd[22].gd.cid = CID_ComponentMsg;
+	/*gcd[22].gd.popup_msg = GStringGetResource(_STR_Ligpop,NULL);*/
+	gcd[22].creator = GLabelCreate;
+
+	gcd[23].gd.pos.x = 5; gcd[23].gd.pos.y = CI_Height-32-32-6-12;
+	gcd[23].gd.pos.width = CI_Width-10;
+	gcd[23].gd.flags = gg_enabled|gg_visible;
+	gcd[23].gd.cid = CID_Components;
+	/*gcd[23].gd.popup_msg = GStringGetResource(_STR_Ligpop,NULL);*/
+	gcd[23].creator = GLabelCreate;
 
 	GGadgetsCreate(gi.gw,gcd);
     }

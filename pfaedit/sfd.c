@@ -207,6 +207,155 @@ static void SFDDumpImage(FILE *sfd,ImageList *img) {
     fprintf(sfd,"\nEndImage\n" );
 }
 
+signed char inbase64[256] = {
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, -1, -1, -1, 63,
+        52, 53, 54, 55, 56, 57, 58, 59, 60, 61, -1, -1, -1, -1, -1, -1,
+        -1,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14,
+        15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, -1, -1, -1, -1, -1,
+        -1, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+        41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, -1, -1, -1, -1, -1,
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
+};
+
+static void utf7_encode(FILE *sfd,long ch) {
+static char base64[64] = {
+ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
+ 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
+ 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
+ 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'};
+
+    putc(base64[(ch>>18)&0x3f],sfd);
+    putc(base64[(ch>>12)&0x3f],sfd);
+    putc(base64[(ch>>6)&0x3f],sfd);
+    putc(base64[ch&0x3f],sfd);
+}
+
+static void SFDDumpUTF7Str(FILE *sfd, const unichar_t *str) {
+    int ch, prev_cnt=0, prev=0, in=0;
+
+    putc('"',sfd);
+    if ( str!=NULL ) while ( (ch = *str++)!='\0' ) {
+	if ( ch<127 && ch!='\n' && ch!='\r' && ch!='\\' && ch!='~' &&
+		ch!='+' && ch!='=' && ch!='"' ) {
+	    if ( prev_cnt!=0 ) {
+		prev<<= (prev_cnt==1?16:8);
+		utf7_encode(sfd,prev);
+		prev_cnt=prev=0;
+	    }
+	    if ( in ) {
+		if ( inbase64[ch]!=-1 )
+		    putc('-',sfd);
+		in = 0;
+	    }
+	    putc(ch,sfd);
+	} else if ( ch=='+' && !in ) {
+	    putc('+',sfd);
+	    putc('-',sfd);
+	} else if ( prev_cnt== 0 ) {
+	    if ( !in ) {
+		putc('+',sfd);
+		in = 1;
+	    }
+	    prev = ch;
+	    prev_cnt = 2;		/* 2 bytes */
+	} else if ( prev_cnt==2 ) {
+	    prev<<=8;
+	    prev += (ch>>8)&0xff;
+	    utf7_encode(sfd,prev);
+	    prev = (ch&0xff);
+	    prev_cnt=1;
+	} else {
+	    prev<<=16;
+	    prev |= ch;
+	    utf7_encode(sfd,prev);
+	    prev_cnt = prev = 0;
+	}
+    }
+    if ( prev_cnt==2 ) {
+	prev<<=8;
+	utf7_encode(sfd,prev);
+    } else if ( prev_cnt==1 ) {
+	prev<<=16;
+	utf7_encode(sfd,prev);
+    }
+    putc('"',sfd);
+    putc(' ',sfd);
+}
+
+static unichar_t *SFDReadUTF7Str(FILE *sfd) {
+    int ch1, ch2, ch3, ch4, done;
+    unichar_t buffer[1024], *pt, *end = buffer+sizeof(buffer)/sizeof(unichar_t)-1;
+    int prev_cnt=0, prev=0, in=0;
+
+    ch1 = getc(sfd);
+    while ( isspace(ch1) && ch1!='\n' && ch1!='\r') ch1 = getc(sfd);
+    if ( ch1=='\n' || ch1=='\r' )
+	ungetc(ch1,sfd);
+    if ( ch1!='"' )
+return( NULL );
+    pt = buffer;
+    while ( (ch1=getc(sfd))!=EOF && ch1!='"' ) {
+	done = 0;
+	if ( !done && !in ) {
+	    if ( ch1=='+' ) {
+		ch1 = getc(sfd);
+		if ( ch1=='-' ) {
+		    if ( pt<end ) *pt++ = '+';
+		    done = true;
+		} else {
+		    in = true;
+		    prev_cnt = 0;
+		}
+	    } else
+		done = true;
+	}
+	if ( !done ) {
+	    if ( ch1=='-' ) {
+		in = false;
+	    } else if ( inbase64[ch1]==-1 ) {
+		in = false;
+		done = true;
+	    } else {
+		ch1 = inbase64[ch1];
+		ch2 = inbase64[getc(sfd)];
+		ch3 = inbase64[getc(sfd)];
+		ch4 = inbase64[getc(sfd)];
+		ch1 = (ch1<<18) | (ch2<<12) | (ch3<<6) | ch4;
+		if ( prev_cnt==0 ) {
+		    prev = ch1&0xff;
+		    ch1 >>= 8;
+		    prev_cnt = 1;
+		} else /* if ( prev_cnt == 1 ) */ {
+		    ch1 |= (prev<<24);
+		    prev = (ch1&0xffff);
+		    ch1 >>= 16;
+		    prev_cnt = 2;
+		}
+		done = true;
+	    }
+	}
+	if ( done && pt<end )
+	    *pt++ = ch1;
+	if ( prev_cnt==2 ) {
+	    prev_cnt = 0;
+	    if ( pt<end && prev!=0 )
+		*pt++ = prev;
+	}
+    }
+    *pt = '\0';
+
+return( buffer[0]=='\0' ? NULL : u_copy(buffer) );
+}
+
 static void SFDDumpHintList(FILE *sfd,char *key, StemInfo *h) {
     HintInstance *hi;
 
@@ -298,6 +447,13 @@ return;
     }
     if ( sc->lig!=NULL )
 	fprintf( sfd, "Ligature: %s\n", sc->lig->components );
+    if ( sc->comment!=NULL ) {
+	fprintf( sfd, "Comment: " );
+	SFDDumpUTF7Str(sfd,sc->comment);
+	putc('\n',sfd);
+    }
+    if ( sc->color!=COLOR_DEFAULT )
+	fprintf( sfd, "Colour: %x\n", sc->color );
     fprintf(sfd,"EndChar\n" );
 }
 
@@ -351,90 +507,6 @@ static void SFDDumpPrivate(FILE *sfd,struct psdict *private) {
 	putc('\n',sfd);
     }
     fprintf( sfd, "EndPrivate\n" );
-}
-
-signed char inbase64[256] = {
-        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, -1, -1, -1, 63,
-        52, 53, 54, 55, 56, 57, 58, 59, 60, 61, -1, -1, -1, -1, -1, -1,
-        -1,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14,
-        15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, -1, -1, -1, -1, -1,
-        -1, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
-        41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, -1, -1, -1, -1, -1,
-        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
-};
-
-static void utf7_encode(FILE *sfd,long ch) {
-static char base64[64] = {
- 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
- 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
- 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
- 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'};
-
-    putc(base64[(ch>>18)&0x3f],sfd);
-    putc(base64[(ch>>12)&0x3f],sfd);
-    putc(base64[(ch>>6)&0x3f],sfd);
-    putc(base64[ch&0x3f],sfd);
-}
-
-static void SFDDumpUTF7Str(FILE *sfd, const unichar_t *str) {
-    int ch, prev_cnt=0, prev=0, in=0;
-
-    putc('"',sfd);
-    if ( str!=NULL ) while ( (ch = *str++)!='\0' ) {
-	if ( ch<127 && ch!='\n' && ch!='\r' && ch!='\\' && ch!='~' &&
-		ch!='+' && ch!='=' && ch!='"' ) {
-	    if ( prev_cnt!=0 ) {
-		prev<<= (prev_cnt==1?16:8);
-		utf7_encode(sfd,prev);
-		prev_cnt=prev=0;
-	    }
-	    if ( in ) {
-		if ( inbase64[ch]!=-1 )
-		    putc('-',sfd);
-		in = 0;
-	    }
-	    putc(ch,sfd);
-	} else if ( ch=='+' && !in ) {
-	    putc('+',sfd);
-	    putc('-',sfd);
-	} else if ( prev_cnt== 0 ) {
-	    if ( !in ) {
-		putc('+',sfd);
-		in = 1;
-	    }
-	    prev = ch;
-	    prev_cnt = 2;		/* 2 bytes */
-	} else if ( prev_cnt==2 ) {
-	    prev<<=8;
-	    prev += (ch>>8)&0xff;
-	    utf7_encode(sfd,prev);
-	    prev = (ch&0xff);
-	    prev_cnt=1;
-	} else {
-	    prev<<=16;
-	    prev |= ch;
-	    utf7_encode(sfd,prev);
-	    prev_cnt = prev = 0;
-	}
-    }
-    if ( prev_cnt==2 ) {
-	prev<<=8;
-	utf7_encode(sfd,prev);
-    } else if ( prev_cnt==1 ) {
-	prev<<=16;
-	utf7_encode(sfd,prev);
-    }
-    putc('"',sfd);
-    putc(' ',sfd);
 }
 
 static void SFDDumpLangName(FILE *sfd, struct ttflangname *ln) {
@@ -1122,7 +1194,7 @@ return( NULL );
     if ( getname(sfd,tok)!=1 )
 return( NULL );
 
-    sc = chunkalloc(sizeof(SplineChar));
+    sc = SplineCharCreate();
     sc->name = copy(tok);
     sc->vwidth = sf->ascent+sf->descent;
     while ( 1 ) {
@@ -1200,6 +1272,10 @@ return( NULL );
 	    sc->lig = gcalloc(1,sizeof(Ligature));
 	    sc->lig->components = copy(tok);
 	    sc->lig->lig = sc;
+	} else if ( strmatch(tok,"Colour:")==0 ) {
+	    gethex(sfd,&sc->color);
+	} else if ( strmatch(tok,"Comment:")==0 ) {
+	    sc->comment = SFDReadUTF7Str(sfd);
 	} else if ( strmatch(tok,"EndChar")==0 ) {
 return( sc );
 	} else {
@@ -1412,71 +1488,6 @@ static void SFDGetSubrs(FILE *sfd,SplineFont *sf) {
     dec.sfd = sfd;
     for ( i=0; i<tot; ++i )
 	Dec85(&dec);
-}
-
-static unichar_t *SFDReadUTF7Str(FILE *sfd) {
-    int ch1, ch2, ch3, ch4, done;
-    unichar_t buffer[1024], *pt, *end = buffer+sizeof(buffer)/sizeof(unichar_t)-1;
-    int prev_cnt=0, prev=0, in=0;
-
-    ch1 = getc(sfd);
-    while ( isspace(ch1) && ch1!='\n' && ch1!='\r') ch1 = getc(sfd);
-    if ( ch1=='\n' || ch1=='\r' )
-	ungetc(ch1,sfd);
-    if ( ch1!='"' )
-return( NULL );
-    pt = buffer;
-    while ( (ch1=getc(sfd))!=EOF && ch1!='"' ) {
-	done = 0;
-	if ( !done && !in ) {
-	    if ( ch1=='+' ) {
-		ch1 = getc(sfd);
-		if ( ch1=='-' ) {
-		    if ( pt<end ) *pt++ = '+';
-		    done = true;
-		} else {
-		    in = true;
-		    prev_cnt = 0;
-		}
-	    } else
-		done = true;
-	}
-	if ( !done ) {
-	    if ( ch1=='-' ) {
-		in = false;
-	    } else if ( inbase64[ch1]==-1 ) {
-		in = false;
-		done = true;
-	    } else {
-		ch1 = inbase64[ch1];
-		ch2 = inbase64[getc(sfd)];
-		ch3 = inbase64[getc(sfd)];
-		ch4 = inbase64[getc(sfd)];
-		ch1 = (ch1<<18) | (ch2<<12) | (ch3<<6) | ch4;
-		if ( prev_cnt==0 ) {
-		    prev = ch1&0xff;
-		    ch1 >>= 8;
-		    prev_cnt = 1;
-		} else /* if ( prev_cnt == 1 ) */ {
-		    ch1 |= (prev<<24);
-		    prev = (ch1&0xffff);
-		    ch1 >>= 16;
-		    prev_cnt = 2;
-		}
-		done = true;
-	    }
-	}
-	if ( done && pt<end )
-	    *pt++ = ch1;
-	if ( prev_cnt==2 ) {
-	    prev_cnt = 0;
-	    if ( pt<end && prev!=0 )
-		*pt++ = prev;
-	}
-    }
-    *pt = '\0';
-
-return( buffer[0]=='\0' ? NULL : u_copy(buffer) );
 }
     
 static struct ttflangname *SFDGetLangName(FILE *sfd,struct ttflangname *old) {

@@ -113,7 +113,7 @@ return;
     }
     if ( info->chars!=NULL ) {
 	if ( info->chars[enc]==NULL ) {
-	    info->chars[enc] = chunkalloc(sizeof(SplineChar));
+	    info->chars[enc] = SplineCharCreate();
 	    info->chars[enc]->enc = enc;
 	    info->chars[enc]->unicodeenc = -1;
 	    info->chars[enc]->width = info->chars[enc]->vwidth = info->emsize;

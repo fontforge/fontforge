@@ -406,6 +406,8 @@ typedef struct splinechar {
     Ligature *lig;		/* If we are a ligature then this tells us what */
     LigList *ligofme;		/* If this is the first character of a ligature then this gives us the list of possible ones */
 				/*  this field must be regenerated before the font is saved */
+    unichar_t *comment;
+    int /*Color*/ color;
 } SplineChar;
 
 enum ttfnames { ttf_copyright=0, ttf_family, ttf_subfamily, ttf_uniqueid,
@@ -569,6 +571,7 @@ extern void BitmapsCopy(SplineFont *to, SplineFont *from, int to_index, int from
 extern void ImageListsFree(ImageList *imgs);
 extern void TTFLangNamesFree(struct ttflangname *l);
 extern void MinimumDistancesFree(MinimumDistance *md);
+extern SplineChar *SplineCharCreate(void);
 extern void SplineCharFree(SplineChar *sc);
 extern void SplineFontFree(SplineFont *sf);
 extern void SplineRefigure(Spline *spline);

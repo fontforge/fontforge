@@ -1365,7 +1365,7 @@ SplineFont *SplineFontNew(void) {
     sf->display_size = -default_fv_font_size;
     sf->onlybitmaps = true;
     for ( i=0; i<enclen && i<256; ++i ) {
-	SplineChar *sc = sf->chars[i] = chunkalloc(sizeof(SplineChar));
+	SplineChar *sc = sf->chars[i] = SplineCharCreate();
 	sc->vwidth = sf->ascent+sf->descent;
 	if ( default_encoding>=em_unicodeplanes && default_encoding<=em_unicodeplanesmax )
 	    uenc = i+ ((default_encoding-em_unicodeplanes)<<16);

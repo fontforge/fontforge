@@ -2765,6 +2765,7 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i) {
     Encoding *item=NULL;
 
     memset(dummy,'\0',sizeof(*dummy));
+    dummy->color = COLOR_DEFAULT;
     dummy->enc = i;
     if ( sf->cidmaster!=NULL ) {
 	/* CID fonts don't have encodings, instead we must look up the cid */
@@ -3024,7 +3025,7 @@ return( ssf->chars[i] );
 
     if ( (sc = sf->chars[i])==NULL ) {
 	SCBuildDummy(&dummy,sf,i);
-	sf->chars[i] = sc = chunkalloc(sizeof(SplineChar));
+	sf->chars[i] = sc = SplineCharCreate();
 	*sc = dummy;
 	sc->name = copy(sc->name);
 	sc->lig = SCLigDefault(sc);
@@ -3221,11 +3222,11 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		    rotated = UniGetRotatedGlyph(fv->sf,sc,-1);
 		}
 	    }
-	    if ( sc->backgroundsplines!=NULL || sc->backimages!=NULL ) {
+	    if ( sc->backgroundsplines!=NULL || sc->backimages!=NULL || sc->color!=COLOR_DEFAULT ) {
 		GRect r;
 		r.x = j*fv->cbw+1; r.width = fv->cbw-1;
 		r.y = i*fv->cbh+1; r.height = FV_LAB_HEIGHT-1;
-		GDrawFillRect(pixmap,&r,0x808080);
+		GDrawFillRect(pixmap,&r,sc->color!=COLOR_DEFAULT?sc->color:0x808080);
 	    }
 	    if ( rotated!=NULL ) {
 		GRect r;
@@ -3564,10 +3565,11 @@ static void FVChar(FontView *fv,GEvent *event) {
 }
 
 void SCPreparePopup(GWindow gw,SplineChar *sc) {
-    static unichar_t space[310];
+    static unichar_t space[410];
     char cspace[100];
     int upos;
     int enc = sc->parent->encoding_name;
+    int done = false;
 
     if ( sc->unicodeenc!=-1 )
 	upos = sc->unicodeenc;
@@ -3588,10 +3590,11 @@ void SCPreparePopup(GWindow gw,SplineChar *sc) {
     else {
 	sprintf( cspace, "%d U+???? \"%.25s\" ", sc->enc, sc->name==NULL?"":sc->name );
 	uc_strcpy(space,cspace);
-	GGadgetPreparePopup(gw,space);
-return;
+	done = true;
     }
-    if ( upos<65536 && UnicodeCharacterNames[upos>>8][upos&0xff]!=NULL ) {
+    if ( done )
+	/* Do Nothing */;
+    else if ( upos<65536 && UnicodeCharacterNames[upos>>8][upos&0xff]!=NULL ) {
 	sprintf( cspace, "%d U+%04x \"%.25s\" ", sc->enc, upos, sc->name==NULL?"":sc->name );
 	uc_strcpy(space,cspace);
 	u_strcat(space,UnicodeCharacterNames[upos>>8][upos&0xff]);
@@ -3613,9 +3616,14 @@ return;
 	    	UnicodeRange(upos));
 	uc_strcpy(space,cspace);
     }
+    if ( sc->comment!=NULL ) {
+	int left = sizeof(space)/sizeof(space[0]) - u_strlen(space)-1;
+	if ( left>4 ) {
+	    uc_strcat(space,"\n\n");
+	    u_strncat(space,sc->comment,left-2);
+	}
+    }
     GGadgetPreparePopup(gw,space);
-    if ( *space==0 )
-	printf( "upos = %x, enc=%d\n", upos, enc );
 }
 
 static void FVMouse(FontView *fv,GEvent *event) {

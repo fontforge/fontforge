@@ -49,7 +49,7 @@ return( rhead );
 }
 
 SplineChar *SplineCharCopy(SplineChar *sc) {
-    SplineChar *nsc = chunkalloc(sizeof(SplineChar));
+    SplineChar *nsc = SplineCharCreate();
 
     *nsc = *sc;
     nsc->enc = -2;
@@ -778,7 +778,7 @@ static void InterpolateChar(SplineFont *new, int enc, SplineChar *base, SplineCh
 
     if ( base==NULL || other==NULL )
 return;
-    sc = chunkalloc(sizeof(SplineChar));
+    sc = SplineCharCreate();
     *sc = *base;
     sc->enc = enc;
     new->chars[enc] = sc;

@@ -836,6 +836,7 @@ static char mnemonic_Ligature = 'L';
 static char *str_AccentedComponents = "Accented char composed of:";
 static char *str_CompositComponents = "Character composed of:";
 static char *str_NoComponents = "No componants";
+static char *str_Color = "Color:";
 static char *str_TransformedBy = "Transformed by:";
 static char *str_NotUnicodeBMP = "Warning: This value is outside of the Unicode BMP.\nIs that really what you want?";
 static char *str_PossiblyTooBig = "Value possibly out of range";
