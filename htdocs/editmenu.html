@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 11-Aug-2004 -->
+  <!-- AP: Last modified: 13-Oct-2004 -->
   <TITLE>The Edit Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -121,21 +121,21 @@ view this menu will be disabled when one of the text fields has the focus.
     The number of commands that may be undone for any glyph is controlled by
     the <A HREF="prefs.html#UndoDepth">UndoDepth</A> preference item.<BR>
     In the font and metrics views, this does NOT undo the last command. It undoes
-    the last operation on all selected characters.
+    the last operation on all selected glyphs.
   <DT>
     <A NAME="Redo">Redo</A>
   <DD>
     In the outline view and the bitmap view this will redo the last command undone.
     Up to twelve commands may be redone (after that they get thrown away)<BR>
     In the font and metrics views, this does NOT undo the last command. It undoes
-    the last operation on all selected characters.
+    the last operation on all selected glyphs.
   <DT>
     <A NAME="Cut">Cut</A>
   <DD>
-    In the font view this command puts the foreground of all selected characters
+    In the font view this command puts the foreground of all selected glyphs
     into the clipboard and then deletes them. Depending on the setting of
-    <A HREF="#From">Copy From</A> it will either refer all characters (bitmap
-    and outline) corresponding to this entry, or just the character being displayed.
+    <A HREF="#From">Copy From</A> it will either refer all glyphs (bitmap and
+    outline) corresponding to this entry, or just the glyph being displayed.
     <P>
     In the Outline View this will copy any selected points, References, or Images
     into the clipboard and then delete them. If a point is removed from a path
@@ -149,11 +149,11 @@ view this menu will be disabled when one of the text fields has the focus.
     <A NAME="Copy">Copy</A>
   <DD>
     In the font view this command puts the foreground and hints of all selected
-    characters into the clipboard. Depending on the setting of <A HREF="#From">Copy
+    glyphs into the clipboard. Depending on the setting of <A HREF="#From">Copy
     From</A> it will either copy all glyphs (bitmap and outline) corresponding
     to this entry, or just the glyph being displayed. Normally it will not copy
-    a character's name, but if <A HREF="#CharName">Copy From-&gt;Char Name</A>
-    is set then it will copy the name as well.
+    a glyph's name, but if <A HREF="#CharName">Copy From-&gt;Char Name</A> is
+    set then it will copy the name as well.
     <P>
     In the Outline View this will copy any selected points, References, or Images
     into the clipboard. If there is no selection everything in the current layer
@@ -165,7 +165,7 @@ view this menu will be disabled when one of the text fields has the focus.
     To external applications selected points (and associated contours) will be
     exported to the clipboard with format "image/eps", while a selected image
     will be exported with formats "image/png" and "image/bmp". If you Copy a
-    series of characters into the clipboard, the only the first one will be exported
+    series of glyphs into the clipboard, the only the first one will be exported
     to external applications. If the clipboard contains a single point, then
     this will also be exported in STRING format (giving the coordinates of the
     point); the intent is to make it easier to people to identify the point.
@@ -173,51 +173,51 @@ view this menu will be disabled when one of the text fields has the focus.
   <DT>
     Copy <A NAME="Reference">Reference</A>
   <DD>
-    In the font view this command puts a reference to all selected characters
-    into the clipboard.
+    In the font view this command puts a reference to all selected glyphs into
+    the clipboard.
     <P>
-    In the Outline View this will copy a reference to the current character into
+    In the Outline View this will copy a reference to the current glyph into
     the clipboard (only available in foreground mode).
     <P>
     This command is not available in the Bitmap View.
   <DT>
     Copy <A NAME="Width">Width</A>
   <DD>
-    In the Font View this command copies the widths of all selected characters
-    and stores them in the clipboard.
+    In the Font View this command copies the widths of all selected glyphs and
+    stores them in the clipboard.
     <P>
-    In the Outline View this command copies the width of the current character
-    and stores it in the clipboard.
+    In the Outline View this command copies the width of the current glyph and
+    stores it in the clipboard.
     <P>
     This command is not available in the Bitmap View.
   <DT>
     Copy <A NAME="VWidth">VWidth</A>
   <DD>
     In the Font View this command copies the vertical widths of all selected
-    characters and stores them in the clipboard.
+    glyphs and stores them in the clipboard.
     <P>
     In the Outline View this command copies the vertical width of the current
-    character and stores it in the clipboard.
+    glyph and stores it in the clipboard.
     <P>
     This command is not available in the Bitmap View.
   <DT>
     Copy <A NAME="LBearing">LBearing</A>
   <DD>
     In the Font View this command copies the left side bearings of all selected
-    characters and stores them in the clipboard.
+    glyphs and stores them in the clipboard.
     <P>
     In the Outline View this command copies the left side bearing of the current
-    character and stores it in the clipboard.
+    glyph and stores it in the clipboard.
     <P>
     This command is not available in the Bitmap View.
   <DT>
     Copy <A NAME="RBearing">RBearing</A>
   <DD>
     In the Font View this command copies the right side bearings of all selected
-    characters and stores them in the clipboard.
+    glyphs and stores them in the clipboard.
     <P>
     In the Outline View this command copies the right side bearing of the current
-    character and stores it in the clipboard.
+    glyph and stores it in the clipboard.
     <P>
     This command is not available in the Bitmap View.
   <DT>
@@ -229,33 +229,31 @@ view this menu will be disabled when one of the text fields has the focus.
   <DT>
     <A NAME="CopyGridFit">Copy Grid Fit</A>
   <DD>
-    Only available in the outline character view and only if
+    Only available in the outline glyph view and only if
     <A HREF="viewmenu.html#ShowGridFit">View-&gt;Show Grid Fit </A>is selected.
-    This will place a copy of the grid fit version of the character into the
-    clipboard.
+    This will place a copy of the grid fit version of the glyph into the clipboard.
   <DT>
     <A NAME="Paste">Paste</A>
   <DD>
     In the Font View this command will paste whatever is in the clipboard into
-    the foregrounds of all selected characters (exception: if the clipboard contains
+    the foregrounds of all selected glyphs (exception: if the clipboard contains
     an image it will not go into the foreground), clearing out whatever was there.
-    If there are more selected characters than there is information in the clipboard
-    then the clipboard will be repeated until all selected characters have had
-    something pasted in them (that is if characters A and B were selected when
-    the copy happened and now characters C, D and E are selected, the C will
-    get A, D will get B and E will also get A). If exactly one character is selected
-    but the clipboard contains more that one character, the the selection will
-    be extended so that enough characters are selected that something may be
-    pasted in each. <BR>
+    If there are more selected glyphs than there is information in the clipboard
+    then the clipboard will be repeated until all selected glyphs have had something
+    pasted in them (that is if glyphs A and B were selected when the copy happened
+    and now glyphs C, D and E are selected, the C will get A, D will get B and
+    E will also get A). If exactly one glyph is selected but the clipboard contains
+    more that one glyph, the the selection will be extended so that enough glyphs
+    are selected that something may be pasted in each. <BR>
     If the clipboard contains outline information then that information will
-    go into the character outline regardless of the setting of Copy From. If
-    the clipboard contains a bitmap and the display is set to outline then the
-    bitmap is pasted into the bitmap font it was copied from (ie. the one with
-    the same pixel size), if the clipboard contains a bitmap and the display
-    is set to a bitmap then the bitmap will be pasted into the currently displayed
-    font. If the clipboard contains a bitmap of a size which does not exist in
-    our database, then you will be asked if you want to create a bitmap font
-    to put the bitmap into.
+    go into the glyph outline regardless of the setting of Copy From. If the
+    clipboard contains a bitmap and the display is set to outline then the bitmap
+    is pasted into the bitmap font it was copied from (ie. the one with the same
+    pixel size), if the clipboard contains a bitmap and the display is set to
+    a bitmap then the bitmap will be pasted into the currently displayed font.
+    If the clipboard contains a bitmap of a size which does not exist in our
+    database, then you will be asked if you want to create a bitmap font to put
+    the bitmap into.
     <P>
     In the Outline View this command will paste whatever is in the clipboard
     to the current editing layer.
@@ -282,16 +280,16 @@ view this menu will be disabled when one of the text fields has the focus.
     <A NAME="PasteInto">Paste Into</A>
   <DD>
     Only available in the fontview. Just like Paste, except it does not clear
-    the contents of the character before adding to it.
+    the contents of the glyph before adding to it.
   <DT>
     <A NAME="PasteAfter">Paste After</A>
   <DD>
     Only available in the fontview. Pastes the contents of the clipboard into
     the selected glyph, shifts it over by the advance width, and then adds the
-    advance width of the character in the clip to this glyph. Essentially this
-    makes it easy to build up words. (If the font has vertical metrics, then
-    glyphs will be stacked vertically. If the glyph is right to left then the
-    clipboard will be added on the left).
+    advance width of the glyph in the clip to this glyph. Essentially this makes
+    it easy to build up words. (If the font has vertical metrics, then glyphs
+    will be stacked vertically. If the glyph is right to left then the clipboard
+    will be added on the left).
     <P>
     This command is not present unless you modify configure-pfaedit.h
   <DT>
@@ -299,10 +297,10 @@ view this menu will be disabled when one of the text fields has the focus.
   <DD>
     Only available in the fontview. If the clipboard contains a single reference
     to a glyph then applying this command makes all selected encoding points
-    refer to that same glyph. (For example the non-breaking-space character (U+00A0)
-    frequently uses the same glyph as the space character. To accomplish this,
-    select the space character, Copy Ref, select the non-breaking-space character
-    and Same Glyph As).
+    refer to that same glyph. (For example the non-breaking-space glyph (U+00A0)
+    frequently uses the same glyph as the space glyph. To accomplish this, select
+    the space glyph, Copy Ref, select the non-breaking-space glyph and Same Glyph
+    As).
   <DT>
     <A NAME="Clear">Clear</A>
   <DD>
@@ -312,7 +310,7 @@ view this menu will be disabled when one of the text fields has the focus.
     Clear <A NAME="Background">Background</A>
   <DD>
     Only in the font view. This command clears the backgrounds of all selected
-    characters.
+    glyphs.
   <DT>
     <A NAME="Merge">Merge</A>
   <DD>
@@ -359,7 +357,7 @@ view this menu will be disabled when one of the text fields has the focus.
       <DD>
 	In the outline view it selects all points, all references (all images if
 	the background is active) and the width line (and the vertical width line
-	if that is enabled). In the fontview it selects all characters. In the bitmap
+	if that is enabled). In the fontview it selects all glyphs. In the bitmap
 	view it selects the current bitmap region.
       <DT>
 	<A NAME="Deselect">Deselect</A> All
@@ -369,7 +367,7 @@ view this menu will be disabled when one of the text fields has the focus.
 	<A NAME="FirstPt">First Point</A>
       <DD>
 	Deselects everything and then selects the first point on the first path of
-	the character.
+	the glyph.
       <DT>
 	First Point, <A NAME="NextContour">Next Contour</A>
       <DD>
@@ -422,23 +420,23 @@ view this menu will be disabled when one of the text fields has the focus.
 	Select <A NAME="Color">Color</A>&gt;
       <DD>
 	Only in the font view. Displays a submenu containing a list of colors and
-	allows you to select all characters which you have set to that color with
-	the Char Info dlg. Normally the selection is cleared before setting the colored
-	characters, but if you hold down the shift key the selection will be extended
-	to the colored characters.
+	allows you to select all glyphs which you have set to that color with the
+	Char Info dlg. Normally the selection is cleared before setting the colored
+	glyphs, but if you hold down the shift key the selection will be extended
+	to the colored glyphs.
       <DT>
 	<A NAME="SelectByATT">Select By ATT...</A>
       <DD>
 	Only in the font view. Brings up a <A HREF="selectbyatt.html">dlg</A> which
-	allows you to select various characters depending on various advanced typographic
+	allows you to select various glyphs depending on various advanced typographic
 	features.
     </DL>
   <DT>
     <A NAME="Find">Find</A> / Replace
   <DD>
     Only in the font view, this brings up a <A HREF="search.html">dialog</A>
-    that allows you to find patterns within characters and replace them with
-    other patterns.
+    that allows you to find patterns within glyphs and replace them with other
+    patterns.
   <DT>
     <A NAME="ReplaceRef">Replace </A>With Reference
   <DD>
@@ -458,13 +456,13 @@ view this menu will be disabled when one of the text fields has the focus.
     it with a reference. It applies this same algorithm for all selected glyphs.
     If you want to check for every possibility, just select all glyphs first.
     <P>
-    After completion, the selection will be set to those characters which have
-    been changed by the command.
+    After completion, the selection will be set to those glyphs which have been
+    changed by the command.
   <DT>
     <A NAME="Unlink">Unlink</A> Reference
   <DD>
-    This will remove a referenced character and replace it with the splines and
-    points that make it up.
+    This will remove a referenced glyph and replace it with the splines and points
+    that make it up.
   <DT>
     Copy <A NAME="From">From</A>
   <DD>
@@ -483,13 +481,12 @@ view this menu will be disabled when one of the text fields has the focus.
 	<A NAME="CharName">Char Metadata</A>
       <DD>
 	Normally Copy does not copy the metadata (name, unicode encoding, comment,
-	ligature info) associated with a character, but if this is checked then it
-	will.
+	ligature info) associated with a glyph, but if this is checked then it will.
     </DL>
     <P>
     This also controls the behavior of the
     <A HREF="elementmenu.html#Transform">Transform</A> and
-    <A HREF="elementmenu.html#Accented">Build Accented</A> character commands.
+    <A HREF="elementmenu.html#Accented">Build Accented</A> glyph commands.
   <DT>
     <A NAME="Remove-Undoes">Remove Undoes</A>
   <DD>
@@ -498,12 +495,12 @@ view this menu will be disabled when one of the text fields has the focus.
     Redoes). Obviously this command cannot be undone.
     <UL>
       <LI>
-	In the Outline Character view this will free up all undoes/redoes in the
-	current edit mode
+	In the Outline Glyph view this will free up all undoes/redoes in the current
+	edit mode
       <LI>
-	In the Bitmap Character view this will free up all bitmap undoes/redoes
+	In the Bitmap Glyph view this will free up all bitmap undoes/redoes
       <LI>
-	In the Font View this will free up all undoes/redoes in all selected characters,
+	In the Font View this will free up all undoes/redoes in all selected glyphs,
 	outline and bitmap, background and foreground.
     </UL>
 </DL>

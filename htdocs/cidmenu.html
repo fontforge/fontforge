@@ -2,9 +2,9 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 30-Jul-2001 -->
-  <!-- AP: Last modified: 2-Mar-2004 -->
-  <LINK REL="icon" href="ffanvil16.png">
+  <!-- AP: Last modified: 13-Oct-2004 -->
   <TITLE>The CID Menu and CID keyed fonts</TITLE>
+  <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
 <BODY>
 <H1 ALIGN=Center>
@@ -44,18 +44,18 @@ A CID keyed font is a postscript (or opentype) font designed to hold Chinese,
 Japanese and Korean characters efficiently. More accurately a CID font is
 a collection of several sub-fonts each with certain common features (one
 might hold all the latin letters, another all the kana, a third all the kanji).
-This allows font-wide hinting to be crafted for subsets of characters to
-which have something in common.
+This allows font-wide hinting to be crafted for subsets of glyphs to which
+have something in common.
 <P>
-CID keyed fonts do not have an encoding built into the font, and the characters
-do not have names. Instead the font is associated with a character set and
-on each character set there are several character mappings defined. These
-mappings are similar to encodings but allow for a wider range of behaviors.
+CID keyed fonts do not have an encoding built into the font, and the glyphs
+do not have names. Instead the font is associated with a glyph set and on
+each glyph set there are several character mappings defined. These mappings
+are similar to encodings but allow for a wider range of behaviors.
 <P>
-A CID is a character index and is used to look up glyph descriptions instead
-of character names in other types of fonts. Using a character set FontForge
-will often be able to map a CID to a unicode character name (but not always),
-so FontForge will give characters names when it can.
+A CID is a glyph index and is used to look up glyph descriptions instead
+of glyph names in other types of fonts. Using a glyph set FontForge will
+often be able to map a CID to a unicode character name (but not always),
+so FontForge will give glyphs names when it can.
 <P>
 For more information see the <A HREF="fontview.html#CID">section on CID keyed
 fonts on the font view page</A>.
@@ -65,8 +65,8 @@ fonts on the font view page</A>.
     <A NAME="Convert">Convert to CID</A>
   <DD>
     If the current font is not a CID font then this command will convert it into
-    one containing one subfont (with the characters in this font). You will be
-    prompted for a character set.
+    one containing one subfont (with the glyphs in this font). You will be prompted
+    for a glyph set.
   <DT>
     <A NAME="ConvertCMap">Convert By CMap</A>
   <DD>
@@ -76,8 +76,8 @@ fonts on the font view page</A>.
     <A NAME="Flatten">Flatten</A>
   <DD>
     If the current font is a CID font then this command will convert it into
-    a normal (flat) font by taking all the characters from all the sub-fonts
-    and merging them into one normal font.
+    a normal (flat) font by taking all the glyphs from all the sub-fonts and
+    merging them into one normal font.
   <DT>
     <A NAME="FlattenCMap">Flatten</A> By CMap
   <DD>

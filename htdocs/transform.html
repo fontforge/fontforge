@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 17-Aug-2004 -->
+  <!-- AP: Last modified: 13-Oct-2004 -->
   <TITLE>Transform Dialog</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -14,14 +14,14 @@
 <IMG SRC="transform.png" WIDTH="372" HEIGHT="336">
 <P>
 This dialog is available in the font, outline and metrics views. In the font
-view it applies to all selected characters. In the outline view if there
-is a selection then it applies to that. if there is no selection then it
-applies to the entire character.
+view it applies to all selected glyphs. In the outline view if there is a
+selection then it applies to that. if there is no selection then it applies
+to the entire glyph.
 <P>
 You may choose whether you want the transformation to be centered at the
-character's origin, the center of the selection (or of the character as a
-whole if there is no selection), or the location of the last point on which
-you clicked the mouse.
+glyph's origin, the center of the selection (or of the glyph as a whole if
+there is no selection), or the location of the last point on which you clicked
+the mouse.
 <P>
 You may apply several different transformations at once:
 <DL>
@@ -89,13 +89,13 @@ If you are in the font view, and if <A HREF="editmenu.html#From">Copy From</A>
 is set to all fonts, then the transformation will also be applied to the
 bitmaps. Not all of these transforms can be mapped to ones on the bitmap
 font (arbitrary rotations, scales, etc. do not map). Only rotations by 90
-degrees, flips, skews and moves will be approximated on the bitmap characters.
+degrees, flips, skews and moves will be approximated on the bitmap glyphs.
 <P>
 If you are in the font view, then any pair-wise kerning information whose
-first character is selected will be scaled (but not translated) by the
-transformation matrix. Similarly and simple positioning features that apply
-to a selected character will be transformed by the matrix (but again not
-translated). You may choose to
+first glyph is selected will be scaled (but not translated) by the transformation
+matrix. Similarly and simple positioning features that apply to a selected
+glyph will be transformed by the matrix (but again not translated). You may
+choose to
 <P>
 If you are in the font view or the outline view and there is no selection
 (and you are in the foreground) there is a "[] Transform Background Too"
@@ -105,7 +105,7 @@ with the foreground.
 If you check [] Round to Int then after the transformation has been applied
 everything will be rounded to an integer value.
 <P>
-Transformations in the Outline character view are not applied to any bitmaps.
+Transformations in the Outline glyph view are not applied to any bitmaps.
 (Nor are transformations in the bitmap window mapped back to the outline).
 <H2>
   <A NAME="Non-Linear">Non-Linear </A>Transformations

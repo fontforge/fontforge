@@ -2,9 +2,9 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 16-Apr-2004 -->
-  <LINK REL="icon" href="ffanvil16.png">
+  <!-- AP: Last modified: 13-Oct-2004 -->
   <TITLE>The Font View</TITLE>
+  <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
 <BODY>
 <H1 ALIGN=Center>
@@ -13,7 +13,7 @@
 <P>
 <IMG SRC="AmbrosiaFV.png" WIDTH="423" HEIGHT="226">
 <P>
-The font view is a list of all the characters available in the given font.
+The font view is a list of all the glyphs available in the given font.
 <P>
 You may chose to display it at various sizes, by default it will be displayed
 with the outline font rasterized on a 24 pixel em square. You may display
@@ -21,32 +21,39 @@ it at 36, 48, 72 and 96 pixel sizes as well. You may also choose to look
 at an anti-aliased greymap (the above image is anti-aliased). These are slower
 to generate but look nicer (<A HREF="AA-Comparison.html">Comparison</A>).
 <P>
-If you have an encoding which has nothing in it (as opposed to an encoding
+If you have an encoding slot which has nothing in it (as opposed to an encoding
 which maps to a space glyph) then that will be shown by a faint red X drawn
 across the box.
 <P>
-If one of your characters has something in its background layer then this
-will be indicated visually (currently by darkening the background of the
-character label).
+Above each image of the glyphs in the font is a label indicating the glyph
+in some conventional format. Usually this is just a small image of the glyph
+in a standard font (as it is above), but you can change it to show the glyph's
+name, unicode code point or encoding (in hex). In small views (24 pixel view
+for instance) there may not be room for the entire label, and it will appear
+truncated.
+<P>
+If one of your glyphs has something in its background layer then this will
+be indicated visually (currently by darkening the background of the glyph
+label).
 <P>
 You may also display any of the bitmap fonts you have generated from the
-outline characters. Simply go to the View menu and select the one you want.
+outline glyphs. Simply go to the View menu and select the one you want.
 <P>
-If you look at a bitmap version of the font, and it does not contain a character
-for which there is an outline character (ie. the font needs its bitmaps
-regenerated) then the missing character will be outlined in red to bring
-it to your attention more easily.
+If you look at a bitmap version of the font, and it does not contain a glyph
+for which there is an outline glyph (ie. the font needs its bitmaps regenerated)
+then the missing glyph will be outlined in red to bring it to your attention
+more easily.
 <P>
 Small bitmap fonts will be magnified. If the pixelsize of the font is less
 than 10 it will be shown 3 times normal size, if less than 20 twice normal
 size.
 <P>
-Underneath the menu bar is some information on the last character selected.
-First is the encoding of the character in the current font expressed in decimal.
-Next is the unicode code point for the character (or ???? if it is not a
-unicode character). Next the postscript name for the character, and finally
-the unicode name. Not all unicode characters will have unicode names (the
-CJK characters do not for example)
+Underneath the menu bar is some information on the last glyph selected. First
+is the encoding of the glyph in the current font expressed in decimal. Next
+is the unicode code point for the glyph (or ???? if it is not a unicode
+character). Next the postscript name for the glyph, and finally the unicode
+name. Not all unicode characters will have unicode names (the CJK characters
+do not for example)
 <P>
 If you move the cursor to a glyph and let it rest there a small popup window
 will appear containing information about that glyph. If you depress the control
@@ -66,36 +73,36 @@ too confusing.
   <TR VALIGN="Top">
     <TD>A 96 pixel display showing the various horizontal metric lines.<BR>
       The blue line is the baseline<BR>
-      The small red tick on the left marks the character origin.<BR>
-      The green line on the right shows where the advance width is<BR>
-      &nbsp;while the bottom green line shows how long it is.<BR>
-      &nbsp;(normally you will not display both at once)<BR>
-      The character is centered horizontally, and the font ascent is<BR>
-      the top of the box displaying it, while the descent is the bottom.</TD>
+      The small red tick on the left marks the glyph origin.<BR>
+      The green line on the right shows where the advance width is&nbsp;while the
+      bottom green line shows how long it is.&nbsp;(normally you will not display
+      both at once)<BR>
+      The glyph is centered horizontally, and the font ascent is the top of the
+      box displaying it, while the descent is the bottom.</TD>
     <TD>A 96 pixel display showing the various vertical metric lines.<BR>
       The blue line down the center is the vertical baseline.<BR>
-      The red bar at the top (over writing the ascent line) is the<BR>
-      &nbsp;vertical origin.<BR>
-      The green line at the bottom shows where the vertical advance<BR>
-      &nbsp;is while the green line on the right shows how long it is.<BR>
-      &nbsp;(normally you will not display both at once)</TD>
+      The red bar at the top (over writing the ascent line) is the&nbsp;vertical
+      origin.<BR>
+      The green line at the bottom shows where the vertical advance &nbsp;is while
+      the green line on the right shows how long it is. &nbsp;(normally you will
+      not display both at once)</TD>
   </TR>
 </TABLE>
 <P>
-You may select any number of characters in the font by dragging through them.
-You may use shift-click to select (or deselect) additional characters. You
-may also use the arrow keys to move around (and shift-arrow to select). To
-some extent the order you select characters in will be remembered and a few
-commands will make use of that.
+You may select any number of glyphs in the font by dragging through them.
+You may use shift-click to select (or deselect) additional glyphs. You may
+also use the arrow keys to move around (and shift-arrow to select). To some
+extent the order you select glyphs in will be remembered and a few commands
+will make use of that.
 <P>
-You may drag and drop selected characters into
+You may drag and drop selected glyphs into
 <DL>
   <DT>
     The metrics view
   <DD>
-    Where they will be inserted into the display before the selected character
-    (selected in the metrics view) in the order in which you selected them in
-    the font view.
+    Where they will be inserted into the display before the selected glyph (selected
+    in the metrics view) in the order in which you selected them in the font
+    view.
   <DT>
     The outline view
   <DD>
@@ -106,10 +113,10 @@ You may drag and drop selected characters into
     Where they will appear as a substitution or ligature.
 </DL>
 <P>
-The [Tab] key will move to the next character with something in it, and
-Shift-[Tab] will move to the previous character with something interesting.
+The [Tab] key will move to the next glyph with something in it, and Shift-[Tab]
+will move to the previous glyph with something interesting.
 <P>
-You can perform various operations on the selected characters:
+You can perform various operations on the selected glyphs:
 <UL>
   <LI>
     Apply a general transformation (ie. move 20 units right and then rotate
@@ -130,8 +137,8 @@ You can perform various operations on the selected characters:
     Control various metrics settings
 </UL>
 <P>
-And, of course, you can cut and paste. Normally copying a character will
-copy that character and any bitmaps associated with it, but you can use the
+And, of course, you can cut and paste. Normally copying a glyph will copy
+that glyph and any bitmaps associated with it, but you can use the
 Edit-&gt;Copy From menu item to change this so that only entries from the
 currently displayed font are copied. So if a 12 pixel font is being displayed
 then only the bitmaps from the 12 pixel bitmap font will be copied in this
@@ -145,16 +152,16 @@ to this. If the clipboard contains a 12 pixel bitmap and the font view is
 currently display a 17pixel bitmap then the paste will go into the displayed
 bitmap.
 <P>
-A Paste from the font view will delete whatever splines were in the character
-beforehand (while a paste in the outline character view will merge the new
-set of splines with the old). Paste from the font view will also set the
-width of the character.
+A Paste from the font view will delete whatever splines were in the glyph
+beforehand (while a paste in the outline glyph view will merge the new set
+of splines with the old). Paste from the font view will also set the width
+of the glyph.
 <P>
 You can scroll the display to any particular character by typing that character.
 There is also a dialog which allows a slightly more general way of jumping
-around. You may type in the character's name (all characters in a font will
-be named), its encoding value, its unicode encoding value, or (for 2 byte
-fonts) its ku ten specification.
+around. You may type in the glyph's name (all glyphs in a font will be named),
+its encoding value, its unicode encoding value, or (for 2 byte fonts) its
+ku ten specification.
 <P>
 Pressing the right mouse button invokes a popup menu.
 <H2>
@@ -172,14 +179,14 @@ All fonts in fontforge have both a character set and an encoding. The character
 set is just the set of characters in the font. The encoding is the way those
 characters are ordered (or sometimes, the way the first 256 are ordered).
 The font info dialog allows you to chose the encoding (and character set)
-you wish for a font. Often a font will have a few extra characters that don't
-fit into the character set specified by the encoding, these characters will
-be placed at the end of the font and when the font is output (ie. postscript
-is generated, or a bitmap font created) the characters will be included in
-the font but they will not be encoded (this can be useful, especially in
-postscript where it is possible to reencode a font at run time. Thus a font
-might have all the characters needed both for a cyrillic character set and
-for a latin one, but only one character set at a time would be encoded).
+you wish for a font. Often a font will have a few extra glyphs that don't
+fit into the character set specified by the encoding, these glyphs will be
+placed at the end of the font and when the font is output (ie. postscript
+is generated, or a bitmap font created) the glyphs will be included in the
+font but they will not be encoded (this can be useful, especially in postscript
+where it is possible to reencode a font at run time. Thus a font might have
+all the glyphs needed both for a cyrillic character set and for a latin one,
+but only one character set at a time would be encoded).
 <P>
 It is possible for an encoding not to be one-to-one. That is there may be
 several characters that might lead to the same underlying glyph (the classic
@@ -191,36 +198,37 @@ the one real character. All characters will have the same name. When FontForge
 generates a font it looks for this case and turns it into a font whose encoding
 vector contains multiple references to a glyph.
 <P>
+It is also possible to have an encoding where a single character can lead
+to several different glyphs depending on the context. In arabic, for example,
+most characters have at least four different glyphs depending on whether
+the character is found initially, medially or finally in a word, or if it
+appears by itself (isolated).
+<P>
 You may also create a custom encoding. (Generally, only the first 256 entries
 of a Custom encodings will actually be part of a font's encoding vector).
-You may change the name of any character in the font with the Element-&gt;Char
+You may change the name of any glyph in the font with the Element-&gt;Char
 Info command. This will force the font to have a custom encoding.
 <P>
 There are many standard encodings built in to the program. There are 14 ISO
 8859 encodings, the encoding used by the Macintosh for the US and Western
 Europe, the encoding used by MS Windows for the US and Europe (which is a
 slight extension of ISO 8859-1). There are also several 2-byte encodings
-built in. Several of these are subsets of unicode whose goal is to specify
-every character currently used by humans. There are 4 CJK (Chinese, Japanese,
-Korean) 94x94 encodings (two bytes where each byte ranges over the 94 ASCII
-printable characters excluding the space character). And there are sjis
-(Japanese), big5 (Traditional Chinese), Wansung (Korean) and johab (Korean)
-. You can also add your own encodings with the
-<A HREF="fontinfo.html">Element-&gt;Font Info</A> dialog. A brief description
-of what's in the encodings also appears <A HREF="fontinfo.html#Encodings">on
-that page</A>.
+built in. Several of these are subsets of unicode (whose goal is to specify
+every character currently used by humans). There are many large CJK (Chinese,
+Japanese, Korean) two byte encodings. You can also add your own encodings
+with the <A HREF="fontinfo.html">Element-&gt;Font Info</A> dialog. A brief
+description of what's in the encodings also appears
+<A HREF="fontinfo.html#Encodings">on that page</A>.
 <P>
 There may be some slight differences between one vendor's definition of an
-encoding and another. I try to follow those encoding specified by the Unicode
+encoding and another. I try to follow those encodings specified by the Unicode
 consortium. I notice that the Symbol encoding used by Microsoft differs from
 the Unicode one (usually just be substituting synonyms, Omega for Ohm sign
 for instance).
 <P>
 Adobe did not choose their naming conventions very well for Greek letters.
 They assigned the name "mu" to Micro Sign, "Delta" to Increment and "Omega"
-to Ohm Sign. So the Greek alphabet has ugly nameless holes in it. I have
-cheated by reassigning "Delta" and "Omega" so that they refer to the letters,
-but "mu" is part of Adobe's Latin1 encoding and I can't change that.
+to Ohm Sign. So the Greek alphabet has ugly nameless holes in it.
 <P>
 CID fonts (see <A HREF="#CID">below</A>) have no encodings. Instead they
 are designed to be associated with one or several cmap files which provide
@@ -259,10 +267,9 @@ FontForge supports two slightly different unicode encodings. The first contains
 only the first 65536 characters of unicode (those in the
 <A HREF="http://www.unicode.org/roadmaps/bmp.html">Basic Multilingual
 Plane</A>, or BMP), while the second can contain as many characters as you
-have memory for. Very few characters have been defined outside of the BMP
-so at the moment you probably want to use just the BMP (the full encoding
-isn't completely supported yet anyway). Currently there are only definitions
-for plane 0 (BMP, U+0000-U+ffff), Plane 1
+have memory for. Character definitions are still sparse outside of the BMP
+so at the moment you probably want to use just the BMP. Currently there are
+only definitions for plane 0 (BMP, U+0000-U+ffff), Plane 1
 (<A HREF="http://www.unicode.org/roadmaps/smp.html">SMP, Secondary Multilingual
 Plane</A>, U+10000-U+1ffff), Plane 2
 (<A HREF="http://www.unicode.org/roadmaps/sip.html">SIP, Supplementary
@@ -289,31 +296,30 @@ which font is displayed by the CID menu.
 The CID menu also allows you to turn a normal font into a CID keyed font.
 It creates a collection containing just the original font (you may add other
 fonts, or blank fonts, later). But before it can create a collection FontForge
-needs to know what character set you will be using. A character set is just
-a collection of characters, and you may define your own if you wish (but
-if you do you have to define your own cmap files, etc and it's probably not
-worth it). Adobe has defined character sets for Japanese (actually there
-are two, one corresponding to JIS208 and one to JIS212), Korean (Wansung
-&amp; Johab), Traditional Chinese (Big5) and Simplified Chinese (GB2312).
-Although these character sets are based on the standards mentioned, they
-each have many additional characters. Adobe also defines a charset that works
-for Unicode, but it is called "Identity" instead. FontForge does not have
-these character sets built in to it, each must be loaded the first time it
-is used. I provide one file for each of the above character sets, they have
-an extension of ".cidmap", and you may download them all
-<A HREF="cidmaps.tgz">from here</A>.
+needs to know what glyph set you will be using. A glyph set is just a collection
+of glyphs, and you may define your own if you wish (but if you do you have
+to define your own cmap files, etc and it's probably not worth it). Adobe
+has defined glyph sets for Japanese (actually there are two, one corresponding
+to JIS208 and one to JIS212), Korean (Wansung &amp; Johab), Traditional Chinese
+(Big5) and Simplified Chinese (GB2312). Although these glyph sets are based
+on the standards mentioned, they each have many additional glyphs. Adobe
+also defines a glyph set that works for Unicode, but it is called "Identity"
+instead. FontForge does not have these glyph sets built in to it, each must
+be loaded the first time it is used. I provide one file for each of the above
+glyph sets, they have an extension of ".cidmap", and you may download them
+all <A HREF="cidmaps.tgz">from here</A>.
 <P>
-(There are also a few other character sets floating around but they aren't
-in the public domain and I haven't been able to get my hands on them).
+(There are also many other character sets floating around feel free to install
+them yourself).
 <P>
-Adobe identifies each character set by a three values: a registry, an ordering
+Adobe identifies each glyph set by a three values: a registry, an ordering
 and a supplement. The registry is the name of the organization that is defining
-the character set (Adobe calls itself Adobe), an ordering identifies the
-character set (Japan1, Korea1, etc.) and the supplement indicates how many
-times the ordering has been revised. Characters may only be added to an ordering,
-never removed, so an old font will be perfectly described by a newer character
-set, while a new font described by an old character set will have some
-unavailable characters. So a full cidmap name will look like:<BR>
+the glyph set (Adobe calls itself Adobe), an ordering identifies the glyph
+set (Japan1, Korea1, etc.) and the supplement indicates how many times the
+ordering has been revised. Glyphs may only be added to an ordering, never
+removed, so an old font will be perfectly described by a newer glyph set,
+while a new font described by an old glyph set will have some unavailable
+glyphs. So a full cidmap name will look like:<BR>
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
 Adobe-Japan1-4.cidmap<BR>
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Adobe-Korea1-2.cidmap
@@ -332,10 +338,10 @@ the OS just sends it a SIGKILL signal.
 <P>
 If the font is a <A HREF="multiplemaster.html#MM">Multiple Master </A>Font
 there will again be several subfonts only this time all the subfonts contain
-the same character set. Each subfont provides glyphs for one style of the
-font family. The <A HREF="mmmenu.html">MM</A> menu allows you to control
-which style of the family is visible in the font view, and provides a few
-other commands for manipulating multiple masters.
+the same glyph set. Each subfont provides glyphs for one style of the font
+family. The <A HREF="mmmenu.html">MM</A> menu allows you to control which
+style of the family is visible in the font view, and provides a few other
+commands for manipulating multiple masters.
 <H2>
   <A NAME="Vertical-Metrics">Vertical Metrics</A>
 </H2>
@@ -349,13 +355,13 @@ To enable vertical metrics for a font go to
 <CODE><A HREF="fontinfo.html#vertical">Element-&gt;Font Info</A></CODE> and
 select the <CODE>General</CODE> tab and check the <CODE>[*] Has Vertical
 Metrics </CODE>checkbox. This will allow you to set the vertical origin for
-the font and it will give every character a default vertical advance of the
-emsize of the font (ascent+descent).
+the font and it will give every glyph a default vertical advance of the emsize
+of the font (ascent+descent).
 <P>
 The vertical origin is the y height (in the design coordinate system) of
 the origin for vertical metrics.
 <P>
-In the outline character view you will be able to adjust the vertical metrics
+In the outline glyph view you will be able to adjust the vertical metrics
 just as you adjust the horizontal metrics.
 <P>
 You can view the vertical metrics in the font view just as you can the horizontal

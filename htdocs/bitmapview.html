@@ -2,32 +2,32 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 6-Aug-2004 -->
+  <!-- AP: Last modified: 13-Oct-2004 -->
   <TITLE>Bitmap Character View</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
 <BODY>
 <H1 ALIGN=Center>
-  Bitmap Character View
+  Bitmap Glyph View
 </H1>
 <P>
 <IMG SRC="BitmapView.png" WIDTH="254" HEIGHT="273">
 <P>
 The bitmap view is vaguely similar to the <A HREF="charview.html">outline
-view</A>. It is also designed for editing character shapes, but here bitmap
-character shapes.
+view</A>. It is also designed for editing glyph shapes, but here bitmap glyph
+shapes.
 <P>
 At the top of the view is a small region showing an unmagnified view of the
-character, to the right of that are two information displays, the first shows
+glyph, to the right of that are two information displays, the first shows
 the current location of the mouse pointer, and the second shows (if the mouse
 button has been depressed and not released yet) the offset from the place
 where the mouse was pressed to the current pointer location. The coordinate
-system here is in pixels with the origin at the character's origin. Next
-to this is a button (here truncated) that allows you to recalculate the bitmap
-(rasterize the outline and place the result in the window for editing).
+system here is in pixels with the origin at the glyph's origin. Next to this
+is a button (here truncated) that allows you to recalculate the bitmap (rasterize
+the outline and place the result in the window for editing).
 <P>
 Underneath is the main display, showing the bits in the image, the outline
-of the character and a grid.
+of the glyph and a grid.
 <P>
 As in the outline view you may choose to dock the palettes in the window
 with View-&gt;Palettes-&gt;Dock Palettes.
@@ -38,8 +38,8 @@ with View-&gt;Palettes-&gt;Dock Palettes.
 <IMG SRC="bvlayers.png" WIDTH="77" HEIGHT="77">
 <P>
 There are three layers to the bitmap view, the bitmap itself, the outline
-character and the grid lines. You are always editing in the bitmap layer
-so there is no control over what layer is editable, just which ones are visible.
+glyph and the grid lines. You are always editing in the bitmap layer so there
+is no control over what layer is editable, just which ones are visible.
 <H2>
   <A NAME="Tools">Tools</A>
 </H2>
@@ -95,23 +95,22 @@ The hand scrolls the screen.
     Set Width<BR>
     This is only available if there is no outline font (ie. if you opened a bdf
     file directly).<BR>
-    It sets the width (character advance) of the bitmap.
+    It sets the width (glyph advance) of the bitmap.
 </UL>
 <H2>
-  <A NAME="AA">Anti-Aliased Characters</A>
+  <A NAME="AA">Anti-Aliased Glyphs</A>
 </H2>
 <P>
 <IMG SRC="greymapedit.png" WIDTH="274" HEIGHT="273" ALIGN="Right">This window
-may also be used to edit anti-aliased characters (characters which are
-represented by shades of grey rather than by black and white. In the information
-area there is a little rectangle which shows the current color that will
-be used by the pencil (line, rectangle, etc.) tool.
+may also be used to edit anti-aliased glyphs (glyphs which are represented
+by shades of grey rather than by black and white. In the information area
+there is a little rectangle which shows the current color that will be used
+by the pencil (line, rectangle, etc.) tool.
 <P>
 The behavior of the drawing tools is slightly different here. In a bitmap
-character the color used for drawing is the opposite of whatever color is
-currently under the cursor, but that doesn't work in an environment with
-more than two colors. So you must select what color you are going to draw
-with manually.
+glyph the color used for drawing is the opposite of whatever color is currently
+under the cursor, but that doesn't work in an environment with more than
+two colors. So you must select what color you are going to draw with manually.
 <P>
 There are two ways to select the drawing color:
 <UL>
@@ -144,9 +143,9 @@ There are two ways to select the drawing color:
   </TR>
 </TABLE>
 <P>
-The shades palette is only visible in an anti-aliased character. The palette
-displays all the possible shades of grey available to this character. Characters
-with more bits per pixel will have more shades of grey. 
+The shades palette is only visible in an anti-aliased glyph. The palette
+displays all the possible shades of grey available to this glyph. Glyphs
+with more bits per pixel will have more shades of grey.
 <P>
 The currently selected drawing color is outlined in green. To select a new
 color, move the cursor to the desired color and click the mouse.

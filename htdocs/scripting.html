@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 10-Oct-2004 -->
+  <!-- AP: Last modified: 13-Oct-2004 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -63,16 +63,15 @@ by menu.
 The scripting language provides access to much of the functionality found
 in the font view's menus. It does not currently (and probably never will)
 provide access to everything. (If you find a lack let me know, I may put
-it in for you). It does not provide commands for building up a character
-out of splines, instead it allows you to do high level modifications to
-characters.
+it in for you). It does not provide commands for building up a glyph out
+of splines, instead it allows you to do high level modifications to glyphs.
 <P>
 If you set the environment variable <CODE>PFAEDIT_VERBOSE</CODE> (it doesn't
 need a value, just needs to be set) then FontForge will print scripts to
 stdout as it executes them.
 <P>
 In general I envision this as being useful for things like taking a latin
-font and extending it to contain cyrillic characters. So the script might:
+font and extending it to contain cyrillic glyphs. So the script might:
 <UL>
   <LI>
     Reencode the font
@@ -234,8 +233,8 @@ a procedure may return nothing (void).<BR>
 The shift statement is stolen from shell scripts and shifts all arguments
 down by one. (argument 0, the name of the script file, remains unchanged.<BR>
 The foreach statement requires that there be a current font. It executes
-the statements once for each character in the selection. Within the statements
-only one character at a time will be selected. After execution the selection
+the statements once for each glyph in the selection. Within the statements
+only one glyph at a time will be selected. After execution the selection
 will be restored to what it was initially. (Caveat: Don't reencode the font
 within a foreach statement).<BR>
 Statements are terminated either by a new line or a semicolon.
@@ -343,8 +342,8 @@ to (some) already existing ones)
     indicated in the array as
     <CODE>(&lt;BitmapDepth&gt;&lt;&lt;16)|&lt;PixelSize&gt;</CODE>)
   <LI>
-    <CODE>$selection</CODE> returns an array containing one entry for each character
-    in the current font indicating whether that character is selected or not
+    <CODE>$selection</CODE> returns an array containing one entry for each glyph
+    in the current font indicating whether that glyph is selected or not
     (0=&gt;not, 1=&gt;selected)
   <LI>
     <CODE>$panose</CODE> returns an array containing the 10 panose values for
@@ -653,8 +652,8 @@ a[4][0] = "Nested array";
       <LI>
 	fmflags&amp;2 =&gt; generate a pfm file
       <LI>
-	fmflags&amp;4 =&gt; generate a short 'post' table with no character name
-	info in it.
+	fmflags&amp;4 =&gt; generate a short 'post' table with no glyph name info
+	in it.
       <LI>
 	fmflags&amp;8 =&gt; do not include ttf instructions
       <LI>
@@ -740,9 +739,9 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     Import(filename[,toback[,flags]])
   <DD>
     Either imports a bitmap font into the database, or imports background image[s]
-    into various characters. There may be one or two arguments. The first must
-    be a string representing a filename. The extension of the file determines
-    how the import proceeds.
+    into various glyphs. There may be one or two arguments. The first must be
+    a string representing a filename. The extension of the file determines how
+    the import proceeds.
     <UL>
       <LI>
 	If the extension is ".bdf" then a bdf font will be imported
@@ -764,8 +763,8 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
 	    and stored in the background
 	  <LI>
 	    Otherwise there may be several filenames (separated by semicolons), the first
-	    will be placed in the background of the first selected character, the second
-	    into the background of the second selected character, ...
+	    will be placed in the background of the first selected glyph, the second
+	    into the background of the second selected glyph, ...
 	</UL>
       <LI>
 	If the extension is "eps" then an encapsulated postscript file will be merged
@@ -778,9 +777,9 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     <P>
     If present the second argument must be an integer, if the first argument
     is a bitmap font then the second argument controls whether it is imported
-    into the bitmap list (0) or to fill up the backgrounds of characters (1).
-    For eps and svg files this argument controls whether the splines are added
-    to the foreground or the background layer of the glyph.
+    into the bitmap list (0) or to fill up the backgrounds of glyphs (1). For
+    eps and svg files this argument controls whether the splines are added to
+    the foreground or the background layer of the glyph.
     <P>
     If there is a third argument it must also be an integer and provides a set
     of flags controling the behavior of importing an EPS file.
@@ -795,33 +794,33 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
   <DT>
     Export(format[,bitmap-size])
   <DD>
-    For each selected character in the current font, this command will export
-    that character into a file in the current directory. Format must be a string
-    and must be one of
+    For each selected glyph in the current font, this command will export that
+    glyph into a file in the current directory. Format must be a string and must
+    be one of
     <UL>
       <LI>
-	eps -- the selected characters will have their splines output into eps files.
+	eps -- the selected glyphs will have their splines output into eps files.
 	The files will be named "&lt;glyph-name&gt;_&lt;font-name&gt;.eps".
       <LI>
-	pdf -- the selected characters will have their splines output into pdf files.
+	pdf -- the selected glyphs will have their splines output into pdf files.
 	The files will be named "&lt;glyph-name&gt;_&lt;font-name&gt;.pdf".
       <LI>
-	svg -- the selected characters will have their splines output into svg files.
+	svg -- the selected glyphs will have their splines output into svg files.
 	The files will be named "&lt;glyph-name&gt;_&lt;font-name&gt;.svg".
       <LI>
-	fig -- the selected characters will have their splines converted (badly)
-	into xfig files. The files will be named
+	fig -- the selected glyphs will have their splines converted (badly) into
+	xfig files. The files will be named
 	"&lt;glyph-name&gt;_&lt;font-name&gt;.fig".
       <LI>
-	xbm -- The second argument specifies a bitmap font size, the selected characters
+	xbm -- The second argument specifies a bitmap font size, the selected glyphs
 	in that bitmap font will be output as xbm files. The files will be named
 	"&lt;glyph-name&gt;_&lt;font-name&gt;.xbm".
       <LI>
-	bmp -- The second argument specifies a bitmap font size, the selected characters
+	bmp -- The second argument specifies a bitmap font size, the selected glyphs
 	in that bitmap font will be output as bmp files. The files will be named
 	"&lt;glyph-name&gt;_&lt;font-name&gt;.bmp".
       <LI>
-	png -- The second argument specifies a bitmap font size, the selected characters
+	png -- The second argument specifies a bitmap font size, the selected glyphs
 	in that bitmap font will be output as png files. The files will be named
 	"&lt;glyph-name&gt;_&lt;font-name&gt;.png".
     </UL>
@@ -869,9 +868,9 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
       <LI>
 	0 =&gt; Prints a full font display at the given pointsize
       <LI>
-	1 =&gt; Prints selected characters to fill page
+	1 =&gt; Prints selected glyphs to fill page
       <LI>
-	2 =&gt; Prints selected characters at multiple pointsizes
+	2 =&gt; Prints selected glyphs at multiple pointsizes
       <LI>
 	3 =&gt; Prints a text sample at the given pointsize(s)
     </UL>
@@ -896,32 +895,32 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
   <DT>
     Cut
   <DD>
-    Makes a copy of all selected characters and saves it in the clipboard, then
-    clears out the selected characters
+    Makes a copy of all selected glyphs and saves it in the clipboard, then clears
+    out the selected glyphs
   <DT>
     Copy
   <DD>
-    Makes a copy of all selected characters.
+    Makes a copy of all selected glyphs.
   <DT>
     CopyReference
   <DD>
-    Makes references to all selected characters and stores them in the clipboard.
+    Makes references to all selected glyphs and stores them in the clipboard.
   <DT>
     CopyWidth
   <DD>
-    Stores the widths of all selected characters in the clipboard
+    Stores the widths of all selected glyphs in the clipboard
   <DT>
     CopyVWidth
   <DD>
-    Stores the vertical widths of all selected characters in the clipboard
+    Stores the vertical widths of all selected glyphs in the clipboard
   <DT>
     CopyLBearing
   <DD>
-    Stores the left side bearing of all selected characters in the clipboard
+    Stores the left side bearing of all selected glyphs in the clipboard
   <DT>
     CopyRBearing
   <DD>
-    Stores the right side bearing of all selected characters in the clipboard
+    Stores the right side bearing of all selected glyphs in the clipboard
   <DT>
     CopyGlyphFeatures(arg,...)
   <DD>
@@ -941,7 +940,7 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
   <DT>
     Paste
   <DD>
-    Copies the clipboard into the selected characters of the current font (removing
+    Copies the clipboard into the selected glyphs of the current font (removing
     what was there before)
   <DT>
     PasteInto
@@ -950,44 +949,44 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
   <DT>
     SameGlyphAs
   <DD>
-    If the clipboard contains a reference to a single character then this makes
-    all selected characters refer to that one.
+    If the clipboard contains a reference to a single glyph then this makes all
+    selected glyphs refer to that one.
   <DT>
     Clear
   <DD>
-    Clears out all selected characters
+    Clears out all selected glyphs
   <DT>
     ClearBackground
   <DD>
-    Clears the background of all selected characters
+    Clears the background of all selected glyphs
   <DT>
     CopyFgToBd
   <DD>
-    Copies all foreground splines into the background in all selected characters
+    Copies all foreground splines into the background in all selected glyphs
   <DT>
     Join([fudge])
   <DD>
-    Joins open paths in selected characters. If fudge is specified then the endpoints
+    Joins open paths in selected glyphs. If fudge is specified then the endpoints
     only need to be within fudge em-units of each other to be merged.
   <DT>
     UnlinkReference
   <DD>
-    Unlinks all references within all selected characters
+    Unlinks all references within all selected glyphs
   <DT>
     SelectAll
   <DD>
-    Selects all characters
+    Selects all glyphs
   <DT>
     SelectNone
   <DD>
-    Deselects all characters
+    Deselects all glyphs
   <DT>
     Select(arg1, arg2, ...)
   <DD>
     This clears out the current selection, then for each pair of arguments it
-    selects all characters between (inclusive) the bounds specified by the pair.
-    If there is a final singleton argument then that single character will be
-    selected. An argument may be specified by:
+    selects all glyphs between (inclusive) the bounds specified by the pair.
+    If there is a final singleton argument then that single glyph will be selected.
+    An argument may be specified by:
     <UL>
       <LI>
 	an integer which specifies the location in the current font's encoding
@@ -998,9 +997,8 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
       <LI>
 	If Select is given exactly one argument and that argument is an array then
 	the selection will be set to that specified in the array. So array[0] would
-	set the selection of the character at encoding 0 and so forth. The array
-	may have a different number of elements from that number of characters in
-	the font.
+	set the selection of the glyph at encoding 0 and so forth. The array may
+	have a different number of elements from that number of glyphs in the font.
     </UL>
   <DT>
     SelectMore(arg1, arg2, ...)
@@ -1010,19 +1008,18 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
   <DT>
     SelectIf(arg1,arg2, ...)
   <DD>
-    The same as Select() except that instead of signalling an error when a character
+    The same as Select() except that instead of signalling an error when a glyph
     is not in the font it returns an error code.
     <UL>
       <LI>
-	0 =&gt; there were no errors but no characters were selected
+	0 =&gt; there were no errors but no glyphs were selected
       <LI>
-	&lt;a positive number&gt; =&gt; there were no errors and this many characters
+	&lt;a positive number&gt; =&gt; there were no errors and this many glyphs
 	were selected
       <LI>
-	-2 =&gt; there was an error and no characters were selected
+	-2 =&gt; there was an error and no glyphs were selected
       <LI>
-	-1 =&gt; there was an error and at least one character was selected before
-	that.<B></B>
+	-1 =&gt; there was an error and at least one glyph was selected before that.
     </UL>
   <DT>
     SelectByATT(type,tags,contents,search-type)
@@ -1101,7 +1098,7 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
   <DT>
     SetCharCnt(cnt)
   <DD>
-    Sets the number of characters in the font.
+    Sets the number of glyphs in the font.
   <DT>
     LoadEncodingFile(filename)
   <DD>
@@ -1224,25 +1221,25 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
   <DT>
     SetCharName(name[,set-from-name-flag])
   <DD>
-    Sets the currently selected character to have the given name. If
-    set-from-name-flag is absent or is present and true then it will also set
-    the unicode value and the ligature string to match the name.
+    Sets the currently selected glyph to have the given name. If set-from-name-flag
+    is absent or is present and true then it will also set the unicode value
+    and the ligature string to match the name.
   <DT>
     SetUnicodeValue(uni[,set-from-value-flag])
   <DD>
-    Sets the currently selected character to have the given unicode value. If
+    Sets the currently selected glyph to have the given unicode value. If
     set-from-value-flag is absent or is present and true then it will also set
     the name and the ligature string to match the value.
   <DT>
     SetCharColor(color)
   <DD>
-    Sets any currently selected characters to have the given color (expressed
-    as 24 bit rgb (0xff0000 is red) with the special value of -2 meaning the
-    default color.
+    Sets any currently selected glyphs to have the given color (expressed as
+    24 bit rgb (0xff0000 is red) with the special value of -2 meaning the default
+    color.
   <DT>
     SetCharComment(comment)
   <DD>
-    Sets the currently selected character to have the given comment. The comment
+    Sets the currently selected glyph to have the given comment. The comment
     is converted via the current encoding to unicode.
   <DT>
     BitmapsAvail(sizes)
@@ -1260,19 +1257,19 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     BitmapsRegen(sizes)
   <DD>
     Allows you to update specific bitmaps in an already generated bitmap font.
-    It will regenerate the bitmaps of all selected characters at the specified
+    It will regenerate the bitmaps of all selected glyphs at the specified
     pixelsizes.
   <DT>
     ApplySubstitution(script,lang,tag)
   <DD>
     All three arguments must be strings of no more that four characters (shorter
     strings will be padded with blanks to become 4 character strings). For each
-    selected character this command will look up that character's list of
-    substitutions, and if it finds a substitution with the tag "tag" (and if
-    that substitution matches the script and language combination) then it will
-    apply the substitution-- that is it will find the variant character specified
-    in the substitution and replace the current character with the variant, and
-    remove the variant from the font.
+    selected glyph this command will look up that glyph's list of substitutions,
+    and if it finds a substitution with the tag "tag" (and if that substitution
+    matches the script and language combination) then it will apply the
+    substitution-- that is it will find the variant glyph specified in the
+    substitution and replace the current glyph with the variant, and remove the
+    variant from the font.
     <P>
     FontForge recognizes the string "*" as a wildcard for both the script and
     the language (not for the tag though). So you wish to replace all glyphs
@@ -1285,33 +1282,33 @@ ApplySubstitution("*","*","vrt2")
   <DT>
     Transform(t1,t2,t3,t4,t5,t6)
   <DD>
-    Each argument will be divided by 100. and then all selected characters will
-    be transformed by this matrix
+    Each argument will be divided by 100. and then all selected glyphs will be
+    transformed by this matrix
   <DT>
     HFlip([about-x])
   <DD>
-    All selected characters will be horizontally flipped about the vertical line
-    through x=about-x. If no argument is given then all selected characters will
+    All selected glyphs will be horizontally flipped about the vertical line
+    through x=about-x. If no argument is given then all selected glyphs will
     be flipped about their central point.
   <DT>
     VFlip([about-y])
   <DD>
-    All selected characters will be vertically flipped about the horizontal line
-    through y=about-y. If no argument is given then all selected characters will
+    All selected glyphs will be vertically flipped about the horizontal line
+    through y=about-y. If no argument is given then all selected glyphs will
     be flipped about their central point.
   <DT>
     Rotate(angle[,ox,oy])
   <DD>
-    Rotates all selected character the specified number of degrees. If the last
-    two args are specified they provide the origin of the rotation, otherwise
-    the center of the character is used.
+    Rotates all selected glyph the specified number of degrees. If the last two
+    args are specified they provide the origin of the rotation, otherwise the
+    center of the glyph is used.
   <DT>
     Scale(factor[,yfactor][,ox,oy])
   <DD>
-    All selected characters will be scaled (scale factors are in percent)
+    All selected glyphs will be scaled (scale factors are in percent)
     <UL>
       <LI>
-	with one argument they will be scaled uniformly about the character's center
+	with one argument they will be scaled uniformly about the glyph's center
 	point
       <LI>
 	with two arguments the first specifies the scale factor for x, the second
@@ -1325,11 +1322,11 @@ ApplySubstitution("*","*","vrt2")
     Skew(angle[,ox,oy])<BR>
     Skew(angle-num,angle-denom[,ox,oy])
   <DD>
-    All selected characters will be skewed by the given angle.
+    All selected glyphs will be skewed by the given angle.
   <DT>
     Move(delta-x,delta-y)
   <DD>
-    All selected characters will have their points moved the given amount.
+    All selected glyphs will have their points moved the given amount.
   <DT>
     ScaleToEm(em-size)<BR>
     ScaleToEm(ascent,descent)
@@ -1341,7 +1338,7 @@ ApplySubstitution("*","*","vrt2")
     <A NAME="NonLinear">NonLinearTransform</A>(x-expression,y-expression)
   <DD>
     Takes two string arguments which must contain valid expressions of x and
-    y and transforms all selected characters using those expressions.
+    y and transforms all selected glyphs using those expressions.
     <BLOCKQUOTE>
       <PRE>&lt;e0&gt; := "x" | "y" | "-" &lt;e0&gt; | "!" &lt;e0&gt; | "(" &lt;expr&gt; ")" |
 	"sin" "(" &lt;expr&gt; ")" | "cos" "(" &lt;expr&gt; ")" | "tan" "(" &lt;expr&gt; ")" | 
@@ -1422,22 +1419,22 @@ ApplySubstitution("*","*","vrt2")
   <DT>
     Outline(width)
   <DD>
-    Strokes all selected characters with a stroke of the specified width (internal
-    to the characters). The bounding box of the character will not change. In
-    other words it produces what the mac calls the "Outline Style".
+    Strokes all selected glyphs with a stroke of the specified width (internal
+    to the glyphs). The bounding box of the glyph will not change. In other words
+    it produces what the mac calls the "Outline Style".
   <DT>
     Inline(width,gap)
   <DD>
-    Produces an outline as above, and then shrinks the character so that it fits
-    inside the outline. In other words, it produces an inlined character.
+    Produces an outline as above, and then shrinks the glyph so that it fits
+    inside the outline. In other words, it produces an inlined glyph.
   <DT>
     Shadow(angle,outline-width,shadow-width)
   <DD>
-    Converts the selected characters into shadowed versions of themselves.
+    Converts the selected glyphs into shadowed versions of themselves.
   <DT>
     Wireframe(angle,outline-width,shadow-width)
   <DD>
-    Converts the selected characters into wireframed versions of themselves.
+    Converts the selected glyphs into wireframed versions of themselves.
   <DT>
     RemoveOverlap()
   <DD>
@@ -1497,15 +1494,15 @@ ApplySubstitution("*","*","vrt2")
   <DT>
     DefaultATT(tag)
   <DD>
-    For all selected characters make a guess as to what might be an appropriate
-    value for the given tag. If the tag is "*" then FontForge will apply guesses
-    for all features it can.
+    For all selected glyphs make a guess as to what might be an appropriate value
+    for the given tag. If the tag is "*" then FontForge will apply guesses for
+    all features it can.
   <DT>
     AddATT(type,script-lang,tag,flags,variant)<BR>
     AddATT("Position",script-lang,tag,flags,xoff,yoff,h_adv_off,v_adv_off)<BR>
     AddATT("Pair",script-lang,tag,flags,name,xoff,yoff,h_adv_off,v_adv_off,xoff2,yoff2,h_adv_off2,v_adv_off2)
   <DD>
-    Allows you to add an Advanced Typography feature to a single selected character.
+    Allows you to add an Advanced Typography feature to a single selected glyph.
     The first argument may be either: Position, Pair, Substitution, AltSubs,
     MultSubs or Ligature. The second argument should be a script-lang list where
     each 4-character script name is followed by a comma separated list of 4 character
@@ -1533,16 +1530,16 @@ ApplySubstitution("*","*","vrt2")
     <P>
     The remaining argument(s) vary depending on the value of the first (type)
     argument. For Position tags there are 4 integral arguments which specify
-    how this feature modifies the metrics of this character. For Pair type the
-    next argument is the name of the other character in the pair followed by
-    8 integral arguments, the first 4 specify the changes in positioning to the
-    first character, the next four the changes for the second char. For substitution
-    tags the fifth argument is the name of another glyph which will replace the
-    current one. For an AltSubs tag the argument is a space separated list of
-    glyph names any of which will replace the current one. For a MultSubs the
-    argument is a space separated list of names all of which will replace the
-    current one. For a Ligature the argument is a space separated list of glyph
-    names all of which will be replaced by the current glyph.
+    how this feature modifies the metrics of this glyph. For Pair type the next
+    argument is the name of the other glyph in the pair followed by 8 integral
+    arguments, the first 4 specify the changes in positioning to the first glyph,
+    the next four the changes for the second char. For substitution tags the
+    fifth argument is the name of another glyph which will replace the current
+    one. For an AltSubs tag the argument is a space separated list of glyph names
+    any of which will replace the current one. For a MultSubs the argument is
+    a space separated list of names all of which will replace the current one.
+    For a Ligature the argument is a space separated list of glyph names all
+    of which will be replaced by the current glyph.
   <DT>
     RemoveATT(type,script-lang,tag)
   <DD>
@@ -1573,11 +1570,11 @@ ApplySubstitution("*","*","vrt2")
   <DT>
     AddAnchorPoint(name,type,x,y[,lig-index])
   <DD>
-    Adds an AnchorPoint to the currently selected character. The first argument
-    is the name of the AnchorClass. The second should be one of the strings:
-    "mark", "basechar", "baselig", "basemark", "cursentry" or "cursexit". The
-    next two values specify the location of the point. The final argument is
-    only present for things of type "baselig".
+    Adds an AnchorPoint to the currently selected glyph. The first argument is
+    the name of the AnchorClass. The second should be one of the strings: "mark",
+    "basechar", "baselig", "basemark", "cursentry" or "cursexit". The next two
+    values specify the location of the point. The final argument is only present
+    for things of type "baselig".
   <DT>
     BuildComposite()
   <DD>
@@ -1593,10 +1590,10 @@ ApplySubstitution("*","*","vrt2")
   <DT>
     MergeFonts(other-font-name[,flags])
   <DD>
-    Loads other-font-name, and extracts any characters from it which are not
-    in the current font and moves them to the current font. The flags argument
-    is the same as that for Open. Currently the only relevant flag is to say
-    that you do have a license to use a font with fstype=2.
+    Loads other-font-name, and extracts any glyphs from it which are not in the
+    current font and moves them to the current font. The flags argument is the
+    same as that for Open. Currently the only relevant flag is to say that you
+    do have a license to use a font with fstype=2.
   <DT>
     InterpolateFonts(percentage,other-font-name[,flags])
   <DD>
@@ -1631,19 +1628,17 @@ ApplySubstitution("*","*","vrt2")
   <DT>
     AddHHint(start,width)
   <DD>
-    Adds horizontal stem hint to any selected characters. The hint starts at
-    location "start" and is width wide. A hint will be added to all selected
-    characters.
+    Adds horizontal stem hint to any selected glyphs. The hint starts at location
+    "start" and is width wide. A hint will be added to all selected glyphs.
   <DT>
     AddVHint(start,width)
   <DD>
-    Adds a vertical stem hint to any selected characters. The hint starts at
-    location "start" and is width wide. A hint will be added to all selected
-    characters.
+    Adds a vertical stem hint to any selected glyphs. The hint starts at location
+    "start" and is width wide. A hint will be added to all selected glyphs.
   <DT>
     ClearCharCounterMasks()
   <DD>
-    Clears any counter masks from the (one) selected character.
+    Clears any counter masks from the (one) selected glyph.
   <DT>
     SetCharCounterMask(cg,hint-index,hint-index,...)
   <DD>
@@ -1653,15 +1648,15 @@ ApplySubstitution("*","*","vrt2")
   <DT>
     ReplaceCharCounterMasks(array)
   <DD>
-    This requires that there be exactly one character selected. It will create
-    a set of counter masks for that character. The single argument must be an
-    array of twelve element arrays of integers (in c this would be "int
-    array[][12]"). This is the format of a type2 counter mask. The number of
-    elements in the top level array is the number of counter groups to be specified.
-    The nested array thus corresponds to a counter mask, and is treated as an
-    array of bytes. Each bit in the byte specifies whether the corresponding
-    hint is active in this counter. (there are at most 96 hints, so at most 12
-    bytes). Array[i][0]&amp;0x80 corresponds to the first horizontal stem hint,
+    This requires that there be exactly one glyph selected. It will create a
+    set of counter masks for that glyph. The single argument must be an array
+    of twelve element arrays of integers (in c this would be "int array[][12]").
+    This is the format of a type2 counter mask. The number of elements in the
+    top level array is the number of counter groups to be specified. The nested
+    array thus corresponds to a counter mask, and is treated as an array of bytes.
+    Each bit in the byte specifies whether the corresponding hint is active in
+    this counter. (there are at most 96 hints, so at most 12 bytes).
+    Array[i][0]&amp;0x80 corresponds to the first horizontal stem hint,
     Array[i][0]&amp;0x40 corresponds to the second, Array[i][1]&amp;0x80 corresponds
     to the eighth hint, etc.
   <DT>
@@ -1714,21 +1709,21 @@ ApplySubstitution("*","*","vrt2")
   <DT>
     AutoWidth(spacing)
   <DD>
-    Guesses at the widths of all selected characters so that two adjacent "I"
-    characters will appear to be spacing em-units apart. (if spacing is the negative
-    of the em-size (sum of ascent and descent) then a default value will be used).
+    Guesses at the widths of all selected glyphs so that two adjacent "I" glyphs
+    will appear to be spacing em-units apart. (if spacing is the negative of
+    the em-size (sum of ascent and descent) then a default value will be used).
   <DT>
     AutoKern(spacing,threshold[,kernfile])
   <DD>
     (AutoKern doesn't work well in general)<BR>
-    Guesses at kerning pairs by looking at all selected characters, or if a kernfile
+    Guesses at kerning pairs by looking at all selected glyphs, or if a kernfile
     is specified, FontForge will read the kern pairs out of the file.
   <DT>
     SetKern(ch2,offset)
   <DD>
-    Sets the kern between any selected characters and the character ch2 to be
-    offset. The first argument may be specified as in Select(), the second is
-    an integer representing the kern offset.
+    Sets the kern between any selected glyphs and the glyph ch2 to be offset.
+    The first argument may be specified as in Select(), the second is an integer
+    representing the kern offset.
   <DT>
     RemoveAllKerns()
   <DD>
@@ -1736,15 +1731,15 @@ ApplySubstitution("*","*","vrt2")
   <DT>
     SetVKern(ch2,offset)
   <DD>
-    Sets the kern between any selected characters and the character ch2 to be
-    offset. The first argument may be specified as in Select(), the second is
-    an integer representing the kern offset.
+    Sets the kern between any selected glyphs and the glyph ch2 to be offset.
+    The first argument may be specified as in Select(), the second is an integer
+    representing the kern offset.
   <DT>
     VKernFromHKern()
   <DD>
     Removes all vertical kern pairs and classes from the current font, and then
     generates new vertical kerning pairs by copying the horizontal kerning data
-    for a pair of characters to the vertically rotated versions of those characters.
+    for a pair of glyphs to the vertically rotated versions of those glyphs.
   <DT>
     RemoveAllVKerns()
   <DD>
@@ -1835,92 +1830,89 @@ ApplySubstitution("*","*","vrt2")
   <DT>
     CharCnt()
   <DD>
-    Returns the number of characters in the current font
+    Returns the number of glyphs in the current font
   <DT>
     InFont(arg)
   <DD>
     Returns whether the argument is in the font. The argument may be an integer
     in which case true is returned if the value is &gt;= 0 and &lt; total number
-    of characters in the font. Otherwise if the argument is a unicode code point
-    or a postscript character name, true is returned if that character is in
-    the font.
+    of glyphs in the font. Otherwise if the argument is a unicode code point
+    or a postscript glyph name, true is returned if that glyph is in the font.
   <DT>
     WorthOutputting(arg)
   <DD>
-    Arg is as above. This returns true if the character contains any splines,
-    references or has had its width set.
+    Arg is as above. This returns true if the glyph contains any splines, references
+    or has had its width set.
   <DT>
     CharInfo(str)<BR>
-    CharInfo("Kern",character-spec)<BR>
-    CharInfo("VKern",character-spec)<BR>
+    CharInfo("Kern",glyph-spec)<BR>
+    CharInfo("VKern",glyph-spec)<BR>
     CharInfo(str,script,lang,tag)
   <DD>
-    There must be exactly one character selected in the font, and this returns
+    There must be exactly one glyph selected in the font, and this returns
     information on it. The information returned depends on str with the obvious
     meanings:
     <UL>
       <LI>
-	"Name" returns the character's name
+	"Name" returns the glyph's name
       <LI>
-	"Unicode" returns the character's unicode encoding
+	"Unicode" returns the glyph's unicode encoding
       <LI>
-	"Encoding" returns the character's encoding in the current font
+	"Encoding" returns the glyph's encoding in the current font
       <LI>
-	"Width" returns the character's width
+	"Width" returns the glyph's width
       <LI>
-	"VWidth" returns the character's Vertical width
+	"VWidth" returns the glyph's Vertical width
       <LI>
-	"LBearing" returns the character's left side bearing
+	"LBearing" returns the glyph's left side bearing
       <LI>
-	"RBearing" returns the character's right side bearing
+	"RBearing" returns the glyph's right side bearing
       <LI>
 	"BBox" returns a 4 element array containing [minimum-x-value, minimum-y-value,
-	maximum-x-value, maximum-y-value] of the character.
+	maximum-x-value, maximum-y-value] of the glyph.
       <LI>
-	"Kern" (there must be a second argument here which specifies another character
-	as in Select()) Returns the kern offset between the two characters (or 0
-	if none).
+	"Kern" (there must be a second argument here which specifies another glyph
+	as in Select()) Returns the kern offset between the two glyphs (or 0 if none).
       <LI>
-	"VKern" (there must be a second argument here which specifies another character
-	as in Select()) Returns the vertical kern offset between the two characters
-	(or 0 if none).
+	"VKern" (there must be a second argument here which specifies another glyph
+	as in Select()) Returns the vertical kern offset between the two glyphs (or
+	0 if none).
       <LI>
-	"Color" returns the character's color as a 24bit rgb value (or -2 if no color
-	has been assigned to the character).
+	"Color" returns the glyph's color as a 24bit rgb value (or -2 if no color
+	has been assigned to the glyph).
       <LI>
-	"Comment" returns the character's comment (it will be converted from unicode
+	"Comment" returns the glyph's comment (it will be converted from unicode
 	into the default encoding).
       <LI>
-	"Changed" returns whether the character has been changed since the last save
+	"Changed" returns whether the glyph has been changed since the last save
 	or load.
       <LI>
 	"DontAutoHint" returns the status of the "Don't AutoHint" flag.
       <LI>
 	"Position" takes three additional arguments, a script, a language and a tag
-	(all 4 character strings) and returns whether the character has a Position
-	alternate with that tag.
+	(all 4 glyph strings) and returns whether the glyph has a Position alternate
+	with that tag.
       <LI>
 	"Pair" takes three additional arguments, a script, a language and a tag (all
-	4 character strings) and returns whether the character has a Pairwise positioning
+	4 glyph strings) and returns whether the glyph has a Pairwise positioning
 	alternate with that tag.
       <LI>
 	"Substitution" takes three additional arguments, a script, a language and
-	a tag (all 4 character strings) and returns the name of the Simple Substitution
+	a tag (all 4 glyph strings) and returns the name of the Simple Substitution
 	alternate with that tag (or a null string if there is none).
       <LI>
 	"AltSubs" takes three additional arguments, a script, a language and a tag
-	(all 4 character strings) and returns a space separated list of the names
-	of all alternate substitutions with that tag (or a null string if there is
-	none).
+	(all 4 glyph strings) and returns a space separated list of the names of
+	all alternate substitutions with that tag (or a null string if there is none).
       <LI>
 	"MultSubs" takes three additional arguments, a script, a language and a tag
-	(all 4 character strings) and returns a space separated list of all the names
+	(all 4 glyph strings) and returns a space separated list of all the names
 	of all glyphs this glyph gets decomposed into with that tag (or a null string
 	if there is none).
       <LI>
 	"Ligature" takes three additional arguments, a script, a language and a tag
-	(all 4 character strings) and returns a space separated list of the names
-	of all components with that tag (or a null string if there is none).
+	(all 4 glyph strings) and returns a space separated list of the names of
+	all components with that tag (or a null string if there is none).
       <LI>
 	"GlyphIndex" returns the index of the current glyph in the ttf 'glyf' table,
 	or -1 if it has been created since. This value may change when a
@@ -1962,7 +1954,7 @@ verta = CharInfo("Substitution","*","dflt","vrt2")
   Example 1:
 </H3>
 <BLOCKQUOTE>
-  <PRE>#Set the color of all selected characters to be yellow
+  <PRE>#Set the color of all selected glyphs to be yellow
 #designed to be run within an interactive fontforge session.
 foreach
   SetCharColor(0xffff00)

@@ -2,10 +2,10 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 3-Jun-2004 -->
-  <LINK REL="icon" href="ffanvil16.png">
+  <!-- AP: Last modified: 13-Oct-2004 -->
   <TITLE>FontForge -- An outline font editor for PostScript&reg;, TrueType
   and OpenType fonts</TITLE>
+  <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
 <BODY>
 <H1 Align=Center>
@@ -37,9 +37,9 @@
       <LI>
 	<A HREF="#FontView">Font View</A>
       <LI>
-	<A HREF="#CharView">Outline Character View</A>
+	<A HREF="#CharView">Outline Glyph View</A>
       <LI>
-	<A HREF="#BitmapView">Bitmap Character View</A>
+	<A HREF="#BitmapView">Bitmap Glyph View</A>
       <LI>
 	<A HREF="#MetricsView">Metrics View</A>
     </UL>
@@ -66,7 +66,7 @@
 	<A HREF="fontview.html#Vertical-Metrics">Vertical Metrics</A>
     </UL>
   <LI>
-    <A HREF="charview.html">Outline Character View</A>
+    <A HREF="charview.html">Outline Glyph View</A>
     <UL>
       <LI>
 	<A HREF="charview.html#Layers">Layers</A>
@@ -78,14 +78,14 @@
 	<A HREF="charview.html#MM">Multiple Master </A>
     </UL>
   <LI>
-    <A HREF="bitmapview.html">Bitmap Character View</A>
+    <A HREF="bitmapview.html">Bitmap Glyph View</A>
     <UL>
       <LI>
 	<A HREF="bitmapview.html#Layers">Layers</A>
       <LI>
 	<A HREF="bitmapview.html#Tools">Tools</A>
       <LI>
-	<A HREF="bitmapview.html#AA">Anti-Aliased Characters</A>
+	<A HREF="bitmapview.html#AA">Anti-Aliased Glyphs</A>
       <LI>
 	<A HREF="bitmapview.html#Shades">Shades</A>
     </UL>
@@ -347,10 +347,10 @@ Each character (or to be more precise, each glyph) in a font has a shape
 and there are various ways of describing that shape on a computer. Postscript
 and truetype fonts generally describe the outline of the shape and then color
 in the interior of that outline, this coloring process is called rasterizing.
-On the other hand a bitmap font describes each character by drawing a picture
+On the other hand a bitmap font describes each glyph by drawing a picture
 of that character on a rectangular grid of pixels. There is a third type,
-a stroked font, where each stem of the character is represented by one line
-down the center of the stem, and the line is later drawn with a certain width.
+a stroked font, where each stem of the glyph is represented by one line down
+the center of the stem, and the line is later drawn with a certain width.
 Most of the time we will not deal with stroked fonts directly (the
 <A HREF="elementmenu.html#Expand">Expand Stroke</A> command can be used to
 turn them into outlines), but if you wish to edit stroked fonts, see the
@@ -359,14 +359,14 @@ section on <A HREF="multilayer.html">multi-layered editing</A>.
   <TR>
     <TD><P ALIGN=Center>
       <I><IMG WIDTH="117" HEIGHT="201" SRC="outlinechar.png"></I><BR>
-      A character's outline</TD>
+      A glyph's outline</TD>
     <TD><P ALIGN=Center>
       <IMG SRC="bitmapchar.png" WIDTH="117" HEIGHT="201">
       <P ALIGN=Center>
-      A character's bitmap</TD>
+      A glyph's bitmap</TD>
     <TD><P ALIGN=Center>
       <IMG SRC="strokechar.png" WIDTH="208" HEIGHT="198"><BR>
-      A stroked character<BR>
+      A stroked glyph<BR>
       (showing the equiv. outline in grey)</TD>
   </TR>
 </TABLE>
@@ -424,11 +424,11 @@ do not self-intersect (and paths in a font SHOULD not self-intersect) and
 we will simplify our life by pretending that we can call paths clockwise
 or counter).
 <P>
-When time comes to draw our outline character we want to make dark everything
+When time comes to draw our outline glyph we want to make dark everything
 in the interior of the outline. But let's look at the outline of our A above.
 We have two paths inside the main outline path, and we want the interior
 of those two paths to be white rather than dark. How do we make this distinction?
-We do it by the direction of the paths. Consider any point in the character.
+We do it by the direction of the paths. Consider any point in the glyph.
 If we draw an imaginary line from that point out to infinity (in any direction)
 and count the number of times we cross a path, each time we cross a clockwise
 path we add one to our count, each time we cross a counter clockwise path
@@ -440,45 +440,45 @@ path should be clockwise).
 <P>
 All of these points (both the end points and the control points) are described
 mathematically. Each point is positioned on a cartesian coordinate system
-which has its origin on the character's base line (the line on which letters
+which has its origin on the glyph's base line (the line on which letters
 without descenders rest). Most font formats expect coordinates to be integers
 between -32768 and 32767, FontForge uses real numbers internally but (usually)
 rounds to the nearest integer when generating a font file.
 <P>
-The horizontal distance between the origin and the leftmost edge of the character
+The horizontal distance between the origin and the leftmost edge of the glyph
 is called the left side bearing (it may be negative, positive or zero). All
-characters have a width (sometimes called an advance width), this is the
-distance from the current character's origin to the origin of the next character.
-The distance between the right edge of the character and the width is called
-the right side bearing.
+glyphs have a width (sometimes called an advance width), this is the distance
+from the current glyph's origin to the origin of the next glyph. The distance
+between the right edge of the glyph and the width is called the right side
+bearing.
 <P>
 CJK text (Chinese, Japanese or Korean) can be written either vertically or
 horizontally, and so CJK fonts usually have a vertical advance width as well
 as the more common horizontal advance.
 <P>
-A character like "g" or "y" extends below the baseline, this is called a
-descender, while a character like "k" or "l" extends above it, this is called
-an ascender. Most latin (and greek and cyrillic) fonts have certain standard
-heights: the height of a lower case letter (without an ascender) is called
-the x-height, the height of a capital letter is called the cap-height, the
-height of the ascenders is called the ascender height (some, but not all,
-fonts have the ascenders and capitals at the same approximate height). Usually
-these will not be exactly the same for all characters, the letter "O" is
-usually slightly taller than the letter "I", but they both are within the
-range of the cap height for the font.
+A glyph like "g" or "y" extends below the baseline, this is called a descender,
+while a glyph like "k" or "l" extends above it, this is called an ascender.
+Most latin (and greek and cyrillic) fonts have certain standard heights:
+the height of a lower case letter (without an ascender) is called the x-height,
+the height of a capital letter is called the cap-height, the height of the
+ascenders is called the ascender height (some, but not all, fonts have the
+ascenders and capitals at the same approximate height). Usually these will
+not be exactly the same for all glyphs, the letter "O" is usually slightly
+taller than the letter "I", but they both are within the range of the cap
+height for the font.
 <P>
 The font itself has an ascent and descent associated with it. In the old
 days of metal type nothing could ascend above or descend below these values,
 nowadays accents and ascenders may reach above the font-wide ascent and
 descenders below it, but the concept is still a convenient one to retain.
-It is true that in almost all cases the characters will not ascend above
-or descend below the font-wide ascent and descent. The sum of the ascent
-and descent is the size of the font. The point size of a piece of metal type
-was determined by this value (essentially the height of the metal block holding
-the character). In a postscript font the local coordinate system is independent
-of the final size at which the font will be draw. By convention in postscript
-the sum of the ascent and descent is 1000 units, while in TrueType it is
-usually a power of two, often 2048.
+It is true that in almost all cases the glyphs will not ascend above or descend
+below the font-wide ascent and descent. The sum of the ascent and descent
+is the size of the font. The point size of a piece of metal type was determined
+by this value (essentially the height of the metal block holding the glyph).
+In a postscript font the local coordinate system is independent of the final
+size at which the font will be draw. By convention in postscript the sum
+of the ascent and descent is 1000 units, while in TrueType it is usually
+a power of two, often 2048.
 <H3>
   <A NAME="PT">TrueType</A> vs. PostScript vs OpenType vs SVG fonts
 </H3>
@@ -569,12 +569,12 @@ to draw small fonts.
   <DD>
     Adobe incorporated several different ways of providing hints for the rasterizer
     about how things should be treated. The most obvious of these are the horizontal
-    and vertical stem hints.Each character has its own set of hints to tell the
+    and vertical stem hints.Each glyph has its own set of hints to tell the
     rasterizer where to find stems. FontForge can usually figure out a reasonable
     set of stem hints (a process called
-    <A HREF="hintsmenu.html#AutoHint">autohinting</A>), but some characters are
-    too complex for it and it can make bad choices. It also provides a mode for
-    you to override its choices.
+    <A HREF="hintsmenu.html#AutoHint">autohinting</A>), but some glyphs are too
+    complex for it and it can make bad choices. It also provides a mode for you
+    to override its choices.
     <P>
     Adobe also has a mechanism for handling dished serifs called flex hinting.
     This means a curve that is only slightly deformed from the horizontal (or
@@ -584,20 +584,20 @@ to draw small fonts.
     The original version of hints did not allow them to overlap, this meant that
     most serifs could not be described, Adobe then developed a mechanism called
     hint substitution which allows for different sets of non-overlapping hints
-    to exist in different parts of the character. There are still shapes which
-    cannot be fully hinted, but hint substitution is an improvement. The
+    to exist in different parts of the glyph. There are still shapes which cannot
+    be fully hinted, but hint substitution is an improvement. The
     Hints-&gt;AutoHint command will figure out what stems overlap and where to
     change the current set of hints. The Hints-&gt;Hint Substitution Pts command
     will also figure where hint changes should occur, and the Hint Mask pane
     of the Point Info dialog gives the user direct control over this.
     <P>
     Most recently Adobe has provide a means to control the counters, the spaces
-    between stems, in a character. The original Type1 description provided support
+    between stems, in a glyph. The original Type1 description provided support
     for the horizontal counters in "m" and the vertical counters in "E" but more
     complex shapes could not be dealt with. Counter Hints (in a type1 font) may
-    only be used with non-latin (non-greek, non-cyrillic) character sets, in
-    type2 (OpenType) things are a bit more complicated,. FontForge will generate
-    counter hints when appropriate.
+    only be used with non-latin (non-greek, non-cyrillic) glyph sets, in type2
+    (OpenType) things are a bit more complicated,. FontForge will generate counter
+    hints when appropriate.
     <P>
     Adobe provides some font-wide hinting mechanisms. The two most obvious are
     the BlueValues and StemSnap settings in the
@@ -646,13 +646,13 @@ to draw small fonts.
     approximately the same width. It does a little extra work, trying to detect
     serifs that are attached to vertical stems and providing hints for them as
     well. It also uses the equivalent of the PostScript BlueValues to generate
-    cvt entries that force characters to have the same height at small pointsizes.
+    cvt entries that force glyphs to have the same height at small pointsizes.
     <P>
     I am not happy with the instructions I generate for TrueType.
     <P>
     When FontForge reads in a TrueType font it will store the instructions used,
     and when it next generates that font it will use those instructions -- provided
-    no significant change has happened to a character.
+    no significant change has happened to a glyph.
 </DL>
 <P>
 Most of my <A HREF="hinting.html">hinting user interface</A> is designed
@@ -661,46 +661,47 @@ with PostScript fonts in mind.
   <A NAME="References">References</A>
 </H3>
 <P>
-In addition to a set of outlines (splines) characters may be built out of
-references to other characters. This is especially handy for the accented
-characters, "&agrave;" can be made up of a reference to the "a" character
-and another reference to the "`" character. This can result in significant
-space savings, and in ease of design (if you change the "a" character after
-making a reference to it the "&agrave;" character will automatically change
-to, whereas if you just copied the "a" you would have to recopy it.
+In addition to a set of outlines (splines) glyphs may be built out of references
+to other glyphs. This is especially handy for the accented glyphs, "&agrave;"
+can be made up of a reference to the "a" glyph and another reference to the
+"`" glyph. This can result in significant space savings, and in ease of design
+(if you change the "a" glyph after making a reference to it the "&agrave;"
+glyph will automatically change to, whereas if you just copied the "a" you
+would have to recopy it.
 <P>
 FontForge has three commands for manipulating references, and one higher
-level command for building accented characters. The Edit-&gt;Copy Reference
-command will put a reference to the current character into the clipboard,
-which a subsequent Edit-&gt;Paste command will install as a reference. The
-Edit-&gt;Unlink Reference command will turn a reference in a character into
-it's component splines. The Element-&gt;Get Info command (when applied to
-a reference) will bring up a dialog showing you what character is referred
-to, and allowing you to bring up an editing window on that character. Finally
-the <CODE>Element-&gt;Build Accented Characters</CODE> command will figure
-out what characters should be refered to to build this composite character,
-and then will make those references and position them appropriately. So if
-"&agrave;" were selected and you did a <CODE>Element-&gt;Build Accented
-Characters</CODE> command, the FontForge would make a reference to "a" and
-another to "`", and place the accent above the letter, and centered on it.
+level command for building accented glyphs. The Edit-&gt;Copy Reference command
+will put a reference to the current glyph into the clipboard, which a subsequent
+Edit-&gt;Paste command will install as a reference. The Edit-&gt;Unlink Reference
+command will turn a reference in a glyph into it's component splines. The
+Element-&gt;Get Info command (when applied to a reference) will bring up
+a dialog showing you what glyph is referred to, and allowing you to bring
+up an editing window on that glyph. Finally the <CODE>Element-&gt;Build Accented
+Glyphs</CODE> command will figure out what glyphs should be refered to to
+build this composite glyph, and then will make those references and position
+them appropriately. So if "&agrave;" were selected and you did a
+<CODE>Element-&gt;Build Accented Glyphs</CODE> command, the FontForge would
+make a reference to "a" and another to "`", and place the accent above the
+letter, and centered on it.
 <P>
 Sadly life is not quite that simple. Both PostScript and TrueType place
-restrictions on what kinds of characters may be referenced, worse they make
-different restrictions. About the only restriction FontForge makes is that
-it won't let you put a reference to a character inside itself. When generating
-a font, if it finds a situation where it can't use a refered character as
-a reference it will fix it up somehow, usually this means replacing it with
-the equivalent outlines.
+restrictions on what kinds of glyphs may be referenced, worse they make different
+restrictions. About the only restriction FontForge makes is that it won't
+let you put a reference to a glyph inside itself. When generating a font,
+if it finds a situation where it can't use a refered glyph as a reference
+it will fix it up somehow, usually this means replacing it with the equivalent
+outlines.
 <P>
-In both TrueType and PostScript a character must either be composed of all
-reference characters or all splines.
+In both TrueType and PostScript a glyph may not contain both splines and
+references, it must be wholy one or the other. If you mix splines and references
+FontForge will convert all references to splines during font generation.
 <P>
 In PostScript characters refered to must be in the Adobe Standard Encoding,
 which includes all of the Ascii characters, a collection of accents and certain
-ligatures. One of the referenced characters may be translated, but neither
-may be rotated, skewed or scaled. There must be exactly two referenced
-characters, and the reference character which is not translated must have
-the same width as the one being built.
+ligatures. One of the referenced glyphs may be translated, but neither may
+be rotated, skewed or scaled. There must be exactly two referenced glyphs,
+and the reference glyph which is not translated must have the same width
+as the one being built.
 <BLOCKQUOTE>
   <STRONG><SMALL><SMALL>Technical and confusing:</SMALL></SMALL></STRONG> FontForge
   has some tricks it can use to improve things. If you are working on U+04D2
@@ -710,27 +711,24 @@ the same width as the one being built.
   a postscript font where U+04D2 is a composite of U+0041 and U+00A8, both
   of which are in the Adobe Set (while U+0410 is not). Again when generating
   U+0410 FontForge will make it be a composite of U+0041 and U+0020 (space)
-  so as to get exactly two characters.
+  so as to get exactly two glyphs.
   <P>
   <STRONG><SMALL><SMALL>Technical and confusing:</SMALL></SMALL></STRONG> If
-  that fails FontForge will attempt to put the referenced characters into
-  subroutines and then invoke those. This only works if the characters in question
-  either:
+  that fails FontForge will attempt to put the referenced glyphs into subroutines
+  and then invoke those. This only works if the glyphs in question either:
   <UL>
     <LI>
       Have no overlapping hints (don't need hint substitution) and don't require
       flex hints
     <LI>
-      Or (if there are overlapping hints or flex hints) if the character in question
-      is not translated and has the same left side bearing as the character refering
+      Or (if there are overlapping hints or flex hints) if the glyph in question
+      is not translated and has the same left side bearing as the glyph refering
       to it (which is often the case)
   </UL>
 </BLOCKQUOTE>
 <P>
-In TrueType characters refered to must not themselves contain reference
-characters (at least in some versions of TrueType), references may be skewed
-and rotated as well as translated, and may be scaled as long as it is by
-an amount less than 2.
+In TrueType may be skewed and rotated as well as translated, and may be scaled
+as long as it is by an amount less than 2.
 <BLOCKQUOTE>
   <STRONG><SMALL><SMALL>Technical and confusing:</SMALL></SMALL></STRONG> So
   in the example above a generated TrueType font would also have U+04D2 composed
@@ -741,11 +739,11 @@ In OpenType (actually Postscript type2 fonts) things are different again.
 There is no direct support for references. FontForge will produce something
 which will allow for the space saving that references provide (by using
 subroutines), but it will not be able to detect what's a reference and what
-isn't when it reads the font in. Any character which does not itself contain
-a reference may be in a reference (like truetype), but only translations
-are allowed on those references, and as above either the characters must
-not have any overlapping hints (flex hints are ok here) or must not be translated
-and none of the other references may have any hints at all.
+isn't when it reads the font in. Any glyph which does not itself contain
+a reference may be in a reference, but only translations are allowed on those
+references, and as above either the glyphs must not have any overlapping
+hints (flex hints are ok here) or must not be translated and none of the
+other references may have any hints at all.
 <H3>
   <A NAME="Scripts">Scripts</A>
 </H3>
@@ -761,22 +759,22 @@ placing vowel marks.
   <A NAME="Anchors">Anchor Points and Classes</A>
 </H3>
 <P>
-Anchor points allow fine control of the positioning of two (or several)
-characters. There are several different styles of attachment based on anchors:
-cursive, mark to base, mark to ligature and mark to mark positioning. The
-first style is used to join glyphs in flowing scripts (cursive) where the
-exit from one character joins the entry point of the next. In the second
-style one of the characters is the base character, and it will be positioned
-normally, the other character will often be a diacritic or vowel mark and
-it will be positioned so that the anchor points in each character are coincident.
-Mark to ligature behaves similarly to mark to base except that there may
-be more that one attachment point for the mark depending on which component
-of the ligature it is connected to. Finally, mark to mark allows you to position
-two marks with respect to each other (as you might need to do in vietnamese
-or hebrew where you may get several marks for one glyph).
+Anchor points allow fine control of the positioning of two (or several) glyphs.
+There are several different styles of attachment based on anchors: cursive,
+mark to base, mark to ligature and mark to mark positioning. The first style
+is used to join glyphs in flowing scripts (cursive) where the exit from one
+glyph joins the entry point of the next. In the second style one of the glyphs
+is the base glyph, and it will be positioned normally, the other glyph will
+often be a diacritic or vowel mark and it will be positioned so that the
+anchor points in each glyph are coincident. Mark to ligature behaves similarly
+to mark to base except that there may be more that one attachment point for
+the mark depending on which component of the ligature it is connected to.
+Finally, mark to mark allows you to position two marks with respect to each
+other (as you might need to do in vietnamese or hebrew where you may get
+several marks for one glyph).
 <P>
-That is badly said. Consider the following two characters and how they are
-joined to make the final result:
+That is badly said. Consider the following two glyphs and how they are joined
+to make the final result:
 <TABLE>
   <TR>
     <TD><IMG SRC="a_with_anchor.png" WIDTH=104 HEIGHT=208></TD>
@@ -790,15 +788,14 @@ joined to make the final result:
 The grave accent has been raised and moved to the right so that its anchor
 point is positioned where the anchor from "a" was.
 <P>
-FontForge does not compose these characters (well, it can, but that's a
-completely different area), instead it provides information with the
+FontForge does not compose these glyphs (well, it can, but that's a completely
+different area), instead it provides information with the
 <A HREF="gposgsub.html">font</A> to a text layout program so that it can
 do the composition.
 <P>
 The example above is unlikely to be very useful since most latin fonts contain
-pre-composed a-grave characters, but the same concepts apply to arabic and
-hebrew where the number of variants is larger and the precomposed characters
-fewer.
+pre-composed a-grave glyphs, but the same concepts apply to arabic and hebrew
+where the number of variants is larger and the precomposed glyphs fewer.
 <P>
 That's roughly how anchor points are used. Now the mechanics.
 <P>
@@ -813,23 +810,23 @@ connections. For cursive connections, use the tag 'curs', and for mark to
 mark connections use 'mkmk'.
 <P>
 Cursive attachments are a little different from the other attachment types.
-Each character has two attachment points, an entry and an exit (instead of
-just the one shown in the mark to base example above). The text layout program
-will attach the exit point of one character to the entry point of the next.
+Each glyph has two attachment points, an entry and an exit (instead of just
+the one shown in the mark to base example above). The text layout program
+will attach the exit point of one glyph to the entry point of the next.
 <P>
-A character may contain several Anchor Points, but only one for each anchor
-class (ligatures may have more than one for a class, and 'curs' classes should
+A glyph may contain several Anchor Points, but only one for each anchor class
+(ligatures may have more than one for a class, and 'curs' classes should
 have two). You may create a point with the
 <A HREF="pointmenu.html#AddAnchor">Point-&gt;Add Anchor command</A>. You
-must specify an anchor class, and whether this point is in a base character
-or in a mark character, and a location. So in the example above the anchor
-point in "a" has class "Top" and is a base character, while the anchor point
-in "grave" also has class "Top" but is a mark character. There may be many
-base characters with an anchor point named "Top" and many mark characters
-also with "Top" anchor points. Any base character with a "Top" anchor point
-maybe composed with any mark character with a "Top" anchor point. So instead
-of specifying the exact composed form for all possible combinations we specify
-far fewer anchor points for the same effect.
+must specify an anchor class, and whether this point is in a base glyph or
+in a mark glyph, and a location. So in the example above the anchor point
+in "a" has class "Top" and is a base glyph, while the anchor point in "grave"
+also has class "Top" but is a mark glyph. There may be many base glyphs with
+an anchor point named "Top" and many mark glyphs also with "Top" anchor points.
+Any base glyph with a "Top" anchor point maybe composed with any mark glyph
+with a "Top" anchor point. So instead of specifying the exact composed form
+for all possible combinations we specify far fewer anchor points for the
+same effect.
 <P>
 But life is not really that simple. Ligatures may need several anchor points
 of the same class (one above each component for example). When you create
@@ -841,7 +838,7 @@ the first anchor point, the second mark over the second and so on (this is
 a gross simplification).
 <P>
 Finally you may need to position two marks based on the same anchor point,
-for example the character <IMG SRC="a_dieresis_macron.png" WIDTH=9 HEIGHT=14>
+for example the glyph <IMG SRC="a_dieresis_macron.png" WIDTH=9 HEIGHT=14>
 has a diaeresis and a macron over it. Both of which might normally be positioned
 with the Top anchor class. Instead we define a special class for positioning
 one mark with respect to another. When creating the anchor class specify
@@ -849,8 +846,8 @@ a tag of 'mkmk' (mark to mark) and call it something like "TopMark". When
 you create a new anchor point for diaeresis you specify that it is a <EM>base
 mark</EM> and you position it above the glyph, while the new anchor point
 in macron should be of type mark and should be positioned at the same place
-as the "Top" anchor point. Thus when given the sequence of characters "a
-diaeresis macron" the text layout program should position "a" normally, position
+as the "Top" anchor point. Thus when given the sequence of glyphs "a diaeresis
+macron" the text layout program should position "a" normally, position
 "diaeresis" so that the its Top anchor point is where "a"'s is, and position
 macron so that its TopMark anchor point is where "diaeresis"'s is.
 <P>
@@ -859,18 +856,18 @@ Anchor points may be selected, dragged, transformed, cut, copied and pasted.
   <A NAME="FontView">Font View</A>
 </H3>
 <P>
-The <A HREF="fontview.html">font view</A> displays all the characters in
-the font (or all that will fit in the window). Every line has two parts,
-at the top are small clear letters, underneath that, somewhat larger is a
-24 pixel rasterization of the font you have designed. As you edit a character
-in an <A HREF="#CharView">outline character view</A> its small version in
-the font view will change with it.
+The <A HREF="fontview.html">font view</A> displays all the glyphs in the
+font (or all that will fit in the window). Every line has two parts, at the
+top is a label, often small clear letters, underneath that, somewhat larger
+is a 24 pixel rasterization of the font you have designed. As you edit a
+glyph in an <A HREF="#CharView">outline glyph view</A> its small version
+in the font view will change with it.
 <P>
-Double-clicking on a character will bring up an outline character view of
-that character which will allow you to edit it.
+Double-clicking on a glyph will bring up an outline glyph view of that glyph
+which will allow you to edit it.
 <P>
-Selecting several characters will allow you to apply various operations to
-all of them, or to cut and paste them.
+Selecting several glyphs will allow you to apply various operations to all
+of them, or to cut and paste them.
 <P>
 <IMG SRC="AmbrosiaFV.png" WIDTH="423" HEIGHT="226">
 <P>
@@ -884,7 +881,7 @@ Another Wadalab font encapsulated in a CID keyed font
 <P>
 <IMG SRC="fontview-cid.png" WIDTH="573" HEIGHT="226">
 <H3>
-  <A NAME="CharView">Outline Character View</A>
+  <A NAME="CharView">Outline Glyph View</A>
 </H3>
 <P>
 The <A HREF="charview.html">outline view</A> is probably the most complex
@@ -896,11 +893,11 @@ the shape you are working on (it is displayed in grey). There are various
 grid lines visible, some created by default (the baseline, the ascent line,
 the descent line, and a line at x=0), you may add others yourself.
 <P>
-There is a layer showing the character's hints.
+There is a layer showing the glyph's hints.
 <P>
-In the foreground are the splines and points of the character itself, and
-the width line (you may adjust the character's width by moving this line).
-If a point is selected then its control points will be displayed.
+In the foreground are the splines and points of the glyph itself, and the
+width line (you may adjust the glyph's width by moving this line). If a point
+is selected then its control points will be displayed.
 <P>
 To the left of the main window (the image below shows them on the right,
 that was just to keep them from crowding things, you can move them around)
@@ -915,14 +912,14 @@ what layers (foreground, background, grid, hints) are visible and editable.
 The <A HREF="bitmapview.html">bitmap view</A> is similar to the outline view
 above. It also has a tools and layer palette.
 <P>
-This allows you to edit bitmap versions of the outline characters you create
+This allows you to edit bitmap versions of the outline glyphs you create
 above.
 <P>
 In the background is a small rendition of the outline, and in the foreground
 are the bits of the image. You may make the program calculate which bits
 should be set by pressing the "Recalculate button", the results usually need
 to be tweaked by hand. In the upper left corner is a full sized image of
-your bitmap character.
+your bitmap glyph.
 <P>
 <IMG SRC="BitmapView.png" WIDTH="254" HEIGHT="273">
 <H3>
@@ -930,18 +927,18 @@ your bitmap character.
 </H3>
 <P>
 The <A HREF="metricsview.html">metrics view</A> allows you to see how the
-characters look together.
+glyphs look together.
 <P>
-You can change the width and left/right bearings of a character, either by
-dragging in the upper part of the window or by entering an appropriate number
-in the lower.
+You can change the width and left/right bearings of a glyph, either by dragging
+in the upper part of the window or by entering an appropriate number in the
+lower.
 <P>
-You can also provide kerning information for any two adjacent characters.
+You can also provide kerning information for any two adjacent glyphs.
 <P>
 <IMG SRC="MetricsView.png" WIDTH="478" HEIGHT="323">
 <P>
 <IMG SRC="VerticalMetrics.png" WIDTH="270" HEIGHT="573" ALIGN="Right">Note
-that in Hebrew, or Arabic (or any other right to left alphabet) the characters
+that in Hebrew, or Arabic (or any other right to left alphabet) the glyphs
 will start on the right and run to the left. While in CJK fonts you may want
 to see things arranged vertically.
 <P>

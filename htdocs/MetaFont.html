@@ -2,9 +2,9 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 23-Jun-2001 -->
-  <!-- AP: Last modified: 16-Apr-2004 -->
-  <LINK REL="icon" href="ffanvil16.png">
+  <!-- AP: Last modified: 13-Oct-2004 -->
   <TITLE>MetaFont -- Standard Transformations on Fonts</TITLE>
+  <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
 <BODY>
 <H1 ALIGN=Center>
@@ -14,7 +14,7 @@
 <P>
 The MetaFont dialog (obviously the name is a rip-off of
 <A HREF="http://www.tug.org/">Knuth's work</A>) will try to find important
-features of a font and a character and allow you to modify them. It does
+features of a font and a glyph and allow you to modify them. It does
 <EM>not</EM> read TeX .mf files. The features searched for are:
 <UL>
   <LI>
@@ -51,7 +51,7 @@ width of the normal font. This is very similar to the 1.75 suggested by
 Microsoft's ratio of 700/400 (700 being the numeric weight of a bold font,
 and 400 being the numeric weight of a normal font).
 <P>
-In Knuth's Computer Modern Bold Extended Roman, the "m" character is extended
+In Knuth's Computer Modern Bold Extended Roman, the "m" glyph is extended
 to 1.15 times the width of the "m" in Computer Modern Roman, and the x-height
 is 1.03 times higher.
 <P>
@@ -130,7 +130,7 @@ At first glance this does not seem like much of a transformation, after all
 postscript and truetype fonts can be drawn at any pointsize. But traditionally,
 as the point-size decreases the boldness (thickness of the stems) increases
 slightly, the counters and side bearings also change. For metal type there
-were generally three drawings for a character in a given font, one for pointsizes
+were generally three drawings for a glyph in a given font, one for pointsizes
 less than 10, one for pointsizes 10,11 and 12, and one for display sizes
 (above 12). Most computer vector fonts do not show this change, while Knuth's
 Computer Modern fonts have a continuum:
@@ -311,7 +311,7 @@ Serif
 <P>
 To the left is an example of the same word (taken from a font specimen sheet)
 printed at 3 different point sizes (8,12 and 24) and then scaled up to the
-same size. The most obvious difference is that the characters are proportionally
+same size. The most obvious difference is that the glyphs are proportionally
 wider at the smaller pointsizes. It is less apparent that the stems of the
 letters are different:
 <TABLE CELLPADDING="2">

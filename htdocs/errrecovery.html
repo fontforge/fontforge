@@ -2,9 +2,9 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 17-Dec-2000 -->
-  <!-- AP: Last modified: 2-Mar-2004 -->
-  <LINK REL="icon" href="ffanvil16.png">
+  <!-- AP: Last modified: 13-Oct-2004 -->
   <TITLE>Error Recovery</TITLE>
+  <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
 <BODY>
 <H1 ALIGN=Center>
@@ -16,7 +16,7 @@ All programs crash, and new programs (like this one) crash a lot.
 Every minute or so FontForge looks around and sees if anything has changed
 since the last time it checked. If it finds a font that has had changes,
 it will save a small file in its private directory (~/.FontForge/autosave)
-which consists of all changed characters in the changed font.
+which consists of all changed glyphs in the changed font.
 <P>
 When FontForge starts up it checks this directory, and if it finds anything
 there it attempts to apply those changes to the original font. So if FontForge
@@ -30,10 +30,10 @@ When editing CID-keyed fonts there are a few potential gotchas:
     sub font)
   <LI>
     FontForge does not keep track of which sub font a change occurred in, instead
-    at recovery time it will look for a subfont that is contains a character
-    at the CID that was changed. In almost all cases this will be right, but
-    if you add characters or if you have two sub-fonts defining the same CID,
-    FontForge may guess wrong.
+    at recovery time it will look for a subfont that is contains a glyph at the
+    CID that was changed. In almost all cases this will be right, but if you
+    add glyphs or if you have two sub-fonts defining the same CID, FontForge
+    may guess wrong.
 </UL>
 <P>
 <P ALIGN=Center>
