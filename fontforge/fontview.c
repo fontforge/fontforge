@@ -341,9 +341,18 @@ int _FVMenuSaveAs(FontView *fv) {
     else if ( fv->sf->filename!=NULL )
 	temp=def2u_copy(fv->sf->filename);
     else {
-	SplineFont *sf = fv->cidmaster?fv->cidmaster:fv->sf;
-	temp = galloc(sizeof(unichar_t)*(strlen(sf->fontname)+8));
+	SplineFont *sf = fv->cidmaster?fv->cidmaster:
+		fv->sf->mm!=NULL?fv->sf->mm->normal:fv->sf;
+	temp = galloc(sizeof(unichar_t)*(strlen(sf->fontname)+10));
 	uc_strcpy(temp,sf->fontname);
+	if ( fv->cidmaster!=NULL )
+	    uc_strcat(temp,"CID");
+	else if ( sf->mm==NULL )
+	    ;
+	else if ( sf->mm->apple )
+	    uc_strcat(temp,"Var");
+	else
+	    uc_strcat(temp,"MM");
 	uc_strcat(temp,".sfd");
     }
     ret = GWidgetSaveAsFile(GStringGetResource(_STR_Saveas,NULL),temp,NULL,NULL,NULL);
