@@ -804,6 +804,7 @@ static void bGenerate(Context *c) {
     int fmflags = -1;
     int res = -1;
     char *subfontdirectory = NULL;
+    int wascompacted = sf->compacted;
 
     if ( c->a.argc!=2 && c->a.argc!=3 && c->a.argc!=4 && c->a.argc!=5 && c->a.argc!=6 )
 	error( c, "Wrong number of arguments");
@@ -821,8 +822,12 @@ static void bGenerate(Context *c) {
 	res = c->a.vals[4].u.ival;
     if ( c->a.argc>=6 )
 	subfontdirectory = c->a.vals[5].u.sval;
+    if ( wascompacted )
+	SFUncompactFont(sf);
     if ( !GenerateScript(sf,c->a.vals[1].u.sval,bitmaptype,fmflags,res,subfontdirectory,NULL) )
 	error(c,"Save failed");
+    if ( wascompacted )
+	SFCompactFont(sf);
 }
 
 static void bGenerateFamily(Context *c) {
