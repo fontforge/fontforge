@@ -589,6 +589,8 @@ static GTextInfo ligature_tags[] = {
     { (unichar_t *) _STR_MacSquareLig, NULL, 0, 0, (void *) CHR('M','S','L','G'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_MacAbbrevSquareLig, NULL, 0, 0, (void *) CHR('M','A','L','G'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_MacUnicodeDecomposition, NULL, 0, 0, (void *) CHR('M','U','C','M'), NULL, false, false, false, false, false, false, false, true },
+/* My hack to identify required features */
+    { (unichar_t *) _STR_RQD, NULL, 0, 0, (void *) REQUIRED_FEATURE, NULL, false, false, false, false, false, false, false, true },
     { NULL }
 };
 
@@ -609,6 +611,8 @@ GTextInfo simplepos_tags[] = {
     { (unichar_t *) _STR_AltVertPropMet, NULL, 0, 0, (void *) CHR('v','p','a','l'), NULL, false, false, false, false, false, false, false, true },
 /* Added by me so I can do round trip conversion of TeX tfm files */
     { (unichar_t *) _STR_ItalicCorrection, NULL, 0, 0, (void *) CHR('I','T','L','C'), NULL, false, false, false, false, false, false, false, true },
+/* My hack to identify required features */
+    { (unichar_t *) _STR_RQD, NULL, 0, 0, (void *) REQUIRED_FEATURE, NULL, false, false, false, false, false, false, false, true },
     { NULL }
 };
 
@@ -675,6 +679,8 @@ GTextInfo simplesubs_tags[] = {
     { (unichar_t *) _STR_MacLineFinalSwash, NULL, 0, 0, (void *) CHR('M','S','L','F'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_MacNonFinalSwash, NULL, 0, 0, (void *) CHR('M','S','N','F'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_MacMonospaceWidth, NULL, 0, 0, (void *) CHR('M','W','I','D'), NULL, false, false, false, false, false, false, false, true },
+/* My hack to identify required features */
+    { (unichar_t *) _STR_RQD, NULL, 0, 0, (void *) REQUIRED_FEATURE, NULL, false, false, false, false, false, false, false, true },
     { NULL }
 };
 
@@ -692,6 +698,8 @@ GTextInfo alternatesubs_tags[] = {
     { (unichar_t *) _STR_TraditionalForms, NULL, 0, 0, (void *) CHR('t','r','a','d'), NULL, false, false, false, false, false, false, false, true },
 /* My own invention, to provide data for tfm files for TeX's characters (like parens) which come in multiple sizes */
     { (unichar_t *) _STR_TeXCharList, NULL, 0, 0, (void *) CHR('T','C','H','L'), NULL, false, false, false, false, false, false, false, true },
+/* My hack to identify required features */
+    { (unichar_t *) _STR_RQD, NULL, 0, 0, (void *) REQUIRED_FEATURE, NULL, false, false, false, false, false, false, false, true },
     { NULL }
 };
 
@@ -699,6 +707,8 @@ static GTextInfo multiplesubs_tags[] = {
     { (unichar_t *) _STR_GlyphCompDecomp, NULL, 0, 0, (void *) CHR('c','c','m','p'), NULL, false, false, false, false, false, false, false, true },
 /* My own invention, to provide data for tfm files for TeX's characters (like parens) which can grow to an arbetrary size */
     { (unichar_t *) _STR_TeXExtensionList, NULL, 0, 0, (void *) CHR('T','E','X','L'), NULL, false, false, false, false, false, false, false, true },
+/* My hack to identify required features */
+    { (unichar_t *) _STR_RQD, NULL, 0, 0, (void *) REQUIRED_FEATURE, NULL, false, false, false, false, false, false, false, true },
     { NULL }
 };
 
@@ -1583,9 +1593,9 @@ return;
 }
 
 unichar_t *ClassName(const unichar_t *name,uint32 feature_tag,
-	uint16 flags, int script_lang_index,int merge_with) {
+	uint16 flags, int script_lang_index,int merge_with,int act_type) {
     unichar_t *newname, *upt;
-    char index[10];
+    char index[20];
 
     newname = galloc((u_strlen(name)+20)*sizeof(unichar_t));
     if ( (newname[0] = feature_tag>>24)==0 ) newname[0] = ' ';
@@ -1604,6 +1614,12 @@ unichar_t *ClassName(const unichar_t *name,uint32 feature_tag,
     sprintf( index,"%3d ", script_lang_index );
     uc_strcpy(upt,index);
     upt += u_strlen(upt);
+
+    if ( act_type!=-1 ) {
+	sprintf( index,"%d ", act_type );
+	uc_strcpy(upt,index);
+	upt += u_strlen(upt);
+    }
 
     if ( merge_with!=-1 ) {
 	sprintf( index,"%3d ", merge_with );
@@ -1650,7 +1666,7 @@ static GTextInfo **ACD_FigureMerge(SplineFont *sf,uint32 tag, int flags,
 			ti[cnt] = gcalloc(1,sizeof(GTextInfo));
 			ti[cnt]->fg = ti[cnt]->bg = COLOR_DEFAULT;
 			ti[cnt]->text = u_copy(ac->name);
-			ti[cnt]->userdata = (void *) (ac->merge_with);
+			ti[cnt]->userdata = (void *) (int32) (ac->merge_with);
 			if ( ac->merge_with == select ) {
 			    ti[cnt]->selected = true;
 			    *spos = cnt;
@@ -1764,13 +1780,13 @@ return( true );
 
 unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 	int script_lang_index, GTextInfo *tags, SplineFont *sf,
-	SplineChar *default_script, int merge_with ) {
+	SplineChar *default_script, int merge_with, int act_type ) {
     static unichar_t nullstr[] = { 0 };
     struct ac_dlg acd;
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[15];
-    GTextInfo label[15];
+    GGadgetCreateData gcd[18];
+    GTextInfo label[18];
     GWindow gw;
     unichar_t ubuf[8];
     unichar_t *ret;
@@ -1805,6 +1821,14 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 	if ( merge_with!=-1 ) {
 	    temp = u_strtol(def,&end,10);
 	    if ( end!=def ) {
+		act_type = temp;
+		def = end;
+		if ( *def==' ' ) ++def;
+	    }
+	}
+	if ( merge_with!=-1 ) {
+	    temp = u_strtol(def,&end,10);
+	    if ( end!=def ) {
 		merge_with = temp;
 		def = end;
 		if ( *def==' ' ) ++def;
@@ -1827,7 +1851,7 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,160));
-	pos.height = GDrawPointsToPixels(NULL,merge_with==-1?225:265);
+	pos.height = GDrawPointsToPixels(NULL,merge_with==-1?225:280);
 	acd.gw = gw = GDrawCreateTopWindow(NULL,&pos,acd_e_h,&acd,&wattrs);
 
 	memset(&gcd,0,sizeof(gcd));
@@ -1927,10 +1951,38 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 
 	i = 10;
 	if ( merge_with!=-1 ) {
+	    label[i].text = (unichar_t *) _STR_Default;
+	    label[i].text_in_resource = true;
+	    gcd[i].gd.label = &label[i];
+	    gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[9].gd.pos.y+20;
+	    gcd[i].gd.flags = gg_enabled|gg_visible;
+	    gcd[i].gd.popup_msg = GStringGetResource(_STR_MarkToBaseLig,NULL);
+	    gcd[i++].creator = GRadioCreate;
+
+	    label[i].text = (unichar_t *) "Mk-Mk";
+	    label[i].text_is_1byte = true;
+	    gcd[i].gd.label = &label[i];
+	    gcd[i].gd.pos.x = 55; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y;
+	    gcd[i].gd.flags = gg_enabled|gg_visible;
+	    gcd[i].gd.popup_msg = GStringGetResource(_STR_MarkToMark,NULL);
+	    gcd[i++].creator = GRadioCreate;
+
+	    label[i].text = (unichar_t *) _STR_Cursive;
+	    label[i].text_in_resource = true;
+	    gcd[i].gd.label = &label[i];
+	    gcd[i].gd.pos.x = 103; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y;
+	    gcd[i].gd.flags = gg_enabled|gg_visible;
+	    gcd[i].gd.popup_msg = GStringGetResource(_STR_CursiveAttach,NULL);
+	    gcd[i++].creator = GRadioCreate;
+
+	    if ( act_type==act_mark ) gcd[10].gd.flags |= gg_cb_on;
+	    else if ( act_type==act_mkmk ) gcd[11].gd.flags |= gg_cb_on;
+	    else gcd[12].gd.flags |= gg_cb_on;
+
 	    label[i].text = (unichar_t *) _STR_MergeWith;
 	    label[i].text_in_resource = true;
 	    gcd[i].gd.label = &label[i];
-	    gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[9].gd.pos.y+22;
+	    gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+17;
 	    gcd[i].gd.flags = gg_enabled|gg_visible;
 	    gcd[i].gd.popup_msg = GStringGetResource(_STR_MergeWithPopup,NULL);
 	    gcd[i++].creator = GLabelCreate;
@@ -1999,9 +2051,12 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 	if ( GGadgetIsChecked(gcd[7].ret) ) flags |= pst_ignorebaseglyphs;
 	if ( GGadgetIsChecked(gcd[8].ret) ) flags |= pst_ignoreligatures;
 	if ( GGadgetIsChecked(gcd[9].ret) ) flags |= pst_ignorecombiningmarks;
-	if ( merge_with!=-1 )
-	    merge_with = (int) (GGadgetGetListItemSelected(gcd[11].ret)->userdata);
-	ret = ClassName(name,tag,flags,script_lang_index,merge_with);
+	if ( merge_with!=-1 ) {
+	    merge_with = (int) (GGadgetGetListItemSelected(gcd[14].ret)->userdata);
+	    act_type = GGadgetIsChecked(gcd[10].ret) ? act_mark :
+			GGadgetIsChecked(gcd[11].ret) ? act_mkmk : act_curs;
+	}
+	ret = ClassName(name,tag,flags,script_lang_index,merge_with,act_type);
     } else
 	ret = NULL;
     GDrawDestroyWindow(gw);
@@ -2430,7 +2485,7 @@ static void CI_DoNew(CharInfo *ci, unichar_t *def) {
 
     newname = sel==0 
 	    ? AskPosTag(newstrings[sel],def,0,flags,-1,pst_tags[sel],ci->sc->parent,ci->sc)
-	    : AskNameTag(newstrings[sel],def,0,flags,-1,pst_tags[sel],ci->sc->parent,ci->sc,-1);
+	    : AskNameTag(newstrings[sel],def,0,flags,-1,pst_tags[sel],ci->sc->parent,ci->sc,-1,-1);
     if ( newname!=NULL ) {
 	if ( sel!=0 )
 	    if ( !LigCheck(ci->sc,sel+1,(newname[0]<<24)|(newname[1]<<16)|(newname[2]<<8)|newname[3],
@@ -2545,7 +2600,7 @@ static int CI_Edit(GGadget *g, GEvent *e) {
 return( true );
 	newname = sel==0 
 		? AskPosTag(editstrings[sel],ti->text,0,0,0,pst_tags[sel],ci->sc->parent,ci->sc)
-		: AskNameTag(editstrings[sel],ti->text,0,0,0,pst_tags[sel],ci->sc->parent,ci->sc,-1);
+		: AskNameTag(editstrings[sel],ti->text,0,0,0,pst_tags[sel],ci->sc->parent,ci->sc,-1,-1);
 	if ( newname!=NULL ) {
 	    old = GGadgetGetList(list,&len);
 	    for ( i=0; i<len; ++i ) if ( old[i]!=ti ) {

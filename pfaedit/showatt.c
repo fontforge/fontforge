@@ -203,7 +203,7 @@ static void BuildAnchorLists(struct node *node,struct att_dlg *att,uint32 script
 
     if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
 
-    if ( ac->feature_tag==CHR('c','u','r','s') ) {
+    if ( ac->type==act_curs ) {
 	entryexit = EntryExitDecompose(sf,ac);
 	if ( entryexit==NULL ) {
 	    node->children = gcalloc(2,sizeof(struct node));
@@ -639,22 +639,26 @@ static void BuildGSUBlang(struct node *node,struct att_dlg *att) {
 	featnodes[i].tag = feats[i];
 	featnodes[i].parent = node;
 	featnodes[i].build = BuildGSUBfeatures;
-	for ( k=1; pst_tags[k]!=NULL; ++k ) {
-	    for ( j=0; pst_tags[k][j].text!=NULL && featnodes[i].tag!=(uint32) pst_tags[k][j].userdata; ++j );
-	    if ( pst_tags[k][j].text!=NULL )
-	break;
+	if ( feats[i]==REQUIRED_FEATURE ) {
+	    u_strcpy(ubuf,GStringGetResource(_STR_RequiredFeature,NULL));
+	} else {
+	    for ( k=1; pst_tags[k]!=NULL; ++k ) {
+		for ( j=0; pst_tags[k][j].text!=NULL && featnodes[i].tag!=(uint32) pst_tags[k][j].userdata; ++j );
+		if ( pst_tags[k][j].text!=NULL )
+	    break;
+	    }
+	    ubuf[0] = '\'';
+	    ubuf[1] = featnodes[i].tag>>24;
+	    ubuf[2] = (featnodes[i].tag>>16)&0xff;
+	    ubuf[3] = (featnodes[i].tag>>8)&0xff;
+	    ubuf[4] = featnodes[i].tag&0xff;
+	    ubuf[5] = '\'';
+	    ubuf[6] = ' ';
+	    if ( pst_tags[k]!=NULL )
+		u_strcpy(ubuf+7,GStringGetResource((uint32) pst_tags[k][j].text,NULL));
+	    else
+		ubuf[7]='\0';
 	}
-	ubuf[0] = '\'';
-	ubuf[1] = featnodes[i].tag>>24;
-	ubuf[2] = (featnodes[i].tag>>16)&0xff;
-	ubuf[3] = (featnodes[i].tag>>8)&0xff;
-	ubuf[4] = featnodes[i].tag&0xff;
-	ubuf[5] = '\'';
-	ubuf[6] = ' ';
-	if ( pst_tags[k]!=NULL )
-	    u_strcpy(ubuf+7,GStringGetResource((uint32) pst_tags[k][j].text,NULL));
-	else
-	    ubuf[7]='\0';
 	if ( acs!=NULL && acs[i]!=NULL )
 	    featnodes[i].u.ac = acs[i];
 	featnodes[i].label = u_copy(ubuf);
@@ -860,7 +864,7 @@ static void BuildGDEF(struct node *node,struct att_dlg *att) {
     int gdef, lcar;
 
     for ( ac = _sf->anchor; ac!=NULL; ac=ac->next ) {
-	if ( ac->feature_tag!=CHR('c','u','r','s'))
+	if ( ac->type==act_curs )
     break;
     }
     l = 0;
@@ -1226,7 +1230,7 @@ static void BuildTop(struct att_dlg *att) {
     if ( _sf->anchor!=NULL )
 	hasgpos = true;
     for ( ac = sf->anchor; ac!=NULL; ac=ac->next ) {
-	if ( ac->feature_tag!=CHR('c','u','r','s'))
+	if ( ac->type==act_curs )
     break;
     }
     if ( ac!=NULL )

@@ -3663,7 +3663,7 @@ static void readttfkerns(FILE *ttf,struct ttfinfo *info) {
     }
 }
 
-#define MAX_LANG 		20		/* Don't support features which appear in more than 10 languages (only rememver first 10) */
+#define MAX_LANG 		20		/* Don't support more than 20 languages per feature (only remember first 20) */
 struct scriptlist {
     uint32 script;
     uint32 langs[MAX_LANG];
@@ -3674,7 +3674,7 @@ struct scriptlist {
 struct feature {
     uint32 offset;
     uint32 tag;
-    struct scriptlist *sl;
+    struct scriptlist *sl, *reqsl;
     /*int script_lang_index;*/
     int lcnt;
     uint16 *lookups;
@@ -3922,6 +3922,7 @@ return;
     class->name = uc_copy("Cursive");
     class->feature_tag = lookup->tag;
     class->script_lang_index = lookup->script_lang_index;
+    class->type = act_curs;
     if ( info->ahead==NULL )
 	info->ahead = class;
     else
@@ -3961,7 +3962,8 @@ return;
 }
 
 static AnchorClass **MarkGlyphsProcessMarks(FILE *ttf,int markoffset,
-	struct ttfinfo *info,struct lookup *lookup,uint16 *markglyphs,int classcnt) {
+	struct ttfinfo *info,struct lookup *lookup,uint16 *markglyphs,
+	int classcnt,int lu_type) {
     AnchorClass **classes = gcalloc(classcnt,sizeof(AnchorClass *)), *ac;
     unichar_t ubuf[50];
     int i, cnt;
@@ -3978,6 +3980,8 @@ static AnchorClass **MarkGlyphsProcessMarks(FILE *ttf,int markoffset,
 	ac->script_lang_index = lookup->script_lang_index;
 	ac->flags = lookup->flags;
 	ac->merge_with = info->anchor_merge_cnt+1;
+	ac->type = lu_type==6 ? act_mkmk : act_mark;
+	    /* I don't distinguish between mark to base and mark to lig */
 	if ( info->ahead==NULL )
 	    info->ahead = ac;
 	else
@@ -4114,12 +4118,13 @@ return;
     }
 	/* as is the (first) mark table */
     classes = MarkGlyphsProcessMarks(ttf,stoffset+markoffset,
-	    info,lookup,markglyphs,classcnt);
+	    info,lookup,markglyphs,classcnt,lu_type);
     switch ( lu_type ) {
       case 4:			/* Mark to Base */
       case 6:			/* Mark to Mark */
 	  MarkGlyphsProcessBases(ttf,stoffset+baseoffset,
-	    info,lookup,baseglyphs,classcnt,classes,lu_type==4?at_basechar:at_basemark);
+	    info,lookup,baseglyphs,classcnt,classes,
+	    lu_type==4?at_basechar:at_basemark);
       break;
       case 5:			/* Mark to Ligature */
 	  MarkGlyphsProcessLigs(ttf,stoffset+baseoffset,
@@ -4674,15 +4679,21 @@ return( NULL );
 return( lookups );
 }
 
-static void LSysAddToFeature(struct feature *feature,uint32 script,uint32 lang) {
+static void LSysAddToFeature(struct feature *feature,uint32 script,uint32 lang,
+	int is_required) {
     int j;
     struct scriptlist *sl;
 
-    for ( sl=feature->sl; sl!=NULL && sl->script!=script; sl=sl->next );
+    for ( sl=is_required ? feature->reqsl : feature->sl; sl!=NULL && sl->script!=script; sl=sl->next );
     if ( sl==NULL ) {
 	sl = gcalloc(1,sizeof(struct scriptlist));
-	sl->next = feature->sl;
-	feature->sl = sl;
+	if ( is_required ) {
+	    sl->next = feature->reqsl;
+	    feature->reqsl = sl;
+	} else {
+	    sl->next = feature->sl;
+	    feature->sl = sl;
+	}
 	sl->script = script;
     }
     if ( sl->lang_cnt<MAX_LANG ) {
@@ -4704,16 +4715,47 @@ static void ProcessLangSys(FILE *ttf,uint32 langsysoff,
     if ( feature==0xffff )
 	/* No required feature */;
     else {
-	LSysAddToFeature(&features[feature],script,lang);
+	LSysAddToFeature(&features[feature],script,lang,true);
     }
     cnt = getushort(ttf);
     for ( i=0; i<cnt; ++i ) {
 	feature = getushort(ttf);
-	LSysAddToFeature(&features[feature],script,lang);
+	LSysAddToFeature(&features[feature],script,lang,false);
     }
 }
 
-static void tagTtfFeaturesWithScript(FILE *ttf,uint32 script_pos,struct feature *features) {
+static struct feature *RequiredFeatureFixup( struct feature *features) {
+    int i, extra=0;
+
+    for ( i=0; features[i].tag!=0; ++i ) {
+	if ( features[i].reqsl==NULL )
+	    /* Nothing to be done */;
+	else if ( features[i].sl==NULL ) {
+	    features[i].tag = REQUIRED_FEATURE;
+	    features[i].sl = features[i].reqsl;
+	    features[i].reqsl = NULL;
+	} else
+	    ++extra;
+    }
+    if ( extra == 0 )
+return( features );
+    features = grealloc(features,(i+extra+1)*sizeof(struct feature));
+    memset(features+i,0,(extra+1)*sizeof(struct feature));
+    extra = i;
+    for ( i=0; features[i].tag!=0; ++i ) {
+	if ( features[i].reqsl!=NULL && features[i].sl!=NULL ) {
+	    features[extra] = features[i];
+	    features[extra].tag = REQUIRED_FEATURE;
+	    features[extra].sl = features[i].reqsl;
+	    features[i].reqsl = NULL; features[extra].reqsl = NULL;
+	    ++extra;
+	}
+    }
+return( features );
+}
+
+static struct feature *tagTtfFeaturesWithScript(FILE *ttf,uint32 script_pos,
+	struct feature *features) {
     int cnt, i, j;
     struct scriptrec {
 	uint32 script;
@@ -4759,6 +4801,8 @@ static void tagTtfFeaturesWithScript(FILE *ttf,uint32 script_pos,struct feature 
     free(stab.langsys);
     free(stab.lang);
     free(scripts);
+
+return( RequiredFeatureFixup(features));
 }
 
 static int SLMatch(struct script_record *sr,struct scriptlist *sl) {
@@ -4836,7 +4880,7 @@ static void ProcessGPOSGSUB(FILE *ttf,struct ttfinfo *info,int gpos,int inusetyp
     features = readttffeatures(ttf,base+feature_off,gpos,info);
     if ( features==NULL )		/* None of the data we care about */
 return;
-    tagTtfFeaturesWithScript(ttf,base+script_off,features);
+    features = tagTtfFeaturesWithScript(ttf,base+script_off,features);
     lookups = compactttflookups( features,info->feats[gpos] );
     if ( lookups==NULL )
 return;

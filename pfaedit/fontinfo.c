@@ -546,6 +546,7 @@ static GTextInfo mark_tags[] = {
     { (unichar_t *) _STR_MarkT, NULL, 0, 0, (void *) CHR('m','a','r','k'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_Mkmk, NULL, 0, 0, (void *) CHR('m','k','m','k'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_Curs, NULL, 0, 0, (void *) CHR('c','u','r','s'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_RQD, NULL, 0, 0, (void *) REQUIRED_FEATURE, NULL, false, false, false, false, false, false, false, true },
     { NULL }
 };
 
@@ -2047,7 +2048,7 @@ GTextInfo *AnchorClassesList(SplineFont *sf) {
     ti = gcalloc(cnt+1,sizeof(GTextInfo));
     for ( cnt=0, an=sf->anchor; an!=NULL; ++cnt, an=an->next ) {
 	ti[cnt].text = ClassName(an->name,an->feature_tag,an->flags,
-		an->script_lang_index, an->merge_with);
+		an->script_lang_index, an->merge_with, an->type);
 	ti[cnt].fg = ti[cnt].bg = COLOR_DEFAULT;
 	ti[cnt].userdata = an;
     }
@@ -2064,7 +2065,7 @@ GTextInfo **AnchorClassesLList(SplineFont *sf) {
     for ( cnt=0, an=sf->anchor; an!=NULL; ++cnt, an=an->next ) {
 	ti[cnt] = gcalloc(1,sizeof(GTextInfo));
 	ti[cnt]->text = ClassName(an->name,an->feature_tag,an->flags,
-		an->script_lang_index,an->merge_with);
+		an->script_lang_index,an->merge_with, an->type);
 	ti[cnt]->fg = ti[cnt]->bg = COLOR_DEFAULT;
 	ti[cnt]->userdata = an;
     }
@@ -2188,6 +2189,7 @@ static void AnchorClassNameDecompose(AnchorClass *ac,const unichar_t *line) {
 	line += 5;
     }
     ac->script_lang_index = u_strtol(line,&end,10);
+    ac->type = u_strtol(end,&end,10);
     ac->merge_with = u_strtol(end,&end,10);
     while ( *end==' ' ) ++end;
     ac->name = u_copy(end);
@@ -2214,7 +2216,7 @@ static void GFI_GetAnchors(struct gfi_data *d) {
 
 static unichar_t *GFI_AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 	int sli, GTextInfo *tags, struct gfi_data *d,
-	SplineChar *default_script, int merge_with ) {
+	SplineChar *default_script, int merge_with, int act_type ) {
     AnchorClass *oldancs;
     unichar_t *newname;
 
@@ -2223,7 +2225,7 @@ static unichar_t *GFI_AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16
     GFI_GetAnchors(d);
 
     newname = AskNameTag(title,def,def_tag,flags,sli,tags,d->sf,
-	    default_script,merge_with);
+	    default_script,merge_with,act_type);
     AnchorClassesFree(d->sf->anchor);
     d->sf->anchor = oldancs;
 return( newname );
@@ -2239,7 +2241,7 @@ static int GFI_AnchorNew(GGadget *g, GEvent *e) {
 	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
 
 	newname = GFI_AskNameTag(_STR_NewAnchorClass,NULL,CHR('m','a','r','k'),0,
-		-1, mark_tags,d,NULL,AnchorClassesNextMerge(d->sf->anchor));
+		-1, mark_tags,d,NULL,AnchorClassesNextMerge(d->sf->anchor),act_mark);
 
 	if ( newname!=NULL ) {
 	    list = GWidgetGetControl(GGadgetGetWindow(g),CID_AnchorClasses);
@@ -2393,7 +2395,7 @@ static int GFI_AnchorRename(GGadget *g, GEvent *e) {
 	if ( (ti = GGadgetGetListItemSelected(list))==NULL )
 return( true );
 	newname = GFI_AskNameTag(_STR_EditAnchorClass,ti->text,0,0,0,mark_tags,
-		d,NULL,0);
+		d,NULL,0,0);
 	if ( newname!=NULL ) {
 	    old = GGadgetGetList(list,&len);
 	    if (( uc_strncmp(newname,"curs",4)==0 && uc_strncmp(ti->text,"curs",4)!=0 ) ||

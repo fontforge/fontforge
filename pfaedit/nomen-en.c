@@ -611,6 +611,7 @@ static char *str_blwm = "Below Base Mark";
 static char *str_markT = "Mark Positioning";
 static char *str_mkmk = "Mark to Mark";
 static char *str_curs = "Cursive Attachment";
+static char *str_RQD = "Required feature"
     /* Private info */
 static char *str_PrivateKey = "Private Key";
 static char *str_KeyInPrivate = "Key (in Private dictionary)";
@@ -1887,6 +1888,10 @@ static char str_NeedsScriptForSubsGuess = "If you specify positioning or substit
 static char str_ReallyNoScript = "You did not specify a script for this glyph (or PfaEdit failed to guess it). This may cause problems if you use this glyph in a GPOS or GSUB table.\nContinue anyway?"
 static char str_MergeWith = "Merge With:";
 static char str_MergeWithPopup = "PfaEdit will attempt to merge all anchor classes with the same value for \"Merge With\" into one GPOS lookup";
+static char str_MarkToBaseLig = "Mark To Base, or\nMark To Ligature";
+static char str_MarkToMark = "Mark To Mark";
+static char str_Cursive = "Cursive";
+static char str_CursiveAttach = "Cursive Attachment";
   /* Select by att (pst) */
 static char str_SimpSubstitution = "Simple Substitution"
 static char str_AltSubstitutions = "Alternate Substitutions"
@@ -2796,6 +2801,7 @@ static char *str_BaseLigatures = "Base Ligatures";
 static char *str_BaseMarks = "Base Marks";
 static char *str_OTFLanguage = "Language";
 static char *str_OTFScript = "Script";
+static char *str_RequiredFeature = "Required Feature";
     /* Metricsview */
 static char *str_NewKernClassEntry = "This kerning pair (%.20hs and %.20hs) is currently part of a kerning class with a 0 offset for this combination. Would you like to alter this kerning class entry (or create a kerning pair for just these two glyphs)?";
 static char *str_NewKernClassEntTitle = "Use Kerning Class?"

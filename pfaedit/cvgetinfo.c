@@ -391,7 +391,7 @@ static int IsAnchorClassUsed(SplineChar *sc,AnchorClass *an) {
 		sawentry = true;
 	    else if ( ap->type==at_cexit )
 		sawexit = true;
-	    else if ( an->feature_tag==CHR('m','k','m','k') ) {
+	    else if ( an->type==act_mkmk ) {
 		if ( ap->type==at_basemark )
 		    sawexit = true;
 		else
@@ -418,7 +418,7 @@ AnchorClass *AnchorClassUnused(SplineChar *sc,int *waslig) {
     /* Are there any anchors with this name? If so can't reuse it */
     /*  unless they are ligature anchores */
     /*  or 'curs' anchors, which allow exactly two points (entry, exit) */
-    /*  or 'mkmk' anchors, which allow exactly a mark to be both a base and an attach */
+    /*  or 'mkmk' anchors, which allow a mark to be both a base and an attach */
 
     *waslig = false; maybelig = false; maybe = NULL;
     sf = sc->parent;
@@ -451,25 +451,28 @@ return(NULL);
     ap->anchor = an;
     ap->me.x = cv->p.cx; /* cv->p.cx = 0; */
     ap->me.y = cv->p.cy; /* cv->p.cy = 0; */
-    ap->type = at_basechar;
+    ap->type = an->type==act_mark ? at_basechar :
+		an->type==act_mkmk ? at_basemark :
+		at_centry;
     for ( pst = cv->sc->possub; pst!=NULL && pst->type!=pst_ligature; pst=pst->next );
-    if ( waslig<-1 && an->feature_tag==CHR('m','k','m','k') ) {
+    if ( waslig<-1 && an->type==act_mkmk ) {
 	ap->type = waslig==-2 ? at_basemark : at_mark;
-    } else if ( waslig==-2 )
+    } else if ( waslig==-2  && an->type==act_curs )
 	ap->type = at_cexit;
-    else if ( waslig==-3 || an->feature_tag==CHR('c','u','r','s'))
+    else if ( waslig==-3 || an->type==act_curs )
 	ap->type = at_centry;
     else if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 &&
 	    iscombining(sc->unicodeenc))
 	ap->type = at_mark;
-    else if ( an->feature_tag==CHR('m','k','m','k') )
+    else if ( an->type==act_mkmk )
 	ap->type = at_basemark;
     else if ( pst!=NULL || waslig )
 	ap->type = at_baselig;
-    if (( ap->type==at_basechar || ap->type==at_baselig ) && an->feature_tag==CHR('m','k','m','k') )
+    if (( ap->type==at_basechar || ap->type==at_baselig ) && an->type==act_mkmk )
 	ap->type = at_basemark;
     ap->next = sc->anchor;
-    ap->lig_index = waslig;
+    if ( waslig>=0 )
+	ap->lig_index = waslig;
     sc->anchor = ap;
 return( ap );
 }
@@ -519,24 +522,23 @@ static void AI_SelectList(GIData *ci,AnchorPoint *ap) {
 
 static void AI_DisplayClass(GIData *ci,AnchorPoint *ap) {
     AnchorClass *ac = ap->anchor;
-    int curs = ac->feature_tag==CHR('c','u','r','s');
-    int enable_mkmk = ac->feature_tag!=CHR('m','a','r','k') && ac->feature_tag!=CHR('a','b','v','m') &&
-	    ac->feature_tag!=CHR('b','l','w','m') && !curs;
-    int enable_mark = ac->feature_tag!=CHR('m','k','m','k');
     AnchorPoint *aps;
     int saw[at_max];
 
-    GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_BaseChar),enable_mark && !curs);
-    GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_BaseLig),enable_mark && !curs);
-    GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_BaseMark),enable_mkmk && !curs);
+    GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_BaseChar),ac->type==act_mark);
+    GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_BaseLig),ac->type==act_mark);
+    GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_BaseMark),ac->type==act_mkmk);
+    GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_CursEntry),ac->type==act_curs);
+    GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_CursExit),ac->type==act_curs);
+    GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_Mark),ac->type!=act_curs);
 
-    if ( !enable_mark && !curs && (ap->type==at_basechar || ap->type==at_baselig)) {
+    if ( ac->type==act_mkmk && (ap->type==at_basechar || ap->type==at_baselig)) {
 	GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_BaseMark),true);
 	ap->type = at_basemark;
-    } else if ( !enable_mkmk && !curs && ap->type==at_basemark ) {
+    } else if ( ac->type==act_mark && ap->type==at_basemark ) {
 	GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_BaseChar),true);
 	ap->type = at_basechar;
-    } else if ( curs && ap->type!=at_centry && ap->type!=at_cexit ) {
+    } else if ( ac->type==act_curs && ap->type!=at_centry && ap->type!=at_cexit ) {
 	GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_CursEntry),true);
 	ap->type = at_centry;
     }
@@ -545,13 +547,10 @@ static void AI_DisplayClass(GIData *ci,AnchorPoint *ap) {
     for ( aps=ci->sc->anchor; aps!=NULL; aps=aps->next ) if ( aps!=ap ) {
 	if ( aps->anchor==ac ) saw[aps->type] = true;
     }
-    if ( curs ) {
+    if ( ac->type==act_curs ) {
 	GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_CursEntry),!saw[at_centry]);
 	GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_CursExit),!saw[at_cexit]);
-	GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_Mark),false);
     } else {
-	GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_CursEntry),false);
-	GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_CursExit),false);
 	GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_Mark),!saw[at_mark]);
 	if ( saw[at_basechar]) GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_BaseChar),false);
 	if ( saw[at_basemark]) GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_BaseMark),false);
@@ -775,25 +774,17 @@ static int AI_ANameChanged(GGadget *g, GEvent *e) {
 	GTextInfo *ti = GGadgetGetListItemSelected(g);
 	AnchorClass *an = ti->userdata;
 	int bad=0, max=0;
-	int iscurs, ismkmk;
 	int ntype;
 	int sawentry, sawexit;
 
 	if ( an==ci->ap->anchor )
 return( true );			/* No op */
-#if 0
-	if ( an->feature_tag==CHR('c','u','r','s') || ci->ap->anchor->feature_tag==CHR('c','u','r','s')) {
-	    GWidgetErrorR(_STR_BadClass,_STR_AnchorClassCurs);
-return( true );
-	}
-#endif
-	iscurs = an->feature_tag==CHR('c','u','r','s');
-	ismkmk = an->feature_tag==CHR('m','k','m','k');
+
 	ntype = ci->ap->type;
-	if ( iscurs ) {
+	if ( an->type==act_curs ) {
 	    if ( ntype!=at_centry && ntype!=at_cexit )
 		ntype = at_centry;
-	} else if ( ismkmk ) {
+	} else if ( an->type==act_mkmk ) {
 	    if ( ntype!=at_basemark && ntype!=at_mark )
 		ntype = at_basemark;
 	} else if ( ntype==at_centry || ntype==at_cexit || ntype==at_basemark ) {
@@ -810,10 +801,10 @@ return( true );
 	sawentry = sawexit = false;
 	for ( ap=ci->sc->anchor; ap!=NULL; ap = ap->next ) {
 	    if ( ap!=ci->ap && ap->anchor==an ) {
-		if ( iscurs ) {
+		if ( an->type==act_curs ) {
 		    if ( ap->type == at_centry ) sawentry = true;
 		    else if ( ap->type== at_cexit ) sawexit = true;
-		} else if ( ismkmk ) {
+		} else if ( an->type==act_mkmk ) {
 		    if ( ap->type == at_mark ) sawentry = true;
 		    else if ( ap->type== at_basemark ) sawexit = true;
 		} else {
@@ -833,10 +824,10 @@ return( true );
 	    GWidgetErrorR(_STR_ClassUsed,_STR_AnchorClassUsed);
 	} else {
 	    ci->ap->anchor = an;
-	    if ( iscurs ) {
+	    if ( an->type==act_curs ) {
 		if ( sawentry ) ntype = at_cexit;
 		else if ( sawexit ) ntype = at_centry;
-	    } else if ( ismkmk ) {
+	    } else if ( an->type==act_mkmk ) {
 		if ( sawentry ) ntype = at_basemark;
 		else if ( sawexit ) ntype = at_mark;
 	    }

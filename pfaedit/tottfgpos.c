@@ -1408,7 +1408,7 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
 		ac2->script_lang_index == ac->script_lang_index &&
 		ac2->merge_with == ac->merge_with ; p=ac2, ac2 = ac2->next )
 	    ++classcnt;
-	if ( ac->feature_tag==CHR('c','u','r','s') )
+	if ( ac->type==act_curs )
 	    lookups = dumpgposCursiveAttach(lfile,ac,sf,lookups);
 	else {
 	    if ( classcnt>cmax ) {
@@ -1677,6 +1677,7 @@ static void dump_script_table(FILE *g___,SplineFont *sf,
     struct feature *f;
     int cnt, dflt_index=-1, total, offset;
     int i,j,k,m;
+    int req_pos;
     uint32 here,base;
 
     memset(touched,0,lc);
@@ -1715,15 +1716,21 @@ static void dump_script_table(FILE *g___,SplineFont *sf,
     /* Now the language system table for default */
     if ( dflt_index!=-1 ) {
 	putshort(g___,0);		/* reserved, must be zero */
-	putshort(g___,0xffff);		/* No required feature */
+	req_pos = 0xffff;
 	for ( f=features, cnt=0; f!=NULL ; f=f->feature_next ) {
-	    if ( FeatureScriptLangMatch(f,script,DEFAULT_LANG))
-		++cnt;
+	    if ( FeatureScriptLangMatch(f,script,DEFAULT_LANG)) {
+		if ( f->feature_tag==REQUIRED_FEATURE )
+		    req_pos = f->feature_cnt;
+		else
+		    ++cnt;
+	    }
 	}
+	putshort(g___,req_pos);		/* No required feature */
 	putshort(g___,cnt);		/* Number of features */
 	for ( f=features; f!=NULL ; f=f->feature_next ) {
 	    if ( FeatureScriptLangMatch(f,script,DEFAULT_LANG))
-		putshort(g___,f->feature_cnt);	/* Index of each feature */
+		if ( f->feature_tag!=REQUIRED_FEATURE )
+		    putshort(g___,f->feature_cnt);	/* Index of each feature */
 	}
     }
     /* Now the language system table for each language */
@@ -1735,15 +1742,21 @@ static void dump_script_table(FILE *g___,SplineFont *sf,
 	fseek(g___,here,SEEK_SET);
 	offset += 6;
 	putshort(g___,0);		/* reserved, must be zero */
-	putshort(g___,0xffff);		/* No required feature */
+	req_pos = 0xffff;
 	for ( f=features, cnt=0; f!=NULL ; f=f->feature_next ) {
-	    if ( FeatureScriptLangMatch(f,script,langs[i]))
-		++cnt;
+	    if ( FeatureScriptLangMatch(f,script,langs[i])) {
+		if ( f->feature_tag==REQUIRED_FEATURE )
+		    req_pos = f->feature_cnt;
+		else
+		    ++cnt;
+	    }
 	}
+	putshort(g___,req_pos);		/* No required feature */
 	putshort(g___,cnt);		/* Number of features */
 	for ( f=features; f!=NULL ; f=f->feature_next ) {
 	    if ( FeatureScriptLangMatch(f,script,langs[i]))
-		putshort(g___,f->feature_cnt);	/* Index of each feature */
+		if ( f->feature_tag!=REQUIRED_FEATURE )
+		    putshort(g___,f->feature_cnt);	/* Index of each feature */
 	}
     }
 }
@@ -1873,7 +1886,7 @@ static void AddSliToFeature(struct feature *f,SplineFont *sf,int sli) {
 /* Now we have a set of lookups. Each of which is used by some colection of */
 /*  scripts and languages. We need to turn this around so that we know for */
 /*  each script what lookups it uses, and we must also merge all lookups of */
-/*  a given type into one feature per script/lang. Of course some lookup */
+/*  a given tag into one feature per script/lang. Of course some lookup */
 /*  combinations may be shared by several script/lang settings and we should */
 /*  use the same feature when possible */
 static struct feature *CoalesceLookups(SplineFont *sf, struct lookup *lookups) {

@@ -155,15 +155,17 @@ typedef struct bdffloat {
 /* we'll turn it into a default entry when we output it. */
 #define DEFAULT_LANG		CHR('d','f','l','t')
 #define DEFAULT_SCRIPT		CHR('D','F','L','T')
+#define REQUIRED_FEATURE	CHR(' ','R','Q','D')
 
-/* I'm not going to give the user access to r2l. They can set the script for that */
 enum pst_flags { pst_r2l=1, pst_ignorebaseglyphs=2, pst_ignoreligatures=4, pst_ignorecombiningmarks=8 };
+enum anchorclass_type { act_mark, /* act_mklg, */act_mkmk, act_curs };
 typedef struct anchorclass {
     unichar_t *name;
     uint32 feature_tag;
     uint16 script_lang_index;
     uint16 flags;
-    int merge_with;
+    uint16 merge_with;
+    uint16 type;		/* anchorclass_type */
     struct anchorclass *next;
 } AnchorClass;
 
