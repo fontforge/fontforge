@@ -38,7 +38,9 @@ static int gtextfield_inited = false;
 
 static unichar_t nullstr[] = { 0 }, nstr[] = { 'n', 0 },
 	newlinestr[] = { '\n', 0 }, tabstr[] = { '\t', 0 };
+
 static void GListFieldSelected(GGadget *g, int i);
+static void GTextField_Show(GTextField *gt, int pos);
 
 static void GTextFieldChanged(GTextField *gt,int src) {
     GEvent e;
@@ -85,7 +87,9 @@ static void GTextFieldMakePassword(GTextField *gt, int start_of_change) {
 }
 
 static void GTextFieldProcessBi(GTextField *gt, int start_of_change) {
-    int i;
+    int i, pos;
+    unichar_t *pt, *end;
+    GBiText bi;
 
     if ( !gt->dobitext )
 	i = GDrawIsAllLeftToRight(gt->text+start_of_change,-1);
@@ -107,9 +111,30 @@ static void GTextFieldProcessBi(GTextField *gt, int start_of_change) {
 	    gt->bidata.original = galloc(gt->bilen*sizeof(unichar_t *));
 	    --gt->bilen;
 	}
-	GDrawBiText1(&gt->bidata,gt->text,cnt);
-	if ( !gt->multi_line )
+	bi = gt->bidata;
+	pt = gt->text;
+	pos = 0;
+	gt->bidata.interpret_arabic = false;
+	do {
+	    end = u_strchr(pt,'\n');
+	    if ( end==NULL || !gt->multi_line ) end = pt+u_strlen(pt);
+	    else ++end;
+	    bi.text = gt->bidata.text+pos;
+	    bi.level = gt->bidata.level+pos;
+	    bi.override = gt->bidata.override+pos;
+	    bi.type = gt->bidata.type+pos;
+	    bi.original = gt->bidata.original+pos;
+	    bi.base_right_to_left = GDrawIsAllLeftToRight(pt,end-pt)==-1;
+	    GDrawBiText1(&bi,pt,end-pt);
+	    if ( bi.interpret_arabic ) gt->bidata.interpret_arabic = true;
+	    pos += end-pt;
+	    pt = end;
+	} while ( *pt!='\0' );
+	gt->bidata.len = cnt;
+	if ( !gt->multi_line ) {
+	    gt->bidata.base_right_to_left = bi.base_right_to_left;
 	    GDrawBiText2(&gt->bidata,0,-1);
+	}
     }
 }
 
@@ -203,12 +228,22 @@ return;
     }
 
     if ( gt->dobitext ) {
-	for ( i=0; i<gt->lcnt; ++i )
-	    GDrawBiText2(&gt->bidata,gt->lines[i],gt->lines[i+1]);
+	int end = -1, off;
+	for ( i=0; i<gt->lcnt; ++i ) {
+	    if ( gt->lines[i]>end ) {
+		unichar_t *ept = u_strchr(gt->text+end+1,'\n');
+		if ( ept==NULL ) ept = gt->text+u_strlen(gt->text);
+		gt->bidata.base_right_to_left = GDrawIsAllLeftToRight(gt->text+end+1,ept-gt->text)==-1;
+		end = ept - gt->text;
+	    }
+	    off = 0;
+	    if ( gt->text[gt->lines[i+1]-1]=='\n' ) off=1;
+	    GDrawBiText2(&gt->bidata,gt->lines[i],gt->lines[i+1]-off);
+	}
     }
 }
 
-static void GTextFieldReplace(GTextField *gt, unichar_t *str) {
+static void _GTextFieldReplace(GTextField *gt, unichar_t *str) {
     unichar_t *old = gt->oldtext;
     unichar_t *new = galloc((u_strlen(gt->text)-(gt->sel_end-gt->sel_start) + u_strlen(str)+1)*sizeof(unichar_t));
 
@@ -226,6 +261,11 @@ static void GTextFieldReplace(GTextField *gt, unichar_t *str) {
     free(old);
 
     GTextFieldRefigureLines(gt,gt->sel_oldstart);
+}
+
+static void GTextFieldReplace(GTextField *gt, unichar_t *str) {
+    _GTextFieldReplace(gt,str);
+    GTextField_Show(gt,gt->sel_start);
 }
 
 static int GTextFieldFindLine(GTextField *gt, int pos) {
@@ -338,7 +378,7 @@ return( u_copyn(gt->text+gt->sel_start,gt->sel_end-gt->sel_start));
 static void *ddgenunicodedata(void *_gt,int32 *len) {
     void *temp = genunicodedata(_gt,len);
     GTextField *gt = _gt;
-    GTextFieldReplace(gt,nullstr);
+    _GTextFieldReplace(gt,nullstr);
     _ggadget_redraw(&gt->g);
 return( temp );
 }
@@ -355,7 +395,7 @@ return( ret );
 static void *ddgenlocaldata(void *_gt,int32 *len) {
     void *temp = genlocaldata(_gt,len);
     GTextField *gt = _gt;
-    GTextFieldReplace(gt,nullstr);
+    _GTextFieldReplace(gt,nullstr);
     _ggadget_redraw(&gt->g);
 return( temp );
 }
@@ -511,12 +551,10 @@ static int gtextfield_editcmd(GGadget *g,enum editor_commands cmd) {
 return( true );
       case ec_clear:
 	GTextFieldReplace(gt,nullstr);
-	GTextField_Show(gt,gt->sel_start);
 return( true );
       case ec_cut:
 	GTextFieldGrabSelection(gt,sn_clipboard);
 	GTextFieldReplace(gt,nullstr);
-	GTextField_Show(gt,gt->sel_start);
 return( true );
       case ec_copy:
 	GTextFieldGrabSelection(gt,sn_clipboard);
@@ -549,13 +587,11 @@ return( true );			/* but probably best to return success */
 		gt->sel_start = GTextFieldSelBackword(gt->text,gt->sel_start);
 	}
 	GTextFieldReplace(gt,nullstr);
-	GTextField_Show(gt,gt->sel_start);
 return( true );
       case ec_deleteword:
         if ( gt->sel_start==gt->sel_end && gt->sel_start!=0 )
 	    GTextFieldSelectWord(gt,gt->sel_start,&gt->sel_start,&gt->sel_end);
 	GTextFieldReplace(gt,nullstr);
-	GTextField_Show(gt,gt->sel_start);
 return( true );
     }
 return( false );
@@ -614,6 +650,8 @@ static int GTextFieldDoChange(GTextField *gt, GEvent *event) {
     int ss = gt->sel_start, se = gt->sel_end;
     int pos, l, xpos, sel;
     unichar_t *bitext = gt->dobitext || gt->password?gt->bidata.text:gt->text;
+    unichar_t *upt;
+    int wasselected = gt->sel_start!=gt->sel_end;
 
     if ( ( event->u.chr.state&(ksm_control|ksm_meta)) ||
 	    event->u.chr.keysym >= 0xff00 ) {
@@ -651,12 +689,16 @@ return( true );
 		gt->sel_end = gt->sel_base = gt->sel_start;
 	    }
 	    GTextField_Show(gt,gt->sel_start);
+	    if ( gt->sel_start!=gt->sel_end || wasselected ) {
+		_ggadget_redraw(&gt->g);
+return( false );
+	    }
 	  break;
 	  case GK_Right: case GK_KP_Right:
 	    if ( gt->sel_start==gt->sel_end ) {
-		gt->sel_start = GTForePos(gt,gt->sel_start,event->u.chr.state&ksm_meta);
+		gt->sel_end = GTForePos(gt,gt->sel_start,event->u.chr.state&ksm_meta);
 		if ( !(event->u.chr.state&ksm_shift ))
-		    gt->sel_end = gt->sel_start;
+		    gt->sel_start = gt->sel_end;
 	    } else if ( event->u.chr.state&ksm_shift ) {
 		if ( gt->sel_end==gt->sel_base ) {
 		    gt->sel_start = GTForePos(gt,gt->sel_start,event->u.chr.state&ksm_meta);
@@ -667,6 +709,10 @@ return( true );
 		gt->sel_start = gt->sel_base = gt->sel_end;
 	    }
 	    GTextField_Show(gt,gt->sel_end);
+	    if ( gt->sel_start!=gt->sel_end || wasselected ) {
+		_ggadget_redraw(&gt->g);
+return( false );
+	    }
 	  break;
 	  case GK_Up: case GK_KP_Up:
 	    if ( !gt->multi_line )
@@ -695,6 +741,10 @@ return( true );
 		}
 	    }
 	    GTextField_Show(gt,gt->sel_start);
+	    if ( gt->sel_start!=gt->sel_end || wasselected ) {
+		_ggadget_redraw(&gt->g);
+return( false );
+	    }
 	  break;
 	  case GK_Down: case GK_KP_Down:
 	    if ( !gt->multi_line )
@@ -723,6 +773,10 @@ return( true );
 		}
 	    }
 	    GTextField_Show(gt,gt->sel_start);
+	    if ( gt->sel_start!=gt->sel_end || wasselected ) {
+		_ggadget_redraw(&gt->g);
+return( false );
+	    }
 	  break;
 	  case GK_Home: case GK_Begin: case GK_KP_Home: case GK_KP_Begin:
 	    if ( !(event->u.chr.state&ksm_shift) ) {
@@ -731,6 +785,30 @@ return( true );
 		gt->sel_start = 0; gt->sel_end = gt->sel_base;
 	    }
 	    GTextField_Show(gt,gt->sel_start);
+	    if ( gt->sel_start!=gt->sel_end || wasselected ) {
+		_ggadget_redraw(&gt->g);
+return( false );
+	    }
+	  break;
+	  /* Move to eol. (if already at eol, move to next eol) */
+	  case 'E': case 'e':
+	    if ( !( event->u.chr.state&ksm_control ) )
+return( false );
+	    upt = gt->text+gt->sel_base;
+	    if ( *upt=='\n' )
+		++upt;
+	    upt = u_strchr(upt,'\n');
+	    if ( upt==NULL ) upt=gt->text+u_strlen(gt->text);
+	    if ( !(event->u.chr.state&ksm_shift) ) {
+		gt->sel_start = gt->sel_base = gt->sel_end =upt-gt->text;
+	    } else {
+		gt->sel_start = gt->sel_base; gt->sel_end = upt-gt->text;
+	    }
+	    GTextField_Show(gt,gt->sel_end);
+	    if ( gt->sel_start!=gt->sel_end || wasselected ) {
+		_ggadget_redraw(&gt->g);
+return( false );
+	    }
 	  break;
 	  case GK_End: case GK_KP_End:
 	    if ( !(event->u.chr.state&ksm_shift) ) {
@@ -739,10 +817,16 @@ return( true );
 		gt->sel_start = gt->sel_base; gt->sel_end = u_strlen(gt->text);
 	    }
 	    GTextField_Show(gt,gt->sel_end);
+	    if ( gt->sel_start!=gt->sel_end || wasselected ) {
+		_ggadget_redraw(&gt->g);
+return( false );
+	    }
 	  break;
 	  case 'A': case 'a':
 	    if ( event->u.chr.state&ksm_control ) {	/* Select All */
 		gtextfield_editcmd(&gt->g,ec_selectall);
+		_ggadget_redraw(&gt->g);
+return( false );
 	    }
 	  break;
 	  case 'C': case 'c':
@@ -753,27 +837,36 @@ return( true );
 	  case 'V': case 'v':
 	    if ( event->u.chr.state&ksm_control ) {	/* Paste */
 		gtextfield_editcmd(&gt->g,ec_paste);
+		GTextField_Show(gt,gt->sel_start);
+return( true );
 	    }
 	  break;
 	  case 'X': case 'x':
 	    if ( event->u.chr.state&ksm_control ) {	/* Cut */
 		gtextfield_editcmd(&gt->g,ec_cut);
+		GTextField_Show(gt,gt->sel_start);
+return( true );
 	    }
 	  break;
 	  case 'Z': case 'z':				/* Undo */
 	    if ( event->u.chr.state&ksm_control ) {
 		gtextfield_editcmd(&gt->g,ec_undo);
+		GTextField_Show(gt,gt->sel_start);
 return( true );
 	    }
 	  break;
 	  case 'D': case 'd':
 	    if ( event->u.chr.state&ksm_control ) {	/* delete word */
 		gtextfield_editcmd(&gt->g,ec_deleteword);
+		GTextField_Show(gt,gt->sel_start);
+return( true );
 	    }
 	  break;
 	  case 'W': case 'w':
 	    if ( event->u.chr.state&ksm_control ) {	/* backword */
 		gtextfield_editcmd(&gt->g,ec_backword);
+		GTextField_Show(gt,gt->sel_start);
+return( true );
 	    }
 	  break;
 	  case 'M': case 'm': case 'J': case 'j':
@@ -783,7 +876,6 @@ return( false );
 	  case GK_Return: case GK_Linefeed:
 	    if ( gt->accepts_returns ) {
 		GTextFieldReplace(gt,newlinestr);
-		GTextField_Show(gt,gt->sel_start);
 return( true );
 	    }
 	  break;
@@ -794,14 +886,12 @@ return( false );
 	  case GK_Tab:
 	    if ( gt->accepts_tabs ) {
 		GTextFieldReplace(gt,tabstr);
-		GTextField_Show(gt,gt->sel_start);
 return( true );
 	    }
 	  break;
 	}
     } else {
 	GTextFieldReplace(gt,event->u.chr.chars);
-	GTextField_Show(gt,gt->sel_start);
 return( true );
     }
 
@@ -1232,12 +1322,16 @@ return( false );
 	    event->u.chr.keysym == GK_BackTab || event->u.chr.keysym == GK_Escape )
 return( false );
 
-    if ( !gt->hidden_cursor ) {
+    if ( !gt->hidden_cursor ) {	/* hide the mouse pointer */
 	if ( !gt->drag_and_drop )
 	    gt->old_cursor = GDrawGetCursor(gt->g.base);
 	GDrawSetCursor(g->base,ct_invisible);
 	gt->hidden_cursor = true;
 	_GWidget_SetGrabGadget(g);	/* so that we get the next mouse movement to turn the cursor on */
+    }
+    if( gt->cursor_on ) {	/* undraw the blinky text cursor if it is drawn */
+	gt_draw_cursor(g->base, gt);
+	gt->cursor_on = false;
     }
 
     if ( GTextFieldDoChange(gt,event))
@@ -1273,8 +1367,13 @@ static int gtextfield_timer(GGadget *g, GEvent *event) {
     if ( !g->takes_input || (g->state!=gs_enabled && g->state!=gs_active && g->state!=gs_focused ))
 return(false);
     if ( gt->cursor == event->u.timer.timer ) {
-	gt->cursor_on = !gt->cursor_on;
-	gt_draw_cursor(g->base, gt);
+	if ( gt->cursor_on ) {
+	    gt_draw_cursor(g->base, gt);
+	    gt->cursor_on = false;
+	} else {
+	    gt->cursor_on = true;
+	    gt_draw_cursor(g->base, gt);
+	}
 return( true );
     }
     if ( gt->pressed == event->u.timer.timer ) {
