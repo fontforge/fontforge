@@ -33,7 +33,7 @@
 char *alphabets[] = { "8859-1.TXT", "8859-2.TXT", "8859-3.TXT", "8859-4.TXT",
     "8859-5.TXT", "8859-6.TXT", "8859-7.TXT", "8859-8.TXT", "8859-9.TXT",
     "8859-10.TXT", "8859-11.TXT", "8859-13.TXT", "8859-14.TXT", "8859-15.TXT",
-    "koi8r.TXT", "jis201.TXT", "WIN.TXT", "MacRoman.TXT",
+    "koi8r.TXT", "JIS0201.txt", "WIN.TXT", "MacRoman.TXT",
     "MacSYMBOL.TXT", "zapfding.TXT", /*"MacCYRILLIC.TXT",*/ NULL };
 char *alnames[] = { "i8859_1", "i8859_2", "i8859_3", "i8859_4",
     "i8859_5", "i8859_6", "i8859_7", "i8859_8", "i8859_9",
