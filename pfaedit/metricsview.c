@@ -47,9 +47,12 @@ static void MVDrawAnchorPoint(GWindow pixmap,MetricsView *mv,int i,struct aplist
 return;
 
     y = mv->topend + 2 + scaleas * sf->ascent - mv->perchar[i].yoff - ap->me.y*scale;
-    x = mv->perchar[i].dx-mv->xoff+mv->perchar[i].xoff + ap->me.x*scale;
+    x = mv->perchar[i].dx-mv->xoff+mv->perchar[i].xoff;
     if ( mv->perchar[i].selected )
 	x += mv->activeoff;
+    if ( mv->right_to_left )
+	x = mv->width - x - mv->perchar[i].dwidth - mv->perchar[i].kernafter;
+    x += ap->me.x*scale;
     DrawAnchorPoint(pixmap,x,y,apl->selected);
 }
 
