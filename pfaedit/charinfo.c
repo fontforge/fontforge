@@ -1718,6 +1718,11 @@ static PST *LigDefaultList(SplineChar *sc, uint32 tag) {
 	alt = SFGetChar(sf,0x3c2,NULL);
 	if ( alt!=NULL )
 	    last=AddSubs(last,CHR('f','i','n','a'),alt->name,0);
+/* I'd really like to add an entry for long-s (initial & medial) but it would */
+/*  confuse most people. There's no historical initial entry, and although the*/
+/*  open type docs suggest long-s as an example of the 'hist' tag, the */
+/*  semantics are incorrect (ie. it would change final short-s to long-s and */
+/*  that's not valid) so... we do nothing for latin here. */
     }
 
     if ( tag==0 || tag==CHR('l','f','b','d') ) {
