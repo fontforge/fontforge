@@ -1619,6 +1619,9 @@ static char *str_FormatPopup = "Specifies file format used to pass the font to f
 static char *str_BadSize = "Bad Size";
 static char *str_RequestedSizeNotAvail = "Requested bitmap size not available in font. Font supports %hs";
 static char *str_BadFont = "Bad Font";
+    /* Mac specific */
+static char *str_LeaveX = "Leave X";
+static char *str_LeaveXLong = "A browser is probably running in the native Mac windowing system. You must leave the X environment to view it. Try Cmd-Opt-A";
 
 static int num_buttonsize = 55;
 static int num_ScaleFactor = 100;

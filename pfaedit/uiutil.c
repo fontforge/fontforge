@@ -131,9 +131,8 @@ static void findbrowser(void) {
 #if __CygWin
 	"IEXPLORE.EXE", "netscape.exe",
 #elif __Mac
-	/* Hmm. I don't know what to do here. The obvious thing : */
-	/*  /Applications/Internet Exporer/Internet Explorer.app  */
-	/* says bad permissions */
+	"/Applications/Internet Exporer/Internet Explorer.app",
+	/* We need to play games with this... */
 #endif
 	NULL };
     int i;
@@ -156,7 +155,6 @@ return;
 	}
     }
 #if __CygWin
-printf( "Here\n" );
     /* Well, under Windows, c:\Program Files\* are generally not in the path */
     if ( access("/cygdrive/c/progra~1/intern~1/iexplore.exe",X_OK)==0 )
 	strcpy(browser,"/cygdrive/c/progra~1/intern~1/iexplore");
@@ -213,11 +211,35 @@ return;
 	free(temp);
     }
 #endif
+    if ( strstr(fullspec,":/")==NULL ) {
+	char *t1 = galloc(strlen(fullspec)+strlen("file:")+20);
+	sprintf( t1, "file:%s", fullspec);
+	strcpy(fullspec,t1);
+	free(t1);
+    }
+#if __Mac
+    /* Starting a Mac application is weird... system() can't do it */
+    /* Thanks to Edward H. Trager giving me an example... */
+    if ( strstr(browser,".app")!=NULL ) {
+	*strstr(browser,".app") = '\0';
+	pt = strrchr(browser,'/');
+	if ( pt==NULL ) pt = browser-1;
+	++pt;
+	temp = galloc(strlen(pt)+strlen(fullspec) +
+		strlen( "osascript -l AppleScript -e \"Tell application \"\" to getURL \"\"\"" )+
+		20);
+	/* this doesn't work on Max OS X.0 (osascript does not support -e) */
+	sprintf( temp, "osascript -l AppleScript -e \"Tell application \"%s\" to getURL \"%s\"\"",
+	    pt, fullspec);
+	system(temp);
+	GWidgetPostNoticeR(_STR_LeaveX,_STR_LeaveXLong);
+    } else {
+#endif
     temp = galloc(strlen(browser) + strlen(fullspec) + 20);
-    if ( strstr(fullspec,":/")==NULL )
-	sprintf( temp, "%s 'file:%s' &", browser, fullspec );	/* mozilla won't take a filename */
-    else
-	sprintf( temp, "%s %s &", browser, fullspec );
+    sprintf( temp, "%s %s &", browser, fullspec );
     system(temp);
+#if __Mac
+    }
+#endif
     free(temp);
 }
