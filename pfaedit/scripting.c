@@ -78,7 +78,7 @@ enum token_type { tt_name, tt_string, tt_number, tt_unicode,
 typedef struct context {
     struct context *caller;
     Array a;		/* args */
-    uint8 *freearr;
+    Array **dontfree;
     struct dictentry *locals;
     int lc, lmax;
     FILE *script;
@@ -159,7 +159,7 @@ static void calldatafree(Context *c) {
     for ( i=1; i<c->a.argc; ++i ) {	/* child may have freed some args itself by shifting, but argc will reflect the proper values none the less */
 	if ( c->a.vals[i].type == v_str )
 	    free( c->a.vals[i].u.sval );
-	if ( c->a.vals[i].type == v_arrfree || c->freearr[i] )
+	if ( c->a.vals[i].type == v_arrfree || (c->a.vals[i].type == v_arr && c->dontfree[i]!=c->a.vals[i].u.aval ))
 	    arrayfree( c->a.vals[i].u.aval );
     }
     for ( i=0; i<c->lc; ++i ) {
@@ -205,6 +205,10 @@ static void expect(Context *c,enum token_type expected, enum token_type got) {
     if ( got!=expected ) {
 	fprintf( stderr, "%s:%d Expected %s, got %s",
 		c->filename, c->lineno, toknames[expected], toknames[got] );
+    if ( screen_display!=NULL ) {
+	static unichar_t umsg[] = { '%','h','s',':','%','d',' ','E','x','p','e','c','t','e','d',' ','%','h','s',',',' ','g','o','t',' ','%','h','s',  0 };
+	GWidgetError(NULL,umsg,c->filename, c->lineno, toknames[expected], toknames[got] );
+    }
 	showtoken(c,got);
     }
 }
@@ -212,6 +216,10 @@ static void expect(Context *c,enum token_type expected, enum token_type got) {
 static void unexpected(Context *c,enum token_type got) {
     fprintf( stderr, "%s:%d Unexpected %s found",
 	    c->filename, c->lineno, toknames[got] );
+    if ( screen_display!=NULL ) {
+	static unichar_t umsg[] = { '%','h','s',':','%','d',' ','U','n','e','x','p','e','c','t','e','d',' ','%','h','s',  0 };
+	GWidgetError(NULL,umsg,c->filename, c->lineno, toknames[got] );
+    }
     showtoken(c,got);
 }
 
@@ -1531,13 +1539,13 @@ static void backuptok(Context *c) {
 static void docall(Context *c,char *name,Val *val) {
     /* Be prepared for c->donteval */
     Val args[PE_ARG_MAX];
-    uint8 freearr[PE_ARG_MAX];
+    Array *dontfree[PE_ARG_MAX];
     int i;
     enum token_type tok;
     Context sub;
 
     tok = NextToken(c);
-    freearr[0] = false;
+    dontfree[0] = NULL;
     if ( tok==tt_rparen )
 	i = 1;
     else {
@@ -1549,7 +1557,7 @@ static void docall(Context *c,char *name,Val *val) {
 	    tok = NextToken(c);
 	    if ( tok!=tt_comma )
 		expect(c,tt_rparen,tok);
-	    freearr[i]=false;
+	    dontfree[i]=NULL;
 	}
     }
 
@@ -1564,13 +1572,13 @@ static void docall(Context *c,char *name,Val *val) {
 	sub.filename = name;
 	sub.curfv = c->curfv;
 	sub.trace = c->trace;
-	sub.freearr = freearr;
+	sub.dontfree = dontfree;
 	for ( i=0; i<sub.a.argc; ++i ) {
 	    dereflvalif(&args[i]);
-	    if ( args[i].type == v_arrfree ) {
+	    if ( args[i].type == v_arrfree )
 		args[i].type = v_arr;
-		freearr[i] = true;
-	    }
+	    else if ( args[i].type == v_arr )
+		dontfree[i] = args[i].u.aval;
 	}
 
 	if ( c->trace.u.ival ) {
@@ -2032,15 +2040,23 @@ static void assign(Context *c,Val *val) {
 	    else if ( other.type == v_void )
 		error( c, "Void found on right side of assignment" );
 	    else if ( tok==tt_assign ) {
-		if ( val->u.lval->type == v_str )
-		    free( val->u.lval->u.sval);
-		else if (val->u.lval->type == v_arr && val->u.lval->u.aval!=other.u.aval )
-		    arrayfree(val->u.lval->u.aval);
+		Val temp;
+		int argi;
+		temp = *val->u.lval;
 		*val->u.lval = other;
 		if ( other.type==v_arr )
 		    val->u.lval->u.aval = arraycopy(other.u.aval);
 		else if ( other.type==v_arrfree )
 		    val->u.lval->type = v_arr;
+		argi = val->u.lval-c->a.vals;
+		/* Have to free things after we copy them */
+		if ( argi>=0 && argi<c->a.argc && temp.type==v_arr &&
+			temp.u.aval==c->dontfree[argi] )
+		    c->dontfree[argi] = NULL;		/* Don't free it */
+		else if ( temp.type == v_arr )
+		    arrayfree(temp.u.aval);
+		else if ( temp.type == v_str )
+		    free( temp.u.sval);
 	    } else if (( val->u.lval->type==v_int || val->u.lval->type==v_unicode ) && (other.type==v_int || other.type==v_unicode)) {
 		if ( tok==tt_pluseq ) val->u.lval->u.ival += other.u.ival;
 		else if ( tok==tt_minuseq ) val->u.lval->u.ival -= other.u.ival;
@@ -2175,12 +2191,12 @@ static void doshift(Context *c) {
 	error(c,"Attempt to shift when there are no arguments left");
     if ( c->a.vals[1].type==v_str )
 	free(c->a.vals[1].u.sval );
-    if ( c->freearr[1] )
+    if ( c->a.vals[1].type==v_arr && c->a.vals[1].u.aval != c->dontfree[1] )
 	arrayfree(c->a.vals[1].u.aval );
     --c->a.argc;
     for ( i=1; i<c->a.argc ; ++i ) {
 	c->a.vals[i] = c->a.vals[i+1];
-	c->freearr[i] = c->freearr[i+1];
+	c->dontfree[i] = c->dontfree[i+1];
     }
 }
 
@@ -2233,7 +2249,7 @@ static void ProcessScript(int argc, char *argv[]) {
     memset( &c,0,sizeof(c));
     c.a.argc = argc-i;
     c.a.vals = galloc(c.a.argc*sizeof(Val));
-    c.freearr = gcalloc(c.a.argc,1);
+    c.dontfree = gcalloc(c.a.argc,sizeof(Array*));
     for ( j=i; j<argc; ++j ) {
 	c.a.vals[j-i].type = v_str;
 	c.a.vals[j-i].u.sval = copy(argv[j]);
@@ -2255,7 +2271,7 @@ static void ProcessScript(int argc, char *argv[]) {
     for ( i=0; i<c.a.argc; ++i )
 	free(c.a.vals[i].u.sval);
     free(c.a.vals);
-    free(c.freearr);
+    free(c.dontfree);
     exit(0);
 }
 
@@ -2292,16 +2308,16 @@ static int SD_OK(GGadget *g, GEvent *e) {
 	struct sd_data *sd = GDrawGetUserData(GGadgetGetWindow(g));
 	Context c;
 	Val args[1];
-	uint8 freearr[1];
+	Array *dontfree[1];
 	jmp_buf env;
 	enum token_type tok;
 
 	memset( &c,0,sizeof(c));
 	memset( args,0,sizeof(args));
-	memset( freearr,0,sizeof(freearr));
+	memset( dontfree,0,sizeof(dontfree));
 	c.a.argc = 1;
 	c.a.vals = args;
-	c.freearr = freearr;
+	c.dontfree = dontfree;
 	c.filename = args[0].u.sval = "ScriptDlg";
 	args[0].type = v_str;
 	c.return_val.type = v_void;
