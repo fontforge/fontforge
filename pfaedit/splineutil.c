@@ -793,9 +793,11 @@ void SplinePointCatagorize(SplinePoint *sp) {
     } else if ( sp->nonextcp && sp->noprevcp ) {
 	;
     } else if ( !sp->nonextcp && !sp->noprevcp ) {
-	if ( sp->nextcp.y==sp->prevcp.y && sp->nextcp.y==sp->me.y )
-	    sp->pointtype = pt_curve;
-	else if ( sp->nextcp.x!=sp->prevcp.x ) {
+	if ( sp->nextcp.y==sp->prevcp.y && sp->nextcp.y==sp->me.y ) {
+	    if ( (sp->nextcp.x-sp->me.x<0 && sp->me.x-sp->prevcp.x<0) ||
+		    (sp->nextcp.x-sp->me.x>0 && sp->me.x-sp->prevcp.x>0))
+		sp->pointtype = pt_curve;
+	} else if ( sp->nextcp.x!=sp->prevcp.x ) {
 	    real slope = (sp->nextcp.y-sp->prevcp.y)/(sp->nextcp.x-sp->prevcp.x);
 	    real y = slope*(sp->me.x-sp->prevcp.x) + sp->prevcp.y - sp->me.y;
 	    if ( y<1 && y>-1 )
@@ -810,7 +812,7 @@ void SplinePointCatagorize(SplinePoint *sp) {
 		sp->pointtype = pt_curve;
 	} else if ( sp->me.x == sp->nextcp.x )
 	    sp->pointtype = pt_curve;
-    } else if ( sp->nonextcp ) {
+    } else if ( sp->nonextcp && (sp->me.x!=sp->next->to->me.x || sp->me.y!=sp->next->to->me.y)) {
 	if ( sp->next->to->me.x!=sp->prevcp.x ) {
 	    real slope = (sp->next->to->me.y-sp->prevcp.y)/(sp->next->to->me.x-sp->prevcp.x);
 	    real y = slope*(sp->me.x-sp->prevcp.x) + sp->prevcp.y - sp->me.y;
@@ -818,7 +820,7 @@ void SplinePointCatagorize(SplinePoint *sp) {
 		sp->pointtype = pt_tangent;
 	} else if ( sp->me.x == sp->prevcp.x )
 	    sp->pointtype = pt_tangent;
-    } else {
+    } else if ( sp->noprevcp && (sp->me.x!=sp->prev->from->me.x || sp->me.y!=sp->prev->from->me.y)) {
 	if ( sp->nextcp.x!=sp->prev->from->me.x ) {
 	    real slope = (sp->nextcp.y-sp->prev->from->me.y)/(sp->nextcp.x-sp->prev->from->me.x);
 	    real y = slope*(sp->me.x-sp->prev->from->me.x) + sp->prev->from->me.y - sp->me.y;

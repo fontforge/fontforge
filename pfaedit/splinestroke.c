@@ -922,10 +922,11 @@ static void StrokeJoint(SplinePoint *base,StrokeInfo *si,
 		before->pinnerto = 1;
 		before->minnerto = 0;
 	    } else {
-		if ( DoIntersect_Splines(before,after,false,si,sc,false)) {
+		if ( DoIntersect_Splines(before,after,false,si,sc,true)) {
 		    before->pinnerto = 0;
 		    before->minnerto = 1;
-		}
+		} else
+		    DoIntersect_Splines(before,after,true,si,sc,true);
 	    }
 	}
     }
@@ -1612,6 +1613,35 @@ static SplineSet *SSRemoveUTurns(SplineSet *base) {
 		}
 		SplineRefigure(s);
 	    }
+	}
+    }
+
+    /* Zero length splines are bad too */
+    /* As are splines of length .000003 */
+    first = NULL;
+    for ( s = spl->first->next; s!=NULL && s!=first; s=next ) {
+	if ( first==NULL ) first = s;
+	next = s->to->next;
+	if ( s->from->nonextcp && s->to->noprevcp &&
+		s->from->me.x >= s->to->me.x-.1 && s->from->me.x <= s->to->me.x+.1 &&
+		s->from->me.y >= s->to->me.y-.1 && s->from->me.y <= s->to->me.y+.1 ) {
+	    s->from->next = next;
+	    if ( next!=NULL ) {
+		s->from->nextcp = next->from->nextcp;
+		s->from->nonextcp = next->from->nonextcp;
+		s->from->nextcpdef = next->from->nextcpdef;
+		next->from = s->from;
+	    }
+	    SplinePointCatagorize(s->from);
+	    if ( spl->last == s->to ) {
+		if ( next==NULL )
+		    spl->last = s->from;
+		else
+		    spl->first = spl->last = s->from;
+	    }
+	    SplinePointFree(s->to);
+	    SplineFree(s);
+	    if ( first==s ) first = NULL;
 	}
     }
 

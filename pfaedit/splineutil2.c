@@ -990,6 +990,9 @@ static void SplinesRemoveBetween(SplineChar *sc, SplinePoint *from, SplinePoint 
     if ( type==0 && !order2 )
 	FixupCurveTanPoints(from,to,&fncp,&tpcp);
     free(tp);
+
+    SplinePointCatagorize(from);
+    SplinePointCatagorize(to);
 }
 
 static void RemoveZeroLengthSplines(SplineSet *spl, int onlyselected) {
@@ -1194,6 +1197,8 @@ return( false );
 	    SplineFree(sp->next);
 	    SplinePointMDFree(sc,sp);
 	}
+	SplinePointCatagorize(from);
+	SplinePointCatagorize(to);
     } else {
 	SplineFree(from->next);
 	from->next = afterfrom->prev;
@@ -1487,7 +1492,7 @@ return;
     }
 
 	/* Special case checks for paths containing only one point */
-	/*  else we get lots of nans (or only two) */
+	/*  else we get lots of nans (or only two points) */
     if ( spl->first->next == NULL )
 return;
     for ( sp = spl->first->next->to; sp!=spl->last && sp->next!=NULL; sp = next ) {
