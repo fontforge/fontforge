@@ -849,7 +849,6 @@ static void ValidatePostScriptFontName(char *str) {
 
 char *EnforcePostScriptName(char *old) {
     char *end, *pt, *npt, *str = copy(old);
-    unichar_t *temp = NULL;
 
     strtod(str,&end);
     if ( (*end=='\0' || (isdigit(str[0]) && strchr(str,'#')!=NULL)) &&
@@ -857,7 +856,7 @@ char *EnforcePostScriptName(char *old) {
 	free(str);
 	str=galloc(strlen(old)+2);
 	*str = 'a';
-	strcpy(str+1,new);
+	strcpy(str+1,old);
     }
     for ( pt=str; *pt; ++pt ) {
 	if ( *pt<=' ' || *pt>=0x7f ||
