@@ -1447,11 +1447,12 @@ return( ret );
 }
 
 static void CvtSimpleHints(GrowBuf *gb, SplineChar *sc,BasePoint *startend,
-	int round, enum fontformat format) {
+	int round, enum fontformat format,int iscjk) {
     MMSet *mm = sc->parent->mm;
     int i,instance_count;
     SplineChar *scs[MmMax];
     BasePoint current[MmMax];
+    DBounds b;
 
     if ( (format==ff_mma || format==ff_mmb) && mm!=NULL ) {
 	instance_count = mm->instance_count;
@@ -1463,7 +1464,20 @@ static void CvtSimpleHints(GrowBuf *gb, SplineChar *sc,BasePoint *startend,
 	instance_count = 1;
 	scs[0] = sc;
 	mm = NULL;
+	/* I don't think I can put counter hints into a type1 subroutine */
+	/*  but this would be the natural place to do it if I could */
+	/*  (counter hints must come immediately after the hbsw, and we've */
+	/*  already seen the procedure call to invoke us */
+	/* if ( iscjk ) CounterHints1(&gb,sc,round);*/
     }
+    for ( i=0; i<instance_count; ++i ) {
+	SplineCharFindBounds(scs[i],&b);
+	scs[i]->lsidebearing = round?rint(b.minx):b.minx;
+    }
+    CvtPsHints(gb,scs,instance_count,true,round,iscjk,NULL);
+    CvtPsHints(gb,scs,instance_count,false,round,iscjk,NULL);
+    for ( i=0; i<instance_count; ++i )
+	scs[i]->lsidebearing = 0;
     memset(current,0,instance_count*sizeof(BasePoint));
     CvtPsSplineSet(gb,scs,instance_count,current,round,NULL,startend,
 	    sc->parent->order2);
@@ -1578,7 +1592,7 @@ static void SplineFont2Subrs1(SplineFont *sf,int round, int iscjk,
 		    memset(&gb,'\0',sizeof(gb));
 		    for ( j=0; j<instance_count; ++j )
 			bp[j*2+1] = bp[j*2+0];
-		    CvtSimpleHints(&gb,sc,bp,round,format);
+		    CvtSimpleHints(&gb,sc,bp,round,format,iscjk);
 		    if ( gb.pt+1>=gb.end )
 			GrowBuffer(&gb);
 		    *gb.pt++ = 11;				/* return */
