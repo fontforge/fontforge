@@ -2669,18 +2669,16 @@ int SCNumberPoints(SplineChar *sc) {
 return( pnum );
 }
 
-static void instrcheck(SplineChar *sc) {
-    int pnum=0, skipit, bad=false;
+int SCPointsNumberedProperly(SplineChar *sc) {
+    int pnum=0, skipit;
     SplineSet *ss;
     SplinePoint *sp;
     int starts_with_cp;
-    uint8 *instrs = sc->ttf_instrs==NULL && sc->parent->mm!=NULL && sc->parent->mm->apple ?
-		sc->parent->mm->normal->chars[sc->enc]->ttf_instrs : sc->ttf_instrs;
 
-    if ( instrs==NULL )
-return;
-    /* If the points are no longer in order then the instructions are not valid */
-    /*  (because they'll refer to the wrong points) and should be removed */
+    if ( sc->layers[ly_fore].splines!=NULL &&
+	    sc->layers[ly_fore].refs!=NULL )
+return( false );
+
     for ( ss = sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
 	starts_with_cp = (ss->first->ttfindex == pnum+1 || ss->first->ttfindex==0xffff) &&
 		!ss->first->noprevcp;
@@ -2693,7 +2691,7 @@ return;
 	    if ( sp->ttfindex==0xffff && skipit )
 		/* Doesn't count */;
 	    else if ( sp->ttfindex!=pnum || skipit )
-		bad = true;
+return( false );
 	    else
 		++pnum;
 	    if ( sp->nonextcp && sp->nextcpindex==0xffff )
@@ -2701,13 +2699,7 @@ return;
 	    else if ( sp->nextcpindex==pnum )
 		++pnum;
 	    else
-		bad = true;
-	    if ( bad ) {
-		free(sc->ttf_instrs); sc->ttf_instrs = NULL;
-		sc->ttf_instrs_len = 0;
-		SCMarkInstrDlgAsChanged(sc);
-return;
-	    }
+return( false );
 	    if ( sp->next==NULL )
 	break;
 	    sp = sp->next->to;
@@ -2715,6 +2707,23 @@ return;
 	break;
 	}
 	if ( starts_with_cp ) --pnum;
+    }
+return( true );
+}
+
+static void instrcheck(SplineChar *sc) {
+    uint8 *instrs = sc->ttf_instrs==NULL && sc->parent->mm!=NULL && sc->parent->mm->apple ?
+		sc->parent->mm->normal->chars[sc->enc]->ttf_instrs : sc->ttf_instrs;
+
+    if ( instrs==NULL )
+return;
+    /* If the points are no longer in order then the instructions are not valid */
+    /*  (because they'll refer to the wrong points) and should be removed */
+    if ( !SCPointsNumberedProperly(sc)) {
+	free(sc->ttf_instrs); sc->ttf_instrs = NULL;
+	sc->ttf_instrs_len = 0;
+	SCMarkInstrDlgAsChanged(sc);
+return;
     }
 }
 
