@@ -1628,6 +1628,7 @@ return( false );
     free(sf->remap);
     sf->remap = NULL;
     sf->encodingchanged = true;
+    sf->compacted = false;
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
 	SCRefreshTitles(sf->chars[i]);
     SFRestoreNearTop(sf);
