@@ -971,7 +971,7 @@ static uint32 SFsToFOND(FILE *res,struct sflist *sfs,uint32 id,int format,int bf
 	    }
 	}
     }
-    if ( famlen!=0 ) for ( i=pscnt=0; i<48; ++i ) if ( psfaces[i]!=NULL ) {
+    if ( famlen!=0 ) for ( i=0; i<48; ++i ) if ( psfaces[i]!=NULL ) {
 	if ( psfaces[i]->sf->fontname[famlen]==0 )
 	    exact = true;
     }
