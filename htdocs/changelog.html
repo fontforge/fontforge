@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 30-Aug-2003 -->
+  <!-- AP: Last modified: 31-Aug-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -11,11 +11,25 @@
 </H1>
 <UL>
   <LI>
-    ???
+    31-Aug-2003
     <UL>
       <LI>
 	Add problems for maximum number of hints (96) and maximum number of subroutine
 	nests (references) ~10.
+      <LI>
+	I looked at AppleChancery again and figured out why I was having trouble
+	parsing its 'mort' ligature tables, and put in code to make it easy to parse
+	tables of this type.
+      <LI>
+	After figuring that out, I realized there was a bug in my own table generation.
+	Suppose we have two ligatures "f l =&gt; fl" and "s t =&gt; st", and are
+	given "fst". Then my table would fail to find the "st" ligature. The state
+	of 'read "f" waiting for "l"' would see that it didn't get an "l" and revert
+	back to the initial state. It should instead have checked to see if "s" could
+	start a ligature in its own right, and if so jump to the 'got "s" waiting
+	for "t"' state.
+      <LI>
+	The same fix needs to be done for contextual glyph substitution.
     </UL>
   <LI>
     29-Aug-2003

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 29-Dec-2002 -->
-  <!-- AP: Last modified: 26-Aug-2003 -->
+  <!-- AP: Last modified: 31-Aug-2003 -->
   <TITLE>Advanced Typography tables</TITLE>
 </HEAD>
 <BODY>
@@ -603,11 +603,14 @@ while.
 </H4>
 <P>
 There is a subtle bug involved in converting a chaining contextual substitution
-into an Apple contextual glyph substitution. AAT does not have the concept
-of a backtrack list. This means that the substitution will start with the
-first character of the backtrack list, which means that any substitutions
-that may already have happened (to the glyphs on the backtrack list) on an
-opentype platform will not have happened on a Mac.
+into an Apple contextual glyph substitution. In AAT any given substitution
+will start at the beginning of input and run to the end of input, while OT
+will start at the beginning of input and apply all substitutions at once
+to each character. This means that an OT substitution will expect characters
+in the backtrack list to have had substitutions applied to them while in
+AAT they will not have been, or that OT will expect substitutions not to
+have been applied to the lookahead list that may already have been done in
+AAT.
 <H4>
   Example:
 </H4>
@@ -643,7 +646,8 @@ Consider the following contextual sustitution in a glyph list format:
     <TD>d</TD>
   </TR>
   <TR>
-    <TH>Replace With</TH>
+    <TH><P ALIGN=Left>
+      Replace With</TH>
     <TD>&nbsp;</TD>
     <TD>B</TD>
     <TD>C</TD>
@@ -654,8 +658,11 @@ Consider the following contextual sustitution in a glyph list format:
 Now in OpenType this means if you find the sequence "abcd" then replace the
 "b" with "B" and the "c" with "C". But this can't be expressed in an Apple
 state machine. In OpenType the match is done first, and then the substitutions
-occur. In a state machine the sustitutions have to be done (almost) concurrently
+occur. In a state machine the substitutions have to be done (almost) concurrently
 with the match and so must happen whether the final "d" is present or not.
+(Note I'm using a glyph sequence because it is easier to display in an example.
+The same problem applies if the substitution is expressed by classes or by
+coverage tables)
 <P>
 Consider the following table with two glyph strings
 <TABLE BORDER CELLPADDING="2">
@@ -669,7 +676,8 @@ Consider the following table with two glyph strings
     <TD>d</TD>
   </TR>
   <TR>
-    <TH>Replace With</TH>
+    <TH><P ALIGN=Left>
+      Replace With</TH>
     <TD>&nbsp;</TD>
     <TD><P ALIGN=Center>
       B</TD>
@@ -686,7 +694,8 @@ Consider the following table with two glyph strings
     <TD>e&nbsp;</TD>
   </TR>
   <TR>
-    <TH>Replace With</TH>
+    <TH><P ALIGN=Left>
+      Replace With</TH>
     <TD>&nbsp;</TD>
     <TD></TD>
     <TD><P ALIGN=Center>
@@ -697,17 +706,67 @@ Consider the following table with two glyph strings
 <P>
 So replace the "b" if the final "d" is present, otherwise replace the "c".
 Again this cannot be expressed in Apple's state machines. 
+<P>
+Finally consider
+<TABLE BORDER CELLPADDING="2">
+  <TR>
+    <TH>Initial Sequence</TH>
+    <TD><P ALIGN=Center>
+      a</TD>
+    <TD><P ALIGN=Center>
+      b</TD>
+    <TD><P ALIGN=Center>
+      c</TD>
+    <TD>d</TD>
+  </TR>
+  <TR>
+    <TH><P ALIGN=Left>
+      Replace With</TH>
+    <TD>&nbsp;</TD>
+    <TD><P ALIGN=Center>
+    </TD>
+    <TD>C</TD>
+    <TD>&nbsp;</TD>
+  </TR>
+  <TR>
+    <TH>Initial Sequence</TH>
+    <TD><P ALIGN=Center>
+      b</TD>
+    <TD><P ALIGN=Center>
+      c</TD>
+    <TD><P ALIGN=Center>
+      e</TD>
+    <TD></TD>
+  </TR>
+  <TR>
+    <TH><P ALIGN=Left>
+      Replace With</TH>
+    <TD><P ALIGN=Center>
+      B&nbsp;</TD>
+    <TD></TD>
+    <TD><P ALIGN=Center>
+      &nbsp;</TD>
+    <TD>&nbsp;</TD>
+  </TR>
+</TABLE>
+<P>
+If this substitution is given the sequence "abce" it cannot work in AAT.
+When it reads the "a" it will start down the "abcd" branch, the match will
+not fail until it looks for the "d" and finds "e" instead. At that point
+it is too late to switch to the "bce" substitution (which does match) because
+the "b" character will not have been marked as a substitution location.
+<P>
   <HR>
 On the other hand, Apple's state machines can express things that OpenType
-tables cannot (again I'm restricting myself to contextual substitutions).
+tables cannot (again I'm restricting myself to contextual glyph substitutions).
 Consider the case of a swash character at the begining (or end) of a word.
 Let us say that a word begins when a letter appears at the start of input
 or following a whitespace character. But OpenType has no way of expressing
 "start of input" (or end of input) in a contextual/chaining context, whereas
 Apple's state machines do.
 <P>
-Finally a state machine can match a general regular expression, while OpenType
-tables can only match fixed length strings. Suppose you were typesetting
+Finally an AAT state machine can match a general regular expression, while
+OpenType tables can only match fixed length strings. Suppose you were typesetting
 mathematics and wanted a substitution which would convert an arbetrary digit
 string following a variable into a subscript (so x23 should become
 x<SMALL><SUB>23</SUB></SMALL>). It is easy to write a state machine which
@@ -729,6 +788,11 @@ you could kern them so far that they moved past each other).
 <P>
 Conditional glyph insertion could be done with an OpenType contextual table
 and a multiple substitution.
+<P>
+I don't yet see how to use a state machine to do an OpenType contextual ligature
+table. There are two matches that need to be done at the same time and the
+ligature substitution can only be applied if both succeed. Perhaps if the
+'clig' were specified as glyph sequences it would be doable.
 <H3>
   Apple and OpenType features
 </H3>
