@@ -312,6 +312,24 @@ int GWidgetAskR_(int title,const unichar_t *question, int *answers, int def, int
 return(ret);
 }
 
+int GWidgetAskCenteredR_(int title,const unichar_t *question, int *answers, int def, int cancel) {
+    const unichar_t **ans;
+    unichar_t *mn;
+    int ret;
+    int i;
+
+    for ( i=0; answers[i]!=0 && answers[i]!=0x80000000; ++i );
+    ans = gcalloc(i+1,sizeof(unichar_t));
+    mn = gcalloc(1,sizeof(unichar_t));
+    for ( i=0; answers[i]!=0 && answers[i]!=0x80000000; ++i )
+	ans[i] = GStringGetResource(answers[i],&mn[i]);
+    ret = GWidgetAskCentered(GStringGetResource(title,NULL),question,
+	    ans,mn,def,cancel);
+    free(ans);
+    free(mn);
+return(ret);
+}
+
 int GWidgetAskCenteredR(int title,int question, int *answers, int def, int cancel) {
     const unichar_t **ans;
     unichar_t *mn;
@@ -402,4 +420,169 @@ void GWidgetPostNoticeR(int title,int statement) {
     GDrawRequestTimer(gw,40*1000,0,NULL);
     /* Continue merrily on our way. Window will destroy itself in 40 secs */
     /*  or when user kills it. We can ignore it */
+}
+
+/* ************************************************************************** */
+
+#define CID_Cancel	0
+#define CID_OK		1
+#define CID_List	2
+
+static int c_e_h(GWindow gw, GEvent *event) {
+    struct dlg_info *d = GDrawGetUserData(gw);
+
+    if ( event->type==et_close ) {
+	d->done = true;
+	d->ret = -1;
+    } else if ( event->type==et_controlevent &&
+	    (event->u.control.subtype == et_buttonactivate ||
+	     event->u.control.subtype == et_listdoubleclick )) {
+	d->done = true;
+	if ( GGadgetGetCid(event->u.control.g)==CID_Cancel )
+	    d->ret = -1;
+	else
+	    d->ret = GGadgetGetFirstListSelectedItem(GWidgetGetControl(gw,CID_List));
+    } else if ( event->type == et_char ) {
+return( false );
+    } else if ( event->type == et_map ) {
+	/* Above palettes */
+	GDrawRaise(gw);
+    }
+return( true );
+}
+
+static GWindow ChoiceDlgCreate(struct dlg_info *d,const unichar_t *title,const unichar_t *question,
+	const unichar_t **choices, int cnt, int def,
+	int restrict_input, int center) {
+    GTextInfo qlabels[GLINE_MAX+1], *llabels, blabel[2];
+    GGadgetCreateData *gcd;
+    int lb;
+    GRect pos;
+    GWindow gw;
+    GWindowAttrs wattrs;
+    extern FontInstance *_ggadget_default_font;
+    int as, ds, ld, fh;
+    int w, maxw;
+    int i, y;
+
+    memset(qlabels,'\0',sizeof(qlabels));
+    lb = FindLineBreaks(question,qlabels);
+    llabels = gcalloc(cnt+1,sizeof(GTextInfo));
+    for ( i=0; i<cnt; ++i) {
+	llabels[i].text = (unichar_t *) choices[i];
+	llabels[i].selected = (i==def);
+    }
+
+    memset(&wattrs,0,sizeof(wattrs));
+    /* If we have many questions in quick succession the dlg will jump around*/
+    /*  as it tracks the cursor (which moves to the buttons). That's not good*/
+    /*  So I don't do undercursor here */
+    wattrs.mask = wam_events|wam_cursor|wam_wtitle;
+    if ( restrict_input )
+	wattrs.mask |= wam_restrict;
+    else 
+	wattrs.mask |= wam_notrestricted;
+    if ( center )
+	wattrs.mask |= wam_centered;
+    else
+	wattrs.mask |= wam_undercursor;
+    wattrs.not_restricted = true;
+    wattrs.restrict_input_to_me = 1;
+    wattrs.event_masks = ~(1<<et_charup);
+    wattrs.undercursor = 1;
+    wattrs.centered = 2;
+    wattrs.cursor = ct_pointer;
+    wattrs.window_title = (unichar_t *) title;
+    pos.x = pos.y = 0;
+    pos.width = 200; pos.height = 60;		/* We'll figure size later */
+		/* but if we get the size too small, the cursor isn't in dlg */
+    gw = GDrawCreateTopWindow(NULL,&pos,c_e_h,d,&wattrs);
+
+    GDrawSetFont(gw,_ggadget_default_font);
+    GDrawFontMetrics(_ggadget_default_font,&as,&ds,&ld);
+    fh = as+ds;
+    maxw = 200;
+    for ( i=0; i<lb; ++i ) {
+	w = GDrawGetTextWidth(gw,qlabels[i].text,-1,NULL);
+	if ( w>maxw ) maxw = w;
+    }
+    maxw += GDrawPointsToPixels(gw,16);
+
+    gcd = gcalloc(lb+1+2+2,sizeof(GGadgetCreateData));
+    if ( lb==1 ) {
+	gcd[0].gd.pos.width = GDrawGetTextWidth(gw,qlabels[0].text,-1,NULL);
+	gcd[0].gd.pos.x = (maxw-gcd[0].gd.pos.width)/2;
+	gcd[0].gd.pos.y = GDrawPointsToPixels(gw,6);
+	gcd[0].gd.pos.height = fh;
+	gcd[0].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels;
+	gcd[0].gd.label = &qlabels[0];
+	gcd[0].creator = GLabelCreate;
+    } else for ( i=0; i<lb; ++i ) {
+	gcd[i].gd.pos.x = GDrawPointsToPixels(gw,8);
+	gcd[i].gd.pos.y = GDrawPointsToPixels(gw,6)+i*fh;
+	gcd[i].gd.pos.width = GDrawGetTextWidth(gw,qlabels[i].text,-1,NULL);
+	gcd[i].gd.pos.height = fh;
+	gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels;
+	gcd[i].gd.label = &qlabels[i];
+	gcd[i].creator = GLabelCreate;
+    }
+
+    y = GDrawPointsToPixels(gw,12)+lb*fh;
+    gcd[i].gd.pos.x = GDrawPointsToPixels(gw,8); gcd[i].gd.pos.y = y;
+    gcd[i].gd.pos.width = maxw - 2*GDrawPointsToPixels(gw,8);
+    gcd[i].gd.pos.height = (cnt<4?4:cnt<8?cnt:8)*fh + 2*GDrawPointsToPixels(gw,3);
+    gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels | gg_list_exactlyone;
+    gcd[i].gd.u.list = llabels;
+    gcd[i].gd.cid = CID_List;
+    gcd[i++].creator = GListCreate;
+    y += gcd[i-1].gd.pos.height + GDrawPointsToPixels(gw,10);
+
+    memset(blabel,'\0',sizeof(blabel));
+    gcd[i].gd.pos.x = GDrawPointsToPixels(gw,15)-3; gcd[i].gd.pos.y = y-3;
+    gcd[i].gd.pos.width = -1;
+    gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels |gg_but_default;
+    gcd[i].gd.label = &blabel[0];
+    blabel[0].text = (unichar_t *) _STR_OK;
+    blabel[0].text_in_resource = true;
+    gcd[i].gd.cid = CID_OK;
+    gcd[i++].creator = GButtonCreate;
+
+    gcd[i].gd.pos.x = maxw-GDrawPointsToPixels(gw,15)-
+	    GDrawPointsToPixels(gw,GIntGetResource(_NUM_Buttonsize));
+    gcd[i].gd.pos.y = y;
+    gcd[i].gd.pos.width = -1;
+    gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels |gg_but_cancel;
+    gcd[i].gd.label = &blabel[1];
+    blabel[1].text = (unichar_t *) _STR_Cancel;
+    blabel[1].text_in_resource = true;
+    gcd[i].gd.cid = CID_Cancel;
+    gcd[i++].creator = GButtonCreate;
+
+    GGadgetsCreate(gw,gcd);
+    pos.width = maxw;
+    pos.height = y + GDrawPointsToPixels(gw,34);
+    GDrawResize(gw,pos.width,pos.height);
+    GWidgetHidePalettes();
+    GDrawSetVisible(gw,true);
+    memset(d,'\0',sizeof(d));
+    d->ret = -1;
+    free(llabels);
+    free(gcd);
+    for ( i=0; i<lb; ++i )
+	free(qlabels[i].text);
+return( gw );
+}
+
+int GWidgetChoicesR(int title,int question, const unichar_t **choices,int cnt, int def) {
+    struct dlg_info d;
+    GWindow gw;
+
+    gw = ChoiceDlgCreate(&d,GStringGetResource( title,NULL),GStringGetResource( question,NULL),
+	    choices,cnt,def,true,false);
+    while ( !d.done )
+	GDrawProcessOneEvent(NULL);
+    GDrawDestroyWindow(gw);
+    GDrawSync(NULL);
+    GDrawProcessPendingEvents(NULL);
+return(d.ret);
 }

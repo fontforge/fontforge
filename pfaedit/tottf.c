@@ -2203,8 +2203,6 @@ static void dumpcffprivate(SplineFont *sf,struct alltabs *at) {
     int hasblue=0, hash=0, hasv=0, bs;
     int maxw=0;
     uint16 *widths; uint32 *cumwid;
-    static unichar_t autohinting[] = { 'A','u','t','o',' ','H','i','n','t','i','n','g',' ','F','o','n','t',  '\0' };
-    static unichar_t saveotf[] = { 'S','a','v','i','n','g',' ','O','p','e','n','T','y','p','e',' ','F','o','n','t', '\0' };
 
     /* The private dict is not in an index, so no index header. Just the data */
 
@@ -2255,7 +2253,7 @@ static void dumpcffprivate(SplineFont *sf,struct alltabs *at) {
     hash = PSDictHasEntry(sf->private,"StdHW")!=NULL;
     hasv = PSDictHasEntry(sf->private,"StdVW")!=NULL;
     GProgressChangeStages(3+!hasblue);
-    GProgressChangeLine1(autohinting);
+    GProgressChangeLine1R(_STR_AutoHintingFont);
     SplineFontAutoHint(sf);
     GProgressNextStage();
 
@@ -2282,7 +2280,7 @@ static void dumpcffprivate(SplineFont *sf,struct alltabs *at) {
 	    else if ( snapcnt[i]>snapcnt[mi] ) mi = i;
 	if ( mi!=-1 ) stdvw[0] = stemsnapv[mi];
     }
-    GProgressChangeLine1(saveotf);
+    GProgressChangeLine1R(_STR_SavingOpenTypeFont);
 
     if ( hasblue )
 	DumpStrArray(PSDictHasEntry(sf->private,"BlueValues"),private,6);

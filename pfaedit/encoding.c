@@ -149,7 +149,7 @@ static void ParseEncodingFile(char *filename) {
     char *orig = filename;
     Encoding *head, *item, *prev;
     unichar_t *name;
-    char buffer[100]; unichar_t ubuf[100];
+    char buffer[10]; unichar_t ubuf[100];
     int i,ch;
 
     if ( filename==NULL ) filename = getPfaEditEncodings();
@@ -167,7 +167,7 @@ return;
 	head = PSSlurpEncodings(file);
     fclose(file);
     if ( head==NULL ) {
-	GDrawError("Bad encoding file format" );
+	GWidgetPostNoticeR(_STR_BadEncFormat,_STR_BadEncFormat );
 return;
     }
 
@@ -175,15 +175,22 @@ return;
 	item->enc_num = ++enc_num;
 	if ( item->enc_name==NULL ) {
 	    if ( item==head && item->next==NULL )
-		strcpy(buffer,"Please name this encoding" );
-	    else if ( i<3 )
-		sprintf(buffer, "Please name the %s encoding in this file",
-		    i==0 ? "first" :
-		    i==1 ? "second" :
-		    "third" );
-	    else
-		sprintf( buffer, "Please name the %dth encoding in this file" );
-	    uc_strcpy(ubuf,buffer);
+		u_strcpy(ubuf,GStringGetResource(_STR_PleaseNameEnc,NULL) );
+	    else {
+		u_strcpy(ubuf,GStringGetResource(_STR_PleaseNameEncPre,NULL) );
+		if ( i==1 )
+		    u_strcat(ubuf,GStringGetResource(_STR_First,NULL) );
+		else if ( i==2 )
+		    u_strcat(ubuf,GStringGetResource(_STR_Second,NULL) );
+		else if ( i==3 )
+		    u_strcat(ubuf,GStringGetResource(_STR_Third,NULL) );
+		else {
+		    sprintf(buffer,"%d", i );
+		    uc_strcat(ubuf,buffer);
+		    u_strcat(ubuf,GStringGetResource(_STR_Th,NULL) );
+		}
+		u_strcat(ubuf,GStringGetResource(_STR_PleaseNameEncPost,NULL) );
+	    }
 	    name = GWidgetAskString(ubuf,ubuf,NULL);
 	    if ( name!=NULL ) {
 		item->enc_name = cu_copy(name);
@@ -357,7 +364,6 @@ void RemoveEncoding(void) {
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[5];
     GTextInfo label[5];
-    static unichar_t title[] = { 'R','e','m','o','v','e',' ','E','n','c','o','d','i','n','g',  '\0' };
     Encoding *item;
     int done = 0;
 
@@ -373,7 +379,7 @@ return;
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.window_title = title;
+    wattrs.window_title = GStringGetResource(_STR_RemoveEncoding,NULL);
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,150);
     pos.height = GDrawPointsToPixels(NULL,110);
@@ -424,16 +430,13 @@ return;
 
 Encoding *MakeEncoding(SplineFont *sf) {
     unichar_t *name;
-    char buffer[100]; unichar_t ubuf[100];
     int i;
     Encoding *item, *temp;
 
     if ( sf->encoding_name!=em_none || sf->charcnt>=1500 )
 return(NULL);
 
-    strcpy(buffer,"Please name this encoding" );
-    uc_strcpy(ubuf,buffer);
-    name = GWidgetAskString(ubuf,ubuf,NULL);
+    name = GWidgetAskStringR(_STR_PleaseNameEnc,_STR_PleaseNameEnc,NULL);
     if ( name==NULL )
 return(NULL);
     item = gcalloc(1,sizeof(Encoding));
@@ -464,12 +467,11 @@ return( item );
 }
 
 void LoadEncodingFile(void) {
-    static unichar_t title[] = { 'L','o','a','d',' ','E','n','c','o','d','i','n','g',  '\0' };
     static unichar_t filter[] = { '*','.','{','p','s',',','P','S',',','t','x','t',',','T','X','T','}',  '\0' };
     unichar_t *fn;
     char *filename;
 
-    fn = GWidgetOpenFile(title, NULL, filter, NULL);
+    fn = GWidgetOpenFile(GStringGetResource(_STR_LoadEncoding,NULL), NULL, filter, NULL);
     if ( fn==NULL )
 return;
     filename = cu_copy(fn);

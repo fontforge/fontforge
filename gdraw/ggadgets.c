@@ -417,7 +417,7 @@ static int msgpopup_eh(GWindow popup,GEvent *event) {
 return( true );
 }
 
-void GGadgetPreparePopup(GWindow base,unichar_t *msg) {
+void GGadgetPreparePopup(GWindow base,const unichar_t *msg) {
     GGadgetEndPopup();
     if ( msg==NULL )
 return;
@@ -438,7 +438,11 @@ return;
 	GDrawSetFont(popup,popup_font);
     }
     GDrawGetSize(base,&popup_within);
-    popup_timer = GDrawRequestTimer(popup,popup_delay,0,msg);
+    popup_timer = GDrawRequestTimer(popup,popup_delay,0,(void *) msg);
+}
+
+void GGadgetPreparePopupR(GWindow base,int msg) {
+    GGadgetPreparePopup(base,GStringGetResource(msg,NULL));
 }
 
 void _ggadget_redraw(GGadget *g) {

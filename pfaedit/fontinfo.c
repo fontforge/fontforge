@@ -1052,7 +1052,7 @@ return(false);
 	    tlen = item->char_cnt;
 	    table = item->unicode;
 	} else {
-	    GDrawError("Invalid encoding");
+	    GWidgetPostNoticeR(_STR_InvalidEncoding,_STR_InvalidEncoding);
 return( false );
 	}
     } else if ( new_map==em_iso8859_1 )
@@ -1378,7 +1378,8 @@ static char *GetModifiers(char *fontname) {
 		    if ((bpt = strstrmatch(fontname,"Medium"))==NULL )
 			if ((bpt = strstrmatch(fontname,"Roman"))==NULL )
 			    if ((bpt = strstrmatch(fontname,"Heavy"))==NULL )
-				;
+				if ((bpt = strstrmatch(fontname,"Nord"))==NULL )
+				    ;
     if ((ept = strstrmatch(fontname,"Expanded"))==NULL )
 	if ((ept = strstrmatch(fontname,"Condensed"))==NULL )
 	    if ((ept = strstrmatch(fontname,"Outline"))==NULL )
@@ -1457,6 +1458,8 @@ void SFSetFontName(SplineFont *sf, char *family, char *mods,char *full) {
 	sf->weight = copy("Heavy");
     else if ( strstrmatch(mods,"black")!=NULL )
 	sf->weight = copy("Black");
+    else if ( strstrmatch(mods,"Nord")!=NULL )
+	sf->weight = copy("Nord");
     else
 	sf->weight = copy("Medium");
 

@@ -95,33 +95,15 @@ static void RestoreOffsets(GWindow main, GWindow palette, GPoint *off) {
     GDrawRaise(palette);
 }
 
-static unichar_t poppointer[] = { 'P','o','i','n','t','e','r',  '\0' };
-static unichar_t popmag[] = { 'M','a','g','n','i','f','y',' ','(','M','i','n','i','f','y',' ','w','i','t','h',' ','a','l','t',')',  '\0' };
-static unichar_t popcurve[] = { 'A','d','d',' ','a',' ','c','u','r','v','e',' ','p','o','i','n','t',  '\0' };
-static unichar_t popcorner[] = { 'A','d','d',' ','a',' ','c','o','r','n','e','r',' ','p','o','i','n','t',  '\0' };
-static unichar_t poptangent[] = { 'A','d','d',' ','a',' ','t','a','n','g','e','n','t',' ','p','o','i','n','t',  '\0' };
-static unichar_t poppen[] = { 'A','d','d',' ','a',' ','p','o','i','n','t',',',' ','d','r','a','g',' ','o','u','t',' ','i','t','s',' ','c','o','n','t','r','o','l',' ','p','o','i','n','t','s',  '\0' };
-static unichar_t popknife[] = { 'C','u','t',' ','s','p','l','i','n','e','s',' ','i','n',' ','t','w','o',  '\0' };
-static unichar_t popruler[] = { 'M','e','a','s','u','r','e',' ','d','i','s','t','a','n','c','e',',',' ','a','n','g','l','e',' ','b','e','t','w','e','e','n',' ','p','o','i','n','t','s',  '\0' };
-static unichar_t popscale[] = { 'S','c','a','l','e',' ','t','h','e',' ','s','e','l','e','c','t','i','o','n',  '\0' };
-static unichar_t popflip[] = { 'F','l','i','p',' ','t','h','e',' ','s','e','l','e','c','t','i','o','n',  '\0' };
-static unichar_t poprotate[] = { 'R','o','t','a','t','e',' ','t','h','e',' ','s','e','l','e','c','t','i','o','n',  '\0' };
-static unichar_t popskew[] = { 'S','k','e','w',' ','t','h','e',' ','s','e','l','e','c','t','i','o','n',  '\0' };
-static unichar_t poprectelipse[] = { 'R','e','c','t', 'a','n','g','l','e',' ','o','r',' ','E','l','i','p','s','e',  '\0' };
-static unichar_t poppolystar[] = { 'P','o','l','y', 'g','o','n',' ','o','r',' ','S','t','a','r',  '\0' };
-static unichar_t poppencil[] = { 'S','e','t','/','C','l','e','a','r',' ','P','i','x','e','l', 's',  '\0' };
-static unichar_t popline[] = { 'D','r','a','w',' ','a',' ','L','i','n','e',  '\0' };
-static unichar_t popshift[] = { 'S','h','i','f','t',' ','E','n','t','i','r','e',' ','B','i', 't','m','a','p',  '\0' };
-static unichar_t pophand[] = { 'S','c','r','o','l','l',' ','B','i', 't','m','a','p',  '\0' };
 /* Note: If you change this ordering, change enum cvtools */
-static unichar_t *popups[] = { poppointer, popmag,
-				    popcurve, popcorner,
-			            poptangent, poppen,
-			            popknife, popruler,
-			            popscale, popflip,
-			            poprotate, popskew,
-			            poprectelipse, poppolystar,
-			            poprectelipse, poppolystar};
+static int popupsres[] = { _STR_Pointer, _STR_PopMag,
+				    _STR_AddCurvePoint, _STR_AddCornerPoint,
+			            _STR_AddTangentPoint, _STR_AddPenPoint,
+			            _STR_PopKnife, _STR_PopRuler,
+			            _STR_PopScale, _STR_PopFlip,
+			            _STR_PopRotate, _STR_PopSkew,
+			            _STR_PopRectElipse, _STR_PopPolyStar,
+			            _STR_PopRectElipse, _STR_PopPolyStar};
 static int rectelipse=0, polystar=0, regular_star=1;
 static double rr_radius=0;
 static int ps_pointcnt=6;
@@ -457,7 +439,7 @@ static void ToolsMouse(CharView *cv, GEvent *event) {
     } else if ( event->type == et_mousemove ) {
 	if ( cv->pressed_tool==cvt_none && pos!=cvt_none )
 	    /* Not pressed */
-	    GGadgetPreparePopup(cvtools,popups[pos]);
+	    GGadgetPreparePopupR(cvtools,popupsres[pos]);
 	else if ( pos!=cv->pressed_tool || cv->had_control != ((event->u.mouse.state&ksm_control)?1:0) )
 	    cv->pressed_display = cvt_none;
 	else
@@ -592,7 +574,8 @@ void CVToolsPopup(CharView *cv, GEvent *event) {
 
     memset(mi,'\0',sizeof(mi));
     for ( i=0;i<14; ++i ) {
-	mi[i].ti.text = popups[i];
+	mi[i].ti.text = (unichar_t *) popupsres[i];
+	mi[i].ti.text_in_resource = true;
 	mi[i].ti.fg = COLOR_DEFAULT;
 	mi[i].ti.bg = COLOR_DEFAULT;
 	mi[i].mid = i;
@@ -1070,9 +1053,9 @@ return(bvlayers);
 return( bvlayers );
 }
 
-static unichar_t *bvpopups[] = { poppointer, popmag,
-				    poppencil, popline,
-			            popshift, pophand };
+static int bvpopups[] = { _STR_Pointer, _STR_PopMag,
+				    _STR_PopPencil, _STR_PopLine,
+			            _STR_PopShift, _STR_PopHand };
 
 static void BVToolsExpose(GWindow pixmap, BitmapView *bv, GRect *r) {
     GRect old;
@@ -1159,7 +1142,7 @@ static void BVToolsMouse(BitmapView *bv, GEvent *event) {
     } else if ( event->type == et_mousemove ) {
 	if ( bv->pressed_tool==bvt_none && pos!=bvt_none )
 	    /* Not pressed */
-	    GGadgetPreparePopup(bvtools,bvpopups[pos]);
+	    GGadgetPreparePopupR(bvtools,bvpopups[pos]);
 	else if ( pos!=bv->pressed_tool || bv->had_control != ((event->u.mouse.state&ksm_control)?1:0) )
 	    bv->pressed_display = bvt_none;
 	else
@@ -1270,7 +1253,8 @@ void BVToolsPopup(BitmapView *bv, GEvent *event) {
 
     memset(mi,'\0',sizeof(mi));
     for ( i=0;i<6; ++i ) {
-	mi[i].ti.text = bvpopups[i];
+	mi[i].ti.text = (unichar_t *) bvpopups[i];
+	mi[i].ti.text_in_resource = true;
 	mi[i].ti.fg = COLOR_DEFAULT;
 	mi[i].ti.bg = COLOR_DEFAULT;
 	mi[i].mid = i;

@@ -34,8 +34,6 @@
 #include <math.h>
 #include "nomen.h"
 
-#define AUTODECOMPRESS	1
-
 #define XOR_COLOR	0x505050
 #define	FV_LAB_HEIGHT	15
 
@@ -250,7 +248,6 @@ static void FVMenuGenerate(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 
 int _FVMenuSaveAs(FontView *fv) {
-    static unichar_t title[] = { 'S','a','v','e',' ','A','s', '\0' };
     unichar_t *temp;
     unichar_t *ret;
     char *filename;
@@ -263,7 +260,7 @@ int _FVMenuSaveAs(FontView *fv) {
 	uc_strcpy(temp,fv->sf->fontname);
 	uc_strcat(temp,".sfd");
     }
-    ret = GWidgetSaveAsFile(title,temp,NULL,NULL);
+    ret = GWidgetSaveAsFile(GStringGetResource(_STR_Saveas,NULL),temp,NULL,NULL);
     free(temp);
     if ( ret==NULL )
 return( 0 );
@@ -289,7 +286,6 @@ static void FVMenuSaveAs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 
 int _FVMenuSave(FontView *fv) {
-    static unichar_t failedtitle[] = { 'S','a','v','e',' ','F','a','i','l','e','d', '\0' };
     int ret = 0;
 
     if ( fv->sf->filename==NULL && fv->sf->origname!=NULL &&
@@ -304,7 +300,7 @@ int _FVMenuSave(FontView *fv) {
     else {
 	FVFlattenAllBitmapSelections(fv);
 	if ( !SFDWriteBak(fv->sf) )
-	    GWidgetPostNotice(failedtitle,failedtitle);
+	    GWidgetPostNoticeR(_STR_SaveFailed,_STR_SaveFailed);
 	else {
 	    SplineFontSetUnChanged(fv->sf);
 	    ret = true;
@@ -487,14 +483,10 @@ void MenuExit(GWindow base,struct gmenuitem *mi,GEvent *e) {
 
 char *GetPostscriptFontName(int mult) {
     /* Some people use pf3 as an extension for postscript type3 fonts */
-#if AUTODECOMPRESS
-    static unichar_t wild[] = { '*', '.', '{', 'p','f','a',',','p','f','b',',','s','f','d',',','t','t','f',',','b','d','f',',','o','t','f',',','p','f','3','}', 
+    static unichar_t wild[] = { '*', '.', '{', 'p','f','a',',','p','f','b',',','s','f','d',',','t','t','f',',','b','d','f',',','o','t','f',',','p','f','3',',','t','t','c','}', 
 	     '{','.','g','z',',','.','Z',',','.','b','z','2',',','}',  '\0' };
-#else
-    static unichar_t wild[] = { '*', '.', '{', 'p','f','a',',','p','f','b',',','s','f','d',',','t','t','f',',','b','d','f',',','o','t','f',',','p','f','3','}', '\0' };
-#endif
-    static unichar_t title[] = { 'O','p','e','n',' ','p','o','s','t','s','c','r','i','p','t',' ','f','o','n','t', '\0' };
-    unichar_t *ret = FVOpenFont(title,NULL,wild,NULL,mult);
+    unichar_t *ret = FVOpenFont(GStringGetResource(_STR_OpenPostscript,NULL),
+	    NULL,wild,NULL,mult);
     char *temp = cu_copy(ret);
 
     free(ret);
@@ -503,12 +495,11 @@ return( temp );
 
 void MergeKernInfo(SplineFont *sf) {
     static unichar_t wild[] = { '*', '.', 'a', 'f','m',  '\0' };
-    static unichar_t title[] = { 'M','e','r','g','e',' ','K','e','r','n',' ','I','n','f','o', '\0' };
-    unichar_t *ret = GWidgetOpenFile(title,NULL,wild,NULL);
+    unichar_t *ret = GWidgetOpenFile(GStringGetResource(_STR_MergeKernInfo,NULL),NULL,wild,NULL);
     char *temp = cu_copy(ret);
 
     if ( !LoadKerningDataFromAfm(sf,temp))
-	GDrawError( "Failed to load data from %s", temp);
+	GDrawError( "Failed to load kern data from %s", temp);
     free(ret); free(temp);
 }
 
@@ -900,12 +891,11 @@ static void FVTransFunc(void *_fv,double transform[6],int otype, BVTFunc *bvts) 
     DBounds bb;
     BasePoint base;
     int i, cnt=0;
-    static unichar_t trans[] = { 'T','r','a','n','s','f','o','r','m','i','n','g',' ','.','.','.',  '\0' };
     BDFFont *bdf;
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
 	++cnt;
-    GProgressStartIndicator(10,trans,trans,NULL,cnt,1);
+    GProgressStartIndicatorR(10,_STR_Transforming,_STR_Transforming,0,cnt,1);
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
@@ -955,7 +945,6 @@ static void FVMenuStroke(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void FVMenuOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     int i, cnt=0;
-    static unichar_t over[] = { 'R','e','m','o','v','i','n','g',' ','o','v','e','l','a','p','s',  '\0' };
 
     /* We know it's more likely that we'll find a problem in the overlap code */
     /*  than anywhere else, so let's save the current state against a crash */
@@ -963,7 +952,7 @@ static void FVMenuOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
 	++cnt;
-    GProgressStartIndicator(10,over,over,NULL,cnt,1);
+    GProgressStartIndicatorR(10,_STR_RemovingOverlap,_STR_RemovingOverlap,0,cnt,1);
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
@@ -979,12 +968,11 @@ static void FVMenuOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void FVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     int i, cnt=0;
-    static unichar_t simplifying[] = { 'S','i','m','p','l','i','f','y','i','n','g',' ','.','.','.',  '\0' };
     int cleanup = e!=NULL && (e->u.mouse.state&ksm_shift);
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
 	++cnt;
-    GProgressStartIndicator(10,simplifying,simplifying,NULL,cnt,1);
+    GProgressStartIndicatorR(10,_STR_Simplifying,_STR_Simplifying,0,cnt,1);
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
@@ -1000,11 +988,10 @@ static void FVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void FVMenuCorrectDir(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     int i, cnt=0;
-    static unichar_t correcting[] = { 'C','o','r','r','e','c','t','i','n','g',' ','D','i','r','e','c','t','i','o','n','.','.','.',  '\0' };
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
 	++cnt;
-    GProgressStartIndicator(10,correcting,correcting,NULL,cnt,1);
+    GProgressStartIndicatorR(10,_STR_CorrectingDirection,_STR_CorrectingDirection,0,cnt,1);
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
@@ -1361,12 +1348,11 @@ static void mtlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void FVMenuAutoHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     int i, cnt=0;
-    static unichar_t autohint[] = { 'A','u','t','o','h','i','n','t','i','n','g',' ','f','o','n','t',  '\0' };
     int removeOverlap = e==NULL || !(e->u.mouse.state&ksm_shift);
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
 	++cnt;
-    GProgressStartIndicator(10,autohint,autohint,NULL,cnt,1);
+    GProgressStartIndicatorR(10,_STR_AutoHintingFont,_STR_AutoHintingFont,0,cnt,1);
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
@@ -1390,7 +1376,7 @@ static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = anychars==-1;
 	    removeOverlap = e==NULL || !(e->u.mouse.state&ksm_shift);
 	    free(mi->ti.text);
-	    mi->ti.text = uc_copy(removeOverlap?"AutoHint": "Full AutoHint");
+	    mi->ti.text = u_copy(GStringGetResource(removeOverlap?_STR_Autohint:_STR_FullAutohint,NULL));
 	  break;
 	}
     }
@@ -2462,11 +2448,7 @@ return( fv );
 SplineFont *ReadSplineFont(char *filename) {
     FontDict *fd;
     SplineFont *sf;
-    static unichar_t loading[] = { 'L','o','a','d','i','n','g','.','.','.',  '\0' };
-    static unichar_t reading[] = { 'R','e','a','d','i','n','g',' ','G','l','y','p','h','s',  '\0' };
-    static unichar_t interpret[] = { 'I','n','t','e','p','r','e','t','i','n','g',' ','G','l','y','p','h','s',  '\0' };
-    unichar_t ubuf[120];
-#if AUTODECOMPRESS
+    unichar_t ubuf[150];
     char buf[1200];
     static struct { char *ext, *decomp, *recomp; } compressors[] = {
 	{ "gz", "gunzip", "gzip" },
@@ -2476,14 +2458,11 @@ SplineFont *ReadSplineFont(char *filename) {
     };
     int i;
     char *pt;
-#else
-    char buf[120];
-#endif
+    int len;
 
     if ( filename==NULL )
 return( NULL );
 
-#if AUTODECOMPRESS
     pt = strrchr(filename,'.');
     i = -1;
     if ( pt!=NULL ) for ( i=0; compressors[i].ext!=NULL; ++i )
@@ -2499,17 +2478,19 @@ return( NULL );
 return( NULL );
 	}
     }
-#endif
 
-    sprintf(buf, "Loading font from %.100s", GFileNameTail(filename));
-    uc_strcpy(ubuf,buf);
-    GProgressStartIndicator(10,loading,ubuf,reading,0,1);
+    u_strcpy(ubuf,GStringGetResource(_STR_LoadingFontFrom,NULL));
+    len = u_strlen(ubuf);
+    uc_strncat(ubuf,GFileNameTail(filename),100);
+    ubuf[100+len] = '\0';
+    GProgressStartIndicator(10,GStringGetResource(_STR_Loading,NULL),ubuf,GStringGetResource(_STR_ReadingGlyphs,NULL),0,1);
     GProgressEnableStop(0);
 
     sf = NULL;
     if ( strmatch(filename+strlen(filename)-4, ".sfd")==0 ) {
 	sf = SFDRead(filename);
     } else if ( strmatch(filename+strlen(filename)-4, ".ttf")==0 ||
+		strmatch(filename+strlen(filename)-4, ".ttc")==0 ||
 		strmatch(filename+strlen(filename)-4, ".otf")==0 ) {
 	sf = SFReadTTF(filename);
     } else if ( strmatch(filename+strlen(filename)-4, ".bdf")==0 ) {
@@ -2520,7 +2501,7 @@ return( NULL );
 	GProgressChangeStages(2);
 	fd = ReadPSFont(filename);
 	GProgressNextStage();
-	GProgressChangeLine2(interpret);
+	GProgressChangeLine2R(_STR_InterpretingGlyphs);
 	if ( fd!=NULL ) {
 	    sf = SplineFontFromPSFont(fd);
 	    PSFontFree(fd);
@@ -2530,17 +2511,18 @@ return( NULL );
     }
     GProgressEndIndicator();
 
-    if ( sf==NULL )
-	GDrawError("Couldn't open font (or in bad format): %s", filename );
-    else
+    if ( sf==NULL ) {
+	u_strcpy(ubuf,GStringGetResource(_STR_CouldntOpenFont,NULL));
+	len = u_strlen(ubuf);
+	uc_strncat(ubuf,GFileNameTail(filename),100);
+	ubuf[100+len] = '\0';
+    } else
 	sf->origname = copy(filename);
 
-#if AUTODECOMPRESS
     if ( i!=-1 ) {
 	sprintf( buf, "%s %s", compressors[i].recomp, filename );
 	system(buf);
     }
-#endif
 return( sf );
 }
 

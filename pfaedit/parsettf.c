@@ -30,6 +30,7 @@
 #include "ustring.h"
 #include <math.h>
 #include <locale.h>
+#include <gwidget.h>
 
 /* True Type is a really icky format. Nothing is together. It's badly described */
 /*  much of the description is misleading */
@@ -112,6 +113,7 @@ struct ttfinfo {
     int os2_start;
 
     struct dup *dups;
+    unsigned int one_of_many: 1;	/* A TTCF file, or a opentype font with multiple fonts */
 };
 
 #define CHR(ch1,ch2,ch3,ch4) (((ch1)<<24)|((ch2)<<16)|((ch3)<<8)|(ch4))
@@ -159,11 +161,176 @@ static double get2dot14(FILE *ttf) {
 return( (double) ((val<<16)>>(16+14)) + (mant/16384.0) );
 }
 
+static char *readstring(FILE *ttf,int offset,int len) {
+    long pos = ftell(ttf);
+    char *str, *pt;
+    int i;
+
+    fseek(ttf,offset,SEEK_SET);
+    str = pt = galloc(len+1);
+    for ( i=0; i<len; ++i )
+	*pt++ = getc(ttf);
+    *pt = '\0';
+    fseek(ttf,pos,SEEK_SET);
+return( str );
+}
+
+/* Unicode string */
+static char *readustring(FILE *ttf,int offset,int len) {
+    long pos = ftell(ttf);
+    char *str, *pt;
+    int i;
+
+    fseek(ttf,offset,SEEK_SET);
+    str = pt = galloc(len/2+1);
+    for ( i=0; i<len/2; ++i ) {
+	getc(ttf);
+	*pt++ = getc(ttf);
+    }
+    *pt = '\0';
+    fseek(ttf,pos,SEEK_SET);
+return( str );
+}
+
+static unichar_t *_readustring(FILE *ttf,int offset,int len) {
+    long pos = ftell(ttf);
+    unichar_t *str, *pt;
+    int i, ch;
+
+    fseek(ttf,offset,SEEK_SET);
+    str = pt = galloc(len+2);
+    for ( i=0; i<len/2; ++i ) {
+	ch = getc(ttf)<<8;
+	*pt++ = ch | getc(ttf);
+    }
+    *pt = '\0';
+    fseek(ttf,pos,SEEK_SET);
+return( str );
+}
+
+static unichar_t *TTFGetFontName(FILE *ttf,int32 offset) {
+    int i,num;
+    int32 tag, nameoffset, length, stringoffset;
+    int plat, spec, lang, name, len, off, val;
+    int fullval, fullstr, fulllen, famval, famstr, famlen;
+
+    fseek(ttf,offset,SEEK_SET);
+    /* version = */ getlong(ttf);
+    num = getushort(ttf);
+    /* srange = */ getushort(ttf);
+    /* esel = */ getushort(ttf);
+    /* rshift = */ getushort(ttf);
+    for ( i=0; i<num; ++i ) {
+	tag = getlong(ttf);
+	/* checksum = */ getlong(ttf);
+	nameoffset = getlong(ttf);
+	length = getlong(ttf);
+	if ( tag==CHR('n','a','m','e'))
+    break;
+    }
+    if ( i==num )
+return( NULL );
+
+    fseek(ttf,nameoffset,SEEK_SET);
+    /* format = */ getushort(ttf);
+    num = getushort(ttf);
+    stringoffset = nameoffset+getushort(ttf);
+    fullval = famval = 0;
+    for ( i=0; i<num; ++i ) {
+	plat = getushort(ttf);
+	spec = getushort(ttf);
+	lang = getushort(ttf);
+	name = getushort(ttf);
+	len = getushort(ttf);
+	off = getushort(ttf);
+	val = 0;
+	if ( plat==0 && /* any unicode semantics will do && */ lang==0 )
+	    val = 1;
+	else if ( plat==3 && spec==1 && lang==0x409 )
+	    val = 2;
+	if ( name==4 && val>fullval ) {
+	    fullval = val;
+	    fullstr = off;
+	    fulllen = len;
+	    if ( val==2 )
+    break;
+	} else if ( name==1 && val>famval ) {
+	    famval = val;
+	    famstr = off;
+	    famlen = len;
+	}
+    }
+    if ( fullval==0 ) {
+	if ( famval==0 )
+return( NULL );
+	fullstr = famstr;
+	fulllen = famlen;
+    }
+return( _readustring(ttf,stringoffset+fullstr,fulllen));
+}
+
+static int PickTTFFont(FILE *ttf) {
+    int32 *offsets, cnt, i, choice, j;
+    unichar_t **names;
+
+    /* TTCF version = */ getlong(ttf);
+    cnt = getlong(ttf);
+    if ( cnt==1 ) {
+	/* This is easy, don't bother to ask the user, there's no choice */
+	int32 offset = getlong(ttf);
+	fseek(ttf,offset,SEEK_SET);
+return( true );
+    }
+    offsets = galloc(cnt*sizeof(int32));
+    for ( i=0; i<cnt; ++i )
+	offsets[i] = getlong(ttf);
+    names = galloc(cnt*sizeof(unichar_t *));
+    for ( i=j=0; i<cnt; ++i ) {
+	names[j] = TTFGetFontName(ttf,offsets[i]);
+	if ( names[j]!=NULL ) ++j;
+    }
+    choice = GWidgetChoicesR(_STR_PickFont,_STR_MultipleFontsPick,(const unichar_t **) names,j,0);
+    if ( choice!=-1 )
+	fseek(ttf,offsets[choice],SEEK_SET);
+    for ( i=0; i<j; ++i )
+	free(names[i]);
+    free(names);
+    free(offsets);
+return( choice!=-1);
+}
+
+static int PickCFFFont(char **fontnames) {
+    unichar_t **names;
+    int cnt, i, choice;
+
+    for ( cnt=0; fontnames[cnt]!=NULL; ++cnt);
+    names = gcalloc(cnt+1,sizeof(unichar_t *));
+    for ( i=0; i<cnt; ++i )
+	names[i] = uc_copy(fontnames[i]);
+    choice = GWidgetChoicesR(_STR_PickFont,_STR_MultipleFontsPick,
+	    (const unichar_t **) names,cnt,0);
+    for ( i=0; i<cnt; ++i )
+	free(names[i]);
+    free(names);
+return( choice );
+}
+
 static int readttfheader(FILE *ttf, struct ttfinfo *info) {
     int i;
     int tag, checksum, offset, length, version;
 
-    if ( (version=getlong(ttf))!=0x00010000 && version!=CHR('O','T','T','O'))
+    version=getlong(ttf);
+    if ( version==CHR('t','t','c','f')) {
+	/* TrueType font collection */
+	if ( !PickTTFFont(ttf))
+return( 0 );
+	/* If they picked a font, then we should be left pointing at the */
+	/*  start of the Table Directory for that font */
+	info->one_of_many = true;
+	version = getlong(ttf);
+    }
+
+    if ( (version)!=0x00010000 && version!=CHR('O','T','T','O'))
 return( 0 );			/* Not version 1 of true type, nor Open Type */
     info->numtables = getushort(ttf);
     /* searchRange = */ getushort(ttf);
@@ -276,53 +443,6 @@ static void readttfmaxp(FILE *ttf,struct ttfinfo *info) {
     info->glyph_cnt = cnt;
 }
 
-static char *readstring(FILE *ttf,int offset,int len) {
-    long pos = ftell(ttf);
-    char *str, *pt;
-    int i;
-
-    fseek(ttf,offset,SEEK_SET);
-    str = pt = galloc(len+1);
-    for ( i=0; i<len; ++i )
-	*pt++ = getc(ttf);
-    *pt = '\0';
-    fseek(ttf,pos,SEEK_SET);
-return( str );
-}
-
-/* Unicode string */
-static char *readustring(FILE *ttf,int offset,int len) {
-    long pos = ftell(ttf);
-    char *str, *pt;
-    int i;
-
-    fseek(ttf,offset,SEEK_SET);
-    str = pt = galloc(len/2+1);
-    for ( i=0; i<len/2; ++i ) {
-	getc(ttf);
-	*pt++ = getc(ttf);
-    }
-    *pt = '\0';
-    fseek(ttf,pos,SEEK_SET);
-return( str );
-}
-
-static unichar_t *_readustring(FILE *ttf,int offset,int len) {
-    long pos = ftell(ttf);
-    unichar_t *str, *pt;
-    int i, ch;
-
-    fseek(ttf,offset,SEEK_SET);
-    str = pt = galloc(len+2);
-    for ( i=0; i<len/2; ++i ) {
-	ch = getc(ttf)<<8;
-	*pt++ = ch | getc(ttf);
-    }
-    *pt = '\0';
-    fseek(ttf,pos,SEEK_SET);
-return( str );
-}
-
 static char *stripspaces(char *str) {
     char *str2 = str, *base = str;
 
@@ -377,8 +497,11 @@ static void readttfcopyrights(FILE *ttf,struct ttfinfo *info) {
 		(platform==0 && /*specific==0 && */ language==0) ) {
 		/* MS Arial starts out with a bunch of platform=0, specific=3 */
 		/*  entries. platform 0 is Apple unicode which is said in the */
-		/*  docs not to use the specific entry (I assumed that meant */
+		/*  ms docs not to use the specific entry (I assumed that meant */
 		/*  0, but it's 3. Oh Well. Language is 0 */
+		/* Ah, but the Apple docs say that 3 means Unicode 2.0 */
+		/*  semantics (the difference between 1&2 lies in CJK so I */
+		/*  don't much care */
 	    switch ( name ) {
 	      case 0:
 		if ( info->copyright==NULL )
@@ -1280,7 +1403,7 @@ static void TopDictFree(struct topdicts *dict) {
     free(dict->local_subrs.lens);
 }
 
-static void readcffsubrs(FILE *ttf,struct topdicts *dict, struct pschars *subs) {
+static void readcffsubrs(FILE *ttf,int charstringtype, struct pschars *subs) {
     uint16 count = getushort(ttf);
     int offsize;
     uint32 *offsets;
@@ -1292,7 +1415,7 @@ return;
     subs->cnt = count;
     subs->lens = galloc(count*sizeof(int));
     subs->values = galloc(count*sizeof(uint8 *));
-    subs->bias = dict->charstringtype==1 ? 0 :
+    subs->bias = charstringtype==1 ? 0 :
 	    count<1240 ? 107 :
 	    count<33900 ? 1131 : 32768;
     offsets = galloc((count+1)*sizeof(uint32));
@@ -1561,7 +1684,7 @@ static void readcffprivate(FILE *ttf, struct topdicts *td) {
 
     if ( td->subrsoff!=-1 ) {
 	fseek(ttf,td->cff_start+td->private_offset+td->subrsoff,SEEK_SET);
-	readcffsubrs(ttf,td,&td->local_subrs);
+	readcffsubrs(ttf,td->charstringtype,&td->local_subrs);
     }
 }
 
@@ -1868,7 +1991,7 @@ static int readcffglyphs(FILE *ttf,struct ttfinfo *info) {
     int hdrsize;
     char **fontnames, **strings;
     struct topdicts **dicts;
-    int i;
+    int i, which;
     struct pschars gsubs;
 
     fseek(ttf,info->cff_start,SEEK_SET);
@@ -1880,26 +2003,33 @@ return( 0 );
     if ( hdrsize!=4 )
 	fseek(ttf,info->cff_start+hdrsize,SEEK_SET);
     fontnames = readcfffontnames(ttf);
+    if ( fontnames[1]!=NULL ) {		/* More than one? Can that even happen in OpenType? */
+	which = PickCFFFont(fontnames);
+	if ( which==-1 ) {
+	    for ( i=0; fontnames[i]!=NULL; ++i )
+		free(fontnames[i]);
+	    free(fontnames);
+return( 0 );
+	}
+    }
     dicts = readcfftopdicts(ttf,fontnames,info->cff_start);
 	/* String index is just the same as fontname index */
     strings = readcfffontnames(ttf);
     /* Hmm. presumably all the dicts have the same charstringtype (1 or 2) and*/
     /*  the global subrs match... so we can pick any dict for the defn of charstringtype */
-    readcffsubrs(ttf,dicts[0],&gsubs );
-    /* Can be many fonts here. Only decompose the first one */
-    for ( i=0; fontnames[i]!=NULL && i<1; ++i ) {
-	if ( dicts[i]->charstringsoff!=-1 ) {
-	    fseek(ttf,info->cff_start+dicts[i]->charstringsoff,SEEK_SET);
-	    readcffsubrs(ttf,dicts[i],&dicts[i]->glyphs);
+    readcffsubrs(ttf,dicts[0]->charstringtype,&gsubs );
+    /* Can be many fonts here. Only decompose the one */
+	if ( dicts[which]->charstringsoff!=-1 ) {
+	    fseek(ttf,info->cff_start+dicts[which]->charstringsoff,SEEK_SET);
+	    readcffsubrs(ttf,dicts[which]->charstringtype,&dicts[which]->glyphs);
 	}
-	if ( dicts[i]->private_offset!=-1 )
-	    readcffprivate(ttf,dicts[i]);
-	if ( dicts[i]->charsetoff!=-1 )
-	    readcffset(ttf,dicts[i]);
-	if ( dicts[i]->encodingoff!=-1 )
-	    readcffenc(ttf,dicts[i],strings);
-	cfffigure(info,dicts[i],strings,&gsubs);
-    }
+	if ( dicts[which]->private_offset!=-1 )
+	    readcffprivate(ttf,dicts[which]);
+	if ( dicts[which]->charsetoff!=-1 )
+	    readcffset(ttf,dicts[which]);
+	if ( dicts[which]->encodingoff!=-1 )
+	    readcffenc(ttf,dicts[which],strings);
+	cfffigure(info,dicts[which],strings,&gsubs);
 
     for ( i=0; fontnames[i]!=NULL && i<1; ++i ) {
 	free(fontnames[i]);

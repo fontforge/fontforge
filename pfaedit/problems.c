@@ -100,7 +100,7 @@ static void ExplainIt(struct problems *p, SplineChar *sc, int explain,
     GTextInfo label[7];
     unichar_t ubuf[100]; char buf[20];
 
-    if ( !p->explain )
+    if ( !p->explain || p->finish )
 return;
     if ( p->explainw==NULL ) {
 	memset(&wattrs,0,sizeof(wattrs));

@@ -249,7 +249,7 @@ void GProgressStartIndicatorR( int delay, int win_titler, int line1r, int line2r
     GProgressStartIndicator(delay,
 	GStringGetResource(win_titler,NULL),
 	GStringGetResource(line1r,NULL),
-	GStringGetResource(line2r,NULL),
+	line2r==0?NULL:GStringGetResource(line2r,NULL),
 	tot,stages);
 }
 

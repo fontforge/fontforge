@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 3-May-2001 -->
+  <!-- AP: Last modified: 15-Jul-2001 -->
   <TITLE>Frequently Asked Questions</TITLE>
 </HEAD>
 <BODY>
@@ -29,6 +29,8 @@
   <LI>
     <A HREF="#save-no-change">After I generate a font and quit, why does PfaEdit
     ask if I want to save the font? I didn't change anything.</A>
+  <LI>
+    <A HREF="TeX">Why doesn't TeX work with my fonts?</A>
 </UL>
 <P>
   <HR>
@@ -39,15 +41,14 @@
   <DD>
     I wanted a widget set that would handle Unicode reasonably well. In particular
     I thought support for bidi text was important for hebrew and arabic typography.
-    As I was unaware of any widget sets that did that, I wrote my own.
+    As I was unaware of any widget sets that did that, I wrote my own.<BR>
+    I also wanted a widget set where I could actually figure out whether the
+    checkbox was checked or not checked. In far too many cases my eyes can't
+    work out which is which...
   <DT>
     <A NAME="hint-subs"><B>How do I make PfaEdit use hint substitution?</B></A>
   <DD>
-    At the moment PfaEdit will not generate PostScript fonts using hint substitution.
-    With one exception: If you load a type1 font into PfaEdit which uses hint
-    substitution, modify a few characters, and then generate a new type1 font,
-    then the unmodified characters will continue to use hint substitution if
-    they did before.
+    It happens automagically.
   <DT>
     <A NAME="flex-hints"><B>How do I make Pfaedit use flex hints?</B></A>
   <DD>
@@ -64,6 +65,7 @@
     <OL>
       <LI>
 	Bring up <CODE>Element-&gt;Font Info</CODE><BR>
+	Select the <CODE>Encoding</CODE> tab<BR>
 	Increment the <CODE>Number of Characters</CODE> field by one (probably to
 	<CODE>257</CODE>)<BR>
 	Press <CODE>OK</CODE><BR>
@@ -77,6 +79,7 @@
 	Now draw a dotlessi in the character.
       <LI>
 	Bring up <CODE>Element-&gt;Font Info</CODE><BR>
+	Select the <CODE>Encoding</CODE> tab<BR>
 	Change the <CODE>Encoding</CODE> to <CODE>ISO-10646-1 (Unicode)</CODE><BR>
 	Press <CODE>OK</CODE><BR>
 	Bring up <CODE>View-&gt;Goto</CODE><BR>
@@ -104,7 +107,7 @@
     <P>
     The PostScript used in OpenType is slightly different from that used in .pfa
     and .pfb files. They are Type1 fonts while OpenType uses Type2 fonts. Type2
-    is almost a superset of Type1 with a few minor changes and many extension.
+    is almost a superset of Type1 with a few minor changes and many extensions.
     Adobe's extensions to Type1 (flex hints, hint substitution, counter hints)
     by using subroutines have been added to Type2 as direct instructions.
   <DT>
@@ -126,6 +129,15 @@
 	says it should. A minor annoyance, but it avoids some problems with font
 	caching when you change an old version of the font for a new one).
     </OL>
+  <DT>
+    <A NAME="Tex">Why doesn't TeX work with my fonts?</A>
+  <DD>
+    I'm a total novice with TeX. I am told that TeX (or some part of the TeX
+    chain, dvips perhaps) expects fonts to be encoded in TeX base Encoding --
+    sometimes called "Adobe Standard" by the TeX docs, but it isn't it's TeX
+    base. So if you are having printing problems, missing glyphs, etc. Try changing
+    the encoding of your font to TeX Base (Go to Element-&gt;Font Info, select
+    the Encoding tab, select TeX Base from the pulldown list).
 </DL>
 <P>
 <P ALIGN=Center>

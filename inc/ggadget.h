@@ -253,7 +253,8 @@ void GFileChooserSetMimetypes(GGadget *g,unichar_t **mimetypes);
 unichar_t **GFileChooserGetMimetypes(GGadget *g);
 void GFileChooserGetChildren(GGadget *g,GGadget **pulldown, GGadget **list, GGadget **tf);
 
-extern void GGadgetPreparePopup(GWindow base,unichar_t *msg);
+extern void GGadgetPreparePopup(GWindow base,const unichar_t *msg);
+extern void GGadgetPreparePopupR(GWindow base,int msg);
 extern void GGadgetEndPopup(void);
 
 /* Handles *?{}[] wildcards */

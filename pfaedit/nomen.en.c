@@ -267,7 +267,7 @@ static char str_Mac[] = "Macintosh Latin";
 static char str_Win[] = "Windows Latin (\042ANSI\042)";
 static char str_Adobestd[] = "Adobe Standard";
 static char str_Symbol[] = "Symbol";
-static unichar_t str_Texbase[] = { 0x3a4, 0x3b5, 0x3a7, ' ','B','a','s','e',  '\0' };
+static unichar_t str_Texbase[] = { 0x3a4, 0x3b5, 0x3a7, ' Base',  '\0' };
 static char str_Unicode[] = "ISO 10646-1 (Unicode)";
 static char str_Jis208[] = "JIS 208 (Kanji)";
 static char str_Jis212[] = "JIS 212 (Kanji)";
@@ -324,6 +324,7 @@ static char *str_PSPrivate = "PS Private";
 static char *str_TTFNames = "TTF Names";
 static char *str_TTFValues = "TTF Values";
 static char *str_Panose = "Panose";
+static char *str_InvalidEncoding = "Invalid Encoding";
     /* Private info */
 static char *str_PrivateKey = "Private Key";
 static char *str_KeyInPrivate = "Key (in Private dictionary)";
@@ -490,12 +491,11 @@ static char *str_SampleText = "Sample Text";
     /* Language list */
 /* Language & Country (where applicable) in the native language if I can find */
 /*  it, in english if I can't. Followed by the 2char language _ 2char country */
-/* (again country isn't always applicable. Should basque be ES, FR? What's the*/
-/*  code for byelorussia? */
+/* (again country isn't always applicable. Should basque be ES, FR? */
 static char *str_Albanian = "Albanian sq_AL";
 static char *str_Arabic = "Arabic ar";
 static char *str_Basque = "Basque eu";
-static char *str_Byelorussian = "Byelorussian be";
+static char *str_Byelorussian = "Byelorussian be_BY";
 static char *str_Bulgarian = "Bulgarian bg_BG";
 static char *str_Catalan = "Catalan ca";
 static char *str_MSChinese = "Chinese zh_CN";
@@ -537,7 +537,7 @@ static char *str_Polish = "Polish pl_PL";
 static char *str_PTPortuguese = "Português Português pt_PT";
 static char *str_BRPortuguese = "Português Brasil pt_BR";
 static char *str_Romanian = "Romanian ro_RO";
-static unichar_t str_Russian = { 0x420, 0x443, 0x441, 0x441, 0x43a, 0x438, 0x439, ' ','r','u','_','R','U',  '\0' };
+static unichar_t str_Russian = { 0x420, 0x443, 0x441, 0x441, 0x43a, 0x438, 0x439, ' ru_RU',  '\0' };
 static char *str_Slovak = "Slovak sk_SK";
 static char *str_Slovenian = "Slovenian sl_SI";
 static char *str_TradSpanish = "Español Español es_ES";
@@ -573,13 +573,26 @@ static char str_Revert[] = "Revert";
 static unichar_t mnemonic_Revert[] = 'R';
 static char str_Manywin[] = "Many Windows";
 static char str_Toomany[] = "This involves opening more than 10 windows.\012Is that really what you want?";
+static char *str_MergeKernInfo = "Merge Kern Info";
+static char *str_OpenPostscript = "Open Postscript Font";
+static char *str_Loading = "Loading...";
+static char *str_LoadingFontFrom = "Loading font from ";
+static char *str_ReadingGlyphs = "Reading Glyphs";
+static char *str_InterpretingGlyphs = "Interpreting Glyphs";
+static char *str_CouldntOpenFont = "Couldn't open font (or in bad format): ";
+static char *str_SaveFailed = "Save Failed";
+static char *str_Transforming = "Transforming...";
+static char *str_Simplifying = "Simplifying...";
+static char *str_RemovingOverlap = "Removing overlaps...";
+static char *str_CorrectingDirection = "Correcting Direction...";
     /* Messages from accented characters */
 static char str_Buildingaccented[] = "Building accented letters";
 static char str_Replacearing[] = "Replace Å";
 static char str_Areyousurearing[] = "Are you sure you want to replace Å?\012The ring will not join to the A.";
 static char str_Yes[] = "Yes";
-static unichar_t mnemonic_Yes[] = 'N';
+static unichar_t mnemonic_Yes[] = 'Y';
 static char str_No[] = "No";
+static unichar_t mnemonic_No[] = 'N';
     /* Choices from bitmap editing */
 static char str_Rectangle[] = "Rectangle";
 static char str_FilledRectangle[] = "Filled Rectangle";
@@ -644,7 +657,7 @@ static char *str_ToBeAdjusted = "to be adjusted.";
 static char *str_CharsLeft = "Chars on Left";
 static char *str_CharsRight = "Chars on Right";
 static char *str_All = "All";
-static unichar_t str_stdCharRange[] = { 'A','-','Z','a','-','z','0','-','9',  '\0' };
+static unichar_t str_stdCharRange[] = { 'A-Za-z0-9',  '\0' };
 static char *str_Selected = "Selected";
 static char *str_Spacing = "Spacing";
 static char *str_TotalKerns = "Total Kerns:";
@@ -712,6 +725,51 @@ static char *str_VHints="VHints";
 static char *str_DHints="DHints";
 static char *str_Bitmap="Bitmap";
 static char *str_ShapeType = "Shape Type";
+/* Popups */
+static char *str_Pointer = "Pointer";
+static char *str_PopMag = "Magnify (Minify with alt)";
+static char *str_AddCurvePoint = "Add a curve point";
+static char *str_AddCornerPoint = "Add a corner point";
+static char *str_AddTangentPoint = "Add a tangent point";
+static char *str_AddPenPoint = "Add a point, then drag out its control points";
+static char *str_popKnife = "Cut splines in two";
+static char *str_popRuler = "Measure distance, angle between points";
+static char *str_popScale = "Scale the selection";
+static char *str_popFlip = "Flip the selection";
+static char *str_popRotate = "Rotate the selection";
+static char *str_popSkew = "Skew the selection";
+static char *str_popRectElipse = "Rectangle or Elipse";
+static char *str_popPolyStar = "Polygon or Star";
+static char *str_popPencil = "Set/Clear Pixels";
+static char *str_popLine = "Draw a Line";
+static char *str_popShift = "Shift Entire Bitmap";
+static char *str_popHand = "Scroll Bitmap";
+    /* Undoes */
+static char *str_BitmapPaste = "Bitmap Paste";
+static char *str_YesToAll = "Yes to All";
+static char *mnemonic_YesToAll = 'A';
+/* "The clipboard contains a bitmap character of size %d,\na size which is not in your database.\nWould you like to create a bitmap font of that size,\nor ignore this character?" */
+static char *str_ClipContainsPre = "The clipboard contains a bitmap character of size ";
+static char *str_ClipContainsPost = ",\na size which is not in your database.\nWould you like to create a bitmap font of that size,\nor ignore this character?";
+static char *str_Pasting = "Pasting...";
+static char *str_SelfRef = "Self-referential character"
+static char *str_AttemptSelfRef = "Attempt to make a character that refers to itself";
+    /* dump pfa */
+static char *str_CvtPS = "Converting Postscript";
+static char *str_SavePS = "Saving Postscript Font";
+    /* encoding */
+static char *str_BadEncFormat = "Bad encoding file format";
+static char *str_PleaseNameEnc = "Please name this encoding";
+/* Either insert first, second or third, or the number followed by the "th" string (5th, 6th, etc.) */
+/* Please name the %d/first/second/third encoding in this file" */
+static char *str_PleaseNameEncPre = "Please name the ";
+static char *str_PleaseNameEncPost = " encoding in this file";
+static char *str_First = "First";
+static char *str_Second = "Second";
+static char *str_Third = "Third";
+static char *str_th = "th";
+static char *str_RemoveEncoding = "Remove Encoding";
+static char *str_LoadEncoding = "Load Encoding";
     /* problems */
 static char *str_ProbOpenPath = "The selected path does not form a closed loop";
 static char *str_ProbPointsTooClose = "The selected points are too close to each other";
@@ -791,6 +849,17 @@ static char *str_StemScale = "Scale Stems By:";
 static char *str_CounterScale = "Scale Counters By:";
 static char *str_XHeightFrom = "XHeight From:";
 static char *str_To = "To:";
+	/* to ttf */
+static char *str_PickFont = "Pick a font, any font...";
+static char *str_MultipleFontsPick = "There are multiple fonts in this file, pick one";
+static char *str_AutoHintingFont = "Auto Hinting Font...";
+static char *str_SavingOpenTypeFont = "Saving OpenType Font";
+	/* Spline Fill */
+static char *str_Rasterizing = "Rasterizing...";
+static char *str_GenBitmap = "Generating bitmap font";
+static char *str_GenAntiAlias = "Generating anti-alias font";
+/* "%d pixels" (for the size of the font being rasterized) */
+static char *str_Pixels = " pixels";
 
 
 static int num_buttonsize = 55;

@@ -481,9 +481,6 @@ static void dumpprivatestuff(void (*dumpchar)(int ch,void *data), void *data, Sp
     double stemsnaph[12], stemsnapv[12];
     double stdhw[1], stdvw[1];
     int i;
-    static unichar_t cvtps[] = { 'C','o','n','v','e','r','t','i','n','g',' ','P','o','s','t','s','c','r','i','p','t', '\0' };
-    static unichar_t saveps[] = { 'S','a','v','i','n','g',' ','P','o','s','t','s','c','r','i','p','t',' ','F','o','n','t', '\0' };
-    static unichar_t autohinting[] = { 'A','u','t','o',' ','H','i','n','t','i','n','g',' ','F','o','n','t',  '\0' };
     int hasblue=0, hash=0, hasv=0, hasshift, haso, hasxuid, hasbold, haslg;
     int flex_max;
     int isbold=false;
@@ -507,7 +504,7 @@ static void dumpprivatestuff(void (*dumpchar)(int ch,void *data), void *data, Sp
 	     strstrmatch(sf->weight,"Black")!=NULL))
 	isbold = true;
 
-    GProgressChangeLine1(autohinting);
+    GProgressChangeLine1R(_STR_AutoHintingFont);
     GProgressChangeStages(2+2-hasblue);
     SplineFontAutoHint(sf);
     GProgressNextStage();
@@ -538,10 +535,10 @@ static void dumpprivatestuff(void (*dumpchar)(int ch,void *data), void *data, Sp
     }
 
     GProgressNextStage();
-    GProgressChangeLine1(cvtps);
+    GProgressChangeLine1R(_STR_CvtPS);
     chars = SplineFont2Chrs(sf,true,iscjk,subrs);
     GProgressNextStage();
-    GProgressChangeLine1(saveps);
+    GProgressChangeLine1R(_STR_SavePS);
 
     dumpstr(dumpchar,data,"dup\n");
     cnt = 0;

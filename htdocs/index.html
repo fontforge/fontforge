@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 11-Jul-2001 -->
+  <!-- AP: Last modified: 15-Jul-2001 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -59,8 +59,8 @@ know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-010711.tgz">Download pfaedit linux-i386 Debian
-    </A><A NAME="downloads">executable</A> Version: 11-July-2001
+    <A HREF="pfaedit-010715.tgz">Download pfaedit linux-i386 Debian
+    </A><A NAME="downloads">executable</A> Version: 15-July-2001
   <LI>
     <A HREF="pfaedit-solaris-010624.tgz">Download pfaedit Solaris 8.0
     </A>executable Version: 24-June-2001
@@ -86,12 +86,12 @@ Or you can download the following three packages. Version: 11-July-2001
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGUnicode/index.html">docs</A>
   <LI>
-    <A HREF="libgdraw-010710.tgz">Unicode widget library source</A>
-    (10-July-2001)<BR>
+    <A HREF="libgdraw-010715.tgz">Unicode widget library source</A>
+    (15-July-2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
   <LI>
-    <A HREF="pfaedit_src-010711.tgz">Pfaedit source</A> (11-July-2001)<BR>
+    <A HREF="pfaedit_src-010715.tgz">Pfaedit source</A> (15-July-2001)<BR>
     -- <A HREF="overview.html">docs</A>
   <LI>
     If you want to do autotracing around character images you should also download
@@ -165,6 +165,24 @@ bitmap fonts that pfaedit uses
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    15-July-2001
+    <UL>
+      <LI>
+	PfaEdit should now be able to read truetype collection files and do something
+	reasonable --<BR>
+	At least in theory. I don't have any truetype collection files to test on.
+      <LI>
+	Oh dear. The rasterizer was looking at vertical hints when it should have
+	looked at horizontal ones, looking at no hints when it should have looked
+	at vertical ones. The result was that vertical edges weren't found.
+      <LI>
+	PfaEdit had problems reading in lone bdf fonts with strange encodings.
+      <LI>
+	Cleaned up print behavior slightly on systems without ghostview
+      <LI>
+	Find Problems would not always stop immediately after pressing the stop button.
+    </UL>
   <LI>
     11-July-2001
     <UL>
@@ -1511,6 +1529,9 @@ Other font links
     <A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5040.Download_Fonts.pdf">Adobe's
     downloadable font spec</A>
   <LI>
+    <A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/">Adobe's technical
+    notes</A>
+  <LI>
     <A HREF="http://www.fonts.com/hp/panose/greybook/frame.htm">Panose font
     classification scheme</A>
   <LI>
@@ -1519,6 +1540,9 @@ Other font links
   <LI>
     <A HREF="http://www.microsoft.com/typography/fontpack/default.htm">Microsoft's
     downloadable fonts</A>
+  <LI>
+    <A HREF="ftp://ftp.ora.com/pub/examples/nutshell/ujip/adobe/samples/">Downloadable
+    CJK fonts</A>
 </UL>
 <H2>
   Unicode

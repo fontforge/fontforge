@@ -46,6 +46,34 @@ static int gettoken(FILE *bdf, char *tokbuf, int size) {
 return( pt!=tokbuf?1:ch==EOF?-1: 0 );
 }
 
+static int finduniname(char *name) {
+    int i = -1;
+
+    if ( strncmp(name,"uni",3)==0 ) { char *end;
+	i = strtol(name+3,&end,16);
+	if ( *end )
+	    i = -1;
+    }
+    if ( i==-1 ) for ( i=psunicodenames_cnt-1; i>=0 ; --i ) {
+	if ( psunicodenames[i]!=NULL )
+	    if ( strcmp(name,psunicodenames[i])==0 )
+    break;
+    }
+return( i );
+}
+
+static void MakeEncChar(SplineFont *sf,int enc,char *name) {
+    if ( sf->chars[enc]==NULL ) {
+	sf->chars[enc] = gcalloc(1,sizeof(SplineChar));
+	sf->chars[enc]->parent = sf;
+    }
+    free(sf->chars[enc]->name);
+    sf->chars[enc]->name = copy(name);
+    sf->chars[enc]->unicodeenc = finduniname(name);
+    sf->chars[enc]->enc = enc;
+    sf->encoding_name = em_none;
+}
+
 static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b) {
     BDFChar *bc;
     char name[40], tok[100];
@@ -73,30 +101,36 @@ static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b) {
     i = -1;
     if ( strcmp(name,".notdef")==0 ) {
 	if ( enc<32 || (enc>=127 && enc<0xa0)) i=enc;
+	else if ( sf->encoding_name==em_none ) i = enc;
+	else if ( sf->onlybitmaps && sf->bitmaps==b && b->next==NULL ) i = enc;
+	if ( i!=-1 && (sf->chars[i]==NULL || strcmp(sf->chars[i]->name,name)!=0 ))
+	    MakeEncChar(sf,enc,name);
     } else {
 	for ( i=sf->charcnt-1; i>=0 ; --i ) if ( sf->chars[i]!=NULL ) {
 	    if ( strcmp(name,sf->chars[i]->name)==0 )
 	break;
 	}
 	if ( i==-1 && (sf->encoding_name==em_unicode || sf->encoding_name==em_iso8859_1)) {
-	    if ( strncmp(name,"uni",3)==0 ) { char *end;
-		i = strtol(name+3,&end,16);
-		if ( *end )
-		    i = -1;
-	    }
-	    if ( i==-1 ) for ( i=sf->charcnt-1; i>=0 ; --i ) {
-		if ( sf->chars[i]==NULL && i<psunicodenames_cnt && psunicodenames[i]!=NULL )
-		    if ( strcmp(name,psunicodenames[i])==0 )
-	    break;
-	    }
+	    i = finduniname(name);
+	    if ( i==-1 || i>sf->charcnt || sf->chars[i]!=NULL )
+		i = -1;
 	    if ( i!=-1 )
 		SFMakeChar(sf,i);
+	}
+	if ( i==-1 && sf->onlybitmaps && sf->bitmaps==b && b->next==NULL && enc!=-1 ) {
+	    MakeEncChar(sf,enc,name);
+	    i = enc;
 	}
 	if ( i!=-1 && sf->onlybitmaps && sf->bitmaps==b && b->next==NULL && swidth!=-1 )
 	    sf->chars[i]->width = swidth;
     }
     if ( i==-1 )	/* Can't guess the proper encoding, ignore it */
 return;
+    if ( i!=enc && sf->onlybitmaps && sf->bitmaps==b && b->next==NULL && sf->chars[enc]!=NULL ) {
+	free(sf->chars[enc]->name);
+	sf->chars[enc]->name = copy( ".notdef" );
+	sf->chars[enc]->unicodeenc = -1;
+    }
     if ( (bc=b->chars[i])!=NULL ) {
 	free(bc->bitmap);
 	BDFFloatFree(bc->selection);
@@ -133,7 +167,7 @@ return;
     for ( bv=bc->views; bv!=NULL; bv=bv->next )
 	GDrawRequestExpose(bv->v,NULL,false);
 }
-	
+
 static int slurp_header(FILE *bdf, int *_as, int *_ds, int *_enc, char *family, char *mods, char *full) {
     int pixelsize = -1;
     int ascent= -1, descent= -1, enc, cnt;
@@ -148,9 +182,11 @@ static int slurp_header(FILE *bdf, int *_as, int *_ds, int *_enc, char *family, 
 	    GProgressChangeTotal(cnt);
     break;
 	}
-	if ( strcmp(tok,"FONT")==0 )
-	    fscanf(bdf,"-%*[^-]-%*[^-]-%*[^-]-%*[^-]-%*[^-]-%*[^-]-%d-", &pixelsize );
-	else if ( strcmp(tok,"SIZE")==0 && pixelsize==-1 ) {
+	if ( strcmp(tok,"FONT")==0 ) {
+	    fscanf(bdf," -%*[^-]-%[^-]-%[^-]-%[^-]-%*[^-]-", family, weight, italic );
+	    while ( (ch = getc(bdf))!='-' && ch!=EOF );
+	    fscanf(bdf,"%d", &pixelsize );
+	} else if ( strcmp(tok,"SIZE")==0 && pixelsize==-1 ) {
 	    int size, res;
 	    fscanf(bdf, "%d %d", &size, &res );
 	    pixelsize = rint( size*res/72.0 );

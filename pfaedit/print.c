@@ -1133,7 +1133,12 @@ static void QueueIt(PI *pi) {
 	argv[i] = NULL;
  /*for ( i=0; argv[i]!=NULL; ++i ) printf( "%s ", argv[i]); printf("\n" );*/
 	execvp(argv[0],argv);
-	GDrawIError("Failed to exec print job");
+	if ( pi->printtype == pt_ghostview ) {
+	    argv[0] = "gv";
+	    execvp(argv[0],argv);
+	}
+	fprintf( stderr, "Failed to exec print job\n" );
+	/*GDrawIError("Failed to exec print job");*/ /* X Server gets confused by talking to the child */
 	_exit(1);
     } else if ( pid==-1 )
 	GDrawIError("Failed to fork print job");
@@ -1141,6 +1146,12 @@ static void QueueIt(PI *pi) {
 	waitpid(pid,&status,0);
 	if ( !WIFEXITED(status) )
 	    GDrawIError("Failed to queue print job");
+    } else {
+	sleep(1);
+	if ( waitpid(pid,&status,WNOHANG)>0 ) {
+	    if ( !WIFEXITED(status) )
+		GDrawIError("Failed to run ghostview");
+	}
     }
     waitpid(-1,&status,WNOHANG);	/* Clean up any zombie ghostviews */
 }
