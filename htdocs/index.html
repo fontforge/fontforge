@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 19-Jan-2002 -->
+  <!-- AP: Last modified: 21-Jan-2002 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -72,8 +72,8 @@ you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-020119.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 19-Jan-2002
+    <A HREF="pfaedit-020121.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 21-Jan-2002
   <LI>
     <A HREF="pfaedit-solaris-020117.tgz">Download pfaedit Solaris 8.0
     </A>executable Version: 17-Jan-2002
@@ -107,23 +107,24 @@ If you want to edit CID keyed fonts you probably need these
 <P>
 You can download a <A HREF="pfaedit-011219-1.src.rpm">source RPM</A>: Version:
 19-Dec-2001<BR>
-Or you can download the <A HREF="pfaedit_full-020119.tgz">entire source tree
-</A>in one .tgz file: Version 19-Jan-2002<BR>
+Or you can download the <A HREF="pfaedit_full-020121.tgz">entire source tree
+</A>in one .tgz file: Version
+21-Jan-2002<!--
 Or you can download the following three packages. Version: 19-Jan-2002
 <UL>
-  <LI>
-    <A HREF="libgunicode-020117.tgz">Unicode library source</A> (17-Jan-2002)<BR>
-    --
-    <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGUnicode/index.html">docs</A>
-  <LI>
-    <A HREF="libgdraw-020119.tgz">Unicode widget library source</A>
-    (19-Jan-2002)<BR>
-    --
-    <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
-  <LI>
-    <A HREF="pfaedit_src-020119,tgz">Pfaedit source</A> (19-Jan-2002)<BR>
-    -- <A HREF="overview.html">docs</A>
-</UL>
+<LI>
+<A HREF="libgunicode-020117.tgz">Unicode library source</A> (17-Jan-2002)<BR>
+--
+<A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGUnicode/index.html">docs</A>
+<LI>
+<A HREF="libgdraw-020119.tgz">Unicode widget library source</A>
+(19-Jan-2002)<BR>
+--
+<A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
+<LI>
+<A HREF="pfaedit_src-020119.tgz">Pfaedit source</A> (19-Jan-2002)<BR>
+-- <A HREF="overview.html">docs</A>
+</UL>-->
 <P>
 If you want to do autotracing around character images you should also download
 Martin Weber's <A HREF="http://sourceforge.net/projects/autotrace/">autotrace
@@ -234,6 +235,43 @@ up into one <A HREF="pfaedit_htdocs-011116.tgz">tgz file</A> 16-Nov-2001.
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    21-Jan-2002
+    <UL>
+      <LI>
+	Import will now allow you to import background images from the font view<BR>
+	(and the default setting of "Background" for "pk" files has been set to true)
+      <LI>
+	Added a scripting command to access
+	<UL>
+	  <LI>
+	    Import
+	  <LI>
+	    strlen
+	  <LI>
+	    strstr
+	  <LI>
+	    strcasecmp
+	  <LI>
+	    strsub
+	  <LI>
+	    arrays
+	  <LI>
+	    access to the postscript names of the font
+	  <LI>
+	    access to information about individual characters
+	</UL>
+      <LI>
+	Cleaned up some display oddities in the fontview.
+      <LI>
+	Added a Set Width command to the bitmap view IF there is no outline font.
+      <LI>
+	Added a menu item to invoke a script
+      <LI>
+	Added a "Comment" field to FontInfo. This does not correspond to any postscript
+	or truetype entity. It is to be used for a changelog within the sfd file
+	(or something similar).
+    </UL>
   <LI>
     19-Jan-2002
     <UL>

@@ -94,8 +94,8 @@ return;
     i -= fv->rowoff;
     if ( i>=0 && i<fv->rowcnt ) {
 	GRect r;
-	r.x = j*fv->cbw+1; r.width = fv->cbw;
-	r.y = i*fv->cbh-1; r.height = FV_LAB_HEIGHT+1;
+	r.x = j*fv->cbw+1; r.width = fv->cbw-1;
+	r.y = i*fv->cbh+1; r.height = FV_LAB_HEIGHT-1;
 	GDrawSetXORBase(fv->v,GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(fv->v)));
 	GDrawSetXORMode(fv->v);
 	GDrawFillRect(fv->v,&r,0x000000);
@@ -1755,6 +1755,12 @@ static void FVMenuPrint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     PrintDlg(fv,NULL,NULL);
 }
 
+static void FVMenuExecute(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+
+    ScriptDlg(fv);
+}
+
 static void mtlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     int anychars = FVAnyCharSelected(fv);
@@ -2228,6 +2234,8 @@ static GMenuItem fllist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Print, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, 'P', ksm_control, NULL, NULL, FVMenuPrint, MID_Print },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_ExecuteScript, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'x' }, '.', ksm_control, NULL, NULL, FVMenuExecute },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Prefs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'e' }, '\0', ksm_control, NULL, NULL, MenuPrefs },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Quit, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'Q' }, 'Q', ksm_control, NULL, NULL, FVMenuExit },
@@ -2575,7 +2583,7 @@ return;
 	base.width = bdfc->xmax-bdfc->xmin+1;
 	base.height = bdfc->ymax-bdfc->ymin+1;
 	box.x = j*fv->cbw+1; box.width = fv->cbw-1;
-	box.y = i*fv->cbh+14; box.height = fv->cbw;
+	box.y = i*fv->cbh+FV_LAB_HEIGHT+1; box.height = fv->cbw;
 	GDrawPushClip(fv->v,&box,&old);
 	GDrawFillRect(fv->v,&box,GDrawGetDefaultBackground(NULL));
 	if ( fv->magnify>1 ) {
@@ -2915,8 +2923,8 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		changed = fv->show->chars[index]==NULL? false : fv->show->chars[index]->changed;
 	    if ( changed ) {
 		GRect r;
-		r.x = j*fv->cbw+1; r.width = fv->cbw;
-		r.y = i*fv->cbh-1; r.height = FV_LAB_HEIGHT+1;
+		r.x = j*fv->cbw+1; r.width = fv->cbw-1;
+		r.y = i*fv->cbh+1; r.height = FV_LAB_HEIGHT-1;
 		GDrawSetXORBase(pixmap,GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(fv->v)));
 		GDrawSetXORMode(pixmap);
 		GDrawFillRect(pixmap,&r,0x000000);
@@ -3225,6 +3233,8 @@ return;
 	uc_strcpy(space,cspace);
     }
     GGadgetPreparePopup(gw,space);
+    if ( *space==0 )
+	printf( "upos = %x, enc=%d\n", upos, enc );
 }
 
 static void FVMouse(FontView *fv,GEvent *event) {

@@ -478,6 +478,8 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 	fprintf(sfd, "Weight: %s\n", sf->weight );
     if ( sf->copyright!=NULL )
 	putstring(sfd, "Copyright: ", sf->copyright );
+    if ( sf->comments!=NULL )
+	putstring(sfd, "Comments: ", sf->comments );
     if ( sf->version!=NULL )
 	fprintf(sfd, "Version: %s\n", sf->version );
     fprintf(sfd, "ItalicAngle: %g\n", sf->italicangle );
@@ -1472,6 +1474,8 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    sf->weight = copy(tok);
 	} else if ( strmatch(tok,"Copyright:")==0 ) {
 	    sf->copyright = getquotedeol(sfd);
+	} else if ( strmatch(tok,"Comments:")==0 ) {
+	    sf->comments = getquotedeol(sfd);
 	} else if ( strmatch(tok,"Version:")==0 ) {
 	    geteol(sfd,tok);
 	    sf->version = copy(tok);

@@ -385,6 +385,8 @@ extern void SCInsertBackImage(SplineChar *sc,GImage *image,real scale,real yoff,
 extern void CVImport(CharView *cv);
 extern void BVImport(BitmapView *bv);
 extern void FVImport(FontView *bv);
+extern int FVImportImages(FontView *fv,char *path);
+extern int FVImportImageTemplate(FontView *fv,char *path);
 extern int FVImportBDF(FontView *fv, char *filename,int ispk, int toback);
 extern int FVImportTTF(FontView *fv, char *filename,int toback);
 extern BDFFont *SFImportBDF(SplineFont *sf, char *filename, int ispk, int toback);
@@ -509,6 +511,8 @@ extern void FindProblems(FontView *fv,CharView *cv);
 extern void MetaFont(FontView *fv,CharView *cv);
 extern void CVConstrainSelection(CharView *cv,int type);
 extern void CVMakeParallel(CharView *cv);
+
+extern void ScriptDlg(FontView *fv);
 
 # if HANYANG
 extern void MenuNewComposition(GWindow gw, struct gmenuitem *, GEvent *);

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 19-Jan-2002 -->
+  <!-- AP: Last modified: 21-Jan-2002 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -12,8 +12,8 @@
 <P>
 PfaEdit includes an interpreter so you can write scripts to modify fonts.
 <P>
-At the moment pfaedit will either run a script (and not put up any windows),
-or it will display windows and not run any scripts.
+If you start pfaedit with a script on the command line it will not put up
+any windows and it will exit when the script is done.
 <P>
 The scripting language provides access to much of the functionality found
 in the font view's menus. It does not currently (and probably never will)
@@ -78,7 +78,7 @@ So operators (and their precedences) are:
 <UL>
   <LI>
     unary operators (+, -, !, ~, ++ (prefix and postfix), --(prefix and postfix),
-    () (procedure call), :h, :t, :r, :e<BR>
+    () (procedure call), [] (array index), :h, :t, :r, :e<BR>
     Most of these are as expected in C, the last four are borrowed from shell
     scripts and are applied to strings
     <UL>
@@ -122,6 +122,8 @@ another pfaedit script file, this file will be invoked (since filenames can
 contain characters not legal in name tokens it is important to allow general
 strings to specify filenames). If the procedure name does not contain a directory
 then it is assumed to be in the same directory as the current script file.
+<P>
+Arrays are passed by reference, strings and integers are passed by value.
 <P>
 Variables may be created by assigning a value to them (only with the "="),
 so:<BR>
@@ -192,7 +194,7 @@ ones)
     <CODE>$argc</CODE> the number of arguments passed to the script file (this
     will always be at least 1 as $0 is always present)
   <LI>
-    <CODE>$argv[&lt;expr&gt;] </CODE>allows you to access the n'th argument
+    <CODE>$argv </CODE>allows you to access the array of all the arguments
   <LI>
     <CODE>$curfont </CODE>the name of the filename in which the current font
     resides
@@ -203,6 +205,13 @@ ones)
     <CODE>$nextfont </CODE>the name of the filename of the font which follows
     the current font on the list (or the empty string if the current font is
     the last one on the list)
+  <LI>
+    <CODE>$fontname</CODE> the name contained in the postscript FontName field
+  <LI>
+    <CODE>$familyname </CODE>the name contained in the postscript FamilyName
+    field
+  <LI>
+    <CODE>$fullname </CODE>the name contained in the postscript FullName field
   <LI>
     <CODE>$trace</CODE> if this is set to one then PfaEdit will trace each procedure
     call.
@@ -215,7 +224,53 @@ names.
     Print(arg1,arg2,arg3,...)
   <DD>
     This corresponds to no menu item. It will print all of its arguments to stdout.
-    It can execute with no current font. 
+    It can execute with no current font.
+  <DT>
+    Array(size)
+  <DD>
+    Allocates an array of the indicated size.
+    <BLOCKQUOTE>
+      <PRE>a = Array(10)
+i = 0;
+while ( i&lt;10 )
+   a[i] = i++
+endloop
+a[3] = "string"
+a[4] = Array(10)
+a[4][0] = "Nested array";
+</PRE>
+    </BLOCKQUOTE>
+  <DT>
+    Strsub(str,start[,end])
+  <DD>
+    Returns a substring of the string argument. The substring beings at position
+    indexed by start and ends at the position indexed by end (if end is omitted
+    the end of the string will be used). Thus <CODE>Strsub("abcdef",2,2) == "b"
+    </CODE>and <CODE>Strsub("abcdef",2) == "bcdef"</CODE>
+  <DT>
+    Strlen(str)
+  <DD>
+    Returns the length of the string.
+  <DT>
+    Strstr(haystack,needle)
+  <DD>
+    Returns the index of the first occurance of the string needle within the
+    string haystack (or -1 if not found).
+  <DT>
+    Strrstr(haystack,needle)
+  <DD>
+    Returns the index of the last occurance of the string needle within the string
+    haystack (or -1 if not found).
+  <DT>
+    Strcasestr(haystack,needle)
+  <DD>
+    Returns the index of the first occurance of the string needle within the
+    string haystack ignoring case in the search (or -1 if not found).
+  <DT>
+    Strcasecmp(str1,str2)
+  <DD>
+    Compares the two strings ignoring case, returns zero if the two are equal,
+    a negative number if str1&lt;str2 and a positive number if str1&gt;str2 
       <HR>
   <DT>
     Open(filename)
@@ -260,6 +315,39 @@ names.
 	"" for no bitmaps
     </UL>
   <DT>
+    Import
+  <DD>
+    Either imports a bitmap font into the database, or imports background image[s]
+    into various characters. There may be one or two arguments. The first must
+    be a string representing a filename. The extension of the file determines
+    how the import procedes. If present the second argument must be an integer,
+    if the first argument is a bitmap font then the second argument controls
+    whether it is imported into the bitmap list (0) or to fill up the backgrounds
+    of characters (1).
+    <UL>
+      <LI>
+	If the extension is ".bdf" then a bdf font will be import
+      <LI>
+	If the extension is ".ttf" then the EBDT or bdat table of the ttf file will
+	be searched for bitmap fonts
+      <LI>
+	If the extension is "pk" then a metafont pk (bitmap font) file will be import
+	and by default placed in the background
+      <LI>
+	Otherwise the extension is assumed to be an image extension, and any loaded
+	images will be placed in the background.
+	<UL>
+	  <LI>
+	    If the filename contains a "*" then it should be a recognized template in
+	    which case all images which match that template will be loaded appropriately
+	    and stored in the background
+	  <LI>
+	    Otherwise there may be several filenames (seperated by semicolons), the first
+	    will be placed in the background of the first selected character, the second
+	    into the background of the second selected character, ...
+	</UL>
+    </UL>
+  <DT>
     Quit(status)
   <DD>
     Causes PfaEdit to exit with the given status. It can execute with no current
@@ -275,11 +363,11 @@ names.
   <DD>
     Makes a copy of all selected characters.
   <DT>
-    Copy Reference
+    CopyReference
   <DD>
     Makes references to all selected characters and stores them in the clipboard.
   <DT>
-    Copy Width
+    CopyWidth
   <DD>
     Stores the widths of all selected characters in the clipboard
   <DT>
@@ -400,9 +488,11 @@ names.
   <DT>
     RemoveOverlap()
   <DD>
+    Does the obvious.
   <DT>
     Simplify()
   <DD>
+    Does the obvious.
   <DT>
     AddExtrema()
   <DD>
@@ -440,6 +530,13 @@ names.
   <DT>
     SetRBearing(rbearing)
   <DD>
+  <DT>
+    SetKern(ch2,offset)
+  <DD>
+    Sets the kern between any selected characters and the character ch2 to be
+    offset. The first argument may be specified as in Select(), the second is
+    an integer representing the kern offset.
+  <DD>
       <HR>
   <DT>
     CharCnt()
@@ -454,10 +551,47 @@ names.
     or a postscript character name, true is returned if that character is in
     the font.
   <DT>
-    WorthOutputtin(arg)
+    WorthOutputting(arg)
   <DD>
     Arg is as above. This returns true if the character contains any splines,
     references or has had its width set.
+  <DT>
+    CharInfo(str)
+  <DD>
+    There must be exactly one character selected in the font, and this returns
+    information on it. The information returned depends on str with the obvious
+    meanings:
+    <UL>
+      <LI>
+	"Name" returns the character's name
+      <LI>
+	"Unicode" returns the character's unicode encoding
+      <LI>
+	"Encoding" returns the character's encoding in the current font
+      <LI>
+	"Width" returns the character's width
+      <LI>
+	"VWidth" returns the character's Vertical width
+      <LI>
+	"LBearing" returns the character's left side bearing
+      <LI>
+	"RBearing" returns the character's right side bearing
+      <LI>
+	"Kern" (there must be a second argument here which specifies another character
+	as in Select()) Returns the kern offset between the two characters (or 0
+	if none).
+    </UL>
+    <P>
+    Examples:
+    <BLOCKQUOTE>
+      <PRE>Select("A")
+lbearing = CharInfo("LBearing")
+kern = CharInfo("Kern","O")
+Select(0u410)
+SetLBearing(lbearing)
+SetKern(0u41e,kern)
+</PRE>
+    </BLOCKQUOTE>
 </DL>
 <P>
   <HR>

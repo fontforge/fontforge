@@ -1751,7 +1751,7 @@ void SCClearSelPt(SplineChar *sc) {
 void SCCharChangedUpdate(SplineChar *sc) {
     FontView *fv = sc->parent->fv;
     sc->changed_since_autosave = true;
-    if ( !sc->changed ) {
+    if ( !sc->changed && !sc->parent->onlybitmaps ) {
 	sc->changed = true;
 	FVToggleCharChanged(fv,sc);
     }

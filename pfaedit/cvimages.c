@@ -27,7 +27,9 @@
 #include "pfaeditui.h"
 #include <math.h>
 #include <ustring.h>
-#include "utype.h"
+#include <utype.h>
+#include <sys/types.h>
+#include <dirent.h>
 
 static void ImportPS(CharView *cv,char *path) {
     FILE *ps = fopen(path,"r");
@@ -445,12 +447,16 @@ static void ImageAlterClut(GImage *image) {
 
     if ( base->image_type!=it_mono )
 return;
+
     clut = base->clut;
     if ( clut==NULL ) {
 	clut=base->clut = gcalloc(1,sizeof(GClut));
 	clut->clut_len = 2;
 	clut->clut[0] = 0x808080;
-	clut->clut[1] = GDrawGetDefaultBackground(NULL);
+	if ( screen_display!=NULL )
+	    clut->clut[1] = GDrawGetDefaultBackground(NULL);
+	else
+	    clut->clut[1] = 0xb0b0b0;
 	clut->trans_index = 1;
 	base->trans = 1;
     } else if ( base->trans!=-1 ) {
@@ -492,7 +498,7 @@ static void ImportImage(CharView *cv,char *path) {
 
     image = GImageRead(path);
     if ( image==NULL ) {
-	GWidgetErrorR(_STR_BadImageFile,_STR_BadImageFile);
+	GWidgetErrorR(_STR_BadImageFile,_STR_BadImageFileName, path);
 return;
     }
     ImageAlterClut(image);
@@ -509,13 +515,14 @@ static int BCImportImage(BDFChar *bc,char *path) {
 
     image = GImageRead(path);
     if ( image==NULL ) {
-	GWidgetErrorR(_STR_BadImageFile,_STR_BadImageFile);
+	GWidgetErrorR(_STR_BadImageFile,_STR_BadImageFileName, path);
 return(false);
     }
     base = image->list_len==0?image->u.image:image->u.images[0];
     if ( base->image_type!=it_mono ) {
-	GWidgetErrorR(_STR_BadImageFile,_STR_BadImageFileNotBitmap);
+	GWidgetErrorR(_STR_BadImageFile,_STR_BadImageFileNotBitmap,path);
 	GImageDestroy(image);
+return(false);
     }
     BCPreserveState(bc);
     BCFlattenFloat(bc);
@@ -532,6 +539,148 @@ return(false);
     base->data = NULL;
     GImageDestroy(image);
     BCCharChangedUpdate(bc,NULL);
+return( true );
+}
+
+int FVImportImages(FontView *fv,char *path) {
+    GImage *image;
+    struct _GImage *base;
+    int tot;
+    char *start = path, *endpath=path;
+    int i;
+    SplineChar *sc;
+    double scale;
+
+    tot = 0;
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i]) {
+	sc = SFMakeChar(fv->sf,i);
+	endpath = strchr(start,';');
+	if ( endpath!=NULL ) *endpath = '\0';
+	image = GImageRead(start);
+	if ( image==NULL ) {
+	    GWidgetErrorR(_STR_BadImageFile,_STR_BadImageFileName,start);
+return(false);
+	}
+	base = image->list_len==0?image->u.image:image->u.images[0];
+	if ( base->image_type!=it_mono ) {
+	    GWidgetErrorR(_STR_BadImageFile,_STR_BadImageFileNotBitmap,start);
+	    GImageDestroy(image);
+return(false);
+	}
+	++tot;
+	ImageAlterClut(image);
+	scale = (fv->sf->ascent+fv->sf->descent)/(real) GImageGetHeight(image);
+	ImageListsFree(sc->backimages); sc->backimages = NULL;
+	SCInsertBackImage(sc,image,scale,fv->sf->ascent,0);
+	if ( endpath==NULL )
+    break;
+	start = endpath+1;
+    }
+    if ( tot==0 )
+	GWidgetErrorR(_STR_NothingSelected,_STR_NothingSelected);
+    else if ( endpath!=NULL )
+	GWidgetErrorR(_STR_MoreImagesThanSelected,_STR_MoreImagesThanSelected);
+return( true );
+}
+
+int FVImportImageTemplate(FontView *fv,char *path) {
+    GImage *image;
+    struct _GImage *base;
+    int tot;
+    char *ext, *name, *dirname, *pt, *end;
+    int i, val;
+    int isu=false, ise=false, isc=false;
+    DIR *dir;
+    struct dirent *entry;
+    SplineChar *sc;
+    double scale;
+    BDFFont *bdf;
+
+    ext = strrchr(path,'.');
+    name = strrchr(path,'/');
+    if ( ext==NULL ) {
+	GWidgetErrorR(_STR_BadTemplate,_STR_BadTemplateNoExtension);
+return( false );
+    }
+    if ( name==NULL ) name=path-1;
+    if ( name[1]=='u' ) isu = true;
+    else if ( name[1]=='c' ) isc = true;
+    else if ( name[1]=='e' ) ise = true;
+    else {
+	GWidgetErrorR(_STR_BadTemplate,_STR_BadTemplateUnrecognized);
+return( false );
+    }
+    if ( name<path )
+	dirname = ".";
+    else {
+	dirname = path;
+	*name = '\0';
+    }
+
+    if ( (dir = opendir(dirname))==NULL ) {
+	    GWidgetErrorR(_STR_NothingLoaded,_STR_NothingLoaded);
+return( false );
+    }
+    
+    tot = 0;
+    while ( (entry=readdir(dir))!=NULL ) {
+	pt = strrchr(entry->d_name,'.');
+	if ( pt==NULL )
+    continue;
+	if ( strmatch(pt,ext)!=0 )
+    continue;
+	if ( !(
+		(isu && entry->d_name[0]=='u' && entry->d_name[1]=='n' && entry->d_name[2]=='i' && (val=strtol(entry->d_name+3,&end,16), end==pt)) ||
+		(isc && entry->d_name[0]=='c' && entry->d_name[1]=='i' && entry->d_name[2]=='d' && (val=strtol(entry->d_name+3,&end,10), end==pt)) ||
+		(ise && entry->d_name[0]=='e' && entry->d_name[1]=='n' && entry->d_name[2]=='c' && (val=strtol(entry->d_name+3,&end,10), end==pt)) ))
+    continue;
+	if ( isu ) {
+	    i = SFFindChar(fv->sf,val,NULL);
+	    if ( i==-1 ) {
+		GWidgetErrorR(_STR_UnicodeNotInFont,_STR_UnicodeValueNotInFont,val);
+    continue;
+	    }
+	    sc = SFMakeChar(fv->sf,i);
+	} else {
+	    if ( val<fv->sf->charcnt )
+		/* It's there */;
+	    else if ( val<10*65536 ) {
+		fv->sf->chars = grealloc(fv->sf->chars,val*sizeof(SplineChar *));
+		fv->selected = grealloc(fv->selected,val);
+		for ( i=fv->sf->charcnt; i<val; ++i ) {
+		    fv->sf->chars[i] = NULL;
+		    fv->selected[i] = false;
+		}
+		for ( bdf=fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
+		    bdf->chars = grealloc(bdf->chars,val*sizeof(BDFChar *));
+		    for ( i=bdf->charcnt; i<val; ++i )
+			bdf->chars[i] = NULL;
+		}
+	    } else {
+		GWidgetErrorR(_STR_EncodingNotInFont,_STR_EncodingValueNotInFont,val);
+    continue;
+	    }
+	    sc = SFMakeChar(fv->sf,val);
+	}
+	image = GImageRead(entry->d_name);
+	if ( image==NULL ) {
+	    GWidgetErrorR(_STR_BadImageFile,_STR_BadImageFileName,entry->d_name);
+    continue;
+	}
+	base = image->list_len==0?image->u.image:image->u.images[0];
+	if ( base->image_type!=it_mono ) {
+	    GWidgetErrorR(_STR_BadImageFile,_STR_BadImageFileNotBitmap,entry->d_name);
+	    GImageDestroy(image);
+    continue;
+	}
+	++tot;
+	ImageAlterClut(image);
+	scale = (fv->sf->ascent+fv->sf->descent)/(real) GImageGetHeight(image);
+	ImageListsFree(sc->backimages); sc->backimages = NULL;
+	SCInsertBackImage(sc,image,scale,fv->sf->ascent,0);
+    }
+    if ( tot==0 )
+	GWidgetErrorR(_STR_NothingLoaded,_STR_NothingLoaded);
 return( true );
 }
 
@@ -560,13 +709,24 @@ static unichar_t wildimg[] = { '*', '.', '{',
 't','i','f','f',',',
 #endif
 'x','b','m',',', 'b','m','p', '}', '\0' };
+static unichar_t wildtemplate[] = { '{','u','n','i',',','c','i','d',',','e','p','s','}','[','0','-','9','a','-','f','A','-','F',']','*', '.', '{',
+#ifndef _NO_LIBUNGIF
+'g','i','f',',',
+#endif
+#ifndef _NO_LIBPNG
+'p','n','g',',',
+#endif
+#ifndef _NO_LIBTIFF
+'t','i','f','f',',',
+#endif
+'x','b','m',',', 'b','m','p', '}', '\0' };
 static unichar_t wildps[] = { '*', '.', '{', 'p','s',',', 'e','p','s',',','}', '\0' };
 static unichar_t wildfig[] = { '*', '.', '{', 'f','i','g',',','x','f','i','g','}',  '\0' };
 static unichar_t wildbdf[] = { '*', '.', 'b', 'd','f',  '\0' };
 static unichar_t wildttf[] = { '*', '.', '{', 't', 't','f',',','o','t','f',',','t','t','c','}',  '\0' };
 static unichar_t wildpk[] = { '*', 'p', 'k',  '\0' };		/* pk fonts can have names like cmr10.300pk, not a normal extension */
 static unichar_t *wildchr[] = { wildimg, wildps, wildfig };
-static unichar_t *wildfnt[] = { wildbdf, wildttf, wildpk };
+static unichar_t *wildfnt[] = { wildbdf, wildttf, wildpk, wildimg, wildtemplate };
 
 static GTextInfo formats[] = {
     { (unichar_t *) _STR_Image, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
@@ -578,6 +738,8 @@ static GTextInfo fvformats[] = {
     { (unichar_t *) "BDF", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 1, 0, 1 },
     { (unichar_t *) "TTF", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "pk", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) _STR_Image, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) _STR_Template, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }};
 
 static int GFD_ImportOk(GGadget *g, GEvent *e) {
@@ -595,14 +757,18 @@ static int GFD_ImportOk(GGadget *g, GEvent *e) {
 	free(ret);
 	if ( d->fv!=NULL ) {
 	    int toback = GGadgetIsChecked(d->background);
-	    if ( toback && strchr(temp,';')!=NULL )
+	    if ( toback && strchr(temp,';')!=NULL && format<3 )
 		GWidgetErrorR(_STR_OnlyOneFont,_STR_OnlyOneFontBackground);
 	    else if ( format==0 )
 		d->done = FVImportBDF(d->fv,temp,false, toback);
 	    else if ( format==1 )
 		d->done = FVImportTTF(d->fv,temp,toback);
-	    else
+	    else if ( format==2 )		/* pk */
 		d->done = FVImportBDF(d->fv,temp,true, toback);
+	    else if ( format==3 )
+		d->done = FVImportImages(d->fv,temp);
+	    else if ( format==4 )
+		d->done = FVImportImageTemplate(d->fv,temp);
 	} else if ( d->bc!=NULL )
 	    d->done = BCImportImage(d->bc,temp);
 	else {
@@ -635,6 +801,18 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 	int format = GGadgetGetFirstListSelectedItem(g);
 	GFileChooserSetFilterText(d->gfc,d->fv==NULL?wildchr[format]:wildfnt[format]);
 	GFileChooserRefreshList(d->gfc);
+	if ( d->fv!=NULL ) {
+	    if ( format==0 || format==1 ) {/* bdf, TTF */
+		GGadgetSetChecked(d->background,false);
+		GGadgetSetEnabled(d->background,true);
+	    } else if ( format==2 ) {	/* pk */
+		GGadgetSetChecked(d->background,true);
+		GGadgetSetEnabled(d->background,true);
+	    } else {			/* Images */
+		GGadgetSetChecked(d->background,true);
+		GGadgetSetEnabled(d->background,false);
+	    }
+	}
     }
 return( true );
 }
@@ -670,7 +848,9 @@ static void _Import(CharView *cv,BDFChar *bc,FontView *fv) {
     wattrs.cursor = ct_pointer;
     wattrs.window_title = GStringGetResource(_STR_Import,NULL);
     pos.x = pos.y = 0;
-    bsbigger = 3*bs+4*14>223; totwid = bsbigger?3*bs+4*12:223;
+    totwid = 223;
+    if ( fv!=NULL ) totwid += 60;
+    bsbigger = 3*bs+4*14>totwid; totwid = bsbigger?3*bs+4*12:totwid;
     pos.width = GDrawPointsToPixels(NULL,totwid);
     pos.height = GDrawPointsToPixels(NULL,255);
     gw = GDrawCreateTopWindow(NULL,&pos,e_h,&d,&wattrs);
@@ -731,7 +911,7 @@ static void _Import(CharView *cv,BDFChar *bc,FontView *fv) {
     gcd[5].gd.u.list[format].selected = true;
 
     if ( fv!=NULL ) {
-	gcd[6].gd.pos.x = 120; gcd[6].gd.pos.y = gcd[5].gd.pos.y+4;
+	gcd[6].gd.pos.x = 180; gcd[6].gd.pos.y = gcd[5].gd.pos.y+4;
 	gcd[6].gd.flags = gg_visible | gg_enabled ;
 	label[6].text = (unichar_t *) _STR_AsBackground;
 	label[6].text_in_resource = true;

@@ -139,7 +139,7 @@ int SFFindChar(SplineFont *sf, int unienc, char *name ) {
 
     if ( sf->encoding_name==em_unicode && unienc!=-1 ) {
 	index = unienc;
-	if ( index>=sf->charcnt || sf->chars[index]==NULL )
+	if ( index>=sf->charcnt )
 	    index = -1;
     } else if ( unienc!=-1 ) {
 	if ( unienc<sf->charcnt && sf->chars[unienc]!=NULL &&

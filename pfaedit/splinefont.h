@@ -468,6 +468,7 @@ typedef struct splinefont {
 #if HANYANG
     struct compositionrules *rules;
 #endif
+    char *comments;
 } SplineFont;
 
 struct fontdict;

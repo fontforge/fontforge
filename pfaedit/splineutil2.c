@@ -32,6 +32,7 @@
 #include "chardata.h"
 #include <unistd.h>
 #include <pwd.h>
+#include <time.h>
 
 /*#define DEBUG	1*/
 
@@ -1171,6 +1172,8 @@ SplineFont *SplineFontBlank(int encoding_name,int charcnt) {
     SplineFont *sf;
     char buffer[200], *pt;
     struct passwd *pwd;
+    time_t now;
+    struct tm *tm;
 
     sf = SplineFontEmpty();
     sf->fontname = GetNextUntitledName();
@@ -1196,6 +1199,10 @@ SplineFont *SplineFontBlank(int encoding_name,int charcnt) {
 	sf->xuid = galloc(strlen(xuid)+20);
 	sprintf(sf->xuid,"[%s %d]", xuid, (rand()&0xffffff));
     }
+    time(&now);
+    tm = localtime(&now);
+    sprintf( buffer, "%d-%d-%d: Created.", tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday );
+    sf->comments = copy(buffer);
     sf->version = copy("001.000");
     sf->upos = -100; sf->uwidth = 50;		/* defaults for cff */
     sf->ascent = 800; sf->descent = 200;

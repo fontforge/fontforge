@@ -950,6 +950,7 @@ return( true );
 #define MID_Layers	2502
 #define MID_Revert	2702
 #define MID_Recent	2703
+#define MID_SetWidth	2601
 
 static void BVMenuClose(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     GDrawDestroyWindow(gw);
@@ -1107,6 +1108,37 @@ return;
     BCDoUndo(bv->bc,bv->fv);
 }
 
+static void BVMenuSetWidth(GWindow gw,struct gmenuitem *mi,GEvent *g) {
+    BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
+    char buffer[10];
+    unichar_t ubuf[10], *ret;
+    BDFFont *bdf;
+    int mysize = bv->bdf->pixelsize;
+    SplineChar *sc;
+    int val;
+
+    if ( !bv->fv->sf->onlybitmaps )
+return;
+    sprintf( buffer,"%d",bv->bc->width);
+    uc_strcpy(ubuf,buffer);
+    ret = GWidgetAskStringR(_STR_Setwidth,ubuf,_STR_Setwidth);
+    if ( ret==NULL )
+return;
+    val = u_strtol(ret,NULL,10);
+    free(ret);
+    if ( val<0 )
+return;
+    bv->bc->width = val;
+    BCCharChangedUpdate(bv->bc,bv->fv);
+    for ( bdf=bv->fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next )
+	if ( bdf->pixelsize > mysize )
+return;
+    if ( (sc=bv->fv->sf->chars[bv->bc->enc])!=NULL ) {
+	sc->width = val*(sc->parent->ascent+sc->parent->descent)/mysize;
+	SCCharChangedUpdate(sc);
+    }
+}
+
 static void BVRedo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
     if ( bv->bc->redoes==NULL )
@@ -1258,6 +1290,18 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     }
 }
 
+static void mtlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
+
+    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
+	switch ( mi->mid ) {
+	  case MID_SetWidth:
+	    mi->ti.disabled = !bv->fv->sf->onlybitmaps;
+	  break;
+	}
+    }
+}
+
 int BVFlipNames[] = { _STR_Fliph, _STR_Flipv, _STR_Rotate90cw, _STR_Rotate90ccw, _STR_Rotate180, _STR_Skew };
 
 static GMenuItem dummyitem[] = { { (unichar_t *) _STR_New, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'N' }, NULL };
@@ -1345,11 +1389,17 @@ static GMenuItem vwlist[] = {
     { NULL }
 };
 
+static GMenuItem mtlist[] = {
+    { { (unichar_t *) _STR_Setwidth, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'W' }, 'L', ksm_control|ksm_shift, NULL, NULL, BVMenuSetWidth, MID_SetWidth },
+    { NULL }
+};
+
 static GMenuItem mblist[] = {
     { { (unichar_t *) _STR_File, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, 0, 0, fllist, fllistcheck },
     { { (unichar_t *) _STR_Edit, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'E' }, 0, 0, edlist, edlistcheck },
     { { (unichar_t *) _STR_Element, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'l' }, 0, 0, ellist, ellistcheck },
     { { (unichar_t *) _STR_View, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'V' }, 0, 0, vwlist, vwlistcheck },
+    { { (unichar_t *) _STR_Metric, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, 0, 0, mtlist, mtlistcheck },
     { { (unichar_t *) _STR_Window, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'W' }, 0, 0, NULL, WindowMenuBuild },
     { { (unichar_t *) _STR_Help, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, 0, 0, helplist, NULL },
     { NULL }

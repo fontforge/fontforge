@@ -443,6 +443,8 @@ static struct langstyle *stylelist[] = {regs, demibolds, bolds, heavys, blacks,
 #define CID_String		5003
 #define CID_TNDef		5004
 
+#define CID_Comment		6001
+
 
 struct psdict *PSDictCopy(struct psdict *dict) {
     struct psdict *ret;
@@ -2081,6 +2083,8 @@ return(true);
 	free(sf->xuid); sf->xuid = *txt=='\0'?NULL:cu_copy(txt);
 	txt = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Notice));
 	free(sf->copyright); sf->copyright = cu_copy(txt);
+	txt = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Comment));
+	free(sf->comments); sf->comments = cu_copy(*txt?txt:NULL);
 	if ( sf->subfontcnt!=0 )
 	    sf->cidversion = cidversion;
 	else {
@@ -2295,9 +2299,9 @@ void FontInfo(SplineFont *sf) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GTabInfo aspects[8];
-    GGadgetCreateData mgcd[10], ngcd[11], egcd[12], psgcd[19], tngcd[7],   pgcd[8], vgcd[15], pangcd[22];
-    GTextInfo mlabel[10], nlabel[11], elabel[12], pslabel[19], tnlabel[7], plabel[8], vlabel[15], panlabel[22], *list;
+    GTabInfo aspects[9];
+    GGadgetCreateData mgcd[10], ngcd[11], egcd[12], psgcd[19], tngcd[7],   pgcd[8], vgcd[15], pangcd[22], comgcd[3];
+    GTextInfo mlabel[10], nlabel[11], elabel[12], pslabel[19], tnlabel[7], plabel[8], vlabel[15], panlabel[22], comlabel[3], *list;
     struct gfi_data d;
     char iabuf[20], upbuf[20], uwbuf[20], asbuf[20], dsbuf[20], ncbuf[20],
 	    vbuf[20], uibuf[12], regbuf[100], vorig[20];
@@ -3077,6 +3081,18 @@ void FontInfo(SplineFont *sf) {
     pangcd[19].gd.u.list = panxheight;
     pangcd[19].creator = GListButtonCreate;
 /******************************************************************************/
+    memset(&comlabel,0,sizeof(comlabel));
+    memset(&comgcd,0,sizeof(comgcd));
+
+    comgcd[0].gd.pos.x = 10; comgcd[0].gd.pos.y = 10;
+    comgcd[0].gd.pos.width = 220; comgcd[0].gd.pos.height = 180;
+    comgcd[0].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap;
+    comgcd[0].gd.cid = CID_Comment;
+    comlabel[0].text = (unichar_t *) sf->comments;
+    comlabel[0].text_is_1byte = true;
+    comgcd[0].gd.label = &comlabel[0];
+    comgcd[0].creator = GTextAreaCreate;
+/******************************************************************************/
 
     memset(&mlabel,0,sizeof(mlabel));
     memset(&mgcd,0,sizeof(mgcd));
@@ -3117,6 +3133,11 @@ void FontInfo(SplineFont *sf) {
     aspects[i].text = (unichar_t *) _STR_Panose;
     aspects[i].text_in_resource = true;
     aspects[i++].gcd = pangcd;
+
+    d.panose_aspect = i;
+    aspects[i].text = (unichar_t *) _STR_Comment;
+    aspects[i].text_in_resource = true;
+    aspects[i++].gcd = comgcd;
 
     mgcd[0].gd.pos.x = 4; mgcd[0].gd.pos.y = 6;
     mgcd[0].gd.pos.width = 260;

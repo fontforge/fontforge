@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 10-Dec-2000 -->
-  <!-- AP: Last modified: 15-Dec-2001 -->
+  <!-- AP: Last modified: 21-Jan-2002 -->
   <TITLE>The File Menu</TITLE>
 </HEAD>
 <BODY>
@@ -40,6 +40,8 @@
     <A HREF="#Merge-kern">Merge Kern Info...</A>
   <LI>
     <A HREF="#Print">Print...</A>
+  <LI>
+    <A HREF="#Execute">Execute Script...</A>
   <LI>
     <A HREF="#prefs">Preferences...</A>
   <LI>
@@ -290,7 +292,18 @@
     </STRONG></SMALL></FONT>PfaEdit is unable to read an encoding from pk files,
     it is your responsibility to ensure that the encoding of your font matches
     that of the pk file <EM>BEFORE</EM> loading the file. This is unfortunate,
-    sorry.
+    sorry.<BR>
+    You may also load images into the character backgrounds. There are two ways
+    to do this, you may either select several image files and they will be loaded
+    consecutively into selected characters, or you may select an image template
+    and all images whose filename match that template will be loaded into the
+    backgrounds of the appropriate characters. Image templates look like "uni*.png"
+    or "enc*.gif" or "cid*.tiff". You select the template by selecting a filename
+    which matches that template-- So if you select "uni1100.gif" then all image
+    files which start with "uni" and end with ".gif" and contain a valid unicode
+    number will be loaded and placed in the appropriate place. Files named "enc*"
+    or "cid*" are handled similarly except that they specify the current encoding
+    (and the number must be in decimal rather than hex).
     <P>
     In the Outline View this allows you to import an image into the background,
     or import encapsulated postscript or fig files into the foreground (the xfig
@@ -323,6 +336,11 @@
     in the font, a text sample of the font, or specific characters at a very
     large scale.<BR>
     See the section on <A HREF="print.html">printing</A> for more information.
+  <DT>
+    <A NAME="Execute">Execute</A> Script...
+  <DD>
+    Brings up a dlg and allows you to enter a <A HREF="scripting.html">script</A>
+    (which could be just calling a prewritten script file).
   <DT>
     <A NAME="prefs">Preferences...</A>
   <DD>
