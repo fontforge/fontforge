@@ -2285,10 +2285,8 @@ static SplinePointList *SplinesFromLayers(SplineChar *sc,int *flags) {
     real inversetrans[6], transform[6];
     int changed;
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( *flags==-1 )
 	*flags = PsStrokeFlagsDlg();
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
     if ( *flags & sf_correctdir ) {
 	for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) if ( sc->layers[layer].dofill )
@@ -2467,10 +2465,8 @@ static SplinePointList *SplinesFromEntityChar(EntityChar *ec,int *flags) {
     /*SplineSet *spl;*/
     int handle_eraser;
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( *flags==-1 )
 	*flags = PsStrokeFlagsDlg();
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
     if ( *flags & sf_correctdir )
 	EntityCharCorrectDir(ec);

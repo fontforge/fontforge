@@ -55,7 +55,7 @@ int _ExportEPS(FILE *eps,SplineChar *sc) {
     fprintf( eps, "%%%%Title: %s from %s\n", sc->name, sc->parent->fontname );
     fprintf( eps, "%%%%Creator: FontForge\n" );
     if ( author!=NULL )
-	fprintf( eps, "%%%%Creator: %s\n", author);
+	fprintf( eps, "%%%%Author: %s\n", author);
     time(&now);
     tm = localtime(&now);
     fprintf( eps, "%%%%CreationDate: %d:%02d %d-%d-%d\n", tm->tm_hour, tm->tm_min,
@@ -114,7 +114,7 @@ int _ExportPDF(FILE *pdf,SplineChar *sc) {
     objlocs[3] = ftell(pdf);
     fprintf( pdf, "3 0 obj\n" );
     fprintf( pdf, " << /Type /Page\n" );
-    fprintf( pdf, "    /Parent [ 2 0 R ]\n" );
+    fprintf( pdf, "    /Parent 2 0 R\n" );
     fprintf( pdf, "    /Resources << >>\n" );
     SplineCharFindBounds(sc,&b);
     fprintf( pdf, "    /MediaBox [%g %g %g %g]\n", b.minx, b.miny, b.maxx, b.maxy );
