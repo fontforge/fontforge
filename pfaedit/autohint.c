@@ -1354,7 +1354,7 @@ return( true );
 
 static int AreNearlyParallel(EI *apt,EI *e) {
     DStemInfo d;
-    real x,y,len, len1,len2;
+    real x,y,len, len1,len2, stemwidth;
     BasePoint top, bottom;
     double scale, slope;
 
@@ -1374,9 +1374,9 @@ return( false );
     x/=len; y/=len;
 	/* Now find the projection onto this normal of the vector between any */
 	/*  point on the first segment to any point on the second (should be the same) */
-    len = x*(d.leftedgetop.x-d.rightedgetop.x) +
+    stemwidth = x*(d.leftedgetop.x-d.rightedgetop.x) +
 	    y*(d.leftedgetop.y-d.rightedgetop.y);
-    x *= len; y *= len;
+    x *= stemwidth; y *= stemwidth;
 	/* Now we should have a vector which will move us orthogonal to the */
 	/*  segments from one to the other */
 
@@ -1403,6 +1403,12 @@ return( false );
     x = top.x-bottom.x; y = top.y-bottom.y;
     len = x*x + y*y;
     if ( len<len1/9 )			/* Very little overlap (remember the lengths are squared so 9=>3) */
+return( false );
+
+    /* Now suppose we have a parallelogram. Then there are two possibilities for */
+    /*  dstems, but we only want one of them. We want the dstem where the stem */
+    /*  width is less than the stem length */ /* len1 is the smaller stem length */
+    if ( stemwidth*stemwidth >= len1 )
 return( false );
 
 return( true );
@@ -2103,6 +2109,87 @@ static StemInfo *CheckForGhostHints(StemInfo *stems,SplineChar *sc) {
 return( stems );
 }
 
+static int DStemsOverlapBigger(DStemInfo *t1,DStemInfo *t2,int ls /*leftsame*/) {
+    real width1, width2;
+    real x,y,len, dist;
+
+    x =  (t1->leftedgetop.y-t1->leftedgebottom.y);
+    y = -(t1->leftedgetop.x-t1->leftedgebottom.x);
+    len = sqrt(x*x+y*y);
+    x /= len; y/= len;
+    /* We now have a unit vector perpendicular to the stems (all stems should */
+    /*  be parallel, so we could have chosen any of them */
+
+    dist = ( (&t1->leftedgetop)[ls].x-(&t2->leftedgetop)[ls].x )*x +
+	    ( (&t1->leftedgetop)[ls].y-(&t2->leftedgetop)[ls].y )*y;
+    /* This is the distance (along our unit vector) from the edge of t1 that */
+    /*  is not an edge of t2 TO the edge of t2 that is not an edge of t1 */
+    if ( (&t2->leftedgebottom)[ls].y+dist*y>=(&t1->leftedgetop)[ls].y )
+return( 0 );	/* no overlap */
+    if ( (&t2->leftedgetop)[ls].y+dist*y<=(&t1->leftedgebottom)[ls].y )
+return( 0 );	/* no overlap */
+
+    width1 = (t1->leftedgetop.x-t1->rightedgetop.x)*x +
+		(t1->leftedgetop.y-t1->rightedgetop.y)*y;
+    width2 = (t2->leftedgetop.x-t2->rightedgetop.x)*x +
+		(t2->leftedgetop.y-t2->rightedgetop.y)*y;
+    if ( width1*width2<0 )
+return( 0 );
+    if ( width1<0 ) {
+	width1 = -width1;
+	width2 = -width2;
+    }
+    if ( width1>width2 )
+return( 1 );			/* t1 has the wider dstem */
+    else if ( width1==width2 )
+return( -1 );			/* they must be the same, remove either one */
+
+return( -1 );			/* t2 has the wider dstem */
+}
+
+static DStemInfo *DStemPrune(DStemInfo *dstems) {
+    DStemInfo *test, *prev, *t2, *next, *t2next, *t2prev;
+    int which;
+
+    prev = NULL;
+    for ( test=dstems; test!=NULL; test=next ) {
+	next = test->next;
+	t2prev = test;
+	which = 0;
+	for ( t2 = test->next; t2!=NULL; t2 = t2next ) {
+	    t2next = t2->next;
+	    which = 0;
+	    if ( t2->leftedgetop.x==test->leftedgetop.x &&
+		    t2->leftedgetop.y==test->leftedgetop.y &&
+		    t2->leftedgebottom.x==test->leftedgebottom.x &&
+		    t2->leftedgebottom.y==test->leftedgebottom.y )
+		which = DStemsOverlapBigger(test,t2,1);
+	    else if ( t2->rightedgetop.x==test->rightedgetop.x &&
+		    t2->rightedgetop.y==test->rightedgetop.y &&
+		    t2->rightedgebottom.x==test->rightedgebottom.x &&
+		    t2->rightedgebottom.y==test->rightedgebottom.y )
+		which = DStemsOverlapBigger(test,t2,0);
+	    if ( which==1 ) {
+		if ( prev==NULL )
+		    dstems = next;
+		else
+		    prev->next = next;
+		chunkfree(test,sizeof(DStemInfo));
+	break;
+	    } else if ( which==-1 ) {
+		t2prev->next = t2next;
+		if ( t2prev==test )
+		    next = t2next;
+		chunkfree(t2,sizeof(DStemInfo));
+	    } else
+		t2prev = t2;
+	}
+	if ( which!=1 )
+	    prev = test;
+    }
+return( dstems );
+}
+
 static StemInfo *SCFindStems(EIList *el, int major, int removeOverlaps,DStemInfo **dstems,MinimumDistance **mds) {
     StemInfo *stems;
 
@@ -2124,6 +2211,8 @@ static StemInfo *SCFindStems(EIList *el, int major, int removeOverlaps,DStemInfo
 	    /*  anyway after adding hints from References */
 	}
     }
+    if ( dstems!=NULL )
+	*dstems = DStemPrune( *dstems );
 return( stems );
 }
 

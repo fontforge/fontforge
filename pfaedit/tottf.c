@@ -1547,7 +1547,7 @@ static int BpIndex(BasePoint *search,BasePoint *bp,int ptcnt) {
     int i;
 
     for ( i=0; i<ptcnt; ++i )
-	if ( search->x == bp[i].x && search->y==bp[i].y )
+	if ( rint(search->x) == bp[i].x && rint(search->y)==bp[i].y )
 return( i );
 
 return( -1 );
@@ -1646,14 +1646,14 @@ static DStem *DStemMerge(DStemInfo *d, BasePoint *bp, int ptcnt, uint8 *touched)
     /* "k" is an example, we don't notice the stub between the vertical stem and the lower diagonal stem */
     for ( cur = head; cur!=NULL; cur=cur->next ) {
 	for ( i=0; i<ptcnt; ++i ) {
-	    if ( map[1][i]!=NULL || map[1][i+1]!=NULL ||
-		    (map[0][i]!=NULL && map[0][i]==map[0][i+1] ))
-	continue;	/* These points are already on a diagonal, off just enough that we can't find a line... */
 	    nexti = i+1;
 	    if ( touched[i]&tf_endcontour ) {
 		for ( j=i; j>0 && !(touched[j]&tf_startcontour); --j);
 		nexti = j;
 	    }
+	    if ( map[1][i]!=NULL || map[1][nexti]!=NULL ||
+		    (map[0][i]!=NULL && map[0][i]==map[0][nexti] ))
+	continue;	/* These points are already on a diagonal, off just enough that we can't find a line... */
 	    if ( CoLinear(&cur->leftedgetop,&cur->leftedgebottom,&bp[i],&bp[nexti])) {
 		top = &bp[i]; bottom = &bp[nexti];
 		if ( top->y<bottom->y ) { top = bottom; bottom = &bp[i]; }
@@ -1673,7 +1673,7 @@ static DStem *DStemMerge(DStemInfo *d, BasePoint *bp, int ptcnt, uint8 *touched)
 	    } else if ( CoLinear(&cur->rightedgetop,&cur->rightedgebottom,&bp[i],&bp[nexti])) {
 		top = &bp[i]; bottom = &bp[nexti];
 		if ( top->y<bottom->y ) { top = bottom; bottom = &bp[i]; }
-		cur->used[i] = cur->used[nexti] = 1;
+		cur->used[i] = cur->used[nexti] = 2;
 		if ( cur->rightedgetop.y>top->y ) {
 		    cur->rightedgetop = *top;
 		    cur->pnum[2] = i;
@@ -1706,8 +1706,8 @@ static void DStemFree(DStem *d) {
 	    dslnext = dsl->next;
 	    chunkfree(dsl,sizeof(struct dstemlist));
 	}
-	chunkfree(d,sizeof(DStem));
 	free(d->used);
+	chunkfree(d,sizeof(DStem));
 	d = next;
     }
 }
