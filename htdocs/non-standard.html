@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 30-Jun-2003 -->
-  <!-- AP: Last modified: 16-Jan-2005 -->
+  <!-- AP: Last modified: 17-Jan-2005 -->
   <TITLE>Non standard extensions used by FontForge in True/Open Type</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -287,6 +287,9 @@ For TeX
     </TR>
   </TABLE>
 </BLOCKQUOTE>
+<P>
+I store these values in em-units rather than in the fix_word of a tfm file
+because em-units make more sense in a sfnt and take up less space.
 <H3>
   '<A NAME="sbsp">sbsp</A>' -- the per-glyph comment sub-table
 </H3>
@@ -320,6 +323,9 @@ For TeX
     </TR>
   </TABLE>
 </BLOCKQUOTE>
+<P>
+I store these values in em-units rather than in the fix_word of a tfm file
+because em-units make more sense in a sfnt and take up less space.
 <H3>
   '<A NAME="ftpm">ftpm</A>' -- the font parameter (font dimensions) sub-table
 </H3>
@@ -346,13 +352,17 @@ For TeX
       <TD>parameter name</TD>
     </TR>
     <TR>
-      <TD>uint32</TD>
+      <TD>int32</TD>
       <TD>value</TD>
       <TD></TD>
     </TR>
   </TABLE>
   <P>
-  I have defined the following parameter tags
+  I store these values as fix_words and <EMPH><EM>not</EM></EMPH> as em-units
+  because their meaning is not constrained by the spec and the
+  <CODE>Slant</CODE> parameter (at the least) can not be converted to em-units.
+  <P>
+  I have defined the following 4-letter parameter tags
   <TABLE BORDER CELLPADDING="2">
     <TR>
       <TH>Tag</TH>

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 16-Jan-2005 -->
+  <!-- AP: Last modified: 17-Jan-2005 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -11,6 +11,29 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    17-Jan-2005
+    <UL>
+      <LI>
+	CapsLock now makes the arrow keys scroll in the outline view
+      <LI>
+	We lost count of hints when generating type2 fonts in glyphs with references
+	to something containing hints which did not overlap. If we were unlucky,
+	&lt;new-cnt+7&gt;/8 was different than &lt;real-cnt+7&gt;/8 and we ended
+	up with garbage in the charstring.
+      <LI>
+	Add a TeX table to contain TeX metrics.
+      <LI>
+	TFM output was wrong. the TFtoPL doc says "
+      <LI>
+	reencoding with original encoding could create a glyph table one too small
+	resulting in writing/reading garbage and an eventual crash.
+      <LI>
+	KANOU fixed a couple of problems in reading glyph names from bdf fonts.
+      <LI>
+	KANOU needed to disambiguate between "Point" a unit of measurement and "Point"
+	a geometric object.
+    </UL>
   <LI>
     16-Jan-2005
     <UL>
