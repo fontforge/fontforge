@@ -1155,7 +1155,13 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
 	  case MID_Paste:
-	    mi->ti.disabled = pos==-1 || !CopyContainsSomething();
+	    mi->ti.disabled = pos==-1 ||
+		    (!CopyContainsSomething() &&
+#ifndef _NO_LIBPNG
+		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/png") &&
+#endif
+		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/bmp") &&
+		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/eps"));
 	  break;
 	  case MID_Cut: case MID_Copy: case MID_Clear:
 	  case MID_CopyWidth: case MID_CopyLBearing: case MID_CopyRBearing:

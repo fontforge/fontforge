@@ -1803,7 +1803,13 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = i==-1 || mv->perchar[i].sc->refs==NULL;
 	  break;
 	  case MID_Paste:
-	    mi->ti.disabled = i==-1 || !CopyContainsSomething();
+	    mi->ti.disabled = i==-1 ||
+		(!CopyContainsSomething() &&
+#ifndef _NO_LIBPNG
+		    !GDrawSelectionHasType(mv->gw,sn_clipboard,"image/png") &&
+#endif
+		    !GDrawSelectionHasType(mv->gw,sn_clipboard,"image/bmp") &&
+		    !GDrawSelectionHasType(mv->gw,sn_clipboard,"image/eps"));
 	  break;
 	}
     }
