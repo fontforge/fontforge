@@ -4371,7 +4371,13 @@ static void SFRelativeWinAsDs(SplineFont *sf) {
 	CIDFindBounds(sf,&b);
 	if ( !sf->pfminfo.winascent_add ) {
 	    sf->pfminfo.winascent_add = true;
-	    sf->pfminfo.os2_winascent -= b.maxy;
+	    if ( sf->pfminfo.os2_winascent < sf->ascent/8 ) {
+		/* There was a bug for a while which gave us really bad values */
+		sf->pfminfo.os2_winascent = 0;
+		sf->pfminfo.windescent_add = true;
+		sf->pfminfo.os2_windescent = 0;
+	    } else
+		sf->pfminfo.os2_winascent -= b.maxy;
 	}
 	if ( !sf->pfminfo.windescent_add ) {
 	    sf->pfminfo.windescent_add = true;
