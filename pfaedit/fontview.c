@@ -4130,7 +4130,9 @@ static void FVChar(FontView *fv,GEvent *event) {
 	  break;
 	  case GK_Home: case GK_KP_Home:
 	    pos = 0;
-	    for ( i=0; i<fv->sf->charcnt; ++i )
+	    if ( fv->sf->top_enc!=-1 && fv->sf->top_enc<fv->sf->charcnt )
+		pos = fv->sf->top_enc;
+	    else for ( i=0; i<fv->sf->charcnt; ++i )
 		if ( fv->sf->chars[i]!=NULL &&
 			(fv->sf->chars[i]->unicodeenc=='A' ||
 			 fv->sf->chars[i]->splines!=NULL ||
@@ -4354,6 +4356,8 @@ static void FVResize(FontView *fv,GEvent *event) {
 	topchar = fv->rowoff*fv->colcnt;
     else if ( fv->sf->encoding_name>=em_jis208 && fv->sf->encoding_name<=em_gb2312 )
 	topchar = 1;
+    else if ( fv->sf->top_enc!=-1 && fv->sf->top_enc<fv->sf->charcnt )
+	topchar = fv->sf->top_enc;
     else {
 	/* Position on 'A' if it exists */
 	for ( topchar=fv->sf->charcnt-1; topchar>0; --topchar )
@@ -5190,4 +5194,11 @@ void FVFakeMenus(FontView *fv,int cmd) {
 	FVAutoHint(fv,true);
       break;
     }
+}
+
+int FVTopEncoding(FontView *fv) {
+    if ( fv==NULL )
+return( -1 );
+
+return( fv->rowoff*fv->colcnt );
 }

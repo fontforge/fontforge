@@ -519,6 +519,7 @@ typedef struct splinefont {
     char *comments;
     struct remap *remap;
     int tempuniqueid;
+    int top_enc;
 } SplineFont;
 
 /* mac styles. Useful idea we'll just steal it */
@@ -857,6 +858,7 @@ extern int hascomposing(SplineFont *sf,int u,SplineChar *sc);
 #if 0
 extern void SFFigureGrid(SplineFont *sf);
 #endif
+extern int FVTopEncoding(struct fontview *);
 
 struct cidmap;			/* private structure to encoding.c */
 extern int CID2NameEnc(struct cidmap *map,int cid, char *buffer, int len);

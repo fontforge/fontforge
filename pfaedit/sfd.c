@@ -722,6 +722,10 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 	fprintf( sfd, "DisplaySize: %d\n", sf->display_size );
     if ( sf->display_antialias!=0 )
 	fprintf( sfd, "AntiAlias: %d\n", sf->display_antialias );
+    if ( sf->fv!=NULL )
+	fprintf( sfd, "TopEncoding: %d\n", FVTopEncoding(sf->fv));
+    else if ( sf->top_enc!=-1 )
+	fprintf( sfd, "TopEncoding: %d\n", sf->top_enc);
     if ( sf->onlybitmaps!=0 )
 	fprintf( sfd, "OnlyBitmaps: %d\n", sf->onlybitmaps );
     if ( sf->gridsplines!=NULL ) {
@@ -1784,6 +1788,8 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    sf->pfminfo.pfmset = true;
 	} else if ( strmatch(tok,"DisplaySize:")==0 ) {
 	    getint(sfd,&sf->display_size);
+	} else if ( strmatch(tok,"TopEncoding:")==0 ) {
+	    getint(sfd,&sf->top_enc);
 	} else if ( strmatch(tok,"AntiAlias:")==0 ) {
 	    int temp;
 	    getint(sfd,&temp);
