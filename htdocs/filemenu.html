@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 10-Dec-2000 -->
-  <!-- AP: Last modified: 02-Nov-2002 -->
+  <!-- AP: Last modified: 06-Dec-2002 -->
   <TITLE>The File Menu</TITLE>
 </HEAD>
 <BODY>
@@ -34,6 +34,8 @@
     <A HREF="#Generate">Generate Fonts...</A>
   <LI>
     <A HREF="#Revert">Revert</A>
+  <LI>
+    <A HREF="#RevertGlyph">Revert Glyph</A>
   <LI>
     <A HREF="#Export">Export...</A>
   <LI>
@@ -191,6 +193,20 @@
     <A NAME="Revert">Revert</A>
   <DD>
     Rereads the font from the file on the disk. All changes are lost.
+  <DT>
+    <A NAME="RevertGlyph">Revert Glyph</A>
+  <DD>
+    Only available in the font and outline views.
+    Rereads the font from the sfd file on the disk searching for
+    a character in that file with the same name as the current character.
+    All changes to this character will be lost (but if the character has
+    references then any changes made to the characters being refered to will still be visible).
+    <P>
+    So if you have changed the name of the character this command will fail.<BR>
+    If the font did not come from an sfd file this command will fail.<BR>
+    If the font has been reencoded and the character has references this command may fail.<BR>
+    If you have made a global change to the font (like scaling it to a new em-size) then the
+    results may not be appropriate.
   <DT>
     <A NAME="Export">Export</A>...
   <DD>

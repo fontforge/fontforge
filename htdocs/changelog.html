@@ -11,12 +11,36 @@
 </H1>
 <UL>
   <LI>
-    ?-Dec-2002
+    06-Dec-2002
+    <UL>
+      <LI>
+	Fixed a problem where PfaEdit still picked bad fonts sometimes.
+      <LI>
+	Typo in format spec for character windows
+      <LI>
+	At Werner's suggestion:
+	<UL>
+	  <LI>The Transform dlg now preserves hints in the undo
+	  <LI>Added an indication of which layer was active
+	  <LI>Added an indication on the title bar that a character was changed
+	  <LI>Added a Revert Glyph command
+	  <LI>The location of the advance width pops up on the info line when the cursor moves over the advance width
+	  <LI>changed the Set Width command to get the right default value.
+	  <LI>There were some layout problems in the char info dlg.
+	</UL>
+      <LI>
+	Redid the configuration for mac os/x. I've just upgraded to the new
+	developers' tools and that fixed a lot of problems.
+    </UL>
+  <LI>
+    05-Dec-2002
     <UL>
       <LI>
 	Fixed a crash in menus, if the cursor was moved from a submenu (a cascaded menu)
 	to the menubar without passing through the main menu then a crash would
 	happen.
+      <LI>
+	Clicking in a menu above the first line will dismiss the menu.
       <LI>
 	Fixed a crash when generating postscript fonts.
       <LI>
@@ -26,9 +50,22 @@
 	It is now possible to switch between editing layers in the outline character
 	view by using the mnemonics displayed in the layers palette (even if the
 	layers palette is hidden).
+	<P>
+	Or by using the popup menu invoked by the third mouse button.
       <LI>
 	Rewrote Expand Stroke so that the caligraphic pen is no longer treated
 	as a line (it is now treated as a rectangle).
+      <LI>
+	Changed behavior of Next/Prev char so that they do not wrap in the
+	outline character view. Also added the encoding to the title.
+      <LI>
+	In the outline view made a seperate menu entry for Char Info and
+	removed it from "Get Info". Made Ctl-Shft-I invoke Char Info in all
+	views (Ctl-I will also invoke it everywhere but the outline view).
+      <LI>
+	Undo will now attempt to reset the modified bit on a character.
+	It will not attempt to reset the modified bit on the font as a whole
+	(there are too many things that can change without setting undo info).
     </UL>
   <LI>
     2-Dec-2002

@@ -1,100 +1,80 @@
 BEFORE INSTALLATION
- Before you install pfaedit under Mac OS/X you should first install the X window
- system. I did this as a two step process, first installing the XFree86 Darwin
- distribution,
-	ftp://ftp.xfree86.org/pub/XFree86/4.1.0/binaries/Darwin-ppc/
- (with docs at
-	http://www.xfree86.org/4.1.0/Darwin.html	and
-	http://www.xfree86.org/4.1.0/Install.html	)
- and then installing the XonX distribution on top of it
-	http://prdownloads.sourceforge.net/xonx/XDarwin1.0a2.tgz
+ Before you install pfaedit under Mac OS/X you should first install the X
+ window system. This is available at:
+	http://www.osxgnu.org/
 
  It is possible to use pfaedit without X, but in this case there is no user
- interface and you are limited to running scripts.
+ interface and you are limited to running scripts. (see below for details)
 
 INSTALLATION NOTES:
     Download the appropriate binary from
-    	http://pfaedit.sourceforge.net/Problems-MacOSX.html#binary
-    If it is a .tgz file then it should contain
-	A README file or two
-	pfaedit      -- the executable
-	pfaedit.1    --	the man page.
-	pfaedit-*.ui --	various user interface string files for different
-			languages
-    You should:
-	$ gunzip pfaedit_MacOSX*.tgz; tar xf pfaedit_MacOSX*.tar
-    	$ sudo -s
-	# mkdir -p /usr/local/bin /usr/local/man/man1 /usr/local/share/pfaedit
-	# mv pfaedit /usr/local/bin
-	# mv pfaedit.1 /usr/local/man/man1
-	# mv *.ui /usr/local/share/pfaedit
+        http://pfaedit.sourceforge.net/MacOSX.html#binary
+    There should be a mac package there which will do the installation for you.
     You may need to add /usr/local/bin to your PATH environment variable (and
-    /usr/local/man to your MANPATH environment variable)
+    /usr/local/share/man to your MANPATH environment variable)
     If your shell is tcsh (or csh), edit ~/.cshrc and add:
-    	setenv PATH ${PATH}:/usr/local/bin
-	if ( "$MANPATH" == "" ) then
-	    setenv MANPATH /usr/local/man
-	else
-	    setenv MANPATH ${MANPATH}:/usr/local/man
-	endif
+        setenv PATH ${PATH}:/usr/local/bin
+        if ( "$MANPATH" == "" ) then
+            setenv MANPATH /usr/local/man
+        else
+            setenv MANPATH ${MANPATH}:/usr/local/share/man
+        endif
     If your shell is bash then edit your ~/.bashrc and add
-    	PATH=${PATH}:/usr/local/bin
-	MANPATH=${MANPATH:-}:/usr/local/man ; export MANPATH
+        PATH=${PATH}:/usr/local/bin   
+        MANPATH=${MANPATH:-}:/usr/local/share/man ; export MANPATH
 
 BUILDING
     Just download the file pfaedit_full-*.tgz which you will find on
-	http://pfaedit.sourceforge.net/index.html#source
+        http://pfaedit.sourceforge.net/index.html#source
     Move it somewhere appropriate (/usr/local/src perhaps?) and type:
-	$ gunzip pfaedit_full-*.tgz ; tar xf pfaedit_full-*.tar
-	$ cd pfaedit
-	$ configure.static
-	$ make
-	$ sudo -s
-	# make install
+        $ gunzip pfaedit_full-*.tgz ; tar xf pfaedit_full-*.tar
+        $ cd pfaedit
+        $ configure
+        $ make
+        $ sudo -s
+        # make install
 
 More complex installations
     "make install" will also install a few other things which are not part of
     the standard package, but which are useful for some people.
     CIDMAPS:
-	If you are going to be editing CID keyed fonts you should also down-
-	load my cidmap files from
-		http://pfaedit.sourceforge.net/cidmaps.tgz
-	put that file in the same place as you put pfaedit_full*.tgz, then
-	    $ mkdir -p pfaedit/cidmaps
-	    $ mv cidmaps.tgz pfaedit/cidmaps
-	    $ cd pfaedit/cidmaps
-	    $ gunzip *.tgz ; tar xf *.tar
-	    $ cd ../..
-	And then proceed to do the normal install.
-	Or install them manually:
-	    # mkdir -p /usr/local/share/pfaedit
-	    # mv pfaedit/cidmaps/* /usr/local/share/pfaedit
+        If you are going to be editing CID keyed fonts you should also down-
+        load my cidmap files from
+                http://pfaedit.sourceforge.net/cidmaps.tgz
+        put that file in the same place as you put pfaedit_full*.tgz, then
+            $ mkdir -p pfaedit/cidmaps
+            $ mv cidmaps.tgz pfaedit/cidmaps
+            $ cd pfaedit/cidmaps
+            $ gunzip *.tgz ; tar xf *.tar
+            $ cd ../..
+        And then proceed to do the normal install.
+        Or install them manually:
+            # mkdir -p /usr/local/share/pfaedit
+            # mv pfaedit/cidmaps/* /usr/local/share/pfaedit
     DOCUMENTATION:
-	(On the mac this probably won't work since I can't figure out how to
-	run internet explorer, the most likely browser)
-	You can choose to install PfaEdit's documentation on your system, then
-	pressing the [Help] or [F1] key within PfaEdit will go to the local
-	docs rather than those on the web.
-	Download the doc bundle from
-	    http://pfaedit.sourceforge.net/index.html#docs
-	Then (assuming you have not changed the install prefix)
-	    # mkdir -p /usr/local/share/doc/pfaedit
-	    # mv pfaedit_htdocs-*.tgz /usr/local/share/doc/pfaedit
-	    # cd /usr/local/share/doc/pfaedit
-	    # gunzip *.tgz; tar xf *.tar
+        You can choose to install PfaEdit's documentation on your system, then
+        pressing the [Help] or [F1] key within PfaEdit will go to the local
+        docs rather than those on the web.
+        Download the doc bundle from
+            http://pfaedit.sourceforge.net/index.html#docs
+        Then (assuming you have not changed the install prefix)
+            # mkdir -p /usr/local/share/doc/pfaedit
+            # mv pfaedit_htdocs-*.tgz /usr/local/share/doc/pfaedit
+            # cd /usr/local/share/doc/pfaedit
+            # gunzip *.tgz; tar xf *.tar
 
 BUILDING without X11
     PfaEdit can be built without X11. You will probably only want to do this
     if your system lacks X (in which case configure should figure that out and
     do it automagically). But if, for some strange reason you wish to build a
     non-X version on a machine with X type:
-	$ configure --without-x
-    during the build process instead of "$ configure"
+        $ configure --without-x
+    during the build process instead of "$ configure"      
 
 RUNNING
  Before running PfaEdit you must start XDarwin. It lives in the Applications
  folder, and you start it by double clicking on it.
- You can start pfaedit either from one of the xterms it creates, or from a
+ You can start pfaedit either from one of the xterms it creates, or from a 
  Terminal window. If you start from a Terminal window you must first type:
 $ setenv DISPLAY :0
 
@@ -116,36 +96,37 @@ invoking menu items (that is both ^Q and Cmd-Q will cause PfaEdit to quit).
 CAVEATS
  1) PfaEdit does not conform to Apple's Human Interface Guidelines, and never
     will.
- 2) The default window manager (twm) does not work well with PfaEdit when
+ 2) The default window manager (twm) does not work well when 
     run in Rootless mode.
     PfaEdit allows the window manager to position its windows for it, and
     twm does this by allowing the user to click anywhere on the screen to
     mark the upper left corner of the window. Unfortunately if you click on
     top of an Aqua window (ie. anything that isn't X window) Aqua will put
-    X into the background and the click will be lost to X.
+    X into the background and the click will be lost to X.   
 
-    You can only open a window if you position it so that it's upper left
-    corner is in one of X's already existing windows.
+    So in rootless mode you can only open a window if you position it so
+   that it's upper left  corner is in one of X's already existing windows.
 
 Please report any bugs to
-	pfaedit-devel@lists.sourceforge.net
+        pfaedit-devel@lists.sourceforge.net
 
 DOCUMENTATION
-	http://pfaedit.sourceforge.net/overview.html
+        http://pfaedit.sourceforge.net/overview.html
 
 FONTS UNDER Mac OS/X
  Macintosh fonts live in /Library/Fonts, /System/Library/Fonts or
- ~/Library/Fonts. On Mac OS/X PfaEdit can edit .dfont and resource fork
+ ~/Library/Fonts. On Mac OS/X PfaEdit can edit .dfont and resource fork      
  fonts. On other systems PfaEdit can only edit Mac .dfonts (the concept
  of a resource fork is Mac specific).
 
- (X11 fonts on the mac are completely seperate from the mac fonts.
+ (X11 fonts on the mac are completely seperate from the mac fonts.       
  they reside somewhere in the X tree).
 
 FONTS UNDER Mac OS/9
  Note Bene: As far as I know PfaEdit has not been ported to Mac OS/9 (or 8 or 7)
 
  Fonts live in :System Folder:Fonts: They are stored in resource forks, which
- means that if you want to work with them you must first wrap them up with
+ means that if you want to work with them you must first wrap them up with 
  either macbinary or binhex (Fetch may be used to do either conversion as you
  transfer the font to a different system to edit it).
+
