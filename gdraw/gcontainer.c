@@ -577,7 +577,10 @@ return;
 	}
     }
 }
-    
+
+static GTopLevelD *oldtd = NULL;
+static GGadget *oldgfocus = NULL;
+
 static int _GWidget_TopLevel_eh(GWindow gw, GEvent *event) {
     GTopLevelD *td = (GTopLevelD *) (gw->widget_data);
     int ret;
@@ -587,7 +590,7 @@ return( true );
 
     if ( event->type==et_focus ) {
 	if ( event->u.focus.gained_focus ) {
-	    if ( gw->is_toplevel && !gw->is_popup ) {
+	    if ( gw->is_toplevel && !gw->is_popup && !gw->is_dying ) {
 		if ( last_input_window!=gw )
 		    previous_focus_window = last_input_window;
 		current_focus_window = gw;
@@ -595,7 +598,7 @@ return( true );
 	} else if ( current_focus_window==gw ) {
 	    current_focus_window = NULL;
 	}
-	if ( !td->ispalette && gw->is_visible && event->u.focus.gained_focus ) {
+	if ( !td->ispalette && gw->is_visible && event->u.focus.gained_focus && !gw->is_dying ) {
 	    GWindow dlg = GDrawGetRedirectWindow(NULL);
 	    if ( dlg==NULL || dlg==gw ) {
 		/* If top level window loses the focus all its palettes go invisible */
@@ -619,25 +622,26 @@ return( true );
 		last_paletted_focus_window = gw;
 	    }
 	}
-	if ( td->gfocus!=NULL && td->gfocus->funcs->handle_focus!=NULL )
+	if ( !gw->is_dying && td->gfocus!=NULL && td->gfocus->funcs->handle_focus!=NULL ) {
+ { oldtd = td; oldgfocus = td->gfocus; }	/* Debug!!!! */
 	    (td->gfocus->funcs->handle_focus)(td->gfocus,event);
-	else if ( td->wfocus!=NULL ) {
+	} else if ( !gw->is_dying && td->wfocus!=NULL ) {
 	    if ( td->wfocus->widget_data!=NULL ) {
 		if ( td->wfocus->widget_data->e_h!=NULL )
 		    (td->wfocus->widget_data->e_h)(td->wfocus,event);
 	    } else if ( td->wfocus->eh!=NULL )
 		(td->wfocus->eh)(td->wfocus,event);
 	}
-	if ( td->e_h!=NULL )
+	if ( !gw->is_dying && td->e_h!=NULL )
 	    (td->e_h)(gw,event);
 return( true );
-    } else if ( event->type == et_crossing ) {
+    } else if ( !gw->is_dying && event->type == et_crossing ) {
 	GGadgetEndPopup();
 	GiveToAll((GContainerD *) td,event);
 return( true );
     } else if ( event->type == et_char || event->type == et_charup ) {
 return( _GWidget_TopLevel_Key(gw,gw,event));
-    } else if ( event->type == et_resize ) {
+    } else if ( !gw->is_dying && event->type == et_resize ) {
 	GRect r;
 	if ( td->gmenubar!=NULL ) {
 	    GGadgetGetSize(td->gmenubar,&r);
@@ -676,14 +680,14 @@ return( _GWidget_TopLevel_Key(gw,gw,event));
     } else if ( event->type == et_close && td->ispalette ) {
 	GDrawSetVisible(gw,false);
 return( true );
-    } else if ( event->type == et_visibility ) {
+    } else if ( !gw->is_dying && event->type == et_visibility ) {
 	if ( broken_palettes )
 	    /* Do Nothing */;
 	else if ( td->ispalette && event->u.visibility.state!=vs_unobscured ) {
 	    if ( !GDrawIsAbove(gw,td->owner->w))
 		GDrawRaiseAbove(gw,td->owner->w);
 	}
-    } else if ( event->type == et_map && !td->ispalette ) {
+    } else if ( !gw->is_dying && event->type == et_map && !td->ispalette ) {
 	/* If top level window goes invisible all its palettes follow */
 	/* if it goes visible then all palettes that are supposed to be vis */
 	/*  follow */
@@ -1098,3 +1102,21 @@ return(false);
 return( td->isdocked );
 }
 #endif
+
+void GWidgetReparentWindow(GWindow child,GWindow newparent, int x,int y) {
+    if ( !child->is_toplevel ) {
+	GWindow oldparent, gadgetparent;
+	for ( oldparent = child; oldparent->parent!=NULL && !oldparent->is_toplevel; oldparent=oldparent->parent );
+	if ( oldparent!=child ) {
+	    GTopLevelD *td = (GTopLevelD *) (oldparent->widget_data);
+	    if ( td->gfocus!=NULL ) {
+		for ( gadgetparent = td->gfocus->base;
+			gadgetparent!=child &&
+			gadgetparent!=NULL; gadgetparent = gadgetparent->parent );
+		if ( gadgetparent==child )
+		    td->gfocus = NULL;
+	    }
+	}
+    }
+    GDrawReparentWindow(child,newparent,x,y);
+}

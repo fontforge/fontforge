@@ -64,7 +64,7 @@ static void ReparentFixup(GWindow child,GWindow parent, int x, int y, int width,
 	/* we asked for */
 	/* I have tried reparenting it twice, unmapping & reparenting. Nothing works */
 
-    GDrawReparentWindow(child,parent,x,y);
+    GWidgetReparentWindow(child,parent,x,y);
     if ( width!=0 )
 	GDrawResize(child,width,height);
     GDrawSetWindowBorder(child,1,GDrawGetDefaultForeground(NULL));

@@ -86,6 +86,7 @@ void GWidgetHidePalettes(void);
 void GPaletteDock(GWindow palette,int x, int y);
 void GPaletteUndock(GWindow palette,int x, int y);
 int GPaletteIsDocked(GWindow palette);
+void GWidgetReparentWindow(GWindow child,GWindow newparent, int x,int y);
 
 struct ggadget *GWidgetGetControl(GWindow gw, int cid);
 GWindow GWidgetGetParent(GWindow gw);
