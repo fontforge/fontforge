@@ -935,6 +935,30 @@ return( i );
 return( i );
 }
 
+int ScriptInSLI(SplineFont *sf,uint32 script,int sli) {
+    struct script_record *sr;
+    int i;
+
+    if ( sli>=sf->sli_cnt || sli<0 )
+return( false );
+    /* some things, digits, marks of punctuation, etc. aren't really in any */
+    /*  script because they are used by a lot of different scripts. So as long*/
+    /*  as the sli is valid, assume they just work */
+    if ( script==DEFAULT_SCRIPT )
+return( true );
+
+    sr = sf->script_lang[sli];
+    for ( i=0; sr[i].script!=0; ++i )
+	if ( sr[i].script==script )
+return( true );
+
+return( false );
+}
+
+int SCScriptInSLI(SplineFont *sf,SplineChar *sc,int sli) {
+return( ScriptInSLI(sf,SCScriptFromUnicode(sc),sli));
+}
+
 unichar_t *ScriptLangLine(struct script_record *sr) {
     int i,j, tot=0;
     unichar_t *line, *pt;

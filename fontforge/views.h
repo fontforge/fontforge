@@ -461,7 +461,7 @@ typedef struct fontview {
     int width, height;		/* of v */
     int16 infoh,mbh;
     int16 lab_height;
-    int16 colcnt, rowcnt;
+    int16 colcnt, rowcnt;		/* of display window */
     int32 rowoff, rowltot;		/* Can be really big in full unicode */
     int16 cbw,cbh;			/* width/height of a character box */
     struct fontview *next;		/* Next on list of open fontviews */
@@ -1159,6 +1159,7 @@ extern int DVChar(DebugView *dv, GEvent *e);
 extern void ShowKernClasses(SplineFont *sf,MetricsView *mv,int isv);
 extern void KCLD_End(struct kernclasslistdlg *kcld);
 extern void KCLD_MvDetach(struct kernclasslistdlg *kcld,MetricsView *mv);
+extern void KernPairD(SplineFont *sf,SplineChar *sc1,SplineChar *sc2,int isv);
 
 extern void FVSelectByPST(FontView *fv);
 

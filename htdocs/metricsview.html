@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 13-Oct-2004 -->
+  <!-- AP: Last modified: 9-Jan-2005 -->
   <TITLE>The Metrics View</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -46,7 +46,9 @@ its origin) and a blue line on its right (its width). You may change the
 width by dragging this line. You may change the left side bearing (lbearing)
 of the glyph by clicking on the glyph and dragging it left or right. You
 may change the kerning between this glyph and the one to its left by dragging
-the green line around.
+the green line around. (If you wish to create a <A HREF="#DeviceTable">Device
+Table</A> for small pixel sizes you must use the
+<A HREF="metricsview.html#kernpair">Kern Pair Closeup dialog</A>)
 <TABLE BORDER CELLPADDING="2">
   <CAPTION>
     Kerning
@@ -74,8 +76,8 @@ glyph alone.
 <STRONG>Note also </STRONG>that neither Arabic ligature nor form (initial,
 terminal, medial, isolated) determination will be done in the display area
 (though they will be done in the text field above). If you want to see correct
-form you must enter the unicode character for that form (as opposed to the
-character for the letter), or use the
+form you must enter the unicode code for that form (as opposed to the character
+for the letter), or use the
 <A HREF="viewmenu.html#Substitutions">View-&gt;Substitutions</A> command.
 <P>
 <IMG SRC="VerticalMetrics.png" WIDTH="270" HEIGHT="573" ALIGN="Right"><IMG
@@ -506,12 +508,56 @@ the glyphs that make up the classes which intersect at that point. If you
 click on a kerning value in the display, the dlg changes to a kerning dialog.
 <BR Clear=ALL>
 <P>
-<IMG SRC="kerningclass-kern.png" WIDTH="373" HEIGHT="318" ALIGN="Right">The
+<IMG SRC="kerningclass-kern.png" WIDTH="515" HEIGHT="337" ALIGN="Right">The
 kerning dialog displays a representative glyph from each class and allows
 you to adjust the kerning between them (and all other class members of each
 class). You can select which glyphs to display in the pulldown menus. You
 can enter a new kerning offset by typing in a value, or you can click on
-the second glyph of the kern pair and drag it around.<BR>
+the second glyph of the kern pair and drag it around.
+<P>
+You can also create something called a "<A NAME="DeviceTable">Device
+Table</A>", a name which is not very informative. When a font is rasterized
+at small pixel sizes rounding errors become important, and this is particularly
+true of kerning, there are three things that get rounded: The locations of
+the outlines (to fit them to a pixel grid), the advance widths of the glyphs,
+and the kerning value itself. The result is that something which looks perfectly
+kerned at 150pixels may be either too close or too far apart at 12pixels
+<TABLE ALIGN=CENTER CELLPADDING="2">
+  <TR>
+    <TD><IMG SRC="kern-We-150.png" WIDTH="170" HEIGHT="131"></TD>
+    <TD><P ALIGN=Center>
+      <IMG SRC="kern-We-12.png" WIDTH="32" HEIGHT="26"></TD>
+  </TR>
+  <TR VALIGN="Top">
+    <TD><P ALIGN=Center>
+      Kerning at 150 pixels</TD>
+    <TD><P ALIGN=Center>
+      Kerning at 12 pixels<BR>
+      (magnified by 2)</TD>
+  </TR>
+</TABLE>
+<P>
+You could adjust the kerning value slightly until it looked right at 12pixels,
+of course, but that might break it at 14 pixels. So OpenType has the concept
+of a Device Table which allows you to add small corrections at particular
+point sizes. Simply set the Display Size to a small, but common, value (say
+10-24) and examine the kerning. If the results are ugly type a value into
+the "Device Table Correction" field, and this will change the spacing by
+that many pixels at the given display size (and no other). In the case above
+a correction of 1 would be appropriate for the 12px display. 
+<P>
+Because small pixel sizes can be hard to examine you can change the magnification
+(rasterized at the same size, but each pixel made twice as big).
+<P>
+<A HREF="metricsview.html#DeviceTable">Device Tables</A> may also be created
+in a number of other cases. The example above was for a kerning class.
+<A NAME="kernpair">Kerning pairs</A> may also have tables attached to them
+with the "Kern Pair Closeup" dialog, which looks very similar to the Kerning
+Class dialog above.
+<P ALIGN=Center>
+<IMG SRC="kernpairclose.png" WIDTH="519" HEIGHT="289">
+<P>
+<BR>
 <P>
 <P>
 <P ALIGN=Center>

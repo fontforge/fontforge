@@ -375,7 +375,10 @@ static void MVSelectChar(MetricsView *mv, int i) {
     mv->perchar[i].selected = true;
     if ( mv->perchar[i].name!=NULL )
 	GGadgetSetEnabled(mv->perchar[i].name,false);
-    if ( mv->sli_list!=NULL && SCScriptFromUnicode(mv->perchar[i].sc)!=DEFAULT_SCRIPT ) {
+    if ( mv->sli_list!=NULL && SCScriptInSLI(mv->fv->sf,mv->perchar[i].sc,mv->cur_sli)) {
+	/* The script for the current character is in the current sli */
+	/*  use it without change */
+    } else if ( mv->sli_list!=NULL && SCScriptFromUnicode(mv->perchar[i].sc)!=DEFAULT_SCRIPT ) {
 	int sli_cnt = SLICount(mv->fv->sf);
 	int sli = SCDefaultSLI(mv->fv->sf,mv->perchar[i].sc);
 	mv->cur_sli = sli;
@@ -894,6 +897,15 @@ return( true );
 			psc->vkerns = kp;
 		    }
 		}
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+		/* If we change the kerning offset, then any pixel corrections*/
+		/*  will no longer apply (they only had meaning with the old  */
+		/*  offset) so free the device table, if any */
+		if ( kp->off!=val ) {
+		    DeviceTableFree(kp->adjust);
+		    kp->adjust = NULL;
+		}
+#endif
 		kp->off = val;
 		kp->sli = mv->cur_sli;
 	    }
@@ -2366,6 +2378,21 @@ static void MVMenuVKernFromHKern(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FVVKernFromHKern(mv->fv);
 }
 
+static void MVMenuKPCloseup(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    SplineChar *sc1=NULL, *sc2=NULL;
+    int i;
+
+    for ( i=0; i<mv->charcnt; ++i )
+	if ( mv->perchar[i].selected ) {
+	    sc1 = mv->perchar[i].sc;
+	    if ( i+1<mv->charcnt )
+		sc2 = mv->perchar[i+1].sc;
+    break;
+	}
+    KernPairD(mv->fv->sf,sc1,sc2,mv->vertical);
+}
+
 static void PosSubsMenuFree(GMenuItem *mi) {
     int i;
 
@@ -2813,6 +2840,7 @@ static GMenuItem mtlist[] = {
     { { (unichar_t *) _STR_KernByClasses, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'T' }, '\0', ksm_control, NULL, NULL, MVMenuKernByClasses },
     { { (unichar_t *) _STR_VKernByClasses, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'T' }, '\0', ksm_control, NULL, NULL, MVMenuVKernByClasses, MID_VKernClass },
     { { (unichar_t *) _STR_VKernFromHKern, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'T' }, '\0', ksm_control, NULL, NULL, MVMenuVKernFromHKern, MID_VKernFromHKern },
+    { { (unichar_t *) _STR_KernPairCloseup, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'T' }, '\0', ksm_control, NULL, NULL, MVMenuKPCloseup },
     { NULL }
 };
 

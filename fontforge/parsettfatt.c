@@ -301,8 +301,67 @@ static void readvaluerecord(struct valuerecord *vr,int vf,FILE *ttf) {
 	vr->offYadvanceDev = getushort(ttf);
 }
 
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+static void ReadDeviceTable(FILE *ttf,DeviceTable *adjust,uint32 devtab) {
+    long here;
+    int pack;
+    int w,b,i,c;
+
+    if ( devtab==0 )
+return;
+    here = ftell(ttf);
+    fseek(ttf,devtab,SEEK_SET);
+    adjust->first_pixel_size = getushort(ttf);
+    adjust->last_pixel_size  = getushort(ttf);
+    pack = getushort(ttf);
+    if ( adjust->first_pixel_size>adjust->last_pixel_size || pack==0 || pack>3 ) {
+	fprintf(stderr,"Bad device table\n" );
+	adjust->first_pixel_size = adjust->last_pixel_size = 0;
+    } else {
+	c = adjust->last_pixel_size-adjust->first_pixel_size+1;
+	adjust->corrections = galloc(c);
+	if ( pack==1 ) {
+	    for ( i=0; i<c; i+=8 ) {
+		w = getushort(ttf);
+		for ( b=0; b<8 && i+b<c; ++b )
+		    adjust->corrections[i+b] = ((int16) ((w<<(b*2))&0xc000))>>14;
+	    }
+	} else if ( pack==2 ) {
+	    for ( i=0; i<c; i+=4 ) {
+		w = getushort(ttf);
+		for ( b=0; b<4 && i+b<c; ++b )
+		    adjust->corrections[i+b] = ((int16) ((w<<(b*4))&0xf000))>>12;
+	    }
+	} else {
+	    for ( i=0; i<c; ++i )
+		adjust->corrections[i] = (int8) getc(ttf);
+	}
+    }
+    fseek(ttf,here,SEEK_SET);
+}
+
+static ValDevTab *readValDevTab(FILE *ttf,struct valuerecord *vr,uint32 base) {
+    ValDevTab *ret;
+
+    if ( vr->offXplaceDev==0 && vr->offYplaceDev==0 &&
+	    vr->offXadvanceDev==0 && vr->offYadvanceDev==0 )
+return( NULL );
+    ret = chunkalloc(sizeof(ValDevTab));
+    if ( vr->offXplaceDev!=0 )
+	ReadDeviceTable(ttf,&ret->xadjust,base + vr->offXplaceDev);
+    if ( vr->offYplaceDev!=0 )
+	ReadDeviceTable(ttf,&ret->yadjust,base + vr->offYplaceDev);
+    if ( vr->offXadvanceDev!=0 )
+	ReadDeviceTable(ttf,&ret->xadv,base + vr->offXadvanceDev);
+    if ( vr->offYadvanceDev!=0 )
+	ReadDeviceTable(ttf,&ret->yadv,base + vr->offYadvanceDev);
+return( ret );
+}
+#endif
+
 static void addPairPos(struct ttfinfo *info, int glyph1, int glyph2,
-	struct lookup *lookup,struct valuerecord *vr1,struct valuerecord *vr2) {
+	struct lookup *lookup,struct valuerecord *vr1,struct valuerecord *vr2,
+	uint32 base,FILE *ttf) {
     
     if ( glyph1<info->glyph_cnt && glyph2<info->glyph_cnt ) {
 	PST *pos = chunkalloc(sizeof(PST));
@@ -322,13 +381,18 @@ static void addPairPos(struct ttfinfo *info, int glyph1, int glyph2,
 	pos->u.pair.vr[1].yoff = vr2->yplacement;
 	pos->u.pair.vr[1].h_adv_off = vr2->xadvance;
 	pos->u.pair.vr[1].v_adv_off = vr2->yadvance;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	pos->u.pair.vr[0].adjust = readValDevTab(ttf,vr1,base);
+	pos->u.pair.vr[1].adjust = readValDevTab(ttf,vr2,base);
+#endif
     } else
 	fprintf( stderr, "Bad pair position: glyphs %d & %d should have been < %d\n",
 		glyph1, glyph2, info->glyph_cnt );
 }
 
 static int addKernPair(struct ttfinfo *info, int glyph1, int glyph2,
-	int16 offset, uint16 sli, uint16 flags,int isv) {
+	int16 offset, uint32 devtab, uint16 sli, uint16 flags,int isv,
+	FILE *ttf) {
     KernPair *kp;
     if ( glyph1<info->glyph_cnt && glyph2<info->glyph_cnt ) {
 	for ( kp=isv ? info->chars[glyph1]->vkerns : info->chars[glyph1]->kerns;
@@ -342,6 +406,12 @@ static int addKernPair(struct ttfinfo *info, int glyph1, int glyph2,
 	    kp->off = offset;
 	    kp->sli = sli;
 	    kp->flags = flags;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	    if ( devtab!=0 ) {
+		kp->adjust = chunkalloc(sizeof(DeviceTable));
+		ReadDeviceTable(ttf,kp->adjust,devtab);
+	    }
+#endif
 	    if ( isv ) {
 		kp->next = info->chars[glyph1]->vkerns;
 		info->chars[glyph1]->vkerns = kp;
@@ -400,19 +470,25 @@ return;
 		readvaluerecord(&vr1,vf1,ttf);
 		readvaluerecord(&vr2,vf2,ttf);
 		if ( isv==2 )
-		    addPairPos(info, glyphs[i], glyph2,lookup,&vr1,&vr2);
+		    addPairPos(info, glyphs[i], glyph2,lookup,&vr1,&vr2, stoffset,ttf);
 		else if ( isv ) {
-		    if ( addKernPair(info, glyphs[i], glyph2, vr1.yadvance,lookup->script_lang_index,lookup->flags,isv))
-			addPairPos(info, glyphs[i], glyph2,lookup,&vr1,&vr2);
+		    if ( addKernPair(info, glyphs[i], glyph2, vr1.yadvance,
+			    vr1.offYadvanceDev==0?0:stoffset+vr1.offYadvanceDev,
+			    lookup->script_lang_index,lookup->flags,isv,ttf))
+			addPairPos(info, glyphs[i], glyph2,lookup,&vr1,&vr2, stoffset,ttf);
 			/* If we've already got kern data for this pair of */
 			/*  glyphs, then we can't make it be a true KernPair */
 			/*  but we can save the info as a pst_pair */
 		} else if ( lookup->flags&1 ) {	/* R2L */
-		    if ( addKernPair(info, glyphs[i], glyph2, vr2.xadvance,lookup->script_lang_index,lookup->flags,isv))
-			addPairPos(info, glyphs[i], glyph2,lookup,&vr1,&vr2);
+		    if ( addKernPair(info, glyphs[i], glyph2, vr2.xadvance,
+			    vr2.offXadvanceDev==0?0:stoffset+vr2.offXadvanceDev,
+			    lookup->script_lang_index,lookup->flags,isv,ttf))
+			addPairPos(info, glyphs[i], glyph2,lookup,&vr1,&vr2,stoffset,ttf);
 		} else {
-		    if ( addKernPair(info, glyphs[i], glyph2, vr1.xadvance,lookup->script_lang_index,lookup->flags,isv))
-			addPairPos(info, glyphs[i], glyph2,lookup,&vr1,&vr2);
+		    if ( addKernPair(info, glyphs[i], glyph2, vr1.xadvance,
+			    vr1.offXadvanceDev==0?0:stoffset+vr1.offXadvanceDev,
+			    lookup->script_lang_index,lookup->flags,isv,ttf))
+			addPairPos(info, glyphs[i], glyph2,lookup,&vr1,&vr2,stoffset,ttf);
 		}
 	    }
 	}
@@ -444,6 +520,9 @@ return;
 	    kc->sli = lookup->script_lang_index;
 	    kc->flags = lookup->flags;
 	    kc->offsets = galloc(c1_cnt*c2_cnt*sizeof(int16));
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	    kc->adjusts = gcalloc(c1_cnt*c2_cnt,sizeof(DeviceTable));
+#endif
 	    kc->firsts = ClassToNames(info,c1_cnt,class1,info->glyph_cnt);
 	    kc->seconds = ClassToNames(info,c2_cnt,class2,info->glyph_cnt);
 	    for ( i=0; i<c1_cnt; ++i) {
@@ -456,6 +535,18 @@ return;
 			kc->offsets[i*c2_cnt+j] = vr2.xadvance;
 		    else
 			kc->offsets[i*c2_cnt+j] = vr1.xadvance;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+		    if ( isv ) {
+			if ( vr1.offYadvanceDev!=0 )
+			    ReadDeviceTable(ttf,&kc->adjusts[i*c2_cnt+j],stoffset+vr1.offYadvanceDev);
+		    } else if ( lookup->flags&1 )	{ /* R2L */
+			if ( vr2.offXadvanceDev!=0 )
+			    ReadDeviceTable(ttf,&kc->adjusts[i*c2_cnt+j],stoffset+vr2.offXadvanceDev);
+		    } else {
+			if ( vr1.offXadvanceDev!=0 )
+			    ReadDeviceTable(ttf,&kc->adjusts[i*c2_cnt+j],stoffset+vr1.offXadvanceDev);
+		    }
+#endif
 		}
 	    }
 	} else {
@@ -470,7 +561,7 @@ return;
 			    if ( class1[k]==i )
 				for ( l=0; l<info->glyph_cnt; ++l )
 				    if ( class2[l]==j )
-					addPairPos(info, k,l,lookup,&vr1,&vr2);
+					addPairPos(info, k,l,lookup,&vr1,&vr2,stoffset,ttf);
 		}
 	    }
 	}
@@ -478,12 +569,39 @@ return;
     }
 }
 
+static AnchorPoint *readAnchorPoint(FILE *ttf,uint32 base,AnchorClass *class,
+	enum anchor_type type,AnchorPoint *last) {
+    AnchorPoint *ap;
+    int format;
+
+    ap = chunkalloc(sizeof(AnchorPoint));
+    ap->anchor = class;
+    /* All anchor types have the same initial 3 entries, format */
+    /*  x,y pos. If format==3 may also have device tables */
+    format = getushort(ttf);
+    ap->me.x = (int16) getushort(ttf);
+    ap->me.y = (int16) getushort(ttf);
+    ap->type = type;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    if ( format==3 ) {
+	int devoff;
+	devoff = getushort(ttf);
+	if ( devoff!=0 )
+	    ReadDeviceTable(ttf,&ap->xadjust,base);
+	devoff = getushort(ttf);
+	if ( devoff!=0 )
+	    ReadDeviceTable(ttf,&ap->yadjust,base);
+    }
+#endif
+    ap->next = last;
+return( ap );
+}
+
 static void gposCursiveSubTable(FILE *ttf, int stoffset, struct ttfinfo *info,struct lookup *lookup) {
     int coverage, cnt, format, i;
     struct ee_offsets { int entry, exit; } *offsets;
     uint16 *glyphs;
     AnchorClass *class;
-    AnchorPoint *ap;
     SplineChar *sc;
 
     format=getushort(ttf);
@@ -514,29 +632,14 @@ return;
     for ( i=0; i<cnt; ++i ) {
 	sc = info->chars[glyphs[i]];
 	if ( offsets[i].entry!=0 ) {
-	    ap = chunkalloc(sizeof(AnchorPoint));
-	    ap->anchor = class;
 	    fseek(ttf,stoffset+offsets[i].entry,SEEK_SET);
-	    /* All anchor types have the same initial 3 entries, and I only care */
-	    /*  about two of them, so I can ignore all the complexities of the */
-	    /*  format type */
-	    /* format = */ getushort(ttf);
-	    ap->me.x = (int16) getushort(ttf);
-	    ap->me.y = (int16) getushort(ttf);
-	    ap->type = at_centry;
-	    ap->next = sc->anchor;
-	    sc->anchor = ap;
+	    sc->anchor = readAnchorPoint(ttf,stoffset,class,
+		    at_centry,sc->anchor);
 	}
 	if ( offsets[i].exit!=0 ) {
-	    ap = chunkalloc(sizeof(AnchorPoint));
-	    ap->anchor = class;
 	    fseek(ttf,stoffset+offsets[i].exit,SEEK_SET);
-	    /* format = */ getushort(ttf);
-	    ap->me.x = (int16) getushort(ttf);
-	    ap->me.y = (int16) getushort(ttf);
-	    ap->type = at_cexit;
-	    ap->next = sc->anchor;
-	    sc->anchor = ap;
+	    sc->anchor = readAnchorPoint(ttf,stoffset,class,
+		    at_cexit,sc->anchor);
 	}
     }
     free(offsets);
@@ -550,7 +653,6 @@ static AnchorClass **MarkGlyphsProcessMarks(FILE *ttf,int markoffset,
     unichar_t ubuf[50];
     int i, cnt;
     struct mr { uint16 class, offset; } *at_offsets;
-    AnchorPoint *ap;
     SplineChar *sc;
 
     for ( i=0; i<classcnt; ++i ) {
@@ -593,18 +695,9 @@ static AnchorClass **MarkGlyphsProcessMarks(FILE *ttf,int markoffset,
 	sc = info->chars[markglyphs[i]];
 	if ( sc==NULL || at_offsets[i].offset==0 )
     continue;
-	ap = chunkalloc(sizeof(AnchorPoint));
-	ap->anchor = classes[at_offsets[i].class];
 	fseek(ttf,markoffset+at_offsets[i].offset,SEEK_SET);
-	/* All anchor types have the same initial 3 entries, and I only care */
-	/*  about two of them, so I can ignore all the complexities of the */
-	/*  format type */
-	/* format = */ getushort(ttf);
-	ap->me.x = (int16) getushort(ttf);
-	ap->me.y = (int16) getushort(ttf);
-	ap->type = at_mark;
-	ap->next = sc->anchor;
-	sc->anchor = ap;
+	sc->anchor = readAnchorPoint(ttf,markoffset,classes[at_offsets[i].class],
+		at_mark,sc->anchor);
     }
     free(at_offsets);
 return( classes );
@@ -616,7 +709,6 @@ static void MarkGlyphsProcessBases(FILE *ttf,int baseoffset,
     int basecnt,i, j, ibase;
     uint16 *offsets;
     SplineChar *sc;
-    AnchorPoint *ap;
 
     fseek(ttf,baseoffset,SEEK_SET);
     basecnt = getushort(ttf);
@@ -631,17 +723,8 @@ static void MarkGlyphsProcessBases(FILE *ttf,int baseoffset,
     continue;
 	for ( j=0; j<classcnt; ++j ) if ( offsets[ibase+j]!=0 ) {
 	    fseek(ttf,baseoffset+offsets[ibase+j],SEEK_SET);
-	    ap = chunkalloc(sizeof(AnchorPoint));
-	    ap->anchor = classes[j];
-	    /* All anchor types have the same initial 3 entries, and I only care */
-	    /*  about two of them, so I can ignore all the complexities of the */
-	    /*  format type */
-	    /* format = */ getushort(ttf);
-	    ap->me.x = (int16) getushort(ttf);
-	    ap->me.y = (int16) getushort(ttf);
-	    ap->type = at;
-	    ap->next = sc->anchor;
-	    sc->anchor = ap;
+	    sc->anchor = readAnchorPoint(ttf,baseoffset,classes[j],
+		    at,sc->anchor);
 	}
     }
 }
@@ -652,7 +735,6 @@ static void MarkGlyphsProcessLigs(FILE *ttf,int baseoffset,
     int basecnt,compcnt, i, j, k, kbase;
     uint16 *loffsets, *aoffsets;
     SplineChar *sc;
-    AnchorPoint *ap;
 
     fseek(ttf,baseoffset,SEEK_SET);
     basecnt = getushort(ttf);
@@ -671,18 +753,9 @@ static void MarkGlyphsProcessLigs(FILE *ttf,int baseoffset,
 	for ( k=kbase=0; k<compcnt; ++k, kbase+=classcnt ) {
 	    for ( j=0; j<classcnt; ++j ) if ( aoffsets[kbase+j]!=0 ) {
 		fseek(ttf,baseoffset+loffsets[i]+aoffsets[kbase+j],SEEK_SET);
-		ap = chunkalloc(sizeof(AnchorPoint));
-		ap->anchor = classes[j];
-		/* All anchor types have the same initial 3 entries, and I only care */
-		/*  about two of them, so I can ignore all the complexities of the */
-		/*  format type */
-		/* format = */ getushort(ttf);
-		ap->me.x = (int16) getushort(ttf);
-		ap->me.y = (int16) getushort(ttf);
-		ap->type = at_baselig;
-		ap->lig_index = k;
-		ap->next = sc->anchor;
-		sc->anchor = ap;
+		sc->anchor = readAnchorPoint(ttf,baseoffset,classes[j],
+			at_baselig,sc->anchor);
+		sc->anchor->lig_index = k;
 	    }
 	}
     }
@@ -739,8 +812,13 @@ static void gposSimplePos(FILE *ttf, int stoffset, struct ttfinfo *info, struct 
 return;
     coverage = getushort(ttf);
     vf = getushort(ttf);
-    if ( (vf&0xf)==0 )	/* Not interested in things whose data lives in device tables */
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    if ( vf==0 )
 return;
+#else
+    if ( (vf&0xf)==0 )	/* Not interested in things whose data just live in device tables */
+return;
+#endif
     if ( format==1 ) {
 	memset(&_vr,0,sizeof(_vr));
 	readvaluerecord(&_vr,vf,ttf);
@@ -768,6 +846,9 @@ return;
 	pos->u.pos.yoff = which->yplacement;
 	pos->u.pos.h_adv_off = which->xadvance;
 	pos->u.pos.v_adv_off = which->yadvance;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	pos->u.pos.adjust = readValDevTab(ttf,which,stoffset);
+#endif
     }
     free(vr);
     free(glyphs);

@@ -3976,6 +3976,7 @@ return( true );
 #define MID_RemoveKerns	2605
 #define MID_SetVWidth	2606
 #define MID_RemoveVKerns	2607
+#define MID_KPCloseup	2608
 #define MID_OpenBitmap	2700
 #define MID_Revert	2702
 #define MID_Recent	2703
@@ -4665,7 +4666,8 @@ static void CVDoClear(CharView *cv) {
 		    aprev->next = anext;
 		else
 		    cv->sc->anchor = anext;
-		chunkfree(ap,sizeof(AnchorPoint));
+		ap->next = NULL;
+		AnchorPointsFree(ap);
 	    } else
 		aprev = ap;
 	}
@@ -6605,6 +6607,12 @@ static void CVMenuRemoveVKern(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     }
 }
 
+static void CVMenuKPCloseup(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+
+    KernPairD(cv->sc->parent,cv->sc,NULL,false);
+}
+
 static GMenuItem wnmenu[] = {
     { { (unichar_t *) _STR_NewOutline, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 0, 1, 0, 'u' }, 'H', ksm_control, NULL, NULL, /* No function, never avail */NULL },
     { { (unichar_t *) _STR_NewBitmap, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, 'J', ksm_control, NULL, NULL, CVMenuOpenBitmap, MID_OpenBitmap },
@@ -6905,6 +6913,7 @@ static GMenuItem mtlist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Removekern, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuRemoveKern, MID_RemoveKerns },
     { { (unichar_t *) _STR_RemoveVKern, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuRemoveVKern, MID_RemoveVKerns },
+    { { (unichar_t *) _STR_KernPairCloseup, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuKPCloseup, MID_KPCloseup },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_SetVWidth, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'V' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuSetWidth, MID_SetVWidth },
     { NULL }

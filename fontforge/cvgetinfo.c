@@ -716,7 +716,8 @@ return( true );
 	    ci->sc->anchor = ap;
 	else
 	    prev->next = ap;
-	chunkfree(ci->ap,sizeof(AnchorPoint));
+	ci->ap->next = NULL;
+	AnchorPointsFree(ci->ap);
 	AI_Display(ci,ap);
     }
 return( true );
