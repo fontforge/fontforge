@@ -2293,8 +2293,8 @@ return;
 	    /*  without the active flag above we'd loop forever half-invoking*/
 	    /*  this timer */
     }
-    timer->active = false;
     if ( GTimerInList(gdisp,timer)) {		/* carefull, they might have cancelled it */
+	timer->active = false;
 	if ( timer->repeat_time==0 )
 	    GXDrawCancelTimer(timer);
 	else
