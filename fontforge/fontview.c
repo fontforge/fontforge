@@ -2171,12 +2171,12 @@ void FontViewMenu_SelectCyan(GtkMenuItem *menuitem, gpointer user_data) {
     FVSelectColor(fv,0x00ffff,false);
 }
 
-void FontViewMenu_SelectMagenta(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_SelectBlue(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
     FVSelectColor(fv,0x0000ff,false);
 }
 
-void FontViewMenu_SelectBlue(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_SelectMagenta(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
     FVSelectColor(fv,0xff00ff,false);
 }
