@@ -1250,7 +1250,7 @@ static void bSelectByATT(Context *c) {
     else if ( c->a.vals[4].u.ival<1 || c->a.vals[4].u.ival>3 )
 	error(c,"Bad argument value");
     if ( c->a.vals[1].type==v_int )
-	type = c->curfv,c->a.vals[1].u.ival;
+	type = c->a.vals[1].u.ival;
     else {
 	if ( strmatch(c->a.vals[1].u.sval,"Position")==0 )
 	    type = pst_position;
@@ -1276,7 +1276,7 @@ static void bSelectByATT(Context *c) {
     tags = uc_copy(c->a.vals[2].u.sval);
     contents = uc_copy(c->a.vals[3].u.sval);
     c->return_val.type = v_int;
-    c->return_val.u.ival = FVParseSelectByPST(c->curfv->sf,type,tags,contents,
+    c->return_val.u.ival = FVParseSelectByPST(c->curfv,type,tags,contents,
 	    c->a.vals[4].u.ival);
     free(tags);
     free(contents);
@@ -1411,6 +1411,17 @@ return;
     c->curfv->sf->changed = true;
     c->curfv->sf->changed_since_autosave = true;
     c->curfv->sf->changed_since_xuidchanged = true;
+}
+
+static void bLoadEncodingFile(Context *c) {
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_str )
+	error(c,"Bad argument type");
+
+    ParseEncodingFile(c->a.vals[1].u.sval);
+    DumpPfaEditEncodings();
 }
 
 static void bSetFontOrder(Context *c) {
@@ -2919,6 +2930,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
 /* Element Menu */
     { "Reencode", bReencode },
     { "SetCharCnt", bSetCharCnt },
+    { "LoadEncodingFile", bLoadEncodingFile, 1 },
     { "SetFontOrder", bSetFontOrder },
     { "SetFontNames", bSetFontNames },
     { "SetItalicAngle", bSetItalicAngle },

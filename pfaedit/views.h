@@ -511,6 +511,8 @@ extern GTextInfo *GListAppendLine(GGadget *list,unichar_t *line,int select);
 extern void FontInfo(SplineFont *sf,int aspect,int sync);
 extern void FontInfoDestroy(FontView *fv);
 extern void FontMenuFontInfo(void *fv);
+extern void DumpPfaEditEncodings(void);
+extern void ParseEncodingFile(char *filename);
 extern void LoadEncodingFile(void);
 extern struct enc *MakeEncoding(SplineFont *sf);
 extern void RemoveEncoding(void);

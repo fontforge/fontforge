@@ -150,7 +150,7 @@ static void RemoveMultiples(Encoding *item) {
 	DeleteEncoding(test);
 }
 
-static void ParseEncodingFile(char *filename) {
+void ParseEncodingFile(char *filename) {
     FILE *file;
     char *orig = filename;
     Encoding *head, *item, *prev;
@@ -226,7 +226,7 @@ void LoadPfaEditEncodings(void) {
     ParseEncodingFile(NULL);
 }
 
-static void DumpPfaEditEncodings(void) {
+void DumpPfaEditEncodings(void) {
     FILE *file;
     Encoding *item;
     int i;
