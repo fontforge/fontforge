@@ -1951,18 +1951,22 @@ static void GFD_exists(GIOControl *gio) {
     GFileChooserReplaceIO(d->gfc,NULL);
 }
 
+static void _GFD_SaveOk(struct gfc_data *d) {
+    unichar_t *ret = GGadgetGetTitle(d->gfc);
+    int formatstate = GGadgetGetFirstListSelectedItem(d->pstype);
+
+    if ( formatstate!=ff_none )	/* are we actually generating an outline font? */
+	GIOfileExists(GFileChooserReplaceIO(d->gfc,
+		GIOCreate(ret,d,GFD_exists,GFD_doesnt)));
+    else
+	GFD_doesnt(GIOCreate(ret,d,GFD_exists,GFD_doesnt));	/* No point in bugging the user if we aren't doing anything */
+    free(ret);
+}
+
 static int GFD_SaveOk(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
-	unichar_t *ret = GGadgetGetTitle(d->gfc);
-	int formatstate = GGadgetGetFirstListSelectedItem(d->pstype);
-
-	if ( formatstate!=ff_none )	/* are we actually generating an outline font? */
-	    GIOfileExists(GFileChooserReplaceIO(d->gfc,
-		    GIOCreate(ret,d,GFD_exists,GFD_doesnt)));
-	else
-	    GFD_doesnt(GIOCreate(ret,d,GFD_exists,GFD_doesnt));	/* No point in bugging the user if we aren't doing anything */
-	free(ret);
+	_GFD_SaveOk(d);
     }
 return( true );
 }
@@ -2179,6 +2183,10 @@ static int e_h(GWindow gw, GEvent *event) {
     } else if ( event->type == et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
 	    help("generate.html");
+return( true );
+	} else if ( event->u.chr.keysym=='s' &&
+		(event->u.chr.state&ksm_control) ) {
+	    _GFD_SaveOk(GDrawGetUserData(gw));
 return( true );
 	}
 return( false );
