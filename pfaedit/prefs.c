@@ -398,6 +398,7 @@ static void GreekHack(void) {
 	psunicodenames[0xf518] = "Omegasmall";
 	psunicodenames[0xf519] = "Iotadieresissmall";
 	psunicodenames[0xf51a] = "Upsilondieresissmall";
+/* Should I patch 0x3d6 to be "pi1" rather than "omega1"? Unicode says it's pi, adobe says omega */
     } else {
 	psunicodenames[0x2206] = "Delta";	/* Increment */
 	psunicodenames[0x2126] = "Omega";	/* Ohm sign */
@@ -922,11 +923,11 @@ void DoPrefs(void) {
 	      break;
 	      case pr_string:
 		if ( pl->val!=NULL )
-		    tempstr = *((char **) pl->val);
+		    tempstr = *((char **) (pl->val));
 		else
 		    tempstr = (char *) ((pl->get)());
 		if ( tempstr!=NULL )
-		    plabel[gc].text = /* def2u_*/ uc_copy( *((char **) pl->val));
+		    plabel[gc].text = /* def2u_*/ uc_copy( tempstr );
 		else if ( ((char **) pl->val)==&BDFFoundry )
 		    plabel[gc].text = /* def2u_*/ uc_copy( "PfaEdit" );
 		else
