@@ -3784,8 +3784,9 @@ static void SymbolFixup(struct ttfinfo *info) {
 
     memset(lo,0,sizeof(lo));
     memset(hi,0,sizeof(hi));
-    lo[0] = info->chars[0];
-    for ( i=1; i<info->glyph_cnt; ++i ) if ( (sc = info->chars[i])!=NULL ) {
+    if ( info->chars[0]!=NULL && info->chars[0]->enc==0 )
+	lo[0] = info->chars[0];
+    for ( i=0; i<info->glyph_cnt; ++i ) if ( (sc = info->chars[i])!=NULL ) {
 	if ( sc->enc>0 && sc->enc<0xff )
 	    lo[sc->enc] = sc;
 	else if ( sc->enc>=0xf000 && sc->enc<=0xf0ff )

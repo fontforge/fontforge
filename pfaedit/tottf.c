@@ -6195,7 +6195,7 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
 		    ++pcnt;
 	    }
 	}
-	alreadyprivate = pcnt>acnt;
+	alreadyprivate = acnt>pcnt;
 	memset(table,'\0',sizeof(table));
 	if ( !alreadyprivate ) {
 	    for ( i=0; i<sf->charcnt && i<256; ++i )
@@ -6212,18 +6212,13 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
 	/* if the user has read in a ttf symbol file then it will already have */
 	/*  the right private use encoding, and we don't want to mess it up. */
 	/*  The alreadyprivate flag should detect this case */
-	alreadyprivate = true;
-	for ( i=0; i<sf->charcnt; ++i ) {
-	    if ( sf->chars[i]!=&notdef && sf->chars[i]!=&nonmarkingreturn &&
-		    sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 &&
-		    !SCIsNotdef(sf->chars[i],-1) && i<=0xffff )
-		if ( i<0xf000 || i>0xf0ff )
-		    alreadyprivate = false;
-	}
 	if ( !alreadyprivate ) {
-	    for ( i=0; i<sf->charcnt && i<256; ++i ) if ( sf->chars[i]!=&notdef && sf->chars[i]!=&nonmarkingreturn && sf->chars[i]!=NULL ) {
-		sf->chars[i]->enc = sf->chars[i]->unicodeenc;
-		sf->chars[i]->unicodeenc = 0xf000 + i;
+	    for ( i=0; i<sf->charcnt && i<256; ++i ) {
+		if ( sf->chars[i]!=&notdef && sf->chars[i]!=&nonmarkingreturn &&
+			sf->chars[i]!=NULL && !SCIsNotdef(sf->chars[i],-1)) {
+		    sf->chars[i]->enc = sf->chars[i]->unicodeenc;
+		    sf->chars[i]->unicodeenc = 0xf000 + i;
+		}
 	    }
 	    for ( ; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
 		sf->chars[i]->enc = sf->chars[i]->unicodeenc;
@@ -6343,9 +6338,13 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
 	enccnt = 3;
 	if ( sf->encoding_name==em_johab ) {
 	    enccnt = 2;
-	    hasmac = 0;
+	    hasmac = 0;		/* Don't know what johab looks like on mac */
 	} else if ( format12!=NULL )
 	    enccnt = 4;
+	else if ( format==ff_ttfsym || sf->encoding_name==em_symbol ) {
+	    enccnt = 2;
+	    hasmac = 0;
+	}
 	putshort(at->cmap,0);		/* version */
 	putshort(at->cmap,enccnt);	/* num tables */
 
