@@ -114,6 +114,10 @@ static unichar_t *_readencstring(FILE *ttf,int offset,int len,int enc) {
 	str = pt = galloc(2*len+2);
 	for ( i=0; i<len; ++i )
 	    *pt++ = unicode_from_mac[getc(ttf)];
+    } else if ( enc==em_adobestandard ) {
+	str = pt = galloc(2*len+2);
+	for ( i=0; i<len; ++i )
+	    *pt++ = unicode_from_adobestd[getc(ttf)];
     } else if ( enc==em_unicode ) {
 	str = pt = galloc(len+2);
 	for ( i=0; i<len/2; ++i ) {
@@ -210,8 +214,14 @@ static int enc_from_platspec(int platform,int specific) {
     else if ( platform==1 ) {
 	if ( specific==0 )
 	    enc = em_mac;
+	else if ( specific==1 )
+	    enc = em_jis208;
 	else if ( specific==2 )
-	    enc = em_big5;		/* Empirically determined */
+	    enc = em_big5;
+	else if ( specific==3 )
+	    enc = em_ksc5601;
+    } else if ( platform==2 ) {		/* obselete */
+	enc = em_unicode;
     } else if ( platform==3 ) {
 	if ( specific==1 )
 	    enc = em_unicode;
@@ -223,6 +233,13 @@ static int enc_from_platspec(int platform,int specific) {
 	    enc = em_big5;
 	else if ( specific==6 )
 	    enc = em_johab;
+    } else if ( platform==7 ) {		/* Used internally in freetype, but */
+	if ( specific==0 )		/*  there's no harm in looking for it */
+	    enc = em_adobestandard;	/*  even if it never happens */
+	else if ( specific==1 )
+	    /* adobe_expert */;
+	else if ( specific==2 )
+	    /* adobe_custom */;
     }
 return( enc );
 }
