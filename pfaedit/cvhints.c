@@ -109,6 +109,7 @@ return( DiagCheck(sp1,sp2,sp1->next,sp2->next,sp3,sp4) ||
 typedef struct reviewhintdata {
     unsigned int done: 1;
     unsigned int ishstem: 1;
+    unsigned int oldmanual: 1;
     CharView *cv;
     GWindow gw;
     StemInfo *active;
@@ -185,6 +186,7 @@ return( true );
 		hd->cv->sc->hconflicts = StemListAnyConflicts(hd->cv->sc->hstem);
 	    else
 		hd->cv->sc->vconflicts = StemListAnyConflicts(hd->cv->sc->vstem);
+	    hd->cv->sc->manualhints = true;
 	    if ( wasconflict!=hd->active->hasconflicts )
 		GGadgetSetVisible(GWidgetGetControl(hd->gw,CID_Overlap),hd->active->hasconflicts);
 	    SCOutOfDateBackground(hd->cv->sc);
@@ -216,6 +218,7 @@ static void DoCancel(ReviewHintData *hd) {
     hd->cv->sc->vstem = hd->oldv;
     hd->cv->sc->hconflicts = StemListAnyConflicts(hd->cv->sc->hstem);
     hd->cv->sc->vconflicts = StemListAnyConflicts(hd->cv->sc->vstem);
+    hd->cv->sc->manualhints = hd->oldmanual;
     SCOutOfDateBackground(hd->cv->sc);
     SCUpdateAll(hd->cv->sc);
     hd->done = true;
@@ -249,6 +252,7 @@ return( true );			/* Eh? */
 	    hd->cv->sc->hconflicts = StemListAnyConflicts(hd->cv->sc->hstem);
 	else
 	    hd->cv->sc->vconflicts = StemListAnyConflicts(hd->cv->sc->vstem);
+	hd->cv->sc->manualhints = true;
 	StemInfoFree( hd->active );
 	hd->active = prev;
 	SCOutOfDateBackground(hd->cv->sc);
@@ -477,6 +481,7 @@ void CVReviewHints(CharView *cv) {
     hd.ishstem = (hd.active==cv->sc->hstem);
     hd.oldh = StemInfoCopy(cv->sc->hstem);
     hd.oldv = StemInfoCopy(cv->sc->vstem);
+    hd.oldmanual = cv->sc->manualhints;
     RH_SetupHint(&hd);
     if ( hd.active!=NULL ) {
 	GWidgetIndicateFocusGadget(GWidgetGetControl(gw,CID_Base));
@@ -518,6 +523,7 @@ return(true);
 	    SCGuessVHintInstancesAndAdd(hd->cv->sc,h,0x80000000,0x80000000);
 	    hd->cv->sc->vconflicts = StemListAnyConflicts(hd->cv->sc->vstem);
 	}
+	hd->cv->sc->manualhints = true;
 	SCOutOfDateBackground(hd->cv->sc);
 	SCUpdateAll(hd->cv->sc);
 	hd->done = true;
