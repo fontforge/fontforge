@@ -5617,7 +5617,7 @@ static void term(Context *c,Val *val) {
 	    dereflvalif(val);
 	    if ( val->type==v_real ) {
 		if ( tok==tt_minus )
-		    val->u.ival = -val->u.fval;
+		    val->u.fval = -val->u.fval;
 		else
 		    error( c, "Invalid type in integer expression" );
 	    } else if ( val->type==v_int ) {
