@@ -4119,14 +4119,18 @@ static FILE *NeedsUCS4Table(SplineFont *sf,int *ucs4len) {
     int i=0,j,group;
     FILE *format12;
     SplineChar *sc;
-    
-    if ( sf->encoding_name->is_unicodefull ) {
-	for ( i=0x10000; i<sf->charcnt; ++i )
-	    if ( SCWorthOutputting(sf->chars[i]))
-	break;
-    } else
-return( NULL );
-	if ( i>=sf->charcnt )
+
+    if ( sf->encoding_name->is_unicodefull )
+	i=0x10000;
+    else if ( sf->encoding_name->is_custom )
+	i = 0;
+    else
+	i = sf->encoding_name->char_cnt;
+    for ( ; i<sf->charcnt; ++i )
+	if ( SCWorthOutputting(sf->chars[i]) && sf->chars[i]->unicodeenc>=0x10000 )
+    break;
+
+    if ( i>=sf->charcnt )
 return(NULL);
 
     format12 = tmpfile();
