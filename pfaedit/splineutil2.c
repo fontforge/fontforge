@@ -296,7 +296,11 @@ Spline *ApproximateSplineFromPointsSlopes(SplinePoint *from, SplinePoint *to,
     /* If the two end-points are corner points then allow the slope to vary */
     /* Or if one end-point is a tangent but the point defining the tangent's */
     /*  slope is being removed then allow the slope to vary */
-    if ( (from->pointtype == pt_corner ||
+    /* Except if the slope is horizontal or vertical then keep it fixed */
+    if ( ( !from->nonextcp && ( from->nextcp.x==from->me.x || from->nextcp.y==from->me.y)) ||
+	    (!to->noprevcp && ( to->prevcp.x==to->me.x || to->prevcp.y==to->me.y)) )
+	/* Preserve the slope */;
+    else if ( (from->pointtype == pt_corner ||
 		(from->pointtype == pt_tangent &&
 			((from->nonextcp && from->noprevcp) || !from->noprevcp))) &&
 	    (to->pointtype == pt_corner ||
@@ -752,7 +756,8 @@ void SplineCharMerge(SplineChar *sc,SplineSet **head) {
 }
 
 /* Almost exactly the same as SplinesRemoveBetween, but this one is conditional */
-/*  the point is only removed if it doesn't perturb the spline much */
+/*  the point is only removed if it doesn't perturb the spline much and if */
+/*  it isn't an extrema.
 /*  used for simplify */
 static int SplinesRemoveMidMaybe(SplineChar *sc,SplinePoint *mid) {
     int i,tot;
@@ -765,7 +770,28 @@ static int SplinesRemoveMidMaybe(SplineChar *sc,SplinePoint *mid) {
 
     if ( mid->prev==NULL || mid->next==NULL )
 return( false );
+
     from = mid->prev->from; to = mid->next->to;
+    
+    /* Retain points which are horizontal or vertical, because postscript says*/
+    /*  type1 fonts should always have a point at the extrema (except for small*/
+    /*  things like serifs), and the extrema occur at horizontal/vertical points*/
+    if ( (!mid->nonextcp && (mid->nextcp.x==mid->me.x || mid->nextcp.y==mid->me.y)) ||
+	    (!mid->noprevcp && (mid->prevcp.x==mid->me.x || mid->prevcp.y==mid->me.y)) ) {
+	real x=mid->me.x, y=mid->me.y;
+	if (( mid->nextcp.x==x && mid->prevcp.x==x &&
+		 to->me.x==x && to->prevcp.x==x &&
+		 from->me.x==x && from->nextcp.x==x ) ||
+		( mid->nextcp.y==y && mid->prevcp.y==y &&
+		 to->me.y==y && to->prevcp.y==y &&
+		 from->me.y==y && from->nextcp.y==y ))
+	    /* On the other hand a point in the middle of a straight */
+	    /* horizontal/vertical line may still be removed with impunity */
+	    ;
+	else
+return( false );
+    }
+
     fncp2 = fncp = from->nextcp; tpcp2 = tpcp = to->prevcp;
     fpt = from->pointtype; tpt = to->pointtype;
 
@@ -950,6 +976,77 @@ SplineSet *SplineCharRemoveTiny(SplineChar *sc,SplineSet *head) {
 	    pr = spl;
     }
 return( head );
+}
+
+static Spline *SplineAddExtrema(Spline *s) {
+    /* First find the extrema, if any */
+    double t[4], min;
+    int p, i,j;
+    SplinePoint *sp;
+
+    forever {
+	if ( s->islinear )
+return(s);
+	p = 0;
+	if ( s->splines[0].a!=0 ) {
+	    double d = 4*s->splines[0].b*s->splines[0].b-4*3*s->splines[0].a*s->splines[0].c;
+	    if ( d>0 ) {
+		d = sqrt(d);
+		t[p++] = (-2*s->splines[0].b+d)/(2*3*s->splines[0].a);
+		t[p++] = (-2*s->splines[0].b-d)/(2*3*s->splines[0].a);
+	    }
+	} else if ( s->splines[0].b!=0 )
+	    t[p++] = -s->splines[0].c/(2*s->splines[0].b);
+	if ( s->splines[1].a!=0 ) {
+	    double d = 4*s->splines[1].b*s->splines[1].b-4*3*s->splines[1].a*s->splines[1].c;
+	    if ( d>0 ) {
+		d = sqrt(d);
+		t[p++] = (-2*s->splines[1].b+d)/(2*3*s->splines[1].a);
+		t[p++] = (-2*s->splines[1].b-d)/(2*3*s->splines[1].a);
+	    }
+	} else if ( s->splines[1].b!=0 )
+	    t[p++] = -s->splines[1].c/(2*s->splines[1].b);
+
+	/* Throw out any t values which are not between 0 and 1 */
+	/*  (we do a little fudging near the endpoints so we don't get confused */
+	/*   by rounding errors) */
+	for ( i=0; i<p; ++i ) {
+	    if ( t[i]<.0001 || t[i]>.9999 ) {
+		--p;
+		for ( j=i; j<p; ++j )
+		    t[j] = t[j+1];
+		--i;
+	    }
+	}
+	if ( p==0 )
+return(s);
+
+	/* Find the smallest of all the interesting points */
+	min = t[0];
+	for ( i=1; i<p; ++i ) {
+	    if ( t[i]<min )
+		min=t[i];
+	}
+	sp = SplineBisect(s,min);
+	s = sp->next;
+	/* Don't try to use any other computed t values, it is easier to */
+	/*  recompute them than to try and figure out what they map to on the */
+	/*  new spline */
+    }
+}
+
+void SplineCharAddExtrema(SplineSet *head,int between_selected) {
+    SplineSet *ss;
+    Spline *s, *first;
+
+    for ( ss=head; ss!=NULL; ss=ss->next ) {
+	first = NULL;
+	for ( s = ss->first->next; s!=NULL && s!=first; s = s->to->next ) {
+	    if ( first==NULL ) first = s;
+	    if ( !between_selected || (s->from->selected && s->to->selected))
+		s = SplineAddExtrema(s);
+	}
+    }
 }
 
 char *GetNextUntitledName(void) {

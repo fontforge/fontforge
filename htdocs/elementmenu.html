@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 15-Dec-2001 -->
+  <!-- AP: Last modified: 4-Jan-2002 -->
   <TITLE>The Element Menu</TITLE>
 </HEAD>
 <BODY>
@@ -48,6 +48,8 @@ This menu is not present in the Metrics View.
   <LI>
     <A HREF="#Simplify">Simplify<BR>
     Cleanup Chars</A>
+  <LI>
+    <A HREF="elementmenu.html#Add-Extrema">Add Extrema</A>
   <LI>
     <A HREF="#MetaFont">MetaFont...</A>
   <LI>
@@ -210,7 +212,9 @@ This menu is not present in the Metrics View.
   <DD>
     Only in the font and outline views. If you have lots of points on a path,
     some of which do not materially add to the path's shape, then this command
-    will remove the extraneous points.
+    will remove the extraneous points. (It will not remove points where the slope
+    at the point is horizontal or vertical as postscript likes to have these
+    points present).
   <DT>
     Cleanup Char
   <DD>
@@ -218,6 +222,14 @@ This menu is not present in the Metrics View.
     shift key when invoking from the menu. In this case if there is a spline
     which actually traces out a line but none the less has control points, then
     this command will remove the control points.
+  <DT>
+    <A NAME="Add-Extrema">Add Extrema</A>
+  <DD>
+    Only in the font and outline views. In the font view (or if nothing is selected
+    in the outline view) it will look at each spline in the character and find
+    where the extrema are and insert points at those locations (assuming there
+    aren't points there already). If there are points selected in the outline
+    view then it will only work on splines which are between two selected points.
   <DT>
     <A NAME="MetaFont">MetaFont</A>...
   <DD>

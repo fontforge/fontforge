@@ -1851,35 +1851,37 @@ static void CVMagnify(CharView *cv, real midx, real midy, int bigger) {
     static float scales[] = { 1, 2, 3, 4, 6, 8, 11, 16, 23, 32, 45, 64, 90, 128, 181, 256, 512, 1024, 0 };
     int i, j;
 
-    if ( cv->scale>=1 ) {
-	for ( i=0; scales[i]!=0 && cv->scale>scales[i]; ++i );
-	if ( scales[i]==0 ) i=j= i-1;
-	else if ( RealNear(scales[i],cv->scale) ) j=i;
-	else if ( i!=0 && RealNear(scales[i-1],cv->scale) ) j= --i; /* Round errors! */
-	else j = i-1;
-    } else { real sinv = 1/cv->scale; int t;
-	for ( i=0; scales[i]!=0 && sinv>scales[i]; ++i );
-	if ( scales[i]==0 ) i=j= i-1;
-	else if ( RealNear(scales[i],sinv) ) j=i;
-	else if ( i!=0 && RealNear(scales[i-1],sinv) ) j= --i; /* Round errors! */
-	else j = i-1;
-	t = j;
-	j = -i; i = -t;
-    }
-    if ( bigger==1 ) {
-	if ( i==j ) ++i;
-	if ( i>0 && scales[i]==0 ) --i;
-	if ( i>=0 )
-	    cv->scale = scales[i];
-	else
-	    cv->scale = 1/scales[-i];
-    } else {
-	if ( i==j ) --j;
-	if ( j<0 && scales[-j]==0 ) ++j;
-	if ( j>=0 )
-	    cv->scale = scales[j];
-	else
-	    cv->scale = 1/scales[-j];
+    if ( bigger!=0 ) {
+	if ( cv->scale>=1 ) {
+	    for ( i=0; scales[i]!=0 && cv->scale>scales[i]; ++i );
+	    if ( scales[i]==0 ) i=j= i-1;
+	    else if ( RealNear(scales[i],cv->scale) ) j=i;
+	    else if ( i!=0 && RealNear(scales[i-1],cv->scale) ) j= --i; /* Round errors! */
+	    else j = i-1;
+	} else { real sinv = 1/cv->scale; int t;
+	    for ( i=0; scales[i]!=0 && sinv>scales[i]; ++i );
+	    if ( scales[i]==0 ) i=j= i-1;
+	    else if ( RealNear(scales[i],sinv) ) j=i;
+	    else if ( i!=0 && RealNear(scales[i-1],sinv) ) j= --i; /* Round errors! */
+	    else j = i-1;
+	    t = j;
+	    j = -i; i = -t;
+	}
+	if ( bigger==1 ) {
+	    if ( i==j ) ++i;
+	    if ( i>0 && scales[i]==0 ) --i;
+	    if ( i>=0 )
+		cv->scale = scales[i];
+	    else
+		cv->scale = 1/scales[-i];
+	} else {
+	    if ( i==j ) --j;
+	    if ( j<0 && scales[-j]==0 ) ++j;
+	    if ( j>=0 )
+		cv->scale = scales[j];
+	    else
+		cv->scale = 1/scales[-j];
+	}
     }
     cv->xoff = -(rint(midx*cv->scale) - cv->width/2);
     cv->yoff = -(rint(midy*cv->scale) - cv->height/2);
@@ -2366,6 +2368,7 @@ return( true );
 #define MID_SpaceRegion	2221
 #define MID_MakeParallel	2222
 #define MID_ShowDependents	2223
+#define MID_AddExtrema	2224
 #define MID_Corner	2301
 #define MID_Tangent	2302
 #define MID_Curve	2303
@@ -2585,6 +2588,7 @@ static void CVMenuNextPrevPt(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SplinePoint *selpt, *other;
     RefChar *r; ImageList *il;
     SplineSet *spl, *ss;
+    int x, y;
 
     if ( !CVOneThingSel(cv,&selpt,&spl,&r,&il))
 return;
@@ -2618,6 +2622,13 @@ return;
     other->selected = true;
     cv->p.sp = NULL;
     cv->lastselpt = other;
+
+    /* Make sure the point is visible and has some context around it */
+    x =  cv->xoff + rint(other->me.x*cv->scale);
+    y = -cv->yoff + cv->height - rint(other->me.y*cv->scale);
+    if ( x<40 || y<40 || x>cv->width-40 || y>cv->height-40 )
+	CVMagnify(cv,other->me.x,other->me.y,0);
+
     CVInfoDraw(cv,cv->gw);
     SCUpdateAll(cv->sc);
 }
@@ -3249,6 +3260,16 @@ static void CVMenuOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CVCharChangedUpdate(cv);
 }
 
+static void CVMenuAddExtrema(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    int anysel;
+
+    (void) CVAnySel(cv,&anysel,NULL,NULL);
+    CVPreserveState(cv);
+    SplineCharAddExtrema(*cv->heads[cv->drawmode],anysel);
+    CVCharChangedUpdate(cv);
+}
+
 static void CVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     CVPreserveState(cv);
@@ -3422,6 +3443,11 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  break;
 	  case MID_RegenBitmaps:
 	    mi->ti.disabled = cv->fv->sf->bitmaps==NULL;
+	  break;
+	  case MID_AddExtrema:
+	    mi->ti.disabled = *cv->heads[cv->drawmode]==NULL;
+	  /* Like Simplify, always available, but may not do anything if */
+	  /*  all extrema have points. I'm not going to check for that, too hard */
 	  break;
 	  case MID_Simplify:
 	    mi->ti.disabled = *cv->heads[cv->drawmode]==NULL;
@@ -3911,6 +3937,7 @@ static GMenuItem ellist[] = {
     { { (unichar_t *) _STR_Stroke, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'E' }, 'E', ksm_control|ksm_shift, NULL, NULL, CVMenuStroke, MID_Stroke },
     { { (unichar_t *) _STR_Rmoverlap, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'v' }, 'O', ksm_control|ksm_shift, NULL, NULL, CVMenuOverlap, MID_RmOverlap },
     { { (unichar_t *) _STR_Simplify, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, 'M', ksm_control|ksm_shift, NULL, NULL, CVMenuSimplify, MID_Simplify },
+    { { (unichar_t *) _STR_AddExtrema, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'x' }, 'X', ksm_control|ksm_shift, NULL, NULL, CVMenuAddExtrema, MID_AddExtrema },
     { { (unichar_t *) _STR_MetaFont, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, '!', ksm_control|ksm_shift, NULL, NULL, CVMenuMetaFont, MID_MetaFont },
     { { (unichar_t *) _STR_Autotrace, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'r' }, 'T', ksm_control|ksm_shift, NULL, NULL, CVMenuAutotrace, MID_Autotrace },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},

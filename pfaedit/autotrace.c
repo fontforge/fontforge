@@ -175,9 +175,16 @@ return;
 /* the linker tells me not to use tempnam(). Which does almost exactly what */
 /*  I want. So we go through a much more complex set of machinations to make */
 /*  it happy. */
+	ib = images->image->list_len==0 ? images->image->u.image : images->image->u.images[0];
+	if ( ib->width==0 || ib->height==0 ) {
+	    /* pk fonts can have 0 sized bitmaps for space characters */
+	    /*  but autotrace gets all snooty about being given an empty image */
+	    /*  so if we find one, then just ignore it. It won't produce any */
+	    /*  results anyway */
+    continue;
+	}
 	fd = mytempnam(tempname);
 	GImageWriteBmp(images->image,tempname);
-	ib = images->image->list_len==0 ? images->image->u.image : images->image->u.images[0];
 	if ( ib->trans==-1 )
 	    bgcol = 0xffffff;		/* reasonable guess */
 	else if ( ib->image_type==it_true )
@@ -347,13 +354,15 @@ return;
     ct = GDrawGetCursor(cv->v);
     GDrawSetCursor(cv->v,ct_watch);
     GDrawSync(NULL);
+    GDrawProcessPendingEvents(NULL);
     SCAutoTrace(cv->sc, args);
     GDrawSetCursor(cv->v,ct);
 }
 
 void FVAutoTrace(FontView *fv,int ask) {
     char **args;
-    int i;
+    int i,cnt;
+    GCursor ct;
 
     if ( FindAutoTraceName()==NULL ) {
 	GWidgetErrorR(_STR_NoAutotrace,_STR_NoAutotraceProg);
@@ -363,9 +372,25 @@ return;
     args = AutoTraceArgs(ask);
     if ( args==(char **) -1 )
 return;
-    for ( i=0; i<fv->sf->charcnt; ++i )
-	if ( fv->sf->chars[i] && fv->selected[i] )
+    ct = GDrawGetCursor(fv->v);
+    GDrawSetCursor(fv->v,ct_watch);
+    GDrawSync(NULL);
+    GDrawProcessPendingEvents(NULL);
+
+    for ( i=cnt=0; i<fv->sf->charcnt; ++i )
+	if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->backimages )
+	    ++cnt;
+    GProgressStartIndicatorR(10,_STR_Autotracing,_STR_Autotracing,0,cnt,1);
+
+    for ( i=0; i<fv->sf->charcnt; ++i ) {
+	if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->backimages ) {
 	    SCAutoTrace(fv->sf->chars[i], args);
+	    if ( !GProgressNext())
+    break;
+	}
+    }
+    GProgressEndIndicator();
+    GDrawSetCursor(fv->v,ct);
 }
 
 char *ProgramExists(char *prog,char *buffer) {

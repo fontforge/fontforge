@@ -610,6 +610,7 @@ extern int SplineIsLinearMake(Spline *spline);
 extern int SplineInSplineSet(Spline *spline, SplineSet *spl);
 extern void SplineCharMerge(SplineChar *sc,SplineSet **head);
 extern void SplinePointListSimplify(SplineChar *sc,SplinePointList *spl,int cleanup);
+extern void SplineCharAddExtrema(SplineSet *head,int between_selected);
 extern SplineSet *SplineCharSimplify(SplineChar *sc,SplineSet *head,int cleanup);
 extern SplineSet *SplineCharRemoveTiny(SplineChar *sc,SplineSet *head);
 extern SplineFont *SplineFontNew(void);
