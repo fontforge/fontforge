@@ -3538,7 +3538,7 @@ static void AddMacName(NamTab *nt,struct macname *mn, int strid) {
 /* Undocumented fact: Windows insists on having a UniqueID string 3,1 */
 static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format) {
     int i,j;
-    struct ttflangname dummy, *cur, *useng;
+    struct ttflangname dummy, *cur, *useng = NULL;
     struct macname *mn;
     struct other_names *on, *onn;
     NamTab nt;
