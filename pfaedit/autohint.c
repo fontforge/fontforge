@@ -4278,7 +4278,10 @@ static int SplFigureHintMasks(SplineChar *scs[MmMax], SplineSet *spl[MmMax],
 		SplineSetReverse(spl[i]);
 		spl[i] = spl[i]->next;
 	    }
-	    if ( spl[i]!=NULL ) anymore = true;
+	    if ( spl[i]!=NULL ) {
+		anymore = true;
+		SplineSetReverse(spl[i]);
+	    }
 	}
 	if ( !anymore )
     break;
