@@ -138,3 +138,5 @@ svg.obj : svg.c
 parsettfatt.obj : parsettfatt.c
 contextchain.obj : contextchain.c
 macenc.obj : macenc.c
+statemachine.obj : statemachine.c
+typofeatures.obj : typofeatures.c
