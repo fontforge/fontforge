@@ -240,8 +240,8 @@ static void findbrowser(void) {
 	"iexplore.exe",
 	/*"lynx.exe",*/
 #else
-    static char *stdbrowsers[] = { "netscape", "opera", "galeon", "kfmclient",
-	"mozilla", "mosaic", /*"grail",*/ "lynx",
+    static char *stdbrowsers[] = { "mozilla", "opera", "galeon", "kfmclient",
+	"netscape", "mosaic", /*"grail",*/ "lynx",
 #endif
 	NULL };
     int i;
