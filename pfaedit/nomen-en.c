@@ -106,6 +106,8 @@ static char str_Hidepoints[] = "Hide Points";
 static unichar_t mnemonic_Hidepoints[] = 't';
 static char str_Showpoints[] = "Show Points";
 static unichar_t mnemonic_Showpoints[] = 't';
+static char str_ShowInstructions[] = "Show Instructions...";
+static unichar_t mnemonic_ShowInstructions[] = 'I';
 static char str_MarkExtrema[] = "Mark Extrema";
 static unichar_t mnemonic_MarkExtrema[] = 'M';
 static char str_Hiderulers[] = "Hide Rulers";
@@ -2082,7 +2084,8 @@ static char *str_ChangeSlopesPopup = "Normally simplify will not change the slop
 static char *str_ErrorLimit = "Error Limit:";
 static char mnemonic_ErrorLimit = 'E';
 static char *str_EmUnits = "em-units";
-
+    /* ttfinstrs */
+static char *str_TTFInstructionsFor = "TrueType Instructions for %.50hs"
 
 static int num_buttonsize = 55;
 static int num_ScaleFactor = 100;

@@ -124,6 +124,7 @@ typedef struct charview {
     unsigned int showblues:1;
     unsigned int showfamilyblues:1;
     unsigned int showanchor:1;
+    unsigned int showpointnumbers:1;
     unsigned int markextrema:1;
     unsigned int needsrasterize:1;		/* Rasterization (of fill or fontview) needed on mouse up */
     unsigned int recentchange:1;		/* a change happened in the grids or background. don't need to rasterize */
@@ -756,6 +757,9 @@ extern void SVDetachFV(FontView *fv);
 
 extern void SFShowKernPairs(SplineFont *sf,SplineChar *sc,AnchorClass *ac);
 extern void SFShowLigatures(SplineFont *sf);
+
+extern void SCNumberPoints(SplineChar *sc);
+extern void SCShowInstructions(SplineChar *sc, CharView *cv);
 
 extern GMenuItem helplist[];
 #endif

@@ -341,6 +341,8 @@ static void DrawPoint(CharView *cv, GWindow pixmap, SplinePoint *sp, SplineSet *
     GRect r;
     int x, y, cx, cy;
     Color col = sp==spl->first ? 0x707000 : 0xff0000, subcol;
+    int pnum;
+    char buf[12]; unichar_t ubuf[12];
 
     if ( cv->markextrema && !sp->nonextcp && !sp->noprevcp &&
 	    ((sp->nextcp.x==sp->me.x && sp->prevcp.x==sp->me.x) ||
@@ -367,6 +369,31 @@ return;
 	    GDrawDrawLine(pixmap,x,y,cx,cy, nextcpcol);
 	    GDrawDrawLine(pixmap,cx-3,cy-3,cx+3,cy+3,subcol);
 	    GDrawDrawLine(pixmap,cx+3,cy-3,cx-3,cy+3,subcol);
+	    if ( cv->showpointnumbers ) {
+		pnum = sp->ttfindex+1;
+		if ( sp->ttfindex==0xffff ) {
+		    SplinePoint *np;
+		    int off = 1;
+		    np = sp;
+		    while ( 1 ) {
+			if ( np->ttfindex!=0xffff || np->next==NULL )
+		    break;
+			np = np->next->to;
+			if ( np==sp )
+		    break;
+			off -= 2;
+		    }
+		    if ( np->ttfindex!=0xffff )
+			pnum = np->ttfindex+off;
+		    else
+			pnum = 0xffff;
+		}
+		if ( pnum!=0xffff ) {
+		    sprintf( buf,"%d", pnum );
+		    uc_strcpy(ubuf,buf);
+		    GDrawDrawText(pixmap,cx,cy-6,ubuf,-1,NULL,nextcpcol);
+		}
+	    }
 	}
 	if ( !sp->noprevcp ) {
 	    cx =  cv->xoff + rint(sp->prevcp.x*cv->scale);
@@ -445,6 +472,11 @@ return;
 	    GDrawDrawPoly(pixmap,gp,4,col);
 	else
 	    GDrawFillPoly(pixmap,gp,4,col);
+    }
+    if ( cv->showpointnumbers && sp->ttfindex!=0xffff ) {
+	sprintf( buf,"%d", sp->ttfindex );
+	uc_strcpy(ubuf,buf);
+	GDrawDrawText(pixmap,x,y-6,ubuf,-1,NULL,col);
     }
     if (( sp->roundx || sp->roundy ) &&
 	    (((cv->showrounds&1) && cv->scale>=.3) || (cv->showrounds&2)) ) {
@@ -2172,6 +2204,31 @@ return;
     }
 }
 
+void SCNumberPoints(SplineChar *sc) {
+    int pnum=0, skipit;
+    SplineSet *ss;
+    SplinePoint *sp;
+
+    for ( ss = sc->splines; ss!=NULL; ss=ss->next ) {
+	for ( sp=ss->first; ; ) {
+	    if ( sp!=ss->first && !sp->nonextcp && !sp->noprevcp &&
+		    !sp->roundx && !sp->roundy && !sp->dontinterpolate &&
+		    (sp->nextcp.x+sp->prevcp.x)/2 == sp->me.x &&
+		    (sp->nextcp.y+sp->prevcp.y)/2 == sp->me.y )
+		sp->ttfindex = 0xffff;
+	    else
+		sp->ttfindex = pnum++;
+	    if ( !sp->nonextcp )
+		++pnum;
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==ss->first )
+	break;
+	}
+    }
+}
+
 static void instrcheck(SplineChar *sc) {
     int pnum=0, skipit;
     SplineSet *ss;
@@ -3128,6 +3185,7 @@ return( true );
 #define MID_FindInFontView	2017
 #define MID_KernPairs	2018
 #define MID_AnchorPairs	2019
+#define MID_ShowInstructions 2020
 #define MID_Cut		2101
 #define MID_Copy	2102
 #define MID_Paste	2103
@@ -3464,7 +3522,12 @@ static void CVMenuFill(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CVShows.showfilled = cv->showfilled = !cv->showfilled;
     CVRegenFill(cv);
     GDrawRequestExpose(cv->v,NULL,false);
-    GMenuBarSetItemChecked(cv->mb,MID_Fill,CVShows.showfilled);
+}
+
+static void CVMenuShowInstrs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+
+    SCShowInstructions(NULL,cv);
 }
 
 static void CVMenuKernPairs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -5200,6 +5263,9 @@ static void cv_vwlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 	    free(mi->ti.text);
 	    mi->ti.text = u_copy(GStringGetResource(cv->showrulers?_STR_Hiderulers:_STR_Showrulers,NULL));
 	  break;
+	  case MID_ShowInstructions:
+	    mi->ti.checked = !cv->fv->sf->order2;
+	  break;
 	  case MID_Fill:
 	    mi->ti.checked = cv->showfilled;
 	  break;
@@ -5480,6 +5546,7 @@ static GMenuItem vwlist[] = {
     { { (unichar_t *) _STR_Hidepoints, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'o' }, 'D', ksm_control, NULL, NULL, CVMenuShowHide, MID_HidePoints },
     { { (unichar_t *) _STR_MarkExtrema, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'M' }, '\0', ksm_control, NULL, NULL, CVMenuMarkExtrema, MID_MarkExtrema },
     { { (unichar_t *) _STR_Fill, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'l' }, '\0', 0, NULL, NULL, CVMenuFill, MID_Fill },
+    { { (unichar_t *) _STR_ShowInstructions, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'l' }, '\0', 0, NULL, NULL, CVMenuShowInstrs, MID_ShowInstructions },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, }},
     { { (unichar_t *) _STR_KernPairs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'K' }, '\0', 0, NULL, NULL, CVMenuKernPairs, MID_KernPairs },
     { { (unichar_t *) _STR_AnchoredPairs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'A' }, '\0', 0, NULL, NULL, CVMenuAnchorPairs, MID_AnchorPairs },

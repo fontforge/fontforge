@@ -1,0 +1,981 @@
+/* Copyright (C) 2001-2003 by George Williams */
+/*
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+
+ * Redistributions of source code must retain the above copyright notice, this
+ * list of conditions and the following disclaimer.
+
+ * Redistributions in binary form must reproduce the above copyright notice,
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
+
+ * The name of the author may not be used to endorse or promote products
+ * derived from this software without specific prior written permission.
+
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+ * EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+#include <gkeysym.h>
+#include <ustring.h>
+#include <utype.h>
+#include "pfaeditui.h"
+
+extern int _GScrollBar_Width;
+#define EDGE_SPACING	2
+
+#define ttf_width 16
+#define ttf_height 16
+static unsigned char ttf_bits[] = {
+   0xff, 0x07, 0x21, 0x04, 0x20, 0x00, 0xfc, 0x7f, 0x24, 0x40, 0xf4, 0x5e,
+   0xbc, 0x72, 0xa0, 0x02, 0xa0, 0x02, 0xa0, 0x02, 0xf0, 0x02, 0x80, 0x02,
+   0xc0, 0x06, 0x40, 0x04, 0xc0, 0x07, 0x00, 0x00};
+GWindow ttf_icon = NULL;
+
+enum ttf_instructions {
+ ttf_npushb=0x40, ttf_npushw=0x41, ttf_pushb=0xb0, ttf_pushw=0xb8,
+ ttf_aa=0x7f, ttf_abs=0x64, ttf_add=0x60, ttf_alignpts=0x27, ttf_alignrp=0x3c,
+ ttf_and=0x5a, ttf_call=0x2b, ttf_ceiling=0x67, ttf_cindex=0x25, ttf_clear=0x22,
+ ttf_debug=0x4f, ttf_deltac1=0x73, ttf_deltac2=0x74, ttf_deltac3=0x75,
+ ttf_deltap1=0x5d, ttf_deltap2=0x71, ttf_deltap3=0x72, ttf_depth=0x24,
+ ttf_div=0x62, ttf_dup=0x20, ttf_eif=0x59, ttf_else=0x1b, ttf_endf=0x2d,
+ ttf_eq=0x54, ttf_even=0x57, ttf_fdef=0x2c, ttf_flipoff=0x4e, ttf_flipon=0x4d,
+ ttf_flippt=0x80, ttf_fliprgoff=0x82, ttf_fliprgon=0x81, ttf_floor=0x66,
+ ttf_gc=0x46, ttf_getinfo=0x88, ttf_gfv=0x0d, ttf_gpv=0x0c, ttf_gt=0x52,
+ ttf_gteq=0x53, ttf_idef=0x89, ttf_if=0x58, ttf_instctrl=0x8e, ttf_ip=0x39,
+ ttf_isect=0x0f, ttf_iup=0x30, ttf_jmpr=0x1c, ttf_jrof=0x79, ttf_jrot=0x78,
+ ttf_loopcall=0x2a, ttf_lt=0x50, ttf_lteq=0x51, ttf_max=0x8b, ttf_md=0x49,
+ ttf_mdap=0x2e, ttf_mdrp=0xc0, ttf_miap=0x3e, ttf_min=0x8c, ttf_mindex=0x26,
+ ttf_mirp=0xe0, ttf_mppem=0x4b, ttf_mps=0x4c, ttf_msirp=0x3a, ttf_mul=0x63,
+ ttf_neg=0x65, ttf_neq=0x55, ttf_not=0x5c, ttf_nround=0x6c, ttf_odd=0x56,
+ ttf_or=0x5b, ttf_pop=0x21, ttf_rcvt=0x45, ttf_rdtg=0x7d, ttf_roff=0x7a,
+ ttf_roll=0x8a, ttf_round=0x68, ttf_rs=0x43, ttf_rtdg=0x3d, ttf_rtg=0x18,
+ ttf_rthg=0x19, ttf_rutg=0x7c, ttf_s45round=0x77, ttf_sangw=0x7e,
+ ttf_scanctrl=0x85, ttf_scantype=0x8d, ttf_scfs=0x48, ttf_scvtci=0x1d,
+ ttf_sdb=0x5e, ttf_sdpvtl=0x86, ttf_sds=0x5f, ttf_sfvfs=0x0b, ttf_sfvtca=0x04,
+ ttf_sfvtl=0x08, ttf_sfvtpv=0x0e, ttf_shc=0x34, ttf_shp=0x32, ttf_shpix=0x38,
+ ttf_shz=0x36, ttf_sloop=0x17, ttf_smd=0x1a, ttf_spvfs=0x0a, ttf_spvtca=0x02,
+ ttf_spvtl=0x06, ttf_sround=0x76, ttf_srp0=0x10, ttf_srp1=0x11, ttf_srp2=0x12,
+ ttf_ssw=0x1f, ttf_sswci=0x1e, ttf_sub=0x61, ttf_svtca=0x00, ttf_swap=0x23,
+ ttf_szp0=0x13, ttf_szp1=0x14, ttf_szp2=0x15, ttf_szps=0x16, ttf_utp=0x29,
+ ttf_wcvtf=0x70, ttf_wcvtp=0x44, ttf_ws=0x42
+};
+
+static const char *instrs[] = {
+    "SVTCA[y-axis]",
+    "SVTCA[x-axis]",
+    "SPVTCA[y-axis]",
+    "SPVTCA[x-axis]",
+    "SFVTCA[y-axis]",
+    "SFVTCA[x-axis]",
+    "SPVTL[parallel]",
+    "SPVTL[orthog]",
+    "SFVTL[parallel]",
+    "SFVTL[orthog]",
+    "SPVFS",
+    "SFVFS",
+    "GPV",
+    "GFV",
+    "SFVTPV",
+    "ISECT",
+    "SRP0",
+    "SRP1",
+    "SRP2",
+    "SZP0",
+    "SZP1",
+    "SZP2",
+    "SZPS",
+    "SLOOP",
+    "RTG",
+    "RTHG",
+    "SMD",
+    "ELSE",
+    "JMPR",
+    "SCVTCI",
+    "SSWCI",
+    "SSW",
+    "DUP",
+    "POP",
+    "CLEAR",
+    "SWAP",
+    "DEPTH",
+    "CINDEX",
+    "MINDEX",
+    "ALIGNPTS",
+    "Unknown28",
+    "UTP",
+    "LOOPCALL",
+    "CALL",
+    "FDEF",
+    "ENDF",
+    "MDAP[no rnd]",
+    "MDAP[rnd]",
+    "IUP[y]",
+    "IUP[x]",
+    "SHP[rp2]",
+    "SHP[rp1]",
+    "SHC[rp2]",
+    "SHC[rp1]",
+    "SHZ[rp2]",
+    "SHZ[rp1]",
+    "SHPIX",
+    "IP",
+    "MSIRP[no set rp0]",
+    "MSIRP[set rp0]",
+    "ALIGNRP",
+    "RTDG",
+    "MIAP[no rnd]",
+    "MIAP[rnd]",
+    "NPUSHB",
+    "NPUSHW",
+    "WS",
+    "RS",
+    "WCVTP",
+    "RCVT",
+    "GC[cur]",
+    "GC[orig]",
+    "SCFS",
+    "MD[grid]",
+    "MD[orig]",
+    "MPPEM",
+    "MPS",
+    "FLIPON",
+    "FLIPOFF",
+    "DEBUG",
+    "LT",
+    "LTEQ",
+    "GT",
+    "GTEQ",
+    "EQ",
+    "NEQ",
+    "ODD",
+    "EVEN",
+    "IF",
+    "EIF",
+    "AND",
+    "OR",
+    "NOT",
+    "DELTAP1",
+    "SDB",
+    "SDS",
+    "ADD",
+    "SUB",
+    "DIV",
+    "MUL",
+    "ABS",
+    "NEG",
+    "FLOOR",
+    "CEILING",
+    "ROUND[Grey]",
+    "ROUND[Black]",
+    "ROUND[White]",
+    "ROUND[Undef4]",
+    "NROUND[Grey]",
+    "NROUND[Black]",
+    "NROUND[White]",
+    "NROUND[Undef4]",
+    "WCVTF",
+    "DELTAP2",
+    "DELTAP3",
+    "DELTAC1",
+    "DELTAC2",
+    "DELTAC3",
+    "SROUND",
+    "S45ROUND",
+    "JROT",
+    "JROF",
+    "ROFF",
+    "Unknown7B",
+    "RUTG",
+    "RDTG",
+    "SANGW",
+    "AA",
+    "FLIPPT",
+    "FLIPRGON",
+    "FLIPRGOFF",
+    "Unknown83",
+    "Unknown84",
+    "SCANCTRL",
+    "SDPVTL[parallel]",
+    "SDPVTL[orthog]",
+    "GETINFO",
+    "IDEF",
+    "ROLL",
+    "MAX",
+    "MIN",
+    "SCANTYPE",
+    "INSTCTRL",
+    "Unknown8F",
+    "Unknown90",
+    "Unknown91",
+    "Unknown92",
+    "Unknown93",
+    "Unknown94",
+    "Unknown95",
+    "Unknown96",
+    "Unknown97",
+    "Unknown98",
+    "Unknown99",
+    "Unknown9A",
+    "Unknown9B",
+    "Unknown9C",
+    "Unknown9D",
+    "Unknown9E",
+    "Unknown9F",
+    "UnknownA0",
+    "UnknownA1",
+    "UnknownA2",
+    "UnknownA3",
+    "UnknownA4",
+    "UnknownA5",
+    "UnknownA6",
+    "UnknownA7",
+    "UnknownA8",
+    "UnknownA9",
+    "UnknownAA",
+    "UnknownAB",
+    "UnknownAC",
+    "UnknownAD",
+    "UnknownAE",
+    "UnknownAF",
+    "PUSHB 1",
+    "PUSHB 2",
+    "PUSHB 3",
+    "PUSHB 4",
+    "PUSHB 5",
+    "PUSHB 6",
+    "PUSHB 7",
+    "PUSHB 8",
+    "PUSHW 1",
+    "PUSHW 2",
+    "PUSHW 3",
+    "PUSHW 4",
+    "PUSHW 5",
+    "PUSHW 6",
+    "PUSHW 7",
+    "PUSHW 8",
+    "MDRP[grey]",
+    "MDRP[black]",
+    "MDRP[white]",
+    "MDRP03",
+    "MDRP[rnd, grey]",
+    "MDRP[rnd, black]",
+    "MDRP[rnd, white]",
+    "MDRP07",
+    "MDRP[min, grey]",
+    "MDRP[min, black]",
+    "MDRP[min, white]",
+    "MDRP0b",
+    "MDRP[min, rnd, grey]",
+    "MDRP[min, rnd, black]",
+    "MDRP[min, rnd, white]",
+    "MDRP0f",
+    "MDRP[rp0, grey]",
+    "MDRP[rp0, black]",
+    "MDRP[rp0, white]",
+    "MDRP13",
+    "MDRP[rp0, rnd, grey]",
+    "MDRP[rp0, rnd, black]",
+    "MDRP[rp0, rnd, white]",
+    "MDRP17",
+    "MDRP[rp0, min, grey]",
+    "MDRP[rp0, min, black]",
+    "MDRP[rp0, min, white]",
+    "MDRP1b",
+    "MDRP[rp0, min, rnd, grey]",
+    "MDRP[rp0, min, rnd, black]",
+    "MDRP[rp0, min, rnd, white]",
+    "MDRP1f",
+    "MIRP[grey]",
+    "MIRP[black]",
+    "MIRP[white]",
+    "MIRP03",
+    "MIRP[rnd, grey]",
+    "MIRP[rnd, black]",
+    "MIRP[rnd, white]",
+    "MIRP07",
+    "MIRP[min, grey]",
+    "MIRP[min, black]",
+    "MIRP[min, white]",
+    "MIRP0b",
+    "MIRP[min, rnd, grey]",
+    "MIRP[min, rnd, black]",
+    "MIRP[min, rnd, white]",
+    "MIRP0f",
+    "MIRP[rp0, grey]",
+    "MIRP[rp0, black]",
+    "MIRP[rp0, white]",
+    "MIRP13",
+    "MIRP[rp0, rnd, grey]",
+    "MIRP[rp0, rnd, black]",
+    "MIRP[rp0, rnd, white]",
+    "MIRP17",
+    "MIRP[rp0, min, grey]",
+    "MIRP[rp0, min, black]",
+    "MIRP[rp0, min, white]",
+    "MIRP1b",
+    "MIRP[rp0, min, rnd, grey]",
+    "MIRP[rp0, min, rnd, black]",
+    "MIRP[rp0, min, rnd, white]",
+    "MIRP1f"
+};
+
+static unichar_t *instrhelppopup[256];
+
+static void ihaddr(int bottom,int top,char *msg) {
+    unichar_t *um = uc_copy(msg);
+    while ( bottom<=top )
+	instrhelppopup[bottom++] = um;
+}
+
+static void ihadd(int p,char *msg) {
+    ihaddr(p,p,msg);
+}
+
+static void instrhelpsetup(void) {
+    if ( instrhelppopup[0]!=NULL )
+return;
+    ihadd(0x7f,"Adjust Angle\nObsolete instruction\nPops one value");
+    ihadd(0x64,"ABSolute Value\nReplaces top of stack with its abs");
+    ihadd(0x60,"ADD\nPops two 26.6 fixed numbers from stack\nadds them, pushes result");
+    ihadd(0x27,"ALIGN PoinTS\nAligns (&pops) the two points which are on the stack\nby moving along freedom vector to the average of their\npositions on projection vector");
+    ihadd(0x3c,"ALIGN to Reference Point\nPops as many points as specified in loop counter\nAligns points with RP0 by moving each\nalong freedom vector until distance to\nRP0 on projection vector is 0");
+    ihadd(0x5a,"logical AND\nPops two values, ands them, pushes result");
+    ihadd(0x2b,"CALL function\nPops a value, calls the function represented by it");
+    ihadd(0x67,"CEILING\nPops one 26.6 value, rounds upward to an int\npushes result");
+    ihadd(0x25,"Copy INDEXed element to stack\nPops an index & copies stack\nelement[index] to top of stack");
+    ihadd(0x22,"CLEAR\nPops all elements on stack");
+    ihadd(0x4f,"DEBUG call\nPops a value and executes a debugging interpreter\n(if available)");
+    ihadd(0x73,"DELTA exception C1\nPops a value n & then n exception specifications & cvt entries\nchanges each cvt entry at a given size by the pixel amount");
+    ihadd(0x74,"DELTA exception C2\nPops a value n & then n exception specifications & cvt entries\nchanges each cvt entry at a given size by the amount");
+    ihadd(0x75,"DELTA exception C3\nPops a value n & then n exception specifications & cvt entries\nchanges each cvt entry at a given size by the amount");
+    ihadd(0x5D,"DELTA exception P1\nPops a value n & then n exception specifications & points\nmoves each point at a given size by the amount");
+    ihadd(0x71,"DELTA exception P2\nPops a value n & then n exception specifications & points\nmoves each point at a given size by the amount");
+    ihadd(0x72,"DELTA exception P3\nPops a value n & then n exception specifications & points\nmoves each point at a given size by the amount");
+    ihadd(0x24,"DEPTH of stack\nPushes the number of elements on the stack");
+    ihadd(0x62,"DIVide\nPops two 26.6 numbers, divides them, pushes result");
+    ihadd(0x20,"DUPlicate top stack element\nPushes the top stack element again");
+    ihadd(0x59,"End IF\nEnds and IF or IF-ELSE sequence");
+    ihadd(0x1b,"ELSE clause\nStart of Else clause of preceding IF");
+    ihadd(0x2d,"END Function definition");
+    ihadd(0x54,"EQual\nPops two values, tests for equality, pushes result(0/1)");
+    ihadd(0x57,"EVEN\nPops one value, rounds it and tests if it is even(0/1)");
+    ihadd(0x2C,"Function DEFinition\nPops a value (n) and starts the nth\nfunction definition");
+    ihadd(0x4e,"set the auto FLIP boolean to OFF");
+    ihadd(0x4d,"set the auto FLIP boolean to ON");
+    ihadd(0x80,"FLIP PoinT\nPops as many points as specified in loop counter\nFlips whether each point is on/off curve");
+    ihadd(0x82,"FLIP RanGe OFF\nPops two point numbers\nsets all points between to be off curve points");
+    ihadd(0x81,"FLIP RanGe ON\nPops two point numbers\nsets all points between to be on curve points");
+    ihadd(0x66,"FLOOR\nPops a value, rounds to lowest int, pushes result");
+    ihaddr(0x46,0x47,"Get Coordinate[a] projected onto projection vector\n 0=>use current pos\n 1=>use original pos\nPops one point, pushes the coordinate of\nthe point along projection vector");
+    ihadd(0x88,"GET INFOrmation\nPops information type, pushes result");
+    ihadd(0x0d,"Get Freedom Vector\nDecomposes freedom vector, pushes its\ntwo coordinates onto stack as 2.14");
+    ihadd(0x0c,"Get Projection Vector\nDecomposes projection vector, pushes its\ntwo coordinates onto stack as 2.14");
+    ihadd(0x52,"Greater Than\nPops two values, pushes (0/1) if bottom el > top");
+    ihadd(0x53,"Greater Than or EQual\nPops two values, pushes (0/1) if bottom el >= top");
+    ihadd(0x89,"Instruction DEFinition\nPops a value which becomes the opcode\nand begins definition of new instruction");
+    ihadd(0x58,"IF test\nPops an integer,\nif 0 (false) next instruction is ELSE or EIF\nif non-0 execution continues normally\n(unless there's an ELSE)");
+    ihadd(0x8e,"INSTRuction execution ConTRoL\nPops a selector and value\nSets a state variable");
+    ihadd(0x39,"Interpolate Point\nPops as many points as specified in loop counter\nInterpolates each point to preserve original status\nwith respect to RP1 and RP2");
+    ihadd(0x0f,"moves point to InterSECTion of two lines\nPops start,end start,end points of two lines\nand a point to move. Point is moved to\nintersection");
+    ihaddr(0x30,0x31,"Interpolate Untouched Points[a]\n 0=> interpolate in y direction\n 1=> x direction");
+    ihadd(0x1c,"JuMP Relative\nPops offset (in bytes) to move the instruction pointer");
+    ihadd(0x79,"Jump Relative On False\nPops a boolean and an offset\nChanges instruction pointer by offset bytes\nif boolean is false");
+    ihadd(0x78,"Jump Relative On True\nPops a boolean and an offset\nChanges instruction pointer by offset bytes\nif boolean is true");
+    ihadd(0x2a,"LOOP and CALL function\nPops a function number & count\nCalls function count times");
+    ihadd(0x50,"Less Than\nPops two values, pushes (0/1) if bottom el < top");
+    ihadd(0x51,"Less Than or EQual\nPops two values, pushes (0/1) if bottom el <= top");
+    ihadd(0x8b,"MAXimum of top two stack entries\nPops two values, pushes the maximum back");
+    ihaddr(0x49,0x4a,"Measure Distance[a]\n 0=>distance with current positions\n 1=>distance with original positions\nPops two point numbers, pushes distance between them");
+    ihaddr(0x2e,0x2f,"Move Direct Absolute Point[a]\n 0=>do not round\n 1=>round\nPops a point number, touches that point\nand perhaps rounds it to the grid along\nthe projection vector. Sets rp0&rp1 to the point");
+    ihaddr(0xc0,0xdf,"Move Direct Relative Point[abcde]\n a=0=>don't set rp0\n a=1=>set rp0 to p\n b=0=>do not keep distance more than minimum\n b=1=>keep distance at least minimum\n c=0 do not round\n c=1 round\n de=0 => grey distance\n de=1 => black distance\n de=2 => white distance\nPops a point moves it so that it maintains\nits original distance to the rp0. Sets\nrp1 to rp0, rp2 to point, sometimes rp0 to point");
+    ihaddr(0x3e,0x3f,"Move Indirect Absolute Point[a]\n 0=>do not round, don't use cvt cutin\n 1=>round\nPops a point number & a cvt entry,\ntouches the point and moves it to the coord\nspecified in the cvt (along the projection vector).\nSets rp0&rp1 to the point");
+    ihadd(0x8c,"Minimum of top two stack entries\nPops two values, pushes the minimum back");
+    ihadd(0x26,"Move INDEXed element to stack\nPops an index & moves stack\nelement[index] to top of stack\n(removing it from where it was)");
+    ihaddr(0xe0,0xff,"Move Indirect Relative Point[abcde]\n a=0=>don't set rp0\n a=1=>set rp0 to p\n b=0=>do not keep distance more than minimum\n b=1=>keep distance at least minimum\n c=0 do not round nor use cvt cutin\n c=1 round & use cvt cutin\n de=0 => grey distance\n de=1 => black distance\n de=2 => white distance\nPops a cvt index and a point moves it so that it\nis cvt[index] from rp0. Sets\nrp1 to rp0, rp2 to point, sometimes rp0 to point");
+    ihadd(0x4b,"Measure Pixels Per EM\nPushs the pixels per em (for current rasterization)");
+    ihadd(0x4c,"Measure Point Size\nPushes the current point size");
+    ihaddr(0x3a,0x3b,"Move Stack Indirect Relative Point[a]\n 0=>do not set rp0\n 1=>set rp0 to point\nPops a 26.6 distance and a point\nMoves point so it is distance from rp0");
+    ihadd(0x63,"MULtiply\nPops two 26.6 numbers, multiplies them, pushes result");
+    ihadd(0x65,"NEGate\nNegates the top of the stack");
+    ihadd(0x55,"Not EQual\nPops two values, tests for inequality, pushes result(0/1)");
+    ihadd(0x5c,"logical NOT\nPops a number, if 0 pushes 1, else pushes 0");
+    ihadd(0x40,"N PUSH Bytes\nReads an (unsigned) count byte from the\ninstruction stream, then reads and pushes\nthat many unsigned bytes");
+    ihadd(0x41,"N PUSH Words\nReads an (unsigned) count byte from the\ninstruction stream, then reads and pushes\nthat many signed 2byte words");
+    ihaddr(0x6c,0x6f,"No ROUNDing of value[ab]\n ab=0 => grey distance\n ab=1 => black distance\n ab=2 => white distance\nPops a coordinate (26.6), changes it (without\nrounding) to compensate for engine effects\npushes it back" );
+    ihadd(0x56,"ODD\nPops one value, rounds it and tests if it is odd(0/1)");
+    ihadd(0x5b,"logical OR\nPops two values, ors them, pushes result");
+    ihadd(0x21,"POP top stack element");
+    ihaddr(0xb0,0xb7,"PUSH Byte[abc]\n abc is the number-1 of bytes to push\nReads abc+1 unsigned bytes from\nthe instruction stream and pushes them");
+    ihaddr(0xb8,0xbf,"PUSH Word[abc]\n abc is the number-1 of words to push\nReads abc+1 signed words from\nthe instruction stream and pushes them");
+    ihadd(0x45,"Read Control Value Table entry\nPops an index to the CVT and\npushes it in 26.6 format");
+    ihadd(0x7d,"Round Down To Grid\n\nSets round state to the obvious");
+    ihadd(0x7a,"Round OFF\nSets round state so that no rounding occurs\nbut engine compensation does");
+    ihadd(0x8a,"ROLL the top three stack elements");
+    ihaddr(0x68,0x6b,"ROUND value[ab]\n ab=0 => grey distance\n ab=1 => black distance\n ab=2 => white distance\nRounds a coordinate (26.6) at top of stack\nand compensates for engine effects" );
+    ihadd(0x43,"Read Store\nPops an index into store array\nPushes value at that index");
+    ihadd(0x3d,"Round To Double Grid\nSets the round state (round to closest .5/int)");
+    ihadd(0x18,"Round To Grid\nSets the round state");
+    ihadd(0x19,"Round To Half Grid\nSets the round state (round to closest .5 not int)");
+    ihadd(0x7c,"Round Up To Grid\nSets the round state");
+    ihadd(0x77,"Super 45\260 ROUND\nToo complicated. Look it up");
+    ihadd(0x7e,"Set ANGle Weight\nPops an int, and sets the angle\nweight state variable to it\nObsolete");
+    ihadd(0x85,"SCAN conversion ConTRoL\nPops a number which sets the\ndropout control mode");
+    ihadd(0x8d,"SCANTYPE\nPops number which sets which scan\nconversion rules to use");
+    ihadd(0x48,"Sets Coordinate From Stack using projection & freedom vectors\nPops a coordinate 26.6 and a point\nMoves point to given coordinate");
+    ihadd(0x1d,"Sets Control Value Table Cut-In\nPops 26.6 from stack, sets cvt cutin");
+    ihadd(0x5e,"Set Delta Base\nPops value sets delta base");
+    ihaddr(0x86,0x87,"Set Dual Projection Vector To Line[a]\n 0 => parallel to line\n 1=>orthogonal to line\nPops two points used to establish the line\nSets a second projection vector based on original\npositions of points");
+    ihadd(0x5F,"Set Delta Shift\nPops a new value for delta shift");
+    ihadd(0x0b,"Set Freedom Vector From Stack\npops 2 2.14 values (x,y) from stack\nmust be a unit vector");
+    ihaddr(0x04,0x05,"Set Freedom Vector To Coordinate Axis[a]\n 0=>y axis\n 1=>x axis\n" );
+    ihaddr(0x08,0x09,"Set Fredom Vector To Line[a]\n 0 => parallel to line\n 1=>orthogonal to line\nPops two points used to establish the line\nSets the freedom vector" );
+    ihadd(0x0e,"Set Freedom Vector To Projection Vector");
+    ihaddr(0x34,0x35,"SHift Contour using reference point[a]\n 0=>uses rp2 in zp1\n 1=>uses rp1 in zp0\nPops number of contour to be shifted\nShifts the entire contour by the amount\nreference point was shifted");
+    ihaddr(0x32,0x33,"SHift Point using reference point[a]\n 0=>uses rp2 in zp1\n 1=>uses rp1 in zp0\nPops as many points as specified by the loop count\nShifts each by the amount the reference\npoint was shifted");
+    ihadd(0x38,"SHift point by a PIXel amount\nPops an amount (26.6) and as many points\nas the loop counter specifies\neach point is shifted along the FREEDOM vector");
+    ihaddr(0x36,0x37,"SHift Zone using reference point[a]\n 0=>uses rp2 in zp1\n 1=>uses rp1 in zp0\nPops the zone to be shifted\nShifts all points in zone by the amount\nthe reference point was shifted");
+    ihadd(0x17,"Set LOOP variable\nPops the new value for the loop counter\nDefaults to 1 after each use");
+    ihadd(0x1a,"Set Minimum Distance\nPops a 26.6 value from stack to be new minimum distance");
+    ihadd(0x0a,"Set Projection Vector From Stack\npops 2 2.14 values (x,y) from stack\nmust be a unit vector");
+    ihaddr(0x02,0x03,"Set Projection Vector To Coordinate Axis[a]\n 0=>y axis\n 1=>x axis\n" );
+    ihaddr(0x06,0x07,"Set Projection Vector To Line[a]\n 0 => parallel to line\n 1=>orthogonal to line\nPops two points used to establish the line\nSets the projection vector" );
+    ihadd(0x76,"Super ROUND\nToo complicated. Look it up");
+    ihadd(0x10,"Set Reference Point 0\nPops a point which becomes the new rp0");
+    ihadd(0x11,"Set Reference Point 1\nPops a point which becomes the new rp1");
+    ihadd(0x12,"Set Reference Point 2\nPops a point which becomes the new rp2");
+    ihadd(0x1f,"Set Single Width\nPops value for single width value (FUnit)");
+    ihadd(0x1e,"Set Single Width Cut-In\nPops value for single width cut-in value (26.6)");
+    ihadd(0x61,"SUBtract\nPops two 26.6 fixed numbers from stack\nsubtracts them, pushes result");
+    ihaddr(0x00,0x01,"Set freedom & projection Vectors To Coordinate Axis[a]\n 0=>both to y axis\n 1=>both to x axis\n" );
+    ihadd(0x23,"SWAP top two elements on stack");
+    ihadd(0x13,"Set Zone Pointer 0\nPops the zone number into zp0");
+    ihadd(0x14,"Set Zone Pointer 1\nPops the zone number into zp1");
+    ihadd(0x15,"Set Zone Pointer 2\nPops the zone number into zp2");
+    ihadd(0x16,"Set Zone PointerS\nPops the zone number into zp0,zp1 and zp2");
+    ihadd(0x29,"UnTouch Point\nPops a point number and marks it untouched");
+    ihadd(0x70,"Write Control Value Table in Funits\nPops a number(Funits) and a\nCVT index and writes the number to cvt[index]");
+    ihadd(0x44,"Write Control Value Table in Pixel units\nPops a number(26.6) and a\nCVT index and writes the number to cvt[index]");
+    ihadd(0x42,"Write Store\nPops a value and an index and writes the value to storage[index]");
+}
+
+enum byte_types { bt_instr, bt_cnt, bt_byte, bt_wordhi, bt_wordlo };
+struct instrdata {
+    uint8 *instrs;
+    int instr_cnt, max;
+    uint8 *bts;
+    unsigned int changed: 1;
+    unsigned int in_composit: 1;
+};
+
+struct instrinfo {
+    GWindow v;
+    GGadget *vsb;
+    int16 sbw;
+    int16 vheight, vwidth;
+    int16 lheight,lpos;
+    int16 as, fh;
+    struct instrdata *instrdata;
+    GFont *gfont;
+    int isel_pos;
+    unsigned int showaddr: 1;
+    unsigned int showhex: 1;
+    unsigned int mousedown: 1;
+    void (*selection_callback)(struct instrinfo *);
+};
+
+typedef struct instrdlg {
+    GWindow gw, v;
+    unsigned int done: 1;
+    unsigned int good: 1;
+    struct instrdata *instrdata;
+    struct instrinfo instrinfo;
+    int oc_height;
+    GGadget *ok, *cancel;
+} InstrDlg;
+
+static void instr_typify(struct instrinfo *instrinfo) {
+    int i, len = instrinfo->instrdata->instr_cnt, cnt, j, lh;
+    uint8 *instrs = instrinfo->instrdata->instrs;
+    uint8 *bts;
+
+    if ( instrinfo->instrdata->bts==NULL )
+	instrinfo->instrdata->bts = galloc(len);
+    bts = instrinfo->instrdata->bts;
+    for ( i=lh=0; i<len; ++i ) {
+	bts[i] = bt_instr;
+	++lh;
+	if ( instrs[i]==ttf_npushb ) {
+	    /* NPUSHB */
+	    bts[++i] = bt_cnt;
+	    cnt = instrs[i];
+	    for ( j=0 ; j<cnt; ++j)
+		bts[++i] = bt_byte;
+	    lh += 1+cnt;
+	} else if ( instrs[i]==ttf_npushw ) {
+	    /* NPUSHW */
+	    bts[++i] = bt_cnt; ++lh;
+	    cnt = instrs[i];
+	    for ( j=0 ; j<cnt; ++j) {
+		bts[++i] = bt_wordhi;
+		bts[++i] = bt_wordlo;
+	    }
+	    lh += 1+cnt;
+	} else if ( (instrs[i]&0xf8) == 0xb0 ) {
+	    /* PUSHB[n] */
+	    cnt = (instrs[i]&7)+1;
+	    for ( j=0 ; j<cnt; ++j)
+		bts[++i] = bt_byte;
+	    lh += cnt;
+	} else if ( (instrs[i]&0xf8) == 0xb8 ) {
+	    /* PUSHW[n] */
+	    cnt = (instrs[i]&7)+1;
+	    for ( j=0 ; j<cnt; ++j) {
+		bts[++i] = bt_wordhi;
+		bts[++i] = bt_wordlo;
+	    }
+	    lh += cnt;
+	}
+    }
+    instrinfo->lheight = lh;
+}
+
+static void instr_resize(InstrDlg *iv,GEvent *event) {
+    GRect pos, size;
+    int lh;
+    struct instrinfo *ii = &iv->instrinfo;
+
+    /* Multiple of the number of lines we've got */
+    if ( (event->u.resize.size.height-iv->oc_height-4)%ii->fh!=0 ) {
+	int lc = (event->u.resize.size.height-iv->oc_height+ii->fh/2)/ii->fh;
+	if ( lc<=0 ) lc = 1;
+	GDrawResize(iv->gw, event->u.resize.size.width,lc*ii->fh+iv->oc_height+4);
+return;
+    }
+
+    pos.width = GDrawPointsToPixels(iv->gw,_GScrollBar_Width);
+    pos.height = event->u.resize.size.height-iv->oc_height;
+    pos.x = event->u.resize.size.width-pos.width; pos.y = 0;
+    GGadgetResize(ii->vsb,pos.width,pos.height);
+    GGadgetMove(ii->vsb,pos.x,pos.y);
+    pos.width = pos.x; pos.x = 0;
+    GDrawResize(ii->v,pos.width,pos.height);
+
+    GGadgetGetSize(iv->cancel,&size);
+    GGadgetMove(iv->ok,10,event->u.resize.size.height-iv->oc_height+6);
+    GGadgetMove(iv->cancel,event->u.resize.size.width-13-size.width,event->u.resize.size.height-iv->oc_height+9);
+
+    ii->vheight = pos.height; ii->vwidth = pos.width;
+    lh = ii->lheight;
+
+    GScrollBarSetBounds(ii->vsb,0,lh,ii->vheight/ii->fh);
+    if ( ii->lpos + ii->vheight/ii->fh > lh )
+	ii->lpos = lh-ii->vheight/ii->fh;
+    if ( ii->lpos<0 ) ii->lpos = 0;
+    GScrollBarSetPos(ii->vsb,ii->lpos);
+}
+
+static void instr_expose(struct instrinfo *ii,GWindow pixmap,GRect *rect) {
+    int low, high;
+    int i,x,y;
+    char loc[8], ins[8], val[8]; unichar_t uloc[8], uins[8], uname[30];
+    int addr_end, num_end;
+    static unichar_t nums[] = { '0', '0', '0', '0', '0', '0', '\0' };
+
+    GDrawSetFont(pixmap,ii->gfont);
+    addr_end = 0;
+    if ( ii->showaddr )
+	addr_end = GDrawGetTextWidth(pixmap,nums,4,NULL)+EDGE_SPACING;
+    num_end = addr_end;
+    if ( ii->showhex )
+	num_end = addr_end + GDrawGetTextWidth(pixmap,nums,5,NULL)+4;
+
+    low = ( (rect->y-EDGE_SPACING)/ii->fh ) * ii->fh +EDGE_SPACING;
+    high = ( (rect->y+rect->height+ii->fh-1-EDGE_SPACING)/ii->fh ) * ii->fh +EDGE_SPACING;
+
+    if ( ii->isel_pos!=-1 ) {
+	GRect r;
+	r.x = 0; r.width = ii->vwidth;
+	r.y = (ii->isel_pos-ii->lpos)*ii->fh+EDGE_SPACING; r.height = ii->fh;
+	GDrawFillRect(pixmap,&r,0xffff00);
+    }
+
+    if ( ii->showaddr )
+	GDrawDrawLine(pixmap,addr_end,rect->y,addr_end,rect->y+rect->height,0x000000);
+    if ( ii->showhex )
+	GDrawDrawLine(pixmap,num_end,rect->y,num_end,rect->y+rect->height,0x000000);
+
+    for ( i=0, y=EDGE_SPACING-ii->lpos*ii->fh; y<low && i<ii->instrdata->instr_cnt; ++i ) {
+	if ( ii->instrdata->bts[i]==bt_wordhi )
+	    ++i;
+	y += ii->fh;
+    }
+    if ( y<=high && ii->instrdata->instr_cnt==0 && i==0 ) {
+	if ( ii->instrdata->in_composit ) {
+	    uc_strcpy(uname,"<instrs inherited>");
+	    GDrawDrawText(pixmap,num_end+EDGE_SPACING,y+ii->as,uname,-1,NULL,0xff0000);
+	    y += ii->fh;
+	}
+	uc_strcpy(uname,"<no instrs>");
+	GDrawDrawText(pixmap,num_end+EDGE_SPACING,y+ii->as,uname,-1,NULL,0xff0000);
+    } else for ( ; y<=high && i<ii->instrdata->instr_cnt; ++i ) {
+	sprintf( loc, "%d", i ); uc_strcpy(uloc,loc);
+	if ( ii->instrdata->bts[i]==bt_wordhi ) {
+	    sprintf( ins, " %02x%02x", ii->instrdata->instrs[i], ii->instrdata->instrs[i+1]); uc_strcpy(uins,ins);
+	    sprintf( val, " %d", (short) ((ii->instrdata->instrs[i]<<8) | ii->instrdata->instrs[i+1]) );
+	    uc_strcpy(uname,val);
+	    ++i;
+	} else if ( ii->instrdata->bts[i]==bt_cnt || ii->instrdata->bts[i]==bt_byte ) {
+	    sprintf( ins, " %02x", ii->instrdata->instrs[i] ); uc_strcpy(uins,ins);
+	    sprintf( val, " %d", ii->instrdata->instrs[i]);
+	    uc_strcpy(uname,val);
+	} else {
+	    sprintf( ins, "%02x", ii->instrdata->instrs[i] ); uc_strcpy(uins,ins);
+	    uc_strcpy(uname, instrs[ii->instrdata->instrs[i]]);
+	}
+
+	if ( ii->showaddr ) {
+	    x = addr_end - EDGE_SPACING - GDrawGetTextWidth(pixmap,uloc,-1,NULL);
+	    GDrawDrawText(pixmap,x,y+ii->as,uloc,-1,NULL,0x000000);
+	}
+	x = addr_end + EDGE_SPACING;
+	if ( ii->showhex )
+	    GDrawDrawText(pixmap,x,y+ii->as,uins,-1,NULL,0x000000);
+	GDrawDrawText(pixmap,num_end+EDGE_SPACING,y+ii->as,uname,-1,NULL,0x000000);
+	y += ii->fh;
+    }
+}
+
+static void instr_mousedown(struct instrinfo *ii,int pos) {
+    int i;
+
+    pos = (pos-2)/ii->fh + ii->lpos;
+    if ( pos>=ii->lheight )
+	pos = -1;
+
+    if ( i!=ii->isel_pos ) {
+	ii->isel_pos=pos;
+	GDrawRequestExpose(ii->v,NULL,false);
+	if ( ii->selection_callback!=NULL )
+	    (ii->selection_callback)(ii);
+    }
+}
+
+static void instr_mousemove(struct instrinfo *ii,int pos) {
+    int i,y;
+    static unichar_t buffer[1025];
+    const unichar_t *msg;
+
+    if ( ii->mousedown ) {
+	instr_mousedown(ii,y);
+return;
+    }
+
+    pos = ((pos-2)/ii->fh) * ii->fh + 2;
+
+    for ( i=0, y=2-ii->lpos*ii->fh; y<pos && i<ii->instrdata->instr_cnt; ++i ) {
+	if ( ii->instrdata->bts[i]==bt_wordhi )
+	    ++i;
+	y += ii->fh;
+    }
+    switch ( ii->instrdata->bts[i] ) {
+      case bt_wordhi: case bt_wordlo:
+	uc_strcpy(buffer,"A short to be pushed on the stack");
+	msg = buffer;
+      break;
+      case bt_cnt:
+	uc_strcpy(buffer,"A count specifying how many bytes/shorts\nshould be pushed on the stack");
+	msg = buffer;
+      break;
+      case bt_byte:
+	uc_strcpy(buffer,"An unsigned byte to be pushed on the stack");
+	msg = buffer;
+      break;
+      case bt_instr:
+	msg = instrhelppopup[ii->instrdata->instrs[i]];
+	if ( msg==NULL ) {
+	    uc_strcpy(buffer,"???");
+	    msg = buffer;
+	}
+      break;
+      default:
+	uc_strcpy(buffer,"???");
+	msg = buffer;
+      break;
+    }
+    GGadgetPreparePopup(GDrawGetParentWindow(ii->v),msg);
+}
+
+static void instr_scroll(struct instrinfo *ii,struct sbevent *sb) {
+    int newpos = ii->lpos;
+
+    switch( sb->type ) {
+      case et_sb_top:
+        newpos = 0;
+      break;
+      case et_sb_uppage:
+        newpos -= ii->vheight/ii->fh;
+      break;
+      case et_sb_up:
+        --newpos;
+      break;
+      case et_sb_down:
+        ++newpos;
+      break;
+      case et_sb_downpage:
+        newpos += ii->vheight/ii->fh;
+      break;
+      case et_sb_bottom:
+        newpos = ii->lheight-ii->vheight/ii->fh;
+      break;
+      case et_sb_thumb:
+      case et_sb_thumbrelease:
+        newpos = sb->pos;
+      break;
+    }
+    if ( newpos>ii->lheight-ii->vheight/ii->fh )
+        newpos = ii->lheight-ii->vheight/ii->fh;
+    if ( newpos<0 ) newpos =0;
+    if ( newpos!=ii->lpos ) {
+	GRect r;
+	int diff = newpos-ii->lpos;
+	ii->lpos = newpos;
+	GScrollBarSetPos(ii->vsb,ii->lpos);
+	r.x=0; r.y = EDGE_SPACING; r.width=ii->vwidth; r.height=ii->vheight-2*EDGE_SPACING;
+	GDrawScroll(ii->v,&r,0,diff*ii->fh);
+    }
+}
+
+static int IIChar(struct instrinfo *ii,GEvent *event) {
+    int pos = ii->isel_pos;
+
+    if ( event->u.chr.keysym == GK_Up || event->u.chr.keysym == GK_KP_Up )
+	--pos;
+    else if ( event->u.chr.keysym == GK_Down || event->u.chr.keysym == GK_KP_Down )
+	++pos;
+    else if ( event->u.chr.keysym == GK_Home || event->u.chr.keysym == GK_KP_Home ||
+	    event->u.chr.keysym == GK_Begin || event->u.chr.keysym == GK_KP_Begin )
+	pos = 0;
+    else if ( event->u.chr.keysym == GK_End || event->u.chr.keysym == GK_KP_End ) {
+	pos = ii->lheight-1;
+    } else
+return( false );
+    if ( pos==-2 ) pos = -1;
+    if ( pos!=ii->isel_pos ) {
+	ii->isel_pos = pos;
+	if ( pos!=-1 && (pos<ii->lpos || pos>=ii->lpos+ii->vheight/ii->fh )) {
+	    ii->lpos = pos-(ii->vheight/(3*ii->fh));
+	    if ( ii->lpos>=ii->lheight-ii->vheight/ii->fh )
+		ii->lpos = ii->lheight-ii->vheight/ii->fh-1;
+	    if ( ii->lpos<0 ) ii->lpos = 0;
+	    GScrollBarSetPos(ii->vsb,ii->lpos);
+	}
+	GDrawRequestExpose(ii->v,NULL,false);
+	if ( ii->selection_callback!=NULL )
+	    (ii->selection_callback)(ii);
+    }
+return( true );
+}
+
+static int iv_v_e_h(GWindow gw, GEvent *event) {
+    InstrDlg *iv = (InstrDlg *) GDrawGetUserData(gw);
+    struct instrinfo *ii = &iv->instrinfo;
+
+    switch ( event->type ) {
+      case et_expose:
+	instr_expose(ii,gw,&event->u.expose.rect);
+      break;
+      case et_char:
+	if ( IIChar(ii,event))
+	    /* All Done */;
+	else if ( event->u.chr.keysym == GK_Help || event->u.chr.keysym == GK_F1 )
+	    help("ttfinstrs.html");
+      break;
+      case et_mousemove: case et_mousedown: case et_mouseup:
+	GGadgetEndPopup();
+	if ( event->type==et_mousemove )
+	    instr_mousemove(ii,event->u.mouse.y);
+	else if ( event->type==et_mousedown ) {
+	    instr_mousedown(ii,event->u.mouse.y);
+	    if ( event->u.mouse.clicks==2 )
+		/*InstrModCreate(ii)*/;
+	} else {
+	    instr_mousemove(ii,event->u.mouse.y);
+	    ii->mousedown = false;
+	}
+      break;
+      case et_timer:
+      break;
+      case et_focus:
+      break;
+    }
+return( true );
+}
+
+static int iv_e_h(GWindow gw, GEvent *event) {
+    InstrDlg *iv = (InstrDlg *) GDrawGetUserData(gw);
+
+    switch ( event->type ) {
+      case et_expose:
+	  GDrawDrawLine(gw,0,iv->instrinfo.vheight,
+		  iv->instrinfo.vwidth+400,iv->instrinfo.vheight,0x000000);
+      break;
+      case et_resize:
+	instr_resize(iv,event);
+      break;
+      case et_char:
+	if ( event->u.chr.keysym == GK_Help || event->u.chr.keysym == GK_F1 )
+	    help("ttfinstrs.html");
+      break;
+      case et_controlevent:
+	switch ( event->u.control.subtype ) {
+	  case et_scrollbarchange:
+	    instr_scroll(&iv->instrinfo,&event->u.control.u.sb);
+	  break;
+	  case et_buttonactivate:
+	    iv->done = true;
+	    iv->good = event->u.control.g == iv->ok;
+	  break;
+	}
+      break;
+      case et_close:
+	iv->done = true;;
+      break;
+    }
+return( true );
+}
+
+static int InstrDlgCreate(struct instrdata *id,unichar_t *title) {
+    InstrDlg iv;
+    GRect pos;
+    GWindow gw;
+    GWindowAttrs wattrs;
+    FontRequest rq;
+    static unichar_t monospace[] = { 'c','o','u','r','i','e','r',',','m', 'o', 'n', 'o', 's', 'p', 'a', 'c', 'e',',','c','a','s','l','o','n',',','u','n','i','f','o','n','t', '\0' };
+    int as,ds,ld, lh;
+    GGadgetData gd;
+    GGadget *sb;
+    GTextInfo label;
+
+    instrhelpsetup();
+
+    memset(&iv,0,sizeof(iv));
+    iv.instrdata = id;
+    iv.instrinfo.instrdata = id;
+    iv.instrinfo.showhex = iv.instrinfo.showaddr = true;
+    instr_typify(&iv.instrinfo);
+
+    if ( ttf_icon==NULL )
+	ttf_icon = GDrawCreateBitmap(NULL,ttf_width,ttf_height,ttf_bits);
+
+    memset(&wattrs,0,sizeof(wattrs));
+    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_icon|wam_restrict;
+    wattrs.event_masks = ~(1<<et_charup);
+    wattrs.restrict_input_to_me = 1;
+    wattrs.undercursor = 1;
+    wattrs.cursor = ct_pointer;
+    wattrs.window_title = title;
+    wattrs.icon = ttf_icon;
+    pos.x = pos.y = 0;
+    pos.width =GDrawPointsToPixels(NULL,200);
+    iv.oc_height = GDrawPointsToPixels(NULL,37);
+    pos.height = GDrawPointsToPixels(NULL,100) + iv.oc_height;
+    iv.gw = gw = GDrawCreateTopWindow(NULL,&pos,iv_e_h,&iv,&wattrs);
+
+    memset(&label,0,sizeof(label));
+    memset(&gd,0,sizeof(gd));
+    gd.pos.x = 5; gd.pos.y = 105;
+    gd.pos.width = -1;
+    label.text = (unichar_t *) _STR_OK;
+    label.text_in_resource = true;
+    gd.label = &label;
+    gd.flags = gg_visible|gg_enabled|gg_but_default;
+    iv.ok = GButtonCreate(gw,&gd,&iv);
+    gd.pos.x = -8; gd.pos.y += 3;
+    gd.pos.width = -1;
+    label.text = (unichar_t *) _STR_Cancel;
+    label.text_in_resource = true;
+    gd.label = &label;
+    gd.flags = gg_visible|gg_enabled|gg_but_cancel;
+    iv.cancel = GButtonCreate(gw,&gd,&iv);
+
+    gd.pos.y = 0; gd.pos.height = pos.height-GDrawPointsToPixels(NULL,40);
+    gd.pos.width = GDrawPointsToPixels(gw,_GScrollBar_Width);
+    gd.pos.x = pos.width-gd.pos.width;
+    gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_sb_vert;
+    iv.instrinfo.vsb = sb = GScrollBarCreate(gw,&gd,&iv);
+
+    wattrs.mask = wam_events|wam_cursor;
+    pos.x = 0; pos.y = 0;
+    pos.width = gd.pos.x; pos.height = gd.pos.height;
+    iv.instrinfo.v = GWidgetCreateSubWindow(gw,&pos,iv_v_e_h,&iv,&wattrs);
+    GDrawSetVisible(iv.instrinfo.v,true);
+
+    memset(&rq,0,sizeof(rq));
+    rq.family_name = monospace;
+    rq.point_size = -12;
+    rq.weight = 400;
+    iv.instrinfo.gfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+    GDrawSetFont(iv.instrinfo.v,iv.instrinfo.gfont);
+    GDrawFontMetrics(iv.instrinfo.gfont,&as,&ds,&ld);
+    iv.instrinfo.as = as+1;
+    iv.instrinfo.fh = iv.instrinfo.as+ds;
+    iv.instrinfo.isel_pos = -1;
+
+    lh = iv.instrinfo.lheight;
+    if ( lh>40 ) lh = 40;
+    if ( lh<4 ) lh = 4;
+    GDrawResize(iv.gw,pos.width+gd.pos.width,iv.oc_height+lh*iv.instrinfo.fh+4);
+
+    GDrawSetVisible(gw,true);
+
+    while ( !iv.done )
+	GDrawProcessOneEvent(NULL);
+    GDrawDestroyWindow(gw);
+
+    free(id->bts); id->bts = NULL;
+return( iv.good );
+}
+
+void SCShowInstructions(SplineChar *sc, CharView *cv) {
+    struct instrdata id;
+    unichar_t title[100];
+
+    if ( cv!=NULL ) {
+	sc = cv->sc;
+	cv->showpointnumbers = true;
+	SCNumberPoints(sc);
+	GDrawRequestExpose(cv->v,NULL,false);
+    }
+    memset(&id,0,sizeof(id));
+    id.instr_cnt = id.max = sc->ttf_instrs_len;
+    id.instrs = galloc(id.max+1);
+    if ( sc->ttf_instrs!=NULL )
+	memcpy(id.instrs,sc->ttf_instrs,id.instr_cnt);
+    u_sprintf(title,GStringGetResource(_STR_TTFInstructionsFor,NULL),sc->name);
+    if ( InstrDlgCreate(&id,title)) {
+	if ( id.changed ) {
+	    free(sc->ttf_instrs);
+	    sc->ttf_instrs_len = id.instr_cnt;
+	    if ( id.instr_cnt==0 )
+		sc->ttf_instrs = NULL;
+	    else {
+		sc->ttf_instrs = galloc( id.instr_cnt );
+		memcpy(sc->ttf_instrs,id.instrs,id.instr_cnt );
+	    }
+	}
+    }
+    free( id.instrs );
+    if ( cv!=NULL ) {
+	cv->showpointnumbers = false;
+	GDrawRequestExpose(cv->v,NULL,false);
+    }
+}
