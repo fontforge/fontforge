@@ -1608,7 +1608,9 @@ return;
 
     CVPaletteActivate(cv);
     CVToolsSetCursor(cv,TrueCharState(event),NULL);
-    if ( event->u.chr.keysym=='s' &&
+    if ( cv->dv!=NULL && DVChar(cv->dv,event))
+	/* All Done */;
+    else if ( event->u.chr.keysym=='s' &&
 	    (event->u.chr.state&ksm_control) &&
 	    (event->u.chr.state&ksm_meta) )
 	MenuSaveAll(NULL,NULL,NULL);
@@ -2262,7 +2264,7 @@ return;
     }
 }
 
-void SCNumberPoints(SplineChar *sc) {
+int SCNumberPoints(SplineChar *sc) {
     int pnum=0;
     SplineSet *ss;
     SplinePoint *sp;
@@ -2285,6 +2287,7 @@ void SCNumberPoints(SplineChar *sc) {
 	break;
 	}
     }
+return( pnum );
 }
 
 static void instrcheck(SplineChar *sc) {
@@ -2974,9 +2977,20 @@ void CVResize(CharView *cv ) {
 	int sbwidth = newwidth, sbheight = newheight;
 
 	if ( cv->dv!=NULL ) {
-	    int dvheight = size.height-(cv->mbh+cv->infoh);
 	    newwidth -= cv->dv->dwidth;
 	    sbwidth -= cv->dv->dwidth;
+	}
+	if ( newwidth<30 || newheight<50 ) {
+	    if ( newwidth<30 )
+		newwidth = 30+sbsize+(cv->dv!=NULL ? cv->dv->dwidth : 0);
+	    if ( newheight<50 )
+		newheight = 50+sbsize+cv->mbh+cv->infoh;
+	    GDrawResize(cv->gw,newwidth,newheight);
+return;
+	}
+
+	if ( cv->dv!=NULL ) {
+	    int dvheight = size.height-(cv->mbh+cv->infoh);
 	    GDrawMove(cv->dv->dv,size.width-cv->dv->dwidth,cv->mbh+cv->infoh);
 	    GDrawResize(cv->dv->dv,cv->dv->dwidth,dvheight);
 	    GDrawResize(cv->dv->ii.v,cv->dv->dwidth-sbsize,dvheight-cv->dv->toph);

@@ -155,6 +155,7 @@ typedef struct debugview {
     int dwidth, toph;
     struct charview *cv;
     double scale;
+    GWindow points, cvt, regs, stack, storage;
 } DebugView;
 
 typedef struct charview {
@@ -820,7 +821,7 @@ extern void SVDetachFV(FontView *fv);
 extern void SFShowKernPairs(SplineFont *sf,SplineChar *sc,AnchorClass *ac);
 extern void SFShowLigatures(SplineFont *sf);
 
-extern void SCNumberPoints(SplineChar *sc);
+extern int  SCNumberPoints(SplineChar *sc);
 extern void SCEditInstructions(SplineChar *sc);
 extern void SFEditTable(SplineFont *sf, uint32 tag);
 extern void IIScrollTo(struct instrinfo *ii,int ip,int mark_stop);
@@ -834,6 +835,7 @@ extern void SCDeGridFit(SplineChar *sc);
 
 extern void CVDebugReInit(CharView *cv,int restart_debug,int dbg_fpgm);
 extern void CVDebugFree(DebugView *dv);
+extern int DVChar(DebugView *dv, GEvent *e);
 
 struct debugger_context;
 extern void DebuggerTerminate(struct debugger_context *dc);
@@ -844,6 +846,8 @@ extern void DebuggerGo(struct debugger_context *dc,enum debug_gotype);
 extern struct  TT_ExecContextRec_ *DebuggerGetEContext(struct debugger_context *dc);
 extern void DebuggerToggleBp(struct debugger_context *dc,int range,int ip);
 extern int DebuggerBpCheck(struct debugger_context *dc,int range,int ip);
+extern void DebuggerSetWatches(struct debugger_context *dc,int n, uint8 *w);
+extern uint8 *DebuggerGetWatches(struct debugger_context *dc, int *n);
 
 extern GMenuItem helplist[];
 #endif

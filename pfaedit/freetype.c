@@ -724,6 +724,9 @@ struct debugger_context {
     unsigned int has_finished: 1;
     unsigned int debug_fpgm: 1;
     unsigned int multi_step: 1;
+    unsigned int found_wp: 1;
+    unsigned int initted_pts: 1;
+    int wp_ptindex;
     real ptsize;
     int dpi;
     TT_ExecContext exc;
@@ -731,7 +734,30 @@ struct debugger_context {
     BpData temp;
     BpData breaks[32];
     int bcnt;
+    FT_Vector *oldpts;
+    int n_points;
+    uint8 *watch;
 };
+
+static int AtWp(struct debugger_context *dc, TT_ExecContext exc ) {
+    int i, hit=false;
+
+    dc->found_wp = false;
+    if ( dc->watch==NULL )
+return( false );
+
+    for ( i=0; i<exc->pts.n_points; ++i ) {
+	if ( dc->oldpts[i].x!=exc->pts.cur[i].x || dc->oldpts[i].y!=exc->pts.cur[i].y ) {
+	    dc->oldpts[i] = exc->pts.cur[i];
+	    if ( dc->watch[i] ) {
+		hit = true;
+		dc->wp_ptindex = i;
+	    }
+	}
+    }
+    dc->found_wp = hit;
+return( hit );
+}
 
 static int AtBp(struct debugger_context *dc, TT_ExecContext exc ) {
     int i;
@@ -763,18 +789,34 @@ return( TT_Err_Execution_Too_Long );		/* Some random error code, says we're prob
 return( _TT_RunIns(exc));	/* This should run to completion */
     }
 
+    /* Set up for watch points */
+    if ( dc->oldpts==NULL && exc->pts.n_points!=0 ) {
+	dc->oldpts = gcalloc(exc->pts.n_points,sizeof(FT_Vector));
+	dc->n_points = exc->pts.n_points;
+    }
+    if ( exc->pts.n_points!=0 && !dc->initted_pts ) {
+	AtWp(dc,exc);
+	dc->found_wp = false;
+	dc->initted_pts = true;
+    }
+
     pthread_cond_signal(&dc->parent_cond);
     pthread_cond_wait(&dc->child_cond,&dc->child_mutex);
     if ( dc->terminate )
 return( TT_Err_Execution_Too_Long );
+
     do {
 	exc->instruction_trap = 1;
 	ret = _TT_RunIns(exc);
 	if ( ret )
     break;
 	/* Signal the parent if we are single stepping, or if we've reached a break-point */
-	if ( !dc->multi_step || AtBp(dc,exc) ||
+	if ( AtWp(dc,exc) || !dc->multi_step || AtBp(dc,exc) ||
 		(exc->curRange==tt_coderange_glyph && exc->IP==exc->codeSize)) {
+	    if ( dc->found_wp ) {
+		GWidgetPostNoticeR(_STR_HitWatchPoint,_STR_HitWatchPointn,dc->wp_ptindex);
+		dc->found_wp = true;
+	    }
 	    pthread_cond_signal(&dc->parent_cond);
 	    pthread_cond_wait(&dc->child_cond,&dc->child_mutex);
 	}
@@ -835,6 +877,8 @@ void DebuggerTerminate(struct debugger_context *dc) {
 	FreeTypeFreeContext(dc->ftc);
     if ( dc->context!=NULL )
 	_FT_Done_FreeType( dc->context );
+    free(dc->watch);
+    free(dc->oldpts);
     free(dc);
 }
 
@@ -857,6 +901,7 @@ void DebuggerReset(struct debugger_context *dc,real ptsize,int dpi,int dbg_fpgm)
     dc->ptsize = ptsize;
     dc->dpi = dpi;
     dc->terminate = dc->has_finished = false;
+    dc->initted_pts = false;
 
     pthread_create(&dc->thread,NULL,StartChar,(void *) dc);
     dc->has_thread = true;
@@ -974,6 +1019,23 @@ return;
     dc->breaks[i].range = range;
     dc->breaks[i].ip = ip;
 }
+
+void DebuggerSetWatches(struct debugger_context *dc,int n, uint8 *w) {
+    free(dc->watch); dc->watch=NULL;
+    if ( n!=dc->n_points ) GDrawIError("Bad watchpoint count");
+    else {
+	dc->watch = w;
+	if ( dc->exc ) {
+	    AtWp(dc,dc->exc);
+	    dc->found_wp = false;
+	}
+    }
+}
+
+uint8 *DebuggerGetWatches(struct debugger_context *dc, int *n) {
+    *n = dc->n_points;
+return( dc->watch );
+}
 #else
 
 void DebuggerTerminate(struct debugger_context *dc) {
@@ -990,6 +1052,14 @@ void DebuggerGo(struct debugger_context *dc,enum debug_gotype) {
 }
 
 struct TT_ExecContextRec_ *DebuggerGetEContext(struct debugger_context *dc) {
+return( NULL );
+}
+
+void DebuggerSetWatches(struct debugger_context *dc,int n, uint8 *w) {
+}
+
+uint8 *DebuggerGetWatches(struct debugger_context *dc, int *n) {
+    *n = 0;
 return( NULL );
 }
 #endif

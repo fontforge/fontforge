@@ -2126,7 +2126,14 @@ static char *str_StepPopup = "Step into";
 static char *str_NextPopup = "Step over (Next)";
 static char *str_StepOutOfPopup = "Step out of current function";
 static char *str_ContinuePopup = "Continue";
+static char *str_WatchPointPopup = "Watch all selected points\n(stop when a point moves)";
 static char *str_TooManyBreakpoints = "Too Many Breakpoints";
+static char *str_NoWatchPoints = "No Watch Points";
+static char *str_NoWatchPointsWithRefs = "Watch Points not supported in glyphs with references";
+static char *str_HitWatchPoint = "Hit Watch Point";
+static char *str_HitWatchPointn = "Point %d was moved by the previous instruction"
+static char *str_TTRegisters = "Registers (TrueType)";
+static char *str_TTStack = "Stack (TrueType)";
 
 static int num_buttonsize = 55;
 static int num_ScaleFactor = 100;

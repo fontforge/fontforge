@@ -25,6 +25,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
+#include <gkeysym.h>
+#include <ustring.h>
 
 #ifndef FREETYPE_HAS_DEBUGGER
 void CVDebugReInit(CharView *cv,int restart_debug) {
@@ -54,6 +56,110 @@ static void DVToggleBp(struct instrinfo *ii, int ip) {
     if ( exc==NULL )
 return;
     DebuggerToggleBp(dv->dc,exc->curRange,ip);
+}
+
+static void DVRegExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
+    TT_ExecContext exc = DebuggerGetEContext(dv->dc);
+    char buffer[100];
+    unichar_t ubuffer[100];
+    int y;
+
+    GDrawFillRect(pixmap,&event->u.expose.rect,0xb0b0b0);
+    if ( exc==NULL )
+return;
+    GDrawSetFont(pixmap,dv->ii.gfont);
+    y = 3+dv->ii.as;
+
+    sprintf( buffer, " rp0: %d", exc->GS.rp0 ); uc_strcpy(ubuffer,buffer);
+    GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0); y += dv->ii.fh;
+    sprintf( buffer, " rp1: %d", exc->GS.rp1 ); uc_strcpy(ubuffer,buffer);
+    GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0); y += dv->ii.fh;
+    sprintf( buffer, " rp2: %d", exc->GS.rp2 ); uc_strcpy(ubuffer,buffer);
+    GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0); y += dv->ii.fh;
+    sprintf( buffer, "loop: %d", exc->GS.loop ); uc_strcpy(ubuffer,buffer);
+    GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0); y += dv->ii.fh;
+    y+=2;
+
+    sprintf( buffer, " zp0: %s", exc->GS.gep0?"Normal":"Twilight" ); uc_strcpy(ubuffer,buffer);
+    GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0); y += dv->ii.fh;
+    sprintf( buffer, " zp1: %s", exc->GS.gep1?"Normal":"Twilight" ); uc_strcpy(ubuffer,buffer);
+    GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0); y += dv->ii.fh;
+    sprintf( buffer, " zp2: %s", exc->GS.gep2?"Normal":"Twilight" ); uc_strcpy(ubuffer,buffer);
+    GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0); y += dv->ii.fh;
+    y+=2;
+
+    sprintf( buffer, "MinDist: %.2f", exc->GS.minimum_distance/64.0 ); uc_strcpy(ubuffer,buffer);
+    GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0); y += dv->ii.fh;
+    sprintf( buffer, "CvtCutin: %.2f", exc->GS.control_value_cutin/64.0 ); uc_strcpy(ubuffer,buffer);
+    GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0); y += dv->ii.fh;
+    sprintf( buffer, "SingWidCut: %.2f", exc->GS.single_width_cutin/64.0 ); uc_strcpy(ubuffer,buffer);
+    GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0); y += dv->ii.fh;
+    sprintf( buffer, "SingWidVal: %.2f", exc->GS.single_width_value/64.0 ); uc_strcpy(ubuffer,buffer);
+    GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0); y += dv->ii.fh;
+    y+=2;
+
+    sprintf( buffer, "freeVec: %g,%g", (((int)exc->GS.freeVector.x<<16)>>(16+14)) + ((exc->GS.freeVector.x&0x3fff)/16384.0),
+	    (((int)exc->GS.freeVector.y<<16)>>(16+14)) + ((exc->GS.freeVector.y&0x3fff)/16384.0) ); uc_strcpy(ubuffer,buffer);
+    GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0); y += dv->ii.fh;
+    sprintf( buffer, "projVec: %g,%g", (((int)exc->GS.projVector.x<<16)>>(16+14)) + ((exc->GS.projVector.x&0x3fff)/16384.0),
+	    (((int)exc->GS.projVector.y<<16)>>(16+14)) + ((exc->GS.projVector.y&0x3fff)/16384.0) ); uc_strcpy(ubuffer,buffer);
+    GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0); y += dv->ii.fh;
+    sprintf( buffer, "dualVec: %g,%g", (((int)exc->GS.dualVector.x<<16)>>(16+14)) + ((exc->GS.dualVector.x&0x3fff)/16384.0),
+	    (((int)exc->GS.dualVector.y<<16)>>(16+14)) + ((exc->GS.dualVector.y&0x3fff)/16384.0) ); uc_strcpy(ubuffer,buffer);
+    GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0); y += dv->ii.fh;
+    y+=2;
+
+    sprintf( buffer, "AutoFlip: %s", exc->GS.auto_flip?"True": "False" ); uc_strcpy(ubuffer,buffer);
+    GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0); y += dv->ii.fh;
+    sprintf( buffer, "DeltaBase: %d", exc->GS.delta_base ); uc_strcpy(ubuffer,buffer);
+    GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0); y += dv->ii.fh;
+    sprintf( buffer, "DeltaShift: %d", exc->GS.delta_shift ); uc_strcpy(ubuffer,buffer);
+    GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0); y += dv->ii.fh;
+    sprintf( buffer, "RndState: %s",
+	    exc->GS.round_state==TT_Round_To_Half_Grid? "To Half Grid" :
+	    exc->GS.round_state==TT_Round_To_Grid? "To Grid" :
+	    exc->GS.round_state==TT_Round_To_Double_Grid? "To Double Grid" :
+	    exc->GS.round_state==TT_Round_Down_To_Grid? "Down To Grid" :
+	    exc->GS.round_state==TT_Round_Up_To_Grid? "Up To Grid" :
+	    exc->GS.round_state==TT_Round_Off? "Off" :
+	    exc->GS.round_state==TT_Round_Super? "Super" :
+	    exc->GS.round_state==TT_Round_Super_45? "Super45" :
+		"Unknown" );
+    uc_strcpy(ubuffer,buffer);
+    GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0); y += dv->ii.fh;
+    sprintf( buffer, "SRndPeriod: %.2f", exc->period/64.0 ); uc_strcpy(ubuffer,buffer);
+    GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0); y += dv->ii.fh;
+    sprintf( buffer, "SRndPhase: %.2f", exc->phase/64.0 ); uc_strcpy(ubuffer,buffer);
+    GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0); y += dv->ii.fh;
+    sprintf( buffer, "SRndThreshold: %.2f", exc->threshold/64.0 ); uc_strcpy(ubuffer,buffer);
+    GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0); y += dv->ii.fh;
+    sprintf( buffer, "InstrControl: %d", exc->GS.instruct_control ); uc_strcpy(ubuffer,buffer);
+    GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0); y += dv->ii.fh;
+    sprintf( buffer, "ScanControl: %s", exc->GS.scan_control?"True": "False" ); uc_strcpy(ubuffer,buffer);
+    GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0); y += dv->ii.fh;
+    sprintf( buffer, "ScanType: %d", exc->GS.scan_type ); uc_strcpy(ubuffer,buffer);
+    GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0); y += dv->ii.fh;
+
+    /* Instruction control, scan control, scan type, phase, threshold for super rounding */
+}
+
+static void DVStackExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
+    TT_ExecContext exc = DebuggerGetEContext(dv->dc);
+    char buffer[100];
+    unichar_t ubuffer[100];
+    int i, y;
+
+    GDrawFillRect(pixmap,&event->u.expose.rect,0xb0b0b0);
+    if ( exc==NULL )
+return;
+    GDrawSetFont(pixmap,dv->ii.gfont);
+    y = 3+dv->ii.as;
+    for ( i=exc->top-1; i>=0; --i ) {
+	sprintf(buffer, "%3d: %3d (0x%x)", i, exc->stack[i], exc->stack[i] );
+	uc_strcpy(ubuffer,buffer);
+	GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0);
+	y += dv->ii.fh;
+    }
 }
 
 static SplineSet *SplineSetsFromPoints(TT_GlyphZoneRec *pts, real scale) {
@@ -167,7 +273,16 @@ static void DVFigureNewState(DebugView *dv,TT_ExecContext exc) {
 	dv->cv->gridfit = SplineSetsFromPoints(&exc->pts,dv->scale);
 	dv->cv->ft_gridfitwidth = exc->pts.cur[exc->pts.n_points-1].x * dv->scale;
 	GDrawRequestExpose(dv->cv->v,NULL,false);
+	if ( dv->regs!=NULL )
+	    GDrawRequestExpose(dv->regs,NULL,false);
+	if ( dv->stack!=NULL )
+	    GDrawRequestExpose(dv->stack,NULL,false);
     }
+}
+
+static void DVGoFigure(DebugView *dv,enum debug_gotype go) {
+    DebuggerGo(dv->dc,go);
+    DVFigureNewState(dv,DebuggerGetEContext(dv->dc));
 }
 
 static int DV_Run(GGadget *g, GEvent *e) {
@@ -175,20 +290,174 @@ static int DV_Run(GGadget *g, GEvent *e) {
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	dv = GDrawGetUserData(GGadgetGetWindow(g));
-	DebuggerGo(dv->dc,(enum debug_gotype) GGadgetGetCid(g));
-	DVFigureNewState(dv,DebuggerGetEContext(dv->dc));
+	DVGoFigure(dv,(enum debug_gotype) GGadgetGetCid(g));
+    }
+return( true );
+}
+
+static int DV_WatchPnt(GGadget *g, GEvent *e) {
+    DebugView *dv;
+    int pnum=0, n, any=0;
+    SplineSet *ss;
+    SplinePoint *sp;
+    uint8 *watches;
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	dv = GDrawGetUserData(GGadgetGetWindow(g));
+	if ( dv->cv->sc->refs!=NULL ) {
+	    GWidgetErrorR(_STR_NoWatchPoints,_STR_NoWatchPointsWithRefs);
+return( true );
+	}
+
+	DebuggerGetWatches(dv->dc,&n);
+	watches = gcalloc(n,sizeof(uint8));
+
+	for ( ss = dv->cv->sc->splines; ss!=NULL; ss=ss->next ) {
+	    for ( sp=ss->first; ; ) {
+		if ( sp->ttfindex == 0xffff )
+		    /* Ignore it */;
+		else if ( sp->selected && sp->ttfindex<n) {
+		    watches[pnum=sp->ttfindex] = true;
+		    any = true;
+		}
+		if ( !sp->nonextcp ) {
+		    ++pnum;
+		    if ( sp==dv->cv->p.sp && dv->cv->p.nextcp && pnum<n )
+			watches[pnum] = true;
+		}
+		if ( sp->next==NULL )
+	    break;
+		sp = sp->next->to;
+		if ( sp==ss->first )
+	    break;
+	    }
+	}
+	if ( !any ) {
+	    free(watches);
+	    watches = NULL;
+	}
+	DebuggerSetWatches(dv->dc,n,watches);
     }
 return( true );
 }
 
 static void DVExpose(GWindow pixmap, DebugView *dv,GEvent *event) {
     GDrawDrawLine(pixmap, 0, dv->toph-1, dv->dwidth, dv->toph-1, 0x000000 );
+}
+
+int DVChar(DebugView *dv, GEvent *event) {
+
+    if ( event->u.chr.state&(ksm_control|ksm_meta) || dv==NULL )
+return( false );
+    /* Can't redo F1, handled by menu */
+    if ( event->u.chr.keysym == GK_Help )
+return( false );
+    if ( event->u.chr.keysym >= GK_F1 && event->u.chr.keysym<=GK_F10 )
+return( false );
+
+    switch ( event->u.chr.keysym ) {
+      case 's': case 'S':
+	DVGoFigure(dv,dgt_step);
+      break;
+      case 'n': case 'N':
+	DVGoFigure(dv,dgt_next);
+      break;
+      case 'r': case 'R':
+	DVGoFigure(dv,dgt_stepout);
+      break;
+      case 'c': case 'C':
+	DVGoFigure(dv,dgt_continue);
+      break;
+    }
+return( true );
+}
+
+static int dvreg_e_h(GWindow gw, GEvent *event) {
+    DebugView *dv = (DebugView *) GDrawGetUserData(gw);
+
+    switch ( event->type ) {
+      case et_expose:
+	DVRegExpose(gw,dv,event);
+      break;
+      case et_char:
+return( DVChar(dv,event));
+      break;
+      case et_close:
+	GDrawDestroyWindow(dv->regs);
+      break;
+      case et_destroy:
+	dv->regs = NULL;
+      break;
+      case et_mouseup: case et_mousedown:
+      case et_mousemove:
+	GGadgetEndPopup();
+      break;
+    }
+return( true );
+}
+
+static int dvstack_e_h(GWindow gw, GEvent *event) {
+    DebugView *dv = (DebugView *) GDrawGetUserData(gw);
+
+    switch ( event->type ) {
+      case et_expose:
+	DVStackExpose(gw,dv,event);
+      break;
+      case et_char:
+return( DVChar(dv,event));
+      break;
 #if 0
-    GDrawDrawImage(pixmap, &GIcon_stepinto, NULL, 2, 2);
-    GDrawDrawImage(pixmap, &GIcon_stepover, NULL, 1*(2+16)+2, 2);
-    GDrawDrawImage(pixmap, &GIcon_stepout, NULL, 2*(2+16)+2, 2);
-    GDrawDrawImage(pixmap, &GIcon_continue, NULL, 3*(2+16)+2, 2);
+      case et_controlevent:
+	switch ( event->u.control.subtype ) {
+	  case et_scrollbarchange:
+	    stack_scroll(dv,&event->u.control.u.sb);
+	  break;
+	}
+      break;
 #endif
+      case et_close:
+	GDrawDestroyWindow(dv->stack);
+      break;
+      case et_destroy:
+	dv->stack = NULL;
+      break;
+      case et_mouseup: case et_mousedown:
+      case et_mousemove:
+	GGadgetEndPopup();
+      break;
+    }
+return( true );
+}
+
+static void DVCreateRegs(DebugView *dv) {
+    GWindowAttrs wattrs;
+    GRect pos;
+
+    memset(&wattrs,0,sizeof(wattrs));
+    wattrs.mask = wam_events|wam_cursor|wam_wtitle;
+    wattrs.event_masks = -1;
+    wattrs.cursor = ct_mypointer;
+    wattrs.window_title = GStringGetResource(_STR_TTRegisters,NULL);
+    pos.x = 0; pos.y = 0;
+    pos.width = 133; pos.height = 269;
+    dv->regs = GDrawCreateTopWindow(NULL,&pos,dvreg_e_h,dv,&wattrs);
+    GDrawSetVisible(dv->regs,true);
+}
+
+static void DVCreateStack(DebugView *dv) {
+    GWindowAttrs wattrs;
+    GRect pos;
+    /*extern int _GScrollBar_Width;*/
+
+    memset(&wattrs,0,sizeof(wattrs));
+    wattrs.mask = wam_events|wam_cursor|wam_wtitle;
+    wattrs.event_masks = -1;
+    wattrs.cursor = ct_mypointer;
+    wattrs.window_title = GStringGetResource(_STR_TTStack,NULL);
+    pos.x = 0; pos.y = 0;
+    pos.width = 133; pos.height = 269;
+    dv->stack = GDrawCreateTopWindow(NULL,&pos,dvstack_e_h,dv,&wattrs);
+    GDrawSetVisible(dv->stack,true);
 }
 
 static int dv_e_h(GWindow gw, GEvent *event) {
@@ -199,6 +468,7 @@ static int dv_e_h(GWindow gw, GEvent *event) {
 	DVExpose(gw,dv,event);
       break;
       case et_char:
+return( DVChar(dv,event));
       break;
       case et_charup:
       break;
@@ -327,6 +597,15 @@ return;
 	gcd[4].gd.popup_msg = GStringGetResource(_STR_ContinuePopup,NULL);
 	gcd[4].creator = GButtonCreate;
 
+	gcd[5].gd.pos.y = 2; gcd[5].gd.pos.x = 146;
+	gcd[5].gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
+	/*gcd[5].gd.cid = dgt_continue;*/
+	gcd[5].gd.label = &label[5];
+	label[5].image = &GIcon_watchpnt;
+	gcd[5].gd.handle_controlevent = DV_WatchPnt;
+	gcd[5].gd.popup_msg = GStringGetResource(_STR_WatchPointPopup,NULL);
+	gcd[5].creator = GButtonCreate;
+
 	GGadgetsCreate(dv->dv,gcd);
 
 	dv->ii.vsb = gcd[0].ret;
@@ -355,10 +634,12 @@ return;
 
 	if (( exc = DebuggerGetEContext(dv->dc))!=NULL )
 	    DVFigureNewState(dv,exc);
-	GDrawSetVisible(dv->dv,true);
 	GDrawSetVisible(dv->ii.v,true);
+	GDrawSetVisible(dv->dv,true);
 	CVResize(cv);
 	GDrawRequestExpose(cv->v,NULL,false);
+	DVCreateRegs(dv);
+	DVCreateStack(dv);
     } else {
 	dv->scale = scale;
 	DebuggerReset(dv->dc,cv->ft_pointsize,cv->ft_dpi,dbg_fpgm);

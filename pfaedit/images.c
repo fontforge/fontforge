@@ -2410,6 +2410,52 @@ static struct _GImage stepinto_base = {
     1
 };
 
+static uint8 watchpnt_data[] = {
+    1, 1, 1, 1, 1, 1, 1, 1, 
+	1, 1, 1, 1, 1, 1, 0, 1, 
+    1, 1, 1, 1, 1, 1, 1, 1, 
+	1, 1, 1, 1, 1, 0, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 1, 
+	1, 1, 1, 1, 1, 0, 1, 1, 
+    1, 1, 1, 1, 1, 1, 0, 1, 
+	1, 1, 1, 1, 1, 0, 1, 1, 
+    1, 1, 1, 1, 1, 1, 0, 1, 
+	1, 1, 1, 1, 0, 1, 1, 1, 
+    1, 1, 1, 1, 1, 0, 1, 1, 
+	1, 1, 1, 1, 0, 1, 1, 1, 
+    1, 1, 1, 1, 0, 1, 1, 1, 
+	1, 1, 1, 2, 2, 2, 1, 1, 
+    1, 1, 0, 0, 3, 3, 1, 1, 
+	1, 1, 2, 2, 2, 2, 2, 1, 
+    0, 0, 3, 3, 3, 3, 1, 1, 
+	1, 1, 2, 2, 2, 2, 2, 1, 
+    1, 1, 0, 0, 3, 3, 1, 1, 
+	1, 1, 2, 2, 2, 2, 2, 1, 
+    1, 1, 1, 1, 0, 1, 1, 1, 
+	1, 1, 1, 2, 2, 2, 1, 1, 
+    1, 1, 1, 1, 1, 0, 1, 1, 
+	1, 1, 1, 1, 0, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 0, 1, 
+	1, 1, 1, 1, 0, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 0, 1, 
+	1, 1, 1, 1, 1, 0, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 1, 
+	1, 1, 1, 1, 1, 0, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 1, 
+	1, 1, 1, 1, 1, 0, 1, 1
+};
+
+static GClut watchpnt_clut = { 4, 0, 1,
+    0x000000, 0xb0b0b0, 0xff0000, 0x0000ff };
+
+static struct _GImage watchpnt_base = {
+    it_index,
+    15420,16,16,16,
+    (uint8 *) watchpnt_data,
+    &watchpnt_clut,
+    1
+};
+
 static uint8 stopped_data[] = {
     1, 1, 1, 1, 1, 1, 1, 1, 
 	1, 1, 1, 1, 1, 1, 1, 1, 
@@ -2572,6 +2618,7 @@ GImage GIcon_continue = { 0, &continue_base };
 GImage GIcon_stepout = { 0, &stepout_base };
 GImage GIcon_stepover = { 0, &stepover_base };
 GImage GIcon_stepinto = { 0, &stepinto_base };
+GImage GIcon_watchpnt = { 0, &watchpnt_base };
 
 GImage GIcon_Stopped = { 0, &stopped_base };
 GImage GIcon_Stop = { 0, &stop_base };
