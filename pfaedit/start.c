@@ -176,6 +176,7 @@ void ShowAboutScreen(void) {
 static void SplashLayout() {
     unichar_t *start, *pt, *lastspace;
     extern const char *source_modtime_str;
+    extern const char *source_version_str;
 
     uc_strcpy(msg, "When my father finished his book on Renaissance printing (The Craft of Printing and the Publication of Shakespeare's Works) he told me that I would have to write the chapter on computer typography. This is my attempt to do so.");
 
@@ -201,6 +202,9 @@ static void SplashLayout() {
     }
     uc_strcpy(pt,"  Version: ");;
     uc_strcat(pt,source_modtime_str);
+    uc_strcat(pt," (");
+    uc_strcat(pt,source_version_str);
+    uc_strcat(pt,")");
     lines[linecnt++] = pt+u_strlen(pt);
     lines[linecnt] = NULL;
     is = u_strchr(msg,'(');
