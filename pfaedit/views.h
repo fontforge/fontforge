@@ -300,7 +300,8 @@ extern void SFPrivateInfo(SplineFont *sf);
 extern void FontViewReformat(FontView *fv);
 extern void FVShowFilled(FontView *fv);
 extern void SCPreparePopup(GWindow gw,SplineChar *sc);
-extern void FVTrans(FontView *fv,SplineChar *sc,real transform[6],char *sel);
+extern void FVTrans(FontView *fv,SplineChar *sc,real transform[6],char *sel,
+	int dobackground);
 extern void FVMergeFonts(FontView *fv);
 extern void FVInterpolateFonts(FontView *fv);
 extern void FVRevert(FontView *fv);
@@ -334,9 +335,10 @@ extern void BVPaletteSetVisible(BitmapView *bv,int which,int visible);
 extern void BVPaletteActivate(BitmapView *bv);
 extern void BVPalettesHideIfMine(BitmapView *bv);
 extern void CVPaletteDeactivate(void);
+extern void BackgroundImageTransform(SplineChar *sc, ImageList *img,real transform[6]);
 extern void CVTransFunc(CharView *cv,real transform[6]);
-extern void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *),
-	int (*getorigin)(void *,BasePoint *,int));
+extern void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *,int),
+	int (*getorigin)(void *,BasePoint *,int), int isfv);
 extern void BitmapDlg(FontView *fv,SplineChar *sc, int isavail);
 extern void CVReviewHints(CharView *cv);
 extern void CVCreateHint(CharView *cv,int ishstem);

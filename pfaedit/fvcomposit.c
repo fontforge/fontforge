@@ -111,12 +111,275 @@ static const unichar_t accents[][3] = {
     { 0xffff }
 };
 
+/* greek accents */
+/* because of accent unification I can't use the same glyphs for greek and */
+/*  latin accents. Annoying. So when unicode decomposes a greek letter to */
+/*  use 0x0301 we actually want 0x1ffd and so on */
+static unichar_t unicode_greekalts[256][3] = {
+/* 1F00 */ { 0x03B1, 0x1FBD, 0 },
+/* 1F01 */ { 0x03B1, 0x1FFE, 0 },
+/* 1F02 */ { 0x03B1, 0x1FCD, 0 },
+/* 1F03 */ { 0x03B1, 0x1FDD, 0 },
+/* 1F04 */ { 0x03B1, 0x1FCE, 0 },
+/* 1F05 */ { 0x03B1, 0x1FDE, 0 },
+/* 1F06 */ { 0x03B1, 0x1FCF, 0 },
+/* 1F07 */ { 0x03B1, 0x1FDF, 0 },
+/* 1F08 */ { 0x0391, 0x1FBD, 0 },
+/* 1F09 */ { 0x0391, 0x1FFE, 0 },
+/* 1F0A */ { 0x0391, 0x1FCD, 0 },
+/* 1F0B */ { 0x0391, 0x1FDD, 0 },
+/* 1F0C */ { 0x0391, 0x1FCE, 0 },
+/* 1F0D */ { 0x0391, 0x1FDE, 0 },
+/* 1F0E */ { 0x0391, 0x1FCF, 0 },
+/* 1F0F */ { 0x0391, 0x1FDF, 0 },
+/* 1F10 */ { 0x03B5, 0x1FBD, 0 },
+/* 1F11 */ { 0x03B5, 0x1FFE, 0 },
+/* 1F12 */ { 0x03B5, 0x1FCD, 0 },
+/* 1F13 */ { 0x03B5, 0x1FDD, 0 },
+/* 1F14 */ { 0x03B5, 0x1FCE, 0 },
+/* 1F15 */ { 0x03B5, 0x1FDE, 0 },
+/* 1F16 */ { 0 },
+/* 1F17 */ { 0 },
+/* 1F18 */ { 0x0395, 0x1FBD, 0 },
+/* 1F19 */ { 0x0395, 0x1FFE, 0 },
+/* 1F1A */ { 0x0395, 0x1FCD, 0 },
+/* 1F1B */ { 0x0395, 0x1FDD, 0 },
+/* 1F1C */ { 0x0395, 0x1FCE, 0 },
+/* 1F1D */ { 0x0395, 0x1FDE, 0 },
+/* 1F1E */ { 0 },
+/* 1F1F */ { 0 },
+/* 1F20 */ { 0x03B7, 0x1FBD, 0 },
+/* 1F21 */ { 0x03B7, 0x1FFE, 0 },
+/* 1F22 */ { 0x03B7, 0x1FCD, 0 },
+/* 1F23 */ { 0x03B7, 0x1FDD, 0 },
+/* 1F24 */ { 0x03B7, 0x1FCE, 0 },
+/* 1F25 */ { 0x03B7, 0x1FDE, 0 },
+/* 1F26 */ { 0x03B7, 0x1FCF, 0 },
+/* 1F27 */ { 0x03B7, 0x1FDF, 0 },
+/* 1F28 */ { 0x0397, 0x1FBD, 0 },
+/* 1F29 */ { 0x0397, 0x1FFE, 0 },
+/* 1F2A */ { 0x0397, 0x1FCD, 0 },
+/* 1F2B */ { 0x0397, 0x1FDD, 0 },
+/* 1F2C */ { 0x0397, 0x1FCE, 0 },
+/* 1F2D */ { 0x0397, 0x1FDE, 0 },
+/* 1F2E */ { 0x0397, 0x1FCF, 0 },
+/* 1F2F */ { 0x0397, 0x1FDF, 0 },
+/* 1F30 */ { 0x03B9, 0x1FBD, 0 },
+/* 1F31 */ { 0x03B9, 0x1FFE, 0 },
+/* 1F32 */ { 0x03B9, 0x1FCD, 0 },
+/* 1F33 */ { 0x03B9, 0x1FDD, 0 },
+/* 1F34 */ { 0x03B9, 0x1FCE, 0 },
+/* 1F35 */ { 0x03B9, 0x1FDE, 0 },
+/* 1F36 */ { 0x03B9, 0x1FCF, 0 },
+/* 1F37 */ { 0x03B9, 0x1FDF, 0 },
+/* 1F38 */ { 0x0399, 0x1FBD, 0 },
+/* 1F39 */ { 0x0399, 0x1FFE, 0 },
+/* 1F3A */ { 0x0399, 0x1FCD, 0 },
+/* 1F3B */ { 0x0399, 0x1FDD, 0 },
+/* 1F3C */ { 0x0399, 0x1FCE, 0 },
+/* 1F3D */ { 0x0399, 0x1FDE, 0 },
+/* 1F3E */ { 0x0399, 0x1FCF, 0 },
+/* 1F3F */ { 0x0399, 0x1FDF, 0 },
+/* 1F40 */ { 0x03BF, 0x1FBD, 0 },
+/* 1F41 */ { 0x03BF, 0x1FFE, 0 },
+/* 1F42 */ { 0x03BF, 0x1FCD, 0 },
+/* 1F43 */ { 0x03BF, 0x1FDD, 0 },
+/* 1F44 */ { 0x03BF, 0x1FCE, 0 },
+/* 1F45 */ { 0x03BF, 0x1FDE, 0 },
+/* 1F46 */ { 0 },
+/* 1F47 */ { 0 },
+/* 1F48 */ { 0x039F, 0x1FBD, 0 },
+/* 1F49 */ { 0x039F, 0x1FFE, 0 },
+/* 1F4A */ { 0x039F, 0x1FCD, 0 },
+/* 1F4B */ { 0x039F, 0x1FDD, 0 },
+/* 1F4C */ { 0x039F, 0x1FCE, 0 },
+/* 1F4D */ { 0x039F, 0x1FDE, 0 },
+/* 1F4E */ { 0 },
+/* 1F4F */ { 0 },
+/* 1F50 */ { 0x03C5, 0x1FBD, 0 },
+/* 1F51 */ { 0x03C5, 0x1FFE, 0 },
+/* 1F52 */ { 0x03C5, 0x1FCD, 0 },
+/* 1F53 */ { 0x03C5, 0x1FDD, 0 },
+/* 1F54 */ { 0x03C5, 0x1FCE, 0 },
+/* 1F55 */ { 0x03C5, 0x1FDE, 0 },
+/* 1F56 */ { 0x03C5, 0x1FCF, 0 },
+/* 1F57 */ { 0x03C5, 0x1FDF, 0 },
+/* 1F58 */ { 0 },
+/* 1F59 */ { 0x03D2, 0x1FFE, 0 },
+/* 1F5A */ { 0 },
+/* 1F5B */ { 0x03D2, 0x1FDD, 0 },
+/* 1F5C */ { 0 },
+/* 1F5D */ { 0x03D2, 0x1FDE, 0 },
+/* 1F5E */ { 0 },
+/* 1F5F */ { 0x03D2, 0x1FDF, 0 },
+/* 1F60 */ { 0x03C9, 0x1FBD, 0 },
+/* 1F61 */ { 0x03C9, 0x1FFE, 0 },
+/* 1F62 */ { 0x03C9, 0x1FCD, 0 },
+/* 1F63 */ { 0x03C9, 0x1FDD, 0 },
+/* 1F64 */ { 0x03C9, 0x1FCE, 0 },
+/* 1F65 */ { 0x03C9, 0x1FDE, 0 },
+/* 1F66 */ { 0x03C9, 0x1FCF, 0 },
+/* 1F67 */ { 0x03C9, 0x1FDF, 0 },
+/* 1F68 */ { 0x03A9, 0x1FBD, 0 },
+/* 1F69 */ { 0x03A9, 0x1FFE, 0 },
+/* 1F6A */ { 0x03A9, 0x1FCD, 0 },
+/* 1F6B */ { 0x03A9, 0x1FDD, 0 },
+/* 1F6C */ { 0x03A9, 0x1FCE, 0 },
+/* 1F6D */ { 0x03A9, 0x1FDE, 0 },
+/* 1F6E */ { 0x03A9, 0x1FCF, 0 },
+/* 1F6F */ { 0x03A9, 0x1FDF, 0 },
+/* 1F70 */ { 0x03B1, 0x1FEF, 0 },
+/* 1F71 */ { 0x03B1, 0x1FFD, 0 },
+/* 1F72 */ { 0x03B5, 0x1FEF, 0 },
+/* 1F73 */ { 0x03B5, 0x1FFD, 0 },
+/* 1F74 */ { 0x03B7, 0x1FEF, 0 },
+/* 1F75 */ { 0x03B7, 0x1FFD, 0 },
+/* 1F76 */ { 0x03B9, 0x1FEF, 0 },
+/* 1F77 */ { 0x03B9, 0x1FFD, 0 },
+/* 1F78 */ { 0x03BF, 0x1FEF, 0 },
+/* 1F79 */ { 0x03BF, 0x1FFD, 0 },
+/* 1F7A */ { 0x03C5, 0x1FEF, 0 },
+/* 1F7B */ { 0x03C5, 0x1FFD, 0 },
+/* 1F7C */ { 0x03C9, 0x1FEF, 0 },
+/* 1F7D */ { 0x03C9, 0x1FFD, 0 },
+/* 1F7E */ { 0 },
+/* 1F7F */ { 0 },
+/* 1F80 */ { 0x1F00, 0x0345, 0 },
+/* 1F81 */ { 0x1F01, 0x0345, 0 },
+/* 1F82 */ { 0x1F02, 0x0345, 0 },
+/* 1F83 */ { 0x1F03, 0x0345, 0 },
+/* 1F84 */ { 0x1F04, 0x0345, 0 },
+/* 1F85 */ { 0x1F05, 0x0345, 0 },
+/* 1F86 */ { 0x1F06, 0x0345, 0 },
+/* 1F87 */ { 0x1F07, 0x0345, 0 },
+/* 1F88 */ { 0x1F08, 0x1FBE, 0 },
+/* 1F89 */ { 0x1F09, 0x1FBE, 0 },
+/* 1F8A */ { 0x1F0A, 0x1FBE, 0 },
+/* 1F8B */ { 0x1F0B, 0x1FBE, 0 },
+/* 1F8C */ { 0x1F0C, 0x1FBE, 0 },
+/* 1F8D */ { 0x1F0D, 0x1FBE, 0 },
+/* 1F8E */ { 0x1F0E, 0x1FBE, 0 },
+/* 1F8F */ { 0x1F0F, 0x1FBE, 0 },
+/* 1F90 */ { 0x1F20, 0x0345, 0 },
+/* 1F91 */ { 0x1F21, 0x0345, 0 },
+/* 1F92 */ { 0x1F22, 0x0345, 0 },
+/* 1F93 */ { 0x1F23, 0x0345, 0 },
+/* 1F94 */ { 0x1F24, 0x0345, 0 },
+/* 1F95 */ { 0x1F25, 0x0345, 0 },
+/* 1F96 */ { 0x1F26, 0x0345, 0 },
+/* 1F97 */ { 0x1F27, 0x0345, 0 },
+/* 1F98 */ { 0x1F28, 0x1FBE, 0 },
+/* 1F99 */ { 0x1F29, 0x1FBE, 0 },
+/* 1F9A */ { 0x1F2A, 0x1FBE, 0 },
+/* 1F9B */ { 0x1F2B, 0x1FBE, 0 },
+/* 1F9C */ { 0x1F2C, 0x1FBE, 0 },
+/* 1F9D */ { 0x1F2D, 0x1FBE, 0 },
+/* 1F9E */ { 0x1F2E, 0x1FBE, 0 },
+/* 1F9F */ { 0x1F2F, 0x1FBE, 0 },
+/* 1FA0 */ { 0x1F60, 0x0345, 0 },
+/* 1FA1 */ { 0x1F61, 0x0345, 0 },
+/* 1FA2 */ { 0x1F62, 0x0345, 0 },
+/* 1FA3 */ { 0x1F63, 0x0345, 0 },
+/* 1FA4 */ { 0x1F64, 0x0345, 0 },
+/* 1FA5 */ { 0x1F65, 0x0345, 0 },
+/* 1FA6 */ { 0x1F66, 0x0345, 0 },
+/* 1FA7 */ { 0x1F67, 0x0345, 0 },
+/* 1FA8 */ { 0x1F68, 0x1FBE, 0 },
+/* 1FA9 */ { 0x1F69, 0x1FBE, 0 },
+/* 1FAA */ { 0x1F6A, 0x1FBE, 0 },
+/* 1FAB */ { 0x1F6B, 0x1FBE, 0 },
+/* 1FAC */ { 0x1F6C, 0x1FBE, 0 },
+/* 1FAD */ { 0x1F6D, 0x1FBE, 0 },
+/* 1FAE */ { 0x1F6E, 0x1FBE, 0 },
+/* 1FAF */ { 0x1F6F, 0x1FBE, 0 },
+/* 1FB0 */ { 0x03B1, 0x0306, 0 },
+/* 1FB1 */ { 0x03B1, 0x0304, 0 },
+/* 1FB2 */ { 0x1F70, 0x0345, 0 },
+/* 1FB3 */ { 0x03B1, 0x0345, 0 },
+/* 1FB4 */ { 0x03AC, 0x0345, 0 },
+/* 1FB5 */ { 0 },
+/* 1FB6 */ { 0x03B1, 0x1FC0, 0 },
+/* 1FB7 */ { 0x1FB6, 0x0345, 0 },
+/* 1FB8 */ { 0x0391, 0x0306, 0 },
+/* 1FB9 */ { 0x0391, 0x0304, 0 },
+/* 1FBA */ { 0x0391, 0x1FEF, 0 },
+/* 1FBB */ { 0x0391, 0x1FFD, 0 },
+/* 1FBC */ { 0x0391, 0x1FBE, 0 },
+/* 1FBD */ { 0x0020, 0x0313, 0 },
+/* 1FBE */ { 0x0020, 0x0345, 0 },
+/* 1FBF */ { 0x0020, 0x0313, 0 },
+/* 1FC0 */ { 0x0020, 0x0342, 0 },
+/* 1FC1 */ { 0x00A8, 0x1FC0, 0 },
+/* 1FC2 */ { 0x1F74, 0x0345, 0 },
+/* 1FC3 */ { 0x03B7, 0x0345, 0 },
+/* 1FC4 */ { 0x03AE, 0x0345, 0 },
+/* 1FC5 */ { 0 },
+/* 1FC6 */ { 0x03B7, 0x1FC0, 0 },
+/* 1FC7 */ { 0x1FC6, 0x0345, 0 },
+/* 1FC8 */ { 0x0395, 0x1FEF, 0 },
+/* 1FC9 */ { 0x0395, 0x1FFD, 0 },
+/* 1FCA */ { 0x0397, 0x1FEF, 0 },
+/* 1FCB */ { 0x0397, 0x1FFD, 0 },
+/* 1FCC */ { 0x0397, 0x1FBE, 0 },
+/* 1FCD */ { 0x1FBF, 0x1FEF, 0 },
+/* 1FCE */ { 0x1FBF, 0x1FFD, 0 },
+/* 1FCF */ { 0x1FBF, 0x1FC0, 0 },
+/* 1FD0 */ { 0x03B9, 0x0306, 0 },
+/* 1FD1 */ { 0x03B9, 0x0304, 0 },
+/* 1FD2 */ { 0x03B9, 0x1FED, 0 },
+/* 1FD3 */ { 0x03B9, 0x1FEE, 0 },
+/* 1FD4 */ { 0 },
+/* 1FD5 */ { 0 },
+/* 1FD6 */ { 0x03B9, 0x1FC0, 0 },
+/* 1FD7 */ { 0x03B9, 0x1FC1, 0 },
+/* 1FD8 */ { 0x0399, 0x0306, 0 },
+/* 1FD9 */ { 0x0399, 0x0304, 0 },
+/* 1FDA */ { 0x0399, 0x1FEF, 0 },
+/* 1FDB */ { 0x0399, 0x1FFD, 0 },
+/* 1FDC */ { 0 },
+/* 1FDD */ { 0x1FFE, 0x1FEF, 0 },
+/* 1FDE */ { 0x1FFE, 0x1FFD, 0 },
+/* 1FDF */ { 0x1FFE, 0x1FC0, 0 },
+/* 1FE0 */ { 0x03C5, 0x0306, 0 },
+/* 1FE1 */ { 0x03C5, 0x0304, 0 },
+/* 1FE2 */ { 0x03C5, 0x1FED, 0 },
+/* 1FE3 */ { 0x03C5, 0x1FEE, 0 },
+/* 1FE4 */ { 0x03C1, 0x1FBF, 0 },
+/* 1FE5 */ { 0x03C1, 0x1FFE, 0 },
+/* 1FE6 */ { 0x03C5, 0x1FC0, 0 },
+/* 1FE7 */ { 0x03C5, 0x1FC1, 0 },
+/* 1FE8 */ { 0x03A5, 0x0306, 0 },
+/* 1FE9 */ { 0x03A5, 0x0304, 0 },
+/* 1FEA */ { 0x03A5, 0x1FEF, 0 },
+/* 1FEB */ { 0x03A5, 0x1FFD, 0 },
+/* 1FEC */ { 0x03A1, 0x1FFE, 0 },
+/* 1FED */ { 0x00A8, 0x1FEF, 0 },
+/* 1FEE */ { 0x0385, 0 },
+/* 1FEF */ { 0x0060, 0 },
+/* 1FF0 */ { 0 },
+/* 1FF1 */ { 0 },
+/* 1FF2 */ { 0x1F7C, 0x0345, 0 },
+/* 1FF3 */ { 0x03C9, 0x0345, 0 },
+/* 1FF4 */ { 0x03CE, 0x0345, 0 },
+/* 1FF5 */ { 0 },
+/* 1FF6 */ { 0x03C9, 0x1FC0, 0 },
+/* 1FF7 */ { 0x1FF6, 0x0345, 0 },
+/* 1FF8 */ { 0x039F, 0x1FEF, 0 },
+/* 1FF9 */ { 0x039F, 0x1FFD, 0 },
+/* 1FFA */ { 0x03A9, 0x1FEF, 0 },
+/* 1FFB */ { 0x03A9, 0x1FFD, 0 },
+/* 1FFC */ { 0x03A9, 0x1FBE, 0 },
+/* 1FFD */ { 0x00B4, 0 },
+/* 1FFE */ { 0x0020, 0x0314, 0 },
+/* 1FFF */ { 0 },
+};
+
 static int haschar(SplineFont *sf,int ch) {
     int i;
 
     if ( sf->encoding_name==em_unicode || (ch<0x100 && sf->encoding_name==em_iso8859_1))
 return( ch<sf->charcnt && sf->chars[ch]!=NULL &&
-	(sf->chars[ch]->splines!=NULL || sf->chars[ch]->refs!=NULL) );
+	(sf->chars[ch]->splines!=NULL || sf->chars[ch]->refs!=NULL || sf->chars[ch]->widthset) );
 
     for ( i=sf->charcnt-1; i>=0; --i ) if ( sf->chars[i]!=NULL )
 	if ( sf->chars[i]->unicodeenc == ch )
@@ -140,15 +403,21 @@ return( sf->chars[i] );
 }
 
 const unichar_t *SFGetAlternate(SplineFont *sf, int base) {
-    static unichar_t greekubases[] = { 0x391, 0x395, 0x397, 0x399, 0x39f, 0x3d2, 0x3a9 };
-    static unichar_t greeklbases[] = { 0x3b1, 0x3b5, 0x3b7, 0x3b9, 0x3bf, 0x3c5, 0x3c9 };
-    static unichar_t greekaccents[] = { 0x1fbd, 0x1ffe, 0x1fcd, 0x1fdd, 0x1fce, 0x1fde, 0x1fcf, 0x1fdf };
     static unichar_t greekalts[5];
     const unichar_t *upt, *pt; unichar_t *gpt;
-    int ch, i;
 
     if ( base==-1 )
 return( NULL );
+    if ( base>=0xac00 && base<=0xd7a3 ) { /* Hangul syllables */
+	greekalts[0] = (base-0xac00)/(21*28) + 0x1100;
+	greekalts[1] = ((base-0xac00)/28)%21 + 0x1161;
+	if ( (base-0xac00)%28==0 )
+	    greekalts[2] = 0;
+	else
+	    greekalts[2] = (base-0xac00)%28 -1 + 0x11a8;
+	greekalts[3] = 0;
+return( greekalts );
+    }
     if ( unicode_alternates[base>>8]==NULL )
 return( NULL );
     if ( (upt = unicode_alternates[base>>8][base&0xff])==NULL )
@@ -158,107 +427,10 @@ return( NULL );
 	    /*  linguistic sense, but I can't use it to place the accents */
 	    /*  properly. So I redefine them here */
     if ( base>=0x1f00 && base<0x2000 ) {
-	if ( base<0x1f70 ) {
-	    if ( base&0x8 )
-		greekalts[0] = greekubases[(base>>4)&7];
-	    else
-		greekalts[0] = greeklbases[(base>>4)&7];
-	    ch = greekaccents[(base&7)];
-	    if ( haschar(sf,ch)) {
-		greekalts[1] = ch;
-		greekalts[2] = 0;
-	    } else {
-		switch ( base&0x7 ) {
-		  case 0: case 1:
-		    greekalts[1] = ( base&1 ) ? 0x314 : 0x313;
-		    greekalts[2] = 0;
-		  break;
-		  case 2: case 3: case 4: case 5:
-		    greekalts[1] = ( base&2 ) ? 0x300 : 0x301;
-		    greekalts[2] = ( base&1 ) ? 0x313 : 0x314;
-		    greekalts[3] = 0;
-		  case 6: case 7:
-		    greekalts[1] = ( base&1 ) ? 0x314 : 0x313;
-		    greekalts[2] = 0x342;
-		    greekalts[3] = 0;
-		  break;
-		}
-	    }
-return( greekalts );
-	} else if ( base<0x1f80 ) {
-	    /* unicode maps alpha with oxia to alpha with tonos */
-	    if ( !(base&1) ) {
-		greekalts[0] = *upt;
-		greekalts[1] = 0x1fef;
-	    } else {
-		greekalts[0] = *upt==0x3ac?0x3b1:
-				*upt==0x3ad?0x3b5:
-				*upt==0x3ae?0x3b7:
-				*upt==0x3af?0x3b9:
-				*upt==0x3cc?0x3bf:
-				*upt==0x3cd?0x3c5:
-				/**upt==0x3ce?*/0x3c9;
-		greekalts[1] = 0x1ffd;
-	    }
-	    greekalts[2] = '\0';
-	    if ( haschar(sf,greekalts[1]))
-return( greekalts );
-	} else if ( base<0x1fb0 ) {
-	    if ( base&0x8 ) {
-		greekalts[0] = *upt;
-		greekalts[1] = 0x1fbe;	/* ypogegrammeni => prosgegammeni with upper case */
-		greekalts[2] = 0;
-		if ( haschar(sf,greekalts[1]))
-return( greekalts );
-	    } else
-		/* unicode decomposition should work for lower case */;
-	} else if ( base==0x1fbc || base==0x1fcc || base==0x1ffc ) {
-	    greekalts[0] = *upt;
-	    greekalts[1] = 0x1fbe;	/* ypogegrammeni => prosgegammeni with upper case */
-	    greekalts[2] = 0;
-	    if ( haschar(sf,greekalts[1]))
-return( greekalts );
-	} else if ( base==0x1fbb || base==0x1fcb || base==0x1fdb ||
-		base==0x1feb || base==0x1ffb || base==0x1fc9 || base==0x1ff9) {
-	    /* unicode maps Alpha with oxia to alpha with tonos */
-	    greekalts[0] = base==0x1fbb?0x391:base==0x1fcb?0x397:
-		    base==0x1fdb?0x399:base==0x1feb?0x3a5:base==0x1ffb?0x3a9:
-		    base==0x1fc9?0x395:0x39f;
-	    greekalts[1] = 0x1ffd;
-	    greekalts[2] = 0;
-	    if ( haschar(sf,greekalts[1]))
-return( greekalts );
-	} else if ( base==0x1fd7 || base == 0x1fe7 ) {
-	    greekalts[0] = (base&0xfff0)==0x1fd0?0x03b9:0x03c5;
-	    greekalts[1] = 0x1fc1;
-	    greekalts[2] = '\0';
-	    if ( haschar(sf,greekalts[1]))
-return( greekalts );
-	} else if ( base==0x1fd2 || base==0x1fd3 || base == 0x1fe2 || base==0x1fe3 ) {
-	    greekalts[0] = (base&0xfff0)==0x1fd0?0x03b9:0x03c5;
-	    greekalts[1] = (base&1)?0x1fee:0x1fed;
-	    greekalts[2] = '\0';
-	    if ( haschar(sf,greekalts[1]))
-return( greekalts );
-	} else {
-	    static int bads [] = { 0x0300, 0x0301, 0x0342, 0x0314, 0x0313, 0 };
-	    static int goods[] = { 0x1fef, 0x1ffd, 0x1fc0, 0x1ffe, 0x1fbf, 0 };
-	    for ( pt = upt, gpt = greekalts; *pt; ++pt, ++gpt ) {
-		*gpt = *pt;
-		for ( i=0; bads[i]!=0; ++i )
-		    if ( bads[i]==*pt ) {
-			*gpt = goods[i];
-		break;
-		    }
-		if ( !haschar(sf,*gpt))
-	    break;
-	    }
-	    if ( *pt=='\0' ) {
-		*gpt = 0;
-return( greekalts );
-	    }
-	}
-     } else if ( base>=0x380 && base<=0x3ff && upt!=NULL ) {
+	gpt = unicode_greekalts[base-0x1f00];
+	if ( *gpt && haschar(sf,*gpt) && (gpt[1]=='\0' || haschar(sf,gpt[1])) )
+return( gpt );
+    } else if ( base>=0x380 && base<=0x3ff && upt!=NULL ) {
 	/* Use precombined accents when possible */
 	if ( base==0x390 || base==0x3b0 ) {
 	    greekalts[0] = base==0x390?0x3b1:0x3c5;
@@ -472,10 +644,30 @@ static void SCAddRef(SplineChar *sc,SplineChar *rsc,real xoff, real yoff) {
     _SCAddRef(sc,rsc,transform);
 }
 
+static void BCClearAndCopy(BDFFont *bdf,int toenc,int fromenc) {
+    BDFChar *bc, *rbc;
+
+    bc = BDFMakeChar(bdf,toenc);
+    BCPreserveState(bc);
+    BCFlattenFloat(bc);
+    BCCompressBitmap(bc);
+    if ( bdf->chars[fromenc]!=NULL ) {
+	rbc = bdf->chars[fromenc];
+	free(bc->bitmap);
+	bc->xmin = rbc->xmin;
+	bc->xmax = rbc->xmax;
+	bc->ymin = rbc->ymin;
+	bc->ymax = rbc->ymax;
+	bc->bytes_per_line = rbc->bytes_per_line;
+	bc->width = rbc->width;
+	bc->bitmap = galloc(bc->bytes_per_line*(bc->ymax-bc->ymin+1));
+	memcpy(bc->bitmap,rbc->bitmap,bc->bytes_per_line*(bc->ymax-bc->ymin+1));
+    }
+}
+
 static int SCMakeBaseReference(SplineChar *sc,SplineFont *sf,int ch, int copybmp) {
     SplineChar *rsc;
     BDFFont *bdf;
-    BDFChar *bc, *rbc;
 
     rsc = findchar(sf,ch);
     if ( rsc==NULL ) {
@@ -493,25 +685,11 @@ return( 0 );
     sc->width = rsc->width;
     if ( copybmp ) {
 	for ( bdf=sf->cidmaster?sf->cidmaster->bitmaps:sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
-	    if ( bdf->chars[rsc->enc]!=NULL ) {
-		rbc = bdf->chars[rsc->enc];
-		bc = BDFMakeChar(bdf,sc->enc);
-		BCPreserveState(bc);
-		BCFlattenFloat(bc);
-		BCCompressBitmap(bc);
-		free(bc->bitmap);
-		bc->xmin = rbc->xmin;
-		bc->xmax = rbc->xmax;
-		bc->ymin = rbc->ymin;
-		bc->ymax = rbc->ymax;
-		bc->bytes_per_line = rbc->bytes_per_line;
-		bc->width = rbc->width;
-		bc->bitmap = galloc(bc->bytes_per_line*(bc->ymax-bc->ymin+1));
-		memcpy(bc->bitmap,rbc->bitmap,bc->bytes_per_line*(bc->ymax-bc->ymin+1));
-	    }
+	    BCClearAndCopy(bdf,sc->enc,rsc->enc);
 	}
     }
-    SCAddRef(sc,rsc,0,0);	/* should be after the call to MakeChar */
+    if ( ch!=' ' )		/* Some accents are built by combining with space. Don't. The reference won't be displayed or selectable but will be there and might cause confusion... */
+	SCAddRef(sc,rsc,0,0);	/* should be after the call to MakeChar */
 return( 1 );
 }
 
@@ -580,13 +758,17 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
 	} else if ( isupper(basech) &&
 		(ch==0x313 || ch==0x314 || ch==0x301 || ch==0x300 || ch==0x30d ||
 		 ch==0x1ffe || ch==0x1fbf || ch==0x1fcf || ch==0x1fdf ||
-		 ch==0x1fbd || ch==0x1fbe || ch==0x1fef || ch==0x1ffd ||
+		 ch==0x1fbd || ch==0x1fef || ch==0x1ffd ||
 		 ch==0x1fcd || ch==0x1fdd || ch==0x1fce || ch==0x1fde ) )
 	    pos = ____ABOVE|____LEFT;
+	else if ( isupper(basech) && ch==0x1fbe )
+	    pos = ____RIGHT;
 	else if ( ch==0x1fcd || ch==0x1fdd || ch==0x1fce || ch==0x1fde ||
 		 ch==0x1ffe || ch==0x1fbf || ch==0x1fcf || ch==0x1fdf )
 	    pos = ____ABOVE;
     } else if ( (basech==0x1ffe || basech==0x1fbf) && (ch==0x301 || ch==0x300))
+	pos = ____RIGHT;
+    else if ( sc->unicodeenc==0x1fbe && ch==0x345 )
 	pos = ____RIGHT;
     else if ( basech=='l' && ch==0xb7 )
 	pos = ____RIGHT|____OVERSTRIKE;
@@ -594,6 +776,12 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
 	pos = ____OVERSTRIKE;
     if ( basech==0x391 && pos==(____ABOVE|____LEFT) ) {
 	bb.minx += (bb.maxx-bb.minx)/4;
+    }
+    if ( (sc->unicodeenc==0x1fbd || sc->unicodeenc==0x1fbf ||
+	    sc->unicodeenc==0x1ffe || sc->unicodeenc==0x1fc0 ) &&
+	    bb.maxy==0 && bb.miny==0 ) {
+	/* Building accents on top of space */
+	bb.maxy = 7*sf->ascent/10;
     }
 
     if ( (pos&____ABOVE) && (pos&(____LEFT|____RIGHT)) )
@@ -1037,6 +1225,31 @@ static int SCMakeRightToLeftLig(SplineChar *sc,SplineFont *sf,
 return( ret );
 }
 
+static void SCBuildHangul(SplineFont *sf,SplineChar *sc, const unichar_t *pt, int copybmp) {
+    SplineChar *rsc;
+    int first = true;
+    BDFFont *bdf;
+
+    sc->width = 0;
+    while ( *pt ) {
+	rsc = findchar(sf,*pt++);
+	if ( rsc!=NULL ) {
+	    SCAddRef(sc,rsc,0,0);
+	    if ( rsc->width>sc->width ) sc->width = rsc->width;
+	    if ( copybmp ) {
+		for ( bdf=sf->cidmaster?sf->cidmaster->bitmaps:sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
+		    if ( first )
+			BCClearAndCopy(bdf,sc->enc,rsc->enc);
+		    else if ( bdf->chars[rsc->enc]!=NULL )
+			BCPasteInto(BDFMakeChar(bdf,sc->enc),bdf->chars[rsc->enc],
+				0,0, false, false);
+		}
+	    }
+	    first = false;
+	}
+    }
+}
+
 void SCBuildComposit(SplineFont *sf, SplineChar *sc, int copybmp,FontView *fv) {
     const unichar_t *pt, *apt; unichar_t ch;
     BDFFont *bdf;
@@ -1078,7 +1291,9 @@ return;
 	    else if ( ch=='j' ) ch = 0xf6be;
 	}
     }
-    if ( isrighttoleft(ch) && !iscombining(*pt)) {
+    if ( sc->unicodeenc>=0xac00 && sc->unicodeenc<=0xd7a3 )
+	SCBuildHangul(sf,sc,pt-1,copybmp);
+    else if ( isrighttoleft(ch) && !iscombining(*pt)) {
 	SCMakeRightToLeftLig(sc,sf,pt-1,copybmp);
     } else {
 	if ( !SCMakeBaseReference(sc,sf,ch,copybmp) )

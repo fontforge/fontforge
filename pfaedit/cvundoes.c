@@ -58,12 +58,12 @@ return( NULL );
 return( head );
 }
 
-static ImageList *ImagesCopyState(CharView *cv) {
+static ImageList *SCImagesCopyState(SplineChar *sc) {
     ImageList *head=NULL, *last=NULL, *new, *cimg;
 
-    if ( cv->drawmode!=dm_back || cv->sc->backimages==NULL )
+    if ( sc->backimages==NULL )
 return( NULL );
-    for ( cimg = cv->sc->backimages; cimg!=NULL; cimg=cimg->next ) {
+    for ( cimg = sc->backimages; cimg!=NULL; cimg=cimg->next ) {
 	new = chunkalloc(sizeof(ImageList));
 	*new = *cimg;
 	new->next = NULL;
@@ -75,6 +75,13 @@ return( NULL );
 	}
     }
 return( head );
+}
+
+static ImageList *ImagesCopyState(CharView *cv) {
+
+    if ( cv->drawmode!=dm_back || cv->sc->backimages==NULL )
+return( NULL );
+return( SCImagesCopyState(cv->sc));
 }
 
 static int RefCharsMatch(RefChar *urefs,RefChar *crefs) {
@@ -458,8 +465,7 @@ Undoes *SCPreserveBackground(SplineChar *sc) {
     undo->u.state.width = sc->width;
     undo->u.state.vwidth = sc->vwidth;
     undo->u.state.splines = SplinePointListCopy(sc->backgroundsplines);
-    undo->u.state.refs = RefCharsCopyState(sc);
-    undo->u.state.u.images = NULL;
+    undo->u.state.u.images = SCImagesCopyState(sc);
     undo->u.state.copied_from = sc->parent;
 return( AddUndo(undo,&sc->undoes[1],&sc->redoes[1]));
 }

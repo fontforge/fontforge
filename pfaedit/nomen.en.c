@@ -1224,5 +1224,8 @@ static char mnemonic_DisplayCompositions = 'D';
 static char *str_NoGroups = "This varient of this jamo is not actually used";
 static char *str_UniVarient = "Unicode %04X, Varient %d, %s";
 static char *str_BuildingKoreanFont = "Building Korean Font";
+    /* Transform */
+static char *str_TransformBackground = "Transform Background Too";
+static char mnemonic_TransformBackground = 'B';
 
 static int num_buttonsize = 55;

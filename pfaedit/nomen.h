@@ -910,6 +910,7 @@
 #define _STR_NoGroups	892
 #define _STR_UniVarient	893
 #define _STR_BuildingKoreanFont	894
+#define _STR_TransformBackground	895
 
 
 #endif

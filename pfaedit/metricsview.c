@@ -404,7 +404,7 @@ return( true );
 	    transform[0] = transform[3] = 1.0;
 	    transform[1] = transform[2] = transform[5] = 0;
 	    transform[4] = val-bb.minx;
-	    FVTrans(mv->fv,sc,transform,NULL);
+	    FVTrans(mv->fv,sc,transform,NULL,false);
 	}
     } else if ( e->u.control.subtype == et_textfocuschanged &&
 	    e->u.control.u.tf_focus.gained_focus ) {
@@ -441,7 +441,7 @@ return( true );
 		transform[0] = transform[3] = 1.0;
 		transform[1] = transform[2] = transform[5] = 0;
 		transform[4] = sc->width-val-bb.maxx;
-		FVTrans(mv->fv,sc,transform,NULL);
+		FVTrans(mv->fv,sc,transform,NULL,false);
 	    }
 	    SCCharChangedUpdate(sc);
 	}
@@ -780,8 +780,8 @@ static void MVTextChanged(MetricsView *mv) {
     SplineChar **hold = NULL;
 
     ret = _GGadgetGetTitle(mv->text);
-    if (( isrighttoleft(ret[0] && !mv->right_to_left ) ||
-	    ( !isrighttoleft(ret[0]) && mv->right_to_left ))) {
+    if (( isrighttoleft(ret[0]) && !mv->right_to_left ) ||
+	    ( !isrighttoleft(ret[0]) && mv->right_to_left )) {
 	direction_change = true;
 	mv->right_to_left = !mv->right_to_left;
     }
@@ -1102,7 +1102,7 @@ static void MVMenuCenter(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	else
 	    transform[4] = (sc->width-(bb.maxx-bb.minx))/3 - bb.minx;
 	if ( transform[4]!=0 )
-	    FVTrans(mv->fv,sc,transform,NULL);
+	    FVTrans(mv->fv,sc,transform,NULL,false);
     }
 }
 
@@ -1535,7 +1535,7 @@ return;
 	    transform[4] = diff*
 		    (mv->fv->sf->ascent+mv->fv->sf->descent)/mv->pixelsize;
 	    if ( transform[4]!=0 )
-		FVTrans(mv->fv,sc,transform,NULL);
+		FVTrans(mv->fv,sc,transform,NULL,false);
 	}
     }
 }

@@ -280,7 +280,7 @@ static void DoChar(SplineChar *sc,CreateWidthData *wd, FontView *fv) {
 	else
 	    transform[4] = bb.minx*wd->scale/100 - bb.minx;
 	if ( transform[4]!=0 )
-	    FVTrans(fv,sc,transform,NULL);
+	    FVTrans(fv,sc,transform,NULL,false);
 return;
     } else if ( wd->wtype == wt_rbearing ) {
 	SplineCharFindBounds(sc,&bb);

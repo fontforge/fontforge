@@ -218,7 +218,7 @@ static void ApplyChanges(WidthInfo *wi) {
 	ch = wi->right[i];
 	transform[4] = ch->newl-ch->lbearing;
 	if ( transform[4]!=0 ) {
-	    FVTrans(wi->sf->fv,ch->sc,transform,rsel);
+	    FVTrans(wi->sf->fv,ch->sc,transform,rsel,false);
 	    SCCharChangedUpdate(ch->sc);
 	}
     }

@@ -3044,6 +3044,20 @@ return( false );
 return( true );
 }
 
+void BackgroundImageTransform(SplineChar *sc, ImageList *img,real transform[6]) {
+    if ( transform[1]==0 && transform[2]==0 && transform[0]>0 && transform[3]>0 ) {
+	img->xoff = transform[0]*img->xoff + transform[4];
+	img->yoff = transform[3]*img->yoff + transform[5];
+	if (( img->xscale *= transform[0])<0 ) img->xscale = -img->xscale;
+	if (( img->yscale *= transform[3])<0 ) img->yscale = -img->yscale;
+	img->bb.minx = img->xoff; img->bb.maxy = img->yoff;
+	img->bb.maxx = img->xoff + GImageGetWidth(img->image)*img->xscale;
+	img->bb.miny = img->yoff - GImageGetHeight(img->image)*img->yscale;
+    } else
+	/* Don't support rotating, flipping or skewing images */;
+    SCOutOfDateBackground(sc);
+}
+
 void CVTransFunc(CharView *cv,real transform[6]) {
     int anysel = cv->p.transany;
     RefChar *refs;
@@ -3054,17 +3068,7 @@ void CVTransFunc(CharView *cv,real transform[6]) {
     if ( cv->drawmode==dm_back ) {
 	for ( img = cv->sc->backimages; img!=NULL; img=img->next )
 	    if ( img->selected || !anysel ) {
-		if ( transform[1]==0 && transform[2]==0 && transform[0]>0 && transform[3]>0 ) {
-		    img->xoff = transform[0]*img->xoff + transform[4];
-		    img->yoff = transform[3]*img->yoff + transform[5];
-		    if (( img->xscale *= transform[0])<0 ) img->xscale = -img->xscale;
-		    if (( img->yscale *= transform[3])<0 ) img->yscale = -img->yscale;
-		    img->bb.minx = img->xoff; img->bb.maxy = img->yoff;
-		    img->bb.maxx = img->xoff + GImageGetWidth(img->image)*img->xscale;
-		    img->bb.miny = img->yoff - GImageGetHeight(img->image)*img->yscale;
-		} else
-		    /* Don't support rotating, flipping or skewing images */;
-		SCOutOfDateBackground(cv->sc);
+		BackgroundImageTransform(cv->sc, img, transform);
 	    }
     } else if ( cv->drawmode==dm_fore ) {
 	for ( refs = cv->sc->refs; refs!=NULL; refs=refs->next )
@@ -3097,7 +3101,8 @@ void CVTransFunc(CharView *cv,real transform[6]) {
     }
 }
 
-static void transfunc(void *d,real transform[6],int otype,BVTFunc *bvts) {
+static void transfunc(void *d,real transform[6],int otype,BVTFunc *bvts,
+	int dobackground) {
     CharView *cv = (CharView *) d;
 
     cv->p.transany = CVAnySel(cv,NULL,NULL,NULL);
@@ -3108,7 +3113,7 @@ static void transfunc(void *d,real transform[6],int otype,BVTFunc *bvts) {
 
 static void CVMenuTransform(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    TransformDlgCreate(cv,transfunc,getorigin);
+    TransformDlgCreate(cv,transfunc,getorigin,false);
 }
 
 static void SplinePointRound(SplinePoint *sp) {

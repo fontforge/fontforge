@@ -1029,7 +1029,8 @@ return( false );
 return( true );
 }
 
-void FVTrans(FontView *fv,SplineChar *sc,real transform[6], char *sel) {
+void FVTrans(FontView *fv,SplineChar *sc,real transform[6], char *sel,
+	int dobackground) {
     RefChar *refs;
     real t[6];
 
@@ -1078,10 +1079,18 @@ void FVTrans(FontView *fv,SplineChar *sc,real transform[6], char *sel) {
 	SCUndoSetLBearingChange(sc,(int) rint(transform[4]));
 	SCSynchronizeLBearing(sc,NULL,transform[4]);
     }
+    if ( dobackground ) {
+	ImageList *img;
+	SCPreserveBackground(sc);
+	SplinePointListTransform(sc->backgroundsplines,transform,true);
+	for ( img = sc->backimages; img!=NULL; img=img->next )
+	    BackgroundImageTransform(sc, img, transform);
+    }
     SCCharChangedUpdate(sc);
 }
 
-static void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts) {
+static void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts,
+	int dobackground ) {
     FontView *fv = _fv;
     real transx = transform[4], transy=transform[5];
     DBounds bb;
@@ -1109,7 +1118,7 @@ static void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts) {
 		transform[5]=transy+base.y-
 		    (transform[1]*base.x+transform[3]*base.y);
 	    }
-	    FVTrans(fv,sc,transform,fv->selected);
+	    FVTrans(fv,sc,transform,fv->selected,dobackground);
 	    if ( !fv->onlycopydisplayed ) {
 		for ( bdf = fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next ) if ( bdf->chars[i]!=NULL )
 		    BCTrans(bdf,bdf->chars[i],bvts,fv);
@@ -1130,7 +1139,7 @@ static void FVMenuTransform(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     if ( FVAnyCharSelected(fv)==-1 )
 return;
-    TransformDlgCreate(fv,FVTransFunc,getorigin);
+    TransformDlgCreate(fv,FVTransFunc,getorigin,true);
 }
 
 static void FVMenuStroke(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -1224,30 +1233,23 @@ static void FVMenuAutotrace(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 
 int hascomposing(SplineFont *sf,int u) {
-    const unichar_t *upt;
+    const unichar_t *upt = SFGetAlternate(sf,u);
 
-    if ( u>=0 && u<=65535 && unicode_alternates[u>>8]!=NULL &&
-	    (upt = unicode_alternates[u>>8][u&0xff])!=NULL ) {
+    if ( upt!=NULL ) {
 	while ( *upt ) {
 	    if ( iscombining(*upt) || *upt==0xb7 ||	/* b7, centered dot is used as a combining accent for Ldot */
+		    *upt==0x1ffe || *upt==0x1fbf || *upt==0x1fcf || *upt==0x1fdf ||
+		    *upt==0x1fbd || *upt==0x1fef || *upt==0x1fc0 || *upt==0x1fc1 ||
+		    *upt==0x1fee || *upt==0x1ffd || *upt==0x1fbe ||
 		    *upt==0x1fcd || *upt==0x1fdd || *upt==0x1fce || *upt==0x1fde )	/* Special greek accents */
+return( true );
+	    if ( *upt>=0x1100 && *upt<0x11c7 )
 return( true );
 	    ++upt;
 	}
 
 	if ( u>=0x1f70 && u<0x1f80 )
 return( true );			/* Yes. they do work, I don't care what it looks like */
-	if ( u>=0x1f70 && u<0x2000 ) {
-	    upt = SFGetAlternate(sf,u);
-	    while ( *upt ) {
-	    if ( iscombining(*upt) || *upt==0xb7 ||	/* b7, centered dot is used as a combining accent for Ldot */
-		    *upt==0x1ffe || *upt==0x1fbf || *upt==0x1fcf || *upt==0x1fdf ||
-		    *upt==0x1fee || *upt==0x1ffd ||
-		    *upt==0x1fcd || *upt==0x1fdd || *upt==0x1fce || *upt==0x1fde )	/* Special greek accents */
-return( true );
-		++upt;
-	    }
-	}
     }
 return( false );
 }
@@ -1561,7 +1563,7 @@ static void FVMenuCenter(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	else
 	    transform[4] = (sc->width-(bb.maxx-bb.minx))/3 - bb.minx;
 	if ( transform[4]!=0 )
-	    FVTrans(fv,sc,transform,NULL);
+	    FVTrans(fv,sc,transform,NULL,false);
     }
 }
 

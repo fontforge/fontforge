@@ -33,14 +33,15 @@
 
 typedef struct transdata {
     void *userdata;
-    void (*transfunc)(void *,real trans[6],int otype,BVTFunc *);
+    void (*transfunc)(void *,real trans[6],int otype,BVTFunc *,int);
     int  (*getorigin)(void *,BasePoint *bp,int otype);
     GWindow tblock[TCnt];
     GWindow gw;
     int done;
 } TransData;
 
-#define CID_Origin	1101
+#define CID_Origin		1101
+#define CID_DoBackground	1102
 
 #define CID_Type	1001
 #define CID_XMove	1002
@@ -107,6 +108,7 @@ static int Trans_OK(GGadget *g, GEvent *e) {
     real transform[6], trans[6], t[6];
     real angle;
     int i, index, err;
+    int dobackground = false;
     BasePoint base;
     int origin, bvpos=0;
     BVTFunc bvts[TCnt+1];
@@ -119,6 +121,8 @@ static int Trans_OK(GGadget *g, GEvent *e) {
 	base.x = base.y = 0;
 
 	origin = GGadgetGetFirstListSelectedItem( GWidgetGetControl(td->gw,CID_Origin));
+	if ( GWidgetGetControl(td->gw,CID_DoBackground)!=NULL )
+	    dobackground = GGadgetIsChecked(GWidgetGetControl(td->gw,CID_DoBackground));
 	if ( td->getorigin!=NULL ) {
 	    (td->getorigin)(td->userdata,&base,origin );
 	    transform[4] = -base.x;
@@ -219,7 +223,7 @@ return(true);
 	transform[4] += base.x;
 	transform[5] += base.y;
 
-	(td->transfunc)(td->userdata,transform,origin,bvts);
+	(td->transfunc)(td->userdata,transform,origin,bvts,dobackground);
 	td->done = true;
     }
 return( true );
@@ -447,15 +451,15 @@ static void MakeTransBlock(TransData *td,int bnum) {
     GDrawSetVisible(gw,true);
 }
 
-void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *),
-	int (*getorigin)(void *,BasePoint *,int)) {
+void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *,int),
+	int (*getorigin)(void *,BasePoint *,int), int isfv) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[5];
+    GGadgetCreateData gcd[6];
     GTextInfo label[5];
     static TransData td;
-    int i, len;
+    int i, len, y;
     GGadget *orig;
     BasePoint junk;
     GTextInfo **ti;
@@ -476,7 +480,7 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width =GDrawPointsToPixels(NULL,TBlock_Width);
-	pos.height = GDrawPointsToPixels(NULL,TBlock_Top+TCnt*TBlock_Height+40);
+	pos.height = GDrawPointsToPixels(NULL,TBlock_Top+TCnt*TBlock_Height+64);
 	td.gw = gw = GDrawCreateTopWindow(NULL,&pos,trans_e_h,&td,&wattrs);
 
 	memset(&label,0,sizeof(label));
@@ -490,25 +494,37 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
 	gcd[0].creator = GListButtonCreate;
 	origin[1].selected = true;
 
-	gcd[1].gd.pos.x = 30-3; gcd[1].gd.pos.y = TBlock_Top+TCnt*TBlock_Height+4;
-	gcd[1].gd.pos.width = -1; gcd[1].gd.pos.height = 0;
-	gcd[1].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	label[1].text = (unichar_t *) _STR_OK;
-	label[1].text_in_resource = true;
-	gcd[1].gd.mnemonic = 'O';
-	gcd[1].gd.label = &label[1];
-	gcd[1].gd.handle_controlevent = Trans_OK;
-	gcd[1].creator = GButtonCreate;
+	i = 1; y = TBlock_Top+TCnt*TBlock_Height+4;
 
-	gcd[2].gd.pos.x = TBlock_Width-GIntGetResource(_NUM_Buttonsize)-30; gcd[2].gd.pos.y = TBlock_Top+TCnt*TBlock_Height+7;
-	gcd[2].gd.pos.width = -1; gcd[2].gd.pos.height = 0;
-	gcd[2].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	label[2].text = (unichar_t *) _STR_Cancel;
-	label[2].text_in_resource = true;
-	gcd[2].gd.label = &label[2];
-	gcd[2].gd.mnemonic = 'C';
-	gcd[2].gd.handle_controlevent = Trans_Cancel;
-	gcd[2].creator = GButtonCreate;
+	    gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = y;
+	    gcd[i].gd.flags = isfv ? (gg_visible | gg_enabled) : gg_visible;
+	    label[i].text = (unichar_t *) _STR_TransformBackground;
+	    label[i].text_in_resource = true;
+	    gcd[i].gd.mnemonic = 'T';
+	    gcd[i].gd.label = &label[i];
+	    gcd[i].gd.cid = CID_DoBackground;
+	    gcd[i++].creator = GCheckBoxCreate;
+	    y += 24;
+
+	gcd[i].gd.pos.x = 30-3; gcd[i].gd.pos.y = y;
+	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
+	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_default;
+	label[i].text = (unichar_t *) _STR_OK;
+	label[i].text_in_resource = true;
+	gcd[i].gd.mnemonic = 'O';
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.handle_controlevent = Trans_OK;
+	gcd[i++].creator = GButtonCreate;
+
+	gcd[i].gd.pos.x = TBlock_Width-GIntGetResource(_NUM_Buttonsize)-30; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+3;
+	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
+	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+	label[i].text = (unichar_t *) _STR_Cancel;
+	label[i].text_in_resource = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.mnemonic = 'C';
+	gcd[i].gd.handle_controlevent = Trans_Cancel;
+	gcd[i].creator = GButtonCreate;
 
 	GGadgetsCreate(gw,gcd);
 
@@ -517,6 +533,7 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
     }
     gw = td.gw;
 
+    GGadgetSetEnabled( GWidgetGetControl(gw,CID_DoBackground), isfv);
     orig = GWidgetGetControl(gw,CID_Origin);
     GGadgetSetEnabled( orig, getorigin!=NULL );
     ti = GGadgetGetList(orig,&len);
