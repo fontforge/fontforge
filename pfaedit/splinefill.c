@@ -860,12 +860,8 @@ return( NULL );
 	    es.bytes_per_line = 1;
 	}
 #if 1
-	if ( open!=NULL ) {
-	    SplineSet *e;
-	    for ( e=open; e->next!=NULL; e = e->next );
-	    e->next = sc->splines;
-	    sc->splines = open;
-	}
+	if ( open!=NULL )
+	    SplineSetsInsertOpen(&sc->splines,open);
 #endif
     }
 

@@ -829,7 +829,6 @@ extern void SVDetachFV(FontView *fv);
 extern void SFShowKernPairs(SplineFont *sf,SplineChar *sc,AnchorClass *ac);
 extern void SFShowLigatures(SplineFont *sf);
 
-extern int  SCNumberPoints(SplineChar *sc);
 extern void SCEditInstructions(SplineChar *sc);
 extern void SFEditTable(SplineFont *sf, uint32 tag);
 extern void IIScrollTo(struct instrinfo *ii,int ip,int mark_stop);

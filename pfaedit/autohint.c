@@ -2967,6 +2967,7 @@ return;
 		    md->sp2 = NULL;
 		    md->next = sc->md;
 		    sc->md = md;
+		    sp->dontinterpolate = true;
 return;
 		}
 		if ( sp->next==NULL )

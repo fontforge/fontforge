@@ -937,6 +937,8 @@ static void instr_mousemove(struct instrinfo *ii,int pos) {
 	instr_mousedown(ii,y);
 return;
     }
+    if ( ii->instrdata->bts==NULL )
+return;
 
     pos = ((pos-2)/ii->fh) * ii->fh + 2;
 

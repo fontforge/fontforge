@@ -373,7 +373,7 @@ return;
 		pnum = sp->ttfindex+1;
 		if ( sp->ttfindex==0xffff ) {
 		    SplinePoint *np;
-		    int off = 1;
+		    int off = 0;
 		    np = sp;
 		    while ( 1 ) {
 			if ( np->ttfindex!=0xffff || np->next==NULL )
@@ -381,9 +381,9 @@ return;
 			np = np->next->to;
 			if ( np==sp )
 		    break;
-			off -= 2;
+			--off;
 		    }
-		    if ( np->ttfindex!=0xffff )
+		    if ( np->ttfindex!=0xffff && np->ttfindex!=0 )
 			pnum = np->ttfindex+off;
 		    else
 			pnum = 0xffff;
@@ -2282,10 +2282,10 @@ int SCNumberPoints(SplineChar *sc) {
 
     for ( ss = sc->splines; ss!=NULL; ss=ss->next ) {
 	for ( sp=ss->first; ; ) {
-	    if ( sp!=ss->first && !sp->nonextcp && !sp->noprevcp &&
-		    !sp->roundx && !sp->roundy && !sp->dontinterpolate &&
-		    (sc->ttf_instrs==NULL || sp->ttfindex==0xffff) &&
-		    (sp->nextcp.x+sp->prevcp.x)/2 == sp->me.x &&
+	    if ( ((sc->ttf_instrs!=NULL && sp->ttfindex==0xffff) ||
+		    ( sp!=ss->first && !sp->nonextcp && !sp->noprevcp &&
+		     !sp->roundx && !sp->roundy && !sp->dontinterpolate )) &&
+ 		    (sp->nextcp.x+sp->prevcp.x)/2 == sp->me.x &&
 		    (sp->nextcp.y+sp->prevcp.y)/2 == sp->me.y )
 		sp->ttfindex = 0xffff;
 	    else

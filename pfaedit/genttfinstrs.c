@@ -1494,7 +1494,7 @@ static uint8 *gen_md_instrs(struct glyphinstrs *gi, uint8 *instrs,MinimumDistanc
 		    pt1 = pt2;
 		    pt2 = ptcnt+1;
 		}
-		if ( pt1==-1 || pt2==-1 )
+		if ( pt1==0xffff || pt2==0xffff )
 		    fprintf(stderr, "Internal Error: Failed to find point in minimum distance check\n" );
 		else if ( pt1!=ptcnt+1 && (touched[pt1]&mask) &&
 			pt2!=ptcnt+1 && (touched[pt2]&mask) )
@@ -1680,6 +1680,7 @@ return;
 	sc->ttf_instrs = NULL;
 	sc->ttf_instrs_len = 0;
     }
+    SCNumberPoints(sc);
     if ( autohint_before_generate && sc->changedsincelasthinted &&
 	    !sc->manualhints )
 	SplineCharAutoHint(sc,true);

@@ -1053,7 +1053,7 @@ static void readttfsimpleglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, in
     }
 
     sc->splines = ttfbuildcontours(path_cnt,endpt,flags,pts,info->to_order2);
-    if ( info->to_order2 ) {
+    if ( info->to_order2 && len!=0 ) {
 	sc->ttf_instrs_len = len;
 	sc->ttf_instrs = instructions;
     } else

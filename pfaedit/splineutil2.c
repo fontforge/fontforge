@@ -2422,6 +2422,24 @@ SplineSet *SplineSetsExtractOpen(SplineSet **tbase) {
 return( openhead );
 }
 
+void SplineSetsInsertOpen(SplineSet **tbase,SplineSet *open) {
+    SplineSet *e, *p, *spl, *next;
+
+    for ( p=NULL, spl=*tbase, e=open; e!=NULL; e = next ) {
+	next = e->next;
+	while ( spl!=NULL && spl->first->ttfindex<e->first->ttfindex ) {
+	    p = spl;
+	    spl = spl->next;
+	}
+	if ( p==NULL )
+	    *tbase = e;
+	else
+	    p->next = e;
+	e->next = spl;
+	p = e;
+    }
+}
+
 /* The idea behind SplineSetsCorrect is simple. However there are many splinesets */
 /*  where it is impossible, so bear in mind that this only works for nice */
 /*  splines. Figure 8's, interesecting splines all cause problems */
@@ -2499,19 +2517,18 @@ SplineSet *SplineSetsCorrect(SplineSet *base,int *changed) {
 	}
 	FreeEdges(&es);
     }
-    if ( open==NULL )
-	open = base;
-    else {
-	for ( spl=open; spl->next!=NULL; spl = spl->next );
-	spl->next = base;
+    if ( open!=NULL ) {
+	SplineSet *temp = base;
+	SplineSetsInsertOpen(&temp,open);
+	base = temp;
     }
-return( open );
+return( base );
 }
 
 /* This is exactly the same as SplineSetsCorrect, but instead of correcting */
 /*  problems we merely search for them and if we find any return the first */
 SplineSet *SplineSetsDetectDir(SplineSet **_base,int *_lastscan) {
-    SplineSet *spl, *ret, *base;
+    SplineSet *ret, *base;
     EIList el;
     EI *active=NULL, *apt, *pr, *e;
     int i, winding,change,waschange;
@@ -2579,13 +2596,9 @@ SplineSet *SplineSetsDetectDir(SplineSet **_base,int *_lastscan) {
     free(el.ordered);
     free(el.ends);
     ElFreeEI(&el);
-    if ( open==NULL )
-	open = base;
-    else {
-	for ( spl=open; spl->next!=NULL; spl = spl->next );
-	spl->next = base;
-    }
-    *_base = open;
+    *_base = base;
+    if ( open!=NULL )
+	SplineSetsInsertOpen(_base,open);
     *_lastscan = i;
 return( ret );
 }

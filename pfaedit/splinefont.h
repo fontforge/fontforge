@@ -861,6 +861,7 @@ extern void SFIncrementXUID(SplineFont *sf);
 extern void SFRandomChangeXUID(SplineFont *sf);
 extern SplineSet *SplineSetReverse(SplineSet *spl);
 extern SplineSet *SplineSetsExtractOpen(SplineSet **tbase);
+extern void SplineSetsInsertOpen(SplineSet **tbase,SplineSet *open);
 extern SplineSet *SplineSetsCorrect(SplineSet *base,int *changed);
 extern SplineSet *SplineSetsDetectDir(SplineSet **_base, int *lastscan);
 extern void SPAverageCps(SplinePoint *sp);
@@ -1080,6 +1081,7 @@ extern void AnchorPosFree(AnchorPos *apos);
 
 extern int SFCloseAllInstrs(SplineFont *sf);
 extern void SCMarkInstrDlgAsChanged(SplineChar *sc);
+extern int  SCNumberPoints(SplineChar *sc);
 
 
 # if HANYANG

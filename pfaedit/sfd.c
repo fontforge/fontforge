@@ -1450,8 +1450,10 @@ static void SFDGetMinimumDistances(FILE *sfd, SplineChar *sc) {
 	if ( val<-1 || val>=pt ) {
 	    fprintf( stderr, "Internal Error: Minimum Distance specifies bad point (%d) in sfd file\n", val );
 	    err = true;
-	} else if ( val!=-1 )
+	} else if ( val!=-1 ) {
 	    md->sp1 = mapping[val];
+	    md->sp1->dontinterpolate = true;
+	}
 	ch = getc(sfd);
 	if ( ch!=',' ) {
 	    fprintf( stderr, "Internal Error: Minimum Distance lacks a comma where expected\n" );
@@ -1461,8 +1463,10 @@ static void SFDGetMinimumDistances(FILE *sfd, SplineChar *sc) {
 	if ( val<-1 || val>=pt ) {
 	    fprintf( stderr, "Internal Error: Minimum Distance specifies bad point (%d) in sfd file\n", val );
 	    err = true;
-	} else if ( val!=-1 )
+	} else if ( val!=-1 ) {
 	    md->sp2 = mapping[val];
+	    md->sp2->dontinterpolate = true;
+	}
 	if ( !err ) {
 	    if ( last==NULL )
 		sc->md = md;

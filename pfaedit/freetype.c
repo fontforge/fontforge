@@ -549,7 +549,7 @@ static int FT_LineTo(FT_Vector *to,void *user) {
     SplineMake(context->last,sp,context->order2);
     context->last = sp;
 
-    if ( context->orig_sp!=NULL ) {
+    if ( context->orig_sp!=NULL && context->orig_sp->next!=NULL ) {
 	context->orig_sp = context->orig_sp->next->to;
 	if ( context->orig_sp!=NULL )
 	    sp->ttfindex = context->orig_sp->ttfindex;
