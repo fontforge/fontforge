@@ -2290,9 +2290,16 @@ static void CvtPsSplineSet2(GrowBuf *gb, SplinePointList *spl,
 	    /* list by one, this is possible because only closed paths have */
 	    /* points marked as flex, and because we can't have two flex mid- */
 	    /* points in a row */
-	    temp = *spl;
-	    temp.first = temp.last = spl->first->next->to;
-	    spl = &temp;
+	    if ( spl->first->hintmask!=NULL && spl->first->next->to->hintmask==NULL )
+		/* But we can't rotate it if we expect it to provide us with */
+		/*  a hintmask. In that case just turn off the flex bits and */
+		/*  ignore them. That's safe too.			     */
+		spl->first->flexx = spl->first->flexy = false;
+	    else {
+		temp = *spl;
+		temp.first = temp.last = spl->first->next->to;
+		spl = &temp;
+	    }
 	}
 	if ( start==NULL || !init )
 	    moveto2(gb,hdb,spl->first,round);
