@@ -3498,7 +3498,7 @@ static GMenuItem ellist[] = {
 #ifdef PFAEDIT_CONFIG_TILEPATH
     { { (unichar_t *) _STR_TilePath, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuTilePath, MID_TilePath },
 #endif
-    { { (unichar_t *) _STR_Rmoverlap, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'O' }, '\0', ksm_control|ksm_shift, rmlist, NULL, NULL, MID_RmOverlap },
+    { { (unichar_t *) _STR_Overlap, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'O' }, '\0', ksm_control|ksm_shift, rmlist, NULL, NULL, MID_RmOverlap },
     { { (unichar_t *) _STR_Simplify, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, '\0', ksm_control|ksm_shift, smlist, NULL, NULL, MID_Simplify },
     { { (unichar_t *) _STR_AddExtrema, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'x' }, 'X', ksm_control|ksm_shift, NULL, NULL, FVMenuAddExtrema, MID_AddExtrema },
     { { (unichar_t *) _STR_Round2int, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '_', ksm_control|ksm_shift, NULL, NULL, FVMenuRound2Int, MID_Round },
