@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 28-Oct-2004 -->
+  <!-- AP: Last modified: 30-Oct-2004 -->
   <TITLE>FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -27,7 +27,12 @@ multi-master, cff, svg and bitmap (bdf) fonts, or edit existing ones. Also
 lets you convert one format to another. FontForge has support for many macintosh
 font formats.
 <P>
+FontForge's user interface has been localized for: (English), Russian, Japanese,
+French, Italian, Spanish.
+<P>
 Contents
+<A HREF="http://khdd.net/fontforge-jman/"><IMG SRC="flags/Nisshoki-Japan.png"
+    WIDTH="39" HEIGHT="26"></A>
 <UL>
   <LI>
     <A HREF="overview.html"><BIG>User &amp; Reference
@@ -258,6 +263,11 @@ they are available from:
   <LI>
     <A HREF="http://libuninameslist.sf.net">libuninameslist</A><BR>
     To display unicode names and annotations. And to know what
+  <LI>
+    <A HREF="http://www.gnu.org/software/libiconv/">libiconv</A><BR>
+    For systems with no built-in iconv(). If not present FontForge contains a
+    minimal version of the library which allows it to work. If used you must
+    compile with <CODE>--enable-extra-encodings</CODE>, FontForge requires Shift-JIS.
   <LI>
     <A HREF="http://freetype.sf.net/">freetype</A><BR>
     To do a better job rasterizing bitmaps, and to enable the truetype debugger
@@ -665,7 +675,9 @@ can.
   <LI>
     <EM>My writing leaves much to be desired</EM>. Anyone who can make my
     documentation more readable is encouraged to do so. (or who wishes to translate
-    it into other languages, or who wishes to put it into a more flexable format)
+    it into other languages, or who wishes to put it into a more flexable format,
+    KANOU has a <A HREF="http://khdd.net/fontforge-jman/">Japanese version</A>
+    under construction)
   <LI>
     <I>I also have a brief tutorial in <A HREF="fontforge-tutorial.pdf">pdf
     format</A>.</I> This could also be translated into other languages (and would
