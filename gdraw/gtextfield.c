@@ -1272,6 +1272,8 @@ return( true );
 	}
 	if ( event->type==et_mouseup ) {
 	    GDrawCancelTimer(gt->pressed); gt->pressed = NULL;
+	    if ( event->u.mouse.button==2 )
+		GTextFieldPaste(gt,sn_primary);
 	    if ( gt->sel_start==gt->sel_end )
 		GTextField_Show(gt,gt->sel_start);
 	}
