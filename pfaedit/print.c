@@ -661,7 +661,8 @@ static void PIDoCombiners(PI *pi, SplineChar *sc, unichar_t *accents) {
     DBounds bb, rbb;
     SplineChar *asc;
     real xmove=sc->width*pi->scale, ymove=0;
-    real spacing = (pi->sf->ascent+pi->sf->descent)/25;
+    extern int accent_offset;	/* in prefs.c */
+    real spacing = (pi->sf->ascent+pi->sf->descent)*accent_offset/100;
     real xoff, yoff;
     int first=true, pos;
 
@@ -676,6 +677,8 @@ static void PIDoCombiners(PI *pi, SplineChar *sc, unichar_t *accents) {
 	    else if ( pos&____ABOVE )
 		yoff = bb.maxy + spacing - rbb.miny;
 	    else if ( pos&____BELOW ) {
+		if ( (sc->unicodeenc==0x5d9 || sc->unicodeenc==0xfb39 ) &&
+			asc->unicodeenc==0x5b8 ) bb.miny = 0;
 		yoff = bb.miny - rbb.maxy;
 		if ( !( pos&____TOUCHING) )
 		    yoff -= spacing;
@@ -817,7 +820,7 @@ return;
 	    if ( !bi.base_right_to_left )
 		xstart = 20;
 	    else
-		xstart = 20+pi->pagewidth-100-PIFindLen(pi,pt,ept);
+		xstart = 20+pi->pagewidth-100-PIFindLen(pi,pt,end);
 	    PIDumpChars(pi,bi.text+(pt-base),bi.text+(end-base),xstart);
 	    if ( *end=='\0' )
    goto break_2_loops;
@@ -1640,8 +1643,35 @@ static unichar_t _antigone3[] = { 0x1f41,0x03c0,0x03bf,0x1fd6,0x03bf,0x03bd,' ',
 	0x03b9,' ',0x03b6,0x03c3,0x03b1,0x03b9,0x03bd,' ',0x03c4,0x03b5,0x03bb,
 	0x03b5,0x1fd6,';',  '\0' };
 static unichar_t *antigone[] = { _antigone1, _antigone2, _antigone3, NULL };
-static unichar_t _hebrew[] = { 0x5d0, 0x5d1, 0x5d2, 0x5d3, 0x5d4, 0x5d5, 0 };
-static unichar_t *hebrew[] = { _hebrew, NULL };
+static unichar_t _seder[] = { 0x5d5, 0x5b0, 0x5d0, 0x5b8, 0x5d7, 0x5b8, 0x5d0, ' ',
+	0x5de, 0x5b7, 0x5dc, 0x5b0, 0x5d0, 0x5b7, 0x5da, 0x5b0, ' ',
+	0x5d4, 0x5b7, 0xfb3e, 0x5b8, 0x5d5, 0x5b6, 0x5ea, ',', ' ',
+	0x5d5, 0x5b0, 0xfb2a, 0x5b8, 0x5d7, 0x5b7, 0x5d8, ' ',
+	0x5dc, 0x5b0, 0xfb2c, 0x5d5, 0x5c2, 0x5d7, 0x5b5, 0x5d8, ',', ' ',
+	0xfb48, 0x5b0, 0xfb2a, 0x5b8, 0x5d7, 0x5b7, 0x5d8, ' ',
+	0x5dc, 0x5b0, 0x5ea, 0x5d5, 0x5c2, 0x5e8, 0x5b8, 0x5d0, ',', ' ',
+	0xfb48, 0x5b0, 0xfb2a, 0x5b8, 0x5d7, 0x5b7, 0x5d4, ' ',
+	0x5dc, 0x5b0, 0xfb3e, 0x5b7, 0xfb39, 0x5b8, 0x5d0, ',', ' ',
+	0xfb33, 0x5b0, 0x5db, 0x5b8, 0x5db, 0x5b8, 0x5d4, ' ',
+	0x5dc, 0x5b0, 0x5e0, 0xfb35, 0x5e8, 0x5b8, 0x5d0, ',', ' ',
+	0xfb33, 0x5b0, 0xfb2b, 0x5b8, 0x5e8, 0x5b7, 0x5e3, ' ',
+	0x5dc, 0x5b0, 0x5d7, 0xfb35, 0x5d8, 0x5b0, 0x5e8, 0x5b8, 0x5d0, ',', ' ',
+	0xfb33, 0x5b0, 0x5d4, 0x5b4, 0xfb3b, 0x5b8, 0x5d4, ' ',
+	0x5dc, 0x5b0, 0x5db, 0x5b7, 0x5dc, 0x5b0, 0xfb3b, 0x5b8, 0x5d0, ',', ' ',
+	0xfb33, 0x5b0, 0x5e0, 0x5b8, 0xfb2a, 0x5b7, 0x5da, 0x5b0, ' ',
+	0x5dc, 0x5b0, 0xfb2a, 0xfb35, 0x5e0, 0x5b0, 0x5e8, 0x5b8, 0x5d0, ',', ' ',
+	0xfb33, 0x5b0, 0xfb2f, 0x5db, 0x5b0, 0x5dc, 0x5b8, 0x5d4, ' ',
+	0x5dc, 0x5b0, 0x5d2, 0x5b7, 0x5d3, 0x5b0, 0x5d9, 0x5b8, 0x5d0, ',', ' ',
+	0xfb33, 0x5b4, 0x5d6, 0x5b0, 0x5d1, 0x5b7, 0x5df, ' ',
+	0xfb2e, 0xfb31, 0x5b8, 0x5d0, ' ',
+	0xfb31, 0x5b4, 0x5ea, 0x5b0, 0x5e8, 0x5b5, 0x5d9, ' ',
+	0x5d6, 0xfb35, 0x5d6, 0x5b5, 0x5d9, '.', ' ',
+	0x5d7, 0x5b7, 0x5d3, ' ',
+	0xfb32, 0x5b7, 0x5d3, 0x5b0, 0x5d9, 0x5b8, 0x5d0, ',', ' ',
+	0x5d7, 0x5b7, 0x5d3, ' ',
+	0xfb32, 0x5b7, 0x5d3, 0x5b0, 0x5d9, 0x5b8, 0x5d0, '.',
+	'\0' };
+static unichar_t *hebrew[] = { _seder, NULL };
 /* Renaisance English with period ligatures */
 static unichar_t _muchado[] = {' ','B','u','t',' ','t','i','l','l',' ','a','l',
 	'l',' ','g','r','a','c','e','s',' ','b','e',' ','i','n',' ','o','n','e'
@@ -1793,10 +1823,109 @@ static unichar_t _bulgarian[] = {' ',0x041f,0x0420,0x0415,0x0414,0x041c,0x0415,
     0x0430,0x0441,0x201c,',',' ',0x201e,0x0442,0x043e,0x043d,0x201c,'.',  '\0'};
 static unichar_t *bulgarian[] = { _bulgarian, NULL };
 
+/* The following translations of the gospel according to John are all from */
+/* Belorussian */
+static unichar_t _belojohn1[] = { 0x0412,0x043d,0x0430,0x0447,0x0430,0x043b,
+    0x0435,' ',0x0431,0x044b,0x043b,0x043e,' ',0x0421,0x043b,0x043e,0x0432,
+    0x043e,',',' ',0x0438,' ',0x0421,0x043b,0x043e,0x0432,0x043e,' ',0x0431,
+    0x044b,0x043b,0x043e,' ',0x0443,' ',0x0411,0x043e,0x0433,0x0430,',',' ',
+    0x0438,' ',0x0421,0x043b,0x043e,0x0432,0x043e,' ',0x0431,0x044b,0x043b,
+    0x043e,' ',0x0411,0x043e,0x0433,'.',  '\0'};
+static unichar_t _belojohn2[] = { 0x041e,0x043d,0x043e,' ',0x0431,0x044b,
+    0x043b,0x043e,' ',0x0432,' ',0x043d,0x0430,0x0447,0x0430,0x043b,0x0435,' ',
+    0x0443,' ',0x0411,0x043e,0x0433,0x0430,'.',  '\0' };
+static unichar_t *belorussianjohn[] = { _belojohn1, _belojohn2, NULL };
+/* basque */
+static unichar_t _basquejohn1[] = { 'A','s','i','e','r','a','n',' ','I','t','z','a',' ','b','a','-','z','a','n',',',' ','t','a',' ','I','t','z','a',' ','Y','a','i','n','k','o','a','g','a','n',' ','z','a','n',',',' ','t','a',' ','I','t','z','a',' ','Y','a','i','n','k','o',' ','z','a','n','.',  '\0' };
+static unichar_t _basquejohn2[] = { 'A','s','i','e','r','a','n',' ','B','e','r','a',' ','Y','a','i','n','k','o','a','g','a','n',' ','z','a','n','.',  '\0' };
+static unichar_t *basquejohn[] = { _basquejohn1, _basquejohn2, NULL };
+#if 0
+/* cornish */
+static unichar_t _cornishjohn1[] = { 'Y','\'','n',' ','d','e','l','l','e','t','h','o','s',' ','y','t','h',' ','e','s','a',' ','a','n',' ','G','e','r',',',' ','h','a','\'','n',' ','G','e','r',' ','e','s','a',' ','g','a','n','s',' ','D','e','w',',',' ','h','a','\'','n',' ','G','e','r',' ','o',' ','D','e','w',  '\0' };
+static unichar_t _cornishjohn2[] = { 'A','n',' ','k','e','t','h',' ','e','s','a',' ','y','\'','n',' ','d','a','l','l','e','t','h','v','o','s',' ','g','a','n','s',' ','D','e','w','.',  '\0' };
+static unichar_t *cornishjohn[] = { _cornishjohn1, _cornishjohn2, NULL };
+#endif
+/* danish */
+static unichar_t _danishjohn1[] = { 'B','e','g','y','n','d','e','l','s','e','n',' ','v','a','r',' ','O','r','d','e','t',',',' ','o','g',' ','O','r','d','e','t',' ','v','a','r',' ','h','o','s',' ','G','u','d',',',' ','o','g',' ','O','r','d','e','t',' ','v','a','r',' ','G','u','d','.',  '\0' };
+static unichar_t _danishjohn2[] = { 'D','e','t','t','e',' ','v','a','r',' ','i',' ','B','e','g','y','n','d','e','l','s','e','n',' ','h','o','s',' ','G','u','d','.',  '\0' };
+static unichar_t *danishjohn[] = { _danishjohn1, _danishjohn2, NULL };
+/* dutch */
+static unichar_t _dutchjohn1[] = { 'I','n',' ','d','e','n',' ','b','e','g','i','n','n','e',' ','w','a','s',' ','h','e','t',' ','W','o','o','r','d',' ','e','n',' ','h','e','t',' ','W','o','o','r','d',' ','w','a','s',' ','b','i','j',' ','G','o','d',' ','e','n',' ','h','e','t',' ','W','o','o','r','d',' ','w','a','s',' ','G','o','d','.',  '\0' };
+static unichar_t _dutchjohn2[] = { 'D','i','t',' ','w','a','s',' ','i','n',' ','d','e','n',' ','b','e','g','i','n','n','e',' ','b','i','j',' ','G','o','d','.',  '\0' };
+static unichar_t *dutchjohn[] = { _dutchjohn1, _dutchjohn2, NULL };
+/* finnish */
+static unichar_t _finnishjohn1[] = { 'A','l','u','s','s','a',' ','o','l','i',' ','S','a','n','a',',',' ','j','a',' ','S','a','n','a',' ','o','l','i',' ','J','u','m','a','l','a','n',' ','l','u','o','n','a',',',' ','S','a','n','a',' ','o','l','i',' ','J','u','m','a','l','a','.',  '\0' };
+static unichar_t _finnishjohn2[] = { 'j','a',' ','h', 0xe4, ' ','o','l','i',' ','a','l','u','s','s','a',' ','J','u','m','a','l','a','n',' ','l','u','o','n','a','.',  '\0' };
+static unichar_t *finnishjohn[] = { _finnishjohn1, _finnishjohn2, NULL };
+/* icelandic */
+static unichar_t _icelandicjohn1[] = { 'Í',' ','u','p','p','h','a','f','i',' ',
+	'v','a','r',' ','O','r','ð','i','ð',' ','o','g',' ','O','r','ð','i',
+	'ð',' ','v','a','r',' ','h','j','à',' ','G','u','ð','i',',',' ','o',
+	'g',' ','O','r','ð','i','ð',' ','v','a','r',' ','G','u','ð','i','.',
+	'\0'};
+static unichar_t _icelandicjohn2[] = { 'Þ','a','ð',' ','v','a','r',' ','í',
+	' ','u','p','p','h','a','f','i',' ','h','j','á',' ','G','u','ð','i',
+	'.',  '\0' };
+static unichar_t *icelandicjohn[] = { _icelandicjohn1, _icelandicjohn2, NULL };
+/* irish */
+static unichar_t _irishjohn1[] = { 'B','h','í',' ','a','n',' ','B','r','i',
+	'a','t','h','a','r','(','I',')',' ','a','n','n',' ','i',' ','d','t',
+	'ú','s',' ','b','á','i','r','e',' ','a','g','u','s',' ','b','h','í',
+	' ','a','n',' ','B','r','i','a','t','h','a','r',' ','i','n',' ','é',
+	'i','n','e','a','c','h','t',' ','l','e',' ','D','i','a',',',' ','a',
+	'g','u','s',' ','b','a',' ','D','h','i','a',' ','a','n',' ','B','r',
+	'i','a','t','h','a','r','.',  '\0'};
+static unichar_t _irishjohn2[] = { 'B','h','í',' ','s','é',' ','a','n','n',
+	' ','i',' ','d','t','ú','s',' ','b','á','i','r','e',' ','i','n',' ',
+	'é','i','n','e','a','c','h','t',' ','l','e',' ','D','i','a','.',  '\0'};
+static unichar_t *irishjohn[] = { _irishjohn1, _irishjohn2, NULL };
+/* norwegian */
+static unichar_t _norwegianjohn1[] = { 'I',' ','b','e','g','y','n','n','e','l','s','e','n',' ','v','a','r',' ','O','r','d','e','t',',',' ','O','r','d','e','t',' ','v','a','r',' ','h','o','s',' ','G','u','d',',',' ','o','g',' ','O','r','d','e','t',' ','v','a','r',' ','G','u','d','.',  '\0' };
+static unichar_t _norwegianjohn2[] = { 'H','a','n',' ','v','a','r',' ','i',' ','b','e','g','y','n','n','e','l','s','e','n',' ','h','o','s',' ','G','u','d','.',  '\0' };
+static unichar_t _norwegianjohn3[] = { 'A','l','t',' ','e','r',' ','b','l','i','t','t',' ','t','i','l',' ','v','e','d',' ','h','a','m',';',' ','u','t','e','n',' ','h','a','m',' ','e','r',' ','i','k','k','e',' ','n','o','e',' ','b','l','i','t','t',' ','t','i','l',' ','a','v',' ','a','l','t',' ','s','o','m',' ','e','r',' ','t','i','l','.',  '\0' };
+static unichar_t *norwegianjohn[] = { _norwegianjohn1, _norwegianjohn2, _norwegianjohn3, NULL };
+/* ?old? norwegian */
+static unichar_t _oldnorwegianjohn1[] = { 'I',' ','o','p','p','h','a','v','e','t',' ','v','a','r',' ','O','r','d','e','t',',',' ','o','g',' ','O','r','d','e','t',' ','v','a','r',' ','h','j', 0xe5, ' ','G','u','d',',',' ','o','g',' ','O','r','d','e','t',' ','v','a','r',' ','G','u','d','.',  '\0' };
+static unichar_t _oldnorwegianjohn2[] = { 'H','a','n',' ','v','a','r',' ','i',
+	' ','o','p','p','h','a','v','e','t',' ','h','j', 0xe5, ' ','G','u','d',
+	'.',   '\0' };
+static unichar_t *oldnorwegianjohn[] = { _oldnorwegianjohn1, _oldnorwegianjohn2, NULL };
+/* swedish */
+static unichar_t _swedishjohn1[] = { 'I',' ','b','e','g','y','n','n','e','l','s','e','n',' ','v','a','r',' ','O','r','d','e','t',',',' ','o','c','h',' ','O','r','d','e','t',' ','v','a','r',' ','h','o','s',' ','G','u','d',',',' ','o','c','h',' ','O','r','d','e','t',' ','v','a','r',' ','G','u','d','.',  '\0' };
+static unichar_t _swedishjohn2[] = { 'H','a','n',' ','v','a','r',' ','i',' ','b','e','g','y','n','n','e','l','s','e','n',' ','h','o','s',' ','G','u','d','.',  '\0' };
+static unichar_t *swedishjohn[] = { _swedishjohn1, _swedishjohn2, NULL };
+/* portuguese */
+static unichar_t _portjohn1[] = { 'N','o',' ','P','r','i','n','c','i','p','i','o',' ','e','r','a',' ','a',' ','P','a','l','a','v','r','a',',',' ','e',' ','a',' ','P','a','l','a','v','r','a',' ','e','s','t','a','v','a',' ','j','u','n','t','o',' ','d','e',' ','D','e','o','s',',',' ','e',' ','a',' ','P','a','l','a','v','r','a',' ','e','r','a',' ','D','e','o','s','.',  '\0' };
+static unichar_t _portjohn2[] = { 'E','s','t','a',' ','e','s','t','a','v','a',' ','n','o',' ','p','r','i','n','c','i','p','i','o',' ','j','u','n','t','o',' ','d','e',' ','D','e','o','s','.',  '\0' };
+static unichar_t *portjohn[] = { _portjohn1, _portjohn2, NULL };
+/* cherokee */
+static unichar_t _cherokeejohn1[] = { 0x13d7, 0x13d3, 0x13b4, 0x13c2, 0x13ef, 0x13ac,
+    ' ', 0x13a7, 0x13c3, 0x13ae, 0x13d8, ' ', 0x13a1, 0x13ae, 0x13a2, ',', ' ',
+    0x13a0, 0x13b4, ' ', 0x13be, 0x13ef, 0x13a9, ' ', 0x13a7, 0x13c3, 0x13ae, 0x13d8, ' ',
+    0x13a4, 0x13c1, 0x13b3, 0x13c5, 0x13af, ' ', 0x13a2, 0x13e7, 0x13b3, 0x13ad,
+    ' ', 0x13a0, 0x13d8, 0x13ae, 0x13a2, ',', ' ', 0x13a0, 0x13b4, ' ',
+    0x13be, 0x13ef, 0x13a9, ' ', 0x13a7, 0x13c3, 0x13ae, 0x13d8, ' ',
+    0x13a4, 0x13c1, 0x13b3, 0x13c5, 0x13af, ' ', 0x13a8, 0x13ce, 0x13a2, '.',
+    '\0' };
+static unichar_t _cherokeejohn2[] = { 0x13d7, 0x13d3, 0x13b4, 0x13c2, 0x13ef, 0x13ac,
+    ' ', 0x13be, 0x13ef, 0x13a9, ' ', 0x13a4, 0x13c1, 0x13b3, 0x13c5, 0x13af, ' ',
+    0x13a2, 0x13e7, 0x13b3, 0x13ad,' ', 0x13a0, 0x13d8, 0x13ae, 0x13a2, '\0' };
+static unichar_t *cherokeejohn[] = { _cherokeejohn1, _cherokeejohn2, NULL };
+/* swahili */
+static unichar_t _swahilijohn1[] = { 'H','a','p','o',' ','m','w','a','n','z','o',' ','k','u','l','i','k','u','w','a','k','o',' ','N','e','n','o',',',' ','n','a','y','e',' ','N','e','n','o',' ','a','l','i','k','u','w','a','k','o',' ','k','w','a',' ','M','u','n','g','o',',',' ','n','a','y','e',' ','N','e','n','o',' ','a','l','i','k','u','w','a',' ','M','u','n','g','u',',',' ','H','u','y','o',' ','m','w','a','n','z','o',' ','a','l','i','k','u','w','a','k','o',' ','k','w','a',' ','M','u','n','g','u','.',  '\0' };
+static unichar_t _swahilijohn2[] = { 'V','y','o','t','e',' ','v','i','l','v','a','n','y','i','k','a',' ','k','w','a',' ','h','u','y','o',';',' ','w','a','l','a',' ','p','a','s','i','p','o',' ','y','e','y','e',' ','h','a','k','i','k','u','f','a','n','y','i','k','a',' ','c','h','o',' ','c','h','o','t','e',' ','k','i','l','i','c','h','o','f','a','n','y','i','k','i','.',  '\0' };
+static unichar_t *swahilijohn[] = { _swahilijohn1, _swahilijohn2, NULL };
+
+/* I've omitted cornish. no interesting letters. no current speakers */
+
 static unichar_t **sample[] = { simple, simplecyrill, faust, pheadra, antigone,
 	annakarenena, debello, hebrew, donquixote, inferno, beorwulf, muchado,
-	mabinogion, goodsoldier, macedonian, bulgarian, lithuanian, polish,
-	slovene, NULL };
+	mabinogion, goodsoldier, macedonian, bulgarian, belorussianjohn,
+	lithuanian, polish, slovene, irishjohn, basquejohn, portjohn,
+	icelandicjohn, danishjohn, swedishjohn, norwegianjohn, oldnorwegianjohn,
+	dutchjohn, finnishjohn,
+	cherokeejohn, swahilijohn,
+	NULL };
 
 static int AllChars( SplineFont *sf, unichar_t *str) {
     int i, ch;
