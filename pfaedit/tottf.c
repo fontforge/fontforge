@@ -731,7 +731,7 @@ return( false );
 
 int SSPointCnt(SplineSet *ss,int startcnt, int has_instrs) {
     SplinePoint *sp, *first=NULL;
-    int cnt, starts_with_cp, last_was_counted=false;
+    int cnt;
 
     for ( sp=ss->first, cnt=startcnt; sp!=first ; ) {
 	if ( has_instrs && sp->ttfindex!=0xffff ) {
@@ -1268,9 +1268,26 @@ static int AssignTTFGlyph(SplineFont *sf,int32 *bsizes) {
 return( tg );
 }
 
+static void ReplaceChar(SplineFont *sf, int into, int from) {
+    BDFFont *bdf;
+
+    if ( into==from )
+return;
+
+    sf->chars[into] = sf->chars[from];
+    sf->chars[from] = NULL;
+    sf->chars[into]->enc = into;
+    for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
+	bdf->chars[into] = bdf->chars[from];
+	bdf->chars[from] = NULL;
+	bdf->chars[into]->enc = into;
+    }
+}
+
 static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
-    int i, cnt;
+    int i, cnt, has1, has2;
     int fixed = gi->fixed_width;
+    SplineChar *sc;
 
     GProgressChangeStages(2+gi->strikecnt);
     QuickBlues(sf,&gi->bd);
@@ -1280,9 +1297,36 @@ static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
     if ( gi->onlybitmaps )
 	cnt = AssignTTFGlyph(sf,gi->bsizes);
     else {
+	if ( sf->chars[1]==NULL || sf->chars[2]==NULL ) {
+	    for ( i=0; i<sf->charcnt; ++i ) {
+		if ( sf->chars[i]!=NULL ) {
+		    sc = sf->chars[i];
+		    if ( sc->orig_pos==1 && sc->splines==NULL && sc->refs==NULL ) {
+			ReplaceChar(sf,1,i);
+			if ( sf->chars[2]!=NULL )
+	    break;
+		    } else if ( sc->orig_pos==2 && sc->splines==NULL && sc->refs==NULL ) {
+			ReplaceChar(sf,2,i);
+			if ( sf->chars[1]!=NULL )
+	    break;
+		    }
+		}
+	    }
+	}
+	has1 = ( sf->chars[1]!=NULL && sf->chars[1]->orig_pos==1 );
+	has2 = ( sf->chars[2]!=NULL && sf->chars[2]->orig_pos==2 );
 	i=0, cnt=0;
 	if ( SCIsNotdef(sf->chars[0],fixed) )
 	    sf->chars[i++]->ttf_glyph = cnt++;
+	if (( sf->chars[0]==NULL || sf->chars[0]->ttf_glyph==0 ) && has1 ) {
+	    sf->chars[1]->ttf_glyph = cnt++;
+	    i = 2;
+	    if ( has2 ) {
+		sf->chars[2]->ttf_glyph = cnt++;
+		i = 3;
+	    }
+	} else
+	    has1 = has2 = false;
 	for ( cnt=3; i<sf->charcnt; ++i )
 	    if ( SCWorthOutputting(sf->chars[i]) && sf->chars[i]==SCDuplicate(sf->chars[i]))
 		sf->chars[i]->ttf_glyph = cnt++;
@@ -1306,15 +1350,17 @@ static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
 	gi->lasthwidth = -1;
 	gi->hfullcnt = 3;
     }
-    dumpblankglyph(gi,sf,fixed);	/* I'm not sure exactly why but there seem */
-    dumpblankglyph(gi,sf,fixed);	/* to be a couple of blank glyphs at the start*/
+    if ( !has1 )
+	dumpblankglyph(gi,sf,fixed);	/* I'm not sure exactly why but there seem */
+    if ( !has2 )
+	dumpblankglyph(gi,sf,fixed);	/* to be a couple of blank glyphs at the start*/
     /* One is for NUL and one for CR I think... but why? */
     for ( cnt=0; i<sf->charcnt; ++i ) {
 	if ( gi->onlybitmaps ) {
 	    if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph>0 )
 		dumpspace(sf->chars[i],gi);
 	} else {
-	    if ( SCWorthOutputting(sf->chars[i]) && sf->chars[i]==SCDuplicate(sf->chars[i])) {
+	    if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph>0 ) {
 		if ( IsTTFRefable(sf->chars[i]) )
 		    dumpcomposite(sf->chars[i],gi);
 		else
