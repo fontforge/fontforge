@@ -3693,11 +3693,48 @@ static int CI_ProcessPosSubs(CharInfo *ci) {
 return( true );
 }
 
+static int CI_NameCheck(const unichar_t *name) {
+    int bad, questionable;
+    static int buts[] = { _STR_Yes, _STR_No, 0 };
+
+    if ( uc_strcmp(name,".notdef")==0 )		/* This name is a special case and doesn't follow conventions */
+return( true );
+    if ( u_strlen(name)>31 ) {
+	GWidgetErrorR(_STR_BadName,_STR_GlyphNameTooLong);
+return( false );
+    } else if ( *name=='\0' ) {
+	GWidgetErrorR(_STR_BadName,_STR_BadName);
+return( false );
+    } else if ( isdigit(*name) || *name=='.' ) {
+	GWidgetErrorR(_STR_BadName,_STR_GlyphNameNoDigits);
+return( false );
+    }
+    bad = questionable = false;
+    while ( *name ) {
+	if ( *name<=' ' || *name>=0x7f ||
+		*name=='(' || *name=='[' || *name=='{' || *name=='<' ||
+		*name==')' || *name==']' || *name=='}' || *name=='>' ||
+		*name=='%' || *name=='/' )
+	    bad=true;
+	else if ( !isalnum(*name) || *name!='.' || *name!='_' )
+	    questionable = true;
+	++name;
+    }
+    if ( bad ) {
+	GWidgetErrorR(_STR_BadName,_STR_GlyphNameBadChars);
+return( false );
+    } else if ( questionable ) {
+	if ( GWidgetAskR(_STR_BadName,buts,0,1,_STR_GlyphNameQuestionableChars)==1 )
+return(false);
+    }
+return( true );
+}
+
 static int _CI_OK(CharInfo *ci) {
     int val;
     int ret, refresh_fvdi=0;
     char *name;
-    const unichar_t *comment;
+    const unichar_t *comment, *nm;
     FontView *fvs;
     int err = false;
 
@@ -3708,7 +3745,10 @@ return( false );
 return( false );
     if ( !CI_ProcessPosSubs(ci))
 return( false );
-    name = cu_copy( _GGadgetGetTitle(GWidgetGetControl(ci->gw,CID_UName)) );
+    nm = _GGadgetGetTitle(GWidgetGetControl(ci->gw,CID_UName));
+    if ( !CI_NameCheck(nm) )
+return( false );
+    name = cu_copy( nm );
     if ( strcmp(name,ci->sc->name)!=0 || val!=ci->sc->unicodeenc )
 	refresh_fvdi = 1;
     comment = _GGadgetGetTitle(GWidgetGetControl(ci->gw,CID_Comment));

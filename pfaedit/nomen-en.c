@@ -1233,6 +1233,10 @@ static char str_Elipse[] = "Ellipse";
 static char str_FilledElipse[] = "Filled Ellipse";
     /* Get Info ... */
 static char str_Multiple[] = "Multiple";
+static char str_GlyphNameTooLong = "Glyph names are limitted to 31 characters";
+static char str_GlyphNameNoDigits = "A glyph name may not start with a digit nor a full stop (period)"
+static char str_GlyphNameBadChars = "A glyph name must be ASCII, without spaces and may not contain the characters \"([{<>}])/%%\", and should contain only alphanumerics, periods and underscores";
+static char str_GlyphNameQuestionableChars = "A glyph name should contain only alphanumerics, periods and underscores\nDo you want to use this name in spite of that?";
 static char str_AlreadyCharUnicode[] = "There is already a character with this Unicode encoding,\012(named %1$.40hs, at local encoding %2$d)\012Is that what you want?";
 static char str_Alreadycharnamed[] = "There is already a character with this name,\012do you want to swap names?";
 static char str_AlreadyLigature[] = "There is already a ligature made from these components,\012(named %1$.40hs, at local encoding %2$d)\012Is that what you want?";
