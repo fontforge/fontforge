@@ -1672,6 +1672,47 @@ static void bSelectByATT(Context *c) {
     free(contents);
 }
 
+static void bSelectByColor(Context *c) {
+    int col, sccol;
+    int i, any=0;
+    SplineChar **chars = c->curfv->sf->chars;
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_str && c->a.vals[1].type!=v_int )
+	error(c,"Bad argument type");
+    if ( c->a.vals[1].type==v_int )
+	col = c->a.vals[1].u.ival;
+    else {
+	if ( strmatch(c->a.vals[1].u.sval,"Red")==0 )
+	    col = 0xff0000;
+	else if ( strmatch(c->a.vals[1].u.sval,"Green")==0 )
+	    col = 0x00ff00;
+	else if ( strmatch(c->a.vals[1].u.sval,"Blue")==0 )
+	    col = 0x0000ff;
+	else if ( strmatch(c->a.vals[1].u.sval,"Magenta")==0 )
+	    col = 0xff00ff;
+	else if ( strmatch(c->a.vals[1].u.sval,"Cyan")==0 )
+	    col = 0x00ffff;
+	else if ( strmatch(c->a.vals[1].u.sval,"Yellow")==0 )
+	    col = 0xffff00;
+	else if ( strmatch(c->a.vals[1].u.sval,"White")==0 )
+	    col = 0xffffff;
+	else if ( strmatch(c->a.vals[1].u.sval,"none")==0 ||
+		strmatch(c->a.vals[1].u.sval,"Default")==0 )
+	    col = COLOR_DEFAULT;
+    }
+
+    for ( i=0; i<c->curfv->sf->charcnt; ++i ) {
+	sccol =  ( chars[i]==NULL ) ? COLOR_DEFAULT : chars[i]->color;
+	if ( c->curfv->selected[i]!=(sccol==col) ) {
+	    c->curfv->selected[i] = !c->curfv->selected[i];
+	    if ( c->curfv->selected[i] ) any = true;
+	}
+    }
+    c->curfv->sel_index = any;
+}
+
 /* **** Element Menu **** */
 static void bReencode(Context *c) {
     Encoding *new_map;
@@ -4339,6 +4380,8 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "Select", bSelect },
     { "SelectIf", bSelectIf },
     { "SelectByATT", bSelectByATT },
+    { "SelectByColor", bSelectByColor },
+    { "SelectByColour", bSelectByColor },
 /* Element Menu */
     { "Reencode", bReencode },
     { "SetCharCnt", bSetCharCnt },
