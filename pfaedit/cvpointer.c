@@ -888,6 +888,8 @@ int CVMoveSelection(CharView *cv, real dx, real dy) {
     RefChar *refs;
     ImageList *img;
     AnchorPoint *ap;
+    double fudge;
+    extern float snapdistance;
 
     transform[0] = transform[3] = 1.0;
     transform[1] = transform[2] = 0.0;
@@ -918,10 +920,17 @@ return(false);
 	    SCOutOfDateBackground(cv->sc);
 	}
     }
-    if ( cv->widthsel )
+    fudge = snapdistance/cv->scale/2;
+    if ( cv->widthsel ) {
 	cv->sc->width += dx;
-    if ( cv->vwidthsel )
+	if ( cv->sc->width>=-fudge && cv->sc->width<fudge )
+	    cv->sc->width = 0;
+    }
+    if ( cv->vwidthsel ) {
 	cv->sc->vwidth -= dy;
+	if ( cv->sc->vwidth>=-fudge && cv->sc->vwidth<fudge )
+	    cv->sc->vwidth = 0;
+    }
     CVSetCharChanged(cv,true);
 return( CVCheckMerges( cv ));
 }
