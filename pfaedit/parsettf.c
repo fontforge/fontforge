@@ -3360,6 +3360,10 @@ static void readttfos2metrics(FILE *ttf,struct ttfinfo *info) {
     /* lastchar */ getushort(ttf);
     info->pfminfo.os2_typoascent = getushort(ttf);
     info->pfminfo.os2_typodescent = (short) getushort(ttf);
+    if ( info->pfminfo.os2_typoascent+info->pfminfo.os2_typodescent == info->emsize ) {
+	info->ascent = info->pfminfo.os2_typoascent;
+	info->descent = info->pfminfo.os2_typodescent;
+    }
     if ( info->pfminfo.linegap==0 ) {
 	info->pfminfo.linegap = getushort(ttf);
     } else

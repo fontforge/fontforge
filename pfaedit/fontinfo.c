@@ -3934,6 +3934,13 @@ return(true);
 	    sf->descent = des;
 	    BDFsSetAsDs(sf);
 	    reformat_fv = true;
+	    if ( sf->pfminfo.os2_typoascent!=0 ) {
+		double scale = (as+des)/(double) (sf->ascent+sf->descent);
+		sf->pfminfo.os2_typoascent = as;
+		sf->pfminfo.os2_typodescent = des;
+		sf->pfminfo.os2_winascent *= scale;
+		sf->pfminfo.os2_windescent *= scale;
+	    }
 	}
 	sf->italicangle = ia;
 	sf->upos = upos;

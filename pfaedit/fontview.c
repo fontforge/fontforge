@@ -1716,6 +1716,13 @@ int SFScaleToEm(SplineFont *sf, int as, int des) {
     KernPair *kp;
     PST *pst;
 
+    scale = (as+des)/(double) (sf->ascent+sf->descent);
+    if ( sf->pfminfo.os2_typoascent!=0 ) {
+	sf->pfminfo.os2_typoascent = as;
+	sf->pfminfo.os2_typodescent = des;
+	sf->pfminfo.os2_winascent *= scale;
+	sf->pfminfo.os2_windescent *= scale;
+    }
     if ( as+des == sf->ascent+sf->descent ) {
 	if ( as!=sf->ascent && des!=sf->descent ) {
 	    sf->ascent = as; sf->descent = des;
@@ -1724,7 +1731,6 @@ int SFScaleToEm(SplineFont *sf, int as, int des) {
 return( false );
     }
 
-    scale = (as+des)/(double) (sf->ascent+sf->descent);
     transform[0] = transform[3] = scale;
     transform[1] = transform[2] = transform[4] = transform[5] = 0;
     bvts.func = bvt_none;
