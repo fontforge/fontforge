@@ -830,6 +830,12 @@ return( true );
       case et_char: case et_charup:
 	PostCharToWindow(cv->gw,event);
       break;
+      case et_mousedown:
+#ifdef PFAEDIT_CONFIG_TYPE3
+	if ( event->u.mouse.clicks==2 )		/* !!!! Debug */
+	    LayerDialog(cv->layerheads[cv->drawmode]);
+#endif
+      break;
       case et_controlevent:
 	if ( event->u.control.subtype == et_radiochanged ) {
 	    enum drawmode dm = cv->drawmode;

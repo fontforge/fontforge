@@ -383,7 +383,11 @@ typedef struct undoes {
 	    struct splinepointlist *splines;
 	    struct refchar *refs;
 	    struct minimumdistance *md;
+#ifdef PFAEDIT_CONFIG_TYPE3
+	    struct {				/* In type3 we can have both at once */
+#else
 	    union {
+#endif
 		struct imagelist *images;
 		void *hints;			/* ut_statehint, ut_statename */
 	    } u;
@@ -1160,6 +1164,7 @@ extern void SCReinstanciateRef(SplineChar *sc,SplineChar *rsc);
 extern void SFReinstanciateRefs(SplineFont *sf);
 extern SplineChar *MakeDupRef(SplineChar *base, int local_enc, int uni_enc);
 extern void SCRemoveDependent(SplineChar *dependent,RefChar *rf);
+extern void SCRemoveLayerDependents(SplineChar *dependent,int layer);
 extern void SCRemoveDependents(SplineChar *dependent);
 extern RefChar *SCCanonicalRefs(SplineChar *sc, int isps);
 extern int SCDependsOnSC(SplineChar *parent, SplineChar *child);

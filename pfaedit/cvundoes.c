@@ -374,10 +374,15 @@ void UndoesFree(Undoes *undo) {
 	    SplinePointListsFree(undo->u.state.splines);
 	    RefCharsFree(undo->u.state.refs);
 	    MinimumDistancesFree(undo->u.state.md);
+#ifdef PFAEDIT_CONFIG_TYPE3
+	    UHintListFree(undo->u.state.u.hints);
+	    ImageListsFree(undo->u.state.u.images);
+#else
 	    if ( undo->undotype==ut_statehint || undo->undotype==ut_statename )
 		UHintListFree(undo->u.state.u.hints);
 	    else
 		ImageListsFree(undo->u.state.u.images);
+#endif
 	    if ( undo->undotype==ut_statename ) {
 		free( undo->u.state.charname );
 		free( undo->u.state.comment );
@@ -463,11 +468,18 @@ return(NULL);
     undo->u.state.vwidth = cv->sc->vwidth;
     undo->u.state.splines = SplinePointListCopy(cv->layerheads[cv->drawmode]->splines);
     undo->u.state.refs = RefCharsCopyState(cv->sc,layer);
-    if ( cv->drawmode==dm_fore ) {
+    if ( layer==ly_fore ) {
 	undo->u.state.md = MDsCopyState(cv->sc,undo->u.state.splines);
 	undo->u.state.anchor = AnchorPointsCopy(cv->sc->anchor);
     }
-    undo->u.state.u.images = ImageListCopy(cv->sc->layers[layer].images);
+    undo->u.state.u.images = ImageListCopy(cv->layerheads[cv->drawmode]->images);
+#ifdef PFAEDIT_CONFIG_TYPE3
+    undo->u.state.fill_brush = cv->layerheads[cv->drawmode]->fill_brush;
+    undo->u.state.stroke_pen = cv->layerheads[cv->drawmode]->stroke_pen;
+    undo->u.state.dofill = cv->layerheads[cv->drawmode]->dofill;
+    undo->u.state.dostroke = cv->layerheads[cv->drawmode]->dostroke;
+    undo->u.state.fillfirst = cv->layerheads[cv->drawmode]->fillfirst;
+#endif
 return( CVAddUndo(cv,undo));
 }
 
@@ -502,6 +514,13 @@ return(NULL);
 	    undo->u.state.possub = PSTCopy(sc->possub,sc,sc->parent);
 	}
     }
+#ifdef PFAEDIT_CONFIG_TYPE3
+    undo->u.state.fill_brush = sc->layers[layer].fill_brush;
+    undo->u.state.stroke_pen = sc->layers[layer].stroke_pen;
+    undo->u.state.dofill = sc->layers[layer].dofill;
+    undo->u.state.dostroke = sc->layers[layer].dostroke;
+    undo->u.state.fillfirst = sc->layers[layer].fillfirst;
+#endif
     undo->u.state.copied_from = sc->parent;
 return( AddUndo(undo,&sc->layers[layer].undoes,&sc->layers[layer].redoes));
 }
@@ -532,7 +551,7 @@ Undoes *CVPreserveTState(CharView *cv) {
     Undoes *undo;
     int anyrefs;
     RefChar *refs, *urefs;
-    int was0 = false;
+    int was0 = false, j;
 
     cv->p.transany = CVAnySel(cv,NULL,&anyrefs,NULL,NULL);
     cv->p.transanyrefs = anyrefs;
@@ -544,9 +563,10 @@ Undoes *CVPreserveTState(CharView *cv) {
 
     undo = CVPreserveState(cv);
     if ( !cv->p.transany || cv->p.transanyrefs ) {
-	for ( refs = cv->sc->layers[ly_fore].refs, urefs=undo->u.state.refs; urefs!=NULL; refs=refs->next, urefs=urefs->next )
+	for ( refs = cv->layerheads[cv->drawmode]->refs, urefs=undo->u.state.refs; urefs!=NULL; refs=refs->next, urefs=urefs->next )
 	    if ( !cv->p.transany || refs->selected )
-		urefs->layers[0].splines = SplinePointListCopy(refs->layers[0].splines);
+		for ( j=0; j<urefs->layer_cnt; ++j )
+		    urefs->layers[j].splines = SplinePointListCopy(refs->layers[j].splines);
     }
     undo->undotype = ut_tstate;
 
@@ -782,23 +802,23 @@ void CVRestoreTOriginalState(CharView *cv) {
     Undoes *undo = cv->layerheads[cv->drawmode]->undoes;
     RefChar *ref, *uref;
     ImageList *img, *uimg;
+    int j;
 
     SplinePointListSet(cv->layerheads[cv->drawmode]->splines,undo->u.state.splines);
     if ( cv->drawmode==dm_fore && (!cv->p.anysel || cv->p.transanyrefs)) {
-	for ( ref=cv->sc->layers[ly_fore].refs, uref=undo->u.state.refs; uref!=NULL; ref=ref->next, uref=uref->next )
-	    if ( uref->layers[0].splines!=NULL ) {
-		SplinePointListSet(ref->layers[0].splines,uref->layers[0].splines);
-		memcpy(&ref->transform,&uref->transform,sizeof(ref->transform));
-	    }
+	for ( ref=cv->layerheads[cv->drawmode]->refs, uref=undo->u.state.refs; uref!=NULL; ref=ref->next, uref=uref->next )
+	    for ( j=0; j<uref->layer_cnt; ++j )
+		if ( uref->layers[j].splines!=NULL ) {
+		    SplinePointListSet(ref->layers[j].splines,uref->layers[j].splines);
+		    memcpy(&ref->transform,&uref->transform,sizeof(ref->transform));
+		}
     }
-    if ( cv->drawmode==dm_back ) {
-	for ( img=cv->sc->layers[ly_back].images, uimg=undo->u.state.u.images; uimg!=NULL;
-		img = img->next, uimg = uimg->next ) {
-	    img->xoff = uimg->xoff;
-	    img->yoff = uimg->yoff;
-	    img->xscale = uimg->xscale;
-	    img->yscale = uimg->yscale;
-	}
+    for ( img=cv->layerheads[cv->drawmode]->images, uimg=undo->u.state.u.images; uimg!=NULL;
+	    img = img->next, uimg = uimg->next ) {
+	img->xoff = uimg->xoff;
+	img->yoff = uimg->yoff;
+	img->xscale = uimg->xscale;
+	img->yscale = uimg->yscale;
     }
 }
 
@@ -1228,7 +1248,7 @@ void CopySelected(CharView *cv) {
     copybuffer.u.state.splines = SplinePointListCopySelected(cv->layerheads[cv->drawmode]->splines);
     if ( cv->drawmode==dm_fore ) {
 	RefChar *refs, *new;
-	for ( refs = cv->sc->layers[ly_fore].refs; refs!=NULL; refs = refs->next ) if ( refs->selected ) {
+	for ( refs = cv->layerheads[cv->drawmode]->refs; refs!=NULL; refs = refs->next ) if ( refs->selected ) {
 	    new = RefCharCreate();
 	    *new = *refs;
 	    new->layers[0].splines = NULL;
@@ -1247,9 +1267,12 @@ void CopySelected(CharView *cv) {
 	    }
 	}
     }
-    if ( cv->drawmode==dm_back ) {
+#ifndef PFAEDIT_CONFIG_TYPE3
+    if ( cv->drawmode==dm_back )
+#endif
+    {
 	ImageList *imgs, *new;
-	for ( imgs = cv->sc->layers[ly_back].images; imgs!=NULL; imgs = imgs->next ) if ( imgs->selected ) {
+	for ( imgs = cv->layerheads[cv->drawmode]->images; imgs!=NULL; imgs = imgs->next ) if ( imgs->selected ) {
 	    new = chunkalloc(sizeof(ImageList));
 	    *new = *imgs;
 	    new->next = copybuffer.u.state.u.images;
@@ -1279,7 +1302,12 @@ return;
     XClipCheckEps();
 }
 
+#ifdef PFAEDIT_CONFIG_TYPE3
+static Undoes *SCCopyAllLayer(SplineChar *sc,int full,int layer) {
+#else
 static Undoes *SCCopyAll(SplineChar *sc,int full) {
+    const int layer = ly_fore;
+#endif
     Undoes *cur;
     RefChar *ref;
     extern int copymetadata;
@@ -1293,14 +1321,28 @@ static Undoes *SCCopyAll(SplineChar *sc,int full) {
 	cur->u.state.vwidth = sc->vwidth;
 	if ( full ) {
 	    cur->undotype = copymetadata ? ut_statename : ut_statehint;
-	    cur->u.state.splines = SplinePointListCopy(sc->layers[ly_fore].splines);
-	    cur->u.state.refs = RefCharsCopyState(sc,ly_fore);
+	    cur->u.state.splines = SplinePointListCopy(sc->layers[layer].splines);
+	    cur->u.state.refs = RefCharsCopyState(sc,layer);
 	    cur->u.state.anchor = AnchorPointsCopy(sc->anchor);
 	    cur->u.state.u.hints = UHintCopy(sc,true);
 	    cur->u.state.unicodeenc = sc->unicodeenc;
-	    cur->u.state.charname = copymetadata ? copy(sc->name) : NULL;
-	    cur->u.state.comment = copymetadata ? u_copy(sc->comment) : NULL;
-	    cur->u.state.possub = copymetadata ? PSTCopy(sc->possub,sc,sc->parent) : NULL;
+	    if ( copymetadata && layer==ly_fore ) {
+		cur->u.state.charname = copy(sc->name);
+		cur->u.state.comment = u_copy(sc->comment);
+		cur->u.state.possub = PSTCopy(sc->possub,sc,sc->parent);
+	    } else {
+		cur->u.state.charname = NULL;
+		cur->u.state.comment = NULL;
+		cur->u.state.possub = NULL;
+	    }
+#ifdef PFAEDIT_CONFIG_TYPE3
+	    cur->u.state.u.images = ImageListCopy(sc->layers[layer].images);
+	    cur->u.state.fill_brush = sc->layers[layer].fill_brush;
+	    cur->u.state.stroke_pen = sc->layers[layer].stroke_pen;
+	    cur->u.state.dofill = sc->layers[layer].dofill;
+	    cur->u.state.dostroke = sc->layers[layer].dostroke;
+	    cur->u.state.fillfirst = sc->layers[layer].fillfirst;
+#endif
 	} else {		/* Or just make a reference */
 	    sc = SCDuplicate(sc);
 	    cur->undotype = ut_state;
@@ -1314,6 +1356,33 @@ static Undoes *SCCopyAll(SplineChar *sc,int full) {
     }
 return( cur );
 }
+
+#ifdef PFAEDIT_CONFIG_TYPE3
+static Undoes *SCCopyAll(SplineChar *sc,int full) {
+    int layer;
+    Undoes *ret, *cur, *last=NULL;
+
+    ret = chunkalloc(sizeof(Undoes));
+    if ( sc==NULL ) {
+	ret->undotype = ut_noop;
+    } else if ( !full || !sc->parent->multilayer ) {	/* Make a reference */
+	chunkfree(ret,sizeof(Undoes));
+	ret = SCCopyAllLayer(sc,full,ly_fore );
+    } else {
+	ret->undotype = ut_layers;
+	for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
+	    cur = SCCopyAllLayer(sc,true,layer);
+	    if ( ret->u.multiple.mult==NULL )
+		ret->u.multiple.mult = cur;
+	    else
+		last->next = cur;
+	    last = cur;
+	    full = false;
+	}
+    }
+return( ret );
+}
+#endif
 
 void SCCopyWidth(SplineChar *sc,enum undotype ut) {
     DBounds bb;
@@ -1593,7 +1662,13 @@ return;
 }
 
 /* when pasting from the fontview we do a clear first */
+#ifdef PFAEDIT_CONFIG_TYPE3
+static void _PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear,
+	int layer) {
+#else
 static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear) {
+    const int layer = ly_fore;
+#endif
     DBounds bb;
     real transform[6];
     int width, vwidth;
@@ -1616,27 +1691,55 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear) {
 	    SCSynchronizeWidth(sc,width,sc->width,fv);
 	sc->vwidth = vwidth;
 	if ( doclear ) {
-	    SplinePointListsFree(sc->layers[ly_fore].splines);
-	    sc->layers[ly_fore].splines = NULL;
-	    SCRemoveDependents(sc);
+	    SplinePointListsFree(sc->layers[layer].splines);
+	    sc->layers[layer].splines = NULL;
+	    ImageListsFree(sc->layers[layer].images);
+	    sc->layers[layer].images = NULL;
+	    SCRemoveLayerDependents(sc,layer);
 	    AnchorPointsFree(sc->anchor);
 	    sc->anchor = NULL;
 	}
+#ifdef PFAEDIT_CONFIG_TYPE3
+	if ( layer>=ly_fore && sc->layers[layer].splines==NULL &&
+		sc->layers[layer].refs==NULL && sc->layers[layer].images==NULL &&
+		sc->parent->multilayer ) {
+	    /* pasting into an empty layer sets the fill/stroke */
+	    sc->layers[layer].fill_brush = paster->u.state.fill_brush;
+	    sc->layers[layer].stroke_pen = paster->u.state.stroke_pen;
+	    sc->layers[layer].dofill = paster->u.state.dofill;
+	    sc->layers[layer].dostroke = paster->u.state.dostroke;
+	    sc->layers[layer].fillfirst = paster->u.state.fillfirst;
+	}
+#endif
 	if ( paster->u.state.splines!=NULL ) {
 	    SplinePointList *temp = SplinePointListCopy(paster->u.state.splines);
 	    if ( paster->was_order2 != sc->parent->order2 )
 		temp = SplineSetsConvertOrder(temp,sc->parent->order2);
-	    if ( sc->layers[ly_fore].splines!=NULL ) {
-		SplinePointList *e = sc->layers[ly_fore].splines;
+	    if ( sc->layers[layer].splines!=NULL ) {
+		SplinePointList *e = sc->layers[layer].splines;
 		while ( e->next!=NULL ) e = e->next;
 		e->next = temp;
 	    } else
-		sc->layers[ly_fore].splines = temp;
+		sc->layers[layer].splines = temp;
 	}
 	if ( !sc->searcherdummy )
 	    APMerge(sc,paster->u.state.anchor);
+#ifdef PFAEDIT_CONFIG_TYPE3
+	if ( paster->u.state.u.images!=NULL && sc->parent->multilayer ) {
+	    ImageList *new, *cimg;
+	    for ( cimg = paster->u.state.u.images; cimg!=NULL; cimg=cimg->next ) {
+		new = galloc(sizeof(ImageList));
+		*new = *cimg;
+		new->selected = true;
+		new->next = sc->layers[layer].images;
+		sc->layers[layer].images = new;
+	    }
+	    SCOutOfDateBackground(sc);
+	}
+#else
 	/* Ignore any images, can't be in foreground level */
 	/* but might be hints */
+#endif
 	if ( paster->undotype==ut_statehint || paster->undotype==ut_statename )
 	    if ( doclear )	/* Hints aren't meaningful unless we've cleared first */
 		ExtractHints(sc,paster->u.state.u.hints,true);
@@ -1665,8 +1768,8 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear) {
 		    new->transform[4] *= scale; new->transform[5] *= scale;
 		    new->layers[0].splines = NULL;
 		    new->sc = rsc;
-		    new->next = sc->layers[ly_fore].refs;
-		    sc->layers[ly_fore].refs = new;
+		    new->next = sc->layers[layer].refs;
+		    sc->layers[layer].refs = new;
 		    SCReinstanciateRefChar(sc,new);
 		    SCMakeDependent(sc,rsc);
 		} else {
@@ -1708,10 +1811,40 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear) {
 	transform[4] = paster->u.lbearing-bb.minx;
 	if ( transform[4]!=0 )
 	    FVTrans(fv,sc,transform,NULL,false);
-	/* FVTrans will preserver the state and update the chars */
+	/* FVTrans will preserve the state and update the chars */
       break;
     }
 }
+
+#ifdef PFAEDIT_CONFIG_TYPE3
+static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear) {
+    if ( paster->undotype==ut_layers ) {
+	int lc, start, layer;
+	Undoes *pl;
+	for ( lc=0, pl = paster->u.multiple.mult; pl!=NULL; pl=pl->next, ++lc );
+	if ( doclear ) {
+	    start = ly_fore;
+	    for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
+		SplinePointListsFree(sc->layers[layer].splines);
+		sc->layers[layer].splines = NULL;
+		ImageListsFree(sc->layers[layer].images);
+		sc->layers[layer].images = NULL;
+		SCRemoveLayerDependents(sc,layer);
+	    }
+	} else
+	    start = sc->layer_cnt;
+	if ( start+lc > sc->layer_cnt ) {
+	    sc->layers = grealloc(sc->layers,(start+lc)*sizeof(Layer));
+	    for ( layer = sc->layer_cnt; layer<start+lc; ++layer )
+		LayerDefault(&sc->layers[layer]);
+	    sc->layer_cnt = start+lc;
+	}
+	for ( lc=0, pl = paster->u.multiple.mult; pl!=NULL; pl=pl->next, ++lc );
+	    _PasteToSC(sc,pl,fv,doclear,start+lc);
+    } else
+	_PasteToSC(sc,paster,fv,doclear,ly_fore);
+}
+#endif
 
 static void _PasteToCV(CharView *cv,SplineChar *cvsc,Undoes *paster) {
     int refstate = 0;
@@ -1734,6 +1867,18 @@ return;
 	    SCSynchronizeWidth(cvsc,paster->u.state.width,cvsc->width,NULL);
 	    cvsc->vwidth = paster->u.state.vwidth;
 	}
+#ifdef PFAEDIT_CONFIG_TYPE3
+	if ( cv->drawmode==dm_fore && cv->layerheads[dm_fore]->splines==NULL &&
+		cv->layerheads[dm_fore]->refs==NULL && cv->layerheads[dm_fore]->images==NULL &&
+		cvsc->parent->multilayer ) {
+	    /* pasting into an empty layer sets the fill/stroke */
+	    cv->layerheads[dm_fore]->fill_brush = paster->u.state.fill_brush;
+	    cv->layerheads[dm_fore]->stroke_pen = paster->u.state.stroke_pen;
+	    cv->layerheads[dm_fore]->dofill = paster->u.state.dofill;
+	    cv->layerheads[dm_fore]->dostroke = paster->u.state.dostroke;
+	    cv->layerheads[dm_fore]->fillfirst = paster->u.state.fillfirst;
+	}
+#endif
 	if ( paster->u.state.splines!=NULL ) {
 	    SplinePointList *spl, *new = SplinePointListCopy(paster->u.state.splines);
 	    if ( paster->was_order2 != cvsc->parent->order2 )
@@ -1744,15 +1889,20 @@ return;
 	    cv->layerheads[cv->drawmode]->splines = new;
 	}
 	if ( paster->undotype==ut_state && paster->u.state.u.images!=NULL ) {
+#ifdef PFAEDIT_CONFIG_TYPE3
+	    int dm = cvsc->parent->multilayer ? cv->drawmode : dm_back;
+#else
+	    const int dm = dm_back;
 	    /* Images can only be pasted into background, so do that */
 	    /*  even if we aren't in background mode */
+#endif
 	    ImageList *new, *cimg;
 	    for ( cimg = paster->u.state.u.images; cimg!=NULL; cimg=cimg->next ) {
 		new = galloc(sizeof(ImageList));
 		*new = *cimg;
 		new->selected = true;
-		new->next = cvsc->layers[ly_back].images;
-		cvsc->layers[ly_back].images = new;
+		new->next = cv->layerheads[dm]->images;
+		cv->layerheads[dm]->images = new;
 	    }
 	    SCOutOfDateBackground(cvsc);
 	} else if ( paster->undotype==ut_statehint && cv->searcher==NULL )
@@ -1843,7 +1993,7 @@ return;
 	if ( paster->u.composit.state!=NULL )
 	    _PasteToCV(cv,cvsc,paster->u.composit.state);
       break;
-      case ut_multiple:
+      case ut_multiple: case ut_layers:
 	_PasteToCV(cv,cvsc,paster->u.multiple.mult);
       break;
     }
@@ -2241,6 +2391,7 @@ return;
 	      case ut_state: case ut_width: case ut_vwidth:
 	      case ut_lbearing: case ut_rbearing: case ut_possub:
 	      case ut_statehint: case ut_statename:
+	      case ut_layers:
 		if ( !sf->hasvmetrics && cur->undotype==ut_vwidth) {
 		    GWidgetErrorR(_STR_NoVerticalMetrics,_STR_FontNoVerticalMetrics);
  goto err;

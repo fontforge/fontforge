@@ -845,3 +845,538 @@ void FVStrokeItScript(FontView *fv, StrokeInfo *si) {
 void FreeHandStrokeDlg(StrokeInfo *si) {
     MakeStrokeDlg(NULL,NULL,si);
 }
+
+/* ************************************************************************** */
+/* ****************************** Layer Dialog ****************************** */
+/* ************************************************************************** */
+#ifdef PFAEDIT_CONFIG_TYPE3
+
+#define LY_Width	300
+#define LY_Height	340
+
+#define CID_FillColor		2001
+#define CID_FillCInherit	2002
+#define CID_FillOpacity		2003
+#define CID_FillOInherit	2004
+#define CID_StrokeColor		2005
+#define CID_StrokeCInherit	2006
+#define CID_StrokeOpacity	2007
+#define CID_StrokeOInherit	2008
+#define CID_StrokeWInherit	2009
+#define CID_Trans		2010
+#define CID_InheritCap		2011
+#define CID_InheritJoin		2012
+#define CID_Fill		2013
+#define CID_Name		2014
+
+struct layer_dlg {
+    int done;
+    int ok;
+    Layer *layer;
+    GWindow gw;
+};
+
+static uint32 getcol(GGadget *g,int *err) {
+    const unichar_t *ret=_GGadgetGetTitle(g);
+    unichar_t *end;
+    uint32 col = COLOR_INHERITED;
+
+    if ( *ret=='#' ) ++ret;
+    col = u_strtol(ret,&end,16);
+    if ( col<0 || col>0xffffff || *end!='\0' ) {
+	*err = true;
+	GWidgetErrorR(_STR_BadColor,_STR_BadColor);
+    }
+return( col );
+}
+
+static int Layer_OK(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	GWindow gw = GGadgetGetWindow(g);
+	struct layer_dlg *ld = GDrawGetUserData(GGadgetGetWindow(g));
+	Layer temp;
+	int err=false;
+	const unichar_t *ret;
+	unichar_t *end, *end2;
+
+	LayerDefault(&temp);
+	temp.dofill = GGadgetIsChecked(GWidgetGetControl(gw,CID_Fill));
+	temp.dostroke = GGadgetIsChecked(GWidgetGetControl(gw,CID_Stroke));
+	if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_FillCInherit)) )
+	    temp.fill_brush.col = COLOR_INHERITED;
+	else
+	    temp.fill_brush.col = getcol(GWidgetGetControl(gw,CID_FillColor),&err);
+	if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_FillOInherit)) )
+	    temp.fill_brush.opacity = -1;
+	else
+	    temp.fill_brush.col = GetRealR(gw,CID_FillOpacity,_STR_Opacity,&err);
+
+	if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_StrokeCInherit)) )
+	    temp.stroke_pen.brush.col = COLOR_INHERITED;
+	else
+	    temp.stroke_pen.brush.col = getcol(GWidgetGetControl(gw,CID_StrokeColor),&err);
+	if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_StrokeOInherit)) )
+	    temp.stroke_pen.brush.opacity = -1;
+	else
+	    temp.stroke_pen.brush.col = GetRealR(gw,CID_StrokeOpacity,_STR_Opacity,&err);
+	if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_StrokeWInherit)) )
+	    temp.stroke_pen.width = WIDTH_INHERITED;
+	else
+	    temp.stroke_pen.width = GetRealR(gw,CID_Width,_STR_Width,&err);
+	if ( err )
+return( true );
+
+	ret = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Trans));
+	while ( *ret==' ' || *ret=='[' ) ++ret;
+	temp.stroke_pen.trans[0] = u_strtod(ret,&end);
+	temp.stroke_pen.trans[1] = u_strtod(end,&end);
+	temp.stroke_pen.trans[2] = u_strtod(end,&end);
+	temp.stroke_pen.trans[3] = u_strtod(end,&end2);
+	for ( ret = end2 ; *ret==' ' || *ret==']' ; ++ret );
+	if ( end2==end || *ret!='\0' || temp.stroke_pen.trans[0] ==0 || temp.stroke_pen.trans[3]==0 ) {
+	    GWidgetErrorR(_STR_BadMatrix,_STR_BadMatrix);
+return( true );
+	}
+	temp.stroke_pen.linecap =
+		GGadgetIsChecked(GWidgetGetControl(gw,CID_ButtCap))?lc_butt:
+		GGadgetIsChecked(GWidgetGetControl(gw,CID_RoundCap))?lc_round:
+		GGadgetIsChecked(GWidgetGetControl(gw,CID_SquareCap))?lc_square:
+			lc_inherited;
+	temp.stroke_pen.linejoin =
+		GGadgetIsChecked(GWidgetGetControl(gw,CID_BevelJoin))?lj_bevel:
+		GGadgetIsChecked(GWidgetGetControl(gw,CID_RoundJoin))?lj_round:
+		GGadgetIsChecked(GWidgetGetControl(gw,CID_MiterJoin))?lj_miter:
+			lj_inherited;
+	ld->done = ld->ok = true;
+	ld->layer->stroke_pen = temp.stroke_pen;
+	ld->layer->fill_brush = temp.fill_brush;
+	ld->layer->dofill = temp.dofill;
+	ld->layer->dostroke = temp.dostroke;
+	ld->layer->fillfirst = temp.fillfirst;
+	free(ld->layer->name);
+	ld->layer->name = GGadgetGetTitle(GWidgetGetControl(gw,CID_Name));
+    }
+return( true );
+}
+
+static int Layer_Cancel(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct layer_dlg *ld = GDrawGetUserData(GGadgetGetWindow(g));
+	ld->done = true;
+    }
+return( true );
+}
+
+static int Layer_Inherit(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	GWindow gw = GGadgetGetWindow(g);
+	int cid = (intpt) GGadgetGetUserData(g);
+	GGadgetSetEnabled(GWidgetGetControl(gw,cid),
+		!GGadgetIsChecked(g));
+    }
+return( true );
+}
+
+static int layer_e_h(GWindow gw, GEvent *event) {
+    if ( event->type==et_close ) {
+	struct layer_dlg *ld = GDrawGetUserData(gw);
+	ld->done = true;
+    } else if ( event->type == et_char ) {
+	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
+	    help("multilayer.html#Layer");
+return( true );
+	}
+return( false );
+    }
+return( true );
+}
+
+int LayerDialog(Layer *layer) {
+    GRect pos;
+    GWindow gw;
+    GWindowAttrs wattrs;
+    GGadgetCreateData gcd[38];
+    GTextInfo label[38];
+    struct layer_dlg ld;
+    int yoff=0;
+    int gcdoff, fill_gcd;
+    char widthbuf[20], fcol[12], scol[12], fopac[30], sopac[30], transbuf[150];
+
+    memset(&ld,0,sizeof(ld));
+    ld.layer = layer;
+
+    memset(&wattrs,0,sizeof(wattrs));
+    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+    wattrs.event_masks = ~(1<<et_charup);
+    wattrs.restrict_input_to_me = 1;
+    wattrs.undercursor = 1;
+    wattrs.cursor = ct_pointer;
+    wattrs.window_title = GStringGetResource(_STR_Layer,NULL);
+    wattrs.is_dlg = true;
+    pos.x = pos.y = 0;
+    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,LY_Width));
+    pos.height = GDrawPointsToPixels(NULL,LY_Height);
+    ld.gw = gw = GDrawCreateTopWindow(NULL,&pos,layer_e_h,&ld,&wattrs);
+
+    memset(&label,0,sizeof(label));
+    memset(&gcd,0,sizeof(gcd));
+
+    gcdoff = 0;
+
+    label[gcdoff].text = (unichar_t *) _STR_Fill;
+    label[gcdoff].text_in_resource = true;
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.pos.x = 5; gcd[gcdoff].gd.pos.y = 5+yoff;
+    gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (layer->dostroke? gg_cb_on : 0);
+    gcd[gcdoff].gd.cid = CID_Fill;
+    gcd[gcdoff++].creator = GCheckBoxCreate;
+
+    fill_gcd = gcdoff;
+    gcd[gcdoff].gd.pos.x = 1; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+6;
+    gcd[gcdoff].gd.pos.width = LY_Width-2; gcd[gcdoff].gd.pos.height = 65;
+    gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
+    gcd[gcdoff++].creator = GGroupCreate;
+
+    label[gcdoff].text = (unichar_t *) _STR_Color;
+    label[gcdoff].text_in_resource = true;
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.pos.x = 5; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+12;
+    gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
+    gcd[gcdoff++].creator = GLabelCreate;
+
+    sprintf( fcol, "#%06x", layer->fill_brush.col );
+    label[gcdoff].text = (unichar_t *) fcol;
+    label[gcdoff].text_is_1byte = true;
+    if ( layer->fill_brush.col==COLOR_INHERITED ) 
+	gcd[gcdoff].gd.flags = gg_visible;
+    else {
+	gcd[gcdoff].gd.label = &label[gcdoff];
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
+    }
+    gcd[gcdoff].gd.pos.x = 80; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y-3;
+    gcd[gcdoff].gd.pos.width = 80;
+    gcd[gcdoff].gd.cid = CID_FillColor;
+    gcd[gcdoff++].creator = GTextFieldCreate;
+
+    label[gcdoff].text = (unichar_t *) _STR_Inherited;
+    label[gcdoff].text_in_resource = true;
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.pos.x = 165; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+2;
+    gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (layer->fill_brush.col==COLOR_INHERITED? gg_cb_on : 0);
+    gcd[gcdoff].data = (void *) CID_FillColor;
+    gcd[gcdoff].gd.cid = CID_FillCInherit;
+    gcd[gcdoff].gd.handle_controlevent = Layer_Inherit;
+    gcd[gcdoff++].creator = GCheckBoxCreate;
+
+    label[gcdoff].text = (unichar_t *) _STR_Opacity;
+    label[gcdoff].text_in_resource = true;
+    gcd[gcdoff].gd.mnemonic = 'W';
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.pos.x = 5; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+25;
+    gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
+    gcd[gcdoff++].creator = GLabelCreate;
+
+    sprintf( fopac, "%g", layer->fill_brush.opacity );
+    label[gcdoff].text = (unichar_t *) fopac;
+    label[gcdoff].text_is_1byte = true;
+    if ( layer->stroke_pen.brush.opacity<0 ) 
+	gcd[gcdoff].gd.flags = gg_visible;
+    else {
+	gcd[gcdoff].gd.label = &label[gcdoff];
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
+    }
+    gcd[gcdoff].gd.pos.x = 80; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y-3;
+    gcd[gcdoff].gd.pos.width = 80;
+    gcd[gcdoff].gd.cid = CID_FillOpacity;
+    gcd[gcdoff++].creator = GTextFieldCreate;
+
+    label[gcdoff].text = (unichar_t *) _STR_Inherited;
+    label[gcdoff].text_in_resource = true;
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.pos.x = 165; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+2;
+    gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (layer->fill_brush.opacity<0? gg_cb_on : 0);
+    gcd[gcdoff].data = (void *) CID_FillOpacity;
+    gcd[gcdoff].gd.cid = CID_FillOInherit;
+    gcd[gcdoff].gd.handle_controlevent = Layer_Inherit;
+    gcd[gcdoff++].creator = GCheckBoxCreate;
+
+    label[gcdoff].text = (unichar_t *) _STR_Strok;
+    label[gcdoff].text_in_resource = true;
+    gcd[gcdoff].gd.mnemonic = 'S';
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.pos.x = 5; gcd[gcdoff].gd.pos.y = gcd[fill_gcd].gd.pos.y+gcd[fill_gcd].gd.pos.height+4;
+    gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (layer->dostroke? gg_cb_on : 0);
+    gcd[gcdoff].gd.cid = CID_Stroke;
+    gcd[gcdoff++].creator = GCheckBoxCreate;
+
+    gcd[gcdoff].gd.pos.x = 1; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+6;
+    gcd[gcdoff].gd.pos.width = LY_Width-2; gcd[gcdoff].gd.pos.height = 180;
+    gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
+    gcd[gcdoff++].creator = GGroupCreate;
+
+    label[gcdoff].text = (unichar_t *) _STR_Color;
+    label[gcdoff].text_in_resource = true;
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.pos.x = 5; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+12;
+    gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
+    gcd[gcdoff++].creator = GLabelCreate;
+
+    sprintf( scol, "#%06x", layer->stroke_pen.brush.col );
+    label[gcdoff].text = (unichar_t *) scol;
+    label[gcdoff].text_is_1byte = true;
+    if ( layer->stroke_pen.brush.col==COLOR_INHERITED ) 
+	gcd[gcdoff].gd.flags = gg_visible;
+    else {
+	gcd[gcdoff].gd.label = &label[gcdoff];
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
+    }
+    gcd[gcdoff].gd.pos.x = 80; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y-3;
+    gcd[gcdoff].gd.pos.width = 80;
+    gcd[gcdoff].gd.cid = CID_StrokeColor;
+    gcd[gcdoff++].creator = GTextFieldCreate;
+
+    label[gcdoff].text = (unichar_t *) _STR_Inherited;
+    label[gcdoff].text_in_resource = true;
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.pos.x = 165; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+2;
+    gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (layer->stroke_pen.brush.col==COLOR_INHERITED? gg_cb_on : 0);
+    gcd[gcdoff].data = (void *) CID_StrokeColor;
+    gcd[gcdoff].gd.cid = CID_StrokeCInherit;
+    gcd[gcdoff].gd.handle_controlevent = Layer_Inherit;
+    gcd[gcdoff++].creator = GCheckBoxCreate;
+
+    label[gcdoff].text = (unichar_t *) _STR_Opacity;
+    label[gcdoff].text_in_resource = true;
+    gcd[gcdoff].gd.mnemonic = 'W';
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.pos.x = 5; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+25;
+    gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
+    gcd[gcdoff++].creator = GLabelCreate;
+
+    sprintf( sopac, "%g", layer->stroke_pen.brush.opacity );
+    label[gcdoff].text = (unichar_t *) sopac;
+    label[gcdoff].text_is_1byte = true;
+    if ( layer->stroke_pen.brush.opacity<0 ) 
+	gcd[gcdoff].gd.flags = gg_visible;
+    else {
+	gcd[gcdoff].gd.label = &label[gcdoff];
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
+    }
+    gcd[gcdoff].gd.pos.x = 80; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y-3;
+    gcd[gcdoff].gd.pos.width = 80;
+    gcd[gcdoff].gd.cid = CID_StrokeOpacity;
+    gcd[gcdoff++].creator = GTextFieldCreate;
+
+    label[gcdoff].text = (unichar_t *) _STR_Inherited;
+    label[gcdoff].text_in_resource = true;
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.pos.x = 165; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+2;
+    gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (layer->stroke_pen.brush.opacity<0? gg_cb_on : 0);
+    gcd[gcdoff].data = (void *) CID_StrokeOpacity;
+    gcd[gcdoff].gd.cid = CID_StrokeOInherit;
+    gcd[gcdoff].gd.handle_controlevent = Layer_Inherit;
+    gcd[gcdoff++].creator = GCheckBoxCreate;
+
+    label[gcdoff].text = (unichar_t *) _STR_StrokeWidth;
+    label[gcdoff].text_in_resource = true;
+    gcd[gcdoff].gd.mnemonic = 'W';
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.pos.x = 5; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+26;
+    gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
+    gcd[gcdoff].gd.cid = CID_WidthTxt;
+    gcd[gcdoff++].creator = GLabelCreate;
+
+    sprintf( widthbuf, "%g", layer->stroke_pen.width );
+    label[gcdoff].text = (unichar_t *) widthbuf;
+    label[gcdoff].text_is_1byte = true;
+    if ( layer->stroke_pen.width==WIDTH_INHERITED ) 
+	gcd[gcdoff].gd.flags = gg_visible;
+    else {
+	gcd[gcdoff].gd.label = &label[gcdoff];
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
+    }
+    gcd[gcdoff].gd.pos.x = 80; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y-3;
+    gcd[gcdoff].gd.pos.width = 80;
+    gcd[gcdoff].gd.cid = CID_Width;
+    gcd[gcdoff++].creator = GTextFieldCreate;
+
+    label[gcdoff].text = (unichar_t *) _STR_Inherited;
+    label[gcdoff].text_in_resource = true;
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.pos.x = 165; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+2;
+    gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (layer->stroke_pen.width==WIDTH_INHERITED? gg_cb_on : 0);
+    gcd[gcdoff].data = (void *) CID_Width;
+    gcd[gcdoff].gd.cid = CID_StrokeWInherit;
+    gcd[gcdoff].gd.handle_controlevent = Layer_Inherit;
+    gcd[gcdoff++].creator = GCheckBoxCreate;
+
+    label[gcdoff].text = (unichar_t *) _STR_TransformPen;
+    label[gcdoff].text_in_resource = true;
+    gcd[gcdoff].gd.mnemonic = 'W';
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.pos.x = 5; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+25;
+    gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
+    gcd[gcdoff++].creator = GLabelCreate;
+
+    sprintf( transbuf, "[%.4g %.4g %.4g %.4g]", layer->stroke_pen.trans[0],
+	    layer->stroke_pen.trans[1], layer->stroke_pen.trans[2],
+	    layer->stroke_pen.trans[3]);
+    label[gcdoff].text = (unichar_t *) transbuf;
+    label[gcdoff].text_is_1byte = true;
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.pos.x = 80; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y-3;
+    gcd[gcdoff].gd.pos.width = 210;
+    gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
+    gcd[gcdoff].gd.cid = CID_Trans;
+    gcd[gcdoff++].creator = GTextFieldCreate;
+
+    label[gcdoff].text = (unichar_t *) _STR_LineCap;
+    label[gcdoff].text_in_resource = true;
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.pos.x = 10; gcd[gcdoff].gd.pos.y = gcd[gcdoff-2].gd.pos.y+20;
+    gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
+    gcd[gcdoff].gd.cid = CID_LineCapTxt;
+    gcd[gcdoff++].creator = GLabelCreate;
+
+    gcd[gcdoff].gd.pos.x = 6; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+6;
+    gcd[gcdoff].gd.pos.width = LY_Width-12; gcd[gcdoff].gd.pos.height = 25;
+    gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
+    gcd[gcdoff++].creator = GGroupCreate;
+
+    label[gcdoff].text = (unichar_t *) _STR_Butt;
+    label[gcdoff].text_in_resource = true;
+    label[gcdoff].image = &GIcon_buttcap;
+    gcd[gcdoff].gd.mnemonic = 'B';
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.pos.x = 15; gcd[gcdoff].gd.pos.y = gcd[gcdoff-2].gd.pos.y+12;
+    gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (layer->stroke_pen.linecap==lc_butt?gg_cb_on:0);
+    gcd[gcdoff].gd.cid = CID_ButtCap;
+    gcd[gcdoff++].creator = GRadioCreate;
+
+    label[gcdoff].text = (unichar_t *) _STR_Round;
+    label[gcdoff].text_in_resource = true;
+    label[gcdoff].image = &GIcon_roundcap;
+    gcd[gcdoff].gd.mnemonic = 'R';
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.pos.x = 80; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y;
+    gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (layer->stroke_pen.linecap==lc_round?gg_cb_on:0);
+    gcd[gcdoff].gd.cid = CID_RoundCap;
+    gcd[gcdoff++].creator = GRadioCreate;
+
+    label[gcdoff].text = (unichar_t *) _STR_Squareq;
+    label[gcdoff].text_in_resource = true;
+    label[gcdoff].image = &GIcon_squarecap;
+    gcd[gcdoff].gd.mnemonic = 'q';
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.pos.x = 150; gcd[gcdoff].gd.pos.y = gcd[gcdoff-2].gd.pos.y;
+    gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (layer->stroke_pen.linecap==lc_square?gg_cb_on:0);
+    gcd[gcdoff].gd.cid = CID_SquareCap;
+    gcd[gcdoff++].creator = GRadioCreate;
+
+    label[gcdoff].text = (unichar_t *) _STR_Inherited;
+    label[gcdoff].text_in_resource = true;
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.pos.x = 220; gcd[gcdoff].gd.pos.y = gcd[gcdoff-2].gd.pos.y;
+    gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (layer->stroke_pen.linecap==lc_inherited?gg_cb_on:0);
+    gcd[gcdoff].gd.cid = CID_InheritCap;
+    gcd[gcdoff++].creator = GRadioCreate;
+
+    label[gcdoff].text = (unichar_t *) _STR_LineJoin;
+    label[gcdoff].text_in_resource = true;
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.pos.x = gcd[gcdoff-6].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[gcdoff-3].gd.pos.y+25;
+    gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
+    gcd[gcdoff].gd.cid = CID_LineJoinTxt;
+    gcd[gcdoff++].creator = GLabelCreate;
+
+    gcd[gcdoff].gd.pos.x = gcd[gcdoff-6].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+6;
+    gcd[gcdoff].gd.pos.width = LY_Width-12; gcd[gcdoff].gd.pos.height = 25;
+    gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
+    gcd[gcdoff++].creator = GGroupCreate;
+
+    label[gcdoff].text = (unichar_t *) _STR_Miter;
+    label[gcdoff].text_in_resource = true;
+    label[gcdoff].image = &GIcon_miterjoin;
+    gcd[gcdoff].gd.mnemonic = 'M';
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.pos.x = gcd[gcdoff-6].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[gcdoff-2].gd.pos.y+12;
+    gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (layer->stroke_pen.linejoin==lj_miter?gg_cb_on:0);
+    gcd[gcdoff].gd.cid = CID_MiterJoin;
+    gcd[gcdoff++].creator = GRadioCreate;
+
+    label[gcdoff].text = (unichar_t *) _STR_Roundu;
+    label[gcdoff].text_in_resource = true;
+    label[gcdoff].image = &GIcon_roundjoin;
+    gcd[gcdoff].gd.mnemonic = 'u';
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.pos.x = gcd[gcdoff-6].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y;
+    gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (layer->stroke_pen.linejoin==lj_round?gg_cb_on:0);
+    gcd[gcdoff].gd.cid = CID_RoundJoin;
+    gcd[gcdoff++].creator = GRadioCreate;
+
+    label[gcdoff].text = (unichar_t *) _STR_Bevel;
+    label[gcdoff].text_in_resource = true;
+    label[gcdoff].image = &GIcon_beveljoin;
+    gcd[gcdoff].gd.mnemonic = 'v';
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.pos.x = gcd[gcdoff-6].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y;
+    gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (layer->stroke_pen.linejoin==lj_bevel?gg_cb_on:0);
+    gcd[gcdoff].gd.cid = CID_BevelJoin;
+    gcd[gcdoff++].creator = GRadioCreate;
+
+    label[gcdoff].text = (unichar_t *) _STR_Inherited;
+    label[gcdoff].text_in_resource = true;
+    gcd[gcdoff].gd.mnemonic = 'q';
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.pos.x = 220; gcd[gcdoff].gd.pos.y = gcd[gcdoff-2].gd.pos.y;
+    gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (layer->stroke_pen.linejoin==lj_inherited?gg_cb_on:0);
+    gcd[gcdoff].gd.cid = CID_InheritCap;
+    gcd[gcdoff++].creator = GRadioCreate;
+
+    label[gcdoff].text = (unichar_t *) _STR_Name;
+    label[gcdoff].text_in_resource = true;
+    gcd[gcdoff].gd.mnemonic = 'W';
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.pos.x = 5; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+34;
+    gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
+    gcd[gcdoff++].creator = GLabelCreate;
+
+    if ( layer->name!=NULL ) {
+	label[gcdoff].text = layer->name;
+	gcd[gcdoff].gd.label = &label[gcdoff];
+    }
+    gcd[gcdoff].gd.pos.x = 80; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y-3;
+    gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
+    gcd[gcdoff].gd.cid = CID_Name;
+    gcd[gcdoff++].creator = GTextFieldCreate;
+
+    gcd[gcdoff].gd.pos.x = 30-3; gcd[gcdoff].gd.pos.y = LY_Height-30-3;
+    gcd[gcdoff].gd.pos.width = -1;
+    gcd[gcdoff].gd.flags = gg_visible | gg_enabled | gg_but_default;
+    label[gcdoff].text = (unichar_t *) _STR_OK;
+    label[gcdoff].text_in_resource = true;
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.handle_controlevent = Layer_OK;
+    gcd[gcdoff++].creator = GButtonCreate;
+
+    gcd[gcdoff].gd.pos.x = -30; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+3;
+    gcd[gcdoff].gd.pos.width = -1;
+    gcd[gcdoff].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    label[gcdoff].text = (unichar_t *) _STR_Cancel;
+    label[gcdoff].text_in_resource = true;
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.handle_controlevent = Layer_Cancel;
+    gcd[gcdoff].creator = GButtonCreate;
+
+    GGadgetsCreate(gw,gcd);
+
+    GWidgetHidePalettes();
+    /*GWidgetIndicateFocusGadget(GWidgetGetControl(ld.gw,CID_Width));*/
+    GDrawSetVisible(ld.gw,true);
+    while ( !ld.done )
+	GDrawProcessOneEvent(NULL);
+    GDrawDestroyWindow(ld.gw);
+return( ld.ok );
+}
+#endif

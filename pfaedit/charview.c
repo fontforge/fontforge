@@ -704,7 +704,7 @@ static void CVDrawLayerSplineSet(CharView *cv, GWindow pixmap, Layer *layer,
     }
     if ( !active && layer!=&cv->sc->layers[ly_back] )
 	GDrawSetDashedLine(pixmap,5,5,cv->xoff+cv->height-cv->yoff);
-    CVDrawSplineSet(cv,pixmap,layer->splines,fg,dopoints,clip);
+    CVDrawSplineSet(cv,pixmap,layer->splines,fg,dopoints && active,clip);
     if ( !active && layer!=&cv->sc->layers[ly_back] )
 	GDrawSetDashedLine(pixmap,0,0,0);
 #if 0
@@ -1224,13 +1224,11 @@ static void DrawImageList(CharView *cv,GWindow pixmap,ImageList *backimages) {
     }
 }
 
-static void DrawSelImageList(CharView *cv,GWindow pixmap,ImageList *backimages) {
-    if ( cv->drawmode==dm_back ) {
-	while ( backimages!=NULL ) {
-	    if ( backimages->selected )
-		CVDrawBB(cv,pixmap,&backimages->bb);
-	    backimages = backimages->next;
-	}
+static void DrawSelImageList(CharView *cv,GWindow pixmap,ImageList *images) {
+    while ( images!=NULL ) {
+	if ( images->selected )
+	    CVDrawBB(cv,pixmap,&images->bb);
+	images = images->next;
     }
 }
 
@@ -1357,11 +1355,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	    DrawLine(cv,pixmap,-8096,sf->vertical_origin,8096,sf->vertical_origin,coordcol);
 	}
 
-	for ( layer = ly_back; layer<cv->sc->layer_cnt; ++layer ) if ( cv->sc->layers[layer].images!=NULL ) {
-	    if ( (( cv->showback || cv->drawmode==dm_back ) && layer==ly_back ) ||
-		    (( cv->showfore || cv->drawmode==dm_fore ) && layer>ly_back ))
-		DrawSelImageList(cv,pixmap,cv->sc->layers[layer].images);
-	}
+	DrawSelImageList(cv,pixmap,cv->layerheads[cv->drawmode]->images);
 
 	if (( cv->showfore || cv->drawmode==dm_fore ) && cv->showfilled ) {
 	    /* Wrong order, I know. But it is useful to have the background */
@@ -3265,7 +3259,7 @@ static void CVDrawVNum(CharView *cv,GWindow pixmap,int x, int y, char *format,re
 static void CVExposeRulers(CharView *cv, GWindow pixmap ) {
     real xmin, xmax, ymin, ymax;
     real onehundred, pos;
-    int units, littleunits;
+    real units, littleunits;
     int ybase = cv->mbh+cv->infoh;
     int x,y;
     GRect rect;
@@ -4410,6 +4404,7 @@ return;
 }
 
 static void CVDoClear(CharView *cv) {
+    ImageList *prev, *imgs, *next;
 
     CVPreserveState(cv);
     if ( cv->drawmode==dm_fore )
@@ -4436,20 +4431,17 @@ static void CVDoClear(CharView *cv) {
 		aprev = ap;
 	}
     }
-    if ( cv->drawmode==dm_back ) {
-	ImageList *prev, *imgs, *next;
-	for ( prev = NULL, imgs=cv->sc->layers[ly_back].images; imgs!=NULL; imgs = next ) {
-	    next = imgs->next;
-	    if ( !imgs->selected )
-		prev = imgs;
-	    else {
-		if ( prev==NULL )
-		    cv->sc->layers[ly_back].images = next;
-		else
-		    prev->next = next;
-		chunkfree(imgs,sizeof(ImageList));
-		/* garbage collection of images????!!!! */
-	    }
+    for ( prev = NULL, imgs=cv->layerheads[cv->drawmode]->images; imgs!=NULL; imgs = next ) {
+	next = imgs->next;
+	if ( !imgs->selected )
+	    prev = imgs;
+	else {
+	    if ( prev==NULL )
+		cv->layerheads[cv->drawmode]->images = next;
+	    else
+		prev->next = next;
+	    chunkfree(imgs,sizeof(ImageList));
+	    /* garbage collection of images????!!!! */
 	}
     }
     if ( cv->lastselpt!=NULL || cv->p.sp!=NULL ) {
@@ -4980,12 +4972,9 @@ static void transfunc(void *d,real transform[6],int otype,BVTFunc *bvts,
     int anya;
 
     cv->p.transany = CVAnySel(cv,NULL,NULL,NULL,&anya);
-    if ( cv->drawmode==dm_fore ) {
-	SCPreserveState(cv->sc,true);
-	if ( (flags&fvt_dobackground) )
-	    SCPreserveBackground(cv->sc);
-    } else
-	CVPreserveState(cv);
+    CVPreserveState(cv);
+    if ( cv->drawmode==dm_fore && (flags&fvt_dobackground) )
+	SCPreserveBackground(cv->sc);
     CVTransFunc(cv,transform,flags);
     CVCharChangedUpdate(cv);
 }
@@ -5335,15 +5324,15 @@ return;
     } else if ( im!=NULL ) {
 	ImageList *p, *pp, *t;
 	p = pp = NULL;
-	for ( t=cv->sc->layers[ly_back].images; t!=NULL && t!=im; t=t->next ) {
+	for ( t=cv->layerheads[cv->drawmode]->images; t!=NULL && t!=im; t=t->next ) {
 	    pp = p; p = t;
 	}
 	switch ( mi->mid ) {
 	  case MID_First:
 	    if ( p!=NULL ) {
 		p->next = im->next;
-		im->next = cv->sc->layers[ly_back].images;
-		cv->sc->layers[ly_back].images = im;
+		im->next = cv->layerheads[cv->drawmode]->images;
+		cv->layerheads[cv->drawmode]->images = im;
 	    }
 	  break;
 	  case MID_Earlier:
@@ -5351,7 +5340,7 @@ return;
 		p->next = im->next;
 		im->next = p;
 		if ( pp==NULL ) {
-		    cv->sc->layers[ly_back].images = im;
+		    cv->layerheads[cv->drawmode]->images = im;
 		} else {
 		    pp->next = im;
 		}
@@ -5359,10 +5348,10 @@ return;
 	  break;
 	  case MID_Last:
 	    if ( im->next!=NULL ) {
-		for ( t=cv->sc->layers[ly_back].images; t->next!=NULL; t=t->next );
+		for ( t=cv->layerheads[cv->drawmode]->images; t->next!=NULL; t=t->next );
 		t->next = im;
 		if ( p==NULL )
-		    cv->sc->layers[ly_back].images = im->next;
+		    cv->layerheads[cv->drawmode]->images = im->next;
 		else
 		    p->next = im->next;
 		im->next = NULL;
@@ -5374,7 +5363,7 @@ return;
 		im->next = t->next;
 		t->next = im;
 		if ( p==NULL )
-		    cv->sc->layers[ly_back].images = t;
+		    cv->layerheads[cv->drawmode]->images = t;
 		else
 		    p->next = t;
 	    }
@@ -5633,15 +5622,13 @@ static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
     RefChar *ref;
     ImageList *il;
 
-    if ( cv->drawmode==dm_fore ) {
-	for ( ref=cv->sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next )
-	    if ( ref->selected )
-		badsel = true;
-    } else if ( cv->drawmode==dm_back ) {
-	for ( il=cv->sc->layers[ly_back].images; il!=NULL; il=il->next )
-	    if ( il->selected )
-		badsel = true;
-    }
+    for ( ref=cv->layerheads[cv->drawmode]->refs; ref!=NULL; ref=ref->next )
+	if ( ref->selected )
+	    badsel = true;
+
+    for ( il=cv->layerheads[cv->drawmode]->images; il!=NULL; il=il->next )
+	if ( il->selected )
+	    badsel = true;
 #endif
 
     sel = NULL;
@@ -6445,10 +6432,10 @@ static void orlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	isfirst = cv->layerheads[cv->drawmode]->splines==spl;
 	islast = spl->next==NULL;
     } else if ( r!=NULL ) {
-	isfirst = cv->sc->layers[ly_fore].refs==r;
+	isfirst = cv->layerheads[cv->drawmode]->refs==r;
 	islast = r->next==NULL;
     } else if ( im!=NULL ) {
-	isfirst = cv->sc->layers[ly_back].images==im;
+	isfirst = cv->layerheads[cv->drawmode]->images==im;
 	islast = im->next!=NULL;
     }
 

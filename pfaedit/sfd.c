@@ -653,19 +653,23 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc) {
     if ( sc->parent->multilayer ) {
 	fprintf( sfd, "LayerCount: %d\n", sc->layer_cnt );
 	for ( i=ly_fore; i<sc->layer_cnt; ++i ) {
-	    fprintf(sfd, "Layer: %d  %d %d %d  #%06x %g  #%06x %g %d %s %s\n",
+	    fprintf(sfd, "Layer: %d  %d %d %d  #%06x %g  #%06x %g %g %s %s [%g %g %g %g]\n",
 		    i, sc->layers[i].dofill, sc->layers[i].dostroke, sc->layers[i].fillfirst,
 		    sc->layers[i].fill_brush.col, sc->layers[i].fill_brush.opacity,
 		    sc->layers[i].stroke_pen.brush.col, sc->layers[i].stroke_pen.brush.opacity,
-		     sc->layers[i].stroke_pen.width, joins[sc->layers[i].stroke_pen.linejoin], caps[sc->layers[i].stroke_pen.linecap]);
+		     sc->layers[i].stroke_pen.width, joins[sc->layers[i].stroke_pen.linejoin], caps[sc->layers[i].stroke_pen.linecap],
+		    sc->layers[i].stroke_pen.trans[0], sc->layers[i].stroke_pen.trans[1],
+		    sc->layers[i].stroke_pen.trans[2], sc->layers[i].stroke_pen.trans[3] );
 	    if ( sc->layers[i].name!=NULL ) {
 		fprintf( sfd, "LayerName: " );
 		SFDDumpUTF7Str(sfd,sc->layers[i].name);
 	    }
 	    for ( img=sc->layers[i].images; img!=NULL; img=img->next )
 		SFDDumpImage(sfd,img);
-	    fprintf(sfd, "SplineSet\n" );
-	    SFDDumpSplineSet(sfd,sc->layers[i].splines);
+	    if ( sc->layers[i].splines!=NULL ) {
+		fprintf(sfd, "SplineSet\n" );
+		SFDDumpSplineSet(sfd,sc->layers[i].splines);
+	    }
 	    SFDDumpRefs(sfd,sc->layers[i].refs,sc->name);
 	}
     } else
@@ -2224,8 +2228,8 @@ return( NULL );
 	    sc->layer_cnt = temp;
 	    current_layer = ly_fore;
 	} else if ( strmatch(tok,"Layer:")==0 ) {
-	    int layer, dofill, dostroke, fillfirst, fillcol, strokecol, strokewidth, linejoin, linecap;
-	    real fillopacity, strokeopacity;
+	    int layer, dofill, dostroke, fillfirst, fillcol, strokecol, linejoin, linecap;
+	    real fillopacity, strokeopacity, strokewidth, trans[4];
 	    int i;
 	    getint(sfd,&layer);
 	    getint(sfd,&dofill);
@@ -2235,7 +2239,7 @@ return( NULL );
 	    getreal(sfd,&fillopacity);
 	    gethex(sfd,&strokecol);
 	    getreal(sfd,&strokeopacity);
-	    getint(sfd,&strokewidth);
+	    getreal(sfd,&strokewidth);
 	    getname(sfd,tok);
 	    for ( i=0; joins[i]!=NULL; ++i )
 		if ( strmatch(joins[i],tok)==0 )
@@ -2252,6 +2256,12 @@ return( NULL );
 		sc->layers = grealloc(sc->layers,(layer+1)*sizeof(Layer));
 		memset(sc->layers+sc->layer_cnt,0,(layer+1-sc->layer_cnt)*sizeof(Layer));
 	    }
+	    while ( (ch=getc(sfd))==' ' || ch=='[' );
+	    ungetc(ch,sfd);
+	    getreal(sfd,&trans[0]);
+	    getreal(sfd,&trans[1]);
+	    getreal(sfd,&trans[2]);
+	    getreal(sfd,&trans[3]);
 	    current_layer = layer;
 	    sc->layers[current_layer].dofill = dofill;
 	    sc->layers[current_layer].dostroke = dostroke;
@@ -2263,6 +2273,7 @@ return( NULL );
 	    sc->layers[current_layer].stroke_pen.width = strokewidth;
 	    sc->layers[current_layer].stroke_pen.linejoin = linejoin;
 	    sc->layers[current_layer].stroke_pen.linecap = linecap;
+	    memcpy(sc->layers[current_layer].stroke_pen.trans,trans,sizeof(trans));
 	    lasti = NULL;
 	    lastr = NULL;
 	} else if ( strmatch(tok,"LayerName:")==0 ) {
@@ -3840,6 +3851,7 @@ return(false);
     memset(&temp,0,sizeof(temp));
     temp.ascent = sf->ascent; temp.descent = sf->descent;
     temp.order2 = sf->order2;
+    temp.multilayer = sf->multilayer;
 
     getint(asfd,&cnt);
     if ( cnt>sf->charcnt ) {

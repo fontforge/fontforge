@@ -969,5 +969,7 @@ extern void SFRetagFeatureDlg(SplineFont *sf);
 extern void MMChangeBlend(MMSet *mm,FontView *fv);
 extern void MMWizard(MMSet *mm);
 
+extern int LayerDialog(Layer *layer);
+
 extern GMenuItem helplist[];
 #endif

@@ -886,7 +886,7 @@ void SCInsertImage(SplineChar *sc,GImage *image,real scale,real yoff,real xoff,
 	int layer) {
     ImageList *im;
 
-    SCPreserveBackground(sc);
+    SCPreserveLayer(sc,layer,false);
     im = galloc(sizeof(ImageList));
     im->image = image;
     im->xoff = xoff;

@@ -627,10 +627,24 @@ void SplineSetFindBounds(SplinePointList *spl, DBounds *bounds) {
     _SplineSetFindBounds(spl,bounds);
 }
 
+#ifdef PFAEDIT_CONFIG_TYPE3
+static void _ImageFindBounds(ImageList *img,DBounds *bounds) {
+    if ( bounds->minx==0 && bounds->maxx==0 && bounds->miny==0 && bounds->maxy == 0 )
+	*bounds = img->bb;
+    else if ( img->bb.minx!=0 || img->bb.maxx != 0 || img->bb.maxy != 0 || img->bb.miny!=0 ) {
+	if ( img->bb.minx < bounds->minx ) bounds->minx = img->bb.minx;
+	if ( img->bb.miny < bounds->miny ) bounds->miny = img->bb.miny;
+	if ( img->bb.maxx > bounds->maxx ) bounds->maxx = img->bb.maxx;
+	if ( img->bb.maxy > bounds->maxy ) bounds->maxy = img->bb.maxy;
+    }
+}
+#endif
+
 void SplineCharFindBounds(SplineChar *sc,DBounds *bounds) {
     RefChar *rf;
     int i;
 #ifdef PFAEDIT_CONFIG_TYPE3
+    ImageList *img;
     real extra=0,e;
 #endif
 
@@ -651,6 +665,8 @@ void SplineCharFindBounds(SplineChar *sc,DBounds *bounds) {
 	}
 	_SplineSetFindBounds(sc->layers[i].splines,bounds);
 #ifdef PFAEDIT_CONFIG_TYPE3
+	for ( img=sc->layers[i].images; img!=NULL; img=img->next )
+	    _ImageFindBounds(img,bounds);
 	if ( sc->layers[i].dostroke ) {
 	    if ( sc->layers[i].stroke_pen.width!=WIDTH_INHERITED )
 		e = sc->layers[i].stroke_pen.width*sc->layers[i].stroke_pen.trans[0];
@@ -671,6 +687,7 @@ void SplineFontFindBounds(SplineFont *sf,DBounds *bounds) {
     int i, k;
 #ifdef PFAEDIT_CONFIG_TYPE3
     real extra=0,e;
+    ImageList *img;
 #endif
 
     bounds->minx = bounds->maxx = 0;
@@ -693,11 +710,13 @@ void SplineFontFindBounds(SplineFont *sf,DBounds *bounds) {
 
 		_SplineSetFindBounds(sc->layers[k].splines,bounds);
 #ifdef PFAEDIT_CONFIG_TYPE3
-		if ( sc->layers[i].dostroke ) {
-		    if ( sc->layers[i].stroke_pen.width!=WIDTH_INHERITED )
-			e = sc->layers[i].stroke_pen.width*sc->layers[i].stroke_pen.trans[0];
+		for ( img=sc->layers[k].images; img!=NULL; img=img->next )
+		    _ImageFindBounds(img,bounds);
+		if ( sc->layers[k].dostroke ) {
+		    if ( sc->layers[k].stroke_pen.width!=WIDTH_INHERITED )
+			e = sc->layers[k].stroke_pen.width*sc->layers[k].stroke_pen.trans[0];
 		    else
-			e = sc->layers[i].stroke_pen.trans[0];
+			e = sc->layers[k].stroke_pen.trans[0];
 		    if ( e>extra ) extra = e;
 		}
 #endif
@@ -1789,6 +1808,8 @@ static void SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext *
 		sf->chars[i] = fd->charprocs->values[k];
 	    else
 		sf->chars[i] = SplineCharCopy(fd->charprocs->values[k],sf);
+	    if ( sf->chars[i]!=NULL )
+		sf->chars[i]->changed = false;
 	    used[k] = true;
 	}
 	sf->chars[i]->orig_pos = k;
@@ -2355,14 +2376,21 @@ void SCRemoveDependent(SplineChar *dependent,RefChar *rf) {
     RefCharFree(rf);
 }
 
-void SCRemoveDependents(SplineChar *dependent) {
+void SCRemoveLayerDependents(SplineChar *dependent,int layer) {
     RefChar *rf, *next;
 
-    for ( rf=dependent->layers[ly_fore].refs; rf!=NULL; rf=next ) {
+    for ( rf=dependent->layers[layer].refs; rf!=NULL; rf=next ) {
 	next = rf->next;
 	SCRemoveDependent(dependent,rf);
     }
-    dependent->layers[ly_fore].refs = NULL;
+    dependent->layers[layer].refs = NULL;
+}
+
+void SCRemoveDependents(SplineChar *dependent) {
+    int layer;
+
+    for ( layer=ly_fore; layer<dependent->layer_cnt; ++layer )
+	SCRemoveLayerDependents(dependent,layer);
 }
 
 void SCRefToSplines(SplineChar *sc,RefChar *rf) {
@@ -3789,7 +3817,7 @@ void TTFLangNamesFree(struct ttflangname *l) {
 void LayerDefault(Layer *layer) {
     memset(layer,0,sizeof(Layer));
 #ifdef PFAEDIT_CONFIG_TYPE3
-    layer->fill_brush.opacity = layer->stroke_pen.brush.opacity = 1.0;
+    layer->fill_brush.opacity = layer->stroke_pen.brush.opacity = WIDTH_INHERITED;
     layer->fill_brush.col = layer->stroke_pen.brush.col = COLOR_INHERITED;
     layer->stroke_pen.width = WIDTH_INHERITED;
     layer->stroke_pen.linecap = lc_inherited;

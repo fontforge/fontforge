@@ -1024,7 +1024,64 @@ static void SetByteMapToGrey(uint8 *bytemap,EdgeList *es,Layer *layer,Layer *alt
 }
 
 static void FillImages(uint8 *bytemap,EdgeList *es,ImageList *img,Layer *layer,Layer *alt) {
-}	/* !!!! Write me! */
+    uint32 fillcol, col;
+    int grey,i,j,x1,x2,y1,y2,jj,ii;
+
+    if ( layer->fill_brush.col!=COLOR_INHERITED )
+	fillcol = layer->fill_brush.col;
+    else if ( alt!=NULL && alt->fill_brush.col!=COLOR_INHERITED )
+	fillcol = alt->fill_brush.col;
+    else
+	fillcol = 0x000000;
+
+    while ( img!=NULL ) {
+	struct _GImage *base = img->image->list_len==0?
+		img->image->u.image:img->image->u.images[0];
+
+	y1 = es->cnt-1 - (img->yoff*es->scale - es->mmin);
+	y2 = es->cnt-1 - ((img->yoff-base->height*img->yscale)*es->scale -es->mmin);
+	x1 = img->xoff*es->scale - es->omin;
+	x2 = (img->xoff+base->width*img->xscale)*es->scale - es->omin;
+	if ( y1==y2 || x1==x2 )	/* too small to show */
+    continue;
+	for ( i=0; i<=y2-y1; ++i ) {
+	    if ( i+y1<0 || i+y1>=es->cnt )	/* Shouldn't happen, rounding errors might gives us off by 1s though */
+	continue;
+	    ii = i*base->height/(y2-y1);
+	    for ( j=0; j<x2-x1; ++j ) {
+		if ( j+x1<0 || j+x1>=8*es->bytes_per_line )
+	    continue;
+		jj = j*base->width/(x2-x1);
+		if ( base->image_type==it_true )
+		    col = ((uint32 *) (base->data + ii*base->bytes_per_line))[jj];
+		else if ( base->image_type==it_index ) {
+		    col = (base->data + ii*base->bytes_per_line)[jj];
+		    col = base->clut->clut[col];
+		} else if ( layer->dofill ) {		/* Equivalent to imagemask */
+		    if ( !( (base->data + ii*base->bytes_per_line)[jj>>3]&(0x80>>(j&7)) ) )
+	    continue;	/* transparent */
+		    col = fillcol;
+		} else {
+		    int index = 0;
+		    if ( (base->data + ii*base->bytes_per_line)[jj>>3]&(0x80>>(j&7)) )
+			index = 1;
+		    if ( base->clut!=NULL ) {
+			col = base->clut->clut[index];
+			if ( col==0xb0b0b0 ) col = 0xffffff;
+		    } else if ( index==1 )
+			col = 0xffffff;
+		    else
+			col = 0x000000;
+		}
+		grey = ( ((col>>16)&0xff)*3 + ((col>>8)&0xff)*6 + (col&0xff) )/ 10;
+		/* but our internal greymap convention is backwards */
+		grey = 255-grey;
+		bytemap[(i+y1)*8*es->bytes_per_line + j+x1] = grey;
+	    }
+	}
+	img = img->next;
+    }
+}
 
 static void ProcessLayer(uint8 *bytemap,EdgeList *es,Layer *layer,
 	Layer *alt) {

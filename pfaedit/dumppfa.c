@@ -342,7 +342,7 @@ return( true );
 }
 
 static void dumpsplineset(void (*dumpchar)(int ch,void *data), void *data,
-	SplineSet *spl, int pdfopers ) {
+	SplineSet *spl, int pdfopers, int forceclose ) {
     SplinePoint *first, *sp;
 
     for ( ; spl!=NULL; spl=spl->next ) {
@@ -366,7 +366,8 @@ static void dumpsplineset(void (*dumpchar)(int ch,void *data), void *data,
 	    if ( sp->next==NULL )
 	break;
 	}
-	dumpstr( dumpchar, data, pdfopers ? "\th\n" : "\tclosepath\n" );
+	if ( forceclose || spl->first->prev!=NULL )
+	    dumpstr( dumpchar, data, pdfopers ? "\th\n" : "\tclosepath\n" );
     }
 }
 
@@ -441,7 +442,7 @@ static void dumppen(void (*dumpchar)(int ch,void *data), void *data,
     dumppenbrush(dumpchar,data,&pen->brush,pdfopers);
 
     if ( pen->width!=WIDTH_INHERITED )
-	dumpf(dumpchar,data,(pdfopers ? "%d w\n": "%d setlinewidth\n"), pen->width );
+	dumpf(dumpchar,data,(pdfopers ? "%g w\n": "%g setlinewidth\n"), pen->width );
     if ( pen->linejoin!=lj_inherited )
 	dumpf(dumpchar,data,(pdfopers ? "%d j\n": "%d setlinejoin\n"), pen->linejoin );
     if ( pen->linecap!=lc_inherited )
@@ -529,7 +530,7 @@ static void PSBuildImageMonoString(void (*dumpchar)(int ch,void *data), void *da
     InitFilter(&ps,dumpchar,data);
     for ( i=0; i<base->height; ++i ) {
 	pt = (uint8 *) (base->data + i*base->bytes_per_line);
-	for ( j=(base->width+7)/8-1; j>=0; ) {
+	for ( j=(base->width+7)/8-1; j>=0; --j ) {
 	    Filter(&ps,*pt++);
 	}
     }
@@ -657,7 +658,7 @@ static void dumpimage(void (*dumpchar)(int ch,void *data), void *data,
 return;
 
     dumpf( dumpchar, data, "  gsave %g %g translate %g %g scale\n",
-	    imgl->xoff, imgl->yoff,
+	    imgl->xoff, imgl->yoff-imgl->yscale*base->height,
 	    imgl->xscale*base->width, imgl->yscale*base->height );
     if ( base->image_type==it_mono ) {
 	PSDrawMonoImg(dumpchar,data,base,use_imagemask);
@@ -683,7 +684,7 @@ void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
 #ifdef PFAEDIT_CONFIG_TYPE3
 	    if ( sc->parent->multilayer ) {
 		dumpstr(dumpchar,data,pdfopers ? "q" : "gsave " );
-		dumpsplineset(dumpchar,data,temp,pdfopers);
+		dumpsplineset(dumpchar,data,temp,pdfopers,sc->layers[i].dofill);
 		if ( sc->layers[i].dofill && sc->layers[i].dostroke ) {
 		    if ( pdfopers ) {
 			dumpbrush(dumpchar,data, &sc->layers[i].fill_brush,pdfopers);
@@ -712,7 +713,7 @@ void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
 		dumpstr(dumpchar,data,pdfopers ? "Q\n" : "grestore\n" );
 	    } else
 #endif
-		dumpsplineset(dumpchar,data,temp,pdfopers);
+		dumpsplineset(dumpchar,data,temp,pdfopers,true);
 	    if ( sc->parent->order2 ) SplinePointListFree(temp);
 	}
 	if ( sc->layers[i].refs!=NULL ) {
@@ -731,7 +732,7 @@ void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
 #ifdef PFAEDIT_CONFIG_TYPE3
 			if ( sc->parent->multilayer ) {
 			    dumpstr(dumpchar,data,pdfopers ? "q" : "gsave " );
-			    dumpsplineset(dumpchar,data,temp,pdfopers);
+			    dumpsplineset(dumpchar,data,temp,pdfopers,ref->layers[j].dofill);
 			    if ( ref->layers[j].dofill && ref->layers[j].dostroke ) {
 				if ( pdfopers ) {
 				    dumpbrush(dumpchar,data, &ref->layers[j].fill_brush,pdfopers);
@@ -760,7 +761,7 @@ void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
 			    dumpstr(dumpchar,data,pdfopers ? "Q\n" : "grestore\n" );
 			} else
 #endif
-			    dumpsplineset(dumpchar,data,temp,pdfopers);
+			    dumpsplineset(dumpchar,data,temp,pdfopers,true);
 			if ( sc->parent->order2 ) SplinePointListFree(temp);
 		    }
 		}
