@@ -649,7 +649,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
 
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = 16;
     gcd[k].gd.flags = gg_visible ;
-    label[k].text = (unichar_t *) _STR_Round;
+    label[k].text = (unichar_t *) _STR_PSRound;
     label[k].text_in_resource = true;
     gcd[k].gd.popup_msg = GStringGetResource(_STR_PSRoundPopup,NULL);
     gcd[k].gd.label = &label[k];
@@ -658,7 +658,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
 
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
     gcd[k].gd.flags = gg_visible ;
-    label[k].text = (unichar_t *) _STR_Hints;
+    label[k].text = (unichar_t *) _STR_GenerateHints;
     label[k].text_in_resource = true;
     gcd[k].gd.popup_msg = GStringGetResource(_STR_PSHintsPopup,NULL);
     gcd[k].gd.label = &label[k];
@@ -736,7 +736,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
 
     gcd[k].gd.pos.x = gcd[group+1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+8;
     gcd[k].gd.flags = gg_visible ;
-    label[k].text = (unichar_t *) _STR_Hints;
+    label[k].text = (unichar_t *) _STR_GenerateHints;
     label[k].text_in_resource = true;
     gcd[k].gd.popup_msg = GStringGetResource(_STR_TTFHintsPopup,NULL);
     gcd[k].gd.label = &label[k];
