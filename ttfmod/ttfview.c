@@ -39,6 +39,7 @@ static unsigned char ttf_bits[] = {
    0xff, 0x07, 0x21, 0x04, 0x20, 0x00, 0xfc, 0x7f, 0x24, 0x40, 0xf4, 0x5e,
    0xbc, 0x72, 0xa0, 0x02, 0xa0, 0x02, 0xa0, 0x02, 0xf0, 0x02, 0x80, 0x02,
    0xc0, 0x06, 0x40, 0x04, 0xc0, 0x07, 0x00, 0x00};
+GWindow ttf_icon = NULL;
 
 TtfView *tfv_list=NULL;
 
@@ -55,41 +56,42 @@ static struct tableinfo {
     int32 name;
     int description;
     void (*createviewer)(Table *,TtfView *);
+    char *helppage;
 } tableinfo[] = {
-    { CHR('c','m','a','p'), _STR_Tbl_cmap, NULL },
-    { CHR('g','l','y','f'), _STR_Tbl_glyf, NULL },
-    { CHR('h','e','a','d'), _STR_Tbl_head, NULL },
-    { CHR('h','h','e','a'), _STR_Tbl_hhea, NULL },
-    { CHR('h','m','t','x'), _STR_Tbl_hmtx, NULL },
-    { CHR('m','a','x','p'), _STR_Tbl_maxp, maxpCreateEditor },
-    { CHR('n','a','m','e'), _STR_Tbl_name, NULL },
-    { CHR('O','S','/','2'), _STR_Tbl_OS2 , NULL },
-    { CHR('p','o','s','t'), _STR_Tbl_post, NULL },
-    { CHR('c','v','t',' '), _STR_Tbl_cvt , NULL },
-    { CHR('E','B','D','T'), _STR_Tbl_EBDT, NULL },
-    { CHR('E','B','L','C'), _STR_Tbl_EBLC, NULL },
-    { CHR('E','B','S','C'), _STR_Tbl_EBSC, NULL },
-    { CHR('f','p','g','m'), _STR_Tbl_fpgm, NULL },
-    { CHR('g','a','s','p'), _STR_Tbl_gasp, NULL },
-    { CHR('h','d','m','x'), _STR_Tbl_hdmx, NULL },
-    { CHR('k','e','r','n'), _STR_Tbl_kern, NULL },
-    { CHR('L','T','S','H'), _STR_Tbl_LTSH, NULL },
-    { CHR('p','r','e','p'), _STR_Tbl_prep, NULL },
-    { CHR('P','C','L','T'), _STR_Tbl_PCLT, NULL },
-    { CHR('V','D','M','X'), _STR_Tbl_VDMX, NULL },
-    { CHR('v','h','e','a'), _STR_Tbl_vhea, NULL },
-    { CHR('v','m','t','x'), _STR_Tbl_vmtx, NULL },
-    { CHR('C','F','F',' '), _STR_Tbl_CFF , NULL },
-    { CHR('f','v','a','r'), _STR_Tbl_fvar, NULL },
-    { CHR('M','M','S','D'), _STR_Tbl_MMSD, NULL },
-    { CHR('M','M','F','X'), _STR_Tbl_MMFX, NULL },
-    { CHR('B','A','S','E'), _STR_Tbl_BASE, NULL },
-    { CHR('G','D','E','F'), _STR_Tbl_GDEF, NULL },
-    { CHR('G','P','O','S'), _STR_Tbl_GPOS, NULL },
-    { CHR('G','S','U','B'), _STR_Tbl_GSUB, NULL },
-    { CHR('J','S','T','F'), _STR_Tbl_JSTF, NULL },
-    { CHR('D','S','I','G'), _STR_Tbl_DSIG, NULL },
-    { CHR('V','O','R','G'), _STR_Tbl_VORG, NULL },
+    { CHR('c','m','a','p'), _STR_Tbl_cmap, NULL, "http://partners.adobe.com/asn/developer/opentype/cmap.html" },
+    { CHR('g','l','y','f'), _STR_Tbl_glyf, NULL, "http://partners.adobe.com/asn/developer/opentype/glyf.html" },
+    { CHR('h','e','a','d'), _STR_Tbl_head, NULL, "http://partners.adobe.com/asn/developer/opentype/head.html" },
+    { CHR('h','h','e','a'), _STR_Tbl_hhea, NULL, "http://partners.adobe.com/asn/developer/opentype/hhea.html" },
+    { CHR('h','m','t','x'), _STR_Tbl_hmtx, NULL, "http://partners.adobe.com/asn/developer/opentype/hmtx.html" },
+    { CHR('m','a','x','p'), _STR_Tbl_maxp, maxpCreateEditor, "http://partners.adobe.com/asn/developer/opentype/maxp.html" },
+    { CHR('n','a','m','e'), _STR_Tbl_name, NULL, "http://partners.adobe.com/asn/developer/opentype/name.html" },
+    { CHR('O','S','/','2'), _STR_Tbl_OS2 , OS2CreateEditor, "http://partners.adobe.com/asn/developer/opentype/os2.html" },
+    { CHR('p','o','s','t'), _STR_Tbl_post, NULL, "http://partners.adobe.com/asn/developer/opentype/post.html" },
+    { CHR('c','v','t',' '), _STR_Tbl_cvt , NULL, "http://partners.adobe.com/asn/developer/opentype/cvt.html" },
+    { CHR('E','B','D','T'), _STR_Tbl_EBDT, NULL, "http://partners.adobe.com/asn/developer/opentype/ebdt.html" },
+    { CHR('E','B','L','C'), _STR_Tbl_EBLC, NULL, "http://partners.adobe.com/asn/developer/opentype/eblc.html" },
+    { CHR('E','B','S','C'), _STR_Tbl_EBSC, NULL, "http://partners.adobe.com/asn/developer/opentype/ebsc.html" },
+    { CHR('f','p','g','m'), _STR_Tbl_fpgm, instrCreateEditor, "http://partners.adobe.com/asn/developer/opentype/fpgm.html" },
+    { CHR('g','a','s','p'), _STR_Tbl_gasp, NULL, "http://partners.adobe.com/asn/developer/opentype/gasp.html" },
+    { CHR('h','d','m','x'), _STR_Tbl_hdmx, NULL, "http://partners.adobe.com/asn/developer/opentype/hdmx.html" },
+    { CHR('k','e','r','n'), _STR_Tbl_kern, NULL, "http://partners.adobe.com/asn/developer/opentype/kern.html" },
+    { CHR('L','T','S','H'), _STR_Tbl_LTSH, NULL, "http://partners.adobe.com/asn/developer/opentype/ltsh.html" },
+    { CHR('p','r','e','p'), _STR_Tbl_prep, instrCreateEditor, "http://partners.adobe.com/asn/developer/opentype/prep.html" },
+    { CHR('P','C','L','T'), _STR_Tbl_PCLT, NULL, "http://partners.adobe.com/asn/developer/opentype/pclt.html" },
+    { CHR('V','D','M','X'), _STR_Tbl_VDMX, NULL, "http://partners.adobe.com/asn/developer/opentype/vdmx.html" },
+    { CHR('v','h','e','a'), _STR_Tbl_vhea, NULL, "http://partners.adobe.com/asn/developer/opentype/vhea.html" },
+    { CHR('v','m','t','x'), _STR_Tbl_vmtx, NULL, "http://partners.adobe.com/asn/developer/opentype/vmtx.html" },
+    { CHR('C','F','F',' '), _STR_Tbl_CFF , NULL, "http://partners.adobe.com/asn/developer/opentype/cff.html" },
+    { CHR('f','v','a','r'), _STR_Tbl_fvar, NULL, "http://partners.adobe.com/asn/developer/opentype/tablist.html" },
+    { CHR('M','M','S','D'), _STR_Tbl_MMSD, NULL, "http://partners.adobe.com/asn/developer/opentype/tablist.html" },
+    { CHR('M','M','F','X'), _STR_Tbl_MMFX, NULL, "http://partners.adobe.com/asn/developer/opentype/tablist.html" },
+    { CHR('B','A','S','E'), _STR_Tbl_BASE, NULL, "http://partners.adobe.com/asn/developer/opentype/base.html" },
+    { CHR('G','D','E','F'), _STR_Tbl_GDEF, NULL, "http://partners.adobe.com/asn/developer/opentype/gdef.html" },
+    { CHR('G','P','O','S'), _STR_Tbl_GPOS, NULL, "http://partners.adobe.com/asn/developer/opentype/gpos.html" },
+    { CHR('G','S','U','B'), _STR_Tbl_GSUB, NULL, "http://partners.adobe.com/asn/developer/opentype/gsub.html" },
+    { CHR('J','S','T','F'), _STR_Tbl_JSTF, NULL, "http://partners.adobe.com/asn/developer/opentype/jstf.html" },
+    { CHR('D','S','I','G'), _STR_Tbl_DSIG, NULL, "http://partners.adobe.com/asn/developer/opentype/dsig.html" },
+    { CHR('V','O','R','G'), _STR_Tbl_VORG, NULL, "http://partners.adobe.com/asn/developer/opentype/vorg.html" },
     { 0 }
 };
 
@@ -202,6 +204,10 @@ int _TFVMenuSave(TtfView *tfv) {
 return( 0 );
 }
 
+int _TFVMenuRevert(TtfView *tfv) {
+return( 0 );
+}
+
 static void TFVMenuSaveAs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     TtfView *tfv = (TtfView *) GDrawGetUserData(gw);
 
@@ -214,10 +220,27 @@ static void TFVMenuSave(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 
 static void TFVMenuRevert(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    TtfView *tfv = (TtfView *) GDrawGetUserData(gw);
+    _TFVMenuRevert(tfv);
 }
 
 void MenuHelp(GWindow base,struct gmenuitem *mi,GEvent *e) {
     system("netscape http://pfaedit.sf.net/ttfmod/ &");
+}
+
+void TableHelp(int table_name) {
+    int k;
+    char buffer[1000];
+
+    for ( k=0; tableinfo[k].name!=0; ++k )
+	if ( tableinfo[k].name == table_name )
+    break;
+    if ( tableinfo[k].name==0 )
+	MenuHelp(NULL,NULL,NULL);
+    else {
+	sprintf(buffer,"netscape %s &" );
+	system(buffer);
+    }
 }
 
 static int _TFVMenuClose(TtfView *tfv) {
@@ -253,7 +276,7 @@ return;
     exit(0);
 }
 
-static void TFVMenuExit(GWindow base,struct gmenuitem *mi,GEvent *e) {
+void MenuExit(GWindow base,struct gmenuitem *mi,GEvent *e) {
     DelayEvent((void (*)(void *)) _MenuExit, NULL);
 }
 
@@ -280,7 +303,7 @@ static GMenuItem fllist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Prefs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'e' }, '\0', ksm_control, NULL, NULL, MenuPrefs },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_Quit, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'Q' }, 'Q', ksm_control, NULL, NULL, TFVMenuExit },
+    { { (unichar_t *) _STR_Quit, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'Q' }, 'Q', ksm_control, NULL, NULL, MenuExit },
     { NULL }
 };
 
@@ -312,7 +335,7 @@ static GMenuItem mblist[] = {
 static void TFVMouse(TtfView *tfv,GEvent *e) {
     TtfFile *ttf = tfv->ttf;
     TtfFont *font;
-    int seek = e->u.mouse.y / tfv->fh + tfv->lpos;
+    int seek = (e->u.mouse.y-2) / tfv->fh + tfv->lpos;
     int i,j, l, k;
     Table *tab;
 
@@ -388,7 +411,7 @@ static void TFVExpose(TtfView *tfv,GWindow pixmap,GRect *rect) {
 	    GDrawDrawLine(pixmap,0,(l-tfv->lpos)*tfv->fh,tfv->vwidth,(l-tfv->lpos)*tfv->fh,
 		i==tfv->selectedfont || i==tfv->selectedfont+1 ? 0 : 0x808080 );
 	    GDrawSetFont(pixmap,tfv->bold);
-	    GDrawDrawText(pixmap,10,(l-tfv->lpos)*tfv->fh+tfv->as,font->fontname,-1,NULL,0);
+	    GDrawDrawText(pixmap,10,(l-tfv->lpos)*tfv->fh+tfv->as+2,font->fontname,-1,NULL,0);
 	}
 	++l;
 	for ( j=0; j<font->tbl_cnt; ++j, ++l ) {
@@ -402,7 +425,7 @@ static void TFVExpose(TtfView *tfv,GWindow pixmap,GRect *rect) {
 		u_sprintf(buffer+4, spec,
 			font->tbls[j]->start, font->tbls[j]->len );
 		GDrawSetFont(pixmap, font->tbls[j]->changed ? tfv->bold : tfv->font);
-		GDrawDrawText(pixmap,3,(l-tfv->lpos)*tfv->fh+tfv->as,buffer,-1,NULL,0);
+		GDrawDrawText(pixmap,3,(l-tfv->lpos)*tfv->fh+tfv->as+2,buffer,-1,NULL,0);
 	    }
 	}
     }
@@ -451,10 +474,10 @@ static void TFVResize(TtfView *tfv,GEvent *event) {
     int lh, i;
 
     /* Multiple of the number of lines we've got */
-    if ( (event->u.resize.size.height-tfv->mbh)%tfv->fh!=0 ) {
-	int lc = (event->u.resize.size.height-tfv->mbh+tfv->fh/2)/tfv->fh;
+    if ( (event->u.resize.size.height-tfv->mbh-4)%tfv->fh!=0 ) {
+	int lc = (event->u.resize.size.height-tfv->mbh-4+tfv->fh/2)/tfv->fh;
 	if ( lc<=0 ) lc = 1;
-	GDrawResize(tfv->gw, event->u.resize.size.width,lc*tfv->fh+tfv->mbh);
+	GDrawResize(tfv->gw, event->u.resize.size.width,lc*tfv->fh+tfv->mbh+4);
 return;
     }
 
@@ -533,8 +556,7 @@ static int tfv_e_h(GWindow gw, GEvent *event) {
 	    for ( n=tfv_list; n->next!=tfv; n=n->next );
 	    n->next = tfv->next;
 	}
-	if ( tfv_list!=NULL )		/* Freeing a large font can take forever, and if we're just going to exit there's no real reason to do so... */
-	    TtfViewFree(tfv);
+	TtfViewFree(tfv);
       break;
     }
 return( true );
@@ -550,11 +572,10 @@ TtfView *TtfViewCreate(TtfFile *tf) {
     TtfView *tfv = gcalloc(1,sizeof(TtfView));
     FontRequest rq;
     static unichar_t monospace[] = { 'c','o','u','r','i','e','r',',','m', 'o', 'n', 'o', 's', 'p', 'a', 'c', 'e',',','c','a','s','l','o','n',',','u','n','i','f','o','n','t', '\0' };
-    static GWindow icon = NULL;
     int as,ds,ld, i,lh;
 
-    if ( icon==NULL )
-	icon = GDrawCreateBitmap(NULL,ttf_width,ttf_height,ttf_bits);
+    if ( ttf_icon==NULL )
+	ttf_icon = GDrawCreateBitmap(NULL,ttf_width,ttf_height,ttf_bits);
 
     tf->tfv = tfv;
     tfv->ttf = tf;
@@ -565,7 +586,7 @@ TtfView *TtfViewCreate(TtfFile *tf) {
     wattrs.cursor = ct_pointer;
     wattrs.window_title = tf->is_ttc?uc_copy(GFileNameTail(tf->filename)):
 			    u_copy(tf->fonts[0]->fontname);
-    wattrs.icon = icon;
+    wattrs.icon = ttf_icon;
     pos.x = pos.y = 0;
     pos.width = 180;
     pos.height = 100;

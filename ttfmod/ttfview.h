@@ -63,10 +63,13 @@ extern TtfView *ViewTtfFont(char *filename);
 extern TtfView *TtfViewCreate(TtfFile *tf);
 extern void FontNew(void);
 extern void MenuOpen(GWindow base,struct gmenuitem *mi,GEvent *e);
+extern void TableHelp(int table_name);
 extern void MenuHelp(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuPrefs(GWindow base,struct gmenuitem *mi,GEvent *e);
+extern void MenuExit(GWindow base,struct gmenuitem *mi,GEvent *e);
 int _TFVMenuSaveAs(TtfView *tfv);
 int _TFVMenuSave(TtfView *tfv);
+int _TFVMenuRevert(TtfView *tfv);
 extern void TtfModSetFallback(void);
 extern void LoadPrefs(void);
 extern void DoPrefs(void);
@@ -77,4 +80,6 @@ int RecentFilesAny(void);
 void MenuRecentBuild(GWindow base,struct gmenuitem *mi,GEvent *e);
 
 void maxpCreateEditor(Table *tab,TtfView *tfv);
+void OS2CreateEditor(Table *tab,TtfView *tfv);
+void instrCreateEditor(Table *tab,TtfView *tfv);
 #endif
