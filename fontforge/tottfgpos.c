@@ -3264,7 +3264,7 @@ static struct feature *CoalesceLookups(SplineFont *sf, struct lookup *lookups,in
     for ( ; lookups!=NULL; lookups = last->feature_next ) {
 	cnt = lcnt = 0;
 	allsame = true;
-	if ( !added_size && is_gpos && CHR('s','i','z','e')<l->feature_tag &&
+	if ( !added_size && is_gpos && CHR('s','i','z','e')<lookups->feature_tag &&
 		sf->design_size!=0 ) {
 	    f = CreateSizeFeature(sf,fcnt++);
 	    if ( flast==NULL )
