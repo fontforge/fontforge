@@ -4734,6 +4734,9 @@ static void uc_annot_strncat(unichar_t *to, const char *from, int len) {
 	    else if ( ch=='x' ) ch = 0x2192;
 	    else if ( ch==':' ) ch = 0x224d;
 	    else if ( ch=='#' ) ch = 0x2245;
+	} else if ( ch=='\t' ) {
+	    *(to++) = ' ';
+	    ch = ' ';
 	}
 	*(to++) = ch;
     }
