@@ -1421,7 +1421,7 @@ static void FVMenuAATSuffix(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i])
 	if ( SCScriptFromUnicode(fv->sf->chars[i])!=0 )
     break;
-    usuffix = AskNameTag(_STR_SuffixToTag,NULL,0,0,-1,simplesubs_tags,fv->sf,fv->sf->chars[i]);
+    usuffix = AskNameTag(_STR_SuffixToTag,NULL,0,0,-1,simplesubs_tags,fv->sf,fv->sf->chars[i],-1);
     if ( usuffix==NULL )
 return;
 

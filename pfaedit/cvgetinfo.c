@@ -414,13 +414,16 @@ return( waslig );
 AnchorClass *AnchorClassUnused(SplineChar *sc,int *waslig) {
     AnchorClass *an, *maybe;
     int val, maybelig;
+    SplineFont *sf;
     /* Are there any anchors with this name? If so can't reuse it */
     /*  unless they are ligature anchores */
     /*  or 'curs' anchors, which allow exactly two points (entry, exit) */
     /*  or 'mkmk' anchors, which allow exactly a mark to be both a base and an attach */
 
     *waslig = false; maybelig = false; maybe = NULL;
-    for ( an=sc->parent->anchor; an!=NULL; an=an->next ) {
+    sf = sc->parent;
+    if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
+    for ( an=sf->anchor; an!=NULL; an=an->next ) {
 	val = IsAnchorClassUsed(sc,an);
 	if ( val>=0 ) {
 	    *waslig = val;
@@ -506,8 +509,11 @@ return;
 static void AI_SelectList(GIData *ci,AnchorPoint *ap) {
     int i;
     AnchorClass *an;
+    SplineFont *sf = ci->sc->parent;
 
-    for ( i=0, an=ci->sc->parent->anchor; an!=ap->anchor; ++i, an=an->next );
+    if ( sf->cidmaster ) sf = sf->cidmaster;
+
+    for ( i=0, an=sf->anchor; an!=ap->anchor; ++i, an=an->next );
     GGadgetSelectOneListItem(GWidgetGetControl(ci->gw,CID_NameList),i);
 }
 
@@ -662,10 +668,13 @@ static int AI_New(GGadget *g, GEvent *e) {
 	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
 	int waslig;
 	AnchorPoint *ap;
+	SplineFont *sf = ci->sc->parent;
+
+	if ( sf->cidmaster ) sf = sf->cidmaster;
 
 	if ( AnchorClassUnused(ci->sc,&waslig)==NULL ) {
 	    GWidgetPostNoticeR(_STR_MakeNewClass,_STR_MakeNewAnchorClass);
-	    FontInfo(ci->sc->parent,8,true);		/* Anchor Class */
+	    FontInfo(sf,8,true);		/* Anchor Class */
 	    if ( AnchorClassUnused(ci->sc,&waslig)==NULL )
 return(true);
 	    GGadgetSetList(GWidgetGetControl(ci->gw,CID_NameList),
@@ -815,7 +824,9 @@ return( true );
 		    else if ( ap->lig_index>max )
 			max = ap->lig_index;
 		}
-	    }
+	    } else if ( ap!=ci->ap && ap->anchor->merge_with==an->merge_with &&
+		    ap->type==at_mark )
+	break;
 	}
 	if ( ap!=NULL || (sawentry && sawexit)) {
 	    AI_SelectList(ci,ci->ap);
@@ -916,6 +927,7 @@ void ApGetInfo(CharView *cv, AnchorPoint *ap) {
     GGadgetCreateData gcd[22];
     GTextInfo label[22];
     int j;
+    SplineFont *sf;
 
     memset(&gi,0,sizeof(gi));
     gi.cv = cv;
@@ -927,7 +939,7 @@ void ApGetInfo(CharView *cv, AnchorPoint *ap) {
 	if ( ap==NULL )
 return;
     }
-	
+
     gi.ap = ap;
     gi.changed = false;
     gi.done = false;
@@ -955,7 +967,9 @@ return;
 	gcd[j].gd.pos.width = AI_Width-10; 
 	gcd[j].gd.flags = gg_enabled|gg_visible;
 	gcd[j].gd.cid = CID_NameList;
-	gcd[j].gd.u.list = AnchorClassesList(cv->sc->parent);
+	sf = cv->sc->parent;
+	if ( sf->cidmaster ) sf = sf->cidmaster;
+	gcd[j].gd.u.list = AnchorClassesList(sf);
 	gcd[j].gd.handle_controlevent = AI_ANameChanged;
 	gcd[j].creator = GListButtonCreate;
 	++j;

@@ -2560,6 +2560,18 @@ static char *str_ExitDebugger = "Exit Debugger"
     /* showatt */
 static char *str_NoAdvancedTypography = "No Advanced Typography";
 static char *str_AppleAdvancedTypography = "Apple Advanced Typography";
+static char *str_Empty = "Empty";
+static char *str_Entry = "Entry (%d,%d)";
+static char *str_Exit = "Exit (%d,%d)";
+static char *str_MarkAnchorNamePos = "%.30s (%d,%d)"
+static char *str_MarkLigComponentNamePos = "Component %d %.30s (%d,%d)"
+static char *str_MarkCharNamePos = "%.30hs (%d,%d)"
+static char *str_MarkClassS = "Mark Class %.20s"
+static char *str_BaseCharacters = "Base Characters";
+static char *str_BaseLigatures = "Base Ligatures";
+static char *str_BaseMarks = "Base Marks";
+static char *str_OTFLanguage = "Language";
+static char *str_OTFScript = "Script";
     /* Metricsview */
 static char *str_NewKernClassEntry = "This kerning pair (%.20hs and %.20hs) is currently part of a kerning class with a 0 offset for this combination. Would you like to alter this kerning class entry (or create a kerning pair for just these two glyphs)?";
 static char *str_NewKernClassEntTitle = "Use Kerning Class?"

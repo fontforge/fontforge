@@ -46,7 +46,10 @@ struct node {
     void (*build)(struct node *,struct att_dlg *);
     unichar_t *label;
     uint32 tag;
-    SplineChar *sc;
+    union {
+	SplineChar *sc;
+	AnchorClass *ac;
+    } u;
     int lpos;
 };
 
@@ -80,23 +83,211 @@ static int compare_tag(const void *_n1, const void *_n2) {
 return( n1->tag-n2->tag );
 }
 
-static void BuildAnchorLists(struct node *node,struct att_dlg *att,uint32 script, AnchorClass *ac) {
-    node->children = gcalloc(2,sizeof(struct node));
-    node->cnt = 1;
-    node->children[0].label = uc_copy("Not yet implemented");
-    node->children[0].parent = node;
+static void BuildMarkedLigatures(struct node *node,struct att_dlg *att) {
+    SplineChar *sc = node->u.sc;
+    AnchorClass *ac = node->parent->parent->u.ac, *ac2;
+    int classcnt, i, j, max, k;
+    AnchorPoint *ap;
+    unichar_t ubuf[60];
+
+    for ( ac2=ac, classcnt=0; ac2!=NULL &&
+	    ac2->feature_tag==ac->feature_tag &&
+	    ac2->script_lang_index == ac->script_lang_index &&
+	    ac2->merge_with == ac->merge_with ; ac2 = ac2->next )
+	++classcnt;
+    max=0;
+    for ( ap=sc->anchor; ap!=NULL ; ap=ap->next )
+	if ( ap->lig_index>max )
+	    max = ap->lig_index;
+    node->children = gcalloc((classcnt*(max+1))+1,sizeof(struct node));
+    for ( k=j=0; k<=max; ++k ) {
+	for ( i=0, ac2=ac; i<classcnt; ++i, ac2=ac2->next ) {
+	    for ( ap=sc->anchor; ap!=NULL && (ap->type!=at_baselig || ap->anchor!=ac2 || ap->lig_index!=k); ap=ap->next );
+	    if ( ap!=NULL ) {
+		u_sprintf(ubuf,GStringGetResource(_STR_MarkLigComponentNamePos,NULL),
+			k, ac2->name, (int) ap->me.x, (int) ap->me.y );
+		node->children[j].label = u_copy(ubuf);
+		node->children[j++].parent = node;
+	    }
+	}
+    }
+    node->cnt = j;
+}
+
+static void BuildMarkedChars(struct node *node,struct att_dlg *att) {
+    SplineChar *sc = node->u.sc;
+    AnchorClass *ac = node->parent->parent->u.ac, *ac2;
+    int classcnt, i, j;
+    AnchorPoint *ap;
+    unichar_t ubuf[60];
+
+    for ( ac2=ac, classcnt=0; ac2!=NULL &&
+	    ac2->feature_tag==ac->feature_tag &&
+	    ac2->script_lang_index == ac->script_lang_index &&
+	    ac2->merge_with == ac->merge_with ; ac2 = ac2->next )
+	++classcnt;
+    node->children = gcalloc(classcnt+1,sizeof(struct node));
+    for ( i=j=0, ac2=ac; i<classcnt; ++i, ac2=ac2->next ) {
+	for ( ap=sc->anchor; ap!=NULL && (!(ap->type==at_basechar || ap->type==at_basemark) || ap->anchor!=ac2); ap=ap->next );
+	if ( ap!=NULL ) {
+	    u_sprintf(ubuf,GStringGetResource(_STR_MarkAnchorNamePos,NULL), ac2->name,
+		    (int) ap->me.x, (int) ap->me.y );
+	    node->children[j].label = u_copy(ubuf);
+	    node->children[j++].parent = node;
+	}
+    }
+    node->cnt = j;
+}
+
+static void BuildBase(struct node *node,SplineChar **bases,enum anchor_type at, struct node *parent) {
+    int i;
+
+    node->parent = parent;
+    node->label = u_copy(GStringGetResource(at==at_basechar?_STR_BaseCharacters:
+					    at==at_baselig?_STR_BaseLigatures:
+			                    _STR_BaseMarks,NULL));
+    for ( i=0; bases[i]!=NULL; ++i );
+    if ( i==0 ) {
+	node->cnt = 1;
+	node->children = gcalloc(2,sizeof(struct node));
+	node->children[0].label = u_copy(GStringGetResource(_STR_Empty,NULL));
+	node->children[0].parent = node;
+    } else {
+	node->cnt = i;
+	node->children = gcalloc(i+1,sizeof(struct node));
+	for ( i=0; bases[i]!=NULL; ++i ) {
+	    node->children[i].label = uc_copy(bases[i]->name);
+	    node->children[i].parent = node;
+	    node->children[i].u.sc = bases[i];
+	    node->children[i].build = at==at_baselig?BuildMarkedLigatures:BuildMarkedChars;
+	}
+    }
+}
+
+static void BuildMark(struct node *node,SplineChar **marks,AnchorClass *ac, struct node *parent) {
+    int i;
+    unichar_t ubuf[60];
+    AnchorPoint *ap;
+
+    node->parent = parent;
+    u_sprintf(ubuf,GStringGetResource(_STR_MarkClassS,NULL),ac->name);
+    node->label = u_copy(ubuf);
+    for ( i=0; marks[i]!=NULL; ++i );
+    if ( i==0 ) {
+	node->cnt = 1;
+	node->children = gcalloc(2,sizeof(struct node));
+	node->children[0].label = u_copy(GStringGetResource(_STR_Empty,NULL));
+	node->children[0].parent = node;
+    } else {
+	node->cnt = i;
+	node->children = gcalloc(i+1,sizeof(struct node));
+	for ( i=0; marks[i]!=NULL; ++i ) {
+	    for ( ap=marks[i]->anchor; ap!=NULL && (ap->type!=at_mark || ap->anchor!=ac); ap=ap->next );
+	    u_sprintf(ubuf,GStringGetResource(_STR_MarkCharNamePos,NULL), marks[i]->name,
+		    (int) ap->me.x, (int) ap->me.y );
+	    node->children[i].label = u_copy(ubuf);
+	    node->children[i].parent = node;
+	}
+    }
+}
+
+static void BuildAnchorLists(struct node *node,struct att_dlg *att,uint32 script) {
+    AnchorClass *ac = node->u.ac, *ac2;
+    int cnt, i, j, classcnt;
+    AnchorPoint *ap, *ent, *ext;
+    SplineChar **base, **lig, **mkmk, **entryexit;
+    SplineChar ***marks;
+    int *subcnts;
+    SplineFont *sf = att->sf;
+    unichar_t ubuf[60];
+
+    if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
+
+    if ( ac->feature_tag==CHR('c','u','r','s') ) {
+	entryexit = EntryExitDecompose(sf,ac);
+	if ( entryexit==NULL ) {
+	    node->children = gcalloc(2,sizeof(struct node));
+	    node->cnt = 1;
+	    node->children[0].label = u_copy(GStringGetResource(_STR_Empty,NULL));
+	    node->children[0].parent = node;
+	} else {
+	    for ( cnt=0; entryexit[cnt]!=NULL; ++cnt );
+	    node->children = gcalloc(cnt+1,sizeof(struct node));
+	    for ( cnt=0; entryexit[cnt]!=NULL; ++cnt ) {
+		node->children[cnt].u.sc = entryexit[cnt];
+		node->children[cnt].label = uc_copy(entryexit[cnt]->name);
+		node->children[cnt].parent = node;
+		for ( ent=ext=NULL, ap=entryexit[cnt]->anchor; ap!=NULL; ap=ap->next ) {
+		    if ( ap->anchor==ac ) {
+			if ( ap->type == at_centry )
+			    ent = ap;
+			else if ( ap->type == at_cexit )
+			    ent = ap;
+		    }
+		}
+		node->children[cnt].cnt = 1+(ent!=NULL)+(ext!=NULL);
+		node->children[cnt].children = gcalloc((1+(ent!=NULL)+(ext!=NULL)),sizeof(struct node));
+		i = 0;
+		if ( ent!=NULL ) {
+		    u_snprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),
+			    GStringGetResource(_STR_Entry,NULL),
+			    ent->me.x, ent->me.y);
+		    node->children[cnt].children[i].label = u_copy(ubuf);
+		    node->children[cnt].children[i].parent = &node->children[cnt];
+		    ++i;
+		}
+		if ( ext!=NULL ) {
+		    u_snprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),
+			    GStringGetResource(_STR_Exit,NULL),
+			    ext->me.x, ext->me.y);
+		    node->children[cnt].children[i].label = u_copy(ubuf);
+		    node->children[cnt].children[i].parent = &node->children[cnt];
+		    ++i;
+		}
+	    }
+	}
+	free(entryexit);
+    } else {
+	for ( ac2=ac, classcnt=0; ac2!=NULL &&
+		ac2->feature_tag==ac->feature_tag &&
+		ac2->script_lang_index == ac->script_lang_index &&
+		ac2->merge_with == ac->merge_with ; ac2 = ac2->next )
+	    ++classcnt;
+	marks = galloc(classcnt*sizeof(SplineChar **));
+	subcnts = galloc(classcnt*sizeof(int));
+	AnchorClassDecompose(sf,ac,classcnt,subcnts,marks,&base,&lig,&mkmk);
+	node->cnt = classcnt+(base!=NULL)+(lig!=NULL)+(mkmk!=NULL);
+	node->children = gcalloc(node->cnt+1,sizeof(struct node));
+	i=0;
+	if ( base!=NULL )
+	    BuildBase(&node->children[i++],base,at_basechar,node);
+	if ( lig!=NULL )
+	    BuildBase(&node->children[i++],lig,at_baselig,node);
+	if ( mkmk!=NULL )
+	    BuildBase(&node->children[i++],mkmk,at_basemark,node);
+	for ( j=0, ac2=ac; j<classcnt; ++j, ac2=ac2->next ) if ( marks[j]!=NULL )
+	    BuildMark(&node->children[i++],marks[j],ac2,node);
+	node->cnt = i;
+	for ( i=0; i<classcnt; ++i )
+	    free(marks[i]);
+	free(marks);
+	free(subcnts);
+	free(base);
+	free(lig);
+	free(mkmk);
+    }
 }
 
 static void BuildKerns2(struct node *node,struct att_dlg *att,
 	uint32 script, uint32 lang) {
-    KernPair *kp = node->sc->kerns;
+    KernPair *kp = node->u.sc->kerns;
     int i,j,l,m;
     struct node *chars;
     char buf[80];
     SplineFont *_sf = att->sf;
 
     for ( j=0; j<2; ++j ) {
-	for ( kp=node->sc->kerns, i=0; kp!=NULL; kp=kp->next ) {
+	for ( kp=node->u.sc->kerns, i=0; kp!=NULL; kp=kp->next ) {
 	    int sli = kp->sli;
 	    struct script_record *sr = _sf->script_lang[sli];
 	    for ( l=0; sr[l].script!=0 && sr[l].script!=script; ++l );
@@ -150,7 +341,7 @@ static void BuildKerns(struct node *node,struct att_dlg *att,uint32 script,uint3
 			for ( m=0; sr[l].langs[m]!=0 && sr[l].langs[m]!=lang; ++m );
 			if ( sr[l].langs[m]!=0 ) {
 			    if ( j ) {
-				chars[tot].sc = sf->chars[i];
+				chars[tot].u.sc = sf->chars[i];
 				chars[tot].label = uc_copy(sf->chars[i]->name);
 				chars[tot].build = build;
 				chars[tot].parent = node;
@@ -345,7 +536,7 @@ return;
 	}
 	for ( ac = att->sf->anchor; ac!=NULL; ac=ac->next ) {
 	    if ( feat==ac->feature_tag ) {
-		BuildAnchorLists(node,att,script,ac);
+		BuildAnchorLists(node,att,script);
 return;
 	    }
 	}
@@ -363,7 +554,7 @@ static void BuildGSUBlang(struct node *node,struct att_dlg *att) {
     struct node *featnodes;
     extern GTextInfo *pst_tags[];
     int haskerns=false;
-    AnchorClass *ac;
+    AnchorClass *ac, *ac2, **acs;
     SplineChar *sc;
     PST *pst;
     KernPair *kp;
@@ -414,22 +605,32 @@ static void BuildGSUBlang(struct node *node,struct att_dlg *att) {
 	}
 	++k;
     } while ( k<_sf->subfontcnt );
+    acs = NULL;
     if ( !isgsub ) {
-	for ( ac=_sf->anchor; ac!=NULL; ac=ac->next ) {
+	acs = gcalloc(max,sizeof(AnchorClass *));
+	AnchorClassOrder(_sf);
+	for ( ac=_sf->anchor; ac!=NULL; ) {
 	    int sli = ac->script_lang_index;
 	    struct script_record *sr = _sf->script_lang[sli];
 	    for ( l=0; sr[l].script!=0 && sr[l].script!=script; ++l );
 	    if ( sr[l].script!=0 ) {
 		for ( m=0; sr[l].langs[m]!=0 && sr[l].langs[m]!=lang; ++m );
 		if ( sr[l].langs[m]!=0 ) {
-		    for ( l=0; l<tot && feats[l]!=ac->feature_tag; ++l );
-		    if ( l>=tot ) {
-			if ( tot>=max )
-			    feats = grealloc(feats,(max+=30)*sizeof(uint32));
-			feats[tot++] = ac->feature_tag;
+		    /* We expect to get multiple features with the same tag here */
+		    if ( tot>=max ) {
+			feats = grealloc(feats,(max+=30)*sizeof(uint32));
+			acs = grealloc(acs,max*sizeof(AnchorClass *));
 		    }
+		    acs[tot] = ac;
+		    feats[tot++] = ac->feature_tag;
 		}
 	    }
+	    /* These all get merged together into one feature */
+	    for ( ac2 = ac->next; ac2!=NULL &&
+		    ac2->feature_tag==ac->feature_tag &&
+		    ac2->script_lang_index == ac->script_lang_index &&
+		    ac2->merge_with == ac->merge_with ; ac2 = ac2->next );
+	    ac = ac2;
 	}
     }
 
@@ -454,6 +655,8 @@ static void BuildGSUBlang(struct node *node,struct att_dlg *att) {
 	    u_strcpy(ubuf+7,GStringGetResource((uint32) pst_tags[k][j].text,NULL));
 	else
 	    ubuf[7]='\0';
+	if ( acs!=NULL && acs[i]!=NULL )
+	    featnodes[i].u.ac = acs[i];
 	featnodes[i].label = u_copy(ubuf);
     }
 
@@ -512,10 +715,12 @@ return;
 	ubuf[4] = langnodes[i].tag&0xff;
 	ubuf[5] = '\'';
 	ubuf[6] = ' ';
-	if ( languages[j].text!=NULL )
+	if ( languages[j].text!=NULL ) {
 	    u_strcpy(ubuf+7,GStringGetResource((uint32) languages[j].text,NULL));
-	else
+	    uc_strcat(ubuf," ");
+	} else
 	    ubuf[7]='\0';
+	u_strcat(ubuf,GStringGetResource(_STR_OTFLanguage,NULL));
 	langnodes[i].label = u_copy(ubuf);
 	langnodes[i].build = BuildGSUBlang;
 	langnodes[i].parent = node;
@@ -537,6 +742,7 @@ static void BuildTable(struct node *node,struct att_dlg *att) {
     PST *pst;
     KernPair *kp;
     unichar_t ubuf[120];
+    AnchorClass *ac;
 
     /* Build the list of scripts that are mentioned in the font */
     for ( j=0; j<2; ++j ) {
@@ -601,6 +807,17 @@ return;
 	}
 	++k;
     } while ( k<_sf->subfontcnt );
+    if ( isgpos && _sf->anchor!=NULL ) {
+	for ( ac=_sf->anchor; ac!=NULL; ac=ac->next ) {
+	    int sli = ac->script_lang_index;
+	    struct script_record *sr = _sf->script_lang[sli];
+	    for ( l=0; sr[l].script!=0 ; ++l ) {
+		for ( j=0; j<script_max && scriptnodes[j].tag!=sr[l].script; ++j );
+		if ( j<script_max )
+		    scriptnodes[j].used = true;
+	    }
+	}
+    }
     /* And remove any that aren't */
     for ( i=j=0; i<script_max; ++i ) {
 	while ( i<script_max && !scriptnodes[i].used ) ++i;
@@ -619,10 +836,12 @@ return;
 	ubuf[4] = scriptnodes[i].tag&0xff;
 	ubuf[5] = '\'';
 	ubuf[6] = ' ';
-	if ( scripts[j].text!=NULL )
+	if ( scripts[j].text!=NULL ) {
 	    u_strcpy(ubuf+7,GStringGetResource((uint32) scripts[j].text,NULL));
-	else
+	    uc_strcat(ubuf," ");
+	} else
 	    ubuf[7]='\0';
+	u_strcat(ubuf,GStringGetResource(_STR_OTFScript,NULL));
 	scriptnodes[i].label = u_copy(ubuf);
 	scriptnodes[i].build = iskern ? BuildKernScript :
 				ismorx ? BuildMorxScript :
@@ -662,6 +881,8 @@ static void BuildTop(struct att_dlg *att) {
 	}
 	++k;
     } while ( k<_sf->subfontcnt );
+    if ( _sf->anchor!=NULL )
+	hasgpos = true;
 
     if ( hasgsub+hasgpos+hasmorx+haskern==0 ) {
 	tables = gcalloc(2,sizeof(struct node));

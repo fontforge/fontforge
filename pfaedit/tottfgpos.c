@@ -356,7 +356,7 @@ return( NULL );
 return( glyphs );
 }
 
-static void AnchorClassDecompose(SplineFont *sf,AnchorClass *_ac, int classcnt, int *subcnts,
+void AnchorClassDecompose(SplineFont *sf,AnchorClass *_ac, int classcnt, int *subcnts,
 	SplineChar ***marks,SplineChar ***base,
 	SplineChar ***lig,SplineChar ***mkmk) {
     /* Run through the font finding all characters with this anchor class */
@@ -408,7 +408,7 @@ static void AnchorClassDecompose(SplineFont *sf,AnchorClass *_ac, int classcnt, 
     *mkmk = heads[at_basemark].glyphs;
 }
 
-static SplineChar **EntryExitDecompose(SplineFont *sf,AnchorClass *ac) {
+SplineChar **EntryExitDecompose(SplineFont *sf,AnchorClass *ac) {
     /* Run through the font finding all characters with this anchor class */
     int i,j, cnt;
     SplineChar **array;
@@ -1214,6 +1214,33 @@ static void TagFlagLangFromPST(struct tagflaglang *tfl,PST *pst) {
     tfl->tag = pst->tag;
 }
 
+void AnchorClassOrder(SplineFont *sf) {
+    AnchorClass *ac, *p, *ac2, *n, *last;
+    /* Order the AnchorClasses so that all those with the same:
+	    tag
+	    sli
+	    merge field
+	are together. These will be treated as one sub-table (well we might
+	get 2 sub-tables if there are both ligature and normal base glyphs)
+    */
+    for ( ac=sf->anchor; ac!=NULL; ac = ac->next ) {
+	last = ac;
+	for ( p=ac, ac2 = ac->next; ac2!=NULL; ac2 = n ) {
+	    n = ac2->next;
+	    if ( ac2->feature_tag==ac->feature_tag &&
+		    ac2->script_lang_index == ac->script_lang_index &&
+		    ac2->merge_with == ac->merge_with &&
+		    last!=p ) { 	/* if p==ac we don't need to do anything, already in place */
+		ac2->next = last->next;
+		last->next = ac2;
+		p->next = n;
+		last = ac2;
+	    } else
+		p = ac2;
+	}
+    }
+}
+
 static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
 	struct alltabs *at) {
     /* When we find a feature, we split it out into various scripts */
@@ -1224,7 +1251,7 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
     int *subcnts;
     SplineChar **base, **lig, **mkmk, ***map, **glyphs;
     SplineChar *sc;
-    AnchorClass *ac, *p, *ac2, *n;
+    AnchorClass *ac, *p, *ac2;
     struct tagflaglang *ligtags;
     int cmax, classcnt;
     enum possub_type type;
@@ -1313,27 +1340,8 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
 	new->len = ftell(lfile)-new->offset;
     }
 
-    /* Order the AnchorClasses so that all those with the same:
-	    tag
-	    sli
-	    merge field
-	are together. These will be treated as one sub-table (well we might
-	get 2 sub-tables if there are both ligature and normal base glyphs)
-    */
-    for ( ac=sf->anchor; ac!=NULL; ac = ac->next ) {
-	for ( p=ac, ac2 = ac->next; ac2!=NULL; ac2 = n ) {
-	    n = ac2->next;
-	    if ( ac2->feature_tag==ac->feature_tag &&
-		    ac2->script_lang_index == ac->script_lang_index &&
-		    ac2->merge_with == ac->merge_with &&
-		    p!=ac ) { 	/* if p==ac we don't need to do anything, already in place */
-		ac2->next = ac->next;
-		ac->next = ac2;
-		p->next = n;
-	    } else
-		p = ac;
-	}
-    }
+    AnchorClassOrder(sf);
+
     if ( sf->anchor ) {
 	marks = galloc((cmax=20)*sizeof(SplineChar **));
 	subcnts = galloc(cmax*sizeof(int));
