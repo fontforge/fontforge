@@ -416,6 +416,7 @@ return( i );
 	    to_sr[j].langs[k] = from_sr[j].langs[k];
 	to_sr[j].langs[k] = 0;
     }
+    tosf->sli_cnt = i+1;
 return( i );
 }
 

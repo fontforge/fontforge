@@ -1661,6 +1661,7 @@ static int sld_e_h(GWindow gw, GEvent *event) {
     struct sl_dlg *sld = GDrawGetUserData(gw);
     struct script_record **srl;
     GTextInfo *ti;
+    int i;
 
     if ( event->type==et_close ) {
 	sld->done = true;
@@ -1684,6 +1685,11 @@ return( false );
 		sld->done = true;
 		ScriptRecordListFree(sld->sf->script_lang);
 		sld->sf->script_lang = srl;
+		if ( srl!=NULL ) {
+		    for ( i=0; srl[i]!=NULL; ++i );
+		    sld->sf->sli_cnt = i;
+		} else
+		    sld->sf->sli_cnt = 0;
 	    }
 	  break;
 	  case _STR_Cancel:

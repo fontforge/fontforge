@@ -103,6 +103,7 @@ return( i );
     else
 	to->script_lang = grealloc(to->script_lang,(i+2)*sizeof(struct script_record *));
     to->script_lang[i+1] = NULL;
+    to->sli_cnt = i+1;
     for ( j=0; from->script_lang[sli][j].script!=0; ++j );
     to->script_lang[i] = galloc((j+1)*sizeof(struct script_record));
     for ( j=0; from->script_lang[sli][j].script!=0; ++j ) {

@@ -1814,6 +1814,7 @@ return(NULL);
     new->script_lang = cidmaster->script_lang;
     cidmaster->script_lang = NULL;
     new->sli_cnt = cidmaster->sli_cnt;
+    cidmaster->sli_cnt = 0;
     new->kerns = cidmaster->kerns; new->vkerns = cidmaster->vkerns;
     cidmaster->kerns = cidmaster->vkerns = NULL;
     new->names = cidmaster->names; cidmaster->names = NULL;
