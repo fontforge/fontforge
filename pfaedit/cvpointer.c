@@ -677,6 +677,7 @@ static void CVAdjustSpline(CharView *cv) {
     tp[4] = tp[0];		/*  ditto */
     cv->p.spline = ApproximateSplineFromPoints(old->from,old->to,tp,5);
     old->from->pointtype = pt_corner; old->to->pointtype = pt_corner;
+    old->from->nextcpdef = old->to->prevcpdef = false;
     SplineFree(old);
     CVSetCharChanged(cv,true);
 }

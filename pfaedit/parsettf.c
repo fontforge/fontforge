@@ -2389,7 +2389,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	    enc = em_mac;
 	    encoff = offset;
 	} else if ( platform==3 && (specific==2 || specific==3 || specific==5) && enc!=em_unicode ) {
-	    enc = em_unicode;
+	    enc = specific==2? em_ksc5601 : specific==5 ? em_jis208 : em_unicode;
 	    mod = specific;
 	    encoff = offset;
 	}
