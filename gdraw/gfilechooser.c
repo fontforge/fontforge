@@ -40,6 +40,7 @@
 /* Instead we've got a bunch of routines that make them work as a whole */
 static GBox gfilechooser_box = { 0 };	/* no box */
 static unichar_t *lastdir;
+static int showhidden = false;
 
 /* Handles *?{}[] wildcards */
 int GGadgetWildMatch(unichar_t *pattern, unichar_t *name,int ignorecase) {
@@ -147,6 +148,8 @@ enum fchooserret GFileChooserDefFilter(GGadget *g,GDirEntry *ent,const unichar_t
     unichar_t *mime;
 
     if ( uc_strcmp(ent->name,".")==0 )	/* Don't show the current directory entry */
+return( fc_hide );
+    if ( !showhidden && ent->name[0]=='.' && uc_strcmp(ent->name,"..")!=0 )
 return( fc_hide );
     if ( ent->isdir )			/* Show all other directories */
 return( fc_show );
@@ -313,7 +316,7 @@ static void GFileChooserErrorDir(GIOControl *gc) {
     gfc->outstanding = NULL;
     GDrawSetCursor(gfc->g.base,gfc->old_cursor);
 }
-    
+
 static void GFileChooserScanDir(GFileChooser *gfc,unichar_t *dir) {
     GTextInfo **ti=NULL;
     int cnt, tot=0;
@@ -567,6 +570,33 @@ return(true);
 return( true );
 }
 
+static void GFCHideToggle(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    GFileChooser *gfc = (GFileChooser *) (mi->ti.userdata);
+    unichar_t *dir;
+
+    showhidden = !showhidden;
+
+    dir = GFileChooserGetCurDir(gfc,-1);
+    GFileChooserScanDir(gfc,dir);
+    free(dir);
+}
+
+static void GFCRefresh(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    GFileChooser *gfc = (GFileChooser *) (mi->ti.userdata);
+    unichar_t *dir;
+
+    dir = GFileChooserGetCurDir(gfc,-1);
+    GFileChooserScanDir(gfc,dir);
+    free(dir);
+}
+
+static unichar_t showhiddenfiles[] = { 'S','h','o','w',' ','H','i','d','d','e','n',' ','F','i','l','e','s',  '\0' };
+static GMenuItem gfcpopupmenu[] = {
+    { { showhiddenfiles, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 0, 0, 'H' }, '\0', ksm_control, NULL, NULL, GFCHideToggle },
+    { { (unichar_t *) "Refresh File List", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 'H' }, '\0', ksm_control, NULL, NULL, GFCRefresh },
+    NULL
+};
+
 /* Routine to be called as the mouse moves across the dlg */
 void GFileChooserPopupCheck(GGadget *g,GEvent *e) {
     GFileChooser *gfc = (GFileChooser *) g;
@@ -588,6 +618,12 @@ void GFileChooserPopupCheck(GGadget *g,GEvent *e) {
 	}
 	if ( !inside )
 	    GGadgetPreparePopup(gfc->g.base,gfc->wildcard);
+    } else if ( e->type == et_mousedown && e->u.mouse.button==3 ) {
+	int i;
+	for ( i=0; gfcpopupmenu[i].ti.text!=NULL || gfcpopupmenu[i].ti.line; ++i )
+	    gfcpopupmenu[i].ti.userdata = gfc;
+	gfcpopupmenu[0].ti.checked = showhidden;
+	GMenuCreatePopupMenu(g->base,e, gfcpopupmenu);
     }
 }
 
