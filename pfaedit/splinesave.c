@@ -1467,7 +1467,7 @@ static void SplineFont2Subrs1(SplineFont *sf,int round, int iscjk,
     uint8 *temp;
     int len;
     GrowBuf gb;
-    MMSet *mm = format==ff_mm ? sc->parent->mm : NULL;
+    MMSet *mm = format==ff_mm ? sf->mm : NULL;
     int instance_count = mm!=NULL ? mm->instance_count : 1;
 
     for ( i=cnt=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL )

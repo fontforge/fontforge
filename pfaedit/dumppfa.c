@@ -1050,9 +1050,9 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
 	}
 	dumpstr(dumpchar,data," } bind def\n" );
 
-	dumpstr(dumpchar,data," /Blend 3 dict dup begin" );
+	dumpstr(dumpchar,data," /Blend 3 dict dup begin\n" );
 	for ( j=0; j<mm->instance_count; ++j )
-	    SplineFontFindBounds(sf,&mb[j]);
+	    SplineFontFindBounds(mm->instances[j],&mb[j]);
 	dumpstr(dumpchar,data,"  /FontBBox{" );
 	for ( k=0; k<4; ++k ) {
 	    dumpstr(dumpchar,data,"{" );
@@ -1065,21 +1065,25 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
 	}
 	dumpstr(dumpchar,data,"} def\n" );
 
-	dumpf(dumpchar,data,"  /Private %d dict def", sf->private->next+10 );
+	dumpf(dumpchar,data,"  /Private %d dict def\n", sf->private->next+10 );
 	dumpstr(dumpchar,data," end def		%End of Blend dict\n" );
 
-	dumpstr(dumpchar,data," /NormalizeDesignVector {\n" );
-	dumpstr(dumpchar,data, mm->ndv );
-	dumpstr(dumpchar,data," } bind def\n" );
-
-	dumpstr(dumpchar,data," /ConvertDesignVector {\n" );
-	dumpstr(dumpchar,data, mm->cdv );
-	dumpstr(dumpchar,data," } bind def\n" );
-
-	for ( j=0; makeblendedfont[j]!=NULL; ++j )
+	for ( j=0; makeblendedfont[j]!=NULL; ++j ) {
 	    dumpstr(dumpchar,data,makeblendedfont[j]);
-	for ( j=0; makeblendedfont[j]!=NULL; ++j )
+	    (dumpchar)('\n',data);
+	}
+	for ( j=0; mmfindfont[j]!=NULL; ++j ) {
 	    dumpstr(dumpchar,data,mmfindfont[j]);
+	    (dumpchar)('\n',data);
+	}
+
+	dumpstr(dumpchar,data," /NormalizeDesignVector\n" );
+	dumpstr(dumpchar,data, mm->ndv );
+	dumpstr(dumpchar,data," bind def\n" );
+
+	dumpstr(dumpchar,data," /ConvertDesignVector\n" );
+	dumpstr(dumpchar,data, mm->cdv );
+	dumpstr(dumpchar,data," bind def\n" );
     }
     dumpfontinfo(dumpchar,data,sf,format);
 
@@ -1117,8 +1121,8 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
 }
 
 static void dumpinitialascii(void (*dumpchar)(int ch,void *data), void *data,
-	SplineFont *sf ) {
-    dumprequiredfontinfo(dumpchar,data,sf,ff_pfa);
+	SplineFont *sf, int format ) {
+    dumprequiredfontinfo(dumpchar,data,sf,format);
     dumpstr(dumpchar,data,"currentdict end\ncurrentfile eexec\n" );
 }
 
@@ -1175,7 +1179,7 @@ static void dumpfontdict(FILE *out, SplineFont *sf, int format, int flags ) {
     if ( format==ff_pfb ) {
 	FILE *temp;
 	temp = tmpfile();
-	dumpinitialascii((DumpChar) fputc,temp,sf );
+	dumpinitialascii((DumpChar) fputc,temp,sf,format );
 	mkheadercopyfile(temp,out,1);
 	temp = tmpfile();
 	dumpencodedstuff((DumpChar) fputc,temp,sf,format,flags);
@@ -1189,7 +1193,7 @@ static void dumpfontdict(FILE *out, SplineFont *sf, int format, int flags ) {
 	dumprequiredfontinfo((DumpChar) fputc,out,sf,ff_ptype3);
 	dumpcharprocs((DumpChar) fputc,out,sf);
     } else {
-	dumpinitialascii((DumpChar) (fputc),out,sf );
+	dumpinitialascii((DumpChar) (fputc),out,sf,format );
 	dumpencodedstuff((DumpChar) (fputc),out,sf,format,flags);
 	dumpfinalascii((DumpChar) (fputc),out);
     }

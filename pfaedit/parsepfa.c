@@ -1070,6 +1070,8 @@ static void ContinueValue(struct fontparse *fp, struct psdict *dict, char *line)
 		    fp->vpt -= 8;
 		else if ( fp->vpt>fp->vbuf+8 && strncmp(fp->vpt-8,"readonly",8)==0 )
 		    fp->vpt -= 8;
+		else if ( fp->vpt>fp->vbuf+4 && strncmp(fp->vpt-4,"bind",4)==0 )
+		    fp->vpt -= 4;
 		else
 	    break;
 	    }
@@ -1140,6 +1142,8 @@ return;
 	    pt -= 8;
 	else if ( pt-8>endtok && strncmp(pt-8,"readonly",8)==0 )
 	    pt -= 8;
+	else if ( pt-4>endtok && strncmp(pt-4,"bind",4)==0 )
+	    pt -= 4;
 	else
 	    break;
     }
@@ -1337,19 +1341,9 @@ return;
 	for ( endtok=line+1; !isspace(*endtok) && *endtok!='(' &&
 		*endtok!='{' && *endtok!='[' && *endtok!='\0'; ++endtok );
 
-    if ( fp->skipping_mbf ) {	/* Skip over the makeblendedfont defn in a multimaster font */
-	if ( fp->multiline )
-	    ContinueValue(fp,NULL,line);
-	else if ( strstr( line,"/NormalizeDesignVector" )!=NULL ) {
-	    fp->pending_parse = &fp->fd->ndv;
-	    AddValue(fp,NULL,line,endtok);
-	} else if ( strstr( line,"/ConvertDesignVector" )!=NULL ) {
-	    fp->pending_parse = &fp->fd->cdv;
-	    AddValue(fp,NULL,line,endtok);
-	}
-return;
-    }
     if ( strstr(line,"/shareddict")!=NULL && strstr(line,"where")!=NULL ) {
+	fp->infi = fp->inbb = fp->inmetrics = fp->inmetrics2 = false;
+	fp->inprivate = fp->inblendprivate = fp->inblendfi = false;
 	fp->skipping_mbf = true;
 return;
     }
@@ -1525,7 +1519,7 @@ return;
 	else if ( mycmp("Supplement",line+1,endtok)==0 )		/* cff spec allows for copyright and notice */
 	    fp->fd->supplement = strtol(endtok,NULL,0);
     } else {
-	if ( strstr(line,"/Private")!=NULL ) {
+	if ( strstr(line,"/Private")!=NULL && strstr(line,"dict")!=NULL ) {
 	    fp->infi = fp->inbb = fp->inmetrics = fp->inmetrics2 = false;
 	    fp->inprivate = fp->inblendprivate = fp->inblendfi = false;
 	    if ( strstr(line,"/Blend")!=NULL ) {
@@ -1537,7 +1531,7 @@ return;
 		InitDict(fp->fd->private->private,line);
 	    }
 return;
-	} else if ( strstr(line,"/FontInfo")!=NULL ) {
+	} else if ( strstr(line,"/FontInfo")!=NULL && strstr(line,"dict")!=NULL ) {
 	    fp->inprivate = fp->inbb = fp->inmetrics = fp->inmetrics2 = false;
 	    fp->infi = fp->inblendprivate = fp->inblendfi = false;
 	    if ( strstr(line,"/Blend")!=NULL ) {
@@ -1586,7 +1580,9 @@ return;
 	}
 	
 	if ( endtok==NULL ) {
-	    if ( fp->fdindex!=-1 && strstr(line,"end")!=NULL ) {
+	    if ( fp->skipping_mbf )
+		;
+	    else if ( fp->fdindex!=-1 && strstr(line,"end")!=NULL ) {
 		if ( ++fp->fdindex>=fp->mainfd->fdcnt )
 		    fp->fd = fp->mainfd;
 		else
@@ -1634,6 +1630,12 @@ return;
 	} else if ( mycmp("$Blend",line+1,endtok)==0 ) {
 	    fp->pending_parse = &fp->fd->blendfunc;
 	    AddValue(fp,NULL,line,endtok);
+	} else if ( strstr( line,"/NormalizeDesignVector" )!=NULL ) {
+	    fp->pending_parse = &fp->fd->ndv;
+	    AddValue(fp,NULL,line,endtok);
+	} else if ( strstr( line,"/ConvertDesignVector" )!=NULL ) {
+	    fp->pending_parse = &fp->fd->cdv;
+	    AddValue(fp,NULL,line,endtok);
 	} else if ( mycmp("BuildChar",line+1,endtok)==0 )
 	    /* Do Nothing */;
 	else if ( mycmp("BuildGlyph",line+1,endtok)==0 )
@@ -1675,6 +1677,8 @@ return;
 	} else if ( mycmp("CIDInit",line+1,endtok)==0 ) {
 	    fp->iscid = true;
 	    fp->iscff = false;
+	} else if ( fp->skipping_mbf ) {	/* Skip over the makeblendedfont defn in a multimaster font */
+	    /* Do Nothing */
 	} else if ( !fp->alreadycomplained ) {
 	    fprintf( stderr, "Didn't understand |%s", line );
 	    fp->alreadycomplained = true;
