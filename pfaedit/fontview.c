@@ -3612,8 +3612,9 @@ SplineChar *SFMakeChar(SplineFont *sf,int i) {
 	for ( j=0; j<sf->subfontcnt; ++j )
 	    if ( i<sf->subfonts[j]->charcnt ) {
 		ssf = sf->subfonts[j];
-		if ( ssf->chars[i]!=NULL )
+		if ( ssf->chars[i]!=NULL ) {
 return( ssf->chars[i] );
+		}
 	    }
 	sf = ssf;
     }

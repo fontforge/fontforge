@@ -373,6 +373,20 @@ static void SetCur(CharView *cv) {
     GDrawSetCursor(cv->v,cursors[cv->expandedge]);
 }
 
+static int NearCaret(SplineChar *sc,real x,real fudge ) {
+    PST *pst;
+    int i;
+
+    for ( pst=sc->possub; pst!=NULL && pst->type!=pst_lcaret; pst=pst->next );
+    if ( pst==NULL )
+return( -1 );
+    for ( i=0; i<pst->u.lcaret.cnt; ++i ) {
+	if ( x>pst->u.lcaret.carets[i]-fudge && x<pst->u.lcaret.carets[i]+fudge )
+return( i );
+    }
+return( -1 );
+}
+
 void CVCheckResizeCursors(CharView *cv) {
     RefChar *ref;
     ImageList *img;
@@ -380,7 +394,6 @@ void CVCheckResizeCursors(CharView *cv) {
     real fudge = 3.5/cv->scale;
 
     cv->expandedge = ee_none;
-    cv->expand_width = false;
     if ( cv->drawmode==dm_fore ) {
 	for ( ref=cv->sc->refs; ref!=NULL; ref=ref->next ) if ( ref->selected ) {
 	    if (( cv->expandedge = OnBB(cv,&ref->bb,fudge))!=ee_none )
@@ -390,12 +403,12 @@ void CVCheckResizeCursors(CharView *cv) {
 	    if ( cv->showhmetrics && cv->info.x > cv->sc->width-fudge &&
 		    cv->info.x<cv->sc->width+fudge && cv->searcher==NULL )
 		cv->expandedge = ee_right;
+	    else if ( cv->showhmetrics && NearCaret(cv->sc,cv->info.x,fudge)!=-1 )
+		cv->expandedge = ee_right;
 	    if ( cv->showvmetrics && cv->sc->parent->hasvmetrics && cv->searcher==NULL &&
 		    cv->info.y > cv->sc->parent->vertical_origin-cv->sc->vwidth-fudge &&
 		    cv->info.y < cv->sc->parent->vertical_origin-cv->sc->vwidth+fudge )
 		cv->expandedge = ee_down;
-	    if ( cv->expandedge!=ee_none )
-		cv->expand_width = true;
 	}
     }
     if ( cv->drawmode==dm_back ) {
@@ -451,7 +464,7 @@ return( false );
 
 void CVMouseDownPointer(CharView *cv, FindSel *fs, GEvent *event) {
     int needsupdate = false;
-    int dowidth, dovwidth;
+    int dowidth, dovwidth, nearcaret;
 
     if ( cv->pressed==NULL )
 	cv->pressed = GDrawRequestTimer(cv->v,200,100,NULL);
@@ -465,6 +478,8 @@ return;
     dovwidth = ( cv->showvmetrics && cv->sc->parent->hasvmetrics && cv->searcher == NULL &&
 		cv->p.cy>cv->sc->parent->vertical_origin-cv->sc->vwidth-fs->fudge &&
 		cv->p.cy<cv->sc->parent->vertical_origin-cv->sc->vwidth+fs->fudge );
+    nearcaret = -1;
+    if ( cv->showhmetrics ) nearcaret = NearCaret(cv->sc,cv->p.cx,fs->fudge);
     if ( (fs->p->sp==NULL || !fs->p->sp->selected) &&
 	    (fs->p->ref==NULL || !fs->p->ref->selected) &&
 	    (fs->p->img==NULL || !fs->p->img->selected) &&
@@ -505,6 +520,13 @@ return;
 		cv->expandedge = ee_none;
 	    SetCur(cv);
 	    needsupdate = true;
+	} else if ( nearcaret!=-1 ) {
+	    PST *pst;
+	    for ( pst=cv->sc->possub; pst!=NULL && pst->type!=pst_lcaret; pst=pst->next );
+	    cv->lcarets = pst;
+	    cv->nearcaret = nearcaret;
+	    cv->expandedge = ee_right;
+	    SetCur(cv);
 	}
     } else if ( event->u.mouse.clicks<=1 && !(event->u.mouse.state&ksm_shift)) {
 	if ( fs->p->nextcp || fs->p->prevcp )
@@ -918,9 +940,16 @@ return;
 
     /* I used to have special cases for moving width lines, but that's now */
     /*  done by move selection */
-    if ( cv->expandedge!=ee_none && !cv->widthsel && !cv->vwidthsel )
+    if ( cv->expandedge!=ee_none && !cv->widthsel && !cv->vwidthsel && cv->nearcaret==-1 )
 	needsupdate = CVExpandEdge(cv);
-    else if ( !cv->p.anysel ) {
+    else if ( cv->nearcaret!=-1 ) {
+	if ( cv->info.x!=cv->last_c.x ) {
+	    if ( !cv->recentchange ) SCPreserveState(cv->sc,2);
+	    cv->lcarets->u.lcaret.carets[cv->nearcaret] += cv->info.x-cv->last_c.x;
+	    needsupdate = true;
+	    CVSetCharChanged(cv,true);
+	}
+    } else if ( !cv->p.anysel ) {
 	if ( !cv->p.rubberbanding ) {
 	    cv->p.ex = cv->p.cx;
 	    cv->p.ey = cv->p.cy;
@@ -974,6 +1003,11 @@ void CVMouseUpPointer(CharView *cv ) {
 	    if ( GWidgetAskR(_STR_NegativeWidth, buts, 0, 1, _STR_NegativeWidthCheck )==1 )
 		cv->sc->vwidth = cv->p.cy;
 	}
+	cv->expandedge = ee_none;
+	GDrawSetCursor(cv->v,ct_mypointer);
+    }
+    if ( cv->nearcaret!=-1 ) {
+	cv->nearcaret = -1;
 	cv->expandedge = ee_none;
 	GDrawSetCursor(cv->v,ct_mypointer);
     }

@@ -516,6 +516,9 @@ return( 0 );			/* Not version 1 of true type, nor Open Type */
 	    info->glyph_start = offset;
 	    info->glyph_length = length;
 	  break;
+	  case CHR('G','D','E','F'):
+	    info->gdef_start = offset;
+	  break;
 	  case CHR('G','P','O','S'):
 	    info->gpos_start = offset;
 	  break;
@@ -4383,6 +4386,65 @@ return;
     free(lookups);
 }
 
+static void readttfgdef(FILE *ttf,struct ttfinfo *info) {
+    int lclo;
+    int coverage, cnt, i,j, format;
+    uint16 *glyphs, *lc_offsets;
+    PST *pst;
+    SplineChar *sc;
+
+    fseek(ttf,info->gdef_start,SEEK_SET);
+    if ( getlong(ttf)!=0x00010000 )
+return;
+    /* glyph class def = */ getushort(ttf);
+    /* attach list = */ getushort(ttf);
+    lclo = getushort(ttf);		/* ligature caret list */
+    /* mark attach class = */ getushort(ttf);
+    if ( lclo==0 )
+return;
+
+    lclo += info->gdef_start;
+    fseek(ttf,lclo,SEEK_SET);
+    coverage = getushort(ttf);
+    cnt = getushort(ttf);
+    if ( cnt==0 )
+return;
+    lc_offsets = galloc(cnt*sizeof(uint16));
+    for ( i=0; i<cnt; ++i )
+	lc_offsets[i]=getushort(ttf);
+    glyphs = getCoverageTable(ttf,lclo+coverage,info);
+    for ( i=0; i<cnt; ++i ) if ( glyphs[i]<info->glyph_cnt ) {
+	fseek(ttf,lclo+lc_offsets[i],SEEK_SET);
+	sc = info->chars[glyphs[i]];
+	for ( pst=sc->possub; pst!=NULL && pst->type!=pst_lcaret; pst=pst->next );
+	if ( pst==NULL ) {
+	    pst = chunkalloc(sizeof(PST));
+	    pst->next = sc->possub;
+	    sc->possub = pst;
+	    pst->type = pst_lcaret;
+	}
+	pst->u.lcaret.cnt = getushort(ttf);
+	if ( pst->u.lcaret.carets!=NULL ) free(pst->u.lcaret.carets);
+	pst->u.lcaret.carets = galloc(pst->u.lcaret.cnt*sizeof(int16));
+	for ( j=0; j<pst->u.lcaret.cnt; ++j ) {
+	    format=getushort(ttf);
+	    if ( format==1 ) {
+		pst->u.lcaret.carets[i] = getushort(ttf);
+	    } else if ( format==2 ) {
+		pst->u.lcaret.carets[i] = 0;
+		/* point = */ getushort(ttf);
+	    } else if ( format==3 ) {
+		pst->u.lcaret.carets[i] = getushort(ttf);
+		/* in device table = */ getushort(ttf);
+	    } else {
+		fprintf( stderr, "!!!! Unknown caret format %d !!!!\n", format );
+	    }
+	}
+    }
+    free(lc_offsets);
+    free(glyphs);
+}
+
 static void UnfigureControls(Spline *spline,BasePoint *pos) {
     pos->x = rint( (spline->splines[0].c+2*spline->splines[0].d)/2 );
     pos->y = rint( (spline->splines[1].c+2*spline->splines[1].d)/2 );
@@ -4530,6 +4592,8 @@ return( 0 );
 	readttfpostnames(ttf,info);
     if ( info->kern_start!=0 )
 	readttfkerns(ttf,info);
+    if ( info->gdef_start!=0 )		/* ligature caret positioning info */
+	readttfgdef(ttf,info);
     if ( info->gpos_start!=0 )		/* kerning info may live in the gpos table too */
 	readttfgpossub(ttf,info,true);
     if ( info->gsub_start!=0 )

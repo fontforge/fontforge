@@ -144,7 +144,9 @@ typedef struct anchorpoint {
 } AnchorPoint;
 
 enum possub_type { pst_null, pst_position, pst_substitution, pst_alternate,
-	pst_multiple, pst_ligature, pst_max};
+	pst_multiple, pst_ligature,
+	pst_lcaret /* must be pst_max-1, see charinfo.c*/,
+	pst_max};
 typedef struct generic_pst {
     enum possub_type type;
     uint32 tag;
@@ -155,6 +157,7 @@ typedef struct generic_pst {
 	struct { char *variant; } subs;
 	struct { char *components; } mult, alt;
 	struct { char *components; struct splinechar *lig; } lig;
+	struct { int16 *carets; int cnt; } lcaret;	/* Ligature caret positions */
     } u;
 } PST;
 
@@ -879,6 +882,7 @@ extern uint32 LigTagFromUnicode(int uni);
 extern void SCLigDefault(SplineChar *sc);
 extern void SCTagDefault(SplineChar *sc,uint32 tag);
 extern void SCSuffixDefault(SplineChar *sc,uint32 tag,char *suffix,uint16 flags);
+extern void SCLigCaretCheck(SplineChar *sc);
 extern BDFChar *BDFMakeChar(BDFFont *bdf,int i);
 
 extern void SCUndoSetLBearingChange(SplineChar *sc,int lb);

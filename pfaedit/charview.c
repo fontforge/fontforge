@@ -1003,12 +1003,31 @@ static void DrawTransOrigin(CharView *cv, GWindow pixmap) {
     GDrawDrawLine(pixmap,x,y-4,x,y+4,0x000000);
 }
 
+static void DrawVLine(CharView *cv,GWindow pixmap,real pos,Color fg, int flags) {
+    unichar_t ubuf[20];
+    int x = cv->xoff + rint(pos*cv->scale);
+    DrawLine(cv,pixmap,pos,-32768,pos,32767,fg);
+    if ( flags&1 ) {
+	if ( x>-400 && x<cv->width+400 ) {
+	    dtou( ubuf, pos);
+	    GDrawSetFont(pixmap,cv->small);
+	    GDrawDrawText(pixmap,x+5,cv->sas+3,ubuf,-1,NULL,0x00000);
+	}
+    }
+    if ( ItalicConstrained && cv->sc->parent->italicangle!=0 ) {
+	double s = sin(-cv->sc->parent->italicangle*3.1415926535897932/180.);
+	int xoff = rint(8096*s);
+	DrawLine(cv,pixmap,pos-xoff,-8096,pos+xoff,8096,0x909090);
+    }
+}
+
 static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
     SplineFont *sf = cv->sc->parent;
     RefChar *rf;
     GRect old;
     DRect clip;
     unichar_t ubuf[20];
+    PST *pst; int i;
 
     GDrawPushClip(pixmap,&event->u.expose.rect,&old);
 
@@ -1043,12 +1062,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 		cv->showpoints && cv->drawmode==dm_grid,&clip);
     }
     if ( cv->showhmetrics ) {
-	DrawLine(cv,pixmap,0,-8096,0,8096,0x808080);
-	if ( ItalicConstrained && cv->sc->parent->italicangle!=0 ) {
-	    double s = sin(-cv->sc->parent->italicangle*3.1415926535897932/180.);
-	    int xoff = rint(8096*s);
-	    DrawLine(cv,pixmap,-xoff,-8096,xoff,8096,0x909090);
-	}
+	DrawVLine(cv,pixmap,0,0x808080,false);
 	DrawLine(cv,pixmap,-8096,0,8096,0,0x808080);
 	DrawLine(cv,pixmap,-8096,sf->ascent,8096,sf->ascent,0x808080);
 	DrawLine(cv,pixmap,-8096,-sf->descent,8096,-sf->descent,0x808080);
@@ -1101,18 +1115,11 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 		false,&clip);
 
     if ( cv->showhmetrics && cv->searcher==NULL ) {
-	int x = cv->xoff + rint(cv->sc->width*cv->scale);
-	DrawLine(cv,pixmap,cv->sc->width,-32768,cv->sc->width,32767,
-		(!cv->inactive && cv->widthsel)?0x00ff00:0x0);
-	if ( x>-400 && x<cv->width+400 ) {
-	    dtou( ubuf, cv->sc->width);
-	    GDrawSetFont(pixmap,cv->small);
-	    GDrawDrawText(pixmap,x+5,cv->sas+3,ubuf,-1,NULL,0x00000);
-	}
-	if ( ItalicConstrained && cv->sc->parent->italicangle!=0 ) {
-	    double s = sin(-cv->sc->parent->italicangle*3.1415926535897932/180.);
-	    int xoff = rint(8096*s);
-	    DrawLine(cv,pixmap,cv->sc->width-xoff,-8096,cv->sc->width+xoff,8096,0x909090);
+	DrawVLine(cv,pixmap,cv->sc->width,(!cv->inactive && cv->widthsel)?0x00ff00:0x0,true);
+	for ( pst=cv->sc->possub; pst!=NULL && pst->type!=pst_lcaret; pst=pst->next );
+	if ( pst!=NULL ) {
+	    for ( i=0; i<pst->u.lcaret.cnt; ++i )
+		DrawVLine(cv,pixmap,pst->u.lcaret.carets[i],0x909040,true);
 	}
     }
     if ( cv->showvmetrics ) {
@@ -1404,6 +1411,8 @@ void CVChangeSC(CharView *cv, SplineChar *sc ) {
 	GDrawSetCursor(cv->v,ct_mypointer);
 	cv->expandedge = ee_none;
     }
+
+    SCLigCaretCheck(sc);
 
     CVUnlinkView(cv);
     cv->p.nextcp = cv->p.prevcp = cv->widthsel = cv->vwidthsel = false;
@@ -1742,18 +1751,6 @@ return;
     } else if ( cv->p.rubberbanding ) {
 	xdiff=cv->info.x-cv->p.cx;
 	ydiff = cv->info.y-cv->p.cy;
-#if 0	
-    } else if ( cv->expand_width ) {
-	/* Werner wants to know where the width line is when he moves the cursor over it. */
-	/*  Let's write it on the screen as we do hints instead */
-	if ( cv->expandedge==ee_right )	/* Advance width */
-	    sprintf(buffer,"%d", (int) cv->sc->width );
-	else
-	    sprintf(buffer,"%d", (int) cv->sc->vwidth );
-	uc_strcpy(ubuffer,buffer);
-	GDrawDrawText(pixmap,SPT_DATA,ybase,ubuffer,-1,NULL,0);
-return;
-#endif
     } else
 return;
 
@@ -5552,6 +5549,7 @@ CharView *CharViewCreate(SplineChar *sc, FontView *fv) {
     unichar_t ubuf[300];
 
     cv->sc = sc;
+    SCLigCaretCheck(sc);
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_ititle;

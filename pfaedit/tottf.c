@@ -548,7 +548,8 @@ Optional for bitmaps
 additional tables
 	kern		(if data are present)
 	GPOS		(opentype, if kern,anchor data are present)
-	GSUB		(opentype, if ligature data are present)
+	GSUB		(opentype, if ligature (other subs) data are present)
+	GDEF		(opentype, if anchor data are present)
 	cvt		for hinting
 	gasp		to control when things should be hinted
 */
@@ -6193,6 +6194,8 @@ static void AbortTTF(struct alltabs *at, SplineFont *sf) {
 	fclose(at->gpos);
     if ( at->gsub!=NULL )
 	fclose(at->gsub);
+    if ( at->gdef!=NULL )
+	fclose(at->gdef);
     if ( at->kern!=NULL )
 	fclose(at->kern);
     if ( at->cmap!=NULL )
@@ -6338,6 +6341,7 @@ return( false );
     if ( format==ff_otf || format==ff_otfcid || !at->applemode ) {
 	otf_dumpgpos(at,sf);
 	otf_dumpgsub(at,sf);
+	otf_dumpgdef(at,sf);
     } else
 	ttf_dumpkerns(at,sf);
     redoos2(at);
@@ -6388,6 +6392,14 @@ return( false );
 	at->tabdir.tabs[i].offset = pos;
 	at->tabdir.tabs[i++].length = at->ebsclen;
 	pos += ((at->ebsclen+3)>>2)<<2;
+    }
+
+    if ( at->gdef!=NULL ) {
+	at->tabdir.tabs[i].tag = CHR('G','D','E','F');
+	at->tabdir.tabs[i].checksum = filecheck(at->gdef);
+	at->tabdir.tabs[i].offset = pos;
+	at->tabdir.tabs[i++].length = at->gposlen;
+	pos += ((at->gdeflen+3)>>2)<<2;
     }
 
     if ( at->gpos!=NULL ) {
@@ -6588,6 +6600,8 @@ static void dumpttf(FILE *ttf,struct alltabs *at, enum fontformat format) {
     }
     if ( at->ebsc!=NULL )
 	if ( !ttfcopyfile(ttf,at->ebsc,at->tabdir.tabs[i++].offset)) at->error = true;
+    if ( at->gdef!=NULL )
+	if ( !ttfcopyfile(ttf,at->gdef,at->tabdir.tabs[i++].offset)) at->error = true;
     if ( at->gpos!=NULL )
 	if ( !ttfcopyfile(ttf,at->gpos,at->tabdir.tabs[i++].offset)) at->error = true;
     if ( at->gsub!=NULL )
@@ -6722,5 +6736,5 @@ return( 0 );
 return( 0 );
 return( ret );
 }
-    
+
 /* Fontograpgher also generates: fpgm, hdmx, prep */

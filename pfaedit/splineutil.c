@@ -2745,7 +2745,9 @@ void PSTFree(PST *pst) {
     PST *pnext;
     for ( ; pst!=NULL; pst = pnext ) {
 	pnext = pst->next;
-	if ( pst->type!=pst_position )
+	if ( pst->type==pst_lcaret )
+	    free(pst->u.lcaret.carets);
+	else if ( pst->type!=pst_position )
 	    free(pst->u.subs.variant);
 	chunkfree(pst,sizeof(PST));
     }

@@ -1147,10 +1147,20 @@ return( tag );
 static int CI_ProcessPosSubs(CharInfo *ci) {
     int i, j, len;
     GTextInfo **tis;
-    PST *old = ci->sc->possub;
+    PST *old = ci->sc->possub, *prev, *lcaret;
     char **data;
 
-    ci->sc->possub = NULL;
+    for ( prev=NULL, lcaret=old; lcaret!=NULL && lcaret->type!=pst_lcaret;
+	    prev = lcaret, lcaret=lcaret->next );
+    if ( lcaret!=NULL ) {
+	if ( prev==NULL )
+	    old = lcaret->next;
+	else
+	    prev->next = lcaret->next;
+	lcaret->next = NULL;
+    }
+
+    ci->sc->possub = lcaret;
     ci->sc->charinfo = NULL;	/* Without this we put them back into the charinfo dlg */
     for ( i=0; i<5; ++i ) {
 	tis = GGadgetGetList(GWidgetGetControl(ci->gw,CID_List+i*100),&len);
@@ -1167,6 +1177,7 @@ static int CI_ProcessPosSubs(CharInfo *ci) {
     }
     ci->sc->charinfo = ci;
     PSTFree(old);
+    SCLigCaretCheck(ci->sc);
 return( true );
 }
 
@@ -1813,6 +1824,49 @@ void SCSuffixDefault(SplineChar *sc,uint32 tag,char *suffix,uint16 flags) {
 	SCMergePSList(sc,AddSubs(NULL,tag,alt->name,flags));
 }
 
+void SCLigCaretCheck(SplineChar *sc) {
+    PST *pst, *carets=NULL;
+    int lig_comp_max=0, lc, i;
+    char *pt;
+    /* Check to see if this is a ligature character, and if so, does it have */
+    /*  a ligature caret structure. If a lig but no lig caret structure then */
+    /*  create a lig caret struct */
+
+    for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
+	if ( pst->type == pst_lcaret ) {
+	    if ( carets!=NULL )
+		GDrawIError("Too many ligature caret structures" );
+	    else
+		carets = pst;
+	} else if ( pst->type==pst_ligature ) {
+	    for ( lc=0, pt=pst->u.lig.components; *pt; ++pt )
+		if ( *pt==' ' ) ++lc;
+	    if ( lc>lig_comp_max )
+		lig_comp_max = lc;
+	}
+    }
+    if ( lig_comp_max == 0 )
+return;
+    if ( carets==NULL ) {
+	carets = chunkalloc(sizeof(PST));
+	carets->type = pst_lcaret;
+	carets->next = sc->possub;
+	sc->possub = carets;
+    }
+    if ( carets->u.lcaret.cnt>=lig_comp_max ) {
+	carets->u.lcaret.cnt = lig_comp_max;
+return;
+    }
+    if ( carets->u.lcaret.carets==NULL )
+	carets->u.lcaret.carets = gcalloc(lig_comp_max,sizeof(real));
+    else {
+	carets->u.lcaret.carets = grealloc(carets->u.lcaret.carets,lig_comp_max*sizeof(real));
+	for ( i=carets->u.lcaret.cnt; i<lig_comp_max; ++i )
+	    carets->u.lcaret.carets[i] = 0;
+    }
+    carets->u.lcaret.cnt = lig_comp_max;
+}
+
 static int CI_SName(GGadget *g, GEvent *e) {	/* Set From Name */
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	CharInfo *ci = GDrawGetUserData(GGadgetGetWindow(g));
@@ -2077,7 +2131,7 @@ static void CIFillup(CharInfo *ci) {
 	arrays[pst->type][j]->text[8] = ' ';
 	arrays[pst->type][j]->fg = arrays[pst->type][j]->bg = COLOR_DEFAULT;
     }
-    for ( i=pst_null+1; i<pst_max; ++i ) {
+    for ( i=pst_null+1; i<pst_lcaret /* == pst_max-1 */; ++i ) {
 	arrays[i][cnts[i]] = gcalloc(1,sizeof(GTextInfo));
 	GGadgetSetList(GWidgetGetControl(ci->gw,CID_List+(i-1)*100),
 		arrays[i],false);

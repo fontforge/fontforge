@@ -135,7 +135,6 @@ typedef struct charview {
     unsigned int widthsel:1;
     unsigned int vwidthsel:1;
     unsigned int inactive:1;			/* When in a search view */
-    unsigned int expand_width:1;
     SplinePointList **heads[dm_max];
     Undoes **uheads[dm_max];
     Undoes **rheads[dm_max];
@@ -197,6 +196,8 @@ typedef struct charview {
 #endif
     struct searchview *searcher;	/* The sv within which this view is embedded (if it is) */
     GIC *gic;
+    PST *lcarets;
+    int16 nearcaret;
 } CharView;
 
 typedef struct bitmapview {

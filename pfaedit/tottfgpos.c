@@ -1451,7 +1451,6 @@ void otf_dumpgsub(struct alltabs *at, SplineFont *sf) {
     SFLigaturePrepare(sf);
     at->gsub = dumpg___info(at, sf, false);
     if ( at->gsub!=NULL ) {
-	at->gsub = dumpg___info(at, sf, false);
 	at->gsublen = ftell(at->gsub);
 	if ( at->gsublen&1 ) putc('\0',at->gsub);
 	if ( (at->gsublen+1)&2 ) putshort(at->gsub,0);
@@ -1459,3 +1458,166 @@ void otf_dumpgsub(struct alltabs *at, SplineFont *sf) {
     SFLigatureCleanup(sf);
 }
 
+static int LigCaretCnt(SplineChar *sc) {
+    PST *pst;
+
+    for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
+	if ( pst->type == pst_lcaret )
+return( pst->u.lcaret.cnt );
+    }
+return( 0 );
+}
+    
+static void DumpLigCarets(FILE *gdef,SplineChar *sc) {
+    PST *pst;
+    int i, j;
+
+    for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
+	if ( pst->type == pst_lcaret )
+    break;
+    }
+    if ( pst==NULL )
+return;
+
+    if ( sc->script==CHR('a','r','a','b') || sc->script==CHR('h','e','b','r') ) {
+	for ( i=0; i<pst->u.lcaret.cnt-1; ++i )
+	    for ( j=i+1; j<pst->u.lcaret.cnt; ++j )
+		if ( pst->u.lcaret.carets[i]<pst->u.lcaret.carets[j] ) {
+		    int16 temp = pst->u.lcaret.carets[i];
+		    pst->u.lcaret.carets[i] = pst->u.lcaret.carets[j];
+		    pst->u.lcaret.carets[j] = temp;
+		}
+    } else {
+	for ( i=0; i<pst->u.lcaret.cnt-1; ++i )
+	    for ( j=i+1; j<pst->u.lcaret.cnt; ++j )
+		if ( pst->u.lcaret.carets[i]>pst->u.lcaret.carets[j] ) {
+		    int16 temp = pst->u.lcaret.carets[i];
+		    pst->u.lcaret.carets[i] = pst->u.lcaret.carets[j];
+		    pst->u.lcaret.carets[j] = temp;
+		}
+    }
+
+    putshort(gdef,pst->u.lcaret.cnt);	/* this many carets */
+    for ( i=0; i<pst->u.lcaret.cnt; ++i ) {
+	putshort(gdef,1);		/* Format 1 */
+	putshort(gdef,pst->u.lcaret.carets[i]);
+    }
+}
+
+void otf_dumpgdef(struct alltabs *at, SplineFont *sf) {
+    /* In spite of what the open type docs say, this table does appear to be */
+    /*  required (at least the glyph class def table) if we do mark to base */
+    /*  positioning */
+    /* I was wondering at the apperant contradiction: something can be both a */
+    /*  base glyph and a ligature component, but it appears that the component*/
+    /*  class is unused and everything is a base unless it is a ligature or */
+    /*  mark */
+    /* All my example fonts ignore the attachment list subtable and the mark */
+    /*  attach class def subtable, so I shall too */
+    /* All my example fonts contain a ligature caret list subtable, which is */
+    /*  empty. Odd, but perhaps important */
+    AnchorClass *ac;
+    AnchorPoint *ap;
+    PST *pst;
+    int i,j,k, lcnt;
+    int pos, offset;
+    SplineChar **glyphs;
+
+    for ( ac = sf->anchor; ac!=NULL; ac=ac->next ) {
+	if ( ac->feature_tag!=CHR('c','u','r','s'))
+    break;
+    }
+    glyphs = NULL;
+    for ( k=0; k<2; ++k ) {
+	lcnt = 0;
+	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 ) {
+	    for ( pst=sf->chars[i]->possub; pst!=NULL; pst=pst->next ) {
+		if ( pst->type == pst_lcaret ) {
+		    for ( j=pst->u.lcaret.cnt-1; j>=0; --j )
+			if ( pst->u.lcaret.carets[j]!=0 )
+		    break;
+		    if ( j!=-1 )
+	    break;
+		}
+	    }
+	    if ( pst!=NULL ) {
+		if ( glyphs!=NULL ) glyphs[lcnt] = sf->chars[i];
+		++lcnt;
+	    }
+	}
+	if ( lcnt==0 )
+    break;
+	if ( glyphs!=NULL )
+    break;
+	glyphs = galloc((lcnt+1)*sizeof(SplineChar *));
+    }
+    if ( ac==NULL && lcnt==0 )
+return;					/* No anchor positioning, no ligature carets */
+    glyphs[lcnt] = NULL;
+
+    at->gdef = tmpfile();
+    putlong(at->gdef,0x00010000);		/* Version */
+    putshort(at->gdef, ac!=NULL ? 12 : 0 );	/* glyph class defn table */
+    putshort(at->gdef, 0 );			/* attachment list table */
+    putshort(at->gdef, 0 );			/* ligature caret table (come back and fix up later) */
+    putshort(at->gdef, 0 );			/* mark attachment class table */
+
+    if ( ac!=NULL ) {
+	/* Mark shouldn't conflict with anything */
+	/* Ligature is more important than Base */
+	/* Component is not used */
+	putshort(at->gdef,1);	/* class format 1 complete list of glyphs */
+	putshort(at->gdef,0);	/* First glyph */
+	putshort(at->gdef,at->maxp.numGlyphs );
+	j=0;
+	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 ) {
+	    for ( ; j<sf->chars[i]->ttf_glyph; ++j )
+		putshort(at->gdef,1);	/* Any hidden characters (like notdef) default to base */
+	    for ( pst=sf->chars[i]->possub; pst!=NULL; pst=pst->next ) {
+		if ( pst->type == pst_ligature )
+	    break;
+	    }
+	    ap=sf->chars[i]->anchor;
+	    while ( ap!=NULL && (ap->type==at_centry || ap->type==at_cexit) )
+		ap = ap->next;
+	    if ( pst!=NULL )
+		putshort(at->gdef,2);		/* ligature */
+	    else if ( ap!=NULL && (ap->type==at_mark || ap->type==at_basemark) )
+		putshort(at->gdef,3);		/* mark */
+	    else
+		putshort(at->gdef,1);		/* base */
+	    ++j;
+	}
+    }
+    pos = ftell(at->gdef);
+    fseek(at->gdef,8,SEEK_SET);			/* location of lig caret table offset */
+    putshort(at->gdef,pos);
+    fseek(at->gdef,0,SEEK_END);
+    if ( lcnt==0 ) {
+	/* It always seems to be present, even if empty */
+	putshort(at->gdef,4);			/* Offset to (empty) coverage table */
+	putshort(at->gdef,0);			/* no ligatures */
+	putshort(at->gdef,2);			/* coverage table format 2 */
+	putshort(at->gdef,0);			/* no ranges in coverage table */
+    } else {
+	pos = ftell(at->gdef);	/* coverage location */
+	putshort(at->gdef,0);			/* Offset to coverage table (fix up later) */
+	putshort(at->gdef,lcnt);
+	offset = 2*lcnt+4;
+	for ( i=0; i<lcnt; ++i ) {
+	    putshort(at->gdef,offset);
+	    offset+=2+4*LigCaretCnt(glyphs[i]);
+	}
+	for ( i=0; i<lcnt; ++i )
+	    DumpLigCarets(at->gdef,glyphs[i]);
+	offset = ftell(at->gdef);
+	fseek(at->gdef,pos,SEEK_SET);
+	putshort(at->gdef,offset-pos);
+	fseek(at->gdef,0,SEEK_END);
+	dumpcoveragetable(at->gdef,glyphs);
+    }
+
+    at->gdeflen = ftell(at->gdef);
+    if ( at->gdeflen&1 ) putc('\0',at->gdef);
+    if ( (at->gdeflen+1)&2 ) putshort(at->gdef,0);
+}

@@ -58,6 +58,9 @@ PST *PSTCopy(PST *base,SplineChar *sc) {
 	if ( cur->type==pst_ligature ) {
 	    cur->u.lig.components = copy(cur->u.lig.components);
 	    cur->u.lig.lig = sc;
+	} else if ( cur->type==pst_lcaret ) {
+	    cur->u.lcaret.carets = galloc(cur->u.lcaret.cnt*sizeof(uint16));
+	    memcpy(cur->u.lcaret.carets,base->u.lcaret.carets,cur->u.lcaret.cnt*sizeof(uint16));
 	} else if ( cur->type==pst_substitution || cur->type==pst_multiple || cur->type==pst_alternate )
 	    cur->u.subs.variant = copy(cur->u.subs.variant);
 	if ( head==NULL )

@@ -576,11 +576,13 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc) {
 	fprintf(sfd, "\n" );
     }
     for ( liga=sc->possub; liga!=NULL; liga=liga->next ) {
-	if ( liga->tag==0 || liga->type==pst_null )
+	if (( liga->tag==0 && liga->type!=pst_lcaret) || liga->type==pst_null )
 	    /* Skip it */;
 	else {
 	    static char *keywords[] = { "Null:", "Position:", "Substitution:",
-		    "AlternateSubs:", "MultipleSubs:", "Ligature:", NULL };
+		    "AlternateSubs:", "MultipleSubs:", "Ligature:",
+		    "LCarets:", NULL };
+	    if ( liga->tag==0 ) liga->tag = CHR(' ',' ',' ',' ');
 	    fprintf( sfd, "%s %d '%c%c%c%c' ",
 		    keywords[liga->type], liga->flags,
 		    liga->tag>>24, (liga->tag>>16)&0xff,
@@ -589,7 +591,13 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc) {
 		fprintf( sfd, "dx=%d dy=%d dh=%d dv=%d\n",
 			liga->u.pos.xoff, liga->u.pos.yoff,
 			liga->u.pos.h_adv_off, liga->u.pos.v_adv_off);
-	    else
+	    else if ( liga->type==pst_lcaret ) {
+		int i;
+		fprintf( sfd, "%d ", liga->u.lcaret.cnt );
+		for ( i=0; i<liga->u.lcaret.cnt; ++i )
+		    fprintf( sfd, "%d ", liga->u.lcaret.carets[i] );
+		fprintf( sfd, "\n" );
+	    } else
 		fprintf( sfd, "%s\n", liga->u.lig.components );
 	}
     }
@@ -1499,7 +1507,7 @@ static SplineChar *SFDGetChar(FILE *sfd,SplineFont *sf) {
     RefChar *lastr=NULL, *ref;
     ImageList *lasti=NULL, *img;
     AnchorPoint *lastap = NULL;
-    int isliga, ispos, issubs, ismult;
+    int isliga, ispos, issubs, ismult, islcar;
 
     if ( getname(sfd,tok)!=1 )
 return( NULL );
@@ -1601,6 +1609,7 @@ return( NULL );
 		last = kp;
 	    }
 	} else if ( (ispos = (strmatch(tok,"Position:")==0)) ||
+		( islcar = (strmatch(tok,"LCarets:")==0)) ||
 		(isliga = (strmatch(tok,"Ligature:")==0)) ||
 		( issubs = (strmatch(tok,"Substitution:")==0)) ||
 		( ismult = (strmatch(tok,"MultipleSubs:")==0)) ||
@@ -1609,6 +1618,7 @@ return( NULL );
 	    liga->next = sc->possub;
 	    sc->possub = liga;
 	    liga->type = ispos ? pst_position :
+			 islcar ? pst_lcaret :
 			 isliga ? pst_ligature :
 			 issubs ? pst_substitution :
 			 ismult ? pst_multiple :
@@ -1621,7 +1631,7 @@ return( NULL );
 		getint(sfd,&temp);
 		liga->flags = temp;
 		while ( (ch=getc(sfd))==' ' || ch=='\t' );
-	    } else if ( isliga )
+	    } else if ( liga->type==pst_ligature )
 		liga->flags |= pst_ignorecombiningmarks;
 	    if ( ch=='\'' ) {
 		liga->tag = getc(sfd)<<24;
@@ -1635,7 +1645,14 @@ return( NULL );
 		fscanf( sfd, " dx=%hd dy=%hd dh=%hd dv=%hd\n",
 			&liga->u.pos.xoff, &liga->u.pos.yoff,
 			&liga->u.pos.h_adv_off, &liga->u.pos.v_adv_off);
-	    else {
+	    else if ( liga->type==pst_lcaret ) {
+		int i;
+		fscanf( sfd, " %d", &liga->u.lcaret.cnt );
+		liga->u.lcaret.carets = galloc(liga->u.lcaret.cnt*sizeof(int16));
+		for ( i=0; i<liga->u.lcaret.cnt; ++i )
+		    fscanf( sfd, " %hd", &liga->u.lcaret.carets[i]);
+		geteol(sfd,tok);
+	    } else {
 		geteol(sfd,tok);
 		liga->u.lig.components = copy(tok);	/* it's in the same place for all formats */
 		if ( isliga ) {

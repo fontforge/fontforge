@@ -88,6 +88,8 @@ struct ttfinfo {
 		/* glyf */
     int glyph_start;		/* Offset from sof to start of glyph table */
     int glyph_length;
+		/* GDEF */
+    int gdef_start;		/* Offset from sof to start of GDEF table (glyph class defn, ligature carets) */
 		/* GPOS */
     int gpos_start;		/* Offset from sof to start of GPOS table */
 		/* GSUB */
@@ -386,10 +388,12 @@ struct alltabs {
     int namelen;
     FILE *post;
     int postlen;
-    FILE *gpos;			/* Used instead of kern for opentype */
+    FILE *gpos;			/* Used instead of kern for opentype (and other glyph positioning) */
     int gposlen;
-    FILE *gsub;			/* Used for ligatures */
+    FILE *gsub;			/* Used for ligatures and other substitutions */
     int gsublen;
+    FILE *gdef;			/* If we use mark to base we need this to tell the text processor what things are marks (the opentype docs say it is optional. They are wrong) */
+    int gdeflen;
     FILE *kern;
     int kernlen;
     FILE *cmap;
@@ -447,3 +451,4 @@ enum touchflags { tf_x=1, tf_y=2, tf_d=4, tf_endcontour=0x80, tf_startcontour=0x
 
 extern void otf_dumpgpos(struct alltabs *at, SplineFont *sf);
 extern void otf_dumpgsub(struct alltabs *at, SplineFont *sf);
+extern void otf_dumpgdef(struct alltabs *at, SplineFont *sf);
