@@ -1,3 +1,17 @@
+pfaedit (0.0.20020312-1) unstable; urgency=low
+
+  * New upstream version (Closes: bug#139183)
+    + Fixed EPS reading problems
+    + Improved scripting abilities
+      - Generate PFM file
+      - Merge Kerning Info
+      - Remove all Kerning
+    + Added sfddiff, a diff between two SFD fonts (pfaedit native format)
+    + Improved handling of 8bit colormaps
+  * Upgrading also fixed two crashing problems (Closes: bug#138944, #138765)
+
+ -- Baruch Even <baruch@debian.org>  Thu, 23 Mar 2002 01:09:00 +0200
+
 pfaedit (0.0.20020210-1) unstable; urgency=low
 
   * New upstream version

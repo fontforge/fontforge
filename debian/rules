@@ -8,10 +8,26 @@
 # This is the debhelper compatability version to use.
 export DH_COMPAT=3
 
+CFLAGS = -O2
+INSTALL = install
+INSTALL_FILE    = $(INSTALL) -p    -o root -g root  -m  644
+INSTALL_PROGRAM = $(INSTALL) -p    -o root -g root  -m  755
+INSTALL_SCRIPT  = $(INSTALL) -p    -o root -g root  -m  755
+INSTALL_DIR     = $(INSTALL) -p -d -o root -g root  -m  755
+
+DOCDIR=/usr/share/doc/pfaedit/html
+
+ifneq (,$(findstring debug,$(DEB_BUILD_OPTIONS)))
+  CFLAGS += -g
+endif
+ifeq (,$(findstring nostrip,$(DEB_BUILD_OPTIONS)))
+  INSTALL_PROGRAM += -s
+endif
+
 configure: configure-stamp
 configure-stamp:
 	dh_testdir
-	./configure --prefix=/usr --mandir=\$${prefix}/share/man --infodir=\$${prefix}/share/info
+	CFLAGS=${CFLAGS} ./configure --prefix=/usr --mandir=\$${prefix}/share/man --infodir=\$${prefix}/share/info
 
 	touch configure-stamp
 
@@ -19,7 +35,7 @@ build: configure-stamp build-stamp
 build-stamp:
 	dh_testdir
 
-	$(MAKE) DOCDIR=/usr/share/doc/pfaedit/html
+	$(MAKE) DOCDIR=${DOCDIR}
 
 	touch build-stamp
 

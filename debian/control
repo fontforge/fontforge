@@ -3,7 +3,7 @@ Section: x11
 Priority: optional
 Maintainer: Baruch Even <baruch@debian.org>
 Build-Depends: debhelper (>> 3.0.0), libjpeg62-dev, libtiff3g-dev, libpng2-dev,  libungif4-dev, xlibs-dev, libfreetype6-dev
-Standards-Version: 3.5.2
+Standards-Version: 3.5.6
 
 Package: pfaedit
 Architecture: any
