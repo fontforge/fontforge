@@ -825,8 +825,6 @@ static void InsChrMouseDown(GWindow gw, GEvent *event) {
     int ch;
     char buffer[20]; unichar_t ubuffer[20];
 
-    GGadgetEndPopup();
-
     x= event->u.mouse.x/inschr.spacing;
     y= (event->u.mouse.y-inschr.ybase)/inschr.spacing;
     ch = 256*inschr.page + (y*16)+x;
@@ -886,7 +884,6 @@ static void uc_annot_strncat(unichar_t *to, const char *from, int len) {
 
 static void InsChrMouseMove(GWindow gw, GEvent *event) {
     int x, y;
-    GGadgetEndPopup();
 
     x= event->u.mouse.x/inschr.spacing;
     y= (event->u.mouse.y-inschr.ybase)/inschr.spacing;
@@ -957,6 +954,7 @@ return;
 }
 
 static int inschr_e_h(GWindow gw, GEvent *event) {
+    GGadgetPopupExternalEvent(event);
     switch ( event->type ) {
       case et_close:
 	inschr.hidden = true;
@@ -1092,7 +1090,7 @@ void GWidgetCreateInsChar(void) {
 	inschr.height = pos.height = inschr.ybase + pos.width;
 	memset(&wattrs,0,sizeof(wattrs));
 	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_isdlg|wam_notrestricted|wam_icon;
-	wattrs.event_masks = ~(1<<et_charup);
+	wattrs.event_masks = -1;
 	wattrs.cursor = ct_pointer;
 	wattrs.window_title = inschar;
 	wattrs.is_dlg = true;

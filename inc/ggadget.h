@@ -278,6 +278,7 @@ void GFileChooserGetChildren(GGadget *g,GGadget **pulldown, GGadget **list, GGad
 extern void GGadgetPreparePopup(GWindow base,const unichar_t *msg);
 extern void GGadgetPreparePopupR(GWindow base,int msg);
 extern void GGadgetEndPopup(void);
+extern void GGadgetPopupExternalEvent(GEvent *e);
 
 extern int GGadgetDispatchEvent(GGadget *g,GEvent *e);
 

@@ -2788,8 +2788,8 @@ static void readttffeatures(FILE *ttf, FILE *util, struct ttfinfo *info) {
     printf( "\t version=%g\n", getfixed(ttf));
     n = getushort(ttf);
     printf( "\t number of features=%d\n", n);
-    getushort(ttf);
-    getlong(ttf);
+    printf( "\t must be zero: %x\n", getushort(ttf));
+    printf( "\t must be zero: %x\n", getlong(ttf));
     info->features = calloc(n+1,sizeof(struct features));
     info->features[n].feature = -1;
     for ( i=0; i<n; ++i ) {
@@ -4398,7 +4398,7 @@ static void readttfapplegvar(FILE *ttf, FILE *util, struct ttfinfo *info) {
     int axiscount, gcc, glyphCount, flags;
     uint32 *offsets, offset2Coord, offset2Data;
     int tupleCount, offset;
-    int i, j;
+    int i, j, k, index;
 
     fseek(ttf,info->gvar_start,SEEK_SET);
     printf( "\ngvar table (at %d) (Glyph Variations)\n", info->gvar_start );
@@ -4417,9 +4417,9 @@ static void readttfapplegvar(FILE *ttf, FILE *util, struct ttfinfo *info) {
 	    offsets[i] = getlong(ttf) + offset2Data + info->gvar_start;
     } else {
 	for ( i=0; i<glyphCount; ++i )
-	    offsets[i] = getushort(ttf) + offset2Data + info->gvar_start;
+	    offsets[i] = getushort(ttf)*2 + offset2Data + info->gvar_start;
     }
-    for ( i=0; i<glyphCount; ++i ) if ( offsets[i]!=offset2Data + info->gvar_start ) {
+    for ( i=0; i<glyphCount; ++i ) if ( offsets[i]!=offsets[i+1] ) {
 	fseek(ttf,offsets[i],SEEK_SET);
 	printf( "\t  Glyph %d %s\n", i, info->glyph_names!=NULL? info->glyph_names[i]: "" );
 	tupleCount = getushort(ttf);
@@ -4429,6 +4429,36 @@ static void readttfapplegvar(FILE *ttf, FILE *util, struct ttfinfo *info) {
 		(tupleCount&0x8000)? "" : "do not " );
 	printf( "\t    Offset=%d\n", offset );
 	for ( j=0; j<(tupleCount&0xfff); ++j ) {
+	    printf( "\t     Tuple %d\n", j );
+	    printf( "\t      Size %d\n", getushort(ttf) );
+	    index = getushort(ttf);
+	    printf( "\t      Index %d%s%s%s\n", index&0xfff,
+		    index&0x8000 ? ", Embedded tuple" : "",
+		    index&0x4000 ? ", Intermediate tuple" : "",
+		    index&0x2000 ? ", Private points" : "" );
+	    if ( index&0x8000 ) {
+		printf( "\t      Coords[%g", ((short) getushort(ttf))/16384.0 );
+		for ( k=1; k<axiscount; ++k )
+		    printf( ",%g", ((short) getushort(ttf))/16384.0 );
+		printf( "]\n" );
+	    }
+	    if ( index&0x4000 ) {
+		printf( "\t      Intermediate[%g-%g", ((short) getushort(ttf)/16384.0),
+			((short) getushort(ttf)/16384.0));
+		for ( k=1; k<axiscount; ++k )
+		    printf( ",%g-%g", ((short) getushort(ttf)/16384.0),
+			    ((short) getushort(ttf)/16384.0));
+		printf( "]\n" );
+	    }
+	    if ( !(index&0xc000) ) {
+		int here = ftell(ttf);
+		fseek(ttf,info->gvar_start+offset2Coord+(index&0xfff)*axiscount*2,SEEK_SET);
+		printf( "\t      Global Coords[%g", ((short) getushort(ttf))/16384.0 );
+		for ( k=1; k<axiscount; ++k )
+		    printf( ",%g", ((short) getushort(ttf))/16384.0 );
+		printf( "]\n" );
+		fseek(ttf,here,SEEK_SET);
+	    }
 	}
     }
 
