@@ -1351,10 +1351,18 @@ static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
     SplineChar *sc;
     int onepos = -1, twopos = -1;
 
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressChangeStages(2+gi->strikecnt);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_change_stages(2+gi->strikecnt);
+#endif
     QuickBlues(sf,&gi->bd);
     /*FindBlues(sf,gi->blues,NULL);*/
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressNextStage();
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_next_stage();
+#endif
 
     if ( gi->onlybitmaps )
 	cnt = AssignTTFGlyph(sf,gi->bsizes);
@@ -1444,7 +1452,11 @@ static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
 		    dumpglyph(sf->chars[i],gi);
 	    }
 	}
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( !GProgressNext())
+#elif defined(FONTFORGE_CONFIG_GTK)
+	if ( !gwwv_progress_next())
+#endif
 return( false );
     }
 
@@ -1943,16 +1955,32 @@ static void dumpcffprivate(SplineFont *sf,struct alltabs *at,int subfont,
     hasblue = PSDictHasEntry(sf->private,"BlueValues")!=NULL;
     hash = PSDictHasEntry(sf->private,"StdHW")!=NULL;
     hasv = PSDictHasEntry(sf->private,"StdVW")!=NULL;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressChangeStages(2+autohint_before_generate+!hasblue);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_change_stages(2+autohint_before_generate+!hasblue);
+#endif
     if ( autohint_before_generate ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressChangeLine1R(_STR_AutoHintingFont);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_progress_change_line1(_("Auto Hinting Font..."));
+#endif
 	SplineFontAutoHint(sf);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressNextStage();
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_progress_next_stage();
+#endif
     }
 
     if ( !hasblue ) {
 	FindBlues(sf,bluevalues,otherblues);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressNextStage();
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_progress_next_stage();
+#endif
     }
 
     stdhw[0] = stdvw[0] = 0;
@@ -1973,7 +2001,11 @@ static void dumpcffprivate(SplineFont *sf,struct alltabs *at,int subfont,
 	    else if ( snapcnt[i]>snapcnt[mi] ) mi = i;
 	if ( mi!=-1 ) stdvw[0] = stemsnapv[mi];
     }
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressChangeLine1R(_STR_SavingOpenTypeFont);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_change_line1(_("Saving OpenType Font"));
+#endif
 
     if ( hasblue )
 	DumpStrArray(PSDictHasEntry(sf->private,"BlueValues"),private,6);
@@ -2497,13 +2529,21 @@ static int dumptype2glyphs(SplineFont *sf,struct alltabs *at) {
     dumpcffheader(sf,at->cfff);
     dumpcffnames(sf,at->cfff);
     dumpcffcharset(sf,at);
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressChangeStages(2+at->gi.strikecnt);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_change_stages(2+at->gi.strikecnt);
+#endif
     if ((subrs = SplineFont2Subrs2(sf,at->gi.flags))==NULL )
 return( false );
     dumpcffprivate(sf,at,-1,subrs->next);
     if ( subrs->next!=0 )
 	_dumpcffstrings(at->private,subrs);
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressNextStage();
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_next_stage();
+#endif
     at->charstrings = dumpcffstrings(SplineFont2Chrs2(sf,at->nomwid,at->defwid,subrs,at->gi.flags));
     PSCharsFree(subrs);
     if ( at->charstrings == NULL )
@@ -3180,6 +3220,7 @@ docs are wrong.
 	os2->firstcharindex = 0xf000 + first;
 	os2->lastcharindex  = 0xf000 + last;
     } else {
+	if ( first>13 && format!=ff_otf && format!=ff_otfcid ) first = 13;	/* We give the font an extra char mapped to cr (13) */
 	os2->firstcharindex = first;
 	os2->lastcharindex = last;
 	OS2FigureCodePages(sf, os2->ulCodePage);
@@ -4197,7 +4238,7 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
 	notdef.layers = layers;
 #endif
     }
-    if ( sf->subfontcnt==0 && sf->chars[13]==NULL && !at->isotf ) {	/* Encode the default notdef char at 0 */
+    if ( sf->subfontcnt==0 && sf->chars[13]==NULL && !at->isotf ) {	/* Encode the default cr char at 13 */
 	memset(&nonmarkingreturn,0,sizeof(notdef));
 	nonmarkingreturn.unicodeenc = 13;
 	nonmarkingreturn.name = "nonmarkingreturn";

@@ -1924,14 +1924,26 @@ return( true );
 		for ( cnt=i=0; i<meta->fv->sf->charcnt; ++i )
 		    if ( meta->fv->sf->chars[i]!=NULL && meta->fv->selected[i] )
 			++cnt;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GProgressStartIndicatorR(10,_STR_MetamorphosingFont,_STR_MetamorphosingFont,0,cnt,1);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_progress_start_indicator(10,_("Metamorphosing Font..."),_("Metamorphosing Font..."),0,cnt,1);
+#endif
 		for ( i=0; i<meta->fv->sf->charcnt; ++i )
 		    if ( meta->fv->sf->chars[i]!=NULL && meta->fv->selected[i] ) {
 			_MetaFont(meta,meta->fv->sf->chars[i]);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 			if ( !GProgressNext())
+#elif defined(FONTFORGE_CONFIG_GTK)
+			if ( !gwwv_progress_next())
+#endif
 		break;
 		    }
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GProgressEndIndicator();
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_progress_end_indicator();
+#endif
 	    }
 	}
 	lastdlgtype = type;

@@ -264,7 +264,11 @@ static void BDFDumpChar(FILE *file,BDFFont *font,BDFChar *bdfc,int enc) {
 	putc('\n',file);
     }
     fprintf( file, "ENDCHAR\n" );
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressNext();
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_next();
+#endif
 }
 
 static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding, int res) {

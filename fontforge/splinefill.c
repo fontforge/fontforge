@@ -1261,11 +1261,13 @@ BDFFont *SplineFontToBDFHeader(SplineFont *_sf, int pixelsize, int indicate) {
 	}
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressStartIndicator(10,GStringGetResource(_STR_Rasterizing,NULL),
-#elif defined(FONTFORGE_CONFIG_GTK)
-	GProgressStartIndicator(10,_("Rasterizing..."),
-#endif
 		aa,size,sf->charcnt,1);
 	GProgressEnableStop(0);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_progress_start_indicator(10,_("Rasterizing..."),
+		aa,size,sf->charcnt,1);
+	gwwv_progress_enable_stop(0);
+#endif
     }
     bdf->sf = _sf;
     bdf->charcnt = max;
@@ -1520,9 +1522,17 @@ BDFFont *SplineFontRasterize(SplineFont *_sf, int pixelsize, int indicate) {
 #else
 	bdf->chars[i] = SplineCharRasterize(sf->chars[i],pixelsize);
 #endif
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( indicate ) GProgressNext();
+#elif defined(FONTFORGE_CONFIG_GTK)
+	if ( indicate ) gwwv_progress_next();
+#endif
     }
+#if defined(FONTFORGE_CONFIG_GDRAW)
     if ( indicate ) GProgressEndIndicator();
+#elif defined(FONTFORGE_CONFIG_GTK)
+    if ( indicate ) gwwv_progress_end_indicator();
+#endif
 return( bdf );
 }
 
@@ -1666,11 +1676,13 @@ return( SplineFontRasterize(_sf,pixelsize,true));
     }
 #if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressStartIndicator(10,GStringGetResource(_STR_Rasterizing,NULL),
-#elif defined(FONTFORGE_CONFIG_GTK)
-    GProgressStartIndicator(10,_("Rasterizing..."),
-#endif
 	    aa,size,sf->charcnt,1);
     GProgressEnableStop(0);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_start_indicator(10,_("Rasterizing..."),
+	    aa,size,sf->charcnt,1);
+    gwwv_progress_enable_stop(0);
+#endif
 
     if ( linear_scale>16 ) linear_scale = 16;	/* can't deal with more than 256 levels of grey */
     if ( linear_scale<=1 ) linear_scale = 2;
@@ -1693,10 +1705,18 @@ return( SplineFontRasterize(_sf,pixelsize,true));
 	}
 	bdf->chars[i] = SplineCharRasterize(sf->chars[i],pixelsize*linear_scale);
 	BDFCAntiAlias(bdf->chars[i],linear_scale);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressNext();
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_progress_next();
+#endif
     }
     BDFClut(bdf,linear_scale);
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressEndIndicator();
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_end_indicator();
+#endif
 return( bdf );
 }
 

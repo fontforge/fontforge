@@ -208,7 +208,11 @@ void FindBlues( SplineFont *sf, real blues[14], real otherblues[10]) {
 		}
 	    }
 	}
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( !GProgressNext())
+#elif defined(FONTFORGE_CONFIG_GTK)
+	if ( !gwwv_progress_next())
+#endif
     break;
     }
     if ( otherdigits[2]>0 && digith[2]>0 ) {
@@ -4478,7 +4482,11 @@ void SplineFontAutoHint( SplineFont *_sf) {
 	    if ( sf->chars[i]->changedsincelasthinted &&
 		    !sf->chars[i]->manualhints )
 		SplineCharAutoHint(sf->chars[i],true);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    if ( !GProgressNext()) {
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    if ( !gwwv_progress_next()) {
+#endif
 		k = _sf->subfontcnt+1;
 	break;
 	    }

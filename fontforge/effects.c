@@ -38,7 +38,11 @@ void FVOutline(FontView *fv, real width) {
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->layers[ly_fore].splines )
 	++cnt;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressStartIndicatorR(10,_STR_Outlining,_STR_Outlining,0,cnt,1);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_start_indicator(10,_("Outlining characters"),_("Outlining characters"),0,cnt,1);
+#endif
 
     memset(&si,0,sizeof(si));
     si.removeexternal = true;
@@ -53,10 +57,18 @@ void FVOutline(FontView *fv, real width) {
 	spl->next = temp;
 	SplineSetsCorrect(sc->layers[ly_fore].splines,&changed);
 	SCCharChangedUpdate(sc);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( !GProgressNext())
+#elif defined(FONTFORGE_CONFIG_GTK)
+	if ( !gwwv_progress_next())
+#endif
     break;
     }
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressEndIndicator();
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_end_indicator();
+#endif
 }
 
 static void CVOutline(CharView *cv, real width) {
@@ -108,7 +120,11 @@ void FVInline(FontView *fv, real width, real inset) {
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->layers[ly_fore].splines )
 	++cnt;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressStartIndicatorR(10,_STR_Inlining,_STR_Inlining,0,cnt,1);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_start_indicator(10,_("Inlining characters"),_("Inlining characters"),0,cnt,1);
+#endif
 
     memset(&si,0,sizeof(si));
     si.removeexternal = true;
@@ -127,10 +143,18 @@ void FVInline(FontView *fv, real width, real inset) {
 	spl->next = temp2;
 	SplineSetsCorrect(sc->layers[ly_fore].splines,&changed);
 	SCCharChangedUpdate(sc);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( !GProgressNext())
+#elif defined(FONTFORGE_CONFIG_GTK)
+	if ( !gwwv_progress_next())
+#endif
     break;
     }
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressEndIndicator();
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_end_indicator();
+#endif
 }
 
 static void CVInline(CharView *cv, real width, real inset) {
@@ -1014,7 +1038,11 @@ void FVShadow(FontView *fv,real angle, real outline_width,
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->layers[ly_fore].splines )
 	++cnt;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressStartIndicatorR(10,_STR_Shadowing,_STR_Shadowing,0,cnt,1);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_start_indicator(10,_("Shadowing characters"),_("Shadowing characters"),0,cnt,1);
+#endif
 
     for ( i=0; i<fv->sf->charcnt; ++i )
 	    if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->layers[ly_fore].splines ) {
@@ -1022,10 +1050,18 @@ void FVShadow(FontView *fv,real angle, real outline_width,
 	SCPreserveState(sc,false);
 	sc->layers[ly_fore].splines = SSShadow(sc->layers[ly_fore].splines,angle,outline_width,shadow_length,sc,wireframe);
 	SCCharChangedUpdate(sc);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( !GProgressNext())
+#elif defined(FONTFORGE_CONFIG_GTK)
+	if ( !gwwv_progress_next())
+#endif
     break;
     }
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressEndIndicator();
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_end_indicator();
+#endif
 }
 
 static void CVShadow(CharView *cv,real angle, real outline_width,

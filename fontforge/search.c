@@ -1603,8 +1603,13 @@ void FVReplaceOutlineWithReference( FontView *fv ) {
     selcnt = 0;
     for ( i=0; i<sf->charcnt; ++i ) if ( selected[i] && sf->chars[i]!=NULL )
 	++selcnt;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressStartIndicatorR(10,_STR_ReplaceOutlineWithReference,
 	    _STR_ReplaceOutlineWithReference,0,selcnt,1);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_start_indicator(10,_("Replace with Reference"),
+	    _("Replace Outline with Reference",0,selcnt,1);
+#endif
 
     for ( i=0; i<sf->charcnt; ++i ) if ( selected[i] && sf->chars[i]!=NULL ) {
 	if ( IsASingleReferenceOrEmpty(sf->chars[i]))
@@ -1630,10 +1635,18 @@ void FVReplaceOutlineWithReference( FontView *fv ) {
 	    if ( fv->selected[j] )
 		changed[j] = 1;
 	CopyBufferFree();
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( !GProgressNext())
+#elif defined(FONTFORGE_CONFIG_GTK)
+	if ( !gwwv_progress_next())
+#endif
     break;
     }
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressEndIndicator();
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_end_indicator();
+#endif
 
     fv->sv = oldsv;
 

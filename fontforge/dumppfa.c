@@ -338,7 +338,11 @@ static int dumpcharstrings(void (*dumpchar)(int ch,void *data), void *data,
 	dumpf(dumpchar,data,"/%s %d RD ", chars->keys[i], chars->lens[i]+leniv );
 	encodestrout(dumpchar,data,chars->values[i],chars->lens[i],leniv);
 	dumpstr(dumpchar,data," ND\n");
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( !GProgressNext())
+#elif defined(FONTFORGE_CONFIG_GTK)
+	if ( !gwwv_progress_next())
+#endif
 return( false );
     }
     dumpstr(dumpchar,data,"end end\nreadonly put\n");
@@ -879,7 +883,11 @@ static int dumpcharprocs(void (*dumpchar)(int ch,void *data), void *data, Spline
     for ( ; i<sf->charcnt; ++i ) {
 	if ( SCWorthOutputting(sf->chars[i]) )
 	    dumpproc(dumpchar,data,sf->chars[i]);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( !GProgressNext())
+#elif defined(FONTFORGE_CONFIG_GTK)
+	if ( !gwwv_progress_next())
+#endif
 return( false );
     }
     dumpstr(dumpchar,data,"end\ncurrentdict end\n" );
@@ -1091,18 +1099,34 @@ return( false );
 	     strstrmatch(sf->weight,"Black")!=NULL))
 	isbold = true;
 
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressChangeStages(2+2-hasblue);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_change_stages(2+2-hasblue);
+#endif
     if ( autohint_before_generate && SFNeedsAutoHint(sf) &&
 	    !(flags&ps_flag_nohints)) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressChangeLine1R(_STR_AutoHintingFont);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_progress_change_line1(_("Auto Hinting Font..."));
+#endif
 	SplineFontAutoHint(sf);
     }
+#if defined(FONTFORGE_CONFIG_GDRAW)
     if ( !GProgressNextStage())
+#elif defined(FONTFORGE_CONFIG_GTK)
+    if ( !gwwv_progress_next_stage())
+#endif
 return( false );
 
     if ( !hasblue ) {
 	FindBlues(sf,bluevalues,otherblues);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( !GProgressNextStage())
+#elif defined(FONTFORGE_CONFIG_GTK)
+	if ( !gwwv_progress_next_stage())
+#endif
 return( false );
     }
 
@@ -1127,12 +1151,22 @@ return( false );
     }
 
     if ( incid==NULL ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressNextStage();
 	GProgressChangeLine1R(_STR_CvtPS);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_progress_next_stage();
+	gwwv_progress_change_line1(_("Converting Postscript"));
+#endif
 	if ( (chars = SplineFont2Chrs(sf,iscjk,subrs,flags,format))==NULL )
 return( false );
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressNextStage();
 	GProgressChangeLine1R(_STR_SavingPSFont);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_progress_next_stage();
+	gwwv_progress_change_line1(_("Saving Postscript Font"));
+#endif
     }
 
     if ( incid==NULL ) dumpstr(dumpchar,data,"dup\n");
@@ -1238,7 +1272,11 @@ return( false );
 	PSCharsFree(subrs);
     }
 
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressChangeStages(1);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_change_stages(1);
+#endif
 return( true );
 }
 
@@ -1810,18 +1848,31 @@ return( NULL );
 	else
 	    fd->leniv = 4;
     }
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressChangeLine1R(_STR_CvtPS);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_change_line1(_("Converting Postscript"));
+#endif
     if ( (chars = CID2Chrs(cidmaster,cidbytes,flags))==NULL )
 return( NULL );
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressNextStage();
     GProgressChangeLine1R(_STR_SavingPSFont);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_next_stage();
+    gwwv_progress_change_line1(_("Saving Postscript Font"));
+#endif
 
     chrs = tmpfile();
     for ( i=0; i<chars->next; ++i ) {
 	if ( chars->lens[i]!=0 ) {
 	    leniv = cidbytes->fds[cidbytes->fdind[i]].leniv;
 	    dumpt1str(chrs,chars->values[i],chars->lens[i],leniv);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    if ( !GProgressNext()) {
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    if ( !gwwv_progress_next()) {
+#endif
 		fclose(chrs);
 return( NULL );
 	    }

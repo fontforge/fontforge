@@ -1855,7 +1855,11 @@ static void _SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext 
 	sf->chars[i]->unicodeenc = UniFromName(encoding[i]);
 	sf->chars[i]->parent = sf;
 	SCLigDefault(sf->chars[i]);		/* Also reads from AFM file, but it probably doesn't exist */
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressNext();
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_progress_next();
+#endif
     }
     GreekUnicodeCheck(sf);
     SFInstanciateRefs(sf);
@@ -2213,7 +2217,11 @@ return( NULL );
 	    GDrawIError( "Reference found in CID font. Can't fix it up");
 	chars[i]->enc = i;
 	sf->subfonts[j]->charcnt = i+1;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressNext();
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_progress_next();
+#endif
     }
     for ( i=0; i<fd->fdcnt; ++i )
 	sf->subfonts[i]->chars = gcalloc(sf->subfonts[i]->charcnt,sizeof(SplineChar *));

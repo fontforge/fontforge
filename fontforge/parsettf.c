@@ -1381,7 +1381,11 @@ static void readttfglyphs(FILE *ttf,struct ttfinfo *info) {
 	/* read all the glyphs */
 	for ( i=0; i<info->glyph_cnt ; ++i ) {
 	    info->chars[i] = readttfglyph(ttf,info,goffsets[i],goffsets[i+1],i);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GProgressNext();
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_progress_next();
+#endif
 	}
     } else {
 	/* only read the glyphs we actually use in this font */
@@ -1399,7 +1403,11 @@ static void readttfglyphs(FILE *ttf,struct ttfinfo *info) {
 	    for ( i=0; i<info->glyph_cnt ; ++i ) {
 		if ( info->inuse[i] && info->chars[i]==NULL ) {
 		    info->chars[i] = readttfglyph(ttf,info,goffsets[i],goffsets[i+1],i);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		    GProgressNext();
+#elif defined(FONTFORGE_CONFIG_GTK)
+		    gwwv_progress_next();
+#endif
 		    anyread = info->chars[i]!=NULL;
 		}
 	    }
@@ -1410,7 +1418,11 @@ static void readttfglyphs(FILE *ttf,struct ttfinfo *info) {
     for ( i=0; i<info->glyph_cnt ; ++i )
 	if ( info->chars[i]!=NULL )
 	    info->chars[i]->orig_pos = i;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressNextStage();
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_next_stage();
+#endif
 }
 
 /* Standard names for cff */
@@ -2908,7 +2920,11 @@ static void cidfigure(struct ttfinfo *info, struct topdicts *dict,
 	    else
 		sf->chars[cid]->width += dict->nominalwidthx;
 	}
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressNext();
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_progress_next();
+#endif
     }
     /* No need to do a reference fixup here-- the chars aren't associated */
     /*  with any encoding as is required for seac */
@@ -3667,7 +3683,11 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
     extern const char *ttfstandardnames[];
     int notdefwarned = false;
 
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressChangeLine2R(_STR_ReadingNames);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_change_line2(_("Reading Names"));
+#endif
     if ( info->postscript_start!=0 ) {
 	fseek(ttf,info->postscript_start,SEEK_SET);
 	format = getlong(ttf);
@@ -3751,7 +3771,11 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 		sprintf( buffer, "u%04X", info->chars[i]->unicodeenc );
 	    name = buffer;
 	}
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressNext();
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_progress_next();
+#endif
 	info->chars[i]->name = copy(name);
     }
 
@@ -3781,9 +3805,17 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 	else
 	    sprintf( buffer, "glyph%d", i );
 	info->chars[i]->name = copy(buffer);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressNext();
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_progress_next();
+#endif
     }
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressNextStage();
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_next_stage();
+#endif
 }
 
 static void UnfigureControls(Spline *spline,BasePoint *pos) {
@@ -3878,12 +3910,24 @@ return( true );
 static void ttfFixupReferences(struct ttfinfo *info) {
     int i;
 
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressChangeLine2R(_STR_FixingupReferences);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_change_line2(_("Fixing up References"));
+#endif
     for ( i=0; i<info->glyph_cnt; ++i ) {
 	ttfFixupRef(info->chars,i);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressNext();
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_progress_next();
+#endif
     }
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressNextStage();
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_next_stage();
+#endif
 }
 
 static void TtfCopyTableBlindly(struct ttfinfo *info,FILE *ttf,
@@ -3905,13 +3949,21 @@ return;
 static int readttf(FILE *ttf, struct ttfinfo *info, char *filename) {
     char *oldloc;
 
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressChangeStages(3);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_change_stages(3);
+#endif
     if ( !readttfheader(ttf,info,filename,&info->chosenname)) {
 return( 0 );
     }
     oldloc = setlocale(LC_NUMERIC,"C");		/* TrueType doesn't need this but opentype dictionaries do */
     readttfpreglyph(ttf,info);
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressChangeTotal(info->glyph_cnt);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_change_total(info->glyph_cnt);
+#endif
 
     /* If font only contains bitmaps, then only read bitmaps */
     if ( (info->glyphlocations_start==0 || info->glyph_length==0) &&

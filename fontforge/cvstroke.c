@@ -134,7 +134,11 @@ static void FVStrokeIt(void *_fv, StrokeInfo *si) {
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
 	++cnt;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressStartIndicatorR(10,_STR_Stroking,_STR_Stroking,0,cnt,1);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_start_indicator(10,_("Stroking..."),_("Stroking..."),0,cnt,1);
+#endif
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
@@ -145,10 +149,18 @@ static void FVStrokeIt(void *_fv, StrokeInfo *si) {
 	    sc->layers[layer].splines = temp;
 	}
 	SCCharChangedUpdate(sc);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( !GProgressNext())
+#elif defined(FONTFORGE_CONFIG_GTK)
+	if ( !gwwv_progress_next())
+#endif
     break;
     }
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressEndIndicator();
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_end_indicator();
+#endif
 }
 
 static int Stroke_OK(GGadget *g, GEvent *e) {

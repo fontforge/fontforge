@@ -391,7 +391,7 @@ return;
 }
 
 /* Builds up a menu containing all the anchor classes */
-void _aplistbuild(GtkMenuItem *top,SplineFont *sf,
+void _aplistbuild(GtkMenuItem *menuitem,SplineFont *sf,
 	void (*func)(GtkMenuItem *menuitem, gpointer user_data)) {
     int cnt;
     GMenuItem *mi, *sub;

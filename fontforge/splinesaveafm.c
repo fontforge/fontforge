@@ -100,7 +100,11 @@ int LoadKerningDataFromAfm(SplineFont *sf, char *filename) {
 
     if ( file==NULL )
 return( 0 );
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressChangeLine2R(_STR_ReadingAFM);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_change_line2(_("Reading AFM file"));
+#endif
     while ( mygets(file,buffer,sizeof(buffer))!=NULL ) {
 	if ( strncmp(buffer,"KPX",3)==0 || strncmp(buffer,"KPY",3)==0 ) {
 	    int isv = strncmp(buffer,"KPY",3)==0;
@@ -187,7 +191,11 @@ int LoadKerningDataFromAmfm(SplineFont *sf, char *filename) {
     if ( file==NULL )
 return( 0 );
 
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressChangeLine2R(_STR_ReadingAFM);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_change_line2(_("Reading AFM file"));
+#endif
     while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
 	if ( strstrmatch(buffer,"StartMaster")!=NULL )
     break;
@@ -610,7 +618,11 @@ static void AfmSplineCharX(FILE *afm, SplineChar *sc, int enc) {
     if (sc->ligofme!=NULL)
 	AfmLigOut(afm,sc);
     putc('\n',afm);
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressNext();
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_next();
+#endif
 }
 
 static void AfmZapfCharX(FILE *afm, int zi) {
@@ -638,7 +650,11 @@ static void AfmSplineChar(FILE *afm, SplineChar *sc, int enc) {
     if (sc->ligofme!=NULL)
 	AfmLigOut(afm,sc);
     putc('\n',afm);
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressNext();
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_next();
+#endif
 }
 
 static void AfmCIDChar(FILE *afm, SplineChar *sc, int enc) {
@@ -654,7 +670,11 @@ static void AfmCIDChar(FILE *afm, SplineChar *sc, int enc) {
 	    (int) floor(b.minx*1000/em), (int) floor(b.miny*1000/em),
 	    (int) ceil(b.maxx*1000/em), (int) ceil(b.maxy*1000/em) );
     putc('\n',afm);
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressNext();
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_next();
+#endif
 }
 
 static int anykerns(SplineFont *sf,int isv) {

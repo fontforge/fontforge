@@ -461,16 +461,28 @@ return;
     for ( i=cnt=0; i<fv->sf->charcnt; ++i )
 	if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->layers[ly_back].images )
 	    ++cnt;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressStartIndicatorR(10,_STR_Autotracing,_STR_Autotracing,0,cnt,1);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_start_indicator(10,_("Autotracing..."),_("Autotracing..."),0,cnt,1);
+#endif
 
     for ( i=0; i<fv->sf->charcnt; ++i ) {
 	if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->layers[ly_back].images ) {
 	    _SCAutoTrace(fv->sf->chars[i], args);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    if ( !GProgressNext())
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    if ( !gwwv_progress_next())
+#endif
     break;
 	}
     }
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressEndIndicator();
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_end_indicator();
+#endif
     if ( fv->v!=NULL )
 	GDrawSetCursor(fv->v,ct);
 }
@@ -719,7 +731,11 @@ return( NULL );
 	}
 	exit(execvp(arglist[0],arglist)==-1);	/* If exec fails, then die */
     } else if ( pid!=-1 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressShow();
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_progress_show();
+#endif
 	waitpid(pid,&status,0);
 	if ( WIFEXITED(status)) {
 	    char *gffile = FindGfFile(tempdir);
@@ -733,8 +749,13 @@ return( NULL );
 		sf = SFFromBDF(gffile,3,true);
 		free(gffile);
 		if ( sf!=NULL ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		    GProgressChangeLine1R(_STR_Autotracing);
 		    GProgressChangeTotal(sf->charcnt);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		    gwwv_progress_change_line1(_("Autotracing..."));
+		    gwwv_progress_change_total(sf->charcnt);
+#endif
 		    for ( i=0; i<sf->charcnt; ++i ) {
 			if ( (sc = sf->chars[i])!=NULL && sc->layers[ly_back].images ) {
 			    _SCAutoTrace(sc, args);
@@ -744,7 +765,11 @@ return( NULL );
 			        sc->layers[ly_back].images = NULL;
 			    }
 			}
+#if defined(FONTFORGE_CONFIG_GDRAW)
 			if ( !GProgressNext())
+#elif defined(FONTFORGE_CONFIG_GTK)
+			if ( !gwwv_progress_next())
+#endif
 		    break;
 		    }
 		} else 

@@ -11,6 +11,7 @@ Encoding *enclist = NULL;
 int local_encoding = e_iso8859_1;
 char *iconv_local_encoding_name = NULL;
 
+#if defined(FONTFORGE_CONFIG_GDRAW)
 void GProgressStartIndicator(
     int delay,			/* in tenths of seconds */
     const unichar_t *win_title,	/* for the window decoration */
@@ -29,6 +30,24 @@ void GProgressChangeLine2R(int line2r) {}
 void GProgressChangeTotal(int tot) { }
 void GProgressChangeStages(int stages) { }
 int GWidgetAskR(int title, int *answers, int def, int cancel,int question,...) { return cancel; }
+#elif defined(FONTFORGE_CONFIG_GTK)
+void gwwv_progress_start_indicator(
+    int delay,			/* in tenths of seconds */
+    const unichar_t *win_title,	/* for the window decoration */
+    const unichar_t *line1,	/* First line of description */
+    const unichar_t *line2,	/* Second line */
+    int tot,			/* Number of sub-entities in the operation */
+    int stages			/* Number of stages, each processing tot sub-entities */
+) {}
+void gwwv_progress_enable_stop(int enabled) {}
+void gwwv_progress_end_indicator(void) {}
+int gwwv_progress_next_stage(void) { return(1); }
+int gwwv_progress_next(void) { return( 1 ); }
+void gwwv_progress_change_line2(int line2r) {}
+void gwwv_progress_change_total(int tot) { }
+void gwwv_progress_change_stages(int stages) { }
+#endif
+
 SplineFont *LoadSplineFont(char *filename, enum openflags of) { return NULL; }
 int SFReencodeFont(SplineFont *sf,enum charset new_map) { return 0 ; }
 void RefCharFree(RefChar *ref) {}

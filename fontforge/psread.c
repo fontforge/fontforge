@@ -2607,7 +2607,11 @@ void PSFontInterpretPS(FILE *ps,struct charprocs *cp) {
 		cp->values[cp->next++] = sc;
 		sc->name = copy(tokbuf);
 		SCInterpretPS(ps,sc,&flags);
+#if defined(FONTFORGE_CONFIG_GDRAW)
        		GProgressNext();
+#elif defined(FONTFORGE_CONFIG_GTK)
+       		gwwv_progress_next();
+#endif
 	    } else {
 		InterpretPS(ps,NULL,&dummy,NULL);
 	    }

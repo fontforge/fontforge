@@ -345,6 +345,7 @@ static void FVFlattenAllBitmapSelections(FontView *fv) {
     }
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static int AskChanged(SplineFont *sf) {
     int ret;
 #if defined(FONTFORGE_CONFIG_GDRAW)
@@ -397,6 +398,7 @@ static int RevertAskChanged(char *fontname,char *filename) {
 #endif
 return( ret==0 );
 }
+#endif
 
 int _FVMenuGenerate(FontView *fv,int family) {
     FVFlattenAllBitmapSelections(fv);
@@ -417,7 +419,7 @@ static void FVMenuGenerateFamily(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     _FVMenuGenerate(fv,true);
 }
 # elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_Generate(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_Generate(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 
     _FVMenuGenerate(fv,false);
@@ -502,7 +504,7 @@ static void FVMenuSaveAs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     _FVMenuSaveAs(fv);
 }
 # elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_SaveAs(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_SaveAs(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 
     _FVMenuSaveAs(fv);
@@ -551,7 +553,7 @@ static void FVMenuSave(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     _FVMenuSave(fv);
 }
 # elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_Save(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_Save(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 
     _FVMenuSave(fv);
@@ -720,9 +722,7 @@ gboolean FontView_RequestClose(GtkWidget *widget, GdkEvent *event,
     _FVMenuClose(fv);
 }
 # endif
-#endif
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void FVReattachCVs(SplineFont *old,SplineFont *new) {
     int i, j, enc;
     CharView *cv, *cvnext;
@@ -855,7 +855,7 @@ return;
 static void FVMenuRevert(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 # elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_Revert(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_Revert(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
     FVRevert(fv);
@@ -865,7 +865,7 @@ static void FontViewMenu_Revert(GtkMenuItem *menuitem, gpointer user_data) {
 static void FVMenuRevertGlyph(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 # elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_RevertGlyph(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_RevertGlyph(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
     int i;
@@ -1134,7 +1134,7 @@ return;
 static void FVMenuMergeKern(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 # elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_MergeKern(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_MergeKern(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
     MergeKernInfo(fv->sf);
@@ -1207,7 +1207,7 @@ void MenuAbout(GtkMenuItem *menuitem, gpointer user_data) {
 static void FVMenuImport(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 # elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_Import(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_Import(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
     int empty = fv->sf->onlybitmaps && fv->sf->bitmaps==NULL;
@@ -1241,7 +1241,7 @@ return( true );
 static void FVMenuOpenOutline(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 # elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_OpenOutline(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_OpenOutline(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
     int i;
@@ -1260,7 +1260,7 @@ return;
 static void FVMenuOpenBitmap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 # elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_OpenBitmap(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_OpenBitmap(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
     int i;
@@ -1281,17 +1281,50 @@ return;
 static void FVMenuOpenMetrics(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 # elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_OpenMetrics(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_OpenMetrics(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
     MetricsViewCreate(fv,NULL,fv->filled==fv->show?NULL:fv->show);
+}
+
+# if defined(FONTFORGE_CONFIG_GDRAW)
+static void FVMenuPrint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_Print(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+
+    PrintDlg(fv,NULL,NULL);
+}
+
+# if defined(FONTFORGE_CONFIG_GDRAW)
+static void FVMenuDisplay(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_Display(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+
+    DisplayDlg(fv->sf);
+}
+
+# if defined(FONTFORGE_CONFIG_GDRAW)
+static void FVMenuExecute(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_Execute(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+
+    ScriptDlg(fv);
 }
 
 # ifdef FONTFORGE_CONFIG_GDRAW
 static void FVMenuFontInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 # elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_FontInfo(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_FontInfo(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
     FontMenuFontInfo(fv);
@@ -1301,7 +1334,7 @@ static void FontViewMenu_FontInfo(GtkMenuItem *menuitem, gpointer user_data) {
 static void FVMenuFindProblems(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 # elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_FindProblems(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_FindProblems(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
     FindProblems(fv,NULL,NULL);
@@ -1311,7 +1344,7 @@ static void FontViewMenu_FindProblems(GtkMenuItem *menuitem, gpointer user_data)
 static void FVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 # elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_MetaFont(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_MetaFont(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
     MetaFont(fv,NULL,NULL);
@@ -1479,19 +1512,19 @@ static void FVMenuCopyFrom(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SavePrefs();
 }
 # elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_CopyFromAll(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_CopyFromAll(GtkMenuItem *menuitem, gpointer user_data) {
 
     onlycopydisplayed = false;
     SavePrefs();
 }
 
-static void FontViewMenu_CopyFromDisplayed(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_CopyFromDisplayed(GtkMenuItem *menuitem, gpointer user_data) {
 
     onlycopydisplayed = true;
     SavePrefs();
 }
 
-static void FontViewMenu_CopyFromMetadata(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_CopyFromMetadata(GtkMenuItem *menuitem, gpointer user_data) {
 
     copymetadata = !copymetadata;
     SavePrefs();
@@ -1502,7 +1535,7 @@ static void FontViewMenu_CopyFromMetadata(GtkMenuItem *menuitem, gpointer user_d
 static void FVMenuCopy(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 # elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_Copy(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_Copy(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
     if ( FVAnyCharSelected(fv)==-1 )
@@ -1514,7 +1547,7 @@ return;
 static void FVMenuCopyRef(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 # elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_CopyRef(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_CopyRef(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
     if ( FVAnyCharSelected(fv)==-1 )
@@ -1536,14 +1569,14 @@ return;
 					 ut_rbearing);
 }
 # elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_CopyWidth(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_CopyWidth(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
     if ( FVAnyCharSelected(fv)==-1 )
 return;
     FVCopyWidth(fv,ut_width);
 }
 
-static void FontViewMenu_CopyVWidth(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_CopyVWidth(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
     if ( FVAnyCharSelected(fv)==-1 )
 return;
@@ -1552,14 +1585,14 @@ return;
     FVCopyWidth(fv,ut_vwidth);
 }
 
-static void FontViewMenu_CopyLBearing(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_CopyLBearing(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
     if ( FVAnyCharSelected(fv)==-1 )
 return;
     FVCopyWidth(fv,ut_lbearing);
 }
 
-static void FontViewMenu_CopyRBearing(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_CopyRBearing(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
     if ( FVAnyCharSelected(fv)==-1 )
 return;
@@ -1585,7 +1618,7 @@ return;
 static void FVMenuPaste(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 # elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_Paste(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_Paste(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
     if ( FVAnyCharSelected(fv)==-1 )
@@ -1597,7 +1630,7 @@ return;
 static void FVMenuPasteInto(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 # elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_PasteInto(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_PasteInto(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
     if ( FVAnyCharSelected(fv)==-1 )
@@ -1610,7 +1643,7 @@ return;
 static void FVMenuPasteAfter(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 # elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_PasteAfter(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_PasteAfter(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
     int pos = FVAnyCharSelected(fv);
@@ -1619,7 +1652,7 @@ return;
     PasteIntoFV(fv,2);
 }
 #elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_PasteAfter(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_PasteAfter(GtkMenuItem *menuitem, gpointer user_data) {
 }
 #endif
 #endif
@@ -1644,7 +1677,7 @@ return;
 static void FVMenuSameGlyphAs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 # elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_SameGlyphAs(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_SameGlyphAs(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
     FVSameGlyphAs(fv);
@@ -1664,7 +1697,7 @@ static void FVCopyFgtoBg(FontView *fv) {
 static void FVMenuCopyFgBg(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 # elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_CopyFgBg(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_CopyFgBg(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
     FVCopyFgtoBg( fv );
@@ -1849,7 +1882,7 @@ static void FVClear(FontView *fv) {
 static void FVMenuClear(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 # elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_Clear(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_Clear(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
     FVClear( fv );
@@ -1873,7 +1906,7 @@ return;
 static void FVMenuClearBackground(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 # elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_ClearBackground(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_ClearBackground(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
     FVClearBackground( fv );
@@ -1901,7 +1934,7 @@ return;
 static void FVMenuJoin(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 # elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_Join(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_Join(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
     FVJoin( fv );
@@ -1931,7 +1964,7 @@ static void FVUnlinkRef(FontView *fv) {
 static void FVMenuUnlinkRef(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 # elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_UnlinkRef(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_UnlinkRef(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
     FVUnlinkRef( fv );
@@ -1978,7 +2011,7 @@ void SFRemoveUndoes(SplineFont *sf,uint8 *selected) {
 static void FVMenuRemoveUndoes(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 # elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_RemoveUndoes(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_RemoveUndoes(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
     SFRemoveUndoes(fv->sf,fv->selected);
@@ -1988,7 +2021,7 @@ static void FontViewMenu_RemoveUndoes(GtkMenuItem *menuitem, gpointer user_data)
 static void FVMenuUndo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 # elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_Undo(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_Undo(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
     int i,j,layer;
@@ -2014,7 +2047,7 @@ static void FontViewMenu_Undo(GtkMenuItem *menuitem, gpointer user_data) {
 static void FVMenuRedo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 # elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_Redo(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_Redo(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
     int i,j,layer;
@@ -2040,7 +2073,7 @@ static void FontViewMenu_Redo(GtkMenuItem *menuitem, gpointer user_data) {
 static void FVMenuCut(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 # elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_Cut(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_Cut(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
     FVCopy(fv,true);
@@ -2051,7 +2084,7 @@ static void FontViewMenu_Cut(GtkMenuItem *menuitem, gpointer user_data) {
 static void FVMenuSelectAll(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 # elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_SelectAll(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_SelectAll(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
 
@@ -2062,7 +2095,7 @@ static void FontViewMenu_SelectAll(GtkMenuItem *menuitem, gpointer user_data) {
 static void FVMenuDeselectAll(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 # elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_DeselectAll(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_DeselectAll(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
 
@@ -2075,52 +2108,52 @@ static void FVMenuSelectColor(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FVSelectColor(fv,(uint32) (mi->ti.userdata),(e->u.chr.state&ksm_shift)?1:0);
 }
 # elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_SelectDefault(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_SelectDefault(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
     FVSelectColor(fv,COLOR_DEFAULT,false);
 }
 
-static void FontViewMenu_SelectWhite(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_SelectWhite(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
     FVSelectColor(fv,0xffffff,false);
 }
 
-static void FontViewMenu_SelectRed(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_SelectRed(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
     FVSelectColor(fv,0xff0000,false);
 }
 
-static void FontViewMenu_SelectGreen(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_SelectGreen(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
     FVSelectColor(fv,0x00ff00,false);
 }
 
-static void FontViewMenu_SelectBlue(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_SelectBlue(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
     FVSelectColor(fv,0x0000ff,false);
 }
 
-static void FontViewMenu_SelectYellow(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_SelectYellow(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
     FVSelectColor(fv,0xffff00,false);
 }
 
-static void FontViewMenu_SelectCyan(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_SelectCyan(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
     FVSelectColor(fv,0x00ffff,false);
 }
 
-static void FontViewMenu_SelectMagenta(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_SelectMagenta(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
     FVSelectColor(fv,0x0000ff,false);
 }
 
-static void FontViewMenu_SelectBlue(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_SelectBlue(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
     FVSelectColor(fv,0xff00ff,false);
 }
 
-static void FontViewMenu_SelectColorPicker(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_SelectColorPicker(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
     GtkWidget *color_picker = gtk_color_selection_dialog_new(_("Select Color"));
     static GdkColor last_col;
@@ -2145,7 +2178,7 @@ static void FontViewMenu_SelectColorPicker(GtkMenuItem *menuitem, gpointer user_
 static void FVMenuSelectByPST(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 # elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_SelectByPST(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_SelectByPST(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
 
@@ -2156,7 +2189,7 @@ static void FontViewMenu_SelectByPST(GtkMenuItem *menuitem, gpointer user_data) 
 static void FVMenuFindRpl(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 # elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_FindRpl(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_FindRpl(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
 
@@ -2167,182 +2200,18 @@ static void FontViewMenu_FindRpl(GtkMenuItem *menuitem, gpointer user_data) {
 static void FVMenuReplaceWithRef(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 # elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_ReplaceWithRef(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_ReplaceWithRef(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
 
     FVReplaceOutlineWithReference(fv);
 }
 
-# ifdef FONTFORGE_CONFIG_GDRAW
-static void cflistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    /*FontView *fv = (FontView *) GDrawGetUserData(gw);*/
-
-    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
-	switch ( mi->mid ) {
-	  case MID_AllFonts:
-	    mi->ti.checked = !onlycopydisplayed;
-	  break;
-	  case MID_DisplayedFont:
-	    mi->ti.checked = onlycopydisplayed;
-	  break;
-	  case MID_CharName:
-	    mi->ti.checked = copymetadata;
-	  break;
-	}
-    }
-}
-# elif defined(FONTFORGE_CONFIG_GTK)
-void FontViewMenu_ActivateCopyFrom(GtkMenuItem *menuitem, gpointer user_data) {
-    GtkWidget *w;
-
-    w = lookup_widget( menuitem, "all_fonts1" );
-    gtk_widget_set_sensitive(w,!onlycopydisplayed);
-
-    w = lookup_widget( menuitem, "displayed_fonts1" );
-    gtk_widget_set_sensitive(w,onlycopydisplayed);
-
-    w = lookup_widget( menuitem, "char_metadata1" );
-    gtk_widget_set_sensitive(w,copymetadata);
-}
-# endif
-
-# ifdef FONTFORGE_CONFIG_GDRAW
-static void sllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    fv = fv;
-}
-# endif
-
-# ifdef FONTFORGE_CONFIG_GDRAW
-static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    int pos = FVAnyCharSelected(fv), i;
-    int not_pasteable = pos==-1 ||
-		    (!CopyContainsSomething() &&
-#ifndef _NO_LIBPNG
-		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/png") &&
-#endif
-		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/bmp") &&
-		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/eps"));
-    RefChar *base = CopyContainsRef(fv->sf);
-
-
-    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
-	switch ( mi->mid ) {
-	  case MID_Paste: case MID_PasteInto:
-	    mi->ti.disabled = not_pasteable;
-	  break;
-#ifdef FONTFORGE_CONFIG_PASTEAFTER
-	  case MID_PasteAfter:
-	    mi->ti.disabled = not_pasteable || pos<0;
-	  break;
-#endif
-	  case MID_SameGlyphAs:
-	    mi->ti.disabled = not_pasteable || base==NULL || fv->cidmaster!=NULL ||
-		    fv->selected[base->local_enc];	/* Can't be self-referential */
-	  break;
-	  case MID_CopyFeatures:
-	    mi->ti.disabled = pos<0 || !SCAnyFeatures(fv->sf->chars[pos]);
-	  break;
-	  case MID_Join:
-	  case MID_Cut: case MID_Copy: case MID_Clear:
-	  case MID_CopyWidth: case MID_CopyLBearing: case MID_CopyRBearing:
-	  case MID_CopyRef: case MID_UnlinkRef:
-	  case MID_RemoveUndoes: case MID_CopyFgToBg:
-	  case MID_RplRef:
-	    mi->ti.disabled = pos==-1;
-	  break;
-	  case MID_CopyVWidth: 
-	    mi->ti.disabled = pos==-1 || !fv->sf->hasvmetrics;
-	  break;
-	  case MID_ClearBackground:
-	    mi->ti.disabled = true;
-	    if ( pos!=-1 && !( onlycopydisplayed && fv->filled!=fv->show )) {
-		for ( i=0; i<fv->sf->charcnt; ++i )
-		    if ( fv->selected[i] && fv->sf->chars[i]!=NULL )
-			if ( fv->sf->chars[i]->layers[ly_back].images!=NULL ||
-				fv->sf->chars[i]->layers[ly_back].splines!=NULL ) {
-			    mi->ti.disabled = false;
-		break;
-			}
-	    }
-	  break;
-	  case MID_Undo:
-	    for ( i=0; i<fv->sf->charcnt; ++i )
-		if ( fv->selected[i] && fv->sf->chars[i]!=NULL )
-		    if ( fv->sf->chars[i]->layers[ly_fore].undoes!=NULL )
-	    break;
-	    mi->ti.disabled = i==fv->sf->charcnt;
-	  break;
-	  case MID_Redo:
-	    for ( i=0; i<fv->sf->charcnt; ++i )
-		if ( fv->selected[i] && fv->sf->chars[i]!=NULL )
-		    if ( fv->sf->chars[i]->layers[ly_fore].redoes!=NULL )
-	    break;
-	    mi->ti.disabled = i==fv->sf->charcnt;
-	  break;
-	}
-    }
-}
-# elif defined(FONTFORGE_CONFIG_GTK)
-void FontViewMenu_ActivateEdit(GtkMenuItem *menuitem, gpointer user_data) {
-    FontView *fv = FV_From_MI(menuitem);
-    int pos = FVAnyCharSelected(fv), i;
-    /* I can only determine the contents of the clipboard asyncronously */
-    /*  hence I can't check to see if it contains something that is pastable */
-    /*  So all I can do with paste is check that something is selected */
-#if 0
-    int not_pasteable = pos==-1 ||
-		    (!CopyContainsSomething() &&
-		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/png") &&
-		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/bmp") &&
-		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/eps"));
-#endif
-    RefChar *base = CopyContainsRef(fv->sf);
-    GtkWidget *w;
-    static char *poslist[] = { "cut2", "copy2", "copy_reference1", "copy_width1",
-	    "copy_lbearing1", "copy_rbearing1", "paste2", "paste_into1",
-	    "paste_after1", "same_glyph_as1", "clear2", "clear_background1",
-	    "copy_fg_to_bg1", "join1", "replace_with_reference1",
-	    "unlink_reference1", "remove_undoes1", NULL };
-
-    w = lookup_widget( menuitem, "undo2" );
-    for ( i=0; i<fv->sf->charcnt; ++i )
-	if ( fv->selected[i] && fv->sf->chars[i]!=NULL )
-	    if ( fv->sf->chars[i]->layers[ly_fore].undoes!=NULL )
-    break;
-    gtk_widget_set_sensitive(w,i!=fv->sf->charcnt);
-
-    w = lookup_widget( menuitem, "redo2" );
-    for ( i=0; i<fv->sf->charcnt; ++i )
-	if ( fv->selected[i] && fv->sf->chars[i]!=NULL )
-	    if ( fv->sf->chars[i]->layers[ly_fore].redoes!=NULL )
-    break;
-    gtk_widget_set_sensitive(w,i!=fv->sf->charcnt);
-
-    for ( i=0; poslist[i]!=NULL; ++i ) {
-	w = lookup_widget( menuitem, poslist[i] );
-	if ( w!=NULL )
-	    gtk_widget_set_sensitive(w,pos!=-1);
-    }
-
-    w = lookup_widget( menuitem, "copy_vwidth1" );
-    if ( w!=NULL )
-	gtk_widget_set_sensitive(w,pos!=-1 && fv->sf->hasvmetrics);
-
-#  ifndef FONTFORGE_CONFIG_PASTEAFTER
-    w = lookup_widget( menuitem, "paste_after1" );
-    gtk_widget_hide(w);
-#  endif
-}
-# endif
-
 # if defined(FONTFORGE_CONFIG_GDRAW)
 static void FVMenuCharInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 # elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_CharInfo(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_CharInfo(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
     int pos = FVAnyCharSelected(fv);
@@ -2360,7 +2229,7 @@ static void FVMenuAAT(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     uint32 tag = (uint32) (mi->ti.userdata);
 # elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_AAT(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_AAT(GtkMenuItem *menuitem, gpointer user_data) {
     int i;
     FontView *fv = FV_From_MI(menuitem);
     guint32 tag;
@@ -2427,7 +2296,7 @@ static void FontViewMenu_AAT(GtkMenuItem *menuitem, gpointer user_data) {
 static void FVMenuAATSuffix(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 # elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_AATSuffix(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_AATSuffix(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
     uint32 tag;
@@ -2476,7 +2345,7 @@ return;
 static void FVMenuCopyFeatureToFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 # elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_CopyFeatureToFont(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_CopyFeatureToFont(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
     SFCopyFeatureToFontDlg(fv->sf);
@@ -2490,7 +2359,7 @@ static void FVMenuRemoveAllFeatures(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	GWidgetErrorR(_STR_NoFeaturesRemoved,_STR_NoFeaturesRemoved);
 }
 # elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_RemoveAllFeatures(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_RemoveAllFeatures(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 
     if ( !SFRemoveThisFeatureTag(fv->sf,0xffffffff,SLI_UNKNOWN,-1))
@@ -2502,7 +2371,7 @@ static void FontViewMenu_RemoveAllFeatures(GtkMenuItem *menuitem, gpointer user_
 static void FVMenuRemoveFeatures(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 # elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_RemoveFeatures(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_RemoveFeatures(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
     SFRemoveFeatureDlg(fv->sf);
@@ -2515,7 +2384,7 @@ static void FVMenuRemoveUnusedNested(GWindow gw,struct gmenuitem *mi,GEvent *e) 
 	GWidgetErrorR(_STR_NoFeaturesRemoved,_STR_NoFeaturesRemoved);
 }
 # elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_UnusedNested(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_UnusedNested(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
     if ( !SFRemoveUnusedNestedFeatures(fv->sf))
 	gwwv_post_error(_("No Features Removed"),_("No Features Removed"));
@@ -2526,7 +2395,7 @@ static void FontViewMenu_UnusedNested(GtkMenuItem *menuitem, gpointer user_data)
 static void FVMenuRetagFeature(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 # elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_RetagFeature(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_RetagFeature(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
     SFRetagFeatureDlg(fv->sf);
@@ -2536,7 +2405,7 @@ static void FontViewMenu_RetagFeature(GtkMenuItem *menuitem, gpointer user_data)
 static void FVMenuShowDependentRefs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 # elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_ShowDependentRefs(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_ShowDependentRefs(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
     int pos = FVAnyCharSelected(fv);
@@ -2551,7 +2420,7 @@ return;
 static void FVMenuShowDependentSubs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 # elif defined(FONTFORGE_CONFIG_GTK)
-static void FontViewMenu_ShowDependentSubs(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_ShowDependentSubs(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
     int pos = FVAnyCharSelected(fv);
@@ -2752,7 +2621,11 @@ void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts,
 	    fv->sf->pfminfo.vlinegap *= transform[0];
     }
 
+# ifdef FONTFORGE_CONFIG_GDRAW
     GProgressStartIndicatorR(10,_STR_Transforming,_STR_Transforming,0,cnt,1);
+# elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_start_indicator(10,_("Transforming..."),_("Transforming..."),0,cnt,1);
+# endif
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
@@ -2776,10 +2649,18 @@ void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts,
 		    BCTrans(bdf,bdf->chars[i],bvts,fv);
 	    }
 	}
+# ifdef FONTFORGE_CONFIG_GDRAW
 	if ( !GProgressNext())
+# elif defined(FONTFORGE_CONFIG_GTK)
+	if ( !gwwv_progress_next())
+# endif
     break;
     }
+# ifdef FONTFORGE_CONFIG_GDRAW
     GProgressEndIndicator();
+# elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_end_indicator();
+# endif
 
     if ( flags&fvt_scalekernclasses ) {
 	KernClass *kc;
@@ -2848,13 +2729,14 @@ return( false );
 return( true );
 }
 
-static void FVMenuBitmaps(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    BitmapDlg(fv,NULL,mi->mid==MID_AvailBitmaps );
-}
-
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+# if defined(FONTFORGE_CONFIG_GDRAW)
 static void FVMenuTransform(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_Transform(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
     int flags=0x3;
     if ( FVAnyCharSelected(fv)==-1 )
 return;
@@ -2863,25 +2745,68 @@ return;
     TransformDlgCreate(fv,FVTransFunc,getorigin,flags,cvt_none);
 }
 
-#ifdef FONTFORGE_CONFIG_NONLINEAR
+#if defined(FONTFORGE_CONFIG_GDRAW)
+# ifdef FONTFORGE_CONFIG_NONLINEAR
 static void FVMenuNLTransform(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     if ( FVAnyCharSelected(fv)==-1 )
 return;
     NonLinearDlg(fv,NULL);
 }
+# endif
+#elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_NonLinearTransform(GtkMenuItem *menuitem, gpointer user_data) {
+# ifdef FONTFORGE_CONFIG_NONLINEAR
+    FontView *fv = FV_From_MI(menuitem);
+    if ( FVAnyCharSelected(fv)==-1 )
+return;
+    NonLinearDlg(fv,NULL);
+# endif
+}
 #endif
 
+# if defined(FONTFORGE_CONFIG_GDRAW)
+static void FVMenuBitmaps(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    BitmapDlg(fv,NULL,mi->mid==MID_AvailBitmaps );
+}
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_BitmapsAvail(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+    BitmapDlg(fv,NULL,true );
+}
+
+void FontViewMenu_RegenBitmaps(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+    BitmapDlg(fv,NULL,false );
+}
+# endif
+
+# if defined(FONTFORGE_CONFIG_GDRAW)
 static void FVMenuStroke(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_Stroke(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
     FVStroke(fv);
 }
 
-#ifdef FONTFORGE_CONFIG_TILEPATH
+# if defined(FONTFORGE_CONFIG_GDRAW)
+#  ifdef FONTFORGE_CONFIG_TILEPATH
 static void FVMenuTilePath(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     FVTile(fv);
 }
+#  endif
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_TilePath(GtkMenuItem *menuitem, gpointer user_data) {
+#  ifdef FONTFORGE_CONFIG_TILEPATH
+    FontView *fv = FV_From_MI(menuitem);
+    FVTile(fv);
+#  endif
+}
+# endif
 #endif
 
 static void FVOverlap(FontView *fv,enum overlap_type ot) {
@@ -2893,7 +2818,11 @@ static void FVOverlap(FontView *fv,enum overlap_type ot) {
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
 	++cnt;
+# ifdef FONTFORGE_CONFIG_GDRAW
     GProgressStartIndicatorR(10,_STR_RemovingOverlap,_STR_RemovingOverlap,0,cnt,1);
+# elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_start_indicator(10,_("Removing overlaps..."),_("Removing overlaps..."),0,cnt,1);
+# endif
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
@@ -2903,12 +2832,21 @@ static void FVOverlap(FontView *fv,enum overlap_type ot) {
 	for ( layer = ly_fore; layer<sc->layer_cnt; ++layer )
 	    sc->layers[layer].splines = SplineSetRemoveOverlap(sc,sc->layers[layer].splines,ot);
 	SCCharChangedUpdate(sc);
+# ifdef FONTFORGE_CONFIG_GDRAW
 	if ( !GProgressNext())
+# elif defined(FONTFORGE_CONFIG_GTK)
+	if ( !gwwv_progress_next())
+# endif
     break;
     }
+# ifdef FONTFORGE_CONFIG_GDRAW
     GProgressEndIndicator();
+# elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_end_indicator();
+# endif
 }
 
+# if defined(FONTFORGE_CONFIG_GDRAW)
 static void FVMenuOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 
@@ -2920,37 +2858,86 @@ static void FVMenuOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 		 mi->mid==MID_Intersection ? over_intersect :
 		      over_findinter);
 }
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_RemoveOverlap(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
 
+    /* We know it's more likely that we'll find a problem in the overlap code */
+    /*  than anywhere else, so let's save the current state against a crash */
+    DoAutoSaves();
+
+    FVOverlap(fv,over_remove);
+}
+
+void FontViewMenu_Intersect(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    DoAutoSaves();
+    FVOverlap(fv,over_intersect);
+}
+
+void FontViewMenu_FindInter(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    DoAutoSaves();
+    FVOverlap(fv,over_findinter);
+}
+#endif
+
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+# if defined(FONTFORGE_CONFIG_GDRAW)
 static void FVMenuInline(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_Inline(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
 
     OutlineDlg(fv,NULL,NULL,true);
 }
 
+# if defined(FONTFORGE_CONFIG_GDRAW)
 static void FVMenuOutline(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_Outline(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
 
     OutlineDlg(fv,NULL,NULL,false);
 }
 
+# if defined(FONTFORGE_CONFIG_GDRAW)
 static void FVMenuShadow(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_Shadow(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
 
     ShadowDlg(fv,NULL,NULL,false);
 }
 
+# if defined(FONTFORGE_CONFIG_GDRAW)
 static void FVMenuWireframe(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_Wireframe(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
 
     ShadowDlg(fv,NULL,NULL,true);
 }
+#endif
 
 void _FVSimplify(FontView *fv,struct simplifyinfo *smpl) {
     int i, cnt=0, layer;
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
 	++cnt;
+# ifdef FONTFORGE_CONFIG_GDRAW
     GProgressStartIndicatorR(10,_STR_Simplifying,_STR_Simplifying,0,cnt,1);
+# elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_start_indicator(10,_("Simplifying..."),_("Simplifying..."),0,cnt,1);
+# endif
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
@@ -2958,10 +2945,18 @@ void _FVSimplify(FontView *fv,struct simplifyinfo *smpl) {
 	for ( layer = ly_fore; layer<sc->layer_cnt; ++layer )
 	    sc->layers[layer].splines = SplineCharSimplify(sc,sc->layers[layer].splines,smpl);
 	SCCharChangedUpdate(sc);
+# ifdef FONTFORGE_CONFIG_GDRAW
 	if ( !GProgressNext())
+# elif defined(FONTFORGE_CONFIG_GTK)
+	if ( !gwwv_progress_next())
+# endif
     break;
     }
+# ifdef FONTFORGE_CONFIG_GDRAW
     GProgressEndIndicator();
+# elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_end_indicator();
+# endif
 }
 
 static void FVSimplify(FontView *fv,int type) {
@@ -2976,6 +2971,7 @@ return;
     _FVSimplify(fv,&smpl);
 }
 
+# if defined(FONTFORGE_CONFIG_GDRAW)
 static void FVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FVSimplify( (FontView *) GDrawGetUserData(gw),false );
 }
@@ -2987,13 +2983,30 @@ static void FVMenuSimplifyMore(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void FVMenuCleanup(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FVSimplify( (FontView *) GDrawGetUserData(gw),-1 );
 }
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_Simplify(GtkMenuItem *menuitem, gpointer user_data) {
+    FVSimplify( (FontView *) FV_From_MI(menuitem), false);
+}
+
+void FontViewMenu_SimplifyMore(GtkMenuItem *menuitem, gpointer user_data) {
+    FVSimplify( (FontView *) FV_From_MI(menuitem), true);
+}
+
+void FontViewMenu_Cleanup(GtkMenuItem *menuitem, gpointer user_data) {
+    FVSimplify( (FontView *) FV_From_MI(menuitem), -1);
+}
+#endif
 
 static void FVAddExtrema(FontView *fv) {
     int i, cnt=0, layer;
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
 	++cnt;
+# ifdef FONTFORGE_CONFIG_GDRAW
     GProgressStartIndicatorR(10,_STR_AddingExtrema,_STR_AddingExtrema,0,cnt,1);
+# elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_start_indicator(10,_("Adding points at Extrema..."),_("Adding points at Extrema..."),0,cnt,1);
+# endif
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
@@ -3001,25 +3014,48 @@ static void FVAddExtrema(FontView *fv) {
 	for ( layer = ly_fore; layer<sc->layer_cnt; ++layer )
 	    SplineCharAddExtrema(sc->layers[layer].splines,false);
 	SCCharChangedUpdate(sc);
+# ifdef FONTFORGE_CONFIG_GDRAW
 	if ( !GProgressNext())
+# elif defined(FONTFORGE_CONFIG_GTK)
+	if ( !gwwv_progress_next())
+# endif
     break;
     }
+# ifdef FONTFORGE_CONFIG_GDRAW
     GProgressEndIndicator();
+# elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_end_indicator();
+# endif
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+# if defined(FONTFORGE_CONFIG_GDRAW)
 static void FVMenuAddExtrema(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FVAddExtrema( (FontView *) GDrawGetUserData(gw) );
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_AddExtrema(GtkMenuItem *menuitem, gpointer user_data) {
+    FVAddExtrema( (FontView *) FV_From_MI(menuitem) );
+# endif
 }
 
+# if defined(FONTFORGE_CONFIG_GDRAW)
 static void FVMenuCorrectDir(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_CorrectDir(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
     int i, cnt=0, changed, refchanged, preserved, layer;
     int askedall=-1, asked;
     RefChar *ref;
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
 	++cnt;
+# ifdef FONTFORGE_CONFIG_GDRAW
     GProgressStartIndicatorR(10,_STR_CorrectingDirection,_STR_CorrectingDirection,0,cnt,1);
+# elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_start_indicator(10,_("Correcting Direction..."),_("Correcting Direction..."),0,cnt,1);
+# endif
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
@@ -3067,36 +3103,69 @@ return;
 	}
 	if ( changed || refchanged )
 	    SCCharChangedUpdate(sc);
+# ifdef FONTFORGE_CONFIG_GDRAW
 	if ( !GProgressNext())
+# elif defined(FONTFORGE_CONFIG_GTK)
+	if ( !gwwv_progress_next())
+# endif
     break;
     }
+# ifdef FONTFORGE_CONFIG_GDRAW
     GProgressEndIndicator();
+# elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_end_indicator();
+# endif
 }
+#endif
 
 static void FVRound2Int(FontView *fv) {
     int i, cnt=0;
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
 	++cnt;
+# ifdef FONTFORGE_CONFIG_GDRAW
     GProgressStartIndicatorR(10,_STR_Rounding,_STR_Rounding,0,cnt,1);
+# elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_start_indicator(10,_("Rounding to integer..."),_("Rounding to integer..."),0,cnt,1);
+# endif
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SCPreserveState(fv->sf->chars[i],false);
 	SCRound2Int( fv->sf->chars[i]);
+# ifdef FONTFORGE_CONFIG_GDRAW
 	if ( !GProgressNext())
+# elif defined(FONTFORGE_CONFIG_GTK)
+	if ( !gwwv_progress_next())
+# endif
     break;
     }
+# ifdef FONTFORGE_CONFIG_GDRAW
     GProgressEndIndicator();
+# elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_end_indicator();
+# endif
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+# if defined(FONTFORGE_CONFIG_GDRAW)
 static void FVMenuRound2Int(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FVRound2Int( (FontView *) GDrawGetUserData(gw) );
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_Round2Int(GtkMenuItem *menuitem, gpointer user_data) {
+    FVRound2Int( (FontView *) FV_From_MI(menuitem));
+# endif
 }
 
+# if defined(FONTFORGE_CONFIG_GDRAW)
 static void FVMenuAutotrace(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_Autotrace(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
     FVAutoTrace(fv,e!=NULL && (e->u.mouse.state&ksm_shift));
 }
+#endif
 
 void FVBuildAccent(FontView *fv,int onlyaccents) {
     int i, cnt=0;
@@ -3104,7 +3173,11 @@ void FVBuildAccent(FontView *fv,int onlyaccents) {
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] )
 	++cnt;
+# ifdef FONTFORGE_CONFIG_GDRAW
     GProgressStartIndicatorR(10,_STR_Buildingaccented,_STR_Buildingaccented,_STR_NULL,cnt,1);
+# elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_start_indicator(10,_("Building accented letters"),_("Building accented letters"),_(),cnt,1);
+# endif
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
@@ -3125,19 +3198,39 @@ void FVBuildAccent(FontView *fv,int onlyaccents) {
 	    sc = SFMakeChar(fv->sf,i);
 	    SCBuildComposit(fv->sf,sc,!onlycopydisplayed,fv);
 	}
+# ifdef FONTFORGE_CONFIG_GDRAW
 	if ( !GProgressNext())
+# elif defined(FONTFORGE_CONFIG_GTK)
+	if ( !gwwv_progress_next())
+# endif
     break;
     }
+# ifdef FONTFORGE_CONFIG_GDRAW
     GProgressEndIndicator();
+# elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_end_indicator();
+# endif
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+# if defined(FONTFORGE_CONFIG_GDRAW)
 static void FVMenuBuildAccent(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FVBuildAccent( (FontView *) GDrawGetUserData(gw), true );
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_Transform(GtkMenuItem *menuitem, gpointer user_data) {
+    FVBuildAccent( (FontView *) FV_From_MI(menuitem), true );
+# endif
 }
 
+# if defined(FONTFORGE_CONFIG_GDRAW)
 static void FVMenuBuildComposite(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FVBuildAccent( (FontView *) GDrawGetUserData(gw), false );
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_Transform(GtkMenuItem *menuitem, gpointer user_data) {
+    FVBuildAccent( (FontView *) FV_From_MI(menuitem), false );
+# endif
 }
+#endif
 
 int ScriptLangMatch(struct script_record *sr,uint32 script,uint32 lang) {
     int i, j;
@@ -3253,15 +3346,27 @@ static void FVMenuBuildSyllables(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 #endif
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+# if defined(FONTFORGE_CONFIG_GDRAW)
 static void FVMenuMergeFonts(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_MergeFonts(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
     FVMergeFonts(fv);
 }
 
+# if defined(FONTFORGE_CONFIG_GDRAW)
 static void FVMenuInterpFonts(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_Interpolate(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
     FVInterpolateFonts(fv);
 }
+#endif
 
 void FVScrollToChar(FontView *fv,int i) {
 
@@ -3296,16 +3401,31 @@ void FVChangeChar(FontView *fv,int i) {
     }
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+# if defined(FONTFORGE_CONFIG_GDRAW)
 static void FVMenuChangeChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
+#  define _CC_ISNext (mi->mid==MID_Next)
+#  define _CC_ISPrev (mi->mid==MID_Prev)
+#  define _CC_ISNextDef (mi->mid==MID_NextDef)
+#  define _CC_ISPrevDef (mi->mid==MID_PrevDef)
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_ChangeChar(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+    G_CONST_RETURN gchar *name = gtk_widget_get_name(menuitem);
+#  define _CC_ISNext (strcmp(name,"next_char1")==0)
+#  define _CC_ISPrev (strcmp(name,"prev_char1")==0)
+#  define _CC_ISNextDef (strcmp(name,"next_defined_char1")==0)
+#  define _CC_ISPrevDef (strcmp(name,"prev_defined_char1")==0)
+# endif
     SplineFont *sf = fv->sf;
     int pos = FVAnyCharSelected(fv);
     if ( pos>=0 ) {
-	if ( mi->mid==MID_Next )
+	if ( _CC_ISNext )
 	    ++pos;
-	else if ( mi->mid==MID_Prev )
+	else if ( _CC_ISPrev )
 	    --pos;
-	else if ( mi->mid==MID_NextDef ) {
+	else if ( _CC_ISNextDef ) {
 	    for ( ++pos; pos<sf->charcnt && sf->chars[pos]==NULL; ++pos );
 	    if ( pos>=sf->charcnt ) {
 		if ( sf->encoding_name==em_big5 && FVAnyCharSelected(fv)<0xa140 )
@@ -3325,7 +3445,7 @@ static void FVMenuChangeChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 		if ( pos>=sf->charcnt )
 return;
 	    }
-	} else if ( mi->mid==MID_PrevDef ) {
+	} else if ( _CC_ISPrevDef ) {
 	    for ( --pos; pos>=0 && sf->chars[pos]==NULL; --pos );
 	    if ( pos<0 )
 return;
@@ -3337,36 +3457,68 @@ return;
 	FVChangeChar(fv,pos);
 }
 
+# if defined(FONTFORGE_CONFIG_GDRAW)
 static void FVMenuGotoChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_Goto(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
     int pos = GotoChar(fv->sf);
     FVChangeChar(fv,pos);
 }
 
+# if defined(FONTFORGE_CONFIG_GDRAW)
 static void FVMenuLigatures(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_Ligatures(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
     SFShowLigatures(fv->sf,NULL);
 }
 
+# if defined(FONTFORGE_CONFIG_GDRAW)
 static void FVMenuKernPairs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_KernPairs(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
     SFKernPrepare(fv->sf,false);
     SFShowKernPairs(fv->sf,NULL,NULL);
     SFKernCleanup(fv->sf,false);
 }
 
+# if defined(FONTFORGE_CONFIG_GDRAW)
 static void FVMenuAnchorPairs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_AnchorPairs(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
     SFShowKernPairs(fv->sf,NULL,mi->ti.userdata);
 }
 
+# if defined(FONTFORGE_CONFIG_GDRAW)
 static void FVMenuShowAtt(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_ShowAtt(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
     ShowAtt(fv->sf);
 }
 
+# if defined(FONTFORGE_CONFIG_GDRAW)
 static void FVMenuCompact(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
+    int to_compact = (mi->mid==MID_CompactedView);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_Compact(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+    int to_compact = strcmp(gtk_widget_get_name(menuitem),"compacted_view1")==0;
+# endif
     FontView *fvs;
     int fv_reformat;
 
@@ -3374,7 +3526,7 @@ static void FVMenuCompact(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	if ( fvs->fontinfo )
 	    FontInfoDestroy(fvs);
 
-    if ( mi->mid==MID_CompactedView )
+    if ( to_compact )
 	fv_reformat = SFCompactFont(fv->sf);
     else
 	fv_reformat = SFUncompactFont(fv->sf);
@@ -3459,11 +3611,7 @@ return;
     }
 }
 
-void FVChangeDisplayBitmap(FontView *fv,BDFFont *bdf) {
-    FVChangeDisplayFont(fv,bdf);
-    fv->sf->display_size = fv->show->pixelsize;
-}
-
+# if defined(FONTFORGE_CONFIG_GDRAW)
 struct md_data {
     int done;
     int ish;
@@ -3521,11 +3669,7 @@ static void FVMenuShowMetrics(GWindow fvgw,struct gmenuitem *mi,GEvent *e) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(d.ish?_STR_ShowHMetrics:_STR_ShowVMetrics,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    wattrs.window_title = d.ish?_("Show H. Metrics...");
-#endif
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,GGadgetScale(170));
     pos.height = GDrawPointsToPixels(NULL,130);
@@ -3540,11 +3684,6 @@ static void FVMenuShowMetrics(GWindow fvgw,struct gmenuitem *mi,GEvent *e) {
     gcd[0].gd.pos.x = 8; gcd[0].gd.pos.y = 8; 
     gcd[0].gd.flags = gg_enabled|gg_visible|(metrics&fvm_baseline?gg_cb_on:0);
     gcd[0].gd.cid = fvm_baseline;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gcd[0].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[0].gd.popup_msg = _("Is Layer Visible?");
-#endif
     gcd[0].creator = GCheckBoxCreate;
 
     label[1].text = (unichar_t *) _STR_Origin;
@@ -3561,11 +3700,7 @@ static void FVMenuShowMetrics(GWindow fvgw,struct gmenuitem *mi,GEvent *e) {
     gcd[2].gd.pos.x = 8; gcd[2].gd.pos.y = gcd[1].gd.pos.y+16;
     gcd[2].gd.flags = gg_enabled|gg_visible|(metrics&fvm_advanceat?gg_cb_on:0);
     gcd[2].gd.cid = fvm_advanceat;
-#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[2].gd.popup_msg = GStringGetResource(_STR_AdvanceLinePopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[2].gd.popup_msg = _("Display the advance width as a line\nperpendicular to the advance direction");
-#endif
     gcd[2].creator = GCheckBoxCreate;
 
     label[3].text = (unichar_t *) _STR_AdvanceWidthAsBar;
@@ -3574,11 +3709,7 @@ static void FVMenuShowMetrics(GWindow fvgw,struct gmenuitem *mi,GEvent *e) {
     gcd[3].gd.pos.x = 8; gcd[3].gd.pos.y = gcd[2].gd.pos.y+16; 
     gcd[3].gd.flags = gg_enabled|gg_visible|(metrics&fvm_advanceto?gg_cb_on:0);
     gcd[3].gd.cid = fvm_advanceto;
-#if defined(FONTFORGE_CONFIG_GDRAW)
     gcd[3].gd.popup_msg = GStringGetResource(_STR_AdvanceBarPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[3].gd.popup_msg = _("Display the advance width as a bar under the character\nshowing the extent of the advance");
-#endif
     gcd[3].creator = GCheckBoxCreate;
 
     label[4].text = (unichar_t *) _STR_OK;
@@ -3608,7 +3739,47 @@ static void FVMenuShowMetrics(GWindow fvgw,struct gmenuitem *mi,GEvent *e) {
     SavePrefs();
     GDrawRequestExpose(fv->v,NULL,false);
 }
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_ShowMetrics(GtkMenuItem *menuitem, gpointer user_data) {
+    GtkWidget *dlg = create_FontViewShowMetrics();
+    int isv = strcmp(gtk_widget_get_name(menuitem),"show_v_metrics1")==0;
+    int metrics = !isv ? fv->showhmetrics : fv->showvmetrics;
 
+    if ( isv )
+	gtk_window_set_title(GTK_WINDOW(dlg), _("Show Vertical Metrics"));
+    gtk_toggle_button_set_active(lookup_widget(dlg,"baseline"),
+	    (metrics&fvm_baseline)?true:false);
+    gtk_toggle_button_set_active(lookup_widget(dlg,"origin"),
+	    (metrics&fvm_origin)?true:false);
+    gtk_toggle_button_set_active(lookup_widget(dlg,"AWBar"),
+	    (metrics&fvm_advanceto)?true:false);
+    gtk_toggle_button_set_active(lookup_widget(dlg,"AWLine"),
+	    (metrics&fvm_advanceat)?true:false);
+    if ( gtk_dialog_run( GTK_DIALOG (dlg)) == GTK_RESPONSE_ACCEPT ) {
+	metrics = 0;
+	if ( gtk_toggle_button_get_active(lookup_widget(dlg,"baseline")) )
+	    metrics |= fvm_baseline;
+	if ( gtk_toggle_button_get_active(lookup_widget(dlg,"origin")) )
+	    metrics |= fvm_origin;
+	if ( gtk_toggle_button_get_active(lookup_widget(dlg,"AWBar")) )
+	    metrics |= fvm_advanceto;
+	if ( gtk_toggle_button_get_active(lookup_widget(dlg,"AWLine")) )
+	    metrics |= fvm_advanceat;
+	if ( isv )
+	    fv->showvmetrics = metrics;
+	else
+	    fv->showhmetrics = metrics;
+    }
+    gtk_widget_destroy( dlg );
+}
+#endif
+
+void FVChangeDisplayBitmap(FontView *fv,BDFFont *bdf) {
+    FVChangeDisplayFont(fv,bdf);
+    fv->sf->display_size = fv->show->pixelsize;
+}
+
+# if defined(FONTFORGE_CONFIG_GDRAW)
 static void FVMenuSize(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw), *fvs, *fvss;
     int dspsize = fv->filled->pixelsize;
@@ -3626,6 +3797,26 @@ static void FVMenuSize(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     else if ( mi->mid == MID_96 )
 	default_fv_font_size = dspsize = 96;
     else if ( mi->mid == MID_FitToEm ) {
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_PixelSize(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+    int dspsize = fv->filled->pixelsize;
+    int changedmodifier = false;
+    G_CONST_RETURN gchar *name = gtk_widget_get_name(menuitem);
+
+    fv->magnify = 1;
+    if ( strstr(name,"24")!=NULL )
+	default_fv_font_size = dspsize = 24;
+    else if ( strstr(name,"36")!=NULL )
+	default_fv_font_size = dspsize = 36;
+    else if ( strstr(name,"48")!=NULL )
+	default_fv_font_size = dspsize = 48;
+    else if ( strstr(name,"72")!=NULL )
+	default_fv_font_size = dspsize = 72;
+    else if ( strstr(name,"96")!=NULL )
+	default_fv_font_size = dspsize = 96;
+    else if ( strcmp(name,"fit_to_em1")==0 ) {
+# endif
 	default_fv_bbsized = fv->bbsized = !fv->bbsized;
 	fv->sf->display_bbsized = fv->bbsized;
 	changedmodifier = true;
@@ -3634,6 +3825,7 @@ static void FVMenuSize(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	fv->sf->display_antialias = fv->antialias;
 	changedmodifier = true;
     }
+
     SavePrefs();
     if ( fv->filled!=fv->show || fv->filled->pixelsize != dspsize || changedmodifier ) {
 	BDFFont *new, *old;
@@ -3670,9 +3862,15 @@ static void FVMenuSize(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     }
 }
 
+# ifdef FONTFORGE_CONFIG_GDRAW
 static void FVMenuShowBitmap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     BDFFont *bdf = mi->ti.userdata;
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_ShowBitmap(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+    BDFFont *bdf = user_data;
+# endif
 
     FVChangeDisplayBitmap(fv,bdf);		/* Let's not change any of the others */
 }
@@ -3685,6 +3883,1034 @@ void FVShowFilled(FontView *fv) {
 	if ( fvs->show!=fvs->filled )
 	    FVChangeDisplayFont(fvs,fvs->filled);
     fv->sf->display_size = -fv->filled->pixelsize;
+}
+
+void FVMetricsCenter(FontView *fv,int docenter) {
+    int i;
+    DBounds bb;
+    real transform[6];
+
+    transform[0] = transform[3] = 1.0;
+    transform[1] = transform[2] = transform[5] = 0.0;
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
+	SplineChar *sc = fv->sf->chars[i];
+	SplineCharFindBounds(sc,&bb);
+	if ( docenter )
+	    transform[4] = (sc->width-(bb.maxx-bb.minx))/2 - bb.minx;
+	else
+	    transform[4] = (sc->width-(bb.maxx-bb.minx))/3 - bb.minx;
+	if ( transform[4]!=0 )
+	    FVTrans(fv,sc,transform,NULL,fvt_dontmovewidth);
+    }
+}
+
+# ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuCenter(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_Center(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+    FVMetricsCenter(fv,mi->mid==MID_Center);
+}
+
+# ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuSetWidth(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+
+    if ( FVAnyCharSelected(fv)==-1 )
+return;
+    if ( mi->mid == MID_SetVWidth && !fv->sf->hasvmetrics )
+return;
+    FVSetWidth(fv,mi->mid==MID_SetWidth   ?wt_width:
+		  mi->mid==MID_SetLBearing?wt_lbearing:
+		  mi->mid==MID_SetRBearing?wt_rbearing:
+		  wt_vwidth);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_Setwidth(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+    G_CONST_RETURN gchar *name = gtk_widget_get_name(menuitem);
+
+    if ( FVAnyCharSelected(fv)==-1 )
+return;
+    if ( strcmp(name,"set_vertical_advance1")==0 && !fv->sf->hasvmetrics )
+return;
+    FVSetWidth(fv,strcmp(name,"set_width1")==0   ?wt_width:
+		  strcmp(name,"set_lbearing1")==0?wt_lbearing:
+		  strcmp(name,"set_rbearing1")==0?wt_rbearing:
+		  wt_vwidth);
+# endif
+}
+
+# if defined(FONTFORGE_CONFIG_GDRAW)
+static void FVMenuAutoWidth(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_AutoWidth(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+
+    FVAutoWidth(fv);
+}
+
+# if defined(FONTFORGE_CONFIG_GDRAW)
+static void FVMenuAutoKern(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_AutoKern(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+
+    FVAutoKern(fv);
+}
+
+# if defined(FONTFORGE_CONFIG_GDRAW)
+static void FVMenuKernByClasses(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_KernClasses(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+
+    ShowKernClasses(fv->sf,NULL,false);
+}
+
+# if defined(FONTFORGE_CONFIG_GDRAW)
+static void FVMenuVKernByClasses(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_VKernClasses(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+
+    ShowKernClasses(fv->sf,NULL,true);
+}
+
+# if defined(FONTFORGE_CONFIG_GDRAW)
+static void FVMenuRemoveKern(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_RemoveKP(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+
+    FVRemoveKerns(fv);
+}
+
+# if defined(FONTFORGE_CONFIG_GDRAW)
+static void FVMenuRemoveVKern(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_RemoveVKP(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+
+    FVRemoveVKerns(fv);
+}
+
+# if defined(FONTFORGE_CONFIG_GDRAW)
+static void FVMenuVKernFromHKern(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_VKernFromH(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+
+    FVVKernFromHKern(fv);
+}
+#endif
+
+static void FVAutoHint(FontView *fv,int removeOverlap) {
+    int i, cnt=0;
+
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
+	++cnt;
+# ifdef FONTFORGE_CONFIG_GDRAW
+    GProgressStartIndicatorR(10,_STR_AutoHintingFont,_STR_AutoHintingFont,0,cnt,1);
+# elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_start_indicator(10,_("Auto Hinting Font..."),_("Auto Hinting Font..."),0,cnt,1);
+# endif
+
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
+	SplineChar *sc = fv->sf->chars[i];
+	sc->manualhints = false;
+	SplineCharAutoHint(sc,removeOverlap);
+# ifdef FONTFORGE_CONFIG_GDRAW
+	if ( !GProgressNext())
+# elif defined(FONTFORGE_CONFIG_GTK)
+	if ( !gwwv_progress_next())
+# endif
+    break;
+    }
+# ifdef FONTFORGE_CONFIG_GDRAW
+    GProgressEndIndicator();
+# elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_end_indicator();
+# endif
+}
+
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+# ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuAutoHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    int removeOverlap = e==NULL || !(e->u.mouse.state&ksm_shift);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_AutoHint(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+    int removeOverlap = false;
+# endif
+    FVAutoHint( (FontView *) GDrawGetUserData(gw), removeOverlap );
+}
+#endif
+
+static void FVAutoHintSubs(FontView *fv) {
+    int i, cnt=0;
+
+    if ( fv->sf->mm!=NULL && fv->sf->mm->apple )
+return;
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
+	++cnt;
+# ifdef FONTFORGE_CONFIG_GDRAW
+    GProgressStartIndicatorR(10,_STR_FindingSubstitutionPts,_STR_FindingSubstitutionPts,0,cnt,1);
+# elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_start_indicator(10,_("Finding Substitution Points..."),_("Finding Substitution Points..."),0,cnt,1);
+# endif
+
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
+	SplineChar *sc = fv->sf->chars[i];
+	SCFigureHintMasks(sc);
+	SCUpdateAll(sc);
+# ifdef FONTFORGE_CONFIG_GDRAW
+	if ( !GProgressNext())
+# elif defined(FONTFORGE_CONFIG_GTK)
+	if ( !gwwv_progress_next())
+# endif
+    break;
+    }
+# ifdef FONTFORGE_CONFIG_GDRAW
+    GProgressEndIndicator();
+# elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_end_indicator();
+# endif
+}
+
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+# ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuAutoHintSubs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_AutoHintSubs(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+    FVAutoHintSubs( fv );
+}
+#endif
+
+static void FVAutoCounter(FontView *fv) {
+    int i, cnt=0;
+
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
+	++cnt;
+# ifdef FONTFORGE_CONFIG_GDRAW
+    GProgressStartIndicatorR(10,_STR_FindingCounterMasks,_STR_FindingCounterMasks,0,cnt,1);
+# elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_start_indicator(10,_("Finding Counter Masks..."),_("Finding Counter Masks..."),0,cnt,1);
+# endif
+
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
+	SplineChar *sc = fv->sf->chars[i];
+	SCFigureCounterMasks(sc);
+# ifdef FONTFORGE_CONFIG_GDRAW
+	if ( !GProgressNext())
+# elif defined(FONTFORGE_CONFIG_GTK)
+	if ( !gwwv_progress_next())
+# endif
+    break;
+    }
+# ifdef FONTFORGE_CONFIG_GDRAW
+    GProgressEndIndicator();
+# elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_end_indicator();
+# endif
+}
+
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+# ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuAutoCounter(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_AutoCounter(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+    FVAutoCounter( fv );
+}
+#endif
+
+static void FVDontAutoHint(FontView *fv) {
+    int i;
+
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
+	SplineChar *sc = fv->sf->chars[i];
+	sc->manualhints = true;
+    }
+}
+
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+# ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuDontAutoHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_DontAutoHint(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+    FVDontAutoHint( fv );
+}
+#endif
+
+static void FVAutoInstr(FontView *fv) {
+    BlueData bd;
+    int i, cnt=0;
+
+    QuickBlues(fv->sf,&bd);
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
+	++cnt;
+# ifdef FONTFORGE_CONFIG_GDRAW
+    GProgressStartIndicatorR(10,_STR_AutoInstructingFont,_STR_AutoInstructingFont,0,cnt,1);
+# elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_start_indicator(10,_("Auto Instructing Font..."),_("Auto Instructing Font..."),0,cnt,1);
+# endif
+
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
+	SplineChar *sc = fv->sf->chars[i];
+	SCAutoInstr(sc,&bd);
+# ifdef FONTFORGE_CONFIG_GDRAW
+	if ( !GProgressNext())
+# elif defined(FONTFORGE_CONFIG_GTK)
+	if ( !gwwv_progress_next())
+# endif
+    break;
+    }
+# ifdef FONTFORGE_CONFIG_GDRAW
+    GProgressEndIndicator();
+# elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_end_indicator();
+# endif
+}
+
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+# ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuAutoInstr(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_AutoInstr(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+    FVAutoInstr( fv );
+}
+
+# ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuEditInstrs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_EditInstrs(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+    int index = FVAnyCharSelected(fv);
+    SplineChar *sc;
+    if ( index<0 )
+return;
+    sc = SFMakeChar(fv->sf,index);
+    SCEditInstructions(sc);
+}
+
+# ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuEditTable(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    SFEditTable(fv->sf,
+	    mi->mid==MID_Editprep?CHR('p','r','e','p'):
+	    mi->mid==MID_Editfpgm?CHR('f','p','g','m'):
+				  CHR('c','v','t',' '));
+}
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_EditTable(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+    G_CONST_RETURN gchar *name = gtk_widget_get_name(menuitem);
+    SFEditTable(fv->sf,
+	    strcmp(name,"edit_prep1")==0?CHR('p','r','e','p'):
+	    strcmp(name,"edit_fpgm1")==0?CHR('f','p','g','m'):
+				  CHR('c','v','t',' '));
+}
+# endif
+
+# ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuClearInstrs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_ClearInstrs(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+    SplineChar *sc;
+    int i;
+
+    if ( !SFCloseAllInstrs(fv->sf))
+return;
+
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( (sc = fv->sf->chars[i])!=NULL ) {
+	if ( sc->ttf_instrs_len!=0 ) {
+	    free(sc->ttf_instrs);
+	    sc->ttf_instrs = NULL;
+	    sc->ttf_instrs_len = 0;
+	    SCCharChangedUpdate(sc);
+	}
+    }
+}
+#endif
+
+static void FVClearHints(FontView *fv) {
+    int i;
+
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
+	SplineChar *sc = fv->sf->chars[i];
+	sc->manualhints = true;
+	SCClearHintMasks(sc,true);
+	StemInfosFree(sc->hstem);
+	StemInfosFree(sc->vstem);
+	sc->hstem = sc->vstem = NULL;
+	sc->hconflicts = sc->vconflicts = false;
+	DStemInfosFree(sc->dstem);
+	sc->dstem = NULL;
+	MinimumDistancesFree(sc->md);
+	sc->md = NULL;
+	SCClearRounds(sc);
+	SCOutOfDateBackground(sc);
+	SCUpdateAll(sc);
+#if 0
+	if ( !GProgressNext())
+    break;
+#endif
+    }
+#if 0
+    GProgressEndIndicator();
+#endif
+}
+
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+# ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuClearHints(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_ClearHints(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+    FVClearHints(fv);
+}
+
+# ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuClearWidthMD(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_ClearWidthMD(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+    int i, changed;
+    MinimumDistance *md, *prev, *next;
+
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
+	SplineChar *sc = fv->sf->chars[i];
+	prev=NULL; changed = false;
+	for ( md=sc->md; md!=NULL; md=next ) {
+	    next = md->next;
+	    if ( md->sp2==NULL ) {
+		if ( prev==NULL )
+		    sc->md = next;
+		else
+		    prev->next = next;
+		chunkfree(md,sizeof(MinimumDistance));
+		changed = true;
+	    } else
+		prev = md;
+	}
+	if ( changed ) {
+	    sc->manualhints = true;
+	    SCOutOfDateBackground(sc);
+	    SCUpdateAll(sc);
+	}
+    }
+}
+
+# ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuHistograms(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    SFHistogram(fv->sf, NULL, FVAnyCharSelected(fv)!=-1?fv->selected:NULL,
+			mi->mid==MID_HStemHist ? hist_hstem :
+			mi->mid==MID_VStemHist ? hist_vstem :
+				hist_blues);
+}
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_Histograms(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+    G_CONST_RETURN gchar *name = gtk_widget_get_name(menuitem);
+    SFHistogram(fv->sf, NULL, FVAnyCharSelected(fv)!=-1?fv->selected:NULL,
+			strcmp(name,"hstem1")==0 ? hist_hstem :
+			strcmp(name,"vstem1")==0 ? hist_vstem :
+				hist_blues);
+# endif
+
+void FVSetTitle(FontView *fv) {
+# ifdef FONTFORGE_CONFIG_GDRAW
+    unichar_t *title, *ititle, *temp;
+    char *file=NULL;
+    char *enc;
+    int len;
+
+    if ( fv->gw==NULL )		/* In scripting */
+return;
+
+    enc = SFEncodingName(fv->sf);
+    len = strlen(fv->sf->fontname)+1 + strlen(enc)+4;
+    if ( (file = fv->sf->filename)==NULL )
+	file = fv->sf->origname;
+    if ( file!=NULL )
+	len += 2+strlen(file);
+    title = galloc((len+1)*sizeof(unichar_t));
+    uc_strcpy(title,fv->sf->fontname);
+    if ( fv->sf->changed )
+	uc_strcat(title,"*");
+    if ( file!=NULL ) {
+	uc_strcat(title,"  ");
+	temp = def2u_copy(GFileNameTail(file));
+	u_strcat(title,temp);
+	free(temp);
+    }
+    uc_strcat(title, " (" );
+    uc_strcat(title,enc);
+    uc_strcat(title, ")" );
+    free(enc);
+
+    ititle = uc_copy(fv->sf->fontname);
+    GDrawSetWindowTitles(fv->gw,title,ititle);
+    free(title);
+    free(ititle);
+# elif defined(FONTFORGE_CONFIG_GTK)
+    unichar_t *title, *ititle, *temp;
+    char *file=NULL;
+    char *enc;
+    int len;
+
+    if ( fv->gw==NULL )		/* In scripting */
+return;
+
+    enc = SFEncodingName(fv->sf);
+    len = strlen(fv->sf->fontname)+1 + strlen(enc)+4;
+    if ( (file = fv->sf->filename)==NULL )
+	file = fv->sf->origname;
+    if ( file!=NULL )
+	len += 2+strlen(file);
+    title = galloc((len+1));
+    strcpy(title,fv->sf->fontname);
+    if ( fv->sf->changed )
+	strcat(title,"*");
+    if ( file!=NULL ) {
+	strcat(title,"  ");
+	strcat(title,GFileNameTail(file));
+    }
+    strcat(title, " (" );
+    strcat(title,enc);
+    strcat(title, ")" );
+    free(enc);
+
+    gdk_window_set_icon_name( GTK_WIDGET(fv->gw)->window, fv->sf->fontname );
+    gtk_window_set_title( GTK_WINDOW(fv->gw), title );
+    free(title);
+# endif
+}
+
+# ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuShowSubFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+static void FontViewMenu_ShowSubFont(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+    SplineFont *new = mi->ti.userdata;
+    MetricsView *mv, *mvnext;
+
+    for ( mv=fv->metrics; mv!=NULL; mv = mvnext ) {
+	/* Don't bother trying to fix up metrics views, just not worth it */
+	mvnext = mv->next;
+	GDrawDestroyWindow(mv->gw);
+    }
+    GDrawSync(NULL);
+    GDrawProcessPendingEvents(NULL);
+    if ( fv->sf->charcnt!=new->charcnt ) {
+	free(fv->selected);
+	fv->selected = gcalloc(new->charcnt,sizeof(char));
+    }
+    fv->sf = new;
+    FVSetTitle(fv);
+    FontViewReformatOne(fv);
+}
+
+# ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuConvert2CID(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_Convert2CID(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+    SplineFont *cidmaster = fv->cidmaster;
+
+    if ( cidmaster!=NULL )
+return;
+    MakeCIDMaster(fv->sf,false,NULL,NULL);
+}
+
+# ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuConvertByCMap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_ConvertByCMap(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+    SplineFont *cidmaster = fv->cidmaster;
+
+    if ( cidmaster!=NULL )
+return;
+    MakeCIDMaster(fv->sf,true,NULL,NULL);
+}
+
+# ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuFlatten(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_Flatten(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+    SplineFont *cidmaster = fv->cidmaster;
+
+    if ( cidmaster==NULL )
+return;
+    SFFlatten(cidmaster);
+}
+
+# ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuFlattenByCMap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_FlattenByCMap(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+    SplineFont *cidmaster = fv->cidmaster;
+
+    if ( cidmaster==NULL )
+return;
+    SFFlattenByCMap(cidmaster,NULL);
+}
+#endif
+
+static void FVInsertInCID(FontView *fv,SplineFont *sf) {
+    SplineFont *cidmaster = fv->cidmaster;
+    SplineFont **subs;
+    int i;
+
+    subs = galloc((cidmaster->subfontcnt+1)*sizeof(SplineFont *));
+    for ( i=0; i<cidmaster->subfontcnt && cidmaster->subfonts[i]!=fv->sf; ++i )
+	subs[i] = cidmaster->subfonts[i];
+    subs[i] = sf;
+    for ( ; i<cidmaster->subfontcnt ; ++i )
+	subs[i+1] = cidmaster->subfonts[i];
+    ++cidmaster->subfontcnt;
+    free(cidmaster->subfonts);
+    cidmaster->subfonts = subs;
+    cidmaster->changed = true;
+    sf->cidmaster = cidmaster;
+
+    if ( fv->sf->charcnt!=sf->charcnt ) {
+	free(fv->selected);
+	fv->selected = gcalloc(sf->charcnt,sizeof(char));
+    }
+    fv->sf = sf;
+    sf->fv = fv;
+    FontViewReformatOne(fv);
+    FVSetTitle(fv);
+}
+
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+# ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuInsertFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_InsertFont(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+    SplineFont *cidmaster = fv->cidmaster;
+    SplineFont *new;
+    struct cidmap *map;
+    char *filename;
+
+    if ( cidmaster==NULL || cidmaster->subfontcnt>=255 )	/* Open type allows 1 byte to specify the fdselect */
+return;
+
+    filename = GetPostscriptFontName(NULL,false);
+    if ( filename==NULL )
+return;
+    new = LoadSplineFont(filename,0);
+    free(filename);
+    if ( new==NULL )
+return;
+    if ( new->fv == fv )		/* Already part of us */
+return;
+    if ( new->fv != NULL ) {
+	if ( new->fv->gw!=NULL )
+	    GDrawRaise(new->fv->gw);
+#if defined(FONTFORGE_CONFIG_GDRAW)
+	GWidgetErrorR(_STR_CloseFont,_STR_CloseFontForCID,new->origname);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_post_error(_("Please close font"),_("Please close %s before inserting it into a CID font"),new->origname);
+#endif
+return;
+    }
+
+    map = FindCidMap(cidmaster->cidregistry,cidmaster->ordering,cidmaster->supplement,cidmaster);
+    SFEncodeToMap(new,map);
+    if ( !PSDictHasEntry(new->private,"lenIV"))
+	PSDictChangeEntry(new->private,"lenIV","1");		/* It's 4 by default, in CIDs the convention seems to be 1 */
+    new->display_antialias = fv->sf->display_antialias;
+    new->display_bbsized = fv->sf->display_bbsized;
+    new->display_size = fv->sf->display_size;
+    FVInsertInCID(fv,new);
+}
+
+# ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuInsertBlank(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_InsertBlank(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+    SplineFont *cidmaster = fv->cidmaster, *sf;
+    struct cidmap *map;
+
+    if ( cidmaster==NULL || cidmaster->subfontcnt>=255 )	/* Open type allows 1 byte to specify the fdselect */
+return;
+    map = FindCidMap(cidmaster->cidregistry,cidmaster->ordering,cidmaster->supplement,cidmaster);
+    sf = SplineFontBlank(em_none,MaxCID(map));
+    sf->cidmaster = cidmaster;
+    sf->display_antialias = fv->sf->display_antialias;
+    sf->display_bbsized = fv->sf->display_bbsized;
+    sf->display_size = fv->sf->display_size;
+    sf->private = gcalloc(1,sizeof(struct psdict));
+    PSDictChangeEntry(sf->private,"lenIV","1");		/* It's 4 by default, in CIDs the convention seems to be 1 */
+    FVInsertInCID(fv,sf);
+}
+
+# ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuRemoveFontFromCID(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    static int buts[] = { _STR_Remove, _STR_Cancel, 0 };
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_RemoveFontFromCID(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+    static char *buts[] = { GTK_STOCK_REMOVE, GTK_STOCK_CANCEL, NULL };
+# endif
+    SplineFont *cidmaster = fv->cidmaster, *sf = fv->sf, *replace;
+    int i;
+    MetricsView *mv, *mnext;
+    FontView *fvs;
+
+    if ( cidmaster==NULL || cidmaster->subfontcnt<=1 )	/* Can't remove last font */
+return;
+#if defined(FONTFORGE_CONFIG_GDRAW)
+    if ( GWidgetAskR(_STR_RemoveFont,buts,0,1,_STR_CIDRemoveFontCheck,
+#elif defined(FONTFORGE_CONFIG_GTK)
+    if ( gwwv_ask(_("Remove Font"),buts,0,1,_("Are you sure you wish to remove sub-font %1$.40s from the CID font %2$.40s"),
+#endif
+	    sf->fontname,cidmaster->fontname)==1 )
+return;
+
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	CharView *cv, *next;
+	for ( cv = sf->chars[i]->views; cv!=NULL; cv = next ) {
+	    next = cv->next;
+	    GDrawDestroyWindow(cv->gw);
+	}
+    }
+    GDrawProcessPendingEvents(NULL);
+    for ( mv=fv->metrics; mv!=NULL; mv = mnext ) {
+	mnext = mv->next;
+	GDrawDestroyWindow(mv->gw);
+    }
+    GDrawSync(NULL);
+    GDrawProcessPendingEvents(NULL);
+    /* Just in case... */
+    GDrawSync(NULL);
+    GDrawProcessPendingEvents(NULL);
+
+    for ( i=0; i<cidmaster->subfontcnt; ++i )
+	if ( cidmaster->subfonts[i]==sf )
+    break;
+    replace = i==0?cidmaster->subfonts[1]:cidmaster->subfonts[i-1];
+    while ( i<cidmaster->subfontcnt-1 ) {
+	cidmaster->subfonts[i] = cidmaster->subfonts[i+1];
+	++i;
+    }
+    --cidmaster->subfontcnt;
+
+    for ( fvs=fv->sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
+	if ( fvs->sf==sf ) {
+	    fvs->sf = replace;
+	    if ( replace->charcnt!=sf->charcnt ) {
+		free(fvs->selected);
+		fvs->selected = gcalloc(replace->charcnt,sizeof(char));
+	    }
+	    FVSetTitle(fv);
+	}
+    }
+    FontViewReformatAll(fv->sf);
+    SplineFontFree(sf);
+}
+
+# ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuCIDFontInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_CIDFontInfo(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+    SplineFont *cidmaster = fv->cidmaster;
+
+    if ( cidmaster==NULL )
+return;
+    FontInfo(cidmaster,-1,false);
+}
+
+# ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuMMValid(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_MMValid(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+    MMSet *mm = fv->sf->mm;
+
+    if ( mm==NULL )
+return;
+    MMValid(mm,true);
+}
+
+# ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuCreateMM(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_CreateMM(GtkMenuItem *menuitem, gpointer user_data) {
+# endif
+    MMWizard(NULL);
+}
+
+# ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuMMInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_MMInfo(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+    MMSet *mm = fv->sf->mm;
+
+    if ( mm==NULL )
+return;
+    MMWizard(mm);
+}
+
+# ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuChangeMMBlend(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_ChangeDefWeights(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+    MMSet *mm = fv->sf->mm;
+
+    if ( mm==NULL || mm->apple )
+return;
+    MMChangeBlend(mm,fv,false);
+}
+
+# ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuBlendToNew(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_Blend(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+    MMSet *mm = fv->sf->mm;
+
+    if ( mm==NULL )
+return;
+    MMChangeBlend(mm,fv,true);
+}
+#endif
+
+# ifdef FONTFORGE_CONFIG_GDRAW
+static void cflistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    /*FontView *fv = (FontView *) GDrawGetUserData(gw);*/
+
+    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
+	switch ( mi->mid ) {
+	  case MID_AllFonts:
+	    mi->ti.checked = !onlycopydisplayed;
+	  break;
+	  case MID_DisplayedFont:
+	    mi->ti.checked = onlycopydisplayed;
+	  break;
+	  case MID_CharName:
+	    mi->ti.checked = copymetadata;
+	  break;
+	}
+    }
+}
+
+static void sllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    fv = fv;
+}
+
+static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    int anychars = FVAnyCharSelected(fv);
+    int removeOverlap;
+    int multilayer = fv->sf->multilayer;
+
+    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
+	switch ( mi->mid ) {
+	  case MID_AutoHint:
+	    mi->ti.disabled = anychars==-1 || multilayer;
+	    removeOverlap = e==NULL || !(e->u.mouse.state&ksm_shift);
+	    free(mi->ti.text);
+	    mi->ti.text = u_copy(GStringGetResource(removeOverlap?_STR_Autohint:_STR_FullAutohint,NULL));
+	  break;
+	  case MID_HintSubsPt:
+	    mi->ti.disabled = fv->sf->order2 || anychars==-1 || multilayer;
+	    if ( fv->sf->mm!=NULL && fv->sf->mm->apple )
+		mi->ti.disabled = true;
+	  break;
+	  case MID_AutoCounter: case MID_DontAutoHint:
+	    mi->ti.disabled = fv->sf->order2 || anychars==-1 || multilayer;
+	  break;
+	  case MID_AutoInstr: case MID_EditInstructions:
+	    mi->ti.disabled = !fv->sf->order2 || anychars==-1 || multilayer;
+	  break;
+	  case MID_Editfpgm: case MID_Editprep: case MID_Editcvt:
+	    mi->ti.disabled = !fv->sf->order2 || multilayer;
+	  break;
+	  case MID_ClearHints: case MID_ClearWidthMD: case MID_ClearInstrs:
+	    mi->ti.disabled = anychars==-1;
+	  break;
+	}
+    }
+}
+
+static void fllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    int anychars = FVAnyCharSelected(fv);
+
+    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
+	switch ( mi->mid ) {
+	  case MID_OpenOutline:
+	    mi->ti.disabled = anychars==-1;
+	  break;
+	  case MID_OpenBitmap:
+	    mi->ti.disabled = anychars==-1 || fv->sf->bitmaps==NULL;
+	  break;
+	  case MID_Revert:
+	    mi->ti.disabled = fv->sf->origname==NULL;
+	  break;
+	  case MID_RevertGlyph:
+	    mi->ti.disabled = fv->sf->origname==NULL || anychars==-1;
+	  break;
+	  case MID_Recent:
+	    mi->ti.disabled = !RecentFilesAny();
+	  break;
+	  case MID_ScriptMenu:
+	    mi->ti.disabled = script_menu_names[0]==NULL;
+	  break;
+	  case MID_Print:
+	    mi->ti.disabled = fv->sf->onlybitmaps;
+	  break;
+	  case MID_Display:
+	    mi->ti.disabled = (fv->sf->onlybitmaps && fv->sf->bitmaps==NULL) ||
+			fv->sf->multilayer;
+	  break;
+	}
+    }
+}
+
+static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    int pos = FVAnyCharSelected(fv), i;
+    int not_pasteable = pos==-1 ||
+		    (!CopyContainsSomething() &&
+#ifndef _NO_LIBPNG
+		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/png") &&
+#endif
+		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/bmp") &&
+		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/eps"));
+    RefChar *base = CopyContainsRef(fv->sf);
+
+
+    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
+	switch ( mi->mid ) {
+	  case MID_Paste: case MID_PasteInto:
+	    mi->ti.disabled = not_pasteable;
+	  break;
+#ifdef FONTFORGE_CONFIG_PASTEAFTER
+	  case MID_PasteAfter:
+	    mi->ti.disabled = not_pasteable || pos<0;
+	  break;
+#endif
+	  case MID_SameGlyphAs:
+	    mi->ti.disabled = not_pasteable || base==NULL || fv->cidmaster!=NULL ||
+		    fv->selected[base->local_enc];	/* Can't be self-referential */
+	  break;
+	  case MID_CopyFeatures:
+	    mi->ti.disabled = pos<0 || !SCAnyFeatures(fv->sf->chars[pos]);
+	  break;
+	  case MID_Join:
+	  case MID_Cut: case MID_Copy: case MID_Clear:
+	  case MID_CopyWidth: case MID_CopyLBearing: case MID_CopyRBearing:
+	  case MID_CopyRef: case MID_UnlinkRef:
+	  case MID_RemoveUndoes: case MID_CopyFgToBg:
+	  case MID_RplRef:
+	    mi->ti.disabled = pos==-1;
+	  break;
+	  case MID_CopyVWidth: 
+	    mi->ti.disabled = pos==-1 || !fv->sf->hasvmetrics;
+	  break;
+	  case MID_ClearBackground:
+	    mi->ti.disabled = true;
+	    if ( pos!=-1 && !( onlycopydisplayed && fv->filled!=fv->show )) {
+		for ( i=0; i<fv->sf->charcnt; ++i )
+		    if ( fv->selected[i] && fv->sf->chars[i]!=NULL )
+			if ( fv->sf->chars[i]->layers[ly_back].images!=NULL ||
+				fv->sf->chars[i]->layers[ly_back].splines!=NULL ) {
+			    mi->ti.disabled = false;
+		break;
+			}
+	    }
+	  break;
+	  case MID_Undo:
+	    for ( i=0; i<fv->sf->charcnt; ++i )
+		if ( fv->selected[i] && fv->sf->chars[i]!=NULL )
+		    if ( fv->sf->chars[i]->layers[ly_fore].undoes!=NULL )
+	    break;
+	    mi->ti.disabled = i==fv->sf->charcnt;
+	  break;
+	  case MID_Redo:
+	    for ( i=0; i<fv->sf->charcnt; ++i )
+		if ( fv->selected[i] && fv->sf->chars[i]!=NULL )
+		    if ( fv->sf->chars[i]->layers[ly_fore].redoes!=NULL )
+	    break;
+	    mi->ti.disabled = i==fv->sf->charcnt;
+	  break;
+	}
+    }
 }
 
 static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -3771,103 +4997,6 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     }
 }
 
-void FVMetricsCenter(FontView *fv,int docenter) {
-    int i;
-    DBounds bb;
-    real transform[6];
-
-    transform[0] = transform[3] = 1.0;
-    transform[1] = transform[2] = transform[5] = 0.0;
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
-	SplineChar *sc = fv->sf->chars[i];
-	SplineCharFindBounds(sc,&bb);
-	if ( docenter )
-	    transform[4] = (sc->width-(bb.maxx-bb.minx))/2 - bb.minx;
-	else
-	    transform[4] = (sc->width-(bb.maxx-bb.minx))/3 - bb.minx;
-	if ( transform[4]!=0 )
-	    FVTrans(fv,sc,transform,NULL,fvt_dontmovewidth);
-    }
-}
-
-static void FVMenuCenter(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    FVMetricsCenter(fv,mi->mid==MID_Center);
-}
-
-static void FVMenuSetWidth(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-
-    if ( FVAnyCharSelected(fv)==-1 )
-return;
-    if ( mi->mid == MID_SetVWidth && !fv->sf->hasvmetrics )
-return;
-    FVSetWidth(fv,mi->mid==MID_SetWidth?wt_width:
-		  mi->mid==MID_SetLBearing?wt_lbearing:
-		  mi->mid==MID_SetRBearing?wt_rbearing:
-		  wt_vwidth);
-}
-
-static void FVMenuAutoWidth(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-
-    FVAutoWidth(fv);
-}
-
-static void FVMenuAutoKern(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-
-    FVAutoKern(fv);
-}
-
-static void FVMenuKernByClasses(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-
-    ShowKernClasses(fv->sf,NULL,false);
-}
-
-static void FVMenuVKernByClasses(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-
-    ShowKernClasses(fv->sf,NULL,true);
-}
-
-static void FVMenuRemoveKern(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-
-    FVRemoveKerns(fv);
-}
-
-static void FVMenuRemoveVKern(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-
-    FVRemoveVKerns(fv);
-}
-
-static void FVMenuVKernFromHKern(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-
-    FVVKernFromHKern(fv);
-}
-
-static void FVMenuPrint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-
-    PrintDlg(fv,NULL,NULL);
-}
-
-static void FVMenuDisplay(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-
-    DisplayDlg(fv->sf);
-}
-
-static void FVMenuExecute(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-
-    ScriptDlg(fv);
-}
-
 static void mtlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     int anychars = FVAnyCharSelected(fv);
@@ -3885,593 +5014,6 @@ static void mtlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_VKernFromH:
 	  case MID_RmVKern:
 	    mi->ti.disabled = !fv->sf->hasvmetrics;
-	  break;
-	}
-    }
-}
-
-static void FVAutoHint(FontView *fv,int removeOverlap) {
-    int i, cnt=0;
-
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
-	++cnt;
-    GProgressStartIndicatorR(10,_STR_AutoHintingFont,_STR_AutoHintingFont,0,cnt,1);
-
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
-	SplineChar *sc = fv->sf->chars[i];
-	sc->manualhints = false;
-	SplineCharAutoHint(sc,removeOverlap);
-	if ( !GProgressNext())
-    break;
-    }
-    GProgressEndIndicator();
-}
-
-static void FVMenuAutoHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    int removeOverlap = e==NULL || !(e->u.mouse.state&ksm_shift);
-    FVAutoHint( (FontView *) GDrawGetUserData(gw), removeOverlap );
-}
-
-static void FVAutoHintSubs(FontView *fv) {
-    int i, cnt=0;
-
-    if ( fv->sf->mm!=NULL && fv->sf->mm->apple )
-return;
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
-	++cnt;
-    GProgressStartIndicatorR(10,_STR_FindingSubstitutionPts,_STR_FindingSubstitutionPts,0,cnt,1);
-
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
-	SplineChar *sc = fv->sf->chars[i];
-	SCFigureHintMasks(sc);
-	SCUpdateAll(sc);
-	if ( !GProgressNext())
-    break;
-    }
-    GProgressEndIndicator();
-}
-
-static void FVMenuAutoHintSubs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FVAutoHintSubs( (FontView *) GDrawGetUserData(gw) );
-}
-
-static void FVAutoCounter(FontView *fv) {
-    int i, cnt=0;
-
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
-	++cnt;
-    GProgressStartIndicatorR(10,_STR_FindingCounterMasks,_STR_FindingCounterMasks,0,cnt,1);
-
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
-	SplineChar *sc = fv->sf->chars[i];
-	SCFigureCounterMasks(sc);
-	if ( !GProgressNext())
-    break;
-    }
-    GProgressEndIndicator();
-}
-
-static void FVMenuAutoCounter(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FVAutoCounter( (FontView *) GDrawGetUserData(gw) );
-}
-
-static void FVDontAutoHint(FontView *fv) {
-    int i;
-
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
-	SplineChar *sc = fv->sf->chars[i];
-	sc->manualhints = true;
-    }
-}
-
-static void FVMenuDontAutoHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FVDontAutoHint( (FontView *) GDrawGetUserData(gw) );
-}
-
-static void FVAutoInstr(FontView *fv) {
-    BlueData bd;
-    int i, cnt=0;
-
-    QuickBlues(fv->sf,&bd);
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
-	++cnt;
-    GProgressStartIndicatorR(10,_STR_AutoInstructingFont,_STR_AutoInstructingFont,0,cnt,1);
-
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
-	SplineChar *sc = fv->sf->chars[i];
-	SCAutoInstr(sc,&bd);
-	if ( !GProgressNext())
-    break;
-    }
-    GProgressEndIndicator();
-}
-
-static void FVMenuAutoInstr(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FVAutoInstr( (FontView *) GDrawGetUserData(gw) );
-}
-
-static void FVMenuEditInstrs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    int index = FVAnyCharSelected(fv);
-    SplineChar *sc;
-    if ( index<0 )
-return;
-    sc = SFMakeChar(fv->sf,index);
-    SCEditInstructions(sc);
-}
-
-static void FVMenuEditTable(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    SFEditTable(fv->sf,
-	    mi->mid==MID_Editprep?CHR('p','r','e','p'):
-	    mi->mid==MID_Editfpgm?CHR('f','p','g','m'):
-				  CHR('c','v','t',' '));
-}
-
-static void FVMenuClearInstrs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    SplineChar *sc;
-    int i;
-
-    if ( !SFCloseAllInstrs(fv->sf))
-return;
-
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( (sc = fv->sf->chars[i])!=NULL ) {
-	if ( sc->ttf_instrs_len!=0 ) {
-	    free(sc->ttf_instrs);
-	    sc->ttf_instrs = NULL;
-	    sc->ttf_instrs_len = 0;
-	    SCCharChangedUpdate(sc);
-	}
-    }
-}
-
-static void FVClearHints(FontView *fv) {
-    int i;
-
-#if 0
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
-	++cnt;
-    GProgressStartIndicatorR(10,_STR_AutoHintingFont,_STR_AutoHintingFont,0,cnt,1);
-#endif
-
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
-	SplineChar *sc = fv->sf->chars[i];
-	sc->manualhints = true;
-	SCClearHintMasks(sc,true);
-	StemInfosFree(sc->hstem);
-	StemInfosFree(sc->vstem);
-	sc->hstem = sc->vstem = NULL;
-	sc->hconflicts = sc->vconflicts = false;
-	DStemInfosFree(sc->dstem);
-	sc->dstem = NULL;
-	MinimumDistancesFree(sc->md);
-	sc->md = NULL;
-	SCClearRounds(sc);
-	SCOutOfDateBackground(sc);
-	SCUpdateAll(sc);
-#if 0
-	if ( !GProgressNext())
-    break;
-#endif
-    }
-#if 0
-    GProgressEndIndicator();
-#endif
-}
-
-static void FVMenuClearHints(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    FVClearHints(fv);
-}
-
-static void FVMenuClearWidthMD(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    int i, changed;
-    MinimumDistance *md, *prev, *next;
-
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
-	SplineChar *sc = fv->sf->chars[i];
-	prev=NULL; changed = false;
-	for ( md=sc->md; md!=NULL; md=next ) {
-	    next = md->next;
-	    if ( md->sp2==NULL ) {
-		if ( prev==NULL )
-		    sc->md = next;
-		else
-		    prev->next = next;
-		chunkfree(md,sizeof(MinimumDistance));
-		changed = true;
-	    } else
-		prev = md;
-	}
-	if ( changed ) {
-	    sc->manualhints = true;
-	    SCOutOfDateBackground(sc);
-	    SCUpdateAll(sc);
-	}
-    }
-}
-
-static void FVMenuHistograms(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    SFHistogram(fv->sf, NULL, FVAnyCharSelected(fv)!=-1?fv->selected:NULL,
-			mi->mid==MID_HStemHist ? hist_hstem :
-			mi->mid==MID_VStemHist ? hist_vstem :
-				hist_blues);
-}
-
-void FVSetTitle(FontView *fv) {
-    unichar_t *title, *ititle, *temp;
-    char *file=NULL;
-    char *enc;
-    int len;
-
-    if ( fv->gw==NULL )		/* In scripting */
-return;
-
-    enc = SFEncodingName(fv->sf);
-    len = strlen(fv->sf->fontname)+1 + strlen(enc)+4;
-    if ( (file = fv->sf->filename)==NULL )
-	file = fv->sf->origname;
-    if ( file!=NULL )
-	len += 2+strlen(file);
-    title = galloc((len+1)*sizeof(unichar_t));
-    uc_strcpy(title,fv->sf->fontname);
-    if ( fv->sf->changed )
-	uc_strcat(title,"*");
-    if ( file!=NULL ) {
-	uc_strcat(title,"  ");
-	temp = def2u_copy(GFileNameTail(file));
-	u_strcat(title,temp);
-	free(temp);
-    }
-    uc_strcat(title, " (" );
-    uc_strcat(title,enc);
-    uc_strcat(title, ")" );
-    free(enc);
-
-    ititle = uc_copy(fv->sf->fontname);
-    GDrawSetWindowTitles(fv->gw,title,ititle);
-    free(title);
-    free(ititle);
-}
-
-static void FVMenuShowSubFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    SplineFont *new = mi->ti.userdata;
-    MetricsView *mv, *mvnext;
-
-    for ( mv=fv->metrics; mv!=NULL; mv = mvnext ) {
-	/* Don't bother trying to fix up metrics views, just not worth it */
-	mvnext = mv->next;
-	GDrawDestroyWindow(mv->gw);
-    }
-    GDrawSync(NULL);
-    GDrawProcessPendingEvents(NULL);
-    if ( fv->sf->charcnt!=new->charcnt ) {
-	free(fv->selected);
-	fv->selected = gcalloc(new->charcnt,sizeof(char));
-    }
-    fv->sf = new;
-    FVSetTitle(fv);
-    FontViewReformatOne(fv);
-}
-
-static void FVMenuConvert2CID(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    SplineFont *cidmaster = fv->cidmaster;
-
-    if ( cidmaster!=NULL )
-return;
-    MakeCIDMaster(fv->sf,false,NULL,NULL);
-}
-
-static void FVMenuConvertByCMap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    SplineFont *cidmaster = fv->cidmaster;
-
-    if ( cidmaster!=NULL )
-return;
-    MakeCIDMaster(fv->sf,true,NULL,NULL);
-}
-
-static void FVMenuFlatten(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    SplineFont *cidmaster = fv->cidmaster;
-
-    if ( cidmaster==NULL )
-return;
-    SFFlatten(cidmaster);
-}
-
-static void FVMenuFlattenByCMap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    SplineFont *cidmaster = fv->cidmaster;
-
-    if ( cidmaster==NULL )
-return;
-    SFFlattenByCMap(cidmaster,NULL);
-}
-
-static void FVInsertInCID(FontView *fv,SplineFont *sf) {
-    SplineFont *cidmaster = fv->cidmaster;
-    SplineFont **subs;
-    int i;
-
-    subs = galloc((cidmaster->subfontcnt+1)*sizeof(SplineFont *));
-    for ( i=0; i<cidmaster->subfontcnt && cidmaster->subfonts[i]!=fv->sf; ++i )
-	subs[i] = cidmaster->subfonts[i];
-    subs[i] = sf;
-    for ( ; i<cidmaster->subfontcnt ; ++i )
-	subs[i+1] = cidmaster->subfonts[i];
-    ++cidmaster->subfontcnt;
-    free(cidmaster->subfonts);
-    cidmaster->subfonts = subs;
-    cidmaster->changed = true;
-    sf->cidmaster = cidmaster;
-
-    if ( fv->sf->charcnt!=sf->charcnt ) {
-	free(fv->selected);
-	fv->selected = gcalloc(sf->charcnt,sizeof(char));
-    }
-    fv->sf = sf;
-    sf->fv = fv;
-    FontViewReformatOne(fv);
-    FVSetTitle(fv);
-}
-
-static void FVMenuInsertFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    SplineFont *cidmaster = fv->cidmaster;
-    SplineFont *new;
-    struct cidmap *map;
-    char *filename;
-
-    if ( cidmaster==NULL || cidmaster->subfontcnt>=255 )	/* Open type allows 1 byte to specify the fdselect */
-return;
-
-    filename = GetPostscriptFontName(NULL,false);
-    if ( filename==NULL )
-return;
-    new = LoadSplineFont(filename,0);
-    free(filename);
-    if ( new==NULL )
-return;
-    if ( new->fv == fv )		/* Already part of us */
-return;
-    if ( new->fv != NULL ) {
-	if ( new->fv->gw!=NULL )
-	    GDrawRaise(new->fv->gw);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_CloseFont,_STR_CloseFontForCID,new->origname);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	gwwv_post_error(_("Please close font"),_("Please close %s before inserting it into a CID font"),new->origname);
-#endif
-return;
-    }
-
-    map = FindCidMap(cidmaster->cidregistry,cidmaster->ordering,cidmaster->supplement,cidmaster);
-    SFEncodeToMap(new,map);
-    if ( !PSDictHasEntry(new->private,"lenIV"))
-	PSDictChangeEntry(new->private,"lenIV","1");		/* It's 4 by default, in CIDs the convention seems to be 1 */
-    new->display_antialias = fv->sf->display_antialias;
-    new->display_bbsized = fv->sf->display_bbsized;
-    new->display_size = fv->sf->display_size;
-    FVInsertInCID(fv,new);
-}
-
-static void FVMenuInsertBlank(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    SplineFont *cidmaster = fv->cidmaster, *sf;
-    struct cidmap *map;
-
-    if ( cidmaster==NULL || cidmaster->subfontcnt>=255 )	/* Open type allows 1 byte to specify the fdselect */
-return;
-    map = FindCidMap(cidmaster->cidregistry,cidmaster->ordering,cidmaster->supplement,cidmaster);
-    sf = SplineFontBlank(em_none,MaxCID(map));
-    sf->cidmaster = cidmaster;
-    sf->display_antialias = fv->sf->display_antialias;
-    sf->display_bbsized = fv->sf->display_bbsized;
-    sf->display_size = fv->sf->display_size;
-    sf->private = gcalloc(1,sizeof(struct psdict));
-    PSDictChangeEntry(sf->private,"lenIV","1");		/* It's 4 by default, in CIDs the convention seems to be 1 */
-    FVInsertInCID(fv,sf);
-}
-
-static void FVMenuRemoveFontFromCID(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    SplineFont *cidmaster = fv->cidmaster, *sf = fv->sf, *replace;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    static int buts[] = { _STR_Remove, _STR_Cancel, 0 };
-#elif defined(FONTFORGE_CONFIG_GTK)
-    static char *buts[] = { GTK_STOCK_REMOVE, GTK_STOCK_CANCEL, NULL };
-#endif
-    int i;
-    MetricsView *mv, *mnext;
-    FontView *fvs;
-
-    if ( cidmaster==NULL || cidmaster->subfontcnt<=1 )	/* Can't remove last font */
-return;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    if ( GWidgetAskR(_STR_RemoveFont,buts,0,1,_STR_CIDRemoveFontCheck,
-#elif defined(FONTFORGE_CONFIG_GTK)
-    if ( gwwv_ask(_("Remove Font"),buts,0,1,_("Are you sure you wish to remove sub-font %1$.40s from the CID font %2$.40s"),
-#endif
-	    sf->fontname,cidmaster->fontname)==1 )
-return;
-
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	CharView *cv, *next;
-	for ( cv = sf->chars[i]->views; cv!=NULL; cv = next ) {
-	    next = cv->next;
-	    GDrawDestroyWindow(cv->gw);
-	}
-    }
-    GDrawProcessPendingEvents(NULL);
-    for ( mv=fv->metrics; mv!=NULL; mv = mnext ) {
-	mnext = mv->next;
-	GDrawDestroyWindow(mv->gw);
-    }
-    GDrawSync(NULL);
-    GDrawProcessPendingEvents(NULL);
-    /* Just in case... */
-    GDrawSync(NULL);
-    GDrawProcessPendingEvents(NULL);
-
-    for ( i=0; i<cidmaster->subfontcnt; ++i )
-	if ( cidmaster->subfonts[i]==sf )
-    break;
-    replace = i==0?cidmaster->subfonts[1]:cidmaster->subfonts[i-1];
-    while ( i<cidmaster->subfontcnt-1 ) {
-	cidmaster->subfonts[i] = cidmaster->subfonts[i+1];
-	++i;
-    }
-    --cidmaster->subfontcnt;
-
-    for ( fvs=fv->sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
-	if ( fvs->sf==sf ) {
-	    fvs->sf = replace;
-	    if ( replace->charcnt!=sf->charcnt ) {
-		free(fvs->selected);
-		fvs->selected = gcalloc(replace->charcnt,sizeof(char));
-	    }
-	    FVSetTitle(fv);
-	}
-    }
-    FontViewReformatAll(fv->sf);
-    SplineFontFree(sf);
-}
-
-static void FVMenuCIDFontInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    SplineFont *cidmaster = fv->cidmaster;
-
-    if ( cidmaster==NULL )
-return;
-    FontInfo(cidmaster,-1,false);
-}
-
-static void FVMenuMMValid(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    MMSet *mm = fv->sf->mm;
-
-    if ( mm==NULL )
-return;
-    MMValid(mm,true);
-}
-
-static void FVMenuCreateMM(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    MMWizard(NULL);
-}
-
-static void FVMenuMMInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    MMSet *mm = fv->sf->mm;
-
-    if ( mm==NULL )
-return;
-    MMWizard(mm);
-}
-
-# ifdef FONTFORGE_CONFIG_GDRAW
-static void FVMenuChangeMMBlend(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-# elif defined(FONTFORGE_CONFIG_GTK)
-void FontViewMenu_ChangeDefWeights(GtkMenuItem *menuitem, gpointer user_data) {
-    FontView *fv = FV_From_MI(menuitem);
-# endif
-    MMSet *mm = fv->sf->mm;
-
-    if ( mm==NULL || mm->apple )
-return;
-    MMChangeBlend(mm,fv,false);
-}
-
-# ifdef FONTFORGE_CONFIG_GDRAW
-static void FVMenuBlendToNew(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-# elif defined(FONTFORGE_CONFIG_GTK)
-void FontViewMenu_Blend(GtkMenuItem *menuitem, gpointer user_data) {
-    FontView *fv = FV_From_MI(menuitem);
-# endif
-    MMSet *mm = fv->sf->mm;
-
-    if ( mm==NULL )
-return;
-    MMChangeBlend(mm,fv,true);
-}
-
-# ifdef FONTFORGE_CONFIG_GDRAW
-static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    int anychars = FVAnyCharSelected(fv);
-    int removeOverlap;
-    int multilayer = fv->sf->multilayer;
-
-    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
-	switch ( mi->mid ) {
-	  case MID_AutoHint:
-	    mi->ti.disabled = anychars==-1 || multilayer;
-	    removeOverlap = e==NULL || !(e->u.mouse.state&ksm_shift);
-	    free(mi->ti.text);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    mi->ti.text = u_copy(GStringGetResource(removeOverlap?_STR_Autohint:_STR_FullAutohint,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    mi->ti.text = u_copy(removeOverlap?_("AutoHint"));
-#endif
-	  break;
-	  case MID_HintSubsPt:
-	    mi->ti.disabled = fv->sf->order2 || anychars==-1 || multilayer;
-	    if ( fv->sf->mm!=NULL && fv->sf->mm->apple )
-		mi->ti.disabled = true;
-	  break;
-	  case MID_AutoCounter: case MID_DontAutoHint:
-	    mi->ti.disabled = fv->sf->order2 || anychars==-1 || multilayer;
-	  break;
-	  case MID_AutoInstr: case MID_EditInstructions:
-	    mi->ti.disabled = !fv->sf->order2 || anychars==-1 || multilayer;
-	  break;
-	  case MID_Editfpgm: case MID_Editprep: case MID_Editcvt:
-	    mi->ti.disabled = !fv->sf->order2 || multilayer;
-	  break;
-	  case MID_ClearHints: case MID_ClearWidthMD: case MID_ClearInstrs:
-	    mi->ti.disabled = anychars==-1;
-	  break;
-	}
-    }
-}
-
-static void fllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    int anychars = FVAnyCharSelected(fv);
-
-    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
-	switch ( mi->mid ) {
-	  case MID_OpenOutline:
-	    mi->ti.disabled = anychars==-1;
-	  break;
-	  case MID_OpenBitmap:
-	    mi->ti.disabled = anychars==-1 || fv->sf->bitmaps==NULL;
-	  break;
-	  case MID_Revert:
-	    mi->ti.disabled = fv->sf->origname==NULL;
-	  break;
-	  case MID_RevertGlyph:
-	    mi->ti.disabled = fv->sf->origname==NULL || anychars==-1;
-	  break;
-	  case MID_Recent:
-	    mi->ti.disabled = !RecentFilesAny();
-	  break;
-	  case MID_ScriptMenu:
-	    mi->ti.disabled = script_menu_names[0]==NULL;
-	  break;
-	  case MID_Print:
-	    mi->ti.disabled = fv->sf->onlybitmaps;
-	  break;
-	  case MID_Display:
-	    mi->ti.disabled = (fv->sf->onlybitmaps && fv->sf->bitmaps==NULL) ||
-			fv->sf->multilayer;
 	  break;
 	}
     }
@@ -4791,7 +5333,7 @@ static void aplistbuild(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static GMenuItem cblist[] = {
     { { (unichar_t *) _STR_KernPairs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'K' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuKernPairs, MID_KernPairs },
-    { { (unichar_t *) _STR_AnchoredPairs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'K' }, '\0', ksm_shift|ksm_control, dummyall, aplistbuild, FVMenuAnchorPairs, MID_AnchorPairs },
+    { { (unichar_t *) _STR_AnchoredPairs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'K' }, '\0', ksm_shift|ksm_control, dummyall, aplistbuild, NULL, MID_AnchorPairs },
     { { (unichar_t *) _STR_Ligatures, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'L' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuLigatures, MID_Ligatures },
     NULL
 };
@@ -4890,17 +5432,9 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 		i<sizeof(vwlist)/sizeof(vwlist[0])-1 && bdf!=NULL;
 		++i, bdf = bdf->next ) {
 	    if ( BDFDepth(bdf)==1 )
-#if defined(FONTFORGE_CONFIG_GDRAW)
 		u_sprintf( buffer, GStringGetResource(_STR_DPixelBitmap,NULL), bdf->pixelsize );
-#elif defined(FONTFORGE_CONFIG_GTK)
-		u_sprintf( buffer, _("%d pixel bitmap"), bdf->pixelsize );
-#endif
 	    else
-#if defined(FONTFORGE_CONFIG_GDRAW)
 		u_sprintf( buffer, GStringGetResource(_STR_DdPixelBitmap,NULL),
-#elif defined(FONTFORGE_CONFIG_GTK)
-		u_sprintf( buffer, _("%d@%d pixel bitmap"),
-#endif
 			bdf->pixelsize, BDFDepth(bdf) );
 	    vwlist[i].ti.text = u_copy(buffer);
 	    vwlist[i].ti.checkable = true;
@@ -5203,6 +5737,19 @@ static GMenuItem mblist[] = {
     { NULL }
 };
 # elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_ActivateCopyFrom(GtkMenuItem *menuitem, gpointer user_data) {
+    GtkWidget *w;
+
+    w = lookup_widget( menuitem, "all_fonts1" );
+    gtk_widget_set_sensitive(w,!onlycopydisplayed);
+
+    w = lookup_widget( menuitem, "displayed_fonts1" );
+    gtk_widget_set_sensitive(w,onlycopydisplayed);
+
+    w = lookup_widget( menuitem, "char_metadata1" );
+    gtk_widget_set_sensitive(w,copymetadata);
+}
+
 struct fv_any {
     FontView *fv;
     int anychars;
@@ -5242,24 +5789,73 @@ void FontViewMenu_ActivateFile(GtkMenuItem *menuitem, gpointer user_data) {
 	    activate_file_items, &data );
 }
 
+void FontViewMenu_ActivateEdit(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+    int pos = FVAnyCharSelected(fv), i;
+    /* I can only determine the contents of the clipboard asyncronously */
+    /*  hence I can't check to see if it contains something that is pastable */
+    /*  So all I can do with paste is check that something is selected */
+#if 0
+    int not_pasteable = pos==-1 ||
+		    (!CopyContainsSomething() &&
+		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/png") &&
+		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/bmp") &&
+		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/eps"));
+#endif
+    RefChar *base = CopyContainsRef(fv->sf);
+    GtkWidget *w;
+    static char *poslist[] = { "cut2", "copy2", "copy_reference1", "copy_width1",
+	    "copy_lbearing1", "copy_rbearing1", "paste2", "paste_into1",
+	    "paste_after1", "same_glyph_as1", "clear2", "clear_background1",
+	    "copy_fg_to_bg1", "join1", "replace_with_reference1",
+	    "unlink_reference1", "remove_undoes1", NULL };
+
+    w = lookup_widget( menuitem, "undo2" );
+    for ( i=0; i<fv->sf->charcnt; ++i )
+	if ( fv->selected[i] && fv->sf->chars[i]!=NULL )
+	    if ( fv->sf->chars[i]->layers[ly_fore].undoes!=NULL )
+    break;
+    gtk_widget_set_sensitive(w,i!=fv->sf->charcnt);
+
+    w = lookup_widget( menuitem, "redo2" );
+    for ( i=0; i<fv->sf->charcnt; ++i )
+	if ( fv->selected[i] && fv->sf->chars[i]!=NULL )
+	    if ( fv->sf->chars[i]->layers[ly_fore].redoes!=NULL )
+    break;
+    gtk_widget_set_sensitive(w,i!=fv->sf->charcnt);
+
+    for ( i=0; poslist[i]!=NULL; ++i ) {
+	w = lookup_widget( menuitem, poslist[i] );
+	if ( w!=NULL )
+	    gtk_widget_set_sensitive(w,pos!=-1);
+    }
+
+    w = lookup_widget( menuitem, "copy_vwidth1" );
+    if ( w!=NULL )
+	gtk_widget_set_sensitive(w,pos!=-1 && fv->sf->hasvmetrics);
+
+    w = lookup_widget( menuitem, "copy_features1" );
+    if ( w!=NULL )
+	gtk_widget_set_sensitive(w,pos!=-1 && SCAnyFeatures(fv->sf->chars[pos]);
+
+#  ifndef FONTFORGE_CONFIG_PASTEAFTER
+    w = lookup_widget( menuitem, "paste_after1" );
+    gtk_widget_hide(w);
+#  endif
+}
+
 void FontViewMenu_ActivateDependents(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
-static void delistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
     int anychars = FVAnyCharSelected(fv);
 
-    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
-	switch ( mi->mid ) {
-	  case MID_ShowDependentRefs:
-	    mi->ti.disabled = anychars<0 || fv->sf->chars[anychars]==NULL ||
-		    fv->sf->chars[anychars]->dependents == NULL;
-	  break;
-	  case MID_ShowDependentSubs:
-	    mi->ti.disabled = anychars<0 || fv->sf->chars[anychars]==NULL ||
-		    !SCUsedBySubs(fv->sf->chars[anychars]);
-	  break;
-	}
-    }
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "references1" ),
+	    anychars>=0 &&
+		    fv->sf->chars[anychars]!=NULL &&
+		    fv->sf->chars[anychars]->dependents != NULL);
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "substitutions1" ),
+	    anychars>=0 &&
+		    fv->sf->chars[anychars]!=NULL &&
+		    SCUsedBySubs(fv->sf->chars[anychars]));
 }
 
 void FontViewMenu_ActivateAAT(GtkMenuItem *menuitem, gpointer user_data) {
@@ -5267,40 +5863,35 @@ void FontViewMenu_ActivateAAT(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *ofv;
     int anychars = FVAnyCharSelected(fv);
 
-    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
-	switch ( mi->mid ) {
-	  case MID_DefaultATT:
-	    mi->ti.disabled = anychars==-1;
-	  break;
-	  case MID_CopyFeatureToFont:
-	    for ( ofv=fv_list; ofv!=NULL && ofv->sf==fv->sf; ofv = ofv->next );
-	    mi->ti.disabled = ofv==NULL;
-	  break;
-	}
-    }
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "default_att1" ),
+	    anychars>=0 );
+    for ( ofv=fv_list; ofv!=NULL && ofv->sf==fv->sf; ofv = ofv->next );
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "copy_features_to_font1" ),
+	    ofv!=NULL );
 }
 
 void FontViewMenu_ActivateBuild(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
+    int anybuildable = false;
+    int anybuildableaccents = false;
+    int i;
 
-    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
-        if ( mi->mid==MID_BuildAccent || mi->mid==MID_BuildComposite ) {
-	    int anybuildable = false;
-	    int onlyaccents = mi->mid==MID_BuildAccent;
-	    int i;
-	    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] ) {
-		SplineChar *sc, dummy;
-		sc = fv->sf->chars[i];
-		if ( sc==NULL )
-		    sc = SCBuildDummy(&dummy,fv->sf,i);
-		if ( SFIsSomethingBuildable(fv->sf,sc,onlyaccents)) {
-		    anybuildable = true;
-	    break;
-		}
-	    }
-	    mi->ti.disabled = !anybuildable;
-	}
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] ) {
+	SplineChar *sc, dummy;
+	sc = fv->sf->chars[i];
+	if ( sc==NULL )
+	    sc = SCBuildDummy(&dummy,fv->sf,i);
+	if ( SFIsSomethingBuildable(fv->sf,sc,true)) {
+	    anybuildableaccents = anybuildable = true;
+    break;
+	else if ( SFIsSomethingBuildable(fv->sf,sc,false))
+	    anybuildable = true;
     }
+
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "build_accented_char1" ),
+	    anybuildableaccents );
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "build_composite_char1" ),
+	    anybuildable );
 }
 
 void FontViewMenu_ActivateElement(GtkMenuItem *menuitem, gpointer user_data) {
@@ -5309,82 +5900,76 @@ void FontViewMenu_ActivateElement(GtkMenuItem *menuitem, gpointer user_data) {
     int anybuildable, anytraceable;
     int order2 = fv->sf->order2;
 
-    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
-	switch ( mi->mid ) {
-	  case MID_CharInfo:
-	    mi->ti.disabled = anychars<0 ||
-		    (fv->cidmaster!=NULL && fv->sf->chars[anychars]==NULL);
-	  break;
-	  case MID_FindProblems:
-	    mi->ti.disabled = anychars==-1;
-	  break;
-	  case MID_Transform: case MID_NLTransform:
-	    mi->ti.disabled = anychars==-1;
-	    /* some Transformations make sense on bitmaps now */
-	  break;
-	  case MID_AddExtrema:
-	    mi->ti.disabled = anychars==-1 || fv->sf->onlybitmaps;
-	  break;
-	  case MID_Simplify:
-	    mi->ti.disabled = anychars==-1 || fv->sf->onlybitmaps;
-	  break;
-	  case MID_MetaFont: case MID_Stroke:
-	  case MID_RmOverlap: case MID_Effects:
-	    mi->ti.disabled = anychars==-1 || fv->sf->onlybitmaps || order2;
-	  break;
-	  case MID_Round: case MID_Correct:
-	    mi->ti.disabled = anychars==-1 || fv->sf->onlybitmaps;
-	  break;
-#ifdef FONTFORGE_CONFIG_TILEPATH
-	  case MID_TilePath:
-	    mi->ti.disabled = anychars==-1 || fv->sf->onlybitmaps || ClipBoardToSplineSet()==NULL || order2;
-	  break;
-#endif
-	  case MID_AvailBitmaps:
-	    mi->ti.disabled = fv->sf->mm!=NULL;
-	  break;
-	  case MID_RegenBitmaps:
-	    mi->ti.disabled = fv->sf->bitmaps==NULL || fv->sf->onlybitmaps ||
-		    fv->sf->mm!=NULL;
-	  break;
-	  case MID_BuildAccent:
-	    anybuildable = false;
-	    if ( anychars!=-1 ) {
-		int i;
-		for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] ) {
-		    SplineChar *sc, dummy;
-		    sc = fv->sf->chars[i];
-		    if ( sc==NULL )
-			sc = SCBuildDummy(&dummy,fv->sf,i);
-		    if ( SFIsSomethingBuildable(fv->sf,sc,false)) {
-			anybuildable = true;
-		break;
-		    }
-		}
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "char_info1" ),
+	    anychars>=0 &&
+		    (fv->cidmaster==NULL || fv->sf->chars[anychars]!=NULL));
+
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "find_problems1" ),
+	    anychars!=-1);
+
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "transform1" ),
+	    anychars!=-1);
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "non_linear_transform1" ),
+	    anychars!=-1);
+
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "add_extrema1" ),
+	    anychars!=-1 && !fv->sf->onlybitmaps );
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "round_to_int1" ),
+	    anychars!=-1 && !fv->sf->onlybitmaps );
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "correct_direction1" ),
+	    anychars!=-1 && !fv->sf->onlybitmaps );
+
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "simplify3" ),
+	    anychars!=-1 && !fv->sf->onlybitmaps );
+
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "meta_font1" ),
+	    anychars!=-1 && !fv->sf->onlybitmaps && !order2 );
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "expand_stroke1" ),
+	    anychars!=-1 && !fv->sf->onlybitmaps && !order2 );
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "overlap1" ),
+	    anychars!=-1 && !fv->sf->onlybitmaps && !order2 );
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "effects1" ),
+	    anychars!=-1 && !fv->sf->onlybitmaps && !order2 );
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "tilepath1" ),
+	    anychars!=-1 && !fv->sf->onlybitmaps && !order2 );
+
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "bitmaps_available1" ),
+	    fv->mm==NULL );
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "regenerate_bitmaps1" ),
+	    fv->mm==NULL && fv->sf->bitmaps!=NULL && !fv->sf->onlybitmaps );
+
+    anybuildable = false;
+    if ( anychars!=-1 ) {
+	int i;
+	for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] ) {
+	    SplineChar *sc, dummy;
+	    sc = fv->sf->chars[i];
+	    if ( sc==NULL )
+		sc = SCBuildDummy(&dummy,fv->sf,i);
+	    if ( SFIsSomethingBuildable(fv->sf,sc,false)) {
+		anybuildable = true;
+	break;
 	    }
-	    mi->ti.disabled = !anybuildable;
-	  break;
-	  case MID_Autotrace:
-	    anytraceable = false;
-	    if ( FindAutoTraceName()!=NULL && anychars!=-1 ) {
-		int i;
-		for ( i=0; i<fv->sf->charcnt; ++i )
-		    if ( fv->selected[i] && fv->sf->chars[i]!=NULL &&
-			    fv->sf->chars[i]->layers[ly_back].images!=NULL ) {
-			anytraceable = true;
-		break;
-		    }
-	    }
-	    mi->ti.disabled = !anytraceable;
-	  break;
-	  case MID_MergeFonts:
-	    mi->ti.disabled = fv->sf->bitmaps!=NULL && fv->sf->onlybitmaps;
-	  break;
-	  case MID_InterpolateFonts:
-	    mi->ti.disabled = fv->sf->onlybitmaps;
-	  break;
 	}
     }
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "build1" ),
+	    anybuildable );
+
+    anytraceable = false;
+    if ( FindAutoTraceName()!=NULL && anychars!=-1 ) {
+	int i;
+	for ( i=0; i<fv->sf->charcnt; ++i )
+	    if ( fv->selected[i] && fv->sf->chars[i]!=NULL &&
+		    fv->sf->chars[i]->layers[ly_back].images!=NULL ) {
+		anytraceable = true;
+	break;
+	    }
+    }
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "autotrace1" ),
+	    anytraceable );
+
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "interpolate_fonts1" ),
+	    !fv->sf->onlybitmaps );
 
 #ifndef FONTFORGE_CONFIG_NONLINEAR
     w = lookup_widget( menuitem, "non_linear_transform1" );
@@ -5399,53 +5984,45 @@ void FontViewMenu_ActivateElement(GtkMenuItem *menuitem, gpointer user_data) {
 void FontViewMenu_ActivateHints(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
     int anychars = FVAnyCharSelected(fv);
-    int removeOverlap;
     int multilayer = fv->sf->multilayer;
 
-    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
-	switch ( mi->mid ) {
-	  case MID_AutoHint:
-	    mi->ti.disabled = anychars==-1 || multilayer;
-	    removeOverlap = e==NULL || !(e->u.mouse.state&ksm_shift);
-	    free(mi->ti.text);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    mi->ti.text = u_copy(GStringGetResource(removeOverlap?_STR_Autohint:_STR_FullAutohint,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    mi->ti.text = u_copy(removeOverlap?_("AutoHint"));
-#endif
-	  break;
-	  case MID_HintSubsPt:
-	    mi->ti.disabled = fv->sf->order2 || anychars==-1 || multilayer;
-	    if ( fv->sf->mm!=NULL && fv->sf->mm->apple )
-		mi->ti.disabled = true;
-	  break;
-	  case MID_AutoCounter: case MID_DontAutoHint:
-	    mi->ti.disabled = fv->sf->order2 || anychars==-1 || multilayer;
-	  break;
-	  case MID_AutoInstr: case MID_EditInstructions:
-	    mi->ti.disabled = !fv->sf->order2 || anychars==-1 || multilayer;
-	  break;
-	  case MID_Editfpgm: case MID_Editprep: case MID_Editcvt:
-	    mi->ti.disabled = !fv->sf->order2 || multilayer;
-	  break;
-	  case MID_ClearHints: case MID_ClearWidthMD: case MID_ClearInstrs:
-	    mi->ti.disabled = anychars==-1;
-	  break;
-	}
-    }
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "autohint1" ),
+	    anychars!=-1 && !multilayer );
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "hint_subsitution_pts1" ),
+	    !fv->sf->order2 && anychars!=-1 && !multilayer );
+    if ( fv->sf->mm!=NULL && fv->sf->mm->apple )
+	gtk_widget_set_sensitive(lookup_widget( menuitem, "hint_subsitution_pts1" ),
+		false);
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "auto_counter_hint1" ),
+	    !fv->sf->order2 && anychars!=-1 && !multilayer );
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "dont_autohint1" ),
+	    !fv->sf->order2 && anychars!=-1 && !multilayer );
+
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "autoinstr1" ),
+	    fv->sf->order2 && anychars!=-1 && !multilayer );
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "edit_instructions1" ),
+	    fv->sf->order2 && anychars>=0 && !multilayer );
+
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "edit_fpgm1" ),
+	    fv->sf->order2 && !multilayer );
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "edit_prep1" ),
+	    fv->sf->order2 && !multilayer );
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "edit_cvt_1" ),
+	    fv->sf->order2 && !multilayer );
+
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "clear_hints1" ),
+	    anychars!=-1 );
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "clear_width_md1" ),
+	    anychars!=-1 );
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "clear_instructions1" ),
+	    fv->sf->order2 && anychars!=-1 );
 }
 
 /* Builds up a menu containing all the anchor classes */
 void FontViewMenu_ActivateAnchoredPairs(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
-    extern void GMenuItemArrayFree(GMenuItem *mi);
 
-    if ( mi->sub!=dummyall ) {
-	GMenuItemArrayFree(mi->sub);
-	mi->sub = NULL;
-    }
-
-    _aplistbuild(mi,fv->sf,FVMenuAnchorPairs);
+    _aplistbuild(menuitem,fv->sf,FVMenuAnchorPairs);
 }
 
 void FontViewMenu_ActivateCombinations(GtkMenuItem *menuitem, gpointer user_data) {
@@ -5470,257 +6047,230 @@ void FontViewMenu_ActivateCombinations(GtkMenuItem *menuitem, gpointer user_data
 	}
     }
 
-    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
-	switch ( mi->mid ) {
-	  case MID_Ligatures:
-	    mi->ti.disabled = !anyligs;
-	  break;
-	  case MID_KernPairs:
-	    mi->ti.disabled = !anykerns;
-	  break;
-	  case MID_AnchorPairs:
-	    mi->ti.disabled = sf->anchor==NULL;
-	  break;
-	}
-    }
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "ligatures2" ),
+	    anyligs);
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "kern_pairs1" ),
+	    anykerns);
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "anchored_pairs1" ),
+	    sf->anchor!=NULL);
 }
 
 void FontViewMenu_ActivateView(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
     int anychars = FVAnyCharSelected(fv);
-    int i, base;
+    int i;
     BDFFont *bdf;
-    unichar_t buffer[50];
-    extern void GMenuItemArrayFree(GMenuItem *mi);
-    extern GMenuItem *GMenuItemArrayCopy(GMenuItem *mi, uint16 *cnt);
     int pos;
     SplineFont *sf = fv->sf;
+    GtkWidget *menu = gtk_menu_item_get_submenu(menuitem);
+    GList *kids, *next;
+    static int sizes[] = { 24, 36, 48, 72, 96, 0 };
 
-    for ( i=0; vwlist[i].ti.text!=(unichar_t *) _STR_FitToEm; ++i );
-    base = i+2;
-    for ( i=base; vwlist[i].ti.text!=NULL; ++i ) {
-	free( vwlist[i].ti.text);
-	vwlist[i].ti.text = NULL;
+    /* First remove anything we might have added previously */
+    for ( kids = GTK_MENU_SHELL(menu)->children; kids!=NULL; kids = next ) {
+	GtkWidget *w = kids->data;
+	next = kids->next;
+	if ( strcmp(gtk_widget_get_name(w),"temporary")==0 )
+	    gtk_container_remove(GTK_CONTAINER(menu),w);
     }
 
-    vwlist[base-1].ti.fg = vwlist[base-1].ti.bg = COLOR_DEFAULT;
-    if ( fv->sf->bitmaps==NULL ) {
-	vwlist[base-1].ti.line = false;
-    } else {
-	vwlist[base-1].ti.line = true;
-	for ( bdf = fv->sf->bitmaps, i=base;
-		i<sizeof(vwlist)/sizeof(vwlist[0])-1 && bdf!=NULL;
-		++i, bdf = bdf->next ) {
+    /* Then add any pre-built bitmap sizes */
+    if ( sf->bitmaps!=NULL ) {
+	GtkWidget *w;
+
+	w = gtk_separator_menu_item_new();
+	gtk_widget_show(w);
+	gtk_widget_set_name(w,"temporary");
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu),w);
+
+	for ( bdf = sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
 	    if ( BDFDepth(bdf)==1 )
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		u_sprintf( buffer, GStringGetResource(_STR_DPixelBitmap,NULL), bdf->pixelsize );
-#elif defined(FONTFORGE_CONFIG_GTK)
-		u_sprintf( buffer, _("%d pixel bitmap"), bdf->pixelsize );
-#endif
+		sprintf( buffer, _("%d pixel bitmap"), bdf->pixelsize );
 	    else
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		u_sprintf( buffer, GStringGetResource(_STR_DdPixelBitmap,NULL),
-#elif defined(FONTFORGE_CONFIG_GTK)
-		u_sprintf( buffer, _("%d@%d pixel bitmap"),
-#endif
+		sprintf( buffer, _("%d@%d pixel bitmap"),
 			bdf->pixelsize, BDFDepth(bdf) );
-	    vwlist[i].ti.text = u_copy(buffer);
-	    vwlist[i].ti.checkable = true;
-	    vwlist[i].ti.checked = bdf==fv->show;
-	    vwlist[i].ti.userdata = bdf;
-	    vwlist[i].invoke = FVMenuShowBitmap;
-	    vwlist[i].ti.fg = vwlist[i].ti.bg = COLOR_DEFAULT;
+	    w = gtk_check_menu_item_new_with_label( buffer );
+	    gtk_widget_show(w);
+	    gtk_widget_set_name(w,"temporary");
+	    gtk_check_menu_item_set_active( GTK_CHECK_MENU_ITEM(w), bdf==fv->show );
+	    g_signal_connect ( G_OBJECT( w ), "activate",
+			    G_CALLBACK (FontViewMenu_ShowBitmap),
+			    bdf);
+	    gtk_menu_shell_append(GTK_MENU_SHELL(menu),w);
 	}
     }
-    GMenuItemArrayFree(mi->sub);
-    mi->sub = GMenuItemArrayCopy(vwlist,NULL);
 
-    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
-	switch ( mi->mid ) {
-	  case MID_Next: case MID_Prev:
-	    mi->ti.disabled = anychars<0;
-	  break;
-	  case MID_NextDef:
-	    if ( anychars<0 ) pos = sf->charcnt;
-	    else for ( pos = anychars+1; pos<sf->charcnt && sf->chars[pos]==NULL; ++pos );
-	    mi->ti.disabled = pos==sf->charcnt;
-	  break;
-	  case MID_PrevDef:
-	    for ( pos = anychars-1; pos>=0 && sf->chars[pos]==NULL; --pos );
-	    mi->ti.disabled = pos<0;
-	  break;
-	  case MID_EncodedView:
-	    mi->ti.checked = !fv->sf->compacted;
-	  break;
-	  case MID_CompactedView:
-	    mi->ti.checked = fv->sf->compacted;
-	  break;
-	  case MID_ShowHMetrics:
-	    /*mi->ti.checked = fv->showhmetrics;*/
-	  break;
-	  case MID_ShowVMetrics:
-	    /*mi->ti.checked = fv->showvmetrics;*/
-	    mi->ti.disabled = !fv->sf->hasvmetrics;
-	  break;
-	  case MID_24:
-	    mi->ti.checked = (fv->show!=NULL && fv->show==fv->filled && fv->show->pixelsize==24);
-	    mi->ti.disabled = fv->sf->onlybitmaps && fv->show!=fv->filled;
-	  break;
-	  case MID_36:
-	    mi->ti.checked = (fv->show!=NULL && fv->show==fv->filled && fv->show->pixelsize==36);
-	    mi->ti.disabled = fv->sf->onlybitmaps && fv->show!=fv->filled;
-	  break;
-	  case MID_48:
-	    mi->ti.checked = (fv->show!=NULL && fv->show==fv->filled && fv->show->pixelsize==48);
-	    mi->ti.disabled = fv->sf->onlybitmaps && fv->show!=fv->filled;
-	  break;
-	  case MID_72:
-	    mi->ti.checked = (fv->show!=NULL && fv->show==fv->filled && fv->show->pixelsize==72);
-	    mi->ti.disabled = fv->sf->onlybitmaps && fv->show!=fv->filled;
-	  break;
-	  case MID_96:
-	    mi->ti.checked = (fv->show!=NULL && fv->show==fv->filled && fv->show->pixelsize==96);
-	    mi->ti.disabled = fv->sf->onlybitmaps && fv->show!=fv->filled;
-	  break;
-	  case MID_AntiAlias:
-	    mi->ti.checked = (fv->show!=NULL && fv->show->clut!=NULL);
-	    mi->ti.disabled = fv->sf->onlybitmaps && fv->show!=fv->filled;
-	  break;
-	  case MID_FitToEm:
-	    mi->ti.checked = (fv->show!=NULL && !fv->show->bbsized);
-	    mi->ti.disabled = fv->sf->onlybitmaps && fv->show!=fv->filled;
-	  break;
-	}
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "next_char1" ),
+	    anychars>=0 );
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "prev_char1" ),
+	    anychars>=0 );
+    if ( anychars<0 ) pos = sf->charcnt;
+    else for ( pos = anychars+1; pos<sf->charcnt && sf->chars[pos]==NULL; ++pos );
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "prev_char1" ),
+	    pos!=sf->charcnt );
+    for ( pos = anychars-1; pos>=0 && sf->chars[pos]==NULL; --pos );
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "prev_char1" ),
+	    pos>=0 );
+    gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(
+		lookup_widget( menuitem, "encoded_view1" )),
+	    !fv->sf->compacted);
+    gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(
+		lookup_widget( menuitem, "compacted_view1" )),
+	    fv->sf->compacted);
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "show_v_metrics1" ),
+	    fv->sf->hasvmetrics );
+
+    for ( i=0; sizes[i]!=NULL; ++i ) {
+	char buffer[80];
+	sprintf( buffer, "%d_pixel_outline1", sizes[i]);
+	gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(
+		    lookup_widget( menuitem, buffer )),
+		(fv->show!=NULL && fv->show==fv->filled && fv->show->pixelsize==sizes[i]));
+	gtk_widget_set_sensitive(lookup_widget( menuitem, buffer ),
+		!fv->sf->onlybitmaps || fv->show==fv->filled );
     }
+
+    gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(
+		lookup_widget( menuitem, "anti_alias1" )),
+	    (fv->show!=NULL && fv->show->clut!=NULL));
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "anti_alias1" ),
+	    !fv->sf->onlybitmaps || fv->show==fv->filled );
+    gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(
+		lookup_widget( menuitem, "fit_to_em1" )),
+	    (fv->show!=NULL && !fv->show->bbsized));
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "fit_to_em1" ),
+	    !fv->sf->onlybitmaps || fv->show==fv->filled );
 }
 
 void FontViewMenu_ActivateMetrics(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
     int anychars = FVAnyCharSelected(fv);
+    char *argnames[] = { "center_in_width1", "thirds_in_width1", "set_width1",
+	    "set_lbearing1", "set_rbearing1", "set_vertical_advance1", NULL };
+    char *vnames[] = { "vkern_by_classes1", "vkern_from_hkern1",
+	    "remove_all_vkern_pairs1", NULL };
 
-    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
-	switch ( mi->mid ) {
-	  case MID_Center: case MID_Thirds: case MID_SetWidth: 
-	  case MID_SetLBearing: case MID_SetRBearing:
-	    mi->ti.disabled = anychars==-1;
-	  break;
-	  case MID_SetVWidth:
-	    mi->ti.disabled = anychars==-1 || !fv->sf->hasvmetrics;
-	  break;
-	  case MID_VKernByClass:
-	  case MID_VKernFromH:
-	  case MID_RmVKern:
-	    mi->ti.disabled = !fv->sf->hasvmetrics;
-	  break;
-	}
-    }
+    for ( i=0; argnames[i]!=NULL; ++i )
+	gtk_widget_set_sensitive(lookup_widget( menuitem, argnames[i] ),
+		anychars!=-1 );
+    if ( !fv->sf->hasvmetrics )
+	gtk_widget_set_sensitive(lookup_widget( menuitem, "set_vertical_advance1" ),
+		false );
+    for ( i=0; vnames[i]!=NULL; ++i )
+	gtk_widget_set_sensitive(lookup_widget( menuitem, vnames[i] ),
+		fv->sf->hasvmetrics );
 }
 
 void FontViewMenu_ActivateCID(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
-    int i, base, j;
-    extern void GMenuItemArrayFree(GMenuItem *mi);
-    extern GMenuItem *GMenuItemArrayCopy(GMenuItem *mi, uint16 *cnt);
+    int i, j;
     SplineFont *sub, *cidmaster = fv->cidmaster;
+    GtkWidget *menu = gtk_menu_item_get_submenu(menuitem);
+    GList *kids, *next;
 
-    for ( i=0; cdlist[i].mid!=MID_CIDFontInfo; ++i );
-    base = i+2;
-    for ( i=base; cdlist[i].ti.text!=NULL; ++i ) {
-	free( cdlist[i].ti.text);
-	cdlist[i].ti.text = NULL;
+    /* First remove anything we might have added previously */
+    for ( kids = GTK_MENU_SHELL(menu)->children; kids!=NULL; kids = next ) {
+	GtkWidget *w = kids->data;
+	next = kids->next;
+	if ( strcmp(gtk_widget_get_name(w),"temporary")==0 )
+	    gtk_container_remove(GTK_CONTAINER(menu),w);
     }
 
-    cdlist[base-1].ti.fg = cdlist[base-1].ti.bg = COLOR_DEFAULT;
-    if ( cidmaster==NULL ) {
-	cdlist[base-1].ti.line = false;
-    } else {
-	cdlist[base-1].ti.line = true;
-	for ( j = 0, i=base; 
-		i<sizeof(cdlist)/sizeof(cdlist[0])-1 && j<cidmaster->subfontcnt;
-		++i, ++j ) {
+    /* Then add any sub-fonts */
+    if ( cidmaster!=NULL ) {
+	GtkWidget *w;
+
+	w = gtk_separator_menu_item_new();
+	gtk_widget_show(w);
+	gtk_widget_set_name(w,"temporary");
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu),w);
+
+	for ( j = 0; j<cidmaster->subfontcnt; ++j ) {
 	    sub = cidmaster->subfonts[j];
-	    cdlist[i].ti.text = uc_copy(sub->fontname);
-	    cdlist[i].ti.checkable = true;
-	    cdlist[i].ti.checked = sub==fv->sf;
-	    cdlist[i].ti.userdata = sub;
-	    cdlist[i].invoke = FVMenuShowSubFont;
-	    cdlist[i].ti.fg = cdlist[i].ti.bg = COLOR_DEFAULT;
+	    w = gtk_check_menu_item_new_with_label( sub->fontname );
+	    gtk_widget_show(w);
+	    gtk_widget_set_name(w,"temporary");
+	    gtk_check_menu_item_set_active( GTK_CHECK_MENU_ITEM(w), sub==fv->sf );
+	    g_signal_connect ( G_OBJECT( w ), "activate",
+			    G_CALLBACK (FontViewMenu_ShowSubFont),
+			    sub);
+	    gtk_menu_shell_append(GTK_MENU_SHELL(menu),w);
 	}
     }
-    GMenuItemArrayFree(mi->sub);
-    mi->sub = GMenuItemArrayCopy(cdlist,NULL);
 
-    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
-	switch ( mi->mid ) {
-	  case MID_Convert2CID: case MID_ConvertByCMap:
-	    mi->ti.disabled = cidmaster!=NULL || fv->sf->mm!=NULL;
-	  break;
-	  case MID_InsertFont: case MID_InsertBlank:
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "convert_to_cid1" ),
+	    cidmaster==NULL && fv->sf->mm==NULL );
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "convert_by_cmap1" ),
+	    cidmaster==NULL && fv->sf->mm==NULL );
+
 	    /* OpenType allows at most 255 subfonts (PS allows more, but why go to the effort to make safe font check that? */
-	    mi->ti.disabled = cidmaster==NULL || cidmaster->subfontcnt>=255;
-	  break;
-	  case MID_RemoveFromCID:
-	    mi->ti.disabled = cidmaster==NULL || cidmaster->subfontcnt<=1;
-	  break;
-	  case MID_Flatten: case MID_FlattenByCMap: case MID_CIDFontInfo:
-	    mi->ti.disabled = cidmaster==NULL;
-	  break;
-	}
-    }
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "insert_font1" ),
+	    cidmaster!=NULL && cidmaster->subfontcnt<255 );
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "insert_empty_font1" ),
+	    cidmaster!=NULL && cidmaster->subfontcnt<255 );
+
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "remove_font1" ),
+	    cidmaster!=NULL && cidmaster->subfontcnt>1 );
+
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "flatten1" ),
+	    cidmaster!=NULL );
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "flatten_by_cmap1" ),
+	    cidmaster!=NULL );
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "cid_font_info1" ),
+	    cidmaster!=NULL );
 }
 
 void FontViewMenu_ActivateMM(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
     int i, base, j;
-    extern void GMenuItemArrayFree(GMenuItem *mi);
-    extern GMenuItem *GMenuItemArrayCopy(GMenuItem *mi, uint16 *cnt);
     MMSet *mm = fv->sf->mm;
     SplineFont *sub;
     GMenuItem *mml;
+    GtkWidget *menu = gtk_menu_item_get_submenu(menuitem);
+    GList *kids, *next;
 
-    for ( i=0; mmlist[i].mid!=MID_ChangeMMBlend; ++i );
-    base = i+2;
-    if ( mm==NULL )
-	mml = mmlist;
-    else {
-	mml = gcalloc(base+mm->instance_count+2,sizeof(GMenuItem));
-	memcpy(mml,mmlist,sizeof(mmlist));
-	mml[base-1].ti.fg = mml[base-1].ti.bg = COLOR_DEFAULT;
-	mml[base-1].ti.line = true;
-	for ( j = 0, i=base; j<mm->instance_count+1; ++i, ++j ) {
+    /* First remove anything we might have added previously */
+    for ( kids = GTK_MENU_SHELL(menu)->children; kids!=NULL; kids = next ) {
+	GtkWidget *w = kids->data;
+	next = kids->next;
+	if ( strcmp(gtk_widget_get_name(w),"temporary")==0 )
+	    gtk_container_remove(GTK_CONTAINER(menu),w);
+    }
+
+    /* Then add any sub-fonts */
+    if ( mm!=NULL ) {
+	GtkWidget *w;
+
+	w = gtk_separator_menu_item_new();
+	gtk_widget_show(w);
+	gtk_widget_set_name(w,"temporary");
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu),w);
+
+	for ( j = 0; j<mm->instance_count+1; ++j ) {
 	    if ( j==0 )
 		sub = mm->normal;
 	    else
 		sub = mm->instances[j-1];
-	    mml[i].ti.text = uc_copy(sub->fontname);
-	    mml[i].ti.checkable = true;
-	    mml[i].ti.checked = sub==fv->sf;
-	    mml[i].ti.userdata = sub;
-	    mml[i].invoke = FVMenuShowSubFont;
-	    mml[i].ti.fg = mml[i].ti.bg = COLOR_DEFAULT;
+	    w = gtk_check_menu_item_new_with_label( sub->fontname );
+	    gtk_widget_show(w);
+	    gtk_widget_set_name(w,"temporary");
+	    gtk_check_menu_item_set_active( GTK_CHECK_MENU_ITEM(w), sub==fv->sf );
+	    g_signal_connect ( G_OBJECT( w ), "activate",
+			    G_CALLBACK (FontViewMenu_ShowSubFont),
+			    sub);
+	    gtk_menu_shell_append(GTK_MENU_SHELL(menu),w);
 	}
-    }
-    GMenuItemArrayFree(mi->sub);
-    mi->sub = GMenuItemArrayCopy(mml,NULL);
-    if ( mml!=mmlist ) {
-	for ( i=base; mml[i].ti.text!=NULL; ++i )
-	    free( mml[i].ti.text);
-	free(mml);
     }
 
-    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
-	switch ( mi->mid ) {
-	  case MID_CreateMM:
-	    mi->ti.disabled = false;
-	  break;
-	  case MID_MMInfo: case MID_MMValid: case MID_BlendToNew:
-	    mi->ti.disabled = mm==NULL;
-	  break;
-	  case MID_ChangeMMBlend:
-	    mi->ti.disabled = mm==NULL || mm->apple;
-	  break;
-	}
-    }
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "mm_validity_check1" ),
+	    mm!=NULL );
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "mm_info1" ),
+	    mm!=NULL );
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "blend_to_new_font1" ),
+	    mm!=NULL );
+
+    gtk_widget_set_sensitive(lookup_widget( menuitem, "mm_change_def_weights1" ),
+	    mm!=NULL && !mm->apple );
 }
 #endif
 
@@ -7752,10 +8302,17 @@ static SplineFont *SFReadPostscript(char *filename) {
     FontDict *fd;
     SplineFont *sf=NULL;
 
+# ifdef FONTFORGE_CONFIG_GDRAW
     GProgressChangeStages(2);
     fd = ReadPSFont(filename);
     GProgressNextStage();
     GProgressChangeLine2R(_STR_InterpretingGlyphs);
+# elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_change_stages(2);
+    fd = ReadPSFont(filename);
+    gwwv_progress_next_stage();
+    gwwv_progress_change_line2(_("Interpreting Glyphs"));
+# endif
     if ( fd!=NULL ) {
 	sf = SplineFontFromPSFont(fd);
 	PSFontFree(fd);
@@ -7769,7 +8326,11 @@ return( sf );
 /*  by LoadSplineFont (which does) and by RevertFile (which knows what it's doing) */
 SplineFont *ReadSplineFont(char *filename,enum openflags openflags) {
     SplineFont *sf;
+# ifdef FONTFORGE_CONFIG_GDRAW
     unichar_t ubuf[150], *temp;
+#elif defined(FONTFORGE_CONFIG_GTK)
+    char buf[400];
+#endif
     char buf[1500];
     int fromsfd = false;
     static struct { char *ext, *decomp, *recomp; } compressors[] = {
@@ -7839,23 +8400,24 @@ return( NULL );
 	    fullname = strippedname;
     }
 
+    /* If there are no pfaedit windows, give them something to look at */
+    /*  immediately. Otherwise delay a bit */
 #if defined(FONTFORGE_CONFIG_GDRAW)
     u_strcpy(ubuf,GStringGetResource(_STR_LoadingFontFrom,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-    u_strcpy(ubuf,_("Loading font from "));
-#endif
     len = u_strlen(ubuf);
     u_strncat(ubuf,temp = def2u_copy(GFileNameTail(fullname)),100);
     free(temp);
     ubuf[100+len] = '\0';
-    /* If there are no pfaedit windows, give them something to look at */
-    /*  immediately. Otherwise delay a bit */
-#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressStartIndicator(fv_list==NULL?0:10,GStringGetResource(_STR_Loading,NULL),ubuf,GStringGetResource(_STR_ReadingGlyphs,NULL),0,1);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    GProgressStartIndicator(fv_list==NULL?0:10,_("Loading..."),ubuf,GStringGetResource(_("Reading Glyphs"),NULL),0,1);
-#endif
     GProgressEnableStop(0);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    strcpy(ubuf,_("Loading font from "));
+    len = u_strlen(buf);
+    strncat(buf,GFileNameTail(fullname),100);
+    buf[100+len] = '\0';
+    gwwv_progress_start_indicator(fv_list==NULL?0:10,_("Loading..."),buf,_("Reading Glyphs"),NULL),0,1);
+    gwwv_progress_enable_stop(0);
+#endif
     if ( fv_list==NULL && screen_display!=NULL ) { GDrawSync(NULL); GDrawProcessPendingEvents(NULL); }
 
     sf = NULL;
@@ -7949,7 +8511,11 @@ return( NULL );
 	free(strippedname);
     if ( fullname!=filename && fullname!=strippedname )
 	free(fullname);
+# ifdef FONTFORGE_CONFIG_GDRAW
     GProgressEndIndicator();
+# elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_end_indicator();
+# endif
 
     if ( sf!=NULL ) {
 	SplineFont *norm = sf->mm!=NULL ? sf->mm->normal : sf;

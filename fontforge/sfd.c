@@ -820,13 +820,21 @@ static void SFDDumpBitmapChar(FILE *sfd,BDFChar *bfc) {
 static void SFDDumpBitmapFont(FILE *sfd,BDFFont *bdf) {
     int i;
 
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressNextStage();
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_next_stage();
+#endif
     fprintf( sfd, "BitmapFont: %d %d %d %d %d %s\n", bdf->pixelsize, bdf->charcnt,
 	    bdf->ascent, bdf->descent, BDFDepth(bdf), bdf->foundry?bdf->foundry:"" );
     for ( i=0; i<bdf->charcnt; ++i ) {
 	if ( bdf->chars[i]!=NULL )
 	    SFDDumpBitmapChar(sfd,bdf->chars[i]);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressNext();
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_progress_next();
+#endif
     }
     fprintf( sfd, "EndBitmapFont\n" );
 }
@@ -1333,13 +1341,21 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 	for ( i=0; i<sf->charcnt; ++i ) {
 	    if ( !SFDOmit(sf->chars[i]) )
 		SFDDumpChar(sfd,sf->chars[i]);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GProgressNext();
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_progress_next();
+#endif
 	}
 	fprintf(sfd, "EndChars\n" );
     }
 	
     if ( sf->bitmaps!=NULL )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressChangeLine2R(_STR_SavingBitmaps);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_progress_change_line2(_("Saving Bitmaps"));
+#endif
     for ( bdf = sf->bitmaps; bdf!=NULL; bdf=bdf->next )
 	SFDDumpBitmapFont(sfd,bdf);
     fprintf(sfd, sf->cidmaster==NULL?"EndSplineFont\n":"EndSubSplineFont\n" );
@@ -1409,15 +1425,25 @@ static void SFDDump(FILE *sfd,SplineFont *sf) {
 		realcnt = sf->subfonts[i]->charcnt;
     }
     for ( i=0, bdf = sf->bitmaps; bdf!=NULL; bdf=bdf->next, ++i );
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressStartIndicatorR(10,_STR_Saving,_STR_SavingDb,_STR_SavingOutlines,
 	    realcnt,i+1);
     GProgressEnableStop(false);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_start_indicator(10,_("Saving..."),_("Saving Spline Font Database"),_("Saving Outlines"),
+	    realcnt,i+1);
+    gwwv_progress_enable_stop(false);
+#endif
     fprintf(sfd, "SplineFontDB: %.1f\n", 1.0 );
     if ( sf->mm != NULL )
 	SFD_MMDump(sfd,sf->mm->normal);
     else
 	SFD_Dump(sfd,sf);
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressEndIndicator();
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_end_indicator();
+#endif
 }
 
 int SFDWrite(char *filename,SplineFont *sf) {
@@ -2738,7 +2764,11 @@ static void SFDFixupRefs(SplineFont *sf) {
 	for ( refs = sf->chars[i]->layers[ly_fore].refs; refs!=NULL; refs=refs->next ) {
 	    SFDFixupRef(sf->chars[i],refs);
 	}
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressNext();
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_progress_next();
+#endif
     }
 }
 
@@ -3868,23 +3898,47 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    int cnt;
 	    getint(sfd,&cnt);
 	    getint(sfd,&realcnt);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GProgressChangeStages(cnt);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_progress_change_stages(cnt);
+#endif
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GProgressChangeTotal(realcnt);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_progress_change_total(realcnt);
+#endif
 	    MMInferStuff(sf->mm);
     break;
 	} else if ( strmatch(tok,"BeginSubFonts:")==0 ) {
 	    getint(sfd,&sf->subfontcnt);
 	    sf->subfonts = gcalloc(sf->subfontcnt,sizeof(SplineFont *));
 	    getint(sfd,&realcnt);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GProgressChangeStages(2);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_progress_change_stages(2);
+#endif
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GProgressChangeTotal(realcnt);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_progress_change_total(realcnt);
+#endif
     break;
 	} else if ( strmatch(tok,"BeginChars:")==0 ) {
 	    getint(sfd,&sf->charcnt);
 	    if ( getint(sfd,&realcnt)!=1 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GProgressChangeTotal(sf->charcnt);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_progress_change_total(sf->charcnt);
+#endif
 	    } else if ( realcnt!=-1 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GProgressChangeTotal(realcnt);
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_progress_change_total(realcnt);
+#endif
 	    }
 	    sf->chars = gcalloc(sf->charcnt,sizeof(SplineChar *));
     break;
@@ -3900,10 +3954,18 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 
     if ( sf->subfontcnt!=0 ) {
 	int max,k;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressChangeStages(2*sf->subfontcnt);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_progress_change_stages(2*sf->subfontcnt);
+#endif
 	for ( i=0; i<sf->subfontcnt; ++i ) {
 	    if ( i!=0 )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GProgressNextStage();
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_progress_next_stage();
+#endif
 	    sf->subfonts[i] = SFD_GetFont(sfd,sf,tok);
 	}
 	max = 0;
@@ -3919,14 +3981,26 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	}
     } else if ( sf->mm!=NULL ) {
 	MMSet *mm = sf->mm;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressChangeStages(2*(mm->instance_count+1));
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_progress_change_stages(2*(mm->instance_count+1));
+#endif
 	for ( i=0; i<mm->instance_count; ++i ) {
 	    if ( i!=0 )
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GProgressNextStage();
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_progress_next_stage();
+#endif
 	    mm->instances[i] = SFD_GetFont(sfd,NULL,tok);
 	    mm->instances[i]->mm = mm;
 	}
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressNextStage();
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_progress_next_stage();
+#endif
 	mm->normal = SFD_GetFont(sfd,NULL,tok);
 	mm->normal->mm = mm;
 	sf->mm = NULL;
@@ -3939,10 +4013,22 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 		sc->orig_pos = glyph++;
 	    else
 		glyph = sc->orig_pos+1;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GProgressNext();
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_progress_next();
+#endif
 	}
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressNextStage();
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_progress_next_stage();
+#endif
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressChangeLine2R(_STR_InterpretingGlyphs);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_progress_change_line2(_("Interpreting Glyphs"));
+#endif
 	SFDFixupRefs(sf);
     }
     while ( getname(sfd,tok)==1 ) {
@@ -3981,7 +4067,11 @@ SplineFont *SFDRead(char *filename) {
     if ( sfd==NULL )
 return( NULL );
     oldloc = setlocale(LC_NUMERIC,"C");
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressChangeStages(2);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_change_stages(2);
+#endif
     if ( SFDStartsCorrectly(sfd,tok) )
 	sf = SFD_GetFont(sfd,NULL,tok);
     setlocale(LC_NUMERIC,oldloc);

@@ -217,8 +217,13 @@ static int WriteAfmFile(char *filename,SplineFont *sf, int formattype) {
 	strcat(buf,".afm");
     else
 	strcpy(pt,".afm");
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressChangeLine1R(_STR_SavingAFM);
     GProgressChangeLine2(temp=uc_copy(buf)); free(temp);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_change_line1(_("Saving AFM File"));
+    gwwv_progress_change_line2(buf);
+#endif
     afm = fopen(buf,"w");
     free(buf);
     if ( afm==NULL )
@@ -241,7 +246,11 @@ return( false );
 	    else ++pt;
 	    strcpy(pt,sf->fontname);
 	    strcat(pt,".afm");
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GProgressChangeLine2(temp=uc_copy(buf)); free(temp);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_progress_change_line2(buf);
+#endif
 	    afm = fopen(buf,"w");
 	    free(buf);
 	    if ( afm==NULL )
@@ -262,7 +271,11 @@ return( false );
 	    strcat(buf,".amfm");
 	else
 	    strcpy(pt,".amfm");
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressChangeLine2(temp=uc_copy(buf)); free(temp);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_progress_change_line2(buf);
+#endif
 	afm = fopen(buf,"w");
 	free(buf);
 	if ( afm==NULL )
@@ -290,8 +303,13 @@ static int WriteTfmFile(char *filename,SplineFont *sf, int formattype) {
 	strcat(buf,".tfm");
     else
 	strcpy(pt,".tfm");
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressChangeLine1R(_STR_SavingTFM);
     GProgressChangeLine2(temp=uc_copy(buf)); free(temp);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_change_line1(_("Saving TFM File"));
+    gwwv_progress_change_line2(buf);
+#endif
     tfm = fopen(buf,"wb");
     if ( tfm==NULL )
 return( false );
@@ -353,7 +371,11 @@ int WritePfmFile(char *filename,SplineFont *sf, int type0) {
 	strcat(buf,".pfm");
     else
 	strcpy(pt,".pfm");
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressChangeLine2(temp=uc_copy(buf)); free(temp);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_change_line2(buf);
+#endif
     pfm = fopen(buf,"wb");
     free(buf);
     if ( pfm==NULL )
@@ -1147,9 +1169,15 @@ static int WriteBitmaps(char *filename,SplineFont *sf, int32 *sizes,int res, int
     extern int ask_user_for_resolution;
 
     if ( ask_user_for_resolution && res==0x80000000 ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressPauseTimer();
 	res = AskResolution(bf);
 	GProgressResumeTimer();
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_progress_pause_timer();
+	res = AskResolution(bf);
+	gwwv_progress_resume_timer();
+#endif
 	if ( res==-2 )
 return( false );
     }
@@ -1157,7 +1185,11 @@ return( false );
     if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
 
     for ( i=0; sizes[i]!=0; ++i );
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressChangeStages(i);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_change_stages(i);
+#endif
     for ( i=0; sizes[i]!=0; ++i ) {
 	buffer[0] = '\0';
 	for ( bdf=sf->bitmaps; bdf!=NULL &&
@@ -1185,12 +1217,20 @@ return( false );
 	else
 	    sprintf( pt, "-%d@%d%s", bdf->pixelsize, BDFDepth(bdf), ext );
 
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressChangeLine2(temp=uc_copy(buf)); free(temp);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_progress_change_line2(buf);
+#endif
 	if ( bf==bf_bdf ) 
 	    BDFFontDump(buf,bdf,EncodingName(sf->encoding_name),res);
 	else
 	    FONFontDump(buf,bdf,res);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressNextStage();
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_progress_next_stage();
+#endif
     }
     free(buf);
 return( true );
@@ -1623,7 +1663,11 @@ return( 0 );
     strcat(temp.fullname," ");
     strcat(temp.fullname,names[subfont]);
     strcat(spt,subtype==ff_pfb ? ".pfb" : ".pfa" );
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressChangeLine2(ufile=uc_copy(filename)); free(ufile);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_change_line2(filename);
+#endif
 
     if ( sf->xuid!=NULL ) {
 	sprintf( buf, "%d", subfont );
@@ -1644,7 +1688,11 @@ return( 0 );
 #elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Save Failed"),_("Save Failed"));
 #endif
+#if defined(FONTFORGE_CONFIG_GDRAW)
     if ( !err && (old_ps_flags&ps_flag_afm) && GProgressNextStage()) {
+#elif defined(FONTFORGE_CONFIG_GTK)
+    if ( !err && (old_ps_flags&ps_flag_afm) && gwwv_progress_next_stage()) {
+#endif
 	if ( !WriteAfmFile(filename,&temp,oldformatstate)) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_Afmfailedtitle,_STR_Afmfailedtitle);
@@ -1665,7 +1713,11 @@ return( 0 );
 	}
     }
     /* ??? Bitmaps */
+#if defined(FONTFORGE_CONFIG_GDRAW)
     if ( !GProgressNextStage())
+#elif defined(FONTFORGE_CONFIG_GTK)
+    if ( !gwwv_progress_next_stage())
+#endif
 	err = -1;
 
     /* restore the parent pointers */
@@ -1726,17 +1778,16 @@ return( 1 );
     path = def2u_copy(newname);
 #if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressStartIndicator(10,GStringGetResource(_STR_SavingFont,NULL),
-#elif defined(FONTFORGE_CONFIG_GTK)
-    GProgressStartIndicator(10,_("Saving font"),
-#endif
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GStringGetResource(_STR_SavingMultiplePSFonts,NULL),
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    _("Saving Multiple Postscript Fonts"),
-#endif
 	    path,256,(max+1)*filecnt );
-    free(path);
     /*GProgressEnableStop(false);*/
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_start_indicator(10,_("Saving font"),
+	    _("Saving Multiple Postscript Fonts"),
+	    path,256,(max+1)*filecnt );
+    /*gwwv_progress_enable_stop(false);*/
+#endif
+    free(path);
 
     for ( i=0; i<=max && !err; ++i )
 	err = SaveSubFont(sf,newname,sizes,res,mapping,i,names);
@@ -1744,7 +1795,11 @@ return( 1 );
     for ( i=0; names[i]!=NULL; ++i ) free(names[i]);
     free(names);
     free( sizes );
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressEndIndicator();
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_end_indicator();
+#endif
     if ( !err )
 	SavePrefs();
 return( err );
@@ -1774,9 +1829,6 @@ return( WriteMultiplePSFont(sf,newname,sizes,res,NULL));
     path = def2u_copy(newname);
 #if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressStartIndicator(10,GStringGetResource(_STR_SavingFont,NULL),
-#elif defined(FONTFORGE_CONFIG_GTK)
-    GProgressStartIndicator(10,_("Saving font"),
-#endif
 		GStringGetResource(oldformatstate==ff_ttf || oldformatstate==ff_ttfsym ||
 		     oldformatstate==ff_ttfmacbin ?_STR_SavingTTFont:
 		 oldformatstate==ff_otf || oldformatstate==ff_otfdfont ?_STR_SavingOpenTypeFont:
@@ -1784,8 +1836,17 @@ return( WriteMultiplePSFont(sf,newname,sizes,res,NULL));
 		  oldformatstate==ff_otfcid || oldformatstate==ff_otfciddfont ?_STR_SavingCIDFont:
 		 _STR_SavingPSFont,NULL),
 	    path,sf->charcnt,1);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_start_indicator(10,_("Saving font"),
+		GStringGetResource(oldformatstate==ff_ttf || oldformatstate==ff_ttfsym ||
+		     oldformatstate==ff_ttfmacbin ?_("Saving TrueType Font") :
+		 oldformatstate==ff_otf || oldformatstate==ff_otfdfont ?_("Saving OpenType Font"):
+		 oldformatstate==ff_cid || oldformatstate==ff_cffcid ||
+		  oldformatstate==ff_otfcid || oldformatstate==ff_otfciddfont ?_("Saving CID keyed font") :
+		 _("Saving PostScript Font"),NULL),
+	    path,sf->charcnt,1);
+#endif
     free(path);
-    /*GProgressEnableStop(false);*/
     if ( oldformatstate!=ff_none ||
 	    oldbitmapstate==bf_sfnt_dfont ||
 	    oldbitmapstate==bf_ttf ) {
@@ -1851,7 +1912,11 @@ return( true );
 	}
     }
     if ( !err && (flags&ps_flag_afm) ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressIncrementBy(-sf->charcnt);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_progress_increment(-sf->charcnt);
+#endif
 	if ( !WriteAfmFile(newname,sf,oldformatstate)) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_Afmfailedtitle,_STR_Afmfailedtitle);
@@ -1862,8 +1927,13 @@ return( true );
 	}
     }
     if ( !err && (flags&ps_flag_pfm) && !iscid ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressChangeLine1R(_STR_SavingPFM);
 	GProgressIncrementBy(-sf->charcnt);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_progress_change_line1(_("Saving PFM File"));
+	gwwv_progress_increment(-sf->charcnt);
+#endif
 	if ( !WritePfmFile(newname,sf,oldformatstate==ff_ptype0)) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_Pfmfailedtitle,_STR_Pfmfailedtitle);
@@ -1885,8 +1955,13 @@ return( true );
 	if ( temp!=newname )
 	    free(temp);
     } else if ( (oldbitmapstate==bf_bdf || oldbitmapstate==bf_fon) && !err ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressChangeLine1R(_STR_SavingBitmapFonts);
 	GProgressIncrementBy(-sf->charcnt);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_progress_change_line1(_("Saving Bitmap Font(s)"));
+	gwwv_progress_increment(-sf->charcnt);
+#endif
 	if ( !WriteBitmaps(newname,sf,sizes,res,oldbitmapstate))
 	    err = true;
     } else if ( (oldbitmapstate==bf_nfntmacbin /*|| oldbitmapstate==bf_nfntdfont*/) &&
@@ -1895,7 +1970,11 @@ return( true );
 	    err = true;
     }
     free( sizes );
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressEndIndicator();
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_end_indicator();
+#endif
     if ( !err )
 	SavePrefs();
 return( err );

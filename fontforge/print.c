@@ -273,25 +273,36 @@ static int PIDownloadFont(PI *pi) {
 #endif
 return(false);
     }
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressStartIndicatorR(10,_STR_PrintingFont,_STR_PrintingFont,
 	    _STR_GeneratingPostscriptFont,pi->sf->charcnt,1);
     GProgressEnableStop(false);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_start_indicator(10,_("Printing Font"),_("Printing Font"),
+	    _("Generating Postscript Font"),pi->sf->charcnt,1);
+    gwwv_progress_enable_stop(false);
+#endif
     if ( !_WritePSFont(pi->fontfile,pi->sf,
 		is_mm?ff_mma:
 		pi->iscid?ff_cid:
 		pi->sf->multilayer?ff_ptype3:
 		pi->twobyte?ff_ptype0:
 		ff_pfa,0)) {
-	GProgressEndIndicator();
 #if defined(FONTFORGE_CONFIG_GDRAW)
+	GProgressEndIndicator();
 	GWidgetErrorR(_STR_FailedGenPost,_STR_FailedGenPost );
 #elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_progress_end_indicator();
 	gwwv_post_error(_("Failed to generate postscript font"),_("Failed to generate postscript font") );
 #endif
 	fclose(pi->fontfile);
 return(false);
     }
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressEndIndicator();
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_end_indicator();
+#endif
     rewind(pi->fontfile);
     dump_prologue(pi);
     fclose(pi->fontfile); pi->fontfile = NULL;

@@ -1536,6 +1536,7 @@ static void PasteNonExistantRefCheck(SplineChar *sc,Undoes *paster,RefChar *ref,
 	    static int buts[] = { _STR_Yes, _STR_YesToAll, _STR_NoToAll, _STR_No, 0 };
 	    GProgressPauseTimer();
 	    yes = GWidgetAskCenteredR(_STR_BadReference,buts,0,3,_STR_FontNoRef,rsc->name,sc->name);
+	    GProgressResumeTimer();
 #elif defined(FONTFORGE_CONFIG_GTK)
 	    char *buts[];
 	    buts[0] = GTK_STOCK_YES;
@@ -1543,9 +1544,10 @@ static void PasteNonExistantRefCheck(SplineChar *sc,Undoes *paster,RefChar *ref,
 	    buts[2] = _("No to All");
 	    buts[3] = GTK_STOCK_NO;
 	    buts[4] = NULL;
+	    gwwv_progress_pause_timer();
 	    yes = gwwv_ask(_("Bad Reference"),buts,0,3,_("You are attempting to paste a reference to %1$s into %2$s.\nBut %1$s does not exist in this font.\nWould you like to copy the original splines (or delete the reference)?"),rsc->name,sc->name);
+	    gwwv_progress_resume_timer();
 #endif
-	    GProgressResumeTimer();
 	    if ( yes==1 )
 		*refstate |= 1;
 	    else if ( yes==2 )
@@ -2515,7 +2517,11 @@ return;
     }
 
     anchor_lost_warning = false;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressStartIndicatorR(10,_STR_Pasting,_STR_Pasting,0,cnt,1);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_start_indicator(10,_("Pasting..."),_("Pasting..."),0,cnt,1);
+#endif
 
     if ( cur->undotype==ut_multiple )
 	cur = cur->u.multiple.mult;
@@ -2590,11 +2596,19 @@ return;
 	    sf = mm->instances[j];
 	}
 	cur = cur->next;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( !GProgressNext())
+#elif defined(FONTFORGE_CONFIG_GTK)
+	if ( !gwwv_progress_next())
+#endif
     break;
     }
  err:
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressEndIndicator();
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_end_indicator();
+#endif
     if ( oldsel!=fv->selected )
 	free(oldsel);
 }

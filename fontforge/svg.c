@@ -2384,7 +2384,11 @@ return( NULL );
 	sf->fontname = copy(sf->familyname);
     sf->fullname = copy(sf->fontname);
 
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressChangeTotal(cnt);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_change_total(cnt);
+#endif
     sf->charcnt = cnt;
     sf->chars = galloc(cnt*sizeof(SplineChar *));
     sf->encoding_name = em_original;
@@ -2394,11 +2398,19 @@ return( NULL );
 	if ( _xmlStrcmp(kids->name,(const xmlChar *) "missing-glyph")==0 ) {
 	    sf->chars[cnt] = SVGParseMissing(sf,kids,defh,defv,cnt,&flags);
 	    cnt++;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GProgressNext();
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_progress_next();
+#endif
 	} else if ( _xmlStrcmp(kids->name,(const xmlChar *) "glyph")==0 ) {
 	    sf->chars[cnt] = SVGParseGlyph(sf,kids,defh,defv,cnt,&flags);
 	    cnt++;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GProgressNext();
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_progress_next();
+#endif
 	}
     }
     cnt = 0;
