@@ -1810,6 +1810,52 @@ static StemInfo *StemRemoveZeroHIlen(StemInfo *stems) {
 return( stems );
 }
 
+static int AnyPointsAt(SplineSet *spl,int major,real coord) {
+    SplinePoint *sp;
+
+    while ( spl!=NULL ) {
+	sp = spl->first;
+	do {
+	    if (( major && sp->me.x==coord ) || (!major && sp->me.y==coord))
+return( true );
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	} while ( sp!=spl->first );
+	spl = spl->next;
+    }
+return( false );
+}
+		
+/* I don't do a good job of figuring points left/right because sometimes */
+/*  the point is actually outside the (obvious) range of the hint. So check */
+/*  and see if there are any points with our coord value. If there are none */
+/*  then it's safe to remove the hint */
+static StemInfo *StemRemovePointlessHints(SplineChar *sc,int major,StemInfo *stems) {
+    StemInfo *head=stems, *n, *p;
+    int right, left;
+
+    p = NULL;
+    while ( stems!=NULL ) {
+	n = stems->next;
+	right = stems->haspointright; left = stems->haspointleft;
+	if ( !left )
+	    left = AnyPointsAt(sc->splines,major,stems->start);
+	if ( !right )
+	    right = AnyPointsAt(sc->splines,major,stems->start+stems->width);
+	if ( !right || !left ) {
+	    StemInfoFree(stems);
+	    if ( p==NULL )
+		head = n;
+	    else
+		p->next = n;
+	} else
+	    p = stems;
+	stems = n;
+    }
+return( head );
+}
+
 static StemInfo *StemRemoveWiderThanLong(StemInfo *stems,real big) {
     StemInfo *s, *p, *sn;
     /* Consider hyphen */
@@ -2229,16 +2275,23 @@ static StemInfo *CheckForGhostHints(StemInfo *stems,SplineChar *sc) {
     /*  (I used to turn them into ghost hints here, but that didn't work (for */
     /*  example on "E" where we don't need any ghosts from the big stem because*/
     /*  the narrow stems provide the hints that PS needs */
+    /* However, there are counter-examples. in Garamond-Pro the "T" character */
+    /*  has a horizontal stem a the top which stretches between two adjacent */
+    /*  bluezones. Removing it is wrong. Um... Thanks Adobe */
+    /* I'd guess the "big" check is more important */
     for ( prev=NULL, s=stems; s!=NULL; s=snext ) {
 	snext = s->next;
-	startfound = widthfound = 0;
+	startfound = widthfound = -1;
 	for ( i=0; i<bd.bluecnt; ++i ) {
 	    if ( s->start>=bd.blues[i][0]-1 && s->start<=bd.blues[i][1]+1 )
-		startfound = true;
+		startfound = i;
 	    else if ( s->start+s->width>=bd.blues[i][0]-1 && s->start+s->width<=bd.blues[i][1]+1 )
-		widthfound = true;
+		widthfound = i;
 	}
-	if ( startfound && widthfound ) {
+	if ( startfound!=-1 && widthfound!=-1 && 
+		(startfound+1==widthfound || startfound==widthfound+1))
+	    startfound = widthfound = -1;
+	if ( startfound!=-1 && widthfound!=-1 ) {
 	    if ( prev==NULL )
 		stems = snext;
 	    else
@@ -2411,6 +2464,7 @@ static StemInfo *SCFindStems(EIList *el, int major, int removeOverlaps,DStemInfo
     free(el->ends);
     stems = StemRemoveZeroHIlen(stems);
     stems = StemRemoveWiderThanLong(stems,big);
+    stems = StemRemovePointlessHints(el->sc,major,stems);
     if ( removeOverlaps ) {
 	/*if ( major==1 )*/ /* There are a few hstem serifs that should be removed, central stem of "E" */
 	    stems = StemRemoveSerifOverlaps(stems);
