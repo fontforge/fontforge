@@ -472,6 +472,14 @@ return( ApproximateSplineFromPoints(from,to,mid,cnt) );
 	/*  results and leave the control points as they were */
 	fprintf( stderr, "Possible divide by zero problem, please send a copy of the current font\n" );
 	fprintf( stderr, " the name of the character you were working on to gww@silcom.com\n" );
+	fprintf( stderr, "From: (%g,%g) nextcp: (%g,%g) prevcp: (%g,%g) To: (%g,%g)\nVia: ",
+	    from->me.x,from->me.y,
+	    from->nextcp.x,from->nextcp.y,
+	    to->prevcp.x, to->prevcp.y,
+	    to->me.x, to->me.y);
+	for ( i=0; i<cnt; ++i )
+	    fprintf( stderr, "(%g,%g,%g) ", mid[i].x, mid[i].y, mid[i].t );
+	fprintf( stderr, "\n");
     } else if ( v[2]*(from->nextcp.x-from->me.x) + v[5]*(from->nextcp.y-from->me.y)>=0 &&
 	    (prevcp.x-to->me.x)*(to->prevcp.x-to->me.x) + (prevcp.y-to->me.y)*(to->prevcp.y-to->me.y)>=0 ) {
 	from->nextcp.x = from->me.x + v[2]/3;
