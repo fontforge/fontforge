@@ -1060,6 +1060,7 @@ return( true );
 #define MID_Tools	2501
 #define MID_Layers	2502
 #define MID_Shades	2503
+#define MID_DockPalettes	2504
 #define MID_Revert	2702
 #define MID_Recent	2703
 #define MID_SetWidth	2601
@@ -1208,6 +1209,10 @@ static void BVMenuFindInFontView(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FVChangeChar(bv->fv,bv->bc->sc->enc);
     GDrawSetVisible(bv->fv->gw,true);
     GDrawRaise(bv->fv->gw);
+}
+
+static void BVMenuPalettesDock(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    PalettesChangeDocking();
 }
 
 static void BVMenuPaletteShow(GWindow gw,struct gmenuitem *mi,GEvent *g) {
@@ -1367,6 +1372,7 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void pllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
+    extern int palettes_docked;
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
@@ -1380,6 +1386,9 @@ static void pllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = BDFDepth(bv->bdf)==1;
 	    if ( !mi->ti.disabled )
 		mi->ti.checked = BVPaletteIsVisible(bv,2);
+	  break;
+	  case MID_DockPalettes:
+	    mi->ti.checked = palettes_docked;
 	  break;
 	}
     }
@@ -1487,6 +1496,8 @@ static GMenuItem pllist[] = {
     { { (unichar_t *) _STR_Tools, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'T' }, '\0', ksm_control, NULL, NULL, BVMenuPaletteShow, MID_Tools },
     { { (unichar_t *) _STR_Layers, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'L' }, '\0', ksm_control, NULL, NULL, BVMenuPaletteShow, MID_Layers },
     { { (unichar_t *) _STR_Shades, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'S' }, '\0', ksm_control, NULL, NULL, BVMenuPaletteShow, MID_Shades },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_DockedPalettes, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'D' }, '\0', ksm_control, NULL, NULL, BVMenuPalettesDock, MID_DockPalettes },
     { NULL }
 };
 

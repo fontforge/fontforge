@@ -2680,6 +2680,7 @@ return( true );
 #define MID_ClearWidthMD	2460
 #define MID_Tools	2501
 #define MID_Layers	2502
+#define MID_DockPalettes	2503
 #define MID_Center	2600
 #define MID_SetWidth	2601
 #define MID_SetLBearing	2602
@@ -2999,6 +3000,10 @@ static void CVMenuFindInFontView(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     GDrawRaise(cv->fv->gw);
 }
 
+static void CVMenuPalettesDock(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    PalettesChangeDocking();
+}
+
 static void CVMenuPaletteShow(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
@@ -3006,6 +3011,7 @@ static void CVMenuPaletteShow(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 
 static void cv_pllistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
+    extern int palettes_docked;
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
@@ -3014,6 +3020,9 @@ static void cv_pllistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 	  break;
 	  case MID_Layers:
 	    mi->ti.checked = CVPaletteIsVisible(cv,0);
+	  break;
+	  case MID_DockPalettes:
+	    mi->ti.checked = palettes_docked;
 	  break;
 	}
     }
@@ -4509,6 +4518,8 @@ static GMenuItem mtlist[] = {
 static GMenuItem pllist[] = {
     { { (unichar_t *) _STR_Tools, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'T' }, '\0', ksm_control, NULL, NULL, CVMenuPaletteShow, MID_Tools },
     { { (unichar_t *) _STR_Layers, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'L' }, '\0', ksm_control, NULL, NULL, CVMenuPaletteShow, MID_Layers },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_DockedPalettes, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'D' }, '\0', ksm_control, NULL, NULL, CVMenuPalettesDock, MID_DockPalettes },
     { NULL }
 };
 
@@ -5152,6 +5163,7 @@ static GMenuItem sv_ellist[] = {
 static GMenuItem sv_pllist[] = {
     { { (unichar_t *) _STR_Tools, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'T' }, '\0', ksm_control, NULL, NULL, SVMenuPaletteShow, MID_Tools },
     { { (unichar_t *) _STR_Layers, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'L' }, '\0', ksm_control, NULL, NULL, SVMenuPaletteShow, MID_Layers },
+    { { (unichar_t *) _STR_DockedPalettes, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'D' }, '\0', ksm_control, NULL, NULL, CVMenuPalettesDock, MID_DockPalettes },
     { NULL }
 };
 

@@ -34,12 +34,19 @@ static int cvvisible[2] = { 1, 1}, bvvisible[3]= { 1,1,1 };
 static GWindow cvlayers, cvtools, bvlayers, bvtools, bvshades;
 static GPoint cvtoolsoff = { -9999 }, cvlayersoff = { -9999 }, bvlayersoff = { -9999 }, bvtoolsoff = { -9999 }, bvshadesoff = { -9999 };
 static int palettesmoved=0;
+int palettes_docked=0;
 int palettes_fixed=1;
 
 static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c','a','l','i','b','a','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
 static GFont *font;
 
-static GWindow CreatePalette(GWindow w, GRect *pos, int (*eh)(GWindow,GEvent *), void *user_data, GWindowAttrs *wattrs) {
+#define CV_TOOLS_HEIGHT		(187+4*12+2)
+#define CV_LAYERS_HEIGHT	162
+#define BV_TOOLS_HEIGHT		80
+#define BV_LAYERS_HEIGHT	73
+#define BV_SHADES_HEIGHT	(8+9*16)
+
+static GWindow CreatePalette(GWindow w, GRect *pos, int (*eh)(GWindow,GEvent *), void *user_data, GWindowAttrs *wattrs, GWindow v) {
     GWindow gw;
     GPoint pt, base;
     GRect newpos;
@@ -66,16 +73,21 @@ static GWindow CreatePalette(GWindow w, GRect *pos, int (*eh)(GWindow,GEvent *),
 	if ( pt.y+pos->height>screensize.height )
 	    pt.y = screensize.height-pos->height;
     }
+    wattrs->mask |= wam_bordcol|wam_bordwidth;
+    wattrs->border_width = 1;
+    wattrs->border_color = GDrawGetDefaultForeground(NULL);
 
     newpos.x = pt.x; newpos.y = pt.y; newpos.width = pos->width; newpos.height = pos->height;
     wattrs->mask |= wam_positioned;
     wattrs->positioned = true;
     gw = GDrawCreateTopWindow(NULL,&newpos,eh,user_data,wattrs);
+    if ( palettes_docked )
+	GDrawReparentWindow(gw,v,0,pos->y);
 return( gw );
 }
 
 static void SaveOffsets(GWindow main, GWindow palette, GPoint *off) {
-    if ( GDrawIsVisible(palette)) {
+    if ( !palettes_docked && !palettes_fixed && GDrawIsVisible(palette)) {
 	GRect mr, pr;
 	GWindow root, temp;
 	root = GDrawGetRoot(NULL);
@@ -539,6 +551,11 @@ static void PostCharToWindow(GWindow to, GEvent *e) {
 static int cvtools_e_h(GWindow gw, GEvent *event) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
+    if ( event->type==et_destroy ) {
+	cvtools = NULL;
+return( true );
+    }
+
     if ( cv==NULL )
 return( true );
 
@@ -564,8 +581,6 @@ return( true );
 	    cv->pressed_display = cvt_none;
 	PostCharToWindow(cv->gw,event);
       break;
-      case et_destroy:
-      break;
       case et_close:
 	GDrawSetVisible(gw,false);
       break;
@@ -589,12 +604,14 @@ return( cvtools );
     wattrs.is_dlg = true;
     wattrs.window_title = GStringGetResource(_STR_Tools,NULL);
 
-    r.width = 53; r.height = 187+4*12+2;
+    r.width = 53; r.height = CV_TOOLS_HEIGHT;
     if ( cvtoolsoff.x==-9999 ) {
 	cvtoolsoff.x = -r.width-6; cvtoolsoff.y = cv->mbh+20;
     }
     r.x = cvtoolsoff.x; r.y = cvtoolsoff.y;
-    cvtools = CreatePalette( cv->gw, &r, cvtools_e_h, cv, &wattrs );
+    if ( palettes_docked )
+	r.x = r.y = 0;
+    cvtools = CreatePalette( cv->gw, &r, cvtools_e_h, cv, &wattrs, cv->v );
 
     memset(&rq,0,sizeof(rq));
     rq.family_name = helv;
@@ -678,6 +695,11 @@ static void CVLayersSet(CharView *cv) {
 
 static int cvlayers_e_h(GWindow gw, GEvent *event) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
+
+    if ( event->type==et_destroy ) {
+	cvlayers = NULL;
+return( true );
+    }
 
     if ( cv==NULL )
 return( true );
@@ -764,13 +786,14 @@ return( cvlayers );
     wattrs.is_dlg = true;
     wattrs.window_title = GStringGetResource(_STR_Layers,NULL);
 
-    r.width = GGadgetScale(104); r.height = 162;
+    r.width = GGadgetScale(104); r.height = CV_LAYERS_HEIGHT;
     if ( cvlayersoff.x==-9999 ) {
 	cvlayersoff.x = -r.width-6;
-	cvlayersoff.y = cv->mbh+187+50+45/*25*/;	/* 45 is right if there's decor, 25 when none. twm gives none, kde gives decor */
+	cvlayersoff.y = cv->mbh+CV_TOOLS_HEIGHT+45/*25*/;	/* 45 is right if there's decor, 25 when none. twm gives none, kde gives decor */
     }
     r.x = cvlayersoff.x; r.y = cvlayersoff.y;
-    cvlayers = CreatePalette( cv->gw, &r, cvlayers_e_h, cv, &wattrs );
+    if ( palettes_docked ) { r.x = 0; r.y=CV_TOOLS_HEIGHT+2; }
+    cvlayers = CreatePalette( cv->gw, &r, cvlayers_e_h, cv, &wattrs, cv->v );
 
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
@@ -961,7 +984,7 @@ static void CVPaletteCheck(CharView *cv) {
     if ( cvtools==NULL ) {
 	if ( palettes_fixed ) {
 	    cvtoolsoff.x = 0; cvtoolsoff.y = 0;
-	    cvlayersoff.x = 0; cvlayersoff.y = 167+50+45/*25*/;	/* 45 is right if there's decor, 25 when none. twm gives none, kde gives decor */
+	    cvlayersoff.x = 0; cvlayersoff.y = CV_TOOLS_HEIGHT+45/*25*/;	/* 45 is right if there's decor, 25 when none. twm gives none, kde gives decor */
 	}
 	CVMakeTools(cv);
 	CVMakeLayers(cv);
@@ -1003,10 +1026,15 @@ void CVPaletteActivate(CharView *cv) {
 	}
 	GDrawSetUserData(cvtools,cv);
 	GDrawSetUserData(cvlayers,cv);
-	if ( cvvisible[0])
-	    RestoreOffsets(cv->gw,cvlayers,&cvlayersoff);
-	if ( cvvisible[1])
-	    RestoreOffsets(cv->gw,cvtools,&cvtoolsoff);
+	if ( palettes_docked ) {
+	    GDrawReparentWindow(cvtools,cv->v,0,0);
+	    GDrawReparentWindow(cvlayers,cv->v,0,CV_TOOLS_HEIGHT+2);
+	} else {
+	    if ( cvvisible[0])
+		RestoreOffsets(cv->gw,cvlayers,&cvlayersoff);
+	    if ( cvvisible[1])
+		RestoreOffsets(cv->gw,cvtools,&cvtoolsoff);
+	}
 	GDrawSetVisible(cvtools,cvvisible[1]);
 	GDrawSetVisible(cvlayers,cvvisible[0]);
 	if ( cvvisible[1]) {
@@ -1060,6 +1088,11 @@ static void BVLayersSet(BitmapView *bv) {
 static int bvlayers_e_h(GWindow gw, GEvent *event) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
 
+    if ( event->type==et_destroy ) {
+	bvlayers = NULL;
+return( true );
+    }
+
     if ( bv==NULL )
 return( true );
 
@@ -1111,12 +1144,14 @@ return(bvlayers);
     wattrs.is_dlg = true;
     wattrs.window_title = GStringGetResource(_STR_Layers,NULL);
 
-    r.width = GGadgetScale(73); r.height = 73;
-    r.x = -r.width-6; r.y = bv->mbh+81+45/*25*/;	/* 45 is right if there's decor, is in kde, not in twm. Sigh */
-    if ( palettes_fixed ) {
-	r.x = 0; r.y = 61+45;
+    r.width = GGadgetScale(73); r.height = BV_LAYERS_HEIGHT;
+    r.x = -r.width-6; r.y = bv->mbh+BV_TOOLS_HEIGHT+45/*25*/;	/* 45 is right if there's decor, is in kde, not in twm. Sigh */
+    if ( palettes_docked ) {
+	r.x = 0; r.y = BV_TOOLS_HEIGHT+4;
+    } else if ( palettes_fixed ) {
+	r.x = 0; r.y = BV_TOOLS_HEIGHT+45;
     }
-    bvlayers = CreatePalette( bv->gw, &r, bvlayers_e_h, bv, &wattrs );
+    bvlayers = CreatePalette( bv->gw, &r, bvlayers_e_h, bv, &wattrs, bv->v );
 
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
@@ -1270,6 +1305,11 @@ return;
 static int bvshades_e_h(GWindow gw, GEvent *event) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
 
+    if ( event->type==et_destroy ) {
+	bvshades = NULL;
+return( true );
+    }
+
     if ( bv==NULL )
 return( true );
 
@@ -1310,12 +1350,14 @@ return( bvshades );
     wattrs.background_color = 0xffffff;
     wattrs.window_title = GStringGetResource(_STR_Shades,NULL);
 
-    r.width = 8+9*16; r.height = r.width;
+    r.width = BV_SHADES_HEIGHT; r.height = r.width;
     r.x = -r.width-6; r.y = bv->mbh+225;
-    if ( palettes_fixed ) {
-	r.x = 0; r.y = 205;
+    if ( palettes_docked ) {
+	r.x = 0; r.y = BV_TOOLS_HEIGHT+BV_LAYERS_HEIGHT+4;
+    } else if ( palettes_fixed ) {
+	r.x = 0; r.y = BV_TOOLS_HEIGHT+BV_LAYERS_HEIGHT+90;
     }
-    bvshades = CreatePalette( bv->gw, &r, bvshades_e_h, bv, &wattrs );
+    bvshades = CreatePalette( bv->gw, &r, bvshades_e_h, bv, &wattrs, bv->v );
     bv->shades_hidden = BDFDepth(bv->bdf)==1;
     GDrawSetVisible(bvshades,!bv->shades_hidden);
 return( bvshades );
@@ -1447,6 +1489,11 @@ static void BVToolsMouse(BitmapView *bv, GEvent *event) {
 static int bvtools_e_h(GWindow gw, GEvent *event) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
 
+    if ( event->type==et_destroy ) {
+	bvtools = NULL;
+return( true );
+    }
+
     if ( bv==NULL )
 return( true );
 
@@ -1472,8 +1519,6 @@ return( true );
 	    bv->pressed_display = bvt_none;
 	PostCharToWindow(bv->gw,event);
       break;
-      case et_destroy:
-      break;
       case et_close:
 	GDrawSetVisible(gw,false);
       break;
@@ -1495,12 +1540,12 @@ return( bvtools );
     wattrs.is_dlg = true;
     wattrs.window_title = GStringGetResource(_STR_Tools,NULL);
 
-    r.width = 53; r.height = 80;
+    r.width = 53; r.height = BV_TOOLS_HEIGHT;
     r.x = -r.width-6; r.y = bv->mbh+20;
-    if ( palettes_fixed ) {
+    if ( palettes_fixed || palettes_docked ) {
 	r.x = 0; r.y = 0;
     }
-    bvtools = CreatePalette( bv->gw, &r, bvtools_e_h, bv, &wattrs );
+    bvtools = CreatePalette( bv->gw, &r, bvtools_e_h, bv, &wattrs, bv->v );
     GDrawSetVisible(bvtools,true);
 return( bvtools );
 }
@@ -1626,12 +1671,18 @@ void BVPaletteActivate(BitmapView *bv) {
 	GDrawSetUserData(bvtools,bv);
 	GDrawSetUserData(bvlayers,bv);
 	GDrawSetUserData(bvshades,bv);
-	if ( bvvisible[0])
-	    RestoreOffsets(bv->gw,bvlayers,&bvlayersoff);
-	if ( bvvisible[1])
-	    RestoreOffsets(bv->gw,bvtools,&bvtoolsoff);
-	if ( bvvisible[2] && !bv->shades_hidden )
-	    RestoreOffsets(bv->gw,bvshades,&bvshadesoff);
+	if ( palettes_docked ) {
+	    GDrawReparentWindow(bvtools,bv->v,0,0);
+	    GDrawReparentWindow(bvlayers,bv->v,0,BV_TOOLS_HEIGHT+2);
+	    GDrawReparentWindow(bvshades,bv->v,0,BV_LAYERS_HEIGHT+BV_TOOLS_HEIGHT+4);
+	} else {
+	    if ( bvvisible[0])
+		RestoreOffsets(bv->gw,bvlayers,&bvlayersoff);
+	    if ( bvvisible[1])
+		RestoreOffsets(bv->gw,bvtools,&bvtoolsoff);
+	    if ( bvvisible[2] && !bv->shades_hidden )
+		RestoreOffsets(bv->gw,bvshades,&bvshadesoff);
+	}
 	GDrawSetVisible(bvtools,bvvisible[1]);
 	GDrawSetVisible(bvlayers,bvvisible[0]);
 	GDrawSetVisible(bvshades,bvvisible[2] && bv->bdf->clut!=NULL);
@@ -1718,4 +1769,37 @@ void BVPaletteChangedChar(BitmapView *bv) {
 	} else
 	    GDrawRequestExpose(bvshades,NULL,false);
     }
+}
+
+void PalettesChangeDocking(void) {
+
+    palettes_docked = !palettes_docked;
+    if ( palettes_docked ) {
+	if ( cvtools!=NULL ) {
+	    CharView *cv = GDrawGetUserData(cvtools);
+	    if ( cv!=NULL ) {
+		GDrawReparentWindow(cvtools,cv->v,0,0);
+		GDrawReparentWindow(cvlayers,cv->v,0,CV_TOOLS_HEIGHT+2);
+	    }
+	}
+	if ( bvtools!=NULL ) {
+	    BitmapView *bv = GDrawGetUserData(bvtools);
+	    if ( bv!=NULL ) {
+		GDrawReparentWindow(bvtools,bv->v,0,0);
+		GDrawReparentWindow(bvlayers,bv->v,0,BV_TOOLS_HEIGHT+2);
+		GDrawReparentWindow(bvshades,bv->v,0,BV_TOOLS_HEIGHT+BV_LAYERS_HEIGHT+4);
+	    }
+	}
+    } else {
+	if ( cvtools!=NULL ) {
+	    GDrawReparentWindow(cvtools,GDrawGetRoot(NULL),0,0);
+	    GDrawReparentWindow(cvlayers,GDrawGetRoot(NULL),0,CV_TOOLS_HEIGHT+2+45);
+	}
+	if ( bvtools!=NULL ) {
+	    GDrawReparentWindow(bvtools,GDrawGetRoot(NULL),0,0);
+	    GDrawReparentWindow(bvlayers,GDrawGetRoot(NULL),0,BV_TOOLS_HEIGHT+2+45);
+	    GDrawReparentWindow(bvshades,GDrawGetRoot(NULL),0,BV_TOOLS_HEIGHT+BV_LAYERS_HEIGHT+4+90);
+	}
+    }
+    SavePrefs();
 }

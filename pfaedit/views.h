@@ -441,6 +441,8 @@ extern void BVPalettesHideIfMine(BitmapView *bv);
 extern void BVPaletteColorChange(BitmapView *bv);
 extern void BVPaletteChangedChar(BitmapView *bv);
 extern void CVPaletteDeactivate(void);
+extern void PalettesChangeDocking(void);
+
 extern void BackgroundImageTransform(SplineChar *sc, ImageList *img,real transform[6]);
 extern void CVTransFunc(CharView *cv,real transform[6],int doback);
 extern void skewselect(BVTFunc *bvtf,real t);
