@@ -335,7 +335,7 @@ void QuickBlues(SplineFont *_sf, BlueData *bd) {
     real xheight = -1e10, caph = -1e10, ascent = -1e10, descent = 1e10, max, min;
     real xheighttop = -1e10, caphtop = -1e10;
     real numh = -1e10, numhtop = -1e10;
-    real base = -1e10, basebelow = -1e10;
+    real base = -1e10, basebelow = 1e10;
     SplineFont *sf;
     SplinePoint *sp;
     SplineSet *spl;
@@ -358,6 +358,8 @@ void QuickBlues(SplineFont *_sf, BlueData *bd) {
 /* Jean-Christophe Dubacq points out that x-height should be calculated from */
 /*  various characters and not just x and o. Italic "x"s often have strange */
 /*  shapes */
+		    enc=='A' || enc==0x391 || enc==0x410 ||
+		    enc=='V' ||
 		    enc=='u' || enc=='v' || enc=='w' || enc=='y' || enc=='z' ||
 		    enc=='7' || enc=='8' ||	/* numbers with ascenders */
 		    enc==0x399 || enc==0x39f || enc==0x3ba || enc==0x3bf || enc==0x3c1 || enc==0x3be || enc==0x3c7 ||
@@ -381,7 +383,8 @@ void QuickBlues(SplineFont *_sf, BlueData *bd) {
 		    if ( enc>0x400 ) {
 			/* Only use ascent and descent here if we don't have anything better */
 			if ( enc==0x41f ) { caph = max; base = min; }
-			else if ( enc==0x41e ) { caphtop = max; basebelow = min; }
+			else if ( enc==0x41e ) { if ( max>caphtop ) caphtop = max; basebelow = min; }
+			else if ( enc==0x410 ) { if ( max>caphtop ) caphtop = max; }
 			else if ( enc==0x43f && xheight<0 ) xheight = max;
 			else if ( enc==0x445 && xheight<0 ) xheight = max;
 			else if ( enc==0x43e ) xheighttop = max;
@@ -389,7 +392,8 @@ void QuickBlues(SplineFont *_sf, BlueData *bd) {
 			else if ( enc==0x440 && descent>0 ) descent = min;
 		    } else if ( enc>0x300 ) {
 			if ( enc==0x399 ) { caph = max; base = min; }
-			else if ( enc==0x39f ) { caphtop = max; basebelow = min; }
+			else if ( enc==0x391 ) { if ( max>caphtop ) caphtop = max; }
+			else if ( enc==0x39f ) { if ( max>caphtop ) caphtop = max; basebelow = min; }
 			else if ( enc==0x3ba && xheight<0 ) xheight = max;
 			else if ( enc==0x3c7 && xheight<0 ) xheight = max;
 			else if ( enc==0x3bf ) xheighttop = max;
@@ -397,7 +401,9 @@ void QuickBlues(SplineFont *_sf, BlueData *bd) {
 			else if ( enc==0x3c1 && descent>0 ) descent = min;
 		    } else {
 			if ( enc=='I' ) { caph = max; base = min; }
-			else if ( enc=='8' ) { caphtop = max; basebelow = min; }
+			else if ( enc=='O' ) { if ( max>caphtop ) caphtop = max; if ( basebelow<min ) basebelow = min; }
+			else if ( enc=='V' ) { if ( basebelow<min ) basebelow = min; }
+			else if ( enc=='A' ) { if ( max>caphtop ) caphtop = max; }
 			else if ( enc=='7' ) numh = max;
 			else if ( enc=='0' ) numhtop = max;
 			else if ( enc=='x' || enc=='o' || enc=='u' || enc=='v' ||
@@ -415,6 +421,8 @@ void QuickBlues(SplineFont *_sf, BlueData *bd) {
 	}
 	++j;
     } while ( j<_sf->subfontcnt );
+
+    if ( basebelow==1e10 ) basebelow=-1e10;
 
     if ( caphtop<caph ) caphtop = caph; else if ( caph==-1e10 ) caph=caphtop;
     if ( basebelow>base ) basebelow = base; else if ( base==-1e10 ) base=basebelow;
