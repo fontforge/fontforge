@@ -1424,6 +1424,7 @@ static int SaveSubFont(SplineFont *sf,char *newname,int32 *sizes,int res,
     RefChar *ref;
     int err = 0;
     unichar_t *ufile;
+    SplineFont *parents[256];
 
     temp = *sf;
     temp.encoding_name = em_none;
@@ -1445,6 +1446,7 @@ static int SaveSubFont(SplineFont *sf,char *newname,int32 *sizes,int res,
 	} while ( k<sf->subfontcnt );
 	if ( i<_sf->charcnt ) {
 	    if ( _sf->chars[i]!=NULL ) {
+		parents[mapping[i]&0xff] = _sf;
 		_sf->chars[i]->parent = &temp;
 		_sf->chars[i]->enc = mapping[i]&0xff;
 		++used;
@@ -1517,6 +1519,7 @@ return( 0 );
     GProgressChangeLine2(ufile=uc_copy(filename)); free(ufile);
 
     if ( sf->xuid!=NULL ) {
+	sprintf( buf, "%d", subfont );
 	temp.xuid = galloc(strlen(sf->xuid)+strlen(buf)+5);
 	strcpy(temp.xuid,sf->xuid);
 	pt = temp.xuid + strlen( temp.xuid )-1;
@@ -1546,10 +1549,9 @@ return( 0 );
     if ( !GProgressNextStage())
 	err = -1;
 
-    /* The parent pointers on chars will be fixed up properly later */
-    /*  for now we just set them to NULL so future reference checks won't be confused */
+    /* restore the parent pointers */
     for ( i=0; i<temp.charcnt; ++i ) if ( temp.chars[i]!=NULL )
-	temp.chars[i]->parent = NULL;
+	temp.chars[i]->parent = parents[i];
     if ( temp.chars!=chars )
 	free(temp.chars);
     GlyphHashFree( &temp );
@@ -1558,20 +1560,6 @@ return( 0 );
     free( temp.fullname );
     free( filename );
 return( err );
-}
-
-static void RestoreSF(SplineFont *sf) {
-    SplineFont *_sf;
-    int k, i;
-
-    k = 0;
-    do {
-	_sf = sf->subfontcnt==0 ? sf : sf->subfonts[k++];
-	for ( i=0; i<_sf->charcnt; ++i ) if ( _sf->chars[i]!=NULL ) {
-	    _sf->chars[i]->parent = _sf;
-	    _sf->chars[i]->enc = i;
-	}
-    } while ( k<sf->subfontcnt );
 }
 
 /* ttf2tfm supports multiple sfd files. I do not. */
@@ -1613,7 +1601,6 @@ return( 1 );
 
     for ( i=0; i<=max && !err; ++i )
 	err = SaveSubFont(sf,newname,sizes,res,mapping,i,names);
-    RestoreSF(sf);
     free(mapping);
     for ( i=0; names[i]!=NULL; ++i ) free(names[i]);
     free(names);
