@@ -2228,7 +2228,10 @@ return( NULL );
 	} else if ( strmatch(tok,"MinimumDistance:")==0 ) {
 	    SFDGetMinimumDistances(sfd,sc);
 	} else if ( strmatch(tok,"Back")==0 ) {
-	    sc->layers[ly_back].splines = SFDGetSplineSet(sf,sfd);
+	    while ( isspace(ch=getc(sfd)));
+	    ungetc(ch,sfd);
+	    if ( ch!='I' )
+		sc->layers[ly_back].splines = SFDGetSplineSet(sf,sfd);
 	    current_layer = ly_back;
 #ifdef FONTFORGE_CONFIG_TYPE3
 	} else if ( strmatch(tok,"LayerCount:")==0 ) {
