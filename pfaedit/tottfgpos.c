@@ -1028,6 +1028,10 @@ static struct lookup *GSUBfigureLookups(FILE *lfile,SplineFont *sf,
     ligtags = galloc(max*sizeof(uint32));
     flag_sets = galloc(max*sizeof(uint32));
     for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL ) {
+	if ( sf->chars[i]->script==0 && sf->chars[i]->ligofme!=NULL )
+	    fprintf( stderr, "Warning: Ligature '%s' beginning with glyph '%s' has no associated script.\n No GSUB entry will be generated for it.\n",
+		    sf->chars[i]->ligofme->lig->u.lig.lig->name,
+		    sf->chars[i]->name );
 	for ( ll = sf->chars[i]->ligofme; ll!=NULL; ll=ll->next ) {
 	    for ( j=0; j<cnt; ++j )
 		if ( ligtags[j]==ll->lig->tag ) {
@@ -1070,6 +1074,9 @@ static struct lookup *GSUBfigureLookups(FILE *lfile,SplineFont *sf,
 	cnt = 0;
 	for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL ) {
 	    for ( subs = sf->chars[i]->possub; subs!=NULL; subs=subs->next ) if ( subs->type==type ) {
+		if ( sf->chars[i]->script==0 )
+		    fprintf( stderr, "Warning: Substitution of '%s' has no associated script.\n No GSUB entry will be generated for it.\n",
+			    sf->chars[i]->name );
 		for ( j=0; j<cnt; ++j )
 		    if ( ligtags[j]==subs->tag ) {
 			flag_sets[j] |= 1<<(subs->flags>>1);

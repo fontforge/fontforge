@@ -1170,6 +1170,28 @@ static int CI_ProcessPosSubs(CharInfo *ci) {
 return( true );
 }
 
+static uint32 GuessScriptFromSubs(SplineChar *sc) {
+    PST *pst;
+    char *pt;
+    int ch;
+    uint32 script = 0;
+    SplineChar *ssc;
+
+    for ( pst = sc->possub; script==0 && pst!=NULL; pst=pst->next ) {
+	if ( pst->type==pst_substitution || pst->type==pst_alternate ||
+		pst->type==pst_multiple || pst->type==pst_ligature ) {
+	    for ( pt=pst->u.lig.components; *pt!='\0' && *pt!=' '; ++pt );
+	    ch = *pt;
+	    *pt = '\0';
+	    ssc = SFGetChar(sc->parent,-1,pst->u.lig.components);
+	    *pt = ch;
+	    if ( ssc!=NULL )
+		script = ssc->script;
+	}
+    }
+return( script );
+}
+
 static int _CI_OK(CharInfo *ci) {
     int val;
     int ret, refresh_fvdi=0;
@@ -1187,6 +1209,18 @@ return( false );
 return( false );
     if ( !CI_ProcessPosSubs(ci))
 return( false );
+    if ( tag==0 && ci->sc->possub!=NULL ) {
+	tag = GuessScriptFromSubs(ci->sc);
+	if ( tag!=0 ) {
+	    int buts[] = { _STR_Yes, _STR_No, 0 };
+	    if ( GWidgetAskR(_STR_NoScript,buts,0,1,_STR_NeedsScriptForSubsGuess,
+		    tag>>24, (tag>>16)&0xff, (tag>>8)&0xff, tag&0xff)==1 )
+		tag = 0;
+	} else
+	    GWidgetErrorR(_STR_NoScript, _STR_NeedsScriptForSubs);
+	if ( tag==0 )
+return( false );
+    }
     name = cu_copy( _GGadgetGetTitle(GWidgetGetControl(ci->gw,CID_UName)) );
     if ( strcmp(name,ci->sc->name)!=0 || val!=ci->sc->unicodeenc )
 	refresh_fvdi = 1;

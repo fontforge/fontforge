@@ -1160,6 +1160,9 @@ static char str_ScriptTagTooLong = "Script tags are limited to 4 ASCII character
 static char str_IgnoreBaseGlyphs = "Ignore Base Glyphs";
 static char str_IgnoreLigatures = "Ignore Ligatures";
 static char str_IgnoreCombiningMarks = "Ignore Combining Marks";
+static char str_NoScript = "No Script";
+static char str_NeedsScriptForSubs = "If you specify positioning or substitution information for a character, pfaedit needs to know its script.";
+static char str_NeedsScriptForSubsGuess = "If you specify positioning or substitution information for a character, pfaedit needs to know its script.\nWould this one be correct: '%c%c%c%c'?";
     /* Import */
 static char str_Duppixelsize[] = "Duplicate pixelsize";
 /* "The font database already contains a bitmap\nfont with this pixelsize (%d)\nDo you want to overwrite it?" */
