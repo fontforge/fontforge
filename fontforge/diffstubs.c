@@ -959,3 +959,8 @@ void AnchorPointsFree(AnchorPoint *ap) {
 	chunkfree(ap,sizeof(AnchorPoint));
     }
 }
+
+#ifdef FONTFORGE_CONFIG_TYPE3
+void SFSplinesFromLayers(SplineFont *sf,int flag) {
+}
+#endif
