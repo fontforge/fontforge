@@ -121,7 +121,6 @@ return( false );
 
 enum charset _GDraw_ParseMapping(unichar_t *setname) {
     unichar_t *pt;
-    /* FontToScript should do this on the mac */
     int val;
 
     if ( uc_strstrmatch(setname,"iso")!=NULL && uc_strstrmatch(setname,"10646")!=NULL )
@@ -129,23 +128,32 @@ return( em_unicode );
     else if ( uc_strstrmatch(setname,"unicode")!=NULL )
 return( em_unicode );
 
-    if ( uc_strstrmatch(setname,"ascii")!=NULL )
-return( em_iso8859_1 );
-    else if ( uc_strstrmatch(setname,"iso")!=NULL && uc_strstrmatch(setname,"646")!=NULL )
-return( em_iso8859_1 );
-    if ( uc_strstrmatch(setname,"iso")!=NULL && uc_strstrmatch(setname,"8859")!=NULL ) {
-	pt = setname+u_strlen(setname)-1;
-	if ( isdigit(*pt) && !isdigit(pt[-1]) )
-return( em_iso8859_1+*pt-'1' );
-	val = (pt[-1]-'0')*10 + *pt-'0';
-	switch ( val ) {
-	  case 10: case 11:
-return( em_iso8859_10+val-10 );
-	  case 13: case 14: case 15:
-return( em_iso8859_13+val-13 );
-	}
+#if 0
+    if ( uc_strstrmatch(setname,"ascii")!=NULL ||
+	    ( uc_strstrmatch(setname,"iso")!=NULL && uc_strstrmatch(setname,"646")!=NULL )) {
+	char *lang = getenv( "LANG" );
+	if ( lang==NULL || *lang=='\0' || (*lang=='e' && *lang=='n' ))
+return( em_iso8859_1 );		/* ascii can masquarade as iso8859-1 for english speakers (no accents needed) */
+    }
+#endif
 
-return( em_iso8859_1 );
+    if ( uc_strstrmatch(setname,"iso")!=NULL && uc_strstrmatch(setname,"8859")!=NULL ) {
+	pt = uc_strstrmatch(setname,"8859");
+	pt += 4;
+	if ( *pt=='-' ) ++pt;
+	if ( !isdigit(*pt) )
+	    /* Bad */;
+	else if ( !isdigit(pt[1]) )
+return( em_iso8859_1+*pt-'1' );
+	else {
+	    val = (pt[0]-'0')*10 + pt[1]-'0';
+	    switch ( val ) {
+	      case 10: case 11:
+return( em_iso8859_10+val-10 );
+	      case 13: case 14: case 15:
+return( em_iso8859_13+val-13 );
+	    }
+	}
     }
 
     if ( uc_strstrmatch(setname,"latin1")!=NULL )
