@@ -530,5 +530,5 @@ extern void memputshort(uint8 *data,int offset,uint16 val);
 extern int TTF__getcvtval(SplineFont *sf,int val);
 extern int TTF_getcvtval(SplineFont *sf,int val);
 extern void initforinstrs(SplineChar *sc);
-extern int SSPointCnt(SplineSet *ss);
-extern int SSAddPoints(SplineSet *ss,int ptcnt,BasePoint *bp, char *flags);
+extern int SSPointCnt(SplineSet *ss,int has_instrs);
+extern int SSAddPoints(SplineSet *ss,int ptcnt,BasePoint *bp, char *flags,int has_instrs);

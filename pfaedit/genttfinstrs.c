@@ -1699,7 +1699,7 @@ return;
 
     cnt = contourcnt = 0;
     for ( ss=sc->splines; ss!=NULL; ss=ss->next, ++contourcnt )
-	cnt += SSPointCnt(ss);
+	cnt += SSPointCnt(ss,false);
 
     contourends = galloc((contourcnt+1)*sizeof(int));
     bp = galloc(cnt*sizeof(BasePoint));
@@ -1707,7 +1707,7 @@ return;
     contourcnt = cnt = 0;
     for ( ss=sc->splines; ss!=NULL; ss=ss->next ) {
 	touched[cnt] |= tf_startcontour;
-	cnt = SSAddPoints(ss,cnt,bp,NULL);
+	cnt = SSAddPoints(ss,cnt,bp,NULL,false);
 	touched[cnt-1] |= tf_endcontour;
 	contourends[contourcnt++] = cnt-1;
     }

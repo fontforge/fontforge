@@ -638,13 +638,14 @@ static SplineSet *SCttfApprox(SplineChar *sc) {
 return( head );
 }
     
-int SSPointCnt(SplineSet *ss) {
+int SSPointCnt(SplineSet *ss,int has_instrs) {
     SplinePoint *sp, *first=NULL;
     int cnt;
 
     for ( sp=ss->first, cnt=0; sp!=first ; ) {
 	if ( sp==ss->first || sp->nonextcp || sp->noprevcp ||
 		(sp->dontinterpolate || sp->roundx || sp->roundy) ||
+		(has_instrs && sp->ttfindex!=0xffff) ||
 		(sp->prevcp.x+sp->nextcp.x)/2!=sp->me.x ||
 		(sp->prevcp.y+sp->nextcp.y)/2!=sp->me.y )
 	    ++cnt;
@@ -664,13 +665,14 @@ return( cnt );
 #define _X_Same		0x10
 #define _Y_Same		0x20
 
-int SSAddPoints(SplineSet *ss,int ptcnt,BasePoint *bp, char *flags) {
+int SSAddPoints(SplineSet *ss,int ptcnt,BasePoint *bp, char *flags,int has_instrs) {
     SplinePoint *sp, *first;
 
     first = NULL;
     for ( sp=ss->first; sp!=first ; ) {
 	if ( sp==ss->first || sp->nonextcp || sp->noprevcp ||
 		(sp->dontinterpolate || sp->roundx || sp->roundy) ||
+		(has_instrs && sp->ttfindex!=0xffff) ||
 		(sp->prevcp.x+sp->nextcp.x)/2!=sp->me.x ||
 		(sp->prevcp.y+sp->nextcp.y)/2!=sp->me.y ) {
 	    /* If an on curve point is midway between two off curve points*/
@@ -999,7 +1001,7 @@ static void dumpcomposite(SplineChar *sc, RefChar *refs, struct glyphinfo *gi) {
 	}
 	for ( ss=ref->splines; ss!=NULL ; ss=ss->next ) {
 	    ++ctcnt;
-	    ptcnt += SSPointCnt(ss);
+	    ptcnt += SSPointCnt(ss,false);
 	}
     }
 
@@ -1050,7 +1052,7 @@ return;
     ttfss = SCttfApprox(sc);
     for ( ss=ttfss; ss!=NULL; ss=ss->next ) {
 	++contourcnt;
-	ptcnt += SSPointCnt(ss);
+	ptcnt += SSPointCnt(ss,sc->ttf_instrs!=NULL);
     }
 
     SplineCharFindBounds(sc,&bb);
@@ -1065,7 +1067,7 @@ return;
     fs = galloc(ptcnt);
     ptcnt = contourcnt = 0;
     for ( ss=ttfss; ss!=NULL; ss=ss->next ) {
-	ptcnt = SSAddPoints(ss,ptcnt,bp,fs);
+	ptcnt = SSAddPoints(ss,ptcnt,bp,fs,sc->ttf_instrs!=NULL);
 	putshort(gi->glyphs,ptcnt-1);
     }
 
