@@ -18,10 +18,13 @@ CFLAGS = @CFLAGS@ -I../inc $(WFLAGS) $(X_CFLAGS) @DEFS@
 
 LDFLAGS = @LDFLAGS@
 LIBS = $(X_LIBS) ../libgdraw.la ../libgunicode.la \
-    $(X_PRE_LIBS) -lX11 $(X_EXTRA_LIBS) @LIBS@ -lm
+    $(X_PRE_LIBS) -lX11 $(X_EXTRA_LIBS) @LIBS@ -L/usr/lib -lm
 
 ttfmod: $(ttfmod_OBJECTS)
 	$(LIBTOOL) $(CC) -o ttfmod $(ttfmod_OBJECTS) $(LIBS)
 
 clean:
-	-rm -f *.o
+	-rm -f *.o ttfmod
+
+cleaner:
+	-rm -f *.o ttfmod Makefile

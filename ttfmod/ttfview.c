@@ -62,12 +62,12 @@ static struct tableinfo {
     { CHR('g','l','y','f'), _STR_Tbl_glyf, NULL, "http://partners.adobe.com/asn/developer/opentype/glyf.html" },
     { CHR('h','e','a','d'), _STR_Tbl_head, NULL, "http://partners.adobe.com/asn/developer/opentype/head.html" },
     { CHR('h','h','e','a'), _STR_Tbl_hhea, NULL, "http://partners.adobe.com/asn/developer/opentype/hhea.html" },
-    { CHR('h','m','t','x'), _STR_Tbl_hmtx, NULL, "http://partners.adobe.com/asn/developer/opentype/hmtx.html" },
+    { CHR('h','m','t','x'), _STR_Tbl_hmtx, metricsCreateEditor, "http://partners.adobe.com/asn/developer/opentype/hmtx.html" },
     { CHR('m','a','x','p'), _STR_Tbl_maxp, maxpCreateEditor, "http://partners.adobe.com/asn/developer/opentype/maxp.html" },
     { CHR('n','a','m','e'), _STR_Tbl_name, NULL, "http://partners.adobe.com/asn/developer/opentype/name.html" },
     { CHR('O','S','/','2'), _STR_Tbl_OS2 , OS2CreateEditor, "http://partners.adobe.com/asn/developer/opentype/os2.html" },
     { CHR('p','o','s','t'), _STR_Tbl_post, NULL, "http://partners.adobe.com/asn/developer/opentype/post.html" },
-    { CHR('c','v','t',' '), _STR_Tbl_cvt , NULL, "http://partners.adobe.com/asn/developer/opentype/cvt.html" },
+    { CHR('c','v','t',' '), _STR_Tbl_cvt , shortCreateEditor, "http://partners.adobe.com/asn/developer/opentype/cvt.html" },
     { CHR('E','B','D','T'), _STR_Tbl_EBDT, NULL, "http://partners.adobe.com/asn/developer/opentype/ebdt.html" },
     { CHR('E','B','L','C'), _STR_Tbl_EBLC, NULL, "http://partners.adobe.com/asn/developer/opentype/eblc.html" },
     { CHR('E','B','S','C'), _STR_Tbl_EBSC, NULL, "http://partners.adobe.com/asn/developer/opentype/ebsc.html" },
@@ -80,7 +80,7 @@ static struct tableinfo {
     { CHR('P','C','L','T'), _STR_Tbl_PCLT, NULL, "http://partners.adobe.com/asn/developer/opentype/pclt.html" },
     { CHR('V','D','M','X'), _STR_Tbl_VDMX, NULL, "http://partners.adobe.com/asn/developer/opentype/vdmx.html" },
     { CHR('v','h','e','a'), _STR_Tbl_vhea, NULL, "http://partners.adobe.com/asn/developer/opentype/vhea.html" },
-    { CHR('v','m','t','x'), _STR_Tbl_vmtx, NULL, "http://partners.adobe.com/asn/developer/opentype/vmtx.html" },
+    { CHR('v','m','t','x'), _STR_Tbl_vmtx, metricsCreateEditor, "http://partners.adobe.com/asn/developer/opentype/vmtx.html" },
     { CHR('C','F','F',' '), _STR_Tbl_CFF , NULL, "http://partners.adobe.com/asn/developer/opentype/cff.html" },
     { CHR('f','v','a','r'), _STR_Tbl_fvar, NULL, "http://partners.adobe.com/asn/developer/opentype/tablist.html" },
     { CHR('M','M','S','D'), _STR_Tbl_MMSD, NULL, "http://partners.adobe.com/asn/developer/opentype/tablist.html" },
@@ -380,7 +380,7 @@ return;
 		GDrawRaise(tab->tv->gw);
 	    else if ( tableinfo[k].createviewer==NULL ||
 		    (e->u.mouse.state&(ksm_control|ksm_meta)) )
-		/* Invoke a default editor !!!*/;
+		binaryCreateEditor(tab,tfv);
 	    else
 		(tableinfo[k].createviewer)(tab,tfv);
 	}

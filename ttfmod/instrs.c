@@ -552,8 +552,8 @@ static void instr_expose(InstrView *iv,GWindow pixmap,GRect *rect) {
     static unichar_t nums[] = { '0', '0', '0', '0', '0', '0', '\0' };
 
     GDrawSetFont(pixmap,iv->gfont);
-    addr_end = GDrawGetTextWidth(iv->v,nums,6,NULL)+2;
-    num_end = addr_end + GDrawGetTextWidth(iv->v,nums,5,NULL)+4;
+    addr_end = GDrawGetTextWidth(pixmap,nums,6,NULL)+2;
+    num_end = addr_end + GDrawGetTextWidth(pixmap,nums,5,NULL)+4;
 
     low = ( (rect->y-2)/iv->fh ) * iv->fh +2;
     high = ( (rect->y+rect->height+iv->fh-1-2)/iv->fh ) * iv->fh +2;
@@ -582,7 +582,7 @@ static void instr_expose(InstrView *iv,GWindow pixmap,GRect *rect) {
 	    uc_strcpy(uname, instrs[table->data[i]]);
 	}
 
-	x = addr_end - 2 - GDrawGetTextWidth(iv->v,uloc,-1,NULL);
+	x = addr_end - 2 - GDrawGetTextWidth(pixmap,uloc,-1,NULL);
 	GDrawDrawText(pixmap,x,y+iv->as,uloc,-1,NULL,0x000000);
 	x = addr_end + 2;
 	GDrawDrawText(pixmap,x,y+iv->as,uins,-1,NULL,0x000000);
@@ -661,15 +661,15 @@ static void instr_scroll(InstrView *iv,struct sbevent *sb) {
         newpos += iv->vheight/iv->fh;
       break;
       case et_sb_bottom:
-        newpos = iv->table->newlen-iv->vheight/iv->fh;
+        newpos = iv->lheight-iv->vheight/iv->fh;
       break;
       case et_sb_thumb:
       case et_sb_thumbrelease:
         newpos = sb->pos;
       break;
     }
-    if ( newpos>iv->table->newlen-iv->vheight/iv->fh )
-        newpos = iv->table->newlen-iv->vheight/iv->fh;
+    if ( newpos>iv->lheight-iv->vheight/iv->fh )
+        newpos = iv->lheight-iv->vheight/iv->fh;
     if ( newpos<0 ) newpos =0;
     if ( newpos!=iv->lpos ) {
 	int diff = newpos-iv->lpos;
@@ -681,6 +681,7 @@ static void instr_scroll(InstrView *iv,struct sbevent *sb) {
 
 static void InstrViewFree(InstrView *iv) {
     iv->table->tv = NULL;
+    free(iv->bts);
     free(iv);
 }
 
@@ -871,7 +872,7 @@ void instrCreateEditor(Table *tab,TtfView *tfv) {
     iv->as = as+1;
     iv->fh = iv->as+ds;
 
-    lh = iv->table->newlen;
+    lh = iv->lheight;
     if ( lh>40 ) lh = 40;
     if ( lh<4 ) lh = 4;
     GDrawResize(iv->gw,pos.width+gd.pos.width,iv->mbh+lh*iv->fh+4);
