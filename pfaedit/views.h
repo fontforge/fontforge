@@ -57,8 +57,8 @@ typedef struct pressedOn {
     unsigned int nextcp: 1;	/* Is the cursor on the "next" control point of */
     unsigned int prevcp: 1;	/*  the spline point, or the "prev" control point */
     unsigned int anysel: 1;	/* did we hit anything? */
-    unsigned int width: 1;	/* we're moving the width rather than a spline */
-    unsigned int vwidth: 1;	/* we're moving the width rather than a spline */
+/*    unsigned int width: 1;	/* we're moving the width rather than a spline */
+/*    unsigned int vwidth: 1;	/* we're moving the width rather than a spline */
     unsigned int pressed: 1;
     unsigned int rubberbanding: 1;
     unsigned int transany: 1;
@@ -124,6 +124,8 @@ typedef struct charview {
     unsigned int back_img_out_of_date: 1;	/* Force redraw of back image pixmap */
     unsigned int cntrldown:1;
     unsigned int joinvalid:1;
+    unsigned int widthsel:1;
+    unsigned int vwidthsel:1;
     SplinePointList **heads[dm_max];
     Undoes **uheads[dm_max];
     Undoes **rheads[dm_max];
@@ -167,6 +169,7 @@ typedef struct charview {
 #if HANYANG
     struct jamodisplay *jamodisplay;
 #endif
+    real oldwidth, oldvwidth;
 } CharView;
 
 typedef struct bitmapview {
@@ -454,6 +457,8 @@ extern void PasteToBC(BDFChar *bc,int pixelsize,FontView *fv);
 extern void FVCopyWidth(FontView *fv);
 extern void FVCopy(FontView *fv, int fullcopy);
 extern void PasteIntoFV(FontView *fv, int doclear);
+
+extern void CVShowPoint(CharView *cv, SplinePoint *sp);
 
 extern void WindowMenuBuild(GWindow base,struct gmenuitem *mi,GEvent *);
 extern void MenuRecentBuild(GWindow base,struct gmenuitem *mi,GEvent *);

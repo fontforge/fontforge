@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 14-Jan-2002 -->
+  <!-- AP: Last modified: 15-Feb-2002 -->
   <TITLE>The Edit Menu</TITLE>
 </HEAD>
 <BODY>
@@ -36,7 +36,27 @@ in text fields.
   <LI>
     <A HREF="#CopyFg">Copy Fg To Bg</A>
   <LI>
-    <A HREF="#All">Select All</A>
+    <A HREF="#Select">Select</A>
+    <UL>
+      <LI>
+	<A HREF="editmenu.html#All">Select All</A>
+      <LI>
+	<A HREF="#Deselect">Deselect All</A>
+      <LI>
+	<A HREF="#FirstPt">First Point</A>
+      <LI>
+	<A HREF="#NextP">Next Point</A>
+      <LI>
+	<A HREF="#PrevP">Prev Point</A>
+      <LI>
+	<A HREF="#NextCP">Next Control Point</A>
+      <LI>
+	<A HREF="#PrevCP">Prev Control Point</A>
+      <LI>
+	<A HREF="#SelWidth">Select Width</A>
+      <LI>
+	<A HREF="#SelVWidth">Select VWidth</A>
+    </UL>
   <LI>
     <A HREF="#Unlink">Unlink Reference</A>
   <LI>
@@ -181,9 +201,50 @@ in text fields.
     all the splines in the foreground layer. Note: Any background images remain.
     No references are copied.
   <DT>
-    Select <A NAME="All">All</A>
+    <A NAME="Select">Select</A>
   <DD>
-    Should be self explanatory.
+    In the outline view there is a select menu, other views just have Select
+    All.
+    <DL>
+      <DT>
+	Select <A NAME="All">All</A>
+      <DD>
+	Should be self explanatory.
+      <DT>
+	<A NAME="Deselect">Deselect</A> All
+      <DD>
+	Deselects anything selected
+      <DT>
+	<A NAME="FirstPt">First Point</A>
+      <DD>
+	Deselects everything and then selects the first point on the first path of
+	the character.
+      <DT>
+	<A NAME="NextP">Next</A> Point
+      <DD>
+	Deselects the current point and selects the next point.
+      <DT>
+	<A NAME="PrevP">Prev</A> Point
+      <DD>
+	Deselects the current point and selects the previous point
+      <DT>
+	<A NAME="NextCP">Next</A> Control Point
+      <DD>
+	Selects the "Next Control Point" of the current point.
+      <DT>
+	<A NAME="PrevCP">Prev</A> Control Point
+      <DD>
+	Selects the "Prev Control Point" of the current point.
+      <DT>
+	<A NAME="SelWidth">Select</A> Width
+      <DD>
+	Deselects everything and selects the width line.
+      <DT>
+	<A NAME="SelVWidth">Select</A> VWidth
+      <DD>
+	(if vertical metrics are enabled) Deselects everything and selects the vertical
+	width line.
+    </DL>
   <DT>
     <A NAME="Unlink">Unlink</A> Reference
   <DD>

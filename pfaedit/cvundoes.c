@@ -559,7 +559,7 @@ static void CVUndoAct(CharView *cv,Undoes *undo) {
       case ut_width: {
 	int width = sc->width;
 	if ( sc->width!=undo->u.width )
-	    SCSynchronizeWidth(sc,undo->u.width,width,cv->fv);
+	    SCSynchronizeWidth(sc,undo->u.width,width,NULL);
 	undo->u.width = width;
       } break;
       case ut_vwidth: {
@@ -573,7 +573,7 @@ static void CVUndoAct(CharView *cv,Undoes *undo) {
 	    int width = sc->width;
 	    int vwidth = sc->vwidth;
 	    if ( sc->width!=undo->u.state.width )
-		SCSynchronizeWidth(sc,undo->u.state.width,width,cv->fv);
+		SCSynchronizeWidth(sc,undo->u.state.width,width,NULL);
 	    sc->vwidth = undo->u.state.vwidth;
 	    undo->u.state.width = width;
 	    undo->u.state.vwidth = vwidth;
@@ -1038,7 +1038,7 @@ static void _PasteToCV(CharView *cv,Undoes *paster) {
       break;
       case ut_state: case ut_statehint:
 	if ( cv->drawmode==dm_fore && cv->sc->splines==NULL && cv->sc->refs==NULL ) {
-	    SCSynchronizeWidth(cv->sc,paster->u.state.width,cv->sc->width,cv->fv);
+	    SCSynchronizeWidth(cv->sc,paster->u.state.width,cv->sc->width,NULL);
 	    cv->sc->vwidth = paster->u.state.vwidth;
 	}
 	if ( paster->u.state.splines!=NULL ) {
@@ -1104,7 +1104,7 @@ static void _PasteToCV(CharView *cv,Undoes *paster) {
 	}
       break;
       case ut_width:
-	SCSynchronizeWidth(cv->sc,paster->u.width,cv->sc->width,cv->fv);
+	SCSynchronizeWidth(cv->sc,paster->u.width,cv->sc->width,NULL);
       break;
       case ut_vwidth:
 	cv->sc->vwidth = paster->u.state.vwidth;

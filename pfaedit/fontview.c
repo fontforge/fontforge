@@ -1119,7 +1119,7 @@ void FVTrans(FontView *fv,SplineChar *sc,real transform[6], char *sel,
 
     SCPreserveState(sc,false);
     if ( transform[0]>0 && transform[3]>0 && transform[1]==0 && transform[2]==0 ) {
-	SCSynchronizeWidth(sc,sc->width*transform[0],sc->width,fv);
+	SCSynchronizeWidth(sc,sc->width*transform[0]+transform[4],sc->width,fv);
     }
     SplinePointListTransform(sc->splines,transform,true);
     for ( refs = sc->refs; refs!=NULL; refs=refs->next ) {

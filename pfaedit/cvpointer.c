@@ -32,16 +32,15 @@
 /*  ours, and if we are a letter, then change the width on all chars linked */
 /*  to us which had the same width that we used to have (so if we change the */
 /*  width of A, we'll also change that of Á and Â and ... */
-void SCSynchronizeWidth(SplineChar *sc,real newwidth, real oldwidth, FontView *fv) {
+void SCSynchronizeWidth(SplineChar *sc,real newwidth, real oldwidth, FontView *flagfv) {
     BDFFont *bdf;
     struct splinecharlist *dlist;
+    FontView *fv = sc->parent->fv;
 
     sc->widthset = true;
     if ( newwidth==oldwidth )
 return;
     sc->width = newwidth;
-    if ( sc->views!=NULL )
-	fv = sc->parent->fv;
     for ( bdf=sc->parent->bitmaps; bdf!=NULL; bdf=bdf->next ) {
 	BDFChar *bc = bdf->chars[sc->enc];
 	if ( bc!=NULL ) {
@@ -59,7 +58,8 @@ return;
 
     if ( sc->unicodeenc!=-1 && isalpha(sc->unicodeenc)) {
 	for ( dlist=sc->dependents; dlist!=NULL; dlist=dlist->next ) {
-	    if ( dlist->sc->width==oldwidth && !fv->selected[dlist->sc->enc]) {
+	    if ( dlist->sc->width==oldwidth &&
+		    (flagfv==NULL || !flagfv->selected[dlist->sc->enc])) {
 		SCSynchronizeWidth(dlist->sc,newwidth,oldwidth,fv);
 		if ( !dlist->sc->changed ) {
 		    dlist->sc->changed = true;
@@ -171,6 +171,10 @@ int CVClearSel(CharView *cv) {
 	for ( img=cv->sc->backimages; img!=NULL; img = img->next )
 	    if ( img->selected ) { needsupdate = true; img->selected = false; }
     }
+    if ( cv->p.nextcp || cv->p.prevcp || cv->widthsel || cv->vwidthsel )
+	needsupdate = true;
+    cv->p.nextcp = cv->p.prevcp = false;
+    cv->widthsel = cv->vwidthsel = false;
 return( needsupdate );
 }
 
@@ -200,6 +204,13 @@ int CVSetSel(CharView *cv) {
 	for ( img=cv->sc->backimages; img!=NULL; img = img->next )
 	    if ( !img->selected ) { needsupdate = true; img->selected = true; }
     }
+    if ( cv->p.nextcp || cv->p.prevcp )
+	needsupdate = true;
+    cv->p.nextcp = cv->p.prevcp = false;
+    if ( cv->showhmetrics && !cv->widthsel )
+	cv->widthsel = needsupdate = true;
+    if ( cv->showvmetrics && cv->sc->parent->hasvmetrics && !cv->vwidthsel )
+	cv->vwidthsel = needsupdate = true;
 return( needsupdate );
 }
 
@@ -438,21 +449,25 @@ return;
 	/* Nothing else... unless they clicked on the width line, check that */
 	if ( cv->showhmetrics && cv->p.cx>cv->sc->width-fs->fudge &&
 		cv->p.cx<cv->sc->width+fs->fudge ) {
-	    fs->p->width = true;
+	    cv->widthsel = true;
+	    cv->oldwidth = cv->sc->width;
 	    fs->p->cx = cv->sc->width;
 	    CVInfoDraw(cv,cv->gw);
 	    fs->p->anysel = true;
 	    cv->expandedge = ee_right;
 	    SetCur(cv);
+	    needsupdate = true;
 	} else if ( cv->showvmetrics && cv->sc->parent->hasvmetrics &&
 		cv->p.cy>cv->sc->parent->vertical_origin-cv->sc->vwidth-fs->fudge &&
 		cv->p.cy<cv->sc->parent->vertical_origin-cv->sc->vwidth+fs->fudge ) {
-	    fs->p->vwidth = true;
+	    cv->vwidthsel = true;
+	    cv->oldvwidth = cv->sc->vwidth;
 	    fs->p->cy = cv->sc->parent->vertical_origin-cv->sc->vwidth;
 	    CVInfoDraw(cv,cv->gw);
 	    fs->p->anysel = true;
 	    cv->expandedge = ee_down;
 	    SetCur(cv);
+	    needsupdate = true;
 	}
     } else if ( event->u.mouse.clicks<=1 && !(event->u.mouse.state&ksm_shift)) {
 	if ( fs->p->nextcp || fs->p->prevcp )
@@ -791,6 +806,10 @@ return;
 	    SCOutOfDateBackground(cv->sc);
 	}
     }
+    if ( cv->widthsel )
+	cv->sc->width += dx;
+    if ( cv->vwidthsel )
+	cv->sc->vwidth += dy;
     CVSetCharChanged(cv,true);
     CVCheckMerges( cv );
 }
@@ -827,17 +846,9 @@ return;
     if (( cv->p.nextcp || cv->p.prevcp ) && cv->p.sp==NULL )
 	cv->p.nextcp = cv->p.prevcp = false;
 
-    if ( cv->p.width ) {
-	if ( !cv->recentchange ) CVPreserveWidth(cv,cv->sc->width);
-	cv->sc->width = cv->info.x;
-	CVSetCharChanged(cv,true);
-	needsupdate = true;
-    } else if ( cv->p.vwidth ) {
-	if ( !cv->recentchange ) CVPreserveVWidth(cv,cv->sc->vwidth);
-	cv->sc->vwidth = cv->sc->parent->vertical_origin-cv->info.y;
-	CVSetCharChanged(cv,true);
-	needsupdate = true;
-    } else if ( cv->expandedge!=ee_none )
+    /* I used to have special cases for moving width lines, but that's now */
+    /*  done by move selection */
+    if ( cv->expandedge!=ee_none && !cv->widthsel && !cv->vwidthsel )
 	needsupdate = CVExpandEdge(cv);
     else if ( !cv->p.anysel ) {
 	if ( !cv->p.rubberbanding ) {
@@ -877,24 +888,26 @@ return;
 
 void CVMouseUpPointer(CharView *cv ) {
     static int buts[] = { _STR_Yes, _STR_No, 0 };
-    if ( cv->p.width ) {
-	cv->p.width = false;
-	if ( cv->sc->width<0 && cv->p.cx>=0 ) {
+    if ( cv->widthsel ) {
+	/* cv->widthsel = false; */
+	if ( cv->sc->width<0 && cv->oldwidth>=0 ) {
 	    if ( GWidgetAskR(_STR_NegativeWidth, buts, 0, 1, _STR_NegativeWidthCheck )==1 )
 		cv->sc->width = cv->p.cx;
 	}
-	SCSynchronizeWidth(cv->sc,cv->sc->width,cv->p.cx,cv->fv);
+	SCSynchronizeWidth(cv->sc,cv->sc->width,cv->oldwidth,NULL);
 	cv->expandedge = ee_none;
 	GDrawSetCursor(cv->v,ct_mypointer);
-    } else if ( cv->p.vwidth ) {
-	cv->p.vwidth = false;
-	if ( cv->sc->vwidth<0 && cv->p.cy>=0 ) {
+    }
+    if ( cv->vwidthsel ) {
+	/* cv->vwidthsel = false; */
+	if ( cv->sc->vwidth<0 && cv->oldvwidth>=0 ) {
 	    if ( GWidgetAskR(_STR_NegativeWidth, buts, 0, 1, _STR_NegativeWidthCheck )==1 )
 		cv->sc->vwidth = cv->p.cy;
 	}
 	cv->expandedge = ee_none;
 	GDrawSetCursor(cv->v,ct_mypointer);
-    } else if ( cv->expandedge!=ee_none ) {
+    }
+    if ( cv->expandedge!=ee_none ) {
 	CVUndoCleanup(cv);
 	cv->expandedge = ee_none;
 	GDrawSetCursor(cv->v,ct_mypointer);
