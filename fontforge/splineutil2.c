@@ -740,6 +740,10 @@ return( SplineMake2(from,to));
     if ( tlen==0 ) {
 	if ( to->pointtype==pt_curve && to->next && !to->nonextcp ) {
 	    tounit.x = to->me.x-to->nextcp.x; tounit.y = to->me.y-to->nextcp.y;
+/* Doesn't work
+	} else if ( to->pointtype==pt_tangent && to->next ) {
+	    tounit.x = to->me.x-to->next->to->me.x; tounit.y = to->me.y-to->next->to->me.y;
+*/
 	} else {
 	    tounit.x = -( (3*temp.splines[0].a*.9999+2*temp.splines[0].b)*.9999+temp.splines[0].c );
 	    tounit.y = -( (3*temp.splines[1].a*.9999+2*temp.splines[1].b)*.9999+temp.splines[1].c );
@@ -751,9 +755,13 @@ return( SplineMake2(from,to));
     if ( flen==0 ) {
 	if ( from->pointtype==pt_curve && from->prev && !from->noprevcp ) {
 	    fromunit.x = from->me.x-from->prevcp.x; fromunit.y = from->me.y-from->prevcp.y;
+/*
+	} else if ( from->pointtype==pt_tangent && from->prev ) {
+	    fromunit.x = from->me.x-from->prev->from->me.x; fromunit.y = from->me.y-from->prev->from->me.y;
+*/
 	} else {
-	    fromunit.x = -( (3*temp.splines[0].a*.0001+2*temp.splines[0].b)*.0001+temp.splines[0].c );
-	    fromunit.y = -( (3*temp.splines[1].a*.0001+2*temp.splines[1].b)*.0001+temp.splines[1].c );
+	    fromunit.x = ( (3*temp.splines[0].a*.0001+2*temp.splines[0].b)*.0001+temp.splines[0].c );
+	    fromunit.y = ( (3*temp.splines[1].a*.0001+2*temp.splines[1].b)*.0001+temp.splines[1].c );
 	}
 	flen = sqrt(fromunit.x*fromunit.x + fromunit.y*fromunit.y);
     }
