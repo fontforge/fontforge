@@ -172,6 +172,7 @@ static char str_Copyref[] = "Copy Reference";
 static unichar_t mnemonic_Copyref[] = 'o';
 static char str_Paste[] = "Paste";
 static unichar_t mnemonic_Paste[] = 'P';
+static char str_PasteInto[] = "Paste Into";
 static char str_Clear[] = "Clear";
 static unichar_t mnemonic_Clear[] = 'l';
 static char str_ClearBackground[] = "Clear Background";
