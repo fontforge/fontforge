@@ -49,6 +49,7 @@ static SplinePointList *SplinesFromEntities(Entity *ent, Color bgcol) {
     StrokeInfo si;
     DBounds bb, sbb;
     int removed;
+    real fudge;
     /* We have a problem. The autotrace program includes contours for the */
     /*  background color (there's supposed to be a way to turn that off, but */
     /*  it didn't work when I tried it, so...). I don't want them, so get */
@@ -96,7 +97,6 @@ static SplinePointList *SplinesFromEntities(Entity *ent, Color bgcol) {
 		    if ( clockwise )
 			SplineSetReverse(test);
 		} else {
-		    clockwise = SplinePointListIsClockwise(test);
 		    if ( !clockwise )
 			SplineSetReverse(test);
 		    clockwise = SplinePointListIsClockwise(test);
@@ -113,14 +113,17 @@ static SplinePointList *SplinesFromEntities(Entity *ent, Color bgcol) {
 	removed = false;
 	sc.splines = head;
 	SplineCharFindBounds(&sc,&bb);
+	fudge = (bb.maxy-bb.miny)/64;
+	if ( (bb.maxx-bb.minx)/64 > fudge )
+	    fudge = (bb.maxx-bb.minx)/64;
 	for ( last=head, prev=NULL; last!=NULL; last=next ) {
 	    next = last->next;
 	    if ( !SplinePointListIsClockwise(last)) {
 		last->next = NULL;
 		SplineSetFindBounds(last,&sbb);
 		last->next = next;
-		if ( sbb.minx<=bb.minx+2 || sbb.maxx>=bb.maxx-2 ||
-			sbb.maxy >= bb.maxy-2 || sbb.miny <= bb.miny+2 ) {
+		if ( sbb.minx<=bb.minx+fudge || sbb.maxx>=bb.maxx-fudge ||
+			sbb.maxy >= bb.maxy-fudge || sbb.miny <= bb.miny+fudge ) {
 		    if ( prev==NULL )
 			head = next;
 		    else
