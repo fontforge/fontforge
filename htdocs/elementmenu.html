@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 31-Dec-2004 -->
+  <!-- AP: Last modified: 15-Jan-2005 -->
   <TITLE>The Element Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -120,7 +120,15 @@
 	<A HREF="#Parallel">Make Parallel</A>
     </UL>
   <LI>
-    <A HREF="#Round">Round to Int</A>
+    Round
+    <UL>
+      <LI>
+	<A HREF="#Round">To Int</A>
+      <LI>
+	<A HREF="#Hundredths">To Hundredths</A>
+      <LI>
+	<A HREF="#Cluster">Cluster</A>
+    </UL>
   <LI>
     <A HREF="#Order">Order</A>
     <UL>
@@ -553,6 +561,9 @@ compiling FontForge.
       <LI>
 	Whether to try to simplify straight lines at all
     </UL>
+    <P>
+    Finally, you may specify whether this set of values should become the default
+    value for future Simplify commands
   <DT>
     <A NAME="Cleanup">Cleanup Glyph</A>
   <DD>
@@ -675,12 +686,22 @@ compiling FontForge.
     <A NAME="Round">Round</A> to Int
   <DD>
     Not in the bitmap view. FontForge stores point locations as real numbers
-    (ie. it retains fractional values). TrueType and PostScript Type1 only support
-    integral values (Well with vast effort Type1 fonts can be made to support
-    real numbers but FontForge doesn't), so when generating the font points are
-    rounded to integral values. Open Type allows real numbers easily. But they
-    make the font file bigger. This command will round all selected locations
-    to the closest integer.
+    (ie. it retains fractional values). TrueType only supports integral values
+    (And much of the time you want integral values in Type1 and Type2 fonts also
+    -- using real numbers makes font files bigger), so when generating the font
+    points are rounded to integral values. This command will round all selected
+    locations to the closest integer.
+  <DT>
+    Round to <A NAME="Hundredths">Hundredths</A>
+  <DD>
+    Not in bitmap or metrics views. FontForge's Type1 output is limited to hundredths
+    of an em-unit, even when rounding is turned off in the Generate [Options]
+    dialog.
+  <DT>
+    Round to <A NAME="Cluster">Cluster</A>
+  <DD>
+    Occasionally you want to make sure that coordinates which are close together
+    have the same value. This command will do that.
   <DT>
     <A NAME="Order">Order</A>
   <DD>

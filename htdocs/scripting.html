@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 31-Dec-2004 -->
+  <!-- AP: Last modified: 16-Jan-2005 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -488,6 +488,11 @@ a[4][0] = "Nested array";
     GetEnv(str)
   <DD>
     Returns the value of the unix environment variable named by str.
+  <DT>
+    FileAccess(filename[,prot])
+  <DD>
+    Behaves like the unix access system call. Returns 0 if the file exists, -1
+    if it does not. If protection is omitted, checks for read access.
   <DT>
     UnicodeFromName(name)
   <DD>

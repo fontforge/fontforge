@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 9-Jan-2005 -->
+  <!-- AP: Last modified: 16-Jan-2005 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -12,13 +12,55 @@
 </H1>
 <UL>
   <LI>
-    ???
+    16-Jan-2005
     <UL>
       <LI>
 	Added support for OpenType Device Tables (These allow you to add small
 	corrections to things like kerning at a given point size. Often at small
 	point sizes kerning and advance widths will round in such a way as to produce
 	unpleasing results. Device tables allow you to correct for that).
+      <LI>
+	Add dialogs for kerning pairs and anchors to allow users to set device tables.
+	Extend dlg for kerning classes for this.
+      <LI>
+	Neil Parker suggested a patch for panose values that didn't apply to latin
+	fonts
+      <LI>
+	Doing a Get Info on a single point caused a crash on the mac
+      <LI>
+	Further attempts to improve spline approximation, underlying Merge &amp;
+	Simplify commands
+      <LI>
+	Relaxed simplify's definition of parallel so it will merge a few more straight
+	lines.
+      <LI>
+	Make the behavior of Simplify More consistant across font/outline view. Simplify
+	More can now set the default behavior for future simplify commands.
+      <LI>
+	Provide a menu command to round to hundredths of a em-unit
+      <LI>
+	Add a new facility to cluster coordinates to the same value. Useful as a
+	prepass to Remove Overlap.
+      <LI>
+	Bug reading ligature data from a tfm file
+      <LI>
+	Add support for GPOS 'size' feature. Create a 'size' pane of the fontinfo
+	dlg
+      <LI>
+	Replace with Reference had an interesting flaw. Consider the open and closed
+	bullet characters. If the (single) contour in closed bullet matched the outer
+	contour in open bullet then it would replace it with a reference. But this
+	is incorrect as the two contours of open bullet need to be treated as a unit.
+      <LI>
+	Could get a bad memory reference in the font view if the mouse were to extend
+	the selection outside of the window.
+      <LI>
+	Add a scripting function to return whether a file exists.
+      <LI>
+	In a Type1 font, if a glyph had no conflicting hints (and no flex hints)
+	and got put in a subroutine, then we'd get no hints at all.
+      <LI>
+	Be more willing to generate format12 cmap subtables (unicode, non-bmp tables)
     </UL>
   <LI>
     6-Jan-2005
