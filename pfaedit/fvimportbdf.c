@@ -211,7 +211,7 @@ return(-1);
 return( i );
 }
 
-static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b) {
+static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b,int depth) {
     BDFChar *bc;
     char name[40], tok[100];
     int enc=-1, width=0, xmin=0, xmax=0, ymin=0, ymax=0, hsz, vsz;
@@ -250,8 +250,15 @@ static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b) {
 	bc->xmax = xmax;
 	bc->ymax = ymax;
 	bc->width = width;
-	bc->bytes_per_line = ((xmax-xmin)>>3) + 1;
+	if ( depth==1 ) {
+	    bc->bytes_per_line = ((xmax-xmin)>>3) + 1;
+	    bc->byte_data = false;
+	} else {
+	    bc->bytes_per_line = xmax-xmin + 1;
+	    bc->byte_data = true;
+	}
 	bc->bitmap = galloc(bc->bytes_per_line*(ymax-ymin+1));
+	bc->byte_data = ( depth!=1 );
 
 	pt = bc->bitmap; end = pt + bc->bytes_per_line*(ymax-ymin+1);
 	while ( pt<end ) {
@@ -265,7 +272,25 @@ static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b) {
 	    if ( ch2>='0' && ch2<='9' ) val |= (ch2-'0');
 	    else if ( ch2>='a' && ch2<='f' ) val |= (ch2-'a'+10);
 	    else if ( ch2>='A' && ch2<='F' ) val |= (ch2-'A'+10);
-	    *pt++ = val;
+	    if ( depth==1 || depth==8 )
+		*pt++ = val;
+	    else if ( depth==2 ) {		/* Internal representation is unpacked, one byte per pixel */
+		*pt++ = (val>>6);
+		if ( pt<end ) *pt++ = (val>>4)&3;
+		if ( pt<end ) *pt++ = (val>>2)&3;
+		if ( pt<end ) *pt++ = val&3;
+	    } else if ( depth==4 ) {
+		*pt++ = (val>>4);
+		if ( pt<end ) *pt++ = val&0xf;
+	    } else if ( depth==16 || depth==32 ) {
+		int i,j;
+		*pt++ = val;
+		/* I only deal with 8 bit pixels, so if they give me more */
+		/*  just ignore the low order bits */
+		j = depth==16?2:6;
+		for ( i=0; i<j; ++j )
+		    ch2 = getc(bdf);
+	    }
 	    if ( ch2==EOF )
 	break;
 	}
@@ -273,7 +298,19 @@ static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b) {
 	for ( bv=bc->views; bv!=NULL; bv=bv->next )
 	    GDrawRequestExpose(bv->v,NULL,false);
     } else {
-	int cnt = (((xmax-xmin)>>3) + 1) * (ymax-ymin+1);
+	int cnt;
+	if ( depth==1 )
+	    cnt = 2*(((xmax-xmin)>>3) + 1) * (ymax-ymin+1);
+	else if ( depth==2 )
+	    cnt = 2*(((xmax-xmin)>>2) + 1) * (ymax-ymin+1);
+	else if ( depth==4 )
+	    cnt = (xmax-xmin + 1) * (ymax-ymin+1);
+	else if ( depth==8 )
+	    cnt = 2*(xmax-xmin + 1) * (ymax-ymin+1);
+	else if ( depth==16 )
+	    cnt = 4*(xmax-xmin + 1) * (ymax-ymin+1);
+	else
+	    cnt = 8*(xmax-xmin + 1) * (ymax-ymin+1);
 	for ( i=0; i<cnt; ++i ) {
 	    while ( isspace(getc(bdf)) );
 	    getc(bdf);
@@ -322,12 +359,14 @@ static int BDFParseEnc(char *encname, int encoff) {
 return( enc );
 }
 
-static int slurp_header(FILE *bdf, int *_as, int *_ds, int *_enc, char *family, char *mods, char *full) {
+static int slurp_header(FILE *bdf, int *_as, int *_ds, int *_enc,
+	char *family, char *mods, char *full, int *depth) {
     int pixelsize = -1;
     int ascent= -1, descent= -1, enc, cnt;
     char tok[100], encname[100], weight[100], italic[100];
     int ch;
 
+    *depth = 1;
     encname[0]= '\0'; family[0] = '\0'; weight[0]='\0'; italic[0]='\0'; full[0]='\0';
     while ( gettoken(bdf,tok,sizeof(tok))!=-1 ) {
 	if ( strcmp(tok,"CHARS")==0 ) {
@@ -343,16 +382,15 @@ static int slurp_header(FILE *bdf, int *_as, int *_ds, int *_enc, char *family, 
 		fscanf(bdf,"%d", &pixelsize );
 	} else if ( strcmp(tok,"SIZE")==0 ) {
 	    int size, res;
-	    fscanf(bdf, "%d %d", &size, &res );
+	    fscanf(bdf, "%d %d %d", &size, &res, &res );
 	    if ( pixelsize==-1 )
 		pixelsize = rint( size*res/72.0 );
 	    while ((ch = getc(bdf))==' ' || ch=='\t' );
+	    ungetc(ch,bdf);
 	    if ( isdigit(ch))
-		fprintf( stderr, "PfaEdit does not support bdf files with a depth other than 1\n" );
-	    else
-		ungetc(ch,bdf);
+		fscanf(bdf, "%d", depth);
 	} else if ( strcmp(tok,"BITSPERPIXEL")==0 ) {
-	    fprintf( stderr, "PfaEdit does not support bdf files with a depth other than 1\n" );
+	    fscanf(bdf, "%d", depth);
 	} else if ( strcmp(tok,"QUAD_WIDTH")==0 && pixelsize==-1 )
 	    fscanf(bdf, "%d", &pixelsize );
 	    /* For Courier the quad is not an em */
@@ -396,6 +434,9 @@ static int slurp_header(FILE *bdf, int *_as, int *_ds, int *_enc, char *family, 
     else if ( strmatch(italic,"R")==0 )
 	strcpy(italic,"");		/* Ignore roman */
     sprintf(mods,"%s%s", weight, italic );
+
+    if ( *depth!=1 && *depth!=2 && *depth!=4 && *depth!=8 && *depth!=16 && *depth!=32 )
+	fprintf( stderr, "PfaEdit does not support this bit depth %d (must be 1,2,4,8,16,32)\n", *depth);
 
 return( pixelsize );
 }
@@ -1276,6 +1317,7 @@ BDFFont *SFImportBDF(SplineFont *sf, char *filename,int ispk, int toback) {
     BDFFont *b;
     char family[100], mods[200], full[300];
     struct toc *toc=NULL;
+    int depth=1;
 
     bdf = fopen(filename,"r");
     if ( bdf==NULL ) {
@@ -1307,7 +1349,7 @@ return( NULL );
 	    GWidgetErrorR(_STR_NotBdfFile, _STR_NotBdfFileName, filename );
 return( NULL );
 	}
-	pixelsize = slurp_header(bdf,&ascent,&descent,&enc,family,mods,full);
+	pixelsize = slurp_header(bdf,&ascent,&descent,&enc,family,mods,full,&depth);
     }
     if ( pixelsize==-1 )
 	pixelsize = askusersize(filename);
@@ -1351,7 +1393,12 @@ return( NULL );
 	    sf->bitmaps = b;
 	    SFOrderBitmapList(sf);
 	}
+    } else {
+	free(b->clut);
+	b->clut = NULL;
     }
+    if ( depth!=1 )
+	BDFClut(b,(1<<(depth/2)));
     if ( ispk==1 ) {
 	while ( pk_char(bdf,sf,b));
     } else if ( ispk==2 ) {
@@ -1361,7 +1408,7 @@ return( NULL );
     } else {
 	while ( gettoken(bdf,tok,sizeof(tok))!=-1 ) {
 	    if ( strcmp(tok,"STARTCHAR")==0 ) {
-		AddBDFChar(bdf,sf,b);
+		AddBDFChar(bdf,sf,b,depth);
 		GProgressNext();
 	    }
 	}
