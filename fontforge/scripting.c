@@ -4767,10 +4767,10 @@ static void docall(Context *c,char *name,Val *val) {
 	}
     }
 
+    memset( &sub,0,sizeof(sub));
     if ( !c->donteval ) {
 	args[0].type = v_str;
 	args[0].u.sval = name;
-	memset( &sub,0,sizeof(sub));
 	sub.caller = c;
 	sub.a.vals = args;
 	sub.a.argc = i;
@@ -4836,8 +4836,9 @@ static void docall(Context *c,char *name,Val *val) {
 		free( sub.filename );
 	}
 	c->curfv = sub.curfv;
-    }
-    calldatafree(&sub);
+	calldatafree(&sub);
+    } else
+	sub.return_val.type = v_void;
     if ( val->type==v_str )
 	free(val->u.sval);
     *val = sub.return_val;
