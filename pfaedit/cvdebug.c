@@ -483,6 +483,16 @@ static int DV_WindowMenu(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static int DV_Exit(GGadget *g, GEvent *e) {
+    DebugView *dv;
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	dv = GDrawGetUserData(GGadgetGetWindow(g));
+	CVDebugFree(dv);
+    }
+return( true );
+}
+
 static void DVExpose(GWindow pixmap, DebugView *dv,GEvent *event) {
     GDrawDrawLine(pixmap, 0, dv->toph-1, dv->dwidth, dv->toph-1, 0x000000 );
 }
@@ -498,20 +508,31 @@ return( false );
 return( false );
 
     switch ( event->u.chr.keysym ) {
-      case 's': case 'S':
+      case 's': case 'S':		/* Step */
 	DVGoFigure(dv,dgt_step);
       break;
-      case 'n': case 'N':
+      case 'n': case 'N':		/* Next */
 	DVGoFigure(dv,dgt_next);
       break;
-      case 'r': case 'R':
+      case 'f': case 'F':		/* finish */
 	DVGoFigure(dv,dgt_stepout);
       break;
-      case 'c': case 'C':
+      case 'c': case 'C':		/* Continue */
 	DVGoFigure(dv,dgt_continue);
+      break;
+      case 'k': case 'K': case 'q': case 'Q':	/* Kill (debugger) */
+	CVDebugFree(dv);
+      break;
+      case 'r': case 'R':		/* run/restart (debugger) */
+	CVDebugReInit(dv->cv,true,DebuggingFpgm(dv->dc));
       break;
     }
 return( true );
+}
+
+static int DV_HandleChar(struct instrinfo *ii, GEvent *event) {
+    DebugView *dv = (ii->userdata);
+return( DVChar(dv,event));
 }
 
 static int dvreg_e_h(GWindow gw, GEvent *event) {
@@ -668,7 +689,7 @@ static void DVCreateRegs(DebugView *dv) {
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
     wattrs.window_title = GStringGetResource(_STR_TTRegisters,NULL);
-    pos.x = 0; pos.y = 0;
+    pos.x = 664; pos.y = 1;
     pos.width = 133; pos.height = 269;
     dv->regs = GDrawCreateTopWindow(NULL,&pos,dvreg_e_h,dv,&wattrs);
     GDrawSetVisible(dv->regs,true);
@@ -684,7 +705,7 @@ static void DVCreateStack(DebugView *dv) {
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
     wattrs.window_title = GStringGetResource(_STR_TTStack,NULL);
-    pos.x = 0; pos.y = 0;
+    pos.x = 664; pos.y = 302;
     pos.width = 133; pos.height = 269;
     dv->stack = GDrawCreateTopWindow(NULL,&pos,dvstack_e_h,dv,&wattrs);
     GDrawSetVisible(dv->stack,true);
@@ -700,7 +721,7 @@ static void DVCreateStore(DebugView *dv) {
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
     wattrs.window_title = GStringGetResource(_STR_TTStorage,NULL);
-    pos.x = 0; pos.y = 0;
+    pos.x = 664; pos.y = 602;
     pos.width = 133; pos.height = 100;
     dv->storage = GDrawCreateTopWindow(NULL,&pos,dvstore_e_h,dv,&wattrs);
     GDrawSetVisible(dv->storage,true);
@@ -718,7 +739,7 @@ static void DVCreatePoints(DebugView *dv) {
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
     wattrs.window_title = GStringGetResource(_STR_TTPoints,NULL);
-    pos.x = 0; pos.y = 0;
+    pos.x = 664; pos.y = 732;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,125)); pos.height = 269;
     dv->points = GDrawCreateTopWindow(NULL,&pos,dvpoints_e_h,dv,&wattrs);
 
@@ -825,6 +846,16 @@ void CVDebugFree(DebugView *dv) {
 	cv->show_ft_results = false;
 	DebuggerTerminate(dv->dc);
 	cv->dv = NULL;
+	if ( dv->points!=NULL )
+	    GDrawDestroyWindow(dv->points);
+	if ( dv->cvt!=NULL )
+	    GDrawDestroyWindow(dv->cvt);
+	if ( dv->regs!=NULL )
+	    GDrawDestroyWindow(dv->regs);
+	if ( dv->stack!=NULL )
+	    GDrawDestroyWindow(dv->stack);
+	if ( dv->storage!=NULL )
+	    GDrawDestroyWindow(dv->storage);
 	if ( dv->dv!=NULL ) {
 	    GDrawDestroyWindow(dv->dv);
 	    CVResize(cv);
@@ -842,8 +873,8 @@ void CVDebugReInit(CharView *cv,int restart_debug,int dbg_fpgm) {
     FontRequest rq;
     static unichar_t monospace[] = { 'c','o','u','r','i','e','r',',','m', 'o', 'n', 'o', 's', 'p', 'a', 'c', 'e',',','c','a','s','l','o','n',',','u','n','i','f','o','n','t', '\0' };
     int as,ds,ld;
-    GGadgetCreateData gcd[8];
-    GTextInfo label[8];
+    GGadgetCreateData gcd[9];
+    GTextInfo label[9];
     extern int _GScrollBar_Width;
     double scale;
 
@@ -938,6 +969,15 @@ return;
 	gcd[6].gd.popup_msg = GStringGetResource(_STR_Window,NULL);
 	gcd[6].creator = GButtonCreate;
 
+	gcd[7].gd.pos.y = 2; gcd[7].gd.pos.x = 218;
+	gcd[7].gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
+	/*gcd[7].gd.cid = dgt_continue;*/
+	gcd[7].gd.label = &label[7];
+	label[7].image = &GIcon_exit;
+	gcd[7].gd.handle_controlevent = DV_Exit;
+	gcd[7].gd.popup_msg = GStringGetResource(_STR_ExitDebugger,NULL);
+	gcd[7].creator = GButtonCreate;
+
 	GGadgetsCreate(dv->dv,gcd);
 
 	dv->ii.vsb = gcd[0].ret;
@@ -947,6 +987,7 @@ return;
 	dv->ii.userdata = dv;
 	dv->ii.selection_callback = DVToggleBp;
 	dv->ii.bpcheck = DVBpCheck;
+	dv->ii.handle_char = DV_HandleChar;
 
 	pos.y = dv->toph;
 	pos.width -= sbsize; pos.height -= pos.y;

@@ -522,10 +522,12 @@ static void instr_typify(struct instrinfo *instrinfo) {
     }
     bts[i] = bt_impliedreturn;
     instrinfo->lheight = lh;
-    if ( instrinfo->lpos > lh-instrinfo->vheight/instrinfo->fh )
-	instrinfo->lpos = lh-instrinfo->vheight/instrinfo->fh;
-    if ( instrinfo->lpos<0 )
-	instrinfo->lpos = 0;
+    if ( instrinfo->fh!=0 ) {
+	if ( instrinfo->lpos > lh-instrinfo->vheight/instrinfo->fh )
+	    instrinfo->lpos = lh-instrinfo->vheight/instrinfo->fh;
+	if ( instrinfo->lpos<0 )
+	    instrinfo->lpos = 0;
+    }
 }
 
 static void instr_resize(InstrDlg *iv,GEvent *event) {
@@ -891,7 +893,7 @@ static void instr_expose(struct instrinfo *ii,GWindow pixmap,GRect *rect) {
 	    if ( ii->showaddr ) {
 		x = addr_end - EDGE_SPACING - GDrawGetTextWidth(pixmap,uloc,-1,NULL);
 		GDrawDrawText(pixmap,x,y+ii->as,uloc,-1,NULL,0x000000);
-		if ( ii->bpcheck(ii,i))
+		if ( ii->bpcheck && ii->bpcheck(ii,i))
 		    GDrawDrawImage(pixmap,&GIcon_Stop,NULL,EDGE_SPACING,
 			    y+(ii->fh-8)/2-5);
 	    }
@@ -1023,7 +1025,9 @@ static int IIChar(struct instrinfo *ii,GEvent *event) {
 	pos = 0;
     else if ( event->u.chr.keysym == GK_End || event->u.chr.keysym == GK_KP_End ) {
 	pos = ii->lheight-1;
-    } else
+    } else if ( ii->handle_char )
+return( (ii->handle_char)(ii,event));
+    else
 return( false );
     if ( pos==-2 ) pos = -1;
     if ( pos!=ii->isel_pos ) {

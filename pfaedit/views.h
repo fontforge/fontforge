@@ -144,6 +144,7 @@ struct instrinfo {
     void *userdata;
     void (*selection_callback)(struct instrinfo *,int ip);
     int  (*bpcheck)(struct instrinfo *,int ip);
+    int  (*handle_char)(struct instrinfo *,GEvent *e);
 };
 
 typedef struct debugview {
@@ -849,6 +850,7 @@ extern void DebuggerToggleBp(struct debugger_context *dc,int range,int ip);
 extern int DebuggerBpCheck(struct debugger_context *dc,int range,int ip);
 extern void DebuggerSetWatches(struct debugger_context *dc,int n, uint8 *w);
 extern uint8 *DebuggerGetWatches(struct debugger_context *dc, int *n);
+extern int DebuggingFpgm(struct debugger_context *dc);
 
 extern GMenuItem helplist[];
 #endif

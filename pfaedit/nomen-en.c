@@ -2147,6 +2147,7 @@ static char *str_Current = "Current";
 static char *str_Original = "Original";
 static char *str_GridUnit = "Grid";
 static char *str_EmUnit = "Em Units"
+static char *str_ExitDebugger = "Exit Debugger"
 
 static int num_buttonsize = 55;
 static int num_ScaleFactor = 100;

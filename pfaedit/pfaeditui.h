@@ -60,7 +60,7 @@ extern GImage GIcon_smallskew, GIcon_smallscale, GIcon_smallrotate,
 extern GImage def_image, red_image, blue_image, green_image, magenta_image,
 	yellow_image, cyan_image, white_image;
 extern GImage GIcon_continue, GIcon_stepout, GIcon_stepover, GIcon_stepinto,
-	GIcon_watchpnt, GIcon_menudelta;
+	GIcon_watchpnt, GIcon_menudelta, GIcon_exit;
 extern GImage GIcon_Stopped, GIcon_Stop;
 extern GWindow logo_icon;
 
