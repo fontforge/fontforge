@@ -4968,6 +4968,8 @@ void CVTransFunc(CharView *cv,real transform[6], enum fvtrans_flags flags) {
     ImageList *img;
     real t[6];
     AnchorPoint *ap;
+    KernPair *kp;
+    PST *pst;
 
     SplinePointListTransform(cv->layerheads[cv->drawmode]->splines,transform,!anysel);
     if ( flags&fvt_round_to_int )
@@ -5004,6 +5006,20 @@ void CVTransFunc(CharView *cv,real transform[6], enum fvtrans_flags flags) {
 	if ( cv->showanchor ) {
 	    for ( ap=cv->sc->anchor; ap!=NULL; ap=ap->next ) if ( ap->selected || !anysel )
 		ApTransform(ap,transform);
+	}
+	if ( flags & fvt_scalepstpos ) {
+	    for ( kp=cv->sc->kerns; kp!=NULL; kp=kp->next )
+		kp->off = rint(kp->off*transform[0]);
+	    for ( kp=cv->sc->vkerns; kp!=NULL; kp=kp->next )
+		kp->off = rint(kp->off*transform[3]);
+	    for ( pst = cv->sc->possub; pst!=NULL; pst=pst->next ) {
+		if ( pst->type == pst_position )
+		    VrTrans(&pst->u.pos,transform);
+		else if ( pst->type==pst_pair ) {
+		    VrTrans(&pst->u.pair.vr[0],transform);
+		    VrTrans(&pst->u.pair.vr[1],transform);
+		}
+	    }
 	}
 	if ( transform[1]==0 && transform[2]==0 ) {
 	    TransHints(cv->sc->hstem,transform[3],transform[5],transform[0],transform[4],flags&fvt_round_to_int);

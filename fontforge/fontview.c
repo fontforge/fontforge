@@ -1743,7 +1743,7 @@ void TransHints(StemInfo *stem,real mul1, real off1, real mul2, real off2, int r
     }
 }
 
-static void VrTrans(struct vr *vr,real transform[6]) {
+void VrTrans(struct vr *vr,real transform[6]) {
     /* I'm interested in scaling and skewing. I think translation should */
     /*  not affect these guys (they are offsets, so offsets should be */
     /*  unchanged by translation */
@@ -1788,16 +1788,18 @@ void FVTrans(FontView *fv,SplineChar *sc,real transform[6], uint8 *sel,
 	    SCSynchronizeWidth(sc,sc->width*transform[0]+transform[4],sc->width,fv);
 	    if ( !(flags&fvt_dontsetwidth) ) sc->widthset = widthset;
 	}
-    for ( kp=sc->kerns; kp!=NULL; kp=kp->next )
-	kp->off = rint(kp->off*transform[0]);
-    for ( kp=sc->vkerns; kp!=NULL; kp=kp->next )
-	kp->off = rint(kp->off*transform[3]);
-    for ( pst = sc->possub; pst!=NULL; pst=pst->next ) {
-	if ( pst->type == pst_position )
-	    VrTrans(&pst->u.pos,transform);
-	else if ( pst->type==pst_pair ) {
-	    VrTrans(&pst->u.pair.vr[0],transform);
-	    VrTrans(&pst->u.pair.vr[1],transform);
+    if ( flags & fvt_scalepstpos ) {
+	for ( kp=sc->kerns; kp!=NULL; kp=kp->next )
+	    kp->off = rint(kp->off*transform[0]);
+	for ( kp=sc->vkerns; kp!=NULL; kp=kp->next )
+	    kp->off = rint(kp->off*transform[3]);
+	for ( pst = sc->possub; pst!=NULL; pst=pst->next ) {
+	    if ( pst->type == pst_position )
+		VrTrans(&pst->u.pos,transform);
+	    else if ( pst->type==pst_pair ) {
+		VrTrans(&pst->u.pair.vr[0],transform);
+		VrTrans(&pst->u.pair.vr[1],transform);
+	    }
 	}
     }
     for ( ap=sc->anchor; ap!=NULL; ap=ap->next )
