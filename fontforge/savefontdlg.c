@@ -2021,6 +2021,7 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	    if ( fmflags&0x20000 ) old_otf_flags |= ps_flag_nohintsubs;
 	    if ( fmflags&0x40000 ) old_otf_flags |= ps_flag_noflex;
 	    if ( fmflags&0x80000 ) old_otf_flags |= ps_flag_nohints;
+	    if ( fmflags&0x200000 ) old_otf_flags |= ps_flag_round;
 		/* Applicable truetype flags */
 	    if ( fmflags&4 ) old_otf_flags |= ttf_flag_shortps;
 	    if ( fmflags&0x10 ) old_otf_flags |= ttf_flag_applemode;
