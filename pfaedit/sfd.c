@@ -975,7 +975,7 @@ return( dec->sofar[dec->pos--] );
 
 static void rle2image(struct enc85 *dec,int rlelen,struct _GImage *base) {
     uint8 *pt, *end;
-    int r,c,set, cnt, ch;
+    int r,c,set, cnt, ch, ch2;
     int i;
 
     r = c = 0; set = 1; pt = base->data; end = pt + base->bytes_per_line*base->height;
@@ -989,12 +989,12 @@ static void rle2image(struct enc85 *dec,int rlelen,struct _GImage *base) {
 	ch = Dec85(dec);
 	--rlelen;
 	if ( ch==255 ) {
-	    ch = Dec85(dec);
-	    cnt = (ch<<8) + Dec85(dec);
+	    ch2 = Dec85(dec);
+	    cnt = (ch2<<8) + Dec85(dec);
 	    rlelen -= 2;
 	} else
 	    cnt = ch;
-	if ( ch==0 && cnt<255 ) {
+	if ( ch==255 && ch2==0 && cnt<255 ) {
 	    /* Line duplication */
 	    for ( i=0; i<cnt; ++i ) {
 		memcpy(pt,base->data+(r-1)*base->bytes_per_line,base->bytes_per_line);
