@@ -828,22 +828,30 @@ typedef struct splinefont {
     char *origname;		/* filename of font file (ie. if not an sfd) */
     char *autosavename;
     int display_size;		/* a val <0 => Generate our own images from splines, a value >0 => find a bdf font of that size */
-    struct psdict *private;		/* read in from type1 file or provided by user */
+    struct psdict *private;	/* read in from type1 file or provided by user */
     char *xuid;
     struct pfminfo {		/* A misnomer now. OS/2 info would be more accurate, but that's stuff in here from all over ttf files */
 	unsigned int pfmset: 1;
+	unsigned int hiddenset: 1;
 	unsigned int winascent_add: 1;
 	unsigned int windescent_add: 1;
+	unsigned int hheadascent_add: 1;
+	unsigned int hheaddescent_add: 1;
 	unsigned char pfmfamily;
 	int16 weight;
 	int16 width;
 	char panose[10];
 	int16 fstype;
-	int16 linegap;
-	int16 vlinegap;
-	/*int16 hhead_ascent, hhead_descent;*/
-	int16 os2_typoascent, os2_typodescent;
+	int16 linegap;		/* from hhea */
+	int16 vlinegap;		/* from vhea */
+	int16 hhead_ascent, hhead_descent;
+	int16 os2_typoascent, os2_typodescent, os2_typolinegap;
 	int16 os2_winascent, os2_windescent;
+	int16 os2_subxsize, os2_subysize, os2_subxoff, os2_subyoff;
+	int16 os2_supxsize, os2_supysize, os2_supxoff, os2_supyoff;
+	int16 os2_strikeysize, os2_strikeypos;
+	char os2_vendor[4];
+	int16 os2_family_class;
     } pfminfo;
     struct ttflangname *names;
     char *cidregistry, *ordering;
