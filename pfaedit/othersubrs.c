@@ -254,3 +254,27 @@ const char *erode[] = {
 	"} bind def",
 	NULL
 };
+
+/* from Adobe Technical Specification #5014, Adobe CMap and CIDFont Files */
+/* Specification, Version 1.0. */
+const char *cid_othersubrs[] = {
+	"[ {} {} {}",
+	"  { systemdict /internaldict known not",
+	"    { pop 3 }",
+	"    { 1183615869 systemdict /internaldict get exec dup",
+	"      /startlock known",
+	"      { /startlock get exec }",
+	"      { dup /strlck known",
+	"        { /strlck get exec }",
+	"        { pop 3 }",
+	"        ifelse",
+	"      }",
+	"      ifelse",
+	"    }",
+	"    ifelse",
+	"  } bind",
+	"  {} {} {} {} {} {} {} {} {}",
+	"  { 2 { cvi { { pop 0 lt { exit } if } loop } repeat }",
+	"       repeat } bind",
+	"] def",
+};

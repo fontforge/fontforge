@@ -158,7 +158,7 @@ return;
     
 static void readttfbitmapfont(FILE *ttf,struct ttfinfo *info,
 	struct ttfsizehead *head, BDFFont *bdf) {
-    int i, j;
+    int i, j, g;
     int indexformat, imageformat, size, num, moreoff;
     int32 offset, *glyphoffsets, *glyphs, loc;
     int first, last;
@@ -214,15 +214,15 @@ static void readttfbitmapfont(FILE *ttf,struct ttfinfo *info,
 	    num = getlong(ttf);
 	    glyphoffsets = galloc((num+1)*sizeof(int32));
 	    glyphs = galloc((num+1)*sizeof(int32));
-	    for ( i=0; i<num+1; ++i ) {
-		glyphs[i] = getushort(ttf);
-		glyphoffsets[i] = getushort(ttf);
+	    for ( g=0; g<num+1; ++g ) {
+		glyphs[g] = getushort(ttf);
+		glyphoffsets[g] = getushort(ttf);
 	    }
-	    for ( i=0; i<=last-first; ++i ) {
-		if ( info->inuse==NULL || info->inuse[i+first] )
-		    ttfreadbmfglyph(ttf,info,offset+glyphoffsets[i],
-			    glyphoffsets[i+1]-glyphoffsets[i],NULL,
-			    imageformat,glyphs[i],bdf);
+	    for ( i=0, g=0; i<=last-first; ++i ) {
+		if ( (info->inuse==NULL || info->inuse[i+first]) && g<num )
+		    ttfreadbmfglyph(ttf,info,offset+glyphoffsets[g],
+			    glyphoffsets[g+1]-glyphoffsets[g],NULL,
+			    imageformat,glyphs[g++],bdf);
 	    }
 	    free(glyphoffsets);
 	    free(glyphs);
@@ -239,16 +239,16 @@ static void readttfbitmapfont(FILE *ttf,struct ttfinfo *info,
 	    big.vadvance = getc(ttf);
 	    num = getlong(ttf);
 	    glyphs = galloc((num+1)*sizeof(int32));
-	    for ( i=0; i<num; ++i ) {
-		glyphs[i] = getushort(ttf);
+	    for ( g=0; g<num; ++g ) {
+		glyphs[g] = getushort(ttf);
 	    }
 	    if ( num&1 )
 		getushort(ttf);		/* padding */
-	    for ( i=first; i<=last; ++i ) {
-		if ( info->inuse==NULL || info->inuse[i+first] )
+	    for ( i=first, g=0; i<=last; ++i ) {
+		if ( (info->inuse==NULL || info->inuse[i+first]) && g<num )
 		    ttfreadbmfglyph(ttf,info,offset,
 			    size,&big,
-			    imageformat,glyphs[i],bdf);
+			    imageformat,glyphs[g++],bdf);
 		offset = -1;
 	    }
 	    free(glyphs);

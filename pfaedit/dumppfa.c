@@ -480,29 +480,32 @@ return( sub );
 }
 
 static void dumpothersubrs(void (*dumpchar)(int ch,void *data), void *data,
-	int needsflex, int needscounters ) {
+	int incid, int needsflex, int needscounters ) {
     extern const char *othersubrs[];
     extern const char *othersubrsnoflex[];
     extern const char *othersubrscounters[];
     extern const char *othersubrsend[];
+    extern const char *cid_othersubrs[];
     int i;
     const char **subs;
 
     dumpstr(dumpchar,data,"/OtherSubrs \n" );
-    subs = needsflex ? othersubrs : othersubrsnoflex;
+    subs = incid ? cid_othersubrs : needsflex ? othersubrs : othersubrsnoflex;
     for ( i=0; subs[i]!=NULL; ++i ) {
 	dumpstr(dumpchar,data,subs[i]);
 	dumpchar('\n',data);
     }
-    if ( needscounters ) {
-	for ( i=0; othersubrscounters[i]!=NULL; ++i ) {
-	    dumpstr(dumpchar,data,othersubrscounters[i]);
-	    dumpchar('\n',data);
-	}
-    }
-    for ( i=0; othersubrsend[i]!=NULL; ++i ) {
-	dumpstr(dumpchar,data,othersubrsend[i]);
-	dumpchar('\n',data);
+    if (!incid) { 
+	if ( needscounters ) {
+	    for ( i=0; othersubrscounters[i]!=NULL; ++i ) {
+                dumpstr(dumpchar,data,othersubrscounters[i]);
+                dumpchar('\n',data);
+            }
+        }
+        for ( i=0; othersubrsend[i]!=NULL; ++i ) {
+            dumpstr(dumpchar,data,othersubrsend[i]);
+            dumpchar('\n',data);
+        }
     }
     dumpstr(dumpchar,data,"def\n" );
 }
@@ -661,7 +664,7 @@ static void dumpprivatestuff(void (*dumpchar)(int ch,void *data), void *data,
 		dumpstr(dumpchar,data," def\n");
 	}
     }
-    dumpothersubrs(dumpchar,data,flex_max>0,iscjk);
+    dumpothersubrs(dumpchar,data,incid!=NULL,flex_max>0,iscjk);
     if ( incid!=NULL ) {
 	dumpf(dumpchar,data," /SubrMapOffset %d def\n", incid->subrmapoff );
 	dumpf(dumpchar,data," /SDBytes %d def\n", incid->sdbytes );
@@ -1280,9 +1283,7 @@ static int dumpcidstuff(FILE *out,SplineFont *cidmaster) {
 	fprintf( out, "14 dict\n  begin\n" );
 	fprintf( out, "  /FontName /%s def\n", sf->fontname );
 	fprintf( out, "  /FontType 1 def\n" );
-	fprintf( out, "  /FontMatrix [ %g 0 0 %g 0 0 ] def\n",
-		1/((real) (sf->ascent+sf->descent)),
-		1/((real) (sf->ascent+sf->descent)));
+	fprintf( out, "  /FontMatrix [ 0.001 0 0 0.001 0 0 ] def\n"),
 	fprintf( out, "  /PaintType 0 def\n" );
 	fprintf( out, "\n  %%ADOBeginPrivateDict\n" );
 	dumpprivatestuff((DumpChar) fputc,out,sf,&cidbytes.fds[i]);
