@@ -379,6 +379,14 @@ static void GMenuDismissAll(struct gmenu *m) {
     }
 }
 
+static void UnsetInitialPress(struct gmenu *m) {
+    while ( m!=NULL ) {
+	m->initial_press = false;
+	if ( m->menubar!=NULL ) m->menubar->initial_press = false;
+	m = m->parent;
+    }
+}
+
 static void GMenuChangeSelection(struct gmenu *m, int newsel,GEvent *event) {
     int old=m->line_with_mouse;
 
@@ -388,7 +396,7 @@ return;
 	GMenuDestroy(m->child);
 	m->child = NULL;
     }
-    m->initial_press = false;
+    UnsetInitialPress(m);
     m->line_with_mouse = newsel;
     if ( newsel!=-1 )
 	m->mi[newsel].ti.selected = true;
@@ -442,13 +450,22 @@ return;
     }
 }
 
+static int MParentInitialPress(struct gmenu *m) {
+    if ( m->parent!=NULL )
+return( m->parent->initial_press );
+    else if ( m->menubar!=NULL )
+return( m->menubar->initial_press );
+
+return( false );
+}
+
 static int gmenu_mouse(struct gmenu *m, GEvent *event) {
     GPoint p;
     struct gmenu *testm;
 
     if ( event->type == et_crossing ) {
 	if ( !event->u.crossing.entered )
-	    m->initial_press = false;
+	    UnsetInitialPress(m);
 return( true );
     }
 
@@ -511,14 +528,17 @@ return( true );
 	    GMenuChangeSelection(m,i,event);
 	if ( event->type == et_mousedown ) {
 	    GMenuSetPressed(m,true);
-	    m->initial_press = true;
+	    if ( m->child!=NULL )
+		m->initial_press = true;
 	}
     } else if ( event->type == et_mouseup && m->child==NULL ) {
 #if 0
  printf("\nActivate menu\n");
 #endif
 	if ( event->u.mouse.y>=m->bp && event->u.mouse.x>=0 &&
-		event->u.mouse.y<m->height-m->bp && event->u.mouse.x < m->width ) {
+		event->u.mouse.y<m->height-m->bp &&
+		event->u.mouse.x < m->width &&
+		!MParentInitialPress(m)) {
 	    int l = (event->u.mouse.y-m->bp)/m->fh;
 	    int i = l + m->offtop;
 	    if ( !( l==0 && m->offtop!=0 ) &&
@@ -534,7 +554,7 @@ return( true );
 	    }
 	}
     } else if ( event->type == et_mouseup ) {
-	m->initial_press = false;
+	UnsetInitialPress(m);
 	GMenuSetPressed(m,false);
     } else
 return( false );
@@ -1059,7 +1079,7 @@ static int gmenubar_mouse(GGadget *g, GEvent *event) {
 	GMenuBarChangeSelection(mb,-1,event);
 	mb->pressed = false;
     } else if ( event->type == et_mouseup ) {
-	mb->pressed = false;
+	mb->initial_press = mb->pressed = false;
 	if ( mb->child!=NULL )
 	    GMenuSetPressed(mb->child,false);
     }
