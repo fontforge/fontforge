@@ -1673,10 +1673,9 @@ static void dumpcffencoding(SplineFont *sf,struct alltabs *at) {
     anydups = 0;
     for ( i=0; i<256 && i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
 	if ( sc != SCDuplicate(sc) ) {
-	    if ( SCDuplicate(sc)->ttf_glyph<256 )
-		++anydups;
+	    ++anydups;
 	} else if ( sc->ttf_glyph!=-1 && sc->ttf_glyph>last ) {
-	    if ( sc->ttf_glyph>=256 )
+	    if ( sc->ttf_glyph>=255 )
     break;
 	    for ( j=last+1; j<sc->ttf_glyph && j<255; ++j )
 		putc(0,at->encoding);
@@ -1686,8 +1685,8 @@ static void dumpcffencoding(SplineFont *sf,struct alltabs *at) {
     }
     if ( anydups ) {
 	fseek(at->encoding,start_pos,SEEK_SET);
-	putc(0x81,at->encoding);
-	putc(last,at->encoding);
+	putc(0x80,at->encoding);
+	putc(last+1,at->encoding);
 	fseek(at->encoding,0,SEEK_END);
 	putc(anydups,at->encoding);
 	for ( i=0; i<256 && i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
@@ -1698,7 +1697,7 @@ static void dumpcffencoding(SplineFont *sf,struct alltabs *at) {
 	}
     } else {
 	fseek(at->encoding,start_pos+1,SEEK_SET);
-	putc(last,at->encoding);
+	putc(last+1,at->encoding);
 	fseek(at->encoding,0,SEEK_END);
     }
     free( at->gn_sid );

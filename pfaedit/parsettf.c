@@ -2271,10 +2271,15 @@ return;
 	    cnt = getc(ttf);
 	    for ( i=0; i<cnt && i<info->glyph_cnt; ++i )
 		info->chars[i]->enc = getc(ttf);
+	    next = 256;
+	    for ( ; i<info->glyph_cnt; ++i )
+		info->chars[i]->enc = next++;
 	} else if ( (format&0x7f)==1 ) {
 	    cnt = getc(ttf);
 	    pos = 0;
-	    for ( i=0; i<cnt; ++i ) {
+	    for ( i=1; i<info->glyph_cnt; ++i )
+		info->chars[i]->enc = -1;
+	    for ( i=0; i<cnt ; ++i ) {
 		first = getc(ttf);
 		last = first + getc(ttf)-1;
 		while ( first<=last ) {
@@ -2284,6 +2289,10 @@ return;
 		    ++first;
 		}
 	    }
+	    next = 256;
+	    for ( i=0; i<info->glyph_cnt; ++i )
+		if ( info->chars[i]->enc==-1 )
+		    info->chars[i]->enc = next++;
 	} else
 	    fprintf( stderr, "Unexpected encoding format in cff: %d\n", format );
 	if ( format&0x80 ) {
@@ -2293,7 +2302,7 @@ return;
 		sid = getushort(ttf);
 		name = getsid(sid,strings);
 		for ( j=0; j<info->glyph_cnt; ++j )
-		    if ( strcmp(name,info->chars[i]->name)==0 )
+		    if ( strcmp(name,info->chars[j]->name)==0 )
 		break;
 		if ( j!=info->glyph_cnt )
 		    info->dups = makedup(info->chars[j],-1,dupenc,info->dups);
