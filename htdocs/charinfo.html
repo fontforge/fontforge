@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 29-Dec-2002 -->
-  <!-- AP: Last modified: 10-Dec-2003 -->
+  <!-- AP: Last modified: 3-Jan-2004 -->
   <TITLE>Char Info</TITLE>
 </HEAD>
 <BODY>
@@ -109,15 +109,15 @@ The Done (or Cancel) button only Cancels work in the current character. If
 you have already used Next or Prev then those earlier changes will not be
 cancelled.<BR Clear=Right>
   <HR>
+<H3>
+  <A NAME="Feature-Tag">Feature Tag Dialog</A>
+</H3>
 <TABLE ALIGN=Right>
   <TR>
     <TD><IMG SRC="feature-tag-sub.png" WIDTH="161" HEIGHT="246" ALIGN="Top">
       <IMG SRC="feature-tag-pos.png" WIDTH="161" HEIGHT="308" ALIGN="Top"></TD>
   </TR>
 </TABLE>
-<H3>
-  <A NAME="Feature-Tag">Feature Tag Dialog</A>
-</H3>
 <P>
 These two dialogs allow you to specify an otf feature tag and all the other
 impedimentia that go along with it. They are used by
@@ -129,12 +129,20 @@ You must either specify an opentype feature tag (a four character tag like
 'liga', see the section on <A HREF="gposgsub.html">GPOS and GSUB</A> for
 feature tags), or an apple feature/setting value (Something like
 &lt;2,2&gt; where the first number is the feature and the second the setting
-for that feature). In addition you must specify a set of flags and a collection
-of scripts and languages for which the substitution will be active. In the
-example above the substitution is active for the greek script and the default
-language (which here means all languages as none have been singled out for
-special treatment), the cyrillic script and the default language, and the
-latin script and several languages.
+for that feature). 
+<P>
+In <A NAME="lookup-flags">addition</A> you must specify a set of
+<A HREF="http://partners.adobe.com/asn/tech/type/opentype/appendices/chapter2.jsp">flags</A>
+which control the behavior of the feature. If your feature is to be used
+in right to left text then select that flag. If your feature is to be used
+to combine glyphs even if there are interviening mark glyphs (accents and
+such) then select Ignore Combining Marks.
+<P>
+And a collection of scripts and languages for which the substitution will
+be active. In the example above the substitution is active for the greek
+script and the default language (which here means all languages as none have
+been singled out for special treatment), the cyrillic script and the default
+language, and the latin script and several languages.
 <P>
 <IMG SRC="scriptlist-pulldown.png" WIDTH="243" HEIGHT="118">
 <P>

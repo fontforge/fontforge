@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 14-Sep-2003 -->
+  <!-- AP: Last modified: 3-Jan-2004 -->
   <TITLE>Spline Font Database File Format</TITLE>
 </HEAD>
 <BODY>
@@ -28,7 +28,8 @@ for each bitmap font.
   Font Header
 </H3>
 <P>
-Here is an example of what the first few lines look like:
+Here is an example of what the first few lines look like (order is largely
+irrelevant within this section):
 <BLOCKQUOTE>
   <PRE>SplineFontDB: 1.0
 FontName: Ambrosia
@@ -158,17 +159,17 @@ If the font has any opentype features it will have a list of
 </PRE>
 </BLOCKQUOTE>
 <P>
-The first line says that there are 3 sets of script lang entries. The next
-line says that this entry is only active for one script ('latn') and then
-only if the language is 'ROM '. The next line says the entry is again only
-active for one script, but that this time any of the four languages 'DEU
-', 'ROM ', 'VIT ' or the default language apply to it. And the last line
-gives an example of an entry that is active for several scripts with several
-languages.
+The first line says that there are 3 sets of script lang entries and they
+follow on the next three lines. The next line says that this entry is only
+active for one script ('latn') and then only if the language is 'ROM '. The
+next line says the entry is again only active for one script, but that this
+time any of the four languages 'DEU ', 'ROM ', 'VIT ' or the default language
+apply to it. And the last line gives an example of an entry that is active
+for several scripts with several languages.
 <P>
 If your font has any kerning classes
 <BLOCKQUOTE>
-  <PRE>KernClass: 31 64 5 0
+  <PRE>KernClass: 31 64 2 0
  1 F
  41 L Lacute glyph78 Lcommaaccent Ldot Lslash
  1 P
@@ -184,21 +185,21 @@ If your font has any kerning classes
 </BLOCKQUOTE>
 <P>
 The first line says that this Kerning Class has 31 different classes for
-the first character, and 64 for the second. It is active for entry 5 in the
-script lang list above. The <A HREF="charinfo.html#Feature-Tag">OpenType
-flags </A>will be 0. The next line says that class 1 of the first character
-(class 0 is reserved and never present) consists of only one character "F"
-(the number in front is the string length of the line. It speeds up processing
-the sfd file but has no semantic content). The next line is for class 2 of
-the first character, it has more characters in it and a longer string length.
-After 30 entries we start on the classes for the second character. They look
-exactly like classes for the first character. After all the second character
-classes have been defined we have an array of numbers, &lt;char1 class
-cnt&gt;*&lt;char2 class cnt&gt; of them in fact. This specified the amount
-of kerning that should be placed between a characters of the given classes
-of left and right characters (ie. if char1 was in left class 2 and char2
-was in right class 4 then we would index this array with 3*&lt;char2 class
-cnt&gt; + 4).
+the first character, and 64 for the second. It is active for entry 2 in the
+script lang list above. The <A HREF="charinfo.html#lookup-flags">OpenType
+flags </A>will be 0. The next line says that the first character class of
+the first character (numbered 1, class 0 is reserved and never needs to be
+defined) consists of only one character "F" (the number in front is the string
+length of the line. It speeds up processing the sfd file but has no semantic
+content). The next line is for class 2 of the first character, it has more
+characters in it and a longer string length. After 30 entries we start on
+the classes for the second character. They look exactly like classes for
+the first character. After all the second character classes have been defined
+we have an array of numbers, &lt;char1 class cnt&gt;*&lt;char2 class cnt&gt;
+of them in fact. This specifies the amount of kerning that should be placed
+between a characters of the given classes of left and right characters (ie.
+if char1 was in left class 2 and char2 was in right class 4 then we would
+index this array with 3*&lt;char2 class cnt&gt; + 4).
 <P>
 The order of opentype features within GPOS/GSUB tables may be stored:
 <BLOCKQUOTE>
@@ -229,7 +230,7 @@ lines will provide 4360 bytes of data, packed in Enc85 (which takes binary
 data and packs it into ASCII without too much expansion. See the PostScript
 Reference Manual for a description of this packing).
 <P>
-The <CODE>LangName</CODE> entries represent the TrueType names table the
+The <CODE>LangName</CODE> entries represent the TrueType name table: the
 number represents the language and is followed by a list of strings encoded
 in UTF-7. The first string corresponds to ID=0 (Copyright), the second to
 ID=1 (Family), ... trailing empty strings will be omitted. In the American
@@ -253,6 +254,122 @@ There is an Anchor Class named "top" which has feature tag 'mark', opentype
 flags 4, a script lang index of 7, and it should be merged with other anchor
 classes marked with "1". The next class is named "bottom", the next "Anchor-2"
 and so forth. (Anchor class names are output in UTF7)
+<P>
+There are three formats for contextual or contextual chaining lookups: <BR>
+By coverage tables
+<BLOCKQUOTE>
+  <PRE>ChainSub: coverage 0 0 'abvs' 0 0 0 1
+ 1 1 0
+  Coverage: 7 uni0C40
+  BCoverage: 8 glyph388
+ 1
+  SeqLookup: 0 '0013'
+EndFPST
+</PRE>
+</BLOCKQUOTE>
+<P>By classes
+<BLOCKQUOTE>
+  <PRE>ChainSub: class 0 0 'calt' 3 3 0 1
+  Class: 52 b o v w b.high o.high v.high w.high r.alt.high r.alt
+  Class: 43 a c d e f g h i j k l m n p q r s t u x y z
+  BClass: 52 b o v w b.high o.high v.high w.high r.alt.high r.alt
+  BClass: 43 a c d e f g h i j k l m n p q r s t u x y z
+ 1 1 0
+  ClsList: 2
+  BClsList: 1
+  FClsList:
+ 1
+  SeqLookup: 0 'high'
+EndFPST
+</PRE>
+</BLOCKQUOTE>
+<P>By glyphs
+<BLOCKQUOTE>
+  <PRE>ChainSub: glyph 0 1 'calt' 0 0 0 1
+ String: 1 D
+ BString: 3 c b
+ FString: 1 e
+ 1
+  SeqLookup: 0 'rigl'
+EndFPST
+</PRE>
+</BLOCKQUOTE>
+The GenTags entry describes a list of feature tags that PfaEdit has generated itself
+<BLOCKQUOTE>
+  <PRE>GenTags: 1 sb'rigl'
+</PRE>
+</BLOCKQUOTE>
+<P>There may be apple state machines
+<BLOCKQUOTE>
+  <PRE>MacContext: 2,2 16384 9 5
+  Class: 320 yehhamzaabovearabic beharabic teharabic theharabic jeemarabic haharabic khaharabic seenarabic sheenarabic sadarabic dadarabic taharabic zaharabic ainarabic ghainarabic feharabic qafarabic kafarabic lamarabic meemarabic noonarabic heharabic alefmaksuraarabic yeharabic peharabic tteharabic tcheharabic veharabic gafarabic
+  Class: 227 noonghunnaarabic alefmaddaabovearabic alefhamzaabovearabic wawhamzaabovearabic alefhamzabelowarabic alefarabic tehmarbutaarabic dalarabic thalarabic reharabic zainarabic wawarabic ddalarabic rreharabic jeharabic yehbarreearabic
+  Class: 201 shaddakasraarabic shaddakasratanarabic shaddafathaarabic shaddadammaarabic shaddadammatanarabic fathatanarabic dammatanarabic kasratanarabic fathaarabic dammaarabic kasraarabic shaddaarabic sukunarabic
+  Class: 13 tatweelarabic
+  Class: 17 ttehinitialarabic
+ 0 0 ~ ~ 
+ 0 0 ~ ~ 
+ 0 0 ~ ~ 
+ 0 0 ~ ~ 
+ 2 32768 ~ ~ 
+ 0 0 ~ ~ 
+ 0 0 ~ ~ 
+ 0 0 ~ ~ 
+ 0 0 ~ 'M000' 
+ 0 0 ~ ~ 
+ 0 0 ~ ~ 
+ 0 0 ~ ~ 
+ 0 0 ~ ~ 
+ 2 32768 ~ ~ 
+ 0 0 ~ ~ 
+ 0 0 ~ ~ 
+ 0 0 ~ ~ 
+ 0 0 ~ 'M001' 
+ 0 0 ~ ~ 
+ 0 0 ~ ~ 
+ 2 0 ~ ~ 
+ 0 0 ~ ~ 
+ 3 32768 'M002' 'M003' 
+ 0 0 'M004' 'M005' 
+ 2 0 ~ ~ 
+ 4 0 'M006' ~ 
+ 0 0 ~ 'M007' 
+ 0 0 ~ ~ 
+ 0 0 ~ ~ 
+ 3 0 ~ ~ 
+ 0 0 ~ ~ 
+ 3 32768 'M008' 'M009' 
+ 0 0 'M010' 'M011' 
+ 3 0 ~ ~ 
+ 4 0 'M012' ~ 
+ 0 0 ~ 'M013' 
+ 0 0 ~ ~ 
+ 0 0 ~ ~ 
+ 4 0 ~ ~ 
+ 0 0 ~ ~ 
+ 3 32768 ~ 'M014' 
+ 0 0 ~ 'M015' 
+ 4 0 ~ ~ 
+ 4 0 ~ ~ 
+ 0 0 ~ 'M016' 
+EndASM
+</PRE>
+</BLOCKQUOTE>
+<P>There may be a list of Mac Feature/Setting names
+<BLOCKQUOTE>
+  <PRE>MacFeat: 0 0 0
+MacName: 0 0 24 "All Typographic Features"
+MacSetting: 0
+MacName: 0 0 12 "All Features"
+MacFeat: 1 0 0
+MacName: 0 0 9 "Ligatures"
+MacSetting: 0
+MacName: 0 0 18 "Required Ligatures"
+MacSetting: 2
+MacName: 0 0 16 "Common Ligatures"
+MacFeat: 2 1 2
+</PRE>
+</BLOCKQUOTE>
 <P>
 There may be a Grid entry near the top of the font, this specifies the splines
 to be drawn in the grid layer for the font, <A HREF="#splineset">see below
