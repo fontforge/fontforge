@@ -2645,6 +2645,7 @@ return;
 		} else if ( gdisp->mykeybuild )
 		    _GDraw_ComposeChars((GDisplay *) gdisp,&gevent);
 	    } else {
+#ifdef X_HAVE_UTF8_STRING
 		len = Xutf8LookupString(((GXWindow) gw)->gic->ic,(XKeyPressedEvent*)event,
 				charbuf, sizeof(charbuf), &keysym, &status);
 		pt = charbuf;
@@ -2663,6 +2664,10 @@ return;
 			sizeof(gevent.u.chr.chars)/sizeof(gevent.u.chr.chars[0]));
 		if ( pt!=charbuf )
 		    free(pt);
+#else
+		gevent.u.chr.keysym = keysym;
+		gevent.u.chr.chars[0] = 0;
+#endif
 	    }
 	} else {
 	    /* XLookupKeysym doesn't do shifts for us (or I don't know how to use the index arg to make it) */
@@ -3746,9 +3751,11 @@ return( NULL );
     if ( GResourceFindBool("Synchronize", false ))
 	XSynchronize(gdisp->display,true);
 
+#ifdef X_HAVE_UTF8_STRING	/* Don't even try without this. I don't want to have to guess encodings myself... */
     /* X Input method initialization */
     XSetLocaleModifiers("");			/* If it fails it means no */
     gdisp->im = XOpenIM(display, NULL, NULL, NULL);	/* input method. Ok */
+#endif
 
     (gdisp->funcs->init)((GDisplay *) gdisp);
     gdisp->top_window_count = 0;
