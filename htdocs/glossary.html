@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 28-Oct-2002 -->
-  <!-- AP: Last modified: 3-Dec-2003 -->
+  <!-- AP: Last modified: 10-Dec-2003 -->
   <TITLE>Glossary of (some) typographical terms</TITLE>
 </HEAD>
 <BODY>
@@ -125,7 +125,11 @@
 	  <A NAME="character">Character</A>
 	<DD>
 	  A character is a Platonic ideal reified into at least one
-	  <A HREF="#glyph">glyph</A>.
+	  <A HREF="#glyph">glyph</A>. For example the letter "s" is a character which
+	  is reified into several different glyphs: "S", "s", "<I>s</I>", long-s, etc.
+	  Note that these glyphs can look fairly different from each other, however
+	  although the glyph for an integral sign might be the same as the long-s glyph,
+	  these are in fact different characters.
 	<DT>
 	  <A NAME="character-set">Character set</A>
 	<DD>
@@ -224,6 +228,11 @@
 	  specifies both a character set and an encoding. But CJK character sets often
 	  have multiple encodings for the character set (end multiple character sets
 	  for some encodings).
+	  <P>
+	  In more complicated cases it is possible to have multiple glyphs associated
+	  with each character (as in arabic where most characters have at least 4 different
+	  glyphs) and the client program must pick the appropriate glyph for the character
+	  in the current context.
 	<DT>
 	  <A NAME="Even-Odd">Even-Odd </A>Fill rule
 	<DD>

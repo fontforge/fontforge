@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 29-Dec-2002 -->
-  <!-- AP: Last modified: 27-Sep-2003 -->
+  <!-- AP: Last modified: 10-Dec-2003 -->
   <TITLE>Char Info</TITLE>
 </HEAD>
 <BODY>
@@ -149,7 +149,7 @@ disabled), however there is no point in having it active for cyrillic users
 as they will never see that combination of characters. On the other hand
 the es-zet ligature (German double-s, &szlig;) has fallen by the wayside
 in all (I think) languages but German so that ligature should only be active
-for the latin script, german language. 
+for the latin script, german language.
 <P>
 And there are some characters that don't fall into one single script. The
 same digits are used for latin, cyrillic, greek, hebrew, (sometimes arabic)
@@ -189,7 +189,14 @@ representation for the default language).
 <P>
 The language names used by PfaEdit are those specified by
 <A HREF="http://partners.adobe.com/asn/tech/type/opentype/appendices/languagetags.jsp">Microsoft
-and Adobe for opentype</A>.<BR CLEAR=ALL>
+and Adobe for opentype</A>.
+<P>
+Note: In most cases the order of scripts in the list is irrelevant, but kerning
+uses the initial script to determine the direction of the kern pair. So if
+you have kerning on the digits, and want those to be active in both latin
+and hebrew, you must use the unparsed dlg which allows you to order the scripts
+yourself (or add a greek, or cyrillic script to the list (something that
+comes before hebrew in alphabetic order and is left to right)).<BR CLEAR=ALL>
 <H3>
   <A NAME="Script"><IMG SRC="scriptsdlg.png" WIDTH="152" HEIGHT="215" ALIGN="Right">The
   Script Dialog</A>

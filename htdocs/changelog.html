@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 5-Dec-2003 -->
+  <!-- AP: Last modified: 10-Dec-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,21 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    10-Dec-2003
+    <UL>
+      <LI>
+	When there were multiple features with the same tag (different scripts with
+	'kern' for instance) PfaEdit would produce multiple copies of the same lookup
+	instead of different lookups.
+      <LI>
+	PfaEdit was not setting the right to left lookup flag bit properly for hebrew
+	(and presumably arabic) kerning
+      <LI>
+	Remove overlap was coalescing some splines that it should not have.
+      <LI>
+	Typo in expand stroke meant that some round line joins were really weird
+    </UL>
   <LI>
     5-Dec-2003
     <UL>
