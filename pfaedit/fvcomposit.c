@@ -549,7 +549,12 @@ const unichar_t *SFGetAlternate(SplineFont *sf, int base,SplineChar *sc,int noch
 return( greekalts );
     }
     if ( base=='i' || base=='j' ) {
-	greekalts[0] = base=='j'? 0xf6be: 0x0131;
+	if ( base=='i' )
+	    greekalts[0] = 0x131;
+	else if ( haschar(sf,0x237))
+	    greekalts[0] = 0x237;		/* proposed dotlessj */
+	else
+	    greekalts[0] = 0xf6be;		/* Dotlessj in Adobe's private use area */
 	greekalts[1] = 0x307;
 	greekalts[2] = 0;
 return( greekalts );
@@ -603,7 +608,7 @@ int SFIsCompositBuildable(SplineFont *sf,int unicodeenc,SplineChar *sc) {
     const unichar_t *pt, *apt, *end; unichar_t ch;
     SplineChar *one, *two;
 
-    if ( unicodeenc==0x131 || unicodeenc==0xf6be )
+    if ( unicodeenc==0x131 || unicodeenc==0x0237 || unicodeenc==0xf6be )
 return( SCMakeDotless(sf,SFGetOrMakeChar(sf,unicodeenc,NULL),false,false));
 
     if (( pt = SFGetAlternate(sf,unicodeenc,sc,false))==NULL )
@@ -1898,7 +1903,10 @@ return;
 	for ( apt = pt; *apt && combiningposmask(*apt)!=____ABOVE; ++apt);
 	if ( *apt!='\0' ) {
 	    if ( ch=='i' || ch==0x456 ) ch = 0x0131;
-	    else if ( ch=='j' ) ch = 0xf6be;
+	    else if ( ch=='j' ) {
+		if ( haschar(sf,0x237) ) ch = 0x237;		/* Proposed dotlessj */
+		else ch = 0xf6be;				/* Adobe's private use dotless j */
+	    }
 	}
     }
     if ( sc->unicodeenc>=0xac00 && sc->unicodeenc<=0xd7a3 )
