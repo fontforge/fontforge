@@ -879,20 +879,24 @@ return(NULL);
 
 	cnt = 1;
 	final = i;
-	for ( j=i+1; j<bdf->charcnt ; ++j ) {
-	    if ( (bc2=bdf->chars[j])==NULL )
-		/* Ignore it */;
-	    else if ( bc2->sc->ttf_glyph!=bc->sc->ttf_glyph+cnt )
-	break;
-	    else if ( bc2->widthgroup!=bc->widthgroup ||
-		    (bc->widthgroup && bc->width!=bc2->width) )
-	break;
-	    else {
-		++cnt;
-		final = j;
+	if ( bc!=bdf->chars[i] )
+	    cur->last = bc->sc->ttf_glyph;
+	else { 
+	    for ( j=i+1; j<bdf->charcnt ; ++j ) {
+		if ( (bc2=bdf->chars[j])==NULL )
+		    /* Ignore it */;
+		else if ( bc2->sc->ttf_glyph!=bc->sc->ttf_glyph+cnt )
+	    break;
+		else if ( bc2->widthgroup!=bc->widthgroup ||
+			(bc->widthgroup && bc->width!=bc2->width) )
+	    break;
+		else {
+		    ++cnt;
+		    final = j;
+		}
 	    }
+	    cur->last = bdf->chars[final]->sc->ttf_glyph;
 	}
-	cur->last = bdf->chars[final]->sc->ttf_glyph;
 
 	if ( !bc->widthgroup ) {
 	    putshort(subtables,1);	/* index format, 4byte offset, no metrics here */
