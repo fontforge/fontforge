@@ -1244,7 +1244,7 @@ static void findstring(struct fontparse *fp,struct pschars *subrs,int index,char
     if ( *str=='(' ) {
 	++str;
 	bpt = buffer;
-	while ( *str!=')' ) {
+	while ( *str!=')' && *str!='\0' ) {
 	    if ( *str!='\\' )
 		val = *str++;
 	    else {
@@ -1910,6 +1910,10 @@ static void addinfo(struct fontparse *fp,char *line,char *tok,char *binstart,int
     decodestr((unsigned char *) binstart,binlen);
     binstart += fp->fd->private->leniv;
     binlen -= fp->fd->private->leniv;
+    if ( binlen<0 ) {
+	fprintf( stderr, "Bad CharString. Does not include lenIV bytes.\n" );
+return;
+    }
 
  retry:
     if ( fp->insubs ) {
@@ -2319,8 +2323,13 @@ static void figurecids(struct fontparse *fp,FILE *temp) {
 	for ( j=val=0; j<fd->gdbytes; ++j )
 	    val = (val<<8) + getc(temp);
 	offsets[i] = val;
-	if ( i!=0 )
+	if ( i!=0 ) {
 	    fd->cidlens[i-1] = offsets[i]-offsets[i-1];
+	    if ( fd->cidlens[i-1]<0 ) {
+		fprintf( stderr, "Bad CID offset for CID %d\n", i-1 );
+		fd->cidlens[i-1] = 0;
+	    }
+	}
     }
 
     for ( i=0; i<fd->cidcnt; ++i ) {
