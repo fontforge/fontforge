@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 12-Feb-2003 -->
+  <!-- AP: Last modified: 24-Feb-2003 -->
   <TITLE>Font Info</TITLE>
 </HEAD>
 <BODY>
@@ -384,9 +384,9 @@ value. The UniqueID key represents the font's Unique postscript ID. If you
 provide a value here then PfaEdit will copy it into the UniqueID field in
 the Font Dictionary. If you do not provide a UniqueID here, PfaEdit will
 generate a random one itself (this is different from True Type's UniqueID.
-They perform the same function but are formatted differently).
+They perform the same function but are formatted differently).<BR CLEAR=ALL>
 <H2>
-  <IMG SRC="fontinfo-ttfvals.png" WIDTH="369" HEIGHT="472" ALIGN="Right"><A
+  <IMG SRC="fontinfo-ttfvals.png" WIDTH="376" HEIGHT="544" ALIGN="Right"><A
       NAME="TTF-Values">TTF Values</A>
 </H2>
 <P>
@@ -419,6 +419,18 @@ You can also specify the default line gap, or leading between lines.
 And if your font has vertical metrics enabled (See PS General above) you
 will be able to set the default spacing between vertical columns of text.
 (the equivalent to LineGap in vertical text).<BR Clear=ALL>
+<H3>
+  <CODE><A NAME="Order"><IMG SRC="GSUB-Order.png" WIDTH="185" HEIGHT="294"
+      ALIGN="Right">GSUB/morx</A></CODE> Ordering
+</H3>
+<P>
+This dialog allows you to control the order features in which are to be executed
+by the word processing program. If you have loaded an opentype or truetype
+font then the original order will be maintained. As you add more features
+they will appear at the bottom of the list (which may not be appropriate).
+You may select a feature name and use the buttons to move it up and down
+in the list. Things at the top of the list are executed first, things at
+the bottom last.<BR CLEAR=ALL>
 <H2>
   <IMG SRC="fontinfo-ttfname.png" WIDTH="369" HEIGHT="472" ALIGN="Right"><A
       NAME="TTF-Names">TTF Names</A>
@@ -571,6 +583,36 @@ languages.
     <TD>Contour</TD>
   </TR>
   <TR>
+    <TH>Spanish</TH>
+    <TD>Normal</TD>
+    <TD>Nigrita</TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD>
+    <TD>Cursiva</TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD>
+  </TR>
+  <TR>
+    <TH>Italian</TH>
+    <TD>Normale</TD>
+    <TD>Nero</TD>
+    <TD>Neretto</TD>
+    <TD>Chiaro</TD>
+    <TD>Medio</TD>
+    <TD>Libro</TD>
+    <TD>ExtraNero</TD>
+    <TD>Corsivo</TD>
+    <TD>Obliquo</TD>
+    <TD>Condensato</TD>
+    <TD>Allargato</TD>
+    <TD></TD>
+  </TR>
+  <TR>
     <TH>German</TH>
     <TD>Standard</TD>
     <TD>Fett</TD>
@@ -600,21 +642,6 @@ languages.
     <TD>&icirc;&Aacute;&Euml;&Igrave;&Iuml;&Icirc;&Icirc;&Ugrave;&Ecirc;</TD>
     <TD>&oacute;&Ouml;&Aacute;&Ocirc;&Ugrave;&Ecirc;</TD>
     <TD>&ucirc;&Eacute;&Ograve;&Iuml;&Euml;&Eacute;&Ecirc;</TD>
-    <TD></TD>
-  </TR>
-  <TR>
-    <TH>Spanish</TH>
-    <TD>Normal</TD>
-    <TD>Nigrita</TD>
-    <TD></TD>
-    <TD></TD>
-    <TD></TD>
-    <TD></TD>
-    <TD></TD>
-    <TD>Cursiva</TD>
-    <TD></TD>
-    <TD></TD>
-    <TD></TD>
     <TD></TD>
   </TR>
 </TABLE>

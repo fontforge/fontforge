@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 18-Feb-2003 -->
+  <!-- AP: Last modified: 24-Feb-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,31 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    24-Feb-2003
+    <UL>
+      <LI>
+	Claudio Beccari has provided an Italian UI.
+      <LI>
+	(added Italian style translations to fontinfo)
+      <LI>
+	User now has the ability to control the conversion from mac feature/settings
+	to otf features.
+      <LI>
+	PfaEdit now remembers the order features are to be applied in GSUB/GPOS/morx
+	tables (and dumps features out in that order when it next saves them).
+      <LI>
+	PfaEdit allows you to reorder the GSUB/morx tables should you wish to do
+	so. I am sufficiently ignorant that I don't believe it is necessary to reorder
+	the GPOS table, so there is currently no UI for this. If I am wrong let me
+	know and I will add that too.
+      <LI>
+	The 'kern' table was not being generated when it should have been. This error
+	was introduced sometime in the last month due to the AAT changes.
+      <LI>
+	Scripts generating otf fonts would crash if the font had non-integral coordinates
+	because of a bug in my PostNotice routine when running without X.
+    </UL>
   <LI>
     18-Feb-2003
     <UL>

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 2-Sep-2002 -->
-  <!-- AP: Last modified: 19-Feb-2003 -->
+  <!-- AP: Last modified: 24-Feb-2003 -->
   <TITLE>Preferences Dialog</TITLE>
 </HEAD>
 <BODY>
@@ -10,7 +10,7 @@
   Preferences Dialog
 </H1>
 <P>
-<IMG SRC="prefs-generic.png" WIDTH="306" HEIGHT="383" ALIGN="Right">
+<IMG SRC="prefs-generic.png" WIDTH="282" HEIGHT="372" ALIGN="Right">
 <DL>
   <DT>
     <A NAME="AutoHint">AutoHint</A>
@@ -64,7 +64,7 @@
     screen will also be read and will supercede those in the file). <BR Clear=all>
 </DL>
 <P>
-<IMG SRC="prefs-editing.png" WIDTH="294" HEIGHT="369" ALIGN="Right">
+<IMG SRC="prefs-editing.png" WIDTH="282" HEIGHT="372" ALIGN="Right">
 <DL>
   <DT>
     <A NAME="AutoWidthSync">AutoWidthSync</A>
@@ -120,7 +120,7 @@
     then it will.<BR Clear=all>
 </DL>
 <P>
-<IMG SRC="prefs-font.png" WIDTH="294" HEIGHT="369" ALIGN="Right">
+<IMG SRC="prefs-font.png" WIDTH="282" HEIGHT="372" ALIGN="Right">
 <DL>
   <DT>
     <A NAME="FoundryName">Foundry Name</A>
@@ -176,12 +176,16 @@
   <DT>
     <A NAME="HintForGen">HintForGen</A>
   <DD>
-    Whether characters should be automagically hinted before a font is
-    generated.<BR Clear=ALL>
+    Whether characters should be automagically hinted before a font is generated.
+  <DT>
+    <A NAME="AlwaysGenApple">AlwaysGenApple</A>
+  <DD>
+    If you always want to generate Apple style TTF fonts (and never windows ones)
+    then select this item.<BR Clear=ALL>
 </DL>
 <DL>
   <DT>
-    <IMG SRC="prefs-apps.png" WIDTH="294" HEIGHT="369" ALIGN="Right"><A NAME="AutotraceArgs">AutotraceArgs</A>
+    <IMG SRC="prefs-apps.png" WIDTH="282" HEIGHT="372" ALIGN="Right"><A NAME="AutotraceArgs">AutotraceArgs</A>
   <DD>
     This allows you to specify any arguments you want passed to the autotrace
     program. Don't try to pass something that will change the input or output
@@ -213,7 +217,7 @@
     so.<BR Clear=all>
 </DL>
 <P>
-<IMG SRC="prefs-script.png" WIDTH="294" HEIGHT="369" ALIGN="Right"><A NAME="scripts">This
+<IMG SRC="prefs-script.png" WIDTH="282" HEIGHT="372" ALIGN="Right"><A NAME="scripts">This
 section </A>of the dialog allows you to define built in scripts that will
 show up in the <A HREF="filemenu.html#ScriptMenu">script menu</A>. Each entry
 has two things associated with it, the menu name and a script file. The menu
@@ -222,6 +226,32 @@ name will be the name of this entry inside the script menu, and the
 to be invoked. The "..." button allows you to browse for script files, which
 I think have extension .pe (but which can have whatever extension you prefer
 if you don't like my conventions).<BR Clear=All>
+<P>
+<IMG SRC="prefs-macfeat.png" WIDTH="282" HEIGHT="372" ALIGN="Left"><IMG SRC="prefs-macset.png"
+    WIDTH="282" HEIGHT="372" ALIGN="Right">The <A NAME="Mac">Mac</A> Features
+and Settings dialog allows you to define a mapping between OTF
+<CODE>GSUB</CODE> feature tags (which are what PfaEdit uses to identify
+substitutions internally) and Apple's
+<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6morx.html"><CODE>mort/morx
+</CODE></A>Feature/Setting codes.
+<P>
+<A HREF="http://developer.apple.com/fonts/Registry/index.html">Apple's published
+list </A>of features and settings appears out of date (in that some features
+used by current fonts are not found in it).
+<P>
+A four letter OTF feature tag may correspond to a mac feature/setting
+combination. If you wish to create a new mapping you must first insure that
+the mac feature you desire is present in the feature list (at left), and
+then you may add the mapping in the settings list (at right).
+<P>
+You must specify a mac feature (which must already be defined), a mac setting
+code, a name for the setting, a setting code to turn the feature off (or
+-1 if there is none), a name for the off setting, a four letter otf tag,
+and two flags: whether this setting should be on by default, and whether
+all the settings in this feature form a mutually exclusive system (like a
+radio button).
+<P>
+<IMG SRC="macFeatureSetting.png" WIDTH="337" HEIGHT="245">
 <H2>
   Other ways of configuring
 </H2>

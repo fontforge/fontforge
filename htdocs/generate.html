@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Sep-2002 -->
-  <!-- AP: Last modified: 29-Dec-2002 -->
+  <!-- AP: Last modified: 24-Feb-2003 -->
   <TITLE>Generate Font Dialog</TITLE>
 </HEAD>
 <BODY>
@@ -108,8 +108,9 @@ The bitmap types are:
     NFNT (dfont) -- Converts the bitmap fonts into Macintosh NFNT resources and
     stores them in a mac (OS/X) dfont file.
   <LI>
-    Windows FNT -- this needs to be processed somehow with the windows resource compiler
-    to create a FON file. I don't have enough info to do this myself yet.
+    Windows FNT -- this needs to be processed somehow with the windows resource
+    compiler to create a FON file. I don't have enough info to do this myself
+    yet.
   <LI>
     None
 </UL>
@@ -144,12 +145,12 @@ There are also the following check boxes. Not all are visible at all times.
 	0 or 1 of them, MS/Adobe say any value other than 1)
       <LI>
 	Apple and MS/Adobe also differ on the way references (components) are scaled.
-	Luckily there is another way to disambiguate this case (and references
-	are rarely scaled anyway).
+	Luckily there is another way to disambiguate this case (and references are
+	rarely scaled anyway).
       <LI>
-	The GPOS, GSUB and kern tables.
-	Apple does not support GPOS/GSUB tables. MicroSoft still supports kern
-	tables for some fonts but requires GPOS for others.
+	The GDEF, GPOS, GSUB and prop, lcar, kern, opbd, morx, feat tables. Apple
+	does not support GPOS/GSUB tables. MicroSoft still supports kern tables for
+	some fonts but requires GPOS for others.
     </UL>
 </UL>
 <P>
@@ -193,14 +194,13 @@ If you are generating a bdf font then you will be prompted for a resolution
 later.
 <P>
 If you generate a TrueType or OpenType font without the Apple mode set then
-PfaEdit will generate <A HREF="gposgsub.html">GPOS and GSUB tables</A>. These
-contain kerning, ligature information, arabic forms data, anchor points, etc.
+PfaEdit will generate <A HREF="gposgsub.html">GPOS, GSUB, and GDEF tables</A>.
+These contain kerning, ligature information, arabic forms data, anchor points,
+etc.
 <P>
-Apple does not support these two tables. If you set Apple mode then kerning
-information will be stored in a kern table instead, but the other information
-mentioned above will not be present (Apple probably has a mechanism for
-specifying these data, but Apple's tables are much harder to parse and I
-haven't implemented them yet).
+Apple does not support these tables. If you set Apple mode
+<A HREF="gposgsub.html#AAT">'kern', 'opbd', 'morx', 'feat', 'lcar' and 'prop'
+</A>tables may be generated instead.
   <HR>
 <H2>
   Generate Mac Family

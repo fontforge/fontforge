@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 29-Dec-2002 -->
-  <!-- AP: Last modified: 18-Feb-2003 -->
+  <!-- AP: Last modified: 24-Feb-2003 -->
   <TITLE>Advanced Typography tables</TITLE>
 </HEAD>
 <BODY>
@@ -174,9 +174,12 @@ PfaEdit will read the following sub tables of the GPOS table:
 </TABLE>
 <P>
 PfaEdit also has built into it knowledge on how to provide default values
-for some features that use these menus. See
+for some features that use these tables. See
 <A HREF="elementmenu.html#DefaultATT">Element-&gt;Default ATT</A> command
 for that.
+<P>
+PfaEdit will retain the order of features in the GPOS table and when a font
+is generated the order should be the same as it was before.
 <H3>
   The <B><CODE><A NAME="GSUB">GSUB</A></CODE></B> table
 </H3>
@@ -262,13 +265,17 @@ PfaEdit will read the following sub tables of the GSUB table:
 </TABLE>
 <P>
 PfaEdit also has built into it knowledge on how to provide default values
-for some features that use these menus. See
+for some features that use these tables. See
 <A HREF="elementmenu.html#DefaultATT">Element-&gt;Default ATT</A> command
 for that.
 <P>
 PfaEdit can produce some of these tables, but the text layout/word processing
 program used has to look up the tables and do the actual work of rearranging
 the glyphs.
+<P>
+PfaEdit will retain the order of features in the GSUB table, and the user
+may adjust it with the <A HREF="fontinfo.html#Order">Element-&gt;Font Info</A>
+command.
 <H3>
   The <B><CODE><A NAME="GDEF">GDEF</A> </CODE></B>table
 </H3>
@@ -492,7 +499,13 @@ combinations which correspond directly to an open type feature are saved.
 <P>
 <A NAME="mine">*</A> Tags which are entirely in upper case have been added
 by me. They do not correspond to any known opentype tag, and are used solely
-for supporting macintoys.
+for supporting macintoys. You may adjust this conversion table from the
+<A HREF="prefs.html#Mac">preference dialog</A>.
+<P>
+PfaEdit will retain the order of features in the morx table, and the user
+may adjust it with the <A HREF="fontinfo.html#Order">Element-&gt;Font Info</A>
+command. (this is the same list as that used for GSUB table. GSUB features
+that don't correspond to mac features will be ignored).
 <P>
 <P ALIGN=Center>
 -- <A HREF="generate.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
