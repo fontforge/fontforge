@@ -2606,9 +2606,18 @@ return( false );
 return( false );
 		}
 		free(sf->chars[i]->name);
-		sf->chars[i]->name = sc->name;
 		sf->chars[i]->namechanged = true;
-		sc->name = NULL;
+		if ( strncmp(sc->name,"uni",3)==0 && sf->chars[i]->unicodeenc!=-1) {
+		    char buffer[12];
+		    if ( sf->chars[i]->unicodeenc<0x10000 )
+			sprintf( buffer,"uni%04X", sf->chars[i]->unicodeenc);
+		    else
+			sprintf( buffer,"u%04X", sf->chars[i]->unicodeenc);
+		    sf->chars[i]->name = copy(buffer);
+		} else {
+		    sf->chars[i]->name = sc->name;
+		    sc->name = NULL;
+		}
 	    break;
 	    }
 	}
