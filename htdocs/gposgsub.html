@@ -15,6 +15,25 @@ table can control things like: kerning, accent positioning, cursive joining,
 etc. The GSUB table can control things like: ligatures, arabic forms, vertical
 rotation, conversion to small caps, indic glyph rearangment, etc.
 <P>
+This page assumes basic familiarity with the abilities of the tables, for more
+information on them read, study and inwardly digest the opentype docs on:
+<UL>
+<LI><A HREF="http://partners.adobe.com/asn/developer/opentype/appendices/chapter2.html">The header for both GPOS and GSUB</A>
+<LI><A HREF="http://partners.adobe.com/asn/developer/opentype/gpos.html">The GPOS table</A>, for positioning glyphs
+<LI><A HREF="http://partners.adobe.com/asn/developer/opentype/gsub.html">The GSUB table</A>, for substituting glyphs
+<LI><A HREF="http://partners.adobe.com/asn/developer/opentype/appendices/feattags.html">The list of feature tags supported by opentype</A>
+<LI><A HREF="http://partners.adobe.com/asn/developer/opentype/appendices/scripttags.html">The list of script tags supported by opentype</A>
+<LI><A HREF="http://partners.adobe.com/asn/developer/opentype/appendices/languagetags.html">The list of language tags supported by opentype</A> (PfaEdit does not currently support languages)
+</UL>
+<P>
+The basic idea of both these tables is that each script (or language within a script) has
+a set of "features" that are available to it. A feature in turn is associated with
+a lookup which contains data for the feature. An example of a script is 'latn' for
+latin, 'arab' for arabic, 'hani' for chinese ideographs. Two examples of 
+features are 'kern' which provides kerning information between pairs of glyphs
+and 'init' which will transform one set of glyphs to another when those
+glyphs are at the beginning of a word
+<P>
 PfaEdit does not support the full range of possibilities inherent in these two
 tables.
 <H2>
