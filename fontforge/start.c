@@ -1,4 +1,4 @@
-/* Copyright (C) 2000-2004 by George Williams */
+/* Copyright (C) 2000-2005 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -505,9 +505,8 @@ int main( int argc, char **argv ) {
 /*  must be set */
 #endif
 
-    fprintf( stderr, "Copyright (c) 2000-2004 by George Williams.\n Executable based on sources from %s.\n",
+    fprintf( stderr, "Copyright (c) 2000-2005 by George Williams.\n Executable based on sources from %s.\n",
 	    source_modtime_str );
-    fprintf( stderr, "FontForge used to be named PfaEdit.\n" );
     setlocale(LC_ALL,"");
     localeinfo = *localeconv();
     coord_sep = ",";
