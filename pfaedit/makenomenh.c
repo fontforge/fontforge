@@ -373,8 +373,8 @@ static unichar_t *slurpunichars(char *filename, char *name,char *buffer) {
     break;
 	if ( *buffer=='\'' ) {
 	    ++buffer;
-	    *pt++ = charval(&buffer);
-	    while ( *buffer!='\'' && *buffer!='\0' ) ++buffer;
+	    while ( *buffer!='\'' && *buffer!='\0' )
+		*pt++ = charval(&buffer);
 	    if ( *buffer=='\'' ) ++buffer;
 	} else {
 	    *pt++ = strtol(buffer,&end,0);
