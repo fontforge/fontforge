@@ -63,14 +63,15 @@ static void inituninameannot(void) {
 #if _NO_LIBUNINAMESLIST
     _UnicodeNameAnnot = NULL;
 #elif defined(_STATIC_LIBUNINAMESLIST) || defined(NODYNAMIC)
-    _UnicodeNameAnnot = &UnicodeNameAnnot;
+    extern const struct unicode_nameannot * const * const UnicodeNameAnnot[];
+    _UnicodeNameAnnot = UnicodeNameAnnot;
 #else
     void *libuninames=NULL;
 # ifdef LIBDIR
-    libuninames = dlopen( LIBDIR "/libuninameslist.so",RTLD_LAZY);
+    libuninames = dlopen( LIBDIR "/libuninameslist.a",RTLD_LAZY);
 # endif
     if ( libuninames==NULL )
-	libuninames = dlopen( "libuninameslist.so",RTLD_LAZY);
+	libuninames = dlopen( "libuninameslist.a",RTLD_LAZY);
     if ( libuninames!=NULL )
 	_UnicodeNameAnnot = dlsym(libuninames,"UnicodeNameAnnot");
 #endif

@@ -340,7 +340,8 @@ static void inituninameannot(void) {
 #if _NO_LIBUNINAMESLIST
     _UnicodeNameAnnot = NULL;
 #elif defined(_STATIC_LIBUNINAMESLIST) || defined(NODYNAMIC)
-    _UnicodeNameAnnot = &UnicodeNameAnnot;
+    extern const struct unicode_nameannot * const * const UnicodeNameAnnot[];
+    _UnicodeNameAnnot = UnicodeNameAnnot;
 #else
     void *libuninames=NULL;
 # ifdef LIBDIR
