@@ -1371,8 +1371,8 @@ return( false );	/* A point in the middle of a horizontal/vertical line */
     if ( prev->x==sp->me.x && next->x==sp->me.x ) {
 	if ( prev->y==sp->me.y && next->y==sp->me.y )
 return( false );		/* this should be caught above */
-	if (( prev->y<=sp->me.y && next->y <= sp->me.y ) ||
-		(prev->y>=sp->me.y && next->y >=sp->me.y ))
+	if (( prev->y<=sp->me.y && sp->me.y <= next->y ) ||
+		(prev->y>=sp->me.y && sp->me.y >= next->y ))
 return( true );
     } else if (( prev->x<=sp->me.x && next->x<=sp->me.x ) ||
 	    (prev->x>=sp->me.x && next->x>=sp->me.x ))
