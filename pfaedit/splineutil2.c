@@ -439,16 +439,15 @@ return( ApproximateSplineFromPoints(from,to,mid,cnt) );
     /*  were before (might be diametrically opposed). If not then leave */
     /*  control points as they are (not a good soln, but it prevents an even */
     /*  worse) */
-    if ( v[2]*(from->nextcp.x-from->me.x) + v[5]*(from->nextcp.y-from->me.y)>=0 ) {
-	from->nextcp.x = from->me.x + v[2]/3;
-	from->nextcp.y = from->me.y + v[5]/3;
-	from->nonextcp = v[2]!=0 || v[5]!=0;
-    }
     prevcp.x = from->me.x + v[2]/3 + (v[2]+v[1])/3;
     prevcp.y = from->me.y + v[5]/3 + (v[5]+v[4])/3;
-    if ( (prevcp.x-to->me.x)*(to->prevcp.x-to->me.x) + (prevcp.y-to->me.y)*(to->prevcp.y-to->me.y)>=0 ) {
+    if ( v[2]*(from->nextcp.x-from->me.x) + v[5]*(from->nextcp.y-from->me.y)>=0 &&
+	    (prevcp.x-to->me.x)*(to->prevcp.x-to->me.x) + (prevcp.y-to->me.y)*(to->prevcp.y-to->me.y)>=0 ) {
+	from->nextcp.x = from->me.x + v[2]/3;
+	from->nextcp.y = from->me.y + v[5]/3;
+	from->nonextcp = v[2]==0 && v[5]==0;
 	to->prevcp = prevcp;
-	to->noprevcp = prevcp.x!=to->me.x || prevcp.y!=to->me.y;
+	to->noprevcp = prevcp.x==to->me.x && prevcp.y==to->me.y;
     }
     spline = SplineMake(from,to);
     if ( SplineIsLinear(spline)) {
@@ -667,7 +666,53 @@ static TPoint *SplinesFigureTPsBetween(SplinePoint *from, SplinePoint *to,
 return( tp );
 }
 
-static void SplinesRemoveBetween(SplineChar *sc, SplinePoint *from, SplinePoint *to) {
+static void FixupCurveTanPoints(SplinePoint *from,SplinePoint *to,
+        BasePoint *fncp, BasePoint *tpcp) {
+
+    /* if the control points don't match the point types then change the */
+    /*  point types. I used to try changing the point types, but the results */
+    /*  weren't good */
+    if ( from->pointtype!=pt_corner && !from->nonextcp ) {
+        fncp->x -= from->me.x; fncp->y -= from->me.y;
+        if ( fncp->x==0 && fncp->y==0 ) {
+            if ( from->pointtype == pt_tangent && from->prev!=NULL ) {
+                fncp->x = from->me.x-from->prev->from->me.x;
+                fncp->y = from->me.y-from->prev->from->me.y;
+            } else if ( from->pointtype == pt_curve && !from->noprevcp ) {
+                fncp->x = from->me.x-from->prevcp.x;
+                fncp->y = from->me.y-from->prevcp.y;
+            }
+        }
+        if ( fncp->x!=0 || fncp->y!=0 ) {
+            if ( !RealNear(atan2(fncp->y,fncp->x),
+                    atan2(from->nextcp.y-from->me.y,from->nextcp.x-from->me.x)) )
+                from->pointtype = pt_corner;
+        }
+    }
+    if ( to->pointtype!=pt_corner && !to->noprevcp ) {
+        tpcp->x -= to->me.x; tpcp->y -= to->me.y;
+        if ( tpcp->x==0 && tpcp->y==0 ) {
+            if ( to->pointtype == pt_tangent && to->next!=NULL ) {
+                tpcp->x = to->me.x-to->next->to->me.x;
+                tpcp->y = to->me.y-to->next->to->me.y;
+            } else if ( to->pointtype == pt_curve && !to->nonextcp ) {
+                tpcp->x = to->me.x-to->nextcp.x;
+                tpcp->y = to->me.y-to->nextcp.y;
+            }
+        }
+        if ( tpcp->x!=0 || tpcp->y!=0 ) {
+            if ( !RealNear(atan2(tpcp->y,tpcp->x),
+                    atan2(to->prevcp.y-to->me.y,to->prevcp.x-to->me.x)) )
+                to->pointtype = pt_corner;
+        }
+    }
+    if ( from->pointtype==pt_tangent )
+        SplineCharTangentPrevCP(from);
+    if ( to->pointtype==pt_tangent )
+        SplineCharTangentNextCP(to);
+}
+
+static void SplinesRemoveBetween(SplineChar *sc, SplinePoint *from, SplinePoint *to,int type) {
     int tot;
     TPoint *tp;
     SplinePoint *np, oldfrom;
@@ -678,7 +723,10 @@ static void SplinesRemoveBetween(SplineChar *sc, SplinePoint *from, SplinePoint 
     fncp = from->nextcp; tpcp = to->prevcp;
 
     oldfrom = *from;
-    ApproximateSplineFromPointsSlopes(from,to,tp,tot-1);
+    if ( type==1 )
+	ApproximateSplineFromPointsSlopes(from,to,tp,tot-1);
+    else
+	ApproximateSplineFromPoints(from,to,tp,tot-1);
     /* Have to do the frees after the approximation because the approx */
     /*  uses the splines to determine slopes */
     for ( sp = oldfrom.next; ; ) {
@@ -689,11 +737,12 @@ static void SplinesRemoveBetween(SplineChar *sc, SplinePoint *from, SplinePoint 
 	sp = np->next;
 	SplinePointMDFree(sc,np);
     }
-    /*FixupCurveTanPoints(from,to,&fncp,&tpcp);*/
+    if ( type==0 )
+	FixupCurveTanPoints(from,to,&fncp,&tpcp);
     free(tp);
 }
 
-static SplinePointList *SplinePointListMerge(SplineChar *sc, SplinePointList *spl) {
+static SplinePointList *SplinePointListMerge(SplineChar *sc, SplinePointList *spl,int type) {
     Spline *spline, *first;
     SplinePoint *nextp, *curp;
     int all;
@@ -749,18 +798,18 @@ return( NULL );			/* Some one else should free it and reorder the spline set lis
 	for ( nextp=curp->next->to; nextp->selected; nextp = nextp->next->to );
 	/* we don't need to check for the end of the splineset here because */
 	/*  we know that spl->last is not selected */
-	SplinesRemoveBetween(sc,curp->prev->from,nextp);
+	SplinesRemoveBetween(sc,curp->prev->from,nextp,type);
 	curp = nextp;
     }
 return( spl );
 }
 
-void SplineCharMerge(SplineChar *sc,SplineSet **head) {
+void SplineCharMerge(SplineChar *sc,SplineSet **head,int type) {
     SplineSet *spl, *prev=NULL, *next;
 
     for ( spl = *head; spl!=NULL; spl = next ) {
 	next = spl->next;
-	if ( SplinePointListMerge(sc,spl)==NULL ) {
+	if ( SplinePointListMerge(sc,spl,type)==NULL ) {
 	    if ( prev==NULL )
 		*head = next;
 	    else

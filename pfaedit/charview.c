@@ -1129,6 +1129,9 @@ static void CVClear(GWindow,GMenuItem *mi, GEvent *);
 static void CVMouseMove(CharView *cv, GEvent *event );
 static void CVHScroll(CharView *cv,struct sbevent *sb);
 static void CVVScroll(CharView *cv,struct sbevent *sb);
+static void CVElide(GWindow gw,struct gmenuitem *mi,GEvent *e);
+static void CVMerge(GWindow gw,struct gmenuitem *mi,GEvent *e);
+
 
 void CVChar(CharView *cv, GEvent *event ) {
 
@@ -1144,6 +1147,12 @@ void CVChar(CharView *cv, GEvent *event ) {
 
     CVPaletteActivate(cv);
     CVToolsSetCursor(cv,TrueCharState(event));
+    if ( event->u.chr.keysym=='M' ||event->u.chr.keysym=='m' ) {
+	if ( (event->u.chr.state&ksm_meta) && (event->u.chr.state&ksm_control))
+	    CVElide(cv->gw,NULL,NULL);
+	else
+	    CVMerge(cv->gw,NULL,NULL);
+    }
     if ( event->u.chr.keysym == GK_Shift_L || event->u.chr.keysym == GK_Shift_R ) {
 	GEvent e;
 	e.type = et_mousemove;
@@ -2321,7 +2330,7 @@ static int cv_e_h(GWindow gw, GEvent *event) {
       case et_expose:
 	InfoExpose(cv,gw,event);
       break;
-      case et_char:
+      case et_char: case et_charup:
 	CVChar(cv,event);
       break;
       case et_resize:
@@ -2888,7 +2897,19 @@ static void CVMerge(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     if ( !CVAnySel(cv,&anyp,NULL,NULL) || !anyp)
 return;
     CVPreserveState(cv);
-    SplineCharMerge(cv->sc,cv->heads[cv->drawmode]);
+    SplineCharMerge(cv->sc,cv->heads[cv->drawmode],true);
+    SCClearSelPt(cv->sc);
+    CVCharChangedUpdate(cv);
+}
+
+static void CVElide(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    int anyp = 0;
+
+    if ( !CVAnySel(cv,&anyp,NULL,NULL) || !anyp)
+return;
+    CVPreserveState(cv);
+    SplineCharMerge(cv->sc,cv->heads[cv->drawmode],false);
     SCClearSelPt(cv->sc);
     CVCharChangedUpdate(cv);
 }
@@ -2960,6 +2981,16 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	switch ( mi->mid ) {
 	  case MID_Merge:
 	    mi->ti.disabled = !anypoints;
+	    free(mi->ti.text);
+	    if ( e==NULL || !(e->u.mouse.state&ksm_shift) ) {
+		mi->ti.text = u_copy(GStringGetResource(_STR_Merge,NULL));
+		mi->short_mask = ksm_control;
+		mi->invoke = CVMerge;
+	    } else {
+		mi->ti.text = u_copy(GStringGetResource(_STR_Elide,NULL));
+		mi->short_mask = (ksm_control|ksm_meta);
+		mi->invoke = CVElide;
+	    }
 	  break;
 	  case MID_Cut: /*case MID_Copy:*/ case MID_Clear:
 	    /* If nothing is selected, copy copies everything */
@@ -4136,7 +4167,7 @@ CharView *CharViewCreate(SplineChar *sc, FontView *fv) {
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_ititle;
-    wattrs.event_masks = ~(1<<et_charup);
+    wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
     wattrs.icon_title = CVMakeTitles(cv,ubuf);
     wattrs.window_title = ubuf;

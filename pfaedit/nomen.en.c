@@ -122,6 +122,7 @@ static char str_CopyFgToBg[] = "Copy Fg To Bg";
 static unichar_t mnemonic_CopyFgToBg[] = 'F';
 static char str_Merge[] = "Merge";
 static unichar_t mnemonic_Merge[] = 'M';
+static char str_Elide = "Elide";
 static char str_Unlinkref[] = "Unlink Reference";
 static unichar_t mnemonic_Unlinkref[] = 'U';
 static char str_RemoveUndoes[] = "Remove Undoes";
