@@ -1533,10 +1533,10 @@ static void MVMenuFindIntersections(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void MVSimplify( MetricsView *mv,int type ) {
     int i;
-    double err=.75;
+    double err = (mv->fv->sf->ascent+mv->fv->sf->descent)/1000.;
 
     if ( type==1 ) {
-	type = SimplifyDlg(&err);
+	type = SimplifyDlg(mv->fv->sf,&err);
 	if ( type==-1 )
 return;
     }

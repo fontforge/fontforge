@@ -31,7 +31,7 @@
 #define CID_Slopes	1001
 #define CID_Error	1002
 
-static double olderr = .75;
+static double olderr_rat = 1/1000.;
 static int oldextrema = false;
 static int oldslopes = false;
 
@@ -40,6 +40,7 @@ typedef struct simplifyinfo {
     double err;
     int done;
     int cancelled;
+    int em_size;
 } Simple;
 
 static int Sim_OK(GGadget *g, GEvent *e) {
@@ -49,7 +50,7 @@ static int Sim_OK(GGadget *g, GEvent *e) {
 	sim->err = GetRealR(GGadgetGetWindow(g),CID_Error,_STR_ErrorLimit,&badparse);
 	if ( badparse )
 return( true );
-	olderr = sim->err;
+	olderr_rat = sim->err/sim->em_size;
 	sim->flags = 0;
 	if ( GGadgetIsChecked(GWidgetGetControl(GGadgetGetWindow(g),CID_Extrema)) )
 	    sim->flags = sf_ignoreextremum;
@@ -83,7 +84,7 @@ return( false );
 return( true );
 }
 
-int SimplifyDlg(double *err) {
+int SimplifyDlg(SplineFont *sf, double *err) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
@@ -93,6 +94,7 @@ int SimplifyDlg(double *err) {
     char buffer[12];
 
     memset(&sim,0,sizeof(sim));
+    sim.em_size = sf->ascent+sf->descent;
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
@@ -139,7 +141,7 @@ int SimplifyDlg(double *err) {
     gcd[2].gd.flags = gg_enabled|gg_visible;
     gcd[2].creator = GLabelCreate;
 
-    sprintf( buffer, "%g", olderr );
+    sprintf( buffer, "%.3g", olderr_rat*sim.em_size );
     label[3].text = (unichar_t *) buffer;
     label[3].text_is_1byte = true;
     gcd[3].gd.label = &label[3];

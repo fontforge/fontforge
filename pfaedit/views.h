@@ -579,7 +579,7 @@ extern void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BV
 extern void BitmapDlg(FontView *fv,SplineChar *sc, int isavail);
 extern int BitmapControl(FontView *fv,int32 *sizes,int isavail);
 extern void _FVSimplify(FontView *fv,int type, double err);
-extern int SimplifyDlg(double *err);
+extern int SimplifyDlg(SplineFont *sf,double *err);
 extern void CVReviewHints(CharView *cv);
 extern void CVCreateHint(CharView *cv,int ishstem);
 extern void SCClearRounds(SplineChar *sc);

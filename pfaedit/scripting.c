@@ -1793,7 +1793,7 @@ static void bRemoveOverlap(Context *c) {
 }
 
 static void bSimplify(Context *c) {
-    double err = .75;
+    double err = (c->curfv->sf->ascent+c->curfv->sf->descent)/1000.;
     int type = 0;
 
     if ( c->a.argc==3 ) {

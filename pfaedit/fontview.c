@@ -1716,14 +1716,12 @@ void _FVSimplify(FontView *fv,int type, double err) {
 }
 
 static void FVSimplify(FontView *fv,int type) {
-    double err = .75;
+    double err = (fv->sf->ascent+fv->sf->descent)/1000.;
 
     if ( type==1 ) {
-	static double local_err = .75;
-	type = SimplifyDlg(&local_err);
+	type = SimplifyDlg(fv->sf,&err);
 	if ( type==-1 )
 return;
-	err = local_err;
     }
     _FVSimplify(fv,type,err);
 }

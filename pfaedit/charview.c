@@ -4648,14 +4648,15 @@ static void CVMenuAddExtrema(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void CVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     CVPreserveState(cv);
-    *cv->heads[cv->drawmode] = SplineCharSimplify(cv->sc,*cv->heads[cv->drawmode],sf_normal,.75);
+    *cv->heads[cv->drawmode] = SplineCharSimplify(cv->sc,*cv->heads[cv->drawmode],sf_normal,
+	    (cv->sc->parent->ascent+cv->sc->parent->descent)/1000.);
     CVCharChangedUpdate(cv);
 }
 
 static void CVMenuSimplifyMore(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     double err;
-    int type = SimplifyDlg(&err);
+    int type = SimplifyDlg(cv->sc->parent,&err);
     CVPreserveState(cv);
     *cv->heads[cv->drawmode] = SplineCharSimplify(cv->sc,*cv->heads[cv->drawmode],type,err);
     CVCharChangedUpdate(cv);
