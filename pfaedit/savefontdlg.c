@@ -664,11 +664,12 @@ static short *ParseWernerSFDFile(char *wernerfilename,SplineFont *sf,int *max,ch
     SplineFont *_sf;
     short *mapping;
     FILE *file;
-    char buffer[200];
+    char buffer[200], *bpt;
     char *end, *pt;
     char *orig;
     struct remap *map;
     char **names;
+    int loop;
 
     file = fopen(wernerfilename,"r");
     if ( file==NULL ) {
@@ -699,12 +700,37 @@ return( NULL );
 	    free(mapping);
 return( NULL );
 	}
-	if ( buffer[0]=='#' || buffer[0]=='\0' || isspace(buffer[0]))
+	pt=buffer+strlen(buffer)-1;
+	bpt = buffer;
+	if (( *pt!='\n' && *pt!='\r') || (pt>buffer && pt[-1]=='\\') ||
+		(pt>buffer+1 && pt[-2]=='\\' && isspace(pt[-1])) ) {
+	    bpt = copy("");
+	    forever {
+		loop = false;
+		if (( *pt!='\n' && *pt!='\r') || (pt>buffer && pt[-1]=='\\') ||
+			(pt>buffer+1 && pt[-2]=='\\' && isspace(pt[-1])) )
+		    loop = true;
+		if ( *pt=='\n' || *pt=='\r') {
+		    if ( pt[-1]=='\\' )
+			pt[-1] = '\0';
+		    else if ( pt[-2]=='\\' )
+			pt[-2] = '\0';
+		}
+		bpt = grealloc(bpt,strlen(bpt)+strlen(buffer)+10);
+		strcat(bpt,buffer);
+		if ( !loop )
+	    break;
+		if ( fgets(buffer,sizeof(buffer),file)==NULL )
+	    break;
+		pt=buffer+strlen(buffer)-1;
+	    }
+	}
+	if ( bpt[0]=='#' || bpt[0]=='\0' || isspace(bpt[0]))
     continue;
-	for ( pt = buffer; !isspace(*pt); ++pt );
+	for ( pt = bpt; !isspace(*pt); ++pt );
 	if ( *pt=='\0' || *pt=='\r' || *pt=='\n' )
     continue;
-	names[subfilecnt] = copyn(buffer,pt-buffer);
+	names[subfilecnt] = copyn(bpt,pt-bpt);
 	if ( subfilecnt>*max ) *max = subfilecnt;
 	end = pt;
 	while ( *end!='\0' ) {
@@ -740,6 +766,8 @@ return( NULL );
 	    }
 	}
 	++subfilecnt;
+	if ( bpt!=buffer )
+	    free(bpt);
     }
     names[subfilecnt]=NULL;
     *_names = names;
