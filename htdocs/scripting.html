@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 8-May-2004 -->
+  <!-- AP: Last modified: 7-Jun-2004 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
 </HEAD>
 <BODY>
@@ -302,6 +302,9 @@ to (some) already existing ones)
     field
   <LI>
     <CODE>$fullname </CODE>the name contained in the postscript FullName field
+  <LI>
+    <CODE>$fondname </CODE>if set this name indicates what FOND the current font
+    should be put in under Generate Mac Family.
   <LI>
     <CODE>$weight </CODE>the name contained in the postscript Weight field
   <LI>
@@ -1058,6 +1061,10 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     Sets various postscript names associated with a font. If a name is omitted
     (or is the empty string) it will not be changed.
   <DT>
+    SetFondName(fondname)
+  <DD>
+    Sets the FOND name of the font.
+  <DT>
     SetItalicAngle(angle[,denom])
   <DD>
     Sets the postscript italic angle field appropriately. If denom is specified
@@ -1303,14 +1310,45 @@ ApplySubstitution("*","*","vrt2")
   <DT>
     ExpandStroke(width)<BR>
     ExpandStroke(width,line cap, line join)<BR>
-    ExpandStroke(width,line cap, line join,0,Kanou's removeinternal /external
-    flag)<BR>
+    ExpandStroke(width,line cap, line join,0,removeinternal /external flag)<BR>
     ExpandStroke(width,calligraphic-angle,height-numerator,height-denom)
   <DD>
     In the first format a line cap of "butt" and line join of "round" are
     implied.<BR>
     A value of 1 for remove internal/external will remove the internal contour,
-    a value of 2 will remove the external contour.
+    a value of 2 will remove the external contour.<BR>
+    The first three calls simulate the PostScript "stroke" command, the final
+    call simulates a caligraphic pen.
+    <DL>
+      <DT>
+	Width
+      <DD>
+	In the PostScript "stoke" command the width is the distance between the two
+	generated curves. To be more precise, at ever point on the original curve,
+	a point will be added to each of the new curves at width/2 units as measured
+	on a vector normal to the direction of the original curve at that point.<BR>
+	In a caligraphic pen, the width is the width of the pen used to draw the
+	curve.
+      <DT>
+	Line-cap
+      <DD>
+	Can have one of three values: 0=&gt; butt, 1=&gt;round, 2=&gt;square
+      <DT>
+	Line-join
+      <DD>
+	Can have one of three values: 0=&gt;miter, 1=&gt;round, 2=&gt;bevel
+      <DT>
+	caligraphic-angle
+      <DD>
+	the (fixed) angle at which the pen is held.
+      <DT>
+	height-numerator/denominator
+      <DD>
+	These two values specify a ratio between the height and the width<BR>
+	height = numerator * width / denominator<BR>
+	(the scripting language only deals in integers, so when fractions are needed
+	this kludge is used)
+    </DL>
   <DT>
     Outline(width)
   <DD>
