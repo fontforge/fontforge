@@ -2475,7 +2475,49 @@ static void bAddHint(Context *c) {
 		ish, start, width);
 }
 
-static void bReplaceCounterMasks(Context *c) {
+static void bClearCharCounterMasks(Context *c) {
+    SplineChar *sc;
+
+    if ( c->a.argc!=1 )
+	error( c, "Wrong number of arguments");
+    sc = GetOneSelChar(c);
+    free(sc->countermasks);
+    sc->countermasks = NULL;
+    sc->countermask_cnt = 0;
+}
+
+static void bSetCharCounterMask(Context *c) {
+    SplineChar *sc;
+    int i;
+    HintMask *cm;
+
+    if ( c->a.argc<3 )
+	error( c, "Wrong number of arguments");
+    for ( i=1; i<c->a.argc; ++i )
+	if ( c->a.vals[i].type!=v_int )
+	    error( c, "Bad argument type" );
+	else if ( c->a.vals[i].u.ival<0 || c->a.vals[i].u.ival>=HntMax )
+	    error( c, "Bad argument value (must be between [0,96) )" );
+    sc = GetOneSelChar(c);
+    if ( c->a.vals[1].u.ival>=sc->countermask_cnt ) {
+	if ( sc->countermask_cnt==0 ) {
+	    sc->countermasks = gcalloc(c->a.vals[1].u.ival+10,sizeof(HintMask));
+	    sc->countermask_cnt = c->a.vals[1].u.ival+1;
+	} else {
+	    sc->countermasks = grealloc(sc->countermasks,
+		    (c->a.vals[1].u.ival+1)*sizeof(HintMask));
+	    memset(sc->countermasks+sc->countermask_cnt,0,
+		    (c->a.vals[1].u.ival+1-sc->countermask_cnt)*sizeof(HintMask));
+	    sc->countermask_cnt = c->a.vals[1].u.ival+1;
+	}
+    }
+    cm = &sc->countermasks[c->a.vals[1].u.ival];
+    memset(cm,0,sizeof(HintMask));
+    for ( i=2; i<c->a.argc; ++i )
+	(*cm)[c->a.vals[i].u.ival>>3] |= (0x80>>(c->a.vals[i].u.ival&7));
+}
+
+static void bReplaceCharCounterMasks(Context *c) {
     HintMask *cm;
     SplineChar *sc;
     int i,j,cnt;
@@ -3607,7 +3649,9 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "AutoInstr", bAutoInstr },
     { "ClearHints", bClearHints },
     { "AddHint", bAddHint },
-    { "ReplaceCounterMasks", bReplaceCounterMasks },
+    { "ClearCharCounterMasks", bClearCharCounterMasks },
+    { "SetCharCounterMask", bSetCharCounterMask },
+    { "ReplaceCharCounterMasks", bReplaceCharCounterMasks },
     { "ClearPrivateEntry", bClearPrivateEntry },
     { "ChangePrivateEntry", bChangePrivateEntry },
     { "GetPrivateEntry", bGetPrivateEntry },
