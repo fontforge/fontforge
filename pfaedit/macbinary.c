@@ -2553,12 +2553,23 @@ static SplineFont *HasResourceFork(char *filename,int flags,SplineFont *into) {
     FSRef ref;
     FSSpec spec;
     short res, err;
+    int iret;
     long cnt;
     SplineFont *ret;
     FILE *temp;
     char *buf;
+    char *tempfn=filename, *pt;
 
-    if ( FSPathMakeRef( (uint8 *) filename,&ref,NULL)!=noErr )
+    if ( strchr(filename,'(')!=NULL ) {
+	tempfn = copy(filename);
+	pt = strchr(tempfn,'(');
+	*pt = '\0';
+    }
+
+    iret = FSPathMakeRef( (uint8 *) tempfn,&ref,NULL);
+    if ( tempfn!=filename )
+	free(tempfn);
+    if ( iret!=noErr )
 return( NULL );
     if ( FSGetCatalogInfo(&ref,0,NULL,NULL,&spec,NULL)!=noErr )
 return( NULL );
@@ -2736,13 +2747,13 @@ return( NULL );
     if ( spt==NULL ) spt = filename;
     pt = strrchr(spt,'.');
     if ( pt!=NULL && (pt[1]=='b' || pt[1]=='B') && (pt[2]=='i' || pt[2]=='I') &&
-	    (pt[3]=='n' || pt[3]=='N') && pt[4]=='\0' ) {
+	    (pt[3]=='n' || pt[3]=='N') && (pt[4]=='\0' || pt[4]=='(') ) {
 	if ( (sf = IsResourceInBinary(f,filename,flags,into))) {
 	    fclose(f);
 return( sf );
 	}
     } else if ( pt!=NULL && (pt[1]=='h' || pt[1]=='H') && (pt[2]=='q' || pt[2]=='Q') &&
-	    (pt[3]=='x' || pt[3]=='X') && pt[4]=='\0' ) {
+	    (pt[3]=='x' || pt[3]=='X') && (pt[4]=='\0' || pt[4]=='(')) {
 	if ( (sf = IsResourceInHex(f,filename,flags,into))) {
 	    fclose(f);
 return( sf );
