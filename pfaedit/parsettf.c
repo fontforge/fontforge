@@ -3709,7 +3709,7 @@ static char *FindUnusedNameTTF(SplineFont *sf,char *myname) {
     strcpy(buffer,myname);
     for ( i=0; i<10000; ++i ) {
 	sprintf( buffer+len,".%d", i);
-	for ( j=0; j<sf->charcnt; ++j ) if ( sf->chars[j]!=NULL )
+	for ( j=0; j<sf->charcnt; ++j ) if ( sf->chars[j]!=NULL && sf->chars[j]->name!=NULL )
 	    if ( strcmp(buffer,sf->chars[j]->name)==0 )
 	break;
 	if ( j==sf->charcnt )
@@ -3812,6 +3812,7 @@ static void UseGivenEncoding(SplineFont *sf,struct ttfinfo *info) {
     BDFFont *bdf;
     BDFChar **obc;
     RefChar *rf;
+    int newcharcnt;
 
     for ( i=0; i<oldcnt; ++i ) if ( oldchars[i]!=NULL ) {
 	if ( oldchars[i]->enc>=256 ) {
@@ -3833,8 +3834,8 @@ static void UseGivenEncoding(SplineFont *sf,struct ttfinfo *info) {
 	epos = (max>=unicode4_size) ? max+1 : unicode4_size;
     else
 	epos = istwobyte?65536:256;
-    sf->charcnt = epos+extras;
-    newchars = gcalloc(sf->charcnt,sizeof(SplineChar *));
+    newcharcnt = epos+extras;
+    newchars = gcalloc(newcharcnt,sizeof(SplineChar *));
     for ( i=0; i<oldcnt; ++i ) if ( oldchars[i]!=NULL ) {
 	if ( oldchars[i]->enc!=0 || i==0 )
 	    newchars[oldchars[i]->enc] = oldchars[i];
@@ -3844,7 +3845,7 @@ static void UseGivenEncoding(SplineFont *sf,struct ttfinfo *info) {
 	}
     }
 
-    for ( i=0; i<sf->charcnt; ++i ) if ( newchars[i]!=NULL ) {
+    for ( i=0; i<newcharcnt; ++i ) if ( newchars[i]!=NULL ) {
 	for ( rf = newchars[i]->refs; rf!=NULL; rf = rf->next ) {
 	    rf->local_enc = rf->sc->enc;
 	    rf->unicode_enc = rf->sc->unicodeenc;
@@ -3855,7 +3856,7 @@ static void UseGivenEncoding(SplineFont *sf,struct ttfinfo *info) {
     for ( dup=info->dups; dup!=NULL; dup=dup->prev )
 	if ( newchars[dup->enc]==NULL )
 	    newchars[dup->enc] = SFMakeDupRef(sf,dup->enc,dup);
-    sf->chars = newchars;
+    sf->chars = newchars; sf->charcnt = newcharcnt;
     free(oldchars);
 
     sf->encoding_name = info->encoding_name==-2? em_none : info->encoding_name;
