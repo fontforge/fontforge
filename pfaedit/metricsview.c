@@ -29,6 +29,7 @@
 #include <string.h>
 #include <ustring.h>
 #include <utype.h>
+#include <math.h>
 
 static void MVExpose(MetricsView *mv, GWindow pixmap, GEvent *event) {
     GRect old, *clip, r, old2;
@@ -425,7 +426,16 @@ return( true );
 	    GDrawBeep(NULL);
 	else if ( val!=sc->width-bb.maxx ) {
 	    SCPreserveWidth(sc);
-	    sc->width = bb.maxx+val;
+	    sc->width = rint(bb.maxx+val);
+	    /* Width is an integer. Adjust the lbearing so that the rbearing */
+	    /*  remains what was just typed in */
+	    if ( sc->width!=bb.maxx+val ) {
+		double transform[6];
+		transform[0] = transform[3] = 1.0;
+		transform[1] = transform[2] = transform[5] = 0;
+		transform[4] = sc->width-val-bb.maxx;
+		FVTrans(mv->fv,sc,transform,NULL);
+	    }
 	    SCCharChangedUpdate(sc,mv->fv);
 	}
     } else if ( e->u.control.subtype == et_textfocuschanged &&
@@ -1493,12 +1503,12 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     mv->mbh = gsize.height;
 
     gd.pos.height = GDrawPointsToPixels(gw,_GScrollBar_Width);
-    gd.pos.y = pos.height-gd.pos.height;
+    gd.pos.y = pos.height/*-gd.pos.height*/;
     gd.pos.x = 0; gd.pos.width = pos.width;
     gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
     mv->hsb = GScrollBarCreate(gw,&gd,mv);
     GGadgetGetSize(mv->hsb,&gsize);
-    mv->sbh = gsize.height;
+    mv->sbh = /*gsize.height*/0;
 
     memset(&rq,0,sizeof(rq));
     rq.family_name = helv;

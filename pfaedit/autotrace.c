@@ -27,7 +27,8 @@
 #include "pfaedit.h"
 #include <math.h>
 #include <ustring.h>
-#include "utype.h"
+#include <utype.h>
+#include <gwidget.h>
 #include "sd.h"
 #include "views.h"
 
@@ -216,10 +217,10 @@ void CVAutoTrace(CharView *cv) {
     char *args;
 
     if ( cv->sc->backimages==NULL ) {
-	GDrawError("Nothing to trace");
+	GWidgetPostNoticeR(_STR_NothingToTrace,_STR_NothingToTrace);
 return;
     } else if ( FindAutoTraceName()==NULL ) {
-	GDrawError("Can't find autotrace program (set AUTOTRACE environment variable)");
+	GWidgetPostNoticeR(_STR_NoAutotrace,_STR_NoAutotraceProg);
 return;
     }
 
@@ -232,7 +233,7 @@ void FVAutoTrace(FontView *fv) {
     int i;
 
     if ( FindAutoTraceName()==NULL ) {
-	GDrawError("Can't find autotrace program (set AUTOTRACE environment variable)");
+	GWidgetPostNoticeR(_STR_NoAutotrace,_STR_NoAutotraceProg);
 return;
     }
 

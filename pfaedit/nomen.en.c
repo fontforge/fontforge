@@ -23,6 +23,7 @@ static char str_Fileexistspost[] = ", exists. Replace it?";
 static char str_Createdir[] = "Create directory...";
 static char str_Dirname[] = "Directory name?";
 static char str_Couldntcreatedir[] = "Couldn't create directory";
+/* Menus ... */
 static char str_File[] = "File";
 static unichar_t mnemonic_File[] = 'F';
 static char str_Edit[] = "Edit";
@@ -165,11 +166,11 @@ static char str_Addvhint[] = "Add VHint";
 static unichar_t mnemonic_Addvhint[] = 's';
 static char str_Adddhint[] = "Add DHint";
 static unichar_t mnemonic_Adddhint[] = 't';
-static char str_Createhhint[] = "Create HHint";
+static char str_Createhhint[] = "Create HHint...";
 static unichar_t mnemonic_Createhhint[] = 'r';
-static char str_Createvhint[] = "Create VHint";
+static char str_Createvhint[] = "Create VHint...";
 static unichar_t mnemonic_Createvhint[] = 'e';
-static char str_Reviewhints[] = "Review Hints";
+static char str_Reviewhints[] = "Review Hints...";
 static unichar_t mnemonic_Reviewhints[] = 'R';
 static char str_Export[] = "Export...";
 static unichar_t mnemonic_Export[] = 't';
@@ -241,6 +242,7 @@ static char str_Rotate180[] = "Rotate 180°";
 static unichar_t mnemonic_Rotate180[] = '1';
 static char str_Skew[] = "Skew...";
 static unichar_t mnemonic_Skew[] = 'S';
+    /* Font Info dlg */
 static char str_Custom[] = "Custom";
 static char str_Isolatin1[] = "ISO 8859-1  (Latin1)";
 static char str_Isolatin0[] = "ISO 8859-15  (Latin0)";
@@ -305,6 +307,7 @@ static char str_Numchars[] = "Number of Characters:";
 static unichar_t mnemonic_Numchars[] = 'N';
 static char str_Guess[] = "Guess";
 static unichar_t mnemonic_Guess[] = 'G';
+    /* Generate fonts */
 static char str_Format[] = "Format:";
 static char str_Savefailedtitle[] = "Save Failed";
 static char str_Outputafm[] = "Output AFM";
@@ -313,9 +316,11 @@ static char str_Nooutlinefont[] = "No Outline Font";
 static char str_Nobitmapfonts[] = "No Bitmap Fonts";
 static char str_Afmfailedtitle[] = "Afm Save Failed";
 static char str_Pfmfailedtitle[] = "Pfm Save Failed";
+    /* Goto character ... */
 static char str_Badnumberin[] = "Bad Number in ";
 static char str_Enternameofchar[] = "Enter the name of a character in the font";
 static char str_Couldntfindchar[] = "Could not find the character: ";
+    /* Font has changed dlg */
 static char str_Dontsave[] = "Don't Save";
 static unichar_t mnemonic_Dontsave[] = 'D';
 static char str_Fontchange[] = "Font changed";
@@ -324,20 +329,24 @@ static char str_Fontchangepre[] = "Font ";
 static char str_Fontchangemid[] = " in file ";
 static char str_Fontchangepost[] = " has been changed.\012Do you want to save it?";
 static char str_Fontchangerevertpost[] = " has been changed.\012Reverting the file will lose those changes.\012Is that what you want?";
+    /* General messages from fontview.c */
 static char str_Revert[] = "Revert";
 static unichar_t mnemonic_Revert[] = 'R';
 static char str_Manywin[] = "Many Windows";
 static char str_Toomany[] = "This involves opening more than 10 windows.\012Is that really what you want?";
+    /* Messages from accented characters */
 static char str_Buildingaccented[] = "Building accented letters";
 static char str_Replacearing[] = "Replace Å";
 static char str_Areyousurearing[] = "Are you sure you want to replace Å?\012The ring will not join to the A.";
 static char str_Yes[] = "Yes";
 static unichar_t mnemonic_Yes[] = 'N';
 static char str_No[] = "No";
+    /* Choices from bitmap editing */
 static char str_Rectangle[] = "Rectangle";
 static char str_FilledRectangle[] = "Filled Rectangle";
 static char str_Elipse[] = "Elipse";
 static char str_FilledElipse[] = "Filled Elipse";
+    /* Get Info ... */
 static char str_Multiple[] = "Multiple";
 /* "There is already a character with this Unicode encoding,\n(named %.10s at local encoding %d)\nIs that what you want?" */
 static char str_Alreadycharpre[] = "There is already a character with this Unicode encoding,\012(named ";
@@ -357,10 +366,12 @@ static unichar_t mnemonic_Done[] = 'D';
 static char str_Ligpop[] = "If this character is a ligature,\012then enter the names of the characters\012into which it decomposes";
 static char str_Show[] = "Show";
 static unichar_t mnemonic_Show[] = 'S';
+    /* Import */
 static char str_Duppixelsize[] = "Duplicate pixelsize";
 /* "The font database already contains a bitmap\nfont with this pixelsize (%d)\nDo you want to overwrite it?" */
 static char str_Duppixelsizepre[] = "The font database already contains a bitmap\012font with this pixelsize (";
 static char str_Duppixelsizepost[] = ")\012Do you want to overwrite it?";
+    /* Private Info */
 static char str_Bluequest[] = "This will change both BlueValues and OtherBlues.\012Do you want to continue?";
 static char str_Hstemquest[] = "This will change both StdHW and StemSnapH.\012Do you want to continue?";
 static char str_Vstemquest[] = "This will change both StdVW and StemSnapV.\012Do you want to continue?";
@@ -371,6 +382,51 @@ static char str_Codequest[] = "Expected code\012Procede anyway?";
 static char str_Badtype[] = "Bad type";
 static char str_Delete[] = "Delete";
 static unichar_t mnemonic_Delete[] = 'D';
+    /* Prefs */
 static char str_Default[] = "Default";
+    /* Hints */
+static char *str_base = "Base:";
+static unichar_t mnemonic_base = 'B';
+static char *str_size = "Size:";
+static unichar_t mnemonic_size = 'S';
+static char *str_HStem = "HStem";
+static unichar_t mnemonic_HStem = 'H';
+static char *str_VStem = "VStem";
+static unichar_t mnemonic_VStem = 'V';
+static char *str_Create = "Create";
+static unichar_t mnemonic_Create = 'e';
+static char *str_PrevArrow = "< Prev";
+static unichar_t mnemonic_PrevArrow = 'P';
+static char *str_NextArrow = "Next >";
+static unichar_t mnemonic_NextArrow = 'N';
+    /* Auto Width/Kern */
+static char *str_EnterTwoCharRange = "Enter two character ranges";
+static char *str_ToBeAdjusted = "to be adjusted.";
+static char *str_CharsLeft = "Chars on Left";
+static char *str_CharsRight = "Chars on Right";
+static char *str_All = "All";
+static unichar_t str_stdCharRange[] = { 'A','-','Z','a','-','z','0','-','9',  '\0' };
+static char *str_Selected = "Selected";
+static char *str_Spacing = "Spacing";
+static char *str_TotalKerns = "Total Kerns:";
+static char *str_Threshold = "Threshold:";
+static char *str_NoCharsSelected = "No characters selected.";
+    /* Auto Trace */
+static char *str_NothingToTrace = "Nothing to trace";
+static char *str_NoAutotrace = "Can't find autotrace";
+static char *str_NoAutotraceProg = "Can't find autotrace program (set AUTOTRACE environment variable)";
+    /* Bitmap dlg */
+static char *str_AllChars = "All Characters";
+static char *str_SelChars = "Selected Characters";
+static char *str_CurChar = "Current Character";
+static char *str_BadRegenSize = "Attempt to regenerate a pixel size that has not been created: ";
+static char *str_PixelSizes = "Pixel Sizes:";
+static char *str_listPixelSizes = "The list of current pixel bitmap sizes";
+static char *str_RemovingSize = " Removing a size will delete it.";
+static char *str_AddingSize = " Adding a size will create it.";
+static char *str_AddingSizeScale = " Adding a size will create it by scaling.";
+static char *str_SpecifyRegenSizes = "Specify bitmap sizes to be regenerated";
+static char *str_PointSizes75 = "Point sizes on a 75 dpi screen";
+static char *str_PointSizes100 = "Point sizes on a 100 dpi screen";
 
 static int num_buttonsize = 55;

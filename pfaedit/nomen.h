@@ -7,6 +7,7 @@
 
 
 /* "File, %s, exists. Replace it?" */
+/* Menus ... */
 #define _STR_File	14
 #define _STR_Edit	15
 #define _STR_Point	16
@@ -225,6 +226,39 @@
 #define _STR_Badtype	224
 #define _STR_Delete	225
 #define _STR_Default	226
+#define _STR_Base	227
+#define _STR_Size	228
+#define _STR_HStem	229
+#define _STR_VStem	230
+#define _STR_Create	231
+#define _STR_PrevArrow	232
+#define _STR_NextArrow	233
+#define _STR_EnterTwoCharRange	234
+#define _STR_ToBeAdjusted	235
+#define _STR_CharsLeft	236
+#define _STR_CharsRight	237
+#define _STR_All	238
+#define _STR_StdCharRange	239
+#define _STR_Selected	240
+#define _STR_Spacing	241
+#define _STR_TotalKerns	242
+#define _STR_Threshold	243
+#define _STR_NoCharsSelected	244
+#define _STR_NothingToTrace	245
+#define _STR_NoAutotrace	246
+#define _STR_NoAutotraceProg	247
+#define _STR_AllChars	248
+#define _STR_SelChars	249
+#define _STR_CurChar	250
+#define _STR_BadRegenSize	251
+#define _STR_PixelSizes	252
+#define _STR_ListPixelSizes	253
+#define _STR_RemovingSize	254
+#define _STR_AddingSize	255
+#define _STR_AddingSizeScale	256
+#define _STR_SpecifyRegenSizes	257
+#define _STR_PointSizes75	258
+#define _STR_PointSizes100	259
 
 
 #endif

@@ -40,9 +40,9 @@ typedef struct createbitmapdata {
 
 enum { bd_all, bd_selected, bd_current };
 static GTextInfo which[] = {
-    { (unichar_t *) "All Characters", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "Selected Characters", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "Current Character", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) _STR_AllChars, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) _STR_SelChars, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) _STR_CurChar, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }};
 static int lastwhich = bd_selected;
 
@@ -207,12 +207,12 @@ static int FVRegenBitmaps(CreateBitmapData *bd,double *sizes) {
     for ( i=0; sizes[i]!=0; ++i ) {
 	for ( bdf = sf->bitmaps; bdf!=NULL && bdf->pixelsize!=sizes[i]; bdf=bdf->next );
 	if ( bdf==NULL ) {
-	    unichar_t *temp;
-	    char buffer[100];
-	    sprintf(buffer,"Attempt to regenerate a pixel size that has not been created (%d)", (int) sizes[i]);
-	    temp=uc_copy(buffer);
+	    unichar_t temp[100];
+	    char buffer[10];
+	    u_strcpy(temp,GStringGetResource(_STR_BadRegenSize,NULL));
+	    sprintf(buffer,"%d", (int) sizes[i]);
+	    uc_strcat(temp,buffer);
 	    GWidgetPostNotice(temp,temp);
-	    free(temp);
 return( false );
 	}
     }
@@ -262,7 +262,7 @@ static double *ParseList(GWindow gw, int cid,int *err, int final) {
 	if ( *end!=' ' && *end!=',' && *end!='\0' ) {
 	    free(sizes);
 	    if ( final )
-		Protest("Pixel List");
+		ProtestR(_STR_PixelSizes);
 	    *err = true;
 return( NULL );
 	}
@@ -376,8 +376,6 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     GGadgetCreateData gcd[13];
     GTextInfo label[13];
     CreateBitmapData bd;
-    static unichar_t bitmapsavail[] = { 'B','i','t','m','a','p','s',' ','A','v','a','i','l','a','b','l','e','.', '.', '.',  '\0' };
-    static unichar_t regenbitmaps[] = { 'R','e','g','e','r','a','t','e', ' ', 'B','i','t','m','a','p','s','.', '.', '.',  '\0' };
     int i,j,y;
     double *sizes;
     BDFFont *bdf;
@@ -407,7 +405,7 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.window_title = isavail ? bitmapsavail : regenbitmaps;
+    wattrs.window_title = GStringGetResource(isavail ? _STR_Bitmapsavail : _STR_Regenbitmaps,NULL );
     wattrs.is_dlg = true;
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,190);
@@ -418,33 +416,33 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     memset(&gcd,0,sizeof(gcd));
 
     if ( isavail ) {
-	label[0].text = (unichar_t *) "The list of current pixel bitmap sizes";
-	label[0].text_is_1byte = true;
+	label[0].text = (unichar_t *) _STR_ListPixelSizes;
+	label[0].text_in_resource = true;
 	gcd[0].gd.label = &label[0];
 	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5; 
 	gcd[0].gd.flags = gg_enabled|gg_visible|gg_cb_on;
 	gcd[0].creator = GLabelCreate;
 
-	label[1].text = (unichar_t *) " Removing a size will delete it.";
-	label[1].text_is_1byte = true;
+	label[1].text = (unichar_t *) _STR_RemovingSize;
+	label[1].text_in_resource = true;
 	gcd[1].gd.label = &label[1];
 	gcd[1].gd.pos.x = 5; gcd[1].gd.pos.y = 5+13;
 	gcd[1].gd.flags = gg_enabled|gg_visible;
 	gcd[1].creator = GLabelCreate;
 
 	if ( fv->sf->onlybitmaps && fv->sf->bitmaps!=NULL )
-	    label[2].text = (unichar_t *) " Adding a size will create it by scaling.";
+	    label[2].text = (unichar_t *) _STR_AddingSizeScale;
 	else
-	    label[2].text = (unichar_t *) " Adding a size will create it.";
-	label[2].text_is_1byte = true;
+	    label[2].text = (unichar_t *) _STR_AddingSize;
+	label[2].text_in_resource = true;
 	gcd[2].gd.label = &label[2];
 	gcd[2].gd.pos.x = 5; gcd[2].gd.pos.y = 5+26;
 	gcd[2].gd.flags = gg_enabled|gg_visible;
 	gcd[2].creator = GLabelCreate;
 	j = 3; y = 5+39+3;
     } else {
-	label[0].text = (unichar_t *) "Specify bitmap sizes to be regenerated";
-	label[0].text_is_1byte = true;
+	label[0].text = (unichar_t *) _STR_SpecifyRegenSizes;
+	label[0].text_in_resource = true;
 	gcd[0].gd.label = &label[0];
 	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5; 
 	gcd[0].gd.flags = gg_enabled|gg_visible|gg_cb_on;
@@ -464,8 +462,8 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
 	j=2; y = 5+13+28;
     }
 
-    label[j].text = (unichar_t *) "Point sizes on a 75 dpi screen";
-    label[j].text_is_1byte = true;
+    label[j].text = (unichar_t *) _STR_PointSizes75;
+    label[j].text_in_resource = true;
     gcd[j].gd.label = &label[j];
     gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = y;
     gcd[j].gd.flags = gg_enabled|gg_visible|gg_cb_on;
@@ -482,8 +480,8 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     gcd[j++].creator = GTextFieldCreate;
     y += 26;
 
-    label[j].text = (unichar_t *) "Point sizes on a 100 dpi screen";
-    label[j].text_is_1byte = true;
+    label[j].text = (unichar_t *) _STR_PointSizes100;
+    label[j].text_in_resource = true;
     gcd[j].gd.label = &label[j];
     gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = y;
     gcd[j].gd.flags = gg_enabled|gg_visible|gg_cb_on;
@@ -500,8 +498,8 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     gcd[j++].creator = GTextFieldCreate;
     y += 26;
 
-    label[j].text = (unichar_t *) "Pixel sizes";
-    label[j].text_is_1byte = true;
+    label[j].text = (unichar_t *) _STR_PixelSizes;
+    label[j].text_in_resource = true;
     gcd[j].gd.label = &label[j];
     gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = y;
     gcd[j].gd.flags = gg_enabled|gg_visible|gg_cb_on;

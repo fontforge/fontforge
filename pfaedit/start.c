@@ -138,6 +138,7 @@ int main( int argc, char **argv ) {
     fprintf( stderr, "Copyright \251 2000,2001 by George Williams.\n Executable based on sources from %s.\n",
 	    link_time_str );
     setlocale(LC_ALL,"");
+    GResourceAddResourceString(NULL,argv[0]);
     LoadPrefs();
 
     for ( i=1; i<argc; ++i ) {
@@ -159,7 +160,7 @@ int main( int argc, char **argv ) {
     initadobeenc();
     initrand();
 
-    GDrawCreateDisplays(display,"pfaedit");
+    GDrawCreateDisplays(display,argv[0]);
 
     /* the splash screen used not to have a title bar (wam_nodecor) */
     /*  but I found I needed to know how much the window manager moved */

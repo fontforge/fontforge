@@ -440,6 +440,7 @@ return( (GDrawGetEH(m->menubar->g.base))(m->menubar->g.base,event));
 	    }
 	}
     } else if ( event->type == et_mouseup && !m->initial_press ) {
+	int dismissed = false;
 #if 0
  printf("\nActivate menu\n");
 #endif
@@ -450,14 +451,16 @@ return( (GDrawGetEH(m->menubar->g.base))(m->menubar->g.base,event));
 	    if ( !( l==0 && m->offtop!=0 ) &&
 		    !( l==m->lcnt-1 && m->offtop+m->lcnt<m->mcnt ) &&
 		    !m->mi[i].ti.disabled && !m->mi[i].ti.line ) {
-		GMenuHideAll(m);
 		if ( m->mi[i].ti.checkable )
 		    m->mi[i].ti.checked = !m->mi[i].ti.checked;
+		GMenuDismissAll(m);
+		dismissed = true;
 		if ( m->mi[i].invoke!=NULL )
 		    (m->mi[i].invoke)(m->owner,&m->mi[i],event);
 	    }
 	}
-	GMenuDismissAll(m);
+	if ( !dismissed )
+	    GMenuDismissAll(m);
     } else if ( event->type == et_mouseup ) {
 	m->initial_press = false;
 	GMenuSetPressed(m,false);

@@ -1292,7 +1292,7 @@ static StemInfo *ELFindStems(EIList *el, int major, DStemInfo **dstems ) {
 		pendings = StemPending(pendings,apt,e,ahv,major,&temp);
 		stems = temp;
 	    } else if ( dstems!=NULL &&
-		    apt->spline->islinear && e->spline->islinear &&
+		    SplineIsLinear(apt->spline) && SplineIsLinear(e->spline) &&
 		    AreNearlyParallel(apt,e)) {
 		*dstems = AddDiagStem(*dstems,apt,e);
 	    }
@@ -1895,6 +1895,52 @@ static StemInfo *RefHintsMerge(StemInfo *into, StemInfo *rh, double mul, double 
 return( into );
 }
 
+static DStemInfo *RefDHintsMerge(DStemInfo *into, DStemInfo *rh, double xmul, double xoffset,
+	double ymul, double yoffset) {
+    DStemInfo *new;
+    BasePoint temp;
+    DStemInfo *prev, *n;
+
+    for ( ; rh!=NULL; rh=rh->next ) {
+	new = galloc(sizeof(DStemInfo));
+	*new = *rh;
+	new->leftedgetop.x = xmul*new->leftedgetop.x + xoffset;
+	new->rightedgetop.x = xmul*new->rightedgetop.x + xoffset;
+	new->leftedgebottom.x = xmul*new->leftedgebottom.x + xoffset;
+	new->rightedgebottom.x = xmul*new->rightedgebottom.x + xoffset;
+	new->leftedgetop.y = ymul*new->leftedgetop.y + yoffset;
+	new->rightedgetop.y = ymul*new->rightedgetop.y + yoffset;
+	new->leftedgebottom.y = ymul*new->leftedgebottom.y + yoffset;
+	new->rightedgebottom.y = ymul*new->rightedgebottom.y + yoffset;
+	if ( xmul<0 ) {
+	    temp = new->leftedgetop;
+	    new->leftedgetop = new->rightedgetop;
+	    new->rightedgetop = temp;
+	    temp = new->leftedgebottom;
+	    new->leftedgebottom = new->rightedgebottom;
+	    new->rightedgebottom = temp;
+	}
+	if ( ymul<0 ) {
+	    temp = new->leftedgetop;
+	    new->leftedgetop = new->leftedgebottom;
+	    new->leftedgebottom = temp;
+	    temp = new->rightedgetop;
+	    new->rightedgetop = new->rightedgebottom;
+	    new->rightedgebottom = temp;
+	}
+	if ( into==NULL || new->leftedgetop.x<into->leftedgetop.x ) {
+	    new->next = into;
+	    into = new;
+	} else {
+	    for ( prev=into, n=prev->next; n!=NULL && new->leftedgetop.x>n->leftedgetop.x;
+		    prev = n, n = n->next );
+	    new->next = n;
+	    prev->next = new;
+	}
+    }
+return( into );
+}
+
 static void AutoHintRefs(SplineChar *sc,int removeOverlaps) {
     RefChar *ref;
 
@@ -1907,6 +1953,7 @@ static void AutoHintRefs(SplineChar *sc,int removeOverlaps) {
 	    if ( ref->sc->unicodeenc!=-1 && isalnum(ref->sc->unicodeenc) ) {
 		sc->hstem = RefHintsMerge(sc->hstem,ref->sc->hstem,ref->transform[3], ref->transform[5], ref->transform[0], ref->transform[4]);
 		sc->vstem = RefHintsMerge(sc->vstem,ref->sc->vstem,ref->transform[0], ref->transform[4], ref->transform[3], ref->transform[5]);
+		sc->dstem = RefDHintsMerge(sc->dstem,ref->sc->dstem,ref->transform[0], ref->transform[4], ref->transform[3], ref->transform[5]);
 	    }
 	}
     }
@@ -1916,6 +1963,7 @@ static void AutoHintRefs(SplineChar *sc,int removeOverlaps) {
 		(ref->sc->unicodeenc==-1 || !isalnum(ref->sc->unicodeenc)) ) {
 	    sc->hstem = RefHintsMerge(sc->hstem,ref->sc->hstem,ref->transform[3], ref->transform[5], ref->transform[0], ref->transform[4]);
 	    sc->vstem = RefHintsMerge(sc->vstem,ref->sc->vstem,ref->transform[0], ref->transform[4], ref->transform[3], ref->transform[5]);
+	    sc->dstem = RefDHintsMerge(sc->dstem,ref->sc->dstem,ref->transform[0], ref->transform[4], ref->transform[3], ref->transform[5]);
 	}
     }
 }

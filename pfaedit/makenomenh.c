@@ -181,6 +181,7 @@ return( *bpt );
 	    val = 0;
 	    while ( isdigit(*bpt) && bpt-start<3 )
 		val = (val<<3) | (*bpt++-'0');
+	    --bpt;
 	}
     }
     *buffer = (char *) bpt+1;

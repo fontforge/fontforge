@@ -32,6 +32,7 @@
 
 #include <sys/types.h>
 #include <dirent.h>
+#include <locale.h>
 
 int adjustwidth = true;
 int adjustlbearing = true;
@@ -110,17 +111,27 @@ return( prefs );
 }
 
 static void CheckLang(void) {
-    const char *lang = getenv("LANG");
+    /*const char *loc = setlocale(LC_MESSAGES,NULL);*/ /* This always returns "C" for me, even when it shouldn't be */
+    const char *loc = getenv("LC_ALL");
     char buffer[100], full[1024];
 
-    if ( lang==NULL )
+    if ( loc==NULL ) loc = getenv("LC_MESSAGES");
+    if ( loc==NULL ) loc = getenv("LANG");
+
+    if ( loc==NULL )
 return;
 
     strcpy(buffer,"pfaedit.");
-    strcat(buffer,lang);
+    strcat(buffer,loc);
     strcat(buffer,".ui");
     GFileBuildName(GResourceProgramDir,buffer,full,sizeof(full));
-    if ( !GFileExists(full) && strlen(lang)>2 ) {
+    /* Look for language_territory */
+    if ( !GFileExists(full) && strlen(loc)>5 ) {
+	strcpy(buffer+13,".ui");
+	GFileBuildName(GResourceProgramDir,buffer,full,sizeof(full));
+    }
+    /* Look for language */
+    if ( !GFileExists(full) && strlen(loc)>2 ) {
 	strcpy(buffer+10,".ui");
 	GFileBuildName(GResourceProgramDir,buffer,full,sizeof(full));
     }
@@ -339,6 +350,7 @@ static void BuildLangStruct(GGadgetCreateData *gcd) {
     char buffer[1025];
     GTextInfo *ti;
 
+ printf( "%s\n", GResourceProgramDir );
     bindir = opendir(GResourceProgramDir);
     if ( bindir!=NULL ) {
 	while ( (ent = readdir(bindir))!=NULL && tot<MAX_CHOICES ) {

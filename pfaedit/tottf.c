@@ -1683,17 +1683,22 @@ return( pt );
     if ( stemwidth<0 ) stemwidth = -stemwidth;
 
     /* which of the two top points is most heavily positioned? */
-    if ( touched[corners[0]]==3 ||
-	    touched[corners[1]]==0 || touched[corners[1]]==2 ||
-	    (touched[corners[0]]==1 && touched[corners[1]]!=3)) {
+    if ( (touched[corners[0]]&1) + (touched[corners[2]]&1) >=
+	    (touched[corners[1]]&1) + (touched[corners[3]]&1) ) {
 	/* Holding the left edge fixed, position the right */
 	stemindex = getcvtval(gi,stemwidth);
 	pt = pushpoint(pt,corners[0]);
-	*pt++ = 16;		/* SRP0 */
+	if ( touched[corners[0]]&1 )
+	    *pt++ = 16;		/* SRP0 */
+	else
+	    *pt++ = 0x2f;	/* MDAP[1round] */
 	pt = pushpointstem(pt,corners[1],stemindex);
 	*pt++ = 0xed;		/* MIRP[01101] */
 	pt = pushpoint(pt,corners[2]);
-	*pt++ = 16;		/* SRP0 */
+	if ( touched[corners[2]]&1 )
+	    *pt++ = 16;		/* SRP0 */
+	else
+	    *pt++ = 0x2f;	/* MDAP[1round] */
 	pt = pushpointstem(pt,corners[3],stemwidth);
 	*pt++ = 0xed;		/* MIRP[01101] */
 	touched[corners[1]] |= 1;
@@ -1702,11 +1707,17 @@ return( pt );
 	/* Holding the right edge fixed, position the left */
 	stemindex = getcvtval(gi,-stemwidth);
 	pt = pushpoint(pt,corners[1]);
-	*pt++ = 16;		/* SRP0 */
+	if ( touched[corners[1]]&1 )
+	    *pt++ = 16;		/* SRP0 */
+	else
+	    *pt++ = 0x2f;	/* MDAP[1round] */
 	pt = pushpointstem(pt,corners[0],stemindex);
 	*pt++ = 0xed;		/* MIRP[01101] */
 	pt = pushpoint(pt,corners[3]);
-	*pt++ = 16;		/* SRP0 */
+	if ( touched[corners[3]]&1 )
+	    *pt++ = 16;		/* SRP0 */
+	else
+	    *pt++ = 0x2f;	/* MDAP[1round] */
 	pt = pushpointstem(pt,corners[2],stemwidth);
 	*pt++ = 0xed;		/* MIRP[01101] */
 	touched[corners[0]] |= 1;

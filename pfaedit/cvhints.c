@@ -59,7 +59,7 @@ return( false );
 static int DiagCheck(SplinePoint *sp1, SplinePoint *sp2, Spline *s1, Spline *s2,
 	SplinePoint **sp3, SplinePoint **sp4 ) {
 
-    if ( s1==NULL || s2==NULL || !s1->islinear || !s2->islinear )
+    if ( s1==NULL || s2==NULL || !SplineIsLinear(s1) || !SplineIsLinear(s2) )
 return( false );
     *sp3 = s1->from==sp1?s1->to:s1->from;
     *sp4 = s2->from==sp2?s2->to:s2->from;
@@ -171,7 +171,7 @@ static int RH_TextChanged(GGadget *g, GEvent *e) {
 	if ( hd->active!=NULL ) {
 	    int cid = GGadgetGetCid(g);
 	    int err=0;
-	    int val = GetInt(hd->gw,cid,cid==CID_Base?"Base":"Width",&err);
+	    int val = GetIntR(hd->gw,cid,cid==CID_Base?_STR_Base:_STR_Size,&err);
 	    if ( err )
 return( true );
 	    if ( cid==CID_Base )
@@ -312,7 +312,6 @@ void CVReviewHints(CharView *cv) {
     GGadgetCreateData gcd[15];
     GTextInfo label[15];
     static ReviewHintData hd;
-    static unichar_t title[] = { 'R','e','v','i','e','w',' ','H','i','n','t','s','.','.','.',  '\0' };
 
     hd.done = false;
     hd.cv = cv;
@@ -324,7 +323,7 @@ void CVReviewHints(CharView *cv) {
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
-	wattrs.window_title = title;
+	wattrs.window_title = GStringGetResource(_STR_Reviewhints,NULL);
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width =GDrawPointsToPixels(NULL,170);
@@ -334,8 +333,8 @@ void CVReviewHints(CharView *cv) {
 	memset(&label,0,sizeof(label));
 	memset(&gcd,0,sizeof(gcd));
 
-	label[0].text = (unichar_t *) "Base:";
-	label[0].text_is_1byte = true;
+	label[0].text = (unichar_t *) _STR_Base;
+	label[0].text_in_resource = true;
 	gcd[0].gd.label = &label[0];
 	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 17+5+6; 
 	gcd[0].gd.flags = gg_enabled|gg_visible;
@@ -347,8 +346,8 @@ void CVReviewHints(CharView *cv) {
 	gcd[1].gd.handle_controlevent = RH_TextChanged;
 	gcd[1].creator = GTextFieldCreate;
 
-	label[2].text = (unichar_t *) "Size:";
-	label[2].text_is_1byte = true;
+	label[2].text = (unichar_t *) _STR_Size;
+	label[2].text_in_resource = true;
 	gcd[2].gd.label = &label[2];
 	gcd[2].gd.pos.x = 90; gcd[2].gd.pos.y = 17+5+6; 
 	gcd[2].gd.flags = gg_enabled|gg_visible;
@@ -380,8 +379,8 @@ void CVReviewHints(CharView *cv) {
 	gcd[5].gd.handle_controlevent = RH_Cancel;
 	gcd[5].creator = GButtonCreate;
 
-	label[6].text = (unichar_t *) "HStem";
-	label[6].text_is_1byte = true;
+	label[6].text = (unichar_t *) _STR_HStem;
+	label[6].text_in_resource = true;
 	gcd[6].gd.label = &label[6];
 	gcd[6].gd.pos.x = 3; gcd[6].gd.pos.y = 2; 
 	gcd[6].gd.flags = gg_enabled|gg_visible|gg_cb_on;
@@ -389,8 +388,8 @@ void CVReviewHints(CharView *cv) {
 	gcd[6].gd.handle_controlevent = RH_HVStem;
 	gcd[6].creator = GRadioCreate;
 
-	label[7].text = (unichar_t *) "VStem";
-	label[7].text_is_1byte = true;
+	label[7].text = (unichar_t *) _STR_VStem;
+	label[7].text_in_resource = true;
 	gcd[7].gd.label = &label[7];
 	gcd[7].gd.pos.x = 60; gcd[7].gd.pos.y = 2; 
 	gcd[7].gd.flags = gg_enabled|gg_visible;
@@ -406,8 +405,8 @@ void CVReviewHints(CharView *cv) {
 	gcd[9].gd.pos.x = 20; gcd[9].gd.pos.y = 17+14+33;
 	gcd[9].gd.pos.width = -1; gcd[9].gd.pos.height = 0;
 	gcd[9].gd.flags = gg_visible | gg_enabled;
-	label[9].text = (unichar_t *) "Create";
-	label[9].text_is_1byte = true;
+	label[9].text = (unichar_t *) _STR_Create;
+	label[9].text_in_resource = true;
 	gcd[9].gd.mnemonic = 'e';
 	gcd[9].gd.label = &label[9];
 	gcd[9].gd.cid = CID_Add;
@@ -417,8 +416,8 @@ void CVReviewHints(CharView *cv) {
 	gcd[10].gd.pos.x = 170-GIntGetResource(_NUM_Buttonsize)-20; gcd[10].gd.pos.y = 17+14+33;
 	gcd[10].gd.pos.width = -1; gcd[10].gd.pos.height = 0;
 	gcd[10].gd.flags = gg_visible | gg_enabled;
-	label[10].text = (unichar_t *) "Remove";
-	label[10].text_is_1byte = true;
+	label[10].text = (unichar_t *) _STR_Remove;
+	label[10].text_in_resource = true;
 	gcd[10].gd.label = &label[10];
 	gcd[10].gd.mnemonic = 'R';
 	gcd[10].gd.cid = CID_Remove;
@@ -428,8 +427,8 @@ void CVReviewHints(CharView *cv) {
 	gcd[11].gd.pos.x = 20; gcd[11].gd.pos.y = 17+37+14+30;
 	gcd[11].gd.pos.width = -1; gcd[11].gd.pos.height = 0;
 	gcd[11].gd.flags = gg_visible | gg_enabled;
-	label[11].text = (unichar_t *) "< Prev";
-	label[11].text_is_1byte = true;
+	label[11].text = (unichar_t *) _STR_PrevArrow;
+	label[11].text_in_resource = true;
 	gcd[11].gd.mnemonic = 'P';
 	gcd[11].gd.label = &label[11];
 	gcd[11].gd.cid = CID_Prev;
@@ -439,8 +438,8 @@ void CVReviewHints(CharView *cv) {
 	gcd[12].gd.pos.x = 170-GIntGetResource(_NUM_Buttonsize)-20; gcd[12].gd.pos.y = 17+37+14+30;
 	gcd[12].gd.pos.width = -1; gcd[12].gd.pos.height = 0;
 	gcd[12].gd.flags = gg_visible | gg_enabled;
-	label[12].text = (unichar_t *) "Next >";
-	label[12].text_is_1byte = true;
+	label[12].text = (unichar_t *) _STR_NextArrow;
+	label[12].text_in_resource = true;
 	gcd[12].gd.label = &label[12];
 	gcd[12].gd.mnemonic = 'N';
 	gcd[12].gd.cid = CID_Next;
@@ -503,8 +502,8 @@ static int CH_OK(GGadget *g, GEvent *e) {
 	int err = 0;
 	StemInfo *h;
 
-	base = GetInt(hd->gw,CID_Base,"Base",&err);
-	width = GetInt(hd->gw,CID_Width,"Size",&err);
+	base = GetIntR(hd->gw,CID_Base,_STR_Base,&err);
+	width = GetIntR(hd->gw,CID_Width,_STR_Size,&err);
 	if ( err )
 return(true);
 	h = calloc(1,sizeof(StemInfo));
@@ -578,8 +577,8 @@ void CVCreateHint(CharView *cv,int ishstem) {
 	memset(&label,0,sizeof(label));
 	memset(&gcd,0,sizeof(gcd));
 
-	label[0].text = (unichar_t *) "Base:";
-	label[0].text_is_1byte = true;
+	label[0].text = (unichar_t *) _STR_Base;
+	label[0].text_in_resource = true;
 	gcd[0].gd.label = &label[0];
 	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 17+5+6; 
 	gcd[0].gd.flags = gg_enabled|gg_visible;
@@ -594,8 +593,8 @@ void CVCreateHint(CharView *cv,int ishstem) {
 	gcd[1].gd.cid = CID_Base;
 	gcd[1].creator = GTextFieldCreate;
 
-	label[2].text = (unichar_t *) "Size:";
-	label[2].text_is_1byte = true;
+	label[2].text = (unichar_t *) _STR_Size;
+	label[2].text_in_resource = true;
 	gcd[2].gd.label = &label[2];
 	gcd[2].gd.pos.x = 90; gcd[2].gd.pos.y = 17+5+6; 
 	gcd[2].gd.flags = gg_enabled|gg_visible;

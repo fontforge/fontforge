@@ -104,7 +104,7 @@ return( false );
     t2 = (spline->from->nextcp.x-spline->from->me.x)/(spline->to->me.x-spline->from->me.x);
     if ( t2<0 || t2>1.0 )
 return( false );
-return( DoubleNear(t1,t2));
+return( DoubleApprox(t1,t2));
 }
 
 int SplineIsLinear(Spline *spline) {
@@ -692,6 +692,8 @@ static void SplinePointListSimplify(SplinePointList *spl) {
     if ( spl->first->next == NULL )
 return;
     for ( sp = spl->first->next->to; sp!=spl->last && sp->next!=NULL; sp = next ) {
+	SplineIsLinear(sp->prev);		/* First see if we can turn it*/
+				/* into a line, then try to merge two splines */
 	next = sp->next->to;
 	SplinesRemoveMidMaybe(sp);
     }

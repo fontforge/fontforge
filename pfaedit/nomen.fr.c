@@ -11,12 +11,12 @@ static char str_Open[] = "Ouvrir";
 static unichar_t mnemonic_Open[] = 'O';
 static char str_Save[] = "Enregistrer";
 static unichar_t mnemonic_Save[] = 'E';
-static char str_Filter[] = "Filter";
+static char str_Filter[] = "Filtre";
 static unichar_t mnemonic_Filter[] = 'F';
 static char str_New[] = "Nouveau";
 static unichar_t mnemonic_New[] = 'N';
 static char str_Replace[] = "Remplacer";
-static char str_Fileexists[] = "File Exists";
+static char str_Fileexists[] = "Le fichier existe";
 /* "File, %s, exists. Replace it?" */
 static char str_Fileexistspre[] = "Le fichier, ";
 static char str_Fileexistspost[] = ", existe. Le remplacez?";
@@ -229,5 +229,6 @@ static char str_Bigger[] = "Plus Grand";
 static unichar_t mnemonic_Bigger[] = 'G';
 static char str_Smaller[] = "Plus Petite";
 static unichar_t mnemonic_Smaller[] = 'P';
+static char str_Dontsave[] = "Ne Pas Enregistrer";
 
 static int num_buttonsize = 70;

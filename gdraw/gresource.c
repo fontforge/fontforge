@@ -153,15 +153,17 @@ static void GResourceSetProg(char *prog) {
     if ( prog!=NULL ) {
 	gfree(GResourceProgramName);
 	if (( pt=strrchr(prog,'/'))!=NULL )
-	    prog = pt+1;
-	GResourceProgramName = copy(prog);
+	    ++pt;
+	else
+	    pt = prog;
+	GResourceProgramName = copy(pt);
     } else if ( GResourceProgramName==NULL )
 	GResourceProgramName = copy("gdraw");
     else
 return;
 
     gfree(GResourceProgramDir);
-    GResourceProgramDir = _GFile_find_program_dir(GResourceProgramName);
+    GResourceProgramDir = _GFile_find_program_dir(prog);
     gfree(GResourceFullProgram);
     GResourceFullProgram = copy(
 	    GFileBuildName(GResourceProgramDir,GResourceProgramName,filename,sizeof(filename)));

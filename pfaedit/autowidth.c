@@ -979,7 +979,6 @@ return;
 #define C_Typed		3
 #define C_Std		4
 #define C_Text		4
-static unichar_t stdtext[] = { 'A','-','Z','a','-','z','0','-','9',  '\0' };
 
 static struct charone *MakeCharOne(SplineChar *sc) {
     struct charone *ch = gcalloc(1,sizeof(struct charone));
@@ -1001,7 +1000,7 @@ static struct charone **BuildCharList(SplineFont *sf,GWindow gw, int base, int *
 	str = _GGadgetGetTitle(GWidgetGetControl(gw,base+C_Text));
     } else {
 	parse = true;
-	str = stdtext;
+	str = GStringGetResource(_STR_StdCharRange,NULL);
     }
 
     for ( doit=0; doit<2; ++doit ) {
@@ -1062,10 +1061,10 @@ static int AW_OK(GGadget *g, GEvent *e) {
 	int err = false;
 	int tot;
 
-	wi->spacing = GetDouble(gw,CID_Spacing, "Spacing",&err);
+	wi->spacing = GetDoubleR(gw,CID_Spacing, _STR_Spacing,&err);
 	if ( wi->autokern ) {
-	    wi->threshold = GetInt(gw,CID_Threshold, "Threshold", &err);
-	    tot = GetInt(gw,CID_Total, "Total Kerns", &err);
+	    wi->threshold = GetIntR(gw,CID_Threshold, _STR_Threshold, &err);
+	    tot = GetIntR(gw,CID_Total, _STR_TotalKerns, &err);
 	    if ( tot<0 ) tot = 0;
 	}
 	if ( err )
@@ -1075,7 +1074,7 @@ return( true );
 	if ( wi->lcnt==0 || wi->rcnt==0 ) {
 	    FreeCharList(wi->left);
 	    FreeCharList(wi->right);
-	    GDrawError("No characters selected");
+	    GWidgetPostNoticeR(_STR_NoCharsSelected,_STR_NoCharsSelected);
 return( true );
 	}
 	wi->done = true;
@@ -1125,10 +1124,10 @@ return( true );
 
 #define SelHeight	51
 static int MakeSelGadgets(GGadgetCreateData *gcd, GTextInfo *label, int i, int base,
-	char *lab, int y, int pixel_width, GWindow gw, int toomany ) {
+	int labr, int y, int pixel_width, GWindow gw, int toomany ) {
 
-    label[i].text = (unichar_t *) lab;
-    label[i].text_is_1byte = true;
+    label[i].text = (unichar_t *) labr;
+    label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.pos.x = 12; gcd[i].gd.pos.y = y; 
     gcd[i].gd.flags = gg_visible | gg_enabled;
@@ -1139,23 +1138,24 @@ static int MakeSelGadgets(GGadgetCreateData *gcd, GTextInfo *label, int i, int b
     gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels;
     gcd[i++].creator = GGroupCreate;
 
-    label[i].text = (unichar_t *) "All";
-    label[i].text_is_1byte = true;
+    label[i].text = (unichar_t *) _STR_All;
+    label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.pos.x = 12; gcd[i].gd.pos.y = y+11; 
     gcd[i].gd.flags = (toomany&1) ? gg_visible : (gg_visible | gg_enabled);
     gcd[i].gd.cid = base+C_All;
     gcd[i++].creator = GRadioCreate;
 
-    label[i].text = stdtext;
+    label[i].text = (unichar_t *) _STR_StdCharRange;
+    label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.pos.x = 75; gcd[i].gd.pos.y = y+11; 
     gcd[i].gd.flags = gg_visible | gg_enabled | gg_cb_on;
     gcd[i].gd.cid = base+C_Std;
     gcd[i++].creator = GRadioCreate;
 
-    label[i].text = (unichar_t *) "Selected";
-    label[i].text_is_1byte = true;
+    label[i].text = (unichar_t *) _STR_Selected;
+    label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.pos.x = 12; gcd[i].gd.pos.y = y+32; 
     gcd[i].gd.flags = (toomany&2) ? gg_visible : (gg_visible | gg_enabled);
@@ -1167,7 +1167,8 @@ static int MakeSelGadgets(GGadgetCreateData *gcd, GTextInfo *label, int i, int b
     gcd[i].gd.cid = base+C_Typed;
     gcd[i++].creator = GRadioCreate;
 
-    label[i].text = stdtext;
+    label[i].text = (unichar_t *) _STR_StdCharRange;
+    label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.pos.x = 98; gcd[i].gd.pos.y = y+31; 
     gcd[i].gd.flags = gg_visible | gg_enabled;
@@ -1206,8 +1207,6 @@ static void AutoWKDlg(SplineFont *sf,int autokern) {
     GRect pos;
     GGadgetCreateData gcd[28];
     GTextInfo label[28];
-    static unichar_t aktit[] = { 'A','u','t','o',' ','K','e','r','n', '\0' };
-    static unichar_t awtit[] = { 'A','u','t','o',' ','W','i','d','t','h', '\0' };
     int i, y;
     char buffer[30], buffer2[30];
     int selcnt = SFCountSel(sf);
@@ -1224,7 +1223,7 @@ static void AutoWKDlg(SplineFont *sf,int autokern) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.window_title = autokern?aktit:awtit;
+    wattrs.window_title = GStringGetResource(autokern?_STR_Autokern:_STR_Autowidth,NULL);
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,200);
     pos.height = GDrawPointsToPixels(NULL,autokern?273:215);
@@ -1235,28 +1234,28 @@ static void AutoWKDlg(SplineFont *sf,int autokern) {
 
     i = 0;
 
-    label[i].text = (unichar_t *) "Enter two character ranges";
-    label[i].text_is_1byte = true;
+    label[i].text = (unichar_t *) _STR_EnterTwoCharRange;
+    label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 6;
     gcd[i].gd.flags = gg_visible | gg_enabled;
     gcd[i++].creator = GLabelCreate;
 
-    label[i].text = (unichar_t *) "to be adjusted.";
-    label[i].text_is_1byte = true;
+    label[i].text = (unichar_t *) _STR_ToBeAdjusted;
+    label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 18;
     gcd[i].gd.flags = gg_visible | gg_enabled;
     gcd[i++].creator = GLabelCreate;
 
-    i = MakeSelGadgets(gcd, label, i, CID_LeftBase, "Chars on Left", 33,
+    i = MakeSelGadgets(gcd, label, i, CID_LeftBase, _STR_CharsLeft, 33,
 	    pos.width, gw, toomany);
-    i = MakeSelGadgets(gcd, label, i, CID_RightBase, "Chars on Right", 33+SelHeight+9,
+    i = MakeSelGadgets(gcd, label, i, CID_RightBase, _STR_CharsRight, 33+SelHeight+9,
 	    pos.width, gw, toomany);
     y = 32+2*(SelHeight+9);
 
-    label[i].text = (unichar_t *) "Spacing:";
-    label[i].text_is_1byte = true;
+    label[i].text = (unichar_t *) _STR_Spacing;
+    label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = y+7;
     gcd[i].gd.flags = gg_visible | gg_enabled;
@@ -1275,8 +1274,8 @@ static void AutoWKDlg(SplineFont *sf,int autokern) {
     if ( autokern ) {
 	y -= 4;
 
-	label[i].text = (unichar_t *) "Total Kerns:";
-	label[i].text_is_1byte = true;
+	label[i].text = (unichar_t *) _STR_TotalKerns;
+	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = y+7;
 	gcd[i].gd.flags = gg_visible | gg_enabled;
@@ -1291,8 +1290,8 @@ static void AutoWKDlg(SplineFont *sf,int autokern) {
 	gcd[i++].creator = GTextFieldCreate;
 	y += 28;
 
-	label[i].text = (unichar_t *) "Threshold:";
-	label[i].text_is_1byte = true;
+	label[i].text = (unichar_t *) _STR_Threshold;
+	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = y+7;
 	gcd[i].gd.flags = gg_visible | gg_enabled;
