@@ -2138,6 +2138,8 @@ static int SFAddScriptIndex(SplineFont *sf,uint32 *scripts,int scnt) {
     }
 
     if ( sf->cidmaster ) sf = sf->cidmaster;
+    if ( sf->script_lang==NULL )	/* It's an old sfd file */
+	sf->script_lang = gcalloc(1,sizeof(struct script_record *));
     for ( i=0; sf->script_lang[i]!=NULL; ++i ) {
 	sr = sf->script_lang[i];
 	for ( j=0; sr[j].script!=0 && j<scnt &&
