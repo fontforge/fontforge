@@ -282,7 +282,9 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding) {
 	fprintf( file, "CHARSET_REGISTRY \"FontSpecific\"\n" );
     else if ( font->encoding_name<=em_iso8859_15 )
 	fprintf( file, "CHARSET_REGISTRY \"ISO8859\"\n" );
-    else if ( font->encoding_name==em_unicode || font->encoding_name==em_unicode4 )
+    else if ( font->encoding_name==em_unicode ||
+	    font->encoding_name==em_unicode4 ||
+	    (font->encoding_name>=em_unicodeplanes && font->encoding_name<=em_unicodeplanesmax))
 	fprintf( file, "CHARSET_REGISTRY \"ISO10646\"\n" );
     else
 	fprintf( file, "CHARSET_REGISTRY \"%s\"\n", encoding );

@@ -413,6 +413,11 @@ static int haschar(SplineFont *sf,int ch) {
 	    (ch<0x100 && sf->encoding_name==em_iso8859_1))
 return( ch<sf->charcnt && sf->chars[ch]!=NULL &&
 	(sf->chars[ch]->splines!=NULL || sf->chars[ch]->refs!=NULL || sf->chars[ch]->widthset) );
+    else if ( sf->encoding_name>=em_unicodeplanes && sf->encoding_name<=em_unicodeplanesmax ) {
+	i = ch - ((sf->encoding_name-em_unicodeplanes)<<16);
+return( i>=0 && i<sf->charcnt && sf->chars[i]!=NULL &&
+	(sf->chars[i]->splines!=NULL || sf->chars[i]->refs!=NULL || sf->chars[i]->widthset) );
+    }
 
     for ( i=sf->charcnt-1; i>=0; --i ) if ( sf->chars[i]!=NULL )
 	if ( sf->chars[i]->unicodeenc == ch )
@@ -426,6 +431,13 @@ static SplineChar *findchar(SplineFont *sf,int ch) {
     if ( sf->encoding_name==em_unicode ||  sf->encoding_name==em_unicode4 ||
 	    (ch<0x100 && sf->encoding_name==em_iso8859_1))
 return( sf->chars[ch] );
+    else if ( sf->encoding_name>=em_unicodeplanes && sf->encoding_name<=em_unicodeplanesmax ) {
+	i = ch - ((sf->encoding_name-em_unicodeplanes)<<16);
+	if ( i>=0 && i<sf->charcnt )
+return( sf->chars[i] );
+
+return( NULL );
+    }
 
     for ( i=sf->charcnt-1; i>=0; --i ) if ( sf->chars[i]!=NULL )
 	if ( sf->chars[i]->unicodeenc == ch )

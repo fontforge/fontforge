@@ -118,7 +118,8 @@ return( -1 );
     if ( *end || val<0 || val>0x7fffffff ) {
 	ProtestR( _STR_UnicodeValue );
 return( -2 );
-    } else if ( val>65535 && sf->encoding_name!=em_unicode4 ) {
+    } else if ( val>65535 && sf->encoding_name!=em_unicode4 &&
+	    sf->encoding_name<em_unicodeplanes ) {
 	static int buts[] = { _STR_Yes, _STR_No, 0 };
 	if ( GWidgetAskR(_STR_PossiblyTooBig,buts,1,1,_STR_NotUnicodeBMP)==1 )
 return(-2);

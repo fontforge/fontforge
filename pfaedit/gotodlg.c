@@ -292,11 +292,15 @@ static GTextInfo *AvailableRanges(SplineFont *sf) {
 	ch = unicoderange[i].defined==-1 ? unicoderange[i].first : unicoderange[i].defined;
 	pos = -1;
 	if ( sf->encoding_name==em_unicode ) {
-	    if ( ch<=sf->charcnt && ch<65536 )
+	    if ( ch<sf->charcnt && ch<65536 )
 		pos = ch;
 	} else if ( sf->encoding_name==em_unicode4 ) {
-	    if ( ch<=sf->charcnt )
+	    if ( ch<sf->charcnt )
 		pos = ch;
+	} else if ( sf->encoding_name>=em_unicodeplanes && sf->encoding_name>=em_unicodeplanesmax ) {
+	    pos = ch-((sf->encoding_name-em_unicodeplanes)<<16);
+	    if ( pos>=sf->charcnt || pos<0 )
+		pos = -1;
 	} else
 	    pos = SFFindChar(sf,ch,NULL);
 	if ( pos!=-1 ) {

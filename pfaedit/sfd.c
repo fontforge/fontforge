@@ -514,6 +514,8 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 	fprintf(sfd, "Ordering: %s\n", sf->ordering );
 	fprintf(sfd, "Supplement: %d\n", sf->supplement );
 	fprintf(sfd, "CIDVersion: %g\n", sf->cidversion );	/* This is a number whereas "version" is a string */
+    } else if ( sf->encoding_name>=em_unicodeplanes && sf->encoding_name<=em_unicodeplanesmax ) {
+	fprintf(sfd, "Encoding: UnicodePlane%d\n", sf->encoding_name-em_unicodeplanes );
     } else if ( sf->encoding_name>=em_base ) {
 	Encoding *item;
 	for ( item = enclist; item!=NULL && item->enc_num!=sf->encoding_name; item = item->next );
@@ -521,7 +523,8 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 	    fprintf(sfd, "Encoding: custom\n" );
 	else
 	    fprintf(sfd, "Encoding: %s\n", item->enc_name );
-    } else if ( sf->encoding_name>=sizeof(charset_names)/sizeof(charset_names[0])-2 ) {
+    } else if ( sf->encoding_name>=sizeof(charset_names)/sizeof(charset_names[0])-2 &&
+	    sf->encoding_name!=em_none ) {
 	fprintf(sfd, "Encoding: %d\n", sf->encoding_name );
 	fprintf(stderr, "Unknown encoding %d\n", sf->encoding_name );
     } else
@@ -1541,7 +1544,7 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    sf->xuid = copy(tok);
 	} else if ( strmatch(tok,"Encoding:")==0 ) {
 	    if ( !getint(sfd,&sf->encoding_name) ) {
-		Encoding *item;
+		Encoding *item; int val;
 		geteol(sfd,tok);
 		sf->encoding_name = em_none;
 		for ( i=0; charset_names[i]!=NULL; ++i )
@@ -1554,6 +1557,9 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 		    if ( item!=NULL )
 			sf->encoding_name = item->enc_num;
 		}
+		if ( sf->encoding_name == em_none &&
+			sscanf(tok,"UnicodePlane%d",&val)==1 )
+		    sf->encoding_name = val+em_unicodeplanes;
 	    }
 	} else if ( strmatch(tok,"Registry:")==0 ) {
 	    geteol(sfd,tok);

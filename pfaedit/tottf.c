@@ -5893,15 +5893,21 @@ return( true );
 }
 
 static FILE *NeedsUCS4Table(SplineFont *sf,int *ucs4len) {
-    int i,j,group;
+    int i=0,j,group;
     FILE *format12;
 
-    if ( sf->encoding_name!=em_unicode4 )
+    
+    if ( sf->encoding_name==em_unicode4 ) {
+	for ( i=0x10000; i<sf->charcnt; ++i )
+	    if ( SCWorthOutputting(sf->chars[i]))
+	break;
+    } else if ( sf->encoding_name>=em_unicodeplanes && sf->encoding_name<=em_unicodeplanesmax ) {
+	for ( i=0; i<sf->charcnt; ++i )
+	    if ( SCWorthOutputting(sf->chars[i]))
+	break;
+    } else
 return( NULL );
-    for ( i=0x10000; i<sf->charcnt; ++i )
-	if ( SCWorthOutputting(sf->chars[i]))
-    break;
-    if ( i>=sf->charcnt )
+	if ( i>=sf->charcnt )
 return(NULL);
 
     format12 = tmpfile();

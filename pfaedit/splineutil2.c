@@ -1286,6 +1286,9 @@ SplineFont *SplineFontNew(void) {
     } else if ( default_encoding==em_unicode4 ) {
 	table = NULL;
 	enclen = unicode4_size;
+    } else if ( default_encoding>=em_unicodeplanes && default_encoding<=em_unicodeplanesmax ) {
+	table = NULL;
+	enclen = 65536;
     } else if ( default_encoding==em_jis208 ) {
 	table = unicode_from_jis208;
 	tlen = 94*94;
@@ -1331,7 +1334,9 @@ SplineFont *SplineFontNew(void) {
     for ( i=0; i<enclen && i<256; ++i ) {
 	SplineChar *sc = sf->chars[i] = chunkalloc(sizeof(SplineChar));
 	sc->vwidth = sf->ascent+sf->descent;
-	if ( table==NULL )
+	if ( default_encoding>=em_unicodeplanes && default_encoding<=em_unicodeplanesmax )
+	    uenc = i+ ((default_encoding-em_unicodeplanes)<<16);
+	else if ( table==NULL )
 	    uenc = i;
 	else if ( tlen==94*94 ) {
 	    if ( i%96==0 || i%96==95 )

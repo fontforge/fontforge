@@ -410,7 +410,7 @@ return;
 	switch ( prefs_list[i].type ) {
 	  case pr_encoding:
 	    val = *(int *) (prefs_list[i].val);
-	    if ( val<em_base )
+	    if ( val<em_base || val>=em_unicodeplanes )
 		fprintf( p, "%s:\t%d\n", prefs_list[i].name, val );
 	    else {
 		Encoding *item;
@@ -592,7 +592,7 @@ void DoPrefs(void) {
     GTextInfo *plabel, **list, label[5], slabel[40];
     GTabInfo aspects[4];
     struct pref_data p;
-    int i, gc, j, line, llen, y, y2;
+    int i, gc, j, line, llen, y, y2, ii;
     char buf[20];
     static unichar_t nullstr[] = { 0 };
 
@@ -735,6 +735,9 @@ void DoPrefs(void) {
 		pgcd[gc].gd.label = EncodingTypesFindEnc(pgcd[gc].gd.u.list,
 			*(int *) prefs_list[i].val);
 	    }
+	    for ( ii=0; pgcd[gc].gd.u.list[ii].text!=NULL ||pgcd[gc].gd.u.list[ii].line; ++ii )
+		if ( pgcd[gc].gd.u.list[ii].userdata==(void *) em_unicodeplanes )
+		    pgcd[gc].gd.u.list[ii].disabled = true;
 	    pgcd[gc].gd.pos.width = 145;
 	    if ( pgcd[gc].gd.label==NULL ) pgcd[gc].gd.label = &encodingtypes[0];
 	    pgcd[gc++].creator = GListButtonCreate;

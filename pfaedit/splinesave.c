@@ -1411,10 +1411,14 @@ return( strtol(val,NULL,10));
 
     if ( sf->encoding_name>=em_first2byte && sf->encoding_name<em_unicode )
 return( true );
+    if ( sf->encoding_name==em_sjis || sf->encoding_name==em_wansung )
+return( true );
     if ( (sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4) &&
 	    sf->charcnt>0x3000 &&
 	    SCWorthOutputting(sf->chars[0x3000]) &&
 	    !SCWorthOutputting(sf->chars['A']) )
+return( true );
+    if ( sf->encoding_name==em_unicodeplanes+2 /* SIP */ )
 return( true );
     if ( sf->encoding_name==em_none ) {
 	/* If it's in a CID font and it doesn't contain alphabetics, then */

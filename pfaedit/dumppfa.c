@@ -1048,14 +1048,8 @@ static void dumptype0stuff(FILE *out,SplineFont *sf) {
 	fprintf( out, " %d\n", i );
     fprintf( out, "] readonly def\n" );
     fprintf( out, "/FDepVector [\n" );
-    if ( sf->encoding_name == em_unicode || sf->encoding_name == em_unicode4 ) {
-	fprintf( out, " /%sBase findfont\n", sf->fontname );
-	for ( i=1; i<256; ++i )
-	    if ( somecharsused(sf,i<<8, (i<<8)+0xff) || i==0x27 )
-		fprintf( out, " /%s%d findfont\n", sf->fontname, i );
-	    else
-		fprintf( out, " /%sNotDef findfont\n", sf->fontname );
-    } else {
+    if ( sf->encoding_name >= em_first2byte &&
+	    sf->encoding_name <= em_last94x94 ) {
 	for ( i=0; i<33; ++i )
 	    fprintf( out, " /%sNotDef findfont\n", sf->fontname );
 	for ( i=0; i<94; ++i ) {
@@ -1066,6 +1060,13 @@ static void dumptype0stuff(FILE *out,SplineFont *sf) {
 	}
 	for ( i=0; i<129; ++i )
 	    fprintf( out, " /%sNotDef findfont\n", sf->fontname );
+    } else {
+	fprintf( out, " /%sBase findfont\n", sf->fontname );
+	for ( i=1; i<256; ++i )
+	    if ( somecharsused(sf,i<<8, (i<<8)+0xff) || i==0x27 )
+		fprintf( out, " /%s%d findfont\n", sf->fontname, i );
+	    else
+		fprintf( out, " /%sNotDef findfont\n", sf->fontname );
     }
     fprintf( out, "  ] readonly def\n" );
     fprintf( out, "end definefont pop\n" );

@@ -278,6 +278,8 @@ static int BDFParseEnc(char *encname, int encoff) {
     } else if ( strcmp(encname,"ISO10646")==0 || strcmp(encname,"ISO-10646")==0 ||
 	    strcmp(encname,"Unicode")==0 || strcmp(encname,"UNICODE")==0 ) {
 	enc = em_unicode;
+	if ( encoff>1 )
+	    enc = em_unicodeplanes+encoff-1;
     } else if ( strstrmatch(encname,"AdobeStandard")!=NULL ) {
 	enc = em_adobestandard;
     } else if ( strstrmatch(encname,"Mac")!=NULL ) {

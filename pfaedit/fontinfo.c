@@ -31,6 +31,8 @@
 #include <gkeysym.h>
 #include <math.h>
 
+static int lastplane=1;		/* SMP, Supplementary Multilingual Plane */
+
 struct gfi_data {
     int done;
     SplineFont *sf;
@@ -41,6 +43,7 @@ struct gfi_data {
     struct psdict *private;
     struct ttflangname *names;
     struct ttflangname def;
+    int uplane;
 };
 
 GTextInfo encodingtypes[] = {
@@ -71,6 +74,7 @@ GTextInfo encodingtypes[] = {
     { NULL, NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 1, 0 },
     { (unichar_t *) _STR_Unicode, NULL, 0, 0, (void *) em_unicode, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Unicode4, NULL, 0, 0, (void *) em_unicode4, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_UnicodePlanes, NULL, 0, 0, (void *) em_unicodeplanes, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { NULL, NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 1, 0 },
     { (unichar_t *) _STR_SJIS, NULL, 0, 0, (void *) em_sjis, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Jis208, NULL, 0, 0, (void *) em_jis208, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -1008,7 +1012,7 @@ return( true );
 }
 
 static int infont(SplineChar *sc, const unsigned short *table, int tlen,
-	Encoding *item, uint8 *used) {
+	Encoding *item, uint8 *used, int new_map) {
     int i;
     int tlen2 = tlen;
     /* for some reason, some encodings have multiple entries for the same */
@@ -1024,13 +1028,25 @@ return( false );
 	    used[0] |= 1;
 return( true );
 	}
-	if ( used[sc->unicodeenc>>3] & (1<<(sc->unicodeenc&7)) ) {
-	    sc->enc = -1;
+	if ( new_map>=em_unicodeplanes && new_map<=em_unicodeplanesmax ) {
+	    i = sc->unicodeenc - ((new_map-em_unicodeplanes)<<16);
+	    if ( i<0 || i>=tlen || (used[i>>3] & (1<<(i&7))) ) {
+		sc->enc = -1;
 return( false );
-	}
-	used[sc->unicodeenc>>3] |= (1<<(sc->unicodeenc&7));
-	sc->enc = sc->unicodeenc;
+	    }
+	    sc->enc = i;
+	    used[i>>3] |= 1<<(i&7);
 return( true );
+	} else {
+	    if ( sc->unicodeenc>=tlen ||
+		    (used[sc->unicodeenc>>3] & (1<<(sc->unicodeenc&7))) ) {
+		sc->enc = -1;
+return( false );
+	    }
+	    used[sc->unicodeenc>>3] |= (1<<(sc->unicodeenc&7));
+	    sc->enc = sc->unicodeenc;
+return( true );
+	}
     }
     if ( sc->unicodeenc==-1 ) {
 	if ( sc->enc==0 && strcmp(sc->name,".notdef")==0 && table[0]==0 && !(used[0]&1)) {
@@ -1242,8 +1258,21 @@ return(false);
 	    sf->encoding_name=em_none;	/* Custom, it's whatever's there */
 return(false);
 	}
+	if ( new_map==em_unicodeplanes )
+	    new_map = em_unicode;		/* Plane 0 is just unicode bmp */
 	if ( new_map==em_adobestandard ) {
 	    table = unicode_from_adobestd;
+	} else if ( new_map==em_iso8859_1 )
+	    table = unicode_from_i8859_1;
+	else if ( new_map==em_unicode ) {
+	    table = NULL;
+	    tlen = 65536;
+	} else if ( new_map==em_unicode4 ) {
+	    table = NULL;
+	    tlen = unicode4_size;
+	} else if ( new_map>=em_unicodeplanes && new_map<=em_unicodeplanesmax ) {
+	    table = NULL;
+	    tlen = 65536;
 	} else if ( new_map>=em_base ) {
 	    for ( item=enclist; item!=NULL && item->enc_num!=new_map; item=item->next );
 	    if ( item!=NULL ) {
@@ -1253,14 +1282,6 @@ return(false);
 		GWidgetErrorR(_STR_InvalidEncoding,_STR_InvalidEncoding);
 return( false );
 	    }
-	} else if ( new_map==em_iso8859_1 )
-	    table = unicode_from_i8859_1;
-	else if ( new_map==em_unicode ) {
-	    table = NULL;
-	    tlen = 65536;
-	} else if ( new_map==em_unicode4 ) {
-	    table = NULL;
-	    tlen = unicode4_size;
 	} else if ( new_map==em_jis208 ) {
 	    table = unicode_from_jis208;
 	    tlen = 94*94;
@@ -1308,7 +1329,7 @@ return( false );
 	SplineChar *sc = sf->chars[i];
 	if ( sc==NULL )
 	    /* skip */;
-	else if ( (target==NULL && !infont(sc,table,tlen,item,used)) ||
+	else if ( (target==NULL && !infont(sc,table,tlen,item,used,new_map)) ||
 		  (target!=NULL && !intarget(sc,target) ) ) {
 	    if ( sc->splines==NULL && sc->refs==NULL && sc->dependents==NULL && !sc->widthset ) {
 		RemoveSplineChar(sf,i);
@@ -1470,6 +1491,24 @@ static int GFI_Delete(GGadget *g, GEvent *e) {
 	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
 	RemoveEncoding();
 	RegenerateEncList(d);
+    }
+return( true );
+}
+
+static int GFI_SelectEncoding(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
+	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+	int enc = GGadgetGetFirstListSelectedItem(GWidgetGetControl(d->gw,CID_Encoding));
+	if ( encodingtypes[enc].userdata==(void *) em_unicodeplanes ) {
+	    unichar_t ubuf[10], *ret;
+	    char buf[10];
+	    int val;
+	    sprintf(buf,"%d", d->uplane );
+	    uc_strcpy(ubuf,buf);
+	    ret = GWidgetAskStringR(_STR_Encoding,ubuf,_STR_WhichPlane);
+	    if ( ret!=NULL && (val=u_strtol(ret,NULL,0))>=0 && val<65536 )
+		d->uplane = lastplane = val;
+	}
     }
 return( true );
 }
@@ -2141,6 +2180,8 @@ return(true);
 	enc = GGadgetGetFirstListSelectedItem(GWidgetGetControl(gw,CID_Encoding));
 	if ( enc!=-1 ) {
 	    enc = (int) (GGadgetGetListItem(GWidgetGetControl(gw,CID_Encoding),enc)->userdata);
+	    if ( enc==em_unicodeplanes )
+		enc += d->uplane;
 	    if ( force_enc )
 		reformat_fv = SFForceEncoding(sf,enc);
 	    else
@@ -2369,6 +2410,7 @@ void FontInfo(SplineFont *sf) {
     d.sf = sf;
     d.gw = gw;
     d.old_sel = -2;
+    d.uplane = lastplane;
 
     memset(&nlabel,0,sizeof(nlabel));
     memset(&ngcd,0,sizeof(ngcd));
@@ -2496,9 +2538,14 @@ void FontInfo(SplineFont *sf) {
     egcd[1].gd.label = EncodingTypesFindEnc(list,sf->encoding_name);
     if ( egcd[1].gd.label==NULL ) egcd[1].gd.label = &list[0];
     egcd[1].gd.cid = CID_Encoding;
+    egcd[1].gd.handle_controlevent = GFI_SelectEncoding;
     egcd[1].creator = GListButtonCreate;
     for ( i=0; list[i].text!=NULL || list[i].line; ++i ) {
-	if ( (void *) (sf->encoding_name)==list[i].userdata &&
+	if ( sf->encoding_name>=em_unicodeplanes && sf->encoding_name<=em_unicodeplanesmax &&
+		(void *) em_unicodeplanes==list[i].userdata ) {
+	    list[i].selected = true;
+	    d.uplane = sf->encoding_name-em_unicodeplanes;
+	} else if ( (void *) (sf->encoding_name)==list[i].userdata &&
 		list[i].text!=NULL )
 	    list[i].selected = true;
 	else

@@ -569,11 +569,17 @@ static SplineChar *findchar(PI *pi, int ch) {
     SplineFont *sf = pi->sf;
     int i, max;
 
-    if ( ch<0 || ch>=65536 )
+    if ( ch<0 )
 return(NULL);
     if ( sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4) {
 	if ( SCWorthOutputting(sf->chars[ch]))
 return( sf->chars[ch]);
+    } else if ( sf->encoding_name>=em_unicodeplanes && sf->encoding_name<=em_unicodeplanesmax ) {
+	i = ch-((sf->encoding_name-em_unicodeplanes)<<16);
+	if ( SCWorthOutputting(sf->chars[i]))
+return( sf->chars[i]);
+    } else if ( ch>=65536 ) {
+return( NULL );
     } else if ( !pi->iscid ) {
 	max = 256;
 	if ( pi->iscjk ) max = 96*94;
@@ -1981,6 +1987,7 @@ static unichar_t _IAmACat[] = {0x543e, 0x8f29, 0x306f, 0x732b, 0x3067, 0x2202, 0
 static unichar_t *IAmACat[] = { _IAmACat, NULL };
 
 /* The following translations of the gospel according to John are all from */
+/*  Compendium of the world's languages. 1991 Routledge. by George L. Campbell*/
 
 /* Belorussian */
 static unichar_t _belojohn1[] = { 0x0412,0x043d,0x0430,0x0447,0x0430,0x043b,

@@ -118,6 +118,11 @@ static int _SFFindChar(SplineFont *sf, int unienc, char *name ) {
 	index = unienc;
 	if ( index>=sf->charcnt || sf->chars[index]==NULL )
 	    index = -1;
+    } else if ( (sf->encoding_name>=em_unicodeplanes && sf->encoding_name<=em_unicodeplanesmax) &&
+	    unienc!=-1 ) {
+	index = unienc-((sf->encoding_name-em_unicodeplanes)<<16);
+	if ( index<0 || index>=sf->charcnt || sf->chars[index]==NULL )
+	    index = -1;
     } else if ( unienc!=-1 ) {
 	if ( unienc<sf->charcnt && sf->chars[unienc]!=NULL &&
 		sf->chars[unienc]->unicodeenc==unienc )
@@ -142,6 +147,11 @@ int SFFindChar(SplineFont *sf, int unienc, char *name ) {
 	    unienc!=-1 ) {
 	index = unienc;
 	if ( index>=sf->charcnt )
+	    index = -1;
+    } else if ( (sf->encoding_name>=em_unicodeplanes && sf->encoding_name<=em_unicodeplanesmax) &&
+	    unienc!=-1 ) {
+	index = unienc-((sf->encoding_name-em_unicodeplanes)<<16);
+	if ( index<0 || index>=sf->charcnt || sf->chars[index]==NULL )
 	    index = -1;
     } else if ( unienc!=-1 ) {
 	if ( unienc<sf->charcnt && sf->chars[unienc]!=NULL &&
@@ -359,7 +369,8 @@ static int SFEncodingCnt(SplineFont *sf) {
 return( unicode4_size );
     if ( sf->encoding_name == em_unicode || sf->encoding_name == em_big5 ||
 	    sf->encoding_name == em_johab || sf->encoding_name == em_wansung ||
-	    sf->encoding_name == em_sjis )
+	    sf->encoding_name == em_sjis ||
+	    (sf->encoding_name >= em_unicodeplanes && sf->encoding_name <= em_unicodeplanesmax ))
 return( 65536 );
     else if ( sf->encoding_name == em_none )
 return( sf->charcnt );

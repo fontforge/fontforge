@@ -211,6 +211,15 @@ return( 1 );
 }
 
 char *EncodingName(int map) {
+
+    if ( map>=em_unicodeplanes && map<=em_unicodeplanesmax ) {
+	static char space[40];
+	/* What is the proper encoding for a font consisting of SMP? */
+	/* I'm guessing at ISO10646-2, but who knows */
+	sprintf( space, "ISO10646-%d", map-em_unicodeplanes+1 );
+return( space );
+    }
+
     switch ( map ) {
       case em_adobestandard:
 return( "AdobeStandardEncoding" );
@@ -501,7 +510,8 @@ int AfmSplineFont(FILE *afm, SplineFont *sf, int formattype) {
 	fprintf( afm, "Descender %d\n", dsh*1000/em );
 
     anyzapf = false;
-    if ( type0 && (sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4)) {
+    if ( type0 && (sf->encoding_name==em_unicode ||
+	    sf->encoding_name==em_unicode4)) {
 	for ( i=0x2700; i<sf->charcnt && i<encmax && i<=0x27ff; ++i )
 	    if ( SCWorthOutputting(sf->chars[i]) ) 
 		anyzapf = true;

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 16-Sep-2001 -->
-  <!-- AP: Last modified: 5-Feb-2002 -->
+  <!-- AP: Last modified: 24-Feb-2002 -->
   <TITLE>Older changes to PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,194 @@
 <A HREF="index.html#change-log">Current changes</A>
 <P>
 <UL>
+  <LI>
+    17-Jan-2002
+    <UL>
+      <LI>
+	PfaEdit used to crash (sometimes anyway) if a list popup were active when
+	a window was destroyed.
+      <LI>
+	TextFields within tabsets (like Font Info) responded to some events twice.
+      <LI>
+	Bug in the new TTF hinting routines could cause a crash (and did cause glyph
+	programs which were erroneous)
+      <LI>
+	Crash caused by long names in /etc/passwd when creating a new font
+      <LI>
+	Redid fontname handling in Font Info dlg to allow URW names to pass through
+	unscathed
+	<UL>
+	  <LI>
+	    Recognize "Regu" as meaning "Regular"
+	  <LI>
+	    Only updates the fullname (human readable name) if it were previously in
+	    sync
+	  <LI>
+	    Recognize "-" as starting the modifiers rather than trying to find the end
+	    of the family name
+	  <LI>
+	    If you don't change the family or the modifiers then pfaedit will now leave
+	    the fontname untouched
+	</UL>
+    </UL>
+  <LI>
+    14 Jan 2002
+    <UL>
+      <LI>
+	The 9 Jan metrics view fix caused crashes when changing the last character
+	displayed.
+      <LI>
+	The outline view now will display points at extrema in a different color
+	from other points if you want that.
+      <LI>
+	Added a command to the font view to clear out the backgrounds of all selected
+	characters.
+      <LI>
+	Fixed one more image freeing problem (see 29-Dec-2001) 
+	  <HR>
+      <LI>
+	bdf fixes of 9&amp;11 Jan did not work on bdf files with character encodings
+	of "-1"
+      <LI>
+	Fixed several bugs with ttf bitmap tables.
+      <LI>
+	Added a mechanism for specifying a font inside a truetype collection from
+	the command line:<BR>
+	<CODE>&nbsp; &nbsp; $ pfaedit "gulim.ttc(GulimChe)"</CODE><BR>
+	will load the GulimChe font within the collection file.
+    </UL>
+  <LI>
+    12 Jan 2002
+    <UL>
+      <LI>
+	Russian ui had an unexpected space in it which confused makenomenh. Have
+	fixed both (makenomenh &amp; nomen.ru)
+      <LI>
+	Last fix to Merge made most merges return straight lines
+      <LI>
+	Added an elide command which allows the slopes of the endpoints to change
+      <LI>
+	Releasing the control or super key when in one of the palettes did not update
+	the tool cursor.
+      <LI>
+	The point info dlg now comes up beside (rather than on top of) the selected
+	point.
+    </UL>
+  <LI>
+    11 Jan 2002
+    <UL>
+      <LI>
+	bdf "fix" of 9 Jan. lost the encoding of the font.
+      <LI>
+	PfaEdit source included "ushort" in a couple of places. Linux must define
+	this but some systems don't. It has been changed to uint16 which I define.
+      <LI>
+	Worked around some imaging bugs of the X server under cygwin (PfaEdit seems
+	to work under cygwin now)
+      <LI>
+	Using the arrow keys to scroll only worked if something were selected. should
+	always work now.
+      <LI>
+	The fontview now contains an indication of which characters have backgrounds
+      <LI>
+	Minor improvements to merge when given an impossible problem.
+    </UL>
+  <LI>
+    9 Jan 2002
+    <UL>
+      <LI>
+	destroy window fix on 2 Jan was not enough, it popped up again. Hope I've
+	killed it this time
+      <LI>
+	PfaEdit had trouble reading bdf fonts that
+	<UL>
+	  <LI>
+	    did not have standard X font names (-vendor-family-weight-italic-...)
+	  <LI>
+	    had the same name used for different characters
+	</UL>
+      <LI>
+	The metrics view got confused by characters with negative lbearings.
+      <LI>
+	Added some Japanese (Kanji) text samples.
+    </UL>
+  <LI>
+    8 Jan 2002
+    <UL>
+      <LI>
+	Fixed a bug in gdf output
+    </UL>
+  <LI>
+    7 Jan 2002
+    <UL>
+      <LI>
+	Added a traditional chinese sample
+      <LI>
+	In the metrics view, the kerning offset was not rescaled when the size of
+	the window changed.
+      <LI>
+	Added a preference item to control the amount by which the arrow keys move
+	selected points
+      <LI>
+	Changed the behavior of the grid layer so that now points will snap to any
+	spline in the grid layer, not just horizontal and vertical splines
+      <LI>
+	Added a preference item to control this snap distance.
+      <LI>
+	Added a couple new outline display sizes to the fontview
+      <LI>
+	Use the "super" modifer to simulate a mouses middle button. If the super
+	key (the one with a windows flag on it on pc keyboards) is depressed then
+	any mouse click will be treated as if it were mouse button 2 that was used.
+      <LI>
+	Minor improvements in truetype hinting
+    </UL>
+  <LI>
+    4 Jan 2002
+    <UL>
+      <LI>
+	if a dfont (or other mac resource file) contains multiple truetype fonts,
+	pfaedit will let you pick one (before it would read in the first and ignore
+	the others)
+      <LI>
+	The tools palette now shows the mouse bindings.
+      <LI>
+	Next/Prev control points are drawn in different colors now, and those colors
+	are reflected in the point get info dlg.
+      <LI>
+	Merge and Simplify will now retain the slope of curve points.
+      <LI>
+	Simplify will no longer remove points at the extrema of their curves (PostScript
+	fonts are supposed to have points at the extrema)
+      <LI>
+	New command in Element menu to <A HREF="elementmenu.html#Add-Extrema">add
+	points at extrema</A> to a spline or set of splines.
+      <LI>
+	Next/Prev Point commands will shift the screen so the newly selected point
+	is visible.
+      <LI>
+	Metrics View now allows for anti aliased character display.
+      <LI>
+	Metrics View View menu was broken and was missing half its entries.
+      <LI>
+	Revert Font would leave pfaedit in a state where some commands would cause
+	a crash. Should be fixed now.
+      <LI>
+	TextFields did not scroll properly with the arrow keys.
+      <LI>
+	The outline and bitmap views may be scrolled with the arrow keys by holding
+	down either the control or meta key.
+      <LI>
+	When reading a ttf file with an encoding pfaedit doesn't recognize which
+	has some glyphs which are refered to from multiple code points, then pfaedit
+	used to crash.
+      <LI>
+	Support Menu key on windows keyboard
+      <LI>
+	Use the Windows "flag" key as a modifier to indicate mouse button 2 (so if
+	that key is depressed, and a mouse button is pressed/released pretend it
+	was button2)
+    </UL>
   <LI>
     2 Jan 2002
     <UL>

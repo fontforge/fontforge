@@ -678,11 +678,17 @@ static void MVSetPos(MetricsView *mv,int i,SplineChar *sc) {
 	mv->perchar[j].dx = mv->perchar[j-1].dx + mv->perchar[j-1].dwidth + mv->perchar[j-1].kernafter;
 }
 
-static SplineChar *SCFromUnicode(SplineFont *sf, unichar_t ch) {
+static SplineChar *SCFromUnicode(SplineFont *sf, int ch) {
     int i;
 
     if ( sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4 ) {
 	if ( ch>=sf->charcnt )
+return( NULL );
+	else
+return( SFMakeChar(sf,ch) );
+    } else if ( sf->encoding_name>=em_unicodeplanes && sf->encoding_name<=em_unicodeplanesmax ) {
+	ch -= ((sf->encoding_name-em_unicodeplanes)<<16);
+	if ( ch>=sf->charcnt || ch<0 )
 return( NULL );
 	else
 return( SFMakeChar(sf,ch) );
@@ -694,11 +700,15 @@ return( sf->chars[i] );
 return( NULL );
 }
 
-static int SFContainsChar(SplineFont *sf, unichar_t ch) {
+static int SFContainsChar(SplineFont *sf, int ch) {
     int i;
 
     if ( sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4 )
 return( ch<sf->charcnt );
+    else if ( sf->encoding_name>=em_unicodeplanes && sf->encoding_name<=em_unicodeplanesmax ) {
+	ch -= ((sf->encoding_name-em_unicodeplanes)<<16);
+return( ch<sf->charcnt && ch>=0 );
+    }
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
 	if ( sf->chars[i]->unicodeenc == ch )
 return( true );

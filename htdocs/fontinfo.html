@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 14-Feb-2002 -->
+  <!-- AP: Last modified: 24-Feb-2002 -->
   <TITLE>Font Info</TITLE>
 </HEAD>
 <BODY>
@@ -10,7 +10,7 @@
   Font Info
 </H1>
 <P>
-<IMG SRC="fontinfo.png" WIDTH="369" HEIGHT="472">
+<IMG SRC="fontinfo.png" WIDTH="369" HEIGHT="506" ALIGN="Right">
 <P>
 The Font Info dialog is available from all views. It allows you to name your
 font, to set its <A HREF="fontview.html#Encodings">encoding</A> and various
@@ -25,9 +25,9 @@ The dialog is composed of 7 different sub dialogs.
 Postscript fonts have several different names, but basically there are two
 important ones: the family name (like Times) and the fontname (which is the
 family name with a bunch of modifiers like Bold Italic Condensed tacked on
-to the end. We support a third one, the FullName (designed to be read by
-humans, while the others are for machines), this name can contain spaces
-(like "New Century Schoolbook-Bold Condensed"). All of these names should
+to the end. The FullName is designed to be read by humans, while the others
+are for machines, this name can contain spaces (like "New Century Schoolbook-Bold
+Condensed"). Finally there is the weight name. All of these names should
 be in ASCII. If you wish to enter names with characters outside this range
 look at the <A HREF="#TTF-Names">TTF Names</A> Section.
 <P>
@@ -35,7 +35,8 @@ The copyright field can contain whatever you want to put there, but it's
 a good place to put a copyright.
 <P>
 In most fonts the version field is a string (and so has minimal constraints
-on it), but in CID keyed fonts it must be a floating point number.
+on it), but in CID keyed fonts it must be a floating point
+number.<BR Clear=ALL>
 <H2>
   <IMG SRC="fontinfo-encoding.png" WIDTH="369" HEIGHT="472" ALIGN="Right"><A
       NAME="Encoding">Encoding</A>
@@ -125,15 +126,27 @@ PfaEdit knows about the following encodings by default:
     ISO-10646-1 (Unicode, BMP)
   <LI>
     ISO-10646-1 (Unicode, Full) 
+  <LI>
+    ISO-10646-? (Unicode, by plane)<BR>
+    (You can select a specific plane of unicode as an encoding (ie BMP, SMP,
+    SIP,...)
       <HR>
+  <LI>
+    SJIS
   <LI>
     JIS 208 -- Japanese Kanji (first 8000 characters)
   <LI>
     JIS 212 -- Japanese Kanji (next 8000 characters)
   <LI>
+    Wansung
+  <LI>
     KSC 5601 -- Korean (this is the 94x94 version of KSC 5601)
   <LI>
+    Johab
+  <LI>
     GB 2312 -- Chinese
+  <LI>
+    Big5
 </UL>
 <P>
 Encoding sources:
@@ -537,12 +550,12 @@ languages.
     <TD>Standard</TD>
     <TD>Fett</TD>
     <TD>Halbfett</TD>
-    <TD>mager </TD>
-    <TD>mittel </TD>
-    <TD>Buchschrift </TD>
+    <TD>mager</TD>
+    <TD>mittel</TD>
+    <TD>Buchschrift</TD>
     <TD>Kursiv</TD>
     <TD>schr&auml;g</TD>
-    <TD>schmal </TD>
+    <TD>schmal</TD>
     <TD>breit</TD>
   </TR>
   <TR>
