@@ -4223,6 +4223,9 @@ return;
 	if ( j>max ) max = j;
     }
 
+    if ( at==NULL )
+return;
+
 /* Sergey Malkin from MicroSoft tells me:
     Each shaping engine in Uniscribe can decide on its requirements for
     layout tables - some of them require both GSUB and GPOS, in some cases
