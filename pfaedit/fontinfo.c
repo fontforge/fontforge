@@ -81,6 +81,7 @@ GTextInfo encodingtypes[] = {
 #define CID_Make	1011
 #define CID_Delete	1012
 #define CID_XUID	1013
+#define CID_Human	1014
 
 static int infont(SplineChar *sc, const unsigned short *table, int tlen,
 	Encoding *item, uint8 *used) {
@@ -485,6 +486,20 @@ static int GFI_Make(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static int GFI_NameChange(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
+	GWindow gw = GGadgetGetWindow(g);
+	const unichar_t *ufamily = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Family));
+	const unichar_t *umods = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Modifiers));
+	unichar_t *uhum = galloc((u_strlen(ufamily)+u_strlen(umods)+1)*sizeof(unichar_t));
+	u_strcpy(uhum,ufamily);
+	u_strcat(uhum,umods);
+	GGadgetSetTitle(GWidgetGetControl(gw,CID_Human),uhum);
+	free(uhum);
+    }
+return( true );
+}
+
 static int GFI_GuessItalic(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
@@ -558,14 +573,15 @@ return( dpt );
 return( ept );
 }
 
-void SFSetFontName(SplineFont *sf, char *family, char *mods) {
-    char *full, *n;
+void SFSetFontName(SplineFont *sf, char *family, char *mods,char *full) {
+    char *n;
     unichar_t *temp; char *pt, *tpt;
     int i;
 
-    full = malloc(strlen(family)+strlen(mods)+1);
-    strcpy(full,family); strcat(full,mods);
-    n = copy(full);
+    n = malloc(strlen(family)+strlen(mods)+1);
+    strcpy(n,family); strcat(n,mods);
+    if ( full==NULL || *full == '\0' )
+	full = copy(n);
     for ( pt=tpt=n; *pt; ) {
 	if ( !isspace(*pt))
 	    *tpt++ = *pt++;
@@ -633,13 +649,15 @@ void SFSetFontName(SplineFont *sf, char *family, char *mods) {
 static void SetFontName(GWindow gw, SplineFont *sf) {
     const unichar_t *ufamily = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Family));
     const unichar_t *umods = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Modifiers));
-    char *family, *mods;
+    const unichar_t *uhum = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Human));
+    char *family, *mods, *human;
 
-    if ( uc_strcmp(ufamily,sf->familyname)==0 && uc_strcmp(umods,GetModifiers(sf->fontname))==0 )
+    if ( uc_strcmp(ufamily,sf->familyname)==0 && uc_strcmp(uhum,sf->fullname)==0 &&
+	    uc_strcmp(umods,GetModifiers(sf->fontname))==0 )
 return;			/* Unchanged */
-    family = cu_copy(ufamily); mods = cu_copy(umods);
-    SFSetFontName(sf,family,mods);
-    free(mods); free(family);
+    family = cu_copy(ufamily); mods = cu_copy(umods); human = cu_copy(uhum);
+    SFSetFontName(sf,family,mods,human);
+    free(mods); free(family); free(human);
 }
 
 static int GFI_OK(GGadget *g, GEvent *e) {
@@ -762,8 +780,8 @@ void FontMenuFontInfo(void *_fv) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[31];
-    GTextInfo label[31], *list;
+    GGadgetCreateData gcd[33];
+    GTextInfo label[33], *list;
     struct gfi_data d;
     static unichar_t title[] = { 'F','o','n','t',' ','I','n','f','o','r','m','a','t','i','o','n',  '\0' };
     char iabuf[20], upbuf[20], uwbuf[20], asbuf[20], dsbuf[20], ncbuf[20];
@@ -794,33 +812,52 @@ void FontMenuFontInfo(void *_fv) {
     gcd[0].gd.flags = gg_visible | gg_enabled;
     gcd[0].creator = GLabelCreate;
 
-    gcd[1].gd.pos.x = 12; gcd[1].gd.pos.y = 21; gcd[1].gd.pos.width = 120;
+    gcd[1].gd.pos.x = 12; gcd[1].gd.pos.y = gcd[0].gd.pos.y+15; gcd[1].gd.pos.width = 120;
     gcd[1].gd.flags = gg_visible | gg_enabled;
     gcd[1].gd.mnemonic = 'F';
     label[1].text = (unichar_t *) (sf->familyname);
     label[1].text_is_1byte = true;
     gcd[1].gd.label = &label[1];
     gcd[1].gd.cid = CID_Family;
+    gcd[1].gd.handle_controlevent = GFI_NameChange;
     gcd[1].creator = GTextFieldCreate;
 
     label[2].text = (unichar_t *) "Font Modifiers:";
     label[2].text_is_1byte = true;
     gcd[2].gd.label = &label[2];
     gcd[2].gd.mnemonic = 'M';
-    gcd[2].gd.pos.x = 133; gcd[2].gd.pos.y = 6; 
+    gcd[2].gd.pos.x = 133; gcd[2].gd.pos.y = gcd[0].gd.pos.y; 
     gcd[2].gd.flags = gg_visible | gg_enabled;
     gcd[2].creator = GLabelCreate;
 
-    gcd[3].gd.pos.x = 133; gcd[3].gd.pos.y = 21; gcd[3].gd.pos.width = 120;
+    gcd[3].gd.pos.x = 133; gcd[3].gd.pos.y = gcd[1].gd.pos.y; gcd[3].gd.pos.width = 120;
     gcd[3].gd.flags = gg_visible | gg_enabled;
     gcd[3].gd.mnemonic = 'M';
     label[3].text = (unichar_t *) GetModifiers(sf->fontname);
     label[3].text_is_1byte = true;
     gcd[3].gd.label = &label[3];
     gcd[3].gd.cid = CID_Modifiers;
+    gcd[3].gd.handle_controlevent = GFI_NameChange;
     gcd[3].creator = GTextFieldCreate;
 
-    gcd[4].gd.pos.x = 12; gcd[4].gd.pos.y = 50+6;
+    gcd[30].gd.pos.x = 12; gcd[30].gd.pos.y = gcd[1].gd.pos.y+26+6;
+    label[30].text = (unichar_t *) "Name For Humans:";
+    label[30].text_is_1byte = true;
+    gcd[30].gd.label = &label[30];
+    gcd[30].gd.mnemonic = 'H';
+    gcd[30].gd.flags = gg_visible | gg_enabled;
+    gcd[30].creator = GLabelCreate;
+
+    gcd[31].gd.pos.x = 105; gcd[31].gd.pos.y = gcd[30].gd.pos.y-6; gcd[31].gd.pos.width = 147;
+    gcd[31].gd.flags = gg_visible | gg_enabled;
+    gcd[31].gd.mnemonic = 'H';
+    label[31].text = (unichar_t *) sf->fullname;
+    label[31].text_is_1byte = true;
+    gcd[31].gd.label = &label[31];
+    gcd[31].gd.cid = CID_Human;
+    gcd[31].creator = GTextFieldCreate;
+
+    gcd[4].gd.pos.x = 12; gcd[4].gd.pos.y = gcd[31].gd.pos.y+29+6;
     gcd[4].gd.flags = gg_visible | gg_enabled;
     gcd[4].gd.mnemonic = 'E';
     label[4].text = (unichar_t *) "Encoding:";
@@ -828,7 +865,7 @@ void FontMenuFontInfo(void *_fv) {
     gcd[4].gd.label = &label[4];
     gcd[4].creator = GLabelCreate;
 
-    gcd[5].gd.pos.x = 80; gcd[5].gd.pos.y = 50;
+    gcd[5].gd.pos.x = 80; gcd[5].gd.pos.y = gcd[4].gd.pos.y-6;
     gcd[5].gd.flags = gg_visible | gg_enabled;
     gcd[5].gd.mnemonic = 'E';
     gcd[5].gd.u.list = list = GetEncodingTypes();
@@ -845,11 +882,11 @@ void FontMenuFontInfo(void *_fv) {
     }
 
     gcd[27].gd.pos.x = 8; gcd[27].gd.pos.y = GDrawPointsToPixels(NULL,gcd[4].gd.pos.y+6);
-    gcd[27].gd.pos.width = pos.width-16; gcd[27].gd.pos.height = GDrawPointsToPixels(NULL,45);
+    gcd[27].gd.pos.width = pos.width-16; gcd[27].gd.pos.height = GDrawPointsToPixels(NULL,43);
     gcd[27].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
     gcd[27].creator = GGroupCreate;
 
-    gcd[28].gd.pos.x = 12; gcd[28].gd.pos.y = 78;
+    gcd[28].gd.pos.x = 12; gcd[28].gd.pos.y = gcd[5].gd.pos.y+27;
     gcd[28].gd.pos.width = 55; gcd[28].gd.pos.height = 0;
     gcd[28].gd.flags = gg_visible | gg_enabled;
     label[28].text = (unichar_t *) "Load";
@@ -859,7 +896,7 @@ void FontMenuFontInfo(void *_fv) {
     gcd[28].gd.handle_controlevent = GFI_Load;
     gcd[28].creator = GButtonCreate;
 
-    gcd[25].gd.pos.x = (260-100)/2; gcd[25].gd.pos.y = 78;
+    gcd[25].gd.pos.x = (260-100)/2; gcd[25].gd.pos.y = gcd[28].gd.pos.y;
     gcd[25].gd.pos.width = 100; gcd[25].gd.pos.height = 0;
     gcd[25].gd.flags = gg_visible;
     if ( sf->encoding_name==em_none ) gcd[25].gd.flags |= gg_enabled;
@@ -871,7 +908,7 @@ void FontMenuFontInfo(void *_fv) {
     gcd[25].gd.cid = CID_Make;
     gcd[25].creator = GButtonCreate;
 
-    gcd[26].gd.pos.x = 260-12-55; gcd[26].gd.pos.y = 78;
+    gcd[26].gd.pos.x = 260-12-55; gcd[26].gd.pos.y = gcd[28].gd.pos.y;
     gcd[26].gd.pos.width = 55; gcd[26].gd.pos.height = 0;
     gcd[26].gd.flags = gg_visible;
     for ( item=enclist; item!=NULL && item->builtin; item=item->next );
@@ -884,7 +921,7 @@ void FontMenuFontInfo(void *_fv) {
     gcd[26].gd.cid = CID_Delete;
     gcd[26].creator = GButtonCreate;
 
-    gcd[6].gd.pos.x = 12; gcd[6].gd.pos.y = 110+6;
+    gcd[6].gd.pos.x = 12; gcd[6].gd.pos.y = gcd[28].gd.pos.y+32+6;
     gcd[6].gd.flags = gg_visible | gg_enabled;
     gcd[6].gd.mnemonic = 'I';
     label[6].text = (unichar_t *) "Italic Angle:";
@@ -892,7 +929,8 @@ void FontMenuFontInfo(void *_fv) {
     gcd[6].gd.label = &label[6];
     gcd[6].creator = GLabelCreate;
 
-    gcd[7].gd.pos.x = 103; gcd[7].gd.pos.y = 110; gcd[7].gd.pos.width = 45;
+    gcd[7].gd.pos.x = 103; gcd[7].gd.pos.y = gcd[6].gd.pos.y-6;
+    gcd[7].gd.pos.width = 45;
     gcd[7].gd.flags = gg_visible | gg_enabled;
     gcd[7].gd.mnemonic = 'I';
     sprintf( iabuf, "%g", sf->italicangle );
@@ -902,7 +940,7 @@ void FontMenuFontInfo(void *_fv) {
     gcd[7].gd.cid = CID_ItalicAngle;
     gcd[7].creator = GTextFieldCreate;
 
-    gcd[8].gd.pos.x = 12; gcd[8].gd.pos.y = 140+6;
+    gcd[8].gd.pos.x = 12; gcd[8].gd.pos.y = gcd[7].gd.pos.y+26+6;
     gcd[8].gd.flags = gg_visible | gg_enabled;
     gcd[8].gd.mnemonic = 'P';
     label[8].text = (unichar_t *) "Underline Position:";
@@ -910,7 +948,7 @@ void FontMenuFontInfo(void *_fv) {
     gcd[8].gd.label = &label[8];
     gcd[8].creator = GLabelCreate;
 
-    gcd[9].gd.pos.x = 103; gcd[9].gd.pos.y = 140; gcd[9].gd.pos.width = 45;
+    gcd[9].gd.pos.x = 103; gcd[9].gd.pos.y = gcd[8].gd.pos.y-6; gcd[9].gd.pos.width = 45;
     gcd[9].gd.flags = gg_visible | gg_enabled;
     gcd[9].gd.mnemonic = 'P';
     sprintf( upbuf, "%g", sf->upos );
@@ -920,7 +958,7 @@ void FontMenuFontInfo(void *_fv) {
     gcd[9].gd.cid = CID_UPos;
     gcd[9].creator = GTextFieldCreate;
 
-    gcd[10].gd.pos.x = 155; gcd[10].gd.pos.y = 140+6;
+    gcd[10].gd.pos.x = 155; gcd[10].gd.pos.y = gcd[8].gd.pos.y;
     gcd[10].gd.flags = gg_visible | gg_enabled;
     gcd[10].gd.mnemonic = 'H';
     label[10].text = (unichar_t *) "Height:";
@@ -928,7 +966,7 @@ void FontMenuFontInfo(void *_fv) {
     gcd[10].gd.label = &label[10];
     gcd[10].creator = GLabelCreate;
 
-    gcd[11].gd.pos.x = 200; gcd[11].gd.pos.y = 140; gcd[11].gd.pos.width = 45;
+    gcd[11].gd.pos.x = 200; gcd[11].gd.pos.y = gcd[9].gd.pos.y; gcd[11].gd.pos.width = 45;
     gcd[11].gd.flags = gg_visible | gg_enabled;
     gcd[11].gd.mnemonic = 'H';
     sprintf( uwbuf, "%g", sf->uwidth );
@@ -938,7 +976,7 @@ void FontMenuFontInfo(void *_fv) {
     gcd[11].gd.cid = CID_UWidth;
     gcd[11].creator = GTextFieldCreate;
 
-    gcd[12].gd.pos.x = 12; gcd[12].gd.pos.y = 170+6;
+    gcd[12].gd.pos.x = 12; gcd[12].gd.pos.y = gcd[9].gd.pos.y+26+6;
     gcd[12].gd.flags = gg_visible | gg_enabled;
     gcd[12].gd.mnemonic = 'A';
     label[12].text = (unichar_t *) "Ascent:";
@@ -946,7 +984,7 @@ void FontMenuFontInfo(void *_fv) {
     gcd[12].gd.label = &label[12];
     gcd[12].creator = GLabelCreate;
 
-    gcd[13].gd.pos.x = 103; gcd[13].gd.pos.y = 170; gcd[13].gd.pos.width = 45;
+    gcd[13].gd.pos.x = 103; gcd[13].gd.pos.y = gcd[12].gd.pos.y-6; gcd[13].gd.pos.width = 45;
     gcd[13].gd.flags = gg_visible | gg_enabled;
     gcd[13].gd.mnemonic = 'A';
     sprintf( asbuf, "%d", sf->ascent );
@@ -956,7 +994,7 @@ void FontMenuFontInfo(void *_fv) {
     gcd[13].gd.cid = CID_Ascent;
     gcd[13].creator = GTextFieldCreate;
 
-    gcd[14].gd.pos.x = 155; gcd[14].gd.pos.y = 170+6;
+    gcd[14].gd.pos.x = 155; gcd[14].gd.pos.y = gcd[12].gd.pos.y;
     gcd[14].gd.flags = gg_visible | gg_enabled;
     gcd[14].gd.mnemonic = 'D';
     label[14].text = (unichar_t *) "Descent:";
@@ -964,7 +1002,7 @@ void FontMenuFontInfo(void *_fv) {
     gcd[14].gd.label = &label[14];
     gcd[14].creator = GLabelCreate;
 
-    gcd[15].gd.pos.x = 200; gcd[15].gd.pos.y = 170; gcd[15].gd.pos.width = 45;
+    gcd[15].gd.pos.x = 200; gcd[15].gd.pos.y = gcd[13].gd.pos.y; gcd[15].gd.pos.width = 45;
     gcd[15].gd.flags = gg_visible | gg_enabled;
     gcd[15].gd.mnemonic = 'D';
     sprintf( dsbuf, "%d", sf->descent );
@@ -974,7 +1012,7 @@ void FontMenuFontInfo(void *_fv) {
     gcd[15].gd.cid = CID_Descent;
     gcd[15].creator = GTextFieldCreate;
 
-    gcd[16].gd.pos.x = 12; gcd[16].gd.pos.y = 200+6;
+    gcd[16].gd.pos.x = 12; gcd[16].gd.pos.y = gcd[13].gd.pos.y+26+6;
     gcd[16].gd.flags = gg_visible | gg_enabled;
     gcd[16].gd.mnemonic = 'r';
     label[16].text = (unichar_t *) "Copyright:";
@@ -982,7 +1020,7 @@ void FontMenuFontInfo(void *_fv) {
     gcd[16].gd.label = &label[16];
     gcd[16].creator = GLabelCreate;
 
-    gcd[17].gd.pos.x = 103; gcd[17].gd.pos.y = 200; gcd[17].gd.pos.width = 142;
+    gcd[17].gd.pos.x = 103; gcd[17].gd.pos.y = gcd[16].gd.pos.y-6; gcd[17].gd.pos.width = 142;
     gcd[17].gd.flags = gg_visible | gg_enabled;
     gcd[17].gd.mnemonic = 'r';
     if ( sf->copyright!=NULL ) {
@@ -993,7 +1031,7 @@ void FontMenuFontInfo(void *_fv) {
     gcd[17].gd.cid = CID_Notice;
     gcd[17].creator = GTextFieldCreate;
 
-    gcd[18].gd.pos.x = 12; gcd[18].gd.pos.y = 230+6;
+    gcd[18].gd.pos.x = 12; gcd[18].gd.pos.y = gcd[17].gd.pos.y+26+6;
     gcd[18].gd.flags = gg_visible | gg_enabled;
     gcd[18].gd.mnemonic = 'x';
     label[18].text = (unichar_t *) "XUID:";
@@ -1001,7 +1039,7 @@ void FontMenuFontInfo(void *_fv) {
     gcd[18].gd.label = &label[18];
     gcd[18].creator = GLabelCreate;
 
-    gcd[19].gd.pos.x = 103; gcd[19].gd.pos.y = 230; gcd[19].gd.pos.width = 142;
+    gcd[19].gd.pos.x = 103; gcd[19].gd.pos.y = gcd[18].gd.pos.y-6; gcd[19].gd.pos.width = 142;
     gcd[19].gd.flags = gg_visible | gg_enabled;
     gcd[19].gd.mnemonic = 'x';
     if ( sf->xuid!=NULL ) {
@@ -1012,7 +1050,7 @@ void FontMenuFontInfo(void *_fv) {
     gcd[19].gd.cid = CID_XUID;
     gcd[19].creator = GTextFieldCreate;
 
-    gcd[20].gd.pos.x = 12; gcd[20].gd.pos.y = 260+6;
+    gcd[20].gd.pos.x = 12; gcd[20].gd.pos.y = gcd[19].gd.pos.y+26+6;
     gcd[20].gd.flags = gg_visible | gg_enabled;
     gcd[20].gd.mnemonic = 'N';
     label[20].text = (unichar_t *) "Number of Characters:";
@@ -1020,7 +1058,7 @@ void FontMenuFontInfo(void *_fv) {
     gcd[20].gd.label = &label[20];
     gcd[20].creator = GLabelCreate;
 
-    gcd[21].gd.pos.x = 123; gcd[21].gd.pos.y = 260; gcd[21].gd.pos.width = 60;
+    gcd[21].gd.pos.x = 123; gcd[21].gd.pos.y = gcd[20].gd.pos.y-6; gcd[21].gd.pos.width = 60;
     gcd[21].gd.flags = gg_visible | gg_enabled;
     gcd[21].gd.mnemonic = 'N';
     sprintf( ncbuf, "%d", sf->charcnt );
@@ -1030,7 +1068,7 @@ void FontMenuFontInfo(void *_fv) {
     gcd[21].gd.cid = CID_NChars;
     gcd[21].creator = GTextFieldCreate;
 
-    gcd[22].gd.pos.x = 30-3; gcd[22].gd.pos.y = 335-35-3;
+    gcd[22].gd.pos.x = 30-3; gcd[22].gd.pos.y = 336-35-3;
     gcd[22].gd.pos.width = 55; gcd[22].gd.pos.height = 0;
     gcd[22].gd.flags = gg_visible | gg_enabled | gg_but_default;
     label[22].text = (unichar_t *) "OK";
@@ -1040,7 +1078,7 @@ void FontMenuFontInfo(void *_fv) {
     gcd[22].gd.handle_controlevent = GFI_OK;
     gcd[22].creator = GButtonCreate;
 
-    gcd[23].gd.pos.x = 250-55-30; gcd[23].gd.pos.y = 335-35;
+    gcd[23].gd.pos.x = 250-55-30; gcd[23].gd.pos.y = gcd[22].gd.pos.y+3;
     gcd[23].gd.pos.width = 55; gcd[23].gd.pos.height = 0;
     gcd[23].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
     label[23].text = (unichar_t *) "Cancel";
@@ -1070,6 +1108,8 @@ void FontMenuFontInfo(void *_fv) {
     GGadgetsCreate(gw,gcd);
     if ( list!=encodingtypes )
 	GTextInfoListFree(list);
+    GWidgetIndicateFocusGadget(gcd[1].ret);
+    /*GTextFieldSelect(gcd[1].ret,0,-1);*/
 
     memset(&d,'\0',sizeof(d));
     d.sf = sf;

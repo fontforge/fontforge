@@ -365,6 +365,11 @@ typedef struct splinefont {
     struct psdict *private;		/* read in from type1 file or provided by user */
     /*struct pschars *subrs;		/* actually an array, but this will do */
     char *xuid;
+    struct pfminfo {
+	unsigned int pfmset: 1;
+	unsigned char family;
+	unsigned short weight;
+    } pfminfo;
 } SplineFont;
 
 struct fontdict;
@@ -390,7 +395,7 @@ extern int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format);
 extern int WritePSFont(char *fontname,SplineFont *sf,enum fontformat format);
 extern int WriteTTFFont(char *fontname,SplineFont *sf, enum fontformat format);
 extern int SFReencodeFont(SplineFont *sf,enum charset new_map);
-extern void SFSetFontName(SplineFont *sf, char *family, char *mods);
+extern void SFSetFontName(SplineFont *sf, char *family, char *mods, char *full);
 
 extern int DoubleNear(double a,double b);
 extern int DoubleNearish(double a,double b);
@@ -500,6 +505,7 @@ extern void SplineFontAutoHint( SplineFont *sf);
 extern int SplineFontIsFlexible(SplineFont *sf);
 extern int SCWorthOutputting(SplineChar *sc);
 extern int AfmSplineFont(FILE *afm, SplineFont *sf,int type0);
+extern int PfmSplineFont(FILE *pfm, SplineFont *sf,int type0);
 extern char *EncodingName(int map);
 extern void SFLigaturePrepare(SplineFont *sf);
 extern void SFLigatureCleanup(SplineFont *sf);

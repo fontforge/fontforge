@@ -703,11 +703,12 @@ static void SCClearAll(SplineChar *sc,FontView *fv) {
 
     if ( sc==NULL )
 return;
+    if ( sc->splines==NULL && sc->refs==NULL && !sc->widthset &&
+	    sc->hstem==NULL && sc->vstem==NULL )
+return;
     SCPreserveState(sc);
     sc->widthset = false;
-	sc->width = sc->parent->ascent+sc->parent->descent;
-    if ( sc->splines==NULL && sc->refs==NULL )
-return;
+    sc->width = sc->parent->ascent+sc->parent->descent;
     SplinePointListsFree(sc->splines);
     sc->splines = NULL;
     for ( refs=sc->refs; refs!=NULL; refs = next ) {
@@ -715,6 +716,9 @@ return;
 	RefCharFree(refs);
     }
     sc->refs = NULL;
+    StemInfosFree(sc->hstem); sc->hstem = NULL;
+    StemInfosFree(sc->vstem); sc->vstem = NULL;
+    SCOutOfDateBackground(sc);
     SCCharChangedUpdate(sc,fv);
 }
 

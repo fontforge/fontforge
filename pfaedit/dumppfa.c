@@ -228,7 +228,7 @@ static void dumpdblmaxarray(void (*dumpchar)(int ch,void *data), void *data,
     dumpf( dumpchar,data,"/%s [",name);
     for ( i=0; i<len; ++i )
 	dumpf( dumpchar,data,"%g ", arr[i]);
-    dumpf( dumpchar,data,"]%sdef\n", modifiers );
+    dumpf( dumpchar,data,"]%sND\n", modifiers );
 }
 
 static void dumpdblarray(void (*dumpchar)(int ch,void *data), void *data,
@@ -263,7 +263,7 @@ static void dumpsubrs(void (*dumpchar)(int ch,void *data), void *data,
 return;
     if ( (pt=PSDictHasEntry(sf->private,"lenIV"))!=NULL )
 	leniv = strtol(pt,NULL,10);
-    dumpf(dumpchar,data,"/Subrs %d array\n",subrs->cnt);
+    dumpf(dumpchar,data,"/Subrs %d array\n",subrs->next);
     for ( i=0; i<subrs->next; ++i ) {
 	dumpf(dumpchar,data,"dup %d %d RD ", i, subrs->lens[i]+leniv );
 	encodestrout(dumpchar,data,subrs->values[i],subrs->lens[i],leniv);
@@ -581,13 +581,13 @@ static void dumpprivatestuff(void (*dumpchar)(int ch,void *data), void *data, Sp
     }
     if ( !hash ) {
 	if ( stdhw[0]!=0 )
-	    dumpf(dumpchar,data,"/StdHW [%g] def\n", stdhw[0] );
+	    dumpf(dumpchar,data,"/StdHW [%g] ND\n", stdhw[0] );
 	if ( stemsnaph[0]!=0 )
 	    dumpdblmaxarray(dumpchar,data,"StemSnapH",stemsnaph,12,"");
     }
     if ( !hasv ) {
 	if ( stdvw[0]!=0 )
-	    dumpf(dumpchar,data,"/StdVW [%g] def\n", stdvw[0] );
+	    dumpf(dumpchar,data,"/StdVW [%g] ND\n", stdvw[0] );
 	if ( stemsnapv[0]!=0 )
 	    dumpdblmaxarray(dumpchar,data,"StemSnapV",stemsnapv,12,"");
     }
@@ -601,7 +601,15 @@ static void dumpprivatestuff(void (*dumpchar)(int ch,void *data), void *data, Sp
 	for ( i=0; i<sf->private->next; ++i ) {
 	    dumpf(dumpchar,data,"/%s ", sf->private->keys[i]);
 	    dumpstr(dumpchar,data,sf->private->values[i]);
-	    dumpstr(dumpchar,data," def\n");
+	    if ( strcmp(sf->private->keys[i],"BlueValues")==0 ||
+		    strcmp(sf->private->keys[i],"OtherBlues")==0 ||
+		    strcmp(sf->private->keys[i],"StdHW")==0 ||
+		    strcmp(sf->private->keys[i],"StdVW")==0 ||
+		    strcmp(sf->private->keys[i],"StemSnapH")==0 ||
+		    strcmp(sf->private->keys[i],"StemSnapV")==0 )
+		dumpstr(dumpchar,data," ND\n");
+	    else
+		dumpstr(dumpchar,data," def\n");
 	}
     }
     dumpothersubrs(dumpchar,data,flex_max>0,iscjk);

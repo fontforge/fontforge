@@ -486,11 +486,12 @@ static int FigureHintMask(struct hintdb *hdb, SplinePoint *to, uint8 mask[12] ) 
     StemInfo *h=NULL, *v=NULL, *s;
     SplinePoint *tsp;
     double lastx, lasty;
-    SplineChar *sc = hdb->sc;
+    SplineChar *sc;
     HintInstance *hi;
 
     if ( hdb==NULL || hdb->noconflicts )
 return(false);
+    sc = hdb->sc;
 
     /* Does this point lie on any hints? */
     if ( hdb->sc->hconflicts )
@@ -522,7 +523,8 @@ return(false);
 	/* Install all hints that should be active when the minor coord is that */
 	/*  of this point. So horizontal hints become active if the x coord matches */
 	for ( s=sc->hstem; s!=NULL; s=s->next )
-	    if ( s->hintnumber!=-1 && s->hasconflicts) {
+	    if ( s->hintnumber!=-1 && s->hasconflicts &&
+		    !ConflictsWithMask(sc->hstem,mask,s)) {
 		for ( hi=s->where; hi!=NULL; hi=hi->next )
 		    if ( hi->begin<=to->me.x && hi->end>=to->me.x ) {
 			mask[s->hintnumber>>3] |= (0x80>>(s->hintnumber&7));
@@ -533,7 +535,8 @@ return(false);
     if ( hdb->sc->vconflicts ) {
 	/* Same for v. So vertical hints become active if the y coord matches */
 	for ( s=sc->vstem; s!=NULL; s=s->next )
-	    if ( s->hintnumber!=-1 && s->hasconflicts) {
+	    if ( s->hintnumber!=-1 && s->hasconflicts &&
+		    ConflictsWithMask(sc->vstem,mask,s)) {
 		for ( hi=s->where; hi!=NULL; hi=hi->next )
 		    if ( hi->begin<=to->me.y && hi->end>=to->me.y ) {
 			mask[s->hintnumber>>3] |= (0x80>>(s->hintnumber&7));
@@ -589,7 +592,6 @@ return;						/* active then we are done */
     if ( gb->pt+1 >= gb->end )
 	GrowBuffer(gb);
     *gb->pt++ = 10;			/* callsubr */
-
     memcpy(hdb->mask,mask,sizeof(mask));
     hdb->cursub = s;
 }
@@ -648,10 +650,21 @@ static void InitialHintSetup(GrowBuf *gb,struct hintdb *hdb, int round ) {
     if ( !InitialHintMask(hdb,mask))
 return;
 
+#if 0		/* Everybody else seems to put the initial hints in line, but a subr call seems to work and (potentially) saves space if we can reuse the subr */
+    if ( !hdb->sc->hconflicts )
+	CvtPsHints(gb,hdb->sc->hstem,0,true,round,hdb->iscjk);
+    else
+	CvtPsMasked(gb,hdb->sc->hstem,0,true,round,mask);
+    if ( !hdb->sc->vconflicts )
+	CvtPsHints(gb,hdb->sc->vstem,hdb->sc->lsidebearing,false,round,hdb->iscjk);
+    else
+	CvtPsMasked(gb,hdb->sc->vstem,hdb->sc->lsidebearing,false,round,mask);
+#else
     AddNumber(gb,FindOrBuildSubr(hdb,mask,round),round);
     if ( gb->pt+1 >= gb->end )
 	GrowBuffer(gb);
     *gb->pt++ = 10;			/* callsubr */
+#endif
 
     memcpy(hdb->mask,mask,sizeof(mask));
 }
@@ -1040,6 +1053,8 @@ static unsigned char *SplineChar2PS(SplineChar *sc,int *len,int round,int iscjk,
 	    memset(&hintdb,0,sizeof(hintdb));
 	    hintdb.subrs = subrs; hintdb.iscjk = iscjk; hintdb.sc = sc;
 	    hdb = &hintdb;
+	    if ( sc->enc==488 )
+		sc->enc = 488;
 	    InitialHintSetup(&gb,hdb,round);
 	}
 	CvtPsSplineSet(&gb,sc->splines,&current,round,hdb);

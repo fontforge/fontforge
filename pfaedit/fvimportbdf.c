@@ -134,13 +134,13 @@ return;
 	GDrawRequestExpose(bv->v,NULL,false);
 }
 	
-static int slurp_header(FILE *bdf, int *_as, int *_ds, int *_enc, char *family, char *mods) {
+static int slurp_header(FILE *bdf, int *_as, int *_ds, int *_enc, char *family, char *mods, char *full) {
     int pixelsize = -1;
     int ascent= -1, descent= -1, enc, cnt;
     char tok[100], encname[100], weight[100], italic[100];
     int ch;
 
-    encname[0]= '\0'; family[0] = '\0'; weight[0]='\0'; italic[0]='\0';
+    encname[0]= '\0'; family[0] = '\0'; weight[0]='\0'; italic[0]='\0'; full[0]='\0';
     while ( gettoken(bdf,tok,sizeof(tok))!=-1 ) {
 	if ( strcmp(tok,"CHARS")==0 ) {
 	    cnt=0;
@@ -168,6 +168,10 @@ static int slurp_header(FILE *bdf, int *_as, int *_ds, int *_enc, char *family, 
 	    ch = getc(bdf);
 	    ch = getc(bdf); ungetc(ch,bdf);
 	    fscanf(bdf, " \"%[^\"]", family );
+	} else if ( strcmp(tok,"FULL_NAME")==0 ) {
+	    ch = getc(bdf);
+	    ch = getc(bdf); ungetc(ch,bdf);
+	    fscanf(bdf, " \"%[^\"]", full );
 	} else if ( strcmp(tok,"WEIGHT_NAME")==0 )
 	    fscanf(bdf, " \"%[^\"]", weight );
 	else if ( strcmp(tok,"SLANT")==0 )
@@ -279,7 +283,7 @@ BDFFont *SFImportBDF(SplineFont *sf, char *filename) {
     char tok[100];
     int pixelsize, ascent, descent, enc;
     BDFFont *b;
-    char family[100], mods[200];
+    char family[100], mods[200], full[300];
 
     bdf = fopen(filename,"r");
     if ( bdf==NULL ) {
@@ -291,7 +295,7 @@ return( 0 );
 	GDrawError("Not a bdf file: %s", filename );
 return( NULL );
     }
-    pixelsize = slurp_header(bdf,&ascent,&descent,&enc,family,mods);
+    pixelsize = slurp_header(bdf,&ascent,&descent,&enc,family,mods,full);
     if ( pixelsize==-1 )
 	pixelsize = askusersize(filename);
     if ( pixelsize==-1 ) {
@@ -300,7 +304,7 @@ return( NULL );
     }
     if ( sf->bitmaps==NULL && sf->onlybitmaps ) {
 	/* Loading first bitmap into onlybitmap font sets the name and encoding */
-	SFSetFontName(sf,family,mods);
+	SFSetFontName(sf,family,mods,full);
 	SFReencodeFont(sf,enc);
 	sf->display_size = pixelsize;
     }

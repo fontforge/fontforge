@@ -370,6 +370,10 @@ static void SFDDump(FILE *sfd,SplineFont *sf) {
     fprintf(sfd, "Descent: %d\n", sf->descent );
     if ( sf->xuid!=NULL )
 	fprintf(sfd, "XUID: %s\n", sf->xuid );
+    if ( sf->pfminfo.pfmset ) {
+	fprintf(sfd, "PfmFamily: %d\n", sf->pfminfo.family );
+	fprintf(sfd, "PfmWeight: %d\n", sf->pfminfo.weight );
+    }
     if ( sf->encoding_name>=em_base ) {
 	Encoding *item;
 	for ( item = enclist; item!=NULL && item->enc_num!=sf->encoding_name; item = item->next );
@@ -1131,6 +1135,16 @@ return( NULL );
 	    getdouble(sfd,&sf->upos);
 	} else if ( strmatch(tok,"UnderlineWidth:")==0 ) {
 	    getdouble(sfd,&sf->uwidth);
+	} else if ( strmatch(tok,"PfmFamily:")==0 ) {
+	    int temp;
+	    getint(sfd,&temp);
+	    sf->pfminfo.family = temp;
+	    sf->pfminfo.pfmset = true;
+	} else if ( strmatch(tok,"PfmWeight:")==0 ) {
+	    int temp;
+	    getint(sfd,&temp);
+	    sf->pfminfo.weight = temp;
+	    sf->pfminfo.pfmset = true;
 	} else if ( strmatch(tok,"DisplaySize:")==0 ) {
 	    getint(sfd,&sf->display_size);
 	} else if ( strmatch(tok,"AntiAlias:")==0 ) {

@@ -1,6 +1,6 @@
 #include "basics.h"
 
-/* These subroutines are code by Adobe for this exact use */
+/* These subroutines are code by Adobe for this exact use (from T1_Spec.pdf) */
 
 	/* 3 0 callothersubr pop pop setcurrentpoint return */
 static const uint8 subrs0[] = { 3+139, 0+139, 12, 16, 12, 17, 12, 17, 12, 33, 11 };
@@ -16,11 +16,10 @@ const uint8 *const subrs[4] = { subrs0, subrs1, subrs2, subrs3 };
 const int subrslens[4] = { sizeof(subrs0), sizeof(subrs1), sizeof(subrs2), sizeof(subrs3)};
 
 /* Assumption: We always want to do hint substitution (anyway, it's small) */
-/* If we also want flex output the "othersubrs" array. If no flex the "othersubrsnoflex" */
+/* If we also want flex output use the "othersubrs" array. If no flex the "othersubrsnoflex" */
 /* If we want to do counters, output "othersubrscounters" too */
 /* Finish up with othersubrsend */
 const char *othersubrs[] = {
-	"",
 	"% Copyright (c) 1987-1990 Adobe Systems Incorporated.",
 	"% All Rights Reserved.",
 	"% This code to be used for Flex and hint replacement.",
@@ -47,18 +46,18 @@ const char *othersubrs[] = {
 	"ifelse",
 	"[",
 	"systemdict /internaldict known not",
-	"{ 100 dict /begin cvx /mtx matrix /def cvx } if",
+	"{100 dict /begin cvx /mtx matrix /def cvx} if",
 	"systemdict /currentpacking known {currentpacking true setpacking} if",
 	"{",
 	"systemdict /internaldict known {",
 	"1183615869 systemdict /internaldict get exec",
 	"dup /$FlxDict known not {",
 	"dup dup length exch maxlength eq",
-	"{ pop userdict dup /$FlxDict known not",
-	"{ 100 dict begin /mtx matrix def",
-	"dup /$FlxDict currentdict put end } if }",
-	"{ 100 dict begin /mtx matrix def",
-	"dup /$FlxDict currentdict put end }",
+	"{pop userdict dup /$FlxDict known not",
+	"{100 dict begin /mtx matrix def",
+	"dup /$FlxDict currentdict put end} if}",
+	"{100 dict begin /mtx matrix def",
+	"dup /$FlxDict currentdict put end}",
 	"ifelse",
 	"} if",
 	"/$FlxDict get begin",
@@ -72,19 +71,19 @@ const char *othersubrs[] = {
 	"/c1y2 exdef /c1x2 exdef /c2x2 c4x2 def /c2y2 c4y2 def",
 	"/yflag c1y2 c3y2 sub abs c1x2 c3x2 sub abs gt def",
 	"/PickCoords {",
-	"{c1x0 c1y0 c1x1 c1y1 c1x2 c1y2 c2x0 c2y0 c2x1 c2y1 c2x2 c2y2 }",
-	"{c3x0 c3y0 c3x1 c3y1 c3x2 c3y2 c4x0 c4y0 c4x1 c4y1 c4x2 c4y2 }",
+	"{c1x0 c1y0 c1x1 c1y1 c1x2 c1y2 c2x0 c2y0 c2x1 c2y1 c2x2 c2y2}",
+	"{c3x0 c3y0 c3x1 c3y1 c3x2 c3y2 c4x0 c4y0 c4x1 c4y1 c4x2 c4y2}",
 	"ifelse",
 	"/y5 exdef /x5 exdef /y4 exdef /x4 exdef /y3 exdef /x3 exdef",
 	"/y2 exdef /x2 exdef /y1 exdef /x1 exdef /y0 exdef /x0 exdef",
 	"} def",
 	"mtx currentmatrix pop",
 	"mtx 0 get abs .00001 lt mtx 3 get abs .00001 lt or",
-	"{/flipXY -1 def }",
+	"{/flipXY -1 def}",
 	"{mtx 1 get abs .00001 lt mtx 2 get abs .00001 lt or",
-	"{/flipXY 1 def }",
-	"{/flipXY 0 def }",
-	"ifelse }",
+	"{/flipXY 1 def}",
+	"{/flipXY 0 def}",
+	"ifelse}",
 	"ifelse",
 	"/erosion 1 def",
 	"systemdict /internaldict known {",
@@ -96,7 +95,7 @@ const char *othersubrs[] = {
 	"} if",
 	"yflag",
 	"{flipXY 0 eq c3y2 c4y2 eq or",
-	"{false PickCoords }",
+	"{false PickCoords}",
 	"{/shrink c3y2 c4y2 eq",
 	"{0}{c1y2 c4y2 sub c3y2 c4y2 sub div abs} ifelse def",
 	"/yshrink {c4y2 sub shrink mul c4y2 add} def",
@@ -112,8 +111,8 @@ const char *othersubrs[] = {
 	"/dY 0 y2 c1y2 sub round dtransform flipXY 1 eq {exch}",
 	"if pop def",
 	"dY round dup 0 ne",
-	"{/dY exdef }",
-	"{pop dY 0 lt {-1}{1} ifelse /dY exdef }",
+	"{/dY exdef}",
+	"{pop dY 0 lt {-1}{1} ifelse /dY exdef}",
 	"ifelse",
 	"/erode PaintType 2 ne erosion 0.5 ge and def",
 	"erode {/cy cy 0.5 sub def} if",
@@ -128,7 +127,7 @@ const char *othersubrs[] = {
 	"} ifelse",
 	"}",
 	"{flipXY 0 eq c3x2 c4x2 eq or",
-	"{false PickCoords }",
+	"{false PickCoords}",
 	"{/shrink c3x2 c4x2 eq",
 	"{0}{c1x2 c4x2 sub c3x2 c4x2 sub div abs} ifelse def",
 	"/xshrink {c4x2 sub shrink mul c4x2 add} def",
@@ -143,8 +142,8 @@ const char *othersubrs[] = {
 	"/cy exch def /cx exch def",
 	"/dX x2 c1x2 sub round 0 dtransform flipXY -1 eq {exch} if pop def",
 	"dX round dup 0 ne",
-	"{/dX exdef }",
-	"{pop dX 0 lt {-1}{1} ifelse /dX exdef }",
+	"{/dX exdef}",
+	"{pop dX 0 lt {-1}{1} ifelse /dX exdef}",
 	"ifelse",
 	"/erode PaintType 2 ne erosion .5 ge and def",
 	"erode {/cx cx .5 sub def} if",
@@ -158,9 +157,9 @@ const char *othersubrs[] = {
 	"} ifelse",
 	"} ifelse",
 	"x2 x5 eq y2 y5 eq or",
-	"{ x5 y5 lineto }",
-	"{ x0 y0 x1 y1 x2 y2 curveto",
-	"x3 y3 x4 y4 x5 y5 curveto }",
+	"{x5 y5 lineto}",
+	"{x0 y0 x1 y1 x2 y2 curveto",
+	"x3 y3 x4 y4 x5 y5 curveto}",
 	"ifelse",
 	"epY epX",
 	"}",
@@ -204,10 +203,9 @@ const char *othersubrs[] = {
 };
 
 const char *othersubrsnoflex[] = {
-	"",
 	"% Copyright (c) 1987-1990 Adobe Systems Incorporated.",
 	"% All Rights Reserved.",
-	"% This code to be used for Flex and hint replacement.",
+	"% This code to be used for Hint replacement only.",
 	"% Version 1.1",
 	"[ {} {} {}",
 	"{systemdict /internaldict known not",
@@ -235,7 +233,7 @@ const char *othersubrscounters[] = {
 	"{}",		/* Other subr 10 */
 	"{}",		/* Other subr 11 */
 	"{}",		/* Other Subr 12, for counter hints */
-	"{ 2 { cvi { { pop 0 lt { exit } if } loop } repeat } repeat }",	/* Other Subr 13 for counter hints */
+	"{2 {cvi {{pop 0 lt {exit} if} loop} repeat} repeat}",	/* Other Subr 13 for counter hints */
 	NULL
 };
 

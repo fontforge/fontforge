@@ -406,16 +406,6 @@ return;
 	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Guess),false);
 	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_PrivateValues),false);
 	GGadgetSetTitle(GWidgetGetControl(d->gw,CID_PrivateValues),nullstr);
-#if 0
-    } else if ( sf->private==NULL || sel==sf->private->next ) {
-	/* Subrs entry */
-	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Remove),true);
-	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Guess),false);
-	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_PrivateValues),false);
-	GGadgetSetTitle(GWidgetGetControl(d->gw,CID_PrivateValues),
-		temp = uc_copy( "<Subroutine array,\n not human readable>" ));
-	free( temp );
-#endif
     } else {
 	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Remove),true);
 	if ( strcmp(sf->private->keys[sel],"BlueValues")==0 ||
@@ -431,6 +421,7 @@ return;
 	GGadgetSetTitle(GWidgetGetControl(d->gw,CID_PrivateValues),
 		temp = uc_copy( sf->private->values[sel]));
 	free( temp );
+	GTextFieldShow(GWidgetGetControl(d->gw,CID_PrivateValues),0);
     }
     d->old_sel = sel;
 }

@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include "splinefont.h"
 #include <utype.h>
+#include <ustring.h>
 
 extern char *zapfnomen[];
 extern short zapfwx[];
@@ -430,4 +431,260 @@ void SFLigaturePrepare(SplineFont *sf) {
 	    for ( ligstart = semi+1; isspace(*ligstart); ++ligstart );
 	}
     }
+}
+
+static void putlshort(short val,FILE *pfm) {
+    putc(val&0xff,pfm);
+    putc(val>>8,pfm);
+}
+
+static void putlint(int val,FILE *pfm) {
+    putc(val&0xff,pfm);
+    putc((val>>8)&0xff,pfm);
+    putc((val>>16)&0xff,pfm);
+    putc((val>>24)&0xff,pfm);
+}
+
+int PfmSplineFont(FILE *pfm, SplineFont *sf, int type0) {
+    int caph, xh, ash, dsh, cnt, first=-1, samewid=-1, maxwid= -1, last=0, wid=0;
+    int kerncnt=0, spacepos=0x20;
+    int i;
+    char *pt;
+    KernPair *kp;
+    /* my docs imply that pfm files can only handle 1byte fonts */
+    long size, devname, facename, extmetrics, exttable, driverinfo, kernpairs, pos;
+    DBounds b;
+
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	if ( sf->chars[i]!=NULL && sf->chars[i]->unicodeenc==' ' )
+	    spacepos = i;
+	if ( SCWorthOutputting(sf->chars[i]) ) {
+	    ++cnt;
+	    if ( sf->chars[i]->unicodeenc=='I' || sf->chars[i]->unicodeenc=='x' ||
+		    sf->chars[i]->unicodeenc=='H' || sf->chars[i]->unicodeenc=='d' || 
+		    sf->chars[i]->unicodeenc=='p' || sf->chars[i]->unicodeenc=='l' ) {
+		SplineCharFindBounds(sf->chars[i],&b);
+		if ( sf->chars[i]->unicodeenc=='I' || sf->chars[i]->unicodeenc=='H' )
+		    caph = b.maxy;
+		else if ( sf->chars[i]->unicodeenc=='x' )
+		    xh = b.maxy;
+		else if ( sf->chars[i]->unicodeenc=='d' || sf->chars[i]->unicodeenc=='l' )
+		    ash = b.maxy;
+		else
+		    dsh = b.miny;
+	    }
+	    if ( samewid==-1 )
+		samewid = sf->chars[i]->width;
+	    else if ( samewid!=sf->chars[i]->width )
+		samewid = -2;
+	    if ( maxwid<sf->chars[i]->width )
+		maxwid = sf->chars[i]->width;
+	    if ( first==-1 )
+		first = i;
+	    wid += sf->chars[i]->width;
+	    last = i;
+	    if ( i<256 ) for ( kp=sf->chars[i]->kerns; kp!=NULL; kp = kp->next )
+		if ( kp->sc->enc<256 )
+		    ++kerncnt;
+	}
+    }
+    if ( spacepos<first ) first = spacepos;
+    if ( first==-1 ) first = 0;
+    if ( spacepos>last ) last = spacepos;
+    if ( cnt!=0 ) wid /= cnt;
+    if ( kerncnt>=512 ) kerncnt = 512;
+
+    if ( !sf->pfminfo.pfmset ) {
+	sf->pfminfo.family = 0x10;
+	if ( samewid>0 )
+	    sf->pfminfo.family = 0x30;
+	else if ( strstrmatch(sf->fontname,"sans")!=NULL )
+	    sf->pfminfo.family = 0x20;
+	else if ( strstrmatch(sf->fontname,"script")!=NULL )
+	    sf->pfminfo.family = 0x40;
+	sf->pfminfo.family |= 0x1;		/* Else it assumes monospace */
+	sf->pfminfo.weight = 400;
+	if ( strstrmatch(sf->fontname,"medium")!=NULL )
+	    sf->pfminfo.weight = 500;
+	else if ( (strstrmatch(sf->fontname,"demi")!=NULL ||
+		    strstrmatch(sf->fontname,"semi")!=NULL) &&
+		strstrmatch(sf->fontname,"bold")!=NULL )
+	    sf->pfminfo.weight = 600;
+	else if ( strstrmatch(sf->fontname,"bold")!=NULL )
+	    sf->pfminfo.weight = 700;
+	else if ( strstrmatch(sf->fontname,"heavy")!=NULL )
+	    sf->pfminfo.weight = 800;
+	else if ( strstrmatch(sf->fontname,"black")!=NULL )
+	    sf->pfminfo.weight = 900;
+	else if ( strstrmatch(sf->fontname,"thin")!=NULL )
+	    sf->pfminfo.weight = 100;
+	else if ( strstrmatch(sf->fontname,"extra")!=NULL ||
+		strstrmatch(sf->fontname,"light")!=NULL )
+	    sf->pfminfo.weight = 200;
+	else if ( strstrmatch(sf->fontname,"light")!=NULL )
+	    sf->pfminfo.weight = 300;
+    }
+
+    putlshort(0x100,pfm);		/* format version number */
+    size = ftell(pfm);
+    putlint(-1,pfm);			/* file size, fill in later */
+    i=0;
+    if ( sf->copyright!=NULL ) for ( pt=sf->copyright; *pt && i<60; ++i, ++pt )
+	putc(*pt,pfm);
+    for ( ; i<60; ++i )
+	putc(' ',pfm);
+    putlshort(0x81,pfm);		/* type flags */
+    putlshort(10,pfm);			/* point size, not really meaningful */
+    putlshort(300,pfm);			/* vert resolution */
+    putlshort(300,pfm);			/* hor resolution */
+    putlshort(sf->ascent,pfm);		/* ascent (is this the right defn of ascent?) */
+    if ( caph==0 ) caph = ash;
+    putlshort(sf->ascent+sf->descent-caph-dsh,pfm);	/* Internal leading */
+    putlshort(0/*(sf->ascent+sf->descent)/8*/,pfm);	/* External leading */
+    putc(sf->italicangle!=0 ||
+	    strstrmatch(sf->fontname,"italic")!=NULL ||
+	    strstrmatch(sf->fontname,"oblique")!=NULL,pfm);	/* is italic */
+    putc(0,pfm);			/* underline */
+    putc(0,pfm);			/* strikeout */
+    putlshort(sf->pfminfo.weight,pfm);	/* weight */
+    putc(sf->encoding_name==em_symbol?2:0,pfm);	/* charset. I'm always saying windows roman (ANSI) or symbol because I don't know the other choices */
+    putlshort(/*samewid<0?sf->ascent+sf->descent:samewid*/0,pfm);	/* width */
+    putlshort(sf->ascent+sf->descent,pfm);	/* height */
+    putc(sf->pfminfo.family,pfm);	/* family */
+    putlshort(wid,pfm);			/* average width, Docs say "Width of "X", but that's wrong */
+    putlshort(maxwid,pfm);		/* max width */
+
+    if ( first>255 ) first=last = 0;
+    else if ( last>255 ) last = 255;
+    putc(first,pfm);			/* first char */
+    putc(last,pfm);
+    if ( spacepos>=first && spacepos<=last ) {
+	putc(spacepos-first,pfm);	/* default char */
+	putc(spacepos-first,pfm);	/* wordbreak */
+    } else {
+	putc(0,pfm);			/* default character. I set to space */
+	putc(0,pfm);			/* word break character. I set to space */
+    }
+    putlshort(0,pfm);			/* width bytes. Not meaningful for ps */
+
+    devname = ftell(pfm);
+    putlint(-1,pfm);			/* offset to device name, fill in later */
+    facename = ftell(pfm);
+    putlint(-1,pfm);			/* offset to face name, fill in later */
+    putlint(0,pfm);			/* bits pointer. not used */
+    putlint(0,pfm);			/* bits offset. not used */
+
+/* No width table */
+
+/* extensions */
+    putlshort(0x1e,pfm);		/* size of extensions table */
+    extmetrics = ftell(pfm);
+    putlint(-1,pfm);			/* extent metrics. fill in later */
+    exttable = ftell(pfm);
+    putlint(-1,pfm);			/* extent table. fill in later */
+    putlint(0,pfm);			/* origin table. not used */
+    kernpairs = ftell(pfm);
+    putlint(kerncnt==0?0:-1,pfm);	/* kern pairs. fill in later */
+    putlint(0,pfm);			/* kern track. I don't understand it so I'm leaving it out */
+    driverinfo = ftell(pfm);
+    putlint(-1,pfm);			/* driver info. fill in later */
+    putlint(0,pfm);			/* reserved. mbz */
+
+/* devicename */
+    pos = ftell(pfm);
+    fseek(pfm,devname,SEEK_SET);
+    putlint(pos,pfm);
+    fseek(pfm,pos,SEEK_SET);
+    for ( pt="Postscript"/*"\273PostScript\253"*/; *pt; ++pt )
+	putc(*pt,pfm);
+    putc('\0',pfm);
+
+/* facename */
+    pos = ftell(pfm);
+    fseek(pfm,facename,SEEK_SET);
+    putlint(pos,pfm);
+    fseek(pfm,pos,SEEK_SET);
+    for ( pt=sf->familyname; *pt; ++pt )
+	putc(*pt,pfm);
+    putc('\0',pfm);
+
+/* extmetrics */
+    pos = ftell(pfm);
+    fseek(pfm,extmetrics,SEEK_SET);
+    putlint(pos,pfm);
+    fseek(pfm,pos,SEEK_SET);
+    putlshort(0x34,pfm);		/* size */
+    putlshort(240,pfm);			/* 12 point in twentieths of a point */
+    putlshort(0,pfm);			/* any orientation */
+    putlshort(sf->ascent+sf->descent,pfm);	/* master height */
+    putlshort(3,pfm);			/* min scale */
+    putlshort(1000,pfm);		/* max scale */
+    putlshort(sf->ascent+sf->descent,pfm);	/* master units */
+    putlshort(caph,pfm);		/* cap height */
+    putlshort(xh,pfm);			/* x height */
+    putlshort(ash,pfm);			/* lower case ascent height */
+    putlshort(-dsh,pfm);		/* lower case descent height */
+    putlshort((int) (10*sf->italicangle),pfm);	/* italic angle */
+    putlshort(-xh,pfm);			/* super script */
+    putlshort(xh/2,pfm);		/* sub script */
+    putlshort(2*(sf->ascent+sf->descent)/3,pfm);	/* super size */
+    putlshort(2*(sf->ascent+sf->descent)/3,pfm);	/* sub size */
+    putlshort(-sf->upos,pfm);		/* underline pos */
+    putlshort(sf->uwidth,pfm);		/* underline width */
+    putlshort(-sf->upos,pfm);		/* double underline pos */
+    putlshort(-sf->upos+2*sf->uwidth,pfm);	/* double underline second line pos */
+    putlshort(sf->uwidth,pfm);		/* underline width */
+    putlshort(sf->uwidth,pfm);		/* underline width */
+    putlshort((xh+sf->uwidth)/2,pfm);	/* strike out top */
+    putlshort(sf->uwidth,pfm);		/* strike out width */
+    putlshort(kerncnt,pfm);		/* number of kerning pairs <= 512 */
+    putlshort(0,pfm);			/* kerning tracks <= 16 */
+
+/* extent table */
+    pos = ftell(pfm);
+    fseek(pfm,exttable,SEEK_SET);
+    putlint(pos,pfm);
+    fseek(pfm,pos,SEEK_SET);
+    for ( i=first; i<=last; ++i )
+	if ( sf->chars[i]==NULL )
+	    putlshort(0,pfm);
+	else
+	    putlshort(sf->chars[i]->width,pfm);
+
+/* driver info */ /* == ps font name */
+    pos = ftell(pfm);
+    fseek(pfm,driverinfo,SEEK_SET);
+    putlint(pos,pfm);
+    fseek(pfm,pos,SEEK_SET);
+    for ( pt=sf->fontname; *pt; ++pt )
+	putc(*pt,pfm);
+    putc('\0',pfm);
+
+/* kern pairs */
+    if ( kerncnt!=0 ) {
+	pos = ftell(pfm);
+	fseek(pfm,kernpairs,SEEK_SET);
+	putlint(pos,pfm);
+	fseek(pfm,pos,SEEK_SET);
+	for ( i=first; i<last; ++i ) if ( sf->chars[i]!=NULL ) {
+	    if ( SCWorthOutputting(sf->chars[i]) ) {
+		for ( kp=sf->chars[i]->kerns; kp!=NULL; kp = kp->next )
+		    if ( kp->sc->enc<256 ) {
+			putc(i,pfm);
+			putc(kp->sc->enc,pfm);
+			putlshort(kp->off,pfm);
+		    }
+	    }
+	}
+    }
+
+/* kern track */
+    /* I'm ignoring this */
+
+/* file size */
+    pos = ftell(pfm);
+    fseek(pfm,size,SEEK_SET);
+    putlint(pos,pfm);
+
+return( !ferror(pfm));
 }

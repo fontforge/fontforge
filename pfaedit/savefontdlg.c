@@ -41,6 +41,7 @@ struct gfc_data {
     GGadget *bmptype;
     GGadget *bmpsizes;
     GGadget *doafm;
+    GGadget *dopfm;
     SplineFont *sf;
 };
 
@@ -50,6 +51,7 @@ static unichar_t cancel[] = { 'C', 'a', 'n', 'c', 'e', 'l', '\0' };
 static unichar_t new[] = { 'N', 'e', 'w', '.', '.', '.', '\0' };
 static unichar_t replace[] = { 'R', 'e', 'p', 'l', 'a', 'c', 'e', '\0' };
 static unichar_t afm[] = { 'O', 'u', 't', 'p', 'u', 't', ' ', 'A', 'f', 'm', '\0' };
+static unichar_t pfm[] = { 'O', 'u', 't', 'p', 'u', 't', ' ', 'P', 'f', 'm', '\0' };
 
 static char *extensions[] = { ".pfa", ".pfb", ".ps", ".ps", ".ttf", ".ttf", ".otf", NULL };
 static GTextInfo formattypes[] = {
@@ -72,8 +74,9 @@ static GTextInfo bitmaptypes[] = {
 
 static unichar_t failedtitle[] = { 'S','a','v','e',' ','F','a','i','l','e','d', '\0' };
 static unichar_t afmfailedtitle[] = { 'A', 'f', 'm', ' ', 'S','a','v','e',' ','F','a','i','l','e','d', '\0' };
+static unichar_t pfmfailedtitle[] = { 'P', 'f', 'm', ' ', 'S','a','v','e',' ','F','a','i','l','e','d', '\0' };
 
-static int oldafmstate = true;
+static int oldafmstate = true, oldpfmstate = false;
 static int oldformatstate = ff_pfb;
 static int oldbitmapstate = 0;
 
@@ -137,6 +140,30 @@ return( 0 );
 return( ret );
 }
 
+static int WritePfmFile(char *filename,SplineFont *sf, int type0) {
+    char *buf = malloc(strlen(filename)+6), *pt, *pt2;
+    FILE *pfm;
+    int ret;
+    unichar_t *temp;
+
+    strcpy(buf,filename);
+    pt = strrchr(buf,'.');
+    if ( pt!=NULL && (pt2=strrchr(buf,'/'))!=NULL && pt<pt2 )
+	pt = NULL;
+    if ( pt==NULL )
+	strcat(buf,".pfm");
+    else
+	strcpy(pt,".pfm");
+    GProgressChangeLine2(temp=uc_copy(buf)); free(temp);
+    pfm = fopen(buf,"w");
+    if ( pfm==NULL )
+return( false );
+    ret = PfmSplineFont(pfm,sf,type0);
+    if ( fclose(pfm)==-1 )
+return( 0 );
+return( ret );
+}
+
 static int WriteBitmaps(char *filename,SplineFont *sf, double *sizes, int do_grey) {
     char *buf = malloc(strlen(filename)+20), *pt, *pt2;
     int i;
@@ -190,6 +217,7 @@ static void DoSave(struct gfc_data *d,unichar_t *path) {
     static unichar_t savettf[] = { 'S','a','v','i','n','g',' ','T','r','u','e','T','y','p','e',' ','F','o','n','t', '\0' };
     static unichar_t saveotf[] = { 'S','a','v','i','n','g',' ','O','p','e','n','T','y','p','e',' ','F','o','n','t', '\0' };
     static unichar_t saveafm[] = { 'S','a','v','i','n','g',' ','A','F','M',' ','F','i','l','e', '\0' };
+    static unichar_t savepfm[] = { 'S','a','v','i','n','g',' ','P','F','M',' ','F','i','l','e', '\0' };
     static unichar_t savebdf[] = { 'S','a','v','i','n','g',' ','B','i','t','m','a','p',' ','F','o','n','t','(','s',')', '\0' };
 
     temp = cu_copy(path);
@@ -208,11 +236,20 @@ static void DoSave(struct gfc_data *d,unichar_t *path) {
 	}
     }
     oldafmstate = GGadgetIsChecked(d->doafm);
+    oldpfmstate = GGadgetIsChecked(d->dopfm);
     if ( !err && oldafmstate ) {
 	GProgressChangeLine1(saveafm);
 	GProgressIncrementBy(-d->sf->charcnt);
 	if ( !WriteAfmFile(temp,d->sf,oldformatstate==ff_ptype0)) {
 	    GWidgetPostNotice(afmfailedtitle,afmfailedtitle);
+	    err = true;
+	}
+    }
+    if ( !err && oldpfmstate ) {
+	GProgressChangeLine1(savepfm);
+	GProgressIncrementBy(-d->sf->charcnt);
+	if ( !WritePfmFile(temp,d->sf,oldformatstate==ff_ptype0)) {
+	    GWidgetPostNotice(pfmfailedtitle,pfmfailedtitle);
 	    err = true;
 	}
     }
@@ -340,8 +377,18 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
 	unichar_t *pt, *dup, *tpt, *ret;
 	int format = GGadgetGetFirstListSelectedItem(d->pstype);
+	int set;
+
+	set = true;
+	if ( format==ff_ttf || format==ff_ttfsym || format==ff_otf || format==ff_none )
+	    set = false;
+	GGadgetSetChecked(d->doafm,set);
+	if ( !set )				/* Don't default to generating pfms */
+	    GGadgetSetChecked(d->dopfm,set);
+
 	if ( format==ff_none )
 return( true );
+
 	ret = GGadgetGetTitle(d->gfc);
 	dup = galloc((u_strlen(ret)+5)*sizeof(unichar_t));
 	u_strcpy(dup,ret);
@@ -353,8 +400,6 @@ return( true );
 	if ( pt==NULL ) pt = dup+u_strlen(dup);
 	uc_strcpy(pt,extensions[format]);
 	GGadgetSetTitle(d->gfc,dup);
-	if ( format==ff_ttf || format==ff_ttfsym || format==ff_otf )
-	    GGadgetSetChecked(d->doafm,false);
 	free(dup);
     }
 return( true );
@@ -403,8 +448,8 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[12];
-    GTextInfo label[12];
+    GGadgetCreateData gcd[14];
+    GTextInfo label[14];
     struct gfc_data d;
     GGadget *pulldown, *files, *tf;
     static unichar_t title[] = { 'G','e','n','e','r','a','t','e',' ','p','o','s','t','s','c','r','i','p','t',' ','f','o','n','t', '\0' };
@@ -419,7 +464,7 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     wattrs.window_title = title;
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,288);
-    pos.height = GDrawPointsToPixels(NULL,280);
+    pos.height = GDrawPointsToPixels(NULL,285);
     gw = GDrawCreateTopWindow(NULL,&pos,e_h,&d,&wattrs);
 
     memset(&label,0,sizeof(label));
@@ -428,7 +473,7 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     gcd[0].gd.flags = gg_visible | gg_enabled;
     gcd[0].creator = GFileChooserCreate;
 
-    gcd[1].gd.pos.x = 12; gcd[1].gd.pos.y = 246-3; gcd[1].gd.pos.width = 55; gcd[1].gd.pos.height = 0;
+    gcd[1].gd.pos.x = 12; gcd[1].gd.pos.y = 252-3; gcd[1].gd.pos.width = 55; gcd[1].gd.pos.height = 0;
     gcd[1].gd.flags = gg_visible | gg_enabled | gg_but_default;
     label[1].text = save;
     gcd[1].gd.mnemonic = 'S';
@@ -436,7 +481,7 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     gcd[1].gd.handle_controlevent = GFD_SaveOk;
     gcd[1].creator = GButtonCreate;
 
-    gcd[2].gd.pos.x = 81; gcd[2].gd.pos.y = 246; gcd[2].gd.pos.width = 55; gcd[2].gd.pos.height = 0;
+    gcd[2].gd.pos.x = 81; gcd[2].gd.pos.y = 252; gcd[2].gd.pos.width = 55; gcd[2].gd.pos.height = 0;
     gcd[2].gd.flags = gg_visible | gg_enabled;
     label[2].text = filter;
     gcd[2].gd.mnemonic = 'F';
@@ -444,7 +489,7 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     gcd[2].gd.handle_controlevent = GFileChooserFilterEh;
     gcd[2].creator = GButtonCreate;
 
-    gcd[3].gd.pos.x = 220; gcd[3].gd.pos.y = 246; gcd[3].gd.pos.width = 55; gcd[3].gd.pos.height = 0;
+    gcd[3].gd.pos.x = 220; gcd[3].gd.pos.y = 252; gcd[3].gd.pos.width = 55; gcd[3].gd.pos.height = 0;
     gcd[3].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
     label[3].text = cancel;
     gcd[3].gd.label = &label[3];
@@ -452,7 +497,7 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     gcd[3].gd.handle_controlevent = GFD_Cancel;
     gcd[3].creator = GButtonCreate;
 
-    gcd[4].gd.pos.x = 150; gcd[4].gd.pos.y = 246; gcd[4].gd.pos.width = 60; gcd[4].gd.pos.height = 0;
+    gcd[4].gd.pos.x = 150; gcd[4].gd.pos.y = 252; gcd[4].gd.pos.width = 60; gcd[4].gd.pos.height = 0;
     gcd[4].gd.flags = gg_visible | gg_enabled;
     label[4].text = new;
     label[4].image = &_GIcon_dir;
@@ -462,7 +507,7 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     gcd[4].gd.handle_controlevent = GFD_NewDir;
     gcd[4].creator = GButtonCreate;
 
-    gcd[5].gd.pos.x = 12; gcd[5].gd.pos.y = 218; gcd[5].gd.pos.width = 0; gcd[5].gd.pos.height = 0;
+    gcd[5].gd.pos.x = 12; gcd[5].gd.pos.y = 214; gcd[5].gd.pos.width = 0; gcd[5].gd.pos.height = 0;
     gcd[5].gd.flags = gg_visible | gg_enabled | (oldafmstate ?gg_cb_on : 0 );
     label[5].text = afm;
     gcd[5].gd.label = &label[5];
@@ -522,6 +567,12 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     label[9].text = BitmapList(sf);
     gcd[9].gd.label = &label[9];
 
+    gcd[10].gd.pos.x = 12; gcd[10].gd.pos.y = 231; gcd[10].gd.pos.width = 0; gcd[10].gd.pos.height = 0;
+    gcd[10].gd.flags = gg_visible | gg_enabled | (oldpfmstate ?gg_cb_on : 0 );
+    label[10].text = pfm;
+    gcd[10].gd.label = &label[10];
+    gcd[10].creator = GCheckBoxCreate;
+
     GGadgetsCreate(gw,gcd);
     GGadgetSetUserData(gcd[2].ret,gcd[0].ret);
     free(label[9].text);
@@ -541,6 +592,7 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     d.sf = sf;
     d.gfc = gcd[0].ret;
     d.doafm = gcd[5].ret;
+    d.dopfm = gcd[10].ret;
     d.pstype = gcd[6].ret;
     d.bmptype = gcd[8].ret;
     d.bmpsizes = gcd[9].ret;
