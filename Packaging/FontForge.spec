@@ -1,5 +1,5 @@
 Name:        fontforge
-Version:     20040321
+Version:     20041203
 Release:     1
 Summary:     An outline font editor
 Copyright:   BSD
@@ -46,6 +46,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/sfddiff
 %{_libdir}/libgunicode.*
 %{_libdir}/libgdraw.*
+%{_libdir}/pkgconfig/fontforge.pc
 %{_datadir}/fontforge
 %{_mandir}/man1/fontforge.1*
 %{_mandir}/man1/sfddiff.1*

@@ -52,6 +52,8 @@ install: $(sharedir) all install_libs
 	-cp $(srcdir)/cidmap/*.cidmap $(sharedir) >/dev/null 2>&1
 	cp $(srcdir)/fontforge/fontforge.1 $(mandir)/man1
 	cp $(srcdir)/fontforge/sfddiff.1 $(mandir)/man1
+	mkdir -p $(libdir)/pkgconfig
+	$(LIBTOOL) $(INSTALL) -c fontforge.in $(libdir)/pkgconfig
 
 uninstall:
 	-rm $(bindir)/fontforge

@@ -281,6 +281,11 @@ else
   WFLAGS=""
 fi
 
+LIBS="$LIBS $gww_rpath"
+
+AC_SUBST(VERSION)
+VERSION=`cat VERSION`
+
 cp Makefile.dynamic.in Makefile.in
 cp Unicode/Makefile.dynamic.in Unicode/Makefile.in
 cp gdraw/Makefile.dynamic.in gdraw/Makefile.in
@@ -290,8 +295,7 @@ if test -e umap >/dev/null 2>&1 ; then
   cp umap/Makefile.dynamic.in umap/Makefile.in
   AC_OUTPUT( umap/Makefile )
 fi
-
-LIBS="$LIBS $gww_rpath"
+AC_OUTPUT( fontforge.pc )
 
 echo Configuration defines: $DEFS
 echo CFLAGS: $CFLAGS
