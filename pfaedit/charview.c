@@ -2390,7 +2390,8 @@ int SCNumberPoints(SplineChar *sc) {
 	for ( sp=ss->first; ; ) {
 	    if ( ((sc->ttf_instrs!=NULL && sp->ttfindex==0xffff) ||
 		    ( sp!=ss->first && !sp->nonextcp && !sp->noprevcp &&
-		     !sp->roundx && !sp->roundy && !sp->dontinterpolate )) &&
+		     !sp->roundx && !sp->roundy && !sp->dontinterpolate &&
+		     sc->ttf_instrs==NULL )) &&
  		    (sp->nextcp.x+sp->prevcp.x)/2 == sp->me.x &&
 		    (sp->nextcp.y+sp->prevcp.y)/2 == sp->me.y )
 		sp->ttfindex = 0xffff;
