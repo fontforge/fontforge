@@ -422,49 +422,7 @@ static real SplineCharQuickTop(SplineChar *sc) {
 return( max );
 }
 
-static int haschar(SplineFont *sf,int ch) {
-    int i;
-
-    if ( sf->encoding_name==em_unicode ||  sf->encoding_name==em_unicode4 ||
-	    (ch<0x100 && sf->encoding_name==em_iso8859_1))
-return( ch<sf->charcnt && sf->chars[ch]!=NULL &&
-	(sf->chars[ch]->layers[ly_fore].splines!=NULL || sf->chars[ch]->layers[ly_fore].refs!=NULL || sf->chars[ch]->widthset) );
-    else if ( sf->encoding_name>=em_unicodeplanes && sf->encoding_name<=em_unicodeplanesmax ) {
-	i = ch - ((sf->encoding_name-em_unicodeplanes)<<16);
-return( i>=0 && i<sf->charcnt && sf->chars[i]!=NULL &&
-	(sf->chars[i]->layers[ly_fore].splines!=NULL || sf->chars[i]->layers[ly_fore].refs!=NULL || sf->chars[i]->widthset) );
-    }
-
-    for ( i=sf->charcnt-1; i>=0; --i ) if ( sf->chars[i]!=NULL )
-	if ( sf->chars[i]->unicodeenc == ch )
-    break;
-return( i!=-1 && (sf->chars[i]->layers[ly_fore].splines!=NULL || sf->chars[i]->layers[ly_fore].refs!=NULL || (ch==0x20 && sf->chars[i]->widthset)) );
-}
-
-static SplineChar *findchar(SplineFont *sf,int ch) {
-    int i;
-
-    if ( ch==-1 )	/* should never happen */
-return( NULL );
-    if ( sf->encoding_name==em_unicode ||  sf->encoding_name==em_unicode4 ||
-	    (ch<0x100 && sf->encoding_name==em_iso8859_1))
-return( sf->chars[ch] );
-    else if ( sf->encoding_name>=em_unicodeplanes && sf->encoding_name<=em_unicodeplanesmax ) {
-	i = ch - ((sf->encoding_name-em_unicodeplanes)<<16);
-	if ( i>=0 && i<sf->charcnt )
-return( sf->chars[i] );
-
-return( NULL );
-    }
-
-    for ( i=sf->charcnt-1; i>=0; --i ) if ( sf->chars[i]!=NULL )
-	if ( sf->chars[i]->unicodeenc == ch )
-    break;
-    if ( i<0 )
-return( NULL );
-
-return( sf->chars[i] );
-}
+#define haschar(sf,ch)	(SFGetChar(sf,ch,NULL)!=NULL)
 
 static const unichar_t *arabicfixup(SplineFont *sf, const unichar_t *upt, int ini, int final) {
     static unichar_t arabicalts[20];
@@ -665,7 +623,7 @@ return( false );
 	}
 	/* No recursive references */
 	/* Cyrillic gamma could refer to Greek gamma, which the entry gives as an alternate */
-	if ( one!=NULL && (two=findchar(sf,ch))!=NULL && SCDependsOnSC(two,one))
+	if ( one!=NULL && (two=SFGetChar(sf,ch,NULL))!=NULL && SCDependsOnSC(two,one))
 return( false );
     }
 return( true );
@@ -943,7 +901,7 @@ static int SCStemCheck(SplineFont *sf,int basech,DBounds *bb, DBounds *rbb,int p
     SplineChar *sc;
     DStemInfo *d, *dbest;
 
-    sc = findchar(sf,basech);
+    sc = SFGetChar(sf,basech,NULL);
     if ( sc==NULL )
 return( 0x70000000 );
     if ( autohint_before_generate && sc->changedsincelasthinted && !sc->manualhints )
@@ -1072,11 +1030,11 @@ static int SCMakeBaseReference(SplineChar *sc,SplineFont *sf,int ch, int copybmp
     SplineChar *rsc;
     BDFFont *bdf;
 
-    rsc = findchar(sf,ch);
+    rsc = SFGetChar(sf,ch,NULL);
     if ( rsc==NULL ) {
 	if ( ch==0x131 || ch==0xf6be ) {
 	    if ( ch==0x131 ) ch='i'; else ch = 'j';
-	    rsc = findchar(sf,ch);
+	    rsc = SFGetChar(sf,ch,NULL);
 	    if ( rsc!=NULL && !sf->dotlesswarn ) {
 #if defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error( _("Missing Glyph..."),ch=='i'?_("Your font is missing the dotlessi glyph,\nplease add it and remake your accented glyphs"):_("Your font is missing the dotlessj glyph,\nplease add it and remake your accented glyphs"));
@@ -1157,7 +1115,7 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
 	}
     } else
 	ach = ch;
-    rsc = findchar(sf,ach);
+    rsc = SFGetChar(sf,ach,NULL);
     /* Look to see if there are upper case variants of the accents available */
     if ( isupper(basech) || (basech>=0x400 && basech<=0x52f) ) {
 	char *uc_accent = copyn(rsc->name,strlen(rsc->name)+10);
@@ -1231,7 +1189,7 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
 	/* Again, a tiny bit of overlap is usual for Aring */
 	rbb.miny += (rbb.maxy-rbb.miny)/30;
     ybase = SplineCharFindSlantedBounds(sc,&bb,ia);
-    if ( ia==0 && baserch!=basech && (basersc = findchar(sf,baserch))!=NULL ) {
+    if ( ia==0 && baserch!=basech && (basersc = SFGetChar(sf,baserch,NULL))!=NULL ) {
 	ybase = SplineCharFindSlantedBounds(basersc,&bbb,ia);
 	if ( ____utype2[1+ch]&(____ABOVE|____BELOW) ) {
 	    bbb.maxy = bb.maxy;
@@ -1242,7 +1200,7 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
 	    bbb.minx = bb.minx;
 	}
 	bb = bbb;
-    } else if ( basech==sc->unicodeenc || ( basersc = findchar(sf,basech))==NULL )
+    } else if ( basech==sc->unicodeenc || ( basersc = SFGetChar(sf,basech,NULL))==NULL )
 	basersc = sc;
 
     transform[0] = transform[3] = 1;
@@ -1268,7 +1226,7 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
  /*  hence test for isupper,islower. And I'm assuming greek,cyrillic will */
  /*  be consistant with latin */
     if ( islower(basech) || isupper(basech)) {
-	SplineChar *common = findchar(sf,islower(basech)?'o':'O');
+	SplineChar *common = SFGetChar(sf,islower(basech)?'o':'O',NULL);
 	if ( common!=NULL ) {
 	    real top = SplineCharQuickTop(common);
 	    if ( bb.maxy<top ) {
@@ -1459,7 +1417,7 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
 }
 
 static void SCPutRefAfter(SplineChar *sc,SplineFont *sf,int ch, int copybmp) {
-    SplineChar *rsc = findchar(sf,ch);
+    SplineChar *rsc = SFGetChar(sf,ch,NULL);
     BDFFont *bdf;
     BDFChar *bc, *rbc;
     int full = sc->unicodeenc, normal = false, under = false/*, stationary=false*/;
@@ -1557,17 +1515,17 @@ static void DoSpaces(SplineFont *sf,SplineChar *sc,int copybmp,FontView *fv) {
 	width = em/100;
       break;
       case 0x2007:
-	tempsc = findchar(sf,'0');
+	tempsc = SFGetChar(sf,'0',NULL);
 	if ( tempsc!=NULL && tempsc->layers[ly_fore].splines==NULL && tempsc->layers[ly_fore].refs==NULL ) tempsc = NULL;
 	if ( tempsc==NULL ) width = em/2; else width = tempsc->width;
       break;
       case 0x2008:
-	tempsc = findchar(sf,'.');
+	tempsc = SFGetChar(sf,'.',NULL);
 	if ( tempsc!=NULL && tempsc->layers[ly_fore].splines==NULL && tempsc->layers[ly_fore].refs==NULL ) tempsc = NULL;
 	if ( tempsc==NULL ) width = em/4; else width = tempsc->width;
       break;
       case ' ':
-	tempsc = findchar(sf,'I');
+	tempsc = SFGetChar(sf,'I',NULL);
 	if ( tempsc!=NULL && tempsc->layers[ly_fore].splines==NULL && tempsc->layers[ly_fore].refs==NULL ) tempsc = NULL;
 	if ( tempsc==NULL ) width = em/4; else width = tempsc->width;
       break;
@@ -1633,12 +1591,12 @@ static void DoRules(SplineFont *sf,SplineChar *sc,int copybmp,FontView *fv) {
 	width = em/3;
       break;
       case 0x2010: case 0x2011:
-	tempsc = findchar(sf,'-');
+	tempsc = SFGetChar(sf,'-',NULL);
 	if ( tempsc!=NULL && tempsc->layers[ly_fore].splines==NULL && tempsc->layers[ly_fore].refs==NULL ) tempsc = NULL;
 	if ( tempsc==NULL ) width = (4*em)/10; else width = tempsc->width;
       break;
       case 0x2012:
-	tempsc = findchar(sf,'0');
+	tempsc = SFGetChar(sf,'0',NULL);
 	if ( tempsc!=NULL && tempsc->layers[ly_fore].splines==NULL && tempsc->layers[ly_fore].refs==NULL ) tempsc = NULL;
 	if ( tempsc==NULL ) width = em/2; else width = tempsc->width;
       break;
@@ -1656,7 +1614,7 @@ static void DoRules(SplineFont *sf,SplineChar *sc,int copybmp,FontView *fv) {
       break;
     }
 
-    tempsc = findchar(sf,'-');
+    tempsc = SFGetChar(sf,'-',NULL);
     if ( tempsc==NULL || (tempsc->layers[ly_fore].splines==NULL && tempsc->layers[ly_fore].refs==NULL )) {
 	height = em/10;
 	lbearing = rbearing = em/10;
@@ -1877,7 +1835,7 @@ static void SCBuildHangul(SplineFont *sf,SplineChar *sc, const unichar_t *pt, in
 
     sc->width = 0;
     while ( *pt ) {
-	rsc = findchar(sf,*pt++);
+	rsc = SFGetChar(sf,*pt++,NULL);
 	if ( rsc!=NULL ) {
 	    SCAddRef(sc,rsc,0,0);
 	    if ( rsc->width>sc->width ) sc->width = rsc->width;

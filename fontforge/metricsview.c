@@ -1101,42 +1101,15 @@ static void MVToggleVertical(MetricsView *mv) {
 }
 
 static SplineChar *SCFromUnicode(SplineFont *sf, int ch) {
-    int i;
+    int i = SFFindChar(sf,ch,NULL);
 
-    if ( sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4 ) {
-	if ( ch>=sf->charcnt )
+    if ( i==-1 )
 return( NULL );
-	else
-return( SFMakeChar(sf,ch) );
-    } else if ( sf->encoding_name>=em_unicodeplanes && sf->encoding_name<=em_unicodeplanesmax ) {
-	ch -= ((sf->encoding_name-em_unicodeplanes)<<16);
-	if ( ch>=sf->charcnt || ch<0 )
-return( NULL );
-	else
-return( SFMakeChar(sf,ch) );
-    }
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
-	if ( sf->chars[i]->unicodeenc == ch )
-return( sf->chars[i] );
-
-return( NULL );
+    else
+return( SFMakeChar(sf,i) );
 }
 
-static int SFContainsChar(SplineFont *sf, int ch) {
-    int i;
-
-    if ( sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4 )
-return( ch<sf->charcnt );
-    else if ( sf->encoding_name>=em_unicodeplanes && sf->encoding_name<=em_unicodeplanesmax ) {
-	ch -= ((sf->encoding_name-em_unicodeplanes)<<16);
-return( ch<sf->charcnt && ch>=0 );
-    }
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
-	if ( sf->chars[i]->unicodeenc == ch )
-return( true );
-
-return( false );
-}
+#define SFContainsChar(sf,ch) (SFFindChar(sf,ch,NULL)!=-1)
 
 static void MVMoveFieldsBy(MetricsView *mv,int diff) {
     int i;
