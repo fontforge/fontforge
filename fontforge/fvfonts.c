@@ -239,10 +239,10 @@ void BitmapsCopy(SplineFont *to, SplineFont *from, int to_index, int from_index 
 	    }
 	    t_bdf = t_bdf->next;
 	    f_bdf = f_bdf->next;
-	} else if ( t_bdf->pixelsize < f_bdf->pixelsize )
+	} else if ( t_bdf->pixelsize < f_bdf->pixelsize ) {
 	    t_bdf = t_bdf->next;
-	
 	    f_bdf = f_bdf->next;
+	}
     }
 }
 
