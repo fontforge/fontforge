@@ -1270,6 +1270,25 @@ return;
     c->curfv->sf->changed_since_xuidchanged = true;
 }
 
+static void bSetFontOrder(Context *c) {
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_int )
+	error(c,"Bad argument type");
+    else if ( c->a.vals[1].u.ival!=2 && c->a.vals[1].u.ival!=3 )
+	error(c,"Order must be 2 or 3");
+    if ( c->a.vals[1].u.ival==(c->curfv->sf->order2?2:3))
+	/* No Op */;
+    else {
+	if ( c->a.vals[1].u.ival==2 ) {
+	    SFCloseAllInstrs(c->curfv->sf);
+	    SFConvertToOrder2(c->curfv->sf);
+	} else
+	    SFConvertToOrder3(c->curfv->sf);
+    }
+}
+
 static void _SetFontNames(Context *c,SplineFont *sf) {
     int i;
 
@@ -2093,7 +2112,7 @@ static void bCharInfo(Context *c) {
 	}
     }
 }
-    
+
 struct builtins { char *name; void (*func)(Context *); int nofontok; } builtins[] = {
 /* Generic utilities */
     { "Print", bPrint, 1 },
@@ -2150,6 +2169,7 @@ struct builtins { char *name; void (*func)(Context *); int nofontok; } builtins[
 /* Element Menu */
     { "Reencode", bReencode },
     { "SetCharCnt", bSetCharCnt },
+    { "SetFontOrder", bSetFontOrder },
     { "SetFontNames", bSetFontNames },
     { "SetItalicAngle", bSetItalicAngle },
     { "SetUniqueID", bSetUniqueID },
