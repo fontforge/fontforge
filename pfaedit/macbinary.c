@@ -2090,6 +2090,7 @@ static BDFChar *NFNTCvtBitmap(struct MacFontRec *font,int index,SplineFont *sf) 
 		bpt[j>>3] |= (0x80>>(j&7));
 	}
     }
+    BCCompressBitmap(bdfc);
 return( bdfc );
 }
 
