@@ -42,14 +42,15 @@ static int counterwarned = false;
  *	To change the xheight (thereby changing the feel of the font)
  *
  * So first we find all the stems (and I mean all, not just the horizontal/
- *  vertical stems). From this list (or perhaps from the hints?, yes from
- *  hints. Figuring horizontal/vertical is non-trivial.) we then look
- *  at just the hv stems and find the hv counters, based on this we figure
- *  how to position the centers of all stems.
- *	(we build a map based on horizontal stems and counters. We figure
+ *  vertical stems). From this list we then look at just the hv stems and
+ *  find the hv counters, (if a glyph has few vertical stems (like "k" or "w")
+ *  we also look at the diagonals. Pretend a diagonal expresses a counter
+ *  half its expected size) based on this we figure how to position the
+ *  centers of all stems.
+ *	(we build a map based on vertical stems and h counters. We figure
  *	 how each stem and counter should expand, and based on that where
  *	 each should end up. We then extrapolate intermediate values.
- *	We do the same for the vertical stems, except in most cases they
+ *	We do the same for the horizontal stems, except in most cases they
  *	 won't move much. We may need to move the center of the xheight stem
  *	 down slightly so that the top of the stem is still at the xheight,
  *	 (and same for cap, while descent moves up) but that's about it.)
@@ -75,8 +76,8 @@ static int counterwarned = false;
  *	corner point (so there are two non-parallel stems that intersect
  *	here) we figure the lines which are tangent to the stem edges, and
  *	then intersect them.
- * Since all points had better lie on stems, we should now have positioned
- *  every point. But we need to figure out the control points now.
+ * Any points which do not lie on stems get interpolated.
+ * We now need to figure out the control points.
  *	If a point has no control point, it continues not to.
  *	Otherwise find the x,y distance between this point and the next.
  *	 Find what it used to be.
@@ -88,15 +89,6 @@ static int counterwarned = false;
  * character's shape and place it in the background so the user can compare
  * the two (and perhaps fix things more easily if we screwed up).
  */
-/* Drat. Finding all diagonal stems is not possible with just horizontal and */
-/*  vertical passes. Consider a rotated rectangle. The stem whose width is */
-/*  the lesser will almost certainly show up, but the perp direction will not */
-/*  be detected because no horizontal/vertical line will intersect both edges */
-/* So... We could rotate the coordinate system for each slanted edge and */
-/*  run a detection pass for it. (Ug) */
-/* Or... we could just say that if we have to lose one of the stems, well we're*/
-/*  losing the less important one (we lose the one that's wider), and this */
-/*  algorithem only really works for hv stems anyway... */
 
 /* ************ Data structures active during the entire command ************ */
 enum counterchoices { cc_same,	/* counters have the same width until scaled */
