@@ -828,7 +828,7 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
 
     for ( i=0; i<256 && i<sf->charcnt; ++i )
 	if ( SCWorthOutputting(sf->chars[i]) )
-	    encoding[i] = sf->chars[i]->name;
+	    encoding[i] = SCDuplicate(sf->chars[i])->name;
 	else
 	    encoding[i] = ".notdef";
     for ( ; i<256; ++i )

@@ -896,7 +896,7 @@ static void FigureFullMetricsEnd(SplineFont *sf,struct glyphinfo *gi) {
 	if ( sf->subfonts[j]->charcnt>maxc ) maxc = sf->subfonts[j]->charcnt;
     if ( sf->subfontcnt==0 ) {
 	for ( i=maxc-1; i>0; --i )
-	    if ( SCWorthOutputting(sf->chars[i]))
+	    if ( SCWorthOutputting(sf->chars[i]) && sf->chars[i]==SCDuplicate(sf->chars[i]))
 	break;
     } else {
 	for ( i=maxc-1; i>0; --i ) {
@@ -904,7 +904,7 @@ static void FigureFullMetricsEnd(SplineFont *sf,struct glyphinfo *gi) {
 		if ( i<sf->subfonts[j]->charcnt && sf->subfonts[j]->chars[i]!=NULL )
 	    break;
 	    if ( j<sf->subfontcnt && SCWorthOutputting(sf->subfonts[j]->chars[i]))
-	break;
+	break;	/* no duplicates in cid font */
 	}
     }
 
@@ -914,7 +914,7 @@ static void FigureFullMetricsEnd(SplineFont *sf,struct glyphinfo *gi) {
 	    width = sf->chars[i]->width;
 	    vwidth = sf->chars[i]->vwidth;
 	    for ( --i; i>0; --i ) {
-		if ( SCWorthOutputting(sf->chars[i])) {
+		if ( SCWorthOutputting(sf->chars[i]) && sf->chars[i]==SCDuplicate(sf->chars[i])) {
 		    if ( sf->chars[i]->width!=width )
 	    break;
 		    else
@@ -924,7 +924,7 @@ static void FigureFullMetricsEnd(SplineFont *sf,struct glyphinfo *gi) {
 	    gi->lasthwidth = lasti;
 	    if ( sf->hasvmetrics ) {
 		for ( i=lastv-1; i>0; --i ) {
-		    if ( SCWorthOutputting(sf->chars[i])) {
+		    if ( SCWorthOutputting(sf->chars[i]) && sf->chars[i]==SCDuplicate(sf->chars[i])) {
 			if ( sf->chars[i]->vwidth!=vwidth )
 		break;
 			else
@@ -3229,7 +3229,7 @@ static void dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
     if ( SCIsNotdef(sf->chars[0],fixed) )
 	sf->chars[i++]->ttf_glyph = cnt++;
     for ( cnt=3; i<sf->charcnt; ++i )
-	if ( SCWorthOutputting(sf->chars[i]) )
+	if ( SCWorthOutputting(sf->chars[i]) && sf->chars[i]==SCDuplicate(sf->chars[i]))
 	    sf->chars[i]->ttf_glyph = cnt++;
 
     gi->maxp->numGlyphs = cnt;
@@ -3250,7 +3250,7 @@ static void dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
     dumpblankglyph(gi,sf);	/* to be a couple of blank glyphs at the start*/
     /* One is for NUL and one for CR I think... but why? */
     for ( cnt=0; i<sf->charcnt; ++i ) {
-	if ( SCWorthOutputting(sf->chars[i]) ) {
+	if ( SCWorthOutputting(sf->chars[i]) && sf->chars[i]==SCDuplicate(sf->chars[i])) {
 	    if ( (refs = SCCanonicalRefs(sf->chars[i],false))!=NULL )
 		dumpcomposit(sf->chars[i],refs,gi);
 	    else
@@ -4386,7 +4386,7 @@ static void sethhead(struct hhead *hhead,struct hhead *vhead,struct alltabs *at,
     j=0;
     do {
 	sf = ( _sf->subfontcnt==0 ) ? _sf : _sf->subfonts[j];
-	for ( i=0; i<sf->charcnt; ++i ) if ( SCWorthOutputting(sf->chars[i]) ) {
+	for ( i=0; i<sf->charcnt; ++i ) if ( SCWorthOutputting(sf->chars[i])) { /* I don't check for duplicates here. Shouldn't matter, they are duplicates, won't change things */
 	    SplineCharFindBounds(sf->chars[i],&bb);
 	    if ( sf->chars[i]->width>width ) width = sf->chars[i]->width;
 	    if ( sf->chars[i]->vwidth>height ) height = sf->chars[i]->vwidth;
@@ -5664,14 +5664,10 @@ void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf) {
     time_t now;
     struct tm *tm;
     char buffer[200];
-    char *temp;
 
     if ( dummy->names[0]==NULL ) dummy->names[0] = uc_copy(sf->copyright);
     if ( dummy->names[1]==NULL ) dummy->names[1] = uc_copy(sf->familyname);
-    if ( dummy->names[2]==NULL ) {
-	temp = SFGetModifiers(sf);
-	dummy->names[2] = uc_copy(temp && *temp?temp:"Regular");
-    }
+    if ( dummy->names[2]==NULL ) dummy->names[2] = uc_copy(SFGetModifiers(sf));
     if ( dummy->names[3]==NULL ) {
 	time(&now);
 	tm = localtime(&now);
@@ -5947,8 +5943,8 @@ return( false );		/* Doesn't have the single byte entries */
     glyphs = gcalloc(subheadcnt*planesize+plane0size,sizeof(uint16));
     subheads[0].rangeoff = 0;
     for ( i=0; i<plane0size && i<sf->charcnt; ++i )
-	if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1)
-	    glyphs[i] = sf->chars[i]->ttf_glyph;
+	if ( sf->chars[i]!=NULL && SCDuplicate(sf->chars[i])->ttf_glyph!=-1)
+	    glyphs[i] = SCDuplicate(sf->chars[i])->ttf_glyph;
     
     pos = 1;
 
@@ -5971,8 +5967,8 @@ return( false );		/* Doesn't have the single byte entries */
 	}
 	memset(tempglyphs,0,sizeof(tempglyphs));
 	for ( i=0; i<planesize; ++i )
-	    if ( sf->chars[j+lbase+i]!=NULL && sf->chars[j+lbase+i]->ttf_glyph!=-1 )
-		tempglyphs[i] = sf->chars[j+lbase+i]->ttf_glyph;
+	    if ( sf->chars[j+lbase+i]!=NULL && SCDuplicate(sf->chars[j+lbase+i])->ttf_glyph!=-1 )
+		tempglyphs[i] = SCDuplicate(sf->chars[j+lbase+i])->ttf_glyph;
 	for ( i=1; i<pos; ++i ) {
 	    int delta = 0;
 	    for ( k=0; k<planesize; ++k )
@@ -6061,16 +6057,16 @@ return( false );		/* Doesn't have the single byte entries */
 	GDrawIError("Mac cmap sub-table not at right place is %d should be %d", ftell(at->cmap), macpos );
     memset(table,0,sizeof(table));
     for ( i=0; i<256 && i<sf->charcnt; ++i )
-	if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 &&
-		sf->chars[i]->ttf_glyph<256 )
-	    table[i] = sf->chars[i]->ttf_glyph;
+	if ( sf->chars[i]!=NULL && SCDuplicate(sf->chars[i])->ttf_glyph!=-1 &&
+		SCDuplicate(sf->chars[i])->ttf_glyph<256 )
+	    table[i] = SCDuplicate(sf->chars[i])->ttf_glyph;
 return( true );
 }
 
 static FILE *NeedsUCS4Table(SplineFont *sf,int *ucs4len) {
     int i=0,j,group;
     FILE *format12;
-
+    SplineChar *sc;
     
     if ( sf->encoding_name==em_unicode4 ) {
 	for ( i=0x10000; i<sf->charcnt; ++i )
@@ -6097,13 +6093,14 @@ return( NULL );
 
     group = 0;
     for ( i=0; i<sf->charcnt; ++i ) if ( SCWorthOutputting(sf->chars[i]) && sf->chars[i]->unicodeenc!=-1 ) {
+	sc = SCDuplicate(sf->chars[i]);
 	for ( j=i+1; j<sf->charcnt && SCWorthOutputting(sf->chars[j]) &&
 		sf->chars[j]->unicodeenc!=-1 &&
-		sf->chars[j]->ttf_glyph==sf->chars[i]->ttf_glyph+j-i; ++j );
+		SCDuplicate(sf->chars[j])->ttf_glyph==sc->ttf_glyph+j-i; ++j );
 	--j;
 	putlong(format12,i);		/* start char code */
 	putlong(format12,j);		/* end char code */
-	putlong(format12,sf->chars[i]->ttf_glyph);
+	putlong(format12,sc->ttf_glyph);
 	++group;
     }
     *ucs4len = ftell(format12);
@@ -6175,16 +6172,16 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
     /* MacRoman encoding table */ /* Not going to bother with making this work for cid fonts */
     memset(table,'\0',sizeof(table));
     for ( i=0; i<sf->charcnt && i<256; ++i ) {
-	sc = SFFindExistingCharMac(sf,unicode_from_mac[i]);
-	if ( sc!=NULL && sc->ttf_glyph!=-1 )
+	sc = SCDuplicate(SFFindExistingCharMac(sf,unicode_from_mac[i]));
+	if ( sc!=NULL && sc->ttf_glyph!=-1 && sc->ttf_glyph<256 )
 	    table[i] = sc->ttf_glyph;
     }
     table[0] = table[8] = table[13] = table[29] = 1;
-    table[9] = table[32];
+    table[9] = table[32]==0 ? 1 : table[32];
 
     if ( format==ff_ttfsym || sf->encoding_name==em_symbol ) {
 	int acnt=0, pcnt=0;
-	int space = table[32];
+	int space = table[9];
 	for ( i=0; i<sf->charcnt; ++i ) {
 	    if ( sf->chars[i]!=&notdef && sf->chars[i]!=&nonmarkingreturn &&
 		    sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 &&
@@ -6198,14 +6195,18 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
 	alreadyprivate = acnt>pcnt;
 	memset(table,'\0',sizeof(table));
 	if ( !alreadyprivate ) {
-	    for ( i=0; i<sf->charcnt && i<256; ++i )
-		if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 )
-		    table[sf->chars[i]->enc] = sf->chars[i]->ttf_glyph;
+	    for ( i=0; i<sf->charcnt && i<256; ++i ) {
+		sc = SCDuplicate(sf->chars[i]);
+		if ( sc!=NULL && sc->ttf_glyph!=-1 && sc->ttf_glyph<256 )
+		    table[sf->chars[i]->enc] = sc->ttf_glyph;
+	    }
 	} else {
-	    for ( i=0xf000; i<=0xf0ff && i<sf->charcnt; ++i )
-		if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 &&
-			sf->chars[i]->ttf_glyph<256 )
-		    table[sf->chars[i]->enc-0xf000] = sf->chars[i]->ttf_glyph;
+	    for ( i=0xf000; i<=0xf0ff && i<sf->charcnt; ++i ) {
+		sc = SCDuplicate(sf->chars[i]);
+		if ( sc!=NULL && sc->ttf_glyph!=-1 &&
+			sc->ttf_glyph<256 )
+		    table[sf->chars[i]->enc-0xf000] = sc->ttf_glyph;
+	    }
 	}
 	table[0] = table[8] = table[13] = table[29] = 1;
 	table[9] = space;
@@ -6251,7 +6252,7 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
 	    do {
 		sf = (_sf->subfontcnt==0 ) ? _sf : _sf->subfonts[k];
 		if ( i<sf->charcnt &&
-			sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 &&
+			sf->chars[i]!=NULL && SCDuplicate(sf->chars[i])->ttf_glyph!=-1 &&
 			(l = figureencoding(sf,i))!=-1 ) {
 		    avail[l] = i;
 		    if ( sfind!=NULL ) sfind[l] = k;
@@ -6314,6 +6315,7 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
 	    for ( j=cmapseg[i].start; j<=cmapseg[i].end; ++j ) {
 		l = avail[j];
 		sc = sfind==NULL ? _sf->chars[l] : _sf->subfonts[sfind[j]]->chars[l];
+		sc = SCDuplicate(sc);
 		if ( delta != sc->ttf_glyph-j )
 	    break;
 	    }
@@ -6324,6 +6326,7 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
 		for ( j=cmapseg[i].start; j<=cmapseg[i].end; ++j ) {
 		    l = avail[j];
 		    sc = sfind==NULL ? _sf->chars[l] : _sf->subfonts[sfind[j]]->chars[l];
+		    sc = SCDuplicate(sc);
 		    ranges[rpos++] = sc->ttf_glyph;
 		}
 	    }
@@ -6424,7 +6427,7 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
 	}
     }
 
-    /* Mac table just same as symbol table */
+    /* Mac table */
     putshort(at->cmap,0);		/* format */
     putshort(at->cmap,262);	/* length = 256bytes + 6 header bytes */
     putshort(at->cmap,0);		/* language = english */

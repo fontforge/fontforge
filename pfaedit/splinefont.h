@@ -693,6 +693,7 @@ extern void SplineFontAutoHint( SplineFont *sf);
 extern StemInfo *HintCleanup(StemInfo *stem,int dosort);
 extern int SplineFontIsFlexible(SplineFont *sf);
 extern int SCWorthOutputting(SplineChar *sc);
+extern SplineChar *SCDuplicate(SplineChar *sc);
 extern int SCIsNotdef(SplineChar *sc,int isfixed);
 extern int IsntBDFChar(BDFChar *bdfc);
 extern int CIDWorthOutputting(SplineFont *cidmaster, int enc); /* Returns -1 on failure, font number on success */

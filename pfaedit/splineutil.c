@@ -1423,24 +1423,6 @@ static void CleanupGreekNames(FontDict *fd) {
     }
 }
 
-static char *FindUnusedName(char **encoding,char *myname,int charcnt) {
-    char *buffer;
-    int i, j, len;
-
-    buffer = galloc((len = strlen(myname))+10);
-    strcpy(buffer,myname);
-    for ( i=0; i<10000; ++i ) {
-	sprintf( buffer+len,".%d", i);
-	for ( j=0; j<charcnt; ++j )
-	    if ( strcmp(buffer,encoding[j])==0 )
-	break;
-	if ( j==charcnt )
-    break;
-    }
-    free(myname);
-return( buffer );
-}
-
 static SplineChar *DuplicateNameReference(SplineFont *sf,char **encoding,int encindex) {
     SplineChar *sc = SplineCharCreate();
     RefChar *ref;
@@ -1450,13 +1432,15 @@ static SplineChar *DuplicateNameReference(SplineFont *sf,char **encoding,int enc
 	if ( i!=encindex && strcmp(encoding[i],encoding[encindex])==0 )
     break;
 
-    encoding[encindex] = FindUnusedName(encoding,encoding[encindex],sf->charcnt);
     sc->name = copy(encoding[encindex]);
     sc->unicodeenc = -1;
     sc->width = sf->chars[i]->width;
     sc->vwidth = sf->chars[i]->vwidth;
     sc->parent = sf;
-    if ( sf->chars[i]->splines!=NULL || sf->chars[i]->refs!=NULL ) {
+    /* Used not to do this for spaces but I now use the ref as a mark in */
+    /*  SCDuplicate() which allows me to generate an encoding vector with */
+    /*  duplicates */
+    /*if ( sf->chars[i]->splines!=NULL || sf->chars[i]->refs!=NULL )*/ {
 	sc->refs = ref = gcalloc(1,sizeof(RefChar));
 	ref->sc = sf->chars[i];
 	ref->transform[0] = ref->transform[3] = 1;

@@ -1340,7 +1340,7 @@ static void SplineFont2Subrs1(SplineFont *sf,int round, int iscjk,
 
     for ( i=cnt=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
 	sc->ttf_glyph = 0x7fff;
-	if ( !SCWorthOutputting(sc) || sc->refs!=NULL )
+	if ( !SCWorthOutputting(sc) || sc->refs!=NULL || sc!=SCDuplicate(sc))
     continue;
 	/* If we've got one of the badly named greek characters then put it */
 	/*  into a subr because we're going to duplicate it. Also put the */
@@ -1551,7 +1551,7 @@ struct pschars *SplineFont2Chrs(SplineFont *sf, int round, int iscjk,
 	    /* Don't count it */;
 	else
 #endif
-	if ( SCWorthOutputting(sf->chars[i]) )
+	if ( SCWorthOutputting(sf->chars[i]) && sf->chars[i]==SCDuplicate(sf->chars[i]))
 	    ++cnt;
 /* only honor the width on .notdef in non-fixed pitch fonts (or ones where there is an actual outline in notdef) */
     zero_is_notdef = SCIsNotdef(sf->chars[0],fixed);
@@ -1607,7 +1607,7 @@ struct pschars *SplineFont2Chrs(SplineFont *sf, int round, int iscjk,
 	    /* don't output it, should be in a subroutine */;
 	else
 #endif
-	if ( SCWorthOutputting(sf->chars[i]) ) {
+	if ( SCWorthOutputting(sf->chars[i]) && sf->chars[i]==SCDuplicate(sf->chars[i])) {
 	    chrs->keys[cnt] = copy(sf->chars[i]->name);
 	    chrs->values[cnt] = SplineChar2PS(sf->chars[i],&chrs->lens[cnt],
 		    round,iscjk,subrs,NULL);
@@ -2376,7 +2376,7 @@ struct pschars *SplineFont2Subrs2(SplineFont *sf) {
 	sc = sf->chars[i];
 	if ( sc!=NULL && sc->changedsincelasthinted && !sc->manualhints )
 	    SplineCharAutoHint(sc,true);
-	if ( sc==NULL )
+	if ( sc==NULL || sc!=SCDuplicate(sc))
 	    /* Do Nothing */;
 	else if ( SCWorthOutputting(sc) &&
 	    (( sc->refs==NULL && sc->dependents!=NULL &&
@@ -2443,7 +2443,7 @@ struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
 	    /* don't output it, should be in a subroutine */;
 	else
 #endif
-	if ( SCWorthOutputting(sc) )
+	if ( SCWorthOutputting(sc) && sc==SCDuplicate(sc))
 	    ++cnt;
     }
 /* only honor the width on .notdef in non-fixed pitch fonts (or ones where there is an actual outline in notdef) */
@@ -2498,7 +2498,7 @@ struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
 	    /* don't output it, should be in a subroutine */;
 	else
 #endif
-	if ( SCWorthOutputting(sc) ) {
+	if ( SCWorthOutputting(sc) && sc==SCDuplicate(sc)) {
 	    chrs->values[cnt] = SplineChar2PS2(sc,&chrs->lens[cnt],nomwid,defwid,subrs,NULL);
 	    sf->chars[i]->ttf_glyph = cnt++;
 	}

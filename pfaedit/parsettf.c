@@ -2689,6 +2689,16 @@ static struct dup *makedup(SplineChar *sc, int uni, int enc, struct dup *prev) {
 return( d );
 }
 
+static void dupfree(struct dup *dups) {
+    struct dup *next;
+
+    while ( dups!=NULL ) {
+	next = dups->prev;
+	free(dups);
+	dups = next;
+    }
+}
+
 static int modenc(int enc,int modtype) {
 #if 0		/* to convert to jis208 (or later ksc5601) */
     if ( modtype==2 /* SJIS */ ) {
@@ -3708,52 +3718,17 @@ return( 0 );
 return( true );
 }
 
-static char *FindUnusedNameTTF(SplineFont *sf,char *myname) {
-    char *buffer;
-    int i, j, len;
-
-    buffer = galloc((len = strlen(myname))+10);
-    strcpy(buffer,myname);
-    for ( i=0; i<10000; ++i ) {
-	sprintf( buffer+len,".%d", i);
-	for ( j=0; j<sf->charcnt; ++j ) if ( sf->chars[j]!=NULL && sf->chars[j]->name!=NULL )
-	    if ( strcmp(buffer,sf->chars[j]->name)==0 )
-	break;
-	if ( j==sf->charcnt )
-    break;
-    }
-    free(myname);
-return( buffer );
-}
-
-static SplineChar *SFMakeDupRef(SplineFont *sf, int local_enc, struct dup *dup) {
+static SplineChar *MakeDupRef(int local_enc, struct dup *dup) {
     SplineChar *sc = SplineCharCreate();
-    char buffer[40], *temp;
 
     sc->enc = local_enc;
     sc->unicodeenc = dup->uni;
     sc->width = dup->sc->width;
     sc->vwidth = dup->sc->vwidth;
-    sc->parent = sf;
-    if ( dup->uni>=0 && dup->uni<0x10000 && psunicodenames[dup->uni]!=NULL )
-	strcpy(buffer,psunicodenames[dup->uni]);
-    else if ( dup->uni>=0 && dup->uni!=dup->sc->unicodeenc )
-	sprintf( buffer, "uni%04X", dup->uni);
-    else if ( dup->enc!=0 )
-	sprintf( buffer, "nounicode_%x", dup->enc);
-    else
-	sprintf( buffer, "unencoded_%d", local_enc );
-    sc->name = copy(buffer);
-    if ( strcmp(sc->name,dup->sc->name)==0 ) {
-	temp = FindUnusedNameTTF(sf,sc->name);
-	if ( dup->uni==0x20 ) {		/* Sometimes tab takes the same glyph as space. But space should get the name */
-	    sc->name = dup->sc->name;
-	    dup->sc->name = temp;
-	} else
-	    sc->name = temp;
-    }
+    sc->name = copy(dup->sc->name);
 
-    if ( dup->sc->refs!=NULL || dup->sc->splines!=NULL ) {
+    /* Used not to bother for spaces, but SCDuplicate depends on the ref */
+    /*if ( dup->sc->refs!=NULL || dup->sc->splines!=NULL )*/ {
 	RefChar *ref = chunkalloc(sizeof(RefChar));
 	sc->refs = ref;
 	ref->sc = dup->sc;
@@ -3767,37 +3742,45 @@ static SplineChar *SFMakeDupRef(SplineFont *sf, int local_enc, struct dup *dup) 
 return( sc );
 }
 
-static void SFAddDups(SplineFont *sf,struct dup *dups) {
-    int cnt;
-    struct dup *dup;
+static SplineChar *SFMakeDupRef(SplineFont *sf, int local_enc, struct dup *dup) {
+    SplineChar *sc;
 
-    for ( dup=dups, cnt=0; dup!=NULL; ++cnt, dup=dup->prev );
-    sf->chars = grealloc(sf->chars,(sf->charcnt+cnt)*sizeof(SplineChar *));
-    for ( dup=dups, cnt=0; dup!=NULL; ++cnt, dup=dup->prev )
-	sf->chars[sf->charcnt+cnt] = SFMakeDupRef(sf,sf->charcnt+cnt,dup);
-    sf->charcnt += cnt;
+    sc = MakeDupRef(local_enc,dup);
+    sc->parent = sf;
+return( sc );
 }
 
 static void SymbolFixup(struct ttfinfo *info) {
     SplineChar *lo[256], *hi[256], *sc, **chars;
     int extras=0, i, uenc;
+    struct dup *dup;
 
     memset(lo,0,sizeof(lo));
     memset(hi,0,sizeof(hi));
     if ( info->chars[0]!=NULL && info->chars[0]->enc==0 )
 	lo[0] = info->chars[0];
     for ( i=0; i<info->glyph_cnt; ++i ) if ( (sc = info->chars[i])!=NULL ) {
-	if ( sc->enc>0 && sc->enc<0xff )
+	if ( sc->enc>0 && sc->enc<=0xff )
 	    lo[sc->enc] = sc;
 	else if ( sc->enc>=0xf000 && sc->enc<=0xf0ff )
 	    hi[sc->enc-0xf000] = sc;
 	else if ( sc->enc!=0 )
 return;		/* Leave it as it is, it isn't a real symbol encoding */
     }
+    for ( dup=info->dups; dup!=NULL; dup=dup->prev ) {
+	if ( !((dup->enc>0 && dup->enc<=0xff ) || ( dup->enc>=0xf000 && dup->enc<=0xf0ff )) )
+return;
+    }
     extras = 0;
     for ( i=1; i<info->glyph_cnt; ++i ) if ( (sc = info->chars[i])!=NULL ) {
 	if ( sc->enc==0 )
 	    sc->enc = 256 + extras++;
+    }
+    for ( dup=info->dups; dup!=NULL; dup=dup->prev ) {
+	if ( dup->enc>0 && dup->enc<=0xff )
+	    lo[dup->enc] = MakeDupRef(dup->enc,dup);
+	else
+	    hi[dup->enc-0xf000] = MakeDupRef(dup->enc,dup);
     }
     for ( i=0; i<256; ++i ) {
 	if ( hi[i]!=NULL && lo[i]!=NULL ) {
@@ -3807,8 +3790,13 @@ return;		/* Leave it as it is, it isn't a real symbol encoding */
 	    hi[i]->enc -= 0xf000;
     }
     chars = gcalloc(256+extras,sizeof(SplineChar *));
-    for ( i=0; i<info->glyph_cnt; ++i ) if ( (sc = info->chars[i])!=NULL ) {
+    for ( i=0; i<info->glyph_cnt; ++i ) if ( (sc = info->chars[i])!=NULL )
 	chars[sc->enc] = sc;
+    for ( i=0; i<256; ++i ) if ( (sc = lo[i])!=NULL )
+	chars[sc->enc] = sc;
+    for ( i=0; i<256; ++i ) if ( (sc = hi[i])!=NULL )
+	chars[sc->enc] = sc;
+    for ( i=0; i<256+extras; ++i ) if ( (sc=chars[i])!=NULL ) {
 	uenc = UnicodeNameLookup(sc->name);
 	if ( uenc!=-1 )
 	    sc->unicodeenc = uenc;
@@ -3821,6 +3809,9 @@ return;		/* Leave it as it is, it isn't a real symbol encoding */
     info->chars = chars;
     info->glyph_cnt = 256+extras;
     info->is_onebyte = true;
+
+    dupfree(info->dups);
+    info->dups = NULL;
 }
 
 static void CheckEncoding(struct ttfinfo *info) {
@@ -3944,6 +3935,9 @@ static void UseGivenEncoding(SplineFont *sf,struct ttfinfo *info) {
 	bdf->charcnt = sf->charcnt;
 	free(obc);
     }
+
+    dupfree(info->dups);
+    info->dups = NULL;
 }
 
 static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
@@ -3998,18 +3992,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     }
 
     if ( info->subfontcnt == 0 ) {
-	if ( info->encoding_name!=em_none )
-	    UseGivenEncoding(sf,info);
-	else {
-	    sf->charcnt = info->glyph_cnt;
-	    sf->chars = info->chars;
-	    for ( i=0; i<info->glyph_cnt; ++i ) if ( info->chars[i]!=NULL ) {
-		info->chars[i]->parent = sf;
-		info->chars[i]->enc = i;
-	    }
-	    if ( info->dups!=NULL )
-		SFAddDups(sf,info->dups);
-	}
+	UseGivenEncoding(sf,info);
     } else {
 	sf->subfontcnt = info->subfontcnt;
 	sf->subfonts = info->subfonts;
