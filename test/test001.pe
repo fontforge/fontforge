@@ -1,6 +1,13 @@
 #!/usr/local/bin/pfaedit
+#Needs: fonts/Caliban.sfd
+
 Open("fonts/Caliban.sfd");
 Print( "...Opened Caliban")
+SelectAll()
+AutoHint();
+Print("...AutoHinted");
+Save("results/Caslon.sfd");
+Print("...Saved As");
 Generate("results/Caliban.ps","bdf",-1);
 Print( "...Generated type0")
 Generate("results/Caliban.ttf","ms",2);
@@ -26,31 +33,13 @@ Close();
 Open("results/Caliban.dfont");
 Print( "...Read dfont")
 Close();
-New();
-Save("results/foo.sfd");
-Print( "...Saved new font")
-Close();
 Open("results/Caliban-10.bdf");
 Generate("results/Caliban.dfont","sbit",-1);
 Print( "...Read bdf & Generated sbit")
 Close();
-Open("fonts/HanSans-Bold.otf");
-Print( "...Read HanSans-Bold.otf")
-Generate("results/HansSansBold.otf");
-Print( "...Generated otf (cid)")
-Generate("results/HansSansBold.cid");
-Print( "...Generated ps cid")
-Close();
-#Yes, mingliu doesn't work without the ttf instructions, but that is irrelevant
-#here. I'm just looking for the smallest ttc file I've got.
-Open("fonts/mingliu.ttc(PMingLiU)");
-Print( "...Read mingliu.ttc(PMingLiU)")
-Generate("results/pmingliu.ttf","bdf");
-Print( "...Generated ttf")
-Close();
-Open("fonts/MunhwaGothic-Bold");
-Print( "...Read MunhwaGothic-Bold (ps cid)")
-Generate("results/MunhwaGothic-Bold.otf");
-Print( "...Generated otf (cid)")
+
+New();
+Save("results/foo.sfd");
+Print( "...Saved new font")
 Close();
 Quit()
