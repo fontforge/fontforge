@@ -1149,6 +1149,7 @@ static int PageSetup(PI *pi) {
     gcd[4].creator = GRadioCreate;
 
     if ( (pt=pi->printtype)==pt_unknown ) pt = pt_lp;
+    if ( !(gcd[pt].gd.flags&gg_enabled) ) pt = pt_file;		/* always enabled */
     gcd[pt].gd.flags |= gg_cb_on;
 
     label[5].text = (unichar_t *) (printcommand?printcommand:"");
