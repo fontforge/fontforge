@@ -2325,8 +2325,6 @@ static char *str_WinSizes = "Win";
 static char *str_MacSizes = "Mac";
 static char *str_UseFreeType = "Utilizar FreeType";
 static char *str_ScalingBitmaps = "Cambiar de escala a los mapas de bits";
-static char *str_CantScaleGreymap = "Imposible cambiar de escala a una fuente en tonos de gris";
-static char *str_CantDeleteAllBitmaps = "Imposible eliminar todos los mapas de bits";
     /* Bitmap view */
 /* "%s at %d size %d from %s", charactername, encoding, pixelsize, fontname */
 static char *str_BvTitle = "%1$.80hs at %2$d size %3$d from %4$.80hs"

@@ -2355,8 +2355,6 @@ static char *str_WinSizes = "Win";
 static char *str_MacSizes = "Mac";
 static char *str_UseFreeType = "FreeTypeを使う";
 static char *str_ScalingBitmaps = "ビットマップを拡大/縮小中";
-static char *str_CantScaleGreymap = "greymapフォントを拡大/縮小できません.";
-static char *str_CantDeleteAllBitmaps = "ビットマップを全削除できません.";
     /* Bitmap view */
 /* "%s at %d size %d from %s", charactername, encoding, pixelsize, fontname */
 static char *str_BvTitle = "%1$.80hs at %2$d size %3$d from %4$.80hs";

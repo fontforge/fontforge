@@ -2320,8 +2320,6 @@ static char *str_WinSizes = "Win" ;
 static char *str_MacSizes = "Mac" ;
 static char *str_UseFreeType = "Utiliser Freetype" ;
 static char *str_ScalingBitmaps = "Mise à l'échelle des bitmaps" ;
-static char *str_CantScaleGreymap = "Impossible de mettre à l'échelle une fonte avec des niveaux de gris" ;
-static char *str_CantDeleteAllBitmaps = "Impossible de supprimer tous les bitmaps" ;
  /* Bitmap view */
    /* "%s at %d size %d from %s", charactername, encoding, pixelsize, fontname */
 static char *str_BvTitle = "%1$.80hs (%2$d) taille %3$d venant de %4$.80hs"
