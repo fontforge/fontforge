@@ -444,12 +444,102 @@ return( bound );
 return( t );
 }
 
+static double Grad1(Spline1D *s1, Spline1D *s2,
+	double t1,double t2 ) {
+    /* d/dt[12] (m1(t1).x-m2(t2).x)^2 + (m1(t1).y-m2(t2).y)^2 */
+    /* d/dt[12] (m1(t1).x^2 -2m1(t1).x*m2(t2).x + m2(t2).x^2) + (m1(t1).y^2 -2m1(t1).y*m2(t2).y + m2(t2).y^2) */
+    double val2 = ((s2->a*t2+s2->b)*t2+s2->c)*t2+s2->d;
+
+return( ((((6*s1->a*s1->a*t1 +
+	    5*2*s1->a*s1->b)*t1 +
+	    4*(s1->b*s1->b+2*s1->a*s1->c))*t1 +
+	    3*2*(s1->a*s1->d+s1->b*s1->c))*t1 +
+	    2*(s1->c*s1->c+2*s1->b*s1->d))*t1 +
+	    2*s1->c*s1->d  -
+	     2*val2 * ((3*s1->a*t1 + 2*s1->b)*t1 + s1->c) );
+}
+
+static void GradImproveInter(Monotonic *m1, Monotonic *m2,
+	double *_t1,double *_t2,BasePoint *inter) {
+    Spline *s1 = m1->s, *s2 = m2->s;
+    double x1, x2, y1, y2;
+    double gt1=0, gt2=0, glen=1;
+    double error, olderr=1e10;
+    double factor = 4096;
+    double t1=*_t1, t2=*_t2;
+    /*int cnt=0;*/
+    /* We want to find (t1,t2) so that (m1(t1)-m2(t2))^2==0 */
+    /* Find the gradiant and move in the reverse direction */
+    /* We know that the current values of (t1,t2) are close to an intersection*/
+    /* so the grad should point correctly */
+    /* d/dt[12] (m1(t1).x-m2(t2).x)^2 + (m1(t1).y-m2(t2).y)^2 */
+    /* d/dt[12] (m1(t1).x^2 -2m1(t1).x*m2(t2).x + m2(t2).x^2) + (m1(t1).y^2 -2m1(t1).y*m2(t2).y + m2(t2).y^2) */
+
+    forever {
+	x1 = ((s1->splines[0].a*t1 + s1->splines[0].b)*t1 + s1->splines[0].c)*t1 + s1->splines[0].d;
+	x2 = ((s2->splines[0].a*t2 + s2->splines[0].b)*t2 + s2->splines[0].c)*t2 + s2->splines[0].d;
+	y1 = ((s1->splines[1].a*t1 + s1->splines[1].b)*t1 + s1->splines[1].c)*t1 + s1->splines[1].d;
+	y2 = ((s2->splines[1].a*t2 + s2->splines[1].b)*t2 + s2->splines[1].c)*t2 + s2->splines[1].d;
+	error = (x1-x2)*(x1-x2) + (y1-y2)*(y1-y2);
+	if ( error>olderr ) {
+	    if ( olderr==1e10 )
+    break;
+	    factor *= 2;
+	    if ( factor>4096*4096 )
+    break;
+	    glen *= 2;
+	    t1 += gt1/glen;
+	    t2 += gt2/glen;
+    continue;
+	} else
+	    factor /= 1.4;
+	if ( error<1e-11 )	/* Error is actually the square of the error */
+    break;			/* So this isn't as constraining as it looks */
+
+	gt1 = Grad1(&s1->splines[0],&s2->splines[0],t1,t2) + Grad1(&s1->splines[1],&s2->splines[1],t1,t2);
+	gt2 = Grad1(&s2->splines[0],&s1->splines[0],t2,t1) + Grad1(&s2->splines[1],&s1->splines[1],t2,t1);
+	glen = sqrt(gt1*gt1 + gt2*gt2) * factor;
+	*_t1 = t1; *_t2 = t2;
+	t1 -= gt1/glen;
+	t2 -= gt2/glen;
+	olderr = error;
+	/*++cnt;*/
+    }
+#if 0
+    if ( cnt<=1 && error>=1e-11 )
+	fprintf(stderr,"No Improvement\n" );
+    else if ( cnt>1 )
+	fprintf(stderr,"Improvement\n" );
+#endif
+    t1 = *_t1; t2 = *_t2;
+    if ( t1<0 && t1>-.00001 ) *_t1 = t1 = 0;
+    else if ( t1>1 && t1<1.00001 ) *_t1 = t1 = 1.0;
+    if ( t2<0 && t2>-.00001 ) *_t2 = t2 = 0;
+    else if ( t2>1 && t2<1.00001 ) *_t2 = t2 = 1.0;
+    x1 = ((s1->splines[0].a*t1 + s1->splines[0].b)*t1 + s1->splines[0].c)*t1 + s1->splines[0].d;
+    x2 = ((s2->splines[0].a*t2 + s2->splines[0].b)*t2 + s2->splines[0].c)*t2 + s2->splines[0].d;
+    y1 = ((s1->splines[1].a*t1 + s1->splines[1].b)*t1 + s1->splines[1].c)*t1 + s1->splines[1].d;
+    y2 = ((s2->splines[1].a*t2 + s2->splines[1].b)*t2 + s2->splines[1].c)*t2 + s2->splines[1].d;
+    inter->x = (x1+x2)/2; inter->y = (y1+y2)/2;
+}
+
 static Intersection *AddIntersection(Intersection *ilist,Monotonic *m1,
 	Monotonic *m2,double t1,double t2,BasePoint *inter) {
     Intersection *il;
     double ot1 = t1, ot2 = t2;
 
     /* Fixup some rounding errors */
+    GradImproveInter(m1,m2,&t1,&t2,inter);
+    if ( t1<m1->tstart || t1>m1->tend || t2<m2->tstart || t2>m2->tend )
+return( ilist );
+
+#if 0
+    if (( m1->start==m2->start && m1->start!=NULL && RealNear(t1,m1->tstart) && RealNear(t2,m2->tstart)) ||
+	    ( m1->start==m2->end && m1->start!=NULL && RealNear(t1,m1->tstart) && RealNear(t2,m2->tend)) ||
+	    ( m1->end==m2->start && m1->end!=NULL && RealNear(t1,m1->tend) && RealNear(t2,m2->tstart)) ||
+	    ( m1->end==m2->end && m1->end!=NULL && RealNear(t1,m1->tend) && RealNear(t2,m2->tend)) )
+return( ilist );
+    else
     if ( RealWithin(t1,1.0,.01) && RealWithin(t2,0.0,.01) && BpSame(&m1->s->to->me,&m2->s->from->me)) {
 	t1 = 1.0;
 	t2 = 0.0;
@@ -457,10 +547,13 @@ static Intersection *AddIntersection(Intersection *ilist,Monotonic *m1,
 	t1 = 0.0;
 	t2 = 1.0;
     } else {
+#endif
 	t1 = RoundToEndpoints(m1,t1,inter);
 	t2 = RoundToEndpoints(m2,t2,inter);
 	t1 = RoundToEndpoints(m1,t1,inter);	/* Do it twice. rounding t2 can mean we now need to round t1 */
+#if 0
     }
+#endif
 
     if (( m1->s->to == m2->s->from && RealWithin(t1,1.0,.01) && RealWithin(t2,0,.01)) ||
 	    ( m1->s->from == m2->s->to && RealWithin(t1,0,.01) && RealWithin(t2,1.0,.01)))
@@ -526,6 +619,9 @@ static Intersection *FindMonotonicIntersection(Intersection *ilist,Monotonic *m1
 	double x1,y1, x2,y2;
 	if ( m1->next==m2 || m2->next==m1 )
 return( ilist );		/* Not interesting. Only intersection is at an endpoint */
+	if ( ((m1->start==m2->start || m1->end==m2->start) && m2->start!=NULL) ||
+		((m1->start==m2->end || m1->end==m2->end ) && m2->end!=NULL ))
+return( ilist );
 	pt.x = b.minx; pt.y = b.miny;
 	if ( m1->b.maxx-m1->b.minx > m1->b.maxy-m1->b.miny )
 	    t1 = BoundIterateSplineSolve(&m1->s->splines[0],m1->tstart,m1->tend,b.minx,error);
@@ -1398,6 +1494,49 @@ static void MonoFigure(Spline *s,double firstt,double endt, SplinePoint *first,
     }
 }
 
+static Intersection *MonoFollow(Intersection *curil, Monotonic *m) {
+    Monotonic *mstart=m;
+
+    if ( m->start==curil ) {
+	while ( m!=NULL && m->end==NULL ) {
+	    m=m->next;
+	    if ( m==mstart )
+	break;
+	}
+	if ( m==NULL )
+return( NULL );
+
+return( m->end );
+    } else {
+	while ( m!=NULL && m->start==NULL ) {
+	    m=m->prev;
+	    if ( m==mstart )
+	break;
+	}
+	if ( m==NULL )
+return( NULL );
+
+return( m->start );
+    }
+}
+
+static int MonoGoesSomewhereUseful(Intersection *curil, Monotonic *m) {
+    Intersection *nextil = MonoFollow(curil,m);
+    MList *ml;
+    int cnt;
+
+    if ( nextil==NULL )
+return( false );
+    cnt = 0;
+    for ( ml=nextil->monos; ml!=NULL ; ml=ml->next )
+	if ( ml->m->isneeded )
+	    ++cnt;
+    if ( cnt>=2 )	/* One for the mono that one in, one for another going out... */
+return( true );
+
+return( false );
+}
+
 static SplinePoint *MonoFollowForward(Intersection **curil, MList *ml,
 	SplinePoint *last) {
     SplinePoint *mid;
@@ -1510,6 +1649,21 @@ static SplineSet *JoinAContour(Intersection *startil,MList *ml) {
 	if ( ml==NULL )
 	    for ( ml=curil->monos; ml!=NULL && !ml->m->isneeded; ml=ml->next );
 	if ( ml==NULL ) {
+	    for ( ml=curil->monos; ml!=NULL ; ml=ml->next )
+		if ( ml->m->isunneeded && ml->m->start==curil &&
+			MonoFollow(curil,ml->m)==startil )
+	    break;
+	    if ( ml==NULL )
+		for ( ml=curil->monos; ml!=NULL ; ml=ml->next )
+		    if ( ml->m->isunneeded && ml->m->end==curil &&
+			    MonoFollow(curil,ml->m)==startil )
+		break;
+	    if ( ml!=NULL ) {
+		SOError("Closing contour with unneeded path\n" );
+		ml->m->isneeded = true;
+	    }
+	}
+	if ( ml==NULL ) {
 	    SOError( "couldn't find a needed exit from an intersection\n" );
 	    ss->last = last;
     break;
@@ -1532,6 +1686,10 @@ static SplineSet *JoinAllNeeded(Intersection *ilist) {
 		for ( ml=il->monos; ml!=NULL && !ml->m->isneeded; ml=ml->next );
 	    if ( ml==NULL )
 	break;
+	    if ( !MonoGoesSomewhereUseful(il,ml->m)) {
+		SOError("Skipping needed monotonic which leads nowhere.\n" );
+	break;
+	    }
 	    cur = JoinAContour(il,ml);
 	    if ( head==NULL )
 		head = cur;
