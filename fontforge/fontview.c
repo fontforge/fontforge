@@ -804,8 +804,8 @@ return( temp );
 
 void MergeKernInfo(SplineFont *sf) {
 #ifndef __Mac
-    static unichar_t wild[] = { '*', '.', '{','a','f','m',',','t','f','m',',','b','i','n',',','h','q','x','}',  '\0' };
-    static unichar_t wild2[] = { '*', '.', '{','a','f','m',',','a','m','f','m',',','t','f','m',',','b','i','n',',','h','q','x','}',  '\0' };
+    static unichar_t wild[] = { '*', '.', '{','a','f','m',',','t','f','m',',','b','i','n',',','h','q','x',',','d','f','o','n','t','}',  '\0' };
+    static unichar_t wild2[] = { '*', '.', '{','a','f','m',',','a','m','f','m',',','t','f','m',',','b','i','n',',','h','q','x',',','d','f','o','n','t','}',  '\0' };
 #else
     static unichar_t wild[] = { '*', 0 };	/* Mac resource files generally don't have extensions */
     static unichar_t wild2[] = { '*', 0 };

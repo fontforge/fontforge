@@ -1892,7 +1892,7 @@ static SplineFont *SearchPostscriptResources(FILE *f,long rlistpos,int subcnt,lo
     SplineFont *sf;
 
     fseek(f,rlistpos,SEEK_SET);
-    offsets = calloc(subcnt,sizeof(long));
+    offsets = gcalloc(subcnt,sizeof(long));
     for ( i=0; i<subcnt; ++i ) {
 	/* resource id = */ getushort(f);
 	tmp = (short) getushort(f);
@@ -2133,6 +2133,7 @@ typedef struct fond {
 	    short offset;		/* 4.12 */
 	} *kerns;
     } *stylekerns;
+    char *psnames[48];
     struct fond *next;
 } FOND;
 
@@ -2172,6 +2173,8 @@ static void FondListFree(FOND *list) {
 	for ( i=0; i<list->stylekerncnt; ++i )
 	    free(list->stylekerns[i].kerns);
 	free(list->stylekerns);
+	for ( i=0; i<48; ++i )
+	    free(list->psnames[i]);
 	free(list);
 	list = next;
     }
@@ -2206,7 +2209,7 @@ static FOND *BuildFondList(FILE *f,long rlistpos,int subcnt,long rdata_pos,
 	/* mbz = */ getlong(f);
 	here = ftell(f);
 
-	cur = calloc(1,sizeof(FOND));
+	cur = gcalloc(1,sizeof(FOND));
 	cur->next = head;
 	head = cur;
 
@@ -2237,7 +2240,7 @@ static FOND *BuildFondList(FILE *f,long rlistpos,int subcnt,long rdata_pos,
 	/* internal & undefined, for international scripts = */ getlong(f);
 	/* version = */ getushort(f);
 	cur->assoc_cnt = getushort(f)+1;
-	cur->assoc = calloc(cur->assoc_cnt,sizeof(struct assoc));
+	cur->assoc = gcalloc(cur->assoc_cnt,sizeof(struct assoc));
 	for ( j=0; j<cur->assoc_cnt; ++j ) {
 	    cur->assoc[j].size = getushort(f);
 	    cur->assoc[j].style = getushort(f);
@@ -2247,10 +2250,10 @@ static FOND *BuildFondList(FILE *f,long rlistpos,int subcnt,long rdata_pos,
 	    fseek(f,widoff,SEEK_SET);
 	    cnt = getushort(f)+1;
 	    cur->stylewidthcnt = cnt;
-	    cur->stylewidths = calloc(cnt,sizeof(struct stylewidths));
+	    cur->stylewidths = gcalloc(cnt,sizeof(struct stylewidths));
 	    for ( j=0; j<cnt; ++j ) {
 		cur->stylewidths[j].style = getushort(f);
-		cur->stylewidths[j].widthtab = malloc((cur->last-cur->first+3)*sizeof(short));
+		cur->stylewidths[j].widthtab = galloc((cur->last-cur->first+3)*sizeof(short));
 		for ( k=cur->first; k<=cur->last+2; ++k )
 		    cur->stylewidths[j].widthtab[k] = getushort(f);
 	    }
@@ -2259,17 +2262,60 @@ static FOND *BuildFondList(FILE *f,long rlistpos,int subcnt,long rdata_pos,
 	    fseek(f,kernoff,SEEK_SET);
 	    cnt = getushort(f)+1;
 	    cur->stylekerncnt = cnt;
-	    cur->stylekerns = calloc(cnt,sizeof(struct stylekerns));
+	    cur->stylekerns = gcalloc(cnt,sizeof(struct stylekerns));
 	    for ( j=0; j<cnt; ++j ) {
 		cur->stylekerns[j].style = getushort(f);
 		cur->stylekerns[j].kernpairs = getushort(f);
-		cur->stylekerns[j].kerns = malloc(cur->stylekerns[j].kernpairs*sizeof(struct kerns));
+		cur->stylekerns[j].kerns = galloc(cur->stylekerns[j].kernpairs*sizeof(struct kerns));
 		for ( k=0; k<cur->stylekerns[j].kernpairs; ++k ) {
 		    cur->stylekerns[j].kerns[k].ch1 = getc(f);
 		    cur->stylekerns[j].kerns[k].ch2 = getc(f);
 		    cur->stylekerns[j].kerns[k].offset = getushort(f);
 		}
 	    }
+	}
+	if ( styleoff!=0 ) {
+	    uint8 stringoffsets[48];
+	    int strcnt, strlen, format;
+	    char **strings, *pt;
+	    fseek(f,styleoff,SEEK_SET);
+	    /* class = */ getushort(f);
+	    /* glyph encoding offset = */ getlong(f);
+	    /* reserved = */ getlong(f);
+	    for ( j=0; j<48; ++j )
+		stringoffsets[j] = getc(f);
+	    strcnt = getushort(f);
+	    strings = galloc(strcnt*sizeof(char *));
+	    for ( j=0; j<strcnt; ++j ) {
+		strlen = getc(f);
+		strings[j] = galloc(strlen+2);
+		strings[j][0] = strlen;
+		strings[j][strlen+1] = '\0';
+		for ( k=0; k<strlen; ++k )
+		    strings[j][k+1] = getc(f);
+	    }
+	    for ( j=0; j<48; ++j ) {
+		for ( k=j-1; k>=0; --k )
+		    if ( stringoffsets[j]==stringoffsets[k] )
+		break;
+		if ( k!=-1 )
+	    continue;		/* this style doesn't exist */
+		format = stringoffsets[j]-1;
+		strlen = strings[0][0];
+		for ( k=0; k<strings[format][0]; ++k )
+		    strlen += strings[ strings[format][k+1]-1 ][0];
+		pt = cur->psnames[j] = galloc(strlen+1);
+		strcpy(pt,strings[ 0 ]+1);
+		pt += strings[ 0 ][0];
+		for ( k=0; k<strings[format][0]; ++k ) {
+		    strcpy(pt,strings[ strings[format][k+1]-1 ]+1);
+		    pt += strings[ strings[format][k+1]-1 ][0];
+		}
+		*pt = '\0';
+	    }
+	    for ( j=0; j<strcnt; ++j )
+		free(strings[j]);
+	    free(strings);
 	}
 	fseek(f,here,SEEK_SET);
     }
@@ -2335,9 +2381,9 @@ static void LoadNFNT(FILE *f,long offset, SplineFont *sf, int size) {
     font.leading = getushort(f);
     font.rowWords = getushort(f);
     if ( font.rowWords!=0 ) {
-	font.fontImage = calloc(font.rowWords*font.fRectHeight,sizeof(short));
-	font.locs = calloc(font.lastChar-font.firstChar+3,sizeof(short));
-	font.offsetWidths = calloc(font.lastChar-font.firstChar+3,sizeof(short));
+	font.fontImage = gcalloc(font.rowWords*font.fRectHeight,sizeof(short));
+	font.locs = gcalloc(font.lastChar-font.firstChar+3,sizeof(short));
+	font.offsetWidths = gcalloc(font.lastChar-font.firstChar+3,sizeof(short));
 	for ( i=0; i<font.rowWords*font.fRectHeight; ++i )
 	    font.fontImage[i] = getushort(f);
 	for ( i=0; i<font.lastChar-font.firstChar+3; ++i )
@@ -2420,6 +2466,22 @@ static FOND *PickFOND(FOND *fondlist,char *filename,char **name, int *style) {
     int *styles;
     int cnt, which;
     char *pt, *lparen;
+    char *find = NULL;
+
+    if ((pt = strrchr(filename,'/'))!=NULL ) pt = filename;
+    if ( (lparen = strchr(filename,'('))!=NULL && strchr(lparen,')')!=NULL ) {
+	find = copy(lparen+1);
+	pt = strchr(find,')');
+	if ( pt!=NULL ) *pt='\0';
+	for ( test=fondlist; test!=NULL; test=test->next ) {
+	    for ( i=0; i<48; ++i )
+		if ( test->psnames[i]!=NULL && strcmp(find,test->psnames[i])==0 ) {
+		    *style = (i&3) | ((i&~3)<<1);	/* PS styles skip underline bit */
+		    *name = copy(test->psnames[i]);
+return( test );
+		}
+	}
+    }
 
     /* The file may contain multiple families, and each family may contain */
     /*  multiple styles (and each style may contain multiple sizes, but that's */
@@ -2448,11 +2510,7 @@ static FOND *PickFOND(FOND *fondlist,char *filename,char **name, int *style) {
 	}
     }
 
-    if ((pt = strrchr(filename,'/'))!=NULL ) pt = filename;
-    if ( (lparen = strchr(filename,'('))!=NULL && strchr(lparen,')')!=NULL ) {
-	char *find = copy(lparen+1);
-	pt = strchr(find,')');
-	if ( pt!=NULL ) *pt='\0';
+    if ( find!=NULL ) {
 	for ( which=cnt-1; which>=0; --which )
 	    if ( uc_strcmp(names[which],find)==0 )
 	break;
@@ -2762,7 +2820,7 @@ return( NULL );
     if ( FSpOpenRF(&spec,fsRdPerm,&res)!=noErr )
 return( NULL );
     temp = tmpfile();
-    buf = malloc(8192);
+    buf = galloc(8192);
     while ( 1 ) {
 	cnt = 8192;
 	err = FSRead(res,&cnt,buf);
