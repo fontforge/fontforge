@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 22-Jan-2002 -->
+  <!-- AP: Last modified: 23-Jan-2002 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -14,6 +14,8 @@ PfaEdit includes an interpreter so you can write scripts to modify fonts.
 <P>
 If you start pfaedit with a script on the command line it will not put up
 any windows and it will exit when the script is done.
+<P>
+You can also start a script from within PfaEdit with File-&gt;Execute Script.
 <P>
 The scripting language provides access to much of the functionality found
 in the font view's menus. It does not currently (and probably never will)
@@ -173,10 +175,12 @@ endloop
 </BLOCKQUOTE>
 <P>
 PfaEdit maintains the concept of a "current font" almost all commands refer
-only to the current font (and require that there be a font). The Open(),
-New() and Close() commands all change the current font. PfaEdit also maintains
+only to the current font (and require that there be a font). If you start
+a script with File-&gt;Execute Script, the font you were editing will be
+current, otherwise there will be no initial current font. The Open(), New()
+and Close() commands all change the current font. PfaEdit also maintains
 a list of all fonts that are currently open. This list is in no particular
-order.
+order. The list starts with $firstfont.
 <P>
 Similarly when working with cid keyed fonts, PfaEdit works in the "current
 sub font", and most commands refer to this font. The CIDChangeSubFont() command
@@ -580,14 +584,14 @@ a[4][0] = "Nested array";
   <DD>
     If the current font is a cid keyed font, this command changes the active
     sub-font to be the one specified (the string should be the postscript FontName
-    of the subfont) 
+    of the subfont)
   <DT>
     CIDSetFontNames(fontname[,family[,fullname[,weight[,copyright-notice]]]])
   <DD>
     Sets various postscript names associated with the top level cid font. If
     a name is omitted (or is the empty string) it will not be changed. (this
     is just like SetFontNames except it works on the top level cid font rather
-    than the current font).
+    than the current font). 
       <HR>
   <DT>
     CharCnt()
