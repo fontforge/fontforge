@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 29-Dec-2002 -->
-  <!-- AP: Last modified: 17-Aug-2003 -->
+  <!-- AP: Last modified: 18-Aug-2003 -->
   <TITLE>Advanced Typography tables</TITLE>
 </HEAD>
 <BODY>
@@ -485,6 +485,32 @@ capabilies beyond those of AAT. Currently this means:
 PfaEdit does not even try to parse an AAT contextual glyph substitution
 sub-table, too few of these can be expressed in OpenType to make it worth
 while.
+<H4>
+  <FONT COLOR="Red">BUG</FONT>
+</H4>
+<P>
+There is a subtle bug involved in converting a chaining contextual substitution
+into an Apple contextual glyph substitution. AAT does not have the concept
+of a backtrack list. This means that the substitution will start with the
+first character of the backtrack list, which means that any substitutions
+that may already have happened (to the glyphs on the backtrack list) on an
+opentype platform will not have happened on a Mac.
+<H4>
+  Example:
+</H4>
+<BLOCKQUOTE>
+  <SMALL>Suppose we have a simple substitution <BR>
+  <CODE>&nbsp; { r =&gt; r.alt</CODE> }<BR>
+  and a chaining substitution<BR>
+  <CODE>&nbsp; { a r.alt [b] =&gt; {b =&gt; b.alt}}</CODE><BR>
+  (where "a" and "r.alt" are on the backtrack list, and "b" is the match
+  string)<BR>
+  On an opentype platform this will work as expected because by the time the
+  current character becomes "b" and the substitution starts we will already
+  have changed "r" into "r.alt", but on the Mac the substitution will start
+  at glyph "a" and the { r =&gt; r.alt } will not yet have executed and the
+  match will fail.</SMALL>
+</BLOCKQUOTE>
 <H3>
   Apple and OpenType features
 </H3>
