@@ -1064,6 +1064,11 @@ static void TreeFree(struct contexttree *tree) {
 static int TreeLabelState(struct contexttree *tree, int snum) {
     int i;
 
+    if ( tree->branch_cnt==0 && tree->ends_here!=NULL ) {
+	tree->state = 0;
+return( snum );
+    }
+
     tree->state = snum++;
     for ( i=0; i<tree->branch_cnt; ++i )
 	snum = TreeLabelState(tree->branches[i].branch,snum);
@@ -1140,7 +1145,7 @@ return( false );
 	    if ( j<me->rule_cnt ) {
 		if ( pending_pos==-1 ) {
 		    pending_pos = me->depth;
-		    me->branches[i].markme = true;
+		    me->markme = true;
 		} else
 return( false );
 	    }
@@ -1158,7 +1163,7 @@ static struct contexttree *_FPST2Tree(FPST *fpst,struct contexttree *parent,int 
     uint16 *classes;
 
     if ( fpst!=NULL ) {
-	me->depth = 0;
+	me->depth = -1;
 	me->rule_cnt = fpst->rule_cnt;
 	me->rules = gcalloc(me->rule_cnt,sizeof(struct ct_subs));
 	for ( i=0; i<me->rule_cnt; ++i )
@@ -1167,18 +1172,18 @@ static struct contexttree *_FPST2Tree(FPST *fpst,struct contexttree *parent,int 
     } else {
 	me->depth = parent->depth+1;
 	for ( i=rcnt=0; i<parent->rule_cnt; ++i )
-	    if ( parent->rules[i].rule->u.class.allclasses[parent->depth] == class )
+	    if ( parent->rules[i].rule->u.class.allclasses[me->depth] == class )
 		++rcnt;
 	me->rule_cnt = rcnt;
 	me->rules = gcalloc(me->rule_cnt,sizeof(struct ct_subs));
 	for ( i=rcnt=0; i<parent->rule_cnt; ++i )
-	    if ( parent->rules[i].rule->u.class.allclasses[parent->depth] == class )
+	    if ( parent->rules[i].rule->u.class.allclasses[me->depth] == class )
 		me->rules[rcnt++].rule = parent->rules[i].rule;
 	me->parent = parent;
     }
     classes = galloc(me->rule_cnt*sizeof(uint16));
     for ( i=ccnt=0; i<me->rule_cnt; ++i ) {
-	thisclass = me->rules[i].thisclassnum = me->rules[i].rule->u.class.allclasses[me->depth];
+	thisclass = me->rules[i].thisclassnum = me->rules[i].rule->u.class.allclasses[me->depth+1];
 	if ( thisclass==0xffff ) {
 	    if ( me->ends_here==NULL )
 		me->ends_here = me->rules[i].rule;
@@ -1367,13 +1372,22 @@ struct transitions2 {
 
 static int Transition2(int state,int mark, int mindex,int cindex,
 	struct transitions2 *transitions,int *tcur) {
-    struct transitions2 *t = &transitions[*tcur];
+    struct transitions2 *t;
+    int i;
+
+    for ( i= *tcur-1; i>=0 ; --i ) {
+	struct transitions2 *t = &transitions[i];
+	if ( t->next_state==state && t->markit==mark && t->mark_index==mindex &&
+		t->cur_index == cindex )
+return( i );
+    }
+    t = &transitions[*tcur];
 
     t->next_state = state;
     t->markit = mark;
     t->mark_index = mindex;
     t->cur_index = cindex;
-return( *tcur++ );
+return( (*tcur)++ );
 }
 
 static int Transition2Find(struct contexttree *cur,int classnum,
@@ -1384,13 +1398,20 @@ static int Transition2Find(struct contexttree *cur,int classnum,
     int i;
 
     for ( i=0; i<cur->branch_cnt; ++i ) {
-	if ( cur->branches[i].classnum==classnum )
+	if ( cur->branches[i].classnum==classnum ) {
 return( Transition2(cur->branches[i].branch->state,
-		cur->branches[i].markme,
-		cur->marked_index,
-		cur->cur_index,
+		cur->branches[i].branch->markme,
+		cur->branches[i].branch->marked_index,
+		cur->branches[i].branch->cur_index,
 		transitions, tcur));
+	}
     }
+
+    /* If we're at the end of a match apply any substitutions we found */
+    if ( cur->ends_here!=NULL )
+return( Transition2(0, false, cur->marked_index, cur->cur_index,
+		transitions, tcur));
+
 return( 0 );
 }
 
@@ -1501,7 +1522,7 @@ static int morx_dumpContGlyphFeatureFromClass(FILE *temp,FPST *fpst,
     tcur = 1;
     first = true;
     tlist = galloc(class_cnt*sizeof(uint16));
-    for ( cur = tree; cur!=NULL; cur = TreeNext(cur)) {
+    for ( cur = tree; cur!=NULL; cur = TreeNext(cur)) if ( cur->state!=0 ) {
 	tlist[0] = 0;						/* end of text */
 	tlist[1] = Transition2Find(cur,0,transitions,&tcur);	/* out of bounds */
 	tlist[2] = Transition2(cur->state,0,0xffff,0xffff,transitions,&tcur);	/* stay here, deleted glyph */
@@ -1511,11 +1532,11 @@ static int morx_dumpContGlyphFeatureFromClass(FILE *temp,FPST *fpst,
 	if ( fpst->flags & pst_ignorecombiningmarks )
 	    tlist[3+i] = tlist[2];				/* marks get ignored like delete chars */
 	for ( i=0; i<class_cnt; ++i )
-	    putshort(temp,i);
+	    putshort(temp,tlist[i]);
 	if ( first ) {
 	    /* classes 0 and 1 should look the same as far as I'm concerned */
 	    for ( i=0; i<class_cnt; ++i )
-		putshort(temp,i);
+		putshort(temp,tlist[i]);
 	    first = false;
 	}
     }
@@ -1524,16 +1545,16 @@ static int morx_dumpContGlyphFeatureFromClass(FILE *temp,FPST *fpst,
 
 
     here = ftell(temp);
-    fseek(temp,start+2*sizeof(uint32),SEEK_SET);
+    fseek(temp,start+3*sizeof(uint32),SEEK_SET);
     putlong(temp,here-start);			/* Point to start of state arrays */
     fseek(temp,0,SEEK_END);
 
     /* Now the transitions */
     for ( i=0; i<tcur; ++i ) {
-	putshort(temp,transitions[0].next_state);
-	putshort(temp,transitions[0].markit ? 0x8000 : 0 );
-	putshort(temp,transitions[0].mark_index );
-	putshort(temp,transitions[0].cur_index );
+	putshort(temp,transitions[i].next_state);
+	putshort(temp,transitions[i].markit ? 0x8000 : 0 );
+	putshort(temp,transitions[i].mark_index );
+	putshort(temp,transitions[i].cur_index );
     }
     free(transitions);
 
@@ -1650,6 +1671,8 @@ return( NULL );
 	    ++class_cnt;
 	}
     }
+    for ( j=0; j<match_len; ++j )
+	(*classes)[j][nc[j]] = 0xffff;		/* End marker */
 
     free(next);
     free(nc);
@@ -1726,21 +1749,21 @@ return( false );
     /* initial states */
     for ( j=0; j<2; ++j ) {
 	for ( i=0; i<class_cnt; ++i ) {
-	    for ( k=0; classes[0][k]!=0 && classes[0][k]!=i; ++k );
+	    for ( k=0; classes[0][k]!=0xffff && classes[0][k]!=i; ++k );
 	    putshort(temp,classes[0][k]==i?1:0);
 	}
     }
     if ( !(fpst->flags & pst_ignorecombiningmarks ) ) {
 	for ( j=1; j<match_len; ++j ) {
 	    for ( i=0; i<class_cnt; ++i ) {
-		for ( k=0; classes[j][k]!=0 && classes[j][k]!=i; ++k );
-		putshort(temp,classes[j][k]==i?j:0);
+		for ( k=0; classes[j][k]!=0xffff && classes[j][k]!=i; ++k );
+		putshort(temp,classes[j][k]==i?j+1:0);
 	    }
 	}
     } else {
 	for ( j=1; j<match_len; ++j ) {
 	    for ( i=0; i<class_cnt-1; ++i ) {
-		for ( k=0; classes[j][k]!=0 && classes[j][k]!=i; ++k );
+		for ( k=0; classes[j][k]!=0xffff && classes[j][k]!=i; ++k );
 		putshort(temp,classes[j][k]==i?j+1:0);
 	    }
 	    putshort(temp,subspos==j?match_len+1:j);	/* a mark leaves us in the same class */
@@ -1753,9 +1776,14 @@ return( false );
     fseek(temp,0,SEEK_END);
     /* transitions */
     putshort(temp,0); putshort(temp,0x0000); putshort(temp,0xffff); putshort(temp,0xffff);
-    for ( j=0; j<match_len-2; ++j )
-	putshort(temp,j+1); putshort(temp,subspos==j?0x8000:0x0000); putshort(temp,0xffff); putshort(temp,0xffff);
-    putshort(temp,0); putshort(temp,subspos==j?0x8000:0x0000); putshort(temp,0); putshort(temp,hasfinal?1:0xffff);
+    for ( j=0; j<match_len-1; ++j ) {
+	putshort(temp,j+2); putshort(temp,subspos==j?0x8000:0x0000); putshort(temp,0xffff); putshort(temp,0xffff);
+    }
+    if ( subspos==j ) {
+	putshort(temp,0); putshort(temp,0x0000); putshort(temp,0xffff); putshort(temp,0);
+    } else {
+	putshort(temp,0); putshort(temp,0x0000); putshort(temp,0); putshort(temp,hasfinal?1:0xffff);
+    }
     if ( fpst->flags & pst_ignorecombiningmarks ) {
 	putshort(temp,subspos); putshort(temp,0x0000); putshort(temp,0xffff); putshort(temp,0xffff);
     }

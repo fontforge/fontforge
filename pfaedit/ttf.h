@@ -514,7 +514,6 @@ struct contexttree {
     int branch_cnt;	/* count of subbranches of this node */
     struct ct_branch {
 	uint16 classnum;
-	uint8 markme;
 	struct contexttree *branch;
     } *branches;
     struct fpst_rule *ends_here;
@@ -527,6 +526,7 @@ struct contexttree {
     uint32 applymarkedsubs;
     uint32 applycursubs;
     uint16 marked_index, cur_index;
+    uint8 markme;
     int state, next_state;
     struct contexttree *parent;
 };
