@@ -52,7 +52,7 @@ fi
 if test "FreeType2_IncRoot" = "" >/dev/null 2>&1 ; then
  AC_CHECK_FILE(/usr/include/freetype2,CFLAGS="$CFLAGS -I/usr/include/freetype2/",[
  AC_CHECK_FILE(/usr/local/include/freetype2,CFLAGS="$CFLAGS -I/usr/local/include -I/usr/local/include/freetype2/",[
- AC_CHECK_FILE(/usr/X11R6/include/freetype2,CFLAGS="$CFLAGS -I/usr/X11R6/include -I/usr/X11R6/include/freetype2/",)])])
+ AC_CHECK_FILE(/usr/X11R6/include/freetype2,CFLAGS="$CFLAGS -I/usr/X11R6/include -I/usr/X11R6/include/freetype2/",AC_DEFINE(_NO_FREETYPE))])])
 fi
 
 dnl Some old versions of lib(un)gif don't work for us, they've got the

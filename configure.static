@@ -2434,6 +2434,11 @@ echo "$as_me:$LINENO: result: $ac_cv_file__usr_X11R6_include_freetype2" >&5
 echo "${ECHO_T}$ac_cv_file__usr_X11R6_include_freetype2" >&6
 if test $ac_cv_file__usr_X11R6_include_freetype2 = yes; then
   CFLAGS="$CFLAGS -I/usr/X11R6/include -I/usr/X11R6/include/freetype2/"
+else
+  cat >>confdefs.h <<\_ACEOF
+#define _NO_FREETYPE 1
+_ACEOF
+
 fi
 
 fi
