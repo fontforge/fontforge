@@ -1232,17 +1232,23 @@ static void bSetFontNames(Context *c) {
 }
 
 static void bSetItalicAngle(Context *c) {
+    int denom=1;
 
-    if ( c->a.argc==2 )
+    if ( c->a.argc!=2 && c->a.argc!=3 )
 	error( c, "Wrong number of arguments");
+    if ( c->a.argc==3 ) {
+	if ( c->a.vals[2].type!=v_int )
+	    error(c,"Bad argument type");
+	denom=c->a.vals[2].u.ival;
+    }
     if ( c->a.vals[1].type!=v_int )
 	error(c,"Bad argument type");
-    c->curfv->sf->italicangle = c->a.vals[1].u.ival;
+    c->curfv->sf->italicangle = c->a.vals[1].u.ival/ (double) denom;
 }
  
 static void bSetUniqueID(Context *c) {
 
-    if ( c->a.argc==2 )
+    if ( c->a.argc!=2 )
 	error( c, "Wrong number of arguments");
     if ( c->a.vals[1].type!=v_int )
 	error(c,"Bad argument type");
