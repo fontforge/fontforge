@@ -1246,26 +1246,30 @@ void CVChar(CharView *cv, GEvent *event ) {
 		CVVScroll(cv,&sb);
 	    else
 		CVHScroll(cv,&sb);
-	} else if (( cv->p.sp!=NULL || cv->lastselpt!=NULL ) &&
-		(cv->p.nextcp || cv->p.prevcp) ) {
-	    SplinePoint *sp = cv->p.sp ? cv->p.sp : cv->lastselpt;
-	    SplinePoint *old = cv->p.sp;
-	    BasePoint *which = cv->p.nextcp ? &sp->nextcp : &sp->prevcp;
-	    BasePoint to;
-	    to.x = which->x + dx*arrowAmount;
-	    to.y = which->y + dy*arrowAmount;
-	    cv->p.sp = sp;
-	    CVPreserveState(cv);
-	    CVAdjustControl(cv,which,&to);
-	    cv->p.sp = old;
-	    SCUpdateAll(cv->sc);
-	} else if ( CVAnySel(cv,NULL,NULL,NULL) || cv->widthsel || cv->vwidthsel ) {
-	    CVPreserveState(cv);
-	    CVMoveSelection(cv,dx*arrowAmount,dy*arrowAmount);
-	    if ( cv->widthsel )
-		SCSynchronizeWidth(cv->sc,cv->sc->width,cv->sc->width-dx,NULL);
-	    CVCharChangedUpdate(cv);
-	    CVInfoDraw(cv,cv->gw);
+	} else {
+	    if ( event->u.chr.state & (ksm_shift) )
+		dx -= dy*tan((cv->sc->parent->italicangle)*(3.1415926535897932/180) );
+	    if (( cv->p.sp!=NULL || cv->lastselpt!=NULL ) &&
+		    (cv->p.nextcp || cv->p.prevcp) ) {
+		SplinePoint *sp = cv->p.sp ? cv->p.sp : cv->lastselpt;
+		SplinePoint *old = cv->p.sp;
+		BasePoint *which = cv->p.nextcp ? &sp->nextcp : &sp->prevcp;
+		BasePoint to;
+		to.x = which->x + dx*arrowAmount;
+		to.y = which->y + dy*arrowAmount;
+		cv->p.sp = sp;
+		CVPreserveState(cv);
+		CVAdjustControl(cv,which,&to);
+		cv->p.sp = old;
+		SCUpdateAll(cv->sc);
+	    } else if ( CVAnySel(cv,NULL,NULL,NULL) || cv->widthsel || cv->vwidthsel ) {
+		CVPreserveState(cv);
+		CVMoveSelection(cv,dx*arrowAmount,dy*arrowAmount);
+		if ( cv->widthsel )
+		    SCSynchronizeWidth(cv->sc,cv->sc->width,cv->sc->width-dx,NULL);
+		CVCharChangedUpdate(cv);
+		CVInfoDraw(cv,cv->gw);
+	    }
 	}
     } else if ( !(event->u.chr.state&(ksm_control|ksm_meta)) &&
 	    event->type == et_char &&
