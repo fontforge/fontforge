@@ -2647,8 +2647,9 @@ static void bSimplify(Context *c) {
     static struct simplifyinfo smpl = { sf_normal,.75,.2,10 };
     smpl.err = (c->curfv->sf->ascent+c->curfv->sf->descent)/1000.;
     smpl.linefixup = (c->curfv->sf->ascent+c->curfv->sf->descent)/500.;
+    smpl.linelenmax = (c->curfv->sf->ascent+c->curfv->sf->descent)/100.;
 
-    if ( c->a.argc>=3 && c->a.argc<=6 ) {
+    if ( c->a.argc>=3 && c->a.argc<=7 ) {
 	if ( c->a.vals[1].type!=v_int || c->a.vals[2].type!=v_int )
 	    error( c, "Bad type for argument" );
 	smpl.flags = c->a.vals[1].u.ival;
@@ -2665,6 +2666,11 @@ static void bSimplify(Context *c) {
 		    if ( c->a.vals[5].type!=v_int || c->a.vals[5].u.ival==0 )
 			error( c, "Bad type for argument" );
 		    smpl.err /= (double) c->a.vals[5].u.ival;
+		    if ( c->a.argc>=7 ) {
+			if ( c->a.vals[6].type!=v_int )
+			    error( c, "Bad type for argument" );
+			smpl.linelenmax = c->a.vals[6].u.ival;
+		    }
 		}
 	    }
 	}

@@ -1474,7 +1474,8 @@ return( good );
 
 /* A wrapper to the previous routine to handle some extra checking for a */
 /*  common case */
-static int SplinesRemoveMidMaybe(SplineChar *sc,SplinePoint *mid, int flags, double err) {
+static int SplinesRemoveMidMaybe(SplineChar *sc,SplinePoint *mid, int flags,
+	double err, double lenmax2) {
     SplinePoint *from, *to;
     BasePoint fncp, tpcp, fncp2, tpcp2;
     int fpt, tpt;
@@ -1487,8 +1488,35 @@ return( false );
     /* Retain points which are horizontal or vertical, because postscript says*/
     /*  type1 fonts should always have a point at the extrema (except for small*/
     /*  things like serifs), and the extrema occur at horizontal/vertical points*/
+    /* tt says something similar */
     if ( !(flags&sf_ignoreextremum) && SPisExtremum(mid) )
 return( false );
+
+    if ( mid->prev->knownlinear || mid->next->knownlinear ) {
+	/* Be very careful about merging straight lines. Generally they should*/
+	/*  remain straight... */
+	if ( mid->prev->knownlinear && mid->next->knownlinear ) {
+	    /* If both are straight, only allow a merge if lines are colinear*/
+	    if ( from->me.x==to->me.x ) {
+		if ( mid->me.x!=to->me.x )
+return( false );
+	    } else if ( from->me.y==to->me.y ) {
+		if ( mid->me.y!=to->me.y )
+return( false );
+	    } else if ( !RealNear((from->me.y-to->me.y)/(from->me.x-to->me.x),
+				(mid->me.y-to->me.y)/(mid->me.x-to->me.x)) ) {
+return( false );
+	    }
+	} else if ( mid->prev->knownlinear ) {
+	    if ( (mid->me.x-from->me.x)*(mid->me.x-from->me.x) + (mid->me.y-from->me.y)*(mid->me.y-from->me.y)
+		    > lenmax2 )
+return( false );
+	} else {
+	    if ( (mid->me.x-to->me.x)*(mid->me.x-to->me.x) + (mid->me.y-to->me.y)*(mid->me.y-to->me.y)
+		    > lenmax2 )
+return( false );
+	}
+    }
 
     fncp2 = fncp = from->nextcp; tpcp2 = tpcp = to->prevcp;
     fpt = from->pointtype; tpt = to->pointtype;
@@ -1760,6 +1788,7 @@ void SplinePointListSimplify(SplineChar *sc,SplinePointList *spl,
 	struct simplifyinfo *smpl) {
     SplinePoint *first, *next, *sp, *nsp;
     BasePoint suv, nuv;
+    double lenmax2 = smpl->linelenmax*smpl->linelenmax;
 
     if ( spl==NULL )
 return;
@@ -1790,6 +1819,11 @@ return;		/* Ignore any splines which are just dots */
 		for ( nsp=sp->next->to; nsp!=sp; nsp = nsp->next->to ) {
 		    if ( nsp->next==NULL )
 		break;
+		    if ( nsp->prev->knownlinear &&
+			    (nsp->me.x-nsp->prev->from->me.x)*(nsp->me.x-nsp->prev->from->me.x) +
+			    (nsp->me.y-nsp->prev->from->me.y)*(nsp->me.y-nsp->prev->from->me.y)
+			    >= lenmax2 )
+	      goto nogood;
 		    GetNextUnitVector(nsp,&nuv);
 		    if ( suv.x*nuv.x + suv.y*nuv.y < 0 ) {
 			if ( suv.x*nuv.x + suv.y*nuv.y > -.1 )
@@ -1818,7 +1852,7 @@ return;		/* Ignore any splines which are just dots */
 	    first = spl->first->prev->from;
 	    if ( first->prev == first->next )
 return;
-	    if ( !SplinesRemoveMidMaybe(sc,spl->first,smpl->flags,smpl->err))
+	    if ( !SplinesRemoveMidMaybe(sc,spl->first,smpl->flags,smpl->err,lenmax2))
 	break;
 	    if ( spl->first==spl->last )
 		spl->last = first;
@@ -1839,7 +1873,7 @@ return;
 		    sp->next->to->next->to == sp ))
 return;
 	if ( smpl->flags!=sf_cleanup )
-	    SplinesRemoveMidMaybe(sc,sp,smpl->flags,smpl->err);
+	    SplinesRemoveMidMaybe(sc,sp,smpl->flags,smpl->err,lenmax2);
 	else {
 	    while ( sp->me.x==next->me.x && sp->me.y==next->me.y &&
 		    sp->nextcp.x>sp->me.x-1 && sp->nextcp.x<sp->me.x+1 &&

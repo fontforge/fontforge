@@ -36,8 +36,10 @@
 #define CID_SmoothHV	1005
 #define CID_FlattenBumps	1006
 #define CID_FlattenBound	1007
+#define CID_LineLenMax		1008
 
-static double olderr_rat = 1/1000., oldsmooth_tan=.2, oldlinefixup_rat = 10./1000.;
+static double olderr_rat = 1/1000., oldsmooth_tan=.2,
+	oldlinefixup_rat = 10./1000., oldlinelenmax_rat = 1/100.;
 static int oldextrema = false;
 static int oldslopes = false;
 static int oldsmooth = true;
@@ -49,6 +51,7 @@ typedef struct simplifydlg {
     double err;
     double tan_bounds;
     double linefixup;
+    double linelenmax;
     int done;
     int cancelled;
     int em_size;
@@ -74,6 +77,7 @@ static int Sim_OK(GGadget *g, GEvent *e) {
 	    sim->tan_bounds= GetRealR(GGadgetGetWindow(g),CID_SmoothTan,_STR_Tangent,&badparse);
 	if ( sim->flags&sf_forcelines )
 	    sim->linefixup= GetRealR(GGadgetGetWindow(g),CID_FlattenBound,_STR_BumpSize,&badparse);
+	sim->linelenmax = GetRealR(GGadgetGetWindow(g),CID_LineLenMax,_STR_LineLenMax,&badparse);
 	if ( badparse )
 return( true );
 	olderr_rat = sim->err/sim->em_size;
@@ -87,6 +91,7 @@ return( true );
 	}
 	if ( oldlinefix )
 	    oldlinefixup_rat = sim->linefixup/sim->em_size;
+	oldlinelenmax_rat = sim->linelenmax/sim->em_size;
 	
 	sim->done = true;
     }
@@ -118,10 +123,10 @@ int SimplifyDlg(SplineFont *sf, struct simplifyinfo *smpl) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[18];
-    GTextInfo label[18];
+    GGadgetCreateData gcd[22];
+    GTextInfo label[22];
     Simple sim;
-    char buffer[12], buffer2[12], buffer3[12];
+    char buffer[12], buffer2[12], buffer3[12], buffer4[12];
 
     memset(&sim,0,sizeof(sim));
     sim.em_size = sf->ascent+sf->descent;
@@ -140,7 +145,7 @@ int SimplifyDlg(SplineFont *sf, struct simplifyinfo *smpl) {
     wattrs.is_dlg = true;
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,180));
-    pos.height = GDrawPointsToPixels(NULL,215);
+    pos.height = GDrawPointsToPixels(NULL,255);
     gw = GDrawCreateTopWindow(NULL,&pos,sim_e_h,&sim,&wattrs);
 
     memset(&label,0,sizeof(label));
@@ -311,32 +316,64 @@ int SimplifyDlg(SplineFont *sf, struct simplifyinfo *smpl) {
     gcd[13].creator = GLabelCreate;
 
 
-
-
-    gcd[14].gd.pos.x = 20-3; gcd[14].gd.pos.y = gcd[13].gd.pos.y+30;
-    gcd[14].gd.pos.width = -1; gcd[14].gd.pos.height = 0;
-    gcd[14].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[14].text = (unichar_t *) _STR_OK;
+    label[14].text = (unichar_t *) _STR_DontSmoothLines;
     label[14].text_in_resource = true;
-    gcd[14].gd.mnemonic = 'O';
     gcd[14].gd.label = &label[14];
-    gcd[14].gd.handle_controlevent = Sim_OK;
-    gcd[14].creator = GButtonCreate;
+    gcd[14].gd.pos.x = 8; gcd[14].gd.pos.y = gcd[13].gd.pos.y+14; 
+    gcd[14].gd.flags = gg_enabled|gg_visible;
+    gcd[14].creator = GLabelCreate;
 
-    gcd[15].gd.pos.x = -20; gcd[15].gd.pos.y = gcd[14].gd.pos.y+3;
-    gcd[15].gd.pos.width = -1; gcd[15].gd.pos.height = 0;
-    gcd[15].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[15].text = (unichar_t *) _STR_Cancel;
+    label[15].text = (unichar_t *) _STR_LongerThan;
     label[15].text_in_resource = true;
     gcd[15].gd.label = &label[15];
-    gcd[15].gd.mnemonic = 'C';
-    gcd[15].gd.handle_controlevent = Sim_Cancel;
-    gcd[15].creator = GButtonCreate;
+    gcd[15].gd.pos.x = 20; gcd[15].gd.pos.y = gcd[14].gd.pos.y+24;
+    gcd[15].gd.flags = gg_enabled|gg_visible;
+    gcd[15].creator = GLabelCreate;
 
-    gcd[16].gd.pos.x = 2; gcd[16].gd.pos.y = 2;
-    gcd[16].gd.pos.width = pos.width-4; gcd[16].gd.pos.height = pos.height-4;
-    gcd[16].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
-    gcd[16].creator = GGroupCreate;
+    sprintf( buffer4, "%.3g", oldlinelenmax_rat*sim.em_size );
+    label[16].text = (unichar_t *) buffer4;
+    label[16].text_is_1byte = true;
+    gcd[16].gd.label = &label[16];
+    gcd[16].gd.pos.x = 90; gcd[16].gd.pos.y = gcd[15].gd.pos.y-6;
+    gcd[16].gd.pos.width = 40;
+    gcd[16].gd.flags = gg_enabled|gg_visible;
+    gcd[16].gd.cid = CID_LineLenMax;
+    gcd[16].creator = GTextFieldCreate;
+
+    gcd[17].gd.pos.x = gcd[16].gd.pos.x+gcd[16].gd.pos.width+3;
+    gcd[17].gd.pos.y = gcd[15].gd.pos.y;
+    gcd[17].gd.flags = gg_visible | gg_enabled ;
+    label[17].text = (unichar_t *) _STR_EmUnits;
+    label[17].text_in_resource = true;
+    gcd[17].gd.label = &label[17];
+    gcd[17].creator = GLabelCreate;
+
+
+
+    gcd[18].gd.pos.x = 20-3; gcd[18].gd.pos.y = gcd[17].gd.pos.y+30;
+    gcd[18].gd.pos.width = -1; gcd[18].gd.pos.height = 0;
+    gcd[18].gd.flags = gg_visible | gg_enabled | gg_but_default;
+    label[18].text = (unichar_t *) _STR_OK;
+    label[18].text_in_resource = true;
+    gcd[18].gd.mnemonic = 'O';
+    gcd[18].gd.label = &label[18];
+    gcd[18].gd.handle_controlevent = Sim_OK;
+    gcd[18].creator = GButtonCreate;
+
+    gcd[19].gd.pos.x = -20; gcd[19].gd.pos.y = gcd[18].gd.pos.y+3;
+    gcd[19].gd.pos.width = -1; gcd[19].gd.pos.height = 0;
+    gcd[19].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    label[19].text = (unichar_t *) _STR_Cancel;
+    label[19].text_in_resource = true;
+    gcd[19].gd.label = &label[19];
+    gcd[19].gd.mnemonic = 'C';
+    gcd[19].gd.handle_controlevent = Sim_Cancel;
+    gcd[19].creator = GButtonCreate;
+
+    gcd[20].gd.pos.x = 2; gcd[20].gd.pos.y = 2;
+    gcd[20].gd.pos.width = pos.width-4; gcd[20].gd.pos.height = pos.height-4;
+    gcd[20].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
+    gcd[20].creator = GGroupCreate;
 
     GGadgetsCreate(gw,gcd);
     GWidgetIndicateFocusGadget(GWidgetGetControl(gw,CID_Error));
@@ -354,6 +391,7 @@ return( false );
     smpl->err = sim.err;
     smpl->tan_bounds = sim.tan_bounds;
     smpl->linefixup = sim.linefixup;
+    smpl->linelenmax = sim.linelenmax;
 return( true );
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

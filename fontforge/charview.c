@@ -5719,6 +5719,7 @@ static void CVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     static struct simplifyinfo smpl = { sf_normal,.75,.05,0 };
 
     smpl.err = (cv->sc->parent->ascent+cv->sc->parent->descent)/1000.;
+    smpl.linelenmax = (cv->sc->parent->ascent+cv->sc->parent->descent)/100.;
     CVPreserveState(cv);
     cv->layerheads[cv->drawmode]->splines = SplineCharSimplify(cv->sc,cv->layerheads[cv->drawmode]->splines,
 	    &smpl);
@@ -5727,8 +5728,10 @@ static void CVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void CVMenuSimplifyMore(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    static struct simplifyinfo smpl = { sf_normal,.75,.05,0 };
+    static struct simplifyinfo smpl = { sf_normal,.75,.05,0, -1 };
 
+    if ( smpl.linelenmax == -1 )
+	smpl.linelenmax = (cv->sc->parent->ascent+cv->sc->parent->descent)/100.;
     if ( !SimplifyDlg(cv->sc->parent,&smpl))
 return;
     CVPreserveState(cv);
@@ -7806,6 +7809,7 @@ static void SVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = sv->cv_srch.inactive ? &sv->cv_rpl : &sv->cv_srch;
     static struct simplifyinfo smpl = { sf_normal,.75,.05,0 };
     smpl.err = (cv->sc->parent->ascent+cv->sc->parent->descent)/1000.;
+    smpl.linelenmax = (cv->sc->parent->ascent+cv->sc->parent->descent)/100.;
     CVPreserveState(cv);
     cv->layerheads[cv->drawmode]->splines = SplineCharSimplify(cv->sc,cv->layerheads[cv->drawmode]->splines,&smpl);
     CVCharChangedUpdate(cv);
