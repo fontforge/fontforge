@@ -5262,7 +5262,7 @@ static void dumpcoveragetable(FILE *gpos,SplineChar **glyphs) {
     } else {
 	putshort(gpos,2);		/* Coverage format=2 => range list */
 	putshort(gpos,range_cnt);	/* count of ranges */
-	last = -2; start = -2;
+	last = -2; start = -2;		/* start is a index in our glyph array, last is ttf_glyph */
 	for ( i=0; glyphs[i]!=NULL; ++i ) {
 	    if ( glyphs[i]->ttf_glyph!=last+1 ) {
 		if ( last!=-2 ) {
@@ -5273,6 +5273,11 @@ static void dumpcoveragetable(FILE *gpos,SplineChar **glyphs) {
 		start = i;
 	    }
 	    last = glyphs[i]->ttf_glyph;
+	}
+	if ( last!=-2 ) {
+	    putshort(gpos,glyphs[start]->ttf_glyph);	/* start glyph ID */
+	    putshort(gpos,last);			/* end glyph ID */
+	    putshort(gpos,start);			/* coverage index of start glyph */
 	}
     }
 }
