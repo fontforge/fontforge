@@ -434,11 +434,12 @@ return;
     }
     if ( prev!=NULL &&
 	    prev->here.x==lines->here.x && prev->here.y == lines->here.y ) {
-	prev->next = NULL;
+	prev->next = lines->next;
 	chunkfree(lines,sizeof(*lines));
+	lines = prev->next;
     }
 
-    while ( (next = lines->next)!=NULL ) {
+    if ( lines!=NULL ) while ( (next = lines->next)!=NULL ) {
 	if ( prev->here.x!=next->here.x ) {
 	    double slope = (next->here.y-prev->here.y) / (double) (next->here.x-prev->here.x);
 	    double inter = prev->here.y - slope*prev->here.x;
@@ -746,12 +747,14 @@ static void _SplineSetFindTop(SplineSet *ss,BasePoint *top) {
     }
 }
 
+#ifndef PFAEDIT_CONFIG_TYPE3
 static void SplineSetFindTop(SplineSet *ss,BasePoint *top) {
 
     top->y = -1e10;
     _SplineSetFindTop(ss,top);
     if ( top->y < -65536 ) top->y = top->x = 0;
 }
+#endif
 
 void SplineSetQuickBounds(SplineSet *ss,DBounds *b) {
     SplinePoint *sp;
@@ -1827,6 +1830,10 @@ static void SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext *
     /*  formality, it acutally contains a skew. So be ready */
     if ( fd->fontmatrix[0]!=0 )
 	TransByFontMatrix(sf,fd->fontmatrix);
+#ifdef PFAEDIT_CONFIG_TYPE3
+    if ( fd->charprocs->cnt!=0 )
+	sf->multilayer = true;
+#endif
 }
 
 static SplineFont *SplineFontFromMMType1(SplineFont *sf, FontDict *fd, struct pscontext *pscontext) {
@@ -2139,6 +2146,34 @@ static void LayerToRefLayer(struct reflayer *rl,Layer *layer) {
 }
 #endif
 
+void RefCharFindBounds(RefChar *rf) {
+#ifdef PFAEDIT_CONFIG_TYPE3
+    int i;
+    SplineChar *rsc = rf->sc;
+    real extra=0,e;
+
+    memset(&rf->bb,'\0',sizeof(rf->bb));
+    rf->top.y = -1e10;
+    for ( i=0; i<rf->layer_cnt; ++i ) {
+	_SplineSetFindBounds(rf->layers[i].splines,&rf->bb);
+	_SplineSetFindTop(rf->layers[i].splines,&rf->top);
+	if ( rsc->layers[i].dostroke ) {
+	    if ( rf->layers[i].stroke_pen.width!=WIDTH_INHERITED )
+		e = rf->layers[i].stroke_pen.width*rf->layers[i].stroke_pen.trans[0];
+	    else
+		e = rf->layers[i].stroke_pen.trans[0];
+	    if ( e>extra ) extra = e;
+	}
+    }
+    if ( rf->top.y < -65536 ) rf->top.y = rf->top.x = 0;
+    rf->bb.minx -= extra; rf->bb.miny -= extra;
+    rf->bb.maxx += extra; rf->bb.maxy += extra;
+#else
+    SplineSetFindBounds(rf->layers[0].splines,&rf->bb);
+    SplineSetFindTop(rf->layers[0].splines,&rf->top);
+#endif
+}
+
 void SCReinstanciateRefChar(SplineChar *sc,RefChar *rf) {
     SplinePointList *spl, *new;
     RefChar *refs;
@@ -2235,9 +2270,8 @@ return;
 		rf->layers[0].splines = new;
 	    }
 	}
-	SplineSetFindBounds(rf->layers[0].splines,&rf->bb);
-	SplineSetFindTop(rf->layers[0].splines,&rf->top);
     }
+    RefCharFindBounds(rf);
 }
 
 static void _SFReinstanciateRefs(SplineFont *sf) {
@@ -2333,13 +2367,37 @@ void SCRemoveDependents(SplineChar *dependent) {
 
 void SCRefToSplines(SplineChar *sc,RefChar *rf) {
     SplineSet *spl;
+#ifdef PFAEDIT_CONFIG_TYPE3
+    int layer;
 
-    if ( (spl = rf->layers[0].splines)!=NULL ) {
-	while ( spl->next!=NULL )
-	    spl = spl->next;
-	spl->next = sc->layers[ly_fore].splines;
-	sc->layers[ly_fore].splines = rf->layers[0].splines;
-	rf->layers[0].splines = NULL;
+    if ( sc->parent->multilayer ) {
+	sc->layers = grealloc(sc->layers,(sc->layer_cnt+rf->layer_cnt)*sizeof(Layer));
+	for ( layer = 0; layer<rf->layer_cnt; ++layer ) {
+	    LayerDefault(&sc->layers[sc->layer_cnt+layer]);
+	    sc->layers[sc->layer_cnt+layer].splines = rf->layers[layer].splines;
+	    rf->layers[layer].splines = NULL;
+	    sc->layers[sc->layer_cnt+layer].images = rf->layers[layer].images;
+	    rf->layers[layer].images = NULL;
+	    sc->layers[sc->layer_cnt+layer].refs = NULL;
+	    sc->layers[sc->layer_cnt+layer].undoes = NULL;
+	    sc->layers[sc->layer_cnt+layer].redoes = NULL;
+	    sc->layers[sc->layer_cnt+layer].fill_brush = rf->layers[layer].fill_brush;
+	    sc->layers[sc->layer_cnt+layer].stroke_pen = rf->layers[layer].stroke_pen;
+	    sc->layers[sc->layer_cnt+layer].dofill = rf->layers[layer].dofill;
+	    sc->layers[sc->layer_cnt+layer].dostroke = rf->layers[layer].dostroke;
+	    sc->layers[sc->layer_cnt+layer].fillfirst = rf->layers[layer].fillfirst;
+	}
+    } else {
+#else
+    {
+#endif
+	if ( (spl = rf->layers[0].splines)!=NULL ) {
+	    while ( spl->next!=NULL )
+		spl = spl->next;
+	    spl->next = sc->layers[ly_fore].splines;
+	    sc->layers[ly_fore].splines = rf->layers[0].splines;
+	    rf->layers[0].splines = NULL;
+	}
     }
     SCRemoveDependent(sc,rf);
 }
@@ -3729,6 +3787,7 @@ void TTFLangNamesFree(struct ttflangname *l) {
 }
 
 void LayerDefault(Layer *layer) {
+    memset(layer,0,sizeof(Layer));
 #ifdef PFAEDIT_CONFIG_TYPE3
     layer->fill_brush.opacity = layer->stroke_pen.brush.opacity = 1.0;
     layer->fill_brush.col = layer->stroke_pen.brush.col = COLOR_INHERITED;
@@ -3736,6 +3795,7 @@ void LayerDefault(Layer *layer) {
     layer->stroke_pen.linecap = lc_inherited;
     layer->stroke_pen.linejoin = lj_inherited;
     layer->dofill = true;
+    layer->fillfirst = true;
     layer->stroke_pen.trans[0] = layer->stroke_pen.trans[3] = 1.0;
     layer->stroke_pen.trans[1] = layer->stroke_pen.trans[2] = 0.0;
 #endif

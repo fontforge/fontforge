@@ -282,7 +282,9 @@ static void svg_scpathdump(FILE *file, SplineChar *sc) {
     int i,j;
     RefChar *ref;
     int lineout, any;
+#ifdef PFAEDIT_CONFIG_TYPE3
     SplineSet *transed;
+#endif
 
     any = false;
     for ( i=ly_fore; i<sc->layer_cnt && !any; ++i ) {
@@ -1881,6 +1883,7 @@ static void SVGParseGlyphBody(SplineChar *sc, xmlNodePtr glyph,int *flags) {
 	sc->layer_cnt = 1;
 	SCAppendEntityLayers(sc,ent);
 	if ( sc->layer_cnt==1 ) ++sc->layer_cnt;
+	sc->parent->multilayer = true;
 #else
 	sc->layers[ly_fore].splines = SplinesFromEntities(ent,flags);
 #endif

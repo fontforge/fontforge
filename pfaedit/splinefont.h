@@ -368,7 +368,8 @@ typedef struct undoes {
     struct undoes *next;
     enum undotype { ut_none=0, ut_state, ut_tstate, ut_statehint, ut_statename,
 	    ut_width, ut_vwidth, ut_lbearing, ut_rbearing, ut_possub,
-	    ut_bitmap, ut_bitmapsel, ut_composit, ut_multiple, ut_noop } undotype;
+	    ut_bitmap, ut_bitmapsel, ut_composit, ut_multiple, ut_layers,
+	    ut_noop } undotype;
     unsigned int was_modified: 1;
     unsigned int was_order2: 1;
     union {
@@ -387,6 +388,13 @@ typedef struct undoes {
 		void *hints;			/* ut_statehint, ut_statename */
 	    } u;
 	    AnchorPoint *anchor;
+#ifdef PFAEDIT_CONFIG_TYPE3
+	    struct brush fill_brush;
+	    struct pen stroke_pen;
+	    unsigned int dofill: 1;
+	    unsigned int dostroke: 1;
+	    unsigned int fillfirst: 1;
+#endif
 	    struct splinefont *copied_from;
 	} state;
 	int width;	/* used by both ut_width and ut_vwidth */
@@ -407,6 +415,7 @@ typedef struct undoes {
 	} composit;
 	struct {
 	    struct undoes *mult; /* copy contains several sub copies (composits, or states or widths or...) */
+		/* Also used for ut_layers, each sub copy is a state (first is ly_fore, next ly_fore+1...) */
 	} multiple;
 	struct {
 	    enum possub_type pst;
@@ -560,13 +569,13 @@ typedef struct refchar {
     real transform[6];		/* transformation matrix (first 2 rows of a 3x3 matrix, missing row is 0,0,1) */
 #ifdef PFAEDIT_CONFIG_TYPE3
     struct reflayer {
-	SplinePointList *splines;
-	ImageList *images;
 	struct brush fill_brush;
 	struct pen stroke_pen;
 	unsigned int dofill: 1;
 	unsigned int dostroke: 1;
 	unsigned int fillfirst: 1;
+	SplinePointList *splines;
+	ImageList *images;
     } *layers;
 #else
     struct reflayer {
@@ -680,18 +689,20 @@ typedef struct minimumdistance {
     struct minimumdistance *next;
 } MinimumDistance;
 
-typedef struct layer {
-    SplinePointList *splines;
-    RefChar *refs;			/* Only in foreground layer(s) */
-    ImageList *images;			/* Only in background or type3 layer(s) */
-    Undoes *undoes;
-    Undoes *redoes;
+typedef struct layer /* : reflayer */{
 #ifdef PFAEDIT_CONFIG_TYPE3
     struct brush fill_brush;
     struct pen stroke_pen;
     unsigned int dofill: 1;
     unsigned int dostroke: 1;
     unsigned int fillfirst: 1;
+#endif
+    SplinePointList *splines;
+    ImageList *images;			/* Only in background or type3 layer(s) */
+    RefChar *refs;			/* Only in foreground layer(s) */
+    Undoes *undoes;
+    Undoes *redoes;
+#ifdef PFAEDIT_CONFIG_TYPE3
     unichar_t *name;
 #endif
 } Layer;
@@ -1143,6 +1154,7 @@ extern SplinePointList *SplinePointListRemoveSelected(SplineChar *sc,SplinePoint
 extern void SplinePointListSet(SplinePointList *tobase, SplinePointList *frombase);
 extern void SplinePointListSelect(SplinePointList *spl,int sel);
 extern void SCRefToSplines(SplineChar *sc,RefChar *rf);
+extern void RefCharFindBounds(RefChar *rf);
 extern void SCReinstanciateRefChar(SplineChar *sc,RefChar *rf);
 extern void SCReinstanciateRef(SplineChar *sc,SplineChar *rsc);
 extern void SFReinstanciateRefs(SplineFont *sf);

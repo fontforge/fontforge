@@ -692,8 +692,10 @@ static void CVDrawLayerSplineSet(CharView *cv, GWindow pixmap, Layer *layer,
 	if ( layer->stroke_pen.brush.col!=COLOR_INHERITED &&
 		layer->stroke_pen.brush.col!=GDrawGetDefaultBackground(NULL))
 	    fg = layer->stroke_pen.brush.col;
+#if 0
 	if ( layer->stroke_pen.width!=WIDTH_INHERITED )
 	    GDrawSetLineWidth(pixmap,rint(layer->stroke_pen.width*layer->stroke_pen.trans[0]*cv->scale));
+#endif
     }
     if ( layer->dofill ) {
 	if ( layer->fill_brush.col!=COLOR_INHERITED &&
@@ -705,8 +707,10 @@ static void CVDrawLayerSplineSet(CharView *cv, GWindow pixmap, Layer *layer,
     CVDrawSplineSet(cv,pixmap,layer->splines,fg,dopoints,clip);
     if ( !active && layer!=&cv->sc->layers[ly_back] )
 	GDrawSetDashedLine(pixmap,0,0,0);
+#if 0
     if ( layer->dostroke && layer->stroke_pen.width!=WIDTH_INHERITED )
 	GDrawSetLineWidth(pixmap,0);
+#endif
 #else
     CVDrawSplineSet(cv,pixmap,layer->splines,fg,dopoints,clip);
 #endif
@@ -5107,6 +5111,7 @@ void SCRound2Int(SplineChar *sc) {
     RefChar *r;
     StemInfo *stems;
     real old, new;
+    int layer;
 
     for ( stems = sc->hstem; stems!=NULL; stems=stems->next ) {
 	old = stems->start+stems->width;
@@ -5125,11 +5130,13 @@ void SCRound2Int(SplineChar *sc) {
 	    SplineSetsChangeCoord(sc->layers[ly_fore].splines,old,new,false);
     }
 
-    SplineSetsRound2Int(sc->layers[ly_fore].splines);
-    for ( r=sc->layers[ly_fore].refs; r!=NULL; r=r->next ) {
-	r->transform[4] = rint(r->transform[4]);
-	r->transform[5] = rint(r->transform[5]);
-	SplineSetFindBounds(r->layers[0].splines,&r->bb);
+    for ( layer = ly_fore; layer<sc->layer_cnt; ++layer ) {
+	SplineSetsRound2Int(sc->layers[layer].splines);
+	for ( r=sc->layers[layer].refs; r!=NULL; r=r->next ) {
+	    r->transform[4] = rint(r->transform[4]);
+	    r->transform[5] = rint(r->transform[5]);
+	    RefCharFindBounds(r);
+	}
     }
     SCCharChangedUpdate(sc);
 }

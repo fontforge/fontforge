@@ -606,6 +606,26 @@ static void SplineSetNLTrans(SplineSet *ss,struct context *c,
 static void SCNLTrans(SplineChar *sc,struct context *c) {
     SplineSet *ss;
     RefChar *ref;
+#ifdef PFAEDIT_CONFIG_TYPE3
+    int i;
+
+    if ( sc->layer_cnt==ly_fore+1 &&
+	    sc->layers[ly_fore].splines==NULL && sc->layers[ly_fore].refs==NULL )
+return;
+
+    SCPreserveState(sc,false);
+    c->sc = sc;
+    for ( i=ly_fore; i<sc->layer_cnt; ++i ) {
+	for ( ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next )
+	    SplineSetNLTrans(ss,c,true);
+	for ( ref=sc->layers[i].refs; ref!=NULL; ref=ref->next ) {
+	    c->x = ref->transform[4]; c->y = ref->transform[5];
+	    ref->transform[4] = NL_expr(c,c->x_expr);
+	    ref->transform[5] = NL_expr(c,c->y_expr);
+	    /* we'll fix up the splines after all characters have been transformed*/
+	}
+    }
+#else
 
     if ( sc->layers[ly_fore].splines==NULL && sc->layers[ly_fore].refs==NULL )
 return;
@@ -620,6 +640,7 @@ return;
 	ref->transform[5] = NL_expr(c,c->y_expr);
 	/* we'll fix up the splines after all characters have been transformed*/
     }
+#endif
 }
 
 static void CVNLTrans(CharView *cv,struct context *c) {
@@ -634,7 +655,7 @@ return;
     for ( ss=cv->layerheads[cv->drawmode]->splines; ss!=NULL; ss=ss->next )
 	SplineSetNLTrans(ss,c,false);
     if ( cv->drawmode==dm_fore ) {
-	for ( ref=cv->sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
+	for ( ref=cv->layerheads[cv->drawmode]->refs; ref!=NULL; ref=ref->next ) {
 	    c->x = ref->transform[4]; c->y = ref->transform[5];
 	    ref->transform[4] = NL_expr(c,c->x_expr);
 	    ref->transform[5] = NL_expr(c,c->y_expr);

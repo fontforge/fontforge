@@ -507,6 +507,12 @@ return( AddUndo(undo,&sc->layers[layer].undoes,&sc->layers[layer].redoes));
 }
 
 Undoes *SCPreserveState(SplineChar *sc,int dohints) {
+#ifdef PFAEDIT_CONFIG_TYPE3
+    int i;
+
+    for ( i=ly_fore+1; i<sc->layer_cnt; ++i )
+	SCPreserveLayer(sc,i,false);
+#endif
 return( SCPreserveLayer(sc,ly_fore,dohints));
 }
 

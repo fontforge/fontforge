@@ -41,7 +41,7 @@ static void HintsFree(Hints *h) {
     }
 }
 
-void FreeEdges(EdgeList *es) {
+static void _FreeEdgeList(EdgeList *es) {
     int i;
 
     /* edges will be NULL if the user tries to make an enormous bitmap */
@@ -56,6 +56,10 @@ void FreeEdges(EdgeList *es) {
 	    }
 	}
     }
+}
+
+void FreeEdges(EdgeList *es) {
+    _FreeEdgeList(es);
     free(es->edges);
     free(es->interesting);
     HintsFree(es->hhints);
@@ -438,24 +442,10 @@ void FindEdgesSplineSet(SplinePointList *spl, EdgeList *es) {
 static void FindEdges(SplineChar *sc, EdgeList *es) {
     RefChar *rf;
 
-#ifdef PFAEDIT_CONFIG_TYPE3
-    int i,j;
-
-    for ( j=ly_fore; j<sc->layer_cnt; ++j ) {
-	for ( rf=sc->layers[j].refs; rf!=NULL; rf = rf->next )
-	    for ( i=0; i<rf->layer_cnt; ++i )
-		if ( rf->layers[i].dofill && rf->layers[i].fill_brush.col!=0xffffff )
-		    FindEdgesSplineSet(rf->layers[i].splines,es);
-
-	if ( sc->layers[j].dofill && sc->layers[j].fill_brush.col!=0xffffff )
-	    FindEdgesSplineSet(sc->layers[j].splines,es);
-    }
-#else
     for ( rf=sc->layers[ly_fore].refs; rf!=NULL; rf = rf->next )
 	FindEdgesSplineSet(rf->layers[0].splines,es);
 
     FindEdgesSplineSet(sc->layers[ly_fore].splines,es);
-#endif
 }
 
 Edge *ActiveEdgesInsertNew(EdgeList *es, Edge *active,int i) {
@@ -760,7 +750,7 @@ void BCCompressBitmap(BDFChar *bdfc) {
     /*  check to see if there are any unused rows or columns.... */
     int i,j,any, off, last;
 
-    /* we can use the same code to lop off rows wether we deal with bytes or bits */
+    /* we can use the same code to lop off rows whether we deal with bytes or bits */
     for ( i=0; i<bdfc->ymax-bdfc->ymin; ++i ) {
 	any = 0;
 	for ( j=0; j<bdfc->bytes_per_line; ++j )
@@ -868,14 +858,216 @@ void BCCompressBitmap(BDFChar *bdfc) {
     }
 }
 
+#ifdef PFAEDIT_CONFIG_TYPE3
+static void Bresenham(uint8 *bytemap,EdgeList *es,int x1,int x2,int y1,int y2,
+	int grey) {
+    int dx, dy, incr1, incr2, d, x, y;
+    int incr3;
+    int bytes_per_line = es->bytes_per_line<<3;
+    int ymax = es->cnt;
+
+    /* We are guarenteed x1<=x2 */
+    dx = x2-x1;
+    if ( (dy = y1-y2)<0 ) dy=-dy;
+    if ( dx>=dy ) {
+	d = 2 * dy - dx;
+	incr1 = 2*dy;
+	incr2 = 2*(dy-dx);
+	incr3 = y2>y1 ? 1 : -1;
+	x = x1;
+	y = y1;
+	if ( x>=0 && y>=0 && x<bytes_per_line && y<ymax )
+	    bytemap[y*bytes_per_line+x] = grey;
+	while ( x<x2 ) {
+	    ++x;
+	    if ( d<0 )
+		d += incr1;
+	    else {
+		y += incr3;
+		d += incr2;
+	    }
+	    if ( x>=0 && y>=0 && x<bytes_per_line && y<ymax )
+		bytemap[y*bytes_per_line+x] = grey;
+	}
+    } else {
+	if ( y1>y2 ) {
+	    incr1 = y1; y1 = y2; y2 = incr1;
+	    incr1 = x1; x1 = x2; x2 = incr1;
+	}
+	d = 2 * dx - dy;
+	incr1 = 2*dx;
+	incr2 = 2*(dx-dy);
+	incr3 = x2>x1 ? 1 : -1;
+	x = x1;
+	y = y1;
+	if ( x>=0 && y>=0 && x<bytes_per_line && y<ymax )
+	    bytemap[y*bytes_per_line+x] = grey;
+	while ( y<y2 ) {
+	    ++y;
+	    if ( d<0 )
+		d += incr1;
+	    else {
+		x += incr3;
+		d += incr2;
+	    }
+	    if ( x>=0 && y>=0 && x<bytes_per_line && y<ymax )
+		bytemap[y*bytes_per_line+x] = grey;
+	}
+    }
+}
+
+static void StrokeLine(uint8 *bytemap,IPoint *from, IPoint *to,EdgeList *es,int grey,int width) {
+    int x1, x2, y1, y2;
+    int dx, dy;
+    int i, w2;
+
+    x1 = from->x - es->omin;
+    x2 = to->x - es->omin;
+    if ( (y1 = (es->cnt-1 - (from->y - es->mmin)))<0 ) y1=0;
+    if ( (y2 = (es->cnt-1 - (to->y - es->mmin)))<0 ) y2=0;
+
+    if ( x1>x2 ) {
+	dx = x1; x1 = x2; x2 = dx;
+	dy = y1; y1 = y2; y2 = dy;
+    }
+
+    if ( width>1 ) {
+	w2 = width/2;
+	dx = x2-x1;
+	if ( (dy = y1-y2)<0 ) dy=-dy;
+	if ( dy>2*dx ) {
+	    x1 -= w2; x2 -= w2;
+	    for ( i=0; i<width; ++i )
+		Bresenham(bytemap,es,x1+i,x2+i,y1,y2,grey);
+	} else if ( dx>2*dy ) {
+	    y1 -= w2; y2 -= w2;
+	    for ( i=0; i<width; ++i )
+		Bresenham(bytemap,es,x1,x2,y1+i,y2+i,grey);
+	} else if ( y2>y1 ) {
+	    x1-=w2/2; y1+=w2/2; x2-=w2/2; y2+=w2/2;
+	    for ( i=0; 2*i<width; ++i ) {
+		Bresenham(bytemap,es,x1+i,x2+i,y1-i,y2-i,grey);
+		Bresenham(bytemap,es,x1+i+1,x2+i+1,y1-i,y2-i,grey);
+	    }
+	} else {
+	    x1-=w2/2; y1-=w2/2; x2-=w2/2; y2-=w2/2;
+	    for ( i=0; 2*i<width; ++i ) {
+		Bresenham(bytemap,es,x1+i,x2+i,y1+i,y2+i,grey);
+		Bresenham(bytemap,es,x1+i+1,x2+i+1,y1+i,y2+i,grey);
+	    }
+	}
+    } else
+	Bresenham(bytemap,es,x1,x2,y1,y2,grey);
+}
+
+static void StrokePaths(uint8 *bytemap,EdgeList *es,Layer *layer,Layer *alt) {
+    uint32 col;
+    int width;
+    int grey;
+    SplineSet *spl;
+    LinearApprox *lap;
+    LineList *line, *prev;
+    Spline *spline, *first;
+
+    if ( layer->stroke_pen.brush.col!=COLOR_INHERITED )
+	col = layer->stroke_pen.brush.col;
+    else if ( alt!=NULL && alt->stroke_pen.brush.col!=COLOR_INHERITED )
+	col = alt->stroke_pen.brush.col;
+    else
+	col = 0x000000;
+    if ( layer->stroke_pen.width!=WIDTH_INHERITED )
+	width = rint(layer->stroke_pen.width*layer->stroke_pen.trans[0]*es->scale);
+    else if ( alt!=NULL && alt->stroke_pen.width!=WIDTH_INHERITED )
+	width = rint(alt->stroke_pen.width*alt->stroke_pen.trans[0]*es->scale);
+    else
+	width = 1;
+    grey = ( ((col>>16)&0xff)*3 + ((col>>8)&0xff)*6 + (col&0xff) )/ 10;
+    /* but our internal greymap convention is backwards */
+    grey = 255-grey;
+
+    for ( spl=layer->splines; spl!=NULL; spl=spl->next ) {
+	first = NULL;
+	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
+	    lap = SplineApproximate(spline,es->scale);
+	    if ( lap->lines!=NULL ) {
+		for ( prev = lap->lines, line=prev->next; line!=NULL; prev = line, line=line->next )
+		    StrokeLine(bytemap,&prev->here,&line->here,es,grey,width);
+	    }
+	    if ( first == NULL ) first = spline;
+	}
+    }
+}
+
+static void SetByteMapToGrey(uint8 *bytemap,EdgeList *es,Layer *layer,Layer *alt) {
+    uint32 col;
+    int grey,i,j;
+    uint8 *pt, *bpt;
+
+    if ( layer->fill_brush.col!=COLOR_INHERITED )
+	col = layer->fill_brush.col;
+    else if ( alt!=NULL && alt->fill_brush.col!=COLOR_INHERITED )
+	col = alt->fill_brush.col;
+    else
+	col = 0x000000;
+    grey = ( ((col>>16)&0xff)*3 + ((col>>8)&0xff)*6 + (col&0xff) )/ 10;
+    /* but our internal greymap convention is backwards */
+    grey = 255-grey;
+
+    for ( i=0; i<es->cnt; ++i ) {
+	bpt = es->bitmap + i*es->bytes_per_line;
+	pt = bytemap + i*8*es->bytes_per_line;
+	for ( j=0; j<=8*es->bytes_per_line; ++j ) {
+	    if ( bpt[j>>3]&(0x80>>(j&7)) )
+		pt[j] = grey;
+	}
+    }
+}
+
+static void FillImages(uint8 *bytemap,EdgeList *es,ImageList *img,Layer *layer,Layer *alt) {
+}	/* !!!! Write me! */
+
+static void ProcessLayer(uint8 *bytemap,EdgeList *es,Layer *layer,
+	Layer *alt) {
+    ImageList *img;
+
+    if ( !layer->fillfirst && layer->dostroke )
+	StrokePaths(bytemap,es,layer,alt);
+    if ( layer->dofill ) {
+	memset(es->bitmap,0,es->cnt*es->bytes_per_line);
+	FindEdgesSplineSet(layer->splines,es);
+	FillChar(es);
+	SetByteMapToGrey(bytemap,es,layer,alt);
+    }
+    for ( img = layer->images; img!=NULL; img=img->next )
+	FillImages(bytemap,es,img,layer,alt);
+    if ( layer->fillfirst && layer->dostroke )
+	StrokePaths(bytemap,es,layer,alt);
+}
+
+static void FlattenBytemap(EdgeList *es,uint8 *bytemap) {
+    int i,j;
+    uint8 *bpt, *pt;
+
+    memset(es->bitmap,0,es->cnt*es->bytes_per_line);
+    for ( i=0; i<es->cnt; ++i ) {
+	bpt = es->bitmap + i*es->bytes_per_line;
+	pt = bytemap + i*8*es->bytes_per_line;
+	for ( j=0; j<8*es->bytes_per_line; ++j )
+	    if ( pt[j]>=128 )
+		bpt[j>>3] |= (0x80>>(j&7));
+    }
+}
+#endif
+
 /* Yes, I really do want a double, even though it will almost always be an */
 /*  integer value there are a few cases (fill pattern for charview) where */
 /*  I need more precision and the pixelsize itself is largely irrelevant */
 /*  (I care about the scale though) */
-BDFChar *SplineCharRasterize(SplineChar *sc, double pixelsize) {
+static BDFChar *_SplineCharRasterize(SplineChar *sc, double pixelsize, int is_aa) {
     EdgeList es;
     DBounds b;
     BDFChar *bdfc;
+    int depth = 0;
 
     if ( sc==NULL )
 return( NULL );
@@ -884,13 +1076,8 @@ return( NULL );
 	es.mmin = es.mmax = es.omin = es.omax = 0;
 	es.bitmap = gcalloc(1,1);
 	es.bytes_per_line = 1;
+	is_aa = false;
     } else {
-#if 0
-	/* Some truetype fonts have open paths that should be ignored */
-	/* We ignore them now in FindEdgesSplineSet */
-	SCNumberPoints(sc);
-	open = SplineSetsExtractOpen(&sc->splines);
-#endif
 	SplineCharFindBounds(sc,&b);
 	es.scale = (pixelsize-.1) / (real) (sc->parent->ascent+sc->parent->descent);
 	es.mmin = floor(b.miny*es.scale);
@@ -902,13 +1089,42 @@ return( NULL );
 	    es.edges = gcalloc(es.cnt,sizeof(Edge *));
 	    es.sc = sc;
 	    es.major = 1; es.other = 0;
-
-	    InitializeHints(sc,&es);
-	    FindEdges(sc,&es);
-
 	    es.bytes_per_line = ((int) ceil(es.omax-es.omin) + 8)/8;
 	    es.bitmap = gcalloc(es.cnt*es.bytes_per_line,1);
-	    FillChar(&es);
+
+	    InitializeHints(sc,&es);
+#ifdef PFAEDIT_CONFIG_TYPE3
+	    if ( sc->parent->multilayer ) {
+		uint8 *bytemap = gcalloc(es.cnt*es.bytes_per_line*8,1);
+		int layer, i;
+		RefChar *rf;
+		for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
+		    ProcessLayer(bytemap,&es,&sc->layers[layer],NULL);
+
+		    for ( rf=sc->layers[layer].refs; rf!=NULL; rf = rf->next ) {
+			for ( i=0; i<rf->layer_cnt; ++i ) {
+			    ProcessLayer(bytemap,&es,(Layer *) (&rf->layers[i]),
+				    &sc->layers[layer]);
+			}
+		    }
+		}
+		if ( is_aa ) {
+		    depth = 8;
+		    free(es.bitmap);
+		    es.bitmap = bytemap;
+		} else {
+		    depth = 0;
+		    FlattenBytemap(&es,bytemap);
+		    free(bytemap);
+		}
+	    } else {
+#else
+	    {
+#endif
+		FindEdges(sc,&es);
+		FillChar(&es);
+		depth = 0;
+	    }
 	} else {
 	    /* If they want a bitmap so enormous it threatens our memory */
 	    /*  then just give 'em a blank. It's probably by mistake anyway */
@@ -916,10 +1132,6 @@ return( NULL );
 	    es.bitmap = gcalloc(1,1);
 	    es.bytes_per_line = 1;
 	}
-#if 0
-	if ( open!=NULL )
-	    SplineSetsInsertOpen(&sc->splines,open);
-#endif
     }
 
     bdfc = chunkalloc(sizeof(BDFChar));
@@ -933,10 +1145,21 @@ return( NULL );
 	bdfc->enc = sc->enc;
     }
     bdfc->bitmap = es.bitmap;
+    bdfc->depth = depth;
     bdfc->bytes_per_line = es.bytes_per_line;
+#ifdef PFAEDIT_CONFIG_TYPE3
+    if ( depth==8 ) {
+	bdfc->byte_data = true;
+	bdfc->bytes_per_line *= 8;
+    }
+#endif
     BCCompressBitmap(bdfc);
     FreeEdges(&es);
 return( bdfc );
+}
+
+BDFChar *SplineCharRasterize(SplineChar *sc, double pixelsize) {
+return( _SplineCharRasterize(sc,pixelsize,false));
 }
 
 BDFFont *SplineFontToBDFHeader(SplineFont *_sf, int pixelsize, int indicate) {
@@ -1250,14 +1473,37 @@ return;
     new.byte_data = true;
     new.depth = max==3 ? 2 : max==15 ? 4 : 8;
     new.bitmap = gcalloc( (new.ymax-new.ymin+1) * new.bytes_per_line, sizeof(uint8));
-    for ( i=0; i<=bc->ymax-bc->ymin; ++i ) {
-	bpt = bc->bitmap + i*bc->bytes_per_line;
-	pt = new.bitmap + (i/linear_scale)*new.bytes_per_line;
-	for ( j=0; j<=bc->xmax-bc->xmin; ++j ) {
-	    if ( bpt[(j>>3)] & (1<<(7-(j&7))) )
-		/* we can get values between 0..2^n we want values between 0..(2^n-1) */
-		if ( pt[ j/linear_scale ]!=max )
-		    ++pt[ j/linear_scale ];
+#ifdef PFAEDIT_CONFIG_TYPE3
+    if ( bc->depth>1 ) {
+	uint32 *sum = gcalloc(new.bytes_per_line,sizeof(uint32));
+	for ( i=0; i<=bc->ymax-bc->ymin; ++i ) {
+	    bpt = bc->bitmap + i*bc->bytes_per_line;
+	    for ( j=0; j<=bc->xmax-bc->xmin; ++j ) {
+		sum[j/linear_scale] += bpt[j];
+	    }
+	    if ( (i+1)%linear_scale==0 ) {
+		pt = new.bitmap + (i/linear_scale)*new.bytes_per_line;
+		for ( j=(bc->xmax-bc->xmin)/linear_scale-1; j>=0 ; --j ) {
+		    int val = rint( (sum[j]+128)/255 );
+		    if ( val>max ) val = max;
+		    pt[j] = val;
+		}
+		memset(sum,0,new.bytes_per_line*sizeof(uint32));
+	    }
+	}
+    } else {
+#else
+    {
+#endif
+	for ( i=0; i<=bc->ymax-bc->ymin; ++i ) {
+	    bpt = bc->bitmap + i*bc->bytes_per_line;
+	    pt = new.bitmap + (i/linear_scale)*new.bytes_per_line;
+	    for ( j=0; j<=bc->xmax-bc->xmin; ++j ) {
+		if ( bpt[(j>>3)] & (1<<(7-(j&7))) )
+		    /* we can get values between 0..2^n we want values between 0..(2^n-1) */
+		    if ( pt[ j/linear_scale ]!=max )
+			++pt[ j/linear_scale ];
+	    }
 	}
     }
     free(bc->bitmap);
@@ -1294,7 +1540,7 @@ return( bdf->clut->clut_len==256 ? 8 :
 BDFChar *SplineCharAntiAlias(SplineChar *sc, int pixelsize, int linear_scale) {
     BDFChar *bc;
 
-    bc = SplineCharRasterize(sc,pixelsize*linear_scale);
+    bc = _SplineCharRasterize(sc,pixelsize*linear_scale,true);
     if ( linear_scale!=1 )
 	BDFCAntiAlias(bc,linear_scale);
     BCCompressBitmap(bc);

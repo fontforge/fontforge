@@ -757,7 +757,7 @@ return( cvtools );
     r.x = cvtoolsoff.x; r.y = cvtoolsoff.y;
     if ( palettes_docked )
 	r.x = r.y = 0;
-    cvtools = CreatePalette( cv->gw, &r, cvtools_e_h, cv, &wattrs, cv->v );
+    cvtools = CreatePalette( cv->gw, &r, cvtools_e_h, NULL, &wattrs, cv->v );
 
     if ( GDrawRequestDeviceEvents(cvtools,input_em_cnt,input_em)>0 ) {
 	/* Success! They've got a wacom tablet */
@@ -960,7 +960,7 @@ return( cvlayers );
     }
     r.x = cvlayersoff.x; r.y = cvlayersoff.y;
     if ( palettes_docked ) { r.x = 0; r.y=CV_TOOLS_HEIGHT+2; }
-    cvlayers = CreatePalette( cv->gw, &r, cvlayers_e_h, cv, &wattrs, cv->v );
+    cvlayers = CreatePalette( cv->gw, &r, cvlayers_e_h, NULL, &wattrs, cv->v );
 
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));

@@ -78,13 +78,13 @@ struct gfc_data {
 };
 
 #if __Mac
-static char *extensions[] = { ".pfa", ".pfb", "", ".mult", ".pfa", ".pfb", ".ps", ".ps",
+static char *extensions[] = { ".pfa", ".pfb", "", ".mult", ".pfa", ".pfb", ".pt3", ".ps",
 	".cid", ".cff", ".cid.cff",
 	".ttf", ".ttf", ".suit", ".dfont", ".otf", ".otf.dfont", ".otf",
 	".otf.dfont", ".svg", NULL };
 static char *bitmapextensions[] = { ".*bdf", ".ttf", ".dfont", ".bmap", ".dfont", ".*fnt", ".otb", ".none", NULL };
 #else
-static char *extensions[] = { ".pfa", ".pfb", ".bin", ".mult", ".pfa", ".pfb", ".ps", ".ps",
+static char *extensions[] = { ".pfa", ".pfb", ".bin", ".mult", ".pfa", ".pfb", ".pt3", ".ps",
 	".cid", ".cff", ".cid.cff",
 	".ttf", ".ttf", ".ttf.bin", ".dfont", ".otf", ".otf.dfont", ".otf",
 	".otf.dfont", ".svg", NULL };

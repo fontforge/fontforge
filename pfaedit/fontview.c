@@ -1153,20 +1153,23 @@ return;
 
 void SCClearContents(SplineChar *sc) {
     RefChar *refs, *next;
+    int layer;
 
     if ( sc==NULL )
 return;
     sc->widthset = false;
     sc->width = sc->parent->ascent+sc->parent->descent;
-    SplinePointListsFree(sc->layers[1].splines);
-    sc->layers[1].splines = NULL;
+    for ( layer = ly_fore; layer<sc->layer_cnt; ++layer ) {
+	SplinePointListsFree(sc->layers[layer].splines);
+	sc->layers[layer].splines = NULL;
+	for ( refs=sc->layers[layer].refs; refs!=NULL; refs = next ) {
+	    next = refs->next;
+	    SCRemoveDependent(sc,refs);
+	}
+	sc->layers[layer].refs = NULL;
+    }
     AnchorPointsFree(sc->anchor);
     sc->anchor = NULL;
-    for ( refs=sc->layers[ly_fore].refs; refs!=NULL; refs = next ) {
-	next = refs->next;
-	SCRemoveDependent(sc,refs);
-    }
-    sc->layers[ly_fore].refs = NULL;
     StemInfosFree(sc->hstem); sc->hstem = NULL;
     StemInfosFree(sc->vstem); sc->vstem = NULL;
     DStemInfosFree(sc->dstem); sc->dstem = NULL;
@@ -1338,16 +1341,18 @@ static void FVMenuJoin(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 
 static void FVUnlinkRef(FontView *fv) {
-    int i;
+    int i,layer;
     SplineChar *sc;
     RefChar *rf, *next;
 
     for ( i=0; i<fv->sf->charcnt; ++i )
 	    if ( fv->selected[i] && (sc=fv->sf->chars[i])!=NULL && sc->layers[ly_fore].refs!=NULL ) {
 	SCPreserveState(sc,false);
-	for ( rf=sc->layers[ly_fore].refs; rf!=NULL ; rf=next ) {
-	    next = rf->next;
-	    SCRefToSplines(sc,rf);
+	for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
+	    for ( rf=sc->layers[ly_fore].refs; rf!=NULL ; rf=next ) {
+		next = rf->next;
+		SCRefToSplines(sc,rf);
+	    }
 	}
 	SCCharChangedUpdate(sc);
     }
@@ -1359,7 +1364,7 @@ static void FVMenuUnlinkRef(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 void SFRemoveUndoes(SplineFont *sf,uint8 *selected) {
     SplineFont *main = sf->cidmaster? sf->cidmaster : sf, *ssf;
-    int i,k, max;
+    int i,k, max, layer;
     SplineChar *sc;
     BDFFont *bdf;
 
@@ -1382,10 +1387,10 @@ void SFRemoveUndoes(SplineFont *sf,uint8 *selected) {
 	    ssf = main->subfontcnt==0? main: main->subfonts[k];
 	    if ( i<ssf->charcnt && ssf->chars[i]!=NULL ) {
 		sc = ssf->chars[i];
-		UndoesFree(sc->layers[ly_fore].undoes); sc->layers[ly_fore].undoes = NULL;
-		UndoesFree(sc->layers[ly_back].undoes); sc->layers[ly_back].undoes = NULL;
-		UndoesFree(sc->layers[ly_fore].redoes); sc->layers[ly_fore].redoes = NULL;
-		UndoesFree(sc->layers[ly_back].redoes); sc->layers[ly_back].redoes = NULL;
+		for ( layer = 0; layer<sc->layer_cnt; ++layer ) {
+		    UndoesFree(sc->layers[layer].undoes); sc->layers[layer].undoes = NULL;
+		    UndoesFree(sc->layers[layer].redoes); sc->layers[layer].redoes = NULL;
+		}
 	    }
 	    ++k;
 	} while ( k<main->subfontcnt );
@@ -1399,34 +1404,42 @@ static void FVMenuRemoveUndoes(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void FVMenuUndo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    int i,j;
+    int i,j,layer;
     MMSet *mm = fv->sf->mm;
     int was_blended = mm!=NULL && mm->normal==fv->sf;
 
     for ( i=0; i<fv->sf->charcnt; ++i )
-	if ( fv->selected[i] && fv->sf->chars[i]!=NULL &&
-		fv->sf->chars[i]->layers[ly_fore].undoes!=NULL ) {
-	    SCDoUndo(fv->sf->chars[i],ly_fore);
-	    if ( was_blended ) {
-		for ( j=0; j<mm->instance_count; ++j )
-		    SCDoUndo(mm->instances[j]->chars[i],ly_fore);
+	if ( fv->selected[i] && fv->sf->chars[i]!=NULL ) {
+	    SplineChar *sc = fv->sf->chars[i];
+	    for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
+		if ( sc->layers[layer].undoes!=NULL ) {
+		    SCDoUndo(sc,layer);
+		    if ( was_blended ) {
+			for ( j=0; j<mm->instance_count; ++j )
+			    SCDoUndo(mm->instances[j]->chars[i],layer);
+		    }
+		}
 	    }
 	}
 }
 
 static void FVMenuRedo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    int i,j;
+    int i,j,layer;
     MMSet *mm = fv->sf->mm;
     int was_blended = mm->normal==fv->sf;
 
     for ( i=0; i<fv->sf->charcnt; ++i )
-	if ( fv->selected[i] && fv->sf->chars[i]!=NULL &&
-		fv->sf->chars[i]->layers[ly_fore].redoes!=NULL ) {
-	    SCDoRedo(fv->sf->chars[i],ly_fore);
-	    if ( was_blended ) {
-		for ( j=0; j<mm->instance_count; ++j )
-		    SCDoRedo(mm->instances[j]->chars[i],ly_fore);
+	if ( fv->selected[i] && fv->sf->chars[i]!=NULL ) {
+	    SplineChar *sc = fv->sf->chars[i];
+	    for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
+		if ( sc->layers[layer].redoes!=NULL ) {
+		    SCDoRedo(sc,layer);
+		    if ( was_blended ) {
+			for ( j=0; j<mm->instance_count; ++j )
+			    SCDoRedo(mm->instances[j]->chars[i],layer);
+		    }
+		}
 	    }
 	}
 }
@@ -1694,6 +1707,7 @@ void FVTrans(FontView *fv,SplineChar *sc,real transform[6], uint8 *sel,
     RefChar *refs;
     real t[6];
     AnchorPoint *ap;
+    int i,j;
 
     if ( sc->blended ) {
 	int j;
@@ -1711,46 +1725,50 @@ void FVTrans(FontView *fv,SplineChar *sc,real transform[6], uint8 *sel,
 	}
     for ( ap=sc->anchor; ap!=NULL; ap=ap->next )
 	ApTransform(ap,transform);
-    SplinePointListTransform(sc->layers[ly_fore].splines,transform,true);
-    for ( refs = sc->layers[ly_fore].refs; refs!=NULL; refs=refs->next ) {
-	if ( sel!=NULL && sel[refs->sc->enc] ) {
-	    /* if the character referred to is selected then it's going to */
-	    /*  be scaled too (or will have been) so we don't want to scale */
-	    /*  it twice */
-	    t[4] = refs->transform[4]*transform[0] +
-			refs->transform[5]*transform[2] +
-			/*transform[4]*/0;
-	    t[5] = refs->transform[4]*transform[1] +
-			refs->transform[5]*transform[3] +
-			/*transform[5]*/0;
-	    t[0] = refs->transform[4]; t[1] = refs->transform[5];
-	    refs->transform[4] = t[4];
-	    refs->transform[5] = t[5];
-	    /* Now update the splines to match */
-	    t[4] -= t[0]; t[5] -= t[1];
-	    if ( t[4]!=0 || t[5]!=0 ) {
-		t[0] = t[3] = 1; t[1] = t[2] = 0;
-		SplinePointListTransform(refs->layers[0].splines,t,true);
+    for ( i=ly_fore; i<sc->layer_cnt; ++i ) {
+	SplinePointListTransform(sc->layers[i].splines,transform,true);
+	for ( refs = sc->layers[i].refs; refs!=NULL; refs=refs->next ) {
+	    if ( sel!=NULL && sel[refs->sc->enc] ) {
+		/* if the character referred to is selected then it's going to */
+		/*  be scaled too (or will have been) so we don't want to scale */
+		/*  it twice */
+		t[4] = refs->transform[4]*transform[0] +
+			    refs->transform[5]*transform[2] +
+			    /*transform[4]*/0;
+		t[5] = refs->transform[4]*transform[1] +
+			    refs->transform[5]*transform[3] +
+			    /*transform[5]*/0;
+		t[0] = refs->transform[4]; t[1] = refs->transform[5];
+		refs->transform[4] = t[4];
+		refs->transform[5] = t[5];
+		/* Now update the splines to match */
+		t[4] -= t[0]; t[5] -= t[1];
+		if ( t[4]!=0 || t[5]!=0 ) {
+		    t[0] = t[3] = 1; t[1] = t[2] = 0;
+		    for ( j=0; j<refs->layer_cnt; ++j )
+			SplinePointListTransform(refs->layers[j].splines,t,true);
+		}
+	    } else {
+		for ( j=0; j<refs->layer_cnt; ++j )
+		    SplinePointListTransform(refs->layers[j].splines,transform,true);
+		t[0] = refs->transform[0]*transform[0] +
+			    refs->transform[1]*transform[2];
+		t[1] = refs->transform[0]*transform[1] +
+			    refs->transform[1]*transform[3];
+		t[2] = refs->transform[2]*transform[0] +
+			    refs->transform[3]*transform[2];
+		t[3] = refs->transform[2]*transform[1] +
+			    refs->transform[3]*transform[3];
+		t[4] = refs->transform[4]*transform[0] +
+			    refs->transform[5]*transform[2] +
+			    transform[4];
+		t[5] = refs->transform[4]*transform[1] +
+			    refs->transform[5]*transform[3] +
+			    transform[5];
+		memcpy(refs->transform,t,sizeof(t));
 	    }
-	} else {
-	    SplinePointListTransform(refs->layers[0].splines,transform,true);
-	    t[0] = refs->transform[0]*transform[0] +
-			refs->transform[1]*transform[2];
-	    t[1] = refs->transform[0]*transform[1] +
-			refs->transform[1]*transform[3];
-	    t[2] = refs->transform[2]*transform[0] +
-			refs->transform[3]*transform[2];
-	    t[3] = refs->transform[2]*transform[1] +
-			refs->transform[3]*transform[3];
-	    t[4] = refs->transform[4]*transform[0] +
-			refs->transform[5]*transform[2] +
-			transform[4];
-	    t[5] = refs->transform[4]*transform[1] +
-			refs->transform[5]*transform[3] +
-			transform[5];
-	    memcpy(refs->transform,t,sizeof(t));
+	    RefCharFindBounds(refs);
 	}
-	SplineSetFindBounds(refs->layers[0].splines,&refs->bb);
     }
     if ( transform[1]==0 && transform[2]==0 ) {
 	TransHints(sc->hstem,transform[3],transform[5],transform[0],transform[4],flags&fvt_round_to_int);
@@ -1913,7 +1931,7 @@ static void FVMenuTilePath(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #endif
 
 static void FVOverlap(FontView *fv,enum overlap_type ot) {
-    int i, cnt=0;
+    int i, cnt=0, layer;
 
     /* We know it's more likely that we'll find a problem in the overlap code */
     /*  than anywhere else, so let's save the current state against a crash */
@@ -1928,7 +1946,8 @@ static void FVOverlap(FontView *fv,enum overlap_type ot) {
 	SCPreserveState(sc,false);
 	MinimumDistancesFree(sc->md);
 	sc->md = NULL;
-	sc->layers[ly_fore].splines = SplineSetRemoveOverlap(sc,sc->layers[ly_fore].splines,ot);
+	for ( layer = ly_fore; layer<sc->layer_cnt; ++layer )
+	    sc->layers[layer].splines = SplineSetRemoveOverlap(sc,sc->layers[layer].splines,ot);
 	SCCharChangedUpdate(sc);
 	if ( !GProgressNext())
     break;
@@ -1973,7 +1992,7 @@ static void FVMenuWireframe(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 
 void _FVSimplify(FontView *fv,struct simplifyinfo *smpl) {
-    int i, cnt=0;
+    int i, cnt=0, layer;
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
 	++cnt;
@@ -1982,7 +2001,8 @@ void _FVSimplify(FontView *fv,struct simplifyinfo *smpl) {
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
 	SCPreserveState(sc,false);
-	sc->layers[ly_fore].splines = SplineCharSimplify(sc,sc->layers[ly_fore].splines,smpl);
+	for ( layer = ly_fore; layer<sc->layer_cnt; ++layer )
+	    sc->layers[layer].splines = SplineCharSimplify(sc,sc->layers[layer].splines,smpl);
 	SCCharChangedUpdate(sc);
 	if ( !GProgressNext())
     break;
@@ -2015,7 +2035,7 @@ static void FVMenuCleanup(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 
 static void FVAddExtrema(FontView *fv) {
-    int i, cnt=0;
+    int i, cnt=0, layer;
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
 	++cnt;
@@ -2024,7 +2044,8 @@ static void FVAddExtrema(FontView *fv) {
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
 	SCPreserveState(sc,false);
-	SplineCharAddExtrema(sc->layers[ly_fore].splines,false);
+	for ( layer = ly_fore; layer<sc->layer_cnt; ++layer )
+	    SplineCharAddExtrema(sc->layers[layer].splines,false);
 	SCCharChangedUpdate(sc);
 	if ( !GProgressNext())
     break;
@@ -2038,7 +2059,7 @@ static void FVMenuAddExtrema(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void FVMenuCorrectDir(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    int i, cnt=0, changed, refchanged;
+    int i, cnt=0, changed, refchanged, preserved, layer;
     int askedall=-1, asked;
     static int buts[] = { _STR_UnlinkAll, _STR_Unlink, _STR_No, _STR_Cancel, 0 };
     RefChar *ref;
@@ -2050,33 +2071,37 @@ static void FVMenuCorrectDir(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
 
-	changed = refchanged = false;
+	changed = refchanged = preserved = false;
 	asked = askedall;
-	for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
-	    if ( ref->transform[0]*ref->transform[3]<0 ||
-		    (ref->transform[0]==0 && ref->transform[1]*ref->transform[2]>0)) {
-		if ( asked==-1 ) {
-		    asked = GWidgetAskR(_STR_FlippedRef,buts,0,2,_STR_FlippedRefUnlink, sc->name );
-		    if ( asked==3 )
+	for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
+	    for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
+		if ( ref->transform[0]*ref->transform[3]<0 ||
+			(ref->transform[0]==0 && ref->transform[1]*ref->transform[2]>0)) {
+		    if ( asked==-1 ) {
+			asked = GWidgetAskR(_STR_FlippedRef,buts,0,2,_STR_FlippedRefUnlink, sc->name );
+			if ( asked==3 )
 return;
-		    else if ( asked==2 )
-	break;
-		    else if ( asked==0 )
-			askedall = 0;
-		}
-		if ( asked==0 || asked==1 ) {
-		    if ( !refchanged ) {
-			refchanged = true;
-			SCPreserveState(sc,false);
+			else if ( asked==2 )
+	    break;
+			else if ( asked==0 )
+			    askedall = 0;
 		    }
-		    SCRefToSplines(sc,ref);
+		    if ( asked==0 || asked==1 ) {
+			if ( !preserved ) {
+			    preserved = refchanged = true;
+			    SCPreserveState(sc,false);
+			}
+			SCRefToSplines(sc,ref);
+		    }
 		}
 	    }
-	}
 
-	if ( !refchanged )
-	    SCPreserveState(sc,false);
-	sc->layers[ly_fore].splines = SplineSetsCorrect(sc->layers[ly_fore].splines,&changed);
+	    if ( !preserved && sc->layers[layer].splines!=NULL ) {
+		SCPreserveState(sc,false);
+		preserved = true;
+	    }
+	    sc->layers[layer].splines = SplineSetsCorrect(sc->layers[layer].splines,&changed);
+	}
 	if ( changed || refchanged )
 	    SCCharChangedUpdate(sc);
 	if ( !GProgressNext())

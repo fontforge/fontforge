@@ -130,7 +130,7 @@ static void SCStrokeIt(void *_sc, StrokeInfo *si) {
 static void FVStrokeIt(void *_fv, StrokeInfo *si) {
     FontView *fv = _fv;
     SplineSet *temp;
-    int i, cnt=0;
+    int i, cnt=0, layer;
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
 	++cnt;
@@ -139,9 +139,11 @@ static void FVStrokeIt(void *_fv, StrokeInfo *si) {
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
 	SCPreserveState(sc,false);
-	temp = SSStroke(sc->layers[ly_fore].splines,si,sc);
-	SplinePointListsFree( sc->layers[ly_fore].splines );
-	sc->layers[ly_fore].splines = temp;
+	for ( layer = ly_fore; layer<sc->layer_cnt; ++layer ) {
+	    temp = SSStroke(sc->layers[layer].splines,si,sc);
+	    SplinePointListsFree( sc->layers[layer].splines );
+	    sc->layers[layer].splines = temp;
+	}
 	SCCharChangedUpdate(sc);
 	if ( !GProgressNext())
     break;
