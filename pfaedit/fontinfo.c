@@ -1556,10 +1556,10 @@ return( true );
 
 /* Use URW 4 letter abrieviations */
 static char *knownweights[] = { "Demi", "Bold", "Regu", "Medi", "Book", "Thin",
-	"Ligh", "Heav", "Blac", "Nord", "Norm", "Gras", "Stan", "Halb",
+	"Ligh", "Heav", "Blac", "Ultr", "Nord", "Norm", "Gras", "Stan", "Halb",
 	"Fett", "Mage", "Mitt", "Buch", NULL };
 static char *realweights[] = { "Demi", "Bold", "Regular", "Medium", "Book", "Thin",
-	"Light", "Heavy", "Black", "Nord", "Normal", "Gras", "Standard", "Halbfett",
+	"Light", "Heavy", "Black", "Ultra", "Nord", "Normal", "Gras", "Standard", "Halbfett",
 	"Fett", "Mager", "Mittel", "Buchschrift", NULL};
 
 static int GFI_NameChange(GGadget *g, GEvent *e) {
@@ -1664,59 +1664,122 @@ static void BadFamily() {
     GWidgetErrorR(_STR_Badfamily,_STR_Badfamilyn);
 }
 
+static char *modifierlist[] = { "Ital", "Obli", "Kursive", "Cursive",
+	"Expa", "Cond", NULL };
+static char *modifierlistfull[] = { "Italic", "Oblique", "Kursive", "Cursive",
+    "Expanded", "Condensed", NULL };
+static char **mods[] = { knownweights, modifierlist, NULL };
+static char **fullmods[] = { realweights, modifierlistfull, NULL };
+
 static char *_GetModifiers(char *fontname, char *familyname) {
     char *pt, *fpt;
+    int i, j;
 
     /* URW fontnames don't match the familyname */
     /* "NimbusSanL-Regu" vs "Nimbus Sans L" (note "San" vs "Sans") */
     /* so look for a '-' if there is one and use that as the break point... */
 
-    if ( (pt=strchr(fontname,'-'))!=NULL )
-return( pt );
-
-    fpt = familyname;
-    if ( familyname==NULL )
-return( "" );
-
-    for ( pt = fontname; *fpt!='\0' && *pt!='\0'; ) {
-	if ( *fpt == *pt ) {
-	    ++fpt; ++pt;
-	} else if ( *fpt==' ' )
-	    ++fpt;
-	else if ( *pt==' ' )
-	    ++pt;
+    if ( (fpt=strchr(fontname,'-'))!=NULL )
+	/* OK */;
+    else if ( familyname!=NULL ) {
+	for ( pt = fontname, fpt=familyname; *fpt!='\0' && *pt!='\0'; ) {
+	    if ( *fpt == *pt ) {
+		++fpt; ++pt;
+	    } else if ( *fpt==' ' )
+		++fpt;
+	    else if ( *pt==' ' )
+		++pt;
+	    else if ( *fpt=='a' || *fpt=='e' || *fpt=='i' || *fpt=='o' || *fpt=='u' )
+		++fpt;	/* allow vowels to be omitted from family when in fontname */
+	    else
+	break;
+	}
+	if ( *fpt=='\0' )
+	    fpt = pt;
 	else
-return( pt );
+	    fpt = NULL;
     }
-return ( pt );
+
+    if ( fpt == NULL ) {
+	for ( i=0; mods[i]!=NULL; ++i ) for ( j=0; mods[i][j]!=NULL; ++j ) {
+	    pt = strstr(fontname,mods[i][j]);
+	    if ( pt!=NULL && (fpt==NULL || pt<fpt))
+		fpt = pt;
+	}
+    }
+    if ( fpt!=NULL ) {
+	for ( i=0; mods[i]!=NULL; ++i ) for ( j=0; mods[i][j]!=NULL; ++j ) {
+	    if ( strcmp(fpt,mods[i][j])==0 )
+return( fullmods[i][j]);
+	}
+	if ( strcmp(fpt,"BoldItal")==0 )
+return( "BoldItalic" );
+	else if ( strcmp(fpt,"BoldObli")==0 )
+return( "BoldOblique" );
+
+return( fpt );
+    }
+
+return( "Regular" );
 }
 
 static unichar_t *_uGetModifiers(unichar_t *fontname, unichar_t *familyname) {
     unichar_t *pt, *fpt;
-    static unichar_t nullstr[] = { 0 };
+    static unichar_t regular[] = { 'R','e','g','u','l','a','r', 0 };
+    static unichar_t space[20];
+    int i,j;
 
     /* URW fontnames don't match the familyname */
     /* "NimbusSanL-Regu" vs "Nimbus Sans L" (note "San" vs "Sans") */
     /* so look for a '-' if there is one and use that as the break point... */
 
-    if ( (pt=u_strchr(fontname,'-'))!=NULL )
-return( pt );
-
-    fpt = familyname;
-    if ( familyname==NULL )
-return( nullstr );
-
-    for ( pt = fontname; *fpt!='\0' && *pt!='\0'; ) {
-	if ( *fpt == *pt ) {
-	    ++fpt; ++pt;
-	} else if ( *fpt==' ' )
-	    ++fpt;
-	else if ( *pt==' ' )
-	    ++pt;
+    if ( (fpt=u_strchr(fontname,'-'))!=NULL )
+	/* Ok */;
+    else if ( familyname!=NULL ) {
+	for ( pt = fontname, fpt=familyname; *fpt!='\0' && *pt!='\0'; ) {
+	    if ( *fpt == *pt ) {
+		++fpt; ++pt;
+	    } else if ( *fpt==' ' )
+		++fpt;
+	    else if ( *pt==' ' )
+		++pt;
+	    else if ( *fpt=='a' || *fpt=='e' || *fpt=='i' || *fpt=='o' || *fpt=='u' )
+		++fpt;	/* allow vowels to be omitted from family when in fontname */
+	    else
+	break;
+	}
+	if ( *fpt=='\0' )
+	    fpt = pt;
 	else
-return( pt );
+	    fpt = NULL;
     }
-return ( pt );
+
+    if ( fpt==NULL ) {
+	for ( i=0; mods[i]!=NULL; ++i ) for ( j=0; mods[i][j]!=NULL; ++j ) {
+	    pt = uc_strstr(fontname,mods[i][j]);
+	    if ( pt!=NULL && (fpt==NULL || pt<fpt))
+		fpt = pt;
+	}
+    }
+
+    if ( fpt!=NULL ) {
+	for ( i=0; mods[i]!=NULL; ++i ) for ( j=0; mods[i][j]!=NULL; ++j ) {
+	    if ( uc_strcmp(fpt,mods[i][j])==0 ) {
+		uc_strcpy(space,fullmods[i][j]);
+return( space );
+	    }
+	}
+	if ( uc_strcmp(fpt,"BoldItal")==0 ) {
+	    uc_strcpy(space,"BoldItalic");
+return( space );
+	} else if ( uc_strcmp(fpt,"BoldObli")==0 ) {
+	    uc_strcpy(space,"BoldOblique");
+return( space );
+	}
+return( fpt );
+    }
+
+return( regular );
 }
 
 char *SFGetModifiers(SplineFont *sf) {
