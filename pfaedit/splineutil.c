@@ -248,8 +248,8 @@ void SplinePointListFree(SplinePointList *spl) {
 
     if ( spl==NULL )
 return;
-    nonext = spl->first->next==NULL;
     if ( spl->first!=NULL ) {
+	nonext = spl->first->next==NULL;
 	first = NULL;
 	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline = next ) {
 	    next = spline->to->next;
@@ -2077,6 +2077,18 @@ void SplineFindExtrema(Spline1D *sp, double *_t1, double *_t2 ) {
     *_t1 = t1; *_t2 = t2;
 }
 
+int SplineAtInflection(Spline1D *sp, double t ) {
+    /* It's a point of inflection if d sp/dt==0 and d2 sp/dt^2==0 */
+return ( RealNear( (3*sp->a*t + 2*sp->b)*t + sp->c,0) &&
+	    RealNear( 6*sp->a*t + 2*sp->b, 0));
+}
+
+int SplineAtMinMax(Spline1D *sp, double t ) {
+    /* It's a point of inflection if d sp/dt==0 and d2 sp/dt^2!=0 */
+return ( RealNear( (3*sp->a*t + 2*sp->b)*t + sp->c,0) &&
+	    !RealNear( 6*sp->a*t + 2*sp->b, 0));
+}
+
 int Spline2DFindExtrema(Spline *sp, double extrema[4] ) {
     int i,j;
 
@@ -2783,6 +2795,100 @@ real SplineNearPoint(Spline *spline, BasePoint *bp, real fudge) {
 return( -1 );
 
 return( p.t );
+}
+
+static int SplinePrevMinMax(Spline *s,int up) {
+    const double t = .9999;
+    double y;
+    int pup;
+
+    s = s->from->prev;
+    while ( s->from->me.y==s->to->me.y && s->islinear )
+	s = s->from->prev;
+    y = ((s->splines[1].a*t + s->splines[1].b)*t + s->splines[1].c)*t + s->splines[1].d;
+    pup = s->to->me.y > y;
+return( pup!=up );
+}
+
+static int SplineNextMinMax(Spline *s,int up) {
+    const double t = .0001;
+    double y;
+    int nup;
+
+    s = s->to->next;
+    while ( s->from->me.y==s->to->me.y && s->islinear )
+	s = s->to->next;
+    y = ((s->splines[1].a*t + s->splines[1].b)*t + s->splines[1].c)*t + s->splines[1].d;
+    nup = y > s->from->me.y;
+return( nup!=up );
+}
+
+static int Crossings(Spline *s,BasePoint *pt) {
+    double ext[4];
+    int i, cnt=0;
+    double yi, yi1, t, x;
+
+    ext[0] = 0; ext[3] = 1.0;
+    SplineFindExtrema(&s->splines[1],&ext[1],&ext[2]);
+    if ( ext[2]!=-1 && SplineAtInflection(&s->splines[1],ext[2])) ext[2]=-1;
+    if ( ext[1]!=-1 && SplineAtInflection(&s->splines[1],ext[1])) {ext[1] = ext[2]; ext[2]=-1;}
+    if ( ext[1]==-1 ) ext[1] = 1.0;
+    else if ( ext[2]==-1 ) ext[2] = 1.0;
+    yi = s->splines[1].d;
+    for ( i=0; ext[i]!=1.0; ++i, yi=yi1 ) {
+	yi1 = ((s->splines[1].a*ext[i+1]+s->splines[1].b)*ext[i+1]+s->splines[1].c)*ext[i+1]+s->splines[1].d;
+	if ( yi==yi1 )
+    continue;		/* Ignore horizontal lines */
+	if ( (yi>yi1 && (pt->y<yi1 || pt->y>yi)) ||
+		(yi<yi1 && (pt->y<yi || pt->y>yi1)) )
+    continue;
+	t = IterateSplineSolve(&s->splines[1],ext[i],ext[i+1],pt->y,.0001);
+	if ( t==-1 )
+    continue;
+	x = ((s->splines[0].a*t+s->splines[0].b)*t+s->splines[0].c)*t+s->splines[0].d;
+	if ( x>=pt->x )		/* Things on the edge are not inside */
+    continue;
+	if (( RealApprox(t,ext[i]) && SplineAtMinMax(&s->splines[1],ext[i]) ) ||
+		( RealApprox(t,ext[i+1]) && SplineAtMinMax(&s->splines[1],ext[i+1]) ))
+    continue;			/* Min/Max points don't add to count */
+	if (( RealApprox(t,0) && SplinePrevMinMax(s,yi1>yi) ) ||
+		( RealApprox(t,1) && SplineNextMinMax(s,yi1>yi) ))
+    continue;			/* ditto */
+	if ( pt->y==yi1 )	/* Not a min/max. prev/next spline continues same direction */
+    continue;			/* If it's at an endpoint we don't want to count it twice */
+				/* So only add to count at start endpoint, never at final */
+	if ( yi1>yi )
+	    ++cnt;
+	else
+	    --cnt;
+    }
+return( cnt );
+}
+
+/* Return whether this point is within the set of contours in spl */
+/* Draw a line from [-infinity,pt.y] to [pt.x,pt.y] and count contour crossings */
+int SSPointWithin(SplineSet *spl,BasePoint *pt) {
+    int cnt=0;
+    Spline *s, *first;
+
+    while ( spl!=NULL ) {
+	if ( spl->first->prev!=NULL ) {
+	    first = NULL;
+	    for ( s = spl->first->next; s!=first; s=s->to->next ) {
+		if ( first==NULL ) first = s;
+		if (( s->from->me.x>pt->x && s->from->nextcp.x>pt->x &&
+			s->to->me.x>pt->x && s->to->prevcp.x>pt->x) ||
+		    ( s->from->me.y>pt->y && s->from->nextcp.y>pt->y &&
+			s->to->me.y>pt->y && s->to->prevcp.y>pt->y) ||
+		    ( s->from->me.y<pt->y && s->from->nextcp.y<pt->y &&
+			s->to->me.y<pt->y && s->to->prevcp.y<pt->y))
+	    continue;
+		cnt += Crossings(s,pt);
+	    }
+	}
+	spl = spl->next;
+    }
+return( cnt!=0 );	
 }
 
 void StemInfoFree(StemInfo *h) {

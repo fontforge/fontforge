@@ -859,12 +859,19 @@ extern void BDFCharFree(BDFChar *bdfc);
 extern void BDFFontFree(BDFFont *bdf);
 extern int  BDFFontDump(char *filename,BDFFont *font, char *encodingname,int res);
 extern int  FONFontDump(char *filename,BDFFont *font, int res);
-extern int SplinesIntersect(Spline *s1, Spline *s2, BasePoint pts[4], double t1s[4], double t2s[4]);
+/* Two lines intersect in at most 1 point */
+/* Two quadratics intersect in at most 4 points */
+/* Two cubics intersect in at most 9 points */ /* Plus an extra space for a trailing -1 */
+extern int SplinesIntersect(Spline *s1, Spline *s2, BasePoint pts[9],
+	double t1s[10], double t2s[10]);
 extern int CubicSolve(Spline1D *sp,double ts[3]);
 extern double IterateSplineSolve(Spline1D *sp, double tmin, double tmax, double sought_y, double err);
 extern double SplineSolve(Spline1D *sp, real tmin, real tmax, real sought_y, real err);
 extern int SplineSolveFull(Spline1D *sp,double val, double ts[3]);
 extern void SplineFindExtrema(Spline1D *sp, double *_t1, double *_t2 );
+extern int Spline2DFindExtrema(Spline *sp, double extrema[4] );
+extern int SplineAtInflection(Spline1D *sp, double t );
+extern int SplineAtMinMax(Spline1D *sp, double t );
 extern void SplineRemoveInflectionsTooClose(Spline1D *sp, double *_t1, double *_t2 );
 extern int NearSpline(struct findsel *fs, Spline *spline);
 extern real SplineNearPoint(Spline *spline, BasePoint *bp, real fudge);
@@ -879,6 +886,7 @@ extern double SplineLength(Spline *spline);
 extern int SplineIsLinear(Spline *spline);
 extern int SplineIsLinearMake(Spline *spline);
 extern int SplineInSplineSet(Spline *spline, SplineSet *spl);
+extern int SSPointWithin(SplineSet *spl,BasePoint *pt);
 extern void SSRemoveZeroLengthSplines(SplineSet *base);
 extern void SplineCharMerge(SplineChar *sc,SplineSet **head,int type);
 enum simpify_flags { sf_cleanup=-1, sf_normal=0, sf_ignoreslopes=1, sf_ignoreextremum=2 };
