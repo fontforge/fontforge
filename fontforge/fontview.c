@@ -6833,7 +6833,8 @@ return;
 int32 UniFromEnc(int enc, Encoding *encname) {
     char from[20];
     unsigned short to[20];
-    char *fpt, *tpt;
+    ICONV_CONST char *fpt;
+    char *tpt;
     size_t fromlen, tolen;
 
     if ( encname->is_custom || encname->is_original || encname->is_compact )
@@ -6847,7 +6848,7 @@ return( encname->unicode[enc] );
     else if ( encname->tounicode ) {
 	fpt = from; tpt = (char *) to; tolen = sizeof(to);
 	if ( encname->has_1byte && enc<256 ) {
-	    *fpt = enc;
+	    *(char *) fpt = enc;
 	    fromlen = 1;
 	} else if ( encname->has_2byte ) {
 	    if ( encname->iso_2022_escape_len )
@@ -6869,7 +6870,8 @@ return( -1 );
 int32 EncFromUni(int32 uni, Encoding *enc) {
     short from[20];
     unsigned char to[20];
-    char *fpt, *tpt;
+    ICONV_CONST char *fpt;
+    char *tpt;
     size_t fromlen, tolen;
     int i;
 

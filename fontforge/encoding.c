@@ -183,7 +183,8 @@ return( goodname );
 static int TryEscape( Encoding *enc,char *escape_sequence ) {
     char from[20], ucs2[20];
     size_t fromlen, tolen;
-    char *fpt, *upt;
+    ICONV_CONST char *fpt;
+    char *upt;
     int i, j, low;
     int esc_len = strlen(escape_sequence);
 
@@ -227,7 +228,8 @@ Encoding *_FindOrMakeEncoding(const char *name,int make_it) {
     int i, j, any, all;
     char from[8], ucs2[20];
     size_t fromlen, tolen;
-    char *fpt, *upt;
+    ICONV_CONST char *fpt;
+    char *upt;
     /* iconv is not case sensitive */
 
     if ( strncasecmp(name,"iso8859_",8)==0 || strncasecmp(name,"koi8_",5)==0 ) {

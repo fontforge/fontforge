@@ -3655,7 +3655,8 @@ static void AddEncodedName(NamTab *nt,unichar_t *uniname,uint16 lang,uint16 stri
 	    ne->offset = ne[-1].offset;
 	    ne->len    = ne[-1].len;
 	} else {
-	    char *space, *encname, *in, *out;
+	    char *space, *encname, *out;
+	    ICONV_CONST char *in;
 	    Encoding *enc;
 	    size_t inlen, outlen;
 	    ne->offset  = ftell(nt->strings);
