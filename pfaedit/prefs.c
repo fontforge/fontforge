@@ -107,7 +107,7 @@ return( NULL );
 return( prefs );
 }
 
-static char *getPfaEditShareDir(void) {
+char *getPfaEditShareDir(void) {
     static char *sharedir=NULL;
     static int set=false;
     char *pt;

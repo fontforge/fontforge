@@ -445,6 +445,7 @@ extern void MVReKern(MetricsView *mv);
 extern MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf);
 extern void MetricsViewFree(MetricsView *mv);
 
+extern char *getPfaEditShareDir(void);
 extern void LoadPrefs(void);
 extern void SavePrefs(void);
 extern void DoPrefs(void);

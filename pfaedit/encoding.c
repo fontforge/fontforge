@@ -697,6 +697,12 @@ return( maybe );	/* User has said it's ok to use maybe at this supplement level 
     file = SearchDirForCidMap(".",registry,ordering,supplement,&maybefile);
     if ( file==NULL )
 	file = SearchDirForCidMap(GResourceProgramDir,registry,ordering,supplement,&maybefile);
+#ifdef SHAREDIR
+    if ( file==NULL )
+	file = SearchDirForCidMap(SHAREDIR,registry,ordering,supplement,&maybefile);
+#endif
+    if ( file==NULL )
+	file = SearchDirForCidMap(getPfaEditShareDir(),registry,ordering,supplement,&maybefile);
     if ( file==NULL )
 	file = SearchDirForCidMap("/usr/share/pfaedit",registry,ordering,supplement,&maybefile);
 
@@ -883,6 +889,10 @@ struct cidmap *AskUserForCIDMap(SplineFont *sf) {
     }
     FindMapsInDir(&block,".");
     FindMapsInDir(&block,GResourceProgramDir);
+#ifdef SHAREDIR
+    FindMapsInDir(&block,SHAREDIR);
+#endif
+    FindMapsInDir(&block,getPfaEditShareDir());
     FindMapsInDir(&block,"/usr/share/pfaedit");
 
     choices = gcalloc(block.cur+2,sizeof(unichar_t *));
