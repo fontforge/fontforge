@@ -51,6 +51,8 @@ char *RecentFiles[RECENT_MAX] = { NULL };
 /*struct cvshows CVShows = { 1, 1, 1, 1, 1, 0, 1 };*/ /* in charview */
 /* int default_fv_font_size = 24; */	/* in fontview */
 /* int default_fv_antialias = false */	/* in fontview */
+extern int default_fv_showhmetrics;	/* in fontview */
+extern int default_fv_showvmetrics;	/* in fontview */
 /* int local_encoding; */		/* in gresource.c *//* not a charset */
 int greekfixup = true;
 extern int onlycopydisplayed, copymetadata;
@@ -132,6 +134,8 @@ static struct prefs_list {
 },
  hidden_list[] = {
 	{ "AntiAlias", pr_bool, &default_fv_antialias, NULL, NULL, '\0', NULL, 1 },
+	{ "DefaultFVShowHmetrics", pr_bool, &default_fv_showhmetrics, NULL, NULL, '\0', NULL, 1 },
+	{ "DefaultFVShowVmetrics", pr_bool, &default_fv_showvmetrics, NULL, NULL, '\0', NULL, 1 },
 	{ "DefaultFVSize", pr_enum, &default_fv_font_size, NULL, NULL, 'S', fvsize_enums, 1 },
 	{ "OnlyCopyDisplayed", pr_bool, &onlycopydisplayed, NULL, NULL, '\0', NULL, 1 },
 	{ "CopyMetaData", pr_bool, &copymetadata, NULL, NULL, '\0', NULL, 1 },

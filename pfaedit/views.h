@@ -273,6 +273,8 @@ typedef struct fontview {
     unsigned int wasonlybitmaps:1;
     unsigned int refstate: 3;	/* 0x1 => paste orig of all non exist refs, 0x2=>don't, 0x3 => don't warn about non-exist refs with no source font */
     unsigned int touched: 1;
+    unsigned int showhmetrics: 1;
+    unsigned int showvmetrics: 1;
     int16 magnify;
     SplineFont *cidmaster;
     int32 *mapping;	/* an array mapping grid cells (0=upper left) to font indeces (enc, 0=NUL) */

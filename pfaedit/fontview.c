@@ -68,7 +68,9 @@ static unsigned char fontview2_bits[] = {
 
 extern int _GScrollBar_Width;
 
-int default_fv_font_size = 24, default_fv_antialias=false;
+int default_fv_font_size = 24, default_fv_antialias=false,
+	default_fv_showhmetrics=false, default_fv_showvmetrics=false;
+#define METRICS_COLOR 0x0000c0
 FontView *fv_list=NULL;
 
 void FVToggleCharChanged(SplineChar *sc) {
@@ -728,13 +730,15 @@ static void FVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_24	2001
 #define MID_36	2002
 #define MID_48	2004
+#define MID_72	2014
+#define MID_96	2015
 #define MID_AntiAlias	2005
 #define MID_Next	2006
 #define MID_Prev	2007
 #define MID_NextDef	2012
 #define MID_PrevDef	2013
-#define MID_72	2014
-#define MID_96	2015
+#define MID_ShowHMetrics 2016
+#define MID_ShowVMetrics 2017
 #define MID_CharInfo	2201
 #define MID_FindProblems 2216
 #define MID_MetaFont	2217
@@ -1669,6 +1673,16 @@ void FVChangeDisplayBitmap(FontView *fv,BDFFont *bdf) {
     fv->sf->display_size = fv->show->pixelsize;
 }
 
+static void FVMenuShowMetrics(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    if ( mi->mid==MID_ShowHMetrics )
+	default_fv_showhmetrics = fv->showhmetrics = !fv->showhmetrics;
+    else
+	default_fv_showvmetrics = fv->showvmetrics = !fv->showvmetrics;
+    SavePrefs();
+    GDrawRequestExpose(fv->v,NULL,false);
+}
+
 static void FVMenuSize(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw), *fvs, *fvss;
     int dspsize = fv->filled->pixelsize;
@@ -1690,6 +1704,7 @@ static void FVMenuSize(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	fv->sf->display_antialias = fv->antialias;
 	changealias = true;
     }
+    SavePrefs();
     if ( fv->filled!=fv->show || fv->filled->pixelsize != dspsize || changealias ) {
 	BDFFont *new, *old;
 	for ( fvs=fv->sf->fv; fvs!=NULL; fvs=fvs->nextsame )
@@ -2420,6 +2435,9 @@ static GMenuItem vwlist[] = {
     { { (unichar_t *) _STR_PrevDefChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'a' }, '[', ksm_control|ksm_meta, NULL, NULL, FVMenuChangeChar, MID_PrevDef },
     { { (unichar_t *) _STR_Goto, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'G' }, '>', ksm_shift|ksm_control, NULL, NULL, FVMenuGotoChar },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_ShowHMetrics, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'H' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuShowMetrics, MID_ShowHMetrics },
+    { { (unichar_t *) _STR_ShowVMetrics, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'V' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuShowMetrics, MID_ShowVMetrics },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_24, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, '2' }, '2', ksm_control, NULL, NULL, FVMenuSize, MID_24 },
     { { (unichar_t *) _STR_36, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, '3' }, '3', ksm_control, NULL, NULL, FVMenuSize, MID_36 },
     { { (unichar_t *) _STR_48, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, '4' }, '4', ksm_control, NULL, NULL, FVMenuSize, MID_48 },
@@ -2488,6 +2506,13 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 	  case MID_PrevDef:
 	    for ( pos = anychars-1; pos>=0 && sf->chars[pos]==NULL; --pos );
 	    mi->ti.disabled = pos<0;
+	  break;
+	  case MID_ShowHMetrics:
+	    mi->ti.checked = fv->showhmetrics;
+	  break;
+	  case MID_ShowVMetrics:
+	    mi->ti.checked = fv->showvmetrics;
+	    mi->ti.disabled = !fv->sf->hasvmetrics;
 	  break;
 	  case MID_24:
 	    mi->ti.checked = (fv->show!=NULL && fv->show==fv->filled && fv->show->pixelsize==24);
@@ -3124,6 +3149,8 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
     SplineChar dummy;
     int italic, wasitalic=0;
     GImage *rotated=NULL;
+    int em = fv->sf->ascent+fv->sf->descent;
+    int yorg = fv->magnify*(fv->show->ascent-fv->sf->vertical_origin*fv->show->pixelsize/em);
 
     memset(&gi,'\0',sizeof(gi));
     memset(&base,'\0',sizeof(base));
@@ -3296,6 +3323,24 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		    GDrawDrawImage(pixmap,&gi,NULL,
 			    j*fv->cbw+(fv->cbw-1-base.width)/2,
 			    i*fv->cbh+FV_LAB_HEIGHT+1+fv->show->ascent-bdfc->ymax);
+		if ( fv->showhmetrics ) {
+		    int x0 = j*fv->cbw+(fv->cbw-1-fv->magnify*base.width)/2- bdfc->xmin*fv->magnify;
+		    /* Draw advance width & horizontal origin */
+		    GDrawDrawLine(pixmap,x0,i*fv->cbh+FV_LAB_HEIGHT+1,x0,
+			    (i+1)*fv->cbh-1,METRICS_COLOR);
+		    x0 += bdfc->width;
+		    GDrawDrawLine(pixmap,x0,i*fv->cbh+FV_LAB_HEIGHT+1,x0,
+			    (i+1)*fv->cbh-1,METRICS_COLOR);
+		}
+		if ( fv->showvmetrics ) {
+		    int x0 = j*fv->cbw+(fv->cbw-1-fv->magnify*base.width)/2- bdfc->xmin*fv->magnify
+			    + fv->magnify*fv->show->pixelsize/2;
+		    int yvw = i*fv->cbh+FV_LAB_HEIGHT+yorg + fv->magnify*sc->vwidth*fv->show->pixelsize/em;
+		    GDrawDrawLine(pixmap,x0,i*fv->cbh+FV_LAB_HEIGHT+1,x0,
+			    (i+1)*fv->cbh-1,METRICS_COLOR);
+		    GDrawDrawLine(pixmap,j*fv->cbw,yvw,(j+1)*fv->cbw,
+			    yvw,METRICS_COLOR);
+		}
 		GDrawPopClip(pixmap,&old2);
 	    }
 	    if ( fv->selected[index] ) {
@@ -3307,6 +3352,16 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		GDrawSetCopyMode(pixmap);
 	    }
 	}
+    }
+    if ( fv->showhmetrics ) {
+	int baseline = (fv->sf->ascent*fv->magnify*fv->show->pixelsize)/em;
+	for ( i=0; i<=fv->rowcnt; ++i )
+	    GDrawDrawLine(pixmap,0,i*fv->cbh+FV_LAB_HEIGHT+baseline,fv->width,i*fv->cbh+FV_LAB_HEIGHT+baseline,METRICS_COLOR);
+    }
+    if ( fv->showhmetrics ) {
+	int yorg = fv->magnify*(fv->show->ascent-fv->sf->vertical_origin*fv->show->pixelsize/em);
+	for ( i=0; i<=fv->rowcnt; ++i )
+	    GDrawDrawLine(pixmap,0,i*fv->cbh+FV_LAB_HEIGHT+yorg,fv->width,i*fv->cbh+FV_LAB_HEIGHT+yorg,METRICS_COLOR);
     }
     GDrawPopClip(pixmap,&old);
     GDrawSetDither(NULL, true);
@@ -4089,6 +4144,8 @@ FontView *FontViewCreate(SplineFont *sf) {
     rq.style = fs_italic;
     fv->iheader = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
     GDrawSetFont(fv->v,fv->header);
+    fv->showhmetrics = default_fv_showhmetrics;
+    fv->showvmetrics = default_fv_showvmetrics && sf->hasvmetrics;
     if ( fv->nextsame!=NULL ) {
 	fv->filled = fv->nextsame->filled;
 	bdf = fv->nextsame->show;
