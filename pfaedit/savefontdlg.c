@@ -311,14 +311,20 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype) {
     int i;
     static char *bitmaps[] = {"bdf", "ms", "apple", "sbit", "gdf", "bin", "dfont", NULL };
     real *sizes=NULL;
+    char *end = filename+strlen(filename);
 
     for ( i=0; extensions[i]!=NULL; ++i ) {
-	if ( strmatch(filename+strlen(filename)-strlen(extensions[i]),extensions[i])==0 )
+	if ( strlen( extensions[i])>0 &&
+		strmatch(end-strlen(extensions[i]),extensions[i])==0 )
     break;
     }
+    if ( strmatch(end-strlen(".ttf.bin"),".ttf.bin")==0 )
+	i = ff_ttfmacbin;
+    else if ( strmatch(end-strlen(".bin"),".bin")==0 )
+	i = ff_pfbmacbin;
     if ( extensions[i]==NULL ) {
 	for ( i=0; bitmaps[i]!=NULL; ++i ) {
-	    if ( strmatch(filename+strlen(filename)-strlen(bitmaps[i]),bitmaps[i])==0 )
+	    if ( strmatch(end-strlen(bitmaps[i]),bitmaps[i])==0 )
 	break;
 	}
 	if ( bitmaps[i]==NULL )
