@@ -3031,6 +3031,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 	  case 6: /* hlineto */
 	  case 7: /* vlineto */
 	    polarity = 0;
+	    base = 0;
 	    while ( base<sp ) {
 		dx = dy = 0;
 		if ( v==5 || v==21 ) {
@@ -3189,8 +3190,13 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 	  case 29: /* callgsubr */
 	  case 10: /* callsubr */
 	    /* stack[sp-1] contains the number of the subroutine to call */
-	    if ( sp<1 ) fprintf(stderr, "Stack underflow on callsubr in %s\n", name );
-	    else if ( pcsp>10 ) fprintf( stderr, "Too many subroutine calls in %s\n", name );
+	    if ( sp<1 ) {
+		fprintf(stderr, "Stack underflow on callsubr in %s\n", name );
+	  break;
+	    } else if ( pcsp>10 ) {
+		fprintf( stderr, "Too many subroutine calls in %s\n", name );
+	  break;
+	    }
 	    s=subrs; if ( v==29 ) s = gsubrs;
 	    if ( s!=NULL ) stack[sp-1] += s->bias;
 	    /* Type2 subrs have a bias that must be added to the subr-number */

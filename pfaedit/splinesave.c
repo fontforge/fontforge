@@ -1895,7 +1895,14 @@ static void CounterHints2(GrowBuf *gb, SplineChar *sc, int hcnt) {
 
 static int HintSetup2(GrowBuf *gb,struct hintdb *hdb, SplinePoint *to ) {
 
-    if ( to->hintmask==NULL )
+    /* We might get a point with a hintmask in a glyph with no conflicts */
+    /* (ie. the initial point when we return to it at the end of the splineset*/
+    /* in that case hdb->cnt will be 0 and we should ignore it */
+    /* components in subroutines depend on not having any hintmasks */
+    if ( to->hintmask==NULL || hdb->cnt==0 )
+return( false );
+
+    if ( memcmp(hdb->mask,*to->hintmask,(hdb->cnt+7)/8)==0 )
 return( false );
 
     AddMask2(gb,*to->hintmask,hdb->cnt,19);		/* hintmask */
