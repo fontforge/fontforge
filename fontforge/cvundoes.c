@@ -410,6 +410,7 @@ void UndoesFree(Undoes *undo) {
 	    for ( i=0; undo->u.possub.data[i]!=NULL; ++i )
 		free(undo->u.possub.data[i]);
 	    free(undo->u.possub.data);
+	    UndoesFree(undo->u.possub.more_pst);
 	  break;
 	  default:
 	    GDrawIError( "Unknown undo type in UndoesFree: %d", undo->undotype );
@@ -1013,7 +1014,7 @@ return( copy( cur->u.state.charname ));
 }
 
 static void *copybufferPosSub2str(void *_copybuffer,int32 *len) {
-    Undoes *cur = &copybuffer;
+    Undoes *cur = &copybuffer, *otherpsts;
     char *pt, *data;
     int lcnt, size;
 
@@ -1037,14 +1038,16 @@ static void *copybufferPosSub2str(void *_copybuffer,int32 *len) {
 	*len=0;
 return( copy(""));
     }
-    for ( lcnt=size=0; cur->u.possub.data[lcnt]!=NULL; ++lcnt )
-	size += strlen(cur->u.possub.data[lcnt])+1;
+    for ( otherpsts = cur; otherpsts!=NULL; otherpsts = otherpsts->u.possub.more_pst )
+	for ( lcnt=size=0; otherpsts->u.possub.data[lcnt]!=NULL; ++lcnt )
+	    size += strlen(otherpsts->u.possub.data[lcnt])+1;
     data = pt = galloc(size+1);
-    for ( lcnt=0; cur->u.possub.data[lcnt]!=NULL; ++lcnt ) {
-	strcpy(pt,cur->u.possub.data[lcnt]);
-	pt += strlen(cur->u.possub.data[lcnt]);
-	*pt++='\n';
-    }
+    for ( otherpsts = cur; otherpsts!=NULL; otherpsts = otherpsts->u.possub.more_pst )
+	for ( lcnt=0; otherpsts->u.possub.data[lcnt]!=NULL; ++lcnt ) {
+	    strcpy(pt,otherpsts->u.possub.data[lcnt]);
+	    pt += strlen(otherpsts->u.possub.data[lcnt]);
+	    *pt++='\n';
+	}
     if ( lcnt!=0 )
 	pt[-1] = '\0';
     *pt = '\0';
@@ -1179,7 +1182,7 @@ return( cur->undotype==ut_state || cur->undotype==ut_tstate ||
 	cur->undotype==ut_statehint || cur->undotype==ut_statename ||
 	cur->undotype==ut_width || cur->undotype==ut_vwidth ||
 	cur->undotype==ut_lbearing || cur->undotype==ut_rbearing ||
-	cur->undotype==ut_noop );
+	cur->undotype==ut_noop || cur->undotype==ut_possub );
 }
 
 int CopyContainsBitmap(void) {
@@ -1213,14 +1216,20 @@ return( NULL );
 return( cur->u.state.refs );
 }
 
-char **CopyGetPosSubData(enum possub_type *type) {
+char **CopyGetPosSubData(enum possub_type *type, SplineFont **copied_from,
+	int depth) {
     Undoes *cur = &copybuffer;
 
     if ( cur->undotype==ut_multiple )
 	cur = cur->u.multiple.mult;
     if ( cur->undotype!=ut_possub )
 return( NULL );
+    while ( depth-->0 && cur!=NULL )
+	cur = cur->u.possub.more_pst;
+    if ( cur==NULL )
+return( NULL );
     *type = cur->u.possub.pst;
+    *copied_from = cur->u.possub.copied_from;
 return( cur->u.possub.data );
 }
 
@@ -1886,7 +1895,10 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto) 
 	SCCharChangedUpdate(sc);
       break;
       case ut_possub:
-	SCAppendPosSub(sc,paster->u.possub.pst,paster->u.possub.data);
+	while ( paster!=NULL ) {
+	    SCAppendPosSub(sc,paster->u.possub.pst,paster->u.possub.data,paster->u.possub.copied_from);
+	    paster = paster->u.possub.more_pst;
+	}
       break;
       case ut_width:
 	SCPreserveWidth(sc);
@@ -2089,7 +2101,10 @@ return;
 	}
       break;
       case ut_possub:
-	SCAppendPosSub(cvsc,paster->u.possub.pst,paster->u.possub.data);
+	while ( paster!=NULL ) {
+	    SCAppendPosSub(cvsc,paster->u.possub.pst,paster->u.possub.data,paster->u.possub.copied_from);
+	    paster = paster->u.possub.more_pst;
+	}
       break;
       case ut_width:
 	SCSynchronizeWidth(cvsc,paster->u.width,cvsc->width,NULL);
@@ -2421,7 +2436,7 @@ static BDFFont *BitmapCreateCheck(FontView *fv,int *yestoall, int first, int pix
 	else
 	    sprintf( buf, "%d", pixelsize );
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	yes = GWidgetAskCenteredR_(_STR_BitmapPaste,buts,0,3,_STR_ClipContains,buf);
+	yes = GWidgetAskCenteredR(_STR_BitmapPaste,buts,0,3,_STR_ClipContains,buf);
 #elif defined(FONTFORGE_CONFIG_GTK)
 	buts[0] = GTK_STOCK_YES;
 	buts[1] = _("Yes to All");
@@ -2692,12 +2707,56 @@ void PasteRemoveAnchorClass(SplineFont *sf,AnchorClass *dying) {
     _PasteAnchorClassManip(sf,NULL,dying);
 }
 
-void PosSubCopy(enum possub_type type, char **data) {
+void PosSubCopy(enum possub_type type, char **data,SplineFont *sf) {
 
     CopyBufferFreeGrab();
 
     copybuffer.undotype = ut_possub;
     copybuffer.u.possub.pst = type;
     copybuffer.u.possub.data = data;
+    copybuffer.u.possub.more_pst = NULL;
+    copybuffer.u.possub.copied_from = sf;
     XClipCheckEps();
+}
+
+void CopyPSTStart(SplineFont *sf) {
+
+    CopyBufferFreeGrab();
+
+    copybuffer.undotype = ut_possub;
+    copybuffer.u.possub.pst = pst_null;
+    copybuffer.u.possub.data = NULL;
+    copybuffer.u.possub.more_pst = NULL;
+    copybuffer.u.possub.copied_from = sf;
+}
+
+void CopyPSTAppend(enum possub_type type, unichar_t *text ) {
+    Undoes *cp;
+
+    if ( copybuffer.undotype!=ut_possub ) {
+	GDrawIError("Bad call to CopyPSTAppend");
+return;
+    }
+
+    if ( copybuffer.u.possub.pst == pst_null )
+	copybuffer.u.possub.pst = type;
+    for ( cp=&copybuffer; cp!=NULL && cp->u.possub.pst!=type; cp = cp->u.possub.more_pst );
+    if ( cp==NULL ) {
+	cp = chunkalloc(sizeof(Undoes));
+	cp->undotype = ut_possub;
+	cp->u.possub.pst = type;
+	cp->u.possub.copied_from = copybuffer.u.possub.copied_from;
+	cp->u.possub.more_pst = copybuffer.u.possub.more_pst;
+	copybuffer.u.possub.more_pst = cp;
+    }
+    if ( cp->u.possub.cnt>=cp->u.possub.max ) {
+	cp->u.possub.max += 10;
+	if ( cp->u.possub.data==NULL )
+	    cp->u.possub.data = galloc((cp->u.possub.max+1)*sizeof(char *));
+	else
+	    cp->u.possub.data = grealloc(cp->u.possub.data,(cp->u.possub.max+1)*sizeof(char *));
+    }
+    cp->u.possub.data[cp->u.possub.cnt++] = cu_copy(text);
+    cp->u.possub.data[cp->u.possub.cnt  ] = NULL;
+    free(text);
 }

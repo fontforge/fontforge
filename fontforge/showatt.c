@@ -615,6 +615,51 @@ static void BuildMorxFeatures(struct node *node,struct att_dlg *att) {
     BuildFeatures(node,att, script,lang,feat,false);
 }
 
+#if defined(FONTFORGE_CONFIG_GDRAW)
+unichar_t *TagFullName(SplineFont *sf,uint32 tag, int ismac) {
+    unichar_t ubuf[100], *end = ubuf+sizeof(ubuf)/sizeof(ubuf[0]), *setname;
+    int j,k;
+    extern GTextInfo *pst_tags[];
+
+    if ( ismac==-1 )
+	/* Guess */
+	ismac = (tag>>24)<' ' || (tag>>24)>0x7e;
+
+    if ( ismac ) {
+	char buf[30];
+	sprintf( buf, "<%d,%d> ", tag>>16,tag&0xffff );
+	uc_strcpy(ubuf, buf );
+	if ( (setname = PickNameFromMacName(FindMacSettingName(sf,tag>>16,tag&0xffff)))!=NULL ) {
+	    u_strcat( ubuf, setname );
+	    free( setname );
+	}
+    } else {
+	if ( tag==REQUIRED_FEATURE ) {
+	    u_strcpy(ubuf,GStringGetResource(_STR_RequiredFeature,NULL));
+	} else {
+	    for ( k=0; pst_tags[k]!=NULL; ++k ) {
+		for ( j=0; pst_tags[k][j].text!=NULL && tag!=(uint32) pst_tags[k][j].userdata; ++j );
+		if ( pst_tags[k][j].text!=NULL )
+	    break;
+	    }
+	    ubuf[0] = '\'';
+	    ubuf[1] = tag>>24;
+	    ubuf[2] = (tag>>16)&0xff;
+	    ubuf[3] = (tag>>8)&0xff;
+	    ubuf[4] = tag&0xff;
+	    ubuf[5] = '\'';
+	    ubuf[6] = ' ';
+	    if ( pst_tags[k]!=NULL )
+		u_strncpy(ubuf+7, GStringGetResource((uint32) pst_tags[k][j].text,NULL),end-ubuf-7);
+	    else
+		ubuf[7]='\0';
+	}
+    }
+return( u_copy( ubuf ));
+}
+#elif defined(FONTFORGE_CONFIG_GTK)
+#endif
+
 static void BuildMorxScript(struct node *node,struct att_dlg *att) {
     uint32 script = node->tag, lang = DEFAULT_LANG;
     int i,k,l,m, tot, max;
@@ -625,8 +670,6 @@ static void BuildMorxScript(struct node *node,struct att_dlg *att) {
     int feat, set;
     SplineChar *sc;
     PST *pst;
-    char buf[20];
-    unichar_t *setname;
 
     sf_sl = _sf;
     if ( sf_sl->cidmaster ) sf_sl = sf_sl->cidmaster;
@@ -700,15 +743,7 @@ static void BuildMorxScript(struct node *node,struct att_dlg *att) {
 	    set = feats[i]&0xffff;
 	    featnodes[i].macfeat = true;
 	}
-	setname = PickNameFromMacName(FindMacSettingName(sf,feat,set));
-	if ( setname==NULL )
-	    setname = uc_copy("");
-	featnodes[i].tag = (feat<<16)|set;
-	sprintf( buf, "<%d,%d> ", feat,set );
-	featnodes[i].label = galloc((strlen(buf)+u_strlen(setname)+1)*sizeof(unichar_t));
-	uc_strcpy(featnodes[i].label,buf);
-	u_strcat(featnodes[i].label,setname);
-	free(setname);
+	featnodes[i].label = TagFullName(sf,(feat<<16)|set,true);
     }
 
     qsort(featnodes,tot,sizeof(struct node),compare_tag);
@@ -1134,7 +1169,7 @@ static void BuildGSUBfeatures(struct node *node,struct att_dlg *att) {
 static void BuildGSUBlang(struct node *node,struct att_dlg *att) {
     int isgsub = node->parent->parent->tag==CHR('G','S','U','B');
     uint32 script = node->parent->tag, lang = node->tag;
-    int i,j,k,l, tot, max;
+    int i,k,l, tot, max;
     SplineFont *_sf = att->sf, *sf;
     struct f {
 	uint32 feats;
@@ -1142,13 +1177,11 @@ static void BuildGSUBlang(struct node *node,struct att_dlg *att) {
 	void (*build)(struct node *,struct att_dlg *);
     } *f;
     struct node *featnodes;
-    extern GTextInfo *pst_tags[];
     int haskerns=false, hasvkerns=false;
     AnchorClass *ac, *ac2;
     SplineChar *sc;
     PST *pst;
     KernPair *kp;
-    unichar_t ubuf[80];
     int isv;
     KernClass *kc;
     FPST *fpst;
@@ -1265,31 +1298,7 @@ static void BuildGSUBlang(struct node *node,struct att_dlg *att) {
 	featnodes[i].parent = node;
 	featnodes[i].build = f[i].build==NULL ? BuildGSUBfeatures : f[i].build;
 	featnodes[i].u = f[i].acs;
-	if ( f[i].feats==REQUIRED_FEATURE ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    u_strcpy(ubuf,GStringGetResource(_STR_RequiredFeature,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    u_strcpy(ubuf,_("Required Feature"));
-#endif
-	} else {
-	    for ( k=0; pst_tags[k]!=NULL; ++k ) {
-		for ( j=0; pst_tags[k][j].text!=NULL && featnodes[i].tag!=(uint32) pst_tags[k][j].userdata; ++j );
-		if ( pst_tags[k][j].text!=NULL )
-	    break;
-	    }
-	    ubuf[0] = '\'';
-	    ubuf[1] = featnodes[i].tag>>24;
-	    ubuf[2] = (featnodes[i].tag>>16)&0xff;
-	    ubuf[3] = (featnodes[i].tag>>8)&0xff;
-	    ubuf[4] = featnodes[i].tag&0xff;
-	    ubuf[5] = '\'';
-	    ubuf[6] = ' ';
-	    if ( pst_tags[k]!=NULL )
-		u_strcpy(ubuf+7,GStringGetResource((uint32) pst_tags[k][j].text,NULL));
-	    else
-		ubuf[7]='\0';
-	}
-	featnodes[i].label = u_copy(ubuf);
+	featnodes[i].label = TagFullName(sf,featnodes[i].tag,false);
     }
 
     qsort(featnodes,tot,sizeof(struct node),compare_tag);
@@ -1707,8 +1716,6 @@ static void BuildTable(struct node *node,struct att_dlg *att) {
     PST *pst;
     KernPair *kp;
     unichar_t ubuf[120];
-    char buf[32];
-    unichar_t *setname;
     AnchorClass *ac;
     int isv;
     FPST *fpst;
@@ -1877,15 +1884,7 @@ return;
 	    scriptnodes[i+j].build = BuildASM;
 	    scriptnodes[i+j].tag = (sm->feature<<16)|sm->setting;
 	    scriptnodes[i+j].u.sm = sm;
-
-	    setname = PickNameFromMacName(FindMacSettingName(sf,sm->feature,sm->setting));
-	    if ( setname==NULL )
-		setname = uc_copy("");
-	    sprintf( buf, "<%d,%d> ", sm->feature,sm->setting );
-	    scriptnodes[i+j].label = galloc((strlen(buf)+u_strlen(setname)+1)*sizeof(unichar_t));
-	    uc_strcpy(scriptnodes[i+j].label,buf);
-	    u_strcat(scriptnodes[i+j].label,setname);
-	    free(setname);
+	    scriptnodes[i+j].label = TagFullName(sf,(sm->feature<<16)|sm->setting,true);
 	    ++j;
 	}
 	qsort(scriptnodes+i,j,sizeof(struct node),compare_tag);

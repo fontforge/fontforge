@@ -344,12 +344,41 @@ struct copycontext {
     int mcur;
 };
 
-static int SFConvertSLI(SplineFont *fromsf,int sli,SplineFont *tosf) {
+int SFConvertSLI(SplineFont *fromsf,int sli,SplineFont *tosf,
+	SplineChar *default_script) {
     int i,j,k;
     struct script_record *from_sr, *to_sr;
+    FontView *fv;
 
     if ( sli==SLI_NESTED )
 return( SLI_NESTED );
+
+    if ( tosf==fromsf )
+return( sli );		/* It's from us. Yeah! that's easy */
+
+
+    for ( fv=fv_list; fv!=NULL && fv->sf!=fromsf; fv=fv->next );
+    /* The font from which we did the copy is no longer loaded */
+    /*  can't access it's sli data */
+    if ( fv==NULL ) fromsf=NULL;
+
+    if ( tosf->cidmaster ) tosf = tosf->cidmaster;
+    else if ( tosf->mm!=NULL ) tosf = tosf->mm->normal;
+
+    if ( fromsf==NULL ) {
+	if ( tosf->script_lang==NULL )
+	    sli = SFAddScriptLangIndex(tosf,SCScriptFromUnicode(default_script),DEFAULT_LANG);
+	else {
+	    for ( i=0; tosf->script_lang[i]!=NULL; ++i );
+	    if ( sli>=i )
+		sli = SFAddScriptLangIndex(tosf,SCScriptFromUnicode(default_script),DEFAULT_LANG);
+	}
+return( sli );
+    }
+
+    if ( fromsf->cidmaster ) fromsf = fromsf->cidmaster;
+    else if ( fromsf->mm!=NULL ) fromsf = fromsf->mm->normal;
+
     from_sr = fromsf->script_lang[sli];
     if ( tosf->script_lang!=NULL ) {
 	for ( i=0; tosf->script_lang[i]!=NULL; ++i ) {
@@ -442,7 +471,7 @@ return( false );
     *newpst = *pst;
     if ( pst->script_lang_index == SLI_NESTED )
 	newpst->tag = ConvertNestedTag(tosf, fromsf,cc->nested_map, pst->tag);
-    newpst->script_lang_index = SFConvertSLI(fromsf,pst->script_lang_index,tosf);
+    newpst->script_lang_index = SFConvertSLI(fromsf,pst->script_lang_index,tosf,tosc);
     newpst->next = tosc->possub;
     tosc->possub = newpst;
     tosf->changed = true;
@@ -501,7 +530,7 @@ return(false);
     newkp = chunkalloc(sizeof(AnchorPoint));
     *newkp = *kp;
     newkp->sc = tosecond;
-    newkp->sli = SFConvertSLI(fromsf,kp->sli,tosf);
+    newkp->sli = SFConvertSLI(fromsf,kp->sli,tosf,tosc);
     if ( isvkern ) {
 	newkp->next = tosc->vkerns;
 	tosc->vkerns = newkp;
@@ -537,7 +566,7 @@ static void SF_AddAnchor(SplineFont *tosf,AnchorClass *ac, struct copycontext *c
     if ( ac->script_lang_index == SLI_NESTED )
 	newac->feature_tag = ConvertNestedTag(tosf, fromsf,cc->nested_map, ac->feature_tag);
     newac->name = u_copy(ac->name);
-    newac->script_lang_index = SFConvertSLI(fromsf,ac->script_lang_index,tosf);
+    newac->script_lang_index = SFConvertSLI(fromsf,ac->script_lang_index,tosf,NULL);
     tosf->changed = true;
     newac->next = tosf->anchor;
     tosf->anchor = newac;
@@ -564,7 +593,7 @@ static void SF_AddKernClass(SplineFont *tosf,KernClass *kc, struct copycontext *
     newkc = chunkalloc(sizeof(KernClass));
     *newkc = *kc;
     /* can't be nested */
-    newkc->sli = SFConvertSLI(fromsf,kc->sli,tosf);
+    newkc->sli = SFConvertSLI(fromsf,kc->sli,tosf,NULL);
     tosf->changed = true;
     if ( isvkern ) {
 	newkc->next = tosf->vkerns;
@@ -589,7 +618,7 @@ static void SF_AddFPST(SplineFont *tosf,FPST *fpst, struct copycontext *cc, Spli
     *newfpst = *fpst;
     if ( fpst->script_lang_index == SLI_NESTED )
 	newfpst->tag = ConvertNestedTag(tosf, fromsf,cc->nested_map, fpst->tag);
-    newfpst->script_lang_index = SFConvertSLI(fromsf,fpst->script_lang_index,tosf);
+    newfpst->script_lang_index = SFConvertSLI(fromsf,fpst->script_lang_index,tosf,NULL);
     tosf->changed = true;
     newfpst->next = tosf->possub;
     tosf->possub = newfpst;
