@@ -370,6 +370,7 @@ return( sc!=NULL &&
 #if HANYANG
 	    sc->compositionunit ||
 #endif
+	    sc->dependents!=NULL ||
 	    sc->width!=sc->parent->ascent+sc->parent->descent ) &&
 	( strcmp(sc->name,".notdef")!=0 || sc->enc==0) );
 }

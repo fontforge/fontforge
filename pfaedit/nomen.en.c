@@ -910,6 +910,7 @@ static char *str_PointSizes72 = "Point sizes on a 72 dpi screen";
 static char *str_XSizes = "X";
 static char *str_WinSizes = "Win";
 static char *str_MacSizes = "Mac";
+static char *str_UseFreeType = "Use FreeType";
 static char *str_ScalingBitmaps = "Scaling Bitmaps";
     /* Bitmap view */
 /* "%s at %d from %s", charactername, pixelsize, fontname */

@@ -28,6 +28,10 @@ AC_SEARCH_LIBS(inet_aton, resolv) dnl some systems have this in libc
 dnl Some old versions of lib(un)gif don't work for us, they've got the
 dnl Function argument in the wrong place. So two checks for gif.
 
+dnl Is there a better way to add a directory to the include path?
+
+CFLAGS="$CFLAGS -I/usr/include/freetype2/"
+
 AC_CHECK_LIB(ungif, DGifOpenFileName, [
 echo -n checking for ExtensionBlock.Function in gif_lib.h...
 AC_TRY_COMPILE([#include <gif_lib.h>], [ ExtensionBlock foo; foo.Function=3; ], echo " " yes , [echo " " no
@@ -38,6 +42,7 @@ AC_TRY_COMPILE([#include <gif_lib.h>], [ ExtensionBlock foo; foo.Function=3; ], 
 AC_CHECK_LIB(png, png_create_read_struct, : ,AC_DEFINE(_NO_LIBPNG), -lz -lm) 
 AC_CHECK_LIB(jpeg, jpeg_CreateDecompress, :  ,AC_DEFINE(_NO_LIBJPEG)) 
 AC_CHECK_LIB(tiff, TIFFOpen, : , AC_DEFINE(_NO_LIBTIFF), -lm )
+AC_CHECK_LIB(freetype, FT_New_Face, : ,AC_DEFINE(_NO_FREETYPE)) 
 
 dnl older libc's don't have snprintf
 

@@ -849,6 +849,47 @@ return( NULL );
 return( bdfc );
 }
 
+BDFFont *SplineFontToBDFHeader(SplineFont *_sf, int pixelsize, int indicate) {
+    BDFFont *bdf = gcalloc(1,sizeof(BDFFont));
+    int i;
+    real scale;
+    char csize[10]; unichar_t size[30];
+    unichar_t aa[200];
+    int max;
+    SplineFont *sf;	/* The complexity here is to pick the appropriate subfont of a CID font */
+
+    sf = _sf;
+    max = sf->charcnt;
+    for ( i=0; i<_sf->subfontcnt; ++i ) {
+	sf = _sf->subfonts[i];
+	if ( sf->charcnt>max ) max = sf->charcnt;
+    }
+    scale = pixelsize / (real) (sf->ascent+sf->descent);
+
+    if ( indicate ) {
+	sprintf(csize,"%d", pixelsize );
+	uc_strcpy(size,csize);
+	u_strcat(size,GStringGetResource(_STR_Pixels,NULL));
+	u_strcpy(aa,GStringGetResource(_STR_GenBitmap,NULL));
+	if ( sf->fontname!=NULL ) {
+	    uc_strcat(aa,": ");
+	    uc_strncat(aa,sf->fontname,sizeof(aa)/sizeof(aa[0])-u_strlen(aa));
+	    aa[sizeof(aa)/sizeof(aa[0])-1] = '\0';
+	}
+	GProgressStartIndicator(10,GStringGetResource(_STR_Rasterizing,NULL),
+		aa,size,sf->charcnt,1);
+	GProgressEnableStop(0);
+    }
+    bdf->sf = _sf;
+    bdf->charcnt = max;
+    bdf->pixelsize = pixelsize;
+    bdf->chars = galloc(max*sizeof(BDFChar *));
+    bdf->ascent = rint(sf->ascent*scale);
+    bdf->descent = pixelsize-bdf->ascent;
+    bdf->encoding_name = sf->encoding_name;
+return( bdf );
+}
+
 #if 0
 /* This code was an attempt to do better at rasterizing by making a big bitmap*/
 /*  and shrinking it down. It did make curved edges look better, but it made */
@@ -1071,44 +1112,12 @@ BDFFont *SplineFontRasterize(SplineFont *_sf, int pixelsize, int indicate, int s
 #else
 BDFFont *SplineFontRasterize(SplineFont *_sf, int pixelsize, int indicate) {
 #endif
-    BDFFont *bdf = gcalloc(1,sizeof(BDFFont));
+    BDFFont *bdf = SplineFontToBDFHeader(_sf,pixelsize,indicate);
     int i,k;
     real scale;
-    char csize[10]; unichar_t size[30];
-    unichar_t aa[200];
-    int max;
-    SplineFont *sf;	/* The complexity here is to pick the appropriate subfont of a CID font */
+    SplineFont *sf=_sf;	/* The complexity here is to pick the appropriate subfont of a CID font */
 
-    sf = _sf;
-    max = sf->charcnt;
-    for ( i=0; i<_sf->subfontcnt; ++i ) {
-	sf = _sf->subfonts[i];
-	if ( sf->charcnt>max ) max = sf->charcnt;
-    }
-    scale = pixelsize / (real) (sf->ascent+sf->descent);
-
-    if ( indicate ) {
-	sprintf(csize,"%d", pixelsize );
-	uc_strcpy(size,csize);
-	u_strcat(size,GStringGetResource(_STR_Pixels,NULL));
-	u_strcpy(aa,GStringGetResource(_STR_GenBitmap,NULL));
-	if ( sf->fontname!=NULL ) {
-	    uc_strcat(aa,": ");
-	    uc_strncat(aa,sf->fontname,sizeof(aa)/sizeof(aa[0])-u_strlen(aa));
-	    aa[sizeof(aa)/sizeof(aa[0])-1] = '\0';
-	}
-	GProgressStartIndicator(10,GStringGetResource(_STR_Rasterizing,NULL),
-		aa,size,sf->charcnt,1);
-	GProgressEnableStop(0);
-    }
-    bdf->sf = _sf;
-    bdf->charcnt = max;
-    bdf->pixelsize = pixelsize;
-    bdf->chars = galloc(max*sizeof(BDFChar *));
-    bdf->ascent = rint(sf->ascent*scale);
-    bdf->descent = pixelsize-bdf->ascent;
-    bdf->encoding_name = sf->encoding_name;
-    for ( i=0; i<max; ++i ) {
+    for ( i=0; i<bdf->charcnt; ++i ) {
 	if ( _sf->subfontcnt!=0 ) {
 	    for ( k=0; k<_sf->subfontcnt; ++k ) if ( _sf->subfonts[k]->charcnt>i ) {
 		sf = _sf->subfonts[k];

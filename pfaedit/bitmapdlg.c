@@ -29,6 +29,9 @@
 #include "ustring.h"
 #include <math.h>
 
+static int oldusefreetype=1;
+int oldsystem=0 /* X */;
+
 typedef struct createbitmapdata {
     unsigned int done: 1;
     FontView *fv;
@@ -122,9 +125,10 @@ static void SFRemoveUnwantedBitmaps(SplineFont *sf,real *sizes) {
     }
 }
 
-static void SFFigureBitmaps(SplineFont *sf,real *sizes) {
+static void SFFigureBitmaps(SplineFont *sf,real *sizes,int usefreetype) {
     BDFFont *bdf;
     int i, first;
+    void *freetypecontext = NULL;
 
     SFRemoveUnwantedBitmaps(sf,sizes);
 
@@ -132,12 +136,19 @@ static void SFFigureBitmaps(SplineFont *sf,real *sizes) {
     for ( i=0; sizes[i]!=0 ; ++i ) if ( sizes[i]>0 ) {
 	if ( first && autohint_before_rasterize )
 	    SplineFontAutoHint(sf);
-	bdf = SplineFontRasterize(sf,sizes[i],true);
+	if ( first && usefreetype )
+	    freetypecontext = FreeTypeFontContext(sf,NULL,true);
+	if ( freetypecontext )
+	    bdf = SplineFontFreeTypeRasterize(freetypecontext,sizes[i]);
+	else
+	    bdf = SplineFontRasterize(sf,sizes[i],true);
 	bdf->next = sf->bitmaps;
 	sf->bitmaps = bdf;
 	sf->changed = true;
 	first = false;
     }
+    if ( freetypecontext )
+	FreeTypeFreeContext(freetypecontext);
 
     /* Order the list */
     SFOrderBitmapList(sf);
@@ -167,21 +178,13 @@ static void FVScaleBitmaps(FontView *fv,real *sizes) {
     SFOrderBitmapList(fv->sf);
 }
 
-static void ReplaceBDFC(SplineFont *sf,real *sizes,int enc) {
+static void ReplaceBDFC(SplineFont *sf,real *sizes,int enc,void *freetypecontext) {
     BDFFont *bdf;
     BDFChar *bdfc, temp;
     int i;
     BitmapView *bv;
     int first=true;
 
-    if ( sf->subfontcnt!=0 ) {
-	for ( i=0; i<sf->subfontcnt; ++i )
-	    if ( enc<sf->subfonts[i]->charcnt &&
-		    SCWorthOutputting(sf->subfonts[i]->chars[enc]))
-	break;
-	if ( i<sf->subfontcnt )
-	    sf = sf->subfonts[i];
-    }
     if ( enc>=sf->charcnt || sf->chars[enc]==NULL )
 return;
 
@@ -193,7 +196,10 @@ return;
 		    !sf->chars[enc]->manualhints )
 		SplineCharAutoHint(sf->chars[enc],true);
 	    first = false;
-	    bdfc = SplineCharRasterize(sf->chars[enc],bdf->pixelsize);
+	    if ( freetypecontext )
+		bdfc = SplineCharFreeTypeRasterize(freetypecontext,enc,bdf->pixelsize);
+	    else
+		bdfc = SplineCharRasterize(sf->chars[enc],bdf->pixelsize);
 	    if ( bdf->chars[enc]==NULL )
 		bdf->chars[enc] = bdfc;
 	    else {
@@ -212,11 +218,12 @@ return;
     }
 }
 
-static int FVRegenBitmaps(CreateBitmapData *bd,real *sizes) {
+static int FVRegenBitmaps(CreateBitmapData *bd,real *sizes,int usefreetype) {
     FontView *fv = bd->fv;
-    SplineFont *sf = bd->sf;
-    int i,max;
+    SplineFont *sf = bd->sf, *subsf;
+    int i,j;
     BDFFont *bdf;
+    void *freetypecontext=NULL;
 
     for ( i=0; sizes[i]!=0; ++i ) {
 	for ( bdf = sf->bitmaps; bdf!=NULL && bdf->pixelsize!=sizes[i]; bdf=bdf->next );
@@ -230,17 +237,39 @@ static int FVRegenBitmaps(CreateBitmapData *bd,real *sizes) {
 return( false );
 	}
     }
-    if ( bd->which==bd_current && bd->sc!=NULL )
-	ReplaceBDFC(sf,sizes,bd->sc->enc);
-    else {
-	max = sf->charcnt;
-	if ( sf->subfontcnt!=0 )
-	    for ( i=0; i<sf->subfontcnt; ++i )
-		if ( sf->subfonts[i]->charcnt>max )
-		    max = sf->subfonts[i]->charcnt;
-	for ( i=0; i<max; ++i )
-	    if ( fv->selected[i] || bd->which == bd_all ) {
-		ReplaceBDFC(sf,sizes,i);
+    if ( bd->which==bd_current && bd->sc!=NULL ) {
+	if ( usefreetype )
+	    freetypecontext = FreeTypeFontContext(bd->sc->parent,bd->sc,false);
+	ReplaceBDFC(bd->sc->parent,sizes,bd->sc->enc,freetypecontext);
+	if ( freetypecontext )
+	    FreeTypeFreeContext(freetypecontext);
+    } else {
+	if ( sf->subfontcnt!=0 ) {
+	    for ( j=0 ; j<sf->subfontcnt; ++j ) {
+		subsf = sf->subfonts[j];
+		for ( i=0; i<subsf->charcnt; ++i ) {
+		    if (( fv->selected[i] || bd->which == bd_all ) &&
+			    SCWorthOutputting(subsf->chars[i])) {
+			if ( usefreetype && freetypecontext==NULL )
+			    freetypecontext = FreeTypeFontContext(subsf,NULL,false);
+			ReplaceBDFC(subsf,sizes,i,freetypecontext);
+		    }
+		}
+		if ( freetypecontext )
+		    FreeTypeFreeContext(freetypecontext);
+		freetypecontext = NULL;
+	    }
+	} else {
+	    for ( i=0; i<sf->charcnt; ++i ) {
+		if ( fv->selected[i] || bd->which == bd_all ) {
+		    if ( usefreetype && freetypecontext==NULL )
+			freetypecontext = FreeTypeFontContext(sf,NULL,false);
+		    ReplaceBDFC(sf,sizes,i,freetypecontext);
+		}
+	    }
+	    if ( freetypecontext )
+		FreeTypeFreeContext(freetypecontext);
+	    freetypecontext = NULL;
 	}
     }
     sf->changed = true;
@@ -261,6 +290,7 @@ return( true );
 #define CID_X		1007
 #define CID_Win		1008
 #define CID_Mac		1009
+#define CID_FreeType	1010
 
 static int GetSystem(GWindow gw) {
     if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_X)) )
@@ -327,19 +357,22 @@ static int CB_OK(GGadget *g, GEvent *e) {
 	real *sizes = ParseList(bd->gw, CID_Pixel,&err, true);
 	if ( err )
 return( true );
+	oldusefreetype = GGadgetIsChecked(GWidgetGetControl(bd->gw,CID_FreeType));
+	oldsystem = GetSystem(bd->gw)-CID_X;
 	bd->done = true;
 	if ( bd->isavail && bd->fv->sf->onlybitmaps && bd->fv->sf->bitmaps!=NULL )
 	    FVScaleBitmaps(bd->fv,sizes);
 	else if ( bd->isavail )
-	    SFFigureBitmaps(bd->sf,sizes);
+	    SFFigureBitmaps(bd->sf,sizes,oldusefreetype);
 	else {
 	    bd->which = GGadgetGetFirstListSelectedItem(GWidgetGetControl(bd->gw,CID_Which));
-	    if ( !FVRegenBitmaps(bd,sizes))
+	    if ( !FVRegenBitmaps(bd,sizes,oldusefreetype))
 		bd->done = false;
 	    else
 		lastwhich = bd->which;
 	}
 	free(sizes);
+	SavePrefs();
     }
 return( true );
 }
@@ -479,7 +512,7 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     wattrs.is_dlg = true;
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,190));
-    pos.height = GDrawPointsToPixels(NULL,228);
+    pos.height = GDrawPointsToPixels(NULL,252);
     bd.gw = GDrawCreateTopWindow(NULL,&pos,bd_e_h,&bd,&wattrs);
 
     memset(&label,0,sizeof(label));
@@ -536,7 +569,7 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     label[j].text_in_resource = true;
     gcd[j].gd.label = &label[j];
     gcd[j].gd.pos.x = 10; gcd[j].gd.pos.y = y;
-    gcd[j].gd.flags = gg_enabled|gg_visible|gg_cb_on;
+    gcd[j].gd.flags = gg_enabled|gg_visible;
     gcd[j].gd.cid = CID_X;
     gcd[j].gd.handle_controlevent = CB_SystemChange;
     gcd[j++].creator = GRadioCreate;
@@ -559,6 +592,7 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     gcd[j].gd.handle_controlevent = CB_SystemChange;
     gcd[j++].creator = GRadioCreate;
     y += 26;
+    gcd[j-3+oldsystem].gd.flags |= gg_cb_on;
 
     label[j].text = (unichar_t *) _STR_PointSizes75;
     label[j].text_in_resource = true;
@@ -569,7 +603,7 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     gcd[j++].creator = GLabelCreate;
     y += 13;
 
-    label[j].text = GenText(sizes,72./75.);
+    label[j].text = GenText(sizes,oldsystem==0?72./75.:oldsystem==1?72/96.:1.);
     gcd[j].gd.label = &label[j];
     gcd[j].gd.pos.x = 15; gcd[j].gd.pos.y = y;
     gcd[j].gd.pos.width = 170;
@@ -588,11 +622,13 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     gcd[j++].creator = GLabelCreate;
     y += 13;
 
-    label[j].text = GenText(sizes,72./100.);
+    label[j].text = GenText(sizes,oldsystem==1?72./120.:72/100.);
     gcd[j].gd.label = &label[j];
     gcd[j].gd.pos.x = 15; gcd[j].gd.pos.y = y;
     gcd[j].gd.pos.width = 170;
     gcd[j].gd.flags = gg_enabled|gg_visible;
+    if ( oldsystem==2 )
+	gcd[j].gd.flags = gg_visible;
     gcd[j].gd.cid = CID_100;
     gcd[j].gd.handle_controlevent = CB_TextChange;
     gcd[j++].creator = GTextFieldCreate;
@@ -616,13 +652,28 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     gcd[j++].creator = GTextFieldCreate;
     y += 26;
 
+    label[j].text = (unichar_t *) _STR_UseFreeType;
+    label[j].text_in_resource = true;
+    gcd[j].gd.label = &label[j];
+    gcd[j].gd.pos.x = 10; gcd[j].gd.pos.y = y;
+    if ( !hasFreeType() || bd.sf->onlybitmaps)
+	gcd[j].gd.flags = gg_visible;
+    else if ( oldusefreetype )
+	gcd[j].gd.flags = gg_enabled|gg_visible|gg_cb_on;
+    else
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+    gcd[j].gd.cid = CID_FreeType;
+    gcd[j].gd.handle_controlevent = CB_SystemChange;
+    gcd[j++].creator = GCheckBoxCreate;
+    y += 26;
+
     gcd[j].gd.pos.x = 2; gcd[j].gd.pos.y = 2;
     gcd[j].gd.pos.width = pos.width-4;
     gcd[j].gd.pos.height = pos.height-4;
     gcd[j].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels;
     gcd[j++].creator = GGroupCreate;
 
-    gcd[j].gd.pos.x = 20-3; gcd[j].gd.pos.y = 228-32-3;
+    gcd[j].gd.pos.x = 20-3; gcd[j].gd.pos.y = 252-32-3;
     gcd[j].gd.pos.width = -1; gcd[j].gd.pos.height = 0;
     gcd[j].gd.flags = gg_visible | gg_enabled | gg_but_default;
     label[j].text = (unichar_t *) _STR_OK;
@@ -632,7 +683,7 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     gcd[j].gd.handle_controlevent = CB_OK;
     gcd[j++].creator = GButtonCreate;
 
-    gcd[j].gd.pos.x = -20; gcd[j].gd.pos.y = 228-32;
+    gcd[j].gd.pos.x = -20; gcd[j].gd.pos.y = 252-32;
     gcd[j].gd.pos.width = -1; gcd[j].gd.pos.height = 0;
     gcd[j].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
     label[j].text = (unichar_t *) _STR_Cancel;

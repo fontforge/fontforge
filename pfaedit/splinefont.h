@@ -589,6 +589,7 @@ extern void BCRegularizeGreymap(BDFChar *bdfc);
 extern void BCPasteInto(BDFChar *bc,BDFChar *rbc,int ixoff,int iyoff, int invert, int cleartoo);
 extern void BCRotateCharForVert(BDFChar *bc,BDFChar *from, BDFFont *frombdf);
 extern BDFChar *SplineCharRasterize(SplineChar *sc, int pixelsize);
+extern BDFFont *SplineFontToBDFHeader(SplineFont *_sf, int pixelsize, int indicate);
 extern BDFFont *SplineFontRasterize(SplineFont *sf, int pixelsize, int indicate);
 extern BDFChar *SplineCharAntiAlias(SplineChar *sc, int pixelsize,int linear_scale);
 extern BDFFont *SplineFontAntiAlias(SplineFont *sf, int pixelsize,int linear_scale);
@@ -764,6 +765,12 @@ void putfixed(FILE *file,real dval);
 int ttfcopyfile(FILE *ttf, FILE *other, int pos);
 
 extern void SCCopyFgToBg(SplineChar *sc,int show);
+
+int hasFreeType(void);
+void *FreeTypeFontContext(SplineFont *sf,SplineChar *sc,int doall);
+BDFFont *SplineFontFreeTypeRasterize(void *freetypecontext,int pixelsize);
+BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int enc,int pixelsize);
+void FreeTypeFreeContext(void *freetypecontext);
 
 # if HANYANG
 extern void SFDDumpCompositionRules(FILE *sfd,struct compositionrules *rules);

@@ -123,10 +123,10 @@ This menu is not present in the Metrics View.
     <A NAME="Bitmaps">Bitmaps</A> Available...
   <DD>
     This brings up a list of pixel sizes for bitmap fonts.<BR>
-    <IMG SRC="bitmapsavail.png" WIDTH="263" HEIGHT="333"><BR>
-    If you have bitmap fonts this will show their pixel sizes. If you remove
-    a size that is in the list then that font will be deleted from the sfd file.
-    If you add a size then that size font will be created and stored in the sfd
+    <IMG SRC="bitmapsavail.png" WIDTH="263" HEIGHT="366" ALIGN="Right"> If you
+    have bitmap fonts this will show their pixel sizes. If you remove a size
+    that is in the list then that font will be deleted from the sfd file. If
+    you add a size then that size font will be created and stored in the sfd
     file.
     <P>
     PfaEdit deals in pixel sizes, not point sizes. The conversion between pixels
@@ -193,9 +193,15 @@ This menu is not present in the Metrics View.
     and on the Mac 72dpi. This dialog provides the conversion between pixel size
     and point sizes at these resolutions.
     <P>
-    Normally the new characters are created by rasterizing the outline font,
-    but if you are only editing bitmaps (with no outline font) then the new
-    characters will be created by scaling the font displayed in the font view.<BR>
+    Normally the new characters are created by rasterizing the outline font.
+    If your system has the freetype2 library installed (and you checked the "Use
+    FreeType" box) then PfaEdit will use the FreeType rasterizer to generate
+    bitmaps, otherwise it will use PfaEdit's built-in rasterizer (which isn't
+    as good, but involves a little less overhead).
+    <P>
+    Finally, if you have no outline font then the new characters will be created
+    by scaling the (bitmap) font displayed in the font view.
+    <P>
     In CID keyed fonts there will not be a set of bitmaps for each sub font,
     instead the entire complex of sub-fonts share bitmaps.
   <DT>

@@ -116,9 +116,9 @@ If you want to edit CID keyed fonts you probably need these
 <P>
 You can download a <A HREF="pfaedit-020208-1.src.rpm">source RPM</A>: Version:
 8-Feb-2002<BR>
-Or you can download the <A HREF="pfaedit_full-020208.tgz">entire source tree
+Or you can download the <A HREF="pfaedit_full-020209.tgz">entire source tree
 </A>in one .tgz file: Version
-8-Feb-2002<!--
+9-Feb-2002<!--
 Or you can download the following three packages. Version: 19-Jan-2002
 <UL>
 <LI>
@@ -266,6 +266,17 @@ Or you can just browse the <A HREF="overview.html">docs online</A>.
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    9-Feb-2002
+    <UL>
+      <LI>
+	PfaEdit will now use freetype (if available) to generate bitmaps for the
+	fonts (results are much better).<BR>
+	It still does its own rasterizing for the fontview (there's a lot of overhead
+	involved with freetype, and this needs to be fastish)
+      <LI>
+	Made the Generate Font dlg settings sticky across invocations of pfaedit.
+    </UL>
   <LI>
     8-Feb-2002
     <UL>
