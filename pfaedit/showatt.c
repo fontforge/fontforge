@@ -664,18 +664,18 @@ static void BuildTop(struct att_dlg *att) {
 	tables = gcalloc((hasgsub||hasgpos)+(hasmorx||haskern)+1,sizeof(struct node));
 	i=0;
 	if ( hasgsub || hasgpos ) {
-	    tables[i].label = uc_copy("OTF");
+	    tables[i].label = uc_copy("OpenType Tables");
 	    tables[i].children_checked = true;
 	    tables[i].children = gcalloc(hasgsub+hasgpos+1,sizeof(struct node));
 	    tables[i].cnt = hasgsub + hasgpos;
 	    if ( hasgsub ) {
-		tables[i].children[0].label = uc_copy("GSUB");
+		tables[i].children[0].label = uc_copy("'GSUB' Glyph Substitution Table");
 		tables[i].children[0].tag = CHR('G','S','U','B');
 		tables[i].children[0].build = BuildTable;
 		tables[i].children[0].parent = &tables[i];
 	    }
 	    if ( hasgpos ) {
-		tables[i].children[hasgsub].label = uc_copy("GPOS");
+		tables[i].children[hasgsub].label = uc_copy("'GPOS' Glyph Positioning Table");
 		tables[i].children[hasgsub].tag = CHR('G','P','O','S');
 		tables[i].children[hasgsub].build = BuildTable;
 		tables[i].children[hasgsub].parent = &tables[i];
@@ -688,13 +688,13 @@ static void BuildTop(struct att_dlg *att) {
 	    tables[i].children = gcalloc(hasmorx+haskern+1,sizeof(struct node));
 	    tables[i].cnt = hasmorx+haskern;
 	    if ( hasmorx ) {
-		tables[i].children[0].label = uc_copy("GSUB");
+		tables[i].children[0].label = uc_copy("'morx' Glyph Extended Metamorphasis Table");
 		tables[i].children[0].tag = CHR('m','o','r','x');
 		tables[i].children[0].build = BuildTable;
 		tables[i].children[0].parent = &tables[i];
 	    }
 	    if ( haskern ) {
-		tables[i].children[hasmorx].label = uc_copy("kern");
+		tables[i].children[hasmorx].label = uc_copy("'kern' Horizontal Kerning Table");
 		tables[i].children[hasmorx].tag = CHR('k','e','r','n');
 		tables[i].children[hasmorx].build = BuildTable;
 		tables[i].children[hasmorx].parent = &tables[i];
