@@ -7154,12 +7154,7 @@ int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
     }
     if ( initTables(&at,sf,format,bsizes,bf,flags))
 	dumpttf(ttf,&at,format);
-    else
-	at.error = true;
     setlocale(LC_NUMERIC,oldloc);
-    if ( at.error ) {
-	GDrawIError("Failed to save in TTF/OTF format");
-    }
     if ( at.error || ferror(ttf))
 return( 0 );
 
