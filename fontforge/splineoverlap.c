@@ -304,7 +304,7 @@ static void AddSpline(Intersection *il,Monotonic *m,double t) {
     MList *ml;
 
     for ( ml=il->monos; ml!=NULL; ml=ml->next ) {
-	if ( ml->s==m->s && RealNear( ml->t,t ))
+	if ( ml->s==m->s && RealWithin( ml->t,t,.0001 ))
 return;
     }
 
@@ -433,7 +433,7 @@ return( t );
 	bound = m->tend;
 	SetEndPoint(&end,m);
     }
-    if ( BpSame(&end,inter) || RealWithin(t,bound,.001)) {
+    if ( BpSame(&end,inter) || RealWithin(t,bound,.00001)) {
 	*inter = end;
 return( bound );
     }
@@ -498,7 +498,7 @@ static Intersection *FindMonotonicIntersection(Intersection *ilist,Monotonic *m1
     /*  so we can't just check if the splines are on oposite sides of each */
     /*  other at top and bottom */
     DBounds b;
-    const double error = .001;
+    const double error = .0001;
     BasePoint pt;
     double t1,t2;
 
@@ -750,7 +750,7 @@ return( -1 );
 /*  end-points and nowhere else */
 static int CoincidentIntersect(Monotonic *m1,Monotonic *m2,BasePoint *pts,
 	double *t1s,double *t2s) {
-    const double error = .001;
+    const double error = .0001;
     int cnt=0;
     double t, t2, diff;
 
@@ -1080,10 +1080,18 @@ int MonotonicFindAt(Monotonic *ms,int which, double test, Monotonic **space ) {
     for ( m=ms, i=0; m!=NULL; m=m->linked ) {
 	if (( which==0 && test >= m->b.minx && test <= m->b.maxx ) ||
 		( which==1 && test >= m->b.miny && test <= m->b.maxy )) {
+	    /* Lines parallel to the direction we are testing just get in the */
+	    /*  way and don't add any useful info */
+	    if ( m->s->knownlinear &&
+		    (( which==1 && m->s->from->me.y==m->s->to->me.y ) ||
+			(which==0 && m->s->from->me.x==m->s->to->me.x)))
+    continue;
 	    t = BoundIterateSplineSolve(&m->s->splines[which],m->tstart,m->tend,test,error);
 	    if ( t==-1 )
     continue;
 	    m->t = t;
+	    if ( t==m->tend ) t -= (m->tend-m->tstart)/100;
+	    else if ( t==m->tstart ) t += (m->tend-m->tstart)/100;
 	    m->other = ((m->s->splines[nw].a*t+m->s->splines[nw].b)*t+
 		    m->s->splines[nw].c)*t+m->s->splines[nw].d;
 	    space[i++] = m;
@@ -1130,8 +1138,6 @@ int MonotonicFindAt(Monotonic *ms,int which, double test, Monotonic **space ) {
 		if ( i>j ) --i;
 	    }
 	}
-	if ( t==m->tend ) t -= (m->tend-m->tstart)/100;
-	else if ( t==m->tstart ) t += (m->tend-m->tstart)/100;
     }
 
     space[cnt] = NULL; space[cnt+1] = NULL;
