@@ -1794,7 +1794,7 @@ return;		/* It already has a kern==0 with everything */
 	else if ( kp!=NULL )
 	    kp->off = kern;
 	else {
-	    kp = gcalloc(1,sizeof(KernPair));
+	    kp = chunkalloc(sizeof(KernPair));
 	    kp->next = sc1->kerns;
 	    sc1->kerns = kp;
 	    kp->sc = sc2;

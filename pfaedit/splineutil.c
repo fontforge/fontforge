@@ -2613,7 +2613,7 @@ void KernPairsFree(KernPair *kp) {
     KernPair *knext;
     for ( ; kp!=NULL; kp = knext ) {
 	knext = kp->next;
-	free(kp);
+	chunkfree(kp,sizeof(KernPair));
     }
 }
 

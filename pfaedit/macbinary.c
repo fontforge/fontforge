@@ -2336,7 +2336,7 @@ return( NULL );
 	    if ( kp->sc==sc2 )
 	break;
 	if ( kp==NULL ) {
-	    kp = galloc(sizeof(KernPair));
+	    kp = chunkalloc(sizeof(KernPair));
 	    kp->sc = sc2;
 	    kp->next = sc1->kerns;
 	    sc1->kerns = kp;

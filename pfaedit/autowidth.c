@@ -391,7 +391,7 @@ static void AutoKern(WidthInfo *wi) {
 		wi->sf->changed = true;
 	    }
 	} else if ( diff!=0 ) {
-	    kp = gcalloc(1,sizeof(KernPair));
+	    kp = chunkalloc(sizeof(KernPair));
 	    kp->sc = rsc;
 	    kp->off = diff;
 	    kp->next = lsc->kerns;
@@ -1040,7 +1040,7 @@ return;
 		    sf->chars[i]->kerns = next;
 		else
 		    prev->next = next;
-		free(kp);
+		chunkfree(kp,sizeof(KernPair));
 	    }
 	}
     }

@@ -1451,7 +1451,7 @@ return( NULL );
 	    KernPair *kp, *last=NULL;
 	    int index, off;
 	    while ( fscanf(sfd,"%d %d", &index, &off )==2 ) {
-		kp = galloc(sizeof(KernPair));
+		kp = chunkalloc(sizeof(KernPair));
 		kp->sc = (SplineChar *) index;
 		kp->off = off;
 		kp->next = NULL;
@@ -1634,7 +1634,7 @@ static void SFDFixupRefs(SplineFont *sf) {
 		    sf->chars[(int) (kp->sc)]->kerns = next;
 		else
 		    prev->next = next;
-		free(kp);
+		chunkfree(kp,sizeof(KernPair));
 	    }
 	}
     }

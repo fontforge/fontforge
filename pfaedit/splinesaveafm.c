@@ -73,7 +73,7 @@ static void KPInsert( SplineChar *sc1, SplineChar *sc2, int off ) {
 	if ( kp!=NULL )
 	    kp->off = off;
 	else if ( off!=0 ) {
-	    kp = gcalloc(1,sizeof(KernPair));
+	    kp = chunkalloc(sizeof(KernPair));
 	    kp->sc = sc2;
 	    kp->off = off;
 	    kp->next = sc1->kerns;

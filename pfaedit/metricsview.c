@@ -525,7 +525,7 @@ return( true );
 	else {
 	    for ( kp = psc->kerns; kp!=NULL && kp->sc!=sc; kp = kp->next );
 	    if ( kp==NULL ) {
-		kp = galloc(sizeof(KernPair));
+		kp = chunkalloc(sizeof(KernPair));
 		kp->sc = sc;
 		kp->off = val;
 		kp->next = psc->kerns;
@@ -2278,7 +2278,7 @@ return;
 		KernPair *kp;
 		for ( kp = mv->perchar[i-1].sc->kerns; kp!=NULL && kp->sc!=mv->perchar[i].sc; kp = kp->next );
 		if ( kp==NULL ) {
-		    kp = gcalloc(1,sizeof(KernPair));
+		    kp = chunkalloc(sizeof(KernPair));
 		    kp->sc = mv->perchar[i].sc;
 		    kp->next = mv->perchar[i-1].sc->kerns;
 		    mv->perchar[i-1].sc->kerns = kp;

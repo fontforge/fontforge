@@ -3331,7 +3331,7 @@ static void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 		right = getushort(ttf);
 		offset = (short) getushort(ttf);
 		if ( left<info->glyph_cnt && right<info->glyph_cnt ) {
-		    kp = gcalloc(1,sizeof(KernPair));
+		    kp = chunkalloc(sizeof(KernPair));
 		    kp->sc = info->chars[right];
 		    kp->off = offset;
 		    kp->next = info->chars[left]->kerns;
@@ -3436,7 +3436,7 @@ static void addKernPair(struct ttfinfo *info, int glyph1, int glyph2, int16 offs
 	    if ( kp->sc == info->chars[glyph2] )
 	break;
 	if ( kp==NULL ) {
-	    kp = gcalloc(1,sizeof(KernPair));
+	    kp = chunkalloc(sizeof(KernPair));
 	    kp->sc = info->chars[glyph2];
 	    kp->off = offset;
 	    kp->next = info->chars[glyph1]->kerns;

@@ -83,7 +83,7 @@ static KernPair *KernsCopy(KernPair *kp,int *mapping,SplineFont *into,SplineFont
     while ( kp!=NULL ) {
 	if ( (index=mapping[kp->sc->enc])>=0 && index<into->charcnt &&
 		into->chars[index]!=NULL ) {
-	    new = gcalloc(1,sizeof(KernPair));
+	    new = chunkalloc(sizeof(KernPair));
 	    new->off = kp->off;
 	    new->sc = into->chars[index];
 	    if ( head==NULL )
@@ -877,7 +877,7 @@ return( NULL );
 	for ( k=kp2; k!=NULL && k->sc->enc!=kp1->sc->enc; k=k->next );
 	if ( k!=NULL ) {
 	    if ( k==kp2 ) kp2 = kp2->next;
-	    nkp = gcalloc(1,sizeof(KernPair));
+	    nkp = chunkalloc(sizeof(KernPair));
 	    nkp->sc = new->chars[k->sc->enc];
 	    nkp->off = kp1->off + amount*(k->off-kp1->off);
 	    if ( head==NULL )
