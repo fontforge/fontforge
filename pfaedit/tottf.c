@@ -1802,7 +1802,8 @@ static void dumpcfftopdict(SplineFont *sf,struct alltabs *at) {
 	dumpint(cfff,0);
 	dumpintoper(cfff,0,(12<<8)|7);
     }
-    dumpintoper(cfff, sf->uniqueid?sf->uniqueid:4000000 + (rand()&0x3ffff), 13 );
+    if ( sf->uniqueid!=-1 )
+	dumpintoper(cfff, sf->uniqueid?sf->uniqueid:4000000 + (rand()&0x3ffff), 13 );
     SplineFontFindBounds(sf,&b);
     at->gi.xmin = b.minx;
     at->gi.ymin = b.miny;

@@ -666,7 +666,7 @@ return( false );
 	dumpf(dumpchar,data,"/ForceBold true def\n" );
     if ( !haslg && iscjk ) 
 	dumpf(dumpchar,data,"/LanguageGroup 1 def\n" );
-    if ( sf->tempuniqueid!=0 )
+    if ( sf->tempuniqueid!=0 && sf->tempuniqueid!=-1 )
 	dumpf(dumpchar,data,"/UniqueID %d def\n", sf->tempuniqueid );
     if ( sf->private!=NULL ) {
 	for ( i=0; i<sf->private->next; ++i ) {
@@ -821,7 +821,7 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
     ++cnt;		/* fontinfo */
     ++cnt;		/* encoding */
     ++cnt;		/* fontbb */
-    ++cnt;		/* uniqueid */
+    if ( sf->uniqueid!=-1 ) ++cnt;
     ++cnt;		/* painttype */
     if ( format==ff_ptype3 ) {
 	++cnt;		/* charprocs */
@@ -839,7 +839,7 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
 	uniqueid = sf->uniqueid ;
     sf->tempuniqueid = uniqueid;
 
-    if ( format!=ff_ptype3 ) {
+    if ( format!=ff_ptype3 && uniqueid!=-1 ) {
 	dumpf(dumpchar,data,"FontDirectory/%s known{/%s findfont dup/UniqueID known{dup\n", sf->fontname, sf->fontname);
 	dumpf(dumpchar,data,"/UniqueID get %d eq exch/FontType get 1 eq and}{pop false}ifelse\n", uniqueid );
 	dumpf(dumpchar,data,"{save true}{false}ifelse}{false}ifelse\n" );
@@ -858,7 +858,8 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
     fm[2] = ceil( b.maxx);
     fm[3] = ceil( b.maxy);
     dumpdblarray(dumpchar,data,"FontBBox",fm,4,"readonly ");
-    dumpf(dumpchar,data,"/UniqueID %d def\n", uniqueid );
+    if ( uniqueid!=-1 )
+	dumpf(dumpchar,data,"/UniqueID %d def\n", uniqueid );
     if ( sf->xuid!=NULL ) {
 	dumpf(dumpchar,data,"/XUID %s def\n", sf->xuid );
 	if ( sf->changed_since_xuidchanged )
