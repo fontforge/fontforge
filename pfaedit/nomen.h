@@ -569,6 +569,18 @@
 #define _STR_MetaFont	555
 #define _STR_CounterTooSmallT	556
 #define _STR_CounterTooSmall	557
+#define _STR_Simple	558
+#define _STR_Advanced	559
+#define _STR_Embolden	560
+#define _STR_Condense	561
+#define _STR_Expand	562
+#define _STR_Stems	563
+#define _STR_HCounters	564
+#define _STR_VCounters	565
+#define _STR_StemScale	566
+#define _STR_CounterScale	567
+#define _STR_XHeightFrom	568
+#define _STR_To	569
 
 
 

@@ -891,12 +891,12 @@ static GWindow CharIcon(CharView *cv, FontView *fv) {
 	cv->icon = icon = GDrawCreateBitmap(NULL,r.width,r.width,NULL);
     GDrawFillRect(icon,&r,0x0);		/* for some reason icons seem to be color reversed by my defn */
 
-    bdfc = NULL;
+    bdf = NULL; bdfc = NULL;
     if ( sc->refs!=NULL || sc->splines!=NULL ) {
-	bdfc = fv->show->chars[sc->enc];
-	if ( bdfc==NULL || bdfc->byte_data )
-	    bdfc = fv->filled->chars[sc->enc];
-	if ( bdfc==NULL || bdfc->byte_data ) {
+	bdf = fv->show;
+	if ( bdf->chars[sc->enc]==NULL )
+	    bdf = fv->filled;
+	if ( bdf->chars[sc->enc]==NULL ) {
 	    bdf2 = NULL; bdfc = NULL;
 	    for ( bdf=fv->sf->bitmaps; bdf!=NULL && bdf->pixelsize<24 ; bdf=bdf->next )
 		bdf2 = bdf;
@@ -905,12 +905,12 @@ static GWindow CharIcon(CharView *cv, FontView *fv) {
 		    bdf = bdf2;
 	    } else if ( bdf==NULL )
 		bdf = bdf2;
-	    if ( bdf!=NULL )
-		bdfc = bdf->chars[sc->enc];
 	}
+	if ( bdf!=NULL )
+	    bdfc = bdf->chars[sc->enc];
     }
 
-    if (( sc->refs!=NULL || sc->splines!=NULL ) && bdfc!=NULL ) {
+    if ( bdfc!=NULL ) {
 	GClut clut;
 	struct _GImage base;
 	GImage gi;
@@ -920,10 +920,21 @@ static GWindow CharIcon(CharView *cv, FontView *fv) {
 	memset(&base,'\0',sizeof(base));
 	memset(&clut,'\0',sizeof(clut));
 	gi.u.image = &base;
-	base.image_type = it_mono;
+	base.trans = -1;
 	base.clut = &clut;
-	clut.clut_len = 2;
-	clut.clut[1] = 0xffffff;
+	if ( bdfc->byte_data ) { int i;
+	    base.image_type = it_index;
+	    clut.clut_len = bdf->clut->clut_len;
+	    for ( i=0; i<clut.clut_len; ++i ) {
+		int v = 255-i*255/(clut.clut_len-1);
+		clut.clut[i] = COLOR_CREATE(v,v,v);
+	    }
+	    clut.trans_index = -1;
+	} else {
+	    base.image_type = it_mono;
+	    clut.clut_len = 2;
+	    clut.clut[1] = 0xffffff;
+	}
 	base.data = bdfc->bitmap;
 	base.bytes_per_line = bdfc->bytes_per_line;
 	base.width = bdfc->xmax-bdfc->xmin+1;
@@ -1549,6 +1560,7 @@ void CVSetCharChanged(CharView *cv,int changed) {
 }
 
 void SCCharChangedUpdate(SplineChar *sc,FontView *fv) {
+    if ( fv==NULL ) fv = sc->views->fv;
     sc->changed_since_autosave = true;
     if ( !sc->changed ) {
 	sc->changed = true;
@@ -2215,6 +2227,7 @@ return( true );
 #define MID_BuildAccent	2208
 #define MID_Autotrace	2212
 #define MID_Round	2213
+#define MID_MetaFont	2217
 #define MID_Corner	2301
 #define MID_Tangent	2302
 #define MID_Curve	2303
@@ -2323,12 +2336,10 @@ static void CVMenuFindProblems(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FindProblems(NULL,cv);
 }
 
-#if TESTING
 static void CVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     MetaFont(NULL,cv);
 }
-#endif
 
 static void CVMenuScale(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
@@ -3088,6 +3099,9 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = !anypoints;
 	    mi->ti.checked = dir==0;
 	  break;
+	  case MID_MetaFont:
+	    mi->ti.disabled = cv->drawmode!=dm_fore || cv->sc->refs!=NULL;
+	  break;
 	  case MID_Stroke: case MID_RmOverlap:
 	    mi->ti.disabled = ( *cv->heads[cv->drawmode]==NULL );
 	  break;
@@ -3391,9 +3405,7 @@ static GMenuItem ellist[] = {
     { { (unichar_t *) _STR_Rmoverlap, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'v' }, 'O', ksm_control|ksm_shift, NULL, NULL, CVMenuOverlap, MID_RmOverlap },
     { { (unichar_t *) _STR_Simplify, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, 'M', ksm_control|ksm_shift, NULL, NULL, CVMenuSimplify, MID_Simplify },
     { { (unichar_t *) _STR_Round2int, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '_', ksm_control|ksm_shift, NULL, NULL, CVMenuRound2Int, MID_Round },
-#if TESTING
-    { { (unichar_t *) _STR_MetaFont, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, '\0', ksm_control, NULL, NULL, CVMenuMetaFont },
-#endif
+    { { (unichar_t *) _STR_MetaFont, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, '!', ksm_control|ksm_shift, NULL, NULL, CVMenuMetaFont, MID_MetaFont },
     { { (unichar_t *) _STR_Autotrace, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'r' }, 'T', ksm_control|ksm_shift, NULL, NULL, CVMenuAutotrace, MID_Autotrace },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Clockwise, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'o' }, '\0', 0, NULL, NULL, CVMenuDir, MID_Clockwise },

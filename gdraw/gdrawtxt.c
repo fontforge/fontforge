@@ -2156,11 +2156,11 @@ return( 1 );
 
 /* Figure out the proper text ordering */
 /* This routine must be called for each paragraph as a whole */
-void GDrawBiText1(GBiText *bd, unichar_t *text, int32 cnt) {
+void GDrawBiText1(GBiText *bd, const unichar_t *text, int32 cnt) {
     int level=0, override=0;
     int levels[16], overrides[16];
     int stat=0;
-    unichar_t *pt=text, *end = text+cnt, ch;
+    const unichar_t *pt=text, *end = text+cnt; unichar_t ch;
     int pos;
 
     /* handle overrides and embeddings */
@@ -2202,7 +2202,7 @@ void GDrawBiText1(GBiText *bd, unichar_t *text, int32 cnt) {
 	    bd->level[pos] = level;
 	    bd->override[pos] = override;
 	    bd->type[pos] = ____utype[ch+1];
-	    bd->original[pos] = pt;
+	    bd->original[pos] = (unichar_t *) pt;
 	    if ( ch>=0x621 && ch<=0x6ff )
 		bd->interpret_arabic = true;
 	    ++pos;

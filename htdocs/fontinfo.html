@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 8-Jul-2001 -->
+  <!-- AP: Last modified: 10-Jul-2001 -->
   <TITLE>Font Info</TITLE>
 </HEAD>
 <BODY>
@@ -255,8 +255,7 @@ If you have set the XUID preference entry then PfaEdit will assign values
 to all new fonts (by appending a number unique to this font to the end of
 your preference item). Adobe recommends that the XUID be changed every time
 the font is changed, so each time you generate a postscript font, that font's
-XUID (if present) will be incremented by 1.
-<BR Clear=ALL>
+XUID (if present) will be incremented by 1. <BR Clear=ALL>
 <H2>
   <A NAME="Private">Private</A> -- <SMALL>(font-wide postscript hinting)</SMALL>
 </H2>
@@ -295,8 +294,8 @@ would also guess the value of <CODE>OtherBlues</CODE>.
 You may also delete an entry from the dictionary with the <CODE>[Remove]
 </CODE>button. Some entries (such as <CODE>BlueValues</CODE>) are required
 to be present in any type1 font, but you may still delete them. PfaEdit will
-simply guess at a reasonable value when it needs to generate the font.<BR
-Clear=Right>
+simply guess at a reasonable value when it needs to generate the
+font.<BR Clear=Right>
 <P>
 <IMG SRC="privatekey.png" WIDTH="208" HEIGHT="146" ALIGN="Left"><IMG SRC="privatekeymenu.png"
     WIDTH="208" HEIGHT="202" ALIGN="Right">The <CODE>[Add]</CODE> button allows
@@ -452,6 +451,82 @@ and an "Apple Unicode (2.0)" set.
 Generally fonts will have a fairly complete set of strings in the American
 English entry, with the Style string (and nothing else) translated into different
 languages.
+<TABLE BORDER CELLPADDING="2">
+  <TR>
+    <TH>English</TH>
+    <TH>Regular</TH>
+    <TH>Bold</TH>
+    <TH>Demi-Bold</TH>
+    <TH>Light</TH>
+    <TH>Demi-Light</TH>
+    <TH>Medium</TH>
+    <TH>Book</TH>
+    <TH>Italic</TH>
+    <TH>Oblique</TH>
+    <TH>Condensed</TH>
+    <TH>Expanded</TH>
+  </TR>
+  <TR>
+    <TH>French</TH>
+    <TD>Normal</TD>
+    <TD>Gras</TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD>
+    <TD>Italique</TD>
+    <TD>Oblique</TD>
+    <TD></TD>
+    <TD></TD>
+  </TR>
+  <TR>
+    <TH>German</TH>
+    <TD>Standard</TD>
+    <TD>Fett</TD>
+    <TD>Halbfett</TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD>
+    <TD>Kursiv</TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD>
+  </TR>
+  <TR>
+    <TH>Russian<BR>
+      <SMALL>(koi8r)</SMALL></TH>
+    <TD></TD>
+    <TD>&Ouml;&Eacute;&Ograve;&Icirc;&Ugrave;&Ecirc;</TD>
+    <TD>&ETH;&Iuml;&Igrave;&Otilde;&Ouml;&Eacute;&Ograve;&Icirc;&Ugrave;&Ecirc;</TD>
+    <TD>&oacute;&#215;&Aring;&Ocirc;&Igrave;&Ugrave;&Ecirc;</TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD>
+    <TD>&euml;&Otilde;&Ograve;&Oacute;&Eacute;&#215;&Icirc;&Ugrave;&Ecirc;</TD>
+    <TD>&icirc;&Aacute;&Euml;&Igrave;&Iuml;&Icirc;&Icirc;&Ugrave;&Ecirc;</TD>
+    <TD>&oacute;&Ouml;&Aacute;&Ocirc;&Ugrave;&Ecirc;</TD>
+    <TD>&ucirc;&Eacute;&Ograve;&Iuml;&Euml;&Eacute;&Ecirc;</TD>
+  </TR>
+  <TR>
+    <TH>Spanish</TH>
+    <TD>Normal</TD>
+    <TD>Nigrita</TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD>
+    <TD>Cursiva</TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD>
+  </TR>
+</TABLE>
+<P>
+(Any help in expanding/correcting the above table would be greatly appreciated
+<A HREF="mailto:gww@silcom.com">gww@silcom.com</A>)
 <H2>
   <IMG SRC="fontinfo-panose.png" WIDTH="369" HEIGHT="472" ALIGN="Right"><A
       NAME="Panose">Panose</A>

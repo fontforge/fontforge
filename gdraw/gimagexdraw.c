@@ -1293,7 +1293,7 @@ static void gximage_to_ximage(GXWindow gw, GImage *image, GRect *src) {
 	}
     } else { /* no mask */
 	if ( base->image_type == it_index ) {
-	    switch ( gdisp->pixel_size ) {
+	    switch ( depth ) {
 	      case 1:
 	      default:
 		gdraw_8_on_1_nomag_dithered_nomask(gdisp,image,src);
@@ -1315,7 +1315,7 @@ static void gximage_to_ximage(GXWindow gw, GImage *image, GRect *src) {
 	      break;
 	    }
 	} else if ( base->image_type == it_true ) {
-	    switch ( gdisp->pixel_size ) {
+	    switch ( depth ) {
 	      case 1:
 	      default:
 		gdraw_32_on_1_nomag_dithered_nomask(gdisp,image,src);

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 23-Jun-2001 -->
-  <!-- AP: Last modified: 23-Jun-2001 -->
+  <!-- AP: Last modified: 10-Jul-2001 -->
   <TITLE>MetaFont -- Standard Transformations on Fonts</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,35 @@
   MetaFont<BR>
   Standard Transformations on Fonts
 </H1>
+<P>
+The MetaFont dialog (obviously the name is a rip-off of
+<A HREF="http://www.tug.org/">Knuth's work</A>) will try to find important
+features of a font and a character and allow you to modify them. The features
+searched for are:
+<UL>
+  <LI>
+    The X-Height.<BR>
+    A font-wide attribute, making the X-Height larger relative to the Cap-Height
+    will often make the font appear to have a larger point-size (PfaEdit will
+    also search out the Cap-Height, Acendor-Height and Descender, but modification
+    of those is less common. Though it is feasible)
+  <LI>
+    Stems and their widths<BR>
+    Modification of a Stem's width makes the font appear Bolder or Lighter
+  <LI>
+    Counters and their widths (a counter is the white space between stems)<BR>
+    Modification of a Counter's width makes the font appear Expanded or Condensed
+  <LI>
+    Left and Right Side Bearings<BR>
+    Behavior similar to Counter's
+</UL>
+<P>
+The results will probably always need to be examined and fixed up by the
+human eye, but they may provide a help in changing a font's attributes. At
+the moment the command is pretty primative.
+<P>
+It "works" best on sans serif, non-Oblique fonts.
+  <HR>
 <H3>
   Bold
 </H3>
@@ -24,6 +53,58 @@ and 400 being the numeric weight of a normal font).
 In Knuth's Computer Modern Bold Extended Roman, the "m" character is extended
 to 1.15 times the width of the "m" in Computer Modern Roman, and the x-height
 is 1.03 times higher.
+<P>
+<TABLE BORDER CELLPADDING="2">
+  <TR>
+    <TD>Font</TD>
+    <TD>Ratio of Bold/Regular Stems</TD>
+    <TD>Ratio of DemiBold/Regular</TD>
+    <TD>Expansion</TD>
+  </TR>
+  <TR>
+    <TD>Arial</TD>
+    <TD>1.5</TD>
+    <TD></TD>
+    <TD>1</TD>
+  </TR>
+  <TR>
+    <TD>Times New Roman</TD>
+    <TD>1.7</TD>
+    <TD></TD>
+    <TD></TD>
+  </TR>
+  <TR>
+    <TD>Computer Modern Roman</TD>
+    <TD>1.68(at 12pt) - 1.5(at 5pt)</TD>
+    <TD></TD>
+    <TD>1.15</TD>
+  </TR>
+  <TR>
+    <TD>Adobe Helvetica</TD>
+    <TD>1.6</TD>
+    <TD></TD>
+    <TD></TD>
+  </TR>
+  <TR>
+    <TD>Adobe Times</TD>
+    <TD>1.56</TD>
+    <TD></TD>
+    <TD>1.17</TD>
+  </TR>
+  <TR>
+    <TD>Garamond Antiqua</TD>
+    <TD></TD>
+    <TD>1.5</TD>
+    <TD></TD>
+  </TR>
+  <TR>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD>
+  </TR>
+</TABLE>
+<P>
 <H3>
   Point Size
 </H3>
@@ -124,22 +205,63 @@ In Knuth's Computer Modern fonts:
 </H3>
 <P>
 The Italic transformation contains at least three parts: A change in the
-letterforms of the lowercase letters, a skew, and a condensation. In Knuth's
-Computer Modern Text Italic, the condensation is about .91. The glyphs are
-skewed by 14&#186;.
+letterforms of the lowercase letters, a skew, and a condensation.
+<TABLE BORDER CELLPADDING="2">
+  <TR>
+    <TD></TD>
+    <TD>Italic Angle</TD>
+    <TD>Condensation</TD>
+  </TR>
+  <TR>
+    <TD>Computer Modern Text Italic</TD>
+    <TD>14&#186;</TD>
+    <TD>91%</TD>
+  </TR>
+  <TR>
+    <TD>Times New Roman</TD>
+    <TD>16&#186;</TD>
+    <TD>100%</TD>
+  </TR>
+  <TR>
+    <TD>Adobe Times</TD>
+    <TD>15</TD>
+    <TD>100%</TD>
+  </TR>
+</TABLE>
 <P>
-<IMG SRC="ItalicComp.png" WIDTH="368" HEIGHT="48"> <SMALL>(These glyphs have
-been deskewed to display the shape transformation better.)</SMALL>
+Letterform changes in Galliard:
+<IMG SRC="ItalicCompGalliard.png" WIDTH="328" HEIGHT="33">
+<P>
+Letterform changes in
+Caslon:<IMG WIDTH="368" HEIGHT="48" SRC="ItalicCompCaslon.png"> <BR>
+<SMALL>(These glyphs have been deskewed to display the shape transformation
+better.)</SMALL>
 <P>
 This is not a complete list, but it shows most of the salient features of
-such a transformation. The "g" character will often have a different shape
-as well.
+such a transformation.
 <H3>
   Oblique
 </H3>
 <P>
-The Oblique transformation is a simple skew, in Computer Modern Slanted Sans
-Serif it is 9.5&#186;.
+The Oblique transformation is a simple skew,
+<TABLE BORDER CELLPADDING="2">
+  <TR>
+    <TD>Computer Modern Slanted Sans Serif</TD>
+    <TD>9.5&#186;</TD>
+  </TR>
+  <TR>
+    <TD>Arial Italic (actually an oblique)</TD>
+    <TD>12&#186;</TD>
+  </TR>
+  <TR>
+    <TD>Adobe Helvetica Oblique</TD>
+    <TD>12&#186;</TD>
+  </TR>
+  <TR>
+    <TD></TD>
+    <TD></TD>
+  </TR>
+</TABLE>
 <H3>
   Extended/Condensed
 </H3>
@@ -147,11 +269,5 @@ Serif it is 9.5&#186;.
 In these two transformations the stem width is held constant but the horizontal
 counter sizes and side bearings are increased (or decreased for condensed).
 <H3>
-  Modern/Old Style
 </H3>
-<P>
-In Old Style fonts numerals tended to be lower-case, the x-height tended
-to be less than half the ascent, and the cap-height tended to be visibly
-smaller than the ascent.
-<P>
 </BODY></HTML>

@@ -411,7 +411,7 @@ extern int32 GDrawGetBiTextPtBeforePos(GWindow gw,unichar_t *text, int32 cnt, Fo
 extern int32 GDrawGetBiTextPtFromPos(GWindow gw,unichar_t *text, int32 cnt, FontMods *mods,
 	int32 maxwidth, unichar_t **end);
 extern int32 GDrawIsAllLeftToRight(unichar_t *text, int32 cnt);
-extern void GDrawBiText1(GBiText *bd, unichar_t *text, int32 cnt);
+extern void GDrawBiText1(GBiText *bd, const unichar_t *text, int32 cnt);
 extern void GDrawBiText2(GBiText *bd, int32 start, int32 end);
 
 extern void GDrawClear(GWindow w, GRect *rect);

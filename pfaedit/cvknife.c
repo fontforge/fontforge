@@ -46,6 +46,7 @@ return;					/* Nothing to cut */
 	if ( p->sp==p->spl->first || p->sp==p->spl->last )
 return;					/* Already cut here */
     n = galloc(sizeof(SplinePoint));
+    p->sp->pointtype = pt_corner;
     *n = *p->sp;
     p->sp->next = NULL;
     n->prev = NULL;
@@ -61,6 +62,7 @@ return;					/* Already cut here */
 	nspl->last = p->spl->last;
 	p->spl->last = p->sp;
     }
+    
     cv->lastknife.x = cv->info.x;
     cv->lastknife.y = cv->info.y;
     CVSetCharChanged(cv,true);

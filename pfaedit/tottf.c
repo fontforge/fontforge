@@ -31,6 +31,7 @@
 #include <time.h>
 #include "ustring.h"
 #include <locale.h>
+#include <chardata.h>
 
 /* This file produces a ttf file given a splinefont. The most interesting thing*/
 /*  it does is to figure out a quadratic approximation to the cubic splines */
@@ -3042,11 +3043,30 @@ return;
 	dumpshort(at->kern,0);		/* pad it */
 }
 
+static void dumpmacstr(FILE *file,unichar_t *str) {
+    int ch;
+    unsigned char *table;
+
+    do {
+	ch = *str++;
+	if ( ch==0 )
+	    putc('\0',file);
+	else if ( (ch>>8)>=mac_from_unicode.first && (ch>>8)<=mac_from_unicode.last &&
+		(table = mac_from_unicode.table[(ch>>8)-mac_from_unicode.first])!=NULL &&
+		table[ch&0xff]!=0 )
+	    putc(table[ch&0xff],file);
+	else
+	    putc('?',file);	/* if we were to omit an unencoded char all our position calculations would be off */
+    } while ( ch!='\0' );
+}
+
+#if 0
 static void dumpstr(FILE *file,unichar_t *str) {
     do {
 	putc(*str,file);
     } while ( *str++!='\0' );
 }
+#endif
 
 static void dumpustr(FILE *file,unichar_t *str) {
     fwrite(str,sizeof(unichar_t),u_strlen(str)+1,file);
@@ -3056,6 +3076,28 @@ static void dumppstr(FILE *file,char *str) {
     putc(strlen(str),file);
     fwrite(str,sizeof(char),strlen(str),file);
 }
+
+#if 0
+/* Languages on the mac presumably imply an encoding, but that encoding is not*/
+/*  listed in the language table in the name table docs. I think it is safe to*/
+/*  guess that these first 10 languages all use the MacRoman encoding that */
+/*  is designed for western europe. I could handle that... */
+/* The complexities of locale (british vs american english) don't seem to be */
+/*  present on the mac */
+/* I don't think I'll make use of this table for the mac though... */
+static struct { int mslang, maclang, enc, used; } mactrans[] = {
+    { 0x09, 0, em_mac },		/* English */
+    { 0x0c, 1, em_mac },		/* French */
+    { 0x07, 2, em_mac },		/* German */
+    { 0x10, 3, em_mac },		/* Italian */
+    { 0x13, 4, em_mac },		/* Dutch */
+    { 0x1d, 5, em_mac },		/* Swedish */
+    { 0x0a, 6, em_mac },		/* Spanish */
+    { 0x06, 7, em_mac },		/* Danish */
+    { 0x16, 8, em_mac },		/* Portuguese */
+    { 0x14, 9, em_mac },		/* Norwegian */
+    { 0 }};
+#endif
 
 static void dumpnames(struct alltabs *at, SplineFont *sf) {
     int pos=0,i,j;
@@ -3106,7 +3148,7 @@ static void dumpnames(struct alltabs *at, SplineFont *sf) {
     }
     for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL ) {
 	dumpshort(at->name,0);	/* apple unicode */
-	dumpshort(at->name,3);	/* Docs say meaningless, but it seems to be 3 in other fonts */
+	dumpshort(at->name,3);	/* 3 => Unicode 2.0 semantics */ /* 0 ("default") is also a reasonable value */
 	dumpshort(at->name,0);	/*  */
 	dumpshort(at->name,i);
 	dumpshort(at->name,2*u_strlen(dummy.names[i]));
@@ -3136,7 +3178,7 @@ static void dumpnames(struct alltabs *at, SplineFont *sf) {
     }
 
     for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL )
-	dumpstr(at->name,dummy.names[i]);
+	dumpmacstr(at->name,dummy.names[i]);
     for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL )
 	dumpustr(at->name,dummy.names[i]);
     for ( cur=sf->names; cur!=NULL; cur=cur->next ) if ( cur->lang!=0x409 )

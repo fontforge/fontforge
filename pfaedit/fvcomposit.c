@@ -28,6 +28,7 @@
 #include <chardata.h>
 #include <math.h>
 #include <utype.h>
+#include <ustring.h>
 
 #define BottomAccent	0x300
 #define TopAccent	0x345
@@ -772,6 +773,77 @@ static void DoRules(SplineFont *sf,SplineChar *sc,int copybmp,FontView *fv) {
     }
 }
 
+static int SCMakeRightToLeftLig(SplineChar *sc,SplineFont *sf,
+	const unichar_t *start,int copybmp) {
+    int cnt = u_strlen(start);
+    GBiText bd;
+    int ret, ch;
+    unichar_t *pt, *end, *freeme=NULL;
+    static unichar_t final_lamalef[] = { 0xFE8E, 0xfee0, 0 }, isolated_lamalef[] = { 0xFE8E ,0xfedf, 0 };
+    /* Bugs: Doesn't handle accents, and there are some in arabic ligs */
+
+    /* Deal with arabic ligatures which are not isolated */
+    if ( isarabinitial(sc->unicodeenc) || isarabmedial(sc->unicodeenc) ||
+	    isarabfinal(sc->unicodeenc)) {
+	++cnt;
+	if ( isarabmedial(sc->unicodeenc)) ++cnt;
+	freeme = malloc((cnt+1)*sizeof(unichar_t));
+	if ( isarabinitial(sc->unicodeenc)) {
+	    u_strcpy(freeme,start);
+	    freeme[cnt-2] = 0x200d; freeme[cnt-1] = 0;
+	} else {
+	    *freeme = 0x200d;
+	    u_strcpy(freeme+1,start);
+	    if ( isarabmedial(sc->unicodeenc)) {
+		freeme[cnt-2] = 0x200d;
+		freeme[cnt-1] = 0;
+	    }
+	}
+	start = freeme;
+    }
+
+    ++cnt;		/* for EOS */
+    bd.text = malloc(cnt*sizeof(unichar_t));
+    bd.level = malloc(cnt*sizeof(uint8));
+    bd.override = malloc(cnt*sizeof(uint8));
+    bd.type = malloc(cnt*sizeof(uint16));
+    bd.original = malloc(cnt*sizeof(unichar_t *));
+    --cnt;
+    bd.len = cnt;
+    bd.base_right_to_left = true;
+    GDrawBiText1(&bd,start,cnt);
+    GDrawBiText2(&bd,0,cnt);
+
+    ret = false;
+    pt = bd.text; end = pt+cnt;
+    if ( *pt==0x200d ) ++pt;
+	/* The arabic encoder knows about two ligs. So if we pass in either of*/
+	/*  those two we will get out itself. We want it decomposed so undo */
+	/*  the process */
+    if ( sc->unicodeenc==0xfedf )
+	pt = isolated_lamalef;
+    else if ( sc->unicodeenc==0xfee0 )
+	pt = final_lamalef;
+    if ( SCMakeBaseReference(sc,sf,*pt,copybmp) ) {
+	for ( ++pt; pt<end; ++pt ) if ( *pt!=0x200d ) {
+	    ch = *pt;
+	    /* Arabic characters may get transformed into initial/medial/final*/
+	    /*  and we don't know that those characters exist in the font. We */
+	    /*  do know that the "unformed" character exists (because we checked)*/
+	    /*  so go back to using it if we must */
+	    if ( !haschar(sf,ch) ) {
+		const unichar_t *temp = SFGetAlternate(sf,ch);
+		if ( temp!=NULL ) ch = *temp;
+	    }
+	    SCPutRefAfter(sc,sf,ch,copybmp);
+	}
+	ret = true;
+    }
+    free(bd.text); free(bd.level); free(bd.override); free(bd.type);
+    free(bd.original);
+return( ret );
+}
+
 void SCBuildComposit(SplineFont *sf, SplineChar *sc, int copybmp,FontView *fv) {
     const unichar_t *pt, *apt; unichar_t ch;
     BDFFont *bdf;
@@ -810,13 +882,17 @@ return;
 	    else if ( ch=='j' ) ch = 0xf6be;
 	}
     }
-    if ( !SCMakeBaseReference(sc,sf,ch,copybmp) )
+    if ( isrighttoleft(ch) && !iscombining(*pt)) {
+	SCMakeRightToLeftLig(sc,sf,pt-1,copybmp);
+    } else {
+	if ( !SCMakeBaseReference(sc,sf,ch,copybmp) )
 return;
-    while ( iscombining(*pt) || (ch!='l' && *pt==0xb7) ||	/* b7, centered dot is used as a combining accent for Ldot but as a lig for ldot */
-	    *pt==0x1fcd || *pt==0x1fdd || *pt==0x1fce || *pt==0x1fde )	/* Special greek accents */
-	SCCenterAccent(sc,sf,*pt++,copybmp,ia, ch);
-    while ( *pt )
-	SCPutRefAfter(sc,sf,*pt++,copybmp);
+	while ( iscombining(*pt) || (ch!='l' && *pt==0xb7) ||	/* b7, centered dot is used as a combining accent for Ldot but as a lig for ldot */
+		*pt==0x1fcd || *pt==0x1fdd || *pt==0x1fce || *pt==0x1fde )	/* Special greek accents */
+	    SCCenterAccent(sc,sf,*pt++,copybmp,ia, ch);
+	while ( *pt )
+	    SCPutRefAfter(sc,sf,*pt++,copybmp);
+    }
     SCCharChangedUpdate(sc,fv);
     if ( copybmp ) {
 	for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next )

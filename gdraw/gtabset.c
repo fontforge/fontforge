@@ -500,8 +500,8 @@ static void _gtabset_setvisible(GGadget *g,int visible) {
 
     _ggadget_setvisible(g,visible);
     i = gts->sel;
-    if ( gts->tabs[i].w!=NULL )
-	GDrawSetVisible(gts->tabs[i].w, visible);
+    if ( gts->tabs[gts->sel].w!=NULL )
+	GDrawSetVisible(gts->tabs[gts->sel].w, visible);
 }
 
 struct gfuncs gtabset_funcs = {
@@ -604,9 +604,10 @@ GGadget *GTabSetCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     for ( i=0; gd->u.tabs[i].text!=NULL; ++i ) if ( gd->u.tabs[i].gcd!=NULL ) {
 	gts->tabs[i].w = GDrawCreateSubWindow(base,&gts->g.inner,sendtoparent_eh,GDrawGetUserData(base),&childattrs);
 	GGadgetsCreate(gts->tabs[i].w,gd->u.tabs[i].gcd);
-	if ( gts->sel==i )
+	if ( gts->sel==i && (gd->flags & gg_visible ))
 	    GDrawSetVisible(gts->tabs[i].w,true);
-    }
+    } else
+	gts->tabs[i].w = NULL;
 
     if ( gd->flags & gg_group_end )
 	_GGadgetCloseGroup(&gts->g);

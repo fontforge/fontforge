@@ -71,6 +71,7 @@ FontView *fv_list=NULL;
 void FVToggleCharChanged(FontView *fv,SplineChar *sc) {
     int i, j;
 
+    if ( fv==NULL ) fv = sc->views->fv;
     i = sc->enc / fv->colcnt;
     j = sc->enc - i*fv->colcnt;
     i -= fv->rowoff;
@@ -602,6 +603,11 @@ static void FVMenuFindProblems(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FindProblems(fv,NULL);
 }
 
+static void FVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    MetaFont(fv,NULL);
+}
+
 #define MID_24	2001
 #define MID_36	2002
 #define MID_48	2004
@@ -609,7 +615,8 @@ static void FVMenuFindProblems(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_Next	2006
 #define MID_Prev	2007
 #define MID_CharInfo	2201
-#define MID_FindProblems	2216
+#define MID_FindProblems 2216
+#define MID_MetaFont	2217
 #define MID_Transform	2202
 #define MID_Stroke	2203
 #define MID_RmOverlap	2204
@@ -1221,6 +1228,9 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_FindProblems:
 	    mi->ti.disabled = anychars==-1;
 	  break;
+	  case MID_MetaFont:
+	    mi->ti.disabled = anychars==-1;
+	  break;
 	  case MID_Transform:
 	    mi->ti.disabled = anychars==-1;
 	    /* some Transformations make sense on bitmaps now */
@@ -1473,6 +1483,7 @@ static GMenuItem ellist[] = {
     { { (unichar_t *) _STR_Rmoverlap, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'O' }, 'O', ksm_control|ksm_shift, NULL, NULL, FVMenuOverlap, MID_RmOverlap },
     { { (unichar_t *) _STR_Simplify, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, 'M', ksm_control|ksm_shift, NULL, NULL, FVMenuSimplify, MID_Simplify },
     { { (unichar_t *) _STR_Round2int, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '_', ksm_control|ksm_shift, NULL, NULL, FVMenuRound2Int, MID_Round },
+    { { (unichar_t *) _STR_MetaFont, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, '!', ksm_control|ksm_shift, NULL, NULL, FVMenuMetaFont, MID_MetaFont },
     { { (unichar_t *) _STR_Autotrace, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'r' }, 'T', ksm_control|ksm_shift, NULL, NULL, FVMenuAutotrace, MID_Autotrace },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Correct, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'D' }, 'D', ksm_control|ksm_shift, NULL, NULL, FVMenuCorrectDir, MID_Correct },

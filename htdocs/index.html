@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 7-Jul-2001 -->
+  <!-- AP: Last modified: 10-Jul-2001 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -59,8 +59,8 @@ know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-010707.tgz">Download pfaedit linux-i386 RedHat 7.0
-    </A><A NAME="downloads">executable</A> Version: 7-July-2001
+    <A HREF="pfaedit-010710.tgz">Download pfaedit linux-i386 Debian
+    </A><A NAME="downloads">executable</A> Version: 10-July-2001
   <LI>
     <A HREF="pfaedit-solaris-010624.tgz">Download pfaedit Solaris 8.0
     </A>executable Version: 24-June-2001
@@ -79,19 +79,19 @@ know when you do</A>.
 <P>
 You can download a <A HREF="pfaedit-010628-1.src.rpm">source RPM</A>: Version:
 28-June-2001<BR>
-Or you can download the following three packages. Version: 30-June-2001
+Or you can download the following three packages. Version: 10-July-2001
 <UL>
   <LI>
-    <A HREF="libgunicode-010627.tgz">Unicode library source</A> (27-June-2001)<BR>
+    <A HREF="libgunicode-010710.tgz">Unicode library source</A> (10-July-2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGUnicode/index.html">docs</A>
   <LI>
-    <A HREF="libgdraw-010707.tgz">Unicode widget library source</A>
-    (7-July-2001)<BR>
+    <A HREF="libgdraw-010710.tgz">Unicode widget library source</A>
+    (10-July-2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
   <LI>
-    <A HREF="pfaedit_src-010707.tgz">Pfaedit source</A> (7-July-2001)<BR>
+    <A HREF="pfaedit_src-010710.tgz">Pfaedit source</A> (10-July-2001)<BR>
     -- <A HREF="overview.html">docs</A>
   <LI>
     If you want to do autotracing around character images you should also download
@@ -102,7 +102,7 @@ Or you can download the following three packages. Version: 30-June-2001
 PfaEdit has been ported to the following systems (at some point in its life)
 <UL>
   <LI>
-    Linux (obviously)
+    Linux (obviously, various, but I think all 386 based)
   <LI>
     Solaris
   <LI>
@@ -165,6 +165,21 @@ bitmap fonts that pfaedit uses
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    10-July-2001
+    <UL>
+      <LI>
+	Did significant improvement to arabic ligature creation (at least it's done
+	right to left now and the proper forms will be picked).
+      <LI>
+	Improved the character icons of Anti-Aliased fonts.
+      <LI>
+	Oops. FontInfo would mistakenly complain about modifiers like "-Bold". Fixed.
+      <LI>
+	There's the start of a <A HREF="metafont.html">command to change the weight
+	of a font</A>. It doesn't work very well yet. It probably never will work
+	perfectly, but I hope it may eventually be useful.
+    </UL>
   <LI>
     7-July-2001
     <UL>
@@ -1316,16 +1331,11 @@ prepared to save frequently and always work on a copy of the original.
     Importing a type0 font loses the encoding. PfaEdit only imports simple type0
     fonts (such as those made by itself), will get confused if there's more than
     one font with a chars dictionary.
-  <LI>
-    No Change Weight command
 </UL>
 <H2>
   <A NAME="known-bugs">Bugs</A>
 </H2>
 <UL>
-  <LI>
-    Different Window Managers introduce different bugs into palette code. I've
-    tested this under twm, kde and gnome sawtooth.
   <LI>
     My rasterizer will never be as good as adobe's.
   <LI>
@@ -1336,6 +1346,8 @@ prepared to save frequently and always work on a copy of the original.
     PfaEdit is confused by small splines, on the order of one em unit. If you
     need something that small, scale the font up by a factor of 2 or more (including
     the ascent and descent).
+  <LI>
+    The MetaFont command doesn't work well.
   <LI>
     ???
 </UL>

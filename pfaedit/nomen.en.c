@@ -778,7 +778,19 @@ static char *str_Expected = ", expected ";
 	/* Meta font */
 static char *str_MetaFont = "Meta Font...";
 static char *str_CounterTooSmallT = "Counter Too Small";
-static char *str_CounterTooSmall = "A counter was requested to be too small, it has been pegged at it's the minimum value";
+static char *str_CounterTooSmall = "A counter was requested to be too small, it has been pegged at its minimum value";
+static char *str_Simple = "Simple";
+static char *str_Advanced = "Advanced";
+static char *str_Embolden = "Embolden";
+static char *str_Condense = "Condense";
+static char *str_Expand = "Expand";
+static char *str_Stems = "Stems";
+static char *str_HCounters = "H Counters";
+static char *str_VCounters = "V Counters";
+static char *str_StemScale = "Scale Stems By:";
+static char *str_CounterScale = "Scale Counters By:";
+static char *str_XHeightFrom = "XHeight From:";
+static char *str_To = "To:";
 
 
 static int num_buttonsize = 55;

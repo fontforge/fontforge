@@ -907,6 +907,10 @@ static void visualalts(void) {
     alts[0x585][0] = 'o';
     alts[0x589][0] = ':';
 
+    alts[0x5f0][0] = 0x5d5; alts[0x5f0][1] = 0x5d5;	/* Yiddish ligs */
+    alts[0x5f1][0] = 0x5d5; alts[0x5f1][1] = 0x5d9;	/* 0x5d9 should be drawn first (r to l) */
+    alts[0x5f2][0] = 0x5d9; alts[0x5f2][1] = 0x5d9;
+
     alts[0x60c][0] = 0x2018;		/* Arabic */
     alts[0x66a][0] = '%';
     alts[0x66c][0] = ',';

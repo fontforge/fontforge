@@ -95,9 +95,9 @@
 /*  algorithem only really works for hv stems anyway... */
 
 /* ************ Data structures active during the entire command ************ */
-enum counterchoices { cc_scale,	/* scale counters */
-	cc_centerfixed,		/* stem centers remain fixed, stems expand around */
-	cc_edgefixed,		/* outer edges are fixed, outer stems only expand */
+enum counterchoices { cc_same,	/* counters have the same with until scaled */
+	cc_centerfixed,		/* stem centers remain fixed, stems expand around, then scale */
+	cc_edgefixed,		/* outer edges are fixed, outer stems only expand, then scale */
 				/*  inward, while inner stems have their centers */
 			        /*  fixed */
 	cc_zones		/* specify a mapping directly */
@@ -122,6 +122,7 @@ struct stemcntl {
 };
 
 typedef struct metafont {
+    unsigned int done: 1;
     unsigned int scalewidth: 1;		/* If false then scale l/rbearing */
     struct scale width;			/* if scalewidth scale width by this */
     struct scale lbearing, rbearing;	/* if !scalewidth, do these */
@@ -135,6 +136,12 @@ typedef struct metafont {
     } counters[2];			/* 0 is horizontal, 1 is vertical */
     int stemcnt;
     struct stemcntl *stems;
+    double blues[6];			/* Contains the result of QuickBlues */
+    int bcnt, bxh;			/* number of entries and location of xh*/
+    FontView *fv;
+    CharView *cv;
+    SplineFont *sf;
+    GWindow gw;
 } MetaFontDlg;
 
 /* ************ Data structures active on a per character basis ************* */
@@ -151,8 +158,9 @@ typedef struct splineinfo {
 		/* if the len is -1 the we've decided that this doesn't */
 		/*  qualify as a stem, probably because the two edges are */
 		/*  nothing like parallel */
-    BasePoint frommid, tomid;		/* The point mid-way between the two */
+    BasePoint fromvec, tovec;		/* Vector to the point mid-way between the two splines */
     		/* splines */
+    unsigned int spline2backwards: 1;
     unsigned int figured: 1;
     unsigned int freepasscnt: 1;
 } SplineInfo;
@@ -195,6 +203,7 @@ typedef struct scinfo {
     struct mapd mapd[2];
     MetaFontDlg *meta;
     double rbearing;		/* Only used if !meta->scalewidth */
+    double width;
 } SCI;
 
 
@@ -384,9 +393,9 @@ static void SCIFindStems(SCI *sci) {
 
 /* Generate a line through spline1[t1] perpendicular to it at that point */
 /*  Intersect the line with spline2. If the intersection is on the spline */
-/*  segment, then fill in the len and mid values */
+/*  segment, then fill in the len and vec values (vec is the vector from the spline to the midpoint between the two)*/
 static int FindPerpDistance(double t1,Spline *spline1, Spline *spline2,
-	BasePoint *mid, double *len) {
+	BasePoint *vec, double *len) {
     BasePoint pt, slope, pslope, end[3], ss2;
     double x, y, slope1, slope2, ts[3], lens[3], angle;
     Spline1D temp;
@@ -456,8 +465,8 @@ return( false );
 		j = 2;
     }
 
-    mid->x = (pt.x+end[j].x)/2;
-    mid->y = (pt.y+end[j].y)/2;
+    vec->x = (pt.x+end[j].x)/2 - pt.x;
+    vec->y = (pt.y+end[j].y)/2 - pt.y;
     if ( lens[j]<.001 ) lens[j]=0;
     else {
 	double len = rint(lens[j]);
@@ -486,62 +495,80 @@ return( true );
 static void SIFigureWidth(SplineInfo *si) {
     int foundfrom=false, foundto=false;
     int up1, up2;
+    int v;
 
  printf( "\nspline1=(%g,%g) -> (%g,%g), spline2=(%g,%g) -> (%g,%g)\n",
      si->spline1->from->me.x, si->spline1->from->me.y, si->spline1->to->me.x, si->spline1->to->me.y,
      si->spline2->from->me.x, si->spline2->from->me.y, si->spline2->to->me.x, si->spline2->to->me.y );
 
     si->fromlen = si->tolen = -1;
-    if (( foundfrom = (FindPerpDistance(0,si->spline1,si->spline2,&si->frommid,&si->fromlen)>0) ))
+    if (( foundfrom = (FindPerpDistance(0,si->spline1,si->spline2,&si->fromvec,&si->fromlen)>0) ))
 	si->from = si->spline1->from;
-    if (( foundto = (FindPerpDistance(1,si->spline1,si->spline2,&si->tomid,&si->tolen)>0) ))
+    if (( foundto = (FindPerpDistance(1,si->spline1,si->spline2,&si->tovec,&si->tolen)>0) ))
 	si->to = si->spline1->to;
-    if ( true || !foundfrom || !foundto ) {
-	if ( si->spline1->from->me.y==si->spline1->to->me.y ||
-		si->spline2->from->me.y==si->spline2->to->me.y ) {
-	    up1 = si->spline1->from->me.x<si->spline1->to->me.x;
-	    up2 = si->spline2->from->me.x<si->spline2->to->me.x;
-	} else {
-	    up1 = si->spline1->from->me.y<si->spline1->to->me.y;
-	    up2 = si->spline2->from->me.y<si->spline2->to->me.y;
-	}
+    if ( si->spline1->from->me.y==si->spline1->to->me.y ||
+	    si->spline2->from->me.y==si->spline2->to->me.y ) {
+	up1 = si->spline1->from->me.x<si->spline1->to->me.x;
+	up2 = si->spline2->from->me.x<si->spline2->to->me.x;
+    } else {
+	up1 = si->spline1->from->me.y<si->spline1->to->me.y;
+	up2 = si->spline2->from->me.y<si->spline2->to->me.y;
+    }
+    si->spline2backwards = (up1!=up2);
+    if ( true || !foundfrom || !foundto ) {			/* !!! Debug */
 	if ( up1==up2 ) {
 	    if ( !foundfrom ) {
-		if ( FindPerpDistance(0,si->spline2,si->spline1,&si->frommid,&si->fromlen)>0 )
+		if ( FindPerpDistance(0,si->spline2,si->spline1,&si->fromvec,&si->fromlen)>0 )
 		    si->from = si->spline2->from;
 	    }
 	    if ( !foundto ) {
-		if ( FindPerpDistance(1,si->spline2,si->spline1,&si->frommid,&si->fromlen)>0 )
+		if ( FindPerpDistance(1,si->spline2,si->spline1,&si->tovec,&si->tolen)>0 )
 		    si->to = si->spline2->to;
 	    }
  printf( "(%g,%g) <-> (%g,%g) mid=(%g,%g) len=%g\n",
 si->spline1->from->me.x, si->spline1->from->me.y,
 si->spline2->from->me.x, si->spline2->from->me.y,
-si->frommid.x, si->frommid.y, si->fromlen);
+si->fromvec.x, si->fromvec.y, si->fromlen);
  printf( "(%g,%g) <-> (%g,%g) mid=(%g,%g) len=%g\n",
 si->spline1->to->me.x, si->spline1->to->me.y,
 si->spline2->to->me.x, si->spline2->to->me.y,
-si->tomid.x, si->tomid.y, si->tolen);
+si->tovec.x, si->tovec.y, si->tolen);
 	} else {
 	    if ( !foundfrom ) {
-		if ( FindPerpDistance(1,si->spline2,si->spline1,&si->frommid,&si->fromlen) )
+		if ( FindPerpDistance(1,si->spline2,si->spline1,&si->fromvec,&si->fromlen) )
 		    si->from = si->spline2->to;
 	    }
 	    if ( !foundto ) {
-		if ( FindPerpDistance(0,si->spline2,si->spline1,&si->frommid,&si->fromlen) )
+		if ( FindPerpDistance(0,si->spline2,si->spline1,&si->tovec,&si->tolen) )
 		    si->to = si->spline2->from;
 	    }
  printf( "(%g,%g) <-> (%g,%g) mid=(%g,%g) len=%g\n",
 si->spline1->from->me.x, si->spline1->from->me.y,
 si->spline2->to->me.x, si->spline2->to->me.y,
-si->frommid.x, si->frommid.y, si->fromlen);
+si->fromvec.x, si->fromvec.y, si->fromlen);
  printf( "(%g,%g) <-> (%g,%g) mid=(%g,%g) len=%g\n",
 si->spline1->to->me.x, si->spline1->to->me.y,
 si->spline2->from->me.x, si->spline2->from->me.y,
-si->tomid.x, si->tomid.y, si->tolen);
+si->tovec.x, si->tovec.y, si->tolen);
+	}
+	if ( si->from!=NULL && si->from != si->spline1->from ) {
+	    si->fromvec.x = -si->fromvec.x;
+	    si->fromvec.y = -si->fromvec.y;
+	}
+	if ( si->to!=NULL && si->to != si->spline1->to ) {
+	    si->tovec.x = -si->tovec.x;
+	    si->tovec.y = -si->tovec.y;
 	}
     }
     si->figured = true;
+
+/* If it's close to an integer, round it to the integer */
+    v = rint(si->fromlen); if ( si->fromlen>v-.05 && si->fromlen<v+.05 ) si->fromlen = v;
+    v = rint(si->tolen); if ( si->tolen>v-.05 && si->tolen<v+.05 ) si->tolen = v;
+    v = rint(si->fromvec.x); if ( si->fromvec.x>v-.05 && si->fromvec.x<v+.05 ) si->fromvec.x = v;
+    v = rint(si->fromvec.y); if ( si->fromvec.y>v-.05 && si->fromvec.y<v+.05 ) si->fromvec.y = v;
+    v = rint(si->tovec.x); if ( si->tovec.x>v-.05 && si->tovec.x<v+.05 ) si->tovec.x = v;
+    v = rint(si->tovec.y); if ( si->tovec.y>v-.05 && si->tovec.y<v+.05 ) si->tovec.y = v;
 
     if ( (si->fromlen>0 && si->tolen>=0 ) || (si->fromlen>=0 && si->tolen>0))
 	si->spline1->touched = si->spline2->touched = true;
@@ -581,6 +608,7 @@ static void SplineFindOtherEdge(SCI *sci,Spline *spline) {
     for ( ss = sci->sc->splines; ss!=NULL; ss=ss->next ) {
 	first = NULL;
 	for ( test = ss->first->next; test!=first; test = test->to->next ) {
+	  if ( first==NULL ) first = test;
 	  if ( test!=spline ) {
 	    double f,t,c1,c2;
 	    f = -test->from->me.x*s + test->from->me.y*c;
@@ -617,7 +645,6 @@ static void SplineFindOtherEdge(SCI *sci,Spline *spline) {
 		}
 	    }
 	  }
-	    if ( first==NULL ) first = test;
 	}
     }
 
@@ -635,6 +662,28 @@ static void SplineFindOtherEdge(SCI *sci,Spline *spline) {
 	    SIFigureWidth(si);
     }
     spline->touched = true;		/* Even if we didn't find anything */
+}
+
+static int NotParallelHere(SplineInfo *si,SplinePoint *sp) {
+    Spline *s1, *s2;
+    double t1, len;
+    BasePoint mid;
+
+    if ( si->spline1->from==sp ) {
+	s1 = si->spline1; s2 = si->spline2;
+	t1 = 0;
+    } else if ( si->spline1->to==sp ) {
+	s1 = si->spline1; s2 = si->spline2;
+	t1 = 1;
+    } else if ( si->spline2->from==sp ) {
+	s1 = si->spline2; s2 = si->spline1;
+	t1 = 0;
+    } else if ( si->spline2->to==sp ) {
+	s1 = si->spline2; s2 = si->spline1;
+	t1 = 1;
+    } else
+return( true );		/* It's not parallel. Actually we've no idea what's going on, this shouldn't happen */
+return( FindPerpDistance(t1,s1,s2,&mid,&len)<=0 );
 }
 
 static void SCIFigureWidths(SCI *sci) {
@@ -767,9 +816,8 @@ static void MapFromCounterGroup(struct map *map,MetaFontDlg *meta,
 	    newcwidth = counterwidth =
 		    cg->stems[j]->start - (cg->stems[j-1]->start+cg->stems[j-1]->width);
 	    switch ( meta->counters[isvert].counterchoices ) {
-	      case cc_scale:
-		newcwidth = meta->counters[isvert].counter.factor*counterwidth +
-			meta->counters[isvert].counter.add;
+	      case cc_same:
+		newcwidth = counterwidth;
 	      break;
 	      case cc_centerfixed:
 		newcwidth -= (lastwidth-cg->stems[j-1]->width)/2 +
@@ -789,6 +837,8 @@ static void MapFromCounterGroup(struct map *map,MetaFontDlg *meta,
 		GDrawIError("Shouldn't get here in MapFromCounterGroup" );
 	      break;
 	    }
+	    newcwidth = meta->counters[isvert].counter.factor*newcwidth +
+		    meta->counters[isvert].counter.add;
 	    if ( newcwidth<meta->counters[isvert].widthmin ) {
 		GWidgetPostNoticeR(_STR_CounterTooSmallT,_STR_CounterTooSmall);
 		newcwidth = meta->counters[isvert].widthmin;
@@ -984,8 +1034,7 @@ static struct map *MapFromDiags(MetaFontDlg *meta,StemInfo *vstem, DStemInfo *ds
 	    minx = vstem->start;
 	    minxw = vstem->width;
 	    vstem = NULL;
-	}
-	if ( vstem->start<=maxx && vstem->start+vstem->width > maxx ) {
+	} else if ( vstem->start<=maxx && vstem->start+vstem->width > maxx ) {
 	    maxx = vstem->start+vstem->width;
 	    maxxw = vstem->width;
 	    vstem = NULL;
@@ -1016,7 +1065,23 @@ static struct map *MapFromDiags(MetaFontDlg *meta,StemInfo *vstem, DStemInfo *ds
     MapFromCounterGroup(map,meta,&cg, extras,ecnt,false);
 return( map );
 }
-    
+
+static void MapCleanup(struct mapd *mapd) {
+    int i, j, k;
+    struct map *map;
+
+    for ( i=0; i<mapd->mapcnt; ++i ) {
+	map = &mapd->maps[i];
+	for ( j=0; j<map->cnt-1; ++j ) {
+	    if ( map->mapping[j].from>=map->mapping[j+1].from ) {
+		--map->cnt;
+		for ( k=j ; k<map->cnt; ++k )
+		    map->mapping[k] = map->mapping[k+1];
+	    }
+	}
+    }
+}
+
 static void SCIBuildMaps(SCI *sci, int isvert) {
     MetaFontDlg *meta = sci->meta;
     struct zonemap extras[2];
@@ -1030,7 +1095,7 @@ static void SCIBuildMaps(SCI *sci, int isvert) {
 	extras[0].from = b.minx;
 	if ( meta->scalewidth ) {
 	    extras[0].to = extras[0].from;
-	    sci->sc->width = meta->width.factor*sci->sc->width + meta->width.add;
+	    sci->width = meta->width.factor*sci->sc->width + meta->width.add;
 	} else {
 	    extras[0].to = meta->lbearing.factor*b.minx + meta->lbearing.add;
 	    sci->rbearing = meta->rbearing.factor*(sci->sc->width-b.maxx) + meta->rbearing.add;
@@ -1067,6 +1132,7 @@ static void SCIBuildMaps(SCI *sci, int isvert) {
 		    extras,ecnt,isvert);
 	CounterGroupsFree(countergroups);
     }
+    MapCleanup(&sci->mapd[isvert]);
 }
 
 static double _MapCoord(struct map *map, double coord) {
@@ -1122,9 +1188,9 @@ static int _IsOnKnownEdge(struct map *map, double coord) {
     int i;
 
     for ( i=0; i<map->cnt; ++i ) {
-	if ( coord<map->mapping[0].from-.1 )
+	if ( coord<map->mapping[i].from-.1 )
 return( false );
-	if ( coord<map->mapping[0].from+.1 )
+	if ( coord<map->mapping[i].from+.1 )
 return( true );
     }
 return( false );
@@ -1151,10 +1217,17 @@ return( IsOnKnownEdge(&sci->mapd[1],pt->y,pt->x));
 return( false );
 }
 
-static int IsHVSpline(Spline *spline) {
-    if ( !spline->knownlinear )
+static int IsHVSpline(Spline *spline, SplinePoint *sp) {
+    if ( !spline->knownlinear ) {
+	if ( sp==spline->from )
+return( spline->splines[0].c==0 ? 1 : spline->splines[1].c==0 ? 0 : 2 );
+	else if ( sp==spline->to )
+return( DoubleNear(3*spline->splines[0].a+2*spline->splines[0].b+spline->splines[0].c,0) ? 1 :
+	DoubleNear(3*spline->splines[1].a+2*spline->splines[1].b+spline->splines[1].c,0) ? 0 :
+	 2 );
+	 else
 return( 2 );
-    else if ( spline->from->me.x==spline->to->me.x )
+    } else if ( spline->from->me.x==spline->to->me.x )
 return( 1 );
     else if ( spline->from->me.y==spline->to->me.y )
 return( 0 );
@@ -1168,22 +1241,32 @@ static double SCIFindMidPoint(SCI *sci,int pt, SplineList *spl, BasePoint *mid) 
     double len;
     SplineInfo *only, *exact;
     int isvert;
-    BasePoint v;
     Spline *spline;
 
-    if ( spl->cur->spline1==sp->next )
-	isvert = IsHVSpline( spline = sp->next );
+    if ( spl->cur->spline1==sp->next || spl->cur->spline2==sp->next )
+	isvert = IsHVSpline( spline = sp->next, sp );
     else
-	isvert = IsHVSpline( spline = sp->prev );
+	isvert = IsHVSpline( spline = sp->prev, sp );
 
     /* First check to see if there's a Stem in the splinelist that's valid */
     len = -1; only = exact = NULL;
     for ( sl=spl; sl!=NULL; sl=sl->next ) {
+	/* A curved spline may form a stem with another spline/line at one */
+	/*  location, while at another location the two are not a good match */
+	/*  So not all the stems we figured will be good matches at all times */
+	if (( !sl->cur->spline1->knownlinear || !sl->cur->spline2->knownlinear ) &&
+		NotParallelHere(sl->cur,sp))
+    continue;
 	if ( MetaRecognizedStemWidth(sci->meta,sl->cur->fromlen,isvert) ||
 		MetaRecognizedStemWidth(sci->meta,sl->cur->tolen,isvert)) {
 	    if ( len==-1 ) {
-		len = MetaRecognizedStemWidth(sci->meta,sl->cur->fromlen,isvert)?
-			sl->cur->fromlen:sl->cur->tolen;
+		if ( sl->cur->from==sp && MetaRecognizedStemWidth(sci->meta,sl->cur->fromlen,isvert))
+		    len = sl->cur->fromlen;
+		else if ( sl->cur->to==sp && MetaRecognizedStemWidth(sci->meta,sl->cur->tolen,isvert))
+		    len = sl->cur->tolen;
+		else
+		    len = MetaRecognizedStemWidth(sci->meta,sl->cur->fromlen,isvert)?
+			    sl->cur->fromlen:sl->cur->tolen;
 		only = sl->cur;
 	    } else if ( DoubleApprox(len,sl->cur->fromlen) ||
 		    DoubleApprox(len,sl->cur->tolen)) {
@@ -1196,24 +1279,23 @@ static double SCIFindMidPoint(SCI *sci,int pt, SplineList *spl, BasePoint *mid) 
     }
     if ( exact==NULL && len!=-2 ) exact = only;
     if ( exact!=NULL ) {
-	if ( exact->from==sp ) {
-	    *mid = exact->frommid;
+	if ( exact->spline1->from==sp ) {
+	    mid->x = sp->me.x + exact->fromvec.x;
+	    mid->y = sp->me.y + exact->fromvec.y;
 	    len = exact->fromlen;
-	} else if ( exact->to==sp ) {
-	    *mid = exact->tomid;
+	} else if ( exact->spline1->to==sp ) {
+	    mid->x = sp->me.x + exact->tovec.x;
+	    mid->y = sp->me.y + exact->tovec.y;
 	    len = exact->tolen;
+	} else if (( exact->spline2->from==sp && !exact->spline2backwards) ||
+		(exact->spline2->to==sp && exact->spline2backwards)) {
+	    mid->x = sp->me.x - exact->fromvec.x;
+	    mid->y = sp->me.y - exact->fromvec.y;
+	    len = exact->fromlen;
 	} else {
-	    if ( exact->spline1->to==sp ) {
-		v.x = exact->tomid.x-spline->to->me.x;
-		v.y = exact->tomid.y-spline->to->me.y;
-		len = exact->tolen;
-	    } else {
-		v.x = exact->frommid.x-spline->from->me.x;
-		v.y = exact->frommid.y-spline->from->me.y;
-		len = exact->fromlen;
-	    }
-	    mid->x = sp->me.x - v.x;
-	    mid->y = sp->me.y - v.y;
+	    mid->x = sp->me.x - exact->tovec.x;
+	    mid->y = sp->me.y - exact->tovec.y;
+	    len = exact->tolen;
 	}
 return( len );
     }
@@ -1244,31 +1326,55 @@ return( 0 );		/* Couldn't find a stem */
 
 static void PositionFromMidLen(SCI *sci,BasePoint *new,BasePoint *mid,SplinePoint *sp,
 	double len, Spline *s) {
-    BasePoint v, other;
-    int isvert = IsHVSpline(s);
+    BasePoint v, other, temp;
+    int isvert = IsHVSpline(s,sp);
 
     v.x = mid->x-sp->me.x; v.y = mid->y-sp->me.y;
     other.x = mid->x+v.x; other.y = mid->y+v.y;
-    len = MetaFontFindWidth(sci->meta,len,isvert);
-    len /= sqrt(v.x*v.x + v.y*v.y);
+    len = MetaFontFindWidth(sci->meta,len,isvert)/2;	/* Get half the stem width */
+    len /= sqrt(v.x*v.x + v.y*v.y);			/* Normalize vector which is half current width */
     v.x *= len; v.y *= len;
-    if ( SCIIsOnKnownEdge(sci,&sp->me,isvert) ) {
-	*new = sp->me;
-	SCIMapPoint(sci,new);
-	new->x = rint(new->x);
-	new->y = rint(new->y);
-    } else if ( SCIIsOnKnownEdge(sci,&other,isvert)) {
-	SCIMapPoint(sci,&other);
-	new->x = rint(other.x)-2*v.x;
-	new->y = rint(other.y)-2*v.y;
+    if ( isvert!=2 ) {
+	if ( SCIIsOnKnownEdge(sci,&sp->me,0) ) {
+	    temp = sp->me;
+	    SCIMapPoint(sci,&temp);
+	    new->x = rint(temp.x);
+	} else if ( SCIIsOnKnownEdge(sci,&other,0)) {
+	    temp = other;
+	    SCIMapPoint(sci,&temp);
+	    new->x = rint(temp.x)-2*v.x;
+	} else {
+	    temp = *mid;
+	    SCIMapPoint(sci,&temp);
+	    if ( v.x>0 )
+		new->x = rint(temp.x-v.x);
+	    else
+		new->x = rint(temp.x+v.x)-2*v.x;
+	}
+	if ( SCIIsOnKnownEdge(sci,&sp->me,1) ) {
+	    temp = sp->me;
+	    SCIMapPoint(sci,&temp);
+	    new->y = rint(temp.y);
+	} else if ( SCIIsOnKnownEdge(sci,&other,1)) {
+	    temp = other;
+	    SCIMapPoint(sci,&temp);
+	    new->y = rint(temp.y)-2*v.y;
+	} else {
+	    temp = *mid;
+	    SCIMapPoint(sci,&temp);
+	    if ( v.y>0 )
+		new->y = rint(temp.y-v.y);
+	    else
+		new->y = rint(temp.y+v.y)-2*v.y;
+	}
     } else {
 	SCIMapPoint(sci,mid);
 	if ( v.y>0 || (v.x>0 && v.y==0)) {
-	    new->x = rint(mid->x+v.x)-2*v.x;
-	    new->y = rint(mid->y+v.y)-2*v.y;
-	} else {
 	    new->x = rint(mid->x-v.x);
 	    new->y = rint(mid->y-v.y);
+	} else {
+	    new->x = rint(mid->x+v.x)-2*v.x;
+	    new->y = rint(mid->y+v.y)-2*v.y;
 	}
     }
 }
@@ -1301,26 +1407,30 @@ static void SCIPositionPts(SCI *sci) {
 		PositionFromMidLen(sci,&new2,&mid2,sp,len2,sp->prev);
 		new = new1;		/* This is a fallback for when we get errors */
 		if ( v1.x==0 ) {
-		    if ( v2.x==0 )
-			GDrawIError("Two Parallel horizontal lines" );
-		    else
+		    if ( v2.x==0 ) {
+			if ( !DoubleApprox(new1.x,new2.x) || !DoubleApprox(new1.y,new2.y))
+			    GDrawIError("Two Parallel horizontal lines" );
+		    } else
 			/* Inherit x from new1 */
 			new.y = new2.y + v2.y*(new.x-new2.x)/v2.x;
 		} else if ( v2.x==0 ) {
-		    if ( v1.x==0 )
-			GDrawIError("Two Parallel horizontal lines(2)" );
-		    else {
-			new.x = new2.x;
-			new.y = new1.y + v1.y*(new.x-new1.x)/v1.x;
-		    }
-		} else if ( v2.y/v2.x == v1.y/v1.x )
+		    new.x = new2.x;
+		    new.y = new1.y + v1.y*(new.x-new1.x)/v1.x;
+		} else if ( v2.y/v2.x == v1.y/v1.x ) {
+		    if ( !DoubleApprox(new1.x,new2.x) || !DoubleApprox(new1.y,new2.y))
 			GDrawIError("Two Parallel lines" );
-		else {
+		} else {
 /* new1.y + v1.y*(X-new1.x)/v1.x = new2.y + v2.y*(X-new2.x)/v2.x */
 /* new1.y-new2.y - v1.y/v1.x*new1.x + v2.y/v2.x*new2.x = (v2.y/v2.x-v1.y/v1.x)*X */
 		    new.x = (new1.y-new2.y - v1.y/v1.x*new1.x + v2.y/v2.x*new2.x)/(v2.y/v2.x-v1.y/v1.x);
 		    new.y = new1.y+ v1.y/v1.x*(new.x-new1.x);
 		}
+	    } else if ( len1!=0 ) {
+		PositionFromMidLen(sci,&new1,&mid1,sp,len1,sp->next);
+		new = new1;
+	    } else if ( len2!=0 ) {
+		PositionFromMidLen(sci,&new2,&mid2,sp,len2,sp->prev);
+		new = new2;
 	    } else {
 		new = sp->me;
 		SCIMapPoint(sci,&new);
@@ -1341,9 +1451,9 @@ static void SCIPositionControls(SCI *sci) {
 	j = nsp->ptindex;
 	scale.x = scale.y = 1.0;
 	if ( sp->me.x!=nsp->me.x )
-	    scale.x = ( sci->pts[i].newme.x != sci->pts[j].newme.x )/(sp->me.x-nsp->me.x);
+	    scale.x = ( sci->pts[i].newme.x - sci->pts[j].newme.x )/(sp->me.x-nsp->me.x);
 	if ( sp->me.y!=nsp->me.y )
-	    scale.y = ( sci->pts[i].newme.y != sci->pts[j].newme.y )/(sp->me.y-nsp->me.y);
+	    scale.y = ( sci->pts[i].newme.y - sci->pts[j].newme.y )/(sp->me.y-nsp->me.y);
 	sci->pts[i].newnext.x = sci->pts[i].newme.x + scale.x * (sp->nextcp.x-sp->me.x);
 	sci->pts[i].newnext.y = sci->pts[i].newme.y + scale.y * (sp->nextcp.y-sp->me.y);
 	sci->pts[j].newprev.x = sci->pts[j].newme.x + scale.x * (nsp->prevcp.x-nsp->me.x);
@@ -1361,24 +1471,474 @@ static void SCISet(SCI *sci) {
 	sp->nextcp = sci->pts[i].newnext;
 	sp->me = sci->pts[i].newme;
     }
+    for ( i=0; i<sci->ptcnt; ++i ) {
+	sp = sci->pts[i].cur;
+	SplineRefigure(sp->next);
+    }
 }
-	    
-void MetaFont(FontView *fv,CharView *cv) {
+
+static void SCIFixupHV(SCI *sci) {
+    int i;
+    SplinePoint *sp, *nsp;
+
+    for ( i=0; i<sci->ptcnt; ++i ) {
+	sp = sci->pts[i].cur;
+	nsp = sp->next->to;
+	if ( sp->me.x==nsp->me.x && sci->pts[i].newme.x!=sci->pts[nsp->ptindex].newme.x ) {
+	    fprintf(stderr, "Vertical line no longer vertical (%g,%g) <-> (%g,%g) becomes (%g,%g) <-> (%g,%g)\n",
+		    sp->me.x, sp->me.y, nsp->me.x, nsp->me.y,
+		    sci->pts[i].newme.x, sci->pts[i].newme.y,
+		    sci->pts[nsp->ptindex].newme.x, sci->pts[nsp->ptindex].newme.y );
+	    sci->pts[i].newme.x = sci->pts[nsp->ptindex].newme.x =
+		rint((sci->pts[i].newme.x + sci->pts[nsp->ptindex].newme.x)/2);
+	}
+	if ( sp->me.y==nsp->me.y && sci->pts[i].newme.y!=sci->pts[nsp->ptindex].newme.y ) {
+	    fprintf(stderr, "Horizontal line no longer horizontal (%g,%g) <-> (%g,%g) becomes (%g,%g) <-> (%g,%g)\n",
+		    sp->me.x, sp->me.y, nsp->me.x, nsp->me.y,
+		    sci->pts[i].newme.x, sci->pts[i].newme.y,
+		    sci->pts[nsp->ptindex].newme.x, sci->pts[nsp->ptindex].newme.y );
+	    sci->pts[i].newme.y = sci->pts[nsp->ptindex].newme.y =
+		rint((sci->pts[i].newme.y + sci->pts[nsp->ptindex].newme.y)/2);
+	}
+    }
+}
+
+static void MovePointToInter(SCI *sci,int i,int j, double val, int isvert) {
+    /* Move the new version of point i to the place where the spline between */
+    /*  it and point j intersects the horizontal/vertical line through val */
+    SplinePoint pti, ptj, *midsp;
+    double ts[3], t;
+    int k;
+    Spline *spline;
+
+    memset(&pti,'\0',sizeof(pti));
+    memset(&ptj,'\0',sizeof(ptj));
+    pti.me = sci->pts[i].newme;
+    ptj.me = sci->pts[j].newme;
+    if ( sci->pts[i].cur->prev->from->ptindex==j ) {
+	pti.nextcp = sci->pts[i].newprev;
+	ptj.prevcp = sci->pts[j].newnext;
+    } else {
+	pti.nextcp = sci->pts[i].newnext;
+	ptj.prevcp = sci->pts[j].newprev;
+    }
+    spline = SplineMake(&pti,&ptj);
+    SplineSolveFull(&spline->splines[isvert],val,ts);
+    t = 2;
+    for ( k=0; k<3 ; ++k ) if ( ts[k]!=-1 )
+	if ( t>ts[k] ) t=ts[k];
+    if ( t==2 ) {
+	SplineFree(spline);
+return;
+    }
+    midsp = SplineBisect(spline,t);
+    sci->pts[i].newme = midsp->me;
+    if ( sci->pts[i].cur->prev->from->ptindex==j ) {
+	sci->pts[i].newprev = midsp->nextcp;
+	sci->pts[j].newnext = ptj.prevcp;
+    } else {
+	sci->pts[i].newnext = midsp->nextcp;
+	sci->pts[j].newprev = ptj.prevcp;
+    }
+    SplineFree(midsp->prev); SplineFree(midsp->next);
+    SplinePointFree(midsp);
+}
+    
+static void SCICornerFixups(SCI *sci) {
+    int i;
+    SplinePoint *sp, *nsp;
+    BasePoint *me, *nme;
+
+    for ( i=0; i<sci->ptcnt; ++i ) {
+	sp = sci->pts[i].cur;
+	nsp = sp->next->to;
+	me = &sci->pts[i].newme;
+	nme = &sci->pts[nsp->ptindex].newme;
+	if ( sp->me.x==nsp->me.x &&
+		((sp->me.y>nsp->me.y && me->y<nme->y) ||
+		    (sp->me.y<nsp->me.y && me->y>nme->y)) ) {
+	    MovePointToInter(sci,i,sp->prev->from->ptindex,sp->me.y,1);
+	    MovePointToInter(sci,nsp->ptindex,nsp->next->to->ptindex,nsp->me.y,1);
+	}
+	if ( sp->me.y==nsp->me.y &&
+		((sp->me.x>nsp->me.x && me->x<nme->x) ||
+		    (sp->me.x<nsp->me.x && me->x>nme->x)) ) {
+	    MovePointToInter(sci,i,sp->prev->from->ptindex,sp->me.x,0);
+	    MovePointToInter(sci,nsp->ptindex,nsp->next->to->ptindex,nsp->me.x,0);
+	}
+    }
+}
+
+static void _MetaFont(MetaFontDlg *meta,SplineChar *sc) {
     SCI *sci;
-    MetaFontDlg meta;
     DBounds b;
 
-    sci = SCIinit(cv->sc,&meta);
+    if ( sc->refs!=NULL )
+return;
+
+    sci = SCIinit(sc,meta);
     SCIFindStems(sci);
     SCIFigureWidths(sci);
     SCIBuildMaps(sci,0);		/* Horizontal maps */
     SCIBuildMaps(sci,1);		/* Vertical maps */
     SCIPositionPts(sci);
+    SCIFixupHV(sci);
     SCIPositionControls(sci);
+    SCICornerFixups(sci);
     SCISet(sci);
-    if ( !meta.scalewidth ) {
-	SplineCharFindBounds(sci->sc,&b);
-	sci->sc->width = sci->rbearing + b.maxx;
+    if ( !meta->scalewidth ) {
+	SplineCharFindBounds(sc,&b);
+	sci->width = sci->rbearing + b.maxx;
     }
+    SCSynchronizeWidth(sc,sci->width,sc->width,meta->fv);
+    StemInfosFree(sc->hstem); sc->hstem = NULL;
+    StemInfosFree(sc->vstem); sc->vstem = NULL;
+    DStemInfosFree(sc->dstem); sc->dstem = NULL;
+    SCOutOfDateBackground(sc);
+    SCCharChangedUpdate(sc, meta->fv);
     SCIFree(sci);
+}
+
+static int lastdlgtype=0;
+
+static GTextInfo dlgtypes[] = {
+    { (unichar_t *) _STR_Simple, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Advanced, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { NULL }};
+
+static GTextInfo simplefuncs[] = {
+    { (unichar_t *) _STR_Embolden, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 1, 0, 0, 1},
+    { (unichar_t *) _STR_Thin, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Condense, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Expand, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { NULL }};
+
+#define CID_DlgType		1001
+#define CID_SimpleFuncs		1002
+#define CID_AdvancedTabs	1003
+#define CID_StemScale		1004
+#define CID_CounterScale	1005
+#define CID_StemScaleTxt	1006
+#define CID_CounterScaleTxt	1007
+#define CID_StemScalePer	1008
+#define CID_CounterScalePer	1009
+#define CID_XH_From		1010
+#define CID_XH_OldVal		1011
+#define CID_XH_To		1012
+#define CID_XH_Val		1013
+
+
+static int MT_OK(GGadget *g, GEvent *e) {
+    int type;
+    MetaFontDlg *meta;
+    int i;
+    double stems, counters, xh=0;
+    int err;
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	meta = GDrawGetUserData(GGadgetGetWindow(g));
+	type = GGadgetGetFirstListSelectedItem(GWidgetGetControl(meta->gw,CID_DlgType));
+	if ( type==0 ) {
+	    /*func = GGadgetGetFirstListSelectedItem(GWidgetGetControl(meta->gw,CID_SimpleFuncs));*/
+	    err = false;
+	    stems = GetDoubleR(meta->gw,CID_StemScale, _STR_StemScale,&err)/100;
+	    counters = GetDoubleR(meta->gw,CID_CounterScale,_STR_CounterScale,&err)/100;
+	    if ( meta->bxh!=-1 )
+		xh = GetDoubleR(meta->gw,CID_XH_Val,_STR_XHeight,&err);
+	    if ( err )
+return( true );
+	    meta->counters[0].counterchoices = cc_edgefixed;
+	    if ( stems!=1 ) {
+		meta->stemcnt = 1;
+		meta->stems = gcalloc(1,sizeof(struct stemcntl));
+		meta->stems->small = 0;
+		meta->stems->wide = (meta->sf->ascent+meta->sf->descent)/4;
+		meta->stems->factor = stems;
+	    }
+	    meta->counters[0].counter.factor = counters;
+	    meta->lbearing.factor = meta->rbearing.factor = meta->counters[0].counter.factor;
+
+	    meta->counters[1].counterchoices = cc_zones;
+	    meta->counters[1].zonecnt = meta->bcnt;
+	    meta->counters[1].zones = galloc(meta->bcnt*sizeof(struct zonemap));
+	    for ( i=0; i<meta->bcnt; ++i )
+		meta->counters[1].zones[i].from = meta->counters[1].zones[i].to = meta->blues[i];
+	    if ( meta->bxh!=-1 )
+		meta->counters[1].zones[meta->bxh].to = xh;
+	    if ( meta->cv!=NULL )
+		_MetaFont(meta,meta->cv->sc);
+	    else {
+		for ( i=0; i<meta->fv->sf->charcnt; ++i )
+		    if ( meta->fv->sf->chars[i]!=NULL && meta->fv->selected[i] )
+			_MetaFont(meta,meta->fv->sf->chars[i]);
+	    }
+	}
+	lastdlgtype = type;
+	meta->done = true;
+    }
+return( true );
+}
+
+static int MT_Cancel(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	MetaFontDlg *meta = GDrawGetUserData(GGadgetGetWindow(g));
+	meta->done = true;
+    }
+return( true );
+}
+
+static void FuncSet(MetaFontDlg *meta) {
+    int func = GGadgetGetFirstListSelectedItem(GWidgetGetControl(meta->gw,CID_SimpleFuncs));
+    double stemval = func==0?170:func==1?70:100;
+    double counterval = func==0?110:func==1?95:func==2?75:125;
+    char buffer[10];
+    unichar_t ustem[10], ucounter[10];
+
+    sprintf(buffer,"%g",stemval);
+    uc_strcpy(ustem,buffer);
+    sprintf(buffer,"%g",counterval);
+    uc_strcpy(ucounter,buffer);
+    GGadgetSetTitle(GWidgetGetControl(meta->gw,CID_StemScale),ustem);
+    GGadgetSetTitle(GWidgetGetControl(meta->gw,CID_CounterScale),ucounter);
+}    
+    
+static int MT_FuncChange(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
+	MetaFontDlg *meta = GDrawGetUserData(GGadgetGetWindow(g));
+	FuncSet(meta);
+    }
+return( true );
+}
+
+static int MT_AspectChange(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+    }
+return( true );
+}
+
+static void DlgSetup(MetaFontDlg *meta) {
+    int type = GGadgetGetFirstListSelectedItem(GWidgetGetControl(meta->gw,CID_DlgType));
+    GGadgetSetVisible(GWidgetGetControl(meta->gw,CID_SimpleFuncs),type==0);
+    GGadgetSetVisible(GWidgetGetControl(meta->gw,CID_StemScale),type==0);
+    GGadgetSetVisible(GWidgetGetControl(meta->gw,CID_StemScaleTxt),type==0);
+    GGadgetSetVisible(GWidgetGetControl(meta->gw,CID_StemScalePer),type==0);
+    GGadgetSetVisible(GWidgetGetControl(meta->gw,CID_CounterScale),type==0);
+    GGadgetSetVisible(GWidgetGetControl(meta->gw,CID_CounterScaleTxt),type==0);
+    GGadgetSetVisible(GWidgetGetControl(meta->gw,CID_CounterScalePer),type==0);
+    GGadgetSetVisible(GWidgetGetControl(meta->gw,CID_XH_From),type==0 && meta->bxh!=-1);
+    GGadgetSetVisible(GWidgetGetControl(meta->gw,CID_XH_OldVal),type==0 && meta->bxh!=-1);
+    GGadgetSetVisible(GWidgetGetControl(meta->gw,CID_XH_To),type==0 && meta->bxh!=-1);
+    GGadgetSetVisible(GWidgetGetControl(meta->gw,CID_XH_Val),type==0 && meta->bxh!=-1);
+
+    GGadgetSetVisible(GWidgetGetControl(meta->gw,CID_AdvancedTabs),type==1);
+}
+
+static int GFI_DlgTypeChange(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
+	MetaFontDlg *meta = GDrawGetUserData(GGadgetGetWindow(g));
+	DlgSetup(meta);
+    }
+return( true );
+}
+
+static int e_h(GWindow gw, GEvent *event) {
+    if ( event->type==et_close ) {
+	MetaFontDlg *meta = GDrawGetUserData(gw);
+	meta->done = true;
+    }
+return( event->type!=et_char );
+}
+
+void MetaFont(FontView *fv,CharView *cv) {
+    GRect pos;
+    GWindowAttrs wattrs;
+    GTabInfo aspects[8];
+    GGadgetCreateData mgcd[18];
+    GTextInfo mlabel[18];
+    MetaFontDlg meta;
+    int i;
+    BlueData bd;
+    char buffer[20];
+
+    memset(&meta,'\0',sizeof(meta));
+    meta.fv = fv; meta.cv = cv;
+    if ( cv!=NULL )
+	meta.sf = cv->sc->parent;
+    else
+	meta.sf = fv->sf;
+    QuickBlues(meta.sf,&bd);
+    meta.bcnt = 0; meta.bxh = -1;
+    if ( bd.descent<0 ) meta.blues[meta.bcnt++] = bd.descent;
+    meta.blues[meta.bcnt++] = 0;
+    if ( bd.xheight>0 ) {
+	meta.bxh = meta.bcnt;
+	meta.blues[meta.bcnt++] = bd.xheight;
+    }
+    if ( bd.ascent>bd.caph ) {
+	if ( bd.caph!=0 ) meta.blues[meta.bcnt++] = bd.caph;
+	if ( bd.ascent>bd.caph + bd.caph/50 ) meta.blues[meta.bcnt++] = bd.ascent;
+    } else {
+	if ( bd.caph>bd.ascent + bd.ascent/50 ) meta.blues[meta.bcnt++] = bd.ascent;
+	if ( bd.caph!=0 ) meta.blues[meta.bcnt++] = bd.caph;
+    }
+
+    memset(&wattrs,0,sizeof(wattrs));
+    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_restrict;
+    wattrs.event_masks = ~(1<<et_charup);
+    wattrs.restrict_input_to_me = 1;
+    wattrs.undercursor = 1;
+    wattrs.cursor = ct_pointer;
+    wattrs.window_title = GStringGetResource(_STR_MetaFont,NULL);
+    pos.x = pos.y = 0;
+    pos.width =GDrawPointsToPixels(NULL,268);
+    pos.height = GDrawPointsToPixels(NULL,330);
+    meta.gw = GDrawCreateTopWindow(NULL,&pos,e_h,&meta,&wattrs);
+
+    memset(&mlabel,0,sizeof(mlabel));
+    memset(&mgcd,0,sizeof(mgcd));
+    memset(&aspects,'\0',sizeof(aspects));
+    for ( i=0; dlgtypes[i].text!=NULL; ++i )
+	dlgtypes[i].selected = ( i==lastdlgtype );
+
+    i = 0;
+    aspects[i].text = (unichar_t *) _STR_Stems;
+    aspects[i].selected = true;
+    aspects[i++].text_in_resource = true;
+    /*aspects[i++].gcd = ngcd;*/
+
+    aspects[i].text = (unichar_t *) _STR_HCounters;
+    aspects[i++].text_in_resource = true;
+
+    aspects[i].text = (unichar_t *) _STR_VCounters;
+    aspects[i++].text_in_resource = true;
+
+    mgcd[0].gd.pos.x = 6; mgcd[0].gd.pos.y = 6;
+    mgcd[0].gd.flags = gg_visible | gg_enabled;
+    mgcd[0].gd.cid = CID_DlgType;
+    mgcd[0].gd.u.list = dlgtypes;
+    mgcd[0].gd.handle_controlevent = GFI_DlgTypeChange;
+    mgcd[0].creator = GListButtonCreate;
+
+    mgcd[1].gd.pos.x = 16; mgcd[1].gd.pos.y = 36;
+    mgcd[1].gd.flags = gg_enabled;
+    mgcd[1].gd.cid = CID_SimpleFuncs;
+    mgcd[1].gd.u.list = simplefuncs;
+    mgcd[1].gd.handle_controlevent = MT_FuncChange;
+    mgcd[1].creator = GListButtonCreate;
+
+    mgcd[2].gd.pos.x = 4; mgcd[2].gd.pos.y = 34;
+    mgcd[2].gd.pos.width = 260;
+    mgcd[2].gd.pos.height = 260;
+    mgcd[2].gd.u.tabs = aspects;
+    mgcd[2].gd.flags = gg_enabled;
+    mgcd[2].gd.handle_controlevent = MT_AspectChange;
+    mgcd[2].gd.cid = CID_AdvancedTabs;
+    mgcd[2].creator = GTabSetCreate;
+
+    mgcd[1+lastdlgtype].gd.flags |= gg_visible;
+
+    mgcd[3].gd.pos.x = 16; mgcd[3].gd.pos.y = mgcd[1].gd.pos.y+36+6;
+    mgcd[3].gd.flags = gg_enabled;
+    mlabel[3].text = (unichar_t *) _STR_StemScale;
+    mlabel[3].text_in_resource = true;
+    mgcd[3].gd.label = &mlabel[3];
+    mgcd[3].gd.cid = CID_StemScaleTxt;
+    mgcd[3].creator = GLabelCreate;
+
+    mgcd[4].gd.pos.x = 108; mgcd[4].gd.pos.y = mgcd[3].gd.pos.y-6; mgcd[4].gd.pos.width=50;
+    mgcd[4].gd.flags = gg_enabled;
+    mgcd[4].gd.cid = CID_StemScale;
+    mgcd[4].creator = GTextFieldCreate;
+
+    mgcd[5].gd.pos.x = mgcd[4].gd.pos.x+mgcd[4].gd.pos.width+3; mgcd[5].gd.pos.y = mgcd[3].gd.pos.y;
+    mgcd[5].gd.flags = gg_enabled;
+    mlabel[5].text = (unichar_t *) "%";
+    mlabel[5].text_is_1byte = true;
+    mgcd[5].gd.label = &mlabel[5];
+    mgcd[5].gd.cid = CID_StemScalePer;
+    mgcd[5].creator = GLabelCreate;
+
+    mgcd[6].gd.pos.x = 16; mgcd[6].gd.pos.y = mgcd[4].gd.pos.y+26+6;
+    mgcd[6].gd.flags = gg_enabled;
+    mlabel[6].text = (unichar_t *) _STR_CounterScale;
+    mlabel[6].text_in_resource = true;
+    mgcd[6].gd.label = &mlabel[6];
+    mgcd[6].gd.cid = CID_CounterScaleTxt;
+    mgcd[6].creator = GLabelCreate;
+
+    mgcd[7].gd.pos.x = mgcd[4].gd.pos.x; mgcd[7].gd.pos.y = mgcd[6].gd.pos.y-6; mgcd[7].gd.pos.width=50;
+    mgcd[7].gd.flags = gg_enabled;
+    mgcd[7].gd.cid = CID_CounterScale;
+    mgcd[7].creator = GTextFieldCreate;
+
+    mgcd[8].gd.pos.x = mgcd[7].gd.pos.x+mgcd[7].gd.pos.width+3; mgcd[8].gd.pos.y = mgcd[6].gd.pos.y;
+    mgcd[8].gd.flags = gg_enabled;
+    mlabel[8].text = (unichar_t *) "%";
+    mlabel[8].text_is_1byte = true;
+    mgcd[8].gd.label = &mlabel[8];
+    mgcd[8].gd.cid = CID_CounterScalePer;
+    mgcd[8].creator = GLabelCreate;
+
+    mgcd[9].gd.pos.x = 16; mgcd[9].gd.pos.y = mgcd[7].gd.pos.y+26+6;
+    mgcd[9].gd.flags = gg_enabled;
+    mlabel[9].text = (unichar_t *) _STR_XHeightFrom;
+    mlabel[9].text_in_resource = true;
+    mgcd[9].gd.label = &mlabel[9];
+    mgcd[9].gd.cid = CID_XH_From;
+    mgcd[9].creator = GLabelCreate;
+
+    sprintf( buffer, "%g", bd.xheight );
+    mgcd[10].gd.pos.x = mgcd[4].gd.pos.x; mgcd[10].gd.pos.y = mgcd[9].gd.pos.y;
+    mgcd[10].gd.flags = gg_enabled;
+    mlabel[10].text = (unichar_t *) buffer;
+    mlabel[10].text_is_1byte = true;
+    mgcd[10].gd.label = &mlabel[10];
+    mgcd[10].gd.cid = CID_XH_OldVal;
+    mgcd[10].creator = GLabelCreate;
+
+    mgcd[11].gd.pos.x = mgcd[10].gd.pos.x+30; mgcd[11].gd.pos.y = mgcd[9].gd.pos.y;
+    mgcd[11].gd.flags = gg_enabled;
+    mlabel[11].text = (unichar_t *) _STR_To;
+    mlabel[11].text_in_resource = true;
+    mgcd[11].gd.label = &mlabel[11];
+    mgcd[11].gd.cid = CID_XH_To;
+    mgcd[11].creator = GLabelCreate;
+
+    mgcd[12].gd.pos.x = mgcd[11].gd.pos.x+30; mgcd[12].gd.pos.y = mgcd[9].gd.pos.y-6; mgcd[12].gd.pos.width=50;
+    mgcd[12].gd.flags = gg_enabled;
+    mgcd[12].gd.label = &mlabel[10];	/* Initialized same as old value */
+    mgcd[12].gd.cid = CID_XH_Val;
+    mgcd[12].creator = GTextFieldCreate;
+
+    mgcd[13].gd.pos.x = 30-3; mgcd[13].gd.pos.y = 330-35-3;
+    mgcd[13].gd.pos.width = -1; mgcd[13].gd.pos.height = 0;
+    mgcd[13].gd.flags = gg_visible | gg_enabled | gg_but_default;
+    mlabel[13].text = (unichar_t *) _STR_OK;
+    mlabel[13].text_in_resource = true;
+    mgcd[13].gd.label = &mlabel[13];
+    mgcd[13].gd.handle_controlevent = MT_OK;
+    mgcd[13].creator = GButtonCreate;
+
+    mgcd[14].gd.pos.x = 268-GIntGetResource(_NUM_Buttonsize)-30; mgcd[14].gd.pos.y = mgcd[13].gd.pos.y+3;
+    mgcd[14].gd.pos.width = -1; mgcd[14].gd.pos.height = 0;
+    mgcd[14].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    mlabel[14].text = (unichar_t *) _STR_Cancel;
+    mlabel[14].text_in_resource = true;
+    mgcd[14].gd.label = &mlabel[14];
+    mgcd[14].gd.handle_controlevent = MT_Cancel;
+    mgcd[14].creator = GButtonCreate;
+
+    mgcd[15].gd.pos.x = 2; mgcd[15].gd.pos.y = 2;
+    mgcd[15].gd.pos.width = pos.width-4; mgcd[15].gd.pos.height = pos.height-2;
+    mgcd[15].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
+    mgcd[15].creator = GGroupCreate;
+
+    GGadgetsCreate(meta.gw,mgcd);
+    DlgSetup(&meta);
+    FuncSet(&meta);
+
+    GDrawSetVisible(meta.gw,true);
+    while ( !meta.done )
+	GDrawProcessOneEvent(NULL);
+    GDrawDestroyWindow(meta.gw);
 }
