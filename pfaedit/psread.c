@@ -1272,7 +1272,7 @@ static SplinePointList *SplinesFromEntities(EntityChar *ec) {
 		si.radius = ent->u.splines.stroke_width/2;
 		new = NULL;
 		for ( last = ent->u.splines.splines; last!=NULL; last=last->next ) {
-		    temp = SplineSetStroke(last,&si);
+		    temp = SplineSetStroke(last,&si,NULL);
 		    if ( new==NULL )
 			new=temp;
 		    else

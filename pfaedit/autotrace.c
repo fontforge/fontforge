@@ -56,6 +56,7 @@ static SplinePointList *SplinesFromEntities(Entity *ent, Color bgcol) {
     /*  the list */
     int bgr = COLOR_RED(bgcol), bgg = COLOR_GREEN(bgcol), bgb = COLOR_BLUE(bgcol);
 
+    memset(&sc,'\0',sizeof(sc));
     for ( ; ent!=NULL; ent = enext ) {
 	enext = ent->next;
 	if ( ent->type == et_splines ) {
@@ -66,7 +67,7 @@ static SplinePointList *SplinesFromEntities(Entity *ent, Color bgcol) {
 		si.radius = ent->u.splines.stroke_width/2;
 		new = NULL;
 		for ( last = ent->u.splines.splines; last!=NULL; last=last->next ) {
-		    temp = SplineSetStroke(last,&si);
+		    temp = SplineSetStroke(last,&si,NULL);
 		    if ( new==NULL )
 			new=temp;
 		    else
@@ -105,7 +106,6 @@ static SplinePointList *SplinesFromEntities(Entity *ent, Color bgcol) {
 
     /* Then remove all counter-clockwise (background) contours which are at */
     /*  the edge of the character */
-    memset(&sc,'\0',sizeof(sc));
     do {
 	removed = false;
 	sc.splines = head;

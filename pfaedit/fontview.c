@@ -867,10 +867,15 @@ void FVTrans(FontView *fv,SplineChar *sc,double transform[6], char *sel) {
 
 static void FVTransFunc(void *_fv,double transform[6],int otype) {
     FontView *fv = _fv;
-    int i;
     double transx = transform[4], transy=transform[5];
     DBounds bb;
     BasePoint base;
+    int i, cnt=0;
+    static unichar_t trans[] = { 'T','r','a','n','s','f','o','r','m','i','n','g',' ','.','.','.',  '\0' };
+
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
+	++cnt;
+    GProgressStartIndicator(10,trans,trans,NULL,cnt,1);
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
@@ -885,7 +890,10 @@ static void FVTransFunc(void *_fv,double transform[6],int otype) {
 		(transform[1]*base.x+transform[3]*base.y);
 	}
 	FVTrans(fv,sc,transform,fv->selected);
+	if ( !GProgressNext())
+    break;
     }
+    GProgressEndIndicator();
 }
 
 static void FVMenuBitmaps(GWindow gw,struct gmenuitem *mi) {
@@ -907,26 +915,42 @@ static void FVMenuStroke(GWindow gw,struct gmenuitem *mi) {
 
 static void FVMenuOverlap(GWindow gw,struct gmenuitem *mi) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    int i;
+    int i, cnt=0;
+    static unichar_t over[] = { 'R','e','m','o','v','i','n','g',' ','o','v','e','l','a','p','s',  '\0' };
+
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
+	++cnt;
+    GProgressStartIndicator(10,over,over,NULL,cnt,1);
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
 	SCPreserveState(sc);
 	sc->splines = SplineSetRemoveOverlap(sc->splines);
 	SCCharChangedUpdate(sc,fv);
+	if ( !GProgressNext())
+    break;
     }
+    GProgressEndIndicator();
 }
 
 static void FVMenuSimplify(GWindow gw,struct gmenuitem *mi) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    int i;
+    int i, cnt=0;
+    static unichar_t simplifying[] = { 'S','i','m','p','l','i','f','y','i','n','g',' ','.','.','.',  '\0' };
+
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
+	++cnt;
+    GProgressStartIndicator(10,simplifying,simplifying,NULL,cnt,1);
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
 	SCPreserveState(sc);
 	SplineCharSimplify(sc->splines);
 	SCCharChangedUpdate(sc,fv);
+	if ( !GProgressNext())
+    break;
     }
+    GProgressEndIndicator();
 }
 
 static void FVMenuRound2Int(GWindow gw,struct gmenuitem *mi) {
@@ -968,8 +992,13 @@ return( false );
     
 static void FVMenuBuildAccent(GWindow gw,struct gmenuitem *mi) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    int i;
+    int i, cnt=0;
     SplineChar dummy;
+    static unichar_t accents[] = { 'B','u','i','l','d','i','n','g',' ','a','c','c','e','n','t','e','d',' ','l','e','t','t','e','r','s',  '\0' };
+
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] )
+	++cnt;
+    GProgressStartIndicator(10,accents,accents,NULL,cnt,1);
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
@@ -979,7 +1008,10 @@ static void FVMenuBuildAccent(GWindow gw,struct gmenuitem *mi) {
 	    sc = SFMakeChar(fv->sf,i);
 	    SCBuildComposit(fv->sf,sc,!fv->onlycopydisplayed,fv);
 	}
+	if ( !GProgressNext())
+    break;
     }
+    GProgressEndIndicator();
 }
 
 static void FVMenuMergeFonts(GWindow gw,struct gmenuitem *mi) {
@@ -1228,15 +1260,22 @@ static void mtlistcheck(GWindow gw,struct gmenuitem *mi) {
 
 static void FVMenuAutoHint(GWindow gw,struct gmenuitem *mi) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    int i;
+    int i, cnt=0;
+    static unichar_t autohint[] = { 'A','u','t','o','h','i','n','t','i','n','g',' ','f','o','n','t',  '\0' };
 
-    /* !!!! Hint undoes???? */
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
+	++cnt;
+    GProgressStartIndicator(10,autohint,autohint,NULL,cnt,1);
+
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
 	sc->manualhints = false;
 	SplineCharAutoHint(sc);
 	SCUpdateAll(sc);
+	if ( !GProgressNext())
+    break;
     }
+    GProgressEndIndicator();
 }
 
 static void htlistcheck(GWindow gw,struct gmenuitem *mi) {

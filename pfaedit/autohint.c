@@ -706,6 +706,58 @@ void FindVStems( SplineFont *sf, double snaps[12], double cnt[12]) {
     FindStems(sf,snaps,cnt,FigureVStems);
 }
 
+static Hints *RefHintsMerge(Hints *into, Hints *rh, double mul, double offset) {
+    Hints *prev, *h, *n;
+    double base, width;
+
+    for ( ; rh!=NULL; rh=rh->next ) {
+	base = rh->base*mul + offset;
+	width = rh->width *mul;
+	if ( width<0 ) {
+	    base += width; width = -width;
+	}
+	for ( h=into, prev=NULL; h!=NULL; prev=h, h=h->next ) {
+	    if ( base<h->base || base<h->base+h->width )
+	break;
+	}
+	if ( h==NULL || base+width<h->base ) {
+	    n = gcalloc(1,sizeof(Hints));
+	    n->base = base; n->width = width;
+	    n->next = h;
+	    if ( prev==NULL )
+		into = n;
+	    else
+		prev->next = n;
+	}
+    }
+return( into );
+}
+
+static void AutoHintRefs(SplineChar *sc) {
+    RefChar *ref;
+
+    /* Add hints for base characters before accent hints => if there are any */
+    /*  conflicts, the base characters win */
+    for ( ref=sc->refs; ref!=NULL; ref=ref->next ) {
+	if ( ref->transform[1]==0 && ref->transform[2]==0 ) {
+	    if ( !ref->sc->manualhints &&
+		    ( ref->sc->changedsincelasthhinted || ref->sc->changedsincelastvhinted ))
+		SplineCharAutoHint(ref->sc);
+	    if ( ref->sc->unicodeenc!=-1 && isalnum(ref->sc->unicodeenc) ) {
+		sc->hstem = RefHintsMerge(sc->hstem,ref->sc->hstem,ref->transform[3], ref->transform[5]);
+		sc->vstem = RefHintsMerge(sc->vstem,ref->sc->vstem,ref->transform[0], ref->transform[4]);
+	    }
+	}
+    }
+
+    for ( ref=sc->refs; ref!=NULL; ref=ref->next ) {
+	if ( ref->transform[1]==0 && ref->transform[2]==0 ) {
+	    sc->hstem = RefHintsMerge(sc->hstem,ref->sc->hstem,ref->transform[3], ref->transform[5]);
+	    sc->vstem = RefHintsMerge(sc->vstem,ref->sc->vstem,ref->transform[0], ref->transform[4]);
+	}
+    }
+}
+
 void SplineCharAutoHint( SplineChar *sc) {
     StemInfo *stems;
 
@@ -726,6 +778,9 @@ void SplineCharAutoHint( SplineChar *sc) {
     stems = StripTooBigs(StripNestedStems(FigureHStems(sc)),sc->parent,true);
     sc->hstem = HHintFixup(StemsToHints(stems));
     StemInfoFree(stems);
+
+    AutoHintRefs(sc);
+
     SCOutOfDateBackground(sc);
     SCUpdateAll(sc);
     sc->parent->changed = true;

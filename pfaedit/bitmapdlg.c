@@ -141,7 +141,12 @@ static void FVFigureBitmaps(FontView *fv,double *sizes) {
 
 static void FVScaleBitmaps(FontView *fv,double *sizes) {
     BDFFont *bdf;
-    int i;
+    int i, cnt=0;
+    static unichar_t sb[] = { 'S','c','a','l','i','n','g',' ','B','i','t','m','a','p','s',  '\0' };
+
+    for ( i=0; sizes[i]!=0 ; ++i ) if ( sizes[i]>0 )
+	++cnt;
+    GProgressStartIndicator(10,sb,sb,NULL,cnt,1);
 
     FVRemoveUnwantedBitmaps(fv,sizes);
 
@@ -150,7 +155,10 @@ static void FVScaleBitmaps(FontView *fv,double *sizes) {
 	bdf->next = fv->sf->bitmaps;
 	fv->sf->bitmaps = bdf;
 	fv->sf->changed = true;
+	if ( !GProgressNext())
+    break;
     }
+    GProgressEndIndicator();
 
     /* Order the list */
     SFOrderBitmapList(fv->sf);

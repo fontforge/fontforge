@@ -1019,7 +1019,12 @@ return;
 void PasteIntoFV(FontView *fv) {
     Undoes *cur=NULL, *bmp;
     BDFFont *bdf;
-    int i;
+    int i, cnt=0;
+    static unichar_t pasting[] = { 'P','a','s','t','i','n','g',' ','.','.','.',  '\0' };
+
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] )
+	++cnt;
+    GProgressStartIndicator(10,pasting,pasting,NULL,cnt,1);
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] ) {
 	if ( cur==NULL ) {
@@ -1054,5 +1059,8 @@ void PasteIntoFV(FontView *fv) {
 	  break;
 	}
 	cur = cur->next;
+	if ( !GProgressNext())
+    break;
     }
+    GProgressEndIndicator();
 }

@@ -754,7 +754,7 @@ static void _FindNeeded(EdgeList *es) {
 #ifndef DEBUG
 		GDrawIError("Both needed and unneeded in _FindNeeded#1" );
 #else
-		printf( "needed&unneeded (%g,%g) -> (%g,%g)\n",
+		printf( "IError: needed&unneeded (%g,%g) -> (%g,%g)\n",
 			apt->spline->from->me.x, apt->spline->from->me.y,
 			apt->spline->to->me.x, apt->spline->to->me.y);
 #endif
@@ -767,7 +767,7 @@ static void _FindNeeded(EdgeList *es) {
 #ifndef DEBUG
 			GDrawIError("Both needed and unneeded in _FindNeeded#2" );
 #else
-			printf( "needed&unneeded (%g,%g) -> (%g,%g)\n",
+			printf( "IError: needed&unneeded (%g,%g) -> (%g,%g)\n",
 				e->spline->from->me.x, e->spline->from->me.y,
 				e->spline->to->me.x, e->spline->to->me.y);
 #endif
@@ -786,7 +786,7 @@ static void _FindNeeded(EdgeList *es) {
 #ifndef DEBUG
 			GDrawIError("Both needed and unneeded in _FindNeeded#3" );
 #else
-			printf( "needed&unneeded (%g,%g) -> (%g,%g)\n",
+			printf( "IError: needed&unneeded (%g,%g) -> (%g,%g)\n",
 				e->spline->from->me.x, e->spline->from->me.y,
 				e->spline->to->me.x, e->spline->to->me.y);
 #endif

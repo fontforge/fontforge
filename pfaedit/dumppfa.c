@@ -493,13 +493,15 @@ static void dumpprivatestuff(void (*dumpchar)(int ch,void *data), void *data, Sp
     int i;
     static unichar_t saveps[] = { 'S','a','v','i','n','g',' ','P','o','s','t','s','c','r','i','p','t',' ','F','o','n','t', '\0' };
     static unichar_t autohinting[] = { 'A','u','t','o',' ','H','i','n','t','i','n','g',' ','F','o','n','t',  '\0' };
-    int hasblue=0, hash=0, hasv=0, hasshift, haso, hasxuid, hasbold;
+    int hasblue=0, hash=0, hasv=0, hasshift, haso, hasxuid, hasbold, haslg;
     int flex_max;
     int isbold=false;
+    int iscjk;
 
     flex_max = SplineFontIsFlexible(sf);
     if ( flex_max>0 )
 	massagesubrs(sf);
+    iscjk = (sf->encoding_name>=em_first2byte && sf->encoding_name<em_unicode);
 
     hasbold = PSDictHasEntry(sf->private,"ForceBold")!=NULL;
     hasblue = PSDictHasEntry(sf->private,"BlueValues")!=NULL;
@@ -508,6 +510,7 @@ static void dumpprivatestuff(void (*dumpchar)(int ch,void *data), void *data, Sp
     hasshift = PSDictHasEntry(sf->private,"BlueShift")!=NULL;
     haso = PSDictHasEntry(sf->private,"OtherSubrs")!=NULL;
     hasxuid = PSDictHasEntry(sf->private,"XUID")!=NULL;
+    haslg = PSDictHasEntry(sf->private,"LanguageGroup")!=NULL;
     if ( sf->weight!=NULL &&
 	    (strstrmatch(sf->weight,"Bold")!=NULL ||
 	     strstrmatch(sf->weight,"Black")!=NULL))
@@ -556,6 +559,7 @@ static void dumpprivatestuff(void (*dumpchar)(int ch,void *data), void *data, Sp
     if ( !hasblue && (otherblues[0]!=0 || otherblues[1]!=0) ) ++cnt;
     ++cnt;	/* password is required */
     ++cnt;	/* rd is required */
+    if ( !haslg && iscjk ) ++cnt;
     if ( !hash ) {
 	if ( stdhw[0]!=0 ) ++cnt;
 	if ( stemsnaph[0]!=0 ) ++cnt;
@@ -597,6 +601,8 @@ static void dumpprivatestuff(void (*dumpchar)(int ch,void *data), void *data, Sp
 	dumpf(dumpchar,data,"/BlueShift %d def\n", flex_max+1 );
     if ( isbold && !hasbold )
 	dumpf(dumpchar,data,"/ForceBold true def\n" );
+    if ( !haslg && iscjk ) 
+	dumpf(dumpchar,data,"/LanguageGroup 1 def\n" );
     if ( sf->private!=NULL ) {
 	for ( i=0; i<sf->private->next; ++i ) {
 	    dumpf(dumpchar,data,"/%s ", sf->private->keys[i]);

@@ -57,7 +57,7 @@ static void CVStrokeIt(void *_cv, StrokeInfo *si) {
 	for ( spl= *cv->heads[cv->drawmode]; spl!=NULL; spl = snext ) {
 	    snext = spl->next;
 	    if ( PointListIsSelected(spl)) {
-		cur = SplineSetStroke(spl,si);
+		cur = SplineSetStroke(spl,si,cv->sc);
 		if ( prev==NULL )
 		    *cv->heads[cv->drawmode]=cur;
 		else
@@ -72,7 +72,7 @@ static void CVStrokeIt(void *_cv, StrokeInfo *si) {
 	}
     } else {
 	for ( spl= *cv->heads[cv->drawmode]; spl!=NULL; spl = spl->next ) {
-	    cur = SplineSetStroke(spl,si);
+	    cur = SplineSetStroke(spl,si,cv->sc);
 	    if ( head==NULL )
 		head = cur;
 	    else
@@ -88,14 +88,20 @@ static void CVStrokeIt(void *_cv, StrokeInfo *si) {
 
 static void FVStrokeIt(void *_fv, StrokeInfo *si) {
     FontView *fv = _fv;
-    SplineSet *spl, *head=NULL, *last=NULL, *cur;
-    int i;
+    SplineSet *spl, *head, *last, *cur;
+    int i, cnt=0;
+    static unichar_t stroke[] = { 'S','t','r','o','k','i','n','g',' ','.','.','.',  '\0' };
+
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
+	++cnt;
+    GProgressStartIndicator(10,stroke,stroke,NULL,cnt,1);
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
 	SCPreserveState(sc);
+	head = NULL; last = NULL;
 	for ( spl= sc->splines; spl!=NULL; spl = spl->next ) {
-	    cur = SplineSetStroke(spl,si);
+	    cur = SplineSetStroke(spl,si,sc);
 	    if ( head==NULL )
 		head = cur;
 	    else
@@ -106,7 +112,10 @@ static void FVStrokeIt(void *_fv, StrokeInfo *si) {
 	SplinePointListsFree( sc->splines );
 	sc->splines = head;
 	SCCharChangedUpdate(sc,fv);
+	if ( !GProgressNext())
+    break;
     }
+    GProgressEndIndicator();
 }
 
 static int Stroke_OK(GGadget *g, GEvent *e) {

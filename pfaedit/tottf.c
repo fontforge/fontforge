@@ -2137,6 +2137,8 @@ static void dumpcffprivate(SplineFont *sf,struct alltabs *at) {
 	dumpintoper(private,1,(12<<8)|14);
     if ( (pt=PSDictHasEntry(sf->private,"LanguageGroup"))!=NULL )
 	DumpStrDouble(pt,private,(12<<8)+17);
+    else if ( sf->encoding_name>=em_first2byte && sf->encoding_name<em_unicode )
+	dumpintoper(private,1,(12<<8)|17);
     if ( (pt=PSDictHasEntry(sf->private,"ExpansionFactor"))!=NULL )
 	DumpStrDouble(pt,private,(12<<8)+18);
     dumpsizedint(private,false,ftell(private)+3+1,19);	/* Subrs */

@@ -342,7 +342,7 @@ static void StrokeJoint(SplinePoint *base,StrokeInfo *si,JointPoint *plus,JointP
     }
 }
 
-SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si) {
+SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc) {
     JointPoint first_plus, first_minus, cur_plus, cur_minus;
     SplineSet *ssplus, *ssminus;
     SplinePoint *plus, *minus;		/* plus expects splines added on prev */
@@ -393,8 +393,15 @@ return( ssplus );
 	}
 	t_start = (p_tcur>m_tlast)?p_tcur:m_tlast;
 	t_end = (p_tlast<m_tcur)?p_tlast:m_tcur;
+	if (( p_tcur>=p_tlast || m_tcur<=m_tlast ) && !si->toobigwarn ) {
+	    si->toobigwarn = true;
+	    GDrawError( "You have chosen a stroke width so big that the generated path\nmay intersects itself in %s",
+		    sc==NULL?"<nameless char>": sc->name );
+	}
+#if 0
 	if ( p_tcur>=p_tlast ) GDrawIError( "p_tcur is wrong in SplineSetStroke" );
 	if ( m_tcur<=m_tlast ) GDrawIError( "m_tcur is wrong in SplineSetStroke" );
+#endif
 	for ( i=0; i<4; ++i ) {
 	    BasePoint p,m;
 	    double t = t_start + (i+1)*(t_end-t_start)/5;

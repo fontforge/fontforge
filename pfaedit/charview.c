@@ -345,22 +345,33 @@ return;
 	    float dx = cp->x-sp->me.x, dy = cp->y-sp->me.y;
 	    if ( dx<0 ) dx= -dx;
 	    if ( dy<0 ) dy= -dy;
-	    if ( dx>dy ) {
+	    if ( dx>2*dy ) {
 		if ( cp->x>sp->me.x ) dir = 0 /* right */;
 		else dir = 1 /* left */;
-	    } else {
+	    } else if ( dy>2*dx ) {
 		if ( cp->y>sp->me.y ) dir = 2 /* up */;
 		else dir = 3 /* down */;
+	    } else {
+		if ( cp->y>sp->me.y && cp->x>sp->me.x ) dir=4;
+		else if ( cp->x>sp->me.x ) dir=5;
+		else if ( cp->y>sp->me.y ) dir=7;
+		else dir = 6;
 	    }
 	}
 	if ( dir==1 /* left */ || dir==0 /* right */) {
 	    gp[0].y = y; gp[0].x = (dir==0)?x+4:x-4;
 	    gp[1].y = y-4; gp[1].x = x;
 	    gp[2].y = y+4; gp[2].x = x;
-	} else {
+	} else if ( dir==2 /* up */ || dir==3 /* down */ ) {
 	    gp[0].x = x; gp[0].y = dir==2?y-4:y+4;	/* remember screen coordinates are backwards in y from character coords */
 	    gp[1].x = x-4; gp[1].y = y;
 	    gp[2].x = x+4; gp[2].y = y;
+	} else {
+	    /* at a 45 angle, a value of 4 looks too small. I probably want 4*1.414 */
+	    int xdiff= cp->x>sp->me.x?5:-5, ydiff = cp->y>sp->me.y?-5:5;
+	    gp[0].x = x+xdiff/2; gp[0].y = y+ydiff/2;
+	    gp[1].x = gp[0].x-xdiff; gp[1].y = gp[0].y;
+	    gp[2].x = gp[0].x; gp[2].y = gp[0].y-ydiff;
 	}
 	gp[3] = gp[0];
 	if ( sp->selected )
@@ -2029,7 +2040,7 @@ static unichar_t stroke[] = { 'E','x','p','a','n','d',' ','S', 't', 'r', 'o','k'
 static unichar_t rmoverlap[] = { 'R','e','m','o','v','e',' ','O', 'v', 'e', 'r','l', 'a', 'p',  '\0' };
 static unichar_t simplify[] = { 'S','i','m','p','l','i','f','y',  '\0' };
 static unichar_t round2int[] = { 'R','o','u','n','d',' ','t','o',' ','i','n','t',  '\0' };
-static unichar_t buildaccent[] = { 'B','u','i','l','d',' ','A','c','c','e','n','t','e','d',' ','C','h','a','r',  '\0' };
+static unichar_t buildaccent[] = { 'B','u','i','l','d',' ','C','o','m','p','o','s','i','t',' ','C','h','a','r',  '\0' };
 static unichar_t clockwise[] = { 'C','l','o','c','k','w','i','s', 'e',  '\0' };
 static unichar_t cclockwise[] = { 'C','o','u','n','t','e','r',' ','C','l','o','c','k','w','i','s', 'e',  '\0' };
 static unichar_t correct[] = { 'C','o','r','r','e','c','t',' ','D','i','r','e','c','t','i','o','n',  '\0' };
@@ -2271,7 +2282,7 @@ return(-1);
 	pos = -1;
     if ( pos==-1 ) {
 	unichar_t ubuf[100];
-	uc_strcpy( ubuf, "Could not file the character: ");
+	uc_strcpy( ubuf, "Could not find the character: ");
 	u_strncat(ubuf,ret,70);
 	GWidgetPostNotice(_goto,ubuf);
     }

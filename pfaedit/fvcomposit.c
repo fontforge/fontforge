@@ -203,9 +203,12 @@ return( upt );
 
 int SFIsCompositBuildable(SplineFont *sf,int unicodeenc) {
     const unichar_t *pt, *apt, *end; unichar_t ch;
+    SplineChar *one, *two;
 
     if (( pt = SFGetAlternate(sf,unicodeenc))==NULL )
 return( false );
+
+    one=findchar(sf,unicodeenc);
     
     for ( ; *pt; ++pt ) {
 	ch = *pt;
@@ -230,7 +233,7 @@ return( false );
 	}
 	/* No recursive references */
 	/* Cyrillic gamma could refer to Greek gamma, which the entry gives as an alternate */
-	if ( sf->chars[unicodeenc]!=NULL && SCDependsOnSC(sf->chars[ch],sf->chars[unicodeenc]))
+	if ( one!=NULL && (two=findchar(sf,ch))!=NULL && SCDependsOnSC(two,one))
 return( false );
     }
 return( true );
@@ -519,19 +522,31 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp, do
 		    iyoff = bc->ymin - rbc->ymax;
 		    if ( !( pos&____TOUCHING) )
 			iyoff -= ispacing;
-		} else
+		} else if ( pos&____OVERSTRIKE )
 		    iyoff = bc->ymin - rbc->ymin + ((bc->ymax-bc->ymin)-(rbc->ymax-rbc->ymin))/2;
-		if ( pos&____LEFT )
-		    ixoff = bc->xmin - ispacing-1 - rbc->xmax +
-			    rint(italicoff*bdf->pixelsize/(double) (sf->ascent+sf->descent));
-		else if ( pos&____LEFT )
-		    ixoff = bc->xmax + ispacing+1 - rbc->xmin +
-			    rint(italicoff*bdf->pixelsize/(double) (sf->ascent+sf->descent));
-		/* I think it's ok for centerleft and center right to fall into */
-		/*  the default case */
 		else
-		    ixoff = rint(xoff * bdf->pixelsize/(double) (sf->ascent+sf->descent));
-		    /*ixoff = bc->xmin - rbc->xmin + ((bc->xmax-bc->xmin)-(rbc->xmax-rbc->xmin))/2;*/
+		    iyoff = bc->ymin - rbc->ymin;
+		if ( isupper(basech) && ch==0x342)
+		    xoff = bc->xmin -  rbc->xmin;
+		else if ( pos&____LEFT )
+		    ixoff = bc->xmin - ispacing - rbc->xmax;
+		else if ( pos&____RIGHT ) {
+		    ixoff = bc->xmax - rbc->xmin;
+		    if ( !( pos&____TOUCHING) )
+			ixoff += ispacing;
+		} else {
+		    if ( pos&____CENTERLEFT )
+			ixoff = bc->xmin + (bc->xmax-bc->xmin)/2 - rbc->xmax;
+		    else if ( pos&____LEFTEDGE )
+			ixoff = bc->xmin - rbc->xmin;
+		    else if ( pos&____CENTERRIGHT )
+			ixoff = bc->xmin + (bc->xmax-bc->xmin)/2 - rbc->xmin;
+		    else if ( pos&____RIGHTEDGE )
+			ixoff = bc->xmax - rbc->xmax;
+		    else
+			ixoff = bc->xmin - rbc->xmin + ((bc->xmax-bc->xmin)-(rbc->xmax-rbc->xmin))/2;
+		}
+		ixoff += rint(italicoff*bdf->pixelsize/(double) (sf->ascent+sf->descent));
 		BCPasteInto(bc,rbc,ixoff,iyoff, invert);
 	    }
 	}

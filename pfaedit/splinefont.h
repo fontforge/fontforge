@@ -60,6 +60,7 @@ typedef struct strokeinfo {
     enum linejoin join;
     enum linecap cap;
     unsigned int caligraphic: 1;
+    unsigned int toobigwarn: 1;
     double penangle;
     double thickness;			/* doesn't work */
 } StrokeInfo;
@@ -436,7 +437,7 @@ extern void SFOrderBitmapList(SplineFont *sf);
 extern int KernThreshold(SplineFont *sf, int cnt);
 extern double SFGuessItalicAngle(SplineFont *sf);
 
-extern SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si);
+extern SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc);
 extern SplineSet *SplineSetRemoveOverlap(SplineSet *base);
 
 extern void FindBlues( SplineFont *sf, double blues[14], double otherblues[10]);
