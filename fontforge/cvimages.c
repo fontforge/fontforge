@@ -238,6 +238,11 @@ return( oldflags );
     GDrawDestroyWindow(gw);
 return( oldflags );
 }
+#else
+enum psstrokeflags PsStrokeFlagsDlg(void) {
+    static enum psstrokeflags oldflags = sf_correctdir|sf_removeoverlap/*|sf_handle_eraser*/;
+return( oldflags );
+}
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 #ifdef FONTFORGE_CONFIG_TYPE3

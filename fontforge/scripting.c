@@ -1264,7 +1264,7 @@ static void bPrintSetup(Context *c) {
 	error( c, "Wrong number of arguments");
     if ( c->a.vals[1].type!=v_int )
 	error( c, "Bad type for first argument");
-    if ( c->a.argc>=3 && c->a.vals[2].type!=v_int )
+    if ( c->a.argc>=3 && c->a.vals[2].type!=v_str )
 	error( c, "Bad type for second argument");
     if ( c->a.argc==5 ) {
 	if ( c->a.vals[3].type!=v_int )
@@ -1274,6 +1274,9 @@ static void bPrintSetup(Context *c) {
 	pagewidth = c->a.vals[3].u.ival;
 	pageheight = c->a.vals[4].u.ival;
     }
+    if ( c->a.vals[1].u.ival<0 || c->a.vals[1].u.ival>5 )
+	error( c, "First argument out of range [0,5]");
+    
     printtype = c->a.vals[1].u.ival;
     if ( c->a.argc>=3 && printtype==4 )
 	printcommand = copy(c->a.vals[2].u.sval);

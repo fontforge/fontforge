@@ -718,7 +718,7 @@ void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
 	    if ( sc->parent->order2 ) temp = SplineSetsPSApprox(temp);
 #ifdef FONTFORGE_CONFIG_TYPE3
 	    if ( sc->parent->multilayer ) {
-		dumpstr(dumpchar,data,pdfopers ? "q" : "gsave " );
+		dumpstr(dumpchar,data,pdfopers ? "q " : "gsave " );
 		dumpsplineset(dumpchar,data,temp,pdfopers,sc->layers[i].dofill);
 		if ( sc->layers[i].dofill && sc->layers[i].dostroke ) {
 		    if ( pdfopers ) {
@@ -754,7 +754,7 @@ void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
 	if ( sc->layers[i].refs!=NULL ) {
 #ifdef FONTFORGE_CONFIG_TYPE3
 	    if ( sc->parent->multilayer ) {
-		dumpstr(dumpchar,data,pdfopers ? "q" : "gsave " );
+		dumpstr(dumpchar,data,pdfopers ? "q " : "gsave " );
 		if ( sc->layers[i].dofill )
 		    dumpbrush(dumpchar,data, &sc->layers[i].fill_brush, pdfopers);
 	    }
