@@ -1271,6 +1271,7 @@ static unichar_t *str_Dxa = { 0x2206, 'X','A','d','v','a','n','c','e', ':' };
 static unichar_t *str_Dya = { 0x2206, 'Y','A','d','v','a','n','c','e', ':' };
 static char *str_TooManyComponents = "Too Many Components";
 static char *str_SubsOnlyOne = "A simple substitution takes exactly one component, but you have provided several";
+static char *str_Itself = "Itself";
  /* Ligature feature tags */
 static char str_RequiredLig = "Required Ligatures"
 static char str_StandardLig = "Standard Ligatures"

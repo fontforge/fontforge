@@ -1615,6 +1615,14 @@ unichar_t *ClassName(const unichar_t *name,uint32 feature_tag,
 return( newname );
 }
 
+#define CID_ACD_Tag	1001
+#define CID_ACD_Sli	1002
+#define CID_ACD_R2L	1003
+#define CID_ACD_IgnBase	1004
+#define CID_ACD_IgnLig	1005
+#define CID_ACD_IgnMark	1006
+#define CID_ACD_Merge	1007
+
 struct ac_dlg {
     int done;
     int ok;
@@ -1622,7 +1630,97 @@ struct ac_dlg {
     GTextInfo *tags;
     GGadget *taglist;
     SplineFont *sf;
+    GWindow gw;
+    unichar_t *skipname;
 };
+
+static GTextInfo **ACD_FigureMerge(SplineFont *sf,uint32 tag, int flags,
+	int sli, unichar_t *skipname, int select, int *spos) {
+    int i, cnt, j;
+    GTextInfo **ti = NULL;
+    AnchorClass *ac;
+
+    for ( j=0; j<2; ++j ) {
+	cnt = 0;
+	for ( ac = sf->anchor; ac!=NULL ; ac=ac->next ) {
+	    if ( u_strcmp(skipname,ac->name)!=0 ) {
+		if ( ac->feature_tag==tag && ac->flags==flags &&
+			ac->script_lang_index==sli ) {
+		    if ( ti!=NULL ) {
+			ti[cnt] = gcalloc(1,sizeof(GTextInfo));
+			ti[cnt]->fg = ti[cnt]->bg = COLOR_DEFAULT;
+			ti[cnt]->text = u_copy(ac->name);
+			ti[cnt]->userdata = (void *) (ac->merge_with);
+			if ( ac->merge_with == select ) {
+			    ti[cnt]->selected = true;
+			    *spos = cnt;
+			    select = -2;
+			}
+		    }
+		    ++cnt;
+		}
+	    }
+	}
+	if ( j==0 ) {
+	    for ( i=1; i<0xfffff; ++i ) {
+		for ( ac=sf->anchor; ac!=NULL; ac=ac->next )
+		    if ( u_strcmp(ac->name,skipname)!=0 &&
+			    ac->merge_with==i )
+		break;
+		if ( ac==NULL )
+	    break;
+	    }
+	    ti = galloc((cnt+2)*sizeof(GTextInfo *));
+	    ti[cnt] = gcalloc(1,sizeof(GTextInfo));
+	    ti[cnt]->fg = ti[cnt]->bg = COLOR_DEFAULT;
+	    ti[cnt]->text = u_copy(GStringGetResource(_STR_Itself,NULL));
+	    ti[cnt]->userdata = (void *) (i);
+	    ti[cnt+1] = gcalloc(1,sizeof(GTextInfo));
+	} else if ( select!=-2 ) {
+	    ti[cnt]->selected = true;
+	    *spos = cnt;
+	}
+    }
+return( ti );
+}
+
+static void ACD_RefigureMerge(struct ac_dlg *acd,int old) {
+    uint32 tag, flags, sli; int spos;
+    const unichar_t *utag;
+    GGadget *merge = GWidgetGetControl(acd->gw,CID_ACD_Merge);
+    unichar_t ubuf[8];
+    GTextInfo **list;
+
+    if ( merge==NULL )
+return;
+
+    if ( old==-1 )
+	old = (int) (GGadgetGetListItemSelected(merge)->userdata);
+    utag = _GGadgetGetTitle(GWidgetGetControl(acd->gw,CID_ACD_Tag));
+    if ( (ubuf[0] = utag[0])==0 ) {
+	ubuf[0] = ubuf[1] = ubuf[2] = ubuf[3] = ' ';
+    } else {
+	if ( (ubuf[1] = utag[1])==0 )
+	    ubuf[1] = ubuf[2] = ubuf[3] = ' ';
+	else if ( (ubuf[2] = utag[2])==0 )
+	    ubuf[2] = ubuf[3] = ' ';
+	else if ( (ubuf[3] = utag[3])==0 )
+	    ubuf[3] = ' ';
+    }
+    tag = (ubuf[0]<<24) | (ubuf[1]<<16) | (ubuf[2]<<8) | ubuf[3];
+
+    sli = GGadgetGetFirstListSelectedItem(GWidgetGetControl(acd->gw,CID_ACD_Sli));
+
+    flags = 0;
+    if ( GGadgetIsChecked(GWidgetGetControl(acd->gw,CID_ACD_R2L)) ) flags |= pst_r2l;
+    if ( GGadgetIsChecked(GWidgetGetControl(acd->gw,CID_ACD_IgnBase)) ) flags |= pst_ignorebaseglyphs;
+    if ( GGadgetIsChecked(GWidgetGetControl(acd->gw,CID_ACD_IgnLig)) ) flags |= pst_ignoreligatures;
+    if ( GGadgetIsChecked(GWidgetGetControl(acd->gw,CID_ACD_IgnMark)) ) flags |= pst_ignorecombiningmarks;
+
+    list = ACD_FigureMerge(acd->sf, tag, flags, sli, acd->skipname, old, &spos);
+    GGadgetSetList(merge,list,false);
+    GGadgetSetTitle(merge,list[spos]->text);
+}
 
 static int acd_e_h(GWindow gw, GEvent *event) {
     struct ac_dlg *acd = GDrawGetUserData(gw);
@@ -1639,20 +1737,27 @@ return( false );
 	acd->done = true;
 	acd->ok = GGadgetGetCid(event->u.control.g);
     } else if ( event->type==et_controlevent && event->u.control.subtype == et_textchanged &&
-	    event->u.control.g == acd->taglist &&
-	    event->u.control.u.tf_changed.from_pulldown!=-1 ) {
-	uint32 tag = (uint32) acd->tags[event->u.control.u.tf_changed.from_pulldown].userdata;
-	unichar_t ubuf[8];
-	/* If they select something from the pulldown, don't show the human */
-	/*  readable form, instead show the 4 character tag */
-	ubuf[0] = tag>>24;
-	ubuf[1] = (tag>>16)&0xff;
-	ubuf[2] = (tag>>8)&0xff;
-	ubuf[3] = tag&0xff;
-	ubuf[4] = 0;
-	GGadgetSetTitle(event->u.control.g,ubuf);
-    } else if ( event->type==et_controlevent && event->u.control.subtype == et_listselected ) {
+	    event->u.control.g == acd->taglist ) {
+	if ( event->u.control.u.tf_changed.from_pulldown!=-1 ) {
+	    uint32 tag = (uint32) acd->tags[event->u.control.u.tf_changed.from_pulldown].userdata;
+	    unichar_t ubuf[8];
+	    /* If they select something from the pulldown, don't show the human */
+	    /*  readable form, instead show the 4 character tag */
+	    ubuf[0] = tag>>24;
+	    ubuf[1] = (tag>>16)&0xff;
+	    ubuf[2] = (tag>>8)&0xff;
+	    ubuf[3] = tag&0xff;
+	    ubuf[4] = 0;
+	    GGadgetSetTitle(event->u.control.g,ubuf);
+	}
+	ACD_RefigureMerge(acd,-1);
+    } else if ( event->type==et_controlevent &&
+	    event->u.control.subtype == et_listselected &&
+	    GGadgetGetCid(event->u.control.g)==CID_ACD_Sli ) {
 	ScriptLangList(acd->sf,event->u.control.g,acd->sli);
+	ACD_RefigureMerge(acd,-1);
+    } else if ( event->type==et_controlevent && event->u.control.subtype == et_radiochanged ) {
+	ACD_RefigureMerge(acd,-1);
     }
 return( true );
 }
@@ -1667,8 +1772,7 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
     GGadgetCreateData gcd[15];
     GTextInfo label[15];
     GWindow gw;
-    char buf[12];
-    unichar_t ubuf[8], ub2[12];
+    unichar_t ubuf[8];
     unichar_t *ret;
     const unichar_t *name, *utag;
     unichar_t *end;
@@ -1712,6 +1816,7 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 	acd.tags = tags;
 	acd.sf = sf;
 	acd.sli = script_lang_index;
+	acd.skipname = def;
 	memset(&wattrs,0,sizeof(wattrs));
 	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
 	wattrs.event_masks = ~(1<<et_charup);
@@ -1723,7 +1828,7 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,160));
 	pos.height = GDrawPointsToPixels(NULL,merge_with==-1?225:265);
-	gw = GDrawCreateTopWindow(NULL,&pos,acd_e_h,&acd,&wattrs);
+	acd.gw = gw = GDrawCreateTopWindow(NULL,&pos,acd_e_h,&acd,&wattrs);
 
 	memset(&gcd,0,sizeof(gcd));
 	memset(&label,0,sizeof(label));
@@ -1757,6 +1862,7 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 	gcd[3].gd.pos.x = 10; gcd[3].gd.pos.y = gcd[2].gd.pos.y+14;
 	gcd[3].gd.flags = gg_enabled|gg_visible;
 	gcd[3].gd.u.list = tags;
+	gcd[3].gd.cid = CID_ACD_Tag;
 	gcd[3].creator = GListFieldCreate;
 
 	label[4].text = (unichar_t *) _STR_ScriptAndLangC;
@@ -1770,9 +1876,11 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 	gcd[5].gd.pos.width = 140;
 	gcd[5].gd.flags = gg_enabled|gg_visible;
 	gcd[5].gd.u.list = SFLangList(sf,true,default_script);
-	if ( script_lang_index!=-1 )
+	if ( script_lang_index!=-1 ) {
+	    for ( i=0; gcd[5].gd.u.list[i].text!=NULL; ++i )
+		gcd[5].gd.u.list[i].selected = false;
 	    gcd[5].gd.u.list[script_lang_index].selected = true;
-	else {
+	} else {
 	    for ( script_lang_index=0; !gcd[5].gd.u.list[script_lang_index].selected &&
 		    gcd[5].gd.u.list[script_lang_index].text!=NULL; ++script_lang_index );
 	    if ( gcd[5].gd.u.list[script_lang_index].text!=NULL ) {
@@ -1782,6 +1890,7 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 	    }
 	}
 	gcd[5].gd.label = &gcd[5].gd.u.list[script_lang_index];
+	gcd[5].gd.cid = CID_ACD_Sli;
 	gcd[5].creator = GListButtonCreate;
 
 	gcd[6].gd.pos.x = 5; gcd[6].gd.pos.y = gcd[5].gd.pos.y+28;
@@ -1789,6 +1898,7 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 	label[6].text = (unichar_t *) _STR_RightToLeft;
 	label[6].text_in_resource = true;
 	gcd[6].gd.label = &label[6];
+	gcd[6].gd.cid = CID_ACD_R2L;
 	gcd[6].creator = GCheckBoxCreate;
 
 	gcd[7].gd.pos.x = 5; gcd[7].gd.pos.y = gcd[6].gd.pos.y+15;
@@ -1796,6 +1906,7 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 	label[7].text = (unichar_t *) _STR_IgnoreBaseGlyphs;
 	label[7].text_in_resource = true;
 	gcd[7].gd.label = &label[7];
+	gcd[7].gd.cid = CID_ACD_IgnBase;
 	gcd[7].creator = GCheckBoxCreate;
 
 	gcd[8].gd.pos.x = 5; gcd[8].gd.pos.y = gcd[7].gd.pos.y+15;
@@ -1803,6 +1914,7 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 	label[8].text = (unichar_t *) _STR_IgnoreLigatures;
 	label[8].text_in_resource = true;
 	gcd[8].gd.label = &label[8];
+	gcd[8].gd.cid = CID_ACD_IgnLig;
 	gcd[8].creator = GCheckBoxCreate;
 
 	gcd[9].gd.pos.x = 5; gcd[9].gd.pos.y = gcd[8].gd.pos.y+15;
@@ -1810,6 +1922,7 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 	label[9].text = (unichar_t *) _STR_IgnoreCombiningMarks;
 	label[9].text_in_resource = true;
 	gcd[9].gd.label = &label[9];
+	gcd[9].gd.cid = CID_ACD_IgnMark;
 	gcd[9].creator = GCheckBoxCreate;
 
 	i = 10;
@@ -1822,14 +1935,12 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 	    gcd[i].gd.popup_msg = GStringGetResource(_STR_MergeWithPopup,NULL);
 	    gcd[i++].creator = GLabelCreate;
 
-	    sprintf( buf, "%d", merge_with ); uc_strcpy(ub2,buf);
-	    label[i].text = ub2;
-	    gcd[i].gd.label = &label[i];
 	    gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+13;
 	    gcd[i].gd.pos.width = 140;
 	    gcd[i].gd.flags = gg_enabled|gg_visible;
 	    gcd[i].gd.popup_msg = GStringGetResource(_STR_MergeWithPopup,NULL);
-	    gcd[i++].creator = GTextFieldCreate;
+	    gcd[i].gd.cid = CID_ACD_Merge;
+	    gcd[i++].creator = GListButtonCreate;
 
 	    gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+26;
 	} else 
@@ -1855,6 +1966,8 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 
 	GGadgetsCreate(gw,gcd);
 	acd.taglist = gcd[3].ret;
+	if ( merge_with!=-1 )
+	    ACD_RefigureMerge(&acd,merge_with);
 
     GDrawSetVisible(gw,true);
     GWidgetIndicateFocusGadget(gcd[1].ret);
@@ -1866,7 +1979,6 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 	utag = _GGadgetGetTitle(gcd[3].ret);
 	script_lang_index = GGadgetGetFirstListSelectedItem(gcd[5].ret);
 	if ( (ubuf[0] = utag[0])==0 ) {
-	    tag = 0;
 	    ubuf[0] = ubuf[1] = ubuf[2] = ubuf[3] = ' ';
 	} else {
 	    if ( (ubuf[1] = utag[1])==0 )
@@ -1875,8 +1987,8 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 		ubuf[2] = ubuf[3] = ' ';
 	    else if ( (ubuf[3] = utag[3])==0 )
 		ubuf[3] = ' ';
-	    tag = (ubuf[0]<<24) | (ubuf[1]<<16) | (ubuf[2]<<8) | ubuf[3];
 	}
+	tag = (ubuf[0]<<24) | (ubuf[1]<<16) | (ubuf[2]<<8) | ubuf[3];
 	if ( u_strlen(utag)>4 || ubuf[0]>=0x7f || ubuf[1]>=0x7f || ubuf[2]>=0x7f || ubuf[3]>=0x7f ) {
 	    GWidgetErrorR(_STR_TagTooLong,_STR_FeatureTagTooLong);
 	    acd.done = false;
@@ -1887,16 +1999,8 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 	if ( GGadgetIsChecked(gcd[7].ret) ) flags |= pst_ignorebaseglyphs;
 	if ( GGadgetIsChecked(gcd[8].ret) ) flags |= pst_ignoreligatures;
 	if ( GGadgetIsChecked(gcd[9].ret) ) flags |= pst_ignorecombiningmarks;
-	if ( merge_with!=-1 ) {
-	    const unichar_t *ret = _GGadgetGetTitle(gcd[11].ret); unichar_t *end;
-	    int temp = u_strtol(ret,&end,10);
-	    if ( *end ) {
-		GWidgetErrorR(_STR_BadNumber,_STR_BadNumber);
-		acd.done = false;
- goto tryagain;
-	     }
-	     merge_with = temp;
-	}
+	if ( merge_with!=-1 )
+	    merge_with = (int) (GGadgetGetListItemSelected(gcd[11].ret)->userdata);
 	ret = ClassName(name,tag,flags,script_lang_index,merge_with);
     } else
 	ret = NULL;

@@ -2169,15 +2169,78 @@ static int AnchorClassesNextMerge(AnchorClass *ac) {
 return( max + 1 );
 }
 
+static void AnchorClassNameDecompose(AnchorClass *ac,const unichar_t *line) {
+    unichar_t *end;
+
+    free(ac->name);
+    ac->feature_tag = (line[0]<<24) | (line[1]<<16) | (line[2]<<8) | line[3];
+    line += 5;
+    if (( line[0]=='r' || line[0]==' ' ) &&
+	    ( line[1]=='b' || line[1]==' ' ) &&
+	    ( line[2]=='l' || line[2]==' ' ) &&
+	    ( line[3]=='m' || line[3]==' ' ) &&
+	    line[4]==' ' ) {
+	ac->flags = 0;
+	if ( line[0]=='r' ) ac->flags |= pst_r2l;
+	if ( line[1]=='b' ) ac->flags |= pst_ignorebaseglyphs;
+	if ( line[2]=='l' ) ac->flags |= pst_ignoreligatures;
+	if ( line[3]=='m' ) ac->flags |= pst_ignorecombiningmarks;
+	line += 5;
+    }
+    ac->script_lang_index = u_strtol(line,&end,10);
+    ac->merge_with = u_strtol(end,&end,10);
+    while ( *end==' ' ) ++end;
+    ac->name = u_copy(end);
+}
+
+static void GFI_GetAnchors(struct gfi_data *d) {
+    GGadget *list = GWidgetGetControl(d->gw,CID_AnchorClasses);
+    int len;
+    GTextInfo **old = GGadgetGetList(list,&len);
+    AnchorClass *klast=NULL, *test;
+    int i;
+    SplineFont *sf = d->sf;
+
+    for ( i=0; i<len; ++i ) {
+	test = chunkalloc(sizeof(AnchorClass));
+	AnchorClassNameDecompose(test,old[i]->text);
+	if ( sf->anchor==NULL )
+	    sf->anchor = test;
+	else
+	    klast->next = test;
+	klast = test;
+    }
+}
+
+static unichar_t *GFI_AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
+	int sli, GTextInfo *tags, struct gfi_data *d,
+	SplineChar *default_script, int merge_with ) {
+    AnchorClass *oldancs;
+    unichar_t *newname;
+
+    oldancs = d->sf->anchor;
+    d->sf->anchor = NULL;
+    GFI_GetAnchors(d);
+
+    newname = AskNameTag(title,def,def_tag,flags,sli,tags,d->sf,
+	    default_script,merge_with);
+    AnchorClassesFree(d->sf->anchor);
+    d->sf->anchor = oldancs;
+return( newname );
+}
+
 static int GFI_AnchorNew(GGadget *g, GEvent *e) {
     int len, i;
     GTextInfo **old, **new;
     GGadget *list;
     unichar_t *newname;
+
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
-	newname = AskNameTag(_STR_NewAnchorClass,NULL,CHR('m','a','r','k'),0,
-		-1, mark_tags,d->sf,NULL,AnchorClassesNextMerge(d->sf->anchor));
+
+	newname = GFI_AskNameTag(_STR_NewAnchorClass,NULL,CHR('m','a','r','k'),0,
+		-1, mark_tags,d,NULL,AnchorClassesNextMerge(d->sf->anchor));
+
 	if ( newname!=NULL ) {
 	    list = GWidgetGetControl(GGadgetGetWindow(g),CID_AnchorClasses);
 	    old = GGadgetGetList(list,&len);
@@ -2329,7 +2392,8 @@ static int GFI_AnchorRename(GGadget *g, GEvent *e) {
 	list = GWidgetGetControl(GGadgetGetWindow(g),CID_AnchorClasses);
 	if ( (ti = GGadgetGetListItemSelected(list))==NULL )
 return( true );
-	newname = AskNameTag(_STR_EditAnchorClass,ti->text,0,0,0,mark_tags,d->sf,NULL,0);
+	newname = GFI_AskNameTag(_STR_EditAnchorClass,ti->text,0,0,0,mark_tags,
+		d,NULL,0);
 	if ( newname!=NULL ) {
 	    old = GGadgetGetList(list,&len);
 	    if (( uc_strncmp(newname,"curs",4)==0 && uc_strncmp(ti->text,"curs",4)!=0 ) ||
@@ -2394,30 +2458,6 @@ static int GFI_AnchorSelChanged(GGadget *g, GEvent *e) {
 	GFI_AnchorRename(g,e);
     }
 return( true );
-}
-
-static void AnchorClassNameDecompose(AnchorClass *ac,const unichar_t *line) {
-    unichar_t *end;
-
-    free(ac->name);
-    ac->feature_tag = (line[0]<<24) | (line[1]<<16) | (line[2]<<8) | line[3];
-    line += 5;
-    if (( line[0]=='r' || line[0]==' ' ) &&
-	    ( line[1]=='b' || line[1]==' ' ) &&
-	    ( line[2]=='l' || line[2]==' ' ) &&
-	    ( line[3]=='m' || line[3]==' ' ) &&
-	    line[4]==' ' ) {
-	ac->flags = 0;
-	if ( line[0]=='r' ) ac->flags |= pst_r2l;
-	if ( line[1]=='b' ) ac->flags |= pst_ignorebaseglyphs;
-	if ( line[2]=='l' ) ac->flags |= pst_ignoreligatures;
-	if ( line[3]=='m' ) ac->flags |= pst_ignorecombiningmarks;
-	line += 5;
-    }
-    ac->script_lang_index = u_strtol(line,&end,10);
-    ac->merge_with = u_strtol(end,&end,10);
-    while ( *end==' ' ) ++end;
-    ac->name = u_copy(end);
 }
 
 static int GFI_Cancel(GGadget *g, GEvent *e) {
