@@ -246,12 +246,12 @@ void BVChar(BitmapView *bv, GEvent *event ) {
 	    GDrawCancelTimer(bv->autorpt); bv->autorpt = NULL;
 	    if ( bv->keysym == event->u.chr.keysym )	/* It's an autorepeat, ignore it */
 return;
-	    BVToolsSetCursor(bv,bv->oldstate);
+	    BVToolsSetCursor(bv,bv->oldstate,NULL);
 	}
 #endif
 
     BVPaletteActivate(bv);
-    BVToolsSetCursor(bv,TrueCharState(event));
+    BVToolsSetCursor(bv,TrueCharState(event),NULL);
     if ( event->u.chr.keysym=='s' &&
 	    (event->u.chr.state&ksm_control) &&
 	    (event->u.chr.state&ksm_meta) )
@@ -331,7 +331,7 @@ static void BVCharUp(BitmapView *bv, GEvent *event ) {
 	    event->u.chr.keysym == GK_Hyper_L || event->u.chr.keysym == GK_Hyper_R ) {
 	if ( bv->autorpt!=NULL ) {
 	    GDrawCancelTimer(bv->autorpt);
-	    BVToolsSetCursor(bv,bv->oldstate);
+	    BVToolsSetCursor(bv,bv->oldstate,NULL);
 	}
 	bv->keysym = event->u.chr.keysym;
 	bv->oldstate = TrueCharState(event);
@@ -339,12 +339,12 @@ static void BVCharUp(BitmapView *bv, GEvent *event ) {
     } else {
 	if ( bv->autorpt!=NULL ) {
 	    GDrawCancelTimer(bv->autorpt); bv->autorpt=NULL;
-	    BVToolsSetCursor(bv,bv->oldstate);
+	    BVToolsSetCursor(bv,bv->oldstate,NULL);
 	}
-	BVToolsSetCursor(bv,TrueCharState(event));
+	BVToolsSetCursor(bv,TrueCharState(event),NULL);
     }
 #else
-    BVToolsSetCursor(bv,TrueCharState(event));
+    BVToolsSetCursor(bv,TrueCharState(event),NULL);
 #endif
 }
 
@@ -747,11 +747,15 @@ static void BVMouseDown(BitmapView *bv, GEvent *event) {
     BDFChar *bc = bv->bc;
     BDFFloat *sel;
 
+    if ( event->u.mouse.button==2 && event->u.mouse.device!=NULL &&
+	    strcmp(event->u.mouse.device,"stylus")==0 )
+return;		/* I treat this more like a modifier key change than a button press */
+
     if ( event->u.mouse.button==3 ) {
 	BVToolsPopup(bv,event);
 return;
     }
-    BVToolsSetCursor(bv,event->u.mouse.state|(1<<(7+event->u.mouse.button)) );
+    BVToolsSetCursor(bv,event->u.mouse.state|(1<<(7+event->u.mouse.button)), event->u.mouse.device );
     bv->active_tool = bv->showing_tool;
     bv->pressed_x = x; bv->pressed_y = y;
     bv->info_x = x; bv->info_y = y;
@@ -804,7 +808,7 @@ return;
 		event->u.mouse.x-bv->xoff > bc->width*bv->scale-3 &&
 		event->u.mouse.x-bv->xoff < bc->width*bv->scale+3 ) {
 	    bv->active_tool = bvt_setwidth;
-	    BVToolsSetCursor(bv,event->u.mouse.state|(1<<(7+event->u.mouse.button)) );
+	    BVToolsSetCursor(bv,event->u.mouse.state|(1<<(7+event->u.mouse.button)), event->u.mouse.device );
 	}
 	BCCharUpdate(bc);
       break;
@@ -937,7 +941,7 @@ static void BVMouseUp(BitmapView *bv, GEvent *event) {
       break;
     }
     bv->active_tool = bvt_none;
-    BVToolsSetCursor(bv,event->u.mouse.state&~(1<<(7+event->u.mouse.button)));		/* X still has the buttons set in the state, even though we just released them. I don't want em */
+    BVToolsSetCursor(bv,event->u.mouse.state&~(1<<(7+event->u.mouse.button)), event->u.mouse.device);		/* X still has the buttons set in the state, even though we just released them. I don't want em */
 }
 
 static int v_e_h(GWindow gw, GEvent *event) {
@@ -951,7 +955,7 @@ static int v_e_h(GWindow gw, GEvent *event) {
 	BVExpose(bv,gw,event);
       break;
       case et_crossing:
-	BVToolsSetCursor(bv,event->u.mouse.state);
+	BVToolsSetCursor(bv,event->u.mouse.state, event->u.mouse.device);
       break;
       case et_mousedown:
 	BVPaletteActivate(bv);
@@ -974,7 +978,7 @@ static int v_e_h(GWindow gw, GEvent *event) {
 	/* Under cygwin the modifier keys auto repeat, they don't under normal X */
 	if ( bv->autorpt==event->u.timer.timer ) {
 	    bv->autorpt = NULL;
-	    BVToolsSetCursor(bv,bv->oldstate);
+	    BVToolsSetCursor(bv,bv->oldstate,NULL);
 	}
 #endif
       break;
@@ -1654,6 +1658,7 @@ BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv) {
     bv->height = pos.height; bv->width = pos.width;
     bv->b1_tool = bvt_pencil; bv->cb1_tool = bvt_pointer;
     bv->b2_tool = bvt_magnify; bv->cb2_tool = bvt_shift;
+    bv->s1_tool = bv->s2_tool = bv->er_tool = bvt_pointer;
     bv->showing_tool = bvt_pencil;
     bv->pressed_tool = bv->pressed_display = bv->active_tool = bvt_none;
 

@@ -1911,6 +1911,10 @@ static void CVMouseDown(CharView *cv, GEvent *event ) {
     PressedOn temp;
     GEvent fake;
 
+    if ( event->u.mouse.button==2 && event->u.mouse.device!=NULL &&
+	    strcmp(event->u.mouse.device,"stylus")==0 )
+return;		/* I treat this more like a modifier key change than a button press */
+
     if ( cv->expandedge != ee_none )
 	GDrawSetCursor(cv->v,ct_mypointer);
     if ( event->u.mouse.button==3 ) {
@@ -5022,6 +5026,8 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv) {
     cv->gi.u.image->clut->clut[1] = 0x707070;
     cv->b1_tool = cvt_pointer; cv->cb1_tool = cvt_pointer;
     cv->b2_tool = cvt_magnify; cv->cb2_tool = cvt_ruler;
+    cv->s1_tool = cvt_freehand; cv->s2_tool = cvt_pen;
+    cv->er_tool = cvt_knife;
     cv->showing_tool = cvt_pointer;
     cv->pressed_tool = cv->pressed_display = cv->active_tool = cvt_none;
     cv->heads[dm_fore] = &sc->splines; cv->heads[dm_back] = &sc->backgroundsplines;

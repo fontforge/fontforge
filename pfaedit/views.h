@@ -157,6 +157,7 @@ typedef struct charview {
     SplinePoint *lastselpt;
     /*GWindow tools, layers;*/
     int8 b1_tool, cb1_tool, b2_tool, cb2_tool;		/* Button 3 does a popup */
+    int8 s1_tool, s2_tool, er_tool;			/* Bindings for wacom stylus and eraser */
     int8 showing_tool, pressed_tool, pressed_display, had_control, active_tool;
     SplinePointList *active_spl;
     SplinePoint *active_sp;
@@ -216,6 +217,7 @@ typedef struct bitmapview {
     /*GWindow tools, layers;*/
     GGadget *recalc;
     int8 b1_tool, cb1_tool, b2_tool, cb2_tool;		/* Button 3 does a popup */
+    int8 s1_tool, s2_tool, er_tool;			/* Bindings for wacom stylus and eraser */
     int8 showing_tool, pressed_tool, pressed_display, had_control, active_tool;
     int pressed_x, pressed_y;
     int info_x, info_y;
@@ -446,7 +448,7 @@ extern real CVRoundRectRadius(void);
 extern real CVStarRatio(void);
 extern int CVPolyStarPoints(void);
 extern int TrueCharState(GEvent *event);
-extern void BVToolsSetCursor(BitmapView *bv, int state);
+extern void BVToolsSetCursor(BitmapView *bv, int state,char *device);
 extern void CVToolsSetCursor(CharView *cv, int state,char *device);
 extern void CVToolsPopup(CharView *cv, GEvent *event);
 extern void BVToolsPopup(BitmapView *bv, GEvent *event);

@@ -303,6 +303,8 @@ static void TraceMassage(TraceData *head, TraceData *end) {
 	if ( pt->use_as_pt && pt->next!=NULL && pt->next->online && !pt->next->wasconstrained &&
 		pt->prev!=NULL && !pt->prev->online ) {
 	    npt = TraceNextPoint(pt);
+	    if ( npt==NULL )
+    break;
 	    if ( npt->wasconstrained )
 		/* Leave it */;
 	    else if ( npt->next!=NULL && !npt->next->online ) {

@@ -485,7 +485,7 @@ void CVToolsSetCursor(CharView *cv, int state, char *device) {
 	shouldshow = cv->active_tool;
     else if ( cv->pressed_display!=cvt_none )
 	shouldshow = cv->pressed_display;
-    else if ( device==NULL ) {
+    else if ( device==NULL || strcmp(device,"Mouse1")==0 ) {
 	if ( (state&ksm_control) && (state&(ksm_button2|ksm_super)) )
 	    shouldshow = cv->cb2_tool;
 	else if ( (state&(ksm_button2|ksm_super)) )
@@ -495,11 +495,12 @@ void CVToolsSetCursor(CharView *cv, int state, char *device) {
 	else
 	    shouldshow = cv->b1_tool;
     } else if ( strcmp(device,"eraser")==0 )
-	shouldshow = cvt_knife;
-    else if ( strcmp(device,"stylus")==0 )
-	shouldshow = cvt_pen;
-    else if ( strcmp(device,"Mouse1")==0 ) {
-	shouldshow = cvt_curve;
+	shouldshow = cv->er_tool;
+    else if ( strcmp(device,"stylus")==0 ) {
+	if ( (state&(ksm_button2|ksm_control|ksm_super)) )
+	    shouldshow = cv->s2_tool;
+	else
+	    shouldshow = cv->s1_tool;
     }
     if ( shouldshow==cvt_magnify && (state&ksm_meta))
 	shouldshow = cvt_minify;
@@ -509,8 +510,10 @@ void CVToolsSetCursor(CharView *cv, int state, char *device) {
 	cv->showing_tool = shouldshow;
     }
 
-    if ( device==NULL ) {
+    if ( device==NULL || strcmp(device,"stylus")==0 ) {
 	cntrl = (state&ksm_control)?1:0;
+	if ( device!=NULL && (state&ksm_button2))
+	    cntrl = true;
 	if ( cntrl != cv->cntrldown ) {
 	    cv->cntrldown = cntrl;
 	    GDrawRequestExpose(cvtools,NULL,false);
@@ -521,6 +524,8 @@ void CVToolsSetCursor(CharView *cv, int state, char *device) {
 static void ToolsMouse(CharView *cv, GEvent *event) {
     int i = (event->u.mouse.y/27), j = (event->u.mouse.x/27), mi=i;
     int pos;
+    int isstylus = event->u.mouse.device!=NULL && strcmp(event->u.mouse.device,"stylus")==0;
+    int styluscntl = isstylus && (event->u.mouse.state&0x200);
 
     if ( i==(cvt_rect)/2 && ((j==0 && rectelipse) || (j==1 && polystar)) )
 	++mi;
@@ -530,14 +535,18 @@ static void ToolsMouse(CharView *cv, GEvent *event) {
     if ( pos<0 || pos>=cvt_max )
 	pos = cvt_none;
     if ( event->type == et_mousedown ) {
-	cv->pressed_tool = cv->pressed_display = pos;
-	cv->had_control = (event->u.mouse.state&ksm_control)?1:0;
-	event->u.chr.state |= (1<<(7+event->u.mouse.button));
+	if ( isstylus && event->u.mouse.button==2 )
+	    /* Not a real button press, only touch counts. This is a modifier */;
+	else {
+	    cv->pressed_tool = cv->pressed_display = pos;
+	    cv->had_control = ((event->u.mouse.state&ksm_control) || styluscntl)?1:0;
+	    event->u.mouse.state |= (1<<(7+event->u.mouse.button));
+	}
     } else if ( event->type == et_mousemove ) {
 	if ( cv->pressed_tool==cvt_none && pos!=cvt_none )
 	    /* Not pressed */
 	    GGadgetPreparePopupR(cvtools,popupsres[pos]);
-	else if ( pos!=cv->pressed_tool || cv->had_control != ((event->u.mouse.state&ksm_control)?1:0) )
+	else if ( pos!=cv->pressed_tool || cv->had_control != (((event->u.mouse.state&ksm_control) || styluscntl)?1:0) )
 	    cv->pressed_display = cvt_none;
 	else
 	    cv->pressed_display = cv->pressed_tool;
@@ -552,21 +561,26 @@ static void ToolsMouse(CharView *cv, GEvent *event) {
 	    pos = mi*2 + j;
 	    cv->pressed_tool = cv->pressed_display = pos;
 	}
-	if ( pos!=cv->pressed_tool || cv->had_control != ((event->u.mouse.state&ksm_control)?1:0) )
+	if ( pos!=cv->pressed_tool || cv->had_control != (((event->u.mouse.state&ksm_control)||styluscntl)?1:0) )
 	    cv->pressed_tool = cv->pressed_display = cvt_none;
 	else {
-	    if ( cv->had_control && event->u.mouse.button==2 )
+	    if ( event->u.mouse.device!=NULL && strcmp(event->u.mouse.device,"eraser")==0 )
+		cv->er_tool = pos;
+	    else if ( isstylus ) {
+	        if ( event->u.mouse.button==2 )
+		    /* Only thing that matters is touch which maps to button 1 */;
+		else if ( cv->had_control )
+		    cv->s2_tool = pos;
+		else
+		    cv->s1_tool = pos;
+	    } else if ( cv->had_control && event->u.mouse.button==2 )
 		cv->cb2_tool = pos;
 	    else if ( event->u.mouse.button==2 )
 		cv->b2_tool = pos;
 	    else if ( cv->had_control ) {
-		if ( cv->cb1_tool!=pos ) {
-		    cv->cb1_tool = pos;
-		}
+		cv->cb1_tool = pos;
 	    } else {
-		if ( cv->b1_tool!=pos ) {
-		    cv->b1_tool = pos;
-		}
+		cv->b1_tool = pos;
 	    }
 	    cv->pressed_tool = cv->pressed_display = cvt_none;
 	}
@@ -1453,7 +1467,7 @@ static void BVToolsExpose(GWindow pixmap, BitmapView *bv, GRect *r) {
     GDrawSetDither(NULL,dither);
 }
 
-void BVToolsSetCursor(BitmapView *bv, int state) {
+void BVToolsSetCursor(BitmapView *bv, int state,char *device) {
     int shouldshow;
     static enum bvtools tools[bvt_max2+1] = { bvt_none };
     int cntrl;
@@ -1478,14 +1492,24 @@ void BVToolsSetCursor(BitmapView *bv, int state) {
 	shouldshow = bv->active_tool;
     else if ( bv->pressed_display!=bvt_none )
 	shouldshow = bv->pressed_display;
-    else if ( (state&ksm_control) && (state&(ksm_button2|ksm_super)) )
-	shouldshow = bv->cb2_tool;
-    else if ( (state&(ksm_button2|ksm_super)) )
-	shouldshow = bv->b2_tool;
-    else if ( (state&ksm_control) )
-	shouldshow = bv->cb1_tool;
-    else
-	shouldshow = bv->b1_tool;
+    else if ( device==NULL || strcmp(device,"Mouse1")==0 ) {
+	if ( (state&ksm_control) && (state&(ksm_button2|ksm_super)) )
+	    shouldshow = bv->cb2_tool;
+	else if ( (state&(ksm_button2|ksm_super)) )
+	    shouldshow = bv->b2_tool;
+	else if ( (state&ksm_control) )
+	    shouldshow = bv->cb1_tool;
+	else
+	    shouldshow = bv->b1_tool;
+    } else if ( strcmp(device,"eraser")==0 )
+	shouldshow = bv->er_tool;
+    else if ( strcmp(device,"stylus")==0 ) {
+	if ( (state&(ksm_button2|ksm_control|ksm_super)) )
+	    shouldshow = bv->s2_tool;
+	else
+	    shouldshow = bv->s1_tool;
+    }
+    
     if ( shouldshow==bvt_magnify && (state&ksm_meta))
 	shouldshow = bvt_minify;
     if ( (shouldshow==bvt_pencil || shouldshow==bvt_line) && (state&ksm_meta) && bv->bdf->clut!=NULL )
@@ -1496,38 +1520,57 @@ void BVToolsSetCursor(BitmapView *bv, int state) {
 	bv->showing_tool = shouldshow;
     }
 
-    cntrl = (state&ksm_control)?1:0;
-    if ( cntrl != bv->cntrldown ) {
-	bv->cntrldown = cntrl;
-	GDrawRequestExpose(bvtools,NULL,false);
+    if ( device==NULL || strcmp(device,"stylus")==0 ) {
+	cntrl = (state&ksm_control)?1:0;
+	if ( device!=NULL && (state&ksm_button2))
+	    cntrl = true;
+	if ( cntrl != bv->cntrldown ) {
+	    bv->cntrldown = cntrl;
+	    GDrawRequestExpose(bvtools,NULL,false);
+	}
     }
 }
 
 static void BVToolsMouse(BitmapView *bv, GEvent *event) {
     int i = (event->u.mouse.y/27), j = (event->u.mouse.x/27);
     int pos;
+    int isstylus = event->u.mouse.device!=NULL && strcmp(event->u.mouse.device,"stylus")==0;
+    int styluscntl = isstylus && (event->u.mouse.state&0x200);
 
     pos = i*2 + j;
     GGadgetEndPopup();
     if ( pos<0 || pos>=bvt_max )
 	pos = bvt_none;
     if ( event->type == et_mousedown ) {
-	bv->pressed_tool = bv->pressed_display = pos;
-	bv->had_control = (event->u.mouse.state&ksm_control)?1:0;
-	event->u.chr.state |= (1<<(7+event->u.mouse.button));
+	if ( isstylus && event->u.mouse.button==2 )
+	    /* Not a real button press, only touch counts. This is a modifier */;
+	else {
+	    bv->pressed_tool = bv->pressed_display = pos;
+	    bv->had_control = ((event->u.mouse.state&ksm_control) || styluscntl)?1:0;
+	    event->u.chr.state |= (1<<(7+event->u.mouse.button));
+	}
     } else if ( event->type == et_mousemove ) {
 	if ( bv->pressed_tool==bvt_none && pos!=bvt_none )
 	    /* Not pressed */
 	    GGadgetPreparePopupR(bvtools,bvpopups[pos]);
-	else if ( pos!=bv->pressed_tool || bv->had_control != ((event->u.mouse.state&ksm_control)?1:0) )
+	else if ( pos!=bv->pressed_tool || bv->had_control != (((event->u.mouse.state&ksm_control)||styluscntl)?1:0) )
 	    bv->pressed_display = bvt_none;
 	else
 	    bv->pressed_display = bv->pressed_tool;
     } else if ( event->type == et_mouseup ) {
-	if ( pos!=bv->pressed_tool || bv->had_control != ((event->u.mouse.state&ksm_control)?1:0) )
+	if ( pos!=bv->pressed_tool || bv->had_control != (((event->u.mouse.state&ksm_control)||styluscntl)?1:0) )
 	    bv->pressed_tool = bv->pressed_display = bvt_none;
 	else {
-	    if ( bv->had_control && event->u.mouse.button==2 )
+	    if ( event->u.mouse.device!=NULL && strcmp(event->u.mouse.device,"eraser")==0 )
+		bv->er_tool = pos;
+	    else if ( isstylus ) {
+	        if ( event->u.mouse.button==2 )
+		    /* Only thing that matters is touch which maps to button 1 */;
+		else if ( bv->had_control )
+		    bv->s2_tool = pos;
+		else
+		    bv->s1_tool = pos;
+	    } else if ( bv->had_control && event->u.mouse.button==2 )
 		bv->cb2_tool = pos;
 	    else if ( event->u.mouse.button==2 )
 		bv->b2_tool = pos;
@@ -1544,9 +1587,9 @@ static void BVToolsMouse(BitmapView *bv, GEvent *event) {
 	    }
 	    bv->pressed_tool = bv->pressed_display = bvt_none;
 	}
-	event->u.chr.state &= ~(1<<(7+event->u.mouse.button));
+	event->u.mouse.state &= ~(1<<(7+event->u.mouse.button));
     }
-    BVToolsSetCursor(bv,event->u.chr.state);
+    BVToolsSetCursor(bv,event->u.mouse.state,event->u.mouse.device);
 }
 
 static int bvtools_e_h(GWindow gw, GEvent *event) {
@@ -1575,7 +1618,7 @@ return( true );
       break;
       case et_crossing:
 	bv->pressed_display = bvt_none;
-	BVToolsSetCursor(bv,event->u.mouse.state);
+	BVToolsSetCursor(bv,event->u.mouse.state,event->u.mouse.device);
       break;
       case et_char: case et_charup:
 	if ( bv->had_control != ((event->u.chr.state&ksm_control)?1:0) )
@@ -1629,7 +1672,7 @@ static void BVPopupInvoked(GWindow v, GMenuItem *mi,GEvent *e) {
 	    GDrawRequestExpose(bvtools,NULL,false);
 	}
     }
-    BVToolsSetCursor(bv,bv->had_control?ksm_control:0);
+    BVToolsSetCursor(bv,bv->had_control?ksm_control:0,NULL);
 }
 
 void BVToolsPopup(BitmapView *bv, GEvent *event) {
@@ -1751,7 +1794,7 @@ void BVPaletteActivate(BitmapView *bv) {
 	GDrawSetVisible(bvshades,bvvisible[2] && bv->bdf->clut!=NULL);
 	if ( bvvisible[1]) {
 	    bv->showing_tool = bvt_none;
-	    BVToolsSetCursor(bv,0);
+	    BVToolsSetCursor(bv,0,NULL);
 	    GDrawRequestExpose(bvtools,NULL,false);
 	}
 	if ( bvvisible[0])

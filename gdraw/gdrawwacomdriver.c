@@ -32,6 +32,10 @@
  However thanks to John E. Joganic wacdump program I know what the event
  stream on /dev/input/event0 looks like
 	http://linux.joganic.com/wacom/
+ Some docs are at: http://www.frogmouth.net/hid-doco/x286.html
+
+ To the best of my knowledge this is entirely linux specific and won't work
+ anywhere else.
 
  This file then, attempts to generate the correct device events and pass them
  on to my windows
@@ -106,8 +110,6 @@ typedef struct wacom_state {
     int x_state;
     Window xw;
     GXWindow gw, grabbed;
-
-    int queue_len, queue_cnt;
 } WState;
 
 static void Wacom_FigureTimeOffset(GXDisplay *gdisp) {
@@ -144,9 +146,9 @@ void _GXDraw_Wacom_Init(GXDisplay *gdisp) {
     WState *ws;
 /* Some of this code is stolen from xf86Wacom.c, the XFree driver for wacom */
     char name[256];
-    uint32 bit[2][(KEY_MAX-1)/(sizeof(uint32)*8)];
+    uint8 bit[2][(KEY_MAX-1)/8];
     int abs[5];
-    int i,j;
+    int j;
 /* End stolen section */
     double xscale, yscale;
 
@@ -182,36 +184,81 @@ return;
 
     ws = gdisp->wacom_state = gcalloc(1,sizeof(WState));
 
-/* This code is based on code from xf86Wacom.c, the XFree driver for wacom */
+    ws->screenx = -1;
+    ws->screeny = -1;
+
+    /* See http://www.frogmouth.net/hid-doco/x286.html for docs */
     ioctl(gdisp->wacom_fd, EVIOCGNAME(sizeof(name)), name);
     fprintf( stderr, "GDraw Wacom Driver opened device %s\n", name);
 
     memset(bit, 0, sizeof(bit));
     ioctl(gdisp->wacom_fd, EVIOCGBIT(0, EV_MAX), bit[0]);
 
-    if (bit[0][EV_ABS/32] & (1<<(EV_ABS%32)) ) {
-	ioctl(gdisp->wacom_fd, EVIOCGBIT(i, KEY_MAX), bit[1]);
-	for (j = 0; j < KEY_MAX; j++) if (bit[1][j/32] & (1<<(j%32))) {
+    if (bit[0][EV_ABS/8] & (1<<(EV_ABS%8)) ) {
+	ioctl(gdisp->wacom_fd, EVIOCGBIT(EV_ABS, KEY_MAX), bit[1]);
+	for (j = 0; j < ABS_MAX; j++) if (bit[1][j/8] & (1<<(j%8))) {
 	    ioctl(gdisp->wacom_fd, EVIOCGABS(j), abs);
+	    /* abs contains current-val, min-val, max-val ?flat? ?fuzz? */
+	    /* get initial state variables that have values. Also their bounds, if relevant */
 	    switch (j) {
 	      case ABS_X:
 		ws->sizex = abs[2];
+		ws->lastx = abs[0];
 	      break;
-		
 	      case ABS_Y:
 		ws->sizey = abs[2];
+		ws->lasty = abs[0];
 	      break;
-		
+	      case ABS_WHEEL:
+		ws->last_wheel = abs[0];
+	      break;
 	      case ABS_PRESSURE:
 		ws->max_pressure = abs[2];
+		ws->last_pressure = abs[0];
+	      break;
+	      case ABS_DISTANCE:
+		ws->last_distance = abs[0];
+	      break;
+	      case ABS_TILT_X:
+		ws->last_xtilt = abs[0];
+	      break;
+	      case ABS_TILT_Y:
+		ws->last_ytilt = abs[0];
 	      break;
 	    }
 	}
     }
-/* End code from xf86Wacom.c */
-
-    ws->screenx = -1;
-    ws->screeny = -1;
+#if 0 /* This tells me whether these buttons exist. I don't see how to figure out whether they are pressed */
+/*  The only important stuff is the current tool */
+    if (bit[0][EV_KEY/8] & (1<<(EV_KEY%8)) ) {
+	ioctl(gdisp->wacom_fd, EVIOCGBIT(EV_KEY, KEY_MAX), bit[1]);
+	for (j = 0; j < KEY_MAX; j++) if (bit[1][j/8] & (1<<(j%8))) {
+	    switch (j) {
+	      case BTN_LEFT:
+		ws->mouse_button_state |= 0x100;
+	      break;
+	      case BTN_RIGHT:
+		ws->mouse_button_state |= 0x400;
+	      break;
+	      case BTN_MIDDLE:
+		ws->mouse_button_state |= 0x200;
+	      break;
+	      case BTN_STYLUS2:
+		ws->stylus_button_state |= 0x200;
+	      break;
+	      case BTN_TOOL_PEN:
+		ws->active_tool = at_stylus;
+	      break;
+	      case BTN_TOOL_RUBBER:
+		ws->active_tool = at_eraser;
+	      break;
+	      case BTN_TOOL_MOUSE:
+		ws->active_tool = at_mouse;
+	      break;
+	    }
+	}
+    }
+#endif
 
 #if 1
     fprintf( stderr, "Wacom XMax=%d YMax=%d PressureMax=%d\n",
@@ -233,6 +280,11 @@ return;
     if ( xscale>yscale )
 	yscale = xscale;
     ws->scale = yscale;
+
+    if ( ws->lastx!=0 )
+	ws->screenx = rint((ws->lastx-_WACOM_EXTRA_LEFT)*ws->scale);
+    if ( ws->lasty!=0 )
+	ws->screeny = rint((ws->lasty-_WACOM_EXTRA_TOP)*ws->scale);
 
     Wacom_FigureTimeOffset(gdisp);
 }
@@ -479,21 +531,21 @@ static void Wacom_ProcessEvent(GXDisplay *gdisp,WState *ws,struct input_event *e
 	}
       break;
       case EV_ABS:
-	if ( ev->code==0 ) {
+	if ( ev->code==ABS_X ) {
 	    ws->lastx = ev->value;
 	    Wacom_TestMotion(gdisp);
-	} else if ( ev->code==1 ) {
+	} else if ( ev->code==ABS_Y ) {
 	    ws->lasty = ev->value;
 	    Wacom_TestMotion(gdisp);
-	} else if ( ev->code==8 )
+	} else if ( ev->code==ABS_WHEEL )
 	    ws->last_wheel = ev->value;
-	else if ( ev->code==24 )
+	else if ( ev->code==ABS_PRESSURE )
 	    ws->last_pressure = ev->value;
-	else if ( ev->code==25 )
+	else if ( ev->code==ABS_DISTANCE )
 	    ws->last_distance = ev->value;
-	else if ( ev->code==26 )
+	else if ( ev->code==ABS_TILT_X )
 	    ws->last_xtilt = ev->value;
-	else if ( ev->code==27 )
+	else if ( ev->code==ABS_TILT_Y )
 	    ws->last_ytilt = ev->value;
       break;
     }
