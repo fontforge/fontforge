@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 1-Nov-2002 -->
-  <!-- AP: Last modified: 1-Nov-2002 -->
+  <!-- AP: Last modified: 5-Nov-2002 -->
   <TITLE>X Selections and the X Clipboard</TITLE>
 </HEAD>
 <BODY>
@@ -27,6 +27,10 @@ middle mouse button.
 <P>
 After a Copy command PfaEdit will place data in the X CLIPBOARD. For text selections (in textfields)
 the above format types are supported. For contour data (ie. the contents of an
-outline character) the format "image/eps" will be used. For bitmap image data either
+outline character) the format "image/eps" will be used. As a special case,
+if a single point is in the clipboard then it will also be exported as a STRING
+containing the coordinates of the point (to make it easier for people to
+identify points when sending me email, or in the comment field).
+For bitmap image data either
 "image/bmp" or "image/png" (assuming you have libpng on your system).
 </BODY></HTML>

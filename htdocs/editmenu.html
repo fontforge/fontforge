@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 1-Nov-2002 -->
+  <!-- AP: Last modified: 5-Nov-2002 -->
   <TITLE>The Edit Menu</TITLE>
 </HEAD>
 <BODY>
@@ -140,8 +140,10 @@ view this menu will be disabled when one of the text fields has the focus.
     exported to the clipboard with format "image/eps", while a selected image
     will be exported with formats "image/png" and "image/bmp".
     If you Copy a series of characters into the clipboard, the only the first
-    one will be exported to external applications. The contours of the character
-    will be exported as a selection of type "image/eps".
+    one will be exported to external applications.
+    If the clipboard contains a single point, then this will also be exported in
+    STRING format (giving the coordinates of the point); the intent is to make
+    it easier to people to identify the point.
     See the section on <A HREF="selections.html">selections</A>
   <DT>
     Copy <A NAME="Reference">Reference</A>
