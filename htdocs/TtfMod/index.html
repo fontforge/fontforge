@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 3-Sep-2001 -->
-  <!-- AP: Last modified: 25-Oct-2001 -->
+  <!-- AP: Last modified: 28-Oct-2001 -->
   <TITLE>TtfMod -- A TrueType&reg; Font Modifier</TITLE>
 </HEAD>
 <BODY>
@@ -25,8 +25,6 @@
       <LI>
 	<A HREF="#Standards">Standards</A>
     </UL>
-  <LI>
-    <A HREF="#Download">Downloads</A>
   <LI>
     <A HREF="changelog.html">Change Log</A>
   <LI>
@@ -86,7 +84,7 @@ None of these is entirely consistant with the others.
 	on both systems
       <LI>
 	Apple and MS interpret the offsets of compound glyphs quite differently when
-	scaling factors/rotations are present. Apple doesn't even describe it's
+	scaling factors/rotations are present. Apple doesn't even describe its
 	interpretation well enough to implement it. OpenType provides a mechanism
 	for distinguishing between the two (without describing what Apple does),
 	but Apple doesn't mention this, and anyway old fonts won't have it.
@@ -164,9 +162,10 @@ department</A> or see
 page</A>.
 <P>
 (<SMALL>NOTE</SMALL>: I found that I needed to change options in
-<CODE><SMALL>include/freetype/config/ftoption.h</SMALL> </CODE>even though
-the files says you should make the change in
-<CODE><SMALL>builds/unix/ftoption.h</SMALL></CODE>)
+<CODE><SMALL>include/freetype/config/ftoption.h</SMALL></CODE>)
+<P>
+If you have freetype configured properly then configure.ttfmod should be
+able to choose a configuration that is appropriate.
 <H3>
   <A NAME="Download">Download</A>
 </H3>
@@ -193,7 +192,7 @@ $ make
 </PRE>
 <UL>
   <LI>
-    <A HREF="../ttfmod_src-011025.tgz">Source</A> 25-Oct-2001
+    <A HREF="../ttfmod_src-011028.tgz">Source</A> 28-Oct-2001
   <LI>
     <A HREF="../ttfmod-011025.tgz">linux (redhat 7.1) executable</A>:
     25-Oct-2001<BR>

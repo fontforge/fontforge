@@ -537,7 +537,7 @@ void MenuExit(GWindow base,struct gmenuitem *mi,GEvent *e) {
 
 char *GetPostscriptFontName(int mult) {
     /* Some people use pf3 as an extension for postscript type3 fonts */
-    static unichar_t wild[] = { '*', '.', '{', 'p','f','a',',','p','f','b',',','s','f','d',',','t','t','f',',','b','d','f',',','o','t','f',',','p','f','3',',','t','t','c',',','g','s','f','}', 
+    static unichar_t wild[] = { '*', '.', '{', 'p','f','a',',','p','f','b',',','s','f','d',',','t','t','f',',','b','d','f',',','o','t','f',',','p','f','3',',','t','t','c',',','g','s','f',',', 'c','i','d',',','b','i','n',',','h','q','x','}', 
 	     '{','.','g','z',',','.','Z',',','.','b','z','2',',','}',  '\0' };
     unichar_t *ret = FVOpenFont(GStringGetResource(_STR_OpenPostscript,NULL),
 	    NULL,wild,NULL,mult,true);
@@ -3133,10 +3133,26 @@ FontView *FontViewCreate(SplineFont *sf) {
 return( fv );
 }
 
+static SplineFont *SFReadPostscript(char *filename) {
+    FontDict *fd;
+    SplineFont *sf=NULL;
+
+    GProgressChangeStages(2);
+    fd = ReadPSFont(filename);
+    GProgressNextStage();
+    GProgressChangeLine2R(_STR_InterpretingGlyphs);
+    if ( fd!=NULL ) {
+	sf = SplineFontFromPSFont(fd);
+	PSFontFree(fd);
+	if ( sf!=NULL )
+	    CheckAfmOfPostscript(sf,filename);
+    }
+return( sf );
+}
+
 /* This does not check currently existing fontviews, and should only be used */
 /*  by LoadSplineFont (which does) and by RevertFile (which knows what it's doing) */
 SplineFont *ReadSplineFont(char *filename) {
-    FontDict *fd;
     SplineFont *sf;
     unichar_t ubuf[150];
     char buf[1200];
@@ -3194,16 +3210,40 @@ return( NULL );
 	sf = SplineFontNew();
 	SFImportBDF(sf,filename,true, false);
 	sf->changed = false;
+    } else if ( strmatch(filename+strlen(filename)-4, ".bin")==0 ||
+		strmatch(filename+strlen(filename)-4, ".hqx")==0 ) {
+	sf = SFReadMacBinary(filename);
+    } else if ( strmatch(filename+strlen(filename)-4, ".pfa")==0 ||
+		strmatch(filename+strlen(filename)-4, ".pfb")==0 ||
+		strmatch(filename+strlen(filename)-4, ".pf3")==0 ||
+		strmatch(filename+strlen(filename)-4, ".cid")==0 ||
+		strmatch(filename+strlen(filename)-4, ".gsf")==0 ||
+		strmatch(filename+strlen(filename)-4, ".ps")==0 ) {
+	sf = SFReadPostscript(filename);
     } else {
-	GProgressChangeStages(2);
-	fd = ReadPSFont(filename);
-	GProgressNextStage();
-	GProgressChangeLine2R(_STR_InterpretingGlyphs);
-	if ( fd!=NULL ) {
-	    sf = SplineFontFromPSFont(fd);
-	    PSFontFree(fd);
-	    if ( sf!=NULL )
-		CheckAfmOfPostscript(sf,filename);
+	FILE *foo = fopen(filename,"r");
+	if ( foo!=NULL ) {
+	    /* Try to guess the file type from the first few characters... */
+	    int ch1 = getc(foo);
+	    int ch2 = getc(foo);
+	    int ch3 = getc(foo);
+	    int ch4 = getc(foo);
+	    fclose(foo);
+	    if (( ch1==0 && ch2==1 && ch3==0 && ch4==0 ) ||
+		    (ch1=='O' && ch2=='T' && ch3=='T' && ch4=='O') ||
+		    (ch1=='t' && ch2=='t' && ch3=='c' && ch4=='f') ) {
+		sf = SFReadTTF(filename,0);
+	    } else if ( ch1=='%' && ch2=='!' ) {
+		sf = SFReadPostscript(filename);
+	    } else if ( ch1=='S' && ch2=='p' && ch3=='l' && ch4=='i' ) {
+		sf = SFDRead(filename);
+		fromsfd = true;
+	    } else if ( ch1=='S' && ch2=='T' && ch3=='A' && ch4=='R' ) {
+		sf = SplineFontNew();
+		SFImportBDF(sf,filename,false, false);
+		sf->changed = false;
+	    } else
+		sf = SFReadMacBinary(filename);
 	}
     }
     GProgressEndIndicator();

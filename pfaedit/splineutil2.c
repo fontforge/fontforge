@@ -186,9 +186,11 @@ static void FigureSpline1(Spline1 *sp1,double t0, double t1, Spline1D *sp ) {
 	sp1->sp.c = s*(sp->c + t0*(2*sp->b + 3*sp->a*t0));
 	sp1->sp.b = s*s*(sp->b+3*sp->a*t0);
 	sp1->sp.a = s*s*s*sp->a;
+#if 0		/* Got invoked once on a perfectly good spline */
 	if ( ((sp1->s1>.001 || sp1->s1<-.001) && !RealNear((double) sp1->sp.a+sp1->sp.b+sp1->sp.c+sp1->sp.d,sp1->s1)) ||
 		!RealNear(sp1->sp.d,sp1->s0))
 	    GDrawIError( "Created spline does not work in FigureSpline1");
+#endif
 	sp1->c0 = sp1->sp.c/3 + sp1->s0;
 	sp1->c1 = sp1->c0 + (sp1->sp.b+sp1->sp.c)/3;
     }
@@ -847,14 +849,22 @@ SplineSet *SplineCharRemoveTiny(SplineChar *sc,SplineSet *head) {
 	    next = spline->to->next;
 	    if ( spline->from->me.x-spline->to->me.x>-1 && spline->from->me.x-spline->to->me.x<1 &&
 		    spline->from->me.y-spline->to->me.y>-1 && spline->from->me.y-spline->to->me.y<1 &&
-		    spline->from->nonextcp && spline->to->noprevcp &&
+		    (spline->from->nonextcp || spline->to->noprevcp) &&
 		    spline->from->prev!=NULL ) {
 		if ( spline->from==spline->to )
 	    break;
 		if ( spl->last==spline->from ) spl->last = NULL;
 		if ( spl->first==spline->from ) spl->first = NULL;
 		if ( first==spline->from->prev ) first=NULL;
-		SplinesRemoveBetween(sc,spline->from->prev->from,spline->to);
+		/*SplinesRemoveBetween(sc,spline->from->prev->from,spline->to);*/
+		spline->to->prevcp = spline->from->prevcp;
+		spline->to->noprevcp = spline->from->noprevcp;
+		spline->to->prevcpdef = spline->from->prevcpdef;
+		spline->from->prev->to = spline->to;
+		spline->to->prev = spline->from->prev;
+		SplineRefigure(spline->from->prev);
+		SplinePointFree(spline->from);
+		SplineFree(spline);
 		if ( first==NULL ) first = next->from->prev;
 		if ( spl->first==NULL ) spl->first = next->from;
 		if ( spl->last==NULL ) spl->last = next->from;

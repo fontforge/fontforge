@@ -127,12 +127,15 @@ return;
 	free(item);
     } else {
 	((struct chunk *) item)->next = chunklists[size>>2];
-#ifdef FLAG
+#  ifdef FLAG
 	if ( size>=sizeof(struct chunk2))
 	    ((struct chunk2 *) item)->flag = FLAG;
-#endif
+#  endif
 	chunklists[size>>2] = (struct chunk *) item;
     }
+#  ifdef FLAG
+    chunktest();
+#  endif
 # endif
 }
 #endif

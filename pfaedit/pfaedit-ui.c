@@ -689,7 +689,7 @@ static const unichar_t str685[] = { 'N', 'o', 't', ' ', 'a', ' ', 'b', 'd', 'f',
 static const unichar_t str686[] = { 'N', 'o', 't', ' ', 'a', ' ', 'p', 'k', ' ', 'f', 'i', 'l', 'e',  0 };
 static const unichar_t str687[] = { 'N', 'o', 't', ' ', 'a', ' ', '(', 'm', 'e', 't', 'a', 'f', 'o', 'n', 't', ')', ' ', 'p', 'k', ' ', 'f', 'i', 'l', 'e', ' ', '%', '.', '2', '0', '0', 'h', 's',  0 };
 static const unichar_t str688[] = { 'L', 'o', 'a', 'd', 'i', 'n', 'g', ' ', 'f', 'o', 'n', 't', ' ', 'f', 'r', 'o', 'm', ' ', '%', '.', '1', '0', '0', 'h', 's',  0 };
-static const unichar_t str689[] = { 'T', 'h', 'e', ' ', 's', 'e', 'l', 'e', 'c', 't', 'e', 'd', ' ', 'p', 'a', 't', 'h', ' ', 'd', 'o', 'e', 's', ' ', 'n', 'o', 't', ' ', 'f', 'o', 'r', 'm', ' ', 'a', ' ', 'c', 'l', 'o', 's', 'e', 'd', ' ', 'l', 'o', 'o', 'p',  0 };
+static const unichar_t str689[] = { 'T', 'h', 'e', ' ', 't', 'w', 'o', ' ', 's', 'e', 'l', 'e', 'c', 't', 'e', 'd', ' ', 'p', 'o', 'i', 'n', 't', 's', ' ', 'a', 'r', 'e', ' ', 't', 'h', 'e', ' ', 'e', 'n', 'd', 'p', 'o', 'i', 'n', 't', 's', ' ', 'o', 'f', ' ', 'a', 'n', ' ', 'o', 'p', 'e', 'n', ' ', 'p', 'a', 't', 'h',  0 };
 static const unichar_t str690[] = { 'T', 'h', 'e', ' ', 's', 'e', 'l', 'e', 'c', 't', 'e', 'd', ' ', 'p', 'o', 'i', 'n', 't', 's', ' ', 'a', 'r', 'e', ' ', 't', 'o', 'o', ' ', 'c', 'l', 'o', 's', 'e', ' ', 't', 'o', ' ', 'e', 'a', 'c', 'h', ' ', 'o', 't', 'h', 'e', 'r',  0 };
 static const unichar_t str691[] = { 'T', 'h', 'e', ' ', 's', 'e', 'l', 'e', 'c', 't', 'e', 'd', ' ', 's', 'p', 'l', 'i', 'n', 'e', ' ', 'd', 'o', 'e', 's', ' ', 'n', 'o', 't', ' ', 'h', 'a', 'v', 'e', ' ', 'a', ' ', 'p', 'o', 'i', 'n', 't', ' ', 'a', 't', ' ', 'i', 't', 's', ' ', 'e', 'x', 't', 'r', 'e', 'm', 'u', 'm', '(', 'a', ')',  0 };
 static const unichar_t str692[] = { 'T', 'h', 'e', ' ', 'x', ' ', 'c', 'o', 'o', 'r', 'd', ' ', 'o', 'f', ' ', 't', 'h', 'e', ' ', 's', 'e', 'l', 'e', 'c', 't', 'e', 'd', ' ', 'p', 'o', 'i', 'n', 't', ' ', 'i', 's', ' ', 'n', 'e', 'a', 'r', ' ', 't', 'h', 'e', ' ', 's', 'p', 'e', 'c', 'i', 'f', 'i', 'e', 'd', ' ', 'v', 'a', 'l', 'u', 'e',  0 };
@@ -824,6 +824,8 @@ static const unichar_t str820[] = { 'S', 'a', 'v', 'i', 'n', 'g', ' ', 'S', 'p',
 static const unichar_t str821[] = { 'S', 'a', 'v', 'i', 'n', 'g', ' ', 'O', 'u', 't', 'l', 'i', 'n', 'e', 's',  0 };
 static const unichar_t str822[] = { 'S', 'a', 'v', 'i', 'n', 'g', ' ', 'B', 'i', 't', 'm', 'a', 'p', 's',  0 };
 static const unichar_t str823[] = { 'P', 'f', 'a', 'E', 'd', 'i', 't',  0 };
+static const unichar_t str824[] = { 'N', 'e', 'g', 'a', 't', 'i', 'v', 'e', ' ', 'W', 'i', 'd', 't', 'h',  0 };
+static const unichar_t str825[] = { 'N', 'e', 'g', 'a', 't', 'i', 'v', 'e', ' ', 'c', 'h', 'a', 'r', 'a', 'c', 't', 'e', 'r', ' ', 'w', 'i', 'd', 't', 'h', 's', ' ', 'a', 'r', 'e', ' ', 'n', 'o', 't', ' ', 'a', 'l', 'l', 'o', 'w', 'e', 'd', ' ', 'i', 'n', ' ', 'T', 'r', 'u', 'e', 'T', 'y', 'p', 'e', 0xa, 'D', 'o', ' ', 'y', 'o', 'u', ' ', 'r', 'e', 'a', 'l', 'l', 'y', ' ', 'w', 'a', 'n', 't', ' ', 'a', ' ', 'n', 'e', 'g', 'a', 't', 'i', 'v', 'e', ' ', 'w', 'i', 'd', 't', 'h', '?',  0 };
 
 static const unichar_t *pfaedit_ui_strings[] = {
 	str0,
@@ -1650,6 +1652,8 @@ static const unichar_t *pfaedit_ui_strings[] = {
 	str821,
 	str822,
 	str823,
+	str824,
+	str825,
 	NULL};
 
 static const unichar_t pfaedit_ui_mnemonics[] = {
@@ -1756,6 +1760,7 @@ static const unichar_t pfaedit_ui_mnemonics[] = {
 	'P',    0x0000, 'P',    'F',    'C',    'C',    'T',    0x0000, 
 	0x0000, 'X',    'Y',    'M',    0x0000, 0x0000, 0x0000, 0x0000, 
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 
+	0x0000, 0x0000, 
 	0};
 
 static const int pfaedit_ui_num[] = {

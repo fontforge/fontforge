@@ -46,12 +46,18 @@ typedef struct createwidthdata {
 #define CID_ScaleVal	1013
 
 static int CW_OK(GGadget *g, GEvent *e) {
+    static int buts[] = { _STR_Yes, _STR_No, 0 };
+
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	int err;
 	CreateWidthData *wd = GDrawGetUserData(GGadgetGetWindow(g));
 	if ( GGadgetIsChecked(GWidgetGetControl(wd->gw,CID_Set)) ) {
 	    wd->type = st_set;
 	    wd->setto = GetReal(wd->gw,CID_SetVal,"Value",&err);
+	    if ( wd->setto<0 ) {
+		if ( GWidgetAskR(_STR_NegativeWidth, buts, 0, 1, _STR_NegativeWidthCheck )==1 )
+return( true );
+	    }
 	} else if ( GGadgetIsChecked(GWidgetGetControl(wd->gw,CID_Incr)) ) {
 	    wd->type = st_incr;
 	    wd->increment = GetReal(wd->gw,CID_IncrVal,"Increment",&err);

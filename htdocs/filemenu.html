@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 10-Dec-2000 -->
-  <!-- AP: Last modified: 28-Oct-2001 -->
+  <!-- AP: Last modified: 11-Nov-2001 -->
   <TITLE>The File Menu</TITLE>
 </HEAD>
 <BODY>
@@ -62,11 +62,14 @@
     want to load some of the bitmaps as well as the outlines.
     <P>
     By default this dialog will display all files with extensions of pfa, pfb,
-    sfd, ttf, otf, gsf, ttc and bdf. If you would also like it to display .ps
-    files then enter *.{pfa,pfb,ttf,otf,bdf,sfd,ps} and press the Filter button.
-    If you only want it to display sfd files enter *.sfd and press Filter.<BR>
+    sfd, ttf, otf, gsf, ttc and bdf (possibly others as PfaEdit comes to support
+    more formats). If you would also like it to display .ps files then enter
+    *.{pfa,pfb,ttf,otf,bdf,sfd,ps} and press the Filter button. If you only want
+    it to display sfd files enter *.sfd and press Filter.<BR>
     You may select multiple files (by holding down the shift or control keys
-    when clicking on them), and all selected files will be opened.
+    when clicking on them), and all selected files will be opened.<BR>
+    PfaEdit can open macbinary resource files containing postscript and truetype
+    fonts (it does not open bitmap fonts currently)
   <DT>
     <A NAME="Recent">Recent</A>
   <DD>
@@ -161,6 +164,10 @@
       <LI>
 	PostScript Type1 font, ascii format (a .pfa file, this is used by printers)
       <LI>
+	PostScript Type1 font, macbinary format (a postscript font wrapped up in
+	a set of mac resources wrapped up in a macbinary file, to be copied to a
+	mac, unmacbinaried, and installed there)
+      <LI>
 	PostScript Type3 font (a .ps font, this is also used by printers and is not
 	encrypted)
       <LI>
@@ -179,6 +186,9 @@
 	small pointsizes (equivalent to PostScript's BlueValues).
       <LI>
 	True Type Symbol. Same as True Type, except it uses a symbol encoding scheme.
+      <LI>
+	True Type macbinary format, a truetype font wrapped up in a mac resource,
+	wrapped up in a macbinary file. Designed to be used on a mac.
       <LI>
 	Open Type. Officially Open Type includes True Type, but Open Type True Type
 	fonts are no different from plain True Type fonts, so they might as well
@@ -203,6 +213,15 @@
 	reason), and an anti-aliased font will be generated for that size. As far
 	as I know this is a totally useless format since I just created it, but I
 	thought it a kind of neat idea.
+      <LI>
+	In TTF (MS) -- Store the bitmap fonts inside the ttf file using the microsoft
+	tables.
+      <LI>
+	In TTF (Apple) -- Store the bitmap fonts inside the ttf file using the apple
+	tables (I wish they were consistent!)
+      <LI>
+	NFNT (MacBin) -- Converts the bitmap fonts into Macintosh NFNT resources
+	and wraps them up in a mac binary file.
       <LI>
 	None
     </UL>
@@ -353,6 +372,8 @@
     <A HREF="cidmenu.html">CID</A>
   <LI>
     <A HREF="windowmenu.html">Window</A>
+  <LI>
+    <A HREF="HotKeys.html">Hot Keys</A>
 </UL>
 <P ALIGN=Center>
 -- <A HREF="metricsview.html">Prev</A> -- <A HREF="overview.html">TOC</A>

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 7-Nov-2001 -->
+  <!-- AP: Last modified: 11-Nov-2001 -->
   <TITLE>Frequently Asked Questions</TITLE>
 </HEAD>
 <BODY>
@@ -49,7 +49,11 @@
     <A HREF="#cidmaps">What on earth are the cidmap files, and should I care
     about them?</A>
   <LI>
+    <A HREF="cidmenu.html#CID">(What is a CID-keyed font?)</A>
+  <LI>
     <A HREF="#font-install">How do I install the fonts once I've made them?</A>
+  <LI>
+    <A HREF="#How-mac">How do I edit fonts from my macintoy?</A>
 </UL>
 <P>
   <HR>
@@ -334,10 +338,9 @@ $ xset fp+ `pwd`
 	<STRONG>Macintosh</STRONG>
       <DD>
 	Oh dear. The mac sticks fonts into resource forks and wraps them up in its
-	own headers. Mac fonts aren't compatible with anybody else's, and they can't
-	even be generated on other systems because the rely on concepts like resource
-	forks which don't exist elsewhere.<BR>
-	I've written <A HREF="http://fondu.sourceforge.net/">some utilities
+	own headers. Mac fonts aren't compatible with anybody else's, but see the
+	next section for some ideas.<BR>
+	I've also written <A HREF="http://fondu.sourceforge.net/">some utilities
 	</A>designed to convert from one format machine to another and they may prove
 	useful.<BR>
 	<A HREF="http://babel.uoregon.edu/yamada/fontconversionfaq.html">University
@@ -345,6 +348,77 @@ $ xset fp+ `pwd`
 	Once you've converted your fonts you just drop them into the System Folder
 	and they should be available after that.
     </DL>
+  <DT>
+    <A NAME="How-mac">How do I edit fonts from my macintoy?</A>
+  <DD>
+    Traditionally the macintosh has stored fonts in the resource fork of files.
+    This causes problems for any machine other than a mac, because the very concept
+    of a resource fork is lacking.<BR>
+    There are several programs whose job it is to store all of a macintosh file
+    in one package that can be manipulated on other systems (mac binary and binhex
+    are the most common). PfaEdit knows how to read both of these formats and
+    can extract a postscript or truetype font from either. PfaEdit can also create
+    fonts in macbinary format (I see no reason to support both output formats,
+    and macbinary is slightly simpler).<BR>
+    So to edit a font on your mac:
+    <OL>
+      <LI>
+	Find the file in the System Folder:Fonts folder
+      <LI>
+	Copy the file over to your unix machine
+	<UL>
+	  <LI>
+	    Use Fetch and specify macbinary format
+	  <LI>
+	    Or use some tool like binhex which can create the file directly
+	</UL>
+      <LI>
+	Open it in PfaEdit
+      <LI>
+	Edit it
+      <LI>
+	Save it back in macbinary format
+      <LI>
+	Copy it back to your mac
+	<UL>
+	  <LI>
+	    Fetch will automatically undo the macbinary wrappers and make it be correct
+	  <LI>
+	    Or various other tools can unwrap it.
+	</UL>
+      <LI>
+	Drop it back into your system folder (where it is automagically moved to
+	Fonts)
+    </OL>
+    <P>
+    <STRONG>Caveat: </STRONG>I do not understand how to generate a font that
+    handles 2 byte encodings on the mac. All the docs I've read seem to imply
+    a 1 byte limitation. So all of these fonts will have a FOND that only knows
+    about the first 256 characters. (I believe that some macs now support
+    true/opentype fonts in the data fork, and that might be one way of dealing
+    with the issue)<BR>
+    <STRONG>Caveat:</STRONG> A postscript font is useless on a macintosh unless
+    it is acompanied by at least one bitmap font. If you generate a postscript
+    font make sure you also generate an NFNT as well (this has the
+    FOND).<BR>
+    <STRONG>Caveat:</STRONG> The mac is picky about the filename used to contain
+    a postscript file. It is based on the postscript font name but suffers a
+    transformation. Don't try to rename this file. Basically the rules as I know
+    them are (determined empirically):
+    <UL>
+      <LI>
+	The fontname is broken into chunks where each chunk starts with a capital
+	letter.
+      <LI>
+	The first chunk may have four lower case letters following the initial capital
+      <LI>
+	Subsequent chunks may only have two lower case letters following the capital.
+      <LI>
+	Non-letter characters vanish.<BR>
+	So TimesBold =&gt; TimesBol, Helvetica-BoldItalic =&gt; HelveBolIta,
+	NCenturySchoolbook =&gt; NCenSch
+    </UL>
+  <DT>
 </DL>
 <P>
 <P ALIGN=Center>

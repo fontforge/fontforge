@@ -838,6 +838,8 @@
 #define _STR_SavingOutlines	821
 #define _STR_SavingBitmaps	822
 #define _STR_PfaEdit	823
+#define _STR_NegativeWidth	824
+#define _STR_NegativeWidthCheck	825
 
 
 #endif

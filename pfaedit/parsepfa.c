@@ -1607,16 +1607,10 @@ return;
     }
 }
 
-FontDict *ReadPSFont(char *fontname) {
-    FILE *in, *temp;
+FontDict *_ReadPSFont(FILE *in) {
+    FILE *temp;
     struct fontparse fp;
     char *oldloc;
-
-    in = fopen(fontname,"r");
-    if ( in==NULL ) {
-	fprintf( stderr, "Cannot open %s\n", fontname );
-return(NULL);
-    }
 
     temp = tmpfile();
     if ( temp==NULL ) {
@@ -1632,8 +1626,22 @@ return(NULL);
     realdecrypt(&fp,in,temp);
     setlocale(LC_NUMERIC,oldloc);
 
-    fclose(in); fclose(temp);
+    fclose(temp);
 return( fp.fd );
+}
+
+FontDict *ReadPSFont(char *fontname) {
+    FILE *in;
+    FontDict *fd;
+
+    in = fopen(fontname,"r");
+    if ( in==NULL ) {
+	fprintf( stderr, "Cannot open %s\n", fontname );
+return(NULL);
+    }
+    fd = _ReadPSFont(in);
+    fclose(in);
+return( fd );
 }
 
 void PSCharsFree(struct pschars *chrs) {

@@ -4566,14 +4566,11 @@ static void dumpttf(FILE *ttf,struct alltabs *at, enum fontformat format) {
     /* ttfcopyfile closed all the files (except ttf) */
 }
 
-int WriteTTFFont(char *fontname,SplineFont *sf,enum fontformat format,
+int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
 	real *bsizes, enum bitmapformat bf) {
     struct alltabs at;
-    FILE *ttf;
     char *oldloc;
 
-    if (( ttf=fopen(fontname,"w+"))==NULL )
-return( 0 );
     oldloc = setlocale(LC_NUMERIC,"C");		/* TrueType probably doesn't need this, but OpenType does for floats in dictionaries */
     if ( format==ff_otfcid ) {
 	if ( sf->cidmaster ) sf = sf->cidmaster;
@@ -4583,13 +4580,23 @@ return( 0 );
     initTables(&at,sf,format,bsizes,bf);
     dumpttf(ttf,&at,format);
     setlocale(LC_NUMERIC,oldloc);
-    if ( ferror(ttf)) {
-	fclose(ttf);
+    if ( ferror(ttf))
 return( 0 );
-    }
+
+return( 1 );
+}
+
+int WriteTTFFont(char *fontname,SplineFont *sf,enum fontformat format,
+	real *bsizes, enum bitmapformat bf) {
+    FILE *ttf;
+    int ret;
+
+    if (( ttf=fopen(fontname,"w+"))==NULL )
+return( 0 );
+    ret = _WriteTTFFont(ttf,sf,format,bsizes,bf);
     if ( fclose(ttf)==-1 )
 return( 0 );
-return( 1 );
+return( ret );
 }
     
 /* Fontograpgher also generates: fpgm, hdmx, prep */

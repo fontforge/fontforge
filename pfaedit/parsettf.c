@@ -2982,16 +2982,12 @@ static void ttfFixupReferences(struct ttfinfo *info) {
     GProgressNextStage();
 }
 
-static int readttf(char *filename, struct ttfinfo *info) {
-    FILE *ttf = fopen(filename,"r");
+static int readttf(FILE *ttf, struct ttfinfo *info, char *filename) {
     int i;
     char *oldloc;
 
     GProgressChangeStages(3);
-    if ( ttf==NULL )
-return( 0 );
     if ( !readttfheader(ttf,info)) {
-	fclose(ttf);
 return( 0 );
     }
     oldloc = setlocale(LC_NUMERIC,"C");		/* TrueType doesn't need this but opentype dictionaries do */
@@ -3004,11 +3000,9 @@ return( 0 );
 	readttfglyphs(ttf,info);
     else if ( info->cff_start!=0 ) {
 	if ( !readcffglyphs(ttf,info) ) {
-	    fclose(ttf);
 return( 0 );
 	}
     } else {
-	fclose(ttf);
 return( 0 );
     }
     if ( !info->onlystrikes || info->hmetrics_start!=0 )
@@ -3016,7 +3010,7 @@ return( 0 );
     if ( info->bitmapdata_start!=0 && info->bitmaploc_start!=0 )
 	TTFLoadBitmaps(ttf,info,info->onlyonestrike);
     else if ( info->onlystrikes )
-	GWidgetErrorR( _STR_NoBitmaps, _STR_NoBitmapsInTTF, filename );
+	GWidgetErrorR( _STR_NoBitmaps, _STR_NoBitmapsInTTF, filename==NULL ? "<unknown>" : filename );
     if ( info->cidregistry==NULL )
 	readttfencodings(ttf,info,false);
     if ( info->os2_start!=0 )
@@ -3032,7 +3026,6 @@ return( 0 );
     else
 	for ( i=0; i<info->glyph_cnt; ++i )
 	    info->chars[i]->lig = SCLigDefault(info->chars[i]);
-    fclose(ttf);
     setlocale(LC_NUMERIC,oldloc);
     ttfFixupReferences(info);
 return( true );
@@ -3187,15 +3180,28 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 return( sf );
 }
 
-SplineFont *SFReadTTF(char *filename, int flags) {
+SplineFont *_SFReadTTF(FILE *ttf, int flags,char *filename) {
     struct ttfinfo info;
+    int ret;
 
     memset(&info,'\0',sizeof(struct ttfinfo));
     info.onlystrikes = (flags&ttf_onlystrikes)?1:0;
     info.onlyonestrike = (flags&ttf_onlyonestrike)?1:0;
-    if ( !readttf(filename,&info))
+    ret = readttf(ttf,&info,filename);
+    if ( !ret )
 return( NULL );
 return( SFFillFromTTF(&info));
+}
+
+SplineFont *SFReadTTF(char *filename, int flags) {
+    FILE *ttf = fopen(filename,"r");
+    SplineFont *sf;
+
+    if ( ttf==NULL )
+return( NULL );
+    sf = _SFReadTTF(ttf,flags,filename);
+    fclose(ttf);
+return( sf );
 }
 
 /* This routine is for reading any bare CFF data in a stand alone file */

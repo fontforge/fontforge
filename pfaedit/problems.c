@@ -426,17 +426,8 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	    if ( test->first!=NULL && ( test->first->prev==NULL ||
 		    ( test->first->prev == test->first->next &&
 			test->first->noprevcp && test->first->nonextcp))) {
-		sp = test->first;
 		changed = true;
-		if ( test->first->prev==NULL ) {
-		    while ( 1 ) {
-			sp->selected = true;
-			if ( sp->next==NULL )
-		    break;
-			sp = sp->next->to;
-		    }
-		} else
-		    sp->selected = true;
+		test->first->selected = test->last->selected = true;
 		ExplainIt(p,sc,_STR_ProbOpenPath,0,0);
 		if ( p->ignorethis ) {
 		    p->openpaths = false;

@@ -951,7 +951,7 @@ static char *str_NotPkFile = "Not a pk file"
 static char *str_NotPkFileName = "Not a (metafont) pk file %.200hs"
 static char *str_LoadingFrom = "Loading font from %.100hs";
     /* problems */
-static char *str_ProbOpenPath = "The selected path does not form a closed loop";
+static char *str_ProbOpenPath = "The two selected points are the endpoints of an open path";
 static char *str_ProbPointsTooClose = "The selected points are too close to each other";
 static char *str_ProbMissingExtreme = "The selected spline does not have a point at its extremum(a)";
 static char *str_ProbXNear = "The x coord of the selected point is near the specified value";
@@ -1132,5 +1132,8 @@ static char *str_SavingOutlines = "Saving Outlines";
 static char *str_SavingBitmaps = "Saving Bitmaps";
     /* start.c */
 static char *str_PfaEdit = "PfaEdit";
+    /* cvpointer.c */
+static char *str_NegativeWidth = "Negative Width";
+static char *str_NegativeWidthCheck = "Negative character widths are not allowed in TrueType\nDo you really want a negative width?";
 
 static int num_buttonsize = 55;

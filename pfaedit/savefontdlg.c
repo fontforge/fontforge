@@ -45,15 +45,18 @@ struct gfc_data {
     SplineFont *sf;
 };
 
-static char *extensions[] = { ".pfa", ".pfb", ".ps", ".ps", ".cid", ".ttf", ".ttf", ".otf", ".otf", NULL };
+static char *extensions[] = { ".pfa", ".pfb", ".bin", ".ps", ".ps", ".cid",
+	".ttf", ".ttf", ".ttf.bin", ".otf", ".otf", NULL };
 static GTextInfo formattypes[] = {
     { (unichar_t *) "PS Type 1 (Ascii)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "PS Type 1 (Binary)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) "PS Type 1 (MacBin)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "PS Type 3", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "PS Type 0", NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "PS CID", NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "True Type", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "True Type (Symbol)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) "True Type (MacBin)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "Open Type (PS)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "Open Type CID", NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) _STR_Nooutlinefont, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
@@ -64,6 +67,7 @@ static GTextInfo bitmaptypes[] = {
     { (unichar_t *) "In TTF (MS)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "In TTF (Apple)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "GDF", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) "NFNT (MacBin)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) _STR_Nobitmapfonts, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }
 };
@@ -216,7 +220,7 @@ return;
     }
     if ( d->sf->encoding_name>=em_base )
 	for ( item=enclist; item!=NULL && item->enc_num!=d->sf->encoding_name; item=item->next );
-    if ( oldformatstate<ff_ptype0 &&
+    if ( (oldformatstate<ff_ptype0 || oldformatstate==ff_ttfmacbin) &&
 	    ((d->sf->encoding_name>=em_first2byte && d->sf->encoding_name<em_base) ||
 	     (d->sf->encoding_name>=em_base && (item==NULL || item->char_cnt>256))) ) {
 	static int buts[3] = { _STR_Yes, _STR_Cancel, 0 };
@@ -235,10 +239,23 @@ return;
 	    path,d->sf->charcnt,1);
     GProgressEnableStop(false);
     if ( oldformatstate!=ff_none ) {
-	if ( (oldformatstate!=ff_ttf && oldformatstate!=ff_ttfsym && oldformatstate!=ff_otf && oldformatstate!=ff_otfcid &&
-		    !WritePSFont(temp,d->sf,oldformatstate)) ||
-		((oldformatstate==ff_ttf || oldformatstate==ff_ttfsym || oldformatstate==ff_otf || oldformatstate==ff_otfcid) &&
-		    !WriteTTFFont(temp,d->sf,oldformatstate,sizes,oldbitmapstate)) ) {
+	int oerr = 0;
+	switch ( oldformatstate ) {
+	  case ff_pfa: case ff_pfb: case ff_ptype3: case ff_ptype0: case ff_cid:
+	    oerr = !WritePSFont(temp,d->sf,oldformatstate);
+	  break;
+	  case ff_ttf: case ff_ttfsym: case ff_otf: case ff_otfcid:
+	    oerr = !WriteTTFFont(temp,d->sf,oldformatstate,sizes,oldbitmapstate);
+	  break;
+	  case ff_pfbmacbin:
+	    oerr = !WriteMacPSFont(temp,d->sf,oldformatstate);
+	  break;
+	  case ff_ttfmacbin:
+	    oerr = !WriteMacTTFFont(temp,d->sf,oldformatstate,sizes,
+		    oldbitmapstate);
+	  break;
+	}
+	if ( oerr ) {
 	    GWidgetErrorR(_STR_Savefailedtitle,_STR_Savefailedtitle);
 	    err = true;
 	}
@@ -265,6 +282,9 @@ return;
 	GProgressChangeLine1R(_STR_SavingBitmapFonts);
 	GProgressIncrementBy(-d->sf->charcnt);
 	if ( !WriteBitmaps(temp,d->sf,sizes,oldbitmapstate))
+	    err = true;
+    } else if ( oldbitmapstate==bf_nfntmacbin && !err ) {
+	if ( !WriteMacBitmaps(temp,d->sf,sizes))
 	    err = true;
     }
     free( sizes );
@@ -388,7 +408,8 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 	SplineFont *temp;
 
 	set = true;
-	if ( format==ff_ttf || format==ff_ttfsym || format==ff_otf || format==ff_otfcid || format==ff_none )
+	if ( format==ff_ttf || format==ff_ttfsym || format==ff_otf ||
+		format==ff_otfcid || format==ff_ttfmacbin || format==ff_none )
 	    set = false;
 	GGadgetSetChecked(d->doafm,set);
 	if ( !set )				/* Don't default to generating pfms */
@@ -406,6 +427,7 @@ return( true );
 	if ( pt<tpt )
 	    pt = NULL;
 	if ( pt==NULL ) pt = dup+u_strlen(dup);
+	if ( uc_strcmp(pt-4, ".ttf.bin" )==0 ) pt -= 4;
 	uc_strcpy(pt,extensions[format]);
 	GGadgetSetTitle(d->gfc,dup);
 	free(dup);

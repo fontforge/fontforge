@@ -470,13 +470,19 @@ extern struct pschars *SplineFont2Subrs2(SplineFont *sf);
 extern struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
 	struct pschars *subrs);
 extern struct pschars *CID2Chrs2(SplineFont *cidmaster,struct fd2data *fds);
-enum fontformat { ff_pfa, ff_pfb, ff_ptype3, ff_ptype0, ff_cid,
-	ff_ttf, ff_ttfsym, ff_otf, ff_otfcid, ff_none };
-enum bitmapformat { bf_bdf, bf_ttf_ms, bf_ttf_apple, bf_gdf, bf_none };
+enum fontformat { ff_pfa, ff_pfb, ff_pfbmacbin, ff_ptype3, ff_ptype0, ff_cid,
+	ff_ttf, ff_ttfsym, ff_ttfmacbin, ff_otf, ff_otfcid, ff_none };
+enum bitmapformat { bf_bdf, bf_ttf_ms, bf_ttf_apple, bf_gdf, bf_nfntmacbin, bf_none };
 extern int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format);
 extern int WritePSFont(char *fontname,SplineFont *sf,enum fontformat format);
+extern int WriteMacPSFont(char *fontname,SplineFont *sf,enum fontformat format);
+extern int _WriteTTFFont(FILE *ttf,SplineFont *sf, enum fontformat format,
+	real *bsizes, enum bitmapformat bf);
 extern int WriteTTFFont(char *fontname,SplineFont *sf, enum fontformat format,
 	real *bsizes, enum bitmapformat bf);
+extern int WriteMacTTFFont(char *fontname,SplineFont *sf, enum fontformat format,
+	real *bsizes, enum bitmapformat bf);
+extern int WriteMacBitmaps(char *filename,SplineFont *sf, real *sizes);
 extern void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf);
 extern void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]);
 extern void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *sf,char *fontname);
@@ -629,8 +635,10 @@ extern int SFDWriteBak(SplineFont *sf);
 extern SplineFont *SFDRead(char *filename);
 extern void TTFLoadBitmaps(FILE *ttf,struct ttfinfo *info, int onlyone);
 enum ttfflags { ttf_onlystrikes=1, ttf_onlyonestrike=2 };
+extern SplineFont *_SFReadTTF(FILE *ttf,int flags,char *filename);
 extern SplineFont *SFReadTTF(char *filename,int flags);
 extern SplineFont *CFFParse(FILE *temp,int len,char *fontsetname);
+extern SplineFont *SFReadMacBinary(char *filename);
 extern SplineFont *LoadSplineFont(char *filename);
 extern SplineFont *ReadSplineFont(char *filename);	/* Don't use this, use LoadSF instead */
 

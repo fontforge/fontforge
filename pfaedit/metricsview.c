@@ -772,11 +772,12 @@ static void MVScroll(MetricsView *mv,struct sbevent *sb) {
 
 static void MVTextChanged(MetricsView *mv) {
     const unichar_t *ret, *pt, *ept, *tpt;
-    int i,ei, j,oldx;
+    int i,ei, j,oldx, start=0, end=0;
     static unichar_t nullstr[] = { 0 };
     GRect r;
     int missing;
     int direction_change = false;
+    SplineChar **hold = NULL;
 
     ret = _GGadgetGetTitle(mv->text);
     if (( isrighttoleft(ret[0] && !mv->right_to_left ) ||
@@ -795,13 +796,14 @@ return;					/* Nothing changed */
 		(*ept!=0xfffd || mv->perchar[ei].sc->unicodeenc!=-1 ))) {
 	    ++ei; ++ept;
     break;
-	} else if ( ei<=i || ept<=pt )
+	} else if ( ei<=i || ept<=pt ) {
+	    ++ei; ++ept;
     break;
+	}
     /* the change happened between i and ei, and between pt and ept */
     oldx = mv->perchar[i].dx;
     if ( i!=0 && oldx > mv->perchar[i-1].dx + mv->perchar[i-1].dwidth ) /* without kern */
 	oldx = mv->perchar[i-1].dx + mv->perchar[i-1].dwidth;
-    /* *pt!=perchar[i].sc->unicodeenc && ept[-1]!=perchar[ei-1].unicodeenc*/
     if ( ei==i && ept==pt )
 	GDrawIError("No change when there should have been one in MV_TextChanged");
     if ( u_strlen(ret)>=mv->max ) {
@@ -817,10 +819,13 @@ return;					/* Nothing changed */
 	    ++missing;
 
     if ( ept-pt-missing > ei-i ) {
-	int diff = (ept-pt-missing) - (ei-i);
-	for ( j=mv->charcnt-1; j>=ei; --j )
-	    if ( j>=0 )
-		MVSetPos(mv,j+diff,mv->perchar[j].sc);
+	if ( i<mv->charcnt ) {
+	    int diff = (ept-pt-missing) - (ei-i);
+	    hold = galloc((mv->charcnt+diff+6)*sizeof(SplineChar *));
+	    for ( j=mv->charcnt-1; j>=ei; --j )
+		hold[j+diff] = mv->perchar[j].sc;
+	    start = ei+diff; end = mv->charcnt+diff;
+	}
     } else if ( ept-pt-missing != ei-i ) {
 	int diff = (ept-pt-missing) - (ei-i);
 	for ( j=ei; j<mv->charcnt; ++j )
@@ -842,6 +847,14 @@ return;					/* Nothing changed */
 	SplineChar *sc = SCFromUnicode(mv->fv->sf,*pt);
 	if ( sc!=NULL )
 	    MVSetPos(mv,j++,sc);
+    }
+    if ( hold!=NULL ) {
+	/* We had to figure out what sc's there were before we wrote over them*/
+	/*  but we couldn't put them where they belonged until everything before*/
+	/*  them was set properly */
+	for ( j=start; j<end; ++j )
+	    MVSetPos(mv,j,hold[j]);
+	free(hold);
     }
     r.x = mv->perchar[i].dx;
     if ( i!=0 && r.x > mv->perchar[i-1].dx + mv->perchar[i-1].dwidth ) /* without kern */

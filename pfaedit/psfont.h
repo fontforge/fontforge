@@ -167,6 +167,7 @@ struct fd2data {
 
 extern char *AdobeStandardEncoding[256];
 
+extern FontDict *_ReadPSFont(FILE *ps);
 extern FontDict *ReadPSFont(char *fontname);
 extern void PSFontFree(FontDict *fd);
 #endif

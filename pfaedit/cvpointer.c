@@ -849,8 +849,13 @@ return;
 }
 
 void CVMouseUpPointer(CharView *cv ) {
+    static int buts[] = { _STR_Yes, _STR_No, 0 };
     if ( cv->p.width ) {
 	cv->p.width = false;
+	if ( cv->sc->width<0 && cv->p.cx>=0 ) {
+	    if ( GWidgetAskR(_STR_NegativeWidth, buts, 0, 1, _STR_NegativeWidthCheck )==1 )
+		cv->sc->width = cv->p.cx;
+	}
 	SCSynchronizeWidth(cv->sc,cv->sc->width,cv->p.cx,cv->fv);
 	cv->expandedge = ee_none;
 	GDrawSetCursor(cv->v,ct_mypointer);

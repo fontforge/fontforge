@@ -131,19 +131,24 @@ return( old );
 	match = rights->to;
     /* fixup some rounding errors */
     if ( match!=NULL ) {
+	if ( (match==lefts->from && match==rights->to) ||
+		(match==lefts->to && match==rights->from))
+return( old );
 	xpos = match->me.x; ypos = match->me.y;
-    } else if ( lefts->ishorvert ) {
-	if ( lefts->from->me.x==lefts->to->me.x )
-	    xpos = lefts->from->me.x;
-	if ( lefts->from->me.y==lefts->to->me.y )
-	    ypos = lefts->from->me.y;
-    } else if ( rights->ishorvert ) {
-	if ( rights->from->me.x==rights->to->me.x )
-	    xpos = rights->from->me.x;
-	if ( rights->from->me.y==rights->to->me.y )
-	    ypos = rights->from->me.y;
+    } else {
+	if ( lefts->ishorvert ) {
+	    if ( lefts->from->me.x==lefts->to->me.x )
+		xpos = lefts->from->me.x;
+	    if ( lefts->from->me.y==lefts->to->me.y )
+		ypos = lefts->from->me.y;
+	}
+	if ( rights->ishorvert ) {
+	    if ( rights->from->me.x==rights->to->me.x )
+		xpos = rights->from->me.x;
+	    if ( rights->from->me.y==rights->to->me.y )
+		ypos = rights->from->me.y;
+	}
     }
-	    
 
 #ifdef DEBUG
  printf( "Intersection at %g,%g\n", xpos, ypos);
