@@ -1824,6 +1824,7 @@ static unichar_t _bulgarian[] = {' ',0x041f,0x0420,0x0415,0x0414,0x041c,0x0415,
 static unichar_t *bulgarian[] = { _bulgarian, NULL };
 
 /* The following translations of the gospel according to John are all from */
+
 /* Belorussian */
 static unichar_t _belojohn1[] = { 0x0412,0x043d,0x0430,0x0447,0x0430,0x043b,
     0x0435,' ',0x0431,0x044b,0x043b,0x043e,' ',0x0421,0x043b,0x043e,0x0432,
@@ -1915,6 +1916,15 @@ static unichar_t *cherokeejohn[] = { _cherokeejohn1, _cherokeejohn2, NULL };
 static unichar_t _swahilijohn1[] = { 'H','a','p','o',' ','m','w','a','n','z','o',' ','k','u','l','i','k','u','w','a','k','o',' ','N','e','n','o',',',' ','n','a','y','e',' ','N','e','n','o',' ','a','l','i','k','u','w','a','k','o',' ','k','w','a',' ','M','u','n','g','o',',',' ','n','a','y','e',' ','N','e','n','o',' ','a','l','i','k','u','w','a',' ','M','u','n','g','u',',',' ','H','u','y','o',' ','m','w','a','n','z','o',' ','a','l','i','k','u','w','a','k','o',' ','k','w','a',' ','M','u','n','g','u','.',  '\0' };
 static unichar_t _swahilijohn2[] = { 'V','y','o','t','e',' ','v','i','l','v','a','n','y','i','k','a',' ','k','w','a',' ','h','u','y','o',';',' ','w','a','l','a',' ','p','a','s','i','p','o',' ','y','e','y','e',' ','h','a','k','i','k','u','f','a','n','y','i','k','a',' ','c','h','o',' ','c','h','o','t','e',' ','k','i','l','i','c','h','o','f','a','n','y','i','k','i','.',  '\0' };
 static unichar_t *swahilijohn[] = { _swahilijohn1, _swahilijohn2, NULL };
+/* thai */	/* I'm sure I've made transcription errors here, I can't figure out what "0xe27, 0xe38, 0xe4d" really is */
+static unichar_t _thaijohn1[] = { 0xe43, 0xe19, 0xe17, 0xe35, 0xe40, 0xe14,
+    0xe34, 0xe21, 0xe19, 0xe30, 0xe19, 0xe1e, 0xe27, 0xe38, 0xe4d, 0xe25,
+    0xe2d, 0xe42, 0xe06, 0xe40, 0xe1b, 0xe19, 0xe2d, 0xe22, 0xe48, 0xe39, ' ',
+    0xe41, 0xe25, 0xe40, 0xe1b, 0xe19, 0xe2d, 0xe22, 0xe48, 0xe39, 0xe14,
+    0xe27, 0xe49, 0xe22, 0xe01, 0xe31, 0xe19, 0xe01, 0xe31, 0xe1a,  ' ',
+    0xe1e, 0xe27, 0xe38, 0xe4d, 0xe40, 0xe06, 0xe49, 0xe32,
+    '\0' };
+static unichar_t *thaijohn[] = { _thaijohn1, NULL };
 
 /* I've omitted cornish. no interesting letters. no current speakers */
 
@@ -1924,7 +1934,7 @@ static unichar_t **sample[] = { simple, simplecyrill, faust, pheadra, antigone,
 	lithuanian, polish, slovene, irishjohn, basquejohn, portjohn,
 	icelandicjohn, danishjohn, swedishjohn, norwegianjohn, oldnorwegianjohn,
 	dutchjohn, finnishjohn,
-	cherokeejohn, swahilijohn,
+	cherokeejohn, thaijohn, swahilijohn,
 	NULL };
 
 static int AllChars( SplineFont *sf, unichar_t *str) {
