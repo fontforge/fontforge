@@ -135,10 +135,10 @@ return;
     }
 }
 
-static void GMenuDrawCheckMark(struct gmenu *m, Color fg, int ybase) {
-    int x = m->tickoff;
+static void GMenuDrawCheckMark(struct gmenu *m, Color fg, int ybase, int r2l) {
     int as = m->as;
     int pt = GDrawPointsToPixels(m->w,1);
+    int x = r2l ? m->width-m->tioff+2*pt : m->tickoff;
 
     GDrawSetLineWidth(m->w,pt);
     GDrawDrawLine(m->w,x+2*pt,ybase-as/3,x+as/3,ybase-2*pt,fg);
@@ -148,26 +148,39 @@ static void GMenuDrawCheckMark(struct gmenu *m, Color fg, int ybase) {
     GDrawDrawLine(m->w,x+as/3+2*as/5,ybase-2*pt-as/3-as/7,x+as/3+3*as/5,ybase-2*pt-as/3-as/7-as/8,fg);
 }
 
-static void GMenuDrawUncheckMark(struct gmenu *m, Color fg, int ybase) {
+static void GMenuDrawUncheckMark(struct gmenu *m, Color fg, int ybase, int r2l) {
 }
 
-static void GMenuDrawArrow(struct gmenu *m, int ybase) {
+static void GMenuDrawArrow(struct gmenu *m, int ybase, int r2l) {
     int pt = GDrawPointsToPixels(m->w,1);
-    int x = m->rightedge-2*pt;
     int as = 2*(m->as/2);
+    int x = r2l ? m->bp+2*pt : m->rightedge-2*pt;
     GPoint p[3];
 
-    p[0].x = x;			p[0].y = ybase-as/2;
-    p[1].x = x-3*(as/2);	p[1].y = ybase;
-    p[2].x = p[1].x;		p[2].y = ybase-as;
-
     GDrawSetLineWidth(m->w,pt);
-    GDrawDrawLine(m->w,p[0].x,p[0].y,p[2].x,p[2].y,m->box->border_brighter);
-    GDrawDrawLine(m->w,p[0].x-pt,p[0].y,p[2].x+pt,p[2].y+pt,m->box->border_brighter);
-    GDrawDrawLine(m->w,p[2].x,p[2].y,p[1].x,p[1].y,m->box->border_brightest);
-    GDrawDrawLine(m->w,p[2].x+pt,p[2].y+pt,p[1].x+pt,p[1].y-pt,m->box->border_brightest);
-    GDrawDrawLine(m->w,p[1].x,p[1].y,p[0].x,p[0].y,m->box->border_darkest);
-    GDrawDrawLine(m->w,p[1].x+pt,p[1].y-pt,p[0].x-pt,p[0].y,m->box->border_darkest);
+    if ( r2l ) {
+	p[0].x = x;			p[0].y = ybase-as/2;
+	p[1].x = x+3*(as/2);		p[1].y = ybase;
+	p[2].x = p[1].x;		p[2].y = ybase-as;
+
+	GDrawDrawLine(m->w,p[0].x,p[0].y,p[2].x,p[2].y,m->box->border_brighter);
+	GDrawDrawLine(m->w,p[0].x+pt,p[0].y,p[2].x+pt,p[2].y+pt,m->box->border_brighter);
+	GDrawDrawLine(m->w,p[2].x,p[2].y,p[1].x,p[1].y,m->box->border_brightest);
+	GDrawDrawLine(m->w,p[2].x-pt,p[2].y+pt,p[1].x+pt,p[1].y-pt,m->box->border_brightest);
+	GDrawDrawLine(m->w,p[1].x,p[1].y,p[0].x,p[0].y,m->box->border_darkest);
+	GDrawDrawLine(m->w,p[1].x+pt,p[1].y-pt,p[0].x-pt,p[0].y,m->box->border_darkest);
+    } else {
+	p[0].x = x;			p[0].y = ybase-as/2;
+	p[1].x = x-3*(as/2);		p[1].y = ybase;
+	p[2].x = p[1].x;		p[2].y = ybase-as;
+
+	GDrawDrawLine(m->w,p[0].x,p[0].y,p[2].x,p[2].y,m->box->border_brighter);
+	GDrawDrawLine(m->w,p[0].x-pt,p[0].y,p[2].x+pt,p[2].y+pt,m->box->border_brighter);
+	GDrawDrawLine(m->w,p[2].x,p[2].y,p[1].x,p[1].y,m->box->border_brightest);
+	GDrawDrawLine(m->w,p[2].x+pt,p[2].y+pt,p[1].x+pt,p[1].y-pt,m->box->border_brightest);
+	GDrawDrawLine(m->w,p[1].x,p[1].y,p[0].x,p[0].y,m->box->border_darkest);
+	GDrawDrawLine(m->w,p[1].x+pt,p[1].y-pt,p[0].x-pt,p[0].y,m->box->border_darkest);
+    }
 }
 
 static void GMenuDrawUpArrow(struct gmenu *m, int ybase) {
@@ -215,6 +228,8 @@ static int GMenuDrawMenuLine(struct gmenu *m, GMenuItem *mi, int y) {
     Color fg = m->box->main_foreground;
     GRect old, new;
     int ybase = y+as;
+    int r2l = false;
+    int x;
 
     new.x = m->tickoff; new.width = m->rightedge-m->tickoff;
     new.y = y; new.height = GTextInfoGetHeight(m->w,&mi->ti,m->font);
@@ -226,25 +241,34 @@ static int GMenuDrawMenuLine(struct gmenu *m, GMenuItem *mi, int y) {
 	fg = m->box->disabled_foreground;
     if ( fg==COLOR_DEFAULT )
 	fg = GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(m->w));
+    if ( mi->ti.text!=NULL && isrighttoleft(mi->ti.text[0]) )
+	r2l = true;
 
-    h = GTextInfoDraw(m->w,m->tioff,y,&mi->ti,m->font,
+    if ( r2l )
+	x = m->width-m->tioff-GTextInfoGetWidth(m->w,&mi->ti,m->font);
+    else
+	x = m->tioff;
+    h = GTextInfoDraw(m->w,x,y,&mi->ti,m->font,
 	    (mi->ti.disabled || m->disabled )?m->box->disabled_foreground:fg,
 	    m->box->active_border,new.y+new.height);
 
     if ( mi->ti.checkable ) {
 	if ( mi->ti.checked )
-	    GMenuDrawCheckMark(m,fg,ybase);
+	    GMenuDrawCheckMark(m,fg,ybase,r2l);
 	else
-	    GMenuDrawUncheckMark(m,fg,ybase);
+	    GMenuDrawUncheckMark(m,fg,ybase,r2l);
     }
 
     if ( mi->sub!=NULL )
-	GMenuDrawArrow(m,ybase);
+	GMenuDrawArrow(m,ybase,r2l);
     else if ( mi->shortcut!=0 ) {
 	shorttext(mi,shortbuf);
 
 	width = GDrawGetTextWidth(m->w,shortbuf,-1,NULL);
-	GDrawDrawText(m->w,m->rightedge-width,ybase,shortbuf,-1,NULL,fg);
+	if ( r2l )
+	    GDrawDrawText(m->w,m->bp,ybase,shortbuf,-1,NULL,fg);
+	else
+	    GDrawDrawText(m->w,m->rightedge-width,ybase,shortbuf,-1,NULL,fg);
     }
     GDrawPopClip(m->w,&old);
 return( y + h );
