@@ -375,9 +375,10 @@ return( NULL );
 return( _readencstring(ttf,stringoffset+fullstr,fulllen,enc));
 }
 
-static int PickTTFFont(FILE *ttf) {
+static int PickTTFFont(FILE *ttf,char *filename) {
     int32 *offsets, cnt, i, choice, j;
     unichar_t **names;
+    char *pt;
 
     /* TTCF version = */ getlong(ttf);
     cnt = getlong(ttf);
@@ -395,7 +396,24 @@ return( true );
 	names[j] = TTFGetFontName(ttf,offsets[i],0);
 	if ( names[j]!=NULL ) ++j;
     }
-    choice = GWidgetChoicesR(_STR_PickFont,(const unichar_t **) names,j,0,_STR_MultipleFontsPick);
+    if ( (pt = strchr(filename,'('))!=NULL ) {
+	char *find = copy(pt+1);
+	pt = strchr(find,')');
+	if ( pt!=NULL ) *pt='\0';
+	for ( choice=cnt-1; choice>=0; --choice )
+	    if ( uc_strcmp(names[choice],find)==0 )
+	break;
+	if ( choice==-1 ) {
+	    char *fn = copy(filename);
+	    *strchr(fn,'(') = '\0';
+	    GWidgetErrorR(_STR_NotInCollection,_STR_FontNotInCollection,find,fn);
+	    free(fn);
+	}
+	free(find);
+    } else if ( screen_display==NULL )
+	choice = 0;
+    else
+	choice = GWidgetChoicesR(_STR_PickFont,(const unichar_t **) names,j,0,_STR_MultipleFontsPick);
     if ( choice!=-1 )
 	fseek(ttf,offsets[choice],SEEK_SET);
     for ( i=0; i<j; ++i )
@@ -421,7 +439,7 @@ static int PickCFFFont(char **fontnames) {
 return( choice );
 }
 
-static int readttfheader(FILE *ttf, struct ttfinfo *info) {
+static int readttfheader(FILE *ttf, struct ttfinfo *info,char *filename) {
     int i;
     int tag, checksum, offset, length, version;
 
@@ -429,7 +447,7 @@ static int readttfheader(FILE *ttf, struct ttfinfo *info) {
     if ( version==CHR('t','t','c','f')) {
 	/* TrueType font collection */
 	info->is_ttc = true;
-	if ( !PickTTFFont(ttf))
+	if ( !PickTTFFont(ttf,filename))
 return( 0 );
 	/* If they picked a font, then we should be left pointing at the */
 	/*  start of the Table Directory for that font */
@@ -3530,7 +3548,7 @@ static int readttf(FILE *ttf, struct ttfinfo *info, char *filename) {
     char *oldloc;
 
     GProgressChangeStages(3);
-    if ( !readttfheader(ttf,info)) {
+    if ( !readttfheader(ttf,info,filename)) {
 return( 0 );
     }
     oldloc = setlocale(LC_NUMERIC,"C");		/* TrueType doesn't need this but opentype dictionaries do */
@@ -3667,6 +3685,8 @@ static void UseGivenEncoding(SplineFont *sf,struct ttfinfo *info) {
     int istwobyte = false, i, oldcnt = info->glyph_cnt, extras=0, epos, max=96*94;
     SplineChar **oldchars = info->chars, **newchars;
     struct dup *dup;
+    BDFFont *bdf;
+    BDFChar **obc;
 
     for ( i=0; i<oldcnt; ++i ) if ( oldchars[i]!=NULL ) {
 	if ( oldchars[i]->enc>=256 ) {
@@ -3705,6 +3725,18 @@ static void UseGivenEncoding(SplineFont *sf,struct ttfinfo *info) {
     free(oldchars);
 
     sf->encoding_name = info->encoding_name==-2? em_none : info->encoding_name;
+
+    for ( bdf=sf->bitmaps; bdf!=NULL; bdf = bdf->next ) {
+	bdf->encoding_name = sf->encoding_name;
+	obc = bdf->chars;
+	bdf->chars = gcalloc(sf->charcnt,sizeof(BDFChar *));
+	for ( i=0; i<bdf->charcnt; ++i ) if ( obc[i]!=NULL ) {
+	    bdf->chars[obc[i]->sc->enc] = obc[i];
+	    obc[i]->enc = obc[i]->sc->enc;
+	}
+	bdf->charcnt = sf->charcnt;
+	free(obc);
+    }
 }
 
 static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
@@ -3795,11 +3827,20 @@ return( SFFillFromTTF(&info));
 }
 
 SplineFont *SFReadTTF(char *filename, int flags) {
-    FILE *ttf = fopen(filename,"r");
+    FILE *ttf;
     SplineFont *sf;
+    char *temp=filename, *pt;
 
+    if ( strchr(filename,'(')!=NULL ) {
+	temp = copy(filename);
+	pt = strchr(temp,'(');
+	*pt = '\0';
+    }
+    ttf = fopen(temp,"r");
+    if ( temp!=filename ) free(temp);
     if ( ttf==NULL )
 return( NULL );
+
     sf = _SFReadTTF(ttf,flags,filename);
     fclose(ttf);
 return( sf );

@@ -126,7 +126,7 @@ return;
     bdfc->width = metrics->hadvance;
     bdfc->xmin = metrics->hbearingX;
     bdfc->xmax = bdfc->xmin+metrics->width-1;
-    bdfc->ymax = metrics->hbearingY;
+    bdfc->ymax = metrics->hbearingY-1;
     bdfc->ymin = bdfc->ymax-metrics->height+1;
     bdfc->bytes_per_line = (metrics->width+7)/8;
     bdfc->bitmap = gcalloc(metrics->height*bdfc->bytes_per_line,sizeof(uint8));
