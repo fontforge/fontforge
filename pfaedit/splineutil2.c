@@ -1691,7 +1691,7 @@ SplineSet *SplineCharRemoveTiny(SplineChar *sc,SplineSet *head) {
 return( head );
 }
 
-static Spline *SplineAddExtrema(Spline *s) {
+Spline *SplineAddExtrema(Spline *s) {
     /* First find the extrema, if any */
     double t[4], min;
     int p, i,j;
@@ -1748,17 +1748,22 @@ return(s);
     }
 }
 
-void SplineCharAddExtrema(SplineSet *head,int between_selected) {
-    SplineSet *ss;
+void SplineSetAddExtrema(SplineSet *ss,int between_selected) {
     Spline *s, *first;
 
+    first = NULL;
+    for ( s = ss->first->next; s!=NULL && s!=first; s = s->to->next ) {
+	if ( first==NULL ) first = s;
+	if ( !between_selected || (s->from->selected && s->to->selected))
+	    s = SplineAddExtrema(s);
+    }
+}
+
+void SplineCharAddExtrema(SplineSet *head,int between_selected) {
+    SplineSet *ss;
+
     for ( ss=head; ss!=NULL; ss=ss->next ) {
-	first = NULL;
-	for ( s = ss->first->next; s!=NULL && s!=first; s = s->to->next ) {
-	    if ( first==NULL ) first = s;
-	    if ( !between_selected || (s->from->selected && s->to->selected))
-		s = SplineAddExtrema(s);
-	}
+	SplineSetAddExtrema(ss,between_selected);
     }
 }
 

@@ -1094,6 +1094,8 @@ extern void SplinePointListSimplify(SplineChar *sc,SplinePointList *spl,
 extern SplineSet *SplineCharSimplify(SplineChar *sc,SplineSet *head,
 	struct simplifyinfo *smpl);
 extern SplineSet *SplineSetJoin(SplineSet *start,int doall,real fudge,int *changed);
+extern Spline *SplineAddExtrema(Spline *s);
+extern void SplineSetAddExtrema(SplineSet *ss,int between_selected);
 extern void SplineCharAddExtrema(SplineSet *head,int between_selected);
 extern SplineSet *SplineCharRemoveTiny(SplineChar *sc,SplineSet *head);
 extern SplineFont *SplineFontNew(void);
@@ -1147,7 +1149,9 @@ extern int IntersectLinesClip(BasePoint *inter,
 	BasePoint *line1_1, BasePoint *line1_2,
 	BasePoint *line2_1, BasePoint *line2_2);
 
+#if 0
 extern void SSBisectTurners(SplineSet *spl);
+#endif
 extern SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc);
 extern SplineSet *SSStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc);
 extern SplineSet *SplineSetRemoveOverlap(SplineChar *sc,SplineSet *base,enum overlap_type);

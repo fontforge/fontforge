@@ -1958,7 +1958,9 @@ static SplinePointList *SplinesFromEntities(EntityChar *ec,int *flags) {
 		si.removeoverlapifneeded = *flags & sf_removeoverlap ? 1 : 0;
 		si.radius = ent->u.splines.stroke_width/2;
 		new = NULL;
+#if 0
 		SSBisectTurners(ent->u.splines.splines);
+#endif
 		MatInverse(inversetrans,ent->u.splines.transform);
 		transed = SplinePointListTransform(SplinePointListCopy(
 			ent->u.splines.splines),inversetrans,true);

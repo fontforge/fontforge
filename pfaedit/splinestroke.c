@@ -1443,8 +1443,7 @@ static SplineSet *_SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc)
 return( ssplus );
     }
 
-    if ( spl->first->next->to->next!=NULL && spl->first->next->to->next->to==spl->first )
-	SplineBisect(spl->first->next,.5);	/* We have problems with some closed curves with two splines */
+    SplineSetAddExtrema(spl,false);
 
     if ( spl->first==spl->last && spl->first->next!=NULL ) {
 	/* My routine gets screwed up by counter-clockwise triangles */
@@ -1557,6 +1556,7 @@ return( ssplus );
 return( ssplus );
 }
 
+#if 0
 static void BisectTurners(SplineSet *spl) {
     Spline *first, *s, *next;
     double len,lenf,lent, dott,dotf;
@@ -1591,6 +1591,7 @@ void SSBisectTurners(SplineSet *spl) {
 	spl = spl->next;
     }
 }
+#endif
 
 static SplineSet *SSRemoveUTurns(SplineSet *base) {
     /* My stroking algorithem gets confused by sharp turns. For example */
@@ -1680,7 +1681,9 @@ static SplineSet *SSRemoveUTurns(SplineSet *base) {
 	}
     }
 
+#if 0
     BisectTurners(spl);
+#endif
 return( base );
 }
 
@@ -1699,7 +1702,9 @@ SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc) {
 	factor = si->radius/si->minorradius;
 	trans[0] *= factor; trans[1] *= factor;
 	temp = SplinePointListCopy(spl);
+#if 0 
 	BisectTurners(temp);
+#endif
 	temp = SplinePointListTransform(temp,trans,true);
 	si2 = *si;
 	si2.stroke_type = si_std;
