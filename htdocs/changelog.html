@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 20-Apr-2003 -->
+  <!-- AP: Last modified: 27-Apr-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -12,6 +12,28 @@
 <UL>
   <LI>
     ???
+    <UL>
+      <LI>
+	Yet more fixes for Remove overlap
+      <LI>
+	Added a mode to the ruler tool where it shows the exact position of the mouse
+	cursor
+      <LI>
+	The Goto command had a strange bug: If a font had a glyph with a known name,
+	but that glyph did not reside at the unicode slot assigned to that name,
+	then goingto that name would go to the (empty) unicode slot, rather than
+	to the actually character.
+      <LI>
+	Werner wants a <A HREF="showatt.html">dlg</A> which shows collects all the
+	GPOS/GSUB (morx/kern) information in one place rather than scattering it
+	around hundreds of dlgs.
+      <LI>
+	PfaEdit now stores the script/langs for kern pairs
+      <LI>
+	PfaEdit failed to read script/langs for GPOS properly.
+    </UL>
+  <LI>
+    20-Apr-2003
     <UL>
       <LI>
 	One of PfaEdit's deficiencies is that it handles multiple encodings for the
@@ -46,6 +68,8 @@
       <LI>
 	Added a command to the popup menu in the charview to bring up a window looking
 	at a reference.
+      <LI>
+	Add a check for when sfd files contain bad kerning info.
     </UL>
   <LI>
     14-Apr-2003

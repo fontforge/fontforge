@@ -370,8 +370,8 @@ typedef struct refchar {
 
 typedef struct kernpair {
     struct splinechar *sc;
-    /* lang? */
-    int off;
+    uint16 sli;
+    int16 off;
     struct kernpair *next;
 } KernPair;
 

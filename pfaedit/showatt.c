@@ -81,41 +81,79 @@ return( n1->tag-n2->tag );
 static void BuildAnchorLists(struct node *node,struct att_dlg *att,uint32 script, AnchorClass *ac) {
 }
 
-static void BuildKerns2(struct node *node,struct att_dlg *att) {
+static void BuildKerns2(struct node *node,struct att_dlg *att,
+	uint32 script, uint32 lang) {
     KernPair *kp = node->sc->kerns;
-    int i;
+    int i,j,l,m;
     struct node *chars;
     char buf[80];
+    SplineFont *_sf = att->sf;
 
-    for ( kp=node->sc->kerns, i=0; kp!=NULL; kp=kp->next ) ++i;
-    node->children = chars = gcalloc(i+1,sizeof(struct node));
-    node->cnt = i;
-    for ( kp=node->sc->kerns, i=0; kp!=NULL; kp=kp->next, ++i ) {
-	sprintf( buf, "%.40s %d", kp->sc->name, kp->off );
-	chars[i].label = uc_copy(buf);
-	chars[i].parent = node;
+    for ( j=0; j<2; ++j ) {
+	for ( kp=node->sc->kerns, i=0; kp!=NULL; kp=kp->next ) {
+	    int sli = kp->sli;
+	    struct script_record *sr = _sf->script_lang[sli];
+	    for ( l=0; sr[l].script!=0 && sr[l].script!=script; ++l );
+	    if ( sr[l].script!=0 ) {
+		for ( m=0; sr[l].langs[m]!=0 && sr[l].langs[m]!=lang; ++m );
+		if ( sr[l].langs[m]!=0 ) {
+		    if ( j ) {
+			sprintf( buf, "%.40s %d", kp->sc->name, kp->off );
+			chars[i].label = uc_copy(buf);
+			chars[i].parent = node;
+		    }
+		    ++i;
+		}
+	    }
+	}
+	if ( j==0 ) {
+	    node->children = chars = gcalloc(i+1,sizeof(struct node));
+	    node->cnt = i;
+	}
     }
 }
 
-static void BuildKerns(struct node *node,struct att_dlg *att,uint32 script) {
-    int i,k,j, tot;
+static void BuildKerns2G(struct node *node,struct att_dlg *att) {
+    uint32 script = node->parent->parent->parent->tag, lang = node->parent->parent->tag;
+    BuildKerns2(node,att,script,lang);
+}
+
+static void BuildKerns2M(struct node *node,struct att_dlg *att) {
+    uint32 script = node->parent->tag, lang = DEFAULT_LANG;
+    BuildKerns2(node,att,script,lang);
+}
+
+static void BuildKerns(struct node *node,struct att_dlg *att,uint32 script,uint32 lang,
+	void (*build)(struct node *,struct att_dlg *)) {
+    int i,k,j,l,m, tot;
     SplineFont *_sf = att->sf, *sf;
     struct node *chars;
+    KernPair *kp;
 
     for ( j=0; j<2; ++j ) {
 	tot = 0;
 	k=0;
 	do {
 	    sf = _sf->subfontcnt==0 ? _sf : _sf->subfonts[k++];
-	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->kerns!=NULL &&
-		    SCScriptFromUnicode(sf->chars[i])==script ) {
-		if ( j ) {
-		    chars[tot].sc = sf->chars[i];
-		    chars[tot].label = uc_copy(sf->chars[i]->name);
-		    chars[tot].build = BuildKerns2;
-		    chars[tot].parent = node;
+	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+		for ( kp=sf->chars[i]->kerns; kp!=NULL; kp=kp->next ) {
+		    int sli = kp->sli;
+		    struct script_record *sr = _sf->script_lang[sli];
+		    for ( l=0; sr[l].script!=0 && sr[l].script!=script; ++l );
+		    if ( sr[l].script!=0 ) {
+			for ( m=0; sr[l].langs[m]!=0 && sr[l].langs[m]!=lang; ++m );
+			if ( sr[l].langs[m]!=0 ) {
+			    if ( j ) {
+				chars[tot].sc = sf->chars[i];
+				chars[tot].label = uc_copy(sf->chars[i]->name);
+				chars[tot].build = build;
+				chars[tot].parent = node;
+			    }
+			    ++tot;
+		break;
+			}
+		    }
 		}
-		++tot;
 	    }
 	    ++k;
 	} while ( k<_sf->subfontcnt );
@@ -129,11 +167,11 @@ return;
 }
 
 static void BuildKernScript(struct node *node,struct att_dlg *att) {
-    BuildKerns(node,att,node->tag);
+    BuildKerns(node,att,node->tag,DEFAULT_LANG,BuildKerns2M);
 }
 
 static void BuildFeatures(struct node *node,struct att_dlg *att,
-	uint32 script, uint32 lang, uint32 tag) {
+	uint32 script, uint32 lang, uint32 tag, int ispos) {
     int i,j,k,l,m, maxc, tot, maxl, len;
     SplineFont *_sf = att->sf, *sf;
     SplineChar *sc;
@@ -165,7 +203,10 @@ static void BuildFeatures(struct node *node,struct att_dlg *att,
 		++k;
 	    } while ( k<_sf->subfontcnt );
 	    if ( sc!=NULL ) {
-		for ( pst=sc->possub; pst!=NULL; pst=pst->next ) if ( pst->tag==tag && pst->type!=pst_lcaret ) {
+		for ( pst=sc->possub; pst!=NULL; pst=pst->next )
+			if ( pst->tag==tag && pst->type!=pst_lcaret &&
+			 (( ispos && pst->type==pst_position) ||
+			  (!ispos && pst->type!=pst_position)) ) {
 		    int sli = pst->script_lang_index;
 		    struct script_record *sr = _sf->script_lang[sli];
 		    for ( l=0; sr[l].script!=0 && sr[l].script!=script; ++l );
@@ -175,7 +216,7 @@ static void BuildFeatures(struct node *node,struct att_dlg *att,
 			    if ( chars ) {
 				uc_strcpy(ubuf,sc->name);
 			        if ( pst->type==pst_position ) {
-				    sprintf(buf,"dx=%d dy=%d dx_adv=%d dy_adv=%d",
+				    sprintf(buf," dx=%d dy=%d dx_adv=%d dy_adv=%d",
 					    pst->u.pos.xoff, pst->u.pos.yoff,
 					    pst->u.pos.h_adv_off, pst->u.pos.v_adv_off );
 				    uc_strcat(ubuf,buf);
@@ -215,7 +256,7 @@ return;
 
 static void BuildMorxFeatures(struct node *node,struct att_dlg *att) {
     uint32 script = node->parent->tag, lang = DEFAULT_LANG, feat=node->tag;
-    BuildFeatures(node,att, script,lang,feat);
+    BuildFeatures(node,att, script,lang,feat,false);
 }
 
 static void BuildMorxScript(struct node *node,struct att_dlg *att) {
@@ -293,7 +334,7 @@ static void BuildGSUBfeatures(struct node *node,struct att_dlg *att) {
 
     if ( !isgsub ) {
 	if ( feat==CHR('k','e','r','n')) {
-	    BuildKerns(node,att,script);
+	    BuildKerns(node,att,script,lang,BuildKerns2G);
 return;
 	}
 	for ( ac = att->sf->anchor; ac!=NULL; ac=ac->next ) {
@@ -304,7 +345,7 @@ return;
 	}
     }
 
-    BuildFeatures(node,att, script,lang,feat);
+    BuildFeatures(node,att, script,lang,feat,!isgsub);
 }
 
 static void BuildGSUBlang(struct node *node,struct att_dlg *att) {
@@ -319,6 +360,7 @@ static void BuildGSUBlang(struct node *node,struct att_dlg *att) {
     AnchorClass *ac;
     SplineChar *sc;
     PST *pst;
+    KernPair *kp;
     unichar_t ubuf[80];
 
     /* Build up the list of features in this lang entry of this script in GSUB/GPOS */
@@ -346,12 +388,22 @@ static void BuildGSUBlang(struct node *node,struct att_dlg *att) {
 		    }
 		}
 	    }
-	    if ( !isgsub && lang==CHR('d','f','l','t') && !haskerns &&
-		    SCScriptFromUnicode(sc)==script ) {
-		haskerns = true;
-		if ( tot>=max )
-		    feats = grealloc(feats,(max+=30)*sizeof(uint32));
-		feats[tot++] = CHR('k','e','r','n');
+	    if ( !isgsub && !haskerns ) {
+		for ( kp=sc->kerns; kp!=NULL; kp=kp->next ) {
+		    int sli = kp->sli;
+		    struct script_record *sr = _sf->script_lang[sli];
+		    for ( l=0; sr[l].script!=0 && sr[l].script!=script; ++l );
+		    if ( sr[l].script!=0 ) {
+			for ( m=0; sr[l].langs[m]!=0 && sr[l].langs[m]!=lang; ++m );
+			if ( sr[l].langs[m]!=0 ) {
+			    if ( tot>=max )
+				feats = grealloc(feats,(max+=30)*sizeof(uint32));
+			    feats[tot++] = CHR('k','e','r','n');
+			    haskerns = true;
+		break;
+			}
+		    }
+		}
 	    }
 	}
 	++k;
@@ -477,6 +529,7 @@ static void BuildTable(struct node *node,struct att_dlg *att) {
     int feat, set;
     SplineChar *sc;
     PST *pst;
+    KernPair *kp;
     unichar_t ubuf[120];
 
     /* Build the list of scripts that are mentioned in the font */
@@ -529,10 +582,15 @@ return;
 		}
 	    }
 	    if ( sc->kerns!=NULL && (iskern || isgpos)) {
-		uint32 script = SCScriptFromUnicode(sc);
-		for ( j=0; j<script_max && scriptnodes[j].tag!=script; ++j );
-		if ( j<script_max )
-		    scriptnodes[j].used = true;
+		for ( kp = sc->kerns; kp!=NULL; kp=kp->next ) {
+		    int sli = kp->sli;
+		    struct script_record *sr = _sf->script_lang[sli];
+		    for ( l=0; sr[l].script!=0 ; ++l ) {
+			for ( j=0; j<script_max && scriptnodes[j].tag!=sr[l].script; ++j );
+			if ( j<script_max )
+			    scriptnodes[j].used = true;
+		    }
+		}
 	    }
 	}
 	++k;
@@ -800,15 +858,16 @@ static void AttResize(struct att_dlg *att,GEvent *event) {
 
     GDrawGetSize(att->gw,&size);
     lcnt = (size.height-att->bmargin)/att->fh;
-    GGadgetResize(att->vsb,sbsize,lcnt*att->fh);
+    GGadgetResize(att->vsb,sbsize,lcnt*att->fh+2);
     GGadgetMove(att->vsb,size.width-sbsize,0);
-    GDrawResize(att->v,size.width-sbsize,lcnt*att->fh);
+    GDrawResize(att->v,size.width-sbsize-1,lcnt*att->fh);
     att->lines_page = lcnt;
     GScrollBarSetBounds(att->vsb,0,att->open_cnt,att->lines_page);
 
     GGadgetGetSize(att->cancel,&wsize);
-    GGadgetMove(att->cancel,(size.width-wsize.width)/2,size.height-att->bmargin+5);
+    GGadgetMove(att->cancel,(size.width-wsize.width)/2,lcnt*att->fh+2+5);
     GDrawRequestExpose(att->v,NULL,true);
+    GDrawRequestExpose(att->gw,NULL,true);
 }
 
 static int attv_e_h(GWindow gw, GEvent *event) {
@@ -910,27 +969,28 @@ void ShowAtt(SplineFont *sf) {
     GDrawFontMetrics(att.font,&as,&ds,&ld);
     att.fh = as+ds; att.as = as;
 
-    att.bmargin = GDrawPointsToPixels(NULL,30);
+    att.bmargin = GDrawPointsToPixels(NULL,32);
 
     att.lines_page = (pos.height-att.bmargin)/att.fh;
-    wattrs.mask = wam_events|wam_cursor|wam_bordwidth;
+    wattrs.mask = wam_events|wam_cursor|wam_bordwidth|wam_bordcol;
     wattrs.border_width = 1;
+    wattrs.border_color = 0x000000;
     pos.x = 0; pos.y = 0;
-    pos.width -= sbsize; pos.height = att.lines_page*att.fh;
+    pos.width -= sbsize+1; pos.height = att.lines_page*att.fh;
     att.v = GWidgetCreateSubWindow(att.gw,&pos,attv_e_h,&att,&wattrs);
     GDrawSetVisible(att.v,true);
 
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
 
-    gcd[0].gd.pos.x = pos.width; gcd[0].gd.pos.y = 0;
+    gcd[0].gd.pos.x = pos.width+1; gcd[0].gd.pos.y = 0;
     gcd[0].gd.pos.width = sbsize;
-    gcd[0].gd.pos.height = pos.height;
+    gcd[0].gd.pos.height = pos.height+2;
     gcd[0].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels | gg_sb_vert;
     gcd[0].creator = GScrollBarCreate;
 
     gcd[1].gd.pos.width = GIntGetResource(_NUM_Buttonsize);
-    gcd[1].gd.pos.x = (pos.width+sbsize-gcd[1].gd.pos.width)/2; gcd[1].gd.pos.y = pos.height+7;
+    gcd[1].gd.pos.x = (pos.width+sbsize-gcd[1].gd.pos.width)/2; gcd[1].gd.pos.y = pos.height+5;
     gcd[1].gd.flags = gg_visible | gg_enabled | gg_but_default | gg_but_cancel | gg_pos_in_pixels;
     label[1].text = (unichar_t *) _STR_OK;
     label[1].text_in_resource = true;

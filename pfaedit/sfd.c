@@ -594,10 +594,10 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc) {
     for ( img=sc->backimages; img!=NULL; img=img->next )
 	SFDDumpImage(sfd,img);
     if ( sc->kerns!=NULL ) {
-	fprintf( sfd, "Kerns:" );
+	fprintf( sfd, "KernsSLI:" );
 	for ( kp = sc->kerns; kp!=NULL; kp=kp->next )
 	    if ( kp->off!=0 && !SFDOmit(kp->sc))
-		fprintf( sfd, " %d %d", kp->sc->enc, kp->off );
+		fprintf( sfd, " %d %d %d", kp->sc->enc, kp->off, kp->sli );
 	fprintf(sfd, "\n" );
     }
     for ( liga=sc->possub; liga!=NULL; liga=liga->next ) {
@@ -1724,13 +1724,20 @@ return( NULL );
 	    else
 		lasti->next = img;
 	    lasti = img;
-	} else if ( strmatch(tok,"Kerns:")==0 ) {
+	} else if ( strmatch(tok,"Kerns:")==0 ||
+		strmatch(tok,"KernsSLI:")==0 ) {
 	    KernPair *kp, *last=NULL;
-	    int index, off;
-	    while ( fscanf(sfd,"%d %d", &index, &off )==2 ) {
+	    int index, off, sli;
+	    int hassli = (strmatch(tok,"KernsSLI:")==0);
+	    while ( (hassli && fscanf(sfd,"%d %d %d", &index, &off, &sli )==3) ||
+		    (!hassli && fscanf(sfd,"%d %d", &index, &off )==2) ) {
+		if ( !hassli )
+		    sli = SFAddScriptLangIndex(sc->parent,
+			    script!=0?script:SCScriptFromUnicode(sc),DEFAULT_LANG);
 		kp = chunkalloc(sizeof(KernPair));
 		kp->sc = (SplineChar *) index;
 		kp->off = off;
+		kp->sli = sli;
 		kp->next = NULL;
 		if ( last == NULL )
 		    sc->kerns = kp;

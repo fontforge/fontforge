@@ -160,6 +160,7 @@ static KernPair *KernsCopy(KernPair *kp,int *mapping,SplineFont *into,SplineFont
 		into->chars[index]!=NULL ) {
 	    new = chunkalloc(sizeof(KernPair));
 	    new->off = kp->off;
+	    new->sli = kp->sli;
 	    new->sc = into->chars[index];
 	    if ( head==NULL )
 		head = new;
@@ -1070,6 +1071,7 @@ return( NULL );
 	    nkp = chunkalloc(sizeof(KernPair));
 	    nkp->sc = new->chars[k->sc->enc];
 	    nkp->off = kp1->off + amount*(k->off-kp1->off);
+	    nkp->sli = kp1->sli;
 	    if ( head==NULL )
 		head = nkp;
 	    else

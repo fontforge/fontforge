@@ -87,6 +87,8 @@ static void KPInsert( SplineChar *sc1, SplineChar *sc2, int off ) {
 	    kp = chunkalloc(sizeof(KernPair));
 	    kp->sc = sc2;
 	    kp->off = off;
+	    kp->sli = SFAddScriptLangIndex(sc1->parent,
+			    SCScriptFromUnicode(sc1),DEFAULT_LANG);
 	    kp->next = sc1->kerns;
 	    sc1->kerns = kp;
 	}

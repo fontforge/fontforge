@@ -313,7 +313,7 @@ typedef struct metricsview {
     int16 displayend;		/* y value of the end of the region showing filled characters */
     GFont *font;
     int16 fh, as;
-    GGadget *hsb, *mb, *text;
+    GGadget *hsb, *mb, *text, *sli_list;
     GGadget *namelab, *widthlab, *lbearinglab, *rbearinglab, *kernlab;
     struct metricchar {
 	SplineChar *sc;
@@ -345,6 +345,7 @@ typedef struct metricsview {
     BasePoint ap_start;
     int cursor;
     int scale_index;
+    int cur_sli;
 } MetricsView;
 
 enum fv_metrics { fvm_baseline=1, fvm_origin=2, fvm_advanceat=4, fvm_advanceto=8 };
@@ -496,6 +497,8 @@ extern unichar_t *ClassName(const unichar_t *name,uint32 feature_tag,
 	uint16 flags, int script_lang_index);
 extern unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag,uint16 flags,
 	int script_lang_index, GTextInfo *tags, SplineFont *sf);
+extern GTextInfo *SFLangList(SplineFont *sf,int addfinal);
+extern void ScriptLangList(SplineFont *sf,GGadget *list,int sli);
 extern void GListDelSelected(GGadget *list);
 extern void GListMoveSelected(GGadget *list,int offset);
 extern void GListChangeLine(GGadget *list,int pos, unichar_t *line);

@@ -3468,6 +3468,32 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
     GProgressNextStage();
 }
 
+static int SLIFromInfo(struct ttfinfo *info,SplineChar *sc,uint32 lang) {
+    uint32 script = SCScriptFromUnicode(sc);
+    int j;
+
+    if ( script==0 ) script = CHR('l','a','t','n');
+    if ( info->script_lang==NULL ) {
+	info->script_lang = galloc(2*sizeof(struct script_record *));
+	j = 0;
+    } else {
+	for ( j=0; info->script_lang[j]!=NULL; ++j ) {
+	    if ( info->script_lang[j][0].script==script &&
+		    info->script_lang[j][1].script == 0 &&
+		    info->script_lang[j][0].langs[0] == lang &&
+		    info->script_lang[j][0].langs[1] == 0 )
+return( j );
+	}
+    }
+    info->script_lang = grealloc(info->script_lang,(j+2)*sizeof(struct script_record *));
+    info->script_lang[j+1] = NULL;
+    info->script_lang[j]= gcalloc(2,sizeof(struct script_record));
+    info->script_lang[j][0].script = script;
+    info->script_lang[j][0].langs = gcalloc(2,sizeof(uint32));
+    info->script_lang[j][0].langs[0] = lang;
+return( j );
+}
+
 static void readttfkerns(FILE *ttf,struct ttfinfo *info) {
     int tabcnt, len, coverage,i,j, npairs;
     int left, right, offset;
@@ -3494,6 +3520,7 @@ static void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 		    kp = chunkalloc(sizeof(KernPair));
 		    kp->sc = info->chars[right];
 		    kp->off = offset;
+		    kp->sli = SLIFromInfo(info,info->chars[left],DEFAULT_LANG);
 		    kp->next = info->chars[left]->kerns;
 		    info->chars[left]->kerns = kp;
 		} else
@@ -3633,7 +3660,8 @@ static void readvaluerecord(struct valuerecord *vr,int vf,FILE *ttf) {
 	vr->offYadvanceDev = getushort(ttf);
 }
 
-static void addKernPair(struct ttfinfo *info, int glyph1, int glyph2, int16 offset) {
+static void addKernPair(struct ttfinfo *info, int glyph1, int glyph2,
+	int16 offset, uint16 sli) {
     KernPair *kp;
     if ( glyph1<info->glyph_cnt && glyph2<info->glyph_cnt ) {
 	for ( kp=info->chars[glyph1]->kerns; kp!=NULL; kp=kp->next )
@@ -3643,6 +3671,7 @@ static void addKernPair(struct ttfinfo *info, int glyph1, int glyph2, int16 offs
 	    kp = chunkalloc(sizeof(KernPair));
 	    kp->sc = info->chars[glyph2];
 	    kp->off = offset;
+	    kp->sli = sli;
 	    kp->next = info->chars[glyph1]->kerns;
 	    info->chars[glyph1]->kerns = kp;
 	}
@@ -3687,9 +3716,9 @@ return;
 		readvaluerecord(&vr1,vf1,ttf);
 		readvaluerecord(&vr2,vf2,ttf);
 		if ( lookup->flags&1 )	/* R2L */
-		    addKernPair(info, glyphs[i], glyph2, vr2.xadvance+vr1.xplacement);
+		    addKernPair(info, glyphs[i], glyph2, vr2.xadvance+vr1.xplacement,lookup->script_lang_index);
 		else
-		    addKernPair(info, glyphs[i], glyph2, vr1.xadvance+vr2.xplacement);
+		    addKernPair(info, glyphs[i], glyph2, vr1.xadvance+vr2.xplacement,lookup->script_lang_index);
 	    }
 	}
 	free(ps_offsets); free(glyphs);
@@ -3715,7 +3744,7 @@ return;
 			if ( class1[k]==i )
 			    for ( l=0; l<info->glyph_cnt; ++l )
 				if ( class2[l]==j )
-				    addKernPair(info, k, l, offset);
+				    addKernPair(info, k, l, offset,lookup->script_lang_index);
 	    }
 	}
 	free(class1); free(class2);
@@ -4546,7 +4575,12 @@ static void FigureScriptIndeces(struct ttfinfo *info,struct feature *features) {
     struct scriptlist *sl, *snext;
 
     for ( i=0; features[i].tag!=0; ++i );
-    info->script_lang = gcalloc(i+1,sizeof(struct script_record *));
+    if ( info->script_lang==NULL ) {
+	info->script_lang = gcalloc(i+1,sizeof(struct script_record *));
+    } else {
+	for ( j=0; info->script_lang[j]!=NULL; ++j );
+	info->script_lang = grealloc(info->script_lang,(i+j+1)*sizeof(struct script_record *));
+    }
     for ( i=0; features[i].tag!=0; ++i ) {
 	for ( j=0; info->script_lang[j]!=NULL; ++j )
 	    if ( SLMatch(info->script_lang[j],features[i].sl))
@@ -4562,6 +4596,7 @@ static void FigureScriptIndeces(struct ttfinfo *info,struct feature *features) {
 		info->script_lang[j][k].langs[sl->lang_cnt]=0;
 	    }
 	    info->script_lang[j][k].script = 0;
+	    info->script_lang[j+1] = NULL;
 	}
 	for ( sl=features[i].sl; sl!=NULL; sl=snext ) {
 	    snext = sl->next;
@@ -4813,32 +4848,6 @@ static void readttf_applelookup(FILE *ttf,struct ttfinfo *info,
 	fprintf( stderr, "Invalid lookup table format. %d\n", format );
       break;
     }
-}
-
-static int SLIFromInfo(struct ttfinfo *info,SplineChar *sc,uint32 lang) {
-    uint32 script = SCScriptFromUnicode(sc);
-    int j;
-
-    if ( script==0 ) script = CHR('l','a','t','n');
-    if ( info->script_lang==NULL ) {
-	info->script_lang = galloc(2*sizeof(struct script_record *));
-	j = 0;
-    } else {
-	for ( j=0; info->script_lang[j]!=NULL; ++j ) {
-	    if ( info->script_lang[j][0].script==script &&
-		    info->script_lang[j][1].script == 0 &&
-		    info->script_lang[j][0].langs[0] == lang &&
-		    info->script_lang[j][0].langs[1] == 0 )
-return( j );
-	}
-    }
-    info->script_lang = grealloc(info->script_lang,(j+2)*sizeof(struct script_record *));
-    info->script_lang[j+1] = NULL;
-    info->script_lang[j]= gcalloc(2,sizeof(struct script_record));
-    info->script_lang[j][0].script = script;
-    info->script_lang[j][0].langs = gcalloc(2,sizeof(uint32));
-    info->script_lang[j][0].langs[0] = lang;
-return( j );
 }
 
 static void TTF_SetProp(struct ttfinfo *info,int gnum, int prop) {

@@ -201,6 +201,15 @@ return( isrighttoleft(sc->unicodeenc ));
 return( script==CHR('a','r','a','b') || script==CHR('h','e','b','r') );
 }
 
+static KernPair *KernListMatch(KernPair *kerns,int sli) {
+    KernPair *kp;
+
+    for ( kp=kerns; kp!=NULL; kp=kp->next )
+	if ( kp->sli == sli )
+return( kp );
+return( NULL );
+}
+
 static LigList *LigListMatchTag(LigList *ligs,struct tagflaglang *tfl) {
     LigList *l;
 
@@ -265,7 +274,7 @@ return( NULL );
 return( ret );
 }
 
-static SplineChar **generateGlyphList(SplineFont *sf, int iskern, uint32 script,
+static SplineChar **generateGlyphList(SplineFont *sf, int iskern, int sli,
 	struct tagflaglang *ligtag) {
     int cnt;
     SplineFont *sub;
@@ -280,11 +289,10 @@ static SplineChar **generateGlyphList(SplineFont *sf, int iskern, uint32 script,
 	    sub = ( sf->subfontcnt==0 ) ? sf : sf->subfonts[k];
 	    for ( i=0; i<sub->charcnt; ++i )
 		    if ( SCWorthOutputting(sc=sub->chars[i]) &&
-			    ((iskern && sc->kerns!=NULL && SCScriptFromUnicode(sc)==script ) ||
+			    ((iskern && KernListMatch(sc->kerns,sli)) ||
 			     (!iskern && LigListMatchTag(sc->ligofme,ligtag)) )) {
 		if ( glyphs!=NULL ) glyphs[cnt] = sc;
 		++cnt;
-		sc->ticked = true;
 	    }
 	    ++k;
 	} while ( k<sf->subfontcnt );
@@ -500,7 +508,7 @@ static void dumpcoveragetable(FILE *gpos,SplineChar **glyphs) {
     }
 }
 
-static void dumpgposkerndata(FILE *gpos,SplineFont *sf,uint32 script,
+static void dumpgposkerndata(FILE *gpos,SplineFont *sf,int sli,
 	    struct alltabs *at) {
     int32 coverage_pos, next_val_pos, here;
     int cnt, i, pcnt, max=100, j,k;
@@ -509,8 +517,9 @@ static void dumpgposkerndata(FILE *gpos,SplineFont *sf,uint32 script,
     int16 *offsets=NULL;
     SplineChar **glyphs;
     KernPair *kp;
+    uint32 script = sf->script_lang[sli][0].script;
 
-    glyphs = generateGlyphList(sf,true,script,NULL);
+    glyphs = generateGlyphList(sf,true,sli,NULL);
     cnt=0;
     if ( glyphs!=NULL ) {
 	for ( ; glyphs[cnt]!=NULL; ++cnt );
@@ -537,7 +546,8 @@ static void dumpgposkerndata(FILE *gpos,SplineFont *sf,uint32 script,
 	putshort(gpos,0);
     for ( i=0; i<cnt; ++i ) {
 	offsets[i] = ftell(gpos)-coverage_pos+2;
-	for ( pcnt = 0, kp = glyphs[i]->kerns; kp!=NULL; kp=kp->next ) ++pcnt;
+	for ( pcnt = 0, kp = glyphs[i]->kerns; kp!=NULL; kp=kp->next )
+	    if ( kp->sli==sli ) ++pcnt;
 	putshort(gpos,pcnt);
 	if ( pcnt>=max ) {
 	    max = pcnt+100;
@@ -545,8 +555,10 @@ static void dumpgposkerndata(FILE *gpos,SplineFont *sf,uint32 script,
 	    changes = grealloc(changes,max*sizeof(int));
 	}
 	for ( pcnt = 0, kp = glyphs[i]->kerns; kp!=NULL; kp=kp->next ) {
-	    seconds[pcnt] = kp->sc->ttf_glyph;
-	    changes[pcnt++] = kp->off;
+	    if ( kp->sli==sli ) {
+		seconds[pcnt] = kp->sc->ttf_glyph;
+		changes[pcnt++] = kp->off;
+	    }
 	}
 	for ( j=0; j<pcnt-1; ++j ) for ( k=j+1; k<pcnt; ++k ) {
 	    if ( seconds[k]<seconds[j] ) {
@@ -1000,6 +1012,7 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
     int max, cnt;
     enum possub_type type;
     PST *pst;
+    KernPair *kp;
 
     max = 30; cnt = 0;
     ligtags = galloc(max*sizeof(struct tagflaglang));
@@ -1045,25 +1058,36 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
 	    }
 	}
     }
-    free(ligtags);
 
-    /* Look for kerns */ /* kerns don't store langs or flags */
-    for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL )
-	sf->chars[i]->ticked = false;
-    for ( i=0; i<sf->charcnt; i++ )
-	    if ( (sc=sf->chars[i])!=NULL && sc->kerns!=NULL &&
-		    SCScriptFromUnicode(sc)!=0 && !sc->ticked ) {
+    /* Look for kerns */ /* kerns now store langs but not flags */
+    cnt = 0;
+    for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL ) {
+	for ( kp = sf->chars[i]->kerns; kp!=NULL; kp=kp->next ) {
+	    for ( j=0; j<cnt; ++j )
+		if ( kp->sli == ligtags[j].script_lang_index )
+	    break;
+	    if ( j==cnt ) {
+		if ( cnt>=max ) {
+		    max += 30;
+		    ligtags = grealloc(ligtags,max*sizeof(struct tagflaglang));
+		}
+		ligtags[cnt++].script_lang_index = kp->sli;
+	    }
+	}
+    }
+    for ( j=0; j<cnt; ++j ) {
 	new = chunkalloc(sizeof(struct lookup));
 	new->feature_tag = CHR('k','e','r','n');
 	new->flags = pst_ignorecombiningmarks;
-	new->script_lang_index = SFAddScriptLangIndex(sf,SCScriptFromUnicode(sc),DEFAULT_LANG);
+	new->script_lang_index = ligtags[j].script_lang_index;
 	new->lookup_type = 2;		/* Pair adjustment subtable type */
 	new->offset = ftell(lfile);
 	new->next = lookups;
 	lookups = new;
-	dumpgposkerndata(lfile,sf,SCScriptFromUnicode(sc),at);
+	dumpgposkerndata(lfile,sf,ligtags[j].script_lang_index,at);
 	new->len = ftell(lfile)-new->offset;
     }
+    free(ligtags);
 
     /* Every Anchor Class gets its own lookup (and may get several if it has */
     /*  different anchor types or scripts) */

@@ -230,6 +230,16 @@ return;
     if ( mv->right_to_left )
 	r.x = mv->width - r.x - r.width;
     GDrawRequestExpose(mv->gw,&r,false);
+    if ( mv->perchar[i].selected && i!=0 ) {
+	KernPair *kp;
+	for ( kp=mv->perchar[i-1].sc->kerns; kp!=NULL; kp=kp->next )
+	    if ( kp->sc == mv->perchar[i].sc )
+	break;
+	if ( kp!=NULL ) {
+	    mv->cur_sli = kp->sli;
+	    GGadgetSelectOneListItem(mv->sli_list,kp->sli);
+	}
+    }
 }
 
 static void MVDeselectChar(MetricsView *mv, int i) {
@@ -305,6 +315,10 @@ return;
     GGadgetSetTitle(mv->perchar[i].kern,ubuf);
     mv->perchar[i-1].kernafter = (kp==NULL?0:kp->off) * mv->pixelsize/
 	    (mv->fv->sf->ascent+mv->fv->sf->descent);
+    if ( kp!=NULL ) {
+	mv->cur_sli = kp->sli;
+	GGadgetSelectOneListItem(mv->sli_list,kp->sli);
+    }
 }
 
 static void aplistfree(struct aplist *l) {
@@ -651,11 +665,11 @@ return( true );
 	    if ( kp==NULL ) {
 		kp = chunkalloc(sizeof(KernPair));
 		kp->sc = sc;
-		kp->off = val;
 		kp->next = psc->kerns;
 		psc->kerns = kp;
-	    } else
-		kp->off = val;
+	    }
+	    kp->off = val;
+	    kp->sli = mv->cur_sli;
 	    mv->perchar[which-1].kernafter = (val*mv->pixelsize)/
 		    (mv->fv->sf->ascent+mv->fv->sf->descent);
 	    for ( i=which; i<mv->charcnt; ++i )
@@ -1075,6 +1089,36 @@ static int MV_TextChanged(GGadget *g, GEvent *e) {
 return( true );
 }
 
+
+static int MV_SLIChanged(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
+	MetricsView *mv = GGadgetGetUserData(g);
+	int32 len;
+	GTextInfo **ti = GGadgetGetList(g,&len);
+	int i;
+	KernPair *kp;
+
+	if ( ti[len-1]->selected ) /* Edit script/lang list */
+	    ScriptLangList(mv->fv->sf,g,mv->cur_sli);
+	else {
+	    mv->cur_sli = GGadgetGetFirstListSelectedItem(g);
+	    for ( i=0; i<mv->charcnt; ++i ) {
+		if ( mv->perchar[i].selected )
+	    break;
+	    }
+	    if ( i!=0 ) {
+		for ( kp=mv->perchar[i-1].sc->kerns; kp!=NULL; kp=kp->next ) {
+		    if ( kp->sc==mv->perchar[i].sc ) {
+			kp->sli = mv->cur_sli;
+		break;
+		    }
+		}
+	    }
+	}
+    }
+return( true );
+}
 
 #define MID_ZoomIn	2002
 #define MID_ZoomOut	2003
@@ -2771,6 +2815,7 @@ return;
 		}
 		if ( mv->right_to_left ) diff = -diff;
 		kp->off += diff;
+		kp->sli = mv->cur_sli;
 		mv->perchar[i-1].kernafter = kp->off*mv->pixelsize/
 			(mv->fv->sf->ascent+mv->fv->sf->descent);
 		MVRefreshValues(mv,i-1,mv->perchar[i-1].sc);
@@ -2963,6 +3008,7 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     GTextInfo label;
     int i,j,cnt;
     int as,ds,ld;
+    uint32 script;
 
     if ( icon==NULL )
 	icon = GDrawCreateBitmap(NULL,metricsicon_width,metricsicon_height,metricsicon_bits);
@@ -3044,6 +3090,19 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     mv->text = GTextFieldCreate(gw,&gd,mv);
     GGadgetGetSize(mv->text,&gsize);
     mv->topend = gsize.y + gsize.height + 2;
+
+    for ( i=0; i<cnt; ++i ) {
+	if ( (script=SCScriptFromUnicode(mv->perchar[i].sc))!=0 ) {
+	    SFAddScriptLangIndex(mv->fv->sf,script,DEFAULT_LANG);
+    break;
+	}
+    }
+    gd.pos.x = gd.pos.x+gd.pos.width+10;
+    gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
+    gd.handle_controlevent = MV_SLIChanged;
+    gd.u.list = SFLangList(mv->fv->sf,true);
+    mv->sli_list = GListButtonCreate(gw,&gd,mv);
+
     MVMakeLabels(mv);
 
     if ( sc!=NULL ) {

@@ -2053,14 +2053,21 @@ static void bCenterInWidth(Context *c) {
 static void bSetKern(Context *c) {
     SplineFont *sf = c->curfv->sf;
     SplineChar *sc1, *sc2;
-    int i, kern, ch2;
+    int i, kern, ch2, sli;
     KernPair *kp;
 
-    if ( c->a.argc!=3 )
+    if ( c->a.argc!=3 && c->a.argc!=4 )
 	error( c, "Wrong number of arguments" );
     ch2 = ParseCharIdent(c,&c->a.vals[1],true);
     if ( c->a.vals[2].type!=v_int )
 	error(c,"Bad argument type");
+    sli = -1;
+    if ( c->a.argc==4 ) {
+	if ( c->a.vals[3].type!=v_int )
+	    error(c,"Bad argument type");
+	else
+	    sli = c->a.vals[3].u.ival;
+    }
     kern = c->a.vals[2].u.ival;
     if ( kern!=0 )
 	sc2 = SFMakeChar(sf,ch2);
@@ -2080,14 +2087,21 @@ return;		/* It already has a kern==0 with everything */
 	for ( kp = sc1->kerns; kp!=NULL && kp->sc!=sc2; kp = kp->next );
 	if ( kp==NULL && kern==0 )
     continue;
-	else if ( kp!=NULL )
+	else if ( kp!=NULL ) {
 	    kp->off = kern;
-	else {
+	    if ( sli!=-1 )
+		kp->sli = sli;
+	} else {
 	    kp = chunkalloc(sizeof(KernPair));
 	    kp->next = sc1->kerns;
 	    sc1->kerns = kp;
 	    kp->sc = sc2;
 	    kp->off = kern;
+	    if ( sli!=-1 )
+		kp->sli = sli;
+	    else
+		kp->sli = SFAddScriptLangIndex(sc1->parent,
+			    SCScriptFromUnicode(sc1),DEFAULT_LANG);
 	}
     }
 }

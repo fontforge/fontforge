@@ -637,7 +637,7 @@ static GTextInfo multiplesubs_tags[] = {
 
 GTextInfo *pst_tags[] = {
     simplepos_tags, simplesubs_tags, alternatesubs_tags, multiplesubs_tags,
-    ligature_tags
+    ligature_tags, NULL
 };
 static int newstrings[] = { _STR_NewPosition, _STR_NewSubstitution,
 	_STR_NewAlternate, _STR_NewMultiple, _STR_NewLigature };
@@ -751,7 +751,7 @@ static unichar_t *ScriptLangLine(struct script_record *sr) {
 return( line );
 }
 
-static GTextInfo *SFLangList(SplineFont *sf,int addfinal) {
+GTextInfo *SFLangList(SplineFont *sf,int addfinal) {
     int i;
     GTextInfo *ti;
 
@@ -1322,7 +1322,7 @@ return( false );
 return( true );
 }
 
-static void ScriptLangList(SplineFont *sf,GGadget *list,int sli) {
+void ScriptLangList(SplineFont *sf,GGadget *list,int sli) {
     int32 len;
     GTextInfo **ti = GGadgetGetList(list,&len);
     struct sl_dlg sld;
