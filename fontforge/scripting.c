@@ -2755,7 +2755,7 @@ static void bNearlyHvCps(Context *c) {
     SplineFont *sf = fv->sf;
     real err = .1;
 
-    if ( c->a.argc>=3 )
+    if ( c->a.argc>3 )
 	error( c, "Too many arguments" );
     else if ( c->a.argc>1 ) {
 	if ( c->a.vals[1].type!=v_int )
@@ -2784,7 +2784,7 @@ static void bNearlyHvLines(Context *c) {
     SplineFont *sf = fv->sf;
     real err = .1;
 
-    if ( c->a.argc>=3 )
+    if ( c->a.argc>3 )
 	error( c, "Too many arguments" );
     else if ( c->a.argc>1 ) {
 	if ( c->a.vals[1].type!=v_int )
