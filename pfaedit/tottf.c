@@ -1803,7 +1803,9 @@ static void dumpcomposit(SplineChar *sc, RefChar *refs, struct glyphinfo *gi) {
 	}
     }
 
-#if 0
+#if 0	/* composits inherit the instructions of their references */
+	/* we'd only want instructions if we scaled/rotated a ref */
+	/* (or if we wanted a seperation between two refs) */
     if ( sc->hstem || sc->vstem || sc->dstem )
 	dumpcompositinstrs(sc,gi,refs);
 #endif

@@ -387,7 +387,7 @@ static void readttfmaxp(FILE *ttf,struct ttfinfo *info) {
     fseek(ttf,info->maxp_start+4,SEEK_SET);		/* skip over the version number */
     cnt = getushort(ttf);
     if ( cnt!=info->glyph_cnt && info->glyph_cnt!=0 ) {
-	GDrawError("TTF Font has bad glyph count field %d %d", cnt, info->glyph_cnt);
+	GDrawError("TTF Font has bad glyph count field. maxp says: %d sizeof(loca)=>%d", cnt, info->glyph_cnt);
 	if ( cnt>info->glyph_cnt )
 	    cnt = info->glyph_cnt;		/* Use the smaller of the two values */
     }
@@ -705,9 +705,10 @@ static void readttfsimpleglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, in
 #define _ARGS_ARE_XY	2
 #define _ROUND		4		/* round offsets so componant is on grid */
 #define _SCALE		8
+/* 0x10 is reserved */
+#define _MORE		0x20
 #define _XY_SCALE	0x40
 #define _MATRIX		0x80
-#define _MORE		0x20
 #define _INSTR		0x100
 #define _MY_METRICS	0x200
 #define _OVERLAP_COMPOUND	0x400	/* Used in Apple GX fonts */
@@ -837,7 +838,7 @@ return( sc );
     if ( path_cnt>=0 )
 	readttfsimpleglyph(ttf,info,sc,path_cnt);
     else
-	readttfcompositglyph(ttf,info,sc,end);
+	readttfcompositglyph(ttf,info,sc,info->glyph_start+end);
 return( sc );
 }
 
@@ -2300,19 +2301,25 @@ return( 1 );
 
 static void readttfwidths(FILE *ttf,struct ttfinfo *info) {
     int i,j;
+    int lastwidth = info->emsize;
+    /* I'm not interested in the lsb, I'm not sure what it means if it differs*/
+    /*  from that is specified in the outline. Do we move the outline? */
 
     fseek(ttf,info->hmetrics_start,SEEK_SET);
     for ( i=0; i<info->width_cnt && i<info->glyph_cnt; ++i ) {
 	if ( info->chars[i]!=NULL ) {		/* can happen in ttc files */
-	    info->chars[i]->width = getushort(ttf);
+	    info->chars[i]->width = lastwidth = getushort(ttf);
 	    info->chars[i]->widthset = true;
 	} else
-	    /* unused width = */ getushort(ttf);
+	    /* unused width = */ lastwidth = getushort(ttf);
 	/* lsb = */ getushort(ttf);
     }
+    if ( i==0 )
+	fprintf( stderr, "Invalid ttf hmtx table (or hhea), numOfLongVerMetrics is 0\n" );
+	
     for ( j=i; j<info->glyph_cnt; ++j ) {
 	if ( info->chars[j]!=NULL ) {		/* In a ttc file we may skip some */
-	    info->chars[j]->width = info->chars[i-1]->width;
+	    info->chars[j]->width = lastwidth;
 	    info->chars[j]->widthset = true;
 	}
     }
