@@ -1685,10 +1685,12 @@ static SplineSet *JoinAContour(Intersection *startil,MList *ml) {
     SplineSet *ss = chunkalloc(sizeof(SplineSet));
     SplinePoint *last;
     Intersection *curil;
+    int allexclude = ml->m->exclude;
 
     ss->first = last = SplinePointCreate(startil->inter.x,startil->inter.y);
     curil = startil;
     forever {
+	if ( allexclude && !ml->m->exclude ) allexclude = false;
 	if ( ml->m->start==curil ) {
 	    last = MonoFollowForward(&curil,ml,last);
 	} else if ( ml->m->end==curil ) {
@@ -1735,6 +1737,8 @@ static SplineSet *JoinAContour(Intersection *startil,MList *ml) {
 	}
     }
     SPLCatagorizePoints(ss);
+    if ( allexclude && SplinePointListIsClockwise(ss))
+	SplineSetReverse(ss);
 return( ss );
 }
 
