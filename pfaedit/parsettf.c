@@ -606,7 +606,8 @@ static void readttfmaxp(FILE *ttf,struct ttfinfo *info) {
     int cnt;
     fseek(ttf,info->maxp_start+4,SEEK_SET);		/* skip over the version number */
     cnt = getushort(ttf);
-    if ( info->glyph_cnt==0 && info->glyph_length==0 ) {
+    if ( info->glyph_cnt==0 && info->glyph_length==0 && info->loca_length<=4 &&
+	    info->cff_length==0 ) {
 	/* X11 OpenType bitmap format */;
 	info->onlystrikes = true;
     } else if ( cnt!=info->glyph_cnt && info->loca_length!=0 ) {
