@@ -572,6 +572,27 @@ return( 0 );			/* Not version 1 of true type, nor Open Type */
 	  case CHR('V','O','R','G'):
 	    info->vorg_start = offset;
 	  break;
+	  case CHR('a','c','n','t'):
+	    info->acnt_start = offset;
+	  break;
+	  case CHR('f','e','a','t'):
+	    info->feat_start = offset;
+	  break;
+	  case CHR('l','c','a','r'):
+	    info->lcar_start = offset;
+	  break;
+	  case CHR('m','o','r','t'):
+	    info->mort_start = offset;
+	  break;
+	  case CHR('m','o','r','x'):
+	    info->morx_start = offset;
+	  break;
+	  case CHR('o','p','b','d'):
+	    info->opbd_start = offset;
+	  break;
+	  case CHR('p','r','o','p'):
+	    info->prop_start = offset;
+	  break;
 	}
     }
 return( true );
@@ -4445,6 +4466,110 @@ return;
     free(glyphs);
 }
 
+static void TTF_SetProp(struct ttfinfo *info,int gnum, int prop) {
+    int dir, offset;
+    PST *pst;
+
+    if ( gnum<0 || gnum>=info->glyph_cnt ) {
+	fprintf( stderr, "Glyph out of bounds in 'prop' table %d\n", gnum );
+return;
+    }
+
+    dir = prop&0x1f;
+    if ( dir==1 )
+	info->chars[gnum]->script = CHR('h','e','b','r');
+    else if ( dir==2 )
+	info->chars[gnum]->script = CHR('a','r','a','b');
+
+    if ( prop&0x1000 ) {	/* Mirror */
+	offset = (prop<<20)>>28;
+	if ( gnum+offset>=0 && gnum+offset<info->glyph_cnt &&
+		info->chars[gnum+offset]->name!=NULL ) {
+	    pst = chunkalloc(sizeof(PST));
+	    pst->type = pst_substitution;
+	    pst->tag = CHR('r','t','l','a');
+	    pst->next = info->chars[gnum]->possub;
+	    info->chars[gnum]->possub = pst;
+	    pst->u.subs.variant = copy(info->chars[gnum+offset]->name);
+	}
+    }
+}
+
+static void readttfprop(FILE *ttf,struct ttfinfo *info) {
+    int def, format, i, j, first, last, prop, cnt, prev;
+
+    fseek(ttf,info->prop_start,SEEK_SET);
+    /* The one example that I've got has a wierd version, so I don't check it */
+    /*  the three versions that I know about are all pretty much the same, just a few extra flags */
+    /* version = */ getlong(ttf);
+    /* format = */ getushort(ttf);
+    def = getushort(ttf);
+    switch ( format = getushort(ttf)) {
+      case 0:	/* Simple array */
+	for ( i=0; i<info->glyph_cnt; ++i )
+	    TTF_SetProp(info,i,getushort(ttf));
+      break;
+      case 2:	/* Segment Single */
+	/* Entry size  */ getushort(ttf);
+	cnt = getushort(ttf);
+	/* search range */ getushort(ttf);
+	/* log2(cnt)    */ getushort(ttf);
+	/* range shift  */ getushort(ttf);
+	prev = 0;
+	for ( i=0; i<cnt; ++i ) {
+	    last = getushort(ttf);
+	    first = getushort(ttf);
+	    prop = getushort(ttf);
+	    for ( j=prev; j<first ; ++j ) TTF_SetProp(info,j,def);
+	    for ( j=first; j<=last ; ++j ) TTF_SetProp(info,j,prop);
+	    prev = j;
+	}
+      break;
+      case 4:	/* Segment multiple */
+	/* Entry size  */ getushort(ttf);
+	cnt = getushort(ttf);
+	/* search range */ getushort(ttf);
+	/* log2(cnt)    */ getushort(ttf);
+	/* range shift  */ getushort(ttf);
+	prev = 0;
+	for ( i=0; i<cnt; ++i ) {
+	    last = getushort(ttf);
+	    first = getushort(ttf);
+	    for ( j=prev; j<first ; ++j ) TTF_SetProp(info,j,def);
+	    for ( j=first; j<=last ; ++j ) TTF_SetProp(info,j,getushort(ttf));
+	    prev = j;
+	}
+      break;
+      case 6:	/* Single table */
+	/* Entry size  */ getushort(ttf);
+	cnt = getushort(ttf);
+	/* search range */ getushort(ttf);
+	/* log2(cnt)    */ getushort(ttf);
+	/* range shift  */ getushort(ttf);
+	prev = 0;
+	for ( i=0; i<cnt; ++i ) {
+	    first = getushort(ttf);
+	    for ( j=prev; j<first ; ++j ) TTF_SetProp(info,j,def);
+	    TTF_SetProp(info,first,getushort(ttf));
+	    prev = first+1;
+	}
+      break;
+      case 8:	/* Simple array */
+	first = getushort(ttf);
+	cnt = getushort(ttf);
+	for ( i=0; i<cnt; ++i )
+	    TTF_SetProp(info,i+first,getushort(ttf));
+	for ( i=0; i<first; ++i )
+	    TTF_SetProp(info,i,def);
+	for ( i=first+cnt; i<info->glyph_cnt; ++i )
+	    TTF_SetProp(info,i,def);
+      break;
+      default:
+	fprintf( stderr, "Invalid lookup table format in 'prop' table. %d\n", format );
+      break;
+    }
+}
+
 static void UnfigureControls(Spline *spline,BasePoint *pos) {
     pos->x = rint( (spline->splines[0].c+2*spline->splines[0].d)/2 );
     pos->y = rint( (spline->splines[1].c+2*spline->splines[1].d)/2 );
@@ -4594,6 +4719,8 @@ return( 0 );
 	readttfkerns(ttf,info);
     if ( info->gdef_start!=0 )		/* ligature caret positioning info */
 	readttfgdef(ttf,info);
+    else if ( info->prop_start!=0 )
+	readttfprop(ttf,info);
     if ( info->gpos_start!=0 )		/* kerning info may live in the gpos table too */
 	readttfgpossub(ttf,info,true);
     if ( info->gsub_start!=0 )

@@ -124,6 +124,15 @@ struct ttfinfo {
 		/* VORG */
     int vorg_start;
 
+		/* Apple Advanced Typography Tables */
+    int prop_start;
+    int lcar_start;
+    int opbd_start;
+    int acnt_start;
+    int feat_start;
+    int mort_start;
+    int morx_start;
+
     struct dup *dups;
     unsigned int one_of_many: 1;	/* A TTCF file, or a opentype font with multiple fonts */
     unsigned int obscomplain: 1;	/* We've complained about obsolete format 3 in EBDT table */
@@ -147,7 +156,7 @@ struct tabdir {
 	uint32 checksum;/* for table */
 	uint32 offset;	/* to start of table in file */
 	uint32 length;
-    } tabs[21];		/* room for all the above tables */
+    } tabs[27];		/* room for all the above tables */
 };
 
 struct glyphhead {
@@ -430,6 +439,18 @@ struct alltabs {
     int bloclen;
     FILE *ebsc;
     int ebsclen;
+    FILE *prop;
+    int proplen;
+    FILE *opbd;
+    int opbdlen;
+    FILE *acnt;
+    int acntlen;
+    FILE *lcar;
+    int lcarlen;
+    FILE *feat;
+    int featlen;
+    FILE *morx;
+    int morxlen;
     int defwid, nomwid;
     int sidcnt;
     int lenpos;
@@ -449,6 +470,15 @@ struct subhead { uint16 first, cnt, delta, rangeoff; };	/* a sub header in 8/16 
 
 enum touchflags { tf_x=1, tf_y=2, tf_d=4, tf_endcontour=0x80, tf_startcontour=0x40 };
 
+    /* Open type Advanced Typography Tables */
 extern void otf_dumpgpos(struct alltabs *at, SplineFont *sf);
 extern void otf_dumpgsub(struct alltabs *at, SplineFont *sf);
 extern void otf_dumpgdef(struct alltabs *at, SplineFont *sf);
+
+    /* Apple Advanced Typography Tables */
+extern void aat_dumpacnt(struct alltabs *at, SplineFont *sf);
+extern void ttf_dumpkerns(struct alltabs *at, SplineFont *sf);
+extern void aat_dumplcar(struct alltabs *at, SplineFont *sf);
+extern void aat_dumpmorx(struct alltabs *at, SplineFont *sf);
+extern void aat_dumpopbd(struct alltabs *at, SplineFont *sf);
+extern void aat_dumpprop(struct alltabs *at, SplineFont *sf);
