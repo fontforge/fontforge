@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 1-Jul-2003 -->
+  <!-- AP: Last modified: 4-Jul-2003 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -954,6 +954,21 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
   <DD>
     Sets the postscript uniqueid field as requested. If you give a value of 0
     then PfaEdit will pick a reasonable random number for you.
+  <DT>
+    SetTeXParams(type,design-size,slant,space,stretch,shrink,xheight,quad,extraspace)
+  <DD>
+    Sets the TeX (text) font parameters for the font.<BR>
+    Type may be 1, 2 or 3, depending on whether the font is text, math or math
+    extension. <BR>
+    DesignSize is the pointsize the font was designed for.<BR>
+    The remaining parameters are described in Knuth's The MetaFont Book, pp.
+    98-100.<BR>
+    Slant is expressed as a percentage. All the others are expressed in em-units.
+  <DT>
+    SetTeXMathParams(...)
+  <DD>
+    Sets the font parameters after those required for text.See Knuth's The MetaFont
+    Book, pp. 98-100.
   <DT>
     SetCharName(name[,set-from-name-flag])
   <DD>
