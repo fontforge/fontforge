@@ -2737,40 +2737,41 @@ return( NULL );
 return( components );
 }
 
-Ligature *SCLigDefault(SplineChar *sc) {
+char *LigDefaultStr(int uni, char *name) {
     const unichar_t *alt, *pt;
     char *components = NULL;
     int len;
-    Ligature *lig;
     const unichar_t *uname;
 
     /* If it's not unicode we have no info on it */
     /*  Unless it looks like one of adobe's special ligature names */
-    if ( sc->unicodeenc==-1 ) {
-	if ( strchr(sc->name,'_')==NULL )
+    if ( uni==-1 ) {
+	if ( name==NULL )
 return( NULL );
-	components = AdobeLigatureFormat(sc->name);
+	if ( strchr(name,'_')==NULL )
+return( NULL );
+	components = AdobeLigatureFormat(name);
     } else {
-	if ( !isdecompositionnormative(sc->unicodeenc) ||
-		unicode_alternates[sc->unicodeenc>>8]==NULL ||
-		(alt = unicode_alternates[sc->unicodeenc>>8][sc->unicodeenc&0xff])==NULL )
+	if ( !isdecompositionnormative(uni) ||
+		unicode_alternates[uni>>8]==NULL ||
+		(alt = unicode_alternates[uni>>8][uni&0xff])==NULL )
 return( NULL );
 	for ( pt=alt; *pt; ++pt )
 	    if ( iscombining(*pt))
 return( NULL );			/* Don't treat accented letters as ligatures */
 	if ( alt[1]=='\0' )
 return( NULL );			/* Single replacements aren't ligatures */
-	if ( UnicodeCharacterNames[sc->unicodeenc>>8]!=NULL &&
-		(uname = UnicodeCharacterNames[sc->unicodeenc>>8][sc->unicodeenc&0xff])!=NULL &&
+	if ( UnicodeCharacterNames[uni>>8]!=NULL &&
+		(uname = UnicodeCharacterNames[uni>>8][uni&0xff])!=NULL &&
 		uc_strstr(uname,"LIGATURE")==NULL )
 return( NULL );
     }
 
     if ( components!=NULL )
 	/* All done */;
-    else if ( sc->unicodeenc==0xfb03 )
+    else if ( uni==0xfb03 )
 	components = copy("f f i; ff i");
-    else if ( sc->unicodeenc==0xfb04 )
+    else if ( uni==0xfb04 )
 	components = copy("f f l; ff l");
     else {
 	components=NULL;
@@ -2795,6 +2796,15 @@ return( NULL );
 	}
 	components[len-1] = '\0';
     }
+return( components );
+}
+
+Ligature *SCLigDefault(SplineChar *sc) {
+    char *components = LigDefaultStr(sc->unicodeenc,sc->name);
+    Ligature *lig;
+
+    if ( components==NULL )
+return( NULL );
 
     lig = gcalloc(1,sizeof(Ligature));
     lig->lig = sc;

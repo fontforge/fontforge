@@ -712,12 +712,98 @@ static void bReencode(Context *c) {
     c->curfv->selected = gcalloc(c->curfv->sf->charcnt,1);
 }
 
+static void bSetCharCnt(Context *c) {
+    int oldcnt = c->curfv->sf->charcnt, i;
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_int )
+	error(c,"Bad argument type");
+    else if ( c->a.vals[1].u.ival<=0 && c->a.vals[1].u.ival>10*65536 )
+	error(c,"Argument out of bounds");
+
+    if ( c->curfv->sf->charcnt==c->a.vals[1].u.ival )
+return;
+
+    SFAddDelChars(c->curfv->sf,c->a.vals[1].u.ival);
+    c->curfv->selected = grealloc(c->curfv->selected,c->a.vals[1].u.ival);
+    for ( i=oldcnt; i<c->a.vals[1].u.ival; ++i )
+	c->curfv->selected[i] = false;
+}
+
+static SplineChar *GetOneSelChar(Context *c) {
+    SplineFont *sf = c->curfv->sf;
+    int i, found = -1;
+
+    for ( i=0; i<sf->charcnt; ++i ) if ( c->curfv->selected[i] ) {
+	if ( found==-1 )
+	    found = i;
+	else
+	    error(c,"More than one character selected" );
+    }
+    if ( found==-1 )
+	error(c,"No characters selected" );
+return( SFMakeChar(sf,found));
+}
+
 static void bSetCharName(Context *c) {
-    /* !!! */
+    SplineChar *sc;
+    char *ligature, *name, *end;
+    int uni;
+
+    if ( c->a.argc!=2 && c->a.argc!=3 )
+	error( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_str || (c->a.argc==3 && c->a.vals[1].type!=v_int ))
+	error(c,"Bad argument type");
+    sc = GetOneSelChar(c);
+    uni = sc->unicodeenc;
+    name = c->a.vals[1].u.sval;
+    ligature = sc->lig==NULL?NULL : copy(sc->lig->components);
+
+    if ( c->a.vals[2].u.ival ) {
+	if ( name[0]=='u' && name[1]=='n' && name[2]=='i' && strlen(name)==7 &&
+		(uni = strtol(name+3,&end,16), *end=='\0'))
+	    /* Good */;
+	else {
+	    for ( uni=psunicodenames_cnt-1; uni>=0; --uni )
+		if ( psunicodenames[uni]!=NULL && strcmp(name,psunicodenames[uni])==0 )
+	    break;
+	}
+	free( ligature );
+	ligature = LigDefaultStr(uni,name);
+    }
+    SCSetMetaData(sc,name,uni,ligature);
 }
 
 static void bSetUnicodeValue(Context *c) {
-    /* !!! */
+    SplineChar *sc;
+    char *ligature, *name;
+    int uni;
+
+    if ( c->a.argc!=2 && c->a.argc!=3 )
+	error( c, "Wrong number of arguments");
+    else if ( (c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_unicode) ||
+	    (c->a.argc==3 && c->a.vals[1].type!=v_int ))
+	error(c,"Bad argument type");
+    sc = GetOneSelChar(c);
+    uni = c->a.vals[1].u.ival;
+    name = copy(name);
+    ligature = sc->lig==NULL?NULL : copy(sc->lig->components);
+
+    if ( c->a.vals[2].u.ival ) {
+	free(name);
+	if ( uni>=0 && uni<psunicodenames_cnt && psunicodenames[uni]!=NULL )
+	    name = copy(psunicodenames[uni]);
+	else if (( uni>=32 && uni<0x7f ) || uni>=0xa1 ) {
+	    char buf[12];
+	    sprintf( buf,"uni%04X", uni );
+	    name = copy(buf);
+	} else
+	    name = copy(".notdef");
+	free( ligature );
+	ligature = LigDefaultStr(uni,name);
+    }
+    SCSetMetaData(sc,name,uni,ligature);
 }
 
 static void bTransform(Context *c) {
@@ -1136,7 +1222,6 @@ static void bWorthOutputting(Context *c) {
 }
 
 static void bCharInfo(Context *c) {
-    int i, found=-1;
     SplineFont *sf = c->curfv->sf;
     SplineChar *sc;
     DBounds b;
@@ -1146,15 +1231,7 @@ static void bCharInfo(Context *c) {
     else if ( c->a.vals[1].type!=v_str )
 	error( c, "Bad type for argument");
 
-    for ( i=0; i<sf->charcnt; ++i ) if ( c->curfv->selected[i] ) {
-	if ( found==-1 )
-	    found = i;
-	else
-	    error(c,"More than one character selected" );
-    }
-    if ( found==-1 )
-	error(c,"No characters selected" );
-    sc = SFMakeChar(sf,found);
+    sc = GetOneSelChar(c);
 
     c->return_val.type = v_int;
     if ( c->a.argc==3 ) {
@@ -1227,6 +1304,7 @@ struct builtins { char *name; void (*func)(Context *); int nofontok; } builtins[
     { "Select", bSelect },
 /* Element Menu */
     { "Reencode", bReencode },
+    { "SetCharCnt", bSetCharCnt },
     { "SetCharName", bSetCharName },
     { "SetUnicodeValue", bSetUnicodeValue },
     { "Transform", bTransform },

@@ -1326,7 +1326,7 @@ int SFMatchEncoding(SplineFont *sf,SplineFont *target) {
 return( _SFReencodeFont(sf,em_none,target));
 }
 
-static int AddDelChars(SplineFont *sf, int nchars) {
+int SFAddDelChars(SplineFont *sf, int nchars) {
     int i;
     BDFFont *bdf;
     MetricsView *mv, *mnext;
@@ -2102,7 +2102,7 @@ return(true);
 		nchar = sf->charcnt;
 	}
 	if ( nchar!=sf->charcnt )
-	    reformat_fv = AddDelChars(sf,nchar);
+	    reformat_fv = SFAddDelChars(sf,nchar);
 	if ( as!=sf->ascent || des!=sf->descent ) {
 	    sf->ascent = as;
 	    sf->descent = des;

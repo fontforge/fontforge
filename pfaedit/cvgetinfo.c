@@ -285,15 +285,22 @@ static int CI_OK(GGadget *g, GEvent *e) {
 return( true );
 }
 
-static void LigatureNameCheck(GIData *ci, const unichar_t *name) {
+static void LigatureNameCheck(GIData *ci, int uni, const unichar_t *name) {
     /* I'm not checking to see if the components are known names... */
-    unichar_t *components, *pt;
+    unichar_t *components=NULL, *pt;
 
-    if ( u_strchr(name,'_')==NULL )
+    if ( uni!=-1 ) {
+	char *temp = LigDefaultStr(uni,NULL);
+	if ( temp!=NULL )
+	    components = uc_copy(temp);
+    }
+    if ( components==NULL ) {
+	if ( u_strchr(name,'_')==NULL )
 return;
-    pt = components = u_copy(name);
-    while ( (pt = u_strchr(pt,'_'))!=NULL )
-	*pt = ' ';
+	pt = components = u_copy(name);
+	while ( (pt = u_strchr(pt,'_'))!=NULL )
+	    *pt = ' ';
+    }
     GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_Ligature),components);
     free(components);
 }
@@ -334,8 +341,7 @@ static int CI_SName(GGadget *g, GEvent *e) {	/* Set From Name */
 	    ubuf[0] = '\0';
 	ubuf[1] = '\0';
 	GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_UChar),ubuf);
-	if ( i==-1 && u_strchr(ret,'_')!=NULL )
-	    LigatureNameCheck(ci,ret);
+	LigatureNameCheck(ci,i,ret);
     }
 return( true );
 }
