@@ -253,8 +253,9 @@ void SplineFontSetUnChanged(SplineFont *sf) {
     if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
     if ( sf->mm!=NULL ) sf = sf->mm->normal;
     _SplineFontSetUnChanged(sf);
-    for ( i=0; i<sf->mm->instance_count; ++i )
-	_SplineFontSetUnChanged(sf->mm->instances[i]);
+    if ( sf->mm!=NULL )
+	for ( i=0; i<sf->mm->instance_count; ++i )
+	    _SplineFontSetUnChanged(sf->mm->instances[i]);
 }
 
 static void FVFlattenAllBitmapSelections(FontView *fv) {

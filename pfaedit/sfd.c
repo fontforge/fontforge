@@ -2210,7 +2210,7 @@ return( NULL );
 		if ( sli>=sf->sli_cnt && sli!=SLI_NESTED) {
 		    static int complained=false;
 		    if ( !complained )
-			GDrawError("'%s' in %s has a script index out of bounds: %d",
+			GDrawIError("'%s' in %s has a script index out of bounds: %d",
 				isv ? "vkrn" : "kern",
 				sc->name, sli );
 		    else
@@ -2293,7 +2293,7 @@ return( NULL );
 		    liga->type!=pst_lcaret ) {
 		static int complained=false;
 		if ( !complained )
-		    GDrawError("'%c%c%c%c' in %s has a script index out of bounds: %d",
+		    GDrawIError("'%c%c%c%c' in %s has a script index out of bounds: %d",
 			    (liga->tag>>24), (liga->tag>>16)&0xff, (liga->tag>>8)&0xff, liga->tag&0xff,
 			    sc->name, liga->script_lang_index );
 		else
@@ -2710,11 +2710,11 @@ static void SFDParseChainContext(FILE *sfd,SplineFont *sf,FPST *fpst, char *tok)
     if ( fpst->script_lang_index>=sf->sli_cnt && fpst->script_lang_index!=SLI_NESTED ) {
 	static int complained=false;
 	if ( sf->sli_cnt==0 )
-	    GDrawError("'%c%c%c%c' has a script index out of bounds: %d\nYou MUST fix this manually",
+	    GDrawIError("'%c%c%c%c' has a script index out of bounds: %d\nYou MUST fix this manually",
 		    (fpst->tag>>24), (fpst->tag>>16)&0xff, (fpst->tag>>8)&0xff, fpst->tag&0xff,
 		    fpst->script_lang_index );
 	else if ( !complained )
-	    GDrawError("'%c%c%c%c' has a script index out of bounds: %d",
+	    GDrawIError("'%c%c%c%c' has a script index out of bounds: %d",
 		    (fpst->tag>>24), (fpst->tag>>16)&0xff, (fpst->tag>>8)&0xff, fpst->tag&0xff,
 		    fpst->script_lang_index );
 	else
