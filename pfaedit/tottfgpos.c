@@ -1237,6 +1237,7 @@ static struct lookup *orderlookups(struct lookup **_lookups,struct lookup **feat
 	array[i]->next = array[i+1];
 	array[i]->lookup_cnt = i;
     }
+    array[i]->next = NULL;
     array[i]->lookup_cnt = i;
     *_lookups = array[0];
     /* Now reorder the lookup file so that it's also in execution order */
