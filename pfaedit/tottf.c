@@ -4221,7 +4221,7 @@ return( false );
 	at->tabdir.tabs[i].tag = CHR('G','D','E','F');
 	at->tabdir.tabs[i].checksum = filecheck(at->gdef);
 	at->tabdir.tabs[i].offset = pos;
-	at->tabdir.tabs[i++].length = at->gposlen;
+	at->tabdir.tabs[i++].length = at->gdeflen;
 	pos += ((at->gdeflen+3)>>2)<<2;
     }
 
