@@ -304,23 +304,23 @@ static void Transform(BasePoint *to, BasePoint *from, real trans[6]) {
     to->y = trans[1]*from->y+trans[3]*from->y+trans[5];
 }
 
-static void MatMultiply(real to[6], real m1[6], real m2[6]) {
+static void MatMultiply(real m1[6], real m2[6], real to[6]) {
     real trans[6];
 
-    trans[0] = m2[0]*m1[0] +
-		m2[1]*m1[2];
-    trans[1] = m2[0]*m1[1] +
-		m2[1]*m1[3];
-    trans[2] = m2[2]*m1[0] +
-		m2[3]*m1[2];
-    trans[3] = m2[2]*m1[1] +
-		m2[3]*m1[3];
-    trans[4] = m2[4]*m1[0] +
-		m2[5]*m1[2] +
-		m1[4];
-    trans[5] = m2[4]*m1[1] +
-		m2[5]*m1[3] +
-		m1[5];
+    trans[0] = m1[0]*m2[0] +
+		m1[1]*m2[2];
+    trans[1] = m1[0]*m2[1] +
+		m1[1]*m2[3];
+    trans[2] = m1[2]*m2[0] +
+		m1[3]*m2[2];
+    trans[3] = m1[2]*m2[1] +
+		m1[3]*m2[3];
+    trans[4] = m1[4]*m2[0] +
+		m1[5]*m2[2] +
+		m2[4];
+    trans[5] = m1[4]*m2[1] +
+		m1[5]*m2[3] +
+		m2[5];
     memcpy(to,trans,sizeof(trans));
 }
 
@@ -910,7 +910,7 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 	  case pt_translate:
 	    if ( sp>=2 ) {
 		transform[4] += stack[sp-2].u.val*transform[0]+stack[sp-1].u.val*transform[2];
-		transform[5] += stack[sp-1].u.val*transform[3]+stack[sp-2].u.val*transform[1];
+		transform[5] += stack[sp-2].u.val*transform[1]+stack[sp-1].u.val*transform[3];
 		sp -= 2;
 	    }
 	  break;
