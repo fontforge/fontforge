@@ -627,7 +627,7 @@ static void Bitmapper(Context *c,int isavail) {
 	if ( c->a.vals[1].u.aval->vals[i].type!=v_int ||
 		c->a.vals[1].u.aval->vals[i].u.ival<=2 )
 	    error( c, "Bad type of array component");
-    sizes = galloc((c->a.vals[i].u.aval->argc+1)*sizeof(real));
+    sizes = galloc((c->a.vals[1].u.aval->argc+1)*sizeof(real));
     for ( i=0; i<c->a.vals[1].u.aval->argc; ++i )
 	sizes[i] = c->a.vals[1].u.aval->vals[i].u.ival;
     sizes[i] = 0;
@@ -894,6 +894,12 @@ static void bReencode(Context *c) {
 		new_map = item->enc_num;
 	break;
 	    }
+    }
+    if ( new_map==em_none && strstart(c->a.vals[1].u.sval,"unicode-plane-")!=NULL ) {
+	int plane=0;
+	sscanf( c->a.vals[1].u.sval,"unicode-plane-%x", &plane );
+	if ( plane==0 ) new_map = em_unicode;
+	else new_map = em_unicodeplanes+plane;
     }
     if ( new_map==em_none )
 	errors(c,"Unknown encoding", c->a.vals[1].u.sval);
