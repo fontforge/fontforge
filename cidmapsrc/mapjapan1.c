@@ -368,7 +368,7 @@ int main(int argc, char **argv) {
 	if ( j==maxcid )
 	    sprintf( buffer, "uni%04X.vert", cid_2_rotunicode[i]);
 	else
-	    sprintf( buffer, "cid_%d.vert", j);
+	    sprintf( buffer, "cid-%d.vert", j);
 	nonuni_names[i] = strdup(buffer);
     }
 

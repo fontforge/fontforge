@@ -107,9 +107,9 @@ int main(int argc, char **argv) {
 	    else if ( cid>=17506 && cid<=17599 )	/* Half width */
 		sprintf( buffer,"cid-%d.vert", cid-17506+13648 );
 	    else if ( cid==17604 )
-		strcpy( buffer, "cid_17601.vert" );
+		strcpy( buffer, "cid-17601.vert" );
 	    else if ( cid==17605 )
-		strcpy( buffer, "cid_17603.vert" );
+		strcpy( buffer, "cid-17603.vert" );
 	    nonuni_names[cid] = strdup(buffer);
 	/* Adobe's CNS cids have the rotated and non-rotated forms intermixed */
 	} else if ( (cid>=120 && cid<=127 ) && (cid&1) ) {
