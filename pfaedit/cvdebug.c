@@ -229,9 +229,13 @@ return;
     y = 3+dv->ii.as;
     for ( i=0; i<n; ++i ) {
 	if ( show_grid )
-	    sprintf(buffer, "%3d: %.2f,%.2f", i, pts[i].x/64.0, pts[i].y/64.0 );
+	    sprintf(buffer, "%3d: %c%c %.2f,%.2f", i,
+		    r->tags[i]&FT_Curve_Tag_Touch_X?'H':' ', r->tags[i]&FT_Curve_Tag_Touch_Y?'V':' ',
+		    pts[i].x/64.0, pts[i].y/64.0 );
 	else
-	    sprintf(buffer, "%3d: %g,%g", i, pts[i].x*dv->scale, pts[i].y*dv->scale );
+	    sprintf(buffer, "%3d: %c%c %g,%g", i,
+		    r->tags[i]&FT_Curve_Tag_Touch_X?'H':' ', r->tags[i]&FT_Curve_Tag_Touch_Y?'V':' ',
+		    pts[i].x*dv->scale, pts[i].y*dv->scale );
 	uc_strcpy(ubuffer,buffer);
 	GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0);
 	if ( y>event->u.expose.rect.y+event->u.expose.rect.height )
