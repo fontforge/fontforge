@@ -743,7 +743,6 @@ typedef struct splinefont {
     char *autosavename;
     int display_size;		/* a val <0 => Generate our own images from splines, a value >0 => find a bdf font of that size */
     struct psdict *private;		/* read in from type1 file or provided by user */
-    /*struct pschars *subrs;		/* actually an array, but this will do */
     char *xuid;
     struct pfminfo {		/* A misnomer now. OS/2 info would be more accurate, but that's stuff in here from all over ttf files */
 	unsigned int pfmset: 1;
