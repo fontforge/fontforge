@@ -285,7 +285,7 @@ static void LigatureNew(SplineChar *sc3,SplineChar *sc1,SplineChar *sc2) {
     strcpy(components,sc2->name);
     SubsNew(sc3,pst_ligature,CHR('l','i','g','a'),components,sc1);
 }
-    
+
 static void tfmDoLigKern(SplineFont *sf, int enc, int lk_index,
 	uint8 *ligkerntab, uint8 *kerntab) {
     int enc2, k_index;
@@ -445,7 +445,7 @@ return( 0 );
 	else if ( tag==3 )
 	    tfmDoExten(sf,i,ext+left);
 	if ( ictag!=0 )
-	    tfmDoItalicCor(sf,i,ictab+ictag);
+	    tfmDoItalicCor(sf,i,ictab+4*ictag);
     }
 
     for ( i=first; i<=last; ++i ) {
@@ -1881,6 +1881,7 @@ int TfmSplineFont(FILE *tfm, SplineFont *sf, int formattype) {
     uint32 *lkarray;
     PST *pst;
     char *familyname;
+    int anyITLC;
 
     SFLigaturePrepare(sf);
     LigatureClosure(sf);		/* Convert 3 character ligs to a set of two character ones when possible */
@@ -1891,7 +1892,12 @@ int TfmSplineFont(FILE *tfm, SplineFont *sf, int formattype) {
     header.checksum = 0;		/* don't check checksum (I don't know how to calculate it) */
     header.design_size = sf->texdata.designsize;
     encname=NULL;
-    if ( sf->subfontcnt==0 && sf->encoding_name!=em_custom && !sf->compacted )
+    /* These first two encoding names appear magic to txtopl */
+    /* I tried checking the encodings were correct, name by name, but */
+    /*  that doesn't work. People use non-standard names */
+    if ( sf->texdata.type==tex_math ) encname = "TEX MATH SYMBOLS";
+    else if ( sf->texdata.type==tex_mathext ) encname = "TEX MATH EXTENSION";
+    else if ( sf->subfontcnt==0 && sf->encoding_name!=em_custom && !sf->compacted )
 	encname = EncodingName(sf->encoding_name );
     if ( encname==NULL ) {
 	full = galloc(strlen(sf->fontname)+10);
@@ -1942,16 +1948,21 @@ int TfmSplineFont(FILE *tfm, SplineFont *sf, int formattype) {
     memset(italics,0,sizeof(italics));
     memset(tags,0,sizeof(tags));
     first = last = -1;
+    anyITLC = false;
+    for ( i=0; i<256 && i<sf->charcnt; ++i ) if ( SCWorthOutputting(sf->chars[i])) {
+	if ( (pst=SCFindPST(sf->chars[i],pst_position,CHR('I','T','L','C'),-1,-1))!=NULL ) {
+	    anyITLC = true;
+    break;
+	}
+    }
     for ( i=0; i<256 && i<sf->charcnt; ++i ) if ( SCWorthOutputting(sf->chars[i])) {
 	SplineCharFindBounds(sf->chars[i],&b);
 	widths[i] = sf->chars[i]->width;
-	if ( b.maxy>0 )
-	    heights[i] = b.maxy;
-	if ( b.miny<0 )
-	    depths[i] = -b.miny;
+	heights[i] = b.maxy;
+	depths[i] = -b.miny;
 	if ( (pst=SCFindPST(sf->chars[i],pst_position,CHR('I','T','L','C'),-1,-1))!=NULL )
 	    italics[i] = pst->u.pos.h_adv_off;
-	else if ( (style&sf_italic) && b.maxx>sf->chars[i]->width )
+	else if ( (style&sf_italic) && b.maxx>sf->chars[i]->width && !anyITLC )
 	    italics[i] = (b.maxx-sf->chars[i]->width) +
 			(sf->ascent+sf->descent)/16.0;
 				    /* With a 1/16 em white space after it */
@@ -1961,7 +1972,7 @@ int TfmSplineFont(FILE *tfm, SplineFont *sf, int formattype) {
     widcnt = CoalesceValues(widths,256,widthindex);
     hcnt = CoalesceValues(heights,16,heightindex);
     dcnt = CoalesceValues(depths,16,depthindex);
-    icnt = CoalesceValues(italics,16,italicindex);
+    icnt = CoalesceValues(italics,64,italicindex);
     if ( last==-1 ) { first = 1; last = 0; }
 
     FindCharlists(sf,charlistindex);
