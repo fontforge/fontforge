@@ -204,20 +204,20 @@ static void FVCreateWidth(void *_fv,void (*doit)(CreateWidthData *),
 	gcd[5].creator = GTextFieldCreate;
 
 	gcd[6].gd.pos.x = 20-3; gcd[6].gd.pos.y = 120-32-3;
-	gcd[6].gd.pos.width = 55; gcd[6].gd.pos.height = 0;
+	gcd[6].gd.pos.width = -1; gcd[6].gd.pos.height = 0;
 	gcd[6].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	label[6].text = (unichar_t *) "OK";
-	label[6].text_is_1byte = true;
+	label[6].text = (unichar_t *) _STR_OK;
+	label[6].text_in_resource = true;
 	gcd[6].gd.mnemonic = 'O';
 	gcd[6].gd.label = &label[6];
 	gcd[6].gd.handle_controlevent = CW_OK;
 	gcd[6].creator = GButtonCreate;
 
-	gcd[7].gd.pos.x = 210-55-20; gcd[7].gd.pos.y = 120-32;
-	gcd[7].gd.pos.width = 55; gcd[7].gd.pos.height = 0;
+	gcd[7].gd.pos.x = 210-GIntGetResource(_NUM_Buttonsize)-20; gcd[7].gd.pos.y = 120-32;
+	gcd[7].gd.pos.width = -1; gcd[7].gd.pos.height = 0;
 	gcd[7].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	label[7].text = (unichar_t *) "Cancel";
-	label[7].text_is_1byte = true;
+	label[7].text = (unichar_t *) _STR_Cancel;
+	label[7].text_in_resource = true;
 	gcd[7].gd.label = &label[7];
 	gcd[7].gd.mnemonic = 'C';
 	gcd[7].gd.handle_controlevent = CW_Cancel;

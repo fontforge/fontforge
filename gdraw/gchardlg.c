@@ -145,7 +145,7 @@ static struct unicode_subranges { unichar_t first; int len; char *name; } unicod
 	{ 0, 0, NULL }
 };
 
-static struct namemap maps[] = {
+struct namemap encodingnames[] = {
     {"Latin1 (iso8859-1)", em_iso8859_1 },
     {"Latin0 (iso8859-15)", em_iso8859_15 },
     {"Latin2 (iso8859-2)", em_iso8859_2 },
@@ -250,7 +250,7 @@ static struct namemap maps[] = {
     { NULL }};
 
 static int mapFromIndex(int i) {
-return( maps[i].map );
+return( encodingnames[i].map );
 }
 
 static void InsChrRedraw(void) {
@@ -849,7 +849,7 @@ return( true );
 
 static unichar_t inschar[] = { 'I', 'n', 's', 'e', 'r', 't', ' ', 'C', 'h', 'a', 'r', 'a', 'c', 't', 'e', 'r', '\0' };
 void GWidgetCreateInsChar(void) {
-    GTextInfo charsetnames[sizeof(maps)/sizeof(struct namemap)];
+    GTextInfo charsetnames[sizeof(encodingnames)/sizeof(struct namemap)];
     static GTextInfo labels[11] = {
 	{ (unichar_t *) "Character Set", NULL, -1, -1, NULL, NULL, 0,0,0,0,0,0, 1 },
 	{ (unichar_t *) "Character", NULL, -1, -1, NULL, NULL, 0,0,0,0,0,0, 1 },
@@ -882,7 +882,7 @@ void GWidgetCreateInsChar(void) {
     int i;
     FontRequest rq;
     int as, ds, ld;
-    static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a', ',', 'c', 'l', 'e', 'a', 'r', 'l', 'y', 'u', ',', 'c', 'a', 's', 'l', 'o', 'n',  '\0' };
+    static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a', ',', 'c','a','l','i','b','a','n',',','c', 'l', 'e', 'a', 'r', 'l', 'y', 'u', ',', 'c', 'a', 's', 'l', 'o', 'n',  '\0' };
 
     if ( inschr.icw!=NULL ) {
 	inschr.hidden = false;
@@ -890,8 +890,8 @@ void GWidgetCreateInsChar(void) {
 	GDrawRaise(inschr.icw);
     } else {
 	memset(charsetnames,'\0',sizeof(charsetnames));
-	for ( i=0; maps[i].name!=NULL; ++i ) {
-	    charsetnames[i].text = (unichar_t *) (maps[i].name);
+	for ( i=0; encodingnames[i].name!=NULL; ++i ) {
+	    charsetnames[i].text = (unichar_t *) (encodingnames[i].name);
 	    charsetnames[i].text_is_1byte = true;
 	}
 	gcd[1].gd.u.list = charsetnames;

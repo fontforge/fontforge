@@ -83,6 +83,9 @@ return( DoubleApprox((sp1->me.y-(*sp3)->me.y)/(sp1->me.x-(*sp3)->me.x),
 
 int CVIsDiagonalable(SplinePoint *sp1, SplinePoint *sp2, SplinePoint **sp3, SplinePoint **sp4) {
 
+    if ( sp1==NULL || sp2==NULL )
+return( false );
+
 return( DiagCheck(sp1,sp2,sp1->next,sp2->next,sp3,sp4) ||
 	DiagCheck(sp1,sp2,sp1->next,sp2->prev,sp3,sp4) ||
 	DiagCheck(sp1,sp2,sp1->prev,sp2->next,sp3,sp4) ||
@@ -358,20 +361,20 @@ void CVReviewHints(CharView *cv) {
 	gcd[3].creator = GTextFieldCreate;
 
 	gcd[4].gd.pos.x = 20-3; gcd[4].gd.pos.y = 17+37+14+60;
-	gcd[4].gd.pos.width = 55+6; gcd[4].gd.pos.height = 0;
+	gcd[4].gd.pos.width = -1; gcd[4].gd.pos.height = 0;
 	gcd[4].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	label[4].text = (unichar_t *) "OK";
-	label[4].text_is_1byte = true;
+	label[4].text = (unichar_t *) _STR_OK;
+	label[4].text_in_resource = true;
 	gcd[4].gd.mnemonic = 'O';
 	gcd[4].gd.label = &label[4];
 	gcd[4].gd.handle_controlevent = RH_OK;
 	gcd[4].creator = GButtonCreate;
 
-	gcd[5].gd.pos.x = 170-55-20; gcd[5].gd.pos.y = 17+37+3+14+60;
-	gcd[5].gd.pos.width = 55; gcd[5].gd.pos.height = 0;
+	gcd[5].gd.pos.x = 170-GIntGetResource(_NUM_Buttonsize)-20; gcd[5].gd.pos.y = 17+37+3+14+60;
+	gcd[5].gd.pos.width = -1; gcd[5].gd.pos.height = 0;
 	gcd[5].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	label[5].text = (unichar_t *) "Cancel";
-	label[5].text_is_1byte = true;
+	label[5].text = (unichar_t *) _STR_Cancel;
+	label[5].text_in_resource = true;
 	gcd[5].gd.label = &label[5];
 	gcd[5].gd.mnemonic = 'C';
 	gcd[5].gd.handle_controlevent = RH_Cancel;
@@ -401,7 +404,7 @@ void CVReviewHints(CharView *cv) {
 	gcd[8].creator = GLineCreate;
 
 	gcd[9].gd.pos.x = 20; gcd[9].gd.pos.y = 17+14+33;
-	gcd[9].gd.pos.width = 55; gcd[9].gd.pos.height = 0;
+	gcd[9].gd.pos.width = -1; gcd[9].gd.pos.height = 0;
 	gcd[9].gd.flags = gg_visible | gg_enabled;
 	label[9].text = (unichar_t *) "Create";
 	label[9].text_is_1byte = true;
@@ -411,8 +414,8 @@ void CVReviewHints(CharView *cv) {
 	gcd[9].gd.handle_controlevent = RH_Add;
 	gcd[9].creator = GButtonCreate;
 
-	gcd[10].gd.pos.x = 170-55-20; gcd[10].gd.pos.y = 17+14+33;
-	gcd[10].gd.pos.width = 55; gcd[10].gd.pos.height = 0;
+	gcd[10].gd.pos.x = 170-GIntGetResource(_NUM_Buttonsize)-20; gcd[10].gd.pos.y = 17+14+33;
+	gcd[10].gd.pos.width = -1; gcd[10].gd.pos.height = 0;
 	gcd[10].gd.flags = gg_visible | gg_enabled;
 	label[10].text = (unichar_t *) "Remove";
 	label[10].text_is_1byte = true;
@@ -423,7 +426,7 @@ void CVReviewHints(CharView *cv) {
 	gcd[10].creator = GButtonCreate;
 
 	gcd[11].gd.pos.x = 20; gcd[11].gd.pos.y = 17+37+14+30;
-	gcd[11].gd.pos.width = 55; gcd[11].gd.pos.height = 0;
+	gcd[11].gd.pos.width = -1; gcd[11].gd.pos.height = 0;
 	gcd[11].gd.flags = gg_visible | gg_enabled;
 	label[11].text = (unichar_t *) "< Prev";
 	label[11].text_is_1byte = true;
@@ -433,8 +436,8 @@ void CVReviewHints(CharView *cv) {
 	gcd[11].gd.handle_controlevent = RH_NextPrev;
 	gcd[11].creator = GButtonCreate;
 
-	gcd[12].gd.pos.x = 170-55-20; gcd[12].gd.pos.y = 17+37+14+30;
-	gcd[12].gd.pos.width = 55; gcd[12].gd.pos.height = 0;
+	gcd[12].gd.pos.x = 170-GIntGetResource(_NUM_Buttonsize)-20; gcd[12].gd.pos.y = 17+37+14+30;
+	gcd[12].gd.pos.width = -1; gcd[12].gd.pos.height = 0;
 	gcd[12].gd.flags = gg_visible | gg_enabled;
 	label[12].text = (unichar_t *) "Next >";
 	label[12].text_is_1byte = true;
@@ -607,20 +610,20 @@ void CVCreateHint(CharView *cv,int ishstem) {
 	gcd[3].creator = GTextFieldCreate;
 
 	gcd[4].gd.pos.x = 20-3; gcd[4].gd.pos.y = 17+37;
-	gcd[4].gd.pos.width = 55; gcd[4].gd.pos.height = 0;
+	gcd[4].gd.pos.width = -1; gcd[4].gd.pos.height = 0;
 	gcd[4].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	label[4].text = (unichar_t *) "OK";
-	label[4].text_is_1byte = true;
+	label[4].text = (unichar_t *) _STR_OK;
+	label[4].text_in_resource = true;
 	gcd[4].gd.mnemonic = 'O';
 	gcd[4].gd.label = &label[4];
 	gcd[4].gd.handle_controlevent = CH_OK;
 	gcd[4].creator = GButtonCreate;
 
-	gcd[5].gd.pos.x = 170-55-20; gcd[5].gd.pos.y = 17+37+3;
-	gcd[5].gd.pos.width = 55; gcd[5].gd.pos.height = 0;
+	gcd[5].gd.pos.x = 170-GIntGetResource(_NUM_Buttonsize)-20; gcd[5].gd.pos.y = 17+37+3;
+	gcd[5].gd.pos.width = -1; gcd[5].gd.pos.height = 0;
 	gcd[5].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	label[5].text = (unichar_t *) "Cancel";
-	label[5].text_is_1byte = true;
+	label[5].text = (unichar_t *) _STR_Cancel;
+	label[5].text_in_resource = true;
 	gcd[5].gd.label = &label[5];
 	gcd[5].gd.mnemonic = 'C';
 	gcd[5].gd.handle_controlevent = CH_Cancel;

@@ -40,15 +40,6 @@ struct gfc_data {
     GGadget *gfc;
 };
 
-static unichar_t save[] = { 'S', 'a', 'v', 'e', '\0' };
-static unichar_t filter[] = { 'F', 'i', 'l', 't', 'e', 'r', '\0' };
-static unichar_t cancel[] = { 'C', 'a', 'n', 'c', 'e', 'l', '\0' };
-static unichar_t new[] = { 'N', 'e', 'w', '.', '.', '.', '\0' };
-static unichar_t replace[] = { 'R', 'e', 'p', 'l', 'a', 'c', 'e', '\0' };
-
-static unichar_t rcmn[] = { 'R', 'C', '\0' };
-static unichar_t *buts[] = { replace, cancel, NULL };
-
 static void GFD_doesnt(GIOControl *gio) {
     /* The filename the user chose doesn't exist, so everything is happy */
     struct gfc_data *d = gio->userdata;
@@ -60,13 +51,16 @@ static void GFD_exists(GIOControl *gio) {
     /* The filename the user chose exists, ask user if s/he wants to overwrite */
     struct gfc_data *d = gio->userdata;
     unichar_t buffer[200];
-    unichar_t title[30];
+    const unichar_t *rcb[3]; unichar_t rcmn[2];
 
-    uc_strcpy(title, "File Exists");
-    uc_strcpy(buffer, "File, ");
+    rcb[2]=NULL;
+    rcb[0] = GStringGetResource( _STR_Replace, &rcmn[0]);
+    rcb[1] = GStringGetResource( _STR_Cancel, &rcmn[1]);
+
+    u_strcpy(buffer, GStringGetResource(_STR_Fileexistspre,NULL));
     u_strcat(buffer, u_GFileNameTail(d->ret));
-    uc_strcat(buffer, ", exists. Replace it?");
-    if ( GWidgetAsk(title,buffer,buts,rcmn,0,1)==0 ) {
+    u_strcat(buffer, GStringGetResource(_STR_Fileexistspost,NULL));
+    if ( GWidgetAsk(GStringGetResource(_STR_Fileexists,NULL),buffer,rcb,rcmn,0,1)==0 ) {
 	d->done = true;
     }
     GFileChooserReplaceIO(d->gfc,NULL);
@@ -105,8 +99,9 @@ static void GFD_dircreatefailed(GIOControl *gio) {
     unichar_t buffer[500];
     unichar_t title[30];
 
-    uc_strcpy(title, "Couldn't create directory");
-    uc_strcpy(buffer, "Couldn't create directory, ");
+    u_strcpy(title, GStringGetResource(_STR_Couldntcreatedir,NULL));
+    u_strcpy(buffer, title);
+    uc_strcat(buffer,": ");
     u_strcat(buffer, u_GFileNameTail(gio->path));
     uc_strcat(buffer, ".\n");
     if ( gio->error!=NULL ) {
@@ -123,10 +118,7 @@ static int GFD_NewDir(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
 	unichar_t *newdir;
-	unichar_t title[30], buffer[30];
-	uc_strcpy(title,"Create directory...");
-	uc_strcpy(buffer,"Directory name?");
-	newdir = GWidgetAskString(title,buffer,NULL);
+	newdir = GWidgetAskStringR(_STR_Createdir,_STR_Dirname,NULL);
 	if ( newdir==NULL )
 return( true );
 	if ( !u_GFileIsAbsolute(newdir)) {
@@ -163,6 +155,7 @@ unichar_t *GWidgetSaveAsFile(const unichar_t *title, const unichar_t *defaultfil
     GTextInfo label[5];
     struct gfc_data d;
     GGadget *pulldown, *files, *tf;
+    int bs = GIntGetResource(_NUM_Buttonsize), bsbigger, totwid;
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_restrict;
@@ -172,43 +165,53 @@ unichar_t *GWidgetSaveAsFile(const unichar_t *title, const unichar_t *defaultfil
     wattrs.cursor = ct_pointer;
     wattrs.window_title = (unichar_t *) title;
     pos.x = pos.y = 0;
-    pos.width =GDrawPointsToPixels(NULL,223);
+    bsbigger = 3*bs+4*14>223; totwid = bsbigger?3*bs+4*12:223;
+    pos.width = GDrawPointsToPixels(NULL,totwid);
     pos.height = GDrawPointsToPixels(NULL,255);
     gw = GDrawCreateTopWindow(NULL,&pos,e_h,&d,&wattrs);
 
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
-    gcd[0].gd.pos.x = 12; gcd[0].gd.pos.y = 6; gcd[0].gd.pos.width = 200; gcd[0].gd.pos.height = 180;
+    gcd[0].gd.pos.x = 12; gcd[0].gd.pos.y = 6;
+    gcd[0].gd.pos.width = totwid-24; gcd[0].gd.pos.height = 180;
     gcd[0].gd.flags = gg_visible | gg_enabled;
     gcd[0].creator = GFileChooserCreate;
 
-    gcd[1].gd.pos.x = 12; gcd[1].gd.pos.y = 222-3; gcd[1].gd.pos.width = 55; gcd[1].gd.pos.height = 0;
+    gcd[1].gd.pos.x = 12; gcd[1].gd.pos.y = 222-3;
+    gcd[1].gd.pos.width = -1;
     gcd[1].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[1].text = save;
+    label[1].text = (unichar_t *) _STR_Save;
+    label[1].text_in_resource = true;
     gcd[1].gd.mnemonic = 'S';
     gcd[1].gd.label = &label[1];
     gcd[1].gd.handle_controlevent = GFD_SaveOk;
     gcd[1].creator = GButtonCreate;
 
-    gcd[2].gd.pos.x = 84; gcd[2].gd.pos.y = 222; gcd[2].gd.pos.width = 55; gcd[2].gd.pos.height = 0;
+    gcd[2].gd.pos.x = (totwid-bs)/2; gcd[2].gd.pos.y = 222;
+    gcd[2].gd.pos.width = -1;
     gcd[2].gd.flags = gg_visible | gg_enabled;
-    label[2].text = filter;
+    label[2].text = (unichar_t *) _STR_Filter;
+    label[2].text_in_resource = true;
     gcd[2].gd.mnemonic = 'F';
     gcd[2].gd.label = &label[2];
     gcd[2].gd.handle_controlevent = GFileChooserFilterEh;
     gcd[2].creator = GButtonCreate;
 
-    gcd[3].gd.pos.x = 155; gcd[3].gd.pos.y = 222; gcd[3].gd.pos.width = 55; gcd[3].gd.pos.height = 0;
+    gcd[3].gd.pos.x = totwid-gcd[1].gd.pos.x-bs; gcd[3].gd.pos.y = 222;
+    gcd[3].gd.pos.width = -1;
     gcd[3].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[3].text = cancel;
+    label[3].text = (unichar_t *) _STR_Cancel;
+    label[3].text_in_resource = true;
     gcd[3].gd.label = &label[3];
     gcd[3].gd.mnemonic = 'C';
     gcd[3].gd.handle_controlevent = GFD_Cancel;
     gcd[3].creator = GButtonCreate;
 
-    gcd[4].gd.pos.x = 84; gcd[4].gd.pos.y = 192; gcd[4].gd.pos.width = 55; gcd[4].gd.pos.height = 0;
+    gcd[4].gd.pos.x = gcd[2].gd.pos.x; gcd[4].gd.pos.y = 192;
+    gcd[4].gd.pos.width = GIntGetResource(_NUM_Buttonsize);
     gcd[4].gd.flags = gg_visible | gg_enabled;
-    label[4].text = new;
+    label[4].text = (unichar_t *) _STR_New;
+    label[4].text_in_resource = true;
     label[4].image = &_GIcon_dir;
     label[4].image_precedes = false;
     gcd[4].gd.mnemonic = 'N';

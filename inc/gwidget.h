@@ -81,6 +81,9 @@ void GWidgetNextFocus(GWindow);
 void GWidgetPrevFocus(GWindow);
 void GWidgetRequestVisiblePalette(GWindow palette,int visible);
 void GWidgetHidePalettes(void);
+void GPaletteDock(GWindow palette,int x, int y);
+void GPaletteUndock(GWindow palette,int x, int y);
+int GPaletteIsDocked(GWindow palette);
 
 struct ggadget *GWidgetGetControl(GWindow gw, int cid);
 GWindow GWidgetGetParent(GWindow gw);
@@ -92,12 +95,17 @@ unichar_t *GWidgetOpenFile(const unichar_t *title, const unichar_t *defaultfile,
 unichar_t *GWidgetSaveAsFile(const unichar_t *title, const unichar_t *defaultfile,
 	const unichar_t *initial_filter, unichar_t **mimetypes);
 int GWidgetAsk(const unichar_t *title,const unichar_t *question,
-	unichar_t **answers, const unichar_t *mn, int def, int cancel);
+	const unichar_t **answers, const unichar_t *mn, int def, int cancel);
 int GWidgetAskCentered(const unichar_t *title,const unichar_t *question,
-	unichar_t **answers, const unichar_t *mn, int def, int cancel);
+	const unichar_t ** answers, const unichar_t *mn, int def, int cancel);
 unichar_t *GWidgetAskString(const unichar_t *title,const unichar_t *question,
 	const unichar_t *def);
 void GWidgetPostNotice(const unichar_t *title,const unichar_t *statement);
+int GWidgetAskR(int title,int question, int *answers, int def, int cancel);
+int GWidgetAskR_(int title,const unichar_t *question, int *answers, int def, int cancel);
+int GWidgetAskCenteredR(int title,int question, int *answers, int def, int cancel);
+unichar_t *GWidgetAskStringR(int title,int question, const unichar_t *def);
+void GWidgetPostNoticeR(int title,int statement);
 void GWidgetCreateInsChar(void);	/* takes input even when a modal dlg is active */
 		/* but is not modal itself */
 void GInsCharSetChar(unichar_t ch);	/* Sets current selection in ins char dlg */

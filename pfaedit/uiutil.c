@@ -35,6 +35,17 @@ void Protest(char *label) {
     GWidgetPostNotice(ubuf,ubuf);
 }
 
+void ProtestR(int labelr) {
+    unichar_t ubuf[80];
+    u_strcpy(ubuf,GStringGetResource(_STR_Badnumberin,NULL));
+    u_strcat(ubuf,GStringGetResource(labelr,NULL));
+    if ( ubuf[u_strlen(ubuf)-1]==' ' )
+	ubuf[u_strlen(ubuf)-1]='\0';
+    if ( ubuf[u_strlen(ubuf)-1]==':' )
+	ubuf[u_strlen(ubuf)-1]='\0';
+    GWidgetPostNotice(ubuf,ubuf);
+}
+
 double GetDouble(GWindow gw,int cid,char *name,int *err) {
     const unichar_t *txt; unichar_t *end;
     double val;
@@ -48,6 +59,19 @@ double GetDouble(GWindow gw,int cid,char *name,int *err) {
 return( val );
 }
 
+double GetDoubleR(GWindow gw,int cid,int namer,int *err) {
+    const unichar_t *txt; unichar_t *end;
+    double val;
+
+    txt = _GGadgetGetTitle(GWidgetGetControl(gw,cid));
+    val = u_strtod(txt,&end);
+    if ( *end!='\0' ) {
+	ProtestR(namer);
+	*err = true;
+    }
+return( val );
+}
+
 int GetInt(GWindow gw,int cid,char *name,int *err) {
     const unichar_t *txt; unichar_t *end;
     int val;
@@ -56,6 +80,19 @@ int GetInt(GWindow gw,int cid,char *name,int *err) {
     val = u_strtol(txt,&end,10);
     if ( *end!='\0' ) {
 	Protest(name);
+	*err = true;
+    }
+return( val );
+}
+
+int GetIntR(GWindow gw,int cid,int namer,int *err) {
+    const unichar_t *txt; unichar_t *end;
+    int val;
+
+    txt = _GGadgetGetTitle(GWidgetGetControl(gw,cid));
+    val = u_strtol(txt,&end,10);
+    if ( *end!='\0' ) {
+	ProtestR(namer);
 	*err = true;
     }
 return( val );

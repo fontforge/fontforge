@@ -236,20 +236,20 @@ static char *AskKey(SplineFont *sf) {
     }
 
     gcd[2].gd.pos.x = 20-3; gcd[2].gd.pos.y = 90-35-3;
-    gcd[2].gd.pos.width = 55; gcd[2].gd.pos.height = 0;
+    gcd[2].gd.pos.width = -1; gcd[2].gd.pos.height = 0;
     gcd[2].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[2].text = (unichar_t *) "OK";
-    label[2].text_is_1byte = true;
+    label[2].text = (unichar_t *) _STR_OK;
+    label[2].text_in_resource = true;
     gcd[2].gd.mnemonic = 'O';
     gcd[2].gd.label = &label[2];
     gcd[2].gd.handle_controlevent = Ask_OK;
     gcd[2].creator = GButtonCreate;
 
-    gcd[3].gd.pos.x = 150-55-20; gcd[3].gd.pos.y = 90-35;
-    gcd[3].gd.pos.width = 55; gcd[3].gd.pos.height = 0;
+    gcd[3].gd.pos.x = 150-GIntGetResource(_NUM_Buttonsize)-20; gcd[3].gd.pos.y = 90-35;
+    gcd[3].gd.pos.width = -1; gcd[3].gd.pos.height = 0;
     gcd[3].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[3].text = (unichar_t *) "Cancel";
-    label[3].text_is_1byte = true;
+    label[3].text = (unichar_t *) _STR_Cancel;
+    label[3].text_in_resource = true;
     gcd[3].gd.label = &label[3];
     gcd[3].gd.mnemonic = 'C';
     gcd[3].gd.handle_controlevent = Ask_Cancel;
@@ -338,15 +338,7 @@ return( ti );
 }
 
 static int PIFinishFormer(struct pi_data *d) {
-    static const unichar_t arrayquest[] = { 'E','x','p','e','c','t','e','d',' ','a','r','r','a','y','\n','P','r','o','c','e','d','e',' ','a','n','y','w','a','y','?',  '\0' };
-    static const unichar_t numberquest[] = { 'E','x','p','e','c','t','e','d',' ','n','u','m','b','e','r','\n','P','r','o','c','e','d','e',' ','a','n','y','w','a','y','?',  '\0' };
-    static const unichar_t boolquest[] = { 'E','x','p','e','c','t','e','d',' ','b','o','o','l','e','a','n','\n','P','r','o','c','e','d','e',' ','a','n','y','w','a','y','?',  '\0' };
-    static const unichar_t codequest[] = { 'E','x','p','e','c','t','e','d',' ','c','o','d','e','\n','P','r','o','c','e','d','e',' ','a','n','y','w','a','y','?',  '\0' };
-    static unichar_t title[] = { 'B','a','d',' ','t','y','p','e',  '\0' };
-    static unichar_t ok[] = { 'O','K',  '\0' };
-    static unichar_t cancel[] = { 'C','a','n','c','e','l',  '\0' };
-    static unichar_t *buts[] = { ok, cancel, NULL };
-    static unichar_t mn[] = { 'O', 'C', '\0' };
+    static int buts[] = { _STR_OK, _STR_Cancel, 0 };
     unichar_t *end;
 
     if ( d->sf->private!=NULL && d->old_sel>=0 && d->old_sel!=d->sf->private->next ) {
@@ -361,19 +353,19 @@ static int PIFinishFormer(struct pi_data *d) {
 	break;
 	if ( KnownPrivates[i].name!=NULL ) {
 	    if ( KnownPrivates[i].type==pt_array ) {
-		if ( *pt!='[' && GWidgetAsk(title,arrayquest,buts,mn,0,1)==1 )
+		if ( *pt!='[' && GWidgetAskR(_STR_Badtype,_STR_Arrayquest,buts,0,1)==1 )
 return( false );
 	    } else if ( KnownPrivates[i].type==pt_boolean ) {
 		if ( uc_strcmp(pt,"true")!=0 && uc_strcmp(pt,"false")!=0 &&
-			GWidgetAsk(title,boolquest,buts,mn,0,1)==1 )
+			GWidgetAskR(_STR_Badtype,_STR_Boolquest,buts,0,1)==1 )
 return( false );
 	    } else if ( KnownPrivates[i].type==pt_code ) {
-		if ( *pt!='{' && GWidgetAsk(title,codequest,buts,mn,0,1)==1 )
+		if ( *pt!='{' && GWidgetAskR(_STR_Badtype,_STR_Codequest,buts,0,1)==1 )
 return( false );
 	    } else if ( KnownPrivates[i].type==pt_number ) {
 		u_strtod(pt,&end);
 		while ( isspace(*end)) ++end;
-		if ( *end!='\0' && GWidgetAsk(title,numberquest,buts,mn,0,1)==1 )
+		if ( *end!='\0' && GWidgetAskR(_STR_Badtype,_STR_Numberquest,buts,0,1)==1 )
 return( false );
 	    }
 	}
@@ -513,19 +505,12 @@ static int PI_Guess(GGadget *g, GEvent *e) {
     GGadget *list;
     int sel;
     SplineFont *sf;
-    static const unichar_t bluequest[] = { 'T','h','i','s',' ','w','i','l','l',' ','c','h','a','n','g','e',' ','b','o','t','h',' ','B','l','u','e','V','a','l','u','e','s',' ','a','n','d',' ','O','t','h','e','r','B','l','u','e','s','.','\n','D','o',' ','y','o','u',' ','w','a','n','t',' ','t','o',' ','c','o','n','t','i','n','u','e','?',  '\0' };
-    static const unichar_t hquest[] = { 'T','h','i','s',' ','w','i','l','l',' ','c','h','a','n','g','e',' ','b','o','t','h',' ','S','t','d','H','W',' ','a','n','d',' ','S','t','e','m','S','n','a','p','H','.','\n','D','o',' ','y','o','u',' ','w','a','n','t',' ','t','o',' ','c','o','n','t','i','n','u','e','?',  '\0' };
-    static const unichar_t vquest[] = { 'T','h','i','s',' ','w','i','l','l',' ','c','h','a','n','g','e',' ','b','o','t','h',' ','S','t','d','V','W',' ','a','n','d',' ','S','t','e','m','S','n','a','p','V','.','\n','D','o',' ','y','o','u',' ','w','a','n','t',' ','t','o',' ','c','o','n','t','i','n','u','e','?',  '\0' };
-    static unichar_t title[] = { 'G','u','e','s','s','.','.','.',  '\0' };
-    static unichar_t ok[] = { 'O','K',  '\0' };
-    static unichar_t cancel[] = { 'C','a','n','c','e','l',  '\0' };
-    static unichar_t *buts[] = { ok, cancel, NULL };
-    static unichar_t mn[] = { 'O', 'C', '\0' };
     double bluevalues[14], otherblues[10];
     double snapcnt[12];
     double stemsnap[12];
     char buffer[211];
     unichar_t *temp;
+    static int buts[] = { _STR_OK, _STR_Cancel, 0 };
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	gw = GGadgetGetWindow(g);
@@ -535,7 +520,7 @@ static int PI_Guess(GGadget *g, GEvent *e) {
 	sel = GGadgetGetFirstListSelectedItem(list);
 	if ( strcmp(sf->private->keys[sel],"BlueValues")==0 ||
 		strcmp(sf->private->keys[sel],"OtherBlues")==0 ) {
-	    if ( GWidgetAsk(title,bluequest,buts,mn,0,1)==1 )
+	    if ( GWidgetAskR(_STR_Guess,_STR_Bluequest,buts,0,1)==1 )
 return( true );
 	    FindBlues(sf,bluevalues,otherblues);
 	    arraystring(buffer,bluevalues,14);
@@ -544,13 +529,13 @@ return( true );
 	    PSDictChangeEntry(sf->private,"OtherBlues",buffer);
 	} else if ( strcmp(sf->private->keys[sel],"StdHW")==0 ||
 		strcmp(sf->private->keys[sel],"StemSnapH")==0 ) {
-	    if ( GWidgetAsk(title,hquest,buts,mn,0,1)==1 )
+	    if ( GWidgetAskR(_STR_Guess,_STR_Hstemquest,buts,0,1)==1 )
 return( true );
 	    FindHStems(sf,stemsnap,snapcnt);
 	    SnapSet(sf,stemsnap,snapcnt,"StdHW","StemSnapH");
 	} else if ( strcmp(sf->private->keys[sel],"StdVW")==0 ||
 		strcmp(sf->private->keys[sel],"StemSnapV")==0 ) {
-	    if ( GWidgetAsk(title,vquest,buts,mn,0,1)==1 )
+	    if ( GWidgetAskR(_STR_Guess,_STR_Vstemquest,buts,0,1)==1 )
 return( true );
 	    FindHStems(sf,stemsnap,snapcnt);
 	    SnapSet(sf,stemsnap,snapcnt,"StdVW","StemSnapV");
@@ -576,29 +561,6 @@ static int PI_Delete(GGadget *g, GEvent *e) {
 	sf = d->sf;
 	list = GWidgetGetControl(d->gw,CID_PrivateEntries);
 	sel = GGadgetGetFirstListSelectedItem(list);
-#if 0
-	if ( sf->private==NULL || sel == sf->private->next ||
-		strcmp(sf->private->keys[sel],"OtherSubrs")==0 ) {
-	    static const unichar_t quest[] = { 'D','e','l','e','t','i','n','g',' ','t','h','i','s',' ','e','n','t','r','y',' ','w','i','l','l',' ','l','o','s','e',' ','a','l','l',' ','h','i','n','t',' ','s','u','b','s','t','i','t','u','t','i','o','n',' ','a','n','d',' ','f','l','e','x',' ','h','i','n','t',' ','i','n','f','o','r','m','a','t','i','o','n','\n','D','o',' ','y','o','u',' ','s','t','i','l','l',' ','w','a','n','t',' ','t','o',' ','d','e','l','e','t','e',' ','i','t','?',  '\0' };
-	    static unichar_t title[] = { 'D','e','l','e','t','e',' ','H','i','n','t','s','?',  '\0' };
-	    static unichar_t ok[] = { 'O','K',  '\0' };
-	    static unichar_t cancel[] = { 'C','a','n','c','e','l',  '\0' };
-	    static unichar_t *buts[] = { ok, cancel, NULL };
-	    static unichar_t mn[] = { 'O', 'C', '\0' };
-	    if ( GWidgetAsk(title,quest,buts,mn,0,1)==1 )
-return ( true );
-	    PSDictRemoveEntry(sf->private, "OtherSubrs");
-	    PSCharsFree(sf->subrs);
-	    sf->subrs = NULL;
-	    for ( i=0; i<sf->charcnt; ++i ) {
-		if ( sf->chars[i]!=NULL && sf->chars[i]->origtype1!=NULL ) {
-		    free( sf->chars[i]->origtype1 );
-		    sf->chars[i]->origtype1 = NULL;
-		    sf->chars[i]->origlen = 0;
-		}
-	    }
-	} else
-#endif
 	    PSDictRemoveEntry(sf->private, sf->private->keys[sel]);
 	sf->changed = true;
 	ti = PI_ListArray(sf);
@@ -677,7 +639,7 @@ void SFPrivateInfo(SplineFont *sf) {
     gcd[1].creator = GTextAreaCreate;
 
     gcd[2].gd.pos.x = 20; gcd[2].gd.pos.y = 275-35-30;
-    gcd[2].gd.pos.width = 55; gcd[2].gd.pos.height = 0;
+    gcd[2].gd.pos.width = -1; gcd[2].gd.pos.height = 0;
     gcd[2].gd.flags = gg_visible | gg_enabled ;
     label[2].text = (unichar_t *) "Add";
     label[2].text_is_1byte = true;
@@ -687,8 +649,8 @@ void SFPrivateInfo(SplineFont *sf) {
     gcd[2].gd.cid = CID_Add;
     gcd[2].creator = GButtonCreate;
 
-    gcd[3].gd.pos.x = (220-55)/2; gcd[3].gd.pos.y = 275-35-30;
-    gcd[3].gd.pos.width = 55; gcd[3].gd.pos.height = 0;
+    gcd[3].gd.pos.x = (220-GIntGetResource(_NUM_Buttonsize))/2; gcd[3].gd.pos.y = 275-35-30;
+    gcd[3].gd.pos.width = -1; gcd[3].gd.pos.height = 0;
     gcd[3].gd.flags = gg_visible ;
     label[3].text = (unichar_t *) "Guess";
     label[3].text_is_1byte = true;
@@ -698,8 +660,8 @@ void SFPrivateInfo(SplineFont *sf) {
     gcd[3].gd.cid = CID_Guess;
     gcd[3].creator = GButtonCreate;
 
-    gcd[4].gd.pos.x = 220-55-20; gcd[4].gd.pos.y = 275-35-30;
-    gcd[4].gd.pos.width = 55; gcd[4].gd.pos.height = 0;
+    gcd[4].gd.pos.x = 220-GIntGetResource(_NUM_Buttonsize)-20; gcd[4].gd.pos.y = 275-35-30;
+    gcd[4].gd.pos.width = -1; gcd[4].gd.pos.height = 0;
     gcd[4].gd.flags = gg_visible | gg_enabled ;
     label[4].text = (unichar_t *) "Remove";
     label[4].text_is_1byte = true;
@@ -709,11 +671,11 @@ void SFPrivateInfo(SplineFont *sf) {
     gcd[4].gd.cid = CID_Remove;
     gcd[4].creator = GButtonCreate;
 
-    gcd[5].gd.pos.x = (220-55-6)/2; gcd[5].gd.pos.y = 275-35-3;
-    gcd[5].gd.pos.width = 55+6; gcd[5].gd.pos.height = 0;
+    gcd[5].gd.pos.x = (220-GIntGetResource(_NUM_Buttonsize)-6)/2; gcd[5].gd.pos.y = 275-35-3;
+    gcd[5].gd.pos.width = GIntGetResource(_NUM_Buttonsize)+6; gcd[5].gd.pos.height = 0;
     gcd[5].gd.flags = gg_visible | gg_enabled | gg_but_default | gg_but_cancel;
-    label[5].text = (unichar_t *) "Done";
-    label[5].text_is_1byte = true;
+    label[5].text = (unichar_t *) _STR_Done;
+    label[5].text_in_resource = true;
     gcd[5].gd.mnemonic = 'D';
     gcd[5].gd.label = &label[5];
     gcd[5].gd.handle_controlevent = PI_Done;

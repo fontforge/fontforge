@@ -32,6 +32,7 @@
 #include <string.h>
 #include <gprogress.h>
 #include "splinefont.h"
+#include "nomen.h"
 
 typedef struct enc {
     int enc_num;

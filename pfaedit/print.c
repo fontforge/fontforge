@@ -1048,20 +1048,20 @@ static int PageSetup(PI *pi) {
 
 
     gcd[10].gd.pos.x = 30-3; gcd[10].gd.pos.y = gcd[9].gd.pos.y+36;
-    gcd[10].gd.pos.width = 55; gcd[10].gd.pos.height = 0;
+    gcd[10].gd.pos.width = -1; gcd[10].gd.pos.height = 0;
     gcd[10].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[10].text = (unichar_t *) "OK";
-    label[10].text_is_1byte = true;
+    label[10].text = (unichar_t *) _STR_OK;
+    label[10].text_in_resource = true;
     gcd[10].gd.mnemonic = 'O';
     gcd[10].gd.label = &label[10];
     gcd[10].gd.handle_controlevent = PG_OK;
     gcd[10].creator = GButtonCreate;
 
-    gcd[11].gd.pos.x = 250-55-30; gcd[11].gd.pos.y = gcd[10].gd.pos.y+3;
-    gcd[11].gd.pos.width = 55; gcd[11].gd.pos.height = 0;
+    gcd[11].gd.pos.x = 250-GIntGetResource(_NUM_Buttonsize)-30; gcd[11].gd.pos.y = gcd[10].gd.pos.y+3;
+    gcd[11].gd.pos.width = -1; gcd[11].gd.pos.height = 0;
     gcd[11].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[11].text = (unichar_t *) "Cancel";
-    label[11].text_is_1byte = true;
+    label[11].text = (unichar_t *) _STR_Cancel;
+    label[11].text_in_resource = true;
     gcd[11].gd.label = &label[11];
     gcd[11].gd.mnemonic = 'C';
     gcd[11].gd.handle_controlevent = PG_Cancel;
@@ -1377,6 +1377,26 @@ static unichar_t _beorwulf10[] = { 'g','o','m','b','a','n',' ','g','y','l','d',
 static unichar_t *beorwulf[] = { _beorwulf1, _beorwulf1_5, _beorwulf2, _beorwulf3,
 	_beorwulf4,  _beorwulf5, _beorwulf6, _beorwulf7, _beorwulf8,
 	_beorwulf9, _beorwulf10, NULL };
+static unichar_t _inferno1[] = { ' ','N','e','l',' ','m','e','z','z','o',' ',
+	'd','e','l',' ','c','a','m','m','i','n',' ','d','i',' ',
+	'n','o','s','t','r','a',' ','v','i','t','a',  '\0' };
+static unichar_t _inferno2[] = { 'm','i',' ','r','i','t','r','o','v','a','i',
+	' ','p','e','r',' ','u','n','a',' ','s','o','l','v','a',' ',
+	'o','b','s','c','u','r','a',',',  '\0' };
+static unichar_t _inferno3[] = { 'c','h','é',' ','l','a',' ','d','i','r','i',
+	't','t','a',' ','v','i','a',' ','e','r','a',' ','s','m','a','r','r',
+	'i','t','a','.',  '\0' };
+static unichar_t _inferno4[] = { ' ','A','n','i',' ','q','u','a','n','t','o',
+	' ','a',' ','d','i','r',' ','q','u','a','l',' ','e','r','a',' ','è',
+	' ','c','o','s','a',' ','d','u','r','a',  '\0' };
+static unichar_t _inferno5[] = { 'e','s','t','a',' ','s','e','l','v','a',' ',
+	's','e','l','v','a','g','g','i','a',' ','e',' ','a','s','p','r','a',' ',
+	'e',' ','f','o','r','t','e',  '\0' };
+static unichar_t _inferno6[] = { 'c','h','e',' ','n','e','l',' ','p','e','n',
+	's','i','e','r',' ','r','i','n','o','v','a',' ','l','a',' ','p','a','u',
+	'v','a','!',  '\0' };
+static unichar_t *inferno[] = { _inferno1, _inferno2, _inferno3, _inferno4,
+	_inferno5, _inferno6, NULL };
 static unichar_t _debello1[] = { ' ','G','a','l','l','i','a',' ','e','s','t',
 	' ','o','m','n','i','s',' ','d',0x012b,'v',0x012b,'s','a',' ','i','n',
 	' ','p','a','r','t',0x0113,'s',' ','t','r',0x0113,'s',',',' ','q','u',
@@ -1449,7 +1469,7 @@ static unichar_t _muchado[] = {' ','B','u','t',' ','t','i','l','l',' ','a','l',
 /* contains long-s, u used as v, tilde over vowel used as nasal, and misspellings */
 static unichar_t *muchado[] = { _muchado, NULL };
 static unichar_t **sample[] = { simple, faust, pheadra, antigone, annakarenena,
-	debello, hebrew, donquixote, beorwulf, muchado, NULL };
+	debello, hebrew, donquixote, inferno, beorwulf, muchado, NULL };
 
 static int AllChars( SplineFont *sf, unichar_t *str) {
     int i, ch;
@@ -1651,7 +1671,7 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
 
 
     gcd[7].gd.pos.x = 235; gcd[7].gd.pos.y = 12;
-    gcd[7].gd.pos.width = 55; gcd[7].gd.pos.height = 0;
+    gcd[7].gd.pos.width = -1; gcd[7].gd.pos.height = 0;
     gcd[7].gd.flags = gg_visible | gg_enabled ;
     label[7].text = (unichar_t *) "Setup";
     label[7].text_is_1byte = true;
@@ -1662,20 +1682,20 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
 
 
     gcd[8].gd.pos.x = 30-3; gcd[8].gd.pos.y = gcd[6].gd.pos.y+gcd[6].gd.pos.height+6;
-    gcd[8].gd.pos.width = 55; gcd[8].gd.pos.height = 0;
+    gcd[8].gd.pos.width = -1; gcd[8].gd.pos.height = 0;
     gcd[8].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[8].text = (unichar_t *) "OK";
-    label[8].text_is_1byte = true;
+    label[8].text = (unichar_t *) _STR_OK;
+    label[8].text_in_resource = true;
     gcd[8].gd.mnemonic = 'O';
     gcd[8].gd.label = &label[8];
     gcd[8].gd.handle_controlevent = PRT_OK;
     gcd[8].creator = GButtonCreate;
 
-    gcd[9].gd.pos.x = 310-55-30; gcd[9].gd.pos.y = gcd[8].gd.pos.y+3;
-    gcd[9].gd.pos.width = 55; gcd[9].gd.pos.height = 0;
+    gcd[9].gd.pos.x = 310-GIntGetResource(_NUM_Buttonsize)-30; gcd[9].gd.pos.y = gcd[8].gd.pos.y+3;
+    gcd[9].gd.pos.width = -1; gcd[9].gd.pos.height = 0;
     gcd[9].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[9].text = (unichar_t *) "Cancel";
-    label[9].text_is_1byte = true;
+    label[9].text = (unichar_t *) _STR_Cancel;
+    label[9].text_in_resource = true;
     gcd[9].gd.label = &label[9];
     gcd[9].gd.mnemonic = 'C';
     gcd[9].gd.handle_controlevent = PRT_Cancel;

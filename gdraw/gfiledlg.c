@@ -36,10 +36,6 @@ struct gfc_data {
     GGadget *gfc;
 };
 
-static unichar_t ok[] = { 'O', 'k', '\0' };
-static unichar_t filter[] = { 'F', 'i', 'l', 't', 'e', 'r', '\0' };
-static unichar_t cancel[] = { 'C', 'a', 'n', 'c', 'e', 'l', '\0' };
-
 static int GFD_Ok(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
@@ -78,6 +74,7 @@ unichar_t *GWidgetOpenFile(const unichar_t *title, const unichar_t *defaultfile,
     GGadgetCreateData gcd[7];
     GTextInfo label[4];
     struct gfc_data d;
+    int bs = GIntGetResource(_NUM_Buttonsize), bsbigger, totwid;
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_restrict;
@@ -87,34 +84,43 @@ unichar_t *GWidgetOpenFile(const unichar_t *title, const unichar_t *defaultfile,
     wattrs.cursor = ct_pointer;
     wattrs.window_title = (unichar_t *) title;
     pos.x = pos.y = 0;
-    pos.width = pos.height = GDrawPointsToPixels(NULL,223);
+    bsbigger = 3*bs+4*14>223; totwid = bsbigger?3*bs+4*12:223;
+    pos.width = GDrawPointsToPixels(NULL,totwid);
+    pos.height = GDrawPointsToPixels(NULL,223);
     gw = GDrawCreateTopWindow(NULL,&pos,e_h,&d,&wattrs);
 
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
-    gcd[0].gd.pos.x = 12; gcd[0].gd.pos.y = 6; gcd[0].gd.pos.width = 200; gcd[0].gd.pos.height = 180;
+    gcd[0].gd.pos.x = 12; gcd[0].gd.pos.y = 6;
+    gcd[0].gd.pos.width = totwid-24; gcd[0].gd.pos.height = 180;
     gcd[0].gd.flags = gg_visible | gg_enabled;
     gcd[0].creator = GFileChooserCreate;
 
-    gcd[1].gd.pos.x = 12; gcd[1].gd.pos.y = 192-3; gcd[1].gd.pos.width = 55; gcd[1].gd.pos.height = 0;
+    gcd[1].gd.pos.x = 12; gcd[1].gd.pos.y = 192-3;
+    gcd[1].gd.pos.width = GIntGetResource(_NUM_Buttonsize);
     gcd[1].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[1].text = ok;
+    label[1].text = (unichar_t *) _STR_OK;
+    label[1].text_in_resource = true;
     gcd[1].gd.mnemonic = 'O';
     gcd[1].gd.label = &label[1];
     gcd[1].gd.handle_controlevent = GFD_Ok;
     gcd[1].creator = GButtonCreate;
 
-    gcd[2].gd.pos.x = 84; gcd[2].gd.pos.y = 192; gcd[2].gd.pos.width = 55; gcd[2].gd.pos.height = 0;
+    gcd[2].gd.pos.x = (totwid-bs)/2; gcd[2].gd.pos.y = 192;
+    gcd[2].gd.pos.width = GIntGetResource(_NUM_Buttonsize);
     gcd[2].gd.flags = gg_visible | gg_enabled;
-    label[2].text = filter;
+    label[2].text = (unichar_t *) _STR_Filter;
+    label[2].text_in_resource = true;
     gcd[2].gd.mnemonic = 'F';
     gcd[2].gd.label = &label[2];
     gcd[2].gd.handle_controlevent = GFileChooserFilterEh;
     gcd[2].creator = GButtonCreate;
 
-    gcd[3].gd.pos.x = 155; gcd[3].gd.pos.y = 192; gcd[3].gd.pos.width = 55; gcd[3].gd.pos.height = 0;
+    gcd[3].gd.pos.x = totwid-gcd[1].gd.pos.x-bs; gcd[3].gd.pos.y = 192;
+    gcd[3].gd.pos.width = GIntGetResource(_NUM_Buttonsize);
     gcd[3].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[3].text = cancel;
+    label[3].text = (unichar_t *) _STR_Cancel;
+    label[3].text_in_resource = true;
     gcd[3].gd.label = &label[3];
     gcd[3].gd.mnemonic = 'C';
     gcd[3].gd.handle_controlevent = GFD_Cancel;

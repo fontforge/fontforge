@@ -31,12 +31,6 @@
 #include "gwidget.h"
 #include "ggadget.h"
 
-static unichar_t ok[] = { 'O', 'k', '\0' };
-static unichar_t cancel[] = { 'C', 'a', 'n', 'c', 'e', 'l', '\0' };
-static unichar_t *ocb[] = { ok, cancel, NULL };
-static unichar_t *ob[] = { ok, NULL };
-static unichar_t ocmn[] = { 'O', 'C', '\0' };
-
 struct dlg_info {
     int done;
     int ret;
@@ -121,7 +115,7 @@ return( lb );
 }
 
 static GWindow DlgCreate(const unichar_t *title,const unichar_t *question,
-	unichar_t **answers, const unichar_t *mn, int def, int cancel,
+	const unichar_t **answers, const unichar_t *mn, int def, int cancel,
 	struct dlg_info *d, int add_text, int restrict_input, int center) {
     GTextInfo qlabels[GLINE_MAX+1], *blabels;
     GGadgetCreateData *gcd;
@@ -139,7 +133,7 @@ static GWindow DlgCreate(const unichar_t *title,const unichar_t *question,
     for ( bcnt=0; answers[bcnt]!=NULL; ++bcnt);
     blabels = gcalloc(bcnt+1,sizeof(GTextInfo));
     for ( bcnt=0; answers[bcnt]!=NULL; ++bcnt)
-	blabels[bcnt].text = answers[bcnt];
+	blabels[bcnt].text = (unichar_t *) answers[bcnt];
 
     memset(&wattrs,0,sizeof(wattrs));
     /* If we have many questions in quick succession the dlg will jump around*/
@@ -257,7 +251,7 @@ return( gw );
 }
 
 int GWidgetAsk(const unichar_t *title,const unichar_t *question,
-	unichar_t **answers, const unichar_t *mn, int def, int cancel) {
+	const unichar_t **answers, const unichar_t *mn, int def, int cancel) {
     struct dlg_info d;
     GWindow gw = DlgCreate(title,question,answers,mn,def,cancel,&d,false,true,false);
 
@@ -270,7 +264,7 @@ return(d.ret);
 }
 
 int GWidgetAskCentered(const unichar_t *title,const unichar_t *question,
-	unichar_t **answers, const unichar_t *mn, int def, int cancel) {
+	const unichar_t ** answers, const unichar_t *mn, int def, int cancel) {
     struct dlg_info d;
     GWindow gw = DlgCreate(title,question,answers,mn,def,cancel,&d,false,true,true);
 
@@ -282,12 +276,95 @@ int GWidgetAskCentered(const unichar_t *title,const unichar_t *question,
 return(d.ret);
 }
 
+int GWidgetAskR(int title,int question, int *answers, int def, int cancel) {
+    const unichar_t **ans;
+    unichar_t *mn;
+    int ret;
+    int i;
+
+    for ( i=0; answers[i]!=0 && answers[i]!=0x80000000; ++i );
+    ans = gcalloc(i+1,sizeof(unichar_t));
+    mn = gcalloc(1,sizeof(unichar_t));
+    for ( i=0; answers[i]!=0 && answers[i]!=0x80000000; ++i )
+	ans[i] = GStringGetResource(answers[i],&mn[i]);
+    ret = GWidgetAsk(GStringGetResource(title,NULL),GStringGetResource(question,NULL),
+	    ans,mn,def,cancel);
+    free(ans);
+    free(mn);
+return(ret);
+}
+
+int GWidgetAskR_(int title,const unichar_t *question, int *answers, int def, int cancel) {
+    const unichar_t **ans;
+    unichar_t *mn;
+    int ret;
+    int i;
+
+    for ( i=0; answers[i]!=0 && answers[i]!=0x80000000; ++i );
+    ans = gcalloc(i+1,sizeof(unichar_t));
+    mn = gcalloc(1,sizeof(unichar_t));
+    for ( i=0; answers[i]!=0 && answers[i]!=0x80000000; ++i )
+	ans[i] = GStringGetResource(answers[i],&mn[i]);
+    ret = GWidgetAsk(GStringGetResource(title,NULL),question,
+	    ans,mn,def,cancel);
+    free(ans);
+    free(mn);
+return(ret);
+}
+
+int GWidgetAskCenteredR(int title,int question, int *answers, int def, int cancel) {
+    const unichar_t **ans;
+    unichar_t *mn;
+    int ret;
+    int i;
+
+    for ( i=0; answers[i]!=0 && answers[i]!=0x80000000; ++i );
+    ans = gcalloc(i+1,sizeof(unichar_t));
+    mn = gcalloc(1,sizeof(unichar_t));
+    for ( i=0; answers[i]!=0 && answers[i]!=0x80000000; ++i )
+	ans[i] = GStringGetResource(answers[i],&mn[i]);
+    ret = GWidgetAskCentered(GStringGetResource(title,NULL),GStringGetResource(question,NULL),
+	    ans,mn,def,cancel);
+    free(ans);
+    free(mn);
+return(ret);
+}
+
 unichar_t *GWidgetAskString(const unichar_t *title,const unichar_t *question,
 	const unichar_t *def) {
     struct dlg_info d;
-    GWindow gw = DlgCreate(title,question,ocb,ocmn,0,1,&d,true,true,false);
+    GWindow gw;
     unichar_t *ret = NULL;
+    const unichar_t *ocb[3]; unichar_t ocmn[2];
 
+    ocb[2]=NULL;
+    ocb[0] = GStringGetResource( _STR_OK, &ocmn[0]);
+    ocb[1] = GStringGetResource( _STR_OK, &ocmn[1]);
+    gw = DlgCreate(title,question,ocb,ocmn,0,1,&d,true,true,false);
+    if ( def!=NULL && *def!='\0' )
+	GGadgetSetTitle(GWidgetGetControl(gw,2),def);
+    while ( !d.done )
+	GDrawProcessOneEvent(NULL);
+    if ( d.ret==0 )
+	ret = u_copy(GGadgetGetTitle(GWidgetGetControl(gw,2)));
+    GDrawDestroyWindow(gw);
+    GDrawSync(NULL);
+    GDrawProcessPendingEvents(NULL);
+return(ret);
+}
+
+unichar_t *GWidgetAskStringR(int title,int question,
+	const unichar_t *def) {
+    struct dlg_info d;
+    GWindow gw;
+    unichar_t *ret = NULL;
+    const unichar_t *ocb[3]; unichar_t ocmn[2];
+
+    ocb[2]=NULL;
+    ocb[0] = GStringGetResource( _STR_OK, &ocmn[0]);
+    ocb[1] = GStringGetResource( _STR_Cancel, &ocmn[1]);
+    gw = DlgCreate(GStringGetResource( title,NULL),GStringGetResource( question,NULL),
+	    ocb,ocmn,0,1,&d,true,true,false);
     if ( def!=NULL && *def!='\0' )
 	GGadgetSetTitle(GWidgetGetControl(gw,2),def);
     while ( !d.done )
@@ -302,7 +379,26 @@ return(ret);
 
 void GWidgetPostNotice(const unichar_t *title,const unichar_t *statement) {
     struct dlg_info d;
-    GWindow gw = DlgCreate(title,statement,ob,ocmn,0,0,&d,false,false,true);
+    GWindow gw;
+    const unichar_t *ob[2]; unichar_t omn[1];
+
+    ob[1]=NULL;
+    ob[0] = GStringGetResource( _STR_OK, &omn[0]);
+    gw = DlgCreate(title,statement,ob,omn,0,0,&d,false,false,true);
+    GDrawRequestTimer(gw,40*1000,0,NULL);
+    /* Continue merrily on our way. Window will destroy itself in 40 secs */
+    /*  or when user kills it. We can ignore it */
+}
+
+void GWidgetPostNoticeR(int title,int statement) {
+    struct dlg_info d;
+    GWindow gw;
+    const unichar_t *oc[2]; unichar_t omn[1];
+
+    oc[1]=NULL;
+    oc[0] = GStringGetResource( _STR_OK, &omn[0]);
+    gw = DlgCreate(GStringGetResource(title,NULL),GStringGetResource(statement,NULL),
+	    oc,omn,0,0,&d,false,false,true);
     GDrawRequestTimer(gw,40*1000,0,NULL);
     /* Continue merrily on our way. Window will destroy itself in 40 secs */
     /*  or when user kills it. We can ignore it */

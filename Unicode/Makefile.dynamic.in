@@ -1,0 +1,23 @@
+top_srcdir = @top_srcdir@
+top_builddir = @top_srcdir@
+libdir = @libdir@
+
+LIBTOOL = @LIBTOOL@
+CC = @CC@
+
+libgunicode_OBJECTS =  ArabicForms.lo alphabet.lo backtrns.lo char.lo \
+ cjk.lo memory.lo ucharmap.lo unialt.lo uninames.lo ustring.lo utype.lo
+
+Incs = -I../inc -I/usr/pkg/include -I/usr/pkg/include/giflib
+WFLAGS = -Wmissing-prototypes -Wunused -Wimplicit -Wreturn-type -Wparentheses
+CFLAGS = @CFLAGS@ $(Incs) $(WFLAGS) $(X_CFLAGS)
+
+../libgunicode.la: $(libgunicode_OBJECTS)
+	$(LIBTOOL) $(CC) $(CFLAGS) -o ../libgunicode.la $(libgunicode_OBJECTS) \
+	    -rpath $(libdir)
+
+%.lo: %.c
+	$(LIBTOOL) $(CC) $(CFLAGS) -c $<
+
+clean:
+	-rm -f *.o *.lo

@@ -26,8 +26,12 @@
  */
 #include "pfaeditui.h"
 #include "charset.h"
+#include "gfile.h"
 #include "gresource.h"
 #include "ustring.h"
+
+#include <sys/types.h>
+#include <dirent.h>
 
 int adjustwidth = true;
 int adjustlbearing = true;
@@ -41,9 +45,10 @@ char *RecentFiles[RECENT_MAX] = { NULL };
 /* int default_fv_font_size = 24; */	/* in fontview */
 /* int default_fv_antialias = false */	/* in fontview */
 /* int local_encoding; */		/* in gresource.c *//* not a charset */
+static char *langfile = NULL;
 
 /* don't use mnemonics 'C' or 'O' (Cancel & OK) */
-enum pref_types { pr_int, pr_bool, pr_enum, pr_encoding, pr_string };
+enum pref_types { pr_int, pr_bool, pr_enum, pr_encoding, pr_string, pr_lang };
 struct enums { char *name; int value; };
 
 static const unichar_t aws[] = { 'C','h','a','n','g','i','n','g',' ','t','h','e',' ','w','i','d','t','h',' ','o','f',' ','a',' ','c','h','a','r','a','c','t','e','r','\n','c','h','a','n','g','e','s',' ','t','h','e',' ','w','i','d','t','h','s',' ','o','f',' ','a','l','l',' ','a','c','c','e','n','t','e','d','\n','c','h','a','r','a','c','t','e','r','s',' ','b','a','s','e','d',' ','o','n',' ','i','t','.',  '\0' };
@@ -60,6 +65,7 @@ static const unichar_t xu[] = { 'I','f',' ','s','p','e','c','i','f','i','e','d',
 static const unichar_t rulers[] = { 'D','i','s','p','l','a','y',' ','r','u','l','e','r','s',' ','i','n',' ','t','h','e',' ','O','u','t','l','i','n','e',' ','C','h','a','r','a','c','t','e','r',' ','V','i','e','w',  '\0' };
 static const unichar_t sephints[] = { 'H','a','v','e',' ','s','e','p','e','r','a','t','e',' ','c','o','n','t','r','o','l','s',' ','f','o','r',' ','d','i','s','p','l','a','y',' ','h','o','r','i','z','o','n','t','a','l',' ','a','n','d',' ','v','e','r','t','i','c','a','l',' ','h','i','n','t','s','.',  '\0' };
 static const unichar_t ic[] = { 'I','n',' ','t','h','e',' ','O','u','t','l','i','n','e',' ','V','i','e','w',',',' ','t','h','e',' ','S','h','i','f','t',' ','k','e','y',' ','c','o','n','s','t','r','a','i','n','s',' ','m','o','t','i','o','n',' ','t','o',' ','b','e',' ','p','a','r','a','l','l','e','l',' ','t','o',' ','t','h','e',' ','I','t','a','l','i','c','A','n','g','l','e',' ','r','a','t','h','e','r',' ','t','h','a','n',' ','t','h','e',' ','v','e','r','t','i','c','a','l','.',  '\0' };
+static const unichar_t lg[] = { 'T','h','e',' ','l','a','n','g','u','a','g','e',' ','u','s','e','d',' ','f','o','r',' ','t','h','e',' ','u','s','e','r',' ','i','n','t','e','r','f','a','c','e',  '\0' };
 
 struct enums fvsize_enums[] = { NULL };
 
@@ -86,6 +92,7 @@ static struct prefs_list {
 	{ "PageHeight", pr_int, &pageheight, '\0', NULL, 1 },
 	{ "PrintType", pr_int, &printtype, '\0', NULL, 1 },
 	{ "ItalicConstrained", pr_bool, &ItalicConstrained, '\0', NULL, 0, ic },
+	{ "Language", pr_lang, &langfile, '\0', NULL, 0, lg },
 	{ NULL }
 };
 
@@ -102,6 +109,27 @@ return( NULL );
 return( prefs );
 }
 
+static void CheckLang(void) {
+    const char *lang = getenv("LANG");
+    char buffer[100], full[1024];
+
+    if ( lang==NULL )
+return;
+
+    strcpy(buffer,"pfaedit.");
+    strcat(buffer,lang);
+    strcat(buffer,".ui");
+    GFileBuildName(GResourceProgramDir,buffer,full,sizeof(full));
+    if ( !GFileExists(full) && strlen(lang)>2 ) {
+	strcpy(buffer+10,".ui");
+	GFileBuildName(GResourceProgramDir,buffer,full,sizeof(full));
+    }
+    if ( !GFileExists(full))
+return;
+
+    GStringSetResourceFile(full);
+}
+    
 void LoadPrefs(void) {
     char *prefs = getPfaEditPrefs();
     FILE *p;
@@ -109,6 +137,7 @@ void LoadPrefs(void) {
     int i, ri=0;
     char *pt;
 
+    PfaEditSetFallback();
     LoadPfaEditEncodings();
 
     if ( prefs==NULL )
@@ -148,13 +177,17 @@ return;
 	  case pr_bool: case pr_int:
 	    sscanf( pt, "%d", prefs_list[i].val );
 	  break;
-	  case pr_string:
+	  case pr_string: case pr_lang:
 	    if ( *pt=='\0' ) pt=NULL;
 	    *((char **) (prefs_list[i].val)) = copy(pt);
 	  break;
 	}
     }
     fclose(p);
+    if ( langfile!=NULL )
+	GStringSetResourceFile(langfile);
+    else
+	CheckLang();
 }
 
 void SavePrefs(void) {
@@ -182,7 +215,7 @@ return;
 	  case pr_bool: case pr_int:
 	    fprintf( p, "%s:\t%d\n", prefs_list[i].name, *(int *) (prefs_list[i].val) );
 	  break;
-	  case pr_string:
+	  case pr_string: case pr_lang:
 	    if ( *(char **) (prefs_list[i].val)!=NULL )
 		fprintf( p, "%s:\t%s\n", prefs_list[i].name, *(char **) (prefs_list[i].val) );
 	  break;
@@ -200,13 +233,13 @@ struct pref_data {
 };
 
 static int Prefs_Ok(GGadget *g, GEvent *e) {
-    int i;
+    int i, j, cnt;
     int err=0, enc;
     struct pref_data *p;
     GWindow gw;
     const unichar_t *ret;
     int lc=-1;
-    GTextInfo *ti;
+    GTextInfo *ti, **list;
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	gw = GGadgetGetWindow(g);
@@ -256,6 +289,19 @@ return( true );
 		if ( ret!=NULL && *ret!='\0' )
 		    *((char **) (prefs_list[i].val)) = u2def_copy(ret);
 	      break;
+	      case pr_lang:
+		list = GGadgetGetList(GWidgetGetControl(gw,1000+i),&cnt);
+		for ( j=0; j<cnt; ++j ) {
+		    if ( list[j]->selected ) {
+			if (( j==0 && langfile==NULL ) ||
+				(j!=0 && langfile!=NULL && strcmp(list[j]->userdata,langfile)==0 ))
+		break;		/* No change */
+			free(langfile);
+			langfile = copy(list[j]->userdata);
+			GStringSetResourceFile(langfile);
+		break;
+		    }
+		}
 	    }
 	}
 	p->done = true;
@@ -280,6 +326,55 @@ static int e_h(GWindow gw, GEvent *event) {
 return( false );
     }
 return( true );
+}
+
+#define MAX_CHOICES	200
+static void BuildLangStruct(GGadgetCreateData *gcd) {
+    struct { char *filename; unichar_t *lang; } choices[MAX_CHOICES];
+    int i,tot=0, curpos;
+    DIR *bindir;
+    struct dirent *ent;
+    int len = strlen("pfaedit.en.ui"), dlen;
+    unichar_t *temp;
+    char buffer[1025];
+    GTextInfo *ti;
+
+    bindir = opendir(GResourceProgramDir);
+    if ( bindir!=NULL ) {
+	while ( (ent = readdir(bindir))!=NULL && tot<MAX_CHOICES ) {
+	    dlen = strlen(ent->d_name);
+	    if ( dlen>=len &&
+		    strncmp(ent->d_name,"pfaedit.",8)==0 &&
+		    strcmp(ent->d_name+dlen-3,".ui")==0 ) {
+		GFileBuildName(GResourceProgramDir,ent->d_name,buffer,sizeof(buffer)); 
+		if ( (temp = GStringFileGetResource(buffer,_STR_Language,NULL))!=NULL ) {
+		    choices[tot].filename = copy(buffer);
+		    choices[tot++].lang = temp;
+		}
+	    }
+	}
+	closedir(bindir);
+    }
+
+    curpos = 0;
+    ti = gcalloc((tot+3),sizeof(GTextInfo));
+    ti[0].text = (unichar_t *) _STR_Default;
+    ti[0].text_in_resource = true;
+    ti[0].userdata = NULL;
+    if ( tot!=0 ) {
+	ti[1].line = true;
+	for ( i=0; i<tot; ++i ) {
+	    ti[i+2].text = choices[i].lang;
+	    ti[i+2].userdata = choices[i].filename;
+	    if ( langfile!=NULL && strcmp(langfile,choices[i].filename)==0 ) {
+		curpos = i+2;
+		ti[i+2].selected = true;
+	    }
+	}
+    }
+    gcd->gd.u.list = ti;
+    gcd->gd.label = &ti[curpos];
+    gcd->creator = GListButtonCreate;
 }
 
 void DoPrefs(void) {
@@ -389,25 +484,29 @@ void DoPrefs(void) {
 	    label[gc].text_is_1byte = false;
 	    gcd[gc++].creator = GTextFieldCreate;
 	  break;
+	  case pr_lang:
+	    BuildLangStruct(&gcd[gc]);
+	    ++gc;
+	  break;
 	}
 	++line;
     }
 
     gcd[gc].gd.pos.x = 30-3; gcd[gc].gd.pos.y = 8+line*30+5-3;
-    gcd[gc].gd.pos.width = 55; gcd[gc].gd.pos.height = 0;
+    gcd[gc].gd.pos.width = -1; gcd[gc].gd.pos.height = 0;
     gcd[gc].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[gc].text = (unichar_t *) "OK";
-    label[gc].text_is_1byte = true;
+    label[gc].text = (unichar_t *) _STR_OK;
+    label[gc].text_in_resource = true;
     gcd[gc].gd.mnemonic = 'O';
     gcd[gc].gd.label = &label[gc];
     gcd[gc].gd.handle_controlevent = Prefs_Ok;
     gcd[gc++].creator = GButtonCreate;
 
-    gcd[gc].gd.pos.x = 250-55-30; gcd[gc].gd.pos.y = gcd[gc-1].gd.pos.y+3;
-    gcd[gc].gd.pos.width = 55; gcd[gc].gd.pos.height = 0;
+    gcd[gc].gd.pos.x = 250-GIntGetResource(_NUM_Buttonsize)-30; gcd[gc].gd.pos.y = gcd[gc-1].gd.pos.y+3;
+    gcd[gc].gd.pos.width = -1; gcd[gc].gd.pos.height = 0;
     gcd[gc].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[gc].text = (unichar_t *) "Cancel";
-    label[gc].text_is_1byte = true;
+    label[gc].text = (unichar_t *) _STR_Cancel;
+    label[gc].text_in_resource = true;
     gcd[gc].gd.label = &label[gc];
     gcd[gc].gd.mnemonic = 'C';
     gcd[gc].gd.handle_controlevent = Prefs_Cancel;
@@ -444,6 +543,9 @@ void DoPrefs(void) {
 	  case pr_string: case pr_int:
 	    free(label[gc+1].text);
 	  break;
+	  case pr_lang:
+	    GTextInfoListFree(gcd[gc+1].gd.u.list);
+	  break;
 	}
 	gc += 2;
     }
@@ -455,6 +557,14 @@ void DoPrefs(void) {
     GDrawSetVisible(gw,true);
     while ( !p.done )
 	GDrawProcessOneEvent(NULL);
+    for ( i=0; prefs_list[i].name!=NULL; ++i ) {
+	if ( prefs_list[i].type==pr_lang ) {
+	    int j, cnt;
+	    GTextInfo **list = GGadgetGetList(GWidgetGetControl(gw,1000+i),&cnt);
+	    for ( j=0; j<cnt; ++j )
+		free( list[j]->userdata );
+	}
+    }
     GDrawDestroyWindow(gw);
 }
 

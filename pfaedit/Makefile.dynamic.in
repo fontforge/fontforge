@@ -1,3 +1,8 @@
+top_srcdir = @top_srcdir@
+top_builddir = @top_srcdir@
+libdir = @libdir@
+
+LIBTOOL = @LIBTOOL@
 CC = @CC@
 
 X_CFLAGS = @X_CFLAGS@
@@ -22,11 +27,11 @@ WFLAGS = -Wmissing-prototypes -Wunused -Wimplicit -Wreturn-type -Wparentheses
 CFLAGS = @CFLAGS@ -I../inc $(WFLAGS) $(X_CFLAGS) @DEFS@
 
 LDFLAGS = @LDFLAGS@
-LIBS = -L../libs $(X_LIBS) ../libs/libgdraw.a ../libs/libgunicode.a \
+LIBS = $(X_LIBS) ../libgdraw.la ../libgunicode.la \
     $(X_PRE_LIBS) -lX11 $(X_EXTRA_LIBS) @LIBS@ -lm
 
 pfaedit: $(pfaedit_OBJECTS)
-	$(CC) -o pfaedit $(pfaedit_OBJECTS) $(LIBS)
+	$(LIBTOOL) $(CC) -o pfaedit $(pfaedit_OBJECTS) $(LIBS)
 
 clean:
 	-rm -f *.o

@@ -62,8 +62,8 @@ static GWindow popup;
 static GTimer *popup_timer, *popup_vanish_timer;
 static int popup_visible = false;
 
-static unichar_t courier[] = { 'c', 'o', 'u', 'r', 'i', 'e', 'r', '\0' };
-static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a', '\0' };
+static unichar_t courier[] = { 'c', 'o', 'u', 'r', 'i', 'e', 'r',',','m','o','n','o','s','p','a','c','e', '\0' };
+static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c','a','l','i','b','a','n',  '\0' };
 
 static int match(char **list, char *val) {
     int i;
@@ -512,7 +512,8 @@ GGadget *_GGadget_Create(GGadget *g, struct gwindow *base, GGadgetData *gd,void 
     if ( !(gd->flags&gg_pos_in_pixels) ) {
 	g->r.x = GDrawPointsToPixels(base,g->r.x);
 	g->r.y = GDrawPointsToPixels(base,g->r.y);
-	g->r.width = GDrawPointsToPixels(base,g->r.width);
+	if ( g->r.width!=-1 )
+	    g->r.width = GDrawPointsToPixels(base,g->r.width);
 	g->r.height = GDrawPointsToPixels(base,g->r.height);
     }
     last = g->prev;

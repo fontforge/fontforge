@@ -265,6 +265,7 @@ extern char *GetPostscriptFontName(int mult);
 extern void MenuPrefs(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuExit(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuOpen(GWindow base,struct gmenuitem *mi,GEvent *e);
+extern void MenuHelp(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuNew(GWindow gw,struct gmenuitem *mi,GEvent *e);
 extern void MergeKernInfo(SplineFont *sf);
 extern int FontMenuGeneratePostscript(SplineFont *sf);
@@ -423,7 +424,7 @@ extern void BVRotateBitmap(BitmapView *bv,enum bvtools type );
 extern void BCSetPoint(BDFChar *bc, int x, int y, int clear);
 extern void BCGeneralFunction(BitmapView *bv,
 	void (*SetPoint)(BitmapView *,int x, int y, void *data),void *data);
-extern unichar_t *BVFlipNames[];
+extern int BVFlipNames[];
 extern void BVChangeBC(BitmapView *bv, BDFChar *bc, int fitit );
 extern void BVChar(BitmapView *cv, GEvent *event );
 
@@ -437,6 +438,7 @@ extern void LoadPrefs(void);
 extern void SavePrefs(void);
 extern void DoPrefs(void);
 extern void LoadPfaEditEncodings(void);
+extern void PfaEditSetFallback(void);
 extern void RecentFilesRemember(char *filename);
 
 extern void CVAutoTrace(CharView *cv);
@@ -451,4 +453,6 @@ extern void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv);
 extern void DelayEvent(void (*func)(void *), void *data);
 
 extern void FindProblems(FontView *fv,CharView *cv);
+
+extern GMenuItem helplist[];
 #endif

@@ -494,6 +494,12 @@ static void GLabelFit(GLabel *gl) {
     GRect needed;
     int i;
 
+    if ( gl->g.r.width == -1 ) {
+	gl->g.r.width = GDrawPointsToPixels(gl->g.base,GIntGetResource(_NUM_Buttonsize));
+	if ( gl->is_default )
+	    gl->g.r.width += 6;
+    }
+
     if ( gl->image!=NULL ) {
 	iwidth = GImageGetScaledWidth(gl->g.base,gl->image);
 	iheight = GImageGetScaledHeight(gl->g.base,gl->image);
@@ -586,7 +592,9 @@ static GLabel *_GLabelCreate(GLabel *gl, struct gwindow *base, GGadgetData *gd,v
 	gl->image_precedes = gd->label->image_precedes;
 	if ( gd->label->font!=NULL )
 	    gl->font = gd->label->font;
-	if ( gd->label->text_is_1byte )
+	if ( gd->label->text_in_resource )
+	    gl->label = u_copy((unichar_t *) GStringGetResource((int) gd->label->text,&gl->g.mnemonic));
+	else if ( gd->label->text_is_1byte )
 	    gl->label = def2u_copy((char *) gd->label->text);
 	else
 	    gl->label = u_copy(gd->label->text);

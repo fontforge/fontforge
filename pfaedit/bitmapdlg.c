@@ -525,20 +525,20 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     gcd[j++].creator = GGroupCreate;
 
     gcd[j].gd.pos.x = 20-3; gcd[j].gd.pos.y = 202-32-3;
-    gcd[j].gd.pos.width = 55; gcd[j].gd.pos.height = 0;
+    gcd[j].gd.pos.width = -1; gcd[j].gd.pos.height = 0;
     gcd[j].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[j].text = (unichar_t *) "OK";
-    label[j].text_is_1byte = true;
+    label[j].text = (unichar_t *) _STR_OK;
+    label[j].text_in_resource = true;
     gcd[j].gd.mnemonic = 'O';
     gcd[j].gd.label = &label[j];
     gcd[j].gd.handle_controlevent = CB_OK;
     gcd[j++].creator = GButtonCreate;
 
-    gcd[j].gd.pos.x = 190-55-20; gcd[j].gd.pos.y = 202-32;
-    gcd[j].gd.pos.width = 55; gcd[j].gd.pos.height = 0;
+    gcd[j].gd.pos.x = 190-GIntGetResource(_NUM_Buttonsize)-20; gcd[j].gd.pos.y = 202-32;
+    gcd[j].gd.pos.width = -1; gcd[j].gd.pos.height = 0;
     gcd[j].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[j].text = (unichar_t *) "Cancel";
-    label[j].text_is_1byte = true;
+    label[j].text = (unichar_t *) _STR_Cancel;
+    label[j].text_in_resource = true;
     gcd[j].gd.label = &label[j];
     gcd[j].gd.mnemonic = 'C';
     gcd[j].gd.handle_controlevent = CB_Cancel;

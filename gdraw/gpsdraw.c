@@ -78,6 +78,10 @@ static int PSSetDither(GDisplay *gdisp,int dither ) {
 return( true );
 }
 
+static void PSDrawReparentWindow(GWindow child,GWindow newparent, int x,int y) {
+    /* It's a noop */
+}
+
 static void PSDrawSetVisible(GWindow w,int vis ) {
     /* It's a noop */
 }
@@ -1170,6 +1174,7 @@ static struct displayfuncs psfuncs = {
     PSDestroyCursor,
     PSSetDither,
 
+    PSDrawReparentWindow,
     PSDrawSetVisible,
     PSDrawMove,
     PSDrawMove,

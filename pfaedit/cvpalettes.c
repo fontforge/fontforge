@@ -259,20 +259,20 @@ static int Ask(char *rb1, char *rb2, int rb, char *lab, double *val, int isint )
 	gcd[3].creator = GTextFieldCreate;
 
 	gcd[4].gd.pos.x = 20-3; gcd[4].gd.pos.y = 70+off;
-	gcd[4].gd.pos.width = 55+6; gcd[4].gd.pos.height = 0;
+	gcd[4].gd.pos.width = -1; gcd[4].gd.pos.height = 0;
 	gcd[4].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	label[4].text = (unichar_t *) "OK";
-	label[4].text_is_1byte = true;
+	label[4].text = (unichar_t *) _STR_OK;
+	label[4].text_in_resource = true;
 	gcd[4].gd.mnemonic = 'O';
 	gcd[4].gd.label = &label[4];
 	gcd[4].gd.handle_controlevent = TA_OK;
 	gcd[4].creator = GButtonCreate;
 
-	gcd[5].gd.pos.x = 170-55-20; gcd[5].gd.pos.y = 70+3+off;
-	gcd[5].gd.pos.width = 55; gcd[5].gd.pos.height = 0;
+	gcd[5].gd.pos.x = 170-GIntGetResource(_NUM_Buttonsize)-20; gcd[5].gd.pos.y = 70+3+off;
+	gcd[5].gd.pos.width = -1; gcd[5].gd.pos.height = 0;
 	gcd[5].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	label[5].text = (unichar_t *) "Cancel";
-	label[5].text_is_1byte = true;
+	label[5].text = (unichar_t *) _STR_Cancel;
+	label[5].text_in_resource = true;
 	gcd[5].gd.label = &label[5];
 	gcd[5].gd.mnemonic = 'C';
 	gcd[5].gd.handle_controlevent = TA_Cancel;
@@ -1283,22 +1283,22 @@ void BVToolsPopup(BitmapView *bv, GEvent *event) {
 	mi[i].invoke = BVPopupInvoked;
     }
 
-    mi[i].ti.text = (unichar_t *) "Rectangle"; mi[i].ti.text_is_1byte = true;
+    mi[i].ti.text = (unichar_t *) _STR_Rectangle; mi[i].ti.text_in_resource = true;
     mi[i].ti.fg = COLOR_DEFAULT;
     mi[i].ti.bg = COLOR_DEFAULT;
     mi[i].mid = bvt_rect;
     mi[i++].invoke = BVPopupInvoked;
-    mi[i].ti.text = (unichar_t *) "Filled Rectangle"; mi[i].ti.text_is_1byte = true;
+    mi[i].ti.text = (unichar_t *) _STR_FilledRectangle; mi[i].ti.text_in_resource = true;
     mi[i].ti.fg = COLOR_DEFAULT;
     mi[i].ti.bg = COLOR_DEFAULT;
     mi[i].mid = bvt_filledrect;
     mi[i++].invoke = BVPopupInvoked;
-    mi[i].ti.text = (unichar_t *) "Elipse"; mi[i].ti.text_is_1byte = true;
+    mi[i].ti.text = (unichar_t *) _STR_Elipse; mi[i].ti.text_in_resource = true;
     mi[i].ti.fg = COLOR_DEFAULT;
     mi[i].ti.bg = COLOR_DEFAULT;
     mi[i].mid = bvt_elipse;
     mi[i++].invoke = BVPopupInvoked;
-    mi[i].ti.text = (unichar_t *) "Filled Elipse"; mi[i].ti.text_is_1byte = true;
+    mi[i].ti.text = (unichar_t *) _STR_FilledElipse; mi[i].ti.text_in_resource = true;
     mi[i].ti.fg = COLOR_DEFAULT;
     mi[i].ti.bg = COLOR_DEFAULT;
     mi[i].mid = bvt_filledelipse;
@@ -1308,7 +1308,8 @@ void BVToolsPopup(BitmapView *bv, GEvent *event) {
     mi[i].ti.bg = COLOR_DEFAULT;
     mi[i++].ti.line = true;
     for ( j=0; j<6; ++j, ++i ) {
-	mi[i].ti.text = BVFlipNames[j];
+	mi[i].ti.text = (unichar_t *) BVFlipNames[j];
+	mi[i].ti.text_in_resource = true;
 	mi[i].ti.fg = COLOR_DEFAULT;
 	mi[i].ti.bg = COLOR_DEFAULT;
 	mi[i].mid = j;
@@ -1318,7 +1319,7 @@ void BVToolsPopup(BitmapView *bv, GEvent *event) {
 	mi[i].ti.fg = COLOR_DEFAULT;
 	mi[i].ti.bg = COLOR_DEFAULT;
 	mi[i++].ti.line = true;
-	mi[i].ti.text = (unichar_t *) "Set Width"; mi[i].ti.text_is_1byte = true;
+	mi[i].ti.text = (unichar_t *) _STR_Setwidth; mi[i].ti.text_in_resource = true;
 	mi[i].ti.fg = COLOR_DEFAULT;
 	mi[i].ti.bg = COLOR_DEFAULT;
 	mi[i].mid = bvt_setwidth;

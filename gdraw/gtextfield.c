@@ -1864,7 +1864,9 @@ static GTextField *_GTextFieldCreate(GTextField *gt, struct gwindow *base, GGadg
 
     gt->g.takes_input = true; gt->g.takes_keyboard = true; gt->g.focusable = true;
     if ( gd->label!=NULL ) {
-	if ( gd->label->text_is_1byte )
+	if ( gd->label->text_in_resource )
+	    gt->text = u_copy((unichar_t *) GStringGetResource((int) gd->label->text,&gt->g.mnemonic));
+	else if ( gd->label->text_is_1byte )
 	    gt->text = def2u_copy((char *) gd->label->text);
 	else
 	    gt->text = u_copy(gd->label->text);

@@ -329,20 +329,20 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *)) {
 	gcd[11].creator = GTextFieldCreate;
 
 	gcd[12].gd.pos.x = 30-3; gcd[12].gd.pos.y = SD_Height-30-3;
-	gcd[12].gd.pos.width = 55; 
+	gcd[12].gd.pos.width = -1;
 	gcd[12].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	label[12].text = (unichar_t *) "OK";
-	label[12].text_is_1byte = true;
+	label[12].text = (unichar_t *) _STR_OK;
+	label[12].text_in_resource = true;
 	gcd[12].gd.mnemonic = 'O';
 	gcd[12].gd.label = &label[12];
 	gcd[12].gd.handle_controlevent = Stroke_OK;
 	gcd[12].creator = GButtonCreate;
 
-	gcd[13].gd.pos.x = SD_Width-30-55; gcd[13].gd.pos.y = SD_Height-30;
-	gcd[13].gd.pos.width = 55;
+	gcd[13].gd.pos.x = SD_Width-30-GIntGetResource(_NUM_Buttonsize); gcd[13].gd.pos.y = SD_Height-30;
+	gcd[13].gd.pos.width = -1;
 	gcd[13].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	label[13].text = (unichar_t *) "Cancel";
-	label[13].text_is_1byte = true;
+	label[13].text = (unichar_t *) _STR_Cancel;
+	label[13].text_in_resource = true;
 	gcd[13].gd.label = &label[13];
 	gcd[13].gd.mnemonic = 'C';
 	gcd[13].gd.handle_controlevent = Stroke_Cancel;

@@ -310,6 +310,9 @@ static void GMenuHideAll(struct gmenu *m) {
 }
 
 static void GMenuDismissAll(struct gmenu *m) {
+#if 0
+ printf("DismissAll\n");
+#endif
     if ( m!=NULL ) {
 	while ( m->parent ) m = m->parent;
 	GMenuDestroy(m);
@@ -437,6 +440,9 @@ return( (GDrawGetEH(m->menubar->g.base))(m->menubar->g.base,event));
 	    }
 	}
     } else if ( event->type == et_mouseup && !m->initial_press ) {
+#if 0
+ printf("\nActivate menu\n");
+#endif
 	if ( event->u.mouse.y>=m->bp && event->u.mouse.x>=0 &&
 		event->u.mouse.y<m->height-m->bp && event->u.mouse.x < m->width ) {
 	    int l = (event->u.mouse.y-m->bp)/m->fh;
@@ -590,6 +596,9 @@ return( false );
 }
 
 static int gmenu_destroy(struct gmenu *m) {
+#if 0
+ printf("gmenu_destroy\n");
+#endif
     if ( m->freemi )
 	GMenuItemArrayFree(m->mi);
     free(m);
@@ -1031,7 +1040,7 @@ void GMenuBarSetItemEnabled(GGadget *g, int mid, int enabled) {
 	item->ti.disabled = !enabled;
 }
 
-void GMenuBarSetItemName(GGadget *g, int mid, unichar_t *name) {
+void GMenuBarSetItemName(GGadget *g, int mid, const unichar_t *name) {
     GMenuBar *mb = (GMenuBar *) g;
     GMenuItem *item;
 

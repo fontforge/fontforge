@@ -242,20 +242,20 @@ void FindProblems(FontView *fv,CharView *cv) {
     gcd[2].creator = GCheckBoxCreate;
 
     gcd[3].gd.pos.x = 15-3; gcd[3].gd.pos.y = gcd[2].gd.pos.y+27;
-    gcd[3].gd.pos.width = 55; gcd[3].gd.pos.height = 0;
+    gcd[3].gd.pos.width = -1; gcd[3].gd.pos.height = 0;
     gcd[3].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[3].text = (unichar_t *) "OK";
-    label[3].text_is_1byte = true;
+    label[3].text = (unichar_t *) _STR_OK;
+    label[3].text_in_resource = true;
     gcd[3].gd.mnemonic = 'O';
     gcd[3].gd.label = &label[3];
     gcd[3].gd.handle_controlevent = Prob_OK;
     gcd[3].creator = GButtonCreate;
 
-    gcd[4].gd.pos.x = 150-55-15; gcd[4].gd.pos.y = gcd[3].gd.pos.y+3;
-    gcd[4].gd.pos.width = 55; gcd[4].gd.pos.height = 0;
+    gcd[4].gd.pos.x = 150-GIntGetResource(_NUM_Buttonsize)-15; gcd[4].gd.pos.y = gcd[3].gd.pos.y+3;
+    gcd[4].gd.pos.width = -1; gcd[4].gd.pos.height = 0;
     gcd[4].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[4].text = (unichar_t *) "Cancel";
-    label[4].text_is_1byte = true;
+    label[4].text = (unichar_t *) _STR_Cancel;
+    label[4].text_in_resource = true;
     gcd[4].gd.label = &label[4];
     gcd[4].gd.mnemonic = 'C';
     gcd[4].gd.handle_controlevent = Prob_Cancel;

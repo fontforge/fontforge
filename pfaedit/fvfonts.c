@@ -458,20 +458,20 @@ void FVMergeFonts(FontView *fv) {
 	gcd[1].creator = GListButtonCreate;
 
 	gcd[2].gd.pos.x = 15-3; gcd[2].gd.pos.y = 55-3;
-	gcd[2].gd.pos.width = 55; gcd[2].gd.pos.height = 0;
+	gcd[2].gd.pos.width = -1; gcd[2].gd.pos.height = 0;
 	gcd[2].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	label[2].text = (unichar_t *) "OK";
-	label[2].text_is_1byte = true;
+	label[2].text = (unichar_t *) _STR_OK;
+	label[2].text_in_resource = true;
 	gcd[2].gd.mnemonic = 'O';
 	gcd[2].gd.label = &label[2];
 	gcd[2].gd.handle_controlevent = MF_OK;
 	gcd[2].creator = GButtonCreate;
 
-	gcd[3].gd.pos.x = 150-55-15; gcd[3].gd.pos.y = 55;
-	gcd[3].gd.pos.width = 55; gcd[3].gd.pos.height = 0;
+	gcd[3].gd.pos.x = 150-GIntGetResource(_NUM_Buttonsize)-15; gcd[3].gd.pos.y = 55;
+	gcd[3].gd.pos.width = -1; gcd[3].gd.pos.height = 0;
 	gcd[3].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	label[3].text = (unichar_t *) "Cancel";
-	label[3].text_is_1byte = true;
+	label[3].text = (unichar_t *) _STR_Cancel;
+	label[3].text_in_resource = true;
 	gcd[3].gd.label = &label[3];
 	gcd[3].gd.mnemonic = 'C';
 	gcd[3].gd.handle_controlevent = MF_Cancel;
@@ -804,7 +804,7 @@ void FVInterpolateFonts(FontView *fv) {
     gcd[4].creator = GLabelCreate;
 
     gcd[5].gd.pos.x = 15-3; gcd[5].gd.pos.y = 85-3;
-    gcd[5].gd.pos.width = 55; gcd[5].gd.pos.height = 0;
+    gcd[5].gd.pos.width = -1; gcd[5].gd.pos.height = 0;
     gcd[5].gd.flags = gg_visible | gg_enabled | gg_but_default;
     label[5].text = (unichar_t *) "OK";
     label[5].text_is_1byte = true;
@@ -813,8 +813,8 @@ void FVInterpolateFonts(FontView *fv) {
     gcd[5].gd.handle_controlevent = IF_OK;
     gcd[5].creator = GButtonCreate;
 
-    gcd[6].gd.pos.x = 200-55-15; gcd[6].gd.pos.y = 85;
-    gcd[6].gd.pos.width = 55; gcd[6].gd.pos.height = 0;
+    gcd[6].gd.pos.x = 200-GIntGetResource(_NUM_Buttonsize)-15; gcd[6].gd.pos.y = 85;
+    gcd[6].gd.pos.width = -1; gcd[6].gd.pos.height = 0;
     gcd[6].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
     label[6].text = (unichar_t *) "Cancel";
     label[6].text_is_1byte = true;

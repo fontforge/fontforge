@@ -43,7 +43,8 @@ typedef struct gtextinfo {
     unsigned int checked: 1;			/* Only for menus */
     unsigned int selected: 1;			/* Only for lists (used internally for menu(bar)s, when cursor is on the line) */
     unsigned int line: 1;			/* Only for menus */
-    unsigned int text_is_1byte: 1;		/* If passed in as 1byte (ie. ascii) text, will be converted */
+    unsigned int text_is_1byte: 1;		/* If passed in as 1byte (ie. iso-8859-1) text, will be converted */
+    unsigned int text_in_resource: 1;		/* the text field is actually an index into the string resource table */
     unsigned int changed: 1;			/* If a row/column widget changed this */
     unichar_t mnemonic;				/* Only for menus and menubars */
 						/* should really be in menuitem, but that wastes space and complicates GTextInfoDraw */
@@ -152,10 +153,38 @@ enum editor_commands { ec_cut, ec_clear, ec_copy, ec_paste, ec_undo, ec_redo,
     /* return values from file chooser filter functions */
 enum fchooserret { fc_hide, fc_show, fc_showdisabled };
 
+#define _STR_NULL	(-1)		/* Null string resource */
+#define _STR_Language	0
+#define _STR_OK		1
+#define _STR_Cancel	2
+#define _STR_Open	3
+#define _STR_Save	4
+#define _STR_Filter	5
+#define _STR_New	6
+#define _STR_Replace	7
+#define _STR_Fileexists	8
+#define _STR_Fileexistspre	9
+#define _STR_Fileexistspost	10
+#define _STR_Createdir	11
+#define _STR_Dirname	12
+#define _STR_Couldntcreatedir	13
+#define __STR_LastStd	13
+
+#define _NUM_Buttonsize	0
+#define __NUM_LastStd	0
+
 extern void GTextInfoFree(GTextInfo *ti);
 extern void GTextInfoListFree(GTextInfo *ti);
 extern void GTextInfoArrayFree(GTextInfo **ti);
 extern GTextInfo **GTextInfoFromChars(char **array, int len);
+extern const unichar_t *GStringGetResource(int index,unichar_t *mnemonic);
+extern int GIntGetResource(int index);
+extern int GStringSetResourceFile(char *filename);	/* returns 1 for success, 0 for failure */
+/* fallback string arrays are null terminated. mnemonics is same length as string */
+/* fallback integer arrays are terminated by 0x80000000 (negative infinity) */
+extern void GStringSetFallbackArray(const unichar_t **array,const unichar_t *mn,
+	const int *ires);
+unichar_t *GStringFileGetResource(char *filename, int index,unichar_t *mnemonic);
 
 void GGadgetDestroy(GGadget *g);
 void GGadgetSetVisible(GGadget *g,int visible);
@@ -205,7 +234,7 @@ void GScrollBarGetBounds(GGadget *g, int32 *sb_min, int32 *sb_max, int32 *sb_pag
 
 void GMenuBarSetItemChecked(GGadget *g, int mid, int check);
 void GMenuBarSetItemEnabled(GGadget *g, int mid, int enabled);
-void GMenuBarSetItemName(GGadget *g, int mid, unichar_t *name);
+void GMenuBarSetItemName(GGadget *g, int mid, const unichar_t *name);
 
 void GFileChooserFilterIt(GGadget *g);
 void GFileChooserRefreshList(GGadget *g);

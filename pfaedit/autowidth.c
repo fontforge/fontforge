@@ -1310,20 +1310,20 @@ static void AutoWKDlg(SplineFont *sf,int autokern) {
     }
 
     gcd[i].gd.pos.x = 30-3; gcd[i].gd.pos.y = y-3;
-    gcd[i].gd.pos.width = 55; gcd[i].gd.pos.height = 0;
+    gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
     gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[i].text = (unichar_t *) "OK";
-    label[i].text_is_1byte = true;
+    label[i].text = (unichar_t *) _STR_OK;
+    label[i].text_in_resource = true;
     gcd[i].gd.mnemonic = 'O';
     gcd[i].gd.label = &label[i];
     gcd[i].gd.handle_controlevent = AW_OK;
     gcd[i++].creator = GButtonCreate;
 
-    gcd[i].gd.pos.x = 200-55-30; gcd[i].gd.pos.y = y;
-    gcd[i].gd.pos.width = 55; gcd[i].gd.pos.height = 0;
+    gcd[i].gd.pos.x = 200-GIntGetResource(_NUM_Buttonsize)-30; gcd[i].gd.pos.y = y;
+    gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
     gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[i].text = (unichar_t *) "Cancel";
-    label[i].text_is_1byte = true;
+    label[i].text = (unichar_t *) _STR_Cancel;
+    label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.mnemonic = 'C';
     gcd[i].gd.handle_controlevent = AW_Cancel;

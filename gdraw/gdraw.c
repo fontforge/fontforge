@@ -101,6 +101,10 @@ int GDrawSetDither(GDisplay *gdisp, int dither) {
 return( (gdisp->funcs->setDither)(gdisp,dither) );
 }
 
+void GDrawReparentWindow(GWindow child, GWindow parent, int x, int y) {
+    (child->display->funcs->reparentWindow)(child,parent,x,y);
+}
+
 void GDrawSetVisible(GWindow w, int visible) {
     (w->display->funcs->setVisible)(w,visible);
 }

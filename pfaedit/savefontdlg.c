@@ -45,14 +45,6 @@ struct gfc_data {
     SplineFont *sf;
 };
 
-static unichar_t save[] = { 'S', 'a', 'v', 'e', '\0' };
-static unichar_t filter[] = { 'F', 'i', 'l', 't', 'e', 'r', '\0' };
-static unichar_t cancel[] = { 'C', 'a', 'n', 'c', 'e', 'l', '\0' };
-static unichar_t new[] = { 'N', 'e', 'w', '.', '.', '.', '\0' };
-static unichar_t replace[] = { 'R', 'e', 'p', 'l', 'a', 'c', 'e', '\0' };
-static unichar_t afm[] = { 'O', 'u', 't', 'p', 'u', 't', ' ', 'A', 'f', 'm', '\0' };
-static unichar_t pfm[] = { 'O', 'u', 't', 'p', 'u', 't', ' ', 'P', 'f', 'm', '\0' };
-
 static char *extensions[] = { ".pfa", ".pfb", ".ps", ".ps", ".ttf", ".ttf", ".otf", NULL };
 static GTextInfo formattypes[] = {
     { (unichar_t *) "PS Type 1 (Ascii)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
@@ -62,26 +54,19 @@ static GTextInfo formattypes[] = {
     { (unichar_t *) "True Type", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "True Type (Symbol)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "Open Type (PS)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "No Outline Font", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) _STR_Nooutlinefont, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }
 };
 static GTextInfo bitmaptypes[] = {
     { (unichar_t *) "BDF", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "GDF", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "No Bitmap Fonts", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) _STR_Nobitmapfonts, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }
 };
-
-static unichar_t failedtitle[] = { 'S','a','v','e',' ','F','a','i','l','e','d', '\0' };
-static unichar_t afmfailedtitle[] = { 'A', 'f', 'm', ' ', 'S','a','v','e',' ','F','a','i','l','e','d', '\0' };
-static unichar_t pfmfailedtitle[] = { 'P', 'f', 'm', ' ', 'S','a','v','e',' ','F','a','i','l','e','d', '\0' };
 
 static int oldafmstate = true, oldpfmstate = false;
 static int oldformatstate = ff_pfb;
 static int oldbitmapstate = 0;
-
-static unichar_t rcmn[] = { 'R', 'C', '\0' };
-static unichar_t *buts[] = { replace, cancel, NULL };
 
 static double *ParseBitmapSizes(GGadget *g,int *err) {
     const unichar_t *val = _GGadgetGetTitle(g), *pt; unichar_t *end, *end2;
@@ -231,7 +216,7 @@ static void DoSave(struct gfc_data *d,unichar_t *path) {
 		    !WritePSFont(temp,d->sf,oldformatstate)) ||
 		((oldformatstate==ff_ttf || oldformatstate==ff_ttfsym || oldformatstate==ff_otf) &&
 		    !WriteTTFFont(temp,d->sf,oldformatstate)) ) {
-	    GWidgetPostNotice(failedtitle,failedtitle);
+	    GWidgetPostNoticeR(_STR_Savefailedtitle,_STR_Savefailedtitle);
 	    err = true;
 	}
     }
@@ -241,7 +226,7 @@ static void DoSave(struct gfc_data *d,unichar_t *path) {
 	GProgressChangeLine1(saveafm);
 	GProgressIncrementBy(-d->sf->charcnt);
 	if ( !WriteAfmFile(temp,d->sf,oldformatstate==ff_ptype0)) {
-	    GWidgetPostNotice(afmfailedtitle,afmfailedtitle);
+	    GWidgetPostNoticeR(_STR_Afmfailedtitle,_STR_Afmfailedtitle);
 	    err = true;
 	}
     }
@@ -249,7 +234,7 @@ static void DoSave(struct gfc_data *d,unichar_t *path) {
 	GProgressChangeLine1(savepfm);
 	GProgressIncrementBy(-d->sf->charcnt);
 	if ( !WritePfmFile(temp,d->sf,oldformatstate==ff_ptype0)) {
-	    GWidgetPostNotice(pfmfailedtitle,pfmfailedtitle);
+	    GWidgetPostNoticeR(_STR_Pfmfailedtitle,_STR_Pfmfailedtitle);
 	    err = true;
 	}
     }
@@ -284,13 +269,16 @@ static void GFD_exists(GIOControl *gio) {
     /* The filename the user chose exists, ask user if s/he wants to overwrite */
     struct gfc_data *d = gio->userdata;
     unichar_t buffer[200];
-    unichar_t title[30];
+    const unichar_t *rcb[3]; unichar_t rcmn[2];
 
-    uc_strcpy(title, "File Exists");
-    uc_strcpy(buffer, "File, ");
+    rcb[2]=NULL;
+    rcb[0] = GStringGetResource( _STR_Replace, &rcmn[0]);
+    rcb[1] = GStringGetResource( _STR_Cancel, &rcmn[1]);
+
+    u_strcpy(buffer, GStringGetResource(_STR_Fileexistspre,NULL));
     u_strcat(buffer, u_GFileNameTail(gio->path));
-    uc_strcat(buffer, ", exists. Replace it?");
-    if ( GWidgetAsk(title,buffer,buts,rcmn,0,1)==0 ) {
+    u_strcat(buffer, GStringGetResource(_STR_Fileexistspost,NULL));
+    if ( GWidgetAsk(GStringGetResource(_STR_Fileexists,NULL),buffer,rcb,rcmn,0,1)==0 ) {
 	DoSave(d,gio->path);
     }
     GFileChooserReplaceIO(d->gfc,NULL);
@@ -334,10 +322,9 @@ static void GFD_dircreatefailed(GIOControl *gio) {
     /* We couldn't create the directory */
     struct gfc_data *d = gio->userdata;
     unichar_t buffer[500];
-    unichar_t title[30];
 
-    uc_strcpy(title, "Couldn't create directory");
-    uc_strcpy(buffer, "Couldn't create directory, ");
+    u_strcpy(buffer, GStringGetResource(_STR_Couldntcreatedir,NULL));
+    uc_strcat(buffer,": ");
     u_strcat(buffer, u_GFileNameTail(gio->path));
     uc_strcat(buffer, ".\n");
     if ( gio->error!=NULL ) {
@@ -346,7 +333,7 @@ static void GFD_dircreatefailed(GIOControl *gio) {
     }
     if ( gio->status[0]!='\0' )
 	u_strcat(buffer,gio->status);
-    GWidgetPostNotice(title,buffer);
+    GWidgetPostNotice(GStringGetResource(_STR_Couldntcreatedir,NULL),buffer);
     GFileChooserReplaceIO(d->gfc,NULL);
 }
 
@@ -354,10 +341,7 @@ static int GFD_NewDir(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
 	unichar_t *newdir;
-	unichar_t title[30], buffer[30];
-	uc_strcpy(title,"Create directory...");
-	uc_strcpy(buffer,"Directory name?");
-	newdir = GWidgetAskString(title,buffer,NULL);
+	newdir = GWidgetAskStringR(_STR_Createdir,_STR_Dirname,NULL);
 	if ( newdir==NULL )
 return( true );
 	if ( !u_GFileIsAbsolute(newdir)) {
@@ -454,6 +438,7 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     GGadget *pulldown, *files, *tf;
     static unichar_t title[] = { 'G','e','n','e','r','a','t','e',' ','p','o','s','t','s','c','r','i','p','t',' ','f','o','n','t', '\0' };
     int i, old;
+    int bs = GIntGetResource(_NUM_Buttonsize), bsbigger, totwid, spacing;
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_restrict;
@@ -463,43 +448,51 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     wattrs.cursor = ct_pointer;
     wattrs.window_title = title;
     pos.x = pos.y = 0;
-    pos.width =GDrawPointsToPixels(NULL,288);
+    bsbigger = 4*bs+4*14>295; totwid = bsbigger?4*bs+4*12:295;
+    spacing = (totwid-4*bs-2*12)/3;
+    pos.width = GDrawPointsToPixels(NULL,totwid);
     pos.height = GDrawPointsToPixels(NULL,285);
     gw = GDrawCreateTopWindow(NULL,&pos,e_h,&d,&wattrs);
 
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
-    gcd[0].gd.pos.x = 12; gcd[0].gd.pos.y = 6; gcd[0].gd.pos.width = 265; gcd[0].gd.pos.height = 182;
+    gcd[0].gd.pos.x = 12; gcd[0].gd.pos.y = 6; gcd[0].gd.pos.width = totwid-24; gcd[0].gd.pos.height = 182;
     gcd[0].gd.flags = gg_visible | gg_enabled;
     gcd[0].creator = GFileChooserCreate;
 
-    gcd[1].gd.pos.x = 12; gcd[1].gd.pos.y = 252-3; gcd[1].gd.pos.width = 55; gcd[1].gd.pos.height = 0;
+    gcd[1].gd.pos.x = 12; gcd[1].gd.pos.y = 252-3;
+    gcd[1].gd.pos.width = -1;
     gcd[1].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[1].text = save;
+    label[1].text = (unichar_t *) _STR_Save;
+    label[1].text_in_resource = true;
     gcd[1].gd.mnemonic = 'S';
     gcd[1].gd.label = &label[1];
     gcd[1].gd.handle_controlevent = GFD_SaveOk;
     gcd[1].creator = GButtonCreate;
 
-    gcd[2].gd.pos.x = 81; gcd[2].gd.pos.y = 252; gcd[2].gd.pos.width = 55; gcd[2].gd.pos.height = 0;
+    gcd[2].gd.pos.x = (totwid-spacing)/2-bs; gcd[2].gd.pos.y = 252;
+    gcd[2].gd.pos.width = -1;
     gcd[2].gd.flags = gg_visible | gg_enabled;
-    label[2].text = filter;
+    label[2].text = (unichar_t *) _STR_Filter;
+    label[2].text_in_resource = true;
     gcd[2].gd.mnemonic = 'F';
     gcd[2].gd.label = &label[2];
     gcd[2].gd.handle_controlevent = GFileChooserFilterEh;
     gcd[2].creator = GButtonCreate;
 
-    gcd[3].gd.pos.x = 220; gcd[3].gd.pos.y = 252; gcd[3].gd.pos.width = 55; gcd[3].gd.pos.height = 0;
+    gcd[3].gd.pos.x = totwid-bs-12; gcd[3].gd.pos.y = 252; gcd[3].gd.pos.width = -1; gcd[3].gd.pos.height = 0;
     gcd[3].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[3].text = cancel;
+    label[3].text = (unichar_t *) _STR_Cancel;
+    label[3].text_in_resource = true;
     gcd[3].gd.label = &label[3];
     gcd[3].gd.mnemonic = 'C';
     gcd[3].gd.handle_controlevent = GFD_Cancel;
     gcd[3].creator = GButtonCreate;
 
-    gcd[4].gd.pos.x = 150; gcd[4].gd.pos.y = 252; gcd[4].gd.pos.width = 60; gcd[4].gd.pos.height = 0;
+    gcd[4].gd.pos.x = (totwid+spacing)/2; gcd[4].gd.pos.y = 252; gcd[4].gd.pos.width = -1; gcd[4].gd.pos.height = 0;
     gcd[4].gd.flags = gg_visible | gg_enabled;
-    label[4].text = new;
+    label[4].text = (unichar_t *) _STR_New;
+    label[4].text_in_resource = true;
     label[4].image = &_GIcon_dir;
     label[4].image_precedes = false;
     gcd[4].gd.mnemonic = 'N';
@@ -509,7 +502,8 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
 
     gcd[5].gd.pos.x = 12; gcd[5].gd.pos.y = 214; gcd[5].gd.pos.width = 0; gcd[5].gd.pos.height = 0;
     gcd[5].gd.flags = gg_visible | gg_enabled | (oldafmstate ?gg_cb_on : 0 );
-    label[5].text = afm;
+    label[5].text = (unichar_t *) _STR_Outputafm;
+    label[5].text_in_resource = true;
     gcd[5].gd.label = &label[5];
     gcd[5].creator = GCheckBoxCreate;
 
@@ -569,7 +563,8 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
 
     gcd[10].gd.pos.x = 12; gcd[10].gd.pos.y = 231; gcd[10].gd.pos.width = 0; gcd[10].gd.pos.height = 0;
     gcd[10].gd.flags = gg_visible | gg_enabled | (oldpfmstate ?gg_cb_on : 0 );
-    label[10].text = pfm;
+    label[10].text = (unichar_t *) _STR_Outputpfm;
+    label[10].text_in_resource = true;
     gcd[10].gd.label = &label[10];
     gcd[10].creator = GCheckBoxCreate;
 

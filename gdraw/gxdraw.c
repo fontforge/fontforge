@@ -1144,6 +1144,12 @@ static void _GXDraw_CleanUpWindow( GWindow w ) {
     gfree(gw);
 }
 
+static void GXDrawReparentWindow(GWindow child,GWindow newparent, int x,int y) {
+    GXWindow gchild = (GXWindow) child, gpar = (GXWindow) newparent;
+    GXDisplay *gdisp = gchild->display;
+    XReparentWindow(gdisp->display,gchild->w,gpar->w,x,y);
+}
+
 static void GXDrawSetVisible(GWindow w, int visible) {
     GXWindow gw = (GXWindow) w;
     GXDisplay *gdisp = gw->display;
@@ -3277,6 +3283,7 @@ static struct displayfuncs xfuncs = {
     GXDestroyCursor,
     GXSetDither,
 
+    GXDrawReparentWindow,
     GXDrawSetVisible,
     GXDrawMove,
     GXDrawTrueMove,

@@ -272,8 +272,8 @@ typedef struct gwindow_attrs {
     Color background_color;
     GCursor cursor;
 	/* Remainder is only for top level windows */
-    unichar_t *window_title;
-    unichar_t *icon_title;
+    const unichar_t *window_title;
+    const unichar_t *icon_title;
     struct gwindow *icon;		/* A bitmap pixmap, or NULL */
     unsigned int nodecoration: 1;	/* no wm decoration */
     unsigned int positioned: 1;		/* position information is important */
@@ -336,6 +336,7 @@ extern GCursor GDrawCreateCursor(GWindow src,GWindow mask,Color fg,Color bg,
 extern void GDrawDestroyWindow(GWindow w);
 extern void GDrawDestroyCursor(GDisplay *gdisp, GCursor ct);
 extern int  GDrawSetDither(GDisplay *gdisp, int dither);
+extern void GDrawReparentWindow(GWindow child,GWindow newparent, int x,int y);
 extern void GDrawSetVisible(GWindow w, int visible);
 extern int  GDrawIsVisible(GWindow w);
 extern void GDrawTrueMove(GWindow w, int32 x, int32 y);

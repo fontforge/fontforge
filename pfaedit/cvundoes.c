@@ -1029,7 +1029,7 @@ static BDFFont *BitmapCreateCheck(FontView *fv,int *yestoall, int first, int pix
 	static unichar_t yesb[] = { 'Y','e','s',  '\0' };
 	static unichar_t yestoallb[] = { 'Y','e','s',' ','t','o',' ','A','l','l',  '\0' };
 	static unichar_t no[] = { 'N','o',  '\0' };
-	static unichar_t *buts[] = { yesb, yestoallb, no, NULL };
+	static const unichar_t *buts[] = { yesb, yestoallb, no, NULL };
 	static unichar_t mn[] = { 'Y', 'A', 'N', '\0' };
 	char buf[300]; unichar_t ubuf[300];
 	sprintf( buf, "The clipboard contains a bitmap character of size %d,\na size which is not in your database.\nWould you like to create a bitmap font of that size,\nor ignore this character?",

@@ -487,20 +487,20 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,double *,int,BVTFunc
 	origin[1].selected = true;
 
 	gcd[1].gd.pos.x = 30-3; gcd[1].gd.pos.y = TBlock_Top+TCnt*TBlock_Height+4;
-	gcd[1].gd.pos.width = 55; gcd[1].gd.pos.height = 0;
+	gcd[1].gd.pos.width = -1; gcd[1].gd.pos.height = 0;
 	gcd[1].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	label[1].text = (unichar_t *) "OK";
-	label[1].text_is_1byte = true;
+	label[1].text = (unichar_t *) _STR_OK;
+	label[1].text_in_resource = true;
 	gcd[1].gd.mnemonic = 'O';
 	gcd[1].gd.label = &label[1];
 	gcd[1].gd.handle_controlevent = Trans_OK;
 	gcd[1].creator = GButtonCreate;
 
-	gcd[2].gd.pos.x = TBlock_Width-55-30; gcd[2].gd.pos.y = TBlock_Top+TCnt*TBlock_Height+7;
-	gcd[2].gd.pos.width = 55; gcd[2].gd.pos.height = 0;
+	gcd[2].gd.pos.x = TBlock_Width-GIntGetResource(_NUM_Buttonsize)-30; gcd[2].gd.pos.y = TBlock_Top+TCnt*TBlock_Height+7;
+	gcd[2].gd.pos.width = -1; gcd[2].gd.pos.height = 0;
 	gcd[2].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	label[2].text = (unichar_t *) "Cancel";
-	label[2].text_is_1byte = true;
+	label[2].text = (unichar_t *) _STR_Cancel;
+	label[2].text_in_resource = true;
 	gcd[2].gd.label = &label[2];
 	gcd[2].gd.mnemonic = 'C';
 	gcd[2].gd.handle_controlevent = Trans_Cancel;

@@ -70,29 +70,30 @@ typedef struct gidata {
 #define PI_Width	184
 #define PI_Height	200
 
-static unichar_t multiple[] = {'M','u','l','t','i','p','l','e',  '\0' };
-static unichar_t cancel[] = { 'C', 'a', 'n', 'c', 'e', 'l', '\0' };
-static unichar_t ok[] = { 'O', 'k',  '\0' };
-
-static unichar_t ocmn[] = { 'O', 'C', '\0' };
-static unichar_t *buts[] = { ok, cancel, NULL };
-
 static int MultipleValues(char *name, int local) {
-    char buffer[200]; unichar_t ubuf[200];
-    sprintf( buffer, "There is already a character with this Unicode encoding,\n(named %.10s at local encoding %d)\nIs that what you want?",
-	    name, local );
-    uc_strcpy(ubuf,buffer);
-    if ( GWidgetAsk(multiple,ubuf,buts,ocmn,0,1)==0 )
+    unichar_t ubuf[200]; char buffer[10];
+    const unichar_t *buts[3]; unichar_t ocmn[2];
+
+    buts[2]=NULL;
+    buts[0] = GStringGetResource( _STR_OK, &ocmn[0]);
+    buts[1] = GStringGetResource( _STR_Cancel, &ocmn[1]);
+
+    u_strcpy(ubuf,GStringGetResource( _STR_Alreadycharpre,NULL ));
+    uc_strncat(ubuf,name,10);
+    u_strcat(ubuf,GStringGetResource( _STR_Alreadycharmid,NULL ));
+    sprintf( buffer, "%d", local );
+    uc_strcat(ubuf,buffer);
+    u_strcat(ubuf,GStringGetResource( _STR_Alreadycharpost,NULL ));
+    if ( GWidgetAsk(GStringGetResource(_STR_Multiple,NULL),ubuf,buts,ocmn,0,1)==0 )
 return( true );
 
 return( false );
 }
 
 static int MultipleNames(void) {
-    unichar_t ubuf[200];
-    uc_strcpy(ubuf,
-     "There is already a character with this name,\ndo you want to swap names?");
-    if ( GWidgetAsk(multiple,ubuf,buts,ocmn,0,1)==0 )
+    int buts[] = { _STR_OK, _STR_Cancel, 0 };
+
+    if ( GWidgetAskR(_STR_Multiple,_STR_Alreadycharnamed,buts,0,1)==0 )
 return( true );
 
 return( false );
@@ -139,19 +140,27 @@ static void SetNameFromUnicode(GWindow gw,int cid,int val) {
 
 static int LigCheck(SplineFont *sf,SplineChar *sc,char *componants) {
     int i;
-    char buffer[200]; unichar_t ubuf[200];
+    unichar_t ubuf[200]; char buffer[10];
+    const unichar_t *buts[3]; unichar_t ocmn[2];
     char *pt, *spt, *start, ch;
 
     if ( componants==NULL || *componants=='\0' )
 return( true );
 
+    buts[2]=NULL;
+    buts[0] = GStringGetResource( _STR_OK, &ocmn[0]);
+    buts[1] = GStringGetResource( _STR_Cancel, &ocmn[1]);
+
     for ( i=0; i<sf->charcnt; ++i )
 	if ( sf->chars[i]!=sc && sf->chars[i]!=NULL && sf->chars[i]->lig!=NULL ) {
 	    if ( strcmp(componants,sf->chars[i]->lig->componants)==0 ) {
-		sprintf( buffer, "There is already a ligature made from these componants,\n(named %.10s at local encoding %d)\nIs that what you want?",
-			sf->chars[i]->name, i );
-		uc_strcpy(ubuf,buffer);
-return( GWidgetAsk(multiple,ubuf,buts,ocmn,0,1)==0 );
+		u_strcpy(ubuf,GStringGetResource( _STR_Alreadyligpre,NULL ));
+		uc_strncat(ubuf,sf->chars[i]->name,10);
+		u_strcat(ubuf,GStringGetResource( _STR_Alreadyligmid,NULL ));
+		sprintf( buffer, "%d", i );
+		uc_strcat(ubuf,buffer);
+		u_strcat(ubuf,GStringGetResource( _STR_Alreadyligpost,NULL ));
+return( GWidgetAsk(GStringGetResource(_STR_Multiple,NULL),ubuf,buts,ocmn,0,1)==0 );
 	    }
 	}
 
@@ -164,7 +173,7 @@ return( GWidgetAsk(multiple,ubuf,buts,ocmn,0,1)==0 );
 	if ( pt>spt ) pt = spt;
 	ch = *pt; *pt = '\0';
 	if ( strcmp(start,sc->name)==0 ) {
-	    GDrawError("A ligature may not be made up of itself" );
+	    GWidgetPostNoticeR(_STR_Badligature,_STR_Badligature );
 	    *pt = ch;
 return( false );
 	}
@@ -172,11 +181,11 @@ return( false );
 	    if ( strcmp(start,sf->chars[i]->name)==0 )
 	break;
 	if ( i==sf->charcnt ) {
-	    sprintf( buffer, "The componant %.20s is not in this font,\nIs that what you want?",
-		    start );
+	    u_strcpy(ubuf,GStringGetResource( _STR_Missingcomponantpre,NULL ));
+	    uc_strncat(ubuf,start,20);
+	    u_strcat(ubuf,GStringGetResource( _STR_Missingcomponantpost,NULL ));
 	    *pt = ch;
-	    uc_strcpy(ubuf,buffer);
-return( GWidgetAsk(multiple,ubuf,buts,ocmn,0,1)==0 );
+return( GWidgetAsk(GStringGetResource(_STR_Multiple,NULL),ubuf,buts,ocmn,0,1)==0 );
 	}
 	*pt = ch;
 	if ( ch=='\0' )
@@ -435,10 +444,6 @@ void SCGetInfo(SplineChar *sc, int nextprev) {
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[18];
     GTextInfo label[18];
-    static unichar_t title[] = { 'C','h','a','r','a','c','t','e','r',' ','I','n','f','o',  '\0' };
-    static unichar_t cancel[] = { 'C', 'a', 'n', 'c', 'e', 'l',  '\0' };
-    static unichar_t done[] = { 'D', 'o', 'n', 'e',  '\0' };
-    static unichar_t ligpop[] = { 'I','f',' ','t','h','i','s',' ','c','h','a','r','a','c','t','e','r',' ','i','s',' ','a',' ','l','i','g','a','t','u','r','e',',','\n','t','h','e','n',' ','e','n','t','e','r',' ','t','h','e',' ','n','a','m','e','s',' ','o','f',' ','t','h','e',' ','c','h','a','r','a','c','t','e','r','s','\n','i','n','t','o',' ','w','h','i','c','h',' ','i','t',' ','d','e','c','o','m','p','o','s','e','s',  '\0' };
 
     gi.sc = sc;
     gi.done = false;
@@ -450,7 +455,7 @@ void SCGetInfo(SplineChar *sc, int nextprev) {
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
-	wattrs.window_title = title;
+	wattrs.window_title = GStringGetResource( _STR_Charinfo,NULL );
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width =GDrawPointsToPixels(NULL,CI_Width);
@@ -522,7 +527,7 @@ void SCGetInfo(SplineChar *sc, int nextprev) {
 	gcd[7].creator = GButtonCreate;
 
 	gcd[8].gd.pos.x = 40; gcd[8].gd.pos.y = CI_Height-32-32;
-	gcd[8].gd.pos.width = 55; gcd[8].gd.pos.height = 0;
+	gcd[8].gd.pos.width = -1; gcd[8].gd.pos.height = 0;
 	gcd[8].gd.flags = gg_visible | gg_enabled ;
 	label[8].text = (unichar_t *) "< Prev";
 	label[8].text_is_1byte = true;
@@ -532,8 +537,8 @@ void SCGetInfo(SplineChar *sc, int nextprev) {
 	gcd[8].gd.cid = -1;
 	gcd[8].creator = GButtonCreate;
 
-	gcd[9].gd.pos.x = CI_Width-55-40; gcd[9].gd.pos.y = CI_Height-32-32;
-	gcd[9].gd.pos.width = 55; gcd[9].gd.pos.height = 0;
+	gcd[9].gd.pos.x = CI_Width-GIntGetResource(_NUM_Buttonsize)-40; gcd[9].gd.pos.y = CI_Height-32-32;
+	gcd[9].gd.pos.width = -1; gcd[9].gd.pos.height = 0;
 	gcd[9].gd.flags = gg_visible | gg_enabled ;
 	label[9].text = (unichar_t *) "Next >";
 	label[9].text_is_1byte = true;
@@ -544,20 +549,20 @@ void SCGetInfo(SplineChar *sc, int nextprev) {
 	gcd[9].creator = GButtonCreate;
 
 	gcd[10].gd.pos.x = 25-3; gcd[10].gd.pos.y = CI_Height-32-3;
-	gcd[10].gd.pos.width = 55; gcd[10].gd.pos.height = 0;
+	gcd[10].gd.pos.width = -1; gcd[10].gd.pos.height = 0;
 	gcd[10].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	label[10].text = (unichar_t *) "OK";
-	label[10].text_is_1byte = true;
+	label[10].text = (unichar_t *) _STR_OK;
+	label[10].text_in_resource = true;
 	gcd[10].gd.mnemonic = 'O';
 	gcd[10].gd.label = &label[10];
 	gcd[10].gd.handle_controlevent = CI_OK;
 	gcd[10].creator = GButtonCreate;
 
-	gcd[11].gd.pos.x = CI_Width-55-25; gcd[11].gd.pos.y = CI_Height-32;
-	gcd[11].gd.pos.width = 55; gcd[11].gd.pos.height = 0;
+	gcd[11].gd.pos.x = CI_Width-GIntGetResource(_NUM_Buttonsize)-25; gcd[11].gd.pos.y = CI_Height-32;
+	gcd[11].gd.pos.width = -1; gcd[11].gd.pos.height = 0;
 	gcd[11].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	label[11].text = (unichar_t *) "Done";
-	label[11].text_is_1byte = true;
+	label[11].text = (unichar_t *) _STR_Cancel;
+	label[11].text_in_resource = true;
 	gcd[11].gd.label = &label[11];
 	gcd[11].gd.mnemonic = 'C';
 	gcd[11].gd.handle_controlevent = CI_Cancel;
@@ -580,14 +585,14 @@ void SCGetInfo(SplineChar *sc, int nextprev) {
 	gcd[14].gd.pos.x = 5; gcd[14].gd.pos.y = CI_Height-32-32-6-26+6; 
 	gcd[14].gd.flags = gg_enabled|gg_visible;
 	gcd[14].gd.mnemonic = 'L';
-	gcd[15].gd.popup_msg = ligpop;
+	gcd[15].gd.popup_msg = GStringGetResource(_STR_Ligpop,NULL);
 	gcd[14].creator = GLabelCreate;
 
 	gcd[15].gd.pos.x = 85; gcd[15].gd.pos.y = CI_Height-32-32-6-26;
 	gcd[15].gd.flags = gg_enabled|gg_visible;
 	gcd[15].gd.mnemonic = 'L';
 	gcd[15].gd.cid = CID_Ligature;
-	gcd[15].gd.popup_msg = ligpop;
+	gcd[15].gd.popup_msg = GStringGetResource(_STR_Ligpop,NULL);
 	gcd[15].creator = GTextFieldCreate;
 
 	GGadgetsCreate(gi.gw,gcd);
@@ -597,9 +602,9 @@ void SCGetInfo(SplineChar *sc, int nextprev) {
     if ( !nextprev ) {
 	GGadgetSetEnabled(GWidgetGetControl(gi.gw,1),false);
 	GGadgetSetEnabled(GWidgetGetControl(gi.gw,-1),false);
-	GGadgetSetTitle(GWidgetGetControl(gi.gw,CID_Cancel),cancel);
+	GGadgetSetTitle(GWidgetGetControl(gi.gw,CID_Cancel),GStringGetResource(_STR_Cancel,NULL));
     } else
-	GGadgetSetTitle(GWidgetGetControl(gi.gw,CID_Cancel),done);
+	GGadgetSetTitle(GWidgetGetControl(gi.gw,CID_Cancel),GStringGetResource(_STR_Done,NULL));
 
     GWidgetHidePalettes();
     GDrawSetVisible(gi.gw,true);
@@ -664,20 +669,20 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	}
 
 	gcd[8].gd.pos.x = 30; gcd[8].gd.pos.y = RI_Height-32;
-	gcd[8].gd.pos.width = 55; gcd[8].gd.pos.height = 0;
+	gcd[8].gd.pos.width = -1; gcd[8].gd.pos.height = 0;
 	gcd[8].gd.flags = gg_visible | gg_enabled ;
-	label[8].text = (unichar_t *) "Show";
-	label[8].text_is_1byte = true;
+	label[8].text = (unichar_t *) _STR_Show;
+	label[8].text_in_resource = true;
 	gcd[8].gd.mnemonic = 'S';
 	gcd[8].gd.label = &label[8];
 	gcd[8].gd.handle_controlevent = CI_Show;
 	gcd[8].creator = GButtonCreate;
 
-	gcd[9].gd.pos.x = (RI_Width-55-6-30); gcd[9].gd.pos.y = RI_Height-32-3;
-	gcd[9].gd.pos.width = 55; gcd[9].gd.pos.height = 0;
+	gcd[9].gd.pos.x = (RI_Width-GIntGetResource(_NUM_Buttonsize)-6-30); gcd[9].gd.pos.y = RI_Height-32-3;
+	gcd[9].gd.pos.width = -1; gcd[9].gd.pos.height = 0;
 	gcd[9].gd.flags = gg_visible | gg_enabled | gg_but_default | gg_but_cancel;
-	label[9].text = (unichar_t *) "OK";
-	label[9].text_is_1byte = true;
+	label[9].text = (unichar_t *) _STR_OK;
+	label[9].text_in_resource = true;
 	gcd[9].gd.mnemonic = 'O';
 	gcd[9].gd.label = &label[9];
 	gcd[9].gd.handle_controlevent = CI_Cancel;
@@ -738,11 +743,11 @@ static void ImgGetInfo(CharView *cv, ImageList *img) {
 	gcd[1].gd.flags = gg_enabled|gg_visible;
 	gcd[1].creator = GLabelCreate;
 
-	gcd[2].gd.pos.x = (II_Width-55-6)/2; gcd[2].gd.pos.y = II_Height-32-3;
-	gcd[2].gd.pos.width = 55; gcd[2].gd.pos.height = 0;
+	gcd[2].gd.pos.x = (II_Width-GIntGetResource(_NUM_Buttonsize)-6)/2; gcd[2].gd.pos.y = II_Height-32-3;
+	gcd[2].gd.pos.width = -1; gcd[2].gd.pos.height = 0;
 	gcd[2].gd.flags = gg_visible | gg_enabled | gg_but_default | gg_but_cancel;
-	label[2].text = (unichar_t *) "OK";
-	label[2].text_is_1byte = true;
+	label[2].text = (unichar_t *) _STR_OK;
+	label[2].text_in_resource = true;
 	gcd[2].gd.mnemonic = 'O';
 	gcd[2].gd.label = &label[2];
 	gcd[2].gd.handle_controlevent = CI_Cancel;
@@ -1106,20 +1111,20 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[13].creator = GLineCreate;
 
 	gcd[14].gd.pos.x = 20-3; gcd[14].gd.pos.y = PI_Height-35-3;
-	gcd[14].gd.pos.width = 55+6; gcd[14].gd.pos.height = 0;
+	gcd[14].gd.pos.width = GIntGetResource(_NUM_Buttonsize)+6; gcd[14].gd.pos.height = 0;
 	gcd[14].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	label[14].text = (unichar_t *) "OK";
-	label[14].text_is_1byte = true;
+	label[14].text = (unichar_t *) _STR_OK;
+	label[14].text_in_resource = true;
 	gcd[14].gd.mnemonic = 'O';
 	gcd[14].gd.label = &label[14];
 	gcd[14].gd.handle_controlevent = PI_Ok;
 	gcd[14].creator = GButtonCreate;
 
-	gcd[15].gd.pos.x = PI_Width-55-20; gcd[15].gd.pos.y = PI_Height-35;
-	gcd[15].gd.pos.width = 55; gcd[15].gd.pos.height = 0;
+	gcd[15].gd.pos.x = PI_Width-GIntGetResource(_NUM_Buttonsize)-20; gcd[15].gd.pos.y = PI_Height-35;
+	gcd[15].gd.pos.width = -1; gcd[15].gd.pos.height = 0;
 	gcd[15].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	label[15].text = (unichar_t *) "Cancel";
-	label[15].text_is_1byte = true;
+	label[15].text = (unichar_t *) _STR_Cancel;
+	label[15].text_in_resource = true;
 	gcd[15].gd.label = &label[15];
 	gcd[15].gd.mnemonic = 'C';
 	gcd[15].gd.handle_controlevent = PI_Cancel;

@@ -36,36 +36,36 @@ struct gfi_data {
 };
 
 GTextInfo encodingtypes[] = {
-    { (unichar_t *) "Custom", NULL, 0, 0, (void *) em_none, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) _STR_Custom, NULL, 0, 0, (void *) em_none, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { NULL, NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 1, 0 },
-    { (unichar_t *) "ISO 8859-1  (Latin1)", NULL, 0, 0, (void *) em_iso8859_1, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "ISO 8859-15 (Latin0)", NULL, 0, 0, (void *) em_iso8859_15, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "ISO 8859-2  (Latin2)", NULL, 0, 0, (void *) em_iso8859_2, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "ISO 8859-3  (Latin3)", NULL, 0, 0, (void *) em_iso8859_3, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "ISO 8859-4  (Latin4)", NULL, 0, 0, (void *) em_iso8859_4, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "ISO 8859-9  (Latin5)", NULL, 0, 0, (void *) em_iso8859_9, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "ISO 8859-10 (Latin6)", NULL, 0, 0, (void *) em_iso8859_10, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "ISO 8859-13 (Latin7)", NULL, 0, 0, (void *) em_iso8859_13, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "ISO 8859-14 (Latin8)", NULL, 0, 0, (void *) em_iso8859_14, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) _STR_Isolatin1, NULL, 0, 0, (void *) em_iso8859_1, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Isolatin0, NULL, 0, 0, (void *) em_iso8859_15, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Isolatin2, NULL, 0, 0, (void *) em_iso8859_2, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Isolatin3, NULL, 0, 0, (void *) em_iso8859_3, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Isolatin4, NULL, 0, 0, (void *) em_iso8859_4, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Isolatin5, NULL, 0, 0, (void *) em_iso8859_9, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Isolatin6, NULL, 0, 0, (void *) em_iso8859_10, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Isolatin7, NULL, 0, 0, (void *) em_iso8859_13, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Isolatin8, NULL, 0, 0, (void *) em_iso8859_14, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { NULL, NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 1, 0 },
-    { (unichar_t *) "ISO 8859-5 (Cyrillic)", NULL, 0, 0, (void *) em_iso8859_5, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "KOI8-R (Cyrillic)", NULL, 0, 0, (void *) em_koi8_r, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "ISO 8859-6 (Arabic)", NULL, 0, 0, (void *) em_iso8859_6, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "ISO 8859-7 (Greek)", NULL, 0, 0, (void *) em_iso8859_7, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "ISO 8859-8 (Hebrew)", NULL, 0, 0, (void *) em_iso8859_8, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) _STR_Isocyrillic, NULL, 0, 0, (void *) em_iso8859_5, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Koi8cyrillic, NULL, 0, 0, (void *) em_koi8_r, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Isoarabic, NULL, 0, 0, (void *) em_iso8859_6, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Isogreek, NULL, 0, 0, (void *) em_iso8859_7, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Isohebrew, NULL, 0, 0, (void *) em_iso8859_8, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { NULL, NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 1, 0 },
-    { (unichar_t *) "Macintosh Latin", NULL, 0, 0, (void *) em_mac, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "Windows Latin", NULL, 0, 0, (void *) em_win, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "Adobe Standard", NULL, 0, 0, (void *) em_adobestandard, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "Symbol", NULL, 0, 0, (void *) em_symbol, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "TeX Base", NULL, 0, 0, (void *) em_base, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) _STR_Mac, NULL, 0, 0, (void *) em_mac, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Win, NULL, 0, 0, (void *) em_win, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Adobestd, NULL, 0, 0, (void *) em_adobestandard, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Symbol, NULL, 0, 0, (void *) em_symbol, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Texbase, NULL, 0, 0, (void *) em_base, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { NULL, NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 1, 0 },
-    { (unichar_t *) "ISO 10646-1 (Unicode)", NULL, 0, 0, (void *) em_unicode, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) _STR_Unicode, NULL, 0, 0, (void *) em_unicode, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { NULL, NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 1, 0 },
-    { (unichar_t *) "JIS 208 (Kanji)", NULL, 0, 0, (void *) em_jis208, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "JIS 212 (Kanji)", NULL, 0, 0, (void *) em_jis212, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "KSC 5601 (Korean)", NULL, 0, 0, (void *) em_ksc5601, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "GB 2312 (Chinese)", NULL, 0, 0, (void *) em_gb2312, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) _STR_Jis208, NULL, 0, 0, (void *) em_jis208, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Jis212, NULL, 0, 0, (void *) em_jis212, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Korean, NULL, 0, 0, (void *) em_ksc5601, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Chinese, NULL, 0, 0, (void *) em_gb2312, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { NULL }};
 
 #define CID_Encoding	1001
@@ -423,8 +423,12 @@ static void RegenerateEncList(struct gfi_data *d) {
     for ( i=0; i<sizeof(encodingtypes)/sizeof(encodingtypes[0])-1; ++i ) {
 	ti[i] = galloc(sizeof(GTextInfo));
 	memcpy(ti[i],&encodingtypes[i],sizeof(GTextInfo));
-	ti[i]->text = uc_copy((char *) ti[i]->text);
-	ti[i]->text_is_1byte = false;
+	if ( encodingtypes[i].text_is_1byte ) {
+	    ti[i]->text = uc_copy((char *) ti[i]->text);
+	    ti[i]->text_is_1byte = false;
+	} else {
+	    ti[i]->text = u_copy(ti[i]->text);
+	}
 	ti[i]->bg = ti[i]->fg = COLOR_DEFAULT;
 	ti[i]->selected = ( (int) (ti[i]->userdata)==d->sf->encoding_name) &&
 		!ti[i]->line;
@@ -521,19 +525,12 @@ return( true );
 }
 
 static int AskTooFew() {
-    static unichar_t ok[] = { 'O', 'K', '\0' }, cancel[] = { 'C', 'a', 'n', 'c', 'e', 'l',  '\0' }, oc[] = { 'O', 'C' };
-    static unichar_t *buts[] = { ok, cancel, NULL };
-    unichar_t ubuf1[300], utit[80];
-    uc_strcpy( ubuf1, "You are reducing the number of characters below the\ncurrent number. This will delete some characters.\nIs that what you wish to do?" );
-    uc_strcpy( utit, "Too Few Characters" );
-return( GWidgetAsk(utit,ubuf1,buts,oc,0,1) );
+    static int buts[] = { _STR_OK, _STR_Cancel, 0 };
+return( GWidgetAskR(_STR_Toofew,_STR_Reducing,buts,0,1) );
 }
 
 static void BadFamily() {
-    unichar_t ubuf1[300], utit[80];
-    uc_strcpy( ubuf1, "Bad Family Name, must begin with an alphabetic character.");
-    uc_strcpy( utit, "Bad Family Name" );
-    GWidgetPostNotice(utit,ubuf1);
+    GWidgetPostNoticeR(_STR_Badfamily,_STR_Badfamilyn);
 }
 
 static char *GetModifiers(char *fontname) {
@@ -679,18 +676,18 @@ return( true );
 	txt = _GGadgetGetTitle(GWidgetGetControl(gw,CID_ItalicAngle));
 	ia = u_strtod(txt,&end);
 	if ( *end!='\0' ) {
-	    Protest("ItalicAngle");
+	    ProtestR(_STR_Italicangle);
 return(true);
 	}
-	upos = GetInt(gw,CID_UPos, "Position",&err);
-	uwid = GetInt(gw,CID_UWidth,"Height",&err);
-	as = GetInt(gw,CID_Ascent,"Ascent",&err);
-	des = GetInt(gw,CID_Descent,"Descent",&err);
-	nchar = GetInt(gw,CID_NChars,"Num Chars",&err);
+	upos = GetIntR(gw,CID_UPos, _STR_Upos,&err);
+	uwid = GetIntR(gw,CID_UWidth,_STR_Uheight,&err);
+	as = GetIntR(gw,CID_Ascent,_STR_Ascent,&err);
+	des = GetIntR(gw,CID_Descent,_STR_Descent,&err);
+	nchar = GetIntR(gw,CID_NChars,_STR_Numchars,&err);
 	if ( err )
 return(true);
 	if ( as+des>16384 || des<0 || as<0 ) {
-	    GDrawError("Ascent and Descent must be positive and their sum less than 16384");
+	    GWidgetPostNoticeR(_STR_Badascentdescent,_STR_Badascentdescentn);
 return( true );
 	}
 	if ( nchar<sf->charcnt && AskTooFew())
@@ -754,8 +751,14 @@ return( encodingtypes );
     ti = gcalloc(i+1,sizeof(GTextInfo));
     memcpy(ti,encodingtypes,sizeof(encodingtypes)-sizeof(encodingtypes[0]));
     for ( i=0; i<sizeof(encodingtypes)/sizeof(encodingtypes[0])-1; ++i ) {
-	ti[i].text = uc_copy((char *) ti[i].text);
-	ti[i].text_is_1byte = false;
+	if ( ti[i].text_is_1byte ) {
+	    ti[i].text = uc_copy((char *) ti[i].text);
+	    ti[i].text_is_1byte = false;
+	} else if ( ti[i].text_in_resource ) {
+	    ti[i].text = u_copy(GStringGetResource( (int) ti[i].text,NULL));
+	    ti[i].text_in_resource = false;
+	} else
+	    ti[i].text = u_copy(ti[i].text);
     }
     ti[i++].line = true;
     for ( item=enclist; item!=NULL ; item=item->next )
@@ -783,7 +786,6 @@ void FontMenuFontInfo(void *_fv) {
     GGadgetCreateData gcd[33];
     GTextInfo label[33], *list;
     struct gfi_data d;
-    static unichar_t title[] = { 'F','o','n','t',' ','I','n','f','o','r','m','a','t','i','o','n',  '\0' };
     char iabuf[20], upbuf[20], uwbuf[20], asbuf[20], dsbuf[20], ncbuf[20];
     int i;
     int oldcnt = sf->charcnt;
@@ -795,7 +797,7 @@ void FontMenuFontInfo(void *_fv) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.window_title = title;
+    wattrs.window_title = GStringGetResource(_STR_Fontinformation,NULL);
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,260);
     pos.height = GDrawPointsToPixels(NULL,335);
@@ -804,8 +806,8 @@ void FontMenuFontInfo(void *_fv) {
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
 
-    label[0].text = (unichar_t *) "Family Name:";
-    label[0].text_is_1byte = true;
+    label[0].text = (unichar_t *) _STR_Familyname;
+    label[0].text_in_resource = true;
     gcd[0].gd.label = &label[0];
     gcd[0].gd.mnemonic = 'F';
     gcd[0].gd.pos.x = 12; gcd[0].gd.pos.y = 6; 
@@ -814,7 +816,6 @@ void FontMenuFontInfo(void *_fv) {
 
     gcd[1].gd.pos.x = 12; gcd[1].gd.pos.y = gcd[0].gd.pos.y+15; gcd[1].gd.pos.width = 120;
     gcd[1].gd.flags = gg_visible | gg_enabled;
-    gcd[1].gd.mnemonic = 'F';
     label[1].text = (unichar_t *) (sf->familyname);
     label[1].text_is_1byte = true;
     gcd[1].gd.label = &label[1];
@@ -822,8 +823,8 @@ void FontMenuFontInfo(void *_fv) {
     gcd[1].gd.handle_controlevent = GFI_NameChange;
     gcd[1].creator = GTextFieldCreate;
 
-    label[2].text = (unichar_t *) "Font Modifiers:";
-    label[2].text_is_1byte = true;
+    label[2].text = (unichar_t *) _STR_Fontmodifiers;
+    label[2].text_in_resource = true;
     gcd[2].gd.label = &label[2];
     gcd[2].gd.mnemonic = 'M';
     gcd[2].gd.pos.x = 133; gcd[2].gd.pos.y = gcd[0].gd.pos.y; 
@@ -832,7 +833,6 @@ void FontMenuFontInfo(void *_fv) {
 
     gcd[3].gd.pos.x = 133; gcd[3].gd.pos.y = gcd[1].gd.pos.y; gcd[3].gd.pos.width = 120;
     gcd[3].gd.flags = gg_visible | gg_enabled;
-    gcd[3].gd.mnemonic = 'M';
     label[3].text = (unichar_t *) GetModifiers(sf->fontname);
     label[3].text_is_1byte = true;
     gcd[3].gd.label = &label[3];
@@ -841,8 +841,8 @@ void FontMenuFontInfo(void *_fv) {
     gcd[3].creator = GTextFieldCreate;
 
     gcd[30].gd.pos.x = 12; gcd[30].gd.pos.y = gcd[1].gd.pos.y+26+6;
-    label[30].text = (unichar_t *) "Name For Humans:";
-    label[30].text_is_1byte = true;
+    label[30].text = (unichar_t *) _STR_Humanname;
+    label[30].text_in_resource = true;
     gcd[30].gd.label = &label[30];
     gcd[30].gd.mnemonic = 'H';
     gcd[30].gd.flags = gg_visible | gg_enabled;
@@ -850,7 +850,6 @@ void FontMenuFontInfo(void *_fv) {
 
     gcd[31].gd.pos.x = 105; gcd[31].gd.pos.y = gcd[30].gd.pos.y-6; gcd[31].gd.pos.width = 147;
     gcd[31].gd.flags = gg_visible | gg_enabled;
-    gcd[31].gd.mnemonic = 'H';
     label[31].text = (unichar_t *) sf->fullname;
     label[31].text_is_1byte = true;
     gcd[31].gd.label = &label[31];
@@ -860,14 +859,13 @@ void FontMenuFontInfo(void *_fv) {
     gcd[4].gd.pos.x = 12; gcd[4].gd.pos.y = gcd[31].gd.pos.y+29+6;
     gcd[4].gd.flags = gg_visible | gg_enabled;
     gcd[4].gd.mnemonic = 'E';
-    label[4].text = (unichar_t *) "Encoding:";
-    label[4].text_is_1byte = true;
+    label[4].text = (unichar_t *) _STR_Encoding;
+    label[4].text_in_resource = true;
     gcd[4].gd.label = &label[4];
     gcd[4].creator = GLabelCreate;
 
     gcd[5].gd.pos.x = 80; gcd[5].gd.pos.y = gcd[4].gd.pos.y-6;
     gcd[5].gd.flags = gg_visible | gg_enabled;
-    gcd[5].gd.mnemonic = 'E';
     gcd[5].gd.u.list = list = GetEncodingTypes();
     gcd[5].gd.label = EncodingTypesFindEnc(list,sf->encoding_name);
     if ( gcd[5].gd.label==NULL ) gcd[5].gd.label = &list[0];
@@ -887,10 +885,10 @@ void FontMenuFontInfo(void *_fv) {
     gcd[27].creator = GGroupCreate;
 
     gcd[28].gd.pos.x = 12; gcd[28].gd.pos.y = gcd[5].gd.pos.y+27;
-    gcd[28].gd.pos.width = 55; gcd[28].gd.pos.height = 0;
+    gcd[28].gd.pos.width = -1; gcd[28].gd.pos.height = 0;
     gcd[28].gd.flags = gg_visible | gg_enabled;
-    label[28].text = (unichar_t *) "Load";
-    label[28].text_is_1byte = true;
+    label[28].text = (unichar_t *) _STR_Load;
+    label[28].text_in_resource = true;
     gcd[28].gd.mnemonic = 'L';
     gcd[28].gd.label = &label[28];
     gcd[28].gd.handle_controlevent = GFI_Load;
@@ -900,21 +898,21 @@ void FontMenuFontInfo(void *_fv) {
     gcd[25].gd.pos.width = 100; gcd[25].gd.pos.height = 0;
     gcd[25].gd.flags = gg_visible;
     if ( sf->encoding_name==em_none ) gcd[25].gd.flags |= gg_enabled;
-    label[25].text = (unichar_t *) "Make From Font";
-    label[25].text_is_1byte = true;
+    label[25].text = (unichar_t *) _STR_Makefromfont;
+    label[25].text_in_resource = true;
     gcd[25].gd.mnemonic = 'k';
     gcd[25].gd.label = &label[25];
     gcd[25].gd.handle_controlevent = GFI_Make;
     gcd[25].gd.cid = CID_Make;
     gcd[25].creator = GButtonCreate;
 
-    gcd[26].gd.pos.x = 260-12-55; gcd[26].gd.pos.y = gcd[28].gd.pos.y;
-    gcd[26].gd.pos.width = 55; gcd[26].gd.pos.height = 0;
+    gcd[26].gd.pos.x = 260-12-GIntGetResource(_NUM_Buttonsize); gcd[26].gd.pos.y = gcd[28].gd.pos.y;
+    gcd[26].gd.pos.width = -1; gcd[26].gd.pos.height = 0;
     gcd[26].gd.flags = gg_visible;
     for ( item=enclist; item!=NULL && item->builtin; item=item->next );
     if ( item!=NULL ) gcd[26].gd.flags |= gg_enabled;
-    label[26].text = (unichar_t *) "Remove";
-    label[26].text_is_1byte = true;
+    label[26].text = (unichar_t *) _STR_Remove;
+    label[26].text_in_resource = true;
     gcd[26].gd.mnemonic = 'R';
     gcd[26].gd.label = &label[26];
     gcd[26].gd.handle_controlevent = GFI_Delete;
@@ -924,15 +922,14 @@ void FontMenuFontInfo(void *_fv) {
     gcd[6].gd.pos.x = 12; gcd[6].gd.pos.y = gcd[28].gd.pos.y+32+6;
     gcd[6].gd.flags = gg_visible | gg_enabled;
     gcd[6].gd.mnemonic = 'I';
-    label[6].text = (unichar_t *) "Italic Angle:";
-    label[6].text_is_1byte = true;
+    label[6].text = (unichar_t *) _STR_Italicangle;
+    label[6].text_in_resource = true;
     gcd[6].gd.label = &label[6];
     gcd[6].creator = GLabelCreate;
 
     gcd[7].gd.pos.x = 103; gcd[7].gd.pos.y = gcd[6].gd.pos.y-6;
     gcd[7].gd.pos.width = 45;
     gcd[7].gd.flags = gg_visible | gg_enabled;
-    gcd[7].gd.mnemonic = 'I';
     sprintf( iabuf, "%g", sf->italicangle );
     label[7].text = (unichar_t *) iabuf;
     label[7].text_is_1byte = true;
@@ -943,14 +940,13 @@ void FontMenuFontInfo(void *_fv) {
     gcd[8].gd.pos.x = 12; gcd[8].gd.pos.y = gcd[7].gd.pos.y+26+6;
     gcd[8].gd.flags = gg_visible | gg_enabled;
     gcd[8].gd.mnemonic = 'P';
-    label[8].text = (unichar_t *) "Underline Position:";
-    label[8].text_is_1byte = true;
+    label[8].text = (unichar_t *) _STR_Upos;
+    label[8].text_in_resource = true;
     gcd[8].gd.label = &label[8];
     gcd[8].creator = GLabelCreate;
 
     gcd[9].gd.pos.x = 103; gcd[9].gd.pos.y = gcd[8].gd.pos.y-6; gcd[9].gd.pos.width = 45;
     gcd[9].gd.flags = gg_visible | gg_enabled;
-    gcd[9].gd.mnemonic = 'P';
     sprintf( upbuf, "%g", sf->upos );
     label[9].text = (unichar_t *) upbuf;
     label[9].text_is_1byte = true;
@@ -961,14 +957,13 @@ void FontMenuFontInfo(void *_fv) {
     gcd[10].gd.pos.x = 155; gcd[10].gd.pos.y = gcd[8].gd.pos.y;
     gcd[10].gd.flags = gg_visible | gg_enabled;
     gcd[10].gd.mnemonic = 'H';
-    label[10].text = (unichar_t *) "Height:";
-    label[10].text_is_1byte = true;
+    label[10].text = (unichar_t *) _STR_Uheight;
+    label[10].text_in_resource = true;
     gcd[10].gd.label = &label[10];
     gcd[10].creator = GLabelCreate;
 
     gcd[11].gd.pos.x = 200; gcd[11].gd.pos.y = gcd[9].gd.pos.y; gcd[11].gd.pos.width = 45;
     gcd[11].gd.flags = gg_visible | gg_enabled;
-    gcd[11].gd.mnemonic = 'H';
     sprintf( uwbuf, "%g", sf->uwidth );
     label[11].text = (unichar_t *) uwbuf;
     label[11].text_is_1byte = true;
@@ -979,14 +974,13 @@ void FontMenuFontInfo(void *_fv) {
     gcd[12].gd.pos.x = 12; gcd[12].gd.pos.y = gcd[9].gd.pos.y+26+6;
     gcd[12].gd.flags = gg_visible | gg_enabled;
     gcd[12].gd.mnemonic = 'A';
-    label[12].text = (unichar_t *) "Ascent:";
-    label[12].text_is_1byte = true;
+    label[12].text = (unichar_t *) _STR_Ascent;
+    label[12].text_in_resource = true;
     gcd[12].gd.label = &label[12];
     gcd[12].creator = GLabelCreate;
 
     gcd[13].gd.pos.x = 103; gcd[13].gd.pos.y = gcd[12].gd.pos.y-6; gcd[13].gd.pos.width = 45;
     gcd[13].gd.flags = gg_visible | gg_enabled;
-    gcd[13].gd.mnemonic = 'A';
     sprintf( asbuf, "%d", sf->ascent );
     label[13].text = (unichar_t *) asbuf;
     label[13].text_is_1byte = true;
@@ -997,14 +991,13 @@ void FontMenuFontInfo(void *_fv) {
     gcd[14].gd.pos.x = 155; gcd[14].gd.pos.y = gcd[12].gd.pos.y;
     gcd[14].gd.flags = gg_visible | gg_enabled;
     gcd[14].gd.mnemonic = 'D';
-    label[14].text = (unichar_t *) "Descent:";
-    label[14].text_is_1byte = true;
+    label[14].text = (unichar_t *) _STR_Descent;
+    label[14].text_in_resource = true;
     gcd[14].gd.label = &label[14];
     gcd[14].creator = GLabelCreate;
 
     gcd[15].gd.pos.x = 200; gcd[15].gd.pos.y = gcd[13].gd.pos.y; gcd[15].gd.pos.width = 45;
     gcd[15].gd.flags = gg_visible | gg_enabled;
-    gcd[15].gd.mnemonic = 'D';
     sprintf( dsbuf, "%d", sf->descent );
     label[15].text = (unichar_t *) dsbuf;
     label[15].text_is_1byte = true;
@@ -1015,14 +1008,13 @@ void FontMenuFontInfo(void *_fv) {
     gcd[16].gd.pos.x = 12; gcd[16].gd.pos.y = gcd[13].gd.pos.y+26+6;
     gcd[16].gd.flags = gg_visible | gg_enabled;
     gcd[16].gd.mnemonic = 'r';
-    label[16].text = (unichar_t *) "Copyright:";
-    label[16].text_is_1byte = true;
+    label[16].text = (unichar_t *) _STR_Copyright;
+    label[16].text_in_resource = true;
     gcd[16].gd.label = &label[16];
     gcd[16].creator = GLabelCreate;
 
     gcd[17].gd.pos.x = 103; gcd[17].gd.pos.y = gcd[16].gd.pos.y-6; gcd[17].gd.pos.width = 142;
     gcd[17].gd.flags = gg_visible | gg_enabled;
-    gcd[17].gd.mnemonic = 'r';
     if ( sf->copyright!=NULL ) {
 	label[17].text = (unichar_t *) sf->copyright;
 	label[17].text_is_1byte = true;
@@ -1034,14 +1026,13 @@ void FontMenuFontInfo(void *_fv) {
     gcd[18].gd.pos.x = 12; gcd[18].gd.pos.y = gcd[17].gd.pos.y+26+6;
     gcd[18].gd.flags = gg_visible | gg_enabled;
     gcd[18].gd.mnemonic = 'x';
-    label[18].text = (unichar_t *) "XUID:";
-    label[18].text_is_1byte = true;
+    label[18].text = (unichar_t *) _STR_Xuid;
+    label[18].text_in_resource = true;
     gcd[18].gd.label = &label[18];
     gcd[18].creator = GLabelCreate;
 
     gcd[19].gd.pos.x = 103; gcd[19].gd.pos.y = gcd[18].gd.pos.y-6; gcd[19].gd.pos.width = 142;
     gcd[19].gd.flags = gg_visible | gg_enabled;
-    gcd[19].gd.mnemonic = 'x';
     if ( sf->xuid!=NULL ) {
 	label[19].text = (unichar_t *) sf->xuid;
 	label[19].text_is_1byte = true;
@@ -1053,14 +1044,13 @@ void FontMenuFontInfo(void *_fv) {
     gcd[20].gd.pos.x = 12; gcd[20].gd.pos.y = gcd[19].gd.pos.y+26+6;
     gcd[20].gd.flags = gg_visible | gg_enabled;
     gcd[20].gd.mnemonic = 'N';
-    label[20].text = (unichar_t *) "Number of Characters:";
-    label[20].text_is_1byte = true;
+    label[20].text = (unichar_t *) _STR_Numchars;
+    label[20].text_in_resource = true;
     gcd[20].gd.label = &label[20];
     gcd[20].creator = GLabelCreate;
 
     gcd[21].gd.pos.x = 123; gcd[21].gd.pos.y = gcd[20].gd.pos.y-6; gcd[21].gd.pos.width = 60;
     gcd[21].gd.flags = gg_visible | gg_enabled;
-    gcd[21].gd.mnemonic = 'N';
     sprintf( ncbuf, "%d", sf->charcnt );
     label[21].text = (unichar_t *) ncbuf;
     label[21].text_is_1byte = true;
@@ -1069,22 +1059,20 @@ void FontMenuFontInfo(void *_fv) {
     gcd[21].creator = GTextFieldCreate;
 
     gcd[22].gd.pos.x = 30-3; gcd[22].gd.pos.y = 336-35-3;
-    gcd[22].gd.pos.width = 55; gcd[22].gd.pos.height = 0;
+    gcd[22].gd.pos.width = -1; gcd[22].gd.pos.height = 0;
     gcd[22].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[22].text = (unichar_t *) "OK";
-    label[22].text_is_1byte = true;
-    gcd[22].gd.mnemonic = 'O';
+    label[22].text = (unichar_t *) _STR_OK;
+    label[22].text_in_resource = true;
     gcd[22].gd.label = &label[22];
     gcd[22].gd.handle_controlevent = GFI_OK;
     gcd[22].creator = GButtonCreate;
 
-    gcd[23].gd.pos.x = 250-55-30; gcd[23].gd.pos.y = gcd[22].gd.pos.y+3;
-    gcd[23].gd.pos.width = 55; gcd[23].gd.pos.height = 0;
+    gcd[23].gd.pos.x = 250-GIntGetResource(_NUM_Buttonsize)-30; gcd[23].gd.pos.y = gcd[22].gd.pos.y+3;
+    gcd[23].gd.pos.width = -1; gcd[23].gd.pos.height = 0;
     gcd[23].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[23].text = (unichar_t *) "Cancel";
-    label[23].text_is_1byte = true;
+    label[23].text = (unichar_t *) _STR_Cancel;
+    label[23].text_in_resource = true;
     gcd[23].gd.label = &label[23];
-    gcd[23].gd.mnemonic = 'C';
     gcd[23].gd.handle_controlevent = GFI_Cancel;
     gcd[23].creator = GButtonCreate;
 
@@ -1094,12 +1082,12 @@ void FontMenuFontInfo(void *_fv) {
     gcd[24].creator = GGroupCreate;
 
     gcd[29].gd.pos.y = gcd[7].gd.pos.y;
-    gcd[29].gd.pos.width = 55; gcd[29].gd.pos.height = 0;
+    gcd[29].gd.pos.width = GIntGetResource(_NUM_Buttonsize); gcd[29].gd.pos.height = 0;
     gcd[29].gd.pos.x = gcd[11].gd.pos.x+gcd[11].gd.pos.width-gcd[29].gd.pos.width;
     /*if ( strstrmatch(sf->fontname,"Italic")!=NULL ||strstrmatch(sf->fontname,"Oblique")!=NULL )*/
 	gcd[29].gd.flags = gg_visible | gg_enabled;
-    label[29].text = (unichar_t *) "Guess";
-    label[29].text_is_1byte = true;
+    label[29].text = (unichar_t *) _STR_Guess;
+    label[29].text_in_resource = true;
     gcd[29].gd.label = &label[29];
     gcd[29].gd.mnemonic = 'G';
     gcd[29].gd.handle_controlevent = GFI_GuessItalic;

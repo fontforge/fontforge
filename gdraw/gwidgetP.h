@@ -45,6 +45,7 @@ typedef struct gwidgetdata {
     unsigned int contains_focus: 1;		/* only for top level widgets */
     unsigned int ispalette: 1;			/* only for top level widgets */
     unsigned int positioned_yet: 1;		/* only for top level palettes*/
+    unsigned int isdocked: 1;			/* only for top level palettes*/
 } GWidgetD;
 
 typedef struct gwidgetcontainerdata /* : GWidgetD */{
@@ -60,6 +61,7 @@ typedef struct gwidgetcontainerdata /* : GWidgetD */{
     unsigned int contains_focus: 1;		/* only for top level widgets */
     unsigned int ispalette: 1;			/* only for top level widgets */
     unsigned int positioned_yet: 1;		/* only for top level palettes*/
+    unsigned int isdocked: 1;			/* only for top level palettes*/
     /* ******************* */
     struct ggadget *gadgets;
     struct gwidgetdata *widgets;		/* children */
@@ -80,8 +82,9 @@ typedef struct gtopleveldata /* : GContainerD */{
     unsigned int iscontainer: 1;
     unsigned int istoplevel: 1;
     unsigned int contains_focus: 1;
-    unsigned int positioned_yet: 1;		/* only for top level palettes*/
     unsigned int ispalette: 1;
+    unsigned int positioned_yet: 1;		/* only for top level palettes*/
+    unsigned int isdocked: 1;			/* only for top level palettes*/
     unsigned int programmove: 10;
     struct ggadget *gadgets;
     struct gwidgetdata *widgets;		/* children */

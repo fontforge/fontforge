@@ -233,9 +233,6 @@ static int slurp_header(FILE *bdf, int *_as, int *_ds, int *_enc, char *family, 
 return( pixelsize );
 }
 
-static unichar_t ok[] = { 'O', 'K', '\0' }, cancel[] = { 'C', 'a', 'n', 'c', 'e', 'l',  '\0' }, oc[] = { 'O', 'C' };
-static unichar_t *buts[] = { ok, cancel, NULL };
-
 static int askusersize(char *filename) {
     char *pt;
     int guess;
@@ -268,14 +265,20 @@ return( guess );
 }
 
 static int alreadyexists(int pixelsize) {
-    char buffer[200];
+    char buffer[10];
     unichar_t ubuf[200];
-    unichar_t ubuf2[30];
+    const unichar_t *buts[3]; unichar_t oc[2];
 
-    sprintf(buffer, "The font database already contains a bitmap\nfont with this pixelsize (%d)\nDo you want to overwrite it?", pixelsize );
-    uc_strcpy(ubuf,buffer);
-    uc_strcpy(ubuf2,"Duplicate pixelsize");
-return( GWidgetAsk(ubuf2,ubuf,buts,oc,0,1)==0 );
+    buts[2]=NULL;
+    buts[0] = GStringGetResource( _STR_OK, &oc[0]);
+    buts[1] = GStringGetResource( _STR_Cancel, &oc[1]);
+
+    sprintf(buffer,"%d",pixelsize);
+    u_strcpy(ubuf, GStringGetResource(_STR_Duppixelsizepre,NULL));
+    uc_strcat(ubuf,buffer);
+    u_strcat(ubuf, GStringGetResource(_STR_Duppixelsizepost,NULL));
+    
+return( GWidgetAsk(GStringGetResource(_STR_Duppixelsize,NULL),ubuf,buts,oc,0,1)==0 );
 }
 
 BDFFont *SFImportBDF(SplineFont *sf, char *filename) {

@@ -557,10 +557,6 @@ static unichar_t wildimg[] = { '*', '.', '{',
 static unichar_t wildps[] = { '*', '.', '{', 'p','s',',', 'e','p','s',',','}', '\0' };
 static unichar_t wildfig[] = { '*', '.', '{', 'f','i','g',',','x','f','i','g','}',  '\0' };
 static unichar_t wildbdf[] = { '*', '.', 'b', 'd','f',  '\0' };
-static unichar_t import[] = { 'I', 'm', 'p', 'o', 'r', 't', '\0' };
-static unichar_t filter[] = { 'F', 'i', 'l', 't', 'e', 'r', '\0' };
-static unichar_t cancel[] = { 'C', 'a', 'n', 'c', 'e', 'l', '\0' };
-static unichar_t format[] = { 'F', 'o', 'r', 'm', 'a', 't', ':',   '\0' };
 
 static GTextInfo formats[] = {
     { (unichar_t *) "Image", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 1, 0, 1 },
@@ -638,6 +634,7 @@ static void _Import(CharView *cv,BDFChar *bc,FontView *fv) {
     GTextInfo label[7];
     struct gfc_data d;
     int i;
+    int bs = GIntGetResource(_NUM_Buttonsize), bsbigger, totwid;
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_restrict;
@@ -645,47 +642,50 @@ static void _Import(CharView *cv,BDFChar *bc,FontView *fv) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.window_title = import;
+    wattrs.window_title = GStringGetResource(_STR_Import,NULL);
     pos.x = pos.y = 0;
-    pos.width =GDrawPointsToPixels(NULL,223);
+    bsbigger = 3*bs+4*14>223; totwid = bsbigger?3*bs+4*12:223;
+    pos.width = GDrawPointsToPixels(NULL,totwid);
     pos.height = GDrawPointsToPixels(NULL,255);
     gw = GDrawCreateTopWindow(NULL,&pos,e_h,&d,&wattrs);
 
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
-    gcd[0].gd.pos.x = 12; gcd[0].gd.pos.y = 6; gcd[0].gd.pos.width = 200; gcd[0].gd.pos.height = 182;
+    gcd[0].gd.pos.x = 12; gcd[0].gd.pos.y = 6; gcd[0].gd.pos.width = totwid-24; gcd[0].gd.pos.height = 182;
     gcd[0].gd.flags = gg_visible | gg_enabled;
     if ( fv!=NULL )
 	gcd[0].gd.flags |= gg_file_multiple;
     gcd[0].creator = GFileChooserCreate;
 
-    gcd[1].gd.pos.x = 12; gcd[1].gd.pos.y = 224-3; gcd[1].gd.pos.width = 55; gcd[1].gd.pos.height = 0;
+    gcd[1].gd.pos.x = 12; gcd[1].gd.pos.y = 224-3; gcd[1].gd.pos.width = -1; gcd[1].gd.pos.height = 0;
     gcd[1].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[1].text = import;
-    gcd[1].gd.mnemonic = 'I';
+    label[1].text = (unichar_t *) _STR_Import;
+    label[1].text_in_resource = true;
     gcd[1].gd.label = &label[1];
     gcd[1].gd.handle_controlevent = GFD_ImportOk;
     gcd[1].creator = GButtonCreate;
 
-    gcd[2].gd.pos.x = 84; gcd[2].gd.pos.y = 224; gcd[2].gd.pos.width = 55; gcd[2].gd.pos.height = 0;
+    gcd[2].gd.pos.x = (totwid-bs)/2; gcd[2].gd.pos.y = 224; gcd[2].gd.pos.width = -1; gcd[2].gd.pos.height = 0;
     gcd[2].gd.flags = gg_visible | gg_enabled;
-    label[2].text = filter;
+    label[2].text = (unichar_t *) _STR_Filter;
+    label[2].text_in_resource = true;
     gcd[2].gd.mnemonic = 'F';
     gcd[2].gd.label = &label[2];
     gcd[2].gd.handle_controlevent = GFileChooserFilterEh;
     gcd[2].creator = GButtonCreate;
 
-    gcd[3].gd.pos.x = 155; gcd[3].gd.pos.y = 224; gcd[3].gd.pos.width = 55; gcd[3].gd.pos.height = 0;
+    gcd[3].gd.pos.x = totwid-gcd[1].gd.pos.x-bs; gcd[3].gd.pos.y = 224; gcd[3].gd.pos.width = -1; gcd[3].gd.pos.height = 0;
     gcd[3].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[3].text = cancel;
+    label[3].text = (unichar_t *) _STR_Cancel;
+    label[3].text_in_resource = true;
     gcd[3].gd.label = &label[3];
-    gcd[3].gd.mnemonic = 'C';
     gcd[3].gd.handle_controlevent = GFD_Cancel;
     gcd[3].creator = GButtonCreate;
 
     gcd[4].gd.pos.x = 12; gcd[4].gd.pos.y = 200; gcd[4].gd.pos.width = 0; gcd[4].gd.pos.height = 0;
     gcd[4].gd.flags = gg_visible | gg_enabled;
-    label[4].text = format;
+    label[4].text = (unichar_t *) _STR_Format;
+    label[4].text_in_resource = true;
     gcd[4].gd.label = &label[4];
     gcd[4].creator = GLabelCreate;
 

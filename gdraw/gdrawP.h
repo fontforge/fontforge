@@ -148,6 +148,7 @@ struct displayfuncs {
     void (*destroyCursor)(GDisplay *,GCursor);
     int (*setDither)(GDisplay *,int);
 
+    void (*reparentWindow)(GWindow,GWindow,int,int);
     void (*setVisible)(GWindow,int);
     void (*move)(GWindow,int32,int32);
     void (*trueMove)(GWindow,int32,int32);

@@ -326,20 +326,20 @@ static int AskSizeBits(int *pixelsize,int *bitsperpixel) {
     gcd[3].creator = GTextFieldCreate;
 
     gcd[4].gd.pos.x = 10-3; gcd[4].gd.pos.y = 38+30-3;
-    gcd[4].gd.pos.width = 55+6; gcd[4].gd.pos.height = 0;
+    gcd[4].gd.pos.width = -1; gcd[4].gd.pos.height = 0;
     gcd[4].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[4].text = (unichar_t *) "OK";
-    label[4].text_is_1byte = true;
+    label[4].text = (unichar_t *) _STR_OK;
+    label[4].text_in_resource = true;
     gcd[4].gd.mnemonic = 'O';
     gcd[4].gd.label = &label[4];
     gcd[4].gd.handle_controlevent = SB_OK;
     gcd[4].creator = GButtonCreate;
 
-    gcd[5].gd.pos.x = 140-55-10; gcd[5].gd.pos.y = 38+30;
-    gcd[5].gd.pos.width = 55; gcd[5].gd.pos.height = 0;
+    gcd[5].gd.pos.x = 140-GIntGetResource(_NUM_Buttonsize)-10; gcd[5].gd.pos.y = 38+30;
+    gcd[5].gd.pos.width = -1; gcd[5].gd.pos.height = 0;
     gcd[5].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[5].text = (unichar_t *) "Cancel";
-    label[5].text_is_1byte = true;
+    label[5].text = (unichar_t *) _STR_Cancel;
+    label[5].text_in_resource = true;
     gcd[5].gd.label = &label[5];
     gcd[5].gd.mnemonic = 'C';
     gcd[5].gd.handle_controlevent = SB_Cancel;
@@ -471,17 +471,6 @@ struct gfc_data {
     BDFChar *bc;
 };
 
-static unichar_t save[] = { 'S', 'a', 'v', 'e', '\0' };
-static unichar_t filter[] = { 'F', 'i', 'l', 't', 'e', 'r', '\0' };
-static unichar_t cancel[] = { 'C', 'a', 'n', 'c', 'e', 'l', '\0' };
-static unichar_t new[] = { 'N', 'e', 'w', '.', '.', '.', '\0' };
-static unichar_t replace[] = { 'R', 'e', 'p', 'l', 'a', 'c', 'e', '\0' };
-static unichar_t format[] = { 'F', 'o', 'r', 'm', 'a', 't', ':',   '\0' };
-
-static unichar_t failedtitle[] = { 'S','a','v','e',' ','F','a','i','l','e','d', '\0' };
-
-static unichar_t rcmn[] = { 'R', 'C', '\0' };
-static unichar_t *buts[] = { replace, cancel, NULL };
 
 static GTextInfo bcformats[] = {
     { (unichar_t *) "X Bitmap", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
@@ -513,7 +502,7 @@ static void DoExport(struct gfc_data *d,unichar_t *path) {
     else
 	good = ExportXBM(temp,d->sc,format);
     if ( !good )
-	GWidgetPostNotice(failedtitle,failedtitle);
+	GWidgetPostNoticeR(_STR_Savefailedtitle,_STR_Savefailedtitle);
     free(temp);
     d->done = good;
     d->ret = good;
@@ -530,13 +519,16 @@ static void GFD_exists(GIOControl *gio) {
     /* The filename the user chose exists, ask user if s/he wants to overwrite */
     struct gfc_data *d = gio->userdata;
     unichar_t buffer[200];
-    unichar_t title[30];
+    const unichar_t *rcb[3]; unichar_t rcmn[2];
 
-    uc_strcpy(title, "File Exists");
-    uc_strcpy(buffer, "File, ");
+    rcb[2]=NULL;
+    rcb[0] = GStringGetResource( _STR_Replace, &rcmn[0]);
+    rcb[1] = GStringGetResource( _STR_Cancel, &rcmn[1]);
+
+    u_strcpy(buffer, GStringGetResource(_STR_Fileexistspre,NULL));
     u_strcat(buffer, u_GFileNameTail(gio->path));
-    uc_strcat(buffer, ", exists. Replace it?");
-    if ( GWidgetAsk(title,buffer,buts,rcmn,0,1)==0 ) {
+    u_strcat(buffer, GStringGetResource(_STR_Fileexistspost,NULL));
+    if ( GWidgetAsk(GStringGetResource(_STR_Fileexists,NULL),buffer,rcb,rcmn,0,1)==0 ) {
 	DoExport(d,gio->path);
     }
     GFileChooserReplaceIO(d->gfc,NULL);
@@ -656,9 +648,9 @@ static int _Export(SplineChar *sc,BDFChar *bc) {
     GTextInfo label[7];
     struct gfc_data d;
     GGadget *pulldown, *files, *tf;
-    static unichar_t title[] = { 'E','x','p','o','r','t',  '\0' };
     char buffer[100]; unichar_t ubuf[100];
     int _format, i;
+    int bs = GIntGetResource(_NUM_Buttonsize), bsbigger, totwid;
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_restrict;
@@ -666,55 +658,57 @@ static int _Export(SplineChar *sc,BDFChar *bc) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.window_title = title;
+    wattrs.window_title = GStringGetResource(_STR_Export,NULL);
     pos.x = pos.y = 0;
-    pos.width =GDrawPointsToPixels(NULL,223);
+    bsbigger = 3*bs+4*14>223; totwid = bsbigger?3*bs+4*12:223;
+    pos.width = GDrawPointsToPixels(NULL,totwid);
     pos.height = GDrawPointsToPixels(NULL,255);
     gw = GDrawCreateTopWindow(NULL,&pos,e_h,&d,&wattrs);
 
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
-    gcd[0].gd.pos.x = 12; gcd[0].gd.pos.y = 6; gcd[0].gd.pos.width = 200; gcd[0].gd.pos.height = 182;
+    gcd[0].gd.pos.x = 12; gcd[0].gd.pos.y = 6; gcd[0].gd.pos.width = totwid-24; gcd[0].gd.pos.height = 182;
     gcd[0].gd.flags = gg_visible | gg_enabled;
     gcd[0].creator = GFileChooserCreate;
 
-    gcd[1].gd.pos.x = 12; gcd[1].gd.pos.y = 224-3; gcd[1].gd.pos.width = 55; gcd[1].gd.pos.height = 0;
+    gcd[1].gd.pos.x = 12; gcd[1].gd.pos.y = 224-3; gcd[1].gd.pos.width = -1; gcd[1].gd.pos.height = 0;
     gcd[1].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[1].text = save;
-    gcd[1].gd.mnemonic = 'S';
+    label[1].text = (unichar_t *) _STR_Save;
+    label[1].text_in_resource = true;
     gcd[1].gd.label = &label[1];
     gcd[1].gd.handle_controlevent = GFD_SaveOk;
     gcd[1].creator = GButtonCreate;
 
-    gcd[2].gd.pos.x = 84; gcd[2].gd.pos.y = 224; gcd[2].gd.pos.width = 55; gcd[2].gd.pos.height = 0;
+    gcd[2].gd.pos.x = (totwid-bs)/2; gcd[2].gd.pos.y = 224; gcd[2].gd.pos.width = -1; gcd[2].gd.pos.height = 0;
     gcd[2].gd.flags = gg_visible | gg_enabled;
-    label[2].text = filter;
-    gcd[2].gd.mnemonic = 'F';
+    label[2].text = (unichar_t *) _STR_Filter;
+    label[2].text_in_resource = true;
     gcd[2].gd.label = &label[2];
     gcd[2].gd.handle_controlevent = GFileChooserFilterEh;
     gcd[2].creator = GButtonCreate;
 
-    gcd[3].gd.pos.x = 155; gcd[3].gd.pos.y = 224; gcd[3].gd.pos.width = 55; gcd[3].gd.pos.height = 0;
+    gcd[3].gd.pos.x = totwid-gcd[1].gd.pos.x-bs; gcd[3].gd.pos.y = 224; gcd[3].gd.pos.width = -1; gcd[3].gd.pos.height = 0;
     gcd[3].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[3].text = cancel;
+    label[3].text = (unichar_t *) _STR_Cancel;
+    label[3].text_in_resource = true;
     gcd[3].gd.label = &label[3];
-    gcd[3].gd.mnemonic = 'C';
     gcd[3].gd.handle_controlevent = GFD_Cancel;
     gcd[3].creator = GButtonCreate;
 
-    gcd[4].gd.pos.x = 155; gcd[4].gd.pos.y = 194; gcd[4].gd.pos.width = 55; gcd[4].gd.pos.height = 0;
+    gcd[4].gd.pos.x = gcd[3].gd.pos.x; gcd[4].gd.pos.y = 194; gcd[4].gd.pos.width = -1; gcd[4].gd.pos.height = 0;
     gcd[4].gd.flags = gg_visible | gg_enabled;
-    label[4].text = new;
+    label[4].text = (unichar_t *) _STR_New;
+    label[4].text_in_resource = true;
     label[4].image = &_GIcon_dir;
     label[4].image_precedes = false;
-    gcd[4].gd.mnemonic = 'N';
     gcd[4].gd.label = &label[4];
     gcd[4].gd.handle_controlevent = GFD_NewDir;
     gcd[4].creator = GButtonCreate;
 
     gcd[5].gd.pos.x = 12; gcd[5].gd.pos.y = 200; gcd[5].gd.pos.width = 0; gcd[5].gd.pos.height = 0;
     gcd[5].gd.flags = gg_visible | gg_enabled;
-    label[5].text = format;
+    label[5].text = (unichar_t *) _STR_Format;
+    label[5].text_in_resource = true;
     gcd[5].gd.label = &label[5];
     gcd[5].creator = GLabelCreate;
 

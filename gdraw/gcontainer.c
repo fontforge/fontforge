@@ -333,7 +333,7 @@ return( handled );
 
 static int GWidgetCheckMn(GContainerD *gd,GEvent *event) {
     int handled = false;
-    GGadget *gadget;
+    GGadget *gadget, *last;
     struct gwidgetdata *widget;
     unichar_t keysym = event->u.chr.keysym;
 
@@ -341,16 +341,27 @@ static int GWidgetCheckMn(GContainerD *gd,GEvent *event) {
     for ( gadget = gd->gadgets; gadget!=NULL && !handled ; gadget=gadget->prev ) {
 	if ( (event->u.chr.state&ksm_meta) &&
 		gadget->mnemonic==keysym &&
-		gadget->state != gs_invisible && gadget->state != gs_disabled &&
-		gadget->focusable ) {	/* labels may have a mnemonic */
+		gadget->state != gs_invisible && gadget->state != gs_disabled ) {
+	    if ( gadget->focusable ) {	/* labels may have a mnemonic */
 		    /* (ie. because textfields can't display mnemonics) */
 		    /* but they don't act on it */
-	    _GWidget_IndicateFocusGadget(gadget,mf_mnemonic);
-	    handled = true;
+		_GWidget_IndicateFocusGadget(gadget,mf_mnemonic);
+		handled = true;
+	    } else if ( last!=NULL && last->mnemonic=='\0' ) {
+		/* So if we get a label with a mnemonic, and the next gadget */
+		/*  is focusable and doesn't have a mnemoic itself, give it */
+		/*  the label's focus */
+		_GWidget_IndicateFocusGadget(last,mf_mnemonic);
+		handled = true;
+	    }
 	} else if ( gadget->shortcut == keysym &&
 		(gadget->short_mask&event->u.chr.state)==gadget->short_mask ) {
 	    _GWidget_IndicateFocusGadget(gadget,mf_shortcut);
 	    handled = true;
+	} else if ( gadget->state != gs_invisible &&
+		gadget->state != gs_disabled &&
+		gadget->focusable ) {
+	    last = gadget;
 	}
     }
     for ( widget = gd->widgets; widget!=NULL && !handled ; widget=widget->next ) {
@@ -847,18 +858,20 @@ GWindow GWidgetCreatePalette(GWindow w, GRect *pos, int (*eh)(GWindow,GEvent *),
     GPoint pt;
     GRect newpos;
     struct gtopleveldata *gd, *od;
+    GWindow root;
 
     if ( !w->is_toplevel )
 return( false );
 
     pt.x = pos->x; pt.y = pos->y;
-    GDrawTranslateCoordinates(w,GDrawGetRoot(w->display),&pt);
+    root = GDrawGetRoot(w->display);
+    GDrawTranslateCoordinates(w,root,&pt);
     if ( pt.x<0 ) pt.x=0;
     if ( pt.y<0 ) pt.y=0;
-    if ( pt.x+pos->width>GDrawGetRoot(NULL)->pos.width )
-	pt.x = GDrawGetRoot(NULL)->pos.width-pos->width;
-    if ( pt.y+pos->height>GDrawGetRoot(NULL)->pos.height )
-	pt.y = GDrawGetRoot(NULL)->pos.height-pos->height;
+    if ( pt.x+pos->width>root->pos.width )
+	pt.x = root->pos.width-pos->width;
+    if ( pt.y+pos->height>root->pos.height )
+	pt.y = root->pos.height-pos->height;
 
     newpos.x = pt.x; newpos.y = pt.y; newpos.width = pos->width; newpos.height = pos->height;
     wattrs->event_masks |= (1<<et_visibility);
@@ -939,3 +952,44 @@ return;
     GDrawProcessPendingEvents(NULL);
 #endif
 }
+
+#if 0
+void GPaletteDock(GWindow palette,int x, int y) {
+    GTopLevelD *td = (GTopLevelD *) (palette->widget_data);
+
+    if ( !td->ispalette || td->isdocked )
+return;
+    GDrawReparentWindow(palette,td->owner->w,x,y);
+    td->isdocked = true;
+}
+
+void GPaletteUndock(GWindow palette,int x, int y) {
+    GTopLevelD *td = (GTopLevelD *) (palette->widget_data);
+    GPoint pt;
+    GWindow root;
+
+    if ( !td->ispalette || !td->isdocked )
+return;
+
+    pt.x = x; pt.y = y;
+    root = GDrawGetRoot(palette->display);
+    GDrawTranslateCoordinates(td->owner->w,root,&pt);
+    if ( pt.x<0 ) pt.x=0;
+    if ( pt.y<0 ) pt.y=0;
+    if ( pt.x+palette->pos.width>root->pos.width )
+	pt.x = root->pos.width-palette->pos.width;
+    if ( pt.y+palette->pos.height>root->pos.height )
+	pt.y = root->pos.height-palette->pos.height;
+
+    GDrawReparentWindow(palette,root,x,y);
+    td->isdocked = false;
+}
+
+int GPaletteIsDocked(GWindow palette) {
+    GTopLevelD *td = (GTopLevelD *) (palette->widget_data);
+    if ( !td->ispalette )
+return(false);
+
+return( td->isdocked );
+}
+#endif
