@@ -498,6 +498,13 @@ const unichar_t *SFGetAlternate(SplineFont *sf, int base) {
 	greekalts[3] = 0;
 return( greekalts );
     }
+    if ( base=='i' || base=='j' ) {
+	greekalts[0] = base=='j'? 0xf6be: 0x0131;
+	greekalts[1] = 0x307;
+	greekalts[2] = 0;
+return( greekalts );
+    }
+
     if ( base==-1 || base>=65536 || unicode_alternates[base>>8]==NULL ||
 	    (upt = unicode_alternates[base>>8][base&0xff])==NULL )
 return( SFAlternateFromLigature(sf,base));
@@ -542,10 +549,13 @@ int SFIsCompositBuildable(SplineFont *sf,int unicodeenc) {
     const unichar_t *pt, *apt, *end; unichar_t ch;
     SplineChar *one, *two;
 
+    if ( unicodeenc==0x131 || unicodeenc==0xf6be )
+return( SCMakeDotless(sf,SFGetOrMakeChar(sf,unicodeenc,NULL),false,false));
+
     if (( pt = SFGetAlternate(sf,unicodeenc))==NULL )
 return( false );
 
-    one=findchar(sf,unicodeenc);
+    one=SFGetOrMakeChar(sf,unicodeenc,NULL);
     
     for ( ; *pt; ++pt ) {
 	ch = *pt;
@@ -881,6 +891,43 @@ static void BCClearAndCopy(BDFFont *bdf,int toenc,int fromenc) {
 	bc->bitmap = galloc(bc->bytes_per_line*(bc->ymax-bc->ymin+1));
 	memcpy(bc->bitmap,rbc->bitmap,bc->bytes_per_line*(bc->ymax-bc->ymin+1));
     }
+}
+
+static void BCClearAndCopyBelow(BDFFont *bdf,int toenc,int fromenc, int ymax) {
+    BDFChar *bc, *rbc;
+
+    bc = BDFMakeChar(bdf,toenc);
+    BCPreserveState(bc);
+    BCFlattenFloat(bc);
+    BCCompressBitmap(bc);
+    if ( bdf->chars[fromenc]!=NULL ) {
+	rbc = bdf->chars[fromenc];
+	free(bc->bitmap);
+	bc->xmin = rbc->xmin;
+	bc->xmax = rbc->xmax;
+	bc->ymin = rbc->ymin;
+	bc->ymax = ymax;
+	bc->bytes_per_line = rbc->bytes_per_line;
+	bc->width = rbc->width;
+	bc->bitmap = galloc(bc->bytes_per_line*(bc->ymax-bc->ymin+1));
+	memcpy(bc->bitmap,rbc->bitmap+(rbc->ymax-ymax)*rbc->bytes_per_line,
+		bc->bytes_per_line*(bc->ymax-bc->ymin+1));
+    }
+}
+
+static int BCFindGap(BDFChar *bc) {
+    int i,y;
+
+    BCFlattenFloat(bc);
+    BCCompressBitmap(bc);
+    for ( y=bc->ymax; y>=bc->ymin; --y ) {
+	for ( i=0; i<bc->bytes_per_line; ++i )
+	    if ( bc->bitmap[(bc->ymax-y)*bc->bytes_per_line+i]!=0 )
+	break;
+	if ( i==bc->bytes_per_line )
+return( y );
+    }
+return( bc->ymax );
 }
 
 static int SCMakeBaseReference(SplineChar *sc,SplineFont *sf,int ch, int copybmp) {
@@ -1588,6 +1635,57 @@ static void SCBuildHangul(SplineFont *sf,SplineChar *sc, const unichar_t *pt, in
     }
 }
 
+int SCMakeDotless(SplineFont *sf, SplineChar *dotless, int copybmp, int doit) {
+    SplineChar *sc, *xsc;
+    BlueData bd;
+    SplineSet *head, *last=NULL, *test, *cur;
+    DBounds b;
+    BDFFont *bdf;
+    BDFChar *bc;
+
+    if ( dotless==NULL )
+return( 0 );
+    if ( dotless->unicodeenc!=0x131 && dotless->unicodeenc!=0xf6be )
+return( 0 );
+    sc = SFGetChar(sf,dotless->unicodeenc==0xf6be?'j':'i',NULL);
+    xsc = SFGetChar(sf,'x',NULL);
+    if ( sc==NULL || sc->splines==NULL || sc->refs!=NULL || xsc==NULL )
+return( 0 );
+    QuickBlues(sf,&bd);
+    if ( bd.xheight==0 )
+return( 0 );
+    for ( test=sc->splines; test!=NULL; test=test->next ) {
+	SplineSetQuickBounds(test,&b);
+	if ( b.miny < bd.xheight ) {
+	    if ( !doit )
+return( true );
+	    cur = SplinePointListCopy1(test);
+	    if ( last==NULL )
+		head = cur;
+	    else
+		last->next = cur;
+	    last = cur;
+	}
+    }
+    if ( head==NULL )
+return( 0 );
+
+    SCPreserveState(dotless,true);
+    SplinePointListsFree(dotless->splines);
+    dotless->splines = NULL;
+    SCRemoveDependents(dotless);
+    dotless->width = sc->width;
+    dotless->splines = head;
+    SCCharChangedUpdate(dotless);
+    for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
+	if (( bc = bdf->chars[sc->enc])!=NULL ) {
+	    BCClearAndCopyBelow(bdf,dotless->enc,sc->enc,BCFindGap(bc));
+	}
+    }
+	    
+return( true );
+}
+
 void SCBuildComposit(SplineFont *sf, SplineChar *sc, int copybmp,FontView *fv) {
     const unichar_t *pt, *apt; unichar_t ch;
     BDFFont *bdf;
@@ -1611,6 +1709,9 @@ return;
 return;
     } else if ( SFIsRotatable(sf,sc) ) {
 	DoRotation(sf,sc,copybmp,fv);
+return;
+    } else if ( sc->unicodeenc==0x131 || sc->unicodeenc==0xf6be ) {
+	SCMakeDotless(sf, sc, copybmp, true);
 return;
     }
 

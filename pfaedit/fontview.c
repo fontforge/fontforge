@@ -1425,6 +1425,7 @@ void FVBuildAccent(FontView *fv,int onlyaccents) {
     continue;
 	}
 	if ( SFIsRotatable(fv->sf,sc) ||
+		(SCMakeDotless(fv->sf,sc,false,true) && !onlyaccents) ||
 		(SFIsCompositBuildable(fv->sf,sc->unicodeenc) &&
 		 (!onlyaccents || hascomposing(fv->sf,sc->unicodeenc)))) {
 	    sc = SFMakeChar(fv->sf,i);
@@ -1695,6 +1696,7 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 		    if ( sc==NULL )
 			sc = SCBuildDummy(&dummy,fv->sf,i);
 		    if ( SFIsRotatable(fv->sf,sc) ||
+			    (SCMakeDotless(fv->sf,sc,false,true) && !onlyaccents) ||
 			    (SFIsCompositBuildable(fv->sf,sc->unicodeenc) &&
 			     (!onlyaccents || hascomposing(fv->sf,sc->unicodeenc))) ) {
 			anybuildable = true;

@@ -646,7 +646,7 @@ void CIDFindBounds(SplineFont *cidmaster,DBounds *bounds) {
     }
 }
 
-static void SplineSetQuickBounds(SplineSet *ss,DBounds *b) {
+void SplineSetQuickBounds(SplineSet *ss,DBounds *b) {
     SplinePoint *sp;
 
     b->minx = b->miny = 1e10;
@@ -825,7 +825,7 @@ return( 0xa0 );
 return( -1 );
 }
 
-static SplinePointList *SplinePointListCopy1(SplinePointList *spl) {
+SplinePointList *SplinePointListCopy1(SplinePointList *spl) {
     SplinePointList *cur;
     SplinePoint *pt, *cpt, *first;
     Spline *spline;

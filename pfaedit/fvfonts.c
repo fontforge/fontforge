@@ -282,6 +282,15 @@ return( NULL );
 return( sf->chars[ind]);
 }
 
+SplineChar *SFGetOrMakeChar(SplineFont *sf, int unienc, char *name ) {
+    int ind = SFFindChar(sf,unienc,name);
+
+    if ( ind==-1 )
+return( NULL );
+
+return( SFMakeChar(sf,ind));
+}
+
 int SFFindExistingChar(SplineFont *sf, int unienc, char *name ) {
     int i = _SFFindChar(sf,unienc,name);
 
