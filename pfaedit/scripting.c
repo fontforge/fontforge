@@ -2382,6 +2382,7 @@ void ScriptDlg(FontView *fv) {
     GGadgetCreateData gcd[10];
     GTextInfo label[10];
     struct sd_data sd;
+    FontView *list;
 
     memset(&sd,0,sizeof(sd));
     sd.fv = fv;
@@ -2441,4 +2442,8 @@ void ScriptDlg(FontView *fv) {
     while ( !sd.done )
 	GDrawProcessOneEvent(NULL);
     GDrawSetVisible(gw,false);
+
+    /* Selection may be out of date, force a refresh */
+    for ( list = fv_list; list->next!=NULL; list=list->next )
+	GDrawRequestExpose(list->v,NULL,false);
 }
