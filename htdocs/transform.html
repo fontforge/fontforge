@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 22-Aug-2002 -->
+  <!-- AP: Last modified: 25-Mar-2004 -->
   <TITLE>Transform Dialog</TITLE>
 </HEAD>
 <BODY>
@@ -31,7 +31,7 @@ You may apply several different transformations at once:
   <DT>
     Move
   <DD>
-    You may more the selection an arbitrary amount in the x and y directions
+    You may move the selection an arbitrary amount in the x and y directions
   <DT>
     Rotate
   <DD>
@@ -61,6 +61,12 @@ is set to all fonts, then the transformation will also be applied to the
 bitmaps. Not all of these transforms can be mapped to ones on the bitmap
 font (arbitrary rotations, scales, etc. do not map). Only rotations by 90
 degrees, flips, skews and moves will be approximated on the bitmap characters.
+<P>
+If you are in the font view, then any pair-wise kerning information whose
+first character is selected will be scaled (but not translated) by the
+transformation matrix. Similarly and simple positioning features that apply
+to a selected character will be transformed by the matrix (but again not
+translated). You may choose to 
 <P>
 If you are in the font view or the outline view and there is no selection
 (and you are in the foreground) there is a "[] Transform Background Too"
