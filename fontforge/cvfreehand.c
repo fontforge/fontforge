@@ -836,7 +836,7 @@ return;
 #if 0
 	SplinePointListSimplify(cv->sc,cv->freehand.current_trace,
 		sf_ignoreextremum,.75/cv->scale,0);
-	SplineCharAddExtrema(cv->freehand.current_trace,false);
+	SplineCharAddExtrema(cv->freehand.current_trace,ae_all);
 	SplinePointListSimplify(cv->sc,cv->freehand.current_trace,
 		sf_normal,.75/cv->scale,0);
 #endif

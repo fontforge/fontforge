@@ -2060,7 +2060,7 @@ static void MVMenuAddExtrema(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     if ( i!=-1 ) {
 	SplineChar *sc = mv->perchar[i].sc;
 	SCPreserveState(sc,false);
-	SplineCharAddExtrema(sc->layers[ly_fore].splines,false);
+	SplineCharAddExtrema(sc->layers[ly_fore].splines,ae_only_good,sc->parent);
 	SCCharChangedUpdate(sc);
     }
 }
