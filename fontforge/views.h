@@ -168,28 +168,35 @@ struct instrinfo {
     int  (*handle_char)(struct instrinfo *,GEvent *e);
 };
 
+enum debug_wins { dw_registers=0x1, dw_stack=0x2, dw_storage=0x4, dw_points=0x8,
+	dw_cvt=0x10, dw_raster=0x20, dw_gloss=0x40 };
+
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 typedef struct debugview {
     struct debugger_context *dc;	/* Local to freetype.c */
 #if defined(FONTFORGE_CONFIG_GTK)
     GtkWidget *dv, *v;
-    GtkWidget *regs, *stack, *storage, *points, *cvt, *raster;	/* Order matters */
+    GtkWidget *regs, *stack, *storage, *points, *cvt, *raster, *gloss;	/* Order matters */
     GtkWidget *points_v;
-    GtkWidget *cvtsb, *pts_vsb;
+    GtkWidget *cvtsb, *pts_vsb, *glosssb, *storagesb, *regsb, *stacksb;
 #elif defined(FONTFORGE_CONFIG_GDRAW)
     GWindow dv, v;
-    /* Windows for twilight points, cvt, registers, stack, storage */
-    GWindow regs, stack, storage, points, cvt, raster;	/* order matters */
+    /* Windows for twilight points, cvt, registers, stack, storage, stack gloss */
+    GWindow regs, stack, storage, points, cvt, raster, gloss;	/* order matters */
     GWindow points_v;
     GGadget *cvtsb;
     GGadget *pts_vsb;
+    GGadget *glosssb;
+    GGadget *storagesb;
+    GGadget *regsb;
+    GGadget *stacksb;
 #endif
     struct instrdata id;
     struct instrinfo ii;
     int dwidth, toph;
     struct charview *cv;
     double scale;
-    int pts_head, cvt_offtop;
+    int pts_head, cvt_offtop, gloss_offtop, storage_offtop, stack_offtop, reg_offtop;
     int points_offtop;
 } DebugView;
 
@@ -1207,6 +1214,8 @@ extern int PointOfViewDlg(struct pov_data *pov,SplineFont *sf,int flags);
 extern SplineChar *FVMakeChar(FontView *fv,int i);
 
 extern void CVYPerspective(CharView *cv,double x_vanish, double y_vanish);
+
+extern void DVCreateGloss(DebugView *dv);
 
 #ifdef FONTFORGE_CONFIG_GDRAW
 extern GMenuItem helplist[];

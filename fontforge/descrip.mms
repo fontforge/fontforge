@@ -23,7 +23,7 @@ fontforge_OBJECTS2=displayfonts.obj,combinations.obj,sftextfield.obj,ikarus.obj,
 	histograms.obj,ttfspecial.obj,svg.obj,parsettfatt.obj,contextchain.obj,\
 	macenc.obj,statemachine.obj,typofeatures.obj,splinerefigure.obj,mm.obj,\
 	parsettfvar.obj,tottfvar.obj,pua.obj,stemdb.obj,anchorsaway.obj,\
-	palmfonts.obj
+	palmfonts.obj,cvdgloss.obj
 
 fontforge.exe : nomen.h $(fontforge_OBJECTS) $(fontforge_OBJECTS2) xlib.opt
         library/create tmp.olb $(fontforge_OBJECTS)
@@ -150,3 +150,4 @@ pua.obj : pua.c
 stemdb.obj : stemdb.c
 anchorsaway.obj : anchorsaway.c
 palmfonts.obj : palmfonts.c
+cvdgloss.obj : cvdgloss.c
