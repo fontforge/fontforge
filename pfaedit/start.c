@@ -132,7 +132,7 @@ static void DoDelayedEvents(GEvent *event) {
 static int splash_e_h(GWindow gw, GEvent *event) {
     static int splash_cnt;
     GRect old;
-    static int foolishness[] = { _STR_FreePress };
+    static int foolishness[] = { _STR_FreePress, _STR_GaudiamusLigature };
 
     if ( event->type == et_expose ) {
 	GDrawPushClip(gw,&event->u.expose.rect,&old);

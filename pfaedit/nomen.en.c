@@ -1250,5 +1250,6 @@ static char *str_TransformBackground = "Transform Background Too";
 static char mnemonic_TransformBackground = 'B';
     /* start (about box) */
 static char *str_FreePress = "A free press discriminates\nagainst the illiterate.";
+static char *str_GaudiamusLigature = "Gaudiamus Ligature!";
 
 static int num_buttonsize = 55;
