@@ -734,16 +734,16 @@ int SSPointCnt(SplineSet *ss,int startcnt, int has_instrs) {
     int cnt;
 
     for ( sp=ss->first, cnt=startcnt; sp!=first ; ) {
-	if ( has_instrs && sp->ttfindex!=0xffff ) {
+	if ( has_instrs && sp->ttfindex!=0xffff && sp->ttfindex!=0xfffe ) {
 	    cnt = sp->ttfindex+1;
-	} else if ( !has_instrs &&
+	} else if ( (!has_instrs || sp->ttfindex==0xfffe) &&
 		    ( sp==ss->first || sp->nonextcp || sp->noprevcp ||
 		    (sp->dontinterpolate || sp->roundx || sp->roundy) ||
 		    (sp->prevcp.x+sp->nextcp.x)/2!=sp->me.x ||
 		    (sp->prevcp.y+sp->nextcp.y)/2!=sp->me.y )) {
 	    ++cnt;
 	}
-	if ( has_instrs && sp->nextcpindex!=0xffff ) {
+	if ( has_instrs && sp->nextcpindex!=0xffff && sp->nextcpindex!=0xfffe ) {
 	    if ( sp->nextcpindex!=startcnt )
 		cnt = sp->nextcpindex+1;
 	} else if ( !sp->nonextcp )
@@ -774,7 +774,7 @@ int SSAddPoints(SplineSet *ss,int ptcnt,BasePoint *bp, char *flags,
 	if ( flags!=NULL ) flags[ptcnt] = 0;
 	bp[ptcnt].x = rint(ss->first->prevcp.x);
 	bp[ptcnt++].y = rint(ss->first->prevcp.y);
-    } else if ( has_instrs && ss->first->ttfindex!=ptcnt )
+    } else if ( has_instrs && ss->first->ttfindex!=ptcnt && ss->first->ttfindex!=0xfffe )
 	GDrawIError("Unexpected point count in SSAddPoints" );
 
     first = NULL;
@@ -800,7 +800,8 @@ int SSAddPoints(SplineSet *ss,int ptcnt,BasePoint *bp, char *flags,
 	if ( has_instrs && sp->nextcpindex == startcnt )
 	    /* This control point is actually our first point, not our last */
     break;
-	if ( (has_instrs && sp->nextcpindex !=0xffff ) ||
+	if ( (has_instrs && sp->nextcpindex !=0xffff && sp->nextcpindex!=0xfffe ) ||
+		(has_instrs && !sp->nonextcp && sp->nextcpindex==0xfffe ) ||
 		(!has_instrs && !sp->nonextcp )) {
 	    if ( flags!=NULL ) flags[ptcnt] = 0;
 	    bp[ptcnt].x = rint(sp->nextcp.x);

@@ -2887,7 +2887,7 @@ static struct feature *CoalesceLookups(SplineFont *sf, struct lookup *lookups) {
 	for ( l=lookups; l!=NULL && l->feature_tag==lookups->feature_tag; l = l->feature_next ) {
 	    last = l;
 	    ++cnt;
-	    lcnt += CountLangs(sf,lookups->script_lang_index);
+	    lcnt += CountLangs(sf,l->script_lang_index);
 	    if ( l->script_lang_index!=lookups->script_lang_index )
 		allsame = false;
 	}

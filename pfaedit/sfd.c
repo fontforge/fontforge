@@ -1754,6 +1754,8 @@ static SplineSet *SFDGetSplineSet(SplineFont *sf,FILE *sfd) {
 		    cur = spl;
 		} else {
 		    if ( cur!=NULL && cur->first!=NULL && (cur->first!=cur->last || cur->first->next==NULL) ) {
+			if ( cur->last->nextcpindex==0xfffe )
+			    cur->last->nextcpindex = 0xffff;
 			SplineMake(cur->last,pt,sf->order2);
 			cur->last = pt;
 		    }
@@ -1773,12 +1775,12 @@ static SplineSet *SFDGetSplineSet(SplineFont *sf,FILE *sfd) {
 		    pt->prevcp.y = stack[sp-3];
 		    pt->me = current;
 		    pt->nonextcp = true;
-		    SplineMake(cur->last,pt,sf->order2);
-		    cur->last = pt;
 		    if ( cur->last->nextcpindex==0xfffe )
 			cur->last->nextcpindex = ttfindex++;
 		    else if ( cur->last->nextcpindex!=0xffff )
 			ttfindex = cur->last->nextcpindex+1;
+		    SplineMake(cur->last,pt,sf->order2);
+		    cur->last = pt;
 		}
 		sp -= 6;
 	    } else
@@ -1823,6 +1825,8 @@ static SplineSet *SFDGetSplineSet(SplineFont *sf,FILE *sfd) {
 		    ungetc(ch,sfd);
 		    getint(sfd,&val);
 		    pt->nextcpindex = val;
+		    if ( val!=-1 )
+			ttfindex = val+1;
 		}
 	    }
 	}
@@ -2254,6 +2258,22 @@ return( NULL );
 	    } else
 		liga->script_lang_index = SFAddScriptLangIndex(sf,
 			script!=0?script:SCScriptFromUnicode(sc),DEFAULT_LANG);
+	    if ( ch=='\'' ) {
+		liga->tag = getc(sfd)<<24;
+		liga->tag |= getc(sfd)<<16;
+		liga->tag |= getc(sfd)<<8;
+		liga->tag |= getc(sfd);
+		getc(sfd);	/* Final quote */
+	    } else if ( ch=='<' ) {
+		getint(sfd,&temp);
+		liga->tag = temp<<16;
+		getc(sfd);	/* comma */
+		getint(sfd,&temp);
+		liga->tag |= temp;
+		getc(sfd);	/* close '>' */
+		liga->macfeature = true;
+	    } else
+		ungetc(ch,sfd);
 	    if ( liga->script_lang_index>=sf->sli_cnt && liga->type!=pst_lcaret ) {
 		static int complained=false;
 		if ( sf->sli_cnt==0 )
@@ -2272,22 +2292,6 @@ return( NULL );
 		    liga->script_lang_index = sf->sli_cnt-1;
 		complained = true;
 	    }
-	    if ( ch=='\'' ) {
-		liga->tag = getc(sfd)<<24;
-		liga->tag |= getc(sfd)<<16;
-		liga->tag |= getc(sfd)<<8;
-		liga->tag |= getc(sfd);
-		getc(sfd);	/* Final quote */
-	    } else if ( ch=='<' ) {
-		getint(sfd,&temp);
-		liga->tag = temp<<16;
-		getc(sfd);	/* comma */
-		getint(sfd,&temp);
-		liga->tag |= temp;
-		getc(sfd);	/* close '>' */
-		liga->macfeature = true;
-	    } else
-		ungetc(ch,sfd);
 	    if ( liga->type==pst_position )
 		fscanf( sfd, " dx=%hd dy=%hd dh=%hd dv=%hd\n",
 			&liga->u.pos.xoff, &liga->u.pos.yoff,
