@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 16-Jan-2005 -->
+  <!-- AP: Last modified: 17-Jan-2005 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -637,8 +637,9 @@ a[4][0] = "Nested array";
 	bin (for nfnt in macbinary)
 	<P>
 	NOTE: Mac OS/X does not appear to support NFNT bitmaps. However even though
-	unused itself, an NFNT bitmap must be present for a resource based postscript
-	font to be used.
+	unused itself, an NFNT bitmap must be present for a resource based type1
+	postscript font to be used. (More accurately the obsolete FOND must be present,
+	and that will only be present if an NFNT is present)
       <LI>
 	fnt (For windows FNT format)
       <LI>
@@ -1219,9 +1220,9 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
   <DD>
     Sets the indicated truetype name in the MS platform. Lang must be one of
     the
-    <A HREF="http://partners.adobe.com/asn/tech/type/opentype/name.jsp#lang3">language/locales</A>
+    <A HREF="http://partners.adobe.com/public/developer/opentype/index_name.html#lang3">language/locales</A>
     supported by MS, and nameid must be one of the
-    <A HREF="http://partners.adobe.com/asn/tech/type/opentype/name.jsp#enc4">small
+    <A HREF="http://partners.adobe.com/public/developer/opentype/index_name.html#enc4">small
     integers used to indicate a standard name</A>, while the final argument should
     be a utf8 encoded string which will become the value of that entry. A null
     string ("") may be used to clear an entry.<BR>
