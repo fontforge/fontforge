@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 4-Apr-2003 -->
+  <!-- AP: Last modified: 6-Apr-2003 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -451,6 +451,12 @@ a[4][0] = "Nested array";
     Sets the value of the preference item whose name is containted in str. If
     the preference item has a real type then a second argument may be passed
     and the value set will be val/val2.
+  <DT>
+    UnicodeFromName(name)
+  <DD>
+    Looks the string "name" up in PfaEdit's database of commonly used glyph names
+    and returns the unicode value associated with that name, or -1 if not found.
+    This does <EM>not</EM> check the current font (if any).
   <DT>
       <HR>
   <DT>
@@ -1078,6 +1084,11 @@ ApplySubstitution("*","*","vrt2")
     current one. For a Ligature the argument is a space seperated list of glyph
     names all of which will be replaced by the current glyph.
   <DT>
+    RemoveATT(type,script-lang,tag)
+  <DD>
+    Removes any feature tags which match the arguments (which are essentially
+    the same as above, except that any of them may be "*" which will match anything).
+  <DT>
     BuildComposit()
   <DD>
   <DT>
@@ -1100,6 +1111,22 @@ ApplySubstitution("*","*","vrt2")
   <DT>
     ClearHints()
   <DD>
+  <DT>
+    ClearPrivateEntry(key)
+  <DD>
+    Removes the entry indexed by the given key from the private dictionary of
+    the font.
+  <DT>
+    ChangePrivateEntry(key,val)
+  <DD>
+    Changes (or adds if the key is not already present) the value in the dictionary
+    indexed by key. (all values must be strings even if they represent numbers
+    in PostScript)
+  <DT>
+    GetPrivateEntry(key)
+  <DD>
+    Returns the entry indexed by key in the private dictionary. All return values
+    will be strings. If an entry does not exist a null string is returned.
   <DT>
     SetWidth(width[,relative])
   <DD>

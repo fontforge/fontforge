@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 28-Oct-2002 -->
-  <!-- AP: Last modified: 3-Mar-2003 -->
+  <!-- AP: Last modified: 3-Apr-2003 -->
   <TITLE>Glossary of (some) typographical terms</TITLE>
 </HEAD>
 <BODY>
@@ -218,6 +218,16 @@
 	  have multiple encodings for the character set (end multiple character sets
 	  for some encodings).
 	<DT>
+	  <A NAME="Even-Odd">Even-Odd </A>Fill rule
+	<DD>
+	  To determine if a pixel should be
+	  <A HREF="editexample2.html#even-odd" TARGET="_top">filled using this rule</A>,
+	  draw a line from the pixel to infinity (in any direction) then count the
+	  number of times contours cross this line. If that number is odd then fill
+	  the point, if it is even then do not fill the point. This method is used
+	  by postscript rasterizers after level 2.0 of PostScript. See Also
+	  <A HREF="#Non-Zero">Non-Zero Winding Number Fill</A>.<BR>
+	<DT>
 	  <A NAME="extended">Extended</A>
 	<DD>
 	  An extended font is one where the space between the stems of the characters,
@@ -283,9 +293,9 @@
 	  <A NAME="Grid-Fitting">Grid</A> Fitting
 	<DD>
 	  Before TrueType glyphs are rasterized they go through a process called
-	  <A HREF="overview.html#TrueType">grid fitting</A> where a tiny program is
-	  run which moves the points on the glyph's outlines around until they fit
-	  the pixel grid better.
+	  <A HREF="overview.html#TrueType">grid fitting</A> where a tiny program
+	  (associated with each glyph) is run which moves the points on the glyph's
+	  outlines around until they fit the pixel grid better.
 	<DT>
 	  <A NAME="gothic">Gothic</A>
 	<DD>
@@ -404,7 +414,16 @@
     <TD BGCOLOR=yellow><A NAME="N">N</A></TD>
     <TD><DL>
 	<DT>
+	  <A NAME="Non-Zero">Non-Zero </A>Winding Number Fill rule
 	<DD>
+	  To determine if a pixel should be <A HREF="editexample2.html#non-zero">filled
+	  using this rule</A> draw a line from here to infinity (in any direction)
+	  and count the number of times contours cross this line. If the contour crosses
+	  the line in a clockwise direction add 1, of the contour crosses in a counter
+	  clockwise direction subtract one. If the result is non-zero then fill the
+	  pixel. If it is zero leave it blank. This method is used by truetype and
+	  older (before version 2) postscript rasterizers.<BR>
+	  See Also <A HREF="#Even-Odd">Even-Odd Fill Rule</A>
       </DL>
     </TD>
   </TR>

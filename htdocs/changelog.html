@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 4-Apr-2003 -->
+  <!-- AP: Last modified: 7-Apr-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -11,7 +11,28 @@
 </H1>
 <UL>
   <LI>
-    ??-Apr-2003
+    7-Apr-2003
+    <UL>
+      <LI>
+	Program generated divide by zero errors when using Meta-Shift to move a control
+	point which didn't exist.
+      <LI>
+	(cleaned up some syntax issues in non-English nomen files)
+      <LI>
+	Added new scripting commands ClearPrivateEntry, ChangePrivateEntry,
+	GetPrivateEntry
+      <LI>
+	Added new scripting command: UnicodeFromName
+      <LI>
+	Added new script command: RemoveATT
+      <LI>
+	Vadim pointed out that loading "pala.ttf" and then generating it again (as
+	ttf) produced bad results. PfaEdit was getting confused by the points which
+	were used to control Anchors, getting its points list out of order and generally
+	screwing up.
+    </UL>
+  <LI>
+    04-Apr-2003
     <UL>
       <LI>
 	autosave sometimes lost track of which font it should be applying changes
