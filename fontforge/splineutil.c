@@ -1858,7 +1858,7 @@ static void SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext *
 }
 
 static SplineFont *SplineFontFromMMType1(SplineFont *sf, FontDict *fd, struct pscontext *pscontext) {
-    char *pt, *end;
+    char *pt, *end, *origweight;
     MMSet *mm;
     int ipos, apos, ppos, item, i;
     real blends[12];	/* At most twelve points/axis in a blenddesignmap */
@@ -2001,6 +2001,8 @@ return( NULL );
     mm->cdv = copy(fd->cdv);
     mm->ndv = copy(fd->ndv);
 
+    origweight = fd->fontinfo->weight;
+
     /* Now figure out the master designs, being careful to interpolate */
     /* BlueValues, ForceBold, UnderlinePosition etc. We need to copy private */
     /* generate a font name */
@@ -2008,7 +2010,7 @@ return( NULL );
 	free(fd->fontname);
 	free(fd->fontinfo->fullname);
 	fd->fontname = MMMakeMasterFontname(mm,ipos,&fd->fontinfo->fullname);
-	fd->fontinfo->weight = MMGuessWeight(mm,ipos,fd->fontinfo->weight);
+	fd->fontinfo->weight = MMGuessWeight(mm,ipos,copy(origweight));
 	if ( fd->blendfontinfo!=NULL ) {
 	    for ( item=0; item<3; ++item ) {
 		static char *names[] = { "ItalicAngle", "UnderlinePosition", "UnderlineThickness" };
@@ -2057,6 +2059,7 @@ return( NULL );
 	SplineFontFromType1(mm->instances[ipos],fd,pscontext);
 	mm->instances[ipos]->mm = mm;
     }
+    free(origweight);
 return( sf );
 }
 
