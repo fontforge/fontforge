@@ -1,3 +1,5 @@
+srcdir = @srcdir@
+
 CC = @CC@
 
 X_CFLAGS = @X_CFLAGS@

@@ -968,6 +968,7 @@ static void char_glossexpose(CharView *cv,GWindow pixmap,GRect *rect) {
     struct ttfactions *act;
     char buf[100];
     unichar_t ubuf[100];
+    double scale = 64.0*cv->show.ppem/cv->cc->parent->em;
 
     GDrawSetFont(pixmap,cv->gfont);
     y = EDGE_SPACING+cv->as;
@@ -986,6 +987,8 @@ static void char_glossexpose(CharView *cv,GWindow pixmap,GRect *rect) {
 		act->freedom.y==1.0?'y':'d' );
 	if ( act->basedon==-1 )
 	    strcat(buf,"Absolute At ");
+	else if ( act->interp==-2 )	/* don't know interp range with freetype */
+	    sprintf(buf+strlen(buf), "Interpolated ", act->basedon, act->interp );
 	else if ( act->interp!=-1 )
 	    /* Interpolated between */
 	    sprintf(buf+strlen(buf), "<%3d:%-3d>To ", act->basedon, act->interp );
@@ -993,9 +996,28 @@ static void char_glossexpose(CharView *cv,GWindow pixmap,GRect *rect) {
 	    strcat(buf,"Shifted  By ");
 	else
 	    sprintf(buf+strlen(buf), "Base%4d By ", act->basedon );
-	sprintf(buf+strlen(buf), "%.2f %c%c", act->distance/64.0,
-	    act->rounded ? 'r' : ' ',
-	    act->min ? 'm' : ' ');
+	if ( act->distance!=0 ) {	/* my interpreter */
+		/* I store slightly different info from freetype */
+	    sprintf(buf+strlen(buf), "%.2f %c%c", act->distance/64.0,
+		act->rounded ? 'r' : ' ',
+		act->min ? 'm' : ' ');
+	} else {			/* freetype */
+	    if ( act->interp==-2 )
+		/* leave */;
+	    else if ( act->freedom.x==1.0 || act->freedom.y==1.0 )
+		strcpy(buf+strlen(buf)-3,"To ");
+	    else
+		strcpy(buf+strlen(buf)-3,"   ");
+	    if ( act->freedom.x==1.0 )
+		sprintf( buf+strlen(buf), "%.2f ", act->is.x/64.0 );
+	    else if ( act->freedom.y==1.0 )
+		sprintf( buf+strlen(buf), "%.2f ", act->is.y/64.0 );
+	    else
+		sprintf( buf+strlen(buf), "    " );
+	    sprintf( buf+strlen(buf), "%c%c",
+		    act->rounded ? 'r' : ' ',
+		    act->min ? 'm' : ' ');
+	}
 	uc_strcpy(ubuf,buf);
 	GDrawDrawText(pixmap,EDGE_SPACING,y,ubuf,-1,NULL,0x000000);
 	++i;

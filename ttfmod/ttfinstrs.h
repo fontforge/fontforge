@@ -121,10 +121,9 @@ struct ttfstate {
 };
 
 struct ttfargs {
-    enum ttf_set { ttf_sp0=0x1, ttf_sp1=0x2, ttf_sp2=0x4, ttf_sp3=0x8,
-	    ttf_inloop = 0x10,
-	    ttf_rp0=0x20, ttf_rp1=0x40, ttf_rp2=0x80,
-	    ttf_pushed=0x100, ttf_pushedmore=0x200
+    enum ttf_set { ttf_inloop = 0x1, ttf_rp0=0x2, ttf_rp1=0x4, ttf_rp2=0x8,
+	    ttf_sp0=0x100, ttf_sp1=0x200, ttf_sp2=0x400, ttf_sp3=0x800,
+	    ttf_pushed=0x1000, ttf_pushedmore=0x2000
     } used;			/* Things this instruction uses */
     int loopcnt;
     int spvals[4];

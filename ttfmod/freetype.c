@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "ttfmodui.h"
+#include "ttfinstrs.h"
 
 /* This is the interface module to freetype. You don't need it if you aren't */
 /*  rasterizing glyphs for the fontview (and aren't able to use the bytecode */
@@ -53,6 +54,12 @@
 #  define TT_CONFIG_OPTION_BYTECODE_INTERPRETER 0
 # endif
 
+#if TT_CONFIG_OPTION_BYTECODE_DEBUG && TT_CONFIG_OPTION_FREETYPE_DEBUG && TT_CONFIG_OPTION_BYTECODE_INTERPRETER
+# include "ttobjs.h"
+# include "ttdriver.h"
+# include "ttinterp.h"
+#endif
+
 static FT_Library context;
 
 /* Ok, this complication is here because:				    */
@@ -73,6 +80,10 @@ static FT_Library context;
 #define _FT_Render_Glyph FT_Render_Glyph
 #define _FT_Outline_Decompose FT_Outline_Decompose
 
+#define _FT_Get_Module FT_Get_Module
+#define _FT_Set_Debug_Hook FT_Set_Debug_Hook
+#define _TT_RunIns TT_RunIns
+
 static int freetype_init_base() {
 return( true );
 }
@@ -88,6 +99,12 @@ static FT_Error (*_FT_Load_Glyph)( FT_Face, int, int);
 static FT_Error (*_FT_Render_Glyph)( FT_GlyphSlot, int);
 static FT_Error (*_FT_Outline_Decompose)(FT_Outline *, const FT_Outline_Funcs *,void *);
 
+#if TT_CONFIG_OPTION_BYTECODE_DEBUG && TT_CONFIG_OPTION_FREETYPE_DEBUG && TT_CONFIG_OPTION_BYTECODE_INTERPRETER
+static FT_Module (*_FT_Get_Module)(FT_Library, const char *);
+static void (*_FT_Set_Debug_Hook)(FT_Library, FT_UInt, FT_DebugHook_Func);
+static FT_Error (*_TT_RunIns)( TT_ExecContext );
+#endif
+
 static int freetype_init_base() {
     libfreetype = dlopen("libfreetype.so",RTLD_LAZY);
     if ( libfreetype==NULL )
@@ -100,6 +117,12 @@ return( false );
     _FT_Load_Glyph = (FT_Error (*)(FT_Face, int, int)) dlsym(libfreetype,"FT_Load_Glyph");
     _FT_Render_Glyph = (FT_Error (*)(FT_GlyphSlot, int)) dlsym(libfreetype,"FT_Render_Glyph");
     _FT_Outline_Decompose = (FT_Error (*)(FT_Outline *, const FT_Outline_Funcs *,void *)) dlsym(libfreetype,"FT_Outline_Decompose");
+
+#if TT_CONFIG_OPTION_BYTECODE_DEBUG && TT_CONFIG_OPTION_FREETYPE_DEBUG && TT_CONFIG_OPTION_BYTECODE_INTERPRETER
+    _FT_Get_Module = (FT_Module (*)(FT_Library, const char* )) dlsym(libfreetype,"FT_Get_Module");
+    _FT_Set_Debug_Hook = (void (*)(FT_Library, FT_UInt, FT_DebugHook_Func)) dlsym(libfreetype,"FT_Set_Debug_Hook");
+    _TT_RunIns = (FT_Error (*)(TT_ExecContext)) dlsym(libfreetype,"TT_RunIns");
+#endif
 return( true );
 }
 # endif
@@ -322,11 +345,19 @@ static FT_Outline_Funcs outlinefuncs = {
 };
 
 /* Eventually I want to create baby ttf fonts containing only the glyph I need*/
-/*  and its componants. Also need: head, hhea, hmtx, maxp, prep, fpgm, loca,
+/*  and its componants. Also need: head, hhea, hmtx, maxp, prep, fpgm, loca, */
 /*  OS/2, post. Some of these are just direct copies, others (hmtx) are shrunk */
-void FreeType_GridFitChar(CharView *cv) {
+static FT_Error FreeType_FaceForCV(CharView *cv, FT_Face *face) {
     TtfFile *tfile = cv->cc->parent->tfile;
     int i;
+
+    for ( i=0; i<tfile->font_cnt; ++i )
+	if ( tfile->fonts[i]==cv->cc->parent->tfont )
+    break;
+return( _FT_New_Face(context,tfile->filename,i,face) );
+}
+
+void FreeType_GridFitChar(CharView *cv) {
     FT_Face face;
     struct freetype_raster *ret;
     FT_GlyphSlot slot;
@@ -337,10 +368,7 @@ void FreeType_GridFitChar(CharView *cv) {
 
     if ( !freetype_init())
 return;
-    for ( i=0; i<tfile->font_cnt; ++i )
-	if ( tfile->fonts[i]==cv->cc->parent->tfont )
-    break;
-    if ( _FT_New_Face(context,tfile->filename,i,&face) )
+    if ( FreeType_FaceForCV(cv,&face) )
 return;
     if ( _FT_Set_Pixel_Sizes(face,0,cv->show.ppem)) {
 	_FT_Done_Face(face);
@@ -404,20 +432,456 @@ void FreeType_FreeRaster(struct freetype_raster *raster) {
 #if TT_CONFIG_OPTION_BYTECODE_DEBUG && TT_CONFIG_OPTION_FREETYPE_DEBUG && TT_CONFIG_OPTION_BYTECODE_INTERPRETER
 /* This code is inspired by ttdebug.c in ft2demos and David Turner's kind */
 /*  suggestions. */
-#include "ttobjs.h"
-#include "ttdriver.h"
-#include "ttinterp.h"
 
+#undef  PACK
+#define PACK( x, y )  ( ( x << 4 ) | y )
 
-FT_Library      library;    /* root library object */
-FT_Memory       memory;     /* system object */
-FT_Driver       driver;     /* truetype driver */
-TT_Face         face;       /* truetype face */
-TT_Size         size;       /* truetype size */
-TT_GlyphSlot    glyph;      /* truetype glyph slot */
-TT_ExecContext  exec;       /* truetype execution context */
-FT_Error        error;
+/* And this table is taken directly from ttinterp.c */
+static const FT_Byte  Pop_Push_Use_Count[256][2] = {
+    /* opcodes are gathered in groups of 16 */
+    /* please keep the spaces as they are   */
+
+    /*  SVTCA  y  */  PACK( 0, 0 ), 0,
+    /*  SVTCA  x  */  PACK( 0, 0 ), 0,
+    /*  SPvTCA y  */  PACK( 0, 0 ), 0,
+    /*  SPvTCA x  */  PACK( 0, 0 ), 0,
+    /*  SFvTCA y  */  PACK( 0, 0 ), 0,
+    /*  SFvTCA x  */  PACK( 0, 0 ), 0,
+    /*  SPvTL //  */  PACK( 2, 0 ), 0,
+    /*  SPvTL +   */  PACK( 2, 0 ), 0,
+    /*  SFvTL //  */  PACK( 2, 0 ), 0,
+    /*  SFvTL +   */  PACK( 2, 0 ), 0,
+    /*  SPvFS     */  PACK( 2, 0 ), 0,
+    /*  SFvFS     */  PACK( 2, 0 ), 0,
+    /*  GPV       */  PACK( 0, 2 ), 0,
+    /*  GFV       */  PACK( 0, 2 ), 0,
+    /*  SFvTPv    */  PACK( 0, 0 ), 0,
+    /*  ISECT     */  PACK( 5, 0 ), 0,
+
+    /*  SRP0      */  PACK( 1, 0 ), 0,
+    /*  SRP1      */  PACK( 1, 0 ), 0,
+    /*  SRP2      */  PACK( 1, 0 ), 0,
+    /*  SZP0      */  PACK( 1, 0 ), 0,
+    /*  SZP1      */  PACK( 1, 0 ), 0,
+    /*  SZP2      */  PACK( 1, 0 ), 0,
+    /*  SZPS      */  PACK( 1, 0 ), 0,
+    /*  SLOOP     */  PACK( 1, 0 ), 0,
+    /*  RTG       */  PACK( 0, 0 ), 0,
+    /*  RTHG      */  PACK( 0, 0 ), 0,
+    /*  SMD       */  PACK( 1, 0 ), 0,
+    /*  ELSE      */  PACK( 0, 0 ), 0,
+    /*  JMPR      */  PACK( 1, 0 ), 0,
+    /*  SCvTCi    */  PACK( 1, 0 ), 0,
+    /*  SSwCi     */  PACK( 1, 0 ), 0,
+    /*  SSW       */  PACK( 1, 0 ), 0,
+
+    /*  DUP       */  PACK( 1, 2 ), 0,
+    /*  POP       */  PACK( 1, 0 ), 0,
+    /*  CLEAR     */  PACK( 0, 0 ), 0,
+    /*  SWAP      */  PACK( 2, 2 ), 0,
+    /*  DEPTH     */  PACK( 0, 1 ), 0,
+    /*  CINDEX    */  PACK( 1, 1 ), 0,
+    /*  MINDEX    */  PACK( 1, 0 ), 0,
+    /*  AlignPTS  */  PACK( 2, 0 ), 0,
+    /*  INS_$28   */  PACK( 0, 0 ), 0,
+    /*  UTP       */  PACK( 1, 0 ), 0,
+    /*  LOOPCALL  */  PACK( 2, 0 ), 0,
+    /*  CALL      */  PACK( 1, 0 ), 0,
+    /*  FDEF      */  PACK( 1, 0 ), 0,
+    /*  ENDF      */  PACK( 0, 0 ), 0,
+    /*  MDAP[0]   */  PACK( 1, 0 ), 0,
+    /*  MDAP[1]   */  PACK( 1, 0 ), 0,
+
+    /*  IUP[0]    */  PACK( 0, 0 ), 0,
+    /*  IUP[1]    */  PACK( 0, 0 ), 0,
+    /*  SHP[0]    */  PACK( 0, 0 ), ttf_rp2|ttf_inloop,
+    /*  SHP[1]    */  PACK( 0, 0 ), ttf_rp1|ttf_inloop,
+    /*  SHC[0]    */  PACK( 1, 0 ), ttf_rp1,
+    /*  SHC[1]    */  PACK( 1, 0 ), ttf_rp1,
+    /*  SHZ[0]    */  PACK( 1, 0 ), ttf_rp1,
+    /*  SHZ[1]    */  PACK( 1, 0 ), ttf_rp1,
+    /*  SHPIX     */  PACK( 1, 0 ), ttf_inloop,
+    /*  IP        */  PACK( 0, 0 ), ttf_rp1|ttf_rp2|ttf_inloop,
+    /*  MSIRP[0]  */  PACK( 2, 0 ), ttf_rp0,
+    /*  MSIRP[1]  */  PACK( 2, 0 ), ttf_rp0,
+    /*  AlignRP   */  PACK( 0, 0 ), ttf_rp0|ttf_inloop,
+    /*  RTDG      */  PACK( 0, 0 ), 0,
+    /*  MIAP[0]   */  PACK( 2, 0 ), 0,
+    /*  MIAP[1]   */  PACK( 2, 0 ), 0,
+
+    /*  NPushB    */  PACK( 0, 0 ), 0,
+    /*  NPushW    */  PACK( 0, 0 ), 0,
+    /*  WS        */  PACK( 2, 0 ), 0,
+    /*  RS        */  PACK( 1, 1 ), 0,
+    /*  WCvtP     */  PACK( 2, 0 ), 0,
+    /*  RCvt      */  PACK( 1, 1 ), 0,
+    /*  GC[0]     */  PACK( 1, 1 ), 0,
+    /*  GC[1]     */  PACK( 1, 1 ), 0,
+    /*  SCFS      */  PACK( 2, 0 ), 0,
+    /*  MD[0]     */  PACK( 2, 1 ), 0,
+    /*  MD[1]     */  PACK( 2, 1 ), 0,
+    /*  MPPEM     */  PACK( 0, 1 ), 0,
+    /*  MPS       */  PACK( 0, 1 ), 0,
+    /*  FlipON    */  PACK( 0, 0 ), 0,
+    /*  FlipOFF   */  PACK( 0, 0 ), 0,
+    /*  DEBUG     */  PACK( 1, 0 ), 0,
+
+    /*  LT        */  PACK( 2, 1 ), 0,
+    /*  LTEQ      */  PACK( 2, 1 ), 0,
+    /*  GT        */  PACK( 2, 1 ), 0,
+    /*  GTEQ      */  PACK( 2, 1 ), 0,
+    /*  EQ        */  PACK( 2, 1 ), 0,
+    /*  NEQ       */  PACK( 2, 1 ), 0,
+    /*  ODD       */  PACK( 1, 1 ), 0,
+    /*  EVEN      */  PACK( 1, 1 ), 0,
+    /*  IF        */  PACK( 1, 0 ), 0,
+    /*  EIF       */  PACK( 0, 0 ), 0,
+    /*  AND       */  PACK( 2, 1 ), 0,
+    /*  OR        */  PACK( 2, 1 ), 0,
+    /*  NOT       */  PACK( 1, 1 ), 0,
+    /*  DeltaP1   */  PACK( 1, 0 ), 0,
+    /*  SDB       */  PACK( 1, 0 ), 0,
+    /*  SDS       */  PACK( 1, 0 ), 0,
+
+    /*  ADD       */  PACK( 2, 1 ), 0,
+    /*  SUB       */  PACK( 2, 1 ), 0,
+    /*  DIV       */  PACK( 2, 1 ), 0,
+    /*  MUL       */  PACK( 2, 1 ), 0,
+    /*  ABS       */  PACK( 1, 1 ), 0,
+    /*  NEG       */  PACK( 1, 1 ), 0,
+    /*  FLOOR     */  PACK( 1, 1 ), 0,
+    /*  CEILING   */  PACK( 1, 1 ), 0,
+    /*  ROUND[0]  */  PACK( 1, 1 ), 0,
+    /*  ROUND[1]  */  PACK( 1, 1 ), 0,
+    /*  ROUND[2]  */  PACK( 1, 1 ), 0,
+    /*  ROUND[3]  */  PACK( 1, 1 ), 0,
+    /*  NROUND[0] */  PACK( 1, 1 ), 0,
+    /*  NROUND[1] */  PACK( 1, 1 ), 0,
+    /*  NROUND[2] */  PACK( 1, 1 ), 0,
+    /*  NROUND[3] */  PACK( 1, 1 ), 0,
+
+    /*  WCvtF     */  PACK( 2, 0 ), 0,
+    /*  DeltaP2   */  PACK( 1, 0 ), 0,
+    /*  DeltaP3   */  PACK( 1, 0 ), 0,
+    /*  DeltaCn[0] */ PACK( 1, 0 ), 0,
+    /*  DeltaCn[1] */ PACK( 1, 0 ), 0,
+    /*  DeltaCn[2] */ PACK( 1, 0 ), 0,
+    /*  SROUND    */  PACK( 1, 0 ), 0,
+    /*  S45Round  */  PACK( 1, 0 ), 0,
+    /*  JROT      */  PACK( 2, 0 ), 0,
+    /*  JROF      */  PACK( 2, 0 ), 0,
+    /*  ROFF      */  PACK( 0, 0 ), 0,
+    /*  INS_$7B   */  PACK( 0, 0 ), 0,
+    /*  RUTG      */  PACK( 0, 0 ), 0,
+    /*  RDTG      */  PACK( 0, 0 ), 0,
+    /*  SANGW     */  PACK( 1, 0 ), 0,
+    /*  AA        */  PACK( 1, 0 ), 0,
+
+    /*  FlipPT    */  PACK( 0, 0 ), ttf_inloop,
+    /*  FlipRgON  */  PACK( 2, 0 ), 0,
+    /*  FlipRgOFF */  PACK( 2, 0 ), 0,
+    /*  INS_$83   */  PACK( 0, 0 ), 0,
+    /*  INS_$84   */  PACK( 0, 0 ), 0,
+    /*  ScanCTRL  */  PACK( 1, 0 ), 0,
+    /*  SDVPTL[0] */  PACK( 2, 0 ), 0,
+    /*  SDVPTL[1] */  PACK( 2, 0 ), 0,
+    /*  GetINFO   */  PACK( 1, 1 ), 0,
+    /*  IDEF      */  PACK( 1, 0 ), 0,
+    /*  ROLL      */  PACK( 3, 3 ), 0,
+    /*  MAX       */  PACK( 2, 1 ), 0,
+    /*  MIN       */  PACK( 2, 1 ), 0,
+    /*  ScanTYPE  */  PACK( 1, 0 ), 0,
+    /*  InstCTRL  */  PACK( 2, 0 ), 0,
+    /*  INS_$8F   */  PACK( 0, 0 ), 0,
+
+    /*  INS_$90  */   PACK( 0, 0 ), 0,
+    /*  INS_$91  */   PACK( 0, 0 ), 0,
+    /*  INS_$92  */   PACK( 0, 0 ), 0,
+    /*  INS_$93  */   PACK( 0, 0 ), 0,
+    /*  INS_$94  */   PACK( 0, 0 ), 0,
+    /*  INS_$95  */   PACK( 0, 0 ), 0,
+    /*  INS_$96  */   PACK( 0, 0 ), 0,
+    /*  INS_$97  */   PACK( 0, 0 ), 0,
+    /*  INS_$98  */   PACK( 0, 0 ), 0,
+    /*  INS_$99  */   PACK( 0, 0 ), 0,
+    /*  INS_$9A  */   PACK( 0, 0 ), 0,
+    /*  INS_$9B  */   PACK( 0, 0 ), 0,
+    /*  INS_$9C  */   PACK( 0, 0 ), 0,
+    /*  INS_$9D  */   PACK( 0, 0 ), 0,
+    /*  INS_$9E  */   PACK( 0, 0 ), 0,
+    /*  INS_$9F  */   PACK( 0, 0 ), 0,
+
+    /*  INS_$A0  */   PACK( 0, 0 ), 0,
+    /*  INS_$A1  */   PACK( 0, 0 ), 0,
+    /*  INS_$A2  */   PACK( 0, 0 ), 0,
+    /*  INS_$A3  */   PACK( 0, 0 ), 0,
+    /*  INS_$A4  */   PACK( 0, 0 ), 0,
+    /*  INS_$A5  */   PACK( 0, 0 ), 0,
+    /*  INS_$A6  */   PACK( 0, 0 ), 0,
+    /*  INS_$A7  */   PACK( 0, 0 ), 0,
+    /*  INS_$A8  */   PACK( 0, 0 ), 0,
+    /*  INS_$A9  */   PACK( 0, 0 ), 0,
+    /*  INS_$AA  */   PACK( 0, 0 ), 0,
+    /*  INS_$AB  */   PACK( 0, 0 ), 0,
+    /*  INS_$AC  */   PACK( 0, 0 ), 0,
+    /*  INS_$AD  */   PACK( 0, 0 ), 0,
+    /*  INS_$AE  */   PACK( 0, 0 ), 0,
+    /*  INS_$AF  */   PACK( 0, 0 ), 0,
+
+    /*  PushB[0]  */  PACK( 0, 1 ), 0,
+    /*  PushB[1]  */  PACK( 0, 2 ), 0,
+    /*  PushB[2]  */  PACK( 0, 3 ), 0,
+    /*  PushB[3]  */  PACK( 0, 4 ), 0,
+    /*  PushB[4]  */  PACK( 0, 5 ), 0,
+    /*  PushB[5]  */  PACK( 0, 6 ), 0,
+    /*  PushB[6]  */  PACK( 0, 7 ), 0,
+    /*  PushB[7]  */  PACK( 0, 8 ), 0,
+    /*  PushW[0]  */  PACK( 0, 1 ), 0,
+    /*  PushW[1]  */  PACK( 0, 2 ), 0,
+    /*  PushW[2]  */  PACK( 0, 3 ), 0,
+    /*  PushW[3]  */  PACK( 0, 4 ), 0,
+    /*  PushW[4]  */  PACK( 0, 5 ), 0,
+    /*  PushW[5]  */  PACK( 0, 6 ), 0,
+    /*  PushW[6]  */  PACK( 0, 7 ), 0,
+    /*  PushW[7]  */  PACK( 0, 8 ), 0,
+
+    /*  MDRP[00]  */  PACK( 1, 0 ), ttf_rp0,
+    /*  MDRP[01]  */  PACK( 1, 0 ), ttf_rp0,
+    /*  MDRP[02]  */  PACK( 1, 0 ), ttf_rp0,
+    /*  MDRP[03]  */  PACK( 1, 0 ), ttf_rp0,
+    /*  MDRP[04]  */  PACK( 1, 0 ), ttf_rp0,
+    /*  MDRP[05]  */  PACK( 1, 0 ), ttf_rp0,
+    /*  MDRP[06]  */  PACK( 1, 0 ), ttf_rp0,
+    /*  MDRP[07]  */  PACK( 1, 0 ), ttf_rp0,
+    /*  MDRP[08]  */  PACK( 1, 0 ), ttf_rp0,
+    /*  MDRP[09]  */  PACK( 1, 0 ), ttf_rp0,
+    /*  MDRP[10]  */  PACK( 1, 0 ), ttf_rp0,
+    /*  MDRP[11]  */  PACK( 1, 0 ), ttf_rp0,
+    /*  MDRP[12]  */  PACK( 1, 0 ), ttf_rp0,
+    /*  MDRP[13]  */  PACK( 1, 0 ), ttf_rp0,
+    /*  MDRP[14]  */  PACK( 1, 0 ), ttf_rp0,
+    /*  MDRP[15]  */  PACK( 1, 0 ), ttf_rp0,
+
+    /*  MDRP[16]  */  PACK( 1, 0 ), ttf_rp0,
+    /*  MDRP[17]  */  PACK( 1, 0 ), ttf_rp0,
+    /*  MDRP[18]  */  PACK( 1, 0 ), ttf_rp0,
+    /*  MDRP[19]  */  PACK( 1, 0 ), ttf_rp0,
+    /*  MDRP[20]  */  PACK( 1, 0 ), ttf_rp0,
+    /*  MDRP[21]  */  PACK( 1, 0 ), ttf_rp0,
+    /*  MDRP[22]  */  PACK( 1, 0 ), ttf_rp0,
+    /*  MDRP[23]  */  PACK( 1, 0 ), ttf_rp0,
+    /*  MDRP[24]  */  PACK( 1, 0 ), ttf_rp0,
+    /*  MDRP[25]  */  PACK( 1, 0 ), ttf_rp0,
+    /*  MDRP[26]  */  PACK( 1, 0 ), ttf_rp0,
+    /*  MDRP[27]  */  PACK( 1, 0 ), ttf_rp0,
+    /*  MDRP[28]  */  PACK( 1, 0 ), ttf_rp0,
+    /*  MDRP[29]  */  PACK( 1, 0 ), ttf_rp0,
+    /*  MDRP[30]  */  PACK( 1, 0 ), ttf_rp0,
+    /*  MDRP[31]  */  PACK( 1, 0 ), ttf_rp0,
+
+    /*  MIRP[00]  */  PACK( 2, 0 ), ttf_rp0,
+    /*  MIRP[01]  */  PACK( 2, 0 ), ttf_rp0,
+    /*  MIRP[02]  */  PACK( 2, 0 ), ttf_rp0,
+    /*  MIRP[03]  */  PACK( 2, 0 ), ttf_rp0,
+    /*  MIRP[04]  */  PACK( 2, 0 ), ttf_rp0,
+    /*  MIRP[05]  */  PACK( 2, 0 ), ttf_rp0,
+    /*  MIRP[06]  */  PACK( 2, 0 ), ttf_rp0,
+    /*  MIRP[07]  */  PACK( 2, 0 ), ttf_rp0,
+    /*  MIRP[08]  */  PACK( 2, 0 ), ttf_rp0,
+    /*  MIRP[09]  */  PACK( 2, 0 ), ttf_rp0,
+    /*  MIRP[10]  */  PACK( 2, 0 ), ttf_rp0,
+    /*  MIRP[11]  */  PACK( 2, 0 ), ttf_rp0,
+    /*  MIRP[12]  */  PACK( 2, 0 ), ttf_rp0,
+    /*  MIRP[13]  */  PACK( 2, 0 ), ttf_rp0,
+    /*  MIRP[14]  */  PACK( 2, 0 ), ttf_rp0,
+    /*  MIRP[15]  */  PACK( 2, 0 ), ttf_rp0,
+
+    /*  MIRP[16]  */  PACK( 2, 0 ), ttf_rp0,
+    /*  MIRP[17]  */  PACK( 2, 0 ), ttf_rp0,
+    /*  MIRP[18]  */  PACK( 2, 0 ), ttf_rp0,
+    /*  MIRP[19]  */  PACK( 2, 0 ), ttf_rp0,
+    /*  MIRP[20]  */  PACK( 2, 0 ), ttf_rp0,
+    /*  MIRP[21]  */  PACK( 2, 0 ), ttf_rp0,
+    /*  MIRP[22]  */  PACK( 2, 0 ), ttf_rp0,
+    /*  MIRP[23]  */  PACK( 2, 0 ), ttf_rp0,
+    /*  MIRP[24]  */  PACK( 2, 0 ), ttf_rp0,
+    /*  MIRP[25]  */  PACK( 2, 0 ), ttf_rp0,
+    /*  MIRP[26]  */  PACK( 2, 0 ), ttf_rp0,
+    /*  MIRP[27]  */  PACK( 2, 0 ), ttf_rp0,
+    /*  MIRP[28]  */  PACK( 2, 0 ), ttf_rp0,
+    /*  MIRP[29]  */  PACK( 2, 0 ), ttf_rp0,
+    /*  MIRP[30]  */  PACK( 2, 0 ), ttf_rp0,
+    /*  MIRP[31]  */  PACK( 2, 0 ), ttf_rp0
+  };
+
+static CharView		*debugcv;
+
+static void PointMoved( TT_ExecContext exc, FT_Vector *old, int pt,
+	int val1, int val2, int rp0 ) {
+    struct ttfactions *act = gcalloc(1,sizeof(struct ttfactions));
+    struct ttfactions *test, *prev;
+    int c;
+    int old_opcode = exc->code[exc->IP-1];
+
+    act->pnum = pt;
+    act->interp = (old_opcode==ttf_ip || old_opcode==ttf_iup || old_opcode==ttf_iup+1)?
+	    -2:-1;
+    act->basedon = -1;
+    act->distance = 0;
+    act->cvt_entry = -1;
+    act->min = 0;
+    act->rounded = 0;
+    if ( old_opcode==ttf_msirp || old_opcode==ttf_msirp+1 ) {
+	act->basedon = rp0;
+	act->distance = val2;
+    } else if ( old_opcode==ttf_miap || old_opcode==ttf_miap+1 ) {
+	act->cvt_entry = val2;
+    } else if ( old_opcode==ttf_mdap || old_opcode==ttf_mdap+1 ) {
+	act->rounded = (old_opcode&4)?1:0;
+    } else if ( old_opcode>=ttf_mirp ) {
+	act->basedon = rp0;
+	act->cvt_entry = val2;
+	act->min = (old_opcode&8)?1:0;
+	act->rounded = (old_opcode&4)?1:0;
+    } else if ( old_opcode>=ttf_mdrp ) {
+	act->basedon = rp0;
+	act->min = (old_opcode&8)?1:0;
+	act->rounded = (old_opcode&4)?1:0;
+    }
+    act->infunc = -1;
+    act->instr = debugcv->cc->instrdata.instrs + exc->IP-1;
+    if ( exc->callTop!=0 )
+	act->instr = debugcv->cc->instrdata.instrs + exc->callStack[0].Caller_IP;
+    act->freedom.x = (double) (((int)exc->GS.freeVector.x<<16)>>(16+14)) + ((exc->GS.freeVector.x&0x3fff)/16384.0);
+    act->freedom.y = (double) (((int)exc->GS.freeVector.y<<16)>>(16+14)) + ((exc->GS.freeVector.y&0x3fff)/16384.0);
+    act->was.x = old[pt].x;
+    act->was.y = old[pt].y;
+    act->is.x = exc->pts.cur[pt].x;
+    act->is.y = exc->pts.cur[pt].y;
+
+    c = (act->freedom.x!=0?1:0) + (act->freedom.y!=0?2:0);
+    for ( prev=NULL, test=debugcv->instrinfo.acts; test!=NULL && (pt>test->pnum ||
+	    (pt==test->pnum && c>=(test->freedom.x!=0?1:0) + (test->freedom.y!=0?2:0)));
+	    prev = test, test = test->acts );
+    if ( prev==NULL )
+	debugcv->instrinfo.acts = act;
+    else
+	prev->acts = act;
+    act->acts = test;
+    ++debugcv->instrinfo.act_cnt;
+}
+
+static FT_Error RunIns( TT_ExecContext exc ) {
+    FT_Error ret=0;
+    FT_Vector *old;
+    struct ttfargs *args;
+    int val1, val2, rp0, i, c;
+    double scale = 64.0*debugcv->show.ppem/debugcv->cc->parent->em;
+
+    exc->instruction_trap = 1;
+    old = galloc(exc->pts.n_points*sizeof(FT_Vector));
+
+    while ( true ) {
+	if ( exc->curRange == (FT_Int)tt_coderange_glyph && exc->callTop==0 &&
+		debugcv->instrinfo.args!=NULL ) {
+	    args = &debugcv->instrinfo.args[exc->IP];
+	    if ( args->loopcnt==0 ) {
+		args->rp0val = exc->GS.rp0;
+		args->rp1val = exc->GS.rp1;
+		args->rp2val = exc->GS.rp2;
+		args->rp2val = exc->GS.rp2;
+		if ( exc->GS.gep0 ) args->zs |= 1;
+		if ( exc->GS.gep1 ) args->zs |= 2;
+		if ( exc->GS.gep2 ) args->zs |= 4;
+		args->used = Pop_Push_Use_Count[exc->code[exc->IP]][1];
+		if ( exc->GS.loop<=1 )
+		    args->used &= ~ttf_inloop;
+		if ( (Pop_Push_Use_Count[exc->code[exc->IP]][0]>>4)>=1 ) {
+		    args->used |= ttf_sp0;
+		    args->spvals[0] = exc->stack[exc->top-1];
+		    if ( (Pop_Push_Use_Count[exc->code[exc->IP]][0]>>4)>=2 ) {
+			args->used |= ttf_sp1;
+			args->spvals[1] = exc->stack[exc->top-3];
+		    }
+		}
+	    }
+	    ++args->loopcnt;
+	}
+	val2 = exc->stack[exc->top-1];
+	val1 = exc->stack[exc->top-2];
+	rp0 = exc->GS.rp0;
+	memcpy(old,exc->pts.cur,exc->pts.n_points*sizeof(FT_Vector));
+	ret = _TT_RunIns(exc);
+	if ( exc->curRange == (FT_Int)tt_coderange_glyph && exc->callTop==0 &&
+		debugcv->instrinfo.args!=NULL ) {
+	    args = &debugcv->instrinfo.args[exc->IP];
+	    if ( args->loopcnt==1 && (Pop_Push_Use_Count[exc->code[exc->IP]][0]&0xf)>=1 ) {
+		args->used |= ttf_pushed;
+		args->pushed = exc->stack[exc->top-(Pop_Push_Use_Count[exc->code[exc->IP]][0]&0xf)];
+		if ( (Pop_Push_Use_Count[exc->code[exc->IP]][0]&0xf)>=2 )
+		    args->used |= ttf_pushedmore;
+	    }
+	}
+	for ( i=0; i<exc->pts.n_points; ++i ) {
+	    if ( old[i].x!=exc->pts.cur[i].x || old[i].y!=exc->pts.cur[i].y ) {
+		PointMoved(exc,old,i,val1,val2,rp0);
+	    }
+	}
+	if ( ret ||
+		( exc->curRange == (FT_Int)tt_coderange_glyph && exc->IP >= exc->codeSize ) )
+    break;
+    }
+
+    free(old);
+    debugcv->twilight_cnt = exc->twilight.n_points;
+    debugcv->twilight = galloc(debugcv->twilight_cnt*sizeof(BasePoint));
+    for ( c=0; c<debugcv->twilight_cnt; ++c ) {
+	debugcv->twilight[c].pnum = c;
+	debugcv->twilight[c].x = exc->twilight.cur[c].x/scale;
+	debugcv->twilight[c].y = exc->twilight.cur[c].y/scale;
+    }
+return( ret );
+}
 
 void CVGenerateGloss(CharView *cv) {
+    /*struct ttfactions *acts;*/
+    FT_Driver driver;	/* truetype driver */
+    FT_Face face;
+
+    free(cv->instrinfo.args);
+    TtfActionsFree(cv->instrinfo.acts);
+    free(cv->cvtvals);
+    free(cv->twilight);
+    cv->instrinfo.args = NULL;
+    cv->instrinfo.acts = NULL;
+    cv->instrinfo.act_cnt = 0;
+    cv->twilight = NULL;
+    cv->cvtvals = NULL;
+
+    if ( !freetype_init())
+return;
+    driver = (FT_Driver)_FT_Get_Module( context, "truetype" );
+
+    _FT_Set_Debug_Hook( context,
+                       FT_DEBUG_HOOK_TRUETYPE,
+                       (FT_DebugHook_Func)RunIns );
+
+    if ( FreeType_FaceForCV(cv,&face) )
+return;
+
+    if ( ((TT_Face) face)->root.driver != driver ) {
+	_FT_Done_Face(face);
+return;
+    }
+
+    if ( _FT_Set_Pixel_Sizes(face,0,cv->show.ppem)) {
+	_FT_Done_Face(face);
+return;
+    }
+
+    debugcv = cv;
+    cv->instrinfo.args = gcalloc(cv->cc->instrdata.instr_cnt,sizeof(struct ttfargs));
+    _FT_Load_Glyph(face,cv->cc->glyph,FT_LOAD_NO_BITMAP);
+    _FT_Done_Face(face);
 }
 #endif
