@@ -1766,8 +1766,8 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto,
     real transform[6];
     int width, vwidth;
     FontView *fvs;
-#ifdef FONTFORGE_CONFIG_PASTEAFTER
     int xoff=0, yoff=0;
+#ifdef FONTFORGE_CONFIG_PASTEAFTER
     RefChar *ref;
 #endif
 
