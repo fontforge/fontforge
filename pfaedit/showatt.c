@@ -1415,6 +1415,7 @@ static void BuildGdefs(struct node *node,struct att_dlg *att) {
 		if ( chars!=NULL ) {
 		    int gdefc = gdefclass(sc);
 		    sprintf(buffer,"%.70s %s", sc->name,
+			gdefc==0 ? "Not classified" :
 			gdefc==1 ? "Base" :
 			gdefc==2 ? "Ligature" :
 			gdefc==3 ? "Mark" :
@@ -1445,6 +1446,9 @@ static void BuildGDEF(struct node *node,struct att_dlg *att) {
 	if ( ac->type==act_curs )
     break;
     }
+    gdef = lcar = 0;
+    if ( ac!=NULL )
+	gdef = 1;
     l = 0;
     pst = NULL;
     do {
@@ -1453,25 +1457,20 @@ static void BuildGDEF(struct node *node,struct att_dlg *att) {
 	    for ( pst=sf->chars[i]->possub; pst!=NULL; pst=pst->next ) {
 		if ( pst->type == pst_lcaret ) {
 		    for ( j=pst->u.lcaret.cnt-1; j>=0; --j )
-			if ( pst->u.lcaret.carets[j]!=0 )
+			if ( pst->u.lcaret.carets[j]!=0 ) {
+			    lcar = 1;
 		    break;
+			}
 		    if ( j!=-1 )
 	    break;
 		}
 	    }
-	    if ( pst!=NULL )
-	break;
+	    if ( sf->chars[i]->glyph_class!=0 )
+		gdef = 1;
 	}
-	if ( pst!=NULL )
-    break;
 	++l;
     } while ( l<_sf->subfontcnt );
 
-    gdef = lcar = 0;
-    if ( ac!=NULL )
-	gdef = 1;
-    if ( pst!=NULL )
-	lcar = 1;
     if ( gdef+lcar!=0 ) {
 	node->children = gcalloc(gdef+lcar+1,sizeof(struct node));
 	node->cnt = gdef+lcar;
@@ -1873,6 +1872,8 @@ static void BuildTop(struct att_dlg *att) {
 			ScriptIsRightToLeft(SCScriptFromUnicode(sc)) ) {
 		hasprop = true;
 	    }
+	    if ( sc->glyph_class!=0 )
+		hasgdef = true;
 	    for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
 		if ( pst->type == pst_position ) {
 		    hasgpos = true;

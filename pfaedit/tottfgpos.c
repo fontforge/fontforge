@@ -3257,7 +3257,13 @@ return;
 int gdefclass(SplineChar *sc) {
     PST *pst;
     AnchorPoint *ap;
-    
+
+    if ( sc->glyph_class!=0 )
+return( sc->glyph_class-1 );
+
+    if ( strcmp(sc->name,".notdef")==0 )
+return( 0 );
+
     for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
 	if ( pst->type == pst_ligature )
 return( 2 );			/* Ligature */
@@ -3304,7 +3310,7 @@ void otf_dumpgdef(struct alltabs *at, SplineFont *_sf) {
 	do {
 	    sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[l];
 	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 ) {
-		if ( gdefclass(sf->chars[i])!=1 )
+		if ( sf->chars[i]->glyph_class!=0 || gdefclass(sf->chars[i])!=1 )
 		    needsclass = true;
 		for ( pst=sf->chars[i]->possub; pst!=NULL; pst=pst->next ) {
 		    if ( pst->type == pst_lcaret ) {
@@ -3385,12 +3391,14 @@ return;					/* No anchor positioning, no ligature carets */
 			}
 		    }
 		    --i;
-		    if ( j==1 ) {
-			putshort(at->gdef,sf->chars[start]->ttf_glyph);
-			putshort(at->gdef,sf->chars[last]->ttf_glyph);
-			putshort(at->gdef,lastval);
+		    if ( lastval!=0 ) {
+			if ( j==1 ) {
+			    putshort(at->gdef,sf->chars[start]->ttf_glyph);
+			    putshort(at->gdef,sf->chars[last]->ttf_glyph);
+			    putshort(at->gdef,lastval);
+			}
+			++cnt;
 		    }
-		    ++cnt;
 		}
 	    }
 	    if ( j==0 ) {

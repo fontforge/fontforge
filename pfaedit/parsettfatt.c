@@ -222,9 +222,7 @@ static uint16 *getClassDefTable(FILE *ttf, int classdef_offset, int cnt) {
     uint16 *glist=NULL;
 
     fseek(ttf, classdef_offset, SEEK_SET);
-    glist = galloc(cnt*sizeof(uint16));
-    for ( i=0; i<cnt; ++i )
-	glist[i] = 0;	/* Class 0 is default */
+    glist = gcalloc(cnt,sizeof(uint16));	/* Class 0 is default */
     format = getushort(ttf);
     if ( format==1 ) {
 	start = getushort(ttf);
@@ -246,7 +244,8 @@ static uint16 *getClassDefTable(FILE *ttf, int classdef_offset, int cnt) {
 	    for ( j=start; j<=end; ++j )
 		glist[j] = class;
 	}
-    }
+    } else
+	fprintf( stderr, "Unknown class table format: %d\n", format );
 return glist;
 }
 
@@ -2420,7 +2419,7 @@ void readttfgpossub(FILE *ttf,struct ttfinfo *info,int gpos) {
 }
 
 void readttfgdef(FILE *ttf,struct ttfinfo *info) {
-    int lclo;
+    int lclo, gclass;
     int coverage, cnt, i,j, format;
     uint16 *glyphs, *lc_offsets, *offsets;
     uint32 caret_base;
@@ -2430,10 +2429,19 @@ void readttfgdef(FILE *ttf,struct ttfinfo *info) {
     fseek(ttf,info->gdef_start,SEEK_SET);
     if ( getlong(ttf)!=0x00010000 )
 return;
-    /* glyph class def = */ getushort(ttf);
+    gclass = getushort(ttf);
     /* attach list = */ getushort(ttf);
     lclo = getushort(ttf);		/* ligature caret list */
     /* mark attach class = */ getushort(ttf);
+
+    if ( gclass!=0 ) {
+	uint16 *gclasses = getClassDefTable(ttf,info->gdef_start+gclass,info->glyph_cnt);
+	for ( i=0; i<info->glyph_cnt; ++i )
+	    if ( info->chars[i]!=NULL && gclasses[i]!=0 )
+		info->chars[i]->glyph_class = gclasses[i]+1;
+	free(gclasses);
+    }
+
     if ( lclo==0 )
 return;
 

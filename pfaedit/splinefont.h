@@ -669,7 +669,10 @@ typedef struct splinechar {
     unsigned int changed_since_search: 1;
     unsigned int wasopen: 1;
     unsigned int namechanged: 1;
-    /* two bits left */
+    unsigned int blended: 1;	/* An MM blended character */
+    unsigned int unused_so_far: 1;
+    unsigned int glyph_class: 3; /* 0=> pfaedit determines class automagically, else one more than the class value in gdef */
+    /* 13 bits left */
 #if HANYANG
     unsigned int compositionunit: 1;
     int16 jamo, varient;

@@ -52,6 +52,7 @@ typedef struct charinfo {
 #define CID_Components	1007
 #define CID_Comment	1008
 #define CID_Color	1009
+#define CID_GClass	1010
 #define CID_Tabs	1011
 
 /* Offsets for repeated fields. add 100*index */
@@ -68,6 +69,16 @@ typedef struct charinfo {
 #define CID_SelectResults	1114
 #define CID_MergeResults	1115
 #define CID_RestrictSelection	1116
+
+static GTextInfo glyphclasses[] = {
+    { (unichar_t *) _STR_Automatic, NULL, 0, 0, NULL, NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_NoClass, NULL, 0, 0, NULL, NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_BaseGlyph, NULL, 0, 0, NULL, NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_LigatureL, NULL, 0, 0, NULL, NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_MarkGlyph, NULL, 0, 0, NULL, NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Component, NULL, 0, 0, NULL, NULL, false, false, false, false, false, false, false, true },
+    { NULL, NULL }
+};
 
 static GTextInfo std_colors[] = {
     { (unichar_t *) _STR_Default, &def_image, 0, 0, (void *) COLOR_DEFAULT, NULL, false, true, false, false, false, false, false, true },
@@ -3807,6 +3818,7 @@ return( false );
 	    GDrawRequestExpose(fvs->gw,NULL,false);	/* Redraw info area just in case this char is selected */
     }
     if ( ret ) {
+	ci->sc->glyph_class = GGadgetGetFirstListSelectedItem(GWidgetGetControl(ci->gw,CID_GClass));
 	val = GGadgetGetFirstListSelectedItem(GWidgetGetControl(ci->gw,CID_Color));
 	if ( val!=-1 ) {
 	    if ( ci->sc->color != (int) (std_colors[val].userdata) ) {
@@ -4800,10 +4812,12 @@ static void CIFillup(CharInfo *ci) {
 	free(temp);
     }
 
+    GGadgetSelectOneListItem(GWidgetGetControl(ci->gw,CID_Color),0);
+
     ubuf[0] = '\0';
     GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_Comment),
 	    sc->comment?sc->comment:ubuf);
-    GGadgetSelectOneListItem(GWidgetGetControl(ci->gw,CID_Color),0);
+    GGadgetSelectOneListItem(GWidgetGetControl(ci->gw,CID_GClass),sc->glyph_class);
     for ( i=0; std_colors[i].image!=NULL; ++i ) {
 	if ( std_colors[i].userdata == (void *) sc->color )
 	    GGadgetSelectOneListItem(GWidgetGetControl(ci->gw,CID_Color),i);
@@ -4971,23 +4985,39 @@ return;
 	ugcd[5].gd.handle_controlevent = CI_CharChanged;
 	ugcd[5].creator = GTextFieldCreate;
 
-	ugcd[6].gd.pos.x = 12; ugcd[6].gd.pos.y = 117;
+	ugcd[6].gd.pos.x = 5; ugcd[6].gd.pos.y = 83+4;
 	ugcd[6].gd.flags = gg_visible | gg_enabled;
-	ulabel[6].text = (unichar_t *) _STR_SetFromName;
+	ulabel[6].text = (unichar_t *) _STR_GlyphClass;
 	ulabel[6].text_in_resource = true;
-	ugcd[6].gd.mnemonic = 'a';
 	ugcd[6].gd.label = &ulabel[6];
-	ugcd[6].gd.handle_controlevent = CI_SName;
-	ugcd[6].creator = GButtonCreate;
+	ugcd[6].creator = GLabelCreate;
 
-	ugcd[7].gd.pos.x = 107; ugcd[7].gd.pos.y = 117;
+	ugcd[7].gd.pos.x = 85; ugcd[7].gd.pos.y = 83;
 	ugcd[7].gd.flags = gg_visible | gg_enabled;
 	ulabel[7].text = (unichar_t *) _STR_SetFromValue;
 	ulabel[7].text_in_resource = true;
-	ugcd[7].gd.mnemonic = 'l';
+	ugcd[7].gd.cid = CID_GClass;
+	ugcd[7].gd.u.list = glyphclasses;
 	ugcd[7].gd.label = &ulabel[7];
-	ugcd[7].gd.handle_controlevent = CI_SValue;
-	ugcd[7].creator = GButtonCreate;
+	ugcd[7].creator = GListButtonCreate;
+
+	ugcd[8].gd.pos.x = 12; ugcd[8].gd.pos.y = 117;
+	ugcd[8].gd.flags = gg_visible | gg_enabled;
+	ulabel[8].text = (unichar_t *) _STR_SetFromName;
+	ulabel[8].text_in_resource = true;
+	ugcd[8].gd.mnemonic = 'a';
+	ugcd[8].gd.label = &ulabel[8];
+	ugcd[8].gd.handle_controlevent = CI_SName;
+	ugcd[8].creator = GButtonCreate;
+
+	ugcd[9].gd.pos.x = 107; ugcd[9].gd.pos.y = 117;
+	ugcd[9].gd.flags = gg_visible | gg_enabled;
+	ulabel[9].text = (unichar_t *) _STR_SetFromValue;
+	ulabel[9].text_in_resource = true;
+	ugcd[9].gd.mnemonic = 'l';
+	ugcd[9].gd.label = &ulabel[9];
+	ugcd[9].gd.handle_controlevent = CI_SValue;
+	ugcd[9].creator = GButtonCreate;
 
 	memset(&cgcd,0,sizeof(cgcd));
 	memset(&clabel,0,sizeof(clabel));
