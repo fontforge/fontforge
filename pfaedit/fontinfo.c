@@ -1789,11 +1789,12 @@ void SFSetFontName(SplineFont *sf, char *family, char *mods,char *full) {
     }
 }
 
-static void SetFontName(GWindow gw, SplineFont *sf) {
+static int SetFontName(GWindow gw, SplineFont *sf) {
     const unichar_t *ufamily = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Family));
     const unichar_t *ufont = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Fontname));
     const unichar_t *uweight = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Weight));
     const unichar_t *uhum = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Human));
+    int diff = uc_strcmp(ufont,sf->fontname)!=0;
 
     free(sf->familyname);
     free(sf->fontname);
@@ -1803,6 +1804,7 @@ static void SetFontName(GWindow gw, SplineFont *sf) {
     sf->fontname = cu_copy(ufont);
     sf->weight = cu_copy(uweight);
     sf->fullname = cu_copy(uhum);
+return( diff );
 }
 
 static int CheckNames(struct gfi_data *d) {
@@ -2126,7 +2128,7 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	real ia, cidversion;
 	const unichar_t *txt; unichar_t *end;
 	int i,j;
-	int vmetrics, vorigin;
+	int vmetrics, vorigin, namechange;
 
 	if ( !CheckNames(d))
 return( true );
@@ -2178,9 +2180,27 @@ return( true );
 	if ( nchar<sf->charcnt && AskTooFew())
 return(true);
 	GDrawSetCursor(gw,ct_watch);
-	SetFontName(gw,sf);
+	namechange = SetFontName(gw,sf);
 	txt = _GGadgetGetTitle(GWidgetGetControl(gw,CID_XUID));
-	free(sf->xuid); sf->xuid = *txt=='\0'?NULL:cu_copy(txt);
+	if ( namechange && sf->filename!=NULL &&
+		((uniqueid!=0 && uniqueid==sf->uniqueid) ||
+		(sf->xuid!=NULL && uc_strcmp(txt,sf->xuid)==0)) ) {
+	    static int buts[] = { _STR_Change, _STR_Retain, _STR_Cancel, 0 };
+	    int ans = GWidgetAskR(_STR_UniqueIDTitle,buts,0,2,_STR_UniqueIDChange);
+	    if ( ans==2 ) {
+		GDrawSetCursor(gw,ct_pointer);
+return(true);
+	    }
+	    if ( ans==0 ) {
+		if ( uniqueid!=0 && uniqueid==sf->uniqueid )
+		    uniqueid = 4000000 + (rand()&0x3ffff);
+		if ( sf->xuid!=NULL && uc_strcmp(txt,sf->xuid)==0 )
+		    SFRandomChangeXUID(sf);
+	    }
+	} else {
+	    free(sf->xuid);
+	    sf->xuid = *txt=='\0'?NULL:cu_copy(txt);
+	}
 	txt = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Notice));
 	free(sf->copyright); sf->copyright = cu_copy(txt);
 	txt = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Comment));
