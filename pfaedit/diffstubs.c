@@ -9,6 +9,7 @@
 
 Encoding *enclist = NULL;
 int local_encoding = e_iso8859_1;
+char *iconv_local_encoding_name = NULL;
 
 void GProgressStartIndicator(
     int delay,			/* in tenths of seconds */
