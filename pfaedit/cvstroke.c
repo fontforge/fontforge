@@ -25,8 +25,9 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
-#include "ustring.h"
+#include <ustring.h>
 #include <gkeysym.h>
+#include <math.h>
 
 typedef struct strokedlg {
     int done;
@@ -46,6 +47,10 @@ typedef struct strokedlg {
 #define CID_Caligraphic	1009
 #define CID_PenAngle	1010
 #define CID_PenAngleTxt	1011
+#define CID_ThicknessRatio	1012
+#define CID_ThicknessRatioTxt	1013
+#define CID_LineCapTxt	1014
+#define CID_LineJoinTxt	1015
 
 static void CVStrokeIt(void *_cv, StrokeInfo *si) {
     CharView *cv = _cv;
@@ -155,15 +160,33 @@ static int Stroke_OK(GGadget *g, GEvent *e) {
 		lj_miter;
 	si.caligraphic = GGadgetIsChecked( GWidgetGetControl(sw,CID_Caligraphic));
 	err = false;
-	si.penangle = GetReal(sw,CID_PenAngle,"Pen Angle",&err)*3.1415926535897932/180;
-	si.radius = GetReal(sw,CID_Width,"Width",&err)/2;
-	if ( err )
-return( true );
+	si.radius = GetRealR(sw,CID_Width,_STR_StrokeWidth,&err)/2;
 	if ( si.caligraphic ) {
+	    si.penangle = GetRealR(sw,CID_PenAngle,_STR_PenAngle,&err);
+	    if ( si.penangle>180 || si.penangle < -180 ) {
+		si.penangle = fmod(si.penangle,360);
+		if ( si.penangle>180 )
+		    si.penangle -= 360;
+		else if ( si.penangle<-180 )
+		    si.penangle += 360;
+	    }
+	    si.penangle *= 3.1415926535897932/180;
 	    si.cap = lc_butt;
 	    si.join = lj_bevel;
-	    si.thickness = 0;			/* Can't get this to work */
+	    si.thickness = GetRealR(sw,CID_ThicknessRatio,_STR_PenHeightRatio,&err)*si.radius;
+	    si.s = sin(si.penangle);
+	    si.c = cos(si.penangle);
+	    si.xoff[0] = si.xoff[4] = si.radius*si.c + si.thickness*si.s;
+	    si.yoff[0] = si.yoff[4] = -si.thickness*si.c + si.radius*si.s;
+	    si.xoff[1] = si.xoff[5] = si.radius*si.c - si.thickness*si.s;
+	    si.yoff[1] = si.yoff[5] = si.thickness*si.c + si.radius*si.s;
+	    si.xoff[2] = si.xoff[6] = -si.radius*si.c - si.thickness*si.s;
+	    si.yoff[2] = si.yoff[6] = si.thickness*si.c - si.radius*si.s;
+	    si.xoff[3] = si.xoff[7] = -si.radius*si.c + si.thickness*si.s;
+	    si.yoff[3] = si.yoff[7] = -si.thickness*si.c - si.radius*si.s;
 	}
+	if ( err )
+return( true );
 	(sd->strokeit)(sd->cv,&si);
 	sd->done = true;
     }
@@ -179,14 +202,18 @@ return( true );
 }
 
 static void StrokeSetup(StrokeDlg *sd, int calig) {
+    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_LineCapTxt), !calig);
     GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_ButtCap), !calig);
     GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_RoundCap), !calig);
     GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_SquareCap), !calig);
+    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_LineJoinTxt), !calig);
     GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_BevelJoin), !calig);
     GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_RoundJoin), !calig);
     GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_MiterJoin), !calig);
     GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_PenAngle), calig);
     GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_PenAngleTxt), calig);
+    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_ThicknessRatio), calig);
+    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_ThicknessRatioTxt), calig);
 }
 
 static int Stroke_Caligraphic(GGadget *g, GEvent *e) {
@@ -223,16 +250,15 @@ return( true );
 }
 
 #define SD_Width	230
-#define SD_Height	200
+#define SD_Height	226
 
 static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *)) {
     static StrokeDlg sd;
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[23];
-    GTextInfo label[23];
-    static unichar_t title[] = { 'E','x','p','a','n','d',' ','S','t','r','o','k','e','.','.','.',  '\0' };
+    GGadgetCreateData gcd[25];
+    GTextInfo label[25];
 
     if ( sd.gw==NULL ) {
 	memset(&wattrs,0,sizeof(wattrs));
@@ -241,7 +267,7 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *)) {
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
-	wattrs.window_title = title;
+	wattrs.window_title = GStringGetResource(_STR_Stroke,NULL);
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,SD_Width));
@@ -256,6 +282,7 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *)) {
 	gcd[0].gd.label = &label[0];
 	gcd[0].gd.pos.x = 10; gcd[0].gd.pos.y = 23;
 	gcd[0].gd.flags = gg_enabled | gg_visible;
+	gcd[0].gd.cid = CID_LineCapTxt;
 	gcd[0].creator = GLabelCreate;
 
 	gcd[1].gd.pos.x = 6; gcd[1].gd.pos.y = gcd[0].gd.pos.y+6;
@@ -298,6 +325,7 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *)) {
 	gcd[5].gd.label = &label[5];
 	gcd[5].gd.pos.x = gcd[0].gd.pos.x; gcd[5].gd.pos.y = gcd[2].gd.pos.y+25;
 	gcd[5].gd.flags = gg_enabled | gg_visible;
+	gcd[5].gd.cid = CID_LineJoinTxt;
 	gcd[5].creator = GLabelCreate;
 
 	gcd[6].gd.pos.x = gcd[1].gd.pos.x; gcd[6].gd.pos.y = gcd[5].gd.pos.y+6;
@@ -339,7 +367,7 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *)) {
 	label[10].text_in_resource = true;
 	gcd[10].gd.mnemonic = 'W';
 	gcd[10].gd.label = &label[10];
-	gcd[10].gd.pos.x = 5; gcd[10].gd.pos.y = 140+6;
+	gcd[10].gd.pos.x = 5; gcd[10].gd.pos.y = 166+3;
 	gcd[10].gd.flags = gg_enabled | gg_visible;
 	gcd[10].creator = GLabelCreate;
 
@@ -347,7 +375,7 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *)) {
 	label[11].text_is_1byte = true;
 	gcd[11].gd.mnemonic = 'W';
 	gcd[11].gd.label = &label[11];
-	gcd[11].gd.pos.x = 80; gcd[11].gd.pos.y = 140;
+	gcd[11].gd.pos.x = 80; gcd[11].gd.pos.y = 166;
 	gcd[11].gd.flags = gg_enabled | gg_visible;
 	gcd[11].gd.cid = CID_Width;
 	gcd[11].creator = GTextFieldCreate;
@@ -398,7 +426,7 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *)) {
 	gcd[16].creator = GGroupCreate;
 
 	gcd[17].gd.pos.x = 1; gcd[17].gd.pos.y = gcd[15].gd.pos.y+6;
-	gcd[17].gd.pos.width = SD_Width-2; gcd[17].gd.pos.height = 33;
+	gcd[17].gd.pos.width = SD_Width-2; gcd[17].gd.pos.height = 58;
 	gcd[17].gd.flags = gg_enabled | gg_visible;
 	gcd[17].creator = GGroupCreate;
 
@@ -406,7 +434,7 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *)) {
 	label[18].text_in_resource = true;
 	gcd[18].gd.mnemonic = 'A';
 	gcd[18].gd.label = &label[18];
-	gcd[18].gd.pos.x = gcd[2].gd.pos.x; gcd[18].gd.pos.y = gcd[15].gd.pos.y+12+6;
+	gcd[18].gd.pos.x = gcd[2].gd.pos.x; gcd[18].gd.pos.y = gcd[15].gd.pos.y+15+3;
 	gcd[18].gd.flags = gg_visible;
 	gcd[18].gd.cid = CID_PenAngleTxt;
 	gcd[18].creator = GLabelCreate;
@@ -415,10 +443,30 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *)) {
 	label[19].text_is_1byte = true;
 	gcd[19].gd.mnemonic = 'A';
 	gcd[19].gd.label = &label[19];
-	gcd[19].gd.pos.x = 80; gcd[19].gd.pos.y = gcd[15].gd.pos.y+12;
+	gcd[19].gd.pos.x = 80; gcd[19].gd.pos.y = gcd[15].gd.pos.y+15;
 	gcd[19].gd.flags = gg_visible;
 	gcd[19].gd.cid = CID_PenAngle;
 	gcd[19].creator = GTextFieldCreate;
+
+	label[20].text = (unichar_t *) _STR_PenHeightRatio;
+	label[20].text_in_resource = true;
+	gcd[20].gd.mnemonic = 'H';
+	gcd[20].gd.label = &label[20];
+	gcd[20].gd.pos.x = gcd[2].gd.pos.x; gcd[20].gd.pos.y = gcd[18].gd.pos.y+24;
+	gcd[20].gd.flags = gg_visible;
+	gcd[20].gd.cid = CID_ThicknessRatioTxt;
+	gcd[20].gd.popup_msg = GStringGetResource(_STR_PenHeightRatioPopup,NULL);
+	gcd[20].creator = GLabelCreate;
+
+	label[21].text = (unichar_t *) ".2";
+	label[21].text_is_1byte = true;
+	gcd[21].gd.mnemonic = 'H';
+	gcd[21].gd.label = &label[21];
+	gcd[21].gd.pos.x = gcd[19].gd.pos.x; gcd[21].gd.pos.y = gcd[19].gd.pos.y+24;
+	gcd[21].gd.flags = gg_visible;
+	gcd[21].gd.cid = CID_ThicknessRatio;
+	gcd[21].gd.popup_msg = GStringGetResource(_STR_PenHeightRatioPopup,NULL);
+	gcd[21].creator = GTextFieldCreate;
 
 	GGadgetsCreate(gw,gcd);
     }

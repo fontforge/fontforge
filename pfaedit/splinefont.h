@@ -62,13 +62,15 @@ enum linecap {
 };
 
 typedef struct strokeinfo {
-    real radius;
+    real radius;			/* or major axis of pen */
     enum linejoin join;
     enum linecap cap;
     unsigned int caligraphic: 1;
     unsigned int toobigwarn: 1;
     real penangle;
-    real thickness;			/* doesn't work */
+    real thickness;			/* half-thickness actually */
+    double c,s;
+    real xoff[8], yoff[8];
 } StrokeInfo;
 
 typedef struct ipoint {
