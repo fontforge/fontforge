@@ -50,6 +50,8 @@ static void GMenuBarChangeSelection(GMenuBar *mb, int newsel,GEvent *);
 static struct gmenu *GMenuCreateSubMenu(struct gmenu *parent,GMenuItem *mi);
 static struct gmenu *GMenuCreatePulldownMenu(GMenuBar *mb,GMenuItem *mi);
 
+static int menu_grabs=true;
+
 static void GMenuInit() {
     FontRequest rq;
     char *keystr, *end;
@@ -76,6 +78,7 @@ static void GMenuInit() {
 	else if ( strtol(keystr,&end,10), *end=='\0' )
 	    keyboard = strtol(keystr,NULL,10);
     }
+    menu_grabs = GResourceFindBool("GMenu.Grab",menu_grabs);
     gmenubar_inited = true;
     _GGroup_Init();
 }
@@ -300,11 +303,11 @@ static void GMenuSetPressed(struct gmenu *m, int pressed) {
 	m->menubar->pressed = pressed;
 }
 
-static void GMenuDestroy(struct gmenu *m) {
+static void _GMenuDestroy(struct gmenu *m) {
     if ( m->line_with_mouse!=-1 )
 	m->mi[m->line_with_mouse].ti.selected = false;
     if ( m->child!=NULL )
-	GMenuDestroy(m->child);
+	_GMenuDestroy(m->child);
     if ( m->parent!=NULL )
 	m->parent->child = NULL;
     else if ( m->menubar!=NULL ) {
@@ -313,19 +316,29 @@ static void GMenuDestroy(struct gmenu *m) {
 	_GWidget_ClearPopupOwner((GGadget *) (m->menubar));
 	_GWidget_ClearGrabGadget((GGadget *) (m->menubar));
 	GMenuBarChangeSelection(m->menubar,-1,NULL);
-	GDrawPointerUngrab(GDrawGetDisplayOfWindow(m->menubar->g.base));
     }
     GDrawDestroyWindow(m->w);
     /* data are freed when we get the destroy event !!!! */
 }
 
+static void GMenuDestroy(struct gmenu *m) {
+    GDrawPointerUngrab(GDrawGetDisplayOfWindow(m->w));
+    if ( menu_grabs && m->parent!=NULL )
+	GDrawPointerGrab(m->parent->w);
+    _GMenuDestroy(m);
+}
+
 static void GMenuHideAll(struct gmenu *m) {
     if ( m!=NULL ) {
+	struct gmenu *s = m;
+	GDrawPointerUngrab(GDrawGetDisplayOfWindow(m->w));
 	while ( m->parent ) m = m->parent;
 	while ( m ) {
 	    GDrawSetVisible(m->w,false);
 	    m=m->child;
 	}
+	GDrawSync(GDrawGetDisplayOfWindow(s->w));
+	GDrawProcessPendingEvents(GDrawGetDisplayOfWindow(s->w));
     }
 }
 
@@ -403,66 +416,74 @@ return;
 
 static int gmenu_mouse(struct gmenu *m, GEvent *event) {
     GPoint p;
+    struct gmenu *testm;
+
+    if ( event->type == et_crossing ) {
+	if ( !event->u.crossing.entered )
+	    m->initial_press = false;
+return( true );
+    }
 
     p.x = event->u.mouse.x; p.y = event->u.mouse.y;
 
-  retry:
-    event->u.mouse.x = p.x; event->u.mouse.y = p.y; event->w = m->w;
-    if ( m->scrollit ) {
-	GDrawCancelTimer(m->scrollit); m->scrollit = NULL;
-    }
-    if ( event->type == et_crossing && !event->u.crossing.entered )
-	m->initial_press = false;
-    if (( m->pressed && (event->type==et_mousemove || event->type==et_crossing)) ||
-	    event->type == et_mousedown ) {
-	if ( m->parent!=NULL && GDrawEventInWindow(m->parent->w,event) ) {
-	    GDrawPointerUngrab(GDrawGetDisplayOfWindow(m->w));
-	    GDrawPointerGrab(m->parent->w);
-	    GDrawTranslateCoordinates(m->w,m->parent->w,&p);
-	    m = m->parent;
-  goto retry;
-	} else if ( m->child!=NULL && GDrawEventInWindow(m->child->w,event) ) {
-	    GDrawPointerUngrab(GDrawGetDisplayOfWindow(m->w));
-	    GDrawPointerGrab(m->child->w);
-	    GDrawTranslateCoordinates(m->w,m->child->w,&p);
-	    m = m->child;
-  goto retry;
-	} else if ( m->menubar!=NULL && event->u.mouse.y<0 ) {
-	    GDrawPointerUngrab(GDrawGetDisplayOfWindow(m->w));
-	    GDrawPointerGrab(m->menubar->g.base);
-	    GDrawTranslateCoordinates(m->w,m->menubar->g.base,&p);
-	    event->u.mouse.x = p.x; event->u.mouse.y = p.y;
+    for ( testm=m; testm->child!=NULL; testm = testm->child );
+    if ( testm->scrollit )
+	GDrawCancelTimer(testm->scrollit); testm->scrollit = NULL;
+    for ( ; testm!=NULL; testm=testm->parent )
+	if ( GDrawEventInWindow(testm->w,event) )
+    break;
+
+    if ( testm!=m && testm!=NULL ) {
+	GDrawPointerGrab(testm->w);
+	GDrawTranslateCoordinates(m->w,testm->w,&p);
+	m = testm;
+    } else if ( testm==NULL /*&& event->u.mouse.y<0*/ ) {/* menubars can be below the menu if no room on screen */
+	for ( testm=m; testm->parent!=NULL; testm=testm->parent );
+	if ( testm->menubar!=NULL ) {
+	    GDrawTranslateCoordinates(m->w,testm->menubar->g.base,&p);
+	    if ( p.x>=0 && p.y>=0 &&
+		    p.x<testm->menubar->g.inner.x+testm->menubar->g.inner.width &&
+		    p.y<testm->menubar->g.inner.y+testm->menubar->g.inner.height ) {
+		/*GDrawPointerGrab(testm->menubar->g.base);*/	/* Don't do this */
+		event->u.mouse.x = p.x; event->u.mouse.y = p.y;
 return( (GDrawGetEH(m->menubar->g.base))(m->menubar->g.base,event));
-	} else if ( event->u.mouse.y<m->bp || event->u.mouse.x<0 ||
-		event->u.mouse.y>=m->height-m->bp || event->u.mouse.x >= m->width ) {
-	    GMenuChangeSelection(m,-1,event);
-	    if ( event->type == et_mousedown )
-		GMenuDismissAll(m);
-	} else {
-	    int l = (event->u.mouse.y-m->bp)/m->fh;
-	    int i = l + m->offtop;
-	    if ( l==0 && m->offtop!=0 ) {
-		GMenuChangeSelection(m,-1,event);
-		m->scrollit = GDrawRequestTimer(m->w,_GScrollBar_RepeatTime,_GScrollBar_RepeatTime,m);
-		m->scrollup = true;
-	    } else if ( l==m->lcnt-1 && m->offtop+m->lcnt<m->mcnt ) {
-		GMenuChangeSelection(m,-1,event);
-		m->scrollit = GDrawRequestTimer(m->w,_GScrollBar_RepeatTime,_GScrollBar_RepeatTime,m);
-		m->scrollup = false;
-	    } else if ( event->type == et_mousedown && m->child!=NULL &&
-		    i == m->line_with_mouse ) {
-		GMenuChangeSelection(m,-1,event);
-		m->initial_press = true;
-	    } else
-		GMenuChangeSelection(m,i,event);
-	    if ( event->type == et_mousedown ) {
-		GMenuSetPressed(m,true);
-		if ( m->child )
-		    m->initial_press = true;
 	    }
 	}
-    } else if ( event->type == et_mouseup && !m->initial_press ) {
-	int dismissed = false;
+	testm = NULL;
+    }
+    if ( testm==NULL ) {
+	if ( event->type==et_mousedown )
+	    GMenuDismissAll(m);
+	else if ( event->type==et_mouseup )
+	    GMenuSetPressed(m,false);
+	else if ( m->pressed )
+	    GMenuChangeSelection(m,-1,event);
+return( true );
+    }
+
+    event->u.mouse.x = p.x; event->u.mouse.y = p.y; event->w = m->w;
+    if (( m->pressed && event->type==et_mousemove ) ||
+	    event->type == et_mousedown ) {
+	int l = (event->u.mouse.y-m->bp)/m->fh;
+	int i = l + m->offtop;
+	if ( l==0 && m->offtop!=0 ) {
+	    GMenuChangeSelection(m,-1,event);
+	    m->scrollit = GDrawRequestTimer(m->w,_GScrollBar_RepeatTime,_GScrollBar_RepeatTime,m);
+	    m->scrollup = true;
+	} else if ( l==m->lcnt-1 && m->offtop+m->lcnt<m->mcnt ) {
+	    GMenuChangeSelection(m,-1,event);
+	    m->scrollit = GDrawRequestTimer(m->w,_GScrollBar_RepeatTime,_GScrollBar_RepeatTime,m);
+	    m->scrollup = false;
+	} else if ( event->type == et_mousedown && m->child!=NULL &&
+		i == m->line_with_mouse ) {
+	    GMenuChangeSelection(m,-1,event);
+	} else
+	    GMenuChangeSelection(m,i,event);
+	if ( event->type == et_mousedown ) {
+	    GMenuSetPressed(m,true);
+	    m->initial_press = true;
+	}
+    } else if ( event->type == et_mouseup && m->child==NULL ) {
 #if 0
  printf("\nActivate menu\n");
 #endif
@@ -475,14 +496,12 @@ return( (GDrawGetEH(m->menubar->g.base))(m->menubar->g.base,event));
 		    !m->mi[i].ti.disabled && !m->mi[i].ti.line ) {
 		if ( m->mi[i].ti.checkable )
 		    m->mi[i].ti.checked = !m->mi[i].ti.checked;
+		GMenuHideAll(m);
 		GMenuDismissAll(m);
-		dismissed = true;
 		if ( m->mi[i].invoke!=NULL )
 		    (m->mi[i].invoke)(m->owner,&m->mi[i],event);
 	    }
 	}
-	if ( !dismissed )
-	    GMenuDismissAll(m);
     } else if ( event->type == et_mouseup ) {
 	m->initial_press = false;
 	GMenuSetPressed(m,false);
@@ -778,6 +797,8 @@ static GMenu *_GMenu_Create(GWindow owner,GMenuItem *mi, GPoint *where, int awid
 
     m->w = GDrawCreateTopWindow(disp,&pos,gmenu_eh,m,&pattrs);
     GDrawSetVisible(m->w,true);
+    if ( menu_grabs )
+	GDrawPointerGrab(m->w);
 return( m );
 }
 
@@ -953,17 +974,15 @@ static int gmenubar_mouse(GGadget *g, GEvent *event) {
 
     if ( event->type == et_mousedown ) {
 	mb->pressed = true;
-	if ( mb->child==NULL )
-	    mb->initial_press = true;
-	else
+	if ( mb->child!=NULL )
 	    GMenuSetPressed(mb->child,true);
 	which = GMenuBarIndex(mb,event->u.mouse.x);
 	if ( which==mb->entry_with_mouse && mb->child!=NULL )
 	    GMenuDestroy(mb->child);
-	else
+	else {
+	    mb->initial_press = true;
 	    GMenuBarChangeSelection(mb,which,event);
-    } else if ( event->type == et_crossing && mb->pressed ) {
-	mb->initial_press = false;
+	}
     } else if ( event->type == et_mousemove && mb->pressed ) {
 	if ( GGadgetWithin(g,event->u.mouse.x,event->u.mouse.y))
 	    GMenuBarChangeSelection(mb,GMenuBarIndex(mb,event->u.mouse.x),event);
