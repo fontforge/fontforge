@@ -1636,6 +1636,73 @@ static void bSetFontNames(Context *c) {
     _SetFontNames(c,sf);
 }
 
+static void bSetTTFName(Context *c) {
+    SplineFont *sf = c->curfv->sf;
+    unichar_t *u;
+    int lang, strid;
+    struct ttflangname *prev, *ln;
+
+    if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
+    if ( c->a.argc!=4 )
+	error( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_int || c->a.vals[2].type!=v_int ||
+	    c->a.vals[3].type!=v_str )
+	error(c,"Bad argument type");
+
+    lang = c->a.vals[1].u.ival;
+    strid = c->a.vals[2].u.ival;
+    if ( lang<0 || lang>0xffff )
+	error(c,"Bad value for language");
+    else if ( strid<0 || strid>=ttf_namemax )
+	error(c,"Bad value for string id");
+
+    u = utf82u_copy(c->a.vals[3].u.sval);
+    if ( *u=='\0' ) {
+	free(u);
+	u = NULL;
+    }
+
+    for ( ln = sf->names; ln!=NULL && ln->lang!=lang; ln = ln->next );
+    if ( ln==NULL ) {
+	if ( u==NULL )
+return;
+	for ( prev = NULL, ln = sf->names; ln!=NULL && ln->lang<lang; prev = ln, ln = ln->next );
+	ln = gcalloc(1,sizeof(struct ttflangname));
+	ln->lang = lang;
+	if ( prev==NULL ) { ln->next = sf->names; sf->names = ln; }
+	else { ln->next = prev->next; prev->next = ln; }
+    }
+    free(ln->names[strid]);
+    ln->names[strid] = u;
+}
+
+static void bGetTTFName(Context *c) {
+    SplineFont *sf = c->curfv->sf;
+    int lang, strid;
+    struct ttflangname *ln;
+
+    if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
+    if ( c->a.argc!=3 )
+	error( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_int || c->a.vals[2].type!=v_int )
+	error(c,"Bad argument type");
+
+    lang = c->a.vals[1].u.ival;
+    strid = c->a.vals[2].u.ival;
+    if ( lang<0 || lang>0xffff )
+	error(c,"Bad value for language");
+    else if ( strid<0 || strid>=ttf_namemax )
+	error(c,"Bad value for string id");
+
+    c->return_val.type = v_str;
+
+    for ( ln = sf->names; ln!=NULL && ln->lang!=lang; ln = ln->next );
+    if ( ln==NULL || ln->names[strid]==NULL )
+	c->return_val.u.sval = copy("");
+    else
+	c->return_val.u.sval = u2utf8_copy(ln->names[strid]);
+}
+
 static void bSetItalicAngle(Context *c) {
     int denom=1;
 
@@ -3105,6 +3172,8 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "LoadEncodingFile", bLoadEncodingFile, 1 },
     { "SetFontOrder", bSetFontOrder },
     { "SetFontNames", bSetFontNames },
+    { "SetTTFName", bSetTTFName },
+    { "GetTTFName", bGetTTFName },
     { "SetItalicAngle", bSetItalicAngle },
     { "SetPanose", bSetPanose },
     { "SetUniqueID", bSetUniqueID },

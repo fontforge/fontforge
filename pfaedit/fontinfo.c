@@ -3411,8 +3411,8 @@ return;
 	if ( ln==NULL ) {
 	    ln = gcalloc(1,sizeof(struct ttflangname));
 	    ln->lang = langs[l];
-	    if ( prev==NULL ) d->names = ln;
-	    else prev->next = ln;
+	    if ( prev==NULL ) { ln->next = d->names; d->names = ln; }
+	    else { ln->next = prev->next; prev->next = ln; }
 	}
 	if ( ln->names[ttf_subfamily]==NULL ) {
 	    unichar_t *res = NULL;
