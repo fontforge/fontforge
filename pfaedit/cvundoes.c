@@ -1240,6 +1240,7 @@ void CopyReference(SplineChar *sc) {
     copybuffer.u.state.width = sc->width;
     copybuffer.u.state.vwidth = sc->vwidth;
     copybuffer.u.state.refs = ref = chunkalloc(sizeof(RefChar));
+    copybuffer.u.state.copied_from = sc->parent;
     ref->unicode_enc = sc->unicodeenc;
     ref->local_enc = sc->enc;
     ref->adobe_enc = getAdobeEnc(sc->name);
@@ -1519,7 +1520,8 @@ return;
 static int PasteGuessCorrectWidth(SplineFont *sf,Undoes *paster,int *vwidth) {
     RefChar *ref, *base=NULL;
 
-    if ( paster->u.state.vwidth == paster->u.state.copied_from->ascent+paster->u.state.copied_from->descent )
+    if ( paster->u.state.copied_from==NULL ||
+	    paster->u.state.vwidth == paster->u.state.copied_from->ascent+paster->u.state.copied_from->descent )
 	*vwidth = sf->ascent+sf->descent;
     for ( ref=paster->u.state.refs; ref!=NULL; ref=ref->next ) {
 	if ( ref->unicode_enc!=-1 && ref->unicode_enc<0x10000 &&
