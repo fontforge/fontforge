@@ -578,6 +578,10 @@ static void StrokeJoint(SplinePoint *base,StrokeInfo *si,JointPoint *plus,JointP
 	    plus->from = plus->to = SplinePointCreate(plus->inter.x,plus->inter.y);
 	    plus->from->pointtype = pt_corner;
 	}
+	SPFigureNextCP(plus->to,base->prev,plus->tprev);
+	SPFigurePrevCP(plus->from,base->next,plus->tnext);
+	SPFigurePrevCP(minus->from,base->prev,minus->tprev);
+	SPFigureNextCP(minus->to,base->next,minus->tnext);
     }
 }
 
@@ -751,7 +755,7 @@ static SplineSet *_SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc)
 	StrokeJoint(spl->first,si,&first_plus,&first_minus);
 	plus = first_plus.from;
 	minus = first_minus.to;
-	p_tlast = first_plus.tprev;
+	p_tlast = first_plus.tnext;
 	m_tlast = first_minus.tnext;
     } else if ( spl->first->next==NULL ) {
 	/* Only one point in the SplineSet. */
@@ -760,7 +764,7 @@ static SplineSet *_SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc)
 return( ssplus );
     } else {
 	StrokeEnd(spl->first,si,&plus,&minus);
-	p_tlast = 1.0; m_tlast = 0;
+	p_tlast = 0.0; m_tlast = 0;
     }
 
     first = NULL;
@@ -771,7 +775,7 @@ return( ssplus );
 		cur_minus = first_minus;
 	    } else
 		StrokeJoint(spline->to,si,&cur_plus,&cur_minus);
-	    p_tcur = cur_plus.tnext;
+	    p_tcur = cur_plus.tprev;
 	    m_tcur = cur_minus.tprev;
 	    pto = cur_plus.to;
 	    mto = cur_minus.from;
@@ -781,11 +785,11 @@ return( ssplus );
 	    SplineSetReverse(&junk);
 	    pto = junk.last;
 	    mto = junk.first;
-	    p_tcur = 0.0; m_tcur = 1.0;
+	    p_tcur = 1.0; m_tcur = 1.0;
 	}
 	t_start = (p_tcur>m_tlast)?p_tcur:m_tlast;
 	t_end = (p_tlast<m_tcur)?p_tlast:m_tcur;
-	if ( p_tcur>=p_tlast || m_tcur<=m_tlast ) {
+	if ( p_tcur<=p_tlast || m_tcur<=m_tlast ) {
 	    si->gottoobig = true;
 	    if ( !si->toobigwarn ) {
 		si->toobigwarn = true;
@@ -796,8 +800,8 @@ return( ssplus );
 
 	if ( spline->knownlinear ||
 /* 0 and 1 are valid values. They happen on circles for example */
-		p_tcur<0 || m_tcur>1 || m_tlast<0 || p_tlast>1 ||
-		m_tcur<=m_tlast || p_tcur>=p_tlast ) {
+		p_tcur>1 || m_tcur>1 || m_tlast<0 || p_tlast<0 ||
+		m_tcur<=m_tlast || p_tcur<=p_tlast ) {
 	    pto->nonextcp = plus->noprevcp = true;
 	    minus->nonextcp = mto->noprevcp = true;
 	    SplineMake3(pto,plus);
@@ -880,7 +884,7 @@ return( ssplus );
 	    /*  times we turn sharp corners and we don't get a good sampling */
 	    /*  of the curve which doesn't turn a corner */
 	    for ( i=0; i<approx; ++i ) {
-		real t = (1-p_tlast) - (i+1)*(p_tcur-p_tlast)/(approx+1);
+		real t = p_tlast + (i+1)*(p_tcur-p_tlast)/(approx+1);
 		pmids[pcnt].t = 1-(i+1)/(approx+1);
 		SplineExpand(spline,t,0,si,&p,&m);
 		pmids[pcnt].x = p.x; pmids[pcnt].y = p.y;
@@ -895,7 +899,7 @@ return( ssplus );
 	    ApproximateSplineFromPointsSlopes(pto,plus,pmids,pcnt,false);
 	    for ( i=0; i<approx; ++i ) {
 		real t = m_tlast + (i+1)*(m_tcur-m_tlast)/(approx+1);
-		mmids[mcnt].t = (t-m_tlast)/(m_tcur-m_tlast);
+		mmids[mcnt].t = (i+1)*(m_tcur-m_tlast)/(approx+1);
 		SplineExpand(spline,t,0,si,&p,&m);
 		mmids[mcnt].x = m.x; mmids[mcnt].y = m.y;
 		OnEdge(&p,&m,spline,t,t,spline,si,&pt1,&mt1,&pt2,&mt2);
@@ -906,7 +910,7 @@ return( ssplus );
 	if ( spline->to->next!=NULL ) {
 	    plus = cur_plus.from;
 	    minus = cur_minus.to;
-	    p_tlast = cur_plus.tprev;
+	    p_tlast = cur_plus.tnext;
 	    m_tlast = cur_minus.tnext;
 	} else {
 	    /* Done */
