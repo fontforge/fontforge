@@ -33,7 +33,11 @@
 #include <utype.h>
 #include <unistd.h>
 #include <locale.h>
-#include <pwd.h>
+#ifdef FONTFORGE_CONFIG_GTK
+# include <gtk/gtk.h>
+#else
+# include <pwd.h>
+#endif
 #include <stdarg.h>
 #include <time.h>
 #include "psfont.h"
@@ -1338,6 +1342,13 @@ static void dumpfontinfo(void (*dumpchar)(int ch,void *data), void *data, Spline
 }
 
 const char *GetAuthor(void) {
+#if defined( FONTFORGE_CONFIG_GTK )
+    static char *author;
+
+    if ( author==NULL )
+	author = g_get_real_name();
+return( author );
+#else
     struct passwd *pwd;
     static char author[200] = { '\0' };
     const char *ret = NULL, *pt;
@@ -1367,6 +1378,7 @@ return( author );
     endpwent();
 /* End comment */
 return( ret );
+#endif
 }
 
 static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data,

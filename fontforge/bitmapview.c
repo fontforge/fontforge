@@ -28,7 +28,6 @@
 #include <gkeysym.h>
 #include <utype.h>
 #include <ustring.h>
-#include "nomen.h"
 #include <math.h>
 #include <locale.h>
 #include <gresource.h>

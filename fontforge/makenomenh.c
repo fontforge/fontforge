@@ -22,7 +22,7 @@ static char *standard[] = { "Language", "OK", "Cancel", "Open", "Save",
 	"Fileexistspost", "Createdir", "Dirname", "Couldntcreatedir",
 	"SelectAll", "None", NULL };
 
-static unichar_t **names, **inames;
+static unichar_t **names, **inames, **en_strings;
 static char *hadmn;
 static int nlen=__STR_LastStd+1000, npos=__STR_LastStd+1;
 static int ilen=__NUM_LastStd+1, ipos=__NUM_LastStd+1;
@@ -184,6 +184,69 @@ static int makenomenh() {
 return( 1 );
 
 return( 0 );
+}
+
+static void outpututf8(FILE *out, unichar_t *str) {
+    if ( str!=NULL ) {
+	putc('"',out);
+	while ( *str ) {
+	    if ( *str<' ' || *str=='\\' || *str=='"' || *str=='\177' ) {
+		putc('\\',out);
+		if ( *str=='\n' )
+		    putc('n',out);
+		else if ( *str=='\t' )
+		    putc('t',out);
+		else if ( *str=='\\' )
+		    putc('\\',out);
+		else if ( *str=='"' )
+		    putc('"',out);
+		else {
+		    putc('0'+((*str&0700)>>6), out);
+		    putc('0'+((*str&070)>>3), out);
+		    putc('0'+(*str&07), out);
+		}
+	    } else if ( *str<0x80 )
+		putc( *str,out);
+	    else if ( *str<0x800 ) {
+		putc( 0xc0 | (*str>>6), out );
+		putc( 0x80 | (*str&0x3f), out );
+	    } else {
+		putc( 0xe0 | (*str>>12), out );
+		putc( 0x80 | ((*str>>6)&0x3f), out );
+		putc( 0x80 | (*str&0x3f), out );
+	    }
+	    ++str;
+	}
+	putc('"',out);
+    }
+    fprintf( out, "\n" );
+}
+
+static void MakePOFile(unichar_t **en_strings,unichar_t **values,char *lang) {
+    int i;
+    char buffer[80], *pt;
+    FILE *out;
+
+    strcpy(buffer,"po/");
+    strcat(buffer,lang);
+    pt = strrchr(buffer,'.');
+    if ( pt!=NULL ) *pt = '\0';
+    if ( strcmp(buffer+3,"en")==0 )	/* No translation to us english needed */
+return;
+    strcat(buffer,".po");
+
+    out = fopen(buffer,"w");
+    if ( out==NULL ) {
+	fprintf( stderr, "Failed to write %s\n", buffer);
+return;
+    }
+
+    for ( i=0; i<npos; ++i ) {
+	fprintf( out, "\nmsgid " );
+	outpututf8(out,en_strings[i]);
+	fprintf( out, "msgstr " );
+	outpututf8(out,values[i]);
+    }
 }
 
 static int charval(char **buffer) {
@@ -766,10 +829,15 @@ return;
 	fclose(out);
     }
 
-    for ( i=0; i<npos; ++i ) free( values[i] );
-    free( values);
-    free( mn );
-    free( ivalues);
+    if ( en_strings==NULL ) {
+	en_strings = values;
+    } else {
+	MakePOFile(en_strings,values,filename+6);
+	for ( i=0; i<npos; ++i ) free( values[i] );
+	free( values);
+	free( mn );
+	free( ivalues);
+    }
 }
 
 int main(int argc, char **argv) {
@@ -783,6 +851,11 @@ int main(int argc, char **argv) {
 
     if ( makenomenh())
 return( 1 );
+
+    /* Process the english file first to get a list of strings for the po file(s) */
+    /*  That means we'll process English twice, but so what? */
+    ProcessNames("nomen-en.c",lc,uc);
+    mkdir("po",0755);
 
     /* read all nomen-??*.c files in the current directory */
     here = opendir(".");

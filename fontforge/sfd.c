@@ -79,11 +79,33 @@ static char base64[64] = {
     putc(base64[ch&0x3f],sfd);
 }
 
+#if defined(FONTFORGE_CONFIG_GTK)	/* GTK unicode strings are stored in utf8 rather than ucs2 */
+static void SFDDumpUTF7Str(FILE *sfd, const char *str) {
+#else
 static void SFDDumpUTF7Str(FILE *sfd, const unichar_t *str) {
+#endif
     int ch, prev_cnt=0, prev=0, in=0;
 
     putc('"',sfd);
     if ( str!=NULL ) while ( (ch = *str++)!='\0' ) {
+#if defined(FONTFORGE_CONFIG_GTK)	/* GTK unicode strings are stored in utf8 rather than ucs2 */
+	/* Convert from utf8 to ucs2 */
+	if ( ch<=127 )
+	    /* Done */;
+	else if ( ch<=0xdf && *str!='\0' ) {
+	    ch = ((ch&0x1f)<<6) | (*str++&0x3f);
+	} else if ( ch<=0xef && *str!='\0' && str[1]!='\0' ) {
+	    *upt = ((ch&0xf)<<12) | ((str[0]&0x3f)<<6) | (str[1]&0x3f);
+	    str += 2;
+	} else if ( *str!='\0' && str[1]!='\0' && str[2]!='\0' ) {
+	    w = ( ((ch&0x7)<<2) | ((str[0]&0x30)>>4) )-1;
+	    *upt++ = 0xd800 | (w<<6) | ((str[0]&0xf)<<2) | ((str[1]&0x30)>>4);
+	    *upt   = 0xdc00 | ((str[1]&0xf)<<6) | (str[2]&0x3f);
+	    str += 3;
+	} else {
+	    /* illegal */
+	}
+#endif
 	if ( ch<127 && ch!='\n' && ch!='\r' && ch!='\\' && ch!='~' &&
 		ch!='+' && ch!='=' && ch!='"' ) {
 	    if ( prev_cnt!=0 ) {
@@ -131,9 +153,14 @@ static void SFDDumpUTF7Str(FILE *sfd, const unichar_t *str) {
     putc(' ',sfd);
 }
 
+#if defined(FONTFORGE_CONFIG_GTK)
+static char *SFDReadUTF7Str(FILE *sfd) {
+    char buffer[4096], *pt, *end = buffer+sizeof(buffer)/sizeof(unichar_t)-1;
+#else
 static unichar_t *SFDReadUTF7Str(FILE *sfd) {
-    int ch1, ch2, ch3, ch4, done;
     unichar_t buffer[1024], *pt, *end = buffer+sizeof(buffer)/sizeof(unichar_t)-1;
+#endif
+    int ch1, ch2, ch3, ch4, done;
     int prev_cnt=0, prev=0, in=0;
 
     ch1 = getc(sfd);
@@ -183,8 +210,30 @@ return( NULL );
 		done = true;
 	    }
 	}
+#if defined(FONTFORGE_CONFIG_GTK)
+	if ( done ) {
+	    if ( ch1<=127 && pt<end )
+		*pt ++ = ch;
+	    else if ( ch1<=0x7ff && pt+1<end ) {
+		*pt++ = 0xc0 | (ch1>>6);
+		*pt++ = 0x80 | (ch1&0x3f);
+	    } else if ( ch1<=0xffff && pt+2<end ) {
+		*pt++ = 0xe0 | (ch1>>12);
+		*pt++ = 0x80 | ((ch1>>6)&0x3f);
+		*pt++ = 0x80 | (ch1&0x3f);
+	    } else if ( pt+3<end ) {
+		uint32 val = ch1-0x10000;
+		int u = ((val&0xf0000)>>16)+1, z=(val&0x0f000)>>12, y=(val&0x00fc0)>>6, x=val&0x0003f;
+		*pt++ = 0xf0 | (u>>2);
+		*pt++ = 0x80 | ((u&3)<<4) | z;
+		*pt++ = 0x80 | y;
+		*pt++ = 0x80 | x;
+	    }
+	}
+#else
 	if ( done && pt<end )
 	    *pt++ = ch1;
+#endif
 	if ( prev_cnt==2 ) {
 	    prev_cnt = 0;
 	    if ( pt<end && prev!=0 )
@@ -2056,7 +2105,11 @@ return( head );
 static AnchorPoint *SFDReadAnchorPoints(FILE *sfd,SplineChar *sc,AnchorPoint *lastap) {
     AnchorPoint *ap = chunkalloc(sizeof(AnchorPoint));
     AnchorClass *an;
+#if defined(FONTFORGE_CONFIG_GTK)
+    char *name;
+#else
     unichar_t *name;
+#endif
     char tok[200];
 
     name = SFDReadUTF7Str(sfd);
@@ -3588,7 +3641,11 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    for ( i=0; i<22; ++i )
 		getint(sfd,&sf->texdata.params[i]);
 	} else if ( strmatch(tok,"AnchorClass:")==0 ) {
+#if defined(FONTFORGE_CONFIG_GTK)
+	    char *name;
+#else
 	    unichar_t *name;
+#endif
 	    AnchorClass *lastan = NULL, *an;
 	    while ( (name=SFDReadUTF7Str(sfd))!=NULL ) {
 		an = chunkalloc(sizeof(AnchorClass));

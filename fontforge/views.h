@@ -28,7 +28,12 @@
 #define _VIEWS_H
 
 #include "splinefont.h"
-#include "ggadget.h"
+
+#if defined(FONTFORGE_CONFIG_GTK)
+# include <gtk/gtk.h>
+#elif defined(FONTFORGE_CONFIG_GDRAW)
+# include <ggadget.h>
+#endif
 
 struct gfi_data;
 struct contextchaindlg;
@@ -132,8 +137,13 @@ struct instrdata {
 };
 
 struct instrinfo {
+#if defined(FONTFORGE_CONFIG_GTK)
+    GtkWidget *v;
+    GtkWidget *vsb;
+#elif defined(FONTFORGE_CONFIG_GDRAW)
     GWindow v;
     GGadget *vsb;
+#endif
     int16 sbw;
     int16 vheight, vwidth;
     int16 lheight,lpos;
@@ -153,16 +163,22 @@ struct instrinfo {
 
 typedef struct debugview {
     struct debugger_context *dc;	/* Local to freetype.c */
+#if defined(FONTFORGE_CONFIG_GTK)
+    GtkWidget *dv, *v;
+    GtkWidget *points, *points_v, *cvt, *regs, *stack, *storage;
+    GtkWidget *cvtsb;
+#elif defined(FONTFORGE_CONFIG_GDRAW)
     GWindow dv, v;
+    /* Windows for twilight points, cvt, registers, stack, storage */
+    GWindow points, points_v, cvt, regs, stack, storage;
+    GGadget *cvtsb;
+#endif
     struct instrdata id;
     struct instrinfo ii;
     int dwidth, toph;
     struct charview *cv;
     double scale;
-    /* Windows for twilight points, cvt, registers, stack, storage */
-    GWindow points, points_v, cvt, regs, stack, storage;
     int pts_head, cvt_offtop;
-    GGadget *cvtsb;
 } DebugView;
 
 enum dv_coderange { cr_none=0, cr_fpgm, cr_prep, cr_glyph };	/* cleverly chosen to match ttobjs.h */
@@ -203,23 +219,44 @@ typedef struct charview {
     unsigned int autonomous_ruler_w: 1;
     Layer *layerheads[dm_max];
     real scale;
+#if defined(FONTFORGE_CONFIG_GTK)
+    GtkWidget *v;
+    GtkWidget *vsb, *hsb, *mb;
+    PangoFont *small, *normal;
+    GtkWindow *icon;		/* Pixmap? */
+    guint pressed;		/* glib timer id */
+    GtkWindow backimgs;		/* Pixmap? */
+#elif defined(FONTFORGE_CONFIG_GDRAW)
     GWindow gw, v;
+    GGadget *vsb, *hsb, *mb;
+    GFont *small, *normal;
+    GWindow icon;
+    GWindow ruler_w;
+    GFont *rfont;
+    GTimer *pressed;
+    GWindow backimgs;
+    GIC *gic;
+#endif
     int width, height;
     int xoff, yoff;
     int mbh, infoh, rulerh;
-    GGadget *vsb, *hsb, *mb;
-    GFont *small, *normal;
     int16 sas, sfh, nas, nfh;
     BasePoint info;
     SplinePoint *info_sp;
+#if defined(FONTFORGE_CONFIG_GTK)
+    GdkPoint e;					/* mouse location */
+    GdkPoint olde;
+#elif defined(FONTFORGE_CONFIG_GDRAW)
     GPoint e;					/* mouse location */
     GPoint olde;
+#endif
     BasePoint last_c;
     BDFChar *filled;
+#ifdef FONTFORGE_CONFIG_GDRAW
     GImage gi;
+#endif
     struct charview *next;
     struct fontview *fv;
-    GWindow icon;
     PressedOn p;
     SplinePoint *lastselpt;
     /*GWindow tools, layers;*/
@@ -229,9 +266,7 @@ typedef struct charview {
     SplinePointList *active_spl;
     SplinePoint *active_sp;
     IPoint handscroll_base;
-    GWindow ruler_w;
     uint16 rfh, ras;
-    GFont *rfont;
     BasePoint lastknife;
     struct freehand {
 	struct tracedata *head, *last;	/* for the freehand tool */
@@ -239,8 +274,6 @@ typedef struct charview {
 	int ignore_wobble;		/* Ignore wiggles smaller than this */
 	int skip_cnt;
     } freehand;
-    GTimer *pressed;
-    GWindow backimgs;
     enum expandedge { ee_none, ee_nw, ee_up, ee_ne, ee_right, ee_se, ee_down,
 	    ee_sw, ee_left, ee_max } expandedge;
     BasePoint expandorigin;
@@ -253,13 +286,15 @@ typedef struct charview {
 #endif
     real oldwidth, oldvwidth;
 #if _ModKeysAutoRepeat
+# if defined(FONTFORGE_CONFIG_GTK)
+# elif defined(FONTFORGE_CONFIG_GDRAW)
     GTimer *autorpt;
     int keysym, oldstate;
     int oldkeyx, oldkeyy;
     GWindow oldkeyw;
+# endif
 #endif
     struct searchview *searcher;	/* The sv within which this view is embedded (if it is) */
-    GIC *gic;
     PST *lcarets;
     int16 nearcaret;
 	/* freetype results display */
@@ -275,9 +310,17 @@ typedef struct bitmapview {
     BDFChar *bc;
     BDFFont *bdf;
     struct fontview *fv;
+#if defined(FONTFORGE_CONFIG_GTK)
+    GtkWidget *v;
+    GtkWidget *gw;
+    GtkWidget *vsb, *hsb, *mb;
+#elif defined(FONTFORGE_CONFIG_GDRAW)
     GWindow gw, v;
-    int xoff, yoff;
     GGadget *vsb, *hsb, *mb;
+    GGadget *recalc;
+    GFont *small;
+#endif
+    int xoff, yoff;
     int width, height;
     int infoh, mbh;
     int scale;
@@ -292,18 +335,19 @@ typedef struct bitmapview {
     unsigned int shades_hidden:1;
     unsigned int shades_down:1;
     /*GWindow tools, layers;*/
-    GGadget *recalc;
     int8 b1_tool, cb1_tool, b2_tool, cb2_tool;		/* Button 3 does a popup */
     int8 s1_tool, s2_tool, er_tool;			/* Bindings for wacom stylus and eraser */
     int8 showing_tool, pressed_tool, pressed_display, had_control, active_tool;
     int pressed_x, pressed_y;
     int info_x, info_y;
     int event_x, event_y;
-    GFont *small;
     int16 sas, sfh;
 #if _ModKeysAutoRepeat
+# if defined(FONTFORGE_CONFIG_GTK)
+# elif defined(FONTFORGE_CONFIG_GDRAW)
     GTimer *autorpt;
     int keysym, oldstate;
+# endif
 #endif
     int color;			/* for greyscale fonts */
 } BitmapView;
@@ -314,15 +358,22 @@ typedef struct metricsview {
     struct fontview *fv;
     int pixelsize;
     BDFFont *bdf;		/* We can also see metric info on a bitmap font */
+#if defined(FONTFORGE_CONFIG_GTK)
+    GtkWidget *gw;
+    PangoFont *font;
+    GtkWidget *hsb, *vsb, *mb, *text, *sli_list;
+    GtkWidget *namelab, *widthlab, *lbearinglab, *rbearinglab, *kernlab;
+#elif defined(FONTFORGE_CONFIG_GDRAW)
     GWindow gw;
+    GFont *font;
+    GGadget *hsb, *vsb, *mb, *text, *sli_list;
+    GGadget *namelab, *widthlab, *lbearinglab, *rbearinglab, *kernlab;
+#endif
     int16 width, height, dwidth;
     int16 mbh,sbh;
     int16 topend;		/* y value of the end of the region containing the text field */
     int16 displayend;		/* y value of the end of the region showing filled characters */
-    GFont *font;
     int16 fh, as;
-    GGadget *hsb, *vsb, *mb, *text, *sli_list;
-    GGadget *namelab, *widthlab, *lbearinglab, *rbearinglab, *kernlab;
     struct metricchar {
 	SplineChar *sc;
 	BDFChar *show;
@@ -333,7 +384,11 @@ typedef struct metricsview {
 	int16 xoff, yoff, hoff, voff;	/* adjustments by GPOS other than 'kern' (scaled) */
 	PST *active_pos;	/* Only support one simple positioning GPOS feature at a time */
 	unsigned int selected: 1;
+#if defined(FONTFORGE_CONFIG_GTK)
+	GtkWidget *width, *lbearing, *rbearing, *kern, *name;
+#elif defined(FONTFORGE_CONFIG_GDRAW)
 	GGadget *width, *lbearing, *rbearing, *kern, *name;
+#endif
 	struct aplist *aps;
 	SplineChar *basesc;	/* If we've done a substitution, this lets us go back */
     } *perchar;
@@ -363,18 +418,30 @@ enum fv_metrics { fvm_baseline=1, fvm_origin=2, fvm_advanceat=4, fvm_advanceto=8
 typedef struct fontview {
     SplineFont *sf;
     BDFFont *show, *filled;
+#if defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
+    void *gw, *v;
+#elif defined(FONTFORGE_CONFIG_GTK)
+    GtkWidget *gw, *v;
+    PangoFont *header, *iheader;
+    GtkWidget *vsb, *mb;
+    guint pressed;			/* gtk timer id */
+#elif defined(FONTFORGE_CONFIG_GDRAW)
     GWindow gw, v;
-    int width, height;		/* of v */
-    int16 infoh,mbh;
-    int colcnt, rowcnt;
-    int rowoff, rowltot;
-    int cbw,cbh;		/* width/height of a character box */
     GFont *header, *iheader;
     GGadget *vsb, *mb;
+    GTimer *pressed;
+    GTimer *resize;
+    GIC *gic;
+#endif
+    int width, height;		/* of v */
+    int16 infoh,mbh;
+    int16 lab_height;
+    int16 colcnt, rowcnt;
+    int16 rowoff, rowltot;
+    int16 cbw,cbh;			/* width/height of a character box */
     struct fontview *next;		/* Next on list of open fontviews */
     struct fontview *nextsame;		/* Next fv looking at this font */
     int pressed_pos, end_pos;
-    GTimer *pressed;
     uint8 *selected;
     MetricsView *metrics;
     unsigned int antialias:1;
@@ -399,15 +466,17 @@ typedef struct fontview {
     int mapcnt;		/* Number of chars in the current group (mapping) */
     struct dictionary *fontvars;	/* Scripting */
     struct searchview *sv;
-    GIC *gic;
-    GTimer *resize;
     struct gfi_data *fontinfo;
     SplineChar *sc_near_top;
     int sel_index;
 } FontView;
 
 typedef struct findsel {
+#if defined(FONTFORGE_CONFIG_GTK)
+    GdkEvent *e;
+#elif defined(FONTFORGE_CONFIG_GDRAW)
     GEvent *e;
+#endif
     real fudge;		/* One pixel fudge factor */
     real xl,xh, yl, yh;	/* One pixel fudge factor */
     unsigned int select_controls: 1;	/* notice control points */
@@ -427,10 +496,16 @@ typedef struct searchview {
     CharView cv_srch, cv_rpl;
     CharView *lastcv;
 /* ****** */
+#if defined(FONTFORGE_CONFIG_GTK)
+    GtkWidget *gw;
+    GtkWidget *mb;
+    PangoFont *plain, *bold;
+#elif defined(FONTFORGE_CONFIG_GDRAW)
     GWindow gw;
-    int mbh;
     GGadget *mb;
     GFont *plain, *bold;
+#endif
+    int mbh;
     int fh, as;
     int rpl_x, cv_y;
     int cv_width, cv_height;
@@ -496,6 +571,8 @@ extern int _FVMenuGenerate(FontView *fv,int family);
 extern void _FVCloseWindows(FontView *fv);
 extern void SCClearBackground(SplineChar *sc);
 extern char *GetPostscriptFontName(char *defdir,int mult);
+#if defined(FONTFORGE_CONFIG_GTK)
+#elif defined(FONTFORGE_CONFIG_GDRAW)
 extern void MenuPrefs(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuSaveAll(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuExit(GWindow base,struct gmenuitem *mi,GEvent *e);
@@ -505,6 +582,13 @@ extern void MenuIndex(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuAbout(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuLicense(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuNew(GWindow gw,struct gmenuitem *mi,GEvent *e);
+extern void WindowMenuBuild(GWindow base,struct gmenuitem *mi,GEvent *);
+extern void MenuRecentBuild(GWindow base,struct gmenuitem *mi,GEvent *);
+extern void MenuScriptsBuild(GWindow base,struct gmenuitem *mi,GEvent *);
+extern int RecentFilesAny(void);
+extern void _aplistbuild(struct gmenuitem *mi,SplineFont *sf,
+	void (*func)(GWindow,struct gmenuitem *,GEvent *));
+#endif
 extern void MergeKernInfo(SplineFont *sf);
 extern int32 *ParseBitmapSizes(GGadget *g,int msg,int *err);
 #ifdef FONTFORGE_CONFIG_WRITE_PFM
@@ -554,7 +638,9 @@ extern void FontViewReformatAll(SplineFont *sf);
 extern void FontViewReformatOne(FontView *fv);
 extern void FVShowFilled(FontView *fv);
 extern void FVChangeDisplayBitmap(FontView *fv,BDFFont *bdf);
+#ifdef FONTFORGE_CONFIG_GDRAW
 extern void SCPreparePopup(GWindow gw,SplineChar *sc);
+#endif
 extern int SFScaleToEm(SplineFont *sf, int ascent, int descent);
 extern void TransHints(StemInfo *stem,real mul1, real off1, real mul2, real off2, int round_to_int );
 extern void VrTrans(struct vr *vr,real transform[6]);
@@ -589,14 +675,20 @@ extern void FVVKernFromHKern(FontView *fv);
 extern int AutoWidthScript(SplineFont *sf,int spacing);
 extern int AutoKernScript(SplineFont *sf,int spacing, int threshold,char *kernfile);
 
+#if defined(FONTFORGE_CONFIG_GTK)
+#elif defined(FONTFORGE_CONFIG_GDRAW)
 extern void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
 	Color fg, int dopoints, DRect *clip );
+#endif
 
+#if defined(FONTFORGE_CONFIG_GTK)
+#elif defined(FONTFORGE_CONFIG_GDRAW)
 extern GWindow CVMakeTools(CharView *cv);
 extern GWindow CVMakeLayers(CharView *cv);
 extern GWindow BVMakeTools(BitmapView *bv);
 extern GWindow BVMakeLayers(BitmapView *bv);
 extern int CVPaletteMnemonicCheck(GEvent *event);
+#endif
 extern real CVRoundRectRadius(void);
 extern int CVRectElipseCenter(void);
 extern void CVRectEllipsePosDlg(CharView *cv);
@@ -648,13 +740,17 @@ extern int CVExport(CharView *cv);
 extern int BVExport(BitmapView *bv);
 extern void ScriptExport(SplineFont *sf, BDFFont *bdf, int format, int enc);
 
+#if defined(FONTFORGE_CONFIG_GTK)
+#elif defined(FONTFORGE_CONFIG_GDRAW)
 extern void DrawAnchorPoint(GWindow pixmap,int x, int y,int selected);
 extern void DefaultY(GRect *pos);
+extern void CVDrawRubberRect(GWindow pixmap, CharView *cv);
+extern void CVInfoDraw(CharView *cv, GWindow pixmap );
+#endif
 extern void CVResize(CharView *cv );
 extern CharView *CharViewCreate(SplineChar *sc,FontView *fv);
 extern void CharViewFree(CharView *cv);
 extern int CVValid(SplineFont *sf, SplineChar *sc, CharView *cv);
-extern void CVDrawRubberRect(GWindow pixmap, CharView *cv);
 extern void CVSetCharChanged(CharView *cv,int changed);
 extern void _CVCharChangedUpdate(CharView *cv,int changed);
 extern void CVCharChangedUpdate(CharView *cv);
@@ -678,7 +774,6 @@ extern int CVOneThingSel(CharView *cv, SplinePoint **sp, SplinePointList **spl,
 extern int CVOneContourSel(CharView *cv, SplinePointList **_spl,
 	RefChar **ref, ImageList **img);
 extern void RevertedGlyphReferenceFixup(SplineChar *sc, SplineFont *sf);
-extern void CVInfoDraw(CharView *cv, GWindow pixmap );
 enum fvformats { fv_bdf, fv_ttf, fv_pk, fv_pcf, fv_mac, fv_win, fv_image,
 	fv_imgtemplate, fv_eps, fv_epstemplate, fv_svg, fv_svgtemplate,
 	fv_fig };
@@ -765,7 +860,9 @@ extern void CVMouseUpKnife(CharView *cv);
 extern void CVMouseDownShape(CharView *cv,GEvent *event);
 extern void CVMouseMoveShape(CharView *cv);
 extern void CVMouseUpShape(CharView *cv);
+#ifdef FONTFORGE_CONFIG_GDRAW
 extern void LogoExpose(GWindow pixmap,GEvent *event, GRect *r,enum drawmode dm);
+#endif
 
 extern int GotoChar(SplineFont *sf);
 
@@ -808,16 +905,6 @@ void PasteIntoMV(MetricsView *mv,SplineChar *sc, int doclear);
 
 extern void CVShowPoint(CharView *cv, SplinePoint *sp);
 
-extern void WindowMenuBuild(GWindow base,struct gmenuitem *mi,GEvent *);
-extern void MenuRecentBuild(GWindow base,struct gmenuitem *mi,GEvent *);
-extern void MenuScriptsBuild(GWindow base,struct gmenuitem *mi,GEvent *);
-extern int RecentFilesAny(void);
-extern void _aplistbuild(struct gmenuitem *mi,SplineFont *sf,
-	void (*func)(GWindow,struct gmenuitem *,GEvent *));
-
-extern GImage GIcon_sel2ptr, GIcon_rightpointer, GIcon_angle, GIcon_distance,
-	GIcon_selectedpoint, GIcon_mag;
-
 extern BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv);
 extern BitmapView *BitmapViewCreatePick(int enc, FontView *fv);
 extern void BitmapViewFree(BitmapView *bv);
@@ -827,7 +914,9 @@ extern BDFFloat *BDFFloatCreate(BDFChar *bc,int xmin,int xmax,int ymin,int ymax,
 extern BDFFloat *BDFFloatCopy(BDFFloat *sel);
 extern BDFFloat *BDFFloatConvert(BDFFloat *sel,int newdepth, int olddepth);
 extern void BDFFloatFree(BDFFloat *sel);
+#ifdef FONTFORGE_CONFIG_GDRAW
 extern void BVMenuRotateInvoked(GWindow gw,struct gmenuitem *mi, GEvent *e);
+#endif
 extern void BCTrans(BDFFont *bdf,BDFChar *bc,BVTFunc *bvts,FontView *fv );
 extern void BVRotateBitmap(BitmapView *bv,enum bvtools type );
 extern int  BVColor(BitmapView *bv);
@@ -855,6 +944,8 @@ extern void PfaEditSetFallback(void);
 extern void RecentFilesRemember(char *filename);
 extern int GetPrefs(char *name,Val *val);		/* for scripting */
 extern int SetPrefs(char *name,Val *val1, Val *val2);	/* for scripting */
+#if defined(FONTFORGE_CONFIG_GTK)
+#elif defined(FONTFORGE_CONFIG_GDRAW)
 extern void GListAddStr(GGadget *list,unichar_t *str, void *ud);
 extern void GListReplaceStr(GGadget *list,int index, unichar_t *str, void *ud);
 extern struct macname *NameGadgetsGetNames( GWindow gw );
@@ -864,9 +955,13 @@ extern void GCDFillMacFeat(GGadgetCreateData *mfgcd,GTextInfo *mflabels, int wid
 	MacFeat *all, int fromprefs);
 extern int UserFeaturesDiffer(void);
 extern void Prefs_ReplaceMacFeatures(GGadget *list);
+#endif
 
 extern void FVAutoTrace(FontView *fv,int ask);
+#if defined(FONTFORGE_CONFIG_GTK)
+#elif defined(FONTFORGE_CONFIG_GDRAW)
 extern void SCAutoTrace(SplineChar *sc,GWindow v,int ask);
+#endif
 extern char *FindAutoTraceName(void);
 extern char *FindMFName(void);
 extern char *ProgramExists(char *prog,char *buffer);
@@ -887,8 +982,11 @@ extern int SFTFSetFont(GGadget *g, int start, int end, SplineFont *sf,
 	enum sftf_fonttype, int size, int antialias);
 extern void SFTFRegisterCallback(GGadget *g, void *cbcontext,
 	void (*changefontcallback)(void *,SplineFont *,enum sftf_fonttype,int size,int aa));
+#if defined(FONTFORGE_CONFIG_GTK)
+#elif defined(FONTFORGE_CONFIG_GDRAW)
 extern GGadget *SFTextAreaCreate(struct gwindow *base, GGadgetData *gd,void *data);
 extern void DisplayDlg(SplineFont *sf);
+#endif
 
 extern void ShowAboutScreen(void);
 extern void DelayEvent(void (*func)(void *), void *data);
@@ -913,7 +1011,9 @@ extern void Disp_DefaultTemplate(CharView *cv);
 extern SearchView *SVCreate(FontView *fv);
 extern void FVReplaceOutlineWithReference( FontView *fv );
 extern void SVCharViewInits(SearchView *sv);
+#ifdef FONTFORGE_CONFIG_GDRAW
 extern void SVMenuClose(GWindow gw,struct gmenuitem *mi,GEvent *e);
+#endif
 extern void SVChar(SearchView *sv, GEvent *event);
 extern void SVMakeActive(SearchView *sv,CharView *cv);
 extern int SVAttachFV(FontView *fv,int ask_if_difficult);
@@ -927,7 +1027,9 @@ extern void SCEditInstructions(SplineChar *sc);
 extern void SFEditTable(SplineFont *sf, uint32 tag);
 extern void IIScrollTo(struct instrinfo *ii,int ip,int mark_stop);
 extern void IIReinit(struct instrinfo *ii,int ip);
+#ifdef FONTFORGE_CONFIG_GDRAW
 extern int ii_v_e_h(GWindow gw, GEvent *event);
+#endif
 extern void instr_scroll(struct instrinfo *ii,struct sbevent *sb);
 
 extern void CVGridFitChar(CharView *cv);
@@ -993,7 +1095,9 @@ extern void SCLayersChange(SplineChar *sc);
 extern void CVLayerChange(CharView *cv);
 extern void SFLayerChange(SplineFont *sf);
 
+#ifdef FONTFORGE_CONFIG_GDRAW
 extern GMenuItem helplist[];
+#endif
 extern BasePoint last_ruler_offset[];
 
 #endif
