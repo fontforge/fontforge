@@ -147,7 +147,8 @@ void FindBlues( SplineFont *sf, real blues[14], real otherblues[10]) {
 		}
 	    }
 	}
-	GProgressNext();
+	if ( !GProgressNext())
+    break;
     }
     if ( otherdigits[2]>0 && digith[2]>0 ) {
 	if ( otherdigits[0]/otherdigits[2] >= .95*digith[0]/digith[2] ) {
@@ -3148,10 +3149,15 @@ void SplineFontAutoHint( SplineFont *_sf) {
     k=0;
     do {
 	sf = _sf->subfontcnt==0 ? _sf : _sf->subfonts[k];
-	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
+	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
 	    if ( sf->chars[i]->changedsincelasthinted &&
 		    !sf->chars[i]->manualhints )
 		SplineCharAutoHint(sf->chars[i],true);
+	    if ( !GProgressNext()) {
+		k = _sf->subfontcnt+1;
+	break;
+	    }
+	}
 	++k;
     } while ( k<_sf->subfontcnt );
 }

@@ -306,7 +306,7 @@ return;
 }
 
 /* Dumped within the private dict to get access to ND and RD */
-static void dumpcharstrings(void (*dumpchar)(int ch,void *data), void *data,
+static int dumpcharstrings(void (*dumpchar)(int ch,void *data), void *data,
 	SplineFont *sf, struct pschars *chars ) {
     int leniv = 4;
     int i;
@@ -321,9 +321,11 @@ static void dumpcharstrings(void (*dumpchar)(int ch,void *data), void *data,
 	dumpf(dumpchar,data,"/%s %d RD ", chars->keys[i], chars->lens[i]+leniv );
 	encodestrout(dumpchar,data,chars->values[i],chars->lens[i],leniv);
 	dumpstr(dumpchar,data," ND\n");
-	GProgressNext();
+	if ( !GProgressNext())
+return( false );
     }
     dumpstr(dumpchar,data,"end readonly put\n");
+return( true );
 }
 
 static void dumpsplineset(void (*dumpchar)(int ch,void *data), void *data, SplineSet *spl ) {
@@ -435,7 +437,7 @@ static void dumpproc(void (*dumpchar)(int ch,void *data), void *data, SplineChar
     dumpstr(dumpchar,data,"  } bind def\n" );
 }
 
-static void dumpcharprocs(void (*dumpchar)(int ch,void *data), void *data, SplineFont *sf ) {
+static int dumpcharprocs(void (*dumpchar)(int ch,void *data), void *data, SplineFont *sf ) {
     /* for type 3 fonts */
     int cnt, i;
 
@@ -455,10 +457,12 @@ static void dumpcharprocs(void (*dumpchar)(int ch,void *data), void *data, Splin
     for ( ; i<sf->charcnt; ++i ) {
 	if ( SCWorthOutputting(sf->chars[i]) )
 	    dumpproc(dumpchar,data,sf->chars[i]);
-	GProgressNext();
+	if ( !GProgressNext())
+return( false );
     }
     dumpstr(dumpchar,data,"end\ncurrentdict end\n" );
     dumpf(dumpchar, data, "/%s exch definefont\n", sf->fontname );
+return( true );
 }
 
 static struct pschars *initsubrs(int needsflex) {
@@ -510,7 +514,7 @@ static void dumpothersubrs(void (*dumpchar)(int ch,void *data), void *data,
     dumpstr(dumpchar,data,"def\n" );
 }
 
-static void dumpprivatestuff(void (*dumpchar)(int ch,void *data), void *data,
+static int dumpprivatestuff(void (*dumpchar)(int ch,void *data), void *data,
 	SplineFont *sf, struct fddata *incid ) {
     int cnt, mi;
     real bluevalues[14], otherblues[10];
@@ -527,7 +531,8 @@ static void dumpprivatestuff(void (*dumpchar)(int ch,void *data), void *data,
 
     if ( incid==NULL ) {
 	flex_max = SplineFontIsFlexible(sf);
-	subrs = initsubrs(flex_max>0);
+	if ( (subrs = initsubrs(flex_max>0))==NULL )
+return( false );
 	iscjk = SFIsCJK(sf);
     } else {
 	flex_max = incid->flexmax;
@@ -549,11 +554,13 @@ static void dumpprivatestuff(void (*dumpchar)(int ch,void *data), void *data,
     GProgressChangeLine1R(_STR_AutoHintingFont);
     GProgressChangeStages(2+2-hasblue);
     SplineFontAutoHint(sf);
-    GProgressNextStage();
+    if ( !GProgressNextStage())
+return( false );
 
     if ( !hasblue ) {
 	FindBlues(sf,bluevalues,otherblues);
-	GProgressNextStage();
+	if ( !GProgressNextStage())
+return( false );
     }
 
     if ( !hash || !hasv )
@@ -579,7 +586,8 @@ static void dumpprivatestuff(void (*dumpchar)(int ch,void *data), void *data,
     if ( incid==NULL ) {
 	GProgressNextStage();
 	GProgressChangeLine1R(_STR_CvtPS);
-	chars = SplineFont2Chrs(sf,true,iscjk,subrs);
+	if ( (chars = SplineFont2Chrs(sf,true,iscjk,subrs))==NULL )
+return( false );
 	GProgressNextStage();
 	GProgressChangeLine1R(_STR_SavingPSFont);
     }
@@ -680,6 +688,7 @@ static void dumpprivatestuff(void (*dumpchar)(int ch,void *data), void *data,
     }
 
     GProgressChangeStages(1);
+return( true );
 }
 
 static void dumpfontinfo(void (*dumpchar)(int ch,void *data), void *data, SplineFont *sf ) {
@@ -1125,6 +1134,13 @@ static FILE *gencidbinarydata(SplineFont *cidmaster,struct cidbytes *cidbytes) {
 	fd = &cidbytes->fds[i];
 	fd->flexmax = SplineFontIsFlexible(sf);
 	fd->subrs = initsubrs(fd->flexmax>0);
+	if ( fd->subrs==NULL ) {
+	    int j;
+	    for ( j=0; j<i; ++j )
+		PSCharsFree(cidbytes->fds[j].subrs);
+	    free( cidbytes->fds );
+return( NULL );
+	}
 	fd->iscjk = SFIsCJK(sf);
 	pt = PSDictHasEntry(sf->private,"lenIV");
 	if ( pt!=NULL )
@@ -1133,7 +1149,8 @@ static FILE *gencidbinarydata(SplineFont *cidmaster,struct cidbytes *cidbytes) {
 	    fd->leniv = 4;
     }
     GProgressChangeLine1R(_STR_CvtPS);
-    chars = CID2Chrs(cidmaster,cidbytes);
+    if ( (chars = CID2Chrs(cidmaster,cidbytes))==NULL )
+return( NULL );
     GProgressNextStage();
     GProgressChangeLine1R(_STR_SavingPSFont);
 
@@ -1142,7 +1159,10 @@ static FILE *gencidbinarydata(SplineFont *cidmaster,struct cidbytes *cidbytes) {
 	if ( chars->lens[i]!=0 ) {
 	    leniv = cidbytes->fds[cidbytes->fdind[i]].leniv;
 	    dumpt1str(chrs,chars->values[i],chars->lens[i],leniv);
-	    GProgressNext();
+	    if ( !GProgressNext()) {
+		fclose(chrs);
+return( NULL );
+	    }
 	    if ( leniv>0 )
 		chars->lens[i] += leniv;
 	}
@@ -1276,7 +1296,8 @@ static int dumpcidstuff(FILE *out,SplineFont *cidmaster) {
 
     dumpfontinfo((DumpChar) fputc,out,cidmaster);
 
-    binary = gencidbinarydata(cidmaster,&cidbytes);
+    if ((binary = gencidbinarydata(cidmaster,&cidbytes))==NULL )
+return( 0 );
 
     fprintf( out, "\n/CIDMapOffset %d def\n", cidbytes.cidmapoffset );
     fprintf( out, "/FDBytes %d def\n", cidbytes.fdbytes );

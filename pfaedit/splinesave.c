@@ -1613,7 +1613,10 @@ struct pschars *SplineFont2Chrs(SplineFont *sf, int round, int iscjk,
 		    round,iscjk,subrs,NULL);
 	    ++cnt;
 	}
-	GProgressNext();
+	if ( !GProgressNext()) {
+	    PSCharsFree(chrs);
+return( NULL );
+	}
     }
     if ( exists[0] || exists[1] )
 	cnt = AddGreekDuplicates(chrs,sf,cnt,round,iscjk,subrs,0xb5,0x3bc);
@@ -1697,7 +1700,10 @@ struct pschars *CID2Chrs(SplineFont *cidmaster,struct cidbytes *cidbytes) {
 	    chrs->values[cid] = SplineChar2PS(sf->chars[cid],&chrs->lens[cid],
 		    true,fd->iscjk|0x100,fd->subrs,NULL);
 	}
-	GProgressNext();
+	if ( !GProgressNext()) {
+	    PSCharsFree(chrs);
+return( NULL );
+	}
     }
     chrs->next = cid;
 return( chrs );
@@ -2417,7 +2423,10 @@ return( subrs);
 			subrs,(BasePoint *) (subrs->keys[cnt]));
 	    sc->lsidebearing = cnt++ - subrs->bias;
 	}
-	GProgressNext();
+	if ( !GProgressNext()) {
+	    PSCharsFree(subrs);
+return( NULL );
+	}
     }
     subrs->next = cnt;
 return( subrs );
@@ -2502,7 +2511,10 @@ struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
 	    chrs->values[cnt] = SplineChar2PS2(sc,&chrs->lens[cnt],nomwid,defwid,subrs,NULL);
 	    sf->chars[i]->ttf_glyph = cnt++;
 	}
-	GProgressNext();
+	if ( !GProgressNext()) {
+	    PSCharsFree(chrs);
+return( NULL );
+	}
     }
     chrs->next = cnt;
 return( chrs );

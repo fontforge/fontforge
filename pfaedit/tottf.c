@@ -3220,7 +3220,7 @@ return;
     ttfdumpmetrics(sc,gi,&bb);
 }
 
-static void dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
+static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
     int i, cnt;
     RefChar *refs;
     int fixed = SFOneWidth(sf);
@@ -3262,7 +3262,8 @@ static void dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
 	    else
 		dumpglyph(sf->chars[i],gi);
 	}
-	GProgressNext();
+	if ( !GProgressNext())
+return( false );
     }
 
     /* extra location entry points to end of last glyph */
@@ -3279,6 +3280,7 @@ static void dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
 	gi->vmtxlen = ftell(gi->vmtx);
 	if ( gi->vmtxlen&2 ) putshort(gi->vmtx,0);
     }
+return( true );
 }
 
 /* Standard names for cff */
@@ -4081,7 +4083,7 @@ static void finishupcid(SplineFont *sf,struct alltabs *at) {
     free(at->fds);
 }
 
-static void dumpcffhmtx(struct alltabs *at,SplineFont *sf,int bitmaps) {
+static int dumpcffhmtx(struct alltabs *at,SplineFont *sf,int bitmaps) {
     DBounds b;
     SplineChar *sc;
     int i,cnt;
@@ -4154,6 +4156,7 @@ static void dumpcffhmtx(struct alltabs *at,SplineFont *sf,int bitmaps) {
     }
 
     at->gi.maxp->numGlyphs = cnt;
+return( true );
 }
 
 static void dumpcffcidhmtx(struct alltabs *at,SplineFont *_sf) {
@@ -4215,7 +4218,7 @@ static void dumpcffcidhmtx(struct alltabs *at,SplineFont *_sf) {
     at->gi.maxp->numGlyphs = cnt;
 }
 
-static void dumptype2glyphs(SplineFont *sf,struct alltabs *at) {
+static int dumptype2glyphs(SplineFont *sf,struct alltabs *at) {
     int i;
     struct pschars *subrs;
 
@@ -4232,10 +4235,13 @@ static void dumptype2glyphs(SplineFont *sf,struct alltabs *at) {
     dumpcffencoding(sf,at);
     GProgressChangeStages(2+at->gi.strikecnt);
     dumpcffprivate(sf,at,-1);
-    subrs = SplineFont2Subrs2(sf);
+    if ((subrs = SplineFont2Subrs2(sf))==NULL )
+return( false );
     _dumpcffstrings(at->private,subrs);
     GProgressNextStage();
     at->charstrings = dumpcffstrings(SplineFont2Chrs2(sf,at->nomwid,at->defwid,subrs));
+    if ( at->charstrings == NULL )
+return( false );
     dumpcfftopdict(sf,at);
     finishup(sf,at);
 
@@ -4246,9 +4252,10 @@ static void dumptype2glyphs(SplineFont *sf,struct alltabs *at) {
     }
 
     dumpcffhmtx(at,sf,false);
+return( true );
 }
 
-static void dumpcidglyphs(SplineFont *sf,struct alltabs *at) {
+static int dumpcidglyphs(SplineFont *sf,struct alltabs *at) {
     int i;
 
     at->cfff = tmpfile();
@@ -4262,7 +4269,8 @@ static void dumpcidglyphs(SplineFont *sf,struct alltabs *at) {
     for ( i=0; i<sf->subfontcnt; ++i ) {
 	at->fds[i].private = tmpfile();
 	dumpcffprivate(sf->subfonts[i],at,i);
-	at->fds[i].subrs = SplineFont2Subrs2(sf->subfonts[i]);
+	if ( (at->fds[i].subrs = SplineFont2Subrs2(sf->subfonts[i]))!=NULL )
+return( false );
 	_dumpcffstrings(at->fds[i].private,at->fds[i].subrs);
     }
 
@@ -4271,7 +4279,8 @@ static void dumpcidglyphs(SplineFont *sf,struct alltabs *at) {
     dumpcffcidset(sf,at);
     dumpcfffdselect(sf,at);
     dumpcffdictindex(sf,at);
-    at->charstrings = dumpcffstrings(CID2Chrs2(sf,at->fds));
+    if ( (at->charstrings = dumpcffstrings(CID2Chrs2(sf,at->fds)))==NULL )
+return( false );
     for ( i=0; i<sf->subfontcnt; ++i )
 	PSCharsFree(at->fds[i].subrs);
     dumpcffcidtopdict(sf,at);
@@ -4284,6 +4293,7 @@ static void dumpcidglyphs(SplineFont *sf,struct alltabs *at) {
     }
 
     dumpcffcidhmtx(at,sf);
+return( true );
 }
 
 static int AnyWidthMDs(SplineFont *sf) {
@@ -6503,9 +6513,81 @@ static void AssignTTFGlyph(SplineFont *sf,int32 *bsizes) {
 	sf->chars[i]->ttf_glyph = tg++;
 }
     
-static void initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
+static void AbortTTF(struct alltabs *at, SplineFont *sf) {
+    int i;
+
+    if ( at->loca!=NULL )
+	fclose(at->loca);
+    if ( at->name!=NULL )
+	fclose(at->name);
+    if ( at->post!=NULL )
+	fclose(at->post);
+    if ( at->gpos!=NULL )
+	fclose(at->gpos);
+    if ( at->gsub!=NULL )
+	fclose(at->gsub);
+    if ( at->kern!=NULL )
+	fclose(at->kern);
+    if ( at->cmap!=NULL )
+	fclose(at->cmap);
+    if ( at->headf!=NULL )
+	fclose(at->headf);
+    if ( at->hheadf!=NULL )
+	fclose(at->hheadf);
+    if ( at->maxpf!=NULL )
+	fclose(at->maxpf);
+    if ( at->os2f!=NULL )
+	fclose(at->os2f);
+    if ( at->cvtf!=NULL )
+	fclose(at->cvtf);
+    if ( at->vheadf!=NULL )
+	fclose(at->vheadf);
+    if ( at->vorgf!=NULL )
+	fclose(at->vorgf);
+    if ( at->cfff!=NULL )
+	fclose(at->cfff);
+
+    if ( at->gi.glyphs!=NULL )
+	fclose(at->gi.glyphs);
+    if ( at->gi.hmtx!=NULL )
+	fclose(at->gi.hmtx);
+    if ( at->gi.vmtx!=NULL )
+	fclose(at->gi.vmtx);
+    if ( at->gi.fpgmf!=NULL )
+	fclose(at->gi.fpgmf);
+
+    if ( at->sidf!=NULL )
+	fclose(at->sidf);
+    if ( at->sidh!=NULL )
+	fclose(at->sidh);
+    if ( at->charset!=NULL )
+	fclose(at->charset);
+    if ( at->encoding!=NULL )
+	fclose(at->encoding);
+    if ( at->private!=NULL )
+	fclose(at->private);
+    if ( at->charstrings!=NULL )
+	fclose(at->charstrings);
+    if ( at->fdselect!=NULL )
+	fclose(at->fdselect);
+    if ( at->fdarray!=NULL )
+	fclose(at->fdarray);
+    if ( at->bdat!=NULL )
+	fclose(at->bdat);
+    if ( at->bloc!=NULL )
+	fclose(at->bloc);
+
+    for ( i=0; i<sf->subfontcnt; ++i ) {
+	if ( at->fds[i].private!=NULL )
+	    fclose(at->fds[i].private);
+    }
+    if ( at->fds!=NULL )
+	free( at->fds );
+}
+
+static int initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
 	int32 *bsizes, enum bitmapformat bf,int flags) {
-    int i, j, pos;
+    int i, j, pos, aborted;
     BDFFont *bdf;
 
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
@@ -6539,16 +6621,20 @@ static void initTables(struct alltabs *at, SplineFont *sf,enum fontformat format
     at->maxp.maxStack = 64;		/* A guess, it's probably more like 8 */
     at->gi.maxp = &at->maxp;
     if ( format==ff_otf )
-	dumptype2glyphs(sf,at);
+	aborted = !dumptype2glyphs(sf,at);
     else if ( format==ff_otfcid )
-	dumpcidglyphs(sf,at);
+	aborted = !dumpcidglyphs(sf,at);
     else if ( format==ff_none ) {
 	AssignTTFGlyph(sf,bsizes);
-	dumpcffhmtx(at,sf,true);
+	aborted = !dumpcffhmtx(at,sf,true);
     } else
-	dumpglyphs(sf,&at->gi);
-    if ( bsizes!=NULL )
+	aborted = !dumpglyphs(sf,&at->gi);
+    if ( bsizes!=NULL && !aborted )
 	ttfdumpbitmap(sf,at,bsizes);
+    if ( aborted ) {
+	AbortTTF(at,sf);
+return( false );
+    }
     at->head.xmin = at->gi.xmin;
     at->head.ymin = at->gi.ymin;
     at->head.xmax = at->gi.xmax;
@@ -6773,6 +6859,7 @@ static void initTables(struct alltabs *at, SplineFont *sf,enum fontformat format
     at->tabdir.rangeShift = at->tabdir.numtab*16-at->tabdir.searchRange;
     for ( i=0; i<at->tabdir.numtab; ++i )
 	at->tabdir.tabs[i].offset += sizeof(int32)+4*sizeof(int16) + at->tabdir.numtab*4*sizeof(int32);
+return( true );
 }
 
 static void dumpttf(FILE *ttf,struct alltabs *at, enum fontformat format) {
@@ -6859,8 +6946,8 @@ int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
     } else {
 	if ( sf->subfontcnt!=0 ) sf = sf->subfonts[0];
     }
-    initTables(&at,sf,format,bsizes,bf,flags);
-    dumpttf(ttf,&at,format);
+    if ( initTables(&at,sf,format,bsizes,bf,flags))
+	dumpttf(ttf,&at,format);
     setlocale(LC_NUMERIC,oldloc);
     if ( ferror(ttf))
 return( 0 );
