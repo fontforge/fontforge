@@ -570,7 +570,7 @@ extern void CVMouseMoveHand(CharView *cv, GEvent *event);
 extern void CVMouseUpHand(CharView *cv);
 extern void CVMouseDownFreeHand(CharView *cv, GEvent *event);
 extern void CVMouseMoveFreeHand(CharView *cv, GEvent *event);
-extern void CVMouseUpFreeHand(CharView *cv);
+extern void CVMouseUpFreeHand(CharView *cv, GEvent *event);
 extern void CVMouseDownTransform(CharView *cv);
 extern void CVMouseMoveTransform(CharView *cv);
 extern void CVMouseUpTransform(CharView *cv);

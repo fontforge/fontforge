@@ -542,6 +542,108 @@ static SplineSet *TraceCurve(CharView *cv) {
 return( spl );
 }
 
+static void TraceDataClose(CharView *cv,GEvent *event) {
+    TraceData *new;
+    SplineSet *trace;
+    double langle, hangle, llen, hlen;
+    double dx,dy;
+    BasePoint oldp, oldn;
+
+    if ( cv->freehand.head==NULL )
+return; /* Eh? No points? How did that happen? */
+    if ( cv->freehand.head->here.x!=cv->freehand.last->here.x ||
+	     cv->freehand.head->here.y!=cv->freehand.last->here.y ) {
+	new = chunkalloc(sizeof(TraceData));
+	*new = *cv->freehand.head;
+	new->time = event->u.mouse.time;
+#if 0	/* nope. Have to bring it completely back to start values */
+	new->pressure = (new->pressure + event->u.mouse.pressure)/2;
+	new->xtilt = (new->xtilt + event->u.mouse.xtilt)/2;
+	new->ytilt = (new->xtilt + event->u.mouse.ytilt)/2;
+#endif
+	new->wasconstrained = (event->u.mouse.state&ksm_shift)?1:0;
+
+	new->prev = cv->freehand.last;
+	new->next = NULL;
+	cv->freehand.last->next = new;
+	cv->freehand.last = new;
+	SplinePointListFree(cv->freehand.current_trace);
+	cv->freehand.current_trace = TraceCurve(cv);
+    } else if ( cv->freehand.head == cv->freehand.last )
+return;			/* Only one point, no good way to close it */
+
+    /* Now the first and last points are at the same location. We need to: */
+    /*  average their control points (so that they form a smooth curve) */
+    /*  merge the two SplinePoints into one */
+
+    trace = cv->freehand.current_trace;
+    trace->first->prevcp = trace->last->prevcp;
+    trace->first->noprevcp = trace->last->noprevcp;
+    trace->first->prevcpdef = trace->last->prevcpdef;
+    trace->first->prev = trace->last->prev;
+    trace->first->prev->to = trace->first;
+    SplinePointFree(trace->last);
+    trace->last = trace->first;
+    
+    if ( cv->freehand.head->wasconstrained  || cv->freehand.last->wasconstrained )
+return;
+
+    trace->first->pointtype = pt_curve;
+
+    if ( trace->first->nonextcp && trace->first->noprevcp ) {
+	SplineCharDefaultPrevCP(trace->first,trace->first->prev->from);
+	SplineCharDefaultNextCP(trace->first,trace->first->next->to);
+return;
+    }
+
+    dx = trace->first->nextcp.x-trace->first->me.x;
+    dy = trace->first->nextcp.y-trace->first->me.y;
+    hlen = sqrt(dx*dx+dy*dy);
+    hangle = atan2(dy,dx);
+    oldn = trace->first->nextcp;
+    dx = trace->first->me.x-trace->first->prevcp.x;
+    dy = trace->first->me.y-trace->first->prevcp.y;
+    llen = sqrt(dx*dx+dy*dy);
+    langle = atan2(dy,dx);
+    oldp = trace->first->prevcp;
+
+    if ( trace->first->nonextcp ) {
+	SplineCharDefaultPrevCP(trace->first,trace->first->prev->from);
+	dx = trace->first->me.x-trace->first->prevcp.x;
+	dy = trace->first->me.y-trace->first->prevcp.y;
+	llen = sqrt(dx*dx+dy*dy);
+	trace->first->prevcp.x = trace->first->me.x -
+		cos(hangle)*llen;
+	trace->first->prevcp.y = trace->first->me.y -
+		sin(hangle)*llen;
+	trace->first->nextcp = oldn;
+    } else if ( trace->first->nonextcp ) {
+	SplineCharDefaultPrevCP(trace->first,trace->first->prev->from);
+	dx = trace->first->me.x-trace->first->nextcp.x;
+	dy = trace->first->me.y-trace->first->nextcp.y;
+	hlen = sqrt(dx*dx+dy*dy);
+	trace->first->nextcp.x = trace->first->me.x +
+		cos(langle)*hlen;
+	trace->first->nextcp.y = trace->first->me.y +
+		sin(langle)*hlen;
+	trace->first->prevcp = oldp;
+    } else {
+	if ( hangle>3.1415926535897932/2 && langle<-3.1415926535897932/2 )
+	    langle += 2*3.1415926535897932;
+	if ( hangle<-3.1415926535897932/2 && langle>3.1415926535897932/2 )
+	    hangle += 2*3.1415926535897932;
+	hangle = (hangle+langle)/2;
+	dx = cos(hangle);
+	dy = sin(hangle);
+	trace->first->prevcp.x = trace->first->me.x - dx*llen;
+	trace->first->prevcp.y = trace->first->me.y - dy*llen;
+	trace->first->nextcp.x = trace->first->me.x + dx*hlen;
+	trace->first->nextcp.y = trace->first->me.y + dy*hlen;
+    }
+    SplineRefigure(trace->first->next);
+    SplineRefigure(trace->first->prev);
+}
+
 void CVMouseDownFreeHand(CharView *cv, GEvent *event) {
     TraceDataFree(cv->freehand.head);
     cv->freehand.head = cv->freehand.last = NULL;
@@ -556,19 +658,22 @@ void CVMouseMoveFreeHand(CharView *cv, GEvent *event) {
     GDrawRequestExpose(cv->v,NULL,false);
 }
 
-void CVMouseUpFreeHand(CharView *cv) {
+void CVMouseUpFreeHand(CharView *cv, GEvent *event) {
 
+    if ( event->u.chr.state&ksm_meta )
+	TraceDataClose(cv,event);
     if ( cv->freehand.current_trace!=NULL ) {
 	SplinePointListSimplify(cv->sc,cv->freehand.current_trace,
 		sf_ignoreextremum,.75/cv->scale);
 	SplineCharAddExtrema(cv->freehand.current_trace,false);
 	SplinePointListSimplify(cv->sc,cv->freehand.current_trace,
 		sf_normal,.75/cv->scale);
+	CVPreserveState(cv);
 	cv->freehand.current_trace->next = *cv->heads[cv->drawmode];
 	*cv->heads[cv->drawmode] = cv->freehand.current_trace;
 	cv->freehand.current_trace = NULL;
     }
     TraceDataFree(cv->freehand.head);
     cv->freehand.head = cv->freehand.last = NULL;
-    GDrawRequestExpose(cv->v,NULL,false);
+    CVCharChangedUpdate(cv);
 }

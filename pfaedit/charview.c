@@ -2389,7 +2389,7 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
 	CVMouseUpHand(cv);
       break;
       case cvt_freehand:
-	CVMouseUpFreeHand(cv);
+	CVMouseUpFreeHand(cv,event);
       break;
       case cvt_curve: case cvt_corner: case cvt_tangent: case cvt_pen:
 	CVMouseUpPoint(cv,event);
