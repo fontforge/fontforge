@@ -4782,7 +4782,7 @@ int SCRoundToCluster(SplineChar *sc,int layer,int sel,double within,double max) 
 		    for ( sp = spl->first; ; ) {
 			if ( k && (!sel || (sel && sp->selected)) )
 			    ptspace[ptcnt++] = sp;
-			else
+			else if ( !k )
 			    ++ptcnt;
 			if ( sp->selected ) ++selcnt;
 			if ( sp->next==NULL )
@@ -4802,7 +4802,7 @@ int SCRoundToCluster(SplineChar *sc,int layer,int sel,double within,double max) 
 		for ( sp = spl->first; ; ) {
 		    if ( k && (!sel || (sel && sp->selected)) )
 			ptspace[ptcnt++] = sp;
-		    else 
+		    else if ( !k )
 			++ptcnt;
 		    if ( sp->selected ) ++selcnt;
 		    if ( sp->next==NULL )
