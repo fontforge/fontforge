@@ -2030,6 +2030,16 @@ static void FVShowInfo(FontView *fv) {
 static void FVChar(FontView *fv,GEvent *event) {
     int i,pos;
 
+#if MyMemory
+    if ( event->u.chr.keysym == GK_F2 ) {
+	fprintf( stderr, "Malloc debug on\n" );
+	__malloc_debug(5);
+    } else if ( event->u.chr.keysym == GK_F3 ) {
+	fprintf( stderr, "Malloc debug off\n" );
+	__malloc_debug(0);
+    }
+#endif
+
     if ( event->u.chr.keysym == GK_Left ||
 	    event->u.chr.keysym == GK_Up ||
 	    event->u.chr.keysym == GK_Right ||

@@ -491,6 +491,9 @@ static void PostCharToWindow(GWindow to, GEvent *e) {
 static int cvtools_e_h(GWindow gw, GEvent *event) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
+    if ( cv==NULL )
+return( true );
+
     switch ( event->type ) {
       case et_expose:
 	ToolsExpose(gw,cv,&event->u.expose.rect);
@@ -610,6 +613,9 @@ static void CVLayersSet(CharView *cv) {
 
 static int cvlayers_e_h(GWindow gw, GEvent *event) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
+
+    if ( cv==NULL )
+return( true );
 
     switch ( event->type ) {
       case et_close:
@@ -914,6 +920,8 @@ return;
 	SaveOffsets(cv->gw,cvlayers,&cvlayersoff);
 	GDrawSetVisible(cvtools,false);
 	GDrawSetVisible(cvlayers,false);
+	GDrawSetUserData(cvtools,NULL);
+	GDrawSetUserData(cvlayers,NULL);
     }
 }
 
@@ -929,6 +937,9 @@ static void BVLayersSet(BitmapView *bv) {
 
 static int bvlayers_e_h(GWindow gw, GEvent *event) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
+
+    if ( bv==NULL )
+return( true );
 
     switch ( event->type ) {
       case et_close:
@@ -1176,6 +1187,9 @@ static void BVToolsMouse(BitmapView *bv, GEvent *event) {
 static int bvtools_e_h(GWindow gw, GEvent *event) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
 
+    if ( bv==NULL )
+return( true );
+
     switch ( event->type ) {
       case et_expose:
 	BVToolsExpose(gw,bv,&event->u.expose.rect);
@@ -1377,6 +1391,8 @@ return;
 	SaveOffsets(bv->gw,bvlayers,&bvlayersoff);
 	GDrawSetVisible(bvtools,false);
 	GDrawSetVisible(bvlayers,false);
+	GDrawSetUserData(bvtools,NULL);
+	GDrawSetUserData(bvlayers,NULL);
     }
 }
 

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 28-Jun-2001 -->
-  <!-- AP: Last modified: 24-Jul-2001 -->
+  <!-- AP: Last modified: 25-Jul-2001 -->
   <TITLE>Finding common font problems automagically</TITLE>
 </HEAD>
 <BODY>
@@ -106,6 +106,17 @@ for vertical lines it will show you the x coordinates.
 <P>
 The above check only looks for straight lines, this one looks for curved
 lines that begin or end near horizontal (vertical, italic angle).
+<P>
+<STRONG><BIG>Control points
+odd</BIG></STRONG><IMG SRC="cpodd.png" WIDTH="210" HEIGHT="215" ALIGN="Right">
+<P>
+Consider the character at right, the selected point has a control point that
+is far outside of what is reasonable and is probably not where it should
+be. This will check for such points.
+<P>
+Technically it will search for all control points, which when projected onto
+the line between the two end points lie outside of the segment between the
+two.<BR Clear=all>
 <P>
 <BIG><STRONG>Hints controlling no points</STRONG></BIG>
 <P>

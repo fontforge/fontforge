@@ -121,9 +121,9 @@ Ghosts:
 "http://sourceforge.net/projects/autotrace/" Up="" Style="" Title="" Type="text/html" 0
 Refs:
 "index.html"
+	1 "pfaedit_src-010725.tgz"
+	1 "pfaedit-010725.tgz"
 	1 "libgdraw-010724.tgz"
-	1 "pfaedit_src-010724.tgz"
-	1 "pfaedit-010724.tgz"
 	1 "sfds/index.html"
 	2 "sfds"
 	5 "problems.html"
@@ -583,6 +583,7 @@ Refs:
 	2 "phi-hints-outline.png"
 	2 "phi-hints-filled.png"
 	2 "findprobs.png"
+	2 "cpodd.png"
 "FontDisplay.png"
 "CharPrint.png"
 "FontSample.png"

@@ -41,6 +41,7 @@ struct problems {
     unsigned int ynearstd: 1;		/* baseline, xheight, cap, ascent, descent, etc. */
     unsigned int linenearstd: 1;	/* horizontal, vertical, italicangle */
     unsigned int cpnearstd: 1;		/* control points near: horizontal, vertical, italicangle */
+    unsigned int cpodd: 1;		/* control points beyond points on spline */
     unsigned int hintwithnopt: 1;
     unsigned int ptnearhint: 1;
     unsigned int hintwidthnearval: 1;
@@ -59,7 +60,8 @@ struct problems {
 };
 
 static int openpaths=1, pointstooclose=1/*, missing=0*/, doxnear=0, doynear=0;
-static int doynearstd=1, linestd=1, cpstd=1, hintnopt=0, ptnearhint=0, hintwidth=0, direction=0;
+static int doynearstd=1, linestd=1, cpstd=1, cpodd=1, hintnopt=0, ptnearhint=0;
+static int hintwidth=0, direction=0;
 static double near=3, xval=0, yval=0, widthval=50;
 
 #define CID_Stop		2001
@@ -81,6 +83,7 @@ static double near=3, xval=0, yval=0, widthval=50;
 #define CID_LineStd		1014
 #define CID_Direction		1015
 #define CID_CpStd		1016
+#define CID_CpOdd		1017
 
 
 static int explain_e_h(GWindow gw, GEvent *event) {
@@ -349,6 +352,27 @@ return( true );
 return( false );
 }
 
+/* Is the control point outside of the spline segment when projected onto the */
+/*  vector between the end points of the spline segment? */
+static int OddCPCheck(BasePoint *cp,BasePoint *base,BasePoint *v,
+	SplinePoint *sp, struct problems *p) {
+    double len = (cp->x-base->x)*v->x+ (cp->y-base->y)*v->y;
+    double xoff, yoff;
+    int msg=0;
+
+    if ( len<0 || len>1 || (len==0 && &sp->me!=base) || (len==1 && &sp->me==base)) {
+	xoff = cp->x-sp->me.x; yoff = cp->y-sp->me.y;
+	if ( fabs(yoff)>fabs(xoff) )
+	    msg = yoff>0?_STR_ProbAboveOdd:_STR_ProbBelowOdd;
+	else
+	    msg = xoff>0?_STR_ProbRightOdd:_STR_ProbLeftOdd;
+	sp->selected = true;
+	ExplainIt(p,p->sc,msg, 0,0);
+return( true );
+    }
+return( false );
+}
+
 static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
     SplineSet *spl, *test;
     Spline *spline, *first;
@@ -415,11 +439,13 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 			p->pointstooclose = false;
 	    break;
 		    }
-		    if ( missing(p,test,sp))
+		    if ( missing(p,test,nsp))
   goto restart;
 		}
 		sp = nsp;
 	    } while ( sp!=test->first && !p->finish );
+	    if ( !p->pointstooclose )
+	break;
 	}
     }
 
@@ -470,6 +496,8 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	    break;
 		sp = sp->next->to;
 	    } while ( sp!=test->first && !p->finish );
+	    if ( !p->xnearval )
+	break;
 	}
     }
 
@@ -493,6 +521,8 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	    break;
 		sp = sp->next->to;
 	    } while ( sp!=test->first && !p->finish );
+	    if ( !p->ynearval )
+	break;
 	}
     }
 
@@ -527,7 +557,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		    }
 		    ExplainIt(p,sc,msg,sp->me.y,expected);
 		    if ( p->ignorethis ) {
-			p->ynearval = false;
+			p->ynearstd = false;
 	    break;
 		    }
 		    if ( missing(p,test,sp))
@@ -537,6 +567,8 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	    break;
 		sp = sp->next->to;
 	    } while ( sp!=test->first && !p->finish );
+	    if ( !p->ynearstd )
+	break;
 	}
     }
 
@@ -560,6 +592,8 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		}
 		if ( first==NULL ) first = spline;
 	    }
+	    if ( !p->linenearstd )
+	break;
 	}
     }
 
@@ -595,6 +629,48 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		}
 		if ( first==NULL ) first = spline;
 	    }
+	    if ( !p->cpnearstd )
+	break;
+	}
+    }
+
+    if ( p->cpodd && !p->finish ) {
+	for ( test=spl; test!=NULL && !p->finish && p->linenearstd; test = test->next ) {
+	    first = NULL;
+	    for ( spline = test->first->next; spline!=NULL && spline!=first && !p->finish; spline=spline->to->next ) {
+		if ( !spline->knownlinear ) {
+		    BasePoint v; double len;
+		    v.x = spline->to->me.x-spline->from->me.x;
+		    v.y = spline->to->me.y-spline->from->me.y;
+		    len = /*sqrt*/(v.x*v.x+v.y*v.y);
+		    v.x /= len; v.y /= len;
+		    if ( !spline->from->nonextcp &&
+			    OddCPCheck(&spline->from->nextcp,&spline->from->me,&v,
+			     spline->from,p)) {
+			changed = true;
+			if ( p->ignorethis ) {
+			    p->cpodd = false;
+	    break;
+			}
+			if ( missingspline(p,test,spline))
+  goto restart;
+		    }
+		    if ( !spline->to->noprevcp &&
+			    OddCPCheck(&spline->to->prevcp,&spline->from->me,&v,
+			     spline->to,p)) {
+			changed = true;
+			if ( p->ignorethis ) {
+			    p->cpodd = false;
+	    break;
+			}
+			if ( missingspline(p,test,spline))
+  goto restart;
+		    }
+		}
+		if ( first==NULL ) first = spline;
+	    }
+	    if ( !p->cpodd )
+	break;
 	}
     }
 
@@ -631,7 +707,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	    }
 	}
       restartvhint:
-	for ( h=sc->vstem; h!=NULL && p->hintwithnopt; h=h->next ) {
+	for ( h=sc->vstem; h!=NULL && p->hintwithnopt && !p->finish; h=h->next ) {
 	    anys = anye = false;
 	    for ( test=spl; test!=NULL && !p->finish && (!anys || !anye); test=test->next ) {
 		sp = test->first;
@@ -713,6 +789,8 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	    break;
 		sp = sp->next->to;
 	    } while ( sp!=test->first && !p->finish );
+	    if ( !p->ptnearhint )
+	break;
 	}
     }
 
@@ -832,6 +910,7 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	doynearstd = p->ynearstd = GGadgetIsChecked(GWidgetGetControl(gw,CID_YNearStd));
 	linestd = p->linenearstd = GGadgetIsChecked(GWidgetGetControl(gw,CID_LineStd));
 	cpstd = p->cpnearstd = GGadgetIsChecked(GWidgetGetControl(gw,CID_CpStd));
+	cpodd = p->cpodd = GGadgetIsChecked(GWidgetGetControl(gw,CID_CpOdd));
 	hintnopt = p->hintwithnopt = GGadgetIsChecked(GWidgetGetControl(gw,CID_HintNoPt));
 	ptnearhint = p->ptnearhint = GGadgetIsChecked(GWidgetGetControl(gw,CID_PtNearHint));
 	hintwidth = p->hintwidthnearval = GGadgetIsChecked(GWidgetGetControl(gw,CID_HintWidthNear));
@@ -886,8 +965,8 @@ void FindProblems(FontView *fv,CharView *cv) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[21];
-    GTextInfo label[21];
+    GGadgetCreateData gcd[22];
+    GTextInfo label[22];
     struct problems p;
     char xnbuf[20], ynbuf[20], widthbuf[20], nearbuf[20];
 
@@ -900,7 +979,7 @@ void FindProblems(FontView *fv,CharView *cv) {
     wattrs.window_title = GStringGetResource(_STR_Findprobs,NULL);
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,200);
-    pos.height = GDrawPointsToPixels(NULL,298);
+    pos.height = GDrawPointsToPixels(NULL,315);
     gw = GDrawCreateTopWindow(NULL,&pos,e_h,&p,&wattrs);
 
     memset(&label,0,sizeof(label));
@@ -1024,11 +1103,22 @@ void FindProblems(FontView *fv,CharView *cv) {
     gcd[19].gd.cid = CID_CpStd;
     gcd[19].creator = GCheckBoxCreate;
 
+    label[20].text = (unichar_t *) _STR_CpOdd;
+    label[20].text_in_resource = true;
+    gcd[20].gd.label = &label[20];
+    gcd[20].gd.mnemonic = 'b';
+    gcd[20].gd.pos.x = 6; gcd[20].gd.pos.y = gcd[19].gd.pos.y+17; 
+    gcd[20].gd.flags = gg_visible | gg_enabled;
+    if ( cpodd ) gcd[20].gd.flags |= gg_cb_on;
+    gcd[20].gd.popup_msg = GStringGetResource(_STR_CpOddPopup,NULL);
+    gcd[20].gd.cid = CID_CpOdd;
+    gcd[20].creator = GCheckBoxCreate;
+
     label[8].text = (unichar_t *) _STR_HintNoPt;
     label[8].text_in_resource = true;
     gcd[8].gd.label = &label[8];
     gcd[8].gd.mnemonic = 'H';
-    gcd[8].gd.pos.x = 6; gcd[8].gd.pos.y = gcd[19].gd.pos.y+17; 
+    gcd[8].gd.pos.x = 6; gcd[8].gd.pos.y = gcd[20].gd.pos.y+17; 
     gcd[8].gd.flags = gg_visible | gg_enabled;
     if ( hintnopt ) gcd[8].gd.flags |= gg_cb_on;
     gcd[8].gd.popup_msg = GStringGetResource(_STR_HintNoPtPopup,NULL);

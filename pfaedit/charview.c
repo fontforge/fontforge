@@ -1022,6 +1022,16 @@ static void CVMouseMove(CharView *cv, GEvent *event );
 
 void CVChar(CharView *cv, GEvent *event ) {
 
+#if MyMemory
+    if ( event->u.chr.keysym == GK_F2 ) {
+	fprintf( stderr, "Malloc debug on\n" );
+	__malloc_debug(5);
+    } else if ( event->u.chr.keysym == GK_F3 ) {
+	fprintf( stderr, "Malloc debug off\n" );
+	__malloc_debug(0);
+    }
+#endif
+
     CVPaletteActivate(cv);
     CVToolsSetCursor(cv,TrueCharState(event));
     if ( event->u.chr.keysym == GK_Shift_L || event->u.chr.keysym == GK_Shift_R ) {

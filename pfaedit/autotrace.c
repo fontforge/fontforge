@@ -151,6 +151,8 @@ return;
     if ( prog==NULL )
 return;
     for ( images = sc->backimages; images!=NULL; images=images->next ) {
+/* "never use this function, use mkstemp(3) instead." Er, a fine dogma, but */
+/*  unfortunately mkstemp doesn't do what I want. So I don't use it */
 	base = tempnam(NULL,"PfaEd");
 	bmp = galloc(strlen(base)+8);
 	eps = galloc(strlen(base)+8);

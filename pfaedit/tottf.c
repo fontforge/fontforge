@@ -3070,7 +3070,10 @@ static void dumpstr(FILE *file,unichar_t *str) {
 #endif
 
 static void dumpustr(FILE *file,unichar_t *str) {
-    fwrite(str,sizeof(unichar_t),u_strlen(str)+1,file);
+    do {
+	putc(*str>>8,file);
+	putc(*str&0xff,file);
+    } while ( *str++!='\0' );
 }
 
 static void dumppstr(FILE *file,char *str) {
