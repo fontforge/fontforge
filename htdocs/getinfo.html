@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 23-Jun-2002 -->
+  <!-- AP: Last modified: 14-Jul-2002 -->
   <TITLE>Get Info</TITLE>
 </HEAD>
 <BODY>
@@ -72,16 +72,25 @@ encodings for a range of characters).
 <P>
 The Done (or Cancel) button only Cancels work in the current character. If
 you have already used Next or Prev then those earlier changes will not be
-cancelled.
+cancelled.<BR Clear=Right>
 <H2>
-  Reference Info
+  <IMG SRC="rgetinfo.png" WIDTH="297" HEIGHT="284" ALIGN="Right">Reference
+  Info
 </H2>
 <P>
 This dialog shows the name of the selected reference, its encoding in the
-font and its postscript transformation matrix. Currently you may not alter
-anything here, it is purely informational. There is a button in the dialog
-which will open another character outline view showing the character being
-referred to.
+font and its postscript transformation matrix. You may alter the transformation
+matrix if you desire.
+<P>
+The transformation matrix maps points in the character being refered to into
+their location in the current character: <BR>
+<CODE>&nbsp; &nbsp; x<SUB>current</SUB> = TM[1,1]*x<SUB>ref</SUB> +
+TM[2,1]*y<SUB>ref</SUB> + TM[3,1]<BR>
+&nbsp; &nbsp; y<SUB>current</SUB> = TM[1,2]*y<SUB>ref</SUB> +
+TM[2,2]*y<SUB>ref</SUB> + TM[3,2]</CODE>
+<P>
+The [Show] button will open a character outline view showing the character
+being referred to.
 <H2>
   Image Info
 </H2>
