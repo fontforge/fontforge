@@ -81,6 +81,9 @@ you do</A>.
     <A HREF="pfaedit-020208.tgz">Download pfaedit linux-i386 Redhat 7.1
     </A><A NAME="downloads">executable</A> Version: 8-Feb-2002
   <LI>
+    <A HREF="pfaedit_ppc-020208.tgz">Download pfaedit linux-ppc SUSE 7.1
+    </A>executable Version: 8-Feb-2002
+  <LI>
     <A HREF="pfaedit-solaris-020208.tgz">Download pfaedit Solaris 8.0
     </A>executable Version: 8-Feb-2002
   <LI>
@@ -202,9 +205,28 @@ bitmap fonts that pfaedit uses
   <LI>
     <A HREF="http://www.cl.cam.ac.uk/~mgk25/ucs-fonts.html">X fixed</A>
 </UL>
+<H2>
+  <A NAME="docs">Documentation</A>
+</H2>
 <P>
-<A NAME="docs">All</A> the documentation files in this directory bundled
-up into one <A HREF="pfaedit_htdocs-011116.tgz">tgz file</A> 16-Nov-2001.
+All the documentation files in this directory bundled up into one
+<A HREF="pfaedit_htdocs-020208.tgz">tgz file</A> 8-Feb-2002.<BR>
+PfaEdit will find (ie. if you press F1 in PfaEdit it will look in
+/usr/share/doc/pfaedit before it looks on the web) it if you:
+<BLOCKQUOTE>
+  <PRE>$ mkdir -p /usr/share/doc/pfaedit
+$ cd /usr/share/doc/pfaedit
+$ gunzip pfaedit_htdocs-*.tgz
+$ tar xf pfaedit_htdocs-*.tar
+$ rm pfaedit_htdocs-*.tar
+</PRE>
+</BLOCKQUOTE>
+<P>
+Or you can download an <A HREF="pfaedit-doc-020208-1.i386.rpm">rpm</A> which
+should install them properly for you.
+<H2>
+  License
+</H2>
 <BLOCKQUOTE>
   <BLOCKQUOTE>
     <A NAME="license">Copyright</A> &copy; 2000,2001,2002 by George Williams
@@ -253,6 +275,8 @@ up into one <A HREF="pfaedit_htdocs-011116.tgz">tgz file</A> 16-Nov-2001.
       <LI>
 	Oops, Apple now documents that the bdat and bloc tables should have version
 	number 0x20000. But when I last looked it said 0x10000 and that didn't work.
+      <LI>
+	Put the docs in their own rpm file.
     </UL>
   <LI>
     7-Feb-2002
