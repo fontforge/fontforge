@@ -49,6 +49,8 @@ if test "$gww_uselessiconv" = "no" ; then
  AC_SEARCH_LIBS(libiconv, iconv) dnl linux has iconv in libc, mac,solaris have libiconv in libiconv, and a define to map iconv() to libiconv(), so we can't do the obvious check
 fi
 
+AC_CHECK_HEADERS([ieeefp.h])
+
 dnl Is there a better way to add a directory to the include path?
 
 FreeType2_IncRoot=
