@@ -31,23 +31,41 @@
 #include <sys/types.h>
 #include <dirent.h>
 
-static void ImportPS(CharView *cv,char *path) {
-    FILE *ps = fopen(path,"r");
+void SCImportPSFile(SplineChar *sc,enum drawmode dm,FILE *ps,int doclear) {
     SplinePointList *spl, *espl;
+    SplineSet **head;
 
     if ( ps==NULL )
 return;
     spl = SplinePointListInterpretPS(ps);
-    fclose(ps);
     if ( spl==NULL ) {
 	GDrawError( "I'm sorry this file is too complex for me to understand");
 return;
     }
     for ( espl=spl; espl->next!=NULL; espl = espl->next );
-    CVPreserveState(cv);
-    espl->next = *cv->heads[cv->drawmode];
-    *cv->heads[cv->drawmode] = spl;
-    CVCharChangedUpdate(cv);
+    if ( dm==dm_grid )
+	head = &sc->parent->gridsplines;
+    else if ( dm==dm_fore ) {
+	SCPreserveState(sc,false);
+	head = &sc->splines;
+    } else {
+	SCPreserveBackground(sc);
+	head = &sc->backgroundsplines;
+    }
+    if ( doclear )
+	SplinePointListsFree(*head);
+    espl->next = *head;
+    *head = spl;
+    SCCharChangedUpdate(sc);
+}
+
+static void ImportPS(CharView *cv,char *path) {
+    FILE *ps = fopen(path,"r");
+
+    if ( ps==NULL )
+return;
+    SCImportPSFile(cv->sc,cv->drawmode,ps,false);
+    fclose(ps);
 }
 
 static void SCImportPS(SplineChar *sc,char *path) {
@@ -582,19 +600,25 @@ void SCInsertBackImage(SplineChar *sc,GImage *image,real scale,real yoff,real xo
     SCCharChangedUpdate(sc);
 }
 
+void SCAddScaleImage(SplineChar *sc,GImage *image,int doclear) {
+    double scale;
+
+    ImageAlterClut(image);
+    scale = (sc->parent->ascent+sc->parent->descent)/(real) GImageGetHeight(image);
+    if ( doclear )
+	ImageListsFree(sc->backimages); sc->backimages = NULL;
+    SCInsertBackImage(sc,image,scale,sc->parent->ascent,0);
+}
+
 static void ImportImage(CharView *cv,char *path) {
     GImage *image;
-    real scale;
 
     image = GImageRead(path);
     if ( image==NULL ) {
 	GWidgetErrorR(_STR_BadImageFile,_STR_BadImageFileName, path);
 return;
     }
-    image = ImageAlterClut(image);
-    scale = (cv->sc->parent->ascent+cv->sc->parent->descent)/
-	    (real) GImageGetHeight(image);
-    SCInsertBackImage(cv->sc,image,scale,cv->sc->parent->ascent,0);
+    SCAddScaleImage(cv->sc,image,false);
 }
 
 static int BVImportImage(BitmapView *bv,char *path) {
@@ -683,7 +707,6 @@ int FVImportImages(FontView *fv,char *path,int isimage) {
     char *start = path, *endpath=path;
     int i;
     SplineChar *sc;
-    double scale;
 
     tot = 0;
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i]) {
@@ -703,10 +726,7 @@ return(false);
 return(false);
 	    }
 	    ++tot;
-	    ImageAlterClut(image);
-	    scale = (fv->sf->ascent+fv->sf->descent)/(real) GImageGetHeight(image);
-	    ImageListsFree(sc->backimages); sc->backimages = NULL;
-	    SCInsertBackImage(sc,image,scale,fv->sf->ascent,0);
+	    SCAddScaleImage(sc,image,true);
 	} else {
 	    SCImportPS(sc,start);
 	    ++tot;
@@ -732,7 +752,6 @@ int FVImportImageTemplate(FontView *fv,char *path,int isimage) {
     DIR *dir;
     struct dirent *entry;
     SplineChar *sc;
-    double scale;
     BDFFont *bdf;
 
     ext = strrchr(path,'.');
@@ -814,10 +833,7 @@ return( false );
     continue;
 	    }
 	    ++tot;
-	    ImageAlterClut(image);
-	    scale = (fv->sf->ascent+fv->sf->descent)/(real) GImageGetHeight(image);
-	    ImageListsFree(sc->backimages); sc->backimages = NULL;
-	    SCInsertBackImage(sc,image,scale,fv->sf->ascent,0);
+	    SCAddScaleImage(sc,image,true);
 	} else {
 	    SCImportPS(sc,entry->d_name);
 	    ++tot;

@@ -2262,6 +2262,9 @@ static int mv_e_h(GWindow gw, GEvent *event) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
 
     switch ( event->type ) {
+      case et_selclear:
+	ClipboardClear();
+      break;
       case et_expose:
 	MVExpose(mv,gw,event);
       break;

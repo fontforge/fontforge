@@ -453,7 +453,7 @@ static void GTextFieldGrabSelection(GTextField *gt, enum selnames sel ) {
 	ctemp = u2utf8_copy(temp);
 	GDrawAddSelectionType(gt->g.base,sel,"Unicode",temp,u_strlen(temp),sizeof(unichar_t),
 		NULL,NULL);
-	GDrawAddSelectionType(st->g.base,sel,"UTF8_STRING",ctemp,strlen(ctemp),sizeof(char),
+	GDrawAddSelectionType(gt->g.base,sel,"UTF8_STRING",ctemp,strlen(ctemp),sizeof(char),
 		NULL,NULL);
 	GDrawAddSelectionType(gt->g.base,sel,"STRING",u2def_copy(temp),u_strlen(temp),sizeof(char),
 		NULL,NULL);
@@ -544,14 +544,18 @@ static void GTextFieldSelectWords(GTextField *gt,int last) {
 }
 
 static void GTextFieldPaste(GTextField *gt,enum selnames sel) {
-    if ( GDrawSelectionHasType(gt->g.base,sel,"Unicode")) {
+    if ( GDrawSelectionHasType(gt->g.base,sel,"Unicode") ||
+	    GDrawSelectionHasType(gt->g.base,sel,"text/plain;charset=ISO-10646-UCS-2")) {
 	unichar_t *temp;
 	int32 len;
 	temp = GDrawRequestSelection(gt->g.base,sel,"Unicode",&len);
+	if ( temp==NULL || len==0 )
+	    temp = GDrawRequestSelection(gt->g.base,sel,"text/plain;charset=ISO-10646-UCS-2",&len);
 	if ( temp!=NULL ) 
 	    GTextField_Replace(gt,temp);
 	free(temp);
-    } else if ( GDrawSelectionHasType(gt->g.base,sel,"UTF8_STRING")) {
+    } else if ( GDrawSelectionHasType(gt->g.base,sel,"UTF8_STRING") ||
+	    GDrawSelectionHasType(gt->g.base,sel,"text/plain;charset=UTF-8")) {
 	unichar_t *temp; char *ctemp;
 	int32 len;
 	ctemp = GDrawRequestSelection(gt->g.base,sel,"UTF8_STRING",&len);
@@ -564,6 +568,8 @@ static void GTextFieldPaste(GTextField *gt,enum selnames sel) {
 	unichar_t *temp; char *ctemp;
 	int32 len;
 	ctemp = GDrawRequestSelection(gt->g.base,sel,"STRING",&len);
+	if ( ctemp==NULL || len==0 )
+	    ctemp = GDrawRequestSelection(gt->g.base,sel,"text/plain;charset=UTF-8",&len);
 	if ( ctemp!=NULL ) {
 	    temp = def2u_copy(ctemp);
 	    GTextField_Replace(gt,temp);

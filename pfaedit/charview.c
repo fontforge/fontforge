@@ -2681,6 +2681,9 @@ static int cv_e_h(GWindow gw, GEvent *event) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
     switch ( event->type ) {
+      case et_selclear:
+	ClipboardClear();
+      break;
       case et_expose:
 	InfoExpose(cv,gw,event);
 	CVLogoExpose(cv,gw,event);
@@ -3447,7 +3450,12 @@ static void cv_edlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 	    mi->ti.disabled = cv->sc->splines==NULL;
 	  break;
 	  case MID_Paste:
-	    mi->ti.disabled = !CopyContainsSomething();	/* !!!! restore */
+	    mi->ti.disabled = !CopyContainsSomething() &&
+#ifndef _NO_LIBPNG
+		    !GDrawSelectionHasType(cv->gw,sn_clipboard,"image/png") &&
+#endif
+		    !GDrawSelectionHasType(cv->gw,sn_clipboard,"image/bmp") &&
+		    !GDrawSelectionHasType(cv->gw,sn_clipboard,"image/eps");
 	  break;
 	  case MID_Undo:
 	    mi->ti.disabled = *cv->uheads[cv->drawmode]==NULL;

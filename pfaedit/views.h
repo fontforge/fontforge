@@ -463,6 +463,7 @@ extern void CVReviewHints(CharView *cv);
 extern void CVCreateHint(CharView *cv,int ishstem);
 extern void SCClearRounds(SplineChar *sc);
 extern void SCRemoveSelectedMinimumDistances(SplineChar *sc,int inx);
+extern int _ExportEPS(FILE *eps,SplineChar *sc);
 extern int CVExport(CharView *cv);
 extern int BVExport(BitmapView *bv);
 
@@ -490,6 +491,8 @@ extern SplinePoint *CVAnySelPoint(CharView *cv);
 extern int CVOneThingSel(CharView *cv, SplinePoint **sp, SplinePointList **spl,
 	RefChar **ref, ImageList **img);
 extern void CVInfoDraw(CharView *cv, GWindow pixmap );
+extern void SCImportPSFile(SplineChar *sc,enum drawmode dm,FILE *ps,int doclear);
+extern void SCAddScaleImage(SplineChar *sc,GImage *image,int doclear);
 extern void SCInsertBackImage(SplineChar *sc,GImage *image,real scale,real yoff, real xoff);
 extern void CVImport(CharView *cv);
 extern void BVImport(BitmapView *bv);
@@ -568,6 +571,7 @@ extern void CopySelected(CharView *cv);
 extern void SCCopyWidth(SplineChar *sc,enum undotype);
 extern void CopyWidth(CharView *cv,enum undotype);
 extern void PasteToCV(CharView *cv);
+extern void ClipboardClear(void);
 extern SplineSet *ClipBoardToSplineSet(void);
 extern void BCCopySelected(BDFChar *bc,int pixelsize,int depth);
 extern void PasteToBC(BDFChar *bc,int pixelsize,int depth,FontView *fv);

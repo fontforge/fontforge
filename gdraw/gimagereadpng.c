@@ -97,11 +97,10 @@ static void user_error_fn(png_structp png_ptr, png_const_charp error_msg) {
 static void user_warning_fn(png_structp png_ptr, png_const_charp warning_msg) {
     fprintf(stderr,"%s\n", warning_msg);
 }
-   
-GImage *GImageReadPng(char *filename) {
+
+GImage *GImageRead_Png(FILE *fp) {
     GImage *ret=NULL;
     struct _GImage *base;
-    FILE *fp;
     png_structp png_ptr;
     png_infop info_ptr;
     png_bytep *row_pointers=NULL;
@@ -111,21 +110,14 @@ GImage *GImageReadPng(char *filename) {
 	if ( !loadpng())
 return( NULL );
 
-    fp = fopen(filename, "rb");
-    if (!fp)
-return( NULL );
-
    png_ptr = _png_create_read_struct(PNG_LIBPNG_VER_STRING,
       (void *)NULL, user_error_fn, user_warning_fn);
 
-   if (!png_ptr) {
-      fclose(fp);
+   if (!png_ptr)
 return( NULL );
-   }
 
     info_ptr = _png_create_info_struct(png_ptr);
     if (!info_ptr) {
-      fclose(fp);
       _png_destroy_read_struct(&png_ptr,  (png_infopp)NULL, (png_infopp)NULL);
 return( NULL );
     }
@@ -133,7 +125,6 @@ return( NULL );
     if (setjmp(png_ptr->jmpbuf)) {
       /* Free all of the memory associated with the png_ptr and info_ptr */
       _png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp)NULL);
-      fclose(fp);
       if ( ret!=NULL ) {
 	  GImageDestroy(ret);
 	  gfree(row_pointers);
@@ -231,31 +222,23 @@ static void user_error_fn(png_structp png_ptr, png_const_charp error_msg) {
 static void user_warning_fn(png_structp png_ptr, png_const_charp warning_msg) {
     fprintf(stderr,"%s\n", warning_msg);
 }
-   
-GImage *GImageReadPng(char *filename) {
+
+GImage *GImageRead_Png(FILE *fp) {
     GImage *ret=NULL;
     struct _GImage *base;
-    FILE *fp;
     png_structp png_ptr;
     png_infop info_ptr;
     png_bytep *row_pointers=NULL;
     int i;
 
-    fp = fopen(filename, "rb");
-    if (!fp)
-return( NULL );
-
    png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING,
       (void *)NULL, user_error_fn, user_warning_fn);
 
-   if (!png_ptr) {
-      fclose(fp);
+   if (!png_ptr)
 return( NULL );
-   }
 
     info_ptr = png_create_info_struct(png_ptr);
     if (!info_ptr) {
-      fclose(fp);
       png_destroy_read_struct(&png_ptr,  (png_infopp)NULL, (png_infopp)NULL);
 return( NULL );
     }
@@ -263,7 +246,6 @@ return( NULL );
     if (setjmp(png_ptr->jmpbuf)) {
       /* Free all of the memory associated with the png_ptr and info_ptr */
       png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp)NULL);
-      fclose(fp);
       if ( ret!=NULL ) {
 	  GImageDestroy(ret);
 	  gfree(row_pointers);
@@ -342,3 +324,16 @@ return( NULL );
 return( ret );
 }
 #endif
+
+GImage *GImageReadPng(char *filename) {
+    GImage *ret=NULL;
+    FILE *fp;
+
+    fp = fopen(filename, "rb");
+    if (!fp)
+return( NULL );
+
+    ret = GImageRead_Png(fp);
+    fclose(fp);
+return( ret );
+}

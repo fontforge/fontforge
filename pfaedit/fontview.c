@@ -1154,9 +1154,12 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
+	  case MID_Paste:
+	    mi->ti.disabled = pos==-1 || !CopyContainsSomething();
+	  break;
 	  case MID_Cut: case MID_Copy: case MID_Clear:
 	  case MID_CopyWidth: case MID_CopyLBearing: case MID_CopyRBearing:
-	  case MID_Paste: case MID_CopyRef: case MID_UnlinkRef:
+	  case MID_CopyRef: case MID_UnlinkRef:
 	  case MID_RemoveUndoes: case MID_CopyFgToBg:
 	    mi->ti.disabled = pos==-1;
 	  break;
@@ -4329,6 +4332,9 @@ static int fv_e_h(GWindow gw, GEvent *event) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 
     switch ( event->type ) {
+      case et_selclear:
+	ClipboardClear();
+      break;
       case et_expose:
 	FVDrawInfo(fv,gw,event);
       break;

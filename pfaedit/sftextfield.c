@@ -730,7 +730,7 @@ static void *ddgenlocaldata(void *_gt,int32 *len) {
 return( temp );
 }
 
-static void noop(void *_gt) {
+static void noop(void *_st) {
 }
 
 static void SFTextAreaGrabPrimarySelection(SFTextArea *st) {
@@ -741,7 +741,7 @@ static void SFTextAreaGrabPrimarySelection(SFTextArea *st) {
     GDrawAddSelectionType(st->g.base,sn_primary,"Unicode",st,st->sel_end-st->sel_start,
 	    sizeof(unichar_t),
 	    genunicodedata,noop);
-    GDrawAddSelectionType(st->g.base,sn_primary,"UTF8_STRING",st,st->sel_end-st->sel_start,
+    GDrawAddSelectionType(st->g.base,sn_primary,"UTF8_STRING",st,3*(st->sel_end-st->sel_start),
 	    sizeof(unichar_t),
 	    genutf8data,noop);
     GDrawAddSelectionType(st->g.base,sn_primary,"STRING",st,st->sel_end-st->sel_start,sizeof(char),
@@ -859,17 +859,25 @@ static void SFTextAreaSelectWords(SFTextArea *st,int last) {
 }
 
 static void SFTextAreaPaste(SFTextArea *st,enum selnames sel) {
-    if ( GDrawSelectionHasType(st->g.base,sel,"Unicode")) {
+    if ( GDrawSelectionHasType(st->g.base,sel,"Unicode") ||
+	    GDrawSelectionHasType(st->g.base,sel,"text/plain;charset=ISO-10646-UCS-2")) {
 	unichar_t *temp;
 	int32 len;
-	temp = GDrawRequestSelection(st->g.base,sel,"Unicode",&len);
+	if ( GDrawSelectionHasType(st->g.base,sel,"Unicode") )
+	    temp = GDrawRequestSelection(st->g.base,sel,"Unicode",&len);
+	else
+	    temp = GDrawRequestSelection(st->g.base,sel,"text/plain;charset=ISO-10646-UCS-2",&len);
 	if ( temp!=NULL ) 
 	    SFTextArea_Replace(st,temp);
 	free(temp);
-    } else if ( GDrawSelectionHasType(st->g.base,sel,"UTF8_STRING")) {
+    } else if ( GDrawSelectionHasType(st->g.base,sel,"UTF8_STRING") ||
+	    GDrawSelectionHasType(st->g.base,sel,"text/plain;charset=UTF-8")) {
 	unichar_t *temp; char *ctemp;
 	int32 len;
-	ctemp = GDrawRequestSelection(st->g.base,sel,"UTF8_STRING",&len);
+	if ( GDrawSelectionHasType(st->g.base,sel,"UTF8_STRING") )
+	    ctemp = GDrawRequestSelection(st->g.base,sel,"UTF8_STRING",&len);
+	else
+	    ctemp = GDrawRequestSelection(st->g.base,sel,"text/plain;charset=UTF-8",&len);
 	if ( ctemp!=NULL ) {
 	    temp = utf82u_copyn(ctemp,strlen(ctemp));
 	    SFTextArea_Replace(st,temp);

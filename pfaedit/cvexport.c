@@ -59,19 +59,13 @@ static void DumpSPL(FILE *eps,SplinePointList *spl) {
     }
 }
 
-static int ExportEPS(char *filename,SplineChar *sc) {
+int _ExportEPS(FILE *eps,SplineChar *sc) {
     DBounds b;
     time_t now;
     struct tm *tm;
-    FILE *eps;
     int ret;
     RefChar *rf;
     char *oldloc;
-
-    eps = fopen(filename,"w");
-    if ( eps==NULL ) {
-return(0);
-    }
 
     oldloc = setlocale(LC_NUMERIC,"C");
 
@@ -96,8 +90,20 @@ return(0);
     fprintf( eps, "fill\n" );
     fprintf( eps, "%%%%EOF\n" );
     ret = !ferror(eps);
-    fclose(eps);
     setlocale(LC_NUMERIC,oldloc);
+return( ret );
+}
+
+static int ExportEPS(char *filename,SplineChar *sc) {
+    FILE *eps;
+    int ret;
+
+    eps = fopen(filename,"w");
+    if ( eps==NULL ) {
+return(0);
+    }
+    ret = _ExportEPS(eps,sc);
+    fclose(eps);
 return( ret );
 }
 

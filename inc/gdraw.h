@@ -520,6 +520,7 @@ extern Color GDrawColorBrighten(Color col, int by);
 
 extern int GImageWriteGImage(GImage *gi, char *filename);
 extern int GImageWriteBmp(GImage *gi, char *filename);
+extern GImage *GImageRead_Bmp(FILE *file);
 extern GImage *GImageReadBmp(char *filename);
 extern int GImageWriteXbm(GImage *gi, char *filename);
 extern GImage *GImageReadXbm(char *filename);
@@ -529,6 +530,7 @@ extern int GImageWriteEps(GImage *gi, char *filename);
 extern GImage *GImageReadTiff(char *filename);
 extern GImage *GImageReadJpeg(char *filename);
 extern int GImageWriteJpeg(GImage *gi, char *filename, int quality, int progressive);
+extern GImage *GImageRead_Png(FILE *fp);
 extern GImage *GImageReadPng(char *filename);
 extern int GImageWritePng(GImage *gi, char *filename, int progressive);
 extern GImage *GImageReadGif(char *filename);

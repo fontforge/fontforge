@@ -847,9 +847,100 @@ static void CopyBufferFree(void) {
       case ut_multiple:
 	UndoesFree( copybuffer.u.multiple.mult );
       break;
+      case ut_composit:
+	UndoesFree( copybuffer.u.composit.state );
+	UndoesFree( copybuffer.u.composit.bitmaps );
+      break;
     }
     memset(&copybuffer,'\0',sizeof(copybuffer));
     copybuffer.undotype = ut_none;
+}
+
+static void CopyBufferFreeGrab(void) {
+    CopyBufferFree();
+    if ( fv_list!=NULL )
+	GDrawGrabSelection(fv_list->gw,sn_clipboard);	/* Grab the selection to one of my windows, doesn't matter which, aren't going to export it, but just want to clear things out so no one else thinks they have the selection */
+}
+
+static void noop(void *_copybuffer) {
+}
+
+static void *copybuffer2eps(void *_copybuffer,int32 *len) {
+    Undoes *cur = &copybuffer;
+    SplineChar dummy;
+    FILE *eps;
+    char *ret;
+
+    while ( cur ) {
+	switch ( cur->undotype ) {
+	  case ut_multiple:
+	    cur = cur->u.multiple.mult;
+	  break;
+	  case ut_composit:
+	    cur = cur->u.composit.state;
+	  break;
+	  case ut_state: case ut_statehint:
+    goto out;
+	  default:
+	    cur = NULL;
+	  break;
+	}
+    }
+    out:
+    if ( cur==NULL || fv_list==NULL ) {
+	*len=0;
+return( copy(""));
+    }
+
+    memset(&dummy,0,sizeof(dummy));
+    dummy.name = "dummy";
+    dummy.parent = fv_list->sf;
+    dummy.splines = cur->u.state.splines;
+    dummy.refs = cur->u.state.refs;
+
+    eps = tmpfile();
+    if ( eps==NULL ) {
+	*len=0;
+return( copy(""));
+    }
+    _ExportEPS(eps,&dummy);
+    fseek(eps,0,SEEK_END);
+    *len = ftell(eps);
+    ret = galloc(*len);
+    rewind(eps);
+    fread(ret,1,*len,eps);
+    fclose(eps);
+return( ret );
+}
+
+static void XClipCheckEps(void) {
+    Undoes *cur = &copybuffer;
+
+    if ( fv_list==NULL )
+return;
+
+    while ( cur ) {
+	switch ( cur->undotype ) {
+	  case ut_multiple:
+	    cur = cur->u.multiple.mult;
+	  break;
+	  case ut_composit:
+	    cur = cur->u.composit.state;
+	  break;
+	  case ut_state: case ut_statehint:
+	    GDrawAddSelectionType(fv_list->gw,sn_clipboard,"image/eps",&copybuffer,0,sizeof(char),
+		    copybuffer2eps,noop);
+	    cur = NULL;
+	  break;
+	  default:
+	    cur = NULL;
+	  break;
+	}
+    }
+}
+
+void ClipboardClear(void) {
+    CopyBufferFree();
 }
 
 enum undotype CopyUndoType(void) {
@@ -904,7 +995,7 @@ return( i );
 void CopyReference(SplineChar *sc) {
     RefChar *ref;
 
-    CopyBufferFree();
+    CopyBufferFreeGrab();
 
     copybuffer.undotype = ut_state;
     copybuffer.u.state.width = sc->width;
@@ -914,11 +1005,13 @@ void CopyReference(SplineChar *sc) {
     ref->local_enc = sc->enc;
     ref->adobe_enc = getAdobeEnc(sc->name);
     ref->transform[0] = ref->transform[3] = 1.0;
+
+    XClipCheckEps();
 }
 
 void CopySelected(CharView *cv) {
 
-    CopyBufferFree();
+    CopyBufferFreeGrab();
 
     copybuffer.undotype = ut_state;
     copybuffer.u.state.width = cv->sc->width;
@@ -946,6 +1039,8 @@ void CopySelected(CharView *cv) {
 	}
     }
     copybuffer.u.state.copied_from = cv->sc->parent;
+
+    XClipCheckEps();
 }
 
 static Undoes *SCCopyAll(SplineChar *sc,int full) {
@@ -983,7 +1078,7 @@ return( cur );
 void SCCopyWidth(SplineChar *sc,enum undotype ut) {
     DBounds bb;
 
-    CopyBufferFree();
+    CopyBufferFreeGrab();
 
     copybuffer.undotype = ut;
     switch ( ut ) {
@@ -1097,6 +1192,51 @@ static void PasteNonExistantRefCheck(SplineChar *sc,Undoes *paster,RefChar *ref,
     }
 }
 
+static void SCCheckXClipboard(GWindow awindow,SplineChar *sc,enum drawmode dm,int doclear) {
+    int type, len;
+    char *paste;
+    FILE *temp;
+    GImage *image;
+
+    type = 0;
+#ifndef _NO_LIBPNG
+    if ( GDrawSelectionHasType(awindow,sn_clipboard,"image/png") )
+	type = 1;
+    else
+#endif
+    if ( GDrawSelectionHasType(awindow,sn_clipboard,"image/bmp") )
+	type = 2;
+    else if ( GDrawSelectionHasType(awindow,sn_clipboard,"image/eps") )
+	type = 3;
+
+    if ( type==0 )
+return;
+
+    paste = GDrawRequestSelection(awindow,sn_clipboard,type==1?"image/png":
+		type==2?"image/bmp":"image/eps",&len);
+    if ( paste==NULL )
+return;
+
+    temp = tmpfile();
+    if ( temp!=NULL ) {
+	fwrite(paste,1,len,temp);
+	rewind(temp);
+	if ( type==3 ) {
+	    SCImportPSFile(sc,dm,temp,doclear);
+	} else {
+#ifndef _NO_LIBPNG
+	    if ( type==1 )
+		image = GImageRead_Png(temp);
+	    else
+#endif
+		image = GImageRead_Bmp(temp);
+	    SCAddScaleImage(sc,image,doclear);
+	}
+	fclose(temp);
+    }
+    free(paste);
+}
+
 /* when pasting from the fontview we do a clear first */
 static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear) {
     DBounds bb;
@@ -1197,6 +1337,11 @@ static void _PasteToCV(CharView *cv,Undoes *paster) {
     int refstate = 0;
     DBounds bb;
     real transform[6];
+
+    if ( copybuffer.undotype == ut_none ) {
+	SCCheckXClipboard(cv->gw,cv->sc,cv->drawmode,false);
+return;
+    }
 
     cv->lastselpt = NULL;
     switch ( paster->undotype ) {
@@ -1349,7 +1494,7 @@ return( NULL );
 
 void BCCopySelected(BDFChar *bc,int pixelsize,int depth) {
 
-    CopyBufferFree();
+    CopyBufferFreeGrab();
 
     memset(&copybuffer,'\0',sizeof(copybuffer));
     copybuffer.undotype = ut_bitmapsel;
@@ -1447,7 +1592,7 @@ void FVCopyWidth(FontView *fv,enum undotype ut) {
     SplineChar *sc;
     DBounds bb;
 
-    CopyBufferFree();
+    CopyBufferFreeGrab();
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] ) {
 	any = true;
@@ -1531,9 +1676,11 @@ void FVCopy(FontView *fv, int fullcopy) {
 
     if ( head==NULL )
 return;
-    CopyBufferFree();
+    CopyBufferFreeGrab();
     copybuffer.undotype = ut_multiple;
     copybuffer.u.multiple.mult = head;
+
+    XClipCheckEps();
 }
 
 void MVCopyChar(MetricsView *mv, SplineChar *sc, int fullcopy) {
@@ -1569,9 +1716,11 @@ void MVCopyChar(MetricsView *mv, SplineChar *sc, int fullcopy) {
 
     if ( cur==NULL )
 return;
-    CopyBufferFree();
+    CopyBufferFreeGrab();
     copybuffer.undotype = ut_multiple;
     copybuffer.u.multiple.mult = cur;
+
+    XClipCheckEps();
 }
 
 static BDFFont *BitmapCreateCheck(FontView *fv,int *yestoall, int first, int pixelsize, int depth) {
@@ -1625,6 +1774,12 @@ void PasteIntoFV(FontView *fv,int doclear) {
 	++cnt;
     if ( cnt==0 ) {
 	fprintf( stderr, "No Selection\n" );
+return;
+    }
+
+    if ( copybuffer.undotype == ut_none ) {
+	for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] )
+	    SCCheckXClipboard(fv->gw,SFMakeChar(fv->sf,i),dm_fore,doclear);
 return;
     }
 
@@ -1722,6 +1877,12 @@ void PasteIntoMV(MetricsView *mv,SplineChar *sc, int doclear) {
     extern int onlycopydisplayed;
 
     cur = &copybuffer;
+
+
+    if ( copybuffer.undotype == ut_none ) {
+	SCCheckXClipboard(mv->gw,sc,dm_fore,doclear);
+return;
+    }
 
     if ( cur->undotype==ut_multiple )
 	cur = cur->u.multiple.mult;

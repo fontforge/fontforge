@@ -942,6 +942,9 @@ static int v_e_h(GWindow gw, GEvent *event) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
 
     switch ( event->type ) {
+      case et_selclear:
+	ClipboardClear();
+      break;
       case et_expose:
 	BVExpose(bv,gw,event);
       break;

@@ -309,8 +309,7 @@ return( 0 );
 return( 1 );
 }
 
-GImage *GImageReadBmp(char *filename) {
-    FILE *file = fopen(filename,"rb");
+GImage *GImageRead_Bmp(FILE *file) {
     struct bmpheader bmp;
     int i,l;
     GImage *ret;
@@ -318,15 +317,10 @@ GImage *GImageReadBmp(char *filename) {
 
     if ( file==NULL )
 return( NULL );
-    if ( !fillbmpheader(file,&bmp)) {
-	fclose(file);
+    if ( !fillbmpheader(file,&bmp))
 return( NULL );
-    }
-    if ( !readpixels(file,&bmp)) {
-	fclose(file);
+    if ( !readpixels(file,&bmp))
 return( NULL );
-    }
-    fclose(file);
 
     if ( !bmp.invert ) {
 	ret = _GImage_Create(bmp.bitsperpixel>=16?it_true:bmp.bitsperpixel!=1?it_index:it_mono,
@@ -373,5 +367,17 @@ return( NULL );
 	memcpy(ret->u.image->clut->clut,bmp.clut,bmp.colorsused*sizeof(Color));
 	ret->u.image->clut->trans_index = COLOR_UNKNOWN;
     }
+return( ret );
+}
+
+GImage *GImageReadBmp(char *filename) {
+    FILE *file = fopen(filename,"rb");
+    GImage *ret;
+
+    if ( file==NULL )
+return( NULL );
+
+    ret = GImageRead_Bmp(file);
+    fclose(file);
 return( ret );
 }
