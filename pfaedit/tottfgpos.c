@@ -317,6 +317,7 @@ static SplineChar **generateGlyphList(SplineFont *sf, int iskern, int sli,
 	    sub = ( sf->subfontcnt==0 ) ? sf : sf->subfonts[k];
 	    for ( i=0; i<sub->charcnt; ++i )
 		    if ( SCWorthOutputting(sc=sub->chars[i]) &&
+			    SCDuplicate(sc)==sc &&
 			    ((iskern && KernListMatch(sc->kerns,sli)) ||
 			     (!iskern && LigListMatchTag(sc->ligofme,ligtag)) )) {
 		if ( glyphs!=NULL ) glyphs[cnt] = sc;
@@ -349,6 +350,7 @@ static SplineChar **generateGlyphTypeList(SplineFont *sf, enum possub_type type,
 	    sub = ( sf->subfontcnt==0 ) ? sf : sf->subfonts[k];
 	    for ( i=0; i<sub->charcnt; ++i )
 		    if ( SCWorthOutputting(sc=sub->chars[i]) &&
+			    SCDuplicate(sc)==sc &&
 			    PosSubMatchTag(sc->possub,tfl,type) ) {
 		if ( glyphs!=NULL ) {
 		    glyphs[cnt] = sc;

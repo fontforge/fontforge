@@ -1424,8 +1424,9 @@ static void FVMenuAAT(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     uint32 tag = (uint32) (mi->ti.userdata);
     int i;
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i])
-	SCTagDefault(fv->sf->chars[i],tag);
+    for ( i=0; i<fv->sf->charcnt; ++i )
+	if ( fv->sf->chars[i]!=NULL && fv->selected[i])
+	    SCTagDefault(SCDuplicate(fv->sf->chars[i]),tag);
 }
 
 static void FVMenuAATSuffix(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -1464,7 +1465,7 @@ return;
     suffix = cu_copy(upt);
     free(usuffix);
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i])
-	SCSuffixDefault(fv->sf->chars[i],tag,suffix,flags);
+	SCSuffixDefault(SCDuplicate(fv->sf->chars[i]),tag,suffix,flags);
     free(suffix);
 }
 
