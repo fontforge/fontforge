@@ -44,6 +44,7 @@ typedef struct transdata {
 #define CID_DoBackground	1102
 #define CID_Round2Int		1103
 #define CID_DoKerns		1104
+#define CID_DoSimplePos		1105
 
 #define CID_Type	1001
 #define CID_XMove	1002
@@ -110,7 +111,7 @@ static int Trans_OK(GGadget *g, GEvent *e) {
     real transform[6], trans[6], t[6];
     real angle;
     int i, index, err;
-    int dobackground = false, round_2_int = false, dokerns = false;
+    int dobackground = false, round_2_int = false, dokerns = false, dokp=false;
     BasePoint base;
     int origin, bvpos=0;
     BVTFunc bvts[TCnt+1];
@@ -126,6 +127,8 @@ static int Trans_OK(GGadget *g, GEvent *e) {
 	origin = GGadgetGetFirstListSelectedItem( GWidgetGetControl(td->gw,CID_Origin));
 	if ( GWidgetGetControl(td->gw,CID_DoBackground)!=NULL )
 	    dobackground = GGadgetIsChecked(GWidgetGetControl(td->gw,CID_DoBackground));
+	if ( GWidgetGetControl(td->gw,CID_DoSimplePos)!=NULL )
+	    dokp = GGadgetIsChecked(GWidgetGetControl(td->gw,CID_DoSimplePos));
 	if ( GWidgetGetControl(td->gw,CID_DoKerns)!=NULL )
 	    dokerns = GGadgetIsChecked(GWidgetGetControl(td->gw,CID_DoKerns));
 	round_2_int = GGadgetIsChecked(GWidgetGetControl(td->gw,CID_Round2Int));
@@ -236,6 +239,7 @@ return(true);
 	(td->transfunc)(td->userdata,transform,origin,bvts,
 		(dobackground?fvt_dobackground:0)|
 		 (round_2_int?fvt_round_to_int:0)|
+		 (dokp?fvt_scalepstpos:0)|
 		 (dokerns?fvt_scalekernclasses:0));
 	td->done = true;
     }
@@ -469,8 +473,8 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[7];
-    GTextInfo label[6];
+    GGadgetCreateData gcd[9];
+    GTextInfo label[8];
     static TransData td;
     int i, len, y;
     GGadget *orig;
@@ -493,7 +497,7 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,TBlock_Width));
-	pos.height = GDrawPointsToPixels(NULL,TBlock_Top+TCnt*TBlock_Height+94);
+	pos.height = GDrawPointsToPixels(NULL,TBlock_Top+TCnt*TBlock_Height+110);
 	td.gw = gw = GDrawCreateTopWindow(NULL,&pos,trans_e_h,&td,&wattrs);
 
 	memset(&label,0,sizeof(label));
@@ -525,6 +529,17 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
 	    label[i].text_in_resource = true;
 	    gcd[i].gd.label = &label[i];
 	    gcd[i].gd.cid = CID_DoKerns;
+	    gcd[i++].creator = GCheckBoxCreate;
+	    y += 16;
+
+	    gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = y;
+	    gcd[i].gd.flags = gg_visible |
+		    (enableback&1 ? gg_enabled : 0) |
+		    (enableback&2 ? gg_cb_on : 0);
+	    label[i].text = (unichar_t *) _STR_TransformSimplePosPair;
+	    label[i].text_in_resource = true;
+	    gcd[i].gd.label = &label[i];
+	    gcd[i].gd.cid = CID_DoSimplePos;
 	    gcd[i++].creator = GCheckBoxCreate;
 	    y += 16;
 

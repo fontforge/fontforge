@@ -470,7 +470,8 @@ typedef struct searchview {
 } SearchView;
 
 enum fvtrans_flags { fvt_dobackground=1, fvt_round_to_int=2,
-	fvt_dontsetwidth=4, fvt_dontmovewidth=8, fvt_scalekernclasses=16 };
+	fvt_dontsetwidth=4, fvt_dontmovewidth=8, fvt_scalekernclasses=0x10,
+	fvt_scalepstpos=0x20 };
 
 extern void FVSetTitle(FontView *fv);
 extern FontView *_FontViewCreate(SplineFont *sf);
@@ -550,6 +551,7 @@ extern void FVChangeDisplayBitmap(FontView *fv,BDFFont *bdf);
 extern void SCPreparePopup(GWindow gw,SplineChar *sc);
 extern int SFScaleToEm(SplineFont *sf, int ascent, int descent);
 extern void TransHints(StemInfo *stem,real mul1, real off1, real mul2, real off2, int round_to_int );
+extern void VrTrans(struct vr *vr,real transform[6]);
 extern void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts,
 	enum fvtrans_flags );
 extern void FVTrans(FontView *fv,SplineChar *sc,real transform[6],uint8 *sel,
