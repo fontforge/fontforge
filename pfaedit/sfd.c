@@ -2779,7 +2779,7 @@ return;
 	if ( sf->subfonts[i]->charcnt>max ) max = sf->subfonts[i]->charcnt;
 
     oldloc = setlocale(LC_NUMERIC,"C");
-    if ( sf->origname!=NULL )	/* might be a new file */
+    if ( !sf->new && sf->origname!=NULL )	/* might be a new file */
 	fprintf( asfd, "Base: %s\n", sf->origname );
     fprintf( asfd, "Encoding: %d\n", sf->encoding_name );
     if ( sf->order2 )

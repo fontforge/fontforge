@@ -348,6 +348,7 @@ return( 0 );
 	sf->filename = filename;
 	free(sf->origname);
 	sf->origname = copy(filename);
+	sf->new = false;
 	SplineFontSetUnChanged(sf);
 	FVSetTitle(fv);
     } else

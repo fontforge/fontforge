@@ -575,13 +575,11 @@ typedef struct splinefont {
     unsigned int compacted: 1;			/* Font is in a compacted glyph list */
     unsigned int encodingchanged: 1;		/* Font's encoding has changed since it was loaded */
     unsigned int order2: 1;			/* Font's data are order 2 bezier splines (truetype) rather than order 3 (postscript) */
+    unsigned int new: 1;			/* A new and unsaved font */
     struct fontview *fv;
     enum charset encoding_name, old_encname;
     SplinePointList *gridsplines;
     Undoes *gundoes, *gredoes;
-#if 0
-    int *hsnaps, *vsnaps;
-#endif
     BDFFont *bitmaps;
     char *origname;		/* filename of font file (ie. if not an sfd) */
     char *autosavename;

@@ -1843,6 +1843,7 @@ SplineFont *SplineFontNew(void) {
 
     sf = SplineFontBlank(default_encoding,enclen);
     sf->onlybitmaps = true;
+    sf->new = true;
 #if 0    
     for ( i=0; i<enclen && i<256; ++i ) {
 	SplineChar *sc = sf->chars[i] = SplineCharCreate();
