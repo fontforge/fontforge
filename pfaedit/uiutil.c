@@ -30,6 +30,8 @@
 
 #if __CygWin
 #include <unistd.h>
+extern void cygwin_conv_to_full_posix_path(const char *win,char *unx);
+extern void cygwin_conv_to_full_win32_path(const char *unx,char *win);
 #endif
 
 void Protest(char *label) {
@@ -193,7 +195,6 @@ return( copy(programpath));
 }
 
 static void do_windows_browser(char *fullspec) {
-    extern void cygwin_conv_to_full_posix_path(const char *win,char *unx);
     char *format, *start, *pt, ch, *temp, *cmd;
 
     format = win_program_from_extension(".html");
@@ -245,6 +246,10 @@ static void findbrowser(void) {
 
     if ( getenv("BROWSER")!=NULL ) {
 	strcpy(browser,getenv("BROWSER"));
+#if __CygWin			/* Get rid of any dos style names */
+	if ( isalpha(browser[0] && browser[1]==':' && browser[2]=='\\' )
+	    cygwin_conv_to_full_posix_path(getenv("BROWSER"),browser);
+#endif
 	if ( strcmp(browser,"kde")==0 || strcmp(browser,"kfm")==0 ||
 		strcmp(browser,"konqueror")==0 || strcmp(browser,"kfmclient")==0 )
 	    strcpy(browser,"kfmclient openURL");
@@ -313,7 +318,6 @@ return;
 	/* It looks as though the browser is a windows application, so we */
 	/*  should give it a windows file name */
 	char *pt, *tpt;
-	extern void cygwin_conv_to_full_win32_path(const char *unx,char *win);
 	temp = galloc(1024);
 	cygwin_conv_to_full_win32_path(fullspec,temp);
 	for ( pt = fullspec, tpt = temp; *tpt && pt<fullspec+sizeof(fullspec)-3; *pt++ = *tpt++ )
