@@ -861,6 +861,7 @@ static SplineSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
 		sp = chunkalloc(sizeof(SplinePoint));
 		sp->me = sp->nextcp = sp->prevcp = pts[i];
 		sp->nonextcp = sp->noprevcp = true;
+		sp->ptindex = i;
 		if ( last_off && cur->last!=NULL )
 		    FigureControls(cur->last,sp,&pts[i-1]);
 		last_off = false;
@@ -872,6 +873,7 @@ static SplineSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
 		sp->me.y = (pts[i].y+pts[i-1].y)/2;
 		sp->nextcp = sp->prevcp = sp->me;
 		sp->nonextcp = true;
+		sp->ptindex = 0xffff;
 		if ( last_off && cur->last!=NULL )
 		    FigureControls(cur->last,sp,&pts[i-1]);
 		/* last_off continues to be true */
@@ -896,6 +898,7 @@ static SplineSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
 	    sp->me.y = pts[start].y;
 	    sp->nextcp = sp->prevcp = sp->me;
 	    sp->nonextcp = sp->noprevcp = true;
+	    sp->ptindex = i-1;
 	    cur->first = cur->last = sp;
 	} else if ( !(flags[start]&_On_Curve) && !(flags[i-1]&_On_Curve) ) {
 	    sp = chunkalloc(sizeof(SplinePoint));
@@ -903,6 +906,7 @@ static SplineSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
 	    sp->me.y = (pts[start].y+pts[i-1].y)/2;
 	    sp->nextcp = sp->prevcp = sp->me;
 	    sp->nonextcp = true;
+	    sp->ptindex = 0xffff;
 	    FigureControls(cur->last,sp,&pts[i-1]);
 	    SplineMake(cur->last,sp);
 	    cur->last = sp;
@@ -1040,9 +1044,9 @@ static void readttfcompositglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, 
 	    arg1 = (signed char) getc(ttf);
 	    arg2 = (signed char) getc(ttf);
 	}
+	cur->transform[4] = arg1;
+	cur->transform[5] = arg2;
 	if ( flags & _ARGS_ARE_XY ) {
-	    cur->transform[4] = arg1;
-	    cur->transform[5] = arg2;
 	    /* There is some very strange stuff (half-)documented on the apple*/
 	    /*  site about how these should be interpretted when there are */
 	    /*  scale factors, or rotations */
@@ -1058,6 +1062,9 @@ static void readttfcompositglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, 
 	    /*  apple mode under rotation... */
 	    /* I notice that FreeType does nothing about rotation nor does it */
 	    /*  interpret bits 11&12 */
+	    /* Ah. It turns out that even Apple does not do what Apple's docs */
+	    /*  claim it does. I think I've worked it out (see below), but... */
+	    /*  Bleah! */
 	} else {
 	    /* Somehow we can get offsets by looking at the points in the */
 	    /*  points so far generated and comparing them to the points in */
@@ -1066,12 +1073,9 @@ static void readttfcompositglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, 
 	    /* freetype looks up arg1 in the set of points we've got so far */
 	    /*  looks up arg2 in the new component (before renumbering) */
 	    /*  offset.x = arg1.x - arg2.x; offset.y = arg1.y - arg2.y; */
-	    /* Sadly I don't retain the information I need to deal with this */
-	    /*  I lose the point numbers and the control points... */
-	    /* I have implemented it in ttfmod where that info is retained */
+	    /* This fixup needs to be done later though (after all glyphs */
+	    /*  have been loaded) */
 	    cur->point_match = true;
-	    fprintf( stderr, "TTF Warning: I mayn't understand matching points. Please send me a copy\n" );
-	    fprintf( stderr, "  of whatever ttf file you are loading. Thanks.  gww@silcom.com\n" );
 	}
 	cur->transform[0] = cur->transform[3] = 1.0;
 	if ( flags & _SCALE )
@@ -1085,6 +1089,7 @@ static void readttfcompositglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, 
 	    cur->transform[2] = get2dot14(ttf);
 	    cur->transform[3] = get2dot14(ttf);
 	}
+	if ( flags & _ARGS_ARE_XY ) {	/* Only muck with these guys if they are real offsets and not point matching */
 #ifdef __Mac
 	/* On mac assume scaled offsets unless told unscaled explicitly */
 	if ( !(flags&_UNSCALED_OFFSETS) &&
@@ -1107,6 +1112,7 @@ static void readttfcompositglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, 
 		fprintf( stderr, "  I've never seen one, could you send me a copy of %s?\n", info->fontname );
 		fprintf( stderr, "  Thanks.  gww@silcom.com\n" );
 	    }
+	}
 	}
 	if ( cur->local_enc>=info->glyph_cnt ) {
 	    fprintf(stderr, "Glyph %d attempts to reference glyph %d which is outside the font\n", sc->enc, cur->local_enc );
@@ -3642,6 +3648,62 @@ return;
     free(lookups);
 }
 
+static void UnfigureControls(Spline *spline,BasePoint *pos) {
+    pos->x = rint( (spline->splines[0].c+2*spline->splines[0].d)/2 );
+    pos->y = rint( (spline->splines[1].c+2*spline->splines[1].d)/2 );
+}
+
+static int ttfFindPointInSC(SplineChar *sc,int pnum,BasePoint *pos) {
+    SplineSet *ss;
+    SplinePoint *sp;
+    int last=0, ret;
+    RefChar *refs;
+
+    for ( ss = sc->splines; ss!=NULL; ss=ss->next ) {
+	for ( sp=ss->first; ; ) {
+	    if ( sp->ptindex==pnum ) {
+		*pos = sp->me;
+return(-1);
+	    } else if ( !sp->nonextcp && last+1==pnum ) {
+		/* fix this up to be 2 degree bezier control point */
+		UnfigureControls(sp->next,pos);
+return( -1 );
+	    }
+	    if ( sp->ptindex==0xffff )
+		++last;
+	    else if ( sp->nonextcp )
+		last = sp->ptindex;
+	    else
+		last = sp->ptindex+1;
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==ss->first )
+	break;
+	}
+    }
+    for ( refs=sc->refs; refs!=NULL; refs=refs->next ) {
+	ret = ttfFindPointInSC(refs->sc,pnum-last,pos);
+	if ( ret==-1 )
+return( -1 );
+	last += ret;
+    }
+return( last );		/* Count of number of points in the character */
+}
+
+static void ttfPointMatch(SplineChar *sc,RefChar *rf) {
+    BasePoint sofar, inref;
+
+    if ( ttfFindPointInSC(sc,rf->transform[4],&sofar)!=-1 ||
+	    ttfFindPointInSC(rf->sc,rf->transform[5],&inref)!=-1 ) {
+	fprintf( stderr, "Could not match points in composite glyph (%g to %g) when adding %s to %s\n",
+		rf->transform[4], rf->transform[5], rf->sc->name, sc->name);
+return;
+    }
+    rf->transform[4] = sofar.x-inref.x;
+    rf->transform[5] = sofar.y-inref.y;
+}
+
 static int ttfFixupRef(struct ttfinfo *info,int i) {
     RefChar *ref, *prev, *next;
 
@@ -3664,6 +3726,8 @@ return( false );
 	} else {
 	    ref->sc = info->chars[ref->local_enc];
 	    ref->adobe_enc = getAdobeEnc(ref->sc->name);
+	    if ( ref->point_match )
+		ttfPointMatch(info->chars[i],ref);
 	    SCReinstanciateRefChar(info->chars[i],ref);
 	    SCMakeDependent(info->chars[i],ref->sc);
 	    prev = ref;
