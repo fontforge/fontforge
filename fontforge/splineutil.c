@@ -4286,6 +4286,8 @@ SplineChar *SplineCharCreate(void) {
     LayerDefault(&sc->layers[0]);
     LayerDefault(&sc->layers[1]);
 #endif
+    sc->tex_height = sc->tex_depth = sc->tex_sub_pos = sc->tex_super_pos =
+	    TEX_UNDEF;
 return( sc );
 }
 

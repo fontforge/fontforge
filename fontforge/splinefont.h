@@ -872,7 +872,11 @@ typedef struct splinechar {
     int16 ttf_instrs_len;
     int16 countermask_cnt;
     HintMask *countermasks;
+    int16 tex_height, tex_depth;
+    int16 tex_sub_pos, tex_super_pos;	/* Only for math fonts */
 } SplineChar;
+
+#define TEX_UNDEF 0x7fff
 
 enum ttfnames { ttf_copyright=0, ttf_family, ttf_subfamily, ttf_uniqueid,
     ttf_fullname, ttf_version, ttf_postscriptname, ttf_trademark,
@@ -1088,7 +1092,8 @@ enum ttf_flags { ttf_flag_shortps = 1, ttf_flag_nohints = 2,
 		    ttf_flag_applemode=4,
 		    ttf_flag_pfed_comments=8, ttf_flag_pfed_colors=0x10,
 		    ttf_flag_otmode=0x20,
-		    ttf_flag_glyphmap=0x40
+		    ttf_flag_glyphmap=0x40,
+		    ttf_flag_TeXtable=0x80
 		};
 enum openflags { of_fstypepermitted=1 };
 enum ps_flags { ps_flag_nohintsubs = 0x10000, ps_flag_noflex=0x20000,

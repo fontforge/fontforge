@@ -4640,6 +4640,8 @@ static void AbortTTF(struct alltabs *at, SplineFont *sf) {
 
     if ( at->pfed!=NULL )
 	fclose(at->pfed);
+    if ( at->tex!=NULL )
+	fclose(at->tex);
 
     if ( at->gvar!=NULL )
 	fclose(at->gvar);
@@ -4918,6 +4920,7 @@ return( false );
 	dumpcmap(at,sf,format);
 
 	pfed_dump(at,sf);
+	tex_dump(at,sf);
     }
 
     if ( format==ff_otf || format==ff_otfcid ) {
@@ -4984,6 +4987,12 @@ return( false );
 	at->tabdir.tabs[i].tag = CHR('P','f','E','d');
 	at->tabdir.tabs[i].data = at->pfed;
 	at->tabdir.tabs[i++].length = at->pfedlen;
+    }
+
+    if ( at->tex!=NULL ) {
+	at->tabdir.tabs[i].tag = CHR('T','e','X',' ');
+	at->tabdir.tabs[i].data = at->tex;
+	at->tabdir.tabs[i++].length = at->texlen;
     }
 
     if ( at->vorgf!=NULL ) {
