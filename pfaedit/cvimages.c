@@ -264,7 +264,7 @@ static SplineSet * slurppolyline(FILE *fig,SplineChar *sc, SplineSet *sofar) {
 	spl = chunkalloc(sizeof(SplinePointList));
 	if ( cnt==4 && sub==4/*arc-box*/ && radius!=0 ) {
 	    SplineFont *sf = sc->parent;
-	    real scale = sf->ascent/(8.5*1200.0), r = radius*scale;
+	    real scale = sf->ascent/(8.5*80.0), r = radius*scale;	/* radii are scaled differently */
 	    if ( bps[0].x>bps[2].x ) {
 		topleft.x = bps[2].x;
 		bottomright.x = bps[0].x;
