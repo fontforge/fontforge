@@ -2588,8 +2588,8 @@ static void handlename(Context *c,Val *val) {
 	    } else if ( strcmp(name,"$curfont")==0 || strcmp(name,"$nextfont")==0 ||
 		    strcmp(name,"$firstfont")==0 ) {
 		if ( strcmp(name,"$firstfont")==0 ) {
-		    if ( fv_list==NULL ) error(c,"No fonts loaded");
-		    sf = fv_list->sf;
+		    if ( fv_list==NULL ) sf=NULL;
+		    else sf = fv_list->sf;
 		} else {
 		    if ( c->curfv==NULL ) error(c,"No current font");
 		    if ( strcmp(name,"$curfont")==0 ) 
