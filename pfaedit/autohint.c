@@ -2384,11 +2384,17 @@ return;
     /* Don't add this if there's an hstem with this info already... */
     if ( x ) {
 	low = sp1->me.x;
-	high = sp2->me.x;
+	if ( sp2==NULL )
+	    high = low;
+	else
+	    high = sp2->me.x;
 	h = sc->vstem;
     } else {
 	low = sp1->me.y;
-	high = sp2->me.y;
+	if ( sp2==NULL )
+	    high = low;
+	else
+	    high = sp2->me.y;
 	h = sc->hstem;
     }
     if ( low>high ) {
