@@ -3554,7 +3554,7 @@ return;
 	glyphs = getCoverageTable(ttf,stoffset+coverage,info);
 	if ( glyphs==NULL )
 return;
-	for ( i=0; i<cnt; ++i ) {
+	for ( i=0; i<cnt; ++i ) if ( glyphs[i]<info->glyph_cnt ) {
 	    fseek(ttf,stoffset+ps_offsets[i],SEEK_SET);
 	    pair_cnt = getushort(ttf);
 	    for ( j=0; j<pair_cnt; ++j ) {
@@ -3565,6 +3565,12 @@ return;
 		    addKernPair(info, glyphs[i], glyph2, vr2.xadvance+vr1.xplacement);
 		else
 		    addKernPair(info, glyphs[i], glyph2, vr1.xadvance+vr2.xplacement);
+		if ( lookup->script!=UNUSED_SCRIPT && lookup->script!=MULTIPLE_SCRIPTS ) {
+		    if (info->chars[glyphs[i]]->script==0 )
+			info->chars[glyphs[i]]->script = lookup->script;
+		    if (info->chars[glyph2]->script==0 )
+			info->chars[glyph2]->script = lookup->script;
+		}
 	    }
 	}
 	free(ps_offsets); free(glyphs);
@@ -3860,7 +3866,7 @@ return;
 	free(vr);
 return;
     }
-    for ( i=0; glyphs[i]!=0xffff; ++i ) {
+    for ( i=0; glyphs[i]!=0xffff; ++i ) if ( glyphs[i]<info->glyph_cnt ) {
 	PST *pos = chunkalloc(sizeof(PST));
 	pos->type = pst_position;
 	pos->tag = lookup->tag;
@@ -3872,6 +3878,9 @@ return;
 	pos->u.pos.yoff = which->yplacement;
 	pos->u.pos.h_adv_off = which->xadvance;
 	pos->u.pos.v_adv_off = which->yadvance;
+	if ( lookup->script!=UNUSED_SCRIPT && lookup->script!=MULTIPLE_SCRIPTS &&
+		info->chars[glyphs[i]]->script==0 )
+	    info->chars[glyphs[i]]->script = lookup->script;
     }
     free(vr);
 }
