@@ -510,6 +510,7 @@ extern int CheckAfmOfPostscript(SplineFont *sf,char *psname);
 extern int LoadKerningDataFromAfm(SplineFont *sf, char *filename);
 extern int LoadKerningDataFromTfm(SplineFont *sf, char *filename);
 extern int SFOneWidth(SplineFont *sf);
+extern int CIDOneWidth(SplineFont *sf);
 extern int SFOneHeight(SplineFont *sf);
 extern int SFIsCJK(SplineFont *sf);
 extern struct pschars *SplineFont2Chrs(SplineFont *sf, int round, int iscjk,

@@ -1400,6 +1400,31 @@ int SFOneWidth(SplineFont *sf) {
 return(width);
 }
 
+int CIDOneWidth(SplineFont *_sf) {
+    int width, i;
+    int k;
+    SplineFont *sf;
+
+    if ( _sf->cidmaster!=NULL ) _sf = _sf->cidmaster;
+    width = -2;
+    k=0;
+    do {
+	sf = _sf->subfonts==NULL? _sf : _sf->subfonts[k];
+	for ( i=0; i<sf->charcnt; ++i ) if ( SCWorthOutputting(sf->chars[i]) &&
+		(strcmp(sf->chars[i]->name,".notdef")!=0 || sf->chars[i]->splines!=NULL)) {
+	    /* Only trust the width of notdef if it's got some content */
+	    /* (at least as far as fixed pitch determination goes) */
+	    if ( width==-2 ) width = sf->chars[i]->width;
+	    else if ( width!=sf->chars[i]->width ) {
+		width = -1;
+	break;
+	    }
+	}
+	++k;
+    } while ( k<_sf->subfontcnt );
+return(width);
+}
+
 int SFOneHeight(SplineFont *sf) {
     int width, i;
 

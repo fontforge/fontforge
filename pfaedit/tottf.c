@@ -4538,26 +4538,13 @@ static void OS2WeightCheck(struct pfminfo *pfminfo,char *weight) {
 }
 
 void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *_sf,char *fontname) {
-    int i, samewid= -1, j;
+    int samewid= -1;
     SplineFont *sf, *first=NULL;
     char *weight = _sf->cidmaster==NULL ? _sf->weight : _sf->cidmaster->weight;
 
     if ( !pfminfo->pfmset ) {
 	memset(pfminfo,'\0',sizeof(*pfminfo));
-	j=0;
-	do {
-	    sf = ( _sf->subfontcnt==0 ) ? _sf : _sf->subfonts[j];
-	    if ( first==NULL ) first = sf;
-	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-		if ( SCWorthOutputting(sf->chars[i]) ) {
-		    if ( samewid==-1 )
-			samewid = sf->chars[i]->width;
-		    else if ( samewid!=sf->chars[i]->width )
-			samewid = -2;
-		}
-	    }
-	    ++j ;
-	} while ( j<_sf->subfontcnt );
+	samewid = CIDOneWidth(sf);
 	sf = _sf;
 
 	pfminfo->pfmfamily = 0x10;

@@ -518,15 +518,8 @@ int AfmSplineFont(FILE *afm, SplineFont *sf, int formattype) {
 	fprintf( afm, "IsCIDFont true\n" );
     }
     fprintf( afm, "ItalicAngle %g\n", sf->italicangle );
-    width = -1;
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && strcmp(sf->chars[i]->name,".notdef")!=0 ) {
-	if ( width==-1 ) width = sf->chars[i]->width;
-	else if ( width!=sf->chars[i]->width ) {
-	    width = -2;
-    break;
-	}
-    }
-    fprintf( afm, "IsFixedPitch %s\n", width==-2?"false":"true" );
+    width = CIDOneWidth(sf);
+    fprintf( afm, "IsFixedPitch %s\n", width==-1?"false":"true" );
     fprintf( afm, "UnderlinePosition %g\n", sf->upos );
     fprintf( afm, "UnderlineThickness %g\n", sf->uwidth );
     if ( !iscid ) {
