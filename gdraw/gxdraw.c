@@ -3361,6 +3361,7 @@ static void GXResourceInit(GXDisplay *gdisp,char *programname) {
     GResourceAddResourceString((char *) ret,programname);
     if ( ret!=NULL ) XFree(ret);
 
+    memset(res,0,sizeof(res));
     i = 0;
     res[i].resname = "MultiClickTime"; res[i].type = rt_int; res[i].val = &gdisp->bs.double_time; ++i;
     res[i].resname = "MultiClickWiggle"; res[i].type = rt_int; res[i].val = &gdisp->bs.double_wiggle; ++i;
