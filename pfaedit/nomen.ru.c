@@ -1081,11 +1081,11 @@ static char *str_Missingdotlessj = "Your font is missing the dotlessj character,
 static char *str_MergingProb = "Merging Problem"; /*new*/
 static char *str_MergingFontSelf = "Merging a font with itself achieves nothing"; /*new*/
 static char *str_Other = "Другое ..."
-static char *str_FontToMergeInto = "Font to merge into %.20s"; /*new*/
+static char *str_FontToMergeInto = "Font to merge into %.20hs"; /*new*/
 static char *str_InterpolatingProb = "Interpolating Problem"; /*new*/
 static char *str_InterpolatingFontSelf = "Interpolating a font with itself achieves nothing"; /*new*/
 static char *str_Amount = "Amount"; /*new*/
-static char *str_InterpBetween = "Interpolating between %.20s and:"; /*new*/
+static char *str_InterpBetween = "Interpolating between %.20hs and:"; /*new*/
 static char *str_by = "by"; /*new*/
   /* fv metrics */
 static char *str_SetWidthTo = "Set Width To:"; /*new*/
