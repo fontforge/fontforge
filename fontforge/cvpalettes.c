@@ -47,9 +47,7 @@ extern const int input_em_cnt;
 
 int cvvisible[2] = { 1, 1}, bvvisible[3]= { 1,1,1 };
 static GWindow cvlayers, cvtools, bvlayers, bvtools, bvshades;
-#ifdef FONTFORGE_CONFIG_TYPE3
-static GWindow cvlayers2;
-#endif
+static GWindow cvlayers2=NULL;
 static GPoint cvtoolsoff = { -9999 }, cvlayersoff = { -9999 }, bvlayersoff = { -9999 }, bvtoolsoff = { -9999 }, bvshadesoff = { -9999 };
 static int palettesmoved=0;
 int palettes_fixed=1;
