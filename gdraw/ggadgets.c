@@ -339,8 +339,6 @@ void GGadgetEndPopup() {
 }
 
 void GGadgetPopupExternalEvent(GEvent *e) {
-    if ( !popup_visible )
-return;
     /* Depress control key to keep popup alive */
     if ( e->type == et_char &&
 	    ( e->u.chr.keysym == GK_Control_L || e->u.chr.keysym == GK_Control_R )) {
