@@ -4347,6 +4347,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     int i,k;
     BDFFont *bdf;
     struct table_ordering *ord;
+    SplineChar *sc;
 
     sf = SplineFontEmpty();
     sf->display_size = -default_fv_font_size;
@@ -4466,6 +4467,23 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 
     if ( info->variations!=NULL )
 	MMFillFromVAR(sf,info);
+
+    if ( info->cff_length!=0 && !sf->order2 ) {
+	/* Clean up the hint masks, We create an initial hintmask whether we */
+	/*  need it or not */
+	k=0;
+	do {
+	    _sf = k<sf->subfontcnt?sf->subfonts[k]:sf;
+	    for ( i=0; i<sf->charcnt; ++i ) {
+		if ( (sc = _sf->chars[i])!=NULL && !sc->hconflicts && !sc->vconflicts &&
+			sc->layers[ly_fore].splines!=NULL ) {
+		    chunkfree( sc->layers[ly_fore].splines->first->hintmask,sizeof(HintMask) );
+		    sc->layers[ly_fore].splines->first->hintmask = NULL;
+		}
+	    }
+	    ++k;
+	} while ( k<sf->subfontcnt );
+    }
 return( sf );
 }
 
