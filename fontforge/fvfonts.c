@@ -320,7 +320,7 @@ return;
     } while ( k<sf->subfontcnt );
 }
 
-static SplineChar *SFHashName(SplineFont *sf,char *name) {
+static SplineChar *SFHashName(SplineFont *sf,const char *name) {
     struct glyphnamebucket *test;
 
     if ( sf->glyphnames==NULL )
@@ -333,7 +333,7 @@ return( test->sc );
 return( NULL );
 }
 
-static int _SFFindChar(SplineFont *sf, int unienc, char *name ) {
+static int _SFFindChar(SplineFont *sf, int unienc, const char *name ) {
     int index= -1;
 
     if ( (sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4) &&
@@ -369,7 +369,7 @@ static int _SFFindChar(SplineFont *sf, int unienc, char *name ) {
 return( index );
 }
 
-int SFFindChar(SplineFont *sf, int unienc, char *name ) {
+int SFFindChar(SplineFont *sf, int unienc, const char *name ) {
     int index=-1;
     char *end;
 
@@ -492,7 +492,7 @@ return( SFFindChar(sf,unienc,NULL));
 return( index );
 }
 
-int SFCIDFindChar(SplineFont *sf, int unienc, char *name ) {
+int SFCIDFindChar(SplineFont *sf, int unienc, const char *name ) {
     int j,ret;
 
     if ( sf->cidmaster!=NULL )
@@ -524,7 +524,7 @@ return( i );
 return( -1 );
 }
 
-SplineChar *SFGetChar(SplineFont *sf, int unienc, char *name ) {
+SplineChar *SFGetChar(SplineFont *sf, int unienc, const char *name ) {
     int ind;
     int j;
 
@@ -547,11 +547,11 @@ return( sf->subfonts[j]->chars[ind] );
 return( NULL );
 }
 
-SplineChar *SFGetCharDup(SplineFont *sf, int unienc, char *name ) {
+SplineChar *SFGetCharDup(SplineFont *sf, int unienc, const char *name ) {
 return( SCDuplicate(SFGetChar(sf,unienc,name)) );
 }
 
-SplineChar *SFGetOrMakeChar(SplineFont *sf, int unienc, char *name ) {
+SplineChar *SFGetOrMakeChar(SplineFont *sf, int unienc, const char *name ) {
     int ind = SFFindChar(sf,unienc,name);
 
     if ( ind==-1 )
@@ -560,7 +560,7 @@ return( NULL );
 return( SFMakeChar(sf,ind));
 }
 
-int SFFindExistingChar(SplineFont *sf, int unienc, char *name ) {
+int SFFindExistingChar(SplineFont *sf, int unienc, const char *name ) {
     int i = _SFFindChar(sf,unienc,name);
 
     if ( i==-1 || sf->chars[i]==NULL )
@@ -572,7 +572,7 @@ return( i );
 return( -1 );
 }
 
-int SFCIDFindExistingChar(SplineFont *sf, int unienc, char *name ) {
+int SFCIDFindExistingChar(SplineFont *sf, int unienc, const char *name ) {
     int j,ret;
 
     if ( sf->subfonts==NULL && sf->cidmaster==NULL )

@@ -1429,13 +1429,13 @@ extern void MatMultiply(real m1[6], real m2[6], real to[6]);
 
 extern int NameToEncoding(SplineFont *sf,const unichar_t *uname);
 extern void GlyphHashFree(SplineFont *sf);
-extern int SFFindChar(SplineFont *sf, int unienc, char *name );
-extern int SFCIDFindChar(SplineFont *sf, int unienc, char *name );
-extern SplineChar *SFGetChar(SplineFont *sf, int unienc, char *name );
-extern SplineChar *SFGetCharDup(SplineFont *sf, int unienc, char *name );
-extern SplineChar *SFGetOrMakeChar(SplineFont *sf, int unienc, char *name );
-extern int SFFindExistingChar(SplineFont *sf, int unienc, char *name );
-extern int SFCIDFindExistingChar(SplineFont *sf, int unienc, char *name );
+extern int SFFindChar(SplineFont *sf, int unienc, const char *name );
+extern int SFCIDFindChar(SplineFont *sf, int unienc, const char *name );
+extern SplineChar *SFGetChar(SplineFont *sf, int unienc, const char *name );
+extern SplineChar *SFGetCharDup(SplineFont *sf, int unienc, const char *name );
+extern SplineChar *SFGetOrMakeChar(SplineFont *sf, int unienc, const char *name );
+extern int SFFindExistingChar(SplineFont *sf, int unienc, const char *name );
+extern int SFCIDFindExistingChar(SplineFont *sf, int unienc, const char *name );
 extern int SFHasCID(SplineFont *sf, int cid);
 
 extern char *getPfaEditDir(char *buffer);

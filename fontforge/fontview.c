@@ -4739,6 +4739,7 @@ return( ssf->chars[i] );
 	sc->name = copy(sc->name);
 	SCLigDefault(sc);
 	sc->parent = sf;
+	GlyphHashFree(sf);
     }
 return( sc );
 }
