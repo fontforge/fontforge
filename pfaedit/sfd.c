@@ -1658,9 +1658,9 @@ static void SFDGetHintMask(FILE *sfd,HintMask *hintmask) {
 	ch = getc(sfd);
 	if ( isdigit(ch))
 	    ch -= '0';
-	else if ( ch>='a' || ch<='f' )
+	else if ( ch>='a' && ch<='f' )
 	    ch -= 'a'-10;
-	else if ( ch>='A' || ch<='F' )
+	else if ( ch>='A' && ch<='F' )
 	    ch -= 'A'-10;
 	else {
 	    ungetc(ch,sfd);

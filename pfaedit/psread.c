@@ -3291,6 +3291,8 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
     SCGuessVHintInstancesList(ret);
     ret->hconflicts = StemListAnyConflicts(ret->hstem);
     ret->vconflicts = StemListAnyConflicts(ret->vstem);
+    if ( context->instance_count==1 && !ret->hconflicts && !ret->vconflicts )
+	SCClearHintMasks(ret,false);
     HintsRenumber(ret);
     if ( name!=NULL && strcmp(name,".notdef")!=0 )
 	ret->widthset = true;
