@@ -1020,7 +1020,7 @@ return( true );
 
 int FVImportImages(FontView *fv,char *path,int format) {
     GImage *image;
-    struct _GImage *base;
+    /*struct _GImage *base;*/
     int tot;
     char *start = path, *endpath=path;
     int i;
@@ -1037,12 +1037,14 @@ int FVImportImages(FontView *fv,char *path,int format) {
 		GWidgetErrorR(_STR_BadImageFile,_STR_BadImageFileName,start);
 return(false);
 	    }
+#if 0
 	    base = image->list_len==0?image->u.image:image->u.images[0];
 	    if ( base->image_type!=it_mono ) {
 		GWidgetErrorR(_STR_BadImageFile,_STR_BadImageFileNotBitmap,start);
 		GImageDestroy(image);
 return(false);
 	    }
+#endif
 	    ++tot;
 	    SCAddScaleImage(sc,image,true,ly_back);
 #ifndef _NO_LIBXML
