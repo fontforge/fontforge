@@ -5039,6 +5039,11 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv) {
     cv->rheads[dm_fore] = &sc->redoes[dm_fore]; cv->rheads[dm_back] = &sc->redoes[dm_back];
     cv->rheads[dm_grid] = &fv->sf->gredoes;
 
+#if HANYANG
+    if ( sc->parent->rules!=NULL && sc->compositionunit )
+	CVInitialTemplate(cv);
+#endif
+
     cv->olde.x = -1;
 
     /*GWidgetHidePalettes();*/
