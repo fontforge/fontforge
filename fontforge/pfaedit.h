@@ -54,11 +54,7 @@ extern void CheckIsScript(int argc, char *argv[]);
 extern char *AdobeStandardEncoding[256];
 extern int psunicodenames_cnt;
 extern const char *psunicodenames[];
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-extern uint16 unicode_from_adobestd[256];
-#else
 extern int32 unicode_from_adobestd[256];
-#endif
 extern struct psaltnames {
     char *name;
     int unicode;
@@ -74,11 +70,7 @@ extern const struct unicode_nameannot * const *const *_UnicodeNameAnnot;
 extern int default_fv_font_size;
 extern int default_fv_antialias;
 extern int default_fv_bbsized;
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-extern int default_encoding;
-#else
 extern Encoding *default_encoding, custom;
-#endif
 extern int adjustwidth;
 extern int adjustlbearing;
 extern int autohint_before_rasterize;
