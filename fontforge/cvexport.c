@@ -639,10 +639,55 @@ static int BCExportXBM(char *filename,BDFChar *bdfc, int format) {
 return( ret );
 }
 
-void ScriptExport(SplineFont *sf, BDFFont *bdf, int format, int enc) {
-    char *ext = format==0?"eps":format==1?"fig":
-		format==2?"svg":format==3?"pdf":
-		format==4?"xbm":format==5?"bmp":"png";
+static void MakeExportName(char *buffer, int blen,char *format_spec,SplineChar *sc) {
+    char *end = buffer+blen-3;
+    char *pt, *bend;
+    char unicode[8];
+    int ch;
+
+    while ( *format_spec && buffer<end ) {
+	if ( *format_spec!='%' )
+	    *buffer++ = *format_spec++;
+	else {
+	    ++format_spec;
+	    ch = *format_spec++;
+	    if ((bend = buffer+40)>end ) bend = end;
+	    if ( ch=='n' ) {
+#if defined( __CygWin ) || defined(__Mac)
+		/* Windows file systems are not case conscious */
+		/*  nor is the default mac filesystem */
+		for ( pt=sc->name; *pt!='\0' && buffer<bend; ) {
+		    if ( isupper( *pt ))
+			*buffer++ = '$';
+		    *buffer++ = *pt++;
+		}
+#else
+		for ( pt=sc->name; *pt!='\0' && buffer<bend; )
+		    *buffer++ = *pt++;
+#endif
+	    } else if ( ch=='f' ) {
+		for ( pt=sc->parent->fontname; *pt!='\0' && buffer<bend; )
+		    *buffer++ = *pt++;
+	    } else if ( ch=='u' || ch=='U' ) {
+		if ( sc->unicodeenc == -1 )
+		    strcpy(unicode,"xxxx");
+		else
+		    sprintf( unicode,ch=='u' ? "%04x" : "%04X", sc->unicodeenc );
+		for ( pt=unicode; *pt!='\0' && buffer<bend; )
+		    *buffer++ = *pt++;
+	    } else if ( ch=='e' ) {
+		sprintf( unicode,"%d", sc->enc );
+		for ( pt=unicode; *pt!='\0' && buffer<bend; )
+		    *buffer++ = *pt++;
+	    } else
+		*buffer++ = ch;
+	}
+    }
+    *buffer = '\0';
+}
+
+void ScriptExport(SplineFont *sf, BDFFont *bdf, int format, int enc,
+	char *format_spec) {
     char buffer[100];
     SplineChar *sc = sf->chars[enc];
     BDFChar *bc = bdf!=NULL ? bdf->chars[enc] : NULL;
@@ -651,21 +696,8 @@ void ScriptExport(SplineFont *sf, BDFFont *bdf, int format, int enc) {
     if ( sc==NULL )
 return;
 
-#if defined( __CygWin ) || defined(__Mac)
-    /* Windows file systems are not case conscious */
-    /*  nor is the default mac filesystem */
-    { char *pt, *bpt, *end;
-    bpt = buffer; end = buffer+40;
-    for ( pt=sc->name; *pt!='\0' && bpt<end; ) {
-	if ( isupper( *pt ))
-	    *bpt++ = '$';
-	*bpt++ = *pt++;
-    }
-    sprintf( bpt, "_%.40s.%s", sc->parent->fontname, ext);
-    }
-#else
-    sprintf( buffer, "%.40s_%.40s.%s", sc->name, sc->parent->fontname, ext);
-#endif
+    MakeExportName(buffer,sizeof(buffer),format_spec,sc);
+
     if ( format==0 )
 	good = ExportEPS(buffer,sc);
     else if ( format==1 )
