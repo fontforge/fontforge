@@ -2002,6 +2002,40 @@ return( true );
 return( false );
 }
 
+/* Only used for metafont routine */
+void SCFigureVerticalCounterMasks(SplineChar *sc) {
+    HintMask masks[30];
+    StemInfo *h;
+    int mc=0, i;
+
+    /* I'm not supporting counter hints for mm fonts */
+
+    if ( sc==NULL )
+return;
+
+    free(sc->countermasks);
+    sc->countermask_cnt = 0;
+    sc->countermasks = NULL;
+
+    for ( h=sc->vstem; h!=NULL ; h=h->next )
+	h->used = false;
+
+    mc = 0;
+    
+    while ( mc<sizeof(masks)/sizeof(masks[0]) ) {
+	memset(masks[mc],'\0',sizeof(HintMask));
+	if ( !FigureCounters(sc->vstem,masks[mc]))
+    break;
+	++mc;
+    }
+    if ( mc!=0 ) {
+	sc->countermask_cnt = mc;
+	sc->countermasks = galloc(mc*sizeof(HintMask));
+	for ( i=0; i<mc ; ++i )
+	    memcpy(sc->countermasks[i],masks[i],sizeof(HintMask));
+    }
+}
+
 void SCFigureCounterMasks(SplineChar *sc) {
     HintMask masks[30];
     uint32 script;
@@ -2828,7 +2862,7 @@ static StemInfo *GDFindStems(struct glyphdata *gd, int major) {
 return( head );
 }
 
-static void _SplineCharAutoHint( SplineChar *sc, BlueData *bd ) {
+void _SplineCharAutoHint( SplineChar *sc, BlueData *bd, struct glyphdata *gd2 ) {
     struct glyphdata *gd;
 
     StemInfosFree(sc->vstem); sc->vstem=NULL;
@@ -2843,12 +2877,13 @@ static void _SplineCharAutoHint( SplineChar *sc, BlueData *bd ) {
     sc->changedsincelasthinted = false;
     sc->manualhints = false;
 
-    gd = GlyphDataBuild(sc,true);
+    if ( (gd=gd2)==NULL )
+	gd = GlyphDataBuild(sc,true);
     if ( gd!=NULL ) {
 	GDPreprocess(gd);
 	sc->vstem = GDFindStems(gd,1);
 	sc->hstem = GDFindStems(gd,0);
-	GlyphDataFree(gd);
+	if ( gd2==NULL ) GlyphDataFree(gd);
 	sc->hstem = CheckForGhostHints(sc->hstem,sc,bd);
     }
 
@@ -2865,13 +2900,13 @@ void SplineCharAutoHint( SplineChar *sc, BlueData *bd ) {
     int i;
 
     if ( mm==NULL )
-	_SplineCharAutoHint(sc,bd);
+	_SplineCharAutoHint(sc,bd,NULL);
     else {
 	for ( i=0; i<mm->instance_count; ++i )
 	    if ( sc->enc < mm->instances[i]->charcnt )
-		_SplineCharAutoHint(mm->instances[i]->chars[sc->enc],NULL);
+		_SplineCharAutoHint(mm->instances[i]->chars[sc->enc],NULL,NULL);
 	if ( sc->enc < mm->normal->charcnt )
-	    _SplineCharAutoHint(mm->normal->chars[sc->enc],NULL);
+	    _SplineCharAutoHint(mm->normal->chars[sc->enc],NULL,NULL);
     }
     SCFigureHintMasks(sc);
     SCUpdateAll(sc);
