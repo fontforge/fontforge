@@ -692,6 +692,7 @@ static void SFDDumpTtfTable(FILE *sfd,struct ttf_table *tab) {
 
 static int SFDOmit(SplineChar *sc) {
     int layer;
+    BDFFont *bdf;
 
     if ( sc==NULL )
 return( true );
@@ -702,6 +703,12 @@ return( false );
 		sc->layers[layer].refs!=NULL ||
 		sc->layers[layer].images!=NULL )
 return( false );
+    }
+    if ( sc->parent->onlybitmaps ) {
+	for ( bdf = sc->parent->bitmaps; bdf!=NULL; bdf=bdf->next ) {
+	    if ( sc->enc<bdf->charcnt && bdf->chars[sc->enc]!=NULL )
+return( false );
+	}
     }
     if ( strcmp(sc->name,".null")==0 || strcmp(sc->name,"nonmarkingreturn")==0 )
 return(true);
