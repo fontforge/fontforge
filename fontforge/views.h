@@ -173,13 +173,16 @@ typedef struct debugview {
     struct debugger_context *dc;	/* Local to freetype.c */
 #if defined(FONTFORGE_CONFIG_GTK)
     GtkWidget *dv, *v;
-    GtkWidget *points, *points_v, *cvt, *regs, *stack, *storage;
-    GtkWidget *cvtsb;
+    GtkWidget *regs, *stack, *storage, *points, *cvt, *raster;	/* Order matters */
+    GtkWidget *points_v;
+    GtkWidget *cvtsb, *pts_vsb;
 #elif defined(FONTFORGE_CONFIG_GDRAW)
     GWindow dv, v;
     /* Windows for twilight points, cvt, registers, stack, storage */
-    GWindow points, points_v, cvt, regs, stack, storage;
+    GWindow regs, stack, storage, points, cvt, raster;	/* order matters */
+    GWindow points_v;
     GGadget *cvtsb;
+    GGadget *pts_vsb;
 #endif
     struct instrdata id;
     struct instrinfo ii;
@@ -188,7 +191,6 @@ typedef struct debugview {
     double scale;
     int pts_head, cvt_offtop;
     int points_offtop;
-    GGadget *pts_vsb;
 } DebugView;
 
 enum dv_coderange { cr_none=0, cr_fpgm, cr_prep, cr_glyph };	/* cleverly chosen to match ttobjs.h */
