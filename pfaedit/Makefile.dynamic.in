@@ -17,6 +17,7 @@ X_LIBS = @X_LIBS@
 X_11LIB = @X_11LIB@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
+STATIC_LIBS = @STATIC_LIBS@
 
 pfaedit_OBJECTS =  autohint.o autosave.o autowidth.o bitmapdlg.o \
  bitmapview.o bvedit.o charview.o charviewicons.o cursors.o \
@@ -42,7 +43,7 @@ CFLAGS = @CFLAGS@ -I$(top_srcdir)/inc -I$(srcdir) -I. $(WFLAGS) $(X_CFLAGS) \
 
 LDFLAGS = @LDFLAGS@
 LIBS = -rpath $(libdir) $(X_LIBS) ../libgdraw.la ../libgunicode.la \
-    $(X_PRE_LIBS) $(X_11LIB) $(X_EXTRA_LIBS) @LIBS@ -L/usr/lib -lm
+    $(X_PRE_LIBS) $(X_11LIB) $(X_EXTRA_LIBS) @LIBS@ $(STATIC_LIBS) -L/usr/lib -lm
 DLIBS = -rpath $(libdir) ../libgunicode.la -lm
 
 all: pfaedit-en.ui pfaedit sfddiff

@@ -13,8 +13,8 @@ gww_nodynamic="no"
 gww_needsstatic="no"
 case "$host" in
 *-apple-darwin*) AC_DEFINE(NODYNAMIC)
-echo I cant get libtool to behave on my mac, so proceding with a static configure
-exec configure.static $orig_args
+#echo I cant get libtool to behave on my mac, so proceding with a static configure
+#exec configure.static $orig_args
 
 gww_nodynamic="yes"
 AC_DEFINE(_CursorsMustBe16x16)
@@ -107,6 +107,9 @@ if test "$gww_nodynamic" = "yes"; then
  fi
  if test "$ac_cv_lib_png_png_create_read_struct" = "yes"; then
   STATIC_LIBS="$STATIC_LIBS -lpng -lz"
+ fi
+ if test "$ac_cv_lib_png12_png_create_read_struct" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -lpng12 -lz"
  fi
  if test "$ac_cv_lib_tiff_TIFFOpen" = "yes"; then
   STATIC_LIBS="$STATIC_LIBS -ltiff"

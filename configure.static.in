@@ -101,6 +101,9 @@ if test "$gww_nodynamic" = "yes"; then
  if test "$ac_cv_lib_png_png_create_read_struct" = "yes"; then
   STATIC_LIBS="$STATIC_LIBS -lpng -lz"
  fi
+ if test "$ac_cv_lib_png12_png_create_read_struct" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -lpng12 -lz"
+ fi
  if test "$ac_cv_lib_tiff_TIFFOpen" = "yes"; then
   STATIC_LIBS="$STATIC_LIBS -ltiff"
  fi

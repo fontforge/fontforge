@@ -14,6 +14,7 @@ LIBTOOL = @LIBTOOL@
 CC = @CC@
 
 X_CFLAGS = @X_CFLAGS@
+STATIC_LIBS = @STATIC_LIBS@
 
 libgdraw_OBJECTS =  choosericons.lo divisors.lo drawboxborder.lo \
  fsys.lo gaskdlg.lo gbuttons.lo gchardlg.lo gcontainer.lo gdraw.lo \
@@ -36,6 +37,7 @@ CFLAGS = -fpic @CFLAGS@ $(Incs) $(WFLAGS) $(X_CFLAGS) -DNOTHREADS @DEFS@
 
 ../libgdraw.la: $(libgdraw_OBJECTS)
 	$(LIBTOOL) $(CC) $(CFLAGS) -o ../libgdraw.la $(libgdraw_OBJECTS) \
+	    $(STATIC_LIBS) \
 	    -rpath $(libdir) -version-info $(GD_VERSION):$(GD_REVISION):$(GD_AGE)
 
 %.lo: %.c
