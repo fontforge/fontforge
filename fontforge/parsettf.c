@@ -1458,6 +1458,10 @@ return;
 	cur = RefCharCreate();
 	flags = getushort(ttf);
 	cur->local_enc = getushort(ttf);
+	if ( feof(ttf) || cur->local_enc>=info->glyph_cnt ) {
+	    fprintf(stderr, "Reference to glyph %d out of bounds when parsing 'glyf' table.\n", cur->local_enc );
+	    cur->local_enc = 0;
+	}
 	if ( info->inuse!=NULL )
 	    info->inuse[cur->local_enc] = true;
 	if ( flags&_ARGS_ARE_WORDS ) {

@@ -2336,6 +2336,10 @@ static struct feature *tagTtfFeaturesWithScript(FILE *ttf,uint32 script_pos,
 
     fseek(ttf,script_pos,SEEK_SET);
     cnt = getushort(ttf);
+    if ( feof(ttf)) {
+	fprintf(stderr, "Invalid script sub-table.\n" );
+return(features);
+    }
     scripts = galloc(cnt*sizeof(struct scriptrec));
     for ( i=0; i<cnt; ++i ) {
 	scripts[i].script = getlong(ttf);
