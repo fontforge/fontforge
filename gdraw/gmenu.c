@@ -657,56 +657,77 @@ return( true );
 	if ( m->parent!=NULL ) {
 	    GMenuDestroy(m);
 return( true );
-	} else if ( m->line_with_mouse==-1 && m->menubar!=NULL ) {
+	} else if ( m->menubar!=NULL ) {
 	    GMenuBar *mb = m->menubar;
 	    int en = mb->entry_with_mouse;
+	    int lastmi = mb->fake[0].sub!=NULL ? mb->lastmi+1 : mb->lastmi;
 	    if ( en>0 ) {
 		GMenuBarChangeSelection(mb,en-1,event);
 	    } else
-		GMenuBarChangeSelection(mb,mb->lastmi-1,event);
+		GMenuBarChangeSelection(mb,lastmi-1,event);
 return( true );
 	}
 	/* Else fall into the "Up" case */
       case GK_Up: case GK_KP_Up: case GK_Page_Up: case GK_KP_Page_Up: {
-	int ns = m->line_with_mouse-1;
-	if ( m->line_with_mouse==-1 ) {
-	    GMenuDestroy(m);
-	} else {
-	    while ( ns>=0 && (m->mi[ns].ti.disabled || m->mi[ns].ti.line)) --ns;
-	    if ( ns<0 ) ns= -1;
-	    GMenuChangeSelection(m,ns,NULL);
+	int ns;
+	if ( keysym!=GK_Left && keysym!=GK_KP_Left ) {
+	    while ( m->line_with_mouse==-1 && m->parent!=NULL ) {
+		GMenu *p = m->parent;
+		GMenuDestroy(m);
+		m = p;
+	    }
 	}
+	ns = m->line_with_mouse-1;
+	while ( ns>=0 && (m->mi[ns].ti.disabled || m->mi[ns].ti.line)) --ns;
+	if ( ns<0 ) {
+	    ns = m->mcnt-1;
+	    while ( ns>=0 && (m->mi[ns].ti.disabled || m->mi[ns].ti.line)) --ns;
+	}
+	if ( ns<0 && m->line_with_mouse==-1 ) {	/* Nothing selectable? get rid of menu */
+	    GMenuDestroy(m);
+return( true );
+	}
+	if ( ns<0 ) ns = -1;
+	GMenuChangeSelection(m,ns,NULL);
 return( true );
       }
       case GK_Right: case GK_KP_Right:
-	if ( m->line_with_mouse==-1 ) {
-	    if ( m->parent==NULL && m->menubar!=NULL ) {
-		GMenuBar *mb = m->menubar;
-		int en = mb->entry_with_mouse;
-		if ( en+1<mb->lastmi ) {
-		    GMenuBarChangeSelection(mb,en+1,event);
-		} else
-		    GMenuBarChangeSelection(mb,0,event);
-return( true );
-	    } else if ( m->mcnt!=0 ) {
-		GMenuChangeSelection(m,m->line_with_mouse+1,event);
-return( true );
-	    }
-	} else if ( m->mi[m->line_with_mouse].sub!=NULL && m->child==NULL ) {
+	if ( m->line_with_mouse!=-1 &&
+		m->mi[m->line_with_mouse].sub!=NULL && m->child==NULL ) {
 	    m->child = GMenuCreateSubMenu(m,m->mi[m->line_with_mouse].sub,
 		    m->disabled || m->mi[m->line_with_mouse].ti.disabled);
+return( true );
+	} else if ( m->parent==NULL && m->menubar!=NULL ) {
+	    GMenuBar *mb = m->menubar;
+	    int en = mb->entry_with_mouse;
+	    int lastmi = mb->fake[0].sub!=NULL ? mb->lastmi+1 : mb->lastmi;
+	    if ( en+1<lastmi ) {
+		GMenuBarChangeSelection(mb,en+1,event);
+	    } else
+		GMenuBarChangeSelection(mb,0,event);
 return( true );
 	}
       /* Fall through into the "Down" case */
       case GK_Down: case GK_KP_Down: case GK_Page_Down: case GK_KP_Page_Down: {
-	int ns = m->line_with_mouse+1;
+	int ns;
+	if ( keysym!=GK_Right && keysym!=GK_KP_Right ) {
+	    while ( m->line_with_mouse==-1 && m->parent!=NULL ) {
+		GMenu *p = m->parent;
+		GMenuDestroy(m);
+		m = p;
+	    }
+	}
+	ns = m->line_with_mouse+1;
 	while ( ns<m->mcnt && (m->mi[ns].ti.disabled || m->mi[ns].ti.line)) ++ns;
-	if ( m->line_with_mouse==-1 && m->parent!=NULL )
-	    GMenuDestroy(m);		/*  stay in parent */
-	else if ( ns!=m->mcnt )
-	    GMenuChangeSelection(m,ns,event);
-	else if ( m->parent!=NULL )	/* If we've reached the end of a child */
-	    GMenuDestroy(m);		/*  go back to the parent */
+	if ( ns>=m->mcnt ) {
+	    ns = 0;
+	    while ( ns<m->mcnt && (m->mi[ns].ti.disabled || m->mi[ns].ti.line)) ++ns;
+	}
+	if ( ns>=m->mcnt && m->line_with_mouse==-1 ) {	/* Nothing selectable? get rid of menu */
+	    GMenuDestroy(m);
+return( true );
+	}
+	GMenuChangeSelection(m,ns,event);
 return( true );
       }
       case GK_Home: case GK_KP_Home: {
