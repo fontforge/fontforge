@@ -2931,6 +2931,8 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
     int mod = 0;
     const unichar_t *trans=NULL;
     SplineChar *sc;
+    uint8 *used;
+    int badencwarned=false;
 
     fseek(ttf,info->encoding_start,SEEK_SET);
     version = getushort(ttf);
@@ -3020,6 +3022,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	    /* entrySelector = */ getushort(ttf);
 	    /* rangeShift = */ getushort(ttf);
 	    endchars = galloc(segCount*sizeof(uint16));
+	    used = gcalloc(65536,sizeof(uint8));
 	    for ( i=0; i<segCount; ++i )
 		endchars[i] = getushort(ttf);
 	    if ( getushort(ttf)!=0 )
@@ -3051,8 +3054,17 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 			    fprintf( stderr, "Attempt to encode missing glyph %d to %d (0x%x)\n",
 				    j+delta[i], modenc(j,mod), modenc(j,mod));
 			else if ( info->chars[(uint16) (j+delta[i])]->unicodeenc==-1 ) {
-			    info->chars[(uint16) (j+delta[i])]->unicodeenc = umodenc(j,mod);
-			    info->chars[(uint16) (j+delta[i])]->enc = modenc(j,mod);
+			    int uenc = umodenc(j,mod);
+			    if ( used[uenc] ) {
+				if ( !badencwarned ) {
+				    fprintf( stderr, "Multiple glyphs map to the same unicode encoding U+%04X, only one will be used\n", uenc );
+			            badencwarned = true;
+				}
+			    } else {
+				used[uenc] = true;
+				info->chars[(uint16) (j+delta[i])]->unicodeenc = umodenc(j,mod);
+				info->chars[(uint16) (j+delta[i])]->enc = modenc(j,mod);
+			    }
 			} else
 			    info->dups = makedup(info->chars[(uint16) (j+delta[i])],umodenc(j,mod),modenc(j,mod),info->dups);
 		    }
@@ -3077,8 +3089,17 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 				fprintf( stderr, "Attempt to encode missing glyph %d to %d (0x%x)\n",
 					index, modenc(j,mod), modenc(j,mod));
 			    else if ( info->chars[index]->unicodeenc==-1 ) {
-				info->chars[index]->unicodeenc = umodenc(j,mod);
-				info->chars[index]->enc = modenc(j,mod);
+				int uenc = umodenc(j,mod);
+				if ( used[uenc] ) {
+				    if ( !badencwarned ) {
+					fprintf( stderr, "Multiple glyphs map to the same unicode encoding U+%04X, only one will be used\n", uenc );
+					badencwarned = true;
+				    }
+				} else {
+				    used[uenc] = true;
+				    info->chars[index]->unicodeenc = uenc;
+				    info->chars[index]->enc = modenc(j,mod);
+				}
 			    } else
 				info->dups = makedup(info->chars[index],umodenc(j,mod),modenc(j,mod),info->dups);
 			}
@@ -3091,6 +3112,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	    free(delta);
 	    free(startchars);
 	    free(endchars);
+	    free(used);
 	} else if ( format==6 ) {
 	    /* array unicode format */
 	    int first, count;
