@@ -4210,6 +4210,66 @@ static void FVMouse(FontView *fv,GEvent *event) {
 	SVAttachFV(fv,2);
 }
 
+static void FVResize(FontView *fv,GEvent *event) {
+    GRect pos,screensize;
+    int topchar;
+
+    if ( fv->colcnt!=0 )
+	topchar = fv->rowoff*fv->colcnt;
+    else if ( fv->sf->encoding_name>=em_jis208 && fv->sf->encoding_name<=em_gb2312 )
+	topchar = 1;
+    else {
+	/* Position on 'A' if it exists */
+	for ( topchar=fv->sf->charcnt-1; topchar>0; --topchar )
+	    if ( fv->sf->chars[topchar]!=NULL && fv->sf->chars[topchar]->unicodeenc=='A' )
+	break;
+    }
+    if ( (event->u.resize.size.width-
+		GDrawPointsToPixels(fv->gw,_GScrollBar_Width)-1)%fv->cbw!=0 ||
+	    (event->u.resize.size.height-fv->mbh-fv->infoh-1)%fv->cbh!=0 ) {
+	int cc = (event->u.resize.size.width+fv->cbw/2-
+		GDrawPointsToPixels(fv->gw,_GScrollBar_Width)-1)/fv->cbw;
+	int rc = (event->u.resize.size.height-fv->mbh-fv->infoh-1)/fv->cbh;
+	if ( cc<=0 ) cc = 1;
+	if ( rc<=0 ) rc = 1;
+	GDrawGetSize(GDrawGetRoot(NULL),&screensize);
+	if ( cc*fv->cbw+GDrawPointsToPixels(fv->gw,_GScrollBar_Width)+10>screensize.width )
+	    --cc;
+	if ( rc*fv->cbh+fv->mbh+fv->infoh+20>screensize.height )
+	    --rc;
+	GDrawResize(fv->gw,
+		cc*fv->cbw+1+GDrawPointsToPixels(fv->gw,_GScrollBar_Width),
+		rc*fv->cbh+1+fv->mbh+fv->infoh);
+	/* somehow KDE loses this event of mine so to get even the vague effect */
+	/*  we can't just return */
+/*return;*/
+    }
+
+    pos.width = GDrawPointsToPixels(fv->gw,_GScrollBar_Width);
+    pos.height = event->u.resize.size.height-fv->mbh-fv->infoh;
+    pos.x = event->u.resize.size.width-pos.width; pos.y = fv->mbh+fv->infoh;
+    GGadgetResize(fv->vsb,pos.width,pos.height);
+    GGadgetMove(fv->vsb,pos.x,pos.y);
+    pos.width = pos.x; pos.x = 0;
+    GDrawResize(fv->v,pos.width,pos.height);
+
+    fv->width = pos.width; fv->height = pos.height;
+    fv->colcnt = (fv->width-1)/fv->cbw;
+    if ( fv->colcnt<1 ) fv->colcnt = 1;
+    fv->rowcnt = (fv->height-1)/fv->cbh;
+    if ( fv->rowcnt<1 ) fv->rowcnt = 1;
+    fv->rowltot = (fv->sf->charcnt+fv->colcnt-1)/fv->colcnt;
+
+    GScrollBarSetBounds(fv->vsb,0,fv->rowltot,fv->rowcnt);
+    fv->rowoff = topchar/fv->colcnt;
+    if ( fv->rowoff>=fv->rowltot-fv->rowcnt )
+        fv->rowoff = fv->rowltot-fv->rowcnt-1;
+    if ( fv->rowoff<0 ) fv->rowoff =0;
+    GScrollBarSetPos(fv->vsb,fv->rowoff);
+    GDrawRequestExpose(fv->gw,NULL,true);
+    GDrawRequestExpose(fv->v,NULL,true);
+}
+
 static void FVTimer(FontView *fv,GEvent *event) {
 
     if ( event->u.timer.timer==fv->pressed ) {
@@ -4231,6 +4291,10 @@ static void FVTimer(FontView *fv,GEvent *event) {
 		GDrawScroll(fv->v,NULL,0,dy*fv->cbh);
 	    }
 	}
+    } else if ( event->u.timer.timer==fv->resize ) {
+	/* It's a delayed resize event (for kde which sends continuous resizes) */
+	fv->resize = NULL;
+	FVResize(fv,(GEvent *) (event->u.timer.userdata));
     } else if ( event->u.timer.userdata!=NULL ) {
 	/* It's a delayed function call */
 	void (*func)(FontView *) = (void (*)(FontView *)) (event->u.timer.userdata);
@@ -4308,64 +4372,6 @@ static int v_e_h(GWindow gw, GEvent *event) {
       break;
     }
 return( true );
-}
-
-static void FVResize(FontView *fv,GEvent *event) {
-    GRect pos,screensize;
-    int topchar;
-
-    if ( fv->colcnt!=0 )
-	topchar = fv->rowoff*fv->colcnt;
-    else if ( fv->sf->encoding_name>=em_jis208 && fv->sf->encoding_name<=em_gb2312 )
-	topchar = 1;
-    else {
-	/* Position on 'A' if it exists */
-	for ( topchar=fv->sf->charcnt-1; topchar>0; --topchar )
-	    if ( fv->sf->chars[topchar]!=NULL && fv->sf->chars[topchar]->unicodeenc=='A' )
-	break;
-    }
-    if ( (event->u.resize.size.width-
-		GDrawPointsToPixels(fv->gw,_GScrollBar_Width)-1)%fv->cbw!=0 ||
-	    (event->u.resize.size.height-fv->mbh-fv->infoh-1)%fv->cbh!=0 ) {
-	int cc = (event->u.resize.size.width+fv->cbw/2-
-		GDrawPointsToPixels(fv->gw,_GScrollBar_Width)-1)/fv->cbw;
-	int rc = (event->u.resize.size.height-fv->mbh-fv->infoh-1)/fv->cbh;
-	if ( cc<=0 ) cc = 1;
-	if ( rc<=0 ) rc = 1;
-	GDrawGetSize(GDrawGetRoot(NULL),&screensize);
-	if ( cc*fv->cbw+GDrawPointsToPixels(fv->gw,_GScrollBar_Width)+10>screensize.width )
-	    --cc;
-	if ( rc*fv->cbh+fv->mbh+fv->infoh+20>screensize.height )
-	    --rc;
-	GDrawResize(fv->gw,
-		cc*fv->cbw+1+GDrawPointsToPixels(fv->gw,_GScrollBar_Width),
-		rc*fv->cbh+1+fv->mbh+fv->infoh);
-return;
-    }
-
-    pos.width = GDrawPointsToPixels(fv->gw,_GScrollBar_Width);
-    pos.height = event->u.resize.size.height-fv->mbh-fv->infoh;
-    pos.x = event->u.resize.size.width-pos.width; pos.y = fv->mbh+fv->infoh;
-    GGadgetResize(fv->vsb,pos.width,pos.height);
-    GGadgetMove(fv->vsb,pos.x,pos.y);
-    pos.width = pos.x; pos.x = 0;
-    GDrawResize(fv->v,pos.width,pos.height);
-
-    fv->width = pos.width; fv->height = pos.height;
-    fv->colcnt = (fv->width-1)/fv->cbw;
-    if ( fv->colcnt<1 ) fv->colcnt = 1;
-    fv->rowcnt = (fv->height-1)/fv->cbh;
-    if ( fv->rowcnt<1 ) fv->rowcnt = 1;
-    fv->rowltot = (fv->sf->charcnt+fv->colcnt-1)/fv->colcnt;
-
-    GScrollBarSetBounds(fv->vsb,0,fv->rowltot,fv->rowcnt);
-    fv->rowoff = topchar/fv->colcnt;
-    if ( fv->rowoff>=fv->rowltot-fv->rowcnt )
-        fv->rowoff = fv->rowltot-fv->rowcnt-1;
-    if ( fv->rowoff<0 ) fv->rowoff =0;
-    GScrollBarSetPos(fv->vsb,fv->rowoff);
-    GDrawRequestExpose(fv->gw,NULL,true);
-    GDrawRequestExpose(fv->v,NULL,true);
 }
 
 void FontViewReformatOne(FontView *fv) {
@@ -4447,8 +4453,16 @@ static int fv_e_h(GWindow gw, GEvent *event) {
 	FVDrawInfo(fv,gw,event);
       break;
       case et_resize:
-	if ( event->u.resize.sized )
-	    FVResize(fv,event);
+	/* KDE sends a continuous stream of resize events, and gets very */
+	/*  confused if I start resizing the window myself, try to wait for */
+	/*  the user to finish before responding to resizes */
+	if ( event->u.resize.sized ) {
+	    static GEvent temp;
+	    if ( fv->resize )
+		GDrawCancelTimer(fv->resize);
+	    temp = *event;
+	    fv->resize = GDrawRequestTimer(fv->v,300,0,(void *) &temp);
+	}
       break;
       case et_char:
 	FVChar(fv,event);

@@ -288,6 +288,7 @@ typedef struct fontview {
     struct dictionary *fontvars;	/* Scripting */
     struct searchview *sv;
     GIC *gic;
+    GTimer *resize;
 } FontView;
 
 typedef struct findsel {
