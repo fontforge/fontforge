@@ -811,9 +811,9 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     Sets various postscript names associated with a font. If a name is omitted
     (or is the empty string) it will not be changed.
   <DT>
-    SetItalicAngle(angle)
+    SetItalicAngle(angle[,denom])
   <DD>
-    Sets the postscript italic angle field appropriately.
+    Sets the postscript italic angle field appropriately. If denom is specified then angle will be divided by denom before setting the italic angle field (a hack to get real values). The angle should be in degrees.
   <DT>
     SetUniqueID(value)
   <DD>
