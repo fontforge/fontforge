@@ -1332,13 +1332,15 @@ static void bCopyGlyphFeatures(Context *c) {
     KernPair *kp;
     PST *pst;
 
-    if ( c->a.argc!=2 )
+    if ( c->a.argc<2 )
 	error( c, "Wrong number of arguments");
     else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_str ) {
 	a = &c->a;
 	start = 1;
     } else if ( c->a.vals[1].type!=v_arr )
 	error( c, "Bad type for argument");
+    else if ( c->a.argc!=2 )	/* Only one array allowed */
+	error( c, "Wrong number of arguments");
     else {
 	a = c->a.vals[1].u.aval;
 	start = 0;
