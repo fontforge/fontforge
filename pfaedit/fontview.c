@@ -2003,6 +2003,7 @@ return;
 	if ( samesize ) {
 	    GDrawRequestExpose(fv->v,NULL,false);
 	} else if ((( bdf->pixelsize<=fv->sf->display_size || bdf->pixelsize<=-fv->sf->display_size ) &&
+		 fv->sf->desired_col_cnt!=0 && fv->sf->desired_row_cnt!=0 &&
 		 fv->sf->top_enc!=-1 /* Not defaulting */ ) ||
 		bdf->pixelsize<=48 ) {
 	    GDrawResize(fv->gw,
