@@ -731,20 +731,23 @@ return( false );
 
 int SSPointCnt(SplineSet *ss,int startcnt, int has_instrs) {
     SplinePoint *sp, *first=NULL;
-    int cnt, starts_with_cp;
+    int cnt, starts_with_cp, last_was_counted=false;
 
     starts_with_cp = (ss->first->ttfindex == startcnt+1 || ss->first->ttfindex==0xffff) &&
 	    !ss->first->noprevcp && has_instrs;
 
     for ( sp=ss->first, cnt=startcnt; sp!=first ; ) {
-	if ( has_instrs && sp->ttfindex!=0xffff )
+	if ( has_instrs && sp->ttfindex!=0xffff ) {
 	    cnt = sp->ttfindex+1;
-	else if ( !has_instrs &&
+	    last_was_counted = true;
+	} else if ( !has_instrs &&
 		    ( sp==ss->first || sp->nonextcp || sp->noprevcp ||
 		    (sp->dontinterpolate || sp->roundx || sp->roundy) ||
 		    (sp->prevcp.x+sp->nextcp.x)/2!=sp->me.x ||
-		    (sp->prevcp.y+sp->nextcp.y)/2!=sp->me.y ))
+		    (sp->prevcp.y+sp->nextcp.y)/2!=sp->me.y )) {
 	    ++cnt;
+	    last_was_counted = false;
+	}
 	if ( !sp->nonextcp ) ++cnt;
 	if ( sp->next==NULL )
     break;
@@ -752,7 +755,7 @@ int SSPointCnt(SplineSet *ss,int startcnt, int has_instrs) {
 	sp = sp->next->to;
     }
 
-    if ( starts_with_cp )	/* We'll have counted it twice */
+    if ( starts_with_cp && last_was_counted )	/* We'll have counted it twice */
 	--cnt;
 return( cnt );
 }
