@@ -3831,15 +3831,17 @@ return;
 	free(glyph2s);
 return;
     }
-    for ( i=0; glyphs[i]!=0xffff; ++i ) {
-	PST *pos = chunkalloc(sizeof(PST));
-	pos->type = pst_substitution;
-	pos->tag = lookup->tag;
-	pos->flags = lookup->flags;
-	pos->next = info->chars[glyphs[i]]->possub;
-	info->chars[glyphs[i]]->possub = pos;
+    for ( i=0; glyphs[i]!=0xffff; ++i ) if ( info->chars[glyphs[i]]!=NULL ) {
 	which = format==1 ? glyphs[i]+delta : glyph2s[i];
-	pos->u.subs.variant = copy(info->chars[which]->name);
+	if ( info->chars[which]!=NULL ) {	/* Might be in a ttc file */
+	    PST *pos = chunkalloc(sizeof(PST));
+	    pos->type = pst_substitution;
+	    pos->tag = lookup->tag;
+	    pos->flags = lookup->flags;
+	    pos->next = info->chars[glyphs[i]]->possub;
+	    info->chars[glyphs[i]]->possub = pos;
+	    pos->u.subs.variant = copy(info->chars[which]->name);
+	}
     }
     free(glyph2s);
 }
@@ -3852,6 +3854,7 @@ static void gsubMultipleSubTable(FILE *ttf, int stoffset, struct ttfinfo *info,
     uint16 *offsets;
     uint16 *glyphs, *glyph2s;
     char *pt;
+    int bad;
 
     format=getushort(ttf);
     if ( format!=1 )	/* Unknown subtable format */
@@ -3869,28 +3872,34 @@ return;
     max = 20;
     glyph2s = galloc(max*sizeof(uint16));
     for ( i=0; glyphs[i]!=0xffff; ++i ) {
-	PST *pos = chunkalloc(sizeof(PST));
-	pos->type = lu_type==2?pst_multiple:pst_alternate;
-	pos->tag = lookup->tag;
-	pos->flags = lookup->flags;
-	pos->next = info->chars[glyphs[i]]->possub;
-	info->chars[glyphs[i]]->possub = pos;
+	PST *pos;
 	fseek(ttf,stoffset+offsets[i],SEEK_SET);
 	cnt = getushort(ttf);
 	if ( cnt>max ) {
 	    max = cnt+30;
 	    glyph2s = grealloc(glyph2s,max*sizeof(uint16));
 	}
-	len = 0;
+	len = 0; bad = false;
 	for ( j=0; j<cnt; ++j ) {
 	    glyph2s[j] = getushort(ttf);
-	    len += strlen( info->chars[glyph2s[j]]->name) +1;
+	    if ( info->chars[glyph2s[j]]==NULL )
+		bad = true;
+	    else
+		len += strlen( info->chars[glyph2s[j]]->name) +1;
 	}
-	pt = pos->u.subs.variant = galloc(len+1);
-	*pt = '\0';
-	for ( j=0; j<cnt; ++j ) {
-	    strcat(pt,info->chars[glyph2s[j]]->name);
-	    strcat(pt," ");
+	if ( info->chars[glyphs[i]]!=NULL && !bad ) {
+	    pos = chunkalloc(sizeof(PST));
+	    pos->type = lu_type==2?pst_multiple:pst_alternate;
+	    pos->tag = lookup->tag;
+	    pos->flags = lookup->flags;
+	    pos->next = info->chars[glyphs[i]]->possub;
+	    info->chars[glyphs[i]]->possub = pos;
+	    pt = pos->u.subs.variant = galloc(len+1);
+	    *pt = '\0';
+	    for ( j=0; j<cnt; ++j ) {
+		strcat(pt,info->chars[glyph2s[j]]->name);
+		strcat(pt," ");
+	    }
 	}
     }
     free(glyph2s);
@@ -3930,23 +3939,25 @@ return;
 		lig_glyphs[k] = getushort(ttf);
 	    for ( k=len=0; k<cc; ++k )
 		len += strlen(info->chars[lig_glyphs[k]]->name)+1;
-	    liga = chunkalloc(sizeof(PST));
-	    liga->type = pst_ligature;
-	    liga->tag = lookup->tag;
-	    liga->flags = lookup->flags;
-	    liga->next = info->chars[lig]->possub;
-	    info->chars[lig]->possub = liga;
-	    liga->u.lig.lig = info->chars[lig];
-	    liga->u.lig.components = pt = galloc(len);
-	    if ( lookup->script!=UNUSED_SCRIPT && lookup->script!=MULTIPLE_SCRIPTS &&
-		    info->chars[lig]->script==0 )
-		info->chars[lig]->script = lookup->script;
-	    for ( k=0; k<cc; ++k ) {
-		strcpy(pt,info->chars[lig_glyphs[k]]->name);
-		pt += strlen(pt);
-		*pt++ = ' ';
+	    if ( info->chars[lig]!=NULL ) {
+		liga = chunkalloc(sizeof(PST));
+		liga->type = pst_ligature;
+		liga->tag = lookup->tag;
+		liga->flags = lookup->flags;
+		liga->next = info->chars[lig]->possub;
+		info->chars[lig]->possub = liga;
+		liga->u.lig.lig = info->chars[lig];
+		liga->u.lig.components = pt = galloc(len);
+		if ( lookup->script!=UNUSED_SCRIPT && lookup->script!=MULTIPLE_SCRIPTS &&
+			info->chars[lig]->script==0 )
+		    info->chars[lig]->script = lookup->script;
+		for ( k=0; k<cc; ++k ) {
+		    strcpy(pt,info->chars[lig_glyphs[k]]->name);
+		    pt += strlen(pt);
+		    *pt++ = ' ';
+		}
+		pt[-1] = '\0';
 	    }
-	    pt[-1] = '\0';
 	}
 	free(lig_offsets);
     }
@@ -4590,7 +4601,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 	bdf->sf = sf;
     }
 
-    for ( i=0; i<info->glyph_cnt; ++i ) {
+    for ( i=0; i<info->glyph_cnt; ++i ) if ( info->chars[i]!=NULL ) {
 	if ( info->chars[i]->script==0 )	/* GSUB/GSUB table can fill in some script values */
 	    info->chars[i]->script =
 		    ScriptFromUnicode(info->chars[i]->unicodeenc,sf);
