@@ -89,29 +89,15 @@
 /*	(and contains mac type/creator data) */
 /*	(and other stuff) */
 /*	(and finally a crc checksum)
-/*    is followed by the data section */
-/*    is followed by the resource section */
+/*    is followed by the data section (padded to a mult of 128 bytes) */
+/*    is followed by the resource section (padded to a mult of 128 bytes) */
 
-/* MacBinary files use the same CRC that XModem does (in the MacBinary header) */
-/* Taken from zglobal.h in lrzsz-0.12.20.tar, an xmodem package */
-/*  http://www.ohse.de/uwe/software/lrzsz.html */
- /* crctab.c */
- extern unsigned short crctab[256];
-# define updcrc(cp, crc) ( crctab[((crc >> 8) & 255)] ^ (crc << 8) ^ cp)
- extern long cr3tab[];
-# define UPDC32(b, c) (cr3tab[((int)c ^ b) & 0xff] ^ ((c >> 8) & 0x00FFFFFF))
-/* End of borrowed code */
+/* Crc code taken from: */
+/* http://www.ctan.org/tex-archive/tools/macutils/crc/ */
+/* MacBinary files use the same CRC that binhex does (in the MacBinary header) */
+extern unsigned long binhex_crc(unsigned char *buffer,int size);
 
 /* ******************************** Creation ******************************** */
-#if !__Mac
-static int crcbuffer(uint8 *buffer,int size) {
-    int crc = 0, i;
-
-    for ( i=0; size>=2; i+=2, size-=2 )
-	crc = updcrc( ((buffer[i]<<8)|buffer[i+1]) , crc );
-return( crc );
-}
-#endif
 
 static uint16 HashToId(char *fontname,SplineFont *sf) {
     int low = 128, high = 0x3fff;
@@ -1195,6 +1181,9 @@ static int DumpMacBinaryHeader(FILE *res,struct macbinaryheader *mb) {
     fseek(res,0,SEEK_END);
     len = ftell(res)-sizeof(header);
     *hpt++ = len>>24; *hpt++ = len>>16; *hpt++ = len>>8; *hpt++ = len;
+	/* Pad resource fork to be a multiple of 128 bytes */
+    while ( (len&127)!=0 )
+	{ putc('\0',res); ++len; }
 
 	/* Creation time, (seconds from 1/1/1904) */
     time(&now);
@@ -1218,7 +1207,7 @@ static int DumpMacBinaryHeader(FILE *res,struct macbinaryheader *mb) {
     header[122] = 130;			/* MacBinary version 3, written in (129 is MB2) */
     header[123] = 129;			/* MacBinary Version 2, needed to read */
 
-    crc = crcbuffer(header,124);
+    crc = binhex_crc(header,124);
     header[124] = crc>>8;
     header[125] = crc;
 
@@ -2469,7 +2458,8 @@ return( NULL );
 return( NULL );
     dlen = ((header[0x53]<<24)|(header[0x54]<<16)|(header[0x55]<<8)|header[0x56]);
     rlen = ((header[0x57]<<24)|(header[0x58]<<16)|(header[0x59]<<8)|header[0x5a]);
-    offset = 128+dlen;
+	/* 128 bytes for header, then the dlen is padded to a 128 byte boundary */
+    offset = 128 + ((dlen+127)&~127);
 /* Look for a bare truetype font in a binhex/macbinary wrapper */
     if ( dlen!=0 && rlen<=dlen) {
 	int pos = ftell(f);
