@@ -139,13 +139,13 @@ static void SetNameFromUnicode(GWindow gw,int cid,int val) {
     free(temp);
 }
 
-static int LigCheck(SplineFont *sf,SplineChar *sc,char *componants) {
+static int LigCheck(SplineFont *sf,SplineChar *sc,char *components) {
     int i;
     unichar_t ubuf[200]; char buffer[10];
     const unichar_t *buts[3]; unichar_t ocmn[2];
     char *pt, *spt, *start, ch;
 
-    if ( componants==NULL || *componants=='\0' )
+    if ( components==NULL || *components=='\0' )
 return( true );
 
     buts[2]=NULL;
@@ -154,7 +154,7 @@ return( true );
 
     for ( i=0; i<sf->charcnt; ++i )
 	if ( sf->chars[i]!=sc && sf->chars[i]!=NULL && sf->chars[i]->lig!=NULL ) {
-	    if ( strcmp(componants,sf->chars[i]->lig->componants)==0 ) {
+	    if ( strcmp(components,sf->chars[i]->lig->components)==0 ) {
 		u_strcpy(ubuf,GStringGetResource( _STR_Alreadyligpre,NULL ));
 		uc_strncat(ubuf,sf->chars[i]->name,10);
 		u_strcat(ubuf,GStringGetResource( _STR_Alreadyligmid,NULL ));
@@ -165,7 +165,7 @@ return( GWidgetAsk(GStringGetResource(_STR_Multiple,NULL),buts,ocmn,0,1,ubuf)==0
 	    }
 	}
 
-    start = componants;
+    start = components;
     while ( *start!='\0' ) {
 	pt = strchr(start,' ');
 	spt = strchr(start,';');
@@ -205,7 +205,7 @@ static void LigSet(SplineChar *sc,char *lig) {
     } else {
 	LigatureFree(sc->lig);
 	sc->lig = gcalloc(1,sizeof(Ligature));
-	sc->lig->componants = copy(lig);
+	sc->lig->components = copy(lig);
 	sc->lig->lig = sc;
     }
 }
@@ -388,7 +388,7 @@ static void CIFillup(GIData *ci) {
     GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_UChar),ubuf);
 
     if ( sc->lig!=NULL )
-	temp = uc_copy(sc->lig->componants);
+	temp = uc_copy(sc->lig->components);
     else
 	temp = uc_copy("");
     GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_Ligature),temp);

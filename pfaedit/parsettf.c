@@ -690,7 +690,7 @@ static void readttfsimpleglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, in
 #define _INSTR		0x100
 #define _MY_METRICS	0x200
 #define _OVERLAP_COMPOUND	0x400	/* Used in Apple GX fonts */
-	    /* Means the componants overlap (which? this one and what other?) */
+	    /* Means the components overlap (which? this one and what other?) */
 /* Described in OpenType specs, not by Apple */
 #define _SCALED_OFFSETS		0x800	/* Use Apple definition of offset interpretation */
 #define _UNSCALED_OFFSETS	0x1000	/* Use MS definition */
@@ -2791,14 +2791,14 @@ return;
 	    for ( k=len=0; k<cc; ++k )
 		len += strlen(info->chars[lig_glyphs[k]]->name)+1;
 	    if ( info->chars[lig]->lig!=NULL ) {
-		len += strlen( info->chars[lig]->lig->componants)+8;
-		info->chars[lig]->lig->componants = pt = grealloc(info->chars[lig]->lig->componants,len);
+		len += strlen( info->chars[lig]->lig->components)+8;
+		info->chars[lig]->lig->components = pt = grealloc(info->chars[lig]->lig->components,len);
 		pt += strlen(pt);
 		*pt++ = ';';
 	    } else {
 		info->chars[lig]->lig = galloc(sizeof(Ligature));
 		info->chars[lig]->lig->lig = info->chars[lig];
-		info->chars[lig]->lig->componants = pt = galloc(len);
+		info->chars[lig]->lig->components = pt = galloc(len);
 	    }
 	    for ( k=0; k<cc; ++k ) {
 		strcpy(pt,info->chars[lig_glyphs[k]]->name);

@@ -57,6 +57,8 @@ SplineChar *SplineCharCopy(SplineChar *sc) {
     nsc->splines = SplinePointListCopy(nsc->splines);
     nsc->hstem = StemInfoCopy(nsc->hstem);
     nsc->vstem = StemInfoCopy(nsc->vstem);
+    nsc->dstem = DStemInfoCopy(nsc->dstem);
+    nsc->md = MinimumDistanceCopy(nsc->md);
     nsc->refs = RefCharsCopy(nsc->refs);
     nsc->views = NULL;
     nsc->parent = NULL;
@@ -66,6 +68,11 @@ SplineChar *SplineCharCopy(SplineChar *sc) {
     nsc->backimages = NULL;
     nsc->undoes[0] = nsc->undoes[1] = nsc->redoes[0] = nsc->redoes[1] = NULL;
     nsc->kerns = NULL;
+    if ( nsc->lig!=NULL ) {
+	nsc->lig = galloc(sizeof(Ligature));
+	nsc->lig->lig = nsc;
+	nsc->lig->components = copy(sc->lig->components);
+    }
 return(nsc);
 }
 

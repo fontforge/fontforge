@@ -579,8 +579,8 @@ static char str_Alreadycharpre[] = "There is already a character with this Unico
 static char str_Alreadycharmid[] = " at local encoding ";
 static char str_Alreadycharpost[] = ")\012Is that what you want?";
 static char str_Alreadycharnamed[] = "There is already a character with this name,\012do you want to swap names?";
-/* There is already a ligature made from these componants,\n(named %.10s at local encoding %d)\nIs that what you want? */
-static char str_Alreadyligpre[] = "There is already a ligature made from these componants,\012(named ";
+/* There is already a ligature made from these components,\n(named %.10s at local encoding %d)\nIs that what you want? */
+static char str_Alreadyligpre[] = "There is already a ligature made from these components,\012(named ";
 static char str_Alreadyligmid[] = " at local encoding ";
 static char str_Alreadyligpost[] = ")\012Is that what you want?";
 static char str_Badligature[] = "A ligature may not be made up of itself";

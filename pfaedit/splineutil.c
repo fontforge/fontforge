@@ -2350,6 +2350,23 @@ DStemInfo *DStemInfoCopy(DStemInfo *h) {
 return( head );
 }
 
+MinimumDistance *MinimumDistanceCopy(MinimumDistance *md) {
+    MinimumDistance *head=NULL, *last=NULL, *cur;
+
+    for ( ; md!=NULL; md = md->next ) {
+	cur = chunkalloc(sizeof(DStemInfo));
+	*cur = *md;
+	cur->next = NULL;
+	if ( head==NULL )
+	    head = last = cur;
+	else {
+	    last->next = cur;
+	    last = cur;
+	}
+    }
+return( head );
+}
+
 void KernPairsFree(KernPair *kp) {
     KernPair *knext;
     for ( ; kp!=NULL; kp = knext ) {
@@ -2361,7 +2378,7 @@ void KernPairsFree(KernPair *kp) {
 void LigatureFree(Ligature *lig) {
     if ( lig==NULL )
 return;
-    free(lig->componants);
+    free(lig->components);
     free(lig);
 }
 

@@ -1688,7 +1688,7 @@ return;
 
 #if 0
 /* The following is undocumented, but vaguely implied: */
-/* Composit characters have their componants grid fitted BEFORE they go into */
+/* Composit characters have their components grid fitted BEFORE they go into */
 /*  the final character. (That's why round to grid is important). So if we try*/
 /*  to generated hints for them we'll just duplicate earlier work and move */
 /*  stuff where it should not be */

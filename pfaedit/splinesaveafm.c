@@ -276,8 +276,8 @@ static void AfmLigOut(FILE *afm, SplineChar *sc) {
 
     for ( ll=sc->ligofme; ll!=NULL; ll=ll->next ) {
 	lig = ll->lig;
-	pt = strchr(lig->componants,' ');
-	eos = strrchr(lig->componants,' ');
+	pt = strchr(lig->components,' ');
+	eos = strrchr(lig->components,' ');
 	if ( pt!=NULL && eos==pt )
 	    /* AFM files don't seem to support 3 (or more) letter combos */
 	    fprintf( afm, " L %s %s ;", pt+1, lig->lig->name );
@@ -594,12 +594,12 @@ void SFLigaturePrepare(SplineFont *sf) {
     for ( j=0; j<sf->charcnt; ++j ) if ( sf->chars[j]!=NULL )
 	sf->chars[j]->ligofme = NULL;
 
-    /* Attach all the ligatures to the first character of their componants */
+    /* Attach all the ligatures to the first character of their components */
     /* Figure out what the components are, and if they all exist */
     /* we're only interested in the lig if all components are worth outputting */
     for ( i=0 ; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->lig!=NULL ) {
 	lig = sf->chars[i]->lig;
-	ligstart = lig->componants;
+	ligstart = lig->components;
 	while ( *ligstart!='\0' ) {
 	    semi = strchr(ligstart,';');
 	    if ( semi==NULL ) semi = ligstart+strlen(ligstart);

@@ -496,7 +496,7 @@
 #define _STR_Alreadycharmid	495
 #define _STR_Alreadycharpost	496
 #define _STR_Alreadycharnamed	497
-/* There is already a ligature made from these componants,\n(named %.10s at local encoding %d)\nIs that what you want? */
+/* There is already a ligature made from these components,\n(named %.10s at local encoding %d)\nIs that what you want? */
 #define _STR_Alreadyligpre	498
 #define _STR_Alreadyligmid	499
 #define _STR_Alreadyligpost	500

@@ -327,7 +327,7 @@ typedef struct imagelist {
 
 typedef struct ligature {
     struct splinechar *lig;
-    char *componants;
+    char *components;
 } Ligature;
 
 typedef struct liglist {
@@ -508,6 +508,7 @@ extern void KernPairsFree(KernPair *kp);
 extern void LigatureFree(Ligature *lig);
 extern StemInfo *StemInfoCopy(StemInfo *h);
 extern DStemInfo *DStemInfoCopy(DStemInfo *h);
+extern MinimumDistance *MinimumDistanceCopy(MinimumDistance *h);
 extern SplineChar *SplineCharCopy(SplineChar *sc);
 extern BDFChar *BDFCharCopy(BDFChar *bc);
 extern void ImageListsFree(ImageList *imgs);

@@ -279,7 +279,7 @@ return;
 	fprintf(sfd, "\n" );
     }
     if ( sc->lig!=NULL )
-	fprintf( sfd, "Ligature: %s\n", sc->lig->componants );
+	fprintf( sfd, "Ligature: %s\n", sc->lig->components );
     fprintf(sfd,"EndChar\n" );
 }
 
@@ -1099,7 +1099,7 @@ return( NULL );
 	} else if ( strmatch(tok,"Ligature:")==0 ) {
 	    geteol(sfd,tok);
 	    sc->lig = gcalloc(1,sizeof(Ligature));
-	    sc->lig->componants = copy(tok);
+	    sc->lig->components = copy(tok);
 	    sc->lig->lig = sc;
 	} else if ( strmatch(tok,"EndChar")==0 ) {
 return( sc );

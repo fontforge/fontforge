@@ -2364,7 +2364,7 @@ return( dummy );
 
 Ligature *SCLigDefault(SplineChar *sc) {
     const unichar_t *alt, *pt;
-    char *componants;
+    char *components;
     int len;
     Ligature *lig;
     const unichar_t *uname;
@@ -2388,36 +2388,36 @@ return( NULL );
 	    
 
     if ( sc->unicodeenc==0xfb03 )
-	componants = copy("f f i; ff i");
+	components = copy("f f i; ff i");
     else if ( sc->unicodeenc==0xfb04 )
-	componants = copy("f f l; ff l");
+	components = copy("f f l; ff l");
     else {
-	componants=NULL;
+	components=NULL;
 	while ( 1 ) {
 	    len = 0;
 	    for ( pt=alt; *pt; ++pt ) {
 		if ( psunicodenames[*pt]!=NULL ) {
-		    if ( componants!=NULL )
-			strcpy(componants+len,psunicodenames[*pt]);
+		    if ( components!=NULL )
+			strcpy(components+len,psunicodenames[*pt]);
 		    len += strlen( psunicodenames[*pt])+1;
-		    if ( componants!=NULL )
-			componants[len-1] = ' ';
+		    if ( components!=NULL )
+			components[len-1] = ' ';
 		} else {
-		    if ( componants!=NULL )
-			sprintf(componants+len, "uni%04X ", *pt );
+		    if ( components!=NULL )
+			sprintf(components+len, "uni%04X ", *pt );
 		    len += 8;
 		}
 	    }
-	    if ( componants!=NULL )
+	    if ( components!=NULL )
 	break;
-	    componants = galloc(len+1);
+	    components = galloc(len+1);
 	}
-	componants[len-1] = '\0';
+	components[len-1] = '\0';
     }
 
     lig = gcalloc(1,sizeof(Ligature));
     lig->lig = sc;
-    lig->componants = componants;
+    lig->components = components;
 return( lig );
 }
 
