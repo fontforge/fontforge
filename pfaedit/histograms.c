@@ -144,9 +144,11 @@ static HistData *HistFindStemWidths(SplineFont *sf,uint8 *selected,int hor) {
 	    if ( autohint_before_generate && sc->changedsincelasthinted && !sc->manualhints )
 		SplineCharAutoHint(sc,true);
 	    for ( stem = hor ? sc->hstem : sc->vstem ; stem!=NULL; stem = stem->next ) {
+		if ( stem->ghost )
+	    continue;
 		val = rint(stem->width);
 		if ( val<=0 )
-	    continue;
+		    val = -val;
 		if ( val>hist->high ) {
 		    hist->high = val;
 		    if ( val>high ) {
