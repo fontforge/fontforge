@@ -63,7 +63,9 @@ static unichar_t err501[] = { ' ','N','o','t',' ','I','m','p','l','e','m','e','n
 
 static int AddProtocol(unichar_t *prefix,int len) {
     char lib[300], buffer[1400];
+#ifndef NODYNAMIC
     DL_CONST void *handle;
+#endif
     void (*init)(void *,struct stdfuncs *,int);
 
     if ( plen>=pmax ) {
