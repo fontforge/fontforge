@@ -4072,6 +4072,18 @@ AnchorPoint *AnchorPointsCopy(AnchorPoint *alist) {
     while ( alist!=NULL ) {
 	ap = chunkalloc(sizeof(AnchorPoint));
 	*ap = *alist;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	if ( ap->xadjust.corrections!=NULL ) {
+	    int len = ap->xadjust.last_pixel_size-ap->xadjust.first_pixel_size+1;
+	    ap->xadjust.corrections = galloc(len);
+	    memcpy(ap->xadjust.corrections,alist->xadjust.corrections,len);
+	}
+	if ( ap->yadjust.corrections!=NULL ) {
+	    int len = ap->yadjust.last_pixel_size-ap->yadjust.first_pixel_size+1;
+	    ap->yadjust.corrections = galloc(len);
+	    memcpy(ap->yadjust.corrections,alist->yadjust.corrections,len);
+	}
+#endif
 	if ( head==NULL )
 	    head = ap;
 	else
