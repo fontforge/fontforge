@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 20-Oct-2002 -->
+  <!-- AP: Last modified: 22-Oct-2002 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -540,6 +540,12 @@ a[4][0] = "Nested array";
     into the subfonts. <A HREF="big5.txt">Here is an example</A>. If this file
     is not present PfaEdit will go through its default search process to find
     a file for the encoding, and if it fails the fonts will not be saved.
+  <DT>
+    GenerateFamily(filename,bitmaptype,fmflags,array-of-fontnames)
+  <DD>
+    Generates a mac font family (FOND) from the current font and the fonts (which
+    must be loaded) in the array-of-fontnames. filename, bitmaptype, fmflags
+    are as above.
   <DT>
     Import
   <DD>

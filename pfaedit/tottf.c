@@ -4418,7 +4418,7 @@ static void sethead(struct head *head,SplineFont *_sf) {
     if ( AnyWidthMDs(_sf))
 	head->flags = 0x13;		/* baseline at 0, lsbline at 0, instructions change metrics */
     head->emunits = sf->ascent+sf->descent;
-    head->macstyle = MacStyleCode(sf);
+    head->macstyle = MacStyleCode(sf,NULL);
     head->lowestreadable = 8;
     head->locais32 = 1;
     lr = rl = 0;

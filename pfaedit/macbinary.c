@@ -515,6 +515,47 @@ static struct resource *SFToNFNTs(FILE *res, SplineFont *sf, int32 *sizes) {
 return(resstarts);
 }
 
+static struct resource *SFsToNFNTs(FILE *res, struct sflist *sfs,int baseresid) {
+    int i, j, cnt;
+    struct resource *resstarts;
+    BDFFont *bdf;
+    struct sflist *sfi;
+    SplineFont *sf;
+
+    cnt = 0;
+    for ( sfi=sfs; sfi!=NULL; sfi=sfi->next ) {
+	if ( sfi->sizes!=NULL ) {
+	    for ( i=0; sfi->sizes[i]!=0; ++i );
+	    cnt += i;
+	    sfi->ids = gcalloc(i+1,sizeof(int));
+	    sfi->bdfs = gcalloc(i+1,sizeof(BDFFont *));
+	}
+    }
+
+    resstarts = gcalloc(cnt+1,sizeof(struct resource));
+
+    cnt = 0;
+    for ( sfi=sfs; sfi!=NULL; sfi=sfi->next ) {
+	sf = sfi->sf;
+	if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
+	j=0;
+	if ( sfi->sizes ) for ( i=0; sfi->sizes[i]!=0; ++i ) {
+	    if ( (sfi->sizes[i]>>16)!=1 )
+	continue;
+	    for ( bdf=sf->bitmaps; bdf!=NULL && (bdf->pixelsize!=(sfi->sizes[i]&0xffff) || BDFDepth(bdf)!=1); bdf=bdf->next );
+	    if ( bdf==NULL )
+	continue;
+	    sfi->ids[j] = baseresid;
+	    sfi->bdfs[j] = bdf;
+	    resstarts[cnt+j].id = baseresid++;
+	    resstarts[cnt+j++].pos = BDFToNFNT(res,bdf);
+	    /* NFNTs seem to have resource flags of 0 */
+	}
+	cnt += j;
+    }
+return(resstarts);
+}
+
 static struct resource *BuildDummyNFNTlist(FILE *res, SplineFont *sf, int32 *sizes, int baseresid) {
     int i;
     struct resource *resstarts;
@@ -538,41 +579,98 @@ static struct resource *BuildDummyNFNTlist(FILE *res, SplineFont *sf, int32 *siz
 return(resstarts);
 }
 
+static struct resource *BuildDummyNFNTfamilyList(FILE *res, struct sflist *sfs, int baseresid) {
+    int i,j,cnt;
+    struct resource *resstarts;
+    BDFFont *bdf;
+    struct sflist *sfi;
+    SplineFont *sf;
+
+    cnt = 0;
+    for ( sfi=sfs; sfi!=NULL; sfi=sfi->next ) {
+	if ( sfi->sizes!=NULL ) {
+	    for ( i=0; sfi->sizes[i]!=0; ++i );
+	    cnt += i;
+	    sfi->ids = gcalloc(i+1,sizeof(int));
+	    sfi->bdfs = gcalloc(i+1,sizeof(BDFFont *));
+	}
+    }
+
+    resstarts = gcalloc(cnt+1,sizeof(struct resource));
+
+    cnt = 0;
+    for ( sfi=sfs; sfi!=NULL; sfi=sfi->next ) {
+	sf = sfi->sf;
+	j = 0;
+	if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
+	if ( sfi->sizes ) for ( i=0; sfi->sizes[i]!=0; ++i ) {
+	    if ( (sfi->sizes[i]>>16)!=1 )
+	continue;
+	    for ( bdf=sf->bitmaps; bdf!=NULL && (bdf->pixelsize!=(sfi->sizes[i]&0xffff) || BDFDepth(bdf)!=1); bdf=bdf->next );
+	    if ( bdf==NULL )
+	continue;
+	    sfi->ids[j] = baseresid;
+	    sfi->bdfs[j] = bdf;
+	    resstarts[cnt+j].id = baseresid++;
+	    resstarts[cnt+j++].pos = DummyNFNT(res,bdf);
+	    /* NFNTs seem to have resource flags of 0 */
+	}
+	cnt += j;
+    }
+return(resstarts);
+}
+
 enum psstyle_flags { psf_bold = 1, psf_italic = 2, psf_outline = 4,
 	psf_shadow = 0x8, psf_condense = 0x10, psf_extend = 0x20 };
 
-uint16 MacStyleCode( SplineFont *sf ) {
-    unsigned short stylecode= 0;
-    char *styles = SFGetModifiers(sf);
+uint16 MacStyleCode( SplineFont *sf, uint16 *psstylecode ) {
+    unsigned short stylecode= 0, psstyle=0;
+    char *styles;
 
     if ( sf->cidmaster!=NULL )
 	sf = sf->cidmaster;
+    styles = SFGetModifiers(sf);
 
     if ( strstrmatch( styles, "Bold" ) || strstrmatch(styles,"Demi") ||
 	    strstrmatch( styles,"Heav") || strstrmatch(styles,"Blac") ||
 /* A few fonts have German/French styles in their names */
 	    strstrmatch( styles,"Fett") || strstrmatch(styles,"Gras") ) {
 	stylecode = sf_bold;
+	psstyle = psf_bold;
     } else if ( sf->weight!=NULL &&
 	    (strstrmatch( sf->weight, "Bold" ) || strstrmatch(sf->weight,"Demi") ||
 	     strstrmatch( sf->weight,"Heav") || strstrmatch(sf->weight,"Blac") ||
 	     strstrmatch( sf->weight,"Fett") || strstrmatch(sf->weight,"Gras")) ) {
 	stylecode = sf_bold;
+	psstyle = psf_bold;
     }
     /* URW uses four leter abbreviations of Italic and Oblique */
     if ( strstrmatch( styles, "Ital" ) || strstrmatch( styles, "Obli" ) ||
 	    strstrmatch(styles, "Kurs")) {
 	stylecode |= sf_italic;
+	psstyle |= psf_italic;
+    }
+    if ( strstrmatch( styles, "Underline" ) ) {
+	stylecode |= sf_underline;
     }
     if ( strstrmatch( styles, "Outl" ) ) {
 	stylecode |= sf_outline;
+	psstyle |= psf_outline;
+    }
+    if ( strstr(styles,"Shadow")!=NULL ) {
+	stylecode |= sf_shadow;
+	psstyle |= psf_shadow;
     }
     if ( strstrmatch( styles, "Cond" ) ) {
 	stylecode |= sf_condense;
+	psstyle |= psf_condense;
     }
     if ( strstrmatch( styles, "Exte" ) ) {
 	stylecode |= sf_extend;
+	psstyle |= psf_extend;
     }
+    if ( psstylecode!=NULL )
+	*psstylecode = psstyle;
 return( stylecode );
 }
 
@@ -603,7 +701,7 @@ static uint32 SFToFOND(FILE *res,SplineFont *sf,uint32 id,int dottf,int32 *sizes
     putshort(res,2);			/* FOND version */
 
     /* Font association table */
-    stylecode = MacStyleCode( sf );
+    stylecode = MacStyleCode( sf, NULL );
     for ( i=j=0; sizes!=NULL && sizes[i]!=0; ++i )
 	if ( (sizes[i]>>16)==1 )
 	    ++j;
@@ -698,6 +796,216 @@ static uint32 SFToFOND(FILE *res,SplineFont *sf,uint32 id,int dottf,int32 *sizes
 	fwrite(pt,1,strlen(pt),res);	/* everything else */
 	putc(1,res);			/* index string is one byte long */
 	putc(2,res);			/* plain name is basename with string 2 */
+    }
+    /* Greg: record offset for glyph encoding table */
+    /* We assume that the bitmap and postscript fonts are encoded similarly */
+    /*  and so a null vector will do. */
+    glyphenc = ftell( res );
+    fseek(res,geoffset,SEEK_SET);
+    putlong(res,glyphenc);
+    fseek(res,glyphenc,SEEK_SET);
+    putshort(res,0); /* Greg: an empty Glyph encoding table */
+
+    end = ftell(res);
+    fseek(res,widoffpos,SEEK_SET);
+    putlong(res,widoffloc-rlenpos-4);	/* Fill in width offset */
+    putlong(res,kernloc!=0?kernloc-rlenpos-4:0);	/* Fill in kern offset */
+    putlong(res,styleloc!=0?styleloc-rlenpos-4:0);	/* Fill in style offset */
+
+    fseek(res,rlenpos,SEEK_SET);
+    putlong(res,end-rlenpos-4);		/* resource length */
+    fseek(res,end,SEEK_SET);
+return(rlenpos);
+}
+
+static void putpnsstring(FILE *res,char *fontname,int len) {
+    putc(len,res);
+    if ( *fontname && len>0 ) {
+	if ( islower(*fontname))
+	    putc(toupper(*fontname),res);
+	else
+	    putc(*fontname,res);
+	--len;
+	for ( ++fontname; *fontname && len>0; ++fontname, --len )
+	    putc(*fontname,res);
+    }
+}
+
+static void putpsstring(FILE *res,char *fontname) {
+    putc(strlen(fontname),res);
+    if ( *fontname ) {
+	for ( ; *fontname; ++fontname )
+	    putc(*fontname,res);
+    }
+}
+
+static uint32 SFsToFOND(FILE *res,struct sflist *sfs,uint32 id,int format,int bf) {
+    uint32 rlenpos = ftell(res), widoffpos, widoffloc, kernloc, styleloc, end;
+    int i,j,k,cnt, scnt, kcnt, pscnt, strcnt, fontclass, glyphenc, geoffset;
+    uint16 psstyle, stylecode;
+    int exact, famlen;
+    char *familyname;
+    KernPair *kp;
+    DBounds b;
+    /* Fonds are generally marked system heap and sometimes purgeable (resource flags) */
+    struct sflist *faces[96];
+    struct sflist *psfaces[48];
+    SplineFont *sf;
+    struct sflist *sfi;
+    char *pt;
+
+    memset(faces,0,sizeof(faces));
+    memset(psfaces,0,sizeof(psfaces));
+    for ( sfi = sfs ; sfi!=NULL; sfi = sfi->next ) {
+	stylecode = MacStyleCode(sfi->sf,&psstyle);
+	if ( faces[stylecode]==NULL )
+	    faces[stylecode] = sfi;
+	if ( psfaces[psstyle]==NULL )
+	    psfaces[psstyle] = sfi;
+    }
+    sf = faces[0]->sf;
+    
+    putlong(res,0);			/* Fill in length later */
+    putshort(res,IsMacMonospaced(sf)?0x9000:0x1000);
+    putshort(res,id);
+    putshort(res,0);			/* First character */
+    putshort(res,255);			/* Last character */
+    putshort(res,(short) ((sf->ascent*(1<<12))/(sf->ascent+sf->descent)));
+    putshort(res,-(short) ((sf->descent*(1<<12))/(sf->ascent+sf->descent)));
+    putshort(res,(short) ((sf->pfminfo.linegap*(1<<12))/(sf->ascent+sf->descent)));
+    putshort(res,(short) ((SFMacWidthMax(sf)*(1<<12))/(sf->ascent+sf->descent)));
+    widoffpos = ftell(res);
+    putlong(res,0);			/* Fill in width offset later */
+    putlong(res,0);			/* Fill in kern offset later */
+    putlong(res,0);			/* Fill in style offset later */
+    for ( i=0; i<9; ++i )
+	putshort(res,0);		/* Extra width values */
+    putlong(res,0);			/* Script for international */
+    putshort(res,2);			/* FOND version */
+
+    /* Font association table */
+    for ( i=cnt=scnt=kcnt=0; i<96; ++i ) if ( faces[i]!=NULL ) {
+	++scnt;
+	if ( faces[i]->id!=0 ) ++cnt;
+	if ( faces[i]->ids!=NULL )
+	    for ( j=0; faces[i]->ids[j]!=0; ++j ) ++cnt;
+	if ( SFMacAnyKerns(faces[i]->sf)>0 )
+	    ++kcnt;
+    }
+    putshort(res,cnt-1);		/* Number of faces */
+    /* do ttf faces (if any) first */
+    for ( i=cnt=0; i<96; ++i ) if ( faces[i]!=NULL && faces[i]->id!=0 ) {
+	putshort(res,0);		/* it's scaleable */
+	putshort(res,i);		/* style */
+	putshort(res,faces[i]->id);
+    }
+    /* then do bitmap faces (if any) */
+    for ( i=0; i<96; ++i ) if ( faces[i]!=NULL && faces[i]->ids!=NULL ) {
+	for ( j=0; faces[i]->ids[j]!=0 ; ++j ) {
+	    putshort(res,faces[i]->bdfs[j]->pixelsize);
+	    putshort(res,i);		/* style */
+	    putshort(res,faces[i]->ids[j]);
+	}
+    }
+
+    /* offset table */
+    putshort(res,1-1);			/* One table */
+    putlong(res,6);			/* Offset from start of otab to next byte */
+
+    /* bounding box table */
+    putshort(res,scnt-1);		/* One bounding box per style */
+    for ( i=0; i<96; ++i ) if ( faces[i]!=NULL ) {
+	SplineFontFindBounds(faces[i]->sf,&b);
+	putshort(res,i);			/* style */
+	putshort(res,b.minx*(1<<12)/(faces[i]->sf->ascent+faces[i]->sf->descent));
+	putshort(res,b.miny*(1<<12)/(faces[i]->sf->ascent+faces[i]->sf->descent));
+	putshort(res,b.maxx*(1<<12)/(faces[i]->sf->ascent+faces[i]->sf->descent));
+	putshort(res,b.maxy*(1<<12)/(faces[i]->sf->ascent+faces[i]->sf->descent));
+    }
+
+    widoffloc = ftell(res);
+    putshort(res,scnt-1);		/* One set of width metrics per style */
+    for ( i=0; i<96; ++i ) if ( faces[i]!=NULL ) {
+	putshort(res,i);
+	for ( k=0; k<=256; ++k ) {
+	    if ( k>=faces[i]->sf->charcnt || k==256 || faces[i]->sf->chars[k]==NULL )
+		putshort(res,1<<12);	/* 1 em is default size */
+	    else
+		putshort(res,faces[i]->sf->chars[k]->width*(1<<12)/(faces[i]->sf->ascent+faces[i]->sf->descent));
+	}
+    }
+
+    kernloc = 0;
+    if ( kcnt>0 ) {
+	kernloc = ftell(res);
+	putshort(res,kcnt-1);		/* Number of styles with kern pairs */
+	for ( i=0; i<96; ++i ) if ( faces[i]!=NULL &&( cnt = SFMacAnyKerns(sf))>0 ) {
+	    putshort(res,i);		/* plain style, No matter what it really is, pretend it's plain */
+	    putshort(res,cnt);		/* Count of kerning pairs */
+	    for ( k=0; k<256 && k<faces[i]->sf->charcnt; ++k ) if ( faces[i]->sf->chars[k]!=NULL ) {
+		for ( kp=faces[i]->sf->chars[k]->kerns; kp!=NULL; kp=kp->next )
+		    if ( kp->sc->enc<256 ) {
+			putshort(res,k);
+			putshort(res,kp->sc->enc);
+			putshort(res,kp->off*(1<<12)/(sf->ascent+sf->descent));
+		    }
+	    }
+	}
+    }
+
+    /* Fontographer referenced a postscript font even in truetype FONDs */
+    styleloc = ftell(res);
+
+    exact = false;
+    familyname = psfaces[0]->sf->fontname;
+    famlen = strlen(familyname);
+    if ( (pt=strchr(familyname,'-'))!=NULL )
+	famlen = pt-familyname;
+    for ( i=pscnt=0; i<48; ++i ) if ( psfaces[i]!=NULL ) {
+	++pscnt;
+	if ( strncmp(psfaces[i]->sf->fontname,familyname,famlen)!=0 ) {
+	    while ( famlen>0 ) {
+		--famlen;
+		if ( strncmp(psfaces[i]->sf->fontname,familyname,famlen)==0 )
+	    break;
+	    }
+	}
+    }
+    if ( famlen!=0 ) for ( i=pscnt=0; i<48; ++i ) if ( psfaces[i]!=NULL ) {
+	if ( psfaces[i]->sf->fontname[famlen]==0 )
+	    exact = true;
+    }
+    fontclass = 0x1;
+    if ( psfaces[psf_outline]==NULL ) fontclass |= 4;
+    if ( psfaces[psf_bold]!=NULL ) fontclass |= 0x18;
+    if ( psfaces[psf_italic]!=NULL ) fontclass |= 0x40;
+    if ( psfaces[psf_condense]!=NULL ) fontclass |= 0x80;
+    if ( psfaces[psf_extend]!=NULL ) fontclass |= 0x100;
+    putshort(res,fontclass);		/* fontClass */
+    geoffset = ftell(res);
+    putlong(res,0);			/* Offset to glyph encoding table */ /* Fill in later */
+    putlong(res,0);			/* Reserved, MBZ */
+    strcnt = 1/* Family Name */ + pscnt-exact /* count of format strings */ +
+	    pscnt-exact /* count of additional strings */;
+    /* indeces to format strings */
+    for ( i=0,pscnt=2; i<48; ++i )
+	if ( psfaces[i]==NULL || psfaces[i]->sf->fontname[famlen]==0 )
+	    putc(1,res);
+	else
+	    putc(pscnt++,res);
+    putshort(res,strcnt);		/* strcnt strings */
+    putpnsstring(res,familyname,famlen);
+    /* Now the format strings */
+    for ( i=0; i<48; ++i ) if ( psfaces[i]!=NULL ) {
+	if ( psfaces[i]->sf->fontname[famlen]!=0 ) {
+	    putc(1,res);		/* Familyname with the following */
+	    putc(pscnt++,res);
+	}
+    }
+    /* Now the additional names */
+    for ( i=0; i<48; ++i ) if ( psfaces[i]!=NULL ) {
+	if ( psfaces[i]->sf->fontname[famlen]!=0 )
+	    putpsstring(res,psfaces[i]->sf->fontname+famlen);
     }
     /* Greg: record offset for glyph encoding table */
     /* We assume that the bitmap and postscript fonts are encoded similarly */
@@ -981,13 +1289,26 @@ static void WriteDummyDFontHeaders(FILE *res) {
 	putc(0,res);
 }
 
+static void MakeMacPSName(char buffer[63],SplineFont *sf) {
+    char *pt, *spt, *lcpt;
+
+    for ( pt = buffer, spt = sf->fontname; *spt && pt<buffer+63-1; ++spt ) {
+	if ( isupper(*spt) || spt==sf->fontname ) {
+	    *pt++ = *spt;
+	    lcpt = (spt==sf->fontname?spt+5:spt+3);
+	} else if ( islower(*spt) && spt<lcpt )	/* what happens to digits? */
+	    *pt++ = *spt;
+    }
+    *pt = '\0';
+}
+
 int WriteMacPSFont(char *filename,SplineFont *sf,enum fontformat format) {
     FILE *res, *temppfb;
     int ret = 1;
     struct resourcetype resources[2];
     struct macbinaryheader header;
     int lcfn = false, lcfam = false;
-    char buffer[63], *pt, *spt, *lcpt=NULL;
+    char buffer[63];
 
     temppfb = tmpfile();
     if ( temppfb==NULL )
@@ -1005,14 +1326,7 @@ return( 0 );
 	/*  we excede that */
     if ( islower(*sf->fontname)) { *sf->fontname = toupper(*sf->fontname); lcfn = true; }
     if ( islower(*sf->familyname)) { *sf->familyname = toupper(*sf->familyname); lcfam = true; }
-    for ( pt = buffer, spt = sf->fontname; *spt && pt<buffer+sizeof(buffer)-1; ++spt ) {
-	if ( isupper(*spt)) {
-	    *pt++ = *spt;
-	    lcpt = (spt==sf->fontname?spt+5:spt+3);
-	} else if ( islower(*spt) && spt<lcpt )	/* what happens to digits? */
-	    *pt++ = *spt;
-    }
-    *pt = '\0';
+    MakeMacPSName(buffer,sf);
 
     ret = _WritePSFont(temppfb,sf,ff_pfb);
     if ( lcfn ) *sf->fontname = tolower(*sf->fontname);
@@ -1199,6 +1513,155 @@ return( 0 );
     if ( fclose(res)==-1 ) ret = 0;
     free(resources[0].res);
 return( ret );
+}
+
+/* We have to worry about these font formats:
+  ff_pfbmacbin, ff_ttfmacbin, ff_ttfdfont, ff_otfdfont, ff_otfciddfont, ff_none
+  bf_ttf, bf_sfnt_dfont, bf_nfntmacbin, bf_nfntdfont,
+*/
+
+int WriteMacFamily(char *filename,struct sflist *sfs,enum fontformat format,
+	enum bitmapformat bf,int flags) {
+    FILE *res;
+    int ret = 1, r, i;
+    struct resourcetype resources[4];
+    struct resource rlist[3][2];
+    struct macbinaryheader header;
+    struct sflist *sfi, *sfsub;
+    char buffer[80];
+    int freefilename = 0;
+    char *pt;
+    int id;
+
+    if ( format==ff_pfbmacbin ) {
+	for ( sfi=sfs; sfi!=NULL; sfi = sfi->next ) {
+	    char *tempname;
+	    MakeMacPSName(buffer,sfi->sf);
+#if !__Mac
+	    strcat(buffer,".bin");
+#endif
+	    tempname = galloc(strlen(filename)+strlen(buffer)+1);
+	    strcpy(tempname,filename);
+	    pt = strrchr(tempname,'/');
+	    if ( pt==NULL ) pt=tempname-1;
+	    strcpy(pt+1,buffer);
+	    if ( strcmp(tempname,filename)==0 ) {
+		char *tf = galloc(strlen(filename)+20);
+		strcpy(tf,filename);
+		filename = tf;
+		freefilename = true;
+		pt = strrchr(filename,'.');
+		if ( pt==NULL || pt<strrchr(filename,'/'))
+		    pt = filename+strlen(filename)+1;
+#if __Mac
+		strcpy(pt-1,".fam");
+#else
+		strcpy(pt-1,".fam.bin");
+#endif
+	    }
+	    if ( WriteMacPSFont(tempname,sfi->sf,format)==0 )
+return( 0 );
+	    free(tempname);
+	}
+    } else if ( format!=ff_none || bf==bf_sfnt_dfont ) {
+	for ( sfi=sfs; sfi!=NULL; sfi = sfi->next ) {
+	    sfi->tempttf = tmpfile();
+	    if ( sfi->tempttf==NULL ||
+		    _WriteTTFFont(sfi->tempttf,sfi->sf,format==ff_none?ff_none:
+					  format==ff_ttfmacbin?ff_ttf:
+					  format-1,sfi->sizes,bf,flags)==0 ||
+		    ferror(sfi->tempttf) ) {
+		for ( sfsub=sfs; sfsub!=sfi; sfsub=sfsub->next )
+		    fclose( sfsub->tempttf );
+return( 0 );
+	    }
+	    rewind(sfi->tempttf);
+	}
+    }
+
+    if ( __Mac && (format==ff_ttfmacbin || format==ff_pfbmacbin ||
+	    (format==ff_none && bf==bf_nfntmacbin)))
+	res = tmpfile();
+    else
+	res = fopen(filename,"w+");
+    if ( res==NULL ) {
+	for ( sfsub=sfs; sfsub!=NULL; sfsub=sfsub->next )
+	    fclose( sfsub->tempttf );
+return( 0 );
+    }
+
+    if ( format==ff_ttfdfont || format==ff_otfdfont || format==ff_otfciddfont ||
+	    bf==bf_sfnt_dfont || (format==ff_none && bf==bf_nfntdfont))
+	WriteDummyDFontHeaders(res);
+    else
+	WriteDummyMacHeaders(res);
+    memset(rlist,'\0',sizeof(rlist));
+    memset(resources,'\0',sizeof(resources));
+
+    id = HashToId(sfs->sf->fontname,sfs->sf);
+
+    r = 0;
+    if ( format==ff_ttfmacbin || format==ff_ttfdfont || format==ff_otfdfont ||
+	    format==ff_otfciddfont || (format==ff_none && bf==bf_sfnt_dfont )) {
+	resources[r].tag = CHR('s','f','n','t');
+	for ( sfi=sfs, i=0; sfi!=NULL; sfi=sfi->next, ++i );
+	resources[r].res = gcalloc(i+1,sizeof(struct resource));
+	for ( sfi=sfs, i=0; sfi!=NULL; sfi=sfi->next, ++i ) {
+	    resources[r].res[i].pos = TTFToResource(res,sfi->tempttf);
+	    resources[r].res[i].id = sfi->id = id+i;
+	    resources[r].res[i].flags = 0x00;	/* sfnts generally have resource flags 0x20 */
+	    fclose(sfi->tempttf);
+	}
+	++r;
+	if ( bf==bf_ttf || bf==bf_sfnt_dfont ) {
+	    resources[r].tag = CHR('N','F','N','T');
+	    resources[r++].res = BuildDummyNFNTfamilyList(res,sfs,id);
+	}
+    }
+    if ( bf==bf_nfntmacbin || bf==bf_nfntdfont ) {
+	resources[r].tag = CHR('N','F','N','T');
+	resources[r++].res = SFsToNFNTs(res,sfs,id);
+    }
+    resources[r].tag = CHR('F','O','N','D');
+    resources[r].res = rlist[1];
+    rlist[1][0].pos = SFsToFOND(res,sfs,id,format,bf);
+    rlist[1][0].flags = 0x00;	/* I've seen FONDs with resource flags 0, 0x20, 0x60 */
+    rlist[1][0].id = rlist[0][0].id;
+    rlist[1][0].name = sfs->sf->familyname;
+    DumpResourceMap(res,resources,format);
+    for ( i=0; i<r; ++i )
+	free(resources[i].res);
+
+    ret = true;
+    if ( format==ff_ttfmacbin || format==ff_pfbmacbin ||
+	    (format==ff_none && bf==bf_nfntmacbin) ) {
+	header.macfilename = NULL;
+	header.binfilename = filename;
+	    /* Fontographer uses the old suitcase format for both bitmaps and ttf */
+	header.type = CHR('F','F','I','L');
+	header.creator = CHR('D','M','O','V');
+	ret = DumpMacBinaryHeader(res,&header);
+    }
+    if ( ferror(res) ) ret = false;
+    if ( fclose(res)==-1 ) ret = 0;
+    if ( freefilename )
+	free(filename);
+    for ( sfi=sfs; sfi!=NULL; sfi=sfi->next ) {
+	free( sfi->ids );
+	free( sfi->bdfs );
+    }
+return( ret );
+}
+
+void SfListFree(struct sflist *sfs) {
+    struct sflist *sfi;
+
+    while ( sfs!=NULL ) {
+	sfi = sfs->next;
+	free(sfs->sizes);
+	chunkfree(sfs,sizeof(struct sflist));
+	sfs = sfi;
+    }
 }
 
 /* ******************************** Reading ********************************* */

@@ -507,6 +507,16 @@ typedef struct splinefont {
 enum style_flags { sf_bold = 1, sf_italic = 2, sf_underline = 4, sf_outline = 8,
 	sf_shadow = 0x10, sf_condense = 0x20, sf_extend = 0x40 };
 
+struct sflist {
+    SplineFont *sf;
+    int32 *sizes;
+    FILE *tempttf;		/* For ttf */
+    int id;			/* For ttf */
+    int* ids;			/* One for each size */
+    BDFFont **bdfs;		/* Ditto */
+    struct sflist *next;
+};
+
 enum ttf_flags { ttf_flag_shortps = 1, ttf_flag_nohints = 2, ttf_flag_applemode=4 };
 enum openflags { of_fstypepermitted=1 };
 
@@ -555,6 +565,9 @@ extern int WriteTTFFont(char *fontname,SplineFont *sf, enum fontformat format,
 extern int WriteMacTTFFont(char *fontname,SplineFont *sf, enum fontformat format,
 	int32 *bsizes, enum bitmapformat bf,int flags);
 extern int WriteMacBitmaps(char *filename,SplineFont *sf, int32 *sizes,int is_dfont);
+extern int WriteMacFamily(char *filename,struct sflist *sfs,enum fontformat format,
+	enum bitmapformat bf,int flags);
+extern void SfListFree(struct sflist *sfs);
 extern struct ttflangname *TTFLangNamesCopy(struct ttflangname *old);
 extern void TTF_PSDupsDefault(SplineFont *sf);
 extern void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf);
@@ -750,7 +763,7 @@ extern SplineFont *CFFParse(FILE *temp,int len,char *fontsetname);
 extern SplineFont *SFReadMacBinary(char *filename);
 extern SplineFont *LoadSplineFont(char *filename,enum openflags);
 extern SplineFont *ReadSplineFont(char *filename,enum openflags);	/* Don't use this, use LoadSF instead */
-extern uint16 MacStyleCode( SplineFont *sf );
+extern uint16 MacStyleCode( SplineFont *sf, uint16 *psstyle );
 extern SplineFont *SFReadIkarus(char *fontname);
 
 extern const char *UnicodeRange(int unienc);

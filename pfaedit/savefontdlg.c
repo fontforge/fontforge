@@ -37,9 +37,13 @@
 #include <gkeysym.h>
 #include "psfont.h"
 
+#define CID_Family	2000
+
 struct gfc_data {
     int done;
     int ret;
+    int family, familycnt;
+    GWindow gw;
     GGadget *gfc;
     GGadget *pstype;
     GGadget *bmptype;
@@ -1015,12 +1019,33 @@ return( WriteMultiplePSFont(sf,newname,sizes,res,NULL));
 return( err );
 }
 
+static int32 *AllBitmapSizes(SplineFont *sf) {
+    int32 *sizes=NULL;
+    BDFFont *bdf;
+    int i,cnt;
+
+    for ( i=0; i<2; ++i ) {
+	cnt = 0;
+	for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
+	    if ( sizes!=NULL )
+		sizes[cnt] = bdf->pixelsize | (BDFDepth(bdf)<<16);
+	    ++cnt;
+	}
+	if ( i==1 )
+    break;
+	sizes = galloc((cnt+1)*sizeof(int32));
+    }
+    sizes[cnt] = 0;
+return( sizes );
+}
+
 int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
-	int res, char *subfontdefinition) {
+	int res, char *subfontdefinition, struct sflist *sfs) {
     int i;
     static char *bitmaps[] = {"bdf", "ttf", "sbit", "bin", "dfont", NULL };
     int32 *sizes=NULL;
     char *end = filename+strlen(filename);
+    struct sflist *sfi;
 
     for ( i=0; extensions[i]!=NULL; ++i ) {
 	if ( strlen( extensions[i])>0 &&
@@ -1091,20 +1116,21 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
     }
 
     if ( oldbitmapstate!=bf_none ) {
-	BDFFont *bdf;
-	int cnt;
-	for ( i=0; i<2; ++i ) {
-	    cnt = 0;
-	    for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
-		if ( sizes!=NULL )
-		    sizes[cnt] = bdf->pixelsize | (BDFDepth(bdf)<<16);
-		++cnt;
-	    }
-	    if ( i==1 )
-	break;
-	    sizes = galloc((cnt+1)*sizeof(int32));
-	}
-	sizes[cnt] = 0;
+	if ( sfs!=NULL ) {
+	    for ( sfi=sfs; sfi!=NULL; sfi=sfi->next )
+		sfi->sizes = AllBitmapSizes(sfi->sf);
+	} else
+	    sizes = AllBitmapSizes(sf);
+    }
+
+    if ( sfs!=NULL ) {
+	int flags = 0;
+	if ( !oldpsstate )
+	    flags = ttf_flag_shortps;
+	if ( !oldttfhintstate )
+	    flags |= ttf_flag_nohints;
+	flags |= ttf_flag_applemode;
+return( !WriteMacFamily(filename,sfs,oldformatstate,oldbitmapstate,flags));
     }
 
     if ( oldformatstate == ff_multiple )
@@ -1117,8 +1143,9 @@ static void DoSave(struct gfc_data *d,unichar_t *path) {
     int err=false;
     char *temp;
     int32 *sizes=NULL;
-    int iscid;
+    int iscid, i;
     Encoding *item=NULL;
+    struct sflist *sfs=NULL, *cur;
 
     temp = u2def_copy(path);
     oldformatstate = GGadgetGetFirstListSelectedItem(d->pstype);
@@ -1137,9 +1164,34 @@ return;
 	if ( GWidgetAskR(_STR_EncodingTooLarge,buts,0,1,_STR_TwoBEncIn1BFont)==1 )
 return;
     }
+    
     oldbitmapstate = GGadgetGetFirstListSelectedItem(d->bmptype);
     if ( oldbitmapstate!=bf_none )
 	sizes = ParseBitmapSizes(d->bmpsizes,_STR_PixelList,&err);
+    if ( err )
+return;
+
+    if ( d->family ) {
+	for ( i=0; i<d->familycnt; ++i ) {
+	    if ( GGadgetIsChecked(GWidgetGetControl(d->gw,CID_Family+10*i)) ) {
+		cur = chunkalloc(sizeof(struct sflist));
+		cur->next = sfs;
+		sfs = cur;
+		cur->sf = GGadgetGetUserData(GWidgetGetControl(d->gw,CID_Family+10*i));
+		if ( oldbitmapstate!=bf_none )
+		    cur->sizes = ParseBitmapSizes(GWidgetGetControl(d->gw,CID_Family+10*i+1),_STR_PixelList,&err);
+		if ( err ) {
+		    SfListFree(sfs);
+return;
+		}
+	    }
+	}
+	cur = chunkalloc(sizeof(struct sflist));
+	cur->next = sfs;
+	sfs = cur;
+	cur->sf = d->sf;
+	cur->sizes = sizes;
+    }
 
     oldafmstate = GGadgetIsChecked(d->doafm);
     oldpfmstate = GGadgetIsChecked(d->dopfm);
@@ -1147,7 +1199,17 @@ return;
     oldttfhintstate = GGadgetIsChecked(d->ttfhints);
     oldttfapplestate = GGadgetIsChecked(d->ttfapple);
 
-    err = _DoSave(d->sf,temp,sizes,-1);
+    if ( !d->family )
+	err = _DoSave(d->sf,temp,sizes,-1);
+    else {
+	int flags = 0;
+	if ( !oldpsstate )
+	    flags = ttf_flag_shortps;
+	if ( !oldttfhintstate )
+	    flags |= ttf_flag_nohints;
+	flags |= ttf_flag_applemode;
+	err = !WriteMacFamily(temp,sfs,oldformatstate,oldbitmapstate,flags);
+    }
 
     free(temp);
     d->done = !err;
@@ -1350,6 +1412,11 @@ return( true );
 	}
 #endif
 	GGadgetSetEnabled(d->bmptype, format!=ff_multiple );
+	if ( d->family ) {
+	    GGadgetSetVisible(d->doafm,false);
+	    GGadgetSetVisible(d->dopfm,false);
+	    GGadgetSetVisible(d->ttfapple,false);
+	}
     }
 return( true );
 }
@@ -1360,8 +1427,14 @@ static int GFD_BitmapFormat(GGadget *g, GEvent *e) {
 	unichar_t *pt, *dup, *tpt, *ret;
 	/*int format = GGadgetGetFirstListSelectedItem(d->pstype);*/
 	int bf = GGadgetGetFirstListSelectedItem(d->bmptype);
+	int i;
 
 	GGadgetSetEnabled(d->bmpsizes,bf!=bf_none);
+	if ( d->family ) {
+	    for ( i=0; i<d->familycnt; ++i )
+		GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Family+10*i+1),
+			bf!=bf_none);
+	}
 	if ( bf==bf_sfnt_dfont ) {
 	    ret = GGadgetGetTitle(d->gfc);
 	    dup = galloc((u_strlen(ret)+30)*sizeof(unichar_t));
@@ -1422,18 +1495,57 @@ static unichar_t *BitmapList(SplineFont *sf) {
 return( uret );
 }
 
-int FontMenuGeneratePostscript(SplineFont *sf) {
+int SFGenerateFont(SplineFont *sf,int family) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[16];
-    GTextInfo label[16];
+    GGadgetCreateData gcd[16+2*48+2];
+    GTextInfo label[16+2*48+2];
     struct gfc_data d;
     GGadget *pulldown, *files, *tf;
-    int i, old, ofs;
+    int i, j, k, old, ofs, y;
     int bs = GIntGetResource(_NUM_Buttonsize), bsbigger, totwid, spacing;
     SplineFont *temp;
     int wascompacted = sf->compacted;
+    int familycnt=0;
+    SplineFont *familysfs[48];
+    uint16 psstyle;
+
+    if ( family ) {
+	/* I could just disable the menu item, but I think it's a bit confusing*/
+	/*  and I want people to know why they can't generate a family */
+	FontView *fv;
+	SplineFont *dup=NULL, *badenc=NULL;
+	memset(familysfs,0,sizeof(familysfs));
+	familysfs[0] = sf;
+	for ( fv=fv_list; fv!=NULL; fv=fv->next )
+	    if ( fv->sf!=sf && strcmp(fv->sf->familyname,sf->familyname)==0 ) {
+		MacStyleCode(fv->sf,&psstyle);
+		if ( familysfs[psstyle]==fv->sf )
+		    /* several windows may point to same font */; 
+		else if ( familysfs[psstyle]!=NULL )
+		    dup = fv->sf;
+		else {
+		    familysfs[psstyle] = fv->sf;
+		    ++familycnt;
+		    if ( fv->sf->encoding_name!=sf->encoding_name )
+			badenc = fv->sf;
+		}
+	    }
+	if ( MacStyleCode(sf,NULL)!=0 || familycnt==0 ) {
+	    GWidgetErrorR(_STR_BadFamilyForMac,_STR_BadMacFamily);
+return( 0 );
+	} else if ( dup ) {
+	    MacStyleCode(dup,&psstyle);
+	    GWidgetErrorR(_STR_BadFamilyForMac,_STR_TwoFontsSameStyle,
+		dup->fontname, familysfs[psstyle]->fontname);
+return( 0 );
+	} else if ( badenc ) {
+	    GWidgetErrorR(_STR_BadFamilyForMac,_STR_DifferentEncodings,
+		badenc->fontname, sf->fontname );
+return( 0 );
+	}
+    }
 
     if ( wascompacted )
 	SFUncompactFont(sf);
@@ -1444,13 +1556,16 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.window_title = GStringGetResource(_STR_Generate,NULL);
+    wattrs.window_title = GStringGetResource(family?_STR_GenerateMac:_STR_Generate,NULL);
     pos.x = pos.y = 0;
     totwid = GGadgetScale(295);
     bsbigger = 4*bs+4*14>totwid; totwid = bsbigger?4*bs+4*12:totwid;
     spacing = (totwid-4*bs-2*12)/3;
     pos.width = GDrawPointsToPixels(NULL,totwid);
-    pos.height = GDrawPointsToPixels(NULL,285);
+    if ( family )
+	pos.height = GDrawPointsToPixels(NULL,285+13+26*familycnt);
+    else
+	pos.height = GDrawPointsToPixels(NULL,285);
     gw = GDrawCreateTopWindow(NULL,&pos,e_h,&d,&wattrs);
 
     memset(&label,0,sizeof(label));
@@ -1459,7 +1574,11 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     gcd[0].gd.flags = gg_visible | gg_enabled;
     gcd[0].creator = GFileChooserCreate;
 
-    gcd[1].gd.pos.x = 12; gcd[1].gd.pos.y = 252-3;
+    y = 252;
+    if ( family )
+	y += 13 + 26*familycnt;
+
+    gcd[1].gd.pos.x = 12; gcd[1].gd.pos.y = y-3;
     gcd[1].gd.pos.width = -1;
     gcd[1].gd.flags = gg_visible | gg_enabled | gg_but_default;
     label[1].text = (unichar_t *) _STR_Save;
@@ -1469,7 +1588,7 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     gcd[1].gd.handle_controlevent = GFD_SaveOk;
     gcd[1].creator = GButtonCreate;
 
-    gcd[2].gd.pos.x = -(spacing+bs)*100/GIntGetResource(_NUM_ScaleFactor)-12; gcd[2].gd.pos.y = 252;
+    gcd[2].gd.pos.x = -(spacing+bs)*100/GIntGetResource(_NUM_ScaleFactor)-12; gcd[2].gd.pos.y = y;
     gcd[2].gd.pos.width = -1;
     gcd[2].gd.flags = gg_visible | gg_enabled;
     label[2].text = (unichar_t *) _STR_Filter;
@@ -1479,7 +1598,7 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     gcd[2].gd.handle_controlevent = GFileChooserFilterEh;
     gcd[2].creator = GButtonCreate;
 
-    gcd[3].gd.pos.x = -12; gcd[3].gd.pos.y = 252; gcd[3].gd.pos.width = -1; gcd[3].gd.pos.height = 0;
+    gcd[3].gd.pos.x = -12; gcd[3].gd.pos.y = y; gcd[3].gd.pos.width = -1; gcd[3].gd.pos.height = 0;
     gcd[3].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
     label[3].text = (unichar_t *) _STR_Cancel;
     label[3].text_in_resource = true;
@@ -1488,7 +1607,7 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     gcd[3].gd.handle_controlevent = GFD_Cancel;
     gcd[3].creator = GButtonCreate;
 
-    gcd[4].gd.pos.x = (spacing+bs)*100/GIntGetResource(_NUM_ScaleFactor)+12; gcd[4].gd.pos.y = 252; gcd[4].gd.pos.width = -1; gcd[4].gd.pos.height = 0;
+    gcd[4].gd.pos.x = (spacing+bs)*100/GIntGetResource(_NUM_ScaleFactor)+12; gcd[4].gd.pos.y = y; gcd[4].gd.pos.width = -1; gcd[4].gd.pos.height = 0;
     gcd[4].gd.flags = gg_visible | gg_enabled;
     label[4].text = (unichar_t *) _STR_New;
     label[4].text_in_resource = true;
@@ -1520,13 +1639,13 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     gcd[6].gd.u.list = formattypes;
     gcd[6].creator = GListButtonCreate;
     for ( i=0; i<sizeof(formattypes)/sizeof(formattypes[0])-1; ++i )
-	formattypes[i].selected = sf->onlybitmaps;
+	formattypes[i].disabled = sf->onlybitmaps;
     formattypes[ff_ptype0].disabled = sf->onlybitmaps ||
 	    ( sf->encoding_name<em_jis208 && sf->encoding_name>=em_base);
     formattypes[ff_cid].disabled = sf->cidmaster==NULL;
     formattypes[ff_otfcid].disabled = sf->cidmaster==NULL;
     formattypes[ff_otfciddfont].disabled = sf->cidmaster==NULL;
-    formattypes[ff_otfciddfont].disabled = true;	/* Not ready for this yet! */
+    /*formattypes[ff_otfciddfont].disabled = true;	/* Not ready for this yet! */
     ofs = oldformatstate;
     if (( ofs==ff_ptype0 && formattypes[ff_ptype0].disabled ) ||
 	    ((ofs==ff_cid || ofs==ff_otfcid || ofs==ff_otfciddfont) && formattypes[ff_cid].disabled))
@@ -1535,6 +1654,26 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
 	ofs = ff_otfcid;
     if ( sf->onlybitmaps )
 	ofs = ff_none;
+    if ( family ) {
+	if ( ofs==ff_pfa || ofs==ff_pfb || ofs==ff_multiple || ofs==ff_ptype3 ||
+		ofs==ff_ptype0 )
+	    ofs = ff_pfbmacbin;
+	else if ( ofs==ff_cid || ofs==ff_otfcid )
+	    ofs = ff_otfciddfont;
+	else if ( ofs==ff_ttf || ofs==ff_ttfsym )
+	    ofs = ff_ttfmacbin;
+	else if ( ofs==ff_otf )
+	    ofs = ff_otfdfont;
+	formattypes[ff_pfa].disabled = true;
+	formattypes[ff_pfb].disabled = true;
+	formattypes[ff_multiple].disabled = true;
+	formattypes[ff_ptype3].disabled = true;
+	formattypes[ff_ptype0].disabled = true;
+	formattypes[ff_ttf].disabled = true;
+	formattypes[ff_ttfsym].disabled = true;
+	formattypes[ff_otf].disabled = true;
+	formattypes[ff_otfcid].disabled = true;
+    }
     for ( i=0; i<sizeof(formattypes)/sizeof(formattypes[0]); ++i )
 	formattypes[i].selected = false;
     formattypes[ofs].selected = true;
@@ -1555,9 +1694,23 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
 	bitmaptypes[i].disabled = false;
     }
     old = oldbitmapstate;
-    if ( sf->onlybitmaps ) {
-	old = 0;
+    if ( sf->onlybitmaps && old==bf_ttf ) {
+	old = bf_bdf;
 	bitmaptypes[bf_ttf].disabled = true;
+    }
+    if ( family ) {
+	if ( old==bf_bdf ) {
+	    if ( ofs==ff_otfdfont || ofs==ff_otfciddfont || ofs==ff_ttfdfont )
+		old = bf_nfntdfont;
+	    else
+		old = bf_nfntmacbin;
+	} else if ( old==bf_nfntmacbin &&
+		    ( ofs==ff_otfdfont || ofs==ff_otfciddfont || ofs==ff_ttfdfont ))
+	    old = bf_nfntdfont;
+	else if ( old==bf_nfntdfont &&
+		    ( ofs!=ff_otfdfont && ofs!=ff_otfciddfont && ofs!=ff_ttfdfont ))
+	    old = bf_nfntmacbin;
+	bitmaptypes[bf_bdf].disabled = true;
     }
     temp = sf->cidmaster ? sf->cidmaster : sf;
     if ( temp->bitmaps==NULL ) {
@@ -1611,7 +1764,7 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
 	gcd[12].gd.flags |=  gg_visible;
 
     gcd[13].gd.pos.x = gcd[10].gd.pos.x; gcd[13].gd.pos.y = gcd[10].gd.pos.y;
-    gcd[13].gd.flags = gg_visible | gg_enabled | (oldttfapplestate ?gg_cb_on : 0 );
+    gcd[13].gd.flags = gg_visible | gg_enabled | ((oldttfapplestate || family )?gg_cb_on : 0 );
     label[13].text = (unichar_t *) _STR_AppleMode;
     label[13].text_in_resource = true;
     gcd[13].gd.popup_msg = GStringGetResource(_STR_AppleModePopup,NULL);
@@ -1622,12 +1775,60 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
 	    ofs==ff_otfcid || ofs==ff_ttfmacbin || ofs==ff_none )
 	gcd[10].gd.flags &= ~gg_visible;
     else
-	gcd[13].gd.flags = ~gg_visible;
-    
+	gcd[13].gd.flags &= ~gg_visible;
+    if ( d.family ) {
+	gcd[13].gd.flags &= ~gg_visible;	/* Apple mode is implied */
+	gcd[10].gd.flags &= ~gg_visible;	/* pfms are pointless */
+	gcd[5].gd.flags &= ~gg_visible;		/* afms are just too hard (and are in the fond anyway) */
+    }
 
     if ( ofs==ff_otfcid || ofs==ff_cid || ofs==ff_otfciddfont) {
 	/*gcd[5].gd.flags &= ~gg_visible;*/
 	gcd[10].gd.flags &= ~gg_visible;
+    }
+
+    if ( family ) {
+	y = 250;
+	k = 14;
+
+	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = y;
+	gcd[k].gd.pos.width = totwid-5-5;
+	gcd[k].gd.flags = gg_visible | gg_enabled ;
+	gcd[k++].creator = GLineCreate;
+	y += 7;
+
+	for ( i=0, j=1; i<familycnt && j<48 ; ++i ) {
+	    while ( j<48 && familysfs[j]==NULL ) ++j;
+	    if ( j==48 )
+	break;
+	    gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = y;
+	    gcd[k].gd.pos.width = gcd[8].gd.pos.x-gcd[k].gd.pos.x-5;
+	    gcd[k].gd.flags = gg_visible | gg_enabled | gg_cb_on ;
+	    label[k].text = (unichar_t *) (familysfs[j]->fontname);
+	    label[k].text_is_1byte = true;
+	    gcd[k].gd.label = &label[k];
+	    gcd[k].gd.cid = CID_Family+i*10;
+	    gcd[k].data = familysfs[j];
+	    gcd[k++].creator = GCheckBoxCreate;
+
+	    gcd[k].gd.pos.x = gcd[8].gd.pos.x; gcd[k].gd.pos.y = y; gcd[k].gd.pos.width = gcd[8].gd.pos.width;
+	    gcd[k].gd.flags = gg_visible | gg_enabled;
+	    if ( old==bf_none )
+		gcd[k].gd.flags &= ~gg_enabled;
+	    temp = familysfs[j]->cidmaster ? familysfs[j]->cidmaster : familysfs[j];
+	    label[k].text = BitmapList(temp);
+	    gcd[k].gd.label = &label[k];
+	    gcd[k].gd.cid = CID_Family+i*10+1;
+	    gcd[k].data = familysfs[j];
+	    gcd[k++].creator = GTextFieldCreate;
+	    y+=26;
+	    ++j;
+	}
+
+	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = y;
+	gcd[k].gd.pos.width = totwid-5-5;
+	gcd[k].gd.flags = gg_visible | gg_enabled ;
+	gcd[k++].creator = GLineCreate;
     }
 
     GGadgetsCreate(gw,gcd);
@@ -1654,6 +1855,8 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
 
     memset(&d,'\0',sizeof(d));
     d.sf = sf;
+    d.family = family;
+    d.familycnt = familycnt;
     d.gfc = gcd[0].ret;
     d.doafm = gcd[5].ret;
     d.dopfm = gcd[10].ret;
@@ -1663,6 +1866,7 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     d.psnames = gcd[11].ret;
     d.ttfhints = gcd[12].ret;
     d.ttfapple = gcd[13].ret;
+    d.gw = gw;
 
     GWidgetHidePalettes();
     GDrawSetVisible(gw,true);

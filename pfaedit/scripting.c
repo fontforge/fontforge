@@ -635,7 +635,60 @@ static void bGenerate(Context *c) {
 	res = c->a.vals[4].u.ival;
     if ( c->a.argc>=6 )
 	subfontdirectory = c->a.vals[5].u.sval;
-    if ( !GenerateScript(sf,c->a.vals[1].u.sval,bitmaptype,fmflags,res,subfontdirectory) )
+    if ( !GenerateScript(sf,c->a.vals[1].u.sval,bitmaptype,fmflags,res,subfontdirectory,NULL) )
+	error(c,"Save failed");
+}
+
+static void bGenerateFamily(Context *c) {
+    SplineFont *sf = c->curfv->sf;
+    char *bitmaptype = "";
+    int fmflags = -1;
+    struct sflist *sfs, *cur;
+    Array *fonts;
+    FontView *fv;
+    int i;
+
+    if ( c->a.argc!=5 )
+	error( c, "Wrong number of arguments");
+    if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str ||
+	    c->a.vals[3].type!=v_int ||
+	    c->a.vals[4].type!=v_arr )
+	error( c, "Bad type of argument");
+    bitmaptype = c->a.vals[2].u.sval;
+    fmflags = c->a.vals[3].u.ival;
+
+    if ( MacStyleCode(sf,NULL)!=0 )
+	error( c, "The current font must have a plain (Normal, Regular) style when generate a mac family");
+    fonts = c->a.vals[4].u.aval;
+    sfs = NULL;
+    for ( i=0; i<fonts->argc; ++i ) {
+	if ( fonts->vals[i].type!=v_str )
+	    error(c,"Values in the fontname array must be strings");
+	for ( fv=fv_list; fv!=NULL; fv=fv->next ) if ( fv->sf!=sf )
+	    if ( strcmp(fonts->vals[i].u.sval,fv->sf->filename)==0 )
+	break;
+	if ( fv==NULL )
+	    for ( fv=fv_list; fv!=NULL; fv=fv->next ) if ( fv->sf!=sf )
+		if ( strcmp(fonts->vals[i].u.sval,fv->sf->fontname)==0 )
+	    break;
+	if ( fv==NULL ) {
+	    fprintf( stderr, "%s\n", fonts->vals[i].u.sval );
+	    error( c, "The font is not loaded" );
+	}
+	else if ( strcmp(fv->sf->familyname,sf->familyname)!=0 )
+	    fprintf( stderr, "Warning: %s has a different family name than does %s (GenerateFamily)\n",
+		    fv->sf->fontname, sf->fontname );
+	cur = chunkalloc(sizeof(struct sflist));
+	cur->next = sfs;
+	sfs = cur;
+	cur->sf = fv->sf;
+    }
+    cur = chunkalloc(sizeof(struct sflist));
+    cur->next = sfs;
+    sfs = cur;
+    cur->sf = sf;
+    
+    if ( !GenerateScript(sf,c->a.vals[1].u.sval,bitmaptype,fmflags,-1,NULL,sfs) )
 	error(c,"Save failed");
 }
 
@@ -1896,6 +1949,7 @@ struct builtins { char *name; void (*func)(Context *); int nofontok; } builtins[
     { "Close", bClose },
     { "Save", bSave },
     { "Generate", bGenerate },
+    { "GenerateFamily", bGenerateFamily },
     { "Import", bImport },
     { "Export", bExport },
     { "MergeKern", bMergeKern },
