@@ -2515,6 +2515,27 @@ return( u1[i]>u2[i]?1:-1 );
 return( 0 );
 }
 
+static StemInfo *SameH(StemInfo *old,real start, real width,
+	real unblended[2][MmMax], int instance_count) {
+    StemInfo *sameh;
+
+    if ( instance_count==0 ) {
+	for ( sameh=old; sameh!=NULL; sameh=sameh->next )
+	    if ( sameh->start==start && sameh->width==width)
+	break;
+    } else { int j;
+	for ( j=1; j<instance_count; ++j ) {
+	    unblended[0][j] += unblended[0][j-1];
+	    unblended[1][j] += unblended[1][j-1];
+	}
+	for ( sameh=old; sameh!=NULL; sameh=sameh->next )
+	    if ( UnblendedCompare((*sameh->u.unblended)[0],unblended[0],instance_count)==0 &&
+		    UnblendedCompare((*sameh->u.unblended)[1],unblended[1],instance_count)==0)
+	break;
+    }
+return( sameh );
+}
+
 static real Blend(real u[MmMax],struct pscontext *context) {
     real sum = u[0];
     int i;
@@ -2618,7 +2639,15 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 	      break;
 	      case 1: /* vstem3 */	/* specifies three v hints zones at once */
 		if ( sp<6 ) fprintf(stderr, "Stack underflow on vstem3 in %s\n", name );
+		/* according to the standard, if there is a vstem3 there can't */
+		/*  be any vstems, so there can't be any confusion about hint order */
+		/*  so we don't need to worry about unblended stuff */
+		sameh = NULL;
+		if ( !is_type2 )
+		    sameh = SameH(ret->vstem,stack[0] + ret->lsidebearing,stack[1],
+				unblended,0);
 		hint = HintNew(stack[0] + ret->lsidebearing,stack[1]);
+		hint->hintnumber = sameh!=NULL ? sameh->hintnumber : hint_cnt++;
 		if ( activev==NULL )
 		    activev = hp = hint;
 		else {
@@ -2626,13 +2655,34 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		    hp->next = hint;
 		    hp = hint;
 		}
+		sameh = NULL;
+		if ( !is_type2 )
+		    sameh = SameH(ret->vstem,stack[2] + ret->lsidebearing,stack[3],
+				unblended,0);
 		hp->next = HintNew(stack[2] + ret->lsidebearing,stack[3]);
+		hp->next->hintnumber = sameh!=NULL ? sameh->hintnumber : hint_cnt++;
+		if ( !is_type2 )
+		    sameh = SameH(ret->vstem,stack[4] + ret->lsidebearing,stack[5],
+				unblended,0);
 		hp->next->next = HintNew(stack[4] + ret->lsidebearing,stack[5]);
+		hp->next->next->hintnumber = sameh!=NULL ? sameh->hintnumber : hint_cnt++;
+		if ( !is_type2 && hp->next->next->hintnumber<96 ) {
+		    if ( pending_hm==NULL )
+			pending_hm = chunkalloc(sizeof(HintMask));
+		    (*pending_hm)[hint->hintnumber>>3] |= 0x80>>(hint->hintnumber&0x7);
+		    (*pending_hm)[hint->next->hintnumber>>3] |= 0x80>>(hint->next->hintnumber&0x7);
+		    (*pending_hm)[hint->next->next->hintnumber>>3] |= 0x80>>(hint->next->next->hintnumber&0x7);
+		}
+		hp = hp->next->next;
 		sp = 0;
 	      break;
 	      case 2: /* hstem3 */	/* specifies three h hints zones at once */
 		if ( sp<6 ) fprintf(stderr, "Stack underflow on hstem3 in %s\n", name );
+		sameh = NULL;
+		if ( !is_type2 )
+		    sameh = SameH(ret->hstem,stack[0],stack[1], unblended,0);
 		hint = HintNew(stack[0],stack[1]);
+		hint->hintnumber = sameh!=NULL ? sameh->hintnumber : hint_cnt++;
 		if ( activeh==NULL )
 		    activeh = hp = hint;
 		else {
@@ -2640,8 +2690,24 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		    hp->next = hint;
 		    hp = hint;
 		}
+		sameh = NULL;
+		if ( !is_type2 )
+		    sameh = SameH(ret->hstem,stack[2],stack[3], unblended,0);
 		hp->next = HintNew(stack[2],stack[3]);
+		hp->next->hintnumber = sameh!=NULL ? sameh->hintnumber : hint_cnt++;
+		sameh = NULL;
+		if ( !is_type2 )
+		    sameh = SameH(ret->hstem,stack[4],stack[5], unblended,0);
 		hp->next->next = HintNew(stack[4],stack[5]);
+		hp->next->next->hintnumber = sameh!=NULL ? sameh->hintnumber : hint_cnt++;
+		if ( !is_type2 && hp->next->next->hintnumber<96 ) {
+		    if ( pending_hm==NULL )
+			pending_hm = chunkalloc(sizeof(HintMask));
+		    (*pending_hm)[hint->hintnumber>>3] |= 0x80>>(hint->hintnumber&0x7);
+		    (*pending_hm)[hint->next->hintnumber>>3] |= 0x80>>(hint->next->hintnumber&0x7);
+		    (*pending_hm)[hint->next->next->hintnumber>>3] |= 0x80>>(hint->next->next->hintnumber&0x7);
+		}
+		hp = hp->next->next;
 		sp = 0;
 	      break;
 	      case 6: /* seac */	/* build accented characters */
@@ -3062,23 +3128,9 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		for ( hp=activeh; hp->next!=NULL; hp = hp->next );
 	    while ( sp-base>=2 ) {
 		sameh = NULL;
-		if ( !is_type2 ) {
-		    if ( context->instance_count==0 ) {
-			for ( sameh=ret->hstem; sameh!=NULL; sameh=sameh->next )
-			    if ( sameh->start==stack[base]+coord &&
-				    sameh->width==stack[base+1])
-			break;
-		    } else { int j;
-			for ( j=1; j<context->instance_count; ++j ) {
-			    unblended[0][j] += unblended[0][j-1];
-			    unblended[1][j] += unblended[1][j-1];
-			}
-			for ( sameh=ret->hstem; sameh!=NULL; sameh=sameh->next )
-			    if ( UnblendedCompare((*sameh->u.unblended)[0],unblended[0],context->instance_count)==0 &&
-				    UnblendedCompare((*sameh->u.unblended)[1],unblended[1],context->instance_count)==0)
-			break;
-		    }
-		}
+		if ( !is_type2 )
+		    sameh = SameH(ret->hstem,stack[base]+coord,stack[base+1],
+				unblended,context->instance_count);
 		hint = HintNew(stack[base]+coord,stack[base+1]);
 		hint->hintnumber = sameh!=NULL ? sameh->hintnumber : hint_cnt++;
 		if ( !is_type2 && context->instance_count!=0 ) {
@@ -3127,39 +3179,25 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		    for ( hp=activev; hp->next!=NULL; hp = hp->next );
 		while ( sp-base>=2 ) {
 		    sameh = NULL;
-		    if ( !is_type2 ) {
-			if ( context->instance_count==0 ) {
-			    for ( sameh=ret->vstem; sameh!=NULL; sameh=sameh->next )
-				if ( sameh->start==stack[base]+coord &&
-					sameh->width==stack[base+1])
-			    break;
-			} else { int j;
-			    for ( j=1; j<context->instance_count; ++j ) {
-				unblended[0][j] += unblended[0][0];
-				unblended[1][j] += unblended[1][0];
-			    }
-			    for ( sameh=ret->vstem; sameh!=NULL; sameh=sameh->next )
-				if ( UnblendedCompare((*sameh->u.unblended)[0],unblended[0],context->instance_count)==0 &&
-					UnblendedCompare((*sameh->u.unblended)[1],unblended[1],context->instance_count)==0)
-			    break;
-			}
-		    }
+		    if ( !is_type2 )
+			sameh = SameH(ret->vstem,stack[base]+coord,stack[base+1],
+				    unblended,context->instance_count);
 		    hint = HintNew(stack[base]+coord,stack[base+1]);
 		    hint->hintnumber = sameh!=NULL ? sameh->hintnumber : hint_cnt++;
 		    if ( !is_type2 && context->instance_count!=0 ) {
 			hint->u.unblended = chunkalloc(sizeof(real [2][MmMax]));
 			memcpy(hint->u.unblended,unblended,sizeof(real [2][MmMax]));
 		    }
-		    if ( activev==NULL )
-			activev = hint;
-		    else
-			hp->next = hint;
-		    hp = hint;
 		    if ( !is_type2 && hint->hintnumber<96 ) {
 			if ( pending_hm==NULL )
 			    pending_hm = chunkalloc(sizeof(HintMask));
 			(*pending_hm)[hint->hintnumber>>3] |= 0x80>>(hint->hintnumber&0x7);
 		    }
+		    if ( activev==NULL )
+			activev = hint;
+		    else
+			hp->next = hint;
+		    hp = hint;
 		    base+=2;
 		    coord = hint->start+hint->width;
 		}
