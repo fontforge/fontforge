@@ -3689,26 +3689,27 @@ static SplineChar *SFMakeDupRef(SplineFont *sf, int local_enc, struct dup *dup) 
     sc->vwidth = dup->sc->vwidth;
     sc->refs = ref;
     sc->parent = sf;
-    if ( dup->uni>=0 && dup->uni<0x10000 && psunicodenames[dup->uni]!=NULL ) {
-	sc->name = copy(psunicodenames[dup->enc]);
-	if ( strcmp(sc->name,dup->sc->name)==0 ) {
-	    free(dup->sc->name);
-	    if ( dup->sc->unicodeenc>=0 )
-		sprintf( buffer, "uni%04X", dup->sc->unicodeenc );
-	    else if ( dup->sc->enc!=0 )
-		sprintf( buffer, "nounicode_%x", dup->sc->enc);
-	    else
-		sprintf( buffer, "unencoded_%d", local_enc );
-	    dup->sc->name = copy(buffer);
-	}
-    } else {
-	if ( dup->uni>=0 && dup->uni!=dup->sc->unicodeenc )
-	    sprintf( buffer, "uni%04X", dup->uni);
-	else if ( dup->enc!=0 )
-	    sprintf( buffer, "nounicode_%x", dup->enc);
+    if ( dup->uni>=0 && dup->uni<0x10000 && psunicodenames[dup->uni]!=NULL )
+	strcpy(buffer,psunicodenames[dup->uni]);
+    else if ( dup->uni>=0 && dup->uni!=dup->sc->unicodeenc )
+	sprintf( buffer, "uni%04X", dup->uni);
+    else if ( dup->enc!=0 )
+	sprintf( buffer, "nounicode_%x", dup->enc);
+    else
+	sprintf( buffer, "unencoded_%d", local_enc );
+    sc->name = copy(buffer);
+    if ( strcmp(sc->name,dup->sc->name)==0 ) {
+	free(dup->sc->name);
+	if ( dup->sc->unicodeenc>=0 && dup->sc->unicodeenc<0x10000 &&
+		psunicodenames[dup->sc->unicodeenc]!=NULL )
+	    strcpy(buffer,psunicodenames[dup->sc->unicodeenc]);
+	else if ( dup->sc->unicodeenc>=0 )
+	    sprintf( buffer, "uni%04X", dup->sc->unicodeenc );
+	else if ( dup->sc->enc!=0 )
+	    sprintf( buffer, "nounicode_%x", dup->sc->enc);
 	else
 	    sprintf( buffer, "unencoded_%d", local_enc );
-	sc->name = copy(buffer);
+	dup->sc->name = copy(buffer);
     }
 
     ref->sc = dup->sc;
