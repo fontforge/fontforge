@@ -1080,6 +1080,9 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
     GTextInfo label[24];
     static GBox cur, nextcp, prevcp;
     extern Color nextcpcol, prevcpcol;
+    GWindow root;
+    GRect screensize;
+    GPoint pt;
 
     cur.main_background = nextcp.main_background = prevcp.main_background = COLOR_DEFAULT;
     cur.main_foreground = 0xff0000;
@@ -1092,17 +1095,29 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
     gi.done = false;
     CVPreserveState(cv);
 
+    root = GDrawGetRoot(NULL);
+    GDrawGetSize(root,&screensize);
+
 	memset(&wattrs,0,sizeof(wattrs));
-	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_positioned|wam_isdlg|wam_restrict;
 	wattrs.event_masks = ~(1<<et_charup);
 	wattrs.restrict_input_to_me = 1;
-	wattrs.undercursor = 1;
+	wattrs.positioned = 1;
 	wattrs.cursor = ct_pointer;
 	wattrs.window_title = GStringGetResource(_STR_PointInfo,NULL);
 	wattrs.is_dlg = true;
-	pos.x = pos.y = 0;
 	pos.width =GDrawPointsToPixels(NULL,PI_Width);
 	pos.height = GDrawPointsToPixels(NULL,PI_Height);
+	pt.x = cv->xoff + rint(sp->me.x*cv->scale);
+	pt.y = -cv->yoff + cv->height - rint(sp->me.y*cv->scale);
+	GDrawTranslateCoordinates(cv->v,root,&pt);
+	if ( pt.x+20+pos.width<=screensize.width )
+	    pos.x = pt.x+20;
+	else if ( (pos.x = pt.x-10-screensize.width)<0 )
+	    pos.x = 0;
+	pos.y = pt.y;
+	if ( pos.y+pos.height+20 > screensize.height )
+	    pos.y = screensize.height - pos.height - 20;
 	gi.gw = GDrawCreateTopWindow(NULL,&pos,pi_e_h,&gi,&wattrs);
 
 	memset(&gcd,0,sizeof(gcd));
