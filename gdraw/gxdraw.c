@@ -3303,8 +3303,8 @@ static void GXResourceInit(GXDisplay *gdisp,char *programname) {
     res[i].resname = "ScreenWidthCentimeters"; res[i].type = rt_double; res[i].val = &sizetempcm; ++i;
     res[i].resname = "Depth"; res[i].type = rt_int; res[i].val = &depth; ++i;
     res[i].resname = "VisualClass"; res[i].type = rt_string; res[i].val = &vc; res[i].cvt=vc_cvt; ++i;
-    res[i].resname = "TwoButtonFixup"; res[i].type = rt_int; res[i].val = &tbf; ++i;
-    res[i].resname = "MacOSXCmd"; res[i].type = rt_int; res[i].val = &mxc; ++i;
+    res[i].resname = "TwoButtonFixup"; res[i].type = rt_bool; res[i].val = &tbf; ++i;
+    res[i].resname = "MacOSXCmd"; res[i].type = rt_bool; res[i].val = &mxc; ++i;
     res[i].resname = NULL;
     GResourceFind(res,NULL);
 
