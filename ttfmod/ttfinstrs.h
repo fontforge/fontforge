@@ -144,9 +144,11 @@ struct ttfactions {
     unsigned int rounded:2;
     unsigned int min: 1;
     unsigned int newcontour: 1;
+    int16 infunc;		/* Function number in which instr is found */
     uint8 *instr;
     BasePoint freedom;
     struct ttfactions *acts;
+    IPoint was, is;		/* before and after point locations */
 };
 
 extern const char *instrs[];

@@ -424,7 +424,7 @@ return;
 }
 
 void MenuHelp(GWindow base,struct gmenuitem *mi,GEvent *e) {
-    system("netscape http://pfaedit.sf.net/ttfmod/ &");
+    system("netscape http://pfaedit.sf.net/TtfMod/ &");
 }
 
 void TableHelp(int table_name) {

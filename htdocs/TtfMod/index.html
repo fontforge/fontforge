@@ -2,11 +2,13 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 3-Sep-2001 -->
-  <!-- AP: Last modified: 21-Oct-2001 -->
+  <!-- AP: Last modified: 25-Oct-2001 -->
   <TITLE>TtfMod -- A TrueType&reg; Font Modifier</TITLE>
 </HEAD>
 <BODY>
 <H1 Align=Center>
+  <A href="http://sourceforge.net"><IMG src="http://sourceforge.net/sflogo.php?group_id=25752&amp;type=1"
+      width="88" height="31" border="0" alt="SourceForge Logo" ALIGN=right> </A>
   TtfMod<BR>
   <SMALL>A TrueType&reg; Font Modifier</SMALL>
 </H1>
@@ -33,6 +35,10 @@
     <A HREF="#Download">Download</A>
   <LI>
     <A HREF="#CharView">The TTF Character View</A>
+  <LI>
+    <A HREF="#bugs">Buggies!</A>
+  <LI>
+    <A HREF="index.html#Acknowledgements">Acknowledgements</A>
 </UL>
 <H3>
   <A NAME="Overview">Overview</A>
@@ -172,15 +178,25 @@ Then you should download
 <A HREF="http://freetype.sourceforge.net/download.html#stable">libfreetype</A>,
 configure it, build it and install it.
 <P>
-I have not yet designed a configure script for ttfmod. I'll get to it. In
-the meantime I've included a basic makefile in the ttfmod directory which
-assumes you untarred it from the same directory as you untarred pfaedit.
+I have a kind of funky configure script which will improve once I've got
+ttfmod fully integrated into the distribution (it isn't integrated yet because
+it doesn't work yet). Anyway the configure script lives in the top pfaedit
+directory and is called <CODE>configure.ttfmod </CODE>NOT
+<CODE>configure</CODE> (<CODE>configure</CODE> will configure pfaedit). Once
+you've configured it cd into the ttfmod directory and type make:
+<PRE>$ gunzip ttfmod_src*.tgz
+$ tar xf ttfmod_src*.tar
+$ cd pfaedit
+$ configure.ttfmod
+$ cd ttfmod
+$ make
+</PRE>
 <UL>
   <LI>
-    <A HREF="../ttfmod_src-011021.tgz">Source</A> 21-Oct-2001
+    <A HREF="../ttfmod_src-011025.tgz">Source</A> 25-Oct-2001
   <LI>
-    <A HREF="../ttfmod-011021.tgz">linux (redhat 7.1) executable</A>:
-    21-Oct-2001<BR>
+    <A HREF="../ttfmod-011025.tgz">linux (redhat 7.1) executable</A>:
+    25-Oct-2001<BR>
     (The executable is compiled without the grid-fitting debugger)
 </UL>
 <H3>
@@ -217,4 +233,35 @@ Note that the grid-fit splines and the rasterized image are missing.
 <B>If you are more paranoid than I am:</B><BR>
 <IMG SRC="ttfcv-nodebug.png" WIDTH="374" HEIGHT="487"><BR>
 And have turned off the debugger entirely, then the gloss is also missing.
+<H3>
+  Reporting <A NAME="bugs">bugs</A>...
+</H3>
+<P>
+TtfMod isn't very far along. I may not pay much attention to bug reports
+for a bit, but I'm sure you'll find some. If you can isolate one and come
+up with a reproduceable minimal case, that would be great. The executable
+has symbols in it so if you run it in gdb you should be able to get a stack
+trace... Do what you can.
+<P>
+<A HREF="mailto:gww@silcom.com">gww@silcom.com</A>
+<H3>
+  Known bugs...
+</H3>
+<UL>
+  <LI>
+    ttfmod doesn't deal well with composit glyphs. A composit glyph runs the
+    instructions for each of the components, then moves them, then runs the
+    instructions for the composit. FreeType does the right thing, of course.
+    But when TtfMod generates its gloss it only runs the instructions of the
+    composit, and not those of the components.
+</UL>
+<H3>
+  <A NAME="Acknowledgements">Acknowledgements</A>
+</H3>
+<P>
+This program would have been far harder to write if the
+<A HREF="http://freetype.sourceforge.net/">freetype library</A> hadn't done
+almost exactly what I wanted.
+<P>
+Valek Filippov gave me the russian translation.
 </BODY></HTML>

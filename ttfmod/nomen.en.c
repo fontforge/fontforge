@@ -99,6 +99,10 @@ static char str_ShowRaster[] = "Show Raster";
 static unichar_t mnemonic_ShowRaster[] = 'r';
 static char str_HideRaster[] = "Hide Raster";
 static unichar_t mnemonic_HideRaster[] = 'r';
+static char str_ShowTwilight[] = "Show Twilight Points";
+static unichar_t mnemonic_ShowTwilight[] = 'T';
+static char str_HideTwilight[] = "Hide Twilight Points
+static unichar_t mnemonic_HideTwilight[] = 'T';
 static char str_GridSize[] = "Grid Pixels per Em...";
 static unichar_t mnemonic_GridSize[] = 'x';
 

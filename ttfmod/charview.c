@@ -43,6 +43,9 @@ struct charshows charshows = {
 #if TT_CONFIG_OPTION_BYTECODE_INTERPRETER
     true,		/* show gridfit splines if that'st legal */
     true,		/* show raster if that's legal */
+# if TT_CONFIG_OPTION_BYTECODE_DEBUG
+    true,		/* show twilight points if that's legal */
+# endif
 #endif
     12			/* ppem for figuring gridlines and doing gridfitting */
 };
@@ -70,6 +73,7 @@ struct charshows charshows = {
 #define MID_HideGrid	2213
 #define MID_HideGridFit	2214
 #define MID_HideRaster	2215
+#define MID_HideTwilight	2216
 
 int CVClose(CharView *cv) {
     if ( cv->destroyed )
@@ -273,7 +277,7 @@ static BasePoint *CVGetTTFPoint(CharView *cv,int pnum,BasePoint **moved) {
     RefChar *rf;
 
 #if TT_CONFIG_OPTION_BYTECODE_INTERPRETER
-    mspl = cv->gridfit;
+    mspl = cv->gridfit; msp = NULL;
 #else
     mspl = NULL; msp = NULL;
 #endif
@@ -690,7 +694,7 @@ static void NumberPoint(GWindow pixmap, BasePoint *before, BasePoint *me, BasePo
 static void DrawPoint(CharView *cv, GWindow pixmap, ConicPoint *sp, ConicSet *spl) {
     GRect r;
     int x, y, cx, cy;
-    Color col = sp==spl->first ? 0x707000 : 0xff0000;
+    Color col = spl==NULL ? 0x0000ff: sp==spl->first ? 0x707000 : 0xff0000;
     char dirs[4];
 
     if ( sp->me.pnum==-1 )
@@ -794,6 +798,13 @@ return;
 	    &sp->me,
 	    sp->nextcp!=NULL?sp->nextcp:sp->next!=NULL?&sp->next->to->me:NULL,
 	    cv,x,y,col);
+}
+
+static void DrawBasePoint(CharView *cv,GWindow pixmap,BasePoint *me) {
+    static ConicPoint sp;
+
+    sp.me = *me;
+    DrawPoint(cv,pixmap,&sp,NULL);
 }
 
 static void DrawLine(CharView *cv, GWindow pixmap,
@@ -903,6 +914,12 @@ static void char_expose(CharView *cv,GWindow pixmap,GRect *rect) {
 	DrawLine(cv,pixmap,cv->gridwidth,-8096,cv->gridwidth,8096,0x008000);
 
 	CVDrawConicSet(cv,pixmap,cv->gridfit,0x008000,true,&clip);
+    }
+#endif
+#if TT_CONFIG_OPTION_BYTECODE_INTERPRETER && TT_CONFIG_OPTION_BYTECODE_DEBUG
+    if ( cv->show.twilight ) {
+	for ( i=0; i<cv->twilight_cnt; ++i )
+	    DrawBasePoint(cv,pixmap,&cv->twilight[i]);
     }
 #endif
 
@@ -1111,6 +1128,12 @@ static void CharViewFree(CharView *cv) {
 #if TT_CONFIG_OPTION_BYTECODE_INTERPRETER
     ConicPointListsFree(cv->gridfit);
     FreeType_FreeRaster(cv->raster);
+# if TT_CONFIG_OPTION_BYTECODE_DEBUG
+    free(cv->twilight);
+# endif
+#endif
+#if TT_CONFIG_OPTION_BYTECODE_DEBUG
+    free(cv->cvtvals);
 #endif
     free(cv);
 }
@@ -1193,12 +1216,13 @@ static int cv_gv_e_h(GWindow gw, GEvent *event) {
 #if TT_CONFIG_OPTION_BYTECODE_DEBUG
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     struct ttfactions *acts;
-    int i, seek;
+    int i, seek, y;
     ConicPoint *sp;
     BasePoint *bp, *mbp;
     struct instrinfo *ii;
-    char buf[200];
-    static unichar_t msg[200];
+    char buf[400];
+    static unichar_t msg[400];
+    double scale=0;	/* keeps compiler from complaining about uninit variable */
 
     switch ( event->type ) {
       case et_expose:
@@ -1229,24 +1253,35 @@ static int cv_gv_e_h(GWindow gw, GEvent *event) {
 		sprintf(buf+strlen(buf), "\n%s%s",
 		    acts->rounded ? "rounded " : "",
 		    acts->min ? "minimum distance ": "" );
-		if ( acts->cvt_entry!=-1 && cv->cvt!=NULL ) {
-		    int val = (short) ptgetushort(cv->cvt->data+2*acts->cvt_entry);
+		if ( acts->cvt_entry!=-1 && cv->cvtvals!=NULL ) {
+		    int orig = (short) ptgetushort(cv->cvt->data+2*acts->cvt_entry);
+		    int val = cv->cvtvals[acts->cvt_entry];
 		    sprintf(buf+strlen(buf), " cvt entry=%d fword=%d pixel=%.2f",
 			acts->cvt_entry, val,
 				val*(double) cv->show.ppem/cv->cc->parent->em );
+		    if ( orig!=val )
+			sprintf(buf+strlen(buf), " (orig=%d)", orig );
 		}
 	    }
 	    bp = CVGetTTFPoint(cv,acts->pnum,&mbp);
 	    if ( bp!=NULL ) {
-		double scale = cv->show.ppem/(double) (cv->cc->parent->em);
+		scale = cv->show.ppem/(double) (cv->cc->parent->em);
 		sprintf(buf+strlen(buf), "\nPoint originally at: (%g,%g) (%.2f,%.2f)",
 			bp->x,bp->y, bp->x*scale, bp->y*scale);
-#if TT_CONFIG_OPTION_BYTECODE_INTERPRETER
-		if ( mbp!=NULL )
-		    sprintf(buf+strlen(buf), "\nPoint moved to: (%g,%g) (%.2f,%.2f)",
-			    mbp->x,mbp->y, mbp->x*scale, mbp->y*scale);
-#endif
 	    }
+#if TT_CONFIG_OPTION_BYTECODE_INTERPRETER
+	    sprintf(buf+strlen(buf), "\nFrom: (%.2f,%.2f)",
+		    acts->was.x/64., acts->was.y/64.);
+	    sprintf(buf+strlen(buf), "\nTo: (%.2f,%.2f)",
+		    acts->is.x/64., acts->is.y/64.);
+	    if ( bp!=NULL && mbp!=NULL ) {
+		sprintf(buf+strlen(buf), "\nFinally at: (%g,%g) (%.2f,%.2f)",
+			mbp->x,mbp->y, mbp->x*scale, mbp->y*scale);
+	    }
+#endif
+	    sprintf( buf+strlen(buf), "\n%s", instrs[*acts->instr]);
+	    if ( acts->infunc>=0 )
+		sprintf( buf+strlen(buf), " in function %d", acts->infunc );
 	    uc_strcpy(msg,buf);
 	    GGadgetPreparePopup(GDrawGetParentWindow(ii->v),msg);
 	}
@@ -1264,7 +1299,12 @@ static int cv_gv_e_h(GWindow gw, GEvent *event) {
 	    sp = CVGetPoint(cv,acts->pnum);
 	    if ( acts->instr >= ii->instrdata->instrs &&
 		    acts->instr < ii->instrdata->instrs+ii->instrdata->instr_cnt ) {
-		ii->isel_pos = acts->instr - ii->instrdata->instrs;
+		seek = acts->instr - ii->instrdata->instrs;
+		y = 0;
+		for ( i=0; i<seek && i<ii->instrdata->instr_cnt; ++i )
+		    if ( ii->instrdata->bts[i]!=bt_wordlo )
+			++y;
+		ii->isel_pos = y;
 		if ( ii->isel_pos<ii->lpos ||
 			ii->isel_pos>=ii->lpos + cv->vheight/cv->fh ) {
 		    ii->lpos = ii->isel_pos-cv->vheight/(3*cv->fh);
@@ -1395,11 +1435,11 @@ static void CVMenuShowHide(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     if ( mi->mid==MID_HideInstrs || mi->mid==MID_HideGloss ) {
 	if ( mi->mid==MID_HideInstrs ) {
-	    cv->show.instrpane = !cv->show.instrpane;
+	    cv->show.instrpane = charshows.instrpane = !cv->show.instrpane;
 	    GDrawSetVisible(cv->instrinfo.v,cv->show.instrpane);
 	    GGadgetSetVisible(cv->instrinfo.vsb,cv->show.instrpane);
 	} else {
-	    cv->show.glosspane = !cv->show.glosspane;
+	    cv->show.glosspane = charshows.glosspane = !cv->show.glosspane;
 	    GDrawSetVisible(cv->glossv,cv->show.glosspane);
 	    GGadgetSetVisible(cv->gvsb,cv->show.glosspane);
 	}
@@ -1412,18 +1452,23 @@ static void CVMenuShowHide(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     } else {
 	switch ( mi->mid ) {
 	  case MID_HideSplines:
-	    cv->show.fore = !cv->show.fore;
+	    cv->show.fore = charshows.fore = !cv->show.fore;
 	  break;
 	  case MID_HideGrid:
-	    cv->show.grid = !cv->show.grid;
+	    cv->show.grid = charshows.grid = !cv->show.grid;
 	  break;
 #if TT_CONFIG_OPTION_BYTECODE_INTERPRETER
 	  case MID_HideGridFit:
-	    cv->show.gridspline = !cv->show.gridspline;
+	    cv->show.gridspline = charshows.gridspline = !cv->show.gridspline;
 	  break;
 	  case MID_HideRaster:
-	    cv->show.raster = !cv->show.raster;
+	    cv->show.raster = charshows.raster = !cv->show.raster;
 	  break;
+# if TT_CONFIG_OPTION_BYTECODE_DEBUG
+	  case MID_HideTwilight:
+	    cv->show.twilight = charshows.twilight = !cv->show.twilight;
+	  break;
+# endif
 #endif
 	}
 	GDrawRequestExpose(cv->v,NULL,false);
@@ -1488,6 +1533,12 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    free(mi->ti.text);
 	    mi->ti.text = u_copy(GStringGetResource(cv->show.raster?_STR_HideRaster: _STR_ShowRaster,NULL));
 	  break;
+# if TT_CONFIG_OPTION_BYTECODE_DEBUG
+	  case MID_HideTwilight:
+	    free(mi->ti.text);
+	    mi->ti.text = u_copy(GStringGetResource(cv->show.twilight?_STR_HideTwilight: _STR_ShowTwilight,NULL));
+	  break;
+# endif
 #endif
 	}
     }
@@ -1539,6 +1590,9 @@ static GMenuItem vwlist[] = {
 #if TT_CONFIG_OPTION_BYTECODE_INTERPRETER
     { { (unichar_t *) _STR_ShowGridFit, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control, NULL, NULL, CVMenuShowHide, MID_HideGridFit },
     { { (unichar_t *) _STR_ShowRaster, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control, NULL, NULL, CVMenuShowHide, MID_HideRaster },
+# if TT_CONFIG_OPTION_BYTECODE_DEBUG
+    { { (unichar_t *) _STR_ShowTwilight, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control, NULL, NULL, CVMenuShowHide, MID_HideTwilight },
+# endif
 #endif
     { { (unichar_t *) _STR_GridSize, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control, NULL, NULL, CVMenuGridSize },
     { NULL }

@@ -104,6 +104,9 @@ struct charshows {
 #if TT_CONFIG_OPTION_BYTECODE_INTERPRETER
     unsigned int gridspline: 1;		/* Show gridfit splines */
     unsigned int raster: 1;		/* Show a bitmap for this grid */
+# if TT_CONFIG_OPTION_BYTECODE_DEBUG
+    unsigned int twilight: 1;		/* Show the twilight points we generated */
+# endif
 #endif
     uint16 ppem;			/* for the grid/gridfitting */
 };
@@ -150,6 +153,13 @@ typedef struct charview {
     ConicPointList *gridfit;
     struct freetype_raster *raster;
     real gridwidth;
+# if TT_CONFIG_OPTION_BYTECODE_DEBUG
+    int twilight_cnt;
+    BasePoint *twilight;
+# endif
+#endif
+#if TT_CONFIG_OPTION_BYTECODE_DEBUG
+    int16 *cvtvals;
 #endif
     Table *cvt;
 } CharView;

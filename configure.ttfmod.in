@@ -1,0 +1,50 @@
+dnl Process this file with autoconf to produce a configure script.
+
+AC_INIT(ttfmod/ttfmod.h)
+AC_PROG_CC
+#AC_PROG_RANLIB
+#AC_DISABLE_SHARED
+AC_DISABLE_STATIC
+AC_PROG_LIBTOOL
+
+AC_SEARCH_LIBS(dlopen, dl) dnl some systems have this in libc
+AC_SEARCH_LIBS(inet_aton, resolv) dnl some systems have this in libc
+
+dnl Is there a better way to add a directory to the include path?
+
+CFLAGS="$CFLAGS -I/usr/include/freetype2/"
+
+dnl check for freetype. If it doesn't exist then turn off
+dnl rasterization code (which uses it).
+dnl But if it does exist...
+dnl We assume they can't use Apple's patents, do default behavior (in config.h)
+dnl is to turn off the interpreter. But if freetype were compiled with the
+dnl interpreter on then we can assume we can use it too and turn it on here.
+
+AC_CHECK_LIB(freetype, FT_New_Face, [
+dnl only check for the interp if they've got freetype (ie. they might have
+dnl the headers, but no library, and that would confuse us mightily
+
+echo -n checking if bytecode interpreter is on in freetype.h...
+AC_TRY_COMPILE([#include <ft2build.h>
+#include FT_FREETYPE_H], [#ifdef TT_CONFIG_OPTION_BYTECODE_INTERPRETER
+exit(0);
+#else
+A ludicrous error, but so what, it's an error, that's all I need
+#endif], [echo " " yes
+    AC_DEFINE(TT_CONFIG_OPTION_BYTECODE_DEBUG,1)], echo " " no)
+], [ AC_DEFINE(_NO_LIBFREETYPE)
+    AC_DEFINE(TT_RASTERIZE_FONTVIEW,0) ])
+
+dnl older libc's don't have snprintf
+
+AC_CHECK_FUNC(snprintf, : , AC_DEFINE(_NO_SNPRINTF))
+
+AC_C_CONST
+AC_PATH_XTRA
+
+AC_OUTPUT(ttfmod/Makefile)
+
+echo Configuration defines: $DEFS
+
+dnl EOF

@@ -1,6 +1,7 @@
 
 I appologize for the roughness of this process, this is all new stuff and it's
-not completely finished.
+nowhere near finished. Eventually this will all get rolled into the pfaedit
+distribution, but not yet.
 
 BUILDING
     First you must download and build pfaedit (or at least libg{draw,unicode})
@@ -9,8 +10,11 @@ BUILDING
 	http://freetype.sourceforge.net/
     Then download the ttfmod_src package and put it in the same directory
      whence you gunziped the libraries, gunzip it, then:
-	$ cd pfaedit/ttfmod
+	$ cd pfaedit
+	$ configure.ttfmod
+	$ cd ttfmod
 	$ make
+    Note that the configure script is called "configure.ttfmod".
 
 INSTALLING
     Er, I'm not really sure of the best way to do this. If you su root (or

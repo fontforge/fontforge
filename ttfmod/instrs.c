@@ -31,6 +31,7 @@
 #include "ttfinstrs.h"
 
 extern int _GScrollBar_Width;
+#define EDGE_SPACING	2
 
 const char *instrs[] = {
     "SVTCA[y-axis]",
@@ -167,8 +168,8 @@ const char *instrs[] = {
     "Unknown83",
     "Unknown84",
     "SCANCTRL",
-    "SDPVTL0",
-    "SDPVTL1",
+    "SDPVTL[parallel]",
+    "SDPVTL[orthog]",
     "GETINFO",
     "IDEF",
     "ROLL",
@@ -555,18 +556,18 @@ void instr_expose(struct instrinfo *ii,GWindow pixmap,GRect *rect) {
     GDrawSetFont(pixmap,ii->gfont);
     addr_end = 0;
     if ( ii->showaddr )
-	addr_end = GDrawGetTextWidth(pixmap,nums,4,NULL)+2;
+	addr_end = GDrawGetTextWidth(pixmap,nums,4,NULL)+EDGE_SPACING;
     num_end = addr_end;
     if ( ii->showhex )
 	num_end = addr_end + GDrawGetTextWidth(pixmap,nums,5,NULL)+4;
 
-    low = ( (rect->y-2)/ii->fh ) * ii->fh +2;
-    high = ( (rect->y+rect->height+ii->fh-1-2)/ii->fh ) * ii->fh +2;
+    low = ( (rect->y-EDGE_SPACING)/ii->fh ) * ii->fh +EDGE_SPACING;
+    high = ( (rect->y+rect->height+ii->fh-1-EDGE_SPACING)/ii->fh ) * ii->fh +EDGE_SPACING;
 
     if ( ii->isel_pos!=-1 ) {
 	GRect r;
 	r.x = 0; r.width = ii->vwidth;
-	r.y = (ii->isel_pos-ii->lpos)*ii->fh+2; r.height = ii->fh;
+	r.y = (ii->isel_pos-ii->lpos)*ii->fh+EDGE_SPACING; r.height = ii->fh;
 	GDrawFillRect(pixmap,&r,0xffff00);
     }
 
@@ -575,7 +576,7 @@ void instr_expose(struct instrinfo *ii,GWindow pixmap,GRect *rect) {
     if ( ii->showhex )
 	GDrawDrawLine(pixmap,num_end,rect->y,num_end,rect->y+rect->height,0x000000);
 
-    for ( i=0, y=2-ii->lpos*ii->fh; y<low && i<ii->instrdata->instr_cnt; ++i ) {
+    for ( i=0, y=EDGE_SPACING-ii->lpos*ii->fh; y<low && i<ii->instrdata->instr_cnt; ++i ) {
 	if ( ii->instrdata->bts[i]==bt_wordhi )
 	    ++i;
 	y += ii->fh;
@@ -583,11 +584,11 @@ void instr_expose(struct instrinfo *ii,GWindow pixmap,GRect *rect) {
     if ( y<=high && ii->instrdata->instr_cnt==0 && i==0 ) {
 	if ( ii->instrdata->in_composit ) {
 	    uc_strcpy(uname,"<instrs inherited>");
-	    GDrawDrawText(pixmap,num_end+2,y+ii->as,uname,-1,NULL,0xff0000);
+	    GDrawDrawText(pixmap,num_end+EDGE_SPACING,y+ii->as,uname,-1,NULL,0xff0000);
 	    y += ii->fh;
 	}
 	uc_strcpy(uname,"<no instrs>");
-	GDrawDrawText(pixmap,num_end+2,y+ii->as,uname,-1,NULL,0xff0000);
+	GDrawDrawText(pixmap,num_end+EDGE_SPACING,y+ii->as,uname,-1,NULL,0xff0000);
     } else for ( ; y<=high && i<ii->instrdata->instr_cnt; ++i ) {
 	sprintf( loc, "%d", i ); uc_strcpy(uloc,loc);
 	if ( ii->instrdata->bts[i]==bt_wordhi ) {
@@ -605,13 +606,13 @@ void instr_expose(struct instrinfo *ii,GWindow pixmap,GRect *rect) {
 	}
 
 	if ( ii->showaddr ) {
-	    x = addr_end - 2 - GDrawGetTextWidth(pixmap,uloc,-1,NULL);
+	    x = addr_end - EDGE_SPACING - GDrawGetTextWidth(pixmap,uloc,-1,NULL);
 	    GDrawDrawText(pixmap,x,y+ii->as,uloc,-1,NULL,0x000000);
 	}
-	x = addr_end + 2;
+	x = addr_end + EDGE_SPACING;
 	if ( ii->showhex )
 	    GDrawDrawText(pixmap,x,y+ii->as,uins,-1,NULL,0x000000);
-	GDrawDrawText(pixmap,num_end+2,y+ii->as,uname,-1,NULL,0x000000);
+	GDrawDrawText(pixmap,num_end+EDGE_SPACING,y+ii->as,uname,-1,NULL,0x000000);
 	y += ii->fh;
     }
 }
@@ -724,10 +725,12 @@ void instr_scroll(struct instrinfo *ii,struct sbevent *sb) {
         newpos = ii->lheight-ii->vheight/ii->fh;
     if ( newpos<0 ) newpos =0;
     if ( newpos!=ii->lpos ) {
+	GRect r;
 	int diff = newpos-ii->lpos;
 	ii->lpos = newpos;
 	GScrollBarSetPos(ii->vsb,ii->lpos);
-	GDrawScroll(ii->v,NULL,0,diff*ii->fh);
+	r.x=0; r.y = EDGE_SPACING; r.width=ii->vwidth; r.height=ii->vheight-2*EDGE_SPACING;
+	GDrawScroll(ii->v,&r,0,diff*ii->fh);
     }
 }
 
