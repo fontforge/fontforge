@@ -217,6 +217,8 @@ struct ft_context {
     ConicPointList *hcpl, *lcpl, *cpl;
     ConicPoint *last;
     double scale;
+    ConicPointList *orig_cpl;
+    ConicPoint *orig_sp;
 };
 
 static void FT_ClosePath(struct ft_context *context) {
@@ -231,6 +233,9 @@ static void FT_ClosePath(struct ft_context *context) {
 	}
 	context->cpl->last = context->cpl->first;
 	context->last = NULL;
+	if ( context->orig_cpl!=NULL )
+	    context->orig_cpl = context->orig_cpl->next;
+	context->orig_sp = NULL;
     }
 }
 
@@ -251,10 +256,13 @@ static int FT_MoveTo(FT_Vector *to,void *user) {
 	context->lcpl->next = context->cpl;
     context->lcpl = context->cpl;
 
+    if ( context->orig_cpl!=NULL )
+	context->orig_sp = context->orig_cpl->first;
+
     context->last = context->cpl->first = chunkalloc(sizeof(ConicPoint));
     context->last->me.x = to->x*context->scale;
     context->last->me.y = to->y*context->scale;
-    context->last->me.pnum = -1;
+    context->last->me.pnum = context->orig_sp?context->orig_sp->me.pnum: -2;
 return( 0 );
 }
 
@@ -268,6 +276,12 @@ static int FT_LineTo(FT_Vector *to,void *user) {
     sp->me.pnum = -1;
     ConicMake(context->last,sp);
     context->last = sp;
+
+    if ( context->orig_sp!=NULL ) {
+	context->orig_sp = context->orig_sp->next->to;
+	if ( context->orig_sp!=NULL )
+	    sp->me.pnum = context->orig_sp->me.pnum;
+    }
 return( 0 );
 }
 
@@ -287,6 +301,15 @@ static int FT_ConicTo(FT_Vector *_cp, FT_Vector *to,void *user) {
     sp->prevcp = context->last->nextcp = cp;
     ConicMake(context->last,sp);
     context->last = sp;
+
+    if ( context->orig_sp!=NULL ) {
+	context->orig_sp = context->orig_sp->next->to;
+	if ( context->orig_sp!=NULL ) {
+	    sp->me.pnum = context->orig_sp->me.pnum;
+	    if ( context->orig_sp->nextcp!=NULL )
+		cp->pnum = context->orig_sp->nextcp->pnum;
+	}
+    }
 return( 0 );
 }
 
@@ -334,6 +357,8 @@ return;
     /* The outline's position is expressed in 24.6 fixed numbers representing */
     /*  pixels. I want to scale it back to the original coordinate system */
     outline_context.scale = cv->cc->parent->em/(64.0*cv->show.ppem);
+    outline_context.orig_cpl = cv->cc->conics;
+    outline_context.orig_sp = NULL;
     if ( !_FT_Outline_Decompose(&slot->outline,&outlinefuncs,&outline_context)) {
 	FT_ClosePath(&outline_context);
 	cv->gridfit = outline_context.hcpl;

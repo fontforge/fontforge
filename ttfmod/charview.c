@@ -1173,8 +1173,132 @@ static void CVChar(CharView *cv,GEvent *event) {
     }
 }
 
+static void CVGScrollTo(CharView *cv, int newgpos) {
+    struct instrinfo *ii = &cv->instrinfo;
+
+    if ( newgpos!=ii->gsel_pos ) {
+	ii->gsel_pos = newgpos;
+	if ( newgpos<cv->gvpos || newgpos>=cv->gvpos+(ii->vheight-2*EDGE_SPACING)/ii->fh ) {
+	    cv->gvpos = newgpos-(ii->vheight-2*EDGE_SPACING)/(3*ii->fh);
+	    if ( cv->gvpos>=ii->act_cnt-(ii->vheight-2*EDGE_SPACING)/ii->fh )
+		cv->gvpos=ii->act_cnt-(ii->vheight-2*EDGE_SPACING)/ii->fh-1;
+	    if ( cv->gvpos<0 ) cv->gvpos = 0;
+	    GScrollBarSetPos(cv->gvsb,cv->gvpos);
+	}
+	GDrawRequestExpose(cv->glossv,NULL,false);
+    }
+}
+
+static void CVSelectAct(CharView *cv, int pos) {
+    struct instrinfo *ii = &cv->instrinfo;
+    ConicPoint *sp;
+    struct ttfactions *acts;
+    int i, seek, y;
+
+    CVGScrollTo(cv,pos);
+    for ( i=0, acts=ii->acts; acts!=NULL && i<ii->gsel_pos; ++i )
+	acts = acts->acts;
+    sp = NULL;
+    ii->isel_pos = -1;
+    if ( acts!=NULL ) {
+	sp = CVGetPoint(cv,acts->pnum);
+	if ( acts->instr >= ii->instrdata->instrs &&
+		acts->instr < ii->instrdata->instrs+ii->instrdata->instr_cnt ) {
+	    seek = acts->instr - ii->instrdata->instrs;
+	    y = 0;
+	    for ( i=0; i<seek && i<ii->instrdata->instr_cnt; ++i )
+		if ( ii->instrdata->bts[i]!=bt_wordlo )
+		    ++y;
+	    ii->isel_pos = y;
+	    if ( ii->isel_pos<ii->lpos ||
+		    ii->isel_pos>=ii->lpos + cv->vheight/cv->fh ) {
+		ii->lpos = ii->isel_pos-cv->vheight/(3*cv->fh);
+		if ( ii->lpos >= ii->lheight-cv->vheight/cv->fh )
+		    ii->lpos = ii->lheight-cv->vheight/cv->fh;
+		if ( ii->lpos<0 ) ii->lpos = 0;
+		GScrollBarSetPos(ii->vsb,ii->lpos);
+	    }
+	}
+    } else
+	ii->gsel_pos = -1;
+    GDrawRequestExpose(cv->glossv,NULL,false);
+    GDrawRequestExpose(cv->instrinfo.v,NULL,false);
+    if ( CVClearSel(cv) || sp!=NULL ) {
+	if ( sp ) sp->selected = true;
+	GDrawRequestExpose(cv->v,NULL,false);
+    }
+}
+
+static BasePoint *SplFindPoint(CharView *cv,ConicPointList *spl,GEvent *event,
+	real *dist) {
+    BasePoint at;
+    double fudge;
+    ConicPoint *sp;
+    BasePoint *best=NULL;
+    real d, xoff, yoff;
+
+    *dist = 400;
+    at.x = (event->u.mouse.x - cv->xoff)/cv->scale;
+    at.y = (cv->vheight - cv->yoff - event->u.mouse.y)/cv->scale;
+    fudge = 4/cv->scale;
+    for ( ; spl!=NULL; spl = spl->next ) {
+	for ( sp = spl->first; sp!=NULL; ) {
+	    if ( sp->me.x >= at.x - fudge && sp->me.x <= at.x+fudge &&
+		    sp->me.y >= at.y - fudge && sp->me.y <= at.y+fudge ) {
+		xoff = sp->me.x-at.x;
+		yoff = sp->me.y-at.y;
+		d = xoff*xoff + yoff*yoff;
+		if ( d<*dist ) {
+		    best = &sp->me;
+		    *dist = d;
+		}
+	    }
+	    if ( sp->nextcp!=NULL &&
+		    sp->nextcp->x >= at.x - fudge && sp->nextcp->x <= at.x+fudge &&
+		    sp->nextcp->y >= at.y - fudge && sp->nextcp->y <= at.y+fudge ) {
+		xoff = sp->nextcp->x-at.x;
+		yoff = sp->nextcp->y-at.y;
+		d = xoff*xoff + yoff*yoff;
+		if ( d<*dist ) {
+		    best = sp->nextcp;
+		    *dist = d;
+		}
+	    }
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==spl->first )
+	break;
+	}
+    }
+return( best );
+}
+
+static BasePoint *CVFindPoint(CharView *cv,GEvent *event, int *orig) {
+    BasePoint *obp=NULL, *mbp=NULL;
+    real odist=400, mdist=400;
+
+    if ( cv->show.fore )
+	obp = SplFindPoint(cv,cv->cc->conics,event,&odist);
+#if TT_CONFIG_OPTION_BYTECODE_INTERPRETER
+    if ( cv->show.gridspline )
+	mbp = SplFindPoint(cv,cv->gridfit,event,&mdist);
+#endif
+    if ( obp==NULL )
+return( mbp );
+    else if ( mbp==NULL )
+return( obp );
+    else if ( odist<mdist )
+return( obp );
+
+return( mbp );
+}
+
 static int cv_v_e_h(GWindow gw, GEvent *event) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
+    BasePoint *bp;
+    int orig, i;
+    struct ttfactions *acts;
 
     switch ( event->type ) {
       case et_expose:
@@ -1185,8 +1309,33 @@ static int cv_v_e_h(GWindow gw, GEvent *event) {
       break;
       case et_mousemove: case et_mousedown: case et_mouseup:
 	GGadgetEndPopup();
-	if ( event->type==et_mousemove )
+	if ( event->type==et_mousemove ) {
 	    CVUpdateInfo(cv,event);
+	    bp = CVFindPoint(cv,event,&orig);
+	    if ( bp!=NULL ) {
+		char buffer[32];
+		static unichar_t ubuf[32];
+		if ( bp->pnum==-1 )
+		    sprintf(buffer,"Implicit %s", orig ? " Original" : " Moved" );
+		else
+		    sprintf(buffer,"%d%s", bp->pnum, orig ? " Original" : " Moved" );
+		uc_strcpy(ubuf, buffer);
+		GGadgetPreparePopup(cv->gw,ubuf);
+	    }
+	} else if ( event->type==et_mousedown && event->u.mouse.button==2 ) {
+	    CVMagnify(cv,
+		    (event->u.mouse.x - cv->xoff)/cv->scale,
+		    (cv->vheight - cv->yoff - event->u.mouse.y)/cv->scale,
+		    (event->u.mouse.state&ksm_meta)?-1:1);
+	} else if ( event->type==et_mousedown ) {
+	    bp = CVFindPoint(cv,event,&orig);
+	    if ( bp!=NULL ) {
+		for ( i=0, acts=cv->instrinfo.acts; acts!=NULL && acts->pnum!=bp->pnum;
+			acts = acts->acts, ++i );
+		if ( acts!=NULL )
+		    CVSelectAct(cv,i);
+	    }
+	}
       break;
       case et_timer:
       break;
@@ -1249,17 +1398,7 @@ static void cv_ii_selection_callback(struct instrinfo *ii) {
 	if ( acts==NULL ) i = -1;
 	newgpos = i;
     }
-    if ( newgpos!=ii->gsel_pos ) {
-	ii->gsel_pos = newgpos;
-	if ( newgpos<cv->gvpos || newgpos>=cv->gvpos+(ii->vheight-2*EDGE_SPACING)/ii->fh ) {
-	    cv->gvpos = ii->act_cnt-(ii->vheight-2*EDGE_SPACING)/(3*ii->fh);
-	    if ( cv->gvpos>=ii->act_cnt-(ii->vheight-2*EDGE_SPACING)/ii->fh )
-		cv->gvpos=ii->act_cnt-(ii->vheight-2*EDGE_SPACING)/ii->fh-1;
-	    if ( cv->gvpos<0 ) cv->gvpos = 0;
-	    GScrollBarSetPos(cv->gvsb,cv->gvpos);
-	}
-	GDrawRequestExpose(cv->glossv,NULL,false);
-    }
+    CVGScrollTo(cv,newgpos);
 }
 #endif
 
@@ -1267,8 +1406,7 @@ static int cv_gv_e_h(GWindow gw, GEvent *event) {
 #if TT_CONFIG_OPTION_BYTECODE_DEBUG
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     struct ttfactions *acts;
-    int i, seek, y;
-    ConicPoint *sp;
+    int i, seek;
     BasePoint *bp, *mbp;
     struct instrinfo *ii;
     char buf[400];
@@ -1339,39 +1477,7 @@ static int cv_gv_e_h(GWindow gw, GEvent *event) {
       break;
       case et_mousedown:
 	GGadgetEndPopup();
-	ii = &cv->instrinfo;
-	ii->gsel_pos = (event->u.mouse.y-2)/cv->fh + cv->gvpos;
-	for ( i=0, acts=ii->acts; acts!=NULL && i<ii->gsel_pos; ++i )
-	    acts = acts->acts;
-	sp = NULL;
-	ii->isel_pos = -1;
-	if ( acts!=NULL ) {
-	    sp = CVGetPoint(cv,acts->pnum);
-	    if ( acts->instr >= ii->instrdata->instrs &&
-		    acts->instr < ii->instrdata->instrs+ii->instrdata->instr_cnt ) {
-		seek = acts->instr - ii->instrdata->instrs;
-		y = 0;
-		for ( i=0; i<seek && i<ii->instrdata->instr_cnt; ++i )
-		    if ( ii->instrdata->bts[i]!=bt_wordlo )
-			++y;
-		ii->isel_pos = y;
-		if ( ii->isel_pos<ii->lpos ||
-			ii->isel_pos>=ii->lpos + cv->vheight/cv->fh ) {
-		    ii->lpos = ii->isel_pos-cv->vheight/(3*cv->fh);
-		    if ( ii->lpos >= ii->lheight-cv->vheight/cv->fh )
-			ii->lpos = ii->lheight-cv->vheight/cv->fh;
-		    if ( ii->lpos<0 ) ii->lpos = 0;
-		    GScrollBarSetPos(ii->vsb,ii->lpos);
-		}
-	    }
-	} else
-	    ii->gsel_pos = -1;
-	GDrawRequestExpose(cv->glossv,NULL,false);
-	GDrawRequestExpose(cv->instrinfo.v,NULL,false);
-	if ( CVClearSel(cv) || sp!=NULL ) {
-	    if ( sp ) sp->selected = true;
-	    GDrawRequestExpose(cv->v,NULL,false);
-	}
+	CVSelectAct(cv, (event->u.mouse.y-2)/cv->fh + cv->gvpos);
       break;
     }
 #endif
