@@ -3555,6 +3555,7 @@ struct lookup {
     int script_lang_index;
     uint16 flags;
     uint16 lookup;
+    struct lookup *alttags;
 };
 
 static uint16 *getCoverageTable(FILE *ttf, int coverage_offset, struct ttfinfo *info) {
@@ -4453,9 +4454,9 @@ return( into );
 static struct lookup *compactttflookups(struct feature *features,uint32 *feats) {
     /* go through the feature table we read, and return an array containing */
     /*  all lookup indeces which match the feature tag */
-    int cnt;
+    int cnt, extras=0;
     int i,j,k,l;
-    struct lookup *lookups;
+    struct lookup *lookups, *cur, *alt;
 
     cnt = -1;
     for ( i=0; features[i].tag!=0; ++i )
@@ -4467,16 +4468,21 @@ static struct lookup *compactttflookups(struct feature *features,uint32 *feats) 
     for ( i=0; features[i].tag!=0; ++i ) {
 	for ( k=0; k<features[i].lcnt; ++k ) {
 	    j = features[i].lookups[k];
-	    if ( lookups[j].tag==0 ) {
-		lookups[j].tag = features[i].tag;
-		lookups[j].sl = ScriptListCopy(features[i].sl);
-		lookups[j].lookup = j;
+	    cur = &lookups[j];
+	    while ( cur!=NULL && cur->tag!=0 && cur->tag!=features[i].tag )
+		cur = cur->alttags;
+	    if ( cur==NULL ) {
+		cur = gcalloc(1,sizeof(struct lookup));
+		cur->alttags = lookups[j].alttags;
+		lookups[j].alttags = cur;
+		++extras;
+	    }
+	    if ( cur->tag==0 ) {
+		cur->tag = features[i].tag;
+		cur->sl = ScriptListCopy(features[i].sl);
+		cur->lookup = j;
 	    } else {
-		if ( lookups[j].tag!=features[i].tag )
-		    fprintf( stderr, "Warning: Lookup %d is referenced from at least two features with different tags.\n This confuses PfaEdit and it will only remember one tag. '%c%c%c%c' and '%c%c%c%c'\n",
-			    lookups[j].tag>>24, (lookups[j].tag>>16)&0xff, (lookups[j].tag>>8)&0xff, lookups[j].tag&0xff,
-			    features[i].tag>>24, (features[i].tag>>16)&0xff, (features[i].tag>>8)&0xff, features[i].tag&0xff );
-		lookups[j].sl = ScriptListMerge(lookups[j].sl,features[i].sl);
+		cur->sl = ScriptListMerge(cur->sl,features[i].sl);
 	    }
 	}
 	free( features[i].lookups );
@@ -4485,6 +4491,17 @@ static struct lookup *compactttflookups(struct feature *features,uint32 *feats) 
     for ( i=j=0; i<cnt; ++i ) {
 	if ( lookups[i].tag!=0 )
 	    lookups[j++] = lookups[i];
+    }
+    if ( extras!=0 ) {
+	lookups = grealloc(lookups,(j+extras+1)*sizeof(struct lookup));
+	for ( i=0; i<j; ++i ) {
+	    for ( cur = lookups[i].alttags; cur!=NULL; cur = alt ) {
+		alt = cur->alttags;
+		lookups[j] = *cur;
+		lookups[j++].alttags = NULL;
+		free(cur);
+	    }
+	}
     }
 
     free( features );
