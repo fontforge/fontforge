@@ -1277,6 +1277,55 @@ static HintInstance *HIReverse(HintInstance *cur) {
 return( cur );
 }
 
+static void CheckDiagEnd(SplinePoint *nl,SplinePoint *l,SplinePoint *r,
+	SplinePoint *nr,int top,MinimumDistance **mds) {
+    MinimumDistance *md;
+
+    if ( nl->me.y==nr->me.y && nl->me.x<l->me.x && nr->me.x>r->me.x &&
+	    ((top && nl->me.y>l->me.y && nl->me.y>r->me.y ) ||
+	     (!top&& nl->me.y<l->me.y && nl->me.y<r->me.y )) ) {
+	md = chunkalloc(sizeof(MinimumDistance));
+	md->sp1 = nl;
+	md->sp2 = nr;
+	md->x = true;
+	md->next = *mds;
+	*mds = md;
+    }
+}
+
+static void AddDiagMD(DStemInfo *new,EI *apt,EI *e,MinimumDistance **mds) {
+    SplinePoint *lt, *lb, *rt, *rb;
+    SplinePoint *nlt, *nlb, *nrt, *nrb;
+
+    nlt = nlb = nrt = nrb = NULL;
+    if ( apt->spline->to->me.y > apt->spline->from->me.y ) {
+	lt = apt->spline->to;
+	if ( lt->next!=NULL ) nlt = lt->next->to;
+	lb = apt->spline->from;
+	if ( lb->prev!=NULL ) nlb = lb->prev->from;
+    } else {
+	lt = apt->spline->from;
+	if ( lt->prev!=NULL ) nlt = lt->prev->from;
+	lb = apt->spline->to;
+	if ( lb->next!=NULL ) nlb = lb->next->to;
+    }
+    if ( e->spline->to->me.y > e->spline->from->me.y ) {
+	rt = e->spline->to;
+	if ( rt->next!=NULL ) nrt = rt->next->to;
+	rb = e->spline->from;
+	if ( rb->prev!=NULL ) nrb = rb->prev->from;
+    } else {
+	rt = e->spline->from;
+	if ( rt->prev!=NULL ) nrt = rt->prev->from;
+	rb = e->spline->to;
+	if ( rb->next!=NULL ) nrb = rb->next->to;
+    }
+    if ( nlt!=NULL && nrt!=NULL )
+	CheckDiagEnd(nlt,lt,rt,nrt,1,mds);
+    if ( nlb!=NULL && nrb!=NULL )
+	CheckDiagEnd(nlb,lb,rb,nrb,0,mds);
+}
+
 static int MakeDStem(DStemInfo *d,EI *apt,EI *e) {
     memset(d,'\0',sizeof(DStemInfo));
     if ( apt->spline->to->me.y > apt->spline->from->me.y ) {
@@ -1359,7 +1408,7 @@ return( false );
 return( true );
 }
 
-static DStemInfo *AddDiagStem(DStemInfo *dstems,EI *apt,EI *e) {
+static DStemInfo *AddDiagStem(DStemInfo *dstems,EI *apt,EI *e,MinimumDistance **mds) {
     DStemInfo d, *test, *prev, *new;
 
     if ( !MakeDStem(&d,apt,e))
@@ -1368,6 +1417,7 @@ return( dstems );
 	new = chunkalloc(sizeof(DStemInfo));
 	*new = d;
 	new->next = dstems;
+	AddDiagMD(new,apt,e,mds);
 return( new );
     }
     for ( prev=NULL, test=dstems; test!=NULL && d.leftedgetop.x>test->leftedgetop.x;
@@ -1381,6 +1431,7 @@ return( dstems );
     new = chunkalloc(sizeof(DStemInfo));
     *new = d;
     new->next = test;
+    AddDiagMD(new,apt,e,mds);
     if ( prev==NULL )
 return( new );
     prev->next = new;
@@ -1466,7 +1517,7 @@ static StemInfo *URWSerifChecker(SplineChar *sc,StemInfo *stems) {
 return( stems );
 }
 
-static StemInfo *ELFindStems(EIList *el, int major, DStemInfo **dstems ) {
+static StemInfo *ELFindStems(EIList *el, int major, DStemInfo **dstems, MinimumDistance **mds ) {
     EI *active=NULL, *apt, *e, *p;
     int i, change, ahv, ehv, waschange;
     StemInfo *stems=NULL, *s;
@@ -1532,7 +1583,7 @@ static StemInfo *ELFindStems(EIList *el, int major, DStemInfo **dstems ) {
 	    } else if ( dstems!=NULL &&
 		    apt->spline->knownlinear && e->spline->knownlinear &&
 		    AreNearlyParallel(apt,e)) {
-		*dstems = AddDiagStem(*dstems,apt,e);
+		*dstems = AddDiagStem(*dstems,apt,e,mds);
 	    }
 		
 	    if ( EISameLine(p,p->aenext,i+el->low,major))	/* There's one case where this doesn't happen in FindStem */
@@ -2052,12 +2103,12 @@ static StemInfo *CheckForGhostHints(StemInfo *stems,SplineChar *sc) {
 return( stems );
 }
 
-static StemInfo *SCFindStems(EIList *el, int major, int removeOverlaps,DStemInfo **dstems) {
+static StemInfo *SCFindStems(EIList *el, int major, int removeOverlaps,DStemInfo **dstems,MinimumDistance **mds) {
     StemInfo *stems;
 
     el->major = major;
     ELOrder(el,major);
-    stems = ELFindStems(el,major,dstems);
+    stems = ELFindStems(el,major,dstems,mds);
     free(el->ordered);
     free(el->ends);
     stems = StemRemoveZeroHIlen(stems);
@@ -2748,7 +2799,7 @@ return;
     if ( (&serif1->me.x)[coord]!=(&serif2->me.x)[coord] )
 return;
     /* Must go in the same vertical direction as the stem's edge */
-    if ( up != (&serif1->next->to->me.x)[other]<(&serif2->me.x)[other] )
+    if ( serif1->next->to!=serif2 && up != (&serif1->next->to->me.x)[other]<(&serif2->me.x)[other] )
 return;
     /* Must return back towards the stem */
     if ( right != ( (&serif2->me.x)[coord]>(&serif3->me.x)[coord] ))
@@ -2800,8 +2851,8 @@ void SplineCharAutoHint( SplineChar *sc, int removeOverlaps ) {
     sc->changedsincelasthinted = false;
     sc->manualhints = false;
 
-    sc->vstem = SCFindStems(&el,1,removeOverlaps,&sc->dstem);
-    sc->hstem = SCFindStems(&el,0,removeOverlaps,NULL);
+    sc->vstem = SCFindStems(&el,1,removeOverlaps,&sc->dstem,&sc->md);
+    sc->hstem = SCFindStems(&el,0,removeOverlaps,NULL,NULL);
     SCSerifCheck(sc,sc->vstem,1);
     SCSerifCheck(sc,sc->hstem,0);
     SCAddWidthMD(sc);

@@ -324,10 +324,7 @@ typedef struct steminfo {
 typedef struct dsteminfo {
     struct dsteminfo *next;	/* First two fields match those in steminfo */
     unsigned int hinttype: 2;	/* Only used by undoes */
-    unsigned int temporary: 1;	/* used only be tottf.c:gendinstrs to mark a hint that should be freed at end */
     unsigned int used: 1;	/* used only be tottf.c:gendinstrs to mark a hint that has been dealt with */
-    unsigned int onlyleft: 1;	/* used only be tottf.c:gendinstrs to mark a hint where we only found half the stem */
-    unsigned int onlyright: 1;	/* used only be tottf.c:gendinstrs to mark a hint where we only found half the stem */
     BasePoint leftedgetop, leftedgebottom, rightedgetop, rightedgebottom;	/* this order is important in tottf.c: DStemInteresect */
 } DStemInfo;
 
