@@ -1157,6 +1157,29 @@ static void bOpen(Context *c) {
     c->curfv = sf->fv;
 }
 
+static void bSelectBitmap(Context *c) {
+    BDFFont *bdf;
+    int depth, size;
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_int )
+	error( c, "Bad type for argument" );
+    size = c->a.vals[2].u.ival;
+    if ( size==-1 )
+	c->curfv->show = NULL;
+    else {
+	depth = size>>16;
+	if ( depth==0 ) depth = 1;
+	size = size&0xffff;
+	for ( bdf = c->curfv->sf->bitmaps; bdf!=NULL; bdf=bdf->next )
+	    if ( size==bdf->pixelsize && depth==BDFDepth(bdf))
+	break;
+	error(c,"No matching bitmap");
+	c->curfv->show = bdf;
+    }
+}
+
 static void bNew(Context *c) {
     if ( c->a.argc!=1 )
 	error( c, "Wrong number of arguments");
@@ -1472,6 +1495,14 @@ static void Bitmapper(Context *c,int isavail) {
 
 static void bBitmapsAvail(Context *c) {
     Bitmapper(c,true);
+    if ( c->curfv->show!=NULL ) {
+	BDFFont *bdf;
+	for ( bdf=c->curfv->sf->bitmaps; bdf!=NULL; bdf = bdf->next )
+	    if ( bdf==c->curfv->show )
+	break;
+	if ( bdf==NULL )
+	    c->curfv->show = NULL;
+    }
 }
 
 static void bBitmapsRegen(Context *c) {
@@ -5045,6 +5076,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "ClearPrivateEntry", bClearPrivateEntry },
     { "ChangePrivateEntry", bChangePrivateEntry },
     { "GetPrivateEntry", bGetPrivateEntry },
+    { "SelectBitmap", bSelectBitmap },
     { "SetWidth", bSetWidth },
     { "SetVWidth", bSetVWidth },
     { "SetLBearing", bSetLBearing },
