@@ -2371,7 +2371,7 @@ void FontInfo(SplineFont *sf) {
     ngcd[4].gd.flags = gg_visible | gg_enabled;
     ngcd[4].creator = GLabelCreate;
 
-    ngcd[5].gd.pos.x = 105; ngcd[5].gd.pos.y = ngcd[4].gd.pos.y-6; ngcd[5].gd.pos.width = 147;
+    ngcd[5].gd.pos.x = 115; ngcd[5].gd.pos.y = ngcd[4].gd.pos.y-6; ngcd[5].gd.pos.width = 137;
     ngcd[5].gd.flags = gg_visible | gg_enabled;
     nlabel[5].text = (unichar_t *) (sf->fullname?sf->fullname:sf->fontname);
     nlabel[5].text_is_1byte = true;
@@ -2388,7 +2388,7 @@ void FontInfo(SplineFont *sf) {
     ngcd[8].gd.flags = gg_visible | gg_enabled;
     ngcd[8].creator = GLabelCreate;
 
-    ngcd[9].gd.pos.x = 105; ngcd[9].gd.pos.y = ngcd[8].gd.pos.y-6; ngcd[9].gd.pos.width = 147;
+    ngcd[9].gd.pos.x = 115; ngcd[9].gd.pos.y = ngcd[8].gd.pos.y-6; ngcd[9].gd.pos.width = 137;
     ngcd[9].gd.flags = gg_visible | gg_enabled;
     nlabel[9].text = (unichar_t *) (sf->version?sf->version:"");
     nlabel[9].text_is_1byte = true;
@@ -3178,13 +3178,14 @@ void FontInfo(SplineFont *sf) {
 	GTextInfoListFree(list);
     if ( GTabSetGetTabLines(mgcd[0].ret)>2 ) {
 	int offset = (GTabSetGetTabLines(mgcd[0].ret)-2)*GDrawPointsToPixels(NULL,20);
+	GRect temp;
 	GDrawResize(gw,pos.width,pos.height+offset);
 	GGadgetResize(mgcd[0].ret,GDrawPointsToPixels(NULL,mgcd[0].gd.pos.width),
 		GDrawPointsToPixels(NULL,mgcd[0].gd.pos.height)+offset);
 	GGadgetMove(mgcd[1].ret,GDrawPointsToPixels(NULL,mgcd[1].gd.pos.x),
 		GDrawPointsToPixels(NULL,mgcd[1].gd.pos.y)+offset);
-	GGadgetMove(mgcd[2].ret,GDrawPointsToPixels(NULL,mgcd[2].gd.pos.x),
-		GDrawPointsToPixels(NULL,mgcd[2].gd.pos.y)+offset);
+	GGadgetGetSize(mgcd[2].ret,&temp);
+	GGadgetMove(mgcd[2].ret,temp.x, temp.y+offset);
 	GGadgetResize(mgcd[3].ret,GDrawPointsToPixels(NULL,mgcd[3].gd.pos.width),
 		GDrawPointsToPixels(NULL,mgcd[3].gd.pos.height)+offset);
     }
