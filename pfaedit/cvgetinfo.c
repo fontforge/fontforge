@@ -147,6 +147,7 @@ return( val );
 static void SetNameFromUnicode(GWindow gw,int cid,int val) {
     unichar_t *temp;
     char buf[10];
+    const unichar_t *curname = GGadgetGetTitle(GWidgetGetControl(gw,cid));
 
     if ( val>=0 && val<psunicodenames_cnt && psunicodenames[val]!=NULL )
 	temp = uc_copy(psunicodenames[val]);
@@ -154,7 +155,9 @@ static void SetNameFromUnicode(GWindow gw,int cid,int val) {
 	temp = uc_copy("hyphen-minus");
     else if ( val==0xa0 )
 	temp = uc_copy("nonbreakingspace");
-    else if (( val>=32 && val<0x7f ) || val>=0xa1 ) {
+/* If it a control char is already called ".notdef" then give it a uniXXXX style name */
+    else if (( val>=32 && val<0x7f ) || val>=0xa1 ||
+	    (uc_strcmp(curname,".notdef")==0 && val!=0)) {
 	sprintf( buf,"uni%04X", val );
 	temp = uc_copy(buf);
     } else
