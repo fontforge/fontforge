@@ -3719,34 +3719,10 @@ return( 0 );
 return( true );
 }
 
-static SplineChar *MakeDupRef(int local_enc, struct dup *dup) {
-    SplineChar *sc = SplineCharCreate();
-
-    sc->enc = local_enc;
-    sc->unicodeenc = dup->uni;
-    sc->width = dup->sc->width;
-    sc->vwidth = dup->sc->vwidth;
-    sc->name = copy(dup->sc->name);
-
-    /* Used not to bother for spaces, but SCDuplicate depends on the ref */
-    /*if ( dup->sc->refs!=NULL || dup->sc->splines!=NULL )*/ {
-	RefChar *ref = chunkalloc(sizeof(RefChar));
-	sc->refs = ref;
-	ref->sc = dup->sc;
-	ref->local_enc = dup->sc->enc;
-	ref->unicode_enc = dup->sc->unicodeenc;
-	ref->adobe_enc = getAdobeEnc(ref->sc->name);
-	ref->transform[0] = ref->transform[3] = 1;
-	SCReinstanciateRefChar(sc,ref);
-	SCMakeDependent(sc,ref->sc);
-    }
-return( sc );
-}
-
 static SplineChar *SFMakeDupRef(SplineFont *sf, int local_enc, struct dup *dup) {
     SplineChar *sc;
 
-    sc = MakeDupRef(local_enc,dup);
+    sc = MakeDupRef(dup->sc,local_enc,dup->uni);
     sc->parent = sf;
 return( sc );
 }
@@ -3779,9 +3755,9 @@ return;
     }
     for ( dup=info->dups; dup!=NULL; dup=dup->prev ) {
 	if ( dup->enc>0 && dup->enc<=0xff )
-	    lo[dup->enc] = MakeDupRef(dup->enc,dup);
+	    lo[dup->enc] = MakeDupRef(dup->sc,dup->enc,dup->uni);
 	else
-	    hi[dup->enc-0xf000] = MakeDupRef(dup->enc,dup);
+	    hi[dup->enc-0xf000] = MakeDupRef(dup->sc,dup->enc,dup->uni);
     }
     for ( i=0; i<256; ++i ) {
 	if ( hi[i]!=NULL && lo[i]!=NULL ) {
