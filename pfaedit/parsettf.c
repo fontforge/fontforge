@@ -3098,6 +3098,34 @@ return( -1 );
 return( enc );
 }
 
+static int SubtableIsntSupported(FILE *ttf,uint32 offset,int platform,int specific) {
+    uint32 here = ftell(ttf);
+    int format, len, ret=false;
+
+    fseek(ttf,offset,SEEK_SET);
+
+    format = getushort(ttf);
+    if ( format<0 || (format&1) || format>12 ) {
+	fprintf( stderr, "Encoding subtable for platform=%d, specific=%d has an unsupported format %d.\n",
+		platform, specific, format );
+	ret = true;
+    }
+
+    if ( format!=12 && format!=10 && format!=8 ) {
+	len = getushort(ttf);
+    } else {
+	/* padding */ getushort(ttf);
+	len = getlong(ttf);
+    }
+    if ( len==0 ) {
+	fprintf( stderr, "Encoding subtable for platform=%d, specific=%d has a 0 length subtable.\n",
+		platform, specific );
+	ret = true;
+    }
+    fseek(ttf,here,SEEK_SET);
+return( ret );
+}
+    
 static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
     int i,j;
     int nencs, version;
@@ -3126,6 +3154,8 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	platform = getushort(ttf);
 	specific = getushort(ttf);
 	offset = getlong(ttf);
+	if ( SubtableIsntSupported(ttf,info->encoding_start+offset,platform,specific))
+    continue;
 	interp = interp_from_encoding(enc_from_platspec(platform,specific),interp);
 	if ( platform==3 && specific==10 ) { /* MS Unicode 4 byte */
 	    enc = em_unicode4;
@@ -3234,6 +3264,10 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 		    4*segCount*sizeof(uint16);
 	    /* that's the amount of space left in the subtable and it must */
 	    /*  be filled with glyphIDs */
+	    if ( len<0 ) {
+		GDrawIError("This font has an illegal format 4 subtable with too little space for all the segments.\nThis error is not recoverable.\nBye" );
+		exit(1);
+	    }
 	    glyphs = galloc(len);
 	    glyph_tot = len/2;
 	    for ( i=0; i<glyph_tot; ++i )
