@@ -1575,7 +1575,7 @@ static struct ttf_table *SFDGetTtfTable(FILE *sfd, SplineFont *sf,struct ttf_tab
 return( tab );
 }
 
-static void SFDCloseCheck(SplinePointList *spl,int order2) {
+static int SFDCloseCheck(SplinePointList *spl,int order2) {
     if ( spl->first!=spl->last &&
 	    RealNear(spl->first->me.x,spl->last->me.x) &&
 	    RealNear(spl->first->me.y,spl->last->me.y)) {
@@ -1588,7 +1588,9 @@ static void SFDCloseCheck(SplinePointList *spl,int order2) {
 	chunkfree(oldlast,sizeof(*oldlast));
 	SplineMake(spl->last,spl->first,order2);
 	spl->last = spl->first;
+return( true );
     }
+return( false );
 }
 
 static SplineSet *SFDGetSplineSet(SplineFont *sf,FILE *sfd) {
@@ -1622,7 +1624,8 @@ static SplineSet *SFDGetSplineSet(SplineFont *sf,FILE *sfd) {
 		    SplinePointList *spl = chunkalloc(sizeof(SplinePointList));
 		    spl->first = spl->last = pt;
 		    if ( cur!=NULL ) {
-			SFDCloseCheck(cur,sf->order2);
+			if ( SFDCloseCheck(cur,sf->order2))
+			    --ttfindex;
 			cur->next = spl;
 		    } else
 			head = spl;
@@ -1650,6 +1653,7 @@ static SplineSet *SFDGetSplineSet(SplineFont *sf,FILE *sfd) {
 		    pt->nonextcp = true;
 		    SplineMake(cur->last,pt,sf->order2);
 		    cur->last = pt;
+		    ++ttfindex;
 		}
 		sp -= 6;
 	    } else
