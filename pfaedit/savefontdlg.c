@@ -358,7 +358,7 @@ return( false );
 		    d->ps_flags |= ps_flag_noflex;
 		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_Hints)) )
 		    d->ps_flags |= ps_flag_nohints;
-		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_Round)) )
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_Round)) )
 		    d->ps_flags |= ps_flag_round;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_Restrict256)) )
 		    d->ps_flags |= ps_flag_restrict256;
@@ -397,7 +397,7 @@ return( false );
 		    d->otf_flags |= ps_flag_noflex;
 		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_Hints)) )
 		    d->otf_flags |= ps_flag_nohints;
-		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_Round)) )
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_Round)) )
 		    d->otf_flags |= ps_flag_round;
 	    } else {				/* PS + OpenType Bitmap */
 		d->ps_flags = d->psotb_flags = 0;
@@ -409,7 +409,7 @@ return( false );
 		     d->psotb_flags = d->ps_flags |= ps_flag_noflex;
 		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_Hints)) )
 		     d->psotb_flags = d->ps_flags |= ps_flag_nohints;
-		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_Round)) )
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_Round)) )
 		     d->psotb_flags = d->ps_flags |= ps_flag_round;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_PFM)) )
 		     d->psotb_flags = d->ps_flags |= ps_flag_pfm;
@@ -500,8 +500,8 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     int k,group,group2;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[22];
-    GTextInfo label[22];
+    GGadgetCreateData gcd[23];
+    GTextInfo label[23];
     GRect pos;
 
     d->sod_done = false;
@@ -545,6 +545,15 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
 
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = 16;
     gcd[k].gd.flags = gg_visible ;
+    label[k].text = (unichar_t *) _STR_Round;
+    label[k].text_in_resource = true;
+    gcd[k].gd.popup_msg = GStringGetResource(_STR_PSRoundPopup,NULL);
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.cid = CID_PS_Round;
+    gcd[k++].creator = GCheckBoxCreate;
+
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
+    gcd[k].gd.flags = gg_visible ;
     label[k].text = (unichar_t *) _STR_Hints;
     label[k].text_in_resource = true;
     gcd[k].gd.popup_msg = GStringGetResource(_STR_PSHintsPopup,NULL);
@@ -560,15 +569,6 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.popup_msg = GStringGetResource(_STR_FlexHintsPopup,NULL);
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_PS_Flex;
-    gcd[k++].creator = GCheckBoxCreate;
-
-    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
-    gcd[k].gd.flags = gg_visible ;
-    label[k].text = (unichar_t *) _STR_Round;
-    label[k].text_in_resource = true;
-    gcd[k].gd.popup_msg = GStringGetResource(_STR_PSRoundPopup,NULL);
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.cid = CID_PS_Round;
     gcd[k++].creator = GCheckBoxCreate;
 
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
@@ -589,7 +589,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.cid = CID_PS_Restrict256;
     gcd[k++].creator = GCheckBoxCreate;
 
-    gcd[k].gd.pos.x = 110; gcd[k].gd.pos.y = gcd[k-4].gd.pos.y;
+    gcd[k].gd.pos.x = 110; gcd[k].gd.pos.y = gcd[k-5].gd.pos.y;
     gcd[k].gd.flags = gg_visible ;
     label[k].text = (unichar_t *) _STR_Outputafm;
     label[k].text_in_resource = true;
@@ -598,7 +598,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.cid = CID_PS_AFM;
     gcd[k++].creator = GCheckBoxCreate;
 
-    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-4].gd.pos.y;
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-5].gd.pos.y;
     gcd[k].gd.flags = gg_visible ;
     label[k].text = (unichar_t *) _STR_Outputpfm;
     label[k].text_in_resource = true;
@@ -607,7 +607,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.cid = CID_PS_PFM;
     gcd[k++].creator = GCheckBoxCreate;
 
-    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-4].gd.pos.y;
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-5].gd.pos.y;
     gcd[k].gd.flags = gg_visible ;
     label[k].text = (unichar_t *) _STR_Outputtfm;
     label[k].text_in_resource = true;
@@ -666,7 +666,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.cid = CID_TTF_OpenTypeMode;
     gcd[k++].creator = GCheckBoxCreate;
 
-    gcd[k].gd.pos.x = gcd[group+5].gd.pos.x; gcd[k].gd.pos.y = gcd[k-4].gd.pos.y;
+    gcd[k].gd.pos.x = gcd[group+6].gd.pos.x; gcd[k].gd.pos.y = gcd[k-4].gd.pos.y;
     gcd[k].gd.flags = gg_visible ;
     label[k].text = (unichar_t *) _STR_PfaEditTable;
     label[k].text_in_resource = true;
