@@ -646,6 +646,12 @@ typedef struct splinefont {
     } **script_lang;
     struct kernclass *kerns;
     struct kernclasslistdlg *kcld;
+    struct texdata {
+	unsigned int generalset: 1;
+	unsigned int mathset: 1;
+	unsigned int mathextset: 1;
+	int32 params[22];		/* param[6] has different meanings in normal and math fonts */
+    } texdata;
 } SplineFont;
 
 /* mac styles. Useful idea we'll just steal it */
@@ -735,6 +741,7 @@ extern void SfListFree(struct sflist *sfs);
 extern struct ttflangname *TTFLangNamesCopy(struct ttflangname *old);
 extern void TTF_PSDupsDefault(SplineFont *sf);
 extern void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf);
+extern void TeXDefaultParams(SplineFont *sf);
 extern void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]);
 extern void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *sf,char *fontname);
 extern int ScriptIsRightToLeft(uint32 script);

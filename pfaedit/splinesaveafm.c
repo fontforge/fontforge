@@ -1297,10 +1297,89 @@ return( last );
 return( new );
 }
 
+static void FindCharlists(SplineFont *sf,int *charlistindex) {
+    PST *pst;
+    int i, last, ch;
+    char *pt, *end;
+    SplineChar *sc;
+
+    memset(charlistindex,-1,257*sizeof(int));
+    for ( i=0; i<256 && i<sf->charcnt; ++i ) if ( SCWorthOutputting(sf->chars[i])) {
+	for ( pst=sf->chars[i]->possub; pst!=NULL; pst=pst->next )
+	    if ( pst->type == pst_alternate && pst->tag==CHR('T','C','H','L'))
+	break;
+	if ( pst!=NULL ) {
+	    last = i;
+	    for ( pt=pst->u.alt.components; *pt; pt = end ) {
+		end = strchr(pt,' ');
+		if ( end==NULL )
+		    end = pt+strlen(pt);
+		ch = *end;
+		*end = '\0';
+		sc = SFGetCharDup(sf,-1,pt);
+		*end = ch;
+		while ( *end==' ' ) ++end;
+		if ( sc!=NULL && sc->enc<256 ) {
+		    charlistindex[last] = sc->enc;
+		    last = sc->enc;
+		}
+	    }
+	}
+    }
+}
+
+static int FindExtensions(SplineFont *sf,int *extensions,int *extenindex) {
+    PST *pst;
+    int i, ecnt=0, ch;
+    char *pt, *end;
+    int founds[4], fcnt;
+    SplineChar *sc;
+
+    memset(extenindex,-1,257*sizeof(int));
+    for ( i=0; i<256 && i<sf->charcnt; ++i ) if ( SCWorthOutputting(sf->chars[i])) {
+	for ( pst=sf->chars[i]->possub; pst!=NULL; pst=pst->next )
+	    if ( pst->type == pst_multiple && pst->tag==CHR('T','E','X','L'))
+	break;
+	if ( pst!=NULL ) {
+	    fcnt = 0;
+	    founds[0] = founds[1] = founds[2] = founds[3] = 0;
+	    for ( pt=pst->u.alt.components; *pt; pt = end ) {
+		end = strchr(pt,' ');
+		if ( end==NULL )
+		    end = pt+strlen(pt);
+		ch = *end;
+		*end = '\0';
+		sc = SFGetCharDup(sf,-1,pt);
+		*end = ch;
+		while ( *end==' ' ) ++end;
+		if ( sc!=NULL && sc->enc<256 ) {
+		    if ( fcnt<4 )
+			founds[fcnt++] = sc->enc;
+		} else
+		    founds[fcnt++] = 0;
+	    }
+	    if ( fcnt==1 ) {
+		founds[3] = founds[0];
+		founds[0] = 0;
+	    }
+	    if ( fcnt>0 ) {
+		extenindex[i] = ecnt;
+		extensions[ecnt++] = (founds[0]<<24) |
+			(founds[1]<<16) |
+			(founds[2]<<8) |
+			founds[3];
+	    }
+	}
+    }
+return( ecnt );
+}
+
 static int CoalesceValues(double *values,int max,int *index) {
     int i,j,k,top, offpos,diff;
     int backindex[257];
     double off, test;
+    double topvalues[257], totvalues[257];
+    int cnt[257];
 
     values[256] = 0;
     for ( i=0; i<257; ++i )
@@ -1334,46 +1413,86 @@ static int CoalesceValues(double *values,int max,int *index) {
 	    }
 	    top -= diff;
 	}
+	cnt[i] = j-i;
     }
     if ( top<=max )
 return( top );
 
+    for ( i=0; i<top; ++i ) {
+	topvalues[i] = values[i];
+	totvalues[i] = cnt[i]*values[i];
+    }
+
     while ( top>max ) {
-	off = fabs(values[0]-values[1]);
+	off = fabs(topvalues[0]-values[1]);
 	offpos = 0;
 	for ( i=1; i<top-1; ++i ) {
-	    test = fabs(values[i]-values[i+1]);
+	    test = fabs(topvalues[i]-values[i+1]);
 	    if ( test<off ) {
 		off = test;
 		offpos = i;
 	    }
 	}
+	topvalues[offpos] = topvalues[offpos+1];
+	cnt[offpos] += cnt[offpos+1];
+	totvalues[offpos] += totvalues[offpos+1];
 	diff = 1;
-	for ( k=offpos+1; k+diff<256; ++k )
+	for ( k=offpos+1; k+diff<256; ++k ) {
 	    values[k] = values[k+diff];
+	    topvalues[k] = topvalues[k+diff];
+	    cnt[k] = cnt[k+diff];
+	    totvalues[k] = totvalues[k+diff];
+	}
 	for ( k=0; k<257; ++k ) {
 	    if ( index[k]>offpos )
 		index[k] -= diff;
 	}
 	top -= diff;
     }
+    values[0] = 0;
+    for ( i=1; i<top; ++i )
+	values[i] = totvalues[i]/cnt[i];
 return( top );
+}
+
+void TeXDefaultParams(SplineFont *sf) {
+    int i, spacew;
+    BlueData bd;
+
+    if ( sf->texdata.generalset || sf->texdata.mathset || sf->texdata.mathextset )
+return;
+
+    spacew = .33*(1<<20);	/* 1/3 em for a space seems like a reasonable size */
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->unicodeenc==' ' ) {
+	spacew = (sf->chars[i]->width<<20)/(sf->ascent+sf->descent);
+    break;
+    }
+    QuickBlues(sf,&bd);
+
+    memset(sf->texdata.params,0,sizeof(sf->texdata.params));
+    sf->texdata.params[0] = rint( -sin(sf->italicangle)*(1<<20) );	/* slant */
+    sf->texdata.params[1] = spacew;			/* space */
+    sf->texdata.params[2] = spacew/2;			/* stretch_space */
+    sf->texdata.params[3] = spacew/3;			/* shrink space */
+    if ( bd.xheight>0 )
+	sf->texdata.params[4] = (bd.xheight*(1<<20))/(sf->ascent+sf->descent);
+    sf->texdata.params[5] = 1<<20;			/* quad */
+    sf->texdata.params[6] = spacew/3;			/* extra space after sentence period */
 }
 
 int TfmSplineFont(FILE *tfm, SplineFont *sf, int formattype) {
     struct tfm_header header;
-    struct tfm_params params;
     char *full=NULL, *encname;
-    int i, spacew;
-    BlueData bd;
+    int i;
     DBounds b;
     struct ligkern *ligkerns[256], *lk;
     double widths[257], heights[257], depths[257], italics[257];
     uint8 tags[256], lkindex[256];
     int former[256];
+    int charlistindex[257], extensions[257], extenindex[257];
     int widthindex[257], heightindex[257], depthindex[257], italicindex[257];
     double *kerns;
-    int widcnt, hcnt, dcnt, icnt, kcnt, lkcnt;
+    int widcnt, hcnt, dcnt, icnt, kcnt, lkcnt, pcnt, ecnt;
     int first, last;
     KernPair *kp;
     LigList *l;
@@ -1430,22 +1549,8 @@ int TfmSplineFont(FILE *tfm, SplineFont *sf, int formattype) {
     else if ( style&sf_extend )
 	header.face += 12;
 
-    spacew = .33*(1<<20);	/* 1/3 em for a space seems like a reasonable size */
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->unicodeenc==' ' ) {
-	spacew = (sf->chars[i]->width<<20)/(sf->ascent+sf->descent);
-    break;
-    }
-    QuickBlues(sf,&bd);
-
-    memset(&params,0,sizeof(params));
-    params.slant = rint( -sin(sf->italicangle)*(1<<20) );
-    params.space = spacew;
-    params.space_stretch = spacew/2;
-    params.space_shrink = spacew/3;
-    if ( bd.xheight>0 )
-	params.x_height = (bd.xheight*(1<<20))/(sf->ascent+sf->descent);
-    params.quad = 1<<20;
-    params.extra_space = spacew/3;
+    TeXDefaultParams(sf);
+    pcnt = sf->texdata.mathset ? 22 : sf->texdata.mathextset ? 13 : 7;
 
     memset(widths,0,sizeof(widths));
     memset(heights,0,sizeof(heights));
@@ -1472,6 +1577,9 @@ int TfmSplineFont(FILE *tfm, SplineFont *sf, int formattype) {
     icnt = CoalesceValues(italics,16,italicindex);
     if ( last==-1 ) { first = 1; last = 0; }
 
+    FindCharlists(sf,charlistindex);
+    ecnt = FindExtensions(sf,extensions,extenindex);
+
     kcnt = 0;
     for ( i=0; i<256 && i<sf->charcnt; ++i ) if ( SCWorthOutputting(sf->chars[i])) {
 	SplineChar *sc = sf->chars[i];
@@ -1495,6 +1603,10 @@ int TfmSplineFont(FILE *tfm, SplineFont *sf, int formattype) {
 	    for ( lk=ligkerns[i]; lk!=NULL; lk=lk->next )
 		++lkcnt;
 	}
+	if ( extenindex[i]!=-1 )
+	    tags[i] = 3;
+	else if ( charlistindex[i]!=-1 )
+	    tags[i] = 2;
     }
     lkarray = galloc(lkcnt*sizeof(uint32));
     memset(former,-1,sizeof(former));
@@ -1531,8 +1643,8 @@ int TfmSplineFont(FILE *tfm, SplineFont *sf, int formattype) {
 	    icnt +		/* entries in the italic correction table */
 	    lkcnt +		/* entries in the lig/kern table */
 	    kcnt +		/* entries in the kern table */
-	    0 +			/* No extensible characters here */
-	    7);			/* font parameter words */
+	    ecnt +		/* No extensible characters here */
+	    pcnt);		/* font parameter words */
     putshort(tfm,18);
     putshort(tfm,first);
     putshort(tfm,last);
@@ -1542,8 +1654,8 @@ int TfmSplineFont(FILE *tfm, SplineFont *sf, int formattype) {
     putshort(tfm,icnt);
     putshort(tfm,lkcnt);
     putshort(tfm,kcnt);
-    putshort(tfm,0);
-    putshort(tfm,7);
+    putshort(tfm,ecnt);
+    putshort(tfm,pcnt);
 	    /* header */
     putlong(tfm,header.checksum);
     putlong(tfm,header.design_size);
@@ -1556,7 +1668,10 @@ int TfmSplineFont(FILE *tfm, SplineFont *sf, int formattype) {
 	    putc(widthindex[i],tfm);
 	    putc((heightindex[i]<<4)|depthindex[i],tfm);
 	    putc((italicindex[i]<<2)|tags[i],tfm);
-	    putc(lkindex[i],tfm);
+	    putc(tags[i]==0?0 :
+		    tags[i]==1?lkindex[i] :
+		    tags[i]==2?charlistindex[i] :
+		    extenindex[i],tfm);
 	} else {
 	    putlong(tfm,0);
 	}
@@ -1580,10 +1695,11 @@ int TfmSplineFont(FILE *tfm, SplineFont *sf, int formattype) {
     for ( i=0; i<kcnt; ++i )
 	putlong(tfm,(kerns[i]*(1<<20))/(sf->ascent+sf->descent));
 	    /* extensible table */
-    /* empty */
+    for ( i=0; i<ecnt; ++i )
+	putlong(tfm,extensions[i]);
 	    /* font parameters */
-    for ( i=0; i<7; ++i )
-	putlong(tfm,(&params.slant)[i]);
+    for ( i=0; i<pcnt; ++i )
+	putlong(tfm,sf->texdata.params[i]);
 
     SFLigatureCleanup(sf);
     SFKernCleanup(sf);

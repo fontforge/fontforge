@@ -688,11 +688,15 @@ GTextInfo alternatesubs_tags[] = {
     { (unichar_t *) _STR_StylisticAlt, NULL, 0, 0, (void *) CHR('s','a','l','t'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_Swash, NULL, 0, 0, (void *) CHR('s','w','s','h'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_TraditionalForms, NULL, 0, 0, (void *) CHR('t','r','a','d'), NULL, false, false, false, false, false, false, false, true },
+/* My own invention, to provide data for tfm files for TeX's characters (like parens) which come in multiple sizes */
+    { (unichar_t *) _STR_TeXCharList, NULL, 0, 0, (void *) CHR('T','C','H','L'), NULL, false, false, false, false, false, false, false, true },
     { NULL }
 };
 
 static GTextInfo multiplesubs_tags[] = {
     { (unichar_t *) _STR_GlyphCompDecomp, NULL, 0, 0, (void *) CHR('c','c','m','p'), NULL, false, false, false, false, false, false, false, true },
+/* My own invention, to provide data for tfm files for TeX's characters (like parens) which can grow to an arbetrary size */
+    { (unichar_t *) _STR_TeXExtensionList, NULL, 0, 0, (void *) CHR('T','E','X','L'), NULL, false, false, false, false, false, false, false, true },
     { NULL }
 };
 
