@@ -4095,7 +4095,7 @@ return( NULL );
 	offsets = galloc(cnt*sizeof(int32));
 	for ( i=0; i<cnt; ++i )
 	    offsets[i] = getlong(ttf);
-	ret = galloc(cnt*sizeof(char *));
+	ret = galloc((cnt+1)*sizeof(char *));
 	for ( i=j=0; i<cnt; ++i ) {
 	    utemp = TTFGetFontName(ttf,offsets[i],0);
 	    if ( utemp!=NULL )
