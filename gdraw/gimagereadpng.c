@@ -222,8 +222,18 @@ return( NULL );
     if ( info_ptr->color_type==PNG_COLOR_TYPE_RGB || info_ptr->color_type==PNG_COLOR_TYPE_RGB_ALPHA ) {
 	/* PNG orders its bytes as BBGGRRAA instead of 00RRGGBB */
 	uint32 *ipt, *iend;
-	for ( ipt = (uint32 *) (base->data), iend=ipt+base->width*base->height; ipt<iend; ++ipt )
-	    *ipt = COLOR_CREATE( ((*ipt>>8)&0xff) , ((*ipt>>16)&0xff) , (*ipt>>24) );
+	for ( ipt = (uint32 *) (base->data), iend=ipt+base->width*base->height; ipt<iend; ++ipt ) {
+	    /* Minimal support for alpha channel. Assume default background of white */
+	    if ( (*ipt&0xff)==0xff )
+		*ipt = COLOR_CREATE( ((*ipt>>8)&0xff) , ((*ipt>>16)&0xff) , (*ipt>>24) );
+	    else {
+		int r, g, b, a = *ipt&0xff;
+		r = ( ((*ipt>>8 )&0xff) * a + (255-a)*0xff ) / 255;
+		g = ( ((*ipt>>16)&0xff) * a + (255-a)*0xff ) / 255;
+		b = ( ((*ipt>>24)&0xff) * a + (255-a)*0xff ) / 255;
+		*ipt = COLOR_CREATE( r,g,b );
+	    }
+	}
     }
 
     _png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
