@@ -349,7 +349,19 @@ return( handled );
 	    prev = gadget->prev;
 	    if ( !gadget->contained )
 		(gadget->funcs->destroy)(gadget);
-	    /* contained ggadgets will be destroy when their owner is destroyed */
+	    /* contained ggadgets will be destroyed when their owner is destroyed */
+	}
+	/* Widgets are windows and should get their own destroy events and free themselves */
+	/* remove us from our parent */
+	parent = gw->parent;
+	if ( parent!=NULL && parent->widget_data!=NULL ) {
+	    GContainerD *pgd = (GContainerD *) (parent->widget_data);
+	    struct gwidgetdata *wd, *pwd;
+	    for ( pwd=NULL, wd=pgd->widgets; wd!=NULL && wd!=(struct gwidgetdata *) gd; pwd = wd, wd = wd->next );
+	    if ( pwd==NULL )
+		pgd->widgets = gd->next;
+	    else
+		pwd->next = gd->next;
 	}
 	free(gd);
 	gw->widget_data = NULL;
