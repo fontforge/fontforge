@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Feb-2002 -->
-  <!-- AP: Last modified: 24-Feb-2002 -->
+  <!-- AP: Last modified: 12-May-2002 -->
   <TITLE>Building Accented and other Composit Characters</TITLE>
 </HEAD>
 <BODY>
@@ -104,7 +104,10 @@ this does not work too well in postscript. A Type1 font works better if the
 accented character is in the Adobe Standard Encoding, which means either
 using accents around 0x2d0 or ascii characters. Pfaedit will first attempt
 to find an accent around 0x2d0, then in ascii and finally in the 0x300-0x340
-range.
+range. Even worse, Unicode unifies the greek and latin accents, so for greek
+letters- rather than looking for accents around 0x300- PfaEdit will look
+for accents around 0x1fbd (PfaEdit will also require the presence of the
+double accents like 0x1fdd).
 <P>
 Not all accents should be centered above the base character, a cedilla is
 (usually) centered underneath the base, while other accents need to be placed
@@ -158,7 +161,8 @@ of the glyph.
 </TABLE>
 <P>
 PfaEdit gives you a minuscule amount of control over where it puts accents.
-There are two preference items you can set (File-&gt;Preferences)
+There are two preference items you can set
+(<A HREF="filemenu.html#prefs">File-&gt;Preferences</A>)
 <UL>
   <LI>
     AccentOffsetPercent -- This allows you to control the amount of space between
@@ -184,6 +188,10 @@ and be prepared to adjust things.
 The algorithms take some account of the italicangle, but when working on
 an italic (or oblique) font PfaEdit is even more likely to do something you
 don't like.
+<P>
+If all else fails you can build your own accented characters with
+<A HREF="editmenu.html#Reference">Edit-&gt;Copy Reference</A> and
+<A HREF="editmenu.html#Paste">Edit-&gt;Paste</A>
 <P>
 <P ALIGN=Center>
 -- <A HREF="elementmenu.html">Element Menu</A> --
