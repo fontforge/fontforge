@@ -153,6 +153,14 @@ static void RH_SetupHint(ReviewHintData *hd) {
 	if ( h==hd->active ) pos=cnt;
     }
     sprintf( buffer,"%d/%d", pos, cnt );
+    if ( cnt==3 ) {
+	StemInfo *h2, *h3;
+	h = hd->ishstem ? hd->cv->sc->hstem : hd->cv->sc->vstem;
+	h2 = h->next; h3 = h2->next;
+	if ( h->width == h2->width && h2->width==h3->width &&
+		h2->start-h->start == h3->start-h2->start )
+	    strcat( buffer, hd->ishstem ? " hstem3" : " vstem3" );
+    }
     uc_strcpy(ubuf,buffer);
     GGadgetSetTitle(GWidgetGetControl(hd->gw,CID_Count),ubuf);
     
@@ -474,7 +482,7 @@ void CVReviewHints(CharView *cv) {
 	gcd[13].gd.cid = CID_Overlap;
 	gcd[13].creator = GLabelCreate;
 
-	label[14].text = (unichar_t *) "999/999";
+	label[14].text = (unichar_t *) "999/999 hstem3";
 	label[14].text_is_1byte = true;
 	gcd[14].gd.label = &label[14];
 	gcd[14].gd.pos.x = 115; gcd[14].gd.pos.y = 2+3; 
