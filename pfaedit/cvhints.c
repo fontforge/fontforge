@@ -512,10 +512,10 @@ return(true);
 	h->start = base;
 	h->width = width;
 	if ( hd->ishstem ) {
-	    SCGuessHHintInstancesAndAdd(hd->cv->sc,h);
+	    SCGuessHHintInstancesAndAdd(hd->cv->sc,h,0x80000000,0x80000000);
 	    hd->cv->sc->hconflicts = StemListAnyConflicts(hd->cv->sc->hstem);
 	} else {
-	    SCGuessVHintInstancesAndAdd(hd->cv->sc,h);
+	    SCGuessVHintInstancesAndAdd(hd->cv->sc,h,0x80000000,0x80000000);
 	    hd->cv->sc->vconflicts = StemListAnyConflicts(hd->cv->sc->vstem);
 	}
 	SCOutOfDateBackground(hd->cv->sc);

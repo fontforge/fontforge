@@ -3484,7 +3484,7 @@ return;
 	    h->start = sp2->me.y;
 	    h->width = sp1->me.y-sp2->me.y;
 	}
-	SCGuessHHintInstancesAndAdd(cv->sc,h);
+	SCGuessHHintInstancesAndAdd(cv->sc,h,sp1->me.x,sp2->me.x);
 	cv->sc->hconflicts = StemListAnyConflicts(cv->sc->hstem);
     } else if ( mi->mid==MID_AddVHint ) {
 	if ( sp1->me.x==sp2->me.x )
@@ -3497,7 +3497,7 @@ return;
 	    h->start = sp2->me.x;
 	    h->width = sp1->me.x-sp2->me.x;
 	}
-	SCGuessVHintInstancesAndAdd(cv->sc,h);
+	SCGuessVHintInstancesAndAdd(cv->sc,h,sp1->me.y,sp2->me.y);
 	cv->sc->vconflicts = StemListAnyConflicts(cv->sc->vstem);
     } else {
 	if ( !CVIsDiagonalable(sp1,sp2,&sp3,&sp4))

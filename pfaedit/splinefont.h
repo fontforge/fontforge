@@ -302,6 +302,7 @@ typedef struct steminfo {
     unsigned int startdone: 1;	/* Used by ttf instructing */
     unsigned int backwards: 1;	/* If we think this hint is better done with a negative width */
     unsigned int reordered: 1;	/* In AutoHinting. Means we changed the start of the hint, need to test for out of order */
+    unsigned int pendingpt: 1;	/* A pending stem creation, not a true stem */
     int16 hintnumber;		/* when dumping out hintmasks we need to know */
 				/*  what bit to set for this hint */
     int mask;			/* Mask of all references that use this hint */
@@ -627,8 +628,8 @@ extern void FindBlues( SplineFont *sf, real blues[14], real otherblues[10]);
 extern void QuickBlues(SplineFont *sf, BlueData *bd);
 extern void FindHStems( SplineFont *sf, real snaps[12], real cnt[12]);
 extern void FindVStems( SplineFont *sf, real snaps[12], real cnt[12]);
-extern void SCGuessHHintInstancesAndAdd(SplineChar *sc, StemInfo *stem);
-extern void SCGuessVHintInstancesAndAdd(SplineChar *sc, StemInfo *stem);
+extern void SCGuessHHintInstancesAndAdd(SplineChar *sc, StemInfo *stem, real guess1, real guess2);
+extern void SCGuessVHintInstancesAndAdd(SplineChar *sc, StemInfo *stem, real guess1, real guess2);
 extern void SCGuessHHintInstancesList(SplineChar *sc);
 extern void SCGuessVHintInstancesList(SplineChar *sc);
 extern real HIlen( StemInfo *stems);

@@ -966,7 +966,7 @@ return( pendings );
 	t->next = pendings;
 	/*pendings = t;*/
 	t->apt = apt; t->e = e; t->checka = checka;
-	t->otherpos = checkme->ocur; t->mpos = mcur;
+	t->otherpos = ocur; t->mpos = mcur;
 return( t );
     } else if ( t->checka==checka )
 return( pendings );
@@ -980,9 +980,11 @@ return( pendings );
 return( pendings );
 	new = _StemsFind(*stems,ocur<t->otherpos?ocur:t->otherpos,
 		    ocur<t->otherpos?t->otherpos:ocur,
-		    false,false);
-	if ( new->where==NULL )
+		    true,true);	/* pending hints only happen at endpoints */
+	if ( new->where==NULL ) {
+	    new->pendingpt = true;
 	    *stems = StemInsert(*stems,new);
+	}
 	_StemAddBrief(new,mcur<t->mpos ? mcur : t->mpos,
 			  mcur<t->mpos ? t->mpos : mcur);
 	if ( p==NULL )
@@ -1639,6 +1641,29 @@ static StemInfo *StemRemoveWideConflictingHintsContainingLittleOnes(StemInfo *st
     StemInfo *head=stems, *n, *sn, *p;
     int any;
 
+    p = NULL;
+    while ( stems!=NULL ) {
+	n = stems->next;
+	if ( n==NULL )
+    break;
+	if ( stems->start==n->start && stems->pendingpt && stems->width>n->width ) {
+	    StemInfoFree(stems);
+	    if ( p==NULL )
+		head = n;
+	    else
+		p->next = n;
+	    stems = n;
+    continue;
+	} else if ( stems->start==n->start && n->pendingpt && n->width>stems->width ) {
+	    stems->next = n->next;
+	    StemInfoFree(n);
+	    p = stems;
+	    n = stems->next;
+	}
+	p = stems;
+	stems = n;
+    }
+
     while ( stems!=NULL ) {
 	n = stems->next;
 	while ( n!=NULL && RealNear(n->start,stems->start) && n->width>4*stems->width &&
@@ -2125,7 +2150,7 @@ static void HIRemoveFrom(StemInfo *stem, HintInstance *cantuse) {
 static void StemInfoReduceOverlap(StemInfo *list, StemInfo *stem) {
     /* Find all stems which conflict with this one */
     /* then for every stem which contains this one, remove this one's hi's from*/
-    /*  it's where list (so if this one is active, that one can't be) */
+    /*  its where list (so if this one is active, that one can't be) */
     /* Do the reverse if this stem contains others */
     /* And if they just overlap? Neither containing the other? */
 
@@ -2144,23 +2169,35 @@ static void StemInfoReduceOverlap(StemInfo *list, StemInfo *stem) {
     }
 }
 
-void SCGuessHHintInstancesAndAdd(SplineChar *sc, StemInfo *stem) {
+void SCGuessHHintInstancesAndAdd(SplineChar *sc, StemInfo *stem, real guess1, real guess2) {
     SCGuessHintInstances(sc, stem, 0);
     sc->hstem = StemInfoAdd(sc->hstem,stem);
+    if ( stem->where==NULL && guess1!=0x80000000 ) {
+	if ( guess1>guess2 ) { real temp = guess1; guess1 = guess2; guess2 = temp; }
+	stem->where = chunkalloc(sizeof(HintInstance));
+	stem->where->begin = guess1;
+	stem->where->end = guess2;
+    }
     sc->hconflicts = StemListAnyConflicts(sc->hstem);
     if ( stem->hasconflicts ) {
-	StemInfoReduceOverlap(sc->hstem,stem);
+	/*StemInfoReduceOverlap(sc->hstem,stem);*/	/* User asked for it, assume s/he knows what s/he's doing */
 	if ( stem->where==NULL )
 	    GDrawError("Couldn't figure out where this hint is active");
     }
 }
 
-void SCGuessVHintInstancesAndAdd(SplineChar *sc, StemInfo *stem) {
+void SCGuessVHintInstancesAndAdd(SplineChar *sc, StemInfo *stem, real guess1, real guess2) {
     SCGuessHintInstances(sc, stem, 1);
     sc->vstem = StemInfoAdd(sc->vstem,stem);
+    if ( stem->where==NULL && guess1!=0x80000000 ) {
+	if ( guess1>guess2 ) { real temp = guess1; guess1 = guess2; guess2 = temp; }
+	stem->where = chunkalloc(sizeof(HintInstance));
+	stem->where->begin = guess1;
+	stem->where->end = guess2;
+    }
     sc->vconflicts = StemListAnyConflicts(sc->vstem);
     if ( stem->hasconflicts ) {
-	StemInfoReduceOverlap(sc->vstem,stem);
+	/*StemInfoReduceOverlap(sc->vstem,stem);*/	/* User asked for it, assume s/he knows what s/he's doing */
 	if ( stem->where==NULL )
 	    GDrawError("Couldn't figure out where this hint is active");
     }
@@ -2176,9 +2213,11 @@ void SCGuessHHintInstancesList(SplineChar *sc) {
 	    SCGuessHintInstances(sc,h,0);
 	    any |= h->where!=NULL;
 	}
+/*
     if ( any )
 	for ( h= sc->hstem; h!=NULL; h=h->next )
 	    StemInfoReduceOverlap(h->next,h);
+*/
 }
 
 void SCGuessVHintInstancesList(SplineChar *sc) {
@@ -2191,10 +2230,11 @@ void SCGuessVHintInstancesList(SplineChar *sc) {
 	    SCGuessHintInstances(sc,h,1);
 	    any |= h->where!=NULL;
 	}
-
+/*
     if ( any )
 	for ( h= sc->vstem; h!=NULL; h=h->next )
 	    StemInfoReduceOverlap(h->next,h);
+*/
 }
 
 static StemInfo *RefHintsMerge(StemInfo *into, StemInfo *rh, real mul, real offset,
