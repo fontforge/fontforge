@@ -29,6 +29,7 @@
 #include <gkeysym.h>
 #include <utype.h>
 #include <math.h>
+#include "edgelist.h"
 
 void FVOutline(FontView *fv, real width) {
     StrokeInfo si;
@@ -347,30 +348,6 @@ void OutlineDlg(FontView *fv, CharView *cv,MetricsView *mv,int isinline) {
     GDrawSetVisible(gw,false);
 }
 
-static int LineOfInflection(SplinePoint *p,SplinePoint *n) {
-
-    if ( n->next->to->me.y > n->me.y && p->prev->from->me.y > p->me.y )
-return( false );		/* It's a minimum */
-    if ( n->next->to->me.y < n->me.y && p->prev->from->me.y < p->me.y )
-return( false );		/* It's a maximum */
-
-return( true );
-}
-
-static int PrevLineOfInflection(SplinePoint *p) {
-    SplinePoint *n, *nn;
-
-    for ( nn=p ; nn->me.y==p->me.y && n->next->knownlinear; n=nn, nn=nn->next->to);
-return( LineOfInflection(p,n));
-}
-
-static int NextLineOfInflection(SplinePoint *n) {
-    SplinePoint *p, *pp;
-
-    for ( p=pp=n ; n->me.y==pp->me.y && pp->prev->knownlinear; p=pp, pp=pp->prev->from);
-return( LineOfInflection(p,n));
-}
-
 static SplineSet *SpMove(SplinePoint *sp,real offset,SplineSet *cur,SplineSet *lines) {
     SplinePoint *new;
     SplineSet *line;
@@ -397,12 +374,64 @@ static SplineSet *SpMove(SplinePoint *sp,real offset,SplineSet *cur,SplineSet *l
 return( line );
 }
 
+static void OrientEdges(SplineSet *base,SplineChar *sc) {
+    SplineSet *spl;
+    Spline *s, *first;
+    EIList el;
+    EI *active=NULL, *apt, *e;
+    SplineChar dummy;
+    int i, waschange, winding, change;
+
+    for ( spl=base; spl!=NULL; spl=spl->next ) {
+	first = NULL;
+	for ( s = spl->first->next; s!=NULL && s!=first; s=s->to->next ) {
+	    s->leftedge = false;
+	    s->rightedge = false;
+	    if ( first==NULL ) first = s;
+	}
+    }
+
+    memset(&el,'\0',sizeof(el));
+    memset(&dummy,'\0',sizeof(dummy));
+    dummy.splines = base;
+    if ( sc!=NULL ) dummy.name = sc->name;
+    ELFindEdges(&dummy,&el);
+    el.major = 1;
+    ELOrder(&el,el.major);
+
+    waschange = false;
+    for ( i=0; i<el.cnt ; ++i ) {
+	active = EIActiveEdgesRefigure(&el,active,i,1,&change);
+	if ( waschange || change || el.ends[i] || el.ordered[i]!=NULL ||
+		(i!=el.cnt-1 && (el.ends[i+1] || el.ordered[i+1]!=NULL)) ) {
+	    waschange = change;
+    continue;
+	}
+	waschange = change;
+	winding = 0;
+	for ( apt=active; apt!=NULL ; apt = e) {
+	    if ( EISkipExtremum(apt,i+el.low,1)) {
+		e = apt->aenext->aenext;
+	continue;
+	    }
+	    if ( winding==0 )
+		apt->spline->leftedge = true;
+	    winding += apt->up ? 1 : -1;
+	    if ( winding==0 )
+		apt->spline->rightedge = true;
+	    e = apt->aenext;
+	}
+    }
+    free(el.ordered);
+    free(el.ends);
+    ElFreeEI(&el);
+}
+
 static SplineSet *AddVerticalExtremaAndMove(SplineSet *base,real shadow_length,
-	int wireframe) {
+	int wireframe,SplineChar *sc) {
     SplineSet *spl, *head=NULL, *last=NULL, *cur, *lines=NULL;
     Spline *s, *first;
     SplinePoint *sp, *found, *new;
-    real pabove, nabove, offset;
     real t[2];
     int p;
 
@@ -440,55 +469,23 @@ return(NULL);
 		/*  find them when we process the next half of the spline */
 	    }
 	}
-	found = NULL;
-	/* Classify each point as either uninteresting, a minimum/maximum or a point of inflection (uninteresting) */
-	for ( sp = spl->first; ; ) {
-	    sp->ticked = false;
-	    if ( sp->nonextcp )
-		nabove = sp->next->to->me.y - sp->me.y;
-	    else
-		nabove = sp->nextcp.y - sp->me.y;
-	    if ( sp->noprevcp )
-		pabove = sp->prev->from->me.y - sp->me.y;
-	    else
-		pabove = sp->prevcp.y - sp->me.y;
-	    if (( pabove>0 && nabove>0 ) || (pabove<0 && nabove<0))
-		sp->ticked = true;	/* It's a corner point */
-	    else if ( nabove==0 && pabove==0 && !sp->next->knownlinear && !sp->prev->knownlinear )
-		sp->ticked = !LineOfInflection(sp,sp);
-	    else if ( nabove==0 || pabove==0 ) {
-		if ( nabove==0 && sp->next->knownlinear &&
-			pabove==0 && sp->prev->knownlinear )
-		    /* not interesting */;
-		else if ( nabove==0 && sp->next->knownlinear &&
-			 sp->next->to->me.x<sp->me.x )
-		    sp->ticked = !PrevLineOfInflection(sp);
-		else if ( pabove==0 && sp->prev->knownlinear &&
-			 sp->prev->from->me.x<sp->me.x )
-		    sp->ticked = !NextLineOfInflection(sp);
-	    }
-	    if ( sp->ticked )
-		found = sp;
-	    sp = sp->next->to;
-	    if ( sp==spl->first )
-	break;
-	}
-	if ( found==NULL )
-    continue;
-	offset = 0;
+    }
+
+    OrientEdges(base,sc);
+    for ( spl=base; spl!=NULL; spl=spl->next ) if ( spl->first->prev!=NULL && spl->first->prev->from!=spl->first ) {
 	if ( !wireframe ) {
 	    /* Make duplicates of any ticked points and move them over */
-	    for ( sp = found; ; ) {
-		if ( !sp->ticked ) {
-		    sp->me.x += offset;
-		    sp->nextcp.x += offset;
-		    sp->prevcp.x += offset;
-		} else {
+	    for ( sp = spl->first; ; ) {
+		if ( sp->next->rightedge && sp->prev->rightedge ) {
+		    sp->me.x += shadow_length;
+		    sp->nextcp.x += shadow_length;
+		    sp->prevcp.x += shadow_length;
+		    SplineRefigure(sp->prev);
+		} else if ( sp->next->rightedge || sp->prev->rightedge ) {
 		    new = chunkalloc(sizeof(SplinePoint));
 		    *new = *sp;
 		    new->ticked = false; sp->ticked = false;
-		    if ( (sp->nonextcp && sp->next->to->me.x>sp->me.x) ||
-			    (!sp->nonextcp && sp->nextcp.x>sp->me.x)) {
+		    if ( sp->next->rightedge ) {
 			sp->next->from = new;
 			sp->nonextcp = true;
 			sp->nextcp = sp->me;
@@ -497,7 +494,6 @@ return(NULL);
 			new->noprevcp = true;
 			new->prevcp = new->me;
 			SplineMake(sp,new,sp->prev->order2);
-			offset = shadow_length;
 			sp = new;
 		    } else {
 			sp->prev->to = new;
@@ -508,48 +504,32 @@ return(NULL);
 			new->nonextcp = true;
 			new->nextcp = new->me;
 			SplineMake(new,sp,sp->next->order2);
-			offset = 0;
-			if ( sp==found ) found=new;
+			SplineRefigure(new->prev);
 		    }
 		}
 		sp = sp->next->to;
-		if ( sp==found )
-	    break;
-	    }
-	    for ( sp = found; ; ) {
-		SplineRefigure(sp->prev);
-		sp = sp->next->to;
-		if ( sp==found )
+		if ( sp==spl->first )
 	    break;
 	    }
 	} else {
 	    cur = NULL;
 	    /* Wire frame... do hidden line removal by only copying the */
 	    /*  points which would be moved by the above code */
-	    if ( !((found->nonextcp && found->next->to->me.x>found->me.x) ||
-		    (!found->nonextcp && found->nextcp.x>found->me.x)))
-		found = found->next->to;	/* Don't start out by processing the last thing in a chunk */
-	    for ( sp = found; ; ) {
-		if ( !sp->ticked ) {
-		    if ( offset!=0 ) {
-			lines = SpMove(sp,offset,cur,lines);
-		    }
-		} else {
-		    if ( (sp->nonextcp && sp->next->to->me.x>sp->me.x) ||
-			    (!sp->nonextcp && sp->nextcp.x>sp->me.x)) {
-			offset = shadow_length;
-			cur = chunkalloc(sizeof(SplineSet));
-			if ( last==NULL )
-			    head = cur;
-			else
-			    last->next = cur;
-			last = cur;
-			lines = SpMove(sp,offset,cur,lines);
-		    } else {
-			lines = SpMove(sp,offset,cur,lines);
-			offset = 0;
-			cur = NULL;
-		    }
+	    for ( sp=spl->first; sp->prev->rightedge || !sp->next->rightedge ; sp = sp->next->to );
+	    for ( found = sp; ; ) {
+		if ( sp->next->rightedge && sp->prev->rightedge ) {
+		    lines = SpMove(sp,shadow_length,cur,lines);
+		} else if ( sp->next->rightedge ) {
+		    cur = chunkalloc(sizeof(SplineSet));
+		    if ( last==NULL )
+			head = cur;
+		    else
+			last->next = cur;
+		    last = cur;
+		    lines = SpMove(sp,shadow_length,cur,lines);
+		} else if ( sp->prev->rightedge ) {
+		    lines = SpMove(sp,shadow_length,cur,lines);
+		    cur = NULL;
 		}
 		sp = sp->next->to;
 		if ( sp==found )
@@ -604,7 +584,7 @@ static SplineSet *SSShadow(SplineSet *spl,real angle, real outline_width,
 	real shadow_length,SplineChar *sc, int wireframe) {
     real trans[6];
     StrokeInfo si;
-    SplineSet *internal, *temp, *frame, *fatframe, *outline;
+    SplineSet *internal, *temp, *frame, *fatframe, *outline, *mask;
 
     if ( spl==NULL )
 return( NULL );
@@ -620,11 +600,14 @@ return( NULL );
 	memset(&si,0,sizeof(si));
 	si.removeexternal = true;
 	si.radius = outline_width;
-	internal = SSStroke(spl,&si,sc);
+	temp = SplinePointListCopy(spl);	/* SSStroke confuses the direction I think */
+	internal = SSStroke(temp,&si,sc);
+	SplinePointListsFree(temp);
+	internal = SplineSetRemoveOverlap(internal,over_remove);
 	SplineSetsAntiCorrect(internal);
     }
 
-    frame = AddVerticalExtremaAndMove(spl,shadow_length,wireframe);
+    frame = AddVerticalExtremaAndMove(spl,shadow_length,wireframe,sc);
     if ( !wireframe ) 
 	spl = SplineSetRemoveOverlap(spl,over_remove);
     else {
@@ -635,7 +618,7 @@ return( NULL );
 	    SplinePointListsFree(frame); frame = fatframe;
 	    outline = SSStroke(spl,&si,sc);
 	    SSSelectAll(frame,false);
-#if 0		/* doesn't work !!!! */
+#if 1		/* doesn't work !!!! */
 	    si.radius = outline_width/3;
 	    si.removeinternal = true;
 	    mask = SSStroke(spl,&si,sc);
@@ -644,10 +627,15 @@ return( NULL );
 	    temp->next = frame;
 	    frame = SplineSetRemoveOverlap(mask,over_exclude);
 	    SplinePointListsFree(spl);
-#endif
 	    for ( temp=outline; temp->next!=NULL; temp=temp->next);
 	    temp->next = frame;
 	    spl = SplineSetRemoveOverlap(outline,over_remove);
+#else
+	    SplinePointListsFree(spl);
+	    for ( temp=outline; temp->next!=NULL; temp=temp->next);
+	    temp->next = frame;
+	    spl = outline;
+#endif
 	} else {
 	    for ( temp=spl; temp->next!=NULL; temp=temp->next);
 	    temp->next = frame;
