@@ -2287,7 +2287,7 @@ static void MVMenuCenter(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	else
 	    transform[4] = (sc->width-(bb.maxx-bb.minx))/3 - bb.minx;
 	if ( transform[4]!=0 )
-	    FVTrans(mv->fv,sc,transform,NULL,false);
+	    FVTrans(mv->fv,sc,transform,NULL,fvt_dontmovewidth);
     }
 }
 
