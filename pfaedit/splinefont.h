@@ -384,6 +384,8 @@ typedef struct splinechar {
     unsigned int vconflicts: 1;	/* Any hint overlaps in the vstem list? */
     unsigned int hconflicts: 1;	/* Any hint overlaps in the hstem list? */
     unsigned int anyflexes: 1;
+    unsigned int searcherdummy: 1;
+    unsigned int changed_since_search: 1;
 #if HANYANG
     unsigned int compositionunit: 1;
     int16 jamo, varient;

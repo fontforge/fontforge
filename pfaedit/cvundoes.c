@@ -1106,7 +1106,10 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear) {
 	    RefChar *new, *refs;
 	    SplineChar *rsc;
 	    for ( refs = paster->u.state.refs; refs!=NULL; refs=refs->next ) {
-		rsc = FindCharacter(sc->parent,refs);
+		if ( sc->searcherdummy )
+		    rsc = FindCharacter(sc->views->searcher->fv->sf,refs);
+		else
+		    rsc = FindCharacter(sc->parent,refs);
 		if ( rsc!=NULL && SCDependsOnSC(rsc,sc))
 		    GWidgetErrorR(_STR_SelfRef,_STR_AttemptSelfRef);
 		else if ( rsc!=NULL ) {
@@ -1192,13 +1195,16 @@ static void _PasteToCV(CharView *cv,Undoes *paster) {
 		cv->sc->backimages = new;
 	    }
 	    SCOutOfDateBackground(cv->sc);
-	} else if ( paster->undotype==ut_statehint )
+	} else if ( paster->undotype==ut_statehint && cv->searcher==NULL )
 	    ExtractHints(cv->sc,paster->u.state.u.hints,true);
 	if ( paster->u.state.refs!=NULL && cv->drawmode==dm_fore ) {
 	    RefChar *new, *refs;
 	    SplineChar *sc;
 	    for ( refs = paster->u.state.refs; refs!=NULL; refs=refs->next ) {
-		sc = FindCharacter(cv->sc->parent,refs);
+		if ( cv->searcher!=NULL )
+		    sc = FindCharacter(cv->searcher->fv->sf,refs);
+		else
+		    sc = FindCharacter(cv->sc->parent,refs);
 		if ( sc!=NULL && SCDependsOnSC(sc,cv->sc))
 		    GWidgetErrorR(_STR_SelfRef,_STR_AttemptSelfRef);
 		else if ( sc!=NULL ) {
@@ -1222,7 +1228,10 @@ static void _PasteToCV(CharView *cv,Undoes *paster) {
 	    SplineChar *sc;
 	    SplinePointList *new, *spl;
 	    for ( refs = paster->u.state.refs; refs!=NULL; refs=refs->next ) {
-		sc = FindCharacter(cv->sc->parent,refs);
+		if ( cv->searcher!=NULL )
+		    sc = FindCharacter(cv->searcher->fv->sf,refs);
+		else
+		    sc = FindCharacter(cv->sc->parent,refs);
 		if ( sc!=NULL ) {
 		    new = SplinePointListTransform(SplinePointListCopy(sc->backgroundsplines),refs->transform,true);
 		    SplinePointListSelect(new,true);

@@ -55,6 +55,9 @@ AC_CHECK_FUNC(snprintf, : , AC_DEFINE(_NO_SNPRINTF))
 
 AC_C_CONST
 AC_PATH_XTRA
+echo -n checking for long long ...
+AC_TRY_COMPILE(,[long long foo=0x400000000000;],[ AC_DEFINE(_HAS_LONGLONG)
+    echo " " yes] , echo " " no )
 
 dnl If we can't/don't want to use dynamic libraries then we must link with
 dnl the static libraries we've found

@@ -493,7 +493,7 @@ static void BVInfoDrawText(BitmapView *bv, GWindow pixmap ) {
 }
 
 static void BVMainExpose(BitmapView *bv, GWindow pixmap, GEvent *event ) {
-    GRect old, temp, box, old2;
+    GRect old, temp, box, old2, r;
     GImage gi;
     struct _GImage base;
     GClut clut;
@@ -534,6 +534,9 @@ return;
 	BVInfoDrawText(bv,pixmap );
     }
     GDrawDrawLine(pixmap,0,bv->mbh+bv->infoh-1,bv->width+300,bv->mbh+bv->infoh-1,0);
+
+    r.x = bv->width; r.y = bv->height+bv->infoh+bv->mbh;
+    LogoExpose(pixmap,event,&r);
 
     GDrawPopClip(pixmap,&old);
 }

@@ -74,6 +74,10 @@ return( gw );
 static void SaveOffsets(GWindow main, GWindow palette, GPoint *off) {
     if ( GDrawIsVisible(palette)) {
 	GRect mr, pr;
+	GWindow root, temp;
+	root = GDrawGetRoot(NULL);
+	while ( (temp=GDrawGetParentWindow(main))!=root )
+	    main = temp;
 	GDrawGetSize(main,&mr);
 	GDrawGetSize(palette,&pr);
 	off->x = pr.x-mr.x;
@@ -87,13 +91,15 @@ static void SaveOffsets(GWindow main, GWindow palette, GPoint *off) {
 
 static void RestoreOffsets(GWindow main, GWindow palette, GPoint *off) {
     GPoint pt;
-    GWindow root;
+    GWindow root,temp;
     GRect screensize, pos;
 
     pt = *off;
     root = GDrawGetRoot(NULL);
     GDrawGetSize(root,&screensize);
     GDrawGetSize(palette,&pos);
+    while ( (temp=GDrawGetParentWindow(main))!=root )
+	main = temp;
     GDrawTranslateCoordinates(main,root,&pt);
     if ( pt.x<0 ) pt.x=0;
     if ( pt.y<0 ) pt.y=0;

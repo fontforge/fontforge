@@ -406,6 +406,7 @@ return(false);
 	mnext = mv->next;
 	GDrawDestroyWindow(mv->gw);
     }
+    SVDetachFV(fv);
     if ( sf->filename!=NULL )
 	RecentFilesRemember(sf->filename);
     GDrawDestroyWindow(fv->gw);
@@ -3383,6 +3384,10 @@ static void FVChar(FontView *fv,GEvent *event) {
 	    (event->u.chr.state&ksm_control) &&
 	    (event->u.chr.state&ksm_meta) )
 	MenuExit(NULL,NULL,NULL);
+    else if ( event->u.chr.keysym=='f' &&
+	    (event->u.chr.state&ksm_control) &&
+	    (event->u.chr.state&ksm_meta) )
+	SVCreate(fv);
     else if (( event->u.chr.keysym=='M' ||event->u.chr.keysym=='m' ) &&
 	    (event->u.chr.state&ksm_control) ) {
 	if ( (event->u.chr.state&ksm_meta) && (event->u.chr.state&ksm_shift))
@@ -3664,6 +3669,8 @@ static void FVMouse(FontView *fv,GEvent *event) {
     }
     if ( event->type==et_mouseup && dopopup )
 	SCPreparePopup(fv->v,sc);
+    if ( event->type==et_mouseup )
+	SVAttachFV(fv,2);
 }
 
 static void FVTimer(FontView *fv,GEvent *event) {
@@ -4248,12 +4255,27 @@ return( NULL );
     if (( pt = strrchr(filename,'/'))==NULL ) pt = filename;
     if ( strchr(pt,'.')==NULL ) {
 	/* They didn't give an extension. If there's a file with no extension */
-	/*  see if it's a valid postscript file (and if so use the extensionless */
+	/*  see if it's a valid font file (and if so use the extensionless */
 	/*  filename), otherwise guess at an extension */
+	/* For some reason Adobe distributes CID keyed fonts (both OTF and */
+	/*  postscript) as extensionless files */
 	int ok = false;
 	FILE *test = fopen(filename,"r");
 	if ( test!=NULL ) {
-	    /*if ( getc(test)=='%' )*/ ok = true;
+#if 0
+	    int ch1 = getc(test);
+	    int ch2 = getc(test);
+	    int ch3 = getc(test);
+	    int ch4 = getc(test);
+	    if ( ch1=='%' ) ok = true;
+	    else if (( ch1==0 && ch2==1 && ch3==0 && ch4==0 ) ||
+		    (ch1=='O' && ch2=='T' && ch3=='T' && ch4=='O') ||
+		    (ch1=='t' && ch2=='r' && ch3=='u' && ch4=='e') ||
+		    (ch1=='t' && ch2=='t' && ch3=='c' && ch4=='f') ) ok = true;
+	    else if ( ch1=='S' && ch2=='p' && ch3=='l' && ch4=='i' ) ok = true;
+#endif
+	    ok = true;		/* Mac resource files are too hard to check for */
+		    /* If file exists, assume good */
 	    fclose(test);
 	}
 	if ( !ok ) {

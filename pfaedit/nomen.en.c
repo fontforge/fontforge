@@ -1372,6 +1372,26 @@ static char *str_CallScript = "Call Script";
     /* start (about box) */
 static char *str_FreePress = "A free press discriminates\nagainst the illiterate.";
 static char *str_GaudiamusLigature = "Gaudiamus Ligature!";
+    /* search */
+static char *str_SearchPattern = "Search Pattern:";
+static char *str_ReplacePattern = "Replace Pattern:";
+static char *str_Allow = "Allow:";
+static char *str_Flipping = "Flipping";
+static char *str_Scaling = "Scaling";
+static char *str_Rotating = "Rotating";
+static char *str_AllowTransPopup = "Allow a match even if the search pattern has\nto be transformed by a combination of the\nfollowing transformations.";
+static char *str_SearchSelected = "Search Selected Chars";
+static char *str_SearchSelectedPopup = "Only search selected characters in the fontview\nNormally we search all characters in the font.";
+static char *str_Find = "Find";
+static char *str_FindIn = "Find in %.100hs";
+static char *str_FindNext = "Find Next";
+static char *str_FindAll = "Find All";
+static char *str_ReplaceFind = "Replace/Find"
+static char *str_ReplaceAll = "Replace All"
+static char *str_BadRefInSearchRpl = "The %1$s contains a reference to %2$.20hs which does not exist in the new font.\nShould I remove the reference?";
+static char *str_NotFound = "Not Found"
+static char *str_PatternNotFound = "The search pattern was not found in the font %.100hs";
+static char *str_PatternNotFoundAgain = "The search pattern was not found again in the font %.100hs";
 
 static int num_buttonsize = 55;
 static int num_ScaleFactor = 100;

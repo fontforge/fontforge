@@ -3927,6 +3927,43 @@ fi
 
 fi
 
+echo -n checking for long long ...
+cat >conftest.$ac_ext <<_ACEOF
+#line 3932 "configure"
+#include "confdefs.h"
+
+int
+main ()
+{
+long long foo=0x400000000000;
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:3944: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>&5
+  ac_status=$?
+  echo "$as_me:3947: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:3950: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:3953: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+   cat >>confdefs.h <<\EOF
+#define _HAS_LONGLONG 1
+EOF
+
+    echo " " yes
+else
+  echo "$as_me: failed program was:" >&5
+cat conftest.$ac_ext >&5
+echo " " no
+fi
+rm -f conftest.$ac_objext conftest.$ac_ext
+
 STATIC_LIBS=
 if test "$gww_nodynamic" = "yes"; then
  if test "$ac_cv_lib_ungif_DGifOpenFileName" = "yes"; then
@@ -4055,7 +4092,7 @@ rm -f confdef2opt.sed
 : ${CONFIG_STATUS=./config.status}
 ac_clean_files_save=$ac_clean_files
 ac_clean_files="$ac_clean_files $CONFIG_STATUS"
-{ echo "$as_me:4058: creating $CONFIG_STATUS" >&5
+{ echo "$as_me:4095: creating $CONFIG_STATUS" >&5
 echo "$as_me: creating $CONFIG_STATUS" >&6;}
 cat >$CONFIG_STATUS <<_ACEOF
 #! $SHELL
@@ -4222,7 +4259,7 @@ cat >>$CONFIG_STATUS <<\EOF
     echo "$ac_cs_version"; exit 0 ;;
   --he | --h)
     # Conflict between --help and --header
-    { { echo "$as_me:4225: error: ambiguous option: $1
+    { { echo "$as_me:4262: error: ambiguous option: $1
 Try \`$0 --help' for more information." >&5
 echo "$as_me: error: ambiguous option: $1
 Try \`$0 --help' for more information." >&2;}
@@ -4241,7 +4278,7 @@ Try \`$0 --help' for more information." >&2;}
     ac_need_defaults=false;;
 
   # This is an error.
-  -*) { { echo "$as_me:4244: error: unrecognized option: $1
+  -*) { { echo "$as_me:4281: error: unrecognized option: $1
 Try \`$0 --help' for more information." >&5
 echo "$as_me: error: unrecognized option: $1
 Try \`$0 --help' for more information." >&2;}
@@ -4280,7 +4317,7 @@ do
   "Unicode/Makefile" ) CONFIG_FILES="$CONFIG_FILES Unicode/Makefile" ;;
   "gdraw/Makefile" ) CONFIG_FILES="$CONFIG_FILES gdraw/Makefile" ;;
   "pfaedit/Makefile" ) CONFIG_FILES="$CONFIG_FILES pfaedit/Makefile" ;;
-  *) { { echo "$as_me:4283: error: invalid argument: $ac_config_target" >&5
+  *) { { echo "$as_me:4320: error: invalid argument: $ac_config_target" >&5
 echo "$as_me: error: invalid argument: $ac_config_target" >&2;}
    { (exit 1); exit 1; }; };;
   esac
@@ -4492,7 +4529,7 @@ done; }
   esac
 
   if test x"$ac_file" != x-; then
-    { echo "$as_me:4495: creating $ac_file" >&5
+    { echo "$as_me:4532: creating $ac_file" >&5
 echo "$as_me: creating $ac_file" >&6;}
     rm -f "$ac_file"
   fi
@@ -4510,7 +4547,7 @@ echo "$as_me: creating $ac_file" >&6;}
       -) echo $tmp/stdin ;;
       [\\/$]*)
          # Absolute (can't be DOS-style, as IFS=:)
-         test -f "$f" || { { echo "$as_me:4513: error: cannot find input file: $f" >&5
+         test -f "$f" || { { echo "$as_me:4550: error: cannot find input file: $f" >&5
 echo "$as_me: error: cannot find input file: $f" >&2;}
    { (exit 1); exit 1; }; }
          echo $f;;
@@ -4523,7 +4560,7 @@ echo "$as_me: error: cannot find input file: $f" >&2;}
            echo $srcdir/$f
          else
            # /dev/null tree
-           { { echo "$as_me:4526: error: cannot find input file: $f" >&5
+           { { echo "$as_me:4563: error: cannot find input file: $f" >&5
 echo "$as_me: error: cannot find input file: $f" >&2;}
    { (exit 1); exit 1; }; }
          fi;;

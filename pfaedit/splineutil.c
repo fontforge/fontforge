@@ -1166,6 +1166,9 @@ void SplinePointListSelect(SplinePointList *spl,int sel) {
 void SCMakeDependent(SplineChar *dependent,SplineChar *base) {
     struct splinecharlist *dlist;
 
+    if ( dependent->searcherdummy )
+return;
+
     for ( dlist=base->dependents; dlist!=NULL && dlist->sc!=dependent; dlist = dlist->next);
     if ( dlist==NULL ) {
 	dlist = calloc(1,sizeof(struct splinecharlist));

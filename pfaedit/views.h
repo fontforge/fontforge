@@ -126,6 +126,7 @@ typedef struct charview {
     unsigned int joinvalid:1;
     unsigned int widthsel:1;
     unsigned int vwidthsel:1;
+    unsigned int inactive:1;			/* When in a search view */
     SplinePointList **heads[dm_max];
     Undoes **uheads[dm_max];
     Undoes **rheads[dm_max];
@@ -174,7 +175,7 @@ typedef struct charview {
     GTimer *autorpt;
     int keysym, oldstate;
 #endif
-    void *searcher;
+    struct searchview *searcher;	/* The sv within which this view is embedded (if it is) */
 } CharView;
 
 typedef struct bitmapview {
@@ -274,6 +275,7 @@ typedef struct fontview {
 		    /* So the default array would contain NUL, ^A, ^B, ... */
     int mapcnt;		/* Number of chars in the current group (mapping) */
     struct dictionary *fontvars;	/* Scripting */
+    struct searchview *sv;
 } FontView;
 
 typedef struct findsel {
@@ -287,6 +289,63 @@ typedef struct findsel {
 } FindSel;
 
 enum widthtype { wt_width, wt_lbearing, wt_rbearing, wt_vwidth };
+
+typedef struct searchview {
+    FontView dummy_fv;
+    SplineFont dummy_sf;
+    SplineChar sc_srch, sc_rpl;
+    SplineChar *chars[2];
+    char sel[2];
+    CharView cv_srch, cv_rpl;
+    CharView *lastcv;
+/* ****** */
+    GWindow gw;
+    int mbh;
+    GGadget *mb;
+    GFont *plain, *bold;
+    int fh, as;
+    int rpl_x, cv_y;
+    int cv_width, cv_height;
+    short button_height, button_width;
+/* ****** */
+    FontView *fv;
+    SplineChar *curchar;
+    SplineSet *path, *revpath, *replacepath, *revreplace;
+    int pointcnt, rpointcnt;
+    real fudge;
+    real fudge_percent;			/* a value of .05 here represents 5% (we don't store the integer) */
+    unsigned int tryreverse: 1;
+    unsigned int tryflips: 1;
+    unsigned int tryrotate: 1;
+    unsigned int tryscale: 1;
+    unsigned int onlyselected: 1;
+    unsigned int subpatternsearch: 1;
+    unsigned int doreplace: 1;
+    unsigned int replaceall: 1;
+    unsigned int findall: 1;
+    unsigned int searchback: 1;
+    unsigned int wrap: 1;
+    unsigned int wasreversed: 1;
+    unsigned int isvisible: 1;
+    unsigned int findenabled: 1;
+    unsigned int rplallenabled: 1;
+    unsigned int rplenabled: 1;
+    unsigned int showsfindnext: 1;
+    SplineSet *matched_spl;
+    SplinePoint *matched_sp, *last_sp;
+    real matched_rot, matched_scale;
+    real matched_x, matched_y;
+    double matched_co, matched_si;		/* Precomputed sin, cos */
+    enum flipset { flip_none = 0, flip_x, flip_y, flip_xy } matched_flip;
+#ifdef _HAS_LONGLONG
+    unsigned long long matched_refs;	/* Bit map of which refs in the char were matched */
+    unsigned long long matched_ss;	/* Bit map of which splines in the char were matched */
+				    /* In multi-path mode */
+#else
+    unsigned long matched_refs;
+    unsigned long matched_ss;
+#endif
+} SearchView;
 
 extern void FVSetTitle(FontView *fv);
 extern FontView *_FontViewCreate(SplineFont *sf);
@@ -456,6 +515,7 @@ extern void CVMouseUpKnife(CharView *cv);
 extern void CVMouseDownShape(CharView *cv);
 extern void CVMouseMoveShape(CharView *cv);
 extern void CVMouseUpShape(CharView *cv);
+extern void LogoExpose(GWindow pixmap,GEvent *event, GRect *r);
 
 extern int GotoChar(SplineFont *sf);
 
@@ -559,6 +619,14 @@ extern void Disp_DoFinish(struct jamodisplay *d, int cancel);
 extern int Disp_JamoSetup(struct jamodisplay *d,CharView *cv);
 extern void Disp_RefreshChar(SplineFont *sf,SplineChar *sc);
 # endif
+
+extern SearchView *SVCreate(FontView *fv);
+extern void SVCharViewInits(SearchView *sv);
+extern void SVMenuClose(GWindow gw,struct gmenuitem *mi,GEvent *e);
+extern void SVChar(SearchView *sv, GEvent *event);
+extern void SVMakeActive(SearchView *sv,CharView *cv);
+extern int SVAttachFV(FontView *fv,int ask_if_difficult);
+extern void SVDetachFV(FontView *fv);
 
 extern GMenuItem helplist[];
 #endif

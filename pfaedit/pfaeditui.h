@@ -53,7 +53,8 @@ extern GImage GIcon_smallskew, GIcon_smallscale, GIcon_smallrotate,
 	GIcon_smallflip, GIcon_smalltangent, GIcon_smallcorner,
 	GIcon_smallcurve, GIcon_smallmag, GIcon_smallknife, GIcon_smallpen,
 	GIcon_smallpointer, GIcon_smallruler, GIcon_smallelipse,
-	GIcon_smallrect, GIcon_smallpoly, GIcon_smallstar;
+	GIcon_smallrect, GIcon_smallpoly, GIcon_smallstar,
+	GIcon_PfaEditLogo;
 
 extern GTextInfo encodingtypes[];
 extern GTextInfo *EncodingTypesFindEnc(GTextInfo *encodingtypes, int enc);

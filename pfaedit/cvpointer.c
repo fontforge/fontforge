@@ -371,9 +371,9 @@ void CVCheckResizeCursors(CharView *cv) {
 	}
 	if ( cv->expandedge == ee_none ) {
 	    if ( cv->showhmetrics && cv->info.x > cv->sc->width-fudge &&
-		    cv->info.x<cv->sc->width+fudge )
+		    cv->info.x<cv->sc->width+fudge && cv->searcher==NULL )
 		cv->expandedge = ee_right;
-	    if ( cv->showvmetrics && cv->sc->parent->hasvmetrics &&
+	    if ( cv->showvmetrics && cv->sc->parent->hasvmetrics && cv->searcher==NULL &&
 		    cv->info.y > cv->sc->parent->vertical_origin-cv->sc->vwidth-fudge &&
 		    cv->info.y < cv->sc->parent->vertical_origin-cv->sc->vwidth+fudge )
 		cv->expandedge = ee_down;
@@ -442,8 +442,8 @@ void CVMouseDownPointer(CharView *cv, FindSel *fs, GEvent *event) {
     if ( ImgRefEdgeSelected(cv,fs,event))
 return;
     dowidth = ( cv->showhmetrics && cv->p.cx>cv->sc->width-fs->fudge &&
-		cv->p.cx<cv->sc->width+fs->fudge );
-    dovwidth = ( cv->showvmetrics && cv->sc->parent->hasvmetrics &&
+		cv->p.cx<cv->sc->width+fs->fudge && cv->searcher==NULL );
+    dovwidth = ( cv->showvmetrics && cv->sc->parent->hasvmetrics && cv->searcher == NULL &&
 		cv->p.cy>cv->sc->parent->vertical_origin-cv->sc->vwidth-fs->fudge &&
 		cv->p.cy<cv->sc->parent->vertical_origin-cv->sc->vwidth+fs->fudge );
     if ( (fs->p->sp==NULL || !fs->p->sp->selected) &&
