@@ -111,9 +111,9 @@ cp Unicode/Makefile.static.in Unicode/Makefile.in
 cp gdraw/Makefile.static.in gdraw/Makefile.in
 cp pfaedit/Makefile.static.in pfaedit/Makefile.in
 AC_OUTPUT(Makefile Unicode/Makefile gdraw/Makefile pfaedit/Makefile)
-if test -e toys >/dev/null 2>&1 ; then
-  cp toys/Makefile.static.in toys/Makefile.in
-  AC_OUTPUT( toys/Makefile )
+if test -e umap >/dev/null 2>&1 ; then
+  cp umap/Makefile.static.in umap/Makefile.in
+  AC_OUTPUT( umap/Makefile )
 fi
 
 echo Configuration defines: $DEFS

@@ -14,6 +14,8 @@ INSTALL = @INSTALL@
 
 all: pfaedit
 
+libs: libgunicode libgdraw
+
 pfaedit: libgunicode libgdraw
 	( cd pfaedit ; $(MAKE) )
 
@@ -34,7 +36,15 @@ distclean cleaner:
 	( cd gdraw ; $(MAKE) distclean )
 	-rm Makefile config.cache config.log config.status libtool
 
-install: $(sharedir) all
+install_libs: libs
+# You may need to be root to do the install
+	-rm $(libdir)/libgdraw.so* $(libdir)/libgunicode.so.*
+	libtool cp libgdraw.la $(libdir)/libgdraw.la
+	libtool cp libgunicode.la $(libdir)/libgunicode.la
+	cp .libs/*.so.*.* $(libdir)
+	libtool --finish $(libdir)
+
+install: $(sharedir) all install_libs
 # You may need to be root to do the install
 	mkdir -p $(bindir)
 	mkdir -p $(mandir)/man1
@@ -48,11 +58,6 @@ install: $(sharedir) all
 	-cp $(srcdir)/cidmap/*.cidmap $(sharedir) >/dev/null 2>&1
 	cp $(srcdir)/pfaedit/pfaedit.1 $(mandir)/man1
 	cp $(srcdir)/pfaedit/sfddiff.1 $(mandir)/man1
-	-rm $(libdir)/libgdraw.so* $(libdir)/libgunicode.so.*
-	libtool cp libgdraw.la $(libdir)/libgdraw.la
-	libtool cp libgunicode.la $(libdir)/libgunicode.la
-	cp .libs/*.so.*.* $(libdir)
-	libtool --finish $(libdir)
 
 uninstall:
 	-rm $(bindir)/pfaedit

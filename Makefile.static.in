@@ -14,6 +14,8 @@ INSTALL = @INSTALL@
 
 all: pfaedit
 
+libs: libgunicode libgdraw
+
 pfaedit: libgunicode libgdraw
 	( cd pfaedit ; $(MAKE) )
 
@@ -34,7 +36,9 @@ distclean cleaner:
 	( cd gdraw ; $(MAKE) distclean )
 	-rm Makefile config.cache config.log config.status libtool
 
-install: $(sharedir) all
+install_libs: libs
+
+install: $(sharedir) all install_libs
 # You may need to be root to do the install
 	mkdir -p $(bindir)
 	mkdir -p $(mandir)/man1

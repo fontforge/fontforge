@@ -24,7 +24,9 @@ BITMAP FONTS
  The program will choose fonts as best it can depending on what you have
  installed on your machine.
    Sources of unicode fonts:
+	http://czyborra.com/unifont/
 	http://clr.nmsu.edu/~mleisher/cu.html
+	http://savannah.nongnu.org/projects/freefont
         http://bibliofile.mc.duke.edu/gww/fonts/{Monospace,Caliban}
 	
 RUNNING

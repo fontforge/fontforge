@@ -10019,9 +10019,9 @@ if test "$no_create" != yes; then
   $ac_cs_success || { (exit 1); exit 1; }
 fi
 
-if test -e toys >/dev/null 2>&1 ; then
-  cp toys/Makefile.dynamic.in toys/Makefile.in
-  ac_config_files="$ac_config_files toys/Makefile"
+if test -e umap >/dev/null 2>&1 ; then
+  cp umap/Makefile.dynamic.in umap/Makefile.in
+  ac_config_files="$ac_config_files umap/Makefile"
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure
@@ -10522,7 +10522,7 @@ do
   "Unicode/Makefile" ) CONFIG_FILES="$CONFIG_FILES Unicode/Makefile" ;;
   "gdraw/Makefile" ) CONFIG_FILES="$CONFIG_FILES gdraw/Makefile" ;;
   "pfaedit/Makefile" ) CONFIG_FILES="$CONFIG_FILES pfaedit/Makefile" ;;
-  "toys/Makefile" ) CONFIG_FILES="$CONFIG_FILES toys/Makefile" ;;
+  "umap/Makefile" ) CONFIG_FILES="$CONFIG_FILES umap/Makefile" ;;
   *) { { echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5
 echo "$as_me: error: invalid argument: $ac_config_target" >&2;}
    { (exit 1); exit 1; }; };;
