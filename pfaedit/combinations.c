@@ -155,10 +155,13 @@ static int offcmpr(const void *_k1, const void *_k2) {
     if ( (off1=k1->newoff)<0 ) off1 = -off1;
     if ( (off2=k2->newoff)<0 ) off2 = -off2;
 
-    if ( off1==off2 )		/* If same offset, use first char as tie breaker */
+    if ( off1!=off2 )		/* If same offset, use first char as tie breaker */
+return( off1-off2 );
+
+    if ( k1->first!=k2->first )		/* If same first char, use second char as tie breaker */
 return( k1->first->enc-k2->first->enc );
 
-return( off1-off2 );
+return( k1->second->enc-k2->second->enc );
 }
 
 static void KPSortEm(KPData *kpd,enum sortby sort_func) {
