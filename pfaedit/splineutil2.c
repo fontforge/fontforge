@@ -150,6 +150,17 @@ return( true );
     }
     spline->knowncurved = !ret;
     spline->knownlinear = ret;
+    if ( ret ) {
+	/* A few places that if the spline is knownlinear then its splines[?] */
+	/*  are linear. So give the linear version and not that suggested by */
+	/*  the control points */
+	spline->splines[0].a = spline->splines[0].b = 0;
+	spline->splines[0].d = spline->from->me.x;
+	spline->splines[0].c = spline->to->me.x-spline->from->me.x;
+	spline->splines[1].a = spline->splines[1].b = 0;
+	spline->splines[1].d = spline->from->me.y;
+	spline->splines[1].c = spline->to->me.y-spline->from->me.y;
+    }
 return( ret );
 }
 
