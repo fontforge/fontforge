@@ -1327,6 +1327,7 @@ return( 0 );
 
     fprintf( out, "/FDArray %d array\n", cidbytes.fdcnt );
     for ( i=0; i<cidbytes.fdcnt; ++i ) {
+	double factor;
 	sf = cidmaster->subfonts[i];
 	/* According to the PSRef Man, v3. only FontName, FontMatrix & Private*/
 	/*  should be defined here. But adobe's example fonts have a few */
@@ -1336,7 +1337,9 @@ return( 0 );
 	fprintf( out, "14 dict\n  begin\n" );
 	fprintf( out, "  /FontName /%s def\n", sf->fontname );
 	fprintf( out, "  /FontType 1 def\n" );
-	fprintf( out, "  /FontMatrix [ 0.001 0 0 0.001 0 0 ] def\n"),
+	factor = 1.0/(sf->ascent+sf->descent);
+	fprintf( out, "  /FontMatrix [ %g 0 0 %g 0 0 ] def\n",
+		factor, factor );
 	fprintf( out, "  /PaintType 0 def\n" );
 	fprintf( out, "\n  %%ADOBeginPrivateDict\n" );
 	dumpprivatestuff((DumpChar) fputc,out,sf,&cidbytes.fds[i]);
