@@ -272,6 +272,8 @@ return( handled );
 	GGadgetEndPopup();
 	if ( gd->grabgadget!=NULL ) {
 	    handled = (gd->grabgadget->funcs->handle_mouse)(gd->grabgadget,event);
+	    if ( gw->is_dying || gw->widget_data==NULL )	/* Bug!!! gw might have been freed already */
+return( true );
 	    if ( event->type==et_mouseup )
 		gd->grabgadget = NULL;
 	} else if ( event->type==et_mousedown ) {
@@ -282,6 +284,8 @@ return( handled );
 			gadget->takes_input &&
 			GGadgetWithin(gadget,event->u.mouse.x,event->u.mouse.y)) {
 		    handled = (gadget->funcs->handle_mouse)(gadget,event);
+		    if ( gw->is_dying || gw->widget_data==NULL )	/* Bug!!! gw might have been freed already */
+return( true );
 		    gd->grabgadget = gadget;
 		    if ( gadget->focusable && handled )
 			GWidgetIndicateFocusGadget(gadget);
@@ -295,26 +299,37 @@ return( handled );
 		    if ( gd->lastwiggle!=NULL && gd->lastwiggle!=gadget )
 			(gd->lastwiggle->funcs->handle_mouse)(gd->lastwiggle,event);
 		    handled = (gadget->funcs->handle_mouse)(gadget,event);
+		    if ( gw->is_dying || gw->widget_data==NULL )	/* Bug!!! gw might have been freed already */
+return( true );
 		    gd->lastwiggle = gadget;
 		}
 	    }
-	    if ( !handled && gd->lastwiggle!=NULL )
+	    if ( !handled && gd->lastwiggle!=NULL ) {
 		(gd->lastwiggle->funcs->handle_mouse)(gd->lastwiggle,event);
+		if ( gw->is_dying )
+return( true );
+	    }
 	}
     } else if ( event->type == et_char || event->type == et_charup ) {
-	if ( topd!=NULL )
+	if ( topd!=NULL ) {
 	    handled = (topd->handle_key)(parent,gw,event);
+	}
     } else if ( event->type == et_drag || event->type == et_dragout || event->type==et_drop ) {
 	GGadget *lastdd = NULL;
 	GEvent e;
 	for ( gadget = gd->gadgets; gadget!=NULL && !handled ; gadget=gadget->prev ) {
 	    if ( gadget->funcs->handle_sel &&
 		    GGadgetWithin(gadget,event->u.drag_drop.x,event->u.drag_drop.y))
-		if (( handled = (gadget->funcs->handle_sel)(gadget,event) ))
+		if (( handled = (gadget->funcs->handle_sel)(gadget,event) )) {
 		    lastdd = gadget;
+		    if ( gw->is_dying )
+return( true );
+		    }
 	}
 	if ( !handled && gd->e_h!=NULL ) {
 	    handled = (gd->e_h)(gw,event);
+	    if ( gw->is_dying )
+return( true );
 	    lastdd = (GGadget *) -1;
 	}
 	e.type = et_dragout;
@@ -324,6 +339,8 @@ return( handled );
 		(gd->e_h)(gw,&e);
 	    else if ( gd->lastddgadget!=NULL )
 		(gd->lastddgadget->funcs->handle_sel)(gd->lastddgadget,&e);
+	    if ( gw->is_dying )
+return( true );
 	}
 	if ( event->type==et_drag )
 	    gd->lastddgadget = lastdd;
@@ -332,13 +349,17 @@ return( handled );
 return( handled );
     } else if ( event->type == et_selclear ) {
 	for ( gadget = gd->gadgets; gadget!=NULL && !handled ; gadget=gadget->prev ) {
-	    if ( gadget->funcs->handle_sel )
-		handled = (gadget->funcs->handle_sel)(gadget,event);
+	    if ( gadget->funcs->handle_sel ) {
+		if ( (handled = (gadget->funcs->handle_sel)(gadget,event)) )
+	break;
+	    }
 	}
     } else if ( event->type == et_timer ) {
 	for ( gadget = gd->gadgets; gadget!=NULL && !handled ; gadget=gadget->prev ) {
-	    if ( gadget->funcs->handle_timer )
-		handled = (gadget->funcs->handle_timer)(gadget,event);
+	    if ( gadget->funcs->handle_timer ) {
+		if ( (handled = (gadget->funcs->handle_timer)(gadget,event)) )
+	break;
+	    }
 	}
     }
     if ( gd->e_h!=NULL && (!handled || event->type==et_mousemove ))
