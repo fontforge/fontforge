@@ -1883,7 +1883,7 @@ return;
 return;
     }
 
-    map = FindCidMap(cidmaster->cidregistry,cidmaster->ordering,cidmaster->supplement);
+    map = FindCidMap(cidmaster->cidregistry,cidmaster->ordering,cidmaster->supplement,cidmaster);
     SFEncodeToMap(new,map);
     if ( !PSDictHasEntry(new->private,"lenIV"))
 	PSDictChangeEntry(new->private,"lenIV","1");		/* It's 4 by default, in CIDs the convention seems to be 1 */
@@ -1899,7 +1899,7 @@ static void FVMenuInsertBlank(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     if ( cidmaster==NULL || cidmaster->subfontcnt>=255 )	/* Open type allows 1 byte to specify the fdselect */
 return;
-    map = FindCidMap(cidmaster->cidregistry,cidmaster->ordering,cidmaster->supplement);
+    map = FindCidMap(cidmaster->cidregistry,cidmaster->ordering,cidmaster->supplement,cidmaster);
     sf = SplineFontBlank(em_none,MaxCID(map));
     sf->cidmaster = cidmaster;
     sf->display_antialias = fv->sf->display_antialias;
@@ -2404,6 +2404,10 @@ void FVRegenChar(FontView *fv,SplineChar *sc) {
 	MVRegenChar(mv,sc);
 
     FVRefreshChar(fv,fv->filled,sc->enc);
+#if HANYANG
+    if ( sc->compositionunit && fv->sf->rules!=NULL )
+	Disp_RefreshChar(fv->sf,sc);
+#endif
 
     for ( dlist=sc->dependents; dlist!=NULL; dlist=dlist->next )
 	FVRegenChar(fv,dlist->sc);
@@ -2418,8 +2422,11 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i) {
     dummy->enc = i;
     if ( sf->cidmaster!=NULL ) {
 	/* CID fonts don't have encodings, instead we must look up the cid */
-	dummy->unicodeenc = CID2NameEnc(FindCidMap(sf->cidmaster->cidregistry,sf->cidmaster->ordering,sf->cidmaster->supplement),
-		i,namebuf,sizeof(namebuf));
+	if ( sf->cidmaster->loading_cid_map )
+	    dummy->unicodeenc = -1;
+	else
+	    dummy->unicodeenc = CID2NameEnc(FindCidMap(sf->cidmaster->cidregistry,sf->cidmaster->ordering,sf->cidmaster->supplement,sf->cidmaster),
+		    i,namebuf,sizeof(namebuf));
     } else if ( sf->encoding_name==em_unicode || sf->encoding_name==em_iso8859_1 )
 	dummy->unicodeenc = i<65536 ? i : -1;
     else if ( sf->encoding_name==em_adobestandard )

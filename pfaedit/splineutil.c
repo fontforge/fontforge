@@ -1453,7 +1453,7 @@ return( NULL );
 		    fd->fds[i]->private->subrs->cnt<33900 ? 1131 : 32768;
     }
 
-    map = FindCidMap(sf->cidregistry,sf->ordering,sf->supplement);
+    map = FindCidMap(sf->cidregistry,sf->ordering,sf->supplement,sf);
 
     chars = gcalloc(fd->cidcnt,sizeof(SplineChar *));
     for ( i=0; i<fd->cidcnt; ++i ) if ( fd->cidlens[i]>0 ) {

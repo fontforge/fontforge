@@ -71,8 +71,8 @@ know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-011216.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 16-Dec-2001
+    <A HREF="pfaedit-011217.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 17-Dec-2001
   <LI>
     <A HREF="pfaedit-solaris-011211.tgz">Download pfaedit Solaris 8.0
     </A>executable Version: 11-Dec-2001
@@ -110,22 +110,22 @@ If you want to edit CID keyed fonts you need these
 <P>
 You can download a <A HREF="pfaedit-011201-1.src.rpm">source RPM</A>: Version:
 1-Dec-2001<BR>
-Or you can download the following three packages. Version: 16-Dec-2001
+Or you can download the following three packages. Version: 17-Dec-2001
 <UL>
   <LI>
     <A HREF="libgunicode-011215.tgz">Unicode library source</A> (15-Dec-2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGUnicode/index.html">docs</A>
   <LI>
-    <A HREF="libgdraw-011216.tgz">Unicode widget library source</A>
-    (16-Dec-2001)<BR>
+    <A HREF="libgdraw-011217.tgz">Unicode widget library source</A>
+    (17-Dec-2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
   <LI>
-    <A HREF="pfaedit_src-011216.tgz">Pfaedit source</A> (16-Dec-2001)<BR>
+    <A HREF="pfaedit_src-011217.tgz">Pfaedit source</A> (17-Dec-2001)<BR>
     -- <A HREF="overview.html">docs</A>
   <LI>
-    <A HREF="pfaedit_full-011216.tgz">All three bundled together </A>(16-Dec-2001)
+    <A HREF="pfaedit_full-011217.tgz">All three bundled together </A>(17-Dec-2001)
 </UL>
 <P>
 If you want to do autotracing around character images you should also download
@@ -235,6 +235,21 @@ up into one <A HREF="pfaedit_htdocs-011116.tgz">tgz file</A> 16-Nov-2001.
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    17-Dec-2001
+    <UL>
+      <LI>
+	Fixed another bug with cid fonts, this one when attempting to create such
+	a font in the absence of cidmap files
+      <LI>
+	Fixed a bug when outputting otf cid files (bug appeared when I added vertical
+	metrics)
+      <LI>
+	When loading a cid font PfaEdit could get caught up in an semi-infinite loop
+	asking for cidmap files. Should be fixed now.
+      <LI>
+	Finally got rid of the annoying warning about tempnam() when linking.
+    </UL>
   <LI>
     16-Dec-2001
     <UL>

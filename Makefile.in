@@ -47,4 +47,4 @@ uninstall:
 #	-rm $(sharedir)/*.cidmap
 
 $(sharedir):
-	mkdir $(sharedir)
+	mkdir -p $(sharedir)

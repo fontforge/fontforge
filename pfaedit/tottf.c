@@ -903,10 +903,10 @@ static void FigureFullMetricsEnd(SplineFont *sf,struct glyphinfo *gi) {
     }
 
     if ( i>0 ) {
-	width = sf->chars[i]->width;
-	vwidth = sf->chars[i]->vwidth;
 	lasti = lastv = i;
 	if ( sf->subfontcnt==0 ) {
+	    width = sf->chars[i]->width;
+	    vwidth = sf->chars[i]->vwidth;
 	    for ( --i; i>0; --i ) {
 		if ( SCWorthOutputting(sf->chars[i])) {
 		    if ( sf->chars[i]->width!=width )
@@ -928,6 +928,8 @@ static void FigureFullMetricsEnd(SplineFont *sf,struct glyphinfo *gi) {
 		gi->lastvwidth = lastv;
 	    }
 	} else {
+	    width = sf->subfonts[j]->chars[i]->width;
+	    vwidth = sf->subfonts[j]->chars[i]->vwidth;
 	    for ( --i; i>0; --i ) {
 		for ( j=0; j<sf->subfontcnt; ++j )
 		    if ( sf->subfonts[j]->chars[i]!=NULL )
@@ -2362,23 +2364,23 @@ static void _dumpcffstrings(FILE *file, struct pschars *strs) {
 
     /* First figure out the offset size */
     len = 1;
-    for ( i=0; i<strs->cnt; ++i )
+    for ( i=0; i<strs->next; ++i )
 	len += strs->lens[i];
 
     /* Then output the index size and offsets */
-    putshort( file, strs->cnt );
-    if ( strs->cnt!=0 ) {
+    putshort( file, strs->next );
+    if ( strs->next!=0 ) {
 	offsize = len<=255?1:len<=65535?2:len<=0xffffff?3:4;
 	putc(offsize,file);
 	len = 1;
-	for ( i=0; i<strs->cnt; ++i ) {
+	for ( i=0; i<strs->next; ++i ) {
 	    dumpoffset(file,offsize,len);
 	    len += strs->lens[i];
 	}
 	dumpoffset(file,offsize,len);
 
 	/* last of all the strings */
-	for ( i=0; i<strs->cnt; ++i ) {
+	for ( i=0; i<strs->next; ++i ) {
 	    uint8 *pt = strs->values[i], *end = pt+strs->lens[i];
 	    while ( pt<end )
 		putc( *pt++, file );
@@ -2907,12 +2909,12 @@ static void dumpcffcidhmtx(struct alltabs *at,SplineFont *_sf) {
     SplineChar *sc;
     int cid,i,cnt=0,max;
     SplineFont *sf;
-    int dovmetrics = sf->hasvmetrics;
+    int dovmetrics = _sf->hasvmetrics;
 
     at->gi.hmtx = tmpfile();
     if ( dovmetrics )
 	at->gi.vmtx = tmpfile();
-    FigureFullMetricsEnd(sf,&at->gi);
+    FigureFullMetricsEnd(_sf,&at->gi);
 
     max = 0;
     for ( i=0; i<_sf->subfontcnt; ++i )

@@ -685,13 +685,17 @@ static struct cidmap *LoadMapFromFile(char *file,char *registry,char *ordering,
 return( ret );
 }
 
-struct cidmap *FindCidMap(char *registry,char *ordering,int supplement) {
+struct cidmap *FindCidMap(char *registry,char *ordering,int supplement,SplineFont *sf) {
     struct cidmap *map, *maybe=NULL;
     char *file, *maybefile=NULL;
     int maybe_sup = -1;
     static int buts[] = { _STR_UseIt, _STR_Search, 0 };
     static int buts2[] = { _STR_UseIt, _STR_GiveUp, 0 };
     unichar_t ubuf[100]; char buf[100];
+    int ret;
+
+    if ( sf!=NULL && sf->loading_cid_map )
+return( NULL );
 
     for ( map = cidmaps; map!=NULL; map = map->next ) {
 	if ( strcmp(map->registry,registry)==0 && strcmp(map->ordering,ordering)==0 ) {
@@ -730,8 +734,11 @@ return( maybe );	/* User has said it's ok to use maybe at this supplement level 
 	}
 	if ( maybe!=NULL )
 	    maybe_sup = maybe->supplement;
-	if ( GWidgetAskR(_STR_UseCidMap,buts,0,1,_STR_SearchForCIDMap,
-		registry,ordering,supplement,maybe_sup)==0 ) {
+	if ( sf!=NULL ) sf->loading_cid_map = true;
+	ret = GWidgetAskR(_STR_UseCidMap,buts,0,1,_STR_SearchForCIDMap,
+		registry,ordering,supplement,maybe_sup);
+	if ( sf!=NULL ) sf->loading_cid_map = false;
+	if ( ret==0 ) {
 	    if ( maybe!=NULL ) {
 		maybe->maxsupple = supplement;
 return( maybe );
@@ -750,7 +757,9 @@ return( maybe );
 	snprintf(buf,sizeof(buf),"%s-%s-*.cidmap", registry, ordering );
 #endif
 	uc_strcpy(ubuf,buf);
+	if ( sf!=NULL ) sf->loading_cid_map = true;
 	uret = GWidgetOpenFile(GStringGetResource(_STR_FindCharset,NULL),NULL,ubuf,NULL);
+	if ( sf!=NULL ) sf->loading_cid_map = false;
 	if ( uret==NULL ) {
 	    if ( GWidgetAskR(_STR_UseCidMap,buts2,0,1,_STR_AreYouSureCharset)==0 ) {
 		if ( maybe!=NULL ) {
@@ -776,15 +785,28 @@ return( MakeDummyMap(registry,ordering,supplement));
 
 void SFEncodeToMap(SplineFont *sf,struct cidmap *map) {
     SplineChar **chars, *sc;
-    int i,max=0;
+    int i,max=0, anyextras=0;
     RefChar *refs, *rnext, *rprev;
     SplineSet *new, *spl;
 
     for ( i=0; i<sf->charcnt; ++i ) if ( (sc = sf->chars[i])!=NULL ) {
 	sc->enc = NameEnc2CID(map,sc->unicodeenc,sc->name);
 	if ( sc->enc>max ) max = sc->enc;
+	else if ( sc->enc==-1 ) ++anyextras;
     }
 
+    if ( anyextras ) {
+	static int buttons[] = { _STR_Delete, _STR_Add, 0 };
+	if ( GWidgetAskR(_STR_ExtraCharsTitle,buttons,0,1,_STR_ExtraChars)==1 ) {
+	    if ( map!=NULL && max<map->cidmax ) max = map->cidmax;
+	    anyextras = 0;
+	    for ( i=0; i<sf->charcnt; ++i ) if ( (sc = sf->chars[i])!=NULL ) {
+		if ( sc->enc == -1 ) sc->enc = max + anyextras++;
+	    }
+	    max += anyextras;
+	}
+    }
+    
     /* Remove references to characters which aren't in the new map (if any) */
     /* Don't need to fix up dependencies, because we throw the char away */
     for ( i=0; i<sf->charcnt; ++i ) if ( (sc = sf->chars[i])!=NULL ) {
@@ -862,6 +884,8 @@ static void FindMapsInDir(struct block *block,char *dir) {
     int len;
     char *pt, *pt2;
 
+    if ( dir==NULL )
+return;
     /* format of cidmap filename "?*-?*-[0-9]*.cidmap" */
     d = opendir(dir);
     if ( d==NULL )
@@ -957,10 +981,10 @@ struct cidmap *AskUserForCIDMap(SplineFont *sf) {
 	if ( ret == -1 )
 	    /* No map */;
 	else if ( filename==NULL )
-	    map = FindCidMap(reg,ord,supplement);
+	    map = FindCidMap(reg,ord,supplement,sf);
 	else
 	    map = LoadMapFromFile(filename,reg,ord,supplement);
-	if ( reg!=block.maps[ret-1] )
+	if ( ret!=0 && reg!=block.maps[ret-1] )
 	    free(reg);
 	/*free(filename);*/	/* Freed by loadmap */
     }

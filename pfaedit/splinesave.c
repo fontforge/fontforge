@@ -1066,7 +1066,7 @@ return( false );
     /* we need to establish hints for each subr (and remember they may be */
     /*  translated from those normally used by the character) */
     /* Exception: If a reffed char has hint conflicts (and it isn't translated) */
-    /*  then it's subroutines are built in */
+    /*  then its hints are built in */
     /* Then we need to do an rmoveto to do the appropriate translation */
     current.x = round?rint(sb.minx):sb.minx; current.y = 0;
     for ( r=refs; r!=NULL; r=r->next ) {
@@ -2364,6 +2364,7 @@ return( subrs);
 	}
 	GProgressNext();
     }
+    subrs->next = cnt;
 return( subrs );
 }
     
@@ -2439,7 +2440,7 @@ struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
     cnt = 1;
     for ( ; i<sf->charcnt; ++i ) {
 	sc = sf->chars[i];
-#if HANYANG
+#if 0 && HANYANG			/* Too much stuff knows the glyph cnt, can't refigure it here at the end */
 	if ( sc!=NULL && sc->compositionunit )
 	    /* don't output it, should be in a subroutine */;
 	else
@@ -2450,6 +2451,7 @@ struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
 	}
 	GProgressNext();
     }
+    chrs->next = cnt;
 return( chrs );
 }
     
@@ -2497,10 +2499,6 @@ struct pschars *CID2Chrs2(SplineFont *cidmaster,struct fd2data *fds) {
 	}
 	if ( cid!=0 && i==cidmaster->subfontcnt ) {
 	    /* Do nothing */;
-#if HANYANG
-	} else if ( sf->chars[i]->compositionunit ) {
-	    /* don't output it, should be in a subroutine */;
-#endif
 	} else if ( i==cidmaster->subfontcnt ) {
 	    /* They didn't define CID 0 */
 	    /* Place it in the final subfont (which is what sf points to) */
@@ -2532,6 +2530,10 @@ struct pschars *CID2Chrs2(SplineFont *cidmaster,struct fd2data *fds) {
 	    chrs->values[0] = (unsigned char *) copyn(notdefentry,pt-notdefentry);	/* 0 <w> hsbw endchar */
 	    chrs->lens[0] = pt-notdefentry;
 	    ++cnt;
+#if 0 && HANYANG			/* Too much stuff knows the glyph cnt, can't refigure it here at the end */
+	} else if ( sf->chars[cid]->compositionunit ) {
+	    /* don't output it, should be in a subroutine */;
+#endif
 	} else {
 	    sc = sf->chars[cid];
 	    chrs->values[cnt] = SplineChar2PS2(sc,&chrs->lens[cnt],
@@ -2540,5 +2542,6 @@ struct pschars *CID2Chrs2(SplineFont *cidmaster,struct fd2data *fds) {
 	}
 	GProgressNext();
     }
+    chrs->next = cnt;
 return( chrs );
 }

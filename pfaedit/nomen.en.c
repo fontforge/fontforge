@@ -956,6 +956,9 @@ static char *str_AreYouSureCharset = "Are you sure you don't want to use the cha
 static char *str_FindCharset = "Find a charset file..."
 static char *str_Browse = "Browse...";
 static char *str_SelectCIDOrdering = "Please select a CID ordering"
+static char *str_ExtraCharsTitle = "Extraneous characters";
+static char *str_ExtraChars = "The current encoding contains characters which I cannot map to CIDs.\nShould I delete them or add them to the end (where they may conflict with future ros definitions)?";
+
     /* fv composit */
 static char *str_MissingChar = "Missing Character...";
 static char *str_Missingdotlessi="Your font is missing the dotlessi character,\nplease add it and remake your accented characters";
@@ -1214,8 +1217,8 @@ static char *str_JamoHole = "For group %d of %s, glyph variant %d is not used bu
 static char *str_NoRules = "No Rules";
 static char *str_FileHasNoRules = "%.100hs contains no composition rules";
     /* Need a different mnemonic */
-static char *str_SelectAllMn = "Select All";
-static char mnemonic_SelectAllMn = 'S';
+static char *str_AddAll = "Add All";
+static char mnemonic_AddAll = 'd';
 static char *str_DisplayCompositions = "Display Compositions...";
 static char mnemonic_DisplayCompositions = 'D';
 static char *str_NoGroups = "This varient of this jamo is not actually used";

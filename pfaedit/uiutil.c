@@ -125,7 +125,7 @@ return;
 }
 
 void help(char *file) {
-    char fullspec[1024], *temp;
+    char fullspec[1024], *temp, *pt;
 
     if ( browser[0]=='\0' )
 	findbrowser();
@@ -136,13 +136,31 @@ return;
 
     if ( strstr(file,"http://")==NULL ) {
 	fullspec[0] = 0;
-	if ( *file!='/' )
+	if ( *file!='/' ) {
+#ifdef DOCDIR
+	    strcpy(fullspec,DOCDIR);
+	    strcat(fullspec,"/");
+#elif defined(SHAREDIR)
+	    strcpy(fullspec,SHAREDIR);
+	    strcat(fullspec,"/../doc/pfaedit/");
+#else
 	    strcpy(fullspec,"/usr/share/doc/pfaedit/");
+#endif
+	}
 	strcat(fullspec,file);
+	if (( pt = strrchr(fullspec,'#') )!=NULL ) *pt ='\0';
+	if ( !GFileReadable( fullspec )) {
+	    if ( *file!='/' ) {
+		strcpy(fullspec,"/usr/share/doc/pfaedit/");
+		strcat(fullspec,file);
+		if (( pt = strrchr(fullspec,'#') )!=NULL ) *pt ='\0';
+	    }
+	}
 	if ( !GFileReadable( fullspec )) {
 	    strcpy(fullspec,"http://pfaedit.sf.net/");
 	    strcat(fullspec,file);
-	}
+	} else if ( pt!=NULL )
+	    *pt = '#';
     } else
 	strcpy(fullspec,file);
     temp = galloc(strlen(browser) + strlen(fullspec) + 20);

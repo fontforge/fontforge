@@ -2431,7 +2431,7 @@ static void cidfigure(struct ttfinfo *info, struct topdicts *dict,
     /* sf->chars provides access to the chars ordered by CID. Not sure what */
     /*  would happen to a kern from one font to another... */
 
-    map = FindCidMap(info->cidregistry,info->ordering,info->supplement);
+    map = FindCidMap(info->cidregistry,info->ordering,info->supplement,NULL);
 
     for ( i=0; i<info->glyph_cnt; ++i ) {
 	j = fdselect[i];

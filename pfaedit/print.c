@@ -1793,9 +1793,10 @@ static unichar_t _bulgarian[] = {' ',0x041f,0x0420,0x0415,0x0414,0x041c,0x0415,
     0x0430,0x0441,0x201c,',',' ',0x201e,0x0442,0x043e,0x043d,0x201c,'.',  '\0'};
 static unichar_t *bulgarian[] = { _bulgarian, NULL };
 
-static unichar_t **sample[] = { simple, simplecyrill, faust, pheadra, antigone, annakarenena,
-	debello, hebrew, donquixote, inferno, beorwulf, muchado, mabinogion,
-	goodsoldier, macedonian, bulgarian, lithuanian, polish, slovene, NULL };
+static unichar_t **sample[] = { simple, simplecyrill, faust, pheadra, antigone,
+	annakarenena, debello, hebrew, donquixote, inferno, beorwulf, muchado,
+	mabinogion, goodsoldier, macedonian, bulgarian, lithuanian, polish,
+	slovene, NULL };
 
 static int AllChars( SplineFont *sf, unichar_t *str) {
     int i, ch;

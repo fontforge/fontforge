@@ -422,6 +422,7 @@ typedef struct splinefont {
     unsigned int issans: 1;			/* We have no serifs */
     unsigned int isserif: 1;			/* We have serifs. If neither set then we don't know. */
     unsigned int hasvmetrics: 1;		/* We've got vertical metric data and should output vhea/vmtx/VORG tables */
+    unsigned int loading_cid_map: 1;
     struct fontview *fv;
     enum charset encoding_name;
     SplinePointList *gridsplines;
@@ -722,7 +723,8 @@ struct cidmap;			/* private structure to encoding.c */
 extern int CID2NameEnc(struct cidmap *map,int cid, char *buffer, int len);
 extern int NameEnc2CID(struct cidmap *map,int enc, char *name);
 extern int MaxCID(struct cidmap *map);
-extern struct cidmap *FindCidMap(char *registry,char *ordering,int supplement);
+extern struct cidmap *FindCidMap(char *registry,char *ordering,int supplement,
+	SplineFont *sf);
 extern void SFEncodeToMap(SplineFont *sf,struct cidmap *map);
 extern struct cidmap *AskUserForCIDMap(SplineFont *sf);
 
