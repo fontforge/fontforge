@@ -34,8 +34,6 @@
 #define CID_New		300
 #define CID_Edit	301
 #define CID_Delete	302
-#define CID_Up		303
-#define CID_Down	304
 #define CID_Classes	305
 
 #define CID_FeatSet	306
@@ -60,6 +58,7 @@
 #define SMD_WIDTH	350
 #define SMD_HEIGHT	400
 #define SMD_CANCELDROP	32
+#define SMD_DIRDROP	88
 
 #define CID_NextState	400
 #define CID_Flag4000	401
@@ -74,9 +73,15 @@
 #define CID_TagCur	410
 #define CID_TagMark	411
 #define CID_Kerns	412
+#define CID_StateClass	413
+
+#define CID_Up		420
+#define CID_Down	421
+#define CID_Left	422
+#define CID_Right	423
 
 #define SMDE_WIDTH	200
-#define SMDE_HEIGHT	220
+#define SMDE_HEIGHT	(SMD_DIRDROP+200)
 
 extern int _GScrollBar_Width;
 
@@ -1563,6 +1568,216 @@ return( NULL );
 return( ret );
 }
 
+static void SMD_Fillup(SMD *smd) {
+    int state = smd->st_pos/smd->class_cnt;
+    int class = smd->st_pos%smd->class_cnt;
+    struct asm_state *this = &smd->states[smd->st_pos];
+    unichar_t buffer[100], *temp;
+    char buf[100];
+    int j;
+    GGadget *list = GWidgetGetControl( smd->gw, CID_Classes );
+    GTextInfo *ti = GGadgetGetListItem(list,class);
+
+    u_snprintf(buffer,sizeof(buffer)/sizeof(buffer[0]),
+	    GStringGetResource(_STR_StateClass,NULL), state, ti->text );
+    GGadgetSetTitle(GWidgetGetControl(smd->editgw,CID_StateClass),buffer);
+    sprintf(buf,"%d", this->next_state );
+    uc_strcpy(buffer,buf);
+    GGadgetSetTitle(GWidgetGetControl(smd->editgw,CID_NextState),buffer);
+
+    GGadgetSetChecked(GWidgetGetControl(smd->editgw,CID_Flag4000),
+	    this->flags&0x4000?1:0);
+    GGadgetSetChecked(GWidgetGetControl(smd->editgw,CID_Flag8000),
+	    this->flags&0x8000?1:0);
+    if ( smd->sm->type==asm_indic ) {
+	GGadgetSetChecked(GWidgetGetControl(smd->editgw,CID_Flag2000),
+		this->flags&0x2000?1:0);
+	GGadgetSelectOneListItem(GWidgetGetControl(smd->editgw,CID_IndicVerb),
+		this->flags&0xf);
+    } else if ( smd->sm->type==asm_insert ) {
+	GGadgetSetChecked(GWidgetGetControl(smd->editgw,CID_Flag2000),
+		this->flags&0x2000?1:0);
+	GGadgetSetChecked(GWidgetGetControl(smd->editgw,CID_Flag1000),
+		this->flags&0x1000?1:0);
+	GGadgetSetChecked(GWidgetGetControl(smd->editgw,CID_Flag0800),
+		this->flags&0x0800?1:0);
+	GGadgetSetChecked(GWidgetGetControl(smd->editgw,CID_Flag0400),
+		this->flags&0x0400?1:0);
+	temp = uc_copy(this->u.insert.mark_ins);
+	buffer[0]='\0';
+	GGadgetSetTitle(GWidgetGetControl(smd->editgw,CID_InsMark),temp==NULL?buffer:temp);
+	free(temp);
+	temp = uc_copy(this->u.insert.cur_ins);
+	buffer[0]='\0';
+	GGadgetSetTitle(GWidgetGetControl(smd->editgw,CID_InsCur),temp==NULL?buffer:temp);
+	free(temp);
+    } else if ( smd->sm->type==asm_kern ) {
+	buf[0] = '\0';
+	for ( j=0; j<this->u.kern.kcnt; ++j )
+	    sprintf( buf+strlen(buf), "%d ", this->u.kern.kerns[j]);
+	if ( buf[0]!='\0' && buf[strlen(buf)-1]==' ' )
+	    buf[strlen(buf)-1] = '\0';
+	uc_strcpy(buffer,buf);
+	GGadgetSetTitle(GWidgetGetControl(smd->editgw,CID_Kerns),buffer);
+    } else {
+	buffer[0] = this->u.context.mark_tag>>24;
+	buffer[1] = (this->u.context.mark_tag>>16)&0xff;
+	buffer[2] = (this->u.context.mark_tag>>8)&0xff;
+	buffer[3] = (this->u.context.mark_tag)&0xff;
+	buffer[4] = 0;
+	GGadgetSetTitle(GWidgetGetControl(smd->editgw,CID_TagMark),buffer);
+	buffer[0] = this->u.context.cur_tag>>24;
+	buffer[1] = (this->u.context.cur_tag>>16)&0xff;
+	buffer[2] = (this->u.context.cur_tag>>8)&0xff;
+	buffer[3] = (this->u.context.cur_tag)&0xff;
+	buffer[4] = 0;
+	GGadgetSetTitle(GWidgetGetControl(smd->editgw,CID_TagCur),buffer);
+    }
+
+    GGadgetSetEnabled(GWidgetGetControl(smd->editgw,CID_Up), state!=0 );
+    GGadgetSetEnabled(GWidgetGetControl(smd->editgw,CID_Left), class!=0 );
+    GGadgetSetEnabled(GWidgetGetControl(smd->editgw,CID_Right), class<smd->class_cnt-1 );
+    GGadgetSetEnabled(GWidgetGetControl(smd->editgw,CID_Down), state<smd->state_cnt-1 );
+}
+
+static int SMD_DoChange(SMD *smd) {
+    struct asm_state *this = &smd->states[smd->st_pos];
+    int err=false, ns, flags, cnt;
+    char *mins, *cins;
+    uint32 mtag, ctag;
+    const unichar_t *ret;
+    unichar_t *end;
+    int16 kbuf[9];
+    int kerns;
+    int oddcomplain=false;
+
+    ns = GetIntR(smd->editgw,CID_NextState,_STR_NextState,&err);
+    if ( err )
+return( false );
+    flags = 0;
+    if ( !GGadgetIsChecked(GWidgetGetControl(smd->editgw,CID_Flag4000)) ) flags |= 0x4000;
+    if ( GGadgetIsChecked(GWidgetGetControl(smd->editgw,CID_Flag8000)) ) flags |= 0x8000;
+    if ( smd->sm->type==asm_indic ) {
+	if ( GGadgetIsChecked(GWidgetGetControl(smd->editgw,CID_Flag2000)) ) flags |= 0x2000;
+	flags |= GGadgetGetFirstListSelectedItem(GWidgetGetControl(smd->editgw,CID_IndicVerb));
+	this->next_state = ns;
+	this->flags = flags;
+    } else if ( smd->sm->type==asm_kern ) {
+	ret = _GGadgetGetTitle(GWidgetGetControl(smd->editgw,CID_Kerns));
+	kerns=0;
+	while ( *ret!='\0' ) {
+	    while ( *ret==' ' ) ++ret;
+	    if ( *ret=='\0' )
+	break;
+	    kbuf[kerns] = u_strtol(ret,&end,10);
+	    if ( end==ret ) {
+		ProtestR(_STR_KernValues);
+return( false );
+	    } else if ( kerns>=8 ) {
+		GWidgetErrorR(_STR_TooManyKerns,_STR_AtMost8Kerns);
+return( false );
+	    } else if ( kbuf[kerns]&1 ) {
+		kbuf[kerns] &= ~1;
+		if ( !oddcomplain )
+		    GWidgetPostNoticeR(_STR_KernsMustBeEven,_STR_KernsMustBeEven);
+		oddcomplain = true;
+	    }
+	    ++kerns;
+	}
+	this->next_state = ns;
+	this->flags = flags;
+	free(this->u.kern.kerns);
+	this->u.kern.kcnt = kerns;
+	if ( kerns==0 )
+	    this->u.kern.kerns = NULL;
+	else {
+	    this->u.kern.kerns = galloc(kerns*sizeof(int16));
+	    memcpy(this->u.kern.kerns,kbuf,kerns*sizeof(int16));
+	}
+    } else if ( smd->sm->type==asm_context ) {
+	mtag = ctag = 0;
+	ret = _GGadgetGetTitle(GWidgetGetControl(smd->editgw,CID_TagMark));
+	if ( *ret=='\0' )
+	    /* That's ok */;
+	else if ( u_strlen(ret)!=4 ) {
+	    GWidgetErrorR(_STR_TagMustBe4,_STR_TagMustBe4);
+return( false );
+	} else
+	    mtag = (ret[0]<<24)|(ret[1]<<16)|(ret[2]<<8)|ret[3];
+	ret = _GGadgetGetTitle(GWidgetGetControl(smd->editgw,CID_TagCur));
+	if ( *ret=='\0' )
+	    /* That's ok */;
+	else if ( u_strlen(ret)!=4 ) {
+	    GWidgetErrorR(_STR_TagMustBe4,_STR_TagMustBe4);
+return( false );
+	} else
+	    ctag = (ret[0]<<24)|(ret[1]<<16)|(ret[2]<<8)|ret[3];
+	this->next_state = ns;
+	this->flags = flags;
+	this->u.context.mark_tag = mtag;
+	this->u.context.cur_tag = ctag;
+    } else {
+	if ( GGadgetIsChecked(GWidgetGetControl(smd->editgw,CID_Flag2000)) ) flags |= 0x2000;
+	if ( GGadgetIsChecked(GWidgetGetControl(smd->editgw,CID_Flag1000)) ) flags |= 0x1000;
+	if ( GGadgetIsChecked(GWidgetGetControl(smd->editgw,CID_Flag0800)) ) flags |= 0x0800;
+	if ( GGadgetIsChecked(GWidgetGetControl(smd->editgw,CID_Flag0400)) ) flags |= 0x0400;
+	mins = copy_count(smd->editgw,CID_InsMark,&cnt);
+	if ( cnt>31 ) {
+	    GWidgetErrorR(_STR_TooManyGlyphs,_STR_AtMost31Glyphs);
+	    free(mins);
+return( false );
+	}
+	flags |= cnt<<5;
+	cins = copy_count(smd->editgw,CID_InsCur,&cnt);
+	if ( cnt>31 ) {
+	    GWidgetErrorR(_STR_TooManyGlyphs,_STR_AtMost31Glyphs);
+	    free(mins);
+	    free(cins);
+return( false );
+	}
+	flags |= cnt;
+	this->next_state = ns;
+	this->flags = flags;
+	free(this->u.insert.mark_ins);
+	free(this->u.insert.cur_ins);
+	this->u.insert.mark_ins = mins;
+	this->u.insert.cur_ins = cins;
+    }
+
+    /* Show changes in main window */
+    GDrawRequestExpose(smd->gw,NULL,false);
+return( true );
+}
+
+static int SMDE_Arrow(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	SMD *smd = GDrawGetUserData(GGadgetGetWindow(g));
+	int state = smd->st_pos/smd->class_cnt;
+	int class = smd->st_pos%smd->class_cnt;
+	switch( GGadgetGetCid(g)) {
+	  case CID_Up:
+	    if ( state!=0 ) --state;
+	  break;
+	  case CID_Left:
+	    if ( class!=0 ) --class;
+	  break;
+	  case CID_Right:
+	    if ( class<smd->class_cnt-1 ) ++class;
+	  break;
+	  case CID_Down:
+	    if ( state<smd->state_cnt-1 ) ++state;
+	  break;
+	}
+	if ( state!=smd->st_pos/smd->class_cnt || class!=smd->st_pos%smd->class_cnt ) {
+	    if ( SMD_DoChange(smd)) {
+		smd->st_pos = state*smd->class_cnt+class;
+		SMD_Fillup(smd);
+	    }
+	}
+    }
+return( true );
+}
+
 static int smdedit_e_h(GWindow gw, GEvent *event) {
     SMD *smd = GDrawGetUserData(gw);
 
@@ -1587,8 +1802,10 @@ return( false );
       case et_controlevent:
 	switch( event->u.control.subtype ) {
 	  case et_buttonactivate:
-	    smd->edit_done = true;
-	    smd->edit_ok = GGadgetGetCid(event->u.control.g)==CID_Ok;
+	    if ( GGadgetGetCid(event->u.control.g)==CID_Ok )
+		smd->edit_done = SMD_DoChange(smd);
+	    else
+		smd->edit_done = true;
 	  break;
 	}
       break;
@@ -1599,15 +1816,13 @@ return( true );
 static void SMD_EditState(SMD *smd) {
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[20];
-    GTextInfo label[20];
+    GGadgetCreateData gcd[23];
+    GTextInfo label[23];
     GRect pos;
-    int j, k, listk;
-    struct asm_state *this = &smd->states[smd->st_pos];
-    char buf[20], kerns[60];
-    unichar_t utag1[8], utag2[8];
+    int k, listk, new_cnt;
+    unichar_t stateclass[100];
 
-    smd->edit_done = smd->edit_ok = false;
+    smd->edit_done = false;
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
@@ -1626,17 +1841,23 @@ static void SMD_EditState(SMD *smd) {
     memset(label,0,sizeof(label));
     k = 0; listk = -1;
 
+    u_snprintf(stateclass,sizeof(stateclass)/sizeof(stateclass[0]),
+	    GStringGetResource(_STR_StateClass,NULL), 999,
+	    GStringGetResource(_STR_MacEverythingElse,NULL));
+    label[k].text = stateclass;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = 5;
+    gcd[k].gd.flags = gg_enabled|gg_visible;
+    gcd[k].gd.cid = CID_StateClass;
+    gcd[k++].creator = GLabelCreate;
+
     label[k].text = (unichar_t *) _STR_NextState;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = 5+4;
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+13+4;
     gcd[k].gd.flags = gg_enabled|gg_visible;
     gcd[k++].creator = GLabelCreate;
 
-    sprintf(buf,"%d", this->next_state );
-    label[k].text = (unichar_t *) buf;
-    label[k].text_is_1byte = true;
-    gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 80; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-4;
     gcd[k].gd.flags = gg_enabled|gg_visible;
     gcd[k].gd.cid = CID_NextState;
@@ -1646,7 +1867,7 @@ static void SMD_EditState(SMD *smd) {
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+24;
-    gcd[k].gd.flags = gg_enabled|gg_visible | (this->flags&0x4000?0:gg_cb_on);
+    gcd[k].gd.flags = gg_enabled|gg_visible;
     gcd[k].gd.cid = CID_Flag4000;
     gcd[k++].creator = GCheckBoxCreate;
 
@@ -1656,7 +1877,7 @@ static void SMD_EditState(SMD *smd) {
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+16;
-    gcd[k].gd.flags = gg_enabled|gg_visible | (this->flags&0x8000?gg_cb_on:0);
+    gcd[k].gd.flags = gg_enabled|gg_visible;
     gcd[k].gd.cid = CID_Flag8000;
     gcd[k++].creator = GCheckBoxCreate;
 
@@ -1665,13 +1886,10 @@ static void SMD_EditState(SMD *smd) {
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+16;
-	gcd[k].gd.flags = gg_enabled|gg_visible | (this->flags&0x2000?gg_cb_on:0);
+	gcd[k].gd.flags = gg_enabled|gg_visible;
 	gcd[k].gd.cid = CID_Flag2000;
 	gcd[k++].creator = GCheckBoxCreate;
 
-	for ( j=0; j<16; ++j ) indicverbs_list[j].selected = false;
-	indicverbs_list[this->flags&0xf].selected = true;
-	gcd[k].gd.label = &indicverbs_list[this->flags&0xf];
 	gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+24;
 	gcd[k].gd.flags = gg_enabled|gg_visible;
 	gcd[k].gd.u.list = indicverbs_list;
@@ -1682,7 +1900,7 @@ static void SMD_EditState(SMD *smd) {
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+16;
-	gcd[k].gd.flags = gg_enabled|gg_visible | (this->flags&0x2000?gg_cb_on:0);
+	gcd[k].gd.flags = gg_enabled|gg_visible;
 	gcd[k].gd.cid = CID_Flag2000;
 	gcd[k++].creator = GCheckBoxCreate;
 
@@ -1690,7 +1908,7 @@ static void SMD_EditState(SMD *smd) {
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+16;
-	gcd[k].gd.flags = gg_enabled|gg_visible | (this->flags&0x1000?gg_cb_on:0);
+	gcd[k].gd.flags = gg_enabled|gg_visible;
 	gcd[k].gd.cid = CID_Flag1000;
 	gcd[k++].creator = GCheckBoxCreate;
 
@@ -1698,7 +1916,7 @@ static void SMD_EditState(SMD *smd) {
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+16;
-	gcd[k].gd.flags = gg_enabled|gg_visible | (this->flags&0x0800?gg_cb_on:0);
+	gcd[k].gd.flags = gg_enabled|gg_visible;
 	gcd[k].gd.cid = CID_Flag0800;
 	gcd[k++].creator = GCheckBoxCreate;
 
@@ -1706,7 +1924,7 @@ static void SMD_EditState(SMD *smd) {
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+16;
-	gcd[k].gd.flags = gg_enabled|gg_visible | (this->flags&0x0400?gg_cb_on:0);
+	gcd[k].gd.flags = gg_enabled|gg_visible;
 	gcd[k].gd.cid = CID_Flag0400;
 	gcd[k++].creator = GCheckBoxCreate;
 
@@ -1717,10 +1935,7 @@ static void SMD_EditState(SMD *smd) {
 	gcd[k].gd.flags = gg_enabled|gg_visible;
 	gcd[k++].creator = GLabelCreate;
 
-	label[k].text = (unichar_t *) (this->u.insert.mark_ins);
-	label[k].text_is_1byte = true;
-	gcd[k].gd.label = this->u.insert.mark_ins==NULL ? NULL : &label[k];
-	gcd[k].gd.pos.x = gcd[1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-4;
+	gcd[k].gd.pos.x = gcd[2].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-4;
 	gcd[k].gd.flags = gg_enabled|gg_visible;
 	gcd[k].gd.cid = CID_InsMark;
 	gcd[k++].creator = GTextFieldCreate;
@@ -1732,10 +1947,7 @@ static void SMD_EditState(SMD *smd) {
 	gcd[k].gd.flags = gg_enabled|gg_visible;
 	gcd[k++].creator = GLabelCreate;
 
-	label[k].text = (unichar_t *) (this->u.insert.cur_ins);
-	label[k].text_is_1byte = true;
-	gcd[k].gd.label = this->u.insert.cur_ins==NULL ? NULL : &label[k];
-	gcd[k].gd.pos.x = gcd[1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-4;
+	gcd[k].gd.pos.x = gcd[2].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-4;
 	gcd[k].gd.flags = gg_enabled|gg_visible;
 	gcd[k].gd.cid = CID_InsCur;
 	gcd[k++].creator = GTextFieldCreate;
@@ -1747,15 +1959,7 @@ static void SMD_EditState(SMD *smd) {
 	gcd[k].gd.flags = gg_enabled|gg_visible;
 	gcd[k++].creator = GLabelCreate;
 
-	kerns[0] = '\0';
-	for ( j=0; j<this->u.kern.kcnt; ++j )
-	    sprintf( kerns+strlen(kerns), "%d ", this->u.kern.kerns[j]);
-	if ( kerns[0]!='\0' && kerns[strlen(kerns)-1]==' ' )
-	    kerns[strlen(kerns)-1] = '\0';
-	label[k].text = (unichar_t *) kerns;
-	label[k].text_is_1byte = true;
-	gcd[k].gd.label = &label[k];
-	gcd[k].gd.pos.x = gcd[1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-4;
+	gcd[k].gd.pos.x = gcd[2].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-4;
 	gcd[k].gd.flags = gg_enabled|gg_visible;
 	gcd[k].gd.cid = CID_Kerns;
 	gcd[k++].creator = GTextFieldCreate;
@@ -1767,14 +1971,9 @@ static void SMD_EditState(SMD *smd) {
 	gcd[k].gd.flags = gg_enabled|gg_visible;
 	gcd[k++].creator = GLabelCreate;
 
-	utag1[0] = this->u.context.mark_tag>>24; utag1[1] = (this->u.context.mark_tag>>16)&0xff;
-	utag1[2] = (this->u.context.mark_tag>>8)&0xff; utag1[3] = this->u.context.mark_tag&0xff;
-	utag1[4] = 0;
-	label[k].text = utag1;
-	gcd[k].gd.label = &label[k];
-	gcd[k].gd.pos.x = gcd[1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-4;
-	gcd[k].gd.flags = gg_enabled|gg_visible;
 	listk = k;
+	gcd[k].gd.pos.x = gcd[2].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-4;
+	gcd[k].gd.flags = gg_enabled|gg_visible;
 	gcd[k].gd.cid = CID_TagMark;
 	gcd[k++].creator = GListFieldCreate;
 
@@ -1785,17 +1984,53 @@ static void SMD_EditState(SMD *smd) {
 	gcd[k].gd.flags = gg_enabled|gg_visible;
 	gcd[k++].creator = GLabelCreate;
 
-	utag2[0] = this->u.context.cur_tag>>24; utag2[1] = (this->u.context.cur_tag>>16)&0xff;
-	utag2[2] = (this->u.context.cur_tag>>8)&0xff; utag2[3] = this->u.context.cur_tag&0xff;
-	utag2[4] = 0;
-	label[k].text = utag2;
-	gcd[k].gd.label = &label[k];
-	gcd[k].gd.pos.x = gcd[1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-4;
+	gcd[k].gd.pos.x = gcd[2].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-4;
 	gcd[k].gd.flags = gg_enabled|gg_visible;
 	gcd[k].gd.cid = CID_TagCur;
 	gcd[k].gd.u.list = gcd[k-2].gd.u.list;
 	gcd[k++].creator = GListFieldCreate;
     }
+
+    label[k].text = (unichar_t *) _STR_UpArrow;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = (SMDE_WIDTH-GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor))/2;
+    gcd[k].gd.pos.y = SMDE_HEIGHT-SMD_DIRDROP;
+    gcd[k].gd.pos.width = -1;
+    gcd[k].gd.flags = gg_visible|gg_enabled;
+    gcd[k].gd.cid = CID_Up;
+    gcd[k].gd.handle_controlevent = SMDE_Arrow;
+    gcd[k++].creator = GButtonCreate;
+
+    label[k].text = (unichar_t *) _STR_LeftArrow;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = SMDE_HEIGHT-SMD_DIRDROP+13;
+    gcd[k].gd.pos.width = -1;
+    gcd[k].gd.flags = gg_visible|gg_enabled;
+    gcd[k].gd.cid = CID_Left;
+    gcd[k].gd.handle_controlevent = SMDE_Arrow;
+    gcd[k++].creator = GButtonCreate;
+
+    label[k].text = (unichar_t *) _STR_RightArrow;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = -10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y;
+    gcd[k].gd.pos.width = -1;
+    gcd[k].gd.flags = gg_visible|gg_enabled;
+    gcd[k].gd.cid = CID_Right;
+    gcd[k].gd.handle_controlevent = SMDE_Arrow;
+    gcd[k++].creator = GButtonCreate;
+
+    label[k].text = (unichar_t *) _STR_DownArrow;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = gcd[k-3].gd.pos.x; gcd[k].gd.pos.y = SMDE_HEIGHT-SMD_DIRDROP+26;
+    gcd[k].gd.pos.width = -1;
+    gcd[k].gd.flags = gg_visible|gg_enabled;
+    gcd[k].gd.cid = CID_Down;
+    gcd[k].gd.handle_controlevent = SMDE_Arrow;
+    gcd[k++].creator = GButtonCreate;
 
     label[k].text = (unichar_t *) _STR_OK;
     label[k].text_in_resource = true;
@@ -1830,125 +2065,22 @@ static void SMD_EditState(SMD *smd) {
 		SFGenTagListFromType(&smd->sf->gentags,pst_substitution),false);
     }
 
+    SMD_Fillup(smd);
+
     GDrawSetVisible(gw,true);
- retry:
+
+    smd->edit_done = false;
     while ( !smd->edit_done )
 	GDrawProcessOneEvent(NULL);
 
-    if ( smd->edit_ok ) {
-	int new_cnt, err=false, ns, flags, cnt;
-	char *mins, *cins;
-	uint32 mtag, ctag;
-	const unichar_t *ret;
-	unichar_t *end;
-	int16 kbuf[9];
-	int kerns;
-	int oddcomplain=false;
-
-	smd->edit_ok = smd->edit_done = false;
-
-	ns = GetIntR(gw,CID_NextState,_STR_NextState,&err);
-	if ( err )
- goto retry;
-	flags = 0;
-	if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_Flag4000)) ) flags |= 0x4000;
-	if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_Flag8000)) ) flags |= 0x8000;
-	if ( smd->sm->type==asm_indic ) {
-	    if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_Flag2000)) ) flags |= 0x2000;
-	    flags |= GGadgetGetFirstListSelectedItem(GWidgetGetControl(gw,CID_IndicVerb));
-	    this->next_state = ns;
-	    this->flags = flags;
-	} else if ( smd->sm->type==asm_kern ) {
-	    ret = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Kerns));
-	    kerns=0;
-	    while ( *ret!='\0' ) {
-		while ( *ret==' ' ) ++ret;
-		if ( *ret=='\0' )
-	    break;
-		kbuf[kerns] = u_strtol(ret,&end,10);
-		if ( end==ret ) {
-		    ProtestR(_STR_KernValues);
- goto retry;
-		} else if ( kerns>=8 ) {
-		    GWidgetErrorR(_STR_TooManyKerns,_STR_AtMost8Kerns);
- goto retry;
-		} else if ( kbuf[kerns]&1 ) {
-		    kbuf[kerns] &= ~1;
-		    if ( !oddcomplain )
-			GWidgetPostNoticeR(_STR_KernsMustBeEven,_STR_KernsMustBeEven);
-		    oddcomplain = true;
-		}
-		++kerns;
-	    }
-	    this->next_state = ns;
-	    this->flags = flags;
-	    free(this->u.kern.kerns);
-	    this->u.kern.kcnt = kerns;
-	    if ( kerns==0 )
-		this->u.kern.kerns = NULL;
-	    else {
-		this->u.kern.kerns = galloc(kerns*sizeof(int16));
-		memcpy(this->u.kern.kerns,kbuf,kerns*sizeof(int16));
-	    }
-	} else if ( smd->sm->type==asm_context ) {
-	    mtag = ctag = 0;
-	    ret = _GGadgetGetTitle(GWidgetGetControl(gw,CID_TagMark));
-	    if ( *ret=='\0' )
-		/* That's ok */;
-	    else if ( u_strlen(ret)!=4 ) {
-		GWidgetErrorR(_STR_TagMustBe4,_STR_TagMustBe4);
- goto retry;
-	    } else
-		mtag = (ret[0]<<24)|(ret[1]<<16)|(ret[2]<<8)|ret[3];
-	    ret = _GGadgetGetTitle(GWidgetGetControl(gw,CID_TagCur));
-	    if ( *ret=='\0' )
-		/* That's ok */;
-	    else if ( u_strlen(ret)!=4 ) {
-		GWidgetErrorR(_STR_TagMustBe4,_STR_TagMustBe4);
- goto retry;
-	    } else
-		ctag = (ret[0]<<24)|(ret[1]<<16)|(ret[2]<<8)|ret[3];
-	    this->next_state = ns;
-	    this->flags = flags;
-	    this->u.context.mark_tag = mtag;
-	    this->u.context.cur_tag = ctag;
-	} else {
-	    if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_Flag2000)) ) flags |= 0x2000;
-	    if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_Flag1000)) ) flags |= 0x1000;
-	    if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_Flag0800)) ) flags |= 0x0800;
-	    if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_Flag0400)) ) flags |= 0x0400;
-	    mins = copy_count(gw,CID_InsMark,&cnt);
-	    if ( cnt>31 ) {
-		GWidgetErrorR(_STR_TooManyGlyphs,_STR_AtMost31Glyphs);
-		free(mins);
- goto retry;
-	    }
-	    flags |= cnt<<5;
-	    cins = copy_count(gw,CID_InsCur,&cnt);
-	    if ( cnt>31 ) {
-		GWidgetErrorR(_STR_TooManyGlyphs,_STR_AtMost31Glyphs);
-		free(mins);
-		free(cins);
- goto retry;
-	    }
-	    flags |= cnt;
-	    this->next_state = ns;
-	    this->flags = flags;
-	    free(this->u.insert.mark_ins);
-	    free(this->u.insert.cur_ins);
-	    this->u.insert.mark_ins = mins;
-	    this->u.insert.cur_ins = cins;
-	}
-
-	new_cnt = FindMaxReachableStateCnt(smd);
-	if ( new_cnt!=smd->state_cnt ) {
-	    smd->states = StateCopy(smd->states,smd->class_cnt,smd->state_cnt,
-		    smd->class_cnt,new_cnt,
-		    smd->sm->type,true);
-	    smd->state_cnt = new_cnt;
-	    SMD_SBReset(smd);
-	    GDrawRequestExpose(smd->gw,NULL,false);
-	}
+    new_cnt = FindMaxReachableStateCnt(smd);
+    if ( new_cnt!=smd->state_cnt ) {
+	smd->states = StateCopy(smd->states,smd->class_cnt,smd->state_cnt,
+		smd->class_cnt,new_cnt,
+		smd->sm->type,true);
+	smd->state_cnt = new_cnt;
+	SMD_SBReset(smd);
+	GDrawRequestExpose(smd->gw,NULL,false);
     }
     smd->st_pos = -1;
     GDrawDestroyWindow(gw);
@@ -2028,20 +2160,41 @@ static int SMD_Prev(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static unichar_t *AddClass(int class_num,const unichar_t *text,int freetext) {
+    unichar_t buf[40];
+    unichar_t *ret;
+
+    u_snprintf(buf,sizeof(buf)/sizeof(buf[0]),
+	    GStringGetResource(_STR_Class_d,NULL),class_num);
+    ret = galloc((u_strlen(buf)+u_strlen(text)+4)*sizeof(unichar_t));
+    u_strcpy(ret,buf);
+    uc_strcat(ret,": ");
+    u_strcat(ret,text);
+    if ( freetext )
+	free((unichar_t *) text);
+return( ret );
+}
+
 static int SMD_Next(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	SMD *smd = GDrawGetUserData(GGadgetGetWindow(g));
 	const unichar_t *ret = _GGadgetGetTitle(GWidgetGetControl(smd->gw,CID_GlyphList));
+	unichar_t *temp;
 	GGadget *list = GWidgetGetControl( smd->gw, CID_Classes );
+	int32 len;
 
 	if ( !CCD_NameListCheck(smd->sf,ret,true,_STR_BadClass) ||
 		CCD_InvalidClassList(ret,list,smd->isedit))
 return( true );
 
 	if ( smd->isedit ) {
-	    GListChangeLine(list,GGadgetGetFirstListSelectedItem(list),ret);
+	    int cn = GGadgetGetFirstListSelectedItem(list);
+	    temp = AddClass(cn,ret,false);
+	    GListChangeLine(list,cn,temp);
 	} else {
-	    GListAppendLine(list,ret,false);
+	    GGadgetGetList(list,&len);
+	    temp = AddClass(len,ret,false);
+	    GListAppendLine(list,temp,false);
 	    smd->states = StateCopy(smd->states,smd->class_cnt,smd->state_cnt,
 		    smd->class_cnt+1,smd->state_cnt,
 		    smd->sm->type,true);
@@ -2049,12 +2202,14 @@ return( true );
 	    SMD_SBReset(smd);
 	}
 	GDrawSetVisible(smd->cw,false);		/* This will give us an expose so we needed ask for one */
+	free(temp);
     }
 return( true );
 }
 
 static void _SMD_DoEditNew(SMD *smd,int isedit) {
     static unichar_t nullstr[] = { 0 };
+    unichar_t *upt;
 
     smd->isedit = isedit;
     if ( isedit ) {
@@ -2062,7 +2217,10 @@ static void _SMD_DoEditNew(SMD *smd,int isedit) {
 		smd->gw, CID_Classes));
 	if ( selected==NULL )
 return;
-	GGadgetSetTitle(GWidgetGetControl(smd->cw,CID_GlyphList),selected->text);
+	upt = uc_strstr(selected->text,": ");
+	if ( upt==NULL ) upt = selected->text;
+	else upt += 2;
+	GGadgetSetTitle(GWidgetGetControl(smd->cw,CID_GlyphList),upt);
     } else {
 	GGadgetSetTitle(GWidgetGetControl(smd->cw,CID_GlyphList),nullstr);
     }
@@ -2080,8 +2238,6 @@ static void _SMD_EnableButtons(SMD *smd) {
 
     ti = GGadgetGetList(list,&len);
     i = GGadgetGetFirstListSelectedItem(list);
-    GGadgetSetEnabled(GWidgetGetControl(smd->gw,CID_Up),i>4);
-    GGadgetSetEnabled(GWidgetGetControl(smd->gw,CID_Down),i!=len-1 && i>4);
     GGadgetSetEnabled(GWidgetGetControl(smd->gw,CID_Delete),i>=4);
     for ( j=i+1; j<len; ++j )
 	if ( ti[j]->selected )
@@ -2089,26 +2245,23 @@ static void _SMD_EnableButtons(SMD *smd) {
     GGadgetSetEnabled(GWidgetGetControl(smd->gw,CID_Edit),i>=4 && j==len);
 }
 
-static int SMD_Up(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	SMD *smd = GDrawGetUserData(GGadgetGetWindow(g));
-	GGadget *list = GWidgetGetControl(smd->gw,CID_Classes);
+static void SMD_GListDelSelected(GGadget *list) {
+    int len, i,j;
+    GTextInfo **old, **new;
+    unichar_t *upt;
 
-	GListMoveSelected(list,-1);
-	_SMD_EnableButtons(smd);
+    old = GGadgetGetList(list,&len);
+    new = gcalloc(len+1,sizeof(GTextInfo *));
+    for ( i=j=0; i<len; ++i ) if ( !old[i]->selected ) {
+	new[j] = galloc(sizeof(GTextInfo));
+	*new[j] = *old[i];
+	upt = uc_strstr(new[j]->text,": ");
+	if ( upt==NULL ) upt = new[j]->text; else upt += 2;
+	new[j]->text = AddClass(j,upt,false);
+	++j;
     }
-return( true );
-}
-
-static int SMD_Down(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	SMD *smd = GDrawGetUserData(GGadgetGetWindow(g));
-	GGadget *list = GWidgetGetControl(smd->gw,CID_Classes);
-
-	GListMoveSelected(list,1);
-	_SMD_EnableButtons(smd);
-    }
-return( true );
+    new[j] = gcalloc(1,sizeof(GTextInfo));
+    GGadgetSetList(list,new,false);
 }
 
 static int SMD_Delete(GGadget *g, GEvent *e) {
@@ -2118,7 +2271,7 @@ static int SMD_Delete(GGadget *g, GEvent *e) {
 	int32 len;
 
 	StateRemoveClasses(smd,GGadgetGetList(list,&len));
-	GListDelSelected(list);
+	SMD_GListDelSelected(list);
 	_SMD_EnableButtons(smd);
 	SMD_SBReset(smd);
 	GDrawRequestExpose(smd->gw,NULL,false);
@@ -2194,6 +2347,7 @@ static int SMD_Ok(GGadget *g, GEvent *e) {
 	int32 len;
 	GTextInfo **ti = GGadgetGetList(GWidgetGetControl(smd->gw,CID_Classes),&len);
 	ASM *sm = smd->sm;
+	unichar_t *upt;
 
 	if ( GDrawIsVisible(smd->cw))
 return( SMD_Next(g,e));
@@ -2215,8 +2369,11 @@ return( true );
 	sm->classes = galloc(smd->class_cnt*sizeof(char *));
 	sm->classes[0] = sm->classes[1] = sm->classes[2] = sm->classes[3] = NULL;
 	sm->class_cnt = smd->class_cnt;
-	for ( i=4; i<sm->class_cnt; ++i )
-	    sm->classes[i] = cu_copy(ti[i]->text);
+	for ( i=4; i<sm->class_cnt; ++i ) {
+	    upt = uc_strstr(ti[i]->text,": ");
+	    if ( upt==NULL ) upt = ti[i]->text; else upt += 2;
+	    sm->classes[i] = cu_copy(upt);
+	}
 
 	StatesFree(sm->state,sm->state_cnt,sm->class_cnt,
 		sm->type);
@@ -2232,6 +2389,7 @@ return( true );
 
 static void SMD_Mouse(SMD *smd,GEvent *event) {
     static unichar_t space[100];
+    unichar_t *upt;
     char buf[30];
     int32 len;
     GTextInfo **ti;
@@ -2263,7 +2421,10 @@ return;
 	    uc_strcat(space,buf);
 	    ti = GGadgetGetList(GWidgetGetControl(smd->gw,CID_Classes),&len);
 	    len = u_strlen(space);
-	    u_strncpy(space+len,ti[c]->text,(sizeof(space)/sizeof(space[0]))-1 - len);
+	    upt = uc_strstr(ti[c]->text,": ");
+	    if ( upt==NULL ) upt = ti[c]->text;
+	    else upt += 2;
+	    u_strncpy(space+len,upt,(sizeof(space)/sizeof(space[0]))-1 - len);
 	} else if ( event->u.mouse.x<smd->xstart2 ) {
 	    if ( s==0 )
 		u_strcat(space,GStringGetResource(_STR_StartOfInput,NULL));
@@ -2807,27 +2968,6 @@ SMD *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
     gcd[k].gd.cid = CID_Delete;
     gcd[k++].creator = GButtonCreate;
 
-/* I don't really think Up/Down are meaningful in the class list, but I'll leave them here (invisible) in case I need them later. */
-    label[k].text = (unichar_t *) _STR_Up;
-    label[k].text_in_resource = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x+blen+space+5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y;
-    gcd[k].gd.pos.width = -1;
-    gcd[k].gd.flags = /*gg_visible*/0;
-    gcd[k].gd.handle_controlevent = SMD_Up;
-    gcd[k].gd.cid = CID_Up;
-    gcd[k++].creator = GButtonCreate;
-
-    label[k].text = (unichar_t *) _STR_Down;
-    label[k].text_in_resource = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x+blen+space; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y;
-    gcd[k].gd.pos.width = -1;
-    gcd[k].gd.flags = /*gg_visible*/0;
-    gcd[k].gd.handle_controlevent = SMD_Down;
-    gcd[k].gd.cid = CID_Down;
-    gcd[k++].creator = GButtonCreate;
-
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = GDrawPointsToPixels(gw,gcd[k-1].gd.pos.y+28);
     gcd[k].gd.pos.width = pos.width-20;
     gcd[k].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels;
@@ -2890,11 +3030,11 @@ SMD *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
     {
 	GGadget *list = GWidgetGetControl(smd->gw,CID_Classes);
 	GListAppendLine(list,GStringGetResource(_STR_EndOfText,NULL),false);
-	GListAppendLine(list,GStringGetResource(_STR_EverythingElse,NULL),false);
+	GListAppendLine(list,GStringGetResource(_STR_MacEverythingElse,NULL),false);
 	GListAppendLine(list,GStringGetResource(_STR_DeletedGlyph,NULL),false);
 	GListAppendLine(list,GStringGetResource(_STR_EndOfLine,NULL),false);
 	for ( k=4; k<sm->class_cnt; ++k ) {
-	    unichar_t *temp = uc_copy(sm->classes[k]);
+	    unichar_t *temp = AddClass(k,uc_copy(sm->classes[k]),true);
 	    GListAppendLine(list,temp,false);
 	    free(temp);
 	}
