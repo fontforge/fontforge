@@ -1695,16 +1695,20 @@ return;
 
 /* when pasting from the fontview we do a clear first */
 #ifdef FONTFORGE_CONFIG_TYPE3
-static void _PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear,
+static void _PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto,
 	int layer) {
 #else
-static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear) {
+static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto) {
     const int layer = ly_fore;
 #endif
     DBounds bb;
     real transform[6];
     int width, vwidth;
     FontView *fvs;
+#ifdef FONTFORGE_CONFIG_PASTEAFTER
+    int xoff=0, yoff=0;
+    RefChar *ref;
+#endif
 
     switch ( paster->undotype ) {
       case ut_noop:
@@ -1715,14 +1719,14 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear) {
 	SCPreserveState(sc,paster->undotype==ut_statehint);
 	width = paster->u.state.width;
 	vwidth = paster->u.state.vwidth;
-	if ( doclear && paster->u.state.copied_from!=sc->parent &&
+	if ( !pasteinto && paster->u.state.copied_from!=sc->parent &&
 		paster->u.state.splines==NULL &&
 		paster->u.state.refs!=NULL )
 	    width = PasteGuessCorrectWidth(sc->parent,paster,&vwidth);
-	if ( !sc->parent->onlybitmaps )
-	    SCSynchronizeWidth(sc,width,sc->width,fv);
-	sc->vwidth = vwidth;
-	if ( doclear ) {
+	if ( !pasteinto ) {
+	    if ( !sc->parent->onlybitmaps )
+		SCSynchronizeWidth(sc,width,sc->width,fv);
+	    sc->vwidth = vwidth;
 	    SplinePointListsFree(sc->layers[layer].splines);
 	    sc->layers[layer].splines = NULL;
 	    ImageListsFree(sc->layers[layer].images);
@@ -1730,6 +1734,27 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear) {
 	    SCRemoveLayerDependents(sc,layer);
 	    AnchorPointsFree(sc->anchor);
 	    sc->anchor = NULL;
+#ifdef FONTFORGE_CONFIG_PASTEAFTER
+	} else if ( pasteinto==2 ) {
+	    if ( sc->parent->hasvmetrics ) {
+		yoff = -sc->vwidth;
+		sc->vwidth += vwidth;
+	    } else if ( SCRightToLeft(sc) ) {
+		xoff = 0;
+		SCSynchronizeWidth(sc,sc->width+width,sc->width,fv);
+		transform[0] = transform[3] = 1; transform[1] = transform[2] = transform[5] = 0;
+		transform[4] = width;
+		sc->layers[layer].splines = SplinePointListTransform(
+			sc->layers[layer].splines,transform,true);
+		for ( ref = sc->layers[layer].refs; ref!=NULL; ref=ref->next ) {
+		    ref->transform[4] += width;
+		    SCReinstanciateRefChar(sc,ref);
+		}
+	    } else {
+		xoff = sc->width;
+		SCSynchronizeWidth(sc,sc->width+width,sc->width,fv);
+	    }
+#endif
 	}
 #ifdef FONTFORGE_CONFIG_TYPE3
 	if ( layer>=ly_fore && sc->layers[layer].splines==NULL &&
@@ -1745,6 +1770,13 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear) {
 #endif
 	if ( paster->u.state.splines!=NULL ) {
 	    SplinePointList *temp = SplinePointListCopy(paster->u.state.splines);
+#ifdef FONTFORGE_CONFIG_PASTEAFTER
+	    if ( pasteinto==2 && (xoff!=0 || yoff!=0)) {
+		transform[0] = transform[3] = 1; transform[1] = transform[2] = 0;
+		transform[4] = xoff; transform[5] = yoff;
+		temp = SplinePointListTransform(temp,transform,true);
+	    }
+#endif
 	    if ( paster->was_order2 != sc->parent->order2 )
 		temp = SplineSetsConvertOrder(temp,sc->parent->order2);
 	    if ( sc->layers[layer].splines!=NULL ) {
@@ -1773,7 +1805,7 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear) {
 	/* but might be hints */
 #endif
 	if ( paster->undotype==ut_statehint || paster->undotype==ut_statename )
-	    if ( doclear )	/* Hints aren't meaningful unless we've cleared first */
+	    if ( !pasteinto )	/* Hints aren't meaningful unless we've cleared first */
 		ExtractHints(sc,paster->u.state.u.hints,true);
 	if ( paster->undotype==ut_statename ) {
 	    SCSetMetaData(sc,paster->u.state.charname,
@@ -1798,6 +1830,9 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear) {
 		    new = RefCharCreate();
 		    *new = *refs;
 		    new->transform[4] *= scale; new->transform[5] *= scale;
+#ifdef FONTFORGE_CONFIG_PASTEAFTER
+		    new->transform[4] += xoff;  new->transform[5] += yoff;
+#endif
 #ifdef FONTFORGE_CONFIG_TYPE3
 		    new->layers = NULL;
 		    new->layer_cnt = 0;
@@ -1854,12 +1889,12 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear) {
 }
 
 #ifdef FONTFORGE_CONFIG_TYPE3
-static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear) {
+static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto) {
     if ( paster->undotype==ut_layers && sc->parent->multilayer ) {
 	int lc, start, layer;
 	Undoes *pl;
 	for ( lc=0, pl = paster->u.multiple.mult; pl!=NULL; pl=pl->next, ++lc );
-	if ( doclear ) {
+	if ( !pasteinto ) {
 	    start = ly_fore;
 	    for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
 		SplinePointListsFree(sc->layers[layer].splines);
@@ -1877,14 +1912,14 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear) {
 	    sc->layer_cnt = start+lc;
 	}
 	for ( lc=0, pl = paster->u.multiple.mult; pl!=NULL; pl=pl->next, ++lc )
-	    _PasteToSC(sc,pl,fv,doclear,start+lc);
+	    _PasteToSC(sc,pl,fv,pasteinto,start+lc);
 	SCMoreLayers(sc);
     } else if ( paster->undotype==ut_layers ) {
 	Undoes *pl;
 	for ( pl = paster->u.multiple.mult; pl!=NULL; pl=pl->next );
-	    _PasteToSC(sc,pl,fv,doclear,ly_fore);
+	    _PasteToSC(sc,pl,fv,pasteinto,ly_fore);
     } else
-	_PasteToSC(sc,paster,fv,doclear,ly_fore);
+	_PasteToSC(sc,paster,fv,pasteinto,ly_fore);
 }
 #endif
 
@@ -2362,7 +2397,7 @@ static BDFFont *BitmapCreateCheck(FontView *fv,int *yestoall, int first, int pix
 return( bdf );
 }
 
-void PasteIntoFV(FontView *fv,int doclear) {
+void PasteIntoFV(FontView *fv,int pasteinto) {
     Undoes *cur=NULL, *bmp;
     BDFFont *bdf;
     int i, j, cnt=0;
@@ -2386,7 +2421,7 @@ return;
 	j = -1;
 	forever {
 	    for ( i=0; i<sf->charcnt; ++i ) if ( fv->selected[i] )
-		SCCheckXClipboard(fv->gw,SFMakeChar(sf,i),dm_fore,doclear);
+		SCCheckXClipboard(fv->gw,SFMakeChar(sf,i),dm_fore,!pasteinto);
 	    ++j;
 	    if ( mm==NULL || mm->normal!=origsf || j>=mm->instance_count )
 	break;
@@ -2446,11 +2481,11 @@ return;
 		    GWidgetErrorR(_STR_NoVerticalMetrics,_STR_FontNoVerticalMetrics);
  goto err;
 		}
-		PasteToSC(SFMakeChar(sf,i),cur,fv,doclear);
+		PasteToSC(SFMakeChar(sf,i),cur,fv,pasteinto);
 	      break;
 	      case ut_bitmapsel: case ut_bitmap:
 		if ( onlycopydisplayed && fv->show!=fv->filled )
-		    _PasteToBC(BDFMakeChar(fv->show,i),fv->show->pixelsize,BDFDepth(fv->show),cur,doclear,fv);
+		    _PasteToBC(BDFMakeChar(fv->show,i),fv->show->pixelsize,BDFDepth(fv->show),cur,!pasteinto,fv);
 		else {
 		    for ( bdf=sf->bitmaps; bdf!=NULL && (bdf->pixelsize!=cur->u.bmpstate.pixelsize || BDFDepth(bdf)!=cur->u.bmpstate.depth); bdf=bdf->next );
 		    if ( bdf==NULL ) {
@@ -2458,12 +2493,12 @@ return;
 			first = false;
 		    }
 		    if ( bdf!=NULL )
-			_PasteToBC(BDFMakeChar(bdf,i),bdf->pixelsize,BDFDepth(bdf),cur,doclear,fv);
+			_PasteToBC(BDFMakeChar(bdf,i),bdf->pixelsize,BDFDepth(bdf),cur,!pasteinto,fv);
 		}
 	      break;
 	      case ut_composit:
 		if ( cur->u.composit.state!=NULL )
-		    PasteToSC(SFMakeChar(sf,i),cur->u.composit.state,fv,doclear);
+		    PasteToSC(SFMakeChar(sf,i),cur->u.composit.state,fv,pasteinto);
 		for ( bmp=cur->u.composit.bitmaps; bmp!=NULL; bmp = bmp->next ) {
 		    for ( bdf=sf->bitmaps; bdf!=NULL &&
 			    (bdf->pixelsize!=bmp->u.bmpstate.pixelsize || BDFDepth(bdf)!=bmp->u.bmpstate.depth);
@@ -2471,7 +2506,7 @@ return;
 		    if ( bdf==NULL )
 			bdf = BitmapCreateCheck(fv,&yestoall,first,bmp->u.bmpstate.pixelsize,bmp->u.bmpstate.depth);
 		    if ( bdf!=NULL )
-			_PasteToBC(BDFMakeChar(bdf,i),bdf->pixelsize,BDFDepth(bdf),bmp,doclear,fv);
+			_PasteToBC(BDFMakeChar(bdf,i),bdf->pixelsize,BDFDepth(bdf),bmp,!pasteinto,fv);
 		}
 		first = false;
 	      break;
@@ -2517,7 +2552,7 @@ return;
 	    GWidgetErrorR(_STR_NoVerticalMetrics,_STR_FontNoVerticalMetrics);
 return;
 	}
-	PasteToSC(sc,cur,mv->fv,doclear);
+	PasteToSC(sc,cur,mv->fv,!doclear);
       break;
       case ut_bitmapsel: case ut_bitmap:
 	if ( onlycopydisplayed && mv->bdf!=NULL )
@@ -2536,7 +2571,7 @@ return;
       break;
       case ut_composit:
 	if ( cur->u.composit.state!=NULL )
-	    PasteToSC(sc,cur->u.composit.state,mv->fv,doclear);
+	    PasteToSC(sc,cur->u.composit.state,mv->fv,!doclear);
 	for ( bmp=cur->u.composit.bitmaps; bmp!=NULL; bmp = bmp->next ) {
 	    for ( bdf=mv->fv->sf->bitmaps; bdf!=NULL &&
 		    (bdf->pixelsize!=bmp->u.bmpstate.pixelsize || BDFDepth(bdf)!=bmp->u.bmpstate.depth);

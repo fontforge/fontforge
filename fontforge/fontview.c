@@ -1053,6 +1053,7 @@ static void FVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_PasteInto	2129
 #define MID_SameGlyphAs	2130
 #define MID_RplRef	2131
+#define MID_PasteAfter	2132
 #define MID_Convert2CID	2800
 #define MID_Flatten	2801
 #define MID_InsertFont	2802
@@ -1136,15 +1137,25 @@ static void FVMenuPaste(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     if ( FVAnyCharSelected(fv)==-1 )
 return;
-    PasteIntoFV(fv,true);
+    PasteIntoFV(fv,false);
 }
 
 static void FVMenuPasteInto(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     if ( FVAnyCharSelected(fv)==-1 )
 return;
-    PasteIntoFV(fv,false);
+    PasteIntoFV(fv,true);
 }
+
+#ifdef FONTFORGE_CONFIG_PASTEAFTER
+static void FVMenuPasteAfter(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    int pos = FVAnyCharSelected(fv);
+    if ( pos<0 )
+return;
+    PasteIntoFV(fv,2);
+}
+#endif
 
 static void FVSameGlyphAs(FontView *fv) {
     SplineFont *sf = fv->sf;
@@ -1153,7 +1164,7 @@ static void FVSameGlyphAs(FontView *fv) {
 
     if ( FVAnyCharSelected(fv)==-1 || base==NULL || fv->cidmaster!=NULL )
 return;
-    PasteIntoFV(fv,true);
+    PasteIntoFV(fv,false);
     for ( i=0; i<sf->charcnt; ++i )
 	    if ( sf->chars[i]!=NULL && fv->selected[i] && base->local_enc!=i) {
 	free(sf->chars[i]->name);
@@ -1564,6 +1575,11 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_Paste: case MID_PasteInto:
 	    mi->ti.disabled = not_pasteable;
 	  break;
+#ifdef FONTFORGE_CONFIG_PASTEAFTER
+	  case MID_PasteAfter:
+	    mi->ti.disabled = not_pasteable || pos<0;
+	  break;
+#endif
 	  case MID_SameGlyphAs:
 	    mi->ti.disabled = not_pasteable || base==NULL || fv->cidmaster!=NULL ||
 		    fv->selected[base->local_enc];	/* Can't be self-referential */
@@ -3686,6 +3702,9 @@ static GMenuItem edlist[] = {
     { { (unichar_t *) _STR_CopyRBearing, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'g' }, '\0', ksm_control, NULL, NULL, FVMenuCopyWidth, MID_CopyRBearing },
     { { (unichar_t *) _STR_Paste, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, 'V', ksm_control, NULL, NULL, FVMenuPaste, MID_Paste },
     { { (unichar_t *) _STR_PasteInto, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, 'V', ksm_control|ksm_shift, NULL, NULL, FVMenuPasteInto, MID_PasteInto },
+#ifdef FONTFORGE_CONFIG_PASTEAFTER
+    { { (unichar_t *) _STR_PasteAfter, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, 'V', ksm_control|ksm_meta|ksm_shift, NULL, NULL, FVMenuPasteAfter, MID_PasteAfter },
+#endif
     { { (unichar_t *) _STR_SameGlyphAs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'm' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuSameGlyphAs, MID_SameGlyphAs },
     { { (unichar_t *) _STR_Clear, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'l' }, 0, 0, NULL, NULL, FVMenuClear, MID_Clear },
     { { (unichar_t *) _STR_ClearBackground, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, 0, 0, NULL, NULL, FVMenuClearBackground, MID_ClearBackground },
@@ -3694,7 +3713,7 @@ static GMenuItem edlist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Select, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, 0, ksm_control, sllist, sllistcheck },
     { { (unichar_t *) _STR_FindReplace, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'i' }, 'F', ksm_control|ksm_meta, NULL, NULL, FVMenuFindRpl },
-    { { (unichar_t *) _STR_ReplaceOutlineWithReference, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'i' }, '\0', ksm_control|ksm_meta, NULL, NULL, FVMenuReplaceWithRef, MID_RplRef },
+    { { (unichar_t *) _STR_ReplaceOutlineWithReference, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'i' }, 'F', ksm_control|ksm_meta|ksm_shift, NULL, NULL, FVMenuReplaceWithRef, MID_RplRef },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Unlinkref, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'U' }, 'U', ksm_control, NULL, NULL, FVMenuUnlinkRef, MID_UnlinkRef },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
@@ -6609,7 +6628,7 @@ void FVFakeMenus(FontView *fv,int cmd) {
 	FVCopyWidth(fv,ut_width);
       break;
       case 4:
-	PasteIntoFV(fv,true);
+	PasteIntoFV(fv,false);
       break;
       case 5:
 	FVClear(fv);
@@ -6624,7 +6643,7 @@ void FVFakeMenus(FontView *fv,int cmd) {
 	FVUnlinkRef(fv);
       break;
       case 9:
-	PasteIntoFV(fv,false);
+	PasteIntoFV(fv,true);
       break;
       case 10:
 	FVCopyWidth(fv,ut_vwidth);
