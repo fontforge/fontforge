@@ -103,7 +103,7 @@ void ttf_dumpkerns(struct alltabs *at, SplineFont *sf) {
 	j=0;
 	for ( kp = sf->chars[i]->vkerns; kp!=NULL; kp=kp->next )
 	    if ( kp->off!=0 ) 
-		++cnt, ++j;
+		++vcnt, ++j;
 	if ( j>mv ) mv=j;
     }
     kccnt = 0;
@@ -117,8 +117,8 @@ return;
     /* Old kerning format (version 0) uses 16 bit quantities */
     /* Apple's new format (version 0x00010000) uses 32 bit quantities */
     at->kern = tmpfile();
-    if ( kccnt==0 && vkccnt==0 && vcnt==0 ) {
-	/* MS does not support format 2 kern sub-tables so if we have them */
+    if ( kccnt==0 && vkccnt==0 ) {
+	/* MS does not support format 1,2,3 kern sub-tables so if we have them */
 	/*  we might as well admit that this table is for apple only and use */
 	/*  the new format apple recommends. Otherwise, use the old format */
 	putshort(at->kern,0);		/* version */
