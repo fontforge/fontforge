@@ -1063,16 +1063,15 @@ static char *str_ScalingBitmaps = "Mise à l'échelle des bitmaps";
 static char *str_CantScaleGreymap = "Impossible de mettre à l'échelle une police avec des niveaux de gris";
 static char *str_CantDeleteAllBitmaps = "Impossible de supprimer toutes les bitmaps";
     /* Bitmap view */
-/* "%s at %d from %s", charactername, pixelsize, fontname */
-static char *str_bvat = " à ";
-static char *str_bvfrom = " venant de ";
+/* "%s at %d size %d from %s", charactername, encoding, pixelsize, fontname */
+static char *str_BvTitle = "%1$h.75s à %2$d taille %3$d venant de %4$h.75s"
 static char *str_RecalculateBitmaps = "Recalculer Bitmaps";
     /* BV Edit */
 static char *str_skewRatio = "Entrer le rapport x:y de l'inclinaison";
 static char str_BadNumber[] = "Valeur incorrecte";
     /* Char View */
-/* "%s from %s", charactername, fontname */
-static char *str_cvfrom = " from ";
+/* "%s at %d from %s", charactername, encoding, fontname */
+static char *str_CvTitle = "%1$h.80s à %2$d venant de %3$h.80s"
     /* CV Export */
 static char *str_PixelSizeQ = "Pixel size?";
 static char *str_PixelSize = "Pixel size:";

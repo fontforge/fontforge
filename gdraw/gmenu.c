@@ -466,7 +466,9 @@ return( true );
 	    event->type == et_mousedown ) {
 	int l = (event->u.mouse.y-m->bp)/m->fh;
 	int i = l + m->offtop;
-	if ( l==0 && m->offtop!=0 ) {
+	if ( event->u.mouse.y<m->bp && event->type==et_mousedown )
+	    GMenuDismissAll(m);
+	else if ( l==0 && m->offtop!=0 ) {
 	    GMenuChangeSelection(m,-1,event);
 	    m->scrollit = GDrawRequestTimer(m->w,_GScrollBar_RepeatTime,_GScrollBar_RepeatTime,m);
 	    m->scrollup = true;

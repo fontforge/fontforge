@@ -1080,16 +1080,15 @@ static char *str_ScalingBitmaps = "Масштабировать растры";
 static char *str_CantScaleGreymap = "Can't scale a greymap font"; /*new*/
 static char *str_CantDeleteAllBitmaps = "Can't delete all bitmaps"; /*new*/
     /* Bitmap view */
-/* "%s at %d from %s", charactername, pixelsize, fontname */
-static char *str_bvat = " at "; /*new*/
-static char *str_bvfrom = " from "; /*new*/
+/* "%s at %d size %d from %s", charactername, encoding, pixelsize, fontname */
+static char *str_BvTitle = "%1$h.80s at %2$d size %3$d from %4$h.80s" /*new*/
 static char *str_RecalculateBitmaps = "Пересчитать растры";
     /* BV Edit */
 static char *str_skewRatio = "Enter the ratio of x-skew to y rise"; /*new*/
 static char str_BadNumber[] = "Bad Number"; /*new*/
     /* Char View */
-/* "%s from %s", charactername, fontname */
-static char *str_cvfrom = " from "; /*new*/
+/* "%s at %d from %s", charactername, encoding, fontname */
+static char *str_CvTitle = "%1$h.80s at %2$d from %3$h.90s"; /*new*/
     /* CV Export */
 static char *str_PixelSizeQ = "Pixel size?"; /*new*/
 static char *str_PixelSize = "Pixel size:"; /*new*/

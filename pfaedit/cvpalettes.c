@@ -162,6 +162,7 @@ static int popupsres[] = { _STR_Pointer, _STR_PopMag,
 			            _STR_PopRotate, _STR_PopSkew,
 			            _STR_PopRectElipse, _STR_PopPolyStar,
 			            _STR_PopRectElipse, _STR_PopPolyStar};
+static int editablelayers[] = { _STR_Fore, _STR_Back, _STR_Grid };
 static int rectelipse=0, polystar=0, regular_star=1;
 static real rr_radius=0;
 static int ps_pointcnt=6;
@@ -680,44 +681,6 @@ return( cvtools );
 return( cvtools );
 }
 
-static void CVPopupInvoked(GWindow v, GMenuItem *mi, GEvent *e) {
-    CharView *cv = (CharView *) GDrawGetUserData(v);
-    int pos;
-
-    pos = mi->mid;
-    if ( (pos==12 && rectelipse) || (pos==13 && polystar ))
-	pos += 2;
-    if ( cv->had_control ) {
-	if ( cv->cb1_tool!=pos ) {
-	    cv->cb1_tool = pos;
-	    GDrawRequestExpose(cvtools,NULL,false);
-	}
-    } else {
-	if ( cv->b1_tool!=pos ) {
-	    cv->b1_tool = pos;
-	    GDrawRequestExpose(cvtools,NULL,false);
-	}
-    }
-    CVToolsSetCursor(cv,cv->had_control?ksm_control:0,NULL);
-}
-
-void CVToolsPopup(CharView *cv, GEvent *event) {
-    GMenuItem mi[16];
-    int i;
-
-    memset(mi,'\0',sizeof(mi));
-    for ( i=0;i<14; ++i ) {
-	mi[i].ti.text = (unichar_t *) popupsres[i];
-	mi[i].ti.text_in_resource = true;
-	mi[i].ti.fg = COLOR_DEFAULT;
-	mi[i].ti.bg = COLOR_DEFAULT;
-	mi[i].mid = i;
-	mi[i].invoke = CVPopupInvoked;
-    }
-    cv->had_control = (event->u.mouse.state&ksm_control)?1:0;
-    GMenuCreatePopupMenu(cv->v,event, mi);
-}
-
 
 #define CID_VFore	1001
 #define CID_VBack	1002
@@ -1094,6 +1057,75 @@ return( cvlayers );
     GGadgetsCreate(cvlayers,gcd);
     GDrawSetVisible(cvlayers,true);
 return( cvlayers );
+}
+
+static void CVPopupInvoked(GWindow v, GMenuItem *mi, GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(v);
+    int pos;
+
+    pos = mi->mid;
+    if ( (pos==14 && rectelipse) || (pos==15 && polystar ))
+	pos += 2;
+    if ( cv->had_control ) {
+	if ( cv->cb1_tool!=pos ) {
+	    cv->cb1_tool = pos;
+	    GDrawRequestExpose(cvtools,NULL,false);
+	}
+    } else {
+	if ( cv->b1_tool!=pos ) {
+	    cv->b1_tool = pos;
+	    GDrawRequestExpose(cvtools,NULL,false);
+	}
+    }
+    CVToolsSetCursor(cv,cv->had_control?ksm_control:0,NULL);
+}
+
+static void CVPopupLayerInvoked(GWindow v, GMenuItem *mi, GEvent *e) {
+    int cid;
+    GGadget *g;
+    GEvent fake;
+
+    cid = mi->mid==0 ? CID_EFore : mi->mid==1 ? CID_EBack : CID_EGrid;
+    g = GWidgetGetControl(cvlayers,cid);
+    if ( !GGadgetIsChecked(g)) {
+	GGadgetSetChecked(g,true);
+	fake.type = et_controlevent;
+	fake.w = cvlayers;
+	fake.u.control.subtype = et_radiochanged;
+	fake.u.control.g = g;
+	cvlayers_e_h(cvlayers,&fake);
+    }
+}
+
+void CVToolsPopup(CharView *cv, GEvent *event) {
+    GMenuItem mi[125];
+    int i, j;
+
+    memset(mi,'\0',sizeof(mi));
+    for ( i=0;i<16; ++i ) {
+	mi[i].ti.text = (unichar_t *) popupsres[i];
+	mi[i].ti.text_in_resource = true;
+	mi[i].ti.fg = COLOR_DEFAULT;
+	mi[i].ti.bg = COLOR_DEFAULT;
+	mi[i].mid = i;
+	mi[i].invoke = CVPopupInvoked;
+    }
+
+    if ( cvlayers!=NULL ) {
+	mi[i].ti.line = true;
+	mi[i].ti.fg = COLOR_DEFAULT;
+	mi[i++].ti.bg = COLOR_DEFAULT;
+	for ( j=0;j<3; ++j, ++i ) {
+	    mi[i].ti.text = (unichar_t *) editablelayers[j];
+	    mi[i].ti.text_in_resource = true;
+	    mi[i].ti.fg = COLOR_DEFAULT;
+	    mi[i].ti.bg = COLOR_DEFAULT;
+	    mi[i].mid = j;
+	    mi[i].invoke = CVPopupLayerInvoked;
+	}
+    }
+    cv->had_control = (event->u.mouse.state&ksm_control)?1:0;
+    GMenuCreatePopupMenu(cv->v,event, mi);
 }
 
 static void CVPaletteCheck(CharView *cv) {

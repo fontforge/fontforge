@@ -179,18 +179,13 @@ return( bc );
 }
 
 static unichar_t *BVMakeTitles(BitmapView *bv, BDFChar *bc,unichar_t *ubuf) {
-    char buffer[10];
     unichar_t *title;
     SplineChar *sc;
     BDFFont *bdf = bv->bdf;
 
     sc = bc->sc;
-    uc_strncpy(ubuf,sc->name,90);
-    u_strcat(ubuf,GStringGetResource(_STR_Bvat,NULL));
-    sprintf( buffer, "%d", bdf->pixelsize);
-    uc_strcat(ubuf,buffer);
-    u_strcat(ubuf,GStringGetResource(_STR_Bvfrom,NULL));
-    uc_strncat(ubuf,sc->parent->fontname,90);
+    u_sprintf(ubuf,GStringGetResource(_STR_BvTitle,NULL),
+	    sc->name, sc->enc, bdf->pixelsize, sc->parent->fontname);
     title = u_copy(ubuf);
     if ( sc->unicodeenc!=-1 && UnicodeCharacterNames[sc->unicodeenc>>8][sc->unicodeenc&0xff]!=NULL ) {
 	uc_strcat(ubuf, " ");
@@ -321,9 +316,13 @@ return;
 }
 
 static void BVCharUp(BitmapView *bv, GEvent *event ) {
+    if ( event->u.chr.keysym=='I' &&
+	    (event->u.chr.state&ksm_shift) &&
+	    (event->u.chr.state&ksm_meta) )
+	SCGetInfo(bv->bc->sc,false);
 #if _ModKeysAutoRepeat
     /* Under cygwin these keys auto repeat, they don't under normal X */
-    if ( event->u.chr.keysym == GK_Shift_L || event->u.chr.keysym == GK_Shift_R ||
+    else if ( event->u.chr.keysym == GK_Shift_L || event->u.chr.keysym == GK_Shift_R ||
 	    event->u.chr.keysym == GK_Control_L || event->u.chr.keysym == GK_Control_R ||
 	    event->u.chr.keysym == GK_Meta_L || event->u.chr.keysym == GK_Meta_R ||
 	    event->u.chr.keysym == GK_Alt_L || event->u.chr.keysym == GK_Alt_R ||

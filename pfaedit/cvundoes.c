@@ -460,6 +460,7 @@ Undoes *CVPreserveState(CharView *cv) {
     Undoes *undo = chunkalloc(sizeof(Undoes));
 
     undo->undotype = ut_state;
+    undo->was_modified = cv->sc->changed;
     undo->u.state.width = cv->sc->width;
     undo->u.state.vwidth = cv->sc->vwidth;
     undo->u.state.splines = SplinePointListCopy(*cv->heads[cv->drawmode]);
@@ -475,6 +476,7 @@ Undoes *SCPreserveState(SplineChar *sc,int dohints) {
     Undoes *undo = chunkalloc(sizeof(Undoes));
 
     undo->undotype = ut_state;
+    undo->was_modified = sc->changed;
     undo->u.state.width = sc->width;
     undo->u.state.vwidth = sc->vwidth;
     undo->u.state.splines = SplinePointListCopy(sc->splines);
@@ -499,6 +501,7 @@ Undoes *SCPreserveBackground(SplineChar *sc) {
     Undoes *undo = chunkalloc(sizeof(Undoes));
 
     undo->undotype = ut_state;
+    undo->was_modified = sc->changed;
     undo->u.state.width = sc->width;
     undo->u.state.vwidth = sc->vwidth;
     undo->u.state.splines = SplinePointListCopy(sc->backgroundsplines);
@@ -538,6 +541,7 @@ Undoes *CVPreserveWidth(CharView *cv,int width) {
     Undoes *undo = chunkalloc(sizeof(Undoes));
 
     undo->undotype = ut_width;
+    undo->was_modified = cv->sc->changed;
     undo->u.width = width;
 return( CVAddUndo(cv,undo));
 }
@@ -546,6 +550,7 @@ Undoes *CVPreserveVWidth(CharView *cv,int vwidth) {
     Undoes *undo = chunkalloc(sizeof(Undoes));
 
     undo->undotype = ut_vwidth;
+    undo->was_modified = cv->sc->changed;
     undo->u.width = vwidth;
 return( CVAddUndo(cv,undo));
 }
@@ -554,6 +559,7 @@ Undoes *SCPreserveWidth(SplineChar *sc) {
     Undoes *undo = chunkalloc(sizeof(Undoes));
 
     undo->undotype = ut_width;
+    undo->was_modified = sc->changed;
     undo->u.state.width = sc->width;
 return( AddUndo(undo,&sc->undoes[0],&sc->redoes[0]));
 }
@@ -562,6 +568,7 @@ Undoes *SCPreserveVWidth(SplineChar *sc) {
     Undoes *undo = chunkalloc(sizeof(Undoes));
 
     undo->undotype = ut_vwidth;
+    undo->was_modified = sc->changed;
     undo->u.state.width = sc->vwidth;
 return( AddUndo(undo,&sc->undoes[0],&sc->redoes[0]));
 }
@@ -672,7 +679,7 @@ return;
     SCUndoAct(cv->sc,cv->drawmode,undo);
     undo->next = *cv->rheads[cv->drawmode];
     *cv->rheads[cv->drawmode] = undo;
-    CVCharChangedUpdate(cv);
+    _CVCharChangedUpdate(cv,undo->was_modified);
     cv->lastselpt = NULL;
 return;
 }

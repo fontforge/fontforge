@@ -129,7 +129,8 @@ static void findbrowser(void) {
     static char *stdbrowsers[] = { "netscape", "opera", "galeon", "kfmclient",
 	"mozilla", "mosaic", /*"grail",*/ "lynx",
 #if __CygWin
-	"IEXPLORE.EXE", "netscape.exe",
+	"IEXPLORE.EXE", "NETSCAPE.EXE",
+	"iexplore.exe", "netscape.exe",
 #elif __Mac
 	"/Applications/Internet Exporer/Internet Explorer.app",
 	/* We need to play games with this... */

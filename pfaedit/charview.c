@@ -1261,9 +1261,8 @@ static unichar_t *CVMakeTitles(CharView *cv,unichar_t *ubuf) {
     unichar_t *title;
     SplineChar *sc = cv->sc;
 
-    uc_strncpy(ubuf,sc->name,90);
-    u_strcat(ubuf,GStringGetResource(_STR_Bvfrom,NULL));
-    uc_strncat(ubuf,sc->parent->fontname,90);
+    u_sprintf(ubuf,GStringGetResource(_STR_CvTitle,NULL),
+	    sc->name, sc->enc, sc->parent->fontname);
     title = u_copy(ubuf);
     if ( sc->unicodeenc!=-1 && sc->unicodeenc<65536 &&
 	    UnicodeCharacterNames[sc->unicodeenc>>8][sc->unicodeenc&0xff]!=NULL ) {
@@ -2095,8 +2094,8 @@ void SCCharChangedUpdate(SplineChar *sc) {
 	FVRegenChar(sf->fv,sc);
 }
 
-void CVCharChangedUpdate(CharView *cv) {
-    CVSetCharChanged(cv,true);
+void _CVCharChangedUpdate(CharView *cv,int changed) {
+    CVSetCharChanged(cv,changed);
     if ( cv->needsrasterize ) {
 	SCRegenDependents(cv->sc);		/* All chars linked to this one need to get the new splines */
 	SCUpdateAll(cv->sc);
@@ -2114,6 +2113,10 @@ void CVCharChangedUpdate(CharView *cv) {
     }
     cv->recentchange = false;
     cv->p.sp = NULL;		/* Might have been deleted */
+}
+
+void CVCharChangedUpdate(CharView *cv) {
+    _CVCharChangedUpdate(cv,true);
 }
 
 static void CVMouseMove(CharView *cv, GEvent *event ) {
@@ -2908,6 +2911,7 @@ return( true );
 #define MID_AddExtrema	2224
 #define MID_CleanupChar	2225
 #define MID_TilePath	2226
+#define MID_CharInfo	2240
 #define MID_Corner	2301
 #define MID_Tangent	2302
 #define MID_Curve	2303
@@ -3157,8 +3161,11 @@ return;
 	if ( pos<0 )
 return;
     }
-    if ( pos<0 ) pos = cv->sc->parent->charcnt-1;
-    else if ( pos>= cv->sc->parent->charcnt ) pos = 0;
+    /* Werner doesn't think it should wrap */
+    if ( pos<0 ) /* pos = cv->sc->parent->charcnt-1; */
+return;
+    else if ( pos>= cv->sc->parent->charcnt ) /* pos = 0; */
+return;
     if ( pos>=0 && pos<cv->sc->parent->charcnt )
 	CVChangeChar(cv,pos);
 }
@@ -4095,6 +4102,12 @@ static void CVMenuGetInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CVGetInfo(cv);
 }
 
+static void CVMenuCharInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    if ( cv->fv->cidmaster==NULL )
+	SCGetInfo(cv->sc,false);
+}
+
 static void CVMenuShowDependents(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     SCRefBy(cv->sc);
@@ -4196,10 +4209,11 @@ static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
+	  case MID_CharInfo:
+	    mi->ti.disabled = ( cv->fv->cidmaster!=NULL );
+	  break;
 	  case MID_GetInfo:
-	    if ( cv->fv->cidmaster==NULL )
-		mi->ti.disabled = false;
-	    else {
+	    {
 		SplinePoint *sp; SplineSet *spl; RefChar *ref; ImageList *img;
 		mi->ti.disabled = !CVOneThingSel(cv,&sp,&spl,&ref,&img);
 	    }
@@ -4645,7 +4659,13 @@ static void cv_vwlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 	      out:;
 	    }
 	  break;
-	  case MID_Next: case MID_Prev: case MID_Goto: case MID_FindInFontView:
+	  case MID_Next:
+	    mi->ti.disabled = cv->searcher!=NULL || cv->sc->enc==cv->sc->parent->charcnt-1;
+	  break;
+	  case MID_Prev:
+	    mi->ti.disabled = cv->searcher!=NULL || cv->sc->enc==0;
+	  break;
+	  case MID_Goto: case MID_FindInFontView:
 	    mi->ti.disabled = cv->searcher!=NULL;
 	  break;
 	  case MID_MarkExtrema:
@@ -4811,6 +4831,7 @@ static GMenuItem allist[] = {
 
 static GMenuItem ellist[] = {
     { { (unichar_t *) _STR_Fontinfo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, 'F', ksm_control|ksm_shift, NULL, NULL, CVMenuFontInfo },
+    { { (unichar_t *) _STR_Charinfo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, 'I', ksm_shift|ksm_meta, NULL, NULL, CVMenuCharInfo, MID_CharInfo },
     { { (unichar_t *) _STR_Getinfo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, 'I', ksm_control, NULL, NULL, CVMenuGetInfo, MID_GetInfo },
     { { (unichar_t *) _STR_ShowDependents, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'D' }, 'I', ksm_control|ksm_meta, NULL, NULL, CVMenuShowDependents, MID_ShowDependents },
     { { (unichar_t *) _STR_Findprobs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'o' }, 'E', ksm_control, NULL, NULL, CVMenuFindProblems },

@@ -1047,16 +1047,15 @@ static char *str_ScalingBitmaps = "ビットマップを拡大/縮小中";
 static char *str_CantScaleGreymap = "greymapフォントを拡大/縮小できません.";
 static char *str_CantDeleteAllBitmaps = "ビットマップを全削除できません.";
     /* Bitmap view */
-/* "%s at %d from %s", charactername, pixelsize, fontname */
-static char *str_bvat = " at ";
-static char *str_bvfrom = " from ";
+/* "%s at %d size %d from %s", charactername, encoding, pixelsize, fontname */
+static char *str_BvTitle = "%1$h.80s at %2$d size %3$d from %4$h.80s"
 static char *str_RecalculateBitmaps = "ビットマップを再計算";
     /* BV Edit */
 static char *str_skewRatio = "Y軸の高さに対するX軸の歪みの比率を指定してください.";
 static char str_BadNumber[] = "数値が間違っています.";
     /* Char View */
-/* "%s from %s", charactername, fontname */
-static char *str_cvfrom = " from ";
+/* "%s at %d from %s", charactername, encoding, fontname */
+static char *str_CvTitle = "%1$h.80s at %2$d from %3$h.90s"
     /* CV Export */
 static char *str_PixelSizeQ = "ピクセル数はいくつですか?";
 static char *str_PixelSize = "ピクセル数:";

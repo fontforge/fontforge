@@ -2049,6 +2049,10 @@ static void MVChar(MetricsView *mv,GEvent *event) {
 	    (event->u.chr.state&ksm_control) &&
 	    (event->u.chr.state&ksm_meta) )
 	MenuSaveAll(NULL,NULL,NULL);
+    else if ( event->u.chr.keysym=='I' &&
+	    (event->u.chr.state&ksm_shift) &&
+	    (event->u.chr.state&ksm_meta) )
+	MVMenuCharInfo(mv->gw,NULL,NULL);
     else if ( event->u.chr.keysym == GK_Help ) {
 	MenuHelp(NULL,NULL,NULL);	/* Menu does F1 */
     }

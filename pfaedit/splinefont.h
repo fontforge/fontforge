@@ -118,6 +118,7 @@ typedef struct undoes {
     enum undotype { ut_none=0, ut_state, ut_tstate, ut_statehint, ut_statename,
 	    ut_width, ut_vwidth, ut_lbearing, ut_rbearing,
 	    ut_bitmap, ut_bitmapsel, ut_composit, ut_multiple, ut_noop } undotype;
+    unsigned int was_modified: 1;
     union {
 	struct {
 	    int16 width, vwidth;
