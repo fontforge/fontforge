@@ -3280,6 +3280,10 @@ static void _MVVMouse(MetricsView *mv,GEvent *event) {
 		SCPreserveWidth(sc);
 		sc->vwidth += diff;
 		SCCharChangedUpdate(sc);
+		for ( ; i<mv->charcnt; ++i )
+		    mv->perchar[i].dy = mv->perchar[i-1].dy+mv->perchar[i-1].dheight +
+			    mv->perchar[i-1].kernafter + mv->perchar[i-1].voff;
+		GDrawRequestExpose(mv->gw,NULL,false);
 	    }
 	} else if ( mv->pressedkern ) {
 	    mv->pressedkern = false;
@@ -3322,7 +3326,7 @@ static void _MVVMouse(MetricsView *mv,GEvent *event) {
 	    SplineCharFindBounds(sc,&bb);
 	    transform[0] = transform[3] = 1.0;
 	    transform[1] = transform[2] = transform[4] = 0;
-	    transform[5] = diff/scale;
+	    transform[5] = -diff/scale;
 	    if ( transform[5]!=0 )
 		FVTrans(mv->fv,sc,transform,NULL,false);
 	}
