@@ -112,6 +112,28 @@ return( NULL );
 	    ++ufrom;
 	    --n;
 	}
+    } else if ( cs==e_utf8 ) {
+	while ( *from && n>0 ) {
+	    if ( *from<=127 )
+		*upt = *from++;
+	    else if ( *from<=0xdf ) {
+		*upt = ((*from&0x1f)<<6) | (from[1]&0x3f);
+		from += 2;
+	    } else if ( *from<=0xef ) {
+		*upt = ((*from&0xf)<<12) | ((from[1]&0x3f)<<6) | (from[2]&0x3f);
+		from += 3;
+	    } else if ( n>2 ) {
+		/* Um... I don't support surrogates */
+		int w = ( ((*from&0x7)<<2) | ((from[1]&0x30)>>4) )-1;
+		*upt++ = 0xd800 | (w<<6) | ((from[1]&0xf)<<2) | ((from[2]&0x30)>>4);
+		*upt   = 0xdc00 | ((from[2]&0xf)<<6) | (from[3]&0x3f);
+		from += 4;
+	    } else {
+		/* no space for surrogate */
+		from += 4;
+	    }
+	    ++upt;
+	}
     } else
 return( NULL );
 
@@ -228,6 +250,39 @@ return( NULL );
 	}
 	if ( n>1 )
 	    *uto = '\0';
+    } else if ( cs==e_utf8 ) {
+	while ( *ufrom ) {
+	    if ( *ufrom<0x80 ) {
+		if ( n<=1 )
+	break;
+		*to++ = *ufrom;
+		--n;
+	    } else if ( *ufrom<0x800 ) {
+		if ( n<=2 )
+	break;
+		*to++ = 0xc0 | (*ufrom>>6);
+		*to++ = 0x80 | (*ufrom&0x3f);
+		n -= 2;
+	    } else if ( *ufrom>=0xd800 && *ufrom<0xdc00 && ufrom[1]>=0xdc00 && ufrom[1]<0xe000 ) {
+		int u = ((*ufrom>>6)&0xf)+1, y = ((*ufrom&3)<<4) | ((ufrom[1]>>6)&0xf);
+		if ( n<=4 )
+	    break;
+		*to++ = 0xf0 | (u>>2);
+		*to++ = 0x80 | ((u&3)<<4) | ((*ufrom>>2)&0xf);
+		*to++ = 0x80 | y;
+		*to++ = 0x80 | (ufrom[1]&0x3f);
+		n -= 4;
+	    } else {
+		if ( n<=3 )
+	    break;
+		*to++ = 0xe0 | (*ufrom>>12);
+		*to++ = 0x80 | ((*ufrom>>6)&0x3f);
+		*to++ = 0x80 | (*ufrom&0x3f);
+	    }
+	    ++ufrom;
+	}
+	if ( n>1 )
+	    *to = '\0';
     } else
 return( NULL );
 
@@ -265,8 +320,10 @@ char *u2def_copy(const unichar_t *ufrom) {
     if ( ufrom==NULL )
 return( NULL );
     len = u_strlen(ufrom);
+    if ( local_encoding==e_utf8 )
+	len *= 3;
     if ( local_encoding>=e_first2byte )
-	len = 2*len;
+	len *= 2;
     to = galloc(len+2);
     ret = u2encoding_strncpy(to,ufrom,len,local_encoding);
     if ( ret==NULL )
