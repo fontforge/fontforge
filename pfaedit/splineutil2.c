@@ -292,7 +292,7 @@ at the end points remains unchanged
 /* cnt is not quite n because we add in two more points, first and last */
 Spline *ApproximateSplineFromPointsSlopes(SplinePoint *from, SplinePoint *to,
 	TPoint *mid, int cnt) {
-    real t, t2, t3, t4, x, y, xt, yt, tt, ttn;
+    real t, t2, t3, t4, t5, x, y, xt, xt2, yt, yt2, tt, ttn;
     real sx, sy;
     int i;
     real v[6], m[6][6];
@@ -325,10 +325,13 @@ return( ApproximateSplineFromPoints(from,to,mid,cnt) );
 	tt = mid[i].t;
 	xt += tt*mid[i].x;
 	yt += tt*mid[i].y;
+	xt2 += tt*tt*mid[i].x;
+	yt2 += tt*tt*mid[i].y;
 	t += tt;
 	t2 += (ttn=tt*tt);
 	t3 += (ttn*=tt);
 	t4 += (ttn*=tt);
+	t5 += (ttn*=tt);
     }
 
     v[0] = to->me.x-from->me.x;		/* ax */
@@ -412,9 +415,28 @@ return( ApproximateSplineFromPoints(from,to,mid,cnt) );
 	v[2] /= m[2][2];
 	m[2][5] /= m[2][2];
 
-	m[5][5] -= m[5][2]*m[2][5];
+	if ( RealApprox(m[5][5],m[5][2]*m[2][5]) )
+	    m[5][5] = 0;
+	else
+	    m[5][5] -= m[5][2]*m[2][5];
 	v[5] -= m[5][2]*v[2];
 	m[5][2] = 0;
+    }
+    if ( m[5][5]==0 ) {		/* I have seen this failure mode */
+	m[5][3] = t5;
+	m[5][4] = t4;
+	m[5][5] = t3;
+	v[5] = xt2-t2*from->me.y;
+	if ( t5!=0 ) {
+	    m[5][5] -= t5*m[3][5];
+	    v[5] -= t5*v[3];
+	    m[5][3] = 0;
+	}
+	if ( m[5][4]!=0 ) {
+	    m[5][5] -= m[5][4]*m[4][5];
+	    v[5] -= m[5][4]*v[4];
+	    m[5][4] = 0;
+	}
     }
     if ( m[5][5]!=0 ) {
 	v[5] /= m[5][5];
@@ -423,6 +445,7 @@ return( ApproximateSplineFromPoints(from,to,mid,cnt) );
 	v[2] -= m[2][5]*v[5];
 	m[4][5] = m[3][5] = m[2][5] = 0;
     }
+
     /* At this point the matrix looks like:
      1 0 ? 0 0 0
      0 1 ? 0 0 0
@@ -441,7 +464,14 @@ return( ApproximateSplineFromPoints(from,to,mid,cnt) );
     /*  worse) */
     prevcp.x = from->me.x + v[2]/3 + (v[2]+v[1])/3;
     prevcp.y = from->me.y + v[5]/3 + (v[5]+v[4])/3;
-    if ( v[2]*(from->nextcp.x-from->me.x) + v[5]*(from->nextcp.y-from->me.y)>=0 &&
+    if ( prevcp.x > 65536 || prevcp.x < -65536 || prevcp.y > 65536 || prevcp.y < -65536 ||
+	    v[2] > 185536 || v[2] < -185536 || v[5] > 185536 || v[5] < -185536 ) {
+	/* Well these aren't reasonable values. I assume a rounding error */
+	/*  caused us to miss a divide by zero check. Just throw out the */
+	/*  results and leave the control points as they were */
+	fprintf( stderr, "Possible divide by zero problem, please send a copy of the current font\n" );
+	fprintf( stderr, " the name of the character you were working on to gww@silcom.com\n" );
+    } else if ( v[2]*(from->nextcp.x-from->me.x) + v[5]*(from->nextcp.y-from->me.y)>=0 &&
 	    (prevcp.x-to->me.x)*(to->prevcp.x-to->me.x) + (prevcp.y-to->me.y)*(to->prevcp.y-to->me.y)>=0 ) {
 	from->nextcp.x = from->me.x + v[2]/3;
 	from->nextcp.y = from->me.y + v[5]/3;
@@ -827,7 +857,7 @@ void SplineCharMerge(SplineChar *sc,SplineSet **head,int type) {
 /*  the point is only removed if it doesn't perturb the spline much and if */
 /*  it isn't an extrema.
 /*  used for simplify */
-static int SplinesRemoveMidMaybe(SplineChar *sc,SplinePoint *mid) {
+static int SplinesRemoveMidMaybe(SplineChar *sc,SplinePoint *mid, int type) {
     int i,tot;
     SplinePoint *from, *to;
     TPoint *tp;
@@ -840,7 +870,7 @@ static int SplinesRemoveMidMaybe(SplineChar *sc,SplinePoint *mid) {
 return( false );
 
     from = mid->prev->from; to = mid->next->to;
-    
+
     /* Retain points which are horizontal or vertical, because postscript says*/
     /*  type1 fonts should always have a point at the extrema (except for small*/
     /*  things like serifs), and the extrema occur at horizontal/vertical points*/
@@ -877,8 +907,12 @@ return( false );
 
     tp = SplinesFigureTPsBetween(from,to,&tot);
 
-    ApproximateSplineFromPointsSlopes(from,to,tp,tot-1);
-    /*FixupCurveTanPoints(from,to,&fncp2,&tpcp2);*/
+    if ( !type )
+	ApproximateSplineFromPointsSlopes(from,to,tp,tot-1);
+    else {
+	ApproximateSplineFromPoints(from,to,tp,tot-1);
+	FixupCurveTanPoints(from,to,&fncp2,&tpcp2);
+    }
 
     i = tot;
 
@@ -912,18 +946,18 @@ return( good );
 
 /* Cleanup just turns splines with control points which happen to trace out */
 /*  lines into simple lines */
-void SplinePointListSimplify(SplineChar *sc,SplinePointList *spl,int cleanup) {
+void SplinePointListSimplify(SplineChar *sc,SplinePointList *spl,int type) {
     SplinePoint *first, *next, *sp;
 
 	/* Special case checks for paths containing only one point */
 	/*  else we get lots of nans (or only two) */
 
-    if ( !cleanup && spl->first->prev!=NULL ) {
+    if ( type!=-1 && spl->first->prev!=NULL ) {
 	while ( 1 ) {
 	    first = spl->first->prev->from;
 	    if ( first->prev == first->next )
 return;
-	    if ( !SplinesRemoveMidMaybe(sc,spl->first))
+	    if ( !SplinesRemoveMidMaybe(sc,spl->first,type))
 	break;
 	    if ( spl->first==spl->last )
 		spl->last = first;
@@ -940,8 +974,8 @@ return;
 		(sp->next!=NULL && sp->next->to->next!=NULL &&
 		    sp->next->to->next->to == sp ))
 return;
-	if ( !cleanup )
-	    SplinesRemoveMidMaybe(sc,sp);
+	if ( type!=-1 )
+	    SplinesRemoveMidMaybe(sc,sp,type);
 	else {
 	    while ( sp->me.x==next->me.x && sp->me.y==next->me.y &&
 		    sp->nextcp.x>sp->me.x-1 && sp->nextcp.x<sp->me.x+1 &&
