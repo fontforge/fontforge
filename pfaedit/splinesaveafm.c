@@ -535,7 +535,28 @@ int AfmSplineFont(FILE *afm, SplineFont *sf, int formattype) {
     if ( sf->fullname!=NULL ) fprintf( afm, "FullName %s\n", sf->fullname );
     if ( sf->familyname!=NULL ) fprintf( afm, "FamilyName %s\n", sf->familyname );
     if ( sf->weight!=NULL ) fprintf( afm, "Weight %s\n", sf->weight );
-    if ( sf->copyright!=NULL ) fprintf( afm, "Notice (%s)\n", sf->copyright );
+    /* AFM lines are limitted to 256 characters and US ASCII */
+    if ( sf->copyright!=NULL ) {
+	char *pt, *start, *p;
+	for ( pt=start=sf->copyright; *pt && pt-start<200 && *pt!='\n'; ++pt );
+	fprintf( afm, "Notice (" );
+	for ( p=start; p<pt; ++p )
+	    if ( *p=='\xa9' ) fprintf(afm,"(C)");
+	    else if ( *p=='\t' || (*p>=' ' && *p<0x7f))
+		putc(*p,afm);
+	fprintf( afm, ")\n" );
+	while ( *pt ) {
+	    start = pt;
+	    if ( *start=='\n' ) ++start;
+	    for ( pt=start; *pt && pt-start<200 && *pt!='\n'; ++pt );
+	    fprintf( afm, "Comment " );
+	    for ( p=start; p<pt; ++p )
+		if ( *p=='\xa9' ) fprintf(afm,"(C)");
+		else if ( *p=='\t' || (*p>=' ' && *p<0x7f))
+		    putc(*p,afm);
+	    fprintf( afm, "\n" );
+	}
+    }
     if ( iscid ) {
 	fprintf( afm, "Characters %d\n", cnt );
 	fprintf( afm, "Version %g\n", sf->cidversion );
