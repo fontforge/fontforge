@@ -34,6 +34,7 @@
 #include "gicons.h"
 #include <time.h>
 #include <pwd.h>
+#include <utype.h>
 
 int _ExportEPS(FILE *eps,SplineChar *sc) {
     DBounds b;
@@ -638,7 +639,20 @@ void ScriptExport(SplineFont *sf, BDFFont *bdf, int format, int enc) {
     if ( sc==NULL )
 return;
 
+#ifdef __CygWin
+    /* Windows file systems are not case conscious */
+    { char *pt, *bpt, *end;
+    bpt = buffer; end = buffer+40;
+    for ( pt=sc->name; *pt!='\0' && bpt<end; ) {
+	if ( isupper( *pt ))
+	    *bpt++ = '$';
+	*bpt++ = *pt++;
+    }
+    sprintf( bpt, "_%.40s.%s", sc->parent->fontname, ext);
+    }
+#else
     sprintf( buffer, "%.40s_%.40s.%s", sc->name, sc->parent->fontname, ext);
+#endif
     if ( format==0 )
 	good = ExportEPS(buffer,sc);
     else if ( format==1 )
@@ -996,7 +1010,20 @@ static int _Export(SplineChar *sc,BDFChar *bc) {
 	ext = _format==0 ? "xbm" : _format==1 ? "bmp" : "png";
     else
 	ext = _format==0?"eps":_format==1?"fig":_format==2?"xbm":_format==3?"bmp":"png";
-    sprintf( buffer, "%.40s_%.40s.%s", sc->name, sc->parent->fontname,ext);
+#ifdef __CygWin
+    /* Windows file systems are not case conscious */
+    { char *pt, *bpt, *end;
+    bpt = buffer; end = buffer+40;
+    for ( pt=sc->name; *pt!='\0' && bpt<end; ) {
+	if ( isupper( *pt ))
+	    *bpt++ = '$';
+	*bpt++ = *pt++;
+    }
+    sprintf( bpt, "_%.40s.%s", sc->parent->fontname, ext);
+    }
+#else
+    sprintf( buffer, "%.40s_%.40s.%s", sc->name, sc->parent->fontname, ext);
+#endif
     uc_strcpy(ubuf,buffer);
     GGadgetSetTitle(gcd[0].ret,ubuf);
     GFileChooserGetChildren(gcd[0].ret,&pulldown,&files,&tf);
