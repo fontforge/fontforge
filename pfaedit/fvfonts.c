@@ -76,6 +76,27 @@ SplineChar *SplineCharCopy(SplineChar *sc) {
 return(nsc);
 }
 
+static KernPair *KernsCopy(KernPair *kp,int *mapping,SplineFont *into,SplineFont *from) {
+    KernPair *head = NULL, *last=NULL, *new;
+    int index;
+
+    while ( kp!=NULL ) {
+	if ( (index=mapping[kp->sc->enc])>=0 && index<into->charcnt &&
+		into->chars[index]!=NULL ) {
+	    new = chunkalloc(sizeof(KernPair));
+	    new->off = kp->off;
+	    new->sc = into->chars[index];
+	    if ( head==NULL )
+		head = new;
+	    else
+		last->next = new;
+	    last = new;
+	}
+	kp = kp->next;
+    }
+return( head );
+}
+
 BDFChar *BDFCharCopy(BDFChar *bc) {
     BDFChar *nbc = galloc(sizeof( BDFChar ));
 
@@ -105,7 +126,7 @@ void BitmapsCopy(SplineFont *to, SplineFont *from, int to_index, int from_index 
 	    f_bdf = f_bdf->next;
 	} else if ( t_bdf->pixelsize < f_bdf->pixelsize )
 	    t_bdf = t_bdf->next;
-	else
+	
 	    f_bdf = f_bdf->next;
     }
 }
@@ -386,6 +407,7 @@ void MergeFont(FontView *fv,SplineFont *other) {
     int i,cnt, doit, emptypos, index, enc_cnt, j;
     BDFFont *bdf;
     FontView *fvs;
+    int *mapping;
 
     if ( fv->sf==other ) {
 	GWidgetErrorR(_STR_MergingProb,_STR_MergingFontSelf);
@@ -395,6 +417,8 @@ return;
     enc_cnt = SFEncodingCnt(fv->sf);
     for ( i=fv->sf->charcnt-1; i>=enc_cnt && fv->sf->chars[i]==NULL; --i );
     emptypos = i+1;
+    mapping = galloc(other->charcnt*sizeof(int));
+    memset(mapping,-1,other->charcnt*sizeof(int));
 
     for ( doit=0; doit<2; ++doit ) {
 	cnt = 0;
@@ -415,7 +439,8 @@ return;
 		    fv->sf->chars[index] = SplineCharCopy(other->chars[i]);
 		    if ( fv->sf->bitmaps!=NULL && other->bitmaps!=NULL )
 			BitmapsCopy(fv->sf,other,index,i);
-		}
+		} else
+		    mapping[i] = index;
 	    }
 	}
 	if ( !doit ) {
@@ -444,6 +469,9 @@ return;
 	    }
 	}
     }
+    for ( i=0; i<other->charcnt; ++i ) if ( (index=mapping[i])!=-1 )
+	fv->sf->chars[index]->kerns = KernsCopy(other->chars[i]->kerns,mapping,fv->sf,other);
+    free(mapping);
     MergeFixupRefChars(fv->sf);
     if ( other->fv==NULL )
 	SplineFontFree(other);
