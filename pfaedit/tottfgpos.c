@@ -1406,18 +1406,22 @@ void otf_dumpgposkerns(struct alltabs *at, SplineFont *sf) {
     /*  in the kern table. Of course not, how silly of me to think it might */
     /*  be consistent. It stores it in the much more complicated gpos table */
     at->gpos = dumpg___info(at, sf,true);
-    at->gposlen = ftell(at->gpos);
-    if ( at->gposlen&1 ) putc('\0',at->gpos);
-    if ( (at->gposlen+1)&2 ) putshort(at->gpos,0);
+    if ( at->gpos!=NULL ) {
+	at->gposlen = ftell(at->gpos);
+	if ( at->gposlen&1 ) putc('\0',at->gpos);
+	if ( (at->gposlen+1)&2 ) putshort(at->gpos,0);
+    }
 }
 
 void otf_dumpgsub(struct alltabs *at, SplineFont *sf) {
     /* Ligatures, cjk vertical rotation replacement, arabic forms, small caps */
     SFLigaturePrepare(sf);
     at->gsub = dumpg___info(at, sf, false);
-    at->gsublen = ftell(at->gsub);
-    if ( at->gsublen&1 ) putc('\0',at->gsub);
-    if ( (at->gsublen+1)&2 ) putshort(at->gsub,0);
+    if ( at->gsub!=NULL ) {
+	at->gsublen = ftell(at->gsub);
+	if ( at->gsublen&1 ) putc('\0',at->gsub);
+	if ( (at->gsublen+1)&2 ) putshort(at->gsub,0);
+    }
     SFLigatureCleanup(sf);
 }
 
