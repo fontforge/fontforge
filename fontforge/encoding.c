@@ -620,8 +620,6 @@ static void DeleteEncoding(Encoding *me) {
     if ( me->builtin )
 return;
 
-    if ( default_encoding == me )
-	default_encoding = FindOrMakeEncoding("iso8859-1");
     for ( fv = fv_list; fv!=NULL; fv = fv->next ) {
 	if ( fv->sf->encoding_name==me ) {
 	    fv->sf->encoding_name = &custom;
@@ -636,6 +634,8 @@ return;
 	if ( prev!=NULL ) prev->next = me->next;
     }
     EncodingFree(me);
+    if ( default_encoding == me )
+	default_encoding = FindOrMakeEncoding("ISO8859-1");
     DumpPfaEditEncodings();
 }
 

@@ -5431,9 +5431,6 @@ static void ProcessScript(int argc, char *argv[], FILE *script) {
     no_windowing_ui = true;
     running_script = true;
 
-    if ( default_encoding==NULL )
-	default_encoding = FindOrMakeEncoding("ISO-8859-1");
-
     VerboseCheck();
 
     i=1;
