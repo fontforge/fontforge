@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 2-Sep-2002 -->
-  <!-- AP: Last modified: 27-Jan-2003 -->
+  <!-- AP: Last modified: 12-Feb-2003 -->
   <TITLE>Preferences Dialog</TITLE>
 </HEAD>
 <BODY>
@@ -10,7 +10,7 @@
   Preferences Dialog
 </H1>
 <P>
-<IMG SRC="prefs-generic.png" WIDTH="294" HEIGHT="369" ALIGN="Right">
+<IMG SRC="prefs-generic.png" WIDTH="306" HEIGHT="383" ALIGN="Right">
 <DL>
   <DT>
     AutoHint
@@ -28,6 +28,28 @@
     NewCharset
   <DD>
     The default encoding used to create new fonts. Normally this is ISO 8859-1.
+  <DT>
+    NewEmSize
+  <DD>
+    Specifies the default number of em-units in the em-square. For PostScript
+    fonts this should be 1000, for truetype fonts it should be a power of two
+    (often 512, 1024 or 2048 will be used).
+  <DT>
+    NewFontsQuadratic
+  <DD>
+    Splines in fonts may be either in quadratic or cubic format. TrueType fonts
+    use quadratic splines while PostScript (and OpenType) fonts use cubic splines.
+    When PfaEdit generates a font it will convert from whatever format is used
+    internally to whatever format is required for the font, so there will be
+    no problem if this is set incorrectly, but setting it correctly for your
+    font means you get a clearer idea of what the outlines will look like.
+  <DT>
+    LoadedFontsAsNew
+  <DD>
+    When PfaEdit reads in a font it will generally keep the splines in the format
+    they used in the font (that is quadratic for truetype fonts and cubic for
+    postscript). If you set this flag then all loaded fonts will have the same
+    file format as that specified by NewFontsQuadratic above.
   <DT>
     GreekFixup
   <DD>

@@ -576,6 +576,8 @@ static void _MergeFont(SplineFont *into,SplineFont *other) {
 			/*  char */
 			SplineCharFree(into->chars[index]);
 			into->chars[index] = SplineCharCopy(o_sf->chars[i]);
+			if ( into->order2!=o_sf->order2 )
+			    SCConvertOrder(into->chars[index],into->order2);
 			if ( into->bitmaps!=NULL && other->bitmaps!=NULL )
 			    BitmapsCopy(bitmap_into,other,index,i);
 		    } else
@@ -661,6 +663,8 @@ static void CIDMergeFont(SplineFont *into,SplineFont *other) {
 	    else if ( SFHasCID(into,i)==-1 ) {
 		SplineCharFree(i_sf->chars[i]);
 		i_sf->chars[i] = SplineCharCopy(o_sf->chars[i]);
+		if ( i_sf->order2!=o_sf->order2 )
+		    SCConvertOrder(i_sf->chars[i],i_sf->order2);
 		if ( into->bitmaps!=NULL && other->bitmaps!=NULL )
 		    BitmapsCopy(into,other,i,i);
 	    }
@@ -941,7 +945,7 @@ static void InterpPoint(SplineSet *cur, SplinePoint *base, SplinePoint *other, r
     if ( cur->first==NULL )
 	cur->first = p;
     else
-	SplineMake(cur->last,p);
+	SplineMake(cur->last,p,base->prev->order2);
     cur->last = p;
 }
     
@@ -955,14 +959,14 @@ static SplineSet *InterpSplineSet(SplineSet *base, SplineSet *other, real amount
 return( cur );
 	if ( bp->next!=NULL && op->next!=NULL &&
 		bp->next->to==base->first && op->next->to==other->first ) {
-	    SplineMake(cur->last,cur->first);
+	    SplineMake(cur->last,cur->first,bp->next->order2);
 	    cur->last = cur->first;
 return( cur );
 	}
 	if ( bp->next == NULL || bp->next->to==base->first ) {
 	    fprintf( stderr, "In character %s, there are too few points on a path in the base\n", sc->name);
 	    if ( bp->next!=NULL ) {
-		SplineMake(cur->last,cur->first);
+		SplineMake(cur->last,cur->first,bp->next->order2);
 		cur->last = cur->first;
 	    }
 return( cur );
@@ -973,7 +977,7 @@ return( cur );
 		InterpPoint(cur,bp,op,amount);
 	    }
 	    if ( bp->next!=NULL ) {
-		SplineMake(cur->last,cur->first);
+		SplineMake(cur->last,cur->first,bp->next->order2);
 		cur->last = cur->first;
 	    }
 return( cur );
@@ -1080,6 +1084,9 @@ static void InterpolateFont(SplineFont *base, SplineFont *other, real amount) {
 
     if ( base==other ) {
 	GWidgetErrorR(_STR_InterpolatingProb,_STR_InterpolatingFontSelf);
+return;
+    } else if ( base->order2!=other->order2 ) {
+	GWidgetErrorR(_STR_InterpolatingProb,_STR_InterpolatingFontsDiffOrder);
 return;
     }
     new = SplineFontBlank(base->encoding_name,base->charcnt);

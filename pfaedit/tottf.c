@@ -39,489 +39,7 @@
 int glyph_2_name_map=0;
 extern int autohint_before_generate;
 
-/* This file produces a ttf file given a splinefont. The most interesting thing*/
-/*  it does is to figure out a quadratic approximation to the cubic splines */
-/*  that postscript uses. We do this by looking at each spline and running */
-/*  from the end toward the beginning, checking approximately every emunit */
-/*  There is only one quadratic spline possible for any given interval of the */
-/*  cubic. The start and end points are the interval end points (obviously) */
-/*  the control point is where the two slopes (at start and end) intersect. */
-/* If this spline is a close approximation to the cubic spline (doesn't */
-/*  deviate from it by more than an emunit or so), then we use this interval */
-/*  as one of our quadratic splines. */
-/* It may turn out that the "quadratic" spline above is actually linear. Well */
-/*  that's ok. It may also turn out that we can't find a good approximation. */
-/*  If that's true then just insert a linear segment for an emunit stretch. */
-/*  (actually this failure mode may not be possible), but I'm not sure */
-/* Then we play the same trick for the rest of the cubic spline (if any) */
-
-/* Does the quadratic spline in ttf approximate the cubic spline in ps */
-/*  within one pixel between tmin and tmax (on ps. presumably ttf between 0&1 */
-/* dim is the dimension in which there is the greatest change */
-static int comparespline(Spline *ps, Spline *ttf, real tmin, real tmax, real err) {
-    int dim=0, other;
-    real dx, dy, ddim, dt, t;
-    real d, o;
-    real ttf_t, sq, val;
-    DBounds bb;
-
-    /* Are all points on ttf near points on ps? */
-    /* This doesn't answer that question, but rules out gross errors */
-    bb.minx = bb.maxx = ps->from->me.x; bb.miny = bb.maxy = ps->from->me.y;
-    if ( ps->from->nextcp.x>bb.maxx ) bb.maxx = ps->from->nextcp.x;
-    else bb.minx = ps->from->nextcp.x;
-    if ( ps->from->nextcp.y>bb.maxy ) bb.maxy = ps->from->nextcp.y;
-    else bb.miny = ps->from->nextcp.y;
-    if ( ps->to->prevcp.x>bb.maxx ) bb.maxx = ps->to->prevcp.x;
-    else if ( ps->to->prevcp.x<bb.minx ) bb.minx = ps->to->prevcp.x;
-    if ( ps->to->prevcp.y>bb.maxy ) bb.maxy = ps->to->prevcp.y;
-    else if ( ps->to->prevcp.y<bb.miny ) bb.miny = ps->to->prevcp.y;
-    if ( ps->to->me.x>bb.maxx ) bb.maxx = ps->to->me.x;
-    else if ( ps->to->me.x<bb.minx ) bb.minx = ps->to->me.x;
-    if ( ps->to->me.y>bb.maxy ) bb.maxy = ps->to->me.y;
-    else if ( ps->to->me.y<bb.miny ) bb.miny = ps->to->me.y;
-    for ( t=.1; t<1; t+= .1 ) {
-	d = (ttf->splines[0].b*t+ttf->splines[0].c)*t+ttf->splines[0].d;
-	o = (ttf->splines[1].b*t+ttf->splines[1].c)*t+ttf->splines[1].d;
-	if ( d<bb.minx || d>bb.maxx || o<bb.miny || o>bb.maxy )
-return( false );
-    }
-
-    /* Are all points on ps near points on ttf? */
-    dx = ((ps->splines[0].a*tmax+ps->splines[0].b)*tmax+ps->splines[0].c)*tmax -
-	 ((ps->splines[0].a*tmin+ps->splines[0].b)*tmin+ps->splines[0].c)*tmin ;
-    dy = ((ps->splines[1].a*tmax+ps->splines[1].b)*tmax+ps->splines[1].c)*tmax -
-	 ((ps->splines[1].a*tmin+ps->splines[1].b)*tmin+ps->splines[1].c)*tmin ;
-    if ( dx<0 ) dx = -dx;
-    if ( dy<0 ) dy = -dy;
-    if ( dx>dy ) {
-	dim = 0;
-	ddim = dx;
-    } else {
-	dim = 1;
-	ddim = dy;
-    }
-    other = !dim;
-
-    t = tmin;
-    dt = (tmax-tmin)/ddim;
-    for ( t=tmin; t<=tmax; t+= dt ) {
-	if ( t>tmax-dt/8. ) t = tmax;		/* Avoid rounding errors */
-	d = ((ps->splines[dim].a*t+ps->splines[dim].b)*t+ps->splines[dim].c)*t+ps->splines[dim].d;
-	o = ((ps->splines[other].a*t+ps->splines[other].b)*t+ps->splines[other].c)*t+ps->splines[other].d;
-	if ( ttf->splines[dim].b == 0 ) {
-	    ttf_t = (d-ttf->splines[dim].d)/ttf->splines[dim].c;
-	} else {
-	    sq = ttf->splines[dim].c*ttf->splines[dim].c -
-		    4*ttf->splines[dim].b*(ttf->splines[dim].d-d);
-	    if ( sq<0 )
-return( false );
-	    sq = sqrt(sq);
-	    ttf_t = (-ttf->splines[dim].c-sq)/(2*ttf->splines[dim].b);
-	    if ( ttf_t>=0 && ttf_t<=1.0 ) {
-		val = (ttf->splines[other].b*ttf_t+ttf->splines[other].c)*ttf_t+
-			    ttf->splines[other].d;
-		if ( val>o-err && val<o+err )
-    continue;
-	    }
-	    ttf_t = (-ttf->splines[dim].c+sq)/(2*ttf->splines[dim].b);
-	}
-	if ( ttf_t>=0 && ttf_t<=1.0 ) {
-	    val = (ttf->splines[other].b*ttf_t+ttf->splines[other].c)*ttf_t+
-			ttf->splines[other].d;
-	    if ( val>o-err && val<o+err )
-    continue;
-	}
-return( false );
-    }
-
-return( true );
-}
-
-static SplinePoint *MakeQuadSpline(SplinePoint *start,Spline *ttf,real x,
-	real y, real tmax,SplinePoint *oldend) {
-    Spline *new = chunkalloc(sizeof(Spline));
-    SplinePoint *end = chunkalloc(sizeof(SplinePoint));
-
-    if ( tmax==1 ) {
-	end->roundx = oldend->roundx; end->roundy = oldend->roundy; end->dontinterpolate = oldend->dontinterpolate;
-	x = oldend->me.x; y = oldend->me.y;	/* Want it to compare exactly */
-    }
-    end->ptindex = -1;
-    end->me.x = end->nextcp.x = x;
-    end->me.y = end->nextcp.y = y;
-    end->nonextcp = true;
-
-    *new = *ttf;
-    new->from = start;		start->next = new;
-    new->to = end;		end->prev = new;
-    if ( new->splines[0].b==0 && new->splines[1].b==0 ) {
-	end->noprevcp = true;
-	end->prevcp.x = x; end->prevcp.y = y;
-    } else {
-#if 1		/* Quadratic control point */
-	end->prevcp.x = start->nextcp.x = ttf->splines[0].c/2+ttf->splines[0].d;
-	end->prevcp.y = start->nextcp.y = ttf->splines[1].c/2+ttf->splines[1].d;
-	start->nonextcp = end->noprevcp = false;
-#else		/* Cubic control point */
-	start->nextcp.x = ttf->splines[0].d+ttf->splines[0].c/3;
-	end->prevcp.x = start->nextcp.x+(ttf->splines[0].b+ttf->splines[0].c)/3;
-	start->nextcp.y = ttf->splines[1].d+ttf->splines[1].c/3;
-	end->prevcp.y = start->nextcp.y+(ttf->splines[1].b+ttf->splines[1].c)/3;
-	start->nonextcp = false;
-#endif
-    }
-return( end );
-}
-
-static int buildtestquads(Spline *ttf,real xmin,real ymin,real cx,real cy,
-	real x,real y,real tmin,real t,real err,Spline *ps) {
-#if 0
-    BasePoint norm;
-    real sq;
-#endif
-
-    ttf->splines[0].d = xmin;
-    ttf->splines[0].c = 2*(cx-xmin);
-    ttf->splines[0].b = xmin+x-2*cx;
-    ttf->splines[1].d = ymin;
-    ttf->splines[1].c = 2*(cy-ymin);
-    ttf->splines[1].b = ymin+y-2*cy;
-    if ( comparespline(ps,ttf,tmin,t,err) )
-return( true );
-
-#if 0
-    /* In a few cases, the following code will find a match when the above */
-    /*  would not. We move the control point slightly along a vector normal */
-    /*  to the vector between the end-points. What I really want is along */
-    /*  a vector midway between the two slopes, but that's too hard to figure */
-    sq = sqrt((x-xmin)*(x-xmin) + (y-ymin)*(y-ymin));
-    norm.x = (ymin-y)/sq; norm.y = (x-xmin)/sq;
-
-    ttf->splines[0].c += err*norm.x;
-    ttf->splines[0].b -= err*norm.x;
-    ttf->splines[1].c += err*norm.y;
-    ttf->splines[1].b -= err*norm.y;
-    if ( comparespline(ps,ttf,tmin,t,err) )
-return( true );
-
-    ttf->splines[0].c -= 2*err*norm.x;
-    ttf->splines[0].b += 2*err*norm.x;
-    ttf->splines[1].c -= 2*err*norm.y;
-    ttf->splines[1].b += 2*err*norm.y;
-    if ( comparespline(ps,ttf,tmin,t,err) )
-return( true );
-
-    ttf->splines[0].c = 2*(cx-xmin);
-    ttf->splines[0].b = xmin+x-2*cx;
-    ttf->splines[1].c = 2*(cy-ymin);
-    ttf->splines[1].b = ymin+y-2*cy;
-#endif
-return( false );
-}
-
-static SplinePoint *LinearSpline(Spline *ps,SplinePoint *start, real tmax) {
-    real x,y;
-    Spline *new = chunkalloc(sizeof(Spline));
-    SplinePoint *end = chunkalloc(sizeof(SplinePoint));
-
-    x = ((ps->splines[0].a*tmax+ps->splines[0].b)*tmax+ps->splines[0].c)*tmax+ps->splines[0].d;
-    y = ((ps->splines[1].a*tmax+ps->splines[1].b)*tmax+ps->splines[1].c)*tmax+ps->splines[1].d;
-    if ( tmax==1 ) {
-	SplinePoint *oldend = ps->to;
-	end->roundx = oldend->roundx; end->roundy = oldend->roundy; end->dontinterpolate = oldend->dontinterpolate;
-	x = oldend->me.x; y = oldend->me.y;	/* Want it to compare exactly */
-    }
-    end->ptindex = -1;
-    end->me.x = end->nextcp.x = end->prevcp.x = x;
-    end->me.y = end->nextcp.y = end->prevcp.y = y;
-    end->nonextcp = end->noprevcp = start->nonextcp = true;
-    new->from = start;		start->next = new;
-    new->to = end;		end->prev = new;
-    new->splines[0].d = start->me.x;
-    new->splines[0].c = (x-start->me.x);
-    new->splines[1].d = start->me.y;
-    new->splines[1].c = (y-start->me.y);
-return( end );
-}
-
-static SplinePoint *LinearTest(Spline *ps,real tmin,real tmax,
-	real xmax,real ymax, SplinePoint *start) {
-    Spline ttf;
-    int dim=0, other;
-    real dx, dy, ddim, dt, t;
-    real d, o, val;
-    real ttf_t;
-
-    memset(&ttf,'\0',sizeof(ttf));
-    ttf.splines[0].d = start->me.x;
-    ttf.splines[0].c = (xmax-start->me.x);
-    ttf.splines[1].d = start->me.y;
-    ttf.splines[1].c = (ymax-start->me.y);
-
-    if ( ( dx = xmax-start->me.x)<0 ) dx = -dx;
-    if ( ( dy = ymax-start->me.y)<0 ) dy = -dy;
-    if ( dx>dy ) {
-	dim = 0;
-	ddim = dx;
-    } else {
-	dim = 1;
-	ddim = dy;
-    }
-    other = !dim;
-
-    dt = (tmax-tmin)/ddim;
-    for ( t=tmin; t<=tmax; t+= dt ) {
-	d = ((ps->splines[dim].a*t+ps->splines[dim].b)*t+ps->splines[dim].c)*t+ps->splines[dim].d;
-	o = ((ps->splines[other].a*t+ps->splines[other].b)*t+ps->splines[other].c)*t+ps->splines[other].d;
-	ttf_t = (d-ttf.splines[dim].d)/ttf.splines[dim].c;
-	val = ttf.splines[other].c*ttf_t+ ttf.splines[other].d;
-	if ( val<o-1 || val>o+1 )
-return( NULL );
-    }
-return( MakeQuadSpline(start,&ttf,xmax,ymax,tmax,ps->to));
-}
-
-static SplinePoint *_ttfapprox(Spline *ps,real tmin, real tmax, SplinePoint *start) {
-    int dim=0, other;
-    real dx, dy, ddim, dt, t, err;
-    real x,y, xmin, ymin;
-    real dxdtmin, dydtmin, dxdt, dydt;
-    SplinePoint *sp;
-    real cx, cy;
-    Spline ttf;
-    int cnt = -1, forceit, unforceable;
-    BasePoint end, rend, dend;
-
-    if ( RealNearish(ps->splines[0].a,0) && RealNearish(ps->splines[1].a,0) ) {
-	/* Already Quadratic, just need to find the control point */
-	/* Or linear, in which case we don't need to do much of anything */
-	Spline *spline;
-	sp = chunkalloc(sizeof(SplinePoint));
-	sp->me.x = ps->to->me.x; sp->me.y = ps->to->me.y;
-	sp->roundx = ps->to->roundx; sp->roundy = ps->to->roundy; sp->dontinterpolate = ps->to->dontinterpolate;
-	sp->ptindex = -1;
-	sp->nonextcp = true;
-	spline = chunkalloc(sizeof(Spline));
-	spline->from = start;
-	spline->to = sp;
-	spline->splines[0] = ps->splines[0]; spline->splines[1] = ps->splines[1];
-	start->next = sp->prev = spline;
-	if ( ps->knownlinear ) {
-	    spline->islinear = spline->knownlinear = true;
-	    start->nonextcp = sp->noprevcp = true;
-	    start->nextcp = start->me;
-	    sp->prevcp = sp->me;
-	} else {
-	    start->nonextcp = sp->noprevcp = false;
-	    start->nextcp.x = sp->prevcp.x = (ps->splines[0].c+2*ps->splines[0].d)/2;
-	    start->nextcp.y = sp->prevcp.y = (ps->splines[1].c+2*ps->splines[1].d)/2;
-	}
-return( sp );
-    }
-
-    rend.x = ((ps->splines[0].a*tmax+ps->splines[0].b)*tmax+ps->splines[0].c)*tmax + ps->splines[0].d;
-    rend.y = ((ps->splines[1].a*tmax+ps->splines[1].b)*tmax+ps->splines[1].c)*tmax + ps->splines[1].d;
-    end.x = rint( rend.x );
-    end.y = rint( rend.y );
-    dend.x = (3*ps->splines[0].a*tmax+2*ps->splines[0].b)*tmax+ps->splines[0].c;
-    dend.y = (3*ps->splines[1].a*tmax+2*ps->splines[1].b)*tmax+ps->splines[1].c;
-    memset(&ttf,'\0',sizeof(ttf));
-
-  tail_recursion:
-    ++cnt;
-
-    xmin = start->me.x;
-    ymin = start->me.y;
-    dxdtmin = (3*ps->splines[0].a*tmin+2*ps->splines[0].b)*tmin + ps->splines[0].c;
-    dydtmin = (3*ps->splines[1].a*tmin+2*ps->splines[1].b)*tmin + ps->splines[1].c;
-
-    dx = ((ps->splines[0].a*tmax+ps->splines[0].b)*tmax+ps->splines[0].c)*tmax -
-	 ((ps->splines[0].a*tmin+ps->splines[0].b)*tmin+ps->splines[0].c)*tmin ;
-    dy = ((ps->splines[1].a*tmax+ps->splines[1].b)*tmax+ps->splines[1].c)*tmax -
-	 ((ps->splines[1].a*tmin+ps->splines[1].b)*tmin+ps->splines[1].c)*tmin ;
-    if ( dx<0 ) dx = -dx;
-    if ( dy<0 ) dy = -dy;
-    if ( dx>dy ) {
-	dim = 0;
-	ddim = dx;
-    } else {
-	dim = 1;
-	ddim = dy;
-    }
-    other = !dim;
-    if (( err = ddim/3000 )<1 ) err = 1;
-
-    if ( ddim<2 ||
-	    (dend.x==0 && rint(start->me.x)==end.x && dy<=10 && cnt!=0) ||
-	    (dend.y==0 && rint(start->me.y)==end.y && dx<=10 && cnt!=0) ) {
-	if ( cnt==0 || start->noprevcp )
-return( LinearSpline(ps,start,tmax));
-	/* If the end point is very close to where we want to be, then just */
-	/*  pretend it's right */
-	start->prev->splines[0].b += ps->to->me.x-start->me.x;
-	start->prev->splines[1].b += ps->to->me.y-start->me.y;
-	start->prevcp.x += rend.x-start->me.x;
-	start->prevcp.y += rend.y-start->me.y;
-	start->me = rend;
-return( start );
-    }
-
-    dt = (tmax-tmin)/ddim;
-    forceit = false;
- force_end:
-    unforceable = false;
-    for ( t=tmax; t>tmin+dt/128; t-= dt ) {		/* dt/128 is a hack to avoid rounding errors */
-	x = ((ps->splines[0].a*t+ps->splines[0].b)*t+ps->splines[0].c)*t+ps->splines[0].d;
-	y = ((ps->splines[1].a*t+ps->splines[1].b)*t+ps->splines[1].c)*t+ps->splines[1].d;
-	dxdt = (3*ps->splines[0].a*t+2*ps->splines[0].b)*t + ps->splines[0].c;
-	dydt = (3*ps->splines[1].a*t+2*ps->splines[1].b)*t + ps->splines[1].c;
-	/* if the slopes are parallel at the ends there can be no bezier quadratic */
-	/*  (control point is where the splines intersect. But if they are */
-	/*  parallel and colinear then there is a line between 'em */
-	if ( ( dxdtmin==0 && dxdt==0 ) || (dydtmin==0 && dydt==0) ||
-		( dxdt!=0 && dxdtmin!=0 &&
-		    RealNearish(dydt/dxdt,dydtmin/dxdtmin)) ) {
-	    if (( dxdt==0 && x==xmin ) || (dydt==0 && y==ymin) ||
-		    (dxdt!=0 && x!=xmin && RealNearish(dydt/dxdt,(y-ymin)/(x-xmin))) ) {
-		if ( (sp = LinearTest(ps,tmin,t,x,y,start))!=NULL ) {
-		    if ( t==tmax )
-return( sp );
-		    tmin = t;
-		    start = sp;
-  goto tail_recursion;
-	      }
-	  }
-    continue;
-	}
-	if ( dxdt==0 )
-	    cx=x;
-	else if ( dxdtmin==0 )
-	    cx=xmin;
-	else
-	    cx = -(ymin-(dydtmin/dxdtmin)*xmin-y+(dydt/dxdt)*x)/(dydtmin/dxdtmin-dydt/dxdt);
-	if ( dydt==0 )
-	    cy=y;
-	else if ( dydtmin==0 )
-	    cy=ymin;
-	else
-	    cy = -(xmin-(dxdtmin/dydtmin)*ymin-x+(dxdt/dydt)*y)/(dxdtmin/dydtmin-dxdt/dydt);
-	if ( t==tmax && ((cy==y && cx==x) || (cy==ymin && cx==xmin)) )
-	    unforceable = true;
-	/* Make the quadratic spline from (xmin,ymin) through (cx,cy) to (x,y)*/
-	if ( forceit || buildtestquads(&ttf,xmin,ymin,cx,cy,x,y,tmin,t,err,ps)) {
-	    if ( !forceit && !unforceable && (rend.x-x)*(rend.x-x)+(rend.y-y)*(rend.y-y)<4*4 ) {
-		forceit = true;
- goto force_end;
-	    }
-	    sp = MakeQuadSpline(start,&ttf,x,y,t,ps->to);
-	    forceit = false;
-	    if ( t==tmax )
-return( sp );
-	    tmin = t;
-	    start = sp;
-  goto tail_recursion;
-	}
-	ttf.splines[0].d = xmin;
-	ttf.splines[0].c = x-xmin;
-	ttf.splines[0].b = 0;
-	ttf.splines[1].d = ymin;
-	ttf.splines[1].c = y-ymin;
-	ttf.splines[1].b = 0;
-	if ( comparespline(ps,&ttf,tmin,t,err) ) {
-	    sp = LinearSpline(ps,start,t);
-	    if ( t==tmax )
-return( sp );
-	    tmin = t;
-	    start = sp;
-  goto tail_recursion;
-	}
-    }
-    tmin += dt;
-    start = LinearSpline(ps,start,tmin);
-  goto tail_recursion;
-}
-
-static SplinePoint *ttfapprox(Spline *ps,real tmin, real tmax, SplinePoint *start) {
-#if 0
-/* Hmm. With my algorithem, checking for points of inflection actually makes */
-/*  things worse. It uses more points and the splines don't join as nicely */
-    real inflect[2];
-    int i=0;
-    /* no points of inflection in quad splines */
-
-    if ( ps->splines[0].a!=0 ) {
-	inflect[i] = -ps->splines[0].b/(3*ps->splines[0].a);
-	if ( inflect[i]>tmin && inflect[i]<tmax )
-	    ++i;
-    }
-    if ( ps->splines[1].a!=0 ) {
-	inflect[i] = -ps->splines[1].b/(3*ps->splines[1].a);
-	if ( inflect[i]>tmin && inflect[i]<tmax )
-	    ++i;
-    }
-    if ( i==2 ) {
-	if ( RealNearish(inflect[0],inflect[1]) )
-	    --i;
-	else if ( inflect[0]>inflect[1] ) {
-	    real temp = inflect[0];
-	    inflect[0] = inflect[1];
-	    inflect[1] = temp;
-	}
-    }
-    if ( i!=0 ) {
-	start = _ttfapprox(ps,tmin,inflect[0],start);
-	tmin = inflect[0];
-	if ( i==2 ) {
-	    start = _ttfapprox(ps,tmin,inflect[1],start);
-	    tmin = inflect[1];
-	}
-    }
-#endif
-return( _ttfapprox(ps,tmin,tmax,start));
-}
-
-static SplineSet *SSttfApprox(SplineSet *ss) {
-    SplineSet *ret = chunkalloc(sizeof(SplineSet));
-    Spline *spline, *first;
-
-    ret->first = chunkalloc(sizeof(SplinePoint));
-    *ret->first = *ss->first;
-    ret->last = ret->first;
-
-    first = NULL;
-    for ( spline=ss->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
-	ret->last = ttfapprox(spline,0,1,ret->last);
-	if ( first==NULL ) first = spline;
-    }
-    if ( ss->first==ss->last ) {
-	if ( ret->last!=ret->first ) {
-	    ret->first->prevcp = ret->last->prevcp;
-	    ret->first->noprevcp = ret->last->noprevcp;
-	    ret->last->prev->to = ret->first;
-	    SplinePointFree(ret->last);
-	    ret->last = ret->first;
-	}
-    }
-return( ret );
-}
-
-#if 0
-static SplineSet *SplineSetsTTFApprox(SplineSet *ss) {
-    SplineSet *head=NULL, *last, *cur;
-
-    while ( ss!=NULL ) {
-	cur = SSttfApprox(ss);
-	if ( head==NULL )
-	    head = cur;
-	else
-	    last->next = cur;
-	last = cur;
-	ss = ss->next;
-    }
-return( head );
-}
-#endif
+/* This file produces a ttf file given a splinefont. */
 
 /* ************************************************************************** */
 
@@ -533,7 +51,8 @@ return( head );
 	maxp		various maxima in the font
 	name		various names associated with the font
 	post		postscript names and other stuff
-	OS/2		bleah.
+Required by windows but not mac
+	OS/2		bleah. 
 Required for TrueType
 	loca		pointers to the glyphs
 	glyf		character shapes
@@ -545,13 +64,22 @@ Required for bitmaps
 	bhed		for apple bitmap only fonts, replaces head
 Optional for bitmaps
 	EBSC		bitmap scaling table
-additional tables
+"Advanced Typograpy"
+  Apple
+	feat		(mapping between morx features and 'name' names)
 	kern		(if data are present)
+	lcar		(ligature caret, if data present)
+	morx		(substitutions, if data present)
+	prop		(glyph properties, if data present)
+	opbd		(optical bounds, if data present)
+  OpenType
 	GPOS		(opentype, if kern,anchor data are present)
 	GSUB		(opentype, if ligature (other subs) data are present)
 	GDEF		(opentype, if anchor data are present)
+additional tables
 	cvt		for hinting
 	gasp		to control when things should be hinted
+	
 */
 
 const char *ttfstandardnames[258] = {
@@ -1121,14 +649,14 @@ static SplineSet *SCttfApprox(SplineChar *sc) {
     RefChar *ref;
 
     for ( ss=sc->splines; ss!=NULL; ss=ss->next ) {
-	tss = SSttfApprox(ss);
+	tss = sc->parent->order2 ? SplinePointListCopy1(ss) : SSttfApprox(ss);
 	if ( head==NULL ) head = tss;
 	else last->next = tss;
 	last = tss;
     }
     for ( ref=sc->refs; ref!=NULL; ref=ref->next ) {
 	for ( ss=ref->splines; ss!=NULL; ss=ss->next ) {
-	    tss = SSttfApprox(ss);
+	    tss = sc->parent->order2 ? SplinePointListCopy1(ss) : SSttfApprox(ss);
 	    if ( head==NULL ) head = tss;
 	    else last->next = tss;
 	    last = tss;

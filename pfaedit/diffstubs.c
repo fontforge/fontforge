@@ -161,7 +161,7 @@ return( true );
 return( ret );
 }
 
-void SplineRefigure(Spline *spline) {
+void SplineRefigure3(Spline *spline) {
     SplinePoint *from = spline->from, *to = spline->to;
     Spline1D *xsp = &spline->splines[0], *ysp = &spline->splines[1];
 
@@ -210,13 +210,83 @@ void SplineRefigure(Spline *spline) {
 	spline->isquadratic = true;	/* Only likely if we read in a TTF */
 }
 
-Spline *SplineMake(SplinePoint *from, SplinePoint *to) {
+void SplineRefigure2(Spline *spline) {
+    SplinePoint *from = spline->from, *to = spline->to;
+    Spline1D *xsp = &spline->splines[0], *ysp = &spline->splines[1];
+
+#ifdef DEBUG
+    if ( RealNear(from->me.x,to->me.x) && RealNear(from->me.y,to->me.y))
+	GDrawIError("Zero length spline created");
+#endif
+
+    if ( from->nonextcp ) from->nextcp = from->me;
+    else if ( from->nextcp.x==from->me.x && from->nextcp.y == from->me.y ) from->nonextcp = true;
+    if ( to->noprevcp ) to->prevcp = to->me;
+    else if ( to->prevcp.x==to->me.x && to->prevcp.y == to->me.y ) to->noprevcp = true;
+
+    if ( from->nonextcp && to->noprevcp )
+	/* Ok */;
+    else if ( from->nonextcp || to->noprevcp || from->nextcp.x!=to->prevcp.x ||
+	    from->nextcp.y!=to->prevcp.y )
+	GDrawIError("Invalid 2nd order spline in SplineRefigure2" );
+
+    xsp->d = from->me.x; ysp->d = from->me.y;
+    if ( from->nonextcp && to->noprevcp ) {
+	spline->islinear = true;
+	xsp->c = to->me.x-from->me.x;
+	ysp->c = to->me.y-from->me.y;
+	xsp->a = xsp->b = 0;
+	ysp->a = ysp->b = 0;
+    } else {
+	/* from p. 393 (Operator Details, curveto) Postscript Lang. Ref. Man. (Red book) */
+	xsp->c = 2*(from->nextcp.x-from->me.x);
+	ysp->c = 2*(from->nextcp.y-from->me.y);
+	xsp->b = to->me.x-from->me.x-xsp->c;
+	ysp->b = to->me.y-from->me.y-ysp->c;
+	xsp->a = 0;
+	ysp->a = 0;
+	if ( RealNear(xsp->c,0)) xsp->c=0;
+	if ( RealNear(ysp->c,0)) ysp->c=0;
+	if ( RealNear(xsp->b,0)) xsp->b=0;
+	if ( RealNear(ysp->b,0)) ysp->b=0;
+	spline->islinear = false;
+	if ( ysp->b==0 && xsp->b==0 )
+	    spline->islinear = true;	/* This seems extremely unlikely... */
+    }
+    if ( isnan(ysp->b) || isnan(xsp->b) )
+	GDrawIError("NaN value in spline creation");
+    LinearApproxFree(spline->approx);
+    spline->approx = NULL;
+    spline->knowncurved = false;
+    spline->knownlinear = spline->islinear;
+    SplineIsLinear(spline);
+    spline->isquadratic = !spline->knownlinear;
+    spline->order2 = true;
+}
+
+Spline *SplineMake3(SplinePoint *from, SplinePoint *to) {
     Spline *spline = chunkalloc(sizeof(Spline));
 
     spline->from = from; spline->to = to;
     from->next = to->prev = spline;
-    SplineRefigure(spline);
+    SplineRefigure3(spline);
 return( spline );
+}
+
+Spline *SplineMake2(SplinePoint *from, SplinePoint *to) {
+    Spline *spline = chunkalloc(sizeof(Spline));
+
+    spline->from = from; spline->to = to;
+    from->next = to->prev = spline;
+    SplineRefigure2(spline);
+return( spline );
+}
+
+Spline *SplineMake(SplinePoint *from, SplinePoint *to, int order2) {
+    if ( order2 )
+return( SplineMake2(from,to));
+    else
+return( SplineMake3(from,to));
 }
 
 int SCWorthOutputting(SplineChar *sc) {
@@ -445,3 +515,6 @@ struct compositionrules *SFDReadCompositionRules(FILE *sfd) {
 return( NULL );
 }
 #endif
+
+void SFConvertToOrder2(SplineFont *_sf) {}
+void SFConvertToOrder3(SplineFont *_sf) {}

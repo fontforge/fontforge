@@ -733,6 +733,8 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
     fprintf(sfd, "UnderlineWidth: %g\n", sf->uwidth );
     fprintf(sfd, "Ascent: %d\n", sf->ascent );
     fprintf(sfd, "Descent: %d\n", sf->descent );
+    if ( sf->order2 )
+	fprintf(sfd, "Order2: %d\n", sf->order2 );
     if ( sf->hasvmetrics )
 	fprintf(sfd, "VerticalOrigin: %d\n", sf->vertical_origin );
     if ( sf->changed_since_xuidchanged )
@@ -1200,7 +1202,7 @@ static void SFDGetType1(FILE *sfd, SplineChar *sc) {
 	Dec85(&dec);
 }
 
-static void SFDCloseCheck(SplinePointList *spl) {
+static void SFDCloseCheck(SplinePointList *spl,int order2) {
     if ( spl->first!=spl->last &&
 	    RealNear(spl->first->me.x,spl->last->me.x) &&
 	    RealNear(spl->first->me.y,spl->last->me.y)) {
@@ -1211,12 +1213,12 @@ static void SFDCloseCheck(SplinePointList *spl) {
 	spl->last = oldlast->prev->from;
 	chunkfree(oldlast->prev,sizeof(*oldlast));
 	chunkfree(oldlast,sizeof(*oldlast));
-	SplineMake(spl->last,spl->first);
+	SplineMake(spl->last,spl->first,order2);
 	spl->last = spl->first;
     }
 }
 
-static SplineSet *SFDGetSplineSet(FILE *sfd) {
+static SplineSet *SFDGetSplineSet(SplineFont *sf,FILE *sfd) {
     SplinePointList *cur=NULL, *head=NULL;
     BasePoint current;
     real stack[100];
@@ -1246,14 +1248,14 @@ static SplineSet *SFDGetSplineSet(FILE *sfd) {
 		    SplinePointList *spl = chunkalloc(sizeof(SplinePointList));
 		    spl->first = spl->last = pt;
 		    if ( cur!=NULL ) {
-			SFDCloseCheck(cur);
+			SFDCloseCheck(cur,sf->order2);
 			cur->next = spl;
 		    } else
 			head = spl;
 		    cur = spl;
 		} else {
 		    if ( cur!=NULL && cur->first!=NULL && (cur->first!=cur->last || cur->first->next==NULL) ) {
-			SplineMake(cur->last,pt);
+			SplineMake(cur->last,pt,sf->order2);
 			cur->last = pt;
 		    }
 		}
@@ -1272,7 +1274,7 @@ static SplineSet *SFDGetSplineSet(FILE *sfd) {
 		    pt->prevcp.y = stack[sp-3];
 		    pt->me = current;
 		    pt->nonextcp = true;
-		    SplineMake(cur->last,pt);
+		    SplineMake(cur->last,pt,sf->order2);
 		    cur->last = pt;
 		}
 		sp -= 6;
@@ -1291,7 +1293,7 @@ static SplineSet *SFDGetSplineSet(FILE *sfd) {
 	}
     }
     if ( cur!=NULL )
-	SFDCloseCheck(cur);
+	SFDCloseCheck(cur,sf->order2);
     getname(sfd,tok);
 return( head );
 }
@@ -1573,11 +1575,11 @@ return( NULL );
 	} else if ( strmatch(tok,"AnchorPoint:")==0 ) {
 	    lastap = SFDReadAnchorPoints(sfd,sc,lastap);
 	} else if ( strmatch(tok,"Fore")==0 ) {
-	    sc->splines = SFDGetSplineSet(sfd);
+	    sc->splines = SFDGetSplineSet(sf,sfd);
 	} else if ( strmatch(tok,"MinimumDistance:")==0 ) {
 	    SFDGetMinimumDistances(sfd,sc);
 	} else if ( strmatch(tok,"Back")==0 ) {
-	    sc->backgroundsplines = SFDGetSplineSet(sfd);
+	    sc->backgroundsplines = SFDGetSplineSet(sf,sfd);
 	} else if ( strmatch(tok,"Ref:")==0 ) {
 	    ref = SFDGetRef(sfd);
 	    if ( lastr==NULL )
@@ -2044,6 +2046,10 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    getint(sfd,&sf->ascent);
 	} else if ( strmatch(tok,"Descent:")==0 ) {
 	    getint(sfd,&sf->descent);
+	} else if ( strmatch(tok,"Order2:")==0 ) {
+	    int temp;
+	    getint(sfd,&temp);
+	    sf->order2 = temp;
 	} else if ( strmatch(tok,"NeedsXUIDChange:")==0 ) {
 	    int temp;
 	    getint(sfd,&temp);
@@ -2092,7 +2098,7 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    getreal(sfd,&temp);
 	    sf->cidversion = temp;
 	} else if ( strmatch(tok,"Grid")==0 ) {
-	    sf->gridsplines = SFDGetSplineSet(sfd);
+	    sf->gridsplines = SFDGetSplineSet(sf,sfd);
 	} else if ( strmatch(tok,"AnchorClass:")==0 ) {
 	    unichar_t *name;
 	    AnchorClass *lastan = NULL, *an;
@@ -2234,6 +2240,10 @@ return( NULL );
 		    sc = SFDGetChar(sfd,&sf);
 	break;
 		}
+	    } else if ( strmatch(tok,"Order2:")==0 ) {
+		int order2;
+		getint(sfd,&order2);
+		sf.order2 = order2;
 	    } else if ( strmatch(tok,"Ascent:")==0 ) {
 		getint(sfd,&sf.ascent);
 	    } else if ( strmatch(tok,"Descent:")==0 ) {
@@ -2249,7 +2259,7 @@ return( sc );
 }
 
 static int ModSF(FILE *asfd,SplineFont *sf) {
-    int newmap, cnt;
+    int newmap, cnt, order2=0;
     char tok[200];
     int i,k;
     SplineChar *sc;
@@ -2261,12 +2271,26 @@ return(false);
     getint(asfd,&newmap);
     if ( sf->encoding_name!=newmap )
 	SFReencodeFont(sf,newmap);
-    if ( getname(asfd,tok)!=1 || strcmp(tok,"BeginChars:")!=0 )
+    if ( getname(asfd,tok)!=1 )
+return( false );
+    if ( strcmp(tok,"Order2:")==0 ) {
+	getint(asfd,&order2);
+	if ( getname(asfd,tok)!=1 )
+return( false );
+    }
+    if ( order2!=sf->order2 ) {
+	if ( order2 )
+	    SFConvertToOrder2(sf);
+	else
+	    SFConvertToOrder3(sf);
+    }
+    if ( strcmp(tok,"BeginChars:")!=0 )
 return(false);
     SFRemoveDependencies(sf);
 
     memset(&temp,0,sizeof(temp));
     temp.ascent = sf->ascent; temp.descent = sf->descent;
+    temp.order2 = sf->order2;
 
     getint(asfd,&cnt);
     if ( cnt>sf->charcnt ) {
@@ -2372,6 +2396,8 @@ return;
     if ( sf->origname!=NULL && sf->filename!=NULL )	/* might be a new file */
 	fprintf( asfd, "Base: %s\n", sf->origname );
     fprintf( asfd, "Encoding: %d\n", sf->encoding_name );
+    if ( sf->order2 )
+	fprintf( asfd, "Order2: %d\n", sf->order2 );
     fprintf( asfd, "BeginChars: %d\n", max );
     for ( i=0; i<max; ++i ) {
 	ssf = sf;

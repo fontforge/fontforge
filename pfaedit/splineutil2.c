@@ -219,6 +219,7 @@ SplinePoint *SplineBisect(Spline *spline, double t) {
     SplinePoint *mid;
     SplinePoint *old0, *old1;
     Spline1D *xsp = &spline->splines[0], *ysp = &spline->splines[1];
+    int order2 = spline->order2;
 
 #ifdef DEBUG
     if ( t<=1e-3 || t>=1-1e-3 )
@@ -236,19 +237,31 @@ SplinePoint *SplineBisect(Spline *spline, double t) {
 
     mid = chunkalloc(sizeof(SplinePoint));
     mid->me.x = xstart.s1;	mid->me.y = ystart.s1;
-    mid->nextcp.x = xend.c0;	mid->nextcp.y = yend.c0;
-    mid->prevcp.x = xstart.c1;	mid->prevcp.y = ystart.c1;
+    if ( order2 ) {
+	mid->nextcp.x = xend.sp.d + xend.sp.c/2;
+	mid->nextcp.y = yend.sp.d + yend.sp.c/2;
+	mid->prevcp.x = xstart.sp.d + xstart.sp.c/2;
+	mid->prevcp.y = ystart.sp.d + ystart.sp.c/2;
+    } else {
+	mid->nextcp.x = xend.c0;	mid->nextcp.y = yend.c0;
+	mid->prevcp.x = xstart.c1;	mid->prevcp.y = ystart.c1;
+    }
     if ( mid->me.x==mid->nextcp.x && mid->me.y==mid->nextcp.y )
 	mid->nonextcp = true;
     if ( mid->me.x==mid->prevcp.x && mid->me.y==mid->prevcp.y )
 	mid->noprevcp = true;
 
     old0 = spline->from; old1 = spline->to;
-    old0->nextcp.x = xstart.c0;	old0->nextcp.y = ystart.c0;
+    if ( order2 ) {
+	old0->nextcp = mid->prevcp;
+	old1->prevcp = mid->nextcp;
+    } else {
+	old0->nextcp.x = xstart.c0;	old0->nextcp.y = ystart.c0;
+	old1->prevcp.x = xend.c1;	old1->prevcp.y = yend.c1;
+    }
     old0->nonextcp = (old0->nextcp.x==old0->me.x && old0->nextcp.y==old0->me.y);
-    old0->nextcpdef = false;
-    old1->prevcp.x = xend.c1;	old1->prevcp.y = yend.c1;
     old1->noprevcp = (old1->prevcp.x==old1->me.x && old1->prevcp.y==old1->me.y);
+    old0->nextcpdef = false;
     old1->prevcpdef = false;
     SplineFree(spline);
 
@@ -256,6 +269,7 @@ SplinePoint *SplineBisect(Spline *spline, double t) {
     spline1->splines[0] = xstart.sp;	spline1->splines[1] = ystart.sp;
     spline1->from = old0;
     spline1->to = mid;
+    spline1->order2 = order2;
     old0->next = spline1;
     mid->prev = spline1;
     if ( SplineIsLinear(spline1)) {
@@ -269,6 +283,7 @@ SplinePoint *SplineBisect(Spline *spline, double t) {
     spline2->splines[0] = xend.sp;	spline2->splines[1] = xend.sp;
     spline2->from = mid;
     spline2->to = old1;
+    spline2->order2 = order2;
     mid->next = spline2;
     old1->prev = spline2;
     if ( SplineIsLinear(spline2)) {
@@ -287,6 +302,7 @@ Spline *SplineSplit(Spline *spline, real ts[3]) {
     real base;
     SplinePoint *last, *sp;
     Spline *new;
+    int order2 = spline->order2;
 
     memset(splines,0,sizeof(splines));
     base=0;
@@ -307,8 +323,13 @@ return( spline );
 
     last = spline->from;
     for ( i=0; i<=cnt; ++i ) {
-	last->nextcp.x = splines[0][i].c0;
-	last->nextcp.y = splines[1][i].c0;
+	if ( order2 ) {
+	    last->nextcp.x = splines[0][i].sp.d+splines[0][i].sp.c/2;
+	    last->nextcp.y = splines[1][i].sp.d+splines[1][i].sp.c/2;
+	} else {
+	    last->nextcp.x = splines[0][i].c0;
+	    last->nextcp.y = splines[1][i].c0;
+	}
 	if ( i==cnt )
 	    sp = spline->to;
 	else {
@@ -316,9 +337,14 @@ return( spline );
 	    sp->me.x = splines[0][i+1].sp.d;
 	    sp->me.y = splines[1][i+1].sp.d;
 	}
-	sp->prevcp.x = splines[0][i].c1;
-	sp->prevcp.y = splines[1][i].c1;
-	SplineMake(last,sp);
+	if ( order2 ) {
+	    sp->prevcp = last->nextcp;
+	    SplineMake2(last,sp);
+	} else {
+	    sp->prevcp.x = splines[0][i].c1;
+	    sp->prevcp.y = splines[1][i].c1;
+	    SplineMake3(last,sp);
+	}
 	last = sp;
     }
 
@@ -349,7 +375,7 @@ return( NULL );
 return( NULL );
     }
     from->nonextcp = to->noprevcp = true;
-return( SplineMake(from,to) );
+return( SplineMake3(from,to) );
 }
 
 static void CleanupDir(BasePoint *newcp,BasePoint *oldcp,BasePoint *base) {
@@ -625,7 +651,7 @@ return( ApproximateSplineFromPoints(from,to,mid,cnt) );
 	to->prevcp = prevcp;
 	to->noprevcp = prevcp.x==to->me.x && prevcp.y==to->me.y;
     }
-    spline = SplineMake(from,to);
+    spline = SplineMake3(from,to);
     if ( SplineIsLinear(spline)) {
 	spline->islinear = from->nonextcp = to->noprevcp = true;
 	spline->from->nextcp = spline->from->me;
@@ -730,7 +756,7 @@ return( spline );
 	to->prevcp = to->me;
 	to->noprevcp = true;
     }
-    spline = SplineMake(from,to);
+    spline = SplineMake3(from,to);
     if ( SplineIsLinear(spline)) {
 	spline->islinear = from->nonextcp = to->noprevcp = true;
 	spline->from->nextcp = spline->from->me;
@@ -929,14 +955,27 @@ static void SplinesRemoveBetween(SplineChar *sc, SplinePoint *from, SplinePoint 
     Spline *sp;
     BasePoint fncp, tpcp;
 
-    tp = SplinesFigureTPsBetween(from,to,&tot);
-    fncp = from->nextcp; tpcp = to->prevcp;
-
     oldfrom = *from;
-    if ( type==1 )
-	ApproximateSplineFromPointsSlopes(from,to,tp,tot-1);
-    else
-	ApproximateSplineFromPoints(from,to,tp,tot-1);
+    if ( sc->parent->order2 ) {
+	if ( from->nonextcp || to->noprevcp ||
+		!IntersectLines(&fncp,&from->nextcp,&from->me,&to->prevcp,&to->me) ) {
+	    from->nonextcp = to->noprevcp = true;
+	    from->nextcp = from->me;
+	    to->prevcp = to->me;
+	} else {
+	    from->nextcp = to->prevcp = fncp;
+	}
+	SplineMake2(from,to);
+	tp = NULL;
+    } else {
+	tp = SplinesFigureTPsBetween(from,to,&tot);
+	fncp = from->nextcp; tpcp = to->prevcp;
+
+	if ( type==1 )
+	    ApproximateSplineFromPointsSlopes(from,to,tp,tot-1);
+	else
+	    ApproximateSplineFromPoints(from,to,tp,tot-1);
+    }
     /* Have to do the frees after the approximation because the approx */
     /*  uses the splines to determine slopes */
     for ( sp = oldfrom.next; ; ) {
@@ -947,7 +986,7 @@ static void SplinesRemoveBetween(SplineChar *sc, SplinePoint *from, SplinePoint 
 	sp = np->next;
 	SplinePointMDFree(sc,np);
     }
-    if ( type==0 )
+    if ( type==0 && !sc->parent->order2 )
 	FixupCurveTanPoints(from,to,&fncp,&tpcp);
     free(tp);
 }
@@ -1472,14 +1511,15 @@ SplineFont *SplineFontBlank(int encoding_name,int charcnt) {
     sprintf( buffer, "%d-%d-%d: Created.", tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday );
     sf->comments = copy(buffer);
     sf->version = copy("001.000");
-    sf->upos = -100; sf->uwidth = 50;		/* defaults for cff */
-    sf->ascent = 800; sf->descent = 200;
+    sf->ascent = rint(new_em_size*.8); sf->descent = new_em_size-sf->ascent;
+    sf->upos = -rint(new_em_size*.1); sf->uwidth = rint(new_em_size*.05);		/* defaults for cff */
     sf->charcnt = charcnt;
     sf->chars = gcalloc(charcnt,sizeof(SplineChar *));
     sf->encoding_name = encoding_name;
     sf->pfminfo.fstype = -1;
     sf->display_antialias = default_fv_antialias;
     sf->display_size = -default_fv_font_size;
+    sf->order2 = false;
 return( sf );
 }
 
@@ -1609,6 +1649,7 @@ SplineFont *SplineFontNew(void) {
 	SCLigDefault(sc);
     }
 #endif
+    sf->order2 = new_fonts_are_order2;
 return( sf );
 }
 
@@ -1744,6 +1785,8 @@ return;
     sp->nextcp.y = sp->me.y + len*sin(angle);
     sp->nextcp.x = rint(sp->nextcp.x*1024)/1024;
     sp->nextcp.y = rint(sp->nextcp.y*1024)/1024;
+    if ( sp->next!=NULL && sp->next->order2 )
+	sp->next->from->prevcp = sp->nextcp;
 }
 
 void SplineCharTangentPrevCP(SplinePoint *sp) {
@@ -1760,21 +1803,28 @@ return;
     sp->prevcp.y = sp->me.y + len*sin(angle);
     sp->prevcp.x = rint(sp->prevcp.x*1024)/1024;
     sp->prevcp.y = rint(sp->prevcp.y*1024)/1024;
+    if ( sp->prev!=NULL && sp->prev->order2 )
+	sp->prev->from->nextcp = sp->prevcp;
 }
 
 #define NICE_PROPORTION	.39
-void SplineCharDefaultNextCP(SplinePoint *base, SplinePoint *next) {
-    SplinePoint *prev=NULL;
+void SplineCharDefaultNextCP(SplinePoint *base) {
+    SplinePoint *prev=NULL, *next;
     real len;
     real angle, pangle, plen, ca;
 
-    if ( next==NULL )
+    if ( base->next==NULL )
 return;
+    if ( base->next->order2 ) {
+	SplineRefigureFixup(base->next);
+return;
+    }
     if ( !base->nextcpdef ) {
 	if ( base->pointtype==pt_tangent )
 	    SplineCharTangentNextCP(base);
 return;
     }
+    next = base->next->to;
     if ( base->prev!=NULL )
 	prev = base->prev->from;
 
@@ -1799,7 +1849,7 @@ return;
 		    angle += 3.1415926535897932;
 	    base->prevcp.x = base->me.x + plen*cos(angle);
 	    base->prevcp.y = base->me.y + plen*sin(angle);
-	    SplineRefigure(base->prev);
+	    SplineRefigureFixup(base->prev);
 	} else if ( prev!=NULL ) {
 	    /* The prev control point is fixed. So we've got to use the same */
 	    /*  angle it uses */
@@ -1819,7 +1869,7 @@ return;
 			    (base->prevcp.y-base->me.y)*(base->prevcp.y-base->me.y));
 		    base->prevcp.x = base->me.x + plen*cos(angle);
 		    base->prevcp.y = base->me.y + plen*sin(angle);
-		    SplineRefigure(base->prev);
+		    SplineRefigureFixup(base->prev);
 		}
 		angle = atan2( prev->me.y-base->me.y , prev->me.x-base->me.x );
 	    }
@@ -1833,22 +1883,27 @@ return;
 	base->nextcp.x = rint(base->nextcp.x*1024)/1024;
 	base->nextcp.y = rint(base->nextcp.y*1024)/1024;
 	if ( base->next != NULL )
-	    SplineRefigure(base->next);
+	    SplineRefigureFixup(base->next);
     }
 }
 
-void SplineCharDefaultPrevCP(SplinePoint *base, SplinePoint *prev) {
-    SplinePoint *next=NULL;
+void SplineCharDefaultPrevCP(SplinePoint *base) {
+    SplinePoint *next=NULL, *prev;
     real len, nlen;
     real angle, nangle, ca;
 
-    if ( prev==NULL )
+    if ( base->prev==NULL )
 return;
+    if ( base->prev->order2 ) {
+	SplineRefigureFixup(base->prev);
+return;
+    }
     if ( !base->prevcpdef ) {
 	if ( base->pointtype==pt_tangent )
 	    SplineCharTangentPrevCP(base);
 return;
     }
+    prev = base->prev->from;
     if ( base->next!=NULL )
 	next = base->next->to;
 
@@ -1873,7 +1928,7 @@ return;
 		    angle += 3.1415926535897932;
 	    base->nextcp.x = base->me.x + nlen*cos(angle);
 	    base->nextcp.y = base->me.y + nlen*sin(angle);
-	    SplineRefigure(base->next);
+	    SplineRefigureFixup(base->next);
 	} else if ( next!=NULL ) {
 	    /* The next control point is fixed. So we got to use the same */
 	    /*  angle it uses */
@@ -1893,7 +1948,7 @@ return;
 			    (base->nextcp.y-base->me.y)*(base->nextcp.y-base->me.y));
 		    base->nextcp.x = base->me.x + nlen*cos(angle);
 		    base->nextcp.y = base->me.y + nlen*sin(angle);
-		    SplineRefigure(base->next);
+		    SplineRefigureFixup(base->next);
 		}
 		angle = atan2( next->me.y-base->me.y , next->me.x-base->me.x );
 	    }
@@ -1907,7 +1962,7 @@ return;
 	base->prevcp.x = rint(base->prevcp.x*1024)/1024;
 	base->prevcp.y = rint(base->prevcp.y*1024)/1024;
 	if ( base->prev!=NULL )
-	    SplineRefigure(base->prev);
+	    SplineRefigureFixup(base->prev);
     }
 }
 

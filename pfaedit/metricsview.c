@@ -1590,7 +1590,7 @@ static void MVMenuRound2Int(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	if ( mv->perchar[i].selected )
     break;
     if ( i!=-1 )
-	SCRound2Int( mv->perchar[i].sc, mv->fv);
+	SCRound2Int( mv->perchar[i].sc);
 }
 
 static void MVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -2253,6 +2253,7 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     int i, anybuildable;
     SplineChar *sc;
+    int order2 = mv->fv->sf->order2;
 
     for ( i=mv->charcnt-1; i>=0; --i )
 	if ( mv->perchar[i].selected )
@@ -2270,13 +2271,15 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_ShowDependents:
 	    mi->ti.disabled = sc==NULL || sc->dependents == NULL;
 	  break;
-	  case MID_FindProblems:
 	  case MID_MetaFont:
+	    mi->ti.disabled = sc==NULL || order2;
+	  break;
+	  case MID_FindProblems:
 	  case MID_Transform:
 	    mi->ti.disabled = sc==NULL;
 	  break;
 	  case MID_RmOverlap:
-	    mi->ti.disabled = sc==NULL || mv->fv->sf->onlybitmaps;
+	    mi->ti.disabled = sc==NULL || mv->fv->sf->onlybitmaps || order2;
 #if 0
 	    if ( !mi->ti.disabled ) {
 		if ( e==NULL || !(e->u.mouse.state&ksm_shift) )
@@ -2286,18 +2289,20 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    }
 #endif
 	  break;
-	  case MID_AddExtrema:
 	  case MID_Stroke:
+	    mi->ti.disabled = sc==NULL || mv->fv->sf->onlybitmaps || order2;
+	  break;
+	  case MID_AddExtrema:
 	  case MID_Round: case MID_Correct:
 	    mi->ti.disabled = sc==NULL || mv->fv->sf->onlybitmaps;
 	  break;
 #ifdef PFAEDIT_CONFIG_TILEPATH
 	  case MID_TilePath:
-	    mi->ti.disabled = sc==NULL || mv->fv->sf->onlybitmaps || ClipBoardToSplineSet()==NULL;
+	    mi->ti.disabled = sc==NULL || mv->fv->sf->onlybitmaps || ClipBoardToSplineSet()==NULL || order2;
 	  break;
 #endif
 	  case MID_Simplify:
-	    mi->ti.disabled = sc==NULL || mv->fv->sf->onlybitmaps;
+	    mi->ti.disabled = sc==NULL || mv->fv->sf->onlybitmaps || order2;
 #if 0
 	    free(mi->ti.text);
 	    if ( e==NULL || !(e->u.mouse.state&ksm_shift) ) {

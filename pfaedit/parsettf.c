@@ -852,31 +852,41 @@ static void readttfpreglyph(FILE *ttf,struct ttfinfo *info) {
 #define _X_Same		0x10
 #define _Y_Same		0x20
 
-static void FigureControls(SplinePoint *from, SplinePoint *to, BasePoint *cp) {
+static void FigureControls(SplinePoint *from, SplinePoint *to, BasePoint *cp,
+	int is_order2) {
     /* What are the control points for 2 cp bezier which will provide the same*/
     /*  curve as that for the 1 cp bezier specified above */
     real b, c, d;
 
-    d = from->me.x;
-    c = 2*cp->x - 2*from->me.x;
-    b = to->me.x+from->me.x-2*cp->x;
-    from->nextcp.x = d+c/3;
-    to->prevcp.x = from->nextcp.x + (c+b)/3;
+    if ( is_order2 ) {
+	from->nextcp = to->prevcp = *cp;
+    } else {
+	d = from->me.x;
+	c = 2*cp->x - 2*from->me.x;
+	b = to->me.x+from->me.x-2*cp->x;
+	from->nextcp.x = d+c/3;
+	to->prevcp.x = from->nextcp.x + (c+b)/3;
 
-    d = from->me.y;
-    c = 2*cp->y - 2*from->me.y;
-    b = to->me.y+from->me.y-2*cp->y;
-    from->nextcp.y = d+c/3;
-    to->prevcp.y = from->nextcp.y + (c+b)/3;
+	d = from->me.y;
+	c = 2*cp->y - 2*from->me.y;
+	b = to->me.y+from->me.y-2*cp->y;
+	from->nextcp.y = d+c/3;
+	to->prevcp.y = from->nextcp.y + (c+b)/3;
+    }
 
     if ( from->me.x!=from->nextcp.x || from->me.y!=from->nextcp.y )
 	from->nonextcp = false;
     if ( to->me.x!=to->prevcp.x || to->me.y!=to->prevcp.y )
 	to->noprevcp = false;
+    if ( is_order2 && (to->noprevcp || from->nonextcp)) {
+	to->noprevcp = from->nonextcp = true;
+	from->nextcp = from->me;
+	to->prevcp = to->me;
+    }
 }
 
 static SplineSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
-	BasePoint *pts) {
+	BasePoint *pts, int is_order2) {
     SplineSet *head=NULL, *last=NULL, *cur;
     int i, path, start, last_off;
     SplinePoint *sp;
@@ -899,7 +909,7 @@ static SplineSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
 		sp->nonextcp = sp->noprevcp = true;
 		sp->ptindex = i;
 		if ( last_off && cur->last!=NULL )
-		    FigureControls(cur->last,sp,&pts[i-1]);
+		    FigureControls(cur->last,sp,&pts[i-1],is_order2);
 		last_off = false;
 	    } else if ( last_off ) {
 		/* two off curve points get a third on curve point created */
@@ -911,7 +921,7 @@ static SplineSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
 		sp->nonextcp = true;
 		sp->ptindex = 0xffff;
 		if ( last_off && cur->last!=NULL )
-		    FigureControls(cur->last,sp,&pts[i-1]);
+		    FigureControls(cur->last,sp,&pts[i-1],is_order2);
 		/* last_off continues to be true */
 	    } else {
 		last_off = true;
@@ -921,7 +931,7 @@ static SplineSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
 		if ( cur->first==NULL )
 		    cur->first = sp;
 		else
-		    SplineMake(cur->last,sp);
+		    SplineMake(cur->last,sp,is_order2);
 		cur->last = sp;
 	    }
 	    ++i;
@@ -943,16 +953,16 @@ static SplineSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
 	    sp->nextcp = sp->prevcp = sp->me;
 	    sp->nonextcp = true;
 	    sp->ptindex = 0xffff;
-	    FigureControls(cur->last,sp,&pts[i-1]);
-	    SplineMake(cur->last,sp);
+	    FigureControls(cur->last,sp,&pts[i-1],is_order2);
+	    SplineMake(cur->last,sp,is_order2);
 	    cur->last = sp;
-	    FigureControls(sp,cur->first,&pts[start]);
+	    FigureControls(sp,cur->first,&pts[start],is_order2);
 	} else if ( !(flags[i-1]&_On_Curve))
-	    FigureControls(cur->last,cur->first,&pts[i-1]);
+	    FigureControls(cur->last,cur->first,&pts[i-1],is_order2);
 	else if ( !(flags[start]&_On_Curve) )
-	    FigureControls(cur->last,cur->first,&pts[start]);
+	    FigureControls(cur->last,cur->first,&pts[start],is_order2);
 	if ( cur->last!=cur->first ) {
-	    SplineMake(cur->last,cur->first);
+	    SplineMake(cur->last,cur->first,is_order2);
 	    cur->last = cur->first;
 	}
     }
@@ -1031,7 +1041,7 @@ static void readttfsimpleglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, in
 	last_pos = pts[i].y;
     }
 
-    sc->splines = ttfbuildcontours(path_cnt,endpt,flags,pts);
+    sc->splines = ttfbuildcontours(path_cnt,endpt,flags,pts,info->to_order2);
     ttfstemhints(sc,instructions,len);
     SCCatagorizePoints(sc);
     free(endpt);
@@ -2667,6 +2677,11 @@ return( 0 );
 		TopDictFree(subdicts[j]);
 	    free(subdicts); free(fdselect);
 	}
+
+    if ( info->to_order2 ) {
+	for ( i=0; i<info->glyph_cnt; ++i )
+	    SCConvertToOrder2(info->chars[i]);
+    }
 
     for ( i=0; fontnames[i]!=NULL && i<1; ++i ) {
 	free(fontnames[i]);
@@ -5276,11 +5291,15 @@ return( 0 );
 	    info->bitmapdata_start!=0 && info->bitmaploc_start!=0 )
 	info->onlystrikes = true;
 
-    if ( info->onlystrikes )
+    if ( info->onlystrikes ) {
 	info->chars = gcalloc(info->glyph_cnt+1,sizeof(SplineChar *));
-    else if ( info->glyphlocations_start!=0 && info->glyph_start!=0 )
+	info->to_order2 = new_fonts_are_order2;
+    } else if ( info->glyphlocations_start!=0 && info->glyph_start!=0 ) {
+	info->to_order2 = (!loaded_fonts_same_as_new ||
+		(loaded_fonts_same_as_new && new_fonts_are_order2));
 	readttfglyphs(ttf,info);
-    else if ( info->cff_start!=0 ) {
+    } else if ( info->cff_start!=0 ) {
+	info->to_order2 = (loaded_fonts_same_as_new && new_fonts_are_order2);
 	if ( !readcffglyphs(ttf,info) ) {
 return( 0 );
 	}
@@ -5543,6 +5562,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     sf->fullname = info->fullname;
     sf->familyname = info->familyname;
     sf->onlybitmaps = info->onlystrikes;
+    sf->order2 = info->to_order2;
     if ( sf->fontname==NULL ) {
 	sf->fontname = copy(sf->fullname);
 	if ( sf->fontname==NULL )

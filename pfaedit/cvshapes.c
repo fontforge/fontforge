@@ -41,9 +41,9 @@ static SplinePoint *SPMake(BasePoint *base,int pt) {
 return( new );
 }
 
-static SplinePoint *SPMakeTo(BasePoint *base,int pt, SplinePoint *from) {
+static SplinePoint *SPMakeTo(BasePoint *base,int pt, SplinePoint *from,int order2) {
     SplinePoint *to = SPMake(base,pt);
-    SplineMake(from,to);
+    SplineMake(from,to,order2);
 return( to );
 }
 
@@ -51,6 +51,7 @@ void CVMouseDownShape(CharView *cv) {
     real radius = CVRoundRectRadius(); int points = CVPolyStarPoints();
     SplinePoint *last;
     int i;
+    int order2 = cv->sc->parent->order2;
 
     CVClearSel(cv);
     CVPreserveState(cv);
@@ -63,36 +64,36 @@ void CVMouseDownShape(CharView *cv) {
     switch ( cv->active_tool ) {
       case cvt_rect:
 	if ( radius==0 ) {
-	    last = SPMakeTo(&cv->info,pt_corner,last);
-	    last = SPMakeTo(&cv->info,pt_corner,last);
-	    last = SPMakeTo(&cv->info,pt_corner,last);
+	    last = SPMakeTo(&cv->info,pt_corner,last,order2);
+	    last = SPMakeTo(&cv->info,pt_corner,last,order2);
+	    last = SPMakeTo(&cv->info,pt_corner,last,order2);
 	} else {
 	    last->pointtype = pt_tangent;
-	    last = SPMakeTo(&cv->info,pt_tangent,last);
-	    last = SPMakeTo(&cv->info,pt_tangent,last);
-	    last = SPMakeTo(&cv->info,pt_tangent,last);
-	    last = SPMakeTo(&cv->info,pt_tangent,last);
-	    last = SPMakeTo(&cv->info,pt_tangent,last);
-	    last = SPMakeTo(&cv->info,pt_tangent,last);
-	    last = SPMakeTo(&cv->info,pt_tangent,last);
+	    last = SPMakeTo(&cv->info,pt_tangent,last,order2);
+	    last = SPMakeTo(&cv->info,pt_tangent,last,order2);
+	    last = SPMakeTo(&cv->info,pt_tangent,last,order2);
+	    last = SPMakeTo(&cv->info,pt_tangent,last,order2);
+	    last = SPMakeTo(&cv->info,pt_tangent,last,order2);
+	    last = SPMakeTo(&cv->info,pt_tangent,last,order2);
+	    last = SPMakeTo(&cv->info,pt_tangent,last,order2);
 	}
       break;
       case cvt_elipse:
 	last->pointtype = pt_curve;
-	last = SPMakeTo(&cv->info,pt_curve,last);
-	last = SPMakeTo(&cv->info,pt_curve,last);
-	last = SPMakeTo(&cv->info,pt_curve,last);
+	last = SPMakeTo(&cv->info,pt_curve,last,order2);
+	last = SPMakeTo(&cv->info,pt_curve,last,order2);
+	last = SPMakeTo(&cv->info,pt_curve,last,order2);
       break;
       case cvt_poly:
 	for ( i=1; i<points; ++i )
-	    last = SPMakeTo(&cv->info,pt_corner,last);
+	    last = SPMakeTo(&cv->info,pt_corner,last,order2);
       break;
       case cvt_star:
 	for ( i=1; i<2*points; ++i )
-	    last = SPMakeTo(&cv->info,pt_corner,last);
+	    last = SPMakeTo(&cv->info,pt_corner,last,order2);
       break;
     }
-    SplineMake(last,cv->active_shape->first);
+    SplineMake(last,cv->active_shape->first,order2);
     cv->active_shape->last = cv->active_shape->first;
     SCUpdateAll(cv->sc);
 }
@@ -106,11 +107,15 @@ static void SetCorner(SplinePoint *sp,real x, real y) {
 static void SetCurve(SplinePoint *sp,real x, real y,real xrad, real yrad) {
     sp->me.x = x; sp->me.y = y;
     sp->nextcp = sp->me;
-    sp->nextcp.x += .552*xrad;
-    sp->nextcp.y += .552*yrad;
     sp->prevcp = sp->me;
-    sp->prevcp.x -= .552*xrad;
-    sp->prevcp.y -= .552*yrad;
+    if ( !sp->next->order2 ) {
+	xrad *= .552;
+	yrad *= .552;
+    }
+    sp->nextcp.x += xrad;
+    sp->nextcp.y += yrad;
+    sp->prevcp.x -= xrad;
+    sp->prevcp.y -= yrad;
     sp->nonextcp = sp->noprevcp = (xrad==0 && yrad==0);
 }
 
@@ -118,16 +123,24 @@ static void SetPTangent(SplinePoint *sp,real x, real y,real xrad, real yrad) {
     sp->me.x = x; sp->me.y = y;
     sp->nextcp = sp->me;
     sp->prevcp = sp->me;
-    sp->prevcp.x += .552*xrad;
-    sp->prevcp.y += .552*yrad;
+    if ( !sp->next->order2 ) {
+	xrad *= .552;
+	yrad *= .552;
+    }
+    sp->prevcp.x += xrad;
+    sp->prevcp.y += yrad;
     sp->noprevcp = (xrad==0 && yrad==0);
 }
 
 static void SetNTangent(SplinePoint *sp,real x, real y,real xrad, real yrad) {
     sp->me.x = x; sp->me.y = y;
     sp->nextcp = sp->me;
-    sp->nextcp.x += .552*xrad;
-    sp->nextcp.y += .552*yrad;
+    if ( !sp->next->order2 ) {
+	xrad *= .552;
+	yrad *= .552;
+    }
+    sp->nextcp.x += xrad;
+    sp->nextcp.y += yrad;
     sp->prevcp = sp->me;
     sp->nonextcp = (xrad==0 && yrad==0);
 }

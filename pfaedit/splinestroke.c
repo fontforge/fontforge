@@ -123,7 +123,7 @@ static SplinePoint *makequartercircle(real x, real y, real radius,
 	here->prevcp.x = x - .552*xmul*radius;
     }
     if ( prev!=NULL )
-	SplineMake(prev,here);
+	SplineMake3(prev,here);
 return( here );
 }
 
@@ -131,7 +131,7 @@ static SplinePoint *makeline(SplinePoint *prev, real x, real y) {
     SplinePoint *here = SplinePointCreate(x,y);
     here->pointtype = pt_corner;
     if ( prev!=NULL )
-	SplineMake(prev,here);
+	SplineMake3(prev,here);
 return( here );
 }
 
@@ -159,14 +159,14 @@ static void StrokeEnd(SplinePoint *base, StrokeInfo *si, SplinePoint **_plus, Sp
 	    cur = makeline(plus,base->me.x+si->xoff[1],base->me.y+si->yoff[1]);
 	    cur = makeline(cur,base->me.x+si->xoff[2],base->me.y+si->yoff[2]);
 	    cur = makeline(cur,base->me.x+si->xoff[3],base->me.y+si->yoff[3]);
-	    SplineMake(cur,plus);
+	    SplineMake3(cur,plus);
 	    *_plus = *_minus = plus;
 	} else if ( si->cap!=lc_butt ) {
 	    plus = makequartercircle(base->me.x-si->radius,base->me.y,si->radius,0,1,NULL);
 	    cur = makequartercircle(base->me.x,base->me.y+si->radius,si->radius,1,0,plus);
 	    cur = makequartercircle(base->me.x+si->radius,base->me.y,si->radius,0,-1,cur);
 	    cur = makequartercircle(base->me.x,base->me.y-si->radius,si->radius,-1,0,cur);
-	    SplineMake(cur,plus);
+	    SplineMake3(cur,plus);
 	    *_plus = *_minus = plus;
 	} else {
 	    *_plus = *_minus = cur = chunkalloc(sizeof(SplinePoint));
@@ -208,7 +208,7 @@ static void StrokeEnd(SplinePoint *base, StrokeInfo *si, SplinePoint **_plus, Sp
 	    plus->nonextcp = minus->nonextcp = true;
 	}
 	if ( si->cap==lc_butt ) {
-	    SplineMake(plus,minus);		/* draw a line between */
+	    SplineMake3(plus,minus);		/* draw a line between */
 	} else if ( si->cap==lc_square ) {
 	    mid1 = chunkalloc(sizeof(SplinePoint));
 	    mid1->me.x = plus->me.x+ sign*(plus->me.y-base->me.y);
@@ -221,9 +221,9 @@ static void StrokeEnd(SplinePoint *base, StrokeInfo *si, SplinePoint **_plus, Sp
 	    mid2->nextcp = mid2->prevcp = mid2->me;
 	    mid2->nonextcp = mid2->noprevcp = true;
 	    mid1->pointtype = pt_corner; mid2->pointtype = pt_corner;
-	    SplineMake(plus,mid1);
-	    SplineMake(mid1,mid2);
-	    SplineMake(mid2,minus);
+	    SplineMake3(plus,mid1);
+	    SplineMake3(mid1,mid2);
+	    SplineMake3(mid2,minus);
 	} else if ( si->cap==lc_round ) {
 	    mid1 = chunkalloc(sizeof(SplinePoint));
 	    mid1->me.x = base->me.x+ sign*(plus->me.y-base->me.y);
@@ -239,8 +239,8 @@ static void StrokeEnd(SplinePoint *base, StrokeInfo *si, SplinePoint **_plus, Sp
 	    mid1->prevcp.y = mid1->me.y + sign*c;
 	    mid1->nextcp.x = mid1->me.x + sign*s;
 	    mid1->nextcp.y = mid1->me.y - sign*c;
-	    SplineMake(plus,mid1);
-	    SplineMake(mid1,minus);
+	    SplineMake3(plus,mid1);
+	    SplineMake3(mid1,minus);
 	}
 	*_plus = plus;
 	*_minus = minus;
@@ -249,7 +249,7 @@ static void StrokeEnd(SplinePoint *base, StrokeInfo *si, SplinePoint **_plus, Sp
 
 /* Is this the inner intersection or the outer one (the inner one is on both splines) */
 /*  the outer one is beyond both */
-static int IntersectLines(JointPoint *inter,BasePoint *p1,real sx1, real sy1,
+static int Intersect_Lines(JointPoint *inter,BasePoint *p1,real sx1, real sy1,
 	BasePoint *p2, real sx2, real sy2) {
     real t1,t2;
     real denom;
@@ -313,8 +313,8 @@ static void MakeJoints(JointPoint *ret,StrokeInfo *si,
 	    /* same as a miter join */
 	    mid = SplinePointCreate(ret->inter.x,ret->inter.y);
 	    mid->pointtype = pt_corner;
-	    SplineMake(from,mid);
-	    SplineMake(mid,to);
+	    SplineMake3(from,mid);
+	    SplineMake3(mid,to);
 	} else {
 	    if ( incr<0 ) {
 		if ((cstart += 2)>=4 ) cstart -= 4;
@@ -331,15 +331,15 @@ static void MakeJoints(JointPoint *ret,StrokeInfo *si,
 		mid = makeline(mid,base->x+factor*si->xoff[i],base->y+factor*si->yoff[i]);
 		i += incr;
 	    }
-	    SplineMake(mid,to);
+	    SplineMake3(mid,to);
 	}
     } else if ( si->join==lj_bevel ) {
-	SplineMake(from,to);
+	SplineMake3(from,to);
     } else if ( si->join == lj_miter ) {
 	mid = SplinePointCreate(ret->inter.x,ret->inter.y);
 	mid->pointtype = pt_corner;
-	SplineMake(from,mid);
-	SplineMake(mid,to);
+	SplineMake3(from,mid);
+	SplineMake3(mid,to);
     } else {
 	from->pointtype = to->pointtype = pt_curve;
 	CirclePoint(&approx[0],center,&ret->inter,factor*si->radius); approx[0].t = .5;
@@ -380,13 +380,13 @@ static void StrokeJoint(SplinePoint *base,StrokeInfo *si,JointPoint *plus,JointP
 	minus->from->me.y = (pminus.y + nminus.y)/2;
 	minus->from->pointtype = pt_curve;
     } else {
-	pinner = IntersectLines(plus,&pplus,
+	pinner = Intersect_Lines(plus,&pplus,
 		 3*base->prev->splines[0].a+2*base->prev->splines[0].b+base->prev->splines[0].c,
 		 3*base->prev->splines[1].a+2*base->prev->splines[1].b+base->prev->splines[1].c,
 		&nplus,
 		 base->next->splines[0].c,
 		 base->next->splines[1].c);
-	IntersectLines(minus,&pminus,
+	Intersect_Lines(minus,&pminus,
 		 3*base->prev->splines[0].a+2*base->prev->splines[0].b+base->prev->splines[0].c,
 		 3*base->prev->splines[1].a+2*base->prev->splines[1].b+base->prev->splines[1].c,
 		&nminus,
@@ -602,8 +602,8 @@ return( ssplus );
 		m_tcur<=m_tlast || p_tcur>=p_tlast ) {
 	    pto->nonextcp = plus->noprevcp = true;
 	    minus->nonextcp = mto->noprevcp = true;
-	    SplineMake(pto,plus);
-	    SplineMake(minus,mto);
+	    SplineMake3(pto,plus);
+	    SplineMake3(minus,mto);
 	    if ( plus->nonextcp && plus->noprevcp ) plus->pointtype = pt_corner;
 	    if ( minus->nonextcp && minus->noprevcp ) minus->pointtype = pt_corner;
 	} else if ( si->caligraphic ) {
@@ -634,13 +634,13 @@ return( ssplus );
 		    SplineExpand(spline,ts[j-1],(ts[j-1]-ts[j-2])/20.,si,&p,&m);
 		    m_from = SplinePointCreate(m.x,m.y);
 		    m_from->pointtype = pt_tangent;
-		    SplineMake(m_to,m_from);
+		    SplineMake3(m_to,m_from);
 		} else {
 		    m_from = m_to;
 		    SplineExpand(spline,ts[j-1],(ts[j-1]-ts[j-2])/20.,si,&p,&m);
 		    p_from = SplinePointCreate(p.x,p.y);
 		    p_from->pointtype = pt_tangent;
-		    SplineMake(p_from,p_to);
+		    SplineMake3(p_from,p_to);
 		}
 		if ( j==cnt-1 ) {
 		    p_to = pto;

@@ -1395,6 +1395,17 @@ static struct _GImage freehand0_base = {
     2
 };
 
+static GClut greyfree0_clut = { 3, 0, 2,
+    0x404040, 0xc00000, 0x808080 };
+
+static struct _GImage greyfree0_base = {
+    it_index,
+    15420,24,24,24,
+    (uint8 *) freehand0_data,
+    &greyfree0_clut,
+    2
+};
+
 
 static uint8 line0_data[] = {
     0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 
@@ -1601,6 +1612,7 @@ GImage GIcon_miterjoin = { 0, &miterjoin0_base };
 GImage GIcon_buttcap = { 0, &buttcap0_base };
 GImage GIcon_beveljoin = { 0, &beveljoin0_base };
 GImage GIcon_freehand = { 0, &freehand0_base };
+GImage GIcon_greyfree = { 0, &greyfree0_base };
 GImage GIcon_pen = { 0, &pen0_base };
 GImage GIcon_knife = { 0, &knife0_base };
 GImage GIcon_scale = { 0, &scale0_base };

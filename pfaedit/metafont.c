@@ -262,7 +262,7 @@ static SCI *SCIinit(SplineChar *sc,MetaFontDlg *meta) {
     for ( ss = sc->splines; ss!=NULL; ss=ss->next ) {
 	if ( ss->first->prev==NULL ) {
 	    /* It's not a loop, Close it! */
-	    SplineMake( ss->last,ss->first );
+	    SplineMake3( ss->last,ss->first );
 	    ss->last = ss->first;
 	}
     }
@@ -1736,7 +1736,7 @@ static void MovePointToInter(SCI *sci,int i,int j, real val, int isvert) {
 	pti.nextcp = sci->pts[i].newnext;
 	ptj.prevcp = sci->pts[j].newprev;
     }
-    spline = SplineMake(&pti,&ptj);
+    spline = SplineMake3(&pti,&ptj);
     SplineSolveFull(&spline->splines[isvert],val,ts);
     t = 2;
     for ( k=0; k<3 ; ++k ) if ( ts[k]!=-1 )

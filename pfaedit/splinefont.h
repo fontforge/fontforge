@@ -185,6 +185,7 @@ typedef struct undoes {
 	    ut_width, ut_vwidth, ut_lbearing, ut_rbearing, ut_possub,
 	    ut_bitmap, ut_bitmapsel, ut_composit, ut_multiple, ut_noop } undotype;
     unsigned int was_modified: 1;
+    unsigned int was_order2: 1;
     union {
 	struct {
 	    int16 width, vwidth;
@@ -325,6 +326,7 @@ typedef struct spline {
     unsigned int knowncurved: 1;	/* We know that it curves */
     unsigned int knownlinear: 1;	/* it might have control points, but still traces out a line */
 	/* If neither knownlinear nor curved then we haven't checked */
+    unsigned int order2: 1;		/* It's a bezier curve with only one cp */
     unsigned int touched: 1;
     SplinePoint *from, *to;
     Spline1D splines[2];		/* splines[0] is the x spline, splines[1] is y */
@@ -540,6 +542,7 @@ typedef struct splinefont {
     unsigned int dupnamewarn: 1;		/* Warn about duplicate names when loading bdf font */
     unsigned int compacted: 1;			/* Font is in a compacted glyph list */
     unsigned int encodingchanged: 1;		/* Font's encoding has changed since it was loaded */
+    unsigned int order2: 1;			/* Font's data are order 2 bezier splines (truetype) rather than order 3 (postscript) */
     struct fontview *fv;
     enum charset encoding_name, old_encname;
     SplinePointList *gridsplines;
@@ -733,8 +736,9 @@ extern void SplineCharListsFree(struct splinecharlist *dlist);
 extern void SplineCharFreeContents(SplineChar *sc);
 extern void SplineCharFree(SplineChar *sc);
 extern void SplineFontFree(SplineFont *sf);
+extern void SplineRefigure3(Spline *spline);
 extern void SplineRefigure(Spline *spline);
-extern Spline *SplineMake(SplinePoint *from, SplinePoint *to);
+extern Spline *SplineMake3(SplinePoint *from, SplinePoint *to);
 extern LinearApprox *SplineApproximate(Spline *spline, real scale);
 extern int SplinePointListIsClockwise(SplineSet *spl);
 extern void SplineSetFindBounds(SplinePointList *spl, DBounds *bounds);
@@ -824,8 +828,8 @@ extern SplineSet *SplineSetsCorrect(SplineSet *base,int *changed);
 extern SplineSet *SplineSetsDetectDir(SplineSet **_base, int *lastscan);
 extern void SPAverageCps(SplinePoint *sp);
 extern void SPWeightedAverageCps(SplinePoint *sp);
-extern void SplineCharDefaultPrevCP(SplinePoint *base, SplinePoint *prev);
-extern void SplineCharDefaultNextCP(SplinePoint *base, SplinePoint *next);
+extern void SplineCharDefaultPrevCP(SplinePoint *base);
+extern void SplineCharDefaultNextCP(SplinePoint *base);
 extern void SplineCharTangentNextCP(SplinePoint *sp);
 extern void SplineCharTangentPrevCP(SplinePoint *sp);
 extern int PointListIsSelected(SplinePointList *spl);
@@ -834,6 +838,28 @@ extern void SFOrderBitmapList(SplineFont *sf);
 extern int KernThreshold(SplineFont *sf, int cnt);
 extern real SFGuessItalicAngle(SplineFont *sf);
 extern void SFHasSerifs(SplineFont *sf);
+
+extern SplinePoint *SplineTtfApprox(Spline *ps);
+extern SplineSet *SSttfApprox(SplineSet *ss);
+extern SplineSet *SplineSetsTTFApprox(SplineSet *ss);
+extern SplineSet *SSPSApprox(SplineSet *ss);
+extern SplineSet *SplineSetsPSApprox(SplineSet *ss);
+extern SplineSet *SplineSetsConvertOrder(SplineSet *ss, int to_order2);
+extern void SplineRefigure2(Spline *spline);
+extern void SplineRefigureFixup(Spline *spline);
+extern Spline *SplineMake2(SplinePoint *from, SplinePoint *to);
+extern Spline *SplineMake(SplinePoint *from, SplinePoint *to, int order2);
+extern Spline *SFSplineMake(SplineFont *sf,SplinePoint *from, SplinePoint *to);
+extern void SCConvertToOrder2(SplineChar *sc);
+extern void SFConvertToOrder2(SplineFont *sf);
+extern void SCConvertToOrder3(SplineChar *sc);
+extern void SFConvertToOrder3(SplineFont *sf);
+extern void SCConvertOrder(SplineChar *sc, int to_order2);
+extern void SplinePointPrevCPChanged2(SplinePoint *sp, int fixnext);
+extern void SplinePointNextCPChanged2(SplinePoint *sp, int fixprev);
+extern int IntersectLines(BasePoint *inter,
+	BasePoint *line1_1, BasePoint *line1_2,
+	BasePoint *line2_1, BasePoint *line2_2);
 
 extern SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc);
 extern SplineSet *SplineSetRemoveOverlap(SplineSet *base,int justintersect);
@@ -948,8 +974,8 @@ extern char *PSDictHasEntry(struct psdict *dict, char *key);
 extern int PSDictRemoveEntry(struct psdict *dict, char *key);
 extern int PSDictChangeEntry(struct psdict *dict, char *key, char *newval);
 
-extern void SplineSetsRound2Int(SplineSet *spl);
-extern void SCRound2Int(SplineChar *sc,struct fontview *);
+extern void SplineSetsRound2Int(SplineSet *spl,int order2);
+extern void SCRound2Int(SplineChar *sc);
 extern int hascomposing(SplineFont *sf,int u,SplineChar *sc);
 #if 0
 extern void SFFigureGrid(SplineFont *sf);

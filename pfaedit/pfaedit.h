@@ -89,6 +89,10 @@ extern int autohint_before_generate;
 extern int seperate_hint_controls;
 extern int ItalicConstrained;
 
+extern int new_em_size;
+extern int new_fonts_are_order2;
+extern int loaded_fonts_same_as_new;
+
 extern char *BDFFoundry, *TTFFoundry;
 extern char *xuid;
 

@@ -1,4 +1,4 @@
-CFLAGS=/nowarn/incl=([-.inc])/name=(as_is,short)
+CFLAGS=/nowarn/incl=([-.inc])/name=(as_is,short)/define=("NODYNAMIC=1")
 
 
 pfaedit_OBJECTS =  alignment.obj,autohint.obj,autosave.obj,autowidth.obj,\
@@ -17,9 +17,10 @@ pfaedit_OBJECTS =  alignment.obj,autohint.obj,autosave.obj,autowidth.obj,\
  
 pfaedit_OBJECTS2=displayfonts.obj,combinations.obj,sftextfield.obj,ikarus.obj,\
         cvfreehand.obj,cvhand.obj,simplifydlg.obj,winfonts.obj,freetype.obj,\
-	gotodlg.obj,search.obj,tottfgpos.obj,charinfo.obj
+	gotodlg.obj,search.obj,tottfgpos.obj,charinfo.obj,tottfaat.obj,\
+	splineorder2.obj
 
-pfaedit.exe : nomen.h $(pfaedit_OBJECTS) $(pfaedit_OBJECTS2)
+pfaedit.exe : nomen.h $(pfaedit_OBJECTS) $(pfaedit_OBJECTS2) xlib.opt
         library/create tmp.olb $(pfaedit_OBJECTS)
         library tmp.olb $(pfaedit_OBJECTS2)
         link/exec=pfaedit.exe start,tmp/lib,[-.libs]LIBGDRAW/lib,\
@@ -36,3 +37,6 @@ makenomenh.exe : makenomenh.obj
 
 tottf.obj : tottf.c
           $(CC) $(CFLAGS)/noop tottf
+
+tottfaat.obj : tottfaat.c
+          $(CC) $(CFLAGS)/noop tottfaat

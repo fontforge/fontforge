@@ -290,7 +290,7 @@ void ImageListsFree(ImageList *imgs) {
     }
 }
 
-void SplineRefigure(Spline *spline) {
+void SplineRefigure3(Spline *spline) {
     SplinePoint *from = spline->from, *to = spline->to;
     Spline1D *xsp = &spline->splines[0], *ysp = &spline->splines[1];
 
@@ -337,14 +337,15 @@ void SplineRefigure(Spline *spline) {
     spline->isquadratic = false;
     if ( !spline->knownlinear && xsp->a==0 && ysp->a==0 )
 	spline->isquadratic = true;	/* Only likely if we read in a TTF */
+    spline->order2 = false;
 }
 
-Spline *SplineMake(SplinePoint *from, SplinePoint *to) {
+Spline *SplineMake3(SplinePoint *from, SplinePoint *to) {
     Spline *spline = chunkalloc(sizeof(Spline));
 
     spline->from = from; spline->to = to;
     from->next = to->prev = spline;
-    SplineRefigure(spline);
+    SplineRefigure3(spline);
 return( spline );
 }
 
@@ -1182,7 +1183,7 @@ SplinePointList *SplinePointListTransform(SplinePointList *base, real transform[
     Spline *spline, *first;
     SplinePointList *spl;
     SplinePoint *spt, *pfirst;
-    int allsel, anysel;
+    int allsel, anysel, alldone=true;
 
     for ( spl = base; spl!=NULL; spl = spl->next ) {
 	pfirst = NULL;
@@ -1193,7 +1194,7 @@ SplinePointList *SplinePointListTransform(SplinePointList *base, real transform[
 		TransformPoint(spt,transform);
 		anysel = true;
 	    } else
-		allsel = false;
+		allsel = alldone = false;
 	    if ( spt->next==NULL )
 	break;
 	}
@@ -1204,21 +1205,21 @@ SplinePointList *SplinePointListTransform(SplinePointList *base, real transform[
 	/* Figuring out where the edges of the selection are is difficult */
 	/*  so let's just tweak all points, it shouldn't matter */
 	/* It does matter. Let's tweak all default points */
-	if ( !allpoints && !allsel ) {
+	if ( !allpoints && !allsel && spl->first->next!=NULL && !spl->first->next->order2 ) {
 	    pfirst = NULL;
 	    for ( spt = spl->first ; spt!=pfirst; spt = spt->next->to ) {
 		if ( pfirst==NULL ) pfirst = spt;
 		if ( spt->prev!=NULL && spt->prevcpdef )
-		    SplineCharDefaultPrevCP(spt,spt->prev->from);
+		    SplineCharDefaultPrevCP(spt);
 		if ( spt->next==NULL )
 	    break;
 		if ( spt->nextcpdef )
-		    SplineCharDefaultNextCP(spt,spt->next->to);
+		    SplineCharDefaultNextCP(spt);
 	    }
 	}
 	first = NULL;
 	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
-	    SplineRefigure(spline);
+	    if ( !alldone ) SplineRefigureFixup(spline); else SplineRefigure(spline);
 	    if ( first==NULL ) first = spline;
 	}
     }
@@ -1730,6 +1731,8 @@ SplineFont *SplineFontFromPSFont(FontDict *fd) {
 	SplineFontFromType1(sf,fd);
     else
 	sf = SplineFontFromCIDType1(sf,fd);
+    if ( loaded_fonts_same_as_new && new_fonts_are_order2 )
+	SFConvertToOrder2(sf);
 return( sf );
 }
 

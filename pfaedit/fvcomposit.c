@@ -1498,7 +1498,7 @@ static void DoSpaces(SplineFont *sf,SplineChar *sc,int copybmp,FontView *fv) {
     }
 }
 
-static SplinePoint *MakeSP(real x, real y, SplinePoint *last) {
+static SplinePoint *MakeSP(real x, real y, SplinePoint *last,int order2) {
     SplinePoint *new = chunkalloc(sizeof(SplinePoint));
 
     new->me.x = x; new->me.y = y;
@@ -1506,7 +1506,7 @@ static SplinePoint *MakeSP(real x, real y, SplinePoint *last) {
     new->noprevcp = new->nonextcp = true;
     new->pointtype = pt_corner;
     if ( last!=NULL )
-	SplineMake(last,new);
+	SplineMake(last,new,order2);
 return( new );
 }
 
@@ -1563,11 +1563,11 @@ static void DoRules(SplineFont *sf,SplineChar *sc,int copybmp,FontView *fv) {
 	lbearing = b.minx;
 	ypos = b.miny;
     }
-    first = sp = MakeSP(lbearing,ypos,NULL);
-    sp = MakeSP(lbearing,ypos+height,sp);
-    sp = MakeSP(width-rbearing,ypos+height,sp);
-    sp = MakeSP(width-rbearing,ypos,sp);
-    SplineMake(sp,first);
+    first = sp = MakeSP(lbearing,ypos,NULL,sf->order2);
+    sp = MakeSP(lbearing,ypos+height,sp,sf->order2);
+    sp = MakeSP(width-rbearing,ypos+height,sp,sf->order2);
+    sp = MakeSP(width-rbearing,ypos,sp,sf->order2);
+    SplineMake(sp,first,sf->order2);
     sc->splines = chunkalloc(sizeof(SplinePointList));
     sc->splines->first = sc->splines->last = first;
     sc->width = width;

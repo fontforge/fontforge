@@ -442,7 +442,7 @@ return;
     cp.x = base.x + sign*cplen*s1; cp.y = base.y - sign*cplen*c1;
     Transform(&cur->last->nextcp,&cp,transform);
     cur->last->nonextcp = false;
-    SplineMake(cur->last,pt);
+    SplineMake3(cur->last,pt);
     cur->last = pt;
 }
 
@@ -990,7 +990,7 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 		    cur = spl;
 		} else {
 		    if ( cur!=NULL && cur->first!=NULL && (cur->first!=cur->last || cur->first->next==NULL) ) {
-			SplineMake(cur->last,pt);
+			SplineMake3(cur->last,pt);
 			cur->last = pt;
 		    }
 		}
@@ -1018,7 +1018,7 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 		    Transform(&pt->prevcp,&temp,transform);
 		    Transform(&pt->me,&current,transform);
 		    pt->nonextcp = true;
-		    SplineMake(cur->last,pt);
+		    SplineMake3(cur->last,pt);
 		    cur->last = pt;
 		}
 		sp -= 6;
@@ -1041,7 +1041,7 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 		    Transform(&pt->me,&temp,transform);
 		    pt->noprevcp = true; pt->nonextcp = true;
 		    if ( cur!=NULL && cur->first!=NULL && (cur->first!=cur->last || cur->first->next==NULL) ) {
-			SplineMake(cur->last,pt);
+			SplineMake3(cur->last,pt);
 			cur->last = pt;
 		    } else {	/* if no current point, then start here */
 			SplinePointList *spl = chunkalloc(sizeof(SplinePointList));
@@ -1082,7 +1082,7 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 		    pt = chunkalloc(sizeof(SplinePoint));
 		    Transform(&pt->me,&current,transform);
 		    pt->noprevcp = true; pt->nonextcp = true;
-		    SplineMake(cur->last,pt);
+		    SplineMake3(cur->last,pt);
 		    cur->last = pt;
 		} else {
 		    real l1 = sqrt((current.x-x1)*(current.x-x1)+(current.y-y1)*(current.y-y1));
@@ -1114,7 +1114,7 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 			pt = chunkalloc(sizeof(SplinePoint));
 			Transform(&pt->me,&temp,transform);
 			pt->noprevcp = true; pt->nonextcp = true;
-			SplineMake(cur->last,pt);
+			SplineMake3(cur->last,pt);
 			cur->last = pt;
 		    }
 		    a1 = 3*3.1415926535897932/2+a1;
@@ -1147,7 +1147,7 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 		    SplineFree(oldlast->prev);
 		    SplinePointFree(oldlast);
 		}
-		SplineMake(cur->last,cur->first);
+		SplineMake3(cur->last,cur->first);
 		cur->last = cur->first;
 	    }
 	  break;
@@ -1601,7 +1601,7 @@ return;		/* The "path" is just a single point created by a moveto */
 	    chunkfree(oldlast->prev,sizeof(*oldlast));
 	    chunkfree(oldlast,sizeof(*oldlast));
 	}
-	SplineMake(cur->last,cur->first);
+	SplineMake3(cur->last,cur->first);
 	cur->last = cur->first;
     }
 }
@@ -1882,13 +1882,13 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 				pt->me = mid;
 				pt->nextcp = mid_nextcp;
 				/*pt->flex = pops[2];*/
-				SplineMake(cur->last,pt);
+				SplineMake3(cur->last,pt);
 				cur->last = pt;
 				pt = chunkalloc(sizeof(SplinePoint));
 				pt->prevcp = end_prevcp;
 				pt->me = end;
 				pt->nonextcp = true;
-				SplineMake(cur->last,pt);
+				SplineMake3(cur->last,pt);
 				cur->last = pt;
 			    } else
 				fprintf(stderr, "No previous point on path in curveto from flex 0 in %s\n", name );
@@ -1902,7 +1902,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 			    SplinePointListFree(oldcur->next); oldcur->next = NULL;
 			    cur = oldcur;
 			    if ( cur!=NULL && cur->first!=NULL && (cur->first!=cur->last || cur->first->next==NULL) ) {
-				SplineMake(cur->last,pt);
+				SplineMake3(cur->last,pt);
 				cur->last = pt;
 			    } else
 				fprintf(stderr, "No previous point on path in lineto from flex 0 in %s\n", name );
@@ -2047,7 +2047,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 		    current.x += dx3; current.y += dy3;
 		    pt->me = current;
 		    pt->nonextcp = true;
-		    SplineMake(cur->last,pt);
+		    SplineMake3(cur->last,pt);
 		    cur->last = pt;
 
 		    current.x += dx4; current.y += dy4;
@@ -2059,7 +2059,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 		    current.x += dx6; current.y += dy6;
 		    pt->me = current;
 		    pt->nonextcp = true;
-		    SplineMake(cur->last,pt);
+		    SplineMake3(cur->last,pt);
 		    cur->last = pt;
 		} else
 		    fprintf(stderr, "No previous point on path in flex operator in %s\n", name );
@@ -2186,7 +2186,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 		}
 		closepath(cur,true);
 	    }
-#if 0	/* This doesn't work. It breaks type1 flex hinting */
+#if 0	/* This doesn't work. It breaks type1 flex hinting. */
 	/* There's now a special hack just before returning which closes any */
 	/*  open paths */
 	    else if ( cur!=NULL && cur->first->prev==NULL )
@@ -2231,7 +2231,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 	    break;
 		} else {
 		    if ( cur!=NULL && cur->first!=NULL && (cur->first!=cur->last || cur->first->next==NULL) ) {
-			SplineMake(cur->last,pt);
+			SplineMake3(cur->last,pt);
 			cur->last = pt;
 		    } else
 			fprintf(stderr, "No previous point on path in lineto in %s\n", name );
@@ -2247,7 +2247,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 		    pt = chunkalloc(sizeof(SplinePoint));
 		    pt->me = current;
 		    pt->noprevcp = true; pt->nonextcp = true;
-		    SplineMake(cur->last,pt);
+		    SplineMake3(cur->last,pt);
 		    cur->last = pt;
 		}
 	    }
@@ -2311,7 +2311,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 		    current.x += dx3; current.y += dy3;
 		    pt->me = current;
 		    pt->nonextcp = true;
-		    SplineMake(cur->last,pt);
+		    SplineMake3(cur->last,pt);
 		    cur->last = pt;
 		} else
 		    fprintf(stderr, "No previous point on path in curveto in %s\n", name );
@@ -2322,7 +2322,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 		    pt = chunkalloc(sizeof(SplinePoint));
 		    pt->me = current;
 		    pt->noprevcp = true; pt->nonextcp = true;
-		    SplineMake(cur->last,pt);
+		    SplineMake3(cur->last,pt);
 		    cur->last = pt;
 		}
 	    }
@@ -2372,9 +2372,10 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
     /*  the obvious moveto, that breaks flex hints. So we have a hack here at */
     /*  the end which closes any open paths. */
     if ( !is_type2 ) for ( cur = ret->splines; cur!=NULL; cur = cur->next ) if ( cur->first->prev==NULL ) {
-	SplineMake(cur->last,cur->first);
+	SplineMake3(cur->last,cur->first);
 	cur->last = cur->first;
     }
+
     /* For some reason, when I read splines in, I get their clockwise nature */
     /*  backwards ... at least backwards from fontographer ... so reverse 'em*/
     for ( cur = ret->splines; cur!=NULL; cur = cur->next )

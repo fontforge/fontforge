@@ -724,25 +724,19 @@ void CVAdjustControl(CharView *cv,BasePoint *cp, BasePoint *to) {
     } else if ( sp->pointtype==pt_curve ) {
 	cp->x = to->x;
 	cp->y = to->y;
-	if ( cp->x!=sp->me.x || cp->y!=sp->me.y ) {
-	    real angle = atan2(cp->y-sp->me.y,cp->x-sp->me.x)-3.1415926535897932;
-	    real len = sqrt((othercp->y-sp->me.y)*(othercp->y-sp->me.y) + (othercp->x-sp->me.x)*(othercp->x-sp->me.x));
-	    /* There's just enough error in atan2 and sin/cos that horizontal */
-	    /*  and vertical things don't quite match */
-	    if ( cp->y-sp->me.y==0 ) {
-		othercp->y = sp->me.y;
-		othercp->x = sp->me.x + len*cos(angle);
-	    } else if ( cp->x-sp->me.x==0 ) {
-		othercp->x = sp->me.x;
-		othercp->y = sp->me.y + len*sin(angle);
-	    } else {
-		othercp->x = sp->me.x + len*cos(angle);
-		othercp->y = sp->me.y + len*sin(angle);
-	    }
+	if (( cp->x!=sp->me.x || cp->y!=sp->me.y ) && !cv->sc->parent->order2 ) {
+	    double len1, len2;
+	    len1 = sqrt((cp->x-sp->me.x)*(cp->x-sp->me.x) +
+			(cp->y-sp->me.y)*(cp->y-sp->me.y));
+	    len2 = sqrt((othercp->x-sp->me.x)*(othercp->x-sp->me.x) +
+			(othercp->y-sp->me.y)*(othercp->y-sp->me.y));
+	    len2 /= len1;
+	    othercp->x = len2 * (sp->me.x-cp->x) + sp->me.x;
+	    othercp->y = len2 * (sp->me.y-cp->y) + sp->me.y;
 	    if ( sp->next!=NULL && othercp==&sp->nextcp )
-		SplineRefigure(sp->next);
+		SplineRefigure3(sp->next);
 	    if ( sp->prev!=NULL && othercp==&sp->prevcp )
-		SplineRefigure(sp->prev);
+		SplineRefigure3(sp->prev);
 	} 
     } else {
 	BasePoint *bp;
@@ -776,10 +770,20 @@ void CVAdjustControl(CharView *cv,BasePoint *cp, BasePoint *to) {
     if ( cp==&sp->nextcp ) sp->nextcpdef = false;
     else sp->prevcpdef = false;
 
-    if ( sp->next!=NULL && cp==&sp->nextcp )
-	SplineRefigure(sp->next);
-    if ( sp->prev!=NULL && cp==&sp->prevcp )
-	SplineRefigure(sp->prev);
+    if ( sp->next!=NULL && cp==&sp->nextcp ) {
+	if ( sp->next->order2 && !sp->nonextcp ) {
+	    sp->next->to->prevcp = *cp;
+	    sp->next->to->noprevcp = false;
+	}
+	SplineRefigureFixup(sp->next);
+    }
+    if ( sp->prev!=NULL && cp==&sp->prevcp ) {
+	if ( sp->prev->order2 && !sp->noprevcp ) {
+	    sp->prev->from->nextcp = *cp;
+	    sp->prev->from->nonextcp = false;
+	}
+	SplineRefigureFixup(sp->prev);
+    }
     CVSetCharChanged(cv,true);
 }
 
@@ -788,6 +792,9 @@ static void CVAdjustSpline(CharView *cv) {
     TPoint tp[5];
     real t;
     Spline1D *oldx = &old->splines[0], *oldy = &old->splines[1];
+
+    if ( cv->sc->parent->order2 )
+return;
 
     tp[0].x = cv->info.x; tp[0].y = cv->info.y; tp[0].t = cv->p.t;
     t = cv->p.t/10;

@@ -564,7 +564,7 @@ static SplineSet *TraceCurve(CharView *cv) {
 	cur = SplinePointCreate(pt->here.x,pt->here.y);
 	cur->ptindex = pt->num;
 	if ( base->next->online || base->next==pt )
-	    SplineMake(last,cur);
+	    SplineMake3(last,cur);
 	else
 	    ApproximateSplineFromPoints(last,cur,mids+base->num+1,pt->num-base->num-1);
 	last = cur;
@@ -667,8 +667,8 @@ return;
     trace->first->pointtype = pt_curve;
 
     if ( trace->first->nonextcp && trace->first->noprevcp ) {
-	SplineCharDefaultPrevCP(trace->first,trace->first->prev->from);
-	SplineCharDefaultNextCP(trace->first,trace->first->next->to);
+	SplineCharDefaultPrevCP(trace->first);
+	SplineCharDefaultNextCP(trace->first);
 return;
     }
 
@@ -684,7 +684,7 @@ return;
     oldp = trace->first->prevcp;
 
     if ( trace->first->nonextcp ) {
-	SplineCharDefaultPrevCP(trace->first,trace->first->prev->from);
+	SplineCharDefaultPrevCP(trace->first);
 	dx = trace->first->me.x-trace->first->prevcp.x;
 	dy = trace->first->me.y-trace->first->prevcp.y;
 	llen = sqrt(dx*dx+dy*dy);
@@ -694,7 +694,7 @@ return;
 		sin(hangle)*llen;
 	trace->first->nextcp = oldn;
     } else if ( trace->first->nonextcp ) {
-	SplineCharDefaultPrevCP(trace->first,trace->first->prev->from);
+	SplineCharDefaultPrevCP(trace->first);
 	dx = trace->first->me.x-trace->first->nextcp.x;
 	dy = trace->first->me.y-trace->first->nextcp.y;
 	hlen = sqrt(dx*dx+dy*dy);
@@ -781,6 +781,9 @@ static void TraceDataCleanup(CharView *cv) {
 }
 
 void CVMouseDownFreeHand(CharView *cv, GEvent *event) {
+    if ( cv->sc->parent->order2 )
+return;
+
     TraceDataFree(cv->freehand.head);
     cv->freehand.head = cv->freehand.last = NULL;
     cv->freehand.current_trace = NULL;
@@ -796,6 +799,9 @@ void CVMouseMoveFreeHand(CharView *cv, GEvent *event) {
     SplinePoint *last;
     BasePoint *here;
 
+    if ( cv->sc->parent->order2 )
+return;
+
     TraceDataFromEvent(cv,event);
     /* I used to do the full processing here to get an path. But that took */
     /*  too long to process them and we appeared to get events out of order */
@@ -805,13 +811,16 @@ void CVMouseMoveFreeHand(CharView *cv, GEvent *event) {
     if ( (dx=here->x-last->me.x)<0 ) dx = -dx;
     if ( (dy=here->y-last->me.y)<0 ) dy = -dy;
     if ( (dx+dy)*cv->scale > 4 ) {
-	SplineMake(last,SplinePointCreate(here->x,here->y));
+	SplineMake3(last,SplinePointCreate(here->x,here->y));
 	cv->freehand.current_trace->last = last->next->to;
 	GDrawRequestExpose(cv->v,NULL,false);
     }
 }
 
 void CVMouseUpFreeHand(CharView *cv, GEvent *event) {
+
+    if ( cv->sc->parent->order2 )
+return;
 
     TraceDataCleanup(cv);
 

@@ -42,6 +42,8 @@ return;
 	GDrawError( "I'm sorry this file is too complex for me to understand");
 return;
     }
+    if ( sc->parent->order2 )
+	spl = SplineSetsConvertOrder(spl,true);
     for ( espl=spl; espl->next!=NULL; espl = espl->next );
     if ( dm==dm_grid )
 	head = &sc->parent->gridsplines;
@@ -75,6 +77,8 @@ static void SCImportPS(SplineChar *sc,char *path) {
     if ( ps==NULL )
 return;
     spl = SplinePointListInterpretPS(ps);
+    if ( sc->parent->order2 )
+	spl = SplineSetsConvertOrder(spl,true);
     fclose(ps);
     if ( spl==NULL ) {
 	GDrawError( "I'm sorry this file is too complex for me to understand");
@@ -134,7 +138,7 @@ static SplinePoint *ArcSpline(SplinePoint *sp,float sa,SplinePoint *ep,float ea,
     sp->nextcp.x = sp->me.x - len*ss; sp->nextcp.y = sp->me.y + len*sc;
     ep->prevcp.x = ep->me.x + len*es; ep->prevcp.y = ep->me.y - len*ec;
     sp->nonextcp = ep->noprevcp = false;
-    SplineMake(sp,ep);
+    SplineMake3(sp,ep);
 return( ep );
 }
 
@@ -220,19 +224,19 @@ static SplineSet * slurpelipse(FILE *fig,SplineChar *sc, SplineSet *sofar) {
     sp->me.x = dcx+drx; sp->me.y = dcy;
 	sp->nextcp.x = sp->me.x; sp->nextcp.y = sp->me.y - .552*dry;
 	sp->prevcp.x = sp->me.x; sp->prevcp.y = sp->me.y + .552*dry;
-    SplineMake(spl->first,sp);
+    SplineMake3(spl->first,sp);
     sp = chunkalloc(sizeof(SplinePoint));
     sp->me.x = dcx; sp->me.y = dcy-dry;
 	sp->nextcp.x = sp->me.x - .552*drx; sp->nextcp.y = sp->me.y;
 	sp->prevcp.x = sp->me.x + .552*drx; sp->prevcp.y = sp->me.y;
-    SplineMake(spl->last,sp);
+    SplineMake3(spl->last,sp);
     spl->last = sp;
     sp = chunkalloc(sizeof(SplinePoint));
     sp->me.x = dcx-drx; sp->me.y = dcy;
 	sp->nextcp.x = sp->me.x; sp->nextcp.y = sp->me.y + .552*dry;
 	sp->prevcp.x = sp->me.x; sp->prevcp.y = sp->me.y - .552*dry;
-    SplineMake(spl->last,sp);
-    SplineMake(sp,spl->first);
+    SplineMake3(spl->last,sp);
+    SplineMake3(sp,spl->first);
     spl->last = spl->first;
 return( spl );
 }
@@ -283,25 +287,25 @@ static SplineSet * slurppolyline(FILE *fig,SplineChar *sc, SplineSet *sofar) {
 	    spl->first->nextcp.y += .552*r; spl->first->nonextcp = false;
 	    spl->last = sp = SplinePointCreate(topleft.x+r,topleft.y); sp->pointtype = pt_tangent;
 	    sp->prevcp.x -= .552*r; sp->noprevcp = false;
-	    SplineMake(spl->first,sp);
+	    SplineMake3(spl->first,sp);
 	    sp = SplinePointCreate(bottomright.x-r,topleft.y); sp->pointtype = pt_tangent;
 	    sp->nextcp.x += .552*r; sp->nonextcp = false;
-	    SplineMake(spl->last,sp); spl->last = sp;
+	    SplineMake3(spl->last,sp); spl->last = sp;
 	    sp = SplinePointCreate(bottomright.x,topleft.y-r); sp->pointtype = pt_tangent;
 	    sp->prevcp.y += .552*r; sp->noprevcp = false;
-	    SplineMake(spl->last,sp); spl->last = sp;
+	    SplineMake3(spl->last,sp); spl->last = sp;
 	    sp = SplinePointCreate(bottomright.x,bottomright.y+r); sp->pointtype = pt_tangent;
 	    sp->nextcp.y -= .552*r; sp->nonextcp = false;
-	    SplineMake(spl->last,sp); spl->last = sp;
+	    SplineMake3(spl->last,sp); spl->last = sp;
 	    sp = SplinePointCreate(bottomright.x-r,bottomright.y); sp->pointtype = pt_tangent;
 	    sp->prevcp.x += .552*r; sp->noprevcp = false;
-	    SplineMake(spl->last,sp); spl->last = sp;
+	    SplineMake3(spl->last,sp); spl->last = sp;
 	    sp = SplinePointCreate(topleft.x+r,bottomright.y); sp->pointtype = pt_tangent;
 	    sp->nextcp.x -= .552*r; sp->nonextcp = false;
-	    SplineMake(spl->last,sp); spl->last = sp;
+	    SplineMake3(spl->last,sp); spl->last = sp;
 	    sp = SplinePointCreate(topleft.x,bottomright.y+r); sp->pointtype = pt_tangent;
 	    sp->prevcp.y -= .552*r; sp->noprevcp = false;
-	    SplineMake(spl->last,sp); spl->last = sp;
+	    SplineMake3(spl->last,sp); spl->last = sp;
 	} else {
 	    for ( i=0; i<cnt; ++i ) {
 		sp = chunkalloc(sizeof(SplinePoint));
@@ -311,12 +315,12 @@ static SplineSet * slurppolyline(FILE *fig,SplineChar *sc, SplineSet *sofar) {
 		if ( spl->first==NULL )
 		    spl->first = sp;
 		else
-		    SplineMake(spl->last,sp);
+		    SplineMake3(spl->last,sp);
 		spl->last = sp;
 	    }
 	}
 	if ( sub!=1 ) {
-	    SplineMake(spl->last,spl->first);
+	    SplineMake3(spl->last,spl->first);
 	    spl->last = spl->first;
 	}
 	spl->next = sc->splines;
@@ -565,6 +569,8 @@ return;
     spl = slurpcompoundguts(fig,cv->sc,NULL);
     if ( spl!=NULL ) {
 	CVPreserveState(cv);
+	if ( cv->sc->parent->order2 )
+	    spl = SplineSetsConvertOrder(spl,true);
 	for ( espl=spl; espl->next!=NULL; espl=espl->next );
 	espl->next = *cv->heads[cv->drawmode];
 	*cv->heads[cv->drawmode] = spl;

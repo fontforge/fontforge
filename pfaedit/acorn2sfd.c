@@ -198,7 +198,7 @@ static SplineSet *FinishSet(SplineSet *old,SplineSet *active,int closed) {
 	    SplinePointFree(active->last);
 	    active->last = active->first;
 	} else if ( closed ) {
-	    SplineMake(active->last,active->first);
+	    SplineMake3(active->last,active->first);
 	    active->last = active->first;
 	}
 	active->next = old;
@@ -244,7 +244,7 @@ static SplineSet *ReadSplineSets(FILE *file,int flags,SplineSet *old,int closed)
 		next->nextcp = next->me;
 		next->nonextcp = true;
 	    }
-	    SplineMake(active->last,next);
+	    SplineMake3(active->last,next);
 	    active->last = next;
 	}
     }

@@ -3942,8 +3942,16 @@ return;
 	SplineCharTangentNextCP(sp);
     } else {
 	sp->nextcpdef = sp->prevcpdef = true;
-	SplineCharDefaultPrevCP(sp,sp->prev==NULL?NULL:sp->prev->from);
-	SplineCharDefaultNextCP(sp,sp->next==NULL?NULL:sp->next->to);
+	if (( sp->prev!=NULL && sp->prev->order2 ) ||
+		(sp->next!=NULL && sp->next->order2)) {
+	    if ( sp->prev!=NULL )
+		SplineRefigureFixup(sp->prev);
+	    if ( sp->next!=NULL )
+		SplineRefigureFixup(sp->next);
+	} else {
+	    SplineCharDefaultPrevCP(sp);
+	    SplineCharDefaultNextCP(sp);
+	}
     }
 }
 
@@ -4110,7 +4118,7 @@ void CVTransFunc(CharView *cv,real transform[6], enum fvtrans_flags flags) {
 
     SplinePointListTransform(*cv->heads[cv->drawmode],transform,!anysel);
     if ( flags&fvt_round_to_int )
-	SplineSetsRound2Int(*cv->heads[cv->drawmode]);
+	SplineSetsRound2Int(*cv->heads[cv->drawmode],cv->sc->parent->order2);
     if ( cv->drawmode==dm_back ) {
 	for ( img = cv->sc->backimages; img!=NULL; img=img->next )
 	    if ( img->selected || !anysel ) {
@@ -4205,14 +4213,15 @@ static void SplinePointRound(SplinePoint *sp) {
     sp->prevcp.y = rint(sp->prevcp.y);
 }
 
-void SplineSetsRound2Int(SplineSet *spl) {
+void SplineSetsRound2Int(SplineSet *spl,int order2) {
     SplinePoint *sp;
+    void (*refigure)(Spline *) = order2 ? SplineRefigure2 : SplineRefigure3;
 
     for ( ; spl!=NULL; spl=spl->next ) {
 	for ( sp=spl->first; ; ) {
 	    SplinePointRound(sp);
 	    if ( sp->prev!=NULL )
-		SplineRefigure(sp->prev);
+		refigure(sp->prev);
 	    if ( sp->next==NULL )
 	break;
 	    sp = sp->next->to;
@@ -4220,15 +4229,15 @@ void SplineSetsRound2Int(SplineSet *spl) {
 	break;
 	}
 	if ( spl->first->prev!=NULL )
-	    SplineRefigure(spl->first->prev);
+	    refigure(spl->first->prev);
     }
 }
 
-void SCRound2Int(SplineChar *sc,FontView *fv) {
+void SCRound2Int(SplineChar *sc) {
     RefChar *r;
 
     SCPreserveState(sc,false);
-    SplineSetsRound2Int(sc->splines);
+    SplineSetsRound2Int(sc->splines,sc->parent->order2);
     for ( r=sc->refs; r!=NULL; r=r->next ) {
 	r->transform[4] = rint(r->transform[4]);
 	r->transform[5] = rint(r->transform[5]);
@@ -4553,6 +4562,7 @@ static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
     SplinePoint *selpt=NULL;
     Spline *spline, *first;
     AnchorPoint *ap;
+    int order2 = cv->sc->parent->order2;
 
 #ifdef PFAEDIT_CONFIG_TILEPATH
     int badsel = false;
@@ -4624,13 +4634,13 @@ static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 	    mi->ti.disabled = !anypoints || dir==2;
 	  break;
 	  case MID_MetaFont:
-	    mi->ti.disabled = cv->drawmode!=dm_fore || cv->sc->refs!=NULL;
+	    mi->ti.disabled = cv->drawmode!=dm_fore || cv->sc->refs!=NULL || order2;
 	  break;
 	  case MID_Stroke:
-	    mi->ti.disabled = ( *cv->heads[cv->drawmode]==NULL );
+	    mi->ti.disabled = ( *cv->heads[cv->drawmode]==NULL || order2 );
 	  break;
 	  case MID_RmOverlap:
-	    mi->ti.disabled = ( *cv->heads[cv->drawmode]==NULL );
+	    mi->ti.disabled = ( *cv->heads[cv->drawmode]==NULL || order2 );
 #if 0
 	    if ( !mi->ti.disabled ) {
 		if ( e==NULL || !(e->u.mouse.state&ksm_shift) )
@@ -4642,7 +4652,7 @@ static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 	  break;
 #ifdef PFAEDIT_CONFIG_TILEPATH
 	  case MID_TilePath:
-	    mi->ti.disabled = badsel || ClipBoardToSplineSet()==NULL;
+	    mi->ti.disabled = badsel || ClipBoardToSplineSet()==NULL || order2;
 	  break;
 #endif
 	  case MID_RegenBitmaps:
@@ -4654,10 +4664,10 @@ static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 	  /*  all extrema have points. I'm not going to check for that, too hard */
 	  break;
 	  case MID_CleanupChar:
-	    mi->ti.disabled = *cv->heads[cv->drawmode]==NULL;
+	    mi->ti.disabled = *cv->heads[cv->drawmode]==NULL || order2;
 	  break;
 	  case MID_Simplify:
-	    mi->ti.disabled = *cv->heads[cv->drawmode]==NULL;
+	    mi->ti.disabled = *cv->heads[cv->drawmode]==NULL || order2;
 	  /* Simplify is always available (it may not do anything though) */
 	  /*  well, ok. Disable it if there is absolutely nothing to work on */
 #if 0

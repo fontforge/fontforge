@@ -43,7 +43,7 @@ return;
 return;					/* Nothing to cut */
 
     if ( p->spline!=NULL )
-	p->sp = SplineBisect(p->spline,p->t);
+	p->sp = SplineBisect(p->spline,p->t,cv->sc->parent->order2);
     if ( p->spl==NULL )		/* Kanou says this can happen. It doesn't hurt to check for it */
 return;
     if ( p->spl->first!=p->spl->last )

@@ -454,6 +454,7 @@ static GTextInfo mark_tags[] = {
 #define CID_Fontname	1016
 #define CID_Em		1017
 #define CID_Scale	1018
+#define CID_IsOrder2	1019
 
 #define CID_Make	1111
 #define CID_Delete	1112
@@ -2319,6 +2320,11 @@ static int AskTooFew() {
 return( GWidgetAskR(_STR_Toofew,buts,0,1,_STR_Reducing) );
 }
 
+static int AskLoseUndoes() {
+    static int buts[] = { _STR_OK, _STR_Cancel, 0 };
+return( GWidgetAskR(_STR_LosingUndoes,buts,0,1,_STR_ChangingOrderLosesUndoes) );
+}
+
 static void BadFamily() {
     GWidgetErrorR(_STR_Badfamily,_STR_Badfamilyn);
 }
@@ -3059,7 +3065,7 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	real ia, cidversion;
 	const unichar_t *txt; unichar_t *end;
 	int i,j;
-	int vmetrics, vorigin, namechange;
+	int vmetrics, vorigin, namechange, order2;
 	int xuidchanged = false;
 
 	if ( !CheckNames(d))
@@ -3080,6 +3086,7 @@ return( true );
 	    ProtestR(_STR_Italicangle);
 return(true);
 	}
+	order2 = GGadgetIsChecked(GWidgetGetControl(gw,CID_IsOrder2));
 	vmetrics = GGadgetIsChecked(GWidgetGetControl(gw,CID_HasVerticalMetrics));
 	upos = GetIntR(gw,CID_UPos, _STR_Upos,&err);
 	uwid = GetIntR(gw,CID_UWidth,_STR_Uheight,&err);
@@ -3112,6 +3119,8 @@ return( true );
 	}
 	if ( nchar<sf->charcnt && AskTooFew())
 return(true);
+	if ( order2!=sf->order2 && AskLoseUndoes())
+return( true );
 	TTF_PSDupsChanged(gw,sf,d->names_set ? d->names : sf->names);
 	GDrawSetCursor(gw,ct_watch);
 	namechange = SetFontName(gw,sf);
@@ -3220,6 +3229,12 @@ return(true);
 	    if ( vmetrics )
 		sf->pfminfo.vlinegap = vlinegap;
 	    sf->pfminfo.pfmset = true;
+	}
+	if ( order2!=sf->order2 ) {
+	    if ( order2 )
+		SFConvertToOrder2(sf);
+	    else
+		SFConvertToOrder3(sf);
 	}
 	if ( reformat_fv )
 	    FontViewReformatAll(sf);
@@ -3390,8 +3405,8 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
     GWindow gw;
     GWindowAttrs wattrs;
     GTabInfo aspects[10];
-    GGadgetCreateData mgcd[10], ngcd[13], egcd[12], psgcd[22], tngcd[7],   pgcd[8], vgcd[15], pangcd[22], comgcd[3], atgcd[7];
-    GTextInfo mlabel[10], nlabel[13], elabel[12], pslabel[22], tnlabel[7], plabel[8], vlabel[15], panlabel[22], comlabel[3], atlabel[7], *list;
+    GGadgetCreateData mgcd[10], ngcd[13], egcd[12], psgcd[23], tngcd[7],   pgcd[8], vgcd[15], pangcd[22], comgcd[3], atgcd[7];
+    GTextInfo mlabel[10], nlabel[13], elabel[12], pslabel[23], tnlabel[7], plabel[8], vlabel[15], panlabel[22], comlabel[3], atlabel[7], *list;
     struct gfi_data *d;
     char iabuf[20], upbuf[20], uwbuf[20], asbuf[20], dsbuf[20], ncbuf[20],
 	    vbuf[20], uibuf[12], regbuf[100], vorig[20], embuf[20];
@@ -3868,7 +3883,7 @@ return;
     psgcd[18].gd.handle_controlevent = GFI_VMetricsCheck;
     psgcd[18].creator = GCheckBoxCreate;
 
-    psgcd[19].gd.pos.x = 12; psgcd[19].gd.pos.y = psgcd[18].gd.pos.y+26+6;
+    psgcd[19].gd.pos.x = 12; psgcd[19].gd.pos.y = psgcd[18].gd.pos.y+22+4;
     pslabel[19].text = (unichar_t *) _STR_VOrigin;
     pslabel[19].text_in_resource = true;
     psgcd[19].gd.label = &pslabel[19];
@@ -3877,7 +3892,7 @@ return;
     psgcd[19].gd.cid = CID_VOriginLab;
     psgcd[19].creator = GLabelCreate;
 
-    psgcd[20].gd.pos.x = psgcd[15].gd.pos.x; psgcd[20].gd.pos.y = psgcd[19].gd.pos.y-6; psgcd[20].gd.pos.width = psgcd[15].gd.pos.width;
+    psgcd[20].gd.pos.x = psgcd[15].gd.pos.x; psgcd[20].gd.pos.y = psgcd[19].gd.pos.y-4; psgcd[20].gd.pos.width = psgcd[15].gd.pos.width;
     psgcd[20].gd.flags = sf->hasvmetrics ? (gg_visible | gg_enabled) : gg_visible;
     pslabel[20].text = (unichar_t *) "";
     pslabel[20].text_is_1byte = true;
@@ -3888,6 +3903,15 @@ return;
     psgcd[20].gd.label = &pslabel[20];
     psgcd[20].gd.cid = CID_VOrigin;
     psgcd[20].creator = GTextFieldCreate;
+
+    psgcd[21].gd.pos.x = 12; psgcd[21].gd.pos.y = psgcd[20].gd.pos.y+26;
+    pslabel[21].text = (unichar_t *) _STR_Order2Splines;
+    pslabel[21].text_in_resource = true;
+    psgcd[21].gd.label = &pslabel[21];
+    psgcd[21].gd.flags = sf->order2 ? (gg_visible | gg_enabled | gg_cb_on) : (gg_visible | gg_enabled);
+    psgcd[21].gd.cid = CID_IsOrder2;
+    psgcd[21].creator = GCheckBoxCreate;
+    psgcd[21].gd.popup_msg = GStringGetResource(_STR_PopupOrder2Splines,NULL);
 
     if ( sf->subfontcnt!=0 ) {
 	for ( i=0; i<=13; ++i )

@@ -320,6 +320,10 @@ static void dodiff( SplineFont *sf1, SplineFont *sf2, int checkhints,
 	printf( "The two fonts have different encodings\n" );
 	adiff = 1;
     }
+    if ( sf1->order2 != sf2->order2 ) {
+	printf( "The two fonts have spline orders\n" );
+	adiff = 1;
+    }
     if ( strcmp(sf1->fontname,sf2->fontname)!=0 ||
 	    strcmp(sf1->familyname,sf2->familyname)!=0 ||
 	    strcmp(sf1->fullname,sf2->fullname)!=0 ) {

@@ -913,11 +913,13 @@ static void flexto(GrowBuf *gb,BasePoint *current,Spline *pspline,int round,
 }
 
 static void CvtPsSplineSet(GrowBuf *gb, SplinePointList *spl, BasePoint *current,
-	int round, struct hintdb *hdb, BasePoint *start ) {
+	int round, struct hintdb *hdb, BasePoint *start, int is_order2 ) {
     Spline *spline, *first;
-    SplinePointList temp;
+    SplinePointList temp, *freeme=NULL;
     int init=true;
 
+    if ( is_order2 )
+	freeme = spl = SplineSetsPSApprox(spl);
     for ( ; spl!=NULL; spl = spl->next ) {
 	first = NULL;
 	SplineSetReverse(spl);
@@ -961,6 +963,7 @@ static void CvtPsSplineSet(GrowBuf *gb, SplinePointList *spl, BasePoint *current
 	/* Of course, I have to Reverse again to get back to my convention after*/
 	/*  saving */
     }
+    SplinePointListFree(freeme);
 }
 
 static RefChar *IsRefable(RefChar *ref, int isps, real transform[6], RefChar *sofar) {
@@ -1249,9 +1252,9 @@ static unsigned char *SplineChar2PS(SplineChar *sc,int *len,int round,int iscjk,
 	    }
 	}
 	if ( sc->ttf_glyph==0x7fff ) {
-	    CvtPsSplineSet(&gb,sc->splines,&current,round,hdb,startend);
+	    CvtPsSplineSet(&gb,sc->splines,&current,round,hdb,startend,sc->parent->order2);
 	    for ( rf = sc->refs; rf!=NULL; rf = rf->next )
-		CvtPsSplineSet(&gb,rf->splines,&current,round,hdb,NULL);
+		CvtPsSplineSet(&gb,rf->splines,&current,round,hdb,NULL,sc->parent->order2);
 	} else {
 	    _moveto(&gb,&current,&((BasePoint *) (subrs->keys[sc->ttf_glyph]))[0],false,round,NULL);
 	    AddNumber(&gb,sc->ttf_glyph,round);
@@ -1366,7 +1369,7 @@ static void SplineFont2Subrs1(SplineFont *sf,int round, int iscjk,
 	    } else {
 		memset(&gb,'\0',sizeof(gb));
 		bp[1] = bp[0];
-		CvtPsSplineSet(&gb,sc->splines,&bp[1],round,NULL,&bp[0]);
+		CvtPsSplineSet(&gb,sc->splines,&bp[1],round,NULL,&bp[0],sc->parent->order2);
 		if ( gb.pt+1>=gb.end )
 		    GrowBuffer(&gb);
 		*gb.pt++ = 11;				/* return */
@@ -2070,11 +2073,13 @@ static void flexto2(GrowBuf *gb,struct hintdb *hdb,Spline *pspline) {
 }
 
 static void CvtPsSplineSet2(GrowBuf *gb, SplinePointList *spl,
-	struct hintdb *hdb, BasePoint *start) {
+	struct hintdb *hdb, BasePoint *start,int is_order2) {
     Spline *spline, *first;
-    SplinePointList temp;
+    SplinePointList temp, *freeme = NULL;
     int init = true;
 
+    if ( is_order2 )
+	freeme = spl = SplineSetsPSApprox(spl);
     for ( ; spl!=NULL; spl = spl->next ) {
 	first = NULL;
 	SplineSetReverse(spl);
@@ -2112,6 +2117,7 @@ static void CvtPsSplineSet2(GrowBuf *gb, SplinePointList *spl,
 	/* Of course, I have to Reverse again to get back to my convention after*/
 	/*  saving */
     }
+    SplinePointListFree(freeme);
 }
 
 static StemInfo *OrderHints(StemInfo *mh, StemInfo *h, real offset, real otheroffset, int mask) {
@@ -2308,9 +2314,9 @@ static unsigned char *SplineChar2PSOutline2(SplineChar *sc,int *len,
     memset(&hdb,'\0',sizeof(hdb));
     hdb.sc = sc;
 
-    CvtPsSplineSet2(&gb,sc->splines,&hdb,startend);
+    CvtPsSplineSet2(&gb,sc->splines,&hdb,startend,sc->parent->order2);
     for ( rf = sc->refs; rf!=NULL; rf = rf->next )
-	CvtPsSplineSet2(&gb,rf->splines,&hdb,NULL);
+	CvtPsSplineSet2(&gb,rf->splines,&hdb,NULL,sc->parent->order2);
     if ( gb.pt+1>=gb.end )
 	GrowBuffer(&gb);
     *gb.pt++ = 11;				/* return */
@@ -2363,9 +2369,9 @@ static unsigned char *SplineChar2PS2(SplineChar *sc,int *len, int nomwid,
 	    AddMask2(&gb,mask,hdb.cnt,19);		/* hintmask */
 	    memcpy(hdb.mask,mask,sizeof(mask));
 	}
-	CvtPsSplineSet2(&gb,sc->splines,&hdb,NULL);
+	CvtPsSplineSet2(&gb,sc->splines,&hdb,NULL,sc->parent->order2);
 	for ( rf = sc->refs; rf!=NULL; rf = rf->next )
-	    CvtPsSplineSet2(&gb,rf->splines,&hdb,NULL);
+	    CvtPsSplineSet2(&gb,rf->splines,&hdb,NULL,sc->parent->order2);
     }
     if ( gb.pt+1>=gb.end )
 	GrowBuffer(&gb);

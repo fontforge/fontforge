@@ -1331,8 +1331,10 @@ return( true );
 	    cursp->nextcpdef = false;
 	    GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_NextDef), false );
 	}
-	if ( cursp->next!=NULL )
-	    SplineRefigure(cursp->next);
+	if ( ci->sc->parent->order2 )
+	    SplinePointNextCPChanged2(cursp,false);
+	else if ( cursp->next!=NULL )
+	    SplineRefigure3(cursp->next);
 	CVCharChangedUpdate(ci->cv);
 	PIFillup(ci,GGadgetGetCid(g));
     }
@@ -1359,7 +1361,9 @@ return( true );
 	    cursp->prevcpdef = false;
 	    GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_PrevDef), false );
 	}
-	if ( cursp->prev!=NULL )
+	if ( ci->sc->parent->order2 )
+	    SplinePointPrevCPChanged2(cursp,false);
+	else if ( cursp->prev!=NULL )
 	    SplineRefigure(cursp->prev);
 	CVCharChangedUpdate(ci->cv);
 	PIFillup(ci,GGadgetGetCid(g));
@@ -1377,7 +1381,7 @@ static int PI_NextDefChanged(GGadget *g, GEvent *e) {
 	/*  then set things to the default */
 	if ( cursp->nextcpdef ) {
 	    BasePoint temp = cursp->prevcp;
-	    SplineCharDefaultNextCP(cursp,cursp->next==NULL?NULL:cursp->next->to);
+	    SplineCharDefaultNextCP(cursp);
 	    if ( !cursp->prevcpdef )
 		cursp->prevcp = temp;
 	    CVCharChangedUpdate(ci->cv);
@@ -1397,7 +1401,7 @@ static int PI_PrevDefChanged(GGadget *g, GEvent *e) {
 	/*  then set things to the default */
 	if ( cursp->prevcpdef ) {
 	    BasePoint temp = cursp->nextcp;
-	    SplineCharDefaultPrevCP(cursp,cursp->prev==NULL?NULL:cursp->prev->from);
+	    SplineCharDefaultPrevCP(cursp);
 	    if ( !cursp->nextcpdef )
 		cursp->nextcp = temp;
 	    CVCharChangedUpdate(ci->cv);
@@ -1497,7 +1501,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	label[21].text_in_resource = true;
 	gcd[21].gd.label = &label[21];
 	gcd[21].gd.pos.x = 125; gcd[21].gd.pos.y = gcd[4].gd.pos.y-3;
-	gcd[21].gd.flags = gg_enabled|gg_visible;
+	gcd[21].gd.flags = (gg_enabled|gg_visible);
 	gcd[21].gd.cid = CID_PrevDef;
 	gcd[21].gd.handle_controlevent = PI_PrevDefChanged;
 	gcd[21].creator = GCheckBoxCreate;
@@ -1532,7 +1536,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	label[22].text_in_resource = true;
 	gcd[22].gd.label = &label[22];
 	gcd[22].gd.pos.x = gcd[21].gd.pos.x; gcd[22].gd.pos.y = gcd[8].gd.pos.y-3;
-	gcd[22].gd.flags = gg_enabled|gg_visible;
+	gcd[22].gd.flags = (gg_enabled|gg_visible);
 	gcd[22].gd.cid = CID_NextDef;
 	gcd[22].gd.handle_controlevent = PI_NextDefChanged;
 	gcd[22].creator = GCheckBoxCreate;

@@ -82,6 +82,10 @@ extern int glyph_2_name_map;		/* in tottf.c */
 unichar_t *script_menu_names[SCRIPT_MENU_MAX];
 char *script_filenames[SCRIPT_MENU_MAX];
 static char *xdefs_filename;
+int new_em_size = 1000;
+int new_fonts_are_order2 = false;
+int loaded_fonts_same_as_new = false;
+
 
 static int pointless;
 
@@ -138,8 +142,11 @@ static struct prefs_list {
 	{ "AutoHint", pr_bool, &autohint_before_rasterize, NULL, NULL, 'A', NULL, 0, _STR_PrefsPopupAH },
 	{ "LocalEncoding", pr_encoding, &prefs_encoding, NULL, NULL, 'L', NULL, 0, _STR_PrefsPopupLoc },
 	{ "NewCharset", pr_encoding, &default_encoding, NULL, NULL, 'N', NULL, 0, _STR_PrefsPopupForNewFonts },
-	{ "GreekFixup", pr_bool, &greekfixup, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupGF },
-	{ "ResourceFile", pr_file, &xdefs_filename, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupXRF },
+	{ "NewEmSize", pr_int, &new_em_size, NULL, NULL, 'S', NULL, 0, _STR_PrefsPopupNES },
+	{ "NewFontsQuadratic", pr_bool, &new_fonts_are_order2, NULL, NULL, 'Q', NULL, 0, _STR_PrefsPopupNOT },
+	{ "LoadedFontsAsNew", pr_bool, &loaded_fonts_same_as_new, NULL, NULL, 'L', NULL, 0, _STR_PrefsPopupLFN },
+	{ "GreekFixup", pr_bool, &greekfixup, NULL, NULL, 'G', NULL, 0, _STR_PrefsPopupGF },
+	{ "ResourceFile", pr_file, &xdefs_filename, NULL, NULL, 'R', NULL, 0, _STR_PrefsPopupXRF },
 	{ NULL }
 },
   editing_list[] = {

@@ -1449,7 +1449,7 @@ void FVTrans(FontView *fv,SplineChar *sc,real transform[6], char *sel,
     }
     SplinePointListTransform(sc->splines,transform,true);
     if ( flags&fvt_round_to_int )
-	SplineSetsRound2Int(sc->splines);
+	SplineSetsRound2Int(sc->splines,sc->parent->order2);
     for ( refs = sc->refs; refs!=NULL; refs=refs->next ) {
 	if ( sel!=NULL && sel[refs->sc->enc] ) {
 	    /* if the character referred to is selected then it's going to */
@@ -1788,7 +1788,7 @@ static void FVRound2Int(FontView *fv) {
     GProgressStartIndicatorR(10,_STR_Rounding,_STR_Rounding,0,cnt,1);
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
-	SCRound2Int( fv->sf->chars[i], fv);
+	SCRound2Int( fv->sf->chars[i]);
 	if ( !GProgressNext())
     break;
     }
@@ -2234,6 +2234,7 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     int anychars = FVAnyCharSelected(fv);
     int anybuildable, anytraceable;
+    int order2 = fv->sf->order2;
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
@@ -2258,7 +2259,7 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = anychars==-1 || fv->sf->onlybitmaps;
 	  break;
 	  case MID_Simplify:
-	    mi->ti.disabled = anychars==-1 || fv->sf->onlybitmaps;
+	    mi->ti.disabled = anychars==-1 || fv->sf->onlybitmaps || order2;
 #if 0
 	    free(mi->ti.text);
 	    if ( e==NULL || !(e->u.mouse.state&ksm_shift) ) {
@@ -2273,7 +2274,7 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #endif
 	  break;
 	  case MID_RmOverlap:
-	    mi->ti.disabled = anychars==-1 || fv->sf->onlybitmaps;
+	    mi->ti.disabled = anychars==-1 || fv->sf->onlybitmaps || order2;
 #if 0
 	    if ( !mi->ti.disabled ) {
 		if ( e==NULL || !(e->u.mouse.state&ksm_shift) )
@@ -2284,12 +2285,14 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #endif
 	  break;
 	  case MID_Stroke:
+	    mi->ti.disabled = anychars==-1 || fv->sf->onlybitmaps || order2;
+	  break;
 	  case MID_Round: case MID_Correct:
 	    mi->ti.disabled = anychars==-1 || fv->sf->onlybitmaps;
 	  break;
 #ifdef PFAEDIT_CONFIG_TILEPATH
 	  case MID_TilePath:
-	    mi->ti.disabled = anychars==-1 || fv->sf->onlybitmaps || ClipBoardToSplineSet()==NULL;
+	    mi->ti.disabled = anychars==-1 || fv->sf->onlybitmaps || ClipBoardToSplineSet()==NULL || order2;
 	  break;
 #endif
 	  case MID_RegenBitmaps:

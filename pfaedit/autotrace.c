@@ -257,6 +257,11 @@ return;
 		transform[4] = images->xoff;
 		transform[5] = images->yoff - images->yscale*ib->height;
 		new = SplinePointListTransform(new,transform,true);
+		if ( sc->parent->order2 ) {
+		    SplineSet *o2 = SplineSetsTTFApprox(new);
+		    SplinePointListFree(new);
+		    new = o2;
+		}
 		if ( new!=NULL ) {
 		    sc->parent->onlybitmaps = false;
 		    if ( !changed )

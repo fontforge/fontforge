@@ -469,6 +469,7 @@ Undoes *CVPreserveState(CharView *cv) {
 
     undo->undotype = ut_state;
     undo->was_modified = cv->sc->changed;
+    undo->was_order2 = cv->sc->parent->order2;
     undo->u.state.width = cv->sc->width;
     undo->u.state.vwidth = cv->sc->vwidth;
     undo->u.state.splines = SplinePointListCopy(*cv->heads[cv->drawmode]);
@@ -486,6 +487,7 @@ Undoes *SCPreserveState(SplineChar *sc,int dohints) {
 
     undo->undotype = ut_state;
     undo->was_modified = sc->changed;
+    undo->was_order2 = sc->parent->order2;
     undo->u.state.width = sc->width;
     undo->u.state.vwidth = sc->vwidth;
     undo->u.state.splines = SplinePointListCopy(sc->splines);
@@ -514,6 +516,7 @@ Undoes *SCPreserveBackground(SplineChar *sc) {
 
     undo->undotype = ut_state;
     undo->was_modified = sc->changed;
+    undo->was_order2 = sc->parent->order2;
     undo->u.state.width = sc->width;
     undo->u.state.vwidth = sc->vwidth;
     undo->u.state.splines = SplinePointListCopy(sc->backgroundsplines);
@@ -554,6 +557,7 @@ Undoes *CVPreserveWidth(CharView *cv,int width) {
 
     undo->undotype = ut_width;
     undo->was_modified = cv->sc->changed;
+    undo->was_order2 = cv->sc->parent->order2;
     undo->u.width = width;
 return( CVAddUndo(cv,undo));
 }
@@ -563,6 +567,7 @@ Undoes *CVPreserveVWidth(CharView *cv,int vwidth) {
 
     undo->undotype = ut_vwidth;
     undo->was_modified = cv->sc->changed;
+    undo->was_order2 = cv->sc->parent->order2;
     undo->u.width = vwidth;
 return( CVAddUndo(cv,undo));
 }
@@ -572,6 +577,7 @@ Undoes *SCPreserveWidth(SplineChar *sc) {
 
     undo->undotype = ut_width;
     undo->was_modified = sc->changed;
+    undo->was_order2 = sc->parent->order2;
     undo->u.state.width = sc->width;
 return( AddUndo(undo,&sc->undoes[0],&sc->redoes[0]));
 }
@@ -581,6 +587,7 @@ Undoes *SCPreserveVWidth(SplineChar *sc) {
 
     undo->undotype = ut_vwidth;
     undo->was_modified = sc->changed;
+    undo->was_order2 = sc->parent->order2;
     undo->u.state.width = sc->vwidth;
 return( AddUndo(undo,&sc->undoes[0],&sc->redoes[0]));
 }
@@ -1000,6 +1007,7 @@ static void *copybuffer2eps(void *_copybuffer,int32 *len) {
     SplineChar dummy;
     FILE *eps;
     char *ret;
+    int old_order2;
 
     while ( cur ) {
 	switch ( cur->undotype ) {
@@ -1024,7 +1032,7 @@ return( copy(""));
 
     memset(&dummy,0,sizeof(dummy));
     dummy.name = "dummy";
-    dummy.parent = fv_list->sf;
+    dummy.parent = fv_list->sf;		/* might not be the actual parent */
     dummy.splines = cur->u.state.splines;
     dummy.refs = cur->u.state.refs;
 
@@ -1033,7 +1041,12 @@ return( copy(""));
 	*len=0;
 return( copy(""));
     }
+
+    old_order2 = dummy.parent->order2;
+    dummy.parent->order2 = cur->was_order2;
     _ExportEPS(eps,&dummy);
+    dummy.parent->order2 = old_order2;
+
     fseek(eps,0,SEEK_END);
     *len = ftell(eps);
     ret = galloc(*len);
@@ -1155,6 +1168,7 @@ void CopyReference(SplineChar *sc) {
     CopyBufferFreeGrab();
 
     copybuffer.undotype = ut_state;
+    copybuffer.was_order2 = sc->parent->order2;
     copybuffer.u.state.width = sc->width;
     copybuffer.u.state.vwidth = sc->vwidth;
     copybuffer.u.state.refs = ref = chunkalloc(sizeof(RefChar));
@@ -1171,6 +1185,7 @@ void CopySelected(CharView *cv) {
     CopyBufferFreeGrab();
 
     copybuffer.undotype = ut_state;
+    copybuffer.was_order2 = cv->sc->parent->order2;
     copybuffer.u.state.width = cv->sc->width;
     copybuffer.u.state.vwidth = cv->sc->vwidth;
     copybuffer.u.state.splines = SplinePointListCopySelected(*cv->heads[cv->drawmode]);
@@ -1218,6 +1233,7 @@ static Undoes *SCCopyAll(SplineChar *sc,int full) {
     if ( sc==NULL ) {
 	cur->undotype = ut_noop;
     } else {
+	cur->was_order2 = sc->parent->order2;
 	cur->u.state.width = sc->width;
 	cur->u.state.vwidth = sc->vwidth;
 	if ( full ) {
@@ -1500,6 +1516,8 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear) {
 	}
 	if ( paster->u.state.splines!=NULL ) {
 	    SplinePointList *temp = SplinePointListCopy(paster->u.state.splines);
+	    if ( paster->was_order2 != sc->parent->order2 )
+		temp = SplineSetsConvertOrder(temp,sc->parent->order2);
 	    if ( sc->splines!=NULL ) {
 		SplinePointList *e = sc->splines;
 		while ( e->next!=NULL ) e = e->next;
@@ -1607,6 +1625,8 @@ return;
 	}
 	if ( paster->u.state.splines!=NULL ) {
 	    SplinePointList *spl, *new = SplinePointListCopy(paster->u.state.splines);
+	    if ( paster->was_order2 != cv->sc->parent->order2 )
+		new = SplineSetsConvertOrder(new,cv->sc->parent->order2 );
 	    SplinePointListSelect(new,true);
 	    for ( spl = new; spl->next!=NULL; spl = spl->next );
 	    spl->next = *cv->heads[cv->drawmode];

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 27-Jan-2003 -->
+  <!-- AP: Last modified: 12-Feb-2003 -->
   <TITLE>Font Info</TITLE>
 </HEAD>
 <BODY>
@@ -167,7 +167,7 @@ in unicode</A>.
 <P>
   <HR>
 <H3>
-  User Defined Encodings
+  <A NAME="User-def">User Defined Encodings</A>
 </H3>
 <P>
 You can also use the font info dialog to add new encodings to the set that
@@ -265,7 +265,7 @@ It contains:
     characters of almost every other encoding.
 </UL>
 <H2>
-  <IMG SRC="fontinfo-ps.png" WIDTH="369" HEIGHT="506" ALIGN="Right"><A NAME="PS-General">PS
+  <IMG SRC="fontinfo-ps.png" WIDTH="376" HEIGHT="544" ALIGN="Right"><A NAME="PS-General">PS
   General</A>
 </H2>
 <P>
@@ -314,7 +314,19 @@ Metrics</CODE> checkbox. This will enable the Vertical Origin field, and
 will mean that when you generate a truetype or opentype font a vertical metrics
 table will be added. The Vertical Origin is the vertical offset from the
 origin of the design coordinate system to the origin for the purposes of
-vertical metrics.<BR Clear=ALL>
+vertical metrics.
+<P>
+If you check <CODE>[*] Quadratic Splines </CODE>then PfaEdit will use quadratic
+<A HREF="overview.html#spline">Bezier</A> splines for this font rather than
+cubic Beziers, this means that PfaEdit will be using the native spline format
+of truetype rather than postscript (or opentype). When PfaEdit generates
+a font it will convert from whatever format is used internally to whatever
+format is required for the font, so there will be no problem if this is set
+incorrectly, but setting it correctly for your font means you get a clearer
+idea of what the outlines will look like. I find quadratic splines harder
+to edit with because each spline is less flexible (and a number of PfaEdit's
+commands will not work on them), but the advantage of actually seeing what
+your truetype font will look like may outweigh that.<BR Clear=ALL>
 <H2>
   <A NAME="Private">Private</A> -- <SMALL>(font-wide postscript hinting)</SMALL>
 </H2>

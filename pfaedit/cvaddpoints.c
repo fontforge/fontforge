@@ -182,6 +182,7 @@ void CVMouseDownPoint(CharView *cv) {
 			    cv->active_tool==cvt_corner?pt_corner:
 			    cv->active_tool==cvt_tangent?pt_tangent:
 			    /*cv->active_tool==cvt_pen?*/pt_corner);
+    int order2 = cv->sc->parent->order2;
 
     cv->active_spl = NULL;
     cv->active_sp = NULL;
@@ -208,24 +209,44 @@ return;			/* We clicked on the active point, that's a no-op */
 	    sp = chunkalloc(sizeof(SplinePoint));
 	    sp->me.x = cv->p.cx;
 	    sp->me.y = cv->p.cy;
-	    sp->nextcp = sp->me;
-	    sp->nonextcp = 1;
+	    sp->prevcp = sp->nextcp = sp->me;
+	    sp->noprevcp = sp->nonextcp = 1;
 	    sp->nextcpdef = sp->prevcpdef = 1;
 	    sp->pointtype = ptype;
 	    sp->selected = true;
+	    if ( order2 && !base->nonextcp ) {
+		sp->prevcp = base->nextcp;
+		sp->noprevcp = false;
+		if (  cv->active_tool==cvt_pen ) {
+		    sp->nextcp.x = sp->me.x - (sp->prevcp.x-sp->me.x);
+		    sp->nextcp.y = sp->me.y - (sp->prevcp.y-sp->me.y);
+		    sp->nonextcp = false;
+		}
+	    }
+	    SplineMake(base,sp,order2);
 	    if ( cv->active_tool!=cvt_pen )
-		SplineCharDefaultNextCP(base,sp);
-	    SplineCharDefaultPrevCP(sp,base);
-	    SplineMake(base,sp);
+		SplineCharDefaultNextCP(base);
+	    SplineCharDefaultPrevCP(sp);
 	    ss->last = sp;
 	} else if ( cv->p.spl==sel ) {
 	    /* Close the current spline set */
 	    cv->joinvalid = true;
 	    cv->joinpos = *sp; cv->joinpos.selected = false;
+	    if ( order2 ) {
+		if ( base->nonextcp || sp->noprevcp ) {
+		    base->nonextcp = sp->noprevcp = true;
+		    base->nextcp = base->me;
+		    sp->prevcp = sp->me;
+		} else {
+		    base->nextcp.x = sp->prevcp.x = (base->nextcp.x+sp->prevcp.x)/2;
+		    base->nextcp.y = sp->prevcp.y = (base->nextcp.y+sp->prevcp.y)/2;
+		}
+		base->nextcpdef = sp->prevcpdef = true;
+	    }
+	    SplineMake(base,sp,order2);
 	    if ( cv->active_tool!=cvt_pen )
-		SplineCharDefaultNextCP(base,sp);
-	    SplineCharDefaultPrevCP(sp,base);
-	    SplineMake(base,sp);
+		SplineCharDefaultNextCP(base);
+	    SplineCharDefaultPrevCP(sp);
 	    ss->last = sp;
 	    if ( sp->pointtype==pt_tangent ) {
 		SplineCharTangentNextCP(sp);
@@ -246,10 +267,10 @@ return;			/* We clicked on the active point, that's a no-op */
 		for ( temp = *cv->heads[cv->drawmode]; temp->next!=cv->p.spl; temp = temp->next );
 		temp->next = cv->p.spl->next;
 	    }
+	    SplineMake(base,sp,order2);
 	    if ( cv->active_tool!=cvt_pen )
-		SplineCharDefaultNextCP(base,sp);
-	    SplineCharDefaultPrevCP(sp,base);
-	    SplineMake(base,sp);
+		SplineCharDefaultNextCP(base);
+	    SplineCharDefaultPrevCP(sp);
 	    if ( sp->pointtype==pt_tangent ) {
 		SplineCharTangentNextCP(sp);
 		if ( sp->next ) SplineRefigure(sp->next );
@@ -295,8 +316,8 @@ return;			/* We clicked on the active point, that's a no-op */
 
 static void AdjustControls(SplinePoint *sp) {
     if ( sp->next!=NULL ) {
-	SplineCharDefaultNextCP(sp,sp->next->to);	/* also fixes up tangents */
-	SplineCharDefaultPrevCP(sp->next->to,sp);
+	SplineCharDefaultNextCP(sp);	/* also fixes up tangents */
+	SplineCharDefaultPrevCP(sp->next->to);
 	SplineRefigure(sp->next);
 	if ( sp->next->to->pointtype==pt_tangent && sp->next->to->next!=NULL ) {
 	    SplineCharTangentNextCP(sp->next->to);
@@ -304,8 +325,8 @@ static void AdjustControls(SplinePoint *sp) {
 	}
     }
     if ( sp->prev!=NULL ) {
-	SplineCharDefaultPrevCP(sp,sp->prev->from);
-	SplineCharDefaultNextCP(sp->prev->from,sp);
+	SplineCharDefaultPrevCP(sp);
+	SplineCharDefaultNextCP(sp->prev->from);
 	SplineRefigure(sp->prev);
 	if ( sp->prev->from->pointtype==pt_tangent && sp->prev->from->prev!=NULL ) {
 	    SplineCharTangentPrevCP(sp->prev->from);
@@ -411,10 +432,31 @@ return;
 	active->nextcpdef = active->prevcpdef = false;
 	active->pointtype = pt_curve;
     }
-    if ( active->prev!=NULL )
-	SplineRefigure(active->prev);
-    if ( active->next!=NULL )
-	SplineRefigure(active->next);
+    if ( cv->sc->parent->order2 ) {
+	if ( active->prev!=NULL ) {
+	    if ( active->noprevcp )
+		active->prev->from->nonextcp = true;
+	    else {
+		active->prev->from->nextcp = active->prevcp;
+		active->prev->from->nonextcp = false;
+	    }
+	    SplineRefigureFixup(active->prev);
+	}
+	if ( active->next!=NULL ) {
+	    if ( active->nonextcp )
+		active->next->to->noprevcp = true;
+	    else {
+		active->next->to->prevcp = active->nextcp;
+		active->next->to->noprevcp = false;
+	    }
+	    SplineRefigureFixup(active->next);
+	}
+    } else {
+	if ( active->prev!=NULL )
+	    SplineRefigure(active->prev);
+	if ( active->next!=NULL )
+	    SplineRefigure(active->next);
+    }
     SCUpdateAll(cv->sc);
 }
 

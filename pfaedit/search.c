@@ -493,14 +493,14 @@ static SplinePoint *RplInsertSP(SplinePoint *after,SplinePoint *rpl,SearchView *
     new->pointtype = rpl->pointtype;
     new->selected = true;
     if ( after->next==NULL ) {
-	SplineMake(after,new);
+	SplineMake(after,new,s->fv->sf->order2);
 	s->matched_spl->last = new;
     } else {
 	SplinePoint *nsp = after->next->to;
 	after->next->to = new;
 	new->prev = after->next;
 	SplineRefigure(after->next);
-	SplineMake(new,nsp);
+	SplineMake(new,nsp,s->fv->sf->order2);
     }
 return( new );
 }

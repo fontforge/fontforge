@@ -55,7 +55,8 @@ static void DumpSPL(FILE *eps,SplinePointList *spl) {
 	    if ( sp->next==NULL )
 	break;
 	}
-	fprintf( eps, "closepath\n" );
+	if ( spl->first->prev!=NULL )
+	    fprintf( eps, "closepath\n" );
     }
 }
 
@@ -84,9 +85,21 @@ int _ExportEPS(FILE *eps,SplineChar *sc) {
     fprintf( eps, "%%%%Page \"%s\" 1\n", sc->name );
 
     fprintf( eps, "newpath\n" );
-    DumpSPL(eps,sc->splines);
-    for ( rf = sc->refs; rf!=NULL; rf = rf->next )
-	DumpSPL(eps,rf->splines);
+    if ( !sc->parent->order2 ) {
+	DumpSPL(eps,sc->splines);
+	for ( rf = sc->refs; rf!=NULL; rf = rf->next )
+	    DumpSPL(eps,rf->splines);
+    } else {
+	SplinePointList *temp;
+	temp = SplineSetsPSApprox(sc->splines);
+	DumpSPL(eps,temp);
+	SplinePointListFree(temp);
+	for ( rf = sc->refs; rf!=NULL; rf = rf->next ) {
+	    temp = SplineSetsPSApprox(rf->splines);
+	    DumpSPL(eps,temp);
+	    SplinePointListFree(temp);
+	}
+    }
     fprintf( eps, "fill\n" );
     fprintf( eps, "%%%%EOF\n" );
     ret = !ferror(eps);

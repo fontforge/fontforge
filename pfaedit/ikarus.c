@@ -424,14 +424,14 @@ static void IkarusAddContour(SplineChar *sc,int npts,BasePoint *bps,
 	next = SplinePointCreate(bps[i].x,bps[i].y);
 	next->nextcpdef = next->prevcpdef = true;
 	next->pointtype = ptype[i];
-	SplineMake(last,next);
+	SplineMake3(last,next);
 	last = next;
     }
-    SplineMake(last,spl->last);
+    SplineMake3(last,spl->last);
     last = spl->first;
     for ( i=1; i<npts; ++i ) {
-	SplineCharDefaultPrevCP(last,last->prev->from);
-	SplineCharDefaultNextCP(last,last->next->to);
+	SplineCharDefaultPrevCP(last);
+	SplineCharDefaultNextCP(last);
 	last=last->next->to;
     }
 
@@ -698,6 +698,8 @@ return( NULL );
 	fseek(file,offsets[i],SEEK_SET);
 	IkarusReadChar(SFMakeChar(sf,i),file);
     }
+    if ( loaded_fonts_same_as_new && new_fonts_are_order2 )
+	SFConvertToOrder2(sf);
 
     free(numbers); free(offsets);
     fclose(file);
