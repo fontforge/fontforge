@@ -729,6 +729,180 @@ return;
     node->cnt = i;
 }
 
+static void BuildLCarets(struct node *node,struct att_dlg *att) {
+    SplineChar *sc = node->u.sc;
+    PST *pst;
+    int i,j;
+    char buffer[20];
+    struct node *lcars;
+
+    for ( pst=sc->possub; pst!=NULL; pst=pst->next ) if ( pst->type==pst_lcaret ) {
+	for ( j=pst->u.lcaret.cnt-1; j>=0; --j )
+	    if ( pst->u.lcaret.carets[j]!=0 )
+	break;
+    }
+    if ( j==0 )
+return;
+    node->children = lcars = gcalloc(j,sizeof(struct node));
+    node->cnt = j;
+    for ( j=i=0; j<pst->u.lcaret.cnt; ++j ) {
+	if ( pst->u.lcaret.carets[j]!=0 ) {
+	    sprintf( buffer,"%d", pst->u.lcaret.carets[j] );
+	    lcars[i].parent = node;
+	    lcars[i++].label = uc_copy(buffer);
+	}
+    }
+}
+
+static void BuildLcar(struct node *node,struct att_dlg *att) {
+    SplineFont *sf, *_sf = att->sf;
+    struct node *glyphs;
+    int i,j,k,l, lcnt;
+    PST *pst;
+
+    glyphs = NULL;
+    for ( k=0; k<2; ++k ) {
+	lcnt = 0;
+	l = 0;
+	do {
+	    sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[l];
+	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 ) {
+		for ( pst=sf->chars[i]->possub; pst!=NULL; pst=pst->next ) {
+		    if ( pst->type == pst_lcaret ) {
+			for ( j=pst->u.lcaret.cnt-1; j>=0; --j )
+			    if ( pst->u.lcaret.carets[j]!=0 )
+			break;
+			if ( j!=-1 )
+		break;
+		    }
+		}
+		if ( pst!=NULL ) {
+		    if ( glyphs!=NULL ) {
+			glyphs[lcnt].parent = node;
+			glyphs[lcnt].build = BuildLCarets;
+			glyphs[lcnt].u.sc = sf->chars[i];
+			glyphs[lcnt].label = uc_copy(sf->chars[i]->name);
+		    }
+		    ++lcnt;
+		}
+	    }
+	    ++l;
+	} while ( l<_sf->subfontcnt );
+	if ( lcnt==0 )
+    break;
+	if ( glyphs!=NULL )
+    break;
+	node->children = glyphs = gcalloc(lcnt,sizeof(struct node));
+	node->cnt = lcnt;
+    }
+}
+
+static void BuildGdefs(struct node *node,struct att_dlg *att) {
+    SplineFont *sf, *_sf = att->sf;
+    int i, cmax, l,j, ccnt;
+    SplineChar *sc;
+    struct node *chars;
+    char buffer[100];
+
+    cmax = 0;
+    l = 0;
+    do {
+	sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[l];
+	if ( cmax<sf->charcnt ) cmax = sf->charcnt;
+	++l;
+    } while ( l<_sf->subfontcnt );
+
+    chars = NULL;
+    for ( j=0; j<2; ++j ) {
+	ccnt = 0;
+	for ( i=0; i<cmax; ++i ) {
+	    l = 0;
+	    sc = NULL;
+	    do {
+		sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[l];
+		if ( l<sf->charcnt && sf->chars[l]!=NULL ) {
+		    sc = sf->chars[i];
+	    break;
+		}
+		++l;
+	    } while ( l<_sf->subfontcnt );
+	    if ( sc!=NULL && SCWorthOutputting(sc) ) {
+		if ( chars!=NULL ) {
+		    int gdefc = gdefclass(sc);
+		    sprintf(buffer,"%.70s %s", sc->name,
+			gdefc==1 ? "Base" :
+			gdefc==2 ? "Ligature" :
+			gdefc==3 ? "Mark" :
+			    "Componant" );
+		    chars[ccnt].parent = node;
+		    chars[ccnt].label = uc_copy(buffer);;
+		}
+		++ccnt;
+	    }
+	}
+	if ( ccnt==0 )
+    break;
+	if ( chars==NULL ) {
+	    node->cnt = ccnt;
+	    node->children = chars = gcalloc(ccnt,sizeof(struct node));
+	}
+    }
+}
+
+static void BuildGDEF(struct node *node,struct att_dlg *att) {
+    SplineFont *sf, *_sf = att->sf;
+    AnchorClass *ac;
+    PST *pst;
+    int l,j,i;
+    int gdef, lcar;
+
+    for ( ac = _sf->anchor; ac!=NULL; ac=ac->next ) {
+	if ( ac->feature_tag!=CHR('c','u','r','s'))
+    break;
+    }
+    l = 0;
+    pst = NULL;
+    do {
+	sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[l];
+	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 ) {
+	    for ( pst=sf->chars[i]->possub; pst!=NULL; pst=pst->next ) {
+		if ( pst->type == pst_lcaret ) {
+		    for ( j=pst->u.lcaret.cnt-1; j>=0; --j )
+			if ( pst->u.lcaret.carets[j]!=0 )
+		    break;
+		    if ( j!=-1 )
+	    break;
+		}
+	    }
+	    if ( pst!=NULL )
+	break;
+	}
+	if ( pst!=NULL )
+    break;
+	++l;
+    } while ( l<_sf->subfontcnt );
+
+    gdef = lcar = 0;
+    if ( ac!=NULL )
+	gdef = 1;
+    if ( pst!=NULL )
+	lcar = 1;
+    if ( gdef+lcar!=0 ) {
+	node->children = gcalloc(gdef+lcar,sizeof(struct node));
+	node->cnt = gdef+lcar;
+	if ( gdef ) {
+	    node->children[0].label = uc_copy("Glyph Definition Sub-Table");
+	    node->children[0].build = BuildGdefs;
+	    node->children[0].parent = node;
+	}
+	if ( lcar ) {
+	    node->children[gdef].label = uc_copy("Ligature Caret Sub-Table");
+	    node->children[gdef].build = BuildLcar;
+	    node->children[gdef].parent = node;
+	}
+    }
+}
+
 static void BuildTable(struct node *node,struct att_dlg *att) {
     SplineFont *sf, *_sf = att->sf;
     int script_max;
@@ -854,12 +1028,13 @@ return;
 
 static void BuildTop(struct att_dlg *att) {
     SplineFont *sf, *_sf = att->sf;
-    int hasgsub=0, hasgpos=0, hasmorx=0, haskern=0;
+    int hasgsub=0, hasgpos=0, hasgdef=0, hasmorx=0, haskern=0, haslcar=0;
     int feat, set;
     struct node *tables;
     PST *pst;
     SplineChar *sc;
-    int i,k;
+    int i,k,j;
+    AnchorClass *ac;
 
     k=0;
     do {
@@ -868,7 +1043,13 @@ static void BuildTop(struct att_dlg *att) {
 	    for ( pst=sc->possub; pst!=NULL; pst=pst->next ) if ( pst->type!=pst_lcaret ) {
 		if ( pst->type == pst_position )
 		    hasgpos = true;
-		else {
+		else if ( pst->type == pst_lcaret ) {
+		    for ( j=pst->u.lcaret.cnt-1; j>=0; --j )
+			if ( pst->u.lcaret.carets[j]!=0 )
+		    break;
+		    if ( j!=-1 )
+			hasgdef = haslcar = true;
+		} else {
 		    hasgsub = true;
 		    if ( OTTagToMacFeature(pst->type,&feat,&set))
 			hasmorx = true;
@@ -883,18 +1064,24 @@ static void BuildTop(struct att_dlg *att) {
     } while ( k<_sf->subfontcnt );
     if ( _sf->anchor!=NULL )
 	hasgpos = true;
+    for ( ac = sf->anchor; ac!=NULL; ac=ac->next ) {
+	if ( ac->feature_tag!=CHR('c','u','r','s'))
+    break;
+    }
+    if ( ac!=NULL )
+	hasgdef = true;
 
-    if ( hasgsub+hasgpos+hasmorx+haskern==0 ) {
+    if ( hasgsub+hasgpos+hasgdef+hasmorx+haskern+haslcar==0 ) {
 	tables = gcalloc(2,sizeof(struct node));
 	tables[0].label = u_copy(GStringGetResource(_STR_NoAdvancedTypography,NULL));
     } else {
-	tables = gcalloc((hasgsub||hasgpos)+(hasmorx||haskern)+1,sizeof(struct node));
+	tables = gcalloc((hasgsub||hasgpos||hasgdef)+(hasmorx||haskern||haslcar)+1,sizeof(struct node));
 	i=0;
-	if ( hasgsub || hasgpos ) {
+	if ( hasgsub || hasgpos || hasgdef) {
 	    tables[i].label = uc_copy("OpenType Tables");
 	    tables[i].children_checked = true;
-	    tables[i].children = gcalloc(hasgsub+hasgpos+1,sizeof(struct node));
-	    tables[i].cnt = hasgsub + hasgpos;
+	    tables[i].children = gcalloc(hasgsub+hasgpos+hasgdef+1,sizeof(struct node));
+	    tables[i].cnt = hasgsub + hasgpos + hasgdef;
 	    if ( hasgsub ) {
 		tables[i].children[0].label = uc_copy("'GSUB' Glyph Substitution Table");
 		tables[i].children[0].tag = CHR('G','S','U','B');
@@ -907,13 +1094,19 @@ static void BuildTop(struct att_dlg *att) {
 		tables[i].children[hasgsub].build = BuildTable;
 		tables[i].children[hasgsub].parent = &tables[i];
 	    }
+	    if ( hasgdef ) {
+		tables[i].children[hasgsub+hasgpos].label = uc_copy("'GDEF' Glyph Definition Table");
+		tables[i].children[hasgsub+hasgpos].tag = CHR('G','D','E','F');
+		tables[i].children[hasgsub+hasgpos].build = BuildGDEF;
+		tables[i].children[hasgsub+hasgpos].parent = &tables[i];
+	    }
 	    ++i;
 	}
-	if ( hasmorx || haskern ) {
+	if ( hasmorx || haskern || haslcar ) {
 	    tables[i].label = u_copy(GStringGetResource(_STR_AppleAdvancedTypography,NULL));
 	    tables[i].children_checked = true;
-	    tables[i].children = gcalloc(hasmorx+haskern+1,sizeof(struct node));
-	    tables[i].cnt = hasmorx+haskern;
+	    tables[i].children = gcalloc(hasmorx+haskern+haslcar+1,sizeof(struct node));
+	    tables[i].cnt = hasmorx+haskern+haslcar;
 	    if ( hasmorx ) {
 		tables[i].children[0].label = uc_copy("'morx' Glyph Extended Metamorphasis Table");
 		tables[i].children[0].tag = CHR('m','o','r','x');
@@ -925,6 +1118,12 @@ static void BuildTop(struct att_dlg *att) {
 		tables[i].children[hasmorx].tag = CHR('k','e','r','n');
 		tables[i].children[hasmorx].build = BuildTable;
 		tables[i].children[hasmorx].parent = &tables[i];
+	    }
+	    if ( haslcar ) {
+		tables[i].children[hasmorx+haskern].label = uc_copy("'lcar' Ligature Caret Table");
+		tables[i].children[hasmorx+haskern].tag = CHR('l','c','a','r');
+		tables[i].children[hasmorx+haskern].build = BuildLcar;
+		tables[i].children[hasmorx+haskern].parent = &tables[i];
 	    }
 	    ++i;
 	}
