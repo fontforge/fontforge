@@ -584,7 +584,7 @@ static unichar_t *glistitem(struct fpst_rule *r) {
 	    (r->u.glyph.fore==0 ? 0 : strlen(r->u.glyph.fore))+
 	    13*r->lookup_cnt;
     ret = pt = galloc((len+8) * sizeof(unichar_t));
-    if ( r->u.glyph.back!=NULL ) {
+    if ( r->u.glyph.back!=NULL && *r->u.glyph.back!='\0' ) {
 	char *temp = reversenames(r->u.glyph.back);
 	uc_strcpy(pt,temp);
 	pt += strlen(temp);
@@ -598,7 +598,7 @@ static unichar_t *glistitem(struct fpst_rule *r) {
     *pt++ = ' ';
     *pt++ = ']';
     *pt++ = ' ';
-    if ( r->u.glyph.fore!=NULL ) {
+    if ( r->u.glyph.fore!=NULL  && *r->u.glyph.fore!='\0' ) {
 	uc_strcpy(pt,r->u.glyph.fore);
 	pt += strlen(r->u.glyph.fore);
 	*pt++ = ' ';
@@ -1283,7 +1283,7 @@ return;
 	    glistitem2rule(old[i]->text,&dummy);
 	    GGadgetSetTitle(GWidgetGetControl(ccd->gw,CID_GlyphList),(temp=uc_copy(dummy.u.glyph.names)));
 	    free(temp);
-	    GGadgetSetTitle(GWidgetGetControl(ccd->gw,CID_GlyphList+20),(temp=uc_copy(temp2 = reversenames(dummy.u.glyph.back))));
+	    GGadgetSetTitle(GWidgetGetControl(ccd->gw,CID_GlyphList+20),(temp=uc_copy((temp2 = reversenames(dummy.u.glyph.back))==NULL ? "" : temp2)));
 	    free(temp); free(temp2);
 	    GGadgetSetTitle(GWidgetGetControl(ccd->gw,CID_GlyphList+40),(temp=uc_copy(dummy.u.glyph.fore?dummy.u.glyph.fore:"")));
 	    free(temp);
@@ -2547,7 +2547,7 @@ struct contextchaindlg *ContextChainEdit(SplineFont *sf,FPST *fpst,
 	bgcd[1].gd.flags = gg_visible | gg_enabled; bgcd[2].gd.flags = gg_visible;
 	ccd->aw = aw_class;
     } else {
-	bgcd[1].gd.flags = bgcd[2].gd.flags = gg_visible | gg_enabled;
+	bgcd[1].gd.flags = gg_visible | gg_enabled; bgcd[2].gd.flags = gg_visible;
 	ccd->aw = aw_glist;
     }
     
