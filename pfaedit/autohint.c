@@ -1658,6 +1658,8 @@ static StemInfo *StemRemoveSerifOverlaps(StemInfo *stems) {
     /*  with a serif vstem. What we want is to make sure the distance between*/
     /*  the nested (main) stem and the serif is the same on both sides but */
     /*  there is no mechanism for that */
+    /* There are also a few hstem serifs (the central stem of "E" or the low */
+    /*  stem of "F" for instance) */
     /* So I think they are useless. But they provide overlaps, which means */
     /*  we need to invoke hint substitution for something useless. So let's */
     /*  just get rid of them */
@@ -1678,7 +1680,7 @@ static StemInfo *StemRemoveSerifOverlaps(StemInfo *stems) {
 	    real left, right, sh, top, bottom;
 	    left = main->start-serif->start;
 	    right = serif->start+serif->width - (main->start+main->width);
-	    if ( left-right<-5 || left-right>5 )
+	    if ( left-right<-10 || left-right>10 )
 	continue;
 	    /* In "H" the main stem is broken in two */
 	    bottom = main->where->begin; top = main->where->end;
@@ -1694,7 +1696,7 @@ static StemInfo *StemRemoveSerifOverlaps(StemInfo *stems) {
 	    }
 	    if ( hi!=NULL )
 	continue;	/* serif in middle => not serif */
-	    if ( 3*sh>(top-bottom) )
+	    if ( 2*sh>(top-bottom) )
 	continue;
 	    if ( serif->where!=NULL && serif->where->next!=NULL && serif->where->next->next!=NULL )
 	continue;	/* No more that two serifs, top & bottom */
@@ -2111,7 +2113,7 @@ static StemInfo *SCFindStems(EIList *el, int major, int removeOverlaps,DStemInfo
     free(el->ends);
     stems = StemRemoveZeroHIlen(stems);
     if ( removeOverlaps ) {
-	if ( major==1 )
+	/*if ( major==1 )*/ /* There are a few hstem serifs that should be removed, central stem of "E" */
 	    stems = StemRemoveSerifOverlaps(stems);
 	stems = StemRemoveWideConflictingHintsContainingLittleOnes(stems);
 	if ( major==0 )
