@@ -1206,6 +1206,8 @@ static void RemoveStupidControlPoints(SplineSet *spl) {
 
     /* Also remove really stupid control points: Tiny offsets pointing in */
     /*  totally the wrong direction. Some of the TeX fonts we get have these */
+    /* We get equally bad results with a control point that points beyond the */
+    /*  other end point */
     first = NULL;
     for ( s = spl->first->next; s!=NULL && s!=first; s=s->to->next ) {
 	unit.x = s->to->me.x-s->from->me.x;
@@ -1219,7 +1221,8 @@ static void RemoveStupidControlPoints(SplineSet *spl) {
 		off.y = s->from->nextcp.y-s->from->me.y;
 		if ((normal = off.x*unit.y - off.y*unit.x)<0 ) normal = -normal;
 		dir = off.x*unit.x + off.y*unit.y;
-		if (( normal<dir && normal<1 && dir<0 ) || (normal<.5 && dir<-.5)) {
+		if (( normal<dir && normal<1 && dir<0 ) || (normal<.5 && dir<-.5) ||
+			(normal<.1 && dir>len)) {
 		    s->from->nextcp = s->from->me;
 		    s->from->nonextcp = true;
 		    refigure = true;
@@ -1230,7 +1233,8 @@ static void RemoveStupidControlPoints(SplineSet *spl) {
 		off.y = s->to->me.y - s->to->prevcp.y;
 		if ((normal = off.x*unit.y - off.y*unit.x)<0 ) normal = -normal;
 		dir = off.x*unit.x + off.y*unit.y;
-		if (( normal<-dir && normal<1 && dir<0 ) || (normal<.5 && dir>-.5 && dir<0)) {
+		if (( normal<-dir && normal<1 && dir<0 ) || (normal<.5 && dir>-.5 && dir<0) ||
+			(normal<.1 && dir>len)) {
 		    s->to->prevcp = s->to->me;
 		    s->to->noprevcp = true;
 		    refigure = true;
