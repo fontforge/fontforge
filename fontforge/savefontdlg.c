@@ -2047,6 +2047,17 @@ return( !_DoSave(sf,filename,sizes,res));
 }
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+static int AnyRefs(RefChar *refs) {
+    int j;
+    while ( refs!=NULL ) {
+	for ( j=0; j<refs->layer_cnt; ++j )
+	    if ( refs->layers[j].splines!=NULL )
+return( true );
+	refs = refs->next;
+    }
+return( false );
+}
+
 static void DoSave(struct gfc_data *d,unichar_t *path) {
     int err=false;
     char *temp;
@@ -2064,7 +2075,7 @@ static void DoSave(struct gfc_data *d,unichar_t *path) {
 
     for ( i=d->sf->charcnt-1; i>=1; --i )
 	if ( d->sf->chars[i]!=NULL && strcmp(d->sf->chars[i]->name,".notdef")==0 &&
-		(d->sf->chars[i]->layers[ly_fore].splines!=NULL || d->sf->chars[i]->layers[ly_fore].refs!=NULL))
+		(d->sf->chars[i]->layers[ly_fore].splines!=NULL || AnyRefs(d->sf->chars[i]->layers[ly_fore].refs )))
     break;
     if ( i!=0 ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)

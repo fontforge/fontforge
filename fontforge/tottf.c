@@ -1388,6 +1388,8 @@ static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
 	i=0, cnt=0;
 	if ( SCIsNotdef(sf->chars[0],fixed) )
 	    sf->chars[i++]->ttf_glyph = cnt++;
+	else if ( sf->chars[0]!=NULL && strcmp(sf->chars[0]->name,".notdef")==0 )
+	    ++i;
 	if (( sf->chars[0]==NULL || sf->chars[0]->ttf_glyph==0 ) && has1 ) {
 	    sf->chars[1]->ttf_glyph = cnt++;
 	    i = 2;
@@ -1429,8 +1431,11 @@ static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
     i = 0;
     if ( SCIsNotdef(sf->chars[0],fixed) && !gi->onlybitmaps )
 	dumpglyph(sf->chars[i++],gi);
-    else
+    else {
 	dumpmissingglyph(sf,gi,fixed);
+	if ( sf->chars[0]!=NULL && strcmp(sf->chars[0]->name,".notdef")==0 )
+	    ++i;
+    }
     if ( fixed!=-1 ) {
 	gi->lasthwidth = 3;
 	gi->hfullcnt = 3;

@@ -477,7 +477,7 @@ static void dump_pdf3_encoding(PI *pi,int base,DBounds *bb, int notdefproc) {
     SplineFont *sf = pi->sf;
 
     for ( i=base; i<base+256 && i<sf->charcnt; ++i ) {
-	if ( SCWorthOutputting(sf->chars[i])) {
+	if ( SCWorthOutputting(sf->chars[i]) && strcmp(sf->chars[i]->name,".notdef")!=0 ) {
 	    if ( first==-1 ) first = i-base;
 	    last = i-base;
 	}
@@ -487,7 +487,7 @@ return;			/* Nothing in this range */
 
     memset(charprocs,0,sizeof(charprocs));
     for ( i=base; i<base+256 && i<sf->charcnt; ++i ) {
-	if ( SCWorthOutputting(sf->chars[i]))
+	if ( SCWorthOutputting(sf->chars[i]) && strcmp(sf->chars[i]->name,".notdef")!=0 )
 	    charprocs[i-base] = pdf_charproc(pi,sf->chars[i]);
     }
 

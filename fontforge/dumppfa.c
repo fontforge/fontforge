@@ -879,11 +879,14 @@ static int dumpcharprocs(void (*dumpchar)(int ch,void *data), void *data, Spline
     i = 0;
     if ( SCWorthOutputting(sf->chars[0]) && SCIsNotdef(sf->chars[0],-1 ))
 	dumpproc(dumpchar,data,sf->chars[i++]);
-    else
+    else {
 	dumpf(dumpchar, data, "  /.notdef { %d 0 0 0 0 0 setcachedevice } bind def\n",
 	    sf->ascent+sf->descent );
+	if ( sf->chars[0]!=NULL && strcmp(sf->chars[0]->name,".notdef")==0 )
+	    ++i;
+    }
     for ( ; i<sf->charcnt; ++i ) {
-	if ( SCWorthOutputting(sf->chars[i]) )
+	if ( SCWorthOutputting(sf->chars[i]) && SCDuplicate(sf->chars[i])==sf->chars[i])
 	    dumpproc(dumpchar,data,sf->chars[i]);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #if defined(FONTFORGE_CONFIG_GDRAW)
