@@ -2162,7 +2162,8 @@ return;
 	else if ( dups[i].cid==CID_Version ) {
 	    u_sprintf(versionbuf,versionformatspec,txt);
 	    txt1 = versionbuf;
-	    if ( u_strcmp(txt1,english->names[dups[i].ttf])!=0 )
+	    if ( english->names[dups[i].ttf]!=NULL &&
+		    u_strcmp(txt1,english->names[dups[i].ttf])!=0 )
 		versionbuf[u_strlen(versionbuf)-1] = '\0';	/* Trailing space often omitted */
 	}
 	if ( english->names[dups[i].ttf]!=NULL &&
