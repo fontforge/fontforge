@@ -43,6 +43,10 @@ int hasFreeTypeByteCode(void) {
 return( false );
 }
 
+int FreeTypeAtLeast(int major, int minor, int patch) {
+return( 0 );
+}
+
 void *_FreeTypeFontContext(SplineFont *sf,SplineChar *sc,FontView *fv,
 	enum fontformat ff,int flags, void *share) {
 return( NULL );
@@ -93,6 +97,7 @@ static FT_Library context;
 #define _FT_Load_Glyph FT_Load_Glyph
 #define _FT_Render_Glyph FT_Render_Glyph
 #define _FT_Outline_Decompose FT_Outline_Decompose
+#define _FT_Library_Version FT_Library_Version
 
 # if FREETYPE_HAS_DEBUGGER
 #  include "ttobjs.h"
@@ -121,6 +126,7 @@ static FT_Error (*_FT_Set_Char_Size)( FT_Face, int wid/*=0*/, int height/* =ptsi
 static FT_Error (*_FT_Load_Glyph)( FT_Face, int, int);
 static FT_Error (*_FT_Render_Glyph)( FT_GlyphSlot, int);
 static FT_Error (*_FT_Outline_Decompose)(FT_Outline *, const FT_Outline_Funcs *,void *);
+static FT_Error (*_FT_Library_Version)(FT_Library, FT_Int *, FT_Int *, FT_Int *);
 
 # if FREETYPE_HAS_DEBUGGER
 #  include "ttobjs.h"
@@ -145,6 +151,7 @@ return( false );
     _FT_Load_Glyph = (FT_Error (*)(FT_Face, int, int)) dlsym(libfreetype,"FT_Load_Glyph");
     _FT_Render_Glyph = (FT_Error (*)(FT_GlyphSlot, int)) dlsym(libfreetype,"FT_Render_Glyph");
     _FT_Outline_Decompose = (FT_Error (*)(FT_Outline *, const FT_Outline_Funcs *,void *)) dlsym(libfreetype,"FT_Outline_Decompose");
+    _FT_Library_Version = (FT_Error (*)(FT_Library, FT_Int *,  FT_Int *, FT_Int *)) dlsym(libfreetype,"FT_Library_Version");
 #if FREETYPE_HAS_DEBUGGER
     _FT_Set_Debug_Hook = (void (*)(FT_Library, FT_UInt, FT_DebugHook_Func)) dlsym(libfreetype,"FT_Set_Debug_Hook");
     _TT_RunIns = (FT_Error (*)(TT_ExecContext)) dlsym(libfreetype,"TT_RunIns");
@@ -207,6 +214,38 @@ return( found );
     }
 #endif
 }
+
+# if !defined(_STATIC_LIBFREETYPE) && !defined(NODYNAMIC)
+int FreeTypeAtLeast(int major, int minor, int patch) {
+    int ma, mi, pa;
+
+    if ( !hasFreeType())
+return( false );
+    if ( _FT_Library_Version==NULL )
+return( false );	/* older than 2.1.4, but don't know how old */
+    _FT_Library_Version(context,&ma,&mi,&pa);
+    if ( ma>major || (ma==major && (mi>=minor || (mi==minor && pa>=patch))))
+return( true );
+
+return( false );
+}
+# elif FREETYPE_MAJOR>2 || (FREETYPE_MAJOR==2 && (FREETYPE_MINOR>1 || (FREETYPE_MINOR==1 && FREETYPE_PATCH>=4)))
+int FreeTypeAtLeast(int major, int minor, int patch) {
+    int ma, mi, pa;
+
+    if ( !hasFreeType())
+return( false );
+    _FT_Library_Version(context,&ma,&mi,&pa);
+    if ( ma>major || (ma==major && (mi>=minor || (mi==minor && pa>=patch))))
+return( true );
+
+return( false );
+}
+# else 
+int FreeTypeAtLeast(int major, int minor, int patch) {
+return( 0 );		/* older than 2.1.4, but don't know how old */
+}
+# endif
 
 typedef struct freetypecontext {
     SplineFont *sf;
