@@ -702,6 +702,11 @@ return;
 		GDrawSetCursor(bv->v,ct_shift);
 		/* otherwise we'll move the selection */
 	    }
+	} else if ( bc->sc->parent->onlybitmaps &&
+		event->u.mouse.x-bv->xoff > bc->width*bv->scale-3 &&
+		event->u.mouse.x-bv->xoff < bc->width*bv->scale+3 ) {
+	    bv->active_tool = bvt_setwidth;
+	    BVToolsSetCursor(bv,event->u.mouse.state|(1<<(7+event->u.mouse.button)) );
 	}
 	BCCharUpdate(bc);
       break;
