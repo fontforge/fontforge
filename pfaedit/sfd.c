@@ -164,17 +164,103 @@ return;
     enc->pos = 0;
 }
 
+/* Run length encoding */
+/* We always start with a background pixel(1), each line is a series of counts */
+/*  we alternate background/foreground. If we can't represent an entire run */
+/*  as one count, then we can split it up into several smaller runs and put */
+/*  0 counts in between */
+/* counts 0-254 mean 0-254 pixels of the current color */
+/* count 255 means that the next two bytes (bigendian) provide a two byte count */
+/* count 255 0 n (n<255) means that the previous line should be repeated n+1 times */
+/* count 255 0 255 means 255 pixels of the current color */
+static uint8 *image2rle(struct _GImage *img, int *len) {
+    int max = img->height*img->bytes_per_line;
+    uint8 *rle, *pt, *end;
+    int cnt, set;
+    int i,j,k;
+
+    *len = 0;
+    if ( img->image_type!=it_mono || img->bytes_per_line<5 )
+return( NULL );
+    rle = gcalloc(max,sizeof(uint8)), pt = rle, end=rle+max-3;
+
+    for ( i=0; i<img->height; ++i ) {
+	if ( i!=0 ) {
+	    if ( memcmp(img->data+i*img->bytes_per_line,
+			img->data+(i-1)*img->bytes_per_line, img->bytes_per_line)== 0 ) {
+		for ( k=1; k<img->height-i; ++k ) {
+		    if ( memcmp(img->data+(i+k)*img->bytes_per_line,
+				img->data+i*img->bytes_per_line, img->bytes_per_line)!= 0 )
+		break;
+		}
+		i+=k;
+		while ( k>0 ) {
+		    if ( pt>end ) {
+			free(rle);
+return( NULL );
+		    }
+		    *pt++ = 255;
+		    *pt++ = 0;
+		    *pt++ = k>254 ? 254 : k;
+		    k -= 254;
+		}
+		if ( i>=img->height )
+    break;
+	    }
+	}
+
+	set=1; cnt=0; j=0;
+	while ( j<img->width ) {
+	    for ( k=j; k<img->width; ++k ) {
+		if (( set && !(img->data[i*img->bytes_per_line+(k>>3)]&(0x80>>(k&7))) ) ||
+		    ( !set && (img->data[i*img->bytes_per_line+(k>>3)]&(0x80>>(k&7))) ))
+	    break;
+	    }
+	    cnt = k-j;
+	    j=k;
+	    do {
+		if ( pt>=end ) {
+		    free(rle);
+return( NULL );
+		}
+		if ( cnt<=254 )
+		    *pt++ = cnt;
+		else {
+		    *pt++ = 255;
+		    if ( cnt>65535 ) {
+			*pt++ = 255;
+			*pt++ = 255;
+			*pt++ = 0;		/* nothing of the other color, we've still got more of this one */
+		    } else {
+			*pt++ = cnt>>8;
+			*pt++ = cnt&0xff;
+		    }
+		}
+		cnt -= 65535;
+	    } while ( cnt>0 );
+	    set = 1-set;
+	}
+    }
+    *len = pt-rle;
+ for ( i=0; i<*len; ++i )
+  printf( "%d%c", rle[i], (i&0xf)==15? '\n' : ' ' );
+return( rle );
+}
+
 static void SFDDumpImage(FILE *sfd,ImageList *img) {
     GImage *image = img->image;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
     struct enc85 enc;
+    int rlelen;
+    uint8 *rle;
     int i;
 
-    fprintf(sfd, "Image: %d %d %d %d %d %x %g %g %g %g\n",
+    rle = image2rle(base,&rlelen);
+    fprintf(sfd, "Image: %d %d %d %d %d %x %g %g %g %g %d\n",
 	    base->width, base->height, base->image_type,
 	    base->image_type==it_true?3*base->width:base->bytes_per_line,
 	    base->clut==NULL?0:base->clut->clut_len,base->trans,
-	    img->xoff, img->yoff, img->xscale, img->yscale );
+	    img->xoff, img->yoff, img->xscale, img->yscale, rlelen );
     memset(&enc,'\0',sizeof(enc));
     enc.sfd = sfd;
     if ( base->clut!=NULL ) {
@@ -184,22 +270,29 @@ static void SFDDumpImage(FILE *sfd,ImageList *img) {
 	    SFDEnc85(&enc,base->clut->clut[i]&0xff);
 	}
     }
-    for ( i=0; i<base->height; ++i ) {
-	if ( base->image_type==it_true ) {
-	    int *ipt = (int *) (base->data + i*base->bytes_per_line);
-	    int *iend = (int *) (base->data + (i+1)*base->bytes_per_line);
-	    while ( ipt<iend ) {
-		SFDEnc85(&enc,*ipt>>16);
-		SFDEnc85(&enc,(*ipt>>8)&0xff);
-		SFDEnc85(&enc,*ipt&0xff);
-		++ipt;
-	    }
-	} else {
-	    uint8 *pt = (uint8 *) (base->data + i*base->bytes_per_line);
-	    uint8 *end = (uint8 *) (base->data + (i+1)*base->bytes_per_line);
-	    while ( pt<end ) {
-		SFDEnc85(&enc,*pt);
-		++pt;
+    if ( rle!=NULL ) {
+	uint8 *pt=rle, *end=rle+rlelen;
+	while ( pt<end )
+	    SFDEnc85(&enc,*pt++);
+	free( rle );
+    } else {
+	for ( i=0; i<base->height; ++i ) {
+	    if ( base->image_type==it_true ) {
+		int *ipt = (int *) (base->data + i*base->bytes_per_line);
+		int *iend = (int *) (base->data + (i+1)*base->bytes_per_line);
+		while ( ipt<iend ) {
+		    SFDEnc85(&enc,*ipt>>16);
+		    SFDEnc85(&enc,(*ipt>>8)&0xff);
+		    SFDEnc85(&enc,*ipt&0xff);
+		    ++ipt;
+		}
+	    } else {
+		uint8 *pt = (uint8 *) (base->data + i*base->bytes_per_line);
+		uint8 *end = (uint8 *) (base->data + (i+1)*base->bytes_per_line);
+		while ( pt<end ) {
+		    SFDEnc85(&enc,*pt);
+		    ++pt;
+		}
 	    }
 	}
     }
@@ -877,14 +970,59 @@ static int Dec85(struct enc85 *dec) {
 return( dec->sofar[dec->pos--] );
 }
 
+static void rle2image(struct enc85 *dec,int rlelen,struct _GImage *base) {
+    uint8 *pt, *end;
+    int r,c,set, cnt, ch;
+    int i;
+
+    r = c = 0; set = 1; pt = base->data; end = pt + base->bytes_per_line*base->height;
+    memset(base->data,0xff,end-pt);
+    while ( rlelen>0 ) {
+	if ( pt>=end ) {
+	    fprintf( stderr, "IError: RLE failure\n" );
+	    while ( rlelen>0 ) { Dec85(dec); --rlelen; }
+    break;
+	}
+	ch = Dec85(dec);
+	--rlelen;
+	if ( ch==255 ) {
+	    ch = Dec85(dec);
+	    cnt = (ch<<8) + Dec85(dec);
+	    rlelen -= 2;
+	} else
+	    cnt = ch;
+	if ( ch==0 && cnt<255 ) {
+	    /* Line duplication */
+	    for ( i=0; i<cnt; ++i ) {
+		memcpy(pt,base->data+(r-1)*base->bytes_per_line,base->bytes_per_line);
+		++r;
+		pt += base->bytes_per_line;
+	    }
+	    set = 1;
+	} else {
+	    if ( !set ) {
+		for ( i=0; i<cnt; ++i )
+		    pt[(c+i)>>3] &= ((~0x80)>>((c+i)&7));
+	    }
+	    c += cnt;
+	    set = 1-set;
+	    if ( c>=base->width ) {
+		++r;
+		pt += base->bytes_per_line;
+		c = 0; set = 1;
+	    }
+	}
+    }
+}
+
 static ImageList *SFDGetImage(FILE *sfd) {
     /* We've read the image token */
-    int width, height, image_type, bpl, clutlen, trans;
+    int width, height, image_type, bpl, clutlen, trans, rlelen;
     struct _GImage *base;
     GImage *image;
     ImageList *img;
     struct enc85 dec;
-    int i;
+    int i, ch;
 
     memset(&dec,'\0', sizeof(dec)); dec.pos = -1;
     dec.sfd = sfd;
@@ -903,6 +1041,11 @@ static ImageList *SFDGetImage(FILE *sfd) {
     getreal(sfd,&img->yoff);
     getreal(sfd,&img->xscale);
     getreal(sfd,&img->yscale);
+    while ( (ch=getc(sfd))==' ' || ch=='\t' );
+    ungetc(ch,sfd);
+    rlelen = 0;
+    if ( isdigit(ch))
+	getint(sfd,&rlelen);
     base->trans = trans;
     if ( clutlen!=0 ) {
 	if ( base->clut==NULL )
@@ -917,22 +1060,26 @@ static ImageList *SFDGetImage(FILE *sfd) {
 	    base->clut->clut[i] = (r<<16)|(g<<8)|b;
 	}
     }
-    for ( i=0; i<height; ++i ) {
-	if ( image_type==it_true ) {
-	    int *ipt = (int *) (base->data + i*base->bytes_per_line);
-	    int *iend = (int *) (base->data + (i+1)*base->bytes_per_line);
-	    int r,g,b;
-	    while ( ipt<iend ) {
-		r = Dec85(&dec);
-		g = Dec85(&dec);
-		b = Dec85(&dec);
-		*ipt++ = (r<<16)|(g<<8)|b;
-	    }
-	} else {
-	    uint8 *pt = (uint8 *) (base->data + i*base->bytes_per_line);
-	    uint8 *end = (uint8 *) (base->data + (i+1)*base->bytes_per_line);
-	    while ( pt<end ) {
-		*pt++ = Dec85(&dec);
+    if ( rlelen!=0 ) {
+	rle2image(&dec,rlelen,base);
+    } else {
+	for ( i=0; i<height; ++i ) {
+	    if ( image_type==it_true ) {
+		int *ipt = (int *) (base->data + i*base->bytes_per_line);
+		int *iend = (int *) (base->data + (i+1)*base->bytes_per_line);
+		int r,g,b;
+		while ( ipt<iend ) {
+		    r = Dec85(&dec);
+		    g = Dec85(&dec);
+		    b = Dec85(&dec);
+		    *ipt++ = (r<<16)|(g<<8)|b;
+		}
+	    } else {
+		uint8 *pt = (uint8 *) (base->data + i*base->bytes_per_line);
+		uint8 *end = (uint8 *) (base->data + (i+1)*base->bytes_per_line);
+		while ( pt<end ) {
+		    *pt++ = Dec85(&dec);
+		}
 	    }
 	}
     }
