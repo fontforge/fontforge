@@ -474,6 +474,80 @@ return( true );
 return( true );
 }
 
+static GTextInfo *TIFromName(const char *name) {
+    GTextInfo *ti = gcalloc(1,sizeof(GTextInfo));
+    ti->text = uc_copy(name);
+    ti->fg = COLOR_DEFAULT;
+    ti->bg = COLOR_DEFAULT;
+return( ti );
+}
+
+static void CI_SetNameList(GIData *ci,int val) {
+    GGadget *g = GWidgetGetControl(ci->gw,CID_UName);
+    int cnt, i;
+    char buffer[20];
+
+    if ( GGadgetGetUserData(g)==(void *) val )
+return;		/* Didn't change */
+    if ( val<0 || val>=0x1000000 ) {
+	static GTextInfo notdef = { (unichar_t *) ".notdef", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+			 empty = { NULL },
+			 *list[] = { &notdef, &empty };
+	GGadgetSetList(g,list,true);
+    } else {
+	GTextInfo **list = NULL;
+	while ( 1 ) {
+	    cnt=0;
+	    if ( val<psunicodenames_cnt && psunicodenames[val]!=NULL ) {
+		if ( list ) list[cnt] = TIFromName(psunicodenames[val]);
+		++cnt;
+	    } else if ( val<32 || (val>=0x7f && val<0xa0)) {
+		if ( list ) list[cnt] = TIFromName(".notdef");
+		++cnt;
+	    }
+	    for ( i=0; psaltuninames[i].name!=NULL; ++i )
+		if ( psaltuninames[i].unicode==val ) {
+		    if ( list ) list[cnt] = TIFromName(psaltuninames[i].name);
+		    ++cnt;
+		}
+	    if ( val<0x10000 ) {
+		if ( list ) {
+		    sprintf( buffer, "uni%04X", val);
+		    list[cnt] = TIFromName(buffer);
+		}
+		++cnt;
+	    }
+	    if ( list ) {
+		sprintf( buffer, "u%04X", val);
+		list[cnt] = TIFromName(buffer);
+		list[cnt+1] = TIFromName(NULL);
+	    }
+	    ++cnt;
+	    if ( list!=NULL )
+	break;
+	    list = galloc((cnt+1)*sizeof(GTextInfo*)); 
+	}
+	GGadgetSetList(g,list,true);
+    }
+    GGadgetSetUserData(g,(void *) val);
+}
+
+static int CI_UValChanged(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
+	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	const unichar_t *ret = _GGadgetGetTitle(GWidgetGetControl(ci->gw,CID_UValue));
+	unichar_t *end;
+	int val;
+
+	if (( *ret=='U' || *ret=='u' ) && ret[1]=='+' )
+	    ret += 2;
+	val = u_strtol(ret,&end,16);
+	if ( *end=='\0' )
+	    CI_SetNameList(ci,val);
+    }
+return( true );
+}
+
 static int CI_CharChanged(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
 	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
@@ -492,6 +566,7 @@ return( true );
 return( true );
 
 	SetNameFromUnicode(ci->gw,CID_UName,val);
+	CI_SetNameList(ci,val);
 
 	sprintf(buf,"U+%04x", val);
 	temp = uc_copy(buf);
@@ -527,6 +602,7 @@ static void CIFillup(GIData *ci) {
     temp = uc_copy(sc->name);
     GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_UName),temp);
     free(temp);
+    CI_SetNameList(ci,sc->unicodeenc);
 
     sprintf(buffer,"U+%04x", sc->unicodeenc);
     temp = uc_copy(sc->unicodeenc==-1?"-1":buffer);
@@ -739,7 +815,8 @@ void SCGetInfo(SplineChar *sc, int nextprev) {
 	gcd[1].gd.flags = gg_enabled|gg_visible;
 	gcd[1].gd.mnemonic = 'N';
 	gcd[1].gd.cid = CID_UName;
-	gcd[1].creator = GTextFieldCreate;
+	gcd[1].creator = GListFieldCreate;
+	gcd[1].data = (void *) (-2);
 
 	label[2].text = (unichar_t *) _STR_UnicodeValue;
 	label[2].text_in_resource = true;
@@ -753,6 +830,7 @@ void SCGetInfo(SplineChar *sc, int nextprev) {
 	gcd[3].gd.flags = gg_enabled|gg_visible;
 	gcd[3].gd.mnemonic = 'V';
 	gcd[3].gd.cid = CID_UValue;
+	gcd[3].gd.handle_controlevent = CI_UValChanged;
 	gcd[3].creator = GTextFieldCreate;
 
 	label[4].text = (unichar_t *) _STR_UnicodeChar;
