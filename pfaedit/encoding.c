@@ -1460,7 +1460,7 @@ static void SFEncodeToCMap(SplineFont *cidmaster,SplineFont *sf,struct cmap *cma
     SFApplyEnc(sf, max);
 }
 
-SplineFont *MakeCIDMaster(SplineFont *sf,int bycmap,char *cmapfilename) {
+SplineFont *MakeCIDMaster(SplineFont *sf,int bycmap,char *cmapfilename, struct cidmap *cidmap) {
     SplineFont *cidmaster;
     struct cidmap *map;
     struct cmap *cmap;
@@ -1488,7 +1488,14 @@ return(NULL);
 	SFEncodeToCMap(cidmaster,sf,cmap);
 	cmapfree(cmap);
     } else {
-	map = AskUserForCIDMap(cidmaster);		/* Sets the ROS fields */
+	map = cidmap;
+	if (map == NULL) {
+	    map = AskUserForCIDMap(cidmaster);		/* Sets the ROS fields */
+	} else {
+	    cidmaster->cidregistry = copy(map->registry);
+	    cidmaster->ordering = copy(map->ordering);
+	    cidmaster->supplement = map->supplement;
+	}
 	if ( map==NULL ) {
 	    SplineFontFree(cidmaster);
 return(NULL);

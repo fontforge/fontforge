@@ -1067,7 +1067,7 @@ extern void SFEncodeToMap(SplineFont *sf,struct cidmap *map);
 extern struct cidmap *AskUserForCIDMap(SplineFont *sf);
 extern SplineFont *CIDFlatten(SplineFont *cidmaster,SplineChar **chars,int charcnt);
 extern void SFFlattenByCMap(SplineFont *sf,char *cmapname);
-extern SplineFont *MakeCIDMaster(SplineFont *sf,int bycmap,char *cmapfilename);
+extern SplineFont *MakeCIDMaster(SplineFont *sf,int bycmap,char *cmapfilename,struct cidmap *cidmap);
 
 int getushort(FILE *ttf);
 int32 getlong(FILE *ttf);

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 12-May-2003 -->
+  <!-- AP: Last modified: 16-May-2003 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -1233,7 +1233,18 @@ ApplySubstitution("*","*","vrt2")
     is just like SetFontNames except it works on the top level cid font rather
     than the current font).
   <DT>
-    CIDFlattenByCMap(cmap-filename) 
+    CIDFlattenByCMap(cmap-filename)
+  <DT>
+    ConvertToCID(registry, ordering, supplement)
+  <DD>
+    Converts current font to a CID-keyed font using given registry, ordering
+    and supplement. registry and ordering must be strings, supplenmet must be
+    a integer.
+  <DT>
+    ConvertByCMap(cmapfilename)
+  <DD>
+    Converts curernt font to a CID-keyed font using specified CMap file. cmapfilename
+    must be a path name of a file conforming Adobe CMap File Format. 
       <HR>
   <DT>
     CharCnt()

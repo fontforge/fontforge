@@ -2800,7 +2800,7 @@ static void FVMenuConvert2CID(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     if ( cidmaster!=NULL )
 return;
-    MakeCIDMaster(fv->sf,false,NULL);
+    MakeCIDMaster(fv->sf,false,NULL,NULL);
 }
 
 static void FVMenuConvertByCMap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -2809,7 +2809,7 @@ static void FVMenuConvertByCMap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     if ( cidmaster!=NULL )
 return;
-    MakeCIDMaster(fv->sf,true,NULL);
+    MakeCIDMaster(fv->sf,true,NULL,NULL);
 }
 
 static void FVMenuFlatten(GWindow gw,struct gmenuitem *mi,GEvent *e) {

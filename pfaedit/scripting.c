@@ -2136,6 +2136,34 @@ static void bClearAllKerns(Context *c) {
 
 /* **** CID menu **** */
 
+static void bConvertToCID(Context *c) {
+    SplineFont *sf = c->curfv->sf;
+    struct cidmap *map;
+
+    if ( c->a.argc!=4 )
+	error( c, "Wrong number of arguments" );
+    if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str || c->a.vals[3].type!=v_int )
+	error( c, "Bad argument type" );
+    if ( sf->cidmaster!=NULL )
+	errors( c, "Already a cid-keyed font", sf->cidmaster->fontname );
+    map = FindCidMap( c->a.vals[1].u.sval, c->a.vals[2].u.sval, c->a.vals[3].u.ival, sf);
+    if ( map == NULL )
+	error( c, "No cidmap matching given ROS" );
+    MakeCIDMaster(sf, false, NULL, map);
+}
+
+static void bConvertByCMap(Context *c) {
+    SplineFont *sf = c->curfv->sf;
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments" );
+    if ( c->a.vals[0].type!=v_str )
+	error( c, "Bad argument type" );
+    if ( sf->cidmaster!=NULL )
+	errors( c, "Already a cid-keyed font", sf->cidmaster->fontname );
+    MakeCIDMaster(sf, true, c->a.vals[1].u.sval, NULL);
+}
+
 static void bCIDChangeSubFont(Context *c) {
     SplineFont *sf = c->curfv->sf, *new;
     int i;
@@ -2676,6 +2704,8 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "SetKern", bSetKern },
     { "RemoveAllKerns", bClearAllKerns },
 /* CID Menu */
+    { "ConvertToCID", bConvertToCID },
+    { "ConvertByCMap", bConvertByCMap },
     { "CIDChangeSubFont", bCIDChangeSubFont },
     { "CIDSetFontNames", bCIDSetFontNames },
     { "CIDFlattenByCMap", bCIDFlattenByCMap },
