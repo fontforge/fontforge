@@ -51,6 +51,8 @@ void FreeTypeFreeContext(void *freetypecontext) {
 #else
 #include <ft2build.h>
 #include FT_FREETYPE_H
+#include <unistd.h>
+#include <sys/mman.h>
 
 static FT_Library context;
 
