@@ -2860,8 +2860,11 @@ static void bAddATT(Context *c) {
 	temp.u.pair.vr[1].yoff = c->a.vals[11].u.ival;
 	temp.u.pair.vr[1].h_adv_off = c->a.vals[12].u.ival;
 	temp.u.pair.vr[1].v_adv_off = c->a.vals[13].u.ival;
-    } else
+    } else {
 	temp.u.subs.variant = copy(c->a.vals[5].u.sval);
+	if ( temp.type==pst_ligature )
+	    temp.u.lig.lig = sc;
+    }
     pst = chunkalloc(sizeof(PST));
     *pst = temp;
     pst->next = sc->possub;
