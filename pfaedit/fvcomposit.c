@@ -589,15 +589,24 @@ return( true );
 }
 
 int SFIsRotatable(SplineFont *sf,SplineChar *sc) {
+    char *end;
+
     if ( sf->cidmaster!=NULL && strncmp(sc->name,"vertcid_",8)==0 ) {
-	char *end;
 	int cid = strtol(sc->name+8,&end,10);
 	if ( *end=='\0' && SFHasCID(sf,cid)!=-1)
 return( true );
+    } else if ( sf->cidmaster!=NULL &&
+	    (strncmp(sc->name,"cid_",4)==0 && strstr(sc->name,".vert")!=NULL) ) {
+	int cid = strtol(sc->name+4,&end,10);
+	if ( *end=='.' && SFHasCID(sf,cid)!=-1)
+return( true );
     } else if ( strncmp(sc->name,"vertuni",7)==0 && strlen(sc->name)==11 ) {
-	char *end;
 	int uni = strtol(sc->name+7,&end,16);
 	if ( *end=='\0' && SFCIDFindExistingChar(sf,uni,NULL)!=-1 )
+return( true );
+    } else if ( strncmp(sc->name,"uni",3)==0 && strstr(sc->name,".vert")!=NULL ) {
+	int uni = strtol(sc->name+3,&end,16);
+	if ( *end=='.' && SFCIDFindExistingChar(sf,uni,NULL)!=-1 )
 return( true );
     }
 return( false );

@@ -2966,16 +2966,19 @@ return( NULL );
 return( rot );
 }
 
-static GImage *UniGetRotatedGlyph(SplineFont *sf, SplineChar *sc) {
-    int cid=-1, uni=-1;
+static GImage *UniGetRotatedGlyph(SplineFont *sf, SplineChar *sc,int uni) {
+    int cid=-1;
     SplineChar *cidsc, dummy;
     static GWindow pixmap=NULL;
     GRect r;
     unichar_t buf[2];
     GImage *unrot, *rot;
 
-    if ( sscanf(sc->name,"vertuni%x", &uni)!=1 &&
-	    sscanf( sc->name, "vertcid_%d", &cid)==1 ) {
+    if ( uni!=-1 )
+	/* Do nothing */;
+    else if ( sscanf(sc->name,"vertuni%x", &uni)!=1 &&
+	    (sscanf( sc->name, "vertcid_%d", &cid)==1 ||
+	     sscanf( sc->name, "cid_%d", &cid)==1 )) {
 	cidsc = NULL;
 	if ( sf->cidmaster==NULL ) {
 	    if ( cid>=0 && cid<sf->charcnt )
@@ -3092,6 +3095,13 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 			    buf[0] = i;
 		    break;
 			}
+		    if ( strstr(pt,".vert")!=NULL )
+			rotated = UniGetRotatedGlyph(fv->sf,sc,buf[0]!='?'?buf[0]:-1);
+		    if ( buf[0]!='?' ) {
+			fg = 0;
+			if ( strstr(pt,".italic")!=NULL )
+			    italic = true;
+		    }
 		} else if ( strncmp(sc->name,"hwuni",5)==0 ) {
 		    int uni=-1;
 		    sscanf(sc->name,"hwuni%x", &uni );
@@ -3103,7 +3113,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		    fg = 0x000000;
 		} else if ( strncmp(sc->name,"vertcid_",8)==0 ||
 			strncmp(sc->name,"vertuni",7)==0 ) {
-		    rotated = UniGetRotatedGlyph(fv->sf,sc);
+		    rotated = UniGetRotatedGlyph(fv->sf,sc,-1);
 		}
 	    }
 	    if ( sc->backgroundsplines!=NULL || sc->backimages!=NULL ) {
