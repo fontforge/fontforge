@@ -1913,6 +1913,12 @@ static unichar_t *LiiBair[] = { _LiiBair1, _LiiBair2, _LiiBair3, _LiiBair4,
 static unichar_t *LiiBairShort[] = { _LiiBair1, _LiiBair2, _LiiBair3, _LiiBair4,
 	NULL };
 
+/* Japanese */
+static unichar_t _Genji[] = {0x6e90, 0x2f52, 0x7269, 0x8a9e, 0xff08, 0x7d2b, 0x5f0f, 0x90e8, 0xff09, 0xff1a, 0x3044, 0x3065, 0x308c, 0x306e, 0x5fa1, 0x6642, 0x306b, 0x304b, 0x3001, 0x2f25, 0x5fa1, 0x66f4, 0x2f90, 0x2202, 0x307e, 0x305f, 0x3055, 0x3076, 0x3089, 0x3072, 0x305f, 0x307e, 0x3072, 0x3051, 0x308b, 0x4e2d, 0x306b, 0x3001, 0x3044, 0x3068, 0x3084, 0x3080, 0x3054, 0x3068, 0x306a, 0x304d, 0x969b, 0x306b, 0x306f, 0x2202, 0x3089, 0x306c, 0x304c, 0x3001, 0x3059, 0x3050, 0x308c, 0x3066, 0x6642, 0x3081, 0x304d, 0x305f, 0x307e, 0x3075, 0x2202, 0x308a, 0x3051, 0x308a,  0 };
+static unichar_t *Genji[] = { _Genji, NULL };
+static unichar_t _IAmACat[] = {0x543e, 0x8f29, 0x306f, 0x732b, 0x3067, 0x2202, 0x308b, 0xff08, 0x590f, 0xff6d, 0xff9a, 0x6f31, 0x2f6f, 0xff09, 0xff1a, 0x543e, 0x8f29, 0x306f, 0x732b, 0x3067, 0x2202, 0x308b,  0 };
+static unichar_t *IAmACat[] = { _IAmACat, NULL };
+
 /* The following translations of the gospel according to John are all from */
 
 /* Belorussian */
@@ -2056,7 +2062,8 @@ static unichar_t *thaijohn[] = { _thaijohn1, NULL };
 /* I've omitted cornish. no interesting letters. no current speakers */
 
 static unichar_t **sample[] = { simple, simplecyrill, faust, pheadra, antigone,
-	annakarenena, debello, hebrew, hangulsijo, YihKing, LiiBair, donquixote, inferno, beorwulf, muchado,
+	annakarenena, debello, hebrew, hangulsijo, YihKing, LiiBair, Genji,
+	IAmACat, donquixote, inferno, beorwulf, muchado,
 	mabinogion, goodsoldier, macedonian, bulgarian, belorussianjohn,
 	churchjohn,
 	lithuanian, polish, slovene, irishjohn, basquejohn, portjohn,
