@@ -369,7 +369,7 @@ void IError(const char *format, ... ) {
 int RealNear(real a,real b) {
     real d;
 
-#ifdef USE_DOUBLE
+#if 0 /* def FONTFORGE_CONFIG_USE_DOUBLE */
     if ( a==0 )
 return( b>-1e-8 && b<1e-8 );
     if ( b==0 )

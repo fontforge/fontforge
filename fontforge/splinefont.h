@@ -42,7 +42,7 @@
 #  define ICONV_CONST
 #endif
 
-#ifdef USE_DOUBLE
+#ifdef FONTFORGE_CONFIG_USE_DOUBLE
 # define real	double
 #else
 # define real	float

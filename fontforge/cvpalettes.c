@@ -219,7 +219,7 @@ struct ask_info {
     GWindow gw;
     int done;
     int ret;
-    real *val;
+    float *val;
     int *co;
     GGadget *rb1;
     GGadget *reg;
@@ -362,7 +362,7 @@ static int toolask_e_h(GWindow gw, GEvent *event) {
 return( event->type!=et_char );
 }
 
-static int Ask(int rb1, int rb2, int rb, int lab, real *val, int *co,
+static int Ask(int rb1, int rb2, int rb, int lab, float *val, int *co,
 	int ispolystar, CharView *cv ) {
     struct ask_info d;
     char buffer[20], buf[20];
@@ -623,7 +623,7 @@ void CVRectEllipsePosDlg(CharView *cv) {
 }
 
 static void CVPolyStar(CharView *cv) {
-    real temp = ps_pointcnt;
+    float temp = ps_pointcnt;
     int foo[2];
     polystar = Ask(_STR_Polygon,_STR_Star,polystar,
 	    _STR_NumPSVert,&temp,foo,true, cv);
