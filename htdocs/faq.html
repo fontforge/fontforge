@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 1-Sep-2002 -->
+  <!-- AP: Last modified: 28-Oct-2002 -->
   <TITLE>Frequently Asked Questions</TITLE>
 </HEAD>
 <BODY>
@@ -71,6 +71,9 @@
     <A HREF="#ttf-degrade">I loaded a ttf font, made a few changes and generated
     a new font. The new font doesn't look anywhere near as nice as the original
     even for characters I didn't change. Why?</A>
+  <LI>
+    <A HREF="#otf-diffs">I generated an opentype (or truetype) font and windows
+    wouldn't install it. Why not?</A>
   <LI>
     <A HREF="#mingliu">I looked at kaiu.ttf or mingliu.ttf and the outlines looked
     nothing like the correct characters. What's wrong?</A>
@@ -632,6 +635,32 @@ MANPATH=${MANPATH:-}:/usr/local/share/man ; export MANPATH
     those stems hinted) by AutoHinting the entire font and then clearing the
     hints of the entire font.
   <DT>
+    <A NAME="otf-diffs"><B>I generated an opentype font and windows wouldn't
+    install it. Why not?</B></A>
+  <DD>
+    Unfortunately Apple and MicroSoft (and Adobe) do not agree on the proper
+    format for open and truetype fonts. PfaEdit has a check box on the Generate
+    Font dialog labelled [] Apple. Make sure this is checked when you are generating
+    a font for the mac. Make sure this is not checked when generating a font
+    for Windows (and probably for unix too, though unix tends to be less picky).
+    <P>
+    The major differences I've stumbled onto so far are:
+    <UL>
+      <LI>
+	The postscript name entry in the NAME table.
+      <LI>
+	The names of the tables containing bitmap fonts
+      <LI>
+	The way scaled references are stored
+      <LI>
+	And the tables containing advanced typographical features are completely
+	different
+    </UL>
+    <P>
+    I am also told that there are some versions of Windows and NT that do not
+    accept my fonts at all, ever. I do not have any such system myself and cannot
+    test this assertion.
+  <DT>
     <A NAME="mingliu"><B>I looked at kaiu.ttf or mingliu.ttf and the outlines
     looked nothing like the correct characters. What's wrong?</B></A>
   <DD>
@@ -665,7 +694,7 @@ MANPATH=${MANPATH:-}:/usr/local/share/man ; export MANPATH
 </DL>
 <P>
 <P ALIGN=Center>
--- <A HREF="scripting.html">Prev</A> --
+-- <A HREF="scripting.html" TARGET="_top">Prev</A> --
 <A HREF="overview.html" TARGET="_top">TOC</A> --
-<A HREF="license.html" TARGET="_top">Next</A> --
+<A HREF="glossary.html" TARGET="_top">Next</A> --
 </BODY></HTML>
