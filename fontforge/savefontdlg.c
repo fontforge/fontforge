@@ -1957,7 +1957,7 @@ static void DoSave(struct gfc_data *d,unichar_t *path) {
     int32 *sizes=NULL;
     int iscid, i;
     Encoding *item=NULL;
-    struct sflist *sfs=NULL, *cur;
+    struct sflist *sfs=NULL, *cur, *last=NULL;
     static int buts[] = { _STR_Yes, _STR_No, 0 };
     static int psscalewarned=0, ttfscalewarned=0;
     int flags;
@@ -2018,11 +2018,16 @@ return;
 return;
 
     if ( d->family ) {
+	cur = chunkalloc(sizeof(struct sflist));
+	cur->next = NULL;
+	sfs = last = cur;
+	cur->sf = d->sf;
+	cur->sizes = sizes;
 	for ( i=0; i<d->familycnt; ++i ) {
 	    if ( GGadgetIsChecked(GWidgetGetControl(d->gw,CID_Family+10*i)) ) {
 		cur = chunkalloc(sizeof(struct sflist));
-		cur->next = sfs;
-		sfs = cur;
+		last->next = cur;
+		last = cur;
 		cur->sf = GGadgetGetUserData(GWidgetGetControl(d->gw,CID_Family+10*i));
 		if ( oldbitmapstate!=bf_none )
 		    cur->sizes = ParseBitmapSizes(GWidgetGetControl(d->gw,CID_Family+10*i+1),_STR_PixelList,&err);
@@ -2032,11 +2037,6 @@ return;
 		}
 	    }
 	}
-	cur = chunkalloc(sizeof(struct sflist));
-	cur->next = sfs;
-	sfs = cur;
-	cur->sf = d->sf;
-	cur->sizes = sizes;
     }
 
     switch ( d->sod_which ) {
@@ -2399,6 +2399,8 @@ static unichar_t *uStyleName(SplineFont *sf) {
 return( uc_copy(buffer+1));
 }
 
+typedef SplineFont *SFArray[48];
+
 int SFGenerateFont(SplineFont *sf,int family) {
     GRect pos;
     GWindow gw;
@@ -2407,12 +2409,13 @@ int SFGenerateFont(SplineFont *sf,int family) {
     GTextInfo label[16+2*48+2];
     struct gfc_data d;
     GGadget *pulldown, *files, *tf;
-    int i, j, k, old, ofs, y;
+    int i, j, k, old, ofs, y, fc, dupfc, dupstyle;
     int bs = GIntGetResource(_NUM_Buttonsize), bsbigger, totwid, spacing;
     SplineFont *temp;
     int wascompacted = sf->compacted;
     int familycnt=0;
-    SplineFont *familysfs[48];
+    int fondcnt = 0, fondmax = 10;
+    SFArray *familysfs=NULL;
     uint16 psstyle;
 
     if ( (alwaysgenapple || family ) && alwaysgenopentype ) {
@@ -2435,29 +2438,69 @@ int SFGenerateFont(SplineFont *sf,int family) {
 	/*  and I want people to know why they can't generate a family */
 	FontView *fv;
 	SplineFont *dup=NULL, *badenc=NULL;
-	memset(familysfs,0,sizeof(familysfs));
-	familysfs[0] = sf;
+	familysfs = galloc((fondmax=10)*sizeof(SFArray));
+	memset(familysfs[0],0,sizeof(familysfs[0]));
+	familysfs[0][0] = sf;
+	fondcnt = 1;
 	for ( fv=fv_list; fv!=NULL; fv=fv->next )
 	    if ( fv->sf!=sf && strcmp(fv->sf->familyname,sf->familyname)==0 ) {
 		MacStyleCode(fv->sf,&psstyle);
-		if ( familysfs[psstyle]==fv->sf )
-		    /* several windows may point to same font */; 
-		else if ( familysfs[psstyle]!=NULL )
-		    dup = fv->sf;
-		else {
-		    familysfs[psstyle] = fv->sf;
-		    ++familycnt;
-		    if ( fv->sf->encoding_name!=sf->encoding_name )
-			badenc = fv->sf;
+		if ( fv->sf->fondname==NULL ) {
+		    fc = 0;
+		    if ( familysfs[0][0]->fondname==NULL &&
+			    (familysfs[0][psstyle]==NULL || familysfs[0][psstyle]==fv->sf))
+			familysfs[0][psstyle] = fv->sf;
+		    else {
+			for ( fc=0; fc<fondcnt; ++fc ) {
+			    for ( i=0; i<48; ++i )
+				if ( familysfs[fc][i]!=NULL )
+			    break;
+			    if ( i<48 && familysfs[fc][i]->fondname==NULL &&
+				    familysfs[fc][psstyle]==fv->sf )
+			break;
+			}
+		    }
+		} else {
+		    for ( fc=0; fc<fondcnt; ++fc ) {
+			for ( i=0; i<48; ++i )
+			    if ( familysfs[fc][i]!=NULL )
+			break;
+			if ( i<48 && familysfs[fc][i]->fondname!=NULL &&
+				strcmp(familysfs[fc][i]->fondname,fv->sf->fondname)==0 ) {
+			    if ( familysfs[fc][psstyle]==fv->sf )
+				/* several windows may point to same font */; 
+			    else if ( familysfs[fc][psstyle]!=NULL ) {
+				dup = fv->sf;
+			        dupstyle = psstyle;
+			        dupfc = fc;
+			    } else
+				familysfs[fc][psstyle] = fv->sf;
+		    break;
+			}
+		    }
+		}
+		if ( fc==fondcnt ) {
+		    /* Create a new fond containing just this font */
+		    if ( fondcnt>=fondmax )
+			familysfs = grealloc(familysfs,(fondmax+=10)*sizeof(SFArray));
+		    memset(familysfs[fondcnt],0,sizeof(SFArray));
+		    familysfs[fondcnt++][psstyle] = fv->sf;
 		}
 	    }
+	for ( fc=0; fc<fondcnt; ++fc ) for ( i=0; i<48; ++i ) {
+	    if ( familysfs[fc][i]!=NULL ) {
+		++familycnt;
+		if ( familysfs[fc][i]->encoding_name!=sf->encoding_name )
+		    badenc = fv->sf;
+	    }
+	}
 	if ( MacStyleCode(sf,NULL)!=0 || familycnt==0 || sf->multilayer ) {
 	    GWidgetErrorR(_STR_BadFamilyForMac,_STR_BadMacFamily);
 return( 0 );
 	} else if ( dup ) {
 	    MacStyleCode(dup,&psstyle);
 	    GWidgetErrorR(_STR_BadFamilyForMac,_STR_TwoFontsSameStyle,
-		dup->fontname, familysfs[psstyle]->fontname);
+		dup->fontname, familysfs[dupfc][dupstyle]->fontname);
 return( 0 );
 	} else if ( badenc ) {
 	    GWidgetErrorR(_STR_BadFamilyForMac,_STR_DifferentEncodings,
@@ -2688,30 +2731,36 @@ return( 0 );
 	gcd[k++].creator = GLineCreate;
 	y += 7;
 
-	for ( i=0, j=1; i<familycnt && j<48 ; ++i ) {
-	    while ( j<48 && familysfs[j]==NULL ) ++j;
-	    if ( j==48 )
+	for ( i=0, fc=0, j=1; i<familycnt && j<48 ; ++i ) {
+	    while ( fc<fondcnt ) {
+		while ( j<48 && familysfs[fc][j]==NULL ) ++j;
+		if ( j!=48 )
+	    break;
+		++fc;
+		j=0;
+	    }
+	    if ( fc==fondcnt )
 	break;
 	    gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = y;
 	    gcd[k].gd.pos.width = gcd[8].gd.pos.x-gcd[k].gd.pos.x-5;
 	    gcd[k].gd.flags = gg_visible | gg_enabled | gg_cb_on ;
-	    label[k].text = (unichar_t *) (familysfs[j]->fontname);
+	    label[k].text = (unichar_t *) (familysfs[fc][j]->fontname);
 	    label[k].text_is_1byte = true;
 	    gcd[k].gd.label = &label[k];
 	    gcd[k].gd.cid = CID_Family+i*10;
-	    gcd[k].data = familysfs[j];
-	    gcd[k].gd.popup_msg = uStyleName(familysfs[j]);
+	    gcd[k].data = familysfs[fc][j];
+	    gcd[k].gd.popup_msg = uStyleName(familysfs[fc][j]);
 	    gcd[k++].creator = GCheckBoxCreate;
 
 	    gcd[k].gd.pos.x = gcd[8].gd.pos.x; gcd[k].gd.pos.y = y; gcd[k].gd.pos.width = gcd[8].gd.pos.width;
 	    gcd[k].gd.flags = gg_visible | gg_enabled;
 	    if ( old==bf_none )
 		gcd[k].gd.flags &= ~gg_enabled;
-	    temp = familysfs[j]->cidmaster ? familysfs[j]->cidmaster : familysfs[j];
+	    temp = familysfs[fc][j]->cidmaster ? familysfs[fc][j]->cidmaster : familysfs[fc][j];
 	    label[k].text = BitmapList(temp);
 	    gcd[k].gd.label = &label[k];
 	    gcd[k].gd.cid = CID_Family+i*10+1;
-	    gcd[k].data = familysfs[j];
+	    gcd[k].data = familysfs[fc][j];
 	    gcd[k++].creator = GTextFieldCreate;
 	    y+=26;
 	    ++j;
@@ -2721,6 +2770,8 @@ return( 0 );
 	gcd[k].gd.pos.width = totwid-5-5;
 	gcd[k].gd.flags = gg_visible | gg_enabled ;
 	gcd[k++].creator = GLineCreate;
+
+	free(familysfs);
     }
 
     GGadgetsCreate(gw,gcd);
@@ -2750,7 +2801,7 @@ return( 0 );
     memset(&d,'\0',sizeof(d));
     d.sf = sf;
     d.family = family;
-    d.familycnt = familycnt;
+    d.familycnt = familycnt-1;		/* Don't include the "normal" instance */
     d.gfc = gcd[0].ret;
     d.pstype = gcd[6].ret;
     d.bmptype = gcd[8].ret;

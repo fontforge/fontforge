@@ -919,6 +919,8 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 	putstring(sfd, "Comments: ", sf->comments );
     if ( sf->version!=NULL )
 	fprintf(sfd, "Version: %s\n", sf->version );
+    if ( sf->fondname!=NULL )
+	fprintf(sfd, "FONDName: %s\n", sf->fondname );
     fprintf(sfd, "ItalicAngle: %g\n", sf->italicangle );
     fprintf(sfd, "UnderlinePosition: %g\n", sf->upos );
     fprintf(sfd, "UnderlineWidth: %g\n", sf->uwidth );
@@ -3250,6 +3252,9 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	} else if ( strmatch(tok,"Version:")==0 ) {
 	    geteol(sfd,tok);
 	    sf->version = copy(tok);
+	} else if ( strmatch(tok,"FONDName:")==0 ) {
+	    geteol(sfd,tok);
+	    sf->fondname = copy(tok);
 	} else if ( strmatch(tok,"ItalicAngle:")==0 ) {
 	    getreal(sfd,&sf->italicangle);
 	} else if ( strmatch(tok,"UnderlinePosition:")==0 ) {

@@ -904,6 +904,7 @@ typedef struct splinefont {
     struct mmset *mm;			/* If part of a multiple master set */
     int16 macstyle;
     int16 sli_cnt;
+    char *fondname;			/* For use in generating mac families */
 } SplineFont;
 
 /* I am going to simplify my life and not encourage intermediate designs */
