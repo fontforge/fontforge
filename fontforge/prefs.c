@@ -375,7 +375,7 @@ int GetPrefs(char *name,Val *val) {
     for ( i=0; prefs_list[i]!=NULL; ++i ) for ( j=0; prefs_list[i][j].name!=NULL; ++j ) {
 	if ( strcmp(prefs_list[i][j].name,name)==0 ) {
 	    struct prefs_list *pf = &prefs_list[i][j];
-	    if ( pf->type == pr_bool || pf->type == pr_int ) {
+	    if ( pf->type == pr_bool || pf->type == pr_int || pf->type == pr_encoding ) {
 		val->type = v_int;
 		val->u.ival = *((int *) (pf->val));
 	    } else if ( pf->type == pr_real ) {
@@ -412,6 +412,18 @@ return( -1 );
 return( -1 );
 		free( *((char **) (pf->val)));
 		*((char **) (pf->val)) = copy( val1->u.sval );
+	    } else if ( pf->type == pr_encoding ) {
+		if ( val2!=NULL )
+return( -1 );
+		else if ( val1->type==v_int || val1->type==v_unicode )
+		    *((int *) (pf->val)) = val1->u.ival;
+		else if ( val1->type==v_str && pf->val == &default_encoding) {
+		    int enc = FontEncodingByName(val1->u.sval);
+		    if ( enc==(em_none-3) )
+return( -1 );
+		    *((int *) (pf->val)) = enc;
+		} else
+return( -1 );
 	    } else
 return( false );
 
