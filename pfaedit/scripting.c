@@ -2580,7 +2580,7 @@ static void handlename(Context *c,Val *val) {
 		}
 		val->type = v_str;
 		val->u.sval = copy(sf==NULL?"":sf->fontname);
-	    } else if ( strcmp(name,"$fontname")==0 || strcmp(name,"familyname")==0 ||
+	    } else if ( strcmp(name,"$fontname")==0 || strcmp(name,"$familyname")==0 ||
 		    strcmp(name,"$fullname")==0 || strcmp(name,"$weight")==0 ||
 		    strcmp(name,"$copyright")==0 || strcmp(name,"$filename")==0 ) {
 		if ( c->curfv==NULL ) error(c,"No current font");
