@@ -441,8 +441,9 @@ static void DVFigureNewState(DebugView *dv,TT_ExecContext exc) {
     }
 
     if ( exc!=NULL ) {
-	if ( cv->raster!=NULL )
-	    FreeType_FreeRaster(cv->raster);
+	if ( cv->oldraster!=NULL )
+	    FreeType_FreeRaster(cv->oldraster);
+	cv->oldraster = cv->raster;
 	SplinePointListsFree(cv->gridfit);
 	cv->gridfit = SplineSetsFromPoints(&exc->pts,dv->scale);
 	cv->raster = DebuggerCurrentRasterization(cv->gridfit,
@@ -1273,6 +1274,10 @@ void CVDebugFree(DebugView *dv) {
 	    break;
 	    }
 	}
+
+	SplinePointListsFree(cv->gridfit); cv->gridfit = NULL;
+	FreeType_FreeRaster(cv->oldraster); cv->oldraster = NULL;
+	FreeType_FreeRaster(cv->raster); cv->raster = NULL;
 
 	if ( !dying ) {
 	    GDrawRequestExpose(cv->v,NULL,false);
