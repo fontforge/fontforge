@@ -299,7 +299,7 @@ static unichar_t unicode_greekalts[256][3] = {
 /* 1FB1 */ { 0x03B1, 0x0304, 0 },
 /* 1FB2 */ { 0x1F70, 0x0345, 0 },
 /* 1FB3 */ { 0x03B1, 0x0345, 0 },
-/* 1FB4 */ { 0x03AC, 0x0345, 0 },
+/* 1FB4 */ { 0x1f71, 0x0345, 0 },
 /* 1FB5 */ { 0 },
 /* 1FB6 */ { 0x03B1, 0x1FC0, 0 },
 /* 1FB7 */ { 0x1FB6, 0x0345, 0 },
@@ -315,7 +315,7 @@ static unichar_t unicode_greekalts[256][3] = {
 /* 1FC1 */ { 0x00A8, 0x1FC0, 0 },
 /* 1FC2 */ { 0x1F74, 0x0345, 0 },
 /* 1FC3 */ { 0x03B7, 0x0345, 0 },
-/* 1FC4 */ { 0x03AE, 0x0345, 0 },
+/* 1FC4 */ { 0x1f75, 0x0345, 0 },
 /* 1FC5 */ { 0 },
 /* 1FC6 */ { 0x03B7, 0x1FC0, 0 },
 /* 1FC7 */ { 0x1FC6, 0x0345, 0 },
@@ -532,7 +532,7 @@ return( arabicfixup(sf,space,ini,final));
 return( space );
 }
 
-const unichar_t *SFGetAlternate(SplineFont *sf, int base,SplineChar *sc) {
+const unichar_t *SFGetAlternate(SplineFont *sf, int base,SplineChar *sc,int nocheck) {
     static unichar_t greekalts[5];
     const unichar_t *upt, *pt; unichar_t *gpt;
 
@@ -562,7 +562,8 @@ return( SFAlternateFromLigature(sf,base,sc));
 	    /*  properly. So I redefine them here */
     if ( base>=0x1f00 && base<0x2000 ) {
 	gpt = unicode_greekalts[base-0x1f00];
-	if ( *gpt && haschar(sf,*gpt) && (gpt[1]=='\0' || haschar(sf,gpt[1])) )
+	if ( *gpt && (nocheck ||
+		(haschar(sf,*gpt) && (gpt[1]=='\0' || haschar(sf,gpt[1]))) ))
 return( gpt );
 	    /* Similarly for these (korean) jamo */
     } else if (( base>=0x1176 && base<=0x117e ) || (base>=0x119a && base<=0x119c)) {
@@ -574,7 +575,7 @@ return( greekalts );
 	    greekalts[0] = base==0x390?0x3b9:0x3c5;
 	    greekalts[1] = 0x385;
 	    greekalts[2] = '\0';
-	    if ( haschar(sf,greekalts[1]))
+	    if ( nocheck || haschar(sf,greekalts[1]))
 return( greekalts );
 	}
 	/* In version 3 of unicode tonos gets converted to acute, which it */
@@ -603,7 +604,7 @@ int SFIsCompositBuildable(SplineFont *sf,int unicodeenc,SplineChar *sc) {
     if ( unicodeenc==0x131 || unicodeenc==0xf6be )
 return( SCMakeDotless(sf,SFGetOrMakeChar(sf,unicodeenc,NULL),false,false));
 
-    if (( pt = SFGetAlternate(sf,unicodeenc,sc))==NULL )
+    if (( pt = SFGetAlternate(sf,unicodeenc,sc,false))==NULL )
 return( false );
 
     if ( sc!=NULL )
@@ -1038,11 +1039,12 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
     const unichar_t *temp;
     SplineChar *basersc;
     int baserch = basech;
+    int eta;
 
     /* When we center an accent on Uhorn, we don't really want it centered */
     /*  on the combination, we want it centered on "U". So if basech is itself*/
     /*  a combo, find what it is based on */
-    if ( (temp = SFGetAlternate(sf,basech,NULL))!=NULL && haschar(sf,*temp))
+    if ( (temp = SFGetAlternate(sf,basech,NULL,false))!=NULL && haschar(sf,*temp))
 	baserch = *temp;
     /* Similarly in Ø or ø, we really want to base the accents on O or o */
     if ( baserch==0xf8 ) baserch = 'o';
@@ -1082,6 +1084,8 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
 	SCFindTopBounds(rsc,&rbb,ia);
 	/* should do more than touch, should overlap a tiny bit... */
 	rbb.maxy -= (rbb.maxy-rbb.miny)/30;
+    } else if ( ch==0x345 ) {	/* ypogegrammeni */
+	SCFindTopBounds(rsc,&rbb,ia);
     } else if ( (GraveAcuteCenterBottom && (ch==0x300 || ch==0x301 || ch==0x30b || ch==0x30f)) || ch==0x309 )	/* grave, acute, hungarian, Floating hook */
 	SCFindBottomBounds(rsc,&rbb,ia);
     else if ( basech=='A' && ch==0x30a )
@@ -1118,9 +1122,16 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
 	    }
 	}
     }
-    if ( basech>=0x1f20 && basech<=0x1f27 && ch==0x345 ) {
+    eta = false;
+    if ( ((basech>=0x1f20 && basech<=0x1f27) || basech==0x1f74 || basech==0x1f75 || basech==0x3b7 || basech==0x3ae) &&
+	    ch==0x345 ) {
 	bb.miny = 0;		/* ypogegrammeni rides below baseline, not below bottom stem */
-	bb.minx -= (bb.maxx-bb.minx)/3;	/* Should also be centered on left stem of eta, but I don't know how to do that..., hence this hack */
+	eta = true;
+	if ( basersc!=NULL && basersc->vstem!=NULL ) {
+	    bb.minx = basersc->vstem->start;
+	    bb.maxx = bb.minx + basersc->vstem->width;
+	} else
+	    bb.maxx -= (bb.maxx-bb.minx)/3;	/* Should also be centered on left stem of eta, but I don't know how to do that..., hence this hack */
     }
 
     transform[0] = transform[3] = 1;
@@ -1205,7 +1216,7 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
 		    basech=='l' || basech=='t' ) &&
 		    (xoff=SCStemCheck(sf,basech,&bb,&pointless,pos))!=0x70000000 )
 		bb.minx = bb.maxx = xoff;		/* While on "t" we should center over the stem */
-	} else if ( pos&____BELOW )
+	} else if ( ( pos&____BELOW ) && !eta )
 	    ybase = SCFindBottomXRange(sc,&bb,ia);
     }
 
@@ -1665,7 +1676,7 @@ static int SCMakeRightToLeftLig(SplineChar *sc,SplineFont *sf,
 	    /*  do know that the "unformed" character exists (because we checked)*/
 	    /*  so go back to using it if we must */
 	    if ( !haschar(sf,ch) ) {
-		const unichar_t *temp = SFGetAlternate(sf,ch,NULL);
+		const unichar_t *temp = SFGetAlternate(sf,ch,NULL,false);
 		if ( temp!=NULL ) ch = *temp;
 	    }
 	    SCPutRefAfter(sc,sf,ch,copybmp);
@@ -1786,7 +1797,7 @@ return;
 	ia = SFGuessItalicAngle(sf);
     ia *= 3.1415926535897932/180;
 
-    pt= SFGetAlternate(sf,sc->unicodeenc,sc);
+    pt= SFGetAlternate(sf,sc->unicodeenc,sc,false);
     ch = *pt++;
     if ( ch=='i' || ch=='j' || ch==0x456 ) {
 	/* if we're combining i (or j) with an accent that would interfere */

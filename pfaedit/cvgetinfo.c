@@ -66,7 +66,7 @@ typedef struct gidata {
 #define CI_Width	200
 #define CI_Height	249
 
-#define RI_Width	200
+#define RI_Width	215
 #define RI_Height	110
 
 #define II_Width	130
@@ -430,7 +430,7 @@ static void CIFillup(GIData *ci) {
     GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_Ligature),temp);
     free(temp);
 
-    bits = SFGetAlternate(sc->parent,sc->unicodeenc,sc);
+    bits = SFGetAlternate(sc->parent,sc->unicodeenc,sc,true);
     GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_ComponentMsg),GStringGetResource(
 	bits==NULL ? _STR_NoComponents :
 	hascomposing(sc->parent,sc->unicodeenc,sc) ? _STR_AccentedComponents :
@@ -701,10 +701,11 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
     static GIData gi;
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[12];
-    GTextInfo label[12];
+    GGadgetCreateData gcd[13];
+    GTextInfo label[13];
     char namebuf[100], tbuf[6][40];
-    int i;
+    char ubuf[40];
+    int i,j;
 
     gi.cv = cv;
     gi.rf = ref;
@@ -720,7 +721,8 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,RI_Width));
-	pos.height = GDrawPointsToPixels(NULL,RI_Height);
+	pos.height = GDrawPointsToPixels(NULL,
+		ref->sc->unicodeenc!=-1?RI_Height+12:RI_Height);
 	gi.gw = GDrawCreateTopWindow(NULL,&pos,ci_e_h,&gi,&wattrs);
 
 	memset(&gcd,0,sizeof(gcd));
@@ -733,43 +735,56 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5; 
 	gcd[0].gd.flags = gg_enabled|gg_visible;
 	gcd[0].creator = GLabelCreate;
+	j = 1;
 
-	label[1].text = (unichar_t *) _STR_TransformedBy;
-	label[1].text_in_resource = true;
-	gcd[1].gd.label = &label[1];
-	gcd[1].gd.pos.x = 5; gcd[1].gd.pos.y = 19; 
-	gcd[1].gd.flags = gg_enabled|gg_visible;
-	gcd[1].creator = GLabelCreate;
+	if ( ref->sc->unicodeenc!=-1 ) {
+	    sprintf( ubuf, " Unicode: U+%04x", ref->sc->unicodeenc );
+	    label[1].text = (unichar_t *) ubuf;
+	    label[1].text_is_1byte = true;
+	    gcd[1].gd.label = &label[1];
+	    gcd[1].gd.pos.x = 5; gcd[1].gd.pos.y = 17;
+	    gcd[1].gd.flags = gg_enabled|gg_visible;
+	    gcd[1].creator = GLabelCreate;
+	    j=2;
+	}
+
+	label[j].text = (unichar_t *) _STR_TransformedBy;
+	label[j].text_in_resource = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+14;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].creator = GLabelCreate;
+	++j;
 
 	for ( i=0; i<6; ++i ) {
 	    sprintf(tbuf[i],"%g", ref->transform[i]);
-	    label[i+2].text = (unichar_t *) tbuf[i];
-	    label[i+2].text_is_1byte = true;
-	    gcd[i+2].gd.label = &label[i+2];
-	    gcd[i+2].gd.pos.x = 20+((i&1)?60:0); gcd[i+2].gd.pos.y = 33+(i/2)*13; 
-	    gcd[i+2].gd.flags = gg_enabled|gg_visible;
-	    gcd[i+2].creator = GLabelCreate;
+	    label[i+j].text = (unichar_t *) tbuf[i];
+	    label[i+j].text_is_1byte = true;
+	    gcd[i+j].gd.label = &label[i+j];
+	    gcd[i+j].gd.pos.x = 20+((i&1)?60:0); gcd[i+j].gd.pos.y = gcd[j-1].gd.pos.y+14+(i/2)*13; 
+	    gcd[i+j].gd.flags = gg_enabled|gg_visible;
+	    gcd[i+j].creator = GLabelCreate;
 	}
 
-	gcd[8].gd.pos.x = 30; gcd[8].gd.pos.y = RI_Height-32;
-	gcd[8].gd.pos.width = -1; gcd[8].gd.pos.height = 0;
-	gcd[8].gd.flags = gg_visible | gg_enabled ;
-	label[8].text = (unichar_t *) _STR_Show;
-	label[8].text_in_resource = true;
-	gcd[8].gd.mnemonic = 'S';
-	gcd[8].gd.label = &label[8];
-	gcd[8].gd.handle_controlevent = CI_Show;
-	gcd[8].creator = GButtonCreate;
+	gcd[6+j].gd.pos.x = 30; gcd[6+j].gd.pos.y = RI_Height+(j==3?12:0)-32;
+	gcd[6+j].gd.pos.width = -1; gcd[6+j].gd.pos.height = 0;
+	gcd[6+j].gd.flags = gg_visible | gg_enabled ;
+	label[6+j].text = (unichar_t *) _STR_Show;
+	label[6+j].text_in_resource = true;
+	gcd[6+j].gd.mnemonic = 'S';
+	gcd[6+j].gd.label = &label[6+j];
+	gcd[6+j].gd.handle_controlevent = CI_Show;
+	gcd[6+j].creator = GButtonCreate;
 
-	gcd[9].gd.pos.x = -6-30; gcd[9].gd.pos.y = RI_Height-32-3;
-	gcd[9].gd.pos.width = -1; gcd[9].gd.pos.height = 0;
-	gcd[9].gd.flags = gg_visible | gg_enabled | gg_but_default | gg_but_cancel;
-	label[9].text = (unichar_t *) _STR_OK;
-	label[9].text_in_resource = true;
-	gcd[9].gd.mnemonic = 'O';
-	gcd[9].gd.label = &label[9];
-	gcd[9].gd.handle_controlevent = CI_Cancel;
-	gcd[9].creator = GButtonCreate;
+	gcd[7+j].gd.pos.x = -6-30; gcd[7+j].gd.pos.y = gcd[6+j].gd.pos.y-3;
+	gcd[7+j].gd.pos.width = -1; gcd[7+j].gd.pos.height = 0;
+	gcd[7+j].gd.flags = gg_visible | gg_enabled | gg_but_default | gg_but_cancel;
+	label[7+j].text = (unichar_t *) _STR_OK;
+	label[7+j].text_in_resource = true;
+	gcd[7+j].gd.mnemonic = 'O';
+	gcd[7+j].gd.label = &label[7+j];
+	gcd[7+j].gd.handle_controlevent = CI_Cancel;
+	gcd[7+j].creator = GButtonCreate;
 
 	GGadgetsCreate(gi.gw,gcd);
 

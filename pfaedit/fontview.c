@@ -1426,7 +1426,7 @@ static void FVMenuAutotrace(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 
 int hascomposing(SplineFont *sf,int u,SplineChar *sc) {
-    const unichar_t *upt = SFGetAlternate(sf,u,sc);
+    const unichar_t *upt = SFGetAlternate(sf,u,sc,false);
 
     if ( upt!=NULL ) {
 	while ( *upt ) {

@@ -723,7 +723,7 @@ extern int SFIsRotatable(SplineFont *sf,SplineChar *sc);
 extern int SCMakeDotless(SplineFont *sf, SplineChar *dotless, int copybmp, int doit);
 extern void SCBuildComposit(SplineFont *sf, SplineChar *sc, int copybmp,
 	struct fontview *fv);
-extern const unichar_t *SFGetAlternate(SplineFont *sf, int base,SplineChar *sc);
+extern const unichar_t *SFGetAlternate(SplineFont *sf, int base,SplineChar *sc,int nocheck);
 
 extern int getAdobeEnc(char *name);
 
