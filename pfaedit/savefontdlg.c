@@ -1647,6 +1647,9 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 
     if ( sf->bitmaps==NULL ) i = bf_none;
     else if ( strmatch(bitmaptype,"otf")==0 ) i = bf_ttf;
+    else if ( strmatch(bitmaptype,"ms")==0 ) i = bf_ttf;
+    else if ( strmatch(bitmaptype,"apple")==0 ) i = bf_ttf;
+    else if ( strmatch(bitmaptype,"nfnt")==0 ) i = bf_nfntmacbin;
     else for ( i=0; bitmaps[i]!=NULL; ++i ) {
 	if ( strmatch(bitmaptype,bitmaps[i])==0 )
     break;
@@ -1698,7 +1701,33 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	oldformatstate = ff_none;
 
     if ( fmflags==-1 ) {
-	/* Use the default flags */
+	if ( alwaysgenapple && alwaysgenopentype ) {
+	    old_otf_flags |= ttf_flag_applemode | ttf_flag_otmode;
+	    old_ttf_flags |= ttf_flag_applemode | ttf_flag_otmode;
+	} else if ( alwaysgenapple ) {
+	    old_otf_flags |= ttf_flag_applemode;
+	    old_ttf_flags |= ttf_flag_applemode;
+	    old_otf_flags &=~ttf_flag_otmode;
+	    old_ttf_flags &=~ttf_flag_otmode;
+	} else if ( alwaysgenopentype ) {
+	    old_otf_flags |= ttf_flag_otmode;
+	    old_ttf_flags |= ttf_flag_otmode;
+	    old_otf_flags &=~ttf_flag_applemode;
+	    old_ttf_flags &=~ttf_flag_applemode;
+	}
+	if ( strmatch(bitmaptype,"apple")==0 || strmatch(bitmaptype,"sbit")==0 ||
+		oldformatstate==ff_ttfmacbin || oldformatstate==ff_ttfdfont ||
+		oldformatstate==ff_otfdfont || oldformatstate==ff_otfciddfont ) {
+	    old_otf_flags |= ttf_flag_applemode;
+	    old_ttf_flags |= ttf_flag_applemode;
+	    old_otf_flags &=~ttf_flag_otmode;
+	    old_ttf_flags &=~ttf_flag_otmode;
+	} else if ( strmatch(bitmaptype,"ms")==0 ) {
+	    old_otf_flags |= ttf_flag_otmode;
+	    old_ttf_flags |= ttf_flag_otmode;
+	    old_otf_flags &=~ttf_flag_applemode;
+	    old_ttf_flags &=~ttf_flag_applemode;
+	}
     } else {
 	if ( oldformatstate<=ff_cid ) {
 	    old_ps_flags = 0;
@@ -2226,20 +2255,21 @@ int SFGenerateFont(SplineFont *sf,int family) {
     SplineFont *familysfs[48];
     uint16 psstyle;
 
-    if ( alwaysgenapple || family ) {
-	old_ttf_flags |= ttf_flag_applemode;
+    if ( (alwaysgenapple || family ) && alwaysgenopentype ) {
+	old_otf_flags |= ttf_flag_applemode | ttf_flag_otmode;
+	old_ttf_flags |= ttf_flag_applemode | ttf_flag_otmode;
+    } else if ( alwaysgenapple || family ) {
 	old_otf_flags |= ttf_flag_applemode;
-    } else {
-	old_ttf_flags &= ~ttf_flag_applemode;
-	old_otf_flags &= ~ttf_flag_applemode;
-    }
-    if ( alwaysgenopentype ) {
-	old_ttf_flags |= ttf_flag_otmode;
+	old_ttf_flags |= ttf_flag_applemode;
+	old_otf_flags &=~ttf_flag_otmode;
+	old_ttf_flags &=~ttf_flag_otmode;
+    } else if ( alwaysgenopentype ) {
 	old_otf_flags |= ttf_flag_otmode;
-    } else {
-	old_ttf_flags &= ~ttf_flag_otmode;
-	old_otf_flags &= ~ttf_flag_otmode;
+	old_ttf_flags |= ttf_flag_otmode;
+	old_otf_flags &=~ttf_flag_applemode;
+	old_ttf_flags &=~ttf_flag_applemode;
     }
+
     if ( family ) {
 	/* I could just disable the menu item, but I think it's a bit confusing*/
 	/*  and I want people to know why they can't generate a family */
@@ -2440,6 +2470,7 @@ return( 0 );
 	bitmaptypes[bf_nfntmacbin].disabled = true;
 	bitmaptypes[bf_nfntdfont].disabled = true;
 	bitmaptypes[bf_fon].disabled = true;
+	bitmaptypes[bf_otb].disabled = true;
     } else if ( ofs!=ff_none )
 	bitmaptypes[bf_sfnt_dfont].disabled = true;
     bitmaptypes[old].selected = true;

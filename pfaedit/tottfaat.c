@@ -1707,7 +1707,7 @@ void aat_dumpopbd(struct alltabs *at, SplineFont *_sf) {
 	    sc = NULL;
 	    do {
 		sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[l];
-		if ( l<sf->charcnt && sf->chars[l]!=NULL ) {
+		if ( i<sf->charcnt && sf->chars[l]!=NULL ) {
 		    sc = sf->chars[i];
 	    break;
 		}
