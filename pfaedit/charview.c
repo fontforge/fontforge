@@ -31,7 +31,7 @@
 #include <utype.h>
 
 extern int _GScrollBar_Width;
-struct cvshows CVShows = { 1, 1, 1, 1, 1, 1, 0, 1 };
+struct cvshows CVShows = { 1, 1, 1, 1, 1, 1, 1, 0, 1 };
 
 /* Positions on the info line */
 #define RPT_BASE	5		/* Place to draw the pointer icon */
@@ -145,8 +145,6 @@ return( true );
 		    ( l->asstart.x>0 && l->next->asend.x<0 )) {
 		y = -(l->next->asend.y-l->asstart.y)*(double)l->asstart.x/(l->next->asend.x-l->asstart.x) +
 			l->asstart.y;
-		if (( y<0 || y>=cv->height ) && bothout )
-    continue;			/* Not on screen */;
 		if ( l->asstart.x<0 ) {
 		    l->asstart.x = 0;
 		    l->asstart.y = y;
@@ -159,8 +157,6 @@ return( true );
 		    ( l->asstart.x>cv->width && l->next->asend.x<cv->width )) {
 		y = (l->next->asend.y-l->asstart.y)*(double)(cv->width-l->asstart.x)/(l->next->asend.x-l->asstart.x) +
 			l->asstart.y;
-		if (( y<0 || y>=cv->height ) && bothout )
-    continue;			/* Not on screen */;
 		if ( l->asstart.x>cv->width ) {
 		    l->asstart.x = cv->width;
 		    l->asstart.y = y;
@@ -426,14 +422,135 @@ void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
     }
 }
 
+static void CVShowDHint(CharView *cv, GWindow pixmap, DStemInfo *dstem) {
+    IPoint ip[40], ip2[40];
+    GPoint clipped[13];
+    int i,j, tot,last;
+
+    ip[0].x = cv->xoff + rint(dstem->leftedgetop.x*cv->scale);
+    ip[0].y = -cv->yoff + cv->height - rint(dstem->leftedgetop.y*cv->scale);
+    ip[1].x = cv->xoff + rint(dstem->rightedgetop.x*cv->scale);
+    ip[1].y = -cv->yoff + cv->height - rint(dstem->rightedgetop.y*cv->scale);
+    ip[2].x = cv->xoff + rint(dstem->rightedgebottom.x*cv->scale);
+    ip[2].y = -cv->yoff + cv->height - rint(dstem->rightedgebottom.y*cv->scale);
+    ip[3].x = cv->xoff + rint(dstem->leftedgebottom.x*cv->scale);
+    ip[3].y = -cv->yoff + cv->height - rint(dstem->leftedgebottom.y*cv->scale);
+
+    if (( ip[0].x<0 && ip[1].x<0 && ip[2].x<0 && ip[3].x<0 ) ||
+	    ( ip[0].x>=cv->width && ip[1].x>=cv->width && ip[2].x>=cv->width && ip[3].x>=cv->width ) ||
+	    ( ip[0].y<0 && ip[1].y<0 && ip[2].y<0 && ip[3].y<0 ) ||
+	    ( ip[0].y>=cv->height && ip[1].y>=cv->height && ip[2].y>=cv->height && ip[3].y>=cv->height ))
+return;		/* Offscreen */
+
+    /* clip to left edge */
+    tot = 4;
+    for ( i=j=0; i<tot; ++i ) {
+	last = i==0?tot-1:i-1;
+	if ( ip[i].x>=0 && ip[last].x>=0) {
+	    ip2[j++] = ip[i];
+	} else if ( ip[i].x<0 && ip[last].x<0 ) {
+	    if ( j==0 || ip2[j-1].x!=0 || ip2[j-1].y!=ip[i].y ) {
+		ip2[j].x = 0;
+		ip2[j++].y = ip[i].y;
+	    }
+	} else {
+	    ip2[j].x = 0;
+	    ip2[j++].y = ip[last].y - ip[last].x * ((double) (ip[i].y-ip[last].y))/(ip[i].x-ip[last].x);
+	    if ( ip[i].x>0 )
+		ip2[j++] = ip[i];
+	    else {
+		ip2[j].x = 0;
+		ip2[j++].y = ip[i].y;
+	    }
+	}
+    }
+    /* clip to right edge */
+    tot = j;
+    for ( i=j=0; i<tot; ++i ) {
+	last = i==0?tot-1:i-1;
+	if ( ip2[i].x<cv->width && ip2[last].x<cv->width ) {
+	    ip[j++] = ip2[i];
+	} else if ( ip2[i].x>=cv->width && ip2[last].x>=cv->width ) {
+	    if ( j==0 || ip[j-1].x!=cv->width-1 || ip[j-1].y!=ip2[i].y ) {
+		ip[j].x = cv->width-1;
+		ip[j++].y = ip2[i].y;
+	    }
+	} else {
+	    ip[j].x = cv->width-1;
+	    ip[j++].y = ip2[last].y + (cv->width-1- ip2[last].x) * ((double) (ip2[i].y-ip2[last].y))/(ip2[i].x-ip2[last].x);
+	    if ( ip2[i].x<cv->width )
+		ip[j++] = ip2[i];
+	    else {
+		ip[j].x = cv->width-1;
+		ip[j++].y = ip2[i].y;
+	    }
+	}
+    }
+    /* clip to bottom edge */
+    tot = j;
+    for ( i=j=0; i<tot; ++i ) {
+	last = i==0?tot-1:i-1;
+	if ( ip[i].y>=0 && ip[last].y>=0) {
+	    ip2[j++] = ip[i];
+	} else if ( ip[i].y<0 && ip[last].y<0 ) {
+	    ip2[j].y = 0;
+	    ip2[j++].x = ip[i].x;
+	} else {
+	    ip2[j].y = 0;
+	    ip2[j++].x = ip[last].x - ip[last].y * ((double) (ip[i].x-ip[last].x))/(ip[i].y-ip[last].y);
+	    if ( ip[i].y>0 )
+		ip2[j++] = ip[i];
+	    else {
+		ip2[j].y = 0;
+		ip2[j++].x = ip[i].x;
+	    }
+	}
+    }
+    /* clip to top edge */
+    tot = j;
+    for ( i=j=0; i<tot; ++i ) {
+	last = i==0?tot-1:i-1;
+	if ( ip2[i].y<cv->height && ip2[last].y<cv->height ) {
+	    ip[j++] = ip2[i];
+	} else if ( ip2[i].y>=cv->height && ip2[last].y>=cv->height ) {
+	    ip[j].y = cv->height-1;
+	    ip[j++].x = ip2[i].x;
+	} else {
+	    ip[j].y = cv->height-1;
+	    ip[j++].x = ip2[last].x + (cv->height-1- ip2[last].y) * ((double) (ip2[i].x-ip2[last].x))/(ip2[i].y-ip2[last].y);
+	    if ( ip2[i].y<cv->width )
+		ip[j++] = ip2[i];
+	    else {
+		ip[j].y = cv->height-1;
+		ip[j++].x = ip2[i].x;
+	    }
+	}
+    }
+
+    tot=j;
+    clipped[0].x = ip[0].x; clipped[0].y = ip[0].y;
+    for ( i=j=1; i<tot; ++i ) {
+	if ( ip[i].x!=ip[i-1].x || ip[i].y!=ip[i-1].y ) {
+	    clipped[j].x = ip[i].x; clipped[j++].y = ip[i].y;
+	}
+    }
+    clipped[j++] = clipped[0];
+    GDrawFillPoly(pixmap,clipped,j,0xd0a0a0);
+}
+
 static void CVShowHints(CharView *cv, GWindow pixmap) {
     StemInfo *hint;
     GRect r;
     HintInstance *hi;
     int end;
     Color col;
+    DStemInfo *dstem;
 
     GDrawSetDashedLine(pixmap,5,5,0);
+
+    if ( cv->showdhints ) for ( dstem = cv->sc->dstem; dstem!=NULL; dstem = dstem->next ) {
+	CVShowDHint(cv,pixmap,dstem);
+    }
 
     if ( cv->showhhints ) for ( hint = cv->sc->hstem; hint!=NULL; hint = hint->next ) {
 	if ( hint->width<0 ) {
@@ -589,20 +706,25 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 		cv->showpoints && cv->drawmode==dm_grid,&clip);
     }
 
+    if ( cv->showback || cv->drawmode==dm_back )
+	DrawSelImageList(cv,pixmap,cv->sc->backimages);
+    if (( cv->showfore || cv->drawmode==dm_fore ) && cv->showfilled ) {
+	/* Wrong order, I know. But it is useful to have the background */
+	/*  visible on top of the fill... */
+	GDrawDrawImage(pixmap, &cv->gi, NULL, cv->xoff + cv->filled->xmin,
+		-cv->yoff + cv->height-cv->filled->ymax);
+    }
+
     if ( cv->showback || cv->drawmode==dm_back ) {
 	/* Used to draw the image list here, but that's too slow. Optimization*/
 	/*  is to draw to pixmap, dump pixmap a bit earlier */
-	DrawSelImageList(cv,pixmap,cv->sc->backimages);
-	CVDrawSplineSet(cv,pixmap,cv->sc->backgroundsplines,0x808080,
+	/* Then when we moved the fill image around, we had to deal with the */
+	/*  images before the fill... */
+	CVDrawSplineSet(cv,pixmap,cv->sc->backgroundsplines,0x009800,
 		cv->showpoints && cv->drawmode==dm_back,&clip);
     }
 
     if ( cv->showfore || cv->drawmode==dm_fore ) {
-	if ( cv->showfilled ) {
-	    GDrawDrawImage(pixmap, &cv->gi, NULL, cv->xoff + cv->filled->xmin,
-		    -cv->yoff + cv->height-cv->filled->ymax);
-	}
-
 	for ( rf=cv->sc->refs; rf!=NULL; rf = rf->next ) {
 	    CVDrawSplineSet(cv,pixmap,rf->splines,0,false,&clip);
 	    if ( rf->selected )
@@ -2047,11 +2169,13 @@ return( true );
 #define MID_AutoHint	2400
 #define MID_ClearHStem	2401
 #define MID_ClearVStem	2402
-#define MID_AddHHint	2403
-#define MID_AddVHint	2404
-#define MID_ReviewHints	2405
-#define MID_CreateHHint	2406
-#define MID_CreateVHint	2407
+#define MID_ClearDStem	2403
+#define MID_AddHHint	2404
+#define MID_AddVHint	2405
+#define MID_AddDHint	2406
+#define MID_ReviewHints	2407
+#define MID_CreateHHint	2408
+#define MID_CreateVHint	2409
 #define MID_Tools	2501
 #define MID_Layers	2502
 #define MID_Center	2600
@@ -2132,8 +2256,10 @@ static unichar_t tangent[] = { 'T','a','n','g','e','n', 't',  '\0' };
 static unichar_t autohint[] = { 'A', 'u', 't', 'o', 'H', 'i', 'n', 't',  '\0' };
 static unichar_t clearhstem[] = { 'C', 'l', 'e', 'a', 'r', ' ', 'H', 'S', 't', 'e', 'm',  '\0' };
 static unichar_t clearvstem[] = { 'C', 'l', 'e', 'a', 'r', ' ', 'V', 'S', 't', 'e', 'm',  '\0' };
+static unichar_t cleardstem[] = { 'C', 'l', 'e', 'a', 'r', ' ', 'D', 'S', 't', 'e', 'm',  '\0' };
 static unichar_t addhhint[] = { 'A', 'd', 'd', ' ', 'H', 'H', 'i', 'n', 't',  '\0' };
 static unichar_t addvhint[] = { 'A', 'd', 'd', ' ', 'V', 'H', 'i', 'n', 't',  '\0' };
+static unichar_t adddhint[] = { 'A', 'd', 'd', ' ', 'D', 'H', 'i', 'n', 't',  '\0' };
 static unichar_t createhhint[] = { 'C', 'r', 'e', 'a', 't', 'e', ' ', 'H', 'H', 'i', 'n', 't',  '\0' };
 static unichar_t createvhint[] = { 'C', 'r', 'e', 'a', 't', 'e', ' ', 'V', 'H', 'i', 'n', 't',  '\0' };
 static unichar_t reviewhints[] = { 'R', 'e', 'v', 'i', 'e', 'w', ' ', 'H', 'i', 'n', 't', 's',  '\0' };
@@ -3035,10 +3161,13 @@ static void CVMenuClearHints(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	StemInfoFree(cv->sc->hstem);
 	cv->sc->hstem = NULL;
 	cv->sc->hconflicts = false;
-    } else {
+    } else if ( mi->mid==MID_ClearVStem ) {
 	StemInfoFree(cv->sc->vstem);
 	cv->sc->vstem = NULL;
 	cv->sc->hconflicts = false;
+    } else {
+	DStemInfoFree(cv->sc->dstem);
+	cv->sc->dstem = NULL;
     }
     cv->sc->manualhints = true;
     SCOutOfDateBackground(cv->sc);
@@ -3047,8 +3176,9 @@ static void CVMenuClearHints(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void CVMenuAddHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    SplinePoint *sp1, *sp2;
+    SplinePoint *sp1, *sp2, *sp3, *sp4;
     StemInfo *h;
+    DStemInfo *d;
 
     if ( !CVTwoForePointsSelected(cv,&sp1,&sp2))
 return;
@@ -3066,7 +3196,7 @@ return;
 	}
 	SCGuessHHintInstancesAndAdd(cv->sc,h);
 	cv->sc->hconflicts = StemListAnyConflicts(cv->sc->hstem);
-    } else {
+    } else if ( mi->mid==MID_AddVHint ) {
 	if ( sp1->me.x==sp2->me.x )
 return;
 	h = calloc(1,sizeof(StemInfo));
@@ -3079,6 +3209,28 @@ return;
 	}
 	SCGuessVHintInstancesAndAdd(cv->sc,h);
 	cv->sc->vconflicts = StemListAnyConflicts(cv->sc->vstem);
+    } else {
+	if ( !CVIsDiagonalable(sp1,sp2,&sp3,&sp4))
+return;
+	/* Make sure sp1<->sp3 is further left than sp2<->sp4 */
+	if ( sp1->me.x > sp2->me.x + (sp1->me.y-sp2->me.y) * (sp4->me.x-sp2->me.x)/(sp4->me.y-sp2->me.y) ) {
+	    SplinePoint *temp;
+	    temp = sp1; sp1 = sp2; sp2 = temp;
+	    temp = sp3; sp3=sp4; sp4=temp;
+	}
+	/* Make sure sp1,sp2 are at the top */
+	if ( sp1->me.y<sp3->me.y ) {
+	    SplinePoint *temp;
+	    temp = sp1; sp1=sp3; sp3=temp;
+	    temp = sp2; sp2=sp4; sp4=temp;
+	}
+	d = gcalloc(1,sizeof(DStemInfo));
+	d->next = cv->sc->dstem;
+	cv->sc->dstem = d;
+	d->leftedgetop = sp1->me;
+	d->rightedgetop = sp2->me;
+	d->leftedgebottom = sp3->me;
+	d->rightedgebottom = sp4->me;
     }
     cv->sc->manualhints = true;
     SCOutOfDateBackground(cv->sc);
@@ -3103,7 +3255,7 @@ return;
 
 static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    SplinePoint *sp1, *sp2;
+    SplinePoint *sp1, *sp2, *sp3, *sp4;
     int removeOverlap;
 
     sp1 = sp2 = NULL;
@@ -3121,6 +3273,9 @@ static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  break;
 	  case MID_AddVHint:
 	    mi->ti.disabled = sp1==NULL || sp2->me.x==sp1->me.x;
+	  break;
+	  case MID_AddDHint:
+	    mi->ti.disabled = !CVIsDiagonalable(sp1,sp2,&sp3,&sp4);
 	  break;
 	  case MID_ReviewHints:
 	    mi->ti.disabled = (cv->sc->hstem==NULL && cv->sc->vstem==NULL );
@@ -3278,9 +3433,11 @@ static GMenuItem htlist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { clearhstem, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'C' }, '\0', ksm_control, NULL, NULL, CVMenuClearHints, MID_ClearHStem },
     { { clearvstem, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'V' }, '\0', ksm_control, NULL, NULL, CVMenuClearHints, MID_ClearVStem },
+    { { cleardstem, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'D' }, '\0', ksm_control, NULL, NULL, CVMenuClearHints, MID_ClearDStem },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { addhhint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'A' }, '\0', ksm_control, NULL, NULL, CVMenuAddHint, MID_AddHHint },
-    { { addvhint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'd' }, '\0', ksm_control, NULL, NULL, CVMenuAddHint, MID_AddVHint },
+    { { addvhint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 's' }, '\0', ksm_control, NULL, NULL, CVMenuAddHint, MID_AddVHint },
+    { { adddhint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 't' }, '\0', ksm_control, NULL, NULL, CVMenuAddHint, MID_AddDHint },
     { { createhhint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'r' }, '\0', ksm_control, NULL, NULL, CVMenuCreateHint, MID_CreateHHint },
     { { createvhint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'e' }, '\0', ksm_control, NULL, NULL, CVMenuCreateHint, MID_CreateVHint },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
@@ -3362,6 +3519,7 @@ CharView *CharViewCreate(SplineChar *sc, FontView *fv) {
     cv->showgrids = CVShows.showgrids;
     cv->showhhints = CVShows.showhhints;
     cv->showvhints = CVShows.showvhints;
+    cv->showdhints = CVShows.showdhints;
     cv->showpoints = CVShows.showpoints;
     cv->showrulers = CVShows.showrulers;
     cv->showfilled = CVShows.showfilled;
@@ -3431,7 +3589,7 @@ CharView *CharViewCreate(SplineChar *sc, FontView *fv) {
     cv->gi.u.image->clut->trans_index = cv->gi.u.image->trans = 0;
     cv->gi.u.image->clut->clut_len = 2;
     cv->gi.u.image->clut->clut[0] = 0xffffff;
-    cv->gi.u.image->clut->clut[1] = 0x808080;
+    cv->gi.u.image->clut->clut[1] = 0x707070;
     cv->b1_tool = cvt_pointer; cv->cb1_tool = cvt_pointer;
     cv->b2_tool = cvt_magnify; cv->cb2_tool = cvt_ruler;
     cv->showing_tool = cvt_pointer;

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 6-May-2001 -->
+  <!-- AP: Last modified: 11-Jun-2001 -->
   <TITLE>The Element Menu</TITLE>
 </HEAD>
 <BODY>
@@ -19,6 +19,8 @@ This menu is not present in the Metrics View.
     <A HREF="#Private">Private Info</A>
   <LI>
     <A HREF="#Info">Get/Char Info</A>
+  <LI>
+    <A HREF="#Problems">Find Problems...</A>
   <LI>
     <A HREF="#Bitmaps">Bitmaps Available...</A>
   <LI>
@@ -82,6 +84,27 @@ This menu is not present in the Metrics View.
     on what is selected.<BR>
     In the font and bitmap view this only brings up the
     <A HREF="getinfo.html#Character">Character Info dialog</A>.
+  <DT>
+    Find <A NAME="Problems">Problems</A>...
+  <DD>
+    This command is only present in the font view and the outline character view
+    and will search for three common problems. In the character view it will
+    select anything that needs to be fixed, in the font view it will check all
+    selected characters and if any have problems will open them and select the
+    problems.
+    <OL>
+      <LI>
+	Paths which aren't closed (all paths should be closed). The open path will
+	be selected.
+      <LI>
+	Adjacent points on the same path which are within 2 units of each other (this
+	isn't a problem in postscript, but some of pfaedit's commands are confused
+	by short segments). The two points will be selected.
+      <LI>
+	Splines which do not have points at the horizontal/vertical extrema. Hints
+	may not work as well in this case. The end points of the problematic spline
+	will be selected.
+    </OL>
   <DT>
     <A NAME="Bitmaps">Bitmaps</A> Available...
   <DD>

@@ -1130,7 +1130,112 @@ static HintInstance *HIReverse(HintInstance *cur) {
 return( cur );
 }
 
-static StemInfo *ELFindStems(EIList *el, int major) {
+static int MakeDStem(DStemInfo *d,EI *apt,EI *e) {
+    memset(d,'\0',sizeof(DStemInfo));
+    if ( apt->spline->to->me.y > apt->spline->from->me.y ) {
+	d->leftedgetop = apt->spline->to->me;
+	d->leftedgebottom = apt->spline->from->me;
+    } else if ( apt->spline->to->me.y == apt->spline->from->me.y ||
+		apt->spline->to->me.x == apt->spline->from->me.x )
+return(false);			/* If it's horizontal/vertical, I'm not interested */
+    else {
+	d->leftedgetop = apt->spline->from->me;
+	d->leftedgebottom = apt->spline->to->me;
+    }
+
+    if ( e->spline->to->me.y > e->spline->from->me.y ) {
+	d->rightedgetop = e->spline->to->me;
+	d->rightedgebottom = e->spline->from->me;
+    } else if ( e->spline->to->me.y == e->spline->from->me.y ||
+		e->spline->to->me.x == e->spline->from->me.x )
+return(false);			/* If it's horizontal/vertical, I'm not interested */
+    else {
+	d->rightedgetop = e->spline->from->me;
+	d->rightedgebottom = e->spline->to->me;
+    }
+return( true );
+}
+
+static int AreNearlyParallel(EI *apt,EI *e) {
+    DStemInfo d;
+    double x,y,len, len1,len2;
+    BasePoint top, bottom;
+
+    if ( !MakeDStem(&d,apt,e))
+return( false );
+
+    if( !DoubleApprox((d.leftedgetop.y-d.leftedgebottom.y)/(d.leftedgetop.x-d.leftedgebottom.x),
+	    (d.rightedgetop.y-d.rightedgebottom.y)/(d.rightedgetop.x-d.rightedgebottom.x)) )
+return( false );
+
+    /* Now check that the two segments have considerable overlap */
+	/* First find the normal vector to either segment (should be approximately the same) */
+    x = d.leftedgetop.y-d.leftedgebottom.y; y = -(d.leftedgetop.x-d.leftedgebottom.x);
+    len = sqrt(x*x+y*y);
+    x/=len; y/=len;
+	/* Now find the projection onto this normal of the vector between any */
+	/*  point on the first segment to any point on the second (should be the same) */
+    len = x*(d.leftedgetop.x-d.rightedgetop.x) +
+	    y*(d.leftedgetop.y-d.rightedgetop.y);
+    x *= len; y *= len;
+	/* Now we should have a vector which will move us orthogonal to the */
+	/*  segments from one to the other */
+
+    /* Now figure the overlap... */
+    if ( d.leftedgetop.y>d.rightedgetop.y+y ) {
+	top = d.rightedgetop;
+	top.x += x; top.y += y;
+    } else
+	top = d.leftedgetop;
+
+    if ( d.leftedgebottom.y<d.rightedgebottom.y+y ) {
+	bottom = d.rightedgebottom;
+	bottom.x += x; bottom.y += y;
+    } else
+	bottom = d.leftedgebottom;
+    if ( top.y<bottom.y )		/* No overlap */
+return( false );
+    x = d.leftedgetop.x-d.leftedgebottom.x; y = d.leftedgetop.y-d.leftedgebottom.y;
+    len1 = x*x + y*y;
+    x = d.rightedgetop.x-d.rightedgebottom.x; y = d.rightedgetop.y-d.rightedgebottom.y;
+    len2 = x*x + y*y;
+    if ( len1>len2 )
+	len1 = len2;
+    x = top.x-bottom.x; y = top.y-bottom.y;
+    len = x*x + y*y;
+    if ( len<len1/9 )			/* Very little overlap (remember the lengths are squared so 9=>3) */
+return( false );
+
+return( true );
+}
+
+static DStemInfo *AddDiagStem(DStemInfo *dstems,EI *apt,EI *e) {
+    DStemInfo d, *test, *prev, *new;
+
+    if ( !MakeDStem(&d,apt,e))
+return( dstems );
+    if ( dstems==NULL || d.leftedgetop.x < dstems->leftedgetop.x ) {
+	new = galloc(sizeof(DStemInfo));
+	*new = d;
+	new->next = dstems;
+return( new );
+    }
+    for ( prev=dstems, test=dstems->next; test!=NULL && d.leftedgetop.x>test->leftedgetop.x;
+	    prev = test, test = test->next );
+    if ( test!=NULL &&
+	    d.leftedgetop.x==test->leftedgetop.x && d.leftedgetop.y==test->leftedgetop.y &&
+	    d.rightedgetop.x==test->rightedgetop.x && d.rightedgetop.y==test->rightedgetop.y &&
+	    d.leftedgebottom.x==test->leftedgebottom.x && d.leftedgebottom.y==test->leftedgebottom.y &&
+	    d.rightedgebottom.x==test->rightedgebottom.x && d.rightedgebottom.y==test->rightedgebottom.y )
+return( dstems );
+    new = galloc(sizeof(DStemInfo));
+    *new = d;
+    new->next = test;
+    prev->next = new;
+return( dstems );
+}
+
+static StemInfo *ELFindStems(EIList *el, int major, DStemInfo **dstems ) {
     EI *active=NULL, *apt, *e, *p;
     int i, change, ahv, ehv, waschange;
     StemInfo *stems=NULL, *s;
@@ -1186,7 +1291,12 @@ static StemInfo *ELFindStems(EIList *el, int major) {
 		StemInfo *temp = stems;
 		pendings = StemPending(pendings,apt,e,ahv,major,&temp);
 		stems = temp;
+	    } else if ( dstems!=NULL &&
+		    apt->spline->islinear && e->spline->islinear &&
+		    AreNearlyParallel(apt,e)) {
+		*dstems = AddDiagStem(*dstems,apt,e);
 	    }
+		
 	    if ( EISameLine(p,p->aenext,i+el->low,major))	/* There's one case where this doesn't happen in FindStem */
 		e = p->aenext;		/* If the e is horizontal and e->aenext is not */
 	}
@@ -1434,12 +1544,12 @@ static StemInfo *StemRemoveConflictingBigHint(StemInfo *stems,double big) {
 return( head );
 }
 
-static StemInfo *SCFindStems(EIList *el, int major, int removeOverlaps) {
+static StemInfo *SCFindStems(EIList *el, int major, int removeOverlaps,DStemInfo **dstems) {
     StemInfo *stems;
 
     el->major = major;
     ELOrder(el,major);
-    stems = ELFindStems(el,major);
+    stems = ELFindStems(el,major,dstems);
     free(el->ordered);
     free(el->ends);
     stems = StemRemoveZeroHIlen(stems);
@@ -1813,18 +1923,18 @@ static void AutoHintRefs(SplineChar *sc,int removeOverlaps) {
 void SplineCharAutoHint( SplineChar *sc, int removeOverlaps ) {
     EIList el;
 
+    StemInfosFree(sc->vstem); sc->vstem=NULL;
+    StemInfosFree(sc->hstem); sc->hstem=NULL;
+    DStemInfosFree(sc->dstem); sc->dstem=NULL;
+
     memset(&el,'\0',sizeof(el));
     ELFindEdges(sc, &el);
 
     sc->changedsincelasthinted = false;
     sc->manualhints = false;
-#if 0
-    if ( sc->origtype1!=NULL )
-	SCClearOrig(sc);
-#endif
 
-    sc->vstem = SCFindStems(&el,1,removeOverlaps);
-    sc->hstem = SCFindStems(&el,0,removeOverlaps);
+    sc->vstem = SCFindStems(&el,1,removeOverlaps,&sc->dstem);
+    sc->hstem = SCFindStems(&el,0,removeOverlaps,NULL);
     AutoHintRefs(sc,removeOverlaps);
     sc->vconflicts = StemListAnyConflicts(sc->vstem);
     sc->hconflicts = StemListAnyConflicts(sc->hstem);

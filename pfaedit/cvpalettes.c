@@ -30,10 +30,10 @@
 #include "splinefont.h"
 #include "ustring.h"
 
-int seperate_hint_controls=1;
-
 static int cvvisible[2] = { 1, 1}, bvvisible[2]= { 1,1 };
 static GWindow cvlayers, cvtools, bvlayers, bvtools;
+static GPoint cvtoolsoff = { -9999 }, cvlayersoff = { -9999 }, bvlayersoff = { -9999 }, bvtoolsoff = { -9999 };
+static int palettesmoved=0;
 
 static GWindow CreatePalette(GWindow w, GRect *pos, int (*eh)(GWindow,GEvent *), void *user_data, GWindowAttrs *wattrs) {
     GWindow gw;
@@ -54,14 +54,45 @@ static GWindow CreatePalette(GWindow w, GRect *pos, int (*eh)(GWindow,GEvent *),
 	pt.y = screensize.height-pos->height;
 
     newpos.x = pt.x; newpos.y = pt.y; newpos.width = pos->width; newpos.height = pos->height;
-    if ( !(wattrs->mask&wam_transient)) {
-	wattrs->mask |= wam_transient;
-	wattrs->transient = GWidgetGetTopWidget(w);
-    }
     wattrs->mask |= wam_positioned;
     wattrs->positioned = true;
     gw = GDrawCreateTopWindow(NULL,&newpos,eh,user_data,wattrs);
 return( gw );
+}
+
+static void SaveOffsets(GWindow main, GWindow palette, GPoint *off) {
+    if ( GDrawIsVisible(palette)) {
+	GRect mr, pr;
+	GDrawGetSize(main,&mr);
+	GDrawGetSize(palette,&pr);
+	off->x = pr.x-mr.x;
+	off->y = pr.y-mr.y;
+#if 0
+ printf( "%s is offset (%d,%d)\n", palette==cvtools?"CVTools":
+     palette==cvlayers?"CVLayers":palette==bvtools?"BVTools":"BVLayers", off->x, off->y );
+#endif
+    }
+}
+
+static void RestoreOffsets(GWindow main, GWindow palette, GPoint *off) {
+    GPoint pt;
+    GWindow root;
+    GRect screensize, pos;
+
+    pt = *off;
+    root = GDrawGetRoot(NULL);
+    GDrawGetSize(root,&screensize);
+    GDrawGetSize(palette,&pos);
+    GDrawTranslateCoordinates(main,root,&pt);
+    if ( pt.x<0 ) pt.x=0;
+    if ( pt.y<0 ) pt.y=0;
+    if ( pt.x+pos.width>screensize.width )
+	pt.x = screensize.width-pos.width;
+    if ( pt.y+pos.height>screensize.height )
+	pt.y = screensize.height-pos.height;
+    palettesmoved = true;
+    GDrawMove(palette,pt.x,pt.y);
+    GDrawRaise(palette);
 }
 
 static unichar_t poppointer[] = { 'P','o','i','n','t','e','r',  '\0' };
@@ -519,14 +550,18 @@ GWindow CVMakeTools(CharView *cv) {
 return( cvtools );
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_positioned|wam_wtitle;
+    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_positioned|wam_isdlg;
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
     wattrs.positioned = true;
+    wattrs.is_dlg = true;
     wattrs.window_title = title;
 
     r.width = 53; r.height = 187;
-    r.x = -r.width-6; r.y = cv->mbh+20;
+    if ( cvtoolsoff.x==-9999 ) {
+	cvtoolsoff.x = -r.width-6; cvtoolsoff.y = cv->mbh+20;
+    }
+    r.x = cvtoolsoff.x; r.y = cvtoolsoff.y;
     cvtools = CreatePalette( cv->gw, &r, cvtools_e_h, cv, &wattrs );
     GDrawSetVisible(cvtools,true);
 return( cvtools );
@@ -573,12 +608,12 @@ void CVToolsPopup(CharView *cv, GEvent *event) {
 #define CID_VFore	1001
 #define CID_VBack	1002
 #define CID_VGrid	1003
-#define CID_VHints	1004
 #define CID_VHHints	1005
 #define CID_VVHints	1006
-#define CID_EFore	1007
-#define CID_EBack	1008
-#define CID_EGrid	1009
+#define CID_VDHints	1007
+#define CID_EFore	1008
+#define CID_EBack	1009
+#define CID_EGrid	1010
 
 static void CVLayersSet(CharView *cv) {
     GGadgetSetChecked(GWidgetGetControl(cvlayers,CID_VFore),cv->showfore);
@@ -586,6 +621,7 @@ static void CVLayersSet(CharView *cv) {
     GGadgetSetChecked(GWidgetGetControl(cvlayers,CID_VGrid),cv->showgrids);
     GGadgetSetChecked(GWidgetGetControl(cvlayers,CID_VVHints),cv->showvhints);
     GGadgetSetChecked(GWidgetGetControl(cvlayers,CID_VHHints),cv->showhhints);
+    GGadgetSetChecked(GWidgetGetControl(cvlayers,CID_VDHints),cv->showdhints);
     GGadgetSetChecked(GWidgetGetControl(cvlayers,
 		cv->drawmode==dm_fore?CID_EFore:
 		cv->drawmode==dm_back?CID_EBack:CID_EGrid ),true);
@@ -623,9 +659,8 @@ static int cvlayers_e_h(GWindow gw, GEvent *event) {
 			GGadgetIsChecked(event->u.control.g);
 		cv->back_img_out_of_date = true;	/* only this cv */
 	      break;
-	      case CID_VHints:
-		CVShows.showhhints = cv->showhhints =
-		    CVShows.showvhints = cv->showvhints =
+	      case CID_VDHints:
+		CVShows.showdhints = cv->showdhints =
 			GGadgetIsChecked(event->u.control.g);
 		cv->back_img_out_of_date = true;	/* only this cv */
 	      break;
@@ -653,8 +688,8 @@ GWindow CVMakeLayers(CharView *cv) {
     GRect r;
     GWindowAttrs wattrs;
     unichar_t title[] = { 'L', 'a', 'y', 'e', 'r', 's', '\0' };
-    GGadgetCreateData gcd[15];
-    GTextInfo label[15];
+    GGadgetCreateData gcd[17];
+    GTextInfo label[17];
     static GBox radio_box = { bt_none, bs_rect, 0, 0, 0, 0, 0,0,0,0, COLOR_DEFAULT,COLOR_DEFAULT };
     static unichar_t isvis[] =  { 'I', 's', ' ', 'L', 'a', 'y', 'e', 'r', ' ', 'V', 'i', 's', 'i', 'b', 'l', 'e', '?',  '\0' };
     static unichar_t isedit[] = { 'I', 's', ' ', 'L', 'a', 'y', 'e', 'r', ' ', 'E', 'd', 'i', 't', 'a', 'b', 'l', 'e', '?',  '\0' };
@@ -666,15 +701,19 @@ GWindow CVMakeLayers(CharView *cv) {
     if ( cvlayers!=NULL )
 return( cvlayers );
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_positioned|wam_wtitle;
+    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_positioned|wam_isdlg;
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
     wattrs.positioned = true;
+    wattrs.is_dlg = true;
     wattrs.window_title = title;
 
-    r.width = 85; r.height = 94;
-    if ( seperate_hint_controls ) { r.height += 17; r.width += 7; }
-    r.x = -r.width-6; r.y = cv->mbh+187+45/*25*/;	/* 45 is right if there's decor, 25 when none. twm gives none, kde gives decor */
+    r.width = 85; r.height = 128;
+    if ( cvlayersoff.x==-9999 ) {
+	cvlayersoff.x = -r.width-6;
+	cvlayersoff.y = cv->mbh+187+45/*25*/;	/* 45 is right if there's decor, 25 when none. twm gives none, kde gives decor */
+    }
+    r.x = cvlayersoff.x; r.y = cvlayersoff.y;
     cvlayers = CreatePalette( cv->gw, &r, cvlayers_e_h, cv, &wattrs );
 
     memset(&label,0,sizeof(label));
@@ -733,30 +772,27 @@ return( cvlayers );
     gcd[5].gd.box = &radio_box;
     gcd[5].creator = GCheckBoxCreate;
 
-    if ( seperate_hint_controls ) {
-	gcd[6].gd.pos.x = 5; gcd[6].gd.pos.y = 72; 
-	gcd[6].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
-	gcd[6].gd.cid = CID_VHHints;
-	gcd[6].gd.popup_msg = isvis;
-	gcd[6].gd.box = &radio_box;
-	gcd[6].creator = GCheckBoxCreate;
+    gcd[6].gd.pos.x = 5; gcd[6].gd.pos.y = 72; 
+    gcd[6].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
+    gcd[6].gd.cid = CID_VHHints;
+    gcd[6].gd.popup_msg = isvis;
+    gcd[6].gd.box = &radio_box;
+    gcd[6].creator = GCheckBoxCreate;
 
-	gcd[7].gd.pos.x = 5; gcd[7].gd.pos.y = 89; 
-	gcd[7].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
-	gcd[7].gd.cid = CID_VVHints;
-	gcd[7].gd.popup_msg = isvis;
-	gcd[7].gd.box = &radio_box;
-	gcd[7].creator = GCheckBoxCreate;
-	base = 8;
-    } else {
-	gcd[6].gd.pos.x = 5; gcd[6].gd.pos.y = 72; 
-	gcd[6].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
-	gcd[6].gd.cid = CID_VHints;
-	gcd[6].gd.popup_msg = isvis;
-	gcd[6].gd.box = &radio_box;
-	gcd[6].creator = GCheckBoxCreate;
-	base = 7;
-    }
+    gcd[7].gd.pos.x = 5; gcd[7].gd.pos.y = 89; 
+    gcd[7].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
+    gcd[7].gd.cid = CID_VVHints;
+    gcd[7].gd.popup_msg = isvis;
+    gcd[7].gd.box = &radio_box;
+    gcd[7].creator = GCheckBoxCreate;
+
+    gcd[8].gd.pos.x = 5; gcd[8].gd.pos.y = 106; 
+    gcd[8].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
+    gcd[8].gd.cid = CID_VDHints;
+    gcd[8].gd.popup_msg = isvis;
+    gcd[8].gd.box = &radio_box;
+    gcd[8].creator = GCheckBoxCreate;
+    base = 9;
 
 
     label[base].text = (unichar_t *) "Fore";
@@ -792,28 +828,26 @@ return( cvlayers );
     gcd[base+cv->drawmode].gd.flags |= gg_cb_on;
     base += 3;
 
-    if ( seperate_hint_controls ) {
-	label[base].text = (unichar_t *) "HHints";
-	label[base].text_is_1byte = true;
-	gcd[base].gd.label = &label[base];
-	gcd[base].gd.pos.x = 47; gcd[base].gd.pos.y = 72; 
-	gcd[base].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
-	gcd[base++].creator = GLabelCreate;
+    label[base].text = (unichar_t *) "HHints";
+    label[base].text_is_1byte = true;
+    gcd[base].gd.label = &label[base];
+    gcd[base].gd.pos.x = 47; gcd[base].gd.pos.y = 72; 
+    gcd[base].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
+    gcd[base++].creator = GLabelCreate;
 
-	label[base].text = (unichar_t *) "VHints";
-	label[base].text_is_1byte = true;
-	gcd[base].gd.label = &label[base];
-	gcd[base].gd.pos.x = 47; gcd[base].gd.pos.y = 89; 
-	gcd[base].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
-	gcd[base++].creator = GLabelCreate;
-    } else {
-	label[base].text = (unichar_t *) "Hints";
-	label[base].text_is_1byte = true;
-	gcd[base].gd.label = &label[base];
-	gcd[base].gd.pos.x = 47; gcd[base].gd.pos.y = 72; 
-	gcd[base].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
-	gcd[base++].creator = GLabelCreate;
-    }
+    label[base].text = (unichar_t *) "VHints";
+    label[base].text_is_1byte = true;
+    gcd[base].gd.label = &label[base];
+    gcd[base].gd.pos.x = 47; gcd[base].gd.pos.y = 89; 
+    gcd[base].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
+    gcd[base++].creator = GLabelCreate;
+
+    label[base].text = (unichar_t *) "DHints";
+    label[base].text_is_1byte = true;
+    gcd[base].gd.label = &label[base];
+    gcd[base].gd.pos.x = 47; gcd[base].gd.pos.y = 106; 
+    gcd[base].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
+    gcd[base++].creator = GLabelCreate;
 
     gcd[base].gd.pos.x = 1; gcd[base].gd.pos.y = 1;
     gcd[base].gd.pos.width = r.width-2; gcd[base].gd.pos.height = r.height-2;
@@ -823,11 +857,9 @@ return( cvlayers );
     if ( cv->showfore ) gcd[3].gd.flags |= gg_cb_on;
     if ( cv->showback ) gcd[4].gd.flags |= gg_cb_on;
     if ( cv->showgrids ) gcd[5].gd.flags |= gg_cb_on;
-    if ( seperate_hint_controls ) {
-	if ( cv->showhhints ) gcd[6].gd.flags |= gg_cb_on;
-	if ( cv->showvhints ) gcd[7].gd.flags |= gg_cb_on;
-    } else
-	if ( cv->showhhints || cv->showvhints ) gcd[6].gd.flags |= gg_cb_on;
+    if ( cv->showhhints ) gcd[6].gd.flags |= gg_cb_on;
+    if ( cv->showvhints ) gcd[7].gd.flags |= gg_cb_on;
+    if ( cv->showdhints ) gcd[8].gd.flags |= gg_cb_on;
 
     GGadgetsCreate(cvlayers,gcd);
     GDrawSetVisible(cvlayers,true);
@@ -859,10 +891,20 @@ void CVPaletteSetVisible(CharView *cv,int which,int visible) {
 }
 
 void CVPaletteActivate(CharView *cv) {
+    CharView *old;
+
     CVPaletteCheck(cv);
-    if ( GDrawGetUserData(cvtools)!=cv ) {
+    if ( (old = GDrawGetUserData(cvtools))!=cv ) {
+	if ( old!=NULL ) {
+	    SaveOffsets(old->gw,cvtools,&cvtoolsoff);
+	    SaveOffsets(old->gw,cvlayers,&cvlayersoff);
+	}
 	GDrawSetUserData(cvtools,cv);
 	GDrawSetUserData(cvlayers,cv);
+	if ( cvvisible[0])
+	    RestoreOffsets(cv->gw,cvlayers,&cvlayersoff);
+	if ( cvvisible[1])
+	    RestoreOffsets(cv->gw,cvtools,&cvtoolsoff);
 	GDrawSetVisible(cvtools,cvvisible[1]);
 	GDrawSetVisible(cvlayers,cvvisible[0]);
 	if ( cvvisible[1]) {
@@ -874,6 +916,11 @@ void CVPaletteActivate(CharView *cv) {
 	    CVLayersSet(cv);
     }
     if ( bvtools!=NULL ) {
+	BitmapView *bv = GDrawGetUserData(bvtools);
+	if ( bv!=NULL ) {
+	    SaveOffsets(bv->gw,bvtools,&bvtoolsoff);
+	    SaveOffsets(bv->gw,bvlayers,&bvlayersoff);
+	}
 	GDrawSetVisible(bvtools,false);
 	GDrawSetVisible(bvlayers,false);
     }
@@ -883,6 +930,8 @@ void CVPalettesHideIfMine(CharView *cv) {
     if ( cvtools==NULL )
 return;
     if ( GDrawGetUserData(cvtools)==cv ) {
+	SaveOffsets(cv->gw,cvtools,&cvtoolsoff);
+	SaveOffsets(cv->gw,cvlayers,&cvlayersoff);
 	GDrawSetVisible(cvtools,false);
 	GDrawSetVisible(cvlayers,false);
     }
@@ -944,10 +993,11 @@ GWindow BVMakeLayers(BitmapView *bv) {
     if ( bvlayers!=NULL )
 return(bvlayers);
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_positioned|wam_wtitle;
+    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_positioned|wam_isdlg;
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
     wattrs.positioned = true;
+    wattrs.is_dlg = true;
     wattrs.window_title = title;
 
     r.width = 73; r.height = 73;
@@ -1187,10 +1237,11 @@ GWindow BVMakeTools(BitmapView *bv) {
     if ( bvtools!=NULL )
 return( bvtools );
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_positioned|wam_wtitle;
+    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_positioned|wam_isdlg;
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
     wattrs.positioned = true;
+    wattrs.is_dlg = true;
     wattrs.window_title = title;
 
     r.width = 53; r.height = 80;
@@ -1302,10 +1353,20 @@ void BVPaletteSetVisible(BitmapView *bv,int which,int visible) {
 }
 
 void BVPaletteActivate(BitmapView *bv) {
+    BitmapView *old;
+
     BVPaletteCheck(bv);
-    if ( GDrawGetUserData(bvtools)!=bv ) {
+    if ( (old = GDrawGetUserData(bvtools))!=bv ) {
+	if ( old!=NULL ) {
+	    SaveOffsets(old->gw,bvtools,&bvtoolsoff);
+	    SaveOffsets(old->gw,bvlayers,&bvlayersoff);
+	}
 	GDrawSetUserData(bvtools,bv);
 	GDrawSetUserData(bvlayers,bv);
+	if ( bvvisible[0])
+	    RestoreOffsets(bv->gw,bvlayers,&bvlayersoff);
+	if ( bvvisible[1])
+	    RestoreOffsets(bv->gw,bvtools,&bvtoolsoff);
 	GDrawSetVisible(bvtools,bvvisible[1]);
 	GDrawSetVisible(bvlayers,bvvisible[0]);
 	if ( bvvisible[1]) {
@@ -1317,6 +1378,11 @@ void BVPaletteActivate(BitmapView *bv) {
 	    BVLayersSet(bv);
     }
     if ( cvtools!=NULL ) {
+	CharView *cv = GDrawGetUserData(cvtools);
+	if ( cv!=NULL ) {
+	    SaveOffsets(cv->gw,cvtools,&cvtoolsoff);
+	    SaveOffsets(cv->gw,cvlayers,&cvlayersoff);
+	}
 	GDrawSetVisible(cvtools,false);
 	GDrawSetVisible(cvlayers,false);
     }
@@ -1326,6 +1392,8 @@ void BVPalettesHideIfMine(BitmapView *bv) {
     if ( bvtools==NULL )
 return;
     if ( GDrawGetUserData(bvtools)==bv ) {
+	SaveOffsets(bv->gw,bvtools,&bvtoolsoff);
+	SaveOffsets(bv->gw,bvlayers,&bvlayersoff);
 	GDrawSetVisible(bvtools,false);
 	GDrawSetVisible(bvlayers,false);
     }
@@ -1333,10 +1401,20 @@ return;
 
 void CVPaletteDeactivate(void) {
     if ( cvtools!=NULL ) {
+	CharView *cv = GDrawGetUserData(cvtools);
+	if ( cv!=NULL ) {
+	    SaveOffsets(cv->gw,cvtools,&cvtoolsoff);
+	    SaveOffsets(cv->gw,cvlayers,&cvlayersoff);
+	}
 	GDrawSetVisible(cvtools,false);
 	GDrawSetVisible(cvlayers,false);
     }
     if ( bvtools!=NULL ) {
+	BitmapView *bv = GDrawGetUserData(bvtools);
+	if ( bv!=NULL ) {
+	    SaveOffsets(bv->gw,bvtools,&bvtoolsoff);
+	    SaveOffsets(bv->gw,bvlayers,&bvlayersoff);
+	}
 	GDrawSetVisible(bvtools,bvvisible[1]);
 	GDrawSetVisible(bvlayers,bvvisible[0]);
     }

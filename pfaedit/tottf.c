@@ -1451,7 +1451,7 @@ return( instrs );
 /*  the right edge of the hint. */
 /* This is a pretty dumb detector, but it gets simple cases */
 static uint8 *serifcheck(struct glyphinfo *gi, uint8 *instrs,StemInfo *hint,
-	int *contourends, BasePoint *bp, int ptcnt, int pt) {
+	int *contourends, BasePoint *bp, int ptcnt, int pt, char *touched) {
     int up, right, prev;
     int i;
     int cs, ce;
@@ -1488,8 +1488,10 @@ return( instrs );
 		    ((up && bp[i].y<bp[i+1].y) || (!up && bp[i].y>bp[i+1].y))) {
 		instrs = pushpointstem(instrs,i,getcvtval(gi,bp[i].x-bp[pt].x));
 		*instrs++ = 0xe0+0x0d;	/* MIRP, minimum, rounded, black */
+		touched[i] |= 1;
 		instrs = pushpoint(instrs,i+1);
 		*instrs++ = 0x32;	/* SHP, rp2 */
+		touched[i+1] |= 1;
 return( instrs );
 	    }
 	}
@@ -1502,8 +1504,10 @@ return( instrs );
 		    ((up && bp[i].y<bp[i-1].y) || (!up && bp[i].y>bp[i-1].y))) {
 		instrs = pushpointstem(instrs,i,getcvtval(gi,bp[i].x-bp[pt].x));
 		*instrs++ = 0xe0+0x0d;	/* MIRP, minimum, rounded, black */
+		touched[i] |= 1;
 		instrs = pushpoint(instrs,i-1);
 		*instrs++ = 0x32;	/* SHP, rp2 */
+		touched[i+1] |= 1;
 return( instrs );
 	    }
 	}
@@ -1529,7 +1533,8 @@ return( instrs );
 /*	establish a reference point on that edge, don't need to position all */
 /*	the points again. */
 static uint8 *geninstrs(struct glyphinfo *gi, uint8 *instrs,StemInfo *hint,
-	int *contourends, BasePoint *bp, int ptcnt, int first, int xdir) {
+	int *contourends, BasePoint *bp, int ptcnt, int first, int xdir,
+	char *touched) {
     int i;
     int last= -1;
     int stem, basecvt=-1;
@@ -1591,8 +1596,9 @@ static uint8 *geninstrs(struct glyphinfo *gi, uint8 *instrs,StemInfo *hint,
 			*instrs++ = 0x33;		/* SHP, rp1 */
 		    }
 		}
+		touched[i] |= (xdir?1:2);
 		if ( xdir )
-		    instrs = serifcheck(gi,instrs,hint,contourends,bp,ptcnt,i);
+		    instrs = serifcheck(gi,instrs,hint,contourends,bp,ptcnt,i,touched);
 		last = i;
 	    }
 	}
@@ -1622,13 +1628,14 @@ return(instrs);			/*  anywhere, can't give it a width */
 		instrs = pushpointstem(instrs,i,stem);
 		*instrs++ = 0xe0+0x0d;	/* MIRP, minimum, rounded, black */
 	    }
+	    touched[i] |= (xdir?1:2);
 	    if ( xdir )
-		instrs = serifcheck(gi,instrs,hint,contourends,bp,ptcnt,i);
+		instrs = serifcheck(gi,instrs,hint,contourends,bp,ptcnt,i,touched);
 	    last = i;
 	}
     }
 
-    for ( h=hint->next; h->start<=hint->start+hint->width; ++hint ) {
+    for ( h=hint->next; h!=NULL && h->start<=hint->start+hint->width; h=h->next ) {
 	if ( h->start==hint->start || h->start==hint->start+hint->width )
 	    h->startdone = true;
 	if ( h->start+h->width == hint->start+hint->width )
@@ -1638,30 +1645,107 @@ return(instrs);			/*  anywhere, can't give it a width */
 return( instrs );
 }
 
+/* diagonal stem hints */
+static uint8 *gendinstrs(struct glyphinfo *gi,uint8 *pt,DStemInfo *dstem,
+	BasePoint *bp,int ptcnt,char *touched) {
+    int i, stemindex;
+    int corners[4];
+    double stemwidth, tempx, tempy, len;
+
+    /* first get the indexes of the points that make up the diagonal */
+    for ( i=0; i<4; ++i ) corners[i] =-1;
+    for ( i=0; i<ptcnt; ++i ) {
+	if ( bp[i].x==dstem->leftedgetop.x && bp[i].y==dstem->leftedgetop.y )
+	    corners[0] = i;
+	else if ( bp[i].x==dstem->rightedgetop.x && bp[i].y==dstem->rightedgetop.y )
+	    corners[1] = i;
+	else if ( bp[i].x==dstem->leftedgebottom.x && bp[i].y==dstem->leftedgebottom.y )
+	    corners[2] = i;
+	else if ( bp[i].x==dstem->rightedgebottom.x && bp[i].y==dstem->rightedgebottom.y )
+	    corners[3] = i;
+    }
+    /* Must have found all four points for it to be worth doing anything */
+    if ( corners[0]==-1 || corners[1]==-1 || corners[2]==-1 || corners[3]==-1 )
+return( pt );
+
+    /* set the projection vector perpendicular to the edge, freedom vector to x */
+    pt = pushpointstem(pt,corners[0],corners[2]);	/* bad func name, we're pushing two points, but the effect is correct */
+    *pt++ = 7;			/* SPVTL[orthog] */
+    *pt++ = 5;			/* SFVTCA[x-axis] */
+
+    /* find the orthogonal distance from the left stem to the right. Make it positive */
+    /*  (just a dot product with the unit vector orthog to the left edge) */
+    tempx = dstem->leftedgetop.x-dstem->leftedgebottom.x;
+    tempy = dstem->leftedgetop.y-dstem->leftedgebottom.y;
+    len = sqrt(tempx*tempx+tempy*tempy);
+    stemwidth = ((dstem->rightedgetop.x-dstem->leftedgetop.x)*tempy -
+	    (dstem->rightedgetop.y-dstem->leftedgetop.y)*tempx)/len;
+    if ( stemwidth<0 ) stemwidth = -stemwidth;
+
+    /* which of the two top points is most heavily positioned? */
+    if ( touched[corners[0]]==3 ||
+	    touched[corners[1]]==0 || touched[corners[1]]==2 ||
+	    (touched[corners[0]]==1 && touched[corners[1]]!=3)) {
+	/* Holding the left edge fixed, position the right */
+	stemindex = getcvtval(gi,stemwidth);
+	pt = pushpoint(pt,corners[0]);
+	*pt++ = 16;		/* SRP0 */
+	pt = pushpointstem(pt,corners[1],stemindex);
+	*pt++ = 0xed;		/* MIRP[01101] */
+	pt = pushpoint(pt,corners[2]);
+	*pt++ = 16;		/* SRP0 */
+	pt = pushpointstem(pt,corners[3],stemwidth);
+	*pt++ = 0xed;		/* MIRP[01101] */
+	touched[corners[1]] |= 1;
+	touched[corners[3]] |= 1;
+    } else {
+	/* Holding the right edge fixed, position the left */
+	stemindex = getcvtval(gi,-stemwidth);
+	pt = pushpoint(pt,corners[1]);
+	*pt++ = 16;		/* SRP0 */
+	pt = pushpointstem(pt,corners[0],stemindex);
+	*pt++ = 0xed;		/* MIRP[01101] */
+	pt = pushpoint(pt,corners[3]);
+	*pt++ = 16;		/* SRP0 */
+	pt = pushpointstem(pt,corners[2],stemwidth);
+	*pt++ = 0xed;		/* MIRP[01101] */
+	touched[corners[0]] |= 1;
+	touched[corners[2]] |= 1;
+    }
+    /* Diagonal (italic) serifs? */
+return( pt );
+}
+
 static void dumpgeninstructions(SplineChar *sc, struct glyphinfo *gi,
 	int *contourends, BasePoint *bp, int ptcnt) {
     StemInfo *hint;
     uint8 *instrs, *pt, *ystart;
     int max;
+    char *touched;
+    DStemInfo *dstem;
 
-    if ( sc->vstem==NULL && sc->hstem==NULL ) {
+    if ( sc->vstem==NULL && sc->hstem==NULL && sc->dstem==NULL ) {
 	dumpshort(gi->glyphs,0);		/* no instructions */
 return;
     }
     /* Maximum instruction length is 6 bytes for each point in each dimension */
     /*  2 extra bytes to finish up. And one byte to switch from x to y axis */
+    /* Diagonal take more space because we need to set the orientation on */
+    /*  each stem
     /*  That should be an over-estimate */
     max=2;
     if ( sc->vstem!=NULL ) max += 6*ptcnt;
     if ( sc->hstem!=NULL ) max += 6*ptcnt+1;
+    for ( dstem=sc->dstem; dstem!=NULL; max+=7+4*6, dstem=dstem->next );
     max += 6*ptcnt;			/* paranoia */
     instrs = pt = galloc(max);
+    touched = gcalloc(1,ptcnt);
 
     for ( hint=sc->vstem; hint!=NULL; hint=hint->next )
 	hint->enddone = hint->startdone = false;
     for ( hint=sc->vstem; hint!=NULL; hint=hint->next ) {
 	if ( !hint->startdone || !hint->enddone )
-	    pt = geninstrs(gi,pt,hint,contourends,bp,ptcnt,pt==instrs,true);
+	    pt = geninstrs(gi,pt,hint,contourends,bp,ptcnt,pt==instrs,true,touched);
     }
 	
     if ( sc->hstem!=NULL ) {
@@ -1671,9 +1755,15 @@ return;
 	    hint->enddone = hint->startdone = false;
 	for ( hint=sc->hstem; hint!=NULL; hint=hint->next ) {
 	    if ( !hint->startdone || !hint->enddone )
-		pt = geninstrs(gi,pt,hint,contourends,bp,ptcnt,pt==ystart,false);
+		pt = geninstrs(gi,pt,hint,contourends,bp,ptcnt,pt==ystart,false,touched);
 	}
     }
+
+    if ( sc->dstem!=NULL ) {
+	for ( dstem = sc->dstem; dstem!=NULL; dstem=dstem->next )
+	    pt = gendinstrs(gi,pt,dstem,bp,ptcnt,touched);
+    }
+
     /* there seems some discention as to which of these does x and which does */
     /*  y. So rather than try and be clever, let's always do both */
     *pt++ = 0x30;	/* Interpolate Untouched Points y */
@@ -1722,7 +1812,7 @@ static void dumpglyph(SplineChar *sc, struct glyphinfo *gi) {
     if ( ptcnt>gi->maxp->maxPoints ) gi->maxp->maxPoints = ptcnt;
     contourends = galloc((contourcnt+1)*sizeof(int));
 
-    bp = galloc(ptcnt*sizeof(SplinePoint));
+    bp = galloc(ptcnt*sizeof(BasePoint));
     fs = galloc(ptcnt);
     ptcnt = contourcnt = 0;
     for ( ss=sc->splines; ss!=NULL; ss=ss->next ) {

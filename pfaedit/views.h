@@ -31,7 +31,7 @@
 #include "ggadget.h"
 
 extern struct cvshows {
-    int showfore, showback, showgrids, showhhints, showvhints;
+    int showfore, showback, showgrids, showhhints, showvhints, showdhints;
     int showpoints, showfilled;
     int showrulers;
 } CVShows;
@@ -102,6 +102,7 @@ typedef struct charview {
     unsigned int showgrids:1;
     unsigned int showhhints:1;
     unsigned int showvhints:1;
+    unsigned int showdhints:1;
     unsigned int showpoints:1;
     unsigned int showfilled:1;
     unsigned int showrulers:1;
@@ -328,6 +329,7 @@ extern void SCSynchronizeWidth(SplineChar *sc,double newwidth, double oldwidth,F
 extern void SCSynchronizeLBearing(SplineChar *sc,char *selected,double off);
 extern int CVAnySel(CharView *cv, int *anyp, int *anyr, int *anyi);
 extern int CVTwoForePointsSelected(CharView *cv, SplinePoint **sp1, SplinePoint **sp2);
+extern int CVIsDiagonalable(SplinePoint *sp1, SplinePoint *sp2, SplinePoint **sp3, SplinePoint **sp4);
 extern int CVClearSel(CharView *cv);
 extern int CVSetSel(CharView *cv);
 extern int CVAllSelected(CharView *cv);

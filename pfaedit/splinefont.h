@@ -278,6 +278,11 @@ typedef struct steminfo {
 				/*  in type2 output */
 } StemInfo ;
 
+typedef struct dsteminfo {
+    BasePoint leftedgetop, rightedgetop, leftedgebottom, rightedgebottom;
+    struct dsteminfo *next;
+} DStemInfo;
+
 typedef struct imagelist {
     struct gimage *image;
     double xoff, yoff;		/* position in character space of upper left corner of image */
@@ -307,6 +312,7 @@ typedef struct splinechar {
     SplinePointList *splines;
     StemInfo *hstem;		/* hstem hints have a vertical offset but run horizontally */
     StemInfo *vstem;		/* vstem hints have a horizontal offset but run vertically */
+    DStemInfo *dstem;		/* diagonal hints for ttf */
     RefChar *refs;
     struct charview *views;
     struct splinefont *parent;
@@ -399,6 +405,7 @@ extern void SFSetFontName(SplineFont *sf, char *family, char *mods, char *full);
 
 extern int DoubleNear(double a,double b);
 extern int DoubleNearish(double a,double b);
+extern int DoubleApprox(double a,double b);
 
 extern void LineListFree(LineList *ll);
 extern void LinearApproxFree(LinearApprox *la);
@@ -411,6 +418,8 @@ extern void RefCharsFree(RefChar *ref);
 extern void UndoesFree(Undoes *undo);
 extern void StemInfosFree(StemInfo *h);
 extern void StemInfoFree(StemInfo *h);
+extern void DStemInfosFree(DStemInfo *h);
+extern void DStemInfoFree(DStemInfo *h);
 extern void KernPairsFree(KernPair *kp);
 extern void LigatureFree(Ligature *lig);
 extern StemInfo *StemInfoCopy(StemInfo *h);
@@ -469,6 +478,7 @@ extern void SplineCharMerge(SplineSet **head);
 extern void SplineCharSimplify(SplineSet *head);
 extern void SplineCharRemoveTiny(SplineSet *head);
 extern SplineFont *SplineFontNew(void);
+extern char *GetNextUntitledName(void);
 extern SplineFont *SplineFontBlank(int enc,int charcnt);
 extern void SFIncrementXUID(SplineFont *sf);
 extern SplineSet *SplineSetReverse(SplineSet *spl);

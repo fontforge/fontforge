@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 10-May-2001 -->
+  <!-- AP: Last modified: 12-Jun-2001 -->
   <TITLE>PfaEdit -- A postscript&reg; font editor</TITLE>
 </HEAD>
 <BODY>
@@ -448,11 +448,12 @@ to draw small fonts.
     <P>
     PfaEdit's hinting of True Type (properly called "instructing") is very primitive,
     and is based on the stem hints also used by PostScript. It uses these hints
-    to determine which points to move and where to move them. It does a little
-    extra work, trying to detect serifs that are attached to vertical stems and
-    providing hints for them as well. It also uses the equivalent of the PostScript
-    BlueValues to generate cvt entries that force characters to have the same
-    height at small pointsizes.
+    to determine which points to move and where to move them. It also supports
+    the concept of diagonal stems and hints them so they will have approximately
+    the same width. It does a little extra work, trying to detect serifs that
+    are attached to vertical stems and providing hints for them as well. It also
+    uses the equivalent of the PostScript BlueValues to generate cvt entries
+    that force characters to have the same height at small pointsizes.
 </DL>
 <P>
 Most of my <A HREF="hinting.html">hinting user interface</A> is designed

@@ -328,6 +328,9 @@ static int _FVMenuClose(FontView *fv) {
     BDFFont *bdf;
     MetricsView *mv, *mnext;
 
+#if 0
+ printf( "FontView closing...\n" );
+#endif
     if ( fv->sf->changed ) {
 	i = AskChanged(fv->sf);
 	if ( i==2 )	/* Cancel */
@@ -360,6 +363,9 @@ return(false);
     if ( fv->sf->filename!=NULL )
 	RecentFilesRemember(fv->sf->filename);
     GDrawDestroyWindow(fv->gw);
+#if 0
+ printf( "FontView Closed\n" );
+#endif
 return( true );
 }
 
@@ -718,6 +724,7 @@ return;
     sc->refs = NULL;
     StemInfosFree(sc->hstem); sc->hstem = NULL;
     StemInfosFree(sc->vstem); sc->vstem = NULL;
+    DStemInfosFree(sc->dstem); sc->dstem = NULL;
     SCOutOfDateBackground(sc);
     SCCharChangedUpdate(sc,fv);
 }

@@ -205,6 +205,21 @@ return;
     }
 }
 
+static void SFDDumpDHintList(FILE *sfd,char *key, DStemInfo *h) {
+
+    if ( h==NULL )
+return;
+    fprintf(sfd, "%s", key );
+    for ( ; h!=NULL; h=h->next ) {
+	fprintf(sfd, "%g %g %g %g %g %g %g %g",
+		h->leftedgetop.x, h->leftedgetop.y,
+		h->rightedgetop.x, h->rightedgetop.y,
+		h->leftedgebottom.x, h->leftedgebottom.y,
+		h->rightedgebottom.x, h->rightedgebottom.y );
+	putc(h->next?' ':'\n',sfd);
+    }
+}
+
 static void SFDDumpChar(FILE *sfd,SplineChar *sc) {
     RefChar *ref;
     ImageList *img;
@@ -227,6 +242,7 @@ return;
 		sc->widthset?"W":"");
     SFDDumpHintList(sfd,"HStem: ", sc->hstem);
     SFDDumpHintList(sfd,"VStem: ", sc->vstem);
+    SFDDumpDHintList(sfd,"DStem: ", sc->dstem);
     if ( sc->splines!=NULL ) {
 	fprintf(sfd, "Fore\n" );
 	SFDDumpSplineSet(sfd,sc->splines);
@@ -777,6 +793,26 @@ static StemInfo *SFDReadHints(FILE *sfd) {
 return( head );
 }
 
+static DStemInfo *SFDReadDHints(FILE *sfd) {
+    DStemInfo *head=NULL, *last=NULL, *cur;
+    DStemInfo d;
+
+    memset(&d,'\0',sizeof(d));
+    while ( getdouble(sfd,&d.leftedgetop.x)==1 && getdouble(sfd,&d.leftedgetop.y) &&
+	    getdouble(sfd,&d.rightedgetop.x)==1 && getdouble(sfd,&d.rightedgetop.y) &&
+	    getdouble(sfd,&d.leftedgebottom.x)==1 && getdouble(sfd,&d.leftedgebottom.y) &&
+	    getdouble(sfd,&d.rightedgebottom.x)==1 && getdouble(sfd,&d.rightedgebottom.y) ) {
+	cur = galloc(sizeof(DStemInfo));
+	*cur = d;
+	if ( head == NULL )
+	    head = cur;
+	else
+	    last->next = cur;
+	last = cur;
+    }
+return( head );
+}
+
 static RefChar *SFDGetRef(FILE *sfd) {
     RefChar *rf;
     int enc=0, ch;
@@ -834,6 +870,8 @@ return( NULL );
 	    sc->vstem = SFDReadHints(sfd);
 	    SCGuessVHintInstancesList(sc);		/* For reading in old .sfd files */
 	    sc->vconflicts = StemListAnyConflicts(sc->vstem);
+	} else if ( strmatch(tok,"DStem:")==0 ) {
+	    sc->dstem = SFDReadDHints(sfd);
 	} else if ( strmatch(tok,"Fore")==0 ) {
 	    sc->splines = SFDGetSplineSet(sfd);
 	} else if ( strmatch(tok,"Back")==0 ) {

@@ -56,6 +56,40 @@ return( true );
 return( false );
 }
 
+static int DiagCheck(SplinePoint *sp1, SplinePoint *sp2, Spline *s1, Spline *s2,
+	SplinePoint **sp3, SplinePoint **sp4 ) {
+
+    if ( s1==NULL || s2==NULL || !s1->islinear || !s2->islinear )
+return( false );
+    *sp3 = s1->from==sp1?s1->to:s1->from;
+    *sp4 = s2->from==sp2?s2->to:s2->from;
+    if ( *sp3==sp2 || *sp4==sp1 || *sp3==*sp4 )
+return( false );
+
+    /* No horizontal,vertical edges */
+    if ( sp1->me.x == (*sp3)->me.x || sp1->me.y==(*sp3)->me.y ||
+	    sp2->me.x == (*sp4)->me.x || sp2->me.y==(*sp4)->me.y )
+return( false );
+
+    /* Consistanly ordered */
+    if (( (sp1->me.y>(*sp3)->me.y) && (sp2->me.y<(*sp4)->me.y)) ||
+	    ( (sp1->me.y<(*sp3)->me.y) && (sp2->me.y>(*sp4)->me.y)) )
+return ( false );
+
+    /* Similar slopes */
+return( DoubleApprox((sp1->me.y-(*sp3)->me.y)/(sp1->me.x-(*sp3)->me.x),
+	    (sp2->me.y-(*sp4)->me.y)/(sp2->me.x-(*sp4)->me.x)) );
+}
+
+int CVIsDiagonalable(SplinePoint *sp1, SplinePoint *sp2, SplinePoint **sp3, SplinePoint **sp4) {
+
+return( DiagCheck(sp1,sp2,sp1->next,sp2->next,sp3,sp4) ||
+	DiagCheck(sp1,sp2,sp1->next,sp2->prev,sp3,sp4) ||
+	DiagCheck(sp1,sp2,sp1->prev,sp2->next,sp3,sp4) ||
+	DiagCheck(sp1,sp2,sp1->prev,sp2->prev,sp3,sp4));
+}
+
+
 #define CID_Base	1001
 #define CID_Width	1002
 #define CID_Label	1003

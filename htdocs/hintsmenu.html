@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 6-May-2001 -->
+  <!-- AP: Last modified: 12-Jun-2001 -->
   <TITLE>The Hints Menu</TITLE>
 </HEAD>
 <BODY>
@@ -23,9 +23,13 @@ In the font view it only contains one entry:
   <LI>
     <A HREF="#ClearV">Clear VStem</A>
   <LI>
+    <A HREF="#ClearD">Clear DStem</A>
+  <LI>
     <A HREF="#HHint">Add HHint</A>
   <LI>
     <A HREF="#VHint">Add VHint</A>
+  <LI>
+    <A HREF="#DHint">Add DHint</A>
   <LI>
     <A HREF="#Create">Create HHint</A>
   <LI>
@@ -50,6 +54,10 @@ In the font view it only contains one entry:
   <DD>
     Removes all Vertical Stem hints.
   <DT>
+    <A NAME="ClearD">Clear</A> DStem
+  <DD>
+    Removes all Diagonal Stem hints
+  <DT>
     Add <A NAME="HHint">HHint</A>
   <DD>
     If there are two points selected (exactly two) and if they have different
@@ -61,6 +69,12 @@ In the font view it only contains one entry:
     If there are two points selected (exactly two) and if they have different
     x positions, then this will create a Vertical Stem Hint starting at the leftmost
     one of the two going right to the rightmost one.
+  <DT>
+    Add <A NAME="DHint">DHint</A>
+  <DD>
+    If there are exactly two points selected, and if each is connected to a line,
+    and the two lines are roughly parallel and not horizontal or vertical, then
+    this will create a diagonal stem hint.
   <DT>
     <A NAME="Create">Create</A> HHint
   <DD>
@@ -75,8 +89,9 @@ In the font view it only contains one entry:
     <A NAME="Review">Review</A>
     Hints<IMG SRC="ReviewHints.png" WIDTH="383" HEIGHT="410" ALIGN="Right">
   <DD>
-    Brings up a dialog allowing you to examine (and modify) all stem hints. The
-    currently active hint is picked out in either dark blue or dark green.
+    Brings up a dialog allowing you to examine (and modify) all horizontal/vertical
+    stem hints. The currently active hint is picked out in either dark blue or
+    dark green.
 </DL>
 <P>
 <H2>

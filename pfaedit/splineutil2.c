@@ -55,6 +55,22 @@ return( true );
 return( false );
 }
 
+int DoubleApprox(double a,double b) {
+
+    if ( a==0 ) {
+	if ( b<.0001 && b>-.0001 )
+return( true );
+    } else if ( b==0 ) {
+	if ( a<.0001 && a>-.0001 )
+return( true );
+    } else {
+	a /= b;
+	if ( a>=.95 && a<=1.05 )
+return( true );
+    }
+return( false );
+}
+
 static int IsLinearSpline(Spline *spline) {
     double t1,t2;
 
@@ -717,17 +733,23 @@ void SplineCharRemoveTiny(SplineSet *head) {
     }
 }
 
+char *GetNextUntitledName(void) {
+    static int untitled_cnt=1;
+    char buffer[80];
+
+    sprintf( buffer, "Untitled%d", untitled_cnt++ );
+return( copy(buffer));
+}
+
 SplineFont *SplineFontBlank(int encoding_name,int charcnt) {
     SplineFont *sf;
-    static int untitled_cnt=1;
     char buffer[80], *pt;
     struct passwd *pwd;
 
     sf = calloc(1,sizeof(SplineFont));
-    sprintf( buffer, "Untitled%d", untitled_cnt++ );
-    sf->fontname = copy(buffer);
-    sf->fullname = copy(buffer);
-    sf->familyname = copy(buffer);
+    sf->fontname = GetNextUntitledName();
+    sf->fullname = copy(sf->fontname);
+    sf->familyname = copy(sf->fontname);
     sf->weight = copy("Medium");
 /* Can all be commented out if no pwd routines */
     pwd = getpwuid(getuid());

@@ -82,7 +82,6 @@ static struct prefs_list {
 	{ "ShowRulers", pr_bool, &CVShows.showrulers, '\0', NULL, 0, rulers },
 	{ "FoundryName", pr_string, &BDFFoundry, '\0', NULL, 0, fn },
 	{ "XUID-Base", pr_string, &xuid, '\0', NULL, 0, xu },
-	{ "SeperateHintControls", pr_bool, &seperate_hint_controls, '\0', NULL, 1, sephints },
 	{ "PageWidth", pr_int, &pagewidth, '\0', NULL, 1 },
 	{ "PageHeight", pr_int, &pageheight, '\0', NULL, 1 },
 	{ "PrintType", pr_int, &printtype, '\0', NULL, 1 },

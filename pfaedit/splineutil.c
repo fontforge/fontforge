@@ -1050,7 +1050,12 @@ SplineFont *SplineFontFromPSFont(FontDict *fd) {
     sf->display_size = -default_fv_font_size;
     sf->display_antialias = default_fv_antialias;
     if ( fd->fontinfo!=NULL ) {
-	if ( sf->fontname==NULL ) sf->fontname = copy(fd->fontinfo->fullname);
+	if ( sf->fontname==NULL && fd->fontinfo->fullname!=NULL ) { char *from, *to;
+	    sf->fontname = copy(fd->fontinfo->fullname);
+	    for ( from=to=sf->fontname; *from; ++from )
+		if ( *from!=' ' ) *to++ = *from;
+	    *to ='\0';
+	}
 	if ( sf->fontname==NULL ) sf->fontname = copy(fd->fontinfo->familyname);
 	sf->fullname = copy(fd->fontinfo->fullname);
 	sf->familyname = copy(fd->fontinfo->familyname);
@@ -1063,6 +1068,10 @@ SplineFont *SplineFontFromPSFont(FontDict *fd) {
 	sf->ascent = fd->fontinfo->ascent;
 	sf->descent = fd->fontinfo->descent;
     }
+    if ( sf->fontname==NULL ) sf->fontname = GetNextUntitledName();
+    if ( sf->fullname==NULL ) sf->fullname = copy(sf->fontname);
+    if ( sf->familyname==NULL ) sf->familyname = copy(sf->fontname);
+    if ( sf->weight==NULL ) sf->weight = copy("Medium");
     for ( i=19; i>=0 && fd->xuid[i]==0; --i );
     if ( i>=0 ) {
 	int j; char *pt;
@@ -1586,6 +1595,20 @@ void StemInfosFree(StemInfo *h) {
     }
 }
 
+void DStemInfoFree(DStemInfo *h) {
+
+    free(h);
+}
+
+void DStemInfosFree(DStemInfo *h) {
+    DStemInfo *hnext;
+
+    for ( ; h!=NULL; h = hnext ) {
+	hnext = h->next;
+	free(h);
+    }
+}
+
 StemInfo *StemInfoCopy(StemInfo *h) {
     StemInfo *head=NULL, *last=NULL, *cur;
     HintInstance *hilast, *hicur, *hi;
@@ -1644,6 +1667,7 @@ return;
     /* image garbage collection????!!!! */
     StemInfosFree(sc->hstem);
     StemInfosFree(sc->vstem);
+    DStemInfosFree(sc->dstem);
     KernPairsFree(sc->kerns);
     UndoesFree(sc->undoes[0]); UndoesFree(sc->undoes[1]);
     UndoesFree(sc->redoes[0]); UndoesFree(sc->redoes[1]);
