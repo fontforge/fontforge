@@ -1648,6 +1648,7 @@ int TfmSplineFont(FILE *tfm, SplineFont *sf, int formattype) {
     int style, any;
     uint32 *lkarray;
     PST *pst;
+    char *familyname;
 
     SFLigaturePrepare(sf);
     LigatureClosure(sf);		/* Convert 3 character ligs to a set of two character ones when possible */
@@ -1674,12 +1675,13 @@ int TfmSplineFont(FILE *tfm, SplineFont *sf, int formattype) {
 	strcpy(header.encoding+1,encname);
     if ( full ) free(full);
 
-    header.family[0] = strlen(sf->familyname);
+    familyname = sf->cidmaster ? sf->cidmaster->familyname : sf->familyname;
+    header.family[0] = strlen(familyname);
     if ( header.family[0]>19 ) {
 	header.family[0] = 19;
-	memcpy(header.family+1,sf->familyname,19);
+	memcpy(header.family+1,familyname,19);
     } else
-	strcpy(header.family+1,sf->familyname);
+	strcpy(header.family+1,familyname);
     for ( i=128; i<sf->charcnt && i<256; ++i )
 	if ( SCWorthOutputting(sf->chars[i]))
     break;
