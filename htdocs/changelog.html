@@ -43,6 +43,17 @@
 	  <LI>
 	    Inline -- turns the selected characters into inline versions of themselves
 	</UL>
+      <LI>
+	PfaEdit would crash when reading in an sfd file containing a kerning class
+      <LI>
+	gimp objected to some of my ttf fonts. I think because it is inappropriately
+	clipping to the ascent/descent values in the hhea rather than using the font's
+	bounding box. It's easy enough to preserve the 'hhea' ascent/descent values
+	and perhaps that will be enough to make gimp happy.
+      <LI>
+	Kanou points out that rasterization has problems with the new TOfNextMajor,
+	so use the new code for remove overlap and friends and the old code for
+	rasterization
     </UL>
   <LI>
     12-May-2003

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 27-Apr-2003 -->
+  <!-- AP: Last modified: 14-May-2003 -->
   <TITLE>The View Menu</TITLE>
 </HEAD>
 <BODY>
@@ -153,15 +153,21 @@
     may type either:
     <UL>
       <LI>
-	A number (indicating the character you are interested in, in the current
-	encoding)
+	A name of a character in the current font
       <LI>
-	A hex number (preceded by either 0x or U+) indicating the character you are
-	interested in in unicode.
+	A number (in either decimal or hex) indicating the character you are interested
+	in, in the current encoding
+      <LI>
+	A hex number ,preceded by "U+" or "uni" or "u", indicating the character
+	you are interested in in unicode.
+      <LI>
+	A decimal number, preceded by "glyph" ,indicating the glyph index in the
+	original glyph list.
       <LI>
 	A ku ten representation of a CJK font (two comma separated numbers)
       <LI>
-	A name of a character in the current font
+	A standard name (which need not be used in the current font) but which can
+	be mapped to a unicode value.
       <LI>
 	For 2/4 byte encodings you will also be shown a pull-down list of unicode
 	ranges (Things like "Greek", "Katakana", "Hangul Compatibility Jamo") and

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 8-Apr-2003 -->
+  <!-- AP: Last modified: 13-May-2003 -->
   <TITLE>Spline Font Database File Format</TITLE>
 </HEAD>
 <BODY>
@@ -146,15 +146,18 @@ EndChar
 </BLOCKQUOTE>
 <P>
 The first line names the character, the next line gives the encoding, first
-in the current font, then in unicode. Then the width. Then horizontal and
-vertical stem hints (set of several two number pairs, the first number in
-the pair is the location of the stem, the next number is the width of the
-stem). The entry <CODE>Fore</CODE> starts the foreground splines, they are
-encoded as postscript commands with moveto abbreviated to m, curveto to c
-and lineto to l (lower case el). The digit after after the letter indicates
-whether the point is curve (0), corner (1) or tangent (2). A set of splines
-in the background is similar, it will be introduced by a <CODE>Back</CODE>
-entry.
+in the current font, then in unicode. Then the width. Then a set of flags
+(there are currently four flags: "H" =&gt; the character has been changed
+since last hinted, "M" the character's hints have been adjusted manually,
+"W" the width has been set explicitly, and "O" =&gt; the character was open
+when last saved). Then horizontal and vertical stem hints (set of several
+two number pairs, the first number in the pair is the location of the stem,
+the next number is the width of the stem). The entry <CODE>Fore</CODE> starts
+the foreground splines, they are encoded as postscript commands with moveto
+abbreviated to m, curveto to c and lineto to l (lower case el). The digit
+after after the letter indicates whether the point is curve (0), corner (1)
+or tangent (2). A set of splines in the background is similar, it will be
+introduced by a <CODE>Back</CODE> entry.
 <BLOCKQUOTE>
   <PRE>StartChar: semicolon
 Encoding: 59 59
