@@ -2145,7 +2145,7 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    ord = chunkalloc(sizeof(struct table_ordering));
 	    ord->table_tag = (ch<<24) | (getc(sfd)<<16);
 	    ord->table_tag |= getc(sfd)<<8;
-	    ord->table_tag = getc(sfd);
+	    ord->table_tag |= getc(sfd);
 	    getint(sfd,&temp);
 	    ord->ordered_features = galloc((temp+1)*sizeof(uint32));
 	    ord->ordered_features[temp] = 0;
