@@ -3055,14 +3055,14 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 				    j+delta[i], modenc(j,mod), modenc(j,mod));
 			else if ( info->chars[(uint16) (j+delta[i])]->unicodeenc==-1 ) {
 			    int uenc = umodenc(j,mod);
-			    if ( used[uenc] ) {
+			    if ( uenc!=-1 && used[uenc] ) {
 				if ( !badencwarned ) {
 				    fprintf( stderr, "Multiple glyphs map to the same unicode encoding U+%04X, only one will be used\n", uenc );
 			            badencwarned = true;
 				}
 			    } else {
-				used[uenc] = true;
-				info->chars[(uint16) (j+delta[i])]->unicodeenc = umodenc(j,mod);
+				if ( uenc!=-1 ) used[uenc] = true;
+				info->chars[(uint16) (j+delta[i])]->unicodeenc = uenc;
 				info->chars[(uint16) (j+delta[i])]->enc = modenc(j,mod);
 			    }
 			} else
@@ -3090,13 +3090,13 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 					index, modenc(j,mod), modenc(j,mod));
 			    else if ( info->chars[index]->unicodeenc==-1 ) {
 				int uenc = umodenc(j,mod);
-				if ( used[uenc] ) {
+				if ( uenc!=-1 && used[uenc] ) {
 				    if ( !badencwarned ) {
 					fprintf( stderr, "Multiple glyphs map to the same unicode encoding U+%04X, only one will be used\n", uenc );
 					badencwarned = true;
 				    }
 				} else {
-				    used[uenc] = true;
+				    if ( uenc!=-1 ) used[uenc] = true;
 				    info->chars[index]->unicodeenc = uenc;
 				    info->chars[index]->enc = modenc(j,mod);
 				}
