@@ -89,7 +89,7 @@ BDFChar *BDFCharCopy(BDFChar *bc) {
 return( nbc );
 }
 
-static void BitmapsCopy(SplineFont *to, SplineFont *from, int to_index, int from_index ) {
+void BitmapsCopy(SplineFont *to, SplineFont *from, int to_index, int from_index ) {
     BDFFont *f_bdf, *t_bdf;
 
     /* We assume that the bitmaps are ordered. They should be */

@@ -368,7 +368,7 @@ static real SplineCharFindSlantedBounds(SplineChar *sc,DBounds *bounds, real ia)
     }
 return( ymin );
 }
-	
+
 static void _SCAddRef(SplineChar *sc,SplineChar *rsc,real transform[6]) {
     RefChar *ref = chunkalloc(sizeof(RefChar));
 

@@ -46,11 +46,11 @@ typedef struct quartic {
 /*  is bad then put:
 /*	#define chunkalloc(size)	gcalloc(1,size)
 /*	#define chunkfree(item,size)	free(item)
-/*  into splinefont.h after the (or instead of) the definition of chunkalloc()*/
+/*  into splinefont.h after (or instead of) the definition of chunkalloc()*/
 
 #ifndef chunkalloc
 #define ALLOC_CHUNK	100
-#define CHUNK_MAX	100
+#define CHUNK_MAX	120
 
 #ifdef FLAG
 #undef FLAG

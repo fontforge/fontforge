@@ -29,7 +29,7 @@ distclean cleaner:
 	( cd pfaedit ; $(MAKE) distclean )
 	( cd Unicode ; $(MAKE) distclean )
 	( cd gdraw ; $(MAKE) distclean )
-	rm Makefile config.cache config.log config.status
+	rm Makefile config.cache config.log config.status libtool
 
 install: $(sharedir)
 # You may need to be root to do the install

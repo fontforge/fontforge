@@ -1196,6 +1196,7 @@ static int _SFReencodeFont(SplineFont *sf,enum charset new_map, SplineFont *targ
     Encoding *item=NULL;
     uint8 *used;
     RefChar *refs;
+    CharView *cv;
 
     if ( target==NULL ) {
 	if ( sf->encoding_name==new_map )
@@ -1258,16 +1259,20 @@ return( false );
     extras = 0;
     used = gcalloc((tlen+7)/8,sizeof(uint8));
     for ( i=0; i<sf->charcnt; ++i ) {
-	if ( sf->chars[i]==NULL )
+	SplineChar *sc = sf->chars[i];
+	if ( sc==NULL )
 	    /* skip */;
-	else if ( (target==NULL && !infont(sf->chars[i],table,tlen,item,used)) ||
-		  (target!=NULL && !intarget(sf->chars[i],target) ) ) {
-	    SplineChar *sc = sf->chars[i];
+	else if ( (target==NULL && !infont(sc,table,tlen,item,used)) ||
+		  (target!=NULL && !intarget(sc,target) ) ) {
 	    if ( sc->splines==NULL && sc->refs==NULL && sc->dependents==NULL
 		    /*&& sc->width==sf->ascent+sf->descent*/ ) {
 		RemoveSplineChar(sf,i);
 	    } else
 		++extras;
+	}
+	if ( sc!=NULL ) {
+	    for ( cv=sc->views; cv!=NULL; cv=cv->next )
+		cv->template1 = cv->template2 = NULL;
 	}
     }
     free(used);
@@ -1782,7 +1787,7 @@ static void TNNotePresence(struct gfi_data *d, int strid) {
     }
 }
 
-static struct ttflangname *TTFLangNamesCopy(struct ttflangname *old) {
+struct ttflangname *TTFLangNamesCopy(struct ttflangname *old) {
     struct ttflangname *base=NULL, *last, *cur;
     int i;
 

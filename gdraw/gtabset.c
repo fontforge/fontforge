@@ -316,7 +316,7 @@ static void GTabSetRemetric(GTabSet *gts) {
     }
 }
 
-static void GTabSetChangeSel(GTabSet *gts, int sel) {
+static void GTabSetChangeSel(GTabSet *gts, int sel,int sendevent) {
     int i, width;
     int oldsel = gts->sel;
 
@@ -348,7 +348,8 @@ return;
 		gts->toff = i;
 	    }
 	}
-	GTabSetChanged(gts,oldsel);
+	if ( sendevent )
+	    GTabSetChanged(gts,oldsel);
 	if ( gts->tabs[oldsel].w!=NULL )
 	    GDrawSetVisible(gts->tabs[oldsel].w,false);
 	if ( gts->tabs[gts->sel].w!=NULL )
@@ -406,7 +407,7 @@ return( false );
 	    gts->pressed_sel = sel;
 	} else {
 	    if ( gts->pressed && gts->pressed_sel == sel )
-		GTabSetChangeSel(gts,sel);
+		GTabSetChangeSel(gts,sel,true);
 	    gts->pressed = false;
 	    gts->pressed_sel = -1;
 	}
@@ -425,11 +426,11 @@ return( true );
 
     if (event->u.chr.keysym == GK_Left || event->u.chr.keysym == GK_KP_Left ) {
 	for ( i = gts->sel-1; i>0 && gts->tabs[i].disabled; --i );
-	GTabSetChangeSel(gts,i);
+	GTabSetChangeSel(gts,i,true);
 return( true );
     } else if (event->u.chr.keysym == GK_Right || event->u.chr.keysym == GK_KP_Right ) {
 	for ( i = gts->sel+1; i<gts->tabcnt-1 && gts->tabs[i].disabled; ++i );
-	GTabSetChangeSel(gts,i);
+	GTabSetChangeSel(gts,i,true);
 return( true );
     }
 return( false );
@@ -626,6 +627,11 @@ return( &gts->g );
 int GTabSetGetSel(GGadget *g) {
     GTabSet *gts = (GTabSet *) g;
 return( gts->sel );
+}
+
+void GTabSetSetSel(GGadget *g,int sel) {
+    GTabSet *gts = (GTabSet *) g;
+    GTabSetChangeSel(gts,sel,false);
 }
 
 void GTabSetSetEnabled(GGadget *g,int pos,int enabled) {

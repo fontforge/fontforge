@@ -161,6 +161,10 @@ typedef struct charview {
     real expandwidth, expandheight;
     SplinePointList *active_shape;
     SplinePoint joinpos;
+    SplineChar *template1, *template2;
+#if HANYANG
+    struct jamodisplay *jamodisplay;
+#endif
 } CharView;
 
 typedef struct bitmapview {
@@ -488,6 +492,13 @@ extern void FindProblems(FontView *fv,CharView *cv);
 extern void MetaFont(FontView *fv,CharView *cv);
 extern void CVConstrainSelection(CharView *cv,int type);
 extern void CVMakeParallel(CharView *cv);
+
+# if HANYANG
+extern void MenuNewComposition(GWindow gw, struct gmenuitem *, GEvent *);
+extern void CVDisplayCompositions(GWindow gw, struct gmenuitem *, GEvent *);
+extern void Disp_DoFinish(struct jamodisplay *d, int cancel);
+extern int Disp_JamoSetup(struct jamodisplay *d,CharView *cv);
+# endif
 
 extern GMenuItem helplist[];
 #endif

@@ -231,6 +231,7 @@ void GGadgetSetChecked(GGadget *g, int ison);
 int GGadgetIsChecked(GGadget *g);
 
 int GTabSetGetSel(GGadget *g);
+void GTabSetSetSel(GGadget *g,int sel);
 void GTabSetSetEnabled(GGadget *g,int pos, int enabled);
 GWindow GTabSetGetSubwindow(GGadget *g,int pos);
 int GTabSetGetTabLines(GGadget *g);

@@ -924,11 +924,11 @@ SplineFont *SplineFontBlank(int encoding_name,int charcnt) {
 	strcpy( buffer, "Created with PfaEdit 1.0 (http://pfaedit.sf.net)" );
     endpwent();
 /* End comment */
+    sf->copyright = copy(buffer);
     if ( xuid!=NULL ) {
 	sf->xuid = galloc(strlen(xuid)+20);
 	sprintf(sf->xuid,"[%s %d]", xuid, (rand()&0xffffff));
     }
-    sf->copyright = copy(buffer);
     sf->version = copy("001.000");
     sf->upos = -100; sf->uwidth = 50;		/* defaults for cff */
     sf->ascent = 800; sf->descent = 200;

@@ -250,6 +250,10 @@ return;
 		sc->changedsincelasthinted?"H":"",
 		sc->manualhints?"M":"",
 		sc->widthset?"W":"");
+#if HANYANG
+    if ( sc->compositionunit )
+	fprintf( sfd, "CompositionUnit: %d %d\n", sc->jamo, sc->varient );
+#endif
     SFDDumpHintList(sfd,"HStem: ", sc->hstem);
     SFDDumpHintList(sfd,"VStem: ", sc->vstem);
     SFDDumpDHintList(sfd,"DStem: ", sc->dstem);
@@ -518,6 +522,10 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
     }
     if ( sf->private!=NULL )
 	SFDDumpPrivate(sfd,sf->private);
+#if HANYANG
+    if ( sf->rules!=NULL )
+	SFDDumpCompositionRules(sfd,sf->rules);
+#endif
 
     if ( sf->subfontcnt!=0 ) {
 	int max;
@@ -544,6 +552,7 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 	}
 	fprintf(sfd, "EndChars\n" );
     }
+	
     if ( sf->bitmaps!=NULL )
 	GProgressChangeLine2R(_STR_SavingBitmaps);
     for ( bdf = sf->bitmaps; bdf!=NULL; bdf=bdf->next )
@@ -1093,6 +1102,12 @@ return( NULL );
 		else if ( ch=='W' ) sc->widthset = true;
 		ch = getc(sfd);
 	    }
+#if HANYANG
+	} else if ( strmatch(tok,"CompositionUnit:")==0 ) {
+	    getsint(sfd,&sc->jamo);
+	    getsint(sfd,&sc->varient);
+	    sc->compositionunit = true;
+#endif
 	} else if ( strmatch(tok,"HStem:")==0 ) {
 	    sc->hstem = SFDReadHints(sfd);
 	    SCGuessHHintInstancesList(sc);		/* For reading in old .sfd files with no HintInstance data */
@@ -1552,6 +1567,10 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    }
 	    sf->chars = gcalloc(sf->charcnt,sizeof(SplineChar *));
     break;
+#if HANYANG
+	} else if ( strmatch(tok,"BeginCompositionRules")==0 ) {
+	    sf->rules = SFDReadCompositionRules(sfd);
+#endif
 	} else {
 	    /* If we don't understand it, skip it */
 	    geteol(sfd,tok);

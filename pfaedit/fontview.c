@@ -719,6 +719,8 @@ static void FVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_InsertBlank	2803
 #define MID_CIDFontInfo	2804
 #define MID_RemoveFromCID 2805
+#define MID_ModifyComposition	20902
+#define MID_BuildSyllables	20903
 
 /* returns -1 if nothing selected, the char if exactly one, -2 if more than one */
 static int FVAnyCharSelected(FontView *fv) {
@@ -1274,6 +1276,20 @@ static void FVMenuBuildAccent(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     }
     GProgressEndIndicator();
 }
+
+#if HANYANG
+static void FVMenuModifyComposition(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    if ( fv->sf->rules!=NULL )
+	SFModifyComposition(fv->sf);
+}
+
+static void FVMenuBuildSyllables(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    if ( fv->sf->rules!=NULL )
+	SFBuildSyllables(fv->sf);
+}
+#endif
 
 static void FVMenuMergeFonts(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
@@ -1992,9 +2008,31 @@ static void fllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     }
 }
 
+#if HANYANG
+static void hglistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+
+    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
+        if ( mi->mid==MID_BuildSyllables || mi->mid==MID_ModifyComposition )
+	    mi->ti.disabled = fv->sf->rules==NULL;
+    }
+}
+
+static GMenuItem hglist[] = {
+    { { (unichar_t *) _STR_NewComposition, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'N' }, 'N', ksm_shift|ksm_control, NULL, NULL, MenuNewComposition },
+    { { (unichar_t *) _STR_ModifyComposition, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuModifyComposition, MID_ModifyComposition },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_BuildSyllables, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuBuildSyllables, MID_BuildSyllables },
+    { NULL }
+};
+#endif
+
 static GMenuItem dummyitem[] = { { (unichar_t *) _STR_New, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'N' }, NULL };
 static GMenuItem fllist[] = {
     { { (unichar_t *) _STR_New, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'N' }, 'N', ksm_control, NULL, NULL, MenuNew },
+#if HANYANG
+    { { (unichar_t *) _STR_Hangul, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, '\0', 0, hglist, hglistcheck, NULL, 0 },
+#endif
     { { (unichar_t *) _STR_Open, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'O' }, 'O', ksm_control, NULL, NULL, MenuOpen },
     { { (unichar_t *) _STR_Recent, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 't' }, '\0', ksm_control, dummyitem, MenuRecentBuild, NULL, MID_Recent },
     { { (unichar_t *) _STR_Close, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, 'Q', ksm_control|ksm_shift, NULL, NULL, FVMenuClose },
@@ -2067,6 +2105,9 @@ static GMenuItem ellist[] = {
     { { (unichar_t *) _STR_Correct, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'D' }, 'D', ksm_control|ksm_shift, NULL, NULL, FVMenuCorrectDir, MID_Correct },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Buildaccent, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, 'A', ksm_control|ksm_shift, NULL, NULL, FVMenuBuildAccent, MID_BuildAccent },
+#if HANYANG
+    { { (unichar_t *) _STR_BuildSyllables, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'y' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuBuildSyllables, MID_BuildSyllables },
+#endif
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Mergefonts, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuMergeFonts, MID_MergeFonts },
     { { (unichar_t *) _STR_Interp, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'p' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuInterpFonts, MID_InterpolateFonts },
@@ -2583,6 +2624,16 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		buf[0] = '-';
 	    else if ( sc->unicodeenc!=-1 )
 		buf[0] = sc->unicodeenc;
+#if HANYANG
+	    else if ( sc->compositionunit ) {
+		if ( sc->jamo<19 )
+		    buf[0] = 0x1100+sc->jamo;
+		else if ( sc->jamo<19+21 )
+		    buf[0] = 0x1161 + sc->jamo-19;
+		else	/* Leave a hole for the blank char */
+		    buf[0] = 0x11a8 + sc->jamo-(19+21+1);
+	    }
+#endif
 	    else {
 		buf[0] = '?';
 		fg = 0xff0000;
@@ -2795,7 +2846,7 @@ static void FVChar(FontView *fv,GEvent *event) {
 }
 
 void SCPreparePopup(GWindow gw,SplineChar *sc) {
-    static unichar_t space[200];
+    static unichar_t space[300];
     char cspace[80];
     int upos;
     static char *chosung[] = { "G", "GG", "N", "D", "DD", "L", "M", "B", "BB", "S", "SS", "", "J", "JJ", "C", "K", "T", "P", "H", NULL };
@@ -2804,6 +2855,16 @@ void SCPreparePopup(GWindow gw,SplineChar *sc) {
 
     if ( sc->unicodeenc!=-1 )
 	upos = sc->unicodeenc;
+#if HANYANG
+    else if ( sc->compositionunit ) {
+	if ( sc->jamo<19 )
+	    upos = 0x1100+sc->jamo;
+	else if ( sc->jamo<19+21 )
+	    upos = 0x1161 + sc->jamo-19;
+	else		/* Leave a hole for the blank char */
+	    upos = 0x11a8 + sc->jamo-(19+21+1);
+    }
+#endif
     else if ( sc->enc<32 || (sc->enc>=127 && sc->enc<160) )
 	upos = sc->enc;
     else {
@@ -3016,8 +3077,12 @@ static void FVResize(FontView *fv,GEvent *event) {
 	topchar = fv->rowoff*fv->colcnt;
     else if ( fv->sf->encoding_name>=em_jis208 && fv->sf->encoding_name<=em_gb2312 )
 	topchar = 1;
-    else
-	topchar = 'A';
+    else {
+	/* Position on 'A' if it exists */
+	for ( topchar=fv->sf->charcnt-1; topchar>0; --topchar )
+	    if ( fv->sf->chars[topchar]!=NULL && fv->sf->chars[topchar]->unicodeenc=='A' )
+	break;
+    }
     if ( (event->u.resize.size.width-
 		GDrawPointsToPixels(fv->gw,_GScrollBar_Width)-1)%fv->cbw!=0 ||
 	    (event->u.resize.size.height-fv->mbh-fv->infoh-1)%fv->cbh!=0 ) {

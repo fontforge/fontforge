@@ -63,8 +63,8 @@ static GTimer *popup_timer, *popup_vanish_timer;
 static int popup_visible = false;
 static GRect popup_within;
 
-static unichar_t courier[] = { 'c', 'o', 'u', 'r', 'i', 'e', 'r',',','m','o','n','o','s','p','a','c','e', '\0' };
-static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c','a','l','i','b','a','n',  '\0' };
+static unichar_t courier[] = { 'c', 'o', 'u', 'r', 'i', 'e', 'r',',','m','o','n','o','s','p','a','c','e',',','u','n','i','f','o','n','t', '\0' };
+static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c','a','l','i','b','a','n',',','u','n','i','f','o','n','t',  '\0' };
 
 static int match(char **list, char *val) {
     int i;

@@ -1722,7 +1722,7 @@ struct gfuncs glistfield_funcs = {
 };
 
 static void GTextFieldInit() {
-    static unichar_t courier[] = { 'c', 'o', 'u', 'r', 'i', 'e', 'r', '\0' };
+    static unichar_t courier[] = { 'c', 'o', 'u', 'r', 'i', 'e', 'r',',','m','o','n','o','s','p','a','c','e',',','u','n','i','f','o','n','t', '\0' };
     FontRequest rq;
 
     GGadgetInit();

@@ -1181,5 +1181,41 @@ static char *str_PfaEdit = "PfaEdit";
     /* cvpointer.c */
 static char *str_NegativeWidth = "Negative Width";
 static char *str_NegativeWidthCheck = "Negative character widths are not allowed in TrueType\nDo you really want a negative width?";
+    /* hanyang.c */
+static char *str_Hangul = "Hangul";
+static char mnemonic_Hangul = 'H';
+static char *str_NewComposition = "New Composition...";
+static char mnemonic_NewComposition = 'N';
+static char *str_ModifyComposition = "Modify Composition...";
+static char mnemonic_ModifyComposition = 'M';
+static char *str_BuildSyllables = "Build Syllables";
+static char mnemonic_BuildSyllables = 'B';
+static char *str_ChoSung = "Cho-Sung";
+static char *str_JungSung = "Jung-Sung";
+static char *str_JongSung = "Jong-Sung";
+static char *str_ChoSungC = "Cho-Sung:";
+static char *str_JungSungC = "Jung-Sung:";
+static char *str_JongSungC = "Jong-Sung:";
+static char *str_Mapping = "Mapping...";
+static char mnemonic_Mapping = 'M';
+static char *str_Width = "Width...";
+static char mnemonic_Width = 'W';
+static char *str_Reset = "Reset";
+static char *str_LoadFrom = "Load From...";
+static char mnemonic_LoadFrom = 'L';
+static char *str_BadWidth = "Bad Number for Width";
+static char *str_BadGroup = "Bad Number for Group";
+static char *str_JamoHoleTitle = "Unused glyph variant";
+static char *str_JamoHole = "For group %d of %s, glyph variant %d is not used but %d is used.\nProcede anyway?";
+static char *str_NoRules = "No Rules";
+static char *str_FileHasNoRules = "%.100hs contains no composition rules";
+    /* Need a different mnemonic */
+static char *str_SelectAllMn = "Select All";
+static char mnemonic_SelectAllMn = 'S';
+static char *str_DisplayCompositions = "Display Compositions...";
+static char mnemonic_DisplayCompositions = 'D';
+static char *str_NoGroups = "This varient of this jamo is not actually used";
+static char *str_UniVarient = "Unicode %04X, Varient %d, %s";
+static char *str_BuildingKoreanFont = "Building Korean Font";
 
 static int num_buttonsize = 55;

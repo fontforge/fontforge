@@ -1491,6 +1491,11 @@ struct pschars *SplineFont2Chrs(SplineFont *sf, int round, int iscjk,
 
     cnt = 0;
     for ( i=0; i<sf->charcnt; ++i )
+#if HANYANG
+	if ( sf->chars[i]!=NULL && sf->chars[i]->compositionunit )
+	    /* Don't count it */;
+	else
+#endif
 	if ( SCWorthOutputting(sf->chars[i]) )
 	    ++cnt;
 /* only honor the width on .notdef in non-fixed pitch fonts (or ones where there is an actual outline in notdef) */
@@ -1544,6 +1549,11 @@ struct pschars *SplineFont2Chrs(SplineFont *sf, int round, int iscjk,
     }
     cnt = 1;
     for ( ; i<sf->charcnt; ++i ) {
+#if HANYANG
+	if ( sf->chars[i]!=NULL && sf->chars[i]->compositionunit )
+	    /* don't output it, should be in a subroutine */;
+	else
+#endif
 	if ( SCWorthOutputting(sf->chars[i]) ) {
 	    chrs->keys[cnt] = copy(sf->chars[i]->name);
 	    chrs->values[cnt] = SplineChar2PS(sf->chars[i],&chrs->lens[cnt],
@@ -2372,6 +2382,11 @@ struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
     cnt = 0;
     for ( i=0; i<sf->charcnt; ++i ) {
 	sc = sf->chars[i];
+#if HANYANG
+	if ( sc!=NULL && sc->compositionunit )
+	    /* don't output it, should be in a subroutine */;
+	else
+#endif
 	if ( SCWorthOutputting(sc) )
 	    ++cnt;
     }
@@ -2424,6 +2439,11 @@ struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
     cnt = 1;
     for ( ; i<sf->charcnt; ++i ) {
 	sc = sf->chars[i];
+#if HANYANG
+	if ( sc!=NULL && sc->compositionunit )
+	    /* don't output it, should be in a subroutine */;
+	else
+#endif
 	if ( SCWorthOutputting(sc) ) {
 	    chrs->values[cnt] = SplineChar2PS2(sc,&chrs->lens[cnt],nomwid,defwid,subrs,NULL);
 	    sf->chars[i]->ttf_glyph = cnt++;
@@ -2477,6 +2497,10 @@ struct pschars *CID2Chrs2(SplineFont *cidmaster,struct fd2data *fds) {
 	}
 	if ( cid!=0 && i==cidmaster->subfontcnt ) {
 	    /* Do nothing */;
+#if HANYANG
+	} else if ( sf->chars[i]->compositionunit ) {
+	    /* don't output it, should be in a subroutine */;
+#endif
 	} else if ( i==cidmaster->subfontcnt ) {
 	    /* They didn't define CID 0 */
 	    /* Place it in the final subfont (which is what sf points to) */

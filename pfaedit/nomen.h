@@ -879,6 +879,31 @@
 #define _STR_PfaEdit	862
 #define _STR_NegativeWidth	863
 #define _STR_NegativeWidthCheck	864
+#define _STR_Hangul	865
+#define _STR_NewComposition	866
+#define _STR_ModifyComposition	867
+#define _STR_BuildSyllables	868
+#define _STR_ChoSung	869
+#define _STR_JungSung	870
+#define _STR_JongSung	871
+#define _STR_ChoSungC	872
+#define _STR_JungSungC	873
+#define _STR_JongSungC	874
+#define _STR_Mapping	875
+#define _STR_Width	876
+#define _STR_Reset	877
+#define _STR_LoadFrom	878
+#define _STR_BadWidth	879
+#define _STR_BadGroup	880
+#define _STR_JamoHoleTitle	881
+#define _STR_JamoHole	882
+#define _STR_NoRules	883
+#define _STR_FileHasNoRules	884
+#define _STR_SelectAllMn	885
+#define _STR_DisplayCompositions	886
+#define _STR_NoGroups	887
+#define _STR_UniVarient	888
+#define _STR_BuildingKoreanFont	889
 
 
 #endif

@@ -446,6 +446,14 @@ void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
     }
 }
 
+static void CVDrawTemplates(CharView *cv,GWindow pixmap,SplineChar *template,DRect *clip) {
+    RefChar *r;
+
+    CVDrawSplineSet(cv,pixmap,template->splines,0x009800,false,clip);
+    for ( r=template->refs; r!=NULL; r=r->next )
+	CVDrawSplineSet(cv,pixmap,r->splines,0x009800,false,clip);
+}
+
 static void CVShowDHint(CharView *cv, GWindow pixmap, DStemInfo *dstem) {
     IPoint ip[40], ip2[40];
     GPoint clipped[13];
@@ -795,6 +803,10 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	/*  images before the fill... */
 	CVDrawSplineSet(cv,pixmap,cv->sc->backgroundsplines,0x009800,
 		cv->showpoints && cv->drawmode==dm_back,&clip);
+	if ( cv->template1!=NULL )
+	    CVDrawTemplates(cv,pixmap,cv->template1,&clip);
+	if ( cv->template2!=NULL )
+	    CVDrawTemplates(cv,pixmap,cv->template2,&clip);
     }
 
     if ( cv->showfore || cv->drawmode==dm_fore ) {
@@ -1068,6 +1080,7 @@ void CVChangeSC(CharView *cv, SplineChar *sc ) {
     cv->uheads[dm_fore] = &sc->undoes[dm_fore]; cv->rheads[dm_back] = &sc->undoes[dm_back];
     cv->rheads[dm_fore] = &sc->redoes[dm_fore]; cv->rheads[dm_back] = &sc->redoes[dm_back];
     cv->p.sp = cv->lastselpt = NULL;
+    cv->template1 = cv->template2 = NULL;
 
     CVNewScale(cv);
 
@@ -1077,6 +1090,10 @@ void CVChangeSC(CharView *cv, SplineChar *sc ) {
     cv->lastselpt = NULL; cv->p.sp = NULL;
     CVInfoDraw(cv,cv->gw);
     free(title);
+#if HANYANG
+    if ( cv->jamodisplay!=NULL )
+	Disp_JamoSetup(cv->jamodisplay,cv);
+#endif
 }
 
 static void CVChangeChar(CharView *cv, int i ) {
@@ -2297,6 +2314,7 @@ return( true );
 #define MID_PrevPt	2011
 #define MID_NextDef	2012
 #define MID_PrevDef	2013
+#define MID_DisplayCompositions	2014
 #define MID_Cut		2101
 #define MID_Copy	2102
 #define MID_Paste	2103
@@ -3718,6 +3736,11 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    for ( pos = cv->sc->enc-1; pos>=0 && sf->chars[pos]==NULL; --pos );
 	    mi->ti.disabled = pos==-1;
 	  break;
+#if HANYANG
+	  case MID_DisplayCompositions:
+	    mi->ti.disabled = !cv->sc->compositionunit || cv->sc->parent->rules==NULL;
+	  break;
+#endif
 	}
     }
 }
@@ -3920,6 +3943,10 @@ static GMenuItem vwlist[] = {
     { { (unichar_t *) _STR_Fit, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, 'F', ksm_control, NULL, NULL, CVMenuScale, MID_Fit },
     { { (unichar_t *) _STR_Zoomout, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'o' }, '\0', ksm_control, NULL, NULL, CVMenuScale, MID_ZoomOut },
     { { (unichar_t *) _STR_Zoomin, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'i' }, '\0', ksm_control, NULL, NULL, CVMenuScale, MID_ZoomIn },
+#if HANYANG
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_DisplayCompositions, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'i' }, '\0', ksm_control, NULL, NULL, CVDisplayCompositions, MID_DisplayCompositions },
+#endif
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_NextChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'N' }, ']', ksm_control, NULL, NULL, CVMenuChangeChar, MID_Next },
     { { (unichar_t *) _STR_PrevChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '[', ksm_control, NULL, NULL, CVMenuChangeChar, MID_Prev },
@@ -4080,6 +4107,10 @@ void CharViewFree(CharView *cv) {
     BDFCharFree(cv->filled);
     free(cv->gi.u.image->clut);
     free(cv->gi.u.image);
+#if HANYANG
+    if ( cv->jamodisplay!=NULL )
+	Disp_DoFinish(cv->jamodisplay,true);
+#endif
     free(cv);
 }
 

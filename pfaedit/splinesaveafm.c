@@ -361,8 +361,11 @@ static void AfmKernPairs(FILE *afm, SplineChar *sc) {
 }
 
 int SCWorthOutputting(SplineChar *sc) {
-return( sc!=NULL && 
+return( sc!=NULL &&
 	( sc->splines!=NULL || sc->refs!=NULL || sc->widthset ||
+#if HANYANG
+	    sc->compositionunit ||
+#endif
 	    sc->width!=sc->parent->ascent+sc->parent->descent ) &&
 	( strcmp(sc->name,".notdef")!=0 || sc->enc==0) );
 }

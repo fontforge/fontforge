@@ -55,6 +55,9 @@ static void initadobeenc(void) {
 static void _dousage(void) {
     fprintf( stderr, "pfaedit [options] [fontfiles]\n" );
     fprintf( stderr, "\t-new\t\t\t (creates a new font)\n" );
+#if HANYANG
+    fprintf( stderr, "\t-newkorean\t\t (creates a new korean font)\n" );
+#endif
     fprintf( stderr, "\t-recover none|auto|clean (control error recovery)\n" );
     fprintf( stderr, "\t-nosplash\t\t (no splash screen)\n" );
     fprintf( stderr, "\t-display display-name\t (sets the X display)\n" );
@@ -274,6 +277,11 @@ int main( int argc, char **argv ) {
 	if ( strcmp(pt,"-new")==0 ) {
 	    FontNew();
 	    any = 1;
+#if HANYANG
+	} else if ( strcmp(pt,"-newkorean")==0 ) {
+	    MenuNewComposition(NULL,NULL,NULL);
+	    any = 1;
+#endif
 	} else if ( strcmp(pt,"-sync")==0 || strcmp(pt,"-memory")==0 ||
 		strcmp(pt,"-nosplash")==0 || strcmp(pt,"-recover=none")==0 ||
 		strcmp(pt,"-recover=clean")==0 || strcmp(pt,"-recover=auto")==0 )

@@ -372,6 +372,10 @@ typedef struct splinechar {
     unsigned int vconflicts: 1;	/* Any hint overlaps in the vstem list? */
     unsigned int hconflicts: 1;	/* Any hint overlaps in the hstem list? */
     unsigned int anyflexes: 1;
+#if HANYANG
+    unsigned int compositionunit: 1;
+    int16 jamo, varient;
+#endif
     struct splinecharlist { struct splinechar *sc; struct splinecharlist *next;} *dependents;
 	    /* The dependents list is a list of all characters which refenence*/
 	    /*  the current character directly */
@@ -446,6 +450,9 @@ typedef struct splinefont {
     struct splinefont **subfonts;
     struct splinefont *cidmaster;		/* Top level cid font */
     float cidversion;
+#if HANYANG
+    struct compositionrules *rules;
+#endif
 } SplineFont;
 
 struct fontdict;
@@ -490,6 +497,7 @@ extern int WriteTTFFont(char *fontname,SplineFont *sf, enum fontformat format,
 extern int WriteMacTTFFont(char *fontname,SplineFont *sf, enum fontformat format,
 	real *bsizes, enum bitmapformat bf);
 extern int WriteMacBitmaps(char *filename,SplineFont *sf, real *sizes,int is_dfont);
+extern struct ttflangname *TTFLangNamesCopy(struct ttflangname *old);
 extern void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf);
 extern void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]);
 extern void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *sf,char *fontname);
@@ -525,6 +533,7 @@ extern DStemInfo *DStemInfoCopy(DStemInfo *h);
 extern MinimumDistance *MinimumDistanceCopy(MinimumDistance *h);
 extern SplineChar *SplineCharCopy(SplineChar *sc);
 extern BDFChar *BDFCharCopy(BDFChar *bc);
+extern void BitmapsCopy(SplineFont *to, SplineFont *from, int to_index, int from_index );
 extern void ImageListsFree(ImageList *imgs);
 extern void TTFLangNamesFree(struct ttflangname *l);
 extern void MinimumDistancesFree(MinimumDistance *md);
@@ -727,5 +736,12 @@ void putfixed(FILE *file,real dval);
 int ttfcopyfile(FILE *ttf, FILE *other, int pos);
 
 extern void SCCopyFgToBg(SplineChar *sc,int show);
+
+# if HANYANG
+extern void SFDDumpCompositionRules(FILE *sfd,struct compositionrules *rules);
+extern struct compositionrules *SFDReadCompositionRules(FILE *sfd);
+extern void SFModifyComposition(SplineFont *sf);
+extern void SFBuildSyllables(SplineFont *sf);
+# endif
 #endif
 
