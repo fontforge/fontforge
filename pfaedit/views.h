@@ -248,7 +248,7 @@ typedef struct fontview {
     int colcnt, rowcnt;
     int rowoff, rowltot;
     int cbw,cbh;		/* width/height of a character box */
-    GFont *header;
+    GFont *header, *iheader;
     GGadget *vsb, *mb;
     struct fontview *next;
     int pressed_pos, end_pos;

@@ -2930,6 +2930,87 @@ return( ssf->chars[i] );
 return( sc );
 }
 
+static GImage *GImageCropAndRotate(GImage *unrot) {
+    struct _GImage *unbase = unrot->u.image, *rbase;
+    int xmin = unbase->width, xmax = -1, ymin = unbase->height, ymax = -1;
+    int i,j, ii;
+    GImage *rot;
+
+    for ( i=0; i<unbase->height; ++i ) {
+	for ( j=0; j<unbase->width; ++j ) {
+	    if ( !(unbase->data[i*unbase->bytes_per_line+(j>>3)]&(0x80>>(j&7))) ) {
+		if ( j<xmin ) xmin = j;
+		if ( j>xmax ) xmax = j;
+		if ( i>ymax ) ymax = i;
+		if ( i<ymin ) ymin = i;
+	    }
+	}
+    }
+    if ( xmax==-1 )
+return( NULL );
+
+    rot = GImageCreate(it_mono,ymax-ymin+1,xmax-xmin+1);
+    if ( rot==NULL )
+return( NULL );
+    rbase = rot->u.image;
+    memset(rbase->data,-1,rbase->height*rbase->bytes_per_line);
+    for ( i=ymin; i<=ymax; ++i ) {
+	for ( j=xmin; j<=xmax; ++j ) {
+	    if ( !(unbase->data[i*unbase->bytes_per_line+(j>>3)]&(0x80>>(j&7)) )) {
+		ii = ymax-i;
+		rbase->data[(j-xmin)*rbase->bytes_per_line+(ii>>3)] &= ~(0x80>>(ii&7));
+	    }
+	}
+    }
+    rbase->trans = 1;
+return( rot );
+}
+
+static GImage *UniGetRotatedGlyph(SplineFont *sf, SplineChar *sc) {
+    int cid=-1, uni=-1;
+    SplineChar *cidsc, dummy;
+    static GWindow pixmap=NULL;
+    GRect r;
+    unichar_t buf[2];
+    GImage *unrot, *rot;
+
+    if ( sscanf(sc->name,"vertuni%x", &uni)!=1 &&
+	    sscanf( sc->name, "vertcid_%d", &cid)==1 ) {
+	cidsc = NULL;
+	if ( sf->cidmaster==NULL ) {
+	    if ( cid>=0 && cid<sf->charcnt )
+		cidsc = sf->chars[cid];
+	} else {
+	    cidsc = SCBuildDummy(&dummy,sf,cid);
+	}
+	if ( cidsc==NULL || cidsc->unicodeenc==-1 )
+return( NULL );
+	uni = cidsc->unicodeenc;
+    }
+    if ( uni&0x10000 ) uni -= 0x10000;		/* Bug in some old cidmap files */
+    if ( uni<0 || uni>0xffff )
+return( NULL );
+
+    if ( pixmap==NULL ) {
+	pixmap = GDrawCreateBitmap(NULL,2*FV_LAB_HEIGHT,2*FV_LAB_HEIGHT,NULL);
+	if ( pixmap==NULL )
+return( NULL );
+	GDrawSetFont(pixmap,sf->fv->header);
+    }
+    r.x = r.y = 0;
+    r.width = r.height = 2*FV_LAB_HEIGHT;
+    GDrawFillRect(pixmap,&r,1);
+    buf[0] = uni; buf[1] = 0;
+    GDrawDrawText(pixmap,2,FV_LAB_HEIGHT,buf,1,NULL,0);
+    unrot = GDrawCopyScreenToImage(pixmap,&r);
+    if ( unrot==NULL )
+return( NULL );
+
+    rot = GImageCropAndRotate(unrot);
+    GImageDestroy(unrot);
+return( rot );
+}
+
 static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
     int i, j, width;
     int changed;
@@ -2938,6 +3019,8 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
     struct _GImage base;
     GImage gi;
     SplineChar dummy;
+    int italic, wasitalic=0;
+    GImage *rotated=NULL;
 
     memset(&gi,'\0',sizeof(gi));
     memset(&base,'\0',sizeof(base));
@@ -2967,6 +3050,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
     for ( i=event->u.expose.rect.y/fv->cbh; i<=fv->rowcnt &&
 	    (event->u.expose.rect.y+event->u.expose.rect.height+fv->cbh-1)/fv->cbh; ++i ) for ( j=0; j<fv->colcnt; ++j ) {
 	int index = (i+fv->rowoff)*fv->colcnt+j;
+	italic = false;
 	if ( fv->mapping!=NULL ) {
 	    if ( index>=fv->mapcnt ) index = fv->sf->charcnt;
 	    else
@@ -2996,6 +3080,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 	    else {
 		char *pt = strchr(sc->name,'.');
 		buf[0] = '?';
+		fg = 0xff0000;
 		if ( pt!=NULL ) {
 		    int i, n = pt-sc->name;
 		    char *end;
@@ -3007,8 +3092,19 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 			    buf[0] = i;
 		    break;
 			}
+		} else if ( strncmp(sc->name,"hwuni",5)==0 ) {
+		    int uni=-1;
+		    sscanf(sc->name,"hwuni%x", &uni );
+		    if ( uni!=-1 ) buf[0] = uni;
+		} else if ( strncmp(sc->name,"italicuni",9)==0 ) {
+		    int uni=-1;
+		    sscanf(sc->name,"italicuni%x", &uni );
+		    if ( uni!=-1 ) { buf[0] = uni; italic=true; }
+		    fg = 0x000000;
+		} else if ( strncmp(sc->name,"vertcid_",8)==0 ||
+			strncmp(sc->name,"vertuni",7)==0 ) {
+		    rotated = UniGetRotatedGlyph(fv->sf,sc);
 		}
-		fg = 0xff0000;
 	    }
 	    if ( sc->backgroundsplines!=NULL || sc->backimages!=NULL ) {
 		GRect r;
@@ -3016,9 +3112,22 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		r.y = i*fv->cbh+1; r.height = FV_LAB_HEIGHT-1;
 		GDrawFillRect(pixmap,&r,0x808080);
 	    }
-	    width = GDrawGetTextWidth(pixmap,buf,1,NULL);
-	    if ( sc->unicodeenc<0x80 || sc->unicodeenc>=0xa0 )
-		GDrawDrawText(pixmap,j*fv->cbw+(fv->cbw-1-width)/2,i*fv->cbh+FV_LAB_HEIGHT-2,buf,1,NULL,fg);
+	    if ( rotated!=NULL ) {
+		GRect r;
+		r.x = j*fv->cbw+1; r.width = fv->cbw-1;
+		r.y = i*fv->cbh+1; r.height = FV_LAB_HEIGHT-1;
+		GDrawPushClip(pixmap,&r,&old2);
+		GDrawDrawImage(pixmap,rotated,NULL,j*fv->cbw+2,i*fv->cbh+2);
+		GDrawPopClip(pixmap,&old2);
+		GImageDestroy(rotated);
+		rotated = NULL;
+	    } else {
+		if ( italic!=wasitalic ) GDrawSetFont(pixmap,italic?fv->iheader:fv->header);
+		width = GDrawGetTextWidth(pixmap,buf,1,NULL);
+		if ( sc->unicodeenc<0x80 || sc->unicodeenc>=0xa0 )
+		    GDrawDrawText(pixmap,j*fv->cbw+(fv->cbw-1-width)/2,i*fv->cbh+FV_LAB_HEIGHT-2,buf,1,NULL,fg);
+		wasitalic = italic;
+	    }
 	    changed = sc->changed;
 	    if ( fv->sf->onlybitmaps )
 		changed = fv->show->chars[index]==NULL? false : fv->show->chars[index]->changed;
@@ -3729,6 +3838,8 @@ FontView *FontViewCreate(SplineFont *sf) {
     rq.point_size = -13;
     rq.weight = 400;
     fv->header = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+    rq.style = fs_italic;
+    fv->iheader = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
     GDrawSetFont(fv->v,fv->header);
     bdf = SplineFontPieceMeal(fv->sf,sf->display_size<0?-sf->display_size:default_fv_font_size,
 	    fv->antialias );
