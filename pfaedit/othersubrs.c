@@ -277,4 +277,5 @@ const char *cid_othersubrs[] = {
 	"  { 2 { cvi { { pop 0 lt { exit } if } loop } repeat }",
 	"       repeat } bind",
 	"] def",
+	NULL
 };
