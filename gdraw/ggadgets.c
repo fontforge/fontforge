@@ -350,6 +350,7 @@ return( false );
     popup_timer = NULL;
     pt = msg = (unichar_t *) (e->u.timer.userdata);
 
+    GDrawSetFont(popup,popup_font);
     lines = 0; width = 1;
     do {
 	temp = -1;
