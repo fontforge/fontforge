@@ -68,7 +68,7 @@ static void MakeEncChar(SplineFont *sf,int enc,char *name) {
     if ( enc>=sf->charcnt ) {
 	int i,n = enc+sf->charcnt;
 	if ( n>65536 ) n=65536;
-	if ( enc>n ) n = enc;
+	if ( enc>n ) n = enc+1;
 	sf->chars = grealloc(sf->chars,n*sizeof(SplineChar *));
 	for ( i=sf->charcnt; i<n; ++i )
 	    sf->chars[i] = NULL;
@@ -328,6 +328,7 @@ static int alreadyexists(int pixelsize) {
     char buffer[10];
     unichar_t ubuf[200];
     const unichar_t *buts[3]; unichar_t oc[2];
+    int ret;
 
     buts[2]=NULL;
     buts[0] = GStringGetResource( _STR_OK, &oc[0]);
@@ -337,8 +338,9 @@ static int alreadyexists(int pixelsize) {
     u_strcpy(ubuf, GStringGetResource(_STR_Duppixelsizepre,NULL));
     uc_strcat(ubuf,buffer);
     u_strcat(ubuf, GStringGetResource(_STR_Duppixelsizepost,NULL));
-    
-return( GWidgetAsk(GStringGetResource(_STR_Duppixelsize,NULL),buts,oc,0,1,ubuf)==0 );
+
+    ret = GWidgetAsk(GStringGetResource(_STR_Duppixelsize,NULL),buts,oc,0,1,ubuf)==0;
+return( ret );
 }
 
 enum pk_cmd { pk_rrr1=240, pk_rrr2, pk_rrr3, pk_rrr4, pk_yyy, pk_post, pk_no_op, pk_pre,
@@ -633,7 +635,7 @@ BDFFont *SFImportBDF(SplineFont *sf, char *filename,int ispk, int toback) {
     bdf = fopen(filename,"r");
     if ( bdf==NULL ) {
 	GWidgetErrorR(_STR_CouldNotOpenFile, _STR_CouldNotOpenFileName, filename );
-return( 0 );
+return( NULL );
     }
     if ( ispk ) {
 	pixelsize = pk_header(bdf,&ascent,&descent,&enc,family,mods,full, filename);
@@ -650,7 +652,7 @@ return( NULL );
 	}
 	pixelsize = slurp_header(bdf,&ascent,&descent,&enc,family,mods,full);
     }
-    if ( pixelsize==-1 )
+    /*if ( pixelsize==-1 )*/
 	pixelsize = askusersize(filename);
     if ( pixelsize==-1 ) {
 	fclose(bdf);
@@ -739,6 +741,7 @@ int FVImportBDF(FontView *fv, char *filename, int ispk, int toback) {
     unichar_t ubuf[140];
     char *eod, *fpt, *file, *full;
     int fcnt, any = 0;
+    int oldcharcnt = fv->sf->charcnt;
 
     eod = strrchr(filename,'/');
     *eod = '\0';
@@ -761,7 +764,7 @@ int FVImportBDF(FontView *fv, char *filename, int ispk, int toback) {
 	GProgressChangeLine1(ubuf);
 	b = SFImportBDF(fv->sf,full,ispk,toback);
 	free(full);
-	GProgressNextStage();
+	if ( fpt!=NULL ) GProgressNextStage();
 	if ( b!=NULL ) {
 	    anyb = b;
 	    any = true;
@@ -771,12 +774,15 @@ int FVImportBDF(FontView *fv, char *filename, int ispk, int toback) {
 	file = fpt+2;
     } while ( fpt!=NULL );
     GProgressEndIndicator();
-    if ( toback ) {
-	if ( anyb==NULL )
-	    GDrawError( "Could not find a bdf font in %s", file );
-	else
-	    FVAddToBackground(fv,anyb);
+    if ( oldcharcnt != fv->sf->charcnt ) {
+	free(fv->selected);
+	fv->selected = gcalloc(fv->sf->charcnt,sizeof(char));
+	FontViewReformat(fv);
     }
+    if ( anyb==NULL ) {
+	GWidgetErrorR( _STR_NoBitmapFont, _STR_NoBitmapFontIn, filename );
+    } else if ( toback )
+	FVAddToBackground(fv,anyb);
 return( any );
 }
 
