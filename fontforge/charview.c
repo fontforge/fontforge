@@ -2602,6 +2602,8 @@ int SCNumberPoints(SplineChar *sc) {
     SplineSet *ss;
     SplinePoint *sp;
     int starts_with_cp, startcnt;
+    uint8 *instrs = sc->ttf_instrs==NULL && sc->parent->mm!=NULL && sc->parent->mm->apple ?
+		sc->parent->mm->normal->chars[sc->enc]->ttf_instrs : sc->ttf_instrs;
 
     for ( ss = sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
 	starts_with_cp = (ss->first->ttfindex == pnum+1 || ss->first->ttfindex==0xffff) &&
@@ -2609,16 +2611,16 @@ int SCNumberPoints(SplineChar *sc) {
 	startcnt = pnum;
 	if ( starts_with_cp ) ++pnum;
 	for ( sp=ss->first; ; ) {
-	    if ( ((sc->ttf_instrs!=NULL && sp->ttfindex==0xffff) ||
+	    if ( ((instrs!=NULL && sp->ttfindex==0xffff) ||
 		    ( sp!=ss->first && !sp->nonextcp && !sp->noprevcp &&
 		     !sp->roundx && !sp->roundy && !sp->dontinterpolate &&
-		     sc->ttf_instrs==NULL )) &&
+		     instrs==NULL )) &&
  		    (sp->nextcp.x+sp->prevcp.x)/2 == sp->me.x &&
 		    (sp->nextcp.y+sp->prevcp.y)/2 == sp->me.y )
 		sp->ttfindex = 0xffff;
 	    else
 		sp->ttfindex = pnum++;
-	    if ( sc->ttf_instrs!=NULL && sp->nextcpindex!=0xffff ) {
+	    if ( instrs!=NULL && sp->nextcpindex!=0xffff ) {
 		if ( sp->nextcpindex!=startcnt || !starts_with_cp )
 		    sp->nextcpindex = pnum++;
 	    } else if ( !sp->nonextcp ) {
@@ -2641,8 +2643,10 @@ static void instrcheck(SplineChar *sc) {
     SplineSet *ss;
     SplinePoint *sp;
     int starts_with_cp;
+    uint8 *instrs = sc->ttf_instrs==NULL && sc->parent->mm!=NULL && sc->parent->mm->apple ?
+		sc->parent->mm->normal->chars[sc->enc]->ttf_instrs : sc->ttf_instrs;
 
-    if ( sc->ttf_instrs==NULL )
+    if ( instrs==NULL )
 return;
     /* If the points are no longer in order then the instructions are not valid */
     /*  (because they'll refer to the wrong points) and should be removed */

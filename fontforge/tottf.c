@@ -1091,6 +1091,8 @@ static void dumpcomposite(SplineChar *sc, struct glyphinfo *gi) {
     int i, ptcnt, ctcnt, flags, sptcnt, rd;
     SplineSet *ss;
     RefChar *ref;
+    SplineChar *isc = sc->ttf_instrs==NULL && sc->parent->mm!=NULL && sc->parent->mm->apple ?
+		sc->parent->mm->normal->chars[sc->enc] : sc;
 
 #if 0
     if ( autohint_before_generate && sc->changedsincelasthinted &&
@@ -1130,7 +1132,7 @@ static void dumpcomposite(SplineChar *sc, struct glyphinfo *gi) {
 */
 	if ( ref->next!=NULL )
 	    flags |= (1<<5);		/* More components */
-	else if ( sc->ttf_instrs_len!=0 )	/* Composits also inherit instructions */
+	else if ( isc->ttf_instrs_len!=0 )	/* Composits also inherit instructions */
 	    flags |= (1<<8);		/* Instructions appear after last ref */
 	if ( ref->transform[1]!=0 || ref->transform[2]!=0 )
 	    flags |= (1<<7);		/* Need a full matrix */
@@ -1171,8 +1173,8 @@ static void dumpcomposite(SplineChar *sc, struct glyphinfo *gi) {
 	    gi->maxp->maxcomponentdepth = rd;
     }
 
-    if ( sc->ttf_instrs_len!=0 )
-	dumpinstrs(gi,sc->ttf_instrs,sc->ttf_instrs_len);
+    if ( isc->ttf_instrs_len!=0 )
+	dumpinstrs(gi,isc->ttf_instrs,isc->ttf_instrs_len);
 
     if ( gi->maxp->maxnumcomponents<i ) gi->maxp->maxnumcomponents = i;
     if ( gi->maxp->maxCompositPts<ptcnt ) gi->maxp->maxCompositPts=ptcnt;
@@ -1190,7 +1192,9 @@ static void dumpglyph(SplineChar *sc, struct glyphinfo *gi) {
     int contourcnt, ptcnt, origptcnt;
     BasePoint *bp;
     char *fs;
-    int use_ptcnt = sc->ttf_instrs!=NULL || gi->has_instrs;
+    SplineChar *isc = sc->ttf_instrs==NULL && sc->parent->mm!=NULL && sc->parent->mm->apple ?
+		sc->parent->mm->normal->chars[sc->enc] : sc;
+    int use_ptcnt = isc->ttf_instrs!=NULL || gi->has_instrs;
 
 /* I haven't seen this documented, but ttf rasterizers are unhappy with a */
 /*  glyph that consists of a single point. Glyphs containing two single points*/
@@ -1207,12 +1211,12 @@ return;
 
     gi->loca[gi->next_glyph++] = ftell(gi->glyphs);
 
-    if ( sc->ttf_instrs!=NULL )
+    if ( isc->ttf_instrs!=NULL )
 	initforinstrs(sc);
 
     contourcnt = ptcnt = 0;
     ttfss = SCttfApprox(sc);
-    if ( sc->ttf_instrs==NULL && gi->has_instrs )
+    if ( isc->ttf_instrs==NULL && gi->has_instrs )
 	use_ptcnt = !BadCount(ttfss);
     for ( ss=ttfss; ss!=NULL; ss=ss->next ) {
 	++contourcnt;
@@ -1244,7 +1248,7 @@ return;
     if ( ptcnt!=origptcnt )
 	GDrawIError( "Point count wrong calculated=%d, actual=%d in %.20s", origptcnt, ptcnt, sc->name );
 
-    dumpinstrs(gi,sc->ttf_instrs,sc->ttf_instrs_len);
+    dumpinstrs(gi,isc->ttf_instrs,isc->ttf_instrs_len);
 	
     dumppointarrays(gi,bp,fs,ptcnt);
     SplinePointListsFree(ttfss);
@@ -4590,6 +4594,9 @@ static void AbortTTF(struct alltabs *at, SplineFont *sf) {
 static int SFHasInstructions(SplineFont *sf) {
     int i;
 
+    if ( sf->mm!=NULL && sf->mm->apple )
+	sf = sf->mm->normal;
+
     if ( sf->subfontcnt!=0 )
 return( false );		/* Truetype doesn't support cid keyed fonts */
 
@@ -4600,7 +4607,12 @@ return( true );
 return( false );
 }
 
-static void MaxpFromTable(struct alltabs *at,struct ttf_table *maxp ) {
+static void MaxpFromTable(struct alltabs *at,SplineFont *sf) {
+    struct ttf_table *maxp;
+
+    maxp = SFFindTable(sf,CHR('m','a','x','p'));
+    if ( maxp==NULL && sf->mm!=NULL && sf->mm->apple )
+	maxp = SFFindTable(sf->mm->normal,CHR('m','a','x','p'));
     if ( maxp==NULL || maxp->len<13*sizeof(uint16) )
 return;
     /* We can figure out the others ourselves, but these depend on the contents */
@@ -4617,6 +4629,8 @@ static FILE *dumpstoredtable(SplineFont *sf,uint32 tag,int *len) {
     struct ttf_table *tab = SFFindTable(sf,tag);
     FILE *out;
 
+    if ( tab==NULL && sf->mm!=NULL && sf->mm->apple )
+	tab = SFFindTable(sf->mm->normal,tag);
     if ( tab==NULL ) {
 	*len = 0;
 return( NULL );
@@ -4691,7 +4705,7 @@ static int initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
     if ( format==ff_otf || format==ff_otfcid || (format==ff_none && at->applemode) )
 	at->maxp.version = 0x00005000;
     else
-	MaxpFromTable(at,SFFindTable(sf,CHR('m','a','x','p')));
+	MaxpFromTable(at,sf);
     at->gi.maxp = &at->maxp;
     if ( format==ff_otf )
 	aborted = !dumptype2glyphs(sf,at);
