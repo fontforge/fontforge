@@ -1422,6 +1422,10 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 		GGadgetSetChecked(d->ttfapple,true);
 	    else if ( format!=ff_none )
 		GGadgetSetChecked(d->ttfapple,false);
+	    else {
+		int bf = GGadgetGetFirstListSelectedItem(d->bmptype);
+		GGadgetSetChecked(d->ttfapple,bf==bf_sfnt_dfont);
+	    }
 	}
 	GGadgetSetVisible(d->psnames,format==ff_ttf || format==ff_ttfsym ||
 		/*format==ff_otf || format==ff_otfdfont ||*/
@@ -1532,6 +1536,7 @@ static int GFD_BitmapFormat(GGadget *g, GEvent *e) {
 	    uc_strcpy(pt,".dfont");
 	    GGadgetSetTitle(d->gfc,dup);
 	    free(dup);
+	    GGadgetSetChecked(d->ttfapple,true);
 	}
     }
 return( true );
@@ -1879,7 +1884,7 @@ return( 0 );
 	    ofs==ff_otfcid || ofs==ff_ttfmacbin || ofs==ff_none ) {
 	gcd[10].gd.flags &= ~gg_visible;
 	if ( ofs==ff_ttfmacbin || ofs==ff_ttfdfont || ofs==ff_otfdfont ||
-		ofs==ff_otfciddfont || family)
+		ofs==ff_otfciddfont || family || (ofs==ff_none && old==bf_sfnt_dfont))
 	    gcd[13].gd.flags |= gg_cb_on;
 	else
 	    gcd[13].gd.flags &= ~gg_cb_on;
