@@ -1319,17 +1319,19 @@ return( features );
 	    if (i==cnt-1 || all[i]->featureType!=all[i+1]->featureType )
 		all[i]->singleMutex = true;
 	    saw_default = false;
-	    while ( i<cnt-1 && all[i]->featureType==all[i+1]->featureType ) {
-		++i;
+	    j=i;
+	    while ( i<cnt-1 && all[i]->featureType==all[j]->featureType ) {
 		if ( all[i]->featureSetting==0 ) saw_default = true;
+		++i;
 	    }
-	    --i;
+	    if ( i!=j ) --i;
 	    if ( !saw_default )
 		all[i]->singleMutex = true;
 	} else {
-	    while ( i<cnt-1 && all[i]->featureType==all[i+1]->featureType )
+	    j=i;
+	    while ( i<cnt-1 && all[i]->featureType==all[j]->featureType )
 		++i;
-	    --i;
+	    if ( i!=j ) --i;
 	}
     }
     for ( i=0; i<cnt-1; ++i )
