@@ -247,7 +247,6 @@ static int STDrawText(SFTextArea *st,GWindow pixmap,int x,int y,
     if ( fl==NULL )
 return(x);
 
-    GDrawSetLineWidth(pixmap,0);
     if ( !st->dobitext ) {
 	while ( len>0 ) {
 	    if ( pos>=fl->end )
