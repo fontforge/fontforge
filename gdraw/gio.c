@@ -30,7 +30,9 @@
 #include "gresource.h"
 #include "errno.h"
 
-#include <dlfcn.h>
+#ifndef NODYNAMIC
+# include <dlfcn.h>
+#endif
 
 struct stdfuncs _GIO_stdfuncs = {
     GIOguessMimeType, _GIO_decomposeURL, _GIO_PostSuccess, _GIO_PostInter,
@@ -79,6 +81,9 @@ static int AddProtocol(unichar_t *prefix,int len) {
 	protocols[plen].term = NULL;
 	protocols[plen].dothread = false;
     } else {
+#ifdef NODYNAMIC
+return( false );
+#else
 	strcpy(lib,"libgio");
 	cu_strncat(lib,prefix,len);
 	strcat(lib,".so");
@@ -95,6 +100,7 @@ return( false );
 	if ( init!=NULL )
 	    (init)(handle,&_GIO_stdfuncs,plen);
 	protocols[plen].dothread = true;
+#endif
     }
     protocols[plen].index = plen;
     protocols[plen].proto = u_copyn(prefix,len);

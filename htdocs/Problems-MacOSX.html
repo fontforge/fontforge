@@ -1,0 +1,169 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 24-Sep-2001 -->
+  <!-- AP: Last modified: 25-Sep-2001 -->
+  <TITLE>Special issues for PfaEdit on Mac OS/X</TITLE>
+</HEAD>
+<BODY>
+<H1 ALIGN=Center>
+  PfaEdit on Mac OS/X
+</H1>
+<H2>
+  Building PfaEdit
+</H2>
+<P>
+If you want to build PfaEdit on Mac OS/X you have to go through certain
+contortions. I hope eventually to ease some of these.
+<DL>
+  <DT>
+    (1)
+  <DD>
+    First of all you must install development tools on your Mac.<BR>
+    I was not able to figure out how this <EM>should</EM> be done, but I found
+    a fairly painful solution. I could not find any development tool package
+    for Mac OS/X, instead I had to download the Darwin system (120Mb of
+    <A HREF="http://www.publicsource.apple.com/projects/darwin/">binary installer
+    from Apple</A>), and create a Darwin system on a seperate partition.<BR>
+    Then I had to make symbolic links on the Mac OS/X volume to all files on
+    the Darwin volume in directories /usr/bin, /usr/lib, /usr/libexec.
+    <P Align=Center>
+    --- If <A HREF="mailto:gww@silcom.com">anyone can tell me</A> how this should
+    be done, please do so! ---
+  <DT>
+    (2)
+  <DD>
+    Secondly you must install X.<BR>
+    This appears to be a two step process itself
+    <OL>
+      <LI>
+	Load the base binary distribution from
+	<A HREF="ftp://ftp.xfree86.org/pub/XFree86/4.1.0/binaries/Darwin-ppc/">XFree86</A>,
+	with installation instructions
+	<A HREF="http://www.xfree86.org/4.1.0/Darwin.html">here</A> and
+	<A HREF="http://www.xfree86.org/4.1.0/Install.html">here</A>. Make sure you
+	include the programming package Xprog.tgz
+      <LI>
+	After that is installed, install the
+	<A HREF="http://mrcla.com/XonX/">XonX</A> binary,
+	<A HREF="http://prdownloads.sourceforge.net/xonx/XDarwin1.0a2.tgz">XDarwin1.0a2.tgz</A>
+    </OL>
+  <DT>
+    (3)
+  <DD>
+    Thirdly you may choose to install the image libraries
+    <UL>
+      <LI>
+	<A HREF="http://www.libpng.org/pub/png/libpng.html">libpng</A> (and required
+	helper <A HREF="http://www.gzip.org/zlib/">zlib</A>)
+      <LI>
+	<A HREF="http://www.libtiff.org/">libtiff</A>
+      <LI>
+	<A HREF="http://prtr-13.ucsc.edu/~badger/software/libungif/index.shtml">libungif</A>
+      <LI>
+	<A HREF="http://www.ijg.org/">libjpeg</A>
+    </UL>
+    <P>
+    I was able to build libpng (and libz) with no trouble, but for libungif the
+    configure script failed to produce a working Makefile, but I was able to
+    complete the build and install manually. I did not attempt the other two
+    libraries.
+  <DT>
+    (4)
+  <DD>
+    PfaEdit's own configure script had problems itself. Rather than try and fix
+    these I manually edited the {gdraw,pfaedit}/Makefiles it produced to include
+    the following defines:
+    <UL>
+      <LI>
+	-D_STATIC_LIBUNGIF=1<BR>
+	(only add this if you have built a libungif, of course)
+      <LI>
+	-D_STATIC_LIBPNG=1<BR>
+	(only add this if you have built a libpng, of course)
+      <LI>
+	-DNODYNAMIC=1
+      <LI>
+	-D_CursorsMustBe16x16=1
+    </UL>
+    <P>
+    And added the following libraries to the LIBS line in pfaedit/Makefile: -lpng
+    -lz -lungif<BR>
+    Again assuming you built these libraries
+</DL>
+<P>
+You may find it easier just to download my pre-built binary.
+<H2>
+  Installing the Mac OS/X <A NAME="binary">binary</A> distribution
+</H2>
+<P>
+Before installing PfaEdit you should ensure that you have X windows up and
+running. This is free software available from:
+<OL>
+  <LI>
+    Load the base binary distribution from
+    <A HREF="ftp://ftp.xfree86.org/pub/XFree86/4.1.0/binaries/Darwin-ppc/">XFree86</A>,
+    with installation instructions
+    <A HREF="http://www.xfree86.org/4.1.0/Darwin.html">here</A> and
+    <A HREF="http://www.xfree86.org/4.1.0/Install.html">here</A>.
+  <LI>
+    After that is installed, install the
+    <A HREF="http://mrcla.com/XonX/">XonX</A> binary,
+    <A HREF="http://prdownloads.sourceforge.net/xonx/XDarwin1.0a2.tgz">XDarwin1.0a2.tgz</A>
+</OL>
+<P>
+Then gunzip and untar my distribution
+<UL>
+  <LI>
+    <A HREF="pfaedit_MacOSX-010924.tgz">Download pfaedit Mac OS/X executable
+    </A>Version: 24-Sept-2001
+</UL>
+<PRE>$ sudo -s
+# mkdir /usr/share/pfaedit
+# cp *.ui /usr/share/pfaedit
+# cp pfaedit /usr/bin
+# cp pfaedit.1 /usr/share/man/man1
+# ^D
+</PRE>
+<H2>
+  Running PfaEdit on Mac OS/X
+</H2>
+<P>
+The X server (XDarwin) must be running before PfaEdit can start. XDarwin
+lives in the Applications folder and may be started by double clicking on
+it.
+<P>
+You may start PfaEdit either from an xterm or from a Terminal window. If
+you start it from a Terminal window you must first type:<BR>
+$ setenv DISPLAY :0
+<P>
+The default window manager (twm) doesn't work well with PfaEdit when X is
+running in rootless mode.
+<P>
+PfaEdit allows the window manager to position its windows for it, and twm
+does this by allowing the user to click anywhere on the screen to position
+the upper left corner of the new window. Unfortunately unless X has a window
+under the location where you want the upper left corner to be Aqua will put
+X into the background and steal the click from X.
+<P>
+<FONT COLOR="Red"><STRONG>You can only open a window if you position it so
+that it's upper left corner is on one of X's already existing
+windows.</STRONG></FONT>
+<H2>
+  Caveats for Mac OS/X
+</H2>
+<OL>
+  <LI>
+    PfaEdit does not conform to Apple's Human Interface Guidelines
+  <LI>
+    PfaEdit will not edit fonts that work on Mac OS/9. I do not know what font
+    format Apple uses on OS/X, if they use the same (or similar) formats as in
+    Mac OS/9 PfaEdit will not be able to edit native mac fonts.
+  <LI>
+    Mac OS/X is somewhat flakey<BR>
+    XonX is alpha software<BR>
+    PfaEdit has not been well tested here.
+</OL>
+<P>
+<P>
+</BODY></HTML>

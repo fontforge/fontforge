@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 24-Sep-2001 -->
+  <!-- AP: Last modified: 25-Sep-2001 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -16,8 +16,6 @@
 that lets you create your own postscript, truetype, opentype, cid-keyed and
 bitmap (bdf) fonts, or edit existing ones. Also lets you convert one format
 to another.
-<P ALIGN=Right>
-(my vacation cancelled due to terrorism)
 <P>
 Contents
 <UL>
@@ -38,6 +36,8 @@ Contents
 	<A HREF="#cidmaps">Helper files for editing CID keyed fonts</A>
       <LI>
 	<A HREF="index.html#suggested-fonts">Suggested fonts</A>
+      <LI>
+	<A HREF="#docs">Documentation</A>
       <LI>
 	<A HREF="sfds/index.html">A library sfd fonts</A>
     </UL>
@@ -76,7 +76,10 @@ know when you do</A>.
     Version: 5-Sept-2001
   <LI>
     <A HREF="http://packages.debian.org/unstable/x11/pfaedit.html">A debian package
-    is available at the debian site.</A><BR>
+    is available at the debian site.</A>
+  <LI>
+    <A HREF="Problems-MacOSX.html#binary">A Mac OS/X distribution</A> (with Caveats).
+    Version 24-Sept-2001<BR>
     &nbsp;
   <LI>
     If you want to do autotracing around character images you should also download
@@ -148,6 +151,9 @@ PfaEdit has been ported to the following systems (at some point in its life)
     FreeBsd
   <LI>
     NetBsd
+  <LI>
+    Mac OS/X (<A HREF="Problems-MacOSX.html">the configuration script doesn't
+    work too well on Mac OS/X you may need to tweak some things</A>)
 </UL>
 <P>
 If you are editing <A NAME="cidmaps">CID keyed fonts </A>you should pull
@@ -173,6 +179,9 @@ bitmap fonts that pfaedit uses
   <LI>
     <A HREF="http://www.cl.cam.ac.uk/~mgk25/ucs-fonts.html">X fixed</A>
 </UL>
+<P>
+<A NAME="docs">All</A> the documentation files in this directory bundled
+up into one <A HREF="pfaedit_htdocs-010924.tgz">tgz file</A> 24-Sept-2001.
 <BLOCKQUOTE>
   <BLOCKQUOTE>
     <A NAME="license">Copyright</A> &copy; 2000,2001 by George Williams
@@ -212,6 +221,12 @@ bitmap fonts that pfaedit uses
   <LI>
     24-Sept-2001
     <UL>
+      <LI>
+	<A HREF="Problems-MacOSX.html">Mac OS/X port </A>done (or at least a semi-working
+	version has been produced) 
+      <LI>
+	Localization didn't work if there was no preference file.
+	  <HR>
       <LI>
 	Can now read metafont pk files as bitmap fonts (Warning: No encoding on these
 	files, you've got to guess at the encoding before loading them).

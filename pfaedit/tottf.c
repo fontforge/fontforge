@@ -1032,14 +1032,6 @@ return( EOF );
 return( (ch1<<24)|(ch2<<16)|(ch3<<8)|ch4 );
 }
 
-static int32 getushort(FILE *ttf) {
-    int ch1 = getc(ttf);
-    int ch2 = getc(ttf);
-    if ( ch2==EOF )
-return( EOF );
-return( (ch1<<8)|ch2 );
-}
-
 static void dumpshort(FILE *file,int sval) {
     putc((sval>>8)&0xff,file);
     putc(sval&0xff,file);

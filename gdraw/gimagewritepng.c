@@ -27,7 +27,7 @@
 
 #ifdef _NO_LIBPNG
 static int a_file_must_define_something=0;	/* ANSI says so */
-#else
+#elif !defined(_STATIC_LIBPNG)	/* I don't know how to deal with dynamic libs on mac OS/X, hence this */
 #include <dlfcn.h>
 #include <png.h>
 
@@ -185,6 +185,128 @@ return(false);
     if ( info_ptr->trans!=NULL ) gfree(info_ptr->trans);
     if ( info_ptr->palette!=NULL ) gfree(info_ptr->palette);
     _png_destroy_write_struct(&png_ptr, &info_ptr);
+    gfree(rows);
+    fclose(fp);
+return( 1 );
+}
+#else
+#include <png.h>
+
+#define int32 _int32
+#define uint32 _uint32
+#define int16 _int16
+#define uint16 _uint16
+#define int8 _int8
+#define uint8 _uint8
+
+#include "gdraw.h"
+
+static void user_error_fn(png_structp png_ptr, png_const_charp error_msg) {
+    GDrawError( error_msg );
+    longjmp(png_ptr->jmpbuf,1);
+}
+
+static void user_warning_fn(png_structp png_ptr, png_const_charp warning_msg) {
+    fprintf(stderr,"%s\n", warning_msg);
+}
+   
+int GImageWritePng(GImage *gi, char *filename, int progressive) {
+    struct _GImage *base = gi->list_len==0?gi->u.image:gi->u.images[0];
+    FILE *fp;
+    png_structp png_ptr;
+    png_infop info_ptr;
+    png_byte **rows;
+    int i;
+
+   /* open the file */
+   fp = fopen(filename, "wb");
+   if (!fp)
+return(false);
+
+   png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING,
+      (void *)NULL, user_error_fn, user_warning_fn);
+
+   if (!png_ptr) {
+      fclose(fp);
+return(false);
+   }
+
+   info_ptr = png_create_info_struct(png_ptr);
+   if (!info_ptr) {
+      fclose(fp);
+      png_destroy_write_struct(&png_ptr,  (png_infopp)NULL);
+return(false);
+   }
+
+   if (setjmp(png_ptr->jmpbuf)) {
+      fclose(fp);
+      png_destroy_write_struct(&png_ptr,  (png_infopp)NULL);
+return(false);
+   }
+
+   png_init_io(png_ptr, fp);
+
+   info_ptr->width = base->width;
+   info_ptr->height = base->height;
+   info_ptr->bit_depth = 8;
+   info_ptr->valid = 0;
+   info_ptr->interlace_type = progressive;
+   if ( base->trans!=-1 ) {
+       info_ptr->num_trans = 1;
+       info_ptr->valid |= PNG_INFO_tRNS;
+   }
+   if ( base->image_type==it_index || base->image_type==it_bitmap ) {
+       info_ptr->color_type = PNG_COLOR_TYPE_PALETTE;
+       info_ptr->valid |= PNG_INFO_PLTE;
+       info_ptr->num_palette = base->clut==NULL?2:base->clut->clut_len;
+       info_ptr->palette = (png_color *) galloc(info_ptr->num_palette*sizeof(png_color));
+       if ( base->clut==NULL ) {
+	    info_ptr->palette[0].red = info_ptr->palette[0].green = info_ptr->palette[0].blue = 0;
+	    info_ptr->palette[1].red = info_ptr->palette[1].green = info_ptr->palette[1].blue = 0xff;
+       } else {
+	   for ( i=0; i<info_ptr->num_palette; ++i ) {
+		long col = base->clut->clut[i];
+		info_ptr->palette[i].red = COLOR_RED(col);
+		info_ptr->palette[i].green = COLOR_GREEN(col);
+		info_ptr->palette[i].blue = COLOR_BLUE(col);
+	   }
+       }
+       if ( info_ptr->num_palette<=2 )
+	   info_ptr->bit_depth=1;
+       else if ( info_ptr->num_palette<=4 )
+	   info_ptr->bit_depth=2;
+       else if ( info_ptr->num_palette<=16 )
+	   info_ptr->bit_depth=4;
+       if ( info_ptr->num_palette<=16 )
+	   png_set_packing(png_ptr);
+       if ( base->trans!=-1 ) {
+	   info_ptr->trans = galloc(1);
+	   info_ptr->trans[0] = base->trans;
+       }
+   } else {
+       info_ptr->color_type = PNG_COLOR_TYPE_RGB;
+       if ( base->trans!=-1 ) {
+	   info_ptr->trans_values.red = COLOR_RED(base->trans);
+	   info_ptr->trans_values.green = COLOR_GREEN(base->trans);
+	   info_ptr->trans_values.blue = COLOR_BLUE(base->trans);
+       }
+   }
+   png_write_info(png_ptr, info_ptr);
+
+    if (info_ptr->color_type == PNG_COLOR_TYPE_RGB)
+	png_set_filler(png_ptr, '\0', PNG_FILLER_BEFORE);
+
+    rows = galloc(base->height*sizeof(png_byte *));
+    for ( i=0; i<base->height; ++i )
+	rows[i] = (png_byte *) (base->data + i*base->bytes_per_line);
+
+    png_write_image(png_ptr,rows);
+
+    png_write_end(png_ptr, info_ptr);
+
+    if ( info_ptr->trans!=NULL ) gfree(info_ptr->trans);
+    if ( info_ptr->palette!=NULL ) gfree(info_ptr->palette);
+    png_destroy_write_struct(&png_ptr, &info_ptr);
     gfree(rows);
     fclose(fp);
 return( 1 );

@@ -701,8 +701,8 @@ return( ct-ct_user );
 return( CopyFromParent );
     if ( StdCursor[ct]==0 ) {
 	XColor fb[2];
-	fb[0].red = COLOR_RED(gdisp->def_foreground); fb[0].green = COLOR_GREEN(gdisp->def_foreground); fb[0].blue = COLOR_BLUE(gdisp->def_foreground);
-	fb[1].red = COLOR_RED(gdisp->def_background); fb[1].green = COLOR_GREEN(gdisp->def_background); fb[1].blue = COLOR_BLUE(gdisp->def_background);
+	fb[0].red = COLOR_RED(gdisp->def_foreground)*0x101; fb[0].green = COLOR_GREEN(gdisp->def_foreground)*0x101; fb[0].blue = COLOR_BLUE(gdisp->def_foreground)*0x101;
+	fb[1].red = COLOR_RED(gdisp->def_background)*0x101; fb[1].green = COLOR_GREEN(gdisp->def_background)*0x101; fb[1].blue = COLOR_BLUE(gdisp->def_background)*0x101;
 	if ( ct==ct_invisible ) {
 	    static short zeros[16]={0};
 	    Pixmap temp = XCreatePixmapFromBitmapData(display,gdisp->root,
@@ -1077,10 +1077,11 @@ static GCursor GXDrawCreateCursor(GWindow src,GWindow mask,Color fg,Color bg,
     XColor fgc, bgc;
     /* The XServer shipping with redhat 7.1 seems to suffer a protocol change */
     /*  with the red and blue members of XColor structure reversed */
+    /* The XServer runing on Mac OS/X can only handle 16x16 cursors */
 
     fgc.red = COLOR_RED(fg)*0x101; fgc.green = COLOR_GREEN(fg)*0x101; fgc.blue = COLOR_BLUE(fg)*0x101;
-    fgc.pixel = _GXDraw_GetScreenPixel(gdisp,fg); fgc.flags = -1;
     bgc.red = COLOR_RED(bg)*0x101; bgc.green = COLOR_GREEN(bg)*0x101; bgc.blue = COLOR_BLUE(bg)*0x101;
+    fgc.pixel = _GXDraw_GetScreenPixel(gdisp,fg); fgc.flags = -1;
     bgc.pixel = _GXDraw_GetScreenPixel(gdisp,bg); bgc.flags = -1;
 return( ct_user + XCreatePixmapCursor(display,((GXWindow) src)->w, ((GXWindow) mask)->w,
 	&fgc,&bgc, x,y));

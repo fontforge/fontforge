@@ -27,7 +27,7 @@
 
 #ifdef _NO_LIBTIFF
 static int a_file_must_define_something=0;	/* ANSI says so */
-#else
+#elif !defined(_STATIC_LIBTIFF)	/* I don't know how to deal with dynamic libs on mac OS/X, hence this */
 #include <dlfcn.h>
 #include <tiffio.h>
 
@@ -62,7 +62,7 @@ return( 1 );
     GDrawIError("%s", dlerror());
 return( 0 );
 }
-    
+
 GImage *GImageReadTiff(char *filename) {
     TIFF* tif;
     uint32 w, h, i,j;
@@ -102,6 +102,55 @@ return( ret );
 	gfree(raster);
     }
     _TIFFClose(tif);
+return( ret );
+}
+#else
+#include <tiffio.h>
+
+#define int32 _int32
+#define uint32 _uint32
+#define int16 _int16
+#define uint16 _uint16
+#define int8 _int8
+#define uint8 _uint8
+
+#include "gdraw.h"
+
+GImage *GImageReadTiff(char *filename) {
+    TIFF* tif;
+    uint32 w, h, i,j;
+    uint32 *ipt, *fpt;
+    size_t npixels;
+    uint32* raster;
+    GImage *ret=NULL;
+    struct _GImage *base;
+
+    tif = TIFFOpen(filename, "r");
+
+    if (tif==NULL )
+return( ret );
+
+    TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &w);
+    TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &h);
+    npixels = w * h;
+    raster = (uint32*) galloc(npixels * sizeof (uint32));
+    if (raster != NULL) {
+	if (TIFFReadRGBAImage(tif, w, h, raster, 0)) {
+	    ret = GImageCreate(it_true,w,h);
+	    if ( ret!=NULL ) {
+		base = ret->u.image;
+		for ( i=0; i<h; ++i ) {
+		    ipt = (uint32 *) (base->data+i*base->bytes_per_line);
+		    fpt = raster+(h-1-i)*w;
+		    for ( j=0; j<w; ++j )
+			*ipt++ = COLOR_CREATE(
+				TIFFGetR(fpt[j]), TIFFGetG(fpt[j]), TIFFGetB(fpt[j]));
+		}
+	    }
+	} 
+	gfree(raster);
+    }
+    TIFFClose(tif);
 return( ret );
 }
 #endif

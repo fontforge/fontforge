@@ -192,6 +192,7 @@ void LoadPrefs(void) {
 
     PfaEditSetFallback();
     LoadPfaEditEncodings();
+    CheckLang();
 
     if ( prefs==NULL )
 return;
@@ -237,7 +238,6 @@ return;
 	}
     }
     fclose(p);
-    CheckLang();
 }
 
 void SavePrefs(void) {

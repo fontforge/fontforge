@@ -27,7 +27,7 @@
 
 #ifdef _NO_LIBJPEG
 static int a_file_must_define_something=0;	/* ANSI says so */
-#else
+#elif !defined(_STATIC_LIBJPEG)	/* I don't know how to deal with dynamic libs on mac OS/X, hence this */
 #include <dlfcn.h>
 
 #include <sys/types.h>
@@ -175,6 +175,114 @@ return( NULL );
 
   (void) _jpeg_finish_decompress(&cinfo);
   _jpeg_destroy_decompress(&cinfo);
+  gfree(rows[0]);
+
+return( ret );
+}
+#else
+#include <sys/types.h>
+#include <stdio.h>
+#include <jpeglib.h>
+#include <jerror.h>
+
+#include <setjmp.h>
+
+#include "gdraw.h"
+
+/******************************************************************************/
+
+struct jpegState {
+    struct jpeg_decompress_struct *cinfo;
+    int state;
+    struct _GImage *base;
+    JSAMPLE *buffer;
+    int scanpos;
+};
+
+struct my_error_mgr {
+  struct jpeg_error_mgr pub;	/* "public" fields */
+
+  jmp_buf setjmp_buffer;	/* for return to caller */
+  int padding[8];		/* On my solaris box jmp_buf is the wrong size */
+};
+
+typedef struct my_error_mgr * my_error_ptr;
+    
+METHODDEF(void)
+my_error_exit (j_common_ptr cinfo)
+{
+  /* cinfo->err really points to a my_error_mgr struct, so coerce pointer */
+  my_error_ptr myerr = (my_error_ptr) cinfo->err;
+
+  /* Always display the message. */
+  /* We could postpone this until after returning, if we chose. */
+  (*cinfo->err->output_message) (cinfo);
+
+  /* Return control to the setjmp point */
+  longjmp(myerr->setjmp_buffer, 1);
+}
+
+/* jpeg routines use 24 bit pixels, xvt routines pad out to 32 */
+static void transferBufferToImage(struct jpegState *js,int ypos) {
+    struct jpeg_decompress_struct *cinfo = js->cinfo;
+    JSAMPLE *pt, *end;
+    Color *ppt;
+
+    ppt = (Color *) (js->base->data+ypos*js->base->bytes_per_line);
+    for ( pt = js->buffer, end = pt+3*cinfo->image_width; pt<end; ) {
+	register int r,g,b;
+	r = *(pt++); g= *(pt++); b= *(pt++);
+	*(ppt++) = COLOR_CREATE(r,g,b);
+    }
+}
+
+GImage *GImageReadJpeg(char *filename) {
+    GImage *ret;
+    struct _GImage *base;
+    struct jpeg_decompress_struct cinfo;
+    struct my_error_mgr jerr;
+    FILE * infile;		/* source file */
+    JSAMPLE *rows[1];
+    struct jpegState js;
+    int ypos;
+
+  if ((infile = fopen(filename, "rb")) == NULL) {
+    GDrawError( "can't open %s", filename);
+return( NULL );
+  }
+
+  cinfo.err = jpeg_std_error(&jerr.pub);
+  jerr.pub.error_exit = my_error_exit;
+  if (setjmp(jerr.setjmp_buffer)) {
+    jpeg_destroy_decompress(&cinfo);
+    fclose(infile);
+return( NULL );
+  }
+  
+  jpeg_create_decompress(&cinfo,JPEG_LIB_VERSION,(size_t) sizeof(struct jpeg_decompress_struct));
+  jpeg_stdio_src(&cinfo, infile);
+  (void) jpeg_read_header(&cinfo, TRUE);
+
+    if ( cinfo.jpeg_color_space == JCS_GRAYSCALE )
+	cinfo.out_color_space = JCS_RGB;
+    ret = GImageCreate(it_true,cinfo.image_width, cinfo.image_height);
+    if ( ret==NULL ) {
+	jpeg_destroy_decompress(&cinfo);
+return( NULL );
+    }
+    base = ret->u.image;
+
+    (void) jpeg_start_decompress(&cinfo);
+    rows[0] = galloc(3*cinfo.image_width);
+    js.cinfo = &cinfo; js.base = base; js.buffer = rows[0];
+    while (cinfo.output_scanline < cinfo.output_height) {
+	ypos = cinfo.output_scanline;
+	(void) jpeg_read_scanlines(&cinfo, rows, 1);
+	transferBufferToImage(&js,ypos);
+    }
+
+  (void) jpeg_finish_decompress(&cinfo);
+  jpeg_destroy_decompress(&cinfo);
   gfree(rows[0]);
 
 return( ret );
