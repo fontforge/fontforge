@@ -237,6 +237,8 @@ return( DEFAULT_SCRIPT );
     else if ( sf->mm!=NULL ) sf=sf->mm->normal;
     for ( i=0; i<2; ++i ) {
 	for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
+	    if ( sf->script_lang==NULL || pst->script_lang_index>=sf->sli_cnt )
+	continue;
 	    if ( pst->script_lang_index!=SLI_UNKNOWN &&
 		    pst->type!=pst_lcaret &&
 		    pst->script_lang_index!=SLI_NESTED &&
