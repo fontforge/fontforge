@@ -3643,14 +3643,17 @@ static void dumppost(struct alltabs *at, SplineFont *sf, enum fontformat format)
 		if ( shouldbe==0 )
 		    putshort(at->post,0);		/* glyph 0 is named .notdef */
 		else if ( shouldbe==1 )
-		    putshort(at->post,1);		/* glyphs 1&2 are tab and cr */
+		    putshort(at->post,1);		/* glyphs 1&2 are .null and cr */
 		else if ( shouldbe==2 )
 		    putshort(at->post,2);		/* or something */
 		else
 		    putshort(at->post,0);
 		++shouldbe;
 	    }
-	    if ( strcmp(sf->chars[i]->name,".notdef")==0 )
+	    if (( sf->chars[i]->ttf_glyph==1 || sf->chars[i]->ttf_glyph==2 ) &&
+		    sf->chars[i]->ttf_glyph<shouldbe )
+	continue;
+	    else if ( strcmp(sf->chars[i]->name,".notdef")==0 )
 		putshort(at->post,0);
 	    else {
 		for ( j=0; j<258; ++j )

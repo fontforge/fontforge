@@ -4119,6 +4119,19 @@ static void UseGivenEncoding(SplineFont *sf,struct ttfinfo *info) {
     RefChar *rf;
     int newcharcnt;
 
+    if ( oldchars[1]!=NULL && oldchars[1]->enc==0 ) {
+	for ( i=0; i<oldcnt; ++i )
+	    if ( oldchars[i]!=NULL && oldchars[i]->enc==1 )
+	break;
+	if ( i==oldcnt ) {
+	    for ( dup=info->dups; dup!=NULL && !istwobyte; dup=dup->prev )
+		if ( dup->enc==1 )
+	    break;
+	    if ( dup==NULL )
+		info->chars[1]->enc = 1;
+	}
+    }
+
     if ( info->barecff ) {
 	max = 256;
 	if ( oldcnt>1 && oldchars[0]!=NULL && oldchars[1]!=NULL &&
