@@ -108,6 +108,17 @@ static int NumberHints(SplineChar *sc) {
 return( i );
 }
 
+void RefCharsFreeRef(RefChar *ref) {
+    RefChar *rnext;
+
+    while ( ref!=NULL ) {
+	rnext = ref->next;
+	/* don't free the splines */
+	chunkfree(ref,sizeof(RefChar));
+	ref = rnext;
+    }
+}
+
 /* ************************************************************************** */
 /* ********************** Type1 PostScript CharStrings ********************** */
 /* ************************************************************************** */
@@ -980,11 +991,11 @@ static RefChar *IsRefable(RefChar *ref, int isps, real transform[6], RefChar *so
 	sub = chunkalloc(sizeof(RefChar));
 	*sub = *ref;
 	sub->next = sofar;
-	sub->splines = NULL;
+	/*sub->splines = NULL;*/
 	memcpy(sub->transform,trans,sizeof(trans));
 return( sub );
     } else if ( /* isps &&*/ ( ref->sc->refs==NULL || ref->sc->splines!=NULL) ) {
-	RefCharsFree(sofar);
+	RefCharsFreeRef(sofar);
 return( NULL );
     }
     for ( sub=ref->sc->refs; sub!=NULL; sub=sub->next ) {
@@ -1046,7 +1057,7 @@ return( NULL );
 	}
     }
     if ( ref!=NULL ) {
-	RefCharsFree(ret);
+	RefCharsFreeRef(ret);
 return( NULL );
     }
 return( ret );
@@ -1067,7 +1078,7 @@ static int TrySubrRefs(GrowBuf *gb, struct pschars *subrs, SplineChar *sc,
 		(( r->sc->hconflicts || r->sc->vconflicts || r->sc->anyflexes ) &&
 			(r->transform[4]!=0 || r->transform[5]!=0 ||
 				sb.minx!=rb.minx))) {
-	    RefCharsFree(refs);
+	    RefCharsFreeRef(refs);
 return( false );
 	}
     }
@@ -1113,7 +1124,7 @@ return( false );
 	current.x = r->transform[4] + bp[1].x; current.y = r->transform[5]+bp[1].y;
     }
 
-    RefCharsFree(refs);
+    RefCharsFreeRef(refs);
 return( true );
 }
 
@@ -1190,7 +1201,7 @@ return( false );
     *(gb->pt)++ = 12;
     *(gb->pt)++ = 6;			/* seac 12,6 */
 
-    RefCharsFree(refs);
+    RefCharsFreeRef(refs);
 return( true );
 }
 
@@ -2245,7 +2256,7 @@ return( false );
 	ret = true;
     } else
 	ret = false;
-    RefCharsFree(refs);
+    RefCharsFreeRef(refs);
 return( ret );
 }
 

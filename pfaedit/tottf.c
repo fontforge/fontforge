@@ -3053,7 +3053,7 @@ static void dumpcompositinstrs(SplineChar *sc, struct glyphinfo *gi,RefChar *ref
 static void dumpcomposit(SplineChar *sc, RefChar *refs, struct glyphinfo *gi) {
     struct glyphhead gh;
     DBounds bb;
-    int i, ptcnt, ctcnt, contourtemp=0, pttemp=0, flags;
+    int i, ptcnt, ctcnt, flags;
     SplineSet *ss;
     RefChar *ref;
 
@@ -3072,13 +3072,19 @@ static void dumpcomposit(SplineChar *sc, RefChar *refs, struct glyphinfo *gi) {
     for ( ref=refs; ref!=NULL; ref=ref->next, ++i ) {
 	flags = (1<<1)|(1<<2)|(1<<12);	/* Args are always values for me */
 					/* Always round args to grid */
-	    /* There is some very strange stuff (half-)documented on the apple*/
+	    /* There is some very strange stuff wrongly-documented on the apple*/
 	    /*  site about how these should be interpretted when there are */
 	    /*  scale factors, or rotations */
-	    /* It isn't well enough described to be comprehensible */
+	    /* That description does not match the behavior of their rasterizer*/
+	    /*  I've reverse engineered something else (see parsettf.c) */
 	    /*  http://fonts.apple.com/TTRefMan/RM06/Chap6glyf.html */
 	    /* Adobe says that setting bit 12 means that this will not happen */
-	    /*  Apple doesn't mention bit 12 though... */
+	    /*  Apple doesn't mention bit 12 though...(but they do support it) */
+/* if we want a mac style scaled composite then
+	flags = (1<<1)|(1<<2)|(1<<11);
+    and if we want an ambiguous composite...
+	flags = (1<<1)|(1<<2);
+*/
 	if ( ref->next!=NULL )
 	    flags |= (1<<5);		/* More components */
 #if 0
@@ -3114,10 +3120,9 @@ static void dumpcomposit(SplineChar *sc, RefChar *refs, struct glyphinfo *gi) {
 	} else if ( flags&(1<<3) ) {
 	    put2d14(gi->glyphs,ref->transform[0]);
 	}
-	contourtemp = pttemp = 0;
 	for ( ss=ref->splines; ss!=NULL ; ss=ss->next ) {
-	    ++contourtemp;
-	    pttemp += SSPointCnt(ss);
+	    ++ctcnt;
+	    ptcnt += SSPointCnt(ss);
 	}
     }
 
@@ -3133,13 +3138,13 @@ static void dumpcomposit(SplineChar *sc, RefChar *refs, struct glyphinfo *gi) {
 	/* PfaEdit will do a transitive closeur so that we end up with */
 	/*  a maximum depth of 1 (according to apple) or 2 (according to Opentype) */
     gi->maxp->maxcomponentdepth = /* Apple docs say: 1, Open type docs say: */ 2;
-    if ( gi->maxp->maxCompositPts<pttemp ) gi->maxp->maxCompositPts=pttemp;
-    if ( gi->maxp->maxCompositCtrs<contourtemp ) gi->maxp->maxCompositCtrs=contourtemp;
+    if ( gi->maxp->maxCompositPts<ptcnt ) gi->maxp->maxCompositPts=ptcnt;
+    if ( gi->maxp->maxCompositCtrs<ctcnt ) gi->maxp->maxCompositCtrs=ctcnt;
 
     ttfdumpmetrics(sc,gi,&bb);
     if ( ftell(gi->glyphs)&1 )		/* Pad the file so that the next glyph */
 	putc('\0',gi->glyphs);		/* on a word boundary, can only happen if odd number of instrs */
-    RefCharsFree(refs);
+    RefCharsFreeRef(refs);
 }
 
 static void dumpglyph(SplineChar *sc, struct glyphinfo *gi) {
