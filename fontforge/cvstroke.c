@@ -899,7 +899,7 @@ void FreeHandStrokeDlg(StrokeInfo *si) {
 #ifdef FONTFORGE_CONFIG_TYPE3
 
 #define LY_Width	300
-#define LY_Height	310
+#define LY_Height	336
 
 #define CID_FillColor		2001
 #define CID_FillCInherit	2002
@@ -914,6 +914,9 @@ void FreeHandStrokeDlg(StrokeInfo *si) {
 #define CID_InheritCap		2011
 #define CID_InheritJoin		2012
 #define CID_Fill		2013
+#define CID_Dashes		2014
+#define CID_DashesTxt		2015
+#define CID_DashesInherit	2016
 
 struct layer_dlg {
     int done;
@@ -949,6 +952,7 @@ static int Layer_OK(GGadget *g, GEvent *e) {
 	int err=false;
 	const unichar_t *ret;
 	unichar_t *end, *end2;
+	int i;
 
 	LayerDefault(&temp);
 	temp.dofill = GGadgetIsChecked(GWidgetGetControl(gw,CID_Fill));
@@ -991,6 +995,31 @@ return( true );
 	    gwwv_post_error(_("Bad Transformation Matrix"),_("Bad Transformation Matrix"));
 #endif
 return( true );
+	}
+	if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_DashesInherit)) ) {
+	    temp.stroke_pen.dashes[0] = 0; temp.stroke_pen.dashes[1] = DASH_INHERITED;
+	} else {
+	    ret = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Dashes));
+	    while ( *ret==' ' || *ret=='[' ) ++ret;
+	    for ( i=0; ; ++i ) {
+		long val = u_strtol(ret,&end,10);
+		if ( *end=='\0' )
+	    break;
+		if ( val<0 || val>255 ) {
+		    GWidgetErrorR(_STR_BadDash,_STR_OutOfRange);
+return( true );
+		} else if ( *end!=' ' ) {
+		    GWidgetErrorR(_STR_BadDash,_STR_BadNumber);
+return( true );
+		} else if ( i>=DASH_MAX ) {
+		    GWidgetErrorR(_STR_BadDash,_STR_TooManyDashes, DASH_MAX);
+return( true );
+		}
+		temp.stroke_pen.dashes[i] = val;
+		ret = end;
+		while ( *ret==' ' ) ++ret;
+	    }
+	    if ( i<DASH_MAX ) temp.stroke_pen.dashes[i] = 0;
 	}
 	temp.stroke_pen.linecap =
 		GGadgetIsChecked(GWidgetGetControl(gw,CID_ButtCap))?lc_butt:
@@ -1048,12 +1077,15 @@ int LayerDialog(Layer *layer) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[38];
-    GTextInfo label[38];
+    GGadgetCreateData gcd[41];
+    GTextInfo label[41];
     struct layer_dlg ld;
     int yoff=0;
     int gcdoff, fill_gcd;
-    char widthbuf[20], fcol[12], scol[12], fopac[30], sopac[30], transbuf[150];
+    char widthbuf[20], fcol[12], scol[12], fopac[30], sopac[30], transbuf[150],
+	    dashbuf[60];
+    int i;
+    char *pt;
 
     memset(&ld,0,sizeof(ld));
     ld.layer = layer;
@@ -1089,8 +1121,8 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff++].creator = GCheckBoxCreate;
 
     fill_gcd = gcdoff;
-    gcd[gcdoff].gd.pos.x = 1; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+6;
-    gcd[gcdoff].gd.pos.width = LY_Width-2; gcd[gcdoff].gd.pos.height = 65;
+    gcd[gcdoff].gd.pos.x = 2; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+6;
+    gcd[gcdoff].gd.pos.width = LY_Width-4; gcd[gcdoff].gd.pos.height = 65;
     gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
     gcd[gcdoff++].creator = GGroupCreate;
 
@@ -1165,8 +1197,8 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.cid = CID_Stroke;
     gcd[gcdoff++].creator = GCheckBoxCreate;
 
-    gcd[gcdoff].gd.pos.x = 1; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+6;
-    gcd[gcdoff].gd.pos.width = LY_Width-2; gcd[gcdoff].gd.pos.height = 180;
+    gcd[gcdoff].gd.pos.x = 2; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+6;
+    gcd[gcdoff].gd.pos.width = LY_Width-4; gcd[gcdoff].gd.pos.height = 206;
     gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
     gcd[gcdoff++].creator = GGroupCreate;
 
@@ -1264,6 +1296,48 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].data = (void *) CID_Width;
     gcd[gcdoff].gd.cid = CID_StrokeWInherit;
     gcd[gcdoff].gd.handle_controlevent = Layer_Inherit;
+    gcd[gcdoff++].creator = GCheckBoxCreate;
+
+    label[gcdoff].text = (unichar_t *) _STR_Dashes;
+    label[gcdoff].text_in_resource = true;
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.pos.x = 5; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+26;
+    gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
+    gcd[gcdoff].gd.cid = CID_DashesTxt;
+    gcd[gcdoff].gd.popup_msg = GStringGetResource(_STR_DashesPopup,NULL);
+    gcd[gcdoff++].creator = GLabelCreate;
+
+    pt = dashbuf; dashbuf[0] = '\0';
+    for ( i=0; i<DASH_MAX && layer->stroke_pen.dashes[i]!=0; ++i ) {
+	sprintf( pt, "%d ", layer->stroke_pen.dashes[i]);
+	pt += strlen(pt);
+    }
+    if ( pt>dashbuf ) pt[-1] = '\0';
+    label[gcdoff].text = (unichar_t *) dashbuf;
+    label[gcdoff].text_is_1byte = true;
+    if ( layer->stroke_pen.dashes[0]==0 && layer->stroke_pen.dashes[1]==DASH_INHERITED ) 
+	gcd[gcdoff].gd.flags = gg_visible;
+    else {
+	gcd[gcdoff].gd.label = &label[gcdoff];
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
+    }
+    gcd[gcdoff].gd.pos.x = 80; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y-3;
+    gcd[gcdoff].gd.pos.width = 80;
+    gcd[gcdoff].gd.cid = CID_Dashes;
+    gcd[gcdoff++].creator = GTextFieldCreate;
+
+    label[gcdoff].text = (unichar_t *) _STR_Inherited;
+    label[gcdoff].text_in_resource = true;
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.pos.x = 165; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+2;
+    if ( layer->stroke_pen.dashes[0]==0 && layer->stroke_pen.dashes[1]==DASH_INHERITED ) 
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | gg_cb_on;
+    else
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
+    gcd[gcdoff].data = (void *) CID_Dashes;
+    gcd[gcdoff].gd.cid = CID_DashesInherit;
+    gcd[gcdoff].gd.handle_controlevent = Layer_Inherit;
+    gcd[gcdoff].gd.popup_msg = GStringGetResource(_STR_DashesPopup,NULL);
     gcd[gcdoff++].creator = GCheckBoxCreate;
 
     label[gcdoff].text = (unichar_t *) _STR_TransformPen;

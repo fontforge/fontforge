@@ -4125,13 +4125,14 @@ void LayerDefault(Layer *layer) {
 #ifdef FONTFORGE_CONFIG_TYPE3
     layer->fill_brush.opacity = layer->stroke_pen.brush.opacity = 1.0;
     layer->fill_brush.col = layer->stroke_pen.brush.col = COLOR_INHERITED;
-    layer->stroke_pen.width = WIDTH_INHERITED;
-    layer->stroke_pen.linecap = lc_inherited;
-    layer->stroke_pen.linejoin = lj_inherited;
+    layer->stroke_pen.width = 10;
+    layer->stroke_pen.linecap = lc_round;
+    layer->stroke_pen.linejoin = lj_round;
     layer->dofill = true;
     layer->fillfirst = true;
     layer->stroke_pen.trans[0] = layer->stroke_pen.trans[3] = 1.0;
     layer->stroke_pen.trans[1] = layer->stroke_pen.trans[2] = 0.0;
+    /* Dashes default to an unbroken line */
 #endif
 }
 

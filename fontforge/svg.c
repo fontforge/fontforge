@@ -224,6 +224,8 @@ static void svg_dumpstroke(FILE *file, struct pen *cpen, struct pen *fallback) {
 	if ( pen.width == WIDTH_INHERITED ) pen.width = fallback->width;
 	if ( pen.linecap == lc_inherited ) pen.linecap = fallback->linecap;
 	if ( pen.linejoin == lj_inherited ) pen.linejoin = fallback->linejoin;
+	if ( pen.dashes[0]==0 && pen.dashes[1]==DASH_INHERITED )
+	    memcpy(pen.dashes,fallback->dashes,sizeof(pen.dashes));
     }
 
     if ( pen.brush.col!=COLOR_INHERITED )
@@ -247,6 +249,16 @@ static void svg_dumpstroke(FILE *file, struct pen *cpen, struct pen *fallback) {
     if ( pen.trans[0]!=1.0 || pen.trans[3]!=1.0 || pen.trans[1]!=0 || pen.trans[2]!=0 )
 	fprintf( file, "transform=\"matrix(%g, %g, %g, %g, 0, 0)\" ",
 		pen.trans[0], pen.trans[1], pen.trans[2], pen.trans[3] );
+    if ( pen.dashes[0]==0 && pen.dashes[1]==DASH_INHERITED ) {
+	fprintf( file, "stroke-dasharray=\"inherit\" " );
+    } else if ( pen.dashes[0]!=0 ) {
+	int i;
+	fprintf( file, "stroke-dasharray=\"" );
+	for ( i=0; i<DASH_MAX && pen.dashes[i]!=0; ++i )
+	    fprintf( file, "%d ", pen.dashes[i]);
+	fprintf( file,"\" ");
+    } else
+	/* fprintf( file, "stroke-dasharray=\"none\" " )*/;	/* That's the default, don't need to say it */
 }
 
 static void svg_dumpfill(FILE *file, struct brush *cbrush, struct brush *fallback,
@@ -1529,6 +1541,7 @@ struct svg_state {
     enum linecap lc;
     enum linejoin lj;
     real transform[6];
+    DashType dashes[DASH_MAX];
 };
 
 static void SVGFigureTransform(struct svg_state *st,char *name) {
@@ -1783,7 +1796,7 @@ return( NULL );
     }
     name = _xmlGetProp(svg,(xmlChar *) "fill-opacity");
     if ( name!=NULL ) {
-	st.strokeopacity = strtod((char *)name,NULL);
+	st.fillopacity = strtod((char *)name,NULL);
 	_xmlFree(name);
     }
     name = _xmlGetProp(svg,(xmlChar *) "stroke");
@@ -1810,9 +1823,27 @@ return( NULL );
     }
     name = _xmlGetProp(svg,(xmlChar *) "stroke-linejoin");
     if ( name!=NULL ) {
-	st.lc = _xmlStrcmp(name,(xmlChar *) "miter") ? lj_miter :
+	st.lj = _xmlStrcmp(name,(xmlChar *) "miter") ? lj_miter :
 		     _xmlStrcmp(name,(xmlChar *) "round") ? lj_round :
 		     lj_bevel;
+	_xmlFree(name);
+    }
+    name = _xmlGetProp(svg,(xmlChar *) "stroke-dasharray");
+    if ( name!=NULL ) {
+	if ( _xmlStrcmp(name,(xmlChar *) "inherit") ) {
+	    st.dashes[0] = 0; st.dashes[1] = DASH_INHERITED;
+	} else if ( _xmlStrcmp(name,(xmlChar *) "none") ) {
+	    st.dashes[0] = 0; st.dashes[1] = 0;
+	} else {
+	    int i;
+	    xmlChar *pt, *end;
+	    pt = name;
+	    for ( i=0; i<DASH_MAX && *pt!='\0'; ++i ) {
+		st.dashes[i] = strtol((char *) pt,(char **) &end,10);
+		pt = end;
+	    }
+	    if ( i<DASH_MAX ) st.dashes[i] = 0;
+	}
 	_xmlFree(name);
     }
     name = _xmlGetProp(svg,(xmlChar *) "transform");
