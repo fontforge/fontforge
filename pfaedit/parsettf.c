@@ -3961,6 +3961,12 @@ return;
 		pos->next = info->chars[glyphs[i]]->possub;
 		info->chars[glyphs[i]]->possub = pos;
 		pos->u.subs.variant = copy(info->chars[which]->name);
+		if ( lookup->script!=UNUSED_SCRIPT && lookup->script!=MULTIPLE_SCRIPTS &&
+			info->chars[glyphs[i]]->script==0 )
+		    info->chars[glyphs[i]]->script = lookup->script;
+		if ( lookup->script!=UNUSED_SCRIPT && lookup->script!=MULTIPLE_SCRIPTS &&
+			info->chars[which]->script==0 )
+		    info->chars[which]->script = lookup->script;
 	    }
 	}
     }
@@ -3993,7 +3999,7 @@ return;
     max = 20;
     glyph2s = galloc(max*sizeof(uint16));
     for ( i=0; glyphs[i]!=0xffff; ++i ) {
-	PST *pos;
+	PST *sub;
 	fseek(ttf,stoffset+offsets[i],SEEK_SET);
 	cnt = getushort(ttf);
 	if ( cnt>max ) {
@@ -4021,17 +4027,23 @@ return;
 	    for ( j=0; j<cnt; ++j )
 		info->inuse[glyph2s[j]] = 1;
 	} else if ( info->chars[glyphs[i]]!=NULL && !bad ) {
-	    pos = chunkalloc(sizeof(PST));
-	    pos->type = lu_type==2?pst_multiple:pst_alternate;
-	    pos->tag = lookup->tag;
-	    pos->flags = lookup->flags;
-	    pos->next = info->chars[glyphs[i]]->possub;
-	    info->chars[glyphs[i]]->possub = pos;
-	    pt = pos->u.subs.variant = galloc(len+1);
+	    if ( lookup->script!=UNUSED_SCRIPT && lookup->script!=MULTIPLE_SCRIPTS &&
+		    info->chars[glyphs[i]]->script==0 )
+		info->chars[glyphs[i]]->script = lookup->script;
+	    sub = chunkalloc(sizeof(PST));
+	    sub->type = lu_type==2?pst_multiple:pst_alternate;
+	    sub->tag = lookup->tag;
+	    sub->flags = lookup->flags;
+	    sub->next = info->chars[glyphs[i]]->possub;
+	    info->chars[glyphs[i]]->possub = sub;
+	    pt = sub->u.subs.variant = galloc(len+1);
 	    *pt = '\0';
 	    for ( j=0; j<cnt; ++j ) {
 		strcat(pt,info->chars[glyph2s[j]]->name);
 		strcat(pt," ");
+		if ( lookup->script!=UNUSED_SCRIPT && lookup->script!=MULTIPLE_SCRIPTS &&
+			info->chars[glyph2s[j]]->script==0 )
+		    info->chars[glyph2s[j]]->script = lookup->script;
 	    }
 	}
     }
@@ -4104,6 +4116,9 @@ return;
 		    strcpy(pt,info->chars[lig_glyphs[k]]->name);
 		    pt += strlen(pt);
 		    *pt++ = ' ';
+		    if ( lookup->script!=UNUSED_SCRIPT && lookup->script!=MULTIPLE_SCRIPTS &&
+			    info->chars[lig_glyphs[k]]->script==0 )
+			info->chars[lig_glyphs[k]]->script = lookup->script;
 		}
 		pt[-1] = '\0';
 	    }
