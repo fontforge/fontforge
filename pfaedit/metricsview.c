@@ -1003,6 +1003,40 @@ static void MVScroll(MetricsView *mv,struct sbevent *sb) {
     }
 }
 
+void MVSetSCs(MetricsView *mv, SplineChar **scs) {
+    /* set the list of characters being displayed to those in scs */
+    int len;
+    unichar_t *ustr;
+
+    for ( len=0; scs[len]!=NULL; ++len );
+
+    ustr = galloc((len+1)*sizeof(unichar_t));
+    for ( len=0; scs[len]!=NULL; ++len )
+	if ( scs[len]->unicodeenc>0 && scs[len]->unicodeenc<0x10000 )
+	    ustr[len] = scs[len]->unicodeenc;
+	else
+	    ustr[len] = 0xfffd;
+    ustr[len] = 0;
+    GGadgetSetTitle(mv->text,ustr);
+    free(ustr);
+
+    if ( len>=mv->max ) {
+	int oldmax=mv->max;
+	mv->max = len+10;
+	mv->perchar = grealloc(mv->perchar,mv->max*sizeof(struct metricchar));
+	mv->sstr = grealloc(mv->sstr,(mv->max+1)*sizeof(SplineChar *));
+	memset(mv->perchar+oldmax,'\0',(mv->max-oldmax)*sizeof(struct metricchar));
+    }
+    for ( len=0; scs[len]!=NULL; ++len )
+	MVSetPos(mv,len,scs[len]);
+    if ( len!=0 )
+	MVDoSelect(mv,len-1);
+
+    mv->charcnt = len;
+    GDrawRequestExpose(mv->gw,NULL,false);
+    MVSetSb(mv);
+}
+
 static void MVTextChanged(MetricsView *mv) {
     const unichar_t *ret, *pt, *ept, *tpt;
     int i,ei, j,oldx, start=0, end=0;
@@ -1908,6 +1942,12 @@ static void MVMenuCenter(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     }
 }
 
+static void MVMenuKernByClasses(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+
+    ShowKernClasses(mv->fv->sf,mv);
+}
+
 static void PosSubsMenuFree(GMenuItem *mi) {
     int i;
 
@@ -2268,6 +2308,8 @@ static GMenuItem vwlist[] = {
 static GMenuItem mtlist[] = {
     { { (unichar_t *) _STR_Center, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_control, NULL, NULL, MVMenuCenter, MID_Center },
     { { (unichar_t *) _STR_Thirds, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'T' }, '\0', ksm_control, NULL, NULL, MVMenuCenter, MID_Thirds },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_KernByClasses, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'T' }, '\0', ksm_control, NULL, NULL, MVMenuKernByClasses },
     { NULL }
 };
 
@@ -3031,6 +3073,7 @@ static int mv_e_h(GWindow gw, GEvent *event) {
 	    for ( n=mv->fv->metrics; n->next!=mv; n=n->next );
 	    n->next = mv->next;
 	}
+	KCLD_MvDetach(mv->fv->sf->kcld,mv);
 	MetricsViewFree(mv);
       break;
       case et_focus:
@@ -3198,4 +3241,12 @@ void MetricsViewFree(MetricsView *mv) {
     /* the fields will free themselves */
     free(mv->perchar);
     free(mv);
+}
+
+void MVRefreshAll(MetricsView *mv) {
+    int i;
+
+    if ( mv!=NULL )
+	for ( i=0; i<mv->charcnt; ++i )
+	    MVSetPos(mv,i,mv->perchar[i].sc);
 }

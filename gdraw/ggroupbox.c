@@ -169,6 +169,8 @@ GGadget *GLineCreate(struct gwindow *base, GGadgetData *gd,void *data) {
 	_GGroup_Init();
     g->funcs = &gline_funcs;
     _GGadget_Create(g,base,gd,data,&_GGroup_LineBox);
+    if ( gd->flags & gg_line_vert )
+	g->vert = true;
 
     GLineFit(g);
     _GGadget_FinalPosition(g,base,gd);

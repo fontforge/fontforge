@@ -411,6 +411,9 @@ return(false);
 	else
 	    SFClearAutoSave(sf);		/* if they didn't save it, remove change record */
     }
+    if ( fv->nextsame==NULL && fv->sf->fv==fv && fv->sf->kcld!=NULL )
+	KCLD_End(fv->sf->kcld);
+    
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
 	CharView *cv, *next;
 	for ( cv = sf->chars[i]->views; cv!=NULL; cv = next ) {
@@ -2015,7 +2018,7 @@ static void FVMenuInterpFonts(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FVInterpolateFonts(fv);
 }
 
-static void FVScrollToChar(FontView *fv,int i) {
+void FVScrollToChar(FontView *fv,int i) {
 
     if ( fv->v==NULL || fv->colcnt==0 )	/* Can happen in scripts */
 return;
@@ -2543,6 +2546,12 @@ static void FVMenuAutoKern(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 
     FVAutoKern(fv);
+}
+
+static void FVMenuKernByClasses(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+
+    ShowKernClasses(fv->sf,NULL);
 }
 
 static void FVMenuRemoveKern(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -3463,6 +3472,7 @@ static GMenuItem mtlist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Autowidth, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'A' }, 'W', ksm_control|ksm_shift, NULL, NULL, FVMenuAutoWidth },
     { { (unichar_t *) _STR_Autokern, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'K' }, 'K', ksm_control|ksm_shift, NULL, NULL, FVMenuAutoKern },
+    { { (unichar_t *) _STR_KernByClasses, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'K' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuKernByClasses },
     { { (unichar_t *) _STR_Removeallkern, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuRemoveKern },
     { NULL }
 };

@@ -464,6 +464,7 @@ enum fvtrans_flags { fvt_dobackground=1, fvt_round_to_int=2, fvt_dontsetwidth=4 
 extern void FVSetTitle(FontView *fv);
 extern FontView *_FontViewCreate(SplineFont *sf);
 extern FontView *FontViewCreate(SplineFont *sf);
+extern void FVScrollToChar(FontView *fv,int i);
 extern void SplineFontSetUnChanged(SplineFont *sf);
 extern FontView *ViewPostscriptFont(char *filename);
 extern FontView *FontNew(void);
@@ -763,11 +764,13 @@ extern int BVFlipNames[];
 extern void BVChangeBC(BitmapView *bv, BDFChar *bc, int fitit );
 extern void BVChar(BitmapView *cv, GEvent *event );
 
+extern void MVSetSCs(MetricsView *mv, SplineChar **scs);
 extern void MVRefreshChar(MetricsView *mv, SplineChar *sc);
 extern void MVRegenChar(MetricsView *mv, SplineChar *sc);
 extern void MVReKern(MetricsView *mv);
 extern MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf);
 extern void MetricsViewFree(MetricsView *mv);
+extern void MVRefreshAll(MetricsView *mv);
 
 extern char *getPfaEditShareDir(void);
 extern void LoadPrefs(void);
@@ -863,6 +866,12 @@ extern int DebuggerBpCheck(struct debugger_context *dc,int range,int ip);
 extern void DebuggerSetWatches(struct debugger_context *dc,int n, uint8 *w);
 extern uint8 *DebuggerGetWatches(struct debugger_context *dc, int *n);
 extern int DebuggingFpgm(struct debugger_context *dc);
+
+extern unichar_t *ScriptLangLine(struct script_record *sr);
+extern void ShowKernClasses(SplineFont *sf,MetricsView *mv);
+extern void KCLD_End(struct kernclasslistdlg *kcld);
+extern void KCLD_MvDetach(struct kernclasslistdlg *kcld,MetricsView *mv);
+
 
 extern GMenuItem helplist[];
 #endif

@@ -722,7 +722,7 @@ return( i );
 return( i );
 }
 
-static unichar_t *ScriptLangLine(struct script_record *sr) {
+unichar_t *ScriptLangLine(struct script_record *sr) {
     int i,j, tot=0;
     unichar_t *line, *pt;
 

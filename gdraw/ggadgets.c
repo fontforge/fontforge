@@ -397,6 +397,10 @@ static int msgpopup_eh(GWindow popup,GEvent *event) {
 
 	popup_visible = true;
 	pt = msg = (unichar_t *) GDrawGetUserData(popup);
+	if ( pt==NULL ) {
+	    GGadgetEndPopup();
+return( true );
+	}
 	GDrawFontMetrics(popup_font,&as, &ds, &ld);
 	fh = as+ds;
 	y = x = GDrawPointsToPixels(popup,2);

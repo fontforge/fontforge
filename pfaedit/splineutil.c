@@ -2946,6 +2946,26 @@ return;
     free( script_lang );
 }
 
+KernClass *KernClassCopy(KernClass *kc) {
+    KernClass *new;
+    int i;
+
+    if ( kc==NULL )
+return( NULL );
+    new = chunkalloc(sizeof(KernClass));
+    *new = *kc;
+    new->firsts = galloc(new->first_cnt*sizeof(char *));
+    new->seconds = galloc(new->second_cnt*sizeof(char *));
+    new->offsets = galloc(new->first_cnt*new->second_cnt*sizeof(int16));
+    memcpy(new->offsets,kc->offsets, new->first_cnt*new->second_cnt*sizeof(int16));
+    for ( i=0; i<new->first_cnt; ++i )
+	new->firsts[i] = copy(kc->firsts[i]);
+    for ( i=0; i<new->second_cnt; ++i )
+	new->seconds[i] = copy(kc->seconds[i]);
+    new->next = NULL;
+return( new );
+}
+
 void KernClassListFree(KernClass *kc) {
     int i;
     KernClass *n;

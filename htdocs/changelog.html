@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 28-Apr-2003 -->
+  <!-- AP: Last modified: 4-May-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,46 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    4-May-2003
+    <UL>
+      <LI>
+	Added code to determine better defaults for the script lang index
+      <LI>
+	The ligature state table in Apple Chancery has so many possible paths through
+	it that PfaEdit bogs down when evaluating it. I presume it would finish in
+	finite time, but it takes unacceptably long. So I've put in an abort.
+      <LI>
+	Add support for KernClasses (ie. they are no longer just converted into a
+	large number of kernpairs, but will be stored internally as a set class and
+	will be output as such). And they have their own dialogs to manage them.
+      <LI>
+	Add support for Apple's new version of the 'kern' table.
+      <LI>
+	Add support for the format 2 sub table of Apple's 'kern' table (which is
+	different from OpenType's format 2 sub-table of the kern table), and is Apple's
+	kerning class sub-table (note:
+	<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6kern.html">Apple's
+	docs </A>are
+	<FONT COLOR="Red"><SMALL><STRONG>WRONG</STRONG></SMALL></FONT>. they claim
+	class data are stored in an array of uint8, but they really are in an array
+	of uint16).
+    </UL>
+  <LI>
+    29-Apr-2003
+    <UL>
+      <LI>
+	Oops, one more fix to remove overlap
+      <LI>
+	Kanou points out that copy hasn't been working (for some time now) when a
+	contour has be split into bits, only one of the bits is copied.
+      <LI>
+	Kanou points out that Paste reorders open contours
+      <LI>
+	Further work on Show ATT dlg
+      <LI>
+	Further work on multiple features.
+    </UL>
   <LI>
     28-Apr-2003
     <UL>

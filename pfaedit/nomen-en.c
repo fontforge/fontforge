@@ -379,6 +379,8 @@ static char str_CharName[] = "Char Metadata";
 static unichar_t mnemonic_CharName[] = 'N';
 static char str_Autokern[] = "Auto Kern...";
 static unichar_t mnemonic_Autokern[] = 'K';
+static char str_KernByClasses[] = "Kern By Classes...";
+static unichar_t mnemonic_KernByClasses[] = 'n';
 static char str_Autowidth[] = "Auto Width...";
 static unichar_t mnemonic_Autowidth[] = 'A';
 static char str_Removeallkern[] = "Remove All Kern Pairs";
@@ -2452,8 +2454,8 @@ static char *mnemonic_FindReplace = "i";
     /* combinations */
 static char *str_SelectLigature = "Select a ligature to view"
 static char *str_SortBy = "Sort By:"
-static char *str_FirstChar = "Left Char"
-static char *str_SecondChar = "Right Char"
+static char *str_FirstChar = "First Char"
+static char *str_SecondChar = "Second Char"
 static char *str_KernSize = "Kern Size"
     /* tilepath */
 static char *str_Center_ = "Center";
@@ -2559,6 +2561,15 @@ static char *str_AppleAdvancedTypography = "Apple Advanced Typography";
     /* Metricsview */
 static char *str_NewKernClassEntry = "This kerning pair (%.20hs and %.20hs) is currently part of a kerning class with a 0 offset for this combination. Would you like to alter this kerning class entry (or create a kerning pair for just these two glyphs)?";
 static char *str_NewKernClassEntTitle = "Use Kerning Class?"
+    /* Kernclass */
+static char *str_KernClass = "Kerning Class";
+static char *str_ClassCnt = "Class Count:";
+static char *str_ClassIndex = "Class Index:";
+static char *str_SelectClass = "Select Class";
+static char *str_FromSelection = "From Selection";
+static char *str_Set = "Set";
+static char *str_Select_nom = "Select";
+static char *str_KernOffset = "Kern Offset:";
 
 
 static int num_buttonsize = 55;

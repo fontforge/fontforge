@@ -629,6 +629,7 @@ typedef struct splinefont {
 	uint32 *langs;
     } **script_lang;
     struct kernclass *kerns;
+    struct kernclasslistdlg *kcld;
 } SplineFont;
 
 /* mac styles. Useful idea we'll just steal it */
@@ -783,6 +784,7 @@ extern void MinimumDistancesFree(MinimumDistance *md);
 extern SplineChar *SplineCharCreate(void);
 extern void ScriptRecordFree(struct script_record *sr);
 extern void ScriptRecordListFree(struct script_record **script_lang);
+extern KernClass *KernClassCopy(KernClass *kc);
 extern void KernClassListFree(KernClass *kc);
 extern void SplineCharListsFree(struct splinecharlist *dlist);
 extern void SplineCharFreeContents(SplineChar *sc);
