@@ -250,6 +250,14 @@ static void findbrowser(void) {
 #if __CygWin			/* Get rid of any dos style names */
 	if ( isalpha(browser[0]) && browser[1]==':' && browser[2]=='\\' )
 	    cygwin_conv_to_full_posix_path(getenv("BROWSER"),browser);
+	else if ( strchr(browser,'/')==NULL ) {
+	    if ( strstrmatch(browser,".exe")==NULL )
+		strcat(browser,".exe");
+	    if ( (path=_GFile_find_program_dir(browser))!=NULL ) {
+		snprintf(browser,sizeof(browser),"%s/%s", path, getenv("BROWSER"));
+		free(path);
+	    }
+	}
 #endif
 	if ( strcmp(browser,"kde")==0 || strcmp(browser,"kfm")==0 ||
 		strcmp(browser,"konqueror")==0 || strcmp(browser,"kfmclient")==0 )
@@ -266,6 +274,7 @@ return;
 #else
 		strcpy(browser,stdbrowsers[i]);
 #endif
+	    free(path);
 return;
 	}
     }
