@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 28-Jun-2001 -->
-  <!-- AP: Last modified: 11-Jun-2003 -->
+  <!-- AP: Last modified: 6-Jul-2003 -->
   <TITLE>Finding common font problems automagically</TITLE>
 </HEAD>
 <BODY>
@@ -51,7 +51,7 @@ Note: Some of these problems are geared specifically to the problems of
 Latin/Greek/Cyrillic fonts. I would be happy to hear of ways to extend these
 to other script systems, or of problems that are specific to other script
 systems
-(<A HREF="mailto:pfaedit&#64;users.sourceforge.net">pfaedit&#64;users.sourceforge.net</A>).
+(<A HREF="mailto:pfaedit@users.sourceforge.net">pfaedit@users.sourceforge.net</A>).
 <P>
 <IMG SRC="findprobs.png" WIDTH="307" HEIGHT="431" ALIGN="Right">PfaEdit can
 detect the following potential problems:
@@ -215,7 +215,7 @@ to be bigger than the default.
 cases where the "almost stem3" above didn't say anything. It might be because
 it was a stem3 or it might be really far off from a stem3)
 <H3>
-  <IMG SRC="findprobs-random.png" WIDTH="301" HEIGHT="418" ALIGN="Right"><STRONG>Missing
+  <IMG SRC="findprobs-random.png" WIDTH="307" HEIGHT="431" ALIGN="Right"><STRONG>Missing
   Bitmaps</STRONG>
 </H3>
 <P>
@@ -233,7 +233,14 @@ same width).
 <STRONG><BIG>Check Vertical Advance</BIG></STRONG>
 <P>
 Check for any characters whose vertical advance (for fonts with vertical
-metrics) differs from the specified value. 
+metrics) differs from the specified value.
+<P>
+<STRONG><BIG>Check substitutions for empty chars</BIG></STRONG>
+<P>
+Looks through all the 'GSUB' substitution, alternate substitution, multiple
+substitution and ligature entries that are attached to the current character
+and checks to make sure that all the named components are present in the
+font (and contain something).
   <HR Clear=all>
 <P>
 <IMG SRC="findprobs-cid.png" WIDTH="301" HEIGHT="418" ALIGN="Right">If your
