@@ -2302,6 +2302,250 @@ GImage yellow_image = { 0, &yellow_base };
 GImage cyan_image = { 0, &cyan_base };
 GImage white_image = { 0, &white_base };
 
+static uint8 continue_data[] = {
+    0xfe, 0xff, 
+    0xff, 0x7f, 
+    0xf0, 0x3f, 
+    0xef, 0x7f, 
+    0xfe, 0xff, 
+    0x6f, 0xed, 
+    0x6f, 0xed, 
+    0x6f, 0xed, 
+    0x6f, 0xed, 
+    0xff, 0xff, 
+    0xff, 0xff, 
+    0xff, 0xff, 
+    0xfd, 0xbf, 
+    0xfd, 0xbf, 
+    0xfd, 0xbf, 
+    0xfd, 0xbf, 
+};
+
+static struct _GImage continue_base = {
+    it_mono,
+    15420,16,16,2,
+    (uint8 *) continue_data,
+    &magnify0_clut,
+    1
+};
+
+static uint8 stepout_data[] = {
+    0xfe, 0x1f, 
+    0xfd, 0xef, 
+    0xfd, 0xc7, 
+    0xfd, 0xef, 
+    0xfd, 0xff, 
+    0x6d, 0xed, 
+    0x6d, 0xed, 
+    0x6d, 0xed, 
+    0x6d, 0xed, 
+    0xfd, 0xff, 
+    0xff, 0xff, 
+    0xff, 0xff, 
+    0xfd, 0xbf, 
+    0xfd, 0xbf, 
+    0xfd, 0xbf, 
+    0xfd, 0xbf, 
+};
+
+static struct _GImage stepout_base = {
+    it_mono,
+    15420,16,16,2,
+    (uint8 *) stepout_data,
+    &magnify0_clut,
+    1
+};
+
+static uint8 stepover_data[] = {
+    0xf0, 0x1f, 
+    0xef, 0xef, 
+    0xef, 0xc7, 
+    0xef, 0xef, 
+    0xff, 0xff, 
+    0x6f, 0xed, 
+    0x6f, 0xed, 
+    0x6f, 0xed, 
+    0x6f, 0xed, 
+    0xff, 0xff, 
+    0xff, 0xff, 
+    0xff, 0xff, 
+    0xfd, 0xbf, 
+    0xfd, 0xbf, 
+    0xfd, 0xbf, 
+    0xfd, 0xbf, 
+};
+
+static struct _GImage stepover_base = {
+    it_mono,
+    15420,16,16,2,
+    (uint8 *) stepover_data,
+    &magnify0_clut,
+    1
+};
+
+static uint8 stepinto_data[] = {
+    0xff, 0xff, 
+    0xf3, 0xff, 
+    0xed, 0xff, 
+    0xed, 0xff, 
+    0xfd, 0xff, 
+    0x6d, 0xed, 
+    0x6d, 0xed, 
+    0x6d, 0xed, 
+    0x6d, 0xed, 
+    0xf8, 0xff, 
+    0xfd, 0xff, 
+    0xff, 0xff, 
+    0xfd, 0xbf, 
+    0xfd, 0xbf, 
+    0xfd, 0xbf, 
+    0xfd, 0xbf, 
+};
+
+static struct _GImage stepinto_base = {
+    it_mono,
+    15420,16,16,2,
+    (uint8 *) stepinto_data,
+    &magnify0_clut,
+    1
+};
+
+static uint8 stopped_data[] = {
+    1, 1, 1, 1, 1, 1, 1, 1, 
+	1, 1, 1, 1, 1, 1, 1, 1, 
+	1, 1, 1, 1, 1, 1, 1, 1, 
+	1, 1, 1, 1, 1, 0, 1, 1, 
+	1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 1, 
+	1, 1, 1, 1, 1, 1, 1, 1, 
+	1, 1, 1, 1, 1, 1, 1, 1, 
+	1, 1, 1, 1, 1, 0, 0, 1, 
+	1, 1, 1, 1, 
+    1, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	1, 1, 1, 1, 
+    1, 0, 0, 2, 2, 0, 2, 2, 
+	2, 0, 0, 2, 0, 0, 2, 2, 
+	0, 0, 2, 2, 0, 0, 2, 2, 
+	2, 0, 2, 2, 0, 0, 0, 0, 
+	0, 1, 1, 1, 
+    1, 0, 2, 0, 0, 0, 0, 2, 
+	0, 0, 2, 0, 2, 0, 2, 0, 
+	2, 0, 2, 0, 2, 0, 2, 0, 
+	0, 0, 2, 0, 2, 0, 0, 0, 
+	0, 0, 1, 1, 
+    1, 0, 0, 2, 0, 0, 0, 2, 
+	0, 0, 2, 0, 2, 0, 2, 2, 
+	0, 0, 2, 2, 0, 0, 2, 2, 
+	0, 0, 2, 0, 2, 0, 0, 0, 
+	0, 0, 0, 1, 
+    1, 0, 0, 0, 2, 0, 0, 2, 
+	0, 0, 2, 0, 2, 0, 2, 0, 
+	0, 0, 2, 0, 0, 0, 2, 0, 
+	0, 0, 2, 0, 2, 0, 0, 0, 
+	0, 0, 1, 1, 
+    1, 0, 2, 2, 0, 0, 0, 2, 
+	0, 0, 0, 2, 0, 0, 2, 0, 
+	0, 0, 2, 0, 0, 0, 2, 2, 
+	2, 0, 2, 2, 0, 0, 0, 0, 
+	0, 1, 1, 1, 
+    1, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 1, 
+	1, 1, 1, 1, 1, 1, 1, 1, 
+	1, 1, 1, 1, 1, 1, 1, 1, 
+	1, 1, 1, 1, 1, 0, 0, 1, 
+	1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 1, 
+	1, 1, 1, 1, 1, 1, 1, 1, 
+	1, 1, 1, 1, 1, 1, 1, 1, 
+	1, 1, 1, 1, 1, 0, 1, 1, 
+	1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 1, 
+	1, 1, 1, 1, 1, 1, 1, 1, 
+	1, 1, 1, 1, 1, 1, 1, 1, 
+	1, 1, 1, 1, 1, 1, 1, 1, 
+	1, 1, 1, 1
+};
+
+static GClut stopped_clut = { 3, 0, 1,
+    0xff0000, 0xb0b0b0, 0xffffff };
+
+static struct _GImage stopped_base = {
+    it_index,
+    15420,36,12,36,
+    (uint8 *) stopped_data,
+    &stopped_clut,
+    1
+};
+
+static uint8 stop_data[] = {
+    1, 1, 1, 1, 1, 1, 0, 0, 
+	0, 0, 0, 0, 0, 1, 1, 1, 
+	1, 1, 1, 
+    1, 1, 1, 1, 1, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 1, 1, 
+	1, 1, 1, 
+    1, 1, 1, 1, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0, 1, 
+	1, 1, 1, 
+    1, 1, 1, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	1, 1, 1, 
+    1, 1, 0, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	0, 1, 1, 
+    1, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0, 1, 
+    1, 0, 0, 2, 2, 0, 2, 2, 
+	2, 0, 0, 2, 0, 0, 2, 2, 
+	0, 0, 1, 
+    1, 0, 2, 0, 0, 0, 0, 2, 
+	0, 0, 2, 0, 2, 0, 2, 0, 
+	2, 0, 1, 
+    1, 0, 0, 2, 0, 0, 0, 2, 
+	0, 0, 2, 0, 2, 0, 2, 2, 
+	0, 0, 1, 
+    1, 0, 0, 0, 2, 0, 0, 2, 
+	0, 0, 2, 0, 2, 0, 2, 0, 
+	0, 0, 1, 
+    1, 0, 2, 2, 0, 0, 0, 2, 
+	0, 0, 0, 2, 0, 0, 2, 0, 
+	0, 0, 1, 
+    1, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0, 1, 
+    1, 1, 0, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	0, 1, 1, 
+    1, 1, 1, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	1, 1, 1, 
+    1, 1, 1, 1, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0, 1, 
+	1, 1, 1, 
+    1, 1, 1, 1, 1, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 1, 1, 
+	1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 0, 0, 
+	0, 0, 0, 0, 0, 1, 1, 1, 
+	1, 1, 1
+};
+
+static struct _GImage stop_base = {
+    it_index,
+    15420,19,17,19,
+    (uint8 *) stop_data,
+    &stopped_clut,
+    1
+};
+
 GImage GIcon_smallskew = { 0, &smallskew0_base };
 GImage GIcon_smallscale = { 0, &smallscale0_base };
 GImage GIcon_smallrotate = { 0, &smallrotate0_base };
@@ -2323,3 +2567,11 @@ GImage GIcon_smallstar = { 0, &smallstar0_base };
 GImage GIcon_PfaEditLogo = { 0, &logo_base };
 GImage GIcon_PfaEditBack = { 0, &logoback_base };
 GImage GIcon_PfaEditGuide = { 0, &logogrid_base };
+
+GImage GIcon_continue = { 0, &continue_base };
+GImage GIcon_stepout = { 0, &stepout_base };
+GImage GIcon_stepover = { 0, &stepover_base };
+GImage GIcon_stepinto = { 0, &stepinto_base };
+
+GImage GIcon_Stopped = { 0, &stopped_base };
+GImage GIcon_Stop = { 0, &stop_base };

@@ -95,9 +95,13 @@ static FT_Library context;
 #define _FT_Outline_Decompose FT_Outline_Decompose
 
 # if FREETYPE_HAS_DEBUGGER
-#define _FT_Get_Module	FT_Get_Module
-#define _FT_Set_Debug_Hook FT_Set_Debug_Hook
-#define _FT_RunIns FT_RunIns
+#  include "ttobjs.h"
+#  include "ttdriver.h"
+#  include "ttinterp.h"
+
+#  define _FT_Set_Debug_Hook FT_Set_Debug_Hook
+#  define _FT_RunIns FT_RunIns
+#  define _FT_Done_FreeType FT_Done_FreeType
 # endif
 
 static int freetype_init_base() {
@@ -119,15 +123,15 @@ static FT_Error (*_FT_Load_Glyph)( FT_Face, int, int);
 static FT_Error (*_FT_Render_Glyph)( FT_GlyphSlot, int);
 static FT_Error (*_FT_Outline_Decompose)(FT_Outline *, const FT_Outline_Funcs *,void *);
 
-#if FREETYPE_HAS_DEBUGGER
-# include "ttobjs.h"
-# include "ttdriver.h"
-# include "ttinterp.h"
+# if FREETYPE_HAS_DEBUGGER
+#  include "ttobjs.h"
+#  include "ttdriver.h"
+#  include "ttinterp.h"
 
-static FT_Module (*_FT_Get_Module)(FT_Library, const char *);
 static void (*_FT_Set_Debug_Hook)(FT_Library, FT_UInt, FT_DebugHook_Func);
 static FT_Error (*_TT_RunIns)( TT_ExecContext );
-#endif
+static FT_Error (*_FT_Done_FreeType)( FT_Library );
+# endif
 
 static int freetype_init_base() {
     libfreetype = dlopen("libfreetype.so",RTLD_LAZY);
@@ -144,9 +148,9 @@ return( false );
     _FT_Render_Glyph = (FT_Error (*)(FT_GlyphSlot, int)) dlsym(libfreetype,"FT_Render_Glyph");
     _FT_Outline_Decompose = (FT_Error (*)(FT_Outline *, const FT_Outline_Funcs *,void *)) dlsym(libfreetype,"FT_Outline_Decompose");
 #if FREETYPE_HAS_DEBUGGER
-    _FT_Get_Module = (FT_Module (*)(FT_Library, const char* )) dlsym(libfreetype,"FT_Get_Module");
     _FT_Set_Debug_Hook = (void (*)(FT_Library, FT_UInt, FT_DebugHook_Func)) dlsym(libfreetype,"FT_Set_Debug_Hook");
     _TT_RunIns = (FT_Error (*)(TT_ExecContext)) dlsym(libfreetype,"TT_RunIns");
+    _FT_Done_FreeType = (FT_Error (*)(FT_Library )) dlsym(libfreetype,"FT_Done_FreeType");
 #endif
 return( true );
 }
@@ -257,7 +261,8 @@ return;
     free(ftc);
 }
     
-void *_FreeTypeFontContext(SplineFont *sf,SplineChar *sc,FontView *fv,
+static void *__FreeTypeFontContext(FT_Library context,
+	SplineFont *sf,SplineChar *sc,FontView *fv,
 	enum fontformat ff,int flags,void *shared_ftc) {
     /* build up a temporary font consisting of:
      *	sc!=NULL   => Just that character (and its references)
@@ -379,6 +384,12 @@ return( ftc );
 	sf->chars = old;
     }
 return( NULL );
+}
+
+void *_FreeTypeFontContext(SplineFont *sf,SplineChar *sc,FontView *fv,
+	enum fontformat ff,int flags,void *shared_ftc) {
+return( __FreeTypeFontContext(context,sf,sc,fv,
+	ff,flags,shared_ftc));
 }
 
 static void BCTruncateToDepth(BDFChar *bdfc,int depth) {
@@ -684,3 +695,301 @@ return;
     free(raster->bitmap);
     free(raster);
 }
+
+/******************************************************************************/
+/* ***************************** Debugger Stuff ***************************** */
+/******************************************************************************/
+
+#if FREETYPE_HAS_DEBUGGER
+#include <pthread.h>
+#include <tterrors.h>
+
+typedef struct bpdata {
+    int range;	/* tt_coderange_glyph, tt_coderange_font, tt_coderange_cvt */
+    int ip;
+} BpData;
+
+struct debugger_context {
+    FT_Library context;
+    FTC *ftc;
+    /* I use a thread because freetype doesn't return, it just has a callback */
+    /*  on each instruction. In actuallity only one thread should be executable*/
+    /*  at a time (either main, or child) */
+    pthread_t thread;
+    pthread_mutex_t parent_mutex, child_mutex;
+    pthread_cond_t parent_cond, child_cond;
+    unsigned int terminate: 1;		/* The thread has been started simply to clean itself up and die */
+    unsigned int has_mutexes: 1;
+    unsigned int has_thread: 1;
+    unsigned int has_finished: 1;
+    unsigned int debug_fpgm: 1;
+    unsigned int multi_step: 1;
+    real ptsize;
+    int dpi;
+    TT_ExecContext exc;
+    SplineChar *sc;
+    BpData temp;
+    BpData breaks[32];
+    int bcnt;
+};
+
+static int AtBp(struct debugger_context *dc, TT_ExecContext exc ) {
+    int i;
+
+    if ( dc->temp.range==exc->curRange && dc->temp.ip==exc->IP ) {
+	dc->temp.range = tt_coderange_none;
+return( true );
+    }
+
+    for ( i=0; i<dc->bcnt; ++i ) {
+	if ( dc->breaks[i].range==exc->curRange && dc->breaks[i].ip==exc->IP )
+return( true );
+    }
+return( false );
+}
+
+static struct debugger_context *massive_kludge;
+
+static FT_Error PauseIns( TT_ExecContext exc ) {
+    int ret;
+    struct debugger_context *dc = massive_kludge;
+
+    if ( dc->terminate )
+return( TT_Err_Execution_Too_Long );		/* Some random error code, says we're probably in a infinite loop */
+    dc->exc = exc;
+
+    if ( !dc->debug_fpgm && exc->curRange!=tt_coderange_glyph ) {
+	exc->instruction_trap = 0;
+return( _TT_RunIns(exc));	/* This should run to completion */
+    }
+
+    pthread_cond_signal(&dc->parent_cond);
+    pthread_cond_wait(&dc->child_cond,&dc->child_mutex);
+    if ( dc->terminate )
+return( TT_Err_Execution_Too_Long );
+    do {
+	exc->instruction_trap = 1;
+	ret = _TT_RunIns(exc);
+	if ( ret )
+    break;
+	/* Signal the parent if we are single stepping, or if we've reached a break-point */
+	if ( !dc->multi_step || AtBp(dc,exc) ||
+		(exc->curRange==tt_coderange_glyph && exc->IP==exc->codeSize)) {
+	    pthread_cond_signal(&dc->parent_cond);
+	    pthread_cond_wait(&dc->child_cond,&dc->child_mutex);
+	}
+    } while ( !dc->terminate );
+
+    if ( ret==TT_Err_Code_Overflow )
+	ret = 0;
+
+    massive_kludge = dc;	/* We set this again in case we are in a composite character where I think we get called several times (and some other thread might have set it) */
+    if ( dc->terminate )
+return( TT_Err_Execution_Too_Long );
+
+return( ret );
+}
+
+static void *StartChar(void *_dc) {
+    struct debugger_context *dc = _dc;
+
+    pthread_mutex_lock(&dc->child_mutex);
+
+    massive_kludge = dc;
+    if ( (dc->ftc = __FreeTypeFontContext(dc->context,dc->sc->parent,dc->sc,NULL,
+	    ff_ttf, 0, NULL))==NULL )
+ goto finish;
+
+    massive_kludge = dc;
+    if ( _FT_Set_Char_Size(dc->ftc->face,0,(int) (dc->ptsize*64), dc->dpi, dc->dpi))
+ goto finish;
+
+    massive_kludge = dc;
+    _FT_Load_Glyph(dc->ftc->face,dc->ftc->glyph_indeces[dc->sc->enc],FT_LOAD_NO_BITMAP);
+
+ finish:
+    dc->has_finished = true;
+    dc->exc = NULL;
+    pthread_cond_signal(&dc->parent_cond);	/* Wake up parent and get it to clean up after itself */
+    pthread_mutex_unlock(&dc->child_mutex);
+return( NULL );
+}
+
+void DebuggerTerminate(struct debugger_context *dc) {
+    if ( dc->has_thread ) {
+	if ( !dc->has_finished ) {
+	    dc->terminate = true;
+	    pthread_cond_signal(&dc->child_cond);	/* Wake up child and get it to clean up after itself */
+	}
+	pthread_join(dc->thread,NULL);
+	dc->has_thread = false;
+    }
+    if ( dc->has_mutexes ) {
+	pthread_cond_destroy(&dc->child_cond);
+	pthread_cond_destroy(&dc->parent_cond);
+	pthread_mutex_destroy(&dc->child_mutex);
+	pthread_mutex_unlock(&dc->parent_mutex);
+	pthread_mutex_destroy(&dc->parent_mutex);
+    }
+    if ( dc->ftc!=NULL )
+	FreeTypeFreeContext(dc->ftc);
+    if ( dc->context!=NULL )
+	_FT_Done_FreeType( dc->context );
+    free(dc);
+}
+
+void DebuggerReset(struct debugger_context *dc,real ptsize,int dpi,int dbg_fpgm) {
+    /* Kill off the old thread, and start up a new one working on the given */
+    /*  pointsize and resolution */ /* I'm not prepared for errors here */
+    /* Note that if we don't want to look at the fpgm/prep code (and we */
+    /*  usually don't) then we must turn off the debug hook when they get run */
+
+    if ( dc->has_thread ) {
+	dc->terminate = true;
+	pthread_cond_signal(&dc->child_cond);	/* Wake up child and get it to clean up after itself */
+	pthread_join(dc->thread,NULL);
+	dc->has_thread = false;
+    }
+    if ( dc->ftc!=NULL )
+	FreeTypeFreeContext(dc->ftc);
+
+    dc->debug_fpgm = dbg_fpgm;
+    dc->ptsize = ptsize;
+    dc->dpi = dpi;
+    dc->terminate = dc->has_finished = false;
+
+    pthread_create(&dc->thread,NULL,StartChar,(void *) dc);
+    dc->has_thread = true;
+    pthread_cond_wait(&dc->parent_cond,&dc->parent_mutex);
+}
+
+struct debugger_context *DebuggerCreate(SplineChar *sc,real ptsize,int dpi,int dbg_fpgm) {
+    struct debugger_context *dc;
+
+    if ( !hasFreeTypeDebugger())
+return( NULL );
+
+    dc = gcalloc(1,sizeof(struct debugger_context));
+    dc->sc = sc;
+    dc->debug_fpgm = dbg_fpgm;
+    dc->ptsize = ptsize;
+    dc->dpi = dpi;
+    if ( _FT_Init_FreeType( &dc->context )) {
+	free(dc);
+return( NULL );
+    }
+
+    _FT_Set_Debug_Hook( dc->context,
+		       FT_DEBUG_HOOK_TRUETYPE,
+		       (FT_DebugHook_Func)PauseIns );
+
+    pthread_mutex_init(&dc->parent_mutex,NULL); pthread_mutex_init(&dc->child_mutex,NULL);
+    pthread_cond_init(&dc->parent_cond,NULL); pthread_cond_init(&dc->child_cond,NULL);
+    dc->has_mutexes = true;
+
+    pthread_mutex_lock(&dc->parent_mutex);
+    if ( pthread_create(&dc->thread,NULL,StartChar,dc)!=0 ) {
+	DebuggerTerminate( dc );
+return( NULL );
+    }
+    dc->has_thread = true;
+    pthread_cond_wait(&dc->parent_cond,&dc->parent_mutex);	/* Wait for the child to initialize itself (and stop) then we can look at its status */
+
+return( dc );
+}
+
+void DebuggerGo(struct debugger_context *dc,enum debug_gotype dgt) {
+    int opcode;
+
+    if ( !dc->has_thread || dc->has_finished || dc->exc==NULL )
+	DebuggerReset(dc,dc->ptsize,dc->dpi,dc->debug_fpgm);
+    else {
+	switch ( dgt ) {
+	  case dgt_continue:
+	    dc->multi_step = true;
+	  break;
+	  case dgt_stepout:
+	    dc->multi_step = true;
+	    if ( dc->exc->callTop>0 ) {
+		dc->temp.range = dc->exc->callStack[dc->exc->callTop-1].Caller_Range;
+		dc->temp.ip = dc->exc->callStack[dc->exc->callTop-1].Caller_IP;
+	    }
+	  break;
+	  case dgt_next:
+	    opcode = dc->exc->code[dc->exc->IP];
+	    /* I've decided that IDEFs will get stepped into */
+	    if ( opcode==0x2b /* call */ || opcode==0x2a /* loopcall */ ) {
+		dc->temp.range = dc->exc->curRange;
+		dc->temp.ip = dc->exc->IP+1;
+		dc->multi_step = true;
+	    } else
+		dc->multi_step = false;
+	  break;
+	  default:
+	  case dgt_step:
+	    dc->multi_step = false;
+	  break;
+	}
+	pthread_cond_signal(&dc->child_cond);	/* Wake up child and get it to clean up after itself */
+	pthread_cond_wait(&dc->parent_cond,&dc->parent_mutex);	/* Wait for the child to initialize itself (and stop) then we can look at its status */
+    }
+}
+
+struct TT_ExecContextRec_ *DebuggerGetEContext(struct debugger_context *dc) {
+return( dc->exc );
+}
+
+int DebuggerBpCheck(struct debugger_context *dc,int range,int ip) {
+    int i;
+
+    for ( i=0; i<dc->bcnt; ++i ) {
+	if ( dc->breaks[i].range==range && dc->breaks[i].ip==ip )
+return( true );
+    }
+return( false );
+}
+
+void DebuggerToggleBp(struct debugger_context *dc,int range,int ip) {
+    int i;
+
+    /* If the address has a bp, then remove it */
+    for ( i=0; i<dc->bcnt; ++i ) {
+	if ( dc->breaks[i].range==range && dc->breaks[i].ip==ip ) {
+	    ++i;
+	    while ( i<dc->bcnt ) {
+		dc->breaks[i-1].range = dc->breaks[i].range;
+		dc->breaks[i-1].ip = dc->breaks[i].ip;
+		++i;
+	    }
+	    --dc->bcnt;
+return;
+	}
+    }
+    /* Else add it */
+    if ( dc->bcnt>=sizeof(dc->breaks)/sizeof(dc->breaks[0]) ) {
+	GWidgetErrorR(_STR_TooManyBreakpoints,_STR_TooManyBreakpoints);
+return;
+    }
+    i = dc->bcnt++;
+    dc->breaks[i].range = range;
+    dc->breaks[i].ip = ip;
+}
+#else
+
+void DebuggerTerminate(struct debugger_context *dc) {
+}
+
+void DebuggerReset(struct debugger_context *dc,real pointsize,int dpi) {
+}
+
+struct debugger_context *DebuggerCreate(SplineChar *sc,real pointsize,int dpi) {
+return( NULL );
+}
+
+void DebuggerGo(struct debugger_context *dc,enum debug_gotype) {
+}
+
+struct TT_ExecContextRec_ *DebuggerGetEContext(struct debugger_context *dc) {
+return( NULL );
+}
+#endif

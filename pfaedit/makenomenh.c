@@ -492,6 +492,7 @@ static void ProcessNames(char *filename,char *lc,char *uc) {
     int isuni, ismn, index, ch;
     int enc=0;
     int missing;
+    struct stat stat_buf;
 
     values = calloc(npos+1,sizeof(unichar_t *));
     mn = calloc(npos,sizeof(unichar_t));
@@ -653,7 +654,10 @@ return;
 	    fprintf( out, "\n    0x80000000\n};\n\n" );
 	    fprintf( out, "void %sSetFallback(void) {\n", uc );
 	    fprintf( out, "    GStringSetFallbackArray(%s_ui_strings,%s_ui_mnemonics,%s_ui_num);\n",lc,lc,lc );
-	    fprintf( out, "}\n" );
+	    fprintf( out, "}\n\n" );
+
+	    stat("nomen-en.c",&stat_buf);
+	    fprintf( out, "int %sNomenChecksum = %d;\n", uc, stat_buf.st_size );
 	    fclose(out);
 	}
     }

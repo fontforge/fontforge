@@ -113,6 +113,50 @@ struct freetype_raster {
     uint8 *bitmap;
 };
 
+enum byte_types { bt_instr, bt_cnt, bt_byte, bt_wordhi, bt_wordlo, bt_impliedreturn };
+struct instrdata {
+    uint8 *instrs;
+    int instr_cnt, max;
+    uint8 *bts;
+    unsigned int changed: 1;
+    unsigned int in_composit: 1;
+    SplineFont *sf;
+    SplineChar *sc;
+    uint32 tag;
+    struct instrdlg *id;
+    struct instrdata *next;
+};
+
+struct instrinfo {
+    GWindow v;
+    GGadget *vsb;
+    int16 sbw;
+    int16 vheight, vwidth;
+    int16 lheight,lpos;
+    int16 lstopped;
+    int16 as, fh;
+    struct instrdata *instrdata;
+    GFont *gfont;
+    int isel_pos;
+    unsigned int showaddr: 1;
+    unsigned int showhex: 1;
+    unsigned int mousedown: 1;
+    void *userdata;
+    void (*selection_callback)(struct instrinfo *,int ip);
+    int  (*bpcheck)(struct instrinfo *,int ip);
+};
+
+typedef struct debugview {
+    struct debugger_context *dc;	/* Local to freetype.c */
+    GWindow dv, v;
+    struct instrdata id;
+    struct instrinfo ii;
+    /* Windows for twilight points, cvt, registers, stack, storage */
+    int dwidth, toph;
+    struct charview *cv;
+    double scale;
+} DebugView;
+
 typedef struct charview {
     SplineChar *sc;
     unsigned int showback:1;
@@ -213,6 +257,7 @@ typedef struct charview {
     real ft_pointsize;
     SplineSet *gridfit;
     struct freetype_raster *raster;
+    DebugView *dv;
 } CharView;
 
 typedef struct bitmapview {
@@ -537,6 +582,7 @@ extern void ScriptExport(SplineFont *sf, BDFFont *bdf, int format, int enc);
 
 extern void DrawAnchorPoint(GWindow pixmap,int x, int y,int selected);
 extern void DefaultY(GRect *pos);
+extern void CVResize(CharView *cv );
 extern CharView *CharViewCreate(SplineChar *sc,FontView *fv);
 extern void CharViewFree(CharView *cv);
 extern int CVValid(SplineFont *sf, SplineChar *sc, CharView *cv);
@@ -777,10 +823,27 @@ extern void SFShowLigatures(SplineFont *sf);
 extern void SCNumberPoints(SplineChar *sc);
 extern void SCEditInstructions(SplineChar *sc);
 extern void SFEditTable(SplineFont *sf, uint32 tag);
+extern void IIScrollTo(struct instrinfo *ii,int ip,int mark_stop);
+extern void IIReinit(struct instrinfo *ii,int ip);
+extern int ii_v_e_h(GWindow gw, GEvent *event);
+extern void instr_scroll(struct instrinfo *ii,struct sbevent *sb);
 
 extern void CVGridFitChar(CharView *cv);
-extern void CVFtPpemDlg(CharView *cv);
+extern void CVFtPpemDlg(CharView *cv,int debug);
 extern void SCDeGridFit(SplineChar *sc);
+
+extern void CVDebugReInit(CharView *cv,int restart_debug,int dbg_fpgm);
+extern void CVDebugFree(DebugView *dv);
+
+struct debugger_context;
+extern void DebuggerTerminate(struct debugger_context *dc);
+extern void DebuggerReset(struct debugger_context *dc,real pointsize,int dpi,int dbg_fpgm);
+extern struct debugger_context *DebuggerCreate(SplineChar *sc,real pointsize,int dpi,int dbg_fpgm);
+enum debug_gotype { dgt_continue, dgt_step, dgt_next, dgt_stepout };
+extern void DebuggerGo(struct debugger_context *dc,enum debug_gotype);
+extern struct  TT_ExecContextRec_ *DebuggerGetEContext(struct debugger_context *dc);
+extern void DebuggerToggleBp(struct debugger_context *dc,int range,int ip);
+extern int DebuggerBpCheck(struct debugger_context *dc,int range,int ip);
 
 extern GMenuItem helplist[];
 #endif

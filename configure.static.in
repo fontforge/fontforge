@@ -43,9 +43,15 @@ if sh -c "freetype-config --prefix" >/dev/null 2>&1 ; then
 fi
 
 if test "FreeType2_IncRoot" = "" >/dev/null 2>&1 ; then
- AC_CHECK_FILE(/usr/include/freetype2,CFLAGS="$CFLAGS -I/usr/include/freetype2/",[
- AC_CHECK_FILE(/usr/local/include/freetype2,CFLAGS="$CFLAGS -I/usr/local/include -I/usr/local/include/freetype2/",[
- AC_CHECK_FILE(/usr/X11R6/include/freetype2,CFLAGS="$CFLAGS -I/usr/X11R6/include -I/usr/X11R6/include/freetype2/",AC_DEFINE(_NO_FREETYPE))])])
+ AC_CHECK_FILE(/usr/include/freetype2,[CFLAGS="$CFLAGS -I/usr/include/freetype2/"
+     FreeType2_IncRoot="/usr"
+ ],[
+ AC_CHECK_FILE(/usr/local/include/freetype2,[CFLAGS="$CFLAGS -I/usr/local/include -I/usr/local/include/freetype2/"
+     FreeType2_IncRoot="/usr/local/"
+ ],[
+ AC_CHECK_FILE(/usr/X11R6/include/freetype2,[CFLAGS="$CFLAGS -I/usr/X11R6/include -I/usr/X11R6/include/freetype2/"
+     FreeType2_IncRoot="/usr/X11R6/"
+ ],AC_DEFINE(_NO_FREETYPE))])])
 fi
 
 dnl Some old versions of lib(un)gif don't work for us, they've got the
@@ -63,7 +69,62 @@ AC_CHECK_LIB(png, png_create_read_struct, : ,[
  AC_CHECK_LIB(png12, png_create_read_struct, AC_DEFINE(_LIBPNG12), AC_DEFINE(_NO_LIBPNG), -lz -lm)], -lz -lm)
 AC_CHECK_LIB(jpeg, jpeg_CreateDecompress, :  ,AC_DEFINE(_NO_LIBJPEG)) 
 AC_CHECK_LIB(tiff, TIFFOpen, : , AC_DEFINE(_NO_LIBTIFF), -lm )
-AC_CHECK_LIB(freetype, FT_New_Face, : ,AC_DEFINE(_NO_FREETYPE)) 
+
+gww_hasbytecode="no"
+AC_CHECK_LIB(freetype, FT_New_Face, [
+ echo checking for bytecode interpreter in freetype...
+ AC_CHECK_LIB(freetype, TT_RunIns, gww_hasbytecode="yes", : )])
+if test "$gww_hasbytecode" = "yes" ; then
+ AC_CHECK_LIB(pthread, pthread_create, LIBS="$LIBS -lpthread", gww_hasbytecode="no")
+fi
+
+if test \( "$gww_hasbytecode" = "yes" \) -a \( "$FreeType2_IncRoot" != "" \); then
+ gww_hasbytecode="no"
+ AC_ARG_WITH(freetype,
+ [  --with-freetype-src=dir   Specify freetype source directory],
+ [
+    if test "$withval" != "no" >/dev/null 2>&1 ; then
+	FreeType2_TT_BUILD_INC="$withval/src/truetype"
+	AC_MSG_CHECKING(for valid freetype tree)
+	if test -f "$FreeType2_TT_BUILD_INC/ttobjs.h"; then
+		AC_MSG_RESULT(ok)
+	else
+		AC_MSG_RESULT(missing ttobjs.h)
+		echo "Unable to find $FreeType2_TT_BUILD_INC/ttobjs.h"
+	fi
+    fi
+ ],
+ [
+	dnl guess directory
+	AC_MSG_CHECKING(trying to find the freetype source directory -- be patient)
+	  FreeType2_TT_SRC_DIRs=`find / -name ttobjs.h -print 2>/dev/null |grep '[freetype[^/\]*2[^/\]*/src/truetype/ttobjs.h]' | sort -r | sed -e 's/ttobjs.h//'`
+	  for dir in $FreeType2_TT_SRC_DIRs; do
+	   if cmp -s ${dir}../../include/freetype/freetype.h ${FreeType2_IncRoot}/freetype/freetype.h >/dev/null 2>&1 ; then
+	    FreeType2_TT_BUILD_INC=$dir
+	  break
+	   fi
+	  done
+	  if test "$FreeType2_TT_BUILD_INC" = "" >/dev/null 2>&1 ; then
+	   for dir in $FreeType2_TT_SRC_DIRs; do
+	    has_goodft2sources="no"
+	    FreeType2_TT_BUILD_INC=$dir
+	   break
+	   done
+	  fi
+	  if test "$FreeType2_TT_BUILD_INC" = "" >/dev/null 2>&1 ; then
+	   echo " " no
+	  else
+	   echo " " probably
+	  fi
+ ])
+ if test "$FreeType2_TT_BUILD_INC" \!= "" >/dev/null 2>&1 ; then
+  if test -f $FreeType2_TT_BUILD_INC/ttdriver.h >/dev/null 2>&1 ; then
+   CFLAGS="$CFLAGS -I$FreeType2_TT_BUILD_INC"
+   gww_hasbytecode="yes"
+   AC_DEFINE(FREETYPE_HAS_DEBUGGER)
+  fi
+ fi
+fi
 
 dnl older libc's don't have snprintf
 
@@ -133,6 +194,7 @@ if test -e umap >/dev/null 2>&1 ; then
 fi
 
 echo Configuration defines: $DEFS
+echo CFLAGS: $CFLAGS
 if test "$STATIC_LIBS" != ""; then
   echo Static Libraries: $STATIC_LIBS
 fi

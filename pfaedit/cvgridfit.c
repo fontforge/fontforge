@@ -29,6 +29,8 @@
 #include <gkeysym.h>
 #include <math.h>
 
+static int last_fpgm = false;
+
 void SCDeGridFit(SplineChar *sc) {
     CharView *cv;
 
@@ -68,9 +70,11 @@ return;
 #define CID_PointSize	1001
 #define CID_DPI		1002
 #define CID_ShowGrid	1003
+#define CID_Debugfpgm	1004
 
 typedef struct ftsizedata {
     unsigned int done: 1;
+    unsigned int debug: 1;
     CharView *cv;
     GWindow gw;
 } FtSizeData;
@@ -80,7 +84,7 @@ static int FtPpem_OK(GGadget *g, GEvent *e) {
 	FtSizeData *fsd = GDrawGetUserData(GGadgetGetWindow(g));
 	int dpi;
 	real ptsize;
-	int err = 0;
+	int err = 0, bit;
 	CharView *cv = fsd->cv;
 
 	ptsize = GetRealR(fsd->gw,CID_PointSize,_STR_Pointsize,&err);
@@ -88,18 +92,25 @@ static int FtPpem_OK(GGadget *g, GEvent *e) {
 	if ( err )
 return(true);
 
-	cv->show_ft_results = GGadgetIsChecked(GWidgetGetControl(fsd->gw,CID_ShowGrid));
+	bit = GGadgetIsChecked(GWidgetGetControl(fsd->gw,CID_ShowGrid));
+	last_fpgm = GGadgetIsChecked(GWidgetGetControl(fsd->gw,CID_Debugfpgm));
 	cv->ft_pointsize = ptsize; cv->ft_dpi = dpi;
 	cv->ft_ppem = rint(cv->ft_pointsize*cv->ft_dpi/72.0);
 
-	CVLayersSet(cv);
-	if ( cv->show_ft_results )
-	    CVGridFitChar(cv);
+	SplinePointListsFree(cv->gridfit); cv->gridfit = NULL;
+	FreeType_FreeRaster(cv->raster); cv->raster = NULL;
+
+	if ( fsd->debug )
+	    CVDebugReInit(cv,bit,last_fpgm);
 	else {
-	    SplinePointListsFree(cv->gridfit); cv->gridfit = NULL;
-	    FreeType_FreeRaster(cv->raster); cv->raster = NULL;
-	    GDrawRequestExpose(cv->v,NULL,false);
+	    cv->show_ft_results = bit;
+	    if ( cv->show_ft_results )
+		CVGridFitChar(cv);
+	    else {
+		GDrawRequestExpose(cv->v,NULL,false);
+	    }
 	}
+	CVLayersSet(cv);
 	fsd->done = true;
     }
 return( true );
@@ -126,17 +137,18 @@ return( false );
 return( true );
 }
 
-void CVFtPpemDlg(CharView *cv) {
+void CVFtPpemDlg(CharView *cv,int debug) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[9];
-    GTextInfo label[9];
+    GGadgetCreateData gcd[10];
+    GTextInfo label[10];
     FtSizeData fsd;
     char buffer[20], buffer2[20];
 
     memset(&fsd,0,sizeof(fsd));
     fsd.cv = cv;
+    fsd.debug = debug;
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
@@ -206,20 +218,30 @@ void CVFtPpemDlg(CharView *cv) {
     gcd[5].gd.handle_controlevent = FtPpem_Cancel;
     gcd[5].creator = GButtonCreate;
 
-    label[6].text = (unichar_t *) _STR_ShowGridFit;
+    label[6].text = (unichar_t *) (debug ? _STR_Debug : _STR_ShowGridFit);
     label[6].text_in_resource = true;
     gcd[6].gd.label = &label[6];
-    gcd[6].gd.pos.x = 17; gcd[6].gd.pos.y = 5; 
+    gcd[6].gd.pos.x = 17; gcd[6].gd.pos.y = 4; 
     gcd[6].gd.flags = gg_enabled|gg_visible;
-    if ( !cv->show_ft_results )
+    if ( !cv->show_ft_results || debug )
 	gcd[6].gd.flags |= gg_cb_on;
     gcd[6].gd.cid = CID_ShowGrid;
     gcd[6].creator = GCheckBoxCreate;
 
-    gcd[7].gd.pos.x = 5; gcd[7].gd.pos.y = 17+31;
-    gcd[7].gd.pos.width = 190-10;
-    gcd[7].gd.flags = gg_enabled|gg_visible;
-    gcd[7].creator = GLineCreate;
+    label[7].text = (unichar_t *) _STR_Debugfpgm;
+    label[7].text_in_resource = true;
+    gcd[7].gd.label = &label[7];
+    gcd[7].gd.pos.x = 80; gcd[7].gd.pos.y = 4; 
+    gcd[7].gd.flags = debug ? (gg_enabled|gg_visible) : 0;
+    if ( last_fpgm )
+	gcd[7].gd.flags |= gg_cb_on;
+    gcd[7].gd.cid = CID_Debugfpgm;
+    gcd[7].creator = GCheckBoxCreate;
+
+    gcd[8].gd.pos.x = 5; gcd[8].gd.pos.y = 17+31;
+    gcd[8].gd.pos.width = 190-10;
+    gcd[8].gd.flags = gg_enabled|gg_visible;
+    gcd[8].creator = GLineCreate;
 
     GGadgetsCreate(gw,gcd);
 

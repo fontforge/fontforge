@@ -999,6 +999,7 @@ Optional Packages:
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-gnu-ld           assume the C compiler uses GNU ld default=no
   --with-pic              try to use only PIC/non-PIC objects default=use both
+  --with-freetype-src=dir   Specify freetype source directory
   --with-x                use the X Window System
 
 Some influential environment variables:
@@ -3727,7 +3728,7 @@ test "x$enable_libtool_lock" != xno && enable_libtool_lock=yes
 case $host in
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 3730 "configure"' > conftest.$ac_ext
+  echo '#line 3731 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -4277,7 +4278,7 @@ chmod -w .
 save_CFLAGS="$CFLAGS"
 CFLAGS="$CFLAGS -o out/conftest2.$ac_objext"
 compiler_c_o=no
-if { (eval echo configure:4280: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>out/conftest.err; } && test -s out/conftest2.$ac_objext; then
+if { (eval echo configure:4281: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>out/conftest.err; } && test -s out/conftest2.$ac_objext; then
   # The compiler can only warn and ignore the option if not recognized
   # So say no if there are warnings
   if test -s out/conftest.err; then
@@ -6108,7 +6109,7 @@ else
     lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 6111 "configure"
+#line 6112 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -6206,7 +6207,7 @@ else
     lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 6209 "configure"
+#line 6210 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -7263,6 +7264,8 @@ echo "$as_me:$LINENO: result: $ac_cv_file__usr_include_freetype2" >&5
 echo "${ECHO_T}$ac_cv_file__usr_include_freetype2" >&6
 if test $ac_cv_file__usr_include_freetype2 = yes; then
   CFLAGS="$CFLAGS -I/usr/include/freetype2/"
+     FreeType2_IncRoot="/usr"
+
 else
 
  echo "$as_me:$LINENO: checking for /usr/local/include/freetype2" >&5
@@ -7284,6 +7287,8 @@ echo "$as_me:$LINENO: result: $ac_cv_file__usr_local_include_freetype2" >&5
 echo "${ECHO_T}$ac_cv_file__usr_local_include_freetype2" >&6
 if test $ac_cv_file__usr_local_include_freetype2 = yes; then
   CFLAGS="$CFLAGS -I/usr/local/include -I/usr/local/include/freetype2/"
+     FreeType2_IncRoot="/usr/local/"
+
 else
 
  echo "$as_me:$LINENO: checking for /usr/X11R6/include/freetype2" >&5
@@ -7305,6 +7310,8 @@ echo "$as_me:$LINENO: result: $ac_cv_file__usr_X11R6_include_freetype2" >&5
 echo "${ECHO_T}$ac_cv_file__usr_X11R6_include_freetype2" >&6
 if test $ac_cv_file__usr_X11R6_include_freetype2 = yes; then
   CFLAGS="$CFLAGS -I/usr/X11R6/include -I/usr/X11R6/include/freetype2/"
+     FreeType2_IncRoot="/usr/X11R6/"
+
 else
   cat >>confdefs.h <<\_ACEOF
 #define _NO_FREETYPE 1
@@ -7748,6 +7755,8 @@ _ACEOF
 
 fi
 
+
+gww_hasbytecode="no"
 echo "$as_me:$LINENO: checking for FT_New_Face in -lfreetype" >&5
 echo $ECHO_N "checking for FT_New_Face in -lfreetype... $ECHO_C" >&6
 if test "${ac_cv_lib_freetype_FT_New_Face+set}" = set; then
@@ -7804,14 +7813,192 @@ fi
 echo "$as_me:$LINENO: result: $ac_cv_lib_freetype_FT_New_Face" >&5
 echo "${ECHO_T}$ac_cv_lib_freetype_FT_New_Face" >&6
 if test $ac_cv_lib_freetype_FT_New_Face = yes; then
-  :
+
+ echo checking for bytecode interpreter in freetype...
+ echo "$as_me:$LINENO: checking for TT_RunIns in -lfreetype" >&5
+echo $ECHO_N "checking for TT_RunIns in -lfreetype... $ECHO_C" >&6
+if test "${ac_cv_lib_freetype_TT_RunIns+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
 else
-  cat >>confdefs.h <<\_ACEOF
-#define _NO_FREETYPE 1
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lfreetype  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+#include "confdefs.h"
+
+/* Override any gcc2 internal prototype to avoid an error.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+/* We use char because int might match the return type of a gcc2
+   builtin and then its argument prototype would still apply.  */
+char TT_RunIns ();
+#ifdef F77_DUMMY_MAIN
+#  ifdef __cplusplus
+     extern "C"
+#  endif
+   int F77_DUMMY_MAIN() { return 1; }
+#endif
+int
+main ()
+{
+TT_RunIns ();
+  ;
+  return 0;
+}
 _ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_lib_freetype_TT_RunIns=yes
+else
+  echo "$as_me: failed program was:" >&5
+cat conftest.$ac_ext >&5
+ac_cv_lib_freetype_TT_RunIns=no
+fi
+rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+echo "$as_me:$LINENO: result: $ac_cv_lib_freetype_TT_RunIns" >&5
+echo "${ECHO_T}$ac_cv_lib_freetype_TT_RunIns" >&6
+if test $ac_cv_lib_freetype_TT_RunIns = yes; then
+  gww_hasbytecode="yes"
+else
+  :
+fi
 
 fi
 
+if test "$gww_hasbytecode" = "yes" ; then
+ echo "$as_me:$LINENO: checking for pthread_create in -lpthread" >&5
+echo $ECHO_N "checking for pthread_create in -lpthread... $ECHO_C" >&6
+if test "${ac_cv_lib_pthread_pthread_create+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lpthread  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+#include "confdefs.h"
+
+/* Override any gcc2 internal prototype to avoid an error.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+/* We use char because int might match the return type of a gcc2
+   builtin and then its argument prototype would still apply.  */
+char pthread_create ();
+#ifdef F77_DUMMY_MAIN
+#  ifdef __cplusplus
+     extern "C"
+#  endif
+   int F77_DUMMY_MAIN() { return 1; }
+#endif
+int
+main ()
+{
+pthread_create ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_lib_pthread_pthread_create=yes
+else
+  echo "$as_me: failed program was:" >&5
+cat conftest.$ac_ext >&5
+ac_cv_lib_pthread_pthread_create=no
+fi
+rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+echo "$as_me:$LINENO: result: $ac_cv_lib_pthread_pthread_create" >&5
+echo "${ECHO_T}$ac_cv_lib_pthread_pthread_create" >&6
+if test $ac_cv_lib_pthread_pthread_create = yes; then
+  LIBS="$LIBS -lpthread"
+else
+  gww_hasbytecode="no"
+fi
+
+fi
+
+if test \( "$gww_hasbytecode" = "yes" \) -a \( "$FreeType2_IncRoot" != "" \); then
+ gww_hasbytecode="no"
+
+# Check whether --with-freetype or --without-freetype was given.
+if test "${with_freetype+set}" = set; then
+  withval="$with_freetype"
+
+    if test "$withval" != "no" >/dev/null 2>&1 ; then
+	FreeType2_TT_BUILD_INC="$withval/src/truetype"
+	echo "$as_me:$LINENO: checking for valid freetype tree" >&5
+echo $ECHO_N "checking for valid freetype tree... $ECHO_C" >&6
+	if test -f "$FreeType2_TT_BUILD_INC/ttobjs.h"; then
+		echo "$as_me:$LINENO: result: ok" >&5
+echo "${ECHO_T}ok" >&6
+	else
+		echo "$as_me:$LINENO: result: missing ttobjs.h" >&5
+echo "${ECHO_T}missing ttobjs.h" >&6
+		echo "Unable to find $FreeType2_TT_BUILD_INC/ttobjs.h"
+	fi
+    fi
+
+else
+
+		echo "$as_me:$LINENO: checking trying to find the freetype source directory -- be patient" >&5
+echo $ECHO_N "checking trying to find the freetype source directory -- be patient... $ECHO_C" >&6
+	  FreeType2_TT_SRC_DIRs=`find / -name ttobjs.h -print 2>/dev/null |grep 'freetype[^/\]*2[^/\]*/src/truetype/ttobjs.h' | sort -r | sed -e 's/ttobjs.h//'`
+	  for dir in $FreeType2_TT_SRC_DIRs; do
+	   if cmp -s ${dir}../../include/freetype/freetype.h ${FreeType2_IncRoot}/freetype/freetype.h >/dev/null 2>&1 ; then
+	    FreeType2_TT_BUILD_INC=$dir
+	  break
+	   fi
+	  done
+	  if test "$FreeType2_TT_BUILD_INC" = "" >/dev/null 2>&1 ; then
+	   for dir in $FreeType2_TT_SRC_DIRs; do
+	    has_goodft2sources="no"
+	    FreeType2_TT_BUILD_INC=$dir
+	   break
+	   done
+	  fi
+	  if test "$FreeType2_TT_BUILD_INC" = "" >/dev/null 2>&1 ; then
+	   echo " " no
+	  else
+	   echo " " probably
+	  fi
+
+fi;
+ if test "$FreeType2_TT_BUILD_INC" \!= "" >/dev/null 2>&1 ; then
+  if test -f $FreeType2_TT_BUILD_INC/ttdriver.h >/dev/null 2>&1 ; then
+   CFLAGS="$CFLAGS -I$FreeType2_TT_BUILD_INC"
+   gww_hasbytecode="yes"
+   cat >>confdefs.h <<\_ACEOF
+#define FREETYPE_HAS_DEBUGGER 1
+_ACEOF
+
+  fi
+ fi
+fi
 
 
 echo "$as_me:$LINENO: checking for snprintf" >&5
@@ -11224,6 +11411,7 @@ fi
 fi
 
 echo Configuration defines: $DEFS
+echo CFLAGS: $CFLAGS
 if test "$STATIC_LIBS" != ""; then
   echo Static Libraries: $STATIC_LIBS
 fi

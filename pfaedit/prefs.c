@@ -547,6 +547,7 @@ static void CheckLang(void) {
     /*const char *loc = setlocale(LC_MESSAGES,NULL);*/ /* This always returns "C" for me, even when it shouldn't be */
     const char *loc = getenv("LC_ALL");
     char buffer[100], full[1024];
+    extern int PfaEditNomenChecksum;		/* In pfaedit-ui.c */
 
     if ( loc==NULL ) loc = getenv("LC_MESSAGES");
     if ( loc==NULL ) loc = getenv("LANG");
@@ -566,7 +567,7 @@ return;
 	    !CheckLangDir(full,sizeof(full),"/usr/share/pfaedit",loc) )
 return;
 
-    GStringSetResourceFileV(full,__NOMEN_CHECKSUM);
+    GStringSetResourceFileV(full,PfaEditNomenChecksum);
 }
 
 static int encmatch(const char *enc) {

@@ -59,6 +59,8 @@ extern GImage GIcon_smallskew, GIcon_smallscale, GIcon_smallrotate,
 	GIcon_PfaEditLogo, GIcon_PfaEditBack, GIcon_PfaEditGuide;
 extern GImage def_image, red_image, blue_image, green_image, magenta_image,
 	yellow_image, cyan_image, white_image;
+extern GImage GIcon_continue, GIcon_stepout, GIcon_stepover, GIcon_stepinto;
+extern GImage GIcon_Stopped, GIcon_Stop;
 extern GWindow logo_icon;
 
 extern GTextInfo encodingtypes[];

@@ -468,36 +468,6 @@ return;
     ihadd(0x42,"Write Store\nPops a value and an index and writes the value to storage[index]");
 }
 
-enum byte_types { bt_instr, bt_cnt, bt_byte, bt_wordhi, bt_wordlo };
-struct instrdata {
-    uint8 *instrs;
-    int instr_cnt, max;
-    uint8 *bts;
-    unsigned int changed: 1;
-    unsigned int in_composit: 1;
-    SplineFont *sf;
-    SplineChar *sc;
-    uint32 tag;
-    struct instrdlg *id;
-    struct instrdata *next;
-};
-
-struct instrinfo {
-    GWindow v;
-    GGadget *vsb;
-    int16 sbw;
-    int16 vheight, vwidth;
-    int16 lheight,lpos;
-    int16 as, fh;
-    struct instrdata *instrdata;
-    GFont *gfont;
-    int isel_pos;
-    unsigned int showaddr: 1;
-    unsigned int showhex: 1;
-    unsigned int mousedown: 1;
-    void (*selection_callback)(struct instrinfo *);
-};
-
 typedef struct instrdlg {
     GWindow gw, v;
     unsigned int inedit: 1;
@@ -513,7 +483,7 @@ static void instr_typify(struct instrinfo *instrinfo) {
     uint8 *bts;
 
     if ( instrinfo->instrdata->bts==NULL )
-	instrinfo->instrdata->bts = galloc(len);
+	instrinfo->instrdata->bts = galloc(len+1);
     bts = instrinfo->instrdata->bts;
     for ( i=lh=0; i<len; ++i ) {
 	bts[i] = bt_instr;
@@ -550,7 +520,12 @@ static void instr_typify(struct instrinfo *instrinfo) {
 	    lh += cnt;
 	}
     }
+    bts[i] = bt_impliedreturn;
     instrinfo->lheight = lh;
+    if ( instrinfo->lpos > lh-instrinfo->vheight/instrinfo->fh )
+	instrinfo->lpos = lh-instrinfo->vheight/instrinfo->fh;
+    if ( instrinfo->lpos<0 )
+	instrinfo->lpos = 0;
 }
 
 static void instr_resize(InstrDlg *iv,GEvent *event) {
@@ -585,7 +560,7 @@ return;
     ii->vheight = pos.height; ii->vwidth = pos.width;
     lh = ii->lheight;
 
-    GScrollBarSetBounds(ii->vsb,0,lh,ii->vheight/ii->fh);
+    GScrollBarSetBounds(ii->vsb,0,lh+1,ii->vheight/ii->fh);
     if ( ii->lpos + ii->vheight/ii->fh > lh )
 	ii->lpos = lh-ii->vheight/ii->fh;
     if ( ii->lpos<0 ) ii->lpos = 0;
@@ -762,7 +737,7 @@ return( true );
     free(iv->instrdata->bts );
     iv->instrdata->bts = NULL;
     instr_typify(&iv->instrinfo);
-    GScrollBarSetBounds(iv->instrinfo.vsb,0,iv->instrinfo.lheight,
+    GScrollBarSetBounds(iv->instrinfo.vsb,0,iv->instrinfo.lheight+1,
 	    iv->instrinfo.vheight/iv->instrinfo.fh);
 return( true );
 }
@@ -863,6 +838,8 @@ static void instr_expose(struct instrinfo *ii,GWindow pixmap,GRect *rect) {
     num_end = addr_end;
     if ( ii->showhex )
 	num_end = addr_end + GDrawGetTextWidth(pixmap,nums,5,NULL)+4;
+    else if ( addr_end<36+2*EDGE_SPACING )
+	num_end = addr_end = 36+2*EDGE_SPACING;
 
     low = ( (rect->y-EDGE_SPACING)/ii->fh ) * ii->fh +EDGE_SPACING;
     high = ( (rect->y+rect->height+ii->fh-1-EDGE_SPACING)/ii->fh ) * ii->fh +EDGE_SPACING;
@@ -892,47 +869,61 @@ static void instr_expose(struct instrinfo *ii,GWindow pixmap,GRect *rect) {
 	}
 	uc_strcpy(uname,"<no instrs>");
 	GDrawDrawText(pixmap,num_end+EDGE_SPACING,y+ii->as,uname,-1,NULL,0xff0000);
-    } else for ( ; y<=high && i<ii->instrdata->instr_cnt; ++i ) {
-	sprintf( loc, "%d", i ); uc_strcpy(uloc,loc);
-	if ( ii->instrdata->bts[i]==bt_wordhi ) {
-	    sprintf( ins, " %02x%02x", ii->instrdata->instrs[i], ii->instrdata->instrs[i+1]); uc_strcpy(uins,ins);
-	    sprintf( val, " %d", (short) ((ii->instrdata->instrs[i]<<8) | ii->instrdata->instrs[i+1]) );
-	    uc_strcpy(uname,val);
-	    ++i;
-	} else if ( ii->instrdata->bts[i]==bt_cnt || ii->instrdata->bts[i]==bt_byte ) {
-	    sprintf( ins, " %02x", ii->instrdata->instrs[i] ); uc_strcpy(uins,ins);
-	    sprintf( val, " %d", ii->instrdata->instrs[i]);
-	    uc_strcpy(uname,val);
-	} else {
-	    sprintf( ins, "%02x", ii->instrdata->instrs[i] ); uc_strcpy(uins,ins);
-	    uc_strcpy(uname, instrnames[ii->instrdata->instrs[i]]);
-	}
+    } else {
+	for ( ; y<=high && i<ii->instrdata->instr_cnt+1; ++i ) {
+	    sprintf( loc, "%d", i ); uc_strcpy(uloc,loc);
+	    if ( ii->instrdata->bts[i]==bt_wordhi ) {
+		sprintf( ins, " %02x%02x", ii->instrdata->instrs[i], ii->instrdata->instrs[i+1]); uc_strcpy(uins,ins);
+		sprintf( val, " %d", (short) ((ii->instrdata->instrs[i]<<8) | ii->instrdata->instrs[i+1]) );
+		uc_strcpy(uname,val);
+		++i;
+	    } else if ( ii->instrdata->bts[i]==bt_cnt || ii->instrdata->bts[i]==bt_byte ) {
+		sprintf( ins, " %02x", ii->instrdata->instrs[i] ); uc_strcpy(uins,ins);
+		sprintf( val, " %d", ii->instrdata->instrs[i]);
+		uc_strcpy(uname,val);
+	    } else if ( ii->instrdata->bts[i]==bt_impliedreturn ) {
+		uc_strcpy(uname,"<return>");
+	    } else {
+		sprintf( ins, "%02x", ii->instrdata->instrs[i] ); uc_strcpy(uins,ins);
+		uc_strcpy(uname, instrnames[ii->instrdata->instrs[i]]);
+	    }
 
-	if ( ii->showaddr ) {
-	    x = addr_end - EDGE_SPACING - GDrawGetTextWidth(pixmap,uloc,-1,NULL);
-	    GDrawDrawText(pixmap,x,y+ii->as,uloc,-1,NULL,0x000000);
+	    if ( ii->showaddr ) {
+		x = addr_end - EDGE_SPACING - GDrawGetTextWidth(pixmap,uloc,-1,NULL);
+		GDrawDrawText(pixmap,x,y+ii->as,uloc,-1,NULL,0x000000);
+		if ( ii->bpcheck(ii,i))
+		    GDrawDrawImage(pixmap,&GIcon_Stop,NULL,EDGE_SPACING,
+			    y+(ii->fh-8)/2-5);
+	    }
+	    x = addr_end + EDGE_SPACING;
+	    if ( ii->showhex )
+		GDrawDrawText(pixmap,x,y+ii->as,uins,-1,NULL,0x000000);
+	    GDrawDrawText(pixmap,num_end+EDGE_SPACING,y+ii->as,uname,-1,NULL,0x000000);
+	    y += ii->fh;
 	}
-	x = addr_end + EDGE_SPACING;
-	if ( ii->showhex )
-	    GDrawDrawText(pixmap,x,y+ii->as,uins,-1,NULL,0x000000);
-	GDrawDrawText(pixmap,num_end+EDGE_SPACING,y+ii->as,uname,-1,NULL,0x000000);
-	y += ii->fh;
+	if ( ii->showaddr && ii->lstopped!=-1 ) {
+	    GDrawDrawImage(pixmap,&GIcon_Stopped,NULL,EDGE_SPACING,
+		    (ii->lstopped-ii->lpos)*ii->fh+(ii->fh-8)/2);
+	}
     }
 }
 
 static void instr_mousedown(struct instrinfo *ii,int pos) {
-    int i;
+    int i,l;
 
     pos = (pos-2)/ii->fh + ii->lpos;
     if ( pos>=ii->lheight )
 	pos = -1;
 
-    if ( i!=ii->isel_pos ) {
-	ii->isel_pos=pos;
-	GDrawRequestExpose(ii->v,NULL,false);
-	if ( ii->selection_callback!=NULL )
-	    (ii->selection_callback)(ii);
+    for ( i=l=0; l<pos && i<ii->instrdata->instr_cnt; ++i, ++l ) {
+	if ( ii->instrdata->bts[i]==bt_wordhi )
+	    ++i;
     }
+
+    ii->isel_pos=pos;
+    if ( ii->selection_callback!=NULL )
+	(ii->selection_callback)(ii,i);
+    GDrawRequestExpose(ii->v,NULL,false);
 }
 
 static void instr_mousemove(struct instrinfo *ii,int pos) {
@@ -980,7 +971,7 @@ return;
     GGadgetPreparePopup(GDrawGetParentWindow(ii->v),msg);
 }
 
-static void instr_scroll(struct instrinfo *ii,struct sbevent *sb) {
+void instr_scroll(struct instrinfo *ii,struct sbevent *sb) {
     int newpos = ii->lpos;
 
     switch( sb->type ) {
@@ -1044,16 +1035,21 @@ return( false );
 	    if ( ii->lpos<0 ) ii->lpos = 0;
 	    GScrollBarSetPos(ii->vsb,ii->lpos);
 	}
-	GDrawRequestExpose(ii->v,NULL,false);
-	if ( ii->selection_callback!=NULL )
-	    (ii->selection_callback)(ii);
     }
+    if ( ii->selection_callback!=NULL ) {
+	int i,l;
+	for ( i=l=0; l<pos && i<ii->instrdata->instr_cnt; ++i, ++l ) {
+	    if ( ii->instrdata->bts[i]==bt_wordhi )
+		++i;
+	}
+	(ii->selection_callback)(ii,i);
+    }
+    GDrawRequestExpose(ii->v,NULL,false);
 return( true );
 }
 
-static int iv_v_e_h(GWindow gw, GEvent *event) {
-    InstrDlg *iv = (InstrDlg *) GDrawGetUserData(gw);
-    struct instrinfo *ii = &iv->instrinfo;
+int ii_v_e_h(GWindow gw, GEvent *event) {
+    struct instrinfo *ii = (struct instrinfo *) GDrawGetUserData(gw);
 
     switch ( event->type ) {
       case et_expose:
@@ -1172,6 +1168,7 @@ static void InstrDlgCreate(struct instrdata *id,unichar_t *title) {
     iv->instrdata = id;
     iv->instrinfo.instrdata = id;
     iv->instrinfo.showhex = iv->instrinfo.showaddr = true;
+    iv->instrinfo.lstopped = -1;
     instr_typify(&iv->instrinfo);
 
     if ( ttf_icon==NULL )
@@ -1186,7 +1183,7 @@ static void InstrDlgCreate(struct instrdata *id,unichar_t *title) {
     wattrs.window_title = title;
     wattrs.icon = ttf_icon;
     pos.x = pos.y = 0;
-    pos.width =GDrawPointsToPixels(NULL,200);
+    pos.width = 270;
     iv->oc_height = GDrawPointsToPixels(NULL,37);
     pos.height = GDrawPointsToPixels(NULL,100) + iv->oc_height;
     iv->gw = gw = GDrawCreateTopWindow(NULL,&pos,iv_e_h,iv,&wattrs);
@@ -1232,7 +1229,7 @@ static void InstrDlgCreate(struct instrdata *id,unichar_t *title) {
     wattrs.mask = wam_events|wam_cursor;
     pos.x = 0; pos.y = 0;
     pos.width = gd.pos.x; pos.height = gd.pos.height;
-    iv->instrinfo.v = GWidgetCreateSubWindow(gw,&pos,iv_v_e_h,iv,&wattrs);
+    iv->instrinfo.v = GWidgetCreateSubWindow(gw,&pos,ii_v_e_h,&iv->instrinfo,&wattrs);
     GDrawSetVisible(iv->instrinfo.v,true);
 
     memset(&rq,0,sizeof(rq));
@@ -1353,4 +1350,37 @@ void SCMarkInstrDlgAsChanged(SplineChar *sc) {
     for ( id = sc->parent->instr_dlgs; id!=NULL && id->sc!=sc; id=id->next );
     if ( id!=NULL )
 	id->changed = true;
+}
+
+void IIScrollTo(struct instrinfo *ii,int ip,int mark_stop) {
+    int l, i;
+
+    for ( i=l=0; i<ip && i<ii->instrdata->instr_cnt; ++i, ++l ) {
+	if ( ii->instrdata->bts[i]==bt_wordhi || ii->instrdata->bts[i]==bt_wordlo )
+	    ++i;
+    }
+    if ( ip==-1 )
+	ii->lstopped = -1;
+    else {
+	if ( mark_stop )
+	    ii->lstopped = l;
+	if ( l<ii->lpos || l>=ii->lpos+ii->vheight/ii->fh-1 ) {
+	    if ( l+ii->vheight/ii->fh-1 >= ii->lheight+1 )
+		l = ii->lheight+2-(ii->vheight/ii->fh);
+	    if ( l<0 )
+		l = 0;
+	    ii->lpos = l;
+	    GScrollBarSetPos(ii->vsb,l);
+	}
+    }
+    GDrawRequestExpose(ii->v,NULL,false);
+}
+
+void IIReinit(struct instrinfo *ii,int ip) {
+    instrhelpsetup();
+    free(ii->instrdata->bts);
+    ii->instrdata->bts = NULL;
+    instr_typify(ii);
+    GScrollBarSetBounds(ii->vsb,0,ii->lheight+1, ii->vheight/ii->fh);
+    IIScrollTo(ii,ip,true);
 }

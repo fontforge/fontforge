@@ -355,7 +355,7 @@ static void DrawPoint(CharView *cv, GWindow pixmap, SplinePoint *sp, SplineSet *
 return;
 
     /* draw the control points if it's selected */
-    if ( sp->selected || cv->showpointnumbers || cv->show_ft_results ) {
+    if ( sp->selected || cv->showpointnumbers || cv->show_ft_results || cv->dv ) {
 	int iscurrent = sp==(cv->p.sp!=NULL?cv->p.sp:cv->lastselpt);
 	if ( !sp->nonextcp ) {
 	    cx =  cv->xoff + rint(sp->nextcp.x*cv->scale);
@@ -369,7 +369,7 @@ return;
 	    GDrawDrawLine(pixmap,x,y,cx,cy, nextcpcol);
 	    GDrawDrawLine(pixmap,cx-3,cy-3,cx+3,cy+3,subcol);
 	    GDrawDrawLine(pixmap,cx+3,cy-3,cx-3,cy+3,subcol);
-	    if ( cv->showpointnumbers || cv->show_ft_results) {
+	    if ( cv->showpointnumbers || cv->show_ft_results || cv->dv ) {
 		pnum = sp->ttfindex+1;
 		if ( sp->ttfindex==0xffff ) {
 		    SplinePoint *np;
@@ -473,7 +473,7 @@ return;
 	else
 	    GDrawFillPoly(pixmap,gp,4,col);
     }
-    if ( (cv->showpointnumbers || cv->show_ft_results) && sp->ttfindex!=0xffff ) {
+    if ( (cv->showpointnumbers || cv->show_ft_results|| cv->dv ) && sp->ttfindex!=0xffff ) {
 	sprintf( buf,"%d", sp->ttfindex );
 	uc_strcpy(ubuf,buf);
 	GDrawDrawText(pixmap,x,y-6,ubuf,-1,NULL,col);
@@ -1070,7 +1070,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 
     GDrawSetFont(pixmap,cv->small);
 
-    if ( !cv->show_ft_results ) {
+    if ( !cv->show_ft_results && cv->dv==NULL ) {
 	/* if we've got bg images (and we're showing them) then the hints live in */
 	/*  the bg image pixmap (else they get overwritten by the pixmap) */
 	if ( (cv->showhhints || cv->showvhints || cv->showdhints) && ( cv->sc->backimages==NULL || !cv->showback) )
@@ -1163,7 +1163,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
     if ( *cv->uheads[cv->drawmode]!=NULL && (*cv->uheads[cv->drawmode])->undotype==ut_tstate )
 	DrawOldState(cv,pixmap,*cv->uheads[cv->drawmode], &clip);
 
-    if ( !cv->show_ft_results ) {
+    if ( !cv->show_ft_results && cv->dv==NULL ) {
 	if ( cv->showback || cv->drawmode==dm_back ) {
 	    /* Used to draw the image list here, but that's too slow. Optimization*/
 	    /*  is to draw to pixmap, dump pixmap a bit earlier */
@@ -1178,7 +1178,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	}
     }
 
-    if ( cv->showfore || (cv->drawmode==dm_fore && !cv->show_ft_results) ) {
+    if ( cv->showfore || (cv->drawmode==dm_fore && !cv->show_ft_results && cv->dv==NULL))  {
 	CVDrawAnchorPoints(cv,pixmap);
 	for ( rf=cv->sc->refs; rf!=NULL; rf = rf->next ) {
 	    CVDrawRefName(cv,pixmap,rf,0);
@@ -1202,6 +1202,8 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	    for ( i=0; i<pst->u.lcaret.cnt; ++i )
 		DrawVLine(cv,pixmap,pst->u.lcaret.carets[i],0x909040,true);
 	}
+	if ( cv->show_ft_results || cv->dv!=NULL )
+	    DrawVLine(cv,pixmap,cv->ft_gridfitwidth,0x009800,true);
     }
     if ( cv->showvmetrics ) {
 	int len, y = -cv->yoff + cv->height - rint((sf->vertical_origin-cv->sc->vwidth)*cv->scale);
@@ -1487,6 +1489,8 @@ return;
 void CVChangeSC(CharView *cv, SplineChar *sc ) {
     unichar_t *title;
     unichar_t ubuf[300];
+
+    CVDebugFree(cv->dv);
 
     if ( cv->expandedge != ee_none ) {
 	GDrawSetCursor(cv->v,ct_mypointer);
@@ -2960,32 +2964,50 @@ return;
     GDrawPopClip(pixmap,&old1);
 }
 
-static void CVResize(CharView *cv, GEvent *event ) {
+void CVResize(CharView *cv ) {
     int sbsize = GDrawPointsToPixels(cv->gw,_GScrollBar_Width);
-    int newwidth = event->u.resize.size.width-sbsize,
-	newheight = event->u.resize.size.height-sbsize - cv->mbh-cv->infoh;
-    int sbwidth = newwidth, sbheight = newheight;
+    GRect size;
+    GDrawGetSize(cv->gw,&size);
+    {
+	int newwidth = size.width-sbsize,
+	    newheight = size.height-sbsize - cv->mbh-cv->infoh;
+	int sbwidth = newwidth, sbheight = newheight;
 
-    if ( cv->showrulers ) {
-	newheight -= cv->rulerh;
-	newwidth -= cv->rulerh;
-    }
+	if ( cv->dv!=NULL ) {
+	    int dvheight = size.height-(cv->mbh+cv->infoh);
+	    newwidth -= cv->dv->dwidth;
+	    sbwidth -= cv->dv->dwidth;
+	    GDrawMove(cv->dv->dv,size.width-cv->dv->dwidth,cv->mbh+cv->infoh);
+	    GDrawResize(cv->dv->dv,cv->dv->dwidth,dvheight);
+	    GDrawResize(cv->dv->ii.v,cv->dv->dwidth-sbsize,dvheight-cv->dv->toph);
+	    GGadgetResize(cv->dv->ii.vsb,sbsize,dvheight-cv->dv->toph);
+	    cv->dv->ii.vheight = dvheight-cv->dv->toph;
+	    GDrawRequestExpose(cv->dv->dv,NULL,false);
+	    GDrawRequestExpose(cv->dv->ii.v,NULL,false);
+	    GScrollBarSetBounds(cv->dv->ii.vsb,0,cv->dv->ii.lheight,
+		    cv->dv->ii.vheight/cv->dv->ii.fh);
+	}
+	if ( cv->showrulers ) {
+	    newheight -= cv->rulerh;
+	    newwidth -= cv->rulerh;
+	}
 
-    if ( newwidth == cv->width && newheight == cv->height )
+	if ( newwidth == cv->width && newheight == cv->height )
 return;
-    if ( cv->backimgs!=NULL )
-	GDrawDestroyWindow(cv->backimgs);
-    cv->backimgs = NULL;
+	if ( cv->backimgs!=NULL )
+	    GDrawDestroyWindow(cv->backimgs);
+	cv->backimgs = NULL;
 
-    /* MenuBar takes care of itself */
-    GDrawResize(cv->v,newwidth,newheight);
-    GGadgetMove(cv->vsb,sbwidth, cv->mbh+cv->infoh);
-    GGadgetResize(cv->vsb,sbsize,sbheight);
-    GGadgetMove(cv->hsb,0,event->u.resize.size.height-sbsize);
-    GGadgetResize(cv->hsb,sbwidth,sbsize);
-    cv->width = newwidth; cv->height = newheight;
-    CVFit(cv);
-    CVPalettesRaise(cv);
+	/* MenuBar takes care of itself */
+	GDrawResize(cv->v,newwidth,newheight);
+	GGadgetMove(cv->vsb,sbwidth, cv->mbh+cv->infoh);
+	GGadgetResize(cv->vsb,sbsize,sbheight);
+	GGadgetMove(cv->hsb,0,size.height-sbsize);
+	GGadgetResize(cv->hsb,sbwidth,sbsize);
+	cv->width = newwidth; cv->height = newheight;
+	CVFit(cv);
+	CVPalettesRaise(cv);
+    }
 }
 
 static void CVHScroll(CharView *cv,struct sbevent *sb) {
@@ -3127,6 +3149,7 @@ void LogoExpose(GWindow pixmap,GEvent *event, GRect *r,enum drawmode dm) {
 	GDrawDrawImage(pixmap,which,NULL,
 		r->x+(xoff-xoff/2),r->y+(yoff-yoff/2));
 	GDrawPopClip(pixmap,&old);
+	GDrawDrawLine(pixmap,r->x+sbsize-1,r->y,r->x+sbsize-1,r->y+sbsize,0x000000);
     }
 }
 
@@ -3166,7 +3189,7 @@ return( GGadgetDispatchEvent(cv->vsb,event));
       break;
       case et_resize:
 	if ( event->u.resize.sized )
-	    CVResize(cv,event);
+	    CVResize(cv);
       break;
       case et_controlevent:
 	switch ( event->u.control.subtype ) {
@@ -3310,6 +3333,7 @@ return( true );
 #define MID_AutoInstr	2411
 #define MID_ClearInstr	2412
 #define MID_EditInstructions 2413
+#define MID_Debug	2414
 #define MID_ClearAllMD		2451
 #define MID_ClearSelMDX		2452
 #define MID_ClearSelMDY		2453
@@ -3586,15 +3610,23 @@ static void CVMenuFill(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void CVMenuShowGridFit(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
-    if ( !hasFreeType())
+    if ( !hasFreeType() || cv->drawmode!=dm_fore || cv->dv!=NULL )
 return;
-    CVFtPpemDlg(cv);
+    CVFtPpemDlg(cv,false);
 }
 
 static void CVMenuEditInstrs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
     SCEditInstructions(cv->sc);
+}
+
+static void CVMenuDebug(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+
+    if ( !hasFreeTypeDebugger())
+return;
+    CVFtPpemDlg(cv,true);
 }
 
 static void CVMenuClearInstrs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -5236,6 +5268,9 @@ static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_EditInstructions:
 	    mi->ti.disabled = !cv->fv->sf->order2;
 	  break;
+	  case MID_Debug:
+	    mi->ti.disabled = !cv->fv->sf->order2 || !hasFreeTypeDebugger();
+	  break;
 	  case MID_ClearInstr:
 	    mi->ti.disabled = cv->sc->ttf_instrs_len==0;
 	  break;
@@ -5357,7 +5392,7 @@ static void cv_vwlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.text = u_copy(GStringGetResource(cv->showrulers?_STR_Hiderulers:_STR_Showrulers,NULL));
 	  break;
 	  case MID_ShowGridFit:
-	    mi->ti.disabled = !hasFreeType() || cv->drawmode!=dm_fore;
+	    mi->ti.disabled = !hasFreeType() || cv->drawmode!=dm_fore || cv->dv!=NULL;
 	    mi->ti.checked = cv->show_ft_results;
 	  break;
 	  case MID_Fill:
@@ -5585,6 +5620,7 @@ static GMenuItem htlist[] = {
     { { (unichar_t *) _STR_Autohint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, 'H', ksm_control|ksm_shift, NULL, NULL, CVMenuAutoHint, MID_AutoHint },
     { { (unichar_t *) _STR_AutoInstr, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, 'T', ksm_control, NULL, NULL, CVMenuAutoInstr, MID_AutoInstr },
     { { (unichar_t *) _STR_EditInstructions, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'l' }, '\0', 0, NULL, NULL, CVMenuEditInstrs, MID_EditInstructions },
+    { { (unichar_t *) _STR_DebugDDD, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'l' }, '\0', 0, NULL, NULL, CVMenuDebug, MID_Debug },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_MinimumDistance, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, 'H', ksm_control|ksm_shift, mdlist, mdlistcheck, NULL, MID_MinimumDistance },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
@@ -5875,8 +5911,14 @@ void CharViewFree(CharView *cv) {
     if ( cv->jamodisplay!=NULL )
 	Disp_DoFinish(cv->jamodisplay,true);
 #endif
+
+    CVDebugFree(cv->dv);
+
     SplinePointListsFree(cv->gridfit);
     FreeType_FreeRaster(cv->raster);
+
+    CVDebugFree(cv->dv);
+
     free(cv);
 }
 
@@ -6370,7 +6412,7 @@ static int sv_cv_e_h(GWindow gw, GEvent *event) {
       break;
       case et_resize:
 	if ( event->u.resize.sized )
-	    CVResize(cv,event);
+	    CVResize(cv);
       break;
       case et_destroy:
 	if ( cv->backimgs!=NULL ) {
