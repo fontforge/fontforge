@@ -383,16 +383,16 @@ static void svg_dumpkerns(FILE *file,SplineFont *sf,int isv) {
 		fprintf( file, isv ? "    <vkern " : "    <hkern " );
 		if ( sf->chars[i]->unicodeenc==-1 || HasLigature(sf->chars[i]))
 		    fprintf( file, "g1=\"%s\" ", sf->chars[i]->name );
-		else if ( sf->chars[i]->unicodeenc>='A' || sf->chars[i]->unicodeenc<='z' )
+		else if ( sf->chars[i]->unicodeenc>='A' && sf->chars[i]->unicodeenc<='z' )
 		    fprintf( file, "u1=\"%c\" ", sf->chars[i]->unicodeenc );
 		else
-		    fprintf( file, "u1=\"&#x%x\" ", sf->chars[i]->unicodeenc );
+		    fprintf( file, "u1=\"&#x%x;\" ", sf->chars[i]->unicodeenc );
 		if ( kp->sc->unicodeenc==-1 || HasLigature(kp->sc))
 		    fprintf( file, "g2=\"%s\" ", kp->sc->name );
-		else if ( kp->sc->unicodeenc>='A' || kp->sc->unicodeenc<='z' )
+		else if ( kp->sc->unicodeenc>='A' && kp->sc->unicodeenc<='z' )
 		    fprintf( file, "u2=\"%c\" ", kp->sc->unicodeenc );
 		else
-		    fprintf( file, "u2=\"&#x%x\" ", kp->sc->unicodeenc );
+		    fprintf( file, "u2=\"&#x%x;\" ", kp->sc->unicodeenc );
 		fprintf( file, "k=\"%d\" />\n", -kp->off );
 	    }
     }
