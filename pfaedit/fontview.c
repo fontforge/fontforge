@@ -1703,7 +1703,7 @@ return;
     if ( i!=-1 ) {
 	if ( i/fv->colcnt<fv->rowoff || i/fv->colcnt >= fv->rowoff+fv->rowcnt ) {
 	    fv->rowoff = i/fv->colcnt;
-	    if ( fv->rowltot>= 3 )
+	    if ( fv->rowcnt>= 3 )
 		--fv->rowoff;
 	    if ( fv->rowoff+fv->rowcnt>=fv->rowltot )
 		fv->rowoff = fv->rowltot-fv->rowcnt;
@@ -3981,7 +3981,7 @@ static void FVChar(FontView *fv,GEvent *event) {
 	    event->u.chr.keysym == GK_KP_Page_Down ||
 	    event->u.chr.keysym == GK_Next ) {
 	int end_pos = fv->end_pos;
-	/* We move the currently selected point. If there is none, then pick */
+	/* We move the currently selected char. If there is none, then pick */
 	/*  something on the screen */
 	if ( end_pos==-1 )
 	    end_pos = (fv->rowoff+fv->rowcnt/2)*fv->colcnt;
