@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 20-Apr-2003 -->
+  <!-- AP: Last modified: 7-May-2003 -->
   <TITLE>Font Info</TITLE>
 </HEAD>
 <BODY>
@@ -696,7 +696,21 @@ of 'mark' (but see the discussion in the
 <P>
 From here you may add new classes, delete old ones or rename old ones. You
 may also bring up outline character views looking at the characters which
-use these classes.<BR CLEAR=ALL>
+use these classes.
+<P>
+<IMG SRC="newanchor.png" WIDTH="226" HEIGHT="391" ALIGN="Left">The dialog
+for creating a new (or modifying an old) anchor class allows you to give
+that class a name and requires that you associate it with a set of
+<A HREF="charinfo.html#Feature-Tag">scripts and languages</A>. You may also
+set some standard OTF flags.
+<P>
+Generally in OpenType fonts several Anchor Classes will be treated as one
+unit if they refer to approximately the same set of base characters and have
+non-overlapping marks An example: there could be two types of marks that
+attach to the same set of letters, one attaching below and one above the
+letter, each would have its own anchor class, but you would tell PfaEdit
+to associate the two together by giving them the same "Merge With"
+value.<BR CLEAR=ALL>
 <P>
 See Also:
 <UL>

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 18-Apr-2003 -->
+  <!-- AP: Last modified: 7-May-2003 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -872,8 +872,7 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
   <DT>
     Reencode(encoding-name[,force])
   <DD>
-    Reencodes the current font into the given encoding which may
-    be:<BR>
+    Reencodes the current font into the given encoding which may be:<BR>
     compacted,original,<BR>
     iso8859-1, isolatin1, latin1, iso8859-2, latin2, iso8859-3, latin3, iso8859-4,
     latin4, iso8859-5, iso8859-6, iso8859-7, iso8859-8, iso8859-9, iso8859-10,
@@ -1025,6 +1024,7 @@ ApplySubstitution("*","*","vrt2")
   <DT>
     ExpandStroke(width)<BR>
     ExpandStroke(width,line cap, line join)<BR>
+    ExpandStroke(width,line cap, line join,0,Kanou's removeinternal flag)<BR>
     ExpandStroke(width,caligraphic-angle,height-numerator,height-denom)
   <DD>
     In the first format a line cap of "butt" and line join of "round" are implied..

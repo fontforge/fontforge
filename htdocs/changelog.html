@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 6-May-2003 -->
+  <!-- AP: Last modified: 7-May-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -11,11 +11,36 @@
 </H1>
 <UL>
   <LI>
+    7-May-2003
+    <UL>
+      <LI>
+	Oops. It should be legal for a 'mkmk' anchor class to have two points in
+	a glyph, one the normal mark point, the other the base mark point. (that
+	is it should be possible for a glyph to attach to itself).
+      <LI>
+	Kanou supplied a patch to extend expand stroke.
+      <LI>
+	Changed behavior of AnchorClasses so that two classes could be associated
+	to form a single feature (ie. one class of "Above" marks, and one class of
+	"Below" marks)
+      <LI>
+	Show ATT now displays something meaningful for marks
+      <LI>
+	Some general Anchor Class clean up.
+    </UL>
+  <LI>
     6-May-2003
     <UL>
       <LI>
 	Although undocumented, digits behave just like lower case letters in macintosh
-	filenames for postscript resource fonts.
+	filenames for postscript resource fonts. 
+	  <HR>
+      <LI>
+	Looking at the font info-&gt;ttf values dialog would cause pfaedit to crash
+	after [Ok] was pressed.
+      <LI>
+	Old sfd files with anchor classes but not script lang index would crash pfaedit
+	when being read in.
     </UL>
   <LI>
     5-May-2003
