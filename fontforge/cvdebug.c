@@ -773,6 +773,15 @@ return( false );
       case 'r': case 'R':		/* run/restart (debugger) */
 	CVDebugReInit(dv->cv,true,DebuggingFpgm(dv->dc));
       break;
+      default:
+	/* The isalpha check is to prevent infinite loops since CVChar can */
+	/*  call DVChar too */
+	if ( !isalpha(event->u.chr.chars[0])) {
+	    CVChar(dv->cv,event);
+return( true );
+	}
+
+return( false );
     }
 return( true );
 }
