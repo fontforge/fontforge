@@ -585,7 +585,7 @@ static void readttfhhea(FILE *ttf,struct ttfinfo *info) {
     info->pfminfo.linegap = getushort(ttf);
 
     /* fontographer puts the max ascender/min descender here instead. idiots */
-    if ( info->ascent==0 && info->descent==0 )
+    if (( info->ascent==0 && info->descent==0 ) || info->ascent>info->emsize )
 	info->ascent = .8*info->emsize;
 #if 0
     else if ( info->ascent+info->descent!=info->emsize )
