@@ -584,7 +584,7 @@ return( greekalts );
 	if ( *pt ) {
 	    for ( gpt=greekalts ; *upt ; ++upt ) {
 		if ( *upt==0x301 )
-		    *gpt++ = 0x30d;
+		    *gpt++ = 0x384 /* I used to use 0x30d, thinking that it was a combining tonos, but greek users tell me it is not */;
 		else
 		    *gpt++ = *upt;
 	    }
