@@ -3697,17 +3697,21 @@ static uint16 *getCoverageTable(FILE *ttf, int coverage_offset, struct ttfinfo *
 	    }
 	}
     } else if ( format==2 ) {
-	glyphs = galloc((max=256)*sizeof(uint16));
+	glyphs = gcalloc((max=256),sizeof(uint16));
 	cnt = getushort(ttf);
 	for ( i=0; i<cnt; ++i ) {
 	    start = getushort(ttf);
 	    end = getushort(ttf);
 	    ind = getushort(ttf);
-	    if ( start>end || end>=info->glyph_cnt )
+	    if ( start>end || end>=info->glyph_cnt ) {
 		fprintf( stderr, "Bad coverage table. Glyph range %d-%d out of range [0,%d)\n", start, end, info->glyph_cnt );
+		start = end = 0;
+	    }
 	    if ( ind+end-start+2 >= max ) {
+		int oldmax = max;
 		max = ind+end-start+2;
 		glyphs = grealloc(glyphs,max*sizeof(uint16));
+		memset(glyphs+oldmax,0,(max-oldmax)*sizeof(uint16));
 	    }
 	    for ( j=start; j<=end; ++j ) {
 		glyphs[j-start+ind] = j;
@@ -3717,6 +3721,9 @@ static uint16 *getCoverageTable(FILE *ttf, int coverage_offset, struct ttfinfo *
 	}
 	if ( cnt!=0 )
 	    cnt = ind+end-start+1;
+    } else {
+	fprintf( stderr, "Bad format for coverage table %d\n", format );
+return( NULL );
     }
     glyphs[cnt] = 0xffff;
 return( glyphs );
@@ -4400,6 +4407,11 @@ return;
 		lig = 0;
 	    }
 	    cc = getushort(ttf);
+	    if ( cc>100 ) {
+		fprintf( stderr, "Unlikely count of ligature components (%d), I suspect this ligature sub-\n table is garbage, I'm giving up on it.\n", cc );
+		free(glyphs); free(lig_offsets);
+return;
+	    }
 	    lig_glyphs = galloc(cc*sizeof(uint16));
 	    lig_glyphs[0] = glyphs[i];
 	    for ( k=1; k<cc; ++k ) {
