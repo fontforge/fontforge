@@ -2774,7 +2774,9 @@ static uint8 *DStemInfoGeninst(struct glyphinfo *gi,uint8 *pt,DStemInfo *d,
 	uint8 *touched, BasePoint *bp, int ptcnt) {
     DStem *ds;
 
-    /*if ( ds==NULL )		/* Comment out this line to turn off diagonal hinting !!!*/
+#if TEST_DIAGHINTS
+    if ( ds==NULL )		/* Comment out this line to turn off diagonal hinting !!!*/
+#endif
 return( pt );
     ds = DStemMerge(d,bp,ptcnt,touched);
 
@@ -3080,7 +3082,7 @@ static void dumpcomposit(SplineChar *sc, RefChar *refs, struct glyphinfo *gi) {
 	if ( ref->next!=NULL )
 	    flags |= (1<<5);		/* More components */
 #if 0
-	else if ( sc->hstem || sc->vstem || sc->dstem )
+	else if ( sc->hstem || sc->vstem || sc->dstem )	/* Composits inherit instructions */
 	    flags |= (1<<8);		/* Instructions appear after last ref */
 #endif
 	if ( ref->transform[1]!=0 || ref->transform[2]!=0 )
@@ -5978,8 +5980,8 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
     memset(table,'\0',sizeof(table));
     for ( i=0; i<sf->charcnt && i<256; ++i ) {
 	sc = SFFindExistingCharMac(sf,unicode_from_mac[i]);
-	if ( sc!=NULL && sf->chars[i]->ttf_glyph!=-1 )
-	    table[i] = sf->chars[i]->ttf_glyph;
+	if ( sc!=NULL && sc->ttf_glyph!=-1 )
+	    table[i] = sc->ttf_glyph;
     }
     table[0] = table[8] = table[13] = table[29] = 1;
     table[9] = 3;
