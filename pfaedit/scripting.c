@@ -1237,6 +1237,7 @@ static void bReencode(Context *c) {
     } encdata[] = {
 	{ em_compacted, "compacted" },
 	{ em_custom, "custom" },
+	{ em_original, "original" },
 	{ em_iso8859_1, "iso8859-1" },
 	{ em_iso8859_1, "isolatin1" },
 	{ em_iso8859_1, "latin1" },
