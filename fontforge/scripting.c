@@ -2818,17 +2818,18 @@ static void bRoundToCluster(Context *c) {
     int i;
     SplineFont *sf = c->curfv->sf;
 
-    if ( c->a.argc>3 )
+    if ( c->a.argc!=1 && c->a.argc!=3 && c->a.argc!=4 )
 	error( c, "Wrong number of arguments");
-    else if ( c->a.argc>=2 ) {
-	if ( c->a.vals[1].type!=v_int || c->a.vals[1].u.ival<=0 )
+    else if ( c->a.argc>=3 ) {
+	if ( c->a.vals[1].type!=v_int || c->a.vals[1].u.ival<=0 ||
+		c->a.vals[2].type!=v_int || c->a.vals[2].u.ival<=0 )
 	    error( c, "Bad type for argument" );
-	within = 1.0/c->a.vals[1].u.ival;
+	within = c->a.vals[1].u.ival/c->a.vals[2].u.ival;
 	max = 4*within;
-	if ( c->a.argc>=3 ) {
-	    if ( c->a.vals[2].type!=v_int || c->a.vals[2].u.ival<=0 )
+	if ( c->a.argc>=4 ) {
+	    if ( c->a.vals[3].type!=v_int || c->a.vals[3].u.ival<=0 )
 		error( c, "Bad type for argument" );
-	    max = 1.0/c->a.vals[2].u.ival;
+	    max = c->a.vals[3].u.ival*within;
 	}
     }
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && c->curfv->selected[i] )
