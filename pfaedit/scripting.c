@@ -1153,7 +1153,7 @@ static void bExpandStroke(Context *c) {
 	si.join = c->a.vals[3].u.ival;
     } else {
 	si.caligraphic = true;
-	si.penangle = c->a.vals[2].u.ival*3.1415926535897932/180.;
+	si.penangle = 3.1415926535897932*c->a.vals[2].u.ival/180;
     }
     FVStrokeItScript(c->curfv, &si);
 }
