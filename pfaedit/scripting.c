@@ -2583,6 +2583,7 @@ struct builtins { char *name; void (*func)(Context *); int nofontok; } builtins[
     { "CopyRBearing", bCopyRBearing },
     { "Paste", bPaste },
     { "PasteInto", bPasteInto },
+    { "SameGlyphAs", bSameGlyphAs },
     { "Clear", bClear },
     { "ClearBackground", bClearBackground },
     { "CopyFgToBg", bCopyFgToBg },
