@@ -1017,6 +1017,8 @@ return;
 	sc->unicodeenc = -1;
 	free(sc->name);
 	sc->name = copy(".notdef");
+	PSTFree(sc->possub);
+	sc->possub = NULL;
     }
     sc->widthset = false;
     sc->width = sc->parent->ascent+sc->parent->descent;
@@ -1033,6 +1035,9 @@ return;
     StemInfosFree(sc->vstem); sc->vstem = NULL;
     DStemInfosFree(sc->dstem); sc->dstem = NULL;
     MinimumDistancesFree(sc->md); sc->md = NULL;
+    free(sc->ttf_instrs);
+    sc->ttf_instrs = NULL;
+    sc->ttf_instrs_len = 0;
     SCOutOfDateBackground(sc);
     SCCharChangedUpdate(sc);
 }
@@ -1865,6 +1870,99 @@ static void FVMenuBuildAccent(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void FVMenuBuildComposite(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FVBuildAccent( (FontView *) GDrawGetUserData(gw), false );
+}
+
+static int ScriptLangMatch(struct script_record *sr,uint32 script,uint32 lang) {
+    int i, j;
+
+    if ( script==CHR('*',' ',' ',' ') && lang==CHR('*',' ',' ',' ') )
+return(true);	/* Wild card */
+
+    for ( i=0; sr[i].script!=0; ++i ) {
+	if ( sr[i].script==script || script==CHR('*',' ',' ',' ') ) {
+	    for ( j=0; sr[i].langs[j]!=0 ; ++j )
+		if ( sr[i].langs[j]==lang || lang==CHR('*',' ',' ',' ') )
+return( true );
+	    if ( sr[i].script==script )
+return( false );
+	}
+    }
+return( false );
+}
+
+static void SCReplaceWith(SplineChar *dest, SplineChar *src) {
+    int enc=dest->enc, uenc=dest->unicodeenc, oenc = dest->old_enc;
+    Undoes *u[2], *r1;
+    SplineSet *back = dest->backgroundsplines;
+    ImageList *images = dest->backimages;
+    struct splinecharlist *scl = dest->dependents;
+    RefChar *refs;
+
+    SCPreserveState(src,2);
+    SCPreserveState(dest,2);
+    u[0] = dest->undoes[0]; u[1] = dest->undoes[1]; r1 = dest->redoes[1];
+
+    free(dest->name);
+    SplinePointListsFree(dest->splines);
+    RefCharsFree(dest->refs);
+    StemInfosFree(dest->hstem);
+    StemInfosFree(dest->vstem);
+    DStemInfosFree(dest->dstem);
+    MinimumDistancesFree(dest->md);
+    KernPairsFree(dest->kerns);
+    AnchorPointsFree(dest->anchor);
+    PSTFree(dest->possub);
+    free(dest->ttf_instrs);
+
+    *dest = *src;
+    dest->backimages = images;
+    dest->backgroundsplines = back;
+    dest->undoes[0] = u[0]; dest->undoes[1] = u[1]; dest->redoes[0] = NULL; dest->redoes[1] = r1;
+    dest->enc = enc; dest->unicodeenc = uenc; dest->old_enc = oenc;
+    dest->dependents = scl;
+    dest->namechanged = true;
+
+    src->name = copy(".notdef");
+    src->splines = NULL;
+    src->refs = NULL;
+    src->hstem = NULL;
+    src->vstem = NULL;
+    src->dstem = NULL;
+    src->md = NULL;
+    src->kerns = NULL;
+    src->anchor = NULL;
+    src->possub = NULL;
+    src->ttf_instrs = NULL;
+    src->ttf_instrs_len = 0;
+    /* Retain the undoes/redoes */
+    /* Retain the dependents */
+
+    /* Fix up dependant info */
+    for ( refs = dest->refs; refs!=NULL; refs=refs->next ) {
+	for ( scl=refs->sc->dependents; scl!=NULL; scl=scl->next )
+	    if ( scl->sc==src )
+		scl->sc = dest;
+    }
+}
+
+void FVApplySubstitution(FontView *fv,uint32 script, uint32 lang, uint32 tag) {
+    SplineFont *sf = fv->sf;
+    SplineChar *sc, *replacement;
+    PST *pst;
+    int i;
+
+    for ( i=0; i<sf->charcnt; ++i ) if ( fv->selected[i] && (sc=sf->chars[i])!=NULL ) {
+	for ( pst = sc->possub; pst!=NULL; pst=pst->next ) {
+	    if ( pst->type==pst_substitution && pst->tag==tag &&
+		    ScriptLangMatch(sf->script_lang[pst->script_lang_index],script,lang))
+	break;
+	}
+	if ( pst!=NULL ) {
+	    replacement = SFGetCharDup(sf,-1,pst->u.subs.variant);
+	    if ( replacement!=NULL )
+		SCReplaceWith(sc,replacement);
+	}
+    }
 }
 
 #if HANYANG

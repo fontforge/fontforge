@@ -1461,6 +1461,38 @@ static void bSetCharComment(Context *c) {
     c->curfv->sf->changed = true;
 }
 
+static void bApplySubstitution(Context *c) {
+    uint32 tags[3];
+    int i;
+
+    if ( c->a.argc!=4 )
+	error( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str ||
+	      c->a.vals[3].type!=v_str )
+	error(c,"Bad argument type");
+    for ( i=0; i<3; ++i ) {
+	char *str = c->a.vals[i+1].u.sval;
+	char temp[4];
+	memset(temp,' ',4);
+	if ( *str ) {
+	    temp[0] = *str;
+	    if ( str[1] ) {
+		temp[1] = str[1];
+		if ( str[2] ) {
+		    temp[2] = str[2];
+		    if ( str[3] ) {
+			temp[3] = str[3];
+			if ( str[4] )
+			    error(c,"Tags/Scripts/Languages are represented by strings which are at most 4 characters long");
+		    }
+		}
+	    }
+	}
+	tags[i] = (temp[0]<<24)|(temp[1]<<16)|(temp[2]<<8)|temp[3];
+    }
+    FVApplySubstitution(c->curfv, tags[0], tags[1], tags[2]);
+}
+
 static void bTransform(Context *c) {
     real trans[6];
     BVTFunc bvts[1];
@@ -2179,6 +2211,7 @@ struct builtins { char *name; void (*func)(Context *); int nofontok; } builtins[
     { "SetCharComment", bSetCharComment },
     { "BitmapsAvail", bBitmapsAvail },
     { "BitmapsRegen", bBitmapsRegen },
+    { "ApplySubstitution", bApplySubstitution },
     { "Transform", bTransform },
     { "HFlip", bHFlip },
     { "VFlip", bVFlip },
