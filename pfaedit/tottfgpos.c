@@ -2294,18 +2294,22 @@ static struct lookup *GSUBfigureLookups(FILE *lfile,SplineFont *sf,
     /* Look for ligature tags used in the font */
     max = 30; cnt = 0;
     ligtags = galloc(max*sizeof(struct tagflaglang));
-    for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL ) {
-	for ( ll = sf->chars[i]->ligofme; ll!=NULL; ll=ll->next ) if ( !ll->lig->macfeature && ll->lig->script_lang_index!=SLI_NESTED ) {
-	    for ( j=0; j<cnt; ++j )
-		if ( ligtags[j].tag==ll->lig->tag && ll->lig->flags==ligtags[j].flags &&
-			ll->lig->script_lang_index == ligtags[j].script_lang_index )
-	    break;
-	    if ( j==cnt ) {
-		if ( cnt>=max ) {
-		    max += 30;
-		    ligtags = grealloc(ligtags,max*sizeof(struct tagflaglang));
+    for ( i=0; i<sf->charcnt; i++ ) if ( SCWorthOutputting(sf->chars[i]) ) {
+	for ( ll = sf->chars[i]->ligofme; ll!=NULL; ll=ll->next ) {
+	    if ( !ll->lig->macfeature &&
+		    ll->lig->script_lang_index!=SLI_NESTED &&
+		    SCWorthOutputting(ll->lig->u.lig.lig) ) {
+		for ( j=0; j<cnt; ++j )
+		    if ( ligtags[j].tag==ll->lig->tag && ll->lig->flags==ligtags[j].flags &&
+			    ll->lig->script_lang_index == ligtags[j].script_lang_index )
+		break;
+		if ( j==cnt ) {
+		    if ( cnt>=max ) {
+			max += 30;
+			ligtags = grealloc(ligtags,max*sizeof(struct tagflaglang));
+		    }
+		    TagFlagLangFromPST(&ligtags[cnt++],ll->lig);
 		}
-		TagFlagLangFromPST(&ligtags[cnt++],ll->lig);
 	    }
 	}
     }
@@ -3100,7 +3104,8 @@ void otf_dumpgpos(struct alltabs *at, SplineFont *sf) {
 }
 
 void otf_dumpgsub(struct alltabs *at, SplineFont *sf) {
-    /* Ligatures, cjk vertical rotation replacement, arabic forms, small caps */
+    /* substitutions such as: Ligatures, cjk vertical rotation replacement, */
+    /*  arabic forms, small caps, ... */
     SFLigaturePrepare(sf);
     at->gsub = dumpg___info(at, sf, false);
     if ( at->gsub!=NULL ) {
@@ -3179,8 +3184,8 @@ return( 3 );
     else
 return( 1 );
     /* I not quite sure what a componant glyph is. Probably something that */
-    /*  is not in the cmap table and is reference in other glyphs */
-    /* Anyway I never return class 4 */
+    /*  is not in the cmap table and is referenced in other glyphs */
+    /* Anyway I never return class 4 */ /* (I've never seen it used by others) */
 }
 
 void otf_dumpgdef(struct alltabs *at, SplineFont *_sf) {
@@ -3319,6 +3324,7 @@ return;					/* No anchor positioning, no ligature carets */
 	}
 #endif
     }
+
     pos = ftell(at->gdef);
     fseek(at->gdef,8,SEEK_SET);			/* location of lig caret table offset */
     putshort(at->gdef,pos);
