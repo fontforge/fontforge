@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 12-Oct-2002 -->
+  <!-- AP: Last modified: 17-Oct-2002 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -575,6 +575,33 @@ a[4][0] = "Nested array";
 	be merged into the foreground. The file may be specified as for images (except
 	the extension should be "eps" rather than an image extension). PfaEdit is
 	very limitted in its ability to read eps files.
+    </UL>
+  <DT>
+    Export(format[,bitmap-size])
+  <DD>
+    For each selected character in the current font, this command will export
+    that character into a file in the current directory. Format must be a string
+    and must be one of
+    <UL>
+      <LI>
+	eps -- the selected characters will have their splines output into eps files.
+	The files will be named "&lt;glyph-name&gt;_&lt;font-name&gt;.eps".
+      <LI>
+	fig -- the selected characters will have their splines converted (badly)
+	into xfig files. The files will be named
+	"&lt;glyph-name&gt;_&lt;font-name&gt;.fig".
+      <LI>
+	xbm -- The second argument specifies a bitmap font size, the selected characters
+	in that bitmap font will be output as xbm files. The files will be named
+	"&lt;glyph-name&gt;_&lt;font-name&gt;.xbm".
+      <LI>
+	bmp -- The second argument specifies a bitmap font size, the selected characters
+	in that bitmap font will be output as bmp files. The files will be named
+	"&lt;glyph-name&gt;_&lt;font-name&gt;.bmp".
+      <LI>
+	png -- The second argument specifies a bitmap font size, the selected characters
+	in that bitmap font will be output as png files. The files will be named
+	"&lt;glyph-name&gt;_&lt;font-name&gt;.png".
     </UL>
   <DT>
     MergeKern(filename)

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 16-Oct-2002 -->
+  <!-- AP: Last modified: 17-Oct-2002 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -11,7 +11,7 @@
 </H1>
 <UL>
   <LI>
-    ???
+    17-Oct-2002
     <UL>
       <LI>
 	More work on Ik format files
@@ -43,6 +43,28 @@
       <LI>
 	If we read in a gsf font and then generated postscript from that, we weren't
 	able to read in the result.
+      <LI>
+	Added an empty glyph-encoding sub-table to mac FONDs
+      <LI>
+	Save multiple postscript did not save the first sub-font
+      <LI>
+	The second count in BeginChars could be wrong in an sfd file (PfaEdit doesn't
+	care, but I suppose some program might).
+      <LI>
+	Add support for local encoding being UTF-8. Prefs now has an option to try
+	and figure out the encoding from the locale
+      <LI>
+	Display filenames in the local encoding.
+      <LI>
+	There was an erroneous test in simplify which caused PfaEdit to complain
+	about an internal error when in truth all was well.
+      <LI>
+	There was a bad test in dumpbdf
+      <LI>
+	Export will now allow the user to generate png files (if s/he's got the png
+	libraries)
+      <LI>
+	It is possible to invoke Export from a script
     </UL>
   <LI>
     11-Sept-2002
