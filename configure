@@ -12290,6 +12290,17 @@ if test "$no_x" = "yes"; then
  echo " * This version of fontforge will only run scripts. No X libraries *"
  echo " * were found so there is NO user interface!!!!! If you want a UI  *"
  echo " * try installing X11 on your system.                              *"
+ echo " * Caveat: You will probably need to install two packages, the     *"
+ echo " *  base X11 package and the developer SDK package                 *"
  echo " *******************************************************************"
+ case "$host" in
+ *-apple-darwin*)
+  echo ""
+  echo "X11 is optional software on the mac, it does not install automatically"
+  echo " but X11User it is on CD 3 of the OS/X install disks, and X11SDK is on"
+  echo " the Xcode CD. You must install both packages for fontforge to build"
+  echo " with a user interface"
+  ;;
+ esac
 fi
 
