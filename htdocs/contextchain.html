@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 16-Aug-2003 -->
-  <!-- AP: Last modified: 18-Aug-2003 -->
+  <!-- AP: Last modified: 24-Aug-2003 -->
   <TITLE>The dialog for editing Contextual or Chaining Contextual features</TITLE>
 </HEAD>
 <BODY>
@@ -85,32 +85,34 @@ dialog</A>.
 </H3>
 <P>
 Except for the reverse chaining features, any of these may come in one of
-three formats. PfaEdit only allows you to edit two of those formats (it will
-read and write the third, so you won't lose any information if you pass a
-font through pfaedit, but it won't let you change that format).
+three formats.
 <P>
-The simplest format is a list of glyphs. You may specify several glyph sequences
-in a single feature. So the script example above could be specified (quite
-inefficiently) by 4*26 lines like:<BR>
+The simplest format is a list of <A HREF="#Glyphs">glyphs</A>. You may specify
+several glyph sequences in a single feature. So the script example above
+could be specified (quite inefficiently) by 4*26 lines like:<BR>
 <CODE>&nbsp; &nbsp; &nbsp; b a</CODE><BR>
 <CODE>&nbsp; &nbsp; &nbsp; b b</CODE><BR>
 <CODE>&nbsp; &nbsp; &nbsp; ...<BR>
 &nbsp; &nbsp; &nbsp; o a</CODE><BR>
 <CODE>&nbsp; &nbsp; &nbsp; ...</CODE>
 <P>
-The next format (which PfaEdit does not let you edit) allows you to specify
-a list of classes. In the script example we would define 2 classes:<BR>
+The next format allows you to specify a list of
+<A HREF="#Classes">classes</A>. In the script example we would define 2
+classes:<BR>
 <CODE>&nbsp; &nbsp; &nbsp; [bovw]</CODE><BR>
 <CODE>&nbsp; &nbsp; &nbsp; [ac-np-ux-z]</CODE><BR>
-and define a pattern as:<BR>
-<CODE>&nbsp; &nbsp; &nbsp; class1 [class1,class2]</CODE>
+and define two patterns as:<BR>
+<CODE>&nbsp; &nbsp; &nbsp; class1 [class2]<BR>
+&nbsp; &nbsp; &nbsp; class1 [class1]</CODE>
 <P>
 The third format is the most general and allows you to specify your pattern
-by a seperate list of glyphs for each character position:<BR>
+by a <A HREF="#Coverage">seperate list of glyphs</A> for each character
+position:<BR>
 <CODE>&nbsp; &nbsp; &nbsp; [bovw] [a-z]</CODE><BR>
 <BR CLEAR=ALL>
 <H3>
-  <IMG SRC="contextchain-coverage.png" WIDTH="476" HEIGHT="503" ALIGN="Right">Coverage
+  <IMG SRC="contextchain-coverage.png" WIDTH="476" HEIGHT="503" ALIGN="Right"><A
+      NAME="Coverage">Coverage</A>
 </H3>
 <P>
 This display shows a list whose entries are coverage tables -- that is lists
@@ -167,7 +169,8 @@ If you wish to cancel this operation press the [&lt;Prev] button and you
 will be returned to the coverage list page (and any changes made here will
 be lost), while pressing [Next&gt;] will accept those changes.<BR CLEAR=ALL>
 <H3>
-  <IMG SRC="contextchain-glyphlists.png" WIDTH="476" HEIGHT="503" ALIGN="Right">Glyphs
+  <IMG SRC="contextchain-glyphlists.png" WIDTH="476" HEIGHT="503" ALIGN="Right"><A
+      NAME="Glyphs">Glyphs</A>
 </H3>
 <P>
 This format allows you to specify several glyph lists to match. In the example
@@ -199,6 +202,36 @@ glyphs any of which could match. So in the example at right, "DE" would match,
 but "E" would not.
 <P>
 As above a set of lookups can be applied after the match occurs.<BR CLEAR=ALL>
+<H3>
+  <IMG SRC="contextchain-class.png" WIDTH="476" HEIGHT="503" ALIGN="Right"><A
+      NAME="Classes">Classes</A>
+</H3>
+<P>
+When specifying a class match, you must specify at least one set of glyph
+classes. (you may also specify seperate sets of classes for the backtrack
+and lookahead lists, or you use the same set for everything). You must also
+specify a list of patterns where each pattern is a list of numbers and each
+number is the index of the class into the class list.
+<P>
+Every set of classes has a magic class at index 0 which matches whatever
+glyphs are not explicitly mentioned in another class. PfaEdit displays this
+by calling it "{Everything Else}". You may not delete, edit nor reorder this
+class. Other classes are just unordered lists of glyph names (rather like
+coverage tables above), however any specific glyph may belong to at most
+one class at a time (whereas a glyph may occur in as many coverage tables
+as desired).<BR CLEAR=ALL>
+<H3>
+  <IMG SRC="contextchain-classlist.png" WIDTH="476" HEIGHT="503" ALIGN="Right">A
+  list of Class numbers
+</H3>
+<P>
+Once you have set up your classes, you may then edit the patterns you want
+to match. To remind you of what your classes are, PfaEdit displays the class
+list underneath the pattern. Clicking on a class will insert that class's
+index into the pattern.
+<P>
+Finally you must set the nested lookups. This is exactly the same as previous
+sequence / lookup settings.<BR CLEAR=ALL>
 <P ALIGN=Center>
 -- <A HREF="fontinfo.html">Up</A> -- <A HREF="overview.html">TOC</A> --
 </BODY></HTML>
