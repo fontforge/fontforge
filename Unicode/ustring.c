@@ -565,12 +565,20 @@ return( utf8buf );
 }
 
 char *u322utf8_copy(const int32 *ubuf) {
-    int i;
+    int i, len;
     char *buf;
 
-    for ( i=0; ubuf[i]!=0; ++i );
-    buf = galloc(i*4+1);
-return( u322utf8_strncpy(buf,ubuf,i*4+1));
+    for ( i=len=0; ubuf[i]!=0; ++i )
+	if ( ubuf[i]<0x80 )
+	    ++len;
+	else if ( ubuf[i]<0x800 )
+	    len += 2;
+	else if ( ubuf[i]<0x10000 )
+	    len += 3;
+	else
+	    len += 4;
+    buf = galloc(len+1);
+return( u322utf8_strncpy(buf,ubuf,len+1));
 }
 
 unichar_t *utf82u_copyn(const char *utf8buf,int len) {

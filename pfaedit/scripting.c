@@ -569,38 +569,87 @@ static void bUnicodeFromName(Context *c) {
 }
 
 static void bChr(Context *c) {
+    char buf[2];
+    char *temp;
+    int i;
+
     if ( c->a.argc!=2 )
 	error( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type!=v_int )
+    else if ( c->a.vals[1].type==v_int ) {
+	if ( c->a.vals[1].u.ival<-128 || c->a.vals[1].u.ival>255 )
+	    error( c, "Bad value for argument" );
+	buf[0] = c->a.vals[1].u.ival; buf[1] = 0;
+	c->return_val.type = v_str;
+	c->return_val.u.sval = copy(buf);
+    } else if ( c->a.vals[1].type==v_arr || c->a.vals[1].type==v_arrfree ) {
+	Array *arr = c->a.vals[1].u.aval;
+	temp = galloc((arr->argc+1)*sizeof(char));
+	for ( i=0; i<arr->argc; ++i ) {
+	    if ( arr->vals[i].type!=v_int )
+		error( c, "Bad type for argument" );
+	    else if ( c->a.vals[1].u.ival<-128 || c->a.vals[1].u.ival>255 )
+		error( c, "Bad value for argument" );
+	    temp[i] = arr->vals[i].u.ival;
+	}
+	temp[i] = 0;
+	c->return_val.type = v_str;
+	c->return_val.u.sval = temp;
+    } else
 	error( c, "Bad type for argument" );
-    else if ( c->a.vals[1].u.ival<-128 || c->a.vals[1].u.ival>255 )
-	error( c, "Bad value for argument" );
-    c->return_val.type = v_str;
-    c->return_val.u.sval = gcalloc(2,1);
-    c->return_val.u.sval[0] = c->a.vals[1].u.ival;
 }
 
 static void bUtf8(Context *c) {
     int32 buf[2];
+    int i;
+    int32 *temp;
 
     if ( c->a.argc!=2 )
 	error( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type!=v_int )
+    else if ( c->a.vals[1].type==v_int ) {
+	if ( c->a.vals[1].u.ival<0 || c->a.vals[1].u.ival>0x10ffff )
+	    error( c, "Bad value for argument" );
+	buf[0] = c->a.vals[1].u.ival; buf[1] = 0;
+	c->return_val.type = v_str;
+	c->return_val.u.sval = u322utf8_copy(buf);
+    } else if ( c->a.vals[1].type==v_arr || c->a.vals[1].type==v_arrfree ) {
+	Array *arr = c->a.vals[1].u.aval;
+	temp = galloc((arr->argc+1)*sizeof(int32));
+	for ( i=0; i<arr->argc; ++i ) {
+	    if ( arr->vals[i].type!=v_int )
+		error( c, "Bad type for argument" );
+	    else if ( arr->vals[i].u.ival<0 || arr->vals[i].u.ival>0x10ffff )
+		error( c, "Bad value for argument" );
+	    temp[i] = arr->vals[i].u.ival;
+	}
+	temp[i] = 0;
+	c->return_val.type = v_str;
+	c->return_val.u.sval = u322utf8_copy(temp);
+	free(temp);
+    } else
 	error( c, "Bad type for argument" );
-    else if ( c->a.vals[1].u.ival<0 || c->a.vals[1].u.ival>0x10ffff )
-	error( c, "Bad value for argument" );
-    buf[0] = c->a.vals[1].u.ival; buf[1] = 0;
-    c->return_val.type = v_str;
-    c->return_val.u.sval = u322utf8_copy(buf);
 }
 
 static void bOrd(Context *c) {
-    if ( c->a.argc!=2 )
+    if ( c->a.argc!=2 && c->a.argc!=3 )
 	error( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type!=v_str )
+    else if ( c->a.vals[1].type!=v_str || ( c->a.argc==3 && c->a.vals[1].type!=v_int ))
 	error( c, "Bad type for argument" );
-    c->return_val.type = v_int;
-    c->return_val.u.ival = (uint8) c->a.vals[1].u.sval[0];
+    if ( c->a.argc==3 ) {
+	if ( c->a.vals[2].u.ival<0 || c->a.vals[2].u.ival>strlen( c->a.vals[1].u.sval ))
+	    error( c, "Bad value for argument" );
+	c->return_val.type = v_int;
+	c->return_val.u.ival = (uint8) c->a.vals[1].u.sval[c->a.vals[2].u.ival];
+    } else {
+	int i, len = strlen(c->a.vals[1].u.sval);
+	c->return_val.type = v_arrfree;
+	c->return_val.u.aval = galloc(sizeof(Array));
+	c->return_val.u.aval->argc = len;
+	c->return_val.u.aval->vals = galloc(len*sizeof(Val));
+	for ( i=0; i<len; ++i ) {
+	    c->return_val.u.aval->vals[i].type = v_int;
+	    c->return_val.u.aval->vals[i].u.ival = (uint8) c->a.vals[1].u.sval[i];
+	}
+    }
 }
 
 /* **** File menu **** */
