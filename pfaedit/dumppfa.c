@@ -712,10 +712,16 @@ static void dumpfontinfo(void (*dumpchar)(int ch,void *data), void *data, Spline
 	if ( strchr(sf->copyright,'\n')!=NULL || strchr(sf->copyright,'\r')!=NULL )
 	    dumpascomments(dumpchar,data,sf->copyright);
     }
-    if ( sf->fullname )
-	dumpf(dumpchar,data," /FullName (%s) readonly def\n", sf->fullname );
-    if ( sf->familyname )
-	dumpf(dumpchar,data," /FamilyName (%s) readonly def\n", sf->familyname );
+    if ( sf->fullname ) {
+	dumpf(dumpchar,data," /FullName (" );
+	dumpcarefully(dumpchar,data,sf->fullname);
+	dumpf(dumpchar,data,") readonly def\n" );
+    }
+    if ( sf->familyname ) {
+	dumpf(dumpchar,data," /FamilyName (" );
+	dumpcarefully(dumpchar,data,sf->familyname);
+	dumpf(dumpchar,data,") readonly def\n" );
+    }
     if ( sf->weight )
 	dumpf(dumpchar,data," /Weight (%s) readonly def\n", sf->weight );
     if ( sf->pfminfo.fstype!=-1 ) 
