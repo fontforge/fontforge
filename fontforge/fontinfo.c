@@ -513,8 +513,36 @@ static const unichar_t expandedgerm[] = { 'B','r','e','i','t',  '\0' };
 static const unichar_t outlinegerm[] = { 'K','o','n','t','u','r','e','r','t',  '\0' };
 
 static const unichar_t regularspan[] = { 'N','o','r','m','a','l',  '\0' };
-static const unichar_t boldspan[] = { 'N','i','g','r','i','t','a',  '\0' };
+static const unichar_t boldspan[] = { 'N','e','g','r','i','t','a',  '\0' };
+static const unichar_t lightspan[] = { 'F','i','n','a',  '\0' };
+static const unichar_t blackspan[] = { 'S','u','p','e','r','n','e','g','r','a',  '\0' };
 static const unichar_t italicspan[] = { 'C','u','r','s','i','v','a',  '\0' };
+static const unichar_t condensedspan[] = { 'C','o','n','d','e','n','s','a','d','a',  '\0' };
+static const unichar_t expandedspan[] = { 'A','m','p','l','i','d','a',  '\0' };
+
+static const unichar_t regulardutch[] = { 'R','e','g','e','l','m','a','t','i','g',  '\0' };
+static const unichar_t bolddutch[] = { 'V','e','t',  '\0' };
+static const unichar_t lightdutch[] = { 'L','i','c','h','t',  '\0' };
+static const unichar_t blackdutch[] = { 'E','x','t','r','a',' ','v','e','t',  '\0' };
+static const unichar_t italicdutch[] = { 'C','u','r','s','i','e','f',  '\0' };
+static const unichar_t condenseddutch[] = { 'S','m','a','l',  '\0' };
+static const unichar_t expandeddutch[] = { 'B','r','e','e','d',  '\0' };
+
+static const unichar_t regularswed[] = { 'M','a','g','e','r',  '\0' };
+static const unichar_t boldswed[] = { 'F','e','t',  '\0' };
+static const unichar_t lightswed[] = { 'E','x','t','r','a','f','i','n',  '\0' };
+static const unichar_t blackswed[] = { 'E','x','t','r','a','f','e','t',  '\0' };
+static const unichar_t italicswed[] = { 'K','u','r','s','i','v',  '\0' };
+static const unichar_t condensedswed[] = { 'S','m','a','l',  '\0' };
+static const unichar_t expandedswed[] = { 'B','r','e','d',  '\0' };
+
+static const unichar_t regularnor[] = { 'V','a','n','l','i','g',  '\0' };
+static const unichar_t boldnor[] = { 'H','a','l','v','f','e','t',  '\0' };
+static const unichar_t lightnor[] = { 'M','a','g','e','r',  '\0' };
+static const unichar_t blacknor[] = { 'F','e','t',  '\0' };
+static const unichar_t italicnor[] = { 'K','u','r','s','i','v',  '\0' };
+static const unichar_t condensednor[] = { 'S','m','a','l',  '\0' };
+static const unichar_t expandednor[] = { 'S','p','e','r','r','e','t',  '\0' };
 
 static const unichar_t regularital[] = { 'N','o','r','m','a','l','e',  '\0' };
 static const unichar_t demiboldital[] = { 'N','e','r','r','e','t','t','o',  '\0' };
@@ -563,21 +591,28 @@ static const unichar_t condensedhu[] = { 'K','e','s','k','e','n','y',  '\0' };
 static const unichar_t expandedhu[] = { 'S','z',0xe9,'l','e','s',  '\0' };
 static const unichar_t outlinehu[] = { 'K','o','n','t',0xfa,'r','o','s',  '\0' };
 
-static struct langstyle regs[] = { {0x409, regulareng}, { 0x40c, regularfren }, { 0x410, regularital }, { 0x407, regulargerm }, { 0x40a, regularspan }, { 0x419, regularru }, { 0x40e, regularhu }, { 0 }};
+static struct langstyle regs[] = { {0x409, regulareng}, { 0x40c, regularfren }, { 0x410, regularital }, { 0x407, regulargerm }, { 0x40a, regularspan }, { 0x419, regularru }, { 0x40e, regularhu },
+	{ 0x413, regulardutch}, { 0x41d, regularswed }, { 0x414, regularnor }, { 0 }};
 static struct langstyle meds[] = { {0x409, mediumeng}, { 0x410, mediumital }, { 0x40c, mediumfren }, { 0x407, mediumgerm }, { 0x40e, mediumhu }, { 0 }};
 static struct langstyle books[] = { {0x409, bookeng}, { 0x410, bookital }, { 0x407, bookgerm }, { 0x40e, bookhu }, { 0x40e, bookhu2 }, { 0 }};
-static struct langstyle bolds[] = { {0x409, boldeng}, { 0x410, boldital }, { 0x40c, boldfren }, { 0x407, boldgerm }, { 0x407, boldgerm2 }, { 0x40a, boldspan}, { 0x419, boldru }, { 0x40e, boldhu }, { 0x40e, boldhu2 }, { 0 }};
-static struct langstyle italics[] = { {0x409, italiceng}, { 0x410, italicital }, { 0x40c, italicfren }, { 0x407, italicgerm }, { 0x40a, italicspan}, { 0x419, italicru }, { 0x40e, italichu }, { 0 }};
+static struct langstyle bolds[] = { {0x409, boldeng}, { 0x410, boldital }, { 0x40c, boldfren }, { 0x407, boldgerm }, { 0x407, boldgerm2 }, { 0x40a, boldspan}, { 0x419, boldru }, { 0x40e, boldhu }, { 0x40e, boldhu2 }, 
+	{ 0x413, bolddutch}, { 0x41d, boldswed }, { 0x414, boldnor }, { 0 }};
+static struct langstyle italics[] = { {0x409, italiceng}, { 0x410, italicital }, { 0x40c, italicfren }, { 0x407, italicgerm }, { 0x40a, italicspan}, { 0x419, italicru }, { 0x40e, italichu },
+	{ 0x413, italicdutch}, { 0x41d, italicswed }, { 0x414, italicnor },  { 0 }};
 static struct langstyle obliques[] = { {0x409, obliqueeng}, { 0x410, obliqueital }, { 0x40c, obliquefren }, { 0x407, obliquegerm }, { 0x419, obliqueru }, { 0x40e, obliquehu }, { 0x40e, obliquehu2 }, { 0 }};
 static struct langstyle demibolds[] = { {0x409, demiboldeng}, {0x409, demiboldeng3}, {0x409, demiboldeng5},
 	{ 0x410, demiboldital }, { 0x40c, demiboldfren }, { 0x40c, demiboldfren2 }, { 0x407, demiboldgerm }, { 0x407, demiboldgerm2 },
 	{ 0x419, demiboldru }, { 0x40e, demiboldhu }, { 0x40e, demiboldhu2 },{ 0 }};
 static struct langstyle heavys[] = { {0x409, heavyeng}, { 0x410, heavyital }, { 0x419, heavyru }, { 0x40e, heavyhu }, { 0x40e, heavyhu2 }, { 0 }};
-static struct langstyle blacks[] = { {0x409, blackeng}, { 0x410, blackital }, { 0x40c, blackfren }, { 0x407, blackgerm }, { 0x419, blackru }, { 0x40e, blackhu }, { 0x40e, blackhu2 }, { 0 }};
+static struct langstyle blacks[] = { {0x409, blackeng}, { 0x410, blackital }, { 0x40c, blackfren }, { 0x407, blackgerm }, { 0x419, blackru }, { 0x40e, blackhu }, { 0x40e, blackhu2 }, { 0x40a, blackspan }, 
+	{ 0x413, blackdutch}, { 0x41d, blackswed }, { 0x414, blacknor }, { 0 }};
 static struct langstyle thins[] = { {0x409, thineng}, { 0x410, thinital }, { 0x419, thinru }, { 0x40e, thinhu }, { 0 }};
-static struct langstyle lights[] = { {0x409, lighteng}, {0x410, lightital}, {0x40c, lightfren}, {0x407, lightgerm}, { 0x419, lightru }, { 0x40e, lighthu }, { 0 }};
-static struct langstyle condenseds[] = { {0x409, condensedeng}, {0x410, condensedital}, {0x40c, condensedfren}, {0x407, condensedgerm}, { 0x419, condensedru }, { 0x40e, condensedhu }, { 0 }};
-static struct langstyle expandeds[] = { {0x409, expandedeng}, {0x410, expandedital}, {0x40c, expandedfren}, {0x407, expandedgerm}, { 0x419, expandedru }, { 0x40e, expandedhu }, { 0 }};
+static struct langstyle lights[] = { {0x409, lighteng}, {0x410, lightital}, {0x40c, lightfren}, {0x407, lightgerm}, { 0x419, lightru }, { 0x40e, lighthu }, { 0x40a, lightspan }, 
+	{ 0x413, lightdutch}, { 0x41d, lightswed }, { 0x414, lightnor }, { 0 }};
+static struct langstyle condenseds[] = { {0x409, condensedeng}, {0x410, condensedital}, {0x40c, condensedfren}, {0x407, condensedgerm}, { 0x419, condensedru }, { 0x40e, condensedhu }, { 0x40a, condensedspan }, 
+	{ 0x413, condenseddutch}, { 0x41d, condensedswed }, { 0x414, condensednor }, { 0 }};
+static struct langstyle expandeds[] = { {0x409, expandedeng}, {0x410, expandedital}, {0x40c, expandedfren}, {0x407, expandedgerm}, { 0x419, expandedru }, { 0x40e, expandedhu }, { 0x40a, expandedspan }, 
+	{ 0x413, expandeddutch}, { 0x41d, expandedswed }, { 0x414, expandednor }, { 0 }};
 static struct langstyle outlines[] = { {0x409, outlineeng}, {0x40c, outlinefren}, {0x407, outlinegerm}, {0x40e, outlinehu}, { 0 }};
 static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, heavys, blacks,
 	lights, thins, italics, obliques, condenseds, expandeds, outlines, NULL };
