@@ -2391,9 +2391,9 @@ return;
 		AddNumber2(gb,-20,round);
 		cur = myround2(h->start,round);
 	    } else {
-		AddNumber2(gb,myround2(h->start,round)-last,round);
+		AddNumber2(gb,myround2(h->start+21,round)-last,round);
 		AddNumber2(gb,-21,round);
-		cur = myround2(h->start,round)-21;
+		cur = myround2(h->start+21,round)-21;
 	    }
 	} else {
 	    AddNumber2(gb,myround2(h->start,round)-last,round);
