@@ -1119,23 +1119,28 @@ static void InterpolateChar(SplineFont *new, int enc, SplineChar *base, SplineCh
     if ( base==NULL || other==NULL )
 return;
     sc = SplineCharCreate();
-    *sc = *base;
     sc->enc = enc;
+    sc->unicodeenc = base->unicodeenc;
+    sc->old_enc = base->old_enc;
+    sc->orig_pos = base->orig_pos;
     new->chars[enc] = sc;
-    sc->views = NULL;
     sc->parent = new;
     sc->changed = true;
+    sc->views = NULL;
     sc->dependents = NULL;
     sc->backgroundsplines = NULL;
     sc->backimages = NULL;
     sc->undoes[0] = sc->undoes[1] = sc->redoes[0] = sc->redoes[1] = NULL;
     sc->kerns = NULL;
-    sc->name = copy(sc->name);
+    sc->name = copy(base->name);
     sc->width = base->width + amount*(other->width-base->width);
+    sc->vwidth = base->vwidth + amount*(other->vwidth-base->vwidth);
     sc->lsidebearing = base->lsidebearing + amount*(other->lsidebearing-base->lsidebearing);
     sc->splines = InterpSplineSets(base->splines,other->splines,amount,sc);
     sc->refs = InterpRefs(base->refs,other->refs,amount,sc);
     sc->changedsincelasthinted = true;
+    sc->widthset = base->widthset;
+    sc->glyph_class = base->glyph_class;
 }
 
 static void IFixupSC(SplineFont *sf, SplineChar *sc,int i) {
