@@ -477,3 +477,184 @@ return; 	/* Do nothing, need at least three regions */
 	RegionControl(cv,&b,cnt);
     }
 }
+
+static void MakeParallel(Spline *e1, Spline *e2, SplinePoint *mobile) {
+    /* Splines e1&e2 are to be made parallel */
+    /* The spline containing mobile is the one which is to be moved */
+    Spline *temp;
+    double xdiff, ydiff, axdiff, aydiff;
+    SplinePoint *other;
+
+    if ( e1->to==mobile || e1->from==mobile ) {
+	temp = e1;
+	e1 = e2;
+	e2 = temp;
+    }
+    /* Now the spline to be moved is e2 */
+    other = e2->from==mobile ? e2->to : e2->from;
+
+    if ( (axdiff = xdiff = e1->to->me.x-e1->from->me.x)<0 ) axdiff = -axdiff;
+    if ( (aydiff = ydiff = e1->to->me.y-e1->from->me.y)<0 ) aydiff = -aydiff;
+    if ( aydiff > axdiff ) {
+	/* Hold the y coordinate fixed in e2 and move the x coord appropriately */
+	int oldx = mobile->me.x;
+	mobile->me.x = (mobile->me.y-other->me.y)*xdiff/ydiff + other->me.x;
+	mobile->nextcp.x += mobile->me.x-oldx;
+	mobile->prevcp.x += mobile->me.x-oldx;
+    } else {
+	int oldy = mobile->me.y;
+	mobile->me.y = (mobile->me.x-other->me.x)*ydiff/xdiff + other->me.y;
+	mobile->nextcp.y += mobile->me.y-oldy;
+	mobile->prevcp.y += mobile->me.y-oldy;
+    }
+    if ( mobile->next!=NULL )
+	SplineRefigure(mobile->prev);
+    if ( mobile->prev!=NULL )
+	SplineRefigure(mobile->next);
+}
+
+static void MakeParallelogram(Spline *e11, Spline *e12, Spline *e21, Spline *e22,
+	SplinePoint *mobile) {
+    /* Splines e11&e12 are to be made parallel, as are e21&e22 */
+    /* The spline containing mobile is the one which is to be moved */
+    Spline *temp;
+    SplinePoint *other1, *other2, *unconnected;
+    double denom;
+
+    if ( e11->to==mobile || e11->from==mobile ) {
+	temp = e11;
+	e11 = e12;
+	e12 = temp;
+    }
+    if ( e21->to==mobile || e21->from==mobile ) {
+	temp = e21;
+	e21 = e22;
+	e22 = temp;
+    }
+    /* Now the splines to be moved are e?2, while e?1 is held fixed */
+    other1 = e12->from==mobile ? e12->to : e12->from;
+    other2 = e22->from==mobile ? e22->to : e22->from;
+    unconnected = e11->from==other2 ? e11->to : e11->from;
+
+    denom = (unconnected->me.y-other1->me.y)*(unconnected->me.x-other2->me.x) -
+	    (unconnected->me.y-other2->me.y)*(unconnected->me.x-other1->me.x);
+    if ( denom>-.0001 && denom<.0001 ) {
+	/* The two splines e11 and e21 are essentially parallel, so we can't */
+	/*  move mobile to the place where they intersect */
+	mobile->me = unconnected->me;
+    } else {
+	mobile->me.y =
+	    ((other2->me.x-other1->me.x)*(unconnected->me.y-other1->me.y)*
+		    (unconnected->me.y-other2->me.y) -
+		other2->me.y*(unconnected->me.y-other2->me.y)*(unconnected->me.x-other1->me.x) +
+		other1->me.y*(unconnected->me.y-other1->me.y)*(unconnected->me.x-other2->me.x))/
+	     denom;
+	if ( unconnected->me.y-other1->me.y==0 )
+	    mobile->me.x = other1->me.x + (unconnected->me.x-other2->me.x)/(unconnected->me.y-other2->me.y)*
+		    (mobile->me.y-other1->me.y);
+	else
+	    mobile->me.x = other2->me.x + (unconnected->me.x-other1->me.x)/(unconnected->me.y-other1->me.y)*
+		    (mobile->me.y-other2->me.y);
+    }
+    mobile->nextcp = mobile->prevcp = mobile->me;
+    SplineRefigure(mobile->prev);
+    SplineRefigure(mobile->next);
+}
+
+static int CommonEndPoint(Spline *s1, Spline *s2) {
+return( s1->to==s2->to || s1->to==s2->from || s1->from==s2->to || s1->from==s2->from );
+}
+
+void CVMakeParallel(CharView *cv) {
+    /* takes exactly four selected points and tries to find two lines between */
+    /*  them which it then makes parallel */
+    /* If the points are a quadralateral then we make it a parallelogram */
+    /* If the points define 3 lines then throw out the middle one */
+    /* If the points define 2 lines then good */
+    /* Else complain */
+    /* If possible, fix things by moving the lastselpt */
+    SplinePoint *pts[4];
+    Spline *edges[4];
+    int cnt=0, mobilis;
+    SplineSet *ss;
+    SplinePoint *sp;
+
+    for ( ss = *cv->heads[cv->drawmode]; ss!=NULL; ss=ss->next ) {
+	for ( sp=ss->first; ; ) {
+	    if ( sp->selected ) {
+		if ( cnt>=4 )
+return;
+		pts[cnt++] = sp;
+	    }
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp == ss->first )
+	break;
+	}
+    }
+    if ( cnt!=4 )
+return;
+
+    for ( mobilis=0; mobilis<4; ++mobilis )
+	if ( pts[mobilis]==cv->lastselpt )
+    break;
+    if ( mobilis==4 ) mobilis=3;		/* lastselpt didn't match, pick one */
+
+    cnt=0;
+    if ( pts[0]->next!=NULL && pts[0]->next->islinear &&
+	    (pts[0]->next->to==pts[1] ||
+	     pts[0]->next->to==pts[2] ||
+	     pts[0]->next->to==pts[3]) &&
+	     (pts[0]->me.x!=pts[0]->next->to->me.x || pts[0]->me.y!=pts[0]->next->to->me.y))
+	 edges[cnt++] = pts[0]->next;
+    if ( pts[1]->next!=NULL && pts[1]->next->islinear &&
+	    (pts[1]->next->to==pts[0] ||
+	     pts[1]->next->to==pts[2] ||
+	     pts[1]->next->to==pts[3]) &&
+	     (pts[1]->me.x!=pts[1]->next->to->me.x || pts[1]->me.y!=pts[1]->next->to->me.y))
+	 edges[cnt++] = pts[1]->next;
+    if ( pts[2]->next!=NULL && pts[2]->next->islinear &&
+	    (pts[2]->next->to==pts[0] ||
+	     pts[2]->next->to==pts[1] ||
+	     pts[2]->next->to==pts[3]) &&
+	     (pts[2]->me.x!=pts[2]->next->to->me.x || pts[2]->me.y!=pts[2]->next->to->me.y))
+	 edges[cnt++] = pts[2]->next;
+    if ( pts[3]->next!=NULL && pts[3]->next->islinear &&
+	    (pts[3]->next->to==pts[0] ||
+	     pts[3]->next->to==pts[1] ||
+	     pts[3]->next->to==pts[2]) &&
+	     (pts[3]->me.x!=pts[3]->next->to->me.x || pts[3]->me.y!=pts[3]->next->to->me.y))
+	 edges[cnt++] = pts[3]->next;
+
+    if ( cnt<2 ) {
+	GWidgetErrorR(_STR_NotEnoughLines,_STR_NotEnoughLines);
+return;
+    } else if ( cnt==2 && CommonEndPoint(edges[0],edges[1]) ) {
+	GWidgetErrorR(_STR_CantParallel,_STR_ShareCommonEndpoint);
+return;
+    }
+
+    CVPreserveState(cv);
+    if ( cnt==4 ) {
+	int second=3, third=1, fourth=2;
+	if ( !CommonEndPoint(edges[0],edges[1])) {
+	    second = 1; third = 3;
+	} else if ( !CommonEndPoint(edges[0],edges[2])) {
+	    second = 2;
+	    fourth = 3;
+	}
+	MakeParallelogram(edges[0],edges[second], edges[third],edges[fourth],
+		pts[mobilis]);
+    } else if ( cnt==3 ) {
+	if ( !CommonEndPoint(edges[0],edges[1]) )
+	    MakeParallel(edges[0],edges[1],pts[mobilis]);
+	else if ( !CommonEndPoint(edges[0],edges[2]) )
+	    MakeParallel(edges[0],edges[2],pts[mobilis]);
+	else
+	    MakeParallel(edges[1],edges[2],pts[mobilis]);
+    } else {
+	MakeParallel(edges[0],edges[1],pts[mobilis]);
+    }
+    CVCharChangedUpdate(cv);
+}

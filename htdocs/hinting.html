@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 3-May-2001 -->
-  <!-- AP: Last modified: 6-May-2001 -->
+  <!-- AP: Last modified: 29-Oct-2001 -->
   <TITLE>Hinting</TITLE>
 </HEAD>
 <BODY>
@@ -10,7 +10,7 @@
   Hinting
 </H1>
 <P>
-Postscript originally required that hints do not overlap. Now it requires
+Postscript originally required that hints should not overlap. Now it requires
 that any active set of hints be non-overlapping, but it allows you to change
 sets as you move through the character.
 <P>
@@ -86,6 +86,64 @@ the hints, and will mark the font as in need of having its hints regenerated.
 In an OpenType (Type2) font PfaEdit will read in all the hints, but it will
 have to figure out by itself where those hints are active (it will not read
 that from the font file).
+<H2>
+  Hinting and TrueType
+</H2>
+<P>
+Hinting TrueType fonts opens a far wider range of posibilities. I have added
+several types of hints that are specific to truetype (and will be ignored
+by the postscript generation routines). These by no means exhaust the
+capabilities of TrueType, I'm working on another tool for TrueType hinting,
+called <A HREF="TtfMod/index.html">ttfmod</A> (it doesn't do much yet though).
+<UL>
+  <LI>
+    Diagonal Stem Hints<BR>
+    These look similar to the horizontal and vertical stem hints that postscript
+    understands but they allow you to constrain the width of diagonal stems as
+    well.
+  <LI>
+    Minimum Distance Hints<BR>
+    TrueType allows you to say that the distance between two features should
+    never vanish. Every stem hint will automatically have one of these across
+    it, but there may be other places where they will be useful. In particular
+    you can insure that there is always white space after a character by putting
+    a minimum distance hint between a point on the right edge of that character
+    and the width line, also these hints can be used to solve the serif problems
+    mentioned above.
+  <LI>
+    Round to Grid<BR>
+    TrueType can move points to the rasterization grid before rasterizing characters.
+    Stem hints and minimum distance hints will automagically be rounded, but
+    there might be other cases where rounding is useful.
+</UL>
+<H2>
+  Examples of Minimum Distance Hinting
+</H2>
+<P>
+<TABLE BORDER CELLPADDING="2">
+  <TR>
+    <TD><IMG SRC="Ehinted.png" WIDTH="189" HEIGHT="208"></TD>
+    <TD><IMG SRC="EhintedTtf.png" WIDTH="127" HEIGHT="145"><BR>
+      <SMALL>A fully hinted glyph is<BR>
+      completely grid fit, but<BR>
+      the difference between<BR>
+      stem lengths is lost.</SMALL></TD>
+  </TR>
+  <TR>
+    <TD><IMG SRC="Efore.png" WIDTH="188" HEIGHT="208"></TD>
+    <TD><IMG SRC="EforeTtf.png" WIDTH="127" HEIGHT="145"><SMALL><BR>
+      One attempt to solve the<BR>
+      above problem, compare<BR>
+      to below.</SMALL></TD>
+  </TR>
+  <TR>
+    <TD><IMG SRC="Eback.png" WIDTH="189" HEIGHT="208"></TD>
+    <TD><IMG SRC="EbackTtf.png" WIDTH="127" HEIGHT="145"><SMALL><BR>
+      Note how the different<BR>
+      directions in the md hint<BR>
+      change the rasterization</SMALL></TD>
+  </TR>
+</TABLE>
 <H2>
   Hint questions:
 </H2>

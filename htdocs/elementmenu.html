@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 1-Oct-2001 -->
+  <!-- AP: Last modified: 29-Oct-2001 -->
   <TITLE>The Element Menu</TITLE>
 </HEAD>
 <BODY>
@@ -56,11 +56,13 @@ This menu is not present in the Metrics View.
     <A HREF="#Align">Align</A>
     <UL>
       <LI>
-	<A HREF="#Average">Average Points</A>
+	<A HREF="elementmenu.html#Average">Average Points</A>
       <LI>
-	<A HREF="#Space-Pt">Space Points</A>
+	<A HREF="elementmenu.html#Space-Pts">Space Points</A>
       <LI>
-	<A HREF="#Space-Region">Space Regions</A>
+	<A HREF="elementmenu.html#Space-Regions">Space Regions</A>
+      <LI>
+	<A HREF="#Parallel">Make Parallel</A>
     </UL>
   <LI>
     <A HREF="#Round">Round to Int</A>
@@ -292,6 +294,17 @@ This menu is not present in the Metrics View.
 	&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
 	<IMG SRC="Spacem_1.png" WIDTH="140" HEIGHT="108"> &nbsp; &nbsp; &nbsp; &nbsp;
 	<IMG SRC="Spacem_2.png" WIDTH="145" HEIGHT="108">
+      <DT>
+	Make <A NAME="Parallel">Parallel</A>
+      <DD>
+	If four points are selected, and there are two lines between them, then PfaEdit
+	will make those lines parallel. If there are four lines between them (ie.
+	they form a quadralateral, then PfaEdit will turn it into a parallelogram.
+	(note, this only works on lines, not on curved splines)<BR>
+	The last point selected will be the one moved (sometimes PfaEdit doesn't
+	remember which point was selected last, then it will just pick one randomly.
+	If you don't want that to happen, select your points and then single click
+	on the one you want moved).
     </DL>
   <DT>
     <A NAME="Round">Round</A> to Int

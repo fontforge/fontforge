@@ -1574,11 +1574,11 @@ static void FVMenuClearHints(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
 	sc->manualhints = true;
-	StemInfoFree(sc->hstem);
-	StemInfoFree(sc->vstem);
+	StemInfosFree(sc->hstem);
+	StemInfosFree(sc->vstem);
 	sc->hstem = sc->vstem = NULL;
 	sc->hconflicts = sc->vconflicts = false;
-	DStemInfoFree(sc->dstem);
+	DStemInfosFree(sc->dstem);
 	sc->dstem = NULL;
 	MinimumDistancesFree(sc->md);
 	sc->md = NULL;

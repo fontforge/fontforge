@@ -2313,7 +2313,8 @@ return( true );
 #define MID_Average	2219
 #define MID_SpacePts	2220
 #define MID_SpaceRegion	2221
-#define MID_ShowDependents	2222
+#define MID_MakeParallel	2222
+#define MID_ShowDependents	2223
 #define MID_Corner	2301
 #define MID_Tangent	2302
 #define MID_Curve	2303
@@ -3083,6 +3084,11 @@ static void CVMenuConstrain(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 			    2);
 }
 
+static void CVMenuMakeParallel(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    CVMakeParallel(cv);
+}
+
 static void CVMenuRound2Int(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     int anysel = CVAnySel(cv,NULL,NULL,NULL);
@@ -3237,6 +3243,9 @@ static void allistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  break;
 	  case MID_SpaceRegion:
 	    mi->ti.disabled = selpoints<3;
+	  break;
+	  case MID_MakeParallel:
+	    mi->ti.disabled = selpoints!=4;
 	  break;
         }
     }
@@ -3736,8 +3745,10 @@ static GMenuItem ptlist[] = {
 
 static GMenuItem allist[] = {
     { { (unichar_t *) _STR_AveragePts, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'A' }, '@', ksm_control|ksm_shift, NULL, NULL, CVMenuConstrain, MID_Average },
-    { { (unichar_t *) _STR_SpacePts, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '#', ksm_control|ksm_shift, NULL, NULL, CVMenuConstrain, MID_SpacePts },
+    { { (unichar_t *) _STR_SpacePts, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, '#', ksm_control|ksm_shift, NULL, NULL, CVMenuConstrain, MID_SpacePts },
     { { (unichar_t *) _STR_SpaceRegions, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'R' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuConstrain, MID_SpaceRegion },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_MakeParallel, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuMakeParallel, MID_MakeParallel },
     { NULL }
 };
 

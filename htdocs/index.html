@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 21-Oct-2001 -->
+  <!-- AP: Last modified: 29-Oct-2001 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -51,6 +51,9 @@ Contents
     <A HREF="index.html#Lacks">Things missing...</A>
   <LI>
     <A HREF="#known-bugs">Known Bugs</A>
+</UL>
+<UL>
+  <LI>
   <LI>
     <A HREF="#bugs">Reporting Bugs</A>
   <LI>
@@ -66,17 +69,15 @@ know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-011021.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 21-Oct-2001
+    <A HREF="pfaedit-011029.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 29-Oct-2001
   <LI>
     <A HREF="pfaedit-solaris-010901.tgz">Download pfaedit Solaris 8.0
     </A>executable Version: 1-Sept-2001
   <LI>
     <A HREF="pfaedit-010906-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
-    Version: 5-Sept-2001
-  <LI>
-    <A HREF="pfaedit-010925-1.ppc.rpm">Download pfaedit linux-ppc suse 7.1
-    </A>binary rpm Version: 25-Sept-2001
+    Version: 5-Sept-2001<A HREF="pfaedit-010925-1.ppc.rpm">Download pfaedit linux-ppc
+    suse 7.1 </A>binary rpm Version: 25-Sept-2001
   <LI>
     <A HREF="http://packages.debian.org/unstable/x11/pfaedit.html">A debian package
     is available at the debian site.</A>
@@ -87,21 +88,21 @@ know when you do</A>.
     <A HREF="ftp://nchrem.tnw.tudelft.nl/pub/pfaedit/">An OpenVMS executable
     </A>(by Jacob Jansen): Version Approximately 23-Sept-2001<BR>
     &nbsp;
-  <LI>
-    If you want to do autotracing around character images you should also download
-    Martin Weber's <A HREF="http://sourceforge.net/projects/autotrace/">autotrace
-    program.</A>
-  <LI>
-    If you want to edit CID keyed fonts you need these
-    <A HREF="cidmaps.tgz">character set descriptions</A>.
 </UL>
+<P>
+If you want to do autotracing around character images you should also download
+Martin Weber's <A HREF="http://sourceforge.net/projects/autotrace/">autotrace
+program.</A>
+<P>
+If you want to edit CID keyed fonts you need these
+<A HREF="cidmaps.tgz">character set descriptions</A>.
 <H2>
   <A NAME="source">Source</A> distribution
 </H2>
 <P>
 You can download a <A HREF="pfaedit-010906-1.src.rpm">source RPM</A>: Version:
 5-Sept-2001<BR>
-Or you can download the following three packages. Version: 21-Oct-2001
+Or you can download the following three packages. Version: 29-Oct-2001
 <UL>
   <LI>
     <A HREF="libgunicode-011011.tgz">Unicode library source</A> (11-Oct-2001)<BR>
@@ -113,35 +114,35 @@ Or you can download the following three packages. Version: 21-Oct-2001
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
   <LI>
-    <A HREF="pfaedit_src-011021.tgz">Pfaedit source</A> (21-Oct-2001)<BR>
+    <A HREF="pfaedit_src-011029.tgz">Pfaedit source</A> (29-Oct-2001)<BR>
     -- <A HREF="overview.html">docs</A>
   <LI>
-    <A HREF="pfaedit_full-011021.tgz">All three bundled together </A>(21-Oct-2001)
+    <A HREF="pfaedit_full-011029.tgz">All three bundled together </A>(29-Oct-2001)
+</UL>
+<P>
+If you want to do autotracing around character images you should also download
+Martin Weber's <A HREF="http://sourceforge.net/projects/autotrace/">autotrace
+program.</A>
+<P>
+If you want to edit CID keyed fonts you need these
+<A HREF="cidmaps.tgz">character set descriptions</A>.
+<P>
+With the appropriate <A NAME="image-libs">libraries</A>, PfaEdit can import
+png, tiff, and gif images to act as character backgrounds for tracing purposes
+(PfaEdit can import bmp and xbm formats without external libraries). None
+is required for the proper compilation/execution of PfaEdit, if the libraries
+are not present they will not be used. If your machine doesn't have them
+and you want them they are available from:
+<UL>
   <LI>
-    If you want to do autotracing around character images you should also download
-    Martin Weber's <A HREF="http://sourceforge.net/projects/autotrace/">autotrace
-    program.</A>
+    <A HREF="http://www.libpng.org/pub/png/libpng.html">libpng</A> (and required
+    helper <A HREF="http://www.gzip.org/zlib/">zlib</A>)
   <LI>
-    If you want to edit CID keyed fonts you need these
-    <A HREF="cidmaps.tgz">character set descriptions</A>.
+    <A HREF="http://www.libtiff.org/">libtiff</A>
   <LI>
-    With the appropriate <A NAME="image-libs">libraries</A>, PfaEdit can import
-    png, tiff, and gif images to act as character backgrounds for tracing purposes
-    (PfaEdit can import bmp and xbm formats without external libraries). None
-    is required for the proper compilation/execution of PfaEdit, if the libraries
-    are not present they will not be used. If your machine doesn't have them
-    and you want them they are available from:
-    <UL>
-      <LI>
-	<A HREF="http://www.libpng.org/pub/png/libpng.html">libpng</A> (and required
-	helper <A HREF="http://www.gzip.org/zlib/">zlib</A>)
-      <LI>
-	<A HREF="http://www.libtiff.org/">libtiff</A>
-      <LI>
-	<A HREF="http://prtr-13.ucsc.edu/~badger/software/libungif/index.shtml">libungif</A>
-      <LI>
-	<A HREF="http://www.ijg.org/">libjpeg</A>
-    </UL>
+    <A HREF="http://prtr-13.ucsc.edu/~badger/software/libungif/index.shtml">libungif</A>
+  <LI>
+    <A HREF="http://www.ijg.org/">libjpeg</A>
 </UL>
 <P>
 PfaEdit has been ported to the following systems (at some point in its life)
@@ -226,6 +227,67 @@ up into one <A HREF="pfaedit_htdocs-010925.tgz">tgz file</A> 25-Sept-2001.
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    ???
+    <UL>
+      <LI>
+	Change type1 encoding vectors so that they start with a for loop setting
+	everything to notdef. older versions of dvipdfm assume it's there
+      <LI>
+	Added two new concepts to hinting which only apply to truetype:
+	<UL>
+	  <LI>
+	    You can specify that a certain point should be rounded to the grid in x or
+	    y<BR>
+	    (note: points on hints don't need this, they'll always be rounded)
+	  <LI>
+	    You can specify that the x or y distance between two points should never
+	    vanish (this is called Minimum Distance)<BR>
+	    (note: each hint implies one of these going from one side of the hint to
+	    the other, also there is an implied one of these between any two non-overlapping
+	    hints)<BR>
+	    You can also specify that the distance between a point and the width should
+	    never vanish. This means that there will always be at least one pixel between
+	    that point and the advance width of the character.
+	</UL>
+      <LI>
+	I removed the serif checker from the ttf instruction generator and moved
+	it to the autohinter (with some changes of course) and it now generates minimum
+	distances.
+      <LI>
+	I added a minimum distance between the last stem of a character and the width.
+      <LI>
+	I added a user interface to display and control these
+      <LI>
+	I realized I was misinterpretting the ttf docs (again) and that IUP worked
+	better than I thought, and so I removed my own interpolation code (thank
+	you freetype! it is so good to see what the instructions do.)
+      <LI>
+	Cleaned up some rather technical issues in the truetype instruction generation
+	occasioned by non-overlapping and non-intersecting hints.
+      <LI>
+	PfaEdit will now read (but not produce) '.gsf' files. These are yet another
+	postscript format, like a pfa but without the eexec encoding. Ghostscript
+	uses them (others may, I think Wadalab did...).
+      <LI>
+	Oops. In encodings containing characters with no defined postscript unicode
+	names, then the name generated for an unused character was wrong.
+      <LI>
+	Oops. PfaEdit thought all user defined encodings were two byte encodings
+	and produced a warning message for them when generating type1 fonts.
+      <LI>
+	Added a force encoding flag to the Font Info dlg. This is for those cases
+	where PfaEdit reads in a font but can't figure out what the proper encoding
+	is, then doing a force encoding will simply rename all the characters to
+	match what they should be in the chosen encoding.
+      <LI>
+	Oops, neither afm nor bdf files were correctly normalized for fonts whose
+	em size wasn't 1000.
+      <LI>
+	Improved bdf "CHARSET_COLLECTIONS" output.
+      <LI>
+	Added a command to make two lines parallel
+    </UL>
   <LI>
     21-Oct-2001
     <UL>
@@ -422,6 +484,9 @@ prepared to save frequently and always work on a copy of the original.
   <LI>
     The MetaFont command doesn't work well.
   <LI>
+    PfaEdit will not get the correct offset for composit glyphs where offsets
+    are specified by point matching rather than as x,y values.
+  <LI>
     PfaEdit does not deal with vertical metrics (for CJK characters).
   <LI>
     ???
@@ -488,7 +553,7 @@ The following people have helped debug pfaedit. Many thanks!
   <LI>
     <A HREF="http://www.mp3.com/aurora-australis/">Harald ?Gleis?</A>
   <LI>
-    Valek FIlippov
+    Valek Filippov
   <LI>
     Pasi Eronen
   <LI>

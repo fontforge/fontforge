@@ -30,6 +30,7 @@
 #include <utype.h>
 #include <ustring.h>
 #include <time.h>
+#include <math.h>
 
 extern char *zapfnomen[];
 extern short zapfwx[];
@@ -285,12 +286,14 @@ static void AfmLigOut(FILE *afm, SplineChar *sc) {
 
 static void AfmSplineCharX(FILE *afm, SplineChar *sc, int enc) {
     DBounds b;
+    int em = (sc->parent->ascent+sc->parent->descent);
 
     SplineCharFindBounds(sc,&b);
     /*fprintf( afm, "CX <%04x> ; WX %d ; N %s ; B %d %d %d %d ;",*/
     fprintf( afm, "C %d ; WX %d ; N %s ; B %d %d %d %d ;\n",
-	    enc, sc->width, sc->name,
-	    (int) b.minx, (int) b.miny, (int) b.maxx, (int) b.maxy );
+	    enc, sc->width*1000/em, sc->name,
+	    (int) floor(b.minx*1000/em), (int) floor(b.miny*1000/em),
+	    (int) ceil(b.maxx*1000/em), (int) ceil(b.maxy*1000/em) );
     if (sc->ligofme!=NULL)
 	AfmLigOut(afm,sc);
     putc('\n',afm);
@@ -307,11 +310,13 @@ static void AfmZapfCharX(FILE *afm, int zi) {
 
 static void AfmSplineChar(FILE *afm, SplineChar *sc, int enc) {
     DBounds b;
+    int em = (sc->parent->ascent+sc->parent->descent);
 
     SplineCharFindBounds(sc,&b);
     fprintf( afm, "C %d ; WX %d ; N %s ; B %d %d %d %d ;",
-	    enc, sc->width, sc->name,
-	    (int) b.minx, (int) b.miny, (int) b.maxx, (int) b.maxy );
+	    enc, sc->width*1000/em, sc->name,
+	    (int) floor(b.minx*1000/em), (int) floor(b.miny*1000/em),
+	    (int) ceil(b.maxx*1000/em), (int) ceil(b.maxy*1000/em) );
     if (sc->ligofme!=NULL)
 	AfmLigOut(afm,sc);
     putc('\n',afm);
@@ -320,11 +325,13 @@ static void AfmSplineChar(FILE *afm, SplineChar *sc, int enc) {
 
 static void AfmCIDChar(FILE *afm, SplineChar *sc, int enc) {
     DBounds b;
+    int em = (sc->parent->ascent+sc->parent->descent);
 
     SplineCharFindBounds(sc,&b);
     fprintf( afm, "C -1 ; WOX %d ; N %d ; B %d %d %d %d ;",
-	    sc->width, enc,
-	    (int) b.minx, (int) b.miny, (int) b.maxx, (int) b.maxy );
+	    sc->width*1000/em, enc,
+	    (int) floor(b.minx*1000/em), (int) floor(b.miny*1000/em),
+	    (int) ceil(b.maxx*1000/em), (int) ceil(b.maxy*1000/em) );
     putc('\n',afm);
     GProgressNext();
 }
@@ -345,10 +352,11 @@ return( cnt );
 
 static void AfmKernPairs(FILE *afm, SplineChar *sc) {
     KernPair *kp;
+    int em = (sc->parent->ascent+sc->parent->descent);
 
     for ( kp = sc->kerns; kp!=NULL; kp=kp->next ) {
 	if ( strcmp(kp->sc->name,".notdef")!=0 && kp->off!=0 )
-	    fprintf( afm, "KPX %s %s %d\n", sc->name, kp->sc->name, kp->off );
+	    fprintf( afm, "KPX %s %s %d\n", sc->name, kp->sc->name, kp->off*1000/em );
     }
 }
 
@@ -387,6 +395,7 @@ int AfmSplineFont(FILE *afm, SplineFont *sf, int formattype) {
     int iscid = ( formattype==ff_cid || formattype==ff_otfcid );
     time_t now;
     SplineChar *sc;
+    int em = (sf->ascent+sf->descent);
 
     SFLigaturePrepare(sf);
 
@@ -471,16 +480,17 @@ int AfmSplineFont(FILE *afm, SplineFont *sf, int formattype) {
 	fprintf( afm, "EncodingScheme %s\n", EncodingName(sf->encoding_name));
     }
     if ( iscid ) CIDFindBounds(sf,&b); else SplineFontFindBounds(sf,&b);
-    fprintf( afm, "FontBBox %d %d %d %d\n", (int) b.minx, (int) b.miny,
-	    (int) b.maxx, (int) b.maxy );
+    fprintf( afm, "FontBBox %d %d %d %d\n",
+	    (int) floor(b.minx*1000/em), (int) floor(b.miny*1000/em),
+	    (int) ceil(b.maxx*1000/em), (int) ceil(b.maxy*1000/em) );
     if ( caph!=0 )
-	fprintf( afm, "CapHeight %d\n", caph );
+	fprintf( afm, "CapHeight %d\n", caph*1000/em );
     if ( xh!=0 )
-	fprintf( afm, "XHeight %d\n", xh );
+	fprintf( afm, "XHeight %d\n", xh*1000/em );
     if ( ash!=0 )
-	fprintf( afm, "Ascender %d\n", ash );
+	fprintf( afm, "Ascender %d\n", ash*1000/em );
     if ( dsh!=0 )
-	fprintf( afm, "Descender %d\n", dsh );
+	fprintf( afm, "Descender %d\n", dsh*1000/em );
 
     anyzapf = false;
     if ( type0 && sf->encoding_name==em_unicode ) {

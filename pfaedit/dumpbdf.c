@@ -138,6 +138,7 @@ static void calculate_bounding_box(BDFFont *font,
 static void BDFDumpChar(FILE *file,BDFFont *font,BDFChar *bdfc,int enc) {
     int r,c;
     int bpl;
+    int em = ( font->sf->ascent+font->sf->descent );	/* Just in case em isn't 1000, be prepared to normalize */
 
     BCCompressBitmap(bdfc);
     if ( bdfc->enc==0xa0 && strcmp(bdfc->sc->name,"space")==0 )
@@ -147,7 +148,7 @@ static void BDFDumpChar(FILE *file,BDFFont *font,BDFChar *bdfc,int enc) {
     else
 	fprintf( file, "STARTCHAR %s\n", bdfc->sc->name );
     fprintf( file, "ENCODING %d\n", enc );
-    fprintf( file, "SWIDTH %d 0\n", bdfc->sc->width );
+    fprintf( file, "SWIDTH %d 0\n", bdfc->sc->width*1000/em );
     fprintf( file, "DWIDTH %d 0\n", bdfc->width );
     fprintf( file, "BBX %d %d %d %d\n", bdfc->xmax-bdfc->xmin+1, bdfc->ymax-bdfc->ymin+1,
 	    bdfc->xmin, bdfc->ymin );
@@ -197,6 +198,8 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding) {
     char fontname[300];
     int fbb_height, fbb_width, fbb_descent, fbb_lbearing;
     char *pt;
+    uint32 codepages[2];
+    int i;
 
     if ( AllSame(font,&avg,&cnt))
 	mono="M";
@@ -282,7 +285,53 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding) {
 	fprintf( file, "CHARSET_REGISTRY \"%s\"\n", encoding );
     if (( pt = strrchr(encoding,'-'))==NULL ) pt = "-1";
     fprintf( file, "CHARSET_ENCODING \"%s\"\n", pt+1 );
-    fprintf( file, "CHARSET_COLLECTIONS \"ASCII %s\"\n", encoding );
+
+    OS2FigureCodePages(font->sf,codepages);
+    fprintf( file, "CHARSET_COLLECTIONS \"" );
+    if ( codepages[0]&0xff )
+	fprintf( file, "ASCII " );
+    else {
+	for ( i=32; i<127 && i<font->sf->charcnt; ++i )
+	    /* I'll accept a missing glyph, but not a badly encoded one */
+	    if ( font->sf->chars[i]!=NULL || font->sf->chars[i]->unicodeenc!=i )
+	break;
+	if ( i==127 )
+	    fprintf( file, "ASCII ");
+    }
+    if ( (codepages[0]&1) && font->encoding_name!=em_iso8859_1 )
+	fprintf( file, "ISOLatin1Encoding " );
+    if ( (codepages[0]&2) && font->encoding_name!=em_iso8859_2 )
+	fprintf( file, "ISO-8859-2 " );
+    if ( (codepages[0]&4) && font->encoding_name!=em_iso8859_5 )
+	fprintf( file, "ISO-8859-5 " );
+    if ( (codepages[0]&8) && font->encoding_name!=em_iso8859_7 )
+	fprintf( file, "ISO-8859-7 " );
+    if ( (codepages[0]&0x10) && font->encoding_name!=em_iso8859_9 )
+	fprintf( file, "ISO-8859-9 " );
+    if ( (codepages[0]&0x20) && font->encoding_name!=em_iso8859_8 )
+	fprintf( file, "ISO-8859-8 " );
+    if ( (codepages[0]&0x40) && font->encoding_name!=em_iso8859_6 )
+	fprintf( file, "ISO-8859-6 " );
+    if ( (codepages[0]&0x80) && font->encoding_name!=em_iso8859_4 )
+	fprintf( file, "ISO-8859-4 " );
+    if ( (codepages[0]&0x10000) && font->encoding_name!=em_iso8859_11 )
+	fprintf( file, "ISO-8859-11 " );
+    if ( (codepages[0]&0x20000) && font->encoding_name==em_unicode )
+	fprintf( file, "JIS-208 " );
+    if ( (codepages[0]&0x40000) && font->encoding_name==em_unicode )
+	fprintf( file, "GB-2312 " );
+    if ( (codepages[0]&0x80000) && font->encoding_name==em_unicode )
+	fprintf( file, "KSC-5601 " );
+    if ( (codepages[0]&0x100000) && font->encoding_name==em_unicode )
+	fprintf( file, "BIG5 " );
+    if ( (codepages[0]&0x80000000) && font->encoding_name!=em_symbol )
+	fprintf( file, "Symbol " );
+#if 0
+    if ( (codepages[0]&0x20000000) && font->encoding_name!=em_mac )
+	fprintf( file, "MacRoman " );
+#endif
+    fprintf( file, "%s\"\n", encoding );
+
     fprintf( file, "FULL_NAME \"%s\"\n", font->sf->fullname );
 
     if ( font->sf->copyright==NULL )
