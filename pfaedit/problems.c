@@ -54,6 +54,8 @@ struct problems {
     unsigned int bitmaps: 1;
     unsigned int advancewidth: 1;
     unsigned int vadvancewidth: 1;
+    unsigned int stem3: 1;
+    unsigned int showexactstem3: 1;
     unsigned int explain: 1;
     unsigned int done: 1;
     unsigned int doneexplain: 1;
@@ -74,6 +76,7 @@ static int openpaths=1, pointstooclose=1/*, missing=0*/, doxnear=0, doynear=0;
 static int doynearstd=1, linestd=1, cpstd=1, cpodd=1, hintnopt=0, ptnearhint=0;
 static int hintwidth=0, direction=0, flippedrefs=1, bitmaps=0;
 static int cidblank=0, cidmultiple=1, advancewidth=0, vadvancewidth=0;
+static int stem3=0, showexactstem3=0;
 static real near=3, xval=0, yval=0, widthval=50, advancewidthval=0, vadvancewidthval=0;
 
 #define CID_Stop		2001
@@ -107,6 +110,8 @@ static real near=3, xval=0, yval=0, widthval=50, advancewidthval=0, vadvancewidt
 #define CID_AdvanceWidthVal	1023
 #define CID_VAdvanceWidth	1024
 #define CID_VAdvanceWidthVal	1025
+#define CID_Stem3		1026
+#define CID_ShowExactStem3	1027
 
 
 static void FixIt(struct problems *p) {
@@ -178,6 +183,7 @@ return;
     _STR_ProbLineItal, _STR_ProbAboveItal, _STR_ProbBelowItal, _STR_ProbRightItal, _STR_ProbLeftItal
     _STR_ProbAboveOdd, _STR_ProbBelowOdd, _STR_ProbRightOdd, _STR_ProbLeftOdd
     _STR_ProbHintControl
+    _STR_ProbHint3*
 */
 
     SCPreserveState(p->sc,false);
@@ -596,6 +602,116 @@ return( true );
 return( false );
 }
 
+static int Hint3Check(struct problems *p,StemInfo *h) {
+    StemInfo *h2, *h3;
+
+    /* Must be three hints to be interesting */
+    if ( h==NULL || (h2=h->next)==NULL || (h3=h2->next)==NULL )
+return(false);
+    if ( h3->next!=NULL ) {
+	StemInfo *bad, *goods[3];
+	if ( h3->next->next!=NULL )	/* Don't try to find a subset with 5 */
+return(false);
+	if ( h->width==h2->width || h->width==h3->width ) {
+	    goods[0] = h;
+	    if ( h->width==h2->width ) {
+		goods[1] = h2;
+		if ( h->width==h3->width && h->width!=h3->next->width ) {
+		    goods[2] = h3;
+		    bad = h3->next;
+		} else if ( h->width!=h3->width && h->width==h3->next->width ) {
+		    goods[2] = h3->next;
+		    bad = h3;
+		} else
+return(false);
+	    } else if ( h->width==h3->width && h->width==h3->next->width ) {
+		goods[1] = h3;
+		goods[2] = h3->next;
+		bad = h2;
+	    } else
+return(false);
+	} else if ( h2->width == h3->width && h2->width==h3->next->width ) {
+	    bad = h;
+	    goods[0] = h2; goods[1] = h3; goods[2] = h3->next;
+	} else
+return(false);
+	if ( goods[2]->start-goods[1]->start == goods[1]->start-goods[0]->start ) {
+	    bad->active = true;
+	    ExplainIt(p,p->sc,_STR_ProbHint3Four,0,0);
+	    if ( !missinghint(p->sc->hstem,bad) || !missinghint(p->sc->vstem,bad))
+		bad->active = false;
+	    if ( p->ignorethis )
+		p->stem3 = false;
+return( true );
+	}
+return(false);
+    }
+
+    if ( h->width==h2->width && h->width==h3->width &&
+	    h2->start-h->start == h3->start-h2->start ) {
+	if ( p->showexactstem3 ) {
+	    ExplainIt(p,p->sc,_STR_NoProbHint3,0,0);
+	    if ( p->ignorethis )
+		p->showexactstem3 = false;
+	}
+return( false );		/* It IS a stem3, so don't complain */
+    }
+
+    if ( h->width==h2->width && h->width==h3->width ) {
+	if ( h2->start-h->start+p->near > h3->start-h2->start &&
+		h2->start-h->start-p->near < h3->start-h2->start ) {
+	    ExplainIt(p,p->sc,_STR_ProbHint3Spacing,0,0);
+	    if ( p->ignorethis )
+		p->stem3 = false;
+return( true );
+	}
+return( false );
+    }
+
+    if ( (h2->start-h->start+p->near > h3->start-h2->start &&
+	     h2->start-h->start-p->near < h3->start-h2->start ) ||
+	    (h2->start-h->start-h->width+p->near > h3->start-h2->start-h2->width &&
+	     h2->start-h->start-h->width-p->near < h3->start-h2->start-h2->width )) {
+	if ( h->width==h2->width ) {
+	    if ( h->width+p->near > h3->width && h->width-p->near < h3->width ) {
+		h3->active = true;
+		ExplainIt(p,p->sc,_STR_ProbHint3Width,0,0);
+		if ( !missinghint(p->sc->hstem,h3) || !missinghint(p->sc->vstem,h3))
+		    h3->active = false;
+		if ( p->ignorethis )
+		    p->stem3 = false;
+return( true );
+	    } else
+return( false );
+	}
+	if ( h->width==h3->width ) {
+	    if ( h->width+p->near > h2->width && h->width-p->near < h2->width ) {
+		h2->active = true;
+		ExplainIt(p,p->sc,_STR_ProbHint3Width,0,0);
+		if ( !missinghint(p->sc->hstem,h2) || !missinghint(p->sc->vstem,h2))
+		    h2->active = false;
+		if ( p->ignorethis )
+		    p->stem3 = false;
+return( true );
+	    } else
+return( false );
+	}
+	if ( h2->width==h3->width ) {
+	    if ( h2->width+p->near > h->width && h2->width-p->near < h->width ) {
+		h->active = true;
+		ExplainIt(p,p->sc,_STR_ProbHint3Width,0,0);
+		if ( !missinghint(p->sc->hstem,h) || !missinghint(p->sc->vstem,h))
+		    h->active = false;
+		if ( p->ignorethis )
+		    p->stem3 = false;
+return( true );
+	    } else
+return( false );
+	}
+    }
+return( false );
+}
+
 static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
     SplineSet *spl, *test;
     Spline *spline, *first;
@@ -891,11 +1007,12 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		h->active = true;
 		changed = true;
 		ExplainIt(p,sc,_STR_ProbHintControl,0,0);
+		if ( !missinghint(sc->hstem,h))
+		    h->active = false;
 		if ( p->ignorethis ) {
 		    p->hintwithnopt = false;
 	break;
 		}
-		h->active = false;
 		if ( missinghint(sc->hstem,h))
       goto restarthhint;
 	    }
@@ -1019,6 +1136,11 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
       goto restart;
 	}
     }
+
+    if ( p->stem3 && !p->finish )
+	changed |= Hint3Check(p,sc->hstem);
+    if ( p->stem3 && !p->finish )
+	changed |= Hint3Check(p,sc->vstem);
 
     if ( p->direction && !p->finish ) {
 	SplineSet **base, *ret;
@@ -1226,6 +1348,9 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	flippedrefs = p->flippedrefs = GGadgetIsChecked(GWidgetGetControl(gw,CID_FlippedRefs));
 	bitmaps = p->bitmaps = GGadgetIsChecked(GWidgetGetControl(gw,CID_Bitmaps));
 	advancewidth = p->advancewidth = GGadgetIsChecked(GWidgetGetControl(gw,CID_AdvanceWidth));
+	stem3 = p->stem3 = GGadgetIsChecked(GWidgetGetControl(gw,CID_Stem3));
+	if ( stem3 )
+	    showexactstem3 = p->showexactstem3 = GGadgetIsChecked(GWidgetGetControl(gw,CID_ShowExactStem3));
 	if ( p->fv->cidmaster!=NULL ) {
 	    cidmultiple = p->cidmultiple = GGadgetIsChecked(GWidgetGetControl(gw,CID_CIDMultiple));
 	    cidblank = p->cidblank = GGadgetIsChecked(GWidgetGetControl(gw,CID_CIDBlank));
@@ -1254,7 +1379,7 @@ return( true );
 	if ( openpaths || pointstooclose /*|| missing*/ || doxnear || doynear ||
 		doynearstd || linestd || hintnopt || ptnearhint || hintwidth ||
 		direction || p->cidmultiple || p->cidblank || p->flippedrefs ||
-		p->bitmaps || p->advancewidth || p->vadvancewidth ) {
+		p->bitmaps || p->advancewidth || p->vadvancewidth || p->stem3 ) {
 	    DoProbs(p);
 	}
 	p->done = true;
@@ -1277,6 +1402,14 @@ static int Prob_TextChanged(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static int Prob_EnableExact(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	GGadgetSetEnabled(GWidgetGetControl(GGadgetGetWindow(g),CID_ShowExactStem3),
+		GGadgetIsChecked(g));
+    }
+return( true );
+}
+
 static int e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
 	struct problems *p = GDrawGetUserData(gw);
@@ -1289,8 +1422,8 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData pgcd[9], pagcd[5], hgcd[5], rgcd[6], cgcd[5], mgcd[10];
-    GTextInfo plabel[9], palabel[5], hlabel[5], rlabel[6], clabel[5], mlabel[10];
+    GGadgetCreateData pgcd[9], pagcd[5], hgcd[7], rgcd[6], cgcd[5], mgcd[10];
+    GTextInfo plabel[9], palabel[5], hlabel[7], rlabel[6], clabel[5], mlabel[10];
     GTabInfo aspects[9];
     struct problems p;
     char xnbuf[20], ynbuf[20], widthbuf[20], nearbuf[20], awidthbuf[20], vawidthbuf[20];
@@ -1313,7 +1446,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     wattrs.window_title = GStringGetResource(_STR_Findprobs,NULL);
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,218));
-    pos.height = GDrawPointsToPixels(NULL,290);
+    pos.height = GDrawPointsToPixels(NULL,294);
     gw = GDrawCreateTopWindow(NULL,&pos,e_h,&p,&wattrs);
 
     memset(&plabel,0,sizeof(plabel));
@@ -1504,6 +1637,30 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     hgcd[3].gd.handle_controlevent = Prob_TextChanged;
     hgcd[3].data = (void *) CID_HintWidthNear;
     hgcd[3].creator = GTextFieldCreate;
+
+    hlabel[4].text = (unichar_t *) _STR_Hint3;
+    hlabel[4].text_in_resource = true;
+    hgcd[4].gd.label = &hlabel[4];
+    hgcd[4].gd.mnemonic = '3';
+    hgcd[4].gd.pos.x = 3; hgcd[4].gd.pos.y = hgcd[3].gd.pos.y+19;
+    hgcd[4].gd.flags = gg_visible | gg_enabled;
+    if ( stem3 ) hgcd[4].gd.flags |= gg_cb_on;
+    hgcd[4].gd.popup_msg = GStringGetResource(_STR_Hint3Popup,NULL);
+    hgcd[4].gd.cid = CID_Stem3;
+    hgcd[4].gd.handle_controlevent = Prob_EnableExact;
+    hgcd[4].creator = GCheckBoxCreate;
+
+    hlabel[5].text = (unichar_t *) _STR_ShowExactHint3;
+    hlabel[5].text_in_resource = true;
+    hgcd[5].gd.label = &hlabel[5];
+    hgcd[5].gd.mnemonic = 'S';
+    hgcd[5].gd.pos.x = hgcd[4].gd.pos.x+5; hgcd[5].gd.pos.y = hgcd[4].gd.pos.y+17;
+    hgcd[5].gd.flags = gg_visible;
+    if ( showexactstem3 ) hgcd[5].gd.flags |= gg_cb_on;
+    if ( stem3 ) hgcd[5].gd.flags |= gg_enabled;
+    hgcd[5].gd.popup_msg = GStringGetResource(_STR_ShowExactHint3Popup,NULL);
+    hgcd[5].gd.cid = CID_ShowExactStem3;
+    hgcd[5].creator = GCheckBoxCreate;
 
 /* ************************************************************************** */
 

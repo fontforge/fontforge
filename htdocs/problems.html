@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 28-Jun-2001 -->
-  <!-- AP: Last modified: 27-Aug-2002 -->
+  <!-- AP: Last modified: 28-Aug-2002 -->
   <TITLE>Finding common font problems automagically</TITLE>
 </HEAD>
 <BODY>
@@ -137,7 +137,7 @@ reference then either the reference or the original character will be drawn
 with a counter-clockwise path. To fix it you should Edit-&gt;Unlink the reference
 and Element-&gt;Correct Direction.<BR Clear=all>
 <P>
-<BIG><STRONG><IMG SRC="findprobs-hint.png" WIDTH="301" HEIGHT="418" ALIGN="Right">Hints
+<BIG><STRONG><IMG SRC="findprobs-hint.png" WIDTH="301" HEIGHT="423" ALIGN="Right">Hints
 controlling no points</STRONG></BIG>
 <P>
 This is a bit esoteric, and is present to provide a work-around for (what
@@ -174,6 +174,21 @@ Usually one wants many of the characters to have a constant stem width, and
 this command will check that all stems near the indicated value are that
 value (again near is defined at the bottom of the page). If PfaEdit finds
 a bad stem it will select it, stop and allow you to fix things.
+<P>
+<BIG><STRONG>Almost stem3 hint</STRONG></BIG>
+<P>
+Postscript has a special hint operator (hstem3 and vstem3) which is designed
+to hint the stems of things like "m" where there are three stems of equal
+width and equally far appart. It is easy for a character not to fit the criteria
+for this operator (which means PfaEdit won't use it). This will detect cases
+that are close to right. I found that I needed to adjust the "Near" value
+to be bigger than the default.
+<P>
+<STRONG><BIG>Show exact stem3</BIG></STRONG>
+<P>
+(this is not a problem, but I found it helpful to be able to distinuish between
+cases where the "almost stem3" above didn't say anything. It might be because
+it was a stem3 or it might be really far off from a stem3)
 <H3>
   <IMG SRC="findprobs-random.png" WIDTH="301" HEIGHT="418" ALIGN="Right"><STRONG>Missing
   Bitmaps</STRONG>
