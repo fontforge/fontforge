@@ -2818,7 +2818,9 @@ return;
 
 	gdisp->last_event_time = event->xbutton.time;
 	gevent.u.mouse.time = event->xbutton.time;
-	if ((redirect = InputRedirection(gdisp->input,gw))!=NULL ) {
+	if ( event->type==MotionNotify && gdisp->grab_window==NULL )
+	    /* Allow simple motion events to go through */;
+	else if ((redirect = InputRedirection(gdisp->input,gw))!=NULL ) {
 	    if ( event->type==ButtonPress )
 		GXDrawBeep((GDisplay *) gdisp);
 return;

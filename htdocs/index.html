@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 24-Feb-2004 -->
+  <!-- AP: Last modified: 27-Feb-2004 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -112,8 +112,8 @@ let me know when you do</A>.
     </A><A NAME="downloads">executable</A> Version: 24-Feb-2004
     <UL>
       <LI>
-	A <A HREF="pfaedit_type3-040224.tgz">build</A> that supports multi-layered
-	editing for type3 fonts, Version: 24-Feb-2004
+	A <A HREF="pfaedit_type3-040227.tgz">build</A> that supports multi-layered
+	editing for type3 fonts, Version: 27-Feb-2004
     </UL>
   <LI>
     <A HREF="pfaedit-040224-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
@@ -163,9 +163,9 @@ PfaEdit's capabilities.
 <P>
 You can download a <A HREF="pfaedit-040224-1.src.rpm">source RPM</A>: Version:
 24-Feb-2004<BR>
-Or you can download the <A HREF="pfaedit_full-040224.tgz">source tree </A>in
+Or you can download the <A HREF="pfaedit_full-040227.tgz">source tree </A>in
 one .tgz file: Version
-24-Feb-2004<!--
+27-Feb-2004<!--
 Or you can download the following three packages. Version: 19-Jan-2002
 <UL>
 <LI>
@@ -597,7 +597,8 @@ and rarely appear on this list.
     There is a fundemental problem when importing a type3 font (or an eps file).
     In an most postscript programs each contour is stroked or filled individually,
     but in a type1 character, all contours are filled together. This can lead
-    to unexpected side-effects if contours overlap.
+    to unexpected side-effects if contours overlap. (configuring pfaedit for
+    <A HREF="multilayer.html">mutlilayered</A> editing can help with this)
   <LI>
     The MetaFont command doesn't work well.
   <LI>
@@ -650,7 +651,7 @@ can.
       <LI>
 	Japanese is provided by KANOU Hiroki.
       <LI>
-	French is provided by Pierre Hanser.
+	French is provided by Pierre Hanser and Yannis Haralambous.
       <LI>
 	Italian is provided by Claudio Beccari
       <LI>
@@ -687,14 +688,6 @@ can.
 	stems)
     </UL>
   <LI>
-    <I>TrueType AAT</I> (Apple Advanced Typography Tables)
-    <UL>
-      <LI>
-	Apple's 'mort' and 'morx' tables use state machines to specify substitutions.
-	Parsing state machines is a dicy business, and my parser is not perfect.
-	If someone has better code I'd love to make use of it.
-    </UL>
-  <LI>
     <I>Tests</I>
     <UL>
       <LI>
@@ -723,7 +716,8 @@ can.
 	looking for samples from languages I don't have anything on, or in styles
 	that I don't have.<BR>
 	I'm also interested in phrases equivalent to "The quick brown fox jumps over
-	the lazy dog.". A short sentence which uses every latin letter.
+	the lazy dog." (pangrams). These are short sentences which use every letter
+	in the script.
     </UL>
   <LI>
     <I>Indic information</I>
@@ -995,6 +989,10 @@ which company has given me the free time to write this program.
 	<A HREF="http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/pfaedit/pfaedit/fonttools/showttf.c">showttf</A>
 	-- Dumps the contents of a truetype/opentype font. Does some error checking
 	too.
+      <LI>
+	<A HREF="http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/pfaedit/pfaedit/fonttools/pcl2ttf.c">pcl2ttf</A>
+	-- Reads a pcl file (to go to an HP printer) and extracts any truetype fonts
+	in it.
     </UL>
   <LI>
     font organizers
