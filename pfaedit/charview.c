@@ -94,12 +94,13 @@ return;
 
 static void CVDrawBB(CharView *cv, GWindow pixmap, DBounds *bb) {
     GRect r;
+    int off = cv->xoff+cv->height-cv->yoff;
 
     r.x =  cv->xoff + rint(bb->minx*cv->scale);
     r.y = -cv->yoff + cv->height - rint(bb->maxy*cv->scale);
     r.width = rint((bb->maxx-bb->minx)*cv->scale);
     r.height = rint((bb->maxy-bb->miny)*cv->scale);
-    GDrawSetDashedLine(pixmap,1,1,0);
+    GDrawSetDashedLine(pixmap,1,1,off);
     GDrawDrawRect(pixmap,&r,0x000000);
     GDrawSetDashedLine(pixmap,0,0,0);
 }
@@ -594,6 +595,7 @@ return;		/* Offscreen */
 static void CVShowMinimumDistance(CharView *cv, GWindow pixmap,MinimumDistance *md) {
     int x1,y1, x2,y2;
     int xa, ya;
+    int off = cv->xoff+cv->height-cv->yoff;
 
     if (( md->x && !cv->showmdx ) || (!md->x && !cv->showmdy))
 return;
@@ -618,13 +620,13 @@ return;
     if ( md->x ) {
 	ya = (y1+y2)/2;
 	GDrawDrawArrow(pixmap, x1,ya, x2,ya, 2, 0xe04040);
-	GDrawSetDashedLine(pixmap,5,5,0);
+	GDrawSetDashedLine(pixmap,5,5,off);
 	GDrawDrawLine(pixmap, x1,ya, x1,y1, 0xe04040);
 	GDrawDrawLine(pixmap, x2,ya, x2,y2, 0xe04040);
     } else {
 	xa = (x1+x2)/2;
 	GDrawDrawArrow(pixmap, xa,y1, xa,y2, 2, 0xe04040);
-	GDrawSetDashedLine(pixmap,5,5,0);
+	GDrawSetDashedLine(pixmap,5,5,off);
 	GDrawDrawLine(pixmap, xa,y1, x1,y1, 0xe04040);
 	GDrawDrawLine(pixmap, xa,y2, x2,y2, 0xe04040);
     }
@@ -639,8 +641,9 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
     Color col;
     DStemInfo *dstem;
     MinimumDistance *md;
+    int off = cv->xoff+cv->height-cv->yoff;
 
-    GDrawSetDashedLine(pixmap,5,5,0);
+    GDrawSetDashedLine(pixmap,5,5,off);
 
     if ( cv->showdhints ) for ( dstem = cv->sc->dstem; dstem!=NULL; dstem = dstem->next ) {
 	CVShowDHint(cv,pixmap,dstem);
@@ -2081,7 +2084,7 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
 	CVMouseUpRuler(cv,event);
       break;
       case cvt_curve: case cvt_corner: case cvt_tangent: case cvt_pen:
-	CVMouseUpPoint(cv);
+	CVMouseUpPoint(cv,event);
       break;
       case cvt_magnify: case cvt_minify: {
 	real cx, cy;
