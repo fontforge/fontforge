@@ -105,7 +105,6 @@ int CVOneContourSel(CharView *cv, SplinePointList **_spl,
     Spline *spline;
     RefChar *refs, *foundref=NULL;
     ImageList *imgs, *foundimg=NULL;
-    AnchorPoint *aps, *foundap=NULL;
 
     *_spl=NULL; *ref=NULL; *img = NULL;
     for ( spl= *cv->heads[cv->drawmode]; spl!=NULL; spl=spl->next ) {
