@@ -65,9 +65,10 @@ typedef struct strokedlg {
 #define CID_Pressure2	1019
 #define CID_WidthTxt	1020
 #define CID_PressureTxt	1021
-	/* For Kanou */
+	/* For Kanou (& me) */
 #define CID_RmInternal	1022
 #define CID_RmExternal	1023
+#define CID_CleanupSelfIntersect	1024
 
 static void CVStrokeIt(void *_cv, StrokeInfo *si) {
     CharView *cv = _cv;
@@ -172,6 +173,7 @@ static int Stroke_OK(GGadget *g, GEvent *e) {
 		lj_miter;
 	si->removeinternal = GGadgetIsChecked( GWidgetGetControl(sw,CID_RmInternal));
 	si->removeexternal = GGadgetIsChecked( GWidgetGetControl(sw,CID_RmExternal));
+	si->removeoverlapifneeded = GGadgetIsChecked( GWidgetGetControl(sw,CID_CleanupSelfIntersect));
 	if ( si->removeinternal && si->removeexternal ) {
 	    GWidgetErrorR(_STR_BadValue,_STR_NotInternalAndExternal);
 	    err = true;
@@ -242,8 +244,6 @@ static void StrokeSetup(StrokeDlg *sd, int calig) {
     GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_BevelJoin), calig==0);
     GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_RoundJoin), calig==0);
     GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_MiterJoin), calig==0);
-    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_RmInternal), calig==0);
-    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_RmExternal), calig==0);
     GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_PenAngle), calig==1);
     GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_PenAngleTxt), calig==1);
     GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_ThicknessRatio), calig==1);
@@ -256,6 +256,10 @@ static void StrokeSetup(StrokeDlg *sd, int calig) {
 	GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_Pressure1), calig!=-1);
 	GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_Pressure2), calig!=-1);
     }
+#if 0
+    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_RmInternal), true);
+    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_RmExternal), calig==0);
+#endif
 }
 
 static int Stroke_CenterLine(GGadget *g, GEvent *e) {
@@ -347,7 +351,7 @@ return( true );
 }
 
 #define SD_Width	230
-#define SD_Height	256
+#define SD_Height	271
 #define FH_Height	(SD_Height+75)
 
 static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeInfo *si) {
@@ -356,11 +360,19 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[31];
-    GTextInfo label[31];
+    GGadgetCreateData gcd[32];
+    GTextInfo label[32];
     int yoff=0;
-    int gcdoff, stroke_gcd;
-    static StrokeInfo defaults = { 25, lj_round, lc_butt, false, false, false, false, false, 3.1415926535897932/4, .2, 50 };
+    int gcdoff, stroke_gcd, width_pos;
+    static StrokeInfo defaults = { 25, lj_round, lc_butt,
+	    /* caligraphic */ false,
+	    /* centerline */  false,
+	    /* toobigwarn */  false,
+	    /* removeexternal */ false,
+	    /* removeinternal */ false,
+	    /* removeoverlapif*/ false,
+	    /* gottoobig */    false,
+	    3.1415926535897932/4, .2, 50 };
     StrokeInfo *def = si?si:&defaults;
     char anglebuf[20], ratiobuf[20], widthbuf[20], width2buf[20],
 	    pressurebuf[20], pressure2buf[20];
@@ -422,7 +434,7 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	label[gcdoff].text_in_resource = true;
 	gcd[gcdoff].gd.mnemonic = 'C';
 	gcd[gcdoff].gd.label = &label[gcdoff];
-	gcd[gcdoff].gd.pos.x = 5; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+6+114+4;
+	gcd[gcdoff].gd.pos.x = 5; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+6+84+4;
 	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (def->caligraphic ? gg_cb_on : 0);
 	gcd[gcdoff].gd.cid = CID_Caligraphic;
 	gcd[gcdoff].gd.handle_controlevent = Stroke_Caligraphic;
@@ -430,7 +442,7 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 
 	stroke_gcd = gcdoff;
 	gcd[gcdoff].gd.pos.x = 1; gcd[gcdoff].gd.pos.y = gcd[gcdoff-2].gd.pos.y+6;
-	gcd[gcdoff].gd.pos.width = SD_Width-2; gcd[gcdoff].gd.pos.height = 114;
+	gcd[gcdoff].gd.pos.width = SD_Width-2; gcd[gcdoff].gd.pos.height = 84;
 	gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
 	gcd[gcdoff++].creator = GGroupCreate;
 
@@ -525,22 +537,6 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	gcd[gcdoff].gd.cid = CID_BevelJoin;
 	gcd[gcdoff++].creator = GRadioCreate;
 
-	label[gcdoff].text = (unichar_t *) _STR_RmInternalContour;
-	label[gcdoff].text_in_resource = true;
-	gcd[gcdoff].gd.label = &label[gcdoff];
-	gcd[gcdoff].gd.pos.x = gcd[gcdoff-4].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+20;
-	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (def->removeinternal?gg_cb_on:0);
-	gcd[gcdoff].gd.cid = CID_RmInternal;
-	gcd[gcdoff++].creator = GCheckBoxCreate;
-
-	label[gcdoff].text = (unichar_t *) _STR_RmExternalContour;
-	label[gcdoff].text_in_resource = true;
-	gcd[gcdoff].gd.label = &label[gcdoff];
-	gcd[gcdoff].gd.pos.x = gcd[gcdoff-1].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+15;
-	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (def->removeexternal?gg_cb_on:0);
-	gcd[gcdoff].gd.cid = CID_RmExternal;
-	gcd[gcdoff++].creator = GCheckBoxCreate;
-
 	label[gcdoff].text = (unichar_t *) _STR_PenAngle;
 	label[gcdoff].text_in_resource = true;
 	gcd[gcdoff].gd.mnemonic = 'A';
@@ -581,6 +577,7 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	gcd[gcdoff].gd.popup_msg = GStringGetResource(_STR_PenHeightRatioPopup,NULL);
 	gcd[gcdoff++].creator = GTextFieldCreate;
 
+	width_pos = gcdoff;
 	label[gcdoff].text = (unichar_t *) _STR_StrokeWidth;
 	label[gcdoff].text_in_resource = true;
 	gcd[gcdoff].gd.mnemonic = 'W';
@@ -654,6 +651,31 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	    gcd[gcdoff].creator = GTextFieldCreate;
 	    gcd[gcdoff++].gd.pos.width = 50;
 	}
+
+	label[gcdoff].text = (unichar_t *) _STR_RmInternalContour;
+	label[gcdoff].text_in_resource = true;
+	gcd[gcdoff].gd.label = &label[gcdoff];
+	gcd[gcdoff].gd.pos.x = gcd[width_pos].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+20;
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (def->removeinternal?gg_cb_on:0);
+	gcd[gcdoff].gd.cid = CID_RmInternal;
+	gcd[gcdoff++].creator = GCheckBoxCreate;
+
+	label[gcdoff].text = (unichar_t *) _STR_RmExternalContour;
+	label[gcdoff].text_in_resource = true;
+	gcd[gcdoff].gd.label = &label[gcdoff];
+	gcd[gcdoff].gd.pos.x = gcd[gcdoff-1].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+15;
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (def->removeexternal?gg_cb_on:0);
+	gcd[gcdoff].gd.cid = CID_RmExternal;
+	gcd[gcdoff++].creator = GCheckBoxCreate;
+
+	label[gcdoff].text = (unichar_t *) _STR_CleanupSelfIntersect;
+	label[gcdoff].text_in_resource = true;
+	gcd[gcdoff].gd.label = &label[gcdoff];
+	gcd[gcdoff].gd.pos.x = gcd[gcdoff-1].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+15;
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (def->removeexternal?gg_cb_on:0);
+	gcd[gcdoff].gd.cid = CID_CleanupSelfIntersect;
+	gcd[gcdoff].gd.popup_msg = GStringGetResource(_STR_CleanupSelfIntersectPopup,NULL);
+	gcd[gcdoff++].creator = GCheckBoxCreate;
 
 	gcd[gcdoff].gd.pos.x = 30-3; gcd[gcdoff].gd.pos.y = (strokeit!=NULL?SD_Height:FH_Height)-30-3;
 	gcd[gcdoff].gd.pos.width = -1;

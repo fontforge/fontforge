@@ -167,7 +167,15 @@ static int rectelipse=0, polystar=0, regular_star=1;
 static real rr_radius=0;
 static int ps_pointcnt=6;
 static real star_percent=1.7320508;	/* Regular 6 pointed star */
-static StrokeInfo expand = { 25, lj_round, lc_butt, false, true, true, false, false, 3.1415926535897932/4, .2, 50 };
+static StrokeInfo expand = { 25, lj_round, lc_butt,
+	    /* caligraphic */ false,
+	    /* centerline */  true,
+	    /* toobigwarn */  true,
+	    /* removeexternal */ false,
+	    /* removeinternal */ false,
+	    /* removeoverlapif*/ false,
+	    /* gottoobig */    false,
+	3.1415926535897932/4, .2, 50 };
 
 real CVRoundRectRadius(void) {
 return( rr_radius );

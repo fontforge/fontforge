@@ -531,6 +531,28 @@ static void SplineSetFixCPs(SplineSet *ss) {
     }
 }
 
+static SplineSet *SSFixupOverlap(StrokeInfo *si,SplineSet *ssplus,SplineSet *ssminus) {
+    ssplus->next = ssminus;
+    ssplus = SplineSetRemoveOverlap(ssplus,over_remove);
+    if ( si->removeinternal || si->removeexternal ) {
+	SplineSet *prev, *spl, *next;
+	prev = NULL;
+	for ( spl=ssplus; spl!=NULL; spl = next ) {
+	    int clock = SplinePointListIsClockwise(spl);
+	    next = spl->next;
+	    if (( !clock && si->removeinternal ) || ( clock && si->removeexternal )) {
+		SplinePointListFree(spl);
+		if ( prev==NULL )
+		    ssplus = next;
+		else
+		    prev->next = next;
+	    } else
+		prev = spl;
+	}
+    }
+return( ssplus );
+}
+    
 SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc) {
     JointPoint first_plus, first_minus, cur_plus, cur_minus;
     SplineSet *ssplus, *ssminus;
@@ -544,7 +566,7 @@ SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc) {
     real t_start, t_end;
     int i,j;
     Spline *first, *spline;
-    int changed = false, reversed = false;
+    int reversed = false;
     double ts[10];
     int pinners[10];
     int cnt;
@@ -593,10 +615,13 @@ return( ssplus );
 	}
 	t_start = (p_tcur>m_tlast)?p_tcur:m_tlast;
 	t_end = (p_tlast<m_tcur)?p_tlast:m_tcur;
-	if (( p_tcur>=p_tlast || m_tcur<=m_tlast ) && !si->toobigwarn ) {
-	    si->toobigwarn = true;
-	    GWidgetErrorR( _STR_BadStroke, _STR_StrokeWidthTooBig,
-		    sc==NULL?"<nameless char>": sc->name );
+	if ( p_tcur>=p_tlast || m_tcur<=m_tlast ) {
+	    si->gottoobig = true;
+	    if ( !si->toobigwarn ) {
+		si->toobigwarn = true;
+		GWidgetErrorR( _STR_BadStroke, _STR_StrokeWidthTooBig,
+			sc==NULL?"<nameless char>": sc->name );
+	    }
 	}
 	if ( spline->knownlinear ||
 /* 0 and 1 are valid values. They happen on circles for example */
@@ -698,25 +723,31 @@ return( ssplus );
 	ssminus->first = ssminus->last = minus;
 	/*SplineSetFixRidiculous(ssplus); SplineSetFixRidiculous(ssminus);*/
 	SplineSetFixCPs(ssplus); SplineSetFixCPs(ssminus);
-	if ( SplinePointListIsClockwise(ssplus))
-	    SplineSetReverse(ssplus);
-	if ( si->removeinternal ) {
-	    if (reversed)  {
-		SplinePointListFree(ssplus);
-		ssplus = ssminus;
-	    } else
-		SplinePointListFree(ssminus);
+	if ( reversed ) {
+	    SplineSet *temp = ssplus;
+	    ssplus = ssminus;
+	    ssminus = temp;
+	}
+	if ( si->removeoverlapifneeded && si->gottoobig )
+	    ssplus = SSFixupOverlap(si,ssplus,ssminus);
+	else if ( si->removeinternal ) {
+	    SplinePointListFree(ssminus);
 	    SplineSetReverse(ssplus);
 	} else if ( si->removeexternal ) {
-	    if (reversed)
-		SplinePointListFree(ssminus);
-	    else {
-		SplinePointListFree(ssplus);
-		ssplus = ssminus;
-	    }
+	    SplinePointListFree(ssplus);
+	    ssplus = ssminus;
 	} else {
 	    ssplus->next = ssminus;
-	    SplineSetsCorrect(ssplus,&changed);
+	    /* I used to do a splineset correct dir here on both, but */
+	    /*  that doesn't work always if a contour self intersects */
+	    /* I think it should always be correct */
+#if 0
+	    /* probably best to leave it clockwise even if it started counter */
+	    if ( reversed ) {
+		SplineSetReverse(ssplus);
+		SplineSetReverse(ssminus);
+	    }
+#endif
 	}
     } else {
 	/*SplineSetFixRidiculous(ssplus);*/
