@@ -2572,6 +2572,7 @@ static SplinePointList *SplinesFromLayers(SplineChar *sc,int *flags, int tostrok
 	    else
 		last->next = sc->layers[layer].splines;
 	    for ( last = sc->layers[layer].splines; last->next!=NULL; last=last->next );
+	    sc->layers[layer].splines = NULL;
 	}
 return( head );
     }
@@ -2758,7 +2759,7 @@ void EntityDefaultStrokeFill(Entity *ent) {
     }
 }
 
-static SplinePointList *SplinesFromEntityChar(EntityChar *ec,int *flags) {
+static SplinePointList *SplinesFromEntityChar(EntityChar *ec,int *flags,int is_stroked) {
     Entity *ent, *next;
     SplinePointList *head=NULL, *last, *new, *nlast, *temp, *each, *transed;
     StrokeInfo si;
@@ -2766,20 +2767,31 @@ static SplinePointList *SplinesFromEntityChar(EntityChar *ec,int *flags) {
     /*SplineSet *spl;*/
     int handle_eraser;
 
-    if ( *flags==-1 )
-	*flags = PsStrokeFlagsDlg();
-
-    if ( *flags & sf_correctdir )
-	EntityCharCorrectDir(ec);
-
     EntityDefaultStrokeFill(ec->splines);
-    handle_eraser = *flags & sf_handle_eraser;
-    if ( handle_eraser )
-	ec->splines = EntityReverse(ec->splines);
+
+    if ( !is_stroked ) {
+	if ( *flags==-1 )
+	    *flags = PsStrokeFlagsDlg();
+    
+	if ( *flags & sf_correctdir )
+	    EntityCharCorrectDir(ec);
+    
+	handle_eraser = *flags & sf_handle_eraser;
+	if ( handle_eraser )
+	    ec->splines = EntityReverse(ec->splines);
+    }
 
     for ( ent=ec->splines; ent!=NULL; ent = next ) {
 	next = ent->next;
-	if ( ent->type == et_splines ) {
+	if ( ent->type == et_splines && is_stroked ) {
+	    if ( head==NULL )
+		head = ent->u.splines.splines;
+	    else
+		last->next = ent->u.splines.splines;
+	    if ( ent->u.splines.splines!=NULL )
+		for ( last = ent->u.splines.splines; last->next!=NULL; last=last->next );
+	    ent->u.splines.splines = NULL;
+	} else if ( ent->type == et_splines ) {
 	    if ( ent->u.splines.stroke.col!=0xffffffff &&
 		    (ent->u.splines.fill.col==0xffffffff || ent->u.splines.stroke_width!=0)) {
 		/* What does a stroke width of 0 mean? PS Says minimal width line */
@@ -2853,15 +2865,15 @@ static SplinePointList *SplinesFromEntityChar(EntityChar *ec,int *flags) {
 return( head );
 }
 
-SplinePointList *SplinesFromEntities(Entity *ent,int *flags) {
+SplinePointList *SplinesFromEntities(Entity *ent,int *flags,int is_stroked) {
     EntityChar ec;
 
     memset(&ec,'\0',sizeof(ec));
     ec.splines = ent;
-return( SplinesFromEntityChar(&ec,flags));
+return( SplinesFromEntityChar(&ec,flags,is_stroked));
 }
 
-SplinePointList *SplinePointListInterpretPS(FILE *ps,int flags) {
+SplinePointList *SplinePointListInterpretPS(FILE *ps,int flags,int is_stroked) {
     EntityChar ec;
     SplineChar sc;
 
@@ -2869,7 +2881,7 @@ SplinePointList *SplinePointListInterpretPS(FILE *ps,int flags) {
     memset(&sc,0,sizeof(sc)); sc.name = "<No particular character>";
     ec.sc = &sc;
     InterpretPS(ps,NULL,&ec,NULL);
-return( SplinesFromEntityChar(&ec,&flags));
+return( SplinesFromEntityChar(&ec,&flags,is_stroked));
 }
 
 Entity *EntityInterpretPS(FILE *ps) {

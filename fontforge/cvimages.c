@@ -301,7 +301,7 @@ return;
     } else
 #endif
     {
-	spl = SplinePointListInterpretPS(ps,flags);
+	spl = SplinePointListInterpretPS(ps,flags,sc->parent->strokedfont);
 	if ( spl==NULL ) {
 #if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Too Complex or Bad"),_("I'm sorry this file is too complex for me to understand (or is erroneous)"));
@@ -359,7 +359,7 @@ void SCImportSVG(SplineChar *sc,int layer,char *path,int doclear) {
 #endif
     {
 	spl = SplinePointListInterpretSVG(path,sc->parent->ascent+sc->parent->descent,
-		sc->parent->ascent);
+		sc->parent->ascent,sc->parent->strokedfont);
 	for ( espl = spl; espl!=NULL && espl->first->next==NULL; espl=espl->next );
 	if ( espl!=NULL )
 	    if ( espl->first->next->order2!=sc->parent->order2 )
