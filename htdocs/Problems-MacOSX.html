@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 24-Sep-2001 -->
-  <!-- AP: Last modified: 8-Nov-2001 -->
+  <!-- AP: Last modified: 17-Nov-2001 -->
   <TITLE>Special issues for PfaEdit on Mac OS/X</TITLE>
 </HEAD>
 <BODY>
@@ -71,25 +71,8 @@ contortions. I hope eventually to ease some of these.
   <DT>
     (4)
   <DD>
-    PfaEdit's own configure script had problems itself. Rather than try and fix
-    these I manually edited the {gdraw,pfaedit}/Makefiles it produced to include
-    the following defines:
-    <UL>
-      <LI>
-	-D_STATIC_LIBUNGIF=1<BR>
-	(only add this if you have built a libungif, of course)
-      <LI>
-	-D_STATIC_LIBPNG=1<BR>
-	(only add this if you have built a libpng, of course)
-      <LI>
-	-DNODYNAMIC=1
-      <LI>
-	-D_CursorsMustBe16x16=1
-    </UL>
-    <P>
-    And added the following libraries to the LIBS line in pfaedit/Makefile: -lpng
-    -lz -lungif<BR>
-    Again assuming you built these libraries
+    PfaEdit's own configure script should now handle the oddities of Mac OS/X
+    building that I'm aware of.
 </DL>
 <P>
 You may find it easier just to download my pre-built binary.
@@ -115,8 +98,8 @@ running. This is free software available from:
 Then gunzip and untar my distribution
 <UL>
   <LI>
-    <A HREF="pfaedit_MacOSX-010924.tgz">Download pfaedit Mac OS/X executable
-    </A>Version: 24-Sept-2001
+    <A HREF="pfaedit_MacOSX-011117.tgz">Download pfaedit Mac OS/X executable
+    </A>Version: 17-Nov-2001
 </UL>
 <PRE>$ sudo -s
 # mkdir /usr/share/pfaedit
@@ -165,5 +148,6 @@ windows.</STRONG></FONT>
     PfaEdit has not been well tested here.
 </OL>
 <P>
-<P>
+<A HREF="http://www.hexley.com/"><IMG SRC="hexley.png" WIDTH="113" HEIGHT="127"></A><BR>
+(Hexley the platypus, unofficial Darwin mascot, copyright Jon Hooper)
 </BODY></HTML>

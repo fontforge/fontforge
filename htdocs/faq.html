@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 11-Nov-2001 -->
+  <!-- AP: Last modified: 17-Nov-2001 -->
   <TITLE>Frequently Asked Questions</TITLE>
 </HEAD>
 <BODY>
@@ -335,7 +335,7 @@ $ xset fp+ `pwd`
 	I don't know how to install a bdf font. I'd look for a utility to convert
 	bdf files to FON files and then drop the FON files into \Windows\Fonts.
       <DT>
-	<STRONG>Macintosh</STRONG>
+	<STRONG>Macintosh OS 9</STRONG>
       <DD>
 	Oh dear. The mac sticks fonts into resource forks and wraps them up in its
 	own headers. Mac fonts aren't compatible with anybody else's, but see the
@@ -347,6 +347,14 @@ $ xset fp+ `pwd`
 	of Oregon has some links that might be helpful</A>.<BR>
 	Once you've converted your fonts you just drop them into the System Folder
 	and they should be available after that.
+      <DT>
+	<STRONG>Macintosh OS X</STRONG>
+      <DD>
+	On OS/X fonts should be placed either in the top-level Library/Fonts directory
+	(By default <CODE>/Mac OS X/Library/Fonts/</CODE>) or in the user's appropriate
+	fonts sub-directory of the user's home directory
+	(<CODE>~/Library/Fonts</CODE>).<BR>
+	I've never actually attempted this.
     </DL>
   <DT>
     <A NAME="How-mac">How do I edit fonts from my macintoy?</A>
@@ -399,8 +407,7 @@ $ xset fp+ `pwd`
     with the issue)<BR>
     <STRONG>Caveat:</STRONG> A postscript font is useless on a macintosh unless
     it is acompanied by at least one bitmap font. If you generate a postscript
-    font make sure you also generate an NFNT as well (this has the
-    FOND).<BR>
+    font make sure you also generate an NFNT as well (this has the FOND).<BR>
     <STRONG>Caveat:</STRONG> The mac is picky about the filename used to contain
     a postscript file. It is based on the postscript font name but suffers a
     transformation. Don't try to rename this file. Basically the rules as I know
