@@ -2435,19 +2435,18 @@ static void bClearHints(Context *c) {
     FVFakeMenus(c->curfv,201);
 }
 
-static void bAddHint(Context *c) {
+static void _AddHint(Context *c,int ish) {
     int i, any;
-    int start, width, ish;
+    int start, width;
     SplineFont *sf = c->curfv->sf;
     StemInfo *h;
 
-    if ( c->a.argc!=4 )
+    if ( c->a.argc!=3 )
 	error( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_int || c->a.vals[2].type!=v_int || c->a.vals[3].type!=v_int )
+    else if ( c->a.vals[1].type!=v_int || c->a.vals[2].type!=v_int )
 	error( c, "Bad argument type" );
-    ish = c->a.vals[1].u.ival;
-    start = c->a.vals[2].u.ival;
-    width = c->a.vals[3].u.ival;
+    start = c->a.vals[1].u.ival;
+    width = c->a.vals[2].u.ival;
     if ( width<=0 && width!=-20 && width!=-21 )
 	error( c, "Bad hint width" );
     any = false;
@@ -2473,6 +2472,14 @@ static void bAddHint(Context *c) {
     if ( !any )
 	fprintf(stderr, "Warning: No characters selected in AddHint(%d,%d,%d)\n",
 		ish, start, width);
+}
+
+static void bAddHHint(Context *c) {
+    _AddHint(c,true);
+}
+
+static void bAddVHint(Context *c) {
+    _AddHint(c,false);
 }
 
 static void bClearCharCounterMasks(Context *c) {
@@ -3648,7 +3655,8 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "bDontAutoHint", bDontAutoHint },
     { "AutoInstr", bAutoInstr },
     { "ClearHints", bClearHints },
-    { "AddHint", bAddHint },
+    { "AddHHint", bAddHHint },
+    { "AddVHint", bAddVHint },
     { "ClearCharCounterMasks", bClearCharCounterMasks },
     { "SetCharCounterMask", bSetCharCounterMask },
     { "ReplaceCharCounterMasks", bReplaceCharCounterMasks },
