@@ -2338,6 +2338,7 @@ return( true );
 #define MID_NoRoundX		2457
 #define MID_RoundY		2458
 #define MID_NoRoundY		2459
+#define MID_ClearWidthMD	2460
 #define MID_Tools	2501
 #define MID_Layers	2502
 #define MID_Center	2600
@@ -3355,22 +3356,36 @@ static void CVMenuAutoHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void CVMenuClearHints(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
+    MinimumDistance *md, *prev, *next;
 
     if ( mi->mid==MID_ClearHStem ) {
-	StemInfoFree(cv->sc->hstem);
+	StemInfosFree(cv->sc->hstem);
 	cv->sc->hstem = NULL;
 	cv->sc->hconflicts = false;
     } else if ( mi->mid==MID_ClearVStem ) {
-	StemInfoFree(cv->sc->vstem);
+	StemInfosFree(cv->sc->vstem);
 	cv->sc->vstem = NULL;
 	cv->sc->vconflicts = false;
     } else if ( mi->mid==MID_ClearDStem ) {
-	DStemInfoFree(cv->sc->dstem);
+	DStemInfosFree(cv->sc->dstem);
 	cv->sc->dstem = NULL;
     } else if ( mi->mid==MID_ClearAllMD ) {
 	MinimumDistancesFree(cv->sc->md);
 	cv->sc->md = NULL;
 	SCClearRounds(cv->sc);
+    } else if ( mi->mid==MID_ClearWidthMD ) {
+	prev=NULL;
+	for ( md=cv->sc->md; md!=NULL; md=next ) {
+	    next = md->next;
+	    if ( md->sp2==NULL ) {
+		if ( prev==NULL )
+		    cv->sc->md = next;
+		else
+		    prev->next = next;
+		chunkfree(md,sizeof(MinimumDistance));
+	    } else
+		prev = md;
+	}
     } else {
 	SCRemoveSelectedMinimumDistances(cv->sc,mi->mid==MID_ClearSelMDX);
     }
@@ -3554,7 +3569,7 @@ static void mdlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
-	  case MID_ClearAllMD:
+	  case MID_ClearAllMD: case MID_ClearWidthMD:
 	    mi->ti.disabled = cv->sc->md==NULL;
 	  break;
 	  case MID_ClearSelMDX: case MID_ClearSelMDY:
@@ -3784,6 +3799,7 @@ static GMenuItem mdlist[] = {
     { { (unichar_t *) _STR_ClearAllMD, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_control, NULL, NULL, CVMenuClearHints, MID_ClearAllMD },
     { { (unichar_t *) _STR_ClearSelXMD, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 's' }, '\0', ksm_control, NULL, NULL, CVMenuClearHints, MID_ClearSelMDX },
     { { (unichar_t *) _STR_ClearSelYMD, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'e' }, '\0', ksm_control, NULL, NULL, CVMenuClearHints, MID_ClearSelMDY },
+    { { (unichar_t *) _STR_ClearWidthMD, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'W' }, '\0', ksm_control, NULL, NULL, CVMenuClearHints, MID_ClearWidthMD },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_AddxMD, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'x' }, GK_F5, 0, NULL, NULL, CVMenuAddMD, MID_AddxMD },
     { { (unichar_t *) _STR_AddyMD, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'y' }, GK_F6, 0, NULL, NULL, CVMenuAddMD, MID_AddyMD },

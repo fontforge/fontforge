@@ -675,6 +675,7 @@ static void FVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_Thirds	2604
 #define MID_AutoHint	2501
 #define MID_ClearHints	2502
+#define MID_ClearWidthMD	2503
 #define MID_OpenBitmap	2700
 #define MID_OpenOutline	2701
 #define MID_Revert	2702
@@ -1595,6 +1596,34 @@ static void FVMenuClearHints(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #endif
 }
 
+static void FVMenuClearWidthMD(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    int i, changed;
+    MinimumDistance *md, *prev, *next;
+
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
+	SplineChar *sc = fv->sf->chars[i];
+	prev=NULL; changed = false;
+	for ( md=sc->md; md!=NULL; md=next ) {
+	    next = md->next;
+	    if ( md->sp2==NULL ) {
+		if ( prev==NULL )
+		    sc->md = next;
+		else
+		    prev->next = next;
+		chunkfree(md,sizeof(MinimumDistance));
+		changed = true;
+	    } else
+		prev = md;
+	}
+	if ( changed ) {
+	    sc->manualhints = true;
+	    SCOutOfDateBackground(sc);
+	    SCUpdateAll(sc);
+	}
+    }
+}
+
 static void FVSetTitle(FontView *fv) {
     unichar_t *title;
 
@@ -1876,7 +1905,7 @@ static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    free(mi->ti.text);
 	    mi->ti.text = u_copy(GStringGetResource(removeOverlap?_STR_Autohint:_STR_FullAutohint,NULL));
 	  break;
-	  case MID_ClearHints:
+	  case MID_ClearHints: case MID_ClearWidthMD:
 	    mi->ti.disabled = anychars==-1;
 	  break;
 	}
@@ -2068,6 +2097,7 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 static GMenuItem htlist[] = {
     { { (unichar_t *) _STR_Autohint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, 'H', ksm_control|ksm_shift, NULL, NULL, FVMenuAutoHint, MID_AutoHint },
     { { (unichar_t *) _STR_ClearHints, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuClearHints, MID_ClearHints },
+    { { (unichar_t *) _STR_ClearWidthMD, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuClearWidthMD, MID_ClearWidthMD },
     { NULL }
 };
 

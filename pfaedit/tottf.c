@@ -2863,6 +2863,24 @@ static void dumpcidglyphs(SplineFont *sf,struct alltabs *at) {
     dumpcffcidhmtx(at,sf);
 }
 
+static int AnyWidthMDs(SplineFont *sf) {
+    int i;
+    MinimumDistance *md;
+
+    if ( sf->subfontcnt!=0 ) {
+	for ( i=0; i<sf->subfontcnt; ++i )
+	    if ( AnyWidthMDs(sf->subfonts[i]))
+return( true );
+    } else {
+	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	    for ( md=sf->chars[i]->md; md!=NULL; md = md->next )
+		if ( md->sp2==NULL )
+return( true );
+	}
+    }
+return( false );
+}
+
 static void sethead(struct head *head,SplineFont *_sf) {
     time_t now;
     uint32 now1904[4];
@@ -2873,7 +2891,9 @@ static void sethead(struct head *head,SplineFont *_sf) {
     head->version = 0x00010000;
     head->checksumAdj = 0;
     head->magicNum = 0x5f0f3cf5;
-    head->flags = 0x13;		/* baseline at 0, lsbline at 0, instructions change metrics */
+    head->flags = 3;
+    if ( AnyWidthMDs(_sf))
+	head->flags = 0x13;		/* baseline at 0, lsbline at 0, instructions change metrics */
     head->emunits = sf->ascent+sf->descent;
 /* Many of the following style names are truncated because that's what URW */
 /*  does. Only 4 characters for each style. Hence "obli" rather than "oblique"*/

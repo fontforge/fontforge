@@ -52,9 +52,29 @@ typedef struct quartic {
 #define ALLOC_CHUNK	100
 #define CHUNK_MAX	100
 
+#ifdef FLAG
+#undef FLAG
+#define FLAG 0xbadcafe
+#endif
+
 #if ALLOC_CHUNK>1
 struct chunk { struct chunk *next; };
+struct chunk2 { struct chunk2 *next; int flag; };
 static struct chunk *chunklists[CHUNK_MAX/4] = { 0 };
+#endif
+
+#if defined(FLAG) && ALLOC_CHUNK>1
+void chunktest(void) {
+    int i;
+    struct chunk2 *c;
+
+    for ( i=2; i<CHUNK_MAX/4; ++i )
+	for ( c=(struct chunk2 *) chunklists[i]; c!=NULL; c=c->next )
+	    if ( c->flag!=FLAG ) {
+		fprintf( stderr, "Chunk memory list has been corrupted\n" );
+		abort();
+	    }
+}
 #endif
 
 void *chunkalloc(int size) {
@@ -68,6 +88,9 @@ return( gcalloc(1,size));
 	fprintf( stderr, "Attempt to allocate something of size %d\n", size );
 return( gcalloc(1,size));
     }
+#ifdef FLAG
+    chunktest();
+#endif
     index = size>>2;
     if ( chunklists[index]==NULL ) {
 	char *pt, *end;
@@ -76,9 +99,15 @@ return( gcalloc(1,size));
 	end = pt+(ALLOC_CHUNK-1)*size;
 	while ( pt<end ) {
 	    ((struct chunk *) pt)->next = (struct chunk *) (pt + size);
+#ifdef FLAG
+	    ((struct chunk2 *) pt)->flag = FLAG;
+#endif
 	    pt += size;
 	}
 	((struct chunk *) pt)->next = NULL;
+#ifdef FLAG
+	((struct chunk2 *) pt)->flag = FLAG;
+#endif
     }
     item = chunklists[index];
     chunklists[index] = item->next;
@@ -98,6 +127,10 @@ return;
 	free(item);
     } else {
 	((struct chunk *) item)->next = chunklists[size>>2];
+#ifdef FLAG
+	if ( size>=sizeof(struct chunk2))
+	    ((struct chunk2 *) item)->flag = FLAG;
+#endif
 	chunklists[size>>2] = (struct chunk *) item;
     }
 # endif
