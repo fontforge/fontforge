@@ -820,6 +820,12 @@ void CVMouseMovePointer(CharView *cv ) {
 	    RealNear(cv->info.x,cv->p.cx) && RealNear(cv->info.y,cv->p.cy) )
 return;
 
+    /* This can happen if they depress on a control point, move it, then use */
+    /*  the arrow keys to move the point itself, and then try to move the cp */
+    /*  again (mouse still depressed) */
+    if (( cv->p.nextcp || cv->p.prevcp ) && cv->p.sp==NULL )
+	cv->p.nextcp = cv->p.prevcp = false;
+
     if ( cv->p.width ) {
 	if ( !cv->recentchange ) CVPreserveWidth(cv,cv->sc->width);
 	cv->sc->width = cv->info.x;
