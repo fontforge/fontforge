@@ -2273,6 +2273,7 @@ static StemInfo *CheckForGhostHints(StemInfo *stems,SplineChar *sc) {
     StemInfo *prev, *s, *n, *snext, *ghosts = NULL;
     SplineSet *spl;
     Spline *spline, *first;
+    SplinePoint *sp;
     real base, width;
     int i,startfound, widthfound;
 
@@ -2312,7 +2313,7 @@ static StemInfo *CheckForGhostHints(StemInfo *stems,SplineChar *sc) {
 
     /* Now look and see if we can find any edges which lie in */
     /*  these zones.  Edges which are not currently in hints */
-    for ( spl = sc->splines; spl!=NULL; spl = spl->next ) {
+    for ( spl = sc->splines; spl!=NULL; spl = spl->next ) if ( spl->first->prev!=NULL ) {
 	first = NULL;
 	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline = spline->to->next ) {
 	    base = spline->from->me.y;
@@ -2327,6 +2328,24 @@ static StemInfo *CheckForGhostHints(StemInfo *stems,SplineChar *sc) {
 		}
 	    }
 	    if ( first==NULL ) first = spline;
+	}
+	/* And check for the horizontal top of a curved surface */
+	for ( sp = spl->first; ; ) {
+	    base = sp->me.y;
+	    if ( !sp->nonextcp && !sp->noprevcp && sp->nextcp.y==base &&
+		    sp->prevcp.y==base ) {
+		for ( i=0; i<bd.bluecnt; ++i ) {
+		    if ( base>=bd.blues[i][0]-1 && base<=bd.blues[i][1]+1 )
+		break;
+		}
+		if ( i!=bd.bluecnt ) {
+		    width = (spline->from->prev->from->me.y > spline->from->me.y)?21:20;
+		    ghosts = GhostAdd(ghosts,stems, base,width,(sp->me.x+sp->prevcp.x)/2,(sp->me.x+sp->nextcp.x)/2);
+		}
+	    }
+	    sp = sp->next->to;
+	    if ( sp == spl->first )
+	break;
 	}
 /* It's just too hard to detect what isn't a dished serifs... */
 /* We find so much stuff that is just wrong. */
@@ -2938,57 +2957,6 @@ static void AutoHintRefs(SplineChar *sc,int removeOverlaps) {
     }
 }
 
-static void SCAddWidthMD(SplineChar *sc) {
-    StemInfo *h;
-    DStemInfo *dh;
-    SplineSet *ss;
-    SplinePoint *sp;
-    int xmax = 0;
-    MinimumDistance *md;
-
-    /* find the max of: vertical stems, diagonal stems, md's */
-
-    if ( sc->vstem==NULL && sc->dstem==NULL && sc->md==NULL )
-return;
-
-    if ( sc->vstem!=NULL ) {
-	for ( h=sc->vstem; h->next!=NULL; h=h->next );
-	xmax = h->width>0?h->start+h->width:h->start;
-    }
-    for ( dh = sc->dstem; dh!=NULL; dh=dh->next ) {
-	if ( dh->rightedgetop.x>xmax ) xmax = dh->rightedgetop.x;
-	if ( dh->rightedgebottom.x>xmax ) xmax = dh->rightedgebottom.x;
-    }
-    for ( md=sc->md; md!=NULL; md=md->next ) {
-	if ( md->x && md->sp1!=NULL && md->sp1->me.x>xmax )
-	    xmax = md->sp1->me.x;
-	if ( md->x && md->sp2!=NULL && md->sp2->me.x>xmax )
-	    xmax = md->sp2->me.x;
-    }
-    if ( xmax<sc->width ) {
-	for ( ss=sc->splines; ss!=NULL; ss=ss->next) {
-	    for ( sp=ss->first ; ; ) {
-		if ( sp->me.x>=xmax-1 && sp->me.x<xmax+1 ) {
-		    md = chunkalloc(sizeof(MinimumDistance));
-		    md->x = true;
-		    md->sp1 = sp;
-		    md->sp2 = NULL;
-		    md->next = sc->md;
-		    sc->md = md;
-		    sp->dontinterpolate = true;
-return;
-		}
-		if ( sp->next==NULL )
-	    break;
-		sp = sp->next->to;
-		if ( sp==ss->first )
-	    break;
-	    }
-	}
-    }
-    /* Couldn't find a point on the last hint. Oh well, no md */
-}
-
 void MDAdd(SplineChar *sc, int x, SplinePoint *sp1, SplinePoint *sp2) {
     StemInfo *h;
     real low, high, temp;
@@ -3053,6 +3021,58 @@ return;
 	md->next = sc->md;
 	sc->md = md;
     }
+}
+
+#if 0
+static void SCAddWidthMD(SplineChar *sc) {
+    StemInfo *h;
+    DStemInfo *dh;
+    SplineSet *ss;
+    SplinePoint *sp;
+    int xmax = 0;
+    MinimumDistance *md;
+
+    /* find the max of: vertical stems, diagonal stems, md's */
+
+    if ( sc->vstem==NULL && sc->dstem==NULL && sc->md==NULL )
+return;
+
+    if ( sc->vstem!=NULL ) {
+	for ( h=sc->vstem; h->next!=NULL; h=h->next );
+	xmax = h->width>0?h->start+h->width:h->start;
+    }
+    for ( dh = sc->dstem; dh!=NULL; dh=dh->next ) {
+	if ( dh->rightedgetop.x>xmax ) xmax = dh->rightedgetop.x;
+	if ( dh->rightedgebottom.x>xmax ) xmax = dh->rightedgebottom.x;
+    }
+    for ( md=sc->md; md!=NULL; md=md->next ) {
+	if ( md->x && md->sp1!=NULL && md->sp1->me.x>xmax )
+	    xmax = md->sp1->me.x;
+	if ( md->x && md->sp2!=NULL && md->sp2->me.x>xmax )
+	    xmax = md->sp2->me.x;
+    }
+    if ( xmax<sc->width ) {
+	for ( ss=sc->splines; ss!=NULL; ss=ss->next) {
+	    for ( sp=ss->first ; ; ) {
+		if ( sp->me.x>=xmax-1 && sp->me.x<xmax+1 ) {
+		    md = chunkalloc(sizeof(MinimumDistance));
+		    md->x = true;
+		    md->sp1 = sp;
+		    md->sp2 = NULL;
+		    md->next = sc->md;
+		    sc->md = md;
+		    sp->dontinterpolate = true;
+return;
+		}
+		if ( sp->next==NULL )
+	    break;
+		sp = sp->next->to;
+		if ( sp==ss->first )
+	    break;
+	    }
+	}
+    }
+    /* Couldn't find a point on the last hint. Oh well, no md */
 }
 
 /* Look for simple serifs (a vertical stem to the left or right of a hinted */
@@ -3213,6 +3233,7 @@ static void SCSerifCheck(SplineChar *sc,StemInfo *hint, int xdir) {
 	}
     }
 }
+#endif
 
 void SplineCharAutoHint( SplineChar *sc, int removeOverlaps ) {
     EIList el;
@@ -3230,9 +3251,11 @@ void SplineCharAutoHint( SplineChar *sc, int removeOverlaps ) {
 
     sc->vstem = SCFindStems(&el,1,removeOverlaps,&sc->dstem,&sc->md);
     sc->hstem = SCFindStems(&el,0,removeOverlaps,NULL,NULL);
+#if 0
     SCSerifCheck(sc,sc->vstem,1);
     SCSerifCheck(sc,sc->hstem,0);
     SCAddWidthMD(sc);
+#endif
     AutoHintRefs(sc,removeOverlaps);
     sc->vconflicts = StemListAnyConflicts(sc->vstem);
     sc->hconflicts = StemListAnyConflicts(sc->hstem);
