@@ -658,6 +658,8 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
     fprintf(sfd, "Descent: %d\n", sf->descent );
     if ( sf->hasvmetrics )
 	fprintf(sfd, "VerticalOrigin: %d\n", sf->vertical_origin );
+    if ( sf->changed_since_xuidchanged )
+	fprintf(sfd, "NeedsXUIDChange: 1\n" );
     if ( sf->xuid!=NULL )
 	fprintf(sfd, "XUID: %s\n", sf->xuid );
     if ( sf->uniqueid!=0 )
@@ -1755,6 +1757,10 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    getint(sfd,&sf->ascent);
 	} else if ( strmatch(tok,"Descent:")==0 ) {
 	    getint(sfd,&sf->descent);
+	} else if ( strmatch(tok,"NeedsXUIDChange:")==0 ) {
+	    int temp;
+	    getint(sfd,&temp);
+	    sf->changed_since_xuidchanged = temp;
 	} else if ( strmatch(tok,"VerticalOrigin:")==0 ) {
 	    getint(sfd,&sf->vertical_origin);
 	    sf->hasvmetrics = true;

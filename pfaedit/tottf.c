@@ -3906,7 +3906,8 @@ static void dumpcfftopdict(SplineFont *sf,struct alltabs *at) {
 	    for ( pt = end; *pt==' '; ++pt );
 	}
 	putc(14,cfff);
-	SFIncrementXUID(sf);
+	if ( sf->changed_since_xuidchanged )
+	    SFIncrementXUID(sf);
     }
     /* Offset to charset (oper=15) needed here */
     /* Offset to encoding (oper=16) needed here (not for CID )*/
@@ -3986,6 +3987,8 @@ static void dumpcffcidtopdict(SplineFont *sf,struct alltabs *at) {
     /* Actually there is no fontmatrix in the adobe cid font I'm looking at */
     /*  which means it should default to [.001...] but it doesn't so the */
     /*  docs aren't completely accurate */
+    /* I now see I've no idea what the FontMatrix means in a CID keyed font */
+    /*  it seems to be ignored everywhere */
 #if 0
     dumpdbl(cfff,1.0);
     dumpint(cfff,0);
@@ -4012,7 +4015,8 @@ static void dumpcffcidtopdict(SplineFont *sf,struct alltabs *at) {
 	    for ( pt = end; *pt==' '; ++pt );
 	}
 	putc(14,cfff);
-	SFIncrementXUID(sf);
+	if ( sf->changed_since_xuidchanged )
+	    SFIncrementXUID(sf);
     }
     dumpint(cfff,0);			/* Docs say a private dict is required and they don't specifically omit CID top dicts */
     dumpintoper(cfff,0,18);		/* But they do say it can be zero */

@@ -2412,6 +2412,7 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	const unichar_t *txt; unichar_t *end;
 	int i,j;
 	int vmetrics, vorigin, namechange;
+	int xuidchanged = false;
 
 	if ( !CheckNames(d))
 return( true );
@@ -2467,9 +2468,11 @@ return(true);
 	GDrawSetCursor(gw,ct_watch);
 	namechange = SetFontName(gw,sf);
 	txt = _GGadgetGetTitle(GWidgetGetControl(gw,CID_XUID));
+	xuidchanged = (sf->xuid==NULL && *txt!='\0') ||
+			(sf->xuid!=NULL && uc_strcmp(txt,sf->xuid)==0);
 	if ( namechange && sf->filename!=NULL &&
 		((uniqueid!=0 && uniqueid==sf->uniqueid) ||
-		(sf->xuid!=NULL && uc_strcmp(txt,sf->xuid)==0)) ) {
+		 (sf->xuid!=NULL && uc_strcmp(txt,sf->xuid)==0)) ) {
 	    static int buts[] = { _STR_Change, _STR_Retain, _STR_Cancel, 0 };
 	    int ans = GWidgetAskR(_STR_UniqueIDTitle,buts,0,2,_STR_UniqueIDChange);
 	    if ( ans==2 ) {
@@ -2479,8 +2482,10 @@ return(true);
 	    if ( ans==0 ) {
 		if ( uniqueid!=0 && uniqueid==sf->uniqueid )
 		    uniqueid = 4000000 + (rand()&0x3ffff);
-		if ( sf->xuid!=NULL && uc_strcmp(txt,sf->xuid)==0 )
+		if ( sf->xuid!=NULL && uc_strcmp(txt,sf->xuid)==0 ) {
 		    SFRandomChangeXUID(sf);
+		    xuidchanged = true;
+		}
 	    }
 	} else {
 	    free(sf->xuid);
@@ -2570,6 +2575,7 @@ return(true);
 	    FontViewReformatAll(sf);
 	sf->changed = true;
 	sf->changed_since_autosave = true;
+	sf->changed_since_xuidchanged = !xuidchanged;
 	d->done = true;
 	/* Just in case they changed the blue values and we are showing blues */
 	/*  in outline views... */
@@ -3651,6 +3657,7 @@ void FontInfo(SplineFont *sf) {
     GGadgetsCreate(gw,mgcd);
     if ( list!=encodingtypes )
 	GTextInfoListFree(list);
+    GTextInfoListFree(pgcd[0].gd.u.list);
     if ( GTabSetGetTabLines(mgcd[0].ret)>2 ) {
 	int offset = (GTabSetGetTabLines(mgcd[0].ret)-2)*GDrawPointsToPixels(NULL,20);
 	GRect temp;

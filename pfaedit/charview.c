@@ -1993,8 +1993,11 @@ void CVSetCharChanged(CharView *cv,int changed) {
 	if ( changed ) {
 	    cv->sc->changed_since_autosave = true;
 	    cv->sc->parent->changed_since_autosave = true;
-	    if ( cv->fv->cidmaster!=NULL )
+	    cv->sc->parent->changed_since_xuidchanged = true;
+	    if ( cv->fv->cidmaster!=NULL ) {
 		cv->fv->cidmaster->changed_since_autosave = true;
+		cv->fv->cidmaster->changed_since_xuidchanged = true;
+	    }
 	}
 	if ( cv->drawmode==dm_fore ) {
 	    if ( changed )
@@ -2025,8 +2028,10 @@ void SCCharChangedUpdate(SplineChar *sc) {
     sc->changed_since_search = true;
     sf->changed = true;
     sf->changed_since_autosave = true;
+    sf->changed_since_xuidchanged = true;
     if ( sf->cidmaster!=NULL )
-	sf->cidmaster->changed = sf->cidmaster->changed_since_autosave = true;
+	sf->cidmaster->changed = sf->cidmaster->changed_since_autosave =
+		sf->cidmaster->changed_since_xuidchanged = true;
     SCRegenDependents(sc);		/* All chars linked to this one need to get the new splines */
     SCUpdateAll(sc);
     SCRegenFills(sc);

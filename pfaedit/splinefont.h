@@ -183,6 +183,7 @@ typedef struct bdffont {
     struct clut *clut;
     char *foundry;
     int res;
+    void *freetype_context;
 } BDFFont;
 
 enum pointtype { pt_curve, pt_corner, pt_tangent };
@@ -443,6 +444,7 @@ typedef struct splinefont {
     SplineChar **chars;
     unsigned int changed: 1;
     unsigned int changed_since_autosave: 1;
+    unsigned int changed_since_xuidchanged: 1;
     unsigned int display_antialias: 1;
     unsigned int dotlesswarn: 1;		/* User warned that font doesn't have a dotless i character */
     unsigned int onlybitmaps: 1;		/* it's a bdf editor, not a postscript editor */
@@ -639,7 +641,7 @@ extern BDFFont *SplineFontAntiAlias(SplineFont *sf, int pixelsize,int linear_sca
 extern void BDFClut(BDFFont *bdf, int linear_scale);
 extern int BDFDepth(BDFFont *bdf);
 extern BDFChar *BDFPieceMeal(BDFFont *bdf, int index);
-extern BDFFont *SplineFontPieceMeal(SplineFont *sf,int pixelsize,int antialias);
+extern BDFFont *SplineFontPieceMeal(SplineFont *sf,int pixelsize,int antialias,void *freetype_context);
 extern BDFFont *BitmapFontScaleTo(BDFFont *old, int to);
 extern void BDFCharFree(BDFChar *bdfc);
 extern void BDFFontFree(BDFFont *bdf);
@@ -827,6 +829,8 @@ int ttfcopyfile(FILE *ttf, FILE *other, int pos);
 extern void SCCopyFgToBg(SplineChar *sc,int show);
 
 extern int hasFreeType(void);
+extern void *_FreeTypeFontContext(SplineFont *sf,SplineChar *sc,int doall,
+	enum fontformat ff,int flags,void *shared_ftc);
 extern void *FreeTypeFontContext(SplineFont *sf,SplineChar *sc,int doall);
 extern BDFFont *SplineFontFreeTypeRasterize(void *freetypecontext,int pixelsize,int depth);
 extern BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int enc,

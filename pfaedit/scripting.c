@@ -1038,6 +1038,7 @@ static void bReencode(Context *c) {
 	FontViewReformatAll(c->curfv->sf);
     c->curfv->sf->changed = true;
     c->curfv->sf->changed_since_autosave = true;
+    c->curfv->sf->changed_since_xuidchanged = true;
 }
 
 static void bSetCharCnt(Context *c) {
@@ -1064,6 +1065,7 @@ return;
 	FontViewReformatAll(c->curfv->sf);
     c->curfv->sf->changed = true;
     c->curfv->sf->changed_since_autosave = true;
+    c->curfv->sf->changed_since_xuidchanged = true;
 }
 
 static void _SetFontNames(Context *c,SplineFont *sf) {

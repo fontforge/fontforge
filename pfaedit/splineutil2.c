@@ -1535,6 +1535,7 @@ return;
     sprintf(npt, "%d]", val );
     free(sf->xuid); sf->xuid = new;
     sf->changed = true;
+    sf->changed_since_xuidchanged = false;
 }
 
 void SFIncrementXUID(SplineFont *sf) {

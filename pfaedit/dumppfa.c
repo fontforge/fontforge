@@ -851,7 +851,8 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
     dumpf(dumpchar,data,"/UniqueID %d def\n", uniqueid );
     if ( sf->xuid!=NULL ) {
 	dumpf(dumpchar,data,"/XUID %s def\n", sf->xuid );
-	SFIncrementXUID(sf);
+	if ( sf->changed_since_xuidchanged )
+	    SFIncrementXUID(sf);
     }
     dumpf(dumpchar,data,"/PaintType %d def\n", 0/*fd->painttype*/ );
     dumpfontinfo(dumpchar,data,sf);
