@@ -875,6 +875,22 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
 	CVShowMinimumDistance(cv, pixmap,md);
 }
 
+static void CVDrawRefName(CharView *cv,GWindow pixmap,RefChar *ref,int fg) {
+    unichar_t namebuf[100];
+    int x,y, len;
+
+    x = cv->xoff + rint(ref->top.x*cv->scale);
+    y = -cv->yoff + cv->height - rint(ref->top.y*cv->scale);
+    y -= 5;
+    if ( x<-400 || y<-40 || x>cv->width+400 || y>cv->height )
+return;
+
+    uc_strncpy(namebuf,ref->sc->name,sizeof(namebuf)/sizeof(namebuf[0]));
+    GDrawSetFont(pixmap,cv->small);
+    len = GDrawGetTextWidth(pixmap,namebuf,-1,NULL);
+    GDrawDrawText(pixmap,x-len/2,y,namebuf,-1,NULL,fg);
+}
+
 static void DrawImageList(CharView *cv,GWindow pixmap,ImageList *backimages) {
     GRect size, temp;
     int x,y;
@@ -930,6 +946,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
     RefChar *rf;
     GRect old;
     DRect clip;
+    unichar_t ubuf[20];
 
     GDrawPushClip(pixmap,&event->u.expose.rect,&old);
 
@@ -1001,6 +1018,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 
     if ( cv->showfore || cv->drawmode==dm_fore ) {
 	for ( rf=cv->sc->refs; rf!=NULL; rf = rf->next ) {
+	    CVDrawRefName(cv,pixmap,rf,0);
 	    CVDrawSplineSet(cv,pixmap,rf->splines,0,false,&clip);
 	    if ( rf->selected )
 		CVDrawBB(cv,pixmap,&rf->bb);
@@ -1014,13 +1032,26 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	CVDrawSplineSet(cv,pixmap,cv->freehand.current_trace,0x008000,
 		false,&clip);
 
-    if ( cv->showhmetrics && cv->searcher==NULL )
+    if ( cv->showhmetrics && cv->searcher==NULL ) {
+	int x = cv->xoff + rint(cv->sc->width*cv->scale);
 	DrawLine(cv,pixmap,cv->sc->width,-32768,cv->sc->width,32767,
 		(!cv->inactive && cv->widthsel)?0x00ff00:0x0);
-    if ( cv->showvmetrics )
+	if ( x>-400 && x<cv->width+400 ) {
+	    dtou( ubuf, cv->sc->width);
+	    GDrawDrawText(pixmap,x+5,cv->sas+3,ubuf,-1,NULL,0x00000);
+	}
+    }
+    if ( cv->showvmetrics ) {
+	int len, y = -cv->yoff + cv->height - rint((sf->vertical_origin-cv->sc->vwidth)*cv->scale);
 	DrawLine(cv,pixmap,-32768,sf->vertical_origin-cv->sc->vwidth,
 			    32767,sf->vertical_origin-cv->sc->vwidth,
 		(!cv->inactive && cv->vwidthsel)?0x00ff00:0x0);
+	if ( y>-40 && y<cv->height+40 ) {
+	    dtou( ubuf, cv->sc->vwidth);
+	    len = GDrawGetTextWidth(pixmap,ubuf,-1,NULL);
+	    GDrawDrawText(pixmap,cv->width-len-5,y,ubuf,-1,NULL,0x00ffff);
+	}
+    }
 
     if ( cv->p.rubberbanding )
 	CVDrawRubberRect(pixmap,cv);
@@ -1629,8 +1660,10 @@ return;
     } else if ( cv->p.rubberbanding ) {
 	xdiff=cv->info.x-cv->p.cx;
 	ydiff = cv->info.y-cv->p.cy;
+#if 0	
     } else if ( cv->expand_width ) {
 	/* Werner wants to know where the width line is when he moves the cursor over it. */
+	/*  Let's write it on the screen as we do hints instead */
 	if ( cv->expandedge==ee_right )	/* Advance width */
 	    sprintf(buffer,"%d", (int) cv->sc->width );
 	else
@@ -1638,6 +1671,7 @@ return;
 	uc_strcpy(ubuffer,buffer);
 	GDrawDrawText(pixmap,SPT_DATA,ybase,ubuffer,-1,NULL,0);
 return;
+#endif
     } else
 return;
 

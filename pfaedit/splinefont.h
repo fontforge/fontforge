@@ -281,6 +281,7 @@ typedef struct refchar {
     struct refchar *next;
     DBounds bb;
     struct splinechar *sc;
+    BasePoint top;
 } RefChar;
 
 typedef struct kernpair {

@@ -670,6 +670,23 @@ void CIDFindBounds(SplineFont *cidmaster,DBounds *bounds) {
     }
 }
 
+static void SplineSetFindTop(SplineSet *ss,BasePoint *top) {
+    SplinePoint *sp;
+
+    top->y = -1e10;
+    for ( ; ss!=NULL; ss=ss->next ) {
+	for ( sp=ss->first; ; ) {
+	    if ( sp->me.y > top->y ) *top = sp->me;
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==ss->first )
+	break;
+	}
+    }
+    if ( top->y < -65536 ) top->y = top->x = 0;
+}
+
 void SplineSetQuickBounds(SplineSet *ss,DBounds *b) {
     SplinePoint *sp;
 
@@ -1737,6 +1754,7 @@ return;
 	}
     }
     SplineSetFindBounds(rf->splines,&rf->bb);
+    SplineSetFindTop(rf->splines,&rf->top);
 }
 
 void SCReinstanciateRef(SplineChar *sc,SplineChar *rsc) {
