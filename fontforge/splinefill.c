@@ -597,6 +597,7 @@ static void FillChar(EdgeList *es) {
 	    width = rint(pr->o_cur-apt->o_cur);
 	    if ( width<=0 ) width=1;
 	    k=rint(apt->o_cur-es->omin);
+	    if ( k<0 ) k=0;
 	    end =rint(pr->o_cur-es->omin);
 	    if ( end-k > width-1 ) {
 		int kval = -999999, eval= -999999;
