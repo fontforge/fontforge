@@ -77,8 +77,8 @@ return(0);
 
     fprintf( eps, "%%!PS-Adobe-3.0 EPSF-3.0\n" );
     SplineCharFindBounds(sc,&b);
-    fprintf( eps, "%%%%BoundingBox %g %g %g %g\n", b.minx, b.miny, b.maxx, b.maxy );
-    fprintf( eps, "%%%%Pages 0\n" );
+    fprintf( eps, "%%%%BoundingBox: %g %g %g %g\n", b.minx, b.miny, b.maxx, b.maxy );
+    fprintf( eps, "%%%%Pages: 0\n" );
     fprintf( eps, "%%%%Title: %s from %s\n", sc->name, sc->parent->fontname );
     fprintf( eps, "%%%%Creator: PfaEdit\n" );
     time(&now);
