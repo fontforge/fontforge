@@ -291,6 +291,33 @@ return( img->u.images[0]->height );
     }
 }
 
+void BDFClut(BDFFont *bdf, int linear_scale) {
+    int scale = linear_scale*linear_scale, i;
+    Color bg = 0xffffff;
+    int bgr=COLOR_RED(bg), bgg=COLOR_GREEN(bg), bgb=COLOR_BLUE(bg);
+    GClut *clut;
+
+    bdf->clut = clut = gcalloc(1,sizeof(GClut));
+    clut->clut_len = scale;
+    clut->is_grey = (bgr==bgg && bgb==bgr);
+    clut->trans_index = -1;
+    for ( i=0; i<scale; ++i ) {
+	clut->clut[i] =
+		COLOR_CREATE( bgr- (i*(bgr))/(scale-1),
+				bgg- (i*(bgg))/(scale-1),
+				bgb- (i*(bgb))/(scale-1));
+    }
+    clut->clut[scale-1] = 0;	/* avoid rounding errors */
+}
+
+int BDFDepth(BDFFont *bdf) {
+    if ( bdf->clut==NULL )
+return( 1 );
+
+return( bdf->clut->clut_len==256 ? 8 :
+	bdf->clut->clut_len==16 ? 4 : 2);
+}
+
 #if HANYANG
 void SFDDumpCompositionRules(FILE *sfd,struct compositionrules *rules) {
 }
