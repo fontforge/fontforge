@@ -2391,7 +2391,10 @@ void FVRegenChar(FontView *fv,SplineChar *sc) {
     MetricsView *mv;
 
     sc->changedsincelasthinted = true;
-    BDFCharFree(fv->filled->chars[sc->enc]);
+    if ( sc->enc>=fv->filled->charcnt )
+	GDrawIError("Character out of bounds in bitmap font %d>=%d", sc->enc, fv->filled->charcnt );
+    else
+	BDFCharFree(fv->filled->chars[sc->enc]);
     fv->filled->chars[sc->enc] = NULL;
 #if 0
     if ( fv->antialias )
