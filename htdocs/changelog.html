@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 23-Oct-2004 -->
+  <!-- AP: Last modified: 28-Oct-2004 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -11,6 +11,33 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    28-Oct-2004
+    <UL>
+      <LI>
+	Kanou noticed that ISO 15924 has been updated and provide a patch including
+	new scripts.
+      <LI>
+	I have redone the way ff handles encodings internally. We used to depend
+	on the encodings builtin to gdraw/gunicode. Now we use iconv() (if there
+	is no iconv, then ff will use a dummy iconv which understands the encodings
+	of gdraw/gunicode). Encodings are identified by name rather than by number
+	now.
+      <LI>
+	Further fixes to the extremum detector
+      <LI>
+	Further fixes to remove overlap
+      <LI>
+	Added an extra argument to scripting RoundToInt, so that you can have control
+	over what it rounds to (ie. round to hundredths, tenths, etc.)
+      <LI>
+	Added two new scripting commands NearlyHvCps() and NearlyHvLines() which
+	look for control points or lines that are nearly horizontal or vertical and
+	force them to be horizontal or vertical.
+      <LI>
+	Kanou provided a patch so that the GRadio.Font resource controls the font
+	in the layers palette of the glyph view.
+    </UL>
   <LI>
     23-Oct-2004
     <UL>
