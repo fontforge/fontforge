@@ -991,9 +991,10 @@ extern struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
 extern struct pschars *CID2Chrs2(SplineFont *cidmaster,struct fd2data *fds,int flags);
 enum bitmapformat { bf_bdf, bf_ttf, bf_sfnt_dfont, 
 	bf_nfntmacbin, /*bf_nfntdfont, */bf_fon, bf_otb, bf_none };
+extern const char *GetAuthor(void);
 extern SplineChar *SFFindExistingCharMac(SplineFont *,int unienc);
 extern void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
-	SplineChar *sc, int refs_to_splines );
+	SplineChar *sc, int refs_to_splines, int pdfopers );
 extern int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format,int flags);
 extern int WritePSFont(char *fontname,SplineFont *sf,enum fontformat format,int flags);
 extern int WriteMacPSFont(char *fontname,SplineFont *sf,enum fontformat format,int flags);

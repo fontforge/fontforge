@@ -28,7 +28,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
-#include <pwd.h>
 #include <unistd.h>
 #include <ustring.h>
 #include "utype.h"
@@ -140,9 +139,8 @@ static void DumpIdentCMap(PI *pi) {
 
 static void dump_prologue(PI *pi) {
     time_t now;
-    struct passwd *pwd;
-    char *pt;
     int ch, i, j, base;
+    const char *author = GetAuthor();
 
     fprintf( pi->out, "%%!PS-Adobe-3.0\n" );
     fprintf( pi->out, "%%%%BoundingBox: 40 20 %d %d\n", pi->pagewidth-30, pi->pageheight-20 );
@@ -151,20 +149,8 @@ static void dump_prologue(PI *pi) {
     fprintf( pi->out, "%%%%CreationDate: %s", ctime(&now) );
     fprintf( pi->out, "%%%%DocumentData: %s\n", !pi->iscid ||pi->fontfile==NULL?
 	    "Clean7Bit":"Binary" );
-/* Can all be commented out if no pwd routines */
-    pwd = getpwuid(getuid());
-#ifdef __VMS
-    if ( pwd!=NULL && pwd->pw_name!=NULL && *pwd->pw_name!='\0' )
-#else
-    if ( pwd!=NULL && pwd->pw_gecos!=NULL && *pwd->pw_gecos!='\0' )
-	fprintf( pi->out, "%%%%For: %s\n", pwd->pw_gecos );
-    else if ( pwd!=NULL && pwd->pw_name!=NULL && *pwd->pw_name!='\0' )
-#endif
-        fprintf( pi->out, "%%%%For: %s\n", pwd->pw_name );
-    else if ( (pt=getenv("USER"))!=NULL )
-	fprintf( pi->out, "%%%%For: %s\n", pt );
-    endpwent();
-/* End pwd section */
+    if ( author!=NULL )
+	fprintf( pi->out, "%%%%For: %s\n", author);
     fprintf( pi->out, "%%%%LanguageLevel: %d\n", pi->fontfile==NULL?1:
 	    pi->iscid?3: pi->twobyte?2: 1 );
     fprintf( pi->out, "%%%%Orientation: Portrait\n" );

@@ -501,6 +501,8 @@ return( NULL );
 	    if ( pt!=path && buffer[pt-path-1]!='/' )
 		strcat(buffer,"/");
 	    strcat(buffer,prog);
+	    /* Under cygwin, applying access to "potrace" will find "potrace.exe" */
+	    /*  no need for special check to add ".exe" */
 	    if ( access(buffer,X_OK)!=-1 ) {
 return( buffer );
 	    }

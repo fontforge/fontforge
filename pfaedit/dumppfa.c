@@ -341,28 +341,32 @@ return( false );
 return( true );
 }
 
-static void dumpsplineset(void (*dumpchar)(int ch,void *data), void *data, SplineSet *spl ) {
+static void dumpsplineset(void (*dumpchar)(int ch,void *data), void *data,
+	SplineSet *spl, int pdfopers ) {
     SplinePoint *first, *sp;
 
     for ( ; spl!=NULL; spl=spl->next ) {
 	first = NULL;
 	for ( sp = spl->first; ; sp=sp->next->to ) {
 	    if ( first==NULL )
-		dumpf( dumpchar, data, "\t%g %g moveto\n", sp->me.x, sp->me.y );
+		dumpf( dumpchar, data, "\t%g %g %s\n", sp->me.x, sp->me.y,
+			pdfopers ? "m" : "moveto" );
 	    else if ( sp->prev->knownlinear )
-		dumpf( dumpchar, data, "\t %g %g lineto\n", sp->me.x, sp->me.y );
+		dumpf( dumpchar, data, "\t %g %g %s\n", sp->me.x, sp->me.y,
+			pdfopers ? "l" : "lineto" );
 	    else
-		dumpf( dumpchar, data, "\t %g %g %g %g %g %g curveto\n",
+		dumpf( dumpchar, data, "\t %g %g %g %g %g %g %s\n",
 			sp->prev->from->nextcp.x, sp->prev->from->nextcp.y,
 			sp->prevcp.x, sp->prevcp.y,
-			sp->me.x, sp->me.y );
+			sp->me.x, sp->me.y,
+			pdfopers ? "c" : "curveto" );
 	    if ( sp==first )
 	break;
 	    if ( first==NULL ) first = sp;
 	    if ( sp->next==NULL )
 	break;
 	}
-	dumpstr( dumpchar, data, "\tclosepath\n" );
+	dumpstr( dumpchar, data, pdfopers ? "\th\n" : "\tclosepath\n" );
     }
 }
 
@@ -401,30 +405,49 @@ return( true );
 }
 
 #ifdef PFAEDIT_CONFIG_TYPE3
-static void dumpbrush(void (*dumpchar)(int ch,void *data), void *data, struct brush *brush) {
+static void dumpbrush(void (*dumpchar)(int ch,void *data), void *data,
+	struct brush *brush, int pdfopers ) {
     if ( brush->col!=COLOR_INHERITED ) {
 	int r, g, b;
 	r = (brush->col>>16)&0xff;
 	g = (brush->col>>8 )&0xff;
 	b = (brush->col    )&0xff;
 	if ( r==g && b==g )
-	    dumpf(dumpchar,data,"%g setgray\n", r/255.0 );
+	    dumpf(dumpchar,data,(pdfopers ? "%g g\n" : "%g setgray\n"), r/255.0 );
 	else
-	    dumpf(dumpchar,data,"%g %g %g setrgbcolor\n", r/255.0, g/255.0, b/255.0 );
+	    dumpf(dumpchar,data,(pdfopers ? "%g %g %g rg\n" : "%g %g %g setrgbcolor\n"),
+		    r/255.0, g/255.0, b/255.0 );
     }
 }
 
-static void dumppen(void (*dumpchar)(int ch,void *data), void *data, struct pen *pen) {
-    dumpbrush(dumpchar,data,&pen->brush);
+/* Grumble. PDF uses different operators for colors for stroke and fill */
+static void dumppenbrush(void (*dumpchar)(int ch,void *data), void *data,
+	struct brush *brush, int pdfopers ) {
+    if ( brush->col!=COLOR_INHERITED ) {
+	int r, g, b;
+	r = (brush->col>>16)&0xff;
+	g = (brush->col>>8 )&0xff;
+	b = (brush->col    )&0xff;
+	if ( r==g && b==g )
+	    dumpf(dumpchar,data,(pdfopers ? "%g G\n" : "%g setgray\n"), r/255.0 );
+	else
+	    dumpf(dumpchar,data,(pdfopers ? "%g %g %g RG\n" : "%g %g %g setrgbcolor\n"),
+		    r/255.0, g/255.0, b/255.0 );
+    }
+}
+
+static void dumppen(void (*dumpchar)(int ch,void *data), void *data,
+	struct pen *pen, int pdfopers) {
+    dumppenbrush(dumpchar,data,&pen->brush,pdfopers);
 
     if ( pen->width!=WIDTH_INHERITED )
-	dumpf(dumpchar,data,"%d setlinewidth\n", pen->width );
+	dumpf(dumpchar,data,(pdfopers ? "%d w\n": "%d setlinewidth\n"), pen->width );
     if ( pen->linejoin!=lj_inherited )
-	dumpf(dumpchar,data,"%d setlinejoin\n", pen->linejoin );
+	dumpf(dumpchar,data,(pdfopers ? "%d j\n": "%d setlinejoin\n"), pen->linejoin );
     if ( pen->linecap!=lc_inherited )
-	dumpf(dumpchar,data,"%d setlinecap\n", pen->linecap );
+	dumpf(dumpchar,data,(pdfopers ? "%d J\n": "%d setlinecap\n"), pen->linecap );
     if ( pen->trans[0]!=1.0 || pen->trans[3]!=1.0 || pen->trans[1]!=0 || pen->trans[2]!=0 )
-	dumpf(dumpchar,data,"[%g %g %g %g 0 0] concat\n",
+	dumpf(dumpchar,data,(pdfopers ? "[%g %g %g %g 0 0] cm\n" : "[%g %g %g %g 0 0] concat\n"),
 		pen->trans[0], pen->trans[1], pen->trans[2], pen->trans[3]);
 }
 
@@ -627,9 +650,12 @@ static void PSDrawImg(void (*dumpchar)(int ch,void *data), void *data,
 }
 
 static void dumpimage(void (*dumpchar)(int ch,void *data), void *data,
-	ImageList *imgl, int use_imagemask ) {
+	ImageList *imgl, int use_imagemask, int pdfopers ) {
     GImage *image = imgl->image;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    if ( pdfopers )		/* I'm not supporting images yet */
+return;
+
     dumpf( dumpchar, data, "  gsave %g %g translate %g %g scale\n",
 	    imgl->xoff, imgl->yoff,
 	    imgl->xscale*base->width, imgl->yscale*base->height );
@@ -644,7 +670,7 @@ static void dumpimage(void (*dumpchar)(int ch,void *data), void *data,
 #endif
 
 void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
-	SplineChar *sc, int refs_to_splines ) {
+	SplineChar *sc, int refs_to_splines, int pdfopers ) {
     RefChar *ref;
     real inverse[6];
     int i,j;
@@ -656,40 +682,45 @@ void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
 	    if ( sc->parent->order2 ) temp = SplineSetsPSApprox(temp);
 #ifdef PFAEDIT_CONFIG_TYPE3
 	    if ( sc->parent->multilayer ) {
-		dumpstr(dumpchar,data,"gsave " );
-		dumpsplineset(dumpchar,data,temp);
+		dumpstr(dumpchar,data,pdfopers ? "q" : "gsave " );
+		dumpsplineset(dumpchar,data,temp,pdfopers);
 		if ( sc->layers[i].dofill && sc->layers[i].dostroke ) {
-		    dumpstr(dumpchar,data,"gsave " );
-		    if ( sc->layers[i].fillfirst ) {
-			dumpbrush(dumpchar,data, &sc->layers[i].fill_brush);
+		    if ( pdfopers ) {
+			dumpbrush(dumpchar,data, &sc->layers[i].fill_brush,pdfopers);
+			dumppen(dumpchar,data, &sc->layers[i].stroke_pen,pdfopers);
+			dumpstr(dumpchar,data, "B " );
+		    } else if ( sc->layers[i].fillfirst ) {
+			dumpstr(dumpchar,data, "gsave " );
+			dumpbrush(dumpchar,data, &sc->layers[i].fill_brush,pdfopers);
 			dumpstr(dumpchar,data,"fill grestore " );
-			dumppen(dumpchar,data, &sc->layers[i].stroke_pen);
+			dumppen(dumpchar,data, &sc->layers[i].stroke_pen,pdfopers);
 			dumpstr(dumpchar,data,"stroke " );
 		    } else {
-			dumppen(dumpchar,data, &sc->layers[i].stroke_pen);
+			dumpstr(dumpchar,data, "gsave " );
+			dumppen(dumpchar,data, &sc->layers[i].stroke_pen,pdfopers);
 			dumpstr(dumpchar,data,"stroke grestore " );
-			dumpbrush(dumpchar,data, &sc->layers[i].fill_brush);
+			dumpbrush(dumpchar,data, &sc->layers[i].fill_brush,pdfopers);
 			dumpstr(dumpchar,data,"fill " );
 		    }
 		} else if ( sc->layers[i].dofill ) {
-		    dumpbrush(dumpchar,data, &sc->layers[i].fill_brush);
-		    dumpstr(dumpchar,data,"fill " );
+		    dumpbrush(dumpchar,data, &sc->layers[i].fill_brush,pdfopers);
+		    dumpstr(dumpchar,data,pdfopers ? "f ": "fill " );
 		} else if ( sc->layers[i].dostroke ) {
-		    dumppen(dumpchar,data, &sc->layers[i].stroke_pen);
-		    dumpstr(dumpchar,data,"stroke " );
+		    dumppen(dumpchar,data, &sc->layers[i].stroke_pen,pdfopers);
+		    dumpstr(dumpchar,data, pdfopers ? "S ": "stroke " );
 		}
-		dumpstr(dumpchar,data,"grestore\n" );
+		dumpstr(dumpchar,data,pdfopers ? "Q\n" : "grestore\n" );
 	    } else
 #endif
-		dumpsplineset(dumpchar,data,temp);
+		dumpsplineset(dumpchar,data,temp,pdfopers);
 	    if ( sc->parent->order2 ) SplinePointListFree(temp);
 	}
 	if ( sc->layers[i].refs!=NULL ) {
 #ifdef PFAEDIT_CONFIG_TYPE3
 	    if ( sc->parent->multilayer ) {
-		dumpstr(dumpchar,data,"gsave " );
+		dumpstr(dumpchar,data,pdfopers ? "q" : "gsave " );
 		if ( sc->layers[i].dofill )
-		    dumpbrush(dumpchar,data, &sc->layers[i].fill_brush);
+		    dumpbrush(dumpchar,data, &sc->layers[i].fill_brush, pdfopers);
 	    }
 #endif
 	    if ( refs_to_splines ) {
@@ -699,32 +730,37 @@ void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
 			if ( sc->parent->order2 ) temp = SplineSetsPSApprox(temp);
 #ifdef PFAEDIT_CONFIG_TYPE3
 			if ( sc->parent->multilayer ) {
-			    dumpstr(dumpchar,data,"gsave " );
-			    dumpsplineset(dumpchar,data,temp);
+			    dumpstr(dumpchar,data,pdfopers ? "q" : "gsave " );
+			    dumpsplineset(dumpchar,data,temp,pdfopers);
 			    if ( ref->layers[j].dofill && ref->layers[j].dostroke ) {
-				dumpstr(dumpchar,data,"gsave " );
-				if ( ref->layers[j].fillfirst ) {
-				    dumpbrush(dumpchar,data, &ref->layers[j].fill_brush);
+				if ( pdfopers ) {
+				    dumpbrush(dumpchar,data, &ref->layers[j].fill_brush,pdfopers);
+				    dumppen(dumpchar,data, &ref->layers[j].stroke_pen,pdfopers);
+				    dumpstr(dumpchar,data, "B " );
+				} else if ( ref->layers[j].fillfirst ) {
+				    dumpstr(dumpchar,data, "gsave " );
+				    dumpbrush(dumpchar,data, &ref->layers[j].fill_brush,pdfopers);
 				    dumpstr(dumpchar,data,"fill grestore " );
-				    dumppen(dumpchar,data, &ref->layers[j].stroke_pen);
+				    dumppen(dumpchar,data, &ref->layers[j].stroke_pen,pdfopers);
 				    dumpstr(dumpchar,data,"stroke " );
 				} else {
-				    dumppen(dumpchar,data, &ref->layers[j].stroke_pen);
+				    dumpstr(dumpchar,data, "gsave " );
+				    dumppen(dumpchar,data, &ref->layers[j].stroke_pen,pdfopers);
 				    dumpstr(dumpchar,data,"stroke grestore " );
-				    dumpbrush(dumpchar,data, &ref->layers[j].fill_brush);
+				    dumpbrush(dumpchar,data, &ref->layers[j].fill_brush,pdfopers);
 				    dumpstr(dumpchar,data,"fill " );
 				}
 			    } else if ( ref->layers[j].dofill ) {
-				dumpbrush(dumpchar,data, &ref->layers[j].fill_brush);
-				dumpstr(dumpchar,data,"fill " );
+				dumpbrush(dumpchar,data, &ref->layers[j].fill_brush,pdfopers);
+				dumpstr(dumpchar,data,pdfopers ? "f ": "fill " );
 			    } else if ( ref->layers[j].dostroke ) {
-				dumppen(dumpchar,data, &ref->layers[j].stroke_pen);
-				dumpstr(dumpchar,data,"stroke " );
+				dumppen(dumpchar,data, &ref->layers[j].stroke_pen,pdfopers);
+				dumpstr(dumpchar,data, pdfopers ? "S ": "stroke " );
 			    }
-			    dumpstr(dumpchar,data,"grestore\n" );
+			    dumpstr(dumpchar,data,pdfopers ? "Q\n" : "grestore\n" );
 			} else
 #endif
-			    dumpsplineset(dumpchar,data,temp);
+			    dumpsplineset(dumpchar,data,temp,pdfopers);
 			if ( sc->parent->order2 ) SplinePointListFree(temp);
 		    }
 		}
@@ -759,16 +795,16 @@ void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
 	    }
 #ifdef PFAEDIT_CONFIG_TYPE3
 	    if ( sc->parent->multilayer )
-		dumpstr(dumpchar,data,"grestore\n" );
+		dumpstr(dumpchar,data,pdfopers ? "Q\n" : "grestore\n" );
 #endif
 	}
 #ifdef PFAEDIT_CONFIG_TYPE3
-	if ( sc->layers[i].images!=NULL ) { ImageList *img;
+	if ( sc->layers[i].images!=NULL && !pdfopers ) { ImageList *img;
 	    dumpstr(dumpchar,data,"gsave " );
 	    if ( sc->layers[i].dofill )
-		dumpbrush(dumpchar,data, &sc->layers[i].fill_brush);
+		dumpbrush(dumpchar,data, &sc->layers[i].fill_brush,pdfopers);
 	    for ( img = sc->layers[i].images; img!=NULL; img=img->next )
-		dumpimage(dumpchar,data,img,sc->layers[i].dofill);
+		dumpimage(dumpchar,data,img,sc->layers[i].dofill,pdfopers);
 	    dumpstr(dumpchar,data,"grestore\n" );
 	}
 #endif
@@ -789,7 +825,7 @@ static void dumpproc(void (*dumpchar)(int ch,void *data), void *data, SplineChar
 	dumpstr(dumpchar,data," } if\n");
     else
 	dumpstr(dumpchar,data,"\n");
-    SC_PSDump(dumpchar,data,sc,false);
+    SC_PSDump(dumpchar,data,sc,false,false);
     dumpstr(dumpchar,data,"  } bind def\n" );
 }
 
@@ -1275,6 +1311,38 @@ static void dumpfontinfo(void (*dumpchar)(int ch,void *data), void *data, Spline
     dumpstr(dumpchar,data,"end readonly def\n");
 }
 
+const char *GetAuthor(void) {
+    struct passwd *pwd;
+    static char author[200] = { '\0' };
+    const char *ret = NULL, *pt;
+
+    if ( author[0]!='\0' )
+return( author );
+
+/* Can all be commented out if no pwd routines */
+    pwd = getpwuid(getuid());
+#ifndef __VMS
+    if ( pwd!=NULL && pwd->pw_gecos!=NULL && *pwd->pw_gecos!='\0' ) {
+	strncpy(author,pwd->pw_gecos,sizeof(author));
+	author[sizeof(author)-1] = '\0';
+	ret = author;
+    } else if ( pwd!=NULL && pwd->pw_name!=NULL && *pwd->pw_name!='\0' ) {
+#else
+    if ( pwd!=NULL && pwd->pw_name!=NULL && *pwd->pw_name!='\0' ) {
+#endif
+	strncpy(author,pwd->pw_name,sizeof(author));
+	author[sizeof(author)-1] = '\0';
+	ret = author;
+    } else if ( (pt=getenv("USER"))!=NULL ) {
+	strncpy(author,pt,sizeof(author));
+	author[sizeof(author)-1] = '\0';
+	ret = author;
+    }
+    endpwent();
+/* End comment */
+return( ret );
+}
+
 static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data,
 	SplineFont *sf, int format ) {
     int cnt, i;
@@ -1282,28 +1350,15 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
     double fm[6];
     char *encoding[256];
     DBounds b;
-    char *pt;
-    struct passwd *pwd;
     int uniqueid;
+    const char *author = GetAuthor();
 
     dumpf(dumpchar,data,"%%!PS-AdobeFont-1.0: %s %s\n", sf->fontname, sf->version?sf->version:"" );
     time(&now);
     dumpf(dumpchar,data,"%%%%Title: %s\n", sf->fontname);
     dumpf(dumpchar,data,"%%%%CreationDate: %s", ctime(&now));
-/* Can all be commented out if no pwd routines */
-    pwd = getpwuid(getuid());
-#ifndef __VMS
-    if ( pwd!=NULL && pwd->pw_gecos!=NULL && *pwd->pw_gecos!='\0' )
-	dumpf(dumpchar,data,"%%%%Creator: %s\n", pwd->pw_gecos);
-    else if ( pwd!=NULL && pwd->pw_name!=NULL && *pwd->pw_name!='\0' )
-#else
-    if ( pwd!=NULL && pwd->pw_name!=NULL && *pwd->pw_name!='\0' )
-#endif
-	dumpf(dumpchar,data,"%%%%Creator: %s\n", pwd->pw_name);
-    else if ( (pt=getenv("USER"))!=NULL )
-	dumpf(dumpchar,data,"%%%%Creator: %s\n", pt);
-    endpwent();
-/* End comment */
+    if ( author!=NULL )
+	dumpf(dumpchar,data,"%%%%Creator: %s\n", author);
     if ( format==ff_ptype0 && (sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4))
 	dumpf(dumpchar,data,"%%%%DocumentNeededResources: font ZapfDingbats\n" );
     dumpf(dumpchar,data, "%%%%DocumentSuppliedResources: font %s\n", sf->fontname );

@@ -1106,23 +1106,27 @@ static void bExport(Context *c) {
 	format = 0;
     else if ( strmatch(c->a.vals[1].u.sval,"fig")==0 )
 	format = 1;
-    else if ( strmatch(c->a.vals[1].u.sval,"xbm")==0 )
+    else if ( strmatch(c->a.vals[1].u.sval,"svg")==0 )
 	format = 2;
-    else if ( strmatch(c->a.vals[1].u.sval,"bmp")==0 )
+    else if ( strmatch(c->a.vals[1].u.sval,"pdf")==0 )
 	format = 3;
+    else if ( strmatch(c->a.vals[1].u.sval,"xbm")==0 )
+	format = 4;
+    else if ( strmatch(c->a.vals[1].u.sval,"bmp")==0 )
+	format = 5;
 #ifndef _NO_LIBPNG
     else if ( strmatch(c->a.vals[1].u.sval,"png")==0 )
-	format = 4;
+	format = 6;
     else
 	error( c, "Bad format (first arg must be eps/fig/xbm/bmp/png)");
 #else
     else
 	error( c, "Bad format (first arg must be eps/fig/xbm/bmp)");
 #endif
-    if (( format>=2 && c->a.argc!=3 ) || (format<2 && c->a.argc==3 ))
+    if (( format>=4 && c->a.argc!=3 ) || (format<4 && c->a.argc==3 ))
 	error( c, "Wrong number of arguments");
     bdf=NULL;
-    if ( format>=2 ) {
+    if ( format>=4 ) {
 	for ( bdf = c->curfv->sf->bitmaps; bdf!=NULL; bdf=bdf->next )
 	    if (( BDFDepth(bdf)==1 && bdf->pixelsize==c->a.vals[2].u.ival) ||
 		    (bdf->pixelsize!=(c->a.vals[2].u.ival&0xffff) &&

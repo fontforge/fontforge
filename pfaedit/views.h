@@ -629,6 +629,7 @@ extern void CVReviewHints(CharView *cv);
 extern void CVCreateHint(CharView *cv,int ishstem);
 extern void SCClearRounds(SplineChar *sc);
 extern void SCRemoveSelectedMinimumDistances(SplineChar *sc,int inx);
+extern int _ExportPDF(FILE *pdf,SplineChar *sc);
 extern int _ExportEPS(FILE *eps,SplineChar *sc);
 extern int _ExportSVG(FILE *svg,SplineChar *sc);
 extern int CVExport(CharView *cv);

@@ -628,7 +628,10 @@ void SplineSetFindBounds(SplinePointList *spl, DBounds *bounds) {
 
 void SplineCharFindBounds(SplineChar *sc,DBounds *bounds) {
     RefChar *rf;
-    int i,j;
+    int i;
+#ifdef PFAEDIT_CONFIG_TYPE3
+    real extra=0,e;
+#endif
 
     /* a char with no splines (ie. a space) must have an lbearing of 0 */
     bounds->minx = bounds->maxx = 0;
@@ -636,16 +639,38 @@ void SplineCharFindBounds(SplineChar *sc,DBounds *bounds) {
 
     for ( i=ly_fore; i<sc->layer_cnt; ++i ) {
 	for ( rf=sc->layers[i].refs; rf!=NULL; rf = rf->next ) {
-	    for ( j=0; j<rf->layer_cnt; ++j )
-		_SplineSetFindBounds(rf->layers[j].splines,bounds);
+	    if ( bounds->minx==0 && bounds->maxx==0 && bounds->miny==0 && bounds->maxy == 0 )
+		*bounds = rf->bb;
+	    else if ( rf->bb.minx!=0 || rf->bb.maxx != 0 || rf->bb.maxy != 0 || rf->bb.miny!=0 ) {
+		if ( rf->bb.minx < bounds->minx ) bounds->minx = rf->bb.minx;
+		if ( rf->bb.miny < bounds->miny ) bounds->miny = rf->bb.miny;
+		if ( rf->bb.maxx > bounds->maxx ) bounds->maxx = rf->bb.maxx;
+		if ( rf->bb.maxy > bounds->maxy ) bounds->maxy = rf->bb.maxy;
+	    }
 	}
 	_SplineSetFindBounds(sc->layers[i].splines,bounds);
+#ifdef PFAEDIT_CONFIG_TYPE3
+	if ( sc->layers[i].dostroke ) {
+	    if ( sc->layers[i].stroke_pen.width!=WIDTH_INHERITED )
+		e = sc->layers[i].stroke_pen.width*sc->layers[i].stroke_pen.trans[0];
+	    else
+		e = sc->layers[i].stroke_pen.trans[0];
+	    if ( e>extra ) extra = e;
+	}
+#endif
     }
+#ifdef PFAEDIT_CONFIG_TYPE3
+    bounds->minx -= extra; bounds->miny -= extra;
+    bounds->maxx += extra; bounds->maxy += extra;
+#endif
 }
 
 void SplineFontFindBounds(SplineFont *sf,DBounds *bounds) {
     RefChar *rf;
-    int i, j, k;
+    int i, k;
+#ifdef PFAEDIT_CONFIG_TYPE3
+    real extra=0,e;
+#endif
 
     bounds->minx = bounds->maxx = 0;
     bounds->miny = bounds->maxy = 0;
@@ -655,14 +680,33 @@ void SplineFontFindBounds(SplineFont *sf,DBounds *bounds) {
 	if ( sc!=NULL ) {
 	    for ( k=ly_fore; k<sc->layer_cnt; ++k ) {
 		for ( rf=sc->layers[k].refs; rf!=NULL; rf = rf->next ) {
-		    for ( j=0; j<rf->layer_cnt; ++j )
-			_SplineSetFindBounds(rf->layers[j].splines,bounds);
+		    if ( bounds->minx==0 && bounds->maxx==0 && bounds->miny==0 && bounds->maxy == 0 )
+			*bounds = rf->bb;
+		    else if ( rf->bb.minx!=0 || rf->bb.maxx != 0 || rf->bb.maxy != 0 || rf->bb.miny!=0 ) {
+			if ( rf->bb.minx < bounds->minx ) bounds->minx = rf->bb.minx;
+			if ( rf->bb.miny < bounds->miny ) bounds->miny = rf->bb.miny;
+			if ( rf->bb.maxx > bounds->maxx ) bounds->maxx = rf->bb.maxx;
+			if ( rf->bb.maxy > bounds->maxy ) bounds->maxy = rf->bb.maxy;
+		    }
 		}
 
 		_SplineSetFindBounds(sc->layers[k].splines,bounds);
+#ifdef PFAEDIT_CONFIG_TYPE3
+		if ( sc->layers[i].dostroke ) {
+		    if ( sc->layers[i].stroke_pen.width!=WIDTH_INHERITED )
+			e = sc->layers[i].stroke_pen.width*sc->layers[i].stroke_pen.trans[0];
+		    else
+			e = sc->layers[i].stroke_pen.trans[0];
+		    if ( e>extra ) extra = e;
+		}
+#endif
 	    }
 	}
     }
+#ifdef PFAEDIT_CONFIG_TYPE3
+    bounds->minx -= extra; bounds->miny -= extra;
+    bounds->maxx += extra; bounds->maxy += extra;
+#endif
 }
 
 void CIDFindBounds(SplineFont *cidmaster,DBounds *bounds) {
@@ -2101,6 +2145,7 @@ void SCReinstanciateRefChar(SplineChar *sc,RefChar *rf) {
 #ifdef PFAEDIT_CONFIG_TYPE3
     int i,j;
     SplineChar *rsc = rf->sc;
+    real extra=0,e;
 
     for ( i=0; i<rf->layer_cnt; ++i )
 	SplinePointListsFree(rf->layers[0].splines);
@@ -2154,8 +2199,17 @@ return;
 	for ( i=0; i<rf->layer_cnt; ++i ) {
 	    _SplineSetFindBounds(rf->layers[i].splines,&rf->bb);
 	    _SplineSetFindTop(rf->layers[i].splines,&rf->top);
+	    if ( rsc->layers[i].dostroke ) {
+		if ( rf->layers[i].stroke_pen.width!=WIDTH_INHERITED )
+		    e = rf->layers[i].stroke_pen.width*rf->layers[i].stroke_pen.trans[0];
+		else
+		    e = rf->layers[i].stroke_pen.trans[0];
+		if ( e>extra ) extra = e;
+	    }
 	}
 	if ( rf->top.y < -65536 ) rf->top.y = rf->top.x = 0;
+	rf->bb.minx -= extra; rf->bb.miny -= extra;
+	rf->bb.maxx += extra; rf->bb.maxy += extra;
     } else {
 	rf->layers = gcalloc(1,sizeof(struct reflayer));
 	rf->layer_cnt = 1;

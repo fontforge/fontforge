@@ -33,7 +33,6 @@
 #include <chardata.h>
 #include <ustring.h>
 #include <unistd.h>
-#include <pwd.h>
 #include "sd.h"
 
 /* ************************************************************************** */
@@ -62,7 +61,7 @@ static int svg_outfontheader(FILE *file, SplineFont *sf) {
     char *hash, *hasv, ch;
     int minu, maxu, i;
     time_t now;
-    struct passwd *pwd;
+    const char *author = GetAuthor();
 
     SFDefaultOS2Info(&info,sf,sf->fontname);
     SplineFontFindBounds(sf,&bb);
@@ -78,18 +77,10 @@ static int svg_outfontheader(FILE *file, SplineFont *sf) {
     fprintf( file, "<svg>\n" );
     time(&now);
     fprintf( file, "<metadata>\nCreated by PfaEdit at %s", ctime(&now) );
-/* Can all be commented out if no pwd routines */
-    pwd = getpwuid(getuid());
-#ifndef __VMS
-    if ( pwd!=NULL && pwd->pw_gecos!=NULL && *pwd->pw_gecos!='\0' )
-	fprintf(file," By %s\n", pwd->pw_gecos);
-    else if ( pwd!=NULL && pwd->pw_name!=NULL && *pwd->pw_name!='\0' )
-#else
-    if ( pwd!=NULL && pwd->pw_name!=NULL && *pwd->pw_name!='\0' )
-#endif
-	fprintf(file," By %s\n", pwd->pw_name);
-    endpwent();
-/* End comment */
+    if ( author!=NULL )
+	fprintf(file," By %s\n", author);
+    else
+	fprintf(file,"\n" );
     if ( sf->copyright!=NULL ) {
 	latin1ToUtf8Out(file,sf->copyright);
 	putc('\n',file);

@@ -33,6 +33,7 @@
 #include "gio.h"
 #include "gicons.h"
 #include <time.h>
+#include <pwd.h>
 
 int _ExportEPS(FILE *eps,SplineChar *sc) {
     DBounds b;
@@ -40,6 +41,7 @@ int _ExportEPS(FILE *eps,SplineChar *sc) {
     struct tm *tm;
     int ret;
     char *oldloc;
+    const char *author = GetAuthor();
 
     oldloc = setlocale(LC_NUMERIC,"C");
 
@@ -49,6 +51,8 @@ int _ExportEPS(FILE *eps,SplineChar *sc) {
     fprintf( eps, "%%%%Pages: 0\n" );
     fprintf( eps, "%%%%Title: %s from %s\n", sc->name, sc->parent->fontname );
     fprintf( eps, "%%%%Creator: PfaEdit\n" );
+    if ( author!=NULL )
+	fprintf( eps, "%%%%Creator: %s\n", author);
     time(&now);
     tm = localtime(&now);
     fprintf( eps, "%%%%CreationDate: %d:%02d %d-%d-%d\n", tm->tm_hour, tm->tm_min,
@@ -58,7 +62,7 @@ int _ExportEPS(FILE *eps,SplineChar *sc) {
     fprintf( eps, "%%%%Page \"%s\" 1\n", sc->name );
 
     fprintf( eps, "gsave newpath\n" );
-    SC_PSDump((void (*)(int,void *)) fputc,eps,sc,true);
+    SC_PSDump((void (*)(int,void *)) fputc,eps,sc,true,false);
 #ifdef PFAEDIT_CONFIG_TYPE3
     if ( sc->parent->multilayer )
 	fprintf( eps, "grestore\n" );
@@ -80,6 +84,110 @@ static int ExportEPS(char *filename,SplineChar *sc) {
 return(0);
     }
     ret = _ExportEPS(eps,sc);
+    fclose(eps);
+return( ret );
+}
+
+int _ExportPDF(FILE *pdf,SplineChar *sc) {
+    DBounds b;
+    time_t now;
+    struct tm *tm;
+    int ret;
+    char *oldloc;
+    uint32 objlocs[8], xrefloc, streamstart, streamlength;
+    const char *author = GetAuthor();
+    int i;
+
+    oldloc = setlocale(LC_NUMERIC,"C");
+
+    fprintf( pdf, "%%PDF-1.4\n%%\201â\202\203\n" );	/* Header comment + binary comment */
+    /* Every document contains a catalog which points to a page tree, which */
+    /*  in our case, points to a single page */
+    objlocs[1] = ftell(pdf);
+    fprintf( pdf, "1 0 obj\n << /Type /Catalog\n    /Pages 2 0 R\n    /PageMode /UseNone\n >>\nendobj\n" );
+    objlocs[2] = ftell(pdf);
+    fprintf( pdf, "2 0 obj\n << /Type /Pages\n    /Kids [ 3 0 R ]\n    /Count 1\n >>\nendobj\n" );
+    /* And our single page points to its contents */
+    objlocs[3] = ftell(pdf);
+    fprintf( pdf, "3 0 obj\n" );
+    fprintf( pdf, " << /Type /Page\n" );
+    fprintf( pdf, "    /Parent [ 2 0 R ]\n" );
+    fprintf( pdf, "    /Resources << >>\n" );
+    SplineCharFindBounds(sc,&b);
+    fprintf( pdf, "    /MediaBox [%g %g %g %g]\n", b.minx, b.miny, b.maxx, b.maxy );
+    fprintf( pdf, "    /Contents 4 0 R\n" );
+    fprintf( pdf, " >>\n" );
+    fprintf( pdf, "endobj\n" );
+    /* And the contents are the interesting stuff */
+    objlocs[4] = ftell(pdf);
+    fprintf( pdf, "4 0 obj\n" );
+    fprintf( pdf, " << /Length 5 0 R >> \n" );
+    fprintf( pdf, " stream \n" );
+    streamstart = ftell(pdf);
+    SC_PSDump((void (*)(int,void *)) fputc,pdf,sc,true,true);
+#ifdef PFAEDIT_CONFIG_TYPE3
+    if ( !sc->parent->multilayer )
+#endif
+	fprintf( pdf, "f\n" );
+    streamlength = ftell(pdf)-streamstart;
+    fprintf( pdf, " endstream\n" );
+    fprintf( pdf, "endobj\n" );
+    objlocs[5] = ftell(pdf);
+    fprintf( pdf, "5 0 obj\n" );
+    fprintf( pdf, " %d\n", streamlength );
+    fprintf( pdf, "endobj\n" );
+
+    /* Optional Info dict */
+    objlocs[6] = ftell(pdf);
+    fprintf( pdf, "6 0 obj\n" );
+    fprintf( pdf, " <<\n" );
+    fprintf( pdf, "    /Creator (PfaEdit)\n" );
+    time(&now);
+    tm = localtime(&now);
+    tzset();
+    fprintf( pdf, "    /CreationDate (D:%04d%02d%02d%02d%2d%02d",
+	    1900+tm->tm_year, tm->tm_mon+1, tm->tm_mday,
+	    tm->tm_hour, tm->tm_min, tm->tm_sec );
+    if ( timezone==0 )
+	fprintf( pdf, "Z)\n" );
+    else 
+	fprintf( pdf, "%+02d')\n", (int) timezone/3600 );	/* doesn't handle half-hour zones */
+    fprintf( pdf, "    /Title (%s from %s)\n", sc->name, sc->parent->fontname );
+    if ( author!=NULL )
+	fprintf( pdf, "    /Author (%s)\n", author );
+    fprintf( pdf, " >>\n" );
+    fprintf( pdf, "endobj\n" );
+
+    xrefloc = ftell(pdf);
+    fprintf( pdf, "xref\n" );
+    fprintf( pdf, " 0 7\n" );
+    fprintf( pdf, "0000000000 65535 f \n" );
+    for ( i=1; i<7; ++i )
+	fprintf( pdf, "%010d %05d n \n", objlocs[i], 0 );
+    fprintf( pdf, "trailer\n" );
+    fprintf( pdf, " <<\n" );
+    fprintf( pdf, "    /Size 7\n" );
+    fprintf( pdf, "    /Root 1 0 R\n" );
+    fprintf( pdf, "    /Info 6 0 R\n" );
+    fprintf( pdf, " >>\n" );
+    fprintf( pdf, "startxref\n" );
+    fprintf( pdf, "%d\n",xrefloc );
+    fprintf( pdf, "%%%%EOF\n" );
+
+    ret = !ferror(pdf);
+    setlocale(LC_NUMERIC,oldloc);
+return( ret );
+}
+
+static int ExportPDF(char *filename,SplineChar *sc) {
+    FILE *eps;
+    int ret;
+
+    eps = fopen(filename,"w");
+    if ( eps==NULL ) {
+return(0);
+    }
+    ret = _ExportPDF(eps,sc);
     fclose(eps);
 return( ret );
 }
@@ -511,7 +619,9 @@ return( ret );
 }
 
 void ScriptExport(SplineFont *sf, BDFFont *bdf, int format, int enc) {
-    char *ext = format==0?"eps":format==1?"fig":format==2?"xbm":format==3?"bmp":"png";
+    char *ext = format==0?"eps":format==1?"fig":
+		format==2?"svg":format==3?"pdf":
+		format==4?"xbm":format==5?"bmp":"png";
     char buffer[100];
     SplineChar *sc = sf->chars[enc];
     BDFChar *bc = bdf!=NULL ? bdf->chars[enc] : NULL;
@@ -527,6 +637,8 @@ return;
 	good = ExportFig(buffer,sc);
     else if ( format==2 )
 	good = ExportSVG(buffer,sc);
+    else if ( format==3 )
+	good = ExportPDF(buffer,sc);
     else if ( bc!=NULL )
 	good = BCExportXBM(buffer,bc,format-3);
     if ( !good )
@@ -555,6 +667,7 @@ static GTextInfo formats[] = {
     { (unichar_t *) "EPS", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 1, 0, 1 },
     { (unichar_t *) "XFig", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "SVG", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) "PDF", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "X Bitmap", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "BMP", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
 #ifndef _NO_LIBPNG
@@ -570,7 +683,7 @@ static void DoExport(struct gfc_data *d,unichar_t *path) {
     temp = cu_copy(path);
     last_format = format = GGadgetGetFirstListSelectedItem(d->format);
     if ( d->bc )
-	last_format += 2;
+	last_format += 4;
     if ( d->bc!=NULL )
 	good = BCExportXBM(temp,d->bc,format);
     else if ( format==0 )
@@ -579,8 +692,10 @@ static void DoExport(struct gfc_data *d,unichar_t *path) {
 	good = ExportFig(temp,d->sc);
     else if ( format==2 )
 	good = ExportSVG(temp,d->sc);
+    else if ( format==3 )
+	good = ExportPDF(temp,d->sc);
     else
-	good = ExportXBM(temp,d->sc,format-3);
+	good = ExportXBM(temp,d->sc,format-4);
     if ( !good )
 	GWidgetErrorR(_STR_Savefailedtitle,_STR_Savefailedtitle);
     free(temp);
@@ -653,8 +768,9 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 	    uc_strcpy(pt,format==0?".eps":
 			 format==1?".fig":
 			 format==2?".svg":
-			 format==3?".xbm":
-			 format==4?".bmp":
+			 format==3?".pdf":
+			 format==4?".xbm":
+			 format==5?".bmp":
 				   ".png");
 	GGadgetSetTitle(d->gfc,f2);
 	free(f2);

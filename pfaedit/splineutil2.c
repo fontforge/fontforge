@@ -29,7 +29,6 @@
 #include "ustring.h"
 #include "chardata.h"
 #include <unistd.h>
-#include <pwd.h>
 #include <time.h>
 
 /*#define DEBUG	1*/
@@ -1791,11 +1790,11 @@ return( sf );
 
 SplineFont *SplineFontBlank(int encoding_name,int charcnt) {
     SplineFont *sf;
-    char buffer[200], *pt;
-    struct passwd *pwd;
+    char buffer[200];
     time_t now;
     struct tm *tm;
     extern int greeknames;
+    const char *author = GetAuthor();
 
     sf = SplineFontEmpty();
     sf->fontname = GetNextUntitledName();
@@ -1804,22 +1803,10 @@ SplineFont *SplineFontBlank(int encoding_name,int charcnt) {
     sprintf( buffer, "%s.sfd", sf->fontname);
     sf->origname = copy(buffer);
     sf->weight = copy("Medium");
-/* Can all be commented out if no pwd routines */
-    pwd = getpwuid(getuid());
-#ifndef __VMS
-    if ( pwd!=NULL && pwd->pw_gecos!=NULL && *pwd->pw_gecos!='\0' )
-	sprintf( buffer, "Created by %.50s with PfaEdit 1.0 (http://pfaedit.sf.net)", pwd->pw_gecos );
-    else if ( pwd!=NULL && pwd->pw_name!=NULL && *pwd->pw_name!='\0' )
-#else
-    if ( pwd!=NULL && pwd->pw_name!=NULL && *pwd->pw_name!='\0' )
-#endif
-	sprintf( buffer, "Created by %.50s with PfaEdit 1.0 (http://pfaedit.sf.net)", pwd->pw_name );
-    else if ( (pt=getenv("USER"))!=NULL )
-	sprintf( buffer, "Created by %.50s with PfaEdit 1.0 (http://pfaedit.sf.net)", pt );
+    if ( author!=NULL )
+	sprintf( buffer, "Created by %.50s with PfaEdit 1.0 (http://pfaedit.sf.net)", author );
     else
 	strcpy( buffer, "Created with PfaEdit 1.0 (http://pfaedit.sf.net)" );
-    endpwent();
-/* End comment */
     sf->copyright = copy(buffer);
     if ( xuid!=NULL ) {
 	sf->xuid = galloc(strlen(xuid)+20);
