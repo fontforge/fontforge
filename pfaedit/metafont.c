@@ -96,7 +96,7 @@
 /*  algorithem only really works for hv stems anyway... */
 
 /* ************ Data structures active during the entire command ************ */
-enum counterchoices { cc_same,	/* counters have the same with until scaled */
+enum counterchoices { cc_same,	/* counters have the same width until scaled */
 	cc_centerfixed,		/* stem centers remain fixed, stems expand around, then scale */
 	cc_edgefixed,		/* outer edges are fixed, outer stems only expand, then scale */
 				/*  inward, while inner stems have their centers */
