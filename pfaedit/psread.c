@@ -1886,9 +1886,15 @@ static SplinePointList *SplinesFromEntities(EntityChar *ec,int *toobigwarn) {
     SplinePointList *head=NULL, *last, *new, *nlast, *temp, *each, *transed;
     StrokeInfo si;
     real inversetrans[6];
+    /*SplineSet *spl;*/
 
     for ( ent=ec->splines; ent!=NULL; ent = next ) {
 	next = ent->next;
+#if 0
+	/* Postscript conventions are backwards from mine */
+	for ( spl=ent->u.splines.splines; spl!=NULL; spl=spl->next )
+	    SplineSetReverse(spl);
+#endif	/* But doing this just seems to make things worse */
 	if ( ent->type == et_splines ) {
 	    if ( ent->u.splines.stroke.col!=0xffffffff ) {
 		if ( ent->u.splines.fill.col!=0xffffffff && !SplinePointListIsClockwise(ent->u.splines.splines))

@@ -1235,6 +1235,7 @@ static struct strokedspline *_SplineSetApprox(SplineSet *spl,StrokeInfo *si,Spli
 	    if ( (ydiff = spline->to->me.y-spline->from->me.y)<0 ) ydiff = -ydiff;
 	    loopdiff = (xdiff+ydiff==0) ? .1 : 1.0/(4*(xdiff+ydiff)/si->radius);
 	    approx = rint(1.0/loopdiff);
+	    if ( approx<0 || approx>3000 ) approx=3000;
 	    if ( approx>max ) {
 		max = approx+10;
 		pmids = grealloc(pmids,max*sizeof(TPoint));
@@ -1581,6 +1582,8 @@ return( base );
 SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc) {
     SplineSet *ret, *temp;
 
+    if ( si->radius==0 )
+	si->radius=1;
     if ( si->stroke_type == si_elipse ) {
 	real trans[6], factor;
 	StrokeInfo si2;
