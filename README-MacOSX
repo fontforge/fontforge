@@ -70,6 +70,8 @@ More complex installations
 	    # mkdir -p /usr/local/share/pfaedit
 	    # mv pfaedit/cidmaps/* /usr/local/share/pfaedit
     DOCUMENTATION:
+	(On the mac this probably won't work since I can't figure out how to
+	run internet explorer, the most likely browser)
 	You can choose to install PfaEdit's documentation on your system, then
 	pressing the [Help] or [F1] key within PfaEdit will go to the local
 	docs rather than those on the web.
