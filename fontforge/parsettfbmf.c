@@ -215,7 +215,11 @@ return;
 	    }
 	}
     }
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressNext();
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_next();
+#endif
 }
     
 static void readttfbitmapfont(FILE *ttf,struct ttfinfo *info,
@@ -420,7 +424,11 @@ return;
     }
     cnt = j;
 
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressChangeStages(3+cnt);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_change_stages(3+cnt);
+#endif
     info->bitmaps = last = NULL;
     for ( i=0; i<cnt; ++i ) {
 	bdf = gcalloc(1,sizeof(BDFFont));
@@ -443,9 +451,17 @@ return;
 	u_snprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),_("%d pixel bitmap"),
 #endif
 		sizes[i].ppem );
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressChangeLine2(ubuf);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_progress_change_line2(ubuf);
+#endif
 	readttfbitmapfont(ttf,info,&sizes[i],bdf);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressNextStage();
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_progress_next_stage();
+#endif
     }
     free(sizes); free(sel);
 }
@@ -1023,9 +1039,17 @@ void ttfdumpbitmap(SplineFont *sf,struct alltabs *at,int32 *sizes) {
 	dumpbitmapSizeTable(at->bloc,&space);
 
     /* Dump out the strikes... */
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressChangeLine1R(_STR_SavingBitmapFonts);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_change_line1(_("Saving Bitmap Font(s)"));
+#endif
     for ( i=0; sizes[i]!=0; ++i ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressNextStage();
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_progress_next_stage();
+#endif
 	for ( bdf=sf->bitmaps; bdf!=NULL && (bdf->pixelsize!=(sizes[i]&0xffff) || BDFDepth(bdf)!=(sizes[i]>>16)); bdf=bdf->next );
 	if ( bdf==NULL )
     continue;
@@ -1062,7 +1086,11 @@ void ttfdumpbitmap(SplineFont *sf,struct alltabs *at,int32 *sizes) {
     if ( ftell(at->bloc)&2 )
 	putshort(at->bloc,0);
 
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressChangeLine1R(_STR_SavingTTFont);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_change_line1(_("Saving TrueType Font"));
+#endif
 }
 
 static BDFFont *BDFSelect(SplineFont *sf,int32 *sizes,int wanted ) {

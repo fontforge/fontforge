@@ -1033,7 +1033,11 @@ static void InitChars(struct pschars *chars,char *line) {
 	chars->keys = gcalloc(chars->cnt,sizeof(char *));
 	chars->values = gcalloc(chars->cnt,sizeof(char *));
 	chars->lens = gcalloc(chars->cnt,sizeof(int));
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressChangeTotal(chars->cnt);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_progress_change_total(chars->cnt);
+#endif
     }
 }
 
@@ -1044,7 +1048,11 @@ static void InitCharProcs(struct charprocs *cp, char *line) {
     if ( cp->cnt>0 ) {
 	cp->keys = gcalloc(cp->cnt,sizeof(char *));
 	cp->values = gcalloc(cp->cnt,sizeof(SplineChar *));
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressChangeTotal(cp->cnt);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_progress_change_total(cp->cnt);
+#endif
     }
 }
 
@@ -1357,7 +1365,11 @@ return;
 	    while ( isalnum(*line) || *line=='.' ) ++line;
 	    *line = '\0';
 	    findstring(fp,chars,i,namestrt,line+1);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GProgressNext();
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_progress_next();
+#endif
 	}
     }
     fp->inencoding = 0;
@@ -1768,7 +1780,11 @@ static void addinfo(struct fontparse *fp,char *line,char *tok,char *binstart,int
 	    chars->values[i] = galloc(binlen);
 	    memcpy(chars->values[i],binstart,binlen);
 	    ++chars->next;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GProgressNext();
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_progress_next();
+#endif
 	}
     } else if ( !fp->alreadycomplained ) {
 	/* Special hacks for known badly formatted fonts */
@@ -2116,7 +2132,11 @@ static void figurecids(struct fontparse *fp,FILE *temp) {
     fd->cidlens = galloc(cidcnt*sizeof(int16));
     fd->cidfds = galloc((cidcnt+1)*sizeof(int16));
     offsets = galloc((cidcnt+1)*sizeof(int));
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressChangeTotal(cidcnt);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_change_total(cidcnt);
+#endif
 
     fseek(temp,fd->mapoffset,SEEK_SET);
     for ( i=0; i<=fd->cidcnt; ++i ) {
@@ -2138,7 +2158,11 @@ static void figurecids(struct fontparse *fp,FILE *temp) {
 		    fd->fds[fd->cidfds[i]]->private->leniv);
 	    fd->cidlens[i] -= fd->fds[fd->cidfds[i]]->private->leniv;
 	}
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressNext();
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_progress_next();
+#endif
     }
     free(offsets);
 

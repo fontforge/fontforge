@@ -486,7 +486,11 @@ BDFFont *SplineFontFreeTypeRasterize(void *freetypecontext,int pixelsize,int dep
 		    bdf->chars[i] = SplineCharRasterize(subsf->chars[i],pixelsize);
 		else
 		    bdf->chars[i] = SplineCharAntiAlias(subsf->chars[i],pixelsize,(1<<(depth/2)));
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GProgressNext();
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_progress_next();
+#endif
 	    } else
 		bdf->chars[i] = NULL;
 	if ( subftc!=NULL && subftc!=ftc )
@@ -494,7 +498,11 @@ BDFFont *SplineFontFreeTypeRasterize(void *freetypecontext,int pixelsize,int dep
 	subftc = NULL;
 	++k;
     } while ( k<sf->subfontcnt );
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressEndIndicator();
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_end_indicator();
+#endif
 return( bdf );
 }
 

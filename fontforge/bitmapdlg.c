@@ -174,7 +174,11 @@ static void FVScaleBitmaps(FontView *fv,int32 *sizes) {
     scale = fv->show;
     if ( scale->clut!=NULL )
 	for ( scale = fv->sf->bitmaps; scale->next!=NULL; scale=scale->next );
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressStartIndicatorR(10,_STR_ScalingBitmaps,_STR_ScalingBitmaps,0,cnt,1);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_start_indicator(10,_("Scaling Bitmaps"),_("Scaling Bitmaps"),0,cnt,1);
+#endif
 
     for ( i=0; sizes[i]!=0 ; ++i ) if ( sizes[i]>0 && (sizes[i]>>16)==1 ) {
 	bdf = BitmapFontScaleTo(scale,sizes[i]&0xffff);
@@ -183,7 +187,11 @@ static void FVScaleBitmaps(FontView *fv,int32 *sizes) {
 	bdf->next = fv->sf->bitmaps;
 	fv->sf->bitmaps = bdf;
 	fv->sf->changed = true;
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( !GProgressNext())
+#elif defined(FONTFORGE_CONFIG_GTK)
+	if ( !gwwv_progress_next())
+#endif
     break;
     } else if ( sizes[i]>0 && (sizes[i]>>16)!=1 && !warned ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
@@ -193,7 +201,11 @@ static void FVScaleBitmaps(FontView *fv,int32 *sizes) {
 #endif
 	warned = true;
     }
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressEndIndicator();
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_end_indicator();
+#endif
 
     /* Order the list */
     SFOrderBitmapList(fv->sf);

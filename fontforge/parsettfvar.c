@@ -750,7 +750,11 @@ void readttfvariations(struct ttfinfo *info, FILE *ttf) {
     if ( info->gvar_start==0 || info->gvar_len==0 || info->fvar_start==0 || info->fvar_len==0 )
 return;
 
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressChangeLine2R(_STR_ProcessingVariations);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_change_line2(_("Processing Variations"));
+#endif
     if ( screen_display!=NULL )
 	GDrawProcessPendingEvents(NULL);
     parsefvar(info,ttf);

@@ -1769,7 +1769,11 @@ struct pschars *SplineFont2Chrs(SplineFont *sf, int iscjk,
 		    round,iscjk,subrs,NULL,flags,format);
 	    ++cnt;
 	}
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( !GProgressNext()) {
+#elif defined(FONTFORGE_CONFIG_GTK)
+	if ( !gwwv_progress_next()) {
+#endif
 	    PSCharsFree(chrs);
 return( NULL );
 	}
@@ -1852,7 +1856,11 @@ struct pschars *CID2Chrs(SplineFont *cidmaster,struct cidbytes *cidbytes,int fla
 	    chrs->values[cid] = SplineChar2PS(sf->chars[cid],&chrs->lens[cid],
 		    round,fd->iscjk|0x100,fd->subrs,NULL,flags,ff_cid);
 	}
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( !GProgressNext()) {
+#elif defined(FONTFORGE_CONFIG_GTK)
+	if ( !gwwv_progress_next()) {
+#endif
 	    PSCharsFree(chrs);
 return( NULL );
 	}
@@ -2715,7 +2723,11 @@ return( subrs);
 			subrs,(BasePoint *) (subrs->keys[cnt]),flags);
 	    sc->lsidebearing = cnt++ - subrs->bias;
 	}
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( !GProgressNext()) {
+#elif defined(FONTFORGE_CONFIG_GTK)
+	if ( !gwwv_progress_next()) {
+#endif
 	    PSCharsFree(subrs);
 return( NULL );
 	}
@@ -2805,7 +2817,11 @@ struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
 	    chrs->values[cnt] = SplineChar2PS2(sc,&chrs->lens[cnt],nomwid,defwid,subrs,NULL,flags);
 	    sf->chars[i]->ttf_glyph = cnt++;
 	}
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( !GProgressNext()) {
+#elif defined(FONTFORGE_CONFIG_GTK)
+	if ( !gwwv_progress_next()) {
+#endif
 	    PSCharsFree(chrs);
 return( NULL );
 	}
@@ -2901,7 +2917,11 @@ struct pschars *CID2Chrs2(SplineFont *cidmaster,struct fd2data *fds,int flags) {
 		    fds[i].nomwid,fds[i].defwid,fds[i].subrs,NULL,flags);
 	    sc->ttf_glyph = cnt++;
 	}
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressNext();
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_progress_next();
+#endif
     }
     chrs->next = cnt;
 return( chrs );

@@ -432,7 +432,11 @@ static int slurp_header(FILE *bdf, int *_as, int *_ds, int *_enc,
 	if ( strcmp(tok,"CHARS")==0 ) {
 	    cnt=0;
 	    fscanf(bdf,"%d",&cnt);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GProgressChangeTotal(cnt);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_progress_change_total(cnt);
+#endif
     break;
 	}
 	if ( strcmp(tok,"FONT")==0 ) {
@@ -1544,7 +1548,11 @@ return( false );
 		GDrawIError("Bad PCF glyph bitmap size");
 	    memcpy(bc->bitmap,bitmap+offsets[i],
 		    bc->bytes_per_line * (bc->ymax-bc->ymin+1));
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GProgressNext();
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_progress_next();
+#endif
 	}
     } else {
 	int pad = PCF_GLYPH_PAD(format);
@@ -1555,7 +1563,11 @@ return( false );
 		memcpy(bc->bitmap+(j-bc->ymin)*bc->bytes_per_line,
 			bitmap+offsets[i]+(j-bc->ymin)*bpl,
 			bc->bytes_per_line);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	    GProgressNext();
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_progress_next();
+#endif
 	}
     }
     free(bitmap);
@@ -1930,7 +1942,11 @@ return( NULL );
 	while ( gettoken(bdf,tok,sizeof(tok))!=-1 ) {
 	    if ( strcmp(tok,"STARTCHAR")==0 ) {
 		AddBDFChar(bdf,sf,b,depth,&defs,enc);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 		GProgressNext();
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_progress_next();
+#endif
 	    }
 	}
     }
@@ -2037,7 +2053,11 @@ static void SFAddToBackground(SplineFont *sf,BDFFont *bdf);
 
 int FVImportBDF(FontView *fv, char *filename, int ispk, int toback) {
     BDFFont *b, *anyb=NULL;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     unichar_t ubuf[140];
+#elif defined(FONTFORGE_CONFIG_GTK)
+    char buf[300];
+#endif
     char *eod, *fpt, *file, *full;
     int fcnt, any = 0;
     int oldcharcnt = fv->sf->charcnt;
@@ -2051,15 +2071,13 @@ int FVImportBDF(FontView *fv, char *filename, int ispk, int toback) {
 
 #if defined(FONTFORGE_CONFIG_GDRAW)
     u_sprintf(ubuf, GStringGetResource(_STR_LoadingFrom,NULL), filename);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    u_sprintf(ubuf, _("Loading font from %.100s"), filename);
-#endif
-#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressStartIndicator(10,GStringGetResource(_STR_Loading,NULL),ubuf,GStringGetResource(_STR_ReadingGlyphs,NULL),0,fcnt);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    GProgressStartIndicator(10,_("Loading..."),ubuf,GStringGetResource(_("Reading Glyphs"),NULL),0,fcnt);
-#endif
     GProgressEnableStop(false);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    sprintf(buf, _("Loading font from %.100s"), filename);
+    gwwv_progress_start_indicator(10_("Loading..."),buf,_("Reading Glyphs"),0,fcnt);
+    gwwv_progress_enable_stop(false);
+#endif
 
     file = eod+1;
     do {
@@ -2069,13 +2087,18 @@ int FVImportBDF(FontView *fv, char *filename, int ispk, int toback) {
 	strcpy(full,filename); strcat(full,"/"); strcat(full,file);
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	u_sprintf(ubuf, GStringGetResource(_STR_LoadingFrom,NULL), filename);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	u_sprintf(ubuf, _("Loading font from %.100s"), filename);
-#endif
 	GProgressChangeLine1(ubuf);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	sprintf(buf, _("Loading font from %.100s"), filename);
+	gwwv_progress_change_line1(buf);
+#endif
 	b = _SFImportBDF(fv->sf,full,ispk,toback);
 	free(full);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( fpt!=NULL ) GProgressNextStage();
+#elif defined(FONTFORGE_CONFIG_GTK)
+	if ( fpt!=NULL ) gwwv_progress_next_stage();
+#endif
 	if ( b!=NULL ) {
 	    anyb = b;
 	    any = true;
@@ -2084,7 +2107,11 @@ int FVImportBDF(FontView *fv, char *filename, int ispk, int toback) {
 	}
 	file = fpt+2;
     } while ( fpt!=NULL );
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressEndIndicator();
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_end_indicator();
+#endif
     if ( oldcharcnt != fv->sf->charcnt ) {
 	FontView *fvs;
 	for ( fvs=fv->sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
@@ -2148,19 +2175,20 @@ static void SFAddToBackground(SplineFont *sf,BDFFont *bdf) {
 int FVImportMult(FontView *fv, char *filename, int toback, int bf) {
     SplineFont *strikeholder, *sf = fv->sf;
     BDFFont *strikes;
-    unichar_t ubuf[100];
 
 #if defined(FONTFORGE_CONFIG_GDRAW)
+    unichar_t ubuf[100];
+
     u_snprintf(ubuf, sizeof(ubuf)/sizeof(ubuf[0]), GStringGetResource(_STR_LoadingFrom,NULL), filename);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    u_snprintf(ubuf, sizeof(ubuf)/sizeof(ubuf[0]), _("Loading font from %.100s"), filename);
-#endif
-#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressStartIndicator(10,GStringGetResource(_STR_Loading,NULL),ubuf,GStringGetResource(_STR_ReadingGlyphs,NULL),0,2);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    GProgressStartIndicator(10,_("Loading..."),ubuf,GStringGetResource(_("Reading Glyphs"),NULL),0,2);
-#endif
     GProgressEnableStop(false);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    char buf[300];
+
+    snprintf(buf, sizeof(buf)/sizeof(buf[0]), _("Loading font from %.100s"), filename);
+    gwwv_progress_start_indicator(10,_("Loading..."),buf,_("Reading Glyphs"),NULL),0,2);
+    gwwv_progress_enable_stop(false);
+#endif
 
     if ( bf == bf_ttf )
 	strikeholder = SFReadTTF(filename,toback?ttf_onlyonestrike|ttf_onlystrikes:ttf_onlystrikes);
@@ -2171,7 +2199,11 @@ int FVImportMult(FontView *fv, char *filename, int toback, int bf) {
 
     if ( strikeholder==NULL || (strikes = strikeholder->bitmaps)==NULL ) {
 	SplineFontFree(strikeholder);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressEndIndicator();
+#elif defined(FONTFORGE_CONFIG_GTK)
+	gwwv_progress_end_indicator();
+#endif
 return( false );
     }
     SFMatchEncoding(strikeholder,sf);
@@ -2182,7 +2214,11 @@ return( false );
 
     strikeholder->bitmaps =NULL;
     SplineFontFree(strikeholder);
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressEndIndicator();
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_end_indicator();
+#endif
 return( true );
 }
 
