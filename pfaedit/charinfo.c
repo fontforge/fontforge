@@ -503,9 +503,9 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
  goto tryagain;
 	}
 	flags = 0;
-	if ( GGadgetIsChecked(gcd[4].ret) ) flags |= pst_ignorebaseglyphs;
-	if ( GGadgetIsChecked(gcd[5].ret) ) flags |= pst_ignoreligatures;
-	if ( GGadgetIsChecked(gcd[6].ret) ) flags |= pst_ignorecombiningmarks;
+	if ( GGadgetIsChecked(gcd[i-5].ret) ) flags |= pst_ignorebaseglyphs;
+	if ( GGadgetIsChecked(gcd[i-4].ret) ) flags |= pst_ignoreligatures;
+	if ( GGadgetIsChecked(gcd[i-3].ret) ) flags |= pst_ignorecombiningmarks;
 	sprintf(buf,"%c%c%c%c %c%c%c dx=%d dy=%d dx_adv=%d dy_adv=%d",
 		tag>>24, tag>>16, tag>>8, tag,
 		flags&pst_ignorebaseglyphs?'b':' ',
@@ -997,7 +997,7 @@ return;
 		    (((uint8 *) data)[2]<<8) | ((uint8 *) data)[3];
 	new->flags = 0;
 	if ( data[5]=='b' ) new->flags |= pst_ignorebaseglyphs;
-	if ( data[6]=='i' ) new->flags |= pst_ignoreligatures;
+	if ( data[6]=='l' ) new->flags |= pst_ignoreligatures;
 	if ( data[7]=='m' ) new->flags |= pst_ignorecombiningmarks;
 	if ( type==pst_position ) {
 	    for ( pt=data+9; *pt!='\0' && *pt!='='; ++pt ); if ( *pt=='=' ) ++pt;
@@ -1949,12 +1949,15 @@ static void CIFillup(CharInfo *ci) {
     SplineFont *sf = sc->parent;
     unichar_t *temp;
     char buffer[200];
-    unichar_t ubuf[8];
+    unichar_t ubuf[200];
     const unichar_t *bits;
     int i,j;
     GTextInfo **arrays[pst_max];
     int cnts[pst_max];
     PST *pst;
+
+    u_sprintf(ubuf,GStringGetResource(_STR_CharInfoFor,NULL),sc->name);
+    GDrawSetWindowTitles(ci->gw, ubuf, GStringGetResource(_STR_Charinfo,NULL));
 
     if ( ci->oldsc!=NULL && ci->oldsc->charinfo==ci )
 	ci->oldsc->charinfo = NULL;
@@ -2284,7 +2287,7 @@ return;
 	for ( i=0; i<5; ++i ) {
 	    psgcd[i][0].gd.pos.x = 5; psgcd[i][0].gd.pos.y = 5;
 	    psgcd[i][0].gd.pos.width = CI_Width-28; psgcd[i][0].gd.pos.height = 7*12+10;
-	    psgcd[i][0].gd.flags = gg_visible | gg_enabled | gg_list_alphabetic;
+	    psgcd[i][0].gd.flags = gg_visible | gg_enabled | gg_list_alphabetic | gg_list_multiplesel;
 	    psgcd[i][0].gd.cid = CID_List+i*100;
 	    psgcd[i][0].gd.u.list = pst_tags[i];
 	    psgcd[i][0].gd.handle_controlevent = CI_SelChanged;

@@ -325,6 +325,7 @@ static char str_96[] = "96 pixel outline";
 static unichar_t mnemonic_96[] = '9';
 static char str_Charinfo[] = "Infos Caractère...";
 static unichar_t mnemonic_Charinfo[] = 'I';
+static char str_CharInfoFor[] = "Infos Caractère de %.40hs";
 static char str_Mergefonts[] = "Amalgamer Polices...";
 static unichar_t mnemonic_Mergefonts[] = 'M';
 static char str_Interp[] = "Interpoler Polices...";

@@ -339,6 +339,7 @@ static char str_FitToEm[] = "Fit to em";
 static unichar_t mnemonic_FitToEm[] = 'F';
 static char str_Charinfo[] = "Char Info...";
 static unichar_t mnemonic_Charinfo[] = 'I';
+static char str_CharInfoFor[] = "Char Info for %.40hs";
 static char str_DefaultATT = "Default ATT";
 static char str_Mergefonts[] = "Merge Fonts...";
 static unichar_t mnemonic_Mergefonts[] = 'M';
