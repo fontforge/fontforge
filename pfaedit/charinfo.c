@@ -968,8 +968,11 @@ int SCDefaultSLI(SplineFont *sf, SplineChar *default_script) {
 return( def_sli );
 }
 
+static int sli_names[] = { _STR_HHDefaultHH, _STR_Nested, _STR_EditLangList };
+static int sli_ud[] = { SLI_UNKNOWN, SLI_NESTED, -1 };
+
 GTextInfo *SFLangList(SplineFont *sf,int addfinal,SplineChar *default_script) {
-    int i;
+    int i,j,k,bit;
     GTextInfo *ti;
     int def_sli;
 
@@ -977,43 +980,46 @@ GTextInfo *SFLangList(SplineFont *sf,int addfinal,SplineChar *default_script) {
     def_sli = SCDefaultSLI(sf,default_script);
 
     for ( i=0; sf->script_lang[i]!=NULL; ++i );
-    ti = gcalloc(i+3,sizeof( GTextInfo ));
-    for ( i=0; sf->script_lang[i]!=NULL; ++i )
+    ti = gcalloc(i+4,sizeof( GTextInfo ));
+    for ( i=0; sf->script_lang[i]!=NULL; ++i ) {
 	ti[i].text = ScriptLangLine(sf->script_lang[i]);
-    if ( def_sli!=-1 )
-	ti[def_sli].selected = true;
-    if ( addfinal&2 ) {
-	ti[i].text = (unichar_t *) _STR_Nested;
-	ti[i].text_in_resource = true;
-	ti[i++].userdata = (void *) SLI_NESTED;
+	ti[i].userdata = (void *) i;
     }
-    if ( addfinal&1 ) {
-	ti[i].text = (unichar_t *) _STR_EditLangList;
-	ti[i].text_in_resource = true;
-	ti[i++].userdata = (void *) -1;
+    if ( def_sli!=-1 && def_sli<i )
+	ti[def_sli].selected = true;
+    for ( k=0, j=sizeof(sli_names)/sizeof(sli_names[0])-1, bit = 1<<j; j>=0; --j, ++k, bit>>=1 ) {
+	if ( addfinal&bit ) {
+	    ti[i].text = (unichar_t *) sli_names[k];
+	    ti[i].text_in_resource = true;
+	    ti[i].userdata = (void *) sli_ud[k];
+	    ++i;
+	}
     }
 return( ti );
 }
 
 static GTextInfo **SFLangArray(SplineFont *sf,int addfinal) {
-    int i;
+    int i, bit, j, k;
     GTextInfo **ti;
 
     if ( sf->cidmaster ) sf = sf->cidmaster;
     for ( i=0; sf->script_lang[i]!=NULL; ++i );
-    ti = gcalloc(i+2,sizeof( GTextInfo * ));
+    ti = gcalloc(i+4,sizeof( GTextInfo * ));
     for ( i=0; sf->script_lang[i]!=NULL; ++i ) {
 	ti[i] = gcalloc(1,sizeof( GTextInfo));
 	ti[i]->text = ScriptLangLine(sf->script_lang[i]);
 	ti[i]->fg = ti[i]->bg = COLOR_DEFAULT;
+	ti[i]->userdata = (void *) i;
     }
-    if ( addfinal ) {
-	ti[i] = gcalloc(1,sizeof( GTextInfo));
-	ti[i]->text = (unichar_t *) _STR_EditLangList;
-	ti[i]->text_in_resource = true;
-	ti[i]->userdata = (void *) -1;
-	ti[i]->fg = ti[i]->bg = COLOR_DEFAULT;
-	++i;
+    for ( k=0, j=sizeof(sli_names)/sizeof(sli_names[0])-1, bit = 1<<j; j>=0; --j, ++k, bit>>=1 ) {
+	if ( addfinal&bit ) {
+	    ti[i] = gcalloc(1,sizeof( GTextInfo));
+	    ti[i]->text = (unichar_t *) sli_names[k];
+	    ti[i]->text_in_resource = true;
+	    ti[i]->userdata = (void *) sli_ud[k];
+	    ti[i]->fg = ti[i]->bg = COLOR_DEFAULT;
+	    ++i;
+	}
     }
     ti[i] = gcalloc(1,sizeof( GTextInfo));
 return( ti );
@@ -1920,6 +1926,8 @@ static int GetSLI(GGadget *g) {
     GTextInfo **ti = GGadgetGetList(g,&len);
     if ( ti[sel]->userdata == (void *) SLI_NESTED )
 return( SLI_NESTED );
+    if ( ti[sel]->userdata == (void *) SLI_UNKNOWN )
+return( SLI_UNKNOWN );
 
 return( sel );
 }
@@ -2056,7 +2064,7 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 	gcd[5].gd.pos.x = 10; gcd[5].gd.pos.y = gcd[4].gd.pos.y+14;
 	gcd[5].gd.pos.width = 140;
 	gcd[5].gd.flags = gg_enabled|gg_visible;
-	gcd[5].gd.u.list = SFLangList(sf,3,default_script);
+	gcd[5].gd.u.list = SFLangList(sf,title==_STR_SuffixToTag?7:3,default_script);
 	j = script_lang_index;
 	if ( script_lang_index!=-1 ) {
 	    for ( i=0; gcd[5].gd.u.list[i].text!=NULL; ++i )
@@ -3818,13 +3826,17 @@ static PST *AddPos(PST *last,uint32 tag,int dx, int dy, int dxa, int dya, uint16
 return( pos );
 }
 
-static PST *AddSubs(PST *last,uint32 tag,char *name,uint16 flags,SplineChar *sc) {
+static PST *AddSubs(PST *last,uint32 tag,char *name,uint16 flags,
+	uint16 sli,SplineChar *sc) {
     PST *sub = chunkalloc(sizeof(PST));
     sub->tag = tag;
     sub->flags = flags;
     sub->type = pst_substitution;
-    sub->script_lang_index = SFAddScriptLangIndex(sc->parent,
-			SCScriptFromUnicode(sc),DEFAULT_LANG);
+    if ( sli==SLI_UNKNOWN )
+	sub->script_lang_index = SFAddScriptLangIndex(sc->parent,
+			    SCScriptFromUnicode(sc),DEFAULT_LANG);
+    else
+	sub->script_lang_index = sli;
     sub->next = last;
     sub->u.subs.variant = copy(name);
 return( sub );
@@ -3895,7 +3907,7 @@ static PST *LigDefaultList(SplineChar *sc, uint32 tag) {
 	if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 && tomirror(sc->unicodeenc)!=0 ) {
 	    alt = SFGetChar(sf,tomirror(sc->unicodeenc),NULL);
 	    if ( alt!=NULL )
-		last=AddSubs(last,CHR('r','t','l','a'),alt->name, 0x0,sc);
+		last=AddSubs(last,CHR('r','t','l','a'),alt->name, 0x0,SLI_UNKNOWN,sc);
 	}
     }
 
@@ -3903,7 +3915,7 @@ static PST *LigDefaultList(SplineChar *sc, uint32 tag) {
     if ( tag==0 || tag==CHR('v','r','t','2') ) {
 	alt = SuffixCheck(sc,"vert");
 	if ( alt!=NULL )
-	    last=AddSubs(last,CHR('v','r','t','2'),alt->name, 0x0,sc);
+	    last=AddSubs(last,CHR('v','r','t','2'),alt->name, 0x0,SLI_UNKNOWN,sc);
     }
 
 	/* Look for small caps */
@@ -3914,14 +3926,14 @@ static PST *LigDefaultList(SplineChar *sc, uint32 tag) {
 	    alt = SuffixCheck(sc,"oldstyle");
 #endif
 	if ( alt!=NULL )
-	    last=AddSubs(last,CHR('s','m','c','p'),alt->name, 0x0,sc);
+	    last=AddSubs(last,CHR('s','m','c','p'),alt->name, 0x0,SLI_UNKNOWN,sc);
     }
 
 	/* And for oldstyle */
     if ( tag==0 || tag==CHR('o','n','u','m') ) {
 	alt = SuffixCheck(sc,"oldstyle");
 	if ( alt!=NULL )
-	    last=AddSubs(last,CHR('o','n','u','m'),alt->name, 0x0,sc);
+	    last=AddSubs(last,CHR('o','n','u','m'),alt->name, 0x0,SLI_UNKNOWN,sc);
     }
 
 	/* Look for superscripts */
@@ -3943,7 +3955,7 @@ static PST *LigDefaultList(SplineChar *sc, uint32 tag) {
 		alt = SFGetChar(sf,i,NULL);
 	}
 	if ( alt!=NULL )
-	    last=AddSubs(last,CHR('s','u','p','s'),alt->name, 0x0,sc);
+	    last=AddSubs(last,CHR('s','u','p','s'),alt->name, 0x0,SLI_UNKNOWN,sc);
     }
 
 	/* Look for subscripts */
@@ -3960,14 +3972,14 @@ static PST *LigDefaultList(SplineChar *sc, uint32 tag) {
 		alt = SFGetChar(sf,i,NULL);
 	}
 	if ( alt!=NULL )
-	    last=AddSubs(last,CHR('s','u','b','s'),alt->name, 0x0,sc);
+	    last=AddSubs(last,CHR('s','u','b','s'),alt->name, 0x0,SLI_UNKNOWN,sc);
     }
 
 	/* Look for swash forms */
     if ( tag==0 || tag==CHR('s','w','s','h')) {
 	alt = SuffixCheck(sc,"swash");
 	if ( alt!=NULL ) {
-	    last=AddSubs(last,CHR('s','w','s','h'),alt->name, 0x0,sc);
+	    last=AddSubs(last,CHR('s','w','s','h'),alt->name, 0x0,SLI_UNKNOWN,sc);
 	    last->type = pst_alternate;
 	}
     }
@@ -3981,7 +3993,7 @@ static PST *LigDefaultList(SplineChar *sc, uint32 tag) {
 		    variant[1]=='\0' ) {
 		alt = SFGetChar(sf,variant[0],NULL);
 		if ( alt!=NULL )
-		    last=AddSubs(last,CHR('p','w','i','d'),alt->name, 0x0,sc);
+		    last=AddSubs(last,CHR('p','w','i','d'),alt->name, 0x0,SLI_UNKNOWN,sc);
 	    }
 	}
     }
@@ -3995,7 +4007,7 @@ static PST *LigDefaultList(SplineChar *sc, uint32 tag) {
 		    variant[1]=='\0' ) {
 		alt = SFGetChar(sf,variant[0],NULL);
 		if ( alt!=NULL )
-		    last=AddSubs(last,CHR('f','w','i','d'),alt->name, 0x0,sc);
+		    last=AddSubs(last,CHR('f','w','i','d'),alt->name, 0x0,SLI_UNKNOWN,sc);
 	    }
 	} else if ( sc->unicodeenc>=0x0021 && sc->unicodeenc<=0x100 ) {
 	    for ( i=0xff01; i<0xffef; ++i ) {
@@ -4007,13 +4019,13 @@ static PST *LigDefaultList(SplineChar *sc, uint32 tag) {
 	    if ( i<0xffef ) {
 		alt = SFGetChar(sf,i,NULL);
 		if ( alt!=NULL )
-		    last=AddSubs(last,CHR('f','w','i','d'),alt->name, 0x0,sc);
+		    last=AddSubs(last,CHR('f','w','i','d'),alt->name, 0x0,SLI_UNKNOWN,sc);
 	    }
 	}
 	if ( alt==NULL ) {
 	    alt = SuffixCheck(sc,"full");
 	    if ( alt!=NULL )
-		last=AddSubs(last,CHR('f','w','i','d'),alt->name, 0x0,sc);
+		last=AddSubs(last,CHR('f','w','i','d'),alt->name, 0x0,SLI_UNKNOWN,sc);
 	}
     }
 
@@ -4030,13 +4042,13 @@ static PST *LigDefaultList(SplineChar *sc, uint32 tag) {
 	    if ( i<0xffdf ) {
 		alt = SFGetChar(sf,i,NULL);
 		if ( alt!=NULL )
-		    last=AddSubs(last,CHR('h','w','i','d'),alt->name, 0x0,sc);
+		    last=AddSubs(last,CHR('h','w','i','d'),alt->name, 0x0,SLI_UNKNOWN,sc);
 	    }
 	}
 	if ( alt==NULL ) {
 	    alt = SuffixCheck(sc,"hw");
 	    if ( alt!=NULL )
-		last=AddSubs(last,CHR('h','w','i','d'),alt->name, 0x0,sc);
+		last=AddSubs(last,CHR('h','w','i','d'),alt->name, 0x0,SLI_UNKNOWN,sc);
 	}
     }
 
@@ -4046,7 +4058,7 @@ static PST *LigDefaultList(SplineChar *sc, uint32 tag) {
 	    if ( (&(ArabicForms[sc->unicodeenc-0x600].initial))[i]!=0 &&
 		    (&(ArabicForms[sc->unicodeenc-0x600].initial))[i]!=sc->unicodeenc &&
 		    (alt = SFGetChar(sf,(&(ArabicForms[sc->unicodeenc-0x600].initial))[i],NULL))!=NULL )
-		last=AddSubs(last,form_tags[i],alt->name,0,sc);
+		last=AddSubs(last,form_tags[i],alt->name,0,SLI_UNKNOWN,sc);
 	}
 #if 0		/* Silvan Toledo tells me that Hebrew doesn't need (and shouldn't have) this tag */
     } else if ( sc->unicodeenc>=0x5db && sc->unicodeenc<=0x5e6 &&
@@ -4064,14 +4076,14 @@ static PST *LigDefaultList(SplineChar *sc, uint32 tag) {
 	else if ( sc->unicodeenc==0x5e6 )
 	    alt = SFGetChar(sf,0x5e5,NULL);
 	if ( alt!=NULL )
-	    last=AddSubs(last,CHR('f','i','n','a'),alt->name,0,sc);
+	    last=AddSubs(last,CHR('f','i','n','a'),alt->name,0,SLI_UNKNOWN,sc);
 #endif
     } else if ( sc->unicodeenc>=0x3c3 &&
 	    (tag==0 || tag==CHR('f','i','n','a')) ) {
 	/* Greek final sigma */
 	alt = SFGetChar(sf,0x3c2,NULL);
 	if ( alt!=NULL )
-	    last=AddSubs(last,CHR('f','i','n','a'),alt->name,0,sc);
+	    last=AddSubs(last,CHR('f','i','n','a'),alt->name,0,SLI_UNKNOWN,sc);
 /* I'd really like to add an entry for long-s (initial & medial) but it would */
 /*  confuse most people. There's no historical initial entry, and although the*/
 /*  open type docs suggest long-s as an example of the 'hist' tag, the */
@@ -4149,12 +4161,12 @@ void SCTagDefault(SplineChar *sc,uint32 tag) {
     SCMergePSList(sc,LigDefaultList(sc,tag));
 }
 
-void SCSuffixDefault(SplineChar *sc,uint32 tag,char *suffix,uint16 flags) {
+void SCSuffixDefault(SplineChar *sc,uint32 tag,char *suffix,uint16 flags,uint16 sli) {
     SplineChar *alt;
 
     alt = SuffixCheck(sc,suffix);
     if ( alt!=NULL )
-	SCMergePSList(sc,AddSubs(NULL,tag,alt->name,flags,sc));
+	SCMergePSList(sc,AddSubs(NULL,tag,alt->name,flags,sli,sc));
 }
 
 void SCLigCaretCheck(SplineChar *sc,int clean) {

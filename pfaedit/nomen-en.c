@@ -1926,6 +1926,7 @@ static char str_TagC = "Tag:";
 static char mnemonic_TagC = 'T';
 static char str_ScriptAndLangC = "Script & Languages:";
 static char mnemonic_ScriptAndLangC = 'S';
+static char str_HHDefaultHH = " -- Default --";
 static char str_Nested = " -- Nested --";
 static char str_EditLangList = " -- Edit Script & Lang List --";
 static char str_TagTooLong = "Tag too long";

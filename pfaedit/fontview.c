@@ -1493,11 +1493,12 @@ return;
 	upt += 5;
     }
     sli = u_strtol(upt,&end,10);
+    while ( *end==' ' ) ++end;
 
     suffix = cu_copy(end);
     free(usuffix);
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i])
-	SCSuffixDefault(SCDuplicate(fv->sf->chars[i]),tag,suffix,flags);
+	SCSuffixDefault(SCDuplicate(fv->sf->chars[i]),tag,suffix,flags,sli);
     free(suffix);
 }
 

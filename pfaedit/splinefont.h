@@ -1115,7 +1115,7 @@ extern char *AdobeLigatureFormat(char *name);
 extern uint32 LigTagFromUnicode(int uni);
 extern void SCLigDefault(SplineChar *sc);
 extern void SCTagDefault(SplineChar *sc,uint32 tag);
-extern void SCSuffixDefault(SplineChar *sc,uint32 tag,char *suffix,uint16 flags);
+extern void SCSuffixDefault(SplineChar *sc,uint32 tag,char *suffix,uint16 flags,uint16 sli);
 extern void SCLigCaretCheck(SplineChar *sc,int clean);
 extern BDFChar *BDFMakeChar(BDFFont *bdf,int i);
 
