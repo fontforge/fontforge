@@ -1525,9 +1525,8 @@ return( 0 );
     else if ( depth!=1 && depth!=2 && depth!=4 && depth!=8 )
 return( 0 );
     while ( (ch = getc(sfd))==' ' );
-    if ( ch!='\n' && ch!='\r' )
-	ungetc(ch,sfd);		/* old sfds don't have a foundry */
-    else {
+    ungetc(ch,sfd);		/* old sfds don't have a foundry */
+    if ( ch!='\n' && ch!='\r' ) {
 	getname(sfd,tok);
 	bdf->foundry = copy(tok);
     }
