@@ -3089,6 +3089,31 @@ static void IterateSolve(Spline1D *sp,double ts[3]) {
     for ( i=j=0; i<3; ++i )
 	if ( ts[i]>=0 && ts[i]<=1 )
 	    ts[j++] = ts[i];
+    for ( i=0; i<j-1; ++i )
+	if ( ts[i]+.0000001>ts[i+1]) {
+	    ts[i] = (ts[i]+ts[i+1])/2;
+	    --j;
+	    for ( ++i; i<j; ++i )
+		ts[i] = ts[i+1];
+	}
+    if ( j!=0 ) {
+	if ( ts[0]!=0 ) {
+	    double d0 = sp->d;
+	    double dt = ((sp->a*ts[0]+sp->b)*ts[0]+sp->c)*ts[0]+sp->d;
+	    if ( d0<0 ) d0=-d0;
+	    if ( dt<0 ) dt=-dt;
+	    if ( d0<dt )
+		ts[0] = 0;
+	}
+	if ( ts[j-1]!=1.0 ) {
+	    double d1 = sp->a+sp->b+sp->c+sp->d;
+	    double dt = ((sp->a*ts[j-1]+sp->b)*ts[j-1]+sp->c)*ts[j-1]+sp->d;
+	    if ( d1<0 ) d1=-d1;
+	    if ( dt<0 ) dt=-dt;
+	    if ( d1<dt )
+		ts[j-1] = 1;
+	}
+    }
     for ( ; j<3; ++j )
 	ts[j] = -1;
 }
