@@ -105,6 +105,7 @@ return( DiagCheck(sp1,sp2,sp1->next,sp2->next,sp3,sp4) ||
 #define CID_Remove	1008
 #define CID_Add		1009
 #define CID_Overlap	1010
+#define CID_Count	1011
 
 typedef struct reviewhintdata {
     unsigned int done: 1;
@@ -140,9 +141,21 @@ static void RH_SetNextPrev(ReviewHintData *hd) {
 static void RH_SetupHint(ReviewHintData *hd) {
     char buffer[20]; unichar_t ubuf[20];
     static unichar_t nullstr[] = {'\0'};
+    StemInfo *h;
+    int pos,cnt;
 
     if ( hd->lastactive!=NULL )
 	hd->lastactive->active = false;
+
+    pos = cnt = 0;
+    for ( h=hd->ishstem ? hd->cv->sc->hstem : hd->cv->sc->vstem; h!=NULL; h=h->next ) {
+	++cnt;
+	if ( h==hd->active ) pos=cnt;
+    }
+    sprintf( buffer,"%d/%d", pos, cnt );
+    uc_strcpy(ubuf,buffer);
+    GGadgetSetTitle(GWidgetGetControl(hd->gw,CID_Count),ubuf);
+    
     if ( hd->active==NULL ) {
 	GGadgetSetTitle(GWidgetGetControl(hd->gw,CID_Base),nullstr);
 	GGadgetSetTitle(GWidgetGetControl(hd->gw,CID_Width),nullstr);
@@ -315,8 +328,8 @@ void CVReviewHints(CharView *cv) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[15];
-    GTextInfo label[15];
+    GGadgetCreateData gcd[16];
+    GTextInfo label[16];
     static ReviewHintData hd;
 
     hd.done = false;
@@ -342,7 +355,7 @@ void CVReviewHints(CharView *cv) {
 	label[0].text = (unichar_t *) _STR_Base;
 	label[0].text_in_resource = true;
 	gcd[0].gd.label = &label[0];
-	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 17+5+6; 
+	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 17+5+3; 
 	gcd[0].gd.flags = gg_enabled|gg_visible;
 	gcd[0].creator = GLabelCreate;
 
@@ -355,7 +368,7 @@ void CVReviewHints(CharView *cv) {
 	label[2].text = (unichar_t *) _STR_Size;
 	label[2].text_in_resource = true;
 	gcd[2].gd.label = &label[2];
-	gcd[2].gd.pos.x = 90; gcd[2].gd.pos.y = 17+5+6; 
+	gcd[2].gd.pos.x = 90; gcd[2].gd.pos.y = 17+5+3; 
 	gcd[2].gd.flags = gg_enabled|gg_visible;
 	gcd[2].creator = GLabelCreate;
 
@@ -460,6 +473,14 @@ void CVReviewHints(CharView *cv) {
 	gcd[13].gd.label = &label[13];
 	gcd[13].gd.cid = CID_Overlap;
 	gcd[13].creator = GLabelCreate;
+
+	label[14].text = (unichar_t *) "999/999";
+	label[14].text_is_1byte = true;
+	gcd[14].gd.label = &label[14];
+	gcd[14].gd.pos.x = 115; gcd[14].gd.pos.y = 2+3; 
+	gcd[14].gd.flags = gg_enabled|gg_visible;
+	gcd[14].gd.cid = CID_Count;
+	gcd[14].creator = GLabelCreate;
 
 	GGadgetsCreate(gw,gcd);
     } else
