@@ -926,3 +926,22 @@ uint16 PSTDefaultFlags(enum possub_type type,SplineChar *sc ) {
     }
 return( flags );
 }
+
+void MinimumDistancesFree(MinimumDistance *md) {
+    MinimumDistance *next;
+
+    while ( md!=NULL ) {
+	next = md->next;
+	chunkfree(md,sizeof(MinimumDistance));
+	md = next;
+    }
+}
+
+void DStemInfosFree(DStemInfo *h) {
+    DStemInfo *hnext;
+
+    for ( ; h!=NULL; h = hnext ) {
+	hnext = h->next;
+	chunkfree(h,sizeof(DStemInfo));
+    }
+}
