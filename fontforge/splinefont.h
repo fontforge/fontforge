@@ -1414,6 +1414,7 @@ extern struct enc *PSSlurpEncodings(FILE *file);
 extern int EvaluatePS(char *str,real *stack,int size);
 struct pscontext {
     int is_type2;
+    int painttype;
     int instance_count;
     real blend_values[17];
     int blend_warn;
