@@ -522,7 +522,10 @@ int CID2NameEnc(struct cidmap *map,int cid, char *buffer, int len) {
     else if ( cid<map->namemax && map->name[cid]!=NULL )
 	strncpy(buffer,map->name[cid],len);
     else if ( cid==0 || (cid<map->namemax && map->unicode[cid]!=0 )) {
-	enc = map->unicode[cid];
+	if ( map->unicode==NULL || map->namemax==0 )
+	    enc = 0;
+	else
+	    enc = map->unicode[cid];
 	if ( psunicodenames[enc]!=NULL )
 	    strncpy(buffer,psunicodenames[enc],len);
 	else
@@ -648,11 +651,15 @@ static struct cidmap *LoadMapFromFile(char *file,char *registry,char *ordering,
 
     f = fopen( file,"r" );
     if ( f==NULL ) {
-	fprintf( stderr, "Couldn't open %s\n", file );
+	GDrawError("Couldn't open %s", file );
+	ret->cidmax = ret->namemax = 0;
+	ret->unicode = NULL; ret->name = NULL;
+    } else if ( fscanf( f, "%d %d", &ret->cidmax, &ret->namemax )!=2 ) {
+	GDrawError( "%s is not a cidmap file, please download\nhttp://pfaedit.sourceforge.net/cidmaps.tgz", file );
+	fprintf( stderr, "%s is not a cidmap file, please download\nhttp://pfaedit.sourceforge.net/cidmaps.tgz", file );
 	ret->cidmax = ret->namemax = 0;
 	ret->unicode = NULL; ret->name = NULL;
     } else {
-	fscanf( f, "%d %d", &ret->cidmax, &ret->namemax );
 	ret->unicode = gcalloc(ret->namemax+1,sizeof(unichar_t));
 	ret->name = gcalloc(ret->namemax+1,sizeof(char *));
 	while ( 1 ) {
