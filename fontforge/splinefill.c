@@ -1550,7 +1550,7 @@ BDFFont *SplineFontRasterize(SplineFont *_sf, int pixelsize, int indicate) {
 return( bdf );
 }
 
-static void BDFCAntiAlias(BDFChar *bc, int linear_scale) {
+void BDFCAntiAlias(BDFChar *bc, int linear_scale) {
     BDFChar new;
     int i,j, max = linear_scale*linear_scale-1;
     uint8 *bpt, *pt;

@@ -131,7 +131,7 @@ static void SFRemoveUnwantedBitmaps(SplineFont *sf,int32 *sizes) {
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	    for ( fv=sf->fv; fv!=NULL; fv=fv->nextsame ) {
 		if ( fv->show==bdf ) {
-		    if ( sf->onlybitmaps )
+		    if ( sf->onlybitmaps && sf->bitmaps!=NULL )
 			FVChangeDisplayBitmap(fv,sf->bitmaps);
 		    else
 			FVShowFilled(sf->fv);
@@ -177,23 +177,31 @@ static void SFFigureBitmaps(SplineFont *sf,int32 *sizes,int usefreetype) {
     SFOrderBitmapList(sf);
 }
 
+static int SizeExists(BDFFont *list, int size) {
+    BDFFont *bdf;
+
+    for ( bdf=list; bdf!=NULL; bdf = bdf->next ) {
+	if ( (size&0xffff)==bdf->pixelsize && (size>>16)==BDFDepth(bdf) )
+return( true );
+    }
+return( false );
+}
+
 static void FVScaleBitmaps(FontView *fv,int32 *sizes) {
     BDFFont *bdf, *scale;
-    int i, cnt=0, warned = false;
+    int i, cnt=0;
 
     for ( i=0; sizes[i]!=0 ; ++i ) if ( sizes[i]>0 )
 	++cnt;
     scale = fv->show;
-    if ( scale->clut!=NULL )
-	for ( scale = fv->sf->bitmaps; scale->next!=NULL; scale=scale->next );
 #if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressStartIndicatorR(10,_STR_ScalingBitmaps,_STR_ScalingBitmaps,0,cnt,1);
 #elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_start_indicator(10,_("Scaling Bitmaps"),_("Scaling Bitmaps"),0,cnt,1);
 #endif
 
-    for ( i=0; sizes[i]!=0 ; ++i ) if ( sizes[i]>0 && (sizes[i]>>16)==1 ) {
-	bdf = BitmapFontScaleTo(scale,sizes[i]&0xffff);
+    for ( i=0; sizes[i]!=0 ; ++i ) if ( !SizeExists(fv->sf->bitmaps,sizes[i]) ) {
+	bdf = BitmapFontScaleTo(scale,sizes[i]);
 	if ( bdf==NULL )
     continue;
 	bdf->next = fv->sf->bitmaps;
@@ -207,13 +215,6 @@ static void FVScaleBitmaps(FontView *fv,int32 *sizes) {
 #endif
     break;
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
-    } else if ( sizes[i]>0 && (sizes[i]>>16)!=1 && !warned ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_CantScaleGreymap,_STR_CantScaleGreymap);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	gwwv_post_error(_("Can't scale a greymap font"),_("Can't scale a greymap font"));
-#endif
-	warned = true;
     }
 #if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressEndIndicator();
@@ -340,18 +341,9 @@ return( true );
 
 static void BitmapsDoIt(CreateBitmapData *bd,int32 *sizes,int usefreetype) {
 
-    if ( bd->isavail && bd->sf->onlybitmaps && bd->sf->bitmaps!=NULL ) {
-	if ( sizes[0]!=0 )
-	    FVScaleBitmaps(bd->fv,sizes);
-	else {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_CantDeleteAllBitmaps,_STR_CantDeleteAllBitmaps);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_post_error(_("Can't delete all bitmaps"),_("Can't delete all bitmaps"));
-#endif
-return;
-	}
-    } else if ( bd->isavail )
+    if ( bd->isavail && bd->sf->onlybitmaps && bd->sf->bitmaps!=NULL )
+	FVScaleBitmaps(bd->fv,sizes);
+    else if ( bd->isavail )
 	SFFigureBitmaps(bd->sf,sizes,usefreetype);
     else {
 	if ( !FVRegenBitmaps(bd,sizes,usefreetype))

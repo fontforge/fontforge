@@ -703,8 +703,8 @@ return( NULL );
     new->sc = old->sc;
     new->xmin = rint(old->xmin*dto/from);
     new->ymin = rint(old->ymin*dto/from);
-    new->xmax = new->xmin + rint((old->xmax-old->xmin+1)*dto/from-1);
-    new->ymax = new->ymin + rint((old->ymax-old->ymin+1)*dto/from-1);
+    new->xmax = new->xmin + ceil((old->xmax-old->xmin+1)*dto/from-1);
+    new->ymax = new->ymin + ceil((old->ymax-old->ymin+1)*dto/from-1);
     if ( new->sc!=NULL && new->sc->width != new->sc->parent->ascent+new->sc->parent->descent )
 	new->width = rint(new->sc->width*dto/(new->sc->parent->ascent+new->sc->parent->descent)+.5);
     else
@@ -713,7 +713,7 @@ return( NULL );
     new->bitmap = gcalloc((new->ymax-new->ymin+1)*new->bytes_per_line,sizeof(char));
     new->enc = old->enc;
 
-    scale = dto/from;
+    scale = from/dto;
     scale *= scale;
     scale /= 2;
 
@@ -724,20 +724,20 @@ return( NULL );
 	for ( oy = oys; oy<oyend && oy<=old->ymax-old->ymin; ++oy ) {
 	    yscale = 1;
 	    if ( oy==oys && oy==oyend-1 )
-		yscale = 1-(oyend - (y+1)*dto/from) - (y*dto/from - oys);
+		yscale = 1-(oyend - (y+1)*from/dto) - (y*from/dto - oys);
 	    else if ( oy==oys )
-		yscale = 1-(y*dto/from-oys);
+		yscale = 1-(y*from/dto-oys);
 	    else if ( oy==oyend-1 )
-		yscale = 1-(oyend - (y+1)*dto/from);
+		yscale = 1-(oyend - (y+1)*from/dto);
 	    for ( ox = oxs; ox<oxend && ox<=old->xmax-old->xmin; ++ox ) {
 		if ( old->bitmap[oy*old->bytes_per_line + (ox>>3)] & (1<<(7-(ox&7))) ) {
 		    xscale = 1;
 		    if ( ox==oxs && ox==oxend-1 )
-			xscale = 1-(oxend - (x+1)*dto/from) - (x*dto/from - oxs);
+			xscale = 1-(oxend - (x+1)*from/dto) - (x*from/dto - oxs);
 		    else if ( ox==oxs )
-			xscale = 1-(x*dto/from-oxs);
+			xscale = 1-(x*from/dto-oxs);
 		    else if ( ox==oxend-1 )
-			xscale = 1-(oxend - (x+1)*dto/from);
+			xscale = 1-(oxend - (x+1)*from/dto);
 		    tot += yscale*xscale;
 		}
 	    }
@@ -749,14 +749,88 @@ return( NULL );
 return( new );
 }
 
+/* Scale a greymap character to either another greymap or a bitmap */
+static BDFChar *BCScaleGrey(BDFChar *old,int from, int from_depth, int to, int to_depth) {
+    BDFChar *new;
+    int x,y, ox,oy, oxs,oys, oxend, oyend;
+    real tot, scale, bscale;
+    real yscale, xscale;
+    real dto = to;
+    real max = (1<<to_depth);
+
+    if ( old==NULL || !old->byte_data )
+return( NULL );
+    new = chunkalloc(sizeof(BDFChar));
+    new->sc = old->sc;
+    new->xmin = rint(old->xmin*dto/from);
+    new->ymin = rint(old->ymin*dto/from);
+    new->xmax = new->xmin + ceil((old->xmax-old->xmin+1)*dto/from-1);
+    new->ymax = new->ymin + ceil((old->ymax-old->ymin+1)*dto/from-1);
+    if ( new->sc!=NULL && new->sc->width != new->sc->parent->ascent+new->sc->parent->descent )
+	new->width = rint(new->sc->width*dto/(new->sc->parent->ascent+new->sc->parent->descent)+.5);
+    else
+	new->width = rint(old->width*dto/from+.5);
+    if ( to_depth==1 ) {
+	new->bytes_per_line = (new->xmax-new->xmin)/8+1;
+	new->bitmap = gcalloc((new->ymax-new->ymin+1)*new->bytes_per_line,sizeof(char));
+    } else {
+	new->bytes_per_line = (new->xmax-new->xmin)+1;
+	new->bitmap = gcalloc((new->ymax-new->ymin+1)*new->bytes_per_line,sizeof(char));
+	new->byte_data = true;
+    }
+    new->enc = old->enc;
+
+    scale = from/dto;
+    scale *= scale;
+    scale *= (1<<from_depth);
+    bscale = scale/2;
+
+    for ( y=0; y<=new->ymax-new->ymin; ++y ) for ( x=0; x<=new->xmax-new->xmin; ++x ) {
+	tot = 0;
+	oys = floor(y*from/dto); oyend = ceil((y+1)*from/dto);
+	oxs = floor(x*from/dto); oxend = ceil((x+1)*from/dto);
+	for ( oy = oys; oy<oyend && oy<=old->ymax-old->ymin; ++oy ) {
+	    yscale = 1;
+	    if ( oy==oys && oy==oyend-1 )
+		yscale = 1-(oyend - (y+1)*from/dto) - (y*from/dto - oys);
+	    else if ( oy==oys )
+		yscale = 1-(y*from/dto-oys);
+	    else if ( oy==oyend-1 )
+		yscale = 1-(oyend - (y+1)*from/dto);
+	    for ( ox = oxs; ox<oxend && ox<=old->xmax-old->xmin; ++ox ) {
+		xscale = 1;
+		if ( ox==oxs && ox==oxend-1 )
+		    xscale = 1-(oxend - (x+1)*from/dto) - (x*from/dto - oxs);
+		else if ( ox==oxs )
+		    xscale = 1-(x*from/dto-oxs);
+		else if ( ox==oxend-1 )
+		    xscale = 1-(oxend - (x+1)*from/dto);
+		tot += yscale*xscale* old->bitmap[oy*old->bytes_per_line + ox];
+	    }
+	}
+	if ( to_depth!=1 ) {
+	    real temp = tot*max/scale;
+	    if ( temp>=max )
+		temp = max-1;
+	    new->bitmap[y*new->bytes_per_line + x] = (int) rint(temp);
+	} else if ( tot>=bscale ) {
+	    new->bitmap[y*new->bytes_per_line + (x>>3)] |= (1<<(7-(x&7)));
+	}
+    }
+
+return( new );
+}
+
 BDFFont *BitmapFontScaleTo(BDFFont *old, int to) {
     BDFFont *new = gcalloc(1,sizeof(BDFFont));
     int i;
+    int to_depth = (to>>16), old_depth = 1;
+    int linear_scale = 1<<(to_depth/2);
 
-    if ( old->clut!=NULL ) {
-	fprintf( stderr, "Attempt to scale a greymap font, not supported\n" );
-return( NULL );
-    }
+    to &= 0xffff;
+
+    if ( old->clut!=NULL )
+	old_depth = BDFDepth(old);
 
     new->sf = old->sf;
     new->charcnt = old->charcnt;
@@ -766,7 +840,17 @@ return( NULL );
     new->descent = to-new->ascent;
     new->encoding_name = old->encoding_name;
     new->foundry = copy(old->foundry);
-    for ( i=0; i<old->charcnt; ++i )
-	new->chars[i] = BCScale(old->chars[i],old->pixelsize,to);
+    new->res = -1;
+    for ( i=0; i<old->charcnt; ++i ) {
+	if ( old->clut==NULL ) {
+	    new->chars[i] = BCScale(old->chars[i],old->pixelsize,to*linear_scale);
+	    if ( linear_scale!=1 )
+		BDFCAntiAlias(new->chars[i],linear_scale);
+	} else {
+	    new->chars[i] = BCScaleGrey(old->chars[i],old->pixelsize,old_depth,to,to_depth);
+	}
+    }
+    if ( linear_scale!=1 )
+	BDFClut(new,linear_scale);
 return( new );
 }
