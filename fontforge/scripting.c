@@ -2510,6 +2510,64 @@ static void bSimplify(Context *c) {
     _FVSimplify(c->curfv,&smpl);
 }
 
+static void bNearlyHvCps(Context *c) {
+    FontView *fv = c->curfv;
+    int i, layer;
+    SplineSet *spl;
+    SplineFont *sf = fv->sf;
+    real err = .1;
+
+    if ( c->a.argc>=3 )
+	error( c, "Too many arguments" );
+    else if ( c->a.argc>1 ) {
+	if ( c->a.vals[1].type!=v_int )
+	    error( c, "Bad type for argument" );
+	err = c->a.vals[1].u.ival;
+	if ( c->a.argc>2 ) {
+	    if ( c->a.vals[2].type!=v_int )
+		error( c, "Bad type for argument" );
+	    err /= (real) c->a.vals[2].u.ival;
+	}
+    }
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && fv->selected[i] ) {
+	SplineChar *sc = sf->chars[i];
+	SCPreserveState(sc,false);
+	for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
+	    for ( spl = sc->layers[layer].splines; spl!=NULL; spl=spl->next )
+		SPLNearlyHvCps(sc,spl,err);
+	}
+    }
+}
+
+static void bNearlyHvLines(Context *c) {
+    FontView *fv = c->curfv;
+    int i, layer;
+    SplineSet *spl;
+    SplineFont *sf = fv->sf;
+    real err = .1;
+
+    if ( c->a.argc>=3 )
+	error( c, "Too many arguments" );
+    else if ( c->a.argc>1 ) {
+	if ( c->a.vals[1].type!=v_int )
+	    error( c, "Bad type for argument" );
+	err = c->a.vals[1].u.ival;
+	if ( c->a.argc>2 ) {
+	    if ( c->a.vals[2].type!=v_int )
+		error( c, "Bad type for argument" );
+	    err /= (real) c->a.vals[2].u.ival;
+	}
+    }
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && fv->selected[i] ) {
+	SplineChar *sc = sf->chars[i];
+	SCPreserveState(sc,false);
+	for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
+	    for ( spl = sc->layers[layer].splines; spl!=NULL; spl=spl->next )
+		SPLNearlyHvLines(sc,spl,err);
+	}
+    }
+}
+
 static void bAddExtrema(Context *c) {
     if ( c->a.argc!=1 )
 	error( c, "Wrong number of arguments");
@@ -3979,6 +4037,8 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "OverlapIntersect", bOverlapIntersect },
     { "FindIntersections", bFindIntersections },
     { "Simplify", bSimplify },
+    { "NearlyHvCps", bNearlyHvCps },
+    { "NearlyHvLines", bNearlyHvLines },
     { "AddExtrema", bAddExtrema },
     { "RoundToInt", bRoundToInt },
     { "Autotrace", bAutotrace },

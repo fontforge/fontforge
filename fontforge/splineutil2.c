@@ -1502,6 +1502,69 @@ return( false );
 return ( SplinesRemoveBetweenMaybe(sc,from,to,flags,err));
 }
 
+void SPLNearlyHvCps(SplineChar *sc,SplineSet *ss,double err) {
+    Spline *s, *first=NULL;
+    int refresh;
+    SplinePoint *from, *to;
+
+    for ( s = ss->first->next; s!=NULL && s!=first; s=s->to->next ) {
+	if ( first==NULL ) first = s;
+	refresh = false;
+	from = s->from; to = s->to;
+	if ( !from->nonextcp && from->nextcp.x-from->me.x<err && from->nextcp.x-from->me.x>-err ) {
+	    from->nextcp.x = from->me.x;
+	    if ( s->order2 ) to->prevcp = from->nextcp;
+	    if ( from->nextcp.y==from->me.y ) from->nonextcp = true;
+	    refresh = true;
+	} else if ( !from->nonextcp && from->nextcp.y-from->me.y<err && from->nextcp.y-from->me.y>-err ) {
+	    from->nextcp.y = from->me.y;
+	    if ( s->order2 ) to->prevcp = from->nextcp;
+	    if ( from->nextcp.x==from->me.x ) from->nonextcp = true;
+	    refresh = true;
+	}
+	if ( !to->noprevcp && to->prevcp.x-to->me.x<err && to->prevcp.x-to->me.x>-err ) {
+	    to->prevcp.x = to->me.x;
+	    if ( s->order2 ) from->nextcp = to->prevcp;
+	    if ( to->prevcp.y==to->me.y ) to->noprevcp = true;
+	    refresh = true;
+	} else if ( !to->noprevcp && to->prevcp.y-to->me.y<err && to->prevcp.y-to->me.y>-err ) {
+	    to->prevcp.y = to->me.y;
+	    if ( s->order2 ) from->nextcp = to->prevcp;
+	    if ( to->prevcp.x==to->me.x ) to->noprevcp = true;
+	    refresh = true;
+	}
+	if ( refresh )
+	    SplineRefigure(s);
+    }
+}
+
+void SPLNearlyHvLines(SplineChar *sc,SplineSet *ss,double err) {
+    Spline *s, *first=NULL;
+
+    for ( s = ss->first->next; s!=NULL && s!=first; s=s->to->next ) {
+	if ( first==NULL ) first = s;
+	if ( s->knownlinear ) {
+	    if ( s->to->me.x-s->from->me.x<err && s->to->me.x-s->from->me.x>-err ) {
+		s->to->nextcp.x += (s->from->me.x-s->to->me.x);
+		s->to->me.x = s->from->me.x;
+		s->to->prevcp = s->to->me;
+		s->from->nextcp = s->from->me;
+		SplineRefigure(s);
+		if ( s->to->next != NULL )
+		    SplineRefigure(s->to->next);
+	    } else if ( s->to->me.y-s->from->me.y<err && s->to->me.y-s->from->me.y>-err ) {
+		s->to->nextcp.y += (s->from->me.y-s->to->me.y);
+		s->to->me.y = s->from->me.y;
+		s->to->prevcp = s->to->me;
+		s->from->nextcp = s->from->me;
+		SplineRefigure(s);
+		if ( s->to->next != NULL )
+		    SplineRefigure(s->to->next);
+	    }
+	}
+    }
+}
+
 static void SPLForceLines(SplineChar *sc,SplineSet *ss,double bump_size) {
     Spline *s, *first=NULL;
     SplinePoint *sp;
@@ -1702,8 +1765,10 @@ return;
 	    spl->first->nonextcp && spl->first->noprevcp )
 return;		/* Ignore any splines which are just dots */
 
-    if ( smpl->flags!=sf_cleanup && (smpl->flags&sf_forcelines))
+    if ( smpl->flags!=sf_cleanup && (smpl->flags&sf_forcelines)) {
+	SPLNearlyHvLines(sc,spl,smpl->linefixup);
 	SPLForceLines(sc,spl,smpl->linefixup);
+    }
 
     if ( smpl->flags!=sf_cleanup && spl->first->prev!=NULL && spl->first->prev!=spl->first->next ) {
 	/* first thing to try is to remove everything between two extrema */
