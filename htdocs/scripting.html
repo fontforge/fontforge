@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 28-Oct-2004 -->
+  <!-- AP: Last modified: 3-Nov-2004 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -946,6 +946,11 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     PasteInto
   <DD>
     Copies the clipboard into the current font (merging with what was there before)
+  <DT>
+    PasteWithOffset(xoff,yoff)
+  <DD>
+    Translates the clipboard by xoff,yoff before doing a PasteInto(). Can be
+    used to build accented glyphs.
   <DT>
     SameGlyphAs
   <DD>
@@ -1921,6 +1926,18 @@ ApplySubstitution("*","*","vrt2")
 	"VKern" (there must be a second argument here which specifies another glyph
 	as in Select()) Returns the vertical kern offset between the two glyphs (or
 	0 if none).
+      <LI>
+	"Xextrema" (there must be a second argument here which specifies the vertical
+	position) Returns a two element array containing the minimum and maximum
+	horizontal positions on the contours of the glyph at the given vertical position.
+	If the position is beyond the glyph's bounding box the minimum value will
+	be set to 1 and the max to 0 (ie. max&lt;min which is impossible).
+      <LI>
+	"Yextrema" (there must be a second argument here which specifies the horizontal
+	position) Returns a two element array containing the minimum and maximum
+	vertical positions on the contours of the glyph at the given horizontal position.
+	If the position is beyond the glyph's bounding box the minimum value will
+	be set to 1 and the max to 0 (ie. max&lt;min which is impossible).
       <LI>
 	"Color" returns the glyph's color as a 24bit rgb value (or -2 if no color
 	has been assigned to the glyph).
