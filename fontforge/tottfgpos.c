@@ -2423,7 +2423,7 @@ static void g___HandleNested(FILE *lfile,SplineFont *sf,int gpos,
 	if ( new==NULL && !gpos ) {
 	    for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL ) {
 		for ( ll = sf->chars[i]->ligofme; ll!=NULL; ll=ll->next ) {
-		    if ( ll->lig->script_lang_index!=SLI_NESTED &&
+		    if ( ll->lig->script_lang_index==SLI_NESTED &&
 			    ll->lig->tag == pp->feature_tag ) {
 			ligtags.script_lang_index = SLI_NESTED;
 			ligtags.flags = ll->lig->flags;
