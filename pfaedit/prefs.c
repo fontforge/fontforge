@@ -520,6 +520,11 @@ return;
 
 static int encmatch(const char *enc) {
     static struct { char *name; int enc; } encs[] = {
+	{ "US-ASCII", e_usascii },
+	{ "ASCII", e_usascii },
+	{ "ISO646-NO", e_iso646_no },
+	{ "ISO646-SE", e_iso646_se },
+	{ "LATIN1", e_iso8859_1 },
 	{ "ISO-8859-1", e_iso8859_1 },
 	{ "ISO-8859-2", e_iso8859_2 },
 	{ "ISO-8859-3", e_iso8859_3 },
@@ -534,18 +539,82 @@ static int encmatch(const char *enc) {
 	{ "ISO-8859-13", e_iso8859_13 },
 	{ "ISO-8859-14", e_iso8859_14 },
 	{ "ISO-8859-15", e_iso8859_15 },
+	{ "ISO_8859-1", e_iso8859_1 },
+	{ "ISO_8859-2", e_iso8859_2 },
+	{ "ISO_8859-3", e_iso8859_3 },
+	{ "ISO_8859-4", e_iso8859_4 },
+	{ "ISO_8859-5", e_iso8859_4 },
+	{ "ISO_8859-6", e_iso8859_4 },
+	{ "ISO_8859-7", e_iso8859_4 },
+	{ "ISO_8859-8", e_iso8859_4 },
+	{ "ISO_8859-9", e_iso8859_4 },
+	{ "ISO_8859-10", e_iso8859_10 },
+	{ "ISO_8859-11", e_iso8859_11 },
+	{ "ISO_8859-13", e_iso8859_13 },
+	{ "ISO_8859-14", e_iso8859_14 },
+	{ "ISO_8859-15", e_iso8859_15 },
+	{ "ISO8859-1", e_iso8859_1 },
+	{ "ISO8859-2", e_iso8859_2 },
+	{ "ISO8859-3", e_iso8859_3 },
+	{ "ISO8859-4", e_iso8859_4 },
+	{ "ISO8859-5", e_iso8859_4 },
+	{ "ISO8859-6", e_iso8859_4 },
+	{ "ISO8859-7", e_iso8859_4 },
+	{ "ISO8859-8", e_iso8859_4 },
+	{ "ISO8859-9", e_iso8859_4 },
+	{ "ISO8859-10", e_iso8859_10 },
+	{ "ISO8859-11", e_iso8859_11 },
+	{ "ISO8859-13", e_iso8859_13 },
+	{ "ISO8859-14", e_iso8859_14 },
+	{ "ISO8859-15", e_iso8859_15 },
+	{ "ISO88591", e_iso8859_1 },
+	{ "ISO88592", e_iso8859_2 },
+	{ "ISO88593", e_iso8859_3 },
+	{ "ISO88594", e_iso8859_4 },
+	{ "ISO88595", e_iso8859_4 },
+	{ "ISO88596", e_iso8859_4 },
+	{ "ISO88597", e_iso8859_4 },
+	{ "ISO88598", e_iso8859_4 },
+	{ "ISO88599", e_iso8859_4 },
+	{ "ISO885910", e_iso8859_10 },
+	{ "ISO885911", e_iso8859_11 },
+	{ "ISO885913", e_iso8859_13 },
+	{ "ISO885914", e_iso8859_14 },
+	{ "ISO885915", e_iso8859_15 },
+	{ "8859_1", e_iso8859_1 },
+	{ "8859_2", e_iso8859_2 },
+	{ "8859_3", e_iso8859_3 },
+	{ "8859_4", e_iso8859_4 },
+	{ "8859_5", e_iso8859_4 },
+	{ "8859_6", e_iso8859_4 },
+	{ "8859_7", e_iso8859_4 },
+	{ "8859_8", e_iso8859_4 },
+	{ "8859_9", e_iso8859_4 },
+	{ "8859_10", e_iso8859_10 },
+	{ "8859_11", e_iso8859_11 },
+	{ "8859_13", e_iso8859_13 },
+	{ "8859_14", e_iso8859_14 },
+	{ "8859_15", e_iso8859_15 },
 	{ "KOI8-R", e_koi8_r },
+	{ "KOI8R", e_koi8_r },
+	{ "WINDOWS-1252", e_win },
 	{ "CP1252", e_win },
 	{ "Big5", e_big5 },
+	{ "Big-5", e_big5 },
+	{ "BigFive", e_big5 },
+	{ "Big-Five", e_big5 },
 	{ "Big5HKSCS", e_big5hkscs },
+	{ "Big5-HKSCS", e_big5hkscs },
 	{ "UTF-8", e_utf8 },
-	{ "ISO-10646-1", e_unicode },
+	{ "ISO-10646/UTF-8", e_utf8 },
+	{ "ISO_10646/UTF-8", e_utf8 },
+	{ "ISO-10646", e_unicode },
+	{ "ISO_10646", e_unicode },
 #if 0
 	{ "eucJP", e_euc },
 	{ "EUC-JP", e_euc },
 	{ "ujis", ??? },
 	{ "EUC-KR", e_euckorean },
-	{ "ISO-8859-4", e_iso8859_4 },
 #endif
 	{ NULL }};
     int i;
@@ -554,7 +623,12 @@ static int encmatch(const char *enc) {
 	if ( strmatch(enc,encs[i].name)==0 )
 return( encs[i].enc );
 
-return( e_unknown );
+    for ( i=0; encs[i].name!=NULL; ++i )
+	if ( strstrmatch(enc,encs[i].name)!=NULL )
+return( encs[i].enc );
+
+    fprintf( stderr, "PfaEdit does not support your encoding (%s), it will pretend the local encoding is latin1\n", enc );
+return( e_iso8859_1 );
 }
 
 static int DefaultEncoding(void) {

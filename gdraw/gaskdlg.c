@@ -595,7 +595,6 @@ return( true );
 
 static int c_e_h(GWindow gw, GEvent *event) {
     struct dlg_info *d = GDrawGetUserData(gw);
-    GRect pos;
 
     if ( event->type==et_close ) {
 	d->done = true;

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 28-Oct-2003 -->
+  <!-- AP: Last modified: 10-Nov-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -11,11 +11,105 @@
 </H1>
 <UL>
   <LI>
+    10-Nov-2003
+    <UL>
+      <LI>
+	PfaEdit was crashing when loading a bitmap font with encoded characters outside
+	the range specified by the encoding (ie. a character 0x10000 in a unicode
+	BMP font).
+      <LI>
+	Fixes for several memory leaks provided by Kazuki Ohta
+      <LI>
+	Slight improvements to the View-&gt;Combinations-&gt;Ligature dlg
+    </UL>
+  <LI>
+    8-Nov-2003
+    <UL>
+      <LI>
+	Bug introduced 6-Nov, PfaEdit generated a bad 'loca' table when outputing
+	a ttf outline font with bitmaps.
+      <LI>
+	PfaEdit was getting the truetype point number wrong when reading outlines
+	from an sfd file.
+      <LI>
+	If the loca table was 2 or 4 bytes long, PfaEdit failed to warn about a bad
+	glyph count.
+      <LI>
+	PfaEdit got confused if two truetype glyphs had the same name.
+      <LI>
+	When dumping out embedded ttf bitmaps, PfaEdit got confused by the extra
+	glyphs (.null and return) and generated garbage.
+      <LI>
+	Make View-&gt;Combinations-&gt;ligature dlg a bit better for non-latin glyphs
+    </UL>
+  <LI>
+    6-Nov-2003
+    <UL>
+      <LI>
+	The clut used for drawing anti-alias bitmaps in the metrics view was wrong.
+      <LI>
+	In a bitmap only ttf file, PfaEdit was usually producing bad line spacing
+	data as far as the mac was concerned.
+      <LI>
+	When importing bitmaps into an empty font, we might as well change to font
+	view to show the bitmaps rather than the empty outline data.
+      <LI>
+	If glyph 0 was selected in the fontview then the File-&gt;Open Outline command
+	was disabled.
+      <LI>
+	With a user defined encoding we were again getting occasional crashes.
+	(introduced by my work on bitmaps)
+      <LI>
+	On certain glyphs, the optimizer introduced an slight error when calculating
+	a spline's coefficients from its control point. Even though this error was
+	on the order of 7e-8 it was enough that the rasterizer produced grossly incorrect
+	results. I have pulled the relevant routine out into its own file which is
+	now compiled by itself without optimization.
+    </UL>
+  <LI>
+    4-Nov-2003
+    <UL>
+      <LI>
+	When PfaEdit removes glyphs with Font Info-&gt;Encoding-&gt;Number of characters,
+	it will now run through the font and remove any ligatures, substitutions,
+	etc. refering to non-existant glyph names.
+      <LI>
+	Some improvements to remove overlap.
+      <LI>
+	Added a warning message so that when user attempts to output a ttf file where
+	no characters have unicode encodings, then the user at least gets warned
+	that the result will probably not work. For fonts with fewer than 256 glyphs
+	it will offer the choice of a symbol encoding.
+      <LI>
+	If a reference were copied in the outline character view and pasted into
+	the font view, pfaedit would crash.
+      <LI>
+	the expand stroke patch on 29-Sept broke caligraphic and elipse modes.
+      <LI>
+	The mouse's scroll wheel did not work in the metrics view.
+      <LI>
+	The metrics view resized very slowly under window managers which do continuous
+	resizing.
+      <LI>
+	Give the magnifying glass's rectangle mode a threshold so that it doesn't
+	resize tiny rectangles which are really caused by mouse gitter.
+      <LI>
+	Attempt to set a zoom size for character and bitmap windows, but modern window
+	managers don't seem to support the old protocol, and I can't find docs on
+	a new version.
+      <LI>
+	Was not converting filenames to unicode properly for the open/generate progress
+	dlgs.
+      <LI>
+	PfaEdit would crash when attempting to draw a character for which in had
+	no (X11) glyph when doing bidirectional text.
+    </UL>
+  <LI>
     29-Oct-2003
     <UL>
       <LI>
-	When removing an ATT feature from a glyph using a script, PfaEdit would screw up
-	memory. Leading to unpredictable results.
+	When removing an ATT feature from a glyph using a script, PfaEdit would screw
+	up memory. Leading to unpredictable results.
     </UL>
   <LI>
     28-Oct-2003
@@ -356,475 +450,6 @@
 	Add support for the packed gb2312 which mac and windows seem to use.
       <LI>
 	Make a UniqueID of -1 in Font Info mean that the font has no UniqueID.
-    </UL>
-  <LI>
-    31-Aug-2003
-    <UL>
-      <LI>
-	Add problems for maximum number of hints (96) and maximum number of subroutine
-	nests (references) ~10.
-      <LI>
-	I looked at AppleChancery again and figured out why I was having trouble
-	parsing its 'mort' ligature tables, and put in code to make it easy to parse
-	tables of this type.
-      <LI>
-	After figuring that out, I realized there was a bug in my own table generation.
-	Suppose we have two ligatures "f l =&gt; fl" and "s t =&gt; st", and are
-	given "fst". Then my table would fail to find the "st" ligature. The state
-	of 'read "f" waiting for "l"' would see that it didn't get an "l" and revert
-	back to the initial state. It should instead have checked to see if "s" could
-	start a ligature in its own right, and if so jump to the 'got "s" waiting
-	for "t"' state.
-      <LI>
-	The same fix needs to be done for contextual glyph substitution.
-    </UL>
-  <LI>
-    29-Aug-2003
-    <UL>
-      <LI>
-	PfaEdit failed to display the morx table if all it contained were simple
-	substitutions.
-      <LI>
-	PfaEdit generated incorrect simple substitution (AAT) tables if it found
-	a substitution with no valid elements
-      <LI>
-	New problem for find problems. Check for characters with more than 1500 points
-	in them.
-      <LI>
-	PfaEdit will now draw selected points in a different color (currently yellow),
-	and draws them bolder. This makes them stand out better for Find Problems
-	(but also makes it harder to distinguish between corner and curved points).
-      <LI>
-	Redid the way PfaEdit handled arabic forms in AAT. Old method was cleaner
-	but depended on behavior which is unspecified in Apple's docs.
-    </UL>
-  <LI>
-    27-Aug-2003
-    <UL>
-      <LI>
-	<FONT COLOR="Red"><STRONG><BIG>The preference dlg has been broken since about
-	12 July. Anything on the Preference-&gt;Font Info tab is probably
-	wrong.</BIG></STRONG></FONT>
-      <LI>
-	PfaEdit wasn't always getting the script/lang right when filling in the fields
-	of the New Substitution dlg.
-      <LI>
-	The newly generated apple state machines for context/chaining were quite
-	wrong. I hope I've got them right now.
-      <LI>
-	The []PSNames checkbox (in Generate Font, Options dlg) did the opposite of
-	what it was documented to do. Behavior has been changed to conform to the
-	documentation (and expectations).
-      <LI>
-	PfaEdit would crash when loading some sfd files from a few months ago.
-    </UL>
-  <LI>
-    26-Aug-2003
-    <UL>
-      <LI>
-	When I added metadata to svg fonts (20-Aug) I inadvertantly put in two closing
-	metadata tags. Which broke the font.
-      <LI>
-	Fixed a bug conversion of context/chain coverage sub-table into a morx subtable.
-      <LI>
-	Figured out in what cases I could generate a morx subtable from context/chain
-	glyph or class format subtables.
-      <LI>
-	Fixed problems reading required features from ttf files.
-      <LI>
-	Updated French UI
-    </UL>
-  <LI>
-    25-Aug-2003
-    <UL>
-      <LI>
-	View-&gt;Show ATT didn't show contextual/chaining tables even if they would
-	be put in the 'morx' table
-      <LI>
-	View-&gt;Show ATT had problems showing anything in 'morx'
-      <LI>
-	Make it possible to edit contextual/chaining lookups that are formated by
-	class
-      <LI>
-	parsing/generating ttf files with class format context/chaining had problems
-      <LI>
-	loading a class format context/chaining lookup caused memory problems when
-	closing the file.
-      <LI>
-	PfaEdit would sometimes lose track of script/languages of lookups when reading
-	from a ttf file
-      <LI>
-	Added a conversion routine from glyph to class format context/chain
-      <LI>
-	Kanou points out that not all encodings available in Font Info-&gt;Encoding
-	are present in the scripting interface, and fixes that.
-    </UL>
-  <LI>
-    22-Aug-2003
-    <UL>
-      <LI>
-	Fix simplify again
-      <LI>
-	Patch from Andrey V. Panov to improve bluevalues
-      <LI>
-	KDE refused to make the find problems explanation window visible, so now
-	I shan't make it invisible in the first place.
-      <LI>
-	Generate mac family crashed instead (introduced 2-July)
-    </UL>
-  <LI>
-    20-Aug-2003
-    <UL>
-      <LI>
-	Support for <A HREF="http://potrace.sf.net/">potrace</A>
-      <LI>
-	Fix some bugs with simplify more
-      <LI>
-	Mac build was badly configured and linked with a shared library it should
-	not have.
-      <LI>
-	When compiled with -O2 pfaedit had rounding errors which resulted in a bad
-	bezier order3=&gt;order2 conversion (PS-&gt;TTF)
-      <LI>
-	SetPanose sometimes didn't
-      <LI>
-	Patch from KANOU to set ulUnicodeRange for version 4
-    </UL>
-  <LI>
-    18-Aug-2003
-    <UL>
-      <LI>
-	<FONT COLOR="Red"><STRONG><BIG>PfaEdit did not interpret SVG relative paths
-	properly, and did not generate correct SVG output because of
-	this</BIG></STRONG></FONT>. PfaEdit was mistakenly assuming things should
-	be interpreted as in the Type1 rrcurveto operator (where each point is relative
-	to the previous point in the operator) rather than the rcurveto operator
-	(where each point is relative to the initial point).
-      <LI>
-	If PfaEdit opened a Bold font stored in OTF CFF format, then when it closed
-	that font it would either crash, or screw up memory so that a crash would
-	happen later.
-    </UL>
-  <LI>
-    17-Aug-2003
-    <UL>
-      <LI>
-	Support for contextual, chaining contextual and reverse chaining contextual
-	sub-tables of GPOS/GSUB.
-	<UL>
-	  <LI>
-	    Will generate an Apple contextual glyph substitution table if:
-	    <OL>
-	      <LI>
-		There is an apple feature which matches the otf tag
-	      <LI>
-		The sub-table is in coverage format
-	      <LI>
-		The sub-table contains either exactly one nested single glyph replacement
-		substitution, or<BR>
-		it contains exactly two single glyph replacements and one of them refers
-		to the last glyph matched (and the other does not)
-	    </OL>
-	</UL>
-      <LI>
-	KANOU points out that on screens with high dpi PfaEdit would sometimes draw
-	splines 2 pixels wide and sometimes 1 pixel wide (122dpi had this effect)
-      <LI>
-	KANOU provided another patch for reading bitmaps one part covered a memory
-	leak the other fixed a bug reading ttc files.
-      <LI>
-	Added a LoadEncodingFile scripting command
-      <LI>
-	New french ui.
-      <LI>
-	PfaEdit was using the wrong definition of ascent &amp; descent to set those
-	fields in the 'hhea' table. This confused some mac programs (perhaps others).
-      <LI>
-	Added a "BBox" item to CharInfo scripting.
-      <LI>
-	Added a FontsInFile scripting command to return an array containing the fontnames
-	of all fonts in a file. If an error occurs, a zero length array is returned.
-      <LI>
-	Change so that when opening a file containing multiple fonts the font's filename
-	contains the fontname (so it is possible to open other fonts from the same
-	file).
-      <LI>
-	Kanou provides a patch for compressing bitmaps with more than 8 bits of white
-	space to their left.
-      <LI>
-	Markus Schwarzenberg provides a patch to make pfaedit recognize $cidfamilyname
-	as it should have done.
-      <LI>
-	Add the ability to generate fonts which contain both OpenType and Apple Advanced
-	Typography tables (ie. a font that should work everywhere).
-      <LI>
-	Added Utf8(int), Chr(int), Ord(int) to interconvert between strings and their
-	encodings.
-      <LI>
-	Add two problems to Find problems
-	<UL>
-	  <LI>
-	    Search for substitutions, contexts, kerning classes, etc. which refer to
-	    a name which does not match any glyph in the font
-	  <LI>
-	    Search for contexts, chains, etc. which refer to a nested lookup which does
-	    not exist
-	</UL>
-      <LI>
-	Add a new command line argument "-last" which will load the last sfd file
-	closed. 
-	  <HR>
-      <LI>
-	PfaEdit would crash when importing bitmap fonts
-      <LI>
-	PfaEdit would crash when trying to do an Element-&gt;Default ATT-&gt;Suffix
-	to Tag command
-    </UL>
-  <LI>
-    3-Aug-2003
-    <UL>
-      <LI>
-	I still wasn't getting r2l kerns correct
-      <LI>
-	Add support for vertical kerning
-	<UL>
-	  <LI>
-	    In 'GPOS', 'kern' tables of Open/TrueType
-	  <LI>
-	    In SVG fonts
-	  <LI>
-	    menu commands
-	    <UL>
-	      <LI>
-		Remove VKern
-	      <LI>
-		Vertical Kern By Classes
-	      <LI>
-		VKern From HKern
-	    </UL>
-	  <LI>
-	    scripting
-	    <UL>
-	      <LI>
-		RemoveVKern
-	      <LI>
-		SetVKern
-	      <LI>
-		VKernFromHKern
-	      <LI>
-		Add a "VKern" item to CharInfo
-	      <LI>
-		<FONT COLOR="Red"><B>Type argument to SelectByATT has changed</B></FONT>!!!
-	    </UL>
-	</UL>
-      <LI>
-	Add support for other Pairwise positioning features.
-      <LI>
-	Add a $panose command to return an array of panose values (scripting)
-      <LI>
-	Add a SetPanose command allowing scripts to change panose values
-      <LI>
-	PfaEdit was not rotating .vert glyphs properly
-    </UL>
-  <LI>
-    31-Jul-2003
-    <UL>
-      <LI>
-	Installed KANOU's fix for a buffer overrun
-      <LI>
-	Installed KANOU's fix for compacted cid-keyed fonts
-      <LI>
-	Fixed another bug with compacted cid-keyed fonts
-      <LI>
-	Mathias Wollin points out that my pfm files don't have the correct kerning
-	table format
-      <LI>
-	Handles the case where a font has both a 'glyf' and a 'CFF ' table by asking
-	user which to use
-      <LI>
-	Various improvements to the goto dialog from James Crippen.
-      <LI>
-	If the ttf "Apple" box got checked then it remained checked in subsequent
-	Generate Fonts even though the [Options] dialog did not show it checked.
-      <LI>
-	PfaEdit would crash if given an Anchor class with no marks.
-      <LI>
-	Hmm... I notice that volt only uses format 2 coverage tables. I wonder if
-	windows fails to handle format 1 tables...
-    </UL>
-  <LI>
-    30-Jul-2003
-    <UL>
-      <LI>
-	Add support for <A HREF="http://www.w3c.org/TR/SVG11/fonts.html">svg fonts</A>
-	(and add dependency on libxml2 for reading them in)
-      <LI>
-	Add support for importing/exporting svg files (again libxml2 needed for import)
-      <LI>
-	Add support for required features.
-      <LI>
-	In quadratic fonts the ellipse tool did not draw ellipses
-      <LI>
-	Add support for rectangles/ellipses drawn center out rather than just within
-	the bounding box
-      <LI>
-	Preserve the rect/ellipse tool settings across invocations
-      <LI>
-	Put a license entry into the help menu
-    </UL>
-  <LI>
-    20-Jul-2003
-    <UL>
-      <LI>
-	made the default linux browser be mozilla rather than netscape.
-      <LI>
-	If the metrics view were displaying an anchored pair (mark-base), and a character
-	were typed into the text field at top before the anchored pair, then the
-	display got very strange.
-      <LI>
-	PfaEdit got confused when merging a font which contained multiple encodings
-	for the same glyph
-      <LI>
-	PfaEdit got confused if there were an lparen in a directory name (thought
-	this meant a font collection).
-    </UL>
-  <LI>
-    15-Jul-2003
-    <UL>
-      <LI>
-	We weren't parsing any type3 fonts properly any more
-      <LI>
-	Extend our ps interpreter to understand some of METAPOST's idioms better.
-      <LI>
-	I used to call all characters which weren't in the encoding ".notdef" this
-	could cause problems if a user forgot to name them. I now give them unique
-	names starting with "NameMe". I still leave characters &lt;256 called ".notdef"
-	if the encoding calls for it, this may be a mistake...
-      <LI>
-	Fix on 14-July to simplify was incomplete.
-      <LI>
-	More fiddling with autohint
-      <LI>
-	Added support for the new X11 opentype bitmap format.
-    </UL>
-  <LI>
-    14-Jul-2003 (Bastille Day!)
-    <UL>
-      <LI>
-	There are still cases where I'm getting the truetype point count wrong. If
-	a truetype file had a control point that lay under an end point, then I would
-	treat that as a "no control point" mark, and ignore the cp. But if I do that
-	blindly I mess up the point count, so during font generation I must be prepared
-	to put the cp back.
-      <LI>
-	Kanou provided a patch to fix a bug in the underlying graphics library.
-      <LI>
-	Add a popup menu to Show Att to allow those data to be saved (as utf8 text)
-      <LI>
-	Fixed (I hope) right to left kerning
-      <LI>
-	Added 'ccmp' entries by default for Hebrew
-      <LI>
-	Fixed a couple of bugs with the new simplify more options
-      <LI>
-	pfaedit didn't compile on solaris. It now does.
-    </UL>
-  <LI>
-    12-Jul-2003
-    <UL>
-      <LI>
-	Remove weirdness in scripting interface to TeX font parameters
-      <LI>
-	Kanou points out that the code for reading format 4 embedded (ttf) bitmaps
-	was ambiguous and would behave incorrectly sometimes. He provided a patch.
-      <LI>
-	PfaEdit used not to create ghost hints for curved splines. It does now.
-      <LI>
-	PfaEdit did not find some of the hints needed for n021004l.pfb
-      <LI>
-	New French UI
-      <LI>
-	PfaEdit would sometimes crash when autotracing characters
-      <LI>
-	Don't snap to points when moving control points
-      <LI>
-	Directory browsing didn't work if the local encoding wasn't latin1 and the
-	directory name contain non-ascii characters.
-      <LI>
-	Add an entry to find problems to look for 'GSUB' entries to non-existant
-	characters.
-      <LI>
-	Expanded the simplify more command
-      <LI>
-	The GPOS output routines got very unhappy if a duplicate glyph happened to
-	have GPOS data. Fixed on both ends I hope.
-      <LI>
-	The pcf reader was unhappy if
-	<UL>
-	  <LI>
-	    the glyph bb width was a multiple of 8 (we read an extra byte per line which
-	    made the result appear as garbage)
-	  <LI>
-	    several glyphs had the same name.
-	</UL>
-      <LI>
-	the FontInfo dlg failed to parse the merge_with field of Anchor Classes properly,
-	meaning that each time [OK] was pressed in fontinfo each anchor class name
-	got a number prepended to it.
-      <LI>
-	Change the way the merge_with field of anchor classes is handled by the UI
-	so that it makes more sense. We used to display a number, now display the
-	name of another anchor class with which it can be merged.
-      <LI>
-	Added an arabic text sample, courtesy of Thomas Milo.
-      <LI>
-	Upgraded to Unicode 4.0 (<FONT COLOR="Red"><STRONG>Note:
-	<A HREF="http://libuninameslist.sf.net/">libuninameslist</A> has also been
-	upgraded</STRONG></FONT>)
-      <LI>
-	Added a new preference item CharCenterHighest to assist in accent placement.
-	  <HR>
-      <LI>
-	Oh. This isn't documented, but each langsys table can only point to one (1)
-	feature with a given tag. So if I have multiple 'mark' lookups, I can't have
-	multiple 'mark' features, I must have one 'mark' feature with pointers to
-	many lookups.
-      <LI>
-	PfaEdit could crash when generating a tfm file from a CID keyed font
-      <LI>
-	Change GDEF output so that the class def table isn't generated when it isn't
-	needed (we used to generate a 0 length one, which would confuse the freetype-1
-	opentype code, and perhaps others).
-      <LI>
-	Fixed a bug in autohint caused by negative stem widths.
-    </UL>
-  <LI>
-    4-July-2003
-    <UL>
-      <LI>
-	Added a page to the font info dlg which allows users to set TeX font parameters
-      <LI>
-	Added a mechanism for specifying TeX charlists and extension characters
-      <LI>
-	Added a mechanism for specifying TeX Italic Correction
-      <LI>
-	Revamped support for reading tfm files so that it sets all these new things
-	correctly.
-    </UL>
-  <LI>
-    2-July-2003
-    <UL>
-      <LI>
-	Add an Options dialog to the Generate Font window, and remove the check boxes
-	from it.
-	<UL>
-	  <LI>
-	    Add a UI for the 'PfEd' table
-	  <LI>
-	    Add a UI to turn off PostScript hinting
-	</UL>
-      <LI>
-	PfaEdit can now generate a tfm and enc file (for TeX)
     </UL>
   <LI>
     <A HREF="oldchangelog.html">Earlier Changes </A>

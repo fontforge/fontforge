@@ -30,6 +30,8 @@
 #include <charset.h>
 #include <chardata.h>
 
+static int bad_enc_warn = false;
+
 /* Does not handle conversions to Extended unix */
 
 unichar_t *encoding2u_strncpy(unichar_t *uto, const char *_from, int n, enum encoding cs) {
@@ -48,7 +50,11 @@ unichar_t *encoding2u_strncpy(unichar_t *uto, const char *_from, int n, enum enc
 	*uto = '\0';
 	switch ( cs ) {
 	  default:
-return( NULL );
+	    if ( !bad_enc_warn ) {
+		bad_enc_warn = true;
+		fprintf( stderr, "Unexpected encoding %d, I'll pretend it's latin1\n", cs );
+	    }
+return( encoding2u_strncpy(uto,_from,n,e_iso8859_1));
 	  case e_johab: case e_big5: case e_big5hkscs:
 	    if ( cs==e_big5 ) {
 		offset = 0xa100;
@@ -166,8 +172,13 @@ return( NULL );
 	    }
 	    ++upt;
 	}
-    } else
-return( NULL );
+    } else {
+	if ( !bad_enc_warn ) {
+	    bad_enc_warn = true;
+	    fprintf( stderr, "Unexpected encoding %d, I'll pretend it's latin1\n", cs );
+	}
+return( encoding2u_strncpy(uto,_from,n,e_iso8859_1));
+    }
 
     if ( n>0 )
 	*upt = '\0';
@@ -203,7 +214,11 @@ char *u2encoding_strncpy(char *to, const unichar_t *ufrom, int n, enum encoding 
 	*to = '\0';
 	switch ( cs ) {
 	  default:
-return( NULL );
+	    if ( !bad_enc_warn ) {
+		bad_enc_warn = true;
+		fprintf( stderr, "Unexpected encoding %d, I'll pretend it's latin1\n", cs );
+	    }
+return( u2encoding_strncpy(to,ufrom,n,e_iso8859_1));
 	  case e_johab: case e_big5: case e_big5hkscs:
 	    table = cs==e_big5 ? &big5_from_unicode :
 		    cs==e_big5hkscs ? &big5hkscs_from_unicode :
@@ -333,8 +348,13 @@ return( NULL );
 	}
 	if ( n>1 )
 	    *pt = '\0';
-    } else
-return( NULL );
+    } else {
+	if ( !bad_enc_warn ) {
+	    bad_enc_warn = true;
+	    fprintf( stderr, "Unexpected encoding %d, I'll pretend it's latin1\n", cs );
+	}
+return( u2encoding_strncpy(to,ufrom,n,e_iso8859_1));
+    }
 
 return( to );
 }
