@@ -1238,6 +1238,27 @@ static void findstring(struct fontparse *fp,struct pschars *subrs,int index,char
     }
 }
 
+static char *rmbinary(char *line) {
+    char *pt;
+
+    for ( pt=line; *pt; ++pt ) {
+	if (( *pt<' ' || *pt>=0x7f ) && *pt!='\n' ) {
+	    if ( strlen(pt)>5 ) {
+		pt[0] = '.';
+		pt[1] = '.';
+		pt[2] = '.';
+		pt[3] = '\n';
+		pt[4] = '\0';
+	    } else {
+		pt[0] = '\n';
+		pt[1] = '\0';
+	    }
+	break;
+	}
+    }
+return( line );
+}
+
 static void parseline(struct fontparse *fp,char *line,FILE *in) {
     char buffer[200], *pt, *endtok;
 
@@ -1301,7 +1322,7 @@ return;
 	    if ( i<subrs->cnt ) {
 		findstring(fp,subrs,i,NULL,ept);
 	    } else if ( !fp->alreadycomplained ) {
-		fprintf( stderr, "Index too big (must be <%d) |%s", subrs->cnt, line);
+		fprintf( stderr, "Index too big (must be <%d) |%s", subrs->cnt, rmbinary(line));
 		fp->alreadycomplained = true;
 	    }
 	} else if ( strncmp(line, "readonly put", 12)==0 || strncmp(line, "ND", 2)==0 || strncmp(line, "|-", 2)==0 ) {
@@ -1309,7 +1330,7 @@ return;
 	} else if ( *line=='\n' || *line=='\0' ) {
 	    /* Ignore blank lines */;
 	} else if ( !fp->alreadycomplained ) {
-	    fprintf( stderr, "Didn't understand |%s", line );
+	    fprintf( stderr, "Didn't understand |%s", rmbinary(line) );
 	    fp->alreadycomplained = true;
 	}
     } else if ( fp->inchars ) {
@@ -1320,10 +1341,10 @@ return;
 	else if ( *line!='\n' || *line=='\0' )
 	    /* Ignore it */;
 	else if ( *line!='/' || !(isalpha(line[1]) || line[1]=='.')) {
-	    fprintf( stderr, "No name for CharStrings dictionary |%s", line );
+	    fprintf( stderr, "No name for CharStrings dictionary |%s", rmbinary(line) );
 	    fp->alreadycomplained = true;
 	} else if ( chars->next>=chars->cnt )
-	    fprintf( stderr, "Too many entries in CharStrings dictionary |%s", line );
+	    fprintf( stderr, "Too many entries in CharStrings dictionary |%s", rmbinary(line) );
 	else {
 	    int i = chars->next;
 	    char *namestrt = ++line;
@@ -1440,7 +1461,7 @@ return;
 	    fp->pending_parse = &fp->fd->fontinfo->blendaxistypes;
 	    AddValue(fp,NULL,line,endtok);
 	} else if ( !fp->alreadycomplained ) {
-	    fprintf( stderr, "Didn't understand |%s", line );
+	    fprintf( stderr, "Didn't understand |%s", rmbinary(line) );
 	    fp->alreadycomplained = true;
 	}
     } else if ( fp->inblend ) {
@@ -1680,7 +1701,7 @@ return;
 	} else if ( fp->skipping_mbf ) {	/* Skip over the makeblendedfont defn in a multimaster font */
 	    /* Do Nothing */
 	} else if ( !fp->alreadycomplained ) {
-	    fprintf( stderr, "Didn't understand |%s", line );
+	    fprintf( stderr, "Didn't understand |%s", rmbinary(line) );
 	    fp->alreadycomplained = true;
 	}
     }
@@ -1705,19 +1726,19 @@ static void addinfo(struct fontparse *fp,char *line,char *tok,char *binstart,int
 		memcpy(chars->values[i],binstart,binlen);
 		if ( i>=chars->next ) chars->next = i+1;
 	    } else if ( !fp->alreadycomplained ) {
-		fprintf( stderr, "Index too big (must be <%d) |%s", chars->cnt, line);
+		fprintf( stderr, "Index too big (must be <%d) |%s", chars->cnt, rmbinary(line));
 		fp->alreadycomplained = true;
 	    }
 	} else if ( !fp->alreadycomplained ) {
-	    fprintf( stderr, "Didn't understand |%s", line );
+	    fprintf( stderr, "Didn't understand |%s", rmbinary(line) );
 	    fp->alreadycomplained = true;
 	}
     } else if ( fp->inchars ) {
 	struct pschars *chars = fp->fd->chars;
 	if ( *tok=='\0' )
-	    fprintf( stderr, "No name for CharStrings dictionary |%s", line );
+	    fprintf( stderr, "No name for CharStrings dictionary |%s", rmbinary(line) );
 	else if ( chars->next>=chars->cnt )
-	    fprintf( stderr, "Too many entries in CharStrings dictionary |%s", line );
+	    fprintf( stderr, "Too many entries in CharStrings dictionary |%s", rmbinary(line) );
 	else {
 	    int i = chars->next;
 	    chars->lens[i] = binlen;
@@ -1753,7 +1774,7 @@ return;
 	    }
 return;
 	}
-	fprintf( stderr, "Shouldn't be in addinfo |%s", line );
+	fprintf( stderr, "Shouldn't be in addinfo |%s", rmbinary(line) );
 	fp->alreadycomplained = true;
     }
 }

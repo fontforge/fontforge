@@ -2582,7 +2582,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		      case 2: {
 			/* No op */;
 		      } break;
-		      case 0: {
+		      case 0: if ( oldcur!=NULL ) {
 			SplinePointList *spl = oldcur->next;
 			if ( spl!=NULL && spl->next!=NULL &&
 				spl->next->next!=NULL &&
@@ -2637,7 +2637,9 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 			cur->next = NULL;
 			SplinePointListFree(spl);
 			oldcur = NULL;
-		      } break;
+		      } else
+			fprintf(stderr, "Bad flex subroutine\n" );
+		      break;
 		      case 14: 		/* results in 1 blended value */
 		      case 15:		/* results in 2 blended values */
 		      case 16:		/* results in 3 blended values */
