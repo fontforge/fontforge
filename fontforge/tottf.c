@@ -2631,18 +2631,16 @@ return( false );
 return( true );
 }
 
-static int AnyWidthMDs(SplineFont *sf) {
+static int AnyInstructions(SplineFont *sf) {
     int i;
-    MinimumDistance *md;
 
     if ( sf->subfontcnt!=0 ) {
 	for ( i=0; i<sf->subfontcnt; ++i )
-	    if ( AnyWidthMDs(sf->subfonts[i]))
+	    if ( AnyInstructions(sf->subfonts[i]))
 return( true );
     } else {
 	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	    for ( md=sf->chars[i]->md; md!=NULL; md = md->next )
-		if ( md->sp2==NULL )
+	    if ( sf->chars[i]->ttf_instrs_len!=0 )
 return( true );
 	}
     }
@@ -2676,9 +2674,9 @@ static void sethead(struct head *head,SplineFont *_sf) {
     }
     head->checksumAdj = 0;
     head->magicNum = 0x5f0f3cf5;
-    head->flags = 3;
-    if ( AnyWidthMDs(_sf))
-	head->flags = 0x13;		/* baseline at 0, lsbline at 0, instructions change metrics */
+    head->flags = 8|3;
+    if ( AnyInstructions(_sf))
+	head->flags = 0x1b;		/* baseline at 0, lsbline at 0, instructions change metrics */
     head->emunits = sf->ascent+sf->descent;
     head->macstyle = MacStyleCode(sf,NULL);
     head->lowestreadable = 8;
