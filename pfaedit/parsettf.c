@@ -2241,7 +2241,7 @@ static void readcffenc(FILE *ttf,struct topdicts *dict,struct ttfinfo *info,
     extern char *AdobeStandardEncoding[], *AdobeExpertEncoding[];
     const char *name;
 
-    if ( !info->barecff )		/* Use the cmap instead */
+    if ( info->encoding_start!=0 )		/* Use the cmap instead */
 return;
 
     for ( i=0; i<info->glyph_cnt; ++i ) {
