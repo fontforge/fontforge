@@ -668,14 +668,22 @@ static void GListButtonDoPopup(GListButton *gl) {
     gl->popup = GListPopupCreate(&gl->g,GListButtonSelected,gl->ti);
 }
 
+static int _GListAlphaCompare(const void *v1, const void *v2) {
+    GTextInfo * const *pt1 = v1, * const *pt2 = v2;
+return( GTextInfoCompare(*pt1,*pt2));
+}
+
 GGadget *GListButtonCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     GListButton *gl = gcalloc(1,sizeof(GListButton));
     int i;
 
     gl->labeltype = 2;
     gl->g.takes_input = true;
-    if ( gd->u.list!=NULL )
+    if ( gd->u.list!=NULL ) {
 	gl->ti = GTextInfoArrayFromList(gd->u.list,&gl->ltot);
+	if ( gd->flags & gg_list_alphabetic )
+	    qsort(gl->ti,gl->ltot,sizeof(GTextInfo *),_GListAlphaCompare);
+    }
     if ( gd->label==NULL && gd->u.list!=NULL ) {
 	/* find first selected item if there is one */
 	for ( i=0; gd->u.list[i].text!=NULL || gd->u.list[i].line; ++i )

@@ -3603,15 +3603,18 @@ return( true );
 }
 
 static void TNFinishFormer(struct gfi_data *d) {
-    int cur_lang = GGadgetGetFirstListSelectedItem(GWidgetGetControl(d->gw,CID_Language));
+    GGadget *langlist = GWidgetGetControl(d->gw,CID_Language);
+    int cur_lang = GGadgetGetFirstListSelectedItem(langlist);
     int cur_id = GGadgetGetFirstListSelectedItem(GWidgetGetControl(d->gw,CID_StrID));
     struct ttflangname *cur, *prev;
     int nothing;
     static unichar_t nullstr[1] = { 0 };
     int i;
+    int32 len;
+    GTextInfo **langs = GGadgetGetList(langlist,&len);
 
     if ( d->old_lang!=-1 ) {
-	int lang = (int) mslanguages[d->old_lang].userdata;
+	int lang = (int) langs[d->old_lang]->userdata;
 	int id = (int) ttfnameids[d->old_strid].userdata;
 	const unichar_t *str = _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_String));
 
@@ -3664,7 +3667,7 @@ static void TNFinishFormer(struct gfi_data *d) {
     d->old_strid = cur_id;
 
     cur_id =(int) ttfnameids[cur_id].userdata;
-    cur_lang = (int) mslanguages[cur_lang].userdata;
+    cur_lang = (int) langs[cur_lang]->userdata;
     TNNotePresence(d,cur_id);
     for ( prev=NULL, cur = d->names; cur!=NULL && cur->lang!=cur_lang; cur=cur->next );
     GGadgetSetTitle(GWidgetGetControl(d->gw,CID_String),
@@ -3682,20 +3685,12 @@ static int GFI_LanguageChange(GGadget *g, GEvent *e) {
 return( true );
 }
 
-static void DefaultLanguage(struct gfi_data *d) {
-    const char *lang=NULL;
+static int LangSearch(GTextInfo **langs,const char *lang,int langlen) {
+    int i,reslen, found=-1, samelang=-1;
     const unichar_t *res;
-    int i, found=-1, samelang=-1, langlen, reslen;
-    static char *envs[] = { "LC_ALL", "LC_MESSAGES", "LANG", NULL };
-    GGadget *g = GWidgetGetControl(d->gw,CID_Language);
-    unichar_t versionbuf[40];
-
-    for ( i=0; envs[i]!=NULL && lang==NULL; ++i )
-	lang = getenv(envs[i]);
-    if ( lang==NULL ) lang = "en_US";
-    langlen = strlen(lang);
-    for ( i=0; mslanguages[i].text!=NULL; ++i ) {
-	res = GStringGetResource((int) mslanguages[i].text, NULL );
+    
+    for ( i=0; langs[i]->text!=NULL; ++i ) {
+	res = langs[i]->text;
 	if ( res==NULL )
     continue;
 	reslen = u_strlen(res);
@@ -3714,6 +3709,32 @@ static void DefaultLanguage(struct gfi_data *d) {
 	}
     }
     if ( found==-1 ) found = samelang;
+return( found );
+}
+
+static void DefaultLanguage(struct gfi_data *d) {
+    const char *lang=NULL;
+    int i, found=-1, langlen;
+    static char *envs[] = { "LC_ALL", "LC_MESSAGES", "LANG", NULL };
+    GGadget *g = GWidgetGetControl(d->gw,CID_Language);
+    unichar_t versionbuf[40];
+    int32 len;
+    GTextInfo **langs = GGadgetGetList(g,&len);
+
+    for ( i=0; envs[i]!=NULL && lang==NULL; ++i )
+	lang = getenv(envs[i]);
+    if ( lang==NULL ) lang = "en_US";
+    langlen = strlen(lang);
+    found = LangSearch(langs,lang,langlen);
+    if ( langlen==2 ) {
+	char buffer[6];
+	int test;
+	/* Guess that the default locale has the same two letter code as language */
+	sprintf( buffer, "%s_%c%c", lang, toupper(lang[0]), toupper(lang[1]));
+	test = LangSearch(langs,buffer,5);
+	if ( test!=-1 )
+	    found = test;
+    }
     if ( found==-1 ) found = 0;
     GGadgetSelectOneListItem(g,found);
 
@@ -5170,7 +5191,7 @@ return;
     tngcd[1].gd.handle_controlevent = GFI_DefaultStyles;
 
     tngcd[2].gd.pos.x = 30; tngcd[2].gd.pos.y = 36;
-    tngcd[2].gd.flags = gg_visible | gg_enabled;
+    tngcd[2].gd.flags = gg_visible | gg_enabled | gg_list_alphabetic;
     tngcd[2].gd.cid = CID_Language;
     tngcd[2].gd.u.list = mslanguages;
     tngcd[2].gd.handle_controlevent = GFI_LanguageChange;
