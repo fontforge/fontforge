@@ -197,11 +197,14 @@ typedef struct spline1d {
 } Spline1D;
 
 typedef struct spline {
-    unsigned int islinear: 1;
+    unsigned int islinear: 1;		/* No control points */
     unsigned int isticked: 1;
     unsigned int isneeded: 1;
     unsigned int isunneeded: 1;
     unsigned int ishorvert: 1;
+    unsigned int knowncurved: 1;	/* We know that it curves */
+    unsigned int knownlinear: 1;	/* it might have control points, but still traces out a line */
+	/* If neither knownlinear nor curved then we haven't checked */
     SplinePoint *from, *to;
     Spline1D splines[2];		/* splines[0] is the x spline, splines[1] is y */
     struct linearapprox *approx;
@@ -473,9 +476,10 @@ extern SplinePoint *SplineBisect(Spline *spline, double t);
 extern Spline *ApproximateSplineFromPoints(SplinePoint *from, SplinePoint *to,
 	TPoint *mid, int cnt);
 extern int SplineIsLinear(Spline *spline);
+extern int SplineIsLinearMake(Spline *spline);
 extern int SplineInSplineSet(Spline *spline, SplineSet *spl);
 extern void SplineCharMerge(SplineSet **head);
-extern void SplineCharSimplify(SplineSet *head);
+extern void SplineCharSimplify(SplineSet *head,int cleanup);
 extern void SplineCharRemoveTiny(SplineSet *head);
 extern SplineFont *SplineFontNew(void);
 extern char *GetNextUntitledName(void);

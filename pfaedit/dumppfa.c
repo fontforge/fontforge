@@ -301,7 +301,7 @@ static void dumpsplineset(void (*dumpchar)(int ch,void *data), void *data, Splin
 	for ( sp = spl->first; ; sp=sp->next->to ) {
 	    if ( first==NULL )
 		dumpf( dumpchar, data, "\t%g %g moveto\n", sp->me.x, sp->me.y );
-	    else if ( sp->prev->islinear )
+	    else if ( sp->prev->knownlinear )
 		dumpf( dumpchar, data, "\t %g %g lineto\n", sp->me.x, sp->me.y );
 	    else
 		dumpf( dumpchar, data, "\t %g %g %g %g %g %g curveto\n",

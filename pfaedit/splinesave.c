@@ -850,7 +850,7 @@ static void CvtPsSplineSet(GrowBuf *gb, SplinePointList *spl, BasePoint *current
 	    if ( spline->to->flexx || spline->to->flexy ) {
 		flexto(gb,current,spline,round,hdb);	/* does two adjacent splines */
 		spline = spline->to->next;
-	    } else if ( spline->islinear )
+	    } else if ( spline->knownlinear )
 		moveto(gb,current,spline->to,true,round,hdb);
 	    else
 		curveto(gb,current,spline,round,hdb);
@@ -1322,7 +1322,7 @@ static Spline *lineto2(GrowBuf *gb,struct hintdb *hdb,Spline *spline, Spline *do
     int cnt, hv, hvcnt;
     Spline *test, *lastgood, *lasthvgood;
 
-    for ( test=spline, cnt=0; test->islinear && cnt<15; ) {
+    for ( test=spline, cnt=0; test->knownlinear && cnt<15; ) {
 	++cnt;
 	lastgood = test;
 	test = test->to->next;
@@ -1526,7 +1526,7 @@ static void CvtPsSplineSet2(GrowBuf *gb, SplinePointList *spl, struct hintdb *hd
 	    if ( spline->to->flexx || spline->to->flexy ) {
 		flexto2(gb,hdb,spline);	/* does two adjacent splines */
 		spline = spline->to->next->to->next;
-	    } else if ( spline->islinear )
+	    } else if ( spline->knownlinear )
 		spline = lineto2(gb,hdb,spline,first);
 	    else
 		spline = curveto2(gb,hdb,spline,first);

@@ -102,7 +102,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	for ( test=spl; test!=NULL; test = test->next ) {
 	    first = NULL;
 	    for ( spline = test->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
-		if ( !spline->islinear ) {
+		if ( !spline->knownlinear ) {
 		    double t1, t2, t3, t4;
 		    SplineFindInflections(&spline->splines[0],&t1,&t2);
 		    SplineFindInflections(&spline->splines[1],&t3,&t4);

@@ -352,7 +352,7 @@ static void PIDumpSPL(PI *pi,SplinePointList *spl) {
 	for ( sp = spl->first; ; sp=sp->next->to ) {
 	    if ( first==NULL )
 		fprintf( pi->out, "%g %g moveto\n", sp->me.x*pi->scale+pi->xoff, sp->me.y*pi->scale+pi->yoff );
-	    else if ( sp->prev->islinear )
+	    else if ( sp->prev->knownlinear )
 		fprintf( pi->out, " %g %g lineto\n", sp->me.x*pi->scale+pi->xoff, sp->me.y*pi->scale+pi->yoff );
 	    else
 		fprintf( pi->out, " %g %g %g %g %g %g curveto\n",

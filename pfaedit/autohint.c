@@ -861,7 +861,7 @@ static struct pendinglist *StemPending(struct pendinglist *pendings,
     Spline1D *osp = &checkme->spline->splines[other];
     double mcur = ((sp->a*checkme->tcur+sp->b)*checkme->tcur+sp->c)*checkme->tcur+sp->d;
     double ocur = checkme->ocur;
-    int oup = other==0?e->hup:e->vup;
+    int oup = other==0?checkme->hup:checkme->vup;
     int atmin;
     struct pendinglist *t, *p;
     double wide, mdiff;
@@ -1292,7 +1292,7 @@ static StemInfo *ELFindStems(EIList *el, int major, DStemInfo **dstems ) {
 		pendings = StemPending(pendings,apt,e,ahv,major,&temp);
 		stems = temp;
 	    } else if ( dstems!=NULL &&
-		    SplineIsLinear(apt->spline) && SplineIsLinear(e->spline) &&
+		    apt->spline->knownlinear && e->spline->knownlinear &&
 		    AreNearlyParallel(apt,e)) {
 		*dstems = AddDiagStem(*dstems,apt,e);
 	    }

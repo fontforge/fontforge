@@ -42,7 +42,7 @@ static void DumpSPL(FILE *eps,SplinePointList *spl) {
 	for ( sp = spl->first; ; sp=sp->next->to ) {
 	    if ( first==NULL )
 		fprintf( eps, "%g %g moveto\n", sp->me.x, sp->me.y );
-	    else if ( sp->prev->islinear )
+	    else if ( sp->prev->knownlinear )
 		fprintf( eps, " %g %g lineto\n", sp->me.x, sp->me.y );
 	    else
 		fprintf( eps, " %g %g %g %g %g %g curveto\n",

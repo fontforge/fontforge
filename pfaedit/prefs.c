@@ -350,7 +350,6 @@ static void BuildLangStruct(GGadgetCreateData *gcd) {
     char buffer[1025];
     GTextInfo *ti;
 
- printf( "%s\n", GResourceProgramDir );
     bindir = opendir(GResourceProgramDir);
     if ( bindir!=NULL ) {
 	while ( (ent = readdir(bindir))!=NULL && tot<MAX_CHOICES ) {

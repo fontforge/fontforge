@@ -40,7 +40,7 @@ static void SFDDumpSplineSet(FILE *sfd,SplineSet *spl) {
 	for ( sp = spl->first; ; sp=sp->next->to ) {
 	    if ( first==NULL )
 		fprintf( sfd, "%g %g m ", sp->me.x, sp->me.y );
-	    else if ( sp->prev->islinear )
+	    else if ( sp->prev->islinear )		/* Don't use known linear here. save control points if there are any */
 		fprintf( sfd, " %g %g l ", sp->me.x, sp->me.y );
 	    else
 		fprintf( sfd, " %g %g %g %g %g %g c ",

@@ -159,6 +159,13 @@ void SplineRefigure(Spline *spline) {
     }
     LinearApproxFree(spline->approx);
     spline->approx = NULL;
+    spline->knowncurved = false;
+    spline->knownlinear = spline->islinear;
+    SplineIsLinear(spline);
+    if ( !spline->islinear && spline->knownlinear ) {
+	spline->knownlinear = false;
+	SplineIsLinear(spline);		/* Debug */
+    }
 }
 
 Spline *SplineMake(SplinePoint *from, SplinePoint *to) {
@@ -289,7 +296,7 @@ return( test );
     cur->here.x = rint(spline->from->me.x*scale);
     cur->here.y = rint(spline->from->me.y*scale);
     test->lines = last = cur;
-    if ( spline->islinear ) {
+    if ( spline->knownlinear ) {
 	cur = calloc( 1,sizeof(LineList) );
 	cur->here.x = rint(spline->to->me.x*scale);
 	cur->here.y = rint(spline->to->me.y*scale);
@@ -1471,7 +1478,7 @@ int NearSpline(FindSel *fs, Spline *spline) {
     if (( dx = spline->to->me.x-spline->from->me.x)<0 ) dx = -dx;
     if (( dy = spline->to->me.y-spline->from->me.y)<0 ) dy = -dy;
 
-    if ( spline->islinear ) {
+    if ( spline->knownlinear ) {
 	if ( fs->xl > spline->from->me.x && fs->xl > spline->to->me.x )
 return( false );
 	if ( fs->xh < spline->from->me.x && fs->xh < spline->to->me.x )

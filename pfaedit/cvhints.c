@@ -59,7 +59,7 @@ return( false );
 static int DiagCheck(SplinePoint *sp1, SplinePoint *sp2, Spline *s1, Spline *s2,
 	SplinePoint **sp3, SplinePoint **sp4 ) {
 
-    if ( s1==NULL || s2==NULL || !SplineIsLinear(s1) || !SplineIsLinear(s2) )
+    if ( s1==NULL || s2==NULL || !s1->knownlinear || !s2->knownlinear )
 return( false );
     *sp3 = s1->from==sp1?s1->to:s1->from;
     *sp4 = s2->from==sp2?s2->to:s2->from;

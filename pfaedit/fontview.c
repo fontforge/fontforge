@@ -471,8 +471,15 @@ return;
     exit(0);
 }
 
+static void FVMenuExit(GWindow base,struct gmenuitem *mi,GEvent *e) {
+    _MenuExit(NULL);
+}
+
 void MenuExit(GWindow base,struct gmenuitem *mi,GEvent *e) {
-    DelayEvent(_MenuExit,NULL);
+    if ( e==NULL )	/* Not from the menu directly, but a shortcut */
+	_MenuExit(NULL);
+    else
+	DelayEvent(_MenuExit,NULL);
 }
 
 char *GetPostscriptFontName(int mult) {
@@ -964,6 +971,7 @@ static void FVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     int i, cnt=0;
     static unichar_t simplifying[] = { 'S','i','m','p','l','i','f','y','i','n','g',' ','.','.','.',  '\0' };
+    int cleanup = e!=NULL && (e->u.mouse.state&ksm_shift);
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
 	++cnt;
@@ -972,7 +980,7 @@ static void FVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
 	SCPreserveState(sc);
-	SplineCharSimplify(sc->splines);
+	SplineCharSimplify(sc->splines,cleanup);
 	SCCharChangedUpdate(sc,fv);
 	if ( !GProgressNext())
     break;
@@ -1215,8 +1223,15 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = anychars==-1;
 	    /* some Transformations make sense on bitmaps now */
 	  break;
+	  case MID_Simplify:
+	    mi->ti.disabled = anychars==-1 || fv->sf->onlybitmaps;
+	    free(mi->ti.text);
+	    mi->ti.text = u_copy(GStringGetResource(
+		    e!=NULL && (e->u.mouse.state&ksm_shift)
+			?_STR_CleanupChars:_STR_Simplify,NULL));
+	  break;
 	  case MID_Stroke: case MID_RmOverlap:
-	  case MID_Simplify: case MID_Round: case MID_Correct:
+	  case MID_Round: case MID_Correct:
 	    mi->ti.disabled = anychars==-1 || fv->sf->onlybitmaps;
 	  break;
 	  case MID_RegenBitmaps:
@@ -1241,7 +1256,7 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    }
 	    mi->ti.disabled = !anybuildable;
 	    free(mi->ti.text);
-	    mi->ti.text = uc_copy(onlyaccents?"Build Accented Char": "Build Composite Chars");
+	    mi->ti.text = u_copy(GStringGetResource(onlyaccents?_STR_Buildaccent:_STR_Buildcomposit,NULL));
 	  break;
 	  case MID_Autotrace:
 	    anytraceable = false;
@@ -1414,7 +1429,7 @@ static GMenuItem fllist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Prefs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'e' }, '\0', ksm_control, NULL, NULL, MenuPrefs },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_Quit, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'Q' }, 'Q', ksm_control, NULL, NULL, MenuExit },
+    { { (unichar_t *) _STR_Quit, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'Q' }, 'Q', ksm_control, NULL, NULL, FVMenuExit },
     { NULL }
 };
 

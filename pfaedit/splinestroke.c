@@ -142,11 +142,11 @@ static void StrokeEnd(SplinePoint *base, StrokeInfo *si, SplinePoint **_plus, Sp
 	minus = gcalloc(1,sizeof(SplinePoint));
 	plus->pointtype = pt_corner; minus->pointtype = pt_corner;
 	if ( base->next==NULL ) {	/* the prev spline moves toward base */
-	    SplineIsLinear(base->prev);
+	    SplineIsLinearMake(base->prev);
 	    angle = SplineExpand(base->prev,1,si,&plus->me,&minus->me);
 	    sign = 1;
 	} else {
-	    SplineIsLinear(base->next);
+	    SplineIsLinearMake(base->next);
 	    angle = SplineExpand(base->next,0,si,&plus->me,&minus->me)+
 		    3.1415926535897932;
 	    sign = -1;
@@ -289,8 +289,8 @@ static void StrokeJoint(SplinePoint *base,StrokeInfo *si,JointPoint *plus,JointP
     double nangle, pangle;
     int pinner;
 
-    SplineIsLinear(base->prev);
-    SplineIsLinear(base->next);
+    SplineIsLinearMake(base->prev);
+    SplineIsLinearMake(base->next);
 
     pangle = SplineExpand(base->prev,1,si,&pplus,&pminus);
     nangle = SplineExpand(base->next,0,si,&nplus,&nminus);

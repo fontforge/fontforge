@@ -71,50 +71,87 @@ return( true );
 return( false );
 }
 
-static int IsLinearSpline(Spline *spline) {
+int SplineIsLinear(Spline *spline) {
     double t1,t2;
+    int ret;
 
-    if ( spline->splines[0].a==0 && spline->splines[0].b==0 && spline->splines[1].a==0 && spline->splines[1].b==0 )
+    if ( spline->knownlinear )
+return( true );
+    if ( spline->knowncurved )
+return( false );
+
+    if ( spline->splines[0].a==0 && spline->splines[0].b==0 &&
+	    spline->splines[1].a==0 && spline->splines[1].b==0 )
 return( true );
 
     /* Something is linear if the control points lie on the line between the */
     /*  two base points */
 
     /* Vertical lines */
-    if ( DoubleNear(spline->from->me.x,spline->to->me.x) )
-return( DoubleNear(spline->from->me.x,spline->from->nextcp.x) &&
+    if ( DoubleNear(spline->from->me.x,spline->to->me.x) ) {
+	ret = DoubleNear(spline->from->me.x,spline->from->nextcp.x) &&
 	    DoubleNear(spline->from->me.x,spline->to->prevcp.x) &&
-	    spline->from->nextcp.y >= spline->from->me.y &&
-	    spline->from->nextcp.y <= spline->to->me.y &&
-	    spline->to->prevcp.y >= spline->from->me.y &&
-	    spline->to->prevcp.y <= spline->to->me.y );
-
+	    ((spline->from->nextcp.y >= spline->from->me.y &&
+	      spline->from->nextcp.y <= spline->to->prevcp.y &&
+	      spline->to->prevcp.y <= spline->to->me.y ) ||
+	     (spline->from->nextcp.y <= spline->from->me.y &&
+	      spline->from->nextcp.y >= spline->to->prevcp.y &&
+	      spline->to->prevcp.y >= spline->to->me.y ));
     /* Horizontal lines */
-    if ( DoubleNear(spline->from->me.y,spline->to->me.y) )
-return( DoubleNear(spline->from->me.y,spline->from->nextcp.y) &&
+    } else if ( DoubleNear(spline->from->me.y,spline->to->me.y) ) {
+	ret = DoubleNear(spline->from->me.y,spline->from->nextcp.y) &&
 	    DoubleNear(spline->from->me.y,spline->to->prevcp.y) &&
-	    spline->from->nextcp.x >= spline->from->me.x &&
-	    spline->from->nextcp.x <= spline->to->me.x &&
-	    spline->to->prevcp.x >= spline->from->me.x &&
-	    spline->to->prevcp.x <= spline->to->me.x );
-
-    t1 = (spline->from->nextcp.y-spline->from->me.y)/(spline->to->me.y-spline->from->me.y);
-    if ( t1<0 || t1>1.0 )
-return( false );
-    t2 = (spline->from->nextcp.x-spline->from->me.x)/(spline->to->me.x-spline->from->me.x);
-    if ( t2<0 || t2>1.0 )
-return( false );
-return( DoubleApprox(t1,t2));
+	    ((spline->from->nextcp.x >= spline->from->me.x &&
+	      spline->from->nextcp.x <= spline->to->prevcp.x &&
+	      spline->to->prevcp.x <= spline->to->me.x) ||
+	     (spline->from->nextcp.x <= spline->from->me.x &&
+	      spline->from->nextcp.x >= spline->to->prevcp.x &&
+	      spline->to->prevcp.x >= spline->to->me.x));
+    } else {
+	ret = true;
+	t1 = (spline->from->nextcp.y-spline->from->me.y)/(spline->to->me.y-spline->from->me.y);
+	if ( t1<0 || t1>1.0 )
+	    ret = false;
+	else {
+	    t2 = (spline->from->nextcp.x-spline->from->me.x)/(spline->to->me.x-spline->from->me.x);
+	    if ( t2<0 || t2>1.0 )
+		ret = false;
+	    ret = DoubleApprox(t1,t2);
+	}
+	if ( ret ) {
+	    t1 = (spline->to->me.y-spline->to->prevcp.y)/(spline->to->me.y-spline->from->me.y);
+	    if ( t1<0 || t1>1.0 )
+		ret = false;
+	    else {
+		t2 = (spline->to->me.x-spline->to->prevcp.x)/(spline->to->me.x-spline->from->me.x);
+		if ( t2<0 || t2>1.0 )
+		    ret = false;
+		else
+		    ret = DoubleApprox(t1,t2);
+	    }
+	}
+    }
+    spline->knowncurved = !ret;
+    spline->knownlinear = ret;
+return( ret );
 }
 
-int SplineIsLinear(Spline *spline) {
+int SplineIsLinearMake(Spline *spline) {
 
     if ( spline->islinear )
 return( true );
-    if ( IsLinearSpline(spline)) {
+    if ( SplineIsLinear(spline)) {
 	spline->islinear = spline->from->nonextcp = spline->to->noprevcp = true;
 	spline->from->nextcp = spline->from->me;
+	if ( spline->from->nonextcp && spline->from->noprevcp )
+	    spline->from->pointtype = pt_corner;
+	else if ( spline->from->pointtype == pt_curve )
+	    spline->from->pointtype = pt_tangent;
 	spline->to->prevcp = spline->to->me;
+	if ( spline->to->nonextcp && spline->to->noprevcp )
+	    spline->to->pointtype = pt_corner;
+	else if ( spline->to->pointtype == pt_curve )
+	    spline->to->pointtype = pt_tangent;
 	SplineRefigure(spline);
     }
 return( spline->islinear );
@@ -192,7 +229,7 @@ SplinePoint *SplineBisect(Spline *spline, double t) {
     spline1->to = mid;
     old0->next = spline1;
     mid->prev = spline1;
-    if ( IsLinearSpline(spline1)) {
+    if ( SplineIsLinear(spline1)) {
 	spline1->islinear = spline1->from->nonextcp = spline1->to->noprevcp = true;
 	spline1->from->nextcp = spline1->from->me;
 	spline1->to->prevcp = spline1->to->me;
@@ -205,7 +242,7 @@ SplinePoint *SplineBisect(Spline *spline, double t) {
     spline2->to = old1;
     mid->next = spline2;
     old1->prev = spline2;
-    if ( IsLinearSpline(spline2)) {
+    if ( SplineIsLinear(spline2)) {
 	spline2->islinear = spline2->from->nonextcp = spline2->to->noprevcp = true;
 	spline2->from->nextcp = spline2->from->me;
 	spline2->to->prevcp = spline2->to->me;
@@ -303,7 +340,7 @@ Spline *ApproximateSplineFromPoints(SplinePoint *from, SplinePoint *to,
     to->prevcp.y = from->nextcp.y + (vy[0]+vy[1])/3;
     from->nonextcp = to->noprevcp = false;
     spline = SplineMake(from,to);
-    if ( IsLinearSpline(spline)) {
+    if ( SplineIsLinear(spline)) {
 	spline->islinear = from->nonextcp = to->noprevcp = true;
 	spline->from->nextcp = spline->from->me;
 	spline->to->prevcp = spline->to->me;
@@ -676,10 +713,12 @@ return( false );
 return( good );
 }
 
-static void SplinePointListSimplify(SplinePointList *spl) {
+/* Cleanup just turns splines with control points which happen to trace out */
+/*  lines into simple lines */
+static void SplinePointListSimplify(SplinePointList *spl,int cleanup) {
     SplinePoint *first, *next, *sp;
 
-    if ( spl->first->prev!=NULL ) {
+    if ( !cleanup && spl->first->prev!=NULL ) {
 	while ( 1 ) {
 	    first = spl->first->prev->from;
 	    if ( !SplinesRemoveMidMaybe(spl->first))
@@ -692,14 +731,15 @@ static void SplinePointListSimplify(SplinePointList *spl) {
     if ( spl->first->next == NULL )
 return;
     for ( sp = spl->first->next->to; sp!=spl->last && sp->next!=NULL; sp = next ) {
-	SplineIsLinear(sp->prev);		/* First see if we can turn it*/
+	SplineIsLinearMake(sp->prev);		/* First see if we can turn it*/
 				/* into a line, then try to merge two splines */
 	next = sp->next->to;
-	SplinesRemoveMidMaybe(sp);
+	if ( !cleanup )
+	    SplinesRemoveMidMaybe(sp);
     }
 }
 
-void SplineCharSimplify(SplineSet *head) {
+void SplineCharSimplify(SplineSet *head,int cleanup) {
     SplineSet *spl;
     int anysel=0;
 
@@ -709,7 +749,7 @@ void SplineCharSimplify(SplineSet *head) {
 
     for ( spl = head; spl!=NULL; spl = spl->next ) {
 	if ( !anysel || PointListIsSelected(spl))
-	    SplinePointListSimplify(spl);
+	    SplinePointListSimplify(spl,cleanup);
     }
 }
 

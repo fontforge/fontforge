@@ -230,11 +230,11 @@ static SplinePoint *ttfapprox(Spline *ps,double tmin, double tmax, SplinePoint *
 	spline->to = sp;
 	spline->splines[0] = ps->splines[0]; spline->splines[1] = ps->splines[1];
 	start->next = sp->prev = spline;
-	if ( ps->islinear ) {
-	    spline->islinear = true;
+	if ( ps->knownlinear ) {
+	    spline->islinear = spline->knownlinear = true;
 	    start->nonextcp = sp->noprevcp = true;
-	    start->nextcp.x = start->me.x; start->nextcp.y = start->me.y;
-	    sp->prevcp.x = sp->me.x; sp->prevcp.y = sp->me.y;
+	    start->nextcp = start->me;
+	    sp->prevcp = sp->me;
 	} else {
 	    start->nonextcp = sp->noprevcp = false;
 	    start->nextcp.x = sp->prevcp.x = (ps->splines[0].c+2*ps->splines[0].d)/2;

@@ -217,7 +217,7 @@ static unichar_t *slurpchars(char *filename, char *name,int enc,char *buffer) {
 	    }
 	} else {
 	    while ( *buffer!='"' && *buffer!= '\0' ) {
-		*pt++ = charval(&buffer);
+		*pt++ = table[charval(&buffer)];
 	    }
 	}
 	*pt = 0;
@@ -563,14 +563,14 @@ return;
 	if ( missing ) {
 	    fprintf( out, "\n\t/* ************** Missing strings ************** */\n\n" );
 	    for ( i=0; i<npos; ++i ) {
-		if ( values[i]!=NULL )
+		if ( values[i]==NULL )
 		    fprintf( out, "static unichar_t *str_%s;\n", cu_copy(names[i]));
 		if ( hadmn[i] && mn[i]=='\0' )
 		    fprintf( out, "static unichar_t mnemonic_%s;\n", cu_copy(names[i]));
 	    }
 	    putc('\n',out);
 	    for ( i=0; i<ipos; ++i ) {
-		if ( ivalues[i]!=0x80000000 )
+		if ( ivalues[i]==0x80000000 )
 		    fprintf( out, "static int num_%s;\n", cu_copy(inames[i]));
 	    }
 	}

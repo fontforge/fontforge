@@ -2958,7 +2958,7 @@ static void CVMenuOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void CVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     CVPreserveState(cv);
-    SplineCharSimplify(*cv->heads[cv->drawmode]);
+    SplineCharSimplify(*cv->heads[cv->drawmode],e!=NULL && (e->u.mouse.state&ksm_shift));
     CVCharChangedUpdate(cv);
 }
 
@@ -3044,7 +3044,13 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_RegenBitmaps:
 	    mi->ti.disabled = cv->fv->sf->bitmaps==NULL;
 	  break;
+	  case MID_Simplify:
 	  /* Simplify is always available (it may not do anything though) */
+	    free(mi->ti.text);
+	    mi->ti.text = u_copy(GStringGetResource(
+		    e!=NULL && (e->u.mouse.state&ksm_shift)
+			?_STR_CleanupChars:_STR_Simplify,NULL));
+	  break;
 	  case MID_BuildAccent:
 	    mi->ti.disabled = !SFIsCompositBuildable(cv->fv->sf,cv->sc->unicodeenc);
 	    onlyaccents = e==NULL || !(e->u.mouse.state&ksm_shift);
@@ -3053,7 +3059,7 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 		    mi->ti.disabled = true;
 	    }
 	    free(mi->ti.text);
-	    mi->ti.text = uc_copy(onlyaccents?"Build Accented Char": "Build Composite Chars");
+	    mi->ti.text = u_copy(GStringGetResource(onlyaccents?_STR_Buildaccent:_STR_Buildcomposit,NULL));
 	  break;
 	  case MID_Autotrace:
 	    mi->ti.disabled = FindAutoTraceName()==NULL || cv->sc->backimages==NULL;

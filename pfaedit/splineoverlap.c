@@ -422,7 +422,7 @@ static IntersectionList *FindLinearIntersections(SplineSet *spl, IntersectionLis
 	first = NULL;
 	for ( sp = spl->first->next; sp!=NULL && sp!=first; sp=sp->to->next ) {
 	    if ( first==NULL ) first = sp;
-	    if ( sp->islinear || IsHorVertSpline(sp)) {
+	    if ( sp->knownlinear || IsHorVertSpline(sp)) {
 		for ( ss=spl; ss!=NULL; ss = ss->next ) {
 		    if ( ss==spl ) {
 			first2 = first;
@@ -432,7 +432,7 @@ static IntersectionList *FindLinearIntersections(SplineSet *spl, IntersectionLis
 			sp2 = ss->first->next;
 		    }
 		    for ( ; sp2!=NULL && sp2!=first2; sp2 = sp2->to->next ) {
-			if ( sp2->islinear || IsHorVertSpline(sp)) {
+			if ( sp2->knownlinear || IsHorVertSpline(sp)) {
 			    if (( sp->from->me.x>sp2->from->me.x && sp->from->me.x>sp2->to->me.x && sp->to->me.x>sp2->from->me.x && sp->to->me.x>sp2->to->me.x ) ||
 				    ( sp->from->me.x<sp2->from->me.x && sp->from->me.x<sp2->to->me.x && sp->to->me.x<sp2->from->me.x && sp->to->me.x<sp2->to->me.x ) ||
 				    ( sp->from->me.y>sp2->from->me.y && sp->from->me.y>sp2->to->me.y && sp->to->me.y>sp2->from->me.y && sp->to->me.y>sp2->to->me.y ) ||
