@@ -763,8 +763,10 @@ static SplineChar **morx_cg_FigureClasses(SplineChar ***tables,int match_len,
 return( NULL );
 
     gtot = 0;
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	sf->chars[i]->lsidebearing = 1;
 	sf->chars[i]->ttf_glyph = gtot++;
+    }
 
     max=0;
     for ( i=0; i<match_len; ++i ) {
@@ -823,6 +825,7 @@ return( NULL );
 	glyphs[gcnt] = gall[i];
 	map[gcnt++] = gall[i]->lsidebearing+4;	/* there are 4 standard classes, so our first class starts at 4 */
     }
+    glyphs[gcnt] = NULL;
     free(gall);
     free(temp);
     *gc = gcnt;
