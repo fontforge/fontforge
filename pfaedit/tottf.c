@@ -158,13 +158,65 @@ static SplinePoint *MakeQuadSpline(SplinePoint *start,Spline *ttf,real x,
 	end->noprevcp = true;
 	end->prevcp.x = x; end->prevcp.y = y;
     } else {
+#if 1		/* Quadratic control point */
+	end->prevcp.x = start->nextcp.x = ttf->splines[0].c/2+ttf->splines[0].d;
+	end->prevcp.y = start->nextcp.y = ttf->splines[1].c/2+ttf->splines[1].d;
+	start->nonextcp = end->noprevcp = false;
+#else		/* Cubic control point */
 	start->nextcp.x = ttf->splines[0].d+ttf->splines[0].c/3;
 	end->prevcp.x = start->nextcp.x+(ttf->splines[0].b+ttf->splines[0].c)/3;
 	start->nextcp.y = ttf->splines[1].d+ttf->splines[1].c/3;
 	end->prevcp.y = start->nextcp.y+(ttf->splines[1].b+ttf->splines[1].c)/3;
 	start->nonextcp = false;
+#endif
     }
 return( end );
+}
+
+static int buildtestquads(Spline *ttf,real xmin,real ymin,real cx,real cy,
+	real x,real y,real tmin,real t,real err,Spline *ps) {
+#if 0
+    BasePoint norm;
+    real sq;
+#endif
+
+    ttf->splines[0].d = xmin;
+    ttf->splines[0].c = 2*(cx-xmin);
+    ttf->splines[0].b = xmin+x-2*cx;
+    ttf->splines[1].d = ymin;
+    ttf->splines[1].c = 2*(cy-ymin);
+    ttf->splines[1].b = ymin+y-2*cy;
+    if ( comparespline(ps,ttf,tmin,t,err) )
+return( true );
+
+#if 0
+    /* In a few cases, the following code will find a match when the above */
+    /*  would not. We move the control point slightly along a vector normal */
+    /*  to the vector between the end-points. What I really want is along */
+    /*  a vector midway between the two slopes, but that's too hard to figure */
+    sq = sqrt((x-xmin)*(x-xmin) + (y-ymin)*(y-ymin));
+    norm.x = (ymin-y)/sq; norm.y = (x-xmin)/sq;
+
+    ttf->splines[0].c += err*norm.x;
+    ttf->splines[0].b -= err*norm.x;
+    ttf->splines[1].c += err*norm.y;
+    ttf->splines[1].b -= err*norm.y;
+    if ( comparespline(ps,ttf,tmin,t,err) )
+return( true );
+
+    ttf->splines[0].c -= 2*err*norm.x;
+    ttf->splines[0].b += 2*err*norm.x;
+    ttf->splines[1].c -= 2*err*norm.y;
+    ttf->splines[1].b += 2*err*norm.y;
+    if ( comparespline(ps,ttf,tmin,t,err) )
+return( true );
+
+    ttf->splines[0].c = 2*(cx-xmin);
+    ttf->splines[0].b = xmin+x-2*cx;
+    ttf->splines[1].c = 2*(cy-ymin);
+    ttf->splines[1].b = ymin+y-2*cy;
+#endif
+return( false );
 }
 
 static SplinePoint *LinearSpline(Spline *ps,SplinePoint *start, real tmax) {
@@ -356,30 +408,13 @@ return( sp );
 	if ( t==tmax && ((cy==y && cx==x) || (cy==ymin && cx==xmin)) )
 	    unforceable = true;
 	/* Make the quadratic spline from (xmin,ymin) through (cx,cy) to (x,y)*/
-	ttf.splines[0].d = xmin;
-	ttf.splines[0].c = 2*(cx-xmin);
-	ttf.splines[0].b = xmin+x-2*cx;
-	ttf.splines[1].d = ymin;
-	ttf.splines[1].c = 2*(cy-ymin);
-	ttf.splines[1].b = ymin+y-2*cy;
-	if ( forceit || comparespline(ps,&ttf,tmin,t,err) ) {
+	if ( forceit || buildtestquads(&ttf,xmin,ymin,cx,cy,x,y,tmin,t,err,ps)) {
 	    if ( !forceit && !unforceable && (rend.x-x)*(rend.x-x)+(rend.y-y)*(rend.y-y)<4*4 ) {
 		forceit = true;
  goto force_end;
 	    }
 	    sp = MakeQuadSpline(start,&ttf,x,y,t,ps->to);
 	    forceit = false;
-/* Without these two lines we would turn out the cps for cubic splines */
-/*  (what postscript uses). With the lines we get the cp for the quadratic */
-/* So with them we've got the wrong cps for cubic splines and can't manipulate*/
-/*  em properly within the editor */
-/* I made this conditional so that I could look at what I was generating with */
-/*  pfaedit, but it's probably pointless now */
-#if 1
-	    start->nextcp.x = sp->prevcp.x = cx;
-	    start->nextcp.y = sp->prevcp.y = cy;
-#endif
-/* End of quadratic code */
 	    if ( t==tmax )
 return( sp );
 	    tmin = t;
