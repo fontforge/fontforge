@@ -132,6 +132,7 @@ static void DoDelayedEvents(GEvent *event) {
 static int splash_e_h(GWindow gw, GEvent *event) {
     static int splash_cnt;
     GRect old;
+    static int foolishness[] = { _STR_FreePress };
 
     if ( event->type == et_expose ) {
 	GDrawPushClip(gw,&event->u.expose.rect,&old);
@@ -147,14 +148,19 @@ static int splash_e_h(GWindow gw, GEvent *event) {
 	else if ( splash_cnt==2 )
 	    GDrawResize(gw,splashimage.u.image->width,splashimage.u.image->height);
 	else if ( splash_cnt>=7 ) {
+	    GGadgetEndPopup();
 	    GDrawSetVisible(gw,false);
 	    GDrawCancelTimer(splasht);
 	}
     } else if ( event->type == et_timer ) {
 	DoDelayedEvents(event);
     } else if ( event->type==et_char || event->type==et_mousedown ||
-	    event->type==et_close )
+	    event->type==et_close ) {
+	GGadgetEndPopup();
 	GDrawSetVisible(gw,false);
+    } else if ( event->type==et_mousemove ) {
+	GGadgetPreparePopupR(gw,foolishness[rand()%(sizeof(foolishness)/sizeof(foolishness[0]))] );
+    }
 return( true );
 }
 
