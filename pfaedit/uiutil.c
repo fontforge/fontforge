@@ -154,11 +154,9 @@ return;
 	fullspec[0] = 0;
 	if ( *file!='/' ) {
 #ifdef DOCDIR
-	    strcpy(fullspec,DOCDIR);
-	    strcat(fullspec,"/");
+	    strcpy(fullspec,DOCDIR "/");
 #elif defined(SHAREDIR)
-	    strcpy(fullspec,SHAREDIR);
-	    strcat(fullspec,"/../doc/pfaedit/");
+	    strcpy(fullspec,SHAREDIR "/../doc/pfaedit/");
 #else
 	    strcpy(fullspec,"/usr/share/doc/pfaedit/");
 #endif
