@@ -695,7 +695,9 @@ enum openflags { of_fstypepermitted=1 };
 enum ps_flags { ps_flag_nohintsubs = 0x10000, ps_flag_noflex=0x20000,
 		    ps_flag_nohints = 0x40000, ps_flag_restrict256=0x80000,
 		    ps_flag_afm = 0x100000, ps_flag_pfm = 0x200000,
-		    ps_flag_tfm = 0x400000
+		    ps_flag_tfm = 0x400000,
+		    ps_flag_mask = (ps_flag_nohintsubs|ps_flag_noflex|
+			ps_flag_afm|ps_flag_pfm|ps_flag_tfm)
 		};
 
 struct fontdict;
@@ -732,7 +734,7 @@ enum fontformat { ff_pfa, ff_pfb, ff_pfbmacbin, ff_multiple, ff_ptype3, ff_ptype
 	ff_ttf, ff_ttfsym, ff_ttfmacbin, ff_ttfdfont, ff_otf, ff_otfdfont,
 	ff_otfcid, ff_otfciddfont, ff_none };
 enum bitmapformat { bf_bdf, bf_ttf, bf_sfnt_dfont, 
-	bf_nfntmacbin, bf_nfntdfont, bf_fon, bf_none };
+	bf_nfntmacbin, bf_nfntdfont, bf_fon, bf_otb, bf_none };
 extern SplineChar *SFFindExistingCharMac(SplineFont *,int unienc);
 extern int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format,int flags);
 extern int WritePSFont(char *fontname,SplineFont *sf,enum fontformat format,int flags);

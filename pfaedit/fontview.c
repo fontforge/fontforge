@@ -679,7 +679,24 @@ void MenuExit(GWindow base,struct gmenuitem *mi,GEvent *e) {
 char *GetPostscriptFontName(char *dir, int mult) {
     /* Some people use pf3 as an extension for postscript type3 fonts */
     static unichar_t fontmacsuit[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','m','a','c','-','s','u','i','t', '\0' };
-    static unichar_t wild[] = { '*', '.', '{', 'p','f','a',',','p','f','b',',','s','f','d',',','t','t','f',',','b','d','f',',','o','t','f',',','p','f','3',',','t','t','c',',','g','s','f',',', 'c','i','d',',','b','i','n',',','h','q','x',',','d','f','o','n','t',',','m','f',',','i','k',',','f','o','n',',','f','n','t','}', 
+    static unichar_t wild[] = { '*', '.', '{', 'p','f','a',',',
+					       'p','f','b',',',
+			                       's','f','d',',',
+			                       't','t','f',',',
+			                       'b','d','f',',',
+			                       'o','t','f',',',
+			                       'o','t','b',',',
+			                       'p','f','3',',',
+			                       't','t','c',',',
+			                       'g','s','f',',',
+			                       'c','i','d',',',
+			                       'b','i','n',',',
+			                       'h','q','x',',',
+			                       'd','f','o','n','t',',',
+			                       'm','f',',',
+			                       'i','k',',',
+			                       'f','o','n',',',
+			                       'f','n','t','}', 
 	     '{','.','g','z',',','.','Z',',','.','b','z','2',',','}',  '\0' };
     static unichar_t *mimes[] = { fontmacsuit, NULL };
     unichar_t *ret, *u_dir;
@@ -5423,7 +5440,8 @@ return( NULL );
 	fromsfd = true;
     } else if ( strmatch(fullname+strlen(fullname)-4, ".ttf")==0 ||
 		strmatch(fullname+strlen(strippedname)-4, ".ttc")==0 ||
-		strmatch(fullname+strlen(fullname)-4, ".otf")==0 ) {
+		strmatch(fullname+strlen(fullname)-4, ".otf")==0 ||
+		strmatch(fullname+strlen(fullname)-4, ".otb")==0 ) {
 	sf = SFReadTTF(fullname,0);
     } else if ( strmatch(fullname+strlen(fullname)-4, ".bdf")==0 ) {
 	sf = SFFromBDF(fullname,0,false);

@@ -892,7 +892,7 @@ static void bImport(Context *c) {
 	format = 0;
     else if ( strmatch(ext,".pcf")==0 )
 	format = 5;
-    else if ( strmatch(ext,".ttf")==0 )
+    else if ( strmatch(ext,".ttf")==0 || strmatch(ext,".otf")==0 || strmatch(ext,".otb")==0 )
 	format = 1;
     else if ( strmatch(ext,"pk")==0 || strmatch(ext,".pk")==0 ) {
 	format = 2;

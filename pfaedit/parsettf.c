@@ -3076,7 +3076,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 			    info->inuse[(uint16) (j+delta[i])] = true;
 			else if ( (uint16) (j+delta[i])>=info->glyph_cnt || info->chars[(uint16) (j+delta[i])]==NULL )
 			    fprintf( stderr, "Attempt to encode missing glyph %d to %d (0x%x)\n",
-				    j+delta[i], modenc(j,mod), modenc(j,mod));
+				    (uint16) (j+delta[i]), modenc(j,mod), modenc(j,mod));
 			else if ( info->chars[(uint16) (j+delta[i])]->unicodeenc==-1 ) {
 			    int uenc = umodenc(j,mod);
 			    if ( uenc!=-1 && used[uenc] ) {
@@ -5833,7 +5833,8 @@ return( 0 );
     GProgressChangeTotal(info->glyph_cnt);
 
     /* If font only contains bitmaps, then only read bitmaps */
-    if ( info->glyphlocations_start==0 && info->cff_start==0 &&
+    if ( (info->glyphlocations_start==0 || info->glyph_length==0) &&
+	    info->cff_start==0 &&
 	    info->bitmapdata_start!=0 && info->bitmaploc_start!=0 )
 	info->onlystrikes = true;
 

@@ -133,7 +133,7 @@ return( textpsfont );
 return( textsfdfont );
     else if ( uc_strmatch(pt,".ttf")==0 )
 return( fontttf );
-    else if ( uc_strmatch(pt,".otf")==0 )
+    else if ( uc_strmatch(pt,".otf")==0 || uc_strmatch(pt,".otb")==0 )
 return( fontotf );
     else if ( uc_strmatch(pt,".cid")==0 )
 return( fontcid );

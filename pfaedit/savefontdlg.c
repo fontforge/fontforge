@@ -70,6 +70,7 @@ struct gfc_data {
     int ps_flags;
     int ttf_flags;
     int otf_flags;
+    int psotb_flags;
     SplineFont *sf;
 };
 
@@ -77,12 +78,12 @@ struct gfc_data {
 static char *extensions[] = { ".pfa", ".pfb", "", ".mult", ".ps", ".ps", ".cid",
 	".ttf", ".ttf", ".suit", ".dfont", ".otf", ".otf.dfont", ".otf",
 	".otf.dfont", NULL };
-static char *bitmapextensions[] = { ".*bdf", ".ttf", ".dfont", ".bmap", ".dfont", ".*fnt", ".none", NULL };
+static char *bitmapextensions[] = { ".*bdf", ".ttf", ".dfont", ".bmap", ".dfont", ".*fnt", ".otb", ".none", NULL };
 #else
 static char *extensions[] = { ".pfa", ".pfb", ".bin", ".mult", ".ps", ".ps", ".cid",
 	".ttf", ".ttf", ".ttf.bin", ".dfont", ".otf", ".otf.dfont", ".otf",
 	".otf.dfont", NULL };
-static char *bitmapextensions[] = { ".*bdf", ".ttf", ".dfont", ".bmap.bin", ".dfont", ".*fnt", ".none", NULL };
+static char *bitmapextensions[] = { ".*bdf", ".ttf", ".dfont", ".bmap.bin", ".dfont", ".*fnt", ".otb", ".none", NULL };
 #endif
 static GTextInfo formattypes[] = {
     { (unichar_t *) "PS Type 1 (Ascii)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
@@ -122,6 +123,7 @@ static GTextInfo bitmaptypes[] = {
 #endif
     { (unichar_t *) "NFNT (dfont)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "Win FNT", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) "OpenType Bitmap", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) _STR_Nobitmapfonts, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }
 };
@@ -133,6 +135,8 @@ int old_ttf_flags = 0;
 #endif
 int old_ps_flags = ps_flag_afm;
 int old_otf_flags = 0;
+int old_psotb_flags = ps_flag_afm;
+
 int oldformatstate = ff_pfb;
 int oldbitmapstate = 0;
 extern int alwaysgenapple;
@@ -356,7 +360,7 @@ return( false );
 		    d->ttf_flags |= ttf_flag_pfed_comments;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdColors)) )
 		    d->ttf_flags |= ttf_flag_pfed_colors;
-	    } else {				/* OpenType */
+	    } else if ( d->sod_which==2 ) {				/* OpenType */
 		d->otf_flags = 0;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_ShortPS)) )
 		    d->otf_flags |= ttf_flag_shortps;
@@ -375,6 +379,27 @@ return( false );
 		    d->otf_flags |= ps_flag_noflex;
 		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_Hints)) )
 		    d->otf_flags |= ps_flag_nohints;
+	    } else {				/* PS + OpenType Bitmap */
+		d->ps_flags = d->psotb_flags = 0;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_AFM)) )
+		     d->psotb_flags = d->ps_flags |= ps_flag_afm;
+		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_HintSubs)) )
+		     d->psotb_flags = d->ps_flags |= ps_flag_nohintsubs;
+		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_Flex)) )
+		     d->psotb_flags = d->ps_flags |= ps_flag_noflex;
+		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_Hints)) )
+		     d->psotb_flags = d->ps_flags |= ps_flag_nohints;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_PFM)) )
+		     d->psotb_flags = d->ps_flags |= ps_flag_pfm;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_TFM)) )
+		     d->psotb_flags = d->ps_flags |= ps_flag_tfm;
+
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_ShortPS)) )
+		    d->psotb_flags |= ttf_flag_shortps;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdComments)) )
+		    d->psotb_flags |= ttf_flag_pfed_comments;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdColors)) )
+		    d->psotb_flags |= ttf_flag_pfed_colors;
 	    }
 	}
 	d->sod_done = true;
@@ -398,7 +423,7 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
 
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_Hints),!(flags&ttf_flag_nohints));
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_ShortPS),flags&ttf_flag_shortps);
-    if ( which==0 )	/* Postscript */
+    if ( which==0 || which==3 )	/* Postscript */
 	GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_AppleMode),false);
     else if ( alwaysgenapple ||
 	    fs==ff_ttfmacbin || fs==ff_ttfdfont || fs==ff_otfdfont ||
@@ -413,21 +438,21 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Hints),which!=1);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_HintSubs),which!=1);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Flex),which!=1);
-    if ( which!=1 && (flags&ttf_flag_nohints)) {
+    if ( which!=1 && (flags&ps_flag_nohints)) {
 	GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_HintSubs),false);
 	GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Flex),false);
 	GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_HintSubs),false);
 	GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_Flex),false);
     }
-    GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Restrict256),which==0 && !iscid);
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Restrict256),(which==0 || which==3) && !iscid);
 
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_AFM),which!=1);
-    GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_PFM),which==0);
-    GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_TFM),which==0);
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_PFM),which==0 || which==3);
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_TFM),which==0 || which==3);
 
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_Hints),which==1);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_ShortPS),which!=0);
-    GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_AppleMode),which!=0);
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_AppleMode),which!=0 && which!=3);
 
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_PfEd),which!=0);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_PfEdComments),which!=0);
@@ -1469,8 +1494,12 @@ return( WriteMultiplePSFont(sf,newname,sizes,res,NULL));
 	flags = old_ps_flags;
     else if ( oldformatstate<=ff_ttfdfont )
 	flags = old_ttf_flags;
-    else
+    else if ( oldformatstate!=ff_none )
 	flags = old_otf_flags;
+    else
+	flags = old_ttf_flags;
+    if ( oldformatstate<=ff_cid && oldbitmapstate==bf_otb )
+	flags = old_psotb_flags;
 
     path = uc_copy(newname);
     GProgressStartIndicator(10,GStringGetResource(_STR_SavingFont,NULL),
@@ -1486,13 +1515,15 @@ return( WriteMultiplePSFont(sf,newname,sizes,res,NULL));
 	    oldbitmapstate==bf_sfnt_dfont ||
 	    oldbitmapstate==bf_ttf ) {
 	int oerr = 0;
+	int bmap = oldbitmapstate;
+	if ( bmap==bf_otb ) bmap = bt_none;
 	switch ( oldformatstate ) {
 	  case ff_pfa: case ff_pfb: case ff_ptype3: case ff_ptype0: case ff_cid:
 	    oerr = !WritePSFont(newname,sf,oldformatstate,flags);
 	  break;
 	  break;
 	  case ff_ttf: case ff_ttfsym: case ff_otf: case ff_otfcid:
-	    oerr = !WriteTTFFont(newname,sf,oldformatstate,sizes,oldbitmapstate,
+	    oerr = !WriteTTFFont(newname,sf,oldformatstate,sizes,bmap,
 		flags);
 	  break;
 	  case ff_pfbmacbin:
@@ -1500,14 +1531,14 @@ return( WriteMultiplePSFont(sf,newname,sizes,res,NULL));
 	  break;
 	  case ff_ttfmacbin: case ff_ttfdfont: case ff_otfdfont: case ff_otfciddfont:
 	    oerr = !WriteMacTTFFont(newname,sf,oldformatstate,sizes,
-		    oldbitmapstate,flags);
+		    bmap,flags);
 	  break;
 	  case ff_none:		/* only if bitmaps, an sfnt wrapper for bitmaps */
-	    if ( oldbitmapstate==bf_sfnt_dfont )
+	    if ( bmap==bf_sfnt_dfont )
 		oerr = !WriteMacTTFFont(newname,sf,oldformatstate,sizes,
-			oldbitmapstate,flags);
-	    else if ( oldbitmapstate==bf_ttf )
-		oerr = !WriteTTFFont(newname,sf,oldformatstate,sizes,oldbitmapstate,
+			bmap,flags);
+	    else if ( bmap==bf_ttf )
+		oerr = !WriteTTFFont(newname,sf,oldformatstate,sizes,bmap,
 		    flags);
 	  break;
 	}
@@ -1537,7 +1568,10 @@ return( WriteMultiplePSFont(sf,newname,sizes,res,NULL));
 	    err = true;
 	}
     }
-    if ( (oldbitmapstate==bf_bdf || oldbitmapstate==bf_fon) && !err ) {
+    if ( oldbitmapstate==bf_otb ) {
+	if ( !WriteTTFFont(newname,sf,ff_none,sizes,bf_otb,flags) )
+	    err = true;
+    } else if ( (oldbitmapstate==bf_bdf || oldbitmapstate==bf_fon) && !err ) {
 	GProgressChangeLine1R(_STR_SavingBitmapFonts);
 	GProgressIncrementBy(-sf->charcnt);
 	if ( !WriteBitmaps(newname,sf,sizes,res,oldbitmapstate))
@@ -1577,7 +1611,7 @@ return( sizes );
 int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	int res, char *subfontdefinition, struct sflist *sfs) {
     int i;
-    static char *bitmaps[] = {"bdf", "ttf", "sbit", "bin", "dfont", "fnt", NULL };
+    static char *bitmaps[] = {"bdf", "ttf", "sbit", "bin", "dfont", "fnt", "otb", NULL };
     int32 *sizes=NULL;
     char *end = filename+strlen(filename);
     struct sflist *sfi;
@@ -1641,7 +1675,12 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	    if ( fmflags&0x40000 ) old_ps_flags |= ps_flag_noflex;
 	    if ( fmflags&0x80000 ) old_ps_flags |= ps_flag_nohints;
 	    if ( fmflags&0x100000 ) old_ps_flags |= ps_flag_restrict256;
-	} else if ( oldformatstate<=ff_ttfdfont ) {
+	    if ( i==bf_otb ) {
+		if ( fmflags&4 ) old_ttf_flags |= ttf_flag_shortps;
+		if ( fmflags&0x20 ) old_ttf_flags |= ttf_flag_pfed_comments;
+		if ( fmflags&0x40 ) old_ttf_flags |= ttf_flag_pfed_colors;
+	    }
+	} else if ( oldformatstate<=ff_ttfdfont || oldformatstate==ff_none ) {
 	    old_ttf_flags = 0;
 	    if ( fmflags&4 ) old_ttf_flags |= ttf_flag_shortps;
 	    if ( fmflags&8 ) old_ttf_flags |= ttf_flag_nohints;
@@ -1775,12 +1814,21 @@ return;
 	cur->sizes = sizes;
     }
 
-    if ( oldformatstate<=ff_cid )
+    switch ( d->sod_which ) {
+      case 0:	/* PostScript */
 	flags = old_ps_flags = d->ps_flags;
-    else if ( oldformatstate<=ff_ttfdfont )
+      break;
+      case 1:	/* TrueType */
 	flags = old_ttf_flags = d->ttf_flags;
-    else
+      break;
+      case 2:	/* OpenType */
 	flags = old_otf_flags = d->otf_flags;
+      break;
+      case 3:	/* PostScript & OpenType bitmaps */
+	old_ps_flags = d->ps_flags;
+	flags = old_psotb_flags = d->psotb_flags;
+      break;
+    }
 
     if ( !d->family )
 	err = _DoSave(d->sf,temp,sizes,-1);
@@ -1847,17 +1895,19 @@ static int GFD_Options(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
 	int fs = GGadgetGetFirstListSelectedItem(d->pstype);
-	/*int bf = GGadgetGetFirstListSelectedItem(d->bmptype);*/
+	int bf = GGadgetGetFirstListSelectedItem(d->bmptype);
 	int iscid = fs==ff_cid || fs==ff_otfcid || fs==ff_otfciddfont;
 	int which;
 	if ( fs==ff_none )
 	    which = 1;		/* Some bitmaps get stuffed int ttf files */
 	else if ( fs<=ff_cid )
-	    which = 0;
+	    which = 0;		/* Postscript options */
 	else if ( fs<=ff_ttfdfont )
-	    which = 1;
+	    which = 1;		/* truetype options */
 	else
-	    which = 2;
+	    which = 2;		/* opentype options */
+	if ( bf == bf_otb && which==0 )
+	    which = 3;		/* postscript options with opentype bitmap options */
 	SaveOptionsDlg(d,which,iscid);
     }
 return( true );
@@ -2416,6 +2466,7 @@ return( 0 );
     d.ps_flags = old_ps_flags;
     d.ttf_flags = old_ttf_flags;
     d.otf_flags = old_otf_flags;
+    d.psotb_flags = old_ps_flags | (old_psotb_flags&~ps_flag_mask);
 
     GWidgetHidePalettes();
     GDrawSetVisible(gw,true);

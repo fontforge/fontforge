@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 12-Jul-2003 -->
+  <!-- AP: Last modified: 15-Jul-2003 -->
   <TITLE>PfaEdit -- A postscript&reg; font editor</TITLE>
 </HEAD>
 <BODY>
@@ -523,11 +523,12 @@ to draw small fonts.
       Postscript
     </H4>
   <DD>
-    Adobe incorporated several different ways of hinting to the rasterizer how
-    things should be treated. The most obvious of these are the horizontal and
-    vertical stem hints.Each character has its own set of hints to tell the
+    Adobe incorporated several different ways of providing hints for the rasterizer
+    about how things should be treated. The most obvious of these are the horizontal
+    and vertical stem hints.Each character has its own set of hints to tell the
     rasterizer where to find stems. PfaEdit can usually figure out a reasonable
-    set of stem hints (a process called autohinting), but some characters are
+    set of stem hints (a process called
+    <A HREF="hintsmenu.html#AutoHint">autohinting</A>), but some characters are
     too complex for it and it can make bad choices. It also provides a mode for
     you to override its choices.
     <P>
@@ -543,37 +544,36 @@ to draw small fonts.
     cannot be fully hinted, but hint substitution is an improvement. PfaEdit
     will use hint substitution when it can.
     <P>
-    Most recently Adobe has provide a means to control the counters -- the spaces
-    between stems -- in a character. The original Type1 description provided
-    support for the horizontal counters in "m" and the vertical counters in "E"
-    but more complex shapes could not be dealt with. Counter Hints (in a type1
-    font) may only be used with non-latin (non-greek, non-cyrillic) character
-    sets, but in OpenType this restriction appears to have been relaxed. PfaEdit
-    will generate counter hints when appropriate.
+    Most recently Adobe has provide a means to control the counters, the spaces
+    between stems, in a character. The original Type1 description provided support
+    for the horizontal counters in "m" and the vertical counters in "E" but more
+    complex shapes could not be dealt with. Counter Hints (in a type1 font) may
+    only be used with non-latin (non-greek, non-cyrillic) character sets, but
+    in OpenType this restriction appears to have been relaxed. PfaEdit will generate
+    counter hints when appropriate.
     <P>
     Adobe provides some font-wide hinting mechanisms. The two most obvious are
-    the BlueValues and StemSnap settings in the private dictionary. BlueValues
-    provides a list of vertical zones in which interesting things happen (so
-    in a latin font this might include the ascender height, the cap-height, the
-    x-height and the descender height. At small point sizes everything within
-    one of these zones will snap to the same height, while at larger point sizes
-    the heights will be slightly different (for instance an "o" and an "x" usually
-    have slightly different heights, but displaying that at a small point size
-    would be ugly). Similarly the StemSnap variables specify standard stem widths
-    for the font. PfaEdit will try to guess reasonable values for these. It also
-    allows you to override these guesses and
-    <A HREF="fontinfo.html#Private">specify your own values</A>. For a more
-    comprehensible description of the private dictionary and what it can do,
-    look at
+    the BlueValues and StemSnap settings in the
+    <A HREF="fontinfo.html#Private">private dictionary</A>. BlueValues provides
+    a list of vertical zones in which interesting things happen (so in a latin
+    font this might include the ascender height, the cap-height, the x-height
+    and the descender height. At small point sizes everything within one of these
+    zones will snap to the same height, while at larger point sizes the heights
+    will be slightly different (for instance an "o" and an "x" usually have slightly
+    different heights, but displaying that at a small point size would be ugly).
+    Similarly the StemSnap variables specify standard stem widths for the font.
+    PfaEdit will try to guess reasonable values for these. It also allows you
+    to override these guesses and <A HREF="fontinfo.html#Private">specify your
+    own values</A>. For a more comprehensible description of the private dictionary
+    and what it can do, look at
     <A HREF="http://partners.adobe.com/asn/developer/PDFS/TN/T1_SPEC.PDF">Adobe's
     Type1 font specification</A>.<BR>
-    PfaEdit's AutoHint command will work better if the BlueValues and stemsnaps
-    have been set. So before running AutoHint go to FontInfo-&gt;PS Private to
-    set these values.
-    <P>
-    Adobe also provides a mechanism for allowing different sets of hints to exist
-    in different parts of a character. This is called Hint Substitution and PfaEdit
-    should implement it automatically.
+    <A NAME="HintOrder">PfaEdit</A>'s
+    <A HREF="hintsmenu.html#AutoHint">AutoHint</A> command will work better if
+    the BlueValues have been set. So before running AutoHint go to
+    <A HREF="fontinfo.html#Private">Element-&gt; FontInfo-&gt; Private</A> to
+    set this array. After AutoHinting you should regenerate the StemSnaps (also
+    at Element-&gt; FontInfo-&gt; Private).
   <DT>
     <H4>
       <A NAME="TrueType">True</A> Type

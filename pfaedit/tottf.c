@@ -1196,6 +1196,15 @@ return( false );
 return( true );
 }
 
+/* Generate a null glyf and loca table for X opentype bitmaps */
+static int dumpnoglyphs(SplineFont *sf,struct glyphinfo *gi) {
+
+    gi->glyphs = tmpfile();
+    gi->glyph_len = 0;
+    /* loca gets built in dummyloca */
+return( true );
+}
+
 /* Standard names for cff */
 extern const char *cffnames[];
 extern const int nStdStrings;
@@ -2718,6 +2727,19 @@ static void redoloca(struct alltabs *at) {
     free(at->gi.loca);
 }
 
+static void dummyloca(struct alltabs *at) {
+
+    at->loca = tmpfile();
+    if ( at->head.locais32 ) {
+	putlong(at->loca,0);
+	at->localen = sizeof(int32);
+    } else {
+	putshort(at->loca,0);
+	at->localen = sizeof(int16);
+	putshort(at->loca,0);	/* pad it */
+    }
+}
+
 static void redohead(struct alltabs *at) {
     at->headf = tmpfile();
 
@@ -4093,7 +4115,7 @@ static int initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
     memset(at,'\0',sizeof(struct alltabs));
     at->gi.xmin = at->gi.ymin = 15000;
     at->gi.sf = sf;
-    if ( bf!=bf_ttf && bf!=bf_sfnt_dfont)
+    if ( bf!=bf_ttf && bf!=bf_sfnt_dfont && bf!=bf_otb )
 	bsizes = NULL;
     if ( bsizes!=NULL ) {
 	for ( i=j=0; bsizes[i]!=0; ++i ) {
@@ -4108,6 +4130,7 @@ static int initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
     }
     at->applemode = (flags&ttf_flag_applemode)?1:0;
     at->msbitmaps = bsizes!=NULL && !at->applemode;
+    at->otbbitmaps = bsizes!=NULL && bf==bf_otb;
     at->gi.onlybitmaps = format==ff_none;
     at->gi.flags = flags;
     at->gi.bsizes = bsizes;
@@ -4135,6 +4158,10 @@ static int initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
     else if ( format==ff_none && at->applemode ) {
 	AssignTTFGlyph(sf,bsizes);
 	aborted = !dumpcffhmtx(at,sf,true);
+    } else if ( format==ff_none && at->otbbitmaps ) {
+	AssignTTFGlyph(sf,bsizes);
+	aborted = !dumpcffhmtx(at,sf,true);
+	dumpnoglyphs(sf,&at->gi);
     } else
 	/* if format==ff_none the following will put out lots of space glyphs */
 	aborted = !dumpglyphs(sf,&at->gi);
@@ -4156,7 +4183,9 @@ return( false );
     setos2(&at->os2,at,sf,format);	/* should precede kern/ligature output */
     if ( at->gi.glyph_len<0x20000 )
 	at->head.locais32 = 0;
-    if ( format!=ff_otf && format!=ff_otfcid && (format!=ff_none || at->msbitmaps) )
+    if ( at->otbbitmaps )
+	dummyloca(at);
+    else if ( format!=ff_otf && format!=ff_otfcid && (format!=ff_none || at->msbitmaps) )
 	redoloca(at);
     redohead(at);
     redohhead(at,false);
@@ -4192,7 +4221,7 @@ return( false );
 
     pfed_dump(at,sf);
 
-    if ( format==ff_otf || format==ff_otfcid ) {
+    if ( format==ff_otf || format==ff_otfcid || bf==bf_otb ) {
 	at->tabdir.version = CHR('O','T','T','O');
     } else if ( at->applemode ) {
 	at->tabdir.version = CHR('t','r','u','e');

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 14-Jul-2003 -->
+  <!-- AP: Last modified: 15-Jul-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,25 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    15-Jul-2003
+    <UL>
+      <LI>
+	We weren't parsing any type3 fonts properly any more
+      <LI>
+	Extend our ps interpreter to understand some of METAPOST's idioms better.
+      <LI>
+	I used to call all characters which weren't in the encoding ".notdef" this
+	could cause problems if a user forgot to name them. I now give them unique
+	names starting with "NameMe". I still leave characters &lt;256 called ".notdef"
+	if the encoding calls for it, this may be a mistake...
+      <LI>
+	Fix on 14-July to simplify was incomplete.
+      <LI>
+	More fiddling with autohint
+      <LI>
+	Added support for the new X11 opentype bitmap format.
+    </UL>
   <LI>
     14-Jul-2003 (Bastille Day!)
     <UL>

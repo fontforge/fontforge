@@ -47,6 +47,11 @@ struct bigmetrics {
     int vbearingX, vbearingY, vadvance;	/* Small metrics doesn't use this row */
 };
 
+struct bdfcharlist {
+    BDFChar *bc;
+    struct bdfcharlist *next;
+};
+
 static void ttfreadbmfglyph(FILE *ttf,struct ttfinfo *info,
 	int32 offset, int32 len, struct bigmetrics *metrics, int imageformat,
 	int enc, BDFFont *bdf) {
@@ -442,13 +447,14 @@ return;
 
 static BDFChar glyph0, glyph1, glyph2;
 static SplineChar sc0, sc1, sc2;
+static struct bdfcharlist bl[3];
 
-static void BDFAddDefaultGlyphs(BDFFont *bdf) {
+static struct bdfcharlist *BDFAddDefaultGlyphs(BDFFont *bdf) {
     /* when I dump out the glyf table I add 3 glyphs at the start. One is glyph*/
     /*  0, the one used when there is no match, and the other two are varients*/
     /*  on space. There will never be glyphs 1 and 2 in the font. There might */
     /*  be a glyph 0. Add the ones that don't exist */
-    int width, w, i, j, bit;
+    int width, w, i, j, bit, blpos=0;
     SplineFont *sf = bdf->sf;
 
     width = 0x7ffff;
@@ -464,6 +470,7 @@ static void BDFAddDefaultGlyphs(BDFFont *bdf) {
 	/* Proportional */
 	width = bdf->pixelsize/3;
 
+    memset(bl,0,sizeof(bl));
     if ( IsntBDFChar(bdf->chars[0])) {
 	sc0.name = ".notdef";
 	/* sc0.ttf_glyph = 0; /* already done */
@@ -489,7 +496,10 @@ static void BDFAddDefaultGlyphs(BDFFont *bdf) {
 	    glyph0.bitmap[i>>3] |= (0x80>>(i&7));
 	    glyph0.bitmap[glyph0.ymax*glyph0.bytes_per_line+(i>>3)] |= (0x80>>(i&7));
 	}
-	bdf->chars[0] = &glyph0;
+	if ( bdf->chars[0]==NULL )
+	    bdf->chars[0] = &glyph0;
+	else
+	    bl[blpos++].bc = &glyph0;
     }
 
     sc1.ttf_glyph = 1;
@@ -506,8 +516,19 @@ static void BDFAddDefaultGlyphs(BDFFont *bdf) {
     glyph1.enc = 1; glyph2.enc = 2;
     if ( bdf->chars[1]==NULL )
 	bdf->chars[1] = &glyph1;
+    else {
+	if ( blpos!=0 )
+	    bl[blpos-1].next = &bl[blpos];
+	bl[blpos++].bc = &glyph1;
+    }
     if ( bdf->chars[2]==NULL )
 	bdf->chars[2] = &glyph2;
+    else {
+	if ( blpos!=0 )
+	    bl[blpos-1].next = &bl[blpos];
+	bl[blpos++].bc = &glyph2;
+    }
+return( blpos==0 ? NULL : &bl[0] );
 }
 
 static void BDFCleanupDefaultGlyphs(BDFFont *bdf) {
@@ -767,7 +788,8 @@ static void FillLineMetrics(struct bitmapSizeTable *size,BDFFont *bdf) {
 #endif
 }
 
-static struct bitmapSizeTable *ttfdumpstrikelocs(FILE *bloc,FILE *bdat,BDFFont *bdf) {
+static struct bitmapSizeTable *ttfdumpstrikelocs(FILE *bloc,FILE *bdat,
+	BDFFont *bdf, struct bdfcharlist *defs) {
     struct bitmapSizeTable *size = gcalloc(1,sizeof(struct bitmapSizeTable));
     struct indexarray *cur, *last=NULL, *head=NULL;
     int i,j, final,cnt;
@@ -831,6 +853,11 @@ return(NULL);
     /* Now the pointers */
     for ( i=0; i<bdf->charcnt; ++i )
 	    if ( (bc=bdf->chars[i])!=NULL && bc->sc->ttf_glyph!=-1) {
+	if ( defs!=NULL && defs->bc->sc->ttf_glyph<bc->sc->ttf_glyph ) {
+	    --i;
+	    bc = defs->bc;
+	    defs = defs->next;
+	}
 	cur = galloc(sizeof(struct indexarray));
 	cur->next = NULL;
 	if ( last==NULL ) head = cur;
@@ -949,6 +976,7 @@ void ttfdumpbitmap(SplineFont *sf,struct alltabs *at,int32 *sizes) {
     static struct bitmapSizeTable space;
     struct bitmapSizeTable *head=NULL, *cur, *last;
     BDFFont *bdf;
+    struct bdfcharlist *bl;
 
     at->bdat = tmpfile();
     at->bloc = tmpfile();
@@ -980,8 +1008,8 @@ void ttfdumpbitmap(SplineFont *sf,struct alltabs *at,int32 *sizes) {
 	for ( bdf=sf->bitmaps; bdf!=NULL && (bdf->pixelsize!=(sizes[i]&0xffff) || BDFDepth(bdf)!=(sizes[i]>>16)); bdf=bdf->next );
 	if ( bdf==NULL )
     continue;
-	BDFAddDefaultGlyphs(bdf);
-	cur = ttfdumpstrikelocs(at->bloc,at->bdat,bdf);
+	bl = BDFAddDefaultGlyphs(bdf);
+	cur = ttfdumpstrikelocs(at->bloc,at->bdat,bdf,bl);
 	BDFCleanupDefaultGlyphs(bdf);
 	if ( head==NULL )
 	    head = cur;

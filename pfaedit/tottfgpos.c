@@ -259,6 +259,18 @@ return( l );
 return( NULL );
 }
 
+static int AllToBeOutput(LigList *lig) {
+    struct splinecharlist *cmp;
+
+    if ( lig->lig->u.lig.lig->ttf_glyph==-1 ||
+	    lig->first->ttf_glyph==-1 )
+return( 0 );
+    for ( cmp=lig->components; cmp!=NULL; cmp=cmp->next )
+	if ( cmp->sc->ttf_glyph==-1 )
+return( 0 );
+return( true );
+}
+
 static PST *PosSubMatchTag(PST *pst,struct tagflaglang *tfl,enum possub_type type) {
 
     for ( ; pst!=NULL; pst=pst->next )
@@ -328,9 +340,9 @@ static SplineChar **generateGlyphList(SplineFont *sf, int iskern, int sli,
 	    sub = ( sf->subfontcnt==0 ) ? sf : sf->subfonts[k];
 	    for ( i=0; i<sub->charcnt; ++i )
 		    if ( SCWorthOutputting(sc=sub->chars[i]) &&
-			    SCDuplicate(sc)==sc &&
+			    SCDuplicate(sc)==sc && sc->ttf_glyph!=-1 &&
 			    ((iskern && KernListMatch(sc->kerns,sli)) ||
-			     (!iskern && LigListMatchTag(sc->ligofme,ligtag)) )) {
+			     (!iskern && LigListMatchTag(sc->ligofme,ligtag) && AllToBeOutput(sc->ligofme)) )) {
 		if ( glyphs!=NULL ) glyphs[cnt] = sc;
 		++cnt;
 	    }
@@ -1140,7 +1152,8 @@ static void dumpgsubligdata(FILE *gsub,SplineFont *sf,
 	offsets[i] = ftell(gsub)-coverage_pos+2;
 	for ( pcnt = 0, ll = glyphs[i]->ligofme; ll!=NULL; ll=ll->next )
 	    if ( ll->lig->tag==ligtag->tag && (ll->lig->flags&~1) == ligtag->flags &&
-		    ll->lig->script_lang_index == ligtag->script_lang_index )
+		    ll->lig->script_lang_index == ligtag->script_lang_index &&
+		    AllToBeOutput(ll))
 		++pcnt;
 	putshort(gsub,pcnt);
 	if ( pcnt>=max ) {
@@ -1152,7 +1165,8 @@ static void dumpgsubligdata(FILE *gsub,SplineFont *sf,
 	    putshort(gsub,0);			/* Place holders */
 	for ( pcnt=0, ll = glyphs[i]->ligofme; ll!=NULL; ll=ll->next ) {
 	    if ( ll->lig->tag==ligtag->tag && (ll->lig->flags&~1) == ligtag->flags &&
-		    ll->lig->script_lang_index==ligtag->script_lang_index ) {
+		    ll->lig->script_lang_index==ligtag->script_lang_index  &&
+		    AllToBeOutput(ll)) {
 		ligoffsets[pcnt] = ftell(gsub)-lig_list_start+2;
 		putshort(gsub,ll->lig->u.lig.lig->ttf_glyph);
 		for ( lcnt=0, scl=ll->components; scl!=NULL; scl=scl->next ) ++lcnt;
