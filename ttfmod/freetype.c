@@ -783,6 +783,8 @@ static FT_Error RunIns( TT_ExecContext exc ) {
 
     while ( true ) {
 	if ( exc->curRange == (FT_Int)tt_coderange_glyph && exc->callTop==0 &&
+/* How do I tell if I'm executing instructions in a subcomponant of a composit? */
+		exc->IP < debugcv->cc->instrdata.instr_cnt &&
 		debugcv->instrinfo.args!=NULL ) {
 	    args = &debugcv->instrinfo.args[exc->IP];
 	    if ( args->loopcnt==0 ) {
@@ -812,7 +814,9 @@ static FT_Error RunIns( TT_ExecContext exc ) {
 	rp0 = exc->GS.rp0;
 	memcpy(old,exc->pts.cur,exc->pts.n_points*sizeof(FT_Vector));
 	ret = _TT_RunIns(exc);
+/* How do I tell if I'm executing instructions in a subcomponant of a composit? */
 	if ( exc->curRange == (FT_Int)tt_coderange_glyph && exc->callTop==0 &&
+		exc->IP < debugcv->cc->instrdata.instr_cnt &&
 		debugcv->instrinfo.args!=NULL ) {
 	    args = &debugcv->instrinfo.args[exc->IP];
 	    if ( args->loopcnt==1 && (Pop_Push_Use_Count[exc->code[exc->IP]][0]&0xf)>=1 ) {
@@ -858,6 +862,9 @@ void CVGenerateGloss(CharView *cv) {
     cv->twilight = NULL;
     cv->cvtvals = NULL;
 
+    if ( cv->cc->refs!=NULL )	/* I can't figure out what character I'm in */
+return;			/* (composite or which componant) so I get everything wrong */
+
     if ( !freetype_init())
 return;
     driver = (FT_Driver)_FT_Get_Module( context, "truetype" );
@@ -880,7 +887,11 @@ return;
     }
 
     debugcv = cv;
-    cv->instrinfo.args = gcalloc(cv->cc->instrdata.instr_cnt,sizeof(struct ttfargs));
+    cv->instrinfo.args = NULL;
+    if ( cv->cc->refs==NULL )
+	cv->instrinfo.args = gcalloc(cv->cc->instrdata.instr_cnt,sizeof(struct ttfargs));
+	/* Don't know how to tell when I'm in the composit's instrs, and when */
+	/*  in a componant's */
     _FT_Load_Glyph(face,cv->cc->glyph,FT_LOAD_NO_BITMAP);
     _FT_Done_Face(face);
 }
