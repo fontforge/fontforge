@@ -1001,6 +1001,8 @@ static char *str_TryRoundToInt = "¤³¤Î¥Õ¥©¥ó¥È¤Ë¤Ï¾¯¤Ê¤¯¤È¤â1¤ÄÈóÀ°¿ô¤ÎºÂÉ¸¤¬´Þ¤
 static char str_Badnumberin[] = "Bad Number in ";
 static char str_Enternameofchar[] = "¥Õ¥©¥ó¥ÈÆâ¤Ç¤ÎÊ¸»ú¤ÎÌ¾Á°¤òÆþÎÏ¤·¤Æ¤¯¤À¤µ¤¤";
 static char str_Couldntfindchar[] = "Ê¸»ú¤ò¸«¤Ä¤±¤ë¤³¤È¤¬¤Ç¤­¤Þ¤»¤ó: %.70hs";
+static char str_CouldntfindcharU[] = "Ê¸»ú¤ò¸«¤Ä¤±¤ë¤³¤È¤¬¤Ç¤­¤Þ¤»¤ó: %.70s";
+static char str_CouldntfindcharT[] = "Ê¸»ú¤ò¸«¤Ä¤±¤ë¤³¤È¤¬¤Ç¤­¤Þ¤»¤ó";
 static char str_CouldntFindSubstitution = "ÃÖ¤­´¹¤¨Ê¸»ú%.40hs¤¬¸«¤Ä¤«¤ê¤Þ¤»¤ó."
     /* Font has changed dlg */
 static char str_Dontsave[] = "ÊÝÂ¸¤·¤Ê¤¤(D)";

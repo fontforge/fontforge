@@ -329,9 +329,14 @@ return( ret );
 int NameToEncoding(SplineFont *sf,const unichar_t *uname) {
     int enc, uni, i;
     char *end, *dot=NULL, *freeme=NULL;
-    char *name = cu_copy(uname);
+    char *name;
 
+    if ( uname[1]==0 && uname[0]>=256 )
+return( SFFindChar(sf,uname[0],NULL));
+
+    name = cu_copy(uname);
     enc = uni = -1;
+	
     while ( 1 ) {
 	enc = SFFindChar(sf,-1,name);
 	if ( enc!=-1 ) {
@@ -516,12 +521,8 @@ return(-1);
 	enc = NameToEncoding(sf,ret);
 	if ( enc<0 || enc>=sf->charcnt )
 	    enc = -1;
-	if ( enc==-1 ) {
-	    unichar_t ubuf[100];
-	    u_strcpy( ubuf, GStringGetResource(_STR_Couldntfindchar,NULL));
-	    u_strncat(ubuf,ret,70);
-	    GWidgetPostNotice(GStringGetResource(_STR_Goto,NULL),ubuf);
-	}
+	if ( enc==-1 )
+	    GWidgetPostNoticeR(_STR_Goto,_STR_CouldntfindcharU,ret);
 	free(ret);
 return( enc );
     } else {

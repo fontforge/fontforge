@@ -1101,6 +1101,8 @@ static char *str_PfEdColorsPopup = "Sauver les couleurs des glyphes dans la tabl
 static char str_Badnumberin[] = "Numéro incorrect dans ";
 static char str_Enternameofchar[] = "Nom d'un caractère dans la police";
 static char str_Couldntfindchar[] = "Caractère introuvable: %.70hs";
+static char str_CouldntfindcharU[] = "Caractère introuvable: %.70s";
+static char str_CouldntfindcharT[] = "Caractère introuvable";
 static char str_CouldntFindSubstitution = "Caractère de substitution introuvable: %.40hs";
     /* Font has changed dlg */
 static char str_Dontsave[] = "Ne pas Enregistrer";

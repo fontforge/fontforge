@@ -1101,6 +1101,8 @@ static char *str_PfEdColorsPopup = "Save glyph colors in the PfEd table"
 static char str_Badnumberin[] = "Bad Number in ";
 static char str_Enternameofchar[] = "Enter the name of a character in the font";
 static char str_Couldntfindchar[] = "Could not find the character: %.70hs";
+static char str_CouldntfindcharU[] = "Could not find the character: %.70s";
+static char str_CouldntfindcharT[] = "Could not find the character";
 static char str_CouldntFindSubstitution = "Could not find substitution character: %.40hs";
     /* Font has changed dlg */
 static char str_Dontsave[] = "Don't Save";

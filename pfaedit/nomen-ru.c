@@ -848,6 +848,8 @@ static char *str_TTFEmSize2 = "The convention is that TrueType fonts should have
 static char str_Badnumberin[] = "Неправильный номер в ";
 static char str_Enternameofchar[] = "Введите название символа в шрифте";
 static char str_Couldntfindchar[] = "Не удалось найти символ: %.70hs";
+static char str_CouldntfindcharU[] = "Не удалось найти символ: %.70s";
+static char str_CouldntfindcharT[] = "Не удалось найти символ";
 static char str_CouldntFindSubstitution = "Could not find substitution character: %.40hs"; /*new*/
     /* Font has changed dlg */
 static char str_Dontsave[] = "Не сохранять";

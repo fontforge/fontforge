@@ -854,6 +854,8 @@ static char *str_TTFEmSize2 = "La convenzione è che i font TrueType abbiano una 
 static char str_Badnumberin[] = "Numero errato in ";
 static char str_Enternameofchar[] = "Nome di un carattere nel font";
 static char str_Couldntfindchar[] = "Carattere introvabile: %.70hs";
+static char str_CouldntfindcharU[] = "Carattere introvabile: %.70s";
+static char str_CouldntfindcharT[] = "Carattere introvabile";
     /* Font has changed dlg */
 static char str_Dontsave[] = "Non salvare";
 static unichar_t mnemonic_Dontsave[] = 'D';

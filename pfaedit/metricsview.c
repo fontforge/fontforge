@@ -2002,7 +2002,7 @@ static void MVSubsInvoked(GWindow gw, GMenuItem *mi, GEvent *e) {
 	if ( pt!=NULL ) *pt = ' ';
 
 	if ( sc==NULL )
-	    GWidgetErrorR(_STR_Couldntfindchar, _STR_CouldntFindSubstitution, name);
+	    GWidgetErrorR(_STR_CouldntfindcharT, _STR_CouldntFindSubstitution, name);
 	else {
 	    MVSetPos(mv,i,sc);
 	    /* Should I update the text field??? */
