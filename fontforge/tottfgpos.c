@@ -2659,7 +2659,7 @@ static void dump_script_table(FILE *g___,SplineFont *sf,
 	uint32 script, int sc, uint8 *used,
 	uint32 *langs, int lc, uint8 *touched) {
     struct feature *f;
-    int cnt, dflt_index=-1, total, offset;
+    int cnt, dflt_index= -1, dflt_equiv= -1, total, offset;
     int i,j,k,m;
     int req_pos;
     uint32 here,base;
@@ -2688,6 +2688,24 @@ static void dump_script_table(FILE *g___,SplineFont *sf,
 	total -= touched[dflt_index];
     }
 
+/* Microsoft makes some weird restrictions on the format of GSUB as described */
+/*  http://www.microsoft.com/typography/tt/internat/fettspec.doc	      */
+/* (at least for vertical writing). Patch from KANOU.			      */
+    /* search a equivalent langsys entry to a default one */
+    if ( dflt_index!=-1 ) {
+       for ( i=j=0; i<lc; ++i ) if ( touched[i] && i!=dflt_index ) {
+	   for (f=features; 
+		f!=NULL && FeatureScriptLangMatch(f,script,langs[i]) == 
+		       FeatureScriptLangMatch(f,script,DEFAULT_LANG);
+		f=f->feature_next );
+	   if (f==NULL) {
+	       dflt_equiv=j;
+	       break;
+	   }
+	   j++;
+       }
+    }
+
     /* Dump the script table */
     base = ftell(g___);
     putshort(g___,dflt_index==-1?0:4+k*6);/* offset from start of script table */
@@ -2699,7 +2717,7 @@ static void dump_script_table(FILE *g___,SplineFont *sf,
 	putshort(g___,0);		/* Fixup later */
     }
     /* Now the language system table for default */
-    if ( dflt_index!=-1 ) {
+    if ( dflt_index!=-1 && dflt_equiv==-1 ) {
 	putshort(g___,0);		/* reserved, must be zero */
 	req_pos = 0xffff;
 	for ( f=features, cnt=0; f!=NULL ; f=f->feature_next ) {
