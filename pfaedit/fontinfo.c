@@ -1107,7 +1107,12 @@ return( true );
     } else if ( i==tlen && sc->unicodeenc>=0xFF61 && sc->unicodeenc<=0xFF9F &&
 	    tlen2==65536 && table == unicode_from_jis208 ) {
 	/* and katakana */
-	for ( i=0xa1; i<=0xdf && (sc->unicodeenc!=unicode_from_jis208[i] || (used[i>>3]&(1<<(i&7)))); ++i );
+	for ( i=0xa1; i<=0xdf && sc->unicodeenc!=unicode_from_jis201[i] ; ++i );
+		/* Was checking used array above, but it is set up for jis not sjis */
+	if ( i>0xdf ) {
+	    sc->enc = -1;
+return( false );
+	}
 	sc->enc = i;
 return( true );
     } else if ( i==tlen && sc->unicodeenc<160 &&
@@ -1133,7 +1138,7 @@ return( true );
 	} else if ( table==unicode_from_jis208 ) {
 	    /* sjis */
 	    int ch1, ch2, ro, co;
-	    ch1 = i/94; ch2 = i%94;
+	    ch1 = i/94 + 0x21; ch2 = i%94 + 0x21;
 	    ro = ch1<95 ? 112 : 176;
 	    co = (ch1&1) ? (ch2>95?32:31) : 126;
 	    sc->enc = ((((ch1+1)>>1) + ro )<<8 )    |    (ch2+co);

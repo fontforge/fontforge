@@ -3231,7 +3231,7 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i) {
 	else if ( i>=0xa1 && i<=0xdf )
 	    dummy->unicodeenc = unicode_from_jis201[i];
 	else if (( ((i>>8)>=129 && (i>>8)<=159) || ((i>>8)>=224 && (i>>8)<=0xef) ) &&
-		 ( (i&0xff)>=64 && (i&0xff)<=252 && (i&0xff)!=0x127 )) {
+		 ( (i&0xff)>=64 && (i&0xff)<=252 && (i&0xff)!=127 )) {
 	    int ch1 = i>>8, ch2 = i&0xff;
 	    int temp;
 	    if ( ch1 >= 129 && ch1<= 159 )
@@ -3546,12 +3546,14 @@ return( true );
 return( false);
 	if ( ch1>=129 && ch1<=159 )
 	    ch1-=112;
-	else if ( ch1>159 )
+	else if ( ch1>=0xe0 && ch1<=0xef )
 	    ch1-=176;
 	else
 return( false );
 	ch1<<=1;
-	if ( ch2>=159 )
+	if ( ch2 == 127 )
+return( false );
+	else if ( ch2>=159 )
 	    ch2-=126;
 	else if ( ch2>127 ) {
 	    --ch1;
