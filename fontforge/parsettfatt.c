@@ -170,6 +170,10 @@ static uint16 *getCoverageTable(FILE *ttf, int coverage_offset, struct ttfinfo *
     if ( format==1 ) {
 	cnt = getushort(ttf);
 	glyphs = galloc((cnt+1)*sizeof(uint16));
+	if ( ftell(ttf)+2*cnt > info->g_bounds ) {
+	    fprintf( stderr, "coverage table extends beyond end of table\n" );
+	    cnt = (info->g_bounds-ftell(ttf))/2;
+	}
 	for ( i=0; i<cnt; ++i ) {
 	    glyphs[i] = getushort(ttf);
 	    if ( glyphs[i]>=info->glyph_cnt ) {
@@ -180,6 +184,11 @@ static uint16 *getCoverageTable(FILE *ttf, int coverage_offset, struct ttfinfo *
     } else if ( format==2 ) {
 	glyphs = gcalloc((max=256),sizeof(uint16));
 	rcnt = getushort(ttf); cnt = 0;
+	if ( ftell(ttf)+6*rcnt > info->g_bounds ) {
+	    fprintf( stderr, "coverage table extends beyond end of table\n" );
+	    rcnt = (info->g_bounds-ftell(ttf))/6;
+	}
+
 	for ( i=0; i<rcnt; ++i ) {
 	    start = getushort(ttf);
 	    end = getushort(ttf);
@@ -217,7 +226,8 @@ struct valuerecord {
     uint16 offXadvanceDev, offYadvanceDev;
 };
 
-static uint16 *getClassDefTable(FILE *ttf, int classdef_offset, int cnt) {
+static uint16 *getClassDefTable(FILE *ttf, int classdef_offset, int cnt,
+	uint32 g_bounds) {
     int format, i, j;
     uint16 start, glyphcnt, rangecnt, end, class;
     uint16 *glist=NULL;
@@ -232,11 +242,18 @@ static uint16 *getClassDefTable(FILE *ttf, int classdef_offset, int cnt) {
 	if ( start+(int) glyphcnt>cnt ) {
 	    fprintf( stderr, "Bad class def table. start=%d cnt=%d, max glyph=%d\n", start, glyphcnt, cnt );
 	    glyphcnt = cnt-start;
+	} else if ( ftell(ttf)+2*glyphcnt > g_bounds ) {
+	    fprintf( stderr, "Class definition table extends beyond end of table\n" );
+	    glyphcnt = (g_bounds-ftell(ttf))/2;
 	}
 	for ( i=0; i<glyphcnt; ++i )
 	    glist[start+i] = getushort(ttf);
     } else if ( format==2 ) {
 	rangecnt = getushort(ttf);
+	if ( ftell(ttf)+6*rangecnt > g_bounds ) {
+	    fprintf( stderr, "Class definition table extends beyond end of table\n" );
+	    rangecnt = (g_bounds-ftell(ttf))/6;
+	}
 	for ( i=0; i<rangecnt; ++i ) {
 	    start = getushort(ttf);
 	    end = getushort(ttf);
@@ -404,8 +421,8 @@ return;
 	cd1 = getushort(ttf);
 	cd2 = getushort(ttf);
 	foffset = ftell(ttf);
-	class1 = getClassDefTable(ttf, stoffset+cd1, info->glyph_cnt);
-	class2 = getClassDefTable(ttf, stoffset+cd2, info->glyph_cnt);
+	class1 = getClassDefTable(ttf, stoffset+cd1, info->glyph_cnt, info->g_bounds);
+	class2 = getClassDefTable(ttf, stoffset+cd2, info->glyph_cnt, info->g_bounds);
 	fseek(ttf, foffset, SEEK_SET);	/* come back */
 	c1_cnt = getushort(ttf);
 	c2_cnt = getushort(ttf);
@@ -1101,7 +1118,7 @@ static void g___ContextSubTable2(FILE *ttf, int stoffset,
 
 	fpst->rules = rule = gcalloc(cnt,sizeof(struct fpst_rule));
 	fpst->rule_cnt = cnt;
-	class = getClassDefTable(ttf, stoffset+classoff, info->glyph_cnt);
+	class = getClassDefTable(ttf, stoffset+classoff, info->glyph_cnt, info->g_bounds);
 	fpst->nccnt = ClassFindCnt(class,info->glyph_cnt);
 	fpst->nclass = ClassToNames(info,fpst->nccnt,class,info->glyph_cnt);
 
@@ -1223,15 +1240,15 @@ static void g___ChainingSubTable2(FILE *ttf, int stoffset,
 	fpst->rules = rule = gcalloc(cnt,sizeof(struct fpst_rule));
 	fpst->rule_cnt = cnt;
 
-	class = getClassDefTable(ttf, stoffset+classoff, info->glyph_cnt);
+	class = getClassDefTable(ttf, stoffset+classoff, info->glyph_cnt, info->g_bounds);
 	fpst->nccnt = ClassFindCnt(class,info->glyph_cnt);
 	fpst->nclass = ClassToNames(info,fpst->nccnt,class,info->glyph_cnt);
 	free(class);
-	class = getClassDefTable(ttf, stoffset+bclassoff, info->glyph_cnt);
+	class = getClassDefTable(ttf, stoffset+bclassoff, info->glyph_cnt, info->g_bounds);
 	fpst->bccnt = ClassFindCnt(class,info->glyph_cnt);
 	fpst->bclass = ClassToNames(info,fpst->bccnt,class,info->glyph_cnt);
 	free(class);
-	class = getClassDefTable(ttf, stoffset+fclassoff, info->glyph_cnt);
+	class = getClassDefTable(ttf, stoffset+fclassoff, info->glyph_cnt, info->g_bounds);
 	fpst->fccnt = ClassFindCnt(class,info->glyph_cnt);
 	fpst->fclass = ClassToNames(info,fpst->fccnt,class,info->glyph_cnt);
 	free(class);
@@ -2234,11 +2251,16 @@ static void gposExtensionSubTable(FILE *ttf, int stoffset,
       case 8:
 	gposChainingSubTable(ttf,st,info,lookup,alllooks);
       break;
-/* Any cases added here also need to go in the gposLookupSwitch */
       case 9:
 	fprintf( stderr, "This font is erroneous it has a GPOS extension subtable that points to\nanother extension sub-table.\n" );
       break;
+/* Any cases added here also need to go in the gposLookupSwitch */
+      default:
+	fprintf( stderr, "Unknown GPOS sub-table type: %d\n", lu_type );
+      break;
     }
+    if ( ftell(ttf)>info->gpos_start+info->gpos_length )
+	fprintf( stderr, "Subtable extends beyond end of GPOS table\n" );
 }
 
 static void gsubExtensionSubTable(FILE *ttf, int stoffset,
@@ -2275,7 +2297,12 @@ static void gsubExtensionSubTable(FILE *ttf, int stoffset,
 	gsubReverseChainSubTable(ttf,st,info,lookup,justinuse);
       break;
 /* Any cases added here also need to go in the gsubLookupSwitch */
+      default:
+	fprintf( stderr, "Unknown GSUB sub-table type: %d\n", lu_type );
+      break;
     }
+    if ( ftell(ttf)>info->gsub_start+info->gsub_length )
+	fprintf( stderr, "Subtable extends beyond end of GSUB table\n" );
 }
 
 static void gposLookupSwitch(FILE *ttf, int st,
@@ -2310,7 +2337,12 @@ static void gposLookupSwitch(FILE *ttf, int st,
 	gposExtensionSubTable(ttf,st,info,lookup,alllooks);
       break;
 /* Any cases added here also need to go in the gposExtensionSubTable */
+      default:
+	fprintf( stderr, "Unknown GPOS sub-table type: %d\n", lu_type );
+      break;
     }
+    if ( ftell(ttf)>info->gpos_start+info->gpos_length )
+	fprintf( stderr, "Subtable extends beyond end of GPOS table\n" );
 }
 
 static void gsubLookupSwitch(FILE *ttf, int st,
@@ -2340,7 +2372,12 @@ static void gsubLookupSwitch(FILE *ttf, int st,
 	gsubReverseChainSubTable(ttf,st,info,lookup,justinuse);
       break;
 /* Any cases added here also need to go in the gsubExtensionSubTable */
+      default:
+	fprintf( stderr, "Unknown GSUB sub-table type: %d\n", lu_type );
+      break;
     }
+    if ( ftell(ttf)>info->g_bounds )
+	fprintf( stderr, "Subtable extends beyond end of GSUB table\n" );
 }
 
 static uint32 InfoGenerateNewFeatureTag(struct gentagtype *gentags,int lu_type,
@@ -2452,7 +2489,13 @@ static void ProcessGPOSGSUB(FILE *ttf,struct ttfinfo *info,int gpos,int inusetyp
     struct feature *features;
     struct lookup *lookups;
 
-    base = gpos?info->gpos_start:info->gsub_start;
+    if ( gpos ) {
+	base = info->gpos_start;
+	info->g_bounds = base + info->gpos_length;
+    } else {
+	base = info->gsub_start;
+	info->g_bounds = base + info->gsub_length;
+    }
     fseek(ttf,base,SEEK_SET);
     /* version = */ getlong(ttf);
     script_off = getushort(ttf);
@@ -2489,14 +2532,17 @@ return;
 
 void readttfgsubUsed(FILE *ttf,struct ttfinfo *info) {
     ProcessGPOSGSUB(ttf,info,false,git_justinuse);
+    info->g_bounds = 0;
 }
 
 void GuessNamesFromGSUB(FILE *ttf,struct ttfinfo *info) {
     ProcessGPOSGSUB(ttf,info,false,git_findnames);
+    info->g_bounds = 0;
 }
 
 void readttfgpossub(FILE *ttf,struct ttfinfo *info,int gpos) {
     ProcessGPOSGSUB(ttf,info,gpos,git_normal);
+    info->g_bounds = 0;
 }
 
 void readttfgdef(FILE *ttf,struct ttfinfo *info) {
@@ -2510,13 +2556,14 @@ void readttfgdef(FILE *ttf,struct ttfinfo *info) {
     fseek(ttf,info->gdef_start,SEEK_SET);
     if ( getlong(ttf)!=0x00010000 )
 return;
+    info->g_bounds = info->gdef_start + info->gdef_length;
     gclass = getushort(ttf);
     /* attach list = */ getushort(ttf);
     lclo = getushort(ttf);		/* ligature caret list */
     /* mark attach class = */ getushort(ttf);
 
     if ( gclass!=0 ) {
-	uint16 *gclasses = getClassDefTable(ttf,info->gdef_start+gclass,info->glyph_cnt);
+	uint16 *gclasses = getClassDefTable(ttf,info->gdef_start+gclass,info->glyph_cnt, info->g_bounds);
 	for ( i=0; i<info->glyph_cnt; ++i )
 	    if ( info->chars[i]!=NULL && gclasses[i]!=0 )
 		info->chars[i]->glyph_class = gclasses[i]+1;
@@ -2572,6 +2619,7 @@ return;
     }
     free(lc_offsets);
     free(glyphs);
+    info->g_bounds = 0;
 }
 
 static void readttf_applelookup(FILE *ttf,struct ttfinfo *info,

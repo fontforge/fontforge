@@ -112,71 +112,77 @@ struct ttfinfo {
 
     int numtables;
     		/* CFF  */
-    int cff_start;		/* Offset from sof to start of postscript compact font format */
-    int cff_length;
+    uint32 cff_start;		/* Offset from sof to start of postscript compact font format */
+    uint32 cff_length;
     		/* cmap */
-    int encoding_start;		/* Offset from sof to start of encoding table */
+    uint32 encoding_start;	/* Offset from sof to start of encoding table */
 		/* glyf */
-    int glyph_start;		/* Offset from sof to start of glyph table */
-    int glyph_length;
+    uint32 glyph_start;		/* Offset from sof to start of glyph table */
+    uint32 glyph_length;
 		/* GDEF */
-    int gdef_start;		/* Offset from sof to start of GDEF table (glyph class defn, ligature carets) */
+    uint32 gdef_start;		/* Offset from sof to start of GDEF table (glyph class defn, ligature carets) */
+    uint32 gdef_length;
 		/* GPOS */
-    int gpos_start;		/* Offset from sof to start of GPOS table */
+    uint32 gpos_start;		/* Offset from sof to start of GPOS table */
+    uint32 gpos_length;
 		/* GSUB */
-    int gsub_start;		/* Offset from sof to start of GSUB table */
+    uint32 gsub_start;		/* Offset from sof to start of GSUB table */
+    uint32 gsub_length;
+    uint32 g_bounds;		/* Filled in with g???_start+g???_length */
 		/* EBDT, bdat */
-    int bitmapdata_start;	/* Offset to start of bitmap data */
+    uint32 bitmapdata_start;	/* Offset to start of bitmap data */
+    uint32 bitmapdata_length;
 		/* EBLT, bloc */
-    int bitmaploc_start;	/* Offset to start of bitmap locator data */
+    uint32 bitmaploc_start;	/* Offset to start of bitmap locator data */
+    uint32 bitmaploc_length;
 		/* gvar, etc. */
-    int gvar_start, gvar_len;
-    int fvar_start, fvar_len;
-    int avar_start, avar_len;
-    int cvar_start, cvar_len;
+    uint32 gvar_start, gvar_len;
+    uint32 fvar_start, fvar_len;
+    uint32 avar_start, avar_len;
+    uint32 cvar_start, cvar_len;
 		/* head */
-    int head_start;
+    uint32 head_start;
 		/* hhea */
-    int hhea_start;
+    uint32 hhea_start;
 		/* hmtx */
-    int hmetrics_start;
+    uint32 hmetrics_start;
 		/* kern */
-    int kern_start;
+    uint32 kern_start;
 		/* loca */
-    int glyphlocations_start;	/* there are glyph_cnt of these, from maxp tab */
-    int loca_length;		/* actually glypn_cnt is wrong. Use the table length (divided by size) instead */
+    uint32 glyphlocations_start;/* there are glyph_cnt of these, from maxp tab */
+    uint32 loca_length;		/* actually glypn_cnt is wrong. Use the table length (divided by size) instead */
 		/* maxp */
-    int maxp_start;		/* maximum number of glyphs */
-    int maxp_len;
+    uint32 maxp_start;		/* maximum number of glyphs */
+    uint32 maxp_len;
 		/* name */
-    int copyright_start;	/* copyright and fontname */
+    uint32 copyright_start;	/* copyright and fontname */
 		/* post */
-    int postscript_start;	/* names for the glyphs, italic angle, etc. */
+    uint32 postscript_start;	/* names for the glyphs, italic angle, etc. */
 		/* OS/2 */
-    int os2_start;
+    uint32 os2_start;
 		/* vhea */
-    int vhea_start;
+    uint32 vhea_start;
 		/* vmtx */
-    int vmetrics_start;
+    uint32 vmetrics_start;
 		/* VORG */
-    int vorg_start;
+    uint32 vorg_start;
 
 		/* PfEd -- FontForge/PfaEdit specific info */
-    int pfed_start;
+    uint32 pfed_start;
 
 		/* Apple Advanced Typography Tables */
-    int prop_start;
-    int lcar_start;
-    int opbd_start;
-    int acnt_start;
-    int feat_start;
-    int mort_start;
-    int morx_start;
+    uint32 prop_start;
+    uint32 lcar_start;
+    uint32 opbd_start;
+    uint32 acnt_start;
+    uint32 feat_start;
+    uint32 mort_start;
+    uint32 morx_start;
 
 		/* Info for instructions */
-    int cvt_start, cvt_len;
-    int prep_start, prep_len;
-    int fpgm_start, fpgm_len;
+    uint32 cvt_start, cvt_len;
+    uint32 prep_start, prep_len;
+    uint32 fpgm_start, fpgm_len;
 
     struct dup *dups;
     unsigned int one_of_many: 1;	/* A TTCF file, or a opentype font with multiple fonts */
@@ -281,6 +287,7 @@ struct hhead {
     int16 maxextent;	/* How is this different from xmax above? */
     int16 caretSlopeRise;/* Uh... let's say 1? */
     int16 caretSlopeRun;/* Uh... let's say 0 */
+	    /* not exactly specified, but FontValidator wants this to match italicangle */
     int16 mbz[5];
     int16 metricformat;	/* 0 */
     uint16 numMetrics;	/* just set to glyph count */

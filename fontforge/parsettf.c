@@ -473,20 +473,25 @@ return( 0 );			/* Not version 1 of true type, nor Open Type */
 	  break;
 	  case CHR('G','D','E','F'):
 	    info->gdef_start = offset;
+	    info->gdef_length = length;
 	  break;
 	  case CHR('G','P','O','S'):
 	    info->gpos_start = offset;
+	    info->gpos_length = length;
 	  break;
 	  case CHR('G','S','U','B'):
 	    info->gsub_start = offset;
+	    info->gsub_length = length;
 	  break;
 	  case CHR('b','d','a','t'):		/* Apple/MS use a different tag, but the same format. Great. */
 	  case CHR('E','B','D','T'):
 	    info->bitmapdata_start = offset;
+	    info->bitmapdata_length = length;
 	  break;
 	  case CHR('b','l','o','c'):		/* Apple/MS use a different tag. Great. */
 	  case CHR('E','B','L','C'):
 	    info->bitmaploc_start = offset;
+	    info->bitmaploc_length = length;
 	  break;
 	  case CHR('b','h','e','d'):		/* Apple uses bhed for fonts with only bitmaps */
 	  case CHR('h','e','a','d'):
