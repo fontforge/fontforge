@@ -158,7 +158,7 @@ static void BDFDumpChar(FILE *file,BDFFont *font,BDFChar *bdfc,int enc) {
     fprintf( file, "BBX %d %d %d %d\n", bdfc->xmax-bdfc->xmin+1, bdfc->ymax-bdfc->ymin+1,
 	    bdfc->xmin, bdfc->ymin );
     fprintf( file, "BITMAP\n" );
-    bpl = (bdfc->xmax-bdfc->xmin+8)/8;
+    bpl = bdfc->bytes_per_line;
     for ( r = 0; r<bdfc->ymax-bdfc->ymin+1; ++r ) {
 	for ( c=0; c<bpl; ++c ) {
 	    if ( font->clut==NULL || font->clut->clut_len==256 ) {
