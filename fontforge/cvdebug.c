@@ -284,6 +284,20 @@ static void DVPointsExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
     GDrawDrawLine(pixmap,event->u.expose.rect.x,dv->pts_head-1,event->u.expose.rect.x+event->u.expose.rect.width,dv->pts_head-1,0x000000);
 }
 
+static SplineSet *ContourFromPoint(TT_GlyphZoneRec *pts, real scale,int i,
+	SplineSet *last ) {
+    SplineSet *cur;
+    SplinePoint *sp;
+
+    sp = SplinePointCreate(pts->cur[i].x*scale,pts->cur[i].y*scale);
+    sp->ttfindex = i;
+    cur = chunkalloc(sizeof(SplineSet));
+    if ( last!=NULL )
+	last->next = cur;
+    cur->first = cur->last = sp;
+return( cur );
+}
+
 static SplineSet *SplineSetsFromPoints(TT_GlyphZoneRec *pts, real scale) {
     int i=0, c, last_off, start;
     SplineSet *head=NULL, *last=NULL, *cur;
@@ -301,24 +315,21 @@ static SplineSet *SplineSetsFromPoints(TT_GlyphZoneRec *pts, real scale) {
 	last = cur;
 	last_off = false;
 	start = i;
-	while ( i<=pts->contours[c] ) {
+	while ( i<=pts->contours[c] && i<pts->n_points ) {
 	    if ( pts->tags[i]&FT_Curve_Tag_On ) {
-		sp = chunkalloc(sizeof(SplinePoint));
-		sp->me.x = sp->nextcp.x = sp->prevcp.x = pts->cur[i].x*scale;
-		sp->me.y = sp->nextcp.y = sp->prevcp.y = pts->cur[i].y*scale;
-		sp->nonextcp = sp->noprevcp = true;
+		sp = SplinePointCreate(pts->cur[i].x*scale,pts->cur[i].y*scale);
 		sp->ttfindex = i;
 		if ( last_off && cur->last!=NULL ) {
 		    cur->last->nextcp.x = sp->prevcp.x = pts->cur[i-1].x*scale;
 		    cur->last->nextcp.y = sp->prevcp.y = pts->cur[i-1].y*scale;
+		    sp->noprevcp = false;
 		}
 		last_off = false;
 	    } else if ( last_off ) {
-		sp = chunkalloc(sizeof(SplinePoint));
-		sp->me.x = (pts->cur[i].x+pts->cur[i-1].x)/2 * scale;
-		sp->me.y = (pts->cur[i].y+pts->cur[i-1].y)/2 * scale;
-		sp->nextcp = sp->prevcp = sp->me;
-		sp->nonextcp = true;
+		sp = SplinePointCreate(
+		    (pts->cur[i].x+pts->cur[i-1].x)/2 * scale,
+		    (pts->cur[i].y+pts->cur[i-1].y)/2 * scale);
+		sp->noprevcp = false;
 		sp->ttfindex = 0xffff;
 		if ( last_off && cur->last!=NULL ) {
 		    cur->last->nextcp.x = sp->prevcp.x = pts->cur[i-1].x * scale;
@@ -341,20 +352,14 @@ static SplineSet *SplineSetsFromPoints(TT_GlyphZoneRec *pts, real scale) {
 	if ( start==i-1 ) {
 	    /* MS chinese fonts have contours consisting of a single off curve*/
 	    /*  point. What on earth do they think that means? */
-	    sp = chunkalloc(sizeof(SplinePoint));
-	    sp->me.x = pts->cur[start].x * scale;
-	    sp->me.y = pts->cur[start].y * scale;
-	    sp->nextcp = sp->prevcp = sp->me;
-	    sp->nonextcp = sp->noprevcp = true;
+	    sp = SplinePointCreate(pts->cur[start].x*scale,pts->cur[start].y*scale);
 	    sp->ttfindex = i-1;
 	    cur->first = cur->last = sp;
 	} else if ( !(pts->tags[start]&FT_Curve_Tag_On) && !(pts->tags[i-1]&FT_Curve_Tag_On) ) {
-	    sp = chunkalloc(sizeof(SplinePoint));
-	    sp->me.x = (pts->cur[start].x+pts->cur[i-1].x)/2 * scale;
-	    sp->me.y = (pts->cur[start].y+pts->cur[i-1].y)/2 * scale;
-	    sp->nextcp = sp->prevcp = sp->me;
-	    sp->nonextcp = true;
-	    sp->ttfindex = 0xffff;
+	    sp = SplinePointCreate(
+		    (pts->cur[start].x+pts->cur[i-1].x)/2 * scale,
+		    (pts->cur[start].y+pts->cur[i-1].y)/2 * scale);
+	    sp->noprevcp = sp->nonextcp = false;
 	    cur->last->nextcp.x = sp->prevcp.x = pts->cur[i-1].x * scale;
 	    cur->last->nextcp.y = sp->prevcp.y = pts->cur[i-1].y * scale;
 	    SplineMake2(cur->last,sp);
@@ -371,6 +376,17 @@ static SplineSet *SplineSetsFromPoints(TT_GlyphZoneRec *pts, real scale) {
 	if ( cur->last!=cur->first ) {
 	    SplineMake2(cur->last,cur->first);
 	    cur->last = cur->first;
+	}
+    }
+    if ( i+1<pts->n_points ) {
+	/* depending on the version of freetype there should be either 2 or 4 */
+	/*  metric phantom points (2 horizontal metrics + 2 vertical metrics) */
+	last = ContourFromPoint(pts,scale,i,last);
+	if ( head==NULL ) head = last;
+	last = ContourFromPoint(pts,scale,i+1,last);
+	if ( i+3<pts->n_points ) {
+	    last = ContourFromPoint(pts,scale,i+2,last);
+	    last = ContourFromPoint(pts,scale,i+3,last);
 	}
     }
 return( head );
