@@ -1341,7 +1341,9 @@ static int CCD_GlyphSelected(GGadget *g, GEvent *e) {
     } else if ( e->type==et_controlevent && e->u.control.subtype == et_listdoubleclick ) {
 	struct contextchaindlg *ccd = GDrawGetUserData(GGadgetGetWindow(g));
 	int off = GGadgetGetCid(g)-CID_GList;
-	_CCD_DoEditNew(ccd,off,true);
+	int i = GGadgetGetFirstListSelectedItem(g);
+	if ( i!=0 || off<300 )
+	    _CCD_DoEditNew(ccd,off,true);
     }
 return( true );
 }
@@ -1352,8 +1354,8 @@ static int CCD_SameAsClasses(GGadget *g, GEvent *e) {
     struct contextchaindlg *ccd = GDrawGetUserData(GGadgetGetWindow(g));
 
     GGadgetSetEnabled(GWidgetGetControl(ccd->gw,CID_GList+300+off),!ison);
+    GGadgetSetEnabled(GWidgetGetControl(ccd->gw,CID_New+300+off),!ison);
     if ( ison ) {
-	GGadgetSetEnabled(GWidgetGetControl(ccd->gw,CID_New+300+off),false);
 	GGadgetSetEnabled(GWidgetGetControl(ccd->gw,CID_Edit+300+off),false);
 	GGadgetSetEnabled(GWidgetGetControl(ccd->gw,CID_Delete+300+off),false);
 	GGadgetSetEnabled(GWidgetGetControl(ccd->gw,CID_Up+300+off),false);
