@@ -94,6 +94,12 @@ static DumpChar startfileencoding(DumpChar dumpchar,void *data,
     randombytes[1] += 5;
     randombytes[2] += 7;
     randombytes[3] += 11;
+
+    fed->olddump = dumpchar;
+    fed->olddata = data;
+    fed->r = 55665;
+    fed->hexline = 0;
+
     if ( dobinary ) { unsigned short r; unsigned char cypher;
 	while ( 1 ) {
 	    /* find some random bytes where at least one of them encrypts to */
@@ -122,10 +128,6 @@ static DumpChar startfileencoding(DumpChar dumpchar,void *data,
 	}
     }
 
-    fed->olddump = dumpchar;
-    fed->olddata = data;
-    fed->r = 55665;
-    fed->hexline = 0;
     func = dobinary ? encodebin : encodehex;
     func(randombytes[0],fed);
     func(randombytes[1],fed);

@@ -1175,25 +1175,35 @@ return( TrySubrRefs(gb,subrs,sc,refs,round));
 	    if ( sc->parent->chars[i]!=NULL &&
 		    strcmp(sc->parent->chars[i]->name,"space")==0 )
 	break;
-	if ( i==sc->parent->charcnt )
+	if ( i==sc->parent->charcnt ) {
+	    RefCharsFreeRef(refs);
 return( false );			/* No space???? */
+	}
 	space.sc = sc->parent->chars[i];
-	if ( space.sc->splines!=NULL || space.sc->refs!=NULL )
+	if ( space.sc->splines!=NULL || space.sc->refs!=NULL ) {
+	    RefCharsFreeRef(refs);
+return( false );
+	}
+    }
+    if ( r1->adobe_enc==-1 || r2->adobe_enc==-1 ) {
+	RefCharsFreeRef(refs);
 return( false );
     }
-    if ( r1->adobe_enc==-1 || r2->adobe_enc==-1 )
-return( false );
     if ( r1->transform[4]!=0 || r1->transform[5]!=0 ) {
-	if ( r2->transform[4]!=0 || r2->transform[5]!=0 )
+	if ( r2->transform[4]!=0 || r2->transform[5]!=0 ) {
+	    RefCharsFreeRef(refs);
 return( false );			/* Only one can be translated */
+	}
 	rt = r1; r1 = r2; r2 = rt;
     }
     if ( r1->sc->width!=sc->width && r2->sc->width==sc->width &&
 	    r2->transform[4]==0 && r2->transform[5]==0 ) {
 	rt = r1; r1 = r2; r2 = rt;
     }
-    if ( r1->sc->width!=sc->width )
+    if ( r1->sc->width!=sc->width ) {
+	RefCharsFreeRef(refs);
 return( false );
+    }
 
     SplineCharFindBounds(r2->sc,&b);
 

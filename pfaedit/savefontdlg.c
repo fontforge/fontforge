@@ -946,6 +946,7 @@ return( 0 );
 	temp.chars[i]->parent = NULL;
     if ( temp.chars!=chars )
 	free(temp.chars);
+    GlyphHashFree( &temp );
     free( temp.xuid );
     free( temp.fontname );
     free( temp.fullname );
