@@ -299,6 +299,7 @@ Spline *ApproximateSplineFromPointsSlopes(SplinePoint *from, SplinePoint *to,
     real v[6], m[6][6];
     Spline *spline;
     BasePoint prevcp, *p, *n;
+    int err;
 
     /* If the two end-points are corner points then allow the slope to vary */
     /* Or if one end-point is a tangent but the point defining the tangent's */
@@ -317,9 +318,9 @@ Spline *ApproximateSplineFromPointsSlopes(SplinePoint *from, SplinePoint *to,
 return( ApproximateSplineFromPoints(from,to,mid,cnt) );
     }
 
-    t = t2 = t3 = t4 = 1;
+    t = t2 = t3 = t4 = t5 = 1;
     x = from->me.x+to->me.x; y = from->me.y+to->me.y;
-    xt = to->me.x; yt = to->me.y;
+    xt = xt2 = to->me.x; yt = yt2 = to->me.y;
     for ( i=0; i<cnt; ++i ) {
 	x += mid[i].x;
 	y += mid[i].y;
@@ -392,6 +393,7 @@ return( ApproximateSplineFromPoints(from,to,mid,cnt) );
 	m[5][2] -= m[5][1]*m[1][2];
 	m[5][5] -= m[5][4]*m[4][5];
 	m[5][1] = m[5][4] = 0;
+	m[1][1] = m[4][4] = 1;
     }
 
     /* At this point the matrix looks like:
@@ -423,21 +425,40 @@ return( ApproximateSplineFromPoints(from,to,mid,cnt) );
 	    m[5][5] -= m[5][2]*m[2][5];
 	v[5] -= m[5][2]*v[2];
 	m[5][2] = 0;
+	m[2][2] = 1;
     }
     if ( m[5][5]<.0001 && m[5][5]>-.0001 ) {	/* I have seen this failure mode */
 	m[5][3] = t5;
 	m[5][4] = t4;
 	m[5][5] = t3;
 	v[5] = xt2-t2*from->me.y;
+	err = false;
 	if ( t5!=0 ) {
 	    m[5][5] -= t5*m[3][5];
 	    v[5] -= t5*v[3];
 	    m[5][3] = 0;
-	}
+	} else err = true;
 	if ( m[5][4]!=0 ) {
 	    m[5][5] -= m[5][4]*m[4][5];
 	    v[5] -= m[5][4]*v[4];
 	    m[5][4] = 0;
+	} else err = true;
+	if ( err || (m[5][5]<.2 && m[5][5]>-.2 )) {
+	    m[5][3] = t3;
+	    m[5][4] = t2;
+	    m[5][5] = t;
+	    v[5] = y-(cnt+2)*from->me.y;
+	    err = false;
+	    if ( t3!=0 ) {
+		m[5][5] -= t3*m[3][5];
+		v[5] -= t3*v[3];
+		m[5][3] = 0;
+	    }
+	    if ( m[5][4]!=0 ) {
+		m[5][5] -= m[5][4]*m[4][5];
+		v[5] -= m[5][4]*v[4];
+		m[5][4] = 0;
+	    }
 	}
     }
     if ( m[5][5]>=.0001 || m[5][5]<=-.0001 ) {
