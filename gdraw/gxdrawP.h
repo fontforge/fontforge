@@ -215,7 +215,7 @@ typedef struct gxdisplay /* : GDisplay */ {
 	/* my other windows, then that window gets it and is mightily confused*/
 	/* So this field lets us do it right. when the pointer is grabbed the */
 	/* events go to the grab window. It seems so simple... */
-    int16 desired_depth, desired_vc;
+    int16 desired_depth, desired_vc, desired_cm;
 } GXDisplay;
 
 #define Pixel32(gdisp,col) Pixel16(gdisp,col)

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 21-Jan-2001 -->
-  <!-- AP: Last modified: 15-Jan-2002 -->
+  <!-- AP: Last modified: 11-Mar-2002 -->
   <TITLE>X Resources</TITLE>
 </HEAD>
 <BODY>
@@ -59,6 +59,38 @@ then the program will look at it.
     When X creates a virtual screen it may not be possible for Gdraw to find
     the actual number of pixels on the screen. This is not used in point
     calculations.
+  <DT>
+    <CODE>Gdraw.Depth</CODE>
+  <DD>
+    An integer (1, 8, 16, 32)<BR>
+    You can use this to request a different depth than the default one. Not all
+    servers will support all depths. If PfaEdit can't find a visual with the
+    desired depth it will use the default depth.
+  <DT>
+    <CODE>Gdraw.VisualClass</CODE>
+  <DD>
+    A string ("StaticGray", "GrayScale", "StaticColor", "PsuedoColor", "TrueColor",
+    "DirectColor")<BR>
+    PfaEdit will search for a visual with the given class (and possibly depth
+    if the depth argument is specified too).
+  <DT>
+    <CODE>Gdraw.<A NAME="Colormap">Colormap</A></CODE>
+  <DD>
+    An string ("Current", "Copy", "Private")<BR>
+    You can use this to control what PfaEdit does about the colormap on an 8bit
+    screen
+    <UL>
+      <LI>
+	Current -- PfaEdit will attempt to allocate its colors in the current colormap.
+      <LI>
+	Copy -- PfaEdit will allocate what colors it can and then copy the current
+	color map into a private copy. This means PfaEdit has access to a much wider
+	range of colors, and (as long as the shared colormap doesn't change) PfaEdit's
+	colormap will match that of the rest of the screen.
+      <LI>
+	Private -- PfaEdit will allocate a private colormap and set the colors just
+	as it wants them. It will almost certainly not match the shared colormap.
+    </UL>
   <DT>
     <CODE>Gdraw.DoDithering</CODE>
   <DD>
@@ -387,7 +419,7 @@ then the program will look at it.
 </H2>
 <P>
 PfaEdit assumes that your keyboard has a control key and some equivalent
-of a meta key. PfaEdit works best with a three button mouse. 
+of a meta key. PfaEdit works best with a three button mouse.
 <P>
 Almost all keyboards now-a-days will have the needed modifier keys, but which
 key is used for what will depend on the keyboard and the OS (for instance

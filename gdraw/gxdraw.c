@@ -46,6 +46,8 @@
 #include "fontP.h"
 #include "gresource.h"
 
+enum cm_type { cmt_default=-1, cmt_current, cmt_copy, cmt_private };
+
 /*#define GREEK_BUG	1*/
 
 static void GXDrawTransmitSelection(GXDisplay *gd,XEvent *event);
@@ -414,11 +416,10 @@ static void _GXDraw_FindVisual(GXDisplay *gdisp) {
 #endif
 }
 
-static void _GXDraw_AllocColors(GXDisplay *gdisp) {
+static int _GXDraw_AllocColors(GXDisplay *gdisp,XColor *x_colors) {
     /* Try to insure that the standard colours we expect to use are available */
     /*  in the default colormap */
     Display *display = gdisp->display;
-    XColor x_colors[256];
     XColor *acolour;
     static unsigned short rgb[][3]={
 	    {0x8000,0x8000,0x8000}, {0x4000,0x4000,0x4000},
@@ -430,17 +431,17 @@ static void _GXDraw_AllocColors(GXDisplay *gdisp) {
 	    {0xdd00,0xdd00,0xdd00}, {0xee00,0xee00,0xee00},
 	    };
     int i, r,g,b;
-    int pixel=0;
     static int cube[] = { 0x00, 0x33, 0x66, 0x99, 0xcc, 0xff };
 
     acolour = x_colors;
-    for(r = 0; r < 6; ++r) {
-      for(g = 0; g < 6; ++g) {
-	for(b = 0; b < 6; ++b) {
+
+    for(r = 5; r >= 0; --r) {
+      for(g = 5; g >= 0; --g) {
+	for(b = 5; b >= 0; --b) {
 	acolour->red = (cube[r]<<8)|cube[r];
 	acolour->green = (cube[g]<<8)|cube[g];
 	acolour->blue = (cube[b]<<8)|cube[b];
-	acolour->pixel = pixel;
+	acolour->pixel = 0;
 	acolour->flags = 7;
 	if ( XAllocColor(display,gdisp->cmap,acolour))
 	    ++acolour;
@@ -453,6 +454,7 @@ static void _GXDraw_AllocColors(GXDisplay *gdisp) {
 	if ( XAllocColor(display,gdisp->cmap,acolour))
 	    ++acolour;
     }
+return( acolour-x_colors );
 }
 
 static void _GXDraw_AllocGreys(GXDisplay *gdisp) {
@@ -466,6 +468,17 @@ static void _GXDraw_AllocGreys(GXDisplay *gdisp) {
 	xcolour.blue = r<<8;
 	XAllocColor(display,gdisp->cmap,&xcolour);
     }
+}
+
+static int _GXDraw_CopyColors(GXDisplay *gdisp, XColor *x_colors, Colormap new) {
+    int i;
+
+    for ( i=0; i<(1<<gdisp->depth); ++i )
+	x_colors[i].pixel = i;
+    XQueryColors(gdisp->display,gdisp->cmap,x_colors,1<<gdisp->depth);
+    XStoreColors(gdisp->display,new,x_colors,1<<gdisp->depth);
+    gdisp->cmap = new;
+return( 1<<gdisp->depth );
 }
 
 static int FindAllColors(GXDisplay *gdisp, XColor *x_colors) {
@@ -520,10 +533,22 @@ static void _GXDraw_InitCols(GXDisplay *gdisp) {
 	if ( vclass==StaticGray || vclass == GrayScale ) {
 	    _GXDraw_AllocGreys(gdisp);
 	    gdisp->cs.is_grey = clut.is_grey = true;
+	    x_color_max = FindAllColors(gdisp,x_colors);
+	} else if ( gdisp->desired_cm==cmt_private ) {
+	    gdisp->cmap = XCreateColormap(gdisp->display,gdisp->root,
+		    gdisp->visual,AllocNone);
+	    XInstallColormap(gdisp->display,gdisp->cmap);
+	    x_color_max = _GXDraw_AllocColors(gdisp,x_colors);
 	} else {
-	    _GXDraw_AllocColors(gdisp);
+	    x_color_max = _GXDraw_AllocColors(gdisp,x_colors);
+	    if (( gdisp->desired_cm==cmt_default && x_color_max<30 ) ||
+		    gdisp->desired_cm==cmt_copy ) {
+		x_color_max = _GXDraw_CopyColors(gdisp,x_colors,
+			XCreateColormap(gdisp->display,gdisp->root,
+				gdisp->visual,AllocAll));
+		XInstallColormap(gdisp->display,gdisp->cmap);
+	    }
 	}
-	x_color_max = FindAllColors(gdisp,x_colors);
 	clut.clut_len = x_color_max;
 	for ( i=0; i<x_color_max; ++i )
 	    clut.clut[x_colors[i].pixel] = COLOR_CREATE(x_colors[i].red>>8,x_colors[i].green>>8,x_colors[i].blue>>8);
@@ -539,7 +564,7 @@ return( Pixel24(gdisp,col) );
     else if ( gdisp->depth>8 )
 return( Pixel16(gdisp,col));
 
-return( _GImage_GetIndexedPixelPrecise(col, gdisp->cs.rev)->pixel );
+return( _GImage_GetIndexedPixel/*Precise*/(col, gdisp->cs.rev)->pixel );
 }
 
 /* ****************************** Error Handler ***************************** */
@@ -3292,13 +3317,22 @@ return( def );
 return( (void *) ret );
 }
 
+static void *cm_cvt(char *val, void *def) {
+    static char *choices[] = { "default", "current", "copy", "private", NULL };
+    int ret = match(choices,val);
+    if ( ret== -1 )
+return( (void *) -1 );
+
+return( (void *) (ret-1) );
+}
+
 static void GXResourceInit(GXDisplay *gdisp,char *programname) {
     Atom rmatom, type;
     int format, i; unsigned long nitems, bytes_after;
     unsigned char *ret = NULL;
-    GResStruct res[20];
+    GResStruct res[21];
     int dithertemp; double sizetemp, sizetempcm;
-    int depth = -1, vc = -1, cmpos;
+    int depth = -1, vc = -1, cm=-1, cmpos;
     int tbf = 1, mxc = 1;
 
     rmatom = XInternAtom(gdisp->display,"RESOURCE_MANAGER",true);
@@ -3333,6 +3367,7 @@ static void GXResourceInit(GXDisplay *gdisp,char *programname) {
     res[i].resname = "VisualClass"; res[i].type = rt_string; res[i].val = &vc; res[i].cvt=vc_cvt; ++i;
     res[i].resname = "TwoButtonFixup"; res[i].type = rt_bool; res[i].val = &tbf; ++i;
     res[i].resname = "MacOSXCmd"; res[i].type = rt_bool; res[i].val = &mxc; ++i;
+    res[i].resname = "Colormap"; res[i].type = rt_string; res[i].val = &cm; res[i].cvt=cm_cvt; ++i;
     res[i].resname = NULL;
     GResourceFind(res,NULL);
 
@@ -3341,6 +3376,7 @@ static void GXResourceInit(GXDisplay *gdisp,char *programname) {
     else if ( sizetemp>=1 )
 	gdisp->res = gdisp->groot->pos.width/sizetemp;
     gdisp->desired_depth = depth; gdisp->desired_vc = vc;
+    gdisp->desired_cm = cm;
     gdisp->macosx_cmd = mxc;
     gdisp->twobmouse_win = tbf;
 }

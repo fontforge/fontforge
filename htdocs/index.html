@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 10-Mar-2002 -->
+  <!-- AP: Last modified: 11-Mar-2002 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -90,8 +90,8 @@ you do</A>.
     <A HREF="pfaedit_ppc-020208.tgz">Download pfaedit linux-ppc SUSE 7.1
     </A>executable Version: 8-Feb-2002
   <LI>
-    <A HREF="pfaedit-solaris-020306.tgz">Download pfaedit Solaris 8.0
-    </A>executable Version: 6-Mar-2002
+    <A HREF="pfaedit-solaris-020310.tgz">Download pfaedit Solaris 8.0
+    </A>executable Version: 10-Mar-2002
   <LI>
     <A HREF="pfaedit-020220-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
     Version: 20-Feb-2002 (Redhat 7.1)
@@ -275,6 +275,20 @@ Or you can just browse the <A HREF="overview.html">docs online</A>.
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    ???
+    <UL>
+      <LI>
+	Nifty. The modifier keys auto-repeat under cygwin (if Control is down one
+	gets a series of Press/Release, Press/Release... while normal X just gives
+	one Press.) This meant we'd keep refreshing the tools palette, which meant
+	an annoying flicker and slowed things down.
+      <LI>
+	Raise the palettes after a resize
+      <LI>
+	PfaEdit didn't handle 8bit colormaps well. I've improved the behavior, and
+	added an x resource to give the user some control over behavior.
+    </UL>
   <LI>
     10-Mar-2002
     <UL>

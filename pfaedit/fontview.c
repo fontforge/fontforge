@@ -2611,7 +2611,9 @@ return;
 	    gi.u.image = &base;
 	    base.image_type = it_index;
 	    base.clut = bdf->clut;
-	    base.trans = -1;
+	    GDrawSetDither(NULL, false);
+	    base.trans = -1;		/* on 8 bit displays we don't want any dithering */
+	    /*base.clut->trans_index = 0;*/
 	} else {
 	    memset(&clut,'\0',sizeof(clut));
 	    gi.u.image = &base;
@@ -2645,6 +2647,7 @@ return;
 	    GDrawFillRect(fv->v,&box,XOR_COLOR);
 	    GDrawSetCopyMode(fv->v);
 	}
+	GDrawSetDither(NULL, true);
     }
 }
 
@@ -3031,8 +3034,9 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 	gi.u.image = &base;
 	base.image_type = it_index;
 	base.clut = fv->show->clut;
-	base.trans = 0;
-	base.clut->trans_index = 0;
+	GDrawSetDither(NULL, false);
+	base.trans = -1;
+	/*base.clut->trans_index = 0;*/
     } else {
 	memset(&clut,'\0',sizeof(clut));
 	gi.u.image = &base;
@@ -3207,6 +3211,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 	}
     }
     GDrawPopClip(pixmap,&old);
+    GDrawSetDither(NULL, true);
 }
 
 static char *chosung[] = { "G", "GG", "N", "D", "DD", "L", "M", "B", "BB", "S", "SS", "", "J", "JJ", "C", "K", "T", "P", "H", NULL };

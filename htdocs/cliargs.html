@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Jan-2002 -->
-  <!-- AP: Last modified: 12-Feb-2002 -->
+  <!-- AP: Last modified: 11-Mar-2002 -->
   <TITLE>Command Line Arguments</TITLE>
 </HEAD>
 <BODY>
@@ -26,6 +26,13 @@ will select the font GulimChe out of the font file gulim.ttc.
 PfaEdit recognizes the following options:
 <DL>
   <DT>
+    -cmap type
+  <DD>
+    Where type may be<BR>
+    &nbsp; &nbsp; Current | Copy | Private<BR>
+    Gives the user some control over <A HREF="xres.html#Colormap">colormap handling
+    </A>on 8bit screens.
+  <DT>
     -depth val
   <DD>
     Specifies that PfaEdit should search for a visual with the given depth
@@ -45,7 +52,7 @@ PfaEdit recognizes the following options:
     -keyboard type
   <DD>
     Where type may be<BR>
-    ibm | mac | sun | ppc | 0 | 1 | 2 | 3<BR>
+    &nbsp; &nbsp; ibm | mac | sun | ppc | 0 | 1 | 2 | 3<BR>
     Allows you to specify the type of keyboard. Currently this is only relevent
     when generating menus. The modifier keys are in different locations on different
     keyboards (under different operating systems) and if PfaEdit knows what keyboard

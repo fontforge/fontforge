@@ -71,6 +71,7 @@ static void _dousage(void) {
     printf( "\t-display display-name\t (sets the X display)\n" );
     printf( "\t-depth val\t\t (sets the display depth if possible)\n" );
     printf( "\t-vc val\t\t\t (sets the visual class if possible)\n" );
+    printf( "\t-cmap current|copy|private\t (sets the type of colormap)\n" );
     printf( "\t-sync\t\t\t (syncs the display, debugging)\n" );
     printf( "\t-keyboard ibm|mac|sun|ppc  (generates appropriate hotkeys in menus)\n" );
 #if MyMemory
@@ -291,6 +292,8 @@ int main( int argc, char **argv ) {
 	    AddR(argv[0],"Gdraw.Depth", argv[++i]);
 	else if ( strcmp(pt,"-vc")==0 && i<argc-1 )
 	    AddR(argv[0],"Gdraw.VisualClass", argv[++i]);
+	else if ( (strcmp(pt,"-cmap")==0 || strcmp(pt,"-colormap")==0) && i<argc-1 )
+	    AddR(argv[0],"Gdraw.Colormap", argv[++i]);
 	else if ( strcmp(pt,"-keyboard")==0 && i<argc-1 )
 	    AddR(argv[0],"Gdraw.Keyboard", argv[++i]);
 	else if ( strcmp(pt,"-nosplash")==0 )
@@ -394,6 +397,7 @@ int main( int argc, char **argv ) {
 		strcmp(pt,"-recover=clean")==0 || strcmp(pt,"-recover=auto")==0 )
 	    /* Already done, needed to be before display opened */;
 	else if ( (strcmp(pt,"-depth")==0 || strcmp(pt,"-vc")==0 ||
+		    strcmp(pt,"-cmap")==0 || strcmp(pt,"-colormap")==0 || 
 		    strcmp(pt,"-keyboard")==0 || 
 		    strcmp(pt,"-display")==0 || strcmp(pt,"-recover")==0 ) &&
 		i<argc-1 )
