@@ -446,7 +446,7 @@ return( true );
 		    p.y<testm->menubar->g.inner.y+testm->menubar->g.inner.height ) {
 		/*GDrawPointerGrab(testm->menubar->g.base);*/	/* Don't do this */
 		event->u.mouse.x = p.x; event->u.mouse.y = p.y;
-return( (GDrawGetEH(m->menubar->g.base))(m->menubar->g.base,event));
+return( (GDrawGetEH(testm->menubar->g.base))(testm->menubar->g.base,event));
 	    }
 	}
 	testm = NULL;
