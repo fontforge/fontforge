@@ -1310,6 +1310,8 @@ return( false );
 	/*  case we draw the text first, draw the rectangles, and draw the text*/
 	/*  within the rectangles */
 	y = g->inner.y+(i-gt->loff_top)*gt->fh;
+	if ( !gt->multi_line )
+	    y = g->inner.y + (g->inner.height-gt->fh)/2;
 	sel = fg;
 	ll = gt->lines[i+1]==-1?-1:gt->lines[i+1]-gt->lines[i];
 	if ( gt->sel_start != gt->sel_end && gt->sel_end>gt->lines[i] &&
