@@ -5596,8 +5596,8 @@ static void UseGivenEncoding(SplineFont *sf,struct ttfinfo *info) {
 }
 
 static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
-    SplineFont *sf;
-    int i;
+    SplineFont *sf, *_sf;
+    int i,k;
     BDFFont *bdf;
     struct table_ordering *ord;
 
@@ -5682,10 +5682,15 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     TTF_PSDupsDefault(sf);
     if ( info->gsub_start==0 && info->mort_start==0 && info->morx_start==0 ) {
 	/* Get default ligature values, etc. */
-	for ( i=0; i<sf->subfontcnt; ++i ) {
-	    if ( sf->chars[i]!=NULL )		/* Might be null in ttc files */
-		SCLigDefault(sf->chars[i]);
-	}
+	k=0;
+	do {
+	    _sf = k<sf->subfontcnt?sf->subfonts[k]:sf;
+	    for ( i=0; i<sf->charcnt; ++i ) {
+		if ( _sf->chars[i]!=NULL )		/* Might be null in ttc files */
+		    SCLigDefault(_sf->chars[i]);
+	    }
+	    ++k;
+	} while ( k<sf->subfontcnt );
     }
 
     if ( info->feats[0]!=NULL ) {
