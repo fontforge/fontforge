@@ -2981,7 +2981,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
 
     sf = p.fv->sf;
 
-    if ( advancewidthval==0 && sf->chars[' ']!=NULL )
+    if ( advancewidthval==0 && sf->charcnt >= ' ' && sf->chars[' ']!=NULL )
 	advancewidthval = sf->chars[' ']->width;
     sprintf(awidthbuf,"%g",advancewidthval);
     rlabel[2].text = (unichar_t *) awidthbuf;
