@@ -188,7 +188,7 @@ void SplineRefigure3(Spline *spline) {
 
 #ifdef DEBUG
     if ( RealNear(from->me.x,to->me.x) && RealNear(from->me.y,to->me.y))
-	GDrawIError("Zero length spline created");
+	IError("Zero length spline created");
 #endif
     xsp->d = from->me.x; ysp->d = from->me.y;
     if ( from->nonextcp ) from->nextcp = from->me;
@@ -220,7 +220,7 @@ void SplineRefigure3(Spline *spline) {
 	    spline->islinear = true;	/* This seems extremely unlikely... */
     }
     if ( isnan(ysp->a) || isnan(xsp->a) )
-	GDrawIError("NaN value in spline creation");
+	IError("NaN value in spline creation");
     LinearApproxFree(spline->approx);
     spline->approx = NULL;
     spline->knowncurved = false;
@@ -237,7 +237,7 @@ void SplineRefigure2(Spline *spline) {
 
 #ifdef DEBUG
     if ( RealNear(from->me.x,to->me.x) && RealNear(from->me.y,to->me.y))
-	GDrawIError("Zero length spline created");
+	IError("Zero length spline created");
 #endif
 
     if ( from->nonextcp ) from->nextcp = from->me;
@@ -249,7 +249,7 @@ void SplineRefigure2(Spline *spline) {
 	/* Ok */;
     else if ( from->nonextcp || to->noprevcp || from->nextcp.x!=to->prevcp.x ||
 	    from->nextcp.y!=to->prevcp.y )
-	GDrawIError("Invalid 2nd order spline in SplineRefigure2" );
+	IError("Invalid 2nd order spline in SplineRefigure2" );
 
     xsp->d = from->me.x; ysp->d = from->me.y;
     if ( from->nonextcp && to->noprevcp ) {
@@ -275,7 +275,7 @@ void SplineRefigure2(Spline *spline) {
 	    spline->islinear = true;	/* This seems extremely unlikely... */
     }
     if ( isnan(ysp->b) || isnan(xsp->b) )
-	GDrawIError("NaN value in spline creation");
+	IError("NaN value in spline creation");
     LinearApproxFree(spline->approx);
     spline->approx = NULL;
     spline->knowncurved = false;
