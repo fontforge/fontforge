@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 12-Oct-2002 -->
+  <!-- AP: Last modified: 1-Nov-2002 -->
   <TITLE>The Edit Menu</TITLE>
 </HEAD>
 <BODY>
@@ -136,9 +136,13 @@ view this menu will be disabled when one of the text fields has the focus.
     In the Bitmap View this will copy the selection into the clipboard, if there
     is no selection everything is copied.
     <P>
+    To external applications selected points (and associated contours) will be
+    exported to the clipboard with format "image/eps", while a selected image
+    will be exported with formats "image/png" and "image/bmp".
     If you Copy a series of characters into the clipboard, the only the first
     one will be exported to external applications. The contours of the character
     will be exported as a selection of type "image/eps".
+    See the section on <A HREF="selections.html">selections</A>
   <DT>
     Copy <A NAME="Reference">Reference</A>
   <DD>
@@ -231,6 +235,8 @@ view this menu will be disabled when one of the text fields has the focus.
 	<TD>as spline data</TD>
       </TR>
     </TABLE>
+    <P>
+    See the section on <A HREF="selections.html">selections</A>
   <DT>
     <A NAME="Clear">Clear</A>
   <DD>
