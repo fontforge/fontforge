@@ -823,7 +823,7 @@ static const int poses18A9[] = {
 
 static const int poses1FBD[] = {	/* These aren't listed as combiners, but if we don't use them as such greek fonts don't work */
     _Above,
-    _Above,
+    _Right,
     _Above,
     _Above,
     _Above

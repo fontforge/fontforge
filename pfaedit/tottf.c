@@ -854,12 +854,8 @@ int ttfcopyfile(FILE *ttf, FILE *other, int pos) {
 return( ret );
 }
 
-static int getcvtval(struct glyphinfo *gi,int val) {
+static int _getcvtval(struct glyphinfo *gi,int val) {
     int i;
-
-    /* by default sign is unimportant in the cvt */
-    /* if ( val<0 ) val = -val; */
-    /* Er, not quite, only in some instructions. MIAP still cares */
 
     if ( gi->cvtmax==0 ) {
 	gi->cvtmax = 100;
@@ -875,6 +871,15 @@ return( i );
     gi->cvt[i] = val;
     ++gi->cvtcur;
 return( i );
+}
+
+static int getcvtval(struct glyphinfo *gi,int val) {
+
+    /* by default sign is unimportant in the cvt */
+    /* For some instructions anyway, but not for MIAP so this routine has */
+    /*  been broken in two. */
+    if ( val<0 ) val = -val;
+return( _getcvtval(gi,val));
 }
 
 static void FigureFullMetricsEnd(SplineFont *sf,struct glyphinfo *gi) {
@@ -1406,13 +1411,13 @@ static uint8 *geninstrs(struct glyphinfo *gi, uint8 *instrs,StemInfo *hint,
 	/* check the "bluevalues" for things like cap height and xheight */
 	if ( (newbase = BDFindValue(base,&gi->bd))!= 0x80000000 ) {
 	    base = newbase;
-	    basecvt = getcvtval(gi,(int)base);
+	    basecvt = _getcvtval(gi,(int)base);
 	}
 	if ( basecvt == -1 && !hint->startdone ) {
 	    hbase = (base += width);
 	    if ( (newbase = BDFindValue(base,&gi->bd))!= 0x80000000 ) {
 		base = newbase;
-		basecvt = getcvtval(gi,(int)base);
+		basecvt = _getcvtval(gi,(int)base);
 	    }
 	    if ( basecvt!=-1 )
 		width = -width;

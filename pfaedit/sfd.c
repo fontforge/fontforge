@@ -32,6 +32,17 @@
 #include <unistd.h>
 #include <locale.h>
 
+static const char *charset_names[] = {
+    "custom",
+    "iso8859_1", "iso8859_2", "iso8859_3", "iso8859_4", "iso8859_5",
+    "iso8859_6", "iso8859_7", "iso8859_8", "iso8859_9", "iso8859_10",
+    "iso8859_11", "iso8859_13", "iso8859_14", "iso8859_15",
+    "koi8_r",
+    "jis201",
+    "win", "mac", "symbol", "zapfding", "adobestandard",
+    "jis208", "jis212", "ksc5601", "gb2312", "big5", "johab",
+    "unicode", NULL};
+
 static void SFDDumpSplineSet(FILE *sfd,SplineSet *spl) {
     SplinePoint *first, *sp;
 
@@ -505,11 +516,11 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 	Encoding *item;
 	for ( item = enclist; item!=NULL && item->enc_num!=sf->encoding_name; item = item->next );
 	if ( item==NULL )
-	    fprintf(sfd, "Encoding: %d\n", em_none );
+	    fprintf(sfd, "Encoding: custom\n" );
 	else
 	    fprintf(sfd, "Encoding: %s\n", item->enc_name );
     } else
-	fprintf(sfd, "Encoding: %d\n", sf->encoding_name );
+	fprintf(sfd, "Encoding: %s\n", charset_names[sf->encoding_name+1] );
     if ( sf->display_size!=0 )
 	fprintf( sfd, "DisplaySize: %d\n", sf->display_size );
     if ( sf->display_antialias!=0 )
@@ -1524,11 +1535,17 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    if ( !getint(sfd,&sf->encoding_name) ) {
 		Encoding *item;
 		geteol(sfd,tok);
-		for ( item = enclist; item!=NULL && strcmp(item->enc_name,tok)!=0; item = item->next );
-		if ( item==NULL )
-		    sf->encoding_name = em_none;
-		else
-		    sf->encoding_name = item->enc_num;
+		sf->encoding_name = em_none;
+		for ( i=0; charset_names[i]!=NULL; ++i )
+		    if ( strcmp(tok,charset_names[i])==0 ) {
+			sf->encoding_name = i-1;
+		break;
+		    }
+		if ( charset_names[i]==NULL ) {
+		    for ( item = enclist; item!=NULL && strcmp(item->enc_name,tok)!=0; item = item->next );
+		    if ( item!=NULL )
+			sf->encoding_name = item->enc_num;
+		}
 	    }
 	} else if ( strmatch(tok,"Registry:")==0 ) {
 	    geteol(sfd,tok);

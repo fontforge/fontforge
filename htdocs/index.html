@@ -74,8 +74,8 @@ know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-011218.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 18-Dec-2001
+    <A HREF="pfaedit-011219.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 19-Dec-2001
   <LI>
     <A HREF="pfaedit-solaris-011211.tgz">Download pfaedit Solaris 8.0
     </A>executable Version: 11-Dec-2001
@@ -116,19 +116,19 @@ You can download a <A HREF="pfaedit-011201-1.src.rpm">source RPM</A>: Version:
 Or you can download the following three packages. Version: 18-Dec-2001
 <UL>
   <LI>
-    <A HREF="libgunicode-011215.tgz">Unicode library source</A> (15-Dec-2001)<BR>
+    <A HREF="libgunicode-011219.tgz">Unicode library source</A> (19-Dec-2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGUnicode/index.html">docs</A>
   <LI>
-    <A HREF="libgdraw-011217.tgz">Unicode widget library source</A>
-    (17-Dec-2001)<BR>
+    <A HREF="libgdraw-011219.tgz">Unicode widget library source</A>
+    (19-Dec-2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
   <LI>
-    <A HREF="pfaedit_src-011218.tgz">Pfaedit source</A> (18-Dec-2001)<BR>
+    <A HREF="pfaedit_src-011219.tgz">Pfaedit source</A> (19-Dec-2001)<BR>
     -- <A HREF="overview.html">docs</A>
   <LI>
-    <A HREF="pfaedit_full-011218.tgz">All three bundled together </A>(18-Dec-2001)
+    <A HREF="pfaedit_full-011219.tgz">All three bundled together </A>(19-Dec-2001)
 </UL>
 <P>
 If you want to do autotracing around character images you should also download
@@ -239,12 +239,27 @@ up into one <A HREF="pfaedit_htdocs-011116.tgz">tgz file</A> 16-Nov-2001.
 </H2>
 <UL>
   <LI>
+    19-Dec-2001
+    <UL>
+      <LI>
+	The german ui file should be in better german
+      <LI>
+	pfaedit would not notice that an iso10646 bdf file was unicode
+      <LI>
+	Support for conversion to and from some 2 byte encodings (LocalCharset preference
+	item)
+      <LI>
+	sfd files store the font's encoding as a string rather than a number now
+	so if we add more standard encodings things won't get screwed up as they
+	were when we added johab.
+    </UL>
+  <LI>
     18-Dec-2001
     <UL>
       <LI>
 	<FONT COLOR="Red"><STRONG>TrueType hints were terrible</STRONG></FONT>. I
 	fixed one huge bug. There are still problems with diagonals and the results
-	are as nice as Fontographer's, but they are better.
+	are not as nice as Fontographer's, but they are better.
       <LI>
 	Some more greek fixes.
       <LI>

@@ -215,7 +215,7 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding) {
 	pnt = 240;
 
     if ( strcmp(encoding,"ISOLatin1Encoding")==0 )
-	encoding = "ISO-8859-1";
+	encoding = "ISO8859-1";
 
     decomposename(font, font->sf->fontname, family_name, weight_name, slant, stylename, squeeze);
     if ( *font->sf->fontname=='-' ) {
@@ -280,7 +280,7 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding) {
     else if ( font->encoding_name<=em_iso8859_15 )
 	fprintf( file, "CHARSET_REGISTRY \"ISO8859\"\n" );
     else if ( font->encoding_name==em_unicode )
-	fprintf( file, "CHARSET_REGISTRY \"ISO-10646\"\n" );
+	fprintf( file, "CHARSET_REGISTRY \"ISO10646\"\n" );
     else
 	fprintf( file, "CHARSET_REGISTRY \"%s\"\n", encoding );
     if (( pt = strrchr(encoding,'-'))==NULL ) pt = "-1";
@@ -301,27 +301,27 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding) {
     if ( (codepages[0]&1) && font->encoding_name!=em_iso8859_1 )
 	fprintf( file, "ISOLatin1Encoding " );
     if ( (codepages[0]&2) && font->encoding_name!=em_iso8859_2 )
-	fprintf( file, "ISO-8859-2 " );
+	fprintf( file, "ISO8859-2 " );
     if ( (codepages[0]&4) && font->encoding_name!=em_iso8859_5 )
-	fprintf( file, "ISO-8859-5 " );
+	fprintf( file, "ISO8859-5 " );
     if ( (codepages[0]&8) && font->encoding_name!=em_iso8859_7 )
-	fprintf( file, "ISO-8859-7 " );
+	fprintf( file, "ISO8859-7 " );
     if ( (codepages[0]&0x10) && font->encoding_name!=em_iso8859_9 )
-	fprintf( file, "ISO-8859-9 " );
+	fprintf( file, "ISO8859-9 " );
     if ( (codepages[0]&0x20) && font->encoding_name!=em_iso8859_8 )
-	fprintf( file, "ISO-8859-8 " );
+	fprintf( file, "ISO8859-8 " );
     if ( (codepages[0]&0x40) && font->encoding_name!=em_iso8859_6 )
-	fprintf( file, "ISO-8859-6 " );
+	fprintf( file, "ISO8859-6 " );
     if ( (codepages[0]&0x80) && font->encoding_name!=em_iso8859_4 )
-	fprintf( file, "ISO-8859-4 " );
+	fprintf( file, "ISO8859-4 " );
     if ( (codepages[0]&0x10000) && font->encoding_name!=em_iso8859_11 )
-	fprintf( file, "ISO-8859-11 " );
+	fprintf( file, "ISO8859-11 " );
     if ( (codepages[0]&0x20000) && font->encoding_name==em_unicode )
-	fprintf( file, "JIS-208 " );
+	fprintf( file, "JISX208 " );
     if ( (codepages[0]&0x40000) && font->encoding_name==em_unicode )
-	fprintf( file, "GB-2312 " );
+	fprintf( file, "GB2312 " );
     if ( (codepages[0]&0x80000) && font->encoding_name==em_unicode )
-	fprintf( file, "KSC-5601 " );
+	fprintf( file, "KSC5601 " );
     if ( (codepages[0]&0x100000) && font->encoding_name==em_unicode )
 	fprintf( file, "BIG5 " );
     if ( (codepages[0]&0x80000000) && font->encoding_name!=em_symbol )

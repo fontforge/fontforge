@@ -1,6 +1,9 @@
 sharedir = @prefix@/share/pfaedit
 top_srcdir = @top_srcdir@
-top_builddir = @top_srcdir@
+top_builddir = ..
+VPATH = @srcdir@
+prefix = @prefix@
+bindir = @bindir@
 libdir = @libdir@
 
 LIBTOOL = @LIBTOOL@
@@ -26,7 +29,8 @@ pfaedit_OBJECTS =  autohint.o autosave.o autowidth.o bitmapdlg.o \
  macbinary.o crctab.o
 
 WFLAGS = -Wmissing-prototypes -Wunused -Wimplicit -Wreturn-type -Wparentheses
-CFLAGS = @CFLAGS@ -I../inc $(WFLAGS) $(X_CFLAGS) @DEFS@ '-DSHAREDIR="$(sharedir)"'
+CFLAGS = @CFLAGS@ -I$(top_srcdir)/inc -I$(srcdir) $(WFLAGS) $(X_CFLAGS) \
+    @DEFS@ '-DSHAREDIR="$(sharedir)"'
 
 LDFLAGS = @LDFLAGS@
 LIBS = $(X_LIBS) ../libgdraw.la ../libgunicode.la \
@@ -39,8 +43,9 @@ pfaedit: nomen.h $(pfaedit_OBJECTS)
 
 #this makes all the .ui files but wildcarding doesn't work too well if the
 # files don't exist.
-nomen.h pfaedit-ui.c pfaedit.en.ui: nomen.*.c makenomenh.c
-	gcc -o makenomenh $(CFLAGS) makenomenh.c $(LIBS)
+nomen.h pfaedit-ui.c pfaedit.en.ui: $(srcdir)/nomen.*.c makenomenh.c
+	gcc -o makenomenh $(CFLAGS) $(srcdir)/makenomenh.c $(LIBS)
+	-ln -s $(srcdir)/nomen.*.c .
 	./makenomenh
 	mv pfaedit-ui.en.c pfaedit-ui.c
 
@@ -49,3 +54,6 @@ clean:
 
 distclean cleaner: clean
 	-rm -f Makefile
+	-for i in nomen.*.c; do \
+	  test -L $$i && rm $$i; \
+	done;

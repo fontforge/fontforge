@@ -89,7 +89,7 @@ static void MakeEncChar(SplineFont *sf,int enc,char *name) {
     sf->chars[enc]->name = copy(name);
     sf->chars[enc]->unicodeenc = finduniname(name);
     sf->chars[enc]->enc = enc;
-    sf->encoding_name = em_none;
+    /*sf->encoding_name = em_none;*/
 }
 
 static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b) {

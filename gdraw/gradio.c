@@ -413,7 +413,7 @@ static GCheckBox *_GCheckBoxCreate(GCheckBox *gl, struct gwindow *base, GGadgetD
 	if ( gd->label->text_in_resource )
 	    gl->label = u_copy((unichar_t *) GStringGetResource((int) gd->label->text,&gl->g.mnemonic));
 	else if ( gd->label->text_is_1byte )
-	    gl->label = def2u_copy((char *) gd->label->text);
+	    gl->label = /*def2u*/ uc_copy((char *) gd->label->text);
 	else
 	    gl->label = u_copy(gd->label->text);
 	gl->image = gd->label->image;

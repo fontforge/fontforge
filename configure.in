@@ -67,6 +67,8 @@ if test "$gww_nodynamic" = "yes"; then
  fi
 fi
 
+test -d libs || mkdir libs
+
 AC_OUTPUT(Makefile Unicode/Makefile gdraw/Makefile pfaedit/Makefile)
 
 echo Configuration defines: $DEFS

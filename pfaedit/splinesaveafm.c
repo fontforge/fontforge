@@ -217,33 +217,33 @@ return( "AdobeStandardEncoding" );
       case em_iso8859_1:
 return( "ISOLatin1Encoding" );
       case em_iso8859_2:
-return( "ISO-8859-2" );
+return( "ISO8859-2" );
       case em_iso8859_3:
-return( "ISO-8859-3" );
+return( "ISO8859-3" );
       case em_iso8859_4:
-return( "ISO-8859-4" );
+return( "ISO8859-4" );
       case em_iso8859_5:
-return( "ISO-8859-5" );
+return( "ISO8859-5" );
       case em_iso8859_6:
-return( "ISO-8859-6" );
+return( "ISO8859-6" );
       case em_iso8859_7:
-return( "ISO-8859-7" );
+return( "ISO8859-7" );
       case em_iso8859_8:
-return( "ISO-8859-8" );
+return( "ISO8859-8" );
       case em_iso8859_9:
-return( "ISO-8859-9" );
+return( "ISO8859-9" );
       case em_iso8859_10:
-return( "ISO-8859-10" );
+return( "ISO8859-10" );
       case em_iso8859_11:
-return( "ISO-8859-11" );
+return( "ISO8859-11" );
       case em_iso8859_13:
-return( "ISO-8859-13" );
+return( "ISO8859-13" );
       case em_iso8859_14:
-return( "ISO-8859-14" );
+return( "ISO8859-14" );
       case em_iso8859_15:
-return( "ISO-8859-15" );
+return( "ISO8859-15" );
       case em_unicode:
-return( "ISO-10646-1" );
+return( "ISO10646-1" );
       case em_mac:
 return( "MacRoman" );
       case em_win:
@@ -258,6 +258,10 @@ return( "JISX212" );
 return( "KSC5601" );
       case em_gb2312:
 return( "GB2312" );
+      case em_big5:
+return( "BIG5" );
+      case em_johab:
+return( "Johab" );
       default:
 	if ( map>=em_base ) {
 	    Encoding *item;

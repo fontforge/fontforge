@@ -7,6 +7,7 @@ mandir = @mandir@
 includedir = @includedir@
 sharedir = $(prefix)/share/pfaedit
 
+srcdir = @srcdir@
 top_builddir = .
 
 INSTALL = @INSTALL@
@@ -37,8 +38,8 @@ install: $(sharedir)
 	-rm -f $(bindir)/pfaedit*.ui
 	cp pfaedit/pfaedit $(bindir)
 	cp pfaedit/pfaedit.*.ui $(sharedir)
-	cp pfaedit/pfaedit.1 $(mandir)/man1
-#	cp *.cidmap $(sharedir)
+	cp $(srcdir)/pfaedit/pfaedit.1 $(mandir)/man1
+#	cp $(srcdir)/*.cidmap $(sharedir)
 
 uninstall:
 	-rm $(bindir)/pfaedit

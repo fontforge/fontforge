@@ -1,3 +1,9 @@
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+VPATH = @srcdir@
+prefix = @prefix@
+bindir = @bindir@
+
 CC = @CC@
 RANLIB = @RANLIB@
 
@@ -18,7 +24,7 @@ libgdraw_OBJECTS =  choosericons.o divisors.o drawboxborder.o \
  gresourceimage.o gsavefiledlg.o gscrollbar.o gtabset.o \
  gtextfield.o gtextinfo.o gwidgets.o gxdraw.o
 
-Incs = -I../inc -I/usr/pkg/include -I/usr/pkg/include/giflib
+Incs = -I$(top_srcdir)/inc -I/usr/pkg/include -I/usr/pkg/include/giflib
 WFLAGS = -Wmissing-prototypes -Wunused -Wimplicit -Wreturn-type -Wparentheses
 CFLAGS = @CFLAGS@ $(Incs) $(WFLAGS) $(X_CFLAGS) -DNOTHREADS @DEFS@
 

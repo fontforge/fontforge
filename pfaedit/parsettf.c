@@ -2645,7 +2645,6 @@ static int modenc(int enc,int modtype) {
 	} else if ( enc>=161 && enc<=223 ) {
 	    /* Katakana */
 	    enc += 96*96-160;
-	    enc = unicode_from_jis201[enc];
 	} else {
 	    int ch1 = enc>>8, ch2 = enc&0xff;
 	    if ( ch1 >= 129 && ch1<= 159 )

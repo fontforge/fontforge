@@ -32,9 +32,11 @@
 
 /* Does not handle conversions to 2 byte character sets!!!!! */
 
-unichar_t *encoding2u_strncpy(unichar_t *uto, const char *from, int n, enum encoding cs) {
+unichar_t *encoding2u_strncpy(unichar_t *uto, const char *_from, int n, enum encoding cs) {
     unichar_t *upt=uto;
-    unsigned short *table;
+    const unichar_t *table;
+    int offset;
+    const unsigned char *from = (const unsigned char *) _from;
 
     if ( cs<e_first2byte ) {
 	table = unicode_from_alphabets[cs];
@@ -44,7 +46,58 @@ unichar_t *encoding2u_strncpy(unichar_t *uto, const char *from, int n, enum enco
 	}
     } else if ( cs<e_unicode ) {
 	*uto = '\0';
+	switch ( cs ) {
+	  default:
 return( NULL );
+	  case e_johab: case e_big5:
+	    offset = cs==e_big5 ? 0xa100 : 0x8400;
+	    table = cs==e_big5 ? unicode_from_big5 : unicode_from_johab;
+	    while ( *from && n>0 ) {
+		if ( *from>=(offset>>8) && from[1]!='\0' ) {
+		    *upt++ = table[ ((*from<<8) | from[1]) - offset ];
+		    from += 2;
+		} else
+		    *upt++ = *from++;
+		--n;
+	    }
+	  break;
+	  case e_wansung:
+	    while ( *from && n>0 ) {
+		if ( *from>=0xa1 && from[1]>=0xa1 ) {
+		    *upt++ = unicode_from_ksc5601[ (*from-0xa1)*94+(from[1]-0xa1) ];
+		    from += 2;
+		} else
+		    *upt++ = *from++;
+		--n;
+	    }
+	  break;
+	  case e_sjis:
+	    while ( *from && n>0 ) {
+		if ( *from<127 || ( *from>=161 && *from<=223 )) {
+		    *upt++ = unicode_from_jis201[*from++];
+		} else {
+		    int ch1 = *from++;
+		    int ch2 = *from++;
+		    if ( ch1 >= 129 && ch1<= 159 )
+			ch1 -= 112;
+		    else
+			ch1 -= 176;
+		    ch1 <<= 1;
+		    if ( ch2>=159 )
+			ch2-= 126;
+		    else if ( ch2>127 ) {
+			--ch1;
+			ch2 -= 32;
+		    } else {
+			--ch1;
+			ch2 -= 31;
+		    }
+		    *upt++ = unicode_from_jis208[(ch1-0x21)*94+(ch2-0x21)];
+		}
+		--n;
+	    }
+	  break;
+	}
     } else if ( cs==e_unicode ) {
 	unichar_t *ufrom = (unichar_t *) from;
 	while ( *ufrom && n>0 ) {
@@ -69,11 +122,11 @@ return( uto );
 }
 
 char *u2encoding_strncpy(char *to, const unichar_t *ufrom, int n, enum encoding cs) {
+    char *pt = to;
 
     /* we just ignore anything that doesn't fit in the encoding we look at */
     if ( cs<e_first2byte ) {
 	struct charmap *table = NULL;
-	char *pt = to;
 	unsigned char *plane;
 	table = alphabets_from_unicode[cs];
 	while ( *ufrom && n>0 ) {
@@ -89,8 +142,74 @@ char *u2encoding_strncpy(char *to, const unichar_t *ufrom, int n, enum encoding 
 	if ( n>0 )
 	    *pt = '\0';
     } else if ( cs<e_unicode ) {
+	struct charmap2 *table;
+	unsigned short *plane;
+	unsigned char *plane1;
+
 	*to = '\0';
+	switch ( cs ) {
+	  default:
 return( NULL );
+	  case e_johab: case e_big5:
+	    table = cs==e_big5 ? &big5_from_unicode : &johab_from_unicode;
+	    while ( *ufrom && n>0 ) {
+		int highch = *ufrom>>8, ch;
+		if ( *ufrom<0x80 ) {
+		    *pt++ = *ufrom;
+		    --n;
+		} else if ( highch>=table->first && highch<=table->last &&
+			(plane = table->table[highch-table->first])!=NULL &&
+			(ch=plane[*ufrom&0xff])!=0 ) {
+		    *pt++ = ch>>8;
+		    *pt++ = ch&0xff;
+		    n -= 2;
+		}
+		ufrom ++;
+	    }
+	  break;
+	  case e_wansung:
+	    while ( *ufrom && n>0 ) {
+		int highch = *ufrom>>8, ch;
+		if ( *ufrom<0x80 ) {
+		    *pt++ = *ufrom;
+		    --n;
+		} else if ( highch>=ksc5601_from_unicode.first && highch<=ksc5601_from_unicode.last &&
+			(plane = ksc5601_from_unicode.table[highch-ksc5601_from_unicode.first])!=NULL &&
+			(ch=plane[*ufrom&0xff])!=0 ) {
+		    *pt++ = (ch>>8) + 0x80;
+		    *pt++ = (ch&0xff) + 0x80;
+		    n -= 2;
+		}
+		ufrom ++;
+	    }
+	  break;
+	  case e_sjis:
+	    while ( *ufrom && n>0 ) {
+		int highch = *ufrom>>8, ch;
+		if ( highch>=jis201_from_unicode.first && highch<=jis201_from_unicode.last &&
+			(plane1 = jis201_from_unicode.table[highch-jis201_from_unicode.first])!=NULL &&
+			(ch=plane1[*ufrom&0xff])!=0 ) {
+		    *pt++ = ch;
+		    --n;
+		} else if ( *ufrom<' ' ) {	/* control chars */
+		    *pt++ = *ufrom;
+		    --n;
+		} else if ( highch>=jis_from_unicode.first && highch<=jis_from_unicode.last &&
+			(plane = jis_from_unicode.table[highch-jis_from_unicode.first])!=NULL &&
+			(ch=plane[*ufrom&0xff])!=0 && ch<0x8000 ) {	/* no jis212 */
+		    int j1 = ch>>8, j2 = ch&0xff;
+		    int ro = j1<95 ? 112 : 176;
+		    int co = (j1&1) ? (j2>95?32:31) : 126;
+		    *pt++ = ((j1+1)>>1)+ro;
+		    *pt++ = j2+co;
+		    n -= 2;
+		}
+		++ufrom;
+	    }
+	  break;
+	}
+	if ( n>0 )
+	    *pt = '\0';
     } else if ( cs==e_unicode ) {
 	unichar_t *uto = (unichar_t *) to;
 	while ( *ufrom && n>1 ) {
