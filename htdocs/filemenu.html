@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 10-Dec-2000 -->
-  <!-- AP: Last modified: 26-Jul-2002 -->
+  <!-- AP: Last modified: 20-Aug-2002 -->
   <TITLE>The File Menu</TITLE>
 </HEAD>
 <BODY>
@@ -79,7 +79,12 @@
     fonts (it does not open bitmap fonts currently)<BR>
     PfaEdit does not open Acorn RISC/OS files, but you can use
     <I><A HREF="acorn2sfd.html">acorn2sfd</A></I> to convert them into an sfd
-    file which PfaEdit can then open.
+    file which PfaEdit can then open.<BR>
+    If you have <A HREF="http://www.tug.org/"><I>mf </I></A>and
+    <I><A HREF="http://sourceforge.net/projects/autotrace/">autotrace</A>
+    </I>installed on your machine PfaEdit will process metafont's mf files for
+    you. But you might want to use <I>pktrace, mftrace</I> or some other standalone
+    program to do the job.
   <DT>
     <A NAME="Recent">Recent</A>
   <DD>
@@ -292,8 +297,7 @@
     but I get the impression that nobody uses this any more).<BR>
     PfaEdit will normally store the names of all the characters inside a TTF
     font (in the 'post' table) if you do not want this to happen (it can take
-    up a fair amount of space) then uncheck the <TT>[PS Names]</TT>
-    checkbox.<BR>
+    up a fair amount of space) then uncheck the <TT>[PS Names]</TT> checkbox.<BR>
     PfaEdit currently generates bad ttf hints. You may find that your fonts look
     better without any. The [Hints] checkbox allows you to turn this off for
     truetype.

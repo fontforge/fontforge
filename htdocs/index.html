@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 18-Aug-2002 -->
+  <!-- AP: Last modified: 20-Aug-2002 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -11,9 +11,10 @@
       src="http://sourceforge.net/sflogo.php?group_id=25752&amp;type=1" width="88"
       height="31" border="0" alt="SourceForge Logo" ALIGN=right> </A> PfaEdit
 </H1>
-<!--<P ALIGN=Center>
+<P ALIGN=Center>
 <FONT COLOR="Red"><BIG><B>I will not be responding to bug reports/feature
-requests/etc. between 28 June and 9 July.</B></BIG></FONT>-->
+requests/etc. between 13 Sept and 14 Oct.</B></BIG></FONT><BR>
+<SMALL>I'll be in <A HREF="mad.html">Madagascar</A></SMALL>
 <P>
 <FONT COLOR="Red"><STRONG>PfaEdit</STRONG></FONT> -- A postscript font editor
 that lets you create your own postscript, truetype, opentype, cid-keyed and
@@ -89,8 +90,8 @@ let me know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-020818.tgz">Download pfaedit linux-i386 Redhat 7.3
-    </A><A NAME="downloads">executable</A> Version: 18-August-2002
+    <A HREF="pfaedit-020820.tgz">Download pfaedit linux-i386 Redhat 7.3
+    </A><A NAME="downloads">executable</A> Version: 20-August-2002
   <LI>
     <A HREF="pfaedit-020818-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
     Version: 18-August-2002 (Redhat 7.3)
@@ -98,14 +99,14 @@ let me know when you do</A>.
     <A HREF="pfaedit-020818-1.ppc.rpm">Download pfaedit linux-ppc SUSE 7.1
     </A>binary rpm Version: 18-August-2002
   <LI>
-    <A HREF="pfaedit-solaris-020818.tgz">Download pfaedit Solaris 8.0
-    </A>executable Version: 18-August-2002 (no XIM support)
+    <A HREF="pfaedit-solaris-020820.tgz">Download pfaedit Solaris 8.0
+    </A>executable Version: 20-August-2002 (no XIM support)
   <LI>
     <A HREF="http://packages.debian.org/unstable/x11/pfaedit.html">A debian package
     is available at the debian site.</A>
   <LI>
     <A HREF="Problems-MacOSX.html#binary">A Mac OS/X distribution</A> (with Caveats).
-    Version 18-August-2002
+    Version 20-August-2002
   <LI>
     <A HREF="pfaedit_cygwin-020818.tgz">A cygwin version</A>. Version: 18-August-2002
   <LI>
@@ -127,9 +128,9 @@ If you want to edit CID keyed fonts you probably need these
 <P>
 You can download a <A HREF="pfaedit-020818-1.src.rpm">source RPM</A>: Version:
 18-August-2002<BR>
-Or you can download the <A HREF="pfaedit_full-020818.tgz">entire source tree
+Or you can download the <A HREF="pfaedit_full-020820.tgz">entire source tree
 </A>in one .tgz file: Version
-18-August-2002<!--
+20-August-2002<!--
 Or you can download the following three packages. Version: 19-Jan-2002
 <UL>
 <LI>
@@ -235,7 +236,7 @@ bitmap fonts that pfaedit uses
 </H2>
 <P>
 All the documentation files in this directory bundled up into one
-<A HREF="pfaedit_htdocs-020626.tgz">tgz file</A> 26-June-2002.<BR>
+<A HREF="pfaedit_htdocs-020818.tgz">tgz file</A> 18-August-2002.<BR>
 If you do the following then PfaEdit will find the docs for you when you
 press F1 (ie. PfaEdit it will look in /usr/share/doc/pfaedit before it looks
 on the web):
@@ -319,6 +320,40 @@ to the script and processed (or not) by it.
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    20-August-2002
+    <UL>
+      <LI>
+	Under KDE my tools palettes are made too wide and without borders. That's
+	ok until they get reparented (docked). Added code in the docking routines
+	to fix these problems.
+      <LI>
+	May have fixed a race condition problem due to reparented windows under freebsd.
+      <LI>
+	TeX sfd files are a little more complicated than I had originally thought,
+	the parser is now more general.
+      <LI>
+	PfaEdit sometimes thought some X fonts had iso8859-1 encoding when they did
+	not.
+      <LI>
+	cleaned up some problems with encodings
+      <LI>
+	Added support for TeX (actually MetaFont) gf files
+      <LI>
+	RLE background images sometimes showed up inverted (with background color
+	as foreground &amp; vice versa)
+      <LI>
+	The Fit in window command should now take docked palettes into consideration.
+      <LI>
+	Added a Japanese translation of the UI, courtesy of KANOU Hiroki.
+      <LI>
+	Added the ability to run <CODE>mf</CODE> on a .mf font, generate a gf file,
+	autotrace the gf file, and leave you with a font based on an mf file.
+      <LI>
+	Menus now do pointer grabs.
+      <LI>
+	Fixed a bug in generating PostScript resource file fonts on Mac OS/X
+    </UL>
   <LI>
     18-August-2002
     <UL>
@@ -967,6 +1002,9 @@ and rarely appear on this list.
     Under gnome mnemonics in menus don't work. Personally I consider this a bug
     in gnome.
   <LI>
+    Under gnome, docked palettes don't work the first time. Personally I consider
+    this a bug in gnome.
+  <LI>
     ???
 </UL>
 <H2>
@@ -996,11 +1034,13 @@ can.
       <LI>
 	Russian Valek handles
       <LI>
+	Japanese is provided by KANOU Hiroki.
+      <LI>
 	I've also created very minimal French &amp; German translations that lapse
 	into English, anyone who wants to take these on is encouraged to do so.
       <LI>
 	Anything other language additions would be great (the entire UI does not
-	need to be translated)
+	need to be translated, any subset is a help)
     </UL>
   <LI>
     <EM>Different font formats</EM><BR>
@@ -1121,7 +1161,9 @@ The following people have helped debug pfaedit. Many thanks!
   <LI>
     Werner LEMBERG
   <LI>
-    Kuniko Arakawa<BR>
+    Kuniko Arakawa
+  <LI>
+    KANOU Hiroki<BR>
     &nbsp;
   <LI>
     And many others!
@@ -1206,7 +1248,10 @@ now placed in graceful retirement by MacroMedia.
     <UL>
       <LI>
 	<A HREF="http://www.ctan.org/tex-archive/systems/knuth/local/mfware/pktype.web">pk
-	bitmap format</A>
+	packed bitmap format</A>
+      <LI>
+	<A HREF="http://www.ctan.org/tex-archive/systems/knuth/mfware/gftype.web">gf
+	generic font (bitmap) format</A>
       <LI>
 	<A HREF="http://www.ctan.org/tex-archive/systems/knuth/texware/tftopl.web">tfm
 	metrics format</A>
@@ -1358,6 +1403,10 @@ Other Encodings
       <LI>
 	<A HREF="http://www.fontlab.com/">FontLab</A> -- Said to have really good
 	tools for hinting truetype.
+	(<FONT COLOR="Red"><STRONG>proprietary</STRONG></FONT>)
+      <LI>
+	<A HREF="http://www.urwpp.de/english/home.html">Ikarus</A> -- Top of the
+	line font creation software.
 	(<FONT COLOR="Red"><STRONG>proprietary</STRONG></FONT>)
     </UL>
   <LI>
