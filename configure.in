@@ -2,6 +2,7 @@ dnl Process this file with autoconf to produce a configure script.
 
 AC_INIT(pfaedit/pfaedit.h)
 AC_PROG_CC
+AC_PROG_INSTALL
 AC_DISABLE_STATIC
 AC_CANONICAL_HOST
 AC_PROG_LIBTOOL
@@ -114,12 +115,6 @@ if test "$gww_nodynamic" = "yes"; then
  if test "$ac_cv_lib_freetype_FT_New_Face" = "yes"; then
   STATIC_LIBS="$STATIC_LIBS -lfreetype"
  fi
-fi
-
-AC_SUBST(LDARGS)
-LDARGS=
-if test "$GCC" = "yes"; then
-  LDARGS="-Wl,--rpath -Wl,$libdir"
 fi
 
 test -d libs || mkdir libs

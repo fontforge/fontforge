@@ -6,6 +6,10 @@ prefix = @prefix@
 bindir = @bindir@
 libdir = @libdir@
 
+GD_VERSION=1
+GD_REVISION=0
+GD_AGE=0
+
 LIBTOOL = @LIBTOOL@
 CC = @CC@
 
@@ -32,7 +36,7 @@ CFLAGS = -fpic @CFLAGS@ $(Incs) $(WFLAGS) $(X_CFLAGS) -DNOTHREADS @DEFS@
 
 ../libgdraw.la: $(libgdraw_OBJECTS)
 	$(LIBTOOL) $(CC) $(CFLAGS) -o ../libgdraw.la $(libgdraw_OBJECTS) \
-	    -rpath $(libdir)
+	    -rpath $(libdir) -version-info $(GD_VERSION):$(GD_REVISION):$(GD_AGE)
 
 %.lo: %.c
 	$(LIBTOOL) $(CC) $(CFLAGS) -c $<
