@@ -2277,6 +2277,7 @@ uint16 PSTDefaultFlags(enum possub_type type,SplineChar *sc ) {
     if ( sc!=NULL ) {
 	if ( SCRightToLeft(sc))
 	    flags = pst_r2l;
+#if 0		/* Better not. Yudit doesn't support the ligature substitution if the bit is set */
 	if ( type==pst_ligature ) {
 	    int script = SCScriptFromUnicode(sc);
 	    if ( script==CHR('h','e','b','r') || script==CHR('a','r','a','b')) {
@@ -2284,6 +2285,7 @@ uint16 PSTDefaultFlags(enum possub_type type,SplineChar *sc ) {
 		    flags |= pst_ignorecombiningmarks;
 	    }
 	}
+#endif
     }
 return( flags );
 }
