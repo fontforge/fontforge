@@ -594,6 +594,37 @@ static real SCFindBottomXRange(SplineChar *sc,DBounds *bounds, real ia) {
 return( ymin );
 }
 
+/* the cedilla and ogonec accents do not center on the accent itself but on */
+/*  the small part of it that joins at the top */
+static real SCFindTopBounds(SplineChar *sc,DBounds *bounds, real ia) {
+    RefChar *rf;
+    int ymax = bounds->maxy+1, ymin = ymax-(bounds->maxy-bounds->miny)/20;
+
+    /* a char with no splines (ie. a space) must have an lbearing of 0 */
+    bounds->minx = bounds->maxx = 0;
+
+    for ( rf=sc->refs; rf!=NULL; rf = rf->next )
+	_SplineSetFindXRange(rf->splines,bounds,ymin,ymax,ia);
+
+    _SplineSetFindXRange(sc->splines,bounds,ymin,ymax,ia);
+return( ymin );
+}
+
+/* And similarly for the floating hook */
+static real SCFindBottomBounds(SplineChar *sc,DBounds *bounds, real ia) {
+    RefChar *rf;
+    int ymin = bounds->miny-1, ymax = ymin+(bounds->maxy-bounds->miny)/20;
+
+    /* a char with no splines (ie. a space) must have an lbearing of 0 */
+    bounds->minx = bounds->maxx = 0;
+
+    for ( rf=sc->refs; rf!=NULL; rf = rf->next )
+	_SplineSetFindXRange(rf->splines,bounds,ymin,ymax,ia);
+
+    _SplineSetFindXRange(sc->splines,bounds,ymin,ymax,ia);
+return( ymin );
+}
+
 static real SplineCharFindSlantedBounds(SplineChar *sc,DBounds *bounds, real ia) {
     int ymin, ymax;
     RefChar *rf;
@@ -620,6 +651,55 @@ static real SplineCharFindSlantedBounds(SplineChar *sc,DBounds *bounds, real ia)
 	_SplineSetFindXRange(sc->splines,bounds,ymin,ymax,ia);
     }
 return( ymin );
+}
+
+static int SCStemCheck(SplineFont *sf,int basech,DBounds *bb, DBounds *rbb,int pos) {
+    /* cedilla (and ogonec on A) should be centered underneath the left */
+    /*  (or right) vertical (or diagonal) stem. Here we try to find that */
+    /*  stem */
+    StemInfo *h, *best;
+    SplineChar *sc;
+    DStemInfo *d, *dbest;
+
+    sc = findchar(sf,basech);
+    if ( sc==NULL )
+return( 0x70000000 );
+    if ( sc->changedsincelasthinted && !sc->manualhints )
+	SplineCharAutoHint(sc,true);
+    if ( (best=sc->vstem)!=NULL ) {
+	if ( pos&____CENTERLEFT ) {
+	    for ( h=best->next; h!=NULL && h->start<best->start+best->width; h=h->next )
+		if ( h->start+h->width<best->start+best->width )
+		    best = h;
+	    if ( best->start+best->width/2>(bb->maxx+bb->minx)/2 )
+		best = NULL;
+	} else {
+	    while ( best->next!=NULL )
+		best = best->next;
+	    if ( best->start+best->width/2<(bb->maxx+bb->minx)/2 )
+		best = NULL;
+	}
+	if ( best!=NULL )
+return( best->start + best->width/2 - (rbb->maxx-rbb->minx)/2 - rbb->minx );
+    }
+    if ( (dbest=sc->dstem)!=NULL ) {
+	if ( pos&____CENTERLEFT ) {
+	    for ( d=dbest->next; d!=NULL ; d=d->next )
+		if ( d->rightedgebottom.x<dbest->rightedgebottom.x )
+		    dbest = d;
+	    if ( (dbest->leftedgebottom.x+dbest->rightedgebottom.x)/2>(bb->maxx+bb->minx)/2 )
+		dbest = NULL;
+	} else {
+	    for ( d=dbest->next; d!=NULL ; d=d->next )
+		if ( d->leftedgebottom.x>dbest->leftedgebottom.x )
+		    dbest = d;
+	    if ( (dbest->leftedgebottom.x+dbest->rightedgebottom.x)/2<(bb->maxx+bb->minx)/2 )
+		dbest = NULL;
+	}
+	if ( dbest!=NULL )
+return( (dbest->leftedgebottom.x+dbest->rightedgebottom.x)/2 - (rbb->maxx-rbb->minx)/2 - rbb->minx );
+    }
+return( 0x70000000 );
 }
 
 static void _SCAddRef(SplineChar *sc,SplineChar *rsc,real transform[6]) {
@@ -735,6 +815,10 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
 	ach = ch;
     rsc = findchar(sf,ach);
     SplineCharFindSlantedBounds(rsc,&rbb,ia);
+    if ( ch==0x328 || ch==0x327 )
+	SCFindTopBounds(rsc,&rbb,ia);
+    else if ( ch==0x309 )
+	SCFindBottomBounds(rsc,&rbb,ia);
     ybase = SplineCharFindSlantedBounds(sc,&bb,ia);
     if ( basech>=0x1f20 && basech<=0x1f27 && ch==0x345 ) {
 	bb.miny = 0;		/* ypogegrammeni rides below baseline, not below bottom stem */
@@ -774,6 +858,12 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
 	pos = ____RIGHT|____OVERSTRIKE;
     else if ( ch==0xb7 )
 	pos = ____OVERSTRIKE;
+    else if (( basech=='A' || basech=='a' || basech=='E' || basech=='u' ) &&
+	    ch == 0x328 )
+	pos = ____BELOW|____CENTERRIGHT|____TOUCHING;	/* ogonek off to the right for these in polish (but not lc e) */
+    else if (( basech=='N' || basech=='n' || basech=='K' || basech=='k' || basech=='R' || basech=='r' || basech=='H' || basech=='h' ) &&
+	    ch == 0x327 )
+	pos = ____BELOW|____CENTERLEFT|____TOUCHING;	/* cedilla off under left stem for these guys */
     if ( basech==0x391 && pos==(____ABOVE|____LEFT) ) {
 	bb.minx += (bb.maxx-bb.minx)/4;
     }
@@ -815,7 +905,10 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
 	if ( !( pos&____TOUCHING) )
 	    xoff += spacing;
     } else {
-	if ( pos&____CENTERLEFT )
+	if ( (pos&(____CENTERLEFT|____CENTERRIGHT)) &&
+		(xoff=SCStemCheck(sf,basech,&bb,&rbb,pos))!=0x70000000 )
+	    /* Done */;
+	else if ( pos&____CENTERLEFT )
 	    xoff = bb.minx + (bb.maxx-bb.minx)/2 - rbb.maxx;
 	else if ( pos&____LEFTEDGE )
 	    xoff = bb.minx - rbb.minx;

@@ -2,14 +2,25 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Feb-2001 -->
-  <!-- AP: Last modified: 10-May-2001 -->
+  <!-- AP: Last modified: 22-Jan-2002 -->
   <TITLE>High level description of what each source file contains...</TITLE>
 </HEAD>
 <BODY>
-<P>
-<A HREF="#Header">Header files</A>
-<P>
-<A HREF="#Source">Source files</A>
+<H1 ALIGN=Center>
+  High level description of what each source file contains...
+</H1>
+<UL>
+  <LI>
+    <A HREF="#Header">Header files</A>
+  <LI>
+    <A HREF="#Source">Source files</A>
+  <LI>
+    <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGUnicode/index.html">unicode
+    library docs</A>
+  <LI>
+    <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">unicode
+    widget docs</A>
+</UL>
 <H2>
   <A NAME="Header">Header Files</A>
 </H2>
@@ -54,7 +65,7 @@
   <DT>
     autohint.c
   <DD>
-    Contains the routines which guess at postscript hints. 
+    Contains the routines which guess at postscript hints.
   <DT>
     autosave.c
   <DD>
@@ -256,6 +267,10 @@
   <DD>
     A list of all the adobe standard names for unicode characters in postscript.
     Any NULL entry in this array gets an algorithmically generated name uni%04X
+  <DT>
+    scripting.c
+  <DD>
+    All the routines to handle scripts
   <DT>
     savefontdlg.c
   <DD>

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 21-Jan-2002 -->
+  <!-- AP: Last modified: 22-Jan-2002 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -178,6 +178,10 @@ New() and Close() commands all change the current font. PfaEdit also maintains
 a list of all fonts that are currently open. This list is in no particular
 order.
 <P>
+Similarly when working with cid keyed fonts, PfaEdit works in the "current
+sub font", and most commands refer to this font. The CIDChangeSubFont() command
+can alter that.
+<P>
 All builtin variables begin with "$", you may not create any variables that
 start with "$" yourself (though you may assign to (some) already existing
 ones)
@@ -212,6 +216,18 @@ ones)
     field
   <LI>
     <CODE>$fullname </CODE>the name contained in the postscript FullName field
+  <LI>
+    <CODE>$cidname </CODE>returns the fontname of the top-level cid-keyed font
+    (or the empty string if there is none)<BR>
+    Can be used to detect if this is a cid keyed font.
+  <LI>
+    <CODE>$curcid </CODE>returns the fontname of the current font
+  <LI>
+    <CODE>$firstcid </CODE>returns the fontname of the first font within this
+    cid font
+  <LI>
+    <CODE>$nextcid </CODE>returns the fontname of the next font within this cid
+    font (or the empty string if the current sub-font is the last)
   <LI>
     <CODE>$trace</CODE> if this is set to one then PfaEdit will trace each procedure
     call.
@@ -433,6 +449,27 @@ a[4][0] = "Nested array";
     win, mac, wansung, big5, johab, jis208, unicode, iso10646-1 (or one of the
     user defined encodings).
   <DT>
+    SetCharCnt(cnt)
+  <DD>
+    Sets the number of characters in the font.
+  <DT>
+    SetFontNames(fontname[,family[,fullname[,weight[,copyright-notice]]]])
+  <DD>
+    Sets various postscript names associated with a font. If a name is omitted
+    (or is the empty string) it will not be changed.
+  <DT>
+    SetCharName(name[,set-from-name-flag])
+  <DD>
+    Sets the currently selected character to have the given name. If
+    set-from-name-flag is present and is true then it will also set the unicode
+    value and the ligature string to match the name.
+  <DT>
+    SetUnicodeValue(uni[,set-from-value-flag])
+  <DD>
+    Sets the currently selected character to have the given unicode value. If
+    set-from-value-flag is present and is true then it will also set the name
+    and the ligature string to match the value.
+  <DT>
     Transform(t1,t2,t3,t4,t5,t6)
   <DD>
     Each argument will be divided by 100. and then all selected characters will
@@ -537,6 +574,20 @@ a[4][0] = "Nested array";
     offset. The first argument may be specified as in Select(), the second is
     an integer representing the kern offset.
   <DD>
+      <HR>
+  <DT>
+    CIDChangeSubFont(new-sub-font-name)
+  <DD>
+    If the current font is a cid keyed font, this command changes the active
+    sub-font to be the one specified (the string should be the postscript FontName
+    of the subfont) 
+  <DT>
+    CIDSetFontNames(fontname[,family[,fullname[,weight[,copyright-notice]]]])
+  <DD>
+    Sets various postscript names associated with the top level cid font. If
+    a name is omitted (or is the empty string) it will not be changed. (this
+    is just like SetFontNames except it works on the top level cid font rather
+    than the current font).
       <HR>
   <DT>
     CharCnt()
