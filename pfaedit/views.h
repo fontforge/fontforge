@@ -429,7 +429,7 @@ extern void CVMoveSelection(CharView *cv, real dx, real dy);
 extern void CVMouseDownPoint(CharView *cv);
 extern void CVMouseMovePoint(CharView *cv,PressedOn *);
 extern void CVMouseMovePen(CharView *cv, PressedOn *p);
-extern void CVMouseUpPoint(CharView *cv);
+extern void CVMouseUpPoint(CharView *cv,GEvent *event);
 extern void CVMouseUpPointer(CharView *cv );
 extern void CVMouseMovePointer(CharView *cv );
 extern void CVMouseDownPointer(CharView *cv, FindSel *fs, GEvent *event);

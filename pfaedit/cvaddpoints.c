@@ -406,10 +406,12 @@ return;
     SCUpdateAll(cv->sc);
 }
 
-void CVMouseUpPoint(CharView *cv) {
+void CVMouseUpPoint(CharView *cv,GEvent *event) {
     cv->lastselpt = cv->active_sp;
     cv->active_spl = NULL;
     cv->active_sp = NULL;
     cv->joinvalid = false;
     CVInfoDraw(cv,cv->gw);
+    if ( event->u.mouse.clicks>1 )
+	CVGetInfo(cv);
 }
