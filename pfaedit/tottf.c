@@ -2601,7 +2601,7 @@ void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]) {
     else if ( sf->encoding_name==em_jis201 || sf->encoding_name==em_jis208 ||
 	    sf->encoding_name==em_jis212 || sf->encoding_name==em_sjis )
 	CodePage[0] |= 1<<17;	/* japanese */
-    else if ( sf->encoding_name==em_gb2312 )
+    else if ( sf->encoding_name==em_gb2312 || sf->encoding_name==em_jisgb )
 	CodePage[0] |= 1<<18;	/* simplified chinese */
     else if ( sf->encoding_name==em_ksc5601 || sf->encoding_name==em_wansung )
 	CodePage[0] |= 1<<19;	/* korean wansung */
@@ -3099,12 +3099,14 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
     int posses[ttf_namemax];
     int maxlen, len, enc, specific;
     char *space;
-    int extra=0;
+    int extra=0, lang;
+    char *temp;
 
     if ( sf->encoding_name==em_ksc5601 || sf->encoding_name==em_wansung ||
 	    sf->encoding_name==em_jis208 || sf->encoding_name==em_sjis ||
 	    sf->encoding_name==em_big5 || sf->encoding_name==em_big5hkscs ||
 	    sf->encoding_name==em_johab ||
+	    sf->encoding_name==em_jisgb || sf->encoding_name==em_gb2312 ||
 	    format == ff_ttfsym )
 	extra = 1;
     memset(&dummy,'\0',sizeof(dummy));
@@ -3112,7 +3114,11 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
     for ( cur=sf->names; cur!=NULL; cur=cur->next ) {
 	if ( cur->lang!=0x409 ) {
 	    for ( i=0; i<ttf_namemax; ++i )
-		if ( cur->names[i]!=NULL ) strcnt += extra+1;
+		if ( cur->names[i]!=NULL ) {
+		    strcnt += extra+1;
+		    if ( at->applemode && CanEncodingWinLangAsMac(cur->lang))
+			++strcnt;
+		}
 	} else {
 	    dummy = *cur;
 	    useng = cur;
@@ -3125,7 +3131,7 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
     }
     /* once of mac roman encoding, once for mac unicode and once for windows unicode 409 */
 
-    /* The examples I've seen of the feature table only contain mac roman english */
+    /* The examples I've seen of the feature table only contain platform==mac */
     /*  but I'm including apple unicode too */
     if ( at->feat_name!=NULL ) {
 	for ( i=0; at->feat_name[i].strid!=0; ++i )
@@ -3187,6 +3193,26 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
 	    ++cnt;
 	}
     }
+    if ( at->applemode ) {
+	for ( lang=1; lang<256; ++lang ) {		/* Have to order my mac language code now */
+	    for ( cur=sf->names; cur!=NULL; cur=cur->next )
+		    if ( cur->lang!=0x409 && CanEncodingWinLangAsMac(cur->lang) &&
+			    WinLangToMac(cur->lang)==lang ) {
+		for ( i=0; i<ttf_namemax; ++i ) if ( cur->names[i]!=NULL ) {
+		    putshort(at->name,1);			/* Apple platform */
+		    putshort(at->name,MacEncFromMacLang(lang));	/* apple script */
+		    putshort(at->name,lang);			/* apple language code */
+		    putshort(at->name,i);
+		    temp = UnicodeToMacStr(cur->names[i],MacEncFromMacLang(lang),lang);
+		    putshort(at->name,strlen(temp));
+		    putshort(at->name,pos);
+		    pos += strlen(temp)+1;
+		    free(temp);
+		    ++cnt;
+		}
+	    }
+	}
+    }
     if ( format==ff_ttfsym ) {
 	for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL && (i!=6 || !at->applemode) ) {
 	    putshort(at->name,3);	/* MS platform */
@@ -3243,11 +3269,14 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
     if ( sf->encoding_name==em_ksc5601 || sf->encoding_name==em_wansung ||
 	    sf->encoding_name==em_jis208 || sf->encoding_name==em_sjis ||
 	    sf->encoding_name==em_big5 || sf->encoding_name==em_big5hkscs ||
-	    sf->encoding_name==em_johab ) {
+	    sf->encoding_name==em_johab ||
+	    sf->encoding_name==em_gb2312 || sf->encoding_name==em_jisgb ) {
 	specific =  sf->encoding_name==em_ksc5601 ? 5 :	/* Wansung, korean */
 		    sf->encoding_name==em_wansung ? 5 :	/* Wansung, korean */
 		    sf->encoding_name==em_jis208 ? 2 :	/* SJIS */
 		    sf->encoding_name==em_sjis ? 2 :	/* SJIS */
+		    sf->encoding_name==em_gb2312 ? 3 :	/* packed gb2312, don't know the real name */
+		    sf->encoding_name==em_jisgb ? 3 :	/* packed gb2312, don't know the real name */
 		    sf->encoding_name==em_big5 ? 4 :	/* Big5, traditional Chinese */
 		    sf->encoding_name==em_big5hkscs ? 4 :
 		    /* sf->encoding_name==em_johab*/ 6;	/* Korean */
@@ -3255,6 +3284,8 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
 		    sf->encoding_name==em_wansung ? e_wansung :	/* Wansung, korean */
 		    sf->encoding_name==em_jis208 ? e_sjis :	/* SJIS */
 		    sf->encoding_name==em_sjis ? e_sjis :	/* SJIS */
+		    sf->encoding_name==em_gb2312 ? e_jisgb :	/* packed gb2312, don't know the real name */
+		    sf->encoding_name==em_jisgb ? e_jisgb :	/* packed gb2312, don't know the real name */
 		    sf->encoding_name==em_big5 ? e_big5 :	/* Big5, traditional Chinese */
 		    sf->encoding_name==em_big5hkscs ? e_big5hkscs :
 		    /* sf->encoding_name==em_johab*/ e_johab;	/* Korean */
@@ -3299,6 +3330,19 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
     if ( at->feat_name!=NULL ) {
 	for ( i=0; at->feat_name[i].strid!=0; ++i )
 	    dumpstr(at->name,at->feat_name[i].name);
+    }
+    if ( at->applemode ) {
+	for ( lang=1; lang<256; ++lang ) {		/* Have to order my mac language code now */
+	    for ( cur=sf->names; cur!=NULL; cur=cur->next )
+		    if ( cur->lang!=0x409 && CanEncodingWinLangAsMac(cur->lang) &&
+			    WinLangToMac(cur->lang)==lang ) {
+		for ( i=0; i<ttf_namemax; ++i ) if ( cur->names[i]!=NULL ) {
+		    temp = UnicodeToMacStr(cur->names[i],MacEncFromMacLang(lang),lang);
+		    dumpstr(at->name,temp);
+		    free(temp);
+		}
+	    }
+	}
     }
     if ( format==ff_ttfsym ) {
 	for ( cur=sf->names; cur!=NULL; cur=cur->next ) if ( cur->lang!=0x409 )
@@ -3408,6 +3452,7 @@ static FILE *Needs816Enc(SplineFont *sf,int *tlen) {
 return( NULL );
     if ( sf->encoding_name!=em_big5 && sf->encoding_name!=em_big5hkscs &&
 		    sf->encoding_name!=em_johab &&
+		    sf->encoding_name!=em_jisgb &&
 		    sf->encoding_name!=em_sjis && sf->encoding_name!=em_wansung )
 return( NULL );
 
@@ -3424,7 +3469,7 @@ return( NULL );
 	subheadcnt = basebound-base+1;
 	lbase = 0x40;
 	planesize = 191;
-    } else if ( sf->encoding_name==em_wansung ) {
+    } else if ( sf->encoding_name==em_wansung || sf->encoding_name==em_jisgb ) {
 	base = 0xa1;
 	basebound = 0xfd;
 	lbase = 0xa1;
@@ -3824,6 +3869,7 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
 		_sf->encoding_name!=em_sjis && _sf->encoding_name!=em_wansung &&
 		_sf->encoding_name!=em_big5 && _sf->encoding_name!=em_big5hkscs &&
 		_sf->encoding_name!=em_johab &&
+		_sf->encoding_name!=em_gb2312 && _sf->encoding_name!=em_jisgb &&
 		!greekfixup ) {
 	    /* Duplicate glyphs for greek */	/* Only meaningful if unicode */
 	    if ( avail[0xb5]==0xffffffff && avail[0x3bc]!=0xffffffff )
@@ -3938,6 +3984,7 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
 		sf->encoding_name==em_sjis? 1 :		/* SJIS */
 		sf->encoding_name==em_ksc5601? 3 :	/* Korean */
 		sf->encoding_name==em_wansung? 3 :	/* Korean */
+		sf->encoding_name==em_jisgb? 25 :	/* Simplified Chinese */
 		2 );					/* Big5 */
 	    putlong(at->cmap,cjkpos);
 	}
@@ -3955,6 +4002,8 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
 		    sf->encoding_name==em_wansung ? 5 :	/* Wansung, korean */
 		    sf->encoding_name==em_jis208 ? 2 :	/* SJIS */
 		    sf->encoding_name==em_sjis ? 2 :	/* SJIS */
+		    sf->encoding_name==em_gb2312 ? 3 :	/* PRC Chinese */
+		    sf->encoding_name==em_jisgb ? 3 :	/* PRC Chinese */
 		    sf->encoding_name==em_big5 ? 4 :	/* Big5, traditional Chinese */
 		    sf->encoding_name==em_big5hkscs ? 4 :
 		    /*sf->encoding_name==em_johab ?*/ 6);/* Korean */

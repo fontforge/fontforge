@@ -480,7 +480,7 @@ return( CHR('h','a','n','i') );
     }
 
     if ( enc==em_jis208 || enc==em_jis212 || enc==em_gb2312 || enc==em_big5 ||
-	    enc == em_big5hkscs || enc==em_sjis )
+	    enc == em_big5hkscs || enc==em_sjis || enc==em_jisgb )
 return( CHR('h','a','n','i') );
     else if ( enc==em_ksc5601 || enc==em_johab || enc==em_wansung )
 return( CHR('j','a','m','o') );

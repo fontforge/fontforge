@@ -1327,6 +1327,13 @@ extern int SFHasNestedLookupWithTag(SplineFont *sf,uint32 tag,int ispos);
 extern int ClassesMatch(int cnt1,char **classes1,int cnt2,char **classes2);
 extern FPST *FPSTGlyphToClass(FPST *fpst);
 
+extern unichar_t *MacStrToUnicode(const char *str,int macenc,int maclang);
+extern char *UnicodeToMacStr(const unichar_t *ustr,int macenc,int maclang);
+extern uint8 MacEncFromMacLang(int maclang);
+extern uint16 WinLangFromMac(int maclang);
+extern uint16 WinLangToMac(int winlang);
+extern int CanEncodingWinLangAsMac(int winlang);
+
 # if HANYANG
 extern void SFDDumpCompositionRules(FILE *sfd,struct compositionrules *rules);
 extern struct compositionrules *SFDReadCompositionRules(FILE *sfd);

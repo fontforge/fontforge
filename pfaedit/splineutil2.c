@@ -2029,6 +2029,10 @@ SplineFont *SplineFontNew(void) {
 	table = unicode_from_ksc5601;
 	tlen = 0x10000-0x8400;
 	enclen = 65536;
+    } else if ( default_encoding==em_jisgb ) {
+	table = unicode_from_gb2312;
+	tlen = 0x10000-0x8400;
+	enclen = 65536;
     } else if ( default_encoding==em_sjis ) {
 	table = unicode_from_jis208;
 	tlen = 257;

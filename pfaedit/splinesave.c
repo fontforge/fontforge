@@ -1503,7 +1503,8 @@ return( strtol(val,NULL,10));
 
     if ( sf->encoding_name>=em_first2byte && sf->encoding_name<em_unicode )
 return( true );
-    if ( sf->encoding_name==em_sjis || sf->encoding_name==em_wansung )
+    if ( sf->encoding_name==em_sjis || sf->encoding_name==em_wansung ||
+	    sf->encoding_name==em_jisgb )
 return( true );
     if ( (sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4) &&
 	    sf->charcnt>0x3000 &&

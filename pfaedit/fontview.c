@@ -2164,6 +2164,8 @@ static void FVMenuChangeChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 		    pos = 0x8431;
 		else if ( sf->encoding_name==em_wansung && FVAnyCharSelected(fv)<0xa1a1 )
 		    pos = 0xa1a1;
+		else if ( sf->encoding_name==em_jisgb && FVAnyCharSelected(fv)<0xa1a1 )
+		    pos = 0xa1a1;
 		else if ( sf->encoding_name==em_sjis && FVAnyCharSelected(fv)<0x8100 )
 		    pos = 0x8100;
 		else if ( sf->encoding_name==em_sjis && FVAnyCharSelected(fv)<0xb000 )
@@ -3919,14 +3921,17 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i) {
 	    dummy->unicodeenc = unicode_from_johab[i-0x8400];
 	else
 	    dummy->unicodeenc = -1;
-    } else if ( sf->encoding_name==em_wansung ) {
+    } else if ( sf->encoding_name==em_wansung || sf->encoding_name==em_wansung ) {
 	if ( i<160 )
 	    dummy->unicodeenc = i;
 	else if ( (i&0xff00)>=0xa100 && (i&0xff)>=0xa1 &&
 		    (i&0xff00)<0xa100+(94<<8) && (i&0xff)<0xa1+94 ) {
 	    int temp = i-0xa1a1;
 	    temp = (temp>>8)*94 + (temp&0xff);
-	    temp = unicode_from_ksc5601[temp];
+	    if ( sf->encoding_name = em_wansung )
+		temp = unicode_from_ksc5601[temp];
+	    else
+		temp = unicode_from_gb2312[temp];
 	    if ( temp==0 ) temp = -1;
 	    dummy->unicodeenc = temp;
 	} else
@@ -4190,6 +4195,16 @@ return( false);
 	if ( ch1<0xa1 || ch1>0xfd || ch2<0xa1 || ch2>0xfe || sc->enc > 0xfdfe )
 return( false );
 	mods->has_charset = true; mods->charset = em_ksc5601;
+	buf[0] = sc->enc-0x8080;
+	buf[1] = 0;
+return( true );
+      break;
+      case em_jisgb:
+	if ( !GDrawFontHasCharset(fv->header,em_gb2312))
+return( false);
+	if ( ch1<0xa1 || ch1>0xfd || ch2<0xa1 || ch2>0xfe || sc->enc > 0xfdfe )
+return( false );
+	mods->has_charset = true; mods->charset = em_gb2312;
 	buf[0] = sc->enc-0x8080;
 	buf[1] = 0;
 return( true );

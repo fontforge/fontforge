@@ -105,16 +105,72 @@ real get2dot14(FILE *ttf) {
 return( (real) ((val<<16)>>(16+14)) + (mant/16384.0) );
 }
 
-static unichar_t *_readencstring(FILE *ttf,int offset,int len,int enc) {
+static int enc_from_platspec(int platform,int specific) {
+    int enc;
+
+    enc = em_none;
+    if ( platform==0 )
+	enc = em_unicode;
+    else if ( platform==1 ) {
+	if ( specific==0 )
+	    enc = em_mac;
+	else if ( specific==1 )
+	    enc = em_sjis;
+	else if ( specific==2 )
+	    enc = em_big5hkscs;		/* Or should we just guess big5? Both are wrong sometimes */
+	else if ( specific==3 )
+	    enc = em_wansung;
+	else if ( specific==25 )
+	    enc = em_jisgb;
+    } else if ( platform==2 ) {		/* obselete */
+	if ( specific==0 )
+	    enc = em_iso8859_1;		/* Actually just ASCII */
+	else if ( specific==1 )
+	    enc = em_unicode;
+	else if ( specific==2 )
+	    enc = em_iso8859_1;
+    } else if ( platform==3 ) {
+	if ( specific==1 || specific==0 )	/* symbol (sp=0) is just unicode */
+	    enc = em_unicode;
+	else if ( specific==2 )
+	    enc = em_sjis;
+	else if ( specific==3 )
+	    enc = em_jisgb;
+	else if ( specific==4 )
+	    enc = em_big5hkscs;
+	else if ( specific==5 )
+	    enc = em_wansung;
+	else if ( specific==6 )
+	    enc = em_johab;
+    } else if ( platform==7 ) {		/* Used internally in freetype, but */
+	if ( specific==0 )		/*  there's no harm in looking for it */
+	    enc = em_adobestandard;	/*  even if it never happens */
+	else if ( specific==1 )
+	    /* adobe_expert */;
+	else if ( specific==2 )
+	    /* adobe_custom */;
+    }
+return( enc );
+}
+
+static unichar_t *_readencstring(FILE *ttf,int offset,int len,
+	int platform,int specific,int language) {
     long pos = ftell(ttf);
     unichar_t *str, *pt, empty[1];
-    int i, ch;
+    int i, ch, enc;
 
     fseek(ttf,offset,SEEK_SET);
-    if ( enc==em_mac ) {
-	str = pt = galloc(2*len+2);
+
+    enc = enc_from_platspec(platform,specific);
+    if ( platform==1 ) {
+	char *cstr, *cpt;
+	cstr = cpt = galloc(len+1);
 	for ( i=0; i<len; ++i )
-	    *pt++ = unicode_from_mac[getc(ttf)];
+	    *cpt++ = getc(ttf);
+	*cpt = '\0';
+	str = MacStrToUnicode(cstr,specific,language);
+	free(cstr);
+	pt = empty;
     } else if ( enc==em_adobestandard ) {
 	str = pt = galloc(2*len+2);
 	for ( i=0; i<len; ++i )
@@ -168,6 +224,19 @@ static unichar_t *_readencstring(FILE *ttf,int offset,int len,int enc) {
 		++i;
 	    }
 	}
+    } else if ( enc==em_jisgb ) {
+	str = pt = galloc(2*len+2);	/* Probably more space than we need, but it should be enough */
+	for ( i=0; i<len; ++i ) {
+	    ch = getc(ttf);
+	    if ( ch<0xa1 )
+		*pt++ = ch;
+	    else {
+		ch = ((ch<<8)|getc(ttf)) - 0xa1a1;
+		ch = (ch>>8)*94 + (ch&0xff);
+		*pt++ = unicode_from_gb2312[ch];
+		++i;
+	    }
+	}
     } else if ( enc==em_sjis ) {
 	str = pt = galloc(2*len+2);	/* Probably more space than we need, but it should be enough */
 	for ( i=0; i<len; ++i ) {
@@ -198,7 +267,6 @@ static unichar_t *_readencstring(FILE *ttf,int offset,int len,int enc) {
 	    }
 	}
     } else {
-	fprintf( stderr, "Unexpected encoding %d\n", enc );
 	str = NULL; pt = empty;
     }
     *pt = '\0';
@@ -206,137 +274,13 @@ static unichar_t *_readencstring(FILE *ttf,int offset,int len,int enc) {
 return( str );
 }
 
-static int enc_from_platspec(int platform,int specific) {
-    int enc;
-
-    enc = em_none;
-    if ( platform==0 )
-	enc = em_unicode;
-    else if ( platform==1 ) {
-	if ( specific==0 )
-	    enc = em_mac;
-	else if ( specific==1 )
-	    enc = em_sjis;
-	else if ( specific==2 )
-	    enc = em_big5hkscs;		/* Or should we just guess big5? Both are wrong sometimes */
-	else if ( specific==3 )
-	    enc = em_wansung;
-    } else if ( platform==2 ) {		/* obselete */
-	if ( specific==0 )
-	    enc = em_iso8859_1;		/* Actually just ASCII */
-	else if ( specific==1 )
-	    enc = em_unicode;
-	else if ( specific==2 )
-	    enc = em_iso8859_1;
-    } else if ( platform==3 ) {
-	if ( specific==1 || specific==0 )	/* symbol (sp=0) is just unicode */
-	    enc = em_unicode;
-	else if ( specific==2 )
-	    enc = em_sjis;
-	else if ( specific==5 )
-	    enc = em_wansung;
-	else if ( specific==4 )
-	    enc = em_big5hkscs;
-	else if ( specific==6 )
-	    enc = em_johab;
-    } else if ( platform==7 ) {		/* Used internally in freetype, but */
-	if ( specific==0 )		/*  there's no harm in looking for it */
-	    enc = em_adobestandard;	/*  even if it never happens */
-	else if ( specific==1 )
-	    /* adobe_expert */;
-	else if ( specific==2 )
-	    /* adobe_custom */;
-    }
-return( enc );
-}
-
-static int AppleLang_to_MS(int language) {
-    switch ( language ) {
-      case 0:		/* English */
-return( 0x409 );
-      case 36:		/* Albanian */
-return( 0x41c );
-      case 12:		/* Arabic */
-return( 0x401 );
-      case 129:		/* Basque */
-return( 0x42d );
-      case 46:		/* Byelorussian */
-return( 0x423 );
-      case 44:		/* Bulgarian */
-return( 0x402 );
-      case 130:		/* Catalan */
-return( 0x403 );
-      case 19:		/* Traditional Chinese */
-return( 0x404 );
-      case 33:		/* Simplified Chinese */
-return( 0x04 );			/* Not sure about this MS value... */
-      case 18:		/* Croatian */
-return( 0x41a );
-      case 38:		/* Czech */
-return( 0x405 );
-      case 7:		/* Danish */
-return( 0x406 );
-      case 4:		/* Dutch */
-return( 0x413 );
-      case 34:		/* Flemish */
-return( 0x813 );
-      case 27:		/* Estonian */
-return( 0x425 );
-      case 13:		/* Finnish */
-return( 0x40b );
-      case 1:		/* French */
-return( 0x40c );
-      case 2:		/* German */
-return( 0x407 );
-      case 14: case 148:/* Greek */
-return( 0x408 );
-      case 10:		/* Hebrew */
-return( 0x40d );
-      case 26:		/* Hungarian */
-return( 0x40e );
-      case 15:		/* Icelandic */
-return( 0x40f );
-      case 3:		/* Italian */
-return( 0x410 );
-      case 11:		/* Japanese */
-return( 0x411 );
-      case 28:		/* Latvian */
-return( 0x426 );
-      case 24:		/* Lithuanian */
-return( 0x427 );
-      case 9:		/* Norwegian */
-return( 0x414 );
-      case 25:		/* Polish */
-return( 0x415 );
-      case 8:		/* Portuguese */
-return( 0x416 );
-      case 37:		/* Romanian */
-return( 0x418 );
-      case 32:		/* Russian */
-return( 0x419 );
-      case 39:		/* Slovak */
-return( 0x41b );
-      case 40:		/* Slovenian */
-return( 0x424 );
-      case 6:		/* Spanish */
-return( 0x40a );
-      case 5:		/* Swedish */
-return( 0x41d );
-      case 17:		/* Turkish */
-return( 0x41f );
-      case 45:		/* Ukrainian */
-return( 0x422 );
-      default:
-return( 0 );
-    }
-}
-
 unichar_t *TTFGetFontName(FILE *ttf,int32 offset,int32 off2) {
     int i,num;
     int32 tag, nameoffset, length, stringoffset;
     int plat, spec, lang, name, len, off, val;
     int fullval, fullstr, fulllen, famval, famstr, famlen;
-    int enc, fullenc, famenc;
+    int enc;
+    int fullplat, fullspec, fulllang, famplat, famspec, famlang;
 
     fseek(ttf,offset,SEEK_SET);
     /* version = */ getlong(ttf);
@@ -359,7 +303,7 @@ return( NULL );
     /* format = */ getushort(ttf);
     num = getushort(ttf);
     stringoffset = nameoffset+getushort(ttf);
-    fullval = famval = 0; fullenc = famenc = em_none;
+    fullval = famval = 0;
     for ( i=0; i<num; ++i ) {
 	plat = getushort(ttf);
 	spec = getushort(ttf);
@@ -381,14 +325,18 @@ return( NULL );
 	    fullval = val;
 	    fullstr = off;
 	    fulllen = len;
-	    fullenc = enc;
+	    fullplat = plat;
+	    fullspec = spec;
+	    fulllang = lang;
 	    if ( val==12 )
     break;
 	} else if ( name==1 && val>famval ) {
 	    famval = val;
 	    famstr = off;
 	    famlen = len;
-	    famenc = enc;
+	    famplat = plat;
+	    famspec = spec;
+	    famlang = lang;
 	}
     }
     if ( fullval==0 ) {
@@ -396,9 +344,11 @@ return( NULL );
 return( NULL );
 	fullstr = famstr;
 	fulllen = famlen;
-	fullenc = famenc;
+	fullplat = famplat;
+	fullspec = famspec;
+	fulllang = famlang;
     }
-return( _readencstring(ttf,stringoffset+fullstr,fulllen,fullenc));
+return( _readencstring(ttf,stringoffset+fullstr,fulllen,fullplat,fullspec,fulllang));
 }
 
 static int PickTTFFont(FILE *ttf,char *filename,char **chosenname) {
@@ -688,18 +638,21 @@ return( NULL );
 return( base );
 }
 
-static void TTFAddLangStr(FILE *ttf, struct ttfinfo *info, int language, int id,
-	int strlen, int stroff,int enc) {
+static void TTFAddLangStr(FILE *ttf, struct ttfinfo *info, int id,
+	int strlen, int stroff,int plat,int spec,int language) {
     struct ttflangname *cur, *prev;
     unichar_t *str;
 
     if ( id<0 || id>=ttf_namemax )
 return;
-    if ( (language&0xff00)==0 ) language |= 0x400;
 
-    str = _readencstring(ttf,stroff,strlen,enc);
+    str = _readencstring(ttf,stroff,strlen,plat,spec,language);
     if ( str==NULL )		/* we didn't understand the encoding */
 return;
+
+    if ( plat==1 )
+	language = WinLangFromMac(language);
+    if ( (language&0xff00)==0 ) language |= 0x400;
 
     for ( prev=NULL, cur=info->names; cur!=NULL && cur->lang!=language; prev = cur, cur=cur->next );
     if ( cur==NULL ) {
@@ -815,7 +768,6 @@ return( ret );
 static void readttfcopyrights(FILE *ttf,struct ttfinfo *info) {
     int i, cnt, tableoff;
     int platform, specific, language, name, str_len, stroff;
-    int enc;
 
     /* All I want here are the names of the font and its copyright */
     fseek(ttf,info->copyright_start,SEEK_SET);
@@ -829,12 +781,9 @@ static void readttfcopyrights(FILE *ttf,struct ttfinfo *info) {
 	name = getushort(ttf);
 	str_len = getushort(ttf);
 	stroff = getushort(ttf);
-	enc = enc_from_platspec(platform,specific);
-	if ( enc!=em_none ) {
-	    if ( platform==0 || platform==1 )
-		language = AppleLang_to_MS(language);
-	    TTFAddLangStr(ttf,info,language,name,str_len,tableoff+stroff,enc);
-	}
+
+	TTFAddLangStr(ttf,info,name,str_len,tableoff+stroff,
+		platform,specific,language);
     }
 
     if ( info->copyright==NULL )
@@ -2914,6 +2863,14 @@ return( -1 );
 	    }
 	    enc = unicode_from_jis208[(ch1-0x21)*94+(ch2-0x21)];
 	}
+    } else if ( modtype==3 /* GB2312 offset by 0x8080, parse just like wansung */ ) {
+	if ( enc>0xa1a1 ) {
+	    enc -= 0xa1a1;
+	    enc = (enc>>8)*94 + (enc&0xff);
+	    enc = unicode_from_gb2312[enc];
+	    if ( enc==0 ) enc = -1;
+	} else if ( enc>0x100 )
+	    enc = -1;
     } else if ( modtype==4 /* BIG5 */ ) {	/* old ms docs say big5 is modtype==3, but new ones say 4 */
 	if ( enc>0x8100 )
 	    enc = unicode_from_big5hkscs[enc-0x8100];
@@ -2971,6 +2928,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	    info->platform = platform; info->specific = specific;
 	} else if ( (enc!=em_unicode4 || (!prefer_cjk_encodings ||
 		(enc!=em_sjis && enc!=em_wansung && enc!=em_big5 &&
+		 enc!=em_jisgb &&
 		 enc!=em_big5hkscs && enc!=em_johab))) &&
 		(( platform==3 && specific==1 ) || /* MS Unicode */
 /* Well I should only deal with apple unicode specific==0 (default) and 3 (U2.0 semantics) */
@@ -2997,19 +2955,21 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	    enc = em_mac;
 	    encoff = offset;
 	    trans = unicode_from_mac;
-	} else if ( platform==1 && (specific==2 ||specific==1) &&
+	} else if ( platform==1 && (specific==2 ||specific==1||specific==3||specific==25) &&
 		(prefer_cjk_encodings || enc!=em_unicode) ) {
-	    /* I've seen an example of a big5 encoding so I know this is right*/
-	    /*  Japanese appears to be sjis */
-	    enc = specific==1?em_sjis:specific==2?em_big5hkscs:specific==3?em_wansung:em_gb2312;
+	    enc = specific==1?em_sjis:specific==2?em_big5hkscs:specific==3?em_wansung:em_jisgb;
 	    mod = specific==1?2:specific==2?4:specific==3?5:3;		/* convert to ms specific */
 	    info->platform = platform; info->specific = specific;
 	    encoff = offset;
-	} else if ( platform==3 && (specific==2 || specific==4 || specific==5 || specific==6 ) &&
+	} else if ( platform==3 && (specific>=2 && specific<=6 ) &&
 		(prefer_cjk_encodings || enc!=em_unicode) ) {
 	    /* Old ms docs say that specific==3 => big 5, new docs say specific==4 => big5 */
 	    /*  Ain't that jus' great? */
-	    enc = specific==2? em_sjis : specific==5 ? em_wansung : specific==4? em_big5hkscs : em_johab;
+	    enc = specific==2? em_sjis :
+		  specific==3? em_jisgb :
+		  specific==4? em_big5hkscs :
+		  specific==5? em_wansung :
+		      em_johab;
 	    info->platform = platform; info->specific = specific;
 	    mod = specific;
 	    encoff = offset;

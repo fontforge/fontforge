@@ -389,7 +389,7 @@ return( SFFindChar(sf,unienc,NULL));
 	    if ( sf->encoding_name==em_jis208 || sf->encoding_name==em_jis212 ||
 		    sf->encoding_name==em_sjis )
 		table2 = &jis_from_unicode;
-	    else if ( sf->encoding_name==em_gb2312 )
+	    else if ( sf->encoding_name==em_gb2312 || sf->encoding_name==em_jisgb )
 		table2 = &gb2312_from_unicode;
 	    else if ( sf->encoding_name==em_ksc5601 || sf->encoding_name==em_wansung )
 		table2 = &ksc5601_from_unicode;
@@ -415,7 +415,7 @@ return( SFFindChar(sf,unienc,NULL));
 			index = -1;
 		} else if ( unienc<0x80 &&
 			(sf->encoding_name==em_big5 || sf->encoding_name==em_big5hkscs ||
-			 sf->encoding_name==em_johab ||
+			 sf->encoding_name==em_johab || sf->encoding_name==em_jisgb ||
 			 sf->encoding_name==em_sjis || sf->encoding_name==em_wansung ))
 		    index = unienc;
 		else if ( sf->encoding_name==em_sjis && unienc>=0xFF61 &&
@@ -431,7 +431,9 @@ return( SFFindChar(sf,unienc,NULL));
 		    int ro = j1<95 ? 112 : 176;
 		    int co = (j1&1) ? (j2>95?32:31) : 126;
 		    index = ( (((j1+1)>>1) + ro )<<8 ) | (j2+co);
-		}
+		} else if ( index>=0x100 &&
+			(sf->encoding_name==em_wansung || sf->encoding_name==em_jisgb ))
+		    index += 0x8080;
 	    }
 	}
     }

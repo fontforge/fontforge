@@ -132,7 +132,8 @@ static uint16 HashToId(char *fontname,SplineFont *sf) {
 	    sf->encoding_name == em_ksc5601 ||
 	    sf->encoding_name == em_wansung ) {
 	low = 0x4400; high = 0x45ff;
-    } else if ( sf->encoding_name == em_gb2312 ) {
+    } else if ( sf->encoding_name == em_gb2312 ||
+	    sf->encoding_name==em_jisgb ) {
 	low = 0x7200; high = 0x73ff;
     } else for ( i=0; i<sf->charcnt && i<256; ++i ) if ( (sc = sf->chars[i])!=NULL ) {
 	/* Japanese between	0x4000 and 0x41ff */

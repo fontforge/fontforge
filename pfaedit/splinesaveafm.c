@@ -439,7 +439,7 @@ return( "JISX208" );
 return( "JISX212" );
       case em_ksc5601: case em_wansung:
 return( "KSC5601" );
-      case em_gb2312:
+      case em_gb2312: case em_jisgb:
 return( "GB2312" );
       case em_big5:
 return( "BIG5" );
@@ -1251,7 +1251,7 @@ int PfmSplineFont(FILE *pfm, SplineFont *sf, int type0) {
     else if ( sf->encoding_name==em_big5 || sf->encoding_name==em_big5hkscs ||
 	    (sf->cidmaster!=NULL && strnmatch(sf->cidmaster->ordering,"CNS",3)==0 ))
 	putc(136,pfm);
-    else if ( sf->encoding_name==em_gb2312 ||
+    else if ( sf->encoding_name==em_gb2312 || sf->encoding_name==em_jisgb ||
 	    (sf->cidmaster!=NULL && strnmatch(sf->cidmaster->ordering,"GB",2)==0 ))
 	putc(134,pfm);
     else

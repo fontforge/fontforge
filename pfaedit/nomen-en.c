@@ -488,6 +488,7 @@ static char str_Korean[] = "KSC 5601-1987 (Korean)";
 static char str_KoreanJohab[] = "Johab (Korean)";
 static char str_KoreanWansung[] = "Wansung (Korean)";
 static char str_Chinese[] = "GB 2312 (Simp. Chinese)";
+static char str_ChinesePacked = "Packed GB 2312 (Chinese)";
 static char str_ChineseTrad[] = "Big5 (Trad. Chinese)";
 static char str_ChineseTradHKSCS[] = "Big5 HKSCS (Trad. Chinese)";
 static char str_Reducing[] = "You are reducing the number of characters below the\012current number. This will delete some characters.\012Is that what you wish to do?";

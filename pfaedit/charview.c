@@ -3878,6 +3878,8 @@ return;
 		pos = 0x8431;
 	    else if ( cv->sc->enc<0xa1a1 && sf->encoding_name==em_wansung )
 		pos = 0xa1a1;
+	    else if ( cv->sc->enc<0xa1a1 && sf->encoding_name==em_jisgb )
+		pos = 0xa1a1;
 	    else if ( cv->sc->enc<0x8140 && sf->encoding_name==em_sjis )
 		pos = 0x8140;
 	    else if ( cv->sc->enc<0xe040 && sf->encoding_name==em_sjis )

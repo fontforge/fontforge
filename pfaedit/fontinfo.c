@@ -100,6 +100,7 @@ GTextInfo encodingtypes[] = {
     { (unichar_t *) _STR_Korean, NULL, 0, 0, (void *) em_ksc5601, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_KoreanJohab, NULL, 0, 0, (void *) em_johab, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Chinese, NULL, 0, 0, (void *) em_gb2312, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_ChinesePacked, NULL, 0, 0, (void *) em_jisgb, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_ChineseTrad, NULL, 0, 0, (void *) em_big5, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_ChineseTradHKSCS, NULL, 0, 0, (void *) em_big5hkscs, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { NULL }};
@@ -1276,7 +1277,8 @@ return( true );
     if ( sc->unicodeenc==-1 ) {
 	if ( SCIsNotdef(sc,-1) && !(used[0]&1) &&
 		(table[0]==0 || new_map==em_sjis || new_map==em_wansung ||
-		 new_map==em_johab || new_map==em_big5 || new_map==em_big5hkscs)) {
+		 new_map==em_johab || new_map==em_jisgb ||
+		 new_map==em_big5 || new_map==em_big5hkscs)) {
 	    if ( table[0]==0 )
 		used[0] |= 1;
 return( true );			/* .notdef goes to encoding 0 */
@@ -1295,7 +1297,9 @@ return( false );
 	}
     }
 
-    if ( table==unicode_from_jis208 || table == unicode_from_ksc5601 )
+    if ( table==unicode_from_jis208 ||
+	    table == unicode_from_ksc5601 ||
+	    table == unicode_from_gb2312 )
 	tlen = 94*94;
 
     for ( i=0; i<tlen && (sc->unicodeenc!=table[i] || (used[i>>3]&(1<<(i&7))) ||
@@ -1318,7 +1322,9 @@ return( false );
 	sc->enc = i;
 return( true );
     } else if ( i==tlen && sc->unicodeenc<160 &&
-	    (tlen==0x10000-0xa100 || tlen==0x10000-0x8400 || (tlen2==65536 && table==unicode_from_ksc5601 ))) {
+	    (tlen==0x10000-0xa100 || tlen==0x10000-0x8400 ||
+	     (tlen2==65536 && table==unicode_from_gb2312 ) ||
+	     (tlen2==65536 && table==unicode_from_ksc5601 ))) {
 	/* Big 5 often comes with a single byte encoding of ASCII */
 	/* As do Johab and Wansung */
 	/* but sjis is more complex... */
@@ -1335,6 +1341,10 @@ return( false );
 return( true );
 	} else if ( table==unicode_from_ksc5601 ) {
 	    /* Wansung */
+	    sc->enc = 0xa1a1 + ((i/94)<<8) + (i%94);
+return( true );
+	} else if ( table==unicode_from_gb2312 ) {
+	    /* Dunno what this variant of gb2312 is called: em_jisgb */
 	    sc->enc = 0xa1a1 + ((i/94)<<8) + (i%94);
 return( true );
 	} else if ( table==unicode_from_jis208 ) {
@@ -1620,6 +1630,9 @@ return( false );
 	} else if ( new_map==em_ksc5601 ) {
 	    table = unicode_from_ksc5601;
 	    tlen = 94*94;
+	} else if ( new_map==em_jisgb ) {
+	    table = unicode_from_gb2312;
+	    tlen = 65536;
 	} else if ( new_map==em_gb2312 ) {
 	    table = unicode_from_gb2312;
 	    tlen = 94*94;
