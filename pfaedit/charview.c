@@ -1202,6 +1202,10 @@ return;
 	    (event->u.chr.state&ksm_control) &&
 	    (event->u.chr.state&ksm_meta) )
 	MenuSaveAll(NULL,NULL,NULL);
+    else if ( event->u.chr.keysym=='q' &&
+	    (event->u.chr.state&ksm_control) &&
+	    (event->u.chr.state&ksm_meta) )
+	MenuExit(NULL,NULL,NULL);
     else if (( event->u.chr.keysym=='M' ||event->u.chr.keysym=='m' ) &&
 	    (event->u.chr.state&ksm_control) ) {
 	if ( (event->u.chr.state&ksm_meta) && (event->u.chr.state&ksm_shift))
@@ -1833,7 +1837,7 @@ void CVSetCharChanged(CharView *cv,int changed) {
 	    cv->sc->parent->onlybitmaps = false;
 	if ( cv->sc->changed != changed ) {
 	    cv->sc->changed = changed;
-	    FVToggleCharChanged(cv->fv,cv->sc);
+	    FVToggleCharChanged(cv->sc);
 	    if ( changed ) {
 		cv->sc->parent->changed = true;
 		if ( cv->fv->cidmaster!=NULL )
@@ -1868,7 +1872,7 @@ void SCCharChangedUpdate(SplineChar *sc) {
     sc->changed_since_autosave = true;
     if ( !sc->changed && !sc->parent->onlybitmaps ) {
 	sc->changed = true;
-	FVToggleCharChanged(fv,sc);
+	FVToggleCharChanged(sc);
     }
     sc->changedsincelasthinted = true;
     fv->sf->changed = true;

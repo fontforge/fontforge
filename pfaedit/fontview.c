@@ -3352,6 +3352,10 @@ static void FVChar(FontView *fv,GEvent *event) {
 	    (event->u.chr.state&ksm_control) &&
 	    (event->u.chr.state&ksm_meta) )
 	MenuSaveAll(NULL,NULL,NULL);
+    else if ( event->u.chr.keysym=='q' &&
+	    (event->u.chr.state&ksm_control) &&
+	    (event->u.chr.state&ksm_meta) )
+	MenuExit(NULL,NULL,NULL);
     else if (( event->u.chr.keysym=='M' ||event->u.chr.keysym=='m' ) &&
 	    (event->u.chr.state&ksm_control) ) {
 	if ( (event->u.chr.state&ksm_meta) && (event->u.chr.state&ksm_shift))
