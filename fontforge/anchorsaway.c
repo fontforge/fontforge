@@ -78,6 +78,7 @@ typedef struct anchord {
 	int size;		/* odd positioning problems as above */
 	int xstart;		/* This is scaled by factor, others are not */
     } *apmatch;
+    void *freetypecontext;
     int combo, on_ap;
     BasePoint orig_pos;
     int done;
@@ -101,6 +102,8 @@ static void AnchorD_FreeAll(AnchorDlg *a) {
     for ( i=0; i<a->cnt; ++i )
 	BDFCharFree(a->apmatch[i].bdfc);
     free(a->apmatch);
+    if ( a->freetypecontext!=NULL )
+	FreeTypeFreeContext(a->freetypecontext);
 }
 
 static void AnchorD_FindComplements(AnchorDlg *a) {
@@ -109,6 +112,7 @@ static void AnchorD_FindComplements(AnchorDlg *a) {
     AnchorPoint *ap;
     int i, k, j, cnt;
     SplineFont *_sf = a->sc->parent, *sf;
+    uint8 *sel, *oldsel;
 
     switch ( a->ap->type ) {
       case at_mark:
@@ -155,16 +159,31 @@ static void AnchorD_FindComplements(AnchorDlg *a) {
 	if ( j==0 )
 	    a->apmatch = gcalloc(cnt,sizeof(struct apmatch));
     }
+
+    if ( hasFreeType() && _sf->subfontcnt==0 ) {
+	sel = gcalloc(_sf->charcnt,1);
+	sel[a->sc->enc] = true;
+	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	    for ( ap= sf->chars[i]->anchor; ap!=NULL; ap=ap->next ) {
+		if ( ap->anchor == ac && ( ap->type==match || ap->type==match2 )) {
+		    sel[i] = true;
+	    break;
+		}
+	    }
+	}
+	oldsel = _sf->fv->selected;
+	_sf->fv->selected = sel;
+	a->freetypecontext = FreeTypeFontContext(_sf,NULL,_sf->fv);
+	_sf->fv->selected = oldsel;
+	free(sel);
+    }
 }
 
-static BDFChar *APRasterize(SplineChar *sc,int *off,int *size,int pixelsize) {
-    void *freetypecontext=NULL;
+static BDFChar *APRasterize(void *freetypecontext, SplineChar *sc,int *off,int *size,int pixelsize) {
     BDFChar *bdfc;
 
-    freetypecontext = FreeTypeFontContext(sc->parent,sc,sc->parent->fv);
     if ( freetypecontext ) {
 	bdfc = SplineCharFreeTypeRasterize(freetypecontext,sc->enc,pixelsize,8);
-	FreeTypeFreeContext(freetypecontext);
     } else
 	bdfc = SplineCharAntiAlias(sc,pixelsize,4);
 
@@ -244,11 +263,11 @@ static void AnchorD_ChangeSize(AnchorDlg *a) {
     a->scale = a->pixelsize / (double) (a->sc->parent->ascent + a->sc->parent->descent);
 
     BDFCharFree(a->bdfc);
-    a->bdfc = APRasterize(a->sc,&a->char_off,&a->char_size,a->pixelsize);
+    a->bdfc = APRasterize(a->freetypecontext,a->sc,&a->char_off,&a->char_size,a->pixelsize);
     a->ymin = a->bdfc->ymin; a->ymax = a->bdfc->ymax;
     for ( i=0; i<a->cnt; ++i ) {
 	BDFCharFree(a->apmatch[i].bdfc);
-	a->apmatch[i].bdfc = APRasterize(a->apmatch[i].sc,&a->apmatch[i].off,&a->apmatch[i].size,a->pixelsize);
+	a->apmatch[i].bdfc = APRasterize(a->freetypecontext,a->apmatch[i].sc,&a->apmatch[i].off,&a->apmatch[i].size,a->pixelsize);
 	if ( a->ap->type==at_centry || a->ap->type==at_cexit )
 	    a->apmatch[i].size += a->char_size;
 	else if ( a->ap->type!=at_mark )
