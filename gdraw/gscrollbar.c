@@ -251,7 +251,12 @@ return( false );
     
     if ( event->type == et_mousedown && GGadgetWithin(g,event->u.mouse.x,event->u.mouse.y)) {
 	GDrawCancelTimer(gsb->pressed); gsb->pressed = NULL;
-	if ( active_pos >= gsb->thumbpos &&
+	if ( event->u.mouse.button==3 ) {
+	    gsb->thumbpressed = true;
+	    gsb->thumboff = 0;
+	    active_pos = event->u.mouse.y-g->inner.y;
+	    GScrollBarChanged(gsb,et_sb_thumb,active_pos);
+	} else if ( active_pos >= gsb->thumbpos &&
 		active_pos < gsb->thumbpos+gsb->thumbsize ) {
 	    gsb->thumbpressed = true;
 	    gsb->thumboff = active_pos-gsb->thumbpos;
