@@ -1030,10 +1030,13 @@ static SplineSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
 	    SplineMake(cur->last,sp,is_order2);
 	    cur->last = sp;
 	    FigureControls(sp,cur->first,&pts[start],is_order2);
-	} else if ( !(flags[i-1]&_On_Curve))
+	} else if ( !(flags[i-1]&_On_Curve)) {
 	    FigureControls(cur->last,cur->first,&pts[i-1],is_order2);
-	else if ( !(flags[start]&_On_Curve) )
+	    cur->last->nextcpindex = i-1;
+	} else if ( !(flags[start]&_On_Curve) ) {
 	    FigureControls(cur->last,cur->first,&pts[start],is_order2);
+	    sp->nextcpindex = start;
+	}
 	if ( cur->last!=cur->first ) {
 	    SplineMake(cur->last,cur->first,is_order2);
 	    cur->last = cur->first;
