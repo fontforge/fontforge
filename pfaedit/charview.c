@@ -2609,6 +2609,7 @@ return( true );
 #define MID_MarkExtrema	2015
 #define MID_Goto	2016
 #define MID_FindInFontView	2017
+#define MID_KernPairs	2018
 #define MID_Cut		2101
 #define MID_Copy	2102
 #define MID_Paste	2103
@@ -2849,6 +2850,11 @@ static void CVMenuFill(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CVRegenFill(cv);
     GDrawRequestExpose(cv->v,NULL,false);
     GMenuBarSetItemChecked(cv->mb,MID_Fill,CVShows.showfilled);
+}
+
+static void CVMenuKernPairs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    SFShowKernPairs(cv->sc->parent,cv->sc);
 }
 
 static void CVMenuChangeChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -4264,7 +4270,8 @@ static void sllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 
 static void cv_vwlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
-    int pos;
+    int pos,i;
+    KernPair *kp;
     SplineFont *sf = cv->sc->parent;
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
@@ -4276,6 +4283,21 @@ static void cv_vwlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 	  case MID_PrevDef:
 	    for ( pos = cv->sc->enc-1; pos>=0 && sf->chars[pos]==NULL; --pos );
 	    mi->ti.disabled = pos==-1 || cv->searcher!=NULL;
+	  break;
+	  case MID_KernPairs:
+	    mi->ti.disabled = cv->sc->kerns==NULL;
+	    if ( cv->sc->kerns==NULL ) {
+		SplineFont *sf = cv->sc->parent;
+		for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+		    for ( kp = sf->chars[i]->kerns; kp!=NULL; kp=kp->next ) {
+			if ( kp->sc == cv->sc ) {
+			    mi->ti.disabled = false;
+		goto out;
+			}
+		    }
+		}
+	      out:;
+	    }
 	  break;
 	  case MID_Next: case MID_Prev: case MID_Goto: case MID_FindInFontView:
 	    mi->ti.disabled = cv->searcher!=NULL;
@@ -4542,6 +4564,8 @@ static GMenuItem vwlist[] = {
     { { (unichar_t *) _STR_Hidepoints, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'o' }, 'D', ksm_control, NULL, NULL, CVMenuShowHide, MID_HidePoints },
     { { (unichar_t *) _STR_MarkExtrema, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'M' }, '\0', ksm_control, NULL, NULL, CVMenuMarkExtrema, MID_MarkExtrema },
     { { (unichar_t *) _STR_Fill, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'l' }, '\0', 0, NULL, NULL, CVMenuFill, MID_Fill },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, }},
+    { { (unichar_t *) _STR_KernPairs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'K' }, '\0', 0, NULL, NULL, CVMenuKernPairs, MID_KernPairs },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, }},
     { { (unichar_t *) _STR_Palettes, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '\0', 0, pllist, pllistcheck },
     { { (unichar_t *) _STR_Hiderulers, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'R' }, '\0', ksm_control, NULL, NULL, CVMenuShowHideRulers, MID_HideRulers },

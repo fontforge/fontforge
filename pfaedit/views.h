@@ -646,5 +646,8 @@ extern void SVMakeActive(SearchView *sv,CharView *cv);
 extern int SVAttachFV(FontView *fv,int ask_if_difficult);
 extern void SVDetachFV(FontView *fv);
 
+extern void SFShowKernPairs(SplineFont *sf,SplineChar *sc);
+extern void SFShowLigatures(SplineFont *sf);
+
 extern GMenuItem helplist[];
 #endif

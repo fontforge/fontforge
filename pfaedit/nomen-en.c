@@ -1488,6 +1488,10 @@ static char *str_FindReplace = "Find / Replace"
 static char *mnemonic_FindReplace = "i";
     /* combinations */
 static char *str_SelectLigature = "Select a ligature to view"
+static char *str_SortBy = "Sort By:"
+static char *str_FirstChar = "Left Char"
+static char *str_SecondChar = "Right Char"
+static char *str_KernSize = "Kern Size"
 
 static int num_buttonsize = 55;
 static int num_ScaleFactor = 100;

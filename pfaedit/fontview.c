@@ -743,6 +743,8 @@ static void FVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_ShowVMetrics 2017
 #define MID_CompactedView 2018
 #define MID_EncodedView 2019
+#define MID_Ligatures	2020
+#define MID_KernPairs	2021
 #define MID_CharInfo	2201
 #define MID_FindProblems 2216
 #define MID_MetaFont	2217
@@ -1631,6 +1633,16 @@ static void FVMenuGotoChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     int pos = GotoChar(fv->sf);
     FVChangeChar(fv,pos);
+}
+
+static void FVMenuLigatures(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    SFShowLigatures(fv->sf);
+}
+
+static void FVMenuKernPairs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    SFShowKernPairs(fv->sf,NULL);
 }
 
 static void FVMenuCompact(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -2569,6 +2581,42 @@ static GMenuItem ellist[] = {
     { NULL }
 };
 
+static GMenuItem cblist[] = {
+    { { (unichar_t *) _STR_KernPairs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'K' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuKernPairs, MID_KernPairs },
+    { { (unichar_t *) _STR_Ligatures, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'L' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuLigatures, MID_Ligatures },
+    NULL
+};
+
+static void cblistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    SplineFont *sf = fv->sf;
+    int i, anyligs=0, anykerns=0;
+
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	if ( sf->chars[i]->lig!=NULL ) {
+	    anyligs = true;
+	    if ( anykerns )
+    break;
+	}
+	if ( sf->chars[i]->kerns!=NULL ) {
+	    anykerns = true;
+	    if ( anyligs )
+    break;
+	}
+    }
+
+    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
+	switch ( mi->mid ) {
+	  case MID_Ligatures:
+	    mi->ti.disabled = !anyligs;
+	  break;
+	  case MID_KernPairs:
+	    mi->ti.disabled = !anykerns;
+	  break;
+	}
+    }
+}
+
 static GMenuItem vwlist[] = {
     { { (unichar_t *) _STR_NextChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'N' }, ']', ksm_control, NULL, NULL, FVMenuChangeChar, MID_Next },
     { { (unichar_t *) _STR_PrevChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '[', ksm_control, NULL, NULL, FVMenuChangeChar, MID_Prev },
@@ -2578,6 +2626,8 @@ static GMenuItem vwlist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_EncodedView, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'E' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuCompact, MID_EncodedView },
     { { (unichar_t *) _STR_CompactedView, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuCompact, MID_CompactedView },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_Combinations, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'b' }, '\0', ksm_shift|ksm_control, cblist, cblistcheck },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_ShowHMetrics, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuShowMetrics, MID_ShowHMetrics },
     { { (unichar_t *) _STR_ShowVMetrics, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'V' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuShowMetrics, MID_ShowVMetrics },
