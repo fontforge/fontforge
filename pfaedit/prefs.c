@@ -398,7 +398,6 @@ static void GreekHack(void) {
 	psunicodenames[0xf518] = "Omegasmall";
 	psunicodenames[0xf519] = "Iotadieresissmall";
 	psunicodenames[0xf51a] = "Upsilondieresissmall";
-/* Should I patch 0x3d6 to be "pi1" rather than "omega1"? Unicode says it's pi, adobe says omega */
     } else {
 	psunicodenames[0x2206] = "Delta";	/* Increment */
 	psunicodenames[0x2126] = "Omega";	/* Ohm sign */
@@ -408,6 +407,12 @@ static void GreekHack(void) {
 	    psunicodenames[i] = NULL;
     }
     /* I'm leaving mu at 00b5 (rather than 03bc) */
+
+/* Adobe says 0x03d6 should be called "omega1", but Unicode says it's a varient of Pi */
+    if ( getenv("PFAEDIT_PI1")!=NULL )
+	psunicodenames[0x03d6] = "pi1";
+    else
+	psunicodenames[0x03d6] = "omega1";
 }
 
 static unichar_t *utf8_copy(char *src) {
