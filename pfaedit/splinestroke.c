@@ -418,12 +418,14 @@ static void StrokeJoint(SplinePoint *base,StrokeInfo *si,JointPoint *plus,JointP
     }
 }
 
-static int SplineSolveForPen(Spline *s,StrokeInfo *si,double *ts,double tstart,double tend) {
+static int SplineSolveForPen(Spline *s,StrokeInfo *si,double *ts,int *pinners,
+	double tstart,double tend) {
     /* Find all the places at which the spline has the same slope as one of the */
     /*  edges of the pen. There can be at most 8 (we get four quadratics) */
     double a, b, c, sq, t1, t2;
     int i, cnt=0, j;
     Spline1D *xsp = &s->splines[0], *ysp = &s->splines[1];
+    BasePoint pp, pm, np, nm, testp, testm;
 
     ts[cnt++] = tstart;
     for ( i=0; i<2; ++i ) {
@@ -462,14 +464,22 @@ static int SplineSolveForPen(Spline *s,StrokeInfo *si,double *ts,double tstart,d
 	    ts[cnt++] = t2;
     }
     ts[cnt++] = tend;
-    if ( cnt<=3 )
+    if ( cnt<=2 )
 return(cnt);
+    /* Order them */
     for ( i=1; i<cnt-1; ++i ) for ( j=i+1; j<cnt; ++j )
 	if ( ts[i]>ts[j] ) {
 	    double temp = ts[i];
 	    ts[i] = ts[j];
 	    ts[j] = temp;
 	}
+    /* Figure which side is inner */
+    for ( i=1; i<cnt-1; ++i ) {
+	SplineExpand(s,ts[i],-(ts[i]-ts[i-1])/20.,si,&pp,&pm);
+	SplineExpand(s,ts[i],(ts[i+1]-ts[i])/20.,si,&np,&nm);
+	SplineExpand(s,ts[i]+(ts[i+1]-ts[i])/20.,0,si,&testp,&testm);
+	pinners[i] = ( (testp.x-np.x)*(pp.x-np.x)+(testp.y-np.y)*(pp.y-np.y)> 0 );
+    }
 return( cnt );
 }
 
@@ -508,6 +518,19 @@ static void SplineSetFixRidiculous(SplineSet *ss) {
 }
 #endif
 
+static void SplineSetFixCPs(SplineSet *ss) {
+    SplinePoint *sp;
+
+    for ( sp=ss->first; ; ) {
+	SPWeightedAverageCps(sp);
+	if ( sp->next==NULL )
+    break;
+	sp = sp->next->to;
+	if ( sp==ss->first )
+    break;
+    }
+}
+
 SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc) {
     JointPoint first_plus, first_minus, cur_plus, cur_minus;
     SplineSet *ssplus, *ssminus;
@@ -515,7 +538,7 @@ SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc) {
     					/* minus expects splines added on next*/
     SplinePoint *pto, *mto;
     SplinePoint *p_to, *m_to, *p_from, *m_from;
-    BasePoint p,m,junk;
+    BasePoint p,m,temp;
     TPoint pmids[4], mmids[4];
     real p_tlast, m_tlast, p_tcur, m_tcur;
     real t_start, t_end;
@@ -523,6 +546,7 @@ SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc) {
     Spline *first, *spline;
     int changed = false;
     double ts[10];
+    int pinners[10];
     int cnt;
 
     if ( spl->first==spl->last && spl->first->next!=NULL ) {
@@ -590,8 +614,10 @@ return( ssplus );
 	    /*  intersection of the splines from the two corners */
 	    /* And if (god help us) we've got a point of inflection here then */
 	    /*  we get half the pen on each side */
-	    /* So this code is quite wrong !!!! */
-	    cnt = SplineSolveForPen(spline,si,ts,t_start,t_end);
+	    /* I ignore the case of a point of inflection, and I don't */
+	    /*  find the real intersection point, I just guess that it is */
+	    /*  near the mid point of the pen */
+	    cnt = SplineSolveForPen(spline,si,ts,pinners,t_start,t_end);
 	    p_to = m_to = NULL;
 	    for ( j=1; j<cnt; ++j ) {
 		for ( i=0; i<4; ++i ) {
@@ -603,24 +629,36 @@ return( ssplus );
 		}
 		if ( j==1 ) {
 		    p_from = plus; m_from = minus;
-		} else {
-		    SplineExpand(spline,ts[j-1],-(ts[j-1]-ts[j-2])/20.,si,&p,&m);
-		    SplineExpand(spline,ts[j-1],(ts[j-1]-ts[j-2])/20.,si,&junk,&m);
-		    p_from = SplinePointCreate(p.x,p.y);
+		} else if ( pinners[j-1] ) {
+		    p_from = p_to;
+		    SplineExpand(spline,ts[j-1],(ts[j-1]-ts[j-2])/20.,si,&p,&m);
 		    m_from = SplinePointCreate(m.x,m.y);
-		    p_from->pointtype = m_to->pointtype = pt_tangent;
-		    SplineMake(p_from,p_to);
+		    m_from->pointtype = pt_tangent;
 		    SplineMake(m_to,m_from);
+		} else {
+		    m_from = m_to;
+		    SplineExpand(spline,ts[j-1],-(ts[j-1]-ts[j-2])/20.,si,&p,&m);
+		    p_from = SplinePointCreate(p.x,p.y);
+		    p_from->pointtype = pt_tangent;
+		    SplineMake(p_from,p_to);
 		}
 		if ( j==cnt-1 ) {
 		    p_to = pto;
 		    m_to = mto;
-		} else {
+		} else if ( pinners[j] ) {
 		    SplineExpand(spline,ts[j],(ts[j+1]-ts[j-1])/20.,si,&p,&m);
-		    SplineExpand(spline,ts[j],-(ts[j+1]-ts[j-1])/20.,si,&junk,&m);
-		    p_to = SplinePointCreate(p.x,p.y);
+		    SplineExpand(spline,ts[j],-(ts[j+1]-ts[j-1])/20.,si,&temp,&m);
+		    p_to = SplinePointCreate((p.x+temp.x)/2,(p.y+temp.y)/2);
+		    p_to->pointtype = pt_corner;
 		    m_to = SplinePointCreate(m.x,m.y);
-		    p_to->pointtype = m_to->pointtype = pt_tangent;
+		    m_to->pointtype = pt_tangent;
+		} else {
+		    SplineExpand(spline,ts[j],-(ts[j+1]-ts[j-1])/20.,si,&p,&temp);
+		    SplineExpand(spline,ts[j],(ts[j+1]-ts[j-1])/20.,si,&p,&m);
+		    p_to = SplinePointCreate(p.x,p.y);
+		    p_to->pointtype = pt_tangent;
+		    m_to = SplinePointCreate((m.x+temp.x)/2,(m.y+temp.y)/2);
+		    m_to->pointtype = pt_corner;
 		}
 		ApproximateSplineFromPoints(p_to,p_from,pmids,4);
 		ApproximateSplineFromPoints(m_from,m_to,mmids,4);
@@ -657,12 +695,14 @@ return( ssplus );
 	ssminus = chunkalloc(sizeof(SplineSet));
 	ssminus->first = ssminus->last = minus;
 	/*SplineSetFixRidiculous(ssplus); SplineSetFixRidiculous(ssminus);*/
+	SplineSetFixCPs(ssplus); SplineSetFixCPs(ssminus);
 	if ( SplinePointListIsClockwise(ssplus))
 	    SplineSetReverse(ssplus);
 	ssplus->next = ssminus;
 	SplineSetsCorrect(ssplus,&changed);
     } else {
 	/*SplineSetFixRidiculous(ssplus);*/
+	SplineSetFixCPs(ssplus);
 	if ( !SplinePointListIsClockwise(ssplus))
 	    SplineSetReverse(ssplus);
     }

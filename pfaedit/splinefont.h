@@ -724,6 +724,7 @@ extern SplineSet *SplineSetsExtractOpen(SplineSet **tbase);
 extern SplineSet *SplineSetsCorrect(SplineSet *base,int *changed);
 extern SplineSet *SplineSetsDetectDir(SplineSet **_base, int *lastscan);
 extern void SPAverageCps(SplinePoint *sp);
+extern void SPWeightedAverageCps(SplinePoint *sp);
 extern void SplineCharDefaultPrevCP(SplinePoint *base, SplinePoint *prev);
 extern void SplineCharDefaultNextCP(SplinePoint *base, SplinePoint *next);
 extern void SplineCharTangentNextCP(SplinePoint *sp);

@@ -1641,6 +1641,41 @@ void SFRandomChangeXUID(SplineFont *sf) {
     SFChangeXUID(sf,true);
 }
 
+void SPWeightedAverageCps(SplinePoint *sp) {
+    real pangle, nangle, angle, plen, nlen, c, s;
+    if ( sp->pointtype==pt_curve && sp->prev && sp->next ) {
+	if ( sp->noprevcp )
+	    pangle = atan2(sp->me.y-sp->prev->from->me.y,sp->me.x-sp->prev->from->me.x);
+	else
+	    pangle = atan2(sp->me.y-sp->prevcp.y,sp->me.x-sp->prevcp.x);
+	if ( sp->nonextcp )
+	    nangle = atan2(sp->next->to->me.y-sp->me.y,sp->next->to->me.x-sp->me.x);
+	else
+	    nangle = atan2(sp->nextcp.y-sp->me.y,sp->nextcp.x-sp->me.x);
+	if ( pangle<0 && nangle>0 && nangle-pangle>=3.1415926 )
+	    pangle += 2*3.1415926535897932;
+	else if ( pangle>0 && nangle<0 && pangle-nangle>=3.1415926 )
+	    nangle += 2*3.1415926535897932;
+	plen = sqrt((sp->me.y-sp->prevcp.y)*(sp->me.y-sp->prevcp.y) +
+		(sp->me.x-sp->prevcp.x)*(sp->me.x-sp->prevcp.x));
+	nlen = sqrt((sp->nextcp.y-sp->me.y)*(sp->nextcp.y-sp->me.y) +
+		(sp->nextcp.x-sp->me.x)*(sp->nextcp.x-sp->me.x));
+	if ( plen+nlen==0 )
+	    angle = (nangle+pangle)/2;
+	else
+	    angle = (plen*pangle + nlen*nangle)/(plen+nlen);
+	plen = -plen;
+	c = cos(angle); s=sin(angle);
+	sp->nextcp.x = c*nlen + sp->me.x;
+	sp->nextcp.y = s*nlen + sp->me.y;
+	sp->prevcp.x = c*plen + sp->me.x;
+	sp->prevcp.y = s*plen + sp->me.y;
+	SplineRefigure(sp->prev);
+	SplineRefigure(sp->next);
+    } else
+	SPAverageCps(sp);
+}
+
 void SPAverageCps(SplinePoint *sp) {
     real pangle, nangle, angle, plen, nlen, c, s;
     if ( sp->pointtype==pt_curve && sp->prev && sp->next ) {
