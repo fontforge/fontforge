@@ -230,7 +230,8 @@ return( true );
 	    GListAppendLine(list,ret,false);
 	    if ( kcd->off==0 ) {
 		kcd->offsets = grealloc(kcd->offsets,(kcd->first_cnt+1)*kcd->second_cnt*sizeof(int16));
-		memset(kcd->offsets+kcd->first_cnt,0,kcd->second_cnt*sizeof(int16));
+		memset(kcd->offsets+kcd->first_cnt*kcd->second_cnt,
+			0, kcd->second_cnt*sizeof(int16));
 		++kcd->first_cnt;
 	    } else {
 		int16 *new = galloc(kcd->first_cnt*(kcd->second_cnt+1)*sizeof(int16));
@@ -240,6 +241,8 @@ return( true );
 		    new[i*(kcd->second_cnt+1)+kcd->second_cnt] = 0;
 		}
 		++kcd->second_cnt;
+		free( kcd->offsets );
+		kcd->offsets = new;
 	    }
 	    KCD_SBReset(kcd);
 	}
@@ -336,7 +339,7 @@ static void KCD_DrawGlyph(GWindow pixmap,int x,int baseline,BDFChar *bdfc) {
 }
 
 static void KCD_KernMouse(KernClassDlg *kcd,GEvent *event) {
-    int x, width;
+    int x, y, width;
     char buf[20];
     unichar_t ubuf[20];
     int kern, pkern;
@@ -345,56 +348,108 @@ static void KCD_KernMouse(KernClassDlg *kcd,GEvent *event) {
     scale = kcd->pixelsize/(double) (kcd->kcld->sf->ascent+kcd->kcld->sf->descent);
     kern = u_strtol(_GGadgetGetTitle(GWidgetGetControl(kcd->kw,CID_KernOffset)),NULL,10);
     pkern = rint( kern*scale );
-    width = (kcd->fsc!=NULL?kcd->fsc->width:0)+(kcd->ssc!=NULL?kcd->ssc->width:0)+pkern + 20;
-    x = (kcd->width - width)/2;
 
-    if ( GGadgetIsChecked(GWidgetGetControl(kcd->gw,CID_R2L)) ) {
-	if ( kcd->ssc!=NULL )
-	    width -= kcd->ssc->width;
-    } else {
-	if ( kcd->fsc!=NULL ) {
-	    x += kcd->fsc->width + pkern;
-	    width -= kcd->fsc->width + pkern;
+    if ( !kcd->kcld->isv ) {
+	/* Horizontal */
+	width = (kcd->fsc!=NULL?kcd->fsc->width:0)+(kcd->ssc!=NULL?kcd->ssc->width:0)+pkern + 20;
+	x = (kcd->width - width)/2;
+
+	if ( GGadgetIsChecked(GWidgetGetControl(kcd->gw,CID_R2L)) ) {
+	    if ( kcd->ssc!=NULL )
+		width -= kcd->ssc->width;
+	} else {
+	    if ( kcd->fsc!=NULL ) {
+		x += kcd->fsc->width + pkern;
+		width -= kcd->fsc->width + pkern;
+	    }
 	}
-    }
 
-    if ( event->u.mouse.y<kcd->top || event->u.mouse.y>kcd->top+2*kcd->pixelsize ||
-	    event->u.mouse.x<x || event->u.mouse.x>x+width ) {
-	if ( event->type == et_mousedown )
+	if ( event->u.mouse.y<kcd->top || event->u.mouse.y>kcd->top+2*kcd->pixelsize ||
+		event->u.mouse.x<x || event->u.mouse.x>x+width ) {
+	    if ( event->type == et_mousedown )
 return;
-	if ( kcd->within ) {
-	    GDrawSetCursor(kcd->kw,ct_pointer);
-	    if ( kcd->down && kcd->orig_kern!=kern ) {
-		sprintf(buf, "%d", kcd->orig_kern);
+	    if ( kcd->within ) {
+		GDrawSetCursor(kcd->kw,ct_pointer);
+		if ( kcd->down && kcd->orig_kern!=kern ) {
+		    sprintf(buf, "%d", kcd->orig_kern);
+		    uc_strcpy(ubuf,buf);
+		    GGadgetSetTitle(GWidgetGetControl(kcd->kw,CID_KernOffset),ubuf);
+		    GDrawRequestExpose(kcd->kw,NULL,false);
+		}
+		kcd->within = false;
+	    }
+	    if ( event->type==et_mouseup )
+		kcd->down = false;
+return;
+	}
+
+	if ( !kcd->within ) {
+	    GDrawSetCursor(kcd->kw,ct_leftright);
+	    kcd->within = true;
+	}
+	if ( event->type == et_mousedown ) {
+	    kcd->orig_kern = kern;
+	    kcd->down = true;
+	    kcd->downpos = event->u.mouse.x;
+	} else if ( kcd->down ) {
+	    /* I multiply by 2 here because I center the glyphs, so the kerning */
+	    /*  changes in both directions */
+	    int nkern = kcd->orig_kern + rint(2*(event->u.mouse.x-kcd->downpos)/scale);
+	    if ( kern!=nkern ) {
+		sprintf(buf, "%d", nkern);
 		uc_strcpy(ubuf,buf);
 		GGadgetSetTitle(GWidgetGetControl(kcd->kw,CID_KernOffset),ubuf);
 		GDrawRequestExpose(kcd->kw,NULL,false);
 	    }
 	    if ( event->type==et_mouseup )
 		kcd->down = false;
-	    kcd->within = false;
 	}
-return;
-    }
+    } else {
+	/* Vertical */
+	y = kcd->top + kcd->pixelsize/3;
+	width = (kcd->ssc!=NULL ? rint(kcd->ssc->sc->vwidth * scale) : 0);
+	if ( kcd->fsc!=NULL )
+	    y += rint(kcd->fsc->sc->vwidth * scale) + pkern;
+	x = kcd->width/2 - kcd->pixelsize/2;
 
-    if ( !kcd->within ) {
-	GDrawSetCursor(kcd->kw,ct_leftright);
-	kcd->within = true;
-    }
-    if ( event->type == et_mousedown ) {
-	kcd->orig_kern = kern;
-	kcd->down = true;
-	kcd->downpos = event->u.mouse.x;
-    } else if ( kcd->down ) {
-	int nkern = kcd->orig_kern + rint((event->u.mouse.x-kcd->downpos)/scale);
-	if ( kern!=nkern ) {
-	    sprintf(buf, "%d", nkern);
-	    uc_strcpy(ubuf,buf);
-	    GGadgetSetTitle(GWidgetGetControl(kcd->kw,CID_KernOffset),ubuf);
-	    GDrawRequestExpose(kcd->kw,NULL,false);
+	if ( event->u.mouse.y<y || event->u.mouse.y>y+width ||
+		event->u.mouse.x<x || event->u.mouse.x>x+kcd->pixelsize ) {
+	    if ( event->type == et_mousedown )
+return;
+	    if ( kcd->within ) {
+		GDrawSetCursor(kcd->kw,ct_pointer);
+		if ( kcd->down && kcd->orig_kern!=kern ) {
+		    sprintf(buf, "%d", kcd->orig_kern);
+		    uc_strcpy(ubuf,buf);
+		    GGadgetSetTitle(GWidgetGetControl(kcd->kw,CID_KernOffset),ubuf);
+		    GDrawRequestExpose(kcd->kw,NULL,false);
+		}
+		kcd->within = false;
+	    }
+	    if ( event->type==et_mouseup )
+		kcd->down = false;
+return;
 	}
-	if ( event->type==et_mouseup )
-	    kcd->down = false;
+
+	if ( !kcd->within ) {
+	    GDrawSetCursor(kcd->kw,ct_updown);
+	    kcd->within = true;
+	}
+	if ( event->type == et_mousedown ) {
+	    kcd->orig_kern = kern;
+	    kcd->down = true;
+	    kcd->downpos = event->u.mouse.y;
+	} else if ( kcd->down ) {
+	    int nkern = kcd->orig_kern + rint((event->u.mouse.y-kcd->downpos)/scale);
+	    if ( kern!=nkern ) {
+		sprintf(buf, "%d", nkern);
+		uc_strcpy(ubuf,buf);
+		GGadgetSetTitle(GWidgetGetControl(kcd->kw,CID_KernOffset),ubuf);
+		GDrawRequestExpose(kcd->kw,NULL,false);
+	    }
+	    if ( event->type==et_mouseup )
+		kcd->down = false;
+	}
     }
 }
 
@@ -402,41 +457,55 @@ static void KCD_KernExpose(KernClassDlg *kcd,GWindow pixmap,GEvent *event) {
     GRect *area = &event->u.expose.rect;
     GRect rect;
     GRect old1;
-    int x;
+    int x, y;
     SplineFont *sf = kcd->kcld->sf;
     int em = sf->ascent+sf->descent;
     int as = rint(sf->ascent*kcd->pixelsize/(double) em);
     const unichar_t *ret = _GGadgetGetTitle(GWidgetGetControl(kcd->gw,CID_KernOffset));
     int kern = u_strtol(ret,NULL,10);
-    int baseline;
+    int baseline, xbaseline;
 
     if ( area->y+area->height<kcd->top )
 return;
-    if ( area->y>kcd->top+2*kcd->pixelsize )
+    if ( area->y>kcd->top+3*kcd->pixelsize ||
+	    (!kcd->kcld->isv && area->y>kcd->top+2*kcd->pixelsize ))
 return;
 
     rect.x = 0; rect.y = kcd->top;
     rect.width = kcd->width; /* close enough */
-    rect.height = 2*kcd->pixelsize;
+    rect.height = kcd->kcld->isv ? 3*kcd->pixelsize : 2*kcd->pixelsize;
     GDrawPushClip(pixmap,&rect,&old1);
 
     kern = rint(kern*kcd->pixelsize/(double) em);
-    x = (kcd->width-( (kcd->fsc!=NULL?kcd->fsc->width:0)+(kcd->ssc!=NULL?kcd->ssc->width:0)+kern))/2;
-    baseline = kcd->top + as + kcd->pixelsize/2;
-    if ( GGadgetIsChecked(GWidgetGetControl(kcd->gw,CID_R2L)) ) {
-	if ( kcd->ssc!=NULL ) {
-	    KCD_DrawGlyph(pixmap,x,baseline,kcd->ssc);
-	    x += kcd->ssc->width + kern;
+
+    if ( !kcd->kcld->isv ) {
+	x = (kcd->width-( (kcd->fsc!=NULL?kcd->fsc->width:0)+(kcd->ssc!=NULL?kcd->ssc->width:0)+kern))/2;
+	baseline = kcd->top + as + kcd->pixelsize/2;
+	if ( GGadgetIsChecked(GWidgetGetControl(kcd->gw,CID_R2L)) ) {
+	    if ( kcd->ssc!=NULL ) {
+		KCD_DrawGlyph(pixmap,x,baseline,kcd->ssc);
+		x += kcd->ssc->width + kern;
+	    }
+	    if ( kcd->fsc!=NULL )
+		KCD_DrawGlyph(pixmap,x,baseline,kcd->fsc);
+	} else {
+	    if ( kcd->fsc!=NULL ) {
+		KCD_DrawGlyph(pixmap,x,baseline,kcd->fsc);
+		x += kcd->fsc->width + kern;
+	    }
+	    if ( kcd->ssc!=NULL )
+		KCD_DrawGlyph(pixmap,x,baseline,kcd->ssc);
 	}
-	if ( kcd->fsc!=NULL )
-	    KCD_DrawGlyph(pixmap,x,baseline,kcd->fsc);
     } else {
+	/* I don't support top to bottom vertical */
+	y = kcd->top + kcd->pixelsize/3 + as;
+	xbaseline = kcd->width/2;
 	if ( kcd->fsc!=NULL ) {
-	    KCD_DrawGlyph(pixmap,x,baseline,kcd->fsc);
-	    x += kcd->fsc->width + kern;
+	    KCD_DrawGlyph(pixmap,xbaseline-kcd->pixelsize/2,y,kcd->fsc);
+	    y += rint(kcd->fsc->sc->vwidth * kcd->pixelsize/(double) em) + kern;
 	}
 	if ( kcd->ssc!=NULL )
-	    KCD_DrawGlyph(pixmap,x,baseline,kcd->ssc);
+	    KCD_DrawGlyph(pixmap,xbaseline-kcd->pixelsize/2,y,kcd->ssc);
     }
     GDrawPopClip(pixmap,&old1);
 }
@@ -576,7 +645,7 @@ return( KCD_Next(g,e));
 	else if ( GDrawIsVisible(kcd->kw))
 return( KCD_Next2(g,e));
 
-	if ( kcd->kcld->sf->script_lang==NULL ||
+	if ( kcd->kcld->sf->script_lang==NULL || sli<0 ||
 		kcd->kcld->sf->script_lang[sli]==NULL ) {
 	    GWidgetErrorR(_STR_SelectAScript,_STR_SelectAScript);
 return( true );
@@ -1264,10 +1333,11 @@ return;
     gcd[i].gd.pos.width = kc_width-20;
     gcd[i].gd.flags = gg_enabled|gg_visible;
     gcd[i].gd.u.list = SFLangList(kcld->sf,true,(SplineChar *) -1);
-    for ( j=0; gcd[i].gd.u.list[j].text!=NULL; ++j )
-	gcd[i].gd.u.list[j].selected = false;
-    if ( kc!=NULL )
+    if ( kc!=NULL ) {
+	for ( j=0; gcd[i].gd.u.list[j].text!=NULL; ++j )
+	    gcd[i].gd.u.list[j].selected = false;
 	gcd[i].gd.u.list[kc->sli].selected = true;
+    }
     gcd[i].gd.cid = CID_SLI;
     gcd[i].gd.handle_controlevent = KC_Sli;
     gcd[i++].creator = GListButtonCreate;
