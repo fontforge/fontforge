@@ -3156,6 +3156,9 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	    free(used);
 	} else if ( format==6 ) {
 	    /* array unicode format */
+	    /* Well, the docs say it's for 2byte encodings, but Apple actually*/
+	    /*  uses it for 1 byte encodings which don't fit into the require-*/
+	    /*  ments for a format 0 sub-table. See Zapfino.dfont */
 	    int first, count;
 	    if ( enc!=em_unicode && enc!=em_unicode4 )
 		GDrawIError("I don't support truncated array encoding (format=6) except for unicode" );

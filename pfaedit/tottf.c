@@ -3928,11 +3928,11 @@ return( sf->chars[i]->unicodeenc );
 
 static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format) {
     uint16 *sfind = NULL;
-    int i,j,k,l,charcnt,enccnt;
+    int i,j,k,l,charcnt,enccnt, issmall;
     int segcnt, cnt=0, delta, rpos;
     struct cmapseg { uint16 start, end; uint16 delta; uint16 rangeoff; } *cmapseg;
     uint16 *ranges;
-    char table[256];
+    uint16 table[256];
     SplineFont *sf = _sf;
     SplineChar *sc, notdef, nonmarkingreturn;
     int alreadyprivate = false;
@@ -3970,10 +3970,14 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
     at->cmap = tmpfile();
 
     /* MacRoman encoding table */ /* Not going to bother with making this work for cid fonts */
+    /* I now see that Apple doesn't restrict us to format 0 sub-tables (as */
+    /*  the docs imply) but instead also uses format 6 tables. Wildly in- */
+    /*  appropriate as they are for 2byte encodings, but Apple uses them */
+    /*  for one byte ones too */
     memset(table,'\0',sizeof(table));
-    for ( i=0; i<sf->charcnt && i<256; ++i ) {
+    for ( i=0; i<sf->charcnt ; ++i ) {
 	sc = SCDuplicate(SFFindExistingCharMac(sf,unicode_from_mac[i]));
-	if ( sc!=NULL && sc->ttf_glyph!=-1 && sc->ttf_glyph<256 )
+	if ( sc!=NULL && sc->ttf_glyph!=-1 )
 	    table[i] = sc->ttf_glyph;
     }
     table[0] = table[8] = table[13] = table[29] = 1;
@@ -4220,11 +4224,27 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
     }
 
     /* Mac table */
-    putshort(at->cmap,0);		/* format */
-    putshort(at->cmap,262);	/* length = 256bytes + 6 header bytes */
-    putshort(at->cmap,0);		/* language = english */
+    issmall = true;
     for ( i=0; i<256; ++i )
-	putc(table[i],at->cmap);
+	if ( table[i]>=256 ) {
+	    issmall = false;
+    break;
+	}
+    if ( issmall ) {
+	putshort(at->cmap,0);		/* format */
+	putshort(at->cmap,262);		/* length = 256bytes + 6 header bytes */
+	putshort(at->cmap,0);		/* language = english */
+	for ( i=0; i<256; ++i )
+	    putc(table[i],at->cmap);
+    } else {
+	putshort(at->cmap,6);		/* format 6 */
+	putshort(at->cmap,522);		/* length = 256short +10 header bytes */
+	putshort(at->cmap,0);		/* language = english */
+	putshort(at->cmap,0);		/* first code */
+	putshort(at->cmap,256);		/* entry count */
+	for ( i=0; i<256; ++i )
+	    putshort(at->cmap,table[i]);
+    }
 
     at->cmaplen = ftell(at->cmap);
     if ( (at->cmaplen&2)!=0 )
