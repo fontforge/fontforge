@@ -2663,6 +2663,35 @@ static void bBuildAccented(Context *c) {
     FVBuildAccent(c->curfv,true);
 }
 
+static void bAppendAccent(Context *c) {
+    int pos = -1;
+    char *glyph_name = NULL;
+    int uni = -1;
+    int ret;
+    SplineChar *sc;
+
+    if ( c->a.argc!=2 && c->a.argc!=3 )
+	error( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_str && c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_unicode )
+	error(c,"Bad argument type");
+    else if ( c->a.argc==3 && c->a.vals[1].type!=v_int )
+	error(c,"Bad argument type");
+
+    if ( c->a.vals[1].type==v_str )
+	glyph_name = c->a.vals[1].u.sval;
+    else
+	uni = c->a.vals[1].u.ival;
+    if ( c->a.argc==3 )
+	pos = c->a.vals[2].u.ival;
+
+    sc = GetOneSelChar(c);
+    ret = SCAppendAccent(sc,glyph_name,uni,pos);
+    if ( ret==1 )
+	error(c,"No base character reference found");
+    else if ( ret==2 )
+	error(c,"Could not find that accent");
+}
+
 static void bBuildDuplicate(Context *c) {
     if ( c->a.argc!=1 )
 	error( c, "Wrong number of arguments");
@@ -4142,6 +4171,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "BuildComposit", bBuildComposit },
     { "BuildComposite", bBuildComposit },
     { "BuildAccented", bBuildAccented },
+    { "AddAccent", bAppendAccent },
     { "BuildDuplicate", bBuildDuplicate },
     { "ReplaceWithReference", bReplaceOutlineWithReference },
     { "InterpolateFonts", bInterpolateFonts },
