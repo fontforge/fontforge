@@ -2,8 +2,8 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 4-May-2003 -->
-  <TITLE>The Metric Menu</TITLE>
+  <!-- AP: Last modified: 2-Aug-2003 -->
+  <TITLE>The Metrics Menu</TITLE>
 </HEAD>
 <BODY>
 <P>
@@ -33,6 +33,12 @@ This menu is not present in the Bitmap View, and the Metrics View only contains
     <A HREF="#KernByClasses">Kern By Classes...</A>
   <LI>
     <A HREF="#Remove">Remove All Kern Pairs</A>
+  <LI>
+    <A HREF="metricsmenu.html#VKernByClasses">VKern By Classes...</A>
+  <LI>
+    <A HREF="#VKernFromHKern">VKern From HKern</A>
+  <LI>
+    <A HREF="metricsmenu.html#VRemove">Remove All VKern Pairs</A>
   <LI>
     <A HREF="#vertical">Set Vertical Advance</A>
 </UL>
@@ -86,7 +92,7 @@ This menu is not present in the Bitmap View, and the Metrics View only contains
     <A HREF="autowidth.html#AutoKern">It attempts to gues reasonable kerning
     values </A>between the specified characters.
   <DT>
-    Kern By Classes...
+    <A NAME="KernByClasses">Kern</A> By Classes...
   <DD>
     This command is only available from the font and metrics views. It provides
     the user with a <A HREF="metricsview.html#kernclass">dialog</A> to manipulate
@@ -94,7 +100,32 @@ This menu is not present in the Bitmap View, and the Metrics View only contains
   <DT>
     <A NAME="Remove">Remove</A> All Kern Pairs
   <DD>
-    In the font view removes all kern pairs in the font.<BR>
+    In the font view removes all kern pairs (and kern classes) in the font.<BR>
+    In the outline character view removes all kern pairs where the current character
+    is the left hand character.<BR>
+    Not present in the Metrics or Bitmap views.
+  <DT>
+    <A NAME="VKernByClasses">VKern</A> By Classes...
+  <DD>
+    This command is only available from the font and metrics views. It provides
+    the user with a <A HREF="metricsview.html#kernclass">dialog</A> to manipulate
+    vertical kerning classes.
+  <DT>
+    <A NAME="VKernFromHKern">VKern</A> From HKern
+  <DD>
+    This command is only available from the font and metrics views. It removes
+    all current vertical kerning information, then it looks through the font
+    and for each pair of horizontally kerned characters where both have a 'vert'
+    or 'vrt2' feature it produces a vertical kerning pair for the vertical versions
+    of those characters. (That is: If <CODE>A</CODE>+<CODE>V</CODE> are horizontally
+    kerned by -50 and <CODE>A</CODE> =&gt; <CODE>A.vert</CODE> and <CODE>V</CODE>
+    =&gt; <CODE>V.vert </CODE>then this command will produce a vertical kerning
+    pair between <CODE>A.vert</CODE> + <CODE>V.vert</CODE> with a value of -50)
+  <DT>
+    <A NAME="VRemove">Remove</A> All VKern Pairs
+  <DD>
+    In the font view removes all vertical kern pairs (and kern classes) in the
+    font.<BR>
     In the outline character view removes all kern pairs where the current character
     is the left hand character.<BR>
     Not present in the Metrics or Bitmap views.

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 31-Jul-2003 -->
+  <!-- AP: Last modified: 2-Aug-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,52 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    ???
+    <UL>
+      <LI>
+	I still wasn't getting r2l kerns correct
+      <LI>
+	Add support for vertical kerning
+	<UL>
+	  <LI>
+	    In 'GPOS', 'kern' tables of Open/TrueType
+	  <LI>
+	    In SVG fonts
+	  <LI>
+	    menu commands
+	    <UL>
+	      <LI>
+		Remove VKern
+	      <LI>
+		Vertical Kern By Classes
+	      <LI>
+		VKern From HKern
+	    </UL>
+	  <LI>
+	    scripting
+	    <UL>
+	      <LI>
+		RemoveVKern
+	      <LI>
+		SetVKern
+	      <LI>
+		VKernFromHKern
+	      <LI>
+		Add a "VKern" item to CharInfo
+	      <LI>
+		<FONT COLOR="Red"><B>Type argument to SelectByATT has changed</B></FONT>!!!
+	    </UL>
+	</UL>
+      <LI>
+	Add support for other Pairwise positioning features.
+      <LI>
+	Add a $panose command to return an array of panose values (scripting)
+      <LI>
+	Add a SetPanose command allowing scripts to change panose values
+      <LI>
+	PfaEdit was not rotating .vert glyphs properly
+    </UL>
   <LI>
     31-Jul-2003
     <UL>

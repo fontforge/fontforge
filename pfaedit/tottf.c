@@ -2460,7 +2460,10 @@ void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *_sf,char *fontname) {
     SplineFont *sf;
     char *weight = _sf->cidmaster==NULL ? _sf->weight : _sf->cidmaster->weight;
 
-    if ( !pfminfo->pfmset ) {
+    if ( _sf->pfminfo.pfmset ) {
+	if ( pfminfo!=&_sf->pfminfo )
+	    *pfminfo = _sf->pfminfo;
+    } else if ( pfminfo->pfmset ) {
 	memset(pfminfo,'\0',sizeof(*pfminfo));
 	SFDefaultOS2Simple(pfminfo,_sf);
 	samewid = CIDOneWidth(_sf);

@@ -341,7 +341,8 @@ static SplineChar **generateGlyphList(SplineFont *sf, int iskern, int sli,
 	    for ( i=0; i<sub->charcnt; ++i )
 		    if ( SCWorthOutputting(sc=sub->chars[i]) &&
 			    SCDuplicate(sc)==sc && sc->ttf_glyph!=-1 &&
-			    ((iskern && KernListMatch(sc->kerns,sli)) ||
+			    ((iskern==1 && KernListMatch(sc->kerns,sli)) ||
+			     (iskern==2 && KernListMatch(sc->vkerns,sli)) ||
 			     (!iskern && LigListMatchTag(sc->ligofme,ligtag) && AllToBeOutput(sc->ligofme)) )) {
 		if ( glyphs!=NULL ) glyphs[cnt] = sc;
 		++cnt;
@@ -582,7 +583,7 @@ static void dumpcoveragetable(FILE *gpos,SplineChar **glyphs) {
 }
 
 static void dumpgposkerndata(FILE *gpos,SplineFont *sf,int sli,
-	    struct alltabs *at) {
+	    struct alltabs *at,int isv) {
     int32 coverage_pos, next_val_pos, here;
     int cnt, i, pcnt, max=100, j,k;
     int *seconds = galloc(max*sizeof(int));
@@ -593,7 +594,7 @@ static void dumpgposkerndata(FILE *gpos,SplineFont *sf,int sli,
     uint32 script = sf->script_lang[sli][0].script;
     int isr2l = ScriptIsRightToLeft(script);
 
-    glyphs = generateGlyphList(sf,true,sli,NULL);
+    glyphs = generateGlyphList(sf,isv+1,sli,NULL);
     cnt=0;
     if ( glyphs!=NULL ) {
 	for ( ; glyphs[cnt]!=NULL; ++cnt );
@@ -603,13 +604,17 @@ static void dumpgposkerndata(FILE *gpos,SplineFont *sf,int sli,
     putshort(gpos,1);		/* format 1 of the pair adjustment subtable */
     coverage_pos = ftell(gpos);
     putshort(gpos,0);		/* offset to coverage table */
-    if ( isr2l ) {
+    if ( isv ) {
+	/* As far as I know there is no "bottom to top" writing direction */
+	putshort(gpos,0x0008);	/* Alter YAdvance of first character */
+	putshort(gpos,0x0000);	/* leave second char alone */
+    } else if ( isr2l ) {
 	/* Right to left kerns modify the second character's width */
 	/*  this doesn't make sense to me, but who am I to argue */
 	putshort(gpos,0x0000);	/* leave first char alone */
-	putshort(gpos,0x0004);	/* Alter RSideBearing & XAdvance of second character */
+	putshort(gpos,0x0005);	/* Alter RSideBearing & XAdvance of second character */
     } else {
-	putshort(gpos,0x0005);	/* Alter XAdvance of first character */
+	putshort(gpos,0x0004);	/* Alter XAdvance of first character */
 	putshort(gpos,0x0000);	/* leave second char alone */
     }
     putshort(gpos,cnt);
@@ -647,7 +652,7 @@ static void dumpgposkerndata(FILE *gpos,SplineFont *sf,int sli,
 	for ( j=0; j<pcnt; ++j ) {
 	    putshort(gpos,seconds[j]);
 	    putshort(gpos,changes[j]);
-	    if ( isr2l )
+	    if ( !isv && isr2l )
 		putshort(gpos,changes[j]);
 	}
     }
@@ -750,7 +755,7 @@ static void DumpClass(FILE *gpos,uint16 *class,int numGlyphs) {
 }
 
 static void dumpgposkernclass(FILE *gpos,SplineFont *sf,KernClass *kc,
-	    struct alltabs *at) {
+	    struct alltabs *at,int isv) {
     uint32 begin_off = ftell(gpos), pos;
     uint32 script = sf->script_lang[kc->sli][0].script;
     uint16 *class1, *class2;
@@ -759,11 +764,15 @@ static void dumpgposkernclass(FILE *gpos,SplineFont *sf,KernClass *kc,
 
     putshort(gpos,2);		/* format 2 of the pair adjustment subtable */
     putshort(gpos,0);		/* offset to coverage table */
-    if ( ScriptIsRightToLeft(script) ) {
+    if ( isv ) {
+	/* As far as I know there is no "bottom to top" writing direction */
+	putshort(gpos,0x0008);	/* Alter YAdvance of first character */
+	putshort(gpos,0x0000);	/* leave second char alone */
+    } else if ( ScriptIsRightToLeft(script) ) {
 	/* Right to left kerns modify the second character's width */
 	/*  this doesn't make sense to me, but who am I to argue */
 	putshort(gpos,0x0000);	/* leave first char alone */
-	putshort(gpos,0x0004);	/* Alter XAdvance of second character */
+	putshort(gpos,0x0005);	/* Alter RSideBearing & XAdvance of second character */
     } else {
 	putshort(gpos,0x0004);	/* Alter XAdvance of first character */
 	putshort(gpos,0x0000);	/* leave second char alone */
@@ -775,8 +784,11 @@ static void dumpgposkernclass(FILE *gpos,SplineFont *sf,KernClass *kc,
     putshort(gpos,0);		/* offset to second glyph classes */
     putshort(gpos,kc->first_cnt);
     putshort(gpos,kc->second_cnt);
-    for ( i=0; i<kc->first_cnt*kc->second_cnt; ++i )
+    for ( i=0; i<kc->first_cnt*kc->second_cnt; ++i ) {
+	if ( !isv && ScriptIsRightToLeft(script) )
+	    putshort(gpos,kc->offsets[i]);
 	putshort(gpos,kc->offsets[i]);
+    }
 
     pos = ftell(gpos);
     fseek(gpos,begin_off+4*sizeof(uint16),SEEK_SET);
@@ -1068,7 +1080,7 @@ static struct lookup *dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
 return( lookups );
 }
 
-static void dumpGPOSsimplepos(FILE *gsub,SplineFont *sf,SplineChar **glyphs,
+static void dumpGPOSsimplepos(FILE *gpos,SplineFont *sf,SplineChar **glyphs,
 	struct tagflaglang *tfl) {
     int cnt;
     int32 coverage_pos, end;
@@ -1097,34 +1109,113 @@ static void dumpGPOSsimplepos(FILE *gsub,SplineFont *sf,SplineChar **glyphs,
     }
     if ( bits==0 ) bits=1;
 
-    putshort(gsub,same?1:2);	/* 1 means all value records same */
-    coverage_pos = ftell(gsub);
-    putshort(gsub,0);		/* offset to coverage table */
-    putshort(gsub,cnt);
-    putshort(gsub,bits);
+    putshort(gpos,same?1:2);	/* 1 means all value records same */
+    coverage_pos = ftell(gpos);
+    putshort(gpos,0);		/* offset to coverage table */
+    putshort(gpos,cnt);
+    putshort(gpos,bits);
     if ( same ) {
-	if ( bits&1 ) putshort(gsub,first->u.pos.xoff);
-	if ( bits&2 ) putshort(gsub,first->u.pos.yoff);
-	if ( bits&4 ) putshort(gsub,first->u.pos.h_adv_off);
-	if ( bits&8 ) putshort(gsub,first->u.pos.v_adv_off);
+	if ( bits&1 ) putshort(gpos,first->u.pos.xoff);
+	if ( bits&2 ) putshort(gpos,first->u.pos.yoff);
+	if ( bits&4 ) putshort(gpos,first->u.pos.h_adv_off);
+	if ( bits&8 ) putshort(gpos,first->u.pos.v_adv_off);
     } else {
 	for ( cnt = 0; glyphs[cnt]!=NULL; ++cnt ) {
 	    for ( pst=glyphs[cnt]->possub; pst!=NULL; pst=pst->next ) {
 		if ( pst->tag==tfl->tag && (pst->flags&~1)==tfl->flags &&
 			pst->script_lang_index == tfl->script_lang_index && pst->type==pst_position ) {
-		    if ( bits&1 ) putshort(gsub,pst->u.pos.xoff);
-		    if ( bits&2 ) putshort(gsub,pst->u.pos.yoff);
-		    if ( bits&4 ) putshort(gsub,pst->u.pos.h_adv_off);
-		    if ( bits&8 ) putshort(gsub,pst->u.pos.v_adv_off);
+		    if ( bits&1 ) putshort(gpos,pst->u.pos.xoff);
+		    if ( bits&2 ) putshort(gpos,pst->u.pos.yoff);
+		    if ( bits&4 ) putshort(gpos,pst->u.pos.h_adv_off);
+		    if ( bits&8 ) putshort(gpos,pst->u.pos.v_adv_off);
 		}
 	    }
 	}
     }
-    end = ftell(gsub);
-    fseek(gsub,coverage_pos,SEEK_SET);
-    putshort(gsub,end-coverage_pos+2);
-    fseek(gsub,end,SEEK_SET);
-    dumpcoveragetable(gsub,glyphs);
+    end = ftell(gpos);
+    fseek(gpos,coverage_pos,SEEK_SET);
+    putshort(gpos,end-coverage_pos+2);
+    fseek(gpos,end,SEEK_SET);
+    dumpcoveragetable(gpos,glyphs);
+    free(glyphs);
+}
+
+
+static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,SplineChar **glyphs,
+	struct tagflaglang *tfl) {
+    int cnt;
+    int32 coverage_pos, offset_pos, end, start, pos;
+    PST *pst;
+    int vf1 = 0, vf2=0, i, subcnt;
+    SplineChar *sc;
+
+    for ( cnt=0; glyphs[cnt]!=NULL; ++cnt) {
+	for ( pst=glyphs[cnt]->possub; pst!=NULL; pst=pst->next ) {
+	    if ( pst->tag==tfl->tag && (pst->flags&~1)==tfl->flags &&
+		    pst->script_lang_index == tfl->script_lang_index &&
+		    pst->type==pst_pair ) {
+		if ( pst->u.pair.vr[0].xoff!=0 ) vf1 |= 1;
+		if ( pst->u.pair.vr[0].yoff!=0 ) vf1 |= 2;
+		if ( pst->u.pair.vr[0].h_adv_off!=0 ) vf1 |= 4;
+		if ( pst->u.pair.vr[0].v_adv_off!=0 ) vf1 |= 8;
+		if ( pst->u.pair.vr[1].xoff!=0 ) vf2 |= 1;
+		if ( pst->u.pair.vr[1].yoff!=0 ) vf2 |= 2;
+		if ( pst->u.pair.vr[1].h_adv_off!=0 ) vf2 |= 4;
+		if ( pst->u.pair.vr[1].v_adv_off!=0 ) vf2 |= 8;
+	    }
+	}
+    }
+    if ( vf1==0 && vf2==0 ) vf1=1;
+
+    start = ftell(gpos);
+    putshort(gpos,1);		/* 1 means char pairs (ie. not classes) */
+    coverage_pos = ftell(gpos);
+    putshort(gpos,0);		/* offset to coverage table */
+    putshort(gpos,vf1);
+    putshort(gpos,vf2);
+    putshort(gpos,cnt);
+    offset_pos = ftell(gpos);
+    for ( i=0; i<cnt; ++i )
+	putshort(gpos,0);	/* Fill in later */
+    for ( i=0; i<cnt; ++i ) {
+	pos = ftell(gpos);
+	fseek(gpos,offset_pos+i*sizeof(uint16),SEEK_SET);
+	putshort(gpos,pos-start);
+	fseek(gpos,pos,SEEK_SET);
+
+	subcnt=0;
+	for ( pst=glyphs[cnt]->possub; pst!=NULL; pst=pst->next ) {
+	    if ( pst->tag==tfl->tag && (pst->flags&~1)==tfl->flags &&
+		    pst->script_lang_index == tfl->script_lang_index &&
+		    pst->type==pst_pair )
+		++subcnt;
+	}
+	putshort(gpos,subcnt);
+	for ( pst=glyphs[cnt]->possub; pst!=NULL; pst=pst->next ) {
+	    if ( pst->tag==tfl->tag && (pst->flags&~1)==tfl->flags &&
+		    pst->script_lang_index == tfl->script_lang_index &&
+		    pst->type==pst_pair ) {
+		sc = SFGetCharDup(sf,-1,pst->u.pair.paired);
+		if ( sc==NULL || sc->ttf_glyph==-1 )
+		    putshort(gpos,0);
+		else
+		    putshort(gpos,sc->ttf_glyph);
+		if ( vf1&1 ) putshort(gpos,pst->u.pair.vr[0].xoff);
+		if ( vf1&2 ) putshort(gpos,pst->u.pair.vr[0].yoff);
+		if ( vf1&4 ) putshort(gpos,pst->u.pair.vr[0].h_adv_off);
+		if ( vf1&8 ) putshort(gpos,pst->u.pair.vr[0].v_adv_off);
+		if ( vf2&1 ) putshort(gpos,pst->u.pair.vr[1].xoff);
+		if ( vf2&2 ) putshort(gpos,pst->u.pair.vr[1].yoff);
+		if ( vf2&4 ) putshort(gpos,pst->u.pair.vr[1].h_adv_off);
+		if ( vf2&8 ) putshort(gpos,pst->u.pair.vr[1].v_adv_off);
+	    }
+	}
+    }
+    end = ftell(gpos);
+    fseek(gpos,coverage_pos,SEEK_SET);
+    putshort(gpos,end-start);
+    fseek(gpos,end,SEEK_SET);
+    dumpcoveragetable(gpos,glyphs);
     free(glyphs);
 }
 
@@ -1319,7 +1410,7 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
     /* When we find a feature, we split it out into various scripts */
     /*  dumping one lookup per script into the file */
     struct lookup *lookups = NULL, *new;
-    int i, j, cnt, max;
+    int i, j, cnt, max, isv;
     SplineChar ***marks;
     int *subcnts;
     SplineChar **base, **lig, **mkmk, ***map, **glyphs;
@@ -1334,8 +1425,7 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
     max = 30; cnt = 0;
     ligtags = galloc(max*sizeof(struct tagflaglang));
 
-    type = pst_position;
-    {
+    for ( type = pst_position; type<=pst_pair; ++type ) {
 	cnt = 0;
 	for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL ) {
 	    for ( pst = sf->chars[i]->possub; pst!=NULL; pst=pst->next ) if ( pst->type==type ) {
@@ -1362,54 +1452,61 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
 		new->offset = ftell(lfile);
 		new->next = lookups;
 		lookups = new;
-		dumpGPOSsimplepos(lfile,sf,glyphs,&ligtags[j]);
+		if ( type==pst_position )
+		    dumpGPOSsimplepos(lfile,sf,glyphs,&ligtags[j]);
+		else if ( type==pst_pair )
+		    dumpGPOSpairpos(lfile,sf,glyphs,&ligtags[j]);
+		else
+		    GDrawIError("Unknown PST type in GPOS figure lookups" );
 		new->len = ftell(lfile)-new->offset;
 	    }
 	}
     }
 
-    /* Look for kerns */ /* kerns now store langs but not flags */
-    cnt = 0;
-    for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL ) {
-	for ( kp = sf->chars[i]->kerns; kp!=NULL; kp=kp->next ) {
-	    for ( j=0; j<cnt; ++j )
-		if ( kp->sli == ligtags[j].script_lang_index )
-	    break;
-	    if ( j==cnt ) {
-		if ( cnt>=max ) {
-		    max += 30;
-		    ligtags = grealloc(ligtags,max*sizeof(struct tagflaglang));
+    for ( isv=0; isv<2; ++isv ) {
+	/* Look for kerns */ /* kerns now store langs but not flags */
+	cnt = 0;
+	for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL ) {
+	    for ( kp = isv ? sf->chars[i]->vkerns : sf->chars[i]->kerns; kp!=NULL; kp=kp->next ) {
+		for ( j=0; j<cnt; ++j )
+		    if ( kp->sli == ligtags[j].script_lang_index )
+		break;
+		if ( j==cnt ) {
+		    if ( cnt>=max ) {
+			max += 30;
+			ligtags = grealloc(ligtags,max*sizeof(struct tagflaglang));
+		    }
+		    ligtags[cnt++].script_lang_index = kp->sli;
 		}
-		ligtags[cnt++].script_lang_index = kp->sli;
 	    }
 	}
-    }
-    for ( j=0; j<cnt; ++j ) {
-	new = chunkalloc(sizeof(struct lookup));
-	new->feature_tag = CHR('k','e','r','n');
-	/* new->flags = pst_ignorecombiningmarks; */	/* yudit doesn't like this flag to be set 2.7.2 */
-	new->script_lang_index = ligtags[j].script_lang_index;
-	new->lookup_type = 2;		/* Pair adjustment subtable type */
-	new->offset = ftell(lfile);
-	new->next = lookups;
-	lookups = new;
-	dumpgposkerndata(lfile,sf,ligtags[j].script_lang_index,at);
-	new->len = ftell(lfile)-new->offset;
+	for ( j=0; j<cnt; ++j ) {
+	    new = chunkalloc(sizeof(struct lookup));
+	    new->feature_tag = isv ? CHR('v','k','r','n') : CHR('k','e','r','n');
+	    /* new->flags = pst_ignorecombiningmarks; */	/* yudit doesn't like this flag to be set 2.7.2 */
+	    new->script_lang_index = ligtags[j].script_lang_index;
+	    new->lookup_type = 2;		/* Pair adjustment subtable type */
+	    new->offset = ftell(lfile);
+	    new->next = lookups;
+	    lookups = new;
+	    dumpgposkerndata(lfile,sf,ligtags[j].script_lang_index,at,isv);
+	    new->len = ftell(lfile)-new->offset;
+	}
+
+	for ( kc=isv ? sf->vkerns : sf->kerns; kc!=NULL; kc=kc->next ) {
+	    new = chunkalloc(sizeof(struct lookup));
+	    new->feature_tag = isv ? CHR('v','k','r','n') : CHR('k','e','r','n');
+	    new->flags = kc->flags;
+	    new->script_lang_index = kc->sli;
+	    new->lookup_type = 2;		/* Pair adjustment subtable type */
+	    new->offset = ftell(lfile);
+	    new->next = lookups;
+	    lookups = new;
+	    dumpgposkernclass(lfile,sf,kc,at,isv);
+	    new->len = ftell(lfile)-new->offset;
+	}
     }
     free(ligtags);
-
-    for ( kc=sf->kerns; kc!=NULL; kc=kc->next ) {
-	new = chunkalloc(sizeof(struct lookup));
-	new->feature_tag = CHR('k','e','r','n');
-	new->flags = kc->flags;
-	new->script_lang_index = kc->sli;
-	new->lookup_type = 2;		/* Pair adjustment subtable type */
-	new->offset = ftell(lfile);
-	new->next = lookups;
-	lookups = new;
-	dumpgposkernclass(lfile,sf,kc,at);
-	new->len = ftell(lfile)-new->offset;
-    }
 
     AnchorClassOrder(sf);	/* Don't really need this any more */
 

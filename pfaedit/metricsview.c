@@ -1972,7 +1972,18 @@ static void MVMenuCenter(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void MVMenuKernByClasses(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
 
-    ShowKernClasses(mv->fv->sf,mv);
+    ShowKernClasses(mv->fv->sf,mv,false);
+}
+
+static void MVMenuVKernByClasses(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+
+    ShowKernClasses(mv->fv->sf,mv,true);
+}
+
+static void MVMenuVKernFromHKern(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    FVVKernFromHKern(mv->fv);
 }
 
 static void PosSubsMenuFree(GMenuItem *mi) {
@@ -2347,6 +2358,8 @@ static GMenuItem mtlist[] = {
     { { (unichar_t *) _STR_Thirds, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'T' }, '\0', ksm_control, NULL, NULL, MVMenuCenter, MID_Thirds },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_KernByClasses, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'T' }, '\0', ksm_control, NULL, NULL, MVMenuKernByClasses },
+    { { (unichar_t *) _STR_VKernByClasses, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'T' }, '\0', ksm_control, NULL, NULL, MVMenuVKernByClasses },
+    { { (unichar_t *) _STR_VKernFromHKern, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'T' }, '\0', ksm_control, NULL, NULL, MVMenuVKernFromHKern },
     { NULL }
 };
 

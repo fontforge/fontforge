@@ -546,6 +546,8 @@ extern void FVDelay(FontView *fv,void (*func)(FontView *));
 extern void FVAutoKern(FontView *fv);
 extern void FVAutoWidth(FontView *fv);
 extern void FVRemoveKerns(FontView *fv);
+extern void FVRemoveVKerns(FontView *fv);
+extern void FVVKernFromHKern(FontView *fv);
 extern int AutoWidthScript(SplineFont *sf,int spacing);
 extern int AutoKernScript(SplineFont *sf,int spacing, int threshold,char *kernfile);
 
@@ -886,7 +888,7 @@ extern uint8 *DebuggerGetWatches(struct debugger_context *dc, int *n);
 extern int DebuggingFpgm(struct debugger_context *dc);
 
 extern unichar_t *ScriptLangLine(struct script_record *sr);
-extern void ShowKernClasses(SplineFont *sf,MetricsView *mv);
+extern void ShowKernClasses(SplineFont *sf,MetricsView *mv,int isv);
 extern void KCLD_End(struct kernclasslistdlg *kcld);
 extern void KCLD_MvDetach(struct kernclasslistdlg *kcld,MetricsView *mv);
 

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 29-Dec-2002 -->
-  <!-- AP: Last modified: 30-Jul-2003 -->
+  <!-- AP: Last modified: 2-Aug-2003 -->
   <TITLE>Advanced Typography tables</TITLE>
 </HEAD>
 <BODY>
@@ -23,6 +23,8 @@ My support for OpenType is not complete.
     <A HREF="TrueOpenTables.html">other true type and open type tables</A>
   <LI>
     <A HREF="#Unsupported">What is unsupported</A>
+  <LI>
+    <A HREF="non-standard.html">PfaEdit's non-standard extensions</A>
 </UL>
 <H2>
   The <B><CODE>GPOS,</CODE></B> <B><CODE>GSUB</CODE></B> and
@@ -98,8 +100,9 @@ PfaEdit will read the following sub tables of the GPOS table:
       it. But the table is more general than that and could support mark (accent,
       vowel) positioning over a base character (though that is more efficiently
       done with the mark to base subtable).</TD>
-    <TD>Only the 'kern' feature is supported for this sub-table. These may be
-      created from the <A HREF="metricsview.html">Metrics View</A></TD>
+    <TD>'kern' feature s may be created from the <A HREF="metricsview.html">Metrics
+      View</A>. 'vkrn' with
+      <A HREF="metricsmenu.html#VKernFromHKern">Metrics-&gt;VKern From HKern</A>.</TD>
   </TR>
   <TR>
     <TD>3</TD>
@@ -523,9 +526,6 @@ in either opentype or apple advanced typography.
   <LI>
     PfaEdit does not support contextual positioning or chaining contextual
     positioning in GPOS
-  <LI>
-    The only kind of pair-wise positioning that PfaEdit supports is horizontal
-    kerning.
   <LI>
     PfaEdit does not support contextual substitution, chaining contextual
     substitution nor reverse chaining contextual substitution in GSUB.

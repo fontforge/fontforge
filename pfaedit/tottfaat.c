@@ -76,11 +76,12 @@ return( false );
 }
 
 void ttf_dumpkerns(struct alltabs *at, SplineFont *sf) {
-    int i, cnt, j, k, m, threshold=0, kccnt=0;
+    int i, cnt, vcnt, j, k, m, kccnt=0, vkccnt=0, c, mh, mv;
     KernPair *kp;
     KernClass *kc;
     uint16 *glnum, *offsets;
     int version;
+    int isv;
 
 #if 0
     /* I'm told that at most 2048 kern pairs are allowed in a ttf font */
@@ -88,24 +89,31 @@ void ttf_dumpkerns(struct alltabs *at, SplineFont *sf) {
     threshold = KernThreshold(sf,2048);
 #endif
 
-    cnt = m = 0;
+    cnt = mh = vcnt = mv = 0;
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
 	j = 0;
 	for ( kp = sf->chars[i]->kerns; kp!=NULL; kp=kp->next )
-	    if ( kp->off>=threshold || kp->off<=-threshold ) 
+	    if ( kp->off!=0 ) 
 		++cnt, ++j;
-	if ( j>m ) m=j;
+	if ( j>mh ) mh=j;
+	j=0;
+	for ( kp = sf->chars[i]->vkerns; kp!=NULL; kp=kp->next )
+	    if ( kp->off!=0 ) 
+		++cnt, ++j;
+	if ( j>mv ) mv=j;
     }
     kccnt = 0;
     for ( kc=sf->kerns; kc!=NULL; kc = kc->next ) if ( SLIHasDefault(sf,kc->sli) )
 	++kccnt;
-    if ( cnt==0 && kccnt==0 )
+    for ( kc=sf->vkerns; kc!=NULL; kc = kc->next ) if ( SLIHasDefault(sf,kc->sli) )
+	++vkccnt;
+    if ( cnt==0 && kccnt==0 && vcnt==0 && vkccnt==0 )
 return;
 
     /* Old kerning format (version 0) uses 16 bit quantities */
     /* Apple's new format (version 0x00010000) uses 32 bit quantities */
     at->kern = tmpfile();
-    if ( kccnt==0 ) {
+    if ( kccnt==0 && vkccnt==0 && vcnt==0 ) {
 	/* MS does not support format 2 kern sub-tables so if we have them */
 	/*	(also MS docs are different from Apple's docs on this subtable) */
 	/*  we might as well admit that this table is for apple only and use */
@@ -115,91 +123,98 @@ return;
 	version = 0;
     } else {
 	putlong(at->kern,0x00010000);
-	putlong(at->kern,kccnt+(cnt!=0));
+	putlong(at->kern,kccnt+vkccnt+(cnt!=0)+(vcnt!=0));
 	version = 1;
     }
-    if ( cnt!=0 ) {
-	if ( version==0 ) {
-	    putshort(at->kern,0);		/* subtable version */
-	    putshort(at->kern,(7+3*cnt)*sizeof(uint16)); /* subtable length */
-	    putshort(at->kern,1);		/* coverage, flags&format */
-	} else {
-	    putlong(at->kern,(8+3*cnt)*sizeof(uint16)); /* subtable length */
-	    /* Apple's new format has a completely different coverage format */
-	    putshort(at->kern,0);		/* format 0, no flags (coverage)*/
-	    putshort(at->kern,0);		/* tuple index, whatever that means */
-	}
-	putshort(at->kern,cnt);
-	for ( i=1,j=0; i<=cnt; i<<=1, ++j );
-	i>>=1; --j;
-	putshort(at->kern,i*6);		/* binary search headers */
-	putshort(at->kern,j);
-	putshort(at->kern,6*(i-cnt));
+    for ( isv=0; isv<2; ++isv ) {
+	c = isv ? vcnt : cnt;
+	m = isv ? mv : mh;
+	if ( c!=0 ) {
+	    if ( version==0 ) {
+		putshort(at->kern,0);		/* subtable version */
+		putshort(at->kern,(7+3*c)*sizeof(uint16)); /* subtable length */
+		putshort(at->kern,!isv);	/* coverage, flags=hor/vert&format=0 */
+	    } else {
+		putlong(at->kern,(8+3*c)*sizeof(uint16)); /* subtable length */
+		/* Apple's new format has a completely different coverage format */
+		putshort(at->kern,isv?0x8000:0);/* format 0, horizontal/vertical flags (coverage) */
+		putshort(at->kern,0);		/* tuple index, whatever that means */
+	    }
+	    putshort(at->kern,c);
+	    for ( i=1,j=0; i<=c; i<<=1, ++j );
+	    i>>=1; --j;
+	    putshort(at->kern,i*6);		/* binary search headers */
+	    putshort(at->kern,j);
+	    putshort(at->kern,6*(i-c));
 
-	glnum = galloc(m*sizeof(uint16));
-	offsets = galloc(m*sizeof(uint16));
-	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	    m = 0;
-	    for ( kp = sf->chars[i]->kerns; kp!=NULL; kp=kp->next ) {
-		if ( kp->off>=threshold || kp->off<=-threshold ) {
-		    /* order the pairs */
-		    for ( j=0; j<m; ++j )
-			if ( kp->sc->ttf_glyph<glnum[j] )
-		    break;
-		    for ( k=m; k>j; --k ) {
-			glnum[k] = glnum[k-1];
-			offsets[k] = offsets[k-1];
+	    glnum = galloc(m*sizeof(uint16));
+	    offsets = galloc(m*sizeof(uint16));
+	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+		m = 0;
+		for ( kp = isv ? sf->chars[i]->vkerns : sf->chars[i]->kerns; kp!=NULL; kp=kp->next ) {
+		    if ( kp->off!=0 ) {
+			/* order the pairs */
+			for ( j=0; j<m; ++j )
+			    if ( kp->sc->ttf_glyph<glnum[j] )
+			break;
+			for ( k=m; k>j; --k ) {
+			    glnum[k] = glnum[k-1];
+			    offsets[k] = offsets[k-1];
+			}
+			glnum[j] = kp->sc->ttf_glyph;
+			offsets[j] = kp->off;
+			++m;
 		    }
-		    glnum[j] = kp->sc->ttf_glyph;
-		    offsets[j] = kp->off;
-		    ++m;
+		}
+		for ( j=0; j<m; ++j ) {
+		    putshort(at->kern,sf->chars[i]->ttf_glyph);
+		    putshort(at->kern,glnum[j]);
+		    putshort(at->kern,offsets[j]);
 		}
 	    }
-	    for ( j=0; j<m; ++j ) {
-		putshort(at->kern,sf->chars[i]->ttf_glyph);
-		putshort(at->kern,glnum[j]);
-		putshort(at->kern,offsets[j]);
-	    }
+	    free(offsets);
+	    free(glnum);
 	}
-	free(offsets);
-	free(glnum);
     }
-    for ( kc=sf->kerns; kc!=NULL; kc=kc->next ) if ( SLIHasDefault(sf,kc->sli) ) {
-	/* If we are here, we must be using version 1 */
-	uint32 len_pos = ftell(at->kern), pos;
-	uint16 *class1, *class2;
 
-	putlong(at->kern,0); /* subtable length */
-	putshort(at->kern,2);		/* format 2, no flags (coverage)*/
-	putshort(at->kern,0);		/* tuple index, whatever that means */
+    for ( isv=0; isv<2; ++isv ) {
+	for ( kc=isv ? sf->vkerns : sf->kerns; kc!=NULL; kc=kc->next ) if ( SLIHasDefault(sf,kc->sli) ) {
+	    /* If we are here, we must be using version 1 */
+	    uint32 len_pos = ftell(at->kern), pos;
+	    uint16 *class1, *class2;
 
-	putshort(at->kern,sizeof(uint16)*kc->second_cnt);
-	putshort(at->kern,0);		/* left classes */
-	putshort(at->kern,0);		/* right classes */
-	putshort(at->kern,16);		/* Offset to array, next byte */
-	for ( i=0; i<kc->first_cnt*kc->second_cnt; ++i )
-	    putshort(at->kern,kc->offsets[i]);
+	    putlong(at->kern,0); /* subtable length */
+	    putshort(at->kern,isv?0x8002:2);	/* format 2, horizontal/vertical flags (coverage) */
+	    putshort(at->kern,0);		/* tuple index, whatever that means */
 
-	pos = ftell(at->kern);
-	fseek(at->kern,len_pos+10,SEEK_SET);
-	putshort(at->kern,pos-len_pos);
-	fseek(at->kern,pos,SEEK_SET);
-	class1 = ClassesFromNames(sf,kc->firsts,kc->first_cnt,at->maxp.numGlyphs,NULL);
-	DumpKernClass(at->kern,class1,at->maxp.numGlyphs,16,sizeof(uint16)*kc->second_cnt);
-	free(class1);
+	    putshort(at->kern,sizeof(uint16)*kc->second_cnt);
+	    putshort(at->kern,0);		/* left classes */
+	    putshort(at->kern,0);		/* right classes */
+	    putshort(at->kern,16);		/* Offset to array, next byte */
+	    for ( i=0; i<kc->first_cnt*kc->second_cnt; ++i )
+		putshort(at->kern,kc->offsets[i]);
 
-	pos = ftell(at->kern);
-	fseek(at->kern,len_pos+12,SEEK_SET);
-	putshort(at->kern,pos-len_pos);
-	fseek(at->kern,pos,SEEK_SET);
-	class2 = ClassesFromNames(sf,kc->seconds,kc->second_cnt,at->maxp.numGlyphs,NULL);
-	DumpKernClass(at->kern,class2,at->maxp.numGlyphs,0,sizeof(uint16));
-	free(class2);
+	    pos = ftell(at->kern);
+	    fseek(at->kern,len_pos+10,SEEK_SET);
+	    putshort(at->kern,pos-len_pos);
+	    fseek(at->kern,pos,SEEK_SET);
+	    class1 = ClassesFromNames(sf,kc->firsts,kc->first_cnt,at->maxp.numGlyphs,NULL);
+	    DumpKernClass(at->kern,class1,at->maxp.numGlyphs,16,sizeof(uint16)*kc->second_cnt);
+	    free(class1);
 
-	pos = ftell(at->kern);
-	fseek(at->kern,len_pos,SEEK_SET);
-	putlong(at->kern,pos-len_pos);
-	fseek(at->kern,pos,SEEK_SET);
+	    pos = ftell(at->kern);
+	    fseek(at->kern,len_pos+12,SEEK_SET);
+	    putshort(at->kern,pos-len_pos);
+	    fseek(at->kern,pos,SEEK_SET);
+	    class2 = ClassesFromNames(sf,kc->seconds,kc->second_cnt,at->maxp.numGlyphs,NULL);
+	    DumpKernClass(at->kern,class2,at->maxp.numGlyphs,0,sizeof(uint16));
+	    free(class2);
+
+	    pos = ftell(at->kern);
+	    fseek(at->kern,len_pos,SEEK_SET);
+	    putlong(at->kern,pos-len_pos);
+	    fseek(at->kern,pos,SEEK_SET);
+	}
     }
 
     at->kernlen = ftell(at->kern);
@@ -429,7 +444,10 @@ static struct feature *aat_dumpmorx_substitutions(struct alltabs *at, SplineFont
 	    /*  substitution subtable (cursive connection) */
 	    if ( !HasDefaultLang(sf,pst,0) )
 	continue;
-	    if ( pst->tag!=CHR('i','s','o','l') && pst->type!=pst_position &&
+	    if ( pst->tag!=CHR('i','s','o','l') &&
+		    pst->type!=pst_position &&
+		    pst->type!=pst_pair &&
+		    pst->type!=pst_lcaret &&
 		    OTTagToMacFeature(pst->tag,&ft,&fs)) {
 		for ( j=cnt-1; j>=0 && subtags[j]!=pst->tag; --j );
 		if ( j<0 ) {
@@ -448,7 +466,8 @@ static struct feature *aat_dumpmorx_substitutions(struct alltabs *at, SplineFont
 		for ( i=0; i<sf->charcnt; ++i ) if ( (sc = sf->chars[i])!=NULL && sc->ttf_glyph!=-1) {
 		    for ( pst=sc->possub; pst!=NULL &&
 			    (pst->tag!=subtags[j] || !HasDefaultLang(sf,pst,0) ||
-			     pst->type==pst_position); pst=pst->next );
+			     pst->type==pst_position || pst->type==pst_pair ||
+			     pst->type==pst_lcaret); pst=pst->next );
 		    if ( pst!=NULL ) {
 			if ( k==1 ) {
 			    msc = SFGetCharDup(sf,-1,pst->u.subs.variant);

@@ -340,15 +340,16 @@ static void fputkerns( FILE *file, char *names) {
     }
 }
 
-static void svg_dumpkerns(FILE *file,SplineFont *sf) {
+static void svg_dumpkerns(FILE *file,SplineFont *sf,int isv) {
     int i,j;
     KernPair *kp;
     KernClass *kc;
 
     for ( i=0; i<sf->charcnt; ++i ) if ( SCWorthOutputting(sf->chars[i]) ) {
-	for ( kp = sf->chars[i]->kerns; kp!=NULL; kp = kp->next )
+	for ( kp = isv ? sf->chars[i]->vkerns : sf->chars[i]->kerns;
+		kp!=NULL; kp = kp->next )
 	    if ( kp->off!=0 && SCWorthOutputting(kp->sc)) {
-		fprintf( file, "    <hkern " );
+		fprintf( file, isv ? "    <vkern " : "    <hkern " );
 		if ( sf->chars[i]->unicodeenc!=-1 || HasLigature(sf->chars[i]))
 		    fprintf( file, "g1=\"%s\" ", sf->chars[i]->name );
 		else if ( sf->chars[i]->unicodeenc>='A' || sf->chars[i]->unicodeenc<='z' )
@@ -365,10 +366,10 @@ static void svg_dumpkerns(FILE *file,SplineFont *sf) {
 	    }
     }
 
-    for ( kc=sf->kerns; kc!=NULL; kc=kc->next ) {
+    for ( kc=isv ? sf->vkerns : sf->kerns; kc!=NULL; kc=kc->next ) {
 	for ( i=1; i<kc->first_cnt; ++i ) for ( j=1; j<kc->second_cnt; ++j ) {
 	    if ( kc->offsets[i*kc->first_cnt+j]!=0 ) {
-		fprintf( file, "    <hkern g1=\"" );
+		fprintf( file, isv ? "    <vkern g1=\"" : "    <hkern g1=\"" );
 		fputkerns( file, kc->firsts[i]);
 		fprintf( file, "\"\n\tg2=\"" );
 		fputkerns( file, kc->seconds[j]);
@@ -417,7 +418,8 @@ static void svg_sfdump(FILE *file,SplineFont *sf) {
 		 isarabisolated(sf->chars[i]->unicodeenc))))
 	    svg_scdump(file, sf->chars[i],defwid);
     }
-    svg_dumpkerns(file,sf);
+    svg_dumpkerns(file,sf,false);
+    svg_dumpkerns(file,sf,true);
     svg_outfonttrailer(file,sf);
     setlocale(LC_NUMERIC,oldloc);
 }
@@ -1858,7 +1860,7 @@ static char *SVGGetNames(SplineFont *sf,xmlChar *g,xmlChar *utf8,SplineChar **sc
 return( names );
 }
 
-static void SVGParseHKern(SplineFont *sf,xmlNodePtr kern) {
+static void SVGParseKern(SplineFont *sf,xmlNodePtr kern,int isv) {
     xmlChar *k, *g1, *u1, *g2, *u2;
     double off;
     char *c1, *c2;
@@ -1894,13 +1896,23 @@ return;
 	KernPair *kp = chunkalloc(sizeof(KernPair));
 	kp->sc = sc2;
 	kp->off = off;
-	kp->next = sc1->kerns;
-	sc1->kerns = kp;
+	if ( isv ) {
+	    kp->next = sc1->vkerns;
+	    sc1->vkerns = kp;
+	} else {
+	    kp->next = sc1->kerns;
+	    sc1->kerns = kp;
+	}
 	free(c1); free(c2);
     } else {
 	KernClass *kc = chunkalloc(sizeof(KernClass));
-	kc->next = sf->kerns;
-	sf->kerns = kc;
+	if ( isv ) {
+	    kc->next = sf->vkerns;
+	    sf->vkerns = kc;
+	} else {
+	    kc->next = sf->kerns;
+	    sf->kerns = kc;
+	}
 	kc->first_cnt = kc->second_cnt = 2;
 	kc->firsts = gcalloc(2,sizeof(char *));
 	kc->firsts[1] = c1;
@@ -2116,9 +2128,9 @@ return( NULL );
     cnt = 0;
     for ( kids = font->children; kids!=NULL; kids=kids->next ) {
 	if ( _xmlStrcmp(kids->name,(const xmlChar *) "hkern")==0 ) {
-	    SVGParseHKern(sf,kids);
+	    SVGParseKern(sf,kids,false);
 	} else if ( _xmlStrcmp(kids->name,(const xmlChar *) "vkern")==0 ) {
-	    /* We don't support vertical kerning yet */
+	    SVGParseKern(sf,kids,true);
 	} else if ( _xmlStrcmp(kids->name,(const xmlChar *) "glyph")==0 ) {
 	    SVGLigatureFixupCheck(sf->chars[cnt++],kids);
 	} else if ( _xmlStrcmp(kids->name,(const xmlChar *) "missing-glyph")==0 ) {

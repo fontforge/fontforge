@@ -3515,6 +3515,7 @@ return( true );
 #define MID_Thirds	2604
 #define MID_RemoveKerns	2605
 #define MID_SetVWidth	2606
+#define MID_RemoveVKerns	2607
 #define MID_OpenBitmap	2700
 #define MID_Revert	2702
 #define MID_Recent	2703
@@ -5566,6 +5567,9 @@ static void mtlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_RemoveKerns:
 	    mi->ti.disabled = cv->sc->kerns==NULL;
 	  break;
+	  case MID_RemoveVKerns:
+	    mi->ti.disabled = cv->sc->vkerns==NULL;
+	  break;
 	}
     }
 }
@@ -5752,6 +5756,18 @@ static void CVMenuRemoveKern(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     if ( cv->sc->kerns!=NULL ) {
 	KernPairsFree(cv->sc->kerns);
 	cv->sc->kerns = NULL;
+	cv->sc->parent->changed = true;
+	if ( cv->fv->cidmaster!=NULL )
+	    cv->fv->cidmaster->changed = true;
+    }
+}
+
+static void CVMenuRemoveVKern(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+
+    if ( cv->sc->vkerns!=NULL ) {
+	KernPairsFree(cv->sc->vkerns);
+	cv->sc->vkerns = NULL;
 	cv->sc->parent->changed = true;
 	if ( cv->fv->cidmaster!=NULL )
 	    cv->fv->cidmaster->changed = true;
@@ -5962,6 +5978,7 @@ static GMenuItem mtlist[] = {
     { { (unichar_t *) _STR_Setrbearing, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'R' }, 'R', ksm_control, NULL, NULL, CVMenuSetWidth, MID_SetRBearing },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Removekern, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuRemoveKern, MID_RemoveKerns },
+    { { (unichar_t *) _STR_RemoveVKern, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuRemoveVKern, MID_RemoveVKerns },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_SetVWidth, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'V' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuSetWidth, MID_SetVWidth },
     { NULL }

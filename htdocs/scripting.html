@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 30-Jul-2003 -->
+  <!-- AP: Last modified: 2-Aug-2003 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -334,6 +334,9 @@ to (some) already existing ones)
     <CODE>$selection</CODE> returns an array containing one entry for each character
     in the current font indicating whether that character is selected or not
     (0=&gt;not, 1=&gt;selected)
+  <LI>
+    <CODE>$panose</CODE> returns an array containing the 10 panose values for
+    the font.
   <LI>
     <CODE>$trace</CODE> if this is set to one then PfaEdit will trace each procedure
     call.
@@ -891,24 +894,48 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
   <DD>
     See the <A HREF="selectbyatt.html">Select By ATT menu command</A>. The values
     for type are:
-    <OL>
-      <LI>
-	Simple position
-      <LI>
-	Simple substitution
-      <LI>
-	Alternate substitution
-      <LI>
-	Multiple substitution
-      <LI>
-	Ligature
-      <LI>
-	Ligature caret
-      <LI>
-	Kerning
-      <LI>
-	Anchor class
-    </OL>
+    <TABLE>
+      <TR>
+	<TD><CODE>"Position"</CODE></TD>
+	<TD>Simple position</TD>
+      </TR>
+      <TR>
+	<TD><CODE>"Pair"</CODE></TD>
+	<TD>Pairwise positioning (but not kerning)</TD>
+      </TR>
+      <TR>
+	<TD><CODE>"Substitution"</CODE></TD>
+	<TD>Simple substitution</TD>
+      </TR>
+      <TR>
+	<TD><CODE>"AltSubs"</CODE></TD>
+	<TD>Alternate substitution</TD>
+      </TR>
+      <TR>
+	<TD><CODE>"MultSubs"</CODE></TD>
+	<TD>Multiple substitution</TD>
+      </TR>
+      <TR>
+	<TD><CODE>"Ligature"</CODE></TD>
+	<TD>Ligature</TD>
+      </TR>
+      <TR>
+	<TD><CODE>"LCaret"</CODE></TD>
+	<TD>Ligature caret</TD>
+      </TR>
+      <TR>
+	<TD><CODE>"Kern"</CODE></TD>
+	<TD>Kerning</TD>
+      </TR>
+      <TR>
+	<TD><CODE>"VKern"</CODE></TD>
+	<TD>Vertical Kerning</TD>
+      </TR>
+      <TR>
+	<TD><CODE>"Anchor"</CODE></TD>
+	<TD>Anchor class</TD>
+      </TR>
+    </TABLE>
     <P>
     And for search_type
     <OL>
@@ -953,6 +980,13 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     Sets the postscript italic angle field appropriately. If denom is specified
     then angle will be divided by denom before setting the italic angle field
     (a hack to get real values). The angle should be in degrees.
+  <DT>
+    SetPanose(array)<BR>
+    SetPanose(index,value)
+  <DD>
+    This sets the panose values for the font. Either it takes an array of 10
+    integers and sets all the values, or it takes two integer arguments and sets
+    <CODE>font.panose[index] = value</CODE>
   <DT>
     SetUniqueID(value)
   <DD>
@@ -1210,19 +1244,23 @@ ApplySubstitution("*","*","vrt2")
     for all features it can.
   <DT>
     AddATT(type,script-lang,tag,flags,variant)<BR>
-    AddATT("Position",script-lang,tag,flags,xoff,yoff,h_adv_off,v_adv_off)
+    AddATT("Position",script-lang,tag,flags,xoff,yoff,h_adv_off,v_adv_off)<BR>
+    AddATT("Pair",script-lang,tag,flags,name,xoff,yoff,h_adv_off,v_adv_off,xoff2,yoff2,h_adv_off2,v_adv_off2)
   <DD>
     Allows you to add an Advanced Typography feature to a single selected character.
-    The first argument may be either: Position, Substitution, AltSubs, MultSubs
-    or Ligature. The second argument should be a script-lang list where each
-    4-character script name is followed by a comma seperated list of 4 character
+    The first argument may be either: Position, Pair, Substitution, AltSubs,
+    MultSubs or Ligature. The second argument should be a script-lang list where
+    each 4-character script name is followed by a comma seperated list of 4 character
     language names (with the languages enclosed in curly braces). As:<BR>
     <CODE>&nbsp; &nbsp; grek{dflt} latn{dflt,VIT ,ROM }</CODE><BR>
     The third arg should be a 4 character opentype feature tag. The fourth argument
     should be the otf flags (or -1 to make PfaEdit guess appropriate flags).
     The remaining argument(s) vary depending on the value of the first (type)
     argument. For Position tags there are 4 integral arguments which specify
-    how this feature modifies the metrics of this character. For substitution
+    how this feature modifies the metrics of this character. For Pair type the
+    next argument is the name of the other character in the pair followed by
+    8 integral arguments, the first 4 specify the changes in positioning to the
+    first character, the next four the changes for the second char. For substitution
     tags the fifth argument is the name of another glyph which will replace the
     current one. For an AltSubs tag the argument is a space seperated list of
     glyph names any of which will replace the current one. For a MultSubs the
@@ -1325,7 +1363,23 @@ ApplySubstitution("*","*","vrt2")
   <DT>
     RemoveAllKerns()
   <DD>
-    Removes all kern pairs from the current font.
+    Removes all kern pairs and classes from the current font.
+  <DT>
+    SetVKern(ch2,offset)
+  <DD>
+    Sets the kern between any selected characters and the character ch2 to be
+    offset. The first argument may be specified as in Select(), the second is
+    an integer representing the kern offset.
+  <DT>
+    VKernFromHKern()
+  <DD>
+    Removes all vertical kern pairs and classes from the current font, and then
+    generates new vertical kerning pairs by copying the horizontal kerning data
+    for a pair of characters to the vertically rotated versions of those characters.
+  <DT>
+    RemoveAllVKerns()
+  <DD>
+    Removes all vertical kern pairs and classes from the current font.
   <DD>
       <HR>
   <DT>
@@ -1375,6 +1429,7 @@ ApplySubstitution("*","*","vrt2")
   <DT>
     CharInfo(str)<BR>
     CharInfo("Kern",character-spec)<BR>
+    CharInfo("VKern",character-spec)<BR>
     CharInfo(str,script,lang,tag)
   <DD>
     There must be exactly one character selected in the font, and this returns
@@ -1400,6 +1455,10 @@ ApplySubstitution("*","*","vrt2")
 	as in Select()) Returns the kern offset between the two characters (or 0
 	if none).
       <LI>
+	"VKern" (there must be a second argument here which specifies another character
+	as in Select()) Returns the vertical kern offset between the two characters
+	(or 0 if none).
+      <LI>
 	"Color" returns the character's color as a 24bit rgb value (or -2 if no color
 	has been assigned to the character).
       <LI>
@@ -1411,6 +1470,10 @@ ApplySubstitution("*","*","vrt2")
       <LI>
 	"Position" takes three additional arguments, a script, a language and a tag
 	(all 4 character strings) and returns whether the character has a Position
+	alternate with that tag.
+      <LI>
+	"Pair" takes three additional arguments, a script, a language and a tag (all
+	4 character strings) and returns whether the character has a Pairwise positioning
 	alternate with that tag.
       <LI>
 	"Substitution" takes three additional arguments, a script, a language and

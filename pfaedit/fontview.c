@@ -414,6 +414,8 @@ return(false);
     }
     if ( fv->nextsame==NULL && fv->sf->fv==fv && fv->sf->kcld!=NULL )
 	KCLD_End(fv->sf->kcld);
+    if ( fv->nextsame==NULL && fv->sf->fv==fv && fv->sf->vkcld!=NULL )
+	KCLD_End(fv->sf->vkcld);
     
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
 	CharView *cv, *next;
@@ -899,6 +901,10 @@ static void FVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_SetLBearing	2603
 #define MID_SetRBearing	2604
 #define MID_SetVWidth	2605
+#define MID_RmHKern	2606
+#define MID_RmVKern	2607
+#define MID_VKernByClass	2608
+#define MID_VKernFromH	2609
 #define MID_AutoHint	2501
 #define MID_ClearHints	2502
 #define MID_ClearWidthMD	2503
@@ -1691,11 +1697,22 @@ return( false );
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
 	for ( kp=sf->chars[i]->kerns; kp!=NULL; kp=kp->next )
 	    kp->off = rint(scale*kp->off);
-	for ( pst=sf->chars[i]->possub; pst!=NULL; pst=pst->next ) if ( pst->type==pst_position ) {
-	    pst->u.pos.xoff = rint(scale*pst->u.pos.xoff);
-	    pst->u.pos.yoff = rint(scale*pst->u.pos.yoff);
-	    pst->u.pos.h_adv_off = rint(scale*pst->u.pos.h_adv_off);
-	    pst->u.pos.v_adv_off = rint(scale*pst->u.pos.v_adv_off);
+	for ( pst=sf->chars[i]->possub; pst!=NULL; pst=pst->next ) {
+	    if ( pst->type==pst_position ) {
+		pst->u.pos.xoff = rint(scale*pst->u.pos.xoff);
+		pst->u.pos.yoff = rint(scale*pst->u.pos.yoff);
+		pst->u.pos.h_adv_off = rint(scale*pst->u.pos.h_adv_off);
+		pst->u.pos.v_adv_off = rint(scale*pst->u.pos.v_adv_off);
+	    } else if ( pst->type==pst_pair ) {
+		pst->u.pair.vr[0].xoff = rint(scale*pst->u.pair.vr[0].xoff);
+		pst->u.pair.vr[0].yoff = rint(scale*pst->u.pair.vr[0].yoff);
+		pst->u.pair.vr[0].h_adv_off = rint(scale*pst->u.pair.vr[0].h_adv_off);
+		pst->u.pair.vr[0].v_adv_off = rint(scale*pst->u.pair.vr[0].v_adv_off);
+		pst->u.pair.vr[1].xoff = rint(scale*pst->u.pair.vr[1].xoff);
+		pst->u.pair.vr[1].yoff = rint(scale*pst->u.pair.vr[1].yoff);
+		pst->u.pair.vr[1].h_adv_off = rint(scale*pst->u.pair.vr[1].h_adv_off);
+		pst->u.pair.vr[1].v_adv_off = rint(scale*pst->u.pair.vr[1].v_adv_off);
+	    }
 	}
     }
 
@@ -2176,9 +2193,9 @@ static void FVMenuLigatures(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void FVMenuKernPairs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    SFKernPrepare(fv->sf);
+    SFKernPrepare(fv->sf,false);
     SFShowKernPairs(fv->sf,NULL,NULL);
-    SFKernCleanup(fv->sf);
+    SFKernCleanup(fv->sf,false);
 }
 
 static void FVMenuAnchorPairs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -2626,13 +2643,31 @@ static void FVMenuAutoKern(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void FVMenuKernByClasses(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 
-    ShowKernClasses(fv->sf,NULL);
+    ShowKernClasses(fv->sf,NULL,false);
+}
+
+static void FVMenuVKernByClasses(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+
+    ShowKernClasses(fv->sf,NULL,true);
 }
 
 static void FVMenuRemoveKern(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 
     FVRemoveKerns(fv);
+}
+
+static void FVMenuRemoveVKern(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+
+    FVRemoveVKerns(fv);
+}
+
+static void FVMenuVKernFromHKern(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+
+    FVVKernFromHKern(fv);
 }
 
 static void FVMenuPrint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -2665,6 +2700,11 @@ static void mtlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  break;
 	  case MID_SetVWidth:
 	    mi->ti.disabled = anychars==-1 || !fv->sf->hasvmetrics;
+	  break;
+	  case MID_VKernByClass:
+	  case MID_VKernFromH:
+	  case MID_RmVKern:
+	    mi->ti.disabled = !fv->sf->hasvmetrics;
 	  break;
 	}
     }
@@ -3587,7 +3627,11 @@ static GMenuItem mtlist[] = {
     { { (unichar_t *) _STR_Autowidth, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'A' }, 'W', ksm_control|ksm_shift, NULL, NULL, FVMenuAutoWidth },
     { { (unichar_t *) _STR_Autokern, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'K' }, 'K', ksm_control|ksm_shift, NULL, NULL, FVMenuAutoKern },
     { { (unichar_t *) _STR_KernByClasses, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'K' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuKernByClasses },
-    { { (unichar_t *) _STR_Removeallkern, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuRemoveKern },
+    { { (unichar_t *) _STR_Removeallkern, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuRemoveKern, MID_RmHKern },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_VKernByClasses, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'K' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuVKernByClasses, MID_VKernByClass },
+    { { (unichar_t *) _STR_VKernFromHKern, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuVKernFromHKern, MID_VKernFromH },
+    { { (unichar_t *) _STR_RemoveAllVKern, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuRemoveVKern, MID_RmVKern },
     { NULL }
 };
 

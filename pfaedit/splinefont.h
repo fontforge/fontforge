@@ -181,7 +181,8 @@ typedef struct anchorpoint {
     struct anchorpoint *next;
 } AnchorPoint;
 
-enum possub_type { pst_null, pst_position, pst_substitution, pst_alternate,
+enum possub_type { pst_null, pst_position, pst_pair,
+	pst_substitution, pst_alternate,
 	pst_multiple, pst_ligature,
 	pst_lcaret /* must be pst_max-1, see charinfo.c*/,
 	pst_max};
@@ -192,7 +193,8 @@ typedef struct generic_pst {
     uint32 tag;
     struct generic_pst *next;
     union {
-	struct { int16 xoff, yoff, h_adv_off, v_adv_off; } pos;
+	struct vr { int16 xoff, yoff, h_adv_off, v_adv_off; } pos;
+	struct { char *paired; struct vr *vr; } pair;
 	struct { char *variant; } subs;
 	struct { char *components; } mult, alt;
 	struct { char *components; struct splinechar *lig; } lig;
@@ -543,7 +545,7 @@ typedef struct splinechar {
     Undoes *undoes[2];
     Undoes *redoes[2];
     KernPair *kerns;
-    /* KernPair *vkerns;*/
+    KernPair *vkerns;
     PST *possub;		/* If we are a ligature then this tells us what */
 				/*  It may also contain a bunch of other stuff now */
     LigList *ligofme;		/* If this is the first character of a ligature then this gives us the list of possible ones */
@@ -657,8 +659,8 @@ typedef struct splinefont {
 	uint32 script;
 	uint32 *langs;
     } **script_lang;
-    struct kernclass *kerns;
-    struct kernclasslistdlg *kcld;
+    struct kernclass *kerns, *vkerns;
+    struct kernclasslistdlg *kcld, *vkcld;
     struct texdata {
 	enum { tex_unset, tex_text, tex_math, tex_mathext } type;
 	int32 designsize;
@@ -840,6 +842,7 @@ extern void ScriptRecordFree(struct script_record *sr);
 extern void ScriptRecordListFree(struct script_record **script_lang);
 extern KernClass *KernClassCopy(KernClass *kc);
 extern void KernClassListFree(KernClass *kc);
+extern int KernClassContains(KernClass *kc, char *name1, char *name2, int ordered );
 extern void SplineCharListsFree(struct splinecharlist *dlist);
 extern void SplineCharFreeContents(SplineChar *sc);
 extern void SplineCharFree(SplineChar *sc);
@@ -1022,8 +1025,8 @@ extern int TfmSplineFont(FILE *afm, SplineFont *sf,int formattype);
 extern char *EncodingName(int map);
 extern void SFLigaturePrepare(SplineFont *sf);
 extern void SFLigatureCleanup(SplineFont *sf);
-extern void SFKernPrepare(SplineFont *sf);
-extern void SFKernCleanup(SplineFont *sf);
+extern void SFKernPrepare(SplineFont *sf,int isv);
+extern void SFKernCleanup(SplineFont *sf,int isv);
 extern KernClass *SFFindKernClass(SplineFont *sf,SplineChar *first,SplineChar *last,
 	int *index,int allow_zero);
 extern int SCSetMetaData(SplineChar *sc,char *name,int unienc,const unichar_t *comment);
@@ -1077,7 +1080,7 @@ extern const unichar_t *SFGetAlternate(SplineFont *sf, int base,SplineChar *sc,i
 
 extern int getAdobeEnc(char *name);
 
-extern SplineSet *SplinePointListInterpretSVG(char *filename,int em_size,int ascent);
+extern SplineSet *SplinePointListInterpretSVG(char *filename,int em_size, int ascent);
 extern SplinePointList *SplinePointListInterpretPS(FILE *ps);
 extern void PSFontInterpretPS(FILE *ps,struct charprocs *cp);
 extern struct enc *PSSlurpEncodings(FILE *file);

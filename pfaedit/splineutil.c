@@ -3185,7 +3185,10 @@ void PSTFree(PST *pst) {
 	pnext = pst->next;
 	if ( pst->type==pst_lcaret )
 	    free(pst->u.lcaret.carets);
-	else if ( pst->type!=pst_position )
+	else if ( pst->type==pst_pair ) {
+	    free(pst->u.pair.paired);
+	    chunkfree(pst->u.pair.vr,sizeof(struct vr [2]));
+	} else if ( pst->type!=pst_position )
 	    free(pst->u.subs.variant);
 	chunkfree(pst,sizeof(PST));
     }
@@ -3244,6 +3247,7 @@ return;
     DStemInfosFree(sc->dstem);
     MinimumDistancesFree(sc->md);
     KernPairsFree(sc->kerns);
+    KernPairsFree(sc->vkerns);
     AnchorPointsFree(sc->anchor);
     UndoesFree(sc->undoes[0]); UndoesFree(sc->undoes[1]);
     UndoesFree(sc->redoes[0]); UndoesFree(sc->redoes[1]);
@@ -3384,5 +3388,6 @@ return;
     GlyphHashFree(sf);
     ScriptRecordListFree(sf->script_lang);
     KernClassListFree(sf->kerns);
+    KernClassListFree(sf->vkerns);
     free(sf);
 }

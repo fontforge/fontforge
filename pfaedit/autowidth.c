@@ -1746,6 +1746,8 @@ void FVRemoveKerns(FontView *fv) {
     int changed = false;
     MetricsView *mv;
 
+    KernClassListFree(fv->sf->kerns); fv->sf->kerns = NULL;
+
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( (sc = fv->sf->chars[i])!=NULL ) {
 	if ( sc->kerns!=NULL ) {
 	    changed = true;
@@ -1757,6 +1759,163 @@ void FVRemoveKerns(FontView *fv) {
 	fv->sf->changed = true;
 	for ( mv=fv->metrics; mv!=NULL; mv=mv->next )
 	    MVReKern(mv);
+    }
+}
+
+void FVRemoveVKerns(FontView *fv) {
+    int i;
+    SplineChar *sc;
+    int changed = false;
+    MetricsView *mv;
+
+    KernClassListFree(fv->sf->vkerns); fv->sf->vkerns = NULL;
+
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( (sc = fv->sf->chars[i])!=NULL ) {
+	if ( sc->vkerns!=NULL ) {
+	    changed = true;
+	    KernPairsFree(sc->vkerns);
+	    sc->vkerns = NULL;
+	}
+    }
+    if ( changed ) {
+	fv->sf->changed = true;
+	for ( mv=fv->metrics; mv!=NULL; mv=mv->next )
+	    MVReKern(mv);
+    }
+}
+
+static SplineChar *SCHasVertVariant(SplineChar *sc) {
+    PST *pst;
+
+    if ( sc==NULL )
+return( NULL );
+
+    for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
+	if ( pst->type==pst_substitution &&
+		(pst->tag==CHR('v','e','r','t') || pst->tag==CHR('v','r','t','2'))) {
+return( SFGetCharDup(sc->parent,-1,pst->u.subs.variant));
+	}
+    }
+return( NULL );
+}
+
+static SplineChar **CharNamesToVertSC(SplineFont *sf,char *names ) {
+    char *pt, *end, ch;
+    int cnt;
+    SplineChar **list;
+
+    if ( names==NULL || *names=='\0' )
+return( NULL );
+    cnt=1;
+    for ( pt=names; (pt=strchr(pt,' '))!=NULL; ++pt )
+	++cnt;
+    list = gcalloc(cnt+1,sizeof(SplineChar *));
+
+    cnt = 0;
+    for ( pt=names ; *pt ; pt = end ) {
+	while ( *pt==' ' ) ++pt;
+	if ( *pt=='\0' )
+    break;
+	end = strchr(pt,' ');
+	if ( end==NULL ) end = pt+strlen(pt);
+	ch = *end; *end = '\0';
+	list[cnt] = SCHasVertVariant( SFGetChar(sf,-1,pt));
+	*end = ch;
+	if ( list[cnt]!=NULL )
+	    ++cnt;
+    }
+return( list );
+}
+
+static char *SCListToName(SplineChar **sclist) {
+    int i, len;
+    char *names, *pt;
+
+    for ( i=len=0; sclist[i]!=NULL; ++i )
+	len += strlen(sclist[i]->name)+1;
+    names = pt = galloc(len+1);
+    *pt = '\0';
+    for ( i=0; sclist[i]!=NULL; ++i ) {
+	strcat(pt,sclist[i]->name);
+	strcat(pt," ");
+	pt += strlen(pt);
+    }
+    if ( pt>names ) pt[-1] = '\0';
+return( names );
+}
+
+void FVVKernFromHKern(FontView *fv) {
+    int i,j;
+    KernPair *kp, *vkp;
+    SplineChar *sc1, *sc2;
+    KernClass *kc, *vkc;
+    SplineChar ***firsts, ***seconds;
+    int any1, any2;
+    SplineFont *sf = fv->sf;
+    int *map1, *map2;
+
+    FVRemoveVKerns(fv);
+    if ( !sf->hasvmetrics )
+return;
+
+    for ( i=0; i<sf->charcnt; ++i ) {
+	if ( (sc1 = SCHasVertVariant(sf->chars[i]))!=NULL ) {
+	    for ( kp = sf->chars[i]->kerns; kp!=NULL; kp=kp->next ) {
+		if ( (sc2 = SCHasVertVariant(kp->sc))!=NULL ) {
+		    vkp = chunkalloc(sizeof(KernPair));
+		    *vkp = *kp;
+		    vkp->sc = sc2;
+		    vkp->next = sc1->vkerns;
+		    sc1->vkerns = vkp;
+		}
+	    }
+	}
+    }
+
+    for ( kc = sf->kerns; kc!=NULL; kc=kc->next ) {
+	firsts = galloc(kc->first_cnt*sizeof(SplineChar *));
+	map1 = gcalloc(kc->first_cnt,sizeof(int));
+	seconds = galloc(kc->second_cnt*sizeof(SplineChar *));
+	map2 = gcalloc(kc->second_cnt,sizeof(int));
+	any1=0;
+	for ( i=1; i<kc->first_cnt; ++i ) {
+	    if ( (firsts[i] = CharNamesToVertSC(sf,kc->firsts[i]))!=NULL )
+		map1[i] = ++any1;
+	}
+	any2 = 0;
+	for ( i=1; i<kc->second_cnt; ++i ) {
+	    if ((seconds[i] = CharNamesToVertSC(sf,kc->seconds[i]))!=NULL )
+		map2[i] = ++any2;
+	}
+	if ( any1 && any2 ) {
+	    vkc = chunkalloc(sizeof(KernClass));
+	    *vkc = *kc;
+	    vkc->next = sf->vkerns;
+	    sf->vkerns = vkc;
+	    vkc->first_cnt = any1+1;
+	    vkc->second_cnt = any2+1;
+	    vkc->firsts = gcalloc(any1+1,sizeof(char *));
+	    for ( i=0; i<kc->first_cnt; ++i ) if ( map1[i]!=0 )
+		vkc->firsts[map1[i]] = SCListToName(firsts[i]);
+	    vkc->seconds = gcalloc(any2+1,sizeof(char *));
+	    for ( i=0; i<kc->second_cnt; ++i ) if ( map2[i]!=0 )
+		vkc->seconds[map2[i]] = SCListToName(seconds[i]);
+	    vkc->offsets = gcalloc((any1+1)*(any2+1),sizeof(int16));
+	    for ( i=0; i<kc->first_cnt; ++i ) if ( map1[i]!=0 ) {
+		for ( j=0; j<kc->second_cnt; ++j ) if ( map2[j]!=0 ) {
+		    vkc->offsets[map1[i]*vkc->first_cnt+map2[j]] =
+			    kc->offsets[i*kc->first_cnt+j];
+		}
+	    }
+	}
+	free(map1);
+	free(map2);
+	for ( i=1; i<kc->first_cnt; ++i )
+	    free(firsts[i]);
+	for ( i=1; i<kc->second_cnt; ++i )
+	    free(seconds[i]);
+	free(firsts);
+	free(seconds);
     }
 }
 

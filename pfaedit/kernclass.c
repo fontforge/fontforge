@@ -45,6 +45,7 @@ typedef struct kernclasslistdlg {
     MetricsView *mv;
     KernClassDlg *kcd;
     GWindow gw;
+    int isv;
 } KernClassListDlg;
 
 #define KCL_Width	200
@@ -75,14 +76,14 @@ typedef struct kernclasslistdlg {
 #define CID_Label1	1014
 #define CID_Label2	1015
 
-static GTextInfo **KCSLIArray(SplineFont *sf) {
+static GTextInfo **KCSLIArray(SplineFont *sf,int isv) {
     int cnt;
-    KernClass *kc;
+    KernClass *kc, *head = isv ? sf->vkerns : sf->kerns;
     GTextInfo **ti;
 
-    for ( kc=sf->kerns, cnt=0; kc!=NULL; kc=kc->next, ++cnt );
+    for ( kc=head, cnt=0; kc!=NULL; kc=kc->next, ++cnt );
     ti = gcalloc(cnt+1,sizeof(GTextInfo*));
-    for ( kc=sf->kerns, cnt=0; kc!=NULL; kc=kc->next, ++cnt ) {
+    for ( kc=head, cnt=0; kc!=NULL; kc=kc->next, ++cnt ) {
 	ti[cnt] = gcalloc(1,sizeof(GTextInfo));
 	ti[cnt]->fg = ti[cnt]->bg = COLOR_DEFAULT;
 	ti[cnt]->text = ScriptLangLine(sf->script_lang[kc->sli]);
@@ -91,14 +92,14 @@ static GTextInfo **KCSLIArray(SplineFont *sf) {
 return( ti );
 }
 
-static GTextInfo *KCSLIList(SplineFont *sf) {
+static GTextInfo *KCSLIList(SplineFont *sf,int isv) {
     int cnt;
-    KernClass *kc;
+    KernClass *kc, *head = isv ? sf->vkerns : sf->kerns;
     GTextInfo *ti;
 
-    for ( kc=sf->kerns, cnt=0; kc!=NULL; kc=kc->next, ++cnt );
+    for ( kc=head, cnt=0; kc!=NULL; kc=kc->next, ++cnt );
     ti = gcalloc(cnt+1,sizeof(GTextInfo));
-    for ( kc=sf->kerns, cnt=0; kc!=NULL; kc=kc->next, ++cnt )
+    for ( kc=head, cnt=0; kc!=NULL; kc=kc->next, ++cnt )
 	ti[cnt].text = ScriptLangLine(sf->script_lang[kc->sli]);
 return( ti );
 }
@@ -229,7 +230,8 @@ return;
 	if ( ch=='\0' )		/* Couldn't find any characters in the second set */
 return;
     }
-    if ( sc1!=NULL && sc2!=NULL && (sc1!=kcd->last1 || sc2!=kcd->last2)) {
+    if ( sc1!=NULL && sc2!=NULL && (sc1!=kcd->last1 || sc2!=kcd->last2) &&
+	    !kcd->kcld->isv ) {
 	if ( kcd->kcld->mv==NULL )
 	    kcd->kcld->mv = MetricsViewCreate(kcd->kcld->sf->fv,sc1,NULL);
 	else {
@@ -507,9 +509,13 @@ return( true );
 
 static void KC_DoCancel(KernClassDlg *kcd) {
     KernClass temp;
+    KernClassListDlg *kcld = kcd->kcld;
 
     if ( kcd->orig==NULL ) {
-	kcd->kcld->sf->kerns = kcd->new->next;
+	if ( kcld->isv )
+	    kcld->sf->vkerns = kcd->new->next;
+	else
+	    kcld->sf->kerns = kcd->new->next;
 	kcd->new->next = NULL;
 	kcd->orig = kcd->new;
 	kcd->new = NULL;
@@ -549,7 +555,7 @@ return( false );
 	KernClassDlg *kcd = GDrawGetUserData(gw);
 	kcd->kcld->kcd = NULL;
 	GGadgetSetList(GWidgetGetControl(kcd->kcld->gw,CID_List),
-		KCSLIArray(kcd->kcld->sf),false);
+		KCSLIArray(kcd->kcld->sf,kcd->kcld->isv),false);
 	GGadgetSetEnabled(GWidgetGetControl(kcd->kcld->gw,CID_New),true);
 	KernClassListFree(kcd->orig);
 	free(kcd);
@@ -582,8 +588,13 @@ return;
 	kc->firsts = gcalloc(1,sizeof(char *));
 	kc->seconds = gcalloc(1,sizeof(char *));
 	kc->offsets = gcalloc(1,sizeof(int16));
-	kc->next = kcld->sf->kerns;
-	kcld->sf->kerns = kc;
+	if ( kcld->isv ) {
+	    kc->next = kcld->sf->vkerns;
+	    kcld->sf->vkerns = kc;
+	} else {
+	    kc->next = kcld->sf->kerns;
+	    kcld->sf->kerns = kc;
+	}
 	kcld->sf->changed = true;
     }
     kcd->new = kc;
@@ -870,7 +881,7 @@ static int KCL_Delete(GGadget *g, GEvent *e) {
 	    list = GWidgetGetControl(kcld->gw,CID_List);
 	    old = GGadgetGetList(list,&len);
 	    new = gcalloc(len+1,sizeof(GTextInfo *));
-	    p = NULL; kc = kcld->sf->kerns;
+	    p = NULL; kc = kcld->isv ? kcld->sf->vkerns : kcld->sf->kerns;
 	    for ( i=j=0; i<len; ++i, kc = n ) {
 		n = kc->next;
 		if ( !old[i]->selected ) {
@@ -880,10 +891,12 @@ static int KCL_Delete(GGadget *g, GEvent *e) {
 		    ++j;
 		    p = kc;
 		} else {
-		    if ( p==NULL )
-			kcld->sf->kerns = n;
-		    else
+		    if ( p!=NULL )
 			p->next = n;
+		    else if ( kcld->isv )
+			kcld->sf->vkerns = n;
+		    else
+			kcld->sf->kerns = n;
 		    kc->next = NULL;
 		    KernClassListFree(kc);
 		}
@@ -907,7 +920,7 @@ static int KCL_Edit(GGadget *g, GEvent *e) {
 	sel = GGadgetGetFirstListSelectedItem(GWidgetGetControl(GGadgetGetWindow(g),CID_List));
 	if ( sel==-1 || kcld->kcd!=NULL )
 return( true );
-	for ( kc=kcld->sf->kerns, i=0; i<sel; kc=kc->next, ++i );
+	for ( kc=kcld->isv?kcld->sf->vkerns:kcld->sf->kerns, i=0; i<sel; kc=kc->next, ++i );
 	KernClassD(kcld,kc);
     }
 return( true );
@@ -959,28 +972,40 @@ return( true );
 return( false );
     } else if ( event->type == et_destroy ) {
 	KernClassListDlg *kcld = GDrawGetUserData(gw);
-	kcld->sf->kcld = NULL;
+	if ( kcld->isv )
+	    kcld->sf->vkcld = NULL;
+	else
+	    kcld->sf->kcld = NULL;
 	free(kcld);
     }
 return( true );
 }
 
-void ShowKernClasses(SplineFont *sf,MetricsView *mv) {
+void ShowKernClasses(SplineFont *sf,MetricsView *mv,int isv) {
     KernClassListDlg *kcld;
     GRect pos;
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[7];
     GTextInfo label[7];
 
-    if ( sf->kcld ) {
+    if ( sf->kcld && !isv ) {
 	GDrawSetVisible(sf->kcld->gw,true);
 	GDrawRaise(sf->kcld->gw);
 return;
+    } else if ( sf->vkcld && isv ) {
+	GDrawSetVisible(sf->vkcld->gw,true);
+	GDrawRaise(sf->vkcld->gw);
+return;
     }
+
     kcld = gcalloc(1,sizeof(KernClassListDlg));
     kcld->sf = sf;
     kcld->mv = mv;
-    sf->kcld = kcld;
+    kcld->isv = isv;
+    if ( isv )
+	sf->vkcld = kcld;
+    else
+	sf->kcld = kcld;
 
     memset(&wattrs,0,sizeof(wattrs));
     memset(&gcd,0,sizeof(gcd));
@@ -991,7 +1016,7 @@ return;
     wattrs.restrict_input_to_me = false;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.window_title = GStringGetResource( _STR_KernByClasses,NULL );
+    wattrs.window_title = GStringGetResource( isv?_STR_VKernByClasses:_STR_KernByClasses,NULL );
     wattrs.is_dlg = false;
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,KCL_Width));
@@ -1002,7 +1027,7 @@ return;
     gcd[0].gd.pos.width = KCL_Width-28; gcd[0].gd.pos.height = 7*12+10;
     gcd[0].gd.flags = gg_visible | gg_enabled | gg_list_multiplesel;
     gcd[0].gd.cid = CID_List;
-    gcd[0].gd.u.list = KCSLIList(sf);
+    gcd[0].gd.u.list = KCSLIList(sf,isv);
     gcd[0].gd.handle_controlevent = KCL_SelChanged;
     gcd[0].creator = GListCreate;
 
@@ -1067,4 +1092,47 @@ void KCLD_MvDetach(KernClassListDlg *kcld,MetricsView *mv) {
 return;
     if ( kcld->mv == mv )
 	kcld->mv = NULL;
+}
+
+int KernClassContains(KernClass *kc, char *name1, char *name2, int ordered ) {
+    int infirst=0, insecond=0, scpos1, kwpos1, scpos2, kwpos2;
+    int i;
+
+    for ( i=1; i<kc->first_cnt; ++i ) {
+	if ( PSTContains(kc->firsts[i],name1) ) {
+	    scpos1 = i;
+	    if ( ++infirst>=3 )		/* The name occurs twice??? */
+    break;
+	} else if ( PSTContains(kc->firsts[i],name2) ) {
+	    kwpos1 = i;
+	    if ( (infirst+=2)>=3 )
+    break;
+	}
+    }
+    if ( infirst==0 || infirst>3 )
+return( 0 );
+    for ( i=1; i<kc->second_cnt; ++i ) {
+	if ( PSTContains(kc->seconds[i],name1) ) {
+	    scpos2 = i;
+	    if ( ++insecond>=3 )
+    break;
+	} else if ( PSTContains(kc->seconds[i],name2) ) {
+	    kwpos2 = i;
+	    if ( (insecond+=2)>=3 )
+    break;
+	}
+    }
+    if ( insecond==0 || insecond>3 )
+return( 0 );
+    if ( (infirst&1) && (insecond&2) ) {
+	if ( kc->offsets[scpos1*kc->second_cnt+kwpos1]!=0 )
+return( kc->offsets[scpos1*kc->second_cnt+kwpos2] );
+    }
+    if ( !ordered ) {
+	if ( (infirst&2) && (insecond&1) ) {
+	    if ( kc->offsets[kwpos1*kc->second_cnt+scpos2]!=0 )
+return( kc->offsets[kwpos1*kc->second_cnt+scpos2] );
+	}
+    }
+return( 0 );
 }

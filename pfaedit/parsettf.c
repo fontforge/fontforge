@@ -3560,6 +3560,7 @@ static void readttfkerns(FILE *ttf,struct ttfinfo *info) {
     KernClass *kc;
     uint32 begin_table;
     uint16 *class1, *class2;
+    int isv;
 
     fseek(ttf,info->kern_start,SEEK_SET);
     version = getushort(ttf);
@@ -3576,14 +3577,16 @@ static void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 	    len = getushort(ttf);
 	    coverage = getushort(ttf);
 	    format = coverage>>8;
-	    flags_good = ((coverage&7)==1);
+	    flags_good = ((coverage&7)<=1);
+	    isv = !(coverage&1);
 	    header_size = 6;
 	} else {
 	    len = getlong(ttf);
 	    coverage = getushort(ttf);
 	    /* Apple has reordered the bits */
 	    format = (coverage&0xff);
-	    flags_good = ((coverage&0xff00)==0);
+	    flags_good = ((coverage&0xff00)==0 || (coverage&0xff00)==0x8000);
+	    isv = coverage&0x8000? 1 : 0;
 	    /* tupleIndex = */ getushort(ttf);
 	    header_size = 8;
 	}
@@ -3602,8 +3605,13 @@ static void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 		    kp->sc = info->chars[right];
 		    kp->off = offset;
 		    kp->sli = SLIFromInfo(info,info->chars[left],DEFAULT_LANG);
-		    kp->next = info->chars[left]->kerns;
-		    info->chars[left]->kerns = kp;
+		    if ( isv ) {
+			kp->next = info->chars[left]->vkerns;
+			info->chars[left]->vkerns = kp;
+		    } else {
+			kp->next = info->chars[left]->kerns;
+			info->chars[left]->kerns = kp;
+		    }
 		} else
 		    fprintf( stderr, "Bad kern pair glyphs %d & %d must be less than %d\n",
 			    left, right, info->glyph_cnt );
@@ -3613,6 +3621,7 @@ static void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 	    /*  OpenType's spec doesn't document this */
 	    /*  I shan't support it */
 	    fseek(ttf,len-header_size,SEEK_CUR);
+	    fprintf( stderr, "This font has a format 1 kerning table (a state machine).\nPfaEdit doesn't parse these\nSorry.\n" );
 	} else if ( flags_good && format==2 ) {
 	    /* format 2, horizontal kerning data (as classes) not perpendicular */
 	    /*  OpenType's spec documents this, but says windows won't support it */
@@ -3625,11 +3634,19 @@ static void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 	    left = getushort(ttf);
 	    right = getushort(ttf);
 	    array = getushort(ttf);
-	    if ( info->khead==NULL )
-		info->khead = kc = chunkalloc(sizeof(KernClass));
-	    else
-		kc = info->klast->next = chunkalloc(sizeof(KernClass));
-	    info->klast = kc;
+	    if ( isv ) {
+		if ( info->khead==NULL )
+		    info->vkhead = kc = chunkalloc(sizeof(KernClass));
+		else
+		    kc = info->vklast->next = chunkalloc(sizeof(KernClass));
+		info->vklast = kc;
+	    } else {
+		if ( info->khead==NULL )
+		    info->khead = kc = chunkalloc(sizeof(KernClass));
+		else
+		    kc = info->klast->next = chunkalloc(sizeof(KernClass));
+		info->klast = kc;
+	    }
 	    kc->second_cnt = rowWidth/sizeof(uint16);
 	    class1 = getAppleClassTable(ttf, begin_table+left, info->glyph_cnt, array, rowWidth );
 	    class2 = getAppleClassTable(ttf, begin_table+right, info->glyph_cnt, 0, sizeof(uint16) );
@@ -3799,28 +3816,63 @@ static void readvaluerecord(struct valuerecord *vr,int vf,FILE *ttf) {
 	vr->offYadvanceDev = getushort(ttf);
 }
 
-static void addKernPair(struct ttfinfo *info, int glyph1, int glyph2,
-	int16 offset, uint16 sli, uint16 flags) {
+static void addPairPos(struct ttfinfo *info, int glyph1, int glyph2,
+	struct lookup *lookup,struct valuerecord *vr1,struct valuerecord *vr2) {
+    
+    if ( glyph1<info->glyph_cnt && glyph2<info->glyph_cnt ) {
+	PST *pos = chunkalloc(sizeof(PST));
+	pos->type = pst_pair;
+	pos->tag = lookup->tag;
+	pos->script_lang_index = lookup->script_lang_index;
+	pos->flags = lookup->flags;
+	pos->next = info->chars[glyph1]->possub;
+	info->chars[glyph1]->possub = pos;
+	pos->u.pair.vr = chunkalloc(sizeof(struct vr [2]));
+	pos->u.pair.paired = copy(info->chars[glyph2]->name);
+	pos->u.pair.vr[0].xoff = vr1->xplacement;
+	pos->u.pair.vr[0].yoff = vr1->yplacement;
+	pos->u.pair.vr[0].h_adv_off = vr1->xadvance;
+	pos->u.pair.vr[0].v_adv_off = vr1->yadvance;
+	pos->u.pair.vr[1].xoff = vr2->xplacement;
+	pos->u.pair.vr[1].yoff = vr2->yplacement;
+	pos->u.pair.vr[1].h_adv_off = vr2->xadvance;
+	pos->u.pair.vr[1].v_adv_off = vr2->yadvance;
+    } else
+	fprintf( stderr, "Bad pair position: glyphs %d & %d should have been < %d\n",
+		glyph1, glyph2, info->glyph_cnt );
+}
+
+static int addKernPair(struct ttfinfo *info, int glyph1, int glyph2,
+	int16 offset, uint16 sli, uint16 flags,int isv) {
     KernPair *kp;
     if ( glyph1<info->glyph_cnt && glyph2<info->glyph_cnt ) {
-	for ( kp=info->chars[glyph1]->kerns; kp!=NULL; kp=kp->next )
+	for ( kp=isv ? info->chars[glyph1]->vkerns : info->chars[glyph1]->kerns;
+		kp!=NULL; kp=kp->next ) {
 	    if ( kp->sc == info->chars[glyph2] )
 	break;
+	}
 	if ( kp==NULL ) {
 	    kp = chunkalloc(sizeof(KernPair));
 	    kp->sc = info->chars[glyph2];
 	    kp->off = offset;
 	    kp->sli = sli;
 	    kp->flags = flags;
-	    kp->next = info->chars[glyph1]->kerns;
-	    info->chars[glyph1]->kerns = kp;
-	}
+	    if ( isv ) {
+		kp->next = info->chars[glyph1]->vkerns;
+		info->chars[glyph1]->vkerns = kp;
+	    } else {
+		kp->next = info->chars[glyph1]->kerns;
+		info->chars[glyph1]->kerns = kp;
+	    }
+	} else if ( kp->sli!=sli || kp->flags!=flags )
+return( true );
     } else
 	fprintf( stderr, "Bad kern pair: glyphs %d & %d should have been < %d\n",
 		glyph1, glyph2, info->glyph_cnt );
+return( false );
 }
 
-static void gposKernSubTable(FILE *ttf, int stoffset, struct ttfinfo *info, struct lookup *lookup) {
+static void gposKernSubTable(FILE *ttf, int stoffset, struct ttfinfo *info, struct lookup *lookup,int isv) {
     int coverage, cnt, i, j, pair_cnt, vf1, vf2, glyph2;
     int cd1, cd2, c1_cnt, c2_cnt;
     uint16 format;
@@ -3835,11 +3887,18 @@ static void gposKernSubTable(FILE *ttf, int stoffset, struct ttfinfo *info, stru
 return;
     coverage = getushort(ttf);
     vf1 = getushort(ttf);
-    if ( vf1&0xffbb)	/* Not interested in things that deal with y advance/placement nor with x placement */
-return;
     vf2 = getushort(ttf);
-    if ( vf2&0xffaa)	/* Not interested in things that deal with y advance/placement */
-return;
+    if ( isv==1 ) {
+	if ( vf1&0xff77 )
+	    isv = 2;
+	if ( vf2&0xff77 )
+	    isv = 2;
+    } else if ( isv==0 ) {
+	if ( vf1&0xffbb)	/* can't represent things that deal with y advance/placement nor with x placement as kerning */
+	    isv = 2;
+	if ( vf2&0xffaa )
+	    isv = 2;
+    }
     if ( format==1 ) {
 	cnt = getushort(ttf);
 	ps_offsets = galloc(cnt*sizeof(uint16));
@@ -3855,10 +3914,21 @@ return;
 		glyph2 = getushort(ttf);
 		readvaluerecord(&vr1,vf1,ttf);
 		readvaluerecord(&vr2,vf2,ttf);
-		if ( lookup->flags&1 )	/* R2L */
-		    addKernPair(info, glyphs[i], glyph2, vr2.xadvance+vr1.xplacement,lookup->script_lang_index,lookup->flags);
-		else
-		    addKernPair(info, glyphs[i], glyph2, vr1.xadvance+vr2.xplacement,lookup->script_lang_index,lookup->flags);
+		if ( isv==2 )
+		    addPairPos(info, glyphs[i], glyph2,lookup,&vr1,&vr2);
+		else if ( isv ) {
+		    if ( addKernPair(info, glyphs[i], glyph2, vr1.yadvance,lookup->script_lang_index,lookup->flags,isv))
+			addPairPos(info, glyphs[i], glyph2,lookup,&vr1,&vr2);
+			/* If we've already got kern data for this pair of */
+			/*  glyphs, then we can't make it be a true KernPair */
+			/*  but we can save the info as a pst_pair */
+		} else if ( lookup->flags&1 ) {	/* R2L */
+		    if ( addKernPair(info, glyphs[i], glyph2, vr2.xadvance,lookup->script_lang_index,lookup->flags,isv))
+			addPairPos(info, glyphs[i], glyph2,lookup,&vr1,&vr2);
+		} else {
+		    if ( addKernPair(info, glyphs[i], glyph2, vr1.xadvance,lookup->script_lang_index,lookup->flags,isv))
+			addPairPos(info, glyphs[i], glyph2,lookup,&vr1,&vr2);
+		}
 	    }
 	}
 	free(ps_offsets); free(glyphs);
@@ -3871,25 +3941,50 @@ return;
 	fseek(ttf, foffset, SEEK_SET);	/* come back */
 	c1_cnt = getushort(ttf);
 	c2_cnt = getushort(ttf);
-	if ( info->khead==NULL )
-	    info->khead = kc = chunkalloc(sizeof(KernClass));
-	else
-	    kc = info->klast->next = chunkalloc(sizeof(KernClass));
-	info->klast = kc;
-	kc->first_cnt = c1_cnt; kc->second_cnt = c2_cnt;
-	kc->sli = lookup->script_lang_index;
-	kc->flags = lookup->flags;
-	kc->offsets = galloc(c1_cnt*c2_cnt*sizeof(int16));
-	kc->firsts = ClassToNames(info,c1_cnt,class1,info->glyph_cnt);
-	kc->seconds = ClassToNames(info,c2_cnt,class2,info->glyph_cnt);
-	for ( i=0; i<c1_cnt; ++i) {
-	    for ( j=0; j<c2_cnt; ++j) {
-		readvaluerecord(&vr1,vf1,ttf);
-		readvaluerecord(&vr2,vf2,ttf);
-		if ( lookup->flags&1 )	/* R2L */
-		    kc->offsets[i*c2_cnt+j] = vr2.xadvance+vr1.xplacement;
+	if ( isv!=2 ) {
+	    if ( isv ) {
+		if ( info->khead==NULL )
+		    info->vkhead = kc = chunkalloc(sizeof(KernClass));
 		else
-		    kc->offsets[i*c2_cnt+j] = vr1.xadvance+vr2.xplacement;
+		    kc = info->vklast->next = chunkalloc(sizeof(KernClass));
+		info->vklast = kc;
+	    } else {
+		if ( info->khead==NULL )
+		    info->khead = kc = chunkalloc(sizeof(KernClass));
+		else
+		    kc = info->klast->next = chunkalloc(sizeof(KernClass));
+		info->klast = kc;
+	    }
+	    kc->first_cnt = c1_cnt; kc->second_cnt = c2_cnt;
+	    kc->sli = lookup->script_lang_index;
+	    kc->flags = lookup->flags;
+	    kc->offsets = galloc(c1_cnt*c2_cnt*sizeof(int16));
+	    kc->firsts = ClassToNames(info,c1_cnt,class1,info->glyph_cnt);
+	    kc->seconds = ClassToNames(info,c2_cnt,class2,info->glyph_cnt);
+	    for ( i=0; i<c1_cnt; ++i) {
+		for ( j=0; j<c2_cnt; ++j) {
+		    readvaluerecord(&vr1,vf1,ttf);
+		    readvaluerecord(&vr2,vf2,ttf);
+		    if ( lookup->flags&1 )	/* R2L */
+			kc->offsets[i*c2_cnt+j] = vr2.xadvance+vr1.xplacement;
+		    else
+			kc->offsets[i*c2_cnt+j] = vr1.xadvance+vr2.xplacement;
+		}
+	    }
+	} else {
+	    int k,l;
+	    for ( i=0; i<c1_cnt; ++i) {
+		for ( j=0; j<c2_cnt; ++j) {
+		    readvaluerecord(&vr1,vf1,ttf);
+		    readvaluerecord(&vr2,vf2,ttf);
+		    if ( vr1.xadvance!=0 || vr1.xplacement!=0 || vr1.yadvance!=0 || vr1.yplacement!=0 ||
+			    vr2.xadvance!=0 || vr2.xplacement!=0 || vr2.yadvance!=0 || vr2.yplacement!=0 )
+			for ( k=0; k<info->glyph_cnt; ++k )
+			    if ( class1[k]==i )
+				for ( l=0; l<info->glyph_cnt; ++l )
+				    if ( class2[l]==j )
+					addPairPos(info, k,l,lookup,&vr1,&vr2);
+		}
 	    }
 	}
 	free(class1); free(class2);
@@ -4198,7 +4293,11 @@ static void gposExtensionSubTable(FILE *ttf, int stoffset,
       break;  
       case 2:
 	if ( lookup->tag==CHR('k','e','r','n') )
-	    gposKernSubTable(ttf,st,info,lookup);
+	    gposKernSubTable(ttf,st,info,lookup,false);
+	else if ( lookup->tag==CHR('v','k','r','n') )
+	    gposKernSubTable(ttf,st,info,lookup,true);
+	else
+	    gposKernSubTable(ttf,st,info,lookup,2);
       break;  
       case 3:
 	if ( lookup->tag==CHR('c','u','r','s') )
@@ -4913,7 +5012,11 @@ return;
 		  break;  
 		  case 2:
 		    if ( lookups[k].tag==CHR('k','e','r','n') )
-			gposKernSubTable(ttf,st,info,&lookups[k]);
+			gposKernSubTable(ttf,st,info,&lookups[k],false);
+		    else if ( lookups[k].tag==CHR('v','k','r','n') )
+			gposKernSubTable(ttf,st,info,&lookups[k],true);
+		    else
+			gposKernSubTable(ttf,st,info,&lookups[k],2);
 		  break;  
 		  case 3:
 		    if ( lookups[k].tag==CHR('c','u','r','s') )

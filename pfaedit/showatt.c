@@ -279,7 +279,7 @@ static void BuildAnchorLists(struct node *node,struct att_dlg *att,uint32 script
 }
 
 static void BuildKerns2(struct node *node,struct att_dlg *att,
-	uint32 script, uint32 lang) {
+	uint32 script, uint32 lang,int isv) {
     KernPair *kp = node->u.sc->kerns;
     int i,j,l,m;
     struct node *chars;
@@ -287,7 +287,7 @@ static void BuildKerns2(struct node *node,struct att_dlg *att,
     SplineFont *_sf = att->sf;
 
     for ( j=0; j<2; ++j ) {
-	for ( kp=node->u.sc->kerns, i=0; kp!=NULL; kp=kp->next ) {
+	for ( kp=isv ? node->u.sc->vkerns:node->u.sc->kerns, i=0; kp!=NULL; kp=kp->next ) {
 	    int sli = kp->sli;
 	    struct script_record *sr = _sf->script_lang[sli];
 	    for ( l=0; sr[l].script!=0 && sr[l].script!=script; ++l );
@@ -312,16 +312,26 @@ static void BuildKerns2(struct node *node,struct att_dlg *att,
 
 static void BuildKerns2G(struct node *node,struct att_dlg *att) {
     uint32 script = node->parent->parent->parent->tag, lang = node->parent->parent->tag;
-    BuildKerns2(node,att,script,lang);
+    BuildKerns2(node,att,script,lang,false);
+}
+
+static void BuildKerns2GV(struct node *node,struct att_dlg *att) {
+    uint32 script = node->parent->parent->parent->tag, lang = node->parent->parent->tag;
+    BuildKerns2(node,att,script,lang,true);
 }
 
 static void BuildKerns2M(struct node *node,struct att_dlg *att) {
     uint32 script = node->parent->tag, lang = DEFAULT_LANG;
-    BuildKerns2(node,att,script,lang);
+    BuildKerns2(node,att,script,lang,false);
+}
+
+static void BuildKerns2MV(struct node *node,struct att_dlg *att) {
+    uint32 script = node->parent->tag, lang = DEFAULT_LANG;
+    BuildKerns2(node,att,script,lang,true);
 }
 
 static void BuildKerns(struct node *node,struct att_dlg *att,uint32 script,uint32 lang,
-	void (*build)(struct node *,struct att_dlg *)) {
+	void (*build)(struct node *,struct att_dlg *),int isv) {
     int i,k,j,l,m, tot;
     SplineFont *_sf = att->sf, *sf;
     struct node *chars;
@@ -333,7 +343,7 @@ static void BuildKerns(struct node *node,struct att_dlg *att,uint32 script,uint3
 	do {
 	    sf = _sf->subfontcnt==0 ? _sf : _sf->subfonts[k++];
 	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-		for ( kp=sf->chars[i]->kerns; kp!=NULL; kp=kp->next ) {
+		for ( kp=isv ? sf->chars[i]->vkerns:sf->chars[i]->kerns; kp!=NULL; kp=kp->next ) {
 		    int sli = kp->sli;
 		    struct script_record *sr = _sf->script_lang[sli];
 		    for ( l=0; sr[l].script!=0 && sr[l].script!=script; ++l );
@@ -364,7 +374,11 @@ return;
 }
 
 static void BuildKernScript(struct node *node,struct att_dlg *att) {
-    BuildKerns(node,att,node->tag,DEFAULT_LANG,BuildKerns2M);
+    BuildKerns(node,att,node->tag,DEFAULT_LANG,BuildKerns2M,false);
+}
+
+static void BuildVKernScript(struct node *node,struct att_dlg *att) {
+    BuildKerns(node,att,node->tag,DEFAULT_LANG,BuildKerns2MV,true);
 }
 
 static void BuildFeatures(struct node *node,struct att_dlg *att,
@@ -373,7 +387,7 @@ static void BuildFeatures(struct node *node,struct att_dlg *att,
     SplineFont *_sf = att->sf, *sf;
     SplineChar *sc;
     unichar_t *ubuf;
-    char buf[60];
+    char buf[200];
     struct node *chars;
     PST *pst;
 
@@ -402,8 +416,8 @@ static void BuildFeatures(struct node *node,struct att_dlg *att,
 	    if ( sc!=NULL ) {
 		for ( pst=sc->possub; pst!=NULL; pst=pst->next )
 			if ( pst->tag==tag && pst->type!=pst_lcaret &&
-			 (( ispos && pst->type==pst_position) ||
-			  (!ispos && pst->type!=pst_position)) ) {
+			 (( ispos && (pst->type==pst_position || pst->type==pst_pair)) ||
+			  (!ispos && (pst->type!=pst_position && pst->type!=pst_pair))) ) {
 		    int sli = pst->script_lang_index;
 		    struct script_record *sr = _sf->script_lang[sli];
 		    for ( l=0; sr[l].script!=0 && sr[l].script!=script; ++l );
@@ -417,6 +431,14 @@ static void BuildFeatures(struct node *node,struct att_dlg *att,
 					    pst->u.pos.xoff, pst->u.pos.yoff,
 					    pst->u.pos.h_adv_off, pst->u.pos.v_adv_off );
 				    uc_strcat(ubuf,buf);
+			        } else if ( pst->type==pst_pair ) {
+				    sprintf(buf," %.50s dx=%d dy=%d dx_adv=%d dy_adv=%d | dx=%d dy=%d dx_adv=%d dy_adv=%d",
+					    pst->u.pair.paired,
+					    pst->u.pair.vr[0].xoff, pst->u.pair.vr[0].yoff,
+					    pst->u.pair.vr[0].h_adv_off, pst->u.pair.vr[0].v_adv_off,
+					    pst->u.pair.vr[1].xoff, pst->u.pair.vr[1].yoff,
+					    pst->u.pair.vr[1].h_adv_off, pst->u.pair.vr[1].v_adv_off );
+				    uc_strcat(ubuf,buf);
 			        } else {
 				    if ( pst->type==pst_ligature )
 					uc_strcat(ubuf, " <= " );
@@ -429,6 +451,9 @@ static void BuildFeatures(struct node *node,struct att_dlg *att,
 			    } else {
 				if ( pst->type==pst_position )
 				    len = strlen(sc->name)+40;
+				else if ( pst->type==pst_pair )
+				    len = strlen(sc->name)+strlen(pst->u.pair.paired)+
+					100;
 				else
 				    len = strlen(sc->name)+strlen(pst->u.subs.variant)+8;
 			        if ( len>maxl ) maxl = len;
@@ -478,6 +503,7 @@ static void BuildMorxScript(struct node *node,struct att_dlg *att) {
 	for ( i=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
 	    for ( pst=sc->possub; pst!=NULL; pst=pst->next )
 		    if ( pst->type!=pst_position && pst->type!=pst_lcaret &&
+			    pst->type!=pst_pair &&
 			    OTTagToMacFeature(pst->tag,&feat,&set)) {
 		int sli = pst->script_lang_index;
 		struct script_record *sr = _sf->script_lang[sli];
@@ -531,7 +557,11 @@ static void BuildGSUBfeatures(struct node *node,struct att_dlg *att) {
 
     if ( !isgsub ) {
 	if ( feat==CHR('k','e','r','n')) {
-	    BuildKerns(node,att,script,lang,BuildKerns2G);
+	    BuildKerns(node,att,script,lang,BuildKerns2G,false);
+return;
+	}
+	if ( feat==CHR('v','k','r','n')) {
+	    BuildKerns(node,att,script,lang,BuildKerns2GV,true);
 return;
 	}
 	for ( ac = att->sf->anchor; ac!=NULL; ac=ac->next ) {
@@ -553,12 +583,13 @@ static void BuildGSUBlang(struct node *node,struct att_dlg *att) {
     uint32 *feats;
     struct node *featnodes;
     extern GTextInfo *pst_tags[];
-    int haskerns=false;
+    int haskerns=false, hasvkerns=false;
     AnchorClass *ac, *ac2, **acs;
     SplineChar *sc;
     PST *pst;
     KernPair *kp;
     unichar_t ubuf[80];
+    int isv;
 
     /* Build up the list of features in this lang entry of this script in GSUB/GPOS */
     k=tot=0;
@@ -568,8 +599,9 @@ static void BuildGSUBlang(struct node *node,struct att_dlg *att) {
 	sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[k];
 	for ( i=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
 	    for ( pst=sc->possub; pst!=NULL; pst=pst->next )
-		    if ( (isgsub && pst->type!=pst_position && pst->type!=pst_lcaret ) ||
-			    (!isgsub && pst->type==pst_position)) {
+		    if ( (isgsub && pst->type!=pst_position && pst->type!=pst_lcaret &&
+			    pst->type!=pst_pair) ||
+			    (!isgsub && (pst->type==pst_position || pst->type==pst_pair))) {
 		int sli = pst->script_lang_index;
 		struct script_record *sr = _sf->script_lang[sli];
 		for ( l=0; sr[l].script!=0 && sr[l].script!=script; ++l );
@@ -585,19 +617,30 @@ static void BuildGSUBlang(struct node *node,struct att_dlg *att) {
 		    }
 		}
 	    }
-	    if ( !isgsub && !haskerns ) {
-		for ( kp=sc->kerns; kp!=NULL; kp=kp->next ) {
-		    int sli = kp->sli;
-		    struct script_record *sr = _sf->script_lang[sli];
-		    for ( l=0; sr[l].script!=0 && sr[l].script!=script; ++l );
-		    if ( sr[l].script!=0 ) {
-			for ( m=0; sr[l].langs[m]!=0 && sr[l].langs[m]!=lang; ++m );
-			if ( sr[l].langs[m]!=0 ) {
-			    if ( tot>=max )
-				feats = grealloc(feats,(max+=30)*sizeof(uint32));
-			    feats[tot++] = CHR('k','e','r','n');
-			    haskerns = true;
-		break;
+	    if ( !isgsub ) {
+		for ( isv=0; isv<2; ++isv ) {
+		    if ( isv && hasvkerns )
+		continue;
+		    if ( !isv && haskerns )
+		continue;
+		    for ( kp=isv ? sc->vkerns : sc->kerns; kp!=NULL; kp=kp->next ) {
+			int sli = kp->sli;
+			struct script_record *sr = _sf->script_lang[sli];
+			for ( l=0; sr[l].script!=0 && sr[l].script!=script; ++l );
+			if ( sr[l].script!=0 ) {
+			    for ( m=0; sr[l].langs[m]!=0 && sr[l].langs[m]!=lang; ++m );
+			    if ( sr[l].langs[m]!=0 ) {
+				if ( tot>=max )
+				    feats = grealloc(feats,(max+=30)*sizeof(uint32));
+				if ( isv ) {
+				    feats[tot++] = CHR('v','k','r','n');
+				    hasvkerns = true;
+				} else {
+				    feats[tot++] = CHR('k','e','r','n');
+				    haskerns = true;
+				}
+		    break;
+			    }
 			}
 		    }
 		}
@@ -1067,12 +1110,14 @@ static void BuildTable(struct node *node,struct att_dlg *att) {
     extern GTextInfo scripts[];
     int isgsub = node->tag==CHR('G','S','U','B'), isgpos = node->tag==CHR('G','P','O','S');
     int ismorx = node->tag==CHR('m','o','r','x'), iskern = node->tag==CHR('k','e','r','n');
+    int isvkern = node->tag==CHR('v','k','r','n');
     int feat, set;
     SplineChar *sc;
     PST *pst;
     KernPair *kp;
     unichar_t ubuf[120];
     AnchorClass *ac;
+    int isv;
 
     /* Build the list of scripts that are mentioned in the font */
     for ( j=0; j<2; ++j ) {
@@ -1109,7 +1154,7 @@ return;
 	for ( i=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
 	    for ( pst=sc->possub; pst!=NULL; pst=pst->next ) if ( pst->type!=pst_lcaret ) {
 		int relevant = false;
-		if ( pst->type == pst_position )
+		if ( pst->type == pst_position || pst->type==pst_pair )
 		    relevant = isgpos;
 		else
 		    relevant = isgsub || (ismorx && OTTagToMacFeature(pst->tag,&feat,&set));
@@ -1123,14 +1168,17 @@ return;
 		    }
 		}
 	    }
-	    if ( sc->kerns!=NULL && (iskern || isgpos)) {
-		for ( kp = sc->kerns; kp!=NULL; kp=kp->next ) {
-		    int sli = kp->sli;
-		    struct script_record *sr = _sf->script_lang[sli];
-		    for ( l=0; sr[l].script!=0 ; ++l ) {
-			for ( j=0; j<script_max && scriptnodes[j].tag!=sr[l].script; ++j );
-			if ( j<script_max )
-			    scriptnodes[j].used = true;
+	    for ( isv=0; isv<2; ++isv ) {
+		KernPair *head = isv ? sc->vkerns : sc->kerns;
+		if ( head!=NULL && ((iskern && !isv) || (isvkern && isv) || isgpos)) {
+		    for ( kp = head; kp!=NULL; kp=kp->next ) {
+			int sli = kp->sli;
+			struct script_record *sr = _sf->script_lang[sli];
+			for ( l=0; sr[l].script!=0 ; ++l ) {
+			    for ( j=0; j<script_max && scriptnodes[j].tag!=sr[l].script; ++j );
+			    if ( j<script_max )
+				scriptnodes[j].used = true;
+			}
 		    }
 		}
 	    }
@@ -1174,6 +1222,7 @@ return;
 	u_strcat(ubuf,GStringGetResource(_STR_OTFScript,NULL));
 	scriptnodes[i].label = u_copy(ubuf);
 	scriptnodes[i].build = iskern ? BuildKernScript :
+				isvkern ? BuildVKernScript :
 				ismorx ? BuildMorxScript :
 			        BuildGSUBscript;
 	scriptnodes[i].parent = node;
@@ -1185,7 +1234,7 @@ return;
 static void BuildTop(struct att_dlg *att) {
     SplineFont *sf, *_sf = att->sf;
     int hasgsub=0, hasgpos=0, hasgdef=0;
-    int hasmorx=0, haskern=0, haslcar=0, hasprop=0, hasopbd=0;
+    int hasmorx=0, haskern=0, hasvkern=0, haslcar=0, hasprop=0, hasopbd=0;
     int feat, set;
     struct node *tables;
     PST *pst;
@@ -1208,6 +1257,8 @@ static void BuildTop(struct att_dlg *att) {
 		    hasgpos = true;
 		    if ( pst->tag==CHR('l','f','b','d') || pst->tag==CHR('r','t','b','d') )
 			hasopbd = true;
+		} else if ( pst->type == pst_pair ) {
+		    hasgpos = true;
 		} else if ( pst->type == pst_lcaret ) {
 		    for ( j=pst->u.lcaret.cnt-1; j>=0; --j )
 			if ( pst->u.lcaret.carets[j]!=0 )
@@ -1222,6 +1273,10 @@ static void BuildTop(struct att_dlg *att) {
 	    }
 	    if ( sc->kerns!=NULL && SCScriptFromUnicode(sc)!=0 ) {
 		haskern = hasgpos = true;
+		SFAddScriptLangIndex(sf,SCScriptFromUnicode(sc),DEFAULT_LANG);
+	    }
+	    if ( sc->vkerns!=NULL && SCScriptFromUnicode(sc)!=0 ) {
+		hasvkern = hasgpos = true;
 		SFAddScriptLangIndex(sf,SCScriptFromUnicode(sc),DEFAULT_LANG);
 	    }
 	}
@@ -1267,15 +1322,23 @@ static void BuildTop(struct att_dlg *att) {
 	    }
 	    ++i;
 	}
-	if ( hasmorx || haskern || haslcar || hasopbd || hasprop ) {
+	if ( hasmorx || haskern || hasvkern || haslcar || hasopbd || hasprop ) {
 	    int j = 0;
 	    tables[i].label = u_copy(GStringGetResource(_STR_AppleAdvancedTypography,NULL));
 	    tables[i].children_checked = true;
-	    tables[i].children = gcalloc(hasmorx+haskern+haslcar+hasopbd+hasprop+1,sizeof(struct node));
-	    tables[i].cnt = hasmorx+haskern+hasopbd+hasprop+haslcar;
+	    tables[i].children = gcalloc(hasmorx+haskern+haslcar+hasopbd+hasprop+hasvkern+1,sizeof(struct node));
+	    tables[i].cnt = hasmorx+haskern+hasopbd+hasprop+haslcar+hasvkern;
 	    if ( haskern ) {
-		tables[i].children[j].label = uc_copy("'kern' Horizontal Kerning Table");
+		tables[i].children[j].label = hasvkern ? uc_copy("'kern' Horizontal Kerning Sub-Table") :
+				uc_copy("'kern' Horizontal Kerning Table");
 		tables[i].children[j].tag = CHR('k','e','r','n');
+		tables[i].children[j].build = BuildTable;
+		tables[i].children[j++].parent = &tables[i];
+	    }
+	    if ( hasvkern ) {
+		tables[i].children[j].label = haskern ? uc_copy("'kern' Vertical Kerning Sub-Table") :
+				uc_copy("'kern' Vertical Kerning Table");
+		tables[i].children[j].tag = CHR('v','k','r','n');
 		tables[i].children[j].build = BuildTable;
 		tables[i].children[j++].parent = &tables[i];
 	    }

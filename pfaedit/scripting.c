@@ -1239,21 +1239,45 @@ static void bSelectIf(Context *c) {
 
 static void bSelectByATT(Context *c) {
     unichar_t *tags, *contents;
+    int type;
 
     if ( c->a.argc!=5 )
 	error( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_int ||
+    else if ( c->a.vals[1].type!=v_str ||
 	    c->a.vals[2].type!=v_str || c->a.vals[3].type!=v_str ||
 	    c->a.vals[4].type!=v_int )
 	error(c,"Bad argument type");
-    else if ( c->a.vals[4].u.ival<1 || c->a.vals[4].u.ival>3 ||
-	    c->a.vals[1].u.ival<pst_position ||c->a.vals[1].u.ival>pst_max+2 )
+    else if ( c->a.vals[4].u.ival<1 || c->a.vals[4].u.ival>3 )
 	error(c,"Bad argument value");
+    if ( c->a.vals[1].type==v_int )
+	type = c->curfv,c->a.vals[1].u.ival;
+    else {
+	if ( strmatch(c->a.vals[1].u.sval,"Position")==0 )
+	    type = pst_position;
+	else if ( strmatch(c->a.vals[1].u.sval,"Pair")==0 )
+	    type = pst_pair;
+	else if ( strmatch(c->a.vals[1].u.sval,"Substitution")==0 )
+	    type = pst_substitution;
+	else if ( strmatch(c->a.vals[1].u.sval,"AltSubs")==0 )
+	    type = pst_alternate;
+	else if ( strmatch(c->a.vals[1].u.sval,"MultSubs")==0 )
+	    type = pst_multiple;
+	else if ( strmatch(c->a.vals[1].u.sval,"Ligature")==0 )
+	    type = pst_ligature;
+	else if ( strmatch(c->a.vals[1].u.sval,"LCaret")==0 )
+	    type = pst_lcaret;
+	else if ( strmatch(c->a.vals[1].u.sval,"Kern")==0 )
+	    type = pst_max;
+	else if ( strmatch(c->a.vals[1].u.sval,"VKern")==0 )
+	    type = pst_max+1;
+	else if ( strmatch(c->a.vals[1].u.sval,"Anchor")==0 )
+	    type = pst_max+2;
+    }
     tags = uc_copy(c->a.vals[2].u.sval);
     contents = uc_copy(c->a.vals[3].u.sval);
     c->return_val.type = v_int;
-    c->return_val.u.ival = FVParseSelectByPST(c->curfv,c->a.vals[1].u.ival,
-	    tags,contents,c->a.vals[4].u.ival);
+    c->return_val.u.ival = FVParseSelectByPST(c->curfv->sf,type,tags,contents,
+	    c->a.vals[4].u.ival);
     free(tags);
     free(contents);
 }
@@ -1460,6 +1484,34 @@ static void bSetItalicAngle(Context *c) {
     if ( c->a.vals[1].type!=v_int )
 	error(c,"Bad argument type");
     c->curfv->sf->italicangle = c->a.vals[1].u.ival/ (double) denom;
+}
+
+static void bSetPanose(Context *c) {
+    int i;
+
+    if ( c->a.argc!=2 && c->a.argc!=3 )
+	error( c, "Wrong number of arguments");
+    if ( c->a.argc==2 ) {
+	if ( c->a.vals[1].type!=v_arr || c->a.vals[1].type!=v_arrfree )
+	    error(c,"Bad argument type");
+	if ( c->a.vals[1].u.aval->argc!=10 )
+	    error(c,"Wrong size of array");
+	if ( c->a.vals[1].u.aval->vals[0].type!=v_int )
+	    error(c,"Bad argument sub-type");
+	SFDefaultOS2Info(&c->curfv->sf->pfminfo,c->curfv->sf,c->curfv->sf->fontname);
+	for ( i=0; i<10; ++i ) {
+	    if ( c->a.vals[1].u.aval->vals[i].type!=v_int )
+		error(c,"Bad argument sub-type");
+	    c->curfv->sf->pfminfo.panose[i] =  c->a.vals[1].u.aval->vals[i].u.ival;
+	}
+    } else if ( c->a.argc==3 ) {
+	if ( c->a.vals[1].type!=v_int || c->a.vals[2].type!=v_int)
+	    error(c,"Bad argument type");
+	if ( c->a.vals[1].u.ival<0 || c->a.vals[1].u.ival>=10 )
+	    error(c,"Bad argument value must be between [0,9]");
+	SFDefaultOS2Info(&c->curfv->sf->pfminfo,c->curfv->sf,c->curfv->sf->fontname);
+	c->curfv->sf->pfminfo.panose[c->a.vals[1].u.ival] = c->a.vals[2].u.ival;
+    }
 }
  
 static void bSetUniqueID(Context *c) {
@@ -2209,7 +2261,7 @@ static void bCenterInWidth(Context *c) {
     FVMetricsCenter(c->curfv,true);
 }
 
-static void bSetKern(Context *c) {
+static void _SetKern(Context *c,int isv) {
     SplineFont *sf = c->curfv->sf;
     SplineChar *sc1, *sc2;
     int i, kern, ch2, sli;
@@ -2243,7 +2295,7 @@ return;		/* It already has a kern==0 with everything */
 	    if ( (sc1 = sf->chars[i])==NULL )
     continue;
 	}
-	for ( kp = sc1->kerns; kp!=NULL && kp->sc!=sc2; kp = kp->next );
+	for ( kp = isv ? sc1->vkerns : sc1->kerns; kp!=NULL && kp->sc!=sc2; kp = kp->next );
 	if ( kp==NULL && kern==0 )
     continue;
 	else if ( kp!=NULL ) {
@@ -2252,8 +2304,13 @@ return;		/* It already has a kern==0 with everything */
 		kp->sli = sli;
 	} else {
 	    kp = chunkalloc(sizeof(KernPair));
-	    kp->next = sc1->kerns;
-	    sc1->kerns = kp;
+	    if ( isv ) {
+		kp->next = sc1->vkerns;
+		sc1->vkerns = kp;
+	    } else {
+		kp->next = sc1->kerns;
+		sc1->kerns = kp;
+	    }
 	    kp->sc = sc2;
 	    kp->off = kern;
 	    if ( sli!=-1 )
@@ -2265,11 +2322,33 @@ return;		/* It already has a kern==0 with everything */
     }
 }
 
+static void bSetKern(Context *c) {
+    _SetKern(c,false);
+}
+
+static void bSetVKern(Context *c) {
+    _SetKern(c,true);
+}
+
 static void bClearAllKerns(Context *c) {
 
     if ( c->a.argc!=1 )
 	error( c, "Wrong number of arguments" );
     FVRemoveKerns(c->curfv);
+}
+
+static void bClearAllVKerns(Context *c) {
+
+    if ( c->a.argc!=1 )
+	error( c, "Wrong number of arguments" );
+    FVRemoveVKerns(c->curfv);
+}
+
+static void bVKernFromHKern(Context *c) {
+
+    if ( c->a.argc!=1 )
+	error( c, "Wrong number of arguments" );
+    FVVKernFromHKern(c->curfv);
 }
 
 /* **** CID menu **** */
@@ -2462,7 +2541,7 @@ static void bAddATT(Context *c) {
 
     memset(&temp,0,sizeof(temp));
 
-    if ( c->a.argc!=6 && c->a.argc!=9 )
+    if ( c->a.argc!=6 && c->a.argc!=9 && c->a.argc!=14 )
 	error( c, "Wrong number of arguments");
     else if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str ||
 	    c->a.vals[3].type!=v_str || c->a.vals[4].type!=v_int )
@@ -2473,19 +2552,35 @@ static void bAddATT(Context *c) {
 	    c->a.vals[6].type!=v_int || c->a.vals[7].type!=v_int ||
 	    c->a.vals[8].type!=v_int ))
 	error( c, "Bad type for argument");
+    else if ( c->a.argc==14 && ( c->a.vals[5].type!=v_str ||
+	    c->a.vals[6].type!=v_int || c->a.vals[7].type!=v_int ||
+	    c->a.vals[8].type!=v_int || c->a.vals[9].type!=v_int ||
+	    c->a.vals[10].type!=v_int || c->a.vals[11].type!=v_int ||
+	    c->a.vals[12].type!=v_int || c->a.vals[13].type!=v_int ))
+	error( c, "Bad type for argument");
 
-    if ( strcmp(c->a.vals[1].u.sval,"Position")==0 )
+    if ( strcmp(c->a.vals[1].u.sval,"Position")==0 ) {
 	temp.type = pst_position;
-    else if ( strcmp(c->a.vals[1].u.sval,"Substitution")==0 )
-	temp.type = pst_substitution;
-    else if ( strcmp(c->a.vals[1].u.sval,"AltSubs")==0 )
-	temp.type = pst_alternate;
-    else if ( strcmp(c->a.vals[1].u.sval,"MultSubs")==0 )
-	temp.type = pst_multiple;
-    else if ( strcmp(c->a.vals[1].u.sval,"Ligature")==0 )
-	temp.type = pst_ligature;
-    else
-	errors(c,"Unknown tag", c->a.vals[1].u.sval);
+	if (c->a.argc!=9 )
+	    error( c, "Wrong number of arguments");
+    } else if ( strcmp(c->a.vals[1].u.sval,"Pair")==0 ) {
+	temp.type = pst_pair;
+	if (c->a.argc!=14 )
+	    error( c, "Wrong number of arguments");
+    } else {
+	if (c->a.argc!=6 )
+	    error( c, "Wrong number of arguments");
+	if ( strcmp(c->a.vals[1].u.sval,"Substitution")==0 )
+	    temp.type = pst_substitution;
+	else if ( strcmp(c->a.vals[1].u.sval,"AltSubs")==0 )
+	    temp.type = pst_alternate;
+	else if ( strcmp(c->a.vals[1].u.sval,"MultSubs")==0 )
+	    temp.type = pst_multiple;
+	else if ( strcmp(c->a.vals[1].u.sval,"Ligature")==0 )
+	    temp.type = pst_ligature;
+	else
+	    errors(c,"Unknown tag", c->a.vals[1].u.sval);
+    }
 
     memset(tag,' ',4);
     str = c->a.vals[3].u.sval;
@@ -2520,6 +2615,17 @@ static void bAddATT(Context *c) {
 	temp.u.pos.yoff = c->a.vals[6].u.ival;
 	temp.u.pos.h_adv_off = c->a.vals[7].u.ival;
 	temp.u.pos.v_adv_off = c->a.vals[8].u.ival;
+    } else if ( temp.type==pst_pair ) {
+	temp.u.pair.paired = copy(c->a.vals[5].u.sval);
+	temp.u.pair.vr = chunkalloc(sizeof(struct vr [2]));
+	temp.u.pair.vr[0].xoff = c->a.vals[6].u.ival;
+	temp.u.pair.vr[0].yoff = c->a.vals[7].u.ival;
+	temp.u.pair.vr[0].h_adv_off = c->a.vals[8].u.ival;
+	temp.u.pair.vr[0].v_adv_off = c->a.vals[9].u.ival;
+	temp.u.pair.vr[1].xoff = c->a.vals[10].u.ival;
+	temp.u.pair.vr[1].yoff = c->a.vals[11].u.ival;
+	temp.u.pair.vr[1].h_adv_off = c->a.vals[12].u.ival;
+	temp.u.pair.vr[1].v_adv_off = c->a.vals[13].u.ival;
     } else
 	temp.u.subs.variant = copy(c->a.vals[5].u.sval);
     pst = chunkalloc(sizeof(PST));
@@ -2545,6 +2651,8 @@ static void bRemoveATT(Context *c) {
 
     if ( strcmp(c->a.vals[1].u.sval,"Position")==0 )
 	type = pst_position;
+    else if ( strcmp(c->a.vals[1].u.sval,"Pair")==0 )
+	type = pst_pair;
     else if ( strcmp(c->a.vals[1].u.sval,"Substitution")==0 )
 	type = pst_substitution;
     else if ( strcmp(c->a.vals[1].u.sval,"AltSubs")==0 )
@@ -2639,6 +2747,8 @@ static void PosSubInfo(SplineChar *sc,Context *c) {
 
     if ( strcmp(c->a.vals[1].u.sval,"Position")==0 )
 	type = pst_position;
+    else if ( strcmp(c->a.vals[1].u.sval,"Pair")==0 )
+	type = pst_pair;
     else if ( strcmp(c->a.vals[1].u.sval,"Substitution")==0 )
 	type = pst_substitution;
     else if ( strcmp(c->a.vals[1].u.sval,"AltSubs")==0 )
@@ -2657,7 +2767,7 @@ static void PosSubInfo(SplineChar *sc,Context *c) {
     break;
     }
 
-    if ( type==pst_position ) {
+    if ( type==pst_position || type==pst_pair ) {
 	c->return_val.type = v_int;
 	c->return_val.u.ival = (pst!=NULL);
     } else {
@@ -2673,6 +2783,7 @@ static void bCharInfo(Context *c) {
     SplineFont *sf = c->curfv->sf;
     SplineChar *sc;
     DBounds b;
+    KernClass *kc;
 
     if ( c->a.argc!=2 && c->a.argc!=3 && c->a.argc!=5 )
 	error( c, "Wrong number of arguments");
@@ -2688,10 +2799,29 @@ static void bCharInfo(Context *c) {
 	int ch2 = ParseCharIdent(c,&c->a.vals[2],true);
 	if ( strmatch( c->a.vals[1].u.sval,"Kern")==0 ) {
 	    c->return_val.u.ival = 0;
-	    if ( sf->chars[ch2]!=NULL ) { KernPair *kp;
+	    if ( sf->chars[ch2]!=NULL ) { KernPair *kp; KernClass *kc;
 		for ( kp = sc->kerns; kp!=NULL && kp->sc!=sf->chars[ch2]; kp=kp->next );
 		if ( kp!=NULL )
 		    c->return_val.u.ival = kp->off;
+		else {
+		    for ( kc = sf->kerns; kc!=NULL; kc=kc->next ) {
+			if (( c->return_val.u.ival = KernClassContains(kc,sc->name,sf->chars[ch2]->name,true))!=0 )
+		    break;
+		    }
+		}
+	    }
+	} else if ( strmatch( c->a.vals[1].u.sval,"VKern")==0 ) {
+	    c->return_val.u.ival = 0;
+	    if ( sf->chars[ch2]!=NULL ) { KernPair *kp;
+		for ( kp = sc->vkerns; kp!=NULL && kp->sc!=sf->chars[ch2]; kp=kp->next );
+		if ( kp!=NULL )
+		    c->return_val.u.ival = kp->off;
+		else {
+		    for ( kc = sf->vkerns; kc!=NULL; kc=kc->next ) {
+			if (( c->return_val.u.ival = KernClassContains(kc,sc->name,sf->chars[ch2]->name,true))!=0 )
+		    break;
+		    }
+		}
 	    }
 	} else
 	    errors(c,"Unknown tag", c->a.vals[1].u.sval);
@@ -2792,6 +2922,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "SetFontOrder", bSetFontOrder },
     { "SetFontNames", bSetFontNames },
     { "SetItalicAngle", bSetItalicAngle },
+    { "SetPanose", bSetPanose },
     { "SetUniqueID", bSetUniqueID },
     { "SetTeXParams", bSetTeXParams },
     { "SetCharName", bSetCharName },
@@ -2845,6 +2976,9 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "AutoKern", bAutoKern },
     { "SetKern", bSetKern },
     { "RemoveAllKerns", bClearAllKerns },
+    { "SetVKern", bSetVKern },
+    { "RemoveAllVKerns", bClearAllVKerns },
+    { "VKernFromHKern", bVKernFromHKern },
 /* CID Menu */
     { "ConvertToCID", bConvertToCID },
     { "ConvertByCMap", bConvertByCMap },
@@ -3383,6 +3517,22 @@ static void handlename(Context *c,Val *val) {
 		    val->u.aval->vals[cnt].u.ival = bdf->pixelsize;
 		    if ( bdf->clut!=NULL )
 			val->u.aval->vals[cnt].u.ival |= BDFDepth(bdf)<<16;
+		}
+	    } else if ( strcmp(name,"$panose")==0 ) {
+		SplineFont *sf;
+		struct pfminfo pfminfo;
+		int cnt;
+		if ( c->curfv==NULL ) error(c,"No current font");
+		sf = c->curfv->sf;
+		if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
+		val->type = v_arrfree;
+		val->u.aval = galloc(sizeof(Array));
+		val->u.aval->argc = 10;
+		val->u.aval->vals = galloc((10+1)*sizeof(Val));
+		SFDefaultOS2Info(&pfminfo,sf,sf->fontname);
+		for ( cnt=0; cnt<10; ++cnt ) {
+		    val->u.aval->vals[cnt].type = v_int;
+		    val->u.aval->vals[cnt].u.ival = pfminfo.panose[cnt];
 		}
 	    } else if ( strcmp(name,"$selection")==0 ) {
 		SplineFont *sf;

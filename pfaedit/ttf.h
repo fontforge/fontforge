@@ -159,7 +159,7 @@ struct ttfinfo {
     int anchor_merge_cnt;
     AnchorClass *ahead, *alast;
 
-    KernClass *khead, *klast;
+    KernClass *khead, *klast, *vkhead, *vklast;
 
     struct script_record **script_lang;
 

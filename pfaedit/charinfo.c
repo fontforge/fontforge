@@ -616,6 +616,15 @@ GTextInfo simplepos_tags[] = {
     { NULL }
 };
 
+GTextInfo pairpos_tags[] = {
+    { (unichar_t *) _STR_Distance, NULL, 0, 0, (void *) CHR('d','i','s','t'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_HorizontalKerning, NULL, 0, 0, (void *) CHR('k','e','r','n'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_VerticalKerning, NULL, 0, 0, (void *) CHR('v','k','r','n'), NULL, false, false, false, false, false, false, false, true },
+/* My hack to identify required features */
+    { (unichar_t *) _STR_RQD, NULL, 0, 0, (void *) REQUIRED_FEATURE, NULL, false, false, false, false, false, false, false, true },
+    { NULL }
+};
+
 GTextInfo simplesubs_tags[] = {
     { (unichar_t *) _STR_AllAlt, NULL, 0, 0, (void *) CHR('a','a','l','t'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_AboveBaseForms, NULL, 0, 0, (void *) CHR('a','b','v','f'), NULL, false, false, false, false, false, false, false, true },
@@ -625,6 +634,7 @@ GTextInfo simplesubs_tags[] = {
     { (unichar_t *) _STR_Denominators, NULL, 0, 0, (void *) CHR('d','n','o','m'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_ExpertForms, NULL, 0, 0, (void *) CHR('e','x','p','t'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_TerminalForms, NULL, 0, 0, (void *) CHR('f','i','n','a'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_TerminalForms2, NULL, 0, 0, (void *) CHR('f','i','n','2'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_FullWidths, NULL, 0, 0, (void *) CHR('f','w','i','d'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_HistoricalForms, NULL, 0, 0, (void *) CHR('h','i','s','t'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_HorKanaAlt, NULL, 0, 0, (void *) CHR('h','k','n','a'), NULL, false, false, false, false, false, false, false, true },
@@ -639,6 +649,7 @@ GTextInfo simplesubs_tags[] = {
     { (unichar_t *) _STR_LiningFigures, NULL, 0, 0, (void *) CHR('l','n','u','m'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_LocalizedForms, NULL, 0, 0, (void *) CHR('l','o','c','l'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_MedialForms, NULL, 0, 0, (void *) CHR('m','e','d','i'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_MedialForms2, NULL, 0, 0, (void *) CHR('m','e','d','2'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_MathematicalGreek, NULL, 0, 0, (void *) CHR('m','g','r','k'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_AltAnnotForms, NULL, 0, 0, (void *) CHR('n','a','l','t'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_Numerators, NULL, 0, 0, (void *) CHR('n','u','m','r'), NULL, false, false, false, false, false, false, false, true },
@@ -713,12 +724,15 @@ static GTextInfo multiplesubs_tags[] = {
 };
 
 GTextInfo *pst_tags[] = {
-    simplepos_tags, simplesubs_tags, alternatesubs_tags, multiplesubs_tags,
+    simplepos_tags, pairpos_tags,
+    simplesubs_tags, alternatesubs_tags, multiplesubs_tags,
     ligature_tags, NULL
 };
-static int newstrings[] = { _STR_NewPosition, _STR_NewSubstitution,
+static int newstrings[] = { _STR_NewPosition, _STR_NewPair,
+	_STR_NewSubstitution,
 	_STR_NewAlternate, _STR_NewMultiple, _STR_NewLigature };
-static int editstrings[] = { _STR_EditPosition, _STR_EditSubstitution,
+static int editstrings[] = { _STR_EditPosition, _STR_EditPair,
+	_STR_EditSubstitution,
 	_STR_EditAlternate, _STR_EditMultiple, _STR_EditLigature };
 
 static unichar_t monospace[] = { 'c','o','u','r','i','e','r',',','m', 'o', 'n', 'o', 's', 'p', 'a', 'c', 'e',',','c','a','s','l','o','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
@@ -2068,6 +2082,7 @@ struct pt_dlg {
     int ok;
     int sli;
     SplineFont *sf;
+    int ispair;
 };
 
 static int ptd_e_h(GWindow gw, GEvent *event) {
@@ -2086,10 +2101,14 @@ return( false );
 	ptd->ok = GGadgetGetCid(event->u.control.g);
     } else if ( event->type==et_controlevent && event->u.control.subtype == et_textchanged &&
 	    event->u.control.u.tf_changed.from_pulldown!=-1 ) {
-	uint32 tag = (uint32) simplepos_tags[event->u.control.u.tf_changed.from_pulldown].userdata;
+	uint32 tag;
 	unichar_t ubuf[8];
 	/* If they select something from the pulldown, don't show the human */
 	/*  readable form, instead show the 4 character tag */
+	if ( ptd->ispair )
+	    tag = (uint32) pairpos_tags[event->u.control.u.tf_changed.from_pulldown].userdata;
+	else
+	    tag = (uint32) simplepos_tags[event->u.control.u.tf_changed.from_pulldown].userdata;
 	ubuf[0] = tag>>24;
 	ubuf[1] = (tag>>16)&0xff;
 	ubuf[2] = (tag>>8)&0xff;
@@ -2104,22 +2123,25 @@ return( true );
 
 static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 	int script_lang_index, GTextInfo *tags,SplineFont *sf,
-	SplineChar *default_script) {
+	SplineChar *default_script, int ispair) {
     struct pt_dlg ptd;
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[19];
-    GTextInfo label[19];
+    GGadgetCreateData gcd[25];
+    GTextInfo label[25];
     GWindow gw;
     unichar_t ubuf[8];
-    unichar_t *ret, *pt, *end;
+    unichar_t *ret, *pt, *end, *other;
     const unichar_t *utag;
     uint32 tag;
     int dx=0, dy=0, dxa=0, dya=0;
-    char buf[100];
+    int dx2=0, dy2=0, dxa2=0, dya2=0;
+    char buf[200];
     unichar_t udx[12], udy[12], udxa[12], udya[12];
-    int i, temp;
+    unichar_t udx2[12], udy2[12], udxa2[12], udya2[12];
+    int i, temp, tag_pos;
     static unichar_t nullstr[] = { 0 };
+    static int buts[3] = { _STR_OK, _STR_Cancel, 0 };
 
     if ( def==NULL ) def=nullstr;
     if ( def_tag==0 && u_strlen(def)>4 && def[4]==' ' && def[0]<0x7f && def[1]<0x7f && def[2]<0x7f && def[3]<0x7f ) {
@@ -2146,6 +2168,12 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
 	}
     }
 
+    if ( ispair ) {
+	for ( pt=def; *pt==' ' ; ++pt );
+	other = pt;
+	while ( *pt!=' ' && *pt!='\0' ) ++pt;
+	other = u_copyn(other,pt-other);
+    }
     for ( pt=def; *pt!='\0' && *pt!='='; ++pt ); if ( *pt=='=' ) ++pt;
     dx = u_strtol(pt,&end,10);
     for ( pt=end; *pt!='\0' && *pt!='='; ++pt ); if ( *pt=='=' ) ++pt;
@@ -2154,6 +2182,16 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
     dxa = u_strtol(pt,&end,10);
     for ( pt=end; *pt!='\0' && *pt!='='; ++pt ); if ( *pt=='=' ) ++pt;
     dya = u_strtol(pt,&end,10);
+    if ( ispair ) {
+	for ( pt=def; *pt!='\0' && *pt!='='; ++pt ); if ( *pt=='=' ) ++pt;
+	dx2 = u_strtol(pt,&end,10);
+	for ( pt=end; *pt!='\0' && *pt!='='; ++pt ); if ( *pt=='=' ) ++pt;
+	dy2 = u_strtol(pt,&end,10);
+	for ( pt=end; *pt!='\0' && *pt!='='; ++pt ); if ( *pt=='=' ) ++pt;
+	dxa2 = u_strtol(pt,&end,10);
+	for ( pt=end; *pt!='\0' && *pt!='='; ++pt ); if ( *pt=='=' ) ++pt;
+	dya2 = u_strtol(pt,&end,10);
+    }
     sprintf(buf,"%d",dx);
     uc_strcpy(udx,buf);
     sprintf(buf,"%d",dy);
@@ -2162,11 +2200,22 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
     uc_strcpy(udxa,buf);
     sprintf(buf,"%d",dya);
     uc_strcpy(udya,buf);
+    if ( ispair ) {
+	sprintf(buf,"%d",dx);
+	uc_strcpy(udx2,buf);
+	sprintf(buf,"%d",dy);
+	uc_strcpy(udy2,buf);
+	sprintf(buf,"%d",dxa);
+	uc_strcpy(udxa2,buf);
+	sprintf(buf,"%d",dya);
+	uc_strcpy(udya2,buf);
+    }
     
 
 	memset(&ptd,0,sizeof(ptd));
 	ptd.sf = sf;
 	ptd.sli = script_lang_index;
+	ptd.ispair = ispair;
 	memset(&wattrs,0,sizeof(wattrs));
 	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
 	wattrs.event_masks = ~(1<<et_charup);
@@ -2176,7 +2225,7 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
 	wattrs.window_title = GStringGetResource( title,NULL );
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
-	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,160));
+	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,ispair?190:160));
 	pos.height = GDrawPointsToPixels(NULL,290);
 	gw = GDrawCreateTopWindow(NULL,&pos,ptd_e_h,&ptd,&wattrs);
 
@@ -2239,6 +2288,50 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
 	gcd[i].gd.flags = gg_enabled|gg_visible;
 	gcd[i].gd.cid = i+1;
 	gcd[i++].creator = GTextFieldCreate;
+
+	if ( ispair ) {
+	    label[i].text = udx2;
+	    gcd[i].gd.label = &label[i];
+	    gcd[i].gd.pos.x = 130; gcd[i].gd.pos.y = gcd[i-7].gd.pos.y; gcd[i].gd.pos.width = 50;
+	    gcd[i].gd.flags = gg_enabled|gg_visible;
+	    gcd[i].gd.cid = i+1;
+	    gcd[i++].creator = GTextFieldCreate;
+
+	    label[i].text = udy2;
+	    gcd[i].gd.label = &label[i];
+	    gcd[i].gd.pos.x = gcd[i-1].gd.pos.x; gcd[i].gd.pos.y = gcd[i-6].gd.pos.y; gcd[i].gd.pos.width = gcd[i-2].gd.pos.width;
+	    gcd[i].gd.flags = gg_enabled|gg_visible;
+	    gcd[i].gd.cid = i+1;
+	    gcd[i++].creator = GTextFieldCreate;
+
+	    label[i].text = udxa2;
+	    gcd[i].gd.label = &label[i];
+	    gcd[i].gd.pos.x = gcd[i-2].gd.pos.x; gcd[i].gd.pos.y = gcd[i-5].gd.pos.y; gcd[i].gd.pos.width = gcd[i-2].gd.pos.width;
+	    gcd[i].gd.flags = gg_enabled|gg_visible;
+	    gcd[i].gd.cid = i+1;
+	    gcd[i++].creator = GTextFieldCreate;
+
+	    label[i].text = udya2;
+	    gcd[i].gd.label = &label[i];
+	    gcd[i].gd.pos.x = gcd[i-3].gd.pos.x; gcd[i].gd.pos.y = gcd[i-4].gd.pos.y; gcd[i].gd.pos.width = gcd[i-2].gd.pos.width;
+	    gcd[i].gd.flags = gg_enabled|gg_visible;
+	    gcd[i].gd.cid = i+1;
+	    gcd[i++].creator = GTextFieldCreate;
+
+	    label[i].text = (unichar_t *) _STR_PairedChar;
+	    label[i].text_in_resource = true;
+	    gcd[i].gd.label = &label[i];
+	    gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-6].gd.pos.y+26;
+	    gcd[i].gd.flags = gg_enabled|gg_visible;
+	    gcd[i++].creator = GLabelCreate;
+
+	    label[i].text = other;
+	    gcd[i].gd.label = &label[i];
+	    gcd[i].gd.pos.x = gcd[i-6].gd.pos.x; gcd[i].gd.pos.y = gcd[i-2].gd.pos.y+26; gcd[i].gd.pos.width = gcd[i-2].gd.pos.width;
+	    gcd[i].gd.flags = gg_enabled|gg_visible;
+	    gcd[i].gd.cid = i+1;
+	    gcd[i++].creator = GTextFieldCreate;
+	}
 
 	label[i].text = (unichar_t *) _STR_TagC;
 	label[i].text_in_resource = true;
@@ -2331,6 +2424,7 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
 	gcd[i++].creator = GButtonCreate;
 
 	GGadgetsCreate(gw,gcd);
+	free(other);
 	GTextInfoListFree(gcd[11].gd.u.list);
 
     GDrawSetVisible(gw,true);
@@ -2340,12 +2434,27 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
 	GDrawProcessOneEvent(NULL);
     if ( ptd.ok ) {
 	int err=false;
+	char *other;
 	dx = GetIntR(gw,2, _STR_Dx,&err);
 	dy = GetIntR(gw,4, _STR_Dy,&err);
 	dxa = GetIntR(gw,6, _STR_Dxa,&err);
 	dya = GetIntR(gw,8, _STR_Dya,&err);
-	utag = _GGadgetGetTitle(gcd[9].ret);
-	script_lang_index = GGadgetGetFirstListSelectedItem(gcd[11].ret);
+	if ( ispair ) {
+	    dx2 = GetIntR(gw,9, _STR_Dx,&err);
+	    dy2 = GetIntR(gw,10, _STR_Dy,&err);
+	    dxa2 = GetIntR(gw,11, _STR_Dxa,&err);
+	    dya2 = GetIntR(gw,12, _STR_Dya,&err);
+	    other = cu_copy(_GGadgetGetTitle(GWidgetGetControl(gw,14)));
+	    if ( *other=='\0' ) {
+		GWidgetErrorR(_STR_MissingPaired,_STR_NeedPaired);
+		err = true;
+	    } else if ( SFGetCharDup(sf,-1,other)==NULL ) {
+		if ( GWidgetAskR(_STR_MissingPaired,buts,0,1,_STR_PairedNotInFont,other)==1 )
+		    err = true;
+	    }
+	}
+	utag = _GGadgetGetTitle(gcd[tag_pos].ret);
+	script_lang_index = GGadgetGetFirstListSelectedItem(gcd[tag_pos+2].ret);
 	if ( err )
  goto tryagain;
 	if ( (ubuf[0] = utag[0])==0 )
@@ -2369,14 +2478,35 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
 	if ( GGadgetIsChecked(gcd[i-5].ret) ) flags |= pst_ignorebaseglyphs;
 	if ( GGadgetIsChecked(gcd[i-4].ret) ) flags |= pst_ignoreligatures;
 	if ( GGadgetIsChecked(gcd[i-3].ret) ) flags |= pst_ignorecombiningmarks;
-	sprintf(buf,"%c%c%c%c %c%c%c%c %d dx=%d dy=%d dx_adv=%d dy_adv=%d",
-		tag>>24, tag>>16, tag>>8, tag,
-		flags&pst_r2l?'r':' ',
-		flags&pst_ignorebaseglyphs?'b':' ',
-		flags&pst_ignoreligatures?'l':' ',
-		flags&pst_ignorecombiningmarks?'m':' ',
-		script_lang_index,
-		dx, dy, dxa, dya );
+	if ( ispair ) {
+#if defined( _NO_SNPRINTF ) || defined( __VMS )
+	    sprintf(buf,"%c%c%c%c %c%c%c%c %d %.50s dx=%d dy=%d dx_adv=%d dy_adv=%d",
+#else
+	    snprintf(buf,sizeof(buf), "%c%c%c%c %c%c%c%c %d %.50s dx=%d dy=%d dx_adv=%d dy_adv=%d | dx=%d dy=%d dx_adv=%d dy_adv=%d",
+#endif
+		    tag>>24, tag>>16, tag>>8, tag,
+		    flags&pst_r2l?'r':' ',
+		    flags&pst_ignorebaseglyphs?'b':' ',
+		    flags&pst_ignoreligatures?'l':' ',
+		    flags&pst_ignorecombiningmarks?'m':' ',
+		    script_lang_index,
+		    other,
+		    dx, dy, dxa, dya,
+		    dx2, dy2, dxa2, dya2 );
+	} else {
+#if defined( _NO_SNPRINTF ) || defined( __VMS )
+	    sprintf(buf,"%c%c%c%c %c%c%c%c %d dx=%d dy=%d dx_adv=%d dy_adv=%d",
+#else
+	    snprintf(buf,sizeof(buf), "%c%c%c%c %c%c%c%c %d dx=%d dy=%d dx_adv=%d dy_adv=%d",
+#endif
+		    tag>>24, tag>>16, tag>>8, tag,
+		    flags&pst_r2l?'r':' ',
+		    flags&pst_ignorebaseglyphs?'b':' ',
+		    flags&pst_ignoreligatures?'l':' ',
+		    flags&pst_ignorecombiningmarks?'m':' ',
+		    script_lang_index,
+		    dx, dy, dxa, dya );
+	}
 	ret = uc_copy(buf);
     } else
 	ret = NULL;
@@ -2483,11 +2613,11 @@ static void CI_DoNew(CharInfo *ci, unichar_t *def) {
     sel = GTabSetGetSel(GWidgetGetControl(ci->gw,CID_Tabs))-2;
     flags = PSTDefaultFlags(sel+1,ci->sc);
 
-    newname = sel==0 
-	    ? AskPosTag(newstrings[sel],def,0,flags,-1,pst_tags[sel],ci->sc->parent,ci->sc)
+    newname = sel<=1 
+	    ? AskPosTag(newstrings[sel],def,0,flags,-1,pst_tags[sel],ci->sc->parent,ci->sc,sel==1)
 	    : AskNameTag(newstrings[sel],def,0,flags,-1,pst_tags[sel],ci->sc->parent,ci->sc,-1,-1);
     if ( newname!=NULL ) {
-	if ( sel!=0 )
+	if ( sel<=1 )
 	    if ( !LigCheck(ci->sc,sel+1,(newname[0]<<24)|(newname[1]<<16)|(newname[2]<<8)|newname[3],
 		    newname+14)) {
 		free(newname );
@@ -2598,8 +2728,8 @@ static int CI_Edit(GGadget *g, GEvent *e) {
 	list = GWidgetGetControl(GGadgetGetWindow(g),CID_List+sel*100);
 	if ( (ti = GGadgetGetListItemSelected(list))==NULL )
 return( true );
-	newname = sel==0 
-		? AskPosTag(editstrings[sel],ti->text,0,0,0,pst_tags[sel],ci->sc->parent,ci->sc)
+	newname = sel<=1 
+		? AskPosTag(editstrings[sel],ti->text,0,0,0,pst_tags[sel],ci->sc->parent,ci->sc,sel==1)
 		: AskNameTag(editstrings[sel],ti->text,0,0,0,pst_tags[sel],ci->sc->parent,ci->sc,-1,-1);
 	if ( newname!=NULL ) {
 	    old = GGadgetGetList(list,&len);
@@ -2607,11 +2737,13 @@ return( true );
 		if ( u_strncmp(old[i]->text,newname,4)==0 )
 	    break;
 	    }
+#if 0
 	    if ( i<len && sel+1!=pst_ligature) {
 		GWidgetErrorR(_STR_DuplicateTag,_STR_DuplicateTag);
 		free(newname);
 return( false );
 	    }
+#endif
 	    new = gcalloc(len+1,sizeof(GTextInfo *));
 	    for ( i=0; i<len; ++i ) {
 		new[i] = galloc(sizeof(GTextInfo));
@@ -2924,9 +3056,29 @@ return( old );
 return( NULL );
 }
 
+static int ParseVR(char *end,struct vr *vr) {
+    char *pt;
+
+    for ( pt=end; *pt!='\0' && *pt!='='; ++pt ); if ( *pt=='=' ) ++pt;
+    vr->xoff = strtol(pt,&end,10);
+    for ( pt=end; *pt!='\0' && *pt!='='; ++pt ); if ( *pt=='=' ) ++pt;
+    vr->yoff = strtol(pt,&end,10);
+    for ( pt=end; *pt!='\0' && *pt!='='; ++pt ); if ( *pt=='=' ) ++pt;
+    vr->h_adv_off = strtol(pt,&end,10);
+    for ( pt=end; *pt!='\0' && *pt!='='; ++pt );
+    if ( *pt=='=' )
+	++pt;
+    else {
+	GWidgetErrorR(_STR_BadPOSSUB,_STR_ExpectedEquals);
+return(false);
+    }
+    vr->v_adv_off = strtol(pt,&end,10);
+return( true );
+}
+
 void SCAppendPosSub(SplineChar *sc,enum possub_type type, char **d) {
     PST *new;
-    char *pt, *end, *data, *spt, *tpt;
+    char *pt, *end, *data, *spt, *tpt, *other;
     int i;
 
     if ( sc->charinfo!=NULL ) {
@@ -2962,21 +3114,29 @@ return;
 	new->script_lang_index = strtol(data+9,&end,10);
 
 	if ( type==pst_position ) {
-	    for ( pt=end; *pt!='\0' && *pt!='='; ++pt ); if ( *pt=='=' ) ++pt;
-	    new->u.pos.xoff = strtol(pt,&end,10);
-	    for ( pt=end; *pt!='\0' && *pt!='='; ++pt ); if ( *pt=='=' ) ++pt;
-	    new->u.pos.yoff = strtol(pt,&end,10);
-	    for ( pt=end; *pt!='\0' && *pt!='='; ++pt ); if ( *pt=='=' ) ++pt;
-	    new->u.pos.h_adv_off = strtol(pt,&end,10);
-	    for ( pt=end; *pt!='\0' && *pt!='='; ++pt );
-	    if ( *pt=='=' )
-		++pt;
-	    else {
-		GWidgetErrorR(_STR_BadPOSSUB,_STR_ExpectedEquals);
+	    if ( !ParseVR(end,&new->u.pos)) {
 		chunkfree(new,sizeof(PST));
 return;
 	    }
-	    new->u.pos.v_adv_off = strtol(pt,&end,10);
+	} else if ( type==pst_pair ) {
+	    for ( pt=end; *pt==' ' ; ++pt );
+	    other = pt;
+	    while ( *pt!=' ' && *pt!='\0' ) ++pt;
+	    new->u.pair.paired = copyn(other,pt-other);
+	    new->u.pair.vr = chunkalloc(sizeof(struct vr [2]));
+	    if ( !ParseVR(end,&new->u.pair.vr[0])) {
+		free(new->u.pair.paired);
+		chunkfree(new->u.pair.vr,sizeof(struct vr [2]));
+		chunkfree(new,sizeof(PST));
+return;
+	    }
+	    if ( !ParseVR(end,&new->u.pair.vr[1])) {
+		free(new->u.pair.paired);
+		chunkfree(new->u.pair.vr,sizeof(struct vr [2]));
+		chunkfree(new,sizeof(PST));
+return;
+	    }
+	    
 	} else {
 	    /* remove leading/training spaces */
 	    for ( pt=end; *pt==' '; ++pt );
@@ -3088,7 +3248,7 @@ static int CI_ProcessPosSubs(CharInfo *ci) {
 
     ci->sc->possub = lcaret;
     ci->sc->charinfo = NULL;	/* Without this we put them back into the charinfo dlg */
-    for ( i=0; i<5; ++i ) {
+    for ( i=0; i<6; ++i ) {
 	tis = GGadgetGetList(GWidgetGetControl(ci->gw,CID_List+i*100),&len);
 	if ( len!=0 ) {
 	    data = galloc((len+1)*sizeof(char *));
@@ -4065,6 +4225,15 @@ static void CIFillup(CharInfo *ci) {
 		    pst->u.pos.xoff, pst->u.pos.yoff,
 		    pst->u.pos.h_adv_off, pst->u.pos.v_adv_off );
 	    arrays[pst->type][j]->text = uc_copy(buffer);
+	} else if ( pst->type==pst_pair ) {
+	    sprintf(buffer,"         %3d %s dx=%d dy=%d dx_adv=%d dy_adv=%d | dx=%d dy=%d dx_adv=%d dy_adv=%d",
+		    pst->script_lang_index,
+		    pst->u.pair.paired,
+		    pst->u.pair.vr[0].xoff, pst->u.pair.vr[0].yoff,
+		    pst->u.pair.vr[0].h_adv_off, pst->u.pair.vr[0].v_adv_off,
+		    pst->u.pair.vr[1].xoff, pst->u.pair.vr[1].yoff,
+		    pst->u.pair.vr[1].h_adv_off, pst->u.pair.vr[1].v_adv_off );
+	    arrays[pst->type][j]->text = uc_copy(buffer);
 	} else {
 	    sprintf( index, "%3d ", pst->script_lang_index );
 	    arrays[pst->type][j]->text = galloc((strlen(pst->u.subs.variant)+11+strlen(index))*sizeof(unichar_t));;
@@ -4193,8 +4362,8 @@ void SCCharInfo(SplineChar *sc) {
     CharInfo *ci;
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData ugcd[12], cgcd[6], psgcd[5][7], cogcd[3], mgcd[9];
-    GTextInfo ulabel[12], clabel[6], pslabel[5][6], colabel[3], mlabel[9];
+    GGadgetCreateData ugcd[12], cgcd[6], psgcd[6][7], cogcd[3], mgcd[9];
+    GTextInfo ulabel[12], clabel[6], pslabel[6][6], colabel[3], mlabel[9];
     int i;
     GTabInfo aspects[11];
     static GBox smallbox = { bt_raised, bs_rect, 2, 1, 0, 0, 0,0,0,0, COLOR_DEFAULT,COLOR_DEFAULT };
@@ -4335,7 +4504,7 @@ return;
 	memset(&psgcd,0,sizeof(psgcd));
 	memset(&pslabel,0,sizeof(pslabel));
 
-	for ( i=0; i<5; ++i ) {
+	for ( i=0; i<6; ++i ) {
 	    psgcd[i][0].gd.pos.x = 5; psgcd[i][0].gd.pos.y = 5;
 	    psgcd[i][0].gd.pos.width = CI_Width-28; psgcd[i][0].gd.pos.height = 7*12+10;
 	    psgcd[i][0].gd.flags = gg_visible | gg_enabled | gg_list_alphabetic | gg_list_multiplesel;
@@ -4438,21 +4607,25 @@ return;
 	aspects[i].text_in_resource = true;
 	aspects[i++].gcd = psgcd[0];
 
-	aspects[i].text = (unichar_t *) _STR_Subs;
+	aspects[i].text = (unichar_t *) _STR_Pair;
 	aspects[i].text_in_resource = true;
 	aspects[i++].gcd = psgcd[1];
 
-	aspects[i].text = (unichar_t *) _STR_AltSubs;
+	aspects[i].text = (unichar_t *) _STR_Subs;
 	aspects[i].text_in_resource = true;
 	aspects[i++].gcd = psgcd[2];
 
-	aspects[i].text = (unichar_t *) _STR_MultSubs;
+	aspects[i].text = (unichar_t *) _STR_AltSubs;
 	aspects[i].text_in_resource = true;
 	aspects[i++].gcd = psgcd[3];
 
-	aspects[i].text = (unichar_t *) _STR_LigatureL;
+	aspects[i].text = (unichar_t *) _STR_MultSubs;
 	aspects[i].text_in_resource = true;
 	aspects[i++].gcd = psgcd[4];
+
+	aspects[i].text = (unichar_t *) _STR_LigatureL;
+	aspects[i].text_in_resource = true;
+	aspects[i++].gcd = psgcd[5];
 
 	aspects[i].text = (unichar_t *) _STR_Components;
 	aspects[i].text_in_resource = true;
@@ -4534,7 +4707,7 @@ struct sel_dlg {
     FontView *fv;
 };
 
-enum { pst_kerning = pst_max, pst_anchors };
+enum { pst_kerning = pst_max, pst_vkerning, pst_anchors };
 
 GTextInfo pst_names[] = {
     { (unichar_t *) _STR_LigatureL, NULL, 0, 0, (void *) pst_ligature, NULL, false, false, false, false, true, false, false, true },
@@ -4542,7 +4715,9 @@ GTextInfo pst_names[] = {
     { (unichar_t *) _STR_AltSubstitutions, NULL, 0, 0, (void *) pst_alternate, NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_MultSubstitution, NULL, 0, 0, (void *) pst_multiple, NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_SimpPos, NULL, 0, 0, (void *) pst_position, NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_PairPos, NULL, 0, 0, (void *) pst_pair, NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_Kerning, NULL, 0, 0, (void *) pst_kerning, NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_VKerning, NULL, 0, 0, (void *) pst_vkerning, NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_AnchorClass, NULL, 0, 0, (void *) pst_anchors, NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_LigCaret, NULL, 0, 0, (void *) pst_lcaret, NULL, false, false, false, false, false, false, false, true },
     { NULL }
@@ -4587,7 +4762,7 @@ return( false );
     continue;
 	    }
 	    if ( md->type==pst_position || md->contains==NULL ||
-		    PSTContains(pst->u.lig.components,md->contains))
+		    PSTContains(pst->u.lig.components,md->contains))	/* pair names will match here too */
 return( true );
 	}
     }
@@ -4612,26 +4787,27 @@ return( false );
 return( false );
 }
 
-static int SCMatchKern(SplineChar *sc,struct match_data *md) {
+static int _SCMatchKern(SplineChar *sc,struct match_data *md,int isv) {
     SplineFont *sf = md->sf;
     int i;
-    KernPair *kp;
+    KernPair *kp, *head;
     KernClass *kc;
 
     if ( sc==NULL )
 return( false );
+    head = isv ? sc->vkerns : sc->kerns;
 
     if ( md->kernwith==NULL ) {
 	/* Is the current character involved in ANY kerning */
-	if ( sc->kerns!=NULL )
+	if ( head!=NULL )
 return( true );
 	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	    for ( kp = sf->chars[i]->kerns; kp!=NULL; kp = kp->next ) {
+	    for ( kp = isv ? sf->chars[i]->vkerns : sf->chars[i]->kerns; kp!=NULL; kp = kp->next ) {
 		if ( kp->sc == sc )
 return( true );
 	    }
 	}
-	for ( kc = sf->kerns; kc!=NULL; kc=kc->next ) {
+	for ( kc = isv ? sf->vkerns : sf->kerns; kc!=NULL; kc=kc->next ) {
 	    for ( i=1; i<kc->first_cnt; ++i )
 		if ( PSTContains(kc->firsts[i],sc->name) )
 return( true );
@@ -4640,52 +4816,28 @@ return( true );
 return( true );
 	}
     } else {
-	for ( kp=sc->kerns; kp!=NULL; kp=kp->next ) {
+	for ( kp=head; kp!=NULL; kp=kp->next ) {
 	    if ( kp->sc==md->kernwith )
 return( true );
 	}
-	for ( kp=md->kernwith->kerns; kp!=NULL; kp=kp->next ) {
+	for ( kp=isv ? md->kernwith->vkerns : md->kernwith->kerns ; kp!=NULL; kp=kp->next ) {
 	    if ( kp->sc==sc )
 return( true );
 	}
-	for ( kc = sf->kerns; kc!=NULL; kc=kc->next ) {
-	    int infirst=0, insecond=0, scpos, kwpos;
-	    for ( i=1; i<kc->first_cnt; ++i ) {
-		if ( PSTContains(kc->firsts[i],sc->name) ) {
-		    scpos = i;
-		    if ( ++infirst>=3 )
-	    break;
-		} else if ( PSTContains(kc->firsts[i],md->kernwith->name) ) {
-		    kwpos = i;
-		    if ( (infirst+=2)>=3 )
-	    break;
-		}
-	    }
-	    if ( infirst==0 || infirst==3 )
-	continue;
-	    for ( i=1; i<kc->second_cnt; ++i ) {
-		if ( PSTContains(kc->seconds[i],sc->name) ) {
-		    scpos = i;
-		    if ( ++insecond>=3 )
-	    break;
-		} else if ( PSTContains(kc->seconds[i],md->kernwith->name) ) {
-		    kwpos = i;
-		    if ( (insecond+=2)>=3 )
-	    break;
-		}
-	    }
-	    if ( insecond==0 || insecond==3 )
-	continue;
-	    if ( infirst==1 && insecond==2 ) {
-		if ( kc->offsets[scpos*kc->second_cnt+kwpos]!=0 )
+	for ( kc = isv ? sf->vkerns : sf->kerns; kc!=NULL; kc=kc->next ) {
+	    if ( KernClassContains(kc,sc->name,md->kernwith->name,false)!=0 )
 return( true );
-	    } else if ( infirst==2 && insecond==1 ) {
-		if ( kc->offsets[kwpos*kc->second_cnt+scpos]!=0 )
-return( true );
-	    }
 	}
     }
 return( false );
+}
+
+static int SCMatchKern(SplineChar *sc,struct match_data *md) {
+return( _SCMatchKern(sc,md,false));
+}
+
+static int SCMatchVKern(SplineChar *sc,struct match_data *md) {
+return( _SCMatchKern(sc,md,true));
 }
 
 static GTextInfo **LListFromList(GTextInfo *array) {
@@ -4728,7 +4880,8 @@ int FVParseSelectByPST(FontView *fv,int type,
 	    free( md.contains );
 	    md.contains = NULL;
 	}
-	if ( type==pst_kerning && md.contains!=NULL ) {
+	if (( type==pst_kerning || type==pst_vkerning ) &&
+		md.contains!=NULL ) {
 	    md.kernwith = SFGetCharDup(md.sf,-1,md.contains);
 	    if ( md.kernwith==NULL )
 		GWidgetErrorR(_STR_SelectByATT,_STR_Couldntfindchar,md.contains);
@@ -4748,7 +4901,7 @@ return( false );
 	    GWidgetErrorR(_STR_SelectByATT,_STR_UnknownAnchorClass,ret);
 return( false );
 	}
-    } else if ( type!=pst_kerning || type!=pst_lcaret ) {
+    } else if ( type!=pst_kerning && type!=pst_vkerning && type!=pst_lcaret ) {
 	if ( uc_strcmp( tags,"" )==0 || uc_strcmp( tags,"*" )==0 )
 	    md.tagcnt = 0;
 	else {
@@ -4774,6 +4927,8 @@ return( false );
 	tester = SCMatchLCaret;
     else if ( type==pst_kerning )
 	tester = SCMatchKern;
+    else if ( type==pst_vkerning )
+	tester = SCMatchVKern;
     else
 	tester = SCMatchPST;
 
@@ -4817,6 +4972,7 @@ static int selpst_e_h(GWindow gw, GEvent *event) {
     static unichar_t nullstr[] = { 0 };
     static GTextInfo *tags[] = { NULL,
 	simplepos_tags,
+	pairpos_tags,
 	simplesubs_tags,
 	alternatesubs_tags,
 	multiplesubs_tags,

@@ -600,11 +600,19 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc) {
 		fprintf( sfd, " %d %d %d %d", kp->sc->enc, kp->off, kp->sli, kp->flags );
 	fprintf(sfd, "\n" );
     }
+    if ( sc->vkerns!=NULL ) {
+	fprintf( sfd, "VKernsSLIF:" );
+	for ( kp = sc->vkerns; kp!=NULL; kp=kp->next )
+	    if ( kp->off!=0 && !SFDOmit(kp->sc))
+		fprintf( sfd, " %d %d %d %d", kp->sc->enc, kp->off, kp->sli, kp->flags );
+	fprintf(sfd, "\n" );
+    }
     for ( liga=sc->possub; liga!=NULL; liga=liga->next ) {
 	if (( liga->tag==0 && liga->type!=pst_lcaret) || liga->type==pst_null )
 	    /* Skip it */;
 	else {
-	    static char *keywords[] = { "Null:", "Position:", "Substitution:",
+	    static char *keywords[] = { "Null:", "Position:", "PairPos:",
+		    "Substitution:",
 		    "AlternateSubs:", "MultipleSubs:", "Ligature:",
 		    "LCarets:", NULL };
 	    if ( liga->tag==0 ) liga->tag = CHR(' ',' ',' ',' ');
@@ -617,6 +625,13 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc) {
 		fprintf( sfd, "dx=%d dy=%d dh=%d dv=%d\n",
 			liga->u.pos.xoff, liga->u.pos.yoff,
 			liga->u.pos.h_adv_off, liga->u.pos.v_adv_off);
+	    else if ( liga->type==pst_pair )
+		fprintf( sfd, "%s dx=%d dy=%d dh=%d dv=%d | dx=%d dy=%d dh=%d dv=%d\n",
+			liga->u.pair.paired,
+			liga->u.pair.vr[0].xoff, liga->u.pair.vr[0].yoff,
+			liga->u.pair.vr[0].h_adv_off, liga->u.pair.vr[0].v_adv_off,
+			liga->u.pair.vr[1].xoff, liga->u.pair.vr[1].yoff,
+			liga->u.pair.vr[1].h_adv_off, liga->u.pair.vr[1].v_adv_off);
 	    else if ( liga->type==pst_lcaret ) {
 		int i;
 		fprintf( sfd, "%d ", liga->u.lcaret.cnt );
@@ -757,6 +772,7 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
     struct table_ordering *ord;
     struct ttf_table *tab;
     KernClass *kc;
+    int isv;
 
     fprintf(sfd, "FontName: %s\n", sf->fontname );
     if ( sf->fullname!=NULL )
@@ -833,15 +849,18 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 	    fprintf( sfd,"\n");
 	}
     }
-    for ( kc=sf->kerns; kc!=NULL; kc = kc->next ) {
-	fprintf( sfd, "KernClass: %d %d %d %d\n", kc->first_cnt, kc->second_cnt, kc->sli, kc->flags );
-	for ( i=1; i<kc->first_cnt; ++i )
-	    fprintf( sfd, " %d %s\n", strlen(kc->firsts[i]), kc->firsts[i]);
-	for ( i=1; i<kc->second_cnt; ++i )
-	    fprintf( sfd, " %d %s\n", strlen(kc->seconds[i]), kc->seconds[i]);
-	for ( i=0; i<kc->first_cnt*kc->second_cnt; ++i )
-	    fprintf( sfd, " %d", kc->offsets[i]);
-	fprintf( sfd, "\n" );
+    for ( isv=0; isv<2; ++isv ) {
+	for ( kc=isv ? sf->vkerns : sf->kerns; kc!=NULL; kc = kc->next ) {
+	    fprintf( sfd, "%s: %d %d %d %d\n", isv ? "VKernClass" : "KernClass",
+		    kc->first_cnt, kc->second_cnt, kc->sli, kc->flags );
+	    for ( i=1; i<kc->first_cnt; ++i )
+		fprintf( sfd, " %d %s\n", strlen(kc->firsts[i]), kc->firsts[i]);
+	    for ( i=1; i<kc->second_cnt; ++i )
+		fprintf( sfd, " %d %s\n", strlen(kc->seconds[i]), kc->seconds[i]);
+	    for ( i=0; i<kc->first_cnt*kc->second_cnt; ++i )
+		fprintf( sfd, " %d", kc->offsets[i]);
+	    fprintf( sfd, "\n" );
+	}
     }
     for ( ord = sf->orders; ord!=NULL ; ord = ord->next ) {
 	for ( i=0; ord->ordered_features[i]!=0; ++i );
@@ -1669,7 +1688,7 @@ static SplineChar *SFDGetChar(FILE *sfd,SplineFont *sf) {
     RefChar *lastr=NULL, *ref;
     ImageList *lasti=NULL, *img;
     AnchorPoint *lastap = NULL;
-    int isliga, ispos, issubs, ismult, islcar, temp;
+    int isliga, ispos, issubs, ismult, islcar, ispair, temp;
     PST *last = NULL;
     uint32 script = 0;
 
@@ -1768,11 +1787,14 @@ return( NULL );
 	    lasti = img;
 	} else if ( strmatch(tok,"Kerns:")==0 ||
 		strmatch(tok,"KernsSLI:")==0 ||
-		strmatch(tok,"KernsSLIF:")==0 ) {
+		strmatch(tok,"KernsSLIF:")==0 ||
+		strmatch(tok,"VKernsSLIF:")==0 ) {
 	    KernPair *kp, *last=NULL;
 	    int index, off, sli, flags=0;
 	    int hassli = (strmatch(tok,"KernsSLI:")==0);
+	    int isv = *tok=='V';
 	    if ( strmatch(tok,"KernsSLIF:")==0 ) hassli=2;
+	    if ( strmatch(tok,"VKernsSLIF:")==0 ) hassli=2;
 	    while ( (hassli==1 && fscanf(sfd,"%d %d %d", &index, &off, &sli )==3) ||
 		    (hassli==2 && fscanf(sfd,"%d %d %d %d", &index, &off, &sli, &flags )==4) ||
 		    (hassli==0 && fscanf(sfd,"%d %d", &index, &off )==2) ) {
@@ -1785,15 +1807,18 @@ return( NULL );
 		kp->sli = sli;
 		kp->flags = flags;
 		kp->next = NULL;
-		if ( last == NULL )
-		    sc->kerns = kp;
-		else
+		if ( last != NULL )
 		    last->next = kp;
+		else if ( isv )
+		    sc->vkerns = kp;
+		else
+		    sc->kerns = kp;
 		last = kp;
 	    }
 	} else if ( (ispos = (strmatch(tok,"Position:")==0)) ||
+		( ispair = (strmatch(tok,"PairPos:")==0)) ||
 		( islcar = (strmatch(tok,"LCarets:")==0)) ||
-		(isliga = (strmatch(tok,"Ligature:")==0)) ||
+		( isliga = (strmatch(tok,"Ligature:")==0)) ||
 		( issubs = (strmatch(tok,"Substitution:")==0)) ||
 		( ismult = (strmatch(tok,"MultipleSubs:")==0)) ||
 		strmatch(tok,"AlternateSubs:")==0 ) {
@@ -1804,6 +1829,7 @@ return( NULL );
 		last->next = liga;
 	    last = liga;
 	    liga->type = ispos ? pst_position :
+			 ispair ? pst_pair :
 			 islcar ? pst_lcaret :
 			 isliga ? pst_ligature :
 			 issubs ? pst_substitution :
@@ -1834,14 +1860,23 @@ return( NULL );
 		liga->tag |= getc(sfd)<<16;
 		liga->tag |= getc(sfd)<<8;
 		liga->tag |= getc(sfd);
-		getc(sfd);
+		getc(sfd);	/* Final quote */
 	    } else
 		ungetc(ch,sfd);
-	    if ( ispos )
+	    if ( liga->type==pst_position )
 		fscanf( sfd, " dx=%hd dy=%hd dh=%hd dv=%hd\n",
 			&liga->u.pos.xoff, &liga->u.pos.yoff,
 			&liga->u.pos.h_adv_off, &liga->u.pos.v_adv_off);
-	    else if ( liga->type==pst_lcaret ) {
+	    else if ( liga->type==pst_pair ) {
+		getname(sfd,tok);
+		liga->u.pair.paired = copy(tok);
+		liga->u.pair.vr = chunkalloc(sizeof(struct vr [2]));
+		fscanf( sfd, " dx=%hd dy=%hd dh=%hd dv=%hd | dx=%hd dy=%hd dh=%hd dv=%hd\n",
+			&liga->u.pair.vr[0].xoff, &liga->u.pair.vr[0].yoff,
+			&liga->u.pair.vr[0].h_adv_off, &liga->u.pair.vr[0].v_adv_off,
+			&liga->u.pair.vr[1].xoff, &liga->u.pair.vr[1].yoff,
+			&liga->u.pair.vr[1].h_adv_off, &liga->u.pair.vr[1].v_adv_off);
+	    } else if ( liga->type==pst_lcaret ) {
 		int i;
 		fscanf( sfd, " %d", &liga->u.lcaret.cnt );
 		liga->u.lcaret.carets = galloc(liga->u.lcaret.cnt*sizeof(int16));
@@ -1989,7 +2024,7 @@ static void SFDFixupRef(SplineChar *sc,RefChar *ref) {
 }
 
 static void SFDFixupRefs(SplineFont *sf) {
-    int i;
+    int i, isv;
     RefChar *refs, *rnext, *rprev;
     /*int isautorecovery = sf->changed;*/
     KernPair *kp, *prev, *next;
@@ -2022,21 +2057,25 @@ static void SFDFixupRefs(SplineFont *sf) {
 	}
 	/*if ( isautorecovery && !sf->chars[i]->changed )*/
     /*continue;*/
-	for ( prev = NULL, kp=sf->chars[i]->kerns; kp!=NULL; kp=next ) {
-	    next = kp->next;
-	    if ( ((int) (kp->sc))>=sf->charcnt ) {
-		fprintf( stderr, "Warning: Bad kerning information in glyph %s\n", sf->chars[i]->name );
-		kp->sc = NULL;
-	    } else
-		kp->sc = sf->chars[(int) (kp->sc)];
-	    if ( kp->sc!=NULL )
-		prev = kp;
-	    else{
-		if ( prev==NULL )
-		    sf->chars[i]->kerns = next;
-		else
-		    prev->next = next;
-		chunkfree(kp,sizeof(KernPair));
+	for ( isv=0; isv<2; ++isv ) {
+	    for ( prev = NULL, kp=isv?sf->chars[i]->vkerns : sf->chars[i]->kerns; kp!=NULL; kp=next ) {
+		next = kp->next;
+		if ( ((int) (kp->sc))>=sf->charcnt ) {
+		    fprintf( stderr, "Warning: Bad kerning information in glyph %s\n", sf->chars[i]->name );
+		    kp->sc = NULL;
+		} else
+		    kp->sc = sf->chars[(int) (kp->sc)];
+		if ( kp->sc!=NULL )
+		    prev = kp;
+		else{
+		    if ( prev!=NULL )
+			prev->next = next;
+		    else if ( isv )
+			sf->chars[i]->vkerns = next;
+		    else
+			sf->chars[i]->kerns = next;
+		    chunkfree(kp,sizeof(KernPair));
+		}
 	    }
 	}
     }
@@ -2067,6 +2106,8 @@ static void SFRemoveDependencies(SplineFont *sf) {
 	}
 	sf->chars[i]->dependents = NULL;
 	for ( kp=sf->chars[i]->kerns; kp!=NULL; kp=kp->next )
+	    kp->sc = (SplineChar *) (kp->sc->enc);
+	for ( kp=sf->chars[i]->vkerns; kp!=NULL; kp=kp->next )
 	    kp->sc = (SplineChar *) (kp->sc->enc);
     }
 }
@@ -2233,7 +2274,7 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
     int realcnt, i, eof, mappos=-1, ch, glyph;
     struct table_ordering *lastord = NULL;
     struct ttf_table *lastttf = NULL;
-    KernClass *lastkc=NULL, *kc;
+    KernClass *lastkc=NULL, *kc, *lastvkc=NULL;
 
     sf = SplineFontEmpty();
     sf->cidmaster = cidmaster;
@@ -2418,14 +2459,23 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 		    }
 		}
 	    }
-	} else if ( strmatch(tok,"KernClass:")==0 ) {
+	} else if ( strmatch(tok,"KernClass:")==0 || strmatch(tok,"VKernClass:")==0 ) {
 	    int temp;
+	    int isv = tok[0]=='V';
 	    kc = chunkalloc(sizeof(KernClass));
-	    if ( lastkc==NULL )
-		sf->kerns = kc;
-	    else
-		lastkc->next = kc;
-	    lastkc = kc;
+	    if ( !isv ) {
+		if ( lastkc==NULL )
+		    sf->kerns = kc;
+		else
+		    lastkc->next = kc;
+		lastkc = kc;
+	    } else {
+		if ( lastvkc==NULL )
+		    sf->vkerns = kc;
+		else
+		    lastvkc->next = kc;
+		lastvkc = kc;
+	    }
 	    getint(sfd,&kc->first_cnt);
 	    getint(sfd,&kc->second_cnt);
 	    getint(sfd,&temp); kc->sli = temp;
@@ -2440,6 +2490,7 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 		getc(sfd);	/* skip space */
 		fread(kc->firsts[i],1,temp,sfd);
 	    }
+	    kc->seconds[0] = NULL;
 	    for ( i=1; i<kc->second_cnt; ++i ) {
 		getint(sfd,&temp);
 		kc->seconds[i] = galloc(temp+1); kc->seconds[i][temp] = '\0';
