@@ -210,6 +210,59 @@ struct visible_prefs_list { int tab_name; struct prefs_list *pl; } visible_prefs
     { 0 }
  };
 
+int GetPrefs(char *name,Val *val) {
+    int i,j;
+
+    for ( i=0; prefs_list[i]!=NULL; ++i ) for ( j=0; prefs_list[i][j].name!=NULL; ++j ) {
+	if ( strcmp(prefs_list[i][j].name,name)==0 ) {
+	    struct prefs_list *pf = &prefs_list[i][j];
+	    if ( pf->type == pr_bool || pf->type == pr_int ) {
+		val->type = v_int;
+		val->u.ival = *((int *) (pf->val));
+	    } else if ( pf->type == pr_real ) {
+		val->type = v_int;
+		val->u.ival = *((float *) (pf->val));
+	    } else if ( pf->type == pr_string || pf->type == pr_file ) {
+		val->type = v_str;
+		val->u.sval = copy( *((char **) (pf->val)));
+	    } else
+return( false );
+
+return( true );
+	}
+    }
+return( false );
+}
+
+int SetPrefs(char *name,Val *val1, Val *val2) {
+    int i,j;
+
+    for ( i=0; prefs_list[i]!=NULL; ++i ) for ( j=0; prefs_list[i][j].name!=NULL; ++j ) {
+	if ( strcmp(prefs_list[i][j].name,name)==0 ) {
+	    struct prefs_list *pf = &prefs_list[i][j];
+	    if ( pf->type == pr_bool || pf->type == pr_int ) {
+		if ( (val1->type!=v_int && val1->type!=v_unicode) || val2!=NULL )
+return( -1 );
+		*((int *) (pf->val)) = val1->u.ival;
+	    } else if ( pf->type == pr_real ) {
+		if ( val1->type!=v_int || (val2!=NULL && val2->type!=v_int ))
+return( -1 );
+		*((float *) (pf->val)) = (val2==NULL ? val1->u.ival : val1->u.ival / (double) val2->u.ival);
+	    } else if ( pf->type == pr_string || pf->type == pr_file ) {
+		if ( val1->type!=v_str || val2!=NULL )
+return( -1 );
+		free( *((char **) (pf->val)));
+		*((char **) (pf->val)) = copy( val1->u.sval );
+	    } else
+return( false );
+
+	    SavePrefs();
+return( true );
+	}
+    }
+return( false );
+}
+
 static char *getPfaEditPrefs(void) {
     static char *prefs=NULL;
     char buffer[1025];

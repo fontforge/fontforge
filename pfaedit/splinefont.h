@@ -38,6 +38,16 @@
 
 #define CHR(ch1,ch2,ch3,ch4) (((ch1)<<24)|((ch2)<<16)|((ch3)<<8)|(ch4))
 
+typedef struct val {
+    enum val_type { v_int, v_str, v_unicode, v_lval, v_arr, v_arrfree, v_void } type;
+    union {
+	int ival;
+	char *sval;
+	struct val *lval;
+	struct array *aval;
+    } u;
+} Val;		/* Used by scripting */
+
 struct psdict {
     int cnt, next;
     char **keys;

@@ -694,6 +694,8 @@ extern void DoPrefs(void);
 extern void LoadPfaEditEncodings(void);
 extern void PfaEditSetFallback(void);
 extern void RecentFilesRemember(char *filename);
+extern int GetPrefs(char *name,Val *val);		/* for scripting */
+extern int SetPrefs(char *name,Val *val1, Val *val2);	/* for scripting */
 
 extern void FVAutoTrace(FontView *fv,int ask);
 extern void SCAutoTrace(SplineChar *sc,GWindow v,int ask);

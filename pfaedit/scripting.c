@@ -39,16 +39,6 @@
 
 static int verbose = -1;
 
-typedef struct val {
-    enum val_type { v_int, v_str, v_unicode, v_lval, v_arr, v_arrfree, v_void } type;
-    union {
-	int ival;
-	char *sval;
-	struct val *lval;
-	struct array *aval;
-    } u;
-} Val;
-
 struct dictentry {
     char *name;
     Val val;
@@ -519,6 +509,29 @@ static void bStrskipint(Context *c) {
     c->return_val.type = v_int;
     strtol(c->a.vals[1].u.sval,&end,base);
     c->return_val.u.ival = end-c->a.vals[1].u.sval;
+}
+
+static void bGetPrefs(Context *c) {
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type!=v_str )
+	error( c, "Bad type for argument" );
+    if ( !GetPrefs(c->a.vals[1].u.sval,&c->return_val) )
+	errors( c, "Unknown Preference variable", c->a.vals[1].u.sval );
+}
+
+static void bSetPrefs(Context *c) {
+    int ret;
+
+    if ( c->a.argc!=3 && c->a.argc!=4 )
+	error( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type!=v_str || (c->a.argc==4 && c->a.vals[3].type!=v_int) )
+	error( c, "Bad type for argument" );
+    if ( (ret=SetPrefs(c->a.vals[1].u.sval,&c->a.vals[2],c->a.argc==4?&c->a.vals[3]:NULL))==0 )
+	errors( c, "Unknown Preference variable", c->a.vals[1].u.sval );
+    else if ( ret==-1 )
+	errors( c, "Bad type for preference variable",  c->a.vals[1].u.sval);
 }
 
 /* **** File menu **** */
@@ -2027,6 +2040,8 @@ struct builtins { char *name; void (*func)(Context *); int nofontok; } builtins[
     { "Strcasecmp", bStrcasecmp, 1 },
     { "Strtol", bStrtol, 1 },
     { "Strskipint", bStrskipint, 1 },
+    { "GetPref", bGetPrefs, 1 },
+    { "SetPref", bSetPrefs, 1 },
 /* File menu */
     { "Quit", bQuit, 1 },
     { "Open", bOpen, 1 },
@@ -2659,6 +2674,8 @@ static void handlename(Context *c,Val *val) {
 		extern const char *source_version_str;
 		val->type = v_str;
 		val->u.sval = copy(source_version_str);
+	    } else if ( GetPrefs(name+1,val)) {
+		/* Done */
 	    }
 	} else if ( *name=='@' ) {
 	    if ( c->curfv==NULL ) error(c,"No current font");
