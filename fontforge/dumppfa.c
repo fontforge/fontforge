@@ -1721,14 +1721,18 @@ static void dumpencodedstuff(void (*dumpchar)(int ch,void *data), void *data,
 	dumpstr(func,&fed,"dup/FontName get exch definefont pop\n mark currentfile closefile\n" );
 }
 
-static void dumpfinalascii(void (*dumpchar)(int ch,void *data), void *data) {
+static void dumpfinalascii(void (*dumpchar)(int ch,void *data), void *data,
+	SplineFont *sf, int format) {
     int i;
+    int uniqueid = sf->uniqueid ;
 
     /* output 512 zeros */
     dumpchar('\n',data);
     for ( i = 0; i<8; ++i )
 	dumpstr(dumpchar,data,"0000000000000000000000000000000000000000000000000000000000000000\n");
-    dumpstr(dumpchar,data,"cleartomark\n{restore}if\n");
+    dumpstr(dumpchar,data,"cleartomark\n");
+    if ( format!=ff_ptype3 && uniqueid!=-1 ) 
+	dumpstr(dumpchar,data,"{restore}if\n");
 }
 
 static void mkheadercopyfile(FILE *temp,FILE *out,int headertype) {
@@ -1911,7 +1915,7 @@ static void dumpfontdict(FILE *out, SplineFont *sf, int format, int flags ) {
 	dumpencodedstuff((DumpChar) fputc,temp,sf,format,flags);
 	mkheadercopyfile(temp,out,2);
 	temp = tmpfile();
-	dumpfinalascii((DumpChar) fputc,temp);
+	dumpfinalascii((DumpChar) fputc,temp,sf,format);
 	mkheadercopyfile(temp,out,1);
 /* final header, 3=>eof??? */
 	dumpstrn((DumpChar) fputc,out,"\200\003",2);
@@ -1923,7 +1927,7 @@ static void dumpfontdict(FILE *out, SplineFont *sf, int format, int flags ) {
     } else {
 	dumpinitialascii((DumpChar) (fputc),out,sf,format );
 	dumpencodedstuff((DumpChar) (fputc),out,sf,format,flags);
-	dumpfinalascii((DumpChar) (fputc),out);
+	dumpfinalascii((DumpChar) (fputc),out,sf,format);
     }
 }
 
