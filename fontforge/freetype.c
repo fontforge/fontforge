@@ -885,10 +885,12 @@ static SplineSet *StrokeOutline(Layer *layer,SplineChar *sc) {
 	si.radius = sc->parent->strokewidth/2;
 	si.join = lj_bevel;
 	si.cap = lc_butt;
+#ifdef FONTFORGE_CONFIG_TYPE3
     } else {
 	si.radius = layer->stroke_pen.width/2;
 	si.join = layer->stroke_pen.linejoin;
 	si.cap = layer->stroke_pen.linecap;
+#endif
     }
     si.stroke_type = si_std;
 return( SSStroke(layer->splines,&si,sc));
@@ -926,11 +928,11 @@ static void MergeBitmaps(FT_Bitmap *bitmap,FT_Bitmap *newstuff,uint32 col) {
 BDFChar *SplineCharFreeTypeRasterizeNoHints(SplineChar *sc,
 	int pixelsize,int depth) {
     FT_Outline outline;
-    FT_Bitmap bitmap;
+    FT_Bitmap bitmap, temp;
 #ifdef FONTFORGE_CONFIG_TYPE3
-    FT_Bitmap temp;
+    int i;
 #endif
-    int i, k, j;
+    int k, j;
     int cmax, pmax;
     real scale = pixelsize*(1<<6)/(double) (sc->parent->ascent+sc->parent->descent);
     BDFChar *bdfc;
