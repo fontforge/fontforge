@@ -274,11 +274,11 @@ static void readttfbitmapfont(FILE *ttf,struct ttfinfo *info,
 		glyphs[g] = getushort(ttf);
 		glyphoffsets[g] = getushort(ttf);
 	    }
-	    for ( i=0, g=0; i<=last-first; ++i ) {
+	    for ( i=0, g=0; i<=last-first; ++i, ++g ) {
 		if ( (info->inuse==NULL || info->inuse[i+first]) && g<num )
 		    ttfreadbmfglyph(ttf,info,offset+glyphoffsets[g],
 			    glyphoffsets[g+1]-glyphoffsets[g],NULL,
-			    imageformat,glyphs[g++],bdf);
+			    imageformat,glyphs[g],bdf);
 	    }
 	    free(glyphoffsets);
 	    free(glyphs);
