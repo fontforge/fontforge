@@ -109,12 +109,40 @@ void FindBlues( SplineFont *sf, real blues[14], real otherblues[10]) {
 		if ( b.miny==0 && b.maxy==0 )
     continue;
 		if ( enc=='g' || enc=='j' || enc=='p' || enc=='q' || enc=='y' ||
-			enc==0xfe || enc == 0x3c6 || enc==0x3c8 ||
-			enc==0x434 || enc==0x444 || enc==0x449 || enc==0x471) {
+			enc==0xfe || 
+			enc==0x3c1 /* rho */ ||
+			enc==0x3c6 /* phi */ || 
+			enc==0x3c7 /* chi */ || 
+			enc==0x3c8 /* psi */ ||
+			enc==0x440 /* cyr er */ || 
+			enc==0x443 /* cyr u */ || 
+			enc==0x444 /* cyr ef */) {
 		    descenth[0] += b.miny;
 		    descenth[1] += b.miny*b.miny;
 		    ++descenth[2];
-		} else {
+		} else if ( enc=='x' || enc=='r' || enc=='o' || enc=='e' || 
+		               enc=='s' || enc=='c' || enc=='h' || enc=='k' || 
+			       enc=='l' || enc=='m' || enc=='n' || 
+			       enc==0x3b5 /* epsilon */ || 
+			       enc==0x3b9 /* iota */ ||
+			       enc==0x3ba /* kappa */ ||
+			       enc==0x3bf /* omicron */ ||
+			       enc==0x3c3 /* sigma */ ||
+			       enc==0x3c5 /* upsilon */ ||
+			       enc==0x430 /* cyr a */ ||
+			       enc==0x432 /* cyr ve */ ||
+			       enc==0x433 /* cyr ge */ ||
+			       enc==0x435 /* cyr e */ ||
+			       enc==0x436 /* cyr zhe */ ||
+			       enc==0x438 /* cyr i */ ||
+			       enc==0x43a /* cyr ka */ ||
+			       enc==0x43d /* cyr en */ ||
+			       enc==0x43e /* cyr o */ ||
+			       enc==0x441 /* cyr es */ ||
+			       enc==0x445 /* cyr ha */ ||
+			       enc==0x447 /* cyr che */ ||
+			       enc==0x448 /* cyr sha */ ||
+			       enc==0x44f /* cyr ya */ ){
 		    base[0] += b.miny;
 		    base[1] += b.miny*b.miny;
 		    ++base[2];
@@ -136,11 +164,44 @@ void FindBlues( SplineFont *sf, real blues[14], real otherblues[10]) {
 			enc == 'l' || enc==0xf0 || enc==0xfe || enc == 0xdf ||
 			enc == 0x3b2 || enc==0x3b6 || enc==0x3b8 || enc==0x3bb ||
 			enc == 0x3be ||
-			enc == 0x444 ) {
+			enc == 0x431 /* cyr be */ /* || enc == 0x444 - ef may have varible height */) {
 		    ascenth[0] += b.maxy;
 		    ascenth[1] += b.maxy*b.maxy;
 		    ++ascenth[2];
-		} else if ( enc!='i' && enc!='j' ) {
+		} else if ( enc=='c' || enc=='e' || enc=='o' || enc=='s' || enc=='u' || 
+		            enc=='u' || enc=='v' || enc=='w' || enc=='x' || enc=='y' || 
+			    enc=='z' || 
+			    enc==0x3b5 /* epsilon */ ||
+			    enc==0x3b9 /* iota */ ||
+			    enc==0x3ba /* kappa */ ||
+			    enc==0x3bc /* mu */ ||
+			    enc==0x3bd /* nu */ ||
+			    enc==0x3bf /* omicron */ ||
+			    enc==0x3c0 /* pi */ ||
+			    enc==0x3c1 /* rho */ ||
+			    enc==0x3c5 /* upsilon */ ||
+			    enc==0x433 /* cyr ge */ ||
+			    enc==0x435 /* cyr e */ ||
+			    enc==0x436 /* cyr zhe */ ||
+			    enc==0x438 /* cyr i */ ||
+			    enc==0x43b /* cyr el */ ||
+			    enc==0x43d /* cyr en */ ||
+			    enc==0x43e /* cyr o */ ||
+			    enc==0x43f /* cyr pe */ ||
+			    enc==0x440 /* cyr er */ ||
+			    enc==0x441 /* cyr es */ ||
+			    enc==0x442 /* cyr te */ ||
+			    enc==0x443 /* cyr u */ ||
+			    enc==0x445 /* cyr ha */ ||
+			    enc==0x446 /* cyr tse */ ||
+			    enc==0x447 /* cyr che */ ||
+			    enc==0x448 /* cyr sha */ ||
+			    enc==0x449 /* cyr shcha */ ||
+			    enc==0x44a /* cyr hard sign */ ||
+			    enc==0x44b /* cyr yery */ ||
+			    enc==0x44c /* cyr soft sign */ ||
+			    enc==0x44d /* cyr reversed e */ ||
+			    enc==0x44f /* cyr ya */ ) {
 		    xh[0] += b.maxy;
 		    xh[1] += b.maxy*b.maxy;
 		    ++xh[2];
@@ -210,7 +271,7 @@ void FindBlues( SplineFont *sf, real blues[14], real otherblues[10]) {
     continue;
 	    if ( enc=='g' || enc=='j' || enc=='p' || enc=='q' || enc=='y' ||
 		    enc==0xfe || enc == 0x3c6 || enc==0x3c8 ||
-		    enc==0x434 || enc==0x444 || enc==0x449 || enc==0x471) {
+		    enc==0x440 || enc==0x443 || enc==0x444) {
 		AddBlue(b.miny,descenth,false);
 	    } else {
 		/* O and o get forced into the baseline blue value even if they*/
@@ -221,14 +282,47 @@ void FindBlues( SplineFont *sf, real blues[14], real otherblues[10]) {
 		AddBlue(b.maxy,digith,false);
 	    } else if ( isupper(enc)) {
 		AddBlue(b.maxy,caph,enc=='O');
-		} else if ( enc=='b' || enc=='d' || enc=='f' || enc=='h' || enc=='k' ||
-			enc == 'l' || enc=='t' || enc==0xf0 || enc==0xfe || enc == 0xdf ||
-			enc == 0x3b2 || enc==0x3b6 || enc==0x3b8 || enc==0x3bb ||
+	    } else if ( enc=='b' || enc=='d' || enc=='f' || enc=='h' || enc=='k' ||
+		    enc == 'l' || enc=='t' || enc==0xf0 || enc==0xfe || enc == 0xdf ||
+		    enc == 0x3b2 || enc==0x3b6 || enc==0x3b8 || enc==0x3bb ||
 		    enc == 0x3be ||
-		    enc == 0x444 ) {
+		    enc == 0x431 ) {
 		AddBlue(b.maxy,ascenth,false);
-	    } else if ( enc!='i' && enc!='j' ) {
-		AddBlue(b.maxy,xh,enc=='o');
+	    } else if ( enc=='c' || enc=='e' || enc=='o' || enc=='s' || enc=='u' || 
+			enc=='u' || enc=='v' || enc=='w' || enc=='x' || enc=='y' || 
+			enc=='z' || 
+			enc==0x3b5 /* epsilon */ ||
+			enc==0x3b9 /* iota */ ||
+			enc==0x3ba /* kappa */ ||
+			enc==0x3bc /* mu */ ||
+			enc==0x3bd /* nu */ ||
+			enc==0x3bf /* omicron */ ||
+			enc==0x3c0 /* pi */ ||
+			enc==0x3c1 /* rho */ ||
+			enc==0x3c5 /* upsilon */ ||
+			enc==0x433 /* cyr ge */ ||
+			enc==0x435 /* cyr e */ ||
+			enc==0x436 /* cyr zhe */ ||
+			enc==0x438 /* cyr i */ ||
+			enc==0x43b /* cyr el */ ||
+			enc==0x43d /* cyr en */ ||
+			enc==0x43e /* cyr o */ ||
+			enc==0x43f /* cyr pe */ ||
+			enc==0x440 /* cyr er */ ||
+			enc==0x441 /* cyr es */ ||
+			enc==0x442 /* cyr te */ ||
+			enc==0x443 /* cyr u */ ||
+			enc==0x445 /* cyr ha */ ||
+			enc==0x446 /* cyr tse */ ||
+			enc==0x447 /* cyr che */ ||
+			enc==0x448 /* cyr sha */ ||
+			enc==0x449 /* cyr shcha */ ||
+			enc==0x44a /* cyr hard sign */ ||
+			enc==0x44b /* cyr yery */ ||
+			enc==0x44c /* cyr soft sign */ ||
+			enc==0x44d /* cyr reversed e */ ||
+			enc==0x44f /* cyr ya */ ) {
+		AddBlue(b.maxy,xh,enc=='o' || enc=='x');
 	    }
 	}
     }
