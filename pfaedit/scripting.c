@@ -1725,7 +1725,7 @@ static void bSetMacStyle(Context *c) {
 
     if ( c->a.argc!=2 )
 	error( c, "Wrong number of arguments");
-    if ( c->a.vals[1].type!=v_int )
+    if ( c->a.vals[1].type==v_int )
 	c->curfv->sf->macstyle = c->a.vals[1].u.ival;
     else if ( c->a.vals[1].type==v_str )
 	c->curfv->sf->macstyle = _MacStyleCode(c->a.vals[1].u.sval,NULL,NULL);
@@ -5003,6 +5003,7 @@ void ScriptDlg(FontView *fv) {
 
     memset(&sd,0,sizeof(sd));
     sd.fv = fv;
+    sd.oldh = pos.height = GDrawPointsToPixels(NULL,SD_Height);
 
     if ( gw==NULL ) {
 	memset(&wattrs,0,sizeof(wattrs));
@@ -5015,7 +5016,6 @@ void ScriptDlg(FontView *fv) {
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GDrawPointsToPixels(NULL,GGadgetScale(SD_Width));
-	sd.oldh = pos.height = GDrawPointsToPixels(NULL,SD_Height);
 	gw = GDrawCreateTopWindow(NULL,&pos,sd_e_h,&sd,&wattrs);
 
 	memset(&gcd,0,sizeof(gcd));
