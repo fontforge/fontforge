@@ -626,6 +626,9 @@ return( DVChar(dv,event));
 static int dvreg_e_h(GWindow gw, GEvent *event) {
     DebugView *dv = (DebugView *) GDrawGetUserData(gw);
 
+    if ( dv==NULL )
+return( true );
+
     switch ( event->type ) {
       case et_expose:
 	DVRegExpose(gw,dv,event);
@@ -649,6 +652,9 @@ return( true );
 
 static int dvstack_e_h(GWindow gw, GEvent *event) {
     DebugView *dv = (DebugView *) GDrawGetUserData(gw);
+
+    if ( dv==NULL )
+return( true );
 
     switch ( event->type ) {
       case et_expose:
@@ -683,6 +689,9 @@ return( true );
 static int dvstore_e_h(GWindow gw, GEvent *event) {
     DebugView *dv = (DebugView *) GDrawGetUserData(gw);
 
+    if ( dv==NULL )
+return( true );
+
     switch ( event->type ) {
       case et_expose:
 	DVStorageExpose(gw,dv,event);
@@ -716,6 +725,9 @@ return( true );
 static int dvpointsv_e_h(GWindow gw, GEvent *event) {
     DebugView *dv = (DebugView *) GDrawGetUserData(gw);
 
+    if ( dv==NULL )
+return( true );
+
     switch ( event->type ) {
       case et_expose:
 	DVPointsVExpose(gw,dv,event);
@@ -734,6 +746,9 @@ return( true );
 static int dvpoints_e_h(GWindow gw, GEvent *event) {
     DebugView *dv = (DebugView *) GDrawGetUserData(gw);
     GRect r;
+
+    if ( dv==NULL )
+return( true );
 
     switch ( event->type ) {
       case et_expose:
@@ -828,6 +843,9 @@ static void dvcvt_scroll(DebugView *dv,struct sbevent *sb) {
 static int dvcvt_e_h(GWindow gw, GEvent *event) {
     DebugView *dv = (DebugView *) GDrawGetUserData(gw);
     GRect r,g;
+
+    if ( dv==NULL )
+return( true );
 
     switch ( event->type ) {
       case et_expose:
@@ -1064,6 +1082,7 @@ return( DVChar(dv,event));
       break;
       case et_destroy:
 	dv->dv = NULL;
+	CVDebugFree(dv);
 	free(dv->id.bts);
 	free(dv);
       break;
@@ -1081,22 +1100,32 @@ void CVDebugFree(DebugView *dv) {
 	CharView *cv = dv->cv;
 	SplineSet *ss;
 	SplinePoint *sp;
+	int dying = dv->dv==NULL;
 
 	cv->show_ft_results = false;
 	DebuggerTerminate(dv->dc);
 	cv->dv = NULL;
-	if ( dv->points!=NULL )
+	if ( dv->points!=NULL ) {
+	    GDrawSetUserData(dv->points,NULL);
+	    GDrawSetUserData(dv->points_v,NULL);
 	    GDrawDestroyWindow(dv->points);
-	if ( dv->cvt!=NULL )
+	}
+	if ( dv->cvt!=NULL ) {
+	    GDrawSetUserData(dv->cvt,NULL);
 	    GDrawDestroyWindow(dv->cvt);
-	if ( dv->regs!=NULL )
+	}
+	if ( dv->regs!=NULL ) {
+	    GDrawSetUserData(dv->regs,NULL);
 	    GDrawDestroyWindow(dv->regs);
-	if ( dv->stack!=NULL )
+	}
+	if ( dv->stack!=NULL ) {
+	    GDrawSetUserData(dv->stack,NULL);
 	    GDrawDestroyWindow(dv->stack);
-	if ( dv->storage!=NULL )
+	}
+	if ( dv->storage!=NULL ) {
+	    GDrawSetUserData(dv->storage,NULL);
 	    GDrawDestroyWindow(dv->storage);
-	if ( dv->cvt!=NULL )
-	    GDrawDestroyWindow(dv->cvt);
+	}
 	if ( dv->dv!=NULL ) {
 	    GDrawDestroyWindow(dv->dv);
 	    CVResize(cv);
@@ -1113,11 +1142,14 @@ void CVDebugFree(DebugView *dv) {
 	    break;
 	    }
 	}
-	GDrawRequestExpose(cv->v,NULL,false);
 
-	if ( cv->coderange!=cr_none ) {
-	    cv->coderange = cr_none;
-	    CVInfoDraw(cv,cv->gw);
+	if ( !dying ) {
+	    GDrawRequestExpose(cv->v,NULL,false);
+
+	    if ( cv->coderange!=cr_none ) {
+		cv->coderange = cr_none;
+		CVInfoDraw(cv,cv->gw);
+	    }
 	}
     }
 }
