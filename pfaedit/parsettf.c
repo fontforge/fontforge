@@ -3188,6 +3188,34 @@ struct valuerecord {
     uint16 offXadvanceDev, offYadvanceDev;
 };
 
+static uint16 *getClassDefTable(FILE *ttf, int classdef_offset, int cnt) {
+    int format, i, j;
+    uint16 start, glyphcnt, rangecnt, end, class;
+    uint16 *glist=NULL;
+
+    fseek(ttf, classdef_offset, SEEK_SET);
+    glist = galloc(cnt*sizeof(uint16));
+    for ( i=0; i<cnt; ++i )
+	glist[i] = 0;	/* Class 0 is default */
+    format = getushort(ttf);
+    if ( format==1 ) {
+	start = getushort(ttf);
+	glyphcnt = getushort(ttf);
+	for ( i=0; i<glyphcnt; ++i )
+	    glist[start+i] = getushort(ttf);
+    } else if ( format==2 ) {
+	rangecnt = getushort(ttf);
+	for ( i=0; i<rangecnt; ++i ) {
+	    start = getushort(ttf);
+	    end = getushort(ttf);
+	    class = getushort(ttf);
+	    for ( j=start; j<=end; ++j )
+		glist[j] = class;
+	}
+    }
+return glist;
+}
+
 static void readvaluerecord(struct valuerecord *vr,int vf,FILE *ttf) {
     memset(vr,'\0',sizeof(struct valuerecord));
     if ( vf&1 )
@@ -3208,17 +3236,35 @@ static void readvaluerecord(struct valuerecord *vr,int vf,FILE *ttf) {
 	vr->offYadvanceDev = getushort(ttf);
 }
 
-static void gposKernSubTable(FILE *ttf, int which, int stoffset,struct ttfinfo *info) {
-    int coverage, cnt, i, j, pair_cnt, vf1, vf2, glyph2;
-    uint16 *ps_offsets;
-    uint16 *glyphs;
-    struct valuerecord vr1, vr2;
+static void addKernPair(struct ttfinfo *info, int glyph1, int glyph2, int16 offset) {
     KernPair *kp;
-
-    if ( getushort(ttf)!=1 ) {
-	/* I don't support class based kerning (subformat=2) */
-return;
+    if ( glyph1<info->glyph_cnt && glyph2<info->glyph_cnt ) {
+	for ( kp=info->chars[glyph1]->kerns; kp!=NULL; kp=kp->next )
+	    if ( kp->sc == info->chars[glyph2] )
+	break;
+	if ( kp==NULL ) {
+	    kp = gcalloc(1,sizeof(KernPair));
+	    kp->sc = info->chars[glyph2];
+	    kp->off = offset;
+	    kp->next = info->chars[glyph1]->kerns;
+	    info->chars[glyph1]->kerns = kp;
+	}
     }
+}
+
+static void gposKernSubTable(FILE *ttf, int which, int stoffset, struct ttfinfo *info) {
+    int coverage, cnt, i, j, pair_cnt, vf1, vf2, glyph2;
+    int cd1, cd2, c1_cnt, c2_cnt, k, l;
+    int16 offset;
+    uint16 format;
+    uint16 *ps_offsets;
+    uint16 *glyphs, *class1, *class2;
+    struct valuerecord vr1, vr2;
+    long foffset;
+
+    format=getushort(ttf);
+    if ( format!=1 && format!=2 )	/* Unknown subtable format */
+return;
     coverage = getushort(ttf);
     vf1 = getushort(ttf);
     if ( vf1&0xffbb)	/* Not interested in things that deal with y advance/placement nor with x placement */
@@ -3226,35 +3272,49 @@ return;
     vf2 = getushort(ttf);
     if ( vf2&0xffaa)	/* Not interested in things that deal with y advance/placement */
 return;
-    cnt = getushort(ttf);
-    ps_offsets = galloc(cnt*sizeof(uint16));
-    for ( i=0; i<cnt; ++i )
-	ps_offsets[i]=getushort(ttf);
-    glyphs = getCoverageTable(ttf,stoffset+coverage);
-    if ( glyphs==NULL )
+    if ( format==1 ) {
+	cnt = getushort(ttf);
+	ps_offsets = galloc(cnt*sizeof(uint16));
+	for ( i=0; i<cnt; ++i )
+	    ps_offsets[i]=getushort(ttf);
+	glyphs = getCoverageTable(ttf,stoffset+coverage);
+	if ( glyphs==NULL )
 return;
-    for ( i=0; i<cnt; ++i ) {
-	fseek(ttf,stoffset+ps_offsets[i],SEEK_SET);
-	pair_cnt = getushort(ttf);
-	for ( j=0; j<pair_cnt; ++j ) {
-	    glyph2 = getushort(ttf);
-	    readvaluerecord(&vr1,vf1,ttf);
-	    readvaluerecord(&vr2,vf2,ttf);
-	    if ( glyphs[i]<info->glyph_cnt && glyph2<info->glyph_cnt ) {
-		for ( kp=info->chars[glyphs[i]]->kerns; kp!=NULL; kp=kp->next )
-		    if ( kp->sc == info->chars[glyph2] )
-		break;
-		if ( kp==NULL ) {
-		    kp = gcalloc(1,sizeof(KernPair));
-		    kp->sc = info->chars[glyph2];
-		    kp->off = vr1.xadvance+vr2.xplacement;
-		    kp->next = info->chars[glyphs[i]]->kerns;
-		    info->chars[glyphs[i]]->kerns = kp;
-		}
+	for ( i=0; i<cnt; ++i ) {
+	    fseek(ttf,stoffset+ps_offsets[i],SEEK_SET);
+	    pair_cnt = getushort(ttf);
+	    for ( j=0; j<pair_cnt; ++j ) {
+		glyph2 = getushort(ttf);
+		readvaluerecord(&vr1,vf1,ttf);
+		readvaluerecord(&vr2,vf2,ttf);
+		addKernPair(info, glyphs[i], glyph2, vr1.xadvance+vr2.xplacement);
 	    }
 	}
+	free(ps_offsets); free(glyphs);
+    } else if ( format==2 ) {	/* Class-based kerning */
+	cd1 = getushort(ttf);
+	cd2 = getushort(ttf);
+	foffset = ftell(ttf);
+	class1 = getClassDefTable(ttf, stoffset+cd1, info->glyph_cnt);
+	class2 = getClassDefTable(ttf, stoffset+cd2, info->glyph_cnt);
+	fseek(ttf, foffset, SEEK_SET);	/* come back */
+	c1_cnt = getushort(ttf);
+	c2_cnt = getushort(ttf);
+	for ( i=0; i<c1_cnt; ++i) {
+	    for ( j=0; j<c2_cnt; ++j) {
+		readvaluerecord(&vr1,vf1,ttf);
+		readvaluerecord(&vr2,vf2,ttf);
+		offset = vr1.xadvance+vr2.xplacement;
+		if( offset!=0 )
+		    for ( k=0; k<info->glyph_cnt; ++k )
+			if ( class1[k]==i )
+			    for ( l=0; l<info->glyph_cnt; ++l )
+				if ( class2[l]==j )
+				    addKernPair(info, k, l, offset);
+	    }
+	}
+	free(class1); free(class2);
     }
-    free(ps_offsets); free(glyphs);
 }
 
 static void gsubLigatureSubTable(FILE *ttf, int which, int stoffset,struct ttfinfo *info) {
