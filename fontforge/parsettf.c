@@ -842,8 +842,47 @@ return;
 	else
 	    prev->next = cur;
     }
-    if ( cur->names[id]!=NULL ) free(cur->names[id]);
-    cur->names[id] = str;
+    if ( cur->names[id]==NULL )
+	cur->names[id] = str;
+    else if ( u_strcmp(cur->names[id],str)==0 )
+	free(str);
+    else {
+	int ret;
+	extern int running_script;
+	if ( info->dupnamestate!=0 )
+	    ret = info->dupnamestate;
+	else if ( running_script )
+	    ret = 3;
+	else {
+#if defined(FONTFORGE_CONFIG_GDRAW)
+	    static int buts[] = { _STR_First, _STR_FirstToAll,
+			    _STR_SecondToAll, _STR_Second, 0 };
+	    ret = GWidgetAskR(_STR_MultName,buts,0,3,_STR_NameTableMultPickOne,
+		    TTFNameIds(id),MSLangString(language),
+		    cur->names[id],str);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    char *buts[5];
+	    buts[0] = _("Use First");
+	    buts[1] = _("First to All");
+	    buts[2] = _("Second to All");
+	    buts[3] = _("Use Second");
+	    ret = gwwv_ask(_("Multiple names for language"),buts,0,3,
+		    _("The 'name' table contains (at least) two strings for the %s in language %s, the first '%.12s...' the second '%.12...'.\nWhich do you prefer?"),
+		    TTFNameIds(id),MSLangString(language),
+		    cur->names[id],str);
+#else
+	    ret = 3;
+#endif
+	    if ( ret==1 || ret==2 )
+		info->dupnamestate = ret;
+	}
+	if ( ret==0 || ret==1 )
+	    free(str);
+	else {
+	    free(cur->names[id]);
+	    cur->names[id] = str;
+	}
+    }
 }
 
 static int is_ascii(unichar_t *str) {	/* isascii is in ctype */

@@ -1710,6 +1710,9 @@ struct fontview *MMCreateBlendedFont(MMSet *mm,struct fontview *fv,real blends[M
 
 extern char *EnforcePostScriptName(char *old);
 
+const unichar_t *TTFNameIds(int id);
+const unichar_t *MSLangString(int language);
+
 # if HANYANG
 extern void SFDDumpCompositionRules(FILE *sfd,struct compositionrules *rules);
 extern struct compositionrules *SFDReadCompositionRules(FILE *sfd);

@@ -942,6 +942,31 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_MacAutomatic	16000
 #define CID_MacStyles		16001
 #define CID_MacFOND		16002
+
+const unichar_t *TTFNameIds(int id) {
+    int i;
+
+    for ( i=0; ttfnameids[i].text!=NULL; ++i )
+	if ( ttfnameids[i].userdata == (void *) id )
+return( GStringGetResource((intpt) ttfnameids[i].text,NULL));
+
+return( GStringGetResource(_STR_Unknown,NULL) );
+}
+
+const unichar_t *MSLangString(int language) {
+    int i;
+
+    for ( i=0; mslanguages[i].text!=NULL; ++i )
+	if ( mslanguages[i].userdata == (void *) language )
+return( GStringGetResource((intpt) mslanguages[i].text,NULL));
+
+    language &= 0xff;
+    for ( i=0; mslanguages[i].text!=NULL; ++i )
+	if ( ((intpt) mslanguages[i].userdata & 0xff) == language )
+return( GStringGetResource((intpt) mslanguages[i].text,NULL));
+
+return( GStringGetResource(_STR_Unknown,NULL) );
+}
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 struct psdict *PSDictCopy(struct psdict *dict) {

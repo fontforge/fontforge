@@ -1141,6 +1141,7 @@ static char *str_Xhosa = "Xhosa";
 static char *str_Yiddish = "Yiddish";
 static char *str_Yoruba = "Yoruba";
 static char *str_Zulu = "Zulu";
+static char *str_Unknown = "Unknown";
   /* TeX font params */
 static unichar_t str_TeXText = { 0x3a4, 0x3b5, 0x3a7, ' ','T','e','x','t', 0 };
 static unichar_t str_TeXMath = { 0x3a4, 0x3b5, 0x3a7, ' ','M','a','t','h', 0 };
@@ -2941,6 +2942,10 @@ static char *str_UntitledAnchor_n = "Anchor-%d";
 static char *str_TTFGlyf = "TTF 'glyf'";
 static char *str_OTFCFF = "OTF 'CFF '";
 static char *str_GlyfAndCFF = "This font contains both a TrueType 'glyf' table and an OpenType 'CFF ' table. FontForge can only deal with one at a time, please pick which one you want to use";
+static char *str_MultName = "Multiple names for language";
+static char *str_NameTableMultPickOne = "The 'name' table contains (at least) two strings for the %s in language %s, the first '%.12s...' the second '%.12s...'.\nWhich do you prefer?"
+static char *str_FirstToAll = "First to All";
+static char *str_SecondToAll = "Second to All";
     /* sfd */
 static char *str_Saving = "Saving...";
 static char *str_SavingDb = "Saving Spline Font Database";
