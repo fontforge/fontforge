@@ -7,11 +7,39 @@ static int cid_2_unicode[0x100000];
 static char *nonuni_names[0x100000];
 static int cid_2_rotunicode[0x100000];
 
+static int hwtable390[] = {
+    646, 1004, 1005, 1002, 1009, 1010, 1008, 936, 938, 940, 942, 944, 946, 948,
+    950, 952, 954, 956, 958, 961, 963, 965, 972, 973, 975, 976, 978, 979, 981,
+    982, 984, 985 };
+static int hwtable501[] = { 645, 647, 672 };
+static int hwtable516[] = {
+    923, 842, 844, 846, 848, 850, 908, 910, 912, 876, 843, 845, 847, 849, 851,
+    852, 854, 856, 858, 860, 862, 864, 866, 868, 870, 872, 874, 877, 879, 881,
+    883, 884, 885, 886, 887, 888, 891, 894, 897, 900, 903, 904, 905, 906, 907,
+    909, 911, 913, 914, 915, 916, 917, 918, 920, 924, 921, 922, 919, 853, 855,
+    857, 859, 861, 863, 865, 867, 869, 871, 873, 875, 878, 880, 882, 889, 890,
+    892, 893, 895, 896, 898, 899, 901, 902 };
+
 #define VERTMARK 0x1000000
 
+static int ucs2_score(int val) {		/* Supplied by KANOU Hiroki */
+    if ( val>=0x2e80 && val<=0x2fff )
+return( 1 );				/* New CJK Radicals are least important */
+    else if ( val>=VERTMARK )
+return( 2 );				/* Then vertical guys */
+    else if ( val>=0xf000 && val<=0xffff )
+return( 3 );
+/*    else if (( val>=0x3400 && val<0x3dff ) || (val>=0x4000 && val<=0x4dff))*/
+    else if ( val>=0x3400 && val<=0x4dff )
+return( 4 );
+    else
+return( 5 );
+}
+
 static int getnth(char *buffer, int col) {
-    int i, val=0;
+    int i, val=0, best;
     char *end;
+    int vals[10];
 
     if ( col==1 ) {
 	/* first column is decimal, others are hex */
@@ -30,9 +58,32 @@ return( -1 );
     val = strtol(buffer,&end,16);
     if ( end==buffer )
 return( -1 );
-    if ( *end=='v' )
+    if ( *end=='v' ) {
 	val += VERTMARK;
-
+	++end;
+    }
+    if ( *end==',' ) {
+	/* Multiple guess... now we've got to pick one */
+	vals[0] = val;
+	i = 1;
+	while ( *end==',' && i<9 ) {
+	    buffer = end+1;
+	    vals[i] = strtol(buffer,&end,16);
+	    if ( *end=='v' ) {
+		val += VERTMARK;
+		++end;
+	    }
+	    ++i;
+	}
+	vals[i] = 0;
+	best = 0; val = -1;
+	for ( i=0; vals[i]!=0; ++i ) {
+	    if ( ucs2_score(vals[i])>best ) {
+		val = vals[i];
+		best = ucs2_score(vals[i]);
+	    }
+	}
+    }
 return( val );
 }
 
@@ -229,7 +280,7 @@ int main(int argc, char **argv) {
 		sprintf( buffer, "cid_%d.vert", cid-9045+599 );
 	    else if ( cid>=9079 && cid<=9081 )
 		sprintf( buffer, "cid_%d.vert", cid-9079+630 );
-	    else if ( cid>=9083 )		/* halfwidth backslash */
+	    else if ( cid==9083 )		/* halfwidth backslash */
 		strcpy(buffer, "cid_8719.vert" );
     /* Rotated halfwidth katakana */
 	    else if ( cid>=9084 && cid<=9147 )
@@ -270,8 +321,14 @@ int main(int argc, char **argv) {
 	    /* rotated */
 	    cid_2_rotunicode[cid] = uni-VERTMARK;
 	} else if ( uni==-1 ) {
-	    if ( cid>=231 && cid<=632 )
-		sprintf( buffer, "japan1_%d.hw", cid );
+	    if ( cid>=390 && cid<421 )
+		sprintf( buffer, "japan1_%d.hw", hwtable390[cid-390] );
+	    else if ( cid>=501 && cid<=503 )
+		sprintf( buffer, "japan1_%d.hw", hwtable501[cid-501] );
+	    else if ( cid>=516 && cid<=598 )
+		sprintf( buffer, "japan1_%d.hw", hwtable516[cid-516] );
+	    else if ( cid>=231 && cid<=632 )
+		sprintf( buffer, "japan1__%d.hw", cid );
 	    else
     continue;
 		/*sprintf( buffer,"japan1_%d", cid );*/
