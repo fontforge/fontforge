@@ -34,6 +34,7 @@
 #if defined(FONTFORGE_CONFIG_TYPE3) && !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
 # include "views.h"		/* For CharView */
 #endif
+/* Solaris should include <ieeefp.h> */
 
 /* This is not a "real" structure. It is a temporary hack that encompasses */
 /*  various possibilities, the combination of which won't occur in reality */
@@ -513,7 +514,7 @@ return( pt_number );
 	    }
 	} else {
 	    *val = strtod(tokbuf,&end);
-	    if ( isinf(*val) || isnan(*val) ) {
+	    if ( !finite(*val) ) {
 		fprintf( stderr, "Bad number, infinity or nan: %s\n", tokbuf );
 		*val = 0;
 	    }
@@ -654,14 +655,14 @@ return( sp );
 }
 
 static void CheckMakeB(BasePoint *test, BasePoint *good) {
-    if ( isnan(test->x) || isinf(test->x) || test->x>100000 || test->x<-100000 ) {
+    if ( !finite(test->x) || test->x>100000 || test->x<-100000 ) {
 	fprintf( stderr, "Value out of bounds in spline.\n" );
 	if ( good!=NULL )
 	    test->x = good->x;
 	else
 	    test->x = 0;
     }
-    if ( isnan(test->y) || isinf(test->y) || test->y>100000 || test->y<-100000 ) {
+    if ( !finite(test->y) || test->y>100000 || test->y<-100000 ) {
 	fprintf( stderr, "Value out of bounds in spline.\n" );
 	if ( good!=NULL )
 	    test->y = good->y;
