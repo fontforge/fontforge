@@ -280,8 +280,8 @@ static void KPBuildKernList(KPData *kpd) {
 			    CheckLeftRight(&kpd->kerns[cnt]);
 			}
 			++cnt;
-		    }
 		break;
+		    }
 		}
 	    }
 	    if ( kpd->kerns!=NULL )
