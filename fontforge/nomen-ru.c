@@ -1662,6 +1662,7 @@ static char *str_Expected = ", ожидалось ";
 static char *str_Paths = "Контуры";
 static char *str_Random = "Random"; /*new*/
 static char *str_PointsNoC = "Точки";
+static char *str_Hints = "Инструкции";
 static char *str_ClearAll = "Очистить все";
 static char *str_SetAll = "Установить все";
 static char *str_AdvanceWidth = "Check Advance:"; /*new*/

@@ -2718,6 +2718,7 @@ static char *str_Random = "Al azar";
 static char *str_ATT = "ATT";
 static char *str_PointsNoC = "Puntos";
 static char *str_Refs = "Refs";
+static char *str_HintsNoC = "Ajustes";
 static char *str_ClearAll = "Desactivar";
 static char *str_SetAll = "Activar todos";
 static char *str_AdvanceWidth = "Verificar ancho:
