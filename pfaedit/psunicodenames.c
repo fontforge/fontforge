@@ -70706,11 +70706,6 @@ pe		5e4	43f
 schwa		259	4d9
 #endif
 /* Special names (primarily greek) that I've added */
-    { "hyphen-minus", 0x2d },
-    { "nonbreakingspace", 0xa0 },
-    { "nbspace", 0xa0 },
-    { "softhyphen", 0xad },
-    
 	{ "Omegaiotasublenisperispomeni", 0x1fae },
 	{ "Omegalenisperispomeni", 0x1f6e },
 	{ "Upsilonasperperispomeni", 0x1f5f },
@@ -70785,7 +70780,7 @@ schwa		259	4d9
     { "resh", 0x5e8 },
     { "shin", 0x5e9 },
     { "tav", 0x5ea },
-/* I added these myself. PfaEdit's "Private Use zone" */
+/* I added Greek small caps: PfaEdit's "Private Use zone" */
 	{ "alpha.sc", 0xf500 },
 	{ "beta.sc", 0xf501 },
 	{ "gamma.sc", 0xf502 },
