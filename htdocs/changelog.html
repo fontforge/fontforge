@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 7-Sep-2002 -->
+  <!-- AP: Last modified: 9-Sep-2002 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,27 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    9-Sept-2002
+    <UL>
+      <LI>
+	Added support for loading Ikarus .IK font files
+      <LI>
+	Fixed a divide by zero problem when generating ttfs
+      <LI>
+	If you type into the Kern Pairs dlg, it will now scroll to the pairs associated
+	with the character you typed.
+    </UL>
+  <LI>
+    8-Sept-2002
+    <UL>
+      <LI>
+	Display crashed on systems without freetype
+      <LI>
+	my xfig reader didn't handle arcs
+      <LI>
+	Merge fonts and Interpolate fonts didn't merge/interpolate kerning pairs
+    </UL>
   <LI>
     7-Sept-2002
     <UL>
@@ -37,6 +58,15 @@
 	ttf/otf files. So there's now a check box in the Generate dlg which allows
 	you to select between the two defns. I've removed the two different kinds
 	of bitmaps for ttf files, these are now controlled by this new checkbox too.
+      <LI>
+	PfaEdit would sometimes in otf files generate curves which should have been
+	done as lines.
+      <LI>
+	macbinary resource output broke when I fixed straight resource output the
+	other day.
+      <LI>
+	When a grid line was a line but expressed with control points, then pfaedit
+	would get very confused about how to snap to it.
       <LI>
 	Fixed a bug in the generation of ttf/otf fonts with big5/sjis/wansung encodings.
       <LI>
