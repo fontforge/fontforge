@@ -1951,6 +1951,7 @@ static void _MVMenuOverlap(MetricsView *mv,enum overlap_type ot) {
 	SplineChar *sc = mv->perchar[i].sc;
 	SCPreserveState(sc,false);
 	MinimumDistancesFree(sc->md);
+	SCRound2Int(sc,512);
 	sc->md = NULL;
 	sc->layers[ly_fore].splines = SplineSetRemoveOverlap(sc,sc->layers[ly_fore].splines,ot);
 	SCCharChangedUpdate(sc);

@@ -5525,6 +5525,7 @@ static void _CVMenuOverlap(CharView *cv,enum overlap_type ot) {
 	MinimumDistancesFree(cv->sc->md);
 	cv->sc->md = NULL;
     }
+    SCRound2Int(cv->sc,512);
     cv->layerheads[cv->drawmode]->splines = SplineSetRemoveOverlap(cv->sc,cv->layerheads[cv->drawmode]->splines,ot);
     CVCharChangedUpdate(cv);
 }

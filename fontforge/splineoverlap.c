@@ -303,6 +303,9 @@ return;
 static void AddSpline(Intersection *il,Monotonic *m,double t) {
     MList *ml;
 
+    if ( m->start==il || m->end==il )
+return;
+
     for ( ml=il->monos; ml!=NULL; ml=ml->next ) {
 	if ( ml->s==m->s && RealWithin( ml->t,t,.0001 ))
 return;
@@ -447,9 +450,21 @@ static Intersection *AddIntersection(Intersection *ilist,Monotonic *m1,
     double ot1 = t1, ot2 = t2;
 
     /* Fixup some rounding errors */
-    t1 = RoundToEndpoints(m1,t1,inter);
-    t2 = RoundToEndpoints(m2,t2,inter);
-    t1 = RoundToEndpoints(m1,t1,inter);	/* Do it twice. rounding t2 can mean we now need to round t1 */
+    if ( RealWithin(t1,1.0,.01) && RealWithin(t2,0.0,.01) && BpSame(&m1->s->to->me,&m2->s->from->me)) {
+	t1 = 1.0;
+	t2 = 0.0;
+    } else if ( RealWithin(t2,1.0,.01) && RealWithin(t1,0.0,.01) && BpSame(&m2->s->to->me,&m1->s->from->me)) {
+	t1 = 0.0;
+	t2 = 1.0;
+    } else {
+	t1 = RoundToEndpoints(m1,t1,inter);
+	t2 = RoundToEndpoints(m2,t2,inter);
+	t1 = RoundToEndpoints(m1,t1,inter);	/* Do it twice. rounding t2 can mean we now need to round t1 */
+    }
+
+    if (( m1->s->to == m2->s->from && RealWithin(t1,1.0,.01) && RealWithin(t2,0,.01)) ||
+	    ( m1->s->from == m2->s->to && RealWithin(t1,0,.01) && RealWithin(t2,1.0,.01)))
+return( ilist );
 
     if (( t1==m1->tstart && m1->start!=NULL &&
 	    (inter->x!=m1->start->inter.x || inter->y!=m1->start->inter.y)) ||
@@ -1146,12 +1161,12 @@ return(cnt);
 }
 
 static void FigureNeeds(Monotonic *ms,int which, double test, Monotonic **space,
-	enum overlap_type ot) {
+	enum overlap_type ot, int ignore_close) {
     /* Find all monotonic sections which intersect the line (x,y)[which] == test */
     /*  find the value of the other coord on that line */
     /*  Order them (by the other coord) */
     /*  then run along that line figuring out which monotonics are needed */
-    int i, j, winding, ew;
+    int i, j, winding, ew, was_close, close;
 
     MonotonicFindAt(ms,which,test,space);
 
@@ -1190,7 +1205,7 @@ static void FigureNeeds(Monotonic *ms,int which, double test, Monotonic **space,
     }
 #endif
 
-    winding = 0; ew = 0;
+    winding = 0; ew = 0; was_close = false;
     for ( i=0; space[i]!=NULL; ++i ) {
 	int needed, unneeded, inverted=false;
 	Monotonic *m;
@@ -1223,53 +1238,102 @@ static void FigureNeeds(Monotonic *ms,int which, double test, Monotonic **space,
 	    else
 		unneeded = true;
 	}
-	if (( m->isneeded || m->isunneeded ) && m->isneeded!=needed ) {
-	    for ( j=i+1; space[j]!=NULL && space[j]->other-m->other<.5; ++j ) {
-		if ( space[j]->start==m->start && space[j]->end==m->end &&
-			(space[j]->isneeded == needed ||
-			 (!space[j]->isneeded && !space[j]->isunneeded))) {
-		    space[i] = space[j];
-		    space[j] = m;
-		    m = space[i];
-	    break;
-		} else if ( !inverted && space[j]->other-m->other<.001 &&
-			(((&space[j]->xup)[which] == (&m->xup)[which] &&
-			  (space[j]->isneeded == needed ||
-			   (!space[j]->isneeded && !space[j]->isunneeded))) ||
-			 ((&space[j]->xup)[which] != (&m->xup)[which] &&
-			  (space[j]->isneeded != needed ||
-			   (!space[j]->isneeded && !space[j]->isunneeded)))) ) {
-		    space[i] = space[j];
-		    space[j] = m;
-		    inverted = true;
-	      goto retry;
+	if ( space[i+1]!=NULL )
+	    close = space[i+1]->other-space[i]->other < 1;
+	else
+	    close = false;
+	if (( !close && !was_close ) || ignore_close ) {
+	    if (( m->isneeded || m->isunneeded ) && m->isneeded!=needed ) {
+		for ( j=i+1; space[j]!=NULL && space[j]->other-m->other<.5; ++j ) {
+		    if ( space[j]->start==m->start && space[j]->end==m->end &&
+			    (space[j]->isneeded == needed ||
+			     (!space[j]->isneeded && !space[j]->isunneeded))) {
+			space[i] = space[j];
+			space[j] = m;
+			m = space[i];
+		break;
+		    } else if ( !inverted && space[j]->other-m->other<.001 &&
+			    (((&space[j]->xup)[which] == (&m->xup)[which] &&
+			      (space[j]->isneeded == needed ||
+			       (!space[j]->isneeded && !space[j]->isunneeded))) ||
+			     ((&space[j]->xup)[which] != (&m->xup)[which] &&
+			      (space[j]->isneeded != needed ||
+			       (!space[j]->isneeded && !space[j]->isunneeded)))) ) {
+			space[i] = space[j];
+			space[j] = m;
+			inverted = true;
+		  goto retry;
+		    }
 		}
 	    }
+	    if ( !m->isneeded && !m->isunneeded ) {
+		m->isneeded = needed; m->isunneeded = unneeded;
+		m->when_set = test;		/* Debugging */
+	    } else if ( m->isneeded!=needed || m->isunneeded!=unneeded )
+		SOError( "monotonic is both needed and unneeded.\n" );
 	}
-	if ( !m->isneeded && !m->isunneeded ) {
-	    m->isneeded = needed; m->isunneeded = unneeded;
-	    m->when_set = test;		/* Debugging */
-	} else if ( m->isneeded!=needed || m->isunneeded!=unneeded )
-	    SOError( "monotonic is both needed and unneeded.\n" );
 	winding = nwinding;
 	ew = new;
+	was_close = close;
     }
     if ( winding!=0 )
 	SOError( "Winding number did not return to 0 when %s=%g\n",
 		which ? "y" : "x", test );
 }
 
+struct gaps { double test, len; int which; };
+
+static int gcmp(const void *_p1, const void *_p2) {
+    const struct gaps *gpt1 = _p1, *gpt2 = _p2;
+    if ( gpt1->len > gpt2->len )
+return( 1 );
+    else if ( gpt1->len < gpt2->len )
+return( -1 );
+
+return( 0 );
+}
+
 static void FindNeeded(Monotonic *ms,enum overlap_type ot) {
     double *ends[2];
     Monotonic *m, **space;
     double top, bottom, test;
-    int t,b,i,cnt,which;
+    int t,b,i,j,k,cnt,which;
+    struct gaps *gaps;
+    double min_gap;
+
+    if ( ms==NULL )
+return;
 
     ends[0] = FindOrderedEndpoints(ms,0);
     ends[1] = FindOrderedEndpoints(ms,1);
 
     for ( m=ms, cnt=0; m!=NULL; m=m->linked, ++cnt );
     space = galloc((cnt+2)*sizeof(Monotonic*));
+    gaps = galloc(2*cnt*sizeof(struct gaps));
+
+    /* Look for the longest splines without interruptions first. These are */
+    /* least likely to cause problems and will give us a good basis from which*/
+    /* to make guesses should rounding errors occur later */
+    for ( j=k=0; j<2; ++j )
+	for ( i=0; ends[j][i+1]!=1e10; ++i ) {
+	    gaps[k].which = j;
+	    gaps[k].len = (ends[j][i+1]-ends[j][i]);
+	    gaps[k++].test = (ends[j][i+1]+ends[j][i])/2;
+	}
+    qsort(gaps,k,sizeof(struct gaps),gcmp);
+    min_gap = 1e10;
+    for ( m=ms; m!=NULL; m=m->linked ) {
+	if ( m->b.maxx-m->b.minx > m->b.maxy-m->b.miny ) {
+	    if ( min_gap > m->b.maxx-m->b.minx ) min_gap = m->b.maxx-m->b.minx;
+	} else {
+	    if ( m->b.maxy-m->b.miny==0 )
+		fprintf( stderr, "Foo\n");
+	    if ( min_gap > m->b.maxy-m->b.miny ) min_gap = m->b.maxy-m->b.miny;
+	}
+    }
+    if ( min_gap<.5 ) min_gap = .5;
+    for ( i=0; i<k && gaps[i].len>=min_gap; ++i )
+	FigureNeeds(ms,gaps[i].which,gaps[i].test,space,ot,0);
 
     for ( m=ms; m!=NULL; m=m->linked ) if ( !m->isneeded && !m->isunneeded ) {
 	if ( m->b.maxx-m->b.minx > m->b.maxy-m->b.miny ) {
@@ -1296,7 +1360,7 @@ static void FindNeeded(Monotonic *ms,enum overlap_type ot) {
 	break;
 	    }
 	}
-	FigureNeeds(ms,which,test,space,ot);
+	FigureNeeds(ms,which,test,space,ot,1);
     }
     free(ends[0]);
     free(ends[1]);
