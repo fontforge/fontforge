@@ -731,6 +731,10 @@ return;
     str = _readencstring(ttf,stroff,strlen,plat,spec,language);
     if ( str==NULL )		/* we didn't understand the encoding */
 return;
+    if ( *str=='\0' ) {
+	free(str);
+return;
+    }
 
     if ( plat==1 || plat==0 )
 	language = WinLangFromMac(language);
