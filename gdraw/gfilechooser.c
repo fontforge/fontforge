@@ -153,7 +153,7 @@ return( fc_show );
 return( fc_show );
 					/* If no mimetypes then we're done */
     if ( gfc->mimetypes==NULL )
-return( fc_show );
+return( fc_hide );
 					/* match the mimetypes */
     mime = ent->mimetype==NULL?GIOguessMimeType(ent->name,ent->isdir):ent->mimetype;
     for ( i=0; gfc->mimetypes[i]!=NULL; ++i )
