@@ -146,6 +146,22 @@ Apple distortable fonts do not need the postscript functions, nor the default
 weight vector mentioned above. Instead they need a set of named styles which
 map a particular coordinate in design space to a name (which may be provided
 in several languages).
+<P>
+Corresponding glyphs in each design must have certain similarities:
+<UL>
+  <LI>
+    There must be the same number of contours (or references)
+  <LI>
+    There must be the same number of points on each contour
+  <LI>
+    Corresponding contours must be oreinted in the same direction
+  <LI>
+    In a Type1 fonts there must be corresponding hints, and hint substitution
+    points.
+  <LI>
+    In a TrueType font corresponding glyphs share the same instructions (and
+    'fpgm' and 'prep' tables), but may have different 'cvt ' tables.
+</UL>
 <H2>
   The Dialog
 </H2>
