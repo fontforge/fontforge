@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Sep-2002 -->
-  <!-- AP: Last modified: 24-Feb-2003 -->
+  <!-- AP: Last modified: 27-Feb-2003 -->
   <TITLE>Generate Font Dialog</TITLE>
 </HEAD>
 <BODY>
@@ -122,8 +122,11 @@ There are also the following check boxes. Not all are visible at all times.
   <LI>
     [] PFM -- Generate a windows printer font metrics file
   <LI>
-    [] Hints -- Include truetype hints in a truetype font (pfaedit's hints are
-    currently bad, I suggest you leave this off for now)
+    [] Hints -- Include truetype hints in a truetype font. NOTE: This used to
+    generate bad truetype instructions, now it merely inserts whatever truetype
+    instructions are stored with the glyph. If these have been read from another
+    truetype font they will probably be reasonable. If they have been generated
+    with PfaEdit's AutoInstr menu command they will probably make your font uglier.
     <UL>
       <LI>
 	R C van Dalen's <A HREF="http://home.kabelfoon.nl/~slam/fonts/">truetype
@@ -132,10 +135,10 @@ There are also the following check boxes. Not all are visible at all times.
   <LI>
     [] PSNames -- Include the full 'post' (postscript name) table in the font
   <LI>
-    [] Apple -- Apple and MS/Adobe disagree on the format of a ttf font. This
-    is annoying. Checking this box means the font will be generated according
-    to Apple's desires, leaving it unchecked means according to MS/Adobe's desires.
-    Currently this controls:
+    [] <A NAME="AppleMode">Apple</A> -- Apple and MS/Adobe disagree on the format
+    of a ttf font. This is annoying. Checking this box means the font will be
+    generated according to Apple's desires, leaving it unchecked means according
+    to MS/Adobe's desires. Currently this controls:
     <UL>
       <LI>
 	The bitmap tables (Apple calls it 'bdat', MS/Adobe 'EBDT'. The data in them
@@ -200,7 +203,7 @@ etc.
 <P>
 Apple does not support these tables. If you set Apple mode
 <A HREF="gposgsub.html#AAT">'kern', 'opbd', 'morx', 'feat', 'lcar' and 'prop'
-</A>tables may be generated instead.
+</A>tables may be generated instead. 
   <HR>
 <H2>
   Generate Mac Family

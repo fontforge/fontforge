@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 26-Feb-2003 -->
+  <!-- AP: Last modified: 27-Feb-2003 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -103,8 +103,8 @@ let me know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-030226.tgz">Download pfaedit linux-i386 Redhat 7.3
-    </A><A NAME="downloads">executable</A> Version: 26-Feb-2003
+    <A HREF="pfaedit-030227.tgz">Download pfaedit linux-i386 Redhat 7.3
+    </A><A NAME="downloads">executable</A> Version: 27-Feb-2003
   <LI>
     <A HREF="pfaedit-030226-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
     Version: 26-Feb-2003 (Redhat 7.3)
@@ -149,9 +149,9 @@ If you want to edit CID keyed fonts you probably need these
 <P>
 You can download a <A HREF="pfaedit-030226-1.src.rpm">source RPM</A>: Version:
 26-Feb-2003<BR>
-Or you can download the <A HREF="pfaedit_full-030226.tgz">entire source tree
+Or you can download the <A HREF="pfaedit_full-030227.tgz">entire source tree
 </A>in one .tgz file: Version
-26-Feb-2003<!--
+27-Feb-2003<!--
 Or you can download the following three packages. Version: 19-Jan-2002
 <UL>
 <LI>
@@ -269,7 +269,7 @@ bitmap fonts that pfaedit uses
 </H2>
 <P>
 All the documentation files in this directory bundled up into one
-<A HREF="pfaedit_htdocs-030226.tgz">tgz file</A> 26-Feb-2003.<BR>
+<A HREF="pfaedit_htdocs-030227.tgz">tgz file</A> 27-Feb-2003.<BR>
 If you do the following then PfaEdit will find the docs for you when you
 press F1 (ie. PfaEdit it will look in /usr/local/share/doc/pfaedit before
 it looks on the web):
@@ -382,7 +382,9 @@ prepared to save frequently and always work on a copy of the original.
   <LI>
     No attempt has been made to be efficient.
   <LI>
-    No attempt has been made to read truetype instructions (hints)
+    No attempt has been made to interpret truetype instructions (hints), instead
+    the instructions will be stored and used as long as no significant changes
+    happen to the character they are associated with.
   <LI>
     No attempt has been made to retain the change-over points for hint substitution.
     PfaEdit will refigure this when it saves the font.
@@ -395,8 +397,7 @@ prepared to save frequently and always work on a copy of the original.
     one font with a chars dictionary.
   <LI>
     PfaEdit's support for the <A HREF="gposgsub.html">GPOS/GSUB/GDEF</A>/VORG
-    table output is limited. Other advanced opentype tables aren't supported
-    at all.
+    table output is limited.
   <LI>
     PfaEdit's support for <A HREF="gposgsub.html#AAT">Apple's Advanced Typography
     tables</A> (AAT) is limited.

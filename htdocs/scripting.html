@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 26-Feb-2003 -->
+  <!-- AP: Last modified: 27-Feb-2003 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -1001,23 +1001,30 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     SetWidth(width[,relative])
   <DD>
     If the second argument is absent or zero then the width will be set to the
-    first argument, otherwise it will be incremented by the first argument.
+    first argument, if the second argument is 1 then the width will be incremented
+    by the first, and if the argument is 2 then the width will be scaled by
+    &lt;first argument&gt;/100.0 .
   <DT>
     SetVWidth(vertical-width[,relative])
   <DD>
     If the second argument is absent or zero then the vertical width will be
-    set to the first argument, otherwise it will be incremented by the first
-    argument.
+    set to the first argument, if the second argument is 1 then the vertical
+    width will be incremented by the first, and if the argument is 2 then the
+    vertical width will be scaled by &lt;first argument&gt;/100.0 .
   <DT>
     SetLBearing(lbearing[,relative])
   <DD>
     If the second argument is absent or zero then the left bearing will be set
-    to the first argument, otherwise it will be incremented by the first argument.
+    to the first argument, if the second argument is 1 then the left bearing
+    will be incremented by the first, and if the argument is 2 then the left
+    bearing will be scaled by &lt;first argument&gt;/100.0 .
   <DT>
     SetRBearing(rbearing[,relative])
   <DD>
     If the second argument is absent or zero then the right bearing will be set
-    to the first argument, otherwise it will be incremented by the first argument.
+    to the first argument, if the second argument is 1 then the right bearing
+    will be incremented by the first, and if the argument is 2 then the right
+    bearing will be scaled by &lt;first argument&gt;/100.0 .
   <DT>
     CenterInWidth()
   <DD>

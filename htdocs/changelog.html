@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 26-Feb-2003 -->
+  <!-- AP: Last modified: 27-Feb-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,28 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    27-Feb-2003
+    <UL>
+      <LI>
+	Didn't get the SetLBearing change right yesterday.
+      <LI>
+	Changing to quadratic splines with Font Info could generate an invalid spline.
+      <LI>
+	We now preserve truetype instructions when reading in a truetype file (the
+	fpgm and prep tables, the cvt table and any per character instructions)
+      <LI>
+	These instructions will be dumped out when generating truetype fonts
+      <LI>
+	Added a menu command AutoInstr to generate our own (bad) instructions for
+	a character.
+      <LI>
+	Any significant change (ie. anything that reorders the points, or adds or
+	removes points) will clear the instructions for that character.
+      <LI>
+	Changing to cubic splines (fontwide) will clear the instructions (and the
+	fpgm and prep tables).
+    </UL>
   <LI>
     26-Feb-2003
     <UL>
