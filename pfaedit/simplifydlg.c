@@ -117,8 +117,8 @@ int SimplifyDlg(SplineFont *sf, struct simplifyinfo *smpl) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[17];
-    GTextInfo label[17];
+    GGadgetCreateData gcd[18];
+    GTextInfo label[18];
     Simple sim;
     char buffer[12], buffer2[12], buffer3[12];
 
@@ -166,127 +166,135 @@ int SimplifyDlg(SplineFont *sf, struct simplifyinfo *smpl) {
     gcd[2].gd.label = &label[2];
     gcd[2].creator = GLabelCreate;
 
-    label[3].text = (unichar_t *) _STR_CurveSmoothing;
+    label[3].text = (unichar_t *) _STR_RemoveExtrema;
     label[3].text_in_resource = true;
     gcd[3].gd.label = &label[3];
-    gcd[3].gd.pos.x = 8; gcd[3].gd.pos.y = gcd[1].gd.pos.y+24; 
+    gcd[3].gd.pos.x = 8; gcd[3].gd.pos.y = gcd[1].gd.pos.y+24;
     gcd[3].gd.flags = gg_enabled|gg_visible;
-    if ( oldsmooth )
+    if ( oldextrema )
 	gcd[3].gd.flags |= gg_cb_on;
-    gcd[3].gd.popup_msg = GStringGetResource(_STR_CurveSmoothingPopup,NULL);
-    gcd[3].gd.cid = CID_Smooth;
+    gcd[3].gd.popup_msg = GStringGetResource(_STR_RemoveExtremaPopup,NULL);
+    gcd[3].gd.cid = CID_Extrema;
     gcd[3].creator = GCheckBoxCreate;
 
-    label[4].text = (unichar_t *) _STR_IfTan;
+    label[4].text = (unichar_t *) _STR_ChangeSlopes;
     label[4].text_in_resource = true;
     gcd[4].gd.label = &label[4];
-    gcd[4].gd.pos.x = 20; gcd[4].gd.pos.y = gcd[3].gd.pos.y+24;
+    gcd[4].gd.pos.x = 8; gcd[4].gd.pos.y = gcd[3].gd.pos.y+14;
     gcd[4].gd.flags = gg_enabled|gg_visible;
-    gcd[4].creator = GLabelCreate;
+    if ( oldslopes )
+	gcd[4].gd.flags |= gg_cb_on;
+    gcd[4].gd.cid = CID_Slopes;
+    gcd[4].gd.popup_msg = GStringGetResource(_STR_ChangeSlopesPopup,NULL);
+    gcd[4].creator = GCheckBoxCreate;
 
-    sprintf( buffer2, "%.3g", oldsmooth_tan );
-    label[5].text = (unichar_t *) buffer2;
-    label[5].text_is_1byte = true;
-    gcd[5].gd.label = &label[5];
-    gcd[5].gd.pos.x = 94; gcd[5].gd.pos.y = gcd[4].gd.pos.y-6;
-    gcd[5].gd.pos.width = 40;
+    gcd[5].gd.pos.x = 15; gcd[5].gd.pos.y = gcd[4].gd.pos.y + 20;
+    gcd[5].gd.pos.width = 150;
     gcd[5].gd.flags = gg_enabled|gg_visible;
-    gcd[5].gd.cid = CID_SmoothTan;
-    gcd[5].creator = GTextFieldCreate;
+    gcd[5].creator = GLineCreate;
 
-    label[6].text = (unichar_t *) _STR_SnapToHV;
+    label[6].text = (unichar_t *) _STR_CurveSmoothing;
     label[6].text_in_resource = true;
     gcd[6].gd.label = &label[6];
-    gcd[6].gd.pos.x = 17; gcd[6].gd.pos.y = gcd[5].gd.pos.y+24; 
+    gcd[6].gd.pos.x = 8; gcd[6].gd.pos.y = gcd[5].gd.pos.y+4; 
     gcd[6].gd.flags = gg_enabled|gg_visible;
-    if ( oldsmoothhv )
+    if ( oldsmooth )
 	gcd[6].gd.flags |= gg_cb_on;
-    gcd[6].gd.popup_msg = GStringGetResource(_STR_SnapToHVPopup,NULL);
-    gcd[6].gd.cid = CID_SmoothHV;
+    gcd[6].gd.popup_msg = GStringGetResource(_STR_CurveSmoothingPopup,NULL);
+    gcd[6].gd.cid = CID_Smooth;
     gcd[6].creator = GCheckBoxCreate;
 
-    label[7].text = (unichar_t *) _STR_FlattenBumps;
+    label[7].text = (unichar_t *) _STR_IfTan;
     label[7].text_in_resource = true;
     gcd[7].gd.label = &label[7];
-    gcd[7].gd.pos.x = 8; gcd[7].gd.pos.y = gcd[6].gd.pos.y+14; 
+    gcd[7].gd.pos.x = 20; gcd[7].gd.pos.y = gcd[6].gd.pos.y+24;
     gcd[7].gd.flags = gg_enabled|gg_visible;
-    if ( oldlinefix )
-	gcd[7].gd.flags |= gg_cb_on;
-    gcd[7].gd.popup_msg = GStringGetResource(_STR_FlattenBumpsPopup,NULL);
-    gcd[7].gd.cid = CID_FlattenBumps;
-    gcd[7].creator = GCheckBoxCreate;
+    gcd[7].creator = GLabelCreate;
 
-    label[8].text = (unichar_t *) _STR_IfSmallerThan;
-    label[8].text_in_resource = true;
+    sprintf( buffer2, "%.3g", oldsmooth_tan );
+    label[8].text = (unichar_t *) buffer2;
+    label[8].text_is_1byte = true;
     gcd[8].gd.label = &label[8];
-    gcd[8].gd.pos.x = 20; gcd[8].gd.pos.y = gcd[7].gd.pos.y+24;
+    gcd[8].gd.pos.x = 94; gcd[8].gd.pos.y = gcd[7].gd.pos.y-6;
+    gcd[8].gd.pos.width = 40;
     gcd[8].gd.flags = gg_enabled|gg_visible;
-    gcd[8].creator = GLabelCreate;
+    gcd[8].gd.cid = CID_SmoothTan;
+    gcd[8].creator = GTextFieldCreate;
 
-    sprintf( buffer3, "%.3g", oldlinefixup_rat*sim.em_size );
-    label[9].text = (unichar_t *) buffer3;
-    label[9].text_is_1byte = true;
+    label[9].text = (unichar_t *) _STR_SnapToHV;
+    label[9].text_in_resource = true;
     gcd[9].gd.label = &label[9];
-    gcd[9].gd.pos.x = 90; gcd[9].gd.pos.y = gcd[8].gd.pos.y-6;
-    gcd[9].gd.pos.width = 40;
+    gcd[9].gd.pos.x = 17; gcd[9].gd.pos.y = gcd[8].gd.pos.y+24; 
     gcd[9].gd.flags = gg_enabled|gg_visible;
-    gcd[9].gd.cid = CID_FlattenBound;
-    gcd[9].creator = GTextFieldCreate;
+    if ( oldsmoothhv )
+	gcd[9].gd.flags |= gg_cb_on;
+    gcd[9].gd.popup_msg = GStringGetResource(_STR_SnapToHVPopup,NULL);
+    gcd[9].gd.cid = CID_SmoothHV;
+    gcd[9].creator = GCheckBoxCreate;
 
-    gcd[10].gd.pos.x = gcd[9].gd.pos.x+gcd[9].gd.pos.width+3;
-    gcd[10].gd.pos.y = gcd[8].gd.pos.y;
-    gcd[10].gd.flags = gg_visible | gg_enabled ;
-    label[10].text = (unichar_t *) _STR_EmUnits;
+    label[10].text = (unichar_t *) _STR_FlattenBumps;
     label[10].text_in_resource = true;
     gcd[10].gd.label = &label[10];
-    gcd[10].creator = GLabelCreate;
+    gcd[10].gd.pos.x = 8; gcd[10].gd.pos.y = gcd[9].gd.pos.y+14; 
+    gcd[10].gd.flags = gg_enabled|gg_visible;
+    if ( oldlinefix )
+	gcd[10].gd.flags |= gg_cb_on;
+    gcd[10].gd.popup_msg = GStringGetResource(_STR_FlattenBumpsPopup,NULL);
+    gcd[10].gd.cid = CID_FlattenBumps;
+    gcd[10].creator = GCheckBoxCreate;
 
-    label[11].text = (unichar_t *) _STR_RemoveExtrema;
+    label[11].text = (unichar_t *) _STR_IfSmallerThan;
     label[11].text_in_resource = true;
     gcd[11].gd.label = &label[11];
-    gcd[11].gd.pos.x = 8; gcd[11].gd.pos.y = gcd[9].gd.pos.y+24;
+    gcd[11].gd.pos.x = 20; gcd[11].gd.pos.y = gcd[10].gd.pos.y+24;
     gcd[11].gd.flags = gg_enabled|gg_visible;
-    if ( oldextrema )
-	gcd[11].gd.flags |= gg_cb_on;
-    gcd[11].gd.popup_msg = GStringGetResource(_STR_RemoveExtremaPopup,NULL);
-    gcd[11].gd.cid = CID_Extrema;
-    gcd[11].creator = GCheckBoxCreate;
+    gcd[11].creator = GLabelCreate;
 
-    label[12].text = (unichar_t *) _STR_ChangeSlopes;
-    label[12].text_in_resource = true;
+    sprintf( buffer3, "%.3g", oldlinefixup_rat*sim.em_size );
+    label[12].text = (unichar_t *) buffer3;
+    label[12].text_is_1byte = true;
     gcd[12].gd.label = &label[12];
-    gcd[12].gd.pos.x = 8; gcd[12].gd.pos.y = gcd[11].gd.pos.y+14;
+    gcd[12].gd.pos.x = 90; gcd[12].gd.pos.y = gcd[11].gd.pos.y-6;
+    gcd[12].gd.pos.width = 40;
     gcd[12].gd.flags = gg_enabled|gg_visible;
-    if ( oldslopes )
-	gcd[12].gd.flags |= gg_cb_on;
-    gcd[12].gd.cid = CID_Slopes;
-    gcd[12].gd.popup_msg = GStringGetResource(_STR_ChangeSlopesPopup,NULL);
-    gcd[12].creator = GCheckBoxCreate;
+    gcd[12].gd.cid = CID_FlattenBound;
+    gcd[12].creator = GTextFieldCreate;
 
-    gcd[13].gd.pos.x = 20-3; gcd[13].gd.pos.y = gcd[12].gd.pos.y+30;
-    gcd[13].gd.pos.width = -1; gcd[13].gd.pos.height = 0;
-    gcd[13].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[13].text = (unichar_t *) _STR_OK;
+    gcd[13].gd.pos.x = gcd[12].gd.pos.x+gcd[12].gd.pos.width+3;
+    gcd[13].gd.pos.y = gcd[11].gd.pos.y;
+    gcd[13].gd.flags = gg_visible | gg_enabled ;
+    label[13].text = (unichar_t *) _STR_EmUnits;
     label[13].text_in_resource = true;
-    gcd[13].gd.mnemonic = 'O';
     gcd[13].gd.label = &label[13];
-    gcd[13].gd.handle_controlevent = Sim_OK;
-    gcd[13].creator = GButtonCreate;
+    gcd[13].creator = GLabelCreate;
 
-    gcd[14].gd.pos.x = -20; gcd[14].gd.pos.y = gcd[13].gd.pos.y+3;
+
+
+
+    gcd[14].gd.pos.x = 20-3; gcd[14].gd.pos.y = gcd[13].gd.pos.y+30;
     gcd[14].gd.pos.width = -1; gcd[14].gd.pos.height = 0;
-    gcd[14].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[14].text = (unichar_t *) _STR_Cancel;
+    gcd[14].gd.flags = gg_visible | gg_enabled | gg_but_default;
+    label[14].text = (unichar_t *) _STR_OK;
     label[14].text_in_resource = true;
+    gcd[14].gd.mnemonic = 'O';
     gcd[14].gd.label = &label[14];
-    gcd[14].gd.mnemonic = 'C';
-    gcd[14].gd.handle_controlevent = Sim_Cancel;
+    gcd[14].gd.handle_controlevent = Sim_OK;
     gcd[14].creator = GButtonCreate;
 
-    gcd[15].gd.pos.x = 2; gcd[15].gd.pos.y = 2;
-    gcd[15].gd.pos.width = pos.width-4; gcd[15].gd.pos.height = pos.height-4;
-    gcd[15].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
-    gcd[15].creator = GGroupCreate;
+    gcd[15].gd.pos.x = -20; gcd[15].gd.pos.y = gcd[14].gd.pos.y+3;
+    gcd[15].gd.pos.width = -1; gcd[15].gd.pos.height = 0;
+    gcd[15].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    label[15].text = (unichar_t *) _STR_Cancel;
+    label[15].text_in_resource = true;
+    gcd[15].gd.label = &label[15];
+    gcd[15].gd.mnemonic = 'C';
+    gcd[15].gd.handle_controlevent = Sim_Cancel;
+    gcd[15].creator = GButtonCreate;
+
+    gcd[16].gd.pos.x = 2; gcd[16].gd.pos.y = 2;
+    gcd[16].gd.pos.width = pos.width-4; gcd[16].gd.pos.height = pos.height-4;
+    gcd[16].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
+    gcd[16].creator = GGroupCreate;
 
     GGadgetsCreate(gw,gcd);
     GWidgetIndicateFocusGadget(GWidgetGetControl(gw,CID_Error));
