@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 9-Apr-2001 -->
+  <!-- AP: Last modified: 29-Apr-2001 -->
   <TITLE>PfaEdit -- A postscript&reg; font editor</TITLE>
 </HEAD>
 <BODY>
@@ -301,7 +301,7 @@ mathematically. Each point is positioned on a cartesian coordinate system
 which has its origin on the character's base line (the line on which letters
 without descenders rest). Most font formats expect coordinates to be integers
 between -32768 and 32767, PfaEdit uses real numbers internally but (usually)
-rounds to the nearest integer when generating a font file. 
+rounds to the nearest integer when generating a font file.
 <P>
 The horizontal distance between the origin and the leftmost edge of the character
 is called the left side bearing (it may be negative, positive or zero). All
@@ -343,7 +343,7 @@ described above, while TrueType is based on a
 <A HREF="bezier.html">quadratic</A> technology. Cubic splines are generally
 easier to edit (more shapes are possible with them). Any quadratic spline
 can be converted to a cubic spline with essentially no loss. A cubic spline
-can be converted to a quadratic with arbetrary precision, but there will
+can be converted to a quadratic with arbitrary precision, but there will
 be a slight loss of accuracy in most cases. This means it is easy to convert
 TrueType outlines to PostScript outlines, harder to convert PostScript to
 TrueType.
@@ -367,8 +367,8 @@ can be called an OpenType font. OpenType is a superset of TrueType)
 <P>
 At small pixel sizes, the process of drawing the interior of an outline font
 is quite difficult to do well. Postscript and TrueType have different approaches
-to the problem of providing extra information to the rasterizer about the
-how to draw small fonts.
+to the problem of providing extra information to the rasterizer about how
+to draw small fonts.
 <TABLE BORDER CELLPADDING="2" ALIGN="Center">
   <CAPTION>
     <SMALL>Rasterization improvements<BR>
@@ -459,11 +459,11 @@ command for building accented characters. The Edit-&gt;Copy Reference command
 will put a reference to the current character into the clipboard, which a
 subsequent Edit-&gt;Paste command will install as a reference. The
 Edit-&gt;Unlink Reference command will turn a reference in a character into
-it's componant splines. The Element-&gt;Get Info command (when applied to
+it's component splines. The Element-&gt;Get Info command (when applied to
 a reference) will bring up a dialog showing you what character is referred
 to, and allowing you to bring up an editing window on that character. Finally
 the <CODE>Element-&gt;Build Accented Characters</CODE> command will figure
-out what characters should be refered to to build this composit character,
+out what characters should be refered to to build this composite character,
 and then will make those references and position them appropriately. So if
 "&agrave;" were selected and you did a <CODE>Element-&gt;Build Accented
 Characters</CODE> command, the PfaEdit would make a reference to "a" and
@@ -491,10 +491,10 @@ characters.
   (Cyrillic capital letter A with diaeresis) and you make it out of U+0410
   (Cyrillic capital letter A) and U+00A8 (diaeresis) and U+0410 is itself a
   reference to U+0041 (Latin capital letter A), then PfaEdit will generate
-  a postscript font where U+04D2 is a composit of U+0041 and U+00A8, both of
-  which are in the Adobe Set (while U+0410 is not). Again when generating U+0410
-  PfaEdit will make it be a composit of U+0041 and U+0020 (space) so as to
-  get exactly two characters.
+  a postscript font where U+04D2 is a composite of U+0041 and U+00A8, both
+  of which are in the Adobe Set (while U+0410 is not). Again when generating
+  U+0410 PfaEdit will make it be a composite of U+0041 and U+0020 (space) so
+  as to get exactly two characters.
 </BLOCKQUOTE>
 <P>
 In TrueType characters refered to must not themselves contain reference
@@ -511,7 +511,8 @@ There is no direct support for references. PfaEdit will produce something
 which will allow for the space saving that references provide, but it will
 not be able to detect what's a reference and what isn't when it reads the
 font in. Any character which does not itself contain a reference may be in
-a reference (like truetype), but only translations are allowed on thos references
+a reference (like truetype), but only translations are allowed on those
+references
 <H3>
   <A NAME="FontView">Font View</A>
 </H3>
