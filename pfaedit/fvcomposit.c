@@ -990,6 +990,9 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
     /*  a combo, find what it is based on */
     if ( (temp = SFGetAlternate(sf,basech))!=NULL && haschar(sf,*temp))
 	baserch = *temp;
+    /* Similarly in Ø or ø, we really want to base the accents on O or o */
+    if ( baserch==0xf8 ) baserch = 'o';
+    else if ( baserch==0xd8 ) baserch = 'O';
     
     /* cedilla on lower "g" becomes a turned comma above it */
     if ( ch==0x327 && basech=='g' && haschar(sf,0x312))
@@ -1137,8 +1140,8 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
 	/*  the highest point (mostly anyway, there are exceptions) */
 	if ( pos&____ABOVE ) {
 	    static DBounds pointless;
-	    if ( basech!='b' && basech!='d' && basech!='h' && basech!='n' && basech!='r' &&
-		    basech!='B' && basech!='D' && basech!='L')
+	    if ( basech!='b' && basech!='d' && basech!='h' && basech!='n' && basech!='r' && basech!=0xf8 &&
+		    basech!='B' && basech!='D' && basech!='L' && basech!=0xd8 )
 		ybase = SCFindTopXRange(sc,&bb,ia);
 	    if ( ((basech=='h' && ch==0x307) ||	/* dot over the stem in hdot */
 		    basech=='i' || basech=='j' || basech==0x131 || basech==0xf6be ||
@@ -1178,7 +1181,7 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
     if ( ia!=0 )
 	xoff += (italicoff = tan(-ia)*(rbb.miny+yoff-ybase));
     transform[4] = xoff;
-    if ( invert ) transform[5] -= yoff; else transform[5] += yoff;
+    /*if ( invert ) transform[5] -= yoff; else */transform[5] += yoff;
     _SCAddRef(sc,rsc,transform);
     if ( pos&____RIGHT )
 	SCSynchronizeWidth(sc,sc->width + rbb.maxx-rbb.minx+spacing,sc->width,sf->fv);
