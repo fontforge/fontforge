@@ -5615,7 +5615,7 @@ return( NULL );
     GProgressEndIndicator();
 
     if ( sf!=NULL ) {
-	if ( sf->chosenname!=NULL && strippedname!=filename ) {
+	if ( sf->chosenname!=NULL && strippedname==filename ) {
 	    sf->origname = galloc(strlen(filename)+strlen(sf->chosenname)+8);
 	    strcpy(sf->origname,filename);
 	    strcat(sf->origname,"(");
