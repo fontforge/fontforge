@@ -3549,6 +3549,7 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
     nt.applemode     = at->applemode;
     nt.strings	     = tmpfile();
 
+    memset(&dummy,0,sizeof(dummy));
     for ( cur=sf->names; cur!=NULL; cur=cur->next ) {
 	if ( cur->lang==0x409 ) {
 	    dummy = *cur;
