@@ -234,7 +234,7 @@ return( NULL );
 	gcd[bcnt+lb].gd.pos.x = GDrawPointsToPixels(gw,8);
 	gcd[bcnt+lb].gd.pos.y = y;
 	gcd[bcnt+lb].gd.pos.width = maxw-2*GDrawPointsToPixels(gw,6);
-	gcd[bcnt+lb].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels | gg_pos_use0;
+	gcd[bcnt+lb].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels | gg_pos_use0 | gg_text_xim;
 	gcd[bcnt+lb].gd.cid = bcnt;
 	gcd[bcnt+lb].creator = GTextFieldCreate;
 	y += fh + GDrawPointsToPixels(gw,6) + GDrawPointsToPixels(gw,10);

@@ -514,6 +514,7 @@ int main( int argc, char **argv ) {
     coord_sep = ",";
     if ( *localeinfo.decimal_point=='.' ) coord_sep=",";
     else if ( *localeinfo.decimal_point!='.' ) coord_sep=" ";
+    if ( getenv("FF_SCRIPT_IN_LATIN1") ) use_utf8_in_script=false;
 #ifdef FONTFORGE_CONFIG_GDRAW
     GResourceAddResourceString(NULL,argv[0]);
 #elif defined( FONTFORGE_CONFIG_GTK )

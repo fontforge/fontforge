@@ -587,14 +587,26 @@ return( utf82u_strncpy(ubuf,utf8buf,len+1));
 }
 
 unichar_t *utf82u_copy(const char *utf8buf) {
-    int len = strlen(utf8buf);
-    unichar_t *ubuf = galloc((len+1)*sizeof(unichar_t));
+    int len;
+    unichar_t *ubuf;
+
+    if ( utf8buf==NULL )
+return( NULL );
+
+    len = strlen(utf8buf);
+    ubuf = galloc((len+1)*sizeof(unichar_t));
 return( utf82u_strncpy(ubuf,utf8buf,len+1));
 }
 
 int32 *utf82u32_copy(const char *utf8buf) {
-    int len = strlen(utf8buf);
-    int32 *ubuf = galloc((len+1)*sizeof(int32));
+    int len;
+    int32 *ubuf;
+
+    if ( utf8buf==NULL )
+return( NULL );
+
+    len = strlen(utf8buf);
+    ubuf = galloc((len+1)*sizeof(int32));
 return( utf82u32_strncpy(ubuf,utf8buf,len+1));
 }
 
@@ -625,7 +637,13 @@ return( utf8buf );
 }
 
 char *u2utf8_copy(const unichar_t *ubuf) {
-    int len = u_strlen(ubuf);
-    char *utf8buf = galloc((len+1)*3);
+    int len;
+    char *utf8buf;
+
+    if ( ubuf==NULL )
+return( NULL );
+
+    len = u_strlen(ubuf);
+    utf8buf = galloc((len+1)*3);
 return( utf82u_strcpy(utf8buf,ubuf));
 }
