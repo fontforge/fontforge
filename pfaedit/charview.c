@@ -3386,6 +3386,7 @@ static void CVSelectNone(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void CVSelectWidth(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     cv->widthsel = !cv->widthsel;
+    cv->oldwidth = cv->sc->width;
     SCUpdateAll(cv->sc);
 }
 
@@ -3394,6 +3395,7 @@ static void CVSelectVWidth(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     if ( !cv->showvmetrics || !cv->sc->parent->hasvmetrics )
 return;
     cv->vwidthsel = !cv->widthsel;
+    cv->oldvwidth = cv->sc->vwidth;
     SCUpdateAll(cv->sc);
 }
 
