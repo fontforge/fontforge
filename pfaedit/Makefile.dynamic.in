@@ -28,7 +28,8 @@ pfaedit_OBJECTS =  autohint.o autosave.o autowidth.o bitmapdlg.o \
  zapfnomen.o othersubrs.o autotrace.o openfontdlg.o encoding.o print.o \
  problems.o pfaedit-ui.o metafont.o alignment.o parsettfbmf.o \
  macbinary.o crctab.o scripting.o freetype.o gotodlg.o search.o
-DIFFOBJS = sfddiff.o sfd.o diffstubs.o
+DIFFOBJS = sfddiff.o sfd.o diffstubs.o stamp.o
+ACORNOBJS = acorn2sfd.o sfd.o diffstubs.o psunicodenames.o stamp.o
 
 WFLAGS = -Wmissing-prototypes -Wunused -Wimplicit -Wreturn-type -Wparentheses
 CFLAGS = @CFLAGS@ -I$(top_srcdir)/inc -I$(srcdir) -I. $(WFLAGS) $(X_CFLAGS) \
@@ -39,27 +40,30 @@ LIBS = $(X_LIBS) ../libgdraw.la ../libgunicode.la \
     $(X_PRE_LIBS) $(X_11LIB) $(X_EXTRA_LIBS) @LIBS@ -L/usr/lib -lm
 DLIBS = ../libgunicode.la -lm
 
-all: pfaedit.en.ui pfaedit sfddiff
+all: pfaedit-en.ui pfaedit sfddiff
 
 pfaedit: nomen.h $(pfaedit_OBJECTS)
 	$(LIBTOOL) $(CC) -o pfaedit $(pfaedit_OBJECTS) $(LIBS)
 
 sfddiff: $(DIFFOBJS)
-	$(CC) -o sfddiff $(DIFFOBJS) $(srcdir)/stamp.c $(DLIBS)
+	$(LIBTOOL) $(CC) -o sfddiff $(DIFFOBJS) $(DLIBS)
+
+acorn2sfd: $(ACORNOBJS)
+	$(LIBTOOL) $(CC) -o acorn2sfd $(ACORNOBJS) $(DLIBS)
 
 #this makes all the .ui files but wildcarding doesn't work too well if the
 # files don't exist.
-nomen.h pfaedit-ui.c pfaedit.en.ui: $(srcdir)/nomen.*.c makenomenh.c
+nomen.h pfaedit-ui.c pfaedit-en.ui: $(srcdir)/nomen-*.c makenomenh.c
 	$(CC) -o makenomenh $(CFLAGS) $(srcdir)/makenomenh.c $(LIBS)
-	-ln -s $(srcdir)/nomen.*.c .
+	-ln -s $(srcdir)/nomen-*.c .
 	./makenomenh
-	mv pfaedit-ui.en.c pfaedit-ui.c
+	mv pfaedit-ui-en.c pfaedit-ui.c
 
 clean:
-	-rm -f *.o pfaedit *.ui nomen.h pfaedit-ui.c makenomenh _nomen.*.c sfddiff
+	-rm -f *.o pfaedit *.ui nomen.h pfaedit-ui.c makenomenh _nomen-*.c sfddiff
 
 distclean cleaner: clean
 	-rm -f Makefile
-	-for i in nomen.*.c; do \
+	-for i in nomen-*.c; do \
 	  test -L $$i && rm $$i; \
 	done;

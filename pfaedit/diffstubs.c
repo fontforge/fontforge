@@ -242,7 +242,9 @@ void chunkfree(void *item,int size) {
 }
 
 SplineChar *SplineCharCreate(void) {
-return( gcalloc(1,sizeof(SplineChar)));
+    SplineChar *sc = gcalloc(1,sizeof(SplineChar));
+    sc->color = COLOR_DEFAULT;
+return( sc );    
 }
 
 GImage *GImageCreate(enum image_type type, int32 width, int32 height) {

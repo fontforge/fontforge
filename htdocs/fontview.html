@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 5-Feb-2002 -->
+  <!-- AP: Last modified: 22-Jul-2002 -->
   <TITLE>The Font View</TITLE>
 </HEAD>
 <BODY>
@@ -122,6 +122,16 @@ postscript where it is possible to reencode a font at run time. Thus a font
 might have all the characters needed both for a cyrillic character set and
 for a latin one, but only one character set at a time would be encoded).
 <P>
+It is possible for an encoding not to be one-to-one. That is there may be
+several characters that might lead to the same underlying glyph (the classic
+example is the non-breaking space which often uses the same glyph as the
+breaking space). When PfaEdit encounters such an encoding it will create
+a character structure for each entry, one of those structures will contain
+the data for drawing the glyph, the other(s) will contain a reference to
+the one real character. All characters will have the same name. When PfaEdit
+generates a font it looks for this case and turns it into a font whose encoding
+vector contains multiple references to a glyph.
+<P>
 You may also create a custom encoding. (Custom encodings may not have more
 than 256 encoded characters). You may change the name of any character in
 the font with the Element-&gt;Char Info command. This will force the font
@@ -130,12 +140,13 @@ to have a custom encoding.
 There are many standard encodings built in to the program. There are 14 ISO
 8859 encodings, the encoding used by the Macintosh for the US and Western
 Europe, the encoding used by MS Windows for the US and Europe (which is a
-slight extension of ISO 8859-1). There are also 7 2-byte encodings built
-in. Two of these are unicode whose goal is to specify every character currently
-used by humans. There are 4 CJK (Chinese, Japanese, Korean) 94x94 encodings
-(two bytes where each byte ranges over the 94 ASCII printable characters
-excluding the space character). And there are big5 (Taiwanese) and johab
-(korean) which aren't 94x94. You can also add your own encodings with the
+slight extension of ISO 8859-1). There are also several 2-byte encodings
+built in. Two of these are unicode whose goal is to specify every character
+currently used by humans. There are 4 CJK (Chinese, Japanese, Korean) 94x94
+encodings (two bytes where each byte ranges over the 94 ASCII printable
+characters excluding the space character). And there are sjis (Japanese),
+big5 (Traditional Chinese), Wansung (Korean) and johab (Korean) . You can
+also add your own encodings with the
 <A HREF="fontinfo.html">Element-&gt;Font Info</A> dialog. A brief description
 of what's in the encodings also appears <A HREF="fontinfo.html#Encodings">on
 that page</A>.

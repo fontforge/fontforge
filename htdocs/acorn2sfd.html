@@ -1,0 +1,50 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 23-Jul-2002 -->
+  <!-- AP: Last modified: 23-Jul-2002 -->
+  <TITLE>acorn2sfd -- A program for comparing fonts</TITLE>
+</HEAD>
+<BODY>
+<H1 ALIGN=Center>
+  acorn2sfd<BR>
+  <SMALL>A program for comparing fonts</SMALL>
+</H1>
+<P>
+<CODE>acorn2sfd [-version] [-help] {acorndir ...}</CODE>
+<P>
+<EM>acorn2sfd</EM> will take several Acorn RISC/OS font directories and convert
+them into <A HREF="overview.html">PfaEdit</A>'s sfd files.
+<P>
+An Acorn RISC/OS font directory should contain two files, one named
+<CODE>Outlines</CODE> and one named <CODE>Intmetrics</CODE> (the
+<CODE>Intmetrics</CODE> file may be omitted, in which case the advance widths
+will not be known). <I>acorn2sfd</I> will read both files and generate an
+sfd file from them (which <A HREF="overview.html">PfaEdit</A> can turn into
+TrueType or Postscript). 
+<P>
+<CODE>-help</CODE> will provide a mini description and will list the available
+options.
+<P>
+<CODE>-usage</CODE> will list the available options.
+<P>
+<CODE>-version</CODE> will display the current version of <EM>acorn2sfd</EM>
+(a six digit string containing the date stamp of the source files).
+<H3>
+  Bugs
+</H3>
+<UL>
+  <LI>
+    Acorn fonts usually do not contain encoding data so <I>acorn2sfd</I> assumes
+    iso-latin1 (or unicode for big fonts).
+  <LI>
+    Acorn hinting data are lost. 
+  <LI>
+    Acorn kerning data are currently lost.
+</UL>
+<H3>
+  See Also
+</H3>
+<P>
+<A HREF="overview.html">PfaEdit</A>
+</BODY></HTML>
