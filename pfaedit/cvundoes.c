@@ -44,7 +44,7 @@ return( ret );
 static RefChar *RefCharsCopyState(SplineChar *sc,int layer) {
     RefChar *head=NULL, *last=NULL, *new, *crefs;
 
-    if ( sc->layers[layer].refs==NULL )
+    if ( layer<0 || sc->layers[layer].refs==NULL )
 return( NULL );
     for ( crefs = sc->layers[layer].refs; crefs!=NULL; crefs=crefs->next ) {
 	new = RefCharCreate();
