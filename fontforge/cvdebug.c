@@ -192,6 +192,10 @@ return;
     GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0); y += dv->ii.fh;
 
     /* Instruction control, scan control, scan type, phase, threshold for super rounding */
+
+    y += 2;
+    sprintf( buffer, "Pixels/Em: %d", exc->size->metrics.x_ppem ); uc_strcpy(ubuffer,buffer);
+    GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0); y += dv->ii.fh;
 }
 
 static void DVStackExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
@@ -805,7 +809,7 @@ return( DVChar(dv,event));
 return( true );
 }
 
-static const int reg_size = 24;
+static const int reg_size = 26;
 
 static void DVReg_SetScrollBar(DebugView *dv) {
     GRect size;
