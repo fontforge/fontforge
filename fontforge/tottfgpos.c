@@ -2872,6 +2872,9 @@ return( 1000 );
 static struct lookup *reverse_list(struct lookup *lookups) {
     struct lookup *next, *prev=NULL;
 
+    if ( lookups==NULL )
+return( NULL );
+
     next = lookups->next;
     while ( next!=NULL ) {
 	lookups->next = prev;
@@ -2917,6 +2920,9 @@ static struct lookup *orderlookups(struct lookup **_lookups,
     struct lookup *lookups = *_lookups;
     char *buf;
     int bsize, len, totlen;
+
+    if ( lookups==NULL )
+return( NULL );
 
     for ( l=lookups, cnt=0; l!=NULL; l=l->next ) cnt++;
     array = galloc(cnt*sizeof(struct lookup *));
@@ -3419,6 +3425,52 @@ static uint32 *ScriptsFromFeatures(SplineFont *sf, uint8 *used,
 return( scripts );
 }
 
+/* These two routines are to work around what I believe is a Uniscribe bug */
+/* If I have a mini-font with a hebrew base char and a hebrew mark char, and */
+/*  a GPOS mark-to-base table, then the font only works IF there is also a */
+/*  GSUB table with a (possibly empty) entry for script 'hebr' */
+/* It appears that GSUB must contain script entries for all scripts in GPOS */
+static void SaveScripts(struct alltabs *at,uint32 *scripts,int cnt) {
+    at->gpos_script_cnt = cnt;
+    if ( cnt!=0 ) {
+	at->gpos_scripts = galloc((cnt+1)*sizeof(uint32));
+	memcpy(at->gpos_scripts,scripts,(cnt+1)*sizeof(uint32));
+    }
+}
+
+static uint32 *MergeScripts(struct alltabs *at,uint32 *scripts,int *scnt) {
+    int i,j,k;
+    uint32 *s;
+
+    if ( scripts==NULL ) {
+	*scnt = at->gpos_script_cnt;
+return( at->gpos_scripts );
+    } else if ( at->gpos_scripts==NULL )
+return( scripts );
+
+    s = galloc((*scnt+at->gpos_script_cnt+1)*sizeof(uint32));
+    for ( i=j=k=0; i<*scnt || j<at->gpos_script_cnt; ) {
+	if ( i<*scnt && j<at->gpos_script_cnt ) {
+	    if ( scripts[i] == at->gpos_scripts[j] ) {
+		s[k++] = scripts[i];
+		++i; ++j;
+	    } else if ( scripts[i] < at->gpos_scripts[j] ) {
+		s[k++] = scripts[i++];
+	    } else {
+		s[k++] = at->gpos_scripts[j++];
+	    }
+	} else if ( i<*scnt )
+	    s[k++] = scripts[i++];
+	else
+	    s[k++] = at->gpos_scripts[j++];
+    }
+    s[k] = 0;
+    free(scripts);
+    free(at->gpos_scripts);
+    *scnt = k;
+return( s );
+}
+
 static FILE *dumpg___info(struct alltabs *at, SplineFont *sf,int is_gpos) {
     /* Dump out either a gpos or a gsub table. gpos handles kerns, gsub ligs */
     FILE *lfile, *lfile2, *g___, *efile;
@@ -3444,7 +3496,7 @@ static FILE *dumpg___info(struct alltabs *at, SplineFont *sf,int is_gpos) {
 	lookups = GSUBfigureLookups(lfile,sf,at,&nested);
 	for ( ord = sf->orders; ord!=NULL && ord->table_tag!=CHR('G','S','U','B'); ord = ord->next );
     }
-    if ( lookups==NULL ) {
+    if ( lookups==NULL && at->gpos_script_cnt==0 ) {
 	fclose(lfile);
 return( NULL );
     }
@@ -3463,6 +3515,10 @@ return( NULL );
 	used[l->script_lang_index] = true;
 
     scripts = ScriptsFromFeatures(sf,used,&cnt,&langs,&lc);
+    if ( is_gpos )
+	SaveScripts(at,scripts,cnt);
+    else
+	scripts = MergeScripts(at,scripts,&cnt);
     touched = galloc(lc);
 
     g___ = tmpfile();
