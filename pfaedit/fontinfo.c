@@ -2205,6 +2205,39 @@ return( false );
 return( true );
 }
 
+void GListMoveSelected(GGadget *list,int offset) {
+    int len, i,j;
+    GTextInfo **old, **new;
+
+    old = GGadgetGetList(list,&len);
+    new = gcalloc(len+1,sizeof(GTextInfo *));
+    j = (offset<0 ) ? 0 : len-1;
+    for ( i=0; i<len; ++i ) if ( old[i]->selected ) {
+	if ( offset==0x80000000 || offset==0x7fffffff )
+	    /* Do Nothing */;
+	else if ( offset<0 ) {
+	    if ( (j= i+offset)<0 ) j=0;
+	    while ( new[j] ) ++j;
+	} else {
+	    if ( (j= i+offset)>=len ) j=len-1;
+	    while ( new[j] ) --j;
+	}
+	new[j] = galloc(sizeof(GTextInfo));
+	*new[j] = *old[i];
+	new[j]->text = u_copy(new[j]->text);
+	if ( offset<0 ) ++j; else --j;
+    }
+    for ( i=j=0; i<len; ++i ) if ( !old[i]->selected ) {
+	while ( new[j] ) ++j;
+	new[j] = galloc(sizeof(GTextInfo));
+	*new[j] = *old[i];
+	new[j]->text = u_copy(new[j]->text);
+	++j;
+    }
+    new[len] = gcalloc(1,sizeof(GTextInfo));
+    GGadgetSetList(list,new,false);
+}
+
 void GListDelSelected(GGadget *list) {
     int len, i,j;
     GTextInfo **old, **new;
@@ -3419,14 +3452,22 @@ return( false );
     }
 return( true );
 }
+
+static int OrderGSUB(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+	OrderTable(d->sf,CHR('G','S','U','B'));
+    }
+return( true );
+}
 		
 void FontInfo(SplineFont *sf,int defaspect,int sync) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
     GTabInfo aspects[10];
-    GGadgetCreateData mgcd[10], ngcd[13], egcd[12], psgcd[23], tngcd[7],   pgcd[8], vgcd[15], pangcd[22], comgcd[3], atgcd[7];
-    GTextInfo mlabel[10], nlabel[13], elabel[12], pslabel[23], tnlabel[7], plabel[8], vlabel[15], panlabel[22], comlabel[3], atlabel[7], *list;
+    GGadgetCreateData mgcd[10], ngcd[13], egcd[12], psgcd[23], tngcd[7],   pgcd[8], vgcd[16], pangcd[22], comgcd[3], atgcd[7];
+    GTextInfo mlabel[10], nlabel[13], elabel[12], pslabel[23], tnlabel[7], plabel[8], vlabel[16], panlabel[22], comlabel[3], atlabel[7], *list;
     struct gfi_data *d;
     char iabuf[20], upbuf[20], uwbuf[20], asbuf[20], dsbuf[20], ncbuf[20],
 	    vbuf[20], uibuf[12], regbuf[100], vorig[20], embuf[20];
@@ -4114,6 +4155,14 @@ return;
     vgcd[13].gd.cid = CID_VLineGap;
     vgcd[13].gd.popup_msg = vgcd[11].gd.popup_msg;
     vgcd[13].creator = GTextFieldCreate;
+
+    vgcd[14].gd.pos.x = 10; vgcd[14].gd.pos.y = vgcd[13].gd.pos.y+26;
+    vlabel[14].text = (unichar_t *) _STR_SetGSUBOrder;
+    vlabel[14].text_in_resource = true;
+    vgcd[14].gd.label = &vlabel[14];
+    vgcd[14].gd.flags = gg_visible | gg_enabled;
+    vgcd[14].gd.handle_controlevent = OrderGSUB;
+    vgcd[14].creator = GButtonCreate;
 
 /******************************************************************************/
     memset(&tnlabel,0,sizeof(tnlabel));

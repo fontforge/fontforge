@@ -25,14 +25,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaedit.h"
-#include <math.h>
-#include <unistd.h>
-#include <time.h>
-#include <locale.h>
 #include <utype.h>
 #include <ustring.h>
-#include <chardata.h>
-#include <gwidget.h>
 
 #include "ttf.h"
 
@@ -1680,4 +1674,270 @@ return;					/* No anchor positioning, no ligature carets */
     at->gdeflen = ftell(at->gdef);
     if ( at->gdeflen&1 ) putc('\0',at->gdef);
     if ( (at->gdeflen+1)&2 ) putshort(at->gdef,0);
+}
+
+/* ************************************************************************** */
+/* *************************    utility routines    ************************* */
+/* ************************************************************************** */
+
+#include "pfaeditui.h"
+#include <gkeysym.h>
+
+struct order_dlg {
+    uint32 table_tag;
+    SplineFont *sf;
+    struct table_ordering *ord;
+    int done;
+    GGadget *list;
+    GGadget *up, *down;
+    GGadget *top, *bottom;
+    GGadget *new, *del;
+    GGadget *ok, *cancel;
+};
+
+static uint32 *GetTags(SplineFont *sf, int isgsub) {
+    /* !!!! Don't currently handle gpos. Needs to look for kern, marks, curs, etc. */
+    int max, cnt, i,j;
+    uint32 *tags;
+    PST *pst;
+
+    max = 30; cnt = 0;
+    tags = galloc((max+1)*sizeof(uint32));
+    for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL ) {
+	for ( pst = sf->chars[i]->possub; pst!=NULL; pst=pst->next ) {
+	    if ( pst->type==pst_substitution || pst->type==pst_alternate ||
+		    pst->type == pst_multiple || pst->type==pst_ligature ) {
+		for ( j=0; j<cnt; ++j )
+		    if ( tags[j]==pst->tag )
+		break;
+		if ( j==cnt ) {
+		    if ( cnt>=max ) {
+			max += 30;
+			tags = grealloc(tags,(max+1)*sizeof(uint32));
+		    }
+		    tags[cnt++] = pst->tag;
+		}
+	    }
+	}
+    }
+    tags[cnt] = 0;
+    if ( cnt==0 ) {
+	free(tags);
+return( NULL );
+    }
+return( tags );
+}
+
+static int order_e_h(GWindow gw, GEvent *event) {
+    struct order_dlg *d = GDrawGetUserData(gw);
+    int i;
+    int32 len;
+    GTextInfo **ti;
+    uint32 *new;
+
+    if ( event->type==et_close ) {
+	d->done = true;
+    } else if ( event->type==et_char ) {
+	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
+	    help("fontinfo.html#Order");
+return( true );
+	}
+return( false );
+    } else if ( event->type==et_controlevent && event->u.control.subtype == et_buttonactivate ) {
+	if ( event->u.control.g == d->cancel ) {
+	    d->done = true;
+	} else if ( event->u.control.g == d->top ||
+		event->u.control.g == d->up ||
+		event->u.control.g == d->down ||
+		event->u.control.g == d->bottom ) {
+	    GListMoveSelected(d->list,event->u.control.g == d->top ? 0x80000000 :
+		    event->u.control.g == d->up ? -1 :
+		    event->u.control.g == d->down ? 1 : 0x7fffffff );
+	} else if ( event->u.control.g == d->del ) {
+	    GListDelSelected(d->list);
+	} else if ( event->u.control.g == d->ok ) {
+	    ti = GGadgetGetList(d->list,&len);
+	    new = galloc((len+1)*sizeof(uint32));
+	    new[len] = 0;
+	    for ( i=0; i<len; ++i )
+		new[i] = (ti[i]->text[0]<<24)|(ti[i]->text[1]<<16)|(ti[i]->text[2]<<8)|ti[i]->text[3];
+	    if ( d->ord==NULL ) {
+		d->ord = gcalloc(1,sizeof(struct table_ordering));
+		d->ord->table_tag = d->table_tag;
+		d->ord->next = d->sf->orders;
+		d->sf->orders = d->ord;
+	    }
+	    free(d->ord->ordered_features);
+	    d->ord->ordered_features = new;
+	    d->done = true;
+	}
+    }
+return( true );
+}
+
+void OrderTable(SplineFont *sf,uint32 table_tag) {
+    struct table_ordering *ord;
+    uint32 *tags_used, *merged;
+    int cnt1, cnt2;
+    int i,j,temp;
+    GTextInfo *ti;
+    GRect pos;
+    GWindow gw;
+    GWindowAttrs wattrs;
+    GGadgetCreateData gcd[10];
+    GTextInfo label[10];
+    struct order_dlg d;
+    static unichar_t monospace[] = { 'c','o','u','r','i','e','r',',','m', 'o', 'n', 'o', 's', 'p', 'a', 'c', 'e',',','c','a','s','l','o','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
+    FontRequest rq;
+    GFont *font;
+
+    for ( ord = sf->orders; ord!=NULL && ord->table_tag!=table_tag; ord = ord->next );
+    tags_used = GetTags(sf,table_tag==CHR('G','S','U','B'));
+    cnt1 = cnt2 = 0;
+    if ( ord!=NULL )
+	for ( cnt1=0; ord->ordered_features[cnt1]!=0; ++cnt1 );
+    if ( tags_used!=NULL ) {
+	for ( cnt2=0; tags_used[cnt2]!=0; ++cnt2 );
+	/* order this list using our default ordering */
+	for ( i=0; i<cnt2; ++i ) for ( j=i+1; j<cnt2; ++j ) {
+	    if ( TTFFeatureIndex(tags_used[i],NULL)>TTFFeatureIndex(tags_used[j],NULL) ) {
+		temp = tags_used[i];
+		tags_used[i] = tags_used[j];
+		tags_used[j] = temp;
+	    }
+	}
+    }
+    merged = galloc((cnt1+cnt2+1)*sizeof(uint32));
+    if ( ord!=NULL )
+	for ( cnt1=0; ord->ordered_features[cnt1]!=0; ++cnt1 )
+	    merged[cnt1] = ord->ordered_features[cnt1];
+    i = cnt1;
+    if ( tags_used!=NULL ) {
+	for ( cnt2=0; tags_used[cnt2]!=0; ++cnt2 ) {
+	    for ( j=0; j<cnt1; ++j )
+		if ( merged[j]==tags_used[cnt2] )
+	    break;
+	    if ( j==cnt1 )
+		merged[i++] = tags_used[cnt2];
+	}
+    }
+    merged[i] = 0;
+    free(tags_used);
+
+    ti = gcalloc((i+1),sizeof(GTextInfo));
+    for ( i=0; merged[i]!=0; ++i ) {
+	ti[i].text = galloc(5*sizeof(unichar_t));
+	ti[i].text[0] = merged[i]>>24;
+	ti[i].text[1] = (merged[i]>>16)&0xff;
+	ti[i].text[2] = (merged[i]>>8)&0xff;
+	ti[i].text[3] = merged[i]&0xff;
+	ti[i].text[4] = '\0';
+    }
+    free(merged);
+
+    memset(&wattrs,0,sizeof(wattrs));
+    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+    wattrs.event_masks = ~(1<<et_charup);
+    wattrs.is_dlg = true;
+    wattrs.restrict_input_to_me = 1;
+    wattrs.undercursor = 1;
+    wattrs.cursor = ct_pointer;
+    wattrs.window_title = GStringGetResource(_STR_SetGSUBOrder,NULL);
+    pos.x = pos.y = 0;
+    pos.width = GDrawPointsToPixels(NULL,GGadgetScale(20)+2*GIntGetResource(_NUM_Buttonsize));
+    pos.height = GDrawPointsToPixels(NULL,195);
+    gw = GDrawCreateTopWindow(NULL,&pos,order_e_h,&d,&wattrs);
+
+    memset(&d,0,sizeof(d));
+    d.sf = sf;
+    d.table_tag = table_tag;
+    d.ord = ord;
+
+    memset(gcd,0,sizeof(gcd));
+    memset(label,0,sizeof(label));
+
+    gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5;
+    gcd[0].gd.pos.width = 60; gcd[0].gd.pos.height =12*12+10;
+    gcd[0].gd.flags = (gg_visible | gg_enabled);
+    gcd[0].gd.u.list = ti;
+    gcd[0].creator = GListCreate;
+
+    gcd[1].gd.pos.x = -5; gcd[1].gd.pos.y = 5;
+    gcd[1].gd.pos.width = -1;
+    label[1].text = (unichar_t *) _STR_Top;
+    label[1].text_in_resource = true;
+    gcd[1].gd.label = &label[1];
+    gcd[1].gd.flags = (gg_visible | gg_enabled);
+    gcd[1].creator = GButtonCreate;
+
+    gcd[2].gd.pos.x = -5; gcd[2].gd.pos.y = 35; gcd[2].gd.pos.width = -1;
+    label[2].text = (unichar_t *) _STR_Up;
+    label[2].text_in_resource = true;
+    gcd[2].gd.label = &label[2];
+    gcd[2].gd.flags = (gg_visible | gg_enabled);
+    gcd[2].creator = GButtonCreate;
+
+    gcd[3].gd.pos.x = -5; gcd[3].gd.pos.y = 65;
+    gcd[3].gd.pos.width = -1;
+    label[3].text = (unichar_t *) _STR_Down;
+    label[3].text_in_resource = true;
+    gcd[3].gd.label = &label[3];
+    gcd[3].gd.flags = (gg_visible | gg_enabled);
+    gcd[3].creator = GButtonCreate;
+
+    gcd[4].gd.pos.x = -5; gcd[4].gd.pos.y = 95; gcd[4].gd.pos.width = -1;
+    label[4].text = (unichar_t *) _STR_Bottom;
+    label[4].text_in_resource = true;
+    gcd[4].gd.label = &label[4];
+    gcd[4].gd.flags = (gg_visible | gg_enabled);
+    gcd[4].creator = GButtonCreate;
+
+    gcd[5].gd.pos.x = -5; gcd[5].gd.pos.y = gcd[4].gd.pos.y+28;
+    gcd[5].gd.pos.width = GIntGetResource(_NUM_Buttonsize);
+    gcd[5].gd.flags = (gg_visible | gg_enabled);
+    gcd[5].creator = GLineCreate;
+
+    gcd[6].gd.pos.x = -5; gcd[6].gd.pos.y = 130; gcd[6].gd.pos.width = -1;
+    label[6].text = (unichar_t *) _STR_Remove;
+    label[6].text_in_resource = true;
+    gcd[6].gd.label = &label[6];
+    gcd[6].gd.flags = (gg_visible | gg_enabled);
+    gcd[6].creator = GButtonCreate;
+
+    gcd[7].gd.pos.x = 2; gcd[7].gd.pos.y = gcd[0].gd.pos.y+gcd[0].gd.pos.height+5;
+    gcd[7].gd.pos.width = -1;
+    label[7].text = (unichar_t *) _STR_OK;
+    label[7].text_in_resource = true;
+    gcd[7].gd.label = &label[7];
+    gcd[7].gd.flags = (gg_visible | gg_enabled | gg_but_default);
+    gcd[7].creator = GButtonCreate;
+
+    gcd[8].gd.pos.x = -5; gcd[8].gd.pos.y = gcd[7].gd.pos.y+3; gcd[8].gd.pos.width = -1;
+    label[8].text = (unichar_t *) _STR_Cancel;
+    label[8].text_in_resource = true;
+    gcd[8].gd.label = &label[8];
+    gcd[8].gd.flags = (gg_visible | gg_enabled | gg_but_cancel);
+    gcd[8].creator = GButtonCreate;
+
+    GGadgetsCreate(gw,gcd);
+    memset(&rq,0,sizeof(rq));
+    rq.family_name = monospace;
+    rq.point_size = 12;
+    rq.weight = 400;
+    font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+    GGadgetSetFont(gcd[0].ret,font);
+
+    d.list = gcd[0].ret;
+    d.top = gcd[1].ret;
+    d.up = gcd[2].ret;
+    d.down = gcd[3].ret;
+    d.bottom = gcd[4].ret;
+    d.del = gcd[6].ret;
+    d.ok = gcd[7].ret;
+    d.cancel = gcd[8].ret;
+
+    GDrawSetVisible(gw,true);
+    while ( !d.done )
+	GDrawProcessOneEvent(NULL);
+    GDrawDestroyWindow(gw);
 }

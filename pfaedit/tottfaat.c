@@ -25,14 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaedit.h"
-#include <math.h>
-#include <unistd.h>
-#include <time.h>
-#include <locale.h>
 #include <utype.h>
-#include <ustring.h>
-#include <chardata.h>
-#include <gwidget.h>
 
 #include "ttf.h"
 
