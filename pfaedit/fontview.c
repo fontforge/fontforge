@@ -2839,7 +2839,7 @@ char *LigDefaultStr(int uni, char *name) {
 
     /* If it's not unicode we have no info on it */
     /*  Unless it looks like one of adobe's special ligature names */
-    if ( uni==-1 ) {
+    if ( uni==-1 || uni>=65536 ) {
 	if ( name==NULL )
 return( NULL );
 	if ( strchr(name,'_')==NULL )
