@@ -2622,5 +2622,6 @@ return;
     for ( i=0; i<sf->subfontcnt; ++i )
 	SplineFontFree(sf->subfonts[i]);
     free(sf->subfonts);
+    free(sf->remap);
     free(sf);
 }

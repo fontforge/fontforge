@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 30-Jul-2001 -->
-  <!-- AP: Last modified: 15-Dec-2001 -->
+  <!-- AP: Last modified: 27-Jul-2002 -->
   <TITLE>The CID Menu and CID keyed fonts</TITLE>
 </HEAD>
 <BODY>
@@ -18,7 +18,11 @@ subfonts that make up this one. This menu is only available in the font view.
   <LI>
     <A HREF="#Convert">Convert to CID</A>
   <LI>
+    <A HREF="#ConvertCMap">Convert By CMap</A>
+  <LI>
     <A HREF="#Flatten">Flatten</A>
+  <LI>
+    <A HREF="#FlattenCMap">Flatten By CMap</A>
   <LI>
     <A HREF="#Insert">Insert Font</A>
   <LI>
@@ -63,11 +67,22 @@ fonts on the font view page</A>.
     one containing one subfont (with the characters in this font). You will be
     prompted for a character set.
   <DT>
+    <A NAME="ConvertCMap">Convert By CMap</A>
+  <DD>
+    If the current font is not a CID font then this command will convert it into
+    one containing a single subfont. You will be prompted for an Adobe CMap file.
+  <DT>
     <A NAME="Flatten">Flatten</A>
   <DD>
     If the current font is a CID font then this command will convert it into
-    a normal font by taking all the characters from all the sub-fonts and merging
-    them into one normal font.
+    a normal (flat) font by taking all the characters from all the sub-fonts
+    and merging them into one normal font.
+  <DT>
+    <A NAME="FlattenCMap">Flatten</A> By CMap
+  <DD>
+    If the current font is a CID font then this command will convert it into
+    a normal font. It prompts you for an Adobe CMap file and uses that to define
+    an encoding for the resultant font.
   <DT>
     <A NAME="Insert">Insert Font</A>
   <DD>

@@ -424,6 +424,8 @@ struct ttflangname {
     struct ttflangname *next;
 };
 
+struct remap { uint32 firstenc, lastenc; int32 infont; };
+
 typedef struct splinefont {
     char *fontname, *fullname, *familyname, *weight;
     char *copyright;
@@ -481,6 +483,7 @@ typedef struct splinefont {
     struct compositionrules *rules;
 #endif
     char *comments;
+    struct remap *remap;
 } SplineFont;
 
 /* mac styles. Useful idea we'll just steal it */
@@ -792,6 +795,9 @@ extern struct cidmap *FindCidMap(char *registry,char *ordering,int supplement,
 	SplineFont *sf);
 extern void SFEncodeToMap(SplineFont *sf,struct cidmap *map);
 extern struct cidmap *AskUserForCIDMap(SplineFont *sf);
+extern SplineFont *CIDFlatten(SplineFont *cidmaster,SplineChar **chars,int charcnt);
+extern void SFFlattenByCMap(SplineFont *sf,char *cmapname);
+extern SplineFont *MakeCIDMaster(SplineFont *sf,int bycmap,char *cmapfilename);
 
 int getushort(FILE *ttf);
 int32 getlong(FILE *ttf);

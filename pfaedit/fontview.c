@@ -316,7 +316,7 @@ int _FVMenuSaveAs(FontView *fv) {
 	uc_strcpy(temp,sf->fontname);
 	uc_strcat(temp,".sfd");
     }
-    ret = GWidgetSaveAsFile(GStringGetResource(_STR_Saveas,NULL),temp,NULL,NULL);
+    ret = GWidgetSaveAsFile(GStringGetResource(_STR_Saveas,NULL),temp,NULL,NULL,NULL);
     free(temp);
     if ( ret==NULL )
 return( 0 );
@@ -604,7 +604,7 @@ return( temp );
 
 void MergeKernInfo(SplineFont *sf) {
     static unichar_t wild[] = { '*', '.', '[','a','t',']', 'f','m',  '\0' };
-    unichar_t *ret = GWidgetOpenFile(GStringGetResource(_STR_MergeKernInfo,NULL),NULL,wild,NULL);
+    unichar_t *ret = GWidgetOpenFile(GStringGetResource(_STR_MergeKernInfo,NULL),NULL,wild,NULL,NULL);
     char *temp = cu_copy(ret);
     int isafm;
 
@@ -793,6 +793,8 @@ static void FVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_InsertBlank	2803
 #define MID_CIDFontInfo	2804
 #define MID_RemoveFromCID 2805
+#define MID_ConvertByCMap	2806
+#define MID_FlattenByCMap	2807
 #define MID_ModifyComposition	20902
 #define MID_BuildSyllables	20903
 
@@ -2035,109 +2037,54 @@ static void FVMenuShowSubFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 
 static void FVMenuConvert2CID(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw), *fvs;
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
     SplineFont *cidmaster = fv->cidmaster;
-    struct cidmap *map;
 
     if ( cidmaster!=NULL )
 return;
-    cidmaster = SplineFontEmpty();
-    map = AskUserForCIDMap(cidmaster);		/* Sets the ROS fields */
-    if ( map==NULL ) {
-	SplineFontFree(cidmaster);
+    MakeCIDMaster(fv->sf,false,NULL);
+}
+
+static void FVMenuConvertByCMap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    SplineFont *cidmaster = fv->cidmaster;
+
+    if ( cidmaster!=NULL )
 return;
-    }
-    cidmaster->fontname = copy(fv->sf->fontname);
-    cidmaster->fullname = copy(fv->sf->fullname);
-    cidmaster->familyname = copy(fv->sf->familyname);
-    cidmaster->weight = copy(fv->sf->weight);
-    cidmaster->copyright = copy(fv->sf->copyright);
-    cidmaster->cidversion = 1.0;
-    cidmaster->display_antialias = fv->sf->display_antialias;
-    cidmaster->display_size = fv->sf->display_size;
-    cidmaster->changed = cidmaster->changed_since_autosave = true;
-    fv->cidmaster = cidmaster;
-    cidmaster->fv = fv->sf->fv;
-    fv->sf->cidmaster = cidmaster;
-    cidmaster->subfontcnt = 1;
-    cidmaster->subfonts = gcalloc(2,sizeof(SplineFont *));
-    cidmaster->subfonts[0] = fv->sf;
-    SFEncodeToMap(fv->sf,map);
-    if ( fv->sf->private==NULL )
-	fv->sf->private = gcalloc(1,sizeof(struct psdict));
-    if ( !PSDictHasEntry(fv->sf->private,"lenIV"))
-	PSDictChangeEntry(fv->sf->private,"lenIV","1");		/* It's 4 by default, in CIDs the convention seems to be 1 */
-    for ( fvs=fv->sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
-	free(fvs->selected);
-	fvs->selected = gcalloc(fvs->sf->charcnt,sizeof(char));
-    }
-    FontViewReformatAll(fv->sf);
+    MakeCIDMaster(fv->sf,true,NULL);
 }
 
 static void FVMenuFlatten(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    FontView *fvs;
     SplineFont *cidmaster = fv->cidmaster;
-    SplineFont *new;
-    char buffer[20];
-    BDFFont *bdf;
+    SplineChar **chars;
     int i,j,max;
 
     if ( cidmaster==NULL )
 return;
-    new = SplineFontEmpty();
-    new->fontname = copy(cidmaster->fontname);
-    new->fullname = copy(cidmaster->fullname);
-    new->familyname = copy(cidmaster->familyname);
-    new->weight = copy(cidmaster->weight);
-    new->copyright = copy(cidmaster->copyright);
-    sprintf(buffer,"%d", cidmaster->cidversion);
-    new->version = copy(buffer);
-    new->italicangle = cidmaster->italicangle;
-    new->upos = cidmaster->upos;
-    new->uwidth = cidmaster->uwidth;
-    new->ascent = cidmaster->ascent;
-    new->descent = cidmaster->descent;
-    new->changed = new->changed_since_autosave = true;
-    new->display_antialias = cidmaster->display_antialias;
-    new->fv = cidmaster->fv;
-    new->encoding_name = em_none;
-    /* Don't copy the grid splines, there won't be anything meaningfull at top level */
-    /*  and won't know which font to copy from below */
-    new->bitmaps = cidmaster->bitmaps;		/* should already be flattened */
-    cidmaster->bitmaps = NULL;			/* don't free 'em */
-    for ( bdf=new->bitmaps; bdf!=NULL; bdf=bdf->next )
-	bdf->sf = new;
-    new->origname = copy( cidmaster->origname );
-    new->display_size = cidmaster->display_size;
-    /* Don't copy private */
-    new->xuid = copy(cidmaster->xuid);
     for ( i=max=0; i<cidmaster->subfontcnt; ++i )
 	if ( max<cidmaster->subfonts[i]->charcnt )
 	    max = cidmaster->subfonts[i]->charcnt;
-    new->chars = gcalloc(max,sizeof(SplineChar *));
-    new->charcnt = max;
+    chars = gcalloc(max,sizeof(SplineChar *));
     for ( j=0; j<max; ++j ) {
 	for ( i=0; i<cidmaster->subfontcnt; ++i ) {
 	    if ( j<cidmaster->subfonts[i]->charcnt && cidmaster->subfonts[i]->chars[j]!=NULL ) {
-		new->chars[j] = cidmaster->subfonts[i]->chars[j];
+		chars[j] = cidmaster->subfonts[i]->chars[j];
 		cidmaster->subfonts[i]->chars[j] = NULL;
-		new->chars[j]->parent = new;
 	break;
 	    }
 	}
     }
-    for ( fvs=new->fv; fvs!=NULL; fvs=fvs->nextsame ) {
-	fvs->cidmaster = NULL;
-	if ( fvs->sf->charcnt!=new->charcnt ) {
-	    free(fvs->selected);
-	    fvs->selected = gcalloc(new->charcnt,sizeof(char));
-	}
-	fvs->sf = new;
-	FVSetTitle(fvs);
-    }
-    FontViewReformatAll(fv->sf);
-    SplineFontFree(cidmaster);
+    CIDFlatten(cidmaster,chars,max);
+}
+
+static void FVMenuFlattenByCMap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    SplineFont *cidmaster = fv->cidmaster;
+
+    if ( cidmaster==NULL )
+return;
+    SFFlattenByCMap(cidmaster,NULL);
 }
 
 static void FVInsertInCID(FontView *fv,SplineFont *sf) {
@@ -2589,7 +2536,9 @@ static GMenuItem mtlist[] = {
 
 static GMenuItem cdlist[] = {
     { { (unichar_t *) _STR_Convert2CID, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_control, NULL, NULL, FVMenuConvert2CID, MID_Convert2CID },
+    { { (unichar_t *) _STR_ConvertByCMap, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_control, NULL, NULL, FVMenuConvertByCMap, MID_ConvertByCMap },
     { { (unichar_t *) _STR_Flatten, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, '\0', ksm_control, NULL, NULL, FVMenuFlatten, MID_Flatten },
+    { { (unichar_t *) _STR_FlattenByCMap, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, '\0', ksm_control, NULL, NULL, FVMenuFlattenByCMap, MID_FlattenByCMap },
     { { (unichar_t *) _STR_InsertFont, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'o' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuInsertFont, MID_InsertFont },
     { { (unichar_t *) _STR_InsertBlank, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, '\0', ksm_control, NULL, NULL, FVMenuInsertBlank, MID_InsertBlank },
     { { (unichar_t *) _STR_RemoveFont, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'R' }, '\0', ksm_control, NULL, NULL, FVMenuRemoveFontFromCID, MID_RemoveFromCID },
@@ -2640,7 +2589,7 @@ static void cdlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
-	  case MID_Convert2CID:
+	  case MID_Convert2CID: case MID_ConvertByCMap:
 	    mi->ti.disabled = cidmaster!=NULL;
 	  break;
 	  case MID_InsertFont: case MID_InsertBlank:
@@ -2650,7 +2599,7 @@ static void cdlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 	  case MID_RemoveFromCID:
 	    mi->ti.disabled = cidmaster==NULL || cidmaster->subfontcnt<=1;
 	  break;
-	  case MID_Flatten: case MID_CIDFontInfo:
+	  case MID_Flatten: case MID_FlattenByCMap: case MID_CIDFontInfo:
 	    mi->ti.disabled = cidmaster==NULL;
 	  break;
 	}
@@ -3383,7 +3332,18 @@ return;
     if ( fv->end_pos == -1 )
 return;
 
-    if ( sf->encoding_name<em_first2byte || sf->encoding_name>=em_base )
+    if ( sf->remap!=NULL ) {
+	int localenc = fv->end_pos;
+	struct remap *map = fv->sf->remap;
+	while ( map->infont!=-1 ) {
+	    if ( localenc>=map->infont && localenc<=map->infont+(map->lastenc-map->firstenc) ) {
+		localenc += map->firstenc-map->infont;
+	break;
+	    }
+	    ++map;
+	}
+	sprintf( buffer, "%-5u (0x%04x) ", localenc, localenc );
+    } else if ( sf->encoding_name<em_first2byte || sf->encoding_name>=em_base )
 	sprintf( buffer, "%-3d (0x%02x) ", fv->end_pos, fv->end_pos );
     else
 	sprintf( buffer, "%-5d (0x%04x) ", fv->end_pos, fv->end_pos );
@@ -3613,6 +3573,18 @@ void SCPreparePopup(GWindow gw,SplineChar *sc) {
     int upos;
     int enc = sc->parent->encoding_name;
     int done = false;
+    int localenc = sc->enc;
+    struct remap *map = sc->parent->remap;
+
+    if ( map!=NULL ) {
+	while ( map->infont!=-1 ) {
+	    if ( localenc>=map->infont && localenc<=map->infont+(map->lastenc-map->firstenc) ) {
+		localenc += map->firstenc-map->infont;
+	break;
+	    }
+	    ++map;
+	}
+    }
 
     if ( sc->unicodeenc!=-1 )
 	upos = sc->unicodeenc;
@@ -3631,25 +3603,25 @@ void SCPreparePopup(GWindow gw,SplineChar *sc) {
 	    (enc<=em_zapfding || (enc>=em_big5 && enc<=em_unicode)))
 	upos = sc->enc;
     else {
-	sprintf( cspace, "%d U+???? \"%.25s\" ", sc->enc, sc->name==NULL?"":sc->name );
+	sprintf( cspace, "%u 0x%x U+???? \"%.25s\" ", localenc, localenc, sc->name==NULL?"":sc->name );
 	uc_strcpy(space,cspace);
 	done = true;
     }
     if ( done )
 	/* Do Nothing */;
     else if ( upos<65536 && UnicodeCharacterNames[upos>>8][upos&0xff]!=NULL ) {
-	sprintf( cspace, "%d U+%04x \"%.25s\" ", sc->enc, upos, sc->name==NULL?"":sc->name );
+	sprintf( cspace, "%u 0x%x U+%04x \"%.25s\" ", localenc, localenc, upos, sc->name==NULL?"":sc->name );
 	uc_strcpy(space,cspace);
 	u_strcat(space,UnicodeCharacterNames[upos>>8][upos&0xff]);
     } else if ( upos>=0xAC00 && upos<=0xD7A3 ) {
-	sprintf( cspace, "%d U+%04x \"%.25s\" Hangul Syllable %s%s%s",
-		sc->enc, upos, sc->name==NULL?"":sc->name,
+	sprintf( cspace, "%u 0x%x U+%04x \"%.25s\" Hangul Syllable %s%s%s",
+		localenc, localenc, upos, sc->name==NULL?"":sc->name,
 		chosung[(upos-0xAC00)/(21*28)],
 		jungsung[(upos-0xAC00)/28%21],
 		jongsung[(upos-0xAC00)%28] );
 	uc_strcpy(space,cspace);
     } else {
-	sprintf( cspace, "%d U+%04x \"%.25s\" %.50s", sc->enc, upos, sc->name==NULL?"":sc->name,
+	sprintf( cspace, "%u 0x%x U+%04x \"%.25s\" %.50s", localenc, localenc, upos, sc->name==NULL?"":sc->name,
 	    upos=='\0'				? "Null":
 	    upos=='\t'				? "Tab":
 	    upos=='\r'				? "Return":

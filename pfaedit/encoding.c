@@ -31,6 +31,7 @@
 #include <sys/types.h>
 #include <dirent.h>
 #include "gfile.h"
+#include "gio.h"
 #include "gresource.h"
 
 static int enc_num = em_base;
@@ -476,7 +477,7 @@ void LoadEncodingFile(void) {
     unichar_t *fn;
     char *filename;
 
-    fn = GWidgetOpenFile(GStringGetResource(_STR_LoadEncoding,NULL), NULL, filter, NULL);
+    fn = GWidgetOpenFile(GStringGetResource(_STR_LoadEncoding,NULL), NULL, filter, NULL,NULL);
     if ( fn==NULL )
 return;
     filename = cu_copy(fn);
@@ -773,7 +774,7 @@ return( maybe );
 	    uret = NULL;
 	else if ( screen_display!=NULL ) {
 	    if ( sf!=NULL ) sf->loading_cid_map = true;
-	    uret = GWidgetOpenFile(GStringGetResource(_STR_FindCharset,NULL),NULL,ubuf,NULL);
+	    uret = GWidgetOpenFile(GStringGetResource(_STR_FindCharset,NULL),NULL,ubuf,NULL,NULL);
 	    if ( sf!=NULL ) sf->loading_cid_map = false;
 	}
 	if ( uret==NULL ) {
@@ -807,30 +808,12 @@ return( LoadMapFromFile(file,registry,ordering,supplement));
 return( MakeDummyMap(registry,ordering,supplement));
 }
 
-void SFEncodeToMap(SplineFont *sf,struct cidmap *map) {
+static void SFApplyEnc(SplineFont *sf, int charcnt) {
     SplineChar **chars, *sc;
-    int i,max=0, anyextras=0;
+    int i;
     RefChar *refs, *rnext, *rprev;
     SplineSet *new, *spl;
 
-    for ( i=0; i<sf->charcnt; ++i ) if ( (sc = sf->chars[i])!=NULL ) {
-	sc->enc = NameEnc2CID(map,sc->unicodeenc,sc->name);
-	if ( sc->enc>max ) max = sc->enc;
-	else if ( sc->enc==-1 ) ++anyextras;
-    }
-
-    if ( anyextras ) {
-	static int buttons[] = { _STR_Delete, _STR_Add, 0 };
-	if ( GWidgetAskR(_STR_ExtraCharsTitle,buttons,0,1,_STR_ExtraChars)==1 ) {
-	    if ( map!=NULL && max<map->cidmax ) max = map->cidmax;
-	    anyextras = 0;
-	    for ( i=0; i<sf->charcnt; ++i ) if ( (sc = sf->chars[i])!=NULL ) {
-		if ( sc->enc == -1 ) sc->enc = max + anyextras++;
-	    }
-	    max += anyextras;
-	}
-    }
-    
     /* Remove references to characters which aren't in the new map (if any) */
     /* Don't need to fix up dependencies, because we throw the char away */
     for ( i=0; i<sf->charcnt; ++i ) if ( (sc = sf->chars[i])!=NULL ) {
@@ -854,7 +837,7 @@ void SFEncodeToMap(SplineFont *sf,struct cidmap *map) {
 	}
     }
 
-    chars = gcalloc(max+1,sizeof(SplineChar *));
+    chars = gcalloc(charcnt+1,sizeof(SplineChar *));
     for ( i=0; i<sf->charcnt; ++i ) if ( (sc = sf->chars[i])!=NULL ) {
 	if ( sc->enc==-1 )
 	    SplineCharFree(sc);
@@ -863,8 +846,32 @@ void SFEncodeToMap(SplineFont *sf,struct cidmap *map) {
     }
 
     free(sf->chars);
-    sf->charcnt = max;
+    sf->charcnt = charcnt;
     sf->chars = chars;
+}
+
+void SFEncodeToMap(SplineFont *sf,struct cidmap *map) {
+    SplineChar *sc;
+    int i,max=0, anyextras=0;
+
+    for ( i=0; i<sf->charcnt; ++i ) if ( (sc = sf->chars[i])!=NULL ) {
+	sc->enc = NameEnc2CID(map,sc->unicodeenc,sc->name);
+	if ( sc->enc>max ) max = sc->enc;
+	else if ( sc->enc==-1 ) ++anyextras;
+    }
+
+    if ( anyextras ) {
+	static int buttons[] = { _STR_Delete, _STR_Add, 0 };
+	if ( GWidgetAskR(_STR_ExtraCharsTitle,buttons,0,1,_STR_ExtraChars)==1 ) {
+	    if ( map!=NULL && max<map->cidmax ) max = map->cidmax;
+	    anyextras = 0;
+	    for ( i=0; i<sf->charcnt; ++i ) if ( (sc = sf->chars[i])!=NULL ) {
+		if ( sc->enc == -1 ) sc->enc = max + anyextras++;
+	    }
+	    max += anyextras;
+	}
+    }
+    SFApplyEnc(sf, max);
 }
 
 struct block {
@@ -962,7 +969,7 @@ struct cidmap *AskUserForCIDMap(SplineFont *sf) {
 	free( (unichar_t *) choices[i] );
     free(choices);
     if ( ret==0 ) {
-	unichar_t *uret = GWidgetOpenFile(GStringGetResource(_STR_FindCharset,NULL),NULL,cidwild,NULL);
+	unichar_t *uret = GWidgetOpenFile(GStringGetResource(_STR_FindCharset,NULL),NULL,cidwild,NULL,NULL);
 	if ( uret==NULL )
 	    ret = -1;
 	else {
@@ -1022,4 +1029,434 @@ struct cidmap *AskUserForCIDMap(SplineFont *sf) {
 	sf->supplement = map->supplement;
     }
 return( map );
+}
+
+static enum fchooserret CMapFilter(GGadget *g,GDirEntry *ent,
+	const unichar_t *dir) {
+    enum fchooserret ret = GFileChooserDefFilter(g,ent,dir);
+    char buf2[200];
+    FILE *file;
+    static char *cmapflag = "%!PS-Adobe-3.0 Resource-CMap";
+
+    if ( ret==fc_show && !ent->isdir ) {
+	char *filename = galloc(u_strlen(dir)+u_strlen(ent->name)+5);
+	cu_strcpy(filename,dir);
+	strcat(filename,"/");
+	cu_strcat(filename,ent->name);
+	file = fopen(filename,"r");
+	if ( file==NULL )
+	    ret = fc_hide;
+	else {
+	    if ( fgets(buf2,sizeof(buf2),file)==NULL ||
+		    strncmp(buf2,cmapflag,strlen(cmapflag))!=0 )
+		ret = fc_hide;
+	    fclose(file);
+	}
+	free(filename);
+    }
+return( ret );
+}
+
+enum cmaptype { cmt_out=-1, cmt_coderange, cmt_notdefs, cmt_cid, cmt_max };
+struct cmap {
+    struct {
+	int n;
+	struct coderange { uint32 first, last, cid; } *ranges;
+    } groups[cmt_max];
+    char *registry;
+    char *ordering;
+    int supplement;
+    struct remap *remap;
+    int total;
+};
+
+static void cmapfree(struct cmap *cmap) {
+    free(cmap->registry);
+    free(cmap->ordering);
+    free(cmap->groups[cmt_coderange].ranges);
+    free(cmap->groups[cmt_notdefs].ranges);
+    free(cmap->groups[cmt_cid].ranges);
+    free(cmap->remap);
+    free(cmap);
+}
+
+static struct coderange *ExtendArray(struct coderange *ranges,int *n, int val) {
+    if ( *n == 0 )
+	ranges = gcalloc(val,sizeof(struct coderange));
+    else {
+	ranges = grealloc(ranges,(*n+val)*sizeof(struct coderange));
+	memset(ranges+*n,0,val*sizeof(struct coderange));
+    }
+    *n += val;
+return( ranges );
+}
+
+static char *readpsstr(char *str) {
+    char *eos;
+
+    while ( isspace(*str)) ++str;
+    if ( *str=='(' ) ++str;
+    /* Postscript strings can be more complicated than this (hex, nested parens, Enc85...) */
+    /*  but none of those should show up here */
+    for ( eos = str; *eos!=')' && *eos!='\0'; ++eos );
+return( copyn(str,eos-str));
+}
+    
+static struct cmap *ParseCMap(char *filename) {
+    char buf2[200];
+    FILE *file;
+    struct cmap *cmap;
+    char *end, *pt;
+    int val, pos;
+    enum cmaptype in;
+    static const char *bcsr = "begincodespacerange", *bndr = "beginnotdefrange", *bcr = "begincidrange";
+    static const char *reg = "/Registry", *ord = "/Ordering", *sup="/Supplement";
+
+    file = fopen(filename,"r");
+    if ( file==NULL )
+return( NULL );
+
+    cmap = gcalloc(1,sizeof(struct cmap));
+    in = cmt_out;
+    while ( fgets(buf2,sizeof(buf2),file)!=NULL ) {
+	for ( pt=buf2; isspace(*pt); ++pt);
+	if ( in==cmt_out ) {
+	    if ( *pt=='/' ) {
+		if ( strncmp(pt,reg,strlen(reg))==0 )
+		    cmap->registry = readpsstr(pt+strlen(reg));
+		else if ( strncmp(pt,ord,strlen(ord))==0 )
+		    cmap->ordering = readpsstr(pt+strlen(ord));
+		else if ( strncmp(pt,ord,strlen(ord))==0 ) {
+		    for ( pt += strlen(sup); isspace(*pt); ++pt );
+		    cmap->supplement = strtol(pt,NULL,10);
+		}
+    continue;
+	    } else if ( !isdigit(*pt) )
+    continue;
+	    val = strtol(pt,&end,10);
+	    while ( isspace(*end)) ++end;
+	    if ( strncmp(end,bcsr,strlen(bcsr))==0 )
+		in = cmt_coderange;
+	    else if ( strncmp(end,bndr,strlen(bndr))==0 )
+		in = cmt_notdefs;
+	    else if ( strncmp(end,bcr,strlen(bcr))==0 )
+		in = cmt_cid;
+	    if ( in!=cmt_out ) {
+		pos = cmap->groups[in].n;
+		cmap->groups[in].ranges = ExtendArray(cmap->groups[in].ranges,&cmap->groups[in].n,val);
+	    }
+	} else if ( strncmp(pt,"end",3)== 0 )
+	    in = cmt_out;
+	else {
+	    if ( *pt!='<' )
+	continue;
+	    cmap->groups[in].ranges[pos].first = strtoul(pt+1,&end,16);
+	    if ( *end=='>' ) ++end;
+	    while ( isspace(*end)) ++end;
+	    if ( *end=='<' ) ++end;
+	    cmap->groups[in].ranges[pos].last = strtoul(end,&end,16);
+	    if ( in!=cmt_coderange ) {
+		if ( *end=='>' ) ++end;
+		while ( isspace(*end)) ++end;
+		cmap->groups[in].ranges[pos].cid = strtol(end,&end,10);
+	    }
+	    ++pos;
+	}
+    }
+    fclose(file);
+return( cmap );
+}
+
+static void CompressCMap(struct cmap *cmap) {
+    int32 i,j,k, pos, base;
+    uint32 min, oldmax;
+    /* we can't really deal with three and four byte encodings */
+    /*  so if we get one arrange for the sf itself to do a remap */
+
+    cmap->total = 0x10000;
+    for ( i=0; i<cmap->groups[cmt_coderange].n; ++i )
+	if ( cmap->groups[cmt_coderange].ranges[i].last>0xfffff )
+    break;
+    if ( i==cmap->groups[cmt_coderange].n )	/* No need to remap */
+return;
+
+    cmap->remap = gcalloc(cmap->groups[cmt_coderange].n+1,sizeof(struct remap));
+    base = 0;
+    for ( i=0; i<cmap->groups[cmt_coderange].n; ++i )
+	if ( cmap->groups[cmt_coderange].ranges[i].last<0xffff ) {
+	    base = 0x10000;
+    break;
+	}
+
+    pos=0;
+    oldmax = base==0?0:0xffff;
+    for ( i=0; i<cmap->groups[cmt_coderange].n; ++i ) {
+	min = 0xffffffff; k=-1;
+	for ( j=0; j<cmap->groups[cmt_coderange].n; ++j )
+	    if ( cmap->groups[cmt_coderange].ranges[j].first>oldmax &&
+		    cmap->groups[cmt_coderange].ranges[j].first<min ) {
+		min = cmap->groups[cmt_coderange].ranges[j].first;
+		k = j;
+	    }
+	if ( k==-1 )
+    break;
+	cmap->remap[pos].firstenc = cmap->groups[cmt_coderange].ranges[k].first&~0xff;
+	cmap->remap[pos].lastenc = cmap->groups[cmt_coderange].ranges[k].last|0xff;
+	cmap->remap[pos].infont = base;
+	base += cmap->remap[pos].lastenc-cmap->remap[pos].firstenc+1;
+	oldmax = cmap->remap[pos].lastenc;
+	++pos;
+    }
+    cmap->remap[pos].infont = -1;	/* Marks end */
+    cmap->total = base;
+    /* so cmap->remap will map sf indeces into the encoding in the cmap */
+
+    /* And now we want to change the groups[cmt_cid].ranges so that they will */
+    /*  map into sf indeces rather than into the encoding of the cmap */
+    for ( i=0; i<cmap->groups[cmt_cid].n; ++i ) {
+	for ( k=0; cmap->remap[k].infont!=-1; ++k )
+	    if ( cmap->groups[cmt_cid].ranges[i].first>=cmap->remap[k].firstenc &&
+		    cmap->groups[cmt_cid].ranges[i].first<=cmap->remap[k].lastenc )
+	break;
+	if ( cmap->remap[k].infont==-1 )
+    continue;
+	cmap->groups[cmt_cid].ranges[i].first += cmap->remap[k].infont-cmap->remap[k].firstenc;
+	cmap->groups[cmt_cid].ranges[i].last += cmap->remap[k].infont-cmap->remap[k].firstenc;
+    }
+}
+
+SplineFont *CIDFlatten(SplineFont *cidmaster,SplineChar **chars,int charcnt) {
+    FontView *fvs;
+    SplineFont *new;
+    char buffer[20];
+    BDFFont *bdf;
+    int j;
+
+    if ( cidmaster==NULL )
+return(NULL);
+    new = SplineFontEmpty();
+    new->fontname = copy(cidmaster->fontname);
+    new->fullname = copy(cidmaster->fullname);
+    new->familyname = copy(cidmaster->familyname);
+    new->weight = copy(cidmaster->weight);
+    new->copyright = copy(cidmaster->copyright);
+    sprintf(buffer,"%d", cidmaster->cidversion);
+    new->version = copy(buffer);
+    new->italicangle = cidmaster->italicangle;
+    new->upos = cidmaster->upos;
+    new->uwidth = cidmaster->uwidth;
+    new->ascent = cidmaster->ascent;
+    new->descent = cidmaster->descent;
+    new->changed = new->changed_since_autosave = true;
+    new->display_antialias = cidmaster->display_antialias;
+    new->fv = cidmaster->fv;
+    new->encoding_name = em_none;
+    /* Don't copy the grid splines, there won't be anything meaningfull at top level */
+    /*  and won't know which font to copy from below */
+    new->bitmaps = cidmaster->bitmaps;		/* should already be flattened */
+    cidmaster->bitmaps = NULL;			/* don't free 'em */
+    for ( bdf=new->bitmaps; bdf!=NULL; bdf=bdf->next )
+	bdf->sf = new;
+    new->origname = copy( cidmaster->origname );
+    new->display_size = cidmaster->display_size;
+    /* Don't copy private */
+    new->xuid = copy(cidmaster->xuid);
+    new->chars = chars;
+    new->charcnt = charcnt;
+    for ( j=0; j<charcnt; ++j ) if ( chars[j]!=NULL ) {
+	chars[j]->parent = new;
+	chars[j]->enc = j;
+    }
+    for ( fvs=new->fv; fvs!=NULL; fvs=fvs->nextsame ) {
+	fvs->cidmaster = NULL;
+	if ( fvs->sf->charcnt!=new->charcnt ) {
+	    free(fvs->selected);
+	    fvs->selected = gcalloc(new->charcnt,sizeof(char));
+	}
+	fvs->sf = new;
+	FVSetTitle(fvs);
+    }
+    FontViewReformatAll(new);
+    SplineFontFree(cidmaster);
+return( new );
+}
+
+void SFFlattenByCMap(SplineFont *sf,char *cmapname) {
+    struct cmap *cmap;
+    int i,j,k,l, extras, max, curmax;
+    SplineChar **chars = NULL, *sc;
+
+    if ( sf->cidmaster!=NULL )
+	sf = sf->cidmaster;
+    if ( sf->subfontcnt==0 ) {
+	GWidgetErrorR(_STR_NotACIDFont,_STR_NotACIDFont);
+return;
+    }
+    if ( cmapname==NULL ) {
+	unichar_t *uret = GWidgetOpenFile(GStringGetResource(_STR_FindCMap,NULL),NULL,NULL,NULL,CMapFilter);
+	cmapname = cu_copy(uret);
+	free(uret);
+    }
+    if ( cmapname==NULL )
+return;
+    cmap = ParseCMap(cmapname);
+    if ( cmap==NULL )
+return;
+    CompressCMap(cmap);
+    max = 0;
+    for ( i=0; i<cmap->groups[cmt_cid].n; ++i ) {
+	if ( max<cmap->groups[cmt_cid].ranges[i].last )
+	    max = cmap->groups[cmt_cid].ranges[i].last;
+	if ( cmap->groups[cmt_cid].ranges[i].last>0x100000 ) {
+	    GWidgetErrorR(_STR_EncodingTooLarge,_STR_EncodingTooLarge);
+	    cmapfree(cmap);
+return;
+	}
+    }
+
+    curmax = 0;
+    for ( k=0; k<sf->subfontcnt; ++k )
+	if ( curmax < sf->subfonts[k]->charcnt )
+	    curmax = sf->subfonts[k]->charcnt;
+
+    chars = NULL;
+    for ( j=0; j<2; ++j ) {
+	extras = 0;
+	for ( i=0; i<curmax; ++i ) {
+	    sc = NULL;
+	    for ( k=0; k<sf->subfontcnt; ++k )
+		if ( i<sf->subfonts[k]->charcnt && sf->subfonts[k]->chars[i]!=NULL ) {
+		    sc = sf->subfonts[k]->chars[i];
+		    if ( chars!=NULL )
+			sf->subfonts[k]->chars[i] = NULL;
+	    break;
+		}
+	    if ( sc!=NULL ) {
+		for ( l=0; l<cmap->groups[cmt_cid].n; ++l ) {
+		    if ( i>=cmap->groups[cmt_cid].ranges[l].cid &&
+			    i<=cmap->groups[cmt_cid].ranges[l].cid +
+			       cmap->groups[cmt_cid].ranges[l].last -
+				cmap->groups[cmt_cid].ranges[l].first )
+		break;
+		}
+		if ( l==cmap->groups[cmt_cid].n ) {
+		    if ( chars!=NULL )
+			chars[max+extras] = sc;
+		    ++extras;
+		} else {
+		    if ( chars!=NULL ) {
+			chars[cmap->groups[cmt_cid].ranges[l].first +
+				i-cmap->groups[cmt_cid].ranges[l].cid] = sc;
+		    }
+		}
+	    }
+	}
+	if ( chars==NULL )
+	    chars = gcalloc(max+extras,sizeof(SplineChar *));
+    }
+    sf = CIDFlatten(sf,chars,max+extras);
+    sf->remap = cmap->remap; cmap->remap = NULL;
+    cmapfree(cmap);
+}
+
+static int Enc2CMap(struct cmap *cmap,int enc) {
+    int i;
+
+    for ( i=0; i<cmap->groups[cmt_cid].n; ++i )
+	if ( enc>=cmap->groups[cmt_cid].ranges[i].first &&
+		enc<=cmap->groups[cmt_cid].ranges[i].last )
+return( enc-cmap->groups[cmt_cid].ranges[i].first+
+	    cmap->groups[cmt_cid].ranges[i].cid );
+
+return( -1 );
+}
+
+static void SFEncodeToCMap(SplineFont *cidmaster,SplineFont *sf,struct cmap *cmap) {
+    SplineChar *sc;
+    int i,max=0, anyextras=0;
+
+    cidmaster->cidregistry = cmap->registry; cmap->registry = NULL;
+    cidmaster->ordering = cmap->ordering; cmap->ordering = NULL;
+    cidmaster->supplement = cmap->supplement;
+
+    for ( i=0; i<sf->charcnt; ++i ) if ( (sc = sf->chars[i])!=NULL ) {
+	sc->enc = Enc2CMap(cmap,sc->enc);
+	if ( sc->enc>max ) max = sc->enc;
+	else if ( sc->enc==-1 ) ++anyextras;
+    }
+
+    if ( anyextras ) {
+	static int buttons[] = { _STR_Delete, _STR_Add, 0 };
+	if ( GWidgetAskR(_STR_ExtraCharsTitle,buttons,0,1,_STR_ExtraChars)==1 ) {
+	    if ( cmap!=NULL && max<cmap->total ) max = cmap->total;
+	    anyextras = 0;
+	    for ( i=0; i<sf->charcnt; ++i ) if ( (sc = sf->chars[i])!=NULL ) {
+		if ( sc->enc == -1 ) sc->enc = max + anyextras++;
+	    }
+	    max += anyextras;
+	}
+    }
+    SFApplyEnc(sf, max);
+}
+
+SplineFont *MakeCIDMaster(SplineFont *sf,int bycmap,char *cmapfilename) {
+    SplineFont *cidmaster;
+    struct cidmap *map;
+    struct cmap *cmap;
+    FontView *fvs;
+    int freeme;
+
+    cidmaster = SplineFontEmpty();
+    if ( bycmap ) {
+	freeme = false;
+	if ( cmapfilename==NULL ) {
+	    unichar_t *uret = GWidgetOpenFile(GStringGetResource(_STR_FindCMap,NULL),NULL,NULL,NULL,CMapFilter);
+	    cmapfilename = cu_copy(uret);
+	    freeme = true;
+	    free(uret);
+	}
+	if ( cmapfilename==NULL )
+return(NULL);
+	cmap = ParseCMap(cmapfilename);
+	if ( freeme )
+	    free(cmapfilename);
+	if ( cmap==NULL )
+return(NULL);
+	CompressCMap(cmap);
+	SFEncodeToCMap(cidmaster,sf,cmap);
+	cmapfree(cmap);
+    } else {
+	map = AskUserForCIDMap(cidmaster);		/* Sets the ROS fields */
+	if ( map==NULL ) {
+	    SplineFontFree(cidmaster);
+return(NULL);
+	}
+	SFEncodeToMap(sf,map);
+    }
+    cidmaster->fontname = copy(sf->fontname);
+    cidmaster->fullname = copy(sf->fullname);
+    cidmaster->familyname = copy(sf->familyname);
+    cidmaster->weight = copy(sf->weight);
+    cidmaster->copyright = copy(sf->copyright);
+    cidmaster->cidversion = 1.0;
+    cidmaster->display_antialias = sf->display_antialias;
+    cidmaster->display_size = sf->display_size;
+    cidmaster->changed = cidmaster->changed_since_autosave = true;
+    for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->next )
+	fvs->cidmaster = cidmaster;
+    cidmaster->fv = sf->fv;
+    sf->cidmaster = cidmaster;
+    cidmaster->subfontcnt = 1;
+    cidmaster->subfonts = gcalloc(2,sizeof(SplineFont *));
+    cidmaster->subfonts[0] = sf;
+    if ( sf->private==NULL )
+	sf->private = gcalloc(1,sizeof(struct psdict));
+    if ( !PSDictHasEntry(sf->private,"lenIV"))
+	PSDictChangeEntry(sf->private,"lenIV","1");		/* It's 4 by default, in CIDs the convention seems to be 1 */
+    for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
+	free(fvs->selected);
+	fvs->selected = gcalloc(fvs->sf->charcnt,sizeof(char));
+    }
+    FontViewReformatAll(sf);
+return( cidmaster );
 }

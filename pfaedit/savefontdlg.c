@@ -106,6 +106,9 @@ int oldpsstate = true, oldttfhintstate = false;
 int oldformatstate = ff_pfb;
 int oldbitmapstate = 0;
 
+static const char *pfaeditflag = "SplineFontDB:";
+
+
 static int32 *ParseBitmapSizes(GGadget *g,int *err) {
     const unichar_t *val = _GGadgetGetTitle(g), *pt; unichar_t *end, *end2;
     int i;
@@ -531,16 +534,53 @@ return( false );
 return( true );
 }
 
-static char *SearchDirForFile(char *dir,char *filename) {
-    char buffer[1025];
+static char *SearchDirForWernerFile(char *dir,char *filename) {
+    char buffer[1025], buf2[200];
+    FILE *file;
+    int good = false;
+
+    if ( dir==NULL )
+return( NULL );
 
     strcpy(buffer,dir);
     strcat(buffer,"/");
     strcat(buffer,filename);
-    if ( GFileExists(buffer))
+    file = fopen(buffer,"r");
+    if ( file==NULL )
+return( NULL );
+    if ( fgets(buf2,sizeof(buf2),file)!=NULL &&
+	    strncmp(buf2,pfaeditflag,strlen(pfaeditflag))==0 )
+	good = true;
+    fclose( file );
+    if ( good )
 return( copy(buffer));
 
 return( NULL );
+}
+
+static enum fchooserret GFileChooserFilterWernerSFDs(GGadget *g,GDirEntry *ent,
+	const unichar_t *dir) {
+    enum fchooserret ret = GFileChooserDefFilter(g,ent,dir);
+    char buf2[200];
+    FILE *file;
+
+    if ( ret==fc_show && !ent->isdir ) {
+	char *filename = galloc(u_strlen(dir)+u_strlen(ent->name)+5);
+	cu_strcpy(filename,dir);
+	strcat(filename,"/");
+	cu_strcat(filename,ent->name);
+	file = fopen(filename,"r");
+	if ( file==NULL )
+	    ret = fc_hide;
+	else {
+	    if ( fgets(buf2,sizeof(buf2),file)==NULL ||
+		    strncmp(buf2,pfaeditflag,strlen(pfaeditflag))==0 )
+		ret = fc_hide;
+	    fclose(file);
+	}
+	free(filename);
+    }
+return( ret );
 }
 
 static char *GetWernerSFDFile(SplineFont *sf) {
@@ -564,19 +604,19 @@ static char *GetWernerSFDFile(SplineFont *sf) {
 	else if ( sf->encoding_name==em_unicode )
 	    def = "Unicode.sfd";
 	if ( def!=NULL ) {
-	    ret = SearchDirForFile(".",def);
+	    ret = SearchDirForWernerFile(".",def);
 	    if ( ret==NULL )
-		ret = SearchDirForFile(GResourceProgramDir,def);
+		ret = SearchDirForWernerFile(GResourceProgramDir,def);
 	    if ( ret==NULL )
-		ret = SearchDirForFile(GResourceProgramDir,def);
+		ret = SearchDirForWernerFile(GResourceProgramDir,def);
 #ifdef SHAREDIR
 	    if ( ret==NULL )
-		ret = SearchDirForFile(SHAREDIR,def);
+		ret = SearchDirForWernerFile(SHAREDIR,def);
 #endif
 	    if ( ret==NULL )
-		ret = SearchDirForFile(getPfaEditShareDir(),def);
+		ret = SearchDirForWernerFile(getPfaEditShareDir(),def);
 	    if ( ret==NULL )
-		ret = SearchDirForFile("/usr/share/pfaedit",def);
+		ret = SearchDirForWernerFile("/usr/share/pfaedit",def);
 	    if ( ret!=NULL )
 return( ret );
 	}
@@ -590,7 +630,7 @@ return( NULL );
     if ( def==NULL )
 	def = "*.sfd";
     uc_strcpy(ubuf,def);
-    uret = GWidgetOpenFile(GStringGetResource(_STR_FindMultipleMap,NULL),NULL,ubuf,NULL);
+    uret = GWidgetOpenFile(GStringGetResource(_STR_FindMultipleMap,NULL),NULL,ubuf,NULL,GFileChooserFilterWernerSFDs);
     ret = cu_copy(uret);
     free(uret);
 return( ret );
@@ -605,10 +645,11 @@ static short *ParseWernerSFDFile(char *wernerfilename,SplineFont *sf,int *max) {
     FILE *file;
     char buffer[200];
     char *end;
+    char *orig;
 
     file = fopen(wernerfilename,"r");
     if ( file==NULL ) {
-	GWidgetErrorR(_STR_NoSubFontDirectoryFile,_STR_NoSubFontDirectoryFile);
+	GWidgetErrorR(_STR_NoSubFontDefinitionFile,_STR_NoSubFontDefinitionFile);
 return( NULL );
     }
 
@@ -623,6 +664,11 @@ return( NULL );
     *max = 0;
 
     while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
+	if ( strncmp(buffer,pfaeditflag,strlen(pfaeditflag))== 0 ) {
+	    GWidgetErrorR(_STR_WrongSFDFile,_STR_BadSFDFile);
+	    free(mapping);
+return( NULL );
+	}
 	if ( !isdigit(buffer[0]))
     continue;
 	sub = strtol(buffer,&end,10);
@@ -631,7 +677,10 @@ return( NULL );
 	    while ( isspace(*end)) ++end;
 	    if ( *end=='\0' )
 	break;
+	    orig = end;
 	    r1 = strtol(end,&end,0);
+	    if ( orig==end )
+	break;
 	    if ( *end=='_' || *end=='-' )
 		r2 = strtol(end+1,&end,0);
 	    else
@@ -759,15 +808,15 @@ static int SaveSubFont(SplineFont *sf,char *newname,int32 *sizes,int res,
     err = !WritePSFont(filename,&temp,oldformatstate);
     if ( err )
 	GWidgetErrorR(_STR_Savefailedtitle,_STR_Savefailedtitle);
-    if ( !err && oldafmstate ) {
-	GProgressNextStage();
+    if ( !err && oldafmstate && GProgressNextStage()) {
 	if ( !WriteAfmFile(filename,&temp,oldformatstate)) {
 	    GWidgetErrorR(_STR_Afmfailedtitle,_STR_Afmfailedtitle);
 	    err = true;
 	}
     }
     /* ??? Bitmaps */
-    GProgressNextStage();
+    if ( !GProgressNextStage())
+	err = -1;
 
     /* The parent pointers on chars will be fixed up properly later */
     /*  for now we just set them to NULL so future reference checks won't be confused */
@@ -828,7 +877,7 @@ return( 1 );
 	    GStringGetResource(_STR_SavingMultiplePSFonts,NULL),
 	    path,256,(max+1)*filecnt );
     free(path);
-    GProgressEnableStop(false);
+    /*GProgressEnableStop(false);*/
 
     for ( i=1; i<=max && !err; ++i )
 	err = SaveSubFont(sf,newname,sizes,res,mapping,i);
@@ -863,7 +912,7 @@ return( WriteMultiplePSFont(sf,newname,sizes,res,NULL));
 		 _STR_SavingPSFont,NULL),
 	    path,sf->charcnt,1);
     free(path);
-    GProgressEnableStop(false);
+    /*GProgressEnableStop(false);*/
     if ( oldformatstate!=ff_none || oldbitmapstate==bf_sfnt_dfont ) {
 	int oerr = 0;
 	switch ( oldformatstate ) {
@@ -922,7 +971,7 @@ return( err );
 }
 
 int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
-	int res, char *subfontdirectory) {
+	int res, char *subfontdefinition) {
     int i;
     static char *bitmaps[] = {"bdf", "ms", "apple", "sbit", "bin", "dfont", NULL };
     int32 *sizes=NULL;
@@ -1009,7 +1058,7 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
     }
 
     if ( oldformatstate == ff_multiple )
-return( !WriteMultiplePSFont(sf,filename,sizes,res,subfontdirectory));
+return( !WriteMultiplePSFont(sf,filename,sizes,res,subfontdefinition));
 
 return( !_DoSave(sf,filename,sizes,res));
 }
@@ -1172,6 +1221,8 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 	    GGadgetSetChecked(d->dopfm,set);
 	GGadgetSetVisible(d->psnames,format==ff_ttf || format==ff_ttfsym ||
 		format==ff_otf || format==ff_otfdfont ||
+		format==ff_ttfdfont || format==ff_ttfmacbin || format==ff_none);
+	GGadgetSetVisible(d->ttfhints,format==ff_ttf || format==ff_ttfsym ||
 		format==ff_ttfdfont || format==ff_ttfmacbin || format==ff_none);
 
 	list = GGadgetGetList(d->bmptype,&len);

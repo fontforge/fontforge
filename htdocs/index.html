@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 26-Jul-2002 -->
+  <!-- AP: Last modified: 27-Jul-2002 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -85,8 +85,8 @@ let me know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-020726.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 26-July-2002
+    <A HREF="pfaedit-020727.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 27-July-2002
   <LI>
     <A HREF="pfaedit-020709-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
     Version: 9-July-2002 (Redhat 7.1)
@@ -123,9 +123,9 @@ If you want to edit CID keyed fonts you probably need these
 <P>
 You can download a <A HREF="pfaedit-020709-1.src.rpm">source RPM</A>: Version:
 9-July-2002<BR>
-Or you can download the <A HREF="pfaedit_full-020726.tgz">entire source tree
+Or you can download the <A HREF="pfaedit_full-020727.tgz">entire source tree
 </A>in one .tgz file: Version
-26-July-2002<!--
+27-July-2002<!--
 Or you can download the following three packages. Version: 19-Jan-2002
 <UL>
 <LI>
@@ -286,12 +286,37 @@ current)
 </H2>
 <UL>
   <LI>
+    27-July-2002
+    <UL>
+      <LI>
+	Oops. I was calling TeX sfd files Sub Font Directories and their proper name
+	was Sub Font Definition.
+      <LI>
+	Enabled the [Stop] button in the progress dlg when saving a font.
+      <LI>
+	PfaEdit would go into an infinite loop when reading one of its sfd files
+	when it was expecting a TeX sfd file. Fixed, and put in guards so that won't
+	happen anyway.
+      <LI>
+	Added two new menu commands "Flatten to CMap" and "Convert By CMap". These
+	will use one of Adobe's CMap files to guide the Flattening/Converting process
+	(rather than one of my cidmap files)
+      <LI>
+	Added support for some really large encodings if they have almost equally
+	large gaps in them (use adobe's "coderange" data to manage a sparce array).
+      <LI>
+	If we could not find any style modifiers in a fontname, then we used to claim
+	that the style was "Regular". I think it is better if we claim that it is
+	/Width (ie. whatever is in the FontInfo /Width entry) and if that isn't set
+	then return "Regular")
+    </UL>
+  <LI>
     26-July-2002
     <UL>
       <LI>
-	Added support for Werner's Sub Font Directory files which provide a way of
-	splitting up a 2 byte encoding into lots of little pfb fonts with 256 characters
-	in each.
+	Added support for Werner's (TeX's) Sub Font Definition files which provide
+	a way of splitting up a 2 byte encoding into lots of little pfb fonts with
+	256 characters in each.
       <LI>
 	Normally in a ttf font, PfaEdit generates a 'post' table with the names of
 	all the characters in it. I've just added a way to make it generate a short

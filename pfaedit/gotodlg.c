@@ -355,10 +355,10 @@ static int NameToEncoding(SplineFont *sf,const unichar_t *name) {
 	    if ( *end!='\0' )
 		uni = -1;
 	} else if ( isdigit(*name)) {
-	    enc = u_strtol(name,&end,0);
+	    enc = u_strtoul(name,&end,0);
 	    if ( *end==',' && ((sf->encoding_name>=em_jis208 && sf->encoding_name<=em_last94x94) ||
 		    sf->encoding_name == em_unicode )) {
-		int j = u_strtol(end+1,&end,10);
+		int j = u_strtoul(end+1,&end,10);
 		/* kuten */
 		if ( *end!='\0' )
 		    enc = -1;
@@ -375,6 +375,16 @@ static int NameToEncoding(SplineFont *sf,const unichar_t *name) {
 		}
 	    } else if ( *end!='\0' )
 		enc = -1;
+	    if ( sf->remap!=NULL && enc!=-1 ) {
+		struct remap *map = sf->remap;
+		while ( map->infont!=-1 ) {
+		    if ( enc>=map->firstenc && enc<=map->lastenc ) {
+			enc += map->infont-map->firstenc;
+		break;
+		    }
+		    ++map;
+		}
+	    }
 	} else {
 	    for ( i=0; i<sf->charcnt; ++i )
 		if ( sf->chars[i]!=NULL && uc_strcmp(name,sf->chars[i]->name)==0 ) {
