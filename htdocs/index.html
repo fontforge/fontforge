@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 18-Feb-2002 -->
+  <!-- AP: Last modified: 20-Feb-2002 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -78,25 +78,25 @@ you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-020218.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 18-Feb-2002
+    <A HREF="pfaedit-020220.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 20-Feb-2002
   <LI>
     <A HREF="pfaedit_ppc-020208.tgz">Download pfaedit linux-ppc SUSE 7.1
     </A>executable Version: 8-Feb-2002
   <LI>
-    <A HREF="pfaedit-solaris-020216.tgz">Download pfaedit Solaris 8.0
-    </A>executable Version: 16-Feb-2002
+    <A HREF="pfaedit-solaris-020220.tgz">Download pfaedit Solaris 8.0
+    </A>executable Version: 20-Feb-2002
   <LI>
-    <A HREF="pfaedit-020216-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
-    Version: 16-Feb-2002 (Redhat 7.1)
+    <A HREF="pfaedit-020220-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
+    Version: 20-Feb-2002 (Redhat 7.1)
   <LI>
     <A HREF="http://packages.debian.org/unstable/x11/pfaedit.html">A debian package
     is available at the debian site.</A>
   <LI>
     <A HREF="Problems-MacOSX.html#binary">A Mac OS/X distribution</A> (with Caveats).
-    Version 8-Feb-2001
+    Version 16-Feb-2001
   <LI>
-    <A HREF="pfaedit_cygwin-020208.tgz">A cygwin version</A>. Version: 8-Feb-2002
+    <A HREF="pfaedit_cygwin-020220.tgz">A cygwin version</A>. Version: 20-Feb-2002
   <LI>
     <A HREF="ftp://nchrem.tnw.tudelft.nl/pub/pfaedit/">An OpenVMS executable
     </A>(by Jacob Jansen): Version Approximately 23-Sept-2001<BR>
@@ -114,11 +114,11 @@ If you want to edit CID keyed fonts you probably need these
   <A NAME="source">Source</A> distribution
 </H2>
 <P>
-You can download a <A HREF="pfaedit-020216-1.src.rpm">source RPM</A>: Version:
-16-Feb-2002<BR>
-Or you can download the <A HREF="pfaedit_full-020218.tgz">entire source tree
+You can download a <A HREF="pfaedit-020220-1.src.rpm">source RPM</A>: Version:
+20-Feb-2002<BR>
+Or you can download the <A HREF="pfaedit_full-020220.tgz">entire source tree
 </A>in one .tgz file: Version
-18-Feb-2002<!--
+20-Feb-2002<!--
 Or you can download the following three packages. Version: 19-Jan-2002
 <UL>
 <LI>
@@ -270,7 +270,27 @@ Or you can just browse the <A HREF="overview.html">docs online</A>.
 </H2>
 <UL>
   <LI>
-    ???
+    20-Feb-2002
+    <UL>
+      <LI>
+	Made Shift-Arrow keys move along italic axis.
+      <LI>
+	$argv didn't work in scripting. (broken when I added arrays)
+    </UL>
+  <LI>
+    19-Feb-2002
+    <UL>
+      <LI>
+	Bugs in the generation of MacRoman encoding tables in ttf output (introduced
+	14-Feb)
+      <LI>
+	The Goto Dlg sometimes didn't notice Returns (ie. OK button wasn't always
+	invoked)
+      <LI>
+	Some linear splines were not noticed as such.
+    </UL>
+  <LI>
+    18-Feb-2002
     <UL>
       <LI>
 	Cancelling the Point Info dlg would leave minimum distance hints in a bad
