@@ -735,7 +735,7 @@ static void SFMergeBitmaps(SplineFont *sf,BDFFont *strikes) {
 static void FVAddToBackground(FontView *fv,BDFFont *bdf);
 
 int FVImportBDF(FontView *fv, char *filename, int ispk, int toback) {
-    BDFFont *b;
+    BDFFont *b, *anyb=NULL;
     unichar_t ubuf[140];
     char *eod, *fpt, *file, *full;
     int fcnt, any = 0;
@@ -763,6 +763,7 @@ int FVImportBDF(FontView *fv, char *filename, int ispk, int toback) {
 	free(full);
 	GProgressNextStage();
 	if ( b!=NULL ) {
+	    anyb = b;
 	    any = true;
 	    if ( b==fv->show )
 		GDrawRequestExpose(fv->v,NULL,false);
@@ -770,8 +771,12 @@ int FVImportBDF(FontView *fv, char *filename, int ispk, int toback) {
 	file = fpt+2;
     } while ( fpt!=NULL );
     GProgressEndIndicator();
-    if ( toback )
-	FVAddToBackground(fv,b);
+    if ( toback ) {
+	if ( anyb==NULL )
+	    GDrawError( "Could not find a bdf font in %s", file );
+	else
+	    FVAddToBackground(fv,anyb);
+    }
 return( any );
 }
 
