@@ -2377,6 +2377,12 @@ static void bCorrectDirection(Context *c) {
     }
 }
 
+static void bReplaceOutlineWithReference(Context *c) {
+    if ( c->a.argc!=1 )
+	error( c, "Wrong number of arguments");
+    FVReplaceOutlineWithReference(c->curfv);
+}
+
 static void bBuildComposit(Context *c) {
     if ( c->a.argc!=1 )
 	error( c, "Wrong number of arguments");
@@ -3673,6 +3679,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "BuildComposit", bBuildComposit },
     { "BuildComposite", bBuildComposit },
     { "BuildAccented", bBuildAccented },
+    { "ReplaceWithReference", bReplaceOutlineWithReference },
     { "MergeFonts", bMergeFonts },
 /*  Menu */
     { "AutoHint", bAutoHint },

@@ -1052,6 +1052,7 @@ static void FVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_Join	2128
 #define MID_PasteInto	2129
 #define MID_SameGlyphAs	2130
+#define MID_RplRef	2131
 #define MID_Convert2CID	2800
 #define MID_Flatten	2801
 #define MID_InsertFont	2802
@@ -1516,6 +1517,12 @@ static void FVMenuFindRpl(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SVCreate(fv);
 }
 
+static void FVMenuReplaceWithRef(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+
+    FVReplaceOutlineWithReference(fv);
+}
+
 static void cflistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     /*FontView *fv = (FontView *) GDrawGetUserData(gw);*/
 
@@ -1566,6 +1573,7 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_CopyWidth: case MID_CopyLBearing: case MID_CopyRBearing:
 	  case MID_CopyRef: case MID_UnlinkRef:
 	  case MID_RemoveUndoes: case MID_CopyFgToBg:
+	  case MID_RplRef:
 	    mi->ti.disabled = pos==-1;
 	  break;
 	  case MID_CopyVWidth: 
@@ -3686,6 +3694,7 @@ static GMenuItem edlist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Select, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, 0, ksm_control, sllist, sllistcheck },
     { { (unichar_t *) _STR_FindReplace, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'i' }, 'F', ksm_control|ksm_meta, NULL, NULL, FVMenuFindRpl },
+    { { (unichar_t *) _STR_ReplaceOutlineWithReference, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'i' }, '\0', ksm_control|ksm_meta, NULL, NULL, FVMenuReplaceWithRef, MID_RplRef },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Unlinkref, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'U' }, 'U', ksm_control, NULL, NULL, FVMenuUnlinkRef, MID_UnlinkRef },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},

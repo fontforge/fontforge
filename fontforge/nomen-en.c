@@ -2938,8 +2938,10 @@ static char *str_BadRefInSearchRpl = "The %1$s contains a reference to %2$.20hs 
 static char *str_NotFound = "Not Found"
 static char *str_PatternNotFound = "The search pattern was not found in the font %.100hs";
 static char *str_PatternNotFoundAgain = "The search pattern was not found again in the font %.100hs";
+static char *str_GlyphNotFound = "The outlines of glyph %2$.30hs were not found in the font %1$.60hs";
 static char *str_FindReplace = "Find / Replace"
 static char *mnemonic_FindReplace = "i";
+static char *str_ReplaceOutlineWithReference = "Replace with Reference"
     /* combinations */
 static char *str_SelectLigature = "Select a ligature to view"
 static char *str_SortBy = "Sort By:"
