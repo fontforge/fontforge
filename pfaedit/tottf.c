@@ -5946,9 +5946,12 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
 		    sf->encoding_name==em_sjis ? 2 :	/* SJIS */
 		    sf->encoding_name==em_big5 ? 4 :	/* Big5, traditional Chinese */
 		    /* sf->encoding_name==em_johab*/ 6;	/* Korean */
-	enc = sf->encoding_name;
-	if ( sf->encoding_name==em_ksc5601 ) enc = em_wansung;
-	else if ( sf->encoding_name==em_jis208 ) enc = em_sjis;
+	enc =	    sf->encoding_name==em_ksc5601 ? e_wansung :	/* Wansung, korean */
+		    sf->encoding_name==em_wansung ? e_wansung :	/* Wansung, korean */
+		    sf->encoding_name==em_jis208 ? e_sjis :	/* SJIS */
+		    sf->encoding_name==em_sjis ? e_sjis :	/* SJIS */
+		    sf->encoding_name==em_big5 ? e_big5 :	/* Big5, traditional Chinese */
+		    /* sf->encoding_name==em_johab*/ e_johab;	/* Korean */
 	maxlen = 3*maxlen+10;
 	space = galloc(maxlen);
 	for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL && (i!=6 || !at->applemode) ) {
