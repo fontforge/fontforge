@@ -2896,8 +2896,8 @@ static void WinBB(SplineFont *_sf,uint16 *winascent,uint16 *windescent,struct al
 		    b = c;
 		    first = false;
 		} else {
-		    if ( c.miny<b.miny ) c.miny = b.miny;
-		    if ( c.maxy>b.maxy ) c.maxy = b.maxy;
+		    if ( c.miny<b.miny ) b.miny = c.miny;
+		    if ( c.maxy>b.maxy ) b.maxy = c.maxy;
 		}
 	    }
 	}
@@ -2913,8 +2913,8 @@ static void WinBB(SplineFont *_sf,uint16 *winascent,uint16 *windescent,struct al
 			b = c;
 			first = false;
 		    } else {
-			if ( c.miny<b.miny ) c.miny = b.miny;
-			if ( c.maxy>b.maxy ) c.maxy = b.maxy;
+			if ( c.miny<b.miny ) b.miny = c.miny;
+			if ( c.maxy>b.maxy ) b.maxy = c.maxy;
 		    }
 		}
 	    }
@@ -2924,8 +2924,8 @@ static void WinBB(SplineFont *_sf,uint16 *winascent,uint16 *windescent,struct al
 	*winascent = at->head.ymax;
 	*windescent = -at->head.ymin;		/* Should be positive */
     } else {
-	*winascent = rint(c.maxy);
-	*windescent = -rint(c.miny);		/* Should be positive */
+	*winascent = rint(b.maxy);
+	*windescent = -rint(b.miny);		/* Should be positive */
     }
 }
 
