@@ -1985,7 +1985,7 @@ return(false);
 	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
 		if ( sf->chars[i]->orig_pos==0xffff )
 		    sf->chars[i]->orig_pos = ++tlen;
-	    enc_cnt = tlen;
+	    enc_cnt = tlen+1;
 	}
     }
 
