@@ -1714,7 +1714,8 @@ return;
 		    anchor = next;
 		else
 		    prev->next = next;
-		chunkfree(ap,sizeof(AnchorPoint));
+		ap->next = NULL;
+		AnchorPointsFree(ap);
 		anchor_lost_warning = true;
 	    }
 	}
@@ -1754,7 +1755,8 @@ return;
 		anchor = next;
 	    else
 		prev->next = next;
-	    chunkfree(ap,sizeof(AnchorPoint));
+	    ap->next = NULL;
+	    AnchorPointsFree(ap);
 	} else
 	    prev = ap;
     }

@@ -47,6 +47,7 @@
 # define FONTFORGE_CONFIG_GDRAW
 #endif
 
+
 /* Making FontForge handle more of the capabilities of type3 & svg fonts is not*/
 /*  something most people will want. It wastes space too. So I thought I'd    */
 /*  make it conditional. 						      */
@@ -57,6 +58,16 @@
 /*  transparencies, etc. (type3 doesn't support transparency, svg doesn't do  */
 /*  images)								      */
 /* Can be set from configure --with-multilayer				      */
+
+
+/* Making FontForge handle device tables uses up more space, so I want        */
+/*  people to be able to turn it off if space is an issue and device tables   */
+/*  (ability to correct rounding errors in spacing, ie. kerning, at small     */
+/*  point sizes) aren't important. */
+/*									      */
+/* #define FONTFORGE_CONFIG_DEVICETABLES				      */
+/*									      */
+/* Can be set from configure --with-devicetables			      */
 
 
 /* Sometimes I want to create a glyph which is a word, and this command       */

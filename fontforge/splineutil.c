@@ -3956,6 +3956,12 @@ void KernPairsFree(KernPair *kp) {
     KernPair *knext;
     for ( ; kp!=NULL; kp = knext ) {
 	knext = kp->next;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	if ( kp->adjust!=NULL ) {
+	    free(kp->adjust->corrections);
+	    chunkfree(kp->adjust,sizeof(DeviceTable));
+	}
+#endif
 	chunkfree(kp,sizeof(KernPair));
     }
 }
@@ -3970,7 +3976,8 @@ static AnchorPoint *AnchorPointsRemoveName(AnchorPoint *alist,AnchorClass *an) {
 		alist = next;
 	    else
 		prev->next = next;
-	    chunkfree(ap,sizeof(AnchorPoint));
+	    ap->next = NULL;
+	    AnchorPointsFree(ap);
 	    if ( ap->type==at_mark || ap->type==at_basechar || ap->type==at_basemark )
 		next = NULL;		/* Names only occur once, unless it's a ligature or cursive */
 	} else
@@ -4037,7 +4044,8 @@ AnchorPoint *APAnchorClassMerge(AnchorPoint *anchors,AnchorClass *into,AnchorCla
 		    anchors = next;
 		else
 		    prev->next = next;
-		chunkfree(ap,sizeof(AnchorPoint));
+		ap->next = NULL;
+		AnchorPointsFree(ap);
 	    }
 	} else
 	    prev = ap;
@@ -4078,9 +4086,119 @@ void AnchorPointsFree(AnchorPoint *ap) {
     AnchorPoint *anext;
     for ( ; ap!=NULL; ap = anext ) {
 	anext = ap->next;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	free(ap->xadjust.corrections);
+	free(ap->yadjust.corrections);
+#endif
 	chunkfree(ap,sizeof(AnchorPoint));
     }
 }
+
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+void ValDevFree(ValDevTab *adjust) {
+    if ( adjust==NULL )
+return;
+    free( adjust->xadjust.corrections );
+    free( adjust->yadjust.corrections );
+    free( adjust->xadv.corrections );
+    free( adjust->yadv.corrections );
+    chunkfree(adjust,sizeof(ValDevTab));
+}
+
+ValDevTab *ValDevTabCopy(ValDevTab *orig) {
+    ValDevTab *new;
+    int i;
+
+    if ( orig==NULL )
+return( NULL );
+    new = chunkalloc(sizeof(ValDevTab));
+    for ( i=0; i<4; ++i ) {
+	if ( (&orig->xadjust)[i].corrections!=NULL ) {
+	    int len = (&orig->xadjust)[i].last_pixel_size - (&orig->xadjust)[i].first_pixel_size + 1;
+	    (&new->xadjust)[i] = (&orig->xadjust)[i];
+	    (&new->xadjust)[i].corrections = galloc(len);
+	    memcpy((&new->xadjust)[i].corrections,(&orig->xadjust)[i].corrections,len);
+	}
+    }
+return( new );
+}
+
+void DeviceTableFree(DeviceTable *dt) {
+
+    if ( dt==NULL )
+return;
+
+    free(dt->corrections);
+    chunkfree(dt,sizeof(DeviceTable));
+}
+
+DeviceTable *DeviceTableCopy(DeviceTable *orig) {
+    DeviceTable *new;
+    int len;
+
+    if ( orig==NULL )
+return( NULL );
+    new = chunkalloc(sizeof(DeviceTable));
+    *new = *orig;
+    len = orig->last_pixel_size - orig->first_pixel_size + 1;
+    new->corrections = galloc(len);
+    memcpy(new->corrections,orig->corrections,len);
+return( new );
+}
+
+void DeviceTableSet(DeviceTable *adjust, int size, int correction) {
+    int len, i, j;
+
+    len = adjust->last_pixel_size-adjust->first_pixel_size + 1;
+    if ( correction==0 ) {
+	if ( adjust->corrections==NULL ||
+		size<adjust->first_pixel_size ||
+		size>adjust->last_pixel_size )
+return;
+	adjust->corrections[size-adjust->first_pixel_size] = 0;
+	for ( i=0; i<len; ++i )
+	    if ( adjust->corrections[i]!=0 )
+	break;
+	if ( i==len ) {
+	    free(adjust->corrections);
+	    memset(adjust,0,sizeof(DeviceTable));
+	} else {
+	    if ( i!=0 ) {
+		for ( j=0; j<len-i; ++j )
+		    adjust->corrections[j] = adjust->corrections[j+i];
+		adjust->first_pixel_size += i;
+		len -= i;
+	    }
+	    for ( i=len-1; i>=0; --i )
+		if ( adjust->corrections[i]!=0 )
+	    break;
+	    adjust->last_pixel_size = adjust->first_pixel_size+i;
+	}
+    } else {
+	if ( adjust->corrections==NULL ) {
+	    adjust->first_pixel_size = adjust->last_pixel_size = size;
+	    adjust->corrections = galloc(1);
+	} else if ( size>=adjust->first_pixel_size &&
+		size<=adjust->last_pixel_size ) {
+	} else if ( size>adjust->last_pixel_size ) {
+	    adjust->corrections = grealloc(adjust->corrections,
+		    size-adjust->first_pixel_size);
+	    for ( i=len; i<size-adjust->first_pixel_size; ++i )
+		adjust->corrections[i] = 0;
+	    adjust->last_pixel_size = size;
+	} else {
+	    int8 *new = galloc(adjust->last_pixel_size-size+1);
+	    memset(new,0,adjust->first_pixel_size-size);
+	    memcpy(new+adjust->first_pixel_size-size,
+		    adjust->corrections, len);
+	    adjust->first_pixel_size = size;
+	    free(adjust->corrections);
+	    adjust->corrections = new;
+	}
+	adjust->corrections[size-adjust->first_pixel_size] = correction;
+    }
+}
+#endif
 
 void PSTFree(PST *pst) {
     PST *pnext;
@@ -4090,9 +4208,18 @@ void PSTFree(PST *pst) {
 	    free(pst->u.lcaret.carets);
 	else if ( pst->type==pst_pair ) {
 	    free(pst->u.pair.paired);
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	    ValDevFree(pst->u.pair.vr[0].adjust);
+	    ValDevFree(pst->u.pair.vr[1].adjust);
+#endif
 	    chunkfree(pst->u.pair.vr,sizeof(struct vr [2]));
-	} else if ( pst->type!=pst_position )
+	} else if ( pst->type!=pst_position ) {
 	    free(pst->u.subs.variant);
+	} else if ( pst->type==pst_position ) {
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	    ValDevFree(pst->u.pos.adjust);
+#endif
+	}
 	chunkfree(pst,sizeof(PST));
     }
 }
@@ -4257,6 +4384,18 @@ return( NULL );
 	new->firsts[i] = copy(kc->firsts[i]);
     for ( i=0; i<new->second_cnt; ++i )
 	new->seconds[i] = copy(kc->seconds[i]);
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    new->adjusts = gcalloc(new->first_cnt*new->second_cnt,sizeof(DeviceTable));
+    memcpy(new->offsets,kc->offsets, new->first_cnt*new->second_cnt*sizeof(DeviceTable));
+    for ( i=new->first_cnt*new->second_cnt-1; i>=0 ; --i ) {
+	if ( new->adjusts[i].corrections!=NULL ) {
+	    int8 *old = new->adjusts[i].corrections;
+	    int len = new->adjusts[i].last_pixel_size - new->adjusts[i].first_pixel_size + 1;
+	    new->adjusts[i].corrections = galloc(len);
+	    memcpy(new->adjusts[i].corrections,old,len);
+	}
+    }
+#endif
     new->next = NULL;
 return( new );
 }
@@ -4273,6 +4412,11 @@ void KernClassListFree(KernClass *kc) {
 	free(kc->firsts);
 	free(kc->seconds);
 	free(kc->offsets);
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	for ( i=kc->first_cnt*kc->second_cnt-1; i>=0 ; --i )
+	    free(kc->adjusts[i].corrections);
+	free(kc->adjusts);
+#endif
 	n = kc->next;
 	chunkfree(kc,sizeof(KernClass));
 	kc = n;

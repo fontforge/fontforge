@@ -198,6 +198,20 @@ typedef struct bdffloat {
 #define SLI_UNKNOWN		0xffff
 #define SLI_NESTED		0xfffe
 
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+typedef struct devicetab {
+    uint16 first_pixel_size, last_pixel_size;		/* A range of point sizes to which this table applies */
+    int8 *corrections;					/* a set of pixel corrections, one for each point size */
+} DeviceTable;
+
+typedef struct valdev {		/* Value records can have four associated device tables */
+    DeviceTable xadjust;
+    DeviceTable yadjust;
+    DeviceTable xadv;
+    DeviceTable yadv;
+} ValDevTab;
+#endif
+
 enum pst_flags { pst_r2l=1, pst_ignorebaseglyphs=2, pst_ignoreligatures=4,
 	pst_ignorecombiningmarks=8 };
 enum anchorclass_type { act_mark, /* act_mklg, */act_mkmk, act_curs };
@@ -220,6 +234,9 @@ enum anchor_type { at_mark, at_basechar, at_baselig, at_basemark, at_centry, at_
 typedef struct anchorpoint {
     AnchorClass *anchor;
     BasePoint me;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    DeviceTable xadjust, yadjust;
+#endif
     unsigned int type: 4;
     unsigned int selected: 1;
     unsigned int ticked: 1;
@@ -242,6 +259,14 @@ enum possub_type { pst_null, pst_position, pst_pair,
 	/* A kludge used when cutting and pasting features */
 	pst_kernback, pst_vkernback
 	};
+
+struct vr {
+    int16 xoff, yoff, h_adv_off, v_adv_off;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    ValDevTab *adjust;
+#endif
+};
+
 typedef struct generic_pst {
     /* enum possub_type*/ unsigned int type: 7;
     unsigned int macfeature: 1;		/* tag should be interpretted as <feature,setting> rather than 'abcd' */
@@ -250,7 +275,7 @@ typedef struct generic_pst {
     uint32 tag;
     struct generic_pst *next;
     union {
-	struct vr { int16 xoff, yoff, h_adv_off, v_adv_off; } pos;
+	struct vr pos;
 	struct { char *paired; struct vr *vr; } pair;
 	struct { char *variant; } subs;
 	struct { char *components; } mult, alt;
@@ -653,6 +678,9 @@ typedef struct kernpair {
     int16 off;
     uint16 sli, flags;
     uint16 kcid;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    DeviceTable *adjust;		/* Only adjustment in one dimen, if more needed use pst */
+#endif
     struct kernpair *next;
 } KernPair;
 
@@ -665,6 +693,9 @@ typedef struct kernclass {
     uint16 flags;
     uint16 kcid;
     int16 *offsets;			/* array of first_cnt*second_cnt entries */
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    DeviceTable *adjusts;		/* array of first_cnt*second_cnt entries */
+#endif
     struct kernclass *next;
 } KernClass;
 
@@ -1186,11 +1217,19 @@ extern AnchorClass *AnchorClassCursMatch(SplineChar *sc1,SplineChar *sc2,
 	AnchorPoint **_ap1,AnchorPoint **_ap2 );
 extern PST *SCFindPST(SplineChar *sc,int type,uint32 tag,int sli,int flags);
 extern void SCInsertPST(SplineChar *sc,PST *new);
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+extern void ValDevFree(ValDevTab *adjust);
+extern ValDevTab *ValDevTabCopy(ValDevTab *orig);
+extern void DeviceTableFree(DeviceTable *adjust);
+extern DeviceTable *DeviceTableCopy(DeviceTable *orig);
+extern void DeviceTableSet(DeviceTable *adjust, int size, int correction);
+#endif
 extern void PSTFree(PST *lig);
-extern void PSTsFree(PST *lig);
 extern uint16 PSTDefaultFlags(enum possub_type type,SplineChar *sc );
 extern int PSTContains(const char *components,const char *name);
 extern int SCDefaultSLI(SplineFont *sf, SplineChar *default_script);
+extern int ScriptInSLI(SplineFont *sf,uint32 script,int sli);
+extern int SCScriptInSLI(SplineFont *sf,SplineChar *sc,int sli);
 extern StemInfo *StemInfoCopy(StemInfo *h);
 extern DStemInfo *DStemInfoCopy(DStemInfo *h);
 extern MinimumDistance *MinimumDistanceCopy(MinimumDistance *h);

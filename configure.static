@@ -851,6 +851,10 @@ Optional Packages:
   --with-freetype-src=dir   Specify freetype source directory
   --with-x                use the X Window System
   --with-multilayer   Control whether we build with support for type3/svg fonts containing multilayered drawing with strokes, fills, images, etc.
+  --with-devicetables   Control whether we build with support for device tables which allow fine control of kerning (etc.) at small point sizes
+  --with-gtk   Control whether we build using the gtk toolkit (does not work yet)
+  --with-gdraw   Control whether we build using fontforge's traditional toolkit (gdraw)
+  --with-noui   Control whether we build without any ui, just the ability to run scripts
 
 Some influential environment variables:
   CC          C compiler command
@@ -6381,6 +6385,68 @@ if test "${with_multilayer+set}" = set; then
     if test "$withval" != "no" >/dev/null 2>&1 ; then
 	cat >>confdefs.h <<\_ACEOF
 #define FONTFORGE_CONFIG_TYPE3 1
+_ACEOF
+
+    fi
+
+else
+  :
+fi;
+
+
+# Check whether --with-devicetables or --without-devicetables was given.
+if test "${with_devicetables+set}" = set; then
+  withval="$with_devicetables"
+
+    if test "$withval" != "no" >/dev/null 2>&1 ; then
+	cat >>confdefs.h <<\_ACEOF
+#define FONTFORGE_CONFIG_DEVICETABLES 1
+_ACEOF
+
+    fi
+
+else
+  :
+fi;
+
+
+# Check whether --with-gtk or --without-gtk was given.
+if test "${with_gtk+set}" = set; then
+  withval="$with_gtk"
+
+    if test "$withval" != "no" >/dev/null 2>&1 ; then
+	cat >>confdefs.h <<\_ACEOF
+#define FONTFORGE_CONFIG_GTK 1
+_ACEOF
+
+    fi
+
+else
+  :
+fi;
+
+# Check whether --with-gdraw or --without-gdraw was given.
+if test "${with_gdraw+set}" = set; then
+  withval="$with_gdraw"
+
+    if test "$withval" != "no" >/dev/null 2>&1 ; then
+	cat >>confdefs.h <<\_ACEOF
+#define FONTFORGE_CONFIG_GDRAW 1
+_ACEOF
+
+    fi
+
+else
+  :
+fi;
+
+# Check whether --with-noui or --without-noui was given.
+if test "${with_noui+set}" = set; then
+  withval="$with_noui"
+
+    if test "$withval" != "no" >/dev/null 2>&1 ; then
+	cat >>confdefs.h <<\_ACEOF
+#define FONTFORGE_CONFIG_NO_WINDOWING_UI 1
 _ACEOF
 
     fi

@@ -201,6 +201,36 @@ AC_ARG_WITH(multilayer,
     fi
  ], : )
 
+AC_ARG_WITH(devicetables,
+ [  --with-devicetables   Control whether we build with support for device tables which allow fine control of kerning (etc.) at small point sizes],
+ [
+    if test "$withval" != "no" >/dev/null 2>&1 ; then
+	AC_DEFINE(FONTFORGE_CONFIG_DEVICETABLES)
+    fi
+ ], AC_DEFINE(FONTFORGE_CONFIG_DEVICETABLES) )
+
+AC_ARG_WITH(gtk,
+ [  --with-gtk   Control whether we build using the gtk toolkit (does not work yet)],
+ [
+    if test "$withval" != "no" >/dev/null 2>&1 ; then
+	AC_DEFINE(FONTFORGE_CONFIG_GTK)
+    fi
+ ], : )
+AC_ARG_WITH(gdraw,
+ [  --with-gdraw   Control whether we build using fontforge's traditional toolkit (gdraw)],
+ [
+    if test "$withval" != "no" >/dev/null 2>&1 ; then
+	AC_DEFINE(FONTFORGE_CONFIG_GDRAW)
+    fi
+ ], : )
+AC_ARG_WITH(noui,
+ [  --with-noui   Control whether we build without any ui, just the ability to run scripts],
+ [
+    if test "$withval" != "no" >/dev/null 2>&1 ; then
+	AC_DEFINE(FONTFORGE_CONFIG_NO_WINDOWING_UI)
+    fi
+ ], : )
+
 test -d libs || mkdir libs
 
 AC_SUBST(VERSION)
