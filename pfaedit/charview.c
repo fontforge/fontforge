@@ -970,6 +970,10 @@ static void CVNewScale(CharView *cv) {
 static void CVFit(CharView *cv) {
     DBounds b;
     real left, right, top, bottom, hsc, wsc;
+    extern int palettes_docked;
+    int offset = palettes_docked ? 90 : 0;
+
+    if ( offset>cv->width ) offset = 0;
 
     SplineCharFindBounds(cv->sc,&b);
     bottom = b.miny;
@@ -977,7 +981,7 @@ static void CVFit(CharView *cv) {
     left = b.minx;
     right = b.maxx;
 
-    if ( bottom>0 ) bottom = 0;
+    if ( bottom>=0 ) bottom = -cv->sc->parent->descent;
     if ( left>0 ) left = 0;
     if ( right<cv->sc->width ) right = cv->sc->width;
     if ( top<bottom ) GDrawIError("Bottom bigger than top!");
@@ -986,7 +990,7 @@ static void CVFit(CharView *cv) {
     right -= left;
     if ( top==0 ) top = 1000;
     if ( right==0 ) right = 1000;
-    wsc = cv->width / right;
+    wsc = (cv->width-offset) / right;
     hsc = cv->height / top;
     if ( wsc<hsc ) hsc = wsc;
 
@@ -997,7 +1001,7 @@ static void CVFit(CharView *cv) {
 	cv->scale = 1/ceil(1/cv->scale);
     }
 
-    cv->xoff = -(left - (right/10))*cv->scale;
+    cv->xoff = -(left - (right/10))*cv->scale + offset;
     cv->yoff = -(bottom - (top/10))*cv->scale;
 
     CVNewScale(cv);
@@ -1885,22 +1889,24 @@ void SCClearSelPt(SplineChar *sc) {
 }
 
 void SCCharChangedUpdate(SplineChar *sc) {
-    FontView *fv = sc->parent->fv;
+    SplineFont *sf = sc->parent;
+
     sc->changed_since_autosave = true;
-    if ( !sc->changed && !sc->parent->onlybitmaps ) {
+    if ( !sc->changed && !sf->onlybitmaps ) {
 	sc->changed = true;
 	FVToggleCharChanged(sc);
     }
     sc->changedsincelasthinted = true;
     sc->changed_since_search = true;
-    fv->sf->changed = true;
-    fv->sf->changed_since_autosave = true;
-    if ( fv->cidmaster!=NULL )
-	fv->cidmaster->changed = fv->cidmaster->changed_since_autosave = true;
+    sf->changed = true;
+    sf->changed_since_autosave = true;
+    if ( sf->cidmaster!=NULL )
+	sf->cidmaster->changed = sf->cidmaster->changed_since_autosave = true;
     SCRegenDependents(sc);		/* All chars linked to this one need to get the new splines */
     SCUpdateAll(sc);
     SCRegenFills(sc);
-    FVRegenChar(fv,sc);
+    if ( sf->fv!=NULL )
+	FVRegenChar(sf->fv,sc);
 }
 
 void CVCharChangedUpdate(CharView *cv) {

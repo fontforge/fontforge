@@ -54,6 +54,10 @@ static void BVNewScale(BitmapView *bv) {
 static void BVFit(BitmapView *bv) {
     int left, right, top, bottom, hsc, wsc;
     int fh = bv->bdf->ascent+bv->bdf->descent;
+    extern int palettes_docked;
+    int offset = palettes_docked ? 80 : 0;
+
+    if ( offset>bv->width ) offset = 0;
 
     bottom = bv->bc->ymin;
     top = bv->bc->ymax;
@@ -73,7 +77,7 @@ static void BVFit(BitmapView *bv) {
     right -= left;
     if ( top==0 ) top = bv->bdf->pixelsize;
     if ( right==0 ) right = bv->bdf->pixelsize;
-    wsc = (8*bv->width) / (10*right);
+    wsc = (8*(bv->width-offset)) / (10*right);
     hsc = (8*bv->height) / (10*top);
     if ( wsc<hsc ) hsc = wsc;
     if ( hsc<=0 ) hsc = 1;
@@ -81,7 +85,7 @@ static void BVFit(BitmapView *bv) {
 
     bv->scale = hsc;
 
-    bv->xoff = left+(bv->width-right*bv->scale)/2;
+    bv->xoff = left+(bv->width-offset-right*bv->scale)/2 + offset;
     bv->yoff = bottom + (bv->height-top*bv->scale)/2;
     if ( bv->xoff<-3*fh*bv->scale ) bv->xoff = -3*fh*bv->scale;
     if ( bv->yoff<-2*fh*bv->scale ) bv->yoff = -2*fh*bv->scale;
