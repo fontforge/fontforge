@@ -313,7 +313,9 @@ static struct feature *aat_dumpmorx_substitutions(struct alltabs *at, SplineFont
 
     for ( i=0; i<sf->charcnt; ++i ) if ( (sc = sf->chars[i])!=NULL && sc->ttf_glyph!=-1) {
 	for ( pst=sc->possub; pst!=NULL; pst=pst->next ) if ( pst->type == pst_substitution ) {
-	    if ( OTTagToMacFeature(pst->tag,&ft,&fs)) {
+	    /* Arabic forms (marked by 'isol') are done with a contextual glyph */
+	    /*  substitution subtable (cursive connection) */
+	    if ( pst->tag!=CHR('i','s','o','l') && OTTagToMacFeature(pst->tag,&ft,&fs)) {
 		for ( j=cnt-1; j>=0 && subtags[j]!=pst->tag; --j );
 		if ( j<0 ) {
 		    if ( cnt>=max )
@@ -805,17 +807,8 @@ static struct feature *aat_dumpmorx_glyphforms(struct alltabs *at, SplineFont *s
 	    ssc->ticked = true;
 	}
 	glyphs[gcnt] = NULL;
-	if ( gcnt!=0 ) {
+	if ( gcnt!=0 && (cur = featureFromTag(CHR('i','s','o','l')))!=NULL ) {
 	    cur = chunkalloc(sizeof(struct feature));
-	    cur->otftag = CHR('i','n','i','t');
-	    cur->featureType = 2;		/* Cursive connection */
-	    cur->featureSetting = 2;		/* full cursive */
-	    cur->offSetting = 0;		/* unconnected */
-	    cur->name = "Full Cursive Connection";
-	    cur->offname = "No Cursive Connection";
-	    cur->ismutex = false;
-	    cur->defaultOn = true;
-	    cur->vertOnly = false;
 	    cur->r2l = sc->script==CHR('a','r','a','b') || sc->script==CHR('h','e','b','r');
 	    cur->next = features;
 	    features = cur;
