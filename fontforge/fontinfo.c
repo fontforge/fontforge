@@ -6434,9 +6434,9 @@ return;
 	int offset = (GTabSetGetTabLines(mgcd[0].ret)-2)*GDrawPointsToPixels(NULL,20);
 	GRect temp;
 	GDrawResize(gw,pos.width,pos.height+offset);
-	GGadgetResize(mgcd[0].ret,GDrawPointsToPixels(NULL,mgcd[0].gd.pos.width),
+	GGadgetResize(mgcd[0].ret,GDrawPointsToPixels(NULL,mgcd[0].gd.pos.width*GIntGetResource(_NUM_ScaleFactor)/100),
 		GDrawPointsToPixels(NULL,mgcd[0].gd.pos.height)+offset);
-	GGadgetMove(mgcd[1].ret,GDrawPointsToPixels(NULL,mgcd[1].gd.pos.x),
+	GGadgetMove(mgcd[1].ret,GDrawPointsToPixels(NULL,mgcd[1].gd.pos.x*GIntGetResource(_NUM_ScaleFactor)/100),
 		GDrawPointsToPixels(NULL,mgcd[1].gd.pos.y)+offset);
 	GGadgetGetSize(mgcd[2].ret,&temp);
 	GGadgetMove(mgcd[2].ret,temp.x, temp.y+offset);

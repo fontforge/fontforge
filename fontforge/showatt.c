@@ -2642,8 +2642,8 @@ void ShowAtt(SplineFont *sf) {
     gcd[1].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels;
     gcd[1].creator = GScrollBarCreate;
 
-    gcd[2].gd.pos.width = GIntGetResource(_NUM_Buttonsize);
-    gcd[2].gd.pos.x = (pos.width+sbsize-gcd[2].gd.pos.width)/2;
+    gcd[2].gd.pos.width = -1;
+    gcd[2].gd.pos.x = (pos.width-sbsize-GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor))/2;
     gcd[2].gd.pos.y = pos.height+sbsize+5;
     gcd[2].gd.flags = gg_visible | gg_enabled | gg_but_default | gg_but_cancel | gg_pos_in_pixels;
     label[2].text = (unichar_t *) _STR_OK;
