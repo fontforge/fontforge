@@ -57,6 +57,7 @@ struct ttfinfo {
     int width_cnt;		/* from the hhea table, in the hmtx table */
     int glyph_cnt;		/* from maxp table (or cff table) */
     unsigned int index_to_loc_is_long:1;	/* in head table */
+    unsigned int is_ttc:1;			/* Is it a font collection? */
     /* Mac fonts platform=0/1, platform specific enc id, roman=0, english is lang code 0 */
     /* iso platform=2, platform specific enc id, latin1=0/2, no language */
     /* microsoft platform=3, platform specific enc id, 1, english is lang code 0x??09 */
@@ -84,6 +85,7 @@ struct ttfinfo {
     real cidfontversion;
     int subfontcnt;
     SplineFont **subfonts;
+    char *inuse;		/* What glyphs are used by this font in the ttc */
 
     int numtables;
     		/* CFF  */
@@ -340,6 +342,7 @@ static int readttfheader(FILE *ttf, struct ttfinfo *info) {
     version=getlong(ttf);
     if ( version==CHR('t','t','c','f')) {
 	/* TrueType font collection */
+	info->is_ttc = true;
 	if ( !PickTTFFont(ttf))
 return( 0 );
 	/* If they picked a font, then we should be left pointing at the */
@@ -767,6 +770,8 @@ static void readttfcompositglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc) 
 	cur = gcalloc(1,sizeof(RefChar));
 	flags = getushort(ttf);
 	cur->local_enc = getushort(ttf);
+	if ( info->inuse!=NULL )
+	    info->inuse[cur->local_enc] = true;
 	if ( flags&_ARGS_ARE_WORDS ) {
 	    arg1 = (short) getushort(ttf);
 	    arg2 = (short) getushort(ttf);
@@ -827,8 +832,10 @@ return( sc );
 return( sc );
 }
 
+static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse);
+
 static void readttfglyphs(FILE *ttf,struct ttfinfo *info) {
-    int i;
+    int i, anyread;
     uint32 *goffsets = galloc((info->glyph_cnt+1)*sizeof(uint32));
 
     /* First we read all the locations. This might not be needed, they may */
@@ -844,9 +851,29 @@ static void readttfglyphs(FILE *ttf,struct ttfinfo *info) {
     }
 
     info->chars = gcalloc(info->glyph_cnt,sizeof(SplineChar *));
-    for ( i=0; i<info->glyph_cnt ; ++i ) {
-	info->chars[i] = readttfglyph(ttf,info,goffsets[i],goffsets[i+1]);
-	GProgressNext();
+    if ( !info->is_ttc ) {
+	/* read all the glyphs */
+	for ( i=0; i<info->glyph_cnt ; ++i ) {
+	    info->chars[i] = readttfglyph(ttf,info,goffsets[i],goffsets[i+1]);
+	    GProgressNext();
+	}
+    } else {
+	/* only read the glyphs we actually use in this font */
+	/* this is complicated by references, we can't just rely on the encoding */
+	/*  to tell us what is used */
+	info->inuse = gcalloc(info->glyph_cnt,sizeof(char));
+	readttfencodings(ttf,info,true);
+	anyread = true;
+	while ( anyread ) {
+	    anyread = false;
+	    for ( i=0; i<info->glyph_cnt ; ++i ) {
+		if ( info->inuse[i] && info->chars[i]==NULL ) {
+		    info->chars[i] = readttfglyph(ttf,info,goffsets[i],goffsets[i+1]);
+		    GProgressNext();
+		    anyread = info->chars[i]!=NULL;
+		}
+	    }
+	}
     }
     free(goffsets);
     GProgressNextStage();
@@ -2262,7 +2289,8 @@ static void readttfwidths(FILE *ttf,struct ttfinfo *info) {
 
     fseek(ttf,info->hmetrics_start,SEEK_SET);
     for ( i=0; i<info->width_cnt && i<info->glyph_cnt; ++i ) {
-	info->chars[i]->width = getushort(ttf);
+	if ( info->chars[i]!=NULL )		/* can happen in ttc files */
+	    info->chars[i]->width = getushort(ttf);
 	/* lsb = */ getushort(ttf);
     }
     for ( j=i; j<info->glyph_cnt; ++j )
@@ -2323,7 +2351,7 @@ static int modenc(int enc,int modtype) {
 return( enc );
 }
 
-static void readttfencodings(FILE *ttf,struct ttfinfo *info) {
+static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
     int i,j;
     int nencs, version;
     enum charset enc = em_none;
@@ -2371,7 +2399,10 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info) {
 	    for ( i=0; i<len-6; ++i )
 		table[i] = getc(ttf);
 	    for ( i=0; i<256 && i<info->glyph_cnt && i<len-6; ++i )
-		info->chars[table[i]]->enc = i;
+		if ( !justinuse )
+		    info->chars[table[i]]->enc = i;
+		else
+		    info->inuse[table[i]] = 1;
 	} else if ( format==4 ) {
 	    segCount = getushort(ttf)/2;
 	    /* searchRange = */ getushort(ttf);
@@ -2403,7 +2434,9 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info) {
 		    /* Done */;
 		else if ( rangeOffset[i]==0 ) {
 		    for ( j=startchars[i]; j<=endchars[i]; ++j ) {
-			if ( info->chars[(uint16) (j+delta[i])]->unicodeenc==-1 ) {
+			if ( justinuse )
+			    info->inuse[(uint16) (j+delta[i])] = true;
+			else if ( info->chars[(uint16) (j+delta[i])]->unicodeenc==-1 ) {
 			    info->chars[(uint16) (j+delta[i])]->unicodeenc = modenc(j,mod);
 			    info->chars[(uint16) (j+delta[i])]->enc = j;
 			} else
@@ -2417,7 +2450,9 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info) {
 					    j-startchars[i] ];
 			if ( index!=0 ) {
 			    index = (unsigned short) (index+delta[i]);
-			    if ( info->chars[index]->unicodeenc==-1 ) {
+			    if ( justinuse )
+				info->inuse[index] = 1;
+			    else if ( info->chars[index]->unicodeenc==-1 ) {
 				info->chars[index]->unicodeenc = modenc(j,mod);
 				info->chars[index]->enc = j;
 			    } else
@@ -2436,8 +2471,12 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info) {
 	    int first, count;
 	    first = getushort(ttf);
 	    count = getushort(ttf);
-	    for ( i=0; i<count; ++i )
-		info->chars[getushort(ttf)]->unicodeenc = first+i;
+	    if ( justinuse )
+		for ( i=0; i<count; ++i )
+		    info->inuse[getushort(ttf)]= 1;
+	    else
+		for ( i=0; i<count; ++i )
+		    info->chars[getushort(ttf)]->unicodeenc = first+i;
 	} else if ( format==2 ) {
 	    GDrawIError("I don't support mixed 8/16 bit characters (no shit jis for me)");
 	} else if ( format==8 ) {
@@ -2555,7 +2594,8 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
     /* where no names are given, use the encoding to guess at them */
     /*  (or if the names default to the macintosh standard) */
     for ( i=0; i<info->glyph_cnt; ++i ) {
-	if ( info->chars[i]->name!=NULL )
+	/* info->chars[i] can be null in some TTC files */
+	if ( info->chars[i]==NULL || info->chars[i]->name!=NULL )
     continue;
 	if ( i==0 )
 	    name = ".notdef";
@@ -2732,6 +2772,8 @@ static void readttfgsub(FILE *ttf,struct ttfinfo *info) {
 static int ttfFixupRef(struct ttfinfo *info,int i) {
     RefChar *ref, *prev, *next;
 
+    if ( info->chars[i]==NULL )		/* Can happen in ttc files */
+return( false );
     if ( info->chars[i]->ticked )
 return( false );
     info->chars[i]->ticked = true;
@@ -2799,8 +2841,8 @@ return( 0 );
     }
     if ( info->hmetrics_start!=0 )
 	readttfwidths(ttf,info);
-    if ( info->cidregistry!=NULL )
-	readttfencodings(ttf,info);
+    if ( info->cidregistry==NULL )
+	readttfencodings(ttf,info,false);
     if ( info->os2_start!=0 )
 	readttfos2metrics(ttf,info);
     if ( info->postscript_start!=0 )
@@ -2904,7 +2946,10 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 
     sf = SplineFontEmpty();
     sf->display_size = -default_fv_font_size;
-    sf->display_antialias = default_fv_antialias;
+    if ( info->glyph_cnt<2000 )
+	sf->display_antialias = default_fv_antialias;
+    else
+	sf->display_antialias = false;
     sf->fontname = info->fontname;
     sf->fullname = info->fullname;
     sf->familyname = info->familyname;

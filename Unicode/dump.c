@@ -26,6 +26,7 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include "../inc/charset.h"
 #include "../inc/basics.h"
 
@@ -50,6 +51,14 @@ char *cjk[] = { "JIS0208.TXT", "JIS0212.TXT", "BIG5.TXT", "GB2312.TXT",
 	"HANGUL.TXT", NULL };
 /* I'm only paying attention to Wansung encoding (in HANGUL.TXT) which is 94x94 */
 /* I used to look at OLD5601, but that maps to Unicode 1.0, and Hangul's moved*/
+char *adobecjk[] = { "aj14cid2code.txt", "aj20cid2code.txt", "ac13cid2code.txt",
+	"ag14cid2code.txt", "ak12cid2code.txt", NULL };
+/* I'm told that most of the mappings provided on the Unicode site go to */
+/*  Unicode 1.* and that CJK have been moved radically since. So instead */
+/*  of the unicode site's files, try using adobe's which claim they are */
+/*  up to date. These may be found in: */
+/*	ftp://ftp.ora.com/pub/examples/nutshell/ujip/adobe/samples/{aj14,aj20,ak12,ac13,ag14}/cid2code.txt */
+/* they may be bundled up in a tar file, I forget exactly... */
 char *cjknames[] = { "jis208", "jis212", "big5", "gb2312", "ksc5601", NULL };
 int cjkmaps[] = { em_jis208, em_jis212, em_big5, em_gb2312, em_ksc5601 };
 
@@ -253,10 +262,37 @@ static void dumprandom(FILE *output,FILE *header) {
 }
 #endif
 
+static int getnth(char *buffer, int col) {
+    int i, val=0;
+    char *end;
+
+    if ( col==1 ) {
+	/* first column is decimal, others are hex */
+	if ( !isdigit(*buffer))
+return( -1 );
+	while ( isdigit(*buffer))
+	    val = 10*val + *buffer++-'0';
+return( val );
+    }
+    for ( i=1; i<col; ++buffer ) {
+	if ( *buffer=='\t' )
+	    ++i;
+	else if ( *buffer=='\0' )
+return( -1 );
+    }
+    val = strtol(buffer,&end,16);
+    if ( end==buffer )
+return( -1 );
+    if ( *end=='v' )
+return( -1 );
+
+return( val );
+}
+
 static void dumpjis(FILE *output,FILE *header) {
     FILE *file;
     int i,j,k, first, last;
-    long _orig, _unicode, sjis;
+    long _orig, _unicode;
     unichar_t unicode208[94*94], unicode212[94*94];
     unichar_t *table[256], *plane;
     char buffer[200];
@@ -264,51 +300,76 @@ static void dumpjis(FILE *output,FILE *header) {
     for ( k=0; k<256; ++k ) table[k] = NULL;
 
     j=0;
-    file = fopen( cjk[j], "r" );
+    file = fopen( adobecjk[j], "r" );
     if ( file==NULL ) {
-	fprintf( stderr, "Can't open %s\n", cjk[j]);
+	fprintf( stderr, "Can't open %s\n", adobecjk[j]);
     } else {
 	for ( i=0; i<sizeof(unicode208)/sizeof(unicode208[0]); ++i )
 	    unicode208[i] = 0;
 	while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
 	    if ( buffer[0]=='#' )
 	continue;
-	    sscanf(buffer, "0x%lx 0x%lx 0x%lx", &sjis, &_orig, &_unicode);
+	    _orig = getnth(buffer,2);
+	    if ( _orig==-1 )
+	continue;
+	    _unicode = getnth(buffer,18);
+	    if ( _unicode==-1 ) {
+		fprintf( stderr, "Eh? JIS 208-1997 %x is unencoded\n", _orig );
+	continue;
+	    }
 	    if ( table[_unicode>>8]==NULL )
 		table[_unicode>>8] = calloc(256,2);
 	    table[_unicode>>8][_unicode&0xff] = _orig;
 	    _orig -= 0x2121;
 	    _orig = (_orig>>8)*94 + (_orig&0xff);
-	    unicode208[_orig] = _unicode;
-	    if ( used[_unicode>>8]==NULL ) {
-		used[_unicode>>8] = calloc(256,sizeof(long));
+	    if ( _orig>=94*94 )
+		fprintf( stderr, "Attempt to index with %d\n", _orig );
+	    else {
+		unicode208[_orig] = _unicode;
+		if ( used[_unicode>>8]==NULL ) {
+		    used[_unicode>>8] = calloc(256,sizeof(long));
+		}
+		used[_unicode>>8][_unicode&0xff] |= (1<<em_jis208);
 	    }
-	    used[_unicode>>8][_unicode&0xff] |= (1<<em_jis208);
 	}
 	fclose(file);
     }
 
     j=1;
-    file = fopen( cjk[j], "r" );
+    file = fopen( adobecjk[j], "r" );
     if ( file==NULL ) {
-	fprintf( stderr, "Can't open %s\n", cjk[j]);
+	fprintf( stderr, "Can't open %s\n", adobecjk[j]);
     } else {
 	for ( i=0; i<sizeof(unicode212)/sizeof(unicode212[0]); ++i )
 	    unicode212[i] = 0;
 	while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
 	    if ( buffer[0]=='#' )
 	continue;
-	    sscanf(buffer, "0x%lx 0x%lx", &_orig, &_unicode);
+	    _orig = getnth(buffer,2);
+	    if ( _orig==-1 )
+	continue;
+	    _unicode = getnth(buffer,4);
+	    if ( _unicode==-1 ) {
+		fprintf( stderr, "Eh? JIS 212-1990 %x is unencoded\n", _orig );
+	continue;
+	    }
 	    if ( table[_unicode>>8]==NULL )
 		table[_unicode>>8] = calloc(256,2);
-	    table[_unicode>>8][_unicode&0xff] = _orig|0x8000;
+	    if ( table[_unicode>>8][_unicode&0xff]==0 )
+		table[_unicode>>8][_unicode&0xff] = _orig|0x8000;
+	    else
+		fprintf( stderr, "JIS clash at JIS212 %x, unicode %x\n", _orig, _unicode );	/* there are said to be a few of these, I'll just always map to 208 */
 	    _orig -= 0x2121;
 	    _orig = (_orig>>8)*94 + (_orig&0xff);
-	    unicode212[_orig] = _unicode;
-	    if ( used[_unicode>>8]==NULL ) {
-		used[_unicode>>8] = calloc(256,sizeof(long));
+	    if ( _orig>=94*94 )
+		fprintf( stderr, "Attempt to index JIS212 with %d\n", _orig );
+	    else {
+		unicode212[_orig] = _unicode;
+		if ( used[_unicode>>8]==NULL ) {
+		    used[_unicode>>8] = calloc(256,sizeof(long));
+		}
+		used[_unicode>>8][_unicode&0xff] |= (1<<em_jis212);
 	    }
-	    used[_unicode>>8][_unicode&0xff] |= (1<<em_jis212);
 	}
 	fclose(file);
     }
@@ -377,16 +438,23 @@ static void dumpbig5(FILE *output,FILE *header) {
 
     for ( k=0; k<256; ++k ) table[k] = NULL;
 
-    file = fopen( cjk[j], "r" );
+    file = fopen( adobecjk[j], "r" );
     if ( file==NULL ) {
-	fprintf( stderr, "Can't open %s\n", cjk[j]);
+	fprintf( stderr, "Can't open %s\n", adobecjk[j]);
     } else {
 	for ( i=0; i<sizeof(unicode)/sizeof(unicode[0]); ++i )
 	    unicode[i] = 0;
 	while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
 	    if ( buffer[0]=='#' )
 	continue;
-	    sscanf(buffer, "0x%lx 0x%lx", &_orig, &_unicode);
+	    _orig = getnth(buffer,2);
+	    if ( /*_orig==-1*/ _orig<0xa140 )
+	continue;
+	    _unicode = getnth(buffer,4);
+	    if ( _unicode==-1 ) {
+		fprintf( stderr, "Eh? BIG5 %x is unencoded\n", _orig );
+	continue;
+	    }
 	    unicode[_orig-0xa100] = _unicode;
 	    if ( table[_unicode>>8]==NULL )
 		table[_unicode>>8] = calloc(256,2);
@@ -525,7 +593,7 @@ static void dumpWansung(FILE *output,FILE *header) {
 	}
 }
 
-static void dump94x94(FILE *output,FILE *header) {
+static void dumpgb2312(FILE *output,FILE *header) {
     FILE *file;
     int i,j,k, first, last;
     long _orig, _unicode;
@@ -535,17 +603,24 @@ static void dump94x94(FILE *output,FILE *header) {
 
     for ( k=0; k<256; ++k ) table[k] = NULL;
 
-    for ( j=3; j<4 && cjk[j]!=NULL; ++j ) {
-	file = fopen( cjk[j], "r" );
+    j = 3;
+	file = fopen( adobecjk[j], "r" );
 	if ( file==NULL ) {
-	    fprintf( stderr, "Can't open %s\n", cjk[j]);
+	    fprintf( stderr, "Can't open %s\n", adobecjk[j]);
 	} else {
 	    for ( i=0; i<sizeof(unicode)/sizeof(unicode[0]); ++i )
 		unicode[i] = 0;
 	    while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
 		if ( buffer[0]=='#' )
 	    continue;
-		sscanf(buffer, "0x%lx 0x%lx", &_orig, &_unicode);
+		_orig = getnth(buffer,2);
+		if ( _orig==-1 )
+	    continue;
+		_unicode = getnth(buffer,11);
+		if ( _unicode==-1 ) {
+		    fprintf( stderr, "Eh? GB2312-80 %x is unencoded\n", _orig );
+	    continue;
+		}
 		if ( table[_unicode>>8]==NULL )
 		    table[_unicode>>8] = calloc(256,2);
 		table[_unicode>>8][_unicode&0xff] = _orig;
@@ -603,7 +678,6 @@ static void dump94x94(FILE *output,FILE *header) {
 	    free(table[k]);
 	    table[k]=NULL;
 	}
-    }
 }
 
 static void dumpcjks(FILE *output,FILE *header) {
@@ -614,7 +688,7 @@ static void dumpcjks(FILE *output,FILE *header) {
     dumpjis(output,header);
     dumpbig5(output,header);
     dumpWansung(output,header);
-    dump94x94(output,header);
+    dumpgb2312(output,header);
 }
 
 static void dumptrans(FILE *output, FILE *header) {

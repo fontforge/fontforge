@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 6-Aug-2001 -->
+  <!-- AP: Last modified: 8-Aug-2001 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -13,8 +13,12 @@
 </H1>
 <P>
 <FONT COLOR="Red"><STRONG>PfaEdit</STRONG></FONT> -- A postscript font editor
-that lets you create your own postscript, truetype, opentype and bitmap (bdf)
-fonts, or edit existing ones. Also lets you convert one format to another.
+that lets you create your own postscript, truetype, opentype, cid-keyed and
+bitmap (bdf) fonts, or edit existing ones. Also lets you convert one format
+to another.
+<P>
+<FONT COLOR="Red"><STRONG><BIG><BIG>I shall be not be responding to bugs
+between 9-August-2001 and 21-August-2001.</BIG></BIG></STRONG></FONT>
 <P>
 Contents
 <UL>
@@ -61,14 +65,14 @@ know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-010806.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 06-August-2001
+    <A HREF="pfaedit-010808.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 08-August-2001
   <LI>
     <A HREF="pfaedit-solaris-010624.tgz">Download pfaedit Solaris 8.0
     </A>executable Version: 24-June-2001
   <LI>
-    <A HREF="pfaedit-010628-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
-    Version: 28-June-2001<BR>
+    <A HREF="pfaedit-010808-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
+    Version: 8-August-2001<BR>
     &nbsp;
   <LI>
     If you want to do autotracing around character images you should also download
@@ -82,12 +86,12 @@ know when you do</A>.
   <A NAME="source">Source</A> distribution
 </H2>
 <P>
-You can download a <A HREF="pfaedit-010628-1.src.rpm">source RPM</A>: Version:
-28-June-2001<BR>
-Or you can download the following three packages. Version: 6-August-2001
+You can download a <A HREF="pfaedit-010808-1.src.rpm">source RPM</A>: Version:
+8-August-2001<BR>
+Or you can download the following three packages. Version: 8-August-2001
 <UL>
   <LI>
-    <A HREF="libgunicode-010806.tgz">Unicode library source</A> (6-August-2001)<BR>
+    <A HREF="libgunicode-010808.tgz">Unicode library source</A> (8-August-2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGUnicode/index.html">docs</A>
   <LI>
@@ -96,7 +100,7 @@ Or you can download the following three packages. Version: 6-August-2001
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
   <LI>
-    <A HREF="pfaedit_src-010806.tgz">Pfaedit source</A> (6-August-2001)<BR>
+    <A HREF="pfaedit_src-010808.tgz">Pfaedit source</A> (8-August-2001)<BR>
     -- <A HREF="overview.html">docs</A>
   <LI>
     If you want to do autotracing around character images you should also download
@@ -180,6 +184,16 @@ bitmap fonts that pfaedit uses
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    8-August-2001
+    <UL>
+      <LI>
+	Some minor fixes to gchardlg.c
+      <LI>
+	Try to upgrade the CJ translation tables to Unicode 3
+      <LI>
+	Improve processing of ttc files (I can actually read one no)
+    </UL>
   <LI>
     6-August-2001
     <UL>
@@ -1549,6 +1563,9 @@ prepared to save frequently and always work on a copy of the original.
   <LI>
     The MetaFont command doesn't work well.
   <LI>
+    I'm told that my conversions between CJK characters and Unicode are out of
+    date. Anyone know where uptodate conversion tables exist?
+  <LI>
     ???
 </UL>
 <H2>
@@ -1690,6 +1707,9 @@ now placed in graceful retirement by MacroMedia.
 	<A HREF="http://www.microsoft.com/typography/tt/tt.htm">Microsoft's version</A>
     </UL>
   <LI>
+    <A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5014.CMap_CIDFont_Spec.pdf">CID
+    keyed fonts</A>
+  <LI>
     <A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5012.Type42_Spec.pdf">Postscript
     Type42</A> (the opposite of opentype, it's truetype embedded in postscript)
   <LI>
@@ -1709,8 +1729,13 @@ Other font links
     <A HREF="http://www.fonts.com/hp/panose/greybook/frame.htm">Panose font
     classification scheme</A>
   <LI>
-    <A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/psrefman.pdf">Postscript
+    <A HREF="http://www.adobe.com/print/postscript/pdfs/PLRM.pdf">Postscript
     reference manual</A>
+    <UL>
+      <LI>
+	(old<A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/psrefman.pdf">
+	reference manual</A>)
+    </UL>
   <LI>
     <A HREF="http://www.microsoft.com/typography/fontpack/default.htm">Microsoft's
     downloadable fonts</A>
@@ -1733,6 +1758,9 @@ Other font links
   <LI>
     <A HREF="http://www.egt.ie/standards/iso10646/bmp-roadmap-table.html">Pictures
     of the characters</A>
+  <LI>
+    <A HREF="http://partners.adobe.com/asn/developer/type/unicodegn.html">Postscript
+    Unicode names</A>
 </UL>
 <P>
 Other Encodings

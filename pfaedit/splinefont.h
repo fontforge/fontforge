@@ -30,7 +30,11 @@
 #include "basics.h"
 #include "charset.h"
 
-#define real	float
+#ifdef USE_DOUBLE
+# define real	double
+#else
+# define real	float
+#endif
 
 struct psdict {
     int cnt, next;

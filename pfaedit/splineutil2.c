@@ -38,6 +38,7 @@
 int RealNear(real a,real b) {
     real d;
 
+#ifdef USE_DOUBLE
     if ( a==0 )
 return( b>-1e-8 && b<1e-8 );
     if ( b==0 )
@@ -46,6 +47,16 @@ return( a>-1e-8 && a<1e-8 );
     d = a/(1024*1024.);
     if ( d<0 ) d = -d;
 return( b>a-d && b<a+d );
+#else		/* For floats */
+    if ( a==0 )
+return( b>-1e-5 && b<1e-5 );
+    if ( b==0 )
+return( a>-1e-5 && a<1e-5 );
+
+    d = a/(1024*64.);
+    if ( d<0 ) d = -d;
+return( b>a-d && b<a+d );
+#endif
 }
 
 int RealNearish(real a,real b) {
