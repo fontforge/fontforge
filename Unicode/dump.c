@@ -519,21 +519,27 @@ static void dumpWansung(FILE *output,FILE *header) {
 
     for ( k=0; k<256; ++k ) table[k] = NULL;
 
-	file = fopen( cjk[j], "r" );
+	file = fopen( adobecjk[j], "r" );
 	if ( file==NULL ) {
-	    fprintf( stderr, "Can't open %s\n", cjk[j]);
+	    fprintf( stderr, "Can't open %s\n", adobecjk[j]);
 	} else {
 	    for ( i=0; i<sizeof(unicode)/sizeof(unicode[0]); ++i )
 		unicode[i] = 0;
 	    while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
 		if ( buffer[0]=='#' )
 	    continue;
-		if ( sscanf(buffer, "%*d %lx %*x %*x %*x %*x %lx", &_orig, &_unicode)!=2 )
+		_orig = getnth(buffer,2);
+		if ( _orig<0x2121 || (_orig&0xff)<0x21 || _orig>0x7e7e || (_orig&0xff)>0x7e )
 	    continue;
+		_unicode = getnth(buffer,8);
+		if ( _unicode==-1 ) {
+		    fprintf( stderr, "Eh? Wansung %x is unencoded\n", _orig );
+	    continue;
+		}
 		if ( table[_unicode>>8]==NULL )
 		    table[_unicode>>8] = calloc(256,2);
 		table[_unicode>>8][_unicode&0xff] = _orig;
-		_orig -= 0xA1A1;
+		_orig -= 0x2121;
 		_orig = (_orig>>8)*94 + (_orig&0xff);
 		if ( _orig>=94*94 ) {
 		    fprintf( stderr, "Not 94x94\n" );
