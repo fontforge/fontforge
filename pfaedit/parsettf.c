@@ -2813,11 +2813,13 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 /* Well I should only deal with apple unicode specific==0 (default) and 3 (U2.0 semantics) */
 /*  but apple ships dfonts with specific==1 (Unicode 1.1 semantics) */
 /*  which is stupid of them */
-		( platform==0 /*&& (specific==0 || specific==3)*/ && enc!=em_unicode4 )) {	/* Apple Unicode */
+		( platform==0 /*&& (specific==0 || specific==3)*/ && enc!=em_unicode4 && enc!=em_symbol )) {	/* Apple Unicode */
 	    enc = em_unicode;
 	    encoff = offset;
 	    mod = 0;
-	} else if ( platform==3 && specific==0 && (enc==em_none||enc==-2||enc==em_mac) ) {
+	/* choose ms symbol over apple unicode. If there's an ms uncode it will */
+	/*  come after ms symbol in the list and we'll get that */
+	} else if ( platform==3 && specific==0 && (enc==em_none||enc==-2||enc==em_mac||enc==em_unicode) ) {
 	    /* Only select symbol if we don't have something better */
 	    enc = em_symbol;
 	    encoff = offset;
