@@ -759,10 +759,114 @@ static void PIDoCombiners(PI *pi, SplineChar *sc, unichar_t *accents) {
 	fprintf( pi->out, "%g %g rmoveto <", sc->width*pi->scale-xmove, -ymove );
 }
 
+AnchorPos *AnchorPositioning(SplineChar *sc,unichar_t *ustr,SplineChar **sstr ) {
+    AnchorPos *apos, *apt, *aend, *atest;
+    AnchorPoint *ap, *map;
+    SplineChar *mark;
+
+    for ( ap=sc->anchor; ap!=NULL && ap->type==at_mark; ap=ap->next );
+    if ( ap==NULL )
+return( NULL );
+    for ( ap=sc->anchor; ap!=NULL; ap=ap->next )
+	ap->ticked = ap->type==at_mark;
+
+    apt = apos = aend = NULL;
+    while ( 1 ) {
+	if ( ustr ) {
+	    mark = NULL;
+	    while ( *ustr && mark==NULL )
+		mark = SFGetChar(sc->parent,*ustr++,NULL);
+	} else
+	    mark = *sstr++;
+	if ( mark==NULL )
+    break;
+	map = NULL;
+	/* We don't handle the case of a mark having two different basemark anchors */
+	/*  which are both in use */
+	if ( apt!=NULL ) for ( atest=apt-1; atest>=apos; --atest ) if ( !atest->ticked ) {
+	    for ( ap=atest->sc->anchor; ap!=NULL; ap=ap->next ) if ( ap->type==at_basemark ) {
+		for ( map=mark->anchor; map!=NULL; map=map->next )
+		    if ( map->type==at_mark && map->anchor==ap->anchor )
+		break;
+		if ( map!=NULL )
+	    break;
+	    }
+	    if ( map!=NULL )
+	break;
+	}
+	if ( map==NULL ) {
+	    for ( ap=sc->anchor; ap!=NULL; ap=ap->next ) if ( !ap->ticked ) {
+		for ( map=mark->anchor; map!=NULL; map=map->next )
+		    if ( map->type==at_mark && map->anchor==ap->anchor )
+		break;
+		if ( map!=NULL )
+	    break;
+	    }
+	    if ( map==NULL )
+	break;
+	    atest = NULL;
+	    ap->ticked = true;
+	} else
+	    atest->ticked = true;
+	if ( apt>=aend ) {
+	    if ( apt==NULL ) {
+		apt = apos = galloc(10*sizeof(AnchorPos));
+		aend = apos+10-1;
+	    } else {
+		AnchorPos *new = grealloc(apos,(aend-apos+31)*sizeof(AnchorPos) );
+		apt = new + (apt-apos);
+		aend = new + (aend-apos)+30;
+		apos = new;
+	    }
+	}
+	apt->sc = mark;
+	apt->apm = map;
+	apt->apb = ap;
+	if ( atest==NULL ) {
+	    apt->base_index = -1;
+	    apt->x = ap->me.x-map->me.x;
+	    apt->y = ap->me.y-map->me.y;
+	} else {
+	    apt->base_index = atest-apos;
+	    apt->x = ap->me.x-map->me.x + atest->x;
+	    apt->y = ap->me.y-map->me.y + atest->y;
+	}
+	apt->ticked = false;
+	++apt;
+    }
+    if ( apt==apos ) {
+	free( apos );
+return( NULL );
+    }
+    apt->sc = NULL;
+return( apos );
+}
+
+void AnchorPosFree(AnchorPos *apos) {
+    free( apos );
+}
+
+static void PIDrawAnchors(PI *pi,SplineChar *sc, AnchorPos *apos) {
+    /* Draw a set of marks, positioned by anchors */
+    int xoff = -sc->width, yoff = 0;	/* Motion needed to reach the origin of the base character */
+
+    while ( apos->sc != NULL ) {
+	fprintf(pi->out,"> show %g %g rmoveto <", (xoff+apos->x)*pi->scale, (yoff+apos->y)*pi->scale );
+	outputchar(pi,apos->sc);
+	yoff = -apos->y;
+	xoff = -apos->x-apos->sc->width;
+	++apos;
+    }
+    xoff += sc->width;
+    if ( xoff!=0 || yoff!=0 )
+	fprintf(pi->out,"> show %g %g rmoveto <", xoff*pi->scale, yoff*pi->scale );
+}
+
 static void PIDumpChars(PI *pi, unichar_t *pt, unichar_t *ept, int xstart) {
     SplineChar *sc, *nsc;
     unichar_t *npt;
     int off;
+    AnchorPos *apos, *atest;
 
     if ( pi->ypos - pi->pointsize < -(pi->pageheight-90) && pi->ypos!=-30 ) {
 	samplestartpage(pi);
@@ -774,11 +878,20 @@ static void PIDumpChars(PI *pi, unichar_t *pt, unichar_t *ept, int xstart) {
     while ( pt<ept ) {
 	sc = nsc;
 	nsc = NULL;
-	for ( npt=pt+1; npt<ept && iscombining(*npt); ++npt );
+	apos = NULL;
+	if ( sc!=NULL && sc->anchor!=NULL && (apos = AnchorPositioning(sc,pt+1,NULL))!=NULL ) {
+	    npt = pt+1;
+	    for ( atest = apos; atest->sc!=NULL; ++atest )
+		++npt;
+	} else
+	    for ( npt=pt+1; npt<ept && iscombining(*npt); ++npt );
 	nsc = findchar(pi,*npt);
 	if ( sc!=NULL ) {
 	    outputchar(pi,sc);
-	    if ( npt>pt+1 )
+	    if ( apos!=NULL ) {
+		PIDrawAnchors(pi,sc,apos);
+		AnchorPosFree(apos);
+	    } else if ( npt>pt+1 )
 		PIDoCombiners(pi,sc,pt+1);
 	    off = AnyKerns(sc,nsc);
 	    if ( off!=0 )

@@ -135,6 +135,7 @@ typedef struct anchorpoint {
     BasePoint me;
     unsigned int type: 4;
     unsigned int selected: 1;
+    unsigned int ticked: 1;
     int lig_index;
     struct anchorpoint *next;
 } AnchorPoint;
@@ -562,6 +563,16 @@ struct sflist {
     struct sflist *next;
 };
 
+    /* Used for drawing text with mark to base anchors */
+typedef struct anchorpos {
+    SplineChar *sc;		/* This is the mark being positioned */
+    int x,y;			/* Its origin should be shifted this much relative to that of the original base char */
+    AnchorPoint *apm;		/* The anchor point in sc used to position it */
+    AnchorPoint *apb;		/* The anchor point in the base character against which we are positioned */
+    int base_index;		/* Index in this array to the base character (-1=> original base char) */
+    unsigned int ticked: 1;	/* Used as a mark to mark */
+} AnchorPos;
+
 enum ttf_flags { ttf_flag_shortps = 1, ttf_flag_nohints = 2, ttf_flag_applemode=4 };
 enum openflags { of_fstypepermitted=1 };
 
@@ -939,6 +950,10 @@ extern int UniFromName(const char *name);
 extern int uUniFromName(const unichar_t *name);
 
 extern void doversion(void);
+
+extern AnchorPos *AnchorPositioning(SplineChar *sc,unichar_t *ustr,SplineChar **sstr );
+extern void AnchorPosFree(AnchorPos *apos);
+
 
 # if HANYANG
 extern void SFDDumpCompositionRules(FILE *sfd,struct compositionrules *rules);
