@@ -1104,7 +1104,7 @@ static char *str_XHeightC = "XHeight:";
 static char *str_XHeightCPopup = "The height of the lower case letters with flat tops"
 static char *str_Quad = "Quad:";
 static char *str_QuadPopup = "The width of one em"
-static char *str_ExtraSp = "Extra Sp:";
+static char *str_ExtraSp = "Extra Sp: ";
 static char *str_ExtraPopup = "Either:\nThe amount of extra space to be added after a sentence\nOr the space to be used within math formulae"
 static char *str_MathSp = "Math Sp:";
   /* TeX math font params */
