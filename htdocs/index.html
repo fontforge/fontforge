@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 24-Jan-2002 -->
+  <!-- AP: Last modified: 25-Jan-2002 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -72,8 +72,8 @@ you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-020124.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 243-Jan-2002
+    <A HREF="pfaedit-020125.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 25-Jan-2002
   <LI>
     <A HREF="pfaedit-solaris-020117.tgz">Download pfaedit Solaris 8.0
     </A>executable Version: 17-Jan-2002
@@ -87,7 +87,7 @@ you do</A>.
     <A HREF="Problems-MacOSX.html#binary">A Mac OS/X distribution</A> (with Caveats).
     Version 1-Dec-2001
   <LI>
-    <A HREF="pfaedit_cygwin-020119.tgz">A cygwin version</A>. Version: 19-Jan-2002
+    <A HREF="pfaedit_cygwin-020125.tgz">A cygwin version</A>. Version: 25-Jan-2002
   <LI>
     <A HREF="ftp://nchrem.tnw.tudelft.nl/pub/pfaedit/">An OpenVMS executable
     </A>(by Jacob Jansen): Version Approximately 23-Sept-2001<BR>
@@ -107,9 +107,9 @@ If you want to edit CID keyed fonts you probably need these
 <P>
 You can download a <A HREF="pfaedit-020123-1.src.rpm">source RPM</A>: Version:
 23-Jan-2002<BR>
-Or you can download the <A HREF="pfaedit_full-020124.tgz">entire source tree
+Or you can download the <A HREF="pfaedit_full-020125.tgz">entire source tree
 </A>in one .tgz file: Version
-24-Jan-2002<!--
+25-Jan-2002<!--
 Or you can download the following three packages. Version: 19-Jan-2002
 <UL>
 <LI>
@@ -235,6 +235,34 @@ up into one <A HREF="pfaedit_htdocs-011116.tgz">tgz file</A> 16-Nov-2001.
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    25-Jan-2002
+    <UL>
+      <LI>
+	Oops. Generate command in scripting language only generated pfb fonts
+      <LI>
+	PfaEdit would get confused if it loaded a font from a script when running
+	with windows. Eventually it would crash, but perhaps not until you exited.
+      <LI>
+	Added
+	<UL>
+	  <LI>
+	    $italicangle
+	  <LI>
+	    $cidfontname, $cidfamilyname, $cidfullname
+	  <LI>
+	    $weight, $copyright
+	  <LI>
+	    $cidweight, $cidcopyright
+	  <LI>
+	    SetItalicAngle
+	</UL>
+      <LI>
+	Removed $cidname (replaced with $cidfontname)
+      <LI>
+	Added a Call... button to the execute script dlg to allow you to insert a
+	call to a script file easily
+    </UL>
   <LI>
     24-Jan-2002
     <UL>

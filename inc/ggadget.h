@@ -216,6 +216,7 @@ int GGadgetActiveGadgetEditCmd(GWindow gw,enum editor_commands cmd);
 
 void GTextFieldSelect(GGadget *g,int sel_start, int sel_end);
 void GTextFieldShow(GGadget *g,int pos);
+void GTextFieldReplace(GGadget *g,const unichar_t *txt);
 void GGadgetClearList(GGadget *g);
 void GGadgetSetList(GGadget *g, GTextInfo **ti, int32 copyit);
 GTextInfo **GGadgetGetList(GGadget *g,int32 *len);	/* Do not free!!! */

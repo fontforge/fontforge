@@ -424,7 +424,11 @@ static void bOpen(Context *c) {
     sf = LoadSplineFont(c->a.vals[1].u.sval);
     if ( sf==NULL )
 	errors(c, "Failed to open", c->a.vals[1].u.sval);
-    if ( sf->fv==NULL )
+    if ( sf->fv!=NULL )
+	/* All done */;
+    else if ( screen_display!=NULL )
+	FontViewCreate(sf);
+    else
 	FVAppend(_FontViewCreate(sf));
     c->curfv = sf->fv;
 }
@@ -772,6 +776,15 @@ static void _SetFontNames(Context *c,SplineFont *sf) {
 static void bSetFontNames(Context *c) {
     SplineFont *sf = c->curfv->sf;
     _SetFontNames(c,sf);
+}
+
+static void bSetItalicAngle(Context *c) {
+
+    if ( c->a.argc==2 )
+	error( c, "Wrong number of arguments");
+    if ( c->a.vals[1].type!=v_int )
+	error(c,"Bad argument type");
+    c->curfv->sf->italicangle = c->a.vals[1].u.ival;
 }
 
 static SplineChar *GetOneSelChar(Context *c) {
@@ -1397,6 +1410,7 @@ struct builtins { char *name; void (*func)(Context *); int nofontok; } builtins[
     { "Reencode", bReencode },
     { "SetCharCnt", bSetCharCnt },
     { "SetFontNames", bSetFontNames },
+    { "SetItalicAngle", bSetItalicAngle },
     { "SetCharName", bSetCharName },
     { "SetUnicodeValue", bSetUnicodeValue },
     { "Transform", bTransform },
@@ -1461,15 +1475,15 @@ return( c->tok );
     }
     do {
 	ch = cgetc(c);
-	if ( isalpha(ch) || ch=='$' || ch=='_' ) {
+	if ( isalpha(ch) || ch=='$' || ch=='_' || ch=='.' ) {
 	    char *pt = c->tok_text, *end = c->tok_text+TOK_MAX;
 	    int toolong = false;
-	    while ( (isalnum(ch) || ch=='$' || ch=='_' ) && pt<end ) {
+	    while ( (isalnum(ch) || ch=='$' || ch=='_' || ch=='.' ) && pt<end ) {
 		*pt++ = ch;
 		ch = getc(c->script);
 	    }
 	    *pt = '\0';
-	    while ( isalnum(ch) || ch=='$' || ch=='_' ) {
+	    while ( isalnum(ch) || ch=='$' || ch=='_' || ch=='.' ) {
 		ch = getc(c->script);
 		toolong = true;
 	    }
@@ -1877,18 +1891,34 @@ static void handlename(Context *c,Val *val) {
 		val->type = v_str;
 		val->u.sval = copy(sf==NULL?"":sf->fontname);
 	    } else if ( strcmp(name,"$fontname")==0 || strcmp(name,"familyname")==0 ||
-		    strcmp(name,"$fullname")==0 ) {
+		    strcmp(name,"$fullname")==0 || strcmp(name,"$weight")==0 ||
+		    strcmp(name,"$copyright")==0 ) {
 		if ( c->curfv==NULL ) error(c,"No current font");
 		val->type = v_str;
-		val->u.sval = copy(name[2]=='o'?c->curfv->sf->fontname:
+		val->u.sval = copy(strcmp(name,"$fontname")==0?c->curfv->sf->fontname:
 			name[2]=='a'?c->curfv->sf->familyname:
-				    c->curfv->sf->fullname);
-	    } else if ( strcmp(name,"$cidname")==0 ) {
+			name[2]=='u'?c->curfv->sf->fullname:
+			name[2]=='e'?c->curfv->sf->weight:
+				     c->curfv->sf->copyright);
+	    } else if ( strcmp(name,"$cidfontname")==0 || strcmp(name,"cidfamilyname")==0 ||
+		    strcmp(name,"$cidfullname")==0 || strcmp(name,"$cidweight")==0 ||
+		    strcmp(name,"$cidcopyright")==0 ) {
 		if ( c->curfv==NULL ) error(c,"No current font");
-		if ( c->curfv->sf->cidmaster==NULL )
 		val->type = v_str;
-		val->u.sval = copy(c->curfv->sf->cidmaster==NULL?"":
-			c->curfv->sf->cidmaster->fontname);
+		if ( c->curfv->sf->cidmaster==NULL )
+		    val->u.sval = copy("");
+		else {
+		    SplineFont *sf = c->curfv->sf->cidmaster;
+		    val->u.sval = copy(strcmp(name,"$cidfontname")==0?sf->fontname:
+			    name[5]=='a'?sf->familyname:
+			    name[5]=='u'?sf->fullname:
+			    name[5]=='e'?sf->weight:
+					 sf->copyright);
+		}
+	    } else if ( strcmp(name,"$italicangle")==0 ) {
+		if ( c->curfv==NULL ) error(c,"No current font");
+		val->type = v_int;
+		val->u.ival = rint(c->curfv->sf->italicangle);
 	    } else if ( strcmp(name,"$trace")==0 ) {
 		val->type = v_lval;
 		val->u.lval = &c->trace;
@@ -2501,6 +2531,26 @@ struct sd_data {
 #define SD_Height	270
 #define CID_Script	1001
 
+static int SD_Call(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	static unichar_t filter[] = { '*','.','p','e',  0 };
+	unichar_t *fn;
+	unichar_t *insert;
+    
+	fn = GWidgetOpenFile(GStringGetResource(_STR_CallScript,NULL), NULL, filter, NULL);
+	if ( fn==NULL )
+return(true);
+	insert = galloc((u_strlen(fn)+10)*sizeof(unichar_t));
+	*insert = '"';
+	u_strcpy(insert+1,fn);
+	uc_strcat(insert,"\"()");
+	GTextFieldReplace(GWidgetGetControl(GGadgetGetWindow(g),CID_Script),insert);
+	free(insert);
+	free(fn);
+    }
+return( true );
+}
+
 static int SD_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct sd_data *sd = GDrawGetUserData(GGadgetGetWindow(g));
@@ -2602,7 +2652,7 @@ void ScriptDlg(FontView *fv) {
 	memset(&label,0,sizeof(label));
 
 	gcd[0].gd.pos.x = 10; gcd[0].gd.pos.y = 10;
-	gcd[0].gd.pos.width = SD_Width-20; gcd[0].gd.pos.height = SD_Height-50;
+	gcd[0].gd.pos.width = SD_Width-20; gcd[0].gd.pos.height = SD_Height-54;
 	gcd[0].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap;
 	gcd[0].gd.cid = CID_Script;
 	gcd[0].creator = GTextAreaCreate;
@@ -2627,10 +2677,20 @@ void ScriptDlg(FontView *fv) {
 	gcd[2].gd.handle_controlevent = SD_Cancel;
 	gcd[2].creator = GButtonCreate;
 
-	gcd[3].gd.pos.x = 2; gcd[3].gd.pos.y = 2;
-	gcd[3].gd.pos.width = pos.width-4; gcd[3].gd.pos.height = pos.height-4;
-	gcd[3].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
-	gcd[3].creator = GGroupCreate;
+	gcd[3].gd.pos.x = (SD_Width-GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor))/2; gcd[3].gd.pos.y = SD_Height-40;
+	gcd[3].gd.pos.width = -1; gcd[3].gd.pos.height = 0;
+	gcd[3].gd.flags = gg_visible | gg_enabled;
+	label[3].text = (unichar_t *) _STR_Call;
+	label[3].text_in_resource = true;
+	gcd[3].gd.label = &label[3];
+	gcd[3].gd.mnemonic = 'a';
+	gcd[3].gd.handle_controlevent = SD_Call;
+	gcd[3].creator = GButtonCreate;
+
+	gcd[4].gd.pos.x = 2; gcd[4].gd.pos.y = 2;
+	gcd[4].gd.pos.width = pos.width-4; gcd[4].gd.pos.height = pos.height-4;
+	gcd[4].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
+	gcd[4].creator = GGroupCreate;
 
 	GGadgetsCreate(gw,gcd);
     }

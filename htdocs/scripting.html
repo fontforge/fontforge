@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 23-Jan-2002 -->
+  <!-- AP: Last modified: 25-Jan-2002 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -221,9 +221,18 @@ ones)
   <LI>
     <CODE>$fullname </CODE>the name contained in the postscript FullName field
   <LI>
-    <CODE>$cidname </CODE>returns the fontname of the top-level cid-keyed font
-    (or the empty string if there is none)<BR>
+    <CODE>$weight </CODE>the name contained in the postscript Weight field
+  <LI>
+    <CODE>$copyright </CODE>the name contained in the postscript Notice field
+  <LI>
+    <CODE>$cidfontname </CODE>returns the fontname of the top-level cid-keyed
+    font (or the empty string if there is none)<BR>
     Can be used to detect if this is a cid keyed font.
+  <LI>
+    <CODE>$cidfamilyname, $cidfullname, $cidweight, $cidcopyright </CODE>similar
+    to above
+  <LI>
+    <CODE>$italicangle </CODE>the value of the postscript italic angle field
   <LI>
     <CODE>$curcid </CODE>returns the fontname of the current font
   <LI>
@@ -472,6 +481,10 @@ a[4][0] = "Nested array";
   <DD>
     Sets various postscript names associated with a font. If a name is omitted
     (or is the empty string) it will not be changed.
+  <DT>
+    SetItalicAngle(angle)
+  <DD>
+    Sets the postscript italic angle field appropriately.
   <DT>
     SetCharName(name[,set-from-name-flag])
   <DD>

@@ -1295,6 +1295,10 @@ static char *str_BuildingKoreanFont = "Building Korean Font";
     /* Transform */
 static char *str_TransformBackground = "Transform Background Too";
 static char mnemonic_TransformBackground = 'B';
+    /* scripting */
+static char *str_Call = "Call...";
+static char mnemonic_Call = 'a';
+static char *str_CallScript = "Call Script";
     /* start (about box) */
 static char *str_FreePress = "A free press discriminates\nagainst the illiterate.";
 static char *str_GaudiamusLigature = "Gaudiamus Ligature!";

@@ -243,7 +243,7 @@ return;
     }
 }
 
-static void _GTextFieldReplace(GTextField *gt, unichar_t *str) {
+static void _GTextFieldReplace(GTextField *gt, const unichar_t *str) {
     unichar_t *old = gt->oldtext;
     unichar_t *new = galloc((u_strlen(gt->text)-(gt->sel_end-gt->sel_start) + u_strlen(str)+1)*sizeof(unichar_t));
 
@@ -263,7 +263,7 @@ static void _GTextFieldReplace(GTextField *gt, unichar_t *str) {
     GTextFieldRefigureLines(gt,gt->sel_oldstart);
 }
 
-static void GTextFieldReplace(GTextField *gt, unichar_t *str) {
+static void GTextField_Replace(GTextField *gt, const unichar_t *str) {
     _GTextFieldReplace(gt,str);
     GTextField_Show(gt,gt->sel_start);
 }
@@ -531,7 +531,7 @@ static void GTextFieldPaste(GTextField *gt,enum selnames sel) {
 	int32 len;
 	temp = GDrawRequestSelection(gt->g.base,sel,"Unicode",&len);
 	if ( temp!=NULL ) 
-	    GTextFieldReplace(gt,temp);
+	    GTextField_Replace(gt,temp);
 	free(temp);
     } else if ( GDrawSelectionHasType(gt->g.base,sel,"STRING")) {
 	unichar_t *temp; char *ctemp;
@@ -539,7 +539,7 @@ static void GTextFieldPaste(GTextField *gt,enum selnames sel) {
 	ctemp = GDrawRequestSelection(gt->g.base,sel,"STRING",&len);
 	if ( ctemp!=NULL ) {
 	    temp = def2u_copy(ctemp);
-	    GTextFieldReplace(gt,temp);
+	    GTextField_Replace(gt,temp);
 	    free(ctemp); free(temp);
 	}
     }
@@ -554,11 +554,11 @@ static int gtextfield_editcmd(GGadget *g,enum editor_commands cmd) {
 	gt->sel_end = u_strlen(gt->text);
 return( true );
       case ec_clear:
-	GTextFieldReplace(gt,nullstr);
+	GTextField_Replace(gt,nullstr);
 return( true );
       case ec_cut:
 	GTextFieldGrabSelection(gt,sn_clipboard);
-	GTextFieldReplace(gt,nullstr);
+	GTextField_Replace(gt,nullstr);
 return( true );
       case ec_copy:
 	GTextFieldGrabSelection(gt,sn_clipboard);
@@ -590,12 +590,12 @@ return( true );			/* but probably best to return success */
 	    } else
 		gt->sel_start = GTextFieldSelBackword(gt->text,gt->sel_start);
 	}
-	GTextFieldReplace(gt,nullstr);
+	GTextField_Replace(gt,nullstr);
 return( true );
       case ec_deleteword:
         if ( gt->sel_start==gt->sel_end && gt->sel_start!=0 )
 	    GTextFieldSelectWord(gt,gt->sel_start,&gt->sel_start,&gt->sel_end);
-	GTextFieldReplace(gt,nullstr);
+	GTextField_Replace(gt,nullstr);
 return( true );
     }
 return( false );
@@ -665,7 +665,7 @@ static int GTextFieldDoChange(GTextField *gt, GEvent *event) {
 return( 2 );
 		--gt->sel_start;
 	    }
-	    GTextFieldReplace(gt,nullstr);
+	    GTextField_Replace(gt,nullstr);
 return( true );
 	  break;
 	  case GK_Delete:
@@ -674,7 +674,7 @@ return( true );
 return( 2 );
 		++gt->sel_end;
 	    }
-	    GTextFieldReplace(gt,nullstr);
+	    GTextField_Replace(gt,nullstr);
 return( true );
 	  break;
 	  case GK_Left: case GK_KP_Left:
@@ -856,7 +856,7 @@ return( false );
 	    /* fall through into return case */
 	  case GK_Return: case GK_Linefeed:
 	    if ( gt->accepts_returns ) {
-		GTextFieldReplace(gt,newlinestr);
+		GTextField_Replace(gt,newlinestr);
 return( true );
 	    }
 	  break;
@@ -866,13 +866,13 @@ return( false );
 	    /* fall through into tab case */
 	  case GK_Tab:
 	    if ( gt->accepts_tabs ) {
-		GTextFieldReplace(gt,tabstr);
+		GTextField_Replace(gt,tabstr);
 return( true );
 	    }
 	  break;
 	}
     } else {
-	GTextFieldReplace(gt,event->u.chr.chars);
+	GTextField_Replace(gt,event->u.chr.chars);
 return( true );
     }
 
@@ -1538,6 +1538,13 @@ void GTextFieldSelect(GGadget *g,int start, int end) {
     gt->sel_start = gt->sel_base = start;
     gt->sel_end = end;
     _ggadget_redraw(g);			/* Should be safe just to draw the textfield gadget, sbs won't have changed */
+}
+
+void GTextFieldReplace(GGadget *g,const unichar_t *txt) {
+    GTextField *gt = (GTextField *) g;
+
+    GTextField_Replace(gt,txt);
+    _ggadget_redraw(g);
 }
 
 static void GListFSelectOne(GGadget *g, int32 pos) {
