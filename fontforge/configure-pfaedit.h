@@ -120,6 +120,15 @@
 /* #define FONTFORGE_CONFIG_CVT_OLD_MAC_FEATURES			      */
 /*									      */
 
+
+/* Normally fontforge uses float (32 bit real data type) to store position    */
+/*  and transformation data. If you prefer you may use double (64 bit real)   */
+/*  instead.  The extra precision is usually not needed, but the extra space  */
+/*  can be a problem with large (CJK, UNICODE) fonts.                         */
+/*									      */
+/* #define FONTFORGE_CONFIG_USE_DOUBLE					      */
+/*									      */
+
 /* ************************************************************************** */
 /* *********************** Set by configure script ************************** */
 /* ************************************************************************** */

@@ -2129,7 +2129,7 @@ return(true);
 	    pgwidth = 516; pgheight = 728;
 	} else {
 	    char *cret = cu_copy(ret), *pt;
-	    real pw,ph, scale;
+	    float pw,ph, scale;
 	    if ( sscanf(cret,"%gx%g",&pw,&ph)!=2 ) {
 		IError("Bad Pagesize must be a known name or <num>x<num><units>\nWhere <units> is one of pt (points), mm, cm, in" );
 return( true );
