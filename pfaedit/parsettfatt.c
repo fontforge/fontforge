@@ -3615,15 +3615,17 @@ return(NULL);
 	uint32 *lookups;
 	for ( i=0; i<st->nclasses*st->nstates; ++i ) {
 	    if ( as->state[i].u.context.mark_tag!=0xffff ) {
-		if ( as->state[i].u.context.mark_tag>lookup_max )
+		if ( ((int) as->state[i].u.context.mark_tag)>lookup_max )
 		    lookup_max = as->state[i].u.context.mark_tag;
 		as->state[i].u.context.mark_tag = TagFromInfo(info,as->state[i].u.context.mark_tag);
-	    }
+	    } else
+		as->state[i].u.context.mark_tag=0;
 	    if ( as->state[i].u.context.cur_tag!=0xffff ) {
-		if ( as->state[i].u.context.cur_tag>lookup_max )
+		if ( ((int) as->state[i].u.context.cur_tag)>lookup_max )
 		    lookup_max = as->state[i].u.context.cur_tag;
 		as->state[i].u.context.cur_tag = TagFromInfo(info,as->state[i].u.context.cur_tag);
-	    }
+	    } else
+		as->state[i].u.context.cur_tag = 0;
 	}
 	++lookup_max;
 	lookups = galloc(lookup_max*sizeof(uint32));
