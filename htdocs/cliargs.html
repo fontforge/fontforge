@@ -2,9 +2,9 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Jan-2002 -->
-  <!-- AP: Last modified: 16-Apr-2004 -->
-  <LINK REL="icon" href="ffanvil16.png">
+  <!-- AP: Last modified: 9-Aug-2004 -->
   <TITLE>Command Line Arguments</TITLE>
+  <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
 <BODY>
 <H1 ALIGN=Center>
@@ -161,6 +161,14 @@ FontForge examines the following environment variables:
   <DD>
     Turns on verbose mode in script execution (the script will be printed to
     stdout as it is executed).
+  <DT>
+    <CODE>FONTFORGE_LOADPREFS</CODE>
+  <DD>
+    Controls loading of preference items. If set to "Always" then preferences
+    will be loaded even for scripts. If set to "Never" then preferences will
+    not be loaded unless explicitly requested. If unset (or if set to any other
+    value) then preferences will be loaded when ff starts up with a user interface,
+    and will not be loaded if ff starts up executing a script.
 </DL>
 <P>
   <HR>

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 24-Jul-2004 -->
+  <!-- AP: Last modified: 11-Aug-2004 -->
   <TITLE>The Edit Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -448,8 +448,8 @@ view this menu will be disabled when one of the text fields has the focus.
     things which should be references and makes them be.
     <P>
     This is primarily for use after reading a postscript (type1, otf or cff)
-    font. The reference information will usually be lost, and this command can
-    find it again.
+    font. The reference information will usually be lost in these formats, and
+    this command can find it again.
     <P>
     Suppose the font contains a glyph "Acircumflex" which contains an embedded
     copy of "A" (a copy of the contours, not a references), then if you select
@@ -457,6 +457,9 @@ view this menu will be disabled when one of the text fields has the focus.
     that looks like "A", remove it from any glyphs in which it is found and replace
     it with a reference. It applies this same algorithm for all selected glyphs.
     If you want to check for every possibility, just select all glyphs first.
+    <P>
+    After completion, the selection will be set to those characters which have
+    been changed by the command.
   <DT>
     <A NAME="Unlink">Unlink</A> Reference
   <DD>

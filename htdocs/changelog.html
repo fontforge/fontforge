@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 8-Aug-2004 -->
+  <!-- AP: Last modified: 15-Aug-2004 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -11,6 +11,59 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    ???
+    <UL>
+      <LI>
+	Oops, didn't get the expand stroke scripting patch quite right
+      <LI>
+	<FONT COLOR="Red"><STRONG><BIG>Changed the way preferences are handled in
+	scripts</BIG></STRONG></FONT>
+	<UL>
+	  <LI>
+	    By default preferences are no longer loaded when starting a script.
+	  <LI>
+	    Preferences are not saved in a script unless explicitly requested.
+	  <LI>
+	    Added 2 new scripting functions LoadPrefs() and SavePrefs()
+	  <LI>
+	    Added an environment variable FONTFORGE_LOADPREFS to give the user control
+	    over loading of preferences.
+	</UL>
+      <LI>
+	Used to have a preference item DumpGlyphMap. Now we have an equivalent flag
+	in the Generate Fonts [Options] dialog.
+      <LI>
+	The SetPanose scripting command didn't work. MURAOKA Taro provides a patch
+      <LI>
+	It was not possible to get or set NewCharset preference item with GetPref/SetPref
+	scripting commands. Now GetPref returns a magic number, which may be used
+	in SetPref. SetPref will accept either a number or one of the encodings accepted
+	by Reencode().
+      <LI>
+	If you copied a glyph feature from a glyph that didn't have that feature,
+	and then did a paste ff would crash.
+      <LI>
+	Added two new tools to the outline character view. One allows you to rotated
+	your glyph through 3dimensions (and project it back on the xy plane), the
+	other allows you to do a perspective transformation.
+      <LI>
+	Extended the Transformation dialog to handle 3D rotation+projection. After
+	all it's just:
+	<TABLE BORDER CELLPADDING="2" ALIGN="Center">
+	  <TR>
+	    <TD>cos(y-axis-rotation)</TD>
+	    <TD><P ALIGN=Center>
+	      0</TD>
+	  </TR>
+	  <TR>
+	    <TD><P ALIGN=Center>
+	      0</TD>
+	    <TD>cos(x-axis-rotation)</TD>
+	  </TR>
+	</TABLE>
+      <LI>
+    </UL>
   <LI>
     8-Aug-2004
     <UL>

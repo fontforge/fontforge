@@ -63,14 +63,18 @@ typedef struct transdata {
 #define CID_Clockwise	1014
 #define CID_XPercent	1015
 #define CID_YPercent	1016
+#define CID_XDegree	1017
+#define CID_YDegree	1018
+#define CID_XAxis	1019
+#define CID_YAxis	1020
 
 #define CID_First	CID_Type
-#define CID_Last	CID_YPercent
+#define CID_Last	CID_YAxis
 
 #define TBlock_Width	270
 #define TBlock_Height	40
 #define TBlock_Top	32
-#define TBlock_XStart	125
+#define TBlock_XStart	130
 
 static GTextInfo origin[] = {
     { (unichar_t *) _STR_CharacterOrigin, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
@@ -78,7 +82,7 @@ static GTextInfo origin[] = {
     { (unichar_t *) _STR_LastPress, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }};
 
-static int selcid[] = { 0, CID_XMove, CID_Angle, CID_Scale, CID_XScale, 0, CID_SkewAng };
+static int selcid[] = { 0, CID_XMove, CID_Angle, CID_Scale, CID_XScale, 0, CID_SkewAng, CID_XAxis };
 static GTextInfo transformtypes[] = {
     { (unichar_t *) _STR_DoNothing, NULL, 0, 0, (void *) 0x1000, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) _STR_MoveDDD, NULL, 0, 0, (void *) 0x1, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
@@ -87,6 +91,7 @@ static GTextInfo transformtypes[] = {
     { (unichar_t *) _STR_ScaleDDD, NULL, 0, 0, (void *) 0x8, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) _STR_FlipDDD, NULL, 0, 0, (void *) 0x10, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) _STR_SkewDDD, NULL, 0, 0, (void *) 0x20, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) _STR_Rotate3dDDD, NULL, 0, 0, (void *) 0x40, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) _STR_MoveByRulerDDD, NULL, 0, 0, (void *) 0x401, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) _STR_RotateByRulerDDD, NULL, 0, 0, (void *) 0x402, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) _STR_SkewByRulerDDD, NULL, 0, 0, (void *) 0x420, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
@@ -115,7 +120,7 @@ void skewselect(BVTFunc *bvtf,real t) {
 static int Trans_OK(GGadget *g, GEvent *e) {
     GWindow tw;
     real transform[6], trans[6], t[6];
-    real angle;
+    double angle, angle2;
     int i, index, err;
     int dobackground = false, round_2_int = false, dokerns = false, dokp=false;
     BasePoint base;
@@ -153,12 +158,12 @@ static int Trans_OK(GGadget *g, GEvent *e) {
 	      case 0:		/* Do Nothing */
 	      break;
 	      case 1:		/* Move */
-		trans[4] = GetReal(tw,CID_XMove,"X Movement",&err);
-		trans[5] = GetReal(tw,CID_YMove,"Y Movement",&err);
+		trans[4] = GetRealR(tw,CID_XMove,_STR_XMovement,&err);
+		trans[5] = GetRealR(tw,CID_YMove,_STR_YMovement,&err);
 		bvts[bvpos].x = trans[4]; bvts[bvpos].y = trans[5]; bvts[bvpos++].func = bvt_transmove;
 	      break;
 	      case 2:		/* Rotate */
-		angle = GetReal(tw,CID_Angle,"Rotation Angle",&err);
+		angle = GetRealR(tw,CID_Angle,_STR_RotationAngle,&err);
 		if ( GGadgetIsChecked( GWidgetGetControl(tw,CID_Clockwise)) )
 		    angle = -angle;
 		if ( fmod(angle,90)!=0 )
@@ -175,12 +180,12 @@ static int Trans_OK(GGadget *g, GEvent *e) {
 		trans[2] = -(trans[1] = sin(angle));
 	      break;
 	      case 3:		/* Scale Uniformly */
-		trans[0] = trans[3] = GetReal(tw,CID_Scale,"Scale Factor",&err)/100.0;
+		trans[0] = trans[3] = GetRealR(tw,CID_Scale,_STR_ScaleFactor,&err)/100.0;
 		bvts[0].func = bvt_none;		/* Bad trans=> No trans */
 	      break;
 	      case 4:		/* Scale */
-		trans[0] = GetReal(tw,CID_XScale,"X Scale Factor",&err)/100.0;
-		trans[3] = GetReal(tw,CID_YScale,"Y Scale Factor",&err)/100.0;
+		trans[0] = GetRealR(tw,CID_XScale,_STR_XScaleFactor,&err)/100.0;
+		trans[3] = GetRealR(tw,CID_YScale,_STR_YScaleFactor,&err)/100.0;
 		bvts[0].func = bvt_none;		/* Bad trans=> No trans */
 	      break;
 	      case 5:		/* Flip */
@@ -193,12 +198,18 @@ static int Trans_OK(GGadget *g, GEvent *e) {
 		}
 	      break;
 	      case 6:		/* Skew */
-		angle = GetReal(tw,CID_SkewAng,"Skew Angle",&err);
+		angle = GetRealR(tw,CID_SkewAng,_STR_SkewAngle,&err);
 		if ( GGadgetIsChecked( GWidgetGetControl(tw,CID_Clockwise)) )
 		    angle = -angle;
 		angle *= 3.1415926535897932/180;
 		trans[2] = tan(angle);
 		skewselect(&bvts[bvpos],trans[2]); ++bvpos;
+	      break;
+	      case 7:		/* 3D rotate */
+		angle =  GetRealR(tw,CID_XAxis,_STR_RotationAboutXAxis,&err) * 3.1415926535897932/180;
+		angle2 = GetRealR(tw,CID_YAxis,_STR_RotationAboutYAxis,&err) * 3.1415926535897932/180;
+		trans[0] = cos(angle2);
+		trans[3] = cos(angle );
 	      break;
 	      default:
 		IError("Unexpected selection in Transform");
@@ -275,9 +286,9 @@ static int Trans_TypeChange(GGadget *g, GEvent *e) {
 	    real xoff = last_ruler_offset[0].x, yoff = last_ruler_offset[0].y;
 	    char buf[24]; unichar_t ubuf[24];
 	    if ( mask & 0x20 )
-		index -= 3;
+		index -= 4;	/* skew */
 	    else
-		index -= 6;
+		index -= 7;	/* move or rotate */
 	    GGadgetSelectOneListItem( g,index );
 	    mask &= ~0x400;
 	    if ( mask&1 ) {		/* Move */
@@ -358,12 +369,12 @@ static void MakeTransBlock(TransData *td,int bnum) {
     transformtypes[bnum==0].selected = true;
     transformtypes[bnum!=0].selected = false;
 
-    label[1].text = (unichar_t *) "X";
-    label[1].text_is_1byte = true;
+    label[1].text = (unichar_t *) _STR_X;
+    label[1].text_in_resource = true;
     gcd[1].gd.label = &label[1];
     gcd[1].gd.pos.x = TBlock_XStart; gcd[1].gd.pos.y = 15; 
     gcd[1].gd.flags = bnum==0? (gg_enabled|gg_visible) : gg_enabled;
-    gcd[1].data = (void *) 0x9;
+    gcd[1].data = (void *) 0x49;
     gcd[1].gd.cid = CID_XLab;
     gcd[1].creator = GLabelCreate;
 
@@ -376,12 +387,12 @@ static void MakeTransBlock(TransData *td,int bnum) {
     gcd[2].gd.cid = CID_XMove;
     gcd[2].creator = GTextFieldCreate;
 
-    label[3].text = (unichar_t *) "Y";
-    label[3].text_is_1byte = true;
+    label[3].text = (unichar_t *) _STR_Y;
+    label[3].text_in_resource = true;
     gcd[3].gd.label = &label[3];
     gcd[3].gd.pos.x = TBlock_XStart+70; gcd[3].gd.pos.y = 15; 
     gcd[3].gd.flags = bnum==0? (gg_enabled|gg_visible) : gg_enabled;
-    gcd[3].data = (void *) 0x9;
+    gcd[3].data = (void *) 0x49;
     gcd[3].gd.cid = CID_YLab;
     gcd[3].creator = GLabelCreate;
 
@@ -421,8 +432,8 @@ static void MakeTransBlock(TransData *td,int bnum) {
     gcd[7].gd.cid = CID_Scale;
     gcd[7].creator = GTextFieldCreate;
 
-    label[8].text = (unichar_t *) "\260 Clockwise";
-    label[8].text_is_1byte = true;
+    label[8].text = (unichar_t *) _STR_DegreesClockwise;
+    label[8].text_in_resource = true;
     gcd[8].gd.label = &label[8];
     gcd[8].gd.pos.x = TBlock_XStart+53; gcd[8].gd.pos.y = 2; gcd[8].gd.pos.height = 12;
     gcd[8].gd.flags = gg_enabled;
@@ -430,8 +441,8 @@ static void MakeTransBlock(TransData *td,int bnum) {
     gcd[8].gd.cid = CID_Clockwise;
     gcd[8].creator = GRadioCreate;
 
-    label[9].text = (unichar_t *) "\260 Withershins";	/* deiseal */
-    label[9].text_is_1byte = true;
+    label[9].text = (unichar_t *) _STR_DegreesWithershins;	/* deiseal */
+    label[9].text_in_resource = true;
     gcd[9].gd.label = &label[9];
     gcd[9].gd.pos.x = TBlock_XStart+53; gcd[9].gd.pos.y = 17; gcd[9].gd.pos.height = 12;
     gcd[9].gd.flags = gg_enabled | gg_cb_on;
@@ -457,8 +468,8 @@ static void MakeTransBlock(TransData *td,int bnum) {
     gcd[11].gd.cid = CID_SkewAng;
     gcd[11].creator = GTextFieldCreate;
 
-    label[12].text = (unichar_t *) "Horizontal";
-    label[12].text_is_1byte = true;
+    label[12].text = (unichar_t *) _STR_Horizontal;
+    label[12].text_in_resource = true;
     gcd[12].gd.label = &label[12];
     gcd[12].gd.pos.x = TBlock_XStart; gcd[12].gd.pos.y = 2; gcd[12].gd.pos.height = 12;
     gcd[12].gd.flags = gg_enabled | gg_cb_on;
@@ -466,8 +477,8 @@ static void MakeTransBlock(TransData *td,int bnum) {
     gcd[12].gd.cid = CID_Horizontal;
     gcd[12].creator = GRadioCreate;
 
-    label[13].text = (unichar_t *) "Vertical";
-    label[13].text_is_1byte = true;
+    label[13].text = (unichar_t *) _STR_Vertical;
+    label[13].text_in_resource = true;
     gcd[13].gd.label = &label[13];
     gcd[13].gd.pos.x = TBlock_XStart; gcd[13].gd.pos.y = 17; gcd[13].gd.pos.height = 12;
     gcd[13].gd.flags = gg_enabled;
@@ -475,8 +486,8 @@ static void MakeTransBlock(TransData *td,int bnum) {
     gcd[13].gd.cid = CID_Vertical;
     gcd[13].creator = GRadioCreate;
 
-    label[14].text = (unichar_t *) "%";
-    label[14].text_is_1byte = true;
+    label[14].text = (unichar_t *) _STR_PercentMark;
+    label[14].text_in_resource = true;
     gcd[14].gd.label = &label[14];
     gcd[14].gd.pos.x = TBlock_XStart+51; gcd[14].gd.pos.y = 15; 
     gcd[14].gd.flags = gg_enabled;
@@ -484,8 +495,8 @@ static void MakeTransBlock(TransData *td,int bnum) {
     gcd[14].gd.cid = CID_XPercent;
     gcd[14].creator = GLabelCreate;
 
-    label[15].text = (unichar_t *) "%";
-    label[15].text_is_1byte = true;
+    label[15].text = (unichar_t *) _STR_PercentMark;
+    label[15].text_in_resource = true;
     gcd[15].gd.label = &label[15];
     gcd[15].gd.pos.x = TBlock_XStart+121; gcd[15].gd.pos.y = 15; 
     gcd[15].gd.flags = gg_enabled;
@@ -493,11 +504,47 @@ static void MakeTransBlock(TransData *td,int bnum) {
     gcd[15].gd.cid = CID_YPercent;
     gcd[15].creator = GLabelCreate;
 
-    gcd[16].gd.pos.x = 2; gcd[16].gd.pos.y = 1;
-    gcd[16].gd.pos.width = TBlock_Width-3; gcd[16].gd.pos.height = TBlock_Height-2;
-    gcd[16].gd.flags = gg_enabled | gg_visible;
-    gcd[16].data = (void *) -1;
-    gcd[16].creator = GGroupCreate;
+    label[16].text = (unichar_t *) _STR_DegreeMark;
+    label[16].text_in_resource = true;
+    gcd[16].gd.label = &label[16];
+    gcd[16].gd.pos.x = TBlock_XStart+51; gcd[16].gd.pos.y = 15; 
+    gcd[16].gd.flags = gg_enabled;
+    gcd[16].data = (void *) 0x40;
+    gcd[16].gd.cid = CID_XDegree;
+    gcd[16].creator = GLabelCreate;
+
+    label[17].text = (unichar_t *) _STR_DegreeMark;
+    label[17].text_in_resource = true;
+    gcd[17].gd.label = &label[17];
+    gcd[17].gd.pos.x = TBlock_XStart+121; gcd[17].gd.pos.y = 15; 
+    gcd[17].gd.flags = gg_enabled;
+    gcd[17].data = (void *) 0x40;
+    gcd[17].gd.cid = CID_YDegree;
+    gcd[17].creator = GLabelCreate;
+
+    label[18].text = (unichar_t *) "45";
+    label[18].text_is_1byte = true;
+    gcd[18].gd.label = &label[18];
+    gcd[18].gd.pos.x = TBlock_XStart+10; gcd[18].gd.pos.y = 9;  gcd[18].gd.pos.width = 40;
+    gcd[18].gd.flags = gg_enabled;
+    gcd[18].data = (void *) 0x40;
+    gcd[18].gd.cid = CID_XAxis;
+    gcd[18].creator = GTextFieldCreate;
+
+    label[19].text = (unichar_t *) "0";
+    label[19].text_is_1byte = true;
+    gcd[19].gd.label = &label[19];
+    gcd[19].gd.pos.x = TBlock_XStart+80; gcd[19].gd.pos.y = 9;  gcd[19].gd.pos.width = 40;
+    gcd[19].gd.flags = gg_enabled;
+    gcd[19].data = (void *) 0x40;
+    gcd[19].gd.cid = CID_YAxis;
+    gcd[19].creator = GTextFieldCreate;
+
+    gcd[20].gd.pos.x = 2; gcd[20].gd.pos.y = 1;
+    gcd[20].gd.pos.width = TBlock_Width-3; gcd[20].gd.pos.height = TBlock_Height-2;
+    gcd[20].gd.flags = gg_enabled | gg_visible;
+    gcd[20].data = (void *) -1;
+    gcd[20].creator = GGroupCreate;
 
     GGadgetsCreate(gw,gcd);
     GDrawSetVisible(gw,true);
@@ -639,7 +686,8 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
 	int index = cvt == cvt_scale  ? 4 :
 		    cvt == cvt_flip   ? 5 :
 		    cvt == cvt_rotate ? 2 :
-				        6 ;
+		    cvt == cvt_skew   ? 6 :
+			   /* 3d rot*/  7 ;
 	GGadget *firstoption = GWidgetGetControl(td.tblock[0],CID_Type);
 	GEvent dummy;
 	GGadgetSelectOneListItem( firstoption, index );
