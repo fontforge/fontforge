@@ -660,7 +660,7 @@ static int GTextFieldDoChange(GTextField *gt, GEvent *event) {
     unichar_t *upt;
 
     if ( ( event->u.chr.state&(ksm_control|ksm_meta)) ||
-	    event->u.chr.chars[0]=='\0' ) {
+	    event->u.chr.chars[0]<' ' || event->u.chr.chars[0]==0x7f ) {
 	switch ( event->u.chr.keysym ) {
 	  case GK_BackSpace:
 	    if ( gt->sel_start==gt->sel_end ) {
