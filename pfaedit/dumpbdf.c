@@ -252,7 +252,9 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding) {
     }
 
   /* Vertical metrics & metrics specified at top level are 2.2 features */
-    fprintf( file, font->sf->hasvmetrics ? "STARTFONT 2.2\n": "STARTFONT 2.1\n" );
+    fprintf( file, font->clut!=NULL ? "STARTFONT 2.3\n" :
+		   font->sf->hasvmetrics ? "STARTFONT 2.2\n" :
+		   "STARTFONT 2.1\n" );
     fprintf( file, "FONT %s\n", buffer );	/* FONT ... */
 #if !OLD_GREYMAP_FORMAT
     if ( font->clut==NULL )

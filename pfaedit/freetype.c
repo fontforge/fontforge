@@ -248,12 +248,13 @@ return( NULL );
 }
 
 static void BCTruncateToDepth(BDFChar *bdfc,int depth) {
-    int div = 255/((1<<(depth/2))-1);
+    int div = 255/((1<<depth)-1);
     int i,j;
 
     for ( i=0; i<=bdfc->ymax-bdfc->ymin; ++i ) {
 	for ( j=0; j<bdfc->bytes_per_line; ++j )
-	    bdfc->bitmap[i*bdfc->bytes_per_line+j] /= div;
+	    bdfc->bitmap[i*bdfc->bytes_per_line+j] =
+		    (bdfc->bitmap[i*bdfc->bytes_per_line+j]+div/2) / div;
     }
 }
 

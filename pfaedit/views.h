@@ -209,6 +209,7 @@ typedef struct bitmapview {
     GTimer *autorpt;
     int keysym, oldstate;
 #endif
+    int color;			/* for greyscale fonts */
 } BitmapView;
 
 typedef struct metricsview {
@@ -538,8 +539,8 @@ extern void CopySelected(CharView *cv);
 extern void SCCopyWidth(SplineChar *sc,enum undotype);
 extern void CopyWidth(CharView *cv,enum undotype);
 extern void PasteToCV(CharView *cv);
-extern void BCCopySelected(BDFChar *bc,int pixelsize);
-extern void PasteToBC(BDFChar *bc,int pixelsize,FontView *fv);
+extern void BCCopySelected(BDFChar *bc,int pixelsize,int depth);
+extern void PasteToBC(BDFChar *bc,int pixelsize,int depth,FontView *fv);
 extern void FVCopyWidth(FontView *fv,enum undotype ut);
 extern void FVCopy(FontView *fv, int fullcopy);
 extern void MVCopyChar(MetricsView *mv, SplineChar *sc, int fullcopy);
@@ -563,11 +564,13 @@ extern void BCCharChangedUpdate(BDFChar *bc);
 extern void BCFlattenFloat(BDFChar *bc);
 extern BDFFloat *BDFFloatCreate(BDFChar *bc,int xmin,int xmax,int ymin,int ymax, int clear);
 extern BDFFloat *BDFFloatCopy(BDFFloat *sel);
+extern BDFFloat *BDFFloatConvert(BDFFloat *sel,int newdepth, int olddepth);
 extern void BDFFloatFree(BDFFloat *sel);
 extern void BVMenuRotateInvoked(GWindow gw,struct gmenuitem *mi, GEvent *e);
 extern void BCTrans(BDFFont *bdf,BDFChar *bc,BVTFunc *bvts,FontView *fv );
 extern void BVRotateBitmap(BitmapView *bv,enum bvtools type );
-extern void BCSetPoint(BDFChar *bc, int x, int y, int clear);
+extern int  BVColor(BitmapView *bv);
+extern void BCSetPoint(BDFChar *bc, int x, int y, int color);
 extern void BCGeneralFunction(BitmapView *bv,
 	void (*SetPoint)(BitmapView *,int x, int y, void *data),void *data);
 extern int BVFlipNames[];

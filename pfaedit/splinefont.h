@@ -103,6 +103,7 @@ typedef struct bluedata {
 typedef struct bdffloat {
     int16 xmin,xmax,ymin,ymax;
     int16 bytes_per_line;
+    unsigned int byte_data:1;
     uint8 *bitmap;
 } BDFFloat;
 
@@ -135,6 +136,7 @@ typedef struct undoes {
 	    int16 xmin,xmax,ymin,ymax;
 	    int16 bytes_per_line;
 	    int16 pixelsize;
+	    int16 depth;
 	    uint8 *bitmap;
 	    BDFFloat *selection;
 	} bmpstate;

@@ -1242,6 +1242,7 @@ BDFChar *SplineCharAntiAlias(SplineChar *sc, int pixelsize, int linear_scale) {
     bc = SplineCharRasterize(sc,pixelsize*linear_scale);
     if ( linear_scale!=1 )
 	BDFCAntiAlias(bc,linear_scale);
+    BCCompressBitmap(bc);
 return( bc );
 }
 

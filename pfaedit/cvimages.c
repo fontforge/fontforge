@@ -526,11 +526,13 @@ return;
     SCInsertBackImage(cv->sc,image,scale,cv->sc->parent->ascent,0);
 }
 
-static int BCImportImage(BDFChar *bc,char *path) {
+static int BVImportImage(BitmapView *bv,char *path) {
     GImage *image;
     struct _GImage *base;
     int tot;
     uint8 *pt, *end;
+    BDFChar *bc = bv->bc;
+    int i, j;
 
     image = GImageRead(path);
     if ( image==NULL ) {
@@ -538,24 +540,66 @@ static int BCImportImage(BDFChar *bc,char *path) {
 return(false);
     }
     base = image->list_len==0?image->u.image:image->u.images[0];
-    if ( base->image_type!=it_mono ) {
-	GWidgetErrorR(_STR_BadImageFile,_STR_BadImageFileNotBitmap,path);
-	GImageDestroy(image);
-return(false);
-    }
     BCPreserveState(bc);
     BCFlattenFloat(bc);
     free(bc->bitmap);
-    bc->bitmap = base->data;
     bc->xmin = bc->ymin = 0;
     bc->xmax = base->width-1; bc->ymax = base->height-1;
-    bc->bytes_per_line = base->bytes_per_line;
+    if ( !bc->byte_data && base->image_type==it_mono ) {
+	bc->bitmap = base->data;
+	bc->bytes_per_line = base->bytes_per_line;
 
-    /* Sigh. Bitmaps use a different defn of set than images do. make it consistant */
-    tot = bc->bytes_per_line*(bc->ymax-bc->ymin+1);
-    for ( pt = bc->bitmap, end = pt+tot; pt<end; *pt++ ^= 0xff );
+	/* Sigh. Bitmaps use a different defn of set than images do. make it consistant */
+	tot = bc->bytes_per_line*(bc->ymax-bc->ymin+1);
+	for ( pt = bc->bitmap, end = pt+tot; pt<end; *pt++ ^= 0xff );
 
-    base->data = NULL;
+	base->data = NULL;
+    } else if ( base->image_type==it_mono /* && byte_data */) {
+	int set = (1<<BDFDepth(bv->bdf))-1;
+	bc->bytes_per_line = base->width;
+	bc->bitmap = gcalloc(base->height,base->width);
+	for ( i=0; i<base->height; ++i ) for ( j=0; j<base->width; ++j ) {
+	    if ( !(base->data[i*base->bytes_per_line+(j>>3)]&(0x80>>(j&7))) )
+		bc->bitmap[i*bc->bytes_per_line+j] = set;
+	}
+    } else if ( !bc->byte_data && base->image_type==it_true ) {
+	bc->bytes_per_line = (base->width>>3)+1;
+	bc->bitmap = gcalloc(base->height,bc->bytes_per_line);
+	for ( i=0; i<base->height; ++i ) for ( j=0; j<base->width; ++j ) {
+	    int col = ((Color *) (base->data+i*base->bytes_per_line))[j];
+	    col = (3*COLOR_RED(col)+6*COLOR_GREEN(col)+COLOR_BLUE(col));
+	    if ( col<=5*256 )
+		bc->bitmap[i*bc->bytes_per_line+(j>>3)] |= (0x80>>(j&7));
+	}
+    } else if ( /* byte_data && */ base->image_type==it_true ) {
+	int div = 255/((1<<BDFDepth(bv->bdf))-1);
+	bc->bytes_per_line = base->width;
+	bc->bitmap = gcalloc(base->height,base->width);
+	for ( i=0; i<base->height; ++i ) for ( j=0; j<base->width; ++j ) {
+	    int col = ((Color *) (base->data+i*base->bytes_per_line))[j];
+	    col = 255-(3*COLOR_RED(col)+6*COLOR_GREEN(col)+COLOR_BLUE(col)+5)/10;
+	    bc->bitmap[i*bc->bytes_per_line+j] = col/div;
+	}
+    } else if ( bc->byte_data /* && indexed */ ) {
+	int div = 255/((1<<BDFDepth(bv->bdf))-1);
+	bc->bitmap = base->data;
+	bc->bytes_per_line = base->bytes_per_line;
+	for ( i=0; i<base->height; ++i ) for ( j=0; j<base->width; ++j ) {
+	    int col = base->clut->clut[base->data[i*base->bytes_per_line+j]];
+	    col = 255-(3*COLOR_RED(col)+6*COLOR_GREEN(col)+COLOR_BLUE(col)+5)/10;
+	    base->data[i*base->bytes_per_line+j] = col/div;
+	}
+	base->data = NULL;
+    } else /* if ( mono && indexed ) */ {
+	bc->bytes_per_line = (base->width>>3)+1;
+	bc->bitmap = gcalloc(base->height,bc->bytes_per_line);
+	for ( i=0; i<base->height; ++i ) for ( j=0; j<base->width; ++j ) {
+	    int col = base->clut->clut[base->data[i*base->bytes_per_line+j]];
+	    col = (3*COLOR_RED(col)+6*COLOR_GREEN(col)+COLOR_BLUE(col));
+	    if ( col<=5*256 )
+		bc->bitmap[i*bc->bytes_per_line+(j>>3)] |= (0x80>>(j&7));
+	}
+    }
     GImageDestroy(image);
     BCCharChangedUpdate(bc);
 return( true );
@@ -723,7 +767,7 @@ struct gfc_data {
     GGadget *format;
     GGadget *background;
     CharView *cv;
-    BDFChar *bc;
+    BitmapView *bv;
     FontView *fv;
 };
 
@@ -810,8 +854,8 @@ static int GFD_ImportOk(GGadget *g, GEvent *e) {
 		d->done = FVImportImages(d->fv,temp,0);
 	    else if ( format==7 )
 		d->done = FVImportImageTemplate(d->fv,temp,0);
-	} else if ( d->bc!=NULL )
-	    d->done = BCImportImage(d->bc,temp);
+	} else if ( d->bv!=NULL )
+	    d->done = BVImportImage(d->bv,temp);
 	else {
 	    d->done = true;
 	    if ( format==0 )
@@ -874,7 +918,7 @@ return( false );
 return( true );
 }
 
-static void _Import(CharView *cv,BDFChar *bc,FontView *fv) {
+static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
@@ -942,7 +986,7 @@ static void _Import(CharView *cv,BDFChar *bc,FontView *fv) {
 
     gcd[5].gd.pos.x = 55; gcd[5].gd.pos.y = 194; 
     gcd[5].gd.flags = gg_visible | gg_enabled ;
-    if ( bc!=NULL ) {
+    if ( bv!=NULL ) {
 	gcd[5].gd.flags = gg_visible ;			/* No postscript in bitmap mode */
 	last_format=0;
     }
@@ -978,7 +1022,7 @@ static void _Import(CharView *cv,BDFChar *bc,FontView *fv) {
     memset(&d,'\0',sizeof(d));
     d.cv = cv;
     d.fv = fv;
-    d.bc = bc;
+    d.bv = bv;
     d.gfc = gcd[0].ret;
     d.format = gcd[5].ret;
     if ( fv!=NULL )
@@ -996,7 +1040,7 @@ void CVImport(CharView *cv) {
 }
 
 void BVImport(BitmapView *bv) {
-    _Import(NULL,bv->bc,NULL);
+    _Import(NULL,bv,NULL);
 }
 
 void FVImport(FontView *fv) {

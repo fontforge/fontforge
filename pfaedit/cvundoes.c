@@ -1281,7 +1281,7 @@ void PasteToCV(CharView *cv) {
     _PasteToCV(cv,&copybuffer);
 }
 
-void BCCopySelected(BDFChar *bc,int pixelsize) {
+void BCCopySelected(BDFChar *bc,int pixelsize,int depth) {
 
     CopyBufferFree();
 
@@ -1293,9 +1293,10 @@ void BCCopySelected(BDFChar *bc,int pixelsize) {
 	copybuffer.u.bmpstate.selection = BDFFloatCreate(bc,bc->xmin,bc->xmax,
 		bc->ymin,bc->ymax, false);
     copybuffer.u.bmpstate.pixelsize = pixelsize;
+    copybuffer.u.bmpstate.depth = depth;
 }
 
-static Undoes *BCCopyAll(BDFChar *bc,int pixelsize) {
+static Undoes *BCCopyAll(BDFChar *bc,int pixelsize, int depth) {
     Undoes *cur;
 
     cur = chunkalloc(sizeof(Undoes));
@@ -1314,10 +1315,11 @@ static Undoes *BCCopyAll(BDFChar *bc,int pixelsize) {
 	cur->u.bmpstate.selection = BDFFloatCopy(bc->selection);
     }
     cur->u.bmpstate.pixelsize = pixelsize;
+    cur->u.bmpstate.depth = depth;
 return( cur );
 }
 
-static void _PasteToBC(BDFChar *bc,int pixelsize, Undoes *paster, int clearfirst,FontView *fv) {
+static void _PasteToBC(BDFChar *bc,int pixelsize, int depth, Undoes *paster, int clearfirst, FontView *fv) {
     switch ( paster->undotype ) {
       case ut_noop:
       break;
@@ -1326,21 +1328,16 @@ static void _PasteToBC(BDFChar *bc,int pixelsize, Undoes *paster, int clearfirst
 	BCFlattenFloat(bc);
 	if ( clearfirst )
 	    memset(bc->bitmap,'\0',bc->bytes_per_line*(bc->ymax-bc->ymin+1));
-	bc->selection = BDFFloatCopy(paster->u.bmpstate.selection);
+	bc->selection = BDFFloatConvert(paster->u.bmpstate.selection,depth,paster->u.bmpstate.depth);
 	BCCharChangedUpdate(bc);
       break;
       case ut_bitmap:
 	BCPreserveState(bc);
 	BCFlattenFloat(bc);
-	/* bc->width = paster->u.bmpstate.width; */
-	bc->xmin = paster->u.bmpstate.xmin;
-	bc->xmax = paster->u.bmpstate.xmax;
-	bc->ymin = paster->u.bmpstate.ymin;
-	bc->ymax = paster->u.bmpstate.ymax;
-	bc->bytes_per_line = paster->u.bmpstate.bytes_per_line;
-	free(bc->bitmap);
-	bc->bitmap = galloc(bc->bytes_per_line*(bc->ymax-bc->ymin+1));
-	memcpy(bc->bitmap,paster->u.bmpstate.bitmap,bc->bytes_per_line*(bc->ymax-bc->ymin+1));
+	memset(bc->bitmap,0,bc->bytes_per_line*(bc->ymax-bc->ymin+1));
+	bc->selection = BDFFloatConvert(paster->u.bmpstate.selection,depth,paster->u.bmpstate.depth);
+	BCFlattenFloat(bc);
+	BCCompressBitmap(bc);
 	BCCharChangedUpdate(bc);
       break;
       case ut_composit:
@@ -1351,24 +1348,24 @@ static void _PasteToBC(BDFChar *bc,int pixelsize, Undoes *paster, int clearfirst
 	if ( paster->u.composit.bitmaps==NULL )
 	    /* Nothing to be done */;
 	else if ( paster->u.composit.state==NULL && paster->u.composit.bitmaps->next==NULL )
-	    _PasteToBC(bc,pixelsize,paster->u.composit.bitmaps,clearfirst,fv);
+	    _PasteToBC(bc,pixelsize,depth,paster->u.composit.bitmaps,clearfirst,fv);
 	else {
 	    Undoes *b;
 	    for ( b = paster->u.composit.bitmaps;
 		    b!=NULL && b->u.bmpstate.pixelsize!=pixelsize;
 		    b = b->next );
 	    if ( b!=NULL )
-		_PasteToBC(bc,pixelsize,paster->u.composit.bitmaps,clearfirst,fv);
+		_PasteToBC(bc,pixelsize,depth,paster->u.composit.bitmaps,clearfirst,fv);
 	}
       break;
       case ut_multiple:
-	_PasteToBC(bc,pixelsize,paster->u.multiple.mult,clearfirst,fv);
+	_PasteToBC(bc,pixelsize,depth,paster->u.multiple.mult,clearfirst,fv);
       break;
     }
 }
 
-void PasteToBC(BDFChar *bc,int pixelsize,FontView *fv) {
-    _PasteToBC(bc,pixelsize,&copybuffer,false,fv);
+void PasteToBC(BDFChar *bc,int pixelsize,int depth,FontView *fv) {
+    _PasteToBC(bc,pixelsize,depth,&copybuffer,false,fv);
 }
 
 void FVCopyWidth(FontView *fv,enum undotype ut) {
@@ -1423,12 +1420,12 @@ void FVCopy(FontView *fv, int fullcopy) {
 	if ( onlycopydisplayed && fv->filled==fv->show ) {
 	    cur = SCCopyAll(fv->sf->chars[i],fullcopy);
 	} else if ( onlycopydisplayed ) {
-	    cur = BCCopyAll(fv->show->chars[i],fv->show->pixelsize);
+	    cur = BCCopyAll(fv->show->chars[i],fv->show->pixelsize,BDFDepth(fv->show));
 	} else {
 	    state = SCCopyAll(fv->sf->chars[i],fullcopy);
 	    bhead = NULL;
 	    for ( bdf=fv->sf->bitmaps; bdf!=NULL; bdf = bdf->next ) {
-		bcur = BCCopyAll(bdf->chars[i],bdf->pixelsize);
+		bcur = BCCopyAll(bdf->chars[i],bdf->pixelsize,BDFDepth(bdf));
 		if ( bhead==NULL )
 		    bhead = bcur;
 		else
@@ -1469,12 +1466,12 @@ void MVCopyChar(MetricsView *mv, SplineChar *sc, int fullcopy) {
     if ( onlycopydisplayed && mv->bdf==NULL ) {
 	cur = SCCopyAll(sc,fullcopy);
     } else if ( onlycopydisplayed ) {
-	cur = BCCopyAll(mv->bdf->chars[sc->enc],mv->bdf->pixelsize);
+	cur = BCCopyAll(mv->bdf->chars[sc->enc],mv->bdf->pixelsize,BDFDepth(mv->bdf));
     } else {
 	state = SCCopyAll(sc,fullcopy);
 	bhead = NULL;
 	for ( bdf=mv->fv->sf->bitmaps; bdf!=NULL; bdf = bdf->next ) {
-	    bcur = BCCopyAll(bdf->chars[sc->enc],bdf->pixelsize);
+	    bcur = BCCopyAll(bdf->chars[sc->enc],bdf->pixelsize,BDFDepth(bdf));
 	    if ( bhead==NULL )
 		bhead = bcur;
 	    else
@@ -1497,14 +1494,17 @@ return;
     copybuffer.u.multiple.mult = cur;
 }
 
-static BDFFont *BitmapCreateCheck(FontView *fv,int *yestoall, int first, int pixelsize) {
+static BDFFont *BitmapCreateCheck(FontView *fv,int *yestoall, int first, int pixelsize, int depth) {
     int yes = 0;
     BDFFont *bdf = NULL;
 
     if ( *yestoall>0 && first ) {
 	static int buts[] = { _STR_Yes, _STR_YesToAll, _STR_NoToAll, _STR_No, 0 };
 	char buf[20]; unichar_t ubuf[400];
-	sprintf( buf, "%d", pixelsize );
+	if ( depth!=1 )
+	    sprintf( buf, "%d@%d", pixelsize, depth );
+	else
+	    sprintf( buf, "%d", pixelsize );
 	u_strcpy(ubuf,GStringGetResource(_STR_ClipContainsPre,NULL));
 	uc_strcat(ubuf,buf);
 	u_strcat(ubuf,GStringGetResource(_STR_ClipContainsPost,NULL));
@@ -1517,7 +1517,11 @@ static BDFFont *BitmapCreateCheck(FontView *fv,int *yestoall, int first, int pix
 	    yes= yes!=3;
     }
     if ( yes==1 || *yestoall ) {
-	bdf = SplineFontRasterize(fv->sf,pixelsize,false);
+	void *freetypecontext = FreeTypeFontContext(fv->sf,NULL,true);
+	if ( freetypecontext )
+	    bdf = SplineFontFreeTypeRasterize(freetypecontext,pixelsize,depth);
+	else
+	    bdf = SplineFontAntiAlias(fv->sf,pixelsize,1<<(depth/2));
 	bdf->next = fv->sf->bitmaps;
 	fv->sf->bitmaps = bdf;
 	fv->sf->changed = true;
@@ -1590,15 +1594,15 @@ void PasteIntoFV(FontView *fv,int doclear) {
 	  break;
 	  case ut_bitmapsel: case ut_bitmap:
 	    if ( onlycopydisplayed && fv->show!=fv->filled )
-		_PasteToBC(BDFMakeChar(fv->show,i),fv->show->pixelsize,cur,doclear,fv);
+		_PasteToBC(BDFMakeChar(fv->show,i),fv->show->pixelsize,BDFDepth(fv->show),cur,doclear,fv);
 	    else {
-		for ( bdf=fv->sf->bitmaps; bdf!=NULL && bdf->pixelsize!=cur->u.bmpstate.pixelsize; bdf=bdf->next );
+		for ( bdf=fv->sf->bitmaps; bdf!=NULL && (bdf->pixelsize!=cur->u.bmpstate.pixelsize || BDFDepth(bdf)!=cur->u.bmpstate.depth); bdf=bdf->next );
 		if ( bdf==NULL ) {
-		    bdf = BitmapCreateCheck(fv,&yestoall,first,cur->u.bmpstate.pixelsize);
+		    bdf = BitmapCreateCheck(fv,&yestoall,first,cur->u.bmpstate.pixelsize,cur->u.bmpstate.depth);
 		    first = false;
 		}
 		if ( bdf!=NULL )
-		    _PasteToBC(BDFMakeChar(bdf,i),bdf->pixelsize,cur,doclear,fv);
+		    _PasteToBC(BDFMakeChar(bdf,i),bdf->pixelsize,BDFDepth(bdf),cur,doclear,fv);
 	    }
 	  break;
 	  case ut_composit:
@@ -1606,11 +1610,12 @@ void PasteIntoFV(FontView *fv,int doclear) {
 		PasteToSC(SFMakeChar(fv->sf,i),cur->u.composit.state,fv,doclear);
 	    for ( bmp=cur->u.composit.bitmaps; bmp!=NULL; bmp = bmp->next ) {
 		for ( bdf=fv->sf->bitmaps; bdf!=NULL &&
-			bdf->pixelsize!=bmp->u.bmpstate.pixelsize; bdf=bdf->next );
+			(bdf->pixelsize!=bmp->u.bmpstate.pixelsize || BDFDepth(bdf)!=bmp->u.bmpstate.depth);
+			bdf=bdf->next );
 		if ( bdf==NULL )
-		    bdf = BitmapCreateCheck(fv,&yestoall,first,bmp->u.bmpstate.pixelsize);
+		    bdf = BitmapCreateCheck(fv,&yestoall,first,bmp->u.bmpstate.pixelsize,bmp->u.bmpstate.depth);
 		if ( bdf!=NULL )
-		    _PasteToBC(BDFMakeChar(bdf,i),bdf->pixelsize,bmp,doclear,fv);
+		    _PasteToBC(BDFMakeChar(bdf,i),bdf->pixelsize,BDFDepth(bdf),bmp,doclear,fv);
 	    }
 	    first = false;
 	  break;
@@ -1649,15 +1654,17 @@ return;
       break;
       case ut_bitmapsel: case ut_bitmap:
 	if ( onlycopydisplayed && mv->bdf!=NULL )
-	    _PasteToBC(BDFMakeChar(mv->bdf,sc->enc),mv->bdf->pixelsize,cur,doclear,mv->fv);
+	    _PasteToBC(BDFMakeChar(mv->bdf,sc->enc),mv->bdf->pixelsize,BDFDepth(mv->bdf),cur,doclear,mv->fv);
 	else {
-	    for ( bdf=mv->fv->sf->bitmaps; bdf!=NULL && bdf->pixelsize!=cur->u.bmpstate.pixelsize; bdf=bdf->next );
+	    for ( bdf=mv->fv->sf->bitmaps; bdf!=NULL &&
+		    (bdf->pixelsize!=cur->u.bmpstate.pixelsize || BDFDepth(bdf)!=cur->u.bmpstate.depth);
+		    bdf=bdf->next );
 	    if ( bdf==NULL ) {
-		bdf = BitmapCreateCheck(mv->fv,&yestoall,first,cur->u.bmpstate.pixelsize);
+		bdf = BitmapCreateCheck(mv->fv,&yestoall,first,cur->u.bmpstate.pixelsize,cur->u.bmpstate.depth);
 		first = false;
 	    }
 	    if ( bdf!=NULL )
-		_PasteToBC(BDFMakeChar(bdf,sc->enc),bdf->pixelsize,cur,doclear,mv->fv);
+		_PasteToBC(BDFMakeChar(bdf,sc->enc),bdf->pixelsize,BDFDepth(bdf),cur,doclear,mv->fv);
 	}
       break;
       case ut_composit:
@@ -1665,11 +1672,12 @@ return;
 	    PasteToSC(sc,cur->u.composit.state,mv->fv,doclear);
 	for ( bmp=cur->u.composit.bitmaps; bmp!=NULL; bmp = bmp->next ) {
 	    for ( bdf=mv->fv->sf->bitmaps; bdf!=NULL &&
-		    bdf->pixelsize!=bmp->u.bmpstate.pixelsize; bdf=bdf->next );
+		    (bdf->pixelsize!=bmp->u.bmpstate.pixelsize || BDFDepth(bdf)!=bmp->u.bmpstate.depth);
+		    bdf=bdf->next );
 	    if ( bdf==NULL )
-		bdf = BitmapCreateCheck(mv->fv,&yestoall,first,bmp->u.bmpstate.pixelsize);
+		bdf = BitmapCreateCheck(mv->fv,&yestoall,first,bmp->u.bmpstate.pixelsize,bmp->u.bmpstate.depth);
 	    if ( bdf!=NULL )
-		_PasteToBC(BDFMakeChar(bdf,sc->enc),bdf->pixelsize,bmp,doclear,mv->fv);
+		_PasteToBC(BDFMakeChar(bdf,sc->enc),bdf->pixelsize,BDFDepth(bdf),bmp,doclear,mv->fv);
 	}
 	first = false;
       break;

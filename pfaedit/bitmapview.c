@@ -439,6 +439,7 @@ static void BVExpose(BitmapView *bv, GWindow pixmap, GEvent *event ) {
 	GDrawDrawLine(pixmap,bv->xoff+bv->bc->width*bv->scale,0, bv->xoff+bv->bc->width*bv->scale,bv->height,0x000000);
     }
     if ( bv->showoutline ) {
+	Color col = bv->bc->byte_data ? 0x008800 : 0x004400;
 	memset(&cvtemp,'\0',sizeof(cvtemp));
 	cvtemp.v = bv->v;
 	cvtemp.width = bv->width;
@@ -453,9 +454,9 @@ static void BVExpose(BitmapView *bv, GWindow pixmap, GEvent *event ) {
 	clip.height = event->u.expose.rect.height/cvtemp.scale;
 	clip.x = (event->u.expose.rect.x-cvtemp.xoff)/cvtemp.scale;
 	clip.y = (cvtemp.height-event->u.expose.rect.y-event->u.expose.rect.height-cvtemp.yoff)/cvtemp.scale;
-	CVDrawSplineSet(&cvtemp,pixmap,cvtemp.sc->splines,0x004400,false,&clip);
+	CVDrawSplineSet(&cvtemp,pixmap,cvtemp.sc->splines,col,false,&clip);
 	for ( refs = cvtemp.sc->refs; refs!=NULL; refs = refs->next )
-	    CVDrawSplineSet(&cvtemp,pixmap,refs->splines,0x004400,false,&clip);
+	    CVDrawSplineSet(&cvtemp,pixmap,refs->splines,col,false,&clip);
     }
     if ( bv->active_tool==bvt_pointer ) {
 	if ( bv->bc->selection==NULL ) {
@@ -717,6 +718,11 @@ static void BVSetWidth(BitmapView *bv, int x) {
     }
 }
 
+int BVColor(BitmapView *bv) {
+    int div = 255/((1<<BDFDepth(bv->bdf))-1);
+return ( (bv->color+div/2)/div );
+}
+
 static void BVMouseDown(BitmapView *bv, GEvent *event) {
     int x = floor( (event->u.mouse.x-bv->xoff)/ (real) bv->scale);
     int y = floor( (bv->height-event->u.mouse.y-bv->yoff)/ (real) bv->scale);
@@ -735,11 +741,22 @@ return;
     bv->event_x = event->u.mouse.x; bv->event_y = event->u.mouse.y;
     bv->recentchange = false;
     switch ( bv->active_tool ) {
+      case bvt_eyedropper:
+	if ( bc->byte_data )
+	    ny = bc->ymax-y;
+	    if ( x>=bc->xmin && x<=bc->xmax && ny>=0 && ny<=bc->ymax-bc->ymin )
+		bv->color = bc->bitmap[(bc->ymax-y)*bc->bytes_per_line + x-bc->xmin] *
+			255/((1<<BDFDepth(bv->bdf))-1);
+	    else
+		bv->color = 0;
+	    /* Store color as a number between 0 and 255 no matter what the clut size is */
+      break;
       case bvt_pencil: case bvt_line:
       case bvt_rect: case bvt_filledrect:
 	ny = bc->ymax-y;
 	bv->clearing = false;
-	if ( x>=bc->xmin && x<=bc->xmax && ny>=0 && ny<=bc->ymax-bc->ymin ) {
+	if ( !bc->byte_data && x>=bc->xmin && x<=bc->xmax &&
+		ny>=0 && ny<=bc->ymax-bc->ymin ) {
 	    int nx = x-bc->xmin;
 	    if ( bc->bitmap[ny*bc->bytes_per_line + (nx>>3)] &
 		    (1<<(7-(nx&7))) )
@@ -748,7 +765,7 @@ return;
 	BCPreserveState(bc);
 	BCFlattenFloat(bc);
 	if ( bv->active_tool == bvt_pencil )
-	    BCSetPoint(bc,x,y,bv->clearing);
+	    BCSetPoint(bc,x,y,bc->byte_data?BVColor(bv):!bv->clearing);
 	BCCharChangedUpdate(bc);
       break;
       case bvt_elipse: case bvt_filledelipse:
@@ -791,7 +808,7 @@ static void BVMouseMove(BitmapView *bv, GEvent *event) {
 return;			/* Not pressed */
     switch ( bv->active_tool ) {
       case bvt_pencil:
-	BCSetPoint(bc,x,y,bv->clearing);
+	BCSetPoint(bc,x,y,bc->byte_data?BVColor(bv):!bv->clearing);
 	BCCharChangedUpdate(bc);
       break;
       case bvt_line: case bvt_rect: case bvt_filledrect:
@@ -856,7 +873,7 @@ return;			/* Not pressed */
 }
 
 static void BVSetPoint(BitmapView *bv, int x, int y, void *junk) {
-    BCSetPoint(bv->bc,x,y,bv->clearing);
+    BCSetPoint(bv->bc,x,y,bv->bc->byte_data?BVColor(bv):!bv->clearing);
 }
 
 static void BVMagnify(BitmapView *bv, int midx, int midy, int bigger);
@@ -1230,7 +1247,7 @@ static void BVRemoveUndoes(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void BVCopy(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
-    BCCopySelected(bv->bc,bv->bdf->pixelsize);
+    BCCopySelected(bv->bc,bv->bdf->pixelsize,BDFDepth(bv->bdf));
 }
 
 static void BVDoClear(BitmapView *bv) {
@@ -1250,7 +1267,7 @@ static void BVClear(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void BVPaste(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
     if ( CopyContainsBitmap())
-	PasteToBC(bv->bc,bv->bdf->pixelsize,bv->fv);
+	PasteToBC(bv->bc,bv->bdf->pixelsize,BDFDepth(bv->bdf),bv->fv);
 }
 
 static void BVCut(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -1513,6 +1530,7 @@ BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv) {
     bc->views = bv;
     bv->fv = fv;
     bv->bdf = bdf;
+    bv->color = 255;
 
     bv->showfore = BVShows.showfore;
     bv->showoutline = BVShows.showoutline;
