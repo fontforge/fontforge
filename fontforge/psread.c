@@ -47,8 +47,9 @@ typedef struct entitychar {
 
 typedef struct _io {
     char *macro, *start;
-    FILE *ps;
-    int backedup, cnt, isloop, isstopped;
+    FILE *ps, *fog;
+    char fogbuf[60];
+    int backedup, cnt, isloop, isstopped, fogns;
     struct _io *prev;
 } _IO;
 
@@ -155,6 +156,7 @@ enum pstoks { pt_eof=-1, pt_moveto, pt_rmoveto, pt_curveto, pt_rcurveto,
     pt_add, pt_sub, pt_mul, pt_div, pt_idiv, pt_mod, pt_neg,
     pt_abs, pt_round, pt_ceiling, pt_floor, pt_truncate, pt_max, pt_min,
     pt_ne, pt_eq, pt_gt, pt_ge, pt_lt, pt_le, pt_and, pt_or, pt_xor, pt_not,
+    pt_exp, pt_sqrt, pt_ln, pt_log, pt_atan, pt_sin, pt_cos,
     pt_true, pt_false,
     pt_if, pt_ifelse, pt_for, pt_loop, pt_repeat, pt_exit,
     pt_stopped, pt_stop,
@@ -197,6 +199,7 @@ char *toknames[] = { "moveto", "rmoveto", "curveto", "rcurveto",
 	"add", "sub", "mul", "div", "idiv", "mod", "neg",
 	"abs", "round", "ceiling", "floor", "truncate", "max", "min",
 	"ne", "eq", "gt", "ge", "lt", "le", "and", "or", "xor", "not",
+	"exp", "sqrt", "ln", "log", "atan", "sin", "cos",
 	"true", "false", 
 	"if", "ifelse", "for", "loop", "repeat", "exit",
 	"stopped", "stop",
@@ -232,14 +235,44 @@ char *toknames[] = { "moveto", "rmoveto", "curveto", "rcurveto",
 	NULL };
 
 /* length (of string)
-    sqrt sin ...
     fill eofill stroke
     gsave grestore
 */
 
+static int getfoghex(_IO *io) {
+    int ch,val;
+
+    while ( isspace( ch = getc(io->fog)));
+    if ( isdigit(ch))
+	val = ch-'0';
+    else if ( ch >= 'A' && ch <= 'F' )
+	val = ch-'A'+10;
+    else if ( ch >= 'a' && ch <= 'f' )
+	val = ch-'a'+10;
+    else
+return(EOF);
+
+    val <<= 4;
+    while ( isspace( ch = getc(io->fog)));
+    if ( isdigit(ch))
+	val |= ch-'0';
+    else if ( ch >= 'A' && ch <= 'F' )
+	val |= ch-'A'+10;
+    else if ( ch >= 'a' && ch <= 'f' )
+	val |= ch-'a'+10;
+    else
+return(EOF);
+
+return( val );
+}
+
 static int nextch(IO *wrapper) {
     int ch;
     _IO *io = wrapper->top;
+    static char *foguvec[]= { "moveto ", "rlineto ", "rrcurveto ", " ", " ",
+	"Cache ", "10 div setlinewidth ", "ShowInt ", " ", " ", " ", " ",
+	"FillStroke ", " ", " ", "SetWid ", "100 mul add ", "togNS_ ",
+	" ", "closepath ", " ", "SG " };
 
     while ( io!=NULL ) {
 	if ( io->backedup!=EOF ) {
@@ -249,6 +282,24 @@ return( ch );
 	} else if ( io->ps!=NULL ) {
 	    if ( (ch = getc(io->ps))!=EOF )
 return( ch );
+	} else if ( io->fog!=NULL ) {
+	    if ( io->macro!=NULL && *io->macro!='\0' )
+return( *(io->macro++) );
+	    ch = getfoghex(io);
+	    if ( ch>=233 ) {
+		io->macro = foguvec[ch-233];
+return( *(io->macro++) );
+	    } else if ( ch!=EOF && ch<200 ) {
+		sprintf( io->fogbuf, "%d ", ch-100);
+		io->macro=io->fogbuf;
+return( *(io->macro++) );
+	    } else if (ch!=EOF) {
+		sprintf( io->fogbuf, "%d %s ", ch-233+17, io->fogns
+			? "2 exch exp 3 1 roll 100 mul add mul"
+			: "100 mul add" );
+		io->macro=io->fogbuf;
+return( *(io->macro++) );
+	    }
 	} else {
 	    if ( (ch = *(io->macro++))!='\0' )
 return( ch );
@@ -297,6 +348,17 @@ static void pushio(IO *wrapper, FILE *ps, char *macro, int cnt) {
 	io->cnt = cnt;
 	io->isloop = true;
     }
+    wrapper->top = io;
+}
+
+static void pushfogio(IO *wrapper, FILE *fog) {
+    _IO *io = gcalloc(1,sizeof(_IO));
+
+    io->prev = wrapper->top;
+    io->fog = fog;
+    io->backedup = EOF;
+    io->cnt = 1;
+    io->isloop = false;
     wrapper->top = io;
 }
 
@@ -871,7 +933,7 @@ return;		/* Hunh. I don't understand it. I give up */
     ec->refs = ref;
 }
 
-static void InterpretPS(FILE *ps, char *psstr, EntityChar *ec, RetStack *rs) {
+static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
     SplinePointList *cur=NULL, *head=NULL;
     BasePoint current, temp;
     int tok, i, j;
@@ -891,7 +953,6 @@ static void InterpretPS(FILE *ps, char *psstr, EntityChar *ec, RetStack *rs) {
     int gsp = 0;
     int ccnt=0;
     char tokbuf[100];
-    IO wrapper;
     GrowBuf gb;
     struct pskeydict dict;
     struct pskeyval *kv;
@@ -902,9 +963,6 @@ static void InterpretPS(FILE *ps, char *psstr, EntityChar *ec, RetStack *rs) {
     int warned = 0;
 
     oldloc = setlocale(LC_NUMERIC,"C");
-
-    memset(&wrapper,0,sizeof(wrapper));
-    pushio(&wrapper,ps,psstr,0);
 
     memset(&gb,'\0',sizeof(GrowBuf));
     memset(&dict,'\0',sizeof(dict));
@@ -925,8 +983,8 @@ static void InterpretPS(FILE *ps, char *psstr, EntityChar *ec, RetStack *rs) {
 	sp = 2;
     }
 
-    while ( (tok = nextpstoken(&wrapper,&dval,tokbuf,sizeof(tokbuf)))!=pt_eof ) {
-	if ( endedstopped(&wrapper)) {
+    while ( (tok = nextpstoken(wrapper,&dval,tokbuf,sizeof(tokbuf)))!=pt_eof ) {
+	if ( endedstopped(wrapper)) {
 	    if ( sp<sizeof(stack)/sizeof(stack[0]) ) {
 		stack[sp].type = ps_bool;
 		stack[sp++].u.tf = false;
@@ -961,7 +1019,7 @@ static void InterpretPS(FILE *ps, char *psstr, EntityChar *ec, RetStack *rs) {
 	    if ( strcmp(tokbuf,"s")==0 )
 		printf( "s => %s\n", kv->u.str );
 	    if ( kv->type == ps_instr )
-		pushio(&wrapper,NULL,copy(kv->u.str),0);
+		pushio(wrapper,NULL,copy(kv->u.str),0);
 	    else if ( sp<sizeof(stack)/sizeof(stack[0]) ) {
 		stack[sp].type = kv->type;
 		stack[sp++].u = kv->u;
@@ -1017,6 +1075,9 @@ printf( "-%s-\n", toknames[tok]);
 		if ( sp>0 )
 		    --sp;
 		tok = linewidth!=WIDTH_INHERITED ? pt_stroke : pt_fill;
+		if ( wrapper->top!=NULL && wrapper->top->ps!=NULL &&
+			linewidth!=WIDTH_INHERITED )
+		    linewidth /= 10.0;	/* bug in Fontographer's unencrypted type3 fonts */
 	    } else if ( strcmp(tokbuf,"SG")==0 ) {
 		if ( linewidth!=WIDTH_INHERITED && sp>1 )
 		    stack[sp-2].u.val = stack[sp-1].u.val;
@@ -1027,15 +1088,31 @@ printf( "-%s-\n", toknames[tok]);
 		tok = pt_setgray;
 	    } else if ( strcmp(tokbuf,"ShowInt")==0 ) {
 	    	/* Fontographer reference */
-		if ( sp>0 && stack[sp-1].type == ps_num &&
-			stack[sp-1].u.val>=0 && stack[sp-1].u.val<=255 ) {
+		if ( (!wrapper->top->fogns && sp>0 && stack[sp-1].type == ps_num &&
+			 stack[sp-1].u.val>=0 && stack[sp-1].u.val<=255 ) ||
+			(wrapper->top->fogns && sp>6 && stack[sp-7].type == ps_num &&
+			 stack[sp-7].u.val>=0 && stack[sp-7].u.val<=255 )) {
 		    ref = chunkalloc(sizeof(RefChar));
 		    memcpy(ref->transform,transform,sizeof(ref->transform));
+		    if ( wrapper->top->fogns ) {
+			sp -= 6;
+			t[0] = stack[sp+0].u.val;
+			t[1] = stack[sp+1].u.val;
+			t[2] = stack[sp+2].u.val;
+			t[3] = stack[sp+3].u.val;
+			t[4] = stack[sp+4].u.val;
+			t[5] = stack[sp+5].u.val;
+			MatMultiply(t,ref->transform,ref->transform);
+			wrapper->top->fogns = false;
+		    }
 		    ref->local_enc = stack[--sp].u.val;
 		    ref->next = ec->refs;
 		    ec->refs = ref;
     continue;
 		}
+	    } else if ( strcmp(tokbuf,"togNS_")==0 ) {
+		wrapper->top->fogns = !wrapper->top->fogns;
+    continue;
 	    } 
 	}
 	switch ( tok ) {
@@ -1320,12 +1397,50 @@ printf( "-%s-\n", toknames[tok]);
 		--sp;
 	    }
 	  break;
+	  case pt_exp:
+	    if ( sp>=2 && stack[sp-1].type==ps_num && stack[sp-2].type==ps_num ) {
+		stack[sp-2].u.val = pow(stack[sp-2].u.val,stack[sp-1].u.val);
+		--sp;
+	    }
+	  break;
+	  case pt_sqrt:
+	    if ( sp>=1 && stack[sp-1].type==ps_num ) {
+		stack[sp-1].u.val = sqrt(stack[sp-1].u.val);
+	    }
+	  break;
+	  case pt_ln:
+	    if ( sp>=1 && stack[sp-1].type==ps_num ) {
+		stack[sp-1].u.val = log(stack[sp-1].u.val);
+	    }
+	  break;
+	  case pt_log:
+	    if ( sp>=1 && stack[sp-1].type==ps_num ) {
+		stack[sp-1].u.val = log10(stack[sp-1].u.val);
+	    }
+	  break;
+	  case pt_atan:
+	    if ( sp>=2 && stack[sp-1].type==ps_num && stack[sp-2].type==ps_num ) {
+		stack[sp-2].u.val = atan2(stack[sp-2].u.val,stack[sp-1].u.val)*
+			180/3.1415926535897932;
+		--sp;
+	    }
+	  break;
+	  case pt_sin:
+	    if ( sp>=1 && stack[sp-1].type==ps_num ) {
+		stack[sp-1].u.val = sin(stack[sp-1].u.val*3.1415926535897932/180);
+	    }
+	  break;
+	  case pt_cos:
+	    if ( sp>=1 && stack[sp-1].type==ps_num ) {
+		stack[sp-1].u.val = cos(stack[sp-1].u.val*3.1415926535897932/180);
+	    }
+	  break;
 	  case pt_if:
 	    if ( sp>=2 ) {
 		if ( ((stack[sp-2].type == ps_bool && stack[sp-2].u.tf) ||
 			(stack[sp-2].type == ps_num && strstr(stack[sp-1].u.str,"setcachedevice")!=NULL)) &&
 			stack[sp-1].type==ps_instr )
-		    pushio(&wrapper,NULL,stack[sp-1].u.str,0);
+		    pushio(wrapper,NULL,stack[sp-1].u.str,0);
 		if ( stack[sp-1].type==ps_string || stack[sp-1].type==ps_instr || stack[sp-1].type==ps_lit )
 		    free(stack[sp-1].u.str);
 		sp -= 2;
@@ -1335,7 +1450,7 @@ printf( "-%s-\n", toknames[tok]);
 		/* about, but the interp needs to learn the width of the char */
 		if ( strstr(stack[sp-1].u.str,"setcachedevice")!=NULL ||
 			strstr(stack[sp-1].u.str,"setcharwidth")!=NULL )
-		    pushio(&wrapper,NULL,stack[sp-1].u.str,0);
+		    pushio(wrapper,NULL,stack[sp-1].u.str,0);
 		free(stack[sp-1].u.str);
 		sp = 0;
 	    }
@@ -1344,10 +1459,10 @@ printf( "-%s-\n", toknames[tok]);
 	    if ( sp>=3 ) {
 		if ( stack[sp-3].type == ps_bool && stack[sp-3].u.tf ) {
 		    if ( stack[sp-2].type==ps_instr )
-			pushio(&wrapper,NULL,stack[sp-2].u.str,0);
+			pushio(wrapper,NULL,stack[sp-2].u.str,0);
 		} else {
 		    if ( stack[sp-1].type==ps_instr )
-			pushio(&wrapper,NULL,stack[sp-1].u.str,0);
+			pushio(wrapper,NULL,stack[sp-1].u.str,0);
 		}
 		if ( stack[sp-1].type==ps_string || stack[sp-1].type==ps_instr || stack[sp-1].type==ps_lit )
 		    free(stack[sp-1].u.str);
@@ -1375,7 +1490,7 @@ printf( "-%s-\n", toknames[tok]);
 		    } else if ( incr<0 ) {
 			while ( init>=limit ) { ++cnt; init += incr; }
 		    }
-		    pushio(&wrapper,NULL,func,cnt);
+		    pushio(wrapper,NULL,func,cnt);
 		    free(func);
 		}
 	    }
@@ -1389,7 +1504,7 @@ printf( "-%s-\n", toknames[tok]);
 		    cnt = 0x7fffffff;		/* Loop for ever */
 		    func = stack[sp-1].u.str;
 		    --sp;
-		    pushio(&wrapper,NULL,func,cnt);
+		    pushio(wrapper,NULL,func,cnt);
 		    free(func);
 		}
 	    }
@@ -1403,13 +1518,13 @@ printf( "-%s-\n", toknames[tok]);
 		    cnt = stack[sp-2].u.val;
 		    func = stack[sp-1].u.str;
 		    sp -= 2;
-		    pushio(&wrapper,NULL,func,cnt);
+		    pushio(wrapper,NULL,func,cnt);
 		    free(func);
 		}
 	    }
 	  break;
 	  case pt_exit:
-	    ioescapeloop(&wrapper);
+	    ioescapeloop(wrapper);
 	  break;
 	  case pt_stopped:
 	    if ( sp>=1 ) {
@@ -1418,13 +1533,13 @@ printf( "-%s-\n", toknames[tok]);
 		if ( stack[sp-1].type==ps_instr ) {
 		    func = stack[sp-1].u.str;
 		    --sp;
-		    pushio(&wrapper,NULL,func,-1);
+		    pushio(wrapper,NULL,func,-1);
 		    free(func);
 		}
 	    }
 	  break;
 	  case pt_stop:
-	    sp = ioescapestopped(&wrapper,stack,sp);
+	    sp = ioescapestopped(wrapper,stack,sp);
 	  break;
 	  case pt_load:
 	    if ( sp>=1 && stack[sp-1].type==ps_lit ) {
@@ -1559,7 +1674,7 @@ printf( "-%s-\n", toknames[tok]);
 	  break;
 	  case pt_namelit:
 	    if ( strcmp(tokbuf,"CharProcs")==0 && ec!=NULL ) {
-		HandleType3Reference(&wrapper,ec,transform,tokbuf,sizeof(tokbuf));
+		HandleType3Reference(wrapper,ec,transform,tokbuf,sizeof(tokbuf));
 	    } else if ( sp<sizeof(stack)/sizeof(stack[0]) ) {
 		stack[sp].type = ps_lit;
 		stack[sp++].u.str = copy(tokbuf);
@@ -2314,6 +2429,14 @@ printf( "-%s-\n", toknames[tok]);
     setlocale(LC_NUMERIC,oldloc);
 }
 
+static void InterpretPS(FILE *ps, char *psstr, EntityChar *ec, RetStack *rs) {
+    IO wrapper;
+
+    memset(&wrapper,0,sizeof(wrapper));
+    pushio(&wrapper,ps,psstr,0);
+    _InterpretPS(&wrapper,ec,rs);
+}
+
 static SplinePointList *EraseStroke(SplineChar *sc,SplinePointList *head,SplinePointList *erase) {
     SplineSet *spl, *last;
     SplinePoint *sp;
@@ -2668,21 +2791,45 @@ Entity *EntityInterpretPS(FILE *ps) {
 return( ec.splines );
 }
 
+static RefChar *revrefs(RefChar *cur) {
+    RefChar *p, *n;
+
+    if ( cur==NULL )
+return( NULL );
+
+    p = NULL;
+    for ( ; (n=cur->next)!=NULL; cur = n ) {
+	cur->next = p;
+	p = cur;
+    }
+    cur->next = p;
+return( cur );
+}
+
 static void SCInterpretPS(FILE *ps,SplineChar *sc, int *flags) {
     EntityChar ec;
     real dval;
     char tokbuf[10];
     IO wrapper;
+    int ch;
 
-    wrapper.top = NULL;
-    pushio(&wrapper,ps,NULL,0);
+    while ( isspace(ch = getc(ps)) );
+    ungetc(ch,ps);
 
-    if ( nextpstoken(&wrapper,&dval,tokbuf,sizeof(tokbuf))!=pt_opencurly )
-	fprintf(stderr, "We don't understand this font\n" );
+    memset(&wrapper,0,sizeof(wrapper));
+    if ( ch!='<' ) {
+	pushio(&wrapper,ps,NULL,0);
+
+	if ( nextpstoken(&wrapper,&dval,tokbuf,sizeof(tokbuf))!=pt_opencurly )
+	    fprintf(stderr, "We don't understand this font\n" );
+    } else {
+	(void) getc(ps);
+	pushfogio(&wrapper,ps);
+    }
     memset(&ec,'\0',sizeof(ec));
     ec.fromtype3 = true;
     ec.sc = sc;
-    InterpretPS(ps,NULL,&ec,NULL);
+    _InterpretPS(&wrapper,&ec,NULL);
     sc->width = ec.width;
 #ifdef FONTFORGE_CONFIG_TYPE3
     sc->layer_cnt = 1;
@@ -2691,7 +2838,7 @@ static void SCInterpretPS(FILE *ps,SplineChar *sc, int *flags) {
 #else
     sc->layers[ly_fore].splines = SplinesFromEntityChar(&ec,flags);
 #endif
-    sc->layers[ly_fore].refs = ec.refs;
+    sc->layers[ly_fore].refs = revrefs(ec.refs);
     free(wrapper.top);
 }
     
