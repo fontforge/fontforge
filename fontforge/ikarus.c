@@ -689,11 +689,7 @@ return( NULL );
 	offsets[i] = (rpos-1)*4096 + 2*(wpos-1);
     }
 
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    sf = SplineFontBlank(em_none,numchars/*maxnum+1*/);
-#else
     sf = SplineFontBlank(&custom,numchars/*maxnum+1*/);
-#endif
     IkarusFontname(sf,fullname,fnam);
     sf->italicangle = italic_angle;
     sf->ascent = 12000; sf->descent = 3000;	/* Ikarus fonts live in a 15,000 em world */

@@ -197,13 +197,8 @@ return( ScriptFromUnicode( sc->unicodeenc,sf ));
     for ( pt=sc->name; *pt!='\0' && *pt!='_' && *pt!='.'; ++pt );
     if ( *pt!='\0' ) {
 	char *str = copyn(sc->name,pt-sc->name);
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-	int uni = sf==NULL ? UniFromName(str,ui_none,em_custom) :
-			    UniFromName(str,sf->uni_interp,sf->encoding_name);
-#else
 	int uni = sf==NULL ? UniFromName(str,ui_none,&custom) :
 			    UniFromName(str,sf->uni_interp,sf->encoding_name);
-#endif
 	free(str);
 	if ( uni!=-1 )
 return( ScriptFromUnicode( uni,sf ));

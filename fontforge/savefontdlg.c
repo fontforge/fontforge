@@ -343,11 +343,7 @@ return( false );
 return( false );
 
     encname=NULL;
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    if ( sf->subfontcnt==0 && sf->encoding_name!=em_custom && !sf->compacted )
-#else
     if ( sf->subfontcnt==0 && sf->encoding_name!=&custom && !sf->compacted )
-#endif
 	encname = EncodingName(sf->encoding_name );
     if ( encname==NULL )
 	fprintf( enc, "/%s-Enc [\n", sf->fontname );
@@ -1225,20 +1221,6 @@ static char *GetWernerSFDFile(SplineFont *sf) {
 	    if ( sf->subfontcnt!=0 ) {
 		sprintf(buffer,"%.40s-%.40s-%d.sfd", sf->cidregistry,sf->ordering,supl);
 		def = buffer;
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-	    } else if ( sf->encoding_name==em_big5 )
-		def = "Big5.sfd";
-	    else if ( sf->encoding_name==em_big5hkscs )
-		def = "Big5HKSCS.sfd";
-	    else if ( sf->encoding_name==em_sjis )
-		def = "Sjis.sfd";
-	    else if ( sf->encoding_name==em_wansung )
-		def = "Wansung.sfd";
-	    else if ( sf->encoding_name==em_johab )
-		def = "Johab.sfd";
-	    else if ( sf->encoding_name==em_unicode )
-		def = "Unicode.sfd";
-#else
 	    } else if ( strstrmatch(sf->encoding_name->enc_name,"big")!=NULL &&
 		    strchr(sf->encoding_name->enc_name,'5')!=NULL ) {
 		if (strstrmatch(sf->encoding_name->enc_name,"hkscs")!=NULL )
@@ -1254,7 +1236,6 @@ static char *GetWernerSFDFile(SplineFont *sf) {
 		def = "Johab.sfd";
 	    else if ( sf->encoding_name->is_unicodebmp || sf->encoding_name->is_unicodefull )
 		def = "Unicode.sfd";
-#endif
 	}
 	if ( def!=NULL ) {
 	    ret = SearchDirForWernerFile(".",def);
@@ -1412,11 +1393,7 @@ return( NULL );
 		if ( modi<cnt ) {
 		    if ( mapping[modi]!=-1 && !warned ) {
 			if (( i==0xffff || i==0xfffe ) &&
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-				(sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4))
-#else
 				(sf->encoding_name->is_unicodebmp || sf->encoding_name->is_unicodefull))
-#endif
 			    /* Not a character anyway. just ignore it */;
 			else {
 			    fprintf( stderr, "Warning: Encoding %d (%x) is mapped to at least two locations (%s@0x%02x and %s@0x%02x)\n Only one will be used here.\n",
@@ -1457,11 +1434,7 @@ static int SaveSubFont(SplineFont *sf,char *newname,int32 *sizes,int res,
     enum fontformat subtype = strstr(newname,".pfa")!=NULL ? ff_pfa : ff_pfb ;
 
     temp = *sf;
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    temp.encoding_name = em_none;
-#else
     temp.encoding_name = &custom;
-#endif
     temp.charcnt = 256;
     temp.chars = chars;
     temp.bitmaps = NULL;
@@ -1954,13 +1927,7 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	    i = ff_none;
 	}
     }
-    if ( i==ff_ptype3 && 
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-	    ((sf->encoding_name>=em_first2byte && sf->encoding_name<em_max2 ) ||
-	     (sf->encoding_name>=em_unicodeplanes && sf->encoding_name<=em_unicodeplanesmax )) )
-#else
-	    sf->encoding_name->has_2byte )
-#endif
+    if ( i==ff_ptype3 && sf->encoding_name->has_2byte )
 	i = ff_ptype0;
     else if ( i==ff_ttfdfont && strmatch(end-strlen(".otf.dfont"),".otf.dfont")==0 )
 	i = ff_otfdfont;
@@ -2097,9 +2064,6 @@ static void DoSave(struct gfc_data *d,unichar_t *path) {
     char *temp;
     int32 *sizes=NULL;
     int iscid, i;
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    Encoding *item=NULL;
-#endif
     struct sflist *sfs=NULL, *cur, *last=NULL;
 #if defined(FONTFORGE_CONFIG_GDRAW)
     static int buts[] = { _STR_Yes, _STR_No, 0 };
@@ -2163,18 +2127,9 @@ return;
 	}
     }
 
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    if ( d->sf->encoding_name>=em_base )
-	for ( item=enclist; item!=NULL && item->enc_num!=d->sf->encoding_name; item=item->next );
-    if ( ((oldformatstate<ff_ptype0 && oldformatstate!=ff_multiple) ||
-		oldformatstate==ff_ttfsym || oldformatstate==ff_cff ) &&
-	    ((d->sf->encoding_name>=em_first2byte && d->sf->encoding_name<em_base) ||
-	     (d->sf->encoding_name>=em_base && (item==NULL || item->char_cnt>256))) ) {
-#else
     if ( ((oldformatstate<ff_ptype0 && oldformatstate!=ff_multiple) ||
 		oldformatstate==ff_ttfsym || oldformatstate==ff_cff ) &&
 		d->sf->encoding_name->has_2byte ) {
-#endif
 	static int buts[3] = { _STR_Yes, _STR_Cancel, 0 };
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( GWidgetAskR(_STR_EncodingTooLarge,buts,0,1,_STR_TwoBEncIn1BFont)==1 )
@@ -2846,12 +2801,7 @@ return( 0 );
     gcd[6].creator = GListButtonCreate;
     for ( i=0; i<sizeof(formattypes)/sizeof(formattypes[0])-1; ++i )
 	formattypes[i].disabled = sf->onlybitmaps;
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    formattypes[ff_ptype0].disabled = sf->onlybitmaps ||
-	    ( sf->encoding_name<em_jis208 && sf->encoding_name>=em_base);
-#else
     formattypes[ff_ptype0].disabled = sf->onlybitmaps || sf->encoding_name->only_1byte;
-#endif
     formattypes[ff_mma].disabled = formattypes[ff_mmb].disabled =
 	     sf->mm==NULL || sf->mm->apple || !MMValid(sf->mm,false);
     formattypes[ff_cffcid].disabled = sf->cidmaster==NULL;

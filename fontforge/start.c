@@ -41,11 +41,7 @@
 #  include <dynamic.h>
 #endif
 
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-uint16 unicode_from_adobestd[256];
-#else
 int32 unicode_from_adobestd[256];
-#endif
 struct lconv localeinfo;
 char *coord_sep = ",";		/* Not part of locale data */
 const struct unicode_nameannot * const *const *_UnicodeNameAnnot = NULL;
@@ -57,11 +53,7 @@ static void initadobeenc(void) {
 	if ( strcmp(AdobeStandardEncoding[i],".notdef")==0 )
 	    unicode_from_adobestd[i] = 0xfffd;
 	else {
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-	    j = UniFromName(AdobeStandardEncoding[i],ui_none,em_custom);
-#else
 	    j = UniFromName(AdobeStandardEncoding[i],ui_none,&custom);
-#endif
 	    if ( j==-1 ) j = 0xfffd;
 	    unicode_from_adobestd[i] = j;
 	}

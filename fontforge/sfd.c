@@ -883,57 +883,13 @@ static void putstring(FILE *sfd, char *header, char *body) {
     putc('\n',sfd);
 }
 
-#ifdef FONTFORGE_CONFIG_ICONV_ENCODING
 const char *EncName(Encoding *encname) {
 return( encname->enc_name );
 }
-#else
-const char *EncName(int encname) {
-    static char buffer[40];
 
-    if ( encname==em_custom )
-return( "Custom" );
-    if ( encname==em_compacted )
-return( "Compacted" );
-    if ( encname==em_original )
-return( "Original" );
-
-    if ( encname>=em_unicodeplanes && encname<=em_unicodeplanesmax ) {
-	sprintf(buffer, "UnicodePlane%d", encname-em_unicodeplanes );
-return( buffer );
-    } else if ( encname>=em_base ) {
-	Encoding *item;
-	for ( item = enclist; item!=NULL && item->enc_num!=encname; item = item->next );
-	if ( item!=NULL )
-return( item->enc_name );
-
-	fprintf(stderr, "Unknown encoding %d\n", encname );
-return( NULL );
-    } else if ( encname>=sizeof(charset_names)/sizeof(charset_names[0])-2 &&
-	    encname!=em_none ) {
-	fprintf(stderr, "Unknown encoding %d\n", encname );
-return( NULL );
-    } else
-return( charset_names[encname+1]);
-}
-#endif
-
-#ifdef FONTFORGE_CONFIG_ICONV_ENCODING
 static void SFDDumpEncoding(FILE *sfd,Encoding *encname,char *keyword) {
     fprintf(sfd, "%s: %s\n", keyword, encname->enc_name );
 }
-#else
-static void SFDDumpEncoding(FILE *sfd,int encname,char *keyword) {
-    const char *name = EncName(encname);
-
-    if ( name==NULL && encname>=em_base )
-	name = "custom";
-    if ( name==NULL ) {
-	fprintf(sfd, "%s: %d\n", keyword, encname );
-    } else
-	fprintf(sfd, "%s: %s\n", keyword, name );
-}
-#endif
 
 static void SFDDumpMacName(FILE *sfd,struct macname *mn) {
     char *pt;
@@ -2865,7 +2821,6 @@ return( cur );
 return( old );
 }
 
-#ifdef FONTFORGE_CONFIG_ICONV_ENCODING
 static Encoding *SFDGetEncoding(FILE *sfd, char *tok, SplineFont *sf) {
     Encoding *enc = NULL;
     int encname;
@@ -2883,62 +2838,6 @@ static Encoding *SFDGetEncoding(FILE *sfd, char *tok, SplineFont *sf) {
 	sf->compacted = true;
 return( enc );
 }
-#else
-/* Sadly I used underscores to name encodings where iconv uses hyphens */
-/*  I've switched over, but I want to be compatible with old sfd files */
-static int fixunderscore(const char *str1, const char *str2 ) {
-    while ( *str1 || *str2 ) {
-	if ( *str1==*str2 ||
-		((*str1=='-' || *str1=='_') && (*str2=='-' || *str2=='_')))
-	    /* Matches */;
-	else
-return( *str1-*str2 );
-	++str1;
-	++str2;
-    }
-return( 0 );
-}
-
-static enum charset SFDGetEncoding(FILE *sfd, char *tok, SplineFont *sf) {
-    int encname = em_none;
-    int i;
-
-    if ( !getint(sfd,&encname) ) {
-	Encoding *item; int val;
-	geteol(sfd,tok);
-	encname = em_none;
-	for ( i=0; charset_names[i]!=NULL; ++i )
-	    if ( strcmp(tok,charset_names[i])==0 ) {
-		encname = i-1;
-	break;
-	    }
-	if ( charset_names[i]==NULL ) {
-	    for ( item = enclist; item!=NULL && strcmp(item->enc_name,tok)!=0; item = item->next );
-	    if ( item!=NULL )
-		encname = item->enc_num;
-	}
-	if ( encname == em_none &&
-		sscanf(tok,"UnicodePlane%d",&val)==1 )
-	    encname = val+em_unicodeplanes;
-	if ( encname == em_none ) {
-	    if ( strmatch(tok,"compacted")==0 ) {
-		encname = em_none;
-		sf->compacted = true;
-	    } else if ( strmatch(tok,"Custom")==0 )
-		encname = em_custom;
-	    else if ( strmatch(tok,"Original")==0 )
-		encname = em_original;
-	}
-	if ( encname==em_none )
-	    for ( i=0; charset_names[i]!=NULL; ++i )
-		if ( fixunderscore(tok,charset_names[i])==0 ) {
-		    encname = i-1;
-	    break;
-		}
-    }
-return( encname );
-}
-#endif
 
 static enum uni_interp SFDGetUniInterp(FILE *sfd, char *tok, SplineFont *sf) {
     int uniinterp = ui_none;
@@ -3333,7 +3232,6 @@ static void SFDCleanupAnchorClasses(SplineFont *sf) {
 #undef S_MAX
 }
 
-#ifdef FONTFORGE_CONFIG_ICONV_ENCODING
 enum uni_interp interp_from_encoding(Encoding *enc,enum uni_interp interp) {
     if ( enc->is_japanese )
 	interp = ui_japanese;
@@ -3345,29 +3243,6 @@ enum uni_interp interp_from_encoding(Encoding *enc,enum uni_interp interp) {
 	interp = ui_simp_chinese;
 return( interp );
 }
-#else
-enum uni_interp interp_from_encoding(enum charset enc,enum uni_interp interp) {
-
-    switch ( enc ) {
-      case em_sjis: case em_jis208: case em_jis212: case em_jis201:
-	interp = ui_japanese;
-      break;
-      case em_big5: case em_big5hkscs:
-	interp = ui_trad_chinese;
-      break;
-      case em_johab: case em_wansung: case em_ksc5601:
-	interp = ui_korean;
-      break;
-      case em_jisgb: case em_gb2312: case em_gb18030:
-	interp = ui_simp_chinese;
-      break;
-      case em_iso8859_7:
-	interp = ui_greek;
-      break;
-    }
-return( interp );
-}
-#endif
 
 static void SFDCleanupFont(SplineFont *sf) {
     SFDCleanupAnchorClasses(sf);
@@ -4198,11 +4073,7 @@ return( sc );
 }
 
 static int ModSF(FILE *asfd,SplineFont *sf) {
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    int newmap;
-#else
     Encoding *newmap;
-#endif
     int cnt, order2=0;
     char tok[200];
     int i,k;
@@ -4219,11 +4090,7 @@ static int ModSF(FILE *asfd,SplineFont *sf) {
 
     if ( getname(asfd,tok)!=1 || strcmp(tok,"Encoding:")!=0 )
 return(false);
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    getint(asfd,&newmap);
-#else
     newmap = SFDGetEncoding(asfd,tok,&temp);
-#endif
     if ( getname(asfd,tok)!=1 )
 return( false );
     if ( strcmp(tok,"UnicodeInterp:")==0 ) {
@@ -4359,11 +4226,7 @@ return;
     oldloc = setlocale(LC_NUMERIC,"C");
     if ( !sf->new && sf->origname!=NULL )	/* might be a new file */
 	fprintf( asfd, "Base: %s\n", sf->origname );
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    fprintf( asfd, "Encoding: %d\n", sf->encoding_name );
-#else
     fprintf( asfd, "Encoding: %s\n", sf->encoding_name->enc_name );
-#endif
     fprintf( asfd, "UnicodeInterp: %s\n", unicode_interp_names[sf->uni_interp]);
     if ( sf->order2 )
 	fprintf( asfd, "Order2: %d\n", sf->order2 );

@@ -32,9 +32,6 @@
 #include <gkeysym.h>
 #include <math.h>
 
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-static int lastplane=1;		/* SMP, Supplementary Multilingual Plane */
-#endif
 static int last_aspect=0;
 
 struct gfi_data {
@@ -47,9 +44,6 @@ struct gfi_data {
     struct psdict *private;
     struct ttflangname *names;
     struct ttflangname def;
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    int uplane;
-#endif
     unsigned int family_untitled: 1;
     unsigned int human_untitled: 1;
     unsigned int done: 1;
@@ -67,51 +61,7 @@ GTextInfo emsizes[] = {
     { (unichar_t *) "4096", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
     { NULL }
 };
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-GTextInfo encodingtypes[] = {
-    { (unichar_t *) _STR_Custom, NULL, 0, 0, (void *) em_custom, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Compacted, NULL, 0, 0, (void *) em_compacted, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Original, NULL, 0, 0, (void *) em_original, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { NULL, NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 1, 0 },
-    { (unichar_t *) _STR_Isolatin1, NULL, 0, 0, (void *) em_iso8859_1, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Isolatin0, NULL, 0, 0, (void *) em_iso8859_15, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Isolatin2, NULL, 0, 0, (void *) em_iso8859_2, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Isolatin3, NULL, 0, 0, (void *) em_iso8859_3, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Isolatin4, NULL, 0, 0, (void *) em_iso8859_4, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Isolatin5, NULL, 0, 0, (void *) em_iso8859_9, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Isolatin6, NULL, 0, 0, (void *) em_iso8859_10, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Isolatin7, NULL, 0, 0, (void *) em_iso8859_13, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Isolatin8, NULL, 0, 0, (void *) em_iso8859_14, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { NULL, NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 1, 0 },
-    { (unichar_t *) _STR_Isocyrillic, NULL, 0, 0, (void *) em_iso8859_5, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Koi8cyrillic, NULL, 0, 0, (void *) em_koi8_r, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Isoarabic, NULL, 0, 0, (void *) em_iso8859_6, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Isogreek, NULL, 0, 0, (void *) em_iso8859_7, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Isohebrew, NULL, 0, 0, (void *) em_iso8859_8, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Isothai, NULL, 0, 0, (void *) em_iso8859_11, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { NULL, NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 1, 0 },
-    { (unichar_t *) _STR_MacLatin, NULL, 0, 0, (void *) em_mac, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Win, NULL, 0, 0, (void *) em_win, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Adobestd, NULL, 0, 0, (void *) em_adobestandard, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Symbol, NULL, 0, 0, (void *) em_symbol, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Texbase, NULL, 0, 0, (void *) em_base, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { NULL, NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 1, 0 },
-    { (unichar_t *) _STR_Unicode, NULL, 0, 0, (void *) em_unicode, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Unicode4, NULL, 0, 0, (void *) em_unicode4, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_UnicodePlanes, NULL, 0, 0, (void *) em_unicodeplanes, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { NULL, NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 1, 0 },
-    { (unichar_t *) _STR_SJIS, NULL, 0, 0, (void *) em_sjis, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Jis208, NULL, 0, 0, (void *) em_jis208, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Jis212, NULL, 0, 0, (void *) em_jis212, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_KoreanWansung, NULL, 0, 0, (void *) em_wansung, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Korean, NULL, 0, 0, (void *) em_ksc5601, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_KoreanJohab, NULL, 0, 0, (void *) em_johab, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Chinese, NULL, 0, 0, (void *) em_gb2312, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_ChinesePacked, NULL, 0, 0, (void *) em_jisgb, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_ChineseTrad, NULL, 0, 0, (void *) em_big5, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_ChineseTradHKSCS, NULL, 0, 0, (void *) em_big5hkscs, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { NULL }};
-#else
+
 GTextInfo encodingtypes[] = {
     { (unichar_t *) _STR_Custom, NULL, 0, 0, (void *) "Custom", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Compacted, NULL, 0, 0, (void *) "Compacted", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -155,7 +105,7 @@ GTextInfo encodingtypes[] = {
     { (unichar_t *) _STR_ChineseTrad, NULL, 0, 0, (void *) "big5", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_ChineseTradHKSCS, NULL, 0, 0, (void *) "big5hkscs", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { NULL }};
-#endif
+
 GTextInfo interpretations[] = {
     { (unichar_t *) _STR_None_fem, NULL, 0, 0, (void *) ui_none, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_AdobePUA, NULL, 0, 0, (void *) ui_adobe, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -1625,454 +1575,6 @@ static int intarget(SplineChar *sc, SplineFont *target) {
 return( sc->enc!=-1 );
 }
 
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-static int infont(SplineChar *sc, const unsigned short *table, int tlen,
-	Encoding *item, uint8 *used, int new_map) {
-    int i;
-    int tlen2 = tlen;
-    /* for some reason, some encodings have multiple entries for the same */
-    /*  glyph. One obvious one is space: 0x20 and 0xA0. The used bit array */
-    /*  is designed to handle that unpleasantness */
-
-    if ( table==NULL && item==NULL ) {
-	if ( sc->unicodeenc==-1 ) {
-	    if ( sc->enc!=0 || (used[0]&1) ) {
-		sc->enc = -1;
-return( false );
-	    }
-	    used[0] |= 1;
-return( true );
-	}
-	if ( new_map>=em_unicodeplanes && new_map<=em_unicodeplanesmax ) {
-	    i = sc->unicodeenc - ((new_map-em_unicodeplanes)<<16);
-	    if ( i<0 || i>=tlen || (used[i>>3] & (1<<(i&7))) ) {
-		sc->enc = -1;
-return( false );
-	    }
-	    sc->enc = i;
-	    used[i>>3] |= 1<<(i&7);
-return( true );
-	} else {
-	    if ( sc->unicodeenc>=tlen ||
-		    (used[sc->unicodeenc>>3] & (1<<(sc->unicodeenc&7))) ) {
-		sc->enc = -1;
-return( false );
-	    }
-	    used[sc->unicodeenc>>3] |= (1<<(sc->unicodeenc&7));
-	    sc->enc = sc->unicodeenc;
-return( true );
-	}
-    }
-    if ( sc->unicodeenc==-1 ) {
-	if ( SCIsNotdef(sc,-1) && !(used[0]&1) &&
-		((table!=NULL && table[0]==0) || (item!=NULL && item->unicode[0]==0) ||
-		 new_map==em_sjis || new_map==em_wansung ||
-		 new_map==em_johab || new_map==em_jisgb ||
-		 new_map==em_big5 || new_map==em_big5hkscs)) {
-	    if ( (table!=NULL && table[0]==0) || (item!=NULL && item->unicode[0]==0) )
-		used[0] |= 1;
-return( true );			/* .notdef goes to encoding 0 */
-	} else if ( item!=NULL && item->psnames!=NULL ) {
-	    for ( i=0; i<tlen ; ++i ) {
-		if ( item->psnames[i]!=NULL && strcmp(item->psnames[i],sc->name)==0 &&
-			!(used[i>>3]&(1<<(i&7))) ) {
-		    used[i>>3] |= (1<<(i&7));
-		    sc->enc = i;
-return( true );
-		}
-	    }
-	} else {
-	    sc->enc = -1;
-return( false );
-	}
-    }
-
-    if ( item!=NULL ) {
-	const int32 *table32 = item->unicode;
-	for ( i=0; i<tlen && (sc->unicodeenc!=table32[i] || (used[i>>3]&(1<<(i&7))) ||
-		!(table32[i]!=0 || i==0 ||
-		    (item->psnames!=NULL && item->psnames[i]!=NULL &&
-		     strcmp(item->psnames[i],".notdef")==0))); ++i );
-    } else {
-	if ( table==unicode_from_jis208 ||
-		table == unicode_from_ksc5601 ||
-		table == unicode_from_gb2312 )
-	    tlen = 94*94;
-
-	for ( i=0; i<tlen && (sc->unicodeenc!=table[i] || (used[i>>3]&(1<<(i&7))) ||
-		!(table[i]!=0 || i==0 )); ++i );
-    }
-    if ( i==tlen && sc->unicodeenc<0x80 && tlen2==65536 && table == unicode_from_jis208 ) {
-	/* sjis often comes with a single byte encoding of ASCII */
-	sc->enc = sc->unicodeenc;
-return( true );
-    } else if ( i==tlen && sc->unicodeenc>=0xFF61 && sc->unicodeenc<=0xFF9F &&
-	    tlen2==65536 && table == unicode_from_jis208 ) {
-	/* and katakana */
-	for ( i=0xa1; i<=0xdf && sc->unicodeenc!=unicode_from_jis201[i] ; ++i );
-		/* Was checking used array above, but it is set up for jis not sjis */
-	if ( i>0xdf ) {
-	    sc->enc = -1;
-return( false );
-	}
-	sc->enc = i;
-return( true );
-    } else if ( i==tlen && sc->unicodeenc<160 &&
-	    (tlen==0x10000-0xa100 || tlen==0x10000-0x8400 ||
-	     (tlen2==65536 && table==unicode_from_gb2312 ) ||
-	     (tlen2==65536 && table==unicode_from_ksc5601 ))) {
-	/* Big 5 often comes with a single byte encoding of ASCII */
-	/* As do Johab and Wansung */
-	/* but sjis is more complex... */
-	sc->enc = sc->unicodeenc;
-return( true );
-    }
-    if ( i==tlen ) {
-	sc->enc = -1;
-return( false );
-    } else {
-	used[i>>3] |= (1<<(i&7));
-	if ( tlen2==94*94 ) {
-	    sc->enc = 0x2121 + ((i/94)<<8) + (i%94);
-return( true );
-	} else if ( table==unicode_from_ksc5601 ) {
-	    /* Wansung */
-	    sc->enc = 0xa1a1 + ((i/94)<<8) + (i%94);
-return( true );
-	} else if ( table==unicode_from_gb2312 ) {
-	    /* Dunno what this variant of gb2312 is called: em_jisgb */
-	    sc->enc = 0xa1a1 + ((i/94)<<8) + (i%94);
-return( true );
-	} else if ( table==unicode_from_jis208 ) {
-	    /* sjis */
-	    int ch1, ch2, ro, co;
-	    ch1 = i/94 + 0x21; ch2 = i%94 + 0x21;
-	    ro = ch1<95 ? 112 : 176;
-	    co = (ch1&1) ? (ch2>95?32:31) : 126;
-	    sc->enc = ((((ch1+1)>>1) + ro )<<8 )    |    (ch2+co);
-return( true );
-	} else if ( tlen==0x10000-0xa100 ) {
-	    sc->enc = i+0xa100;
-return( true );
-	} else if ( tlen==0x10000-0x8400 ) {
-	    sc->enc = i+0x8400;
-return( true );
-	} else {
-	    sc->enc = i;
-return( true );
-	}
-    }
-}
-
-static int __SFReencodeFont(SplineFont *sf,enum charset new_map, SplineFont *target);
-
-static int _SFForceEncoding(SplineFont *sf,enum charset new_map) {
-    int enc_cnt=256,i;
-    BDFFont *bdf;
-    Encoding *item=NULL;
-
-    if ( sf->encoding_name==new_map )
-return(false);
-    if ( new_map==em_custom || new_map==em_compacted ) {
-	sf->encoding_name=em_custom;	/* Custom, it's whatever's there */
-return(false);
-    }
-
-    if ( new_map==em_original ) {
-	for ( i=enc_cnt=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=0 )
-	    sf->chars[i]->orig_pos = enc_cnt++;
-	if ( sf->charcnt==enc_cnt )
-return( false );
-return( __SFReencodeFont(sf,em_original,NULL));
-    }
-	
-
-    if ( new_map>=em_base ) {
-	for ( item=enclist; item!=NULL && item->enc_num!=new_map; item=item->next );
-	if ( item!=NULL ) {
-	    enc_cnt = item->char_cnt;
-	} else {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_InvalidEncoding,_STR_InvalidEncoding);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_post_error(_("Invalid Encoding"),_("Invalid Encoding"));
-#endif
-return( false );
-	}
-    } else if ( new_map==em_unicode || new_map==em_big5 || new_map==em_big5hkscs || new_map==em_johab )
-	enc_cnt = 65536;
-    else if ( new_map==em_unicode4 )
-	enc_cnt = unicode4_size;
-    else if ( new_map>=em_first2byte )
-	enc_cnt = 65536;
-
-    if ( sf->charcnt<enc_cnt ) {
-	sf->chars = grealloc(sf->chars,enc_cnt*sizeof(SplineChar *));
-	for ( i=sf->charcnt; i<enc_cnt; ++i )
-	    sf->chars[i] = NULL;
-	sf->charcnt = enc_cnt;
-    }
-    for ( bdf=sf->bitmaps; bdf!=NULL; bdf = bdf->next ) {
-	if ( bdf->charcnt<enc_cnt ) {
-	    bdf->chars = grealloc(bdf->chars,enc_cnt*sizeof(BDFChar *));
-	    for ( i=bdf->charcnt; i<enc_cnt; ++i )
-		bdf->chars[i] = NULL;
-	    bdf->charcnt = enc_cnt;
-	}
-    }
-    sf->encoding_name = new_map;
-    for ( i=0; i<sf->charcnt && i<enc_cnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	SplineChar dummy;
-	SCBuildDummy(&dummy,sf,i);
-	sf->chars[i]->unicodeenc = dummy.unicodeenc;
-	free(sf->chars[i]->name);
-	sf->chars[i]->name = copy(dummy.name);
-    }
-    free(sf->remap);
-    sf->remap = NULL;
-return( true );
-}
-
-static int __SFReencodeFont(SplineFont *sf,enum charset new_map,
-	SplineFont *target) {
-    const unsigned short *table=NULL;
-    int i, extras, epos;
-    SplineChar **chars;
-    int enc_cnt;
-    BDFFont *bdf;
-    int tlen = 256;
-    Encoding *item=NULL;
-    uint8 *used;
-    RefChar *refs;
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-    CharView *cv;
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
-
-    if ( target==NULL ) {
-	if ( sf->encoding_name==new_map )
-return(false);
-	if ( sf->encoding_name==em_unicode4 && (sf->uni_interp==ui_ams || sf->uni_interp==ui_trad_chinese))
-	    SFToPUA(sf);
-	if ( new_map==em_custom ) {
-	    sf->encoding_name=em_custom;	/* Custom, it's whatever's there */
-return(false);
-	}
-	if ( new_map==em_unicodeplanes )
-	    new_map = em_unicode;		/* Plane 0 is just unicode bmp */
-	if ( new_map==em_adobestandard ) {
-	    table = unicode_from_adobestd;
-	} else if ( new_map==em_iso8859_1 )
-	    table = unicode_from_i8859_1;
-	else if ( new_map==em_unicode ) {
-	    table = NULL;
-	    tlen = 65536;
-	} else if ( new_map==em_unicode4 ) {
-	    table = NULL;
-	    tlen = unicode4_size;
-	} else if ( new_map>=em_unicodeplanes && new_map<=em_unicodeplanesmax ) {
-	    table = NULL;
-	    tlen = 65536;
-	} else if ( new_map>=em_base ) {
-	    for ( item=enclist; item!=NULL && item->enc_num!=new_map; item=item->next );
-	    if ( item!=NULL ) {
-		tlen = item->char_cnt;
-		table = NULL;
-	    } else {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		GWidgetErrorR(_STR_InvalidEncoding,_STR_InvalidEncoding);
-#elif defined(FONTFORGE_CONFIG_GTK)
-		gwwv_post_error(_("Invalid Encoding"),_("Invalid Encoding"));
-#endif
-return( false );
-	    }
-	} else if ( new_map==em_jis208 ) {
-	    table = unicode_from_jis208;
-	    tlen = 94*94;
-	} else if ( new_map==em_sjis ) {
-	    table = unicode_from_jis208;
-	    tlen = 65536;
-	} else if ( new_map==em_jis212 ) {
-	    table = unicode_from_jis212;
-	    tlen = 94*94;
-	} else if ( new_map==em_wansung ) {
-	    table = unicode_from_ksc5601;
-	    tlen = 65536;
-	} else if ( new_map==em_ksc5601 ) {
-	    table = unicode_from_ksc5601;
-	    tlen = 94*94;
-	} else if ( new_map==em_jisgb ) {
-	    table = unicode_from_gb2312;
-	    tlen = 65536;
-	} else if ( new_map==em_gb2312 ) {
-	    table = unicode_from_gb2312;
-	    tlen = 94*94;
-	} else if ( new_map==em_big5 ) {
-	    table = unicode_from_big5;
-	    tlen = 0x10000-0xa100;	/* the big5 table starts at 0xa100 to save space */
-	} else if ( new_map==em_big5hkscs ) {
-	    table = unicode_from_big5hkscs;
-	    tlen = 0x10000-0x8100;	/* the big5 table starts at 0x8100 to save space */
-	} else if ( new_map==em_johab ) {
-	    table = unicode_from_johab;
-	    tlen = 0x10000-0x8400;	/* the johab table starts at 0x8400 to save space */
-	} else if ( new_map==em_original ) {
-	    tlen = 0;
-	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->orig_pos!=0xffff )
-		if ( sf->chars[i]->orig_pos>tlen ) tlen = sf->chars[i]->orig_pos;
-	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
-/* This can happen in two ways: User added characters, or we have one char at */
-/*  two encodings (space, nbspace) */
-/* We could just remove duplicate encoding here, but I think better to leave */
-/* that info in */
-		if ( sf->chars[i]->orig_pos==0xffff )
-		    sf->chars[i]->orig_pos = ++tlen;
-	    ++tlen;
-	    table = NULL;
-	} else
-	    table = unicode_from_alphabets[new_map+3];
-    } else {
-	if ( target->encoding_name == sf->encoding_name )
-return( false );
-	table = NULL;
-	tlen = target->charcnt;
-    }
-
-    enc_cnt=tlen;
-    if ( target!=NULL )
-	/* Done */;
-    else if ( table==NULL )
-	/* Done */;
-    else if ( tlen == 94*94 )
-	enc_cnt = 65536;
-    else if ( tlen == 0x10000-0xa100 || tlen==0x10000-0x8400 || tlen==0x10000-0x8100 )
-	enc_cnt = 65536;
-
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	for ( cv=sf->chars[i]->views; cv!=NULL; cv=cv->next )
-	    cv->template1 = cv->template2 = NULL;
-    }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
-
-    extras = 0;
-    if ( target==NULL && new_map==em_original ) {
-	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
-	    sf->chars[i]->enc = sf->chars[i]->orig_pos;
-    } else {
-	used = gcalloc((tlen+7)/8,sizeof(uint8));
-	for ( i=0; i<sf->charcnt; ++i ) {
-	    SplineChar *sc = sf->chars[i];
-	    if ( sc==NULL )
-		/* skip */;
-	    else if ( (target==NULL && !infont(sc,table,tlen,item,used,new_map)) ||
-		      (target!=NULL && !intarget(sc,target) ) ) {
-		if ( sc->layers[ly_fore].splines==NULL && sc->layers[ly_fore].refs==NULL && sc->dependents==NULL &&
-			(!sc->widthset || strcmp(sc->name,".notdef")==0 ) ) {
-			/* glyphs mapped to .notdef in a type1 font will have widthset but its not meaningful */
-		    RemoveSplineChar(sf,i);
-		} else
-		    ++extras;
-	    }
-	}
-	free(used);
-    }
-    chars = gcalloc(enc_cnt+extras,sizeof(SplineChar *));
-    for ( bdf=sf->bitmaps; bdf!=NULL; bdf = bdf->next )
-	bdf->temp = gcalloc(enc_cnt+extras,sizeof(BDFChar *));
-    for ( i=0, epos=enc_cnt; i<sf->charcnt; ++i ) {
-	if ( sf->chars[i]==NULL )
-	    /* skip */;
-	else {
-	    if ( sf->chars[i]->enc==-1 )
-		sf->chars[i]->enc = epos++;
-	    if ( chars[sf->chars[i]->enc]!=NULL )
-		fprintf( stderr, "Warning: Two chars (%s,%s) mapped to the same encoding %d\n",
-			chars[sf->chars[i]->enc]->name, sf->chars[i]->name,
-			sf->chars[i]->enc );
-	    chars[sf->chars[i]->enc] = sf->chars[i];
-	    for ( bdf=sf->bitmaps; bdf!=NULL; bdf = bdf->next ) {
-		if ( i<bdf->charcnt && bdf->chars[i]!=NULL && sf->chars[i]!=NULL ) {
-		    bdf->chars[i]->enc = sf->chars[i]->enc;
-		    bdf->temp[sf->chars[i]->enc] = bdf->chars[i];
-		}
-	    }
-	}
-    }
-    if ( epos!=enc_cnt+extras ) IError( "Bad count in ReencodeFont");
-    free(sf->chars);
-    sf->chars = chars;
-    sf->charcnt = enc_cnt+extras;
-    sf->encoding_name = new_map;
-    for ( bdf=sf->bitmaps; bdf!=NULL; bdf = bdf->next ) {
-	free(bdf->chars);
-	bdf->chars = bdf->temp;
-	bdf->temp = NULL;
-	bdf->charcnt = enc_cnt+extras;
-	bdf->encoding_name = new_map;
-    }
-    if ( sf->encoding_name==em_unicode4 && (sf->uni_interp==ui_ams || sf->uni_interp==ui_trad_chinese))
-	SFFromPUA(sf);
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	for ( refs=sf->chars[i]->layers[ly_fore].refs; refs!=NULL; refs = refs->next )
-	    refs->local_enc = refs->sc->enc;
-    }
-
-    free(sf->remap);
-    sf->remap = NULL;
-    sf->encodingchanged = true;
-    sf->compacted = false;
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
-	SCRefreshTitles(sf->chars[i]);
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
-return( true );
-}
-
-static int _SFReencodeFont(SplineFont *sf,enum charset new_map, SplineFont *target) {
-    MMSet *mm = sf->mm;
-    int i, ret;
-
-    SFFindNearTop(sf);
-
-    if ( mm==NULL )
-	ret = __SFReencodeFont(sf,new_map,target);
-    else {
-	ret = false;
-	for ( i=0; i<mm->instance_count; ++i )
-	    ret |= __SFReencodeFont(mm->instances[i],new_map,target);
-	ret |= __SFReencodeFont(mm->normal,new_map,target);
-    }
-
-    SFRestoreNearTop(sf);
-return( ret );
-}
-
-int SFForceEncoding(SplineFont *sf,enum charset new_map) {
-    if ( sf->mm!=NULL ) {
-	MMSet *mm = sf->mm;
-	int i;
-	for ( i=0; i<mm->instance_count; ++i )
-	    _SFForceEncoding(mm->instances[i],new_map);
-	_SFForceEncoding(mm->normal,new_map);
-    } else
-return( _SFForceEncoding(sf,new_map));
-
-return( true );
-}
-
-int SFReencodeFont(SplineFont *sf,enum charset new_map) {
-    if ( new_map==em_compacted )
-return( SFCompactFont(sf));
-    else if ( sf->compacted && new_map==sf->old_encname )
-return( SFUncompactFont(sf));
-    else
-return( _SFReencodeFont(sf,new_map,NULL));
-}
-
-int SFMatchEncoding(SplineFont *sf,SplineFont *target) {
-return( _SFReencodeFont(sf,em_none,target));
-}
-#else
 static int infont(SplineChar *sc, uint8 *used, Encoding *new_map) {
     int enc = -1;
 
@@ -2315,7 +1817,6 @@ return( _SFReencodeFont(sf,new_map,NULL));
 int SFMatchEncoding(SplineFont *sf,SplineFont *target) {
 return( _SFReencodeFont(sf,&custom,target));
 }
-#endif
 
 static void _SFAddDelChars(SplineFont *sf, int nchars) {
     int i;
@@ -2354,11 +1855,7 @@ return;
 	    RemoveSplineChar(sf,i);
 	}
 	sf->charcnt = nchars;
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-	if ( nchars<256 ) sf->encoding_name = em_custom;
-#else
 	if ( nchars<sf->encoding_name->char_cnt ) sf->encoding_name = &custom;
-#endif
 	for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
 	    bdf->charcnt = nchars;
 	    bdf->encoding_name = sf->encoding_name;
@@ -2411,13 +1908,8 @@ static void RegenerateEncList(struct gfi_data *d) {
 	    ti[i]->text = u_copy(ti[i]->text);
 	}
 	ti[i]->bg = ti[i]->fg = COLOR_DEFAULT;
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-	ti[i]->selected = ( (int) (ti[i]->userdata)==d->sf->encoding_name) &&
-		!ti[i]->line;
-#else
 	if ( !ti[i]->line )
 	    ti[i]->selected = d->sf->encoding_name == FindOrMakeEncoding(ti[i]->userdata);
-#endif
 	if ( ti[i]->selected )
 	    title = ti[i]->text;
     }
@@ -2426,17 +1918,10 @@ static void RegenerateEncList(struct gfi_data *d) {
 	ti[i]->bg = ti[i]->fg = COLOR_DEFAULT;
 	ti[i++]->line = true;
 	for ( item=enclist; item!=NULL ; item=item->next )
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-	    if ( !item->builtin ) {
-		ti[i] = gcalloc(1,sizeof(GTextInfo));
-		ti[i]->userdata = (void *) item->enc_num;
-		ti[i]->selected = ( item->enc_num==d->sf->encoding_name);
-#else
 	    if ( !item->hidden ) {
 		ti[i] = gcalloc(1,sizeof(GTextInfo));
 		ti[i]->userdata = (void *) item->enc_name;
 		ti[i]->selected = ( item==d->sf->encoding_name);
-#endif
 		ti[i]->bg = ti[i]->fg = COLOR_DEFAULT;
 		ti[i]->text = uc_copy(item->enc_name);
 		if ( ti[i++]->selected )
@@ -2463,20 +1948,6 @@ return( true );
 
 static int GFI_SelectEncoding(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
-	int enc = GGadgetGetFirstListSelectedItem(GWidgetGetControl(d->gw,CID_Encoding));
-	if ( encodingtypes[enc].userdata==(void *) em_unicodeplanes ) {
-	    unichar_t ubuf[10], *ret;
-	    char buf[10];
-	    int val;
-	    sprintf(buf,"%d", d->uplane );
-	    uc_strcpy(ubuf,buf);
-	    ret = GWidgetAskStringR(_STR_Encoding,ubuf,_STR_WhichPlane);
-	    if ( ret!=NULL && (val=u_strtol(ret,NULL,0))>=0 && val<65536 )
-		d->uplane = lastplane = val;
-	}
-#endif
     }
 return( true );
 }
@@ -2495,11 +1966,7 @@ static int GFI_Make(GGadget *g, GEvent *e) {
 	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
 	Encoding *item = MakeEncoding(d->sf);
 	if ( item!=NULL ) {
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-	    d->sf->encoding_name = item->enc_num;
-#else
 	    d->sf->encoding_name = item;
-#endif
 	    RegenerateEncList(d);
 	    GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Make),false);
 	}
@@ -4615,11 +4082,7 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	GWindow gw = GGadgetGetWindow(g);
 	struct gfi_data *d = GDrawGetUserData(gw);
 	SplineFont *sf = d->sf, *_sf;
-#if !defined(FONTFORGE_CONFIG_ICONV_ENCODING)
-	int enc;
-#else
 	Encoding *enc;
-#endif
 	int interp;
 	int reformat_fv=0, enc_changed, retitle_fv=false;
 	int upos, uwid, as, des, nchar, oldcnt=sf->charcnt, err = false, weight=0;
@@ -4669,11 +4132,9 @@ return(true);
 #ifdef FONTFORGE_CONFIG_TYPE3
 	multilayer = GGadgetIsChecked(GWidgetGetControl(gw,CID_IsMultiLayer));
 #endif
-#if defined(FONTFORGE_CONFIG_ICONV_ENCODING)
 	enc = ParseEncodingNameFromList(GWidgetGetControl(gw,CID_Encoding));
 	if ( enc==NULL )
 return( true );
-#endif
 	vmetrics = GGadgetIsChecked(GWidgetGetControl(gw,CID_HasVerticalMetrics));
 	upos = GetIntR(gw,CID_UPos, _STR_Upos,&err);
 	uwid = GetIntR(gw,CID_UWidth,_STR_Uheight,&err);
@@ -4834,15 +4295,7 @@ return(true);
 	if ( interp==-1 ) sf->uni_interp = ui_none;
 	else sf->uni_interp = (intpt) interpretations[interp].userdata;
 
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-	enc = GGadgetGetFirstListSelectedItem(GWidgetGetControl(gw,CID_Encoding));
-	if ( enc!=-1 ) {
-	    enc = (int) (GGadgetGetListItem(GWidgetGetControl(gw,CID_Encoding),enc)->userdata);
-	    if ( enc==em_unicodeplanes )
-		enc += d->uplane;
-#else
-    if ( enc!=NULL ) {
-#endif
+	if ( enc!=NULL ) {
 	    GDrawSetCursor(gw,ct_watch);
 	    GDrawSetCursor(GGadgetGetWindow(GWidgetGetControl(gw,CID_Encoding)),ct_watch);
 	    GDrawSync(NULL);
@@ -4942,57 +4395,6 @@ return(true);
 return( true );
 }
 
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-GTextInfo *EncodingTypesFindEnc(GTextInfo *encodingtypes, int compacted, int enc) {
-    int i;
-
-    if ( compacted ) enc = em_compacted;
-    for ( i=0; encodingtypes[i].text!=NULL || encodingtypes[i].line; ++i ) {
-	if ( encodingtypes[i].text==NULL )
-	    ;
-	else if ( encodingtypes[i].userdata == (void *) enc )
-return( &encodingtypes[i] );
-    }
-return( NULL );
-}
-
-GTextInfo *GetEncodingTypes(void) {
-    GTextInfo *ti;
-    int i;
-    Encoding *item;
-
-    /* Could be reset in DoPrefs() if no user defined encodings */
-    for ( i=0; i<sizeof(encodingtypes)/sizeof(encodingtypes[0])-1; ++i )
-	encodingtypes[i].disabled = false;
-
-    i = 0;
-    for ( item=enclist; item!=NULL ; item=item->next )
-	if ( !item->builtin )
-	    ++i;
-    if ( i==0 )
-return( encodingtypes );
-    i += sizeof(encodingtypes)/sizeof(encodingtypes[0]);
-    ti = gcalloc(i+1,sizeof(GTextInfo));
-    memcpy(ti,encodingtypes,sizeof(encodingtypes)-sizeof(encodingtypes[0]));
-    for ( i=0; i<sizeof(encodingtypes)/sizeof(encodingtypes[0])-1; ++i ) {
-	if ( ti[i].text_is_1byte ) {
-	    ti[i].text = uc_copy((char *) ti[i].text);
-	    ti[i].text_is_1byte = false;
-	} else if ( ti[i].text_in_resource ) {
-	    ti[i].text = u_copy(GStringGetResource( (int) ti[i].text,NULL));
-	    ti[i].text_in_resource = false;
-	} else
-	    ti[i].text = u_copy(ti[i].text);
-    }
-    ti[i++].line = true;
-    for ( item=enclist; item!=NULL ; item=item->next )
-	if ( !item->builtin ) {
-	    ti[i].text = uc_copy(item->enc_name);
-	    ti[i++].userdata = (void *) item->enc_num;
-	}
-return( ti );
-}
-#else
 GTextInfo *EncodingTypesFindEnc(GTextInfo *encodingtypes, int compacted, Encoding *enc) {
     int i;
     char *name;
@@ -5068,7 +4470,6 @@ Encoding *ParseEncodingNameFromList(GGadget *listfield) {
 	GWidgetErrorR(_STR_BadEncoding,_STR_BadEncoding);
 return( enc );
 }
-#endif
 
 static void GFI_AsDsLab(struct gfi_data *d, int cid) {
     int isoffset = GGadgetIsChecked(GWidgetGetControl(d->gw,cid));
@@ -5515,9 +4916,6 @@ return;
     d->sf = sf;
     d->gw = gw;
     d->old_sel = -2;
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    d->uplane = lastplane;
-#endif
     d->oldcnt = sf->charcnt;
     d->texdata = sf->texdata;
 
@@ -5653,25 +5051,10 @@ return;
     if ( egcd[1].gd.label==NULL ) egcd[1].gd.label = &list[0];
     egcd[1].gd.cid = CID_Encoding;
     egcd[1].gd.handle_controlevent = GFI_SelectEncoding;
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    egcd[1].creator = GListButtonCreate;
-    for ( i=0; list[i].text!=NULL || list[i].line; ++i ) {
-	if ( sf->encoding_name>=em_unicodeplanes && sf->encoding_name<=em_unicodeplanesmax &&
-		(void *) em_unicodeplanes==list[i].userdata ) {
-	    list[i].selected = true;
-	    d->uplane = sf->encoding_name-em_unicodeplanes;
-	} else if ( (void *) (sf->encoding_name)==list[i].userdata &&
-		list[i].text!=NULL )
-	    list[i].selected = true;
-	else
-	    list[i].selected = false;
-    }
-#else
     egcd[1].creator = GListFieldCreate;
     for ( i=0; list[i].text!=NULL || list[i].line; ++i )
 	list[i].selected = false;
     egcd[1].gd.label->selected = true;
-#endif
 
     egcd[2].gd.pos.x = 8; egcd[2].gd.pos.y = GDrawPointsToPixels(NULL,egcd[0].gd.pos.y+6);
     egcd[2].gd.pos.width = pos.width-32; egcd[2].gd.pos.height = GDrawPointsToPixels(NULL,43);
@@ -5691,11 +5074,7 @@ return;
     egcd[4].gd.pos.x = (254-100)/2; egcd[4].gd.pos.y = egcd[3].gd.pos.y;
     egcd[4].gd.pos.width = 100; egcd[4].gd.pos.height = 0;
     egcd[4].gd.flags = gg_visible;
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    if ( sf->encoding_name==em_custom && sf->charcnt<1500 ) egcd[4].gd.flags |= gg_enabled;
-#else
     if ( sf->encoding_name->is_custom && sf->charcnt<1500 ) egcd[4].gd.flags |= gg_enabled;
-#endif
     elabel[4].text = (unichar_t *) _STR_Makefromfont;
     elabel[4].text_in_resource = true;
     egcd[4].gd.mnemonic = 'k';

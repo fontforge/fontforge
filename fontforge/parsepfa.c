@@ -866,11 +866,7 @@ static struct fontdict *MakeEmptyFont(void) {
     ret->private->subrs = gcalloc(1,sizeof(struct pschars));
     ret->private->private = gcalloc(1,sizeof(struct psdict));
     ret->private->leniv = 4;
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    ret->encoding_name = em_none;
-#else
     ret->encoding_name = &custom;
-#endif
     ret->fontinfo->fstype = -1;
 return( ret );
 }
@@ -886,11 +882,7 @@ static struct fontdict *PSMakeEmptyFont(void) {
     ret->private->private = gcalloc(1,sizeof(struct psdict));
     ret->private->leniv = 4;
     ret->charprocs = gcalloc(1,sizeof(struct charprocs));
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    ret->encoding_name = em_none;
-#else
     ret->encoding_name = &custom;
-#endif
     ret->fontinfo->fstype = -1;
 return( ret );
 }
@@ -1531,18 +1523,6 @@ return;
     }
 
     if ( mycmp("Encoding",line+1,endtok)==0 && !fp->doneencoding ) {
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-	if ( strstr(endtok,"StandardEncoding")!=NULL ) {
-	    fp->fd->encoding_name = em_adobestandard;
-	    setStdEnc(fp->fd->encoding);
-	} else if ( strstr(endtok,"ISOLatin1Encoding")!=NULL ) {
-	    fp->fd->encoding_name = em_iso8859_1;
-	    setLatin1Enc(fp->fd->encoding);
-	} else {
-	    fp->fd->encoding_name = em_none;
-	    fp->inencoding = 1;
-	}
-#else
 	if ( strstr(endtok,"StandardEncoding")!=NULL ) {
 	    fp->fd->encoding_name = FindOrMakeEncoding("AdobeStandard");
 	    setStdEnc(fp->fd->encoding);
@@ -1553,7 +1533,6 @@ return;
 	    fp->fd->encoding_name = &custom;
 	    fp->inencoding = 1;
 	}
-#endif
 	fp->infi = fp->inprivate = fp->inbb = fp->inmetrics = fp->inmetrics2 = false;
 	fp->doneencoding = true;
     } else if ( mycmp("BoundingBoxes",line+1,endtok)==0 ) {

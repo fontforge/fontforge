@@ -1350,11 +1350,7 @@ static SearchView *SVFillup(SearchView *sv, FontView *fv) {
     sv->dummy_sf.chars = sv->chars;
     sv->dummy_sf.charcnt = 2;
     sv->dummy_sf.pfminfo.fstype = -1;
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    sv->dummy_sf.encoding_name = em_none;
-#else
     sv->dummy_sf.encoding_name = &custom;
-#endif
     sv->dummy_sf.fontname = sv->dummy_sf.fullname = sv->dummy_sf.familyname = "dummy";
     sv->dummy_sf.weight = "Medium";
     sv->dummy_sf.origname = "dummy";

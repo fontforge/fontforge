@@ -2030,11 +2030,7 @@ SplineFont *SplineFontEmpty(void) {
     SplineFont *sf;
     sf = gcalloc(1,sizeof(SplineFont));
     sf->pfminfo.fstype = -1;
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    sf->encoding_name = em_none;
-#else
     sf->encoding_name = &custom;
-#endif
     sf->top_enc = -1;
     sf->macstyle = -1;
     sf->desired_row_cnt = 4; sf->desired_col_cnt = 16;
@@ -2050,11 +2046,7 @@ SplineFont *SplineFontEmpty(void) {
 return( sf );
 }
 
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-SplineFont *SplineFontBlank(int encoding_name,int charcnt) {
-#else
 SplineFont *SplineFontBlank(Encoding *encoding_name,int charcnt) {
-#endif
     SplineFont *sf;
     char buffer[200];
     time_t now;
@@ -2099,49 +2091,7 @@ SplineFont *SplineFontNew(void) {
     SplineFont *sf;
     /* Create an ISO 8859-1 (Latin1) font, actually whatever default_encoding is */
     int enclen=256;
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    Encoding *item=NULL;
-
-    if ( default_encoding>=em_base ) {
-	for ( item=enclist; item!=NULL && item->enc_num!=default_encoding; item=item->next );
-	if ( item==NULL )
-	    default_encoding = em_iso8859_1;
-    }
-    if ( default_encoding==em_adobestandard ) {
-    } else if ( default_encoding==em_iso8859_1 ) {
-    } else if ( default_encoding==em_unicode ) {
-	enclen = 65536;
-    } else if ( default_encoding==em_unicode4 ) {
-	enclen = unicode4_size;
-    } else if ( default_encoding>=em_unicodeplanes && default_encoding<=em_unicodeplanesmax ) {
-	enclen = 65536;
-    } else if ( default_encoding==em_jis208 ) {
-	enclen = 65536;
-    } else if ( default_encoding==em_jis212 ) {
-	enclen = 65536;
-    } else if ( default_encoding==em_ksc5601 ) {
-	enclen = 65536;
-    } else if ( default_encoding==em_gb2312 ) {
-	enclen = 65536;
-    } else if ( default_encoding==em_big5 ) {
-	enclen = 65536;
-    } else if ( default_encoding==em_big5hkscs ) {
-	enclen = 65536;
-    } else if ( default_encoding==em_johab ) {
-	enclen = 65536;
-    } else if ( default_encoding==em_wansung ) {
-	enclen = 65536;
-    } else if ( default_encoding==em_jisgb ) {
-	enclen = 65536;
-    } else if ( default_encoding==em_sjis ) {
-	enclen = 65536;
-    } else if ( item!=NULL ) {
-	enclen = item->char_cnt;
-    } else
-	;
-#else
     enclen = default_encoding->char_cnt;
-#endif
 
     sf = SplineFontBlank(default_encoding,enclen);
     sf->onlybitmaps = true;

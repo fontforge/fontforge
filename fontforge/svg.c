@@ -642,6 +642,13 @@ return( NULL );
 }
 #else
 
+#ifndef HAVE_ICONV_H
+# undef iconv
+# undef iconv_t
+# undef iconv_open
+# undef iconv_close
+#endif
+
 #include <libxml/parser.h>
 
 /* Ok, this complication is here because:				    */
@@ -1968,11 +1975,7 @@ static SplineChar *SVGParseGlyphArgs(xmlNodePtr glyph,int defh, int defv) {
     }
     if ( glyphname!=NULL ) {
 	if ( sc->unicodeenc==-1 )
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-	    sc->unicodeenc = UniFromName((char *) glyphname,ui_none,em_custom);
-#else
 	    sc->unicodeenc = UniFromName((char *) glyphname,ui_none,&custom);
-#endif
 	sc->name = copy((char *) glyphname);
 	_xmlFree(glyphname);
     } else if ( orientation!=NULL && *orientation=='v' && sc->unicodeenc!=-1 ) {
@@ -2411,11 +2414,7 @@ return( NULL );
 #endif
     sf->charcnt = cnt;
     sf->chars = galloc(cnt*sizeof(SplineChar *));
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    sf->encoding_name = em_original;
-#else
     sf->encoding_name = FindOrMakeEncoding("Original");
-#endif
 
     cnt = 0;
     for ( kids = font->children; kids!=NULL; kids=kids->next ) {

@@ -3871,12 +3871,7 @@ return( -1 );
     if ( *end || val<0 || val>0x1ffff ) {
 	ProtestR( _STR_UnicodeValue );
 return( -2 );
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    } else if ( val>65535 && sf->encoding_name!=em_unicode4 &&
-	    sf->encoding_name<em_unicodeplanes ) {
-#else
     } else if ( val>65535 && sf->encoding_name->is_unicodebmp ) {
-#endif
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	static int buts[] = { _STR_Yes, _STR_No, 0 };
 	if ( GWidgetAskR(_STR_PossiblyTooBig,buts,1,1,_STR_NotUnicodeBMP)==1 )
@@ -4182,27 +4177,14 @@ return( false );
 	GlyphHashFree(sf);
     }
     sf->changed = true;
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    if ( (sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4) &&
-	    unienc==sc->enc && unienc>=0xe000 && unienc<=0xf8ff )
-#else
     if ( (sf->encoding_name->is_unicodebmp || sf->encoding_name->is_unicodefull) &&
 	    unienc==sc->enc && unienc>=0xe000 && unienc<=0xf8ff )
-#endif
 	/* Ok to name things in the private use area */;
     else if ( samename )
 	/* Ok to name it itself */;
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    else if ( (sf->encoding_name<e_first2byte && sc->enc<256) ||
-	    (sf->encoding_name>=em_big5 && sf->encoding_name<=em_unicode && sc->enc<65536 ) ||
-	    (sf->encoding_name>=e_first2byte && sf->encoding_name<em_unicode && sc->enc<0x7e7e ) ||
-	    sc->unicodeenc!=-1 )
-	sf->encoding_name = em_none;
-#else
     else if ( (sf->encoding_name->only_1byte && sc->enc<256) ||
 	    (sf->encoding_name->has_2byte && sc->enc<65535 ))
 	sf->encoding_name = &custom;
-#endif
 
     free(sc->comment); sc->comment = NULL;
     if ( comment!=NULL && *comment!='\0' )
@@ -4526,11 +4508,7 @@ static void psinitnames(void) {
     psnamesinited = true;
 }
 
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-int UniFromName(const char *name,enum uni_interp interp,int encname) {
-#else
 int UniFromName(const char *name,enum uni_interp interp,Encoding *encname) {
-#endif
     int i = -1;
     char *end;
     struct psbucket *buck;
@@ -4543,12 +4521,8 @@ int UniFromName(const char *name,enum uni_interp interp,Encoding *encname) {
 	i = strtol(name+1,&end,16);
 	if ( *end )
 	    i = -1;
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-	else if ( encname!=em_unicode4 && (interp==ui_ams || interp==ui_trad_chinese)) {
-#else
 	else if ( !encname->is_unicodefull &&
 		(interp==ui_ams || interp==ui_trad_chinese)) {
-#endif
 	    int j;
 	    extern const int cns14pua[], amspua[];
 	    const int *pua = interp==ui_ams ? amspua : cns14pua;
@@ -4576,11 +4550,7 @@ int UniFromName(const char *name,enum uni_interp interp,Encoding *encname) {
 return( i );
 }
 
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-int uUniFromName(const unichar_t *name,enum uni_interp interp,int encname) {
-#else
 int uUniFromName(const unichar_t *name,enum uni_interp interp,Encoding *encname) {
-#endif
     int i = -1;
     unichar_t *end;
 
@@ -4592,12 +4562,8 @@ int uUniFromName(const unichar_t *name,enum uni_interp interp,Encoding *encname)
 	i = u_strtol(name+1,&end,16);
 	if ( *end )
 	    i = -1;
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-	else if ( encname!=em_unicode4 && (interp==ui_ams || interp==ui_trad_chinese)) {
-#else
 	else if ( !encname->is_unicodefull &&
 		(interp==ui_ams || interp==ui_trad_chinese)) {
-#endif
 	    int j;
 	    extern const int cns14pua[], amspua[];
 	    const int *pua = interp==ui_ams ? amspua : cns14pua;
@@ -5199,11 +5165,7 @@ static int CI_SName(GGadget *g, GEvent *e) {	/* Set From Name */
 	const unichar_t *ret = _GGadgetGetTitle(GWidgetGetControl(ci->gw,CID_UName));
 	int i;
 	char buf[40]; unichar_t ubuf[2], *temp;
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-	i = uUniFromName(ret,ui_none,em_custom);
-#else
 	i = uUniFromName(ret,ui_none,&custom);
-#endif
 	if ( i==-1 ) {
 	    /* Adobe says names like uni00410042 represent a ligature (A&B) */
 	    /*  (that is "uni" followed by two 4-digit codes). */

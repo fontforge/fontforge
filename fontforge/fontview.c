@@ -3561,22 +3561,6 @@ void FontViewMenu_ChangeChar(GtkMenuItem *menuitem, gpointer user_data) {
 	    for ( ++pos; pos<sf->charcnt && sf->chars[pos]==NULL; ++pos );
 	    if ( pos>=sf->charcnt ) {
 		int selpos = FVAnyCharSelected(fv);
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-		if ( sf->encoding_name==em_big5 && selpos<0xa140 )
-		    pos = 0xa140;
-		else if ( sf->encoding_name==em_big5hkscs && selpos<0x8140 )
-		    pos = 0x8140;
-		else if ( sf->encoding_name==em_johab && selpos<0x8431 )
-		    pos = 0x8431;
-		else if ( sf->encoding_name==em_wansung && selpos<0xa1a1 )
-		    pos = 0xa1a1;
-		else if ( sf->encoding_name==em_jisgb && selpos<0xa1a1 )
-		    pos = 0xa1a1;
-		else if ( sf->encoding_name==em_sjis && selpos<0x8100 )
-		    pos = 0x8100;
-		else if ( sf->encoding_name==em_sjis && selpos<0xb000 )
-		    pos = 0xe000;
-#else
 		char *iconv_name = sf->encoding_name->iconv_name ? sf->encoding_name->iconv_name :
 			sf->encoding_name->enc_name;
 		if ( strstr(iconv_name,"2022")!=NULL && selpos<0x2121 )
@@ -3609,7 +3593,6 @@ void FontViewMenu_ChangeChar(GtkMenuItem *menuitem, gpointer user_data) {
 		    if ( strmatch(iconv_name,"EUC-CN")==0 && selpos<0xa1a1 )
 			selpos = 0xa1a1;
 		}
-#endif
 		if ( pos>=sf->charcnt )
 return;
 	    }
@@ -4829,11 +4812,7 @@ void FontViewMenu_InsertBlank(GtkMenuItem *menuitem, gpointer user_data) {
     if ( cidmaster==NULL || cidmaster->subfontcnt>=255 )	/* Open type allows 1 byte to specify the fdselect */
 return;
     map = FindCidMap(cidmaster->cidregistry,cidmaster->ordering,cidmaster->supplement,cidmaster);
-#if !defined(FONTFORGE_CONFIG_ICONV_ENCODING)
-    sf = SplineFontBlank(em_none,MaxCID(map));
-#else
     sf = SplineFontBlank(&custom,MaxCID(map));
-#endif
     sf->cidmaster = cidmaster;
     sf->display_antialias = fv->sf->display_antialias;
     sf->display_bbsized = fv->sf->display_bbsized;
@@ -6736,239 +6715,9 @@ return;
 }
 #endif
 
-#if !defined(FONTFORGE_CONFIG_ICONV_ENCODING)
-int32 UniFromEnc(int enc, enum charset encname) {
-    int32 uni = -1;
-
-    if ( encname==em_custom )
-return( -1 );
-    else if ( encname<=em_adobestandard ) {
-	if ( enc>=256 || enc<0 )
-return( -1 );
-	switch (encname) {
-	  case em_iso8859_1: uni = enc; break;
-	  case em_iso8859_2: uni = unicode_from_i8859_2[enc]; break;
-	  case em_iso8859_3: uni = unicode_from_i8859_3[enc]; break;
-	  case em_iso8859_4: uni = unicode_from_i8859_4[enc]; break;
-	  case em_iso8859_5: uni = unicode_from_i8859_5[enc]; break;
-	  case em_iso8859_6: uni = unicode_from_i8859_6[enc]; break;
-	  case em_iso8859_7: uni = unicode_from_i8859_7[enc]; break;
-	  case em_iso8859_8: uni = unicode_from_i8859_8[enc]; break;
-	  case em_iso8859_9: uni = unicode_from_i8859_9[enc]; break;
-	  case em_iso8859_10: uni = unicode_from_i8859_10[enc]; break;
-	  case em_iso8859_11: uni = unicode_from_i8859_11[enc]; break;
-	  case em_iso8859_13: uni = unicode_from_i8859_13[enc]; break;
-	  case em_iso8859_14: uni = unicode_from_i8859_14[enc]; break;
-	  case em_iso8859_15: uni = unicode_from_i8859_15[enc]; break;
-	  case em_koi8_r: uni = unicode_from_koi8_r[enc]; break;
-	  case em_jis201: uni = unicode_from_jis201[enc]; break;
-	  case em_win: uni = unicode_from_win[enc]; break;
-	  case em_mac: uni = unicode_from_mac[enc]; break;
-	  case em_symbol: uni = unicode_from_MacSymbol[enc]; break;
-	  case em_zapfding: uni = unicode_from_ZapfDingbats[enc]; break;
-	  case em_adobestandard: uni = unicode_from_adobestd[enc]; break;
-	  default: uni = -1;	/* Unreachable I hope */
-	}
-    } else if ( encname==em_unicode4 ) {
-return( enc );
-    } else if ( encname>=em_unicodeplanes && encname<em_unicodeplanesmax ) {
-	if ( enc>=65536 || enc<0 )
-return( -1 );
-
-return( enc + ((encname-em_unicodeplanes)<<16) );
-    } else if ( encname>=em_base ) {
-	Encoding *item=NULL;
-	for ( item=enclist; item!=NULL && item->enc_num!=encname; item=item->next );
-	if ( item!=NULL && enc>=item->char_cnt ) item = NULL;
-	if ( item==NULL )
-return( -1 );
-return( item->unicode[enc] );
-    } else {
-	if ( enc>=65536 || enc<0 )
-return( -1 );
-	switch (encname) {
-	  case em_unicode: uni = enc; break;
-	  case em_jis208: case em_jis212: case em_ksc5601: case em_gb2312: {
-	      int ch1 = (enc>>8)-0x21, ch2 = (enc&0xff)-0x21;
-	      int index = ch1*94+ch2;
-	      if ( ch1<0 || ch1>0x7e - 0x21 || ch2<0 || ch2>0x7e - 0x21 )
-		  uni = -1;
-	      else switch ( encname ) {
-		  case em_jis208: uni = unicode_from_jis208[index]; break;
-		  case em_jis212: uni = unicode_from_jis212[index]; break;
-		  case em_ksc5601: uni = unicode_from_ksc5601[index]; break;
-		  case em_gb2312: uni = unicode_from_gb2312[index]; break;
-	      }
-	  } break;
-	  case em_big5:
-	      if (enc<0x7f ) uni = enc;
-	      else if ( enc<0xa100 ) uni = -1;
-	      else if (enc-0xa100<24584) uni = unicode_from_big5[enc-0xa100];
-	  break;
-	  case em_big5hkscs:
-	      if (enc<0x7f ) uni = enc;
-	      else if ( enc<0x8100 ) uni = -1;
-	      else if (enc-0x8100<32776) uni = unicode_from_big5hkscs[enc-0x8100];
-	  break;
-	  case em_johab:
-	      if (enc<0x7f ) uni = enc;
-	      else if ( enc<0x8400 ) uni = -1;
-	      else if (enc-0x8400<31752) uni = unicode_from_big5hkscs[enc-0x8400];
-	  break;
-	  case em_sjis:
-	    if ( enc<0x80 )
-		uni = enc;
-	    else if ( enc>=0xa1 && enc<=0xdf )
-		uni = unicode_from_jis201[enc];
-	    else if (( ((enc>>8)>=129 && (enc>>8)<=159) || ((enc>>8)>=224 && (enc>>8)<=0xef) ) &&
-		     ( (enc&0xff)>=64 && (enc&0xff)<=252 && (enc&0xff)!=127 )) {
-		int ch1 = enc>>8, ch2 = enc&0xff;
-		int temp;
-		if ( ch1 >= 129 && ch1<= 159 )
-		    ch1 -= 112;
-		else
-		    ch1 -= 176;
-		ch1 <<= 1;
-		if ( ch2>=159 )
-		    ch2-= 126;
-		else if ( ch2>127 ) {
-		    --ch1;
-		    ch2 -= 32;
-		} else {
-		    --ch1;
-		    ch2 -= 31;
-		}
-		temp = (ch1-0x21)*94+(ch2-0x21);
-		if ( temp>=94*94 )
-		    temp = -1;
-		else
-		    temp = unicode_from_jis208[(ch1-0x21)*94+(ch2-0x21)];
-		uni = temp;
-	    }
-	  break;
-	  case em_wansung:
-	  case em_jisgb:
-	    if ( enc<0x7f )
-		uni = enc;
-	    else if ( (enc&0xff00)>=0xa100 && (enc&0xff)>=0xa1 &&
-			(enc&0xff00)<0xa100+(94<<8) && (enc&0xff)<0xa1+94 ) {
-		int temp = enc-0xa1a1;
-		temp = (temp>>8)*94 + (temp&0xff);
-		if ( encname == em_wansung )
-		    temp = unicode_from_ksc5601[temp];
-		else
-		    temp = unicode_from_gb2312[temp];
-		uni = temp;
-	    } else
-		uni = -1;
-	  break;
-	  default: uni = -1; break;
-	}
-    }
-    if ( uni==0 && enc!=0 ) uni = -1;
-return( uni );
-}
-
-int32 EncFromUni(int32 uni, enum charset encname) {
-    int ch1 = uni>>8;
-    int i, ret;
-    struct charmap2 *cm2;
-
-    if ( encname<=em_custom )
-return( -1 );
-    else if ( encname==em_iso8859_1 || encname==em_unicode || encname==em_unicode4 ) {
-	if (( encname==em_iso8859_1 && uni>=256 ) ||
-	    ( encname==em_unicode && uni>=65536 ))
-return( -1 );
-
-return( uni );
-    } else if ( encname>=em_unicodeplanes && encname<em_unicodeplanesmax ) {
-	int p = (encname-em_unicodeplanes) << 16;
-	if ( uni<p || uni>p+0xffff )
-return( -1 );
-return( uni-p );
-    } else if ( encname<em_adobestandard ) {
-	struct charmap *cm = alphabets_from_unicode[encname+3];
-	if ( ch1<cm->first || ch1>cm->last )
-return( -1 );
-	ret = cm->table[ch1-cm->first]==NULL ? -1 :
-		cm->table[ch1-cm->first][uni&0xff];
-	if ( ret==0 ) ret=-1;
-return( ret );
-    } else if ( encname>=em_base ) {
-	Encoding *item;
-	for ( item=enclist; item!=NULL && item->enc_num!=encname; item=item->next );
-	if ( item==NULL )
-return( -1 );
-	for ( i=item->char_cnt-1; i>=0 && item->unicode[i]!=uni; --i );
-return( i );
-    }
-
-    cm2 = NULL;
-    switch ( encname ) {
-      case em_sjis: case em_jis208: case em_jis212:
-	cm2 = &jis_from_unicode;
-      break;
-      case em_gb2312: case em_jisgb:
-	cm2 = &gb2312_from_unicode;
-      break;
-      case em_big5:
-	cm2 = &big5_from_unicode;
-      break;
-      case em_big5hkscs:
-	cm2 = &big5hkscs_from_unicode;
-      break;
-      case em_wansung: case em_ksc5601:
-	cm2 = &ksc5601_from_unicode;
-      break;
-      case em_johab:
-	cm2 = &johab_from_unicode;
-      break;
-      default:
-return( -1 );
-    }
-
-    if ( uni<0x7f &&
-	    (encname==em_wansung || encname==em_big5hkscs || encname==em_big5 ||
-	     encname==em_sjis ))
-return( uni );
-    else if ( uni>=0xff61 && uni<=0xff9f && encname==em_sjis )
-return( EncFromUni(uni,em_jis201));
-
-    if ( ch1<cm2->first || ch1>cm2->last )
-return( -1 );
-    ret = cm2->table[ch1-cm2->first]==NULL ? -1 :
-	    cm2->table[ch1-cm2->first][uni&0xff];
-    if ( ret==0 ) ret=-1;
-
-    if ( ret!=-1 ) {
-	if ( encname==em_jisgb || encname==em_wansung ) {
-	    ret += 0x8080;
-	} else if ( encname==em_jis208 ) {
-	    if ( ret&0x8000 )
-		ret = -1;
-	} else if ( encname==em_jis212 ) {
-	    if ( ret&0x8000 )
-		ret &= ~0x8000;
-	    else
-		ret = -1;
-	} else if ( encname==em_sjis ) {
-	    if ( ret&0x8000 )
-		ret = -1;
-	    else {
-		int ch1 = ret>>8, ch2 = ret&0xff, ro, co;
-		ro = ch1<95 ? 112 : 176;
-		co = (ch1&1) ? (ch2>95?32:31) : 126;
-		ret = ((((ch1+1)>>1) + ro )<<8 )    |    (ch2+co);
-	    }
-	}
-    }
-return( ret );
-}
-#else
 int32 UniFromEnc(int enc, Encoding *encname) {
     char from[20];
-    short to[20];
+    unsigned short to[20];
     char *fpt, *tpt;
     size_t fromlen, tolen;
 
@@ -6996,7 +6745,7 @@ return( encname->unicode[enc] );
 return( -1 );
 	if ( tpt-(char *) to == 2 )
 return( to[0] );
-	else if ( tpt-(char *) to == 4 )
+	else if ( tpt-(char *) to == 4 && to[0]>=0xd800 && to[0]<0xdc00 && to[1]>=0xdc00 )
 return( ((to[0]-0xd800)<<10) + (to[1]-0xdc00) + 0x10000 );
     }
 return( -1 );
@@ -7047,7 +6796,6 @@ return( (to[0]<<8) | to[1] );
     }
 return( -1 );
 }
-#endif
 
 int32 EncFromSF(int32 uni, SplineFont *sf) {
     int enc = EncFromUni(uni,sf->encoding_name);
@@ -7212,11 +6960,7 @@ return( ssf->chars[i] );
     }
 
     if ( (sc = sf->chars[i])==NULL ) {
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-	if (( sf->encoding_name == em_unicode || sf->encoding_name == em_unicode4 ) &&
-#else
 	if (( sf->encoding_name->is_unicodebmp || sf->encoding_name->is_unicodefull ) &&
-#endif
 		( i>=0xe000 && i<=0xf8ff ) &&
 		( sf->uni_interp==ui_ams || sf->uni_interp==ui_trad_chinese ) &&
 		( real_uni = (sf->uni_interp==ui_ams ? amspua : cns14pua)[i-0xe000])!=0 ) {
@@ -7399,7 +7143,7 @@ return( NULL );
 return( rot );
 }
 
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
+#if 0
 static int Use2ByteEnc(FontView *fv,SplineChar *sc, unichar_t *buf,FontMods *mods) {
     int ch1 = sc->enc>>8, ch2 = sc->enc&0xff, newch;
     int enc = fv->sf->encoding_name;
@@ -7686,9 +7430,6 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 	    unichar_t buf[60]; char cbuf[8];
 	    Color fg = 0;
 	    FontMods *mods=NULL;
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-	    static FontMods for_charset;
-#endif
 	    extern const int amspua[];
 	    int uni;
 	    if ( sc==NULL )
@@ -7712,12 +7453,8 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		styles = _uni_sans;
 	      break;
 	      case gl_encoding:
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-		if ( fv->sf->encoding_name<em_first2byte || fv->sf->encoding_name>=em_base )
-#else
 		if ( fv->sf->encoding_name->only_1byte ||
 			(fv->sf->encoding_name->has_1byte && index<256))
-#endif
 		    sprintf(cbuf,"%02x",index);
 		else
 		    sprintf(cbuf,"%04x",index);
@@ -7727,7 +7464,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 	      case gl_glyph:
 		if ( uni==0xad )
 		    buf[0] = '-';
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
+#if 0
 		else if ( Use2ByteEnc(fv,sc,buf,&for_charset))
 		    mods = &for_charset;
 #endif
@@ -7999,12 +7736,8 @@ return;
 	    ++map;
 	}
 	sprintf( buffer, "%-5u (0x%04x) ", localenc, localenc );
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    } else if ( sf->encoding_name<em_first2byte || sf->encoding_name>=em_base )
-#else
     } else if ( sf->encoding_name->only_1byte ||
 	    (sf->encoding_name->has_1byte && fv->end_pos<256))
-#endif
 	sprintf( buffer, "%-3d (0x%02x) ", fv->end_pos, fv->end_pos );
     else
 	sprintf( buffer, "%-5d (0x%04x) ", fv->end_pos, fv->end_pos );
@@ -8265,9 +7998,6 @@ void SCPreparePopup(GWindow gw,SplineChar *sc) {
     static unichar_t space[810];
     char cspace[162];
     int upos=-1;
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    int enc = sc->parent->encoding_name;
-#endif
     int done = false;
     int localenc = sc->enc;
     struct remap *map = sc->parent->remap;
@@ -8293,12 +8023,6 @@ void SCPreparePopup(GWindow gw,SplineChar *sc) {
 	else		/* Leave a hole for the blank char */
 	    upos = 0x11a8 + sc->jamo-(19+21+1);
     }
-#endif
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    else if (( sc->enc<32 || (sc->enc>=127 && sc->enc<160) ) &&
-	    (enc = sc->parent->encoding_name)!=em_none &&
-	    (enc<=em_zapfding || (enc>=em_big5 && enc<=em_unicode)))
-	upos = sc->enc;
 #endif
     else {
 #if defined( _NO_SNPRINTF ) || defined( __VMS )

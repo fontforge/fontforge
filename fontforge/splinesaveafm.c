@@ -473,81 +473,6 @@ return( 0 );
 return( 1 );
 }
 
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-char *EncodingName(int map) {
-
-    if ( map>=em_unicodeplanes && map<=em_unicodeplanesmax ) {
-	static char space[40];
-	/* What is the proper encoding for a font consisting of SMP? */
-	/* I'm guessing at ISO10646-2, but who knows */
-	sprintf( space, "ISO10646-%d", map-em_unicodeplanes+1 );
-return( space );
-    }
-
-    switch ( map ) {
-      case em_adobestandard:
-return( "AdobeStandardEncoding" );
-      case em_iso8859_1:
-return( "ISOLatin1Encoding" );
-      case em_iso8859_2:
-return( "ISO8859-2" );
-      case em_iso8859_3:
-return( "ISO8859-3" );
-      case em_iso8859_4:
-return( "ISO8859-4" );
-      case em_iso8859_5:
-return( "ISO8859-5" );
-      case em_iso8859_6:
-return( "ISO8859-6" );
-      case em_iso8859_7:
-return( "ISO8859-7" );
-      case em_iso8859_8:
-return( "ISO8859-8" );
-      case em_iso8859_9:
-return( "ISO8859-9" );
-      case em_iso8859_10:
-return( "ISO8859-10" );
-      case em_iso8859_11:
-return( "ISO8859-11" );
-      case em_iso8859_13:
-return( "ISO8859-13" );
-      case em_iso8859_14:
-return( "ISO8859-14" );
-      case em_iso8859_15:
-return( "ISO8859-15" );
-      case em_unicode: case em_unicode4:
-return( "ISO10646-1" );
-      case em_mac:
-return( "MacRoman" );
-      case em_win:
-return( "WinRoman" );
-      case em_koi8_r:
-return( "KOI8R" );
-      case em_jis208: case em_sjis:
-return( "JISX0208.1997" );
-      case em_jis212:
-return( "JISX0212.1990" );
-      case em_ksc5601: case em_wansung:
-return( "KSC5601.1992" );
-      case em_gb2312: case em_jisgb:
-return( "GB2312.1980" );
-      case em_big5:
-return( "BIG5" );			/* 2002? */
-      case em_big5hkscs:
-return( "BIG5HKSCS.2001" );
-      case em_johab:
-return( "Johab" );
-      default:
-	if ( map>=em_base ) {
-	    Encoding *item;
-	    for ( item=enclist; item!=NULL && item->enc_num!=map; item=item->next );
-	    if ( item!=NULL )
-return( item->enc_name );
-	}
-return( "FontSpecific" );
-    }
-}
-#else
 char *EncodingName(Encoding *map) {
     char *name = map->iconv_name != NULL ? map->iconv_name : map->enc_name;
     int len = strlen(name);
@@ -588,7 +513,6 @@ return( "FontSpecific" );
 
 return( name );
 }
-#endif
 
 static int ScriptLangMatchLigOuts(PST *lig,SplineFont *sf) {
     int i,j;
@@ -982,13 +906,8 @@ int AfmSplineFont(FILE *afm, SplineFont *sf, int formattype) {
     }
 
     anyzapf = false;
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    if ( type0 && (sf->encoding_name==em_unicode ||
-	    sf->encoding_name==em_unicode4)) {
-#else
     if ( type0 && (sf->encoding_name->is_unicodebmp ||
 	    sf->encoding_name->is_unicodefull)) {
-#endif
 	for ( i=0x2700; i<sf->charcnt && i<encmax && i<=0x27ff; ++i )
 	    if ( SCWorthOutputting(sf->chars[i]) ) 
 		anyzapf = true;
@@ -1010,13 +929,8 @@ int AfmSplineFont(FILE *afm, SplineFont *sf, int formattype) {
 	    if ( SCWorthOutputting(sc) || (i==0 && sc!=NULL) )
 		AfmCIDChar(afm, sc, i);
 	}
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    } else if ( type0 && (sf->encoding_name==em_unicode ||
-	    sf->encoding_name==em_unicode4)) {
-#else
     } else if ( type0 && (sf->encoding_name->is_unicodebmp ||
 	    sf->encoding_name->is_unicodefull)) {
-#endif
 	for ( i=0; i<sf->charcnt && i<encmax && i<0x2700; ++i )
 	    if ( SCWorthOutputting(sf->chars[i]) ) {
 		AfmSplineCharX(afm,sf->chars[i],i);
@@ -1516,24 +1430,6 @@ int PfmSplineFont(FILE *pfm, SplineFont *sf, int type0) {
     putc(0,pfm);			/* underline */
     putc(0,pfm);			/* strikeout */
     putlshort(sf->pfminfo.weight,pfm);	/* weight */
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    if ( sf->encoding_name==em_jis208 || sf->encoding_name==em_jis212 ||
-	    sf->encoding_name==em_sjis ||
-	    (sf->cidmaster!=NULL && strnmatch(sf->cidmaster->ordering,"Japan",5)==0 ))
-	putc(128,pfm);
-    else if ( sf->encoding_name==em_ksc5601 || sf->encoding_name==em_johab ||
-	    sf->encoding_name==em_wansung ||
-	    (sf->cidmaster!=NULL && strnmatch(sf->cidmaster->ordering,"Korea",5)==0 ))
-	putc(129,pfm);
-    else if ( sf->encoding_name==em_big5 || sf->encoding_name==em_big5hkscs ||
-	    (sf->cidmaster!=NULL && strnmatch(sf->cidmaster->ordering,"CNS",3)==0 ))
-	putc(136,pfm);
-    else if ( sf->encoding_name==em_gb2312 || sf->encoding_name==em_jisgb ||
-	    (sf->cidmaster!=NULL && strnmatch(sf->cidmaster->ordering,"GB",2)==0 ))
-	putc(134,pfm);
-    else
-	putc(sf->encoding_name==em_symbol?2:0,pfm);	/* charset. I'm always saying windows roman (ANSI) or symbol because I don't know the other choices */
-#else
     if ( sf->encoding_name->is_japanese ||
 	    (sf->cidmaster!=NULL && strnmatch(sf->cidmaster->ordering,"Japan",5)==0 ))
 	putc(128,pfm);
@@ -1548,7 +1444,6 @@ int PfmSplineFont(FILE *pfm, SplineFont *sf, int type0) {
 	putc(134,pfm);
     else
 	putc(strmatch(sf->encoding_name->enc_name,"symbol")==0?2:0,pfm);	/* charset. I'm always saying windows roman (ANSI) or symbol because I don't know the other choices */
-#endif
     putlshort(/*samewid<0?sf->ascent+sf->descent:samewid*/0,pfm);	/* width */
     putlshort(sf->ascent+sf->descent,pfm);	/* height */
     putc(sf->pfminfo.pfmfamily,pfm);	/* family */
@@ -2091,11 +1986,7 @@ int TfmSplineFont(FILE *tfm, SplineFont *sf, int formattype) {
     /*  that doesn't work. People use non-standard names */
     if ( sf->texdata.type==tex_math ) encname = "TEX MATH SYMBOLS";
     else if ( sf->texdata.type==tex_mathext ) encname = "TEX MATH EXTENSION";
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    else if ( sf->subfontcnt==0 && sf->encoding_name!=em_custom && !sf->compacted )
-#else
     else if ( sf->subfontcnt==0 && sf->encoding_name!=&custom && !sf->compacted )
-#endif
 	encname = EncodingName(sf->encoding_name );
     if ( encname==NULL ) {
 	full = galloc(strlen(sf->fontname)+10);

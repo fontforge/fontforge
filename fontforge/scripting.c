@@ -616,11 +616,7 @@ static void bUnicodeFromName(Context *c) {
     else if ( c->a.vals[1].type!=v_str )
 	error( c, "Bad type for argument" );
     c->return_val.type = v_int;
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    c->return_val.u.ival = UniFromName(c->a.vals[1].u.sval,ui_none,em_custom);
-#else
     c->return_val.u.ival = UniFromName(c->a.vals[1].u.sval,ui_none,&custom);
-#endif
 }
 
 static void bChr(Context *c) {
@@ -1637,130 +1633,6 @@ static void bSelectByATT(Context *c) {
 }
 
 /* **** Element Menu **** */
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-#define em_unknown (em_none-3)
-int FontEncodingByName(char *name) {
-    Encoding *item=NULL;
-    int i;
-    enum charset new_map = em_unknown;
-    static struct encdata {
-	int val;
-	char *name;
-    } encdata[] = {
-	{ em_compacted, "compacted" },
-	{ em_custom, "custom" },
-	{ em_original, "original" },
-	{ em_iso8859_1, "iso8859-1" },
-	{ em_iso8859_1, "isolatin1" },
-	{ em_iso8859_1, "latin1" },
-	{ em_iso8859_2, "iso8859-2" },
-	{ em_iso8859_2, "latin2" },
-	{ em_iso8859_3, "iso8859-3" },
-	{ em_iso8859_3, "latin3" },
-	{ em_iso8859_4, "iso8859-4" },
-	{ em_iso8859_4, "latin4" },
-	{ em_iso8859_5, "iso8859-5" },
-	{ em_iso8859_5, "isocyrillic" },
-	{ em_iso8859_6, "iso8859-6" },
-	{ em_iso8859_6, "isoarabic" },
-	{ em_iso8859_7, "iso8859-7" },
-	{ em_iso8859_7, "isogreek" },
-	{ em_iso8859_8, "iso8859-8" },
-	{ em_iso8859_8, "isohebrew" },
-	{ em_iso8859_9, "iso8859-9" },
-	{ em_iso8859_9, "latin5" },
-	{ em_iso8859_10, "iso8859-10" },
-	{ em_iso8859_10, "latin6" },
-	{ em_iso8859_11, "isothai" },
-	{ em_iso8859_13, "iso8859-13" },
-	{ em_iso8859_13, "latin7" },
-	{ em_iso8859_14, "iso8859-14" },
-	{ em_iso8859_14, "latin8" },
-	{ em_iso8859_15, "iso8859-15" },
-	{ em_iso8859_15, "latin0" },
-	{ em_iso8859_15, "latin9" },
-	{ em_koi8_r, "koi8-r" },
-	{ em_koi8_r, "koi8r" },
-	{ em_jis201, "jis201" },
-	{ em_jis201, "jisx0201" },
-	{ em_adobestandard, "AdobeStandardEncoding" },
-	{ em_adobestandard, "Adobe" },
-	{ em_win, "win" },
-	{ em_win, "ansi" },
-	{ em_mac, "mac" },
-	{ em_symbol, "symbol" },
-	{ em_base, "TeX" },
-	{ em_ksc5601, "ksc5601" },
-	{ em_wansung, "wansung" },
-	{ em_big5, "big5" },
-	{ em_big5hkscs, "big5hkscs" },
-	{ em_johab, "johab" },
-	{ em_jis208, "jis208" },
-	{ em_jis208, "jisx0208" },
-	{ em_sjis, "sjis" },
-	{ em_jis212, "jis212" },
-	{ em_jis212, "jisx0212" },
-	{ em_jisgb, "gb2312packed" },
-	{ em_gb2312, "gb2312" },
-	{ em_unicode, "unicode" },
-	{ em_unicode4, "unicode4" },
-	{ em_unicode, "iso10646" },
-	{ em_unicode, "iso10646-1" },
-	{ em_unicode4, "ucs4" },
-	{ 0, NULL}};
-
-    for ( i=0; encdata[i].name!=NULL; ++i )
-	if ( strmatch(encdata[i].name,name)==0 ) {
-	    new_map = encdata[i].val;
-    break;
-	}
-    if ( new_map == em_unknown ) {
-	for ( item=enclist; item!=NULL ; item=item->next )
-	    if ( strmatch(name,item->enc_name )==0 ) {
-		new_map = item->enc_num;
-	break;
-	    }
-    }
-    if ( new_map==em_unknown && strstart(name,"unicode-plane-")!=NULL ) {
-	unsigned plane=0;
-	sscanf( name,"unicode-plane-%x", &plane );
-	if ( plane==0 ) new_map = em_unicode;
-	else new_map = em_unicodeplanes+plane;
-    }
-return( new_map );
-}
-
-static void bReencode(Context *c) {
-    enum charset new_map = em_unknown;
-    FontView *fvs;
-    int force = 0;
-
-    if ( c->a.argc!=2 && c->a.argc!=3 )
-	error( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str || ( c->a.argc==3 && c->a.vals[2].type!=v_int ))
-	error(c,"Bad argument type");
-    if ( c->a.argc==3 )
-	force = c->a.vals[2].u.ival;
-    new_map = FontEncodingByName(c->a.vals[1].u.sval);
-    if ( new_map==em_unknown )
-	errors(c,"Unknown encoding", c->a.vals[1].u.sval);
-    if ( force )
-	SFForceEncoding(c->curfv->sf,new_map);
-    else
-	SFReencodeFont(c->curfv->sf,new_map);
-    for ( fvs=c->curfv->sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
-	free( fvs->selected );
-	fvs->selected = gcalloc(fvs->sf->charcnt,1);
-    }
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-    if ( !no_windowing_ui )
-	FontViewReformatAll(c->curfv->sf);
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
-    c->curfv->sf->changed = true;
-    c->curfv->sf->changed_since_autosave = true;
-    c->curfv->sf->changed_since_xuidchanged = true;
-}
-#else
 static void bReencode(Context *c) {
     Encoding *new_map;
     FontView *fvs;
@@ -1791,7 +1663,6 @@ static void bReencode(Context *c) {
     c->curfv->sf->changed_since_autosave = true;
     c->curfv->sf->changed_since_xuidchanged = true;
 }
-#endif
 
 static void bSetCharCnt(Context *c) {
     int oldcnt = c->curfv->sf->charcnt, i;
@@ -5370,10 +5241,8 @@ static void ProcessScript(int argc, char *argv[], FILE *script) {
     no_windowing_ui = true;
     running_script = true;
 
-#ifdef FONTFORGE_CONFIG_ICONV_ENCODING
     if ( default_encoding==NULL )
 	default_encoding = FindOrMakeEncoding("ISO-8859-1");
-#endif
 
     VerboseCheck();
 

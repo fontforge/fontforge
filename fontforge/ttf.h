@@ -92,11 +92,7 @@ struct ttfinfo {
     int upos, uwidth;		/* underline pos, width from post table */
     int fstype;
     struct psdict *private;	/* Only for open type cff fonts */
-#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
-    enum charset encoding_name;/* from cmap */
-#else
     Encoding *encoding_name;
-#endif
     enum uni_interp uni_interp;
     struct pfminfo pfminfo;
     struct ttflangname *names;
