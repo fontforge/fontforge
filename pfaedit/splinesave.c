@@ -845,8 +845,14 @@ static void flexto(GrowBuf *gb,BasePoint *current,Spline *pspline,int round,
 	temp.y = rint(mid->y);
 	mid = &temp;
     }
-    offsets[0].x = mid->x-current->x;	offsets[0].y = mid->y-current->y;
-    offsets[1].x = c0->x-mid->x;	offsets[1].y = c0->y-mid->y;
+/* reference point is same level as current point */
+    if ( current->y==pspline->to->next->to->me.y ) {
+	offsets[0].x = mid->x-current->x;	offsets[0].y = 0;
+	offsets[1].x = c0->x-mid->x;		offsets[1].y = c0->y-current->y;
+    } else {
+	offsets[0].x = 0;			offsets[0].y = mid->y-current->y;
+	offsets[1].x = c0->x-current->x;	offsets[1].y = c0->y-mid->y;
+    }
     offsets[2].x = c1->x-c0->x;		offsets[2].y = c1->y-c0->y;
     offsets[3].x = mid->x-c1->x;	offsets[3].y = mid->y-c1->y;
     nspline = pspline->to->next;
