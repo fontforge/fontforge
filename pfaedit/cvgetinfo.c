@@ -541,6 +541,8 @@ static void AI_DisplayClass(GIData *ci,AnchorPoint *ap) {
     GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_CursExit),ac->type==act_curs);
     GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_Mark),ac->type!=act_curs);
 
+    GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_LigIndex),ap->type==at_baselig);
+
     if ( ac->type==act_mkmk && (ap->type==at_basechar || ap->type==at_baselig)) {
 	GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_BaseMark),true);
 	ap->type = at_basemark;
@@ -564,6 +566,16 @@ static void AI_DisplayClass(GIData *ci,AnchorPoint *ap) {
 	if ( saw[at_basechar]) GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_BaseChar),false);
 	if ( saw[at_basemark]) GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_BaseMark),false);
     }
+}
+
+static void AI_DisplayIndex(GIData *ci,AnchorPoint *ap) {
+    char buffer[12];
+    unichar_t ubuf[12];
+
+    sprintf(buffer,"%d", ap->lig_index );
+    uc_strcpy(ubuf,buffer);
+
+    GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_LigIndex),ubuf);
 }
 
 static void AI_DisplayRadio(GIData *ci,enum anchor_type type) {
@@ -782,7 +794,7 @@ static int AI_ANameChanged(GGadget *g, GEvent *e) {
 	AnchorPoint *ap;
 	GTextInfo *ti = GGadgetGetListItemSelected(g);
 	AnchorClass *an = ti->userdata;
-	int bad=0, max=0;
+	int change=0, max=0;
 	int ntype;
 	int sawentry, sawexit;
 
@@ -817,10 +829,10 @@ return( true );			/* No op */
 		    if ( ap->type == at_mark ) sawentry = true;
 		    else if ( ap->type== at_basemark ) sawexit = true;
 		} else {
-		    if ( ap->type!=at_baselig || ci->ap->type!=at_baselig )
+		    if ( ap->type!=at_baselig )
 	break;
 		    if ( ap->lig_index==ci->ap->lig_index )
-			bad = true;
+			change = true;
 		    else if ( ap->lig_index>max )
 			max = ap->lig_index;
 		}
@@ -846,8 +858,10 @@ return( true );			/* No op */
 	    }
 	    if ( ci->ap->type!=at_baselig )
 		ci->ap->lig_index = 0;
-	    else if ( bad )
+	    else if ( change ) {
 		ci->ap->lig_index = max+1;
+		AI_DisplayIndex(ci,ci->ap);
+	    }
 	    AI_DisplayClass(ci,ci->ap);
 	    AI_TestOrdering(ci,ci->ap->me.x);
 	}
