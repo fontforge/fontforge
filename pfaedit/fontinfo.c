@@ -2216,7 +2216,7 @@ static int e_h(GWindow gw, GEvent *event) {
 	d->done = true;
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    system("netscape http://pfaedit.sf.net/fontinfo.html &");
+	    help("fontinfo.html");
 return( true );
 	}
 return( false );
@@ -2247,7 +2247,7 @@ void FontInfo(SplineFont *sf) {
     wattrs.window_title = GStringGetResource(_STR_Fontinformation,NULL);
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,268);
-    pos.height = GDrawPointsToPixels(NULL,330);
+    pos.height = GDrawPointsToPixels(NULL,355);
     gw = GDrawCreateTopWindow(NULL,&pos,e_h,&d,&wattrs);
 
     memset(&d,'\0',sizeof(d));
@@ -2672,12 +2672,12 @@ void FontInfo(SplineFont *sf) {
     pgcd[0].creator = GListCreate;
 
     pgcd[1].gd.pos.x = 10; pgcd[1].gd.pos.y = pgcd[0].gd.pos.y+pgcd[0].gd.pos.height+10;
-    pgcd[1].gd.pos.width = pgcd[0].gd.pos.width; pgcd[1].gd.pos.height = 6*12+10;
+    pgcd[1].gd.pos.width = pgcd[0].gd.pos.width; pgcd[1].gd.pos.height = 8*12+10;
     pgcd[1].gd.flags = gg_visible | gg_enabled;
     pgcd[1].gd.cid = CID_PrivateValues;
     pgcd[1].creator = GTextAreaCreate;
 
-    pgcd[2].gd.pos.x = 20; pgcd[2].gd.pos.y = 275-35-30;
+    pgcd[2].gd.pos.x = 20; pgcd[2].gd.pos.y = 300-35-30;
     pgcd[2].gd.pos.width = -1; pgcd[2].gd.pos.height = 0;
     pgcd[2].gd.flags = gg_visible | gg_enabled ;
     plabel[2].text = (unichar_t *) _STR_Add;
@@ -2688,7 +2688,7 @@ void FontInfo(SplineFont *sf) {
     pgcd[2].gd.cid = CID_Add;
     pgcd[2].creator = GButtonCreate;
 
-    pgcd[3].gd.pos.x = (240-GIntGetResource(_NUM_Buttonsize))/2; pgcd[3].gd.pos.y = 275-35-30;
+    pgcd[3].gd.pos.x = (240-GIntGetResource(_NUM_Buttonsize))/2; pgcd[3].gd.pos.y = pgcd[2].gd.pos.y;
     pgcd[3].gd.pos.width = -1; pgcd[3].gd.pos.height = 0;
     pgcd[3].gd.flags = gg_visible ;
     plabel[3].text = (unichar_t *) _STR_Guess;
@@ -2699,7 +2699,7 @@ void FontInfo(SplineFont *sf) {
     pgcd[3].gd.cid = CID_Guess;
     pgcd[3].creator = GButtonCreate;
 
-    pgcd[4].gd.pos.x = 240-GIntGetResource(_NUM_Buttonsize)-20; pgcd[4].gd.pos.y = 275-35-30;
+    pgcd[4].gd.pos.x = 240-GIntGetResource(_NUM_Buttonsize)-20; pgcd[4].gd.pos.y = pgcd[2].gd.pos.y;
     pgcd[4].gd.pos.width = -1; pgcd[4].gd.pos.height = 0;
     pgcd[4].gd.flags = gg_visible | gg_enabled ;
     plabel[4].text = (unichar_t *) _STR_Remove;
@@ -2860,18 +2860,18 @@ void FontInfo(SplineFont *sf) {
     tngcd[2].creator = GListButtonCreate;
 
     tngcd[3].gd.pos.x = 12; tngcd[3].gd.pos.y = GDrawPointsToPixels(NULL,tngcd[2].gd.pos.y+12);
-    tngcd[3].gd.pos.width = pos.width-40; tngcd[3].gd.pos.height = GDrawPointsToPixels(NULL,183);
+    tngcd[3].gd.pos.width = pos.width-40; tngcd[3].gd.pos.height = GDrawPointsToPixels(NULL,203);
     tngcd[3].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
     tngcd[3].creator = GGroupCreate;
 
     tngcd[4].gd.pos.x = 14; tngcd[4].gd.pos.y = tngcd[2].gd.pos.y+30;
-    tngcd[4].gd.pos.width = 220; tngcd[4].gd.pos.height = 160;
+    tngcd[4].gd.pos.width = 220; tngcd[4].gd.pos.height = 180;
     tngcd[4].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap;
     tngcd[4].gd.cid = CID_String;
     tngcd[4].creator = GTextAreaCreate;
 
     tngcd[5].gd.pos.x = 8; tngcd[5].gd.pos.y = GDrawPointsToPixels(NULL,tngcd[0].gd.pos.y+12);
-    tngcd[5].gd.pos.width = pos.width-32; tngcd[5].gd.pos.height = GDrawPointsToPixels(NULL,220);
+    tngcd[5].gd.pos.width = pos.width-32; tngcd[5].gd.pos.height = GDrawPointsToPixels(NULL,240);
     tngcd[5].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
     tngcd[5].creator = GGroupCreate;
     
@@ -2990,20 +2990,20 @@ void FontInfo(SplineFont *sf) {
     pangcd[16].gd.flags = gg_visible | gg_enabled;
     pangcd[16].creator = GLabelCreate;
 
-    pangcd[17].gd.pos.x = 55; pangcd[17].gd.pos.y = pangcd[16].gd.pos.y-6; pangcd[17].gd.pos.width = 60;
+    pangcd[17].gd.pos.x = 100; pangcd[17].gd.pos.y = pangcd[16].gd.pos.y-6; pangcd[17].gd.pos.width = 120;
     pangcd[17].gd.flags = gg_visible | gg_enabled;
     pangcd[17].gd.cid = CID_PanMidLine;
     pangcd[17].gd.u.list = panmidline;
     pangcd[17].creator = GListButtonCreate;
 
-    pangcd[18].gd.pos.x = 123; pangcd[18].gd.pos.y = pangcd[16].gd.pos.y;
+    pangcd[18].gd.pos.x = 10; pangcd[18].gd.pos.y = pangcd[17].gd.pos.y+26+6;
     panlabel[18].text = (unichar_t *) _STR_XHeight;
     panlabel[18].text_in_resource = true;
     pangcd[18].gd.label = &panlabel[18];
     pangcd[18].gd.flags = gg_visible | gg_enabled;
     pangcd[18].creator = GLabelCreate;
 
-    pangcd[19].gd.pos.x = 175; pangcd[19].gd.pos.y = pangcd[18].gd.pos.y-6; pangcd[19].gd.pos.width = 60;
+    pangcd[19].gd.pos.x = 100; pangcd[19].gd.pos.y = pangcd[18].gd.pos.y-6; pangcd[19].gd.pos.width = 120;
     pangcd[19].gd.flags = gg_visible | gg_enabled;
     pangcd[19].gd.cid = CID_PanXHeight;
     pangcd[19].gd.u.list = panxheight;
@@ -3052,13 +3052,13 @@ void FontInfo(SplineFont *sf) {
 
     mgcd[0].gd.pos.x = 4; mgcd[0].gd.pos.y = 6;
     mgcd[0].gd.pos.width = 260;
-    mgcd[0].gd.pos.height = 280;
+    mgcd[0].gd.pos.height = 305;
     mgcd[0].gd.u.tabs = aspects;
     mgcd[0].gd.flags = gg_visible | gg_enabled;
     mgcd[0].gd.handle_controlevent = GFI_AspectChange;
     mgcd[0].creator = GTabSetCreate;
 
-    mgcd[1].gd.pos.x = 30-3; mgcd[1].gd.pos.y = 330-35-3;
+    mgcd[1].gd.pos.x = 30-3; mgcd[1].gd.pos.y = GDrawPixelsToPoints(NULL,pos.height)-35-3;
     mgcd[1].gd.pos.width = -1; mgcd[1].gd.pos.height = 0;
     mgcd[1].gd.flags = gg_visible | gg_enabled | gg_but_default;
     mlabel[1].text = (unichar_t *) _STR_OK;

@@ -64,7 +64,7 @@ static ImageList *ImagesCopyState(CharView *cv) {
     if ( cv->drawmode!=dm_back || cv->sc->backimages==NULL )
 return( NULL );
     for ( cimg = cv->sc->backimages; cimg!=NULL; cimg=cimg->next ) {
-	new = chunkalloc(sizeof(RefChar));
+	new = chunkalloc(sizeof(ImageList));
 	*new = *cimg;
 	new->next = NULL;
 	if ( last==NULL )
@@ -811,7 +811,7 @@ void CopySelected(CharView *cv) {
     if ( cv->drawmode==dm_back ) {
 	ImageList *imgs, *new;
 	for ( imgs = cv->sc->backimages; imgs!=NULL; imgs = imgs->next ) if ( imgs->selected ) {
-	    new = chunkalloc(sizeof(RefChar));
+	    new = chunkalloc(sizeof(ImageList));
 	    *new = *imgs;
 	    new->next = copybuffer.u.state.u.images;
 	    copybuffer.u.state.u.images = new;

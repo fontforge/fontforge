@@ -61,5 +61,6 @@ extern void Protest(char *label);
 extern real GetRealR(GWindow gw,int cid,int namer,int *err);
 extern int GetIntR(GWindow gw,int cid,int namer,int *err);
 extern void ProtestR(int labelr);
+extern void help(char *filename);
 
 #endif

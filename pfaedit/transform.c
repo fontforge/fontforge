@@ -264,7 +264,7 @@ static int trans_e_h(GWindow gw, GEvent *event) {
 	GDrawRaise(gw);
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    system("netscape http://pfaedit.sf.net/transform.html &");
+	    help("transform.html");
 return( true );
 	}
 return( false );

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 14-Dec-2001 -->
+  <!-- AP: Last modified: 15-Dec-2001 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -71,8 +71,8 @@ know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-011211.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 11-Dec-2001
+    <A HREF="pfaedit-011215.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 15-Dec-2001
   <LI>
     <A HREF="pfaedit-solaris-011211.tgz">Download pfaedit Solaris 8.0
     </A>executable Version: 11-Dec-2001
@@ -110,22 +110,22 @@ If you want to edit CID keyed fonts you need these
 <P>
 You can download a <A HREF="pfaedit-011201-1.src.rpm">source RPM</A>: Version:
 1-Dec-2001<BR>
-Or you can download the following three packages. Version: 14-Dec-2001
+Or you can download the following three packages. Version: 15-Dec-2001
 <UL>
   <LI>
-    <A HREF="libgunicode-011211.tgz">Unicode library source</A> (11-Dec-2001)<BR>
+    <A HREF="libgunicode-011215.tgz">Unicode library source</A> (15-Dec-2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGUnicode/index.html">docs</A>
   <LI>
-    <A HREF="libgdraw-011214.tgz">Unicode widget library source</A>
-    (14-Dec-2001)<BR>
+    <A HREF="libgdraw-011215.tgz">Unicode widget library source</A>
+    (15-Dec-2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
   <LI>
-    <A HREF="pfaedit_src-011214.tgz">Pfaedit source</A> (14-Dec-2001)<BR>
+    <A HREF="pfaedit_src-011215.tgz">Pfaedit source</A> (15-Dec-2001)<BR>
     -- <A HREF="overview.html">docs</A>
   <LI>
-    <A HREF="pfaedit_full-011214.tgz">All three bundled together </A>(14-Dec-2001)
+    <A HREF="pfaedit_full-011215.tgz">All three bundled together </A>(15-Dec-2001)
 </UL>
 <P>
 If you want to do autotracing around character images you should also download
@@ -235,6 +235,33 @@ up into one <A HREF="pfaedit_htdocs-011116.tgz">tgz file</A> 16-Nov-2001.
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    15-Dec-2001
+    <UL>
+      <LI>
+	Copying a background image caused a crash at some indeterminate future time
+      <LI>
+	Made the Help browser configurable
+      <LI>
+	Changed greek accent processing so that it uses more of the greek accents.
+	For reasons known best to themselves, unicode tends to map greek varia to
+	grave, oxia to accute, etc.
+      <LI>
+	More work to make sure the screen fonts are readable
+      <LI>
+	tabbing into a text field selects all of it.
+      <LI>
+	autotrace 2.8 has changed its argument conventions. new versions of pfaedit
+	will no longer work with autotrace2.7.
+      <LI>
+	If a menu doesn't fit in its window there is now a way to get at the menu
+	items which are offscreen
+      <LI>
+	Cleaned up the panose (fontinfo) window
+      <LI>
+	Added names to the private use area of unicode for greek small caps (starting
+	at 0xf500)
+    </UL>
   <LI>
     14-Dec-2001
     <UL>
@@ -971,9 +998,17 @@ Other font links
 <UL>
   <LI>
     <A HREF="http://www.unicode.org/">Unicode consortium</A>
-  <LI>
-    <A HREF="http://partners.adobe.com/asn/developer/type/corporateuse.txt">Adobe's
-    corporate use extensions</A>
+    <UL>
+      <LI>
+	<A HREF="http://www.unicode.org/Public/MAPPINGS/VENDORS/APPLE/CORPCHAR.TXT">Apple's
+	corporate use extensions</A> (0xF850-0xF8FE)
+      <LI>
+	<A HREF="http://partners.adobe.com/asn/developer/type/corporateuse.txt">Adobe's
+	corporate use extensions</A> (0xF634-0F7FF) (also includes some of Apple's
+	codes above)
+      <LI>
+	<A HREF="corpchar.html">PfaEdit's corporate use extensions </A>(0xF500-0xF580)
+    </UL>
   <LI>
     <A HREF="http://www.unicode.org/roadmaps/bmp-3-1.html">Pictures of the
     characters</A>

@@ -374,6 +374,7 @@ return;
 
 static void GMenuBarChangeSelection(GMenuBar *mb, int newsel,GEvent *event) {
     int old=mb->entry_with_mouse;
+    GMenuItem *mi;
 
     if ( old==newsel )
 return;
@@ -391,10 +392,11 @@ return;
 
     _ggadget_redraw(&mb->g);
     if ( newsel!=-1 ) {
-	if ( mb->mi[newsel].moveto!=NULL )
-	    (mb->mi[newsel].moveto)(mb->g.base,&mb->mi[newsel],event);
-	if ( mb->mi[newsel].sub!=NULL )
-	    mb->child = GMenuCreatePulldownMenu(mb,mb->mi[newsel].sub);
+	mi = newsel==mb->lastmi ? mb->fake : &mb->mi[newsel];
+	if ( mi->moveto!=NULL )
+	    (mi->moveto)(mb->g.base,mi,event);
+	if ( mi->sub!=NULL )
+	    mb->child = GMenuCreatePulldownMenu(mb,mi->sub);
     }
 }
 
@@ -677,6 +679,8 @@ static GMenu *_GMenu_Create(GWindow owner,GMenuItem *mi, GPoint *where, int awid
 	shorttext(&mi[i],buffer);
 	temp = GDrawGetTextWidth(owner,buffer,-1,NULL);
 	if ( temp>keywidth ) keywidth=temp;
+	if ( mi[i].sub!=NULL && 3*m->as>keywidth )
+	    keywidth = 3*m->as;
     }
     m->mcnt = m->lcnt = i;
     if ( keywidth!=0 ) width += keywidth + GDrawPointsToPixels(owner,8);
@@ -815,6 +819,25 @@ return( GMenuSpecialKeys(m,event->u.chr.keysym));
 return( false );
 }
 
+static void GMenuBarDrawDownArrow(GWindow pixmap, GMenuBar *mb, int x) {
+    int pt = GDrawPointsToPixels(pixmap,1);
+    int size = 2*(mb->g.inner.height/3);
+    int ybase = mb->g.inner.y + size + (mb->g.inner.height-size)/2;
+    GPoint p[3];
+
+    p[0].x = x+size;		p[0].y = ybase;
+    p[1].x = x;			p[1].y = ybase - size;
+    p[2].x = x+2*size;		p[2].y = ybase - size;
+
+    GDrawSetLineWidth(pixmap,pt);
+    GDrawDrawLine(pixmap,p[0].x,p[0].y,p[1].x,p[1].y,mb->g.box->border_darker);
+    GDrawDrawLine(pixmap,p[0].x,p[0].y+pt,p[1].x+pt,p[1].y,mb->g.box->border_darker);
+    GDrawDrawLine(pixmap,p[1].x,p[1].y,p[2].x,p[2].y,mb->g.box->border_brightest);
+    GDrawDrawLine(pixmap,p[1].x+pt,p[1].y,p[2].x-pt,p[2].y,mb->g.box->border_brightest);
+    GDrawDrawLine(pixmap,p[2].x,p[2].y,p[0].x,p[0].y,mb->g.box->border_darkest);
+    GDrawDrawLine(pixmap,p[2].x-pt,p[2].y,p[0].x,p[0].y+pt,mb->g.box->border_darkest);
+}
+
 static int gmenubar_expose(GWindow pixmap, GGadget *g, GEvent *expose) {
     GMenuBar *mb = (GMenuBar *) g;
     GRect r,old1,old2, old3;
@@ -832,13 +855,16 @@ static int gmenubar_expose(GWindow pixmap, GGadget *g, GEvent *expose) {
     GDrawSetFont(pixmap,mb->font);
 
     r = g->inner;
-    for ( i=0; i<mb->mtot; ++i ) {
+    for ( i=0; i<mb->lastmi; ++i ) {
 	r.x = mb->xs[i]+mb->g.inner.x; r.width = mb->xs[i+1]-mb->xs[i];
 	GDrawPushClip(pixmap,&r,&old3);
 	GTextInfoDraw(pixmap,r.x,r.y,&mb->mi[i].ti,mb->font,
 		mb->mi[i].ti.disabled?mb->g.box->disabled_foreground:fg,
 		mb->g.box->active_border);
 	GDrawPopClip(pixmap,&old3);
+    }
+    if ( i<mb->mtot ) {
+	GMenuBarDrawDownArrow(pixmap,mb,mb->xs[i]+mb->g.inner.x);
     }
 
     GDrawPopClip(pixmap,&old2);
@@ -851,9 +877,11 @@ static int GMenuBarIndex(GMenuBar *mb, int x ) {
 
     if ( x<0 )
 return( -1 );
-    for ( i=0; i< mb->xs[i+1]; ++i )
+    for ( i=0; i< mb->lastmi; ++i )
 	if ( x<mb->g.inner.x+mb->xs[i+1] )
 return( i );
+    if ( mb->lastmi!=mb->mtot )
+return( mb->lastmi );
 
 return( -1 );
 }
@@ -928,6 +956,25 @@ static FontInstance *GMenuBarGetFont(GGadget *g) {
 return( b->font );
 }
 
+static void GMenuBarTestSize(GMenuBar *mb) {
+    int arrow_size = mb->g.inner.height;
+    int i;
+
+    if ( mb->xs[mb->mtot]<=mb->g.inner.width+4 ) {
+	mb->lastmi = mb->mtot;
+    } else {
+	for ( i=mb->mtot-1; i>0 && mb->xs[i]>mb->g.inner.width-arrow_size; --i );
+	mb->lastmi = i;
+	memset(&mb->fake,0,sizeof(GMenuItem));
+	mb->fake[0].sub = mb->mi+mb->lastmi;
+    }
+}
+
+static void GMenuBarResize(GGadget *g, int32 width, int32 height) {
+    _ggadget_resize(g,width,height);
+    GMenuBarTestSize((GMenuBar *) g);
+}
+
 struct gfuncs gmenubar_funcs = {
     0,
     sizeof(struct gfuncs),
@@ -942,7 +989,7 @@ struct gfuncs gmenubar_funcs = {
 
     _ggadget_redraw,
     _ggadget_move,
-    _ggadget_resize,
+    GMenuBarResize,
     _ggadget_setvisible,
     _ggadget_setenabled,
     _ggadget_getsize,
@@ -1001,6 +1048,7 @@ static void GMenuBarFindXs(GMenuBar *mb) {
     for ( i=0; i<mb->mtot; ++i )
 	mb->xs[i+1] = mb->xs[i]+wid;
 #endif
+    GMenuBarTestSize(mb);
 }
 
 GGadget *GMenuBarCreate(struct gwindow *base, GGadgetData *gd,void *data) {

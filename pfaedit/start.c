@@ -69,7 +69,7 @@ static void _dousage(void) {
     fprintf( stderr, "\t-memory\t\t\t (turns on memory checks, debugging)\n" );
 #endif
     fprintf( stderr, "\t-usage\t\t\t (displays this message, and exits)\n" );
-    fprintf( stderr, "\t-help\t\t\t (displays this message, invokes netscape)\n" );
+    fprintf( stderr, "\t-help\t\t\t (displays this message, invokes a browser)\n\t\t\t\t(Using the BROWSER environment variable)\n" );
     fprintf( stderr, "\n" );
     fprintf( stderr, "pfaedit will read postscript (pfa, pfb, ps, cid), opentype (otf),\n" );
     fprintf( stderr, "\ttruetype (ttf) and bdf fonts. It will also read it's own format\n" );
@@ -86,7 +86,7 @@ exit(0);
 
 static void dohelp(void) {
     _dousage();
-    system("netscape http://pfaedit.sourceforge.net/overview.html &");
+    help("overview.html");
 exit(0);
 }
 

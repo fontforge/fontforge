@@ -293,10 +293,12 @@ typedef struct gmenubar {
     uint16 *xs;			/* locations at which to draw each name (+1 to give us width of last one) */
     uint16 mtot;
     int16 entry_with_mouse;
+    int16 lastmi;		/* If the menubar doesn't fit across the top the make some of it be vertical. Start here */
     struct gmenu *child;
     unsigned int pressed: 1;
     unsigned int initial_press: 1;
     FontInstance *font;
+    GMenuItem fake[2];		/* Used if not enough room for menu... */
 } GMenuBar;
 
 typedef struct gtabset {

@@ -25,7 +25,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
-#include "ustring.h"
+#include <ustring.h>
+#include <gfile.h>
 
 void Protest(char *label) {
     char buffer[80];
@@ -96,4 +97,56 @@ int GetIntR(GWindow gw,int cid,int namer,int *err) {
 	*err = true;
     }
 return( val );
+}
+
+static char browser[1025];
+
+static void findbrowser(void) {
+    static char *stdbrowsers[] = { "netscape", "opera", "mozilla", "mosaic",
+	"kfmclient", /*"grail",*/ "lynx", NULL };
+    int i;
+    char *path;
+
+    if ( getenv("BROWSER")!=NULL ) {
+	strcpy(browser,getenv("BROWSER"));
+	if ( strcmp(browser,"kde")==0 || strcmp(browser,"kfm")==0 || strcmp(browser,"kfmclient")==0 )
+	    strcpy(browser,"kfmclient openURL");
+return;
+    }
+    for ( i=0; stdbrowsers[i]!=NULL; ++i ) {
+	if ( (path=_GFile_find_program_dir(stdbrowsers[i]))!=NULL ) {
+	    if ( strcmp(stdbrowsers[i],"kfmclient")==0 )
+		strcpy(browser,"kfmclient openURL");
+	    else
+		strcpy(browser,stdbrowsers[i]);
+return;
+	}
+    }
+}
+
+void help(char *file) {
+    char fullspec[1024], *temp;
+
+    if ( browser[0]=='\0' )
+	findbrowser();
+    if ( browser[0]=='\0' ) {
+	GDrawError("Could not find a browser. Set the BROWSER environment variable to point to one" );
+return;
+    }
+
+    if ( strstr(file,"http://")==NULL ) {
+	fullspec[0] = 0;
+	if ( *file!='/' )
+	    strcpy(fullspec,"/usr/share/doc/pfaedit/");
+	strcat(fullspec,file);
+	if ( !GFileReadable( fullspec )) {
+	    strcpy(fullspec,"http://pfaedit.sf.net/");
+	    strcat(fullspec,file);
+	}
+    } else
+	strcpy(fullspec,file);
+    temp = galloc(strlen(browser) + strlen(fullspec) + 20);
+    sprintf( temp, "%s %s &", browser, fullspec );
+    system(temp);
+    free(temp);
 }

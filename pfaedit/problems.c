@@ -108,7 +108,7 @@ static int explain_e_h(GWindow gw, GEvent *event) {
 	p->ignorethis = GGadgetIsChecked(event->u.control.g);
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    system("netscape http://pfaedit.sf.net/problems.html &");
+	    help("problems.html");
 return( true );
 	}
 return( false );

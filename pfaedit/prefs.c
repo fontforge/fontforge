@@ -176,16 +176,48 @@ return;
 }
 
 static void GreekHack(void) {
+    int i;
+
     if ( greekfixup ) {
 	psunicodenames[0x2206] = NULL;		/* Increment */
 	psunicodenames[0x2126] = NULL;		/* Ohm sign */
 	psunicodenames[0x0394] = "Delta";	/* Delta */
-	psunicodenames[0x2126] = "Omega";	/* Omega */
+	psunicodenames[0x03A9] = "Omega";	/* Omega */
+
+	psunicodenames[0xf500] = "Alphasmall";
+	psunicodenames[0xf501] = "Betasmall";
+	psunicodenames[0xf502] = "Gammasmall";
+	psunicodenames[0xf503] = "Deltasmall";
+	psunicodenames[0xf504] = "Epsilonsmall";
+	psunicodenames[0xf505] = "Zetasmall";
+	psunicodenames[0xf506] = "Etasmall";
+	psunicodenames[0xf507] = "Thetasmall";
+	psunicodenames[0xf508] = "Iotasmall";
+	psunicodenames[0xf509] = "Kappasmall";
+	psunicodenames[0xf50a] = "Lambdasmall";
+	psunicodenames[0xf50b] = "Musmall";
+	psunicodenames[0xf50c] = "Nusmall";
+	psunicodenames[0xf50d] = "Xismall";
+	psunicodenames[0xf50e] = "Omicronsmall";
+	psunicodenames[0xf50f] = "Pismall";
+	psunicodenames[0xf510] = "Rhosmall";
+	psunicodenames[0xf511] = NULL,
+	psunicodenames[0xf512] = "Sigmasmall";
+	psunicodenames[0xf513] = "Tausmall";
+	psunicodenames[0xf514] = "Upsilonsmall";
+	psunicodenames[0xf515] = "Phismall";
+	psunicodenames[0xf516] = "Chismall";
+	psunicodenames[0xf517] = "Psismall";
+	psunicodenames[0xf518] = "Omegasmall";
+	psunicodenames[0xf519] = "Iotadieresissmall";
+	psunicodenames[0xf51a] = "Upsilondieresissmall";
     } else {
 	psunicodenames[0x2206] = "Delta";	/* Increment */
 	psunicodenames[0x2126] = "Omega";	/* Ohm sign */
 	psunicodenames[0x0394] = NULL;		/* Delta */
-	psunicodenames[0x2126] = NULL;		/* Omega */
+	psunicodenames[0x03A9] = NULL;		/* Omega */
+	for ( i=0xf500; i<=0xf51a; ++i )
+	    psunicodenames[i] = NULL;
     }
     /* I'm leaving mu at 00b5 (rather than 03bc) */
 }

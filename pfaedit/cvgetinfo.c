@@ -434,7 +434,7 @@ static int ci_e_h(GWindow gw, GEvent *event) {
 	ci->done = true;
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    system("netscape http://pfaedit.sf.net/getinfo.html &");
+	    help("getinfo.html");
 return( true );
 	}
 return( false );
@@ -782,7 +782,7 @@ static int pi_e_h(GWindow gw, GEvent *event) {
 	PI_DoCancel( GDrawGetUserData(gw));
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    system("netscape http://pfaedit.sf.net/getinfo.html &");
+	    help("getinfo.html");
 return( true );
 	}
 return( false );

@@ -958,7 +958,7 @@ static int pg_e_h(GWindow gw, GEvent *event) {
 	pi->done = true;
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    system("netscape http://pfaedit.sf.net/print.html &");
+	    help("print.html");
 return( true );
 	}
 return( false );
@@ -1416,7 +1416,7 @@ static int e_h(GWindow gw, GEvent *event) {
 	pi->done = true;
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    system("netscape http://pfaedit.sf.net/print.html &");
+	    help("print.html");
 return( true );
 	}
 return( false );

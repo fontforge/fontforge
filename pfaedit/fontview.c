@@ -590,7 +590,7 @@ return;
 }
 
 void MenuHelp(GWindow base,struct gmenuitem *mi,GEvent *e) {
-    system("netscape http://pfaedit.sf.net/overview.html &");
+    help("overview.html");
 }
 
 static void FVMenuImport(GWindow gw,struct gmenuitem *mi,GEvent *e) {

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 26-Nov-2001 -->
+  <!-- AP: Last modified: 15-Dec-2001 -->
   <TITLE>The Element Menu</TITLE>
 </HEAD>
 <BODY>
@@ -241,7 +241,11 @@ This menu is not present in the Metrics View.
     in my test cases, of course). AutoTrace traces out both foreground and background
     regions, so I may sometimes leave behind a lump which represents a background
     area. Just delete it if it happens (and send me the image so I can fix things
-    up).
+    up).<FONT COLOR="Red"><BR>
+    <STRONG>CAVEAT: </STRONG></FONT>Autotrace 2.8 changed its argument conventions
+    (around Dec 2001). New versions (after 15 Dec) of pfaedit will not work with
+    autotrace2.7, old versions of pfaedit will not work with autotrace2.8. I
+    see no way to make something work with both or to detect the current version...
   <DT>
     <A NAME="Align">Align</A> menu
   <DD>
@@ -389,7 +393,7 @@ This menu is not present in the Metrics View.
     with the AccentOffsetPercent preference item. This lets you specify the
     percentage of the em to use as a separation. To avoid accents at slightly
     different heights, all characters near the x-height are treated as being
-    at the x-height, and similarly for all characters near the cap height.
+    at the x-height, and similarly for all characters near the cap height. 
       <HR>
     When displaying latin (cyrillic, greek, etc.) text amid a CJK characters
     displayed vertically the convention is that the latin glyphs should be rotated
@@ -446,6 +450,8 @@ This menu is not present in the Metrics View.
     <A HREF="cidmenu.html">CID</A>
   <LI>
     <A HREF="windowmenu.html">Window</A>
+  <LI>
+    <A HREF="helpmenu.html">Help</A>
   <LI>
     <A HREF="HotKeys.html">Hot Keys</A>
 </UL>
