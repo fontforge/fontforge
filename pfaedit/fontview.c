@@ -33,6 +33,7 @@
 #include <chardata.h>
 #include <math.h>
 #include <gresource.h>
+#include <unistd.h>
 #include "nomen.h"
 
 int onlycopydisplayed = 0;
@@ -3681,79 +3682,105 @@ return( sf );
 SplineFont *ReadSplineFont(char *filename) {
     SplineFont *sf;
     unichar_t ubuf[150];
-    char buf[1200];
+    char buf[1500];
     int fromsfd = false;
     static struct { char *ext, *decomp, *recomp; } compressors[] = {
 	{ "gz", "gunzip", "gzip" },
 	{ "bz2", "bunzip2", "bzip2" },
-	{ "Z", "uncompress", "compress" },
+	{ "Z", "gunzip", "compress" },
 	NULL
     };
     int i;
-    char *pt, *temp;
+    char *pt, *strippedname, *tmpfile=NULL, *paren=NULL, *fullname=filename;
     int len;
 
     if ( filename==NULL )
 return( NULL );
 
-    pt = strrchr(filename,'.');
+    strippedname = filename;
+    if ( (paren=strchr(filename,'('))!=NULL ) {
+	strippedname = copy(filename);
+	*strchr(strippedname,'(') = '\0';
+    }
+
+    pt = strrchr(strippedname,'.');
     i = -1;
     if ( pt!=NULL ) for ( i=0; compressors[i].ext!=NULL; ++i )
 	if ( strcmp(compressors[i].ext,pt+1)==0 )
     break;
     if ( i==-1 || compressors[i].ext==NULL ) i=-1;
     else {
-	sprintf( buf, "%s %s", compressors[i].decomp, filename );
-	if ( system(buf)==0 )
+	sprintf( buf, "%s %s", compressors[i].decomp, strippedname );
+	if ( system(buf)==0 ) {
 	    *pt='\0';
-	else {
-	    GDrawError("Decompress failed" );
+	} else {
+	    /* Assume no write access to file */
+	    char *dir = getenv("TMPDIR");
+	    if ( dir==NULL ) dir = P_tmpdir;
+	    tmpfile = galloc(strlen(dir)+strlen(GFileNameTail(strippedname))+2);
+	    strcpy(tmpfile,dir);
+	    strcat(tmpfile,"/");
+	    strcat(tmpfile,GFileNameTail(strippedname));
+	    *strrchr(tmpfile,'.') = '\0';
+	    sprintf( buf, "%s -c %s > %s", compressors[i].decomp, strippedname, tmpfile );
+	    if ( system(buf)==0 ) {
+		if ( strippedname!=filename ) free(strippedname);
+		strippedname = tmpfile;
+	    } else {
+		GDrawError("Decompress failed" );
+		free(tmpfile);
 return( NULL );
+	    }
 	}
+	if ( strippedname!=filename && paren!=NULL ) {
+	    fullname = galloc(strlen(strippedname)+strlen(paren)+1);
+	    strcpy(fullname,strippedname);
+	    strcat(fullname,paren);
+	} else
+	    fullname = strippedname;
     }
 
     u_strcpy(ubuf,GStringGetResource(_STR_LoadingFontFrom,NULL));
     len = u_strlen(ubuf);
-    uc_strncat(ubuf,GFileNameTail(filename),100);
+    uc_strncat(ubuf,GFileNameTail(fullname),100);
     ubuf[100+len] = '\0';
     GProgressStartIndicator(10,GStringGetResource(_STR_Loading,NULL),ubuf,GStringGetResource(_STR_ReadingGlyphs,NULL),0,1);
     GProgressEnableStop(0);
 
     sf = NULL;
-    temp = filename;
-    if ( strchr(filename,'(')!=NULL ) {
-	temp = copy(filename);
-	*strchr(temp,'(') = '\0';
-    }
-    if ( strmatch(filename+strlen(filename)-4, ".sfd")==0 ||
-	 strmatch(filename+strlen(filename)-5, ".sfd~")==0 ) {
-	sf = SFDRead(filename);
+    if ( strmatch(fullname+strlen(fullname)-4, ".sfd")==0 ||
+	 strmatch(fullname+strlen(fullname)-5, ".sfd~")==0 ) {
+	sf = SFDRead(fullname);
 	fromsfd = true;
-    } else if ( strmatch(filename+strlen(filename)-4, ".ttf")==0 ||
-		strmatch(filename+strlen(temp)-4, ".ttc")==0 ||
-		strmatch(filename+strlen(filename)-4, ".otf")==0 ) {
-	sf = SFReadTTF(filename,0);
-    } else if ( strmatch(filename+strlen(filename)-4, ".bdf")==0 ) {
+    } else if ( strmatch(fullname+strlen(fullname)-4, ".ttf")==0 ||
+		strmatch(fullname+strlen(strippedname)-4, ".ttc")==0 ||
+		strmatch(fullname+strlen(fullname)-4, ".otf")==0 ) {
+	sf = SFReadTTF(fullname,0);
+    } else if ( strmatch(fullname+strlen(fullname)-4, ".bdf")==0 ) {
 	sf = SplineFontNew();
-	SFImportBDF(sf,filename,false, false);
+	SFImportBDF(sf,fullname,false, false);
 	sf->changed = false;
-    } else if ( strmatch(filename+strlen(filename)-4, ".pk")==0 ) {
+    } else if ( strmatch(fullname+strlen(fullname)-2, "pk")==0 ) {
 	sf = SplineFontNew();
-	SFImportBDF(sf,filename,true, false);
+	SFImportBDF(sf,fullname,true, false);
 	sf->changed = false;
-    } else if ( strmatch(filename+strlen(temp)-4, ".bin")==0 ||
-		strmatch(filename+strlen(temp)-4, ".hqx")==0 ||
-		strmatch(filename+strlen(temp)-6, ".dfont")==0 ) {
-	sf = SFReadMacBinary(filename);
-    } else if ( strmatch(filename+strlen(filename)-4, ".pfa")==0 ||
-		strmatch(filename+strlen(filename)-4, ".pfb")==0 ||
-		strmatch(filename+strlen(filename)-4, ".pf3")==0 ||
-		strmatch(filename+strlen(filename)-4, ".cid")==0 ||
-		strmatch(filename+strlen(filename)-4, ".gsf")==0 ||
-		strmatch(filename+strlen(filename)-4, ".ps")==0 ) {
-	sf = SFReadPostscript(filename);
+    } else if ( strmatch(fullname+strlen(fullname)-4, ".pcf")==0 ) {
+	sf = SplineFontNew();
+	SFImportBDF(sf,fullname,2, false);
+	sf->changed = false;
+    } else if ( strmatch(fullname+strlen(strippedname)-4, ".bin")==0 ||
+		strmatch(fullname+strlen(strippedname)-4, ".hqx")==0 ||
+		strmatch(fullname+strlen(strippedname)-6, ".dfont")==0 ) {
+	sf = SFReadMacBinary(fullname);
+    } else if ( strmatch(fullname+strlen(fullname)-4, ".pfa")==0 ||
+		strmatch(fullname+strlen(fullname)-4, ".pfb")==0 ||
+		strmatch(fullname+strlen(fullname)-4, ".pf3")==0 ||
+		strmatch(fullname+strlen(fullname)-4, ".cid")==0 ||
+		strmatch(fullname+strlen(fullname)-4, ".gsf")==0 ||
+		strmatch(fullname+strlen(fullname)-4, ".ps")==0 ) {
+	sf = SFReadPostscript(fullname);
     } else {
-	FILE *foo = fopen(temp,"r");
+	FILE *foo = fopen(strippedname,"r");
 	if ( foo!=NULL ) {
 	    /* Try to guess the file type from the first few characters... */
 	    int ch1 = getc(foo);
@@ -3765,22 +3792,28 @@ return( NULL );
 		    (ch1=='O' && ch2=='T' && ch3=='T' && ch4=='O') ||
 		    (ch1=='t' && ch2=='r' && ch3=='u' && ch4=='e') ||
 		    (ch1=='t' && ch2=='t' && ch3=='c' && ch4=='f') ) {
-		sf = SFReadTTF(filename,0);
+		sf = SFReadTTF(fullname,0);
 	    } else if ( ch1=='%' && ch2=='!' ) {
-		sf = SFReadPostscript(filename);
+		sf = SFReadPostscript(fullname);
 	    } else if ( ch1=='S' && ch2=='p' && ch3=='l' && ch4=='i' ) {
-		sf = SFDRead(filename);
+		sf = SFDRead(fullname);
 		fromsfd = true;
 	    } else if ( ch1=='S' && ch2=='T' && ch3=='A' && ch4=='R' ) {
 		sf = SplineFontNew();
-		SFImportBDF(sf,filename,false, false);
+		SFImportBDF(sf,fullname,false, false);
+		sf->changed = false;
+	    } else if ( ch1=='\1' && ch2=='f' && ch3=='c' && ch4=='p' ) {
+		sf = SplineFontNew();
+		SFImportBDF(sf,fullname,2, false);
 		sf->changed = false;
 	    } else
-		sf = SFReadMacBinary(filename);
+		sf = SFReadMacBinary(fullname);
 	}
     }
-    if ( temp!=filename )
-	free(temp);
+    if ( strippedname!=filename && strippedname!=tmpfile )
+	free(strippedname);
+    if ( fullname!=filename && fullname!=strippedname )
+	free(fullname);
     GProgressEndIndicator();
 
     if ( sf==NULL ) {
@@ -3788,7 +3821,10 @@ return( NULL );
     } else
 	sf->origname = copy(filename);
 
-    if ( i!=-1 ) {
+    if ( tmpfile!=NULL ) {
+	unlink(tmpfile);
+	free(tmpfile);
+    } else if ( i!=-1 ) {
 	sprintf( buf, "%s %s", compressors[i].recomp, filename );
 	system(buf);
     }

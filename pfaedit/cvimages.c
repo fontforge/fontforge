@@ -722,11 +722,12 @@ static unichar_t wildtemplate[] = { '{','u','n','i',',','c','i','d',',','e','p',
 'x','b','m',',', 'b','m','p', '}', '\0' };
 static unichar_t wildps[] = { '*', '.', '{', 'p','s',',', 'e','p','s',',','}', '\0' };
 static unichar_t wildfig[] = { '*', '.', '{', 'f','i','g',',','x','f','i','g','}',  '\0' };
-static unichar_t wildbdf[] = { '*', '.', 'b', 'd','f',  '\0' };
+static unichar_t wildbdf[] = { '*', '.', 'b', 'd','{', 'f', ',','f','.','g','z',',','f','.','Z',',','f','.','b','z','2','}',  '\0' };
+static unichar_t wildpcf[] = { '*', '.', 'p', 'c','{', 'f', ',','f','.','g','z',',','f','.','Z',',','f','.','b','z','2','}',  '\0' };
 static unichar_t wildttf[] = { '*', '.', '{', 't', 't','f',',','o','t','f',',','t','t','c','}',  '\0' };
 static unichar_t wildpk[] = { '*', 'p', 'k',  '\0' };		/* pk fonts can have names like cmr10.300pk, not a normal extension */
 static unichar_t *wildchr[] = { wildimg, wildps, wildfig };
-static unichar_t *wildfnt[] = { wildbdf, wildttf, wildpk, wildimg, wildtemplate };
+static unichar_t *wildfnt[] = { wildbdf, wildttf, wildpk, wildpcf, wildimg, wildtemplate };
 
 static GTextInfo formats[] = {
     { (unichar_t *) _STR_Image, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
@@ -738,6 +739,7 @@ static GTextInfo fvformats[] = {
     { (unichar_t *) "BDF", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 1, 0, 1 },
     { (unichar_t *) "TTF", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "pk", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) "PCF", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) _STR_Image, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) _STR_Template, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }};
@@ -765,9 +767,11 @@ static int GFD_ImportOk(GGadget *g, GEvent *e) {
 		d->done = FVImportTTF(d->fv,temp,toback);
 	    else if ( format==2 )		/* pk */
 		d->done = FVImportBDF(d->fv,temp,true, toback);
-	    else if ( format==3 )
-		d->done = FVImportImages(d->fv,temp);
+	    else if ( format==3 )		/* pcf */
+		d->done = FVImportBDF(d->fv,temp,2, toback);
 	    else if ( format==4 )
+		d->done = FVImportImages(d->fv,temp);
+	    else if ( format==5 )
 		d->done = FVImportImageTemplate(d->fv,temp);
 	} else if ( d->bc!=NULL )
 	    d->done = BCImportImage(d->bc,temp);
@@ -802,7 +806,7 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 	GFileChooserSetFilterText(d->gfc,d->fv==NULL?wildchr[format]:wildfnt[format]);
 	GFileChooserRefreshList(d->gfc);
 	if ( d->fv!=NULL ) {
-	    if ( format==0 || format==1 ) {/* bdf, TTF */
+	    if ( format==0 || format==1 || format==3 ) {/* bdf, TTF, pcf */
 		GGadgetSetChecked(d->background,false);
 		GGadgetSetEnabled(d->background,true);
 	    } else if ( format==2 ) {	/* pk */
