@@ -147,7 +147,7 @@ static int figureProperEncoding(SplineFont *sf,BDFFont *b, int enc,char *name,
     if ( strcmp(name,".notdef")==0 ) {
 	if ( enc<32 || (enc>=127 && enc<0xa0)) i=enc;
 	else if ( sf->encoding_name==em_none ) i = enc;
-	else if ( sf->onlybitmaps && sf->bitmaps==b && b->next==NULL ) i = enc;
+	else if ( sf->onlybitmaps && ((sf->bitmaps==b && b->next==NULL) || sf->bitmaps==NULL) ) i = enc;
 	if ( i>=sf->charcnt ) i = -1;
 	if ( i!=-1 && (sf->chars[i]==NULL || strcmp(sf->chars[i]->name,name)!=0 )) {
 	    MakeEncChar(sf,enc,name);
@@ -174,7 +174,8 @@ static int figureProperEncoding(SplineFont *sf,BDFFont *b, int enc,char *name,
 	    if ( i!=-1 )
 		SFMakeChar(sf,i);
 	}
-	if ( sf->onlybitmaps && sf->bitmaps==b && b->next==NULL && i!=-1 &&
+	if ( sf->onlybitmaps && i!=-1 &&
+		((sf->bitmaps==b && b->next==NULL) || sf->bitmaps==NULL) &&
 		i!=enc && enc!=-1 && (enc>=b->charcnt || b->chars[enc]==NULL)) {
 	    i = -1;
 	    if ( !sf->dupnamewarn ) {
@@ -183,11 +184,13 @@ static int figureProperEncoding(SplineFont *sf,BDFFont *b, int enc,char *name,
 		sf->dupnamewarn = true;
 	    }
 	}
-	if ( i==-1 && sf->onlybitmaps && sf->bitmaps==b && b->next==NULL && enc!=-1 ) {
+	if ( i==-1 && sf->onlybitmaps && enc!=-1 &&
+		((sf->bitmaps==b && b->next==NULL) || sf->bitmaps==NULL) ) {
 	    MakeEncChar(sf,enc,name);
 	    i = enc;
 	}
-	if ( i!=-1 && sf->onlybitmaps && sf->bitmaps==b && b->next==NULL && swidth!=-1 ) {
+	if ( i!=-1 && sf->onlybitmaps && swidth!=-1 &&
+		((sf->bitmaps==b && b->next==NULL) || sf->bitmaps==NULL) ) {
 	    sf->chars[i]->width = swidth;
 	    sf->chars[i]->widthset = true;
 	    if ( swidth1!=-1 )
@@ -201,7 +204,8 @@ static int figureProperEncoding(SplineFont *sf,BDFFont *b, int enc,char *name,
 		sf->chars[i]->vwidth = swidth1;
 	}
     }
-    if ( i==-1 && sf->onlybitmaps && sf->bitmaps==b && b->next==NULL ) {
+    if ( i==-1 && sf->onlybitmaps &&
+	    ((sf->bitmaps==b && b->next==NULL ) || sf->bitmaps==NULL) ) {
 	/* try adding it to the end of the font */
 	if ( enc>=sf->charcnt ) i=enc;
 	else i = sf->charcnt;
@@ -209,7 +213,8 @@ static int figureProperEncoding(SplineFont *sf,BDFFont *b, int enc,char *name,
     }
     if ( i==-1 )	/* Can't guess the proper encoding, ignore it */
 return(-1);
-    if ( i!=enc && enc!=-1 && sf->onlybitmaps && sf->bitmaps==b && b->next==NULL && sf->chars[enc]!=NULL ) {
+    if ( i!=enc && enc!=-1 && sf->onlybitmaps && sf->chars[enc]!=NULL &&
+	    ((sf->bitmaps==b && b->next==NULL) || sf->bitmaps==NULL) ) {
 	free(sf->chars[enc]->name);
 	sf->chars[enc]->name = copy( ".notdef" );
 	sf->chars[enc]->unicodeenc = -1;
@@ -561,7 +566,7 @@ static BDFChar *SFGrowTo(SplineFont *sf,BDFFont *b, int cc) {
     }
     if ( sf->chars[cc]==NULL )
 	SFMakeChar(sf,cc);
-    if ( sf->onlybitmaps && sf->bitmaps==b && b->next==NULL ) {
+    if ( sf->onlybitmaps && ((sf->bitmaps==b && b->next==NULL) || sf->bitmaps==NULL) ) {
 	free(sf->chars[cc]->name);
 	sprintf( buf, "enc-%d", cc);
 	sf->chars[cc]->name = copy( buf );
