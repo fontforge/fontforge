@@ -312,7 +312,7 @@ return( preverrs );
 
 static void dodiff( SplineFont *sf1, SplineFont *sf2, int checkhints,
 	char *outfilename ) {
-    int i, any, adiff=0, extras;
+    int i, any, adiff=0, extras, oldcnt;
     SplineChar *sc, *sc1;
 
     if ( sf1->encoding_name != sf2->encoding_name ) {
@@ -368,15 +368,16 @@ static void dodiff( SplineFont *sf1, SplineFont *sf2, int checkhints,
 
     if ( adiff!=0 && outfilename!=NULL ) {
 	if ( extras!=0 ) {
+	    oldcnt = sf1->charcnt;
 	    sf1->charcnt += extras;
 	    sf1->chars = grealloc(sf1->chars,sf1->charcnt*sizeof(SplineChar *));
-	    for ( i=sf1->charcnt-extras; i<sf1->charcnt; ++i )
+	    for ( i=oldcnt; i<sf1->charcnt; ++i )
 		sf1->chars[i] = NULL;
-	    extras = sf1->charcnt-extras;
+	    extras = oldcnt;
 	    for ( i=0; i<sf2->charcnt; ++i ) if ( sf2->chars[i]!=NULL ) {
 		sc = FindName(sf1,sf2->chars[i]->name,i);
 		if ( sc==NULL ) {
-		    if ( i<sf1->charcnt && sf1->chars[i]==NULL &&
+		    if ( i<oldcnt && sf1->chars[i]==NULL &&
 			    sf1->encoding_name == sf2->encoding_name ) {
 			sf1->chars[i] = sf2->chars[i];
 			sf1->chars[i]->parent = sf1;
