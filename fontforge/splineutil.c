@@ -2205,7 +2205,7 @@ void SCReinstanciateRefChar(SplineChar *sc,RefChar *rf) {
     real extra=0,e;
 
     for ( i=0; i<rf->layer_cnt; ++i )
-	SplinePointListsFree(rf->layers[0].splines);
+	SplinePointListsFree(rf->layers[i].splines);
     free( rf->layers );
     rf->layers = NULL;
     rf->layer_cnt = 0;

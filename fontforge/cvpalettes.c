@@ -1235,7 +1235,7 @@ void SCMoreLayers(SplineChar *sc) { /* We've added more layers */
     if ( cvtools==NULL  || !sc->parent->multilayer )
 return;
     curcv = GDrawGetUserData(cvtools);
-    if ( curcv->sc!=sc )
+    if ( curcv==NULL || curcv->sc!=sc )
 return;
     CVLayers2Set(curcv);
 }
@@ -1245,7 +1245,7 @@ void SCLayersChange(SplineChar *sc) { /* many of the foreground layers need to b
     if ( cvtools==NULL || !sc->parent->multilayer )
 return;
     curcv = GDrawGetUserData(cvtools);
-    if ( curcv->sc!=sc )
+    if ( curcv==NULL || curcv->sc!=sc )
 return;
     CVLayers2Set(curcv);
 }

@@ -646,7 +646,8 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc) {
     if ( sc->layers[ly_back].splines!=NULL ) {
 	fprintf(sfd, "Back\n" );
 	SFDDumpSplineSet(sfd,sc->layers[ly_back].splines);
-    }
+    } else if ( sc->layers[ly_back].images!=NULL )
+	fprintf(sfd, "Back\n" );
     for ( img=sc->layers[ly_back].images; img!=NULL; img=img->next )
 	SFDDumpImage(sfd,img);
 #ifdef FONTFORGE_CONFIG_TYPE3
