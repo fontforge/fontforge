@@ -324,6 +324,7 @@ static SplineSet *SplineSetsFromPoints(TT_GlyphZoneRec *pts, real scale) {
 		    cur->last->nextcp.x = sp->prevcp.x = pts->cur[i-1].x*scale;
 		    cur->last->nextcp.y = sp->prevcp.y = pts->cur[i-1].y*scale;
 		    cur->last->nonextcp = false;
+		    cur->last->nextcpindex = i-1;
 		    sp->noprevcp = false;
 		}
 		last_off = false;
@@ -337,6 +338,7 @@ static SplineSet *SplineSetsFromPoints(TT_GlyphZoneRec *pts, real scale) {
 		    cur->last->nextcp.x = sp->prevcp.x = pts->cur[i-1].x * scale;
 		    cur->last->nextcp.y = sp->prevcp.y = pts->cur[i-1].y * scale;
 		    cur->last->nonextcp = false;
+		    cur->last->nextcpindex = i-1;
 		}
 		/* last_off continues to be true */
 	    } else {
