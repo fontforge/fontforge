@@ -1214,9 +1214,9 @@ static unichar_t *AskSetting(struct macsettingname *temp,GGadget *list, int inde
     GGadgetsCreate(gw,gcd);
     sd.feature = gcd[1].ret;
     sd.set_code = gcd[3].ret;
-    sd.otf = gcd[13].ret;
-    sd.ok = gcd[14].ret;
-    sd.cancel = gcd[15].ret;
+    sd.otf = gcd[5].ret;
+    sd.ok = gcd[6].ret;
+    sd.cancel = gcd[7].ret;
 
     ti = GGadgetGetList(flist,&len);
     GGadgetSetList(sd.feature,ti,true);
@@ -1265,7 +1265,7 @@ static int Pref_NewMapping(GGadget *g, GEvent *e) {
 	if ( (str=AskSetting(&temp,list,-1,flist))==NULL )
 return( true );
 	GListAddStr(list,str,NULL);
-	free(str);
+	/*free(str);*/
     }
 return( true );
 }
