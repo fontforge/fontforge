@@ -241,7 +241,7 @@ static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
     TT_ExecContext exc = DebuggerGetEContext(dv->dc);
     char buffer[100];
     unichar_t ubuffer[100];
-    int i, l, y;
+    int i, l, y, c;
     FT_Vector *pts;
     int n, n_watch;
     char watched;
@@ -258,14 +258,23 @@ static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 	r = show_twilight ? &exc->twilight : &exc->pts;
 	n = r->n_points;
 	pts = show_current ? r->cur : r->org;
+	c = 0;
 
 	watches = DebuggerGetWatches(dv->dc,&n_watch);
 
 	GDrawSetFont(pixmap,dv->ii.gfont);
 	y = 3+dv->ii.as-dv->points_offtop*dv->ii.fh;
 	for ( i=0; i<n; ++i ) {
-	    if ( i==0 ) l=n-1; else l=i-1;
-	    if ( !(r->tags[i]&FT_Curve_Tag_On) && !(r->tags[l]&FT_Curve_Tag_On)) {
+	    if ( i==r->contours[c] ) {
+		++c;
+		if ( y>0 )
+		    GDrawDrawLine(pixmap,0,y+dv->ii.fh-dv->ii.as,
+			    event->u.expose.rect.x+event->u.expose.rect.width,y+dv->ii.fh-dv->ii.as,
+			    0x000000);
+	    }
+	    if ( i==0 ) l=n-5; else l=i-1;
+	    if ( !show_twilight && i<n-4 &&
+		    !(r->tags[i]&FT_Curve_Tag_On) && !(r->tags[l]&FT_Curve_Tag_On)) {
 		if ( show_grid )
 		    sprintf(buffer, "   : I    %.2f,%.2f",
 			    (pts[i].x+pts[l].x)/128.0, (pts[i].y+pts[l].y)/128.0 );
@@ -280,7 +289,8 @@ static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 	    watched = i<n_watch && !show_twilight && watches!=NULL && watches[i] ? 'W' : ' ';
 	    if ( show_grid )
 		sprintf(buffer, "%3d: %c%c%c%c %.2f,%.2f", i,
-			r->tags[i]&FT_Curve_Tag_On?'P':'C', r->tags[i]&FT_Curve_Tag_Touch_X?'H':' ', r->tags[i]&FT_Curve_Tag_Touch_Y?'V':' ', watched,
+			show_twilight ? 'T' : i>=n-4? 'F' : r->tags[i]&FT_Curve_Tag_On?'P':'C',
+			r->tags[i]&FT_Curve_Tag_Touch_X?'H':' ', r->tags[i]&FT_Curve_Tag_Touch_Y?'V':' ', watched,
 			pts[i].x/64.0, pts[i].y/64.0 );
 	    else
 		sprintf(buffer, "%3d: %c%c%c%c %g,%g", i,
@@ -792,8 +802,9 @@ static int dvpts_cnt(DebugView *dv) {
 
     cnt = 0;
     for ( i=0; i<n; ++i ) {
-	if ( i==0 ) l=n-1; else l=i-1;
-	if ( !(r->tags[i]&FT_Curve_Tag_On) && !(r->tags[l]&FT_Curve_Tag_On))
+	if ( i==0 ) l=n-5; else l=i-1;
+	if ( !show_twilight && i<n-4 &&
+		!(r->tags[i]&FT_Curve_Tag_On) && !(r->tags[l]&FT_Curve_Tag_On))
 	    ++cnt;
 	++cnt;
     }
