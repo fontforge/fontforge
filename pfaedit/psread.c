@@ -312,7 +312,7 @@ return( pt_unknown );
 
 static void Transform(BasePoint *to, BasePoint *from, real trans[6]) {
     to->x = trans[0]*from->x+trans[2]*from->y+trans[4];
-    to->y = trans[1]*from->y+trans[3]*from->y+trans[5];
+    to->y = trans[1]*from->x+trans[3]*from->y+trans[5];
 }
 
 void MatMultiply(real m1[6], real m2[6], real to[6]) {
@@ -728,8 +728,13 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
     SplinePoint *pt;
     RefChar *ref, *lastref=NULL;
     real transform[6], t[6];
-    real transstack[30][6];
-    int tsp = 0;
+    struct graphicsstate {
+	real transform[6];
+	BasePoint current;
+	real linewidth;
+	int linecap, linejoin;
+    } gsaves[30];
+    int gsp = 0;
     int ccnt=0;
     char tokbuf[100];
     IO wrapper;
@@ -1346,7 +1351,8 @@ printf( "-%s-\n", toknames[tok]);
 		sp -= 5;
 		temp.x = cx+r*cos(a1/180 * 3.1415926535897932);
 		temp.y = cy+r*sin(a1/180 * 3.1415926535897932);
-		if ( temp.x!=current.x || temp.y!=current.y ) {
+		if ( temp.x!=current.x || temp.y!=current.y ||
+			!( cur!=NULL && cur->first!=NULL && (cur->first!=cur->last || cur->first->next==NULL) )) {
 		    pt = chunkalloc(sizeof(SplinePoint));
 		    Transform(&pt->me,&temp,transform);
 		    pt->noprevcp = true; pt->nonextcp = true;
@@ -1641,23 +1647,32 @@ printf( "-%s-\n", toknames[tok]);
 		stack[sp].type = ps_num;
 		stack[sp++].u.val = 0;
 	    }
-	    if ( tsp<30 )
-		memcpy(transstack[tsp++],transform,sizeof(transform));
+	  /* Fall through into gsave */;
+	  case pt_gsave:
+	    if ( gsp<30 ) {
+		memcpy(gsaves[gsp].transform,transform,sizeof(transform));
+		gsaves[gsp].current = current;
+		gsaves[gsp].linewidth = linewidth;
+		gsaves[gsp].linecap = linecap;
+		gsaves[gsp].linejoin = linejoin;
+		++gsp;
+		/* I should be saving the "current path" too, but that's too hard */
+	    }
 	  break;
 	  case pt_restore: case pt_setmatrix:
 	    /* pop some junk off the stack */
 	    if ( sp>=1 )
 		--sp;
-	    if ( tsp>0 )
-		memcpy(transform,transstack[--tsp],sizeof(transform));
-	  break;
-	  case pt_gsave:
-	    if ( tsp<30 )
-		memcpy(transstack[tsp++],transform,sizeof(transform));
-	  break;
+	  /* Fall through into grestore */;
 	  case pt_grestore:
-	    if ( tsp>0 )
-		memcpy(transform,transstack[--tsp],sizeof(transform));
+	    if ( gsp>0 ) {
+		--gsp;
+		memcpy(transform,gsaves[gsp].transform,sizeof(transform));
+		current = gsaves[gsp].current;
+		linewidth = gsaves[gsp].linewidth;
+		linecap = gsaves[gsp].linecap;
+		linejoin = gsaves[gsp].linejoin;
+	    }
 	  break;
 	  case pt_setmiterlimit:
 	    /* pop some junk off the stack */
