@@ -3325,7 +3325,13 @@ static void FVChar(FontView *fv,GEvent *event) {
 	    event->u.chr.keysym == GK_Home ||
 	    event->u.chr.keysym == GK_KP_Home ||
 	    event->u.chr.keysym == GK_End ||
-	    event->u.chr.keysym == GK_KP_End ) {
+	    event->u.chr.keysym == GK_KP_End ||
+	    event->u.chr.keysym == GK_Page_Up ||
+	    event->u.chr.keysym == GK_KP_Page_Up ||
+	    event->u.chr.keysym == GK_Prior ||
+	    event->u.chr.keysym == GK_Page_Down ||
+	    event->u.chr.keysym == GK_KP_Page_Down ||
+	    event->u.chr.keysym == GK_Next ) {
 	switch ( event->u.chr.keysym ) {
 	  case GK_Tab:
 	    pos = fv->end_pos;
@@ -3375,6 +3381,18 @@ static void FVChar(FontView *fv,GEvent *event) {
 		     pos = i;
 	     break;
 		 }
+	  break;
+	  case GK_Page_Up: case GK_KP_Page_Up:
+#if GK_Prior!=GK_Page_Up
+	  case GK_Prior:
+#endif
+	    pos = (fv->rowoff-fv->rowcnt+1)*fv->colcnt;
+	  break;
+	  case GK_Page_Down: case GK_KP_Page_Down:
+#if GK_Next!=GK_Page_Down
+	  case GK_Next:
+#endif
+	    pos = (fv->rowoff+fv->rowcnt+1)*fv->colcnt;
 	  break;
 	}
 	if ( pos<0 ) pos = 0;
