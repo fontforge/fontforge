@@ -263,9 +263,27 @@ static void dumprandom(FILE *output,FILE *header) {
 }
 #endif
 
+#define VERTMARK 0x1000000
+
+static int ucs2_score(int val) {		/* Supplied by KANOU Hiroki */
+    if ( val>=0x2e80 && val<=0x2fff )
+return( 1 );				/* New CJK Radicals are least important */
+    else if ( val>=VERTMARK )
+return( 0 );				/* Then vertical guys */
+			    /* only we can't handle vertical here */
+    else if ( val>=0xf000 && val<=0xffff )
+return( 3 );
+/*    else if (( val>=0x3400 && val<0x3dff ) || (val>=0x4000 && val<=0x4dff))*/
+    else if ( val>=0x3400 && val<=0x4dff )
+return( 4 );
+    else
+return( 5 );
+}
+
 static int getnth(char *buffer, int col) {
-    int i, val=0;
+    int i, val=0, best;
     char *end;
+    int vals[10];
 
     if ( col==1 ) {
 	/* first column is decimal, others are hex */
@@ -284,7 +302,34 @@ return( -1 );
     val = strtol(buffer,&end,16);
     if ( end==buffer )
 return( -1 );
-    if ( *end=='v' )
+    if ( *end=='v' ) {
+	val += VERTMARK;
+	++end;
+    }
+    if ( *end==',' ) {
+	/* Multiple guess... now we've got to pick one */
+	vals[0] = val;
+	i = 1;
+	while ( *end==',' && i<9 ) {
+	    buffer = end+1;
+	    vals[i] = strtol(buffer,&end,16);
+	    if ( *end=='v' ) {
+		vals[i] += VERTMARK;
+		++end;
+	    }
+	    ++i;
+	}
+	vals[i] = 0;
+	best = 0; val = -1;
+	for ( i=0; vals[i]!=0; ++i ) {
+	    if ( ucs2_score(vals[i])>best ) {
+		val = vals[i];
+		best = ucs2_score(vals[i]);
+	    }
+	}
+    }
+
+    if ( val >= VERTMARK )
 return( -1 );
 
 return( val );
