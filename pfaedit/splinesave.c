@@ -1416,7 +1416,7 @@ return(cnt);
 		round,iscjk,subrs,NULL);
 	++cnt;
     }
-    if ( psunicodenames[c1]!=NULL ) {
+    if ( psunicodenames[c1]!=NULL ) {	/* one of them will have a real name */
 	sprintf(uname,"uni%04X", c1);
 	i = i1==-1?i2:i1;		/* Use i1 if possible */
     } else if ( psunicodenames[c2]!=NULL ) {

@@ -485,6 +485,7 @@ struct bitmapSizeTable {
     uint8 bitdepth;
     int8 flags;
     struct bitmapSizeTable *next;
+    unsigned int error: 1;
 };
 struct indexarray {
     uint16 first;
@@ -651,7 +652,8 @@ static struct bitmapSizeTable *ttfdumpstrikelocs(FILE *bloc,FILE *bdat,BDFFont *
     }
 
     /* copy the index file and close it (and delete it) */
-    ttfcopyfile(bloc,subtables,pos+startofsubtables);
+    if ( !ttfcopyfile(bloc,subtables,pos+startofsubtables))
+	size->error = true;
 
     size->tablesize = ftell(bloc)-pos;
 
@@ -712,6 +714,7 @@ void ttfdumpbitmap(SplineFont *sf,struct alltabs *at,real *sizes) {
 	else
 	    last->next = cur;
 	last = cur;
+	if ( cur->error ) at->error = true;
     }
 
     fseek(at->bloc,2*sizeof(int32),SEEK_SET);

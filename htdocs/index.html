@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 31-Oct-2001 -->
+  <!-- AP: Last modified: 2-Nov-2001 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -66,14 +66,14 @@ know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-011031.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 31-Oct-2001
+    <A HREF="pfaedit-011102.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 2-Nov-2001
   <LI>
     <A HREF="pfaedit-solaris-010901.tgz">Download pfaedit Solaris 8.0
     </A>executable Version: 1-Sept-2001
   <LI>
-    <A HREF="pfaedit-010906-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
-    Version: 5-Sept-2001
+    <A HREF="pfaedit-011102-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
+    Version: 2-Nov-2001
   <LI>
     <A HREF="pfaedit-010925-1.ppc.rpm">Download pfaedit linux-ppc suse 7.1
     </A>binary rpm Version: 25-Sept-2001
@@ -99,9 +99,9 @@ If you want to edit CID keyed fonts you need these
   <A NAME="source">Source</A> distribution
 </H2>
 <P>
-You can download a <A HREF="pfaedit-010906-1.src.rpm">source RPM</A>: Version:
-5-Sept-2001<BR>
-Or you can download the following three packages. Version: 31-Oct-2001
+You can download a <A HREF="pfaedit-011102-1.src.rpm">source RPM</A>: Version:
+2-Nov-2001<BR>
+Or you can download the following three packages. Version: 2-Nov-2001
 <UL>
   <LI>
     <A HREF="libgunicode-011011.tgz">Unicode library source</A> (11-Oct-2001)<BR>
@@ -113,10 +113,10 @@ Or you can download the following three packages. Version: 31-Oct-2001
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
   <LI>
-    <A HREF="pfaedit_src-011031.tgz">Pfaedit source</A> (31-Oct-2001)<BR>
+    <A HREF="pfaedit_src-011102.tgz">Pfaedit source</A> (2-Nov-2001)<BR>
     -- <A HREF="overview.html">docs</A>
   <LI>
-    <A HREF="pfaedit_full-011031.tgz">All three bundled together </A>(31-Oct-2001)
+    <A HREF="pfaedit_full-011102.tgz">All three bundled together </A>(2-Nov-2001)
 </UL>
 <P>
 If you want to do autotracing around character images you should also download
@@ -226,6 +226,24 @@ up into one <A HREF="pfaedit_htdocs-010925.tgz">tgz file</A> 25-Sept-2001.
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    2-Nov-2001
+    <UL>
+      <LI>
+	PfaEdit would not notice certain disk errors when generating truetype fonts.
+	It should do better now.
+      <LI>
+	PfaEdit could crash when generating postscript from a unicode font that did
+	not contain all the greek letters.
+      <LI>
+	Fixed a display bug in the metrics view.
+      <LI>
+	PfaEdit should not be able to read in an opentype GPOS table and extract
+	kerning information from it.
+      <LI>
+	PfaEdit will now put kerning info into the GPOS table when saving an opentype
+	font. TrueType fonts will still put kerning info into the kern table.
+    </UL>
   <LI>
     31-Oct-2001
     <UL>
@@ -489,10 +507,14 @@ prepared to save frequently and always work on a copy of the original.
     When reading in TrueType PfaEdit will not get the correct offset for composit
     glyphs where offsets are specified by point matching rather than as x,y values.
   <LI>
-    OpenType fonts appear to store kerning data in the GPOS table rather than
-    in the kern table. PfaEdit doesn't (yet) support the GPOS table, it will
-    not read it in, and it will output a kern table if asked to save an otf font
-    with kerning info.
+    PfaEdit's support for the GPOS table output is limitted. Currently it only
+    recognizes latin,cyrillic,greek,arabic and hebrew scripts. It assumes everything
+    it doesn't recognize is latin. It makes at most two lookup tables for kerning
+    one for left to right scripts, one for right to left scripts. If you want
+    to work with a different script let me know, and let me know something about
+    it. It should be easy enough to add (I hope). Furthermore I don't know what
+    to do about digits which appear in arabic/hebrew in l2r ordering, so I shall
+    give the r2l scripts access to both lookups.
   <LI>
     My rasterizer will never be as good as adobe's.
   <LI>

@@ -772,7 +772,7 @@ static void MVScroll(MetricsView *mv,struct sbevent *sb) {
 
 static void MVTextChanged(MetricsView *mv) {
     const unichar_t *ret, *pt, *ept, *tpt;
-    int i,ei, j;
+    int i,ei, j,oldx;
     static unichar_t nullstr[] = { 0 };
     GRect r;
     int missing;
@@ -798,6 +798,9 @@ return;					/* Nothing changed */
 	} else if ( ei<=i || ept<=pt )
     break;
     /* the change happened between i and ei, and between pt and ept */
+    oldx = mv->perchar[i].dx;
+    if ( i!=0 && oldx > mv->perchar[i-1].dx + mv->perchar[i-1].dwidth ) /* without kern */
+	oldx = mv->perchar[i-1].dx + mv->perchar[i-1].dwidth;
     /* *pt!=perchar[i].sc->unicodeenc && ept[-1]!=perchar[ei-1].unicodeenc*/
     if ( ei==i && ept==pt )
 	GDrawIError("No change when there should have been one in MV_TextChanged");
@@ -843,6 +846,7 @@ return;					/* Nothing changed */
     r.x = mv->perchar[i].dx;
     if ( i!=0 && r.x > mv->perchar[i-1].dx + mv->perchar[i-1].dwidth ) /* without kern */
 	r.x = mv->perchar[i-1].dx + mv->perchar[i-1].dwidth;
+    if ( r.x>oldx ) r.x = oldx;
     r.width = mv->width;
     if ( direction_change || mv->right_to_left )
 	r.x = 0;

@@ -697,6 +697,6 @@ real get2dot14(FILE *ttf);
 void putshort(FILE *file,int sval);
 void putlong(FILE *file,int val);
 void putfixed(FILE *file,real dval);
-void ttfcopyfile(FILE *ttf, FILE *other, int pos);
+int ttfcopyfile(FILE *ttf, FILE *other, int pos);
 #endif
 

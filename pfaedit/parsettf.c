@@ -300,6 +300,9 @@ return( 0 );			/* Not version 1 of true type, nor Open Type */
 	  case CHR('g','l','y','f'):
 	    info->glyph_start = offset;
 	  break;
+	  case CHR('G','P','O','S'):
+	    info->gpos_start = offset;
+	  break;
 	  case CHR('G','S','U','B'):
 	    info->gsub_start = offset;
 	  break;
@@ -2652,7 +2655,7 @@ static void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 
 static uint16 *getCoverageTable(FILE *ttf, int coverage_offset) {
     int format, cnt, i,j;
-    uint16 *glyphs;
+    uint16 *glyphs=NULL;
     int start, end, ind, max;
 
     fseek(ttf,coverage_offset,SEEK_SET);
@@ -2680,6 +2683,82 @@ static uint16 *getCoverageTable(FILE *ttf, int coverage_offset) {
 return( glyphs );
 }
 
+struct valuerecord {
+    int16 xplacement, yplacement;
+    int16 xadvance, yadvance;
+    uint16 offXplaceDev, offYplaceDev;
+    uint16 offXadvanceDev, offYadvanceDev;
+};
+
+static void readvaluerecord(struct valuerecord *vr,int vf,FILE *ttf) {
+    memset(vr,'\0',sizeof(struct valuerecord));
+    if ( vf&1 )
+	vr->xplacement = getushort(ttf);
+    if ( vf&2 )
+	vr->yplacement = getushort(ttf);
+    if ( vf&4 )
+	vr->xadvance = getushort(ttf);
+    if ( vf&8 )
+	vr->yadvance = getushort(ttf);
+    if ( vf&0x10 )
+	vr->offXplaceDev = getushort(ttf);
+    if ( vf&0x20 )
+	vr->offYplaceDev = getushort(ttf);
+    if ( vf&0x40 )
+	vr->offXadvanceDev = getushort(ttf);
+    if ( vf&0x80 )
+	vr->offYadvanceDev = getushort(ttf);
+}
+
+static void gposKernSubTable(FILE *ttf, int which, int stoffset,struct ttfinfo *info) {
+    int coverage, cnt, i, j, pair_cnt, vf1, vf2, glyph2;
+    uint16 *ps_offsets;
+    uint16 *glyphs;
+    struct valuerecord vr1, vr2;
+    KernPair *kp;
+
+    if ( getushort(ttf)!=1 ) {
+	/* I don't support class based kerning (subformat=2) */
+return;
+    }
+    coverage = getushort(ttf);
+    vf1 = getushort(ttf);
+    if ( vf1&0xffbb)	/* Not interested in things that deal with y advance/placement nor with x placement */
+return;
+    vf2 = getushort(ttf);
+    if ( vf2&0xffaa)	/* Not interested in things that deal with y advance/placement */
+return;
+    cnt = getushort(ttf);
+    ps_offsets = galloc(cnt*sizeof(uint16));
+    for ( i=0; i<cnt; ++i )
+	ps_offsets[i]=getushort(ttf);
+    glyphs = getCoverageTable(ttf,stoffset+coverage);
+    if ( glyphs==NULL )
+return;
+    for ( i=0; i<cnt; ++i ) {
+	fseek(ttf,stoffset+ps_offsets[i],SEEK_SET);
+	pair_cnt = getushort(ttf);
+	for ( j=0; j<pair_cnt; ++j ) {
+	    glyph2 = getushort(ttf);
+	    readvaluerecord(&vr1,vf1,ttf);
+	    readvaluerecord(&vr2,vf2,ttf);
+	    if ( glyphs[i]<info->glyph_cnt && glyph2<info->glyph_cnt ) {
+		for ( kp=info->chars[glyphs[i]]->kerns; kp!=NULL; kp=kp->next )
+		    if ( kp->sc == info->chars[glyph2] )
+		break;
+		if ( kp==NULL ) {
+		    kp = gcalloc(1,sizeof(KernPair));
+		    kp->sc = info->chars[glyph2];
+		    kp->off = vr1.xadvance+vr2.xplacement;
+		    kp->next = info->chars[glyphs[i]]->kerns;
+		    info->chars[glyphs[i]]->kerns = kp;
+		}
+	    }
+	}
+    }
+    free(ps_offsets); free(glyphs);
+}
+
 static void gsubLigatureSubTable(FILE *ttf, int which, int stoffset,struct ttfinfo *info) {
     int coverage, cnt, i, j, k, lig_cnt, cc, len;
     uint16 *ls_offsets, *lig_offsets;
@@ -2693,6 +2772,8 @@ static void gsubLigatureSubTable(FILE *ttf, int which, int stoffset,struct ttfin
     for ( i=0; i<cnt; ++i )
 	ls_offsets[i]=getushort(ttf);
     glyphs = getCoverageTable(ttf,stoffset+coverage);
+    if ( glyphs==NULL )
+return;
     for ( i=0; i<cnt; ++i ) {
 	fseek(ttf,stoffset+ls_offsets[i],SEEK_SET);
 	lig_cnt = getushort(ttf);
@@ -2731,23 +2812,94 @@ static void gsubLigatureSubTable(FILE *ttf, int which, int stoffset,struct ttfin
     free(ls_offsets); free(glyphs);
 }
 
-static void readttfgsub(FILE *ttf,struct ttfinfo *info) {
-    int i, lu_cnt, lu_type, flags, cnt, j, st;
-    uint16 *lu_offsets, *st_offsets;
-    long lookup_start;
+static int *readttffeatures(FILE *ttf,int32 pos,int tag) {
+    /* read the features table returning an array containing all features */
+    /*  lookup indeces which match the feature tag */
+    int cnt, next, lcnt;
+    int i,j,k,max;
+    int32 here = ftell(ttf);
+    int *lookups, *ft_offsets;
 
-    fseek(ttf,info->gsub_start,SEEK_SET);
+    fseek(ttf,pos,SEEK_SET);
+    cnt = getushort(ttf);
+    if ( cnt<=0 ) {
+	fseek(ttf,here,SEEK_SET);
+return( NULL );
+    }
+    ft_offsets = galloc(cnt*sizeof(int));
+    for ( i=j=0; i<cnt; ++i ) {
+	int ftag = getlong(ttf);
+	int offset = getushort(ttf);
+	if ( ftag==tag )
+	    ft_offsets[j++] = offset;
+    }
+    cnt = j;
+    if ( cnt==0 ) {
+	fseek(ttf,here,SEEK_SET);
+	free(ft_offsets);
+return( NULL );
+    }
+
+    max = cnt;
+    lookups = galloc((cnt+1)*sizeof(int));
+    next = 0;
+    for ( i=0; i<cnt; ++i ) {
+	fseek(ttf,pos+ft_offsets[i],SEEK_SET);
+	/* feature parameters = */ getushort(ttf);
+	lcnt = getushort(ttf);
+	if ( next+lcnt>cnt ) {
+	    max = next+lcnt+(cnt-i)*2;
+	    lookups = grealloc(lookups,(max+1)*sizeof(int));
+	}
+	for ( j=0; j<lcnt; ++j )
+	    lookups[next++] = getushort(ttf);
+    }
+
+    free( ft_offsets );
+    fseek(ttf,here,SEEK_SET);
+    if ( next==0 ) {
+	free(lookups);
+return( NULL );
+    }
+
+    /* The same lookup may appear in several features, so remove duplicates */
+    for ( i=0; i<next; ++i ) {
+	for ( j=i+1; j<next; ++j ) {
+	    while ( j<next && lookups[i]==lookups[j] ) {
+		--next;
+		for ( k=j; k<next; ++k )
+		    lookups[k] = lookups[k+1];
+	    }
+	}
+    }
+    lookups[next] = -1;
+return( lookups );
+}
+
+static void readttfgpossub(FILE *ttf,struct ttfinfo *info,int gpos) {
+    int i, j, k, lu_cnt, lu_type, flags, cnt, st;
+    uint16 *lu_offsets, *st_offsets;
+    int32 base, lookup_start;
+    int *lookups;
+
+    base = gpos?info->gpos_start:info->gsub_start;
+    fseek(ttf,base,SEEK_SET);
     /* version = */ getlong(ttf);
     /* Script list offset = */ getushort(ttf);
-    /* Feature list offset = */ getushort(ttf);
-    lookup_start = info->gsub_start+getushort(ttf);
+    lookups = readttffeatures(ttf,base+getushort(ttf),gpos?CHR('k','e','r','n'):CHR('l','i','g','a'));
+    if ( lookups==NULL )		/* None of the data we care about */
+return;
+    lookup_start = base+getushort(ttf);
     fseek(ttf,lookup_start,SEEK_SET);
 
     lu_cnt = getushort(ttf);
     lu_offsets = galloc(lu_cnt*sizeof(uint16));
     for ( i=0; i<lu_cnt; ++i )
 	lu_offsets[i] = getushort(ttf);
-    for ( i=0; i<lu_cnt; ++i ) {
+    for ( k=0; lookups[k]!=-1; ++k ) {
+	i = lookups[k];
+	if ( i>=lu_cnt )
+    continue;
 	fseek(ttf,lookup_start+lu_offsets[i],SEEK_SET);
 	lu_type = getushort(ttf);
 	flags = getushort(ttf);
@@ -2758,12 +2910,20 @@ static void readttfgsub(FILE *ttf,struct ttfinfo *info) {
 	for ( j=0; j<cnt; ++j ) {
 	    fseek(ttf,st = lookup_start+lu_offsets[i]+st_offsets[j],SEEK_SET);
 	    switch ( lu_type ) {
-	      case 4: gsubLigatureSubTable(ttf,j,st,info); break;
+	      case 2:
+		if ( gpos )
+		    gposKernSubTable(ttf,j,st,info);
+	      break;
+	      case 4:
+		if ( !gpos )
+		    gsubLigatureSubTable(ttf,j,st,info);
+	      break;
 	    }
 	}
 	free(st_offsets);
     }
     free(lu_offsets);
+    free(lookups);
 }
 
 static int ttfFixupRef(struct ttfinfo *info,int i) {
@@ -2851,8 +3011,10 @@ return( 0 );
 	readttfpostnames(ttf,info);
     if ( info->kern_start!=0 )
 	readttfkerns(ttf,info);
+    if ( info->gpos_start!=0 )		/* kerning info may live in the gpos table too */
+	readttfgpossub(ttf,info,true);
     if ( info->gsub_start!=0 )
-	readttfgsub(ttf,info);
+	readttfgpossub(ttf,info,false);
     else
 	for ( i=0; i<info->glyph_cnt; ++i )
 	    info->chars[i]->lig = SCLigDefault(info->chars[i]);

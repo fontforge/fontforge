@@ -428,6 +428,7 @@ Required for OpenType (Postscript)
 	CFF 		A complete postscript CFF font here with all its internal tables
 additional tables
 	kern		(if data are present)
+	GPOS		(opentype, if kern data are present)
 	cvt		for hinting
 */
 
@@ -838,15 +839,18 @@ void putfixed(FILE *file,real dval) {
     putlong(file,val);
 }
 
-void ttfcopyfile(FILE *ttf, FILE *other, int pos) {
+int ttfcopyfile(FILE *ttf, FILE *other, int pos) {
     int ch;
+    int ret = 1;
 
     if ( pos!=ftell(ttf))
 	GDrawIError("File Offset wrong for ttf table, %d expected %d", ftell(ttf), pos );
     rewind(other);
     while (( ch = getc(other))!=EOF )
 	putc(ch,ttf);
-    fclose(other);
+    if ( ferror(other)) ret = 0;
+    if ( fclose(other)) ret = 0;
+return( ret );
 }
 
 static int getcvtval(struct glyphinfo *gi,int val) {
@@ -2632,24 +2636,24 @@ static void finishup(SplineFont *sf,struct alltabs *at) {
     putshort(at->cfff,at->sidcnt-1);
     if ( at->sidcnt!=1 ) {		/* Everybody gets an added NULL */
 	putc(at->sidlongoffset?4:2,at->cfff);
-	ttfcopyfile(at->cfff,at->sidh,base);
-	ttfcopyfile(at->cfff,at->sidf,base+shlen);
+	if ( !ttfcopyfile(at->cfff,at->sidh,base)) at->error = true;
+	if ( !ttfcopyfile(at->cfff,at->sidf,base+shlen)) at->error = true;
     }
 
     /* Global Subrs */
     putshort(at->cfff,0);
 
     /* Charset */
-    ttfcopyfile(at->cfff,at->charset,base+strlen+glen);
+    if ( !ttfcopyfile(at->cfff,at->charset,base+strlen+glen)) at->error = true;
 
     /* Encoding */
-    ttfcopyfile(at->cfff,at->encoding,base+strlen+glen+csetlen);
+    if ( !ttfcopyfile(at->cfff,at->encoding,base+strlen+glen+csetlen)) at->error = true;
 
     /* Char Strings */
-    ttfcopyfile(at->cfff,at->charstrings,base+strlen+glen+csetlen+enclen);
+    if ( !ttfcopyfile(at->cfff,at->charstrings,base+strlen+glen+csetlen+enclen)) at->error = true;
 
     /* Private & Subrs */
-    ttfcopyfile(at->cfff,at->private,base+strlen+glen+csetlen+enclen+cstrlen);
+    if ( !ttfcopyfile(at->cfff,at->private,base+strlen+glen+csetlen+enclen+cstrlen)) at->error = true;
 }
 
 static void finishupcid(SplineFont *sf,struct alltabs *at) {
@@ -2693,31 +2697,31 @@ static void finishupcid(SplineFont *sf,struct alltabs *at) {
     putshort(at->cfff,at->sidcnt-1);
     if ( at->sidcnt!=1 ) {		/* Everybody gets an added NULL */
 	putc(at->sidlongoffset?4:2,at->cfff);
-	ttfcopyfile(at->cfff,at->sidh,base);
-	ttfcopyfile(at->cfff,at->sidf,base+shlen);
+	if ( !ttfcopyfile(at->cfff,at->sidh,base)) at->error = true;
+	if ( !ttfcopyfile(at->cfff,at->sidf,base+shlen)) at->error = true;
     }
 
     /* Global Subrs */
     putshort(at->cfff,0);
 
     /* Charset */
-    ttfcopyfile(at->cfff,at->charset,base+strlen+glen);
+    if ( !ttfcopyfile(at->cfff,at->charset,base+strlen+glen)) at->error = true;
 
     /* FDSelect */
-    ttfcopyfile(at->cfff,at->fdselect,base+strlen+glen+csetlen);
+    if ( !ttfcopyfile(at->cfff,at->fdselect,base+strlen+glen+csetlen)) at->error = true;
 
     /* Char Strings */
-    ttfcopyfile(at->cfff,at->charstrings,base+strlen+glen+csetlen+fdsellen);
+    if ( !ttfcopyfile(at->cfff,at->charstrings,base+strlen+glen+csetlen+fdsellen)) at->error = true;
 
     /* FDArray (DICT Index) */
-    ttfcopyfile(at->cfff,at->fdarray,base+strlen+glen+csetlen+fdsellen+cstrlen);
+    if ( !ttfcopyfile(at->cfff,at->fdarray,base+strlen+glen+csetlen+fdsellen+cstrlen)) at->error = true;
 
     /* Private & Subrs */
     prvlen = 0;
     for ( i=0; i<sf->subfontcnt; ++i ) {
 	int temp = ftell(at->fds[i].private);
-	ttfcopyfile(at->cfff,at->fds[i].private,
-		base+strlen+glen+csetlen+fdsellen+cstrlen+fdarrlen+prvlen);
+	if ( !ttfcopyfile(at->cfff,at->fds[i].private,
+		base+strlen+glen+csetlen+fdsellen+cstrlen+fdarrlen+prvlen)) at->error = true;
 	prvlen += temp;
     }
 
@@ -3411,6 +3415,289 @@ static void redocvt(struct alltabs *at) {
 	putshort(at->cvtf,0);
 }
 
+/* scripts (for opentype) that I understand */
+enum scripts { script_latin, script_cyrillic, script_greek, script_arabic,
+	script_hebrew, script_max };
+static uint32 scripts[] = {
+    CHR('l','a','t','n'),
+    CHR('c','y','r','l'),
+    CHR('g','r','e','k'),
+    CHR('a','r','a','b'),
+    CHR('h','e','b','r'),
+    -1
+};
+
+/* I'll bundle latin/cyrillic/greek all into one lookup, and hebrew/arabic into*/
+/*  another (the only reason I distinguish is be I need to specify direction) */
+static int KernLanguageMask(SplineFont *sf) {
+    int mask=0;
+    SplineFont *sub;
+    int k,i,u;
+
+    k = 0;
+    do {
+	sub = ( sf->subfontcnt==0 ) ? sf : sf->subfonts[k];
+	for ( i=0; i<sub->charcnt; ++i )
+		if ( sub->chars[i]!=NULL && sub->chars[i]->kerns!=NULL &&
+			(u=sub->chars[i]->unicodeenc)!=-1 ) {
+	    if ( isrighttoleft(u)) {
+		/* I assume that right to lefts are either hebrew or arabic */
+		if (( u>=0x0590 && u<=0x05ff ) || ( u>=0xfb1d && u<=0xfb4f ))
+		    mask |= (1<<script_hebrew);
+		else
+		    mask |= (1<<script_arabic);
+	    } else {
+		if ( u>0x0400 && u<=0x52f )
+		    mask |= (1<<script_cyrillic);
+		else if (( u>=0x0370 && u<=0x3ff ) || ( u>=0x1f00 && u<=0x1fff))
+		    /* I include coptic as "greek" script */
+		    mask |= (1<<script_greek);
+		else
+		    /* I assume everything else is latin */
+		    mask |= (1<<script_latin);
+	    }
+	}
+	++k;
+    } while ( k<sf->subfontcnt );
+return( mask );
+}
+
+static SplineChar **generateGlyphList(SplineFont *sf, int isr2l) {
+    int cnt;
+    SplineFont *sub;
+    SplineChar *sc;
+    int k,i,j,u,r2l;
+    KernPair *kp;
+    SplineChar **glyphs=NULL;
+
+    for ( j=0; j<2; ++j ) {
+	k = 0;
+	cnt = 0;
+	do {
+	    sub = ( sf->subfontcnt==0 ) ? sf : sf->subfonts[k];
+	    for ( i=0; i<sub->charcnt; ++i )
+		    if ( (sc=sub->chars[i])!=NULL && sc->kerns!=NULL ) {
+		u=sc->unicodeenc;
+		r2l = 0;
+		if ( u==-1 ) {
+		    /* If it's not something we know about try to guess its */
+		    /*  directionality by seeing whether it kerns with r2l or */
+		    /*  l2r letters */
+		    for ( kp = sc->kerns; kp!=NULL; kp=kp->next )
+			if ( kp->sc->unicodeenc!=-1 ) {
+			    if ( isrighttoleft(kp->sc->unicodeenc))
+				r2l = true;
+		    break;
+			}
+		}
+		if ( r2l==isr2l ) {
+		    if ( glyphs!=NULL ) glyphs[cnt] = sc;
+		    ++cnt;
+		}
+	    }
+	    ++k;
+	} while ( k<sf->subfontcnt );
+	if ( glyphs==NULL ) {
+	    if ( cnt==0 )
+return( NULL );
+	    glyphs = galloc((cnt+1)*sizeof(SplineChar *));
+	}
+    }
+    glyphs[cnt] = NULL;
+return( glyphs );
+}
+
+static void dumpgposcoveragetable(FILE *gpos,SplineChar **glyphs) {
+    int i, last = -2, range_cnt=0, start;
+    /* the glyph list should already be sorted */
+    /* figure out whether it is better (smaller) to use an array of glyph ids */
+    /*  or a set of glyph id ranges */
+
+    for ( i=0; glyphs[i]!=NULL; ++i ) {
+	if ( glyphs[i]->ttf_glyph<=last )
+	    GDrawIError("Glyphs must be ordered when creating coverage table");
+	if ( glyphs[i]->ttf_glyph!=last+1 )
+	    ++range_cnt;
+	last = glyphs[i]->ttf_glyph;
+    }
+    if ( i<=3*range_cnt ) {
+	/* We use less space with a list of glyphs than with a set of ranges */
+	putshort(gpos,1);		/* Coverage format=1 => glyph list */
+	putshort(gpos,i);		/* count of glyphs */
+	for ( i=0; glyphs[i]!=NULL; ++i )
+	    putshort(gpos,glyphs[i]->ttf_glyph);	/* array of glyph IDs */
+    } else {
+	putshort(gpos,2);		/* Coverage format=2 => range list */
+	putshort(gpos,range_cnt);	/* count of ranges */
+	last = -2; start = -2;
+	for ( i=0; glyphs[i]!=NULL; ++i ) {
+	    if ( glyphs[i]->ttf_glyph!=last+1 ) {
+		if ( last!=-2 ) {
+		    putshort(gpos,glyphs[start]->ttf_glyph);	/* start glyph ID */
+		    putshort(gpos,last);			/* end glyph ID */
+		    putshort(gpos,start);			/* coverage index of start glyph */
+		}
+		start = i;
+	    }
+	    last = glyphs[i]->ttf_glyph;
+	}
+    }
+}
+
+static void dumpgposkerndata(FILE *gpos,SplineFont *sf,int isr2l) {
+    int32 coverage_pos, next_val_pos, here;
+    int cnt, i, pcnt, max=100, j,k;
+    int *seconds = galloc(max*sizeof(int));
+    int *changes = galloc(max*sizeof(int));
+    SplineChar **glyphs;
+    KernPair *kp;
+
+    glyphs = generateGlyphList(sf,isr2l);
+    cnt=0;
+    if ( glyphs!=NULL ) for ( ; glyphs[cnt]!=NULL; ++cnt );
+
+    putshort(gpos,1);		/* format 1 of the pair adjustment subtable */
+    coverage_pos = ftell(gpos);
+    putshort(gpos,0);		/* offset to coverage table */
+    putshort(gpos,0x0004);	/* Alter XAdvance of first character */
+    putshort(gpos,0x0000);	/* leave second char alone */
+    putshort(gpos,cnt);
+    next_val_pos = ftell(gpos);
+    for ( i=0; i<cnt; ++i )
+	putshort(gpos,0);
+    for ( i=0; i<cnt; ++i ) {
+	here = ftell(gpos);
+	fseek(gpos,next_val_pos,SEEK_SET);
+	putshort(gpos,here-coverage_pos+2);
+	next_val_pos = ftell(gpos);
+	fseek(gpos,here,SEEK_SET);
+	for ( pcnt = 0, kp = glyphs[i]->kerns; kp!=NULL; kp=kp->next ) ++pcnt;
+	putshort(gpos,pcnt);
+	if ( pcnt>=max ) {
+	    max = pcnt+100;
+	    seconds = grealloc(seconds,max*sizeof(int));
+	    changes = grealloc(changes,max*sizeof(int));
+	}
+	for ( pcnt = 0, kp = glyphs[i]->kerns; kp!=NULL; kp=kp->next ) {
+	    seconds[pcnt] = kp->sc->ttf_glyph;
+	    changes[pcnt++] = kp->off;
+	}
+	for ( j=0; j<pcnt-1; ++j ) for ( k=j+1; k<pcnt; ++k ) {
+	    if ( seconds[k]<seconds[j] ) {
+		int temp = seconds[k];
+		seconds[k] = seconds[j];
+		seconds[j] = temp;
+		temp = changes[k];
+		changes[k] = changes[j];
+		changes[j] = temp;
+	    }
+	}
+	for ( j=0; j<pcnt; ++j ) {
+	    putshort(gpos,seconds[j]);
+	    putshort(gpos,changes[j]);
+	}
+    }
+    free(seconds);
+    free(changes);
+    if ( glyphs!=NULL ) {
+	here = ftell(gpos);
+	fseek(gpos,coverage_pos,SEEK_SET);
+	putshort(gpos,here-coverage_pos+2);
+	fseek(gpos,here,SEEK_SET);
+	dumpgposcoveragetable(gpos,glyphs);
+	free(glyphs);
+    }
+}
+
+static void dumpgposkerns(struct alltabs *at, SplineFont *sf) {
+    /* Open Type, bless its annoying little heart, doesn't store kern info */
+    /*  in the kern table. Of course not, how silly of me to think it might */
+    /*  be consistent. It stores it in the awful gpos table */
+    int mask = KernLanguageMask(sf);
+    int i,j,script_cnt=0, lookup_cnt=0, l2r=0, r2l=0;
+    int32 r2l_pos;
+
+    if ( mask==0 )		/* No recognizable kerns */
+return;
+    for ( i=0; i<script_max; ++i )
+	if ( mask&(1<<i))
+	    ++script_cnt;
+    if ( mask&((1<<script_latin)|(1<<script_cyrillic)|(1<<script_greek)) )
+	l2r = 1;
+    if ( mask&((1<<script_arabic)|(1<<script_hebrew)) )
+	r2l = 1;
+    lookup_cnt = l2r+r2l;
+    
+    at->gpos = tmpfile();
+    putlong(at->gpos,0x10000);		/* version number */
+    putshort(at->gpos,10);		/* offset to script table */
+    putshort(at->gpos,10+2+script_cnt*18);	/* offset to features table */
+    putshort(at->gpos,10+2+script_cnt*18+(lookup_cnt==1?14:28));
+	    /* offset to features table */
+
+/* Now the scripts, first the list */
+    putshort(at->gpos,script_cnt);
+    for ( i=j=0; i<script_max; ++i ) if ( mask&(1<<i)) {
+	putlong(at->gpos,scripts[i]);
+	putshort(at->gpos,2+6*script_cnt+j*12);
+	++j;
+    }
+/* Then each script's default language */
+    for ( i=j=0; i<script_max; ++i ) if ( mask&(1<<i)) {
+	putshort(at->gpos,4);		/* Offset from here to start of default language */
+	putshort(at->gpos,0);		/* no other languages */
+	putshort(at->gpos,0);		/* Offset to something not yet defined */
+	putshort(at->gpos,0xffff);	/* No required features */
+	putshort(at->gpos,1);		/* one feature */
+	putshort(at->gpos,(lookup_cnt==1 || i<script_arabic)?0:1);
+    }
+
+/* Now the features */
+    putshort(at->gpos,lookup_cnt);	/* Number of features */
+    putlong(at->gpos,CHR('k','e','r','n'));	/* First feature type */
+    putshort(at->gpos,lookup_cnt==1?8:14);	/* offset to first feature */
+    if ( lookup_cnt==2 ) {
+	putlong(at->gpos,CHR('k','e','r','n'));	/* Second feature type */
+	putshort(at->gpos,20);			/* offset to it */
+    }
+    putshort(at->gpos,0);			/* No feature params */
+    putshort(at->gpos,1);			/* only one lookup */
+    putshort(at->gpos,0);			/* And it is lookup: 0 */
+    if ( lookup_cnt==2 ) {
+	putshort(at->gpos,0);			/* No feature params */
+	putshort(at->gpos,2);			/* use both l2r and r2l lookups */
+	putshort(at->gpos,1);			/* try r2l first */
+	putshort(at->gpos,0);			/* then l2r first */
+    }
+
+/* Now the lookups */
+    putshort(at->gpos,lookup_cnt);
+    putshort(at->gpos,lookup_cnt*2+2);
+    r2l_pos = ftell(at->gpos);
+    if ( lookup_cnt==2 )
+	putshort(at->gpos,0);		/* Don't know, have to fill in later */
+/* Then the first lookup header */
+    putshort(at->gpos,2);		/* subtable type: Pair adjustment */
+    putshort(at->gpos,l2r?0:1);		/* flag (right2left flag) */
+    putshort(at->gpos,1);		/* One subtable */
+    putshort(at->gpos,8);
+    dumpgposkerndata(at->gpos,sf,!l2r);
+    if ( lookup_cnt==2 ) {
+	int32 here = ftell(at->gpos);
+	fseek(at->gpos,r2l_pos,SEEK_SET);
+	putshort(at->gpos,here-r2l_pos+4);
+	fseek(at->gpos,here,SEEK_SET);
+	putshort(at->gpos,2);		/* subtable type: Pair adjustment */
+	putshort(at->gpos,1);		/* flag (right2left flag) */
+	putshort(at->gpos,1);		/* One subtable */
+	putshort(at->gpos,8);
+	dumpgposkerndata(at->gpos,sf,true);
+    }
+    at->gposlen = ftell(at->gpos);
+    if ( at->gposlen&2 )
+	putshort(at->gpos,0);		/* pad it */
+}
+
 static void dumpkerns(struct alltabs *at, SplineFont *sf) {
     int i, cnt, j, k, m, threshold;
     KernPair *kp;
@@ -3914,7 +4201,6 @@ static int32 filecheck(FILE *file) {
 return( sum );
 }
 
-#define CHR(ch1,ch2,ch3,ch4) (((ch1)<<24)|((ch2)<<16)|((ch3)<<8)|(ch4))
 static void initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
 	real *bsizes, enum bitmapformat bf) {
     int i, j, pos;
@@ -3970,7 +4256,10 @@ static void initTables(struct alltabs *at, SplineFont *sf,enum fontformat format
     redomaxp(at,format);
     redoos2(at);
     redocvt(at);
-    dumpkerns(at,sf);
+    if ( format==ff_otf || format==ff_otfcid )
+	dumpgposkerns(at,sf);
+    else
+	dumpkerns(at,sf);
     dumppost(at,sf,format);
     dumpcmap(at,sf,format);
 
@@ -4005,6 +4294,14 @@ static void initTables(struct alltabs *at, SplineFont *sf,enum fontformat format
 	at->tabdir.tabs[i].offset = pos;
 	at->tabdir.tabs[i++].length = at->bloclen;
 	pos += ((at->bloclen+3)>>2)<<2;
+    }
+
+    if ( at->gpos!=NULL ) {
+	at->tabdir.tabs[i].tag = CHR('G','P','O','S');
+	at->tabdir.tabs[i].checksum = filecheck(at->gpos);
+	at->tabdir.tabs[i].offset = pos;
+	at->tabdir.tabs[i++].length = at->gposlen;
+	pos += ((at->gposlen+3)>>2)<<2;
     }
 
     at->tabdir.tabs[i].tag = CHR('O','S','/','2');
@@ -4128,32 +4425,34 @@ static void dumpttf(FILE *ttf,struct alltabs *at, enum fontformat format) {
 
     i=0;
     if ( format==ff_otf || format==ff_otfcid)
-	ttfcopyfile(ttf,at->cfff,at->tabdir.tabs[i++].offset);
+	if ( !ttfcopyfile(ttf,at->cfff,at->tabdir.tabs[i++].offset)) at->error = true;
     if ( at->bdat!=NULL && at->msbitmaps ) {
-	ttfcopyfile(ttf,at->bdat,at->tabdir.tabs[i++].offset);
-	ttfcopyfile(ttf,at->bloc,at->tabdir.tabs[i++].offset);
+	if ( !ttfcopyfile(ttf,at->bdat,at->tabdir.tabs[i++].offset)) at->error = true;
+	if ( !ttfcopyfile(ttf,at->bloc,at->tabdir.tabs[i++].offset)) at->error = true;
     }
-    ttfcopyfile(ttf,at->os2f,at->tabdir.tabs[i++].offset);
+    if ( at->gpos!=NULL )
+	if ( !ttfcopyfile(ttf,at->gpos,at->tabdir.tabs[i++].offset)) at->error = true;
+    if ( !ttfcopyfile(ttf,at->os2f,at->tabdir.tabs[i++].offset)) at->error = true;
     if ( at->bdat!=NULL && !at->msbitmaps ) {
-	ttfcopyfile(ttf,at->bdat,at->tabdir.tabs[i++].offset);
-	ttfcopyfile(ttf,at->bloc,at->tabdir.tabs[i++].offset);
+	if ( !ttfcopyfile(ttf,at->bdat,at->tabdir.tabs[i++].offset)) at->error = true;
+	if ( !ttfcopyfile(ttf,at->bloc,at->tabdir.tabs[i++].offset)) at->error = true;
     }
-    ttfcopyfile(ttf,at->cmap,at->tabdir.tabs[i++].offset);
+    if ( !ttfcopyfile(ttf,at->cmap,at->tabdir.tabs[i++].offset)) at->error = true;
     if ( format!=ff_otf && format!= ff_otfcid ) {
-	ttfcopyfile(ttf,at->cvtf,at->tabdir.tabs[i++].offset);
-	ttfcopyfile(ttf,at->gi.glyphs,at->tabdir.tabs[i++].offset);
+	if ( !ttfcopyfile(ttf,at->cvtf,at->tabdir.tabs[i++].offset)) at->error = true;
+	if ( !ttfcopyfile(ttf,at->gi.glyphs,at->tabdir.tabs[i++].offset)) at->error = true;
     }
     head_index = i;
-    ttfcopyfile(ttf,at->headf,at->tabdir.tabs[i++].offset);
-    ttfcopyfile(ttf,at->hheadf,at->tabdir.tabs[i++].offset);
-    ttfcopyfile(ttf,at->gi.hmtx,at->tabdir.tabs[i++].offset);
+    if ( !ttfcopyfile(ttf,at->headf,at->tabdir.tabs[i++].offset)) at->error = true;
+    if ( !ttfcopyfile(ttf,at->hheadf,at->tabdir.tabs[i++].offset)) at->error = true;
+    if ( !ttfcopyfile(ttf,at->gi.hmtx,at->tabdir.tabs[i++].offset)) at->error = true;
     if ( at->kern!=NULL )
-	ttfcopyfile(ttf,at->kern,at->tabdir.tabs[i++].offset);
+	if ( !ttfcopyfile(ttf,at->kern,at->tabdir.tabs[i++].offset)) at->error = true;
     if ( format!=ff_otf && format!=ff_otfcid )
-	ttfcopyfile(ttf,at->loca,at->tabdir.tabs[i++].offset);
-    ttfcopyfile(ttf,at->maxpf,at->tabdir.tabs[i++].offset);
-    ttfcopyfile(ttf,at->name,at->tabdir.tabs[i++].offset);
-    ttfcopyfile(ttf,at->post,at->tabdir.tabs[i++].offset);
+	if ( !ttfcopyfile(ttf,at->loca,at->tabdir.tabs[i++].offset)) at->error = true;
+    if ( !ttfcopyfile(ttf,at->maxpf,at->tabdir.tabs[i++].offset)) at->error = true;
+    if ( !ttfcopyfile(ttf,at->name,at->tabdir.tabs[i++].offset)) at->error = true;
+    if ( !ttfcopyfile(ttf,at->post,at->tabdir.tabs[i++].offset)) at->error = true;
 
     checksum = filecheck(ttf);
     checksum = 0xb1b0afba-checksum;

@@ -80,6 +80,8 @@ struct ttfinfo {
     int encoding_start;		/* Offset from sof to start of encoding table */
 		/* glyf */
     int glyph_start;		/* Offset from sof to start of glyph table */
+		/* GPOS */
+    int gpos_start;		/* Offset from sof to start of GPOS table */
 		/* GSUB */
     int gsub_start;		/* Offset from sof to start of GSUB table */
 		/* EBDT, bdat */
@@ -344,6 +346,8 @@ struct alltabs {
     int namelen;
     FILE *post;
     int postlen;
+    FILE *gpos;			/* Used instead of kern for opentype */
+    int gposlen;
     FILE *kern;
     int kernlen;
     FILE *cmap;
@@ -379,6 +383,7 @@ struct alltabs {
     unsigned int sidlongoffset: 1;
     unsigned int cfflongoffset: 1;
     unsigned int msbitmaps: 1;
+    unsigned int error: 1;
     struct glyphinfo gi;
     int isfixed;
     struct fd2data *fds;

@@ -106,9 +106,11 @@ static void BitmapsCopy(SplineFont *to, SplineFont *from, int to_index, int from
 int SFFindChar(SplineFont *sf, int unienc, char *name ) {
     int index;
 
-    if ( sf->encoding_name==em_unicode && unienc!=-1 )
+    if ( sf->encoding_name==em_unicode && unienc!=-1 ) {
 	index = unienc;
-    else if ( unienc!=-1 ) {
+	if ( index>=sf->charcnt || sf->chars[index]==NULL )
+	    index = -1;
+    } else if ( unienc!=-1 ) {
 	if ( unienc<sf->charcnt && sf->chars[unienc]!=NULL &&
 		sf->chars[unienc]->unicodeenc==unienc )
 	    index = unienc;
