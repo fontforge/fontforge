@@ -102,6 +102,13 @@
 /*									      */
 
 
+/* Yoshiki Hayashi wants a copy background to foreground command in the       */
+/*  outline view. Setting this flag will enable his patch		      */
+/*									      */
+/* #define FONTFORGE_CONFIG_COPY_BG_TO_FG				      */
+/*									      */
+
+
 /* Harald Harders would like to be able to generate a PFM file without        */
 /*  creating a font along with it. I don't see the need for this, but he pro- */
 /*  vided a patch. Setting this flag will enable his patch		      */

@@ -221,6 +221,24 @@ void SCCopyFgToBg(SplineChar *sc, int show) {
 	    SCCharChangedUpdate(sc);
     }
 }
+
+#ifdef FONTFORGE_CONFIG_COPY_BG_TO_FG
+void SCCopyBgToFg(SplineChar *sc, int show) {
+    SplinePointList *back, *end;
+
+    SCPreserveState(sc, true);
+    back = SplinePointListCopy(sc->layers[ly_back].splines);
+    if ( back!=NULL ) {
+	SplinePointListFree(sc->layers[ly_fore].splines);
+	sc->layers[ly_fore].splines = NULL;
+	for ( end = back; end->next!=NULL; end = end->next );
+	end->next = sc->layers[ly_fore].splines;
+	sc->layers[ly_fore].splines = back;
+	if ( show )
+	    SCCharChangedUpdate(sc);
+    }
+}
+#endif /* FONTFORGE_CONFIG_COPY_BG_TO_FG */
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 
 static SCI *SCIinit(SplineChar *sc,MetaFontDlg *meta) {

@@ -3911,6 +3911,7 @@ return( true );
 #define MID_SelectHM	2134
 #define MID_CopyFeatures	2135
 #define MID_SelInvert	2136
+#define MID_CopyBgToFg	2137
 #define MID_Clockwise	2201
 #define MID_Counter	2202
 #define MID_GetInfo	2203
@@ -4785,6 +4786,16 @@ return;
     SCCopyFgToBg(cv->sc,true);
 }
 
+#ifdef FONTFORGE_CONFIG_COPY_BG_TO_FG
+static void CVCopyBgFg(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+
+    if ( cv->sc->layers[ly_back].splines==NULL )
+return;
+    SCCopyBgToFg(cv->sc,true);
+}
+#endif
+
 static void CVSelectAll(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     int mask = -1;
@@ -4919,6 +4930,11 @@ static void cv_edlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 	    mi->ti.disabled = cv->drawmode!=dm_fore ||
 		    (cv->sc->layers[ly_fore].splines==NULL && cv->sc->layers[ly_fore].refs==NULL);
 	  break;
+#ifdef FONTFORGE_CONFIG_COPY_BG_TO_FG
+	  case MID_CopyBgToFg:
+	    mi->ti.disabled = cv->sc->layers[ly_back].splines==NULL;
+	  break;
+#endif
 	  case MID_CopyFgToBg:
 	    mi->ti.disabled = cv->sc->layers[ly_fore].splines==NULL;
 	  break;
@@ -6763,6 +6779,9 @@ static GMenuItem edlist[] = {
     { { (unichar_t *) _STR_Elide, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, 'M', ksm_meta|ksm_control, NULL, NULL, CVElide, MID_Elide },
     { { (unichar_t *) _STR_Join, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'J' }, 'J', ksm_control|ksm_shift, NULL, NULL, CVJoin, MID_Join },
     { { (unichar_t *) _STR_CopyFgToBg, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, 'C', ksm_control|ksm_shift, NULL, NULL, CVCopyFgBg, MID_CopyFgToBg },
+#ifdef FONTFORGE_CONFIG_COPY_BG_TO_FG
+    { { (unichar_t *) _STR_CopyBgToFg, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVCopyBgFg, MID_CopyBgToFg },
+#endif
     { { (unichar_t *) _STR_CopyGridFit, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuCopyGridFit, MID_CopyGridFit },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Select, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, 0, ksm_control, sllist, sllistcheck },
