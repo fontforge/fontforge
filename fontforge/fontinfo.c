@@ -2928,6 +2928,7 @@ return( true );
 	if ( newname!=NULL ) {
 	    DecomposeClassName(newname,NULL,&fpst->tag,NULL,&fpst->flags,
 		    &fpst->script_lang_index,NULL,NULL);
+	    old = GGadgetGetList(list,&len);
 	    new = gcalloc(len+1,sizeof(GTextInfo *));
 	    for ( i=0; i<len; ++i ) {
 		new[i] = galloc(sizeof(GTextInfo));
