@@ -96,6 +96,8 @@ static char str_NextDefChar[] = "¼¡¤ÎÄêµÁºÑ¤ßÊ¸»ú(D)";
 static unichar_t mnemonic_NextDefChar[] = 'D';
 static char str_PrevDefChar[] = "Á°¤ÎÄêµÁºÑ¤ßÊ¸»ú(a)";
 static unichar_t mnemonic_PrevDefChar[] = 'a';
+static char str_Substitutions = "ÃÖ´¹°ìÍ÷(S)";
+static char mnemonic_Substitutions = "S";
 static char str_Goto[] = "°ÜÆ°(G)";
 static unichar_t mnemonic_Goto[] = 'G';
 static char str_Hidepoints[] = "ÅÀ¤ò±£¤¹(t)";
@@ -337,6 +339,7 @@ static char str_FitToEm[] = "É½¼¨¤òÁ´³Ñ¤Ë¸ÇÄê(F)";
 static unichar_t mnemonic_FitToEm[] = 'F';
 static char str_Charinfo[] = "Ê¸»ú¾ğÊó(I)...";
 static unichar_t mnemonic_Charinfo[] = 'I';
+static char str_CharInfoFor = "Ê¸»ú%.40hs¤Ë´Ø¤¹¤ë¾ğÊó";
 static char str_Mergefonts[] = "¥Õ¥©¥ó¥È¤ÎÅı¹ç(M)...";
 static unichar_t mnemonic_Mergefonts[] = 'M';
 static char str_Interp[] = "¥Õ¥©¥ó¥È¤ÎÊä´Ö(l)...";
@@ -844,6 +847,7 @@ static char *str_TTFEmSize2 = "ÄÌÎã,PostScript¥Õ¥©¥ó¥È¤ÏÁ´³ÑÉı¤ò2¤ÎÀßÄê¤ËÀßÃÖ¤¹¤
 static char str_Badnumberin[] = "Bad Number in ";
 static char str_Enternameofchar[] = "¥Õ¥©¥ó¥ÈÆâ¤Ç¤ÎÊ¸»ú¤ÎÌ¾Á°¤òÆşÎÏ¤·¤Æ¤¯¤À¤µ¤¤";
 static char str_Couldntfindchar[] = "Ê¸»ú¤ò¸«¤Ä¤±¤ë¤³¤È¤¬¤Ç¤­¤Ş¤»¤ó: ";
+static char str_CouldntFindSubstitution = "ÃÖ¤­´¹¤¨Ê¸»ú%.40hs¤¬¸«¤Ä¤«¤ê¤Ş¤»¤ó."
     /* Font has changed dlg */
 static char str_Dontsave[] = "ÊİÂ¸¤·¤Ê¤¤(D)";
 static unichar_t mnemonic_Dontsave[] = 'D';
@@ -1009,11 +1013,11 @@ static unichar_t *str_Dy = { 0x2206, 'Y', ':' };
 static unichar_t *str_Dxa = { 0x2206, 'X','A','d','v','a','n','c','e', ':' };
 static unichar_t *str_Dya = { 0x2206, 'Y','A','d','v','a','n','c','e', ':' };
  /* Ligature feature tags */
-static char str_RequiredLig = "É¬¿Ü";
-static char str_StandardLig = "É¸½à";
-static char str_DiscretionaryLig = "Ç¤°Õ";
-static char str_HistoricLig = "Îò»ËÅª";
-static char str_FractionLig = "Ê¬¿ô";
+static char str_RequiredLig = "É¬¿Ü¤Î¹ç»ú";
+static char str_StandardLig = "É¸½à¤Î¹ç»ú";
+static char str_DiscretionaryLig = "Ç¤°Õ»ÈÍÑ¤Î¹ç»ú";
+static char str_HistoricLig = "Îò»ËÅª¹ç»ú";
+static char str_FractionLig = "Ê¬¿ô¹ç»ú";
 static char str_AboveBaseSubs = "¥Ù¡¼¥¹¥é¥¤¥ó¾åÊı¤ÎÃÖ´¹";
 static char str_AltFrac = "ÊÌÂÎ¤ÎÊ¬¿ô";
 static char str_Akhand = "Akhand";
@@ -1058,6 +1062,7 @@ static char str_HistoricalForms = "Îò»ËÅª»úÂÎ";
 static char str_HorKanaAlt = "²£½ñ¤­ÍÑ²¾Ì¾";
 static char str_Hanja2Hangul = "´Á»ú¤«¤é¥Ï¥ó¥°¥ë¤Ø"
 static char str_HalfWidths = "È¾³ÑÉı";
+static char str_InitialForms = "¸ìÆ¬·Á";
 static char str_IsolatedForms = "ÆÈÎ©·Á";
 static char str_Italics = "¥¤¥¿¥ê¥Ã¥¯";
 static char str_JIS78Forms = "78JIS»úÂÎ";
@@ -1146,6 +1151,9 @@ static char str_TagC = "Tag:";
 static char mnemonic_TagC = 'T';
 static char str_TagTooLong = "¥¿¥°¤¬Ä¹¤¹¤®¤Ş¤¹.";
 static char str_ScriptTagTooLong = "¥¹¥¯¥ê¥×¥È¥¿¥°¤ÏASCII¤Ç4Ê¸»ú¤Ë¸Â¤é¤ì¤Æ¤¤¤Ş¤¹";
+static char str_IgnoreBaseGlyphs = "´ğÄìÊ¸»ú¤òÌµ»ë¤¹¤ë";
+static char str_IgnoreLigatures = "¹ç»ú¤òÌµ»ë¤¹¤ë";
+static char str_IgnoreCombiningMarks = "·ë¹ç·¿¥Ş¡¼¥¯¤òÌµ»ë¤¹¤ë";
     /* Import */
 static char str_Duppixelsize[] = "¥Ô¥¯¥»¥ë¥µ¥¤¥º¤¬½ÅÊ£¤·¤Æ¤¤¤Ş¤¹.";
 /* "The font database already contains a bitmap\nfont with this pixelsize (%d)\nDo you want to overwrite it?" */
@@ -1341,6 +1349,8 @@ static char *str_GlyphHasRefs = "ÌäÂê¤Î¤¢¤ë»²¾È¤Ç¤¹";
 static char *str_GlyphHasRefsQuestion = "Ê¸»ú%.40hs¤Ë¤Ï»²¾È¤¬´Ş¤Ş¤ì¤Æ¤¤¤Ş¤¹¤¬,¥Õ¥©¥ó¥È¤Î¥¨¥ó¥³¡¼¥Ç¥£¥ó¥°¤ÏÊÑ¹¹¤µ¤ì¤Æ¤¤¤Ş¤¹. ¤³¤ì¤é¤Î»²¾È¤òÀµ¤·¤¤¾ì½ê¤ËÂĞ±ş¤Å¤±¤ë¤Î¤Ï¤ª¤½¤é¤¯ÉÔ²ÄÇ½¤À¤È»×¤ï¤ì¤Ş¤¹. ¤³¤Î¤Ş¤Ş½èÍı¤òÂ³¤±¤ì¤Ğ¤¤¤¯¤Ä¤«¤Î»²¾È¤Ï¼º¤ï¤ì, »Ä¤ê¤Ï´Ö°ã¤Ã¤¿Ê¸»ú¤Ë¥ê¥ó¥¯¤¹¤ë¤³¤È¤Ë¤Ê¤ë¤Ç¤·¤ç¤¦. ¤½¤ì¤Ç¤âÂ³¤±¤Ş¤¹¤«?";
 static char *str_NameChanged = "¥°¥ê¥ÕÌ¾¤¬ÊÑ¹¹¤µ¤ì¤Æ¤¤¤Ş¤¹";
 static char *str_NameChangedGlyph = "Ê¸»úÌ¾%.40¤ÏÊÑ¹¹¤µ¤ì¤Æ¤¤¤Ş¤¹. ¥Õ¥¡¥¤¥ë¤Î¥°¥ê¥Õ¤ò¸¡º÷¤¹¤ë¤Î¤Ë¤Ï¤³¤ÎÌ¾Á°¤ò»È¤Ã¤Æ¤­¤¿¤Î¤Ç,¤³¤ÎÊ¸»ú¤òÉü¸µ¤¹¤ë¤³¤È¤¬¤Ç¤­¤Ş¤»¤ó\n(¤³¤ì°Ê¹ß¤ÎÊ¸»ú¤Ç¤Ï·Ù¹ğ¤Ï¾ÊÎ¬¤µ¤ì¤Ş¤¹)";
+static char *str_NotForeground = "Á°ÌÌ¤Ç¤Ï¤¢¤ê¤Ş¤»¤ó";
+static char *str_RefsOnlyFore = "»²¾È¤ò¥É¥é¥Ã¥°¤¹¤ë¤³¤È¤¬¤Ç¤­¤ë¤Î¤ÏÁ°ÌÌ¥ì¥¤¥ä¤À¤±¤Ç¤¹";
     /* CV Export */
 static char *str_PixelSizeQ = "¥Ô¥¯¥»¥ë¿ô¤Ï¤¤¤¯¤Ä¤Ç¤¹¤«?";
 static char *str_PixelSize = "¥Ô¥¯¥»¥ë¿ô:";
@@ -1500,7 +1510,7 @@ static char *str_by = "by";
 static char *str_SetWidthTo = "Ê¸»úÉı¤ÎÀßÄêÃÍ:";
 static char *str_SetLBearingTo = "º¸¥µ¥¤¥É¥Ù¥¢¥ê¥ó¥°¤ÎÀßÄêÃÍ:";
 static char *str_SetRBearingTo = "±¦¥µ¥¤¥É¥Ù¥¢¥ê¥ó¥°¤ÎÀßÄêÃÍ:";
-static char *str_SetVWidthTo =    "½Ä½ñ¤­»úÁ÷¤ê¤ÎÀßÄêÃÍ:";
+static char *str_SetVWidthTo = "½Ä½ñ¤­»úÁ÷¤ê¤ÎÀßÄêÃÍ:";
 static char *str_IncrWidthBy = "Ê¸»úÉı¤ÎÁı²ÃÎÌ:";
 static char *str_IncrLBearingBy = "º¸¥µ¥¤¥É¥Ù¥¢¥ê¥ó¥°¤ÎÁı²ÃÎÌ:";
 static char *str_IncrRBearingBy = "±¦¥µ¥¤¥É¥Ù¥¢¥ê¥ó¥°¤ÎÁı²ÃÎÌ:";
@@ -1509,6 +1519,7 @@ static char *str_ScaleWidthBy = "Ê¸»úÉı¤Î³ÈÂçÎ¨:";
 static char *str_ScaleLBearingBy = "º¸¥µ¥¤¥É¥Ù¥¢¥ê¥ó¥°¤Î³ÈÂçÎ¨:";
 static char *str_ScaleRBearingBy = "±¦¥µ¥¤¥É¥Ù¥¢¥ê¥ó¥°¤Î³ÈÂçÎ¨:";
 static char *str_ScaleVWidthBy =   "½Ä½ñ¤­»úÁ÷¤ê¤Î³ÈÂçÎ¨:";
+static char *str_Plain = "¤½¤Î¤Ş¤Ş";
     /* Import bdf */
 static char *str_PixelSizeFont = "¤³¤Î¥Õ¥¡¥¤¥ëÆâ¤Î¥Õ¥©¥ó¥È¤Î¥Ô¥¯¥»¥ë¿ô¤Ï´ö¤Ä¤Ç¤¹¤«?";
 static char *str_CouldNotOpenFile = "¥Õ¥¡¥¤¥ë¤ò³«¤±¤Ş¤»¤ó¤Ç¤·¤¿.";
@@ -1900,4 +1911,4 @@ static char *str_EmUnits = "¥°¥ê¥Ã¥É";
 
 static int num_buttonsize = 80;
 static int num_ScaleFactor = 100;
-/* based on nomen-en.c:1.63 */
+/* based on nomen-en.c:1.70 */
