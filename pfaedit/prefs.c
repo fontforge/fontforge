@@ -202,6 +202,7 @@ struct macsettingname macfeat_otftag[] = {
     { 1, 14, 15, 0, 0, CHR('M','A','L','G'), "Abbreviated Square Ligatures", "No Abbreviated Square Ligatures" },
     /* 2, 1, partially connected cursive */
     { 2, 2, 0, 0, 1, CHR('i','s','o','l'), "Full Cursive Connection", "No Cursive Connection" },	/* Arabic forms */
+    { 2, 2, 0, 0, 1, CHR('c','a','l','t'), "Full Cursive Connection", "No Cursive Connection" },	/* Arabic forms */
     /* 3, 2, all caps */
     /* 3, 3, all lower */
     { 3, 4, 0, 1, 0, CHR('s','m','c','p'), "Small Caps", "Upper and Lower Case" },	/* small caps */
