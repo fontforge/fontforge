@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 28-Jun-2001 -->
-  <!-- AP: Last modified: 17-Aug-2003 -->
+  <!-- AP: Last modified: 29-Aug-2003 -->
   <TITLE>Finding common font problems automagically</TITLE>
 </HEAD>
 <BODY>
@@ -122,7 +122,7 @@ is deemed too close if the distance between it and its modified point is
 less than the "Irrelevant Factor" times the distance between the two end
 points of the spline controlled by this control point.<BR Clear=Right>
 <P>
-<IMG SRC="findprobs-paths.png" WIDTH="301" HEIGHT="418" ALIGN="Right"><STRONG><BIG>Open
+<IMG SRC="findprobs-paths.png" WIDTH="307" HEIGHT="431" ALIGN="Right"><STRONG><BIG>Open
 Paths</BIG></STRONG>
 <P>
 All of your paths should be closed, that is they shouldn't have any end points
@@ -160,7 +160,19 @@ it yet.
 As above PostScript and TrueType like clockwise paths. If you have a flipped
 reference then either the reference or the original character will be drawn
 with a counter-clockwise path. To fix it you should Edit-&gt;Unlink the reference
-and Element-&gt;Correct Direction.<BR Clear=all>
+and Element-&gt;Correct Direction
+<H3>
+  <STRONG>More Points Than</STRONG>
+</H3>
+<P>
+Appendix B of the PostScript Language Reference manual says that an interpreter
+is only required to support paths with 1500 points on them. Most interpreters
+actually have a much higher limit, so you may change the limit to suit your
+desires. I believe that control points are included in the count. Note that
+when checking a quadratic font (ie. a truetype font) there will be at most
+one control point between any two end points, but when that font gets converted
+to PostScript there will be two. PfaEdit currently counts this as one
+point).<BR Clear=all>
 <P>
 <BIG><STRONG><IMG SRC="findprobs-hint.png" WIDTH="301" HEIGHT="423" ALIGN="Right">Hints
 controlling no points</STRONG></BIG>

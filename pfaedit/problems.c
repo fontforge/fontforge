@@ -60,6 +60,7 @@ struct problems {
     unsigned int badsubs: 1;
     unsigned int missingglyph: 1;
     unsigned int missinglookuptag: 1;
+    unsigned int toomanypoints: 1;
     unsigned int explain: 1;
     unsigned int done: 1;
     unsigned int doneexplain: 1;
@@ -71,6 +72,7 @@ struct problems {
     real xheight, caph, ascent, descent;
     real irrelevantfactor;
     int advancewidthval, vadvancewidthval;
+    int pointsmax;
     GWindow explainw;
     GGadget *explaintext, *explainvals, *ignoregadg;
     SplineChar *lastcharopened;
@@ -93,7 +95,7 @@ static int doynearstd=1, linestd=1, cpstd=1, cpodd=1, hintnopt=0, ptnearhint=0;
 static int hintwidth=0, direction=0, flippedrefs=1, bitmaps=0;
 static int cidblank=0, cidmultiple=1, advancewidth=0, vadvancewidth=0;
 static int irrelevantcp=1, missingglyph=0, missinglookuptag=0;
-static int badsubs=1;
+static int badsubs=1, toomanypoints=1, pointsmax = 1500;
 static int stem3=0, showexactstem3=0;
 static real near=3, xval=0, yval=0, widthval=50, advancewidthval=0, vadvancewidthval=0;
 static real irrelevantfactor = .005;
@@ -136,6 +138,8 @@ static real irrelevantfactor = .005;
 #define CID_BadSubs		1030
 #define CID_MissingGlyph	1031
 #define CID_MissingLookupTag	1032
+#define CID_TooManyPoints	1033
+#define CID_PointsMax		1034
 
 
 static void FixIt(struct problems *p) {
@@ -1287,6 +1291,32 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	}
     }
 
+    if ( p->toomanypoints && !p->finish ) {
+	int cnt=0;
+	for ( spl = sc->splines; spl!=NULL; spl = spl->next ) {
+	    for ( sp = spl->first; ; ) {
+		++cnt;
+		if ( sp->prev!=NULL && !sp->prev->knownlinear ) {
+		    if ( sp->prev->order2 )
+			++cnt;
+		    else
+			cnt += 2;
+		}
+		if ( sp->next==NULL )
+	    break;
+		sp = sp->next->to;
+		if ( sp==spl->first )
+	    break;
+	    }
+	}
+	if ( cnt>=p->pointsmax ) {
+	    changed = true;
+	    ExplainIt(p,sc,_STR_ProbTooManyPoints,cnt,p->pointsmax);
+	    if ( p->ignorethis )
+		p->toomanypoints = false;
+	}
+    }
+
     if ( p->bitmaps && !p->finish && SCWorthOutputting(sc)) {
 	BDFFont *bdf;
 
@@ -1994,7 +2024,7 @@ static int Prob_DoAll(GGadget *g, GEvent *e) {
 	    CID_HintWidthNear, CID_LineStd, CID_Direction, CID_CpStd,
 	    CID_CpOdd, CID_FlippedRefs, CID_Bitmaps, CID_AdvanceWidth,
 	    CID_MissingGlyph, CID_MissingLookupTag,
-	    CID_Stem3, CID_IrrelevantCP,
+	    CID_Stem3, CID_IrrelevantCP, CID_TooManyPoints,
 	    0 };
 	int i;
 	if ( p->fv->cidmaster!=NULL ) {
@@ -2035,6 +2065,7 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	badsubs = p->badsubs = GGadgetIsChecked(GWidgetGetControl(gw,CID_BadSubs));
 	missingglyph = p->missingglyph = GGadgetIsChecked(GWidgetGetControl(gw,CID_MissingGlyph));
 	missinglookuptag = p->missinglookuptag = GGadgetIsChecked(GWidgetGetControl(gw,CID_MissingLookupTag));
+	toomanypoints = p->toomanypoints = GGadgetIsChecked(GWidgetGetControl(gw,CID_TooManyPoints));
 	stem3 = p->stem3 = GGadgetIsChecked(GWidgetGetControl(gw,CID_Stem3));
 	if ( stem3 )
 	    showexactstem3 = p->showexactstem3 = GGadgetIsChecked(GWidgetGetControl(gw,CID_ShowExactStem3));
@@ -2057,6 +2088,8 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	    advancewidthval = p->advancewidthval = GetIntR(gw,CID_AdvanceWidthVal,_STR_HintWidth,&errs);
 	if ( p->vadvancewidth )
 	    vadvancewidthval = p->vadvancewidthval = GetIntR(gw,CID_VAdvanceWidthVal,_STR_HintWidth,&errs);
+	if ( toomanypoints )
+	    p->pointsmax = pointsmax = GetIntR(gw,CID_PointsMax,_STR_MorePointsThan,&errs);
 	if ( irrelevantcp )
 	    p->irrelevantfactor = irrelevantfactor = GetRealR(gw,CID_IrrelevantFactor,_STR_IrrelevantFactor,&errs)/100.0;
 	near = p->near = GetRealR(gw,CID_Near,_STR_Near,&errs);
@@ -2070,7 +2103,7 @@ return( true );
 		direction || p->cidmultiple || p->cidblank || p->flippedrefs ||
 		p->bitmaps || p->advancewidth || p->vadvancewidth || p->stem3 ||
 		p->irrelevantcontrolpoints || p->badsubs || p->missingglyph ||
-		p->missinglookuptag ) {
+		p->missinglookuptag || p->toomanypoints ) {
 	    DoProbs(p);
 	}
 	p->done = true;
@@ -2113,12 +2146,12 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData pgcd[13], pagcd[5], hgcd[7], rgcd[7], cgcd[5], mgcd[10], agcd[5];
-    GTextInfo plabel[13], palabel[5], hlabel[7], rlabel[7], clabel[5], mlabel[10], alabel[5];
+    GGadgetCreateData pgcd[13], pagcd[7], hgcd[7], rgcd[7], cgcd[5], mgcd[10], agcd[5];
+    GTextInfo plabel[13], palabel[7], hlabel[7], rlabel[7], clabel[5], mlabel[10], alabel[5];
     GTabInfo aspects[9];
     struct problems p;
     char xnbuf[20], ynbuf[20], widthbuf[20], nearbuf[20], awidthbuf[20],
-	    vawidthbuf[20], irrel[20];
+	    vawidthbuf[20], irrel[20], pmax[20];
     int i;
     SplineFont *sf;
     /*static GBox smallbox = { bt_raised, bs_rect, 2, 1, 0, 0, 0,0,0,0, COLOR_DEFAULT,COLOR_DEFAULT };*/
@@ -2317,6 +2350,28 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pagcd[3].gd.popup_msg = GStringGetResource(_STR_CheckFlippedRefsPopup,NULL);
     pagcd[3].gd.cid = CID_FlippedRefs;
     pagcd[3].creator = GCheckBoxCreate;
+
+    palabel[4].text = (unichar_t *) _STR_MorePointsThan;
+    palabel[4].text_in_resource = true;
+    pagcd[4].gd.label = &palabel[4];
+    pagcd[4].gd.mnemonic = 'r';
+    pagcd[4].gd.pos.x = 3; pagcd[4].gd.pos.y = pagcd[3].gd.pos.y+21; 
+    pagcd[4].gd.flags = gg_visible | gg_enabled;
+    if ( toomanypoints ) pagcd[4].gd.flags |= gg_cb_on;
+    pagcd[4].gd.popup_msg = GStringGetResource(_STR_MorePointsThanPopup,NULL);
+    pagcd[4].gd.cid = CID_TooManyPoints;
+    pagcd[4].creator = GCheckBoxCreate;
+
+    sprintf( pmax, "%d", pointsmax );
+    palabel[5].text = (unichar_t *) pmax;
+    palabel[5].text_is_1byte = true;
+    pagcd[5].gd.label = &palabel[5];
+    pagcd[5].gd.pos.x = 105; pagcd[5].gd.pos.y = pagcd[4].gd.pos.y-3;
+    pagcd[5].gd.pos.width = 50; 
+    pagcd[5].gd.flags = gg_visible | gg_enabled;
+    pagcd[5].gd.popup_msg = GStringGetResource(_STR_MorePointsThanPopup,NULL);
+    pagcd[5].gd.cid = CID_PointsMax;
+    pagcd[5].creator = GTextFieldCreate;
 
 /* ************************************************************************** */
 

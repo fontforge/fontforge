@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 27-Aug-2003 -->
+  <!-- AP: Last modified: 29-Aug-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -11,11 +11,29 @@
 </H1>
 <UL>
   <LI>
+    ???
+    <UL>
+      <LI>
+	PfaEdit failed to display the morx table if all it contained were simple
+	substitutions.
+      <LI>
+	PfaEdit generated incorrect simple substitution (AAT) tables if it found
+	a substitution with no valid elements
+      <LI>
+	New problem for find problems. Check for characters with more than 1500 points
+	in them.
+      <LI>
+	PfaEdit will now draw selected points in a different color (currently yellow),
+	and draws them bolder. This makes them stand out better for Find Problems
+	(but also makes it harder to distinguish between corner and curved points).
+    </UL>
+  <LI>
     27-Aug-2003
     <UL>
       <LI>
-	The preference dlg has been broken since about 12 July. Anything on the
-	Preference-&gt;Font Info tab is probably wrong.
+	<FONT COLOR="Red"><STRONG><BIG>The preference dlg has been broken since about
+	12 July. Anything on the Preference-&gt;Font Info tab is probably
+	wrong.</BIG></STRONG></FONT>
       <LI>
 	PfaEdit wasn't always getting the script/lang right when filling in the fields
 	of the New Substitution dlg.
@@ -33,7 +51,7 @@
     26-Aug-2003
     <UL>
       <LI>
-	When I added metadata to svg fonts (20-Aug) I inadvertantly put in to closing
+	When I added metadata to svg fonts (20-Aug) I inadvertantly put in two closing
 	metadata tags. Which broke the font.
       <LI>
 	Fixed a bug conversion of context/chain coverage sub-table into a morx subtable.
