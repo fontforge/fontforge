@@ -2880,8 +2880,8 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
 	CVMouseUpPoint(cv,event);
       break;
       case cvt_magnify: case cvt_minify:
-	if ( cv->p.x>=event->u.mouse.x-4 && cv->p.x<=event->u.mouse.x+4 &&
-		 cv->p.y>=event->u.mouse.y-4 && cv->p.y<=event->u.mouse.y+4 ) {
+	if ( cv->p.x>=event->u.mouse.x-6 && cv->p.x<=event->u.mouse.x+6 &&
+		 cv->p.y>=event->u.mouse.y-6 && cv->p.y<=event->u.mouse.y+6 ) {
 	    real cx, cy;
 	    cx = (event->u.mouse.x-cv->xoff)/cv->scale ;
 	    cy = (cv->height-event->u.mouse.y-cv->yoff)/cv->scale ;
@@ -6343,7 +6343,7 @@ void DefaultY(GRect *pos) {
 CharView *CharViewCreate(SplineChar *sc, FontView *fv) {
     CharView *cv = gcalloc(1,sizeof(CharView));
     GWindowAttrs wattrs;
-    GRect pos;
+    GRect pos, zoom;
     GWindow gw;
     GGadgetData gd;
     GRect gsize;
@@ -6368,6 +6368,11 @@ CharView *CharViewCreate(SplineChar *sc, FontView *fv) {
 
     cv->gw = gw = GDrawCreateTopWindow(NULL,&pos,cv_e_h,cv,&wattrs);
     free( (unichar_t *) wattrs.icon_title );
+
+    GDrawGetSize(GDrawGetRoot(screen_display),&zoom);
+    zoom.x = CVPalettesWidth(); zoom.width -= zoom.x-10;
+    zoom.height -= 30;			/* Room for title bar & such */
+    GDrawSetZoom(gw,&zoom,-1);
 
     memset(&gd,0,sizeof(gd));
     gd.flags = gg_visible | gg_enabled;

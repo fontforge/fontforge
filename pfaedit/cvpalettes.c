@@ -46,10 +46,12 @@ static GFont *font;
 
 #define CV_TOOLS_WIDTH		53
 #define CV_TOOLS_HEIGHT		(214+4*12+2)
+#define CV_LAYERS_WIDTH		104
 #define CV_LAYERS_HEIGHT	196
 #define BV_TOOLS_WIDTH		53
 #define BV_TOOLS_HEIGHT		80
 #define BV_LAYERS_HEIGHT	73
+#define BV_LAYERS_WIDTH		73
 #define BV_SHADES_HEIGHT	(8+9*16)
 
 static void ReparentFixup(GWindow child,GWindow parent, int x, int y, int width, int height ) {
@@ -1371,6 +1373,10 @@ return;
     }
 }
 
+int CVPalettesWidth(void) {
+return( GGadgetScale(CV_LAYERS_WIDTH));
+}
+
 /* ************************************************************************** */
 /* **************************** Bitmap Palettes ***************************** */
 /* ************************************************************************** */
@@ -1439,7 +1445,7 @@ return(bvlayers);
     wattrs.is_dlg = true;
     wattrs.window_title = GStringGetResource(_STR_Layers,NULL);
 
-    r.width = GGadgetScale(73); r.height = BV_LAYERS_HEIGHT;
+    r.width = GGadgetScale(BV_LAYERS_WIDTH); r.height = BV_LAYERS_HEIGHT;
     r.x = -r.width-6; r.y = bv->mbh+BV_TOOLS_HEIGHT+45/*25*/;	/* 45 is right if there's decor, is in kde, not in twm. Sigh */
     if ( palettes_docked ) {
 	r.x = 0; r.y = BV_TOOLS_HEIGHT+4;
@@ -2128,4 +2134,8 @@ void PalettesChangeDocking(void) {
 	}
     }
     SavePrefs();
+}
+
+int BVPalettesWidth(void) {
+return( GGadgetScale(BV_LAYERS_WIDTH));
 }

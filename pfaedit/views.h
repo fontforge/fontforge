@@ -603,6 +603,8 @@ extern void BVPaletteColorChange(BitmapView *bv);
 extern void BVPaletteChangedChar(BitmapView *bv);
 extern void CVPaletteDeactivate(void);
 extern void PalettesChangeDocking(void);
+extern int CVPalettesWidth(void);
+extern int BVPalettesWidth(void);
 
 extern void BackgroundImageTransform(SplineChar *sc, ImageList *img,real transform[6]);
 extern void CVTransFunc(CharView *cv,real transform[6],enum fvtrans_flags);
