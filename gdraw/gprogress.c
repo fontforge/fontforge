@@ -48,6 +48,7 @@ typedef struct gprogress {
     unsigned int visible: 1;
     unsigned int dying: 1;
     unsigned int paused: 1;
+    unsigned int sawmap: 1;
     GWindow gw;
     GFont *font;
     struct gprogress *prev;
@@ -153,6 +154,9 @@ static int progress_eh(GWindow gw, GEvent *event) {
       case et_char:
 	if ( (event->u.chr.state&ksm_control) && event->u.chr.chars[0]=='.' )
 	    p->aborted = true;
+      break;
+      case et_map:
+	p->sawmap = true;
       break;
     }
 return( true );
@@ -272,13 +276,12 @@ return;
 	    /* map it */
 	    /* but destroy it before the server can send us the map notify event */
 	    /* next three lines seem to deal with it */
-	/*GDrawSetVisible(old->gw,false);*/
+    /* unmapping the window also causes a crash */
+    if ( old->visible ) while ( !old->sawmap ) {
 	GDrawSync(NULL);
 	GDrawProcessPendingEvents(NULL);
-	GDrawSync(NULL);
-	GDrawProcessPendingEvents(NULL);
+    }
     GDrawDestroyWindow(old->gw);
-    /* GProgressTimeCheck();*/	/* This caused X to crash... Why would I do it anyway? */
     GDrawSync(NULL);
     GDrawProcessPendingEvents(NULL);
 }
