@@ -2473,7 +2473,12 @@ static SplinePointList *SplinesFromEntityChar(EntityChar *ec,int *flags) {
 	    if ( ent->u.splines.splines!=NULL && ent->u.splines.splines->next==NULL &&
 		    !SplinePointListIsClockwise(ent->u.splines.splines))
 		SplineSetReverse(ent->u.splines.splines);
-	    if ( ent->u.splines.stroke.col!=0xffffffff ) {
+	    if ( ent->u.splines.stroke.col!=0xffffffff &&
+		    (ent->u.splines.fill.col==0xffffffff || ent->u.splines.stroke_width!=0)) {
+		/* What does a stroke width of 0 mean? PS Says minimal width line */
+		/* How do we implement that? Special case: If filled and stroked 0, then */
+		/*  ignore the stroke. This idiom is used by MetaPost sometimes and means */
+		/*  no stroke */
 		memset(&si,'\0',sizeof(si));
 		si.toobigwarn = *flags & sf_toobigwarn ? 1 : 0;
 		si.join = ent->u.splines.join;
