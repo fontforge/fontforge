@@ -778,18 +778,18 @@ return( SCMatchesIncomplete(sv->curchar,sv,startafter));
 return( SCMatchesFull(sv->curchar,sv));
 }
 
-static void DoRpl(SearchView *sv) {
+static int DoRpl(SearchView *sv) {
     RefChar *r;
 
     /* Make sure we don't generate any self referential characters... */
     for ( r = sv->sc_rpl.layers[ly_fore].refs; r!=NULL; r=r->next ) {
 	if ( SCDependsOnSC(r->sc,sv->curchar))
-return;
+return(false);
     }
 
     if ( sv->replaceall && !sv->subpatternsearch &&
 	    HeuristiclyBadMatch(sv->curchar,sv))
-return;
+return(false);
 
     SCPreserveState(sv->curchar,false);
     if ( sv->subpatternsearch )
@@ -797,6 +797,7 @@ return;
     else
 	DoReplaceFull(sv->curchar,sv);
     SCCharChangedUpdate(sv->curchar);
+return( true );
 }
 
 static int _DoFindAll(SearchView *sv) {
@@ -809,8 +810,10 @@ static int _DoFindAll(SearchView *sv) {
 		any = true;
 		if ( sv->replaceall ) {
 		    do {
-			DoRpl(sv);
-		    } while ( sv->subpatternsearch && SearchChar(sv,i,true));
+			if ( !DoRpl(sv))
+		    break;
+		    } while ( (sv->subpatternsearch || sv->replacewithref) &&
+			    SearchChar(sv,i,true));
 		}
 	    }
 	} else
@@ -1646,6 +1649,7 @@ void FVReplaceOutlineWithReference( FontView *fv, double fudge ) {
     CV2SC(&sv->cv_srch,&sv->sc_srch,sv);
     CV2SC(&sv->cv_rpl,&sv->sc_rpl,sv);
     sv->replaceall = true;
+    sv->replacewithref = true;
 
     selected = galloc(sf->charcnt);
     memcpy(selected,fv->selected,sf->charcnt);
