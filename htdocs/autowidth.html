@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 19-Jul-2002 -->
-  <!-- AP: Last modified: 19-Jul-2002 -->
+  <!-- AP: Last modified: 15-Aug-2002 -->
   <TITLE>Auto Width and Auto Kern</TITLE>
 </HEAD>
 <BODY>
@@ -15,20 +15,28 @@ The Auto Width command will attempt to guess reasonable widths (more accurately
 reasonable left and right side bearings) for your font. The command looks
 at all possible combinations of indicated characters (if you request more
 than 300 characters it will only look at the first 300 to avoid running out
-of memory (300*300 takes up a fair amount of room). You must specify two
-different sets, one for the character on the left (which will have its right
-side bearing adjusted) and one for the character on the right (which will
-have its left side bearing adjusted. I know that sounds backwards but think
-about it a little), of course these two sets may be the same. You may apply
-the command to all characters in the font (if there are few than 300 of course),
-to all the selected characters, the the characters A-Z, a-z and 0-9 or to
-a list of characters you specify yourself (characters may be specified either
-by themselves or by a range, so "ace-g" means the characters a, c, e, f and
-g (if you put commas and spaces in the list they will be treated as characters.
-If you want to specify a hyphen, put it first or last, so "-a-z" means hyphen
-and all letters a-z)). <A HREF="metricsview.html#Entering">For information
-on entering non-ASCII characters see that section in the metrics view</A>,
-ranges are based on Unicode code points.
+of memory (300*300 takes up a fair amount of room). 
+<P>
+Do <FONT COLOR="Red"><EM>NOT </EM></FONT>attempt to mix scripts that are
+not artistically similar. PfaEdit will be very confused if you try to run
+autowidth on a Latin "I" and a Hebrew "Aleph". Latin, Greek and Cyrillic
+can usually be intermixed since they evolved together and the letterforms
+are similar.
+<P>
+You must specify two different sets, one for the character on the left (which
+will have its right side bearing adjusted) and one for the character on the
+right (which will have its left side bearing adjusted. I know that sounds
+backwards but think about it a little), of course these two sets may be the
+same. You may apply the command to all characters in the font (if there are
+few than 300 of course), to all the selected characters, the the characters
+A-Z, a-z and 0-9 or to a list of characters you specify yourself (characters
+may be specified either by themselves or by a range, so "ace-g" means the
+characters a, c, e, f and g (if you put commas and spaces in the list they
+will be treated as characters. If you want to specify a hyphen, put it first
+or last, so "-a-z" means hyphen and all letters a-z)).
+<A HREF="metricsview.html#Entering">For information on entering non-ASCII
+characters see that section in the metrics view</A>, ranges are based on
+Unicode code points.
 <P>
 Last of all the Spacing text box allows you to say how close you want the
 characters to be. If you look at a sanserif capital I, and you autowidth

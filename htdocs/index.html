@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 9-Aug-2002 -->
+  <!-- AP: Last modified: 18-Aug-2002 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -89,25 +89,25 @@ let me know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-020809.tgz">Download pfaedit linux-i386 Redhat 7.3
-    </A><A NAME="downloads">executable</A> Version: 9-August-2002
+    <A HREF="pfaedit-020818.tgz">Download pfaedit linux-i386 Redhat 7.3
+    </A><A NAME="downloads">executable</A> Version: 18-August-2002
   <LI>
-    <A HREF="pfaedit-020809-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
-    Version: 9-August-2002 (Redhat 7.3)
+    <A HREF="pfaedit-020818-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
+    Version: 18-August-2002 (Redhat 7.3)
   <LI>
-    <A HREF="pfaedit-020809-1.ppc.rpm">Download pfaedit linux-ppc SUSE 7.1
-    </A>binary rpm Version: 9-August-2002
+    <A HREF="pfaedit-020818-1.ppc.rpm">Download pfaedit linux-ppc SUSE 7.1
+    </A>binary rpm Version: 18-August-2002
   <LI>
-    <A HREF="pfaedit-solaris-020809.tgz">Download pfaedit Solaris 8.0
-    </A>executable Version: 9-August-2002 (no XIM support)
+    <A HREF="pfaedit-solaris-020818.tgz">Download pfaedit Solaris 8.0
+    </A>executable Version: 18-August-2002 (no XIM support)
   <LI>
     <A HREF="http://packages.debian.org/unstable/x11/pfaedit.html">A debian package
     is available at the debian site.</A>
   <LI>
     <A HREF="Problems-MacOSX.html#binary">A Mac OS/X distribution</A> (with Caveats).
-    Version 9-August-2002
+    Version 18-August-2002
   <LI>
-    <A HREF="pfaedit_cygwin-020809.tgz">A cygwin version</A>. Version: 9-August-2002
+    <A HREF="pfaedit_cygwin-020818.tgz">A cygwin version</A>. Version: 18-August-2002
   <LI>
     <A HREF="ftp://nchrem.tnw.tudelft.nl/pfaedit/">An OpenVMS executable </A>(by
     Jacob Jansen): Version Approximately 23-June-2002<BR>
@@ -116,7 +116,7 @@ let me know when you do</A>.
 <P>
 If you want to do autotracing around character images you should also download
 Martin Weber's <A HREF="http://sourceforge.net/projects/autotrace/">autotrace
-program.</A> (there's a new version as of Dec 2001)
+program.</A> (known to work with versions released Dec 2001 and April 2002)
 <P>
 If you want to edit CID keyed fonts you probably need these
 <A HREF="#cidmaps">character set descriptions</A>. (These were last updated
@@ -125,11 +125,11 @@ If you want to edit CID keyed fonts you probably need these
   <A NAME="source">Source</A> distribution
 </H2>
 <P>
-You can download a <A HREF="pfaedit-020809-1.src.rpm">source RPM</A>: Version:
-9-August-2002<BR>
-Or you can download the <A HREF="pfaedit_full-020809.tgz">entire source tree
+You can download a <A HREF="pfaedit-020818-1.src.rpm">source RPM</A>: Version:
+18-August-2002<BR>
+Or you can download the <A HREF="pfaedit_full-020818.tgz">entire source tree
 </A>in one .tgz file: Version
-9-August-2002<!--
+18-August-2002<!--
 Or you can download the following three packages. Version: 19-Jan-2002
 <UL>
 <LI>
@@ -144,7 +144,10 @@ Or you can download the following three packages. Version: 19-Jan-2002
 <LI>
 <A HREF="pfaedit_src-020119.tgz">Pfaedit source</A> (19-Jan-2002)<BR>
 -- <A HREF="overview.html">docs</A>
-</UL>-->
+</UL>--><BR>
+Or you can go to the
+<A HREF="http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/pfaedit/pfaedit/">cvs
+tree</A> and get the most recent version.
 <P>
 If you want to do autotracing around character images you should also download
 Martin Weber's <A HREF="http://sourceforge.net/projects/autotrace/">autotrace
@@ -316,6 +319,44 @@ to the script and processed (or not) by it.
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    18-August-2002
+    <UL>
+      <LI>
+	Added a dlg to show all kern pairs (and another to show all ligatures)
+      <LI>
+	Added a "Find Problems" item to check for missing bitmaps.
+      <LI>
+	Put in some warnings to the ttf parser for bad cmap and glyf tables
+      <LI>
+	PfaEdit was still having trouble about loading space bitmaps (that had been
+	generated with freetype).
+      <LI>
+	PfaEdit did not set the flag indicating manual hinting after changes by Review
+	Hints or Create Hint. Should be set now.
+      <LI>
+	Various small tweaks to the pfa/pfb output because FontLab doesn't like what
+	we currently do. Probably none will make much difference.
+      <LI>
+	The Print command would attempt to print characters outside the encoding
+	of type1 fonts. This did not work well.
+      <LI>
+	The autowidth command got very confused when given a sans-serif script to
+	autowidth when the Latin characters in the font were serifed.
+      <LI>
+	The Print sample text is now ordered so that the language specified in the
+	LANG environment variable comes first in the list.
+      <LI>
+	Added $version
+      <LI>
+	PfaEdit will now read scripts from stdin if you follow the "-script" argument
+	with "-".
+      <LI>
+	Valek points out the using CharInfo to change a character's color did not
+	change it until the fontview was refreshed
+      <LI>
+	Expand Stroke had problems when intersections bent the wrong way.
+    </UL>
   <LI>
     9-August-2002
     <UL>
@@ -922,6 +963,9 @@ and rarely appear on this list.
   <LI>
     PfaEdit will not copy and paste large (&gt;XServer transfer (4Meg on my machine))
     clipboards of text.
+  <LI>
+    Under gnome mnemonics in menus don't work. Personally I consider this a bug
+    in gnome.
   <LI>
     ???
 </UL>

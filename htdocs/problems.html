@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 28-Jun-2001 -->
-  <!-- AP: Last modified: 8-Apr-2002 -->
+  <!-- AP: Last modified: 13-Aug-2002 -->
   <TITLE>Finding common font problems automagically</TITLE>
 </HEAD>
 <BODY>
@@ -159,7 +159,7 @@ a bad stem it will select it, stop and allow you to fix things.
 Both PostScript and TrueType require that paths be traced in a clockwise
 fashion. This sometimes doesn't matter, but many rasterizers do a better
 job if this rule is obeyed. This command will detect whether this constraint
-is violated. 
+is violated.
 <P>
 Currently the command will report the same error several times if you do
 not fix the problem. That's sort of a bug, but I don't see an easy way around
@@ -171,7 +171,15 @@ it yet.
 As above PostScript and TrueType like clockwise paths. If you have a flipped
 reference then either the reference or the original character will be drawn
 with a counter-clockwise path. To fix it you should Edit-&gt;Unlink the reference
-and Element-&gt;Correct Direction. 
+and Element-&gt;Correct Direction.
+<H3>
+  <STRONG>Missing Bitmaps</STRONG>
+</H3>
+<P>
+Look through the associated bitmap fonts, and find if there is a bitmap font
+which is missing versions of characters present in the outline font. Conversely
+look for bitmap fonts with characters which are not present in the outline
+font. 
   <HR>
 <P>
 If your font is a CID keyed font you will also get:

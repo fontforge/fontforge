@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 6-Aug-2002 -->
+  <!-- AP: Last modified: 17-Aug-2002 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -49,8 +49,10 @@ and begin each one with the line<BR>
 the script just by typing<BR>
 <CODE>&nbsp; &nbsp; $ scriptfile.pe {fontnames}</CODE>
 <P>
-(If you build PfaEdit without X11 then pfaedit will attempt to read a script
-file from <CODE>stdin</CODE> if none is given on the command line.)
+If you wish PfaEdit to read from stdin then you can use "-" as a "filename"
+for stdin. (If you build PfaEdit without X11 then pfaedit will attempt to
+read a script file from <CODE>stdin</CODE> if none is given on the command
+line.)
 <P>
 You can also start a script from within PfaEdit with File-&gt;Execute Script,
 and you can use the Preference Dlg to define a set of frequently used scripts
@@ -327,6 +329,9 @@ to (some) already existing ones)
   <LI>
     <CODE>$trace</CODE> if this is set to one then PfaEdit will trace each procedure
     call.
+  <LI>
+    <CODE>$version</CODE> returns a string containing the current version of
+    pfaedit. This should look something like "020817".
 </UL>
 <P>
 The following example will perform an action on all loaded fonts:
