@@ -607,7 +607,7 @@ static void readttfmaxp(FILE *ttf,struct ttfinfo *info) {
     fseek(ttf,info->maxp_start+4,SEEK_SET);		/* skip over the version number */
     cnt = getushort(ttf);
     if ( cnt!=info->glyph_cnt && info->glyph_cnt!=0 ) {
-	GDrawError("TTF Font has bad glyph count field. maxp says: %d sizeof(loca)=>%d", cnt, info->glyph_cnt);
+	GDrawError("TTF file has bad glyph count field. maxp says: %d sizeof(loca)=>%d", cnt, info->glyph_cnt);
 	if ( cnt>info->glyph_cnt )
 	    cnt = info->glyph_cnt;		/* Use the smaller of the two values */
     }
