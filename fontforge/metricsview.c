@@ -600,9 +600,10 @@ void MVReKern(MetricsView *mv) {
 }
 
 static BDFChar *MVRasterize(MetricsView *mv,SplineChar *sc) {
-    BDFChar *bdfc;
+    BDFChar *bdfc=NULL;
 
-    bdfc = SplineCharFreeTypeRasterizeNoHints(sc,mv->pixelsize,mv->antialias?4:1);
+    if ( !sc->parent->multilayer )
+	bdfc = SplineCharFreeTypeRasterizeNoHints(sc,mv->pixelsize,mv->antialias?4:1);
     if ( bdfc!=NULL )
 	/* All done */;
     else if ( mv->antialias && mv->pixelsize<1000 ) {
