@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jul-2003 -->
-  <!-- AP: Last modified: 13-Oct-2004 -->
+  <!-- AP: Last modified: 24-Feb-2005 -->
   <TITLE>FontForge's math</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -188,6 +188,14 @@ the dot product of this normal component with the slope from the <I>other</I>
 end-point, and multiply this by the unit slope of the <I>other</I> end point
 and adjust its control point by this amount (CP<SUB>o</SUB> +=
 len2*Unit-Slope<SUB>o</SUB>). 
+<H3>
+  Nor did that
+</H3>
+<P>
+What I do now is calculate the slope vectors at the endpoints and then try
+many reasonable lengths for those vectors and see which yields the best
+approximation to the original curve (this gives us our new control points).
+No need for least squares at all.
   <HR>
 <H4>
   <SUP><A NAME="guess-t">1</A></SUP>Guessing values for t

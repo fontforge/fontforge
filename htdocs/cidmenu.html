@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 30-Jul-2001 -->
-  <!-- AP: Last modified: 13-Oct-2004 -->
+  <!-- AP: Last modified: 3-Mar-2005 -->
   <TITLE>The CID Menu and CID keyed fonts</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -77,7 +77,9 @@ fonts on the font view page</A>.
   <DD>
     If the current font is a CID font then this command will convert it into
     a normal (flat) font by taking all the glyphs from all the sub-fonts and
-    merging them into one normal font.
+    merging them into one normal font. The new font should be in the same order
+    as the CID font (ie. ordered by CID). After this operation you may re-encode
+    it into whatever encoding is appropriate.
   <DT>
     <A NAME="FlattenCMap">Flatten</A> By CMap
   <DD>
