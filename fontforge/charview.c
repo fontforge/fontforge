@@ -4987,6 +4987,7 @@ void SPChangePointType(SplinePoint *sp, int pointtype) {
     BasePoint unitnext, unitprev;
     double nextlen, prevlen;
     int makedflt;
+    /*int oldpointtype = sp->pointtype;*/
 
     if ( sp->pointtype==pointtype ) {
 	if ( pointtype==pt_curve ) {
@@ -5024,7 +5025,9 @@ return;
 	    SplineCharTangentPrevCP(sp);
 	    if ( sp->prev ) SplineRefigure(sp->prev);
 	}
-    } else if ( BpColinear(&sp->prevcp,&sp->me,&sp->nextcp) ) {
+    } else if ( BpColinear(&sp->prevcp,&sp->me,&sp->nextcp) ||
+	    ( sp->nonextcp ^ sp->noprevcp )) {
+	/* Retain the old control points */
     } else {
 	unitnext.x = sp->nextcp.x-sp->me.x; unitnext.y = sp->nextcp.y-sp->me.y;
 	nextlen = sqrt(unitnext.x*unitnext.x + unitnext.y*unitnext.y);
