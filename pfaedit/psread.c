@@ -112,8 +112,11 @@ enum pstoks { pt_eof=-1, pt_moveto, pt_rmoveto, pt_curveto, pt_rcurveto,
     pt_gsave, pt_grestore, pt_save, pt_restore, pt_currentmatrix, pt_setmatrix,
     pt_setmiterlimit, pt_setdash,
 
+    pt_mark, pt_counttomark, pt_cleartomark, pt_array, pt_aload, pt_astore,
+    pt_print, pt_cvi, pt_cvlit, pt_cvn, pt_cvr, pt_cvrs, pt_cvs, pt_cvx, pt_stringop,
+
     pt_opencurly, pt_closecurly, pt_openarray, pt_closearray, pt_string,
-    pt_number, pt_unknown, pt_namelit };
+    pt_number, pt_unknown, pt_namelit, pt_output, pt_outputd };
 
 char *toknames[] = { "moveto", "rmoveto", "curveto", "rcurveto",
 	"lineto", "rlineto", "arc", "arcn", "arct", "arcto",
@@ -137,8 +140,11 @@ char *toknames[] = { "moveto", "rmoveto", "curveto", "rcurveto",
 	"gsave", "grestore", "save", "restore", "currentmatrix", "setmatrix",
 	"setmiterlimit", "setdash",
 
+	"mark", "counttomark", "cleartomark", "array", "aload", "astore",
+	"print", "cvi", "cvlit", "cvn", "cvr", "cvrs", "cvs", "cvx", "string",
+
 	"opencurly", "closecurly", "openarray", "closearray", "string",
-	"number", "unknown", "namelit",
+	"number", "unknown", "namelit", "=", "==",
 
 	NULL };
 
@@ -357,11 +363,13 @@ static void ECCatagorizePoints( EntityChar *ec ) {
 
 struct pskeydict {
     int16 cnt, max;
+    uint8 is_executable;
     struct pskeyval *entries;
 };
 
 struct psstack {
-    enum pstype { ps_num, ps_bool, ps_string, ps_instr, ps_lit } type;
+    enum pstype { ps_void, ps_num, ps_bool, ps_string, ps_instr, ps_lit,
+		  ps_mark, ps_array, ps_dict } type;
     union vals {
 	real val;
 	int tf;
@@ -420,8 +428,9 @@ static int rollstack(struct psstack *stack, int sp) {
 	n = stack[sp-2].u.val;
 	j = stack[sp-1].u.val;
 	sp-=2;
-	if ( sp>=n ) {
+	if ( sp>=n && n>0 ) {
 	    j %= n;
+	    if ( j<0 ) j += n;
 	    temp = galloc(n*sizeof(struct psstack));
 	    for ( i=0; i<n; ++i )
 		temp[i] = stack[sp-n+i];
@@ -504,6 +513,98 @@ return( &dict->entries[i] );
 return( NULL );
 }
 
+static void dictfree(struct pskeydict *dict) {
+    int i;
+
+    for ( i=0; i<dict->cnt; ++i ) {
+	if ( dict->entries[i].type==ps_string || dict->entries[i].type==ps_instr ||
+		dict->entries[i].type==ps_lit )
+	    free(dict->entries[i].u.str);
+	else if ( dict->entries[i].type==ps_array || dict->entries[i].type==ps_dict )
+	    dictfree(&dict->entries[i].u.dict);
+    }
+}
+
+static void copyarray(struct pskeydict *to,struct pskeydict *from) {
+    int i;
+    struct pskeyval *oldent = from->entries;
+
+    *to = *from;
+    to->entries = gcalloc(to->cnt,sizeof(struct pskeyval));
+    for ( i=0; i<to->cnt; ++i ) {
+	to->entries[i] = oldent[i];
+	if ( to->entries[i].type==ps_string || to->entries[i].type==ps_instr ||
+		to->entries[i].type==ps_lit )
+	    to->entries[i].u.str = copy(to->entries[i].u.str);
+	else if ( to->entries[i].type==ps_array || to->entries[i].type==ps_dict )
+	    copyarray(&to->entries[i].u.dict,&oldent[i].u.dict);
+    }
+}
+
+static int aload(int sp, struct psstack *stack,int stacktop) {
+    int i;
+
+    if ( sp>=1 && stack[sp-1].type==ps_array ) {
+	struct pskeydict dict;
+	--sp;
+	dict = stack[sp].u.dict;
+	for ( i=0; i<dict.cnt; ++i ) {
+	    if ( sp<stacktop ) {
+		stack[sp].type = dict.entries[i].type;
+		stack[sp].u = dict.entries[i].u;
+		if ( stack[sp].type==ps_string || stack[sp].type==ps_instr ||
+			stack[sp].type==ps_lit )
+		    stack[sp].u.str = copy(stack[sp].u.str);
+/* The following is incorrect behavior, but as I don't do garbage collection */
+/*  and I'm not going to implement reference counts, this will work in most cases */
+		else if ( stack[sp].type==ps_array )
+		    copyarray(&stack[sp].u.dict,&stack[sp].u.dict);
+		++sp;
+	    }
+	}
+	if ( sp<sizeof(stack)/sizeof(stack[0]) ) {
+	    stack[sp].type = ps_array;
+	    stack[sp].u.dict = dict;
+	    ++sp;
+	}
+    }
+return( sp );
+}
+
+static void printarray(struct pskeydict *dict) {
+    int i;
+
+    printf("[" );
+    for ( i=0; i<dict->cnt; ++i ) {
+	switch ( dict->entries[i].type ) {
+	  case ps_num:
+	    printf( "%g", dict->entries[i].u.val );
+	  break;
+	  case ps_bool:
+	    printf( "%s", dict->entries[i].u.tf ? "true" : "false" );
+	  break;
+	  case ps_string: case ps_instr: case ps_lit:
+	    printf( dict->entries[i].type==ps_lit ? "/" :
+		    dict->entries[i].type==ps_string ? "(" : "{" );
+	    printf( "%s", dict->entries[i].u.str );
+	    printf( dict->entries[i].type==ps_lit ? "" :
+		    dict->entries[i].type==ps_string ? ")" : "}" );
+	  break;
+	  case ps_array:
+	    printarray(&dict->entries[i].u.dict);
+	  break;
+	  case ps_void:
+	    printf( "-- void --" );
+	  break;
+	  default:
+	    printf( "-- nostringval --" );
+	  break;
+	}
+	printf(" ");
+    }
+    printf( "]" );
+}
+
 static void freestuff(struct psstack *stack, int sp, struct pskeydict *dict, GrowBuf *gb) {
     int i;
 
@@ -519,7 +620,87 @@ static void freestuff(struct psstack *stack, int sp, struct pskeydict *dict, Gro
 	if ( stack[i].type==ps_string || stack[i].type==ps_instr ||
 		stack[i].type==ps_lit )
 	    free(stack[i].u.str);
+	else if ( stack[i].type==ps_array || stack[i].type==ps_dict )
+	    dictfree(&stack[i].u.dict);
     }
+}
+
+static void DoMatTransform(int tok,int sp,struct psstack *stack) {
+    real invt[6], t[6];
+
+    if ( stack[sp-1].u.dict.cnt==6 && stack[sp-1].u.dict.entries[0].type==ps_num ) {
+	double x = stack[sp-3].u.val, y = stack[sp-2].u.val;
+	--sp;
+	t[5] = stack[sp].u.dict.entries[5].u.val;
+	t[4] = stack[sp].u.dict.entries[4].u.val;
+	t[3] = stack[sp].u.dict.entries[3].u.val;
+	t[2] = stack[sp].u.dict.entries[2].u.val;
+	t[1] = stack[sp].u.dict.entries[1].u.val;
+	t[0] = stack[sp].u.dict.entries[0].u.val;
+	dictfree(&stack[sp].u.dict);
+	if ( tok==pt_itransform || tok==pt_idtransform ) {
+	    MatInverse(invt,t);
+	    memcpy(t,invt,sizeof(t));
+	}
+	stack[sp-2].u.val = t[0]*x + t[1]*y;
+	stack[sp-1].u.val = t[2]*x + t[3]*y;
+	if ( tok==pt_transform || tok==pt_itransform ) {
+	    stack[sp-2].u.val += t[4];
+	    stack[sp-1].u.val += t[5];
+	}
+    }
+}
+
+static int DoMatOp(int tok,int sp,struct psstack *stack) {
+    real temp[6], t[6];
+    int nsp=sp;
+
+    if ( stack[sp-1].u.dict.cnt==6 && stack[sp-1].u.dict.entries[0].type==ps_num ) {
+	t[5] = stack[sp-1].u.dict.entries[5].u.val;
+	t[4] = stack[sp-1].u.dict.entries[4].u.val;
+	t[3] = stack[sp-1].u.dict.entries[3].u.val;
+	t[2] = stack[sp-1].u.dict.entries[2].u.val;
+	t[1] = stack[sp-1].u.dict.entries[1].u.val;
+	t[0] = stack[sp-1].u.dict.entries[0].u.val;
+	switch ( tok ) {
+	  case pt_translate:
+	    if ( sp>=3 ) {
+		stack[sp-1].u.dict.entries[5].u.val += stack[sp-3].u.val*t[0]+stack[sp-2].u.val*t[2];
+		stack[sp-1].u.dict.entries[4].u.val += stack[sp-3].u.val*t[1]+stack[sp-2].u.val*t[3];
+		nsp = sp-2;
+	    }
+	  break;
+	  case pt_scale:
+	    if ( sp>=2 ) {
+		stack[sp-1].u.dict.entries[0].u.val *= stack[sp-3].u.val;
+		stack[sp-1].u.dict.entries[1].u.val *= stack[sp-3].u.val;
+		stack[sp-1].u.dict.entries[2].u.val *= stack[sp-2].u.val;
+		stack[sp-1].u.dict.entries[3].u.val *= stack[sp-2].u.val;
+		/* transform[4,5] are unchanged */
+		nsp = sp-2;
+	    }
+	  break;
+	  case pt_rotate:
+	    if ( sp>=1 ) {
+		--sp;
+		temp[0] = temp[3] = cos(stack[sp].u.val);
+		temp[1] = sin(stack[sp].u.val);
+		temp[2] = -temp[1];
+		temp[4] = temp[5] = 0;
+		MatMultiply(temp,t,t);
+		stack[sp-1].u.dict.entries[5].u.val = t[5];
+		stack[sp-1].u.dict.entries[4].u.val = t[4];
+		stack[sp-1].u.dict.entries[3].u.val = t[3];
+		stack[sp-1].u.dict.entries[2].u.val = t[2];
+		stack[sp-1].u.dict.entries[1].u.val = t[1];
+		stack[sp-1].u.dict.entries[0].u.val = t[0];
+		nsp = sp-1;
+	    }
+	  break;
+	}
+	stack[nsp-1] = stack[sp-1];
+    }
+return(nsp);
 }
 
 static Entity *EntityCreate(SplinePointList *head,int linecap,int linejoin,
@@ -538,7 +719,7 @@ return( ent );
 static void InterpretPS(FILE *ps, EntityChar *ec) {
     SplinePointList *cur=NULL, *head=NULL;
     BasePoint current, temp;
-    int tok, i;
+    int tok, i, j;
     struct psstack stack[100];
     real dval;
     int sp=0;
@@ -593,10 +774,38 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 	    else if ( sp<sizeof(stack)/sizeof(stack[0]) ) {
 		stack[sp].type = kv->type;
 		stack[sp++].u = kv->u;
-		if ( kv->type==ps_instr || kv->type==ps_lit )
+		if ( kv->type==ps_instr || kv->type==ps_lit || kv->type==ps_string )
 		    stack[sp-1].u.str = copy(stack[sp-1].u.str);
+		else if ( kv->type==ps_array || kv->type==ps_dict ) {
+		    copyarray(&stack[sp-1].u.dict,&stack[sp-1].u.dict);
+		    if ( stack[sp-1].u.dict.is_executable )
+			sp = aload(sp,stack,sizeof(stack)/sizeof(stack[0]));
+		}
 	    }
-	} else switch ( tok ) {
+	} else {
+#if 0	/* /ps{count /foo exch def count copy foo array astore ==}def */
+	/* printstack */
+int ii;
+for ( ii=0; ii<sp; ++ii )
+ if ( stack[ii].type==ps_num )
+  printf( "%g ", stack[ii].u.val );
+ else if ( stack[ii].type==ps_bool )
+  printf( "%s ", stack[ii].u.tf ? "true" : "false" );
+ else if ( stack[ii].type==ps_string )
+  printf( "(%s) ", stack[ii].u.str );
+ else if ( stack[ii].type==ps_lit )
+  printf( "/%s ", stack[ii].u.str );
+ else if ( stack[ii].type==ps_instr )
+  printf( "-%s- ", stack[ii].u.str );
+ else if ( stack[ii].type==ps_mark )
+  printf( "--mark-- " );
+ else if ( stack[ii].type==ps_array )
+  printf( "--[]-- " );
+ else
+  printf( "--???-- " );
+printf( "-%s-\n", toknames[tok]);
+#endif
+	switch ( tok ) {
 	  case pt_number:
 	    if ( sp<sizeof(stack)/sizeof(stack[0]) ) {
 		stack[sp].type = ps_num;
@@ -606,7 +815,7 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 	  case pt_string:
 	    if ( sp<sizeof(stack)/sizeof(stack[0]) ) {
 		stack[sp].type = ps_string;
-		stack[sp++].u.str = copy(tokbuf);
+		stack[sp++].u.str = copyn(tokbuf+1,strlen(tokbuf)-2);
 	    }
 	  break;
 	  case pt_true: case pt_false:
@@ -637,6 +846,8 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 		if ( stack[sp].type==ps_string || stack[sp].type==ps_instr ||
 			stack[sp].type==ps_lit )
 		    free(stack[sp].u.str);
+		else if ( stack[sp].type==ps_array || stack[sp].type==ps_dict )
+		    dictfree(&stack[sp].u.dict);
 	    }
 	  break;
 	  case pt_clear:
@@ -645,6 +856,8 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 		if ( stack[sp].type==ps_string || stack[sp].type==ps_instr ||
 			stack[sp].type==ps_lit )
 		    free(stack[sp].u.str);
+		else if ( stack[sp].type==ps_array || stack[sp].type==ps_dict )
+		    dictfree(&stack[sp].u.dict);
 	    }
 	  break;
 	  case pt_dup:
@@ -653,12 +866,16 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 		if ( stack[sp].type==ps_string || stack[sp].type==ps_instr ||
 			stack[sp].type==ps_lit )
 		    stack[sp].u.str = copy(stack[sp].u.str);
+    /* The following is incorrect behavior, but as I don't do garbage collection */
+    /*  and I'm not going to implement reference counts, this will work in most cases */
+		else if ( stack[sp].type==ps_array )
+		    copyarray(&stack[sp].u.dict,&stack[sp].u.dict);
 		++sp;
 	    }
 	  break;
 	  case pt_copy:
 	    if ( sp>0 ) {
-		int n = stack[sp-1].u.val;
+		int n = stack[--sp].u.val;
 		if ( n+sp<sizeof(stack)/sizeof(stack[0]) ) {
 		    int i;
 		    for ( i=0; i<n; ++i ) {
@@ -666,6 +883,10 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 			if ( stack[sp].type==ps_string || stack[sp].type==ps_instr ||
 				stack[sp].type==ps_lit )
 			    stack[sp].u.str = copy(stack[sp].u.str);
+    /* The following is incorrect behavior, but as I don't do garbage collection */
+    /*  and I'm not going to implement reference counts, this will work in most cases */
+			else if ( stack[sp].type==ps_array )
+			    copyarray(&stack[sp].u.dict,&stack[sp].u.dict);
 			++sp;
 		    }
 		}
@@ -680,7 +901,7 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 	    }
 	  break;
 	  case pt_roll:
-	    rollstack(stack,sp);
+	    sp = rollstack(stack,sp);
 	  break;
 	  case pt_index:
 	    if ( sp>0 ) {
@@ -690,6 +911,10 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 		    if ( stack[sp].type==ps_string || stack[sp].type==ps_instr ||
 			    stack[sp].type==ps_lit )
 			stack[sp].u.str = copy(stack[sp].u.str);
+    /* The following is incorrect behavior, but as I don't do garbage collection */
+    /*  and I'm not going to implement reference counts, this will work in most cases */
+		    else if ( stack[sp].type==ps_array )
+			copyarray(&stack[sp].u.dict,&stack[sp].u.dict);
 		    ++sp;
 		}
 	    }
@@ -805,6 +1030,8 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 	    if ( sp>=2 ) {
 		if ( stack[sp-2].type!=stack[sp-1].type )
 		    stack[sp-2].u.tf = false;
+		else if ( stack[sp-2].type==ps_array )
+		    fprintf( stderr, "Can't compare arrays\n" );
 		else {
 		    int cmp;
 		    if ( stack[sp-2].type==ps_num )
@@ -928,14 +1155,18 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 		ec->width = stack[--sp].u.val;
 	  break;
 	  case pt_translate:
-	    if ( sp>=2 ) {
+	    if ( sp>=1 && stack[sp-1].type==ps_array )
+		sp = DoMatOp(tok,sp,stack);
+	    else if ( sp>=2 ) {
 		transform[4] += stack[sp-2].u.val*transform[0]+stack[sp-1].u.val*transform[2];
 		transform[5] += stack[sp-2].u.val*transform[1]+stack[sp-1].u.val*transform[3];
 		sp -= 2;
 	    }
 	  break;
 	  case pt_scale:
-	    if ( sp>=2 ) {
+	    if ( sp>=1 && stack[sp-1].type==ps_array )
+		sp = DoMatOp(tok,sp,stack);
+	    else if ( sp>=2 ) {
 		transform[0] *= stack[sp-2].u.val;
 		transform[1] *= stack[sp-2].u.val;
 		transform[2] *= stack[sp-1].u.val;
@@ -945,7 +1176,9 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 	    }
 	  break;
 	  case pt_rotate:
-	    if ( sp>=1 ) {
+	    if ( sp>=1 && stack[sp-1].type==ps_array )
+		sp = DoMatOp(tok,sp,stack);
+	    else if ( sp>=1 ) {
 		--sp;
 		t[0] = t[3] = cos(stack[sp].u.val);
 		t[1] = sin(stack[sp].u.val);
@@ -955,39 +1188,65 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 	    }
 	  break;
 	  case pt_concat:
-	    if ( sp>=6 ) {
-		t[5] = stack[--sp].u.val;
-		t[4] = stack[--sp].u.val;
-		t[3] = stack[--sp].u.val;
-		t[2] = stack[--sp].u.val;
-		t[1] = stack[--sp].u.val;
-		t[0] = stack[--sp].u.val;
-		MatMultiply(t,transform,transform);
+	    if ( sp>=1 ) {
+		if ( stack[sp-1].type==ps_array ) {
+		    if ( stack[sp-1].u.dict.cnt==6 && stack[sp-1].u.dict.entries[0].type==ps_num ) {
+			--sp;
+			t[5] = stack[sp].u.dict.entries[5].u.val;
+			t[4] = stack[sp].u.dict.entries[4].u.val;
+			t[3] = stack[sp].u.dict.entries[3].u.val;
+			t[2] = stack[sp].u.dict.entries[2].u.val;
+			t[1] = stack[sp].u.dict.entries[1].u.val;
+			t[0] = stack[sp].u.dict.entries[0].u.val;
+			dictfree(&stack[sp].u.dict);
+			MatMultiply(t,transform,transform);
+		    }
+		}
 	    }
 	  break;
 	  case pt_transform:
-	    if ( sp>=2 ) {
+	    if ( sp>=1 && stack[sp-1].type==ps_array ) {
+		if ( sp>=3 ) {
+		    DoMatTransform(tok,sp,stack);
+		    --sp;
+		}
+	    } else if ( sp>=2 ) {
 		double x = stack[sp-2].u.val, y = stack[sp-1].u.val;
 		stack[sp-2].u.val = transform[0]*x + transform[1]*y + transform[4];
 		stack[sp-1].u.val = transform[2]*x + transform[3]*y + transform[5];
 	    }
 	  break;
 	  case pt_itransform:
-	    if ( sp>=2 ) {
+	    if ( sp>=1 && stack[sp-1].type==ps_array ) {
+		if ( sp>=3 ) {
+		    DoMatTransform(tok,sp,stack);
+		    --sp;
+		}
+	    } else if ( sp>=2 ) {
 		double x = stack[sp-2].u.val-transform[4], y = stack[sp-1].u.val-transform[5];
 		MatInverse(t,transform);
-		stack[sp-2].u.val = t[0]*x + t[1]*y;
-		stack[sp-1].u.val = t[2]*x + t[3]*y;
+		stack[sp-2].u.val = t[0]*x + t[1]*y + t[4];
+		stack[sp-1].u.val = t[2]*x + t[3]*y + t[5];
 	    }
 	  case pt_dtransform:
-	    if ( sp>=2 ) {
+	    if ( sp>=1 && stack[sp-1].type==ps_array ) {
+		if ( sp>=3 ) {
+		    DoMatTransform(tok,sp,stack);
+		    --sp;
+		}
+	    } else if ( sp>=2 ) {
 		double x = stack[sp-2].u.val, y = stack[sp-1].u.val;
 		stack[sp-2].u.val = transform[0]*x + transform[1]*y;
 		stack[sp-1].u.val = transform[2]*x + transform[3]*y;
 	    }
 	  break;
 	  case pt_idtransform:
-	    if ( sp>=2 ) {
+	    if ( sp>=1 && stack[sp-1].type==ps_array ) {
+		if ( sp>=3 ) {
+		    DoMatTransform(tok,sp,stack);
+		    --sp;
+		}
+	    } else if ( sp>=2 ) {
 		double x = stack[sp-2].u.val, y = stack[sp-1].u.val;
 		MatInverse(t,transform);
 		stack[sp-2].u.val = t[0]*x + t[1]*y;
@@ -1408,6 +1667,195 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 		--sp;
 	  break;
 
+	  case pt_openarray: case pt_mark:
+	    if ( sp<sizeof(stack)/sizeof(stack[0]) ) {
+		stack[sp++].type = ps_mark;
+	    }
+	  break;
+	  case pt_counttomark:
+	    for ( i=0; i<sp; ++i )
+		if ( stack[sp-1-i].type==ps_mark )
+	    break;
+	    if ( i==sp )
+		fprintf( stderr, "No mark in counttomark\n" );
+	    else if ( sp<sizeof(stack)/sizeof(stack[0]) ) {
+		stack[sp].type = ps_num;
+		stack[sp++].u.val = i;
+	    }
+	  break;
+	  case pt_cleartomark:
+	    for ( i=0; i<sp; ++i )
+		if ( stack[sp-1-i].type==ps_mark )
+	    break;
+	    if ( i==sp )
+		fprintf( stderr, "No mark in cleartomark\n" );
+	    else
+		sp = sp-i-1;
+	  break;
+	  case pt_closearray:
+	    for ( i=0; i<sp; ++i )
+		if ( stack[sp-1-i].type==ps_mark )
+	    break;
+	    if ( i==sp )
+		fprintf( stderr, "No mark in ] (close array)\n" );
+	    else {
+		struct pskeydict dict;
+		dict.cnt = dict.max = i;
+		dict.entries = gcalloc(i,sizeof(struct pskeyval));
+		for ( j=0; j<i; ++j ) {
+		    dict.entries[j].type = stack[sp-i+j].type;
+		    dict.entries[j].u = stack[sp-i+j].u;
+		    /* don't need to copy because the things on the stack */
+		    /*  are being popped (don't need to free either) */
+		}
+		sp = sp-i;
+		stack[sp-1].type = ps_array;
+		stack[sp-1].u.dict = dict;
+	    }
+	  break;
+	  case pt_array:
+	    if ( sp>=1 && stack[sp-1].type==ps_num ) {
+		struct pskeydict dict;
+		dict.cnt = dict.max = stack[sp-1].u.val;
+		dict.entries = gcalloc(dict.cnt,sizeof(struct pskeyval));
+		/* all entries are inited to void */
+		stack[sp-1].type = ps_array;
+		stack[sp-1].u.dict = dict;
+	    }
+	  break;
+	  case pt_aload:
+	    sp = aload(sp,stack,sizeof(stack)/sizeof(stack[0]));
+	  break;
+	  case pt_astore:
+	    if ( sp>=1 && stack[sp-1].type==ps_array ) {
+		struct pskeydict dict;
+		--sp;
+		dict = stack[sp].u.dict;
+		if ( sp>=dict.cnt ) {
+		    for ( i=dict.cnt-1; i>=0 ; --i ) {
+			--sp;
+			dict.entries[i].type = stack[sp].type;
+			dict.entries[i].u = stack[sp].u;
+		    }
+		}
+		stack[sp].type = ps_array;
+		stack[sp].u.dict = dict;
+		++sp;
+	    }
+	  break;
+
+	  case pt_output: case pt_outputd: case pt_print:
+	    if ( sp>=1 ) {
+		--sp;
+		switch ( stack[sp].type ) {
+		  case ps_num:
+		    printf( "%g", stack[sp].u.val );
+		  break;
+		  case ps_bool:
+		    printf( "%s", stack[sp].u.tf ? "true" : "false" );
+		  break;
+		  case ps_string: case ps_instr: case ps_lit:
+		    if ( tok==pt_outputd )
+			printf( stack[sp].type==ps_lit ? "/" :
+				stack[sp].type==ps_string ? "(" : "{" );
+		    printf( "%s", stack[sp].u.str );
+		    if ( tok==pt_outputd )
+			printf( stack[sp].type==ps_lit ? "" :
+				stack[sp].type==ps_string ? ")" : "}" );
+		    free(stack[sp].u.str);
+		  break;
+		  case ps_void:
+		    printf( "-- void --" );
+		  break;
+		  case ps_array:
+		    if ( tok==pt_outputd ) {
+			printarray(&stack[sp].u.dict);
+			dictfree(&stack[sp].u.dict);
+		  break;
+		    } /* else fall through */
+		    dictfree(&stack[sp].u.dict);
+		  default:
+		    printf( "-- nostringval --" );
+		  break;
+		}
+		if ( tok==pt_output || tok==pt_outputd )
+		    printf( "\n" );
+	    } else
+		fprintf(stderr, "Nothing on stack to print\n" );
+	  break;
+
+	  case pt_cvi: case pt_cvr:
+	    /* I shan't distinguish between integers and reals */
+	    if ( sp>=1 && stack[sp-1].type==ps_string ) {
+		double val = strtod(stack[sp-1].u.str,NULL);
+		free(stack[sp-1].u.str);
+		stack[sp-1].u.val = val;
+		stack[sp-1].type = ps_num;
+	    }
+	  break;
+	  case pt_cvlit:
+	    if ( sp>=1 ) {
+		if ( stack[sp-1].type==ps_array )
+		    stack[sp-1].u.dict.is_executable = false;
+	    }
+	  case pt_cvn:
+	    if ( sp>=1 ) {
+		if ( stack[sp-1].type==ps_string )
+		    stack[sp-1].type = ps_lit;
+	    }
+	  case pt_cvx:
+	    if ( sp>=1 ) {
+		if ( stack[sp-1].type==ps_array )
+		    stack[sp-1].u.dict.is_executable = true;
+	    }
+	  break;
+	  case pt_cvrs:
+	    if ( sp>=3 && stack[sp-1].type==ps_string &&
+		    stack[sp-2].type==ps_num &&
+		    stack[sp-3].type==ps_num ) {
+		if ( stack[sp-2].u.val==8 )
+		    sprintf( stack[sp-1].u.str, "%o", (int) stack[sp-3].u.val );
+		else if ( stack[sp-2].u.val==16 )
+		    sprintf( stack[sp-1].u.str, "%X", (int) stack[sp-3].u.val );
+		else /* default to radix 10 no matter what they asked for */
+		    sprintf( stack[sp-1].u.str, "%g", stack[sp-3].u.val );
+		stack[sp-3] = stack[sp-1];
+		sp-=2;
+	    }
+	  break;
+	  case pt_cvs:
+	    if ( sp>=2 && stack[sp-1].type==ps_string ) {
+		switch ( stack[sp].type ) {
+		  case ps_num:
+		    sprintf( stack[sp-1].u.str, "%g", stack[sp-2].u.val );
+		  break;
+		  case ps_bool:
+		    sprintf( stack[sp-1].u.str, "%s", stack[sp-2].u.tf ? "true" : "false" );
+		  break;
+		  case ps_string: case ps_instr: case ps_lit:
+		    sprintf( stack[sp-1].u.str, "%s", stack[sp-2].u.str );
+		    free(stack[sp].u.str);
+		  break;
+		  case ps_void:
+		    printf( "-- void --" );
+		  break;
+		  case ps_array:
+		    dictfree(&stack[sp].u.dict);
+		  default:
+		    sprintf( stack[sp-1].u.str, "-- nostringval --" );
+		  break;
+		}
+		stack[sp-2] = stack[sp-1];
+		--sp;
+	    }
+	  break;
+	  case pt_stringop:	/* the string keyword, not the () thingy */
+	    if ( sp>=1 && stack[sp-1].type==ps_num ) {
+		stack[sp-1].type = ps_string;
+		stack[sp-1].u.str = gcalloc(stack[sp-1].u.val+1,1);
+	    }
+	  break;
+
 	  case pt_unknown:
 	    if ( !warned ) {
 		fprintf( stderr, "Warning: Unable to parse token %s, some features may be lost\n", tokbuf );
@@ -1416,9 +1864,8 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 	  break;
 
 	  default:
-	  case pt_openarray: case pt_closearray:
 	  break;
-	}
+	}}
     }
  done:
     freestuff(stack,sp,&dict,&gb);
