@@ -1409,11 +1409,13 @@ return( true );
 	    dx = cursp->nextcp.x - cursp->me.x;
 	    dy = cursp->nextcp.y - cursp->me.y;
 	    len = sqrt(dx*dx+dy*dy);
-	    len2 = sqrt((cursp->prevcp.x-cursp->me.x)*(cursp->prevcp.x-cursp->me.x)+
-		    (cursp->prevcp.y-cursp->me.y)*(cursp->prevcp.y-cursp->me.y));
-	    cursp->prevcp.x=cursp->me.x-dx*len2/len;
-	    cursp->prevcp.y=cursp->me.y-dy*len2/len;
-	    SplineRefigure(cursp->prev);
+	    if ( len!=0 ) {
+		len2 = sqrt((cursp->prevcp.x-cursp->me.x)*(cursp->prevcp.x-cursp->me.x)+
+			(cursp->prevcp.y-cursp->me.y)*(cursp->prevcp.y-cursp->me.y));
+		cursp->prevcp.x=cursp->me.x-dx*len2/len;
+		cursp->prevcp.y=cursp->me.y-dy*len2/len;
+		SplineRefigure(cursp->prev);
+	    }
 	}
 	if ( ci->sc->parent->order2 )
 	    SplinePointNextCPChanged2(cursp,false);
@@ -1449,11 +1451,13 @@ return( true );
 	    dx = cursp->prevcp.x - cursp->me.x;
 	    dy = cursp->prevcp.y - cursp->me.y;
 	    len = sqrt(dx*dx+dy*dy);
-	    len2 = sqrt((cursp->nextcp.x-cursp->me.x)*(cursp->nextcp.x-cursp->me.x)+
-		    (cursp->nextcp.y-cursp->me.y)*(cursp->nextcp.y-cursp->me.y));
-	    cursp->nextcp.x=cursp->me.x-dx*len2/len;
-	    cursp->nextcp.y=cursp->me.y-dy*len2/len;
-	    SplineRefigure(cursp->next);
+	    if ( len!=0 ) {
+		len2 = sqrt((cursp->nextcp.x-cursp->me.x)*(cursp->nextcp.x-cursp->me.x)+
+			(cursp->nextcp.y-cursp->me.y)*(cursp->nextcp.y-cursp->me.y));
+		cursp->nextcp.x=cursp->me.x-dx*len2/len;
+		cursp->nextcp.y=cursp->me.y-dy*len2/len;
+		SplineRefigure(cursp->next);
+	    }
 	}
 	if ( ci->sc->parent->order2 )
 	    SplinePointPrevCPChanged2(cursp,false);
