@@ -69,7 +69,7 @@ static int svg_outfontheader(FILE *file, SplineFont *sf) {
     QuickBlues(sf,&bd);
 
     fprintf( file, "<?xml version=\"1.0\" standalone=\"no\"?>\n" );
-    fprintf( file, "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd\" >\n" );
+    fprintf( file, "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\" >\n" );
     if ( sf->comments!=NULL ) {
 	fprintf( file, "<!--\n" );
 	latin1ToUtf8Out(file,sf->comments);
@@ -605,19 +605,21 @@ int _ExportSVG(FILE *svg,SplineChar *sc) {
 
     oldloc = setlocale(LC_NUMERIC,"C");
     fprintf(svg, "<?xml version=\"1.0\" standalone=\"no\"?>\n" );
-    fprintf(svg, "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg11.dtd\" >\n" ); 
+    fprintf(svg, "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\" >\n" ); 
     em_size = sc->parent->ascent+sc->parent->descent;
-    fprintf(svg, "<svg viewBox=\"0 %d %d %d\" transform=\"matrix(1 0 0 -1 0 %d)\">\n",
-	    -sc->parent->descent, em_size, em_size,
+    fprintf(svg, "<svg viewBox=\"0 %d %d %d\">\n",
+	    -sc->parent->descent, em_size, em_size );
+    fprintf(svg, "  <g transform=\"matrix(1 0 0 -1 0 %d)\">\n",
 	    sc->parent->ascent );
-    fprintf(svg, "  <g stroke=\"green\" stroke-width=\"1\">\n" );
-    fprintf(svg, "    <line x1=\"0\" y1=\"0\" x2=\"%d\" y2=\"0\" />\n", sc->width );
-    fprintf(svg, "    <line x1=\"0\" y1=\"10\" x2=\"0\" y2=\"-10\" />\n" );
-    fprintf(svg, "    <line x1=\"%d\" y1=\"10\" x2=\"%d\" y2=\"-10\" />\n",
+    fprintf(svg, "   <g stroke=\"green\" stroke-width=\"1\">\n" );
+    fprintf(svg, "     <line x1=\"0\" y1=\"0\" x2=\"%d\" y2=\"0\" />\n", sc->width );
+    fprintf(svg, "     <line x1=\"0\" y1=\"10\" x2=\"0\" y2=\"-10\" />\n" );
+    fprintf(svg, "     <line x1=\"%d\" y1=\"10\" x2=\"%d\" y2=\"-10\" />\n",
 	    sc->width, sc->width );
-    fprintf(svg, "  </g>\n\n" );
-    fprintf(svg, "  <path fill=\"currentColor\"\n");
+    fprintf(svg, "   </g>\n\n" );
+    fprintf(svg, "   <path fill=\"currentColor\"\n");
     svg_scpathdump(svg,sc);
+    fprintf(svg, "  </g>\n\n" );
     fprintf(svg, "</svg>\n" );
 
     setlocale(LC_NUMERIC,oldloc);
