@@ -160,7 +160,7 @@ struct lookup {
 enum gsub_inusetype { git_normal, git_justinuse, git_findnames };
 
 static uint16 *getCoverageTable(FILE *ttf, int coverage_offset, struct ttfinfo *info) {
-    int format, cnt, i,j;
+    int format, cnt, i,j, rcnt;
     uint16 *glyphs=NULL;
     int start, end, ind, max;
 
@@ -178,8 +178,8 @@ static uint16 *getCoverageTable(FILE *ttf, int coverage_offset, struct ttfinfo *
 	}
     } else if ( format==2 ) {
 	glyphs = gcalloc((max=256),sizeof(uint16));
-	cnt = getushort(ttf);
-	for ( i=0; i<cnt; ++i ) {
+	rcnt = getushort(ttf); cnt = 0;
+	for ( i=0; i<rcnt; ++i ) {
 	    start = getushort(ttf);
 	    end = getushort(ttf);
 	    ind = getushort(ttf);
@@ -198,9 +198,9 @@ static uint16 *getCoverageTable(FILE *ttf, int coverage_offset, struct ttfinfo *
 		if ( j>=info->glyph_cnt )
 		    glyphs[j-start+ind] = 0;
 	    }
+	    if ( ind+end-start+1>cnt )
+		cnt = ind+end-start+1;
 	}
-	if ( cnt!=0 )
-	    cnt = ind+end-start+1;
     } else {
 	fprintf( stderr, "Bad format for coverage table %d\n", format );
 return( NULL );
@@ -552,8 +552,10 @@ static AnchorClass **MarkGlyphsProcessMarks(FILE *ttf,int markoffset,
 	}
     }
     for ( i=0; i<cnt; ++i ) {
+	if ( markglyphs[i]>=info->glyph_cnt )
+    continue;
 	sc = info->chars[markglyphs[i]];
-	if ( markglyphs[i]>=info->glyph_cnt || sc==NULL || at_offsets[i].offset==0 )
+	if ( sc==NULL || at_offsets[i].offset==0 )
     continue;
 	ap = chunkalloc(sizeof(AnchorPoint));
 	ap->anchor = classes[at_offsets[i].class];
@@ -586,8 +588,10 @@ static void MarkGlyphsProcessBases(FILE *ttf,int baseoffset,
     for ( i=0; i<basecnt*classcnt; ++i )
 	offsets[i] = getushort(ttf);
     for ( i=ibase=0; i<basecnt; ++i, ibase+= classcnt ) {
+	if ( baseglyphs[i]>=info->glyph_cnt )
+    continue;
 	sc = info->chars[baseglyphs[i]];
-	if ( baseglyphs[i]>=info->glyph_cnt || sc==NULL )
+	if ( sc==NULL )
     continue;
 	for ( j=0; j<classcnt; ++j ) if ( offsets[ibase+j]!=0 ) {
 	    fseek(ttf,baseoffset+offsets[ibase+j],SEEK_SET);
@@ -1774,7 +1778,7 @@ static struct feature *readttffeatures(FILE *ttf,int32 pos,int isgpos, struct tt
     if ( cnt<=0 )
 return( NULL );
     features = gcalloc(cnt+1,sizeof(struct feature));
-    info->feats[isgpos] = galloc((cnt+1)*sizeof(uint32));
+    info->feats[isgpos] = galloc((3*cnt+1)*sizeof(uint32));
     info->feats[isgpos][0] = 0;
     for ( i=0; i<cnt; ++i ) {
 	features[i].tag = tag = getlong(ttf);
@@ -1846,6 +1850,13 @@ static struct lookup *compactttflookups(struct feature *features,uint32 *feats, 
     for ( i=0; features[i].tag!=0; ++i ) {
 	for ( k=0; k<features[i].lcnt; ++k ) {
 	    j = features[i].lookups[k];
+	    if ( j>lu_cnt ) {
+		fprintf( stderr, "Feature '%c%c%c%c' refers to lookup %d which is not within the lookup array[%d]\n",
+			features[i].tag>>24, (features[i].tag>>16)&0xff,
+			(features[i].tag>>8)&0xff, features[i].tag&0xff,
+			j, lu_cnt );
+	continue;
+	    }
 	    cur = &lookups[j];
 	    while ( cur!=NULL && cur->tag!=0 && cur->tag!=features[i].tag )
 		cur = cur->alttags;
@@ -1983,6 +1994,8 @@ return( features );
 	    features[extra] = features[i];
 	    features[extra].tag = REQUIRED_FEATURE;
 	    features[extra].sl = features[i].reqsl;
+	    features[extra].lookups = galloc(features[extra].lcnt*sizeof(uint16));
+	    memcpy(features[extra].lookups,features[i].lookups,features[extra].lcnt*sizeof(uint16));
 	    features[i].reqsl = NULL; features[extra].reqsl = NULL;
 	    ++extra;
 	}
