@@ -63,8 +63,8 @@ if test "FreeType2_IncRoot" = "" >/dev/null 2>&1 ; then
  ],AC_DEFINE(_NO_FREETYPE))])])
 fi
 
-AC_CHECK_FILE(/usr/include/libxml/libxml2,[CFLAGS="$CFLAGS -I/usr/include/libxml/"],[
- AC_CHECK_FILE(/usr/local/include/libxml/libxml2,[CFLAGS="$CFLAGS -I/usr/local/include -I/usr/local/include/libxml/"],
+AC_CHECK_FILE(/usr/include/libxml2/libxml,[CFLAGS="$CFLAGS -I/usr/include/libxml2/"],[
+ AC_CHECK_FILE(/usr/local/include/libxml2/libxml,[CFLAGS="$CFLAGS -I/usr/local/include -I/usr/local/include/libxml2/"],
   AC_DEFINE(_NO_LIBXML))])
 
 dnl Some old versions of lib(un)gif don't work for us, they've got the
