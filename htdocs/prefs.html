@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 2-Sep-2002 -->
-  <!-- AP: Last modified: 17-Oct-2002 -->
+  <!-- AP: Last modified: 8-Dec-2002 -->
   <TITLE>Preferences Dialog</TITLE>
 </HEAD>
 <BODY>
@@ -10,21 +10,8 @@
   Preferences Dialog
 </H1>
 <P>
-<IMG SRC="prefs-generic.png" WIDTH="369" HEIGHT="494" ALIGN="Right">
+<IMG SRC="prefs-generic.png" WIDTH="294" HEIGHT="369" ALIGN="Right">
 <DL>
-  <DT>
-    AutoWidthSync
-  <DD>
-    Whether you want the widths of accented characters to track the width of
-    the base character (so if you modify the width of A then the width of &Agrave;
-    will automagically change, if &Agrave; is built as a reference to A and a
-    reference to grave)
-  <DT>
-    AutoLBearingSync
-  <DD>
-    Whether you want left side bearings of accented characters to track the left
-    side bearing of base characters (so if you shift A left, then the accent
-    in &Agrave; will also be shifted left)
   <DT>
     AutoHint
   <DD>
@@ -42,6 +29,35 @@
   <DD>
     The default encoding used to create new fonts. Normally this is ISO 8859-1.
   <DT>
+    GreekFixup
+  <DD>
+    Whether to accept Adobe's naming conventions for greek letters, or to make
+    them a bit more expected.
+  <DT>
+    ResourceFile
+  <DD>
+    PfaEdit will read <A HREF="xres.hmtl">X Resources</A> from a property on
+    the screen. But sometimes this isn't enough. You set this preference item
+    to specify a file from which these resources should be read (those on the
+    screen will also be read and will supercede those in the file).
+    <BR Clear=all>
+</DL>
+<IMG SRC="prefs-editing.png" WIDTH="294" HEIGHT="369" ALIGN="Right">
+<DL>
+  <DT>
+    AutoWidthSync
+  <DD>
+    Whether you want the widths of accented characters to track the width of
+    the base character (so if you modify the width of A then the width of &Agrave;
+    will automagically change, if &Agrave; is built as a reference to A and a
+    reference to grave)
+  <DT>
+    AutoLBearingSync
+  <DD>
+    Whether you want left side bearings of accented characters to track the left
+    side bearing of base characters (so if you shift A left, then the accent
+    in &Agrave; will also be shifted left)
+  <DT>
     ItalicConstrained
   <DD>
     Whether constrained motion in the character view should allow motion parallel
@@ -58,11 +74,6 @@
     Whether accents should be positioned over letters based on the center of
     the accent, or on the center of the bottom of the accent.
   <DT>
-    GreekFixup
-  <DD>
-    Whether to accept Adobe's naming conventions for greek letters, or to make
-    them a bit more expected.
-  <DT>
     ArrowMoveSize
   <DD>
     The number of em-units an arrow key will move a selected point in the character
@@ -75,7 +86,7 @@
     etc.)<BR Clear=all>
 </DL>
 <P>
-<IMG SRC="prefs-font.png" WIDTH="369" HEIGHT="494" ALIGN="Right">
+<IMG SRC="prefs-font.png" WIDTH="294" HEIGHT="369" ALIGN="Right">
 <DL>
   <DT>
     Foundry Name
@@ -119,7 +130,7 @@
 </DL>
 <DL>
   <DT>
-    <IMG SRC="prefs-apps.png" WIDTH="369" HEIGHT="494" ALIGN="Right">AutotraceArgs
+    <IMG SRC="prefs-apps.png" WIDTH="294" HEIGHT="369" ALIGN="Right">AutotraceArgs
   <DD>
     This allows you to specify any arguments you want passed to the autotrace
     program. Don't try to pass something that will change the input or output
@@ -151,7 +162,7 @@
     so.<BR Clear=all>
 </DL>
 <P>
-<IMG SRC="prefs-script.png" WIDTH="369" HEIGHT="494" ALIGN="Right"><A NAME="scripts">This
+<IMG SRC="prefs-script.png" WIDTH="294" HEIGHT="369" ALIGN="Right"><A NAME="scripts">This
 section </A>of the dialog allows you to define built in scripts that will
 show up in the <A HREF="filemenu.html#ScriptMenu">script menu</A>. Each entry
 has two things associated with it, the menu name and a script file. The menu
@@ -160,8 +171,15 @@ name will be the name of this entry inside the script menu, and the
 to be invoked. The "..." button allows you to browse for script files, which
 I think have extension .pe (but which can have whatever extension you prefer
 if you don't like my conventions).<BR Clear=All>
+<H2>
+Other ways of configuring
+</H2>
 A number of things that might be controlled from a preference window are
-controlled by <A HREF="xres.html">X Resources</A>.
+controlled by
+<UL>
+<LI><A HREF="xres.html">X Resources</A>
+<LI><A HREF="cliargs.html#Environment">Environment Variables</A>
+</UL>
 <P ALIGN=Center>
 -- <A HREF="filemenu.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
 <A HREF="filemenu.html">Next</A> --
