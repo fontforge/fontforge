@@ -256,8 +256,9 @@ static int KC_ClassIndex(GGadget *g, GEvent *e) {
 return( true );
 	ret = _GGadgetGetTitle(GWidgetGetControl(kcd->gw,CID_ClassIndex1));
 	val1 = u_strtol(ret,&end1,10);
-	en1 = ( *end1=='\0' && val1>0 && val1<=kcd->new->first_cnt );
+	en1 = ( *end1=='\0' && val1>=0 && val1<=kcd->new->first_cnt );
 	GGadgetSetEnabled(GWidgetGetControl(kcd->gw,CID_SelectClass1),en1);
+	if ( val1==0 ) en1 = false;
 	GGadgetSetEnabled(GWidgetGetControl(kcd->gw,CID_SetClass1),en1);
 	if ( en1 ) {
 	    uc_strncpy(ubuf,kcd->new->firsts[val1],30);
@@ -265,8 +266,9 @@ return( true );
 	}
 	ret = _GGadgetGetTitle(GWidgetGetControl(kcd->gw,CID_ClassIndex2));
 	val2 = u_strtol(ret,&end2,10);
-	en2 = ( *end2=='\0' && val2>0 && val2<=kcd->new->second_cnt );
+	en2 = ( *end2=='\0' && val2>=0 && val2<=kcd->new->second_cnt );
 	GGadgetSetEnabled(GWidgetGetControl(kcd->gw,CID_SelectClass2),en2);
+	if ( val2==0 ) en2 = false;
 	GGadgetSetEnabled(GWidgetGetControl(kcd->gw,CID_SetClass2),en2);
 	GGadgetSetEnabled(GWidgetGetControl(kcd->gw,CID_KernOffset),en1 && en2);
 	if ( en2 ) {
@@ -312,13 +314,32 @@ return( true );
 return( true );
 }
 
+static void SelectNames(FontView *fv,char *namelist) {
+    char *pt, *end, ch;
+    SplineFont *sf = fv->sf;
+    SplineChar *sc;
+
+    for ( pt = namelist; *pt; pt = end+1 ) {
+	end = strchr(pt,' ');
+	if ( end==NULL )
+	    end = pt+strlen(pt);
+	ch = *end;
+	*end = '\0';
+	sc = SFGetCharDup(sf,-1,pt);
+	if ( sc!=NULL )
+	    sf->fv->selected[sc->enc] = true;
+	*end = ch;
+	if ( ch=='\0' )
+    break;
+    }
+}
+
 static int KC_Select(GGadget *g, GEvent *e) {
     KernClassDlg *kcd;
     int issecond;
     const unichar_t *ret; unichar_t *end;
-    int val, top, found = -1;
+    int val, top, found = -1, i;
     char **classnames;
-    SplineChar *sc;
     SplineFont *sf;
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
@@ -336,25 +357,24 @@ static int KC_Select(GGadget *g, GEvent *e) {
 	    top = kcd->new->first_cnt;
 	    classnames = kcd->new->firsts;
 	}
-	if ( *end=='\0' && val>0 && val<=top ) {
-	    char *pt, *end, ch;
+	if ( *end=='\0' && val>=0 && val<=top ) {
 	    memset(sf->fv->selected,0,sf->charcnt);
-	    for ( pt = classnames[val]; *pt; pt = end+1 ) {
-		end = strchr(pt,' ');
-		if ( end==NULL )
-		    end = pt+strlen(pt);
-		ch = *end;
-		*end = '\0';
-		sc = SFGetCharDup(sf,-1,pt);
-		if ( sc!=NULL ) {
-		    sf->fv->selected[sc->enc] = true;
-		    if ( found==-1 ) found = sc->enc;
+	    if ( val!=0 )
+		SelectNames(sf->fv,classnames[val]);
+	    else {
+		for ( val=1; val<top; ++val )
+		    SelectNames(sf->fv,classnames[val]);
+		for ( i=0; i<sf->charcnt; ++i ) {
+		    if ( sf->fv->selected[i] )
+			sf->fv->selected[i] = false;
+		    else if ( sf->chars[i]!=NULL )
+			sf->fv->selected[i] = true;
 		}
-		*end = ch;
-		if ( ch=='\0' )
-	    break;
 	    }
-	    if ( found!=-1 )
+	    for ( found=0; found<sf->charcnt; ++found )
+		if ( sf->fv->selected[found] )
+	    break;
+	    if ( found!=sf->charcnt )
 		FVScrollToChar(sf->fv,found);
 	    GDrawRequestExpose(sf->fv->v,NULL,false);
 	}
@@ -362,11 +382,69 @@ static int KC_Select(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static int ClassesFindName(char **classnames,char *name,int top,int dontmatch) {
+    int i;
+    char *pt, *end, ch;
+
+    for ( i=1; i<top; ++i ) if ( i!=dontmatch ) {
+	for ( pt = classnames[i]; *pt; pt = end+1 ) {
+	    end = strchr(pt,' ');
+	    if ( end==NULL )
+		end = pt+strlen(pt);
+	    ch = *end;
+	    *end = '\0';
+	    if ( strcmp(pt,name)==0 ) {
+		*end=ch;
+return( i );
+	    }
+	    *end = ch;
+	    if ( ch=='\0' )
+	break;
+	}
+    }
+return( 0 );
+}
+
+static void ClassesRemoveName(char **classnames,char *name,int top,int fromhere) {
+    char *pt, *end, ch;
+    int cmp;
+
+    if ( fromhere==-1 )
+	fromhere = ClassesFindName(classnames,name,top,-1);
+    if ( fromhere==-1 )
+return;
+    for ( pt = classnames[fromhere]; *pt; pt = end+1 ) {
+	end = strchr(pt,' ');
+	if ( end==NULL )
+	    end = pt+strlen(pt);
+	ch = *end;
+	*end = '\0';
+	cmp = strcmp(pt,name);
+	*end = ch;
+	if ( cmp==0 ) {
+	    char *new = galloc(strlen(classnames[fromhere])-strlen(name)+1);
+	    int pos = pt-classnames[fromhere];
+	    if ( pos!=0 ) {
+		strncpy(new,classnames[fromhere],pos-1);
+		strcpy(new+pos-1,end);
+	    } else if ( ch!='\0' )
+		strcpy(new,end+1);
+	    else
+		*new = '\0';
+	    free( classnames[fromhere] );
+	    classnames[fromhere] = new;
+return;
+	}
+	if ( ch=='\0' )
+return;
+    }
+}
+
 static int KC_Set(GGadget *g, GEvent *e) {
     KernClassDlg *kcd;
     int issecond;
     const unichar_t *ret; unichar_t *end;
-    int val, i, j, top;
+    int val, i, j, top, pos;
     char **classnames;
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
@@ -388,6 +466,18 @@ static int KC_Set(GGadget *g, GEvent *e) {
 	    int len;
 	    for ( j=0; j<2 ; ++j ) {
 		for ( i=len=0; i<sf->charcnt; ++i ) if ( fv->selected[i] && sf->chars[i]!=NULL ) {
+		    if ( j==0 && (pos = ClassesFindName(classnames,sf->chars[i]->name,top,val))!=0 ) {
+			static int buts[] = { _STR_FromThis, _STR_FromOld, _STR_Cancel, 0 };
+			int ans = GWidgetAskR(_STR_AlreadyUsed,buts,0,2,_STR_AlreadyInClass, sf->chars[i]->name);
+			if ( ans==2 )	/* Cancel */
+return( true );
+			else if ( ans==0 ) {
+			    fv->selected[i]=false;
+			    GDrawRequestExpose(fv->v,NULL,false);
+		continue;
+			} else
+			    ClassesRemoveName(classnames,sf->chars[i]->name,top,pos);
+		    }
 		    if ( j ) {
 			strcpy(names+len,sf->chars[i]->name);
 			strcat(names+len," ");
@@ -679,7 +769,7 @@ return;
 
     gcd[i].gd.pos.x = gcd[i-7].gd.pos.x; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y-3;
     gcd[i].gd.pos.width = -1;
-    gcd[i].gd.flags = gg_visible ;
+    gcd[i].gd.flags = gg_visible | gg_enabled;
     label[i].text = (unichar_t *) _STR_Select_nom;
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
@@ -689,7 +779,7 @@ return;
 
     gcd[i].gd.pos.x = gcd[i-7].gd.pos.x; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y;
     gcd[i].gd.pos.width = -1;
-    gcd[i].gd.flags = gg_visible ;
+    gcd[i].gd.flags = gg_visible | gg_enabled;
     label[i].text = (unichar_t *) _STR_Select_nom;
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];

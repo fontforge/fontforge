@@ -2570,7 +2570,10 @@ static char *str_FromSelection = "From Selection";
 static char *str_Set = "Set";
 static char *str_Select_nom = "Select";
 static char *str_KernOffset = "Kern Offset:";
-
+static char *str_AlreadyUsed = "Already in use";
+static char *str_AlreadyInClass = "The character %.30hs is already in a different class. Would you like to remove it from the old class, or remove it from this class?"
+static char *str_FromOld = "From old";
+static char *str_FromThis = "From this";
 
 static int num_buttonsize = 55;
 static int num_ScaleFactor = 100;
