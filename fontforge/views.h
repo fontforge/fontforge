@@ -320,6 +320,7 @@ typedef struct charview {
     DebugView *dv;
 #endif
     uint32 mmvisible;
+    char *former_name;		/* We never actually look at the string, so we don't copy/free it. */
 } CharView;
 #endif
 

@@ -1787,6 +1787,7 @@ void CVChangeSC(CharView *cv, SplineChar *sc ) {
     unichar_t *title;
     unichar_t ubuf[300];
     extern int updateflex;
+    SplineChar *former = cv->sc;
 
     CVDebugFree(cv->dv);
 
@@ -1828,6 +1829,9 @@ void CVChangeSC(CharView *cv, SplineChar *sc ) {
     CVInfoDraw(cv,cv->gw);
     free(title);
     _CVPaletteActivate(cv,true);
+
+    if ( former!=NULL )
+	cv->former_name = former->name;
 }
 
 static void CVChangeChar(CharView *cv, int i ) {
@@ -3832,7 +3836,8 @@ return( true );
 #define MID_PtsTrue	2022
 #define MID_PtsPost	2023
 #define MID_PtsSVG	2024
-#define MID_Ligatures	2021
+#define MID_Ligatures	2025
+#define MID_Former	2026
 #define MID_Cut		2101
 #define MID_Copy	2102
 #define MID_Paste	2103
@@ -4350,6 +4355,14 @@ return;
     } else if ( mi->mid == MID_PrevDef ) {
 	for ( pos = cv->sc->enc-1; pos>=0 &&
 		(sf->chars[pos]==NULL || sf->chars[pos]!=SCDuplicate(sf->chars[pos])); --pos );
+	if ( pos<0 )
+return;
+    } else if ( mi->mid == MID_Former ) {
+	if ( cv->former_name==NULL )
+return;
+	for ( pos=sf->charcnt-1; pos>=0; --pos )
+	    if ( sf->chars[pos]!=NULL && sf->chars[pos]->name==cv->former_name )
+	break;
 	if ( pos<0 )
 return;
     }
@@ -6597,6 +6610,14 @@ static void cv_vwlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 	  case MID_Prev:
 	    mi->ti.disabled = cv->searcher!=NULL || cv->sc->enc==0;
 	  break;
+	  case MID_Former:
+	    if ( cv->former_name==NULL )
+		pos = -1;
+	    else for ( pos = sf->charcnt-1; pos>=0 ; --pos )
+		if ( sf->chars[pos]!=NULL && sf->chars[pos]->name==cv->former_name )
+	    break;
+	    mi->ti.disabled = pos==-1 || cv->searcher!=NULL;
+	  break;
 	  case MID_Goto: case MID_FindInFontView:
 	    mi->ti.disabled = cv->searcher!=NULL;
 	  break;
@@ -7068,6 +7089,7 @@ static GMenuItem vwlist[] = {
     { { (unichar_t *) _STR_PrevGlyph, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '[', ksm_control, NULL, NULL, CVMenuChangeChar, MID_Prev },
     { { (unichar_t *) _STR_NextDefGlyph, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'D' }, ']', ksm_control|ksm_meta, NULL, NULL, CVMenuChangeChar, MID_NextDef },
     { { (unichar_t *) _STR_PrevDefGlyph, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'a' }, '[', ksm_control|ksm_meta, NULL, NULL, CVMenuChangeChar, MID_PrevDef },
+    { { (unichar_t *) _STR_FormerGlyph, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'a' }, '<', ksm_shift|ksm_control, NULL, NULL, CVMenuChangeChar, MID_Former },
     { { (unichar_t *) _STR_Goto, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'G' }, '>', ksm_shift|ksm_control, NULL, NULL, CVMenuGotoChar, MID_Goto },
     { { (unichar_t *) _STR_FindInFontView, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'V' }, '<', ksm_shift|ksm_control, NULL, NULL, CVMenuFindInFontView, MID_FindInFontView },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
