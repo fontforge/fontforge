@@ -32,6 +32,8 @@
 #include "ustring.h"
 #include "chardata.h"
 
+/*#define GREEK_BUG	1*/
+
 static unichar_t *normalize_font_names(unichar_t *names) {
     unichar_t *n;
     unichar_t *ipt, *opt;
@@ -311,7 +313,7 @@ static struct font_data *PickFontForEncoding(GDisplay *gdisp, struct family_info
 	    best = FindBest(gdisp,fs->lastchance2[enc][ft_unknown],rq,enc,best,&best_pos,&best_val,i+1);
 	}
     }
-#if 0
+#if GREEK_BUG
  if ( best!=NULL )
   printf( "Best for %d pos=%d: %s\n", enc, best_pos, best->localname );
 #endif
@@ -1937,6 +1939,16 @@ return( 0 );
 	    (disp->funcs->loadFontMetrics)(disp,sc);
 	    if ( sc->info==NULL ) sc=NULL;
 	}
+
+#if GREEK_BUG
+	if ( *text>=0xa0 && *text<=0xff ) {
+	    printf( "Char 0x%x enc=%d ", *text, enc );
+	    if ( fd!=NULL )
+		printf( "Picked=%s\n", fd->localname );
+	    else
+		printf( "No font\n" );
+	}
+#endif
 
 	while ( text<next ) {
 	    /* if the string begins with a combining char, then just print it */

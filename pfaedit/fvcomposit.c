@@ -924,12 +924,22 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
     if ( pos&(____ABOVE|____BELOW) ) {
 	if ( !sf->serifcheck ) SFHasSerifs(sf);
 	if ( sf->issans ) {
-	    if ( pos&____ABOVE )
-		ybase = SCFindTopXRange(basersc,&bb,ia);
-	    else if ( pos&____BELOW )
-		ybase = SCFindBottomXRange(basersc,&bb,ia);
+	    if ( ia==0 ) {
+		if ( pos&____ABOVE )
+		    ybase = SCFindTopXRange(basersc,&bbb,ia);
+		else if ( pos&____BELOW )
+		    ybase = SCFindBottomXRange(basersc,&bbb,ia);
+		bb.maxx = bbb.maxx;
+		bb.minx = bbb.minx;
+	    } else {
+		if ( pos&____ABOVE )
+		    ybase = SCFindTopXRange(sc,&bb,ia);
+		else if ( pos&____BELOW )
+		    ybase = SCFindBottomXRange(sc,&bb,ia);
+	    }
 	}
     }
+
     if ( isupper(basech) && ch==0x342)	/* While this guy rides above PSILI on left */
 	xoff = bb.minx - rbb.minx;
     else if ( pos&____LEFT )

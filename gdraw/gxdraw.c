@@ -46,6 +46,8 @@
 #include "fontP.h"
 #include "gresource.h"
 
+/*#define GREEK_BUG	1*/
+
 static void GXDrawTransmitSelection(GXDisplay *gd,XEvent *event);
 static void GXDrawClearSelData(GXDisplay *gd,enum selnames sel);
 
@@ -208,6 +210,9 @@ static void GXDrawHashFont(FState *fonts,char *xname,struct font_decomp *decomp)
 	if ( strcmp(fd->localname,xname)==0 )	/* Why duplicates? */
 return;
 
+#ifdef GREEK_BUG
+ printf( "Adding %s map=%d\n", xname, map);
+#endif
     fd = gcalloc(1,sizeof(struct font_data));
     fd->next = fn->data[map];
     fn->data[map] = fd;

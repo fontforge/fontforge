@@ -232,11 +232,11 @@ static struct keyword weights[] = {
     { "regular", 400 },
     { "roman", 400 },
     { "normal", 400 },
-    { "demi", 400 },
     { "medium", 500 },
     { "demi_bold", 600 },
     { "demi-bold", 600 },
     { "demibold", 600 },
+    { "demi", 600 },
     { "bold", 700 },
     { "demi_black", 800 },
     { "demi-black", 800 },
@@ -249,6 +249,7 @@ static struct keyword weights[] = {
     { "extrablack", 950 },
     { "extra-black", 950 },
     { "extra_black", 950 },
+    { "nord", 950 },
     { NULL }};
 
 static struct keyword *KeyFind(unichar_t *name,struct keyword *words) {
