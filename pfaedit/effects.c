@@ -1,4 +1,4 @@
-/* Copyright (C) 2000-2003 by George Williams */
+/* Copyright (C) 2003 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -513,6 +513,7 @@ return(NULL);
 		if ( sp==spl->first )
 	    break;
 	    }
+	    SplineRefigure(spl->first->prev);		/* Just in case... */
 	} else {
 	    cur = NULL;
 	    /* Wire frame... do hidden line removal by only copying the */
@@ -656,17 +657,17 @@ return( NULL );
     if ( outline_width!=0 && !wireframe ) {
 	memset(&si,0,sizeof(si));
 	si.removeexternal = true;
+	si.removeoverlapifneeded = true;
 	si.radius = outline_width;
 	temp = SplinePointListCopy(spl);	/* SSStroke confuses the direction I think */
 	internal = SSStroke(temp,&si,sc);
 	SplinePointListsFree(temp);
-	internal = SplineSetRemoveOverlap(internal,over_remove);
 	SplineSetsAntiCorrect(internal);
     }
 
     frame = AddVerticalExtremaAndMove(spl,shadow_length,wireframe,sc);
     if ( !wireframe ) 
-	spl = SplineSetRemoveOverlap(spl,over_remove);
+	spl = SplineSetRemoveOverlap(spl,over_remove);	/* yes, spl, NOT frame. frame is always NULL if !wireframe */
     else {
 	if ( outline_width!=0 ) {
 	    memset(&si,0,sizeof(si));
@@ -675,16 +676,14 @@ return( NULL );
 	    SplinePointListsFree(frame); frame = fatframe;
 	    outline = SSStroke(spl,&si,sc);
 	    SSSelectAll(frame,false);
-#if 0		/* doesn't work */
 	    si.radius = outline_width/3;
 	    si.removeinternal = true;
 	    mask = SSStroke(spl,&si,sc);
 	    SSSelectAll(mask,true);
 	    for ( temp=mask; temp->next!=NULL; temp=temp->next);
 	    temp->next = frame;
+return( mask );
 	    frame = SplineSetRemoveOverlap(mask,over_exclude);
-#else
-#endif
 #if 0
 	    SplinePointListsFree(spl);
 	    for ( temp=outline; temp->next!=NULL; temp=temp->next);
