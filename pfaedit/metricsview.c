@@ -355,6 +355,8 @@ return;
 static void MVDeselectChar(MetricsView *mv, int i) {
 
     mv->perchar[i].selected = false;
+    if ( mv->perchar[i].name!=NULL )
+	GGadgetSetEnabled(mv->perchar[i].name,mv->bdf==NULL);
     MVRedrawI(mv,i,0,0);
 #if 0
     if ( mv->bdf==NULL && mv->showgrid ) {
@@ -371,6 +373,8 @@ static void MVDeselectChar(MetricsView *mv, int i) {
 static void MVSelectChar(MetricsView *mv, int i) {
 
     mv->perchar[i].selected = true;
+    if ( mv->perchar[i].name!=NULL )
+	GGadgetSetEnabled(mv->perchar[i].name,false);
     if ( mv->sli_list!=NULL && SCScriptFromUnicode(mv->perchar[i].sc)!=DEFAULT_SCRIPT ) {
 	int sli_cnt = SLICount(mv->fv->sf);
 	int sli = SCDefaultSLI(mv->fv->sf,mv->perchar[i].sc);
@@ -975,6 +979,8 @@ static void MVCreateFields(MetricsView *mv,int i) {
     if ( mv->bdf==NULL )
 	gd.flags |= gg_enabled;
     mv->perchar[i].name = GLabelCreate(mv->gw,&gd,(void *) i);
+    if ( mv->perchar[i].selected )
+	GGadgetSetEnabled(mv->perchar[i].name,false);
 
     gd.pos.y += mv->fh+4;
     gd.handle_controlevent = MV_WidthChanged;
