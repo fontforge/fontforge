@@ -602,8 +602,12 @@ return;
 			needsupdate = true;
 		    }
 	}
+    } else if ( event->u.mouse.clicks==3 ) {
+	if ( CVSetSel(cv,1)) needsupdate = true;
+		/* don't select width or anchor points for three clicks */
+		/*  but select all points, refs */
     } else {
-	/* should triple clicking select all? */
+	/* Select everything */
 	if ( CVSetSel(cv,-1)) needsupdate = true;
     }
     if ( needsupdate )
