@@ -118,7 +118,6 @@ static void MakeEncChar(SplineFont *sf,int enc,char *name) {
     free(sf->chars[enc]->name);
     sf->chars[enc]->name = copy(name);
     sf->chars[enc]->unicodeenc = UniFromName(name);
-    sf->chars[enc]->script = ScriptFromUnicode(sf->chars[enc]->unicodeenc,sf);
     sf->chars[enc]->enc = enc;
     /*sf->encoding_name = em_none;*/
 }

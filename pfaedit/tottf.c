@@ -1035,7 +1035,8 @@ static void dumpglyph(SplineChar *sc, struct glyphinfo *gi) {
     if (( sc->splines==NULL && sc->refs==NULL ) ||
 	    ( sc->refs==NULL &&
 	     (sc->splines->first->next==NULL ||
-	      sc->splines->first->next->to == sc->splines->first)) ) {
+	      sc->splines->first->next->to == sc->splines->first) &&
+	     sc->splines->next==NULL) ) {
 	dumpspace(sc,gi);
 return;
     }
@@ -2254,13 +2255,16 @@ static void sethead(struct head *head,SplineFont *_sf) {
     j = 0;
     do {
 	sf = ( _sf->subfontcnt==0 ) ? _sf : _sf->subfonts[j];
-	for ( i=0; i<sf->charcnt; ++i )
+	for ( i=0; i<sf->charcnt; ++i ) {
 	    if ( SCWorthOutputting(sf->chars[i]) ) {
-		if ( islefttoright(sf->chars[i]->unicodeenc))
-		    lr = 1;
-		else if ( isrighttoleft(sf->chars[i]->unicodeenc))
+		int uni = sf->chars[i]->unicodeenc ;
+		if ( SCRightToLeft(sf->chars[i]) )
 		    rl = 1;
+		else if (( uni!=-1 && uni<0x10000 && islefttoright(uni)) ||
+			 (uni>=0x10300 && uni<0x107ff))
+		    lr = 1;
 	    }
+	}
 	++j;
     } while ( j<_sf->subfontcnt );
     sf = _sf;
@@ -4111,6 +4115,7 @@ return( false );
     }
     redomaxp(at,format);
     if ( !at->applemode ) {
+	otf_orderlangs(sf);
 	otf_dumpgpos(at,sf);
 	otf_dumpgsub(at,sf);
 	otf_dumpgdef(at,sf);

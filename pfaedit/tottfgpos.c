@@ -41,9 +41,15 @@ struct lookup {
     int feature_cnt;
     uint32 offset, len;
     struct lookup *next;
-    struct lookup *script_next;
     struct lookup *feature_next;
     uint16 flags;
+    int script_lang_index;
+};
+
+struct tagflaglang {
+    uint32 tag;
+    uint16 flags;
+    int script_lang_index;
 };
 
 /* scripts (for opentype) that I understand */
@@ -119,7 +125,7 @@ return( 0 );
 	if ( strmatch(sf->ordering,"Identity")==0 )
 return( 0 );
 	else if ( strmatch(sf->ordering,"Korean")==0 )
-return( CHR('j','a','m','o'));
+return( CHR('h','a','n','g'));
 	else
 return( CHR('h','a','n','i') );
     }
@@ -148,19 +154,65 @@ return( CHR('l','a','t','n'));
 return( 0 );
 }
 
-static LigList *LigListMatchTag(LigList *ligs,uint32 tag,uint16 flags) {
+uint32 SCScriptFromUnicode(SplineChar *sc) {
+    char *pt;
+    PST *pst;
+    SplineFont *sf;
+    int i;
+
+    if ( sc==NULL )
+return( 0 );
+
+    sf = sc->parent;
+    if ( sc->unicodeenc!=-1 )
+return( ScriptFromUnicode( sc->unicodeenc,sf ));
+
+    for ( pt=sc->name; *pt!='\0' && *pt!='_' && *pt!='.'; ++pt );
+    if ( *pt!='\0' ) {
+	char *str = copyn(sc->name,pt-sc->name);
+	int uni = UniFromName(str);
+	free(str);
+	if ( uni!=-1 )
+return( ScriptFromUnicode( uni,sf ));
+    }
+
+    if ( sf->cidmaster ) sf=sf->cidmaster;
+    for ( i=0; i<2; ++i ) {
+	for ( pst=sc->possub; pst!=NULL; pst=pst->next ) if ( pst->script_lang_index!=0xffff ) {
+	    if ( i==1 || sf->script_lang[pst->script_lang_index][1].script==0 )
+return( sf->script_lang[pst->script_lang_index]->script );
+	}
+    }
+return( ScriptFromUnicode( sc->unicodeenc,sf ));
+}
+
+int SCRightToLeft(SplineChar *sc) {
+    uint32 script;
+
+    if ( sc->unicodeenc>=0x10800 && sc->unicodeenc<=0x10fff )
+return( true );		/* Supplemental Multilingual Plane, RTL scripts */
+    if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 )
+return( isrighttoleft(sc->unicodeenc ));
+
+    script = SCScriptFromUnicode(sc);
+return( script==CHR('a','r','a','b') || script==CHR('h','e','b','r') );
+}
+
+static LigList *LigListMatchTag(LigList *ligs,struct tagflaglang *tfl) {
     LigList *l;
 
     for ( l=ligs; l!=NULL; l=l->next )
-	if ( l->lig->tag == tag && (l->lig->flags&~1)==flags )
+	if ( l->lig->tag == tfl->tag && (l->lig->flags&~1)==tfl->flags &&
+		l->lig->script_lang_index == tfl->script_lang_index )
 return( l );
 return( NULL );
 }
 
-static PST *PosSubMatchTag(PST *pst,uint32 tag,enum possub_type type,uint16 flags) {
+static PST *PosSubMatchTag(PST *pst,struct tagflaglang *tfl,enum possub_type type) {
 
     for ( ; pst!=NULL; pst=pst->next )
-	if ( pst->tag == tag && pst->type==type && (pst->flags&~1)==flags )
+	if ( pst->tag == tfl->tag && pst->type==type && (pst->flags&~1)==tfl->flags &&
+		pst->script_lang_index == tfl->script_lang_index )
 return( pst );
 return( NULL );
 }
@@ -175,7 +227,7 @@ return;
     free(map);
 }
 
-static SplineChar **FindSubs(SplineChar *sc,uint32 tag, enum possub_type type) {
+static SplineChar **FindSubs(SplineChar *sc,struct tagflaglang *tfl, enum possub_type type) {
     SplineChar *space[30];
     int cnt=0;
     char *pt, *start;
@@ -183,7 +235,8 @@ static SplineChar **FindSubs(SplineChar *sc,uint32 tag, enum possub_type type) {
     PST *pst;
 
     for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
-	if ( pst->tag == tag && pst->type==type ) {
+	if ( pst->tag == tfl->tag && (pst->flags&~1)==tfl->flags &&
+		pst->script_lang_index == tfl->script_lang_index && pst->type==type ) {
 	    pt = pst->u.subs.variant;
 	    while ( 1 ) {
 		while ( *pt==' ' ) ++pt;
@@ -210,7 +263,7 @@ return( ret );
 }
 
 static SplineChar **generateGlyphList(SplineFont *sf, int iskern, uint32 script,
-	uint32 tag, uint16 flags) {
+	struct tagflaglang *ligtag) {
     int cnt;
     SplineFont *sub;
     SplineChar *sc;
@@ -224,9 +277,8 @@ static SplineChar **generateGlyphList(SplineFont *sf, int iskern, uint32 script,
 	    sub = ( sf->subfontcnt==0 ) ? sf : sf->subfonts[k];
 	    for ( i=0; i<sub->charcnt; ++i )
 		    if ( SCWorthOutputting(sc=sub->chars[i]) &&
-			    sc->script==script &&
-			    ((iskern && sc->kerns!=NULL ) ||
-			     (!iskern && LigListMatchTag(sc->ligofme,tag,flags)) )) {
+			    ((iskern && sc->kerns!=NULL && SCScriptFromUnicode(sc)==script ) ||
+			     (!iskern && LigListMatchTag(sc->ligofme,ligtag)) )) {
 		if ( glyphs!=NULL ) glyphs[cnt] = sc;
 		++cnt;
 		sc->ticked = true;
@@ -244,7 +296,7 @@ return( glyphs );
 }
 
 static SplineChar **generateGlyphTypeList(SplineFont *sf, enum possub_type type,
-	uint32 script, uint32 tag, uint16 flags, SplineChar ****map) {
+	struct tagflaglang *tfl, SplineChar ****map) {
     int cnt;
     SplineFont *sub;
     SplineChar *sc;
@@ -258,12 +310,11 @@ static SplineChar **generateGlyphTypeList(SplineFont *sf, enum possub_type type,
 	    sub = ( sf->subfontcnt==0 ) ? sf : sf->subfonts[k];
 	    for ( i=0; i<sub->charcnt; ++i )
 		    if ( SCWorthOutputting(sc=sub->chars[i]) &&
-			    sc->script==script &&
-			    PosSubMatchTag(sc->possub,tag,type,flags) ) {
+			    PosSubMatchTag(sc->possub,tfl,type) ) {
 		if ( glyphs!=NULL ) {
 		    glyphs[cnt] = sc;
 		    if ( type==pst_substitution || type==pst_alternate || type==pst_multiple ) {
-			maps[cnt] = FindSubs(sc,tag,type);
+			maps[cnt] = FindSubs(sc,tfl,type);
 			if ( maps[cnt]==NULL )
 			    --cnt;		/* Couldn't find anything, toss it */
 		    }
@@ -358,11 +409,12 @@ return( array );
 static SplineChar **GlyphsOfScript(SplineChar **base,int first) {
     int cnt, k;
     SplineChar **glyphs;
+    uint32 script = SCScriptFromUnicode(base[first]);
 
     glyphs = NULL;
     while ( 1 ) {
 	cnt = 1;
-	for ( k=first+1; base[k]!=NULL; ++k ) if ( base[first]->script==base[k]->script ) {
+	for ( k=first+1; base[k]!=NULL; ++k ) if ( script==SCScriptFromUnicode(base[k]) ) {
 	    if ( glyphs!=NULL ) {
 		glyphs[cnt] = base[k];
 		base[k]->ticked = true;
@@ -455,7 +507,7 @@ static void dumpgposkerndata(FILE *gpos,SplineFont *sf,uint32 script,
     SplineChar **glyphs;
     KernPair *kp;
 
-    glyphs = generateGlyphList(sf,true,script,0,0);
+    glyphs = generateGlyphList(sf,true,script,NULL);
     cnt=0;
     if ( glyphs!=NULL ) {
 	for ( ; glyphs[cnt]!=NULL; ++cnt );
@@ -541,9 +593,10 @@ return( lookups );
 	glyphs = GlyphsOfScript(entryexit,i);
 	for ( cnt=0; glyphs[cnt]!=NULL; ++cnt );
 	new = chunkalloc(sizeof(struct lookup));
-	new->script = glyphs[0]->script;
+	new->script = SCScriptFromUnicode(glyphs[0]);
 	new->feature_tag = ac->feature_tag;
 	new->flags = ac->flags;
+	new->script_lang_index = ac->script_lang_index;
 	new->lookup_type = 3;		/* Cursive positioning */
 	new->offset = ftell(gpos);
 	new->next = lookups;
@@ -602,7 +655,7 @@ static struct lookup *dumpgposAnchorData(FILE *gpos,AnchorClass *ac,
 	enum anchor_type at,
 	SplineChar **marks,SplineChar **base,struct lookup *lookups) {
     SplineChar **glyphs;
-    struct lookup *new, *l;
+    struct lookup *new;
     int i,j,cnt,k, pos, offset, suboffset, tot, max, mask;
     uint32 coverage_offset, markarray_offset;
     AnchorPoint *ap, **aps;
@@ -613,9 +666,10 @@ static struct lookup *dumpgposAnchorData(FILE *gpos,AnchorClass *ac,
 	glyphs = GlyphsOfScript(base,i);
 	for ( cnt=0; glyphs[cnt]!=NULL; ++cnt );
 	new = chunkalloc(sizeof(struct lookup));
-	new->script = glyphs[0]->script;
+	new->script = SCScriptFromUnicode(glyphs[0]);
 	new->feature_tag = ac->feature_tag;
 	new->flags = ac->flags;
+	new->script_lang_index = ac->script_lang_index;
 	new->lookup_type = 3+at;	/* One of the "mark to *" types 4,5,6 */
 	new->offset = ftell(gpos);
 	new->next = lookups;
@@ -714,7 +768,7 @@ static struct lookup *dumpgposAnchorData(FILE *gpos,AnchorClass *ac,
 	    putshort(gpos,ap->me.y);	/* Y coord of attachment */
 	}
 
-	fseek(gpos,l->offset+2,SEEK_SET);	/* mark coverage table offset */
+	fseek(gpos,new->offset+2,SEEK_SET);	/* mark coverage table offset */
 	putshort(gpos,coverage_offset-new->offset);
 	fseek(gpos,4,SEEK_CUR);
 	putshort(gpos,markarray_offset-new->offset);
@@ -726,7 +780,8 @@ static struct lookup *dumpgposAnchorData(FILE *gpos,AnchorClass *ac,
 return( lookups );
 }
 
-static void dumpGPOSsimplepos(FILE *gsub,SplineFont *sf,SplineChar **glyphs,uint32 tag) {
+static void dumpGPOSsimplepos(FILE *gsub,SplineFont *sf,SplineChar **glyphs,
+	struct tagflaglang *tfl) {
     int cnt;
     int32 coverage_pos, end;
     PST *pst, *first=NULL;
@@ -734,7 +789,8 @@ static void dumpGPOSsimplepos(FILE *gsub,SplineFont *sf,SplineChar **glyphs,uint
 
     for ( cnt=0; glyphs[cnt]!=NULL; ++cnt) {
 	for ( pst=glyphs[cnt]->possub; pst!=NULL; pst=pst->next ) {
-	    if ( pst->tag==tag && pst->type==pst_position ) {
+	    if ( pst->tag==tfl->tag && (pst->flags&~1)==tfl->flags &&
+		    pst->script_lang_index == tfl->script_lang_index && pst->type==pst_position ) {
 		if ( first==NULL ) first = pst;
 		else if ( same ) {
 		    if ( first->u.pos.xoff!=pst->u.pos.xoff ||
@@ -766,7 +822,8 @@ static void dumpGPOSsimplepos(FILE *gsub,SplineFont *sf,SplineChar **glyphs,uint
     } else {
 	for ( cnt = 0; glyphs[cnt]!=NULL; ++cnt ) {
 	    for ( pst=glyphs[cnt]->possub; pst!=NULL; pst=pst->next ) {
-		if ( pst->tag==tag && pst->type==pst_position ) {
+		if ( pst->tag==tfl->tag && (pst->flags&~1)==tfl->flags &&
+			pst->script_lang_index == tfl->script_lang_index && pst->type==pst_position ) {
 		    if ( bits&1 ) putshort(gsub,pst->u.pos.xoff);
 		    if ( bits&2 ) putshort(gsub,pst->u.pos.yoff);
 		    if ( bits&4 ) putshort(gsub,pst->u.pos.h_adv_off);
@@ -783,8 +840,8 @@ static void dumpGPOSsimplepos(FILE *gsub,SplineFont *sf,SplineChar **glyphs,uint
     free(glyphs);
 }
 
-static void dumpgsubligdata(FILE *gsub,SplineFont *sf,uint32 script, uint32 tag,
-	uint16 flags, struct alltabs *at) {
+static void dumpgsubligdata(FILE *gsub,SplineFont *sf,uint32 script,
+	struct tagflaglang *ligtag, struct alltabs *at) {
     int32 coverage_pos, next_val_pos, here, lig_list_start;
     int cnt, i, pcnt, lcnt, max=100, j;
     uint16 *offsets=NULL, *ligoffsets=galloc(max*sizeof(uint16));
@@ -792,7 +849,7 @@ static void dumpgsubligdata(FILE *gsub,SplineFont *sf,uint32 script, uint32 tag,
     LigList *ll;
     struct splinecharlist *scl;
 
-    glyphs = generateGlyphList(sf,false,script,tag,flags);
+    glyphs = generateGlyphList(sf,false,script,ligtag);
     cnt=0;
     if ( glyphs!=NULL ) for ( ; glyphs[cnt]!=NULL; ++cnt );
 
@@ -808,7 +865,8 @@ static void dumpgsubligdata(FILE *gsub,SplineFont *sf,uint32 script, uint32 tag,
     for ( i=0; i<cnt; ++i ) {
 	offsets[i] = ftell(gsub)-coverage_pos+2;
 	for ( pcnt = 0, ll = glyphs[i]->ligofme; ll!=NULL; ll=ll->next )
-	    if ( ll->lig->tag==tag && (ll->lig->flags&~1) == flags)
+	    if ( ll->lig->tag==ligtag->tag && (ll->lig->flags&~1) == ligtag->flags &&
+		    ll->lig->script_lang_index == ligtag->script_lang_index )
 		++pcnt;
 	putshort(gsub,pcnt);
 	if ( pcnt>=max ) {
@@ -819,7 +877,8 @@ static void dumpgsubligdata(FILE *gsub,SplineFont *sf,uint32 script, uint32 tag,
 	for ( j=0; j<pcnt; ++j )
 	    putshort(gsub,0);			/* Place holders */
 	for ( pcnt=0, ll = glyphs[i]->ligofme; ll!=NULL; ll=ll->next ) {
-	    if ( ll->lig->tag==tag && (ll->lig->flags&~1) == flags) {
+	    if ( ll->lig->tag==ligtag->tag && (ll->lig->flags&~1) == ligtag->flags &&
+		    ll->lig->script_lang_index==ligtag->script_lang_index ) {
 		ligoffsets[pcnt] = ftell(gsub)-lig_list_start+2;
 		putshort(gsub,ll->lig->u.lig.lig->ttf_glyph);
 		for ( lcnt=0, scl=ll->components; scl!=NULL; scl=scl->next ) ++lcnt;
@@ -909,6 +968,22 @@ static void dumpGSUBmultiplesubs(FILE *gsub,SplineFont *sf,SplineChar **glyphs, 
     dumpcoveragetable(gsub,glyphs);
 }
 
+static struct lookup *LookupFromTagFlagLang(struct tagflaglang *tfl ) {
+    struct lookup *new;
+
+    new = chunkalloc(sizeof(struct lookup));
+    new->feature_tag = tfl->tag;
+    new->flags = tfl->flags&~1;
+    new->script_lang_index = tfl->script_lang_index;
+return( new );
+}
+
+static void TagFlagLangFromPST(struct tagflaglang *tfl,PST *pst) {
+    tfl->script_lang_index = pst->script_lang_index;
+    tfl->flags = pst->flags&~1;
+    tfl->tag = pst->tag;
+}
+
 static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
 	struct alltabs *at) {
     /* When we find a feature, we split it out into various scripts */
@@ -918,15 +993,13 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
     SplineChar **marks, **base, **lig, **mkmk, ***map, **glyphs;
     SplineChar *sc;
     AnchorClass *ac;
-    uint32 *ligtags;
-    uint32 *flag_sets;
-    int max, cnt, flags;
+    struct tagflaglang *ligtags;
+    int max, cnt;
     enum possub_type type;
     PST *pst;
 
     max = 30; cnt = 0;
-    ligtags = galloc(max*sizeof(uint32));
-    flag_sets = galloc(max*sizeof(uint32));
+    ligtags = galloc(max*sizeof(struct tagflaglang));
 
     type = pst_position;
     {
@@ -934,64 +1007,58 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
 	for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL ) {
 	    for ( pst = sf->chars[i]->possub; pst!=NULL; pst=pst->next ) if ( pst->type==type ) {
 		for ( j=0; j<cnt; ++j )
-		    if ( ligtags[j]==pst->tag ) {
-			flag_sets[j] |= 1<<(pst->flags>>1);
+		    if ( ligtags[j].tag==pst->tag && (pst->flags&~1)==ligtags[j].flags &&
+			    pst->script_lang_index == ligtags[j].script_lang_index )
 		break;
-		    }
 		if ( j==cnt ) {
 		    if ( cnt>=max ) {
 			max += 30;
-			ligtags = grealloc(ligtags,max*sizeof(uint32));
-			flag_sets = grealloc(flag_sets,max*sizeof(uint32));
+			ligtags = grealloc(ligtags,max*sizeof(struct tagflaglang));
 		    }
-		    flag_sets[cnt] |= 1<<(pst->flags>>1);
-		    ligtags[cnt++] = pst->tag;
+		    TagFlagLangFromPST(&ligtags[cnt++],pst);
 		}
 	    }
 	}
 
 	/* Look for positions matching these tags */
-	for ( j=0; j<cnt; ++j ) for ( flags=0; flags<8; ++flags ) if ( flag_sets[j]&(1<<flags) ) {
+	for ( j=0; j<cnt; ++j ) {
 	    for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL )
 		sf->chars[i]->ticked = false;
 	    for ( i=0; i<sf->charcnt; i++ ) 
 		    if ( (sc=sf->chars[i])!=NULL && sc->possub!=NULL &&
-			    sc->script!=0 && !sc->ticked &&
-			    PosSubMatchTag(sc->possub,ligtags[j],type,flags<<1) ) {
-		glyphs = generateGlyphTypeList(sf,type,sc->script,ligtags[j],flags<<1,&map);
+			    !sc->ticked &&
+			    PosSubMatchTag(sc->possub,&ligtags[j],type) ) {
+		glyphs = generateGlyphTypeList(sf,type,&ligtags[j],&map);
 		if ( glyphs!=NULL && glyphs[0]!=NULL ) {
-		    new = chunkalloc(sizeof(struct lookup));
-		    new->script = sc->script;
-		    new->feature_tag = ligtags[j];
-		    new->flags = flags<<1;
+		    new = LookupFromTagFlagLang(&ligtags[j]);
+		    new->script = SCScriptFromUnicode(sc);
 		    new->lookup_type = 1;
 		    new->offset = ftell(lfile);
 		    new->next = lookups;
 		    lookups = new;
-		    dumpGPOSsimplepos(lfile,sf,glyphs,ligtags[j]);
+		    dumpGPOSsimplepos(lfile,sf,glyphs,&ligtags[j]);
 		    new->len = ftell(lfile)-new->offset;
 		}
 	    }
 	}
     }
     free(ligtags);
-    free(flag_sets);
 
-    /* Look for kerns */
+    /* Look for kerns */ /* kerns don't store langs or flags */
     for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL )
 	sf->chars[i]->ticked = false;
     for ( i=0; i<sf->charcnt; i++ )
 	    if ( (sc=sf->chars[i])!=NULL && sc->kerns!=NULL &&
-		    sc->script!=0 && !sc->ticked ) {
+		    SCScriptFromUnicode(sc)!=0 && !sc->ticked ) {
 	new = chunkalloc(sizeof(struct lookup));
-	new->script = sc->script;
 	new->feature_tag = CHR('k','e','r','n');
 	new->flags = pst_ignorecombiningmarks;
+	new->script_lang_index = SFAddScriptLangIndex(sf,SCScriptFromUnicode(sc),DEFAULT_LANG);
 	new->lookup_type = 2;		/* Pair adjustment subtable type */
 	new->offset = ftell(lfile);
 	new->next = lookups;
 	lookups = new;
-	dumpgposkerndata(lfile,sf,sc->script,at);
+	dumpgposkerndata(lfile,sf,SCScriptFromUnicode(sc),at);
 	new->len = ftell(lfile)-new->offset;
     }
 
@@ -1031,8 +1098,8 @@ return( isupper(tag>>24) && isupper((tag>>16)&0xff) && isupper((tag>>8)&0xff) &&
 static struct lookup *GSUBfigureLookups(FILE *lfile,SplineFont *sf,
 	struct alltabs *at) {
     struct lookup *lookups = NULL, *new;
-    uint32 *ligtags, *flag_sets;
-    int i, j, max, cnt, flags;
+    struct tagflaglang *ligtags;
+    int i, j, max, cnt;
     LigList *ll;
     PST *subs;
     SplineChar *sc;
@@ -1041,48 +1108,37 @@ static struct lookup *GSUBfigureLookups(FILE *lfile,SplineFont *sf,
 
     /* Look for ligature tags used in the font */
     max = 30; cnt = 0;
-    ligtags = galloc(max*sizeof(uint32));
-    flag_sets = galloc(max*sizeof(uint32));
+    ligtags = galloc(max*sizeof(struct tagflaglang));
     for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL ) {
-	if ( sf->chars[i]->script==0 && sf->chars[i]->ligofme!=NULL )
-	    fprintf( stderr, "Warning: Ligature '%s' beginning with glyph '%s' has no associated script.\n No GSUB entry will be generated for it.\n",
-		    sf->chars[i]->ligofme->lig->u.lig.lig->name,
-		    sf->chars[i]->name );
 	for ( ll = sf->chars[i]->ligofme; ll!=NULL; ll=ll->next ) if ( !SkipThisTag(ll->lig->tag)) {
 	    for ( j=0; j<cnt; ++j )
-		if ( ligtags[j]==ll->lig->tag ) {
-			flag_sets[j] |= 1<<(ll->lig->flags>>1);
+		if ( ligtags[j].tag==ll->lig->tag && (ll->lig->flags&~1)==ligtags[j].flags &&
+			ll->lig->script_lang_index == ligtags[j].script_lang_index )
 	    break;
-		}
 	    if ( j==cnt ) {
 		if ( cnt>=max ) {
 		    max += 30;
-		    ligtags = grealloc(ligtags,max*sizeof(uint32));
-		    flag_sets = grealloc(flag_sets,max*sizeof(uint32));
+		    ligtags = grealloc(ligtags,max*sizeof(struct tagflaglang));
 		}
-		flag_sets[cnt] = 1<<(ll->lig->flags>>1);
-		ligtags[cnt++] = ll->lig->tag;
+		TagFlagLangFromPST(&ligtags[cnt++],ll->lig);
 	    }
 	}
     }
 
     /* Look for ligatures matching these tags */
-    for ( j=0; j<cnt; ++j ) for ( flags=0; flags<8; ++flags ) if ( flag_sets[j]&(1<<flags) ) {
+    for ( j=0; j<cnt; ++j ) {
 	for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL )
 	    sf->chars[i]->ticked = false;
 	for ( i=0; i<sf->charcnt; i++ ) 
 		if ( (sc=sf->chars[i])!=NULL && sc->ligofme!=NULL &&
-			sc->script!=0 && !sc->ticked &&
-			LigListMatchTag(sc->ligofme,ligtags[j],flags<<1) ) {
-	    new = chunkalloc(sizeof(struct lookup));
-	    new->script = sc->script;
-	    new->feature_tag = ligtags[j];
+			!sc->ticked &&
+			LigListMatchTag(sc->ligofme,&ligtags[j]) ) {
+	    new = LookupFromTagFlagLang(&ligtags[j]);
 	    new->lookup_type = 4;		/* Ligature */
-	    new->flags = flags<<1;
 	    new->offset = ftell(lfile);
 	    new->next = lookups;
 	    lookups = new;
-	    dumpgsubligdata(lfile,sf,sc->script,ligtags[j],flags<<1,at);
+	    dumpgsubligdata(lfile,sf,0,&ligtags[j],at);
 	    new->len = ftell(lfile)-new->offset;
 	}
     }
@@ -1092,40 +1148,31 @@ static struct lookup *GSUBfigureLookups(FILE *lfile,SplineFont *sf,
 	cnt = 0;
 	for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL ) {
 	    for ( subs = sf->chars[i]->possub; subs!=NULL; subs=subs->next ) if ( subs->type==type && !SkipThisTag(subs->tag)) {
-		if ( sf->chars[i]->script==0 )
-		    fprintf( stderr, "Warning: Substitution of '%s' has no associated script.\n No GSUB entry will be generated for it.\n",
-			    sf->chars[i]->name );
 		for ( j=0; j<cnt; ++j )
-		    if ( ligtags[j]==subs->tag ) {
-			flag_sets[j] |= 1<<(subs->flags>>1);
+		    if ( ligtags[j].tag==subs->tag && (subs->flags&~1)==ligtags[j].flags &&
+			    subs->script_lang_index == ligtags[j].script_lang_index )
 		break;
-		    }
 		if ( j==cnt ) {
 		    if ( cnt>=max ) {
 			max += 30;
-			ligtags = grealloc(ligtags,max*sizeof(uint32));
-			flag_sets = grealloc(flag_sets,max*sizeof(uint32));
+			ligtags = grealloc(ligtags,max*sizeof(struct tagflaglang));
 		    }
-		    flag_sets[cnt] |= 1<<(subs->flags>>1);
-		    ligtags[cnt++] = subs->tag;
+		    TagFlagLangFromPST(&ligtags[cnt++],subs);
 		}
 	    }
 	}
 
 	/* Look for substitutions/decompositions matching these tags */
-	for ( j=0; j<cnt; ++j ) for ( flags=0; flags<8; ++flags ) if ( flag_sets[j]&(1<<flags) ) {
+	for ( j=0; j<cnt; ++j ) {
 	    for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL )
 		sf->chars[i]->ticked = false;
 	    for ( i=0; i<sf->charcnt; i++ ) 
 		    if ( (sc=sf->chars[i])!=NULL && sc->possub!=NULL &&
-			    sc->script!=0 && !sc->ticked &&
-			    PosSubMatchTag(sc->possub,ligtags[j],type,flags<<1) ) {
-		glyphs = generateGlyphTypeList(sf,type,sc->script,ligtags[j],flags<<1,&map);
+			    !sc->ticked &&
+			    PosSubMatchTag(sc->possub,&ligtags[j],type) ) {
+		glyphs = generateGlyphTypeList(sf,type,&ligtags[j],&map);
 		if ( glyphs!=NULL && glyphs[0]!=NULL ) {
-		    new = chunkalloc(sizeof(struct lookup));
-		    new->script = sc->script;
-		    new->feature_tag = ligtags[j];
-		    new->flags = flags<<1;
+		    new = LookupFromTagFlagLang(&ligtags[j]);
 		    new->lookup_type = type==pst_substitution?1:type==pst_multiple?2:3;
 		    new->offset = ftell(lfile);
 		    new->next = lookups;
@@ -1142,7 +1189,6 @@ static struct lookup *GSUBfigureLookups(FILE *lfile,SplineFont *sf,
 	}
     }
     free(ligtags);
-    free(flag_sets);
 return( lookups );
 }
 
@@ -1212,10 +1258,10 @@ static struct lookup *reverse_list(struct lookup *lookups) {
 return( lookups );
 }
 
-static struct lookup *orderlookups(struct lookup **_lookups,struct lookup **features,
+static struct lookup *orderlookups(struct lookup **_lookups,
 	struct table_ordering *ord, FILE *ordered, FILE *disordered) {
     int cnt,i,j;
-    struct lookup **array, *l, *script_start, *temp;
+    struct lookup **array, *l, *features, *temp;
     struct lookup *lookups = *_lookups;
     char *buf;
     int bsize, len, totlen;
@@ -1257,20 +1303,6 @@ static struct lookup *orderlookups(struct lookup **_lookups,struct lookup **feat
     fclose(disordered);
     free(buf);
 
-    /* sort by script */
-    for ( i=0; i<cnt-1; ++i ) for ( j=i+1; j<cnt; ++j ) {
-	if ( array[i]->script > array[j]->script ||
-		(array[i]->script==array[j]->script &&
-		    TTFFeatureIndex(array[i]->feature_tag,ord)>TTFFeatureIndex(array[j]->feature_tag,ord))) {
-	    temp = array[i];
-	    array[i] = array[j];
-	    array[j] = temp;
-	}
-    }
-    for ( i=0; i<cnt-1; ++i )
-	array[i]->script_next = array[i+1];
-    script_start = array[0];
-
     /* sort by feature */
     for ( i=0; i<cnt-1; ++i ) for ( j=i+1; j<cnt; ++j ) {
 	if ( array[i]->feature_tag > array[j]->feature_tag ||
@@ -1286,29 +1318,100 @@ static struct lookup *orderlookups(struct lookup **_lookups,struct lookup **feat
 	array[i]->feature_cnt = i;
     }
     array[i]->feature_cnt = i;
-    *features = array[0];
+    features = array[0];
 
     free(array);
-return( script_start );
+return( features );
 }
 
-static struct lookup *dump_script_table(FILE *g___,struct lookup *scripts) {
+static int SFScriptLangMatch(SplineFont *sf,int sli,uint32 script,uint32 lang) {
+    int i,j;
+
+    if ( sf->cidmaster ) sf=sf->cidmaster;
+    for ( i=0; sf->script_lang[sli][i].script!=0 && sf->script_lang[sli][i].script!=script ; ++i );
+    if ( sf->script_lang[sli][i].script==0 )
+return( false );
+
+    for ( j=0; sf->script_lang[sli][i].langs[j]!=0 && sf->script_lang[sli][i].langs[j]!=lang; ++j );
+return( sf->script_lang[sli][i].langs[j]==lang );
+}
+
+static void dump_script_table(FILE *g___,SplineFont *sf,
+	struct lookup *features,
+	uint32 script, int sc, uint8 *used,
+	uint32 *langs, int lc, uint8 *touched) {
     struct lookup *l;
-    int cnt;
+    int cnt, dflt_index=-1, total, offset;
+    int i,j,k,m;
+    uint32 here,base;
+
+    memset(touched,0,lc);
+    if ( sf->cidmaster ) sf = sf->cidmaster;
+    for ( i=0; sf->script_lang[i]!=NULL; ++i ) if ( used[i] ) {
+	for ( j=0; sf->script_lang[i][j].script!=0 &&
+		sf->script_lang[i][j].script!=script; ++j );
+	if ( sf->script_lang[i][j].script!=0 ) {
+	    for ( k=0; sf->script_lang[i][j].langs[k]!=0; ++k ) {
+		for ( m=0; langs[m]!=0 && langs[m]!=sf->script_lang[i][j].langs[k]; ++m );
+		++touched[m];
+	    }
+	}
+    }
+    for ( k=total=i=0; i<lc; ++i ) {
+	if ( touched[i] ) ++k;
+	total += touched[i];
+    }
+    for ( dflt_index = lc-1; dflt_index>=0 && langs[dflt_index]!=DEFAULT_LANG; --dflt_index );
+    if ( dflt_index!=-1 && !touched[dflt_index] ) dflt_index = -1;
+    if ( dflt_index!=-1 ) {
+	--k;
+	total -= touched[dflt_index];
+    }
 
     /* Dump the script table */
-    putshort(g___,4);		/* offset from start of script table to data */
-				/* for default language */
-    putshort(g___,0);		/* count of all non-default languages */
-    /* Now the language system table */
-    putshort(g___,0);		/* reserved, must be zero */
-    putshort(g___,0xffff);	/* No required feature */
-    for ( l=scripts, cnt=0; l!=NULL && l->script==scripts->script; l=l->script_next )
-	++cnt;
-    putshort(g___,cnt);		/* Number of features */
-    for ( l=scripts; l!=NULL && l->script==scripts->script; l=l->script_next )
-	putshort(g___,l->feature_cnt);	/* Index of each feature */
-return( l );
+    base = ftell(g___);
+    putshort(g___,dflt_index==-1?0:4+k*6);/* offset from start of script table */
+				/* to data for default language */
+    putshort(g___,k);		/* count of all non-default languages */
+    /* Now the lang sys records of non-default languages */
+    for ( i=0; i<lc; ++i ) if ( touched[i] && i!=dflt_index ) {
+	putlong(g___,langs[i]);
+	putshort(g___,0);		/* Fixup later */
+    }
+    /* Now the language system table for default */
+    if ( dflt_index!=-1 ) {
+	putshort(g___,0);		/* reserved, must be zero */
+	putshort(g___,0xffff);		/* No required feature */
+	for ( l=features, cnt=0; l!=NULL ; l=l->feature_next ) {
+	    if ( SFScriptLangMatch(sf,l->script_lang_index,script,DEFAULT_LANG))
+		++cnt;
+	}
+	putshort(g___,cnt);		/* Number of features */
+	for ( l=features, cnt=0; l!=NULL ; l=l->feature_next ) {
+	    if ( SFScriptLangMatch(sf,l->script_lang_index,script,DEFAULT_LANG))
+		putshort(g___,l->feature_cnt);	/* Index of each feature */
+	}
+    }
+    /* Now the language system table for each language */
+    offset = 2*2+4;
+    for ( i=0; i<lc; ++i ) if ( touched[i] && i!=dflt_index ) {
+	here = ftell(g___);
+	fseek(g___,base+offset,SEEK_SET);
+	putshort(g___,here-base);
+	fseek(g___,here,SEEK_SET);
+	offset += 6;
+	putshort(g___,0);		/* reserved, must be zero */
+	putshort(g___,0xffff);		/* No required feature */
+	for ( l=features, cnt=0; l!=NULL ; l=l->feature_next ) {
+	    if ( SFScriptLangMatch(sf,l->script_lang_index,script,langs[i]))
+		++cnt;
+	}
+	putshort(g___,cnt);		/* Number of features */
+	for ( l=features, cnt=0; l!=NULL ; l=l->feature_next ) {
+	    if ( SFScriptLangMatch(sf,l->script_lang_index,script,langs[i]))
+		putshort(g___,l->feature_cnt);	/* Index of each feature */
+	}
+    }
 }
     
 static FILE *g___FigureExtensionSubTables(struct lookup *lookups,int is_gpos) {
@@ -1354,14 +1457,72 @@ return( NULL );
 return( efile );
 }
 
+static uint32 *ScriptsFromFeatures(SplineFont *sf, uint8 *used,
+	int *scnt, uint32 **_langs, int *lcnt) {
+    int i,j,k,l, smax,lmax;
+    uint32 *scripts, *langs;
+
+    smax = lmax = 0;
+    for ( i=0; sf->script_lang[i]!=NULL; ++i ) if ( used[i] ) {
+	for ( j=0; sf->script_lang[i][j].script!=0; ++j ) {
+	    for ( k=0; sf->script_lang[i][j].langs[k]!=0; ++k );
+	    lmax += k;
+	}
+	smax += j;
+    }
+
+    scripts = galloc((smax+1)*sizeof(uint32));
+    langs = galloc((lmax+1)*sizeof(uint32));
+    smax = lmax = 0;
+    for ( i=0; sf->script_lang[i]!=NULL; ++i ) if ( used[i] ) {
+	for ( j=0; sf->script_lang[i][j].script!=0; ++j ) {
+	    uint32 script = sf->script_lang[i][j].script;
+	    for ( k=0; sf->script_lang[i][j].langs[k]!=0; ++k ) {
+		uint32 lang = sf->script_lang[i][j].langs[k];
+		for ( l=0; l<lmax && langs[l]!=lang; ++l );
+		if ( l==lmax ) langs[lmax++] = lang;
+	    }
+	    for ( l=0; l<smax && scripts[l]!=script; ++l );
+	    if ( l==smax ) scripts[smax++] = script;
+	}
+    }
+    scripts[smax] = 0;
+    langs[lmax] = 0;
+
+    for ( i=0; i<smax-1; ++i ) for ( j=i+1; j<smax; ++j ) {
+	if ( scripts[i]>scripts[j] ) {
+	    uint32 temp = scripts[i];
+	    scripts[i] = scripts[j];
+	    scripts[j] = temp;
+	}
+    }
+
+    for ( i=0; i<lmax-1; ++i ) for ( j=i+1; j<lmax; ++j ) {
+	if ( langs[i]>langs[j] ) {
+	    uint32 temp = langs[i];
+	    langs[i] = langs[j];
+	    langs[j] = temp;
+	}
+    }
+
+    *_langs = langs;
+    *scnt = smax;
+    *lcnt = lmax;
+return( scripts );
+}
+
 static FILE *dumpg___info(struct alltabs *at, SplineFont *sf,int is_gpos) {
     /* Dump out either a gpos or a gsub table. gpos handles kerns, gsub ligs */
     FILE *lfile, *lfile2, *g___, *efile;
-    struct lookup *lookups=NULL, *script_ordered, *feature_ordered, *l, *prev, *next;
-    int cnt, offset, i, flags, subcnt;
+    struct lookup *lookups=NULL, *feature_ordered, *l, *next;
+    int cnt, offset, i, flags;
     char *buf;
-    uint32 lookup_list_table_start, feature_list_table_start;
+    uint32 *scripts, *langs;
+    uint32 lookup_list_table_start, feature_list_table_start, here, scripts_start_offset;
     struct table_ordering *ord;
+    uint8 *touched, *used;
+    int lc;
+    SplineFont *master;
 
     lfile = tmpfile();
     if ( is_gpos ) {
@@ -1378,15 +1539,17 @@ return( NULL );
 
     lookups = reverse_list(lookups);
     lfile2 = tmpfile();
-    script_ordered = orderlookups(&lookups,&feature_ordered,ord,lfile2,lfile);
+    feature_ordered = orderlookups(&lookups,ord,lfile2,lfile);
     lfile = lfile2;
 
-    cnt = 1;
-    prev = script_ordered;
-    for ( l=prev->script_next; l!=NULL; prev=l, l=l->script_next ) {
-	if ( l->script != prev->script )
-	    ++cnt;
-    }
+    master = ( sf->cidmaster ) ? sf->cidmaster : sf;
+    for ( i=0; master->script_lang[i]!=NULL; ++i );
+    used = gcalloc(i,1);
+    for ( l=lookups; l!=NULL; l=l->next )
+	used[l->script_lang_index] = true;
+
+    scripts = ScriptsFromFeatures(sf,used,&cnt,&langs,&lc);
+    touched = galloc(lc);
 
     g___ = tmpfile();
     putlong(g___,0x10000);		/* version number */
@@ -1394,32 +1557,29 @@ return( NULL );
     putshort(g___,0);		/* offset to features. Come back for this */
     putshort(g___,0);		/* offset to lookups.  Come back for this */
 /* Now the scripts */
+    scripts_start_offset = ftell(g___);
     putshort(g___,cnt);
-    offset = 2+6*cnt;		/* Offset to the first Script Table */
-    putlong(g___,script_ordered->script);
-    putshort(g___,offset);
-    prev = script_ordered;
-    subcnt=1;	/* one feature for the first script so far */
-    for ( l=prev->script_next; l!=NULL; prev=l, l=l->script_next ) {
-	if ( l->script==prev->script )
-	    ++subcnt;
-	else {
-	    /* calculate size of previous script */
-	    offset += 4/* Size of minimal script table */ +
-			6+subcnt*2 /* Size of LangSys table */;
-	    putlong(g___,l->script);
-	    putshort(g___,offset);
-	    subcnt = 1;
-	}
+    for ( i=0; i<cnt; ++i ) {
+	putlong(g___,scripts[i]);
+	putshort(g___,0);	/* fix up later */
     }
 
     /* Ok, that was the script_list_table which gives each script an offset */
     /* Now for each script we provide a Script table which contains an */
     /*  offset to a bunch of features for the default language, and a */
-    /*  count of non-default languages which is always 0 for us */
-    for ( l=dump_script_table(g___,script_ordered); l!=NULL;
-	    l=dump_script_table(g___,l));
-    /* And that should finish all the scripts */
+    /*  a more complex situation for non-default languages. */
+    offset=2+4;
+    for ( i=0; i<cnt; ++i ) {
+	here = ftell(g___);
+	fseek(g___,scripts_start_offset+offset,SEEK_SET);
+	putshort(g___,here-scripts_start_offset);
+	offset+=6;
+	fseek(g___,here,SEEK_SET);
+	dump_script_table(g___,sf,feature_ordered,
+		scripts[i],cnt,used,
+		langs,lc,touched);
+    }
+    /* And that should finish all the scripts/languages */
 
     feature_list_table_start = ftell(g___);
     fseek(g___,6,SEEK_SET);
@@ -1486,6 +1646,10 @@ return( NULL );
 	next = l->next;
 	chunkfree(l,sizeof(*l));
     }
+    free(scripts);
+    free(langs);
+    free(touched);
+    free(used);
 return( g___ );
 }
 
@@ -1534,7 +1698,7 @@ static void DumpLigCarets(FILE *gdef,SplineChar *sc) {
     if ( pst==NULL )
 return;
 
-    if ( sc->script==CHR('a','r','a','b') || sc->script==CHR('h','e','b','r') ) {
+    if ( SCRightToLeft(sc) ) {
 	for ( i=0; i<pst->u.lcaret.cnt-1; ++i )
 	    for ( j=i+1; j<pst->u.lcaret.cnt; ++j )
 		if ( pst->u.lcaret.carets[i]<pst->u.lcaret.carets[j] ) {
@@ -1553,7 +1717,7 @@ return;
     }
 
     putshort(gdef,pst->u.lcaret.cnt);	/* this many carets */
-    offset = 2*pst->u.lcaret.cnt;
+    offset = sizeof(uint16) + sizeof(uint16)*pst->u.lcaret.cnt;
     for ( i=0; i<pst->u.lcaret.cnt; ++i ) {
 	putshort(gdef,offset);
 	offset+=4;
@@ -1946,4 +2110,40 @@ void OrderTable(SplineFont *sf,uint32 table_tag) {
     while ( !d.done )
 	GDrawProcessOneEvent(NULL);
     GDrawDestroyWindow(gw);
+}
+
+void otf_orderlangs(SplineFont *sf) {
+    int i,j,k,l, len,max;
+
+    if ( sf->cidmaster!=NULL ) sf=sf->cidmaster;
+    if ( sf->script_lang==NULL )
+return;
+
+    /* order the scripts in each scriptlist and then the languages attached */
+    /*  to each script */
+    max = 0;
+    for ( i=0; sf->script_lang[i]!=NULL; ++i ) {
+	struct script_record *sl = sf->script_lang[i];
+	for ( len = 0; sl[len].script!=0; ++len );
+	for ( k=0; k<len-1; ++k ) for ( l=k+1; l<len; ++l ) {
+	    if ( sl[k].script > sl[l].script ) {
+		struct script_record slr;
+		slr = sl[k];
+		sl[k] = sl[l];
+		sl[l] = slr;
+	    }
+	}
+	for ( j=0; sl[j].script!=0; ++j ) {
+	    uint32 *langs = sl[j].langs;
+	    for ( len=0; langs[len]!=0; ++len );
+	    for ( k=0; k<len-1; ++k ) for ( l=k+1; l<len; ++l ) {
+		if ( langs[k]>langs[l] ) {
+		    uint32 temp = langs[k];
+		    langs[k] = langs[l];
+		    langs[l] = temp;
+		}
+	    }
+	}
+	if ( j>max ) max = j;
+    }
 }

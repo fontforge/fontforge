@@ -152,7 +152,10 @@ struct ttfinfo {
     int anchor_class_cnt;		/* For GPOS */
     AnchorClass *ahead, *alast;
 
+    struct script_record **script_lang;
+
     uint32 mort_subs_tag;
+    int mort_r2l;
     uint16 *morx_classes;
 
     uint32 *feats[2];			/* Order of gsub/gpos (morx) features */
@@ -488,6 +491,7 @@ struct subhead { uint16 first, cnt, delta, rangeoff; };	/* a sub header in 8/16 
 enum touchflags { tf_x=1, tf_y=2, tf_d=4, tf_endcontour=0x80, tf_startcontour=0x40 };
 
     /* Open type Advanced Typography Tables */
+extern void otf_orderlangs(SplineFont *sf);
 extern void otf_dumpgpos(struct alltabs *at, SplineFont *sf);
 extern void otf_dumpgsub(struct alltabs *at, SplineFont *sf);
 extern void otf_dumpgdef(struct alltabs *at, SplineFont *sf);

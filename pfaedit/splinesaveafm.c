@@ -110,6 +110,9 @@ return( 0 );
 	} else if ( sscanf( buffer, "C %*d ; WX %*d ; N %.40s ; B %*d %*d %*d %*d ; L %.40s %.40s",
 		name, second, lig)==3 ) {
 	    sc1 = SFFindName(sf,lig);
+	    sc2 = SFFindName(sf,name);
+	    if ( sc2==NULL )
+		sc2 = SFFindName(sf,second);
 	    if ( sc1!=NULL ) {
 		sprintf( buffer, "%s %s", name, second);
 		for ( liga=sc1->possub; liga!=NULL; liga=liga->next ) {
@@ -119,6 +122,8 @@ return( 0 );
 		if ( liga==NULL ) {
 		    liga = chunkalloc(sizeof(PST));
 		    liga->tag = CHR('l','i','g','a');
+		    liga->script_lang_index = SFAddScriptLangIndex(sf,
+			    SCScriptFromUnicode(sc2),DEFAULT_LANG);
 		    liga->type = pst_ligature;
 		    liga->next = sc1->possub;
 		    sc1->possub = liga;
@@ -396,6 +401,9 @@ return( cnt );
 static void AfmKernPairs(FILE *afm, SplineChar *sc) {
     KernPair *kp;
     int em = (sc->parent->ascent+sc->parent->descent);
+
+    if ( strcmp(sc->name,".notdef")==0 )
+return;
 
     for ( kp = sc->kerns; kp!=NULL; kp=kp->next ) {
 	if ( strcmp(kp->sc->name,".notdef")!=0 && kp->off!=0 )

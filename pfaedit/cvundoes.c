@@ -511,7 +511,6 @@ return(NULL);
 	if ( dohints==2 ) {
 	    undo->undotype = ut_statename;
 	    undo->u.state.unicodeenc = sc->unicodeenc;
-	    undo->u.state.script = sc->script;
 	    undo->u.state.charname = copy(sc->name);
 	    undo->u.state.comment = u_copy(sc->comment);
 	    undo->u.state.possub = PSTCopy(sc->possub,sc);
@@ -721,15 +720,12 @@ static void SCUndoAct(SplineChar *sc,int drawmode, Undoes *undo) {
 	if ( drawmode==dm_fore && undo->undotype==ut_statename ) {
 	    char *temp = sc->name;
 	    int uni = sc->unicodeenc;
-	    uint32 script = sc->script;
 	    PST *possub = sc->possub;
 	    unichar_t *comment = sc->comment;
 	    sc->name = undo->u.state.charname;
 	    undo->u.state.charname = temp;
 	    sc->unicodeenc = undo->u.state.unicodeenc;
 	    undo->u.state.unicodeenc = uni;
-	    sc->script = undo->u.state.script;
-	    undo->u.state.script = script;
 	    sc->possub = undo->u.state.possub;
 	    undo->u.state.possub = possub;
 	    sc->comment = undo->u.state.comment;
@@ -1310,7 +1306,6 @@ static Undoes *SCCopyAll(SplineChar *sc,int full) {
 	    cur->u.state.anchor = AnchorPointsCopy(sc->anchor);
 	    cur->u.state.u.hints = UHintCopy(sc,true);
 	    cur->u.state.unicodeenc = sc->unicodeenc;
-	    cur->u.state.script = sc->script;
 	    cur->u.state.charname = copymetadata ? copy(sc->name) : NULL;
 	    cur->u.state.comment = copymetadata ? u_copy(sc->comment) : NULL;
 	    cur->u.state.possub = copymetadata ? PSTCopy(sc->possub,NULL) : NULL;

@@ -486,7 +486,7 @@ return( 0 );
     /*  or how */
     if ( version==CHR('t','y','p','1')) {
 	if ( filename==NULL ) filename = "it";
-	fprintf( stderr, "Interesting, I've never seen an example of this type of font, could you\nsend me a copy of %s?\nThanks\n  gww@silcom.com", filename );
+	fprintf( stderr, "Interesting, I've never seen an example of this type of font, could you\nsend me a copy of %s?\nThanks\n  gww@silcom.com\n", filename );
     }
     if ( version!=0x00010000 && version!=CHR('t','r','u','e') &&
 	    version!=CHR('O','T','T','O'))
@@ -3445,16 +3445,25 @@ static void readttfkerns(FILE *ttf,struct ttfinfo *info) {
     }
 }
 
-#define UNUSED_SCRIPT		0
-#define MULTIPLE_SCRIPTS	0xffffffff
+#define MAX_LANG 		20		/* Don't support features which appear in more than 10 languages (only rememver first 10) */
+struct scriptlist {
+    uint script;
+    uint32 langs[MAX_LANG];
+    int lang_cnt;
+    struct scriptlist *next;
+};
+
 struct feature {
     uint32 offset;
-    uint32 tag, script;
+    uint32 tag;
+    struct scriptlist *sl;
+    int script_lang_index;
     int lcnt;
     uint16 *lookups;
 };
 struct lookup {
-    uint32 tag, script;
+    uint32 tag;
+    int script_lang_index;
     uint16 flags;
     uint16 lookup;
 };
@@ -3620,12 +3629,6 @@ return;
 		    addKernPair(info, glyphs[i], glyph2, vr2.xadvance+vr1.xplacement);
 		else
 		    addKernPair(info, glyphs[i], glyph2, vr1.xadvance+vr2.xplacement);
-		if ( lookup->script!=UNUSED_SCRIPT && lookup->script!=MULTIPLE_SCRIPTS ) {
-		    if (info->chars[glyphs[i]]->script==0 )
-			info->chars[glyphs[i]]->script = lookup->script;
-		    if (info->chars[glyph2]->script==0 )
-			info->chars[glyph2]->script = lookup->script;
-		}
 	    }
 	}
 	free(ps_offsets); free(glyphs);
@@ -3683,6 +3686,7 @@ return;
     class = chunkalloc(sizeof(AnchorClass));
     class->name = uc_copy("Cursive");
     class->feature_tag = lookup->tag;
+    class->script_lang_index = lookup->script_lang_index;
     if ( info->ahead==NULL )
 	info->ahead = class;
     else
@@ -3736,6 +3740,7 @@ static AnchorClass **MarkGlyphsProcessMarks(FILE *ttf,int markoffset,
 	classes[i] = ac = chunkalloc(sizeof(AnchorClass));
 	ac->name = u_copy(ubuf);
 	ac->feature_tag = lookup->tag;
+	ac->script_lang_index = lookup->script_lang_index;
 	ac->flags = lookup->flags;
 	if ( info->ahead==NULL )
 	    info->ahead = ac;
@@ -3793,8 +3798,6 @@ static void MarkGlyphsProcessBases(FILE *ttf,int baseoffset,
 	sc = info->chars[baseglyphs[i]];
 	if ( baseglyphs[i]>=info->glyph_cnt || sc==NULL )
     continue;
-	if ( sc->script==0 && lookup->script!=0 && lookup->script!=MULTIPLE_SCRIPTS )
-	    sc->script = lookup->script;
 	for ( j=0; j<classcnt; ++j ) if ( offsets[ibase+j]!=0 ) {
 	    fseek(ttf,baseoffset+offsets[ibase+j],SEEK_SET);
 	    ap = chunkalloc(sizeof(AnchorPoint));
@@ -3829,8 +3832,6 @@ static void MarkGlyphsProcessLigs(FILE *ttf,int baseoffset,
 	sc = info->chars[baseglyphs[i]];
 	if ( baseglyphs[i]>=info->glyph_cnt || sc==NULL )
     continue;
-	if ( sc->script==0 && lookup->script!=0 && lookup->script!=MULTIPLE_SCRIPTS )
-	    sc->script = lookup->script;
 	fseek(ttf,baseoffset+loffsets[i],SEEK_SET);
 	compcnt = getushort(ttf);
 	aoffsets = galloc(compcnt*classcnt*sizeof(uint16));
@@ -3925,6 +3926,7 @@ return;
 	PST *pos = chunkalloc(sizeof(PST));
 	pos->type = pst_position;
 	pos->tag = lookup->tag;
+	pos->script_lang_index = lookup->script_lang_index;
 	pos->flags = lookup->flags;
 	pos->next = info->chars[glyphs[i]]->possub;
 	info->chars[glyphs[i]]->possub = pos;
@@ -3933,9 +3935,6 @@ return;
 	pos->u.pos.yoff = which->yplacement;
 	pos->u.pos.h_adv_off = which->xadvance;
 	pos->u.pos.v_adv_off = which->yadvance;
-	if ( lookup->script!=UNUSED_SCRIPT && lookup->script!=MULTIPLE_SCRIPTS &&
-		info->chars[glyphs[i]]->script==0 )
-	    info->chars[glyphs[i]]->script = lookup->script;
     }
     free(vr);
     free(glyphs);
@@ -3974,7 +3973,7 @@ static void gposExtensionSubTable(FILE *ttf, int stoffset,
 
     if ( !info->extensionrequested ) {
 	info->extensionrequested = true;
-	fprintf( stderr, "Hi. This font uses GPOS extension sub-tables, and I've never seen one that\ndoes. I'd like to be able to look at it to test my code. Would you\nsend a copy of %s to\n   gww@silcom.com\nThanks!",
+	fprintf( stderr, "Hi. This font uses GPOS extension sub-tables, and I've never seen one that\ndoes. I'd like to be able to look at it to test my code. Would you\nsend a copy of %s to\n   gww@silcom.com\nThanks!\n",
 		info->fontname );
     }
 }
@@ -4061,16 +4060,11 @@ return;
 		PST *pos = chunkalloc(sizeof(PST));
 		pos->type = pst_substitution;
 		pos->tag = lookup->tag;
+		pos->script_lang_index = lookup->script_lang_index;
 		pos->flags = lookup->flags;
 		pos->next = info->chars[glyphs[i]]->possub;
 		info->chars[glyphs[i]]->possub = pos;
 		pos->u.subs.variant = copy(info->chars[which]->name);
-		if ( lookup->script!=UNUSED_SCRIPT && lookup->script!=MULTIPLE_SCRIPTS &&
-			info->chars[glyphs[i]]->script==0 )
-		    info->chars[glyphs[i]]->script = lookup->script;
-		if ( lookup->script!=UNUSED_SCRIPT && lookup->script!=MULTIPLE_SCRIPTS &&
-			info->chars[which]->script==0 )
-		    info->chars[which]->script = lookup->script;
 	    }
 	}
     }
@@ -4135,12 +4129,10 @@ return;
 	    for ( j=0; j<cnt; ++j )
 		info->inuse[glyph2s[j]] = 1;
 	} else if ( info->chars[glyphs[i]]!=NULL && !bad ) {
-	    if ( lookup->script!=UNUSED_SCRIPT && lookup->script!=MULTIPLE_SCRIPTS &&
-		    info->chars[glyphs[i]]->script==0 )
-		info->chars[glyphs[i]]->script = lookup->script;
 	    sub = chunkalloc(sizeof(PST));
 	    sub->type = lu_type==2?pst_multiple:pst_alternate;
 	    sub->tag = lookup->tag;
+	    sub->script_lang_index = lookup->script_lang_index;
 	    sub->flags = lookup->flags;
 	    sub->next = info->chars[glyphs[i]]->possub;
 	    info->chars[glyphs[i]]->possub = sub;
@@ -4149,9 +4141,6 @@ return;
 	    for ( j=0; j<cnt; ++j ) {
 		strcat(pt,info->chars[glyph2s[j]]->name);
 		strcat(pt," ");
-		if ( lookup->script!=UNUSED_SCRIPT && lookup->script!=MULTIPLE_SCRIPTS &&
-			info->chars[glyph2s[j]]->script==0 )
-		    info->chars[glyph2s[j]]->script = lookup->script;
 	    }
 	}
     }
@@ -4243,21 +4232,16 @@ return;
 		liga = chunkalloc(sizeof(PST));
 		liga->type = pst_ligature;
 		liga->tag = lookup->tag;
+		liga->script_lang_index = lookup->script_lang_index;
 		liga->flags = lookup->flags;
 		liga->next = info->chars[lig]->possub;
 		info->chars[lig]->possub = liga;
 		liga->u.lig.lig = info->chars[lig];
 		liga->u.lig.components = pt = galloc(len);
-		if ( lookup->script!=UNUSED_SCRIPT && lookup->script!=MULTIPLE_SCRIPTS &&
-			info->chars[lig]->script==0 )
-		    info->chars[lig]->script = lookup->script;
 		for ( k=0; k<cc; ++k ) {
 		    strcpy(pt,info->chars[lig_glyphs[k]]->name);
 		    pt += strlen(pt);
 		    *pt++ = ' ';
-		    if ( lookup->script!=UNUSED_SCRIPT && lookup->script!=MULTIPLE_SCRIPTS &&
-			    info->chars[lig_glyphs[k]]->script==0 )
-			info->chars[lig_glyphs[k]]->script = lookup->script;
 		}
 		pt[-1] = '\0';
 		free(lig_glyphs);
@@ -4296,7 +4280,7 @@ static void gsubExtensionSubTable(FILE *ttf, int stoffset,
 
     if ( !info->extensionrequested ) {
 	info->extensionrequested = true;
-	fprintf( stderr, "Hi. This font uses GSUB extension sub-tables, and I've never seen one that\ndoes. I'd like to be able to look at it to test my code. Would you\nsend a copy of %s to\n   gww@silcom.com\nThanks!",
+	fprintf( stderr, "Hi. This font uses GSUB extension sub-tables, and I've never seen one that\ndoes. I'd like to be able to look at it to test my code. Would you\nsend a copy of %s to\n   gww@silcom.com\nThanks!\n",
 		info->fontname );
     }
 }
@@ -4349,12 +4333,13 @@ static struct lookup *compactttflookups(struct feature *features,uint32 *feats) 
     for ( i=0; features[i].tag!=0; ++i ) {
 	for ( k=0; k<features[i].lcnt; ++k ) {
 	    lookups[j].tag = features[i].tag;
-	    lookups[j].script = features[i].script;
+	    lookups[j].script_lang_index = features[i].script_lang_index;
 	    lookups[j++].lookup = features[i].lookups[k];
 	}
 	free( features[i].lookups );
     }
     /* Some lookups may appear in several features, so remove duplicates */
+    /* !!! Our script/language list won't be accurate !!! */
     for ( k=0; k<j; ++k ) {
 	for ( l=k+1; l<j; ++l ) {
 	    if ( lookups[k].lookup == lookups[l].lookup ) {
@@ -4372,7 +4357,8 @@ return( NULL );
     }
 
     lookups[j].lookup = -1;
-    lookups[j].tag = lookups[j].script = 0;
+    lookups[j].tag = 0;
+    lookups[j].script_lang_index = 0xffff;
 
     for ( i=0; i<j ; ++i ) for ( k=0; k<j; ++k ) if ( lookups[k].lookup==i ) {
 	for ( l=0; feats[l]!=0 && feats[l]!=lookups[k].tag; ++l );
@@ -4384,8 +4370,28 @@ return( NULL );
 return( lookups );
 }
 
+static void LSysAddToFeature(struct feature *feature,uint32 script,uint32 lang) {
+    int j;
+    struct scriptlist *sl;
+
+    for ( sl=feature->sl; sl!=NULL && sl->script!=script; sl=sl->next );
+    if ( sl==NULL ) {
+	sl = gcalloc(1,sizeof(struct scriptlist));
+	sl->next = feature->sl;
+	feature->sl = sl;
+	sl->script = script;
+    }
+    if ( sl->lang_cnt<MAX_LANG ) {
+	for ( j=sl->lang_cnt-1; j>=0 ; --j )
+	    if ( sl->langs[j]==lang )
+	break;
+	if ( j<0 )
+	    sl->langs[sl->lang_cnt++] = lang;
+    }
+}
+
 static void ProcessLangSys(FILE *ttf,uint32 langsysoff,
-	struct feature *features, uint32 script) {
+	struct feature *features, uint32 script, uint32 lang) {
     int cnt, feature, i;
 
     fseek(ttf,langsysoff,SEEK_SET);
@@ -4393,17 +4399,13 @@ static void ProcessLangSys(FILE *ttf,uint32 langsysoff,
     feature = getushort(ttf); /* required feature */
     if ( feature==0xffff )
 	/* No required feature */;
-    else if ( features[feature].script==UNUSED_SCRIPT || features[feature].script==script )
-	features[feature].script = script;
-    else
-	features[feature].script = MULTIPLE_SCRIPTS;
+    else {
+	LSysAddToFeature(&features[feature],script,lang);
+    }
     cnt = getushort(ttf);
     for ( i=0; i<cnt; ++i ) {
 	feature = getushort(ttf);
-	if ( features[feature].script==UNUSED_SCRIPT || features[feature].script==script )
-	    features[feature].script = script;
-	else
-	    features[feature].script = MULTIPLE_SCRIPTS;
+	LSysAddToFeature(&features[feature],script,lang);
     }
 }
 
@@ -4417,6 +4419,7 @@ static void tagTtfFeaturesWithScript(FILE *ttf,uint32 script_pos,struct feature 
 	uint16 deflangsys;
 	int langcnt, maxcnt;
 	uint16 *langsys;
+	uint32 *lang;
     } stab;
 
     fseek(ttf,script_pos,SEEK_SET);
@@ -4430,25 +4433,80 @@ static void tagTtfFeaturesWithScript(FILE *ttf,uint32 script_pos,struct feature 
     memset(&stab,0,sizeof(stab));
     stab.maxcnt = 30;
     stab.langsys = galloc(30*sizeof(uint16));
+    stab.lang = galloc(30*sizeof(uint32));
     for ( i=0; i<cnt; ++i ) {
 	fseek(ttf,scripts[i].offset,SEEK_SET);
 	stab.deflangsys = getushort(ttf);
 	stab.langcnt = getushort(ttf);
 	if ( stab.langcnt>=stab.maxcnt ) {
 	    stab.maxcnt = stab.langcnt+30;
-	    stab.langsys = grealloc(stab.langsys,stab.maxcnt);
+	    stab.langsys = grealloc(stab.langsys,stab.maxcnt*sizeof(uint16));
+	    stab.lang = grealloc(stab.langsys,stab.maxcnt*sizeof(uint32));
 	}
 	for ( j=0; j<stab.langcnt; ++j ) {
-	    /* lang = */ getlong(ttf);
+	    stab.lang[j] = getlong(ttf);
 	    stab.langsys[j] = getushort(ttf);
 	}
 	if ( stab.deflangsys!=0 )
-	    ProcessLangSys(ttf,scripts[i].offset+stab.deflangsys,features,scripts[i].script);
+	    ProcessLangSys(ttf,scripts[i].offset+stab.deflangsys,features,scripts[i].script,DEFAULT_LANG);
 	for ( j=0; j<stab.langcnt; ++j )
-	    ProcessLangSys(ttf,scripts[i].offset+stab.langsys[j],features,scripts[i].script);
+	    ProcessLangSys(ttf,scripts[i].offset+stab.langsys[j],features,scripts[i].script,stab.lang[j]);
     }
     free(stab.langsys);
+    free(stab.lang);
     free(scripts);
+}
+
+static int SLMatch(struct script_record *sr,struct scriptlist *sl) {
+    int i,j;
+    struct scriptlist *slt;
+
+    for ( j=0, slt=sl; slt!=NULL; slt=slt->next, ++j );
+    for ( i=0; sr[i].script!=0; ++i );
+    if ( i!=j )
+return( false );
+
+    for ( slt=sl; slt!=NULL; slt=slt->next ) {
+	for ( i=0; sr[i].script!=0 && sr[i].script!=slt->script; ++i );
+	if ( sr[i].script==0 )
+return( false );
+	for ( j=0 ; sr[i].langs[j]!=0; ++j );
+	if ( j!=slt->lang_cnt )
+return( false );
+	for ( j=0 ; sr[i].langs[j]!=0; ++j )
+	    if ( sr[i].langs[j]!=slt->langs[j] )
+return( false );
+    }
+return( true );
+}
+
+static void FigureScriptIndeces(struct ttfinfo *info,struct feature *features) {
+    int i,j,k;
+    struct scriptlist *sl, *snext;
+
+    for ( i=0; features[i].tag!=0; ++i );
+    info->script_lang = gcalloc(i+1,sizeof(struct script_record *));
+    for ( i=0; features[i].tag!=0; ++i ) {
+	for ( j=0; info->script_lang[j]!=NULL; ++j )
+	    if ( SLMatch(info->script_lang[j],features[i].sl))
+	break;
+	features[i].script_lang_index = j;
+	if ( info->script_lang[j]==NULL ) {
+	    for ( k=0, sl=features[i].sl; sl!=NULL; sl=sl->next, ++k );
+	    info->script_lang[j] = galloc((k+1)*sizeof(struct script_record));
+	    for ( k=0, sl=features[i].sl; sl!=NULL; sl=sl->next, ++k ) {
+		info->script_lang[j][k].script = sl->script;
+		info->script_lang[j][k].langs = galloc((sl->lang_cnt+1)*sizeof(uint32));
+		memcpy(info->script_lang[j][k].langs,sl->langs,sl->lang_cnt*sizeof(uint32));
+		info->script_lang[j][k].langs[sl->lang_cnt]=0;
+	    }
+	    info->script_lang[j][k].script = 0;
+	}
+	for ( sl=features[i].sl; sl!=NULL; sl=snext ) {
+	    snext = sl->next;
+	    free( sl );
+	}
+    }
 }
 
 static void ProcessGPOSGSUB(FILE *ttf,struct ttfinfo *info,int gpos,int inusetype) {
@@ -4469,6 +4527,7 @@ static void ProcessGPOSGSUB(FILE *ttf,struct ttfinfo *info,int gpos,int inusetyp
     if ( features==NULL )		/* None of the data we care about */
 return;
     tagTtfFeaturesWithScript(ttf,base+script_off,features);
+    FigureScriptIndeces(info,features);
     lookups = compactttflookups( features,info->feats[gpos] );
     if ( lookups==NULL )
 return;
@@ -4695,20 +4754,40 @@ static void readttf_applelookup(FILE *ttf,struct ttfinfo *info,
     }
 }
 
+static int SLIFromInfo(struct ttfinfo *info,SplineChar *sc,uint32 lang) {
+    uint32 script = SCScriptFromUnicode(sc);
+    int j;
+
+    if ( script==0 ) script = CHR('l','a','t','n');
+    if ( info->script_lang==NULL ) {
+	info->script_lang = galloc(2*sizeof(struct script_record *));
+	j = 0;
+    } else {
+	for ( j=0; info->script_lang[j]!=NULL; ++j ) {
+	    if ( info->script_lang[j][0].script==script &&
+		    info->script_lang[j][1].script == 0 &&
+		    info->script_lang[j][0].langs[0] == lang &&
+		    info->script_lang[j][0].langs[1] == 0 )
+return( j );
+	}
+    }
+    info->script_lang = grealloc(info->script_lang,(j+2)*sizeof(struct script_record *));
+    info->script_lang[j+1] = NULL;
+    info->script_lang[j]= gcalloc(2,sizeof(struct script_record));
+    info->script_lang[j][0].script = script;
+    info->script_lang[j][0].langs = gcalloc(2,sizeof(uint32));
+    info->script_lang[j][0].langs[0] = lang;
+return( j );
+}
+
 static void TTF_SetProp(struct ttfinfo *info,int gnum, int prop) {
-    int dir, offset;
+    int offset;
     PST *pst;
 
     if ( gnum<0 || gnum>=info->glyph_cnt ) {
 	fprintf( stderr, "Glyph out of bounds in 'prop' table %d\n", gnum );
 return;
     }
-
-    dir = prop&0x1f;
-    if ( dir==1 )
-	info->chars[gnum]->script = CHR('h','e','b','r');
-    else if ( dir==2 )
-	info->chars[gnum]->script = CHR('a','r','a','b');
 
     if ( prop&0x1000 ) {	/* Mirror */
 	offset = (prop<<20)>>28;
@@ -4717,6 +4796,7 @@ return;
 	    pst = chunkalloc(sizeof(PST));
 	    pst->type = pst_substitution;
 	    pst->tag = CHR('r','t','l','a');
+	    pst->script_lang_index = SLIFromInfo(info,info->chars[gnum],DEFAULT_LANG);
 	    pst->next = info->chars[gnum]->possub;
 	    info->chars[gnum]->possub = pst;
 	    pst->u.subs.variant = copy(info->chars[gnum+offset]->name);
@@ -4831,6 +4911,7 @@ return;
 	pst = chunkalloc(sizeof(PST));
 	pst->type = pst_position;
 	pst->tag = CHR('l','f','b','d');
+	pst->script_lang_index = SLIFromInfo(info,sc,DEFAULT_LANG);
 	pst->next = sc->possub;
 	sc->possub = pst;
 	pst->u.pos.xoff = left;
@@ -4840,6 +4921,7 @@ return;
 	pst = chunkalloc(sizeof(PST));
 	pst->type = pst_position;
 	pst->tag = CHR('r','t','b','d');
+	pst->script_lang_index = SLIFromInfo(info,sc,DEFAULT_LANG);
 	pst->next = sc->possub;
 	sc->possub = pst;
 	pst->u.pos.h_adv_off = -right;
@@ -4913,6 +4995,8 @@ return;
     pst = chunkalloc(sizeof(PST));
     pst->type = pst_substitution;
     pst->tag = info->mort_subs_tag;
+    pst->flags = info->mort_r2l ? pst_r2l : 0;
+    pst->script_lang_index = SLIFromInfo(info,sc,DEFAULT_LANG);
     pst->next = sc->possub;
     sc->possub = pst;
     pst->u.subs.variant = copy(ssc->name);
@@ -5033,6 +5117,8 @@ return;
 		    pst = chunkalloc(sizeof(PST));
 		    pst->type = pst_ligature;
 		    pst->tag = sm->info->mort_subs_tag;
+		    pst->flags = sm->info->mort_r2l ? (pst_r2l|pst_ignorecombiningmarks) : pst_ignorecombiningmarks;
+		    pst->script_lang_index = SLIFromInfo(sm->info,sm->info->chars[lig_glyph],DEFAULT_LANG);
 		    pst->u.lig.components = comp;
 		    pst->u.lig.lig = sm->info->chars[lig_glyph];
 		    pst->next = sm->info->chars[lig_glyph]->possub;
@@ -5119,7 +5205,9 @@ return;
 		if ( pst == NULL ) {
 		    pst = chunkalloc(sizeof(PST));
 		    pst->type = pst_ligature;
+		    pst->flags = sm->info->mort_r2l ? (pst_r2l|pst_ignorecombiningmarks) : pst_ignorecombiningmarks;
 		    pst->tag = sm->info->mort_subs_tag;
+		    pst->script_lang_index = SLIFromInfo(sm->info,sm->info->chars[lig_glyph],DEFAULT_LANG);
 		    pst->u.lig.components = comp;
 		    pst->u.lig.lig = sm->info->chars[lig_glyph];
 		    pst->next = sm->info->chars[lig_glyph]->possub;
@@ -5225,6 +5313,7 @@ static uint32 readmortchain(FILE *ttf,struct ttfinfo *info, uint32 base, int ism
     uint32 here;
     uint32 tag;
     struct tagmaskfeature { uint32 tag, enable_flags; } tmf[32];
+    int r2l;
 
     /* default flags = */ getlong(ttf);
     chain_len = getlong(ttf);
@@ -5261,10 +5350,12 @@ return( chain_len );
 	    coverage = getushort(ttf);
 	    coverage = ((coverage&0xe000)<<16) | (coverage&7);	/* convert to morx format */
 	}
+	r2l = (coverage & 0x40000000)? 1 : 0;
 	flags = getlong(ttf);
 	for ( j=k-1; j>=0 && !(flags&tmf[j].enable_flags); --j );
 	if ( j>=0 ) {
 	    info->mort_subs_tag = tmf[j].tag;
+	    info->mort_r2l = r2l;
 	    for ( l=0; info->feats[0][l]!=0; ++l )
 		if ( info->feats[0][l]==tmf[j].tag )
 	    break;
@@ -5773,6 +5864,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     sf->pfminfo = info->pfminfo;
     sf->names = info->names;
     sf->anchor = info->ahead;
+    sf->script_lang = info->script_lang;
     sf->ttf_tables = info->tabs;
     if ( info->encoding_name == em_symbol || info->encoding_name == em_mac )
 	/* Don't trust those encodings */
@@ -5792,9 +5884,6 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     }
 
     for ( i=0; i<info->glyph_cnt; ++i ) if ( info->chars[i]!=NULL ) {
-	if ( info->chars[i]->script==0 )	/* GSUB/GSUB table can fill in some script values */
-	    info->chars[i]->script =
-		    ScriptFromUnicode(info->chars[i]->unicodeenc,sf);
 	SCOrderAP(info->chars[i]);
     }
 

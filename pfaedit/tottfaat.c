@@ -211,6 +211,7 @@ return;
 /* Some type,settings may control more than one otf_tag */
 /* I'm also going to break ligatures up into seperate sub-tables depending on */
 /*  script, so again there may be multiple tags */
+/* (only the default language will be used) */
 struct feature {
     uint32 otftag;
     int16 featureType, featureSetting, offSetting;
@@ -293,6 +294,24 @@ static void morx_dumpSubsFeature(FILE *temp,SplineChar **glyphs,uint16 *maps,int
     morx_lookupmap(temp,glyphs,maps,gcnt);
 }
 
+static int HasDefaultLang(SplineFont *sf,PST *lig,uint32 script) {
+    int i, j;
+    struct script_record *sr;
+
+    if ( sf->cidmaster ) sf = sf->cidmaster;
+    sr = sf->script_lang[lig->script_lang_index];
+    for ( i=0; sr[i].script!=0; ++i ) {
+	if ( script==0 || script==sr[i].script ) {
+	    for ( j=0; sr[i].langs[j]!=0; ++j )
+		if ( sr[i].langs[j]==DEFAULT_LANG )
+return( true );
+	    if ( script!=0 )
+return( false );
+	}
+    }
+return( false );
+}
+
 static struct feature *aat_dumpmorx_substitutions(struct alltabs *at, SplineFont *sf,
 	FILE *temp, struct feature *features) {
     int i, max, cnt, j, k, gcnt;
@@ -310,6 +329,8 @@ static struct feature *aat_dumpmorx_substitutions(struct alltabs *at, SplineFont
 	for ( pst=sc->possub; pst!=NULL; pst=pst->next ) if ( pst->type == pst_substitution ) {
 	    /* Arabic forms (marked by 'isol') are done with a contextual glyph */
 	    /*  substitution subtable (cursive connection) */
+	    if ( !HasDefaultLang(sf,pst,0) )
+	continue;
 	    if ( pst->tag!=CHR('i','s','o','l') && OTTagToMacFeature(pst->tag,&ft,&fs)) {
 		for ( j=cnt-1; j>=0 && subtags[j]!=pst->tag; --j );
 		if ( j<0 ) {
@@ -326,7 +347,8 @@ static struct feature *aat_dumpmorx_substitutions(struct alltabs *at, SplineFont
 	    for ( k=0; k<2; ++k ) {
 		gcnt = 0;
 		for ( i=0; i<sf->charcnt; ++i ) if ( (sc = sf->chars[i])!=NULL && sc->ttf_glyph!=-1) {
-		    for ( pst=sc->possub; pst!=NULL && pst->tag!=subtags[j]; pst=pst->next );
+		    for ( pst=sc->possub; pst!=NULL &&
+			    (pst->tag!=subtags[j] || !HasDefaultLang(sf,pst,0)); pst=pst->next );
 		    if ( pst!=NULL ) {
 			if ( k==1 ) {
 			    msc = SFGetCharDup(sf,-1,pst->u.subs.variant);
@@ -363,17 +385,19 @@ static struct feature *aat_dumpmorx_substitutions(struct alltabs *at, SplineFont
 return( features);
 }
 
-static LigList *LigListMatchOtfTag(LigList *ligs,uint32 tag) {
+static LigList *LigListMatchOtfTag(SplineFont *sf,LigList *ligs,uint32 tag) {
     LigList *l;
 
     for ( l=ligs; l!=NULL; l=l->next )
-	if ( l->lig->tag == tag )
+	if ( l->lig->tag == tag && HasDefaultLang(sf,l->lig,0))
 return( l );
 return( NULL );
 }
 
-static PST *HasAForm(PST *pst) {
+static PST *HasAForm(SplineFont *sf,PST *pst) {
     for ( ; pst!=NULL; pst=pst->next ) {
+	if ( !HasDefaultLang(sf,pst,0))
+    continue;
 	if ( pst->tag==CHR('i','n','i','t') ||
 		pst->tag==CHR('m','e','d','i') ||
 		pst->tag==CHR('f','i','n','a') ||
@@ -591,7 +615,7 @@ static struct feature *aat_dumpmorx_ligatures(struct alltabs *at, SplineFont *sf
 
     for ( i=0; i<sf->charcnt; ++i ) if ( (sc = sf->chars[i])!=NULL && sc->ttf_glyph!=-1) {
 	for ( l=sc->ligofme; l!=NULL; l=l->next ) {
-	    if ( OTTagToMacFeature(l->lig->tag,&ft,&fs)) {
+	    if ( HasDefaultLang(sf,l->lig,0) && OTTagToMacFeature(l->lig->tag,&ft,&fs)) {
 		for ( j=cnt-1; j>=0 && ligtags[j]!=l->lig->tag; --j );
 		if ( j<0 ) {
 		    if ( cnt>=max )
@@ -613,11 +637,12 @@ return( features);
 	    sf->chars[i]->ticked = false;
 	for ( i=0; i<sf->charcnt; ++i )
 		if ( (sc=sf->chars[i])!=NULL && !sc->ticked &&
-			LigListMatchOtfTag(sc->ligofme,ligtags[j])) {
+			LigListMatchOtfTag(sf,sc->ligofme,ligtags[j])) {
+	    uint32 script = SCScriptFromUnicode(sc);
 	    for ( k=i, gcnt=0; k<sf->charcnt; ++k )
 		    if ( (ssc=sf->chars[k])!=NULL && !ssc->ticked &&
-			    ssc->script == sc->script &&
-			    LigListMatchOtfTag(ssc->ligofme,ligtags[j])) {
+			    SCScriptFromUnicode(ssc) == script &&
+			    LigListMatchOtfTag(sf,ssc->ligofme,ligtags[j])) {
 		glyphs[gcnt++] = ssc;
 		ssc->ticked = true;
 	    }
@@ -633,7 +658,7 @@ return( features);
 	    if ( (ftell(temp)-cur->feature_start)&2 )
 		putshort(temp,0);
 	    cur->feature_len = ftell(temp)-cur->feature_start;
-	    cur->r2l = sc->script==CHR('a','r','a','b') || sc->script==CHR('h','e','b','r');
+	    cur->r2l = SCRightToLeft(sc);
 	}
     }
 
@@ -660,7 +685,7 @@ static void morx_dumpContGlyphFeature(FILE *temp,SplineChar **glyphs,uint16 *for
 	used[ forms[f][i] ] = 4;
 	any[f] = true;
     }
-    for ( i=0; i<sf->charcnt; ++i) if ( (sc=sf->chars[i])!=NULL && sc->script==script && sc->ttf_glyph!=-1) {
+    for ( i=0; i<sf->charcnt; ++i) if ( (sc=sf->chars[i])!=NULL && SCScriptFromUnicode(sc)==script && sc->ttf_glyph!=-1) {
 	if ( sc->unicodeenc>=0 && sc->unicodeenc<0x10000 && isalpha(sc->unicodeenc))
 	    used[sc->ttf_glyph] = 4;
 	else {
@@ -776,13 +801,16 @@ static struct feature *aat_dumpmorx_glyphforms(struct alltabs *at, SplineFont *s
 	sf->chars[i]->ticked = false;
     for ( i=0; i<sf->charcnt; ++i )
 	    if ( (sc=sf->chars[i])!=NULL && !sc->ticked &&
-		    HasAForm(sc->possub)) {
+		    HasAForm(sf,sc->possub)) {
+	uint32 script = SCScriptFromUnicode(sc);
 	for ( f=0; f<4; ++f) forms[f][0] = 0;
 	for ( k=i, gcnt=0; k<sf->charcnt; ++k )
 		if ( (ssc=sf->chars[k])!=NULL && !ssc->ticked &&
-			ssc->script == sc->script ) {
+			SCScriptFromUnicode(ssc) == script ) {
 	    int any = false, which;
 	    for ( pst=ssc->possub; pst!=NULL; pst=pst->next ) {
+		if ( !HasDefaultLang(sf,pst,script))
+	    continue;
 		if ( pst->tag==CHR('i','n','i','t')) which = 0;
 		else if ( pst->tag==CHR('m','e','d','i')) which = 1;
 		else if ( pst->tag==CHR('f','i','n','a')) which = 2;
@@ -803,12 +831,12 @@ static struct feature *aat_dumpmorx_glyphforms(struct alltabs *at, SplineFont *s
 	}
 	glyphs[gcnt] = NULL;
 	if ( gcnt!=0 && (cur = featureFromTag(CHR('i','s','o','l')))!=NULL ) {
-	    cur->r2l = sc->script==CHR('a','r','a','b') || sc->script==CHR('h','e','b','r');
+	    cur->r2l = SCRightToLeft(sc);
 	    cur->next = features;
 	    features = cur;
 	    cur->subtable_type = 1;		/* contextual glyph subs */
 	    cur->feature_start = ftell(temp);
-	    morx_dumpContGlyphFeature(temp,glyphs,forms,gcnt,at,sf,sc->script);
+	    morx_dumpContGlyphFeature(temp,glyphs,forms,gcnt,at,sf,SCScriptFromUnicode(sc));
 	    if ( (ftell(temp)-cur->feature_start)&1 )
 		putc('\0',temp);
 	    if ( (ftell(temp)-cur->feature_start)&2 )
@@ -1044,7 +1072,7 @@ static void morxDumpChain(struct alltabs *at,struct feature *features,int chain,
     /* Ordered by tag */
     for ( i=0; i<cnt; ++i ) if ( (f=all[i])->chain==chain ) {
 	putlong(at->morx,f->feature_len+12);		/* Size of header needs to be added */
-	putlong(at->morx,(f->vertOnly?0x80000000:f->r2l?0:0x20000000) | f->subtable_type);
+	putlong(at->morx,(f->vertOnly?0x80000000:f->r2l?0:0x40000000) | f->subtable_type);
 	putlong(at->morx,f->flag);
 	tot = f->feature_len;
 	fseek(temp, f->feature_start, SEEK_SET);
@@ -1223,7 +1251,11 @@ static uint16 *props_array(SplineFont *sf,struct alltabs *at) {
     props = gcalloc(at->maxp.numGlyphs,sizeof(uint16));
     for ( i=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL && sc->ttf_glyph!=-1 ) {
 	dir = 0;
-	if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 ) {
+	if ( sc->unicodeenc>=0x10300 && sc->unicodeenc<=0x103ff )
+	    dir = 0;
+	else if ( sc->unicodeenc>=0x10800 && sc->unicodeenc<=0x103ff )
+	    dir = 1;
+	else if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10fff ) {
 	    if ( iseuronumeric(sc->unicodeenc) )
 		dir = 3;
 	    else if ( iseuronumsep(sc->unicodeenc))
@@ -1240,17 +1272,17 @@ static uint16 *props_array(SplineFont *sf,struct alltabs *at) {
 		dir = 0;
 	    else if ( isrighttoleft(sc->unicodeenc) )
 		dir = 1;
-	    else if ( sc->script==CHR('a','r','a','b') )
+	    else if ( SCScriptFromUnicode(sc)==CHR('a','r','a','b') )
 		dir = 2;
-	    else if ( sc->script==CHR('h','e','b','r') )
+	    else if ( SCScriptFromUnicode(sc)==CHR('h','e','b','r') )
 		dir = 1;
 	    else
 		dir = 11;		/* Other neutrals */
 	    /* Not dealing with unicode 3 classes */
 	    /* nor block seperator/ segment seperator */
-	} else if ( sc->script==CHR('a','r','a','b') )
+	} else if ( SCScriptFromUnicode(sc)==CHR('a','r','a','b') )
 	    dir = 2;
-	else if ( sc->script==CHR('h','e','b','r') )
+	else if ( SCScriptFromUnicode(sc)==CHR('h','e','b','r') )
 	    dir = 1;
 
 	if ( dir==1 || dir==2 ) doit = true;
@@ -1277,7 +1309,7 @@ static uint16 *props_array(SplineFont *sf,struct alltabs *at) {
 		doit = true;
 	    }
 	}
-	if ( sc->script==CHR('a','r','a','b') || sc->script==CHR('h','e','b','r') ) {
+	if ( SCRightToLeft(sc) ) {
 	    /* Apple docs say attached right. So for r2l scripts we look for */
 	    /*  a cursive entry, and for l2r a cursive exit */
 	    for ( ap=sc->anchor; ap!=NULL && ap->type!=at_centry; ap=ap->next );

@@ -688,8 +688,7 @@ static void AI_TestOrdering(GIData *ci,real x) {
     AnchorClass *ac = ap->anchor;
     int isr2l;
 
-    isr2l = ci->sc->script==CHR('a','r','a','b') || ci->sc->script==CHR('h','e','b','r') ||
-	    (ci->sc->unicodeenc!=-1 && ci->sc->unicodeenc<0x10000 && isrighttoleft(ci->sc->unicodeenc));
+    isr2l = SCRightToLeft(ci->sc);
     for ( aps=ci->sc->anchor; aps!=NULL; aps=aps->next ) {
 	if ( aps->anchor==ac && aps!=ci->ap ) {
 	    if (( aps->lig_index<ap->lig_index &&

@@ -133,11 +133,17 @@ typedef struct bdffloat {
     uint8 *bitmap;
 } BDFFloat;
 
+/* OpenType does not document 'DFLT' as a language, but we'll use it anyway. */
+/* we'll turn it into a default entry when we output it. */
+#define DEFAULT_LANG		CHR('d','f','l','t')
+#define DEFAULT_SCRIPT		CHR('D','F','L','T')
+
 /* I'm not going to give the user access to r2l. They can set the script for that */
 enum pst_flags { pst_r2l=1, pst_ignorebaseglyphs=2, pst_ignoreligatures=4, pst_ignorecombiningmarks=8 };
 typedef struct anchorclass {
     unichar_t *name;
     uint32 feature_tag;
+    uint16 script_lang_index;
     uint16 flags;
     struct anchorclass *next;
 } AnchorClass;
@@ -158,10 +164,11 @@ enum possub_type { pst_null, pst_position, pst_substitution, pst_alternate,
 	pst_lcaret /* must be pst_max-1, see charinfo.c*/,
 	pst_max};
 typedef struct generic_pst {
-    enum possub_type type;
+    /* enum possub_type*/ uint8 type;
+    uint8 script_lang_index;
+    uint16 flags;
     uint32 tag;
     struct generic_pst *next;
-    uint16 flags;
     union {
 	struct { int16 xoff, yoff, h_adv_off, v_adv_off; } pos;
 	struct { char *variant; } subs;
@@ -191,7 +198,6 @@ typedef struct undoes {
 	    int16 width, vwidth;
 	    int16 lbearingchange;
 	    int unicodeenc;			/* only for ut_statename */
-	    uint32 script;			/* only for ut_statename */
 	    char *charname;			/* only for ut_statename */
 	    unichar_t *comment;			/* only for ut_statename */
 	    PST *possub;			/* only for ut_statename */
@@ -364,6 +370,7 @@ typedef struct refchar {
 
 typedef struct kernpair {
     struct splinechar *sc;
+    /* lang? */
     int off;
     struct kernpair *next;
 } KernPair;
@@ -504,7 +511,6 @@ typedef struct splinechar {
     unichar_t *comment;
     uint32 /*Color*/ color;
     AnchorPoint *anchor;
-    uint32 script;		/* an opentype script tag-- four letters naming a script like 'latn' */
     uint8 *ttf_instrs;
     int16 ttf_instrs_len;
 } SplineChar;
@@ -598,6 +604,17 @@ typedef struct splinefont {
     } *ttf_tables;
 	/* We copy: fpgm, prep, cvt, maxp */
     struct instrdata *instr_dlgs;	/* Pointer to all table and character instruction dlgs in this font */
+    /* Any GPOS/GSUB entry (PST, AnchorClass (in theory kerns, but not in my code) */
+    /*  Has an entry saying what scripts/languages it should appear it */
+    /*  Things like fractions will appear in almost all possible script/lang */
+    /*  combinations, while alphabetic ligatures will only live in one script */
+    /* Rather than store the complete list of possibilities in each PST we */
+    /*  store all choices used here, and just store an index into this list */
+    /*  in the PST. All lists are terminated by a 0 entry */
+    struct script_record {
+	uint32 script;
+	uint32 *langs;
+    } **script_lang;
 } SplineFont;
 
 /* mac styles. Useful idea we'll just steal it */
@@ -682,6 +699,8 @@ extern void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf);
 extern void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]);
 extern void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *sf,char *fontname);
 extern uint32 ScriptFromUnicode(int u,SplineFont *sf);
+extern uint32 SCScriptFromUnicode(SplineChar *sc);
+extern int SCRightToLeft(SplineChar *sc);
 extern void SFFindNearTop(SplineFont *);
 extern void SFRestoreNearTop(SplineFont *);
 extern int SFAddDelChars(SplineFont *sf, int nchars);
@@ -1002,6 +1021,8 @@ extern int hascomposing(SplineFont *sf,int u,SplineChar *sc);
 extern void SFFigureGrid(SplineFont *sf);
 #endif
 extern int FVWinInfo(struct fontview *,int *cc,int *rc);
+
+extern int SFAddScriptLangIndex(SplineFont *sf,uint32 script,uint32 lang);
 
 struct cidmap;			/* private structure to encoding.c */
 extern int CID2NameEnc(struct cidmap *map,int cid, char *buffer, int len);

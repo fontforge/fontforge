@@ -202,13 +202,7 @@ static void CheckLeftRight(struct kerns *k) {
     /* Figure that there won't be any mixed orientation kerns (no latin "A" with hebrew "Alef" kern) */
     /*  but there might be some hebrew/arabic ligatures or something that */
     /*  we don't recognize as right-to-left (ie. not in unicode) */
-    if (( k->first->unicodeenc!=-1 && isrighttoleft( k->first->unicodeenc )) ||
-	    ( k->second->unicodeenc!=-1 && isrighttoleft( k->second->unicodeenc )) )
-	k->r2l = true;
-    else if ( k->first->script==CHR('a','r','a','b') ||
-	     k->first->script==CHR('h','e','b','r') ||
-	     k->second->script==CHR('a','r','a','b') ||
-	     k->second->script==CHR('h','e','b','r') )
+    if ( SCRightToLeft(k->first) || SCRightToLeft(k->second) )
 	k->r2l = true;
 }
 

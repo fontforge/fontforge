@@ -1383,8 +1383,14 @@ static void FVMenuAATSuffix(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     int i;
     extern GTextInfo simplesubs_tags[];
     uint16 flags;
+    int sli=0;
 
-    usuffix = AskNameTag(_STR_SuffixToTag,NULL,0,0,simplesubs_tags);
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i])
+	if ( SCScriptFromUnicode(fv->sf->chars[i])!=0 )
+    break;
+    if ( i<fv->sf->charcnt )
+	sli = SFAddScriptLangIndex(fv->sf,SCScriptFromUnicode(fv->sf->chars[i]),DEFAULT_LANG);
+    usuffix = AskNameTag(_STR_SuffixToTag,NULL,0,0,sli,simplesubs_tags,fv->sf);
     if ( usuffix==NULL )
 return;
 
@@ -1398,9 +1404,10 @@ return;
 	    ( upt[2]=='m' || upt[2]==' ' ) &&
 	    upt[3]==' ' ) {
 	flags = 0;
-	if ( upt[0]=='b' ) flags |= pst_ignorebaseglyphs;
-	if ( upt[1]=='l' ) flags |= pst_ignoreligatures;
-	if ( upt[2]=='m' ) flags |= pst_ignorecombiningmarks;
+	if ( upt[0]=='r' ) flags |= pst_r2l;
+	if ( upt[1]=='b' ) flags |= pst_ignorebaseglyphs;
+	if ( upt[2]=='l' ) flags |= pst_ignoreligatures;
+	if ( upt[3]=='m' ) flags |= pst_ignorecombiningmarks;
 	upt += 4;
     }
 
@@ -3695,7 +3702,6 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i) {
 	dummy->name = ".notdef";
     dummy->width = dummy->vwidth = sf->ascent+sf->descent;
     dummy->parent = sf;
-    dummy->script = ScriptFromUnicode(dummy->unicodeenc,sf);
 return( dummy );
 }
 

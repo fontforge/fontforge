@@ -551,14 +551,6 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc) {
 
     fprintf(sfd, "StartChar: %s\n", sc->name );
     fprintf(sfd, "Encoding: %d %d\n", sc->enc, sc->unicodeenc);
-    if ( ScriptFromUnicode(sc->unicodeenc,sc->parent)!=sc->script ) {
-	if ( sc->script==0 )
-	    fprintf( sfd, "Script: \n" );
-	else
-	    fprintf( sfd, "Script: %c%c%c%c\n",
-		    sc->script>>24, (sc->script>>16)&0xff,
-		    (sc->script>>8)&0xff, sc->script&0xff );
-    }
     if ( sc->parent->compacted )
 	fprintf(sfd, "OldEncoding: %d\n", sc->old_enc);
     fprintf(sfd, "Width: %d\n", sc->width );
@@ -616,8 +608,9 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc) {
 		    "AlternateSubs:", "MultipleSubs:", "Ligature:",
 		    "LCarets:", NULL };
 	    if ( liga->tag==0 ) liga->tag = CHR(' ',' ',' ',' ');
-	    fprintf( sfd, "%s %d '%c%c%c%c' ",
+	    fprintf( sfd, "%s %d %d '%c%c%c%c' ",
 		    keywords[liga->type], liga->flags,
+		    liga->script_lang_index,
 		    liga->tag>>24, (liga->tag>>16)&0xff,
 		    (liga->tag>>8)&0xff, liga->tag&0xff );
 	    if ( liga->type==pst_position )
@@ -792,13 +785,38 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 	fprintf(sfd, "VLineGap: %d\n", sf->pfminfo.vlinegap );
 	/*putc('\n',sfd);*/
     }
+    if ( sf->script_lang ) {
+	int i,j,k;
+	for ( i=0; sf->script_lang[i]!=NULL; ++i );
+	fprintf(sfd, "ScriptLang: %d\n", i );
+	for ( i=0; sf->script_lang[i]!=NULL; ++i ) {
+	    for ( j=0; sf->script_lang[i][j].script!=0; ++j );
+	    fprintf( sfd, " %d ", j );		/* Script cnt */
+	    for ( j=0; sf->script_lang[i][j].script!=0; ++j ) {
+		for ( k=0; sf->script_lang[i][j].langs[k]!=0 ; ++k );
+		fprintf( sfd, "%c%c%c%c %d ",
+			sf->script_lang[i][j].script>>24,
+			(sf->script_lang[i][j].script>>16)&0xff,
+			(sf->script_lang[i][j].script>>8)&0xff,
+			sf->script_lang[i][j].script&0xff,
+			k );
+		for ( k=0; sf->script_lang[i][j].langs[k]!=0 ; ++k )
+		    fprintf( sfd, "%c%c%c%c ",
+			    sf->script_lang[i][j].langs[k]>>24,
+			    (sf->script_lang[i][j].langs[k]>>16)&0xff,
+			    (sf->script_lang[i][j].langs[k]>>8)&0xff,
+			    sf->script_lang[i][j].langs[k]&0xff );
+	    }
+	    fprintf( sfd,"\n");
+	}
+    }
     for ( ord = sf->orders; ord!=NULL ; ord = ord->next ) {
 	for ( i=0; ord->ordered_features[i]!=0; ++i );
 	fprintf( sfd, "TableOrder: %c%c%c%c %d\n",
 		ord->table_tag>>24, (ord->table_tag>>16)&0xff, (ord->table_tag>>8)&0xff, ord->table_tag&0xff,
 		i );
 	for ( i=0; ord->ordered_features[i]!=0; ++i )
-	    fprintf( sfd, "\t%c%c%c%c\n",
+	    fprintf( sfd, "\t'%c%c%c%c'\n",
 		    ord->ordered_features[i]>>24, (ord->ordered_features[i]>>16)&0xff, (ord->ordered_features[i]>>8)&0xff, ord->ordered_features[i]&0xff );
     }
     for ( tab = sf->ttf_tables; tab!=NULL ; tab = tab->next )
@@ -860,7 +878,7 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 		fprintf( sfd, "%c%c%c%c ",
 			an->feature_tag>>24, (an->feature_tag>>16)&0xff,
 			(an->feature_tag>>8)&0xff, an->feature_tag&0xff );
-	    fprintf( sfd, "%d ", an->flags );
+	    fprintf( sfd, "%d %d ", an->flags, an->script_lang_index );
 	}
 	putc('\n',sfd);
     }
@@ -1266,7 +1284,7 @@ static void SFDGetTtfInstrs(FILE *sfd, SplineChar *sc) {
 	sc->ttf_instrs[i] = Dec85(&dec);
 }
 
-static void SFDGetTtfTable(FILE *sfd, SplineFont *sf) {
+static struct ttf_table *SFDGetTtfTable(FILE *sfd, SplineFont *sf,struct ttf_table *lasttab) {
     /* We've read the TtfTable token, it is followed by a tag and a byte count */
     /* and then the instructions in enc85 format */
     int i,len, ch;
@@ -1287,8 +1305,11 @@ static void SFDGetTtfTable(FILE *sfd, SplineFont *sf) {
     for ( i=0; i<len; ++i )
 	tab->data[i] = Dec85(&dec);
 
-    tab->next = sf->ttf_tables;
-    sf->ttf_tables = tab;
+    if ( lasttab==NULL )
+	sf->ttf_tables = tab;
+    else
+	lasttab->next = tab;
+return( tab );
 }
 
 static void SFDCloseCheck(SplinePointList *spl,int order2) {
@@ -1586,15 +1607,16 @@ return( rf );
 /* Now I want to have seperate ligature structures for each */
 static PST *LigaCreateFromOldStyleMultiple(PST *liga) {
     char *pt;
-    PST *new;
+    PST *new, *last=liga;
     while ( (pt = strrchr(liga->u.lig.components,';'))!=NULL ) {
 	new = chunkalloc(sizeof( PST ));
 	*new = *liga;
 	new->u.lig.components = copy(pt+1);
-	liga->next = new;
+	last->next = new;
+	last = new;
 	*pt = '\0';
     }
-return( liga );
+return( last );
 }
 
 static SplineChar *SFDGetChar(FILE *sfd,SplineFont *sf) {
@@ -1604,6 +1626,7 @@ static SplineChar *SFDGetChar(FILE *sfd,SplineFont *sf) {
     ImageList *lasti=NULL, *img;
     AnchorPoint *lastap = NULL;
     int isliga, ispos, issubs, ismult, islcar;
+    PST *last = NULL;
 
     if ( getname(sfd,tok)!=1 )
 return( NULL );
@@ -1616,7 +1639,6 @@ return( NULL );
     sc->name = copy(tok);
     sc->vwidth = sf->ascent+sf->descent;
     sc->parent = sf;
-    sc->script = 0xffffffff;
     while ( 1 ) {
 	if ( getname(sfd,tok)!=1 ) {
 	    SplineCharFree(sc);
@@ -1627,16 +1649,6 @@ return( NULL );
 	    getint(sfd,&sc->unicodeenc);
 	} else if ( strmatch(tok,"OldEncoding:")==0 ) {
 	    getint(sfd,&sc->old_enc);
-	} else if ( strmatch(tok,"Script:")==0 ) {
-	    while ( (ch=getc(sfd))==' ' || ch=='\t' );
-	    if ( ch=='\n' || ch=='\r' )
-		sc->script = 0;
-	    else {
-		sc->script = ch<<24;
-		sc->script |= (getc(sfd)<<16);
-		sc->script |= (getc(sfd)<<8);
-		sc->script |= getc(sfd);
-	    }
 	} else if ( strmatch(tok,"Width:")==0 ) {
 	    getsint(sfd,&sc->width);
 	} else if ( strmatch(tok,"VWidth:")==0 ) {
@@ -1713,8 +1725,11 @@ return( NULL );
 		( ismult = (strmatch(tok,"MultipleSubs:")==0)) ||
 		strmatch(tok,"AlternateSubs:")==0 ) {
 	    PST *liga = chunkalloc(sizeof(PST));
-	    liga->next = sc->possub;
-	    sc->possub = liga;
+	    if ( last==NULL )
+		sc->possub = liga;
+	    else
+		last->next = liga;
+	    last = liga;
 	    liga->type = ispos ? pst_position :
 			 islcar ? pst_lcaret :
 			 isliga ? pst_ligature :
@@ -1731,6 +1746,15 @@ return( NULL );
 		while ( (ch=getc(sfd))==' ' || ch=='\t' );
 	    } else if ( liga->type==pst_ligature )
 		liga->flags |= pst_ignorecombiningmarks;
+	    if ( isdigit(ch)) {
+		int temp;
+		ungetc(ch,sfd);
+		getint(sfd,&temp);
+		liga->script_lang_index = temp;
+		while ( (ch=getc(sfd))==' ' || ch=='\t' );
+	    } else
+		liga->script_lang_index = SFAddScriptLangIndex(sc->parent,
+			SCScriptFromUnicode(sc),DEFAULT_LANG);
 	    if ( ch=='\'' ) {
 		liga->tag = getc(sfd)<<24;
 		liga->tag |= getc(sfd)<<16;
@@ -1755,7 +1779,7 @@ return( NULL );
 		liga->u.lig.components = copy(tok);	/* it's in the same place for all formats */
 		if ( isliga ) {
 		    liga->u.lig.lig = sc;
-		    sc->possub = LigaCreateFromOldStyleMultiple(liga);
+		    last = LigaCreateFromOldStyleMultiple(liga);
 		}
 	    }
 	} else if ( strmatch(tok,"Colour:")==0 ) {
@@ -1773,8 +1797,6 @@ return( NULL );
 		sc = NULL;
 	    }
 #endif
-	    if ( sc->script==0xffffffff )
-		sc->script = ScriptFromUnicode(sc->unicodeenc,sf);
 return( sc );
 	} else {
 	    geteol(sfd,tok);
@@ -2054,10 +2076,78 @@ static enum charset SFDGetEncoding(FILE *sfd, char *tok, SplineFont *sf) {
 return( encname );
 }
 
+static int SFAddScriptIndex(SplineFont *sf,uint32 *scripts,int scnt) {
+    int i,j;
+    struct script_record *sr;
+
+    if ( scnt==0 )
+	scripts[scnt++] = CHR('l','a','t','n');		/* Need a default script preference */
+    for ( i=0; i<scnt-1; ++i ) for ( j=i+1; j<scnt; ++j ) {
+	if ( scripts[i]>scripts[j] ) {
+	    uint32 temp = scripts[i];
+	    scripts[i] = scripts[j];
+	    scripts[j] = temp;
+	}
+    }
+
+    if ( sf->cidmaster ) sf = sf->cidmaster;
+    for ( i=0; sf->script_lang[i]!=NULL; ++i ) {
+	sr = sf->script_lang[i];
+	for ( j=0; sr[j].script!=0 && j<scnt &&
+		sr[j].script==scripts[j]; ++j );
+	if ( sr[j].script==0 && j==scnt )
+return( i );
+    }
+
+    sf->script_lang = grealloc(sf->script_lang,(i+2)*sizeof(struct script_record *));
+    sf->script_lang[i+1] = NULL;
+    sr = sf->script_lang[i] = gcalloc(scnt+1,sizeof(struct script_record));
+    for ( j = 0; j<scnt; ++j ) {
+	sr[j].script = scripts[j];
+	sr[j].langs = galloc(2*sizeof(uint32));
+	sr[j].langs[0] = DEFAULT_LANG;
+	sr[j].langs[1] = 0;
+    }
+return( i );
+}
+
+static void SFDCleanupAnchorClasses(SplineFont *sf) {
+    AnchorClass *ac;
+    AnchorPoint *ap;
+    int i, j, scnt;
+#define S_MAX	100
+    uint32 scripts[S_MAX];
+
+    for ( ac = sf->anchor; ac!=NULL; ac=ac->next ) if ( ac->script_lang_index==0xffff ) {
+	scnt = 0;
+	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	    for ( ap = sf->chars[i]->anchor; ap!=NULL && ap->anchor!=ac; ap=ap->next );
+	    if ( ap!=NULL && scnt<S_MAX ) {
+		uint32 script = SCScriptFromUnicode(sf->chars[i]);
+		if ( script==0 )
+	continue;
+		for ( j=0; j<scnt; ++j )
+		    if ( scripts[j]==script )
+		break;
+		if ( j==scnt )
+		    scripts[scnt++] = script;
+	    }
+	}
+	ac->script_lang_index = SFAddScriptIndex(sf,scripts,scnt);
+    }
+#undef S_MAX
+}
+
+static void SFDCleanupFont(SplineFont *sf) {
+    SFDCleanupAnchorClasses(sf);
+}
+
 static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
     SplineFont *sf;
     SplineChar *sc;
     int realcnt, i, eof, mappos=-1, ch;
+    struct table_ordering *lastord = NULL;
+    struct ttf_table *lastttf = NULL;
 
     sf = SplineFontEmpty();
     sf->cidmaster = cidmaster;
@@ -2198,6 +2288,34 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    sf->cidversion = temp;
 	} else if ( strmatch(tok,"Grid")==0 ) {
 	    sf->gridsplines = SFDGetSplineSet(sf,sfd);
+	} else if ( strmatch(tok,"ScriptLang:")==0 ) {
+	    int i,j,k;
+	    int imax, jmax, kmax;
+	    getint(sfd,&imax);
+	    sf->script_lang = galloc((imax+1)*sizeof(struct script_record *));
+	    sf->script_lang[imax] = NULL;
+	    for ( i=0; i<imax; ++i ) {
+		getint(sfd,&jmax);
+		sf->script_lang[i] = galloc((jmax+1)*sizeof(struct script_record));
+		sf->script_lang[i][jmax].script = 0;
+		for ( j=0; j<jmax; ++j ) {
+		    while ( (ch=getc(sfd))==' ' || ch=='\t' );
+		    sf->script_lang[i][j].script = ch<<24;
+		    sf->script_lang[i][j].script |= getc(sfd)<<16;
+		    sf->script_lang[i][j].script |= getc(sfd)<<8;
+		    sf->script_lang[i][j].script |= getc(sfd);
+		    getint(sfd,&kmax);
+		    sf->script_lang[i][j].langs = galloc((kmax+1)*sizeof(uint32));
+		    sf->script_lang[i][j].langs[kmax] = 0;
+		    for ( k=0; k<kmax; ++k ) {
+			while ( (ch=getc(sfd))==' ' || ch=='\t' );
+			sf->script_lang[i][j].langs[k] = ch<<24;
+			sf->script_lang[i][j].langs[k] |= getc(sfd)<<16;
+			sf->script_lang[i][j].langs[k] |= getc(sfd)<<8;
+			sf->script_lang[i][j].langs[k] |= getc(sfd);
+		    }
+		}
+	    }
 	} else if ( strmatch(tok,"AnchorClass:")==0 ) {
 	    unichar_t *name;
 	    AnchorClass *lastan = NULL, *an;
@@ -2213,7 +2331,7 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 		    if ( tok[3]=='\0' ) { tok[3]=' '; tok[4] = 0; }
 		    an->feature_tag = (tok[0]<<24) | (tok[1]<<16) | (tok[2]<<8) | tok[3];
 		}
-		while ((ch=getc(sfd))==' ' );
+		while ( (ch=getc(sfd))==' ' || ch=='\t' );
 		ungetc(ch,sfd);
 		if ( isdigit(ch)) {
 		    int temp;
@@ -2221,6 +2339,14 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 		    an->flags = temp;
 		} else if ( an->feature_tag==CHR('c','u','r','s'))
 		    an->flags = pst_ignorecombiningmarks;
+		while ( (ch=getc(sfd))==' ' || ch=='\t' );
+		ungetc(ch,sfd);
+		if ( isdigit(ch)) {
+		    int temp;
+		    getint(sfd,&temp);
+		    an->script_lang_index = temp;
+		} else
+		    an->script_lang_index = 0xffff;		/* Will be fixed up later */
 		if ( lastan==NULL )
 		    sf->anchor = an;
 		else
@@ -2228,7 +2354,7 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 		lastan = an;
 	    }
 	} else if ( strmatch(tok,"TtfTable:")==0 ) {
-	    SFDGetTtfTable(sfd,sf);
+	    lastttf = SFDGetTtfTable(sfd,sf,lastttf);
 	} else if ( strmatch(tok,"TableOrder:")==0 ) {
 	    int temp;
 	    struct table_ordering *ord;
@@ -2242,12 +2368,17 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    ord->ordered_features[temp] = 0;
 	    for ( i=0; i<temp; ++i ) {
 		while ( isspace((ch=getc(sfd))) );
+		if ( ch=='\'' ) ch = getc(sfd);
 		ord->ordered_features[i] = (ch<<24) | (getc(sfd)<<16);
 		ord->ordered_features[i] |= (getc(sfd)<<8);
 		ord->ordered_features[i] |= getc(sfd);
+		if ( (ch=getc(sfd))!='\'') ungetc(ch,sfd);
 	    }
-	    ord->next = sf->orders;
-	    sf->orders = ord;
+	    if ( lastord==NULL )
+		sf->orders = ord;
+	    else
+		lastord->next = ord;
+	    lastord = ord;
 	} else if ( strmatch(tok,"BeginPrivate:")==0 ) {
 	    SFDGetPrivate(sfd,sf);
 	} else if ( strmatch(tok,"BeginSubrs:")==0 ) {	/* leave in so we don't croak on old sfd files */
@@ -2299,6 +2430,7 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	else if ( strcmp(tok,"BitmapFont:")==0 )
 	    SFDGetBitmapFont(sfd,sf);
     }
+    SFDCleanupFont(sf);
 return( sf );
 }
 
@@ -2343,7 +2475,7 @@ SplineChar *SFDReadOneChar(char *filename,const char *name) {
     char *oldloc;
     char tok[2000];
     uint32 pos;
-    SplineFont sf;;
+    SplineFont sf;
 
     if ( sfd==NULL )
 return( NULL );

@@ -1617,7 +1617,6 @@ static void SplineFontFromType1(SplineFont *sf, FontDict *fd) {
 	sf->chars[i]->vwidth = sf->ascent+sf->descent;
 	sf->chars[i]->enc = i;
 	sf->chars[i]->unicodeenc = UniFromName(encoding[i]);
-	sf->chars[i]->script = ScriptFromUnicode(sf->chars[i]->unicodeenc,sf);
 	sf->chars[i]->parent = sf;
 	SCLigDefault(sf->chars[i]);		/* Also reads from AFM file, but it probably doesn't exist */
 	GProgressNext();
@@ -1707,7 +1706,6 @@ return( NULL );
 		    NULL,buffer);
 	chars[i]->vwidth = sf->subfonts[j]->ascent+sf->subfonts[j]->descent;
 	chars[i]->unicodeenc = uni;
-	chars[i]->script = ScriptFromUnicode(uni,sf);
 	chars[i]->enc = i;
 	/* There better not be any references (seac's) because we have no */
 	/*  encoding on which to base any fixups */
@@ -2900,5 +2898,14 @@ return;
     free(sf->subfonts);
     free(sf->remap);
     GlyphHashFree(sf);
+    if ( sf->script_lang!=0 ) {
+	int i, j;
+	for ( i=0; sf->script_lang[i]!=NULL; ++i ) {
+	    for ( j=0; sf->script_lang[i][j].script!=0; ++j )
+		free( sf->script_lang[i][j].langs );
+	    free( sf->script_lang[i] );
+	}
+	free( sf->script_lang );
+    }
     free(sf);
 }

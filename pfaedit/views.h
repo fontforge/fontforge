@@ -492,7 +492,9 @@ extern int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype,
 extern int SFGenerateFont(SplineFont *sf,int family);
 extern GTextInfo *AnchorClassesList(SplineFont *sf);
 extern GTextInfo **AnchorClassesLList(SplineFont *sf);
-extern unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag,uint16 flags,GTextInfo *tags);
+extern unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag,uint16 flags,
+	int script_lang_index, GTextInfo *tags, SplineFont *sf);
+extern GTextInfo *SFLangList(SplineFont *sf);
 extern void GListDelSelected(GGadget *list);
 extern void GListMoveSelected(GGadget *list,int offset);
 extern void FontInfo(SplineFont *sf,int aspect,int sync);
