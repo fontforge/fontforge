@@ -68,13 +68,51 @@ static void inituninameannot(void) {
     _UnicodeNameAnnot = UnicodeNameAnnot;
 #else
     DL_CONST void *libuninames=NULL;
+    const char *loc = getenv("LC_ALL");
 # ifdef LIBDIR
-    libuninames = dlopen( LIBDIR "/libuninameslist" SO_EXT,RTLD_LAZY);
+    char full[1024], buf[100];
+# else
+    char buf[100];
+#endif
+    int i;
+
+    if ( loc==NULL ) loc = getenv("LC_MESSAGES");
+    if ( loc==NULL ) loc = getenv("LANG");
+    for ( i=0; i<4; ++i ) {
+	strcpy(buf,"libuninameslist-");
+	if ( i==3 )
+	    buf[strlen(buf)-1] = '\0';
+	    /* Use the default name */
+	else if ( i==2 ) {
+	    if ( loc==NULL || strlen( loc )<2 )
+    continue;
+	    strncat(buf,loc,2);
+	} else if ( i==1 ) {
+	    if ( loc==NULL || strlen( loc )<5 )
+    continue;
+	    strncat(buf,loc,5);
+	} else if ( i==0 ) {
+	    if ( loc==NULL || strlen( loc )<6 )
+    continue;
+	    strcat(buf,loc);
+	}
+	strcat(buf, SO_EXT );
+
+# ifdef LIBDIR
+#  if !defined(_NO_SNPRINTF) && !defined(VMS)
+	snprintf( full, sizeof(full), "%s/%s", LIBDIR, buf );
+#  else
+	sprintf( full, "%s/%s", LIBDIR, buf );
+#  endif
+	libuninames = dlopen( full,RTLD_LAZY);
 # endif
-    if ( libuninames==NULL )
-	libuninames = dlopen( "libuninameslist" SO_EXT,RTLD_LAZY);
-    if ( libuninames!=NULL )
-	_UnicodeNameAnnot = dlsym(libuninames,"UnicodeNameAnnot");
+	if ( libuninames==NULL )
+	    libuninames = dlopen( buf,RTLD_LAZY);
+	if ( libuninames!=NULL ) {
+	    _UnicodeNameAnnot = dlsym(libuninames,"UnicodeNameAnnot");
+return;
+	}
+    }
 #endif
 }
 
