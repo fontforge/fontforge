@@ -10,6 +10,12 @@ extern char *psunicodenames[];
 #define true	1
 #define false	0
 
+struct r_kern {
+    int right;
+    int amount;
+    struct r_kern *next;
+};
+
 struct Outlines {
     int version;
     int design_size;
@@ -24,6 +30,8 @@ struct Outlines {
     char *metrics_fontname;
     int metrics_n;
     int *xadvance, *yadvance;
+    int defxadvance, defyadvance;
+    struct r_kern **kerns;
     SplineFont *sf;
 };
 
@@ -210,6 +218,7 @@ static SplineChar *ReadChar(FILE *file,struct Outlines *outline,int enc) {
     char buffer[12];
     int flags, x, y, verb, ch;
     RefChar *r1, *r2;
+    SplineFont *sf = outline->sf;
 
     flags = getc(file);
     if ( !(flags&(1<<3)) ) {
@@ -217,18 +226,19 @@ static SplineChar *ReadChar(FILE *file,struct Outlines *outline,int enc) {
 return( NULL );
     }
 
-    sc->parent = outline->sf;
+    sc->parent = sf;
     sc->enc = sc->unicodeenc = enc;
     sc->changedsincelasthinted = true; /* I don't understand the scaffold lines */
 	/* which I think are the same as hints. So no hints processed. PfaEdit */
 	/* should autohint the char */
     sprintf( buffer,"uni%04X", enc);
     sc->name = copy( psunicodenames[enc]==NULL ? buffer : psunicodenames[enc]);
-    sc->width = sc->vwidth = sc->parent->ascent + sc->parent->descent;
+    sc->width = (outline->defxadvance*(sf->ascent + sf->descent))/1000;
+    sc->vwidth = (outline->defyadvance*(sf->ascent + sf->descent))/1000;
     if ( outline->xadvance!=NULL )
-	sc->width = outline->xadvance[enc];
+	sc->width = (outline->xadvance[enc]*(sf->ascent+sf->descent))/1000;
     if ( outline->yadvance!=NULL )
-	sc->vwidth = outline->yadvance[enc];
+	sc->vwidth = (outline->yadvance[enc]*(sf->ascent+sf->descent))/1000;
 
     if ( flags&(1<<4) ) {
 	r1 = gcalloc(1,sizeof(RefChar));
@@ -308,10 +318,16 @@ static void ReadChunk(FILE *file,struct Outlines *outline,int chunk) {
 static void ReadIntmetrics(char *dir, struct Outlines *outline) {
     char *filename = malloc(strlen(dir)+strlen("/Intmetrics")+3);
     FILE *file;
-    int i, flags, m;
+    int i, flags, m, n, left, right;
+    int kern_offset, table_base, misc_offset;
     char buffer[100];
-    char *mapping=NULL, _map[256];
-    static char *names[] = { "/intmetrics", "/INTMETRICS", "/IntMetrics", "/Intmetrics", NULL };
+    uint8 *mapping=NULL;
+    int *widths;
+    /* Order these so that most likely comes last so that error message will */
+    /*  be most meaningful */
+    static char *names[] = { "/IntMetric0", "/Intmetric0", "/intmetrics",
+	    "/INTMETRICS", "/IntMetrics", "/Intmetrics", NULL };
+    struct r_kern *kern;
 
     for ( i=0, file=NULL; names[i]!=NULL && file==NULL; ++i ) {
 	strcpy(filename,dir);
@@ -331,58 +347,123 @@ return;
     outline->metrics_fontname = copy(buffer);
     r_getint(file);	/* Must be 16 */
     r_getint(file);	/* Must be 16 */
-    outline->metrics_n = getc(file);		/* low order byte */
+    n = getc(file);	/* low order byte */
     /* version number = */ getc(file);
     flags = getc(file);
-    outline->metrics_n |= getc(file)<<8;	/* high order byte */
-	/* This value is not reliable. In Trinity n==34, m==416 and */
-	/* number of characters given in Outlines==416 */
-    if ( flags&(1<<5) ) {
+    n |= getc(file)<<8;	/* high order byte */
+    if ( flags&(1<<5) )
 	m = r_getushort(file);
-	if ( outline->metrics_n<m ) {
-	    fprintf( stderr, "This IntMetrics file makes no sense. It claims there are %d characters in\n", outline->metrics_n );
-	    fprintf( stderr, " the font, and then starts talking about %d of them. I have no idea how\n", m );
-	    fprintf( stderr, " how to parse this and have given up. No advance widths are known.\n" );
-	    outline->metrics_n = 0;
-return;
-	}
-    } else
+    else
 	m = 256;
-    if ( m<=256 ) {
-	memset(_map,0,sizeof(_map));
+    if ( m!=0 ) {
+	mapping = galloc(m);
 	for ( i=0; i<m; ++i )
-	    _map[i] = getc(file);
-	if ( m>0 )
-	    mapping = _map;
-    } else {
-	/* Documentation clearly states that m must be less than 256 */
-	/*  but Trinity has m of 416 */
-	for ( i=0; i<m; ++i )
-	    getc(file);
-    }
+	    mapping[i] = getc(file);
+	outline->metrics_n = m;
+    } else
+	outline->metrics_n = n;
     if ( !(flags&1) ) {
 	/* I ignore bbox data */
-	for ( i=0; i<4*outline->metrics_n; ++i )
+	for ( i=0; i<4*n; ++i )
 	    r_getshort(file);
     }
     if ( !(flags&2) ) {
-	outline->xadvance = gcalloc(outline->metrics_n,sizeof(int));
-	for ( i=0; i<outline->metrics_n; ++i )
-	    if ( mapping )
-		outline->xadvance[mapping[i]] = r_getshort(file);
-	    else
-		outline->xadvance[i] = r_getshort(file);
+	widths = galloc(n*sizeof(int));
+	for ( i=0; i<n; ++i )
+	    widths[i] = r_getshort(file);
+	if ( mapping==0 )
+	    outline->xadvance = widths;
+	else {
+	    outline->xadvance = gcalloc(outline->metrics_n,sizeof(int));
+	    for ( i=0; i<m; ++i )
+		outline->xadvance[i] = widths[mapping[i]];
+	    free(widths);
+	}
     }
     if ( !(flags&4) ) {
-	outline->yadvance = gcalloc(outline->metrics_n,sizeof(int));
-	for ( i=0; i<outline->metrics_n; ++i )
-	    if ( mapping )
-		outline->yadvance[mapping[i]] = r_getshort(file);
-	    else
-		outline->yadvance[i] = r_getshort(file);
+	widths = galloc(n*sizeof(int));
+	for ( i=0; i<n; ++i )
+	    widths[i] = r_getshort(file);
+	if ( mapping==0 )
+	    outline->yadvance = widths;
+	else {
+	    outline->yadvance = gcalloc(outline->metrics_n,sizeof(int));
+	    for ( i=0; i<m; ++i )
+		outline->yadvance[i] = widths[mapping[i]];
+	    free(widths);
+	}
+    }
+
+    outline->defxadvance = outline->defyadvance = 1000;
+
+    if ( flags&8 ) {
+	table_base = ftell(file);
+	misc_offset = r_getshort(file);
+	kern_offset = r_getshort(file);
+	if ( misc_offset!=0 ) {
+	    fseek(file,misc_offset+table_base,SEEK_SET);
+	    /* font bounding box */ r_getshort(file); r_getshort(file); r_getshort(file); r_getshort(file);
+	    if ( (flags&2) )
+		outline->defxadvance = r_getshort(file);
+	    if ( (flags&4) )
+		outline->defyadvance = r_getshort(file);
+	}
+	if ( kern_offset!=0 && !feof(file) && outline->metrics_n!=0 ) {
+	    fseek(file,kern_offset+table_base,SEEK_SET);
+	    outline->kerns = gcalloc(outline->metrics_n,sizeof(struct r_kern *));
+	    if ( flags&(1<<6) ) {
+		/* 16 bit */
+		while ( (left=r_getshort(file))!=0 && !feof(file)) {
+		    while ( (right=r_getshort(file))!=0 ) {
+			if ( !(flags&2) && !feof(file)) {
+			    kern = galloc(sizeof(struct r_kern));
+			    kern->amount = r_getshort(file);
+			    kern->right = right;
+			    kern->next = outline->kerns[left];
+			    outline->kerns[left] = kern;
+			}
+			if ( !(flags&4) )
+			    /* I don't care about vertical kerning */ r_getshort(file);
+		    }
+		}
+	    } else {
+		while ( (left=getc(file))!=0 && !feof(file)) {
+		    while ( (right=getc(file))!=0 && !feof(file)) {
+			if ( !(flags&2) ) {
+			    kern = galloc(sizeof(struct r_kern));
+			    kern->amount = r_getshort(file);
+			    kern->right = right;
+			    kern->next = outline->kerns[left];
+			    outline->kerns[left] = kern;
+			}
+			if ( !(flags&4) )
+			    /* I don't care about vertical kerning */ r_getshort(file);
+		    }
+		}
+	    }
+	}
     }
     fclose(file);
-    /* There might be kern data, but I shan't read them */
+}
+
+static void FixupKerns(SplineFont *sf,struct Outlines *outline) {
+    int i;
+    struct r_kern *kern;
+    KernPair *kp;
+    int em = sf->ascent+sf->descent;
+
+    if ( outline->kerns==NULL )
+return;
+
+    for ( i=0; i<outline->metrics_n; ++i ) {
+	for ( kern = outline->kerns[i]; kern!=NULL; kern=kern->next ) {
+	    kp = gcalloc(1,sizeof(KernPair));
+	    kp->off = em*kern->amount/1000;
+	    kp->sc = sf->chars[kern->right];
+	    kp->next = sf->chars[i]->kerns;
+	    sf->chars[i]->kerns = kp;
+	}
+    }
 }
 
 static void FixupRefs(SplineChar *sc,SplineFont *sf) {
@@ -415,7 +496,8 @@ static SplineFont *ReadOutline(char *dir) {
     struct Outlines outline;
     int i, ch;
     char buffer[100];
-    static char *names[] = { "/outlines", "/OUTLINES", "/Outlines", NULL };
+    static char *names[] = { "/outlines0", "/OUTLINES0", "/Outlines0",
+	    "/outlines", "/OUTLINES", "/Outlines", NULL };
 
     for ( i=0, file=NULL; names[i]!=NULL && file==NULL; ++i ) {
 	strcpy(filename,dir);
@@ -534,6 +616,8 @@ return( NULL );
 	    ReadChunk(file,&outline,i);
 	}
     }
+
+    FixupKerns(outline.sf,&outline);
 
     for ( i=0; i<outline.sf->charcnt; ++i )
 	FixupRefs(outline.sf->chars[i],outline.sf);
