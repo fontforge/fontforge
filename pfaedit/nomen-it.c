@@ -408,7 +408,7 @@ static char *str_LoadingFontFrom = "Chargement de la police depuis ";
 
     /* Font Info dlg */
 static char str_Custom[] = "Custom";
-static char str_Compacted[] = "Compactée";
+static char str_Compacted[] = "Compatto";
 static char str_Isolatin1[] = "ISO 8859-1  (Latin1)";
 static char str_Isolatin0[] = "ISO 8859-15  (Latin0)";
 static char str_Isolatin2[] = "ISO 8859-2  (Latin2)";
@@ -1225,8 +1225,9 @@ static char *str_PrefsAppNotice6 = ""
     /* Hints */
 static char *str_base = "Base:";
 static unichar_t mnemonic_base = 'B';
-static char *str_size = "Grandezza:";
-static unichar_t mnemonic_size = 'S';
+/*static char *str_size = "Grandezza:";*/
+static char *str_size = "Dimen.:";
+static unichar_t mnemonic_size = 'D';
 static char *str_HStem = "HStem";
 static unichar_t mnemonic_HStem = 'H';
 static char *str_VStem = "VStem";
