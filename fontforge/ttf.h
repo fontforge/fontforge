@@ -95,6 +95,7 @@ struct ttfinfo {
     Encoding *encoding_name;
     enum uni_interp uni_interp;
     struct pfminfo pfminfo;
+    int dupnamestate;
     struct ttflangname *names;
     char *fontcomments;
     SplineChar **chars;		/* from all over, glyf table for contours */

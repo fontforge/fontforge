@@ -906,7 +906,7 @@ void FontViewMenu_RevertGlyph(GtkMenuItem *menuitem, gpointer user_data) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 			static int buts[] = { _STR_Yes, _STR_YesToAll,
 					_STR_NoToAll, _STR_No, _STR_Cancel, 0 };
-			ret = GWidgetAskR(_STR_GlyphHasRefs,buts,0,1,_STR_GlyphHasRefsQuestion,tsc->name);
+			ret = GWidgetAskR(_STR_GlyphHasRefs,buts,0,4,_STR_GlyphHasRefsQuestion,tsc->name);
 #elif defined(FONTFORGE_CONFIG_GTK)
 			char *buts[5];
 			buts[0] = GTK_STOCK_YES;
