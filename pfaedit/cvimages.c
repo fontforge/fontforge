@@ -31,6 +31,55 @@
 #include <sys/types.h>
 #include <dirent.h>
 
+
+static unichar_t wildimg[] = { '*', '.', '{',
+#ifndef _NO_LIBUNGIF
+'g','i','f',',',
+#endif
+#ifndef _NO_LIBPNG
+'p','n','g',',',
+#endif
+#ifndef _NO_LIBTIFF
+'t','i','f','f',',',
+'t','i','f',',',
+#endif
+'x','b','m',',', 'b','m','p', '}', '\0' };
+static unichar_t wildtemplate[] = { '{','u','n','i',',','u',',','c','i','d',',','e','n','c','}','[','0','-','9','a','-','f','A','-','F',']','*', '.', '{',
+#ifndef _NO_LIBUNGIF
+'g','i','f',',',
+#endif
+#ifndef _NO_LIBPNG
+'p','n','g',',',
+#endif
+#ifndef _NO_LIBTIFF
+'t','i','f','f',',',
+'t','i','f',',',
+#endif
+'x','b','m',',', 'b','m','p', '}', '\0' };
+/* Hmm. Mac seems to use the extension 'art' for eps files sometimes */
+static unichar_t wildepstemplate[] = { '{','u','n','i',',','u',',','c','i','d',',','e','n','c','}','[','0','-','9','a','-','f','A','-','F',']','*', '.', '{', 'p','s',',', 'e','p','s',',','a','r','t','}',  0 };
+static unichar_t wildsvgtemplate[] = { '{','u','n','i',',','u',',','c','i','d',',','e','n','c','}','[','0','-','9','a','-','f','A','-','F',']','*', '.', 's', 'v','g',  0 };
+static unichar_t wildps[] = { '*', '.', '{', 'p','s',',', 'e','p','s',',', 'a','r','t','}', '\0' };
+static unichar_t wildsvg[] = { '*', '.', 's','v','g',  '\0' };
+static unichar_t wildfig[] = { '*', '.', '{', 'f','i','g',',','x','f','i','g','}',  '\0' };
+static unichar_t wildbdf[] = { '*', '.', 'b', 'd','{', 'f', ',','f','.','g','z',',','f','.','Z',',','f','.','b','z','2','}',  '\0' };
+static unichar_t wildpcf[] = { '*', '.', 'p', 'c','{', 'f', ',','f','.','g','z',',','f','.','Z',',','f','.','b','z','2','}',  '\0' };
+static unichar_t wildttf[] = { '*', '.', '{', 't', 't','f',',','o','t','f',',','o','t','b',',','t','t','c','}',  '\0' };
+static unichar_t wildpk[] = { '*', '{', 'p', 'k', ',', 'g', 'f', '}',  '\0' };		/* pk fonts can have names like cmr10.300pk, not a normal extension */
+static unichar_t wildmac[] = { '*', '{', 'b', 'i', 'n', ',', 'h', 'q', 'x', ',', 'd','f','o','n','t', '}',  '\0' };		/* pk fonts can have names like cmr10.300pk, not a normal extension */
+static unichar_t wildwin[] = { '*', '{', 'f', 'o', 'n', ',', 'f', 'n', 't', '}',  '\0' };		/* pk fonts can have names like cmr10.300pk, not a normal extension */
+static unichar_t *wildchr[] = { wildimg, wildps,
+#ifndef _NO_LIBXML
+wildsvg,
+#endif
+wildfig };
+static unichar_t *wildfnt[] = { wildbdf, wildttf, wildpk, wildpcf, wildmac, wildwin, wildimg, wildtemplate, wildps, wildepstemplate
+#ifndef _NO_LIBXML
+, wildsvg, wildsvgtemplate
+#endif
+};
+
+
 void SCImportPSFile(SplineChar *sc,enum drawmode dm,FILE *ps,int doclear) {
     SplinePointList *spl, *espl;
     SplineSet **head;
@@ -90,6 +139,41 @@ return;
     sc->splines = spl;
     SCCharChangedUpdate(sc);
 }
+
+#ifndef _NO_LIBXML
+void SCImportSVG(SplineChar *sc,enum drawmode dm,char *path,int doclear) {
+    SplinePointList *spl, *espl, **head;
+
+    spl = SplinePointListInterpretSVG(path,sc->parent->ascent+sc->parent->descent);
+    for ( espl = spl; espl!=NULL && espl->first->next==NULL; espl=espl->next );
+    if ( espl!=NULL )
+	if ( espl->first->next->order2!=sc->parent->order2 )
+	    spl = SplineSetsConvertOrder(spl,sc->parent->order2);
+    if ( spl==NULL ) {
+	GDrawError( "I'm sorry this file is too complex for me to understand");
+return;
+    }
+    for ( espl=spl; espl->next!=NULL; espl = espl->next );
+    if ( dm==dm_grid )
+	head = &sc->parent->gridsplines;
+    else if ( dm==dm_fore ) {
+	SCPreserveState(sc,false);
+	head = &sc->splines;
+    } else {
+	SCPreserveBackground(sc);
+	head = &sc->backgroundsplines;
+    }
+    if ( doclear )
+	SplinePointListsFree(*head);
+    espl->next = *head;
+    *head = spl;
+    SCCharChangedUpdate(sc);
+}
+
+static void ImportSVG(CharView *cv,char *path) {
+    SCImportSVG(cv->sc,cv->drawmode,path,false);
+}
+#endif
 
 /**************************** Fig File Import *********************************/
 
@@ -750,7 +834,7 @@ return(false);
 return( true );
 }
 
-int FVImportImages(FontView *fv,char *path,int isimage) {
+int FVImportImages(FontView *fv,char *path,int format) {
     GImage *image;
     struct _GImage *base;
     int tot;
@@ -763,7 +847,7 @@ int FVImportImages(FontView *fv,char *path,int isimage) {
 	sc = SFMakeChar(fv->sf,i);
 	endpath = strchr(start,';');
 	if ( endpath!=NULL ) *endpath = '\0';
-	if ( isimage ) {
+	if ( format==fv_image ) {
 	    image = GImageRead(start);
 	    if ( image==NULL ) {
 		GWidgetErrorR(_STR_BadImageFile,_STR_BadImageFileName,start);
@@ -777,7 +861,12 @@ return(false);
 	    }
 	    ++tot;
 	    SCAddScaleImage(sc,image,true);
-	} else {
+#ifndef _NO_LIBXML
+	} else if ( format==fv_svg ) {
+	    SCImportSVG(sc,dm_fore,start,false);
+	    ++tot;
+#endif
+	} else if ( format==fv_eps ) {
 	    SCImportPS(sc,start);
 	    ++tot;
 	}
@@ -792,7 +881,7 @@ return(false);
 return( true );
 }
 
-int FVImportImageTemplate(FontView *fv,char *path,int isimage) {
+int FVImportImageTemplate(FontView *fv,char *path,int format) {
     GImage *image;
     struct _GImage *base;
     int tot;
@@ -871,7 +960,7 @@ return( false );
 	    }
 	    sc = SFMakeChar(fv->sf,val);
 	}
-	if ( isimage ) {
+	if ( format==fv_imgtemplate ) {
 	    image = GImageRead(entry->d_name);
 	    if ( image==NULL ) {
 		GWidgetErrorR(_STR_BadImageFile,_STR_BadImageFileName,entry->d_name);
@@ -885,6 +974,11 @@ return( false );
 	    }
 	    ++tot;
 	    SCAddScaleImage(sc,image,true);
+#ifndef _NO_LIBXML
+	} else if ( format==fv_svgtemplate ) {
+	    SCImportSVG(sc,dm_fore,entry->d_name,false);
+	    ++tot;
+#endif
 	} else {
 	    SCImportPS(sc,entry->d_name);
 	    ++tot;
@@ -909,61 +1003,30 @@ struct gfc_data {
     FontView *fv;
 };
 
-static unichar_t wildimg[] = { '*', '.', '{',
-#ifndef _NO_LIBUNGIF
-'g','i','f',',',
-#endif
-#ifndef _NO_LIBPNG
-'p','n','g',',',
-#endif
-#ifndef _NO_LIBTIFF
-'t','i','f','f',',',
-'t','i','f',',',
-#endif
-'x','b','m',',', 'b','m','p', '}', '\0' };
-static unichar_t wildtemplate[] = { '{','u','n','i',',','u',',','c','i','d',',','e','n','c','}','[','0','-','9','a','-','f','A','-','F',']','*', '.', '{',
-#ifndef _NO_LIBUNGIF
-'g','i','f',',',
-#endif
-#ifndef _NO_LIBPNG
-'p','n','g',',',
-#endif
-#ifndef _NO_LIBTIFF
-'t','i','f','f',',',
-'t','i','f',',',
-#endif
-'x','b','m',',', 'b','m','p', '}', '\0' };
-/* Hmm. Mac seems to use the extension 'art' for eps files sometimes */
-static unichar_t wildepstemplate[] = { '{','u','n','i',',','u',',','c','i','d',',','e','n','c','}','[','0','-','9','a','-','f','A','-','F',']','*', '.', '{', 'p','s',',', 'e','p','s',',','a','r','t','}',  0 };
-static unichar_t wildps[] = { '*', '.', '{', 'p','s',',', 'e','p','s',',', 'a','r','t','}', '\0' };
-static unichar_t wildfig[] = { '*', '.', '{', 'f','i','g',',','x','f','i','g','}',  '\0' };
-static unichar_t wildbdf[] = { '*', '.', 'b', 'd','{', 'f', ',','f','.','g','z',',','f','.','Z',',','f','.','b','z','2','}',  '\0' };
-static unichar_t wildpcf[] = { '*', '.', 'p', 'c','{', 'f', ',','f','.','g','z',',','f','.','Z',',','f','.','b','z','2','}',  '\0' };
-static unichar_t wildttf[] = { '*', '.', '{', 't', 't','f',',','o','t','f',',','o','t','b',',','t','t','c','}',  '\0' };
-static unichar_t wildpk[] = { '*', '{', 'p', 'k', ',', 'g', 'f', '}',  '\0' };		/* pk fonts can have names like cmr10.300pk, not a normal extension */
-static unichar_t wildmac[] = { '*', '{', 'b', 'i', 'n', ',', 'h', 'q', 'x', ',', 'd','f','o','n','t', '}',  '\0' };		/* pk fonts can have names like cmr10.300pk, not a normal extension */
-static unichar_t wildwin[] = { '*', '{', 'f', 'o', 'n', ',', 'f', 'n', 't', '}',  '\0' };		/* pk fonts can have names like cmr10.300pk, not a normal extension */
-static unichar_t *wildchr[] = { wildimg, wildps, wildfig };
-static unichar_t *wildfnt[] = { wildbdf, wildttf, wildpk, wildpcf, wildmac, wildwin, wildimg, wildtemplate, wildps, wildepstemplate };
-
 static GTextInfo formats[] = {
-    { (unichar_t *) _STR_Image, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "EPS", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "XFig", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) _STR_Image, NULL, 0, 0, (void *) fv_image, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) "EPS", NULL, 0, 0, (void *) fv_eps, 0, 0, 0, 0, 0, 0, 0, 1 },
+#ifndef _NO_LIBXML
+    { (unichar_t *) "SVG", NULL, 0, 0, (void *) fv_svg, 0, 0, 0, 0, 0, 0, 0, 1 },
+#endif
+    { (unichar_t *) "XFig", NULL, 0, 0, (void *) fv_fig, 0, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }};
 
-enum fvformats { fv_bdf, fv_ttf, fv_pk, fv_pcf, fv_mac, fv_win, fv_image, fv_imgtemplate, fv_eps, fv_epstemplate };
 static GTextInfo fvformats[] = {
-    { (unichar_t *) "BDF", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 1, 0, 1 },
-    { (unichar_t *) "TTF", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) _STR_TeXBitmap, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "PCF", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) _STR_MacBitmap, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "Win FON", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) _STR_Image, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) _STR_Template, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "EPS", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) _STR_EPSTemplate, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) "BDF", NULL, 0, 0, (void *) fv_bdf, 0, 0, 0, 0, 0, 1, 0, 1 },
+    { (unichar_t *) "TTF", NULL, 0, 0, (void *) fv_ttf, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) _STR_TeXBitmap, (void *) fv_pk, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) "PCF", NULL, 0, 0, (void *) fv_pcf, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) _STR_MacBitmap, NULL, 0, 0, (void *) fv_mac, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) "Win FON", NULL, 0, 0, (void *) fv_win, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) _STR_Image, NULL, 0, 0, (void *) fv_image, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) _STR_Template, NULL, 0, 0, (void *) fv_imgtemplate, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) "EPS", NULL, 0, 0, (void *) fv_eps, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) _STR_EPSTemplate, NULL, 0, 0, (void *) fv_epstemplate, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+#ifndef _NO_LIBXML
+    { (unichar_t *) "SVG", NULL, 0, 0, (void *) fv_svg, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) _STR_SVGTemplate, NULL, 0, 0, (void *) fv_svgtemplate, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+#endif
     { NULL }};
 
 static int GFD_ImportOk(GGadget *g, GEvent *e) {
@@ -971,13 +1034,14 @@ static int GFD_ImportOk(GGadget *g, GEvent *e) {
 	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
 	unichar_t *ret = GGadgetGetTitle(d->gfc);
 	char *temp = u2def_copy(ret);
-	int format = GGadgetGetFirstListSelectedItem(d->format);
+	int pos = GGadgetGetFirstListSelectedItem(d->format);
+	int format = (int) (GGadgetGetListItemSelected(d->format)->userdata);
 
 	GDrawSetCursor(GGadgetGetWindow(g),ct_watch);
 	if ( d->fv!=NULL )
-	    flast_format = format;
+	    flast_format = pos;
 	else
-	    last_format = format;
+	    last_format = pos;
 	free(ret);
 	if ( d->fv!=NULL ) {
 	    int toback = GGadgetIsChecked(d->background);
@@ -996,21 +1060,29 @@ static int GFD_ImportOk(GGadget *g, GEvent *e) {
 	    else if ( format==fv_win )
 		d->done = FVImportMult(d->fv,temp,toback,bf_fon);
 	    else if ( format==fv_image )
-		d->done = FVImportImages(d->fv,temp,1);
+		d->done = FVImportImages(d->fv,temp,format);
 	    else if ( format==fv_imgtemplate )
-		d->done = FVImportImageTemplate(d->fv,temp,1);
+		d->done = FVImportImageTemplate(d->fv,temp,format);
 	    else if ( format==fv_eps )
-		d->done = FVImportImages(d->fv,temp,0);
+		d->done = FVImportImages(d->fv,temp,format);
 	    else if ( format==fv_epstemplate )
-		d->done = FVImportImageTemplate(d->fv,temp,0);
+		d->done = FVImportImageTemplate(d->fv,temp,format);
+	    else if ( format==fv_svg )
+		d->done = FVImportImages(d->fv,temp,format);
+	    else if ( format==fv_svgtemplate )
+		d->done = FVImportImageTemplate(d->fv,temp,format);
 	} else if ( d->bv!=NULL )
 	    d->done = BVImportImage(d->bv,temp);
 	else {
 	    d->done = true;
-	    if ( format==0 )
+	    if ( format==fv_image )
 		ImportImage(d->cv,temp);
-	    else if ( format==1 )
+	    else if ( format==fv_eps )
 		ImportPS(d->cv,temp);
+#ifndef _NO_LIBXML
+	    else if ( format==fv_svg )
+		ImportSVG(d->cv,temp);
+#endif
 	    else
 		ImportFig(d->cv,temp);
 	}

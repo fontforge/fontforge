@@ -686,6 +686,9 @@ char *GetPostscriptFontName(char *dir, int mult) {
 			                       'b','d','f',',',
 			                       'o','t','f',',',
 			                       'o','t','b',',',
+#ifndef _NO_LIBXML
+			                       's','v','g',',',
+#endif
 			                       'p','f','3',',',
 			                       't','t','c',',',
 			                       'g','s','f',',',
@@ -5450,6 +5453,8 @@ return( NULL );
 		strmatch(fullname+strlen(fullname)-4, ".otf")==0 ||
 		strmatch(fullname+strlen(fullname)-4, ".otb")==0 ) {
 	sf = SFReadTTF(fullname,0);
+    } else if ( strmatch(fullname+strlen(fullname)-4, ".svg")==0 ) {
+	sf = SFReadSVG(fullname,0);
     } else if ( strmatch(fullname+strlen(fullname)-4, ".bdf")==0 ) {
 	sf = SFFromBDF(fullname,0,false);
     } else if ( strmatch(fullname+strlen(fullname)-2, "pk")==0 ) {
@@ -5496,6 +5501,8 @@ return( NULL );
 		sf = SFReadTTF(fullname,0);
 	    } else if ( ch1=='%' && ch2=='!' ) {
 		sf = SFReadPostscript(fullname);
+	    } else if ( ch1=='<' && ch2=='?' && (ch3=='x'||ch3=='X') && (ch4=='m'||ch4=='M') ) {
+		sf = SFReadSVG(fullname,0);
 #if 0		/* I'm not sure if this is a good test for mf files... */
 	    } else if ( ch1=='%' && ch2==' ' ) {
 		sf = SFFromMF(fullname);

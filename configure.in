@@ -63,6 +63,10 @@ if test "FreeType2_IncRoot" = "" >/dev/null 2>&1 ; then
  ],AC_DEFINE(_NO_FREETYPE))])])
 fi
 
+AC_CHECK_FILE(/usr/include/libxml/libxml2,[CFLAGS="$CFLAGS -I/usr/include/libxml/"],[
+ AC_CHECK_FILE(/usr/local/include/libxml/libxml2,[CFLAGS="$CFLAGS -I/usr/local/include -I/usr/local/include/libxml/"],
+  AC_DEFINE(_NO_LIBXML))])
+
 dnl Some old versions of lib(un)gif don't work for us, they've got the
 dnl Function argument in the wrong place. So two checks for gif.
 
@@ -78,6 +82,7 @@ AC_CHECK_LIB(png, png_create_read_struct, : ,[
  AC_CHECK_LIB(png12, png_create_read_struct, AC_DEFINE(_LIBPNG12), AC_DEFINE(_NO_LIBPNG), -lz -lm)], -lz -lm)
 AC_CHECK_LIB(jpeg, jpeg_CreateDecompress, :  ,AC_DEFINE(_NO_LIBJPEG)) 
 AC_CHECK_LIB(tiff, TIFFOpen, : , AC_DEFINE(_NO_LIBTIFF), -lm )
+AC_CHECK_LIB(xml2, xmlParseFile, : , AC_DEFINE(_NO_LIBXML))
 
 gww_hasbytecode="no"
 AC_CHECK_LIB(freetype, FT_New_Memory_Face, [

@@ -629,6 +629,10 @@ extern int CVOneThingSel(CharView *cv, SplinePoint **sp, SplinePointList **spl,
 	RefChar **ref, ImageList **img, AnchorPoint **ap);
 extern void RevertedGlyphReferenceFixup(SplineChar *sc, SplineFont *sf);
 extern void CVInfoDraw(CharView *cv, GWindow pixmap );
+enum fvformats { fv_bdf, fv_ttf, fv_pk, fv_pcf, fv_mac, fv_win, fv_image,
+	fv_imgtemplate, fv_eps, fv_epstemplate, fv_svg, fv_svgtemplate,
+	fv_fig };
+extern void SCImportSVG(SplineChar *sc,enum drawmode dm,char *path,int doclear);
 extern void SCImportPSFile(SplineChar *sc,enum drawmode dm,FILE *ps,int doclear);
 extern void SCAddScaleImage(SplineChar *sc,GImage *image,int doclear);
 extern void SCInsertBackImage(SplineChar *sc,GImage *image,real scale,real yoff, real xoff);

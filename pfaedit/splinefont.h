@@ -758,6 +758,7 @@ extern void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf);
 extern void TeXDefaultParams(SplineFont *sf);
 extern void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]);
 extern void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *sf,char *fontname);
+extern void SFDefaultOS2Simple(struct pfminfo *pfminfo,SplineFont *sf);
 extern int ScriptIsRightToLeft(uint32 script);
 extern uint32 ScriptFromUnicode(int u,SplineFont *sf);
 extern uint32 SCScriptFromUnicode(SplineChar *sc);
@@ -859,6 +860,7 @@ extern void SplineCharQuickConservativeBounds(SplineChar *sc, DBounds *b);
 extern void SplineFontQuickConservativeBounds(SplineFont *sf,DBounds *b);
 extern void SplinePointCatagorize(SplinePoint *sp);
 extern int SplinePointIsACorner(SplinePoint *sp);
+extern void SPLCatagorizePoints(SplinePointList *spl);
 extern void SCCatagorizePoints(SplineChar *sc);
 extern SplinePointList *SplinePointListCopy1(SplinePointList *spl);
 extern SplinePointList *SplinePointListCopy(SplinePointList *base);
@@ -1035,6 +1037,7 @@ extern void TTFLoadBitmaps(FILE *ttf,struct ttfinfo *info, int onlyone);
 enum ttfflags { ttf_onlystrikes=1, ttf_onlyonestrike=2, ttf_onlykerns=4 };
 extern SplineFont *_SFReadTTF(FILE *ttf,int flags,char *filename);
 extern SplineFont *SFReadTTF(char *filename,int flags);
+extern SplineFont *SFReadSVG(char *filename,int flags);
 extern SplineFont *CFFParse(FILE *temp,int len,char *fontsetname);
 extern SplineFont *SFReadMacBinary(char *filename,int flags);
 extern SplineFont *SFReadWinFON(char *filename,int toback);
@@ -1073,11 +1076,13 @@ extern const unichar_t *SFGetAlternate(SplineFont *sf, int base,SplineChar *sc,i
 
 extern int getAdobeEnc(char *name);
 
+extern SplineSet *SplinePointListInterpretSVG(char *filename,int em_size);
 extern SplinePointList *SplinePointListInterpretPS(FILE *ps);
 extern void PSFontInterpretPS(FILE *ps,struct charprocs *cp);
 extern struct enc *PSSlurpEncodings(FILE *file);
 extern SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 	struct pschars *subrs, struct pschars *gsubrs, const char *name);
+extern void MatMultiply(real m1[6], real m2[6], real to[6]);
 
 extern int NameToEncoding(SplineFont *sf,const unichar_t *uname);
 extern void GlyphHashFree(SplineFont *sf);

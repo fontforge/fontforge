@@ -2404,7 +2404,9 @@ static void setvorg(struct vorg *vorg, SplineFont *sf) {
 }
 
 static void OS2WeightCheck(struct pfminfo *pfminfo,char *weight) {
-    if ( strstrmatch(weight,"medi")!=NULL ) {
+    if ( weight==NULL ) {
+	/* default it */
+    } else if ( strstrmatch(weight,"medi")!=NULL ) {
 	pfminfo->weight = 500;
 	pfminfo->panose[2] = 6;
     } else if ( strstrmatch(weight,"demi")!=NULL ||
@@ -2440,6 +2442,19 @@ static void OS2WeightCheck(struct pfminfo *pfminfo,char *weight) {
     }
 }
 
+void SFDefaultOS2Simple(struct pfminfo *pfminfo,SplineFont *sf) {
+    pfminfo->pfmfamily = 0x11;
+    pfminfo->panose[0] = 2;
+    pfminfo->weight = 400;
+    pfminfo->panose[2] = 5;
+    pfminfo->width = 5;
+    pfminfo->panose[3] = 3;
+
+    if ( sf->subfonts!=NULL ) sf = sf->subfonts[0];
+    pfminfo->linegap = pfminfo->vlinegap =
+	    rint(.09*(sf->ascent+sf->descent));
+}
+
 void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *_sf,char *fontname) {
     int samewid= -1;
     SplineFont *sf;
@@ -2447,11 +2462,11 @@ void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *_sf,char *fontname) {
 
     if ( !pfminfo->pfmset ) {
 	memset(pfminfo,'\0',sizeof(*pfminfo));
+	SFDefaultOS2Simple(pfminfo,_sf);
 	samewid = CIDOneWidth(_sf);
 	sf = _sf;
 
 	pfminfo->pfmfamily = 0x10;
-	pfminfo->panose[0] = 2;
 	if ( samewid>0 )
 	    pfminfo->pfmfamily = 0x30;
 	else if ( strstrmatch(fontname,"sans")!=NULL )
@@ -2463,15 +2478,11 @@ void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *_sf,char *fontname) {
 	if ( samewid==-1 )
 	    pfminfo->pfmfamily |= 0x1;	/* Else it assumes monospace */
 
-	pfminfo->weight = 400;
-	pfminfo->panose[2] = 5;
 /* urw uses 4 character abreviations */
 	if ( weight!=NULL )
 	    OS2WeightCheck(pfminfo,weight);
 	OS2WeightCheck(pfminfo,fontname);
 
-	pfminfo->width = 5;
-	pfminfo->panose[3] = 3;
 	if ( strstrmatch(fontname,"ultra")!=NULL &&
 		strstrmatch(fontname,"condensed")!=NULL ) {
 	    pfminfo->width = 1;
@@ -2506,9 +2517,6 @@ void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *_sf,char *fontname) {
 	}
 	if ( samewid>0 )
 	    pfminfo->panose[3] = 9;
-	if ( sf->subfonts!=NULL ) sf = sf->subfonts[0];
-	pfminfo->linegap = pfminfo->vlinegap =
-		rint(.09*(sf->ascent+sf->descent));
     }
 }
 

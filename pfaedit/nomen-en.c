@@ -2174,6 +2174,7 @@ static char *str_TeXBitmap = "TeX Bitmap";
 static char *str_MacBitmap = "Mac Bitmap";
 static char *str_Template = "Image Template";
 static char *str_EPSTemplate = "EPS Template";
+static char *str_SVGTemplate = "SVG Template";
 static char *str_AsBackground = "As Background";
 static char *str_OnlyOneFont = "Only One Font";
 static char *str_OnlyOneFontBackground = "Only one font may be imported into the background";

@@ -26,11 +26,16 @@
  */
 #include "pfaeditui.h"
 #include <unistd.h>
+#include <math.h>
 #include <time.h>
 #include <locale.h>
 #include <utype.h>
 #include <chardata.h>
 #include <ustring.h>
+
+/* ************************************************************************** */
+/* ****************************    SVG Output    **************************** */
+/* ************************************************************************** */
 
 static int svg_outfontheader(FILE *file, SplineFont *sf) {
     char *pt;
@@ -83,13 +88,13 @@ static int svg_outfontheader(FILE *file, SplineFont *sf) {
 	info.panose[1], info.panose[2], info.panose[3], info.panose[4], info.panose[5],
 	info.panose[6], info.panose[7], info.panose[8], info.panose[9]);
     fprintf( file, "    ascent=\"%d\"\n", sf->ascent );
-    fprintf( file, "    descent=\"%d\"\n", sf->descent );
-    fprintf( file, "    x-height=\"%d\"\n", bd.xheight );
-    fprintf( file, "    cap-height=\"%d\"\n", bd.caph );
-    fprintf( file, "    bbox=\"%d %d %d %d\"\n", bb.minx, bb.miny, bb.maxx, bb.maxy );
+    fprintf( file, "    descent=\"%d\"\n", -sf->descent );
+    fprintf( file, "    x-height=\"%g\"\n", bd.xheight );
+    fprintf( file, "    cap-height=\"%g\"\n", bd.caph );
+    fprintf( file, "    bbox=\"%g %g %g %g\"\n", bb.minx, bb.miny, bb.maxx, bb.maxy );
 /* !!!! Check bounding box format */
-    fprintf( file, "    underline-thickness=\"%d\"\n", sf->upos );
-    fprintf( file, "    underline-position=\"%d\"\n", sf->uwidth );
+    fprintf( file, "    underline-thickness=\"%g\"\n", sf->uwidth );
+    fprintf( file, "    underline-position=\"%g\"\n", sf->upos );
     if ( sf->italicangle!=0 )
 	fprintf(file, "    slope=\"%d\"\n", sf->italicangle );
 /* !!!! Check slope format */
@@ -120,16 +125,16 @@ static int svg_pathdump(FILE *file, SplineSet *spl, int lineout) {
 	    if ( first==NULL ) first=sp;
 	    if ( sp->knownlinear ) {
 		if ( sp->to->me.x==sp->from->me.x )
-		    sprintf( buffer,"v%g", sp->from->me.y-last.y );
+		    sprintf( buffer,"v%g", sp->to->me.y-last.y );
 		else if ( sp->to->me.y==sp->from->me.y )
-		    sprintf( buffer,"h%g", sp->from->me.x-last.x );
+		    sprintf( buffer,"h%g", sp->to->me.x-last.x );
 		else if ( sp->to->next==first ) {
 		    strcpy( buffer, "z");
 		    closed = true;
 		} else
 		    sprintf( buffer,"l%g %g", sp->to->me.x-last.x, sp->to->me.y-last.y );
 	    } else if ( sp->order2 ) {
-		if ( sp->from->prev!=NULL &&
+		if ( sp->from->prev!=NULL && sp->from!=spl->first &&
 			sp->from->me.x-sp->from->prevcp.x == sp->from->nextcp.x-sp->from->me.x &&
 			sp->from->me.y-sp->from->prevcp.y == sp->from->nextcp.y-sp->from->me.y )
 		    sprintf( buffer,"t%g %g", sp->to->me.x-last.x, sp->to->me.y-last.y );
@@ -138,7 +143,7 @@ static int svg_pathdump(FILE *file, SplineSet *spl, int lineout) {
 			    sp->to->prevcp.x-last.x, sp->to->prevcp.y-last.y,
 			    sp->to->me.x-sp->to->prevcp.x,sp->to->me.y-sp->to->prevcp.y);
 	    } else {
-		if ( sp->from->prev!=NULL &&
+		if ( sp->from->prev!=NULL && sp->from!=spl->first &&
 			sp->from->me.x-sp->from->prevcp.x == sp->from->nextcp.x-sp->from->me.x &&
 			sp->from->me.y-sp->from->prevcp.y == sp->from->nextcp.y-sp->from->me.y )
 		    sprintf( buffer,"s%g %g %g %g",
@@ -233,13 +238,15 @@ static void svg_scdump(FILE *file, SplineChar *sc,int defwid) {
 	c = LigCnt(sc->parent,best,univals,sizeof(univals)/sizeof(univals[0]));
 	fputs("unicode=\"",file);
 	for ( i=0; i<c; ++i )
-	    if ( univals[i]>=' ' && univals[i]<127 )
+	    if ( univals[i]>='A' && univals[i]<'z' )
 		putc(univals[i],file);
 	    else
 		fprintf(file,"&#x%x;",univals[i]);
 	fputs("\" ",file);
     } else if ( sc->unicodeenc!=-1 ) {
-	if ( sc->unicodeenc>=32 && sc->unicodeenc<127 && sc->unicodeenc!='"' && sc->unicodeenc!='&')
+	if ( sc->unicodeenc>=32 && sc->unicodeenc<127 &&
+		sc->unicodeenc!='"' && sc->unicodeenc!='&' &&
+		sc->unicodeenc!='<' && sc->unicodeenc!='>' )
 	    fprintf( file, "unicode=\"%c\" ", sc->unicodeenc);
 	else if ( sc->unicodeenc<0x10000 &&
 		( isarabisolated(sc->unicodeenc) || isarabinitial(sc->unicodeenc) || isarabmedial(sc->unicodeenc) || isarabfinal(sc->unicodeenc) ) &&
@@ -255,6 +262,8 @@ static void svg_scdump(FILE *file, SplineChar *sc,int defwid) {
 	fprintf( file, "horiz-adv-x=\"%d\" ", sc->width );
     if ( sc->parent->hasvmetrics && sc->vwidth!=sc->parent->ascent+sc->parent->descent )
 	fprintf( file, "vert-adv-y=\"%d\" ", sc->vwidth );
+    if ( strstr(sc->name,".vert")!=NULL || strstr(sc->name,".vrt2")!=NULL )
+	fprintf( file, "orientation=\"v\" " );
     if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 ) {
 	if ( isarabinitial(sc->unicodeenc))
 	    fprintf( file,"arabic-form=initial " );
@@ -288,6 +297,17 @@ static void svg_notdefdump(FILE *file, SplineFont *sf,int defwid) {
     }
 }
 
+static void fputkerns( FILE *file, char *names) {
+    while ( *names ) {
+	if ( *names==' ' ) {
+	    putc(',',file);
+	    while ( names[1]==' ' ) ++names;
+	} else
+	    putc(*names,file);
+	++names;
+    }
+}
+
 static void svg_dumpkerns(FILE *file,SplineFont *sf) {
     int i,j;
     KernPair *kp;
@@ -316,8 +336,12 @@ static void svg_dumpkerns(FILE *file,SplineFont *sf) {
     for ( kc=sf->kerns; kc!=NULL; kc=kc->next ) {
 	for ( i=1; i<kc->first_cnt; ++i ) for ( j=1; j<kc->second_cnt; ++j ) {
 	    if ( kc->offsets[i*kc->first_cnt+j]!=0 ) {
-		fprintf( file, "    <hkern g1=\"%s\"\n\tg2=\"%s\"\n\tk=\"%d\" />\n",
-			kc->firsts[i], kc->seconds[j], kc->offsets[i*kc->first_cnt+j]);
+		fprintf( file, "    <hkern g1=\"" );
+		fputkerns( file, kc->firsts[i]);
+		fprintf( file, "\"\n\tg2=\"" );
+		fputkerns( file, kc->seconds[j]);
+		fprintf( file, "\"\n\tk=\"%d\" />\n",
+			kc->offsets[i*kc->first_cnt+j]);
 	    }
 	}
     }
@@ -342,8 +366,23 @@ static void svg_sfdump(FILE *file,SplineFont *sf) {
 	if ( SCWorthOutputting(sf->chars[i]) && HasLigature(sf->chars[i]))
 	    svg_scdump(file, sf->chars[i],defwid);
     }
+    /* And formed arabic before unformed */
     for ( i=0; i<sf->charcnt; ++i ) {
-	if ( SCWorthOutputting(sf->chars[i]) && !HasLigature(sf->chars[i]))
+	if ( SCWorthOutputting(sf->chars[i]) && !HasLigature(sf->chars[i]) &&
+		sf->chars[i]->unicodeenc!=-1 && sf->chars[i]->unicodeenc<0x10000 &&
+		(isarabinitial(sf->chars[i]->unicodeenc) ||
+		 isarabmedial(sf->chars[i]->unicodeenc) ||
+		 isarabfinal(sf->chars[i]->unicodeenc) ||
+		 isarabisolated(sf->chars[i]->unicodeenc)))
+	    svg_scdump(file, sf->chars[i],defwid);
+    }
+    for ( i=0; i<sf->charcnt; ++i ) {
+	if ( SCWorthOutputting(sf->chars[i]) && !HasLigature(sf->chars[i]) &&
+		(sf->chars[i]->unicodeenc==-1 || sf->chars[i]->unicodeenc>=0x10000 ||
+		!(isarabinitial(sf->chars[i]->unicodeenc) ||
+		 isarabmedial(sf->chars[i]->unicodeenc) ||
+		 isarabfinal(sf->chars[i]->unicodeenc) ||
+		 isarabisolated(sf->chars[i]->unicodeenc))))
 	    svg_scdump(file, sf->chars[i],defwid);
     }
     svg_dumpkerns(file,sf);
@@ -368,11 +407,19 @@ return( ret );
 
 int _ExportSVG(FILE *svg,SplineChar *sc) {
     char *oldloc;
+    int em_size;
 
     oldloc = setlocale(LC_NUMERIC,"C");
     fprintf(svg, "<?xml version=\"1.0\" standalone=\"no\"?>\n" );
     fprintf(svg, "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg11.dtd\" >\n" ); 
-    fprintf(svg, "<svg>\n" );
+    em_size = sc->parent->ascent+sc->parent->descent;
+    fprintf(svg, "<svg viewBox=\"0 %d %d %d\" >\n", -sc->parent->descent, em_size, em_size );
+    fprintf(svg, "  <g stroke=\"green\" stroke-width=\"1\">\n" );
+    fprintf(svg, "    <line x1=\"0\" y1=\"0\" x2=\"%d\" y2=\"0\" />\n", sc->width );
+    fprintf(svg, "    <line x1=\"0\" y1=\"10\" x2=\"0\" y2=\"-10\" />\n" );
+    fprintf(svg, "    <line x1=\"%d\" y1=\"10\" x2=\"%d\" y2=\"-10\" />\n",
+	    sc->width, sc->width );
+    fprintf(svg, "  </g>\n\n" );
     fprintf(svg, "  <path fill=\"currentColor\"\n");
     svg_scpathdump(svg,sc);
     fprintf(svg, "</svg>\n" );
@@ -380,3 +427,1676 @@ int _ExportSVG(FILE *svg,SplineChar *sc) {
     setlocale(LC_NUMERIC,oldloc);
 return( !ferror(svg));
 }
+
+/* ************************************************************************** */
+/* *****************************    SVG Input    **************************** */
+/* ************************************************************************** */
+
+#if _NO_LIBXML
+SplineFont *SFReadSVG(char *filename, int flags) {
+return( NULL );
+}
+
+SplineSet *SplinePointListInterpretSVG(char *filename) {
+return( NULL );
+}
+#else
+
+#include <libxml/parser.h>
+
+/* Ok, this complication is here because:				    */
+/*	1) I want to be able to deal with static libraries on some systems  */
+/*	2) If I've got a dynamic library and I compile up an executable     */
+/*		I want it to run on systems without libxml2		    */
+/* So one case boils down to linking against the standard names, while the  */
+/*  other does the link at run time if it's possible */
+
+# if defined(_STATIC_LIBXML) || defined(NODYNAMIC)
+
+#define _xmlParseFile		xmlParseFile
+#define _xmlDocGetRootElement	xmlDocGetRootElement
+#define _xmlFreeDoc		xmlFreeDoc
+#define _xmlFree		xmlFree
+#define _xmlStrcmp		xmlStrcmp
+#define _xmlGetProp		xmlGetProp
+
+static int libxml_init_base() {
+return( true );
+}
+# else
+#  include <dynamic.h>
+
+static DL_CONST void *libxml;
+static xmlDocPtr (*_xmlParseFile)(const char *filename);
+static xmlNodePtr (*_xmlDocGetRootElement)(xmlDocPtr doc);
+static void (*_xmlFreeDoc)(xmlDocPtr doc);
+static void (*_xmlFree)(void *);
+static int (*_xmlStrcmp)(const xmlChar *,const xmlChar *);
+static xmlChar *(*_xmlGetProp)(xmlNodePtr,const xmlChar *);
+
+static int libxml_init_base() {
+    static int xmltested = false;
+
+    if ( xmltested )
+return( libxml!=NULL );
+
+    libxml = dlopen("libxml2" SO_EXT,RTLD_LAZY);
+    xmltested = true;
+    if ( libxml==NULL )
+return( false );
+
+    _xmlParseFile = (xmlDocPtr (*)(const char *)) dlsym(libxml,"xmlParseFile");
+    _xmlDocGetRootElement = (xmlNodePtr (*)(xmlDocPtr )) dlsym(libxml,"xmlDocGetRootElement");
+    _xmlFreeDoc = (void (*)(xmlDocPtr)) dlsym(libxml,"xmlFreeDoc");
+    /* xmlFree is done differently for threaded and non-threaded libraries. */
+    /*  I hope this gets both right... */
+    if ( dlsym(libxml,"__xmlFree")) {
+	xmlFreeFunc *(*foo)(void) = dlsym(libxml,"__xmlFree");
+	_xmlFree = *(*foo)();
+    } else {
+	xmlFreeFunc *foo = dlsym(libxml,"xmlFree");
+	_xmlFree = *foo;
+    }
+    _xmlStrcmp = (int (*)(const xmlChar *,const xmlChar *)) dlsym(libxml,"xmlStrcmp");
+    _xmlGetProp = (xmlChar *(*)(xmlNodePtr,const xmlChar *)) dlsym(libxml,"xmlGetProp");
+    if ( _xmlParseFile==NULL || _xmlDocGetRootElement==NULL || _xmlFree==NULL ) {
+	libxml = NULL;
+return( false );
+    }
+
+return( true );
+}
+# endif
+
+/* Find a node with the given id */
+static xmlNodePtr XmlFindID(xmlNodePtr xml, char *name) {
+    char *id;
+    xmlNodePtr child, ret;
+
+    id = _xmlGetProp(xml,(xmlChar *) "id");
+    if ( id!=NULL && _xmlStrcmp(id,(xmlChar *) name)==0 ) {
+	_xmlFree(id);
+return( xml );
+    }
+    if ( id!=NULL )
+	_xmlFree(id);
+
+    for ( child = xml->children; child!=NULL; child=child->next ) {
+	ret = XmlFindID(child,name);
+	if ( ret!=NULL )
+return( ret );
+    }
+return( NULL );
+}
+
+/* We want to look for "font" nodes within "svg" nodes. Since "svg" nodes may */
+/*  be embedded within another xml/html document there may be several of them */
+/*  and there may be several fonts within each */
+static int _FindSVGFontNodes(xmlNodePtr node,xmlNodePtr *fonts,int cnt, int max,
+	char *nodename) {
+    if ( _xmlStrcmp(node->name,(const xmlChar *) nodename)==0 ) {
+	if ( strcmp(nodename,"svg")==0 )
+	    nodename = "font";
+	else {
+	    fonts[cnt++] = node;
+	    if ( cnt>=max )
+return( cnt );
+	}
+    }
+
+    for ( node=node->children; node!=NULL; node=node->next ) {
+	cnt = _FindSVGFontNodes(node,fonts,cnt,max,nodename);
+	if ( cnt>=max )
+return( cnt );
+    }
+return( cnt );
+}
+
+static xmlNodePtr *FindSVGFontNodes(xmlDocPtr doc) {
+    xmlNodePtr *fonts=NULL;
+    int cnt;
+
+    fonts = gcalloc(100,sizeof(xmlNodePtr));	/* If the file has more than 100 fonts in it then it's foolish to expect the user to pick out one, so let's limit ourselves to 100 */
+    cnt = _FindSVGFontNodes(_xmlDocGetRootElement(doc),fonts,0,100,"svg");
+    if ( cnt==0 ) {
+	free(fonts);
+return( NULL );
+    }
+return( fonts );
+}
+
+static xmlNodePtr SVGPickFont(xmlNodePtr *fonts,char *filename) {
+    int cnt;
+    unichar_t **names;
+    xmlChar *name;
+    char *pt, *lparen;
+    int choice;
+
+    for ( cnt=0; fonts[cnt]!=NULL; ++cnt);
+    names = galloc((cnt+1)*sizeof(unichar_t *));
+    for ( cnt=0; fonts[cnt]!=NULL; ++cnt) {
+	name = _xmlGetProp(fonts[cnt],"id");
+	if ( name==NULL ) {
+	    names[cnt] = uc_copy("nameless-font");
+	} else {
+	    names[cnt] = utf82u_copy(name);
+	    _xmlFree(name);
+	}
+    }
+    names[cnt] = NULL;
+
+    choice = -1;
+    pt = strrchr(filename,'/');
+    if ( pt==NULL ) pt = filename;
+    if ( (lparen = strchr(pt,'('))!=NULL && strchr(lparen,')')!=NULL ) {
+	char *find = copy(lparen+1);
+	pt = strchr(find,')');
+	if ( pt!=NULL ) *pt='\0';
+	for ( choice=cnt-1; choice>=0; --choice )
+	    if ( uc_strcmp(names[choice],find)==0 )
+	break;
+	if ( choice==-1 ) {
+	    char *fn = copy(filename);
+	    fn[lparen-filename] = '\0';
+	    GWidgetErrorR(_STR_NotInCollection,_STR_FontNotInCollection,find,fn);
+	    free(fn);
+	}
+	free(find);
+    } else if ( screen_display==NULL )
+	choice = 0;
+    else
+	choice = GWidgetChoicesR(_STR_PickFont,(const unichar_t **) names,cnt,0,_STR_MultipleFontsPick);
+    for ( cnt=0; names[cnt]!=NULL; ++cnt )
+	free(names[cnt]);
+    free(names);
+    if ( choice!=-1 )
+return( fonts[choice] );
+
+return( NULL );
+}
+
+static SplineSet *SVGParsePath(xmlChar *path) {
+    BasePoint current;
+    SplineSet *head=NULL, *last=NULL, *cur=NULL;
+    SplinePoint *sp;
+    int type = 'M';
+    double x1,x2,x,y1,y2,y,rx,ry,axisrot;
+    int large_arc,sweep;
+    int order2 = 0;
+    char *end;
+
+    current.x = current.y = 0;
+
+    while ( *path ) {
+	while ( *path==' ' ) ++path;
+	while ( isalpha(*path))
+	    type = *path++;
+	if ( *path=='\0' && type!='z' && type!='Z' )
+    break;
+	if ( type=='m' || type=='M' ) {
+	    if ( cur!=NULL && cur->last!=cur->first ) {
+		if ( RealNear(cur->last->me.x,cur->first->me.x) &&
+			RealNear(cur->last->me.y,cur->first->me.y) ) {
+		    cur->first->prevcp = cur->last->prevcp;
+		    cur->first->noprevcp = cur->last->noprevcp;
+		    cur->first->prev = cur->last->prev;
+		    cur->first->prev->to = cur->first;
+		    SplinePointFree(cur->last);
+		} else
+		    SplineMake(cur->last,cur->first,order2);
+		cur->last = cur->first;
+	    }
+	    x = strtod((char *) path,&end);
+	    y = strtod(end,&end);
+	    sp = SplinePointCreate(x,y);
+	    current = sp->me;
+	    cur = chunkalloc(sizeof(SplineSet));
+	    if ( head==NULL )
+		head = cur;
+	    else
+		last->next = cur;
+	    last = cur;
+	    cur->first = cur->last = sp;
+	} else if ( type=='z' || type=='Z' ) {
+	    if ( cur!=NULL && cur->last!=cur->first ) {
+		if ( RealNear(cur->last->me.x,cur->first->me.x) &&
+			RealNear(cur->last->me.y,cur->first->me.y) ) {
+		    cur->first->prevcp = cur->last->prevcp;
+		    cur->first->noprevcp = cur->last->noprevcp;
+		    cur->first->prev = cur->last->prev;
+		    cur->first->prev->to = cur->first;
+		    SplinePointFree(cur->last);
+		} else
+		    SplineMake(cur->last,cur->first,order2);
+		cur->last = cur->first;
+		current = cur->first->me;
+	    }
+	    type = ' ';
+	    end = path;
+	} else {
+	    if ( cur==NULL ) {
+		sp = SplinePointCreate(current.x,current.y);
+		cur = chunkalloc(sizeof(SplineSet));
+		if ( head==NULL )
+		    head = cur;
+		else
+		    last->next = cur;
+		last = cur;
+		cur->first = cur->last = sp;
+	    }
+	    switch ( type ) {
+	      case 'l': case'L':
+		x = strtod((char *) path,&end);
+		y = strtod(end,&end);
+		if ( type=='l' ) {
+		    x += current.x; y += current.y;
+		}
+		sp = SplinePointCreate(x,y);
+		current = sp->me;
+		SplineMake(cur->last,sp,order2);
+		cur->last = sp;
+	      break;
+	      case 'h': case'H':
+		x = strtod((char *) path,&end);
+		y = current.y;
+		if ( type=='h' ) {
+		    x += current.x;
+		}
+		sp = SplinePointCreate(x,y);
+		current = sp->me;
+		SplineMake(cur->last,sp,order2);
+		cur->last = sp;
+	      break;
+	      case 'v': case 'V':
+		x = current.x;
+		y = strtod((char *) path,&end);
+		if ( type=='v' ) {
+		    y += current.y;
+		}
+		sp = SplinePointCreate(x,y);
+		current = sp->me;
+		SplineMake(cur->last,sp,order2);
+		cur->last = sp;
+	      break;
+	      case 'c': case 'C':
+		x1 = strtod((char *) path,&end);
+		y1 = strtod(end,&end);
+		x2 = strtod(end,&end);
+		y2 = strtod(end,&end);
+		x = strtod(end,&end);
+		y = strtod(end,&end);
+		if ( type=='c' ) {
+		    x1 += current.x; y1 += current.y;
+		    x2 += x1; y2 += y1;
+		    x += x2; y += y2;
+		}
+		sp = SplinePointCreate(x,y);
+		sp->prevcp.x = x2; sp->prevcp.y = y2; sp->noprevcp = false;
+		cur->last->nextcp.x = x1; cur->last->nextcp.y = y1; cur->last->nonextcp = false;
+		current = sp->me;
+		SplineMake(cur->last,sp,false);
+		cur->last = sp;
+	      break;
+	      case 's': case 'S':
+		x1 = 2*cur->last->me.x - cur->last->prevcp.x;
+		y1 = 2*cur->last->me.y - cur->last->prevcp.y;
+		x2 = strtod((char *) path,&end);
+		y2 = strtod(end,&end);
+		x = strtod(end,&end);
+		y = strtod(end,&end);
+		if ( type=='s' ) {
+		    x2 += current.x; y2 += current.y;
+		    x += x2; y += y2;
+		}
+		sp = SplinePointCreate(x,y);
+		sp->prevcp.x = x2; sp->prevcp.y = y2; sp->noprevcp = false;
+		cur->last->nextcp.x = x1; cur->last->nextcp.y = y1; cur->last->nonextcp = false;
+		current = sp->me;
+		SplineMake(cur->last,sp,false);
+		cur->last = sp;
+	      break;
+	      case 'Q': case 'q':
+		x1 = strtod((char *) path,&end);
+		y1 = strtod(end,&end);
+		x = strtod(end,&end);
+		y = strtod(end,&end);
+		if ( type=='q' ) {
+		    x1 += current.x; y1 += current.y;
+		    x += x1; y += y1;
+		}
+		sp = SplinePointCreate(x,y);
+		sp->prevcp.x = x1; sp->prevcp.y = y1; sp->noprevcp = false;
+		cur->last->nextcp.x = x1; cur->last->nextcp.y = y1; cur->last->nonextcp = false;
+		current = sp->me;
+		SplineMake(cur->last,sp,true);
+		cur->last = sp;
+		order2 = true;
+	      break;
+	      case 'T': case 't':
+		x = strtod((char *) path,&end);
+		y = strtod(end,&end);
+		if ( type=='q' ) {
+		    x += current.x; y += current.y;
+		}
+		x1 = 2*cur->last->me.x - cur->last->prevcp.x;
+		y1 = 2*cur->last->me.y - cur->last->prevcp.y;
+		sp = SplinePointCreate(x,y);
+		sp->prevcp.x = x1; sp->prevcp.y = y1; sp->noprevcp = false;
+		cur->last->nextcp.x = x1; cur->last->nextcp.y = y1; cur->last->nonextcp = false;
+		current = sp->me;
+		SplineMake(cur->last,sp,true);
+		cur->last = sp;
+		order2 = true;
+	      break;
+	      case 'A': case 'a':
+		rx = strtod((char *) path,&end);
+		ry = strtod(end,&end);
+		axisrot = strtod(end,&end);
+		large_arc = strtol(end,&end,10);
+		sweep = strtol(end,&end,10);
+		x = strtod(end,&end);
+		y = strtod(end,&end);
+		if ( type=='a' ) {
+		    x += current.x; y += current.y;
+		}
+		if ( x!=current.x || y!=current.y ) {
+		    sp = SplinePointCreate(x,y);
+		    current = sp->me;
+		    if ( rx < 0 ) rx = -rx;
+		    if ( ry < 0 ) ry = -ry;
+		    if ( rx!=0 && ry!=0 ) {
+			/* Page 647 in the SVG 1.1 spec describes how to do this */
+			/* Sadly the pdf file is broken and all that shows is	 */
+			/*  whitespace						 */
+			/* This is Appendix F (Implementation notes) section 6	 */
+		    }
+		    SplineMake(cur->last,sp,0);
+		    cur->last = sp;
+		}
+	      break;
+	      default:
+		fprintf(stderr,"Unknown type '%c' found in path specification\n", type );
+	      break;
+	    }
+	}
+	path = end;
+    }
+return( head );
+}
+
+static SplineSet *SVGParseRect(xmlNodePtr rect) {
+	/* x,y,width,height,rx,ry */
+    double x,y,width,height,rx,ry;
+    char *num;
+    SplinePoint *sp;
+    SplineSet *cur;
+
+    num = _xmlGetProp(rect,"x");
+    if ( num!=NULL ) {
+	x = strtod((char *) num,NULL);
+	_xmlFree(num);
+    } else
+	x = 0;
+    num = _xmlGetProp(rect,"width");
+    if ( num!=NULL ) {
+	width = strtod((char *) num,NULL);
+	_xmlFree(num);
+    } else
+return( NULL );
+    num = _xmlGetProp(rect,"y");
+    if ( num!=NULL ) {
+	y = strtod((char *) num,NULL);
+	_xmlFree(num);
+    } else
+	y = 0;
+    num = _xmlGetProp(rect,"height");
+    if ( num!=NULL ) {
+	height = strtod((char *) num,NULL);
+	_xmlFree(num);
+    } else
+return( NULL );
+
+    rx = ry = 0;
+    num = _xmlGetProp(rect,"rx");
+    if ( num!=NULL ) {
+	ry = rx = strtod((char *) num,NULL);
+	_xmlFree(num);
+    }
+    num = _xmlGetProp(rect,"ry");
+    if ( num!=NULL ) {
+	ry = strtod((char *) num,NULL);
+	if ( rx==0 ) ry = rx;
+	_xmlFree(num);
+    }
+
+    if ( 2*rx>width ) rx = width/2;
+    if ( 2*ry>height ) ry = height/2;
+
+    cur = chunkalloc(sizeof(SplineSet));
+    if ( rx==0 ) {
+	cur->first = SplinePointCreate(x,y+height);
+	cur->last = SplinePointCreate(x+width,y+height);
+	SplineMake(cur->first,cur->last,true);
+	sp = SplinePointCreate(x+width,y);
+	SplineMake(cur->last,sp,true);
+	cur->last = sp;
+	sp = SplinePointCreate(x,y);
+	SplineMake(cur->last,sp,true);
+	SplineMake(sp,cur->first,true);
+	cur->last = cur->first;
+return( cur );
+    } else {
+	cur->first = SplinePointCreate(x,y+height-ry);
+	cur->last = SplinePointCreate(x+rx,y+height);
+	cur->first->nextcp.x = x; cur->first->nextcp.y = y+height;
+	cur->last->prevcp = cur->first->nextcp;
+	cur->first->nonextcp = cur->last->noprevcp = false;
+	SplineMake(cur->first,cur->last,false);
+	if ( rx<2*width ) {
+	    sp = SplinePointCreate(x+width-rx,y+height);
+	    SplineMake(cur->last,sp,true);
+	    cur->last = sp;
+	}
+	sp = SplinePointCreate(x+width,y+height-ry);
+	sp->prevcp.x = x+width; sp->prevcp.y = y+height;
+	cur->last->nextcp = sp->prevcp;
+	cur->last->nonextcp = sp->noprevcp = false;
+	SplineMake(cur->last,sp,false);
+	cur->last = sp;
+	if ( ry<2*height ) {
+	    sp = SplinePointCreate(x+width,y+ry);
+	    SplineMake(cur->last,sp,false);
+	    cur->last = sp;
+	}
+	sp = SplinePointCreate(x+width-rx,y);
+	sp->prevcp.x = x+width; sp->prevcp.y = y;
+	cur->last->nextcp = sp->prevcp;
+	cur->last->nonextcp = sp->noprevcp = false;
+	SplineMake(cur->last,sp,false);
+	cur->last = sp;
+	if ( rx<2*width ) {
+	    sp = SplinePointCreate(x+rx,y);
+	    SplineMake(cur->last,sp,false);
+	    cur->last = sp;
+	}
+	cur->last->nextcp.x = x; cur->last->nextcp.y = y;
+	cur->last->nonextcp = false;
+	if ( ry>=2*height ) {
+	    cur->first->prevcp = cur->last->nextcp;
+	    cur->first->noprevcp = false;
+	} else {
+	    sp = SplinePointCreate(x,y+ry);
+	    sp->prevcp = cur->last->nextcp;
+	    sp->noprevcp = false;
+	    SplineMake(cur->last,sp,false);
+	    cur->last = sp;
+	}
+	SplineMake(cur->last,cur->first,false);
+	cur->first = cur->last;
+return( cur );
+    }
+}
+
+static SplineSet *SVGParseLine(xmlNodePtr line) {
+	/* x1,y1, x2,y2 */
+    double x,y, x2,y2;
+    char *num;
+    SplinePoint *sp1, *sp2;
+    SplineSet *cur;
+
+    num = _xmlGetProp(line,"x1");
+    if ( num!=NULL ) {
+	x = strtod((char *) num,NULL);
+	_xmlFree(num);
+    } else
+	x = 0;
+    num = _xmlGetProp(line,"x2");
+    if ( num!=NULL ) {
+	x2 = strtod((char *) num,NULL);
+	_xmlFree(num);
+    } else
+	x2 = 0;
+    num = _xmlGetProp(line,"y1");
+    if ( num!=NULL ) {
+	y = strtod((char *) num,NULL);
+	_xmlFree(num);
+    } else
+	y = 0;
+    num = _xmlGetProp(line,"y2");
+    if ( num!=NULL ) {
+	y2 = strtod((char *) num,NULL);
+	_xmlFree(num);
+    } else
+	y2 = 0;
+
+    sp1 = SplinePointCreate(x,y);
+    sp2 = SplinePointCreate(x2,y2);
+    SplineMake(sp1,sp2,false);
+    cur = chunkalloc(sizeof(SplineSet));
+    cur->first = sp1;
+    cur->last = sp2;
+return( cur );
+}
+
+static SplineSet *SVGParseEllipse(xmlNodePtr ellipse, int iscircle) {
+	/* cx,cy,rx,ry */
+	/* cx,cy,r */
+    double cx,cy,rx,ry;
+    char *num;
+    SplinePoint *sp;
+    SplineSet *cur;
+
+    num = _xmlGetProp(ellipse,"cx");
+    if ( num!=NULL ) {
+	cx = strtod((char *) num,NULL);
+	_xmlFree(num);
+    } else
+	cx = 0;
+    num = _xmlGetProp(ellipse,"cy");
+    if ( num!=NULL ) {
+	cy = strtod((char *) num,NULL);
+	_xmlFree(num);
+    } else
+	cy = 0;
+    if ( iscircle ) {
+	num = _xmlGetProp(ellipse,"r");
+	if ( num!=NULL ) {
+	    rx = ry = strtod((char *) num,NULL);
+	    _xmlFree(num);
+	} else
+return( NULL );
+    } else {
+	num = _xmlGetProp(ellipse,"rx");
+	if ( num!=NULL ) {
+	    rx = strtod((char *) num,NULL);
+	    _xmlFree(num);
+	} else
+return( NULL );
+	num = _xmlGetProp(ellipse,"ry");
+	if ( num!=NULL ) {
+	    ry = strtod((char *) num,NULL);
+	    _xmlFree(num);
+	} else
+return( NULL );
+    }
+    if ( rx<0 ) rx = -rx;
+    if ( ry<0 ) ry = -ry;
+
+    cur = chunkalloc(sizeof(SplineSet));
+    cur->first = SplinePointCreate(cx-rx,cy);
+    cur->last = SplinePointCreate(cx,cy+ry);
+    cur->first->nextcp.x = cx-rx; cur->first->nextcp.y = cy+ry;
+    cur->last->prevcp = cur->first->nextcp;
+    cur->first->noprevcp = cur->first->nonextcp = false;
+    cur->last->noprevcp = cur->last->nonextcp = false;
+    SplineMake(cur->first,cur->last,true);
+    sp = SplinePointCreate(cx+rx,cy);
+    sp->prevcp.x = cx+rx; sp->prevcp.y = cy+ry;
+    sp->nextcp.x = cx+rx; sp->nextcp.y = cy-ry;
+    sp->nonextcp = sp->noprevcp = false;
+    cur->last->nextcp = sp->prevcp;
+    SplineMake(cur->last,sp,true);
+    cur->last = sp;
+    sp = SplinePointCreate(cx,cy-ry);
+    sp->prevcp = cur->last->nextcp;
+    sp->nextcp.x = cx-rx; sp->nextcp.y = cy-ry;
+    sp->nonextcp = sp->noprevcp = false;
+    cur->first->prevcp = sp->nextcp;
+    SplineMake(cur->last,sp,true);
+    SplineMake(sp,cur->first,true);
+    cur->last = cur->first;
+return( cur );
+}
+
+static SplineSet *SVGParsePoly(xmlNodePtr poly, int isgon) {
+	/* points */
+    double x,y;
+    char *pts, *end;
+    SplinePoint *sp;
+    SplineSet *cur;
+
+    pts = (char *) _xmlGetProp(poly,"points");
+    if ( pts==NULL )
+return( NULL );
+
+    x = strtod(pts,&end);
+    if ( *end!=',' ) {
+	_xmlFree(pts);
+return( NULL );
+    }
+    y = strtod(end+1,&end);
+    while ( isspace(*end)) ++end;
+
+    cur = chunkalloc(sizeof(SplineSet));
+    cur->first = cur->last = SplinePointCreate(x,y);
+    while ( *end ) {
+	x = strtod(end,&end);
+	if ( *end!=',' ) {
+	    _xmlFree(pts);
+	    SplinePointListFree(cur);
+return( NULL );
+	}
+	y = strtod(end+1,&end);
+	while ( isspace(*end)) ++end;
+	sp = SplinePointCreate(x,y);
+	SplineMake(cur->last,sp,false);
+	cur->last = sp;
+    }
+    if ( isgon ) {
+	if ( RealNear(cur->last->me.x,cur->first->me.x) &&
+		RealNear(cur->last->me.y,cur->first->me.y) ) {
+	    cur->first->prev = cur->last->prev;
+	    cur->first->prev->to = cur->first;
+	    SplinePointFree(cur->last);
+	} else
+	    SplineMake(cur->last,cur->first,false);
+	cur->last = cur->first;
+    }
+return( cur );
+}
+
+struct svg_state {
+    double linewidth;
+    int dofill, dostroke;
+    int isvisible;
+    enum linecap lc;
+    enum linejoin lj;
+    real transform[6];
+};
+
+/* It is not clear to me from the spec whether the comma is required or not */
+/*  in a transform list */
+static char *skipcomma(char *pt) {
+    while ( isspace(*pt))++pt;
+    if ( *pt==',' ) ++pt;
+return( pt );
+}
+
+static void SVGFigureTransform(struct svg_state *st,char *name) {
+    real trans[6], res[6];
+    double a, cx,cy;
+    char *pt, *paren, *end;
+	/* matrix(a,b,c,d,e,f)
+	   rotate(theta[,cx,cy])
+	   scale(sx[,sy])
+	   translate(x,y)
+	   skewX(theta)
+	   skewY(theta)
+	  */
+
+    for ( pt = (char *)name; isspace(*pt); ++pt );
+    while ( *pt ) {
+	paren = strchr(pt,'(');
+	if ( paren==NULL )
+    break;
+	if ( strncmp(pt,"matrix",paren-pt)==0 ) {
+	    trans[0] = strtod(paren+1,&end);
+	    trans[1] = strtod(skipcomma(end),&end);
+	    trans[2] = strtod(skipcomma(end),&end);
+	    trans[3] = strtod(skipcomma(end),&end);
+	    trans[4] = strtod(skipcomma(end),&end);
+	    trans[5] = strtod(skipcomma(end),&end);
+	} else if ( strncmp(pt,"rotate",paren-pt)==0 ) {
+	    /* The rotations in the svg spec seem backwards to me */
+	    /*  perhaps the angle is measured clockwise */
+	    trans[4] = trans[5] = 0;
+	    a = -strtod(paren+1,&end)*3.1415926535897932/180;
+	    trans[0] = trans[3] = cos(a);
+	    trans[1] = sin(a);
+	    trans[2] = -trans[1];
+	    while ( isspace(*end)) ++end;
+	    if ( *end!=')' ) {
+		cx = strtod(skipcomma(end),&end);
+		cy = strtod(skipcomma(end),&end);
+		res[0] = res[3] = 1;
+		res[1] = res[2] = 0;
+		res[4] = cx; res[5] = cy;
+		MatMultiply(res,trans,res);
+		trans[0] = trans[3] = 1;
+		trans[1] = trans[2] = 0;
+		trans[4] = -cx; trans[5] = -cy;
+		MatMultiply(res,trans,res);
+		memcpy(trans,res,sizeof(res));
+	    }
+	} else if ( strncmp(pt,"scale",paren-pt)==0 ) {
+	    trans[1] = trans[2] = trans[4] = trans[5] = 0;
+	    trans[0] = trans[3] = strtod(paren+1,&end);
+	    while ( isspace(*end)) ++end;
+	    if ( *end!=')' )
+		trans[5] = strtod(skipcomma(end),&end);
+	} else if ( strncmp(pt,"translate",paren-pt)==0 ) {
+	    trans[0] = trans[3] = 1;
+	    trans[1] = trans[2] = trans[5] = 0;
+	    trans[4] = strtod(paren+1,&end);
+	    while ( isspace(*end)) ++end;
+	    if ( *end!=')' )
+		trans[5] = strtod(skipcomma(end),&end);
+	} else if ( strncmp(pt,"skewX",paren-pt)==0 ) {
+	    trans[0] = trans[3] = 1;
+	    trans[1] = trans[2] = trans[4] = trans[5] = 0;
+	    trans[2] = tan(strtod(paren+1,&end)*3.1415926535897932/180);
+	} else if ( strncmp(pt,"skewY",paren-pt)==0 ) {
+	    trans[0] = trans[3] = 1;
+	    trans[1] = trans[2] = trans[4] = trans[5] = 0;
+	    trans[1] = tan(strtod(paren+1,&end)*3.1415926535897932/180);
+	} else
+    break;
+	while ( isspace(*end)) ++end;
+	if ( *end!=')')
+    break;
+	MatMultiply(trans,st->transform,st->transform);
+	pt = end+1;
+	while ( isspace(*pt)) ++pt;
+    }
+}
+
+static void SVGuseTransform(struct svg_state *st,xmlNodePtr use, xmlNodePtr symbol) {
+    double x,y,uwid,uheight,swid,sheight;
+    char *num, *end;
+    real trans[6];
+
+    num = _xmlGetProp(use,"x");
+    if ( num!=NULL ) {
+	x = strtod((char *) num,NULL);
+	_xmlFree(num);
+    } else
+	x = 0;
+    num = _xmlGetProp(use,"y");
+    if ( num!=NULL ) {
+	y = strtod((char *) num,NULL);
+	_xmlFree(num);
+    } else
+	y = 0;
+    if ( x!=0 || y!=0 ) {
+	trans[0] = trans[3] = 1;
+	trans[1] = trans[2] = 0;
+	trans[4] = x; trans[5] = y;
+	MatMultiply(trans,st->transform,st->transform);
+    }
+    num = _xmlGetProp(use,"width");
+    if ( num!=NULL ) {
+	uwid = strtod((char *) num,NULL);
+	_xmlFree(num);
+    } else
+	uwid = 0;
+    num = _xmlGetProp(use,"height");
+    if ( num!=NULL ) {
+	uheight = strtod((char *) num,NULL);
+	_xmlFree(num);
+    } else
+	uheight = 0;
+    num = _xmlGetProp(symbol,"viewBox");
+    if ( num!=NULL ) {
+	x = strtod((char *) num,&end);
+	y = strtod((char *) end+1,&end);
+	swid = strtod((char *) end+1,&end);
+	sheight = strtod((char *) end+1,&end);
+	_xmlFree(num);
+    } else
+return;
+    if ( uwid != 0 || uheight != 0 ) {
+	trans[0] = trans[3] = 1;
+	trans[1] = trans[2] = trans[4] = trans[5] = 0;
+	if ( uwid != 0 && swid!=0 ) trans[0] = uwid/swid;
+	if ( uheight != 0 && sheight!=0 ) trans[3] = uheight/sheight;
+	MatMultiply(trans,st->transform,st->transform);
+    }
+}
+
+static SplineSet *_SVGParseSVG(xmlNodePtr svg, xmlNodePtr top,
+	struct svg_state *inherit) {
+    struct svg_state st;
+    xmlChar *name;
+    xmlNodePtr kid;
+    SplineSet *head, *last, *ret;
+    int treat_symbol_as_g = false;
+
+    if ( svg==NULL )
+return( NULL );
+
+    st = *inherit;
+  tail_recurse:
+    name = _xmlGetProp(svg,"display");
+    if ( name!=NULL ) {
+	int hide = _xmlStrcmp(name,(xmlChar *) "none")==0;
+	_xmlFree(name);
+	if ( hide )
+return( NULL );
+    }
+    name = _xmlGetProp(svg,"visibility");
+    if ( name!=NULL ) {
+	st.isvisible = _xmlStrcmp(name,(xmlChar *) "hidden")!=0 &&
+		_xmlStrcmp(name,(xmlChar *) "colapse")!=0;
+	_xmlFree(name);
+    }
+    name = _xmlGetProp(svg,"fill");
+    if ( name!=NULL ) {
+	st.dofill = _xmlStrcmp(name,(xmlChar *) "none")!=0;
+	_xmlFree(name);
+    }
+    name = _xmlGetProp(svg,"stroke");
+    if ( name!=NULL ) {
+	st.dostroke = _xmlStrcmp(name,(xmlChar *) "none")!=0;
+	_xmlFree(name);
+    }
+    name = _xmlGetProp(svg,"stroke-width");
+    if ( name!=NULL ) {
+	st.linewidth = strtod((char *)name,NULL);
+	_xmlFree(name);
+    }
+    name = _xmlGetProp(svg,"stroke-linecap");
+    if ( name!=NULL ) {
+	st.lc = _xmlStrcmp(name,(xmlChar *) "butt") ? lc_butt :
+		     _xmlStrcmp(name,(xmlChar *) "round") ? lc_round :
+		     lc_square;
+	_xmlFree(name);
+    }
+    name = _xmlGetProp(svg,"stroke-linejoin");
+    if ( name!=NULL ) {
+	st.lc = _xmlStrcmp(name,(xmlChar *) "miter") ? lj_miter :
+		     _xmlStrcmp(name,(xmlChar *) "round") ? lj_round :
+		     lj_bevel;
+	_xmlFree(name);
+    }
+    name = _xmlGetProp(svg,"transform");
+    if ( name!=NULL ) {
+	SVGFigureTransform(&st,name);
+	_xmlFree(name);
+    }
+
+    if ( (treat_symbol_as_g && _xmlStrcmp(svg->name,(xmlChar *) "symbol")==0) ||
+	    _xmlStrcmp(svg->name,(xmlChar *) "svg")==0 ||
+	    _xmlStrcmp(svg->name,(xmlChar *) "g")==0 ) {
+	head = last = NULL;
+	for ( kid = svg->children; kid!=NULL; kid=kid->next ) {
+	    ret = _SVGParseSVG(kid,top,&st);
+	    if ( ret!=NULL ) {
+		if ( last==NULL )
+		    head = ret;
+		else
+		    last->next = ret;
+		while ( ret->next!=NULL ) ret = ret->next;
+		last = ret;
+	    }
+	}
+return( head );
+    } else if ( _xmlStrcmp(svg->name,(xmlChar *) "use")==0 ) {
+	name = _xmlGetProp(svg,"href");
+	kid = NULL;
+	if ( name!=NULL && *name=='#' ) {	/* Within this file */
+	    kid = XmlFindID(top,name+1);
+	    treat_symbol_as_g = true;
+	}
+	SVGuseTransform(&st,svg,kid);
+	svg = kid;
+	if ( name!=NULL )
+	    _xmlFree(name);
+	if ( svg!=NULL )
+  goto tail_recurse;
+return( NULL );
+    }
+
+    if ( !st.isvisible )
+return( NULL );
+
+    /* basic shapes */
+    head = NULL;
+    if ( _xmlStrcmp(svg->name,(xmlChar *) "path")==0 ) {
+	name = _xmlGetProp(svg,"d");
+	if ( name!=NULL ) {
+	    head = SVGParsePath(name);
+	    _xmlFree(name);
+	}
+    } else if ( _xmlStrcmp(svg->name,(xmlChar *) "rect")==0 ) {
+	head = SVGParseRect(svg);		/* x,y,width,height,rx,ry */
+    } else if ( _xmlStrcmp(svg->name,(xmlChar *) "circle")==0 ) {
+	head = SVGParseEllipse(svg,true);	/* cx,cy, r */
+    } else if ( _xmlStrcmp(svg->name,(xmlChar *) "ellipse")==0 ) {
+	head = SVGParseEllipse(svg,false);	/* cx,cy, rx,ry */
+    } else if ( _xmlStrcmp(svg->name,(xmlChar *) "line")==0 ) {
+	head = SVGParseLine(svg);		/* x1,y1, x2,y2 */
+    } else if ( _xmlStrcmp(svg->name,(xmlChar *) "polyline")==0 ) {
+	head = SVGParsePoly(svg,0);		/* points */
+    } else if ( _xmlStrcmp(svg->name,(xmlChar *) "polygon")==0 ) {
+	head = SVGParsePoly(svg,1);		/* points */
+    } else
+return( NULL );
+    if ( head==NULL )
+return( NULL );
+
+    SPLCatagorizePoints(head);
+
+    head = SplinePointListTransform(head,st.transform,true);
+    if ( !st.dostroke )		/* Pretend they asked for a fill even if they didn't */
+return( head );
+
+    { StrokeInfo si;
+	memset(&si,0,sizeof(si));
+	si.radius = st.linewidth/2;
+	si.join = st.lj;
+	si.cap = st.lc;
+	si.stroke_type = si_std;
+	ret = SSStroke(head,&si,NULL);
+	if ( !st.dofill )
+	    SplinePointListsFree(head);
+	else {
+	    for ( last=ret; last->next!=NULL ; last = last->next );
+	    last->next = head;
+	}
+return( ret );
+    }
+}
+
+static SplineSet *SVGParseSVG(xmlNodePtr svg,int em_size) {
+    struct svg_state st;
+    char *num, *end;
+    double x,y,swidth,sheight,width=1,height=1;
+
+    memset(&st,0,sizeof(st));
+    st.lc = lc_butt;
+    st.lj = lj_miter;
+    st.linewidth = 1;
+    st.isvisible = true;
+    st.transform[0] = st.transform[3] = 1;
+    num = _xmlGetProp(svg,"width");
+    if ( num!=NULL ) {
+	width = strtod(num,NULL);
+	_xmlFree(num);
+    }
+    num = _xmlGetProp(svg,"height");
+    if ( num!=NULL ) {
+	height = strtod(num,NULL);
+	_xmlFree(num);
+    }
+    if ( height<=0 ) height = 1;
+    if ( width<=0 ) width = 1;
+    num = _xmlGetProp(svg,"viewBox");
+    if ( num!=NULL ) {
+	x = strtod((char *) num,&end);
+	y = strtod((char *) end+1,&end);
+	swidth = strtod((char *) end+1,&end);
+	sheight = strtod((char *) end+1,&end);
+	_xmlFree(num);
+	if ( width>height ) {
+	    if ( swidth!=0 ) st.transform[0] *= em_size/swidth;
+	    if ( sheight!=0 ) st.transform[3] *= em_size/(sheight*width/height);
+	} else {
+	    if ( swidth!=0 ) st.transform[0] *= em_size/(swidth*height/width);
+	    if ( sheight!=0 ) st.transform[3] *= em_size/sheight;
+	}
+    }
+return( _SVGParseSVG(svg,svg,&st));
+}
+
+static void SVGParseGlyphBody(SplineChar *sc, xmlNodePtr glyph) {
+    xmlChar *path;
+
+    path = _xmlGetProp(glyph,"d");
+    if ( path!=NULL ) {
+	sc->splines = SVGParsePath(path);
+	_xmlFree(path);
+    } else
+	sc->splines = SVGParseSVG(glyph,sc->parent->ascent+sc->parent->descent);
+}
+
+static SplineChar *SVGParseGlyphArgs(xmlNodePtr glyph,int defh, int defv) {
+    SplineChar *sc = SplineCharCreate();
+    xmlChar *name, *form, *glyphname, *unicode, *orientation;
+    int32 *u;
+    char buffer[100];
+
+    name = _xmlGetProp(glyph,"horiz-adv-x");
+    if ( name!=NULL ) {
+	sc->width = strtod(name,NULL);
+	_xmlFree(name);
+    } else
+	sc->width = defh;
+    name = _xmlGetProp(glyph,"vert-adv-y");
+    if ( name!=NULL ) {
+	sc->vwidth = strtod(name,NULL);
+	_xmlFree(name);
+    } else
+	sc->vwidth = defv;
+    name = _xmlGetProp(glyph,"vert-adv-y");
+    if ( name!=NULL ) {
+	sc->vwidth = strtod(name,NULL);
+	_xmlFree(name);
+    } else
+	sc->vwidth = defv;
+
+    form = _xmlGetProp(glyph,"arabic-form");
+    unicode = _xmlGetProp(glyph,"unicode");
+    glyphname = _xmlGetProp(glyph,"glyph-name");
+    orientation = _xmlGetProp(glyph,"orientation");
+    if ( unicode!=NULL ) {
+	u = utf82u32_copy((char *) unicode);
+	_xmlFree(unicode);
+	if ( u[1]=='\0' ) {
+	    sc->unicodeenc = u[0];
+	    if ( form!=NULL && u[0]>=0x600 && u[0]<=0x6ff ) {
+		if ( _xmlStrcmp(form,"initial")==0 )
+		    sc->unicodeenc = ArabicForms[u[0]-0x600].initial;
+		else if ( _xmlStrcmp(form,"medial")==0 )
+		    sc->unicodeenc = ArabicForms[u[0]-0x600].medial;
+		else if ( _xmlStrcmp(form,"final")==0 )
+		    sc->unicodeenc = ArabicForms[u[0]-0x600].final;
+		else if ( _xmlStrcmp(form,"isolated")==0 )
+		    sc->unicodeenc = ArabicForms[u[0]-0x600].isolated;
+	    }
+	}
+	free(u);
+    }
+    if ( glyphname!=NULL ) {
+	if ( sc->unicodeenc==-1 )
+	    sc->unicodeenc = UniFromName((char *) glyphname);
+	sc->name = copy(glyphname);
+	_xmlFree(glyphname);
+    } else if ( orientation!=NULL && *orientation=='v' && sc->unicodeenc!=-1 ) {
+	if ( sc->unicodeenc<0x10000 )
+	    sprintf( buffer, "uni%04X.vert", sc->unicodeenc );
+	else
+	    sprintf( buffer, "u%04X.vert", sc->unicodeenc );
+	sc->name = copy( buffer );
+    }
+    /* we finish off defaulting the glyph name in the parseglyph routine */
+    if ( form!=NULL )
+	_xmlFree(form);
+    if ( orientation!=NULL )
+	_xmlFree(orientation);
+return( sc );
+}
+
+static SplineChar *SVGParseMissing(SplineFont *sf,xmlNodePtr notdef,int defh, int defv, int enc) {
+    SplineChar *sc = SVGParseGlyphArgs(notdef,defh,defv);
+    sc->parent = sf; sc->enc = enc;
+    sc->name = copy(".notdef");
+    sc->unicodeenc = 0;
+    SVGParseGlyphBody(sc,notdef);
+return( sc );
+}
+
+static SplineChar *SVGParseGlyph(SplineFont *sf,xmlNodePtr glyph,int defh, int defv, int enc) {
+    char buffer[40];
+    SplineChar *sc = SVGParseGlyphArgs(glyph,defh,defv);
+    sc->parent = sf; sc->enc = enc;
+    if ( sc->name==NULL ) {
+	if ( sc->unicodeenc==-1 )
+	    sprintf( buffer, "glyph%d", enc);
+	else if ( sc->unicodeenc>=0x10000 )
+	    sprintf( buffer, "u%04X", sc->unicodeenc );
+	else if ( psunicodenames[sc->unicodeenc]!=NULL )
+	    strcpy(buffer,psunicodenames[sc->unicodeenc]);
+	else
+	    sprintf( buffer, "uni%04X", sc->unicodeenc );
+	sc->name = copy(buffer);
+    }
+    SVGParseGlyphBody(sc,glyph);
+return( sc );
+}
+
+static PST *AddLig(PST *last,uint32 tag,char *components,SplineChar *first) {
+    PST *lig = chunkalloc(sizeof(PST));
+    lig->tag = tag;
+    lig->flags = PSTDefaultFlags(pst_ligature,first);
+    lig->type = pst_ligature;
+    lig->script_lang_index = SFAddScriptLangIndex(first->parent,
+			SCScriptFromUnicode(first),DEFAULT_LANG);
+    lig->next = last;
+    lig->u.lig.components = copy(components);
+return( lig );
+}
+
+static void SVGLigatureFixupCheck(SplineChar *sc,xmlNodePtr glyph) {
+    xmlChar *unicode;
+    int32 *u;
+    int len, len2;
+    SplineChar **chars, *any = NULL;
+    char *comp, *pt;
+
+    unicode = _xmlGetProp(glyph,"unicode");
+    if ( unicode!=NULL ) {
+	u = utf82u32_copy((char *) unicode);
+	_xmlFree(unicode);
+	if ( u[1]!='\0' ) {
+	    for ( len=0; u[len]!=0; ++len );
+	    chars = galloc(len*sizeof(SplineChar *));
+	    for ( len=len2=0; u[len]!=0; ++len ) {
+		chars[len] = SFGetChar(sc->parent,u[len],NULL);
+		if ( chars[len]==NULL )
+		    len2 += 9;
+		else {
+		    len2 += strlen(chars[len]->name);
+		    if ( any==NULL ) any = chars[len];
+		}
+	    }
+	    if ( any==NULL ) any=sc;
+	    comp = pt = galloc(len2+1);
+	    *pt = '\0';
+	    for ( len=0; u[len]!=0; ++len ) {
+		if ( chars[len]!=NULL )
+		    strcpy(pt,chars[len]->name);
+		else if ( u[len]<0x10000 )
+		    sprintf(pt,"uni%04X", u[len]);
+		else
+		    sprintf(pt,"u%04X", u[len]);
+		pt += strlen(pt);
+		if ( u[len+1]!='\0' )
+		    *pt++ = ' ';
+	    }
+	    sc->possub = AddLig(sc->possub,CHR('l','i','g','a'),comp,any);
+		/* Understand the unicode latin ligatures. There are too many */
+		/*  arabic ones */
+	    if ( u[0]=='f' ) {
+		if ( u[1]=='f' && u[2]==0 )
+		    sc->unicodeenc = 0xfb00;
+		else if ( u[1]=='i' && u[2]==0 )
+		    sc->unicodeenc = 0xfb01;
+		else if ( u[1]=='l' && u[2]==0 )
+		    sc->unicodeenc = 0xfb02;
+		else if ( u[1]=='f' && u[2]=='i' && u[3]==0 )
+		    sc->unicodeenc = 0xfb03;
+		else if ( u[1]=='f' && u[2]=='l' && u[3]==0 )
+		    sc->unicodeenc = 0xfb04;
+		else if ( u[1]=='t' && u[2]==0 )
+		    sc->unicodeenc = 0xfb05;
+	    } else if ( u[0]=='s' && u[1]=='t' && u[2]==0 )
+		sc->unicodeenc = 0xfb06;
+	    if ( strncmp(sc->name,"glyph",5)==0 && isdigit(sc->name[5])) {
+		/* It's a default name, we can do better */
+		free(sc->name);
+		sc->name = copy(comp);
+		for ( pt = sc->name; *pt; ++pt )
+		    if ( *pt==' ' ) *pt = '_';
+	    }
+	}
+    }
+}
+
+static char *SVGGetNames(SplineFont *sf,xmlChar *g,xmlChar *utf8,SplineChar **sc) {
+    int32 *u=NULL;
+    char *names;
+    int len, i, ch;
+    SplineChar *temp;
+    char *pt, *gpt;
+
+    *sc = NULL;
+    len = 0;
+    if ( utf8!=NULL ) {
+	u = utf82u32_copy(utf8);
+	for ( i=0; u[i]!=0; ++i ) {
+	    temp = SFGetChar(sf,u[i],NULL);
+	    if ( temp!=NULL ) {
+		if ( *sc!=NULL ) *sc = temp;
+		len = strlen(temp->name)+1;
+	    }
+	}
+    }
+    names = pt = galloc(len+(g!=NULL?strlen((char *)g):0)+1);
+    if ( utf8!=NULL ) {
+	for ( i=0; u[i]!=0; ++i ) {
+	    temp = SFGetChar(sf,u[i],NULL);
+	    if ( temp!=NULL ) {
+		strcpy(pt,temp->name);
+		pt += strlen( pt );
+		*pt++ = ' ';
+	    }
+	}
+	free(u);
+    }
+    if ( g!=NULL ) {
+	for ( gpt=(char *) g; *gpt; ) {
+	    if ( *gpt==',' || isspace(*gpt)) {
+		while ( *gpt==',' || isspace(*gpt)) ++gpt;
+		*pt++ = ' ';
+	    } else {
+		*pt++ = *gpt++;
+	    }
+	}
+	if ( *sc==NULL ) {
+	    for ( gpt = (char *) g; *gpt!='\0' && *gpt!=',' && !isspace(*gpt); ++gpt );
+	    ch = *gpt; *gpt = '\0';
+	    *sc = SFGetChar(sf,-1,(char *) g);
+	    *gpt = ch;
+	}
+    }
+    if ( pt>names && pt[-1]==' ' ) --pt;
+    *pt = '\0';
+return( names );
+}
+
+static void SVGParseHKern(SplineFont *sf,xmlNodePtr kern) {
+    xmlChar *k, *g1, *u1, *g2, *u2;
+    double off;
+    char *c1, *c2;
+    SplineChar *sc1, *sc2;
+
+    k = _xmlGetProp(kern,"k");
+    if ( k==NULL )
+return;
+    off = -strtod((char *)k, NULL);
+    _xmlFree(k);
+    if ( off==0 )
+return;
+
+    g1 = _xmlGetProp(kern,"g1");
+    u1 = _xmlGetProp(kern,"u1");
+    if ( g1==NULL && u1==NULL )
+return;
+    c1 = SVGGetNames(sf,g1,u1,&sc1);
+    if ( g1!=NULL ) _xmlFree(g1);
+    if ( u1!=NULL ) _xmlFree(u1);
+
+    g2 = _xmlGetProp(kern,"g2");
+    u2 = _xmlGetProp(kern,"u2");
+    if ( g2==NULL && u2==NULL ) {
+	free(c1);
+return;
+    }
+    c2 = SVGGetNames(sf,g2,u2,&sc2);
+    if ( g2!=NULL ) _xmlFree(g2);
+    if ( u2!=NULL ) _xmlFree(u2);
+
+    if ( strchr(c1,' ')==NULL && strchr(c2,' ')==NULL ) {
+	KernPair *kp = chunkalloc(sizeof(KernPair));
+	kp->sc = sc2;
+	kp->off = off;
+	kp->next = sc1->kerns;
+	sc1->kerns = kp;
+	free(c1); free(c2);
+    } else {
+	KernClass *kc = chunkalloc(sizeof(KernClass));
+	kc->next = sf->kerns;
+	sf->kerns = kc;
+	kc->first_cnt = kc->second_cnt = 2;
+	kc->firsts = gcalloc(2,sizeof(char *));
+	kc->firsts[1] = c1;
+	kc->seconds = gcalloc(2,sizeof(char *));
+	kc->seconds[1] = c2;
+	kc->offsets = gcalloc(4,sizeof(int16));
+	kc->offsets[3] = off;
+	kc->flags = ((sc1!=NULL && SCRightToLeft(sc1)) ||
+			(sc1==NULL && sc2!=NULL && SCRightToLeft(sc2)))? pst_r2l : 0;
+	if ( sc1!=NULL || sc2!=NULL )
+	    kc->sli = SCDefaultSLI(sf,sc1!=NULL ? sc1 : sc2 );
+    }
+}
+
+static SplineFont *SVGParseFont(xmlNodePtr font) {
+    int cnt;
+    xmlNodePtr kids;
+    int defh=0, defv=0;
+    xmlChar *name;
+    SplineFont *sf;
+
+    sf = SplineFontEmpty();
+    name = _xmlGetProp(font,"horiz-adv-x");
+    if ( name!=NULL ) {
+	defh = strtod(name,NULL);
+	_xmlFree(name);
+    }
+    name = _xmlGetProp(font,"vert-adv-y");
+    if ( name!=NULL ) {
+	defv = strtod(name,NULL);
+	_xmlFree(name);
+	sf->hasvmetrics = true;
+    }
+    name = _xmlGetProp(font,"id");
+    if ( name!=NULL ) {
+	sf->fontname = copy( (char *) name);
+	_xmlFree(name);
+    }
+
+    cnt = 0;
+    for ( kids = font->children; kids!=NULL; kids=kids->next ) {
+	int ascent=0, descent=0;
+	if ( _xmlStrcmp(kids->name,(const xmlChar *) "font-face")==0 ) {
+	    name = _xmlGetProp(kids,"units-per-em");
+	    if ( name!=NULL ) {
+		int val = rint(strtod(name,NULL));
+		_xmlFree(name);
+		if ( val<0 ) val = 0;
+		sf->ascent = val*800/1000;
+		sf->descent = val - sf->ascent;
+		if ( defv==0 ) defv = val;
+		if ( defh==0 ) defh = val;
+		SFDefaultOS2Simple(&sf->pfminfo,sf);
+	    } else {
+		fprintf( stderr, "This font does not specify units-per-em\n" );
+		SplineFontFree(sf);
+return( NULL );
+	    }
+	    name = _xmlGetProp(kids,"font-family");
+	    if ( name!=NULL ) {
+		if ( strchr(name,',')!=NULL )
+		    *strchr(name,',') ='\0';
+		sf->familyname = copy( (char *) name);
+		_xmlFree(name);
+	    }
+	    name = _xmlGetProp(kids,"font-weight");
+	    if ( name!=NULL ) {
+		if ( strnmatch(name,"normal",6)==0 ) {
+		    sf->pfminfo.weight = 400;
+		    sf->weight = copy("Regular");
+		    sf->pfminfo.panose[2] = 5;
+		} else if ( strnmatch(name,"bold",4)==0 ) {
+		    sf->pfminfo.weight = 700;
+		    sf->weight = copy("Bold");
+		    sf->pfminfo.panose[2] = 8;
+		} else {
+		    sf->pfminfo.weight = strtod(name,NULL);
+		    if ( sf->pfminfo.weight <= 100 ) {
+			sf->weight = copy("Thin");
+			sf->pfminfo.panose[2] = 2;
+		    } else if ( sf->pfminfo.weight <= 200 ) {
+			sf->weight = copy("Extra-Light");
+			sf->pfminfo.panose[2] = 3;
+		    } else if ( sf->pfminfo.weight <= 300 ) {
+			sf->weight = copy("Light");
+			sf->pfminfo.panose[2] = 4;
+		    } else if ( sf->pfminfo.weight <= 400 ) {
+			sf->weight = copy("Regular");
+			sf->pfminfo.panose[2] = 5;
+		    } else if ( sf->pfminfo.weight <= 500 ) {
+			sf->weight = copy("Medium");
+			sf->pfminfo.panose[2] = 6;
+		    } else if ( sf->pfminfo.weight <= 600 ) {
+			sf->weight = copy("DemiBold");
+			sf->pfminfo.panose[2] = 7;
+		    } else if ( sf->pfminfo.weight <= 700 ) {
+			sf->weight = copy("Bold");
+			sf->pfminfo.panose[2] = 8;
+		    } else if ( sf->pfminfo.weight <= 800 ) {
+			sf->weight = copy("Heavy");
+			sf->pfminfo.panose[2] = 9;
+		    } else {
+			sf->weight = copy("Black");
+			sf->pfminfo.panose[2] = 10;
+		    }
+		}
+		_xmlFree(name);
+	    }
+	    name = _xmlGetProp(kids,"font-stretch");
+	    if ( name!=NULL ) {
+		if ( strnmatch(name,"normal",6)==0 ) {
+		    sf->pfminfo.panose[3] = 3;
+		    sf->pfminfo.width = 5;
+		} else if ( strmatch(name,"ultra-condensed")==0 ) {
+		    sf->pfminfo.panose[3] = 8;
+		    sf->pfminfo.width = 1;
+		} else if ( strmatch(name,"extra-condensed")==0 ) {
+		    sf->pfminfo.panose[3] = 8;
+		    sf->pfminfo.width = 2;
+		} else if ( strmatch(name,"condensed")==0 ) {
+		    sf->pfminfo.panose[3] = 6;
+		    sf->pfminfo.width = 3;
+		} else if ( strmatch(name,"semi-condensed")==0 ) {
+		    sf->pfminfo.panose[3] = 6;
+		    sf->pfminfo.width = 4;
+		} else if ( strmatch(name,"ultra-expanded")==0 ) {
+		    sf->pfminfo.panose[3] = 7;
+		    sf->pfminfo.width = 9;
+		} else if ( strmatch(name,"extra-expanded")==0 ) {
+		    sf->pfminfo.panose[3] = 7;
+		    sf->pfminfo.width = 8;
+		} else if ( strmatch(name,"expanded")==0 ) {
+		    sf->pfminfo.panose[3] = 5;
+		    sf->pfminfo.width = 7;
+		} else if ( strmatch(name,"semi-expanded")==0 ) {
+		    sf->pfminfo.panose[3] = 5;
+		    sf->pfminfo.width = 6;
+		}
+		_xmlFree(name);
+	    }
+	    name = _xmlGetProp(kids,"panose-1");
+	    if ( name!=NULL ) {
+		char *pt, *end;
+		int i;
+		for ( i=0, pt=name; i<10 && *pt; pt = end, ++i ) {
+		    sf->pfminfo.panose[i] = strtol(pt,&end,10);
+		}
+	    }
+	    name = _xmlGetProp(kids,"slope");
+	    if ( name!=NULL ) {
+		sf->italicangle = -strtod(name,NULL);
+		_xmlFree(name);
+	    }
+	    name = _xmlGetProp(kids,"underline-position");
+	    if ( name!=NULL ) {
+		sf->upos = strtod(name,NULL);
+		_xmlFree(name);
+	    }
+	    name = _xmlGetProp(kids,"underline-thickness");
+	    if ( name!=NULL ) {
+		sf->uwidth = strtod(name,NULL);
+		_xmlFree(name);
+	    }
+	    name = _xmlGetProp(kids,"ascent");
+	    if ( name!=NULL ) {
+		ascent = strtod(name,NULL);
+		_xmlFree(name);
+	    }
+	    name = _xmlGetProp(kids,"descent");
+	    if ( name!=NULL ) {
+		descent = strtod(name,NULL);
+		_xmlFree(name);
+	    }
+	    if ( ascent-descent==sf->ascent+sf->descent ) {
+		sf->ascent = ascent;
+		sf->descent = -descent;
+	    }
+	    sf->pfminfo.pfmset = true;
+	} else if ( _xmlStrcmp(kids->name,(const xmlChar *) "glyph")==0 ||
+		_xmlStrcmp(kids->name,(const xmlChar *) "missing-glyph")==0 )
+	    ++cnt;
+    }
+    if ( sf->descent==0 ) {
+	fprintf( stderr, "This font does not specify font-face\n" );
+	SplineFontFree(sf);
+return( NULL );
+    }
+    if ( sf->weight==NULL )
+	sf->weight = copy("Regular");
+    if ( sf->fontname==NULL && sf->familyname==NULL )
+	sf->fontname = GetNextUntitledName();
+    if ( sf->familyname==NULL )
+	sf->familyname = copy(sf->fontname);
+    if ( sf->fontname==NULL )
+	sf->fontname = copy(sf->familyname);
+    sf->fullname = copy(sf->fontname);
+
+    GProgressChangeTotal(cnt);
+    sf->charcnt = cnt;
+    sf->chars = galloc(cnt*sizeof(SplineChar *));
+    sf->encoding_name = em_original;
+
+    cnt = 0;
+    for ( kids = font->children; kids!=NULL; kids=kids->next ) {
+	if ( _xmlStrcmp(kids->name,(const xmlChar *) "missing-glyph")==0 ) {
+	    sf->chars[cnt++] = SVGParseMissing(sf,kids,defh,defv,cnt);
+	    GProgressNext();
+	} else if ( _xmlStrcmp(kids->name,(const xmlChar *) "glyph")==0 ) {
+	    sf->chars[cnt++] = SVGParseGlyph(sf,kids,defh,defv,cnt);
+	    GProgressNext();
+	}
+    }
+    cnt = 0;
+    for ( kids = font->children; kids!=NULL; kids=kids->next ) {
+	if ( _xmlStrcmp(kids->name,(const xmlChar *) "hkern")==0 ) {
+	    SVGParseHKern(sf,kids);
+	} else if ( _xmlStrcmp(kids->name,(const xmlChar *) "vkern")==0 ) {
+	    /* We don't support vertical kerning yet */
+	} else if ( _xmlStrcmp(kids->name,(const xmlChar *) "glyph")==0 ) {
+	    SVGLigatureFixupCheck(sf->chars[cnt++],kids);
+	} else if ( _xmlStrcmp(kids->name,(const xmlChar *) "missing-glyph")==0 ) {
+	    ++cnt;
+	}
+    }
+    
+return( sf );
+}
+
+static int SPLFindOrder(SplineSet *ss) {
+    Spline *s, *first;
+
+    while ( ss!=NULL ) {
+	first = NULL;
+	for ( s = ss->first->next; s!=NULL && s!=first ; s = s->to->next ) {
+	    if ( first==NULL ) first = s;
+	    if ( !s->knownlinear )
+return( s->order2 );
+	}
+	ss = ss->next;
+    }
+return( -1 );    
+}
+
+static int SFFindOrder(SplineFont *sf) {
+    int i, ret;
+
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	ret = SPLFindOrder(sf->chars[i]->splines);
+	if ( ret!=-1 )
+return( ret );
+    }
+return( 0 );
+}
+
+static void SPLSetOrder(SplineSet *ss,int order2) {
+    Spline *s, *first;
+    SplinePoint *from, *to;
+
+    while ( ss!=NULL ) {
+	first = NULL;
+	for ( s = ss->first->next; s!=NULL && s!=first ; s = s->to->next ) {
+	    if ( first==NULL ) first = s;
+	    if ( s->order2!=order2 ) {
+		if ( s->knownlinear ) {
+		    s->from->nextcp = s->from->me;
+		    s->to->prevcp = s->to->me;
+		    s->from->nonextcp = s->to->noprevcp = true;
+		    s->order2 = order2;
+		} else if ( order2 ) {
+		    from = SplineTtfApprox(s);
+		    s->from->nextcp = from->nextcp;
+		    s->from->nonextcp = from->nonextcp;
+		    s->from->next = from->next;
+		    from->next->from = s->from;
+		    SplinePointFree(from);
+		    for ( to = s->from->next->to; to->next!=NULL; to=to->next->to );
+		    s->to->prevcp = to->prevcp;
+		    s->to->noprevcp = to->noprevcp;
+		    s->to->prev = to->prev;
+		    to->prev->to = s->to;
+		    SplinePointFree(to);
+		    to = s->to;
+		    from = s->from;
+		    SplineFree(s);
+		    if ( first==s ) first = from->next;
+		    s = to->prev;
+		} else {
+		    s->from->nextcp.x = s->splines[0].c/3 + s->from->me.x;
+		    s->from->nextcp.y = s->splines[1].c/3 + s->from->me.y;
+		    s->to->prevcp.x = s->from->nextcp.x+ (s->splines[0].b+s->splines[0].c)/3;
+		    s->to->prevcp.y = s->from->nextcp.y+ (s->splines[1].b+s->splines[1].c)/3;
+		    s->order2 = false;
+		    SplineRefigure(s);
+		}
+	    }
+	}
+	ss = ss->next;
+    }
+}
+
+static void SFSetOrder(SplineFont *sf,int order2) {
+    int i;
+
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	SPLSetOrder(sf->chars[i]->splines,order2);
+    }
+}
+
+SplineFont *SFReadSVG(char *filename, int flags) {
+    xmlNodePtr *fonts, font;
+    xmlDocPtr doc;
+    SplineFont *sf;
+    char *temp=filename, *pt, *lparen;
+    char *oldloc;
+
+    if ( !libxml_init_base()) {
+	fprintf( stderr, "Can't find libxml2.\n" );
+return( NULL );
+    }
+
+    pt = strrchr(filename,'/');
+    if ( pt==NULL ) pt = filename;
+    if ( (lparen=strchr(pt,'('))!=NULL && strchr(lparen,')')!=NULL ) {
+	temp = copy(filename);
+	pt = temp + (lparen-filename);
+	*pt = '\0';
+    }
+
+    doc = _xmlParseFile(temp);
+    if ( temp!=filename ) free(temp);
+    if ( doc==NULL ) {
+	/* Can I get an error message from libxml? */
+return( NULL );
+    }
+
+    fonts = FindSVGFontNodes(doc);
+    if ( fonts==NULL || fonts[0]==NULL ) {
+	fprintf( stderr, "This file contains no SVG fonts.\n" );
+	_xmlFreeDoc(doc);
+return( NULL );
+    }
+    font = fonts[0];
+    if ( fonts[1]!=NULL )
+	font = SVGPickFont(fonts,filename);
+    free(fonts);
+    oldloc = setlocale(LC_NUMERIC,"C");
+    sf = SVGParseFont(font);
+    setlocale(LC_NUMERIC,oldloc);
+    _xmlFreeDoc(doc);
+
+    if ( sf!=NULL ) {
+	sf->order2 = SFFindOrder(sf);
+	SFSetOrder(sf,sf->order2);
+    }
+return( sf );
+}
+
+SplineSet *SplinePointListInterpretSVG(char *filename,int em_size) {
+    xmlDocPtr doc;
+    xmlNodePtr top;
+    char *oldloc;
+    SplineSet *ret;
+    int order2;
+
+    if ( !libxml_init_base()) {
+	fprintf( stderr, "Can't find libxml2.\n" );
+return( NULL );
+    }
+    doc = _xmlParseFile(filename);
+    if ( doc==NULL ) {
+	/* Can I get an error message from libxml???? */
+return( NULL );
+    }
+
+    top = _xmlDocGetRootElement(doc);
+    if ( _xmlStrcmp(top->name,"svg")!=0 ) {
+	fprintf( stderr, "%s does not contain an <svg> element at the top\n", filename);
+	_xmlFreeDoc(doc);
+return( NULL );
+    }
+
+    oldloc = setlocale(LC_NUMERIC,"C");
+    ret = SVGParseSVG(top,em_size);
+    setlocale(LC_NUMERIC,oldloc);
+    _xmlFreeDoc(doc);
+
+    order2 = SPLFindOrder(ret);
+    if ( order2==-1 ) order2 = 0;
+    SPLSetOrder(ret,order2);
+
+return( ret );
+}
+#endif

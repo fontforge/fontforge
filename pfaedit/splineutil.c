@@ -886,11 +886,10 @@ int SplinePointIsACorner(SplinePoint *sp) {
 return( new==pt_corner );
 }
 
-void SCCatagorizePoints(SplineChar *sc) {
+void SPLCatagorizePoints(SplinePointList *spl) {
     Spline *spline, *first, *last=NULL;
-    SplinePointList *spl;
 
-    for ( spl = sc->splines; spl!=NULL; spl = spl->next ) {
+    for ( ; spl!=NULL; spl = spl->next ) {
 	first = NULL;
 	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
 	    SplinePointCatagorize(spline->from);
@@ -900,6 +899,10 @@ void SCCatagorizePoints(SplineChar *sc) {
 	if ( spline==NULL && last!=NULL )
 	    SplinePointCatagorize(last->to);
     }
+}
+
+void SCCatagorizePoints(SplineChar *sc) {
+    SPLCatagorizePoints(sc->splines);
 }
 
 static int CharsNotInEncoding(FontDict *fd) {

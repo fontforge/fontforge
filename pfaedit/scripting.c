@@ -873,7 +873,7 @@ static void bBitmapsRegen(Context *c) {
 
 static void bImport(Context *c) {
     char *ext, *filename;
-    int format, back, ok, isimage;
+    int format, back, ok;
 
     if ( c->a.argc!=2 && c->a.argc!=3 )
 	error( c, "Wrong number of arguments");
@@ -889,37 +889,45 @@ static void bImport(Context *c) {
     }
     back = 0;
     if ( strmatch(ext,".bdf")==0 )
-	format = 0;
+	format = fv_bdf;
     else if ( strmatch(ext,".pcf")==0 )
-	format = 5;
+	format = fv_pcf;
     else if ( strmatch(ext,".ttf")==0 || strmatch(ext,".otf")==0 || strmatch(ext,".otb")==0 )
-	format = 1;
+	format = fv_ttf;
     else if ( strmatch(ext,"pk")==0 || strmatch(ext,".pk")==0 ) {
-	format = 2;
+	format = fv_pk;
 	back = 1;
-    } else if ( strchr(filename,'*')==NULL )
-	format = 3;
-    else
-	format = 4;
-    isimage = true;
-    if (( format==3 || format==4 ) &&
-	    (strstrmatch(filename,".eps")!=NULL ||
-	     strstrmatch(filename,".ps")!=NULL ))
-	isimage = false;
+    } else if ( strmatch(ext,".eps")==0 || strmatch(ext,".ps")==0 ||
+	    strstrmatch(ext,".art")==0 ) {
+	if ( strchr(filename,'*')==NULL )
+	    format = fv_epstemplate;
+	else
+	    format = fv_eps;
+    } else if ( strmatch(ext,".svg")==0 ) {
+	if ( strchr(filename,'*')==NULL )
+	    format = fv_svgtemplate;
+	else
+	    format = fv_svg;
+    } else {
+	if ( strchr(filename,'*')==NULL )
+	    format = fv_imgtemplate;
+	else
+	    format = fv_image;
+    }
     if ( c->a.argc==3 )
 	back = c->a.vals[2].u.ival;
-    if ( format==0 )
+    if ( format==fv_bdf )
 	ok = FVImportBDF(c->curfv,filename,false, back);
-    else if ( format==5 )
+    else if ( format==fv_pcf )
 	ok = FVImportBDF(c->curfv,filename,2, back);
-    else if ( format==1 )
+    else if ( format==fv_ttf )
 	ok = FVImportMult(c->curfv,filename, back, bf_ttf);
-    else if ( format==2 )
+    else if ( format==fv_pk )
 	ok = FVImportBDF(c->curfv,filename,true, back);
-    else if ( format==3 )
-	ok = FVImportImages(c->curfv,filename,isimage);
+    else if ( format==fv_image || format==fv_eps || format==fv_svg )
+	ok = FVImportImages(c->curfv,filename,format);
     else
-	ok = FVImportImageTemplate(c->curfv,filename,isimage);
+	ok = FVImportImageTemplate(c->curfv,filename,format);
     free(filename);
     if ( !ok )
 	error(c,"Import failed" );

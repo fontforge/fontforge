@@ -308,7 +308,7 @@ static void Transform(BasePoint *to, BasePoint *from, real trans[6]) {
     to->y = trans[1]*from->y+trans[3]*from->y+trans[5];
 }
 
-static void MatMultiply(real m1[6], real m2[6], real to[6]) {
+void MatMultiply(real m1[6], real m2[6], real to[6]) {
     real trans[6];
 
     trans[0] = m1[0]*m2[0] +
