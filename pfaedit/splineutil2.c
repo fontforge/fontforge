@@ -1915,7 +1915,7 @@ SplineFont *SplineFontNew(void) {
 	else if ( table==NULL )
 	    uenc = i;
 	else if ( tlen==94*94 ) {
-	    if ( i<0x2121 || i>0x7d7d || (i&0xff)<0x21 || (i&0xff)>0x7d )
+	    if ( i<0x2121 || i>0x7e7e || (i&0xff)<0x21 || (i&0xff)>0x7e )
 		uenc = -1;
 	    else
 		uenc = table[((i>>8)-0x21)*94+((i&0xff)-0x21)];
