@@ -42,6 +42,7 @@ typedef struct gresstruct {
 extern char *GResourceProgramName, *GResourceFullProgram, *GResourceProgramDir;
 extern int local_encoding;
 
+void GResourceAddResourceFile(char *filename,char *prog);
 void GResourceAddResourceString(char *string,char *prog);
 void GResourceFind( GResStruct *info, char *prefix);
 char *GResourceFindString(char *name);

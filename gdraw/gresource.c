@@ -153,6 +153,8 @@ static void GResourceSetProg(char *prog) {
     extern char *_GFile_find_program_dir(char *prog);
 
     if ( prog!=NULL ) {
+	if ( GResourceProgramName!=NULL && strcmp(prog,GResourceProgramName)==0 )
+return;
 	gfree(GResourceProgramName);
 	if (( pt=strrchr(prog,'/'))!=NULL )
 	    ++pt;
@@ -202,6 +204,7 @@ return;
 return;
 
     if ( rcur+cnt>=rmax ) {
+	if ( cnt<10 ) cnt = 10;
 	if ( rmax==0 )
 	    _GResource_Res = galloc(cnt*sizeof(struct _GResource_Res));
 	else
@@ -266,6 +269,20 @@ return;
 	    local_encoding = em_iso8859_1;
 	local_encoding += e_iso8859_1-em_iso8859_1;
     }
+}
+
+void GResourceAddResourceFile(char *filename,char *prog) {
+    FILE *file;
+    char buffer[1000];
+
+    file = fopen(filename,"r");
+    if ( file==NULL ) {
+	fprintf( stderr, "Failed to open resource file: %s\n", filename );
+return;
+    }
+    while ( fgets(buffer,sizeof(buffer),file)!=NULL )
+	GResourceAddResourceString(buffer,prog);
+    fclose(file);
 }
 
 void GResourceFind( GResStruct *info,char *prefix) {
