@@ -725,7 +725,7 @@ static GTextInfo ttfnameids[] = {
     { (unichar_t *) _STR_Manufacturer, NULL, 0, 0, (void *) 8, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Designer, NULL, 0, 0, (void *) 9, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Descriptor, NULL, 0, 0, (void *) 10, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_VendorURL, NULL, 0, 0, (void *) 11, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_VenderURL, NULL, 0, 0, (void *) 11, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_DesignerURL, NULL, 0, 0, (void *) 12, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_License, NULL, 0, 0, (void *) 13, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_LicenseURL, NULL, 0, 0, (void *) 14, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -914,6 +914,7 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_Interpretation	1021
 #define CID_IsStrokedFont	1022
 #define CID_StrokeWidth		1023
+#define CID_Supplement	1024
 
 #define CID_Make	1111
 #define CID_Delete	1112
@@ -4701,6 +4702,7 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	int upos, uwid, as, des, nchar, oldcnt=sf->charcnt, err = false, weight=0;
 	int uniqueid, linegap=0, vlinegap=0, winascent=0, windescent=0;
 	int winaoff=true, windoff=true;
+	int supplement= -1;
 	int force_enc=0;
 	real ia, cidversion;
 	const unichar_t *txt, *fond; unichar_t *end;
@@ -4768,8 +4770,16 @@ return( true );
 	force_enc = GGadgetIsChecked(GWidgetGetControl(gw,CID_ForceEncoding));
 	if ( err )
 return(true);
-	if ( sf->subfontcnt!=0 )
+	if ( sf->subfontcnt!=0 ) {
 	    cidversion = GetRealR(gw,CID_Version,_STR_Version,&err);
+	    supplement = GetIntR(gw,CID_Supplement,_STR_CIDSupplement,&err);
+	    if ( err )
+return(true);
+	    if ( supplement!=sf->supplement ) {
+		if ( FindCidMap(sf->cidregistry,sf->ordering,supplement,sf)==NULL )
+return( true );
+	    }
+	}
 	if ( vmetrics )
 	    vorigin = GetIntR(gw,CID_VOrigin,_STR_VOrigin,&err);
 	if ( d->ttf_set ) {
@@ -4890,9 +4900,10 @@ return(true);
 	free(sf->copyright); sf->copyright = cu_copy(txt);
 	txt = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Comment));
 	free(sf->comments); sf->comments = cu_copy(*txt?txt:NULL);
-	if ( sf->subfontcnt!=0 )
+	if ( sf->subfontcnt!=0 ) {
 	    sf->cidversion = cidversion;
-	else {
+	    sf->supplement = supplement;
+	} else {
 	    txt = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Version));
 	    free(sf->version); sf->version = cu_copy(txt);
 	}
@@ -5482,18 +5493,19 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
     GWindow gw;
     GWindowAttrs wattrs;
     GTabInfo aspects[16], conaspects[7], smaspects[5];
-    GGadgetCreateData mgcd[10], ngcd[13], egcd[14], psgcd[28], tngcd[7],
+    GGadgetCreateData mgcd[10], ngcd[13], egcd[16], psgcd[28], tngcd[7],
 	pgcd[8], vgcd[22], pangcd[22], comgcd[3], atgcd[7], txgcd[23],
 	congcd[3], csubgcd[fpst_max-pst_contextpos][6], smgcd[3], smsubgcd[4][6],
 	mfgcd[8], mcgcd[8], szgcd[19];
-    GTextInfo mlabel[10], nlabel[13], elabel[14], pslabel[28], tnlabel[7],
+    GTextInfo mlabel[10], nlabel[13], elabel[16], pslabel[28], tnlabel[7],
 	plabel[8], vlabel[22], panlabel[22], comlabel[3], atlabel[7], txlabel[23],
 	csublabel[fpst_max-pst_contextpos][6], smsublabel[4][6],
 	mflabel[8], mclabel[8], *list, szlabel[17];
     struct gfi_data *d;
     char iabuf[20], upbuf[20], uwbuf[20], asbuf[20], dsbuf[20], ncbuf[20],
 	    vbuf[20], uibuf[12], regbuf[100], vorig[20], embuf[20];
-    char dszbuf[20], dsbbuf[20], dstbuf[21], sibuf[20], swbuf[20];
+    char dszbuf[20], dsbbuf[20], dstbuf[21], sibuf[20], swbuf[20],
+	    suplbuf[20];
     int i,k;
     int mcs;
     Encoding *item;
@@ -5783,7 +5795,6 @@ return;
 
 	egcd[11].gd.pos.x = 12; egcd[11].gd.pos.y = egcd[10].gd.pos.y+36+6;
 	egcd[11].gd.flags = gg_visible ;
-	egcd[11].gd.mnemonic = 'N';
 	elabel[11].text = (unichar_t *) _STR_CIDRegistry;
 	elabel[11].text_in_resource = true;
 	egcd[11].gd.label = &elabel[11];
@@ -5797,6 +5808,23 @@ return;
 	elabel[12].text_is_1byte = true;
 	egcd[12].gd.label = &elabel[12];
 	egcd[12].creator = GTextFieldCreate;
+
+	egcd[13].gd.pos.x = 12; egcd[13].gd.pos.y = egcd[12].gd.pos.y+24+6;
+	egcd[13].gd.flags = gg_visible ;
+	elabel[13].text = (unichar_t *) _STR_CIDSupplement;
+	elabel[13].text_in_resource = true;
+	egcd[13].gd.label = &elabel[13];
+	egcd[13].creator = GLabelCreate;
+
+	egcd[14].gd.pos.x = egcd[1].gd.pos.x; egcd[14].gd.pos.y = egcd[13].gd.pos.y-6;
+	egcd[14].gd.pos.width = 140;
+	egcd[14].gd.flags = gg_visible | gg_enabled;
+	sprintf( suplbuf, "%d", master->supplement );
+	elabel[14].text = (unichar_t *) regbuf;
+	elabel[14].text_is_1byte = true;
+	egcd[14].gd.label = &elabel[14];
+	egcd[14].gd.cid = CID_Supplement;
+	egcd[14].creator = GTextFieldCreate;
     }
 
     if ( sf->subfontcnt!=0 || sf->cidmaster!=NULL ) {
