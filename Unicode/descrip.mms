@@ -9,3 +9,15 @@ all : [-.libs]libgunicode.olb
 
 [-.libs]libgunicode.olb : $(libgunicode_OBJECTS)
 	library/create [-.libs]libgunicode.olb $(libgunicode_OBJECTS)
+
+ArabicForms.obj : ArabicForms.c
+alphabet.obj : alphabet.c
+backtrns.obj : backtrns.c
+char.obj : char.c
+cjk.obj : cjk.c
+memory.obj : memory.c
+ucharmap.obj : ucharmap.c
+unialt.obj : unialt.c
+ustring.obj : ustring.c
+utype.obj : utype.c
+usprintf.obj : usprintf.c
