@@ -7540,12 +7540,14 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 	    if ( sc==NULL )
 		sc = SCBuildDummy(&dummy,fv->sf,index);
 	    uni = sc->unicodeenc;
+	    buf[0] = buf[1] = 0;
 	    if ( fv->sf->uni_interp==ui_ams && uni>=0xe000 && uni<=0xf8ff &&
 		    amspua[uni-0xe000]!=0 )
 		uni = amspua[uni-0xe000];
 	    switch ( fv->glyphlabel ) {
 	      case gl_name:
 		uc_strncpy(buf,sc->name,sizeof(buf)/sizeof(buf[0]));
+		styles = _uni_sans;
 	      break;
 	      case gl_unicode:
 		if ( sc->unicodeenc!=-1 ) {
@@ -7553,6 +7555,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		    uc_strcpy(buf,cbuf);
 		} else
 		    uc_strcpy(buf,"?");
+		styles = _uni_sans;
 	      break;
 	      case gl_encoding:
 		if ( fv->sf->encoding_name<em_first2byte || fv->sf->encoding_name>=em_base )
@@ -7560,6 +7563,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		else
 		    sprintf(cbuf,"%04x",index);
 		uc_strcpy(buf,cbuf);
+		styles = _uni_sans;
 	      break;
 	      case gl_glyph:
 		if ( uni==0xad )
