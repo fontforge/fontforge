@@ -2500,6 +2500,10 @@ return( false );
 	continue;
 	    if ( t<=0 ) {t=0; x=s1->from->me.x; y = s1->from->me.y; }
 	    else if ( t>=1 ) { t=1; x=s1->to->me.x; y = s1->to->me.y; }
+	    if ( s1->from->me.x==s1->to->me.x )		/* Avoid rounding errors */
+		x = s1->from->me.x;			/* on hor/vert lines */
+	    else if ( s1->from->me.y==s1->to->me.y )
+		y = s1->from->me.y;
 	    soln = AddPoint(x,y,t,tempts[i],pts,t1s,t2s,soln);
 	}
 return( soln!=0 );
