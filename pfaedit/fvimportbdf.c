@@ -709,6 +709,17 @@ return( -2 );
 return( pixelsize );
 }
 
+static char *cleancopy(char *name) {
+    char *fpt, *tpt;
+
+    for ( fpt=tpt=name; *fpt; ++fpt ) {
+	if ( isalnum(*fpt) || *fpt=='-' )
+	    *tpt++ = *fpt;
+    }
+    *tpt = '\0';
+return( copy(name));
+}
+
 static int gf_char(FILE *gf, SplineFont *sf, BDFFont *b) {
     int32 pos, to;
     int ch, enc, dx, dy, aw;
@@ -760,7 +771,7 @@ return( false );
     if ( charname[0]!='\0' && sf->onlybitmaps && (sf->bitmaps==NULL ||
 	    (sf->bitmaps==b && b->next==NULL )) ) {
 	free(sf->chars[enc]->name);
-	sf->chars[enc]->name = copy(charname);
+	sf->chars[enc]->name = cleancopy(charname);
 	sf->chars[enc]->unicodeenc = -1;
     }
     bc->xmin = min_c;
