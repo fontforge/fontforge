@@ -173,13 +173,13 @@ Encoding *FindOrMakeEncoding(const char *name) {
 	strncpy(buffer,name,sizeof(buffer));
 	*strchr(buffer,'_') = '-';
 	name = buffer;
-    }
-    if ( strncmp(name,"iso-8859",8)==0 ) {
+    } else if ( strncmp(name,"iso-8859",8)==0 ) {
 	/* Fixup for old naming conventions */
 	strncpy(buffer,name,3);
 	strncpy(buffer+3,name+4,sizeof(buffer)-3);
 	name = buffer;
-    }
+    } else if ( strcmp(name,"AdobeStandardEncoding")==0 )
+	name = "AdobeStandard";
     for ( enc=enclist; enc!=NULL; enc=enc->next )
 	if ( strmatch(name,enc->enc_name)==0 ||
 		(enc->iconv_name!=NULL && strmatch(name,enc->iconv_name)==0))
@@ -205,8 +205,6 @@ return( &unicodefull );
 	iconv_name = "EUC-KR";
     else if ( strcmp(name,"gb2312pk")==0 )
 	iconv_name = "EUC-CN";
-    else if ( strcmp(name,"AdobeStandardEncoding")==0 )
-	iconv_name = "AdobeStandard";
 
 /* Escape sequences:					*/
 /*	ISO-2022-CN:     \e $ ) A ^N			*/
