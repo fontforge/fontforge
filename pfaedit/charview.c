@@ -3121,13 +3121,18 @@ return;
 	    GWidgetAskR(_STR_GlyphHasRefs,buts,0,1,_STR_GlyphHasRefsQuestion,cv->sc->name)==1 ) {
 	SplineCharFree(sc);
     } else {
+	SCPreserveState(cv->sc,true);
+	SCPreserveBackground(cv->sc);
 	temp = *cv->sc;
 	cv->sc->dependents = NULL;
+	cv->sc->undoes[0] = cv->sc->undoes[1] = NULL;
 	SplineCharFreeContents(cv->sc);
 	*cv->sc = *sc;
 	chunkfree(sc,sizeof(SplineChar));
 	cv->sc->parent = temp.parent;
 	cv->sc->dependents = temp.dependents;
+	cv->sc->undoes[0] = temp.undoes[0];
+	cv->sc->undoes[1] = temp.undoes[1];
 	cv->sc->views = temp.views;
 	cv->sc->changed = temp.changed;
 	cv->sc->enc = temp.enc;

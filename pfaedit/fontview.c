@@ -602,13 +602,18 @@ return;
 		} else
 		    ret = 0;
 		if ( ret==0 || ret==1 ) {
+		    SCPreserveState(tsc,true);
+		    SCPreserveBackground(tsc);
 		    temp = *tsc;
 		    tsc->dependents = NULL;
+		    tsc->undoes[0] = tsc->undoes[1] = NULL;
 		    SplineCharFreeContents(tsc);
 		    *tsc = *sc;
 		    chunkfree(sc,sizeof(SplineChar));
 		    tsc->parent = sf;
 		    tsc->dependents = temp.dependents;
+		    tsc->undoes[0] = temp.undoes[0];
+		    tsc->undoes[1] = temp.undoes[1];
 		    tsc->views = temp.views;
 		    tsc->changed = temp.changed;
 		    tsc->enc = temp.enc;
@@ -4162,7 +4167,7 @@ static void FVChar(FontView *fv,GEvent *event) {
 		BDFFont *bdf = fv->show;
 		if ( bdf->chars[i]==NULL )
 		    bdf->chars[i] = SplineCharRasterize(sc,bdf->pixelsize);
-		BitmapViewCreate(bdf->chars[i],bdf,fv);
+		BitmapViewCreate(bdf->chars[pos],bdf,fv);
 	    }
 	    ++cnt;
 	}
