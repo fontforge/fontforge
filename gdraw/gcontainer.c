@@ -284,7 +284,8 @@ return( handled );
 	}
 	if ( gd->grabgadget!=NULL ) {
 	    handled = (gd->grabgadget->funcs->handle_mouse)(gd->grabgadget,event);
-	    if ( gw->is_dying || gw->widget_data==NULL )	/* Bug!!! gw might have been freed already */
+	    if ( !GDrawNativeWindowExists(NULL,event->native_window) ||
+		    gw->is_dying || gw->widget_data==NULL )
 return( true );
 	    if ( event->type==et_mouseup )
 		gd->grabgadget = NULL;
@@ -296,7 +297,8 @@ return( true );
 			gadget->takes_input &&
 			GGadgetWithin(gadget,event->u.mouse.x,event->u.mouse.y)) {
 		    handled = (gadget->funcs->handle_mouse)(gadget,event);
-		    if ( gw->is_dying || gw->widget_data==NULL )	/* Bug!!! gw might have been freed already */
+		    if ( !GDrawNativeWindowExists(NULL,event->native_window) ||
+			    gw->is_dying || gw->widget_data==NULL )
 return( true );
 		    gd->grabgadget = gadget;
 		    if ( gadget->focusable && handled )
@@ -311,14 +313,16 @@ return( true );
 		    if ( gd->lastwiggle!=NULL && gd->lastwiggle!=gadget )
 			(gd->lastwiggle->funcs->handle_mouse)(gd->lastwiggle,event);
 		    handled = (gadget->funcs->handle_mouse)(gadget,event);
-		    if ( gw->is_dying || gw->widget_data==NULL )	/* Bug!!! gw might have been freed already */
+		    if ( !GDrawNativeWindowExists(NULL,event->native_window) ||
+			    gw->is_dying || gw->widget_data==NULL )
 return( true );
 		    gd->lastwiggle = gadget;
 		}
 	    }
 	    if ( !handled && gd->lastwiggle!=NULL ) {
 		(gd->lastwiggle->funcs->handle_mouse)(gd->lastwiggle,event);
-		if ( gw->is_dying )
+		if ( !GDrawNativeWindowExists(NULL,event->native_window) ||
+			gw->is_dying )
 return( true );
 	    }
 	}
@@ -334,13 +338,15 @@ return( true );
 		    GGadgetWithin(gadget,event->u.drag_drop.x,event->u.drag_drop.y))
 		if (( handled = (gadget->funcs->handle_sel)(gadget,event) )) {
 		    lastdd = gadget;
-		    if ( gw->is_dying )
+		    if ( !GDrawNativeWindowExists(NULL,event->native_window) ||
+			    gw->is_dying )
 return( true );
 		    }
 	}
 	if ( !handled && gd->e_h!=NULL ) {
 	    handled = (gd->e_h)(gw,event);
-	    if ( gw->is_dying )
+	    if ( !GDrawNativeWindowExists(NULL,event->native_window) ||
+		    gw->is_dying )
 return( true );
 	    lastdd = (GGadget *) -1;
 	}
@@ -351,7 +357,8 @@ return( true );
 		(gd->e_h)(gw,&e);
 	    else if ( gd->lastddgadget!=NULL )
 		(gd->lastddgadget->funcs->handle_sel)(gd->lastddgadget,&e);
-	    if ( gw->is_dying )
+	    if ( !GDrawNativeWindowExists(NULL,event->native_window) ||
+		    gw->is_dying )
 return( true );
 	}
 	if ( event->type==et_drag )
@@ -580,9 +587,13 @@ static GTopLevelD *oldtd = NULL;
 static GGadget *oldgfocus = NULL;
 
 static int _GWidget_TopLevel_eh(GWindow gw, GEvent *event) {
-    GTopLevelD *td = (GTopLevelD *) (gw->widget_data);
+    GTopLevelD *td;
     int ret;
 
+    if ( !GDrawNativeWindowExists(NULL,event->native_window) )
+return( true );
+
+    td = (GTopLevelD *) (gw->widget_data);
     if ( td==NULL )		/* Dying */
 return( true );
 

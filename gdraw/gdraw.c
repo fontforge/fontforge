@@ -117,6 +117,11 @@ void GDrawDestroyCursor(GDisplay *gdisp, GCursor ct) {
     (gdisp->funcs->destroyCursor)(gdisp,ct);
 }
 
+int GDrawNativeWindowExists(GDisplay *gdisp, void *native) {
+    if ( gdisp==NULL ) gdisp = screen_display;
+return( (gdisp->funcs->nativeWindowExists)(gdisp,native) );
+}
+
 void GDrawSetWindowBorder(GWindow w,int width,Color col) {
     (w->display->funcs->setWindowBorder)(w,width,col);
 }
