@@ -183,16 +183,18 @@ typedef struct gevent {
     GWindow w;
     union {
 	struct {
+	    char *device;		/* for wacom devices */
+	    uint32 time;
 	    uint16 state;
 	    int16 x,y;
-	    char *device;		/* for wacom devices */
 	    uint16 keysym;
 	    unichar_t chars[_GD_EVT_CHRLEN];
 	} chr;
 	struct {
+	    char *device;		/* for wacom devices */
+	    uint32 time;
 	    int16 state;
 	    int16 x,y;
-	    char *device;		/* for wacom devices */
 	    int16 button;
 	    int16 clicks;
 	    int pressure, xtilt, ytilt;
@@ -210,9 +212,10 @@ typedef struct gevent {
 	    unsigned int sized: 1;
 	} resize;
 	struct {
+	    char *device;		/* for wacom devices */
+	    uint32 time;
 	    int16 state;
 	    int16 x,y;
-	    char *device;		/* for wacom devices */
 	    unsigned int entered: 1;
 	} crossing;
 	struct {

@@ -2655,6 +2655,7 @@ return;
       case KeyPress: case KeyRelease:
 	gdisp->last_event_time = event->xkey.time;
 	gevent.type = event->type==KeyPress?et_char:et_charup;
+	gevent.u.chr.time = event->xkey.time;
 	gevent.u.chr.state = event->xkey.state;
 /*#ifdef _CursorsMustBe16x16*/
 	/* On mac os x, map the command key to the control key. So Comand-Q=>^Q=>Quit */
@@ -2748,6 +2749,7 @@ return;
 	}
 
 	gdisp->last_event_time = event->xbutton.time;
+	gevent.u.mouse.time = event->xkey.time;
 	if ((redirect = InputRedirection(gdisp->input,gw))!=NULL ) {
 	    if ( event->type==ButtonPress )
 		GXDrawBeep((GDisplay *) gdisp);
@@ -2819,6 +2821,7 @@ return;
 	gevent.u.crossing.state = event->xcrossing.state;
 	gevent.u.crossing.entered = event->type==EnterNotify;
 	gevent.u.crossing.device = NULL;
+	gevent.u.crossing.time = event->xcrossing.time;
       break;
       case ConfigureNotify:
 	gevent.type = et_resize;
@@ -2932,6 +2935,7 @@ return;
 	    found: ;
 	    if ( gevent.type != et_noevent ) {
 		gdisp->last_event_time = ((XDeviceButtonEvent *) event)->time;
+		gevent.u.mouse.time = ((XDeviceButtonEvent *) event)->time;
 		gevent.u.mouse.device = gdisp->inputdevices[i].name;	/* Same place in key and mouse events */
 		if ( j>3 ) {	/* Key event */
 		    gevent.u.chr.state = ((XDeviceKeyEvent *) event)->device_state;
