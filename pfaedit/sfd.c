@@ -1537,7 +1537,7 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    geteol(sfd,tok);
 	    sf->fullname = copy(tok);
 	} else if ( strmatch(tok,"FamilyName:")==0 ) {
-	    getname(sfd,tok);
+	    geteol(sfd,tok);
 	    sf->familyname = copy(tok);
 	} else if ( strmatch(tok,"Weight:")==0 ) {
 	    getprotectedname(sfd,tok);
