@@ -1702,6 +1702,7 @@ return( false );
 	    } else
 #endif
 	    {
+		g = GWidgetGetControl(cvlayers, strmatch[i].cid);
 		if ( !GGadgetIsChecked(g)) {
 		    GGadgetSetChecked(g,true);
 		    fake.type = et_controlevent;
