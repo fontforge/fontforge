@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 10-Dec-2000 -->
-  <!-- AP: Last modified: 3-Dec-2003 -->
+  <!-- AP: Last modified: 31-Dec-2003 -->
   <TITLE>The File Menu</TITLE>
 </HEAD>
 <BODY>
@@ -74,10 +74,11 @@
     you want to load some of the bitmaps as well as the outlines.
     <P>
     By default this dialog will display all files with extensions of pfa, pfb,
-    sfd, ttf, otf, otb, gsf, ttc, svg, ik, mf and bdf (possibly others as PfaEdit
-    comes to support more formats). If you would also like it to display .ps
-    files then enter *.{pfa,pfb,ttf,otf,bdf,sfd,ps} and press the Filter button.
-    If you only want it to display sfd files enter *.sfd and press Filter.<BR>
+    sfd, ttf, otf, otb, cff, gsf, ttc, svg, ik, mf and bdf (possibly others as
+    PfaEdit comes to support more formats). If you would also like it to display
+    .ps files then enter *.{pfa,pfb,ttf,otf,bdf,sfd,ps} and press the Filter
+    button. If you only want it to display sfd files enter *.sfd and press
+    Filter.<BR>
     You may select multiple files (by holding down the shift or control keys
     when clicking on them), and all selected files will be opened.<BR>
     PfaEdit can open macbinary resource files containing postscript and truetype
@@ -90,6 +91,14 @@
     </I>installed on your machine PfaEdit will process metafont's mf files for
     you. But you might want to use <I>pktrace, mftrace</I> or some other standalone
     program to do the job.
+    <P>
+    When importing a <A NAME="type3-import">type3</A> font PfaEdit will ask you
+    a few questions. It shouldn't have to ask these questions, but this is an
+    imperfect world and PfaEdit an imperfect program. In some rare cases PfaEdit
+    will crash if it tries to do a remove overlap. The remove overlap functionality
+    is important for interpretting stroked paths so you really should have it
+    on. But if a crash happens then, turn it off (and the crash should not repeat,
+    but some functionality will be lost).
   <DT>
     <A NAME="Recent">Recent</A>
   <DD>
@@ -257,7 +266,7 @@
     <P>
     You may load an encapsulated postscript file (or rather the sub-set of postscript
     that PfaEdit understands) into the foreground of characters. As with images
-    above this may either import depending on the selection or a template.<BR>
+    above this may import either depending on the selection or a template.<BR>
     If you have libxml2 on your system then PfaEdit will also be able to import
     svg files. As with postscript, only a subset of svg is understood).
     <P>

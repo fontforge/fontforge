@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 28-Dec-2003 -->
+  <!-- AP: Last modified: 1-Jan-2004 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -453,7 +453,8 @@ to the script and processed (or not) by it.
 </H2>
 <BLOCKQUOTE>
   <BLOCKQUOTE>
-    <A NAME="license">Copyright</A> &copy; 2000,2001,2002,2003 by George Williams
+    <A NAME="license">Copyright</A> &copy; 2000,2001,2002,2003,2004 by George
+    Williams
     <P>
     Redistribution and use in source and binary forms, with or without modification,
     are permitted provided that the following conditions are met:
@@ -579,6 +580,11 @@ and rarely appear on this list.
     PfaEdit is confused by small splines, on the order of one em unit. If you
     need something that small, scale the font up by a factor of 2 or more (including
     the ascent and descent).
+  <LI>
+    There is a fundemental problem when importing a type3 font (or an eps file).
+    In an most postscript programs each contour is stroked or filled individually,
+    but in a type1 character, all contours are filled together. This can lead
+    to unexpected side-effects if contours overlap.
   <LI>
     The MetaFont command doesn't work well.
   <LI>

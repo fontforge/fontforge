@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 28-Dec-2003 -->
+  <!-- AP: Last modified: 1-Jan-2004 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,20 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    ???
+    <UL>
+      <LI>
+	More accurate round joints in stroking.
+      <LI>
+	Better approximations to splines which turn through 180 degrees or more
+      <LI>
+	Support for reading cff files.
+      <LI>
+	Yet more problems counting ttf points
+      <LI>
+	Update copyright notices.
+    </UL>
   <LI>
     28-Dec-2003
     <UL>
@@ -108,6 +122,13 @@
 	  <LI>
 	    It would crash when doing this in an italic font
 	</UL>
+	<P>
+	  <HR>
+      <LI>
+	When importing postscript (type3 fonts, eps files) counter-clockwise paths
+	which are both stroked and filled cause problems
+      <LI>
+	Changed the version stamp of otb fonts from 'OTTO' to 1.0
     </UL>
   <LI>
     10-Dec-2003
@@ -256,353 +277,6 @@
       <LI>
 	PfaEdit would crash when attempting to draw a character for which in had
 	no (X11) glyph when doing bidirectional text.
-    </UL>
-  <LI>
-    29-Oct-2003
-    <UL>
-      <LI>
-	When removing an ATT feature from a glyph using a script, PfaEdit would screw
-	up memory. Leading to unpredictable results.
-    </UL>
-  <LI>
-    28-Oct-2003
-    <UL>
-      <LI>
-	PfaEdit would crash when converting from cubic to quadratic splines in a
-	script
-      <LI>
-	PfaEdit would leave a dangling pointer when converting from cubic to quadratic.
-	This did not affect ttf generation, but would affect most other opperations.
-    </UL>
-  <LI>
-    27-Oct-2003
-    <UL>
-      <LI>
-	PfaEdit would crash when changing the encoding of a font with a .notdef character
-	to a user defined encoding.
-      <LI>
-	If one had multiple ligatures for the same glyph with the same tag and script,
-	PfaEdit would eat all but one of them.
-      <LI>
-	When generating most kinds of font, of a font which had ligatures containing
-	glyph names that were not in the font, then PfaEdit would often screw up
-	memory and eventually crash.
-    </UL>
-  <LI>
-    26-Oct-2003
-    <UL>
-      <LI>
-	Simplify sometimes removed points at extrema even when it should not have
-      <LI>
-	If one had a ttf font (with instructions) and merged in a postscript font
-	and then generated a ttf font, PfaEdit would complain about an internal error,
-	but go on to produce a valid font. It should no longer complain.
-      <LI>
-	When generating fonts from a script, if the font were in compacted format
-	the generated font would have a compact encoding (instead of the desired
-	encoding).
-      <LI>
-	Kanou provided a patch to speed up importing bitmap fonts.
-    </UL>
-  <LI>
-    23-Oct-2003
-    <UL>
-      <LI>
-	The change on the 20th to make custom encoding support 32bit unicode was
-	incomplete and made custom encodings crash instead.
-      <LI>
-	The File-&gt;Display dialog ignored the left-sidebearing of a glyph causing
-	output of some fonts to look awful.
-      <LI>
-	Was getting the AdobeStandardEncoding a bit wrong (after the 5-Oct change
-	to the new unicode glyph list which does not contain "fi" nor "fl")
-      <LI>
-	I used to set the "widthset" bit on .notdef characters, but there's really
-	no point to that.
-      <LI>
-	Maxim Iorsh tells me that U+fb4f should be a historic ligature.
-      <LI>
-	On some displays right scrolling the Histogram dlg would leave black lines
-	on the window.
-      <LI>
-	AutoHint removed too many stems from consideration as hints on some very
-	bold fonts
-      <LI>
-	Make FontBBox of Type1 fonts be executable. Adobe says it doesn't have to
-	be, but dvips expects it to be.
-    </UL>
-  <LI>
-    20-Oct-2003
-    <UL>
-      <LI>
-	Windows XP &amp; 2000 insist on having (what cygwin describes as) the execute
-	bit of the file set. So PfaEdit now sets execute permissions on ttf, otf
-	and pfb fonts on the cygwin platform.
-      <LI>
-	If a menu was so big that it had to be positioned over the menubar (instead
-	of above or below it), and the user clicked on the menubar to invoke it,
-	then the mouse release would go to the new menu and invoke whatever item
-	happened to be under the cursor. Not good.
-      <LI>
-	Oops. The Effects sub-menu should have been disabled for quadratic (truetype)
-	fonts.
-      <LI>
-	Added a new configuration option --with-regular-link to disable my dlopening
-	of libraries. I dislike this. I don't think it is anywhere near as flexible
-	as the dlopen method. It makes it much harder to ship something that will
-	work with freetype (detecting whether the bytecode interpreter is present
-	must be done at link time rather than run time and that is a severe disadvantage.
-	But I have been asked for it.
-      <LI>
-	Change internal format so that custom encodings can handle 32 bit unicode.
-    </UL>
-  <LI>
-    16-Oct-2003
-    <UL>
-      <LI>
-	PfaEdit was still outputting a disordered name table.
-      <LI>
-	The source tarball on the website included many files twice and some files
-	that it should not have included at all. I should now be less than half the
-	size it used to be.
-    </UL>
-  <LI>
-    15-Oct-2003
-    <UL>
-      <LI>
-	PfaEdit did not bother to open files in binary mode. If cygwin was configured
-	with DOS linebreaks, then pfaedit failed to generate valid font files on
-	cygwin. 
-	  <HR>
-      <LI>
-	Added some more warnings to the default build list and fixed the problems
-	they indicated.
-    </UL>
-  <LI>
-    12-Oct-2003
-    <UL>
-      <LI>
-	Several bad bugs in last night's build (name table was (usually) all screwed
-	up, conversion from PS to TTF got incorrect Internal Error msgs)
-      <LI>
-	Order tables in truetype output 
-	  <HR>
-      <LI>
-	My 5-Oct-2003 libpng fix broke it completely. Should now be refixed.
-    </UL>
-  <LI>
-    11-Oct-2003
-    <UL>
-      <LI>
-	Another patch from Kanou to recognize encodings better in bdf files.
-      <LI>
-	Various memory fixes found by valgrind
-      <LI>
-	The Element-&gt;Find Problems-&gt;ATT-&gt;Missing glyph names fixup dlg had
-	some formatting problems and failed to skip properly.
-      <LI>
-	Draw an "x" through encodings which do not map to glyphs
-      <LI>
-	If the user is in a compacted encoding and asks to print a font, then revert
-	to the uncompacted encoding for the duration of the printing.
-      <LI>
-	View-&gt;Show ATT would show ligatures (and substitutions) even if some of
-	the glyphs in the glyph list were missing.
-      <LI>
-	Fix a number of bugs found by the MS Font Validator
-	<UL>
-	  <LI>
-	    I misunderstood (and the spec incorrectly documented) the behavior of the
-	    maxp table
-	  <LI>
-	    I had a typo in figuring out the OS/2 table
-	</UL>
-      <LI>
-	I had one more case where I was computing the point count of a glyph incorrectly.
-      <LI>
-	Make the width line snap to zero when the user drags near it.
-    </UL>
-  <LI>
-    6-Oct-2003
-    <UL>
-      <LI>
-	Give the Metrics View a vertical mode in which it does vertical kerning,
-	etc.
-      <LI>
-	Add a hack to allow PfaEdit to parse a wierd pfb file.
-    </UL>
-  <LI>
-    6-Oct-2003
-    <UL>
-      <LI>
-	Fixed a number of bugs in the new kerning class dlg including:
-	<UL>
-	  <LI>
-	    Vertical kerning classes were displayed horizontally
-	  <LI>
-	    When adding a new class the new offsets were garbage
-	</UL>
-      <LI>
-	The routine to convert a horizontal kerning class to the equivalent vertical
-	kerning class (of the vertical varients of the glyphs in the horizontal class)
-	didn't work.
-      <LI>
-	In Back and Lookup Classes of a contextual chaining substitution by class,
-	the [New] button was never enabled. (it was disabled if []SameAs was on,
-	and then never enabled).
-      <LI>
-	My new 94x94 encodings were actually 93x93. Patch by kanou.
-    </UL>
-  <LI>
-    5-Oct-2003
-    <UL>
-      <LI>
-	Got rid of GreekFixup and added Interpretations of encodings to FontInfo
-      <LI>
-	PfaEdit failed to output ligature substitutions nested under a context/chain
-	sub
-      <LI>
-	If a font had more than about 5 nested ligatures, pfaedit would screw up
-	its memory and (likely) crash
-      <LI>
-	Fixed various problems pertaining to adding a kerning class to an empty font
-      <LI>
-	Add a runtime check for the case where the user's system has a dynamic libpng
-	installed without libz
-      <LI>
-	If a character had ligature carets then PfaEdit could crash when determining
-	its script
-      <LI>
-	PfaEdit was reading mac 'kern' format 3 incorrectly.
-      <LI>
-	Rewrote the Kerning class creation dialog. I hope it is clearer now.
-    </UL>
-  <LI>
-    2-Oct-2003
-    <UL>
-      <LI>
-	got rid of my strange 94x94 encodings for JIS/KSC/GB (based on the kuten
-	array) and used instead the much more obvious encoding that everyone else
-	uses.
-      <LI>
-	BDF files were output with the wrong encoding name for JISX0208 (I was outputting
-	"JISX208" instead-- missing a "0").
-      <LI>
-	Autotrace failed to read potrace output properly if there were more than
-	one contour in a given glyph.
-      <LI>
-	Upgraded psunicodenames to the current Adobe Glyph List for New Fonts.
-      <LI>
-	Simplify now works for quadratic splines. If one uses the []Allow Slopes
-	to Change checkbox then results are not good. I need a better algorithem.
-      <LI>
-	If asked to generate a type0 postscript font for a font encoded with an extended
-	1byte encoding (ie. one that had about 300 characters) PfaEdit would probably
-	crash.
-    </UL>
-  <LI>
-    29-Sept-2003
-    <UL>
-      <LI>
-	When a path was both stroked and filled (in a postscript/eps file), pfaedit
-	would ignore the stroke.
-      <LI>
-	I forgot that the stroke linewidth needs to be transformed by the current
-	transformation matrix. This meant that when a path should have been stroked
-	by an ellipse (when reading a ps/eps file) pfaedit would blithely stroke
-	it with a circle.
-      <LI>
-	Added some support for reading the /Metrics array.
-      <LI>
-	If there were a sharp corner (where the "radius of curvature" of the corner
-	was less than the radius of the pen used to stroke the path) then PfaEdit
-	would generate an incorrect path.
-      <LI>
-	Round line joins were not a good approximation to circular arcs.
-      <LI>
-	When filling the outline character view, rounding errors caused the fill
-	bitmap to stray from the outline.
-      <LI>
-	Extend the functionality of the magnifying (or minifying) tool so that if
-	the user drags out a rectangle with it then the view will be shifted and
-	scaled so that rectangle fits in the window.
-      <LI>
-	PfaEdit will no longer auto-generate hints on non-integral boundries. In
-	Type1 fonts such hints become meaningless and just confuse things.
-      <LI>
-	PfaEdit will now draw a halo around points which will be part of a flex hint.
-	See the <A HREF="prefs.html#UpdateFlex">UpdateFlex</A> preference item.
-      <LI>
-	PfaEdit now has as set of commands for manipulating typographic features
-	in large lumps rather than one at a time.
-	<UL>
-	  <LI>
-	    Copy features from one font to another
-	  <LI>
-	    Remove certain features
-	  <LI>
-	    Give features a new tag
-	</UL>
-      <LI>
-	I have greatly rewritten the code for dealing with AAT fonts
-	<UL>
-	  <LI>
-	    PfaEdit now supports mac feature/setting values to be used as feature tags
-	    as well as opentype 4 letter tags
-	  <LI>
-	    PfaEdit will now read any feature in even if it doesn't map to an opentype
-	    tag
-	  <LI>
-	    PfaEdit understands the most of the state machines in the morx/mort tables
-	    (it does not understand ligature state machines, it parses these for all
-	    unconditional ligatures, but it will miss any condtional ones).
-	  <LI>
-	    PfaEdit now lets you edit apple state machines
-	  <LI>
-	    PfaEdit lets you specify feature/setting names in the font to override the
-	    default values specified in preferences
-	</UL>
-      <LI>
-	Added support for reading Apple's format 3 kern sub-table format (another
-	way of storing a kerning class)
-      <LI>
-	Oops. SVG didn't read relative movetos properly in a path option. Patch by
-	Kengo Ichiki.
-      <LI>
-	Simplify had a bug when passed a path which consisted of a single point with
-	a zero length spline connecting it to itself
-      <LI>
-	Simplify was not greyed out properly in quadratic fonts
-      <LI>
-	Some of the low-level error routines consumed massive amounts of cpu time
-	while waiting for events
-      <LI>
-	The PostScript parsing routines would sometimes think that "noaccess" was
-	part of the value of something in the private dictionary.
-      <LI>
-	Several other patches to importing images by templates from scripts. By Kengo
-	Ichiki
-      <LI>
-	Importing pcf bitmaps into the background had some problems.
-    </UL>
-  <LI>
-    4-Sept-2003
-    <UL>
-      <LI>
-	the 17-Aug addition of context/chaining broke anchor classes. Should be fixed
-	now.
-      <LI>
-	K&aacute;roly L&aacute;szl&oacute; has added Hungarian translations for the
-	style codes to Font Info-&gt;TTF Names
-      <LI>
-	If a font had comments, an svg file generated from it had syntax errors.
-      <LI>
-	Add support for generating multilingual strings (in 'name') for the apple
-	platform.
-      <LI>
-	Add support for the packed gb2312 which mac and windows seem to use.
-      <LI>
-	Make a UniqueID of -1 in Font Info mean that the font has no UniqueID.
     </UL>
   <LI>
     <A HREF="oldchangelog.html">Earlier Changes </A>
