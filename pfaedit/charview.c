@@ -1032,6 +1032,8 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
 			GDrawDrawLine(pixmap,x,y,x,end,vflexhintcol);
 		    }
 		}
+		if ( sp->next==NULL )		/* This can happen if we get an internal error inside of RemoveOverlap when the pointlist is not in good shape */
+	    break;
 		sp = sp->next->to;
 		if ( sp==spl->first )
 	    break;

@@ -407,11 +407,11 @@ return;		/* Horizontal line, ignore it */
 	int mpos;
 	SplineFindExtrema(osp,&ot1,&ot2);
 	if ( ot1>0 && ot1<1 ) {
-	    mpos = (int) ceil( ((msp->a*ot1+msp->b)*ot1+msp->c)*ot1+msp->d-es->mmin );
+	    mpos = (int) ceil( ( ((msp->a*ot1+msp->b)*ot1+msp->c)*ot1+msp->d )*es->scale-es->mmin );
 	    es->interesting[mpos] = 1;
 	}
 	if ( ot2>0 && ot2<1 ) {
-	    mpos = (int) ceil( ((msp->a*ot2+msp->b)*ot2+msp->c)*ot2+msp->d-es->mmin );
+	    mpos = (int) ceil( ( ((msp->a*ot2+msp->b)*ot2+msp->c)*ot2+msp->d )*es->scale-es->mmin );
 	    es->interesting[mpos] = 1;
 	}
     }

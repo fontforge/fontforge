@@ -678,13 +678,55 @@ static void DoIntersections(SplineChar *sc,SplineTList *me,IntersectionList *ili
     }
 }
 
+static void CleanupSplines(IntersectionList *ilist,IntersectionList *ilbase) {
+    SplineList *sl1, *sl2, *prev, *next;
+
+    /* Suppose we have two splines which are essentially coincident */
+    /* We will probably get some rounding errors when calculating the */
+    /*  intersections. These will lead to more intersections, and so forth */
+    /* So try to even out any rounding errors that might lead to problems */
+    for ( sl1 = ilist->splines; sl1!=NULL; sl1=sl1->next ) {
+	for ( sl2 = sl1->next; sl2!=NULL ; sl2 = sl2->next ) {
+	    if ( sl2->spline->from->me.x==sl1->spline->from->me.x &&
+		    sl2->spline->from->me.y==sl1->spline->from->me.y ) {
+		if ( RealApprox(sl2->spline->from->nextcp.x,sl1->spline->from->nextcp.x) &&
+			RealApprox(sl2->spline->from->nextcp.y,sl1->spline->from->nextcp.y)) {
+		    sl2->spline->from->nextcp = sl1->spline->from->nextcp;
+		    if ( sl2->spline->order2 ) sl2->spline->to->prevcp = sl2->spline->from->nextcp;
+		    SplineRefigure(sl2->spline);
+		}
+	    } else if ( sl2->spline->from->me.x==sl1->spline->to->me.x &&
+		    sl2->spline->from->me.y==sl1->spline->to->me.y ) {
+		if ( RealApprox(sl2->spline->from->nextcp.x,sl1->spline->to->prevcp.x) &&
+			RealApprox(sl2->spline->from->nextcp.y,sl1->spline->to->prevcp.y)) {
+		    sl2->spline->from->nextcp = sl1->spline->to->prevcp;
+		    if ( sl2->spline->order2 ) sl2->spline->to->prevcp = sl2->spline->from->nextcp;
+		    SplineRefigure(sl2->spline);
+		}
+	    } else if ( sl2->spline->to->me.x==sl1->spline->from->me.x &&
+		    sl2->spline->to->me.y==sl1->spline->from->me.y ) {
+		if ( RealApprox(sl2->spline->to->prevcp.x,sl1->spline->from->nextcp.x) &&
+			RealApprox(sl2->spline->to->prevcp.y,sl1->spline->from->nextcp.y)) {
+		    sl2->spline->to->prevcp = sl1->spline->from->nextcp;
+		    if ( sl2->spline->order2 ) sl2->spline->from->nextcp = sl2->spline->to->prevcp;
+		    SplineRefigure(sl2->spline);
+		}
+	    } else if ( sl2->spline->to->me.x==sl1->spline->to->me.x &&
+		    sl2->spline->to->me.y==sl1->spline->to->me.y ) {
+		if ( RealApprox(sl2->spline->to->prevcp.x,sl1->spline->to->prevcp.x) &&
+			RealApprox(sl2->spline->to->prevcp.y,sl1->spline->to->prevcp.y)) {
+		    sl2->spline->to->prevcp = sl1->spline->to->prevcp;
+		    if ( sl2->spline->order2 ) sl2->spline->from->nextcp = sl2->spline->to->prevcp;
+		    SplineRefigure(sl2->spline);
+		}
+	    }
+	}
+    }
+
 /* if we have a T shape and the ends of the vertical stem are on the horizontal*/
 /*  then we will get two copies of the line that connects the end of the vert */
 /*  stem (one from the vert stem, and one from the horizontal stem) we need to*/
 /*  merge these two splines into one */
-static void CleanupSplines(IntersectionList *ilist,IntersectionList *ilbase) {
-    SplineList *sl1, *sl2, *prev, *next;
-
 return;	/* But it seems we don't need it at all now */
 
     for ( sl1 = ilist->splines; sl1!=NULL; sl1=sl1->next ) {
@@ -1607,6 +1649,20 @@ return( false );		/* Point of inflection */
 return( true );
 }
 
+static int SameSplines(Spline *s1,Spline *s2) {
+    if ( s1==s2 )
+return( true );
+    if ( s1==NULL || s2==NULL )
+return( false );
+    if ( s1->from->me.x==s2->from->me.x && s1->from->me.y==s2->from->me.y &&
+	    s1->from->nextcp.x==s2->from->nextcp.x && s1->from->nextcp.y==s2->from->nextcp.y &&
+	    s1->to->prevcp.x==s2->to->prevcp.x && s1->to->prevcp.y==s2->to->prevcp.y &&
+	    s1->to->me.x==s2->to->me.x && s1->to->me.y==s2->to->me.y )
+return( true );
+
+return( false );
+}
+
 static int CountCrossings(SplineSet *spl,BasePoint *pt,double me_t, Spline *exceptme) {
     Spline *s, *first;
     double ts[4], t, y, xmin, xmax;
@@ -1617,7 +1673,7 @@ static int CountCrossings(SplineSet *spl,BasePoint *pt,double me_t, Spline *exce
     while ( spl!=NULL ) {
 	if ( spl->first->prev!=NULL ) {
 	    first = NULL;
-	    for ( s=spl->first->next ; s!=first ; s = s->to->next ) if ( s!=exceptme ) {
+	    for ( s=spl->first->next ; s!=first ; s = s->to->next ) if ( !SameSplines(s,exceptme) ) {
 		SplineFindExtrema(&s->splines[0],&ts[1],&ts[2]);
 		if ( ts[1]==-1 ) ts[1] = 1;
 		else if ( ts[2]==-1 ) ts[2] = 1;
