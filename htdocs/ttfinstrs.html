@@ -1,0 +1,66 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 1-Mar-2003 -->
+  <!-- AP: Last modified: 1-Mar-2003 -->
+  <TITLE>Viewing and Editing truetype instructions in PfaEdit.</TITLE>
+</HEAD>
+<BODY>
+<TABLE ALIGN=RIGHT>
+  <TR>
+    <TD><IMG SRC="ttfinstrs-view.png" WIDTH="277" HEIGHT="280"><BR>
+      <IMG SRC="ttfinstrs-edit.png" WIDTH="277" HEIGHT="280"></TD>
+  </TR>
+</TABLE>
+<H1 ALIGN=Center>
+  Viewing and Editing truetype instructions in PfaEdit.
+</H1>
+<UL>
+  <LI>
+    <A HREF="http://developer.apple.com/fonts/TTRefMan/RM03/Chap3.html">Apple's
+    overview on instructiong glyphs</A>
+  <LI>
+    <A HREF="http://developer.apple.com/fonts/TTRefMan/RM05/Chap5.html">Apple's
+    list of truetype instructions</A>
+  <LI>
+    <A HREF="http://developer.apple.com/fonts/TTRefMan/RM04/Chap4.html">Apple's
+    description of the truetype graphics state</A>
+  <LI>
+    <A HREF="http://developer.apple.com/fonts/TTRefMan/RM07/appendixA.html">Apple's
+    summary of truetype instructions</A>
+</UL>
+<P>
+I shall not attempt to describe the mechanics of instructing truetype, if
+you want to understand it I refer you to the above links.
+(<A HREF="http://www.microsoft.com/typography/OTSPEC/ttinst.htm">Microsoft
+has a similar set </A>in but they are in word format).
+<P>
+This dialog shows the instructions associated with a glyph or truetype table
+(like fpgm or prep). If you move your mouse cursor over one of the instructions
+a brief help message will pop up describing that instruction. If you press
+the [Edit] button the dlg will change and you will be presented with a editable
+textarea containing the same instructions. You may modify these to your heart's
+content. Pressing the [Parse] will parse your modifications and (if they
+parse) return you to the "help" mode.
+<P>
+Instructions like MIRP may be entered either in PfaEdit's peculiar (but
+marginally more mnemonic) style: <CODE>MIRP[rnd,white] </CODE>or as
+<CODE>MIRP[00110]</CODE>, and <CODE>PUSHB_1</CODE> may be
+<CODE>PUSHB[000]</CODE>.
+<P>
+You may also include an stack arguments on the same line as the instruction
+and PfaEdit will convert them into the appropriate pushes. So...
+<BLOCKQUOTE>
+  <PRE>5 SRP0
+</PRE>
+</BLOCKQUOTE>
+<P>
+is equivalent to
+<BLOCKQUOTE>
+  <PRE>PUSHB_1
+5
+SRP0
+</PRE>
+</BLOCKQUOTE>
+<P>
+</BODY></HTML>

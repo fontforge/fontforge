@@ -44,7 +44,7 @@ struct ttf_table *SFFindTable(SplineFont *sf,uint32 tag) {
 return( tab );
 }
     
-static int _getcvtval(SplineFont *sf,int val) {
+int TTF__getcvtval(SplineFont *sf,int val) {
     int i;
     struct ttf_table *cvt_tab = SFFindTable(sf,CHR('c','v','t',' '));
 
@@ -76,7 +76,7 @@ int TTF_getcvtval(SplineFont *sf,int val) {
     /* For some instructions anyway, but not for MIAP so this routine has */
     /*  been broken in two. */
     if ( val<0 ) val = -val;
-return( _getcvtval(sf,val));
+return( TTF__getcvtval(sf,val));
 }
 
 static uint8 *pushheader(uint8 *instrs, int isword, int tot) {
@@ -209,13 +209,13 @@ static uint8 *geninstrs(struct glyphinstrs *gi, uint8 *instrs,StemInfo *hint,
 	}
 	if ( (newbase = BDFindValue(base,gi->bd,true))!= 0x80000000 ) {
 	    base = newbase;
-	    basecvt = _getcvtval(gi->sf,(int)base);
+	    basecvt = TTF__getcvtval(gi->sf,(int)base);
 	}
 	if ( basecvt == -1 && !hint->startdone ) {
 	    hbase = (base += width);
 	    if ( (newbase = BDFindValue(base,gi->bd,false))!= 0x80000000 ) {
 		base = newbase;
-		basecvt = _getcvtval(gi->sf,(int)base);
+		basecvt = TTF__getcvtval(gi->sf,(int)base);
 	    }
 	    if ( basecvt!=-1 )
 		width = -width;
@@ -1183,10 +1183,10 @@ return( pt );
     /*  interpretters produce strange results */
 	/* Do Intersect */
 	pushes[0] = inner;
-	pushes[1] = _getcvtval(gi->sf,-sw1);
+	pushes[1] = TTF__getcvtval(gi->sf,-sw1);
 	pushes[3] = b1;
 	pushes[2] = t1;
-	pushes[4] = _getcvtval(gi->sf,-sw2);
+	pushes[4] = TTF__getcvtval(gi->sf,-sw2);
 	pushes[6] = b2;
 	pushes[5] = t2;
 	pushes[7] = 0;

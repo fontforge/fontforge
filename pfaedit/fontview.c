@@ -397,6 +397,9 @@ static int _FVMenuClose(FontView *fv) {
     MetricsView *mv, *mnext;
     SplineFont *sf = fv->cidmaster?fv->cidmaster:fv->sf;
 
+    if ( !SFCloseAllInstrs(fv->sf) )
+return( false );
+
     if ( fv->nextsame!=NULL || fv->sf->fv!=fv ) {
 	/* There's another view, can close this one with no problems */
     } else if ( sf->changed ) {
@@ -868,6 +871,10 @@ static void FVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_ClearHints	2502
 #define MID_ClearWidthMD	2503
 #define MID_AutoInstr	2504
+#define MID_EditInstructions	2505
+#define MID_Editfpgm	2506
+#define MID_Editprep	2507
+#define MID_ClearInstrs	2508
 #define MID_OpenBitmap	2700
 #define MID_OpenOutline	2701
 #define MID_Revert	2702
@@ -2475,6 +2482,36 @@ static void FVMenuAutoInstr(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FVAutoInstr( (FontView *) GDrawGetUserData(gw) );
 }
 
+static void FVMenuEditInstrs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    int index = FVAnyCharSelected(fv);
+    SplineChar *sc;
+    if ( index<0 )
+return;
+    sc = SFMakeChar(fv->sf,index);
+    SCEditInstructions(sc);
+}
+
+static void FVMenuEditTable(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    SFEditTable(fv->sf,mi->mid==MID_Editprep?CHR('p','r','e','p'):CHR('f','p','g','m'));
+}
+
+static void FVMenuClearInstrs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    SplineChar *sc;
+    int i;
+
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( (sc = fv->sf->chars[i])!=NULL ) {
+	if ( sc->ttf_instrs_len!=0 ) {
+	    free(sc->ttf_instrs);
+	    sc->ttf_instrs = NULL;
+	    sc->ttf_instrs_len = 0;
+	    SCCharChangedUpdate(sc);
+	}
+    }
+}
+
 static void FVClearHints(FontView *fv) {
     int i;
 
@@ -2796,10 +2833,13 @@ static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    free(mi->ti.text);
 	    mi->ti.text = u_copy(GStringGetResource(removeOverlap?_STR_Autohint:_STR_FullAutohint,NULL));
 	  break;
-	  case MID_AutoInstr:
-	    mi->ti.disabled = !fv->sf->order2;
+	  case MID_AutoInstr: case MID_EditInstructions:
+	    mi->ti.disabled = !fv->sf->order2 || anychars==-1;
 	  break;
-	  case MID_ClearHints: case MID_ClearWidthMD:
+	  case MID_Editfpgm: case MID_Editprep:
+	    mi->ti.disabled = !fv->sf->order2 ;
+	  break;
+	  case MID_ClearHints: case MID_ClearWidthMD: case MID_ClearInstrs:
 	    mi->ti.disabled = anychars==-1;
 	  break;
 	}
@@ -3247,8 +3287,13 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 static GMenuItem htlist[] = {
     { { (unichar_t *) _STR_Autohint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, 'H', ksm_control|ksm_shift, NULL, NULL, FVMenuAutoHint, MID_AutoHint },
     { { (unichar_t *) _STR_AutoInstr, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, 'T', ksm_control, NULL, NULL, FVMenuAutoInstr, MID_AutoInstr },
+    { { (unichar_t *) _STR_EditInstructions, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'l' }, '\0', 0, NULL, NULL, FVMenuEditInstrs, MID_EditInstructions },
+    { { (unichar_t *) _STR_Editfpgm, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', 0, NULL, NULL, FVMenuEditTable, MID_Editfpgm },
+    { { (unichar_t *) _STR_Editprep, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', 0, NULL, NULL, FVMenuEditTable, MID_Editprep },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_ClearHints, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuClearHints, MID_ClearHints },
     { { (unichar_t *) _STR_ClearWidthMD, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuClearWidthMD, MID_ClearWidthMD },
+    { { (unichar_t *) _STR_ClearInstructions, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuClearInstrs, MID_ClearInstrs },
     { NULL }
 };
 

@@ -597,6 +597,7 @@ typedef struct splinefont {
 	struct ttf_table *next;
     } *ttf_tables;
 	/* We copy: fpgm, prep, cvt, maxp */
+    struct instrdata *instr_dlgs;	/* Pointer to all table and character instruction dlgs in this font */
 } SplineFont;
 
 /* mac styles. Useful idea we'll just steal it */

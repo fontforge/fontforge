@@ -355,7 +355,7 @@ static void DrawPoint(CharView *cv, GWindow pixmap, SplinePoint *sp, SplineSet *
 return;
 
     /* draw the control points if it's selected */
-    if ( sp->selected ) {
+    if ( sp->selected || cv->showpointnumbers) {
 	int iscurrent = sp==(cv->p.sp!=NULL?cv->p.sp:cv->lastselpt);
 	if ( !sp->nonextcp ) {
 	    cx =  cv->xoff + rint(sp->nextcp.x*cv->scale);
@@ -2205,7 +2205,7 @@ return;
 }
 
 void SCNumberPoints(SplineChar *sc) {
-    int pnum=0, skipit;
+    int pnum=0;
     SplineSet *ss;
     SplinePoint *sp;
 
@@ -3185,7 +3185,6 @@ return( true );
 #define MID_FindInFontView	2017
 #define MID_KernPairs	2018
 #define MID_AnchorPairs	2019
-#define MID_ShowInstructions 2020
 #define MID_Cut		2101
 #define MID_Copy	2102
 #define MID_Paste	2103
@@ -3251,6 +3250,8 @@ return( true );
 #define MID_CreateVHint	2409
 #define MID_MinimumDistance	2410
 #define MID_AutoInstr	2411
+#define MID_ClearInstr	2412
+#define MID_EditInstructions 2413
 #define MID_ClearAllMD		2451
 #define MID_ClearSelMDX		2452
 #define MID_ClearSelMDY		2453
@@ -3524,10 +3525,21 @@ static void CVMenuFill(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     GDrawRequestExpose(cv->v,NULL,false);
 }
 
-static void CVMenuShowInstrs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+static void CVMenuEditInstrs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
-    SCShowInstructions(NULL,cv);
+    SCEditInstructions(cv->sc);
+}
+
+static void CVMenuClearInstrs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+
+    if ( cv->sc->ttf_instrs_len!=0 ) {
+	free(cv->sc->ttf_instrs);
+	cv->sc->ttf_instrs = NULL;
+	cv->sc->ttf_instrs_len = 0;
+	SCCharChangedUpdate(cv->sc);
+    }
 }
 
 static void CVMenuKernPairs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -5146,6 +5158,12 @@ static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_AutoInstr:
 	    mi->ti.disabled = !cv->sc->parent->order2;
 	  break;
+	  case MID_EditInstructions:
+	    mi->ti.disabled = !cv->fv->sf->order2;
+	  break;
+	  case MID_ClearInstr:
+	    mi->ti.disabled = cv->sc->ttf_instrs_len==0;
+	  break;
 	  case MID_AddHHint:
 	    mi->ti.disabled = sp2==NULL || sp2->me.y==sp1->me.y;
 	  break;
@@ -5262,9 +5280,6 @@ static void cv_vwlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 	  case MID_HideRulers:
 	    free(mi->ti.text);
 	    mi->ti.text = u_copy(GStringGetResource(cv->showrulers?_STR_Hiderulers:_STR_Showrulers,NULL));
-	  break;
-	  case MID_ShowInstructions:
-	    mi->ti.checked = !cv->fv->sf->order2;
 	  break;
 	  case MID_Fill:
 	    mi->ti.checked = cv->showfilled;
@@ -5489,12 +5504,14 @@ static GMenuItem mdlist[] = {
 static GMenuItem htlist[] = {
     { { (unichar_t *) _STR_Autohint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, 'H', ksm_control|ksm_shift, NULL, NULL, CVMenuAutoHint, MID_AutoHint },
     { { (unichar_t *) _STR_AutoInstr, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, 'T', ksm_control, NULL, NULL, CVMenuAutoInstr, MID_AutoInstr },
+    { { (unichar_t *) _STR_EditInstructions, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'l' }, '\0', 0, NULL, NULL, CVMenuEditInstrs, MID_EditInstructions },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_MinimumDistance, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, 'H', ksm_control|ksm_shift, mdlist, mdlistcheck, NULL, MID_MinimumDistance },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Clearhstem, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_control, NULL, NULL, CVMenuClearHints, MID_ClearHStem },
     { { (unichar_t *) _STR_Clearvstem, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'V' }, '\0', ksm_control, NULL, NULL, CVMenuClearHints, MID_ClearVStem },
     { { (unichar_t *) _STR_Cleardstem, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'D' }, '\0', ksm_control, NULL, NULL, CVMenuClearHints, MID_ClearDStem },
+    { { (unichar_t *) _STR_ClearInstructions, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control, NULL, NULL, CVMenuClearInstrs, MID_ClearInstr },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Addhhint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'A' }, '\0', ksm_control, NULL, NULL, CVMenuAddHint, MID_AddHHint },
     { { (unichar_t *) _STR_Addvhint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 's' }, '\0', ksm_control, NULL, NULL, CVMenuAddHint, MID_AddVHint },
@@ -5546,7 +5563,6 @@ static GMenuItem vwlist[] = {
     { { (unichar_t *) _STR_Hidepoints, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'o' }, 'D', ksm_control, NULL, NULL, CVMenuShowHide, MID_HidePoints },
     { { (unichar_t *) _STR_MarkExtrema, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'M' }, '\0', ksm_control, NULL, NULL, CVMenuMarkExtrema, MID_MarkExtrema },
     { { (unichar_t *) _STR_Fill, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'l' }, '\0', 0, NULL, NULL, CVMenuFill, MID_Fill },
-    { { (unichar_t *) _STR_ShowInstructions, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'l' }, '\0', 0, NULL, NULL, CVMenuShowInstrs, MID_ShowInstructions },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, }},
     { { (unichar_t *) _STR_KernPairs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'K' }, '\0', 0, NULL, NULL, CVMenuKernPairs, MID_KernPairs },
     { { (unichar_t *) _STR_AnchoredPairs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'A' }, '\0', 0, NULL, NULL, CVMenuAnchorPairs, MID_AnchorPairs },

@@ -759,7 +759,9 @@ extern void SFShowKernPairs(SplineFont *sf,SplineChar *sc,AnchorClass *ac);
 extern void SFShowLigatures(SplineFont *sf);
 
 extern void SCNumberPoints(SplineChar *sc);
-extern void SCShowInstructions(SplineChar *sc, CharView *cv);
+extern void SCEditInstructions(SplineChar *sc);
+extern void SFEditTable(SplineFont *sf, uint32 tag);
+extern int SFCloseAllInstrs(SplineFont *sf);
 
 extern GMenuItem helplist[];
 #endif

@@ -28,6 +28,7 @@
 #include <ustring.h>
 #include <utype.h>
 #include "pfaeditui.h"
+#include "ttf.h"
 
 extern int _GScrollBar_Width;
 #define EDGE_SPACING	2
@@ -69,7 +70,7 @@ enum ttf_instructions {
  ttf_wcvtf=0x70, ttf_wcvtp=0x44, ttf_ws=0x42
 };
 
-static const char *instrs[] = {
+static const char *instrnames[] = {
     "SVTCA[y-axis]",
     "SVTCA[x-axis]",
     "SPVTCA[y-axis]",
@@ -116,7 +117,7 @@ static const char *instrs[] = {
     "CALL",
     "FDEF",
     "ENDF",
-    "MDAP[no rnd]",
+    "MDAP[no-rnd]",
     "MDAP[rnd]",
     "IUP[y]",
     "IUP[x]",
@@ -132,7 +133,7 @@ static const char *instrs[] = {
     "MSIRP[set rp0]",
     "ALIGNRP",
     "RTDG",
-    "MIAP[no rnd]",
+    "MIAP[no-rnd]",
     "MIAP[rnd]",
     "NPUSHB",
     "NPUSHW",
@@ -246,85 +247,85 @@ static const char *instrs[] = {
     "UnknownAD",
     "UnknownAE",
     "UnknownAF",
-    "PUSHB 1",
-    "PUSHB 2",
-    "PUSHB 3",
-    "PUSHB 4",
-    "PUSHB 5",
-    "PUSHB 6",
-    "PUSHB 7",
-    "PUSHB 8",
-    "PUSHW 1",
-    "PUSHW 2",
-    "PUSHW 3",
-    "PUSHW 4",
-    "PUSHW 5",
-    "PUSHW 6",
-    "PUSHW 7",
-    "PUSHW 8",
+    "PUSHB_1",
+    "PUSHB_2",
+    "PUSHB_3",
+    "PUSHB_4",
+    "PUSHB_5",
+    "PUSHB_6",
+    "PUSHB_7",
+    "PUSHB_8",
+    "PUSHW_1",
+    "PUSHW_2",
+    "PUSHW_3",
+    "PUSHW_4",
+    "PUSHW_5",
+    "PUSHW_6",
+    "PUSHW_7",
+    "PUSHW_8",
     "MDRP[grey]",
     "MDRP[black]",
     "MDRP[white]",
     "MDRP03",
-    "MDRP[rnd, grey]",
-    "MDRP[rnd, black]",
-    "MDRP[rnd, white]",
+    "MDRP[rnd,grey]",
+    "MDRP[rnd,black]",
+    "MDRP[rnd,white]",
     "MDRP07",
-    "MDRP[min, grey]",
-    "MDRP[min, black]",
-    "MDRP[min, white]",
+    "MDRP[min,grey]",
+    "MDRP[min,black]",
+    "MDRP[min,white]",
     "MDRP0b",
-    "MDRP[min, rnd, grey]",
-    "MDRP[min, rnd, black]",
-    "MDRP[min, rnd, white]",
+    "MDRP[min,rnd,grey]",
+    "MDRP[min,rnd,black]",
+    "MDRP[min,rnd,white]",
     "MDRP0f",
-    "MDRP[rp0, grey]",
-    "MDRP[rp0, black]",
-    "MDRP[rp0, white]",
+    "MDRP[rp0,grey]",
+    "MDRP[rp0,black]",
+    "MDRP[rp0,white]",
     "MDRP13",
-    "MDRP[rp0, rnd, grey]",
-    "MDRP[rp0, rnd, black]",
-    "MDRP[rp0, rnd, white]",
+    "MDRP[rp0,rnd,grey]",
+    "MDRP[rp0,rnd,black]",
+    "MDRP[rp0,rnd,white]",
     "MDRP17",
-    "MDRP[rp0, min, grey]",
-    "MDRP[rp0, min, black]",
-    "MDRP[rp0, min, white]",
+    "MDRP[rp0,min,grey]",
+    "MDRP[rp0,min,black]",
+    "MDRP[rp0,min,white]",
     "MDRP1b",
-    "MDRP[rp0, min, rnd, grey]",
-    "MDRP[rp0, min, rnd, black]",
-    "MDRP[rp0, min, rnd, white]",
+    "MDRP[rp0,min,rnd,grey]",
+    "MDRP[rp0,min,rnd,black]",
+    "MDRP[rp0,min,rnd,white]",
     "MDRP1f",
     "MIRP[grey]",
     "MIRP[black]",
     "MIRP[white]",
     "MIRP03",
-    "MIRP[rnd, grey]",
-    "MIRP[rnd, black]",
-    "MIRP[rnd, white]",
+    "MIRP[rnd,grey]",
+    "MIRP[rnd,black]",
+    "MIRP[rnd,white]",
     "MIRP07",
-    "MIRP[min, grey]",
-    "MIRP[min, black]",
-    "MIRP[min, white]",
+    "MIRP[min,grey]",
+    "MIRP[min,black]",
+    "MIRP[min,white]",
     "MIRP0b",
-    "MIRP[min, rnd, grey]",
-    "MIRP[min, rnd, black]",
-    "MIRP[min, rnd, white]",
+    "MIRP[min,rnd,grey]",
+    "MIRP[min,rnd,black]",
+    "MIRP[min,rnd,white]",
     "MIRP0f",
-    "MIRP[rp0, grey]",
-    "MIRP[rp0, black]",
-    "MIRP[rp0, white]",
+    "MIRP[rp0,grey]",
+    "MIRP[rp0,black]",
+    "MIRP[rp0,white]",
     "MIRP13",
-    "MIRP[rp0, rnd, grey]",
-    "MIRP[rp0, rnd, black]",
-    "MIRP[rp0, rnd, white]",
+    "MIRP[rp0,rnd,grey]",
+    "MIRP[rp0,rnd,black]",
+    "MIRP[rp0,rnd,white]",
     "MIRP17",
-    "MIRP[rp0, min, grey]",
-    "MIRP[rp0, min, black]",
-    "MIRP[rp0, min, white]",
+    "MIRP[rp0,min,grey]",
+    "MIRP[rp0,min,black]",
+    "MIRP[rp0,min,white]",
     "MIRP1b",
-    "MIRP[rp0, min, rnd, grey]",
-    "MIRP[rp0, min, rnd, black]",
-    "MIRP[rp0, min, rnd, white]",
+    "MIRP[rp0,min,rnd,grey]",
+    "MIRP[rp0,min,rnd,black]",
+    "MIRP[rp0,min,rnd,white]",
     "MIRP1f"
 };
 
@@ -474,6 +475,11 @@ struct instrdata {
     uint8 *bts;
     unsigned int changed: 1;
     unsigned int in_composit: 1;
+    SplineFont *sf;
+    SplineChar *sc;
+    uint32 tag;
+    struct instrdlg *id;
+    struct instrdata *next;
 };
 
 struct instrinfo {
@@ -494,12 +500,11 @@ struct instrinfo {
 
 typedef struct instrdlg {
     GWindow gw, v;
-    unsigned int done: 1;
-    unsigned int good: 1;
+    unsigned int inedit: 1;
     struct instrdata *instrdata;
     struct instrinfo instrinfo;
     int oc_height;
-    GGadget *ok, *cancel;
+    GGadget *ok, *cancel, *edit, *parse, *text;
 } InstrDlg;
 
 static void instr_typify(struct instrinfo *instrinfo) {
@@ -569,9 +574,13 @@ return;
     pos.width = pos.x; pos.x = 0;
     GDrawResize(ii->v,pos.width,pos.height);
 
+    GGadgetResize(iv->text,event->u.resize.size.width,pos.height);
+
     GGadgetGetSize(iv->cancel,&size);
     GGadgetMove(iv->ok,10,event->u.resize.size.height-iv->oc_height+6);
     GGadgetMove(iv->cancel,event->u.resize.size.width-13-size.width,event->u.resize.size.height-iv->oc_height+9);
+    GGadgetMove(iv->edit,(event->u.resize.size.width-size.width)/2,event->u.resize.size.height-iv->oc_height+9);
+    GGadgetMove(iv->parse,(event->u.resize.size.width-size.width)/2,event->u.resize.size.height-iv->oc_height+9);
 
     ii->vheight = pos.height; ii->vwidth = pos.width;
     lh = ii->lheight;
@@ -581,6 +590,263 @@ return;
 	ii->lpos = lh-ii->vheight/ii->fh;
     if ( ii->lpos<0 ) ii->lpos = 0;
     GScrollBarSetPos(ii->vsb,ii->lpos);
+    GDrawRequestExpose(iv->gw,NULL,false);
+}
+
+static void IVError(InstrDlg *iv,int msg,int offset) {
+
+    GTextFieldSelect(iv->text,offset,offset);
+    GTextFieldShow(iv->text,offset);
+    GWidgetIndicateFocusGadget(iv->text);
+    GWidgetErrorR(_STR_ParseError,msg);
+}
+
+static int IVParse(InstrDlg *iv) {
+    short numberstack[256];
+    int npos=0, nread, i;
+    int push_left=0, push_size=0;
+    const unichar_t *text = _GGadgetGetTitle(iv->text), *pt;
+    unichar_t *end, *bend, *brack;
+    int icnt=0, imax=u_strlen(text)/2, val, temp;
+    uint8 *instrs = galloc(imax);
+
+    for ( pt = text; *pt ; ++pt ) {
+	npos = 0;
+	while ( npos<256 ) {
+	    while ( *pt==' ' || *pt=='\t' ) ++pt;
+	    if ( isdigit( *pt ) || *pt=='-' ) {
+		val = u_strtol(pt,&end,0);
+		if ( val>32767 || val<-32768 ) {
+		    IVError(iv,_STR_InvalidShort,pt-text);
+return( false );
+		}
+		numberstack[npos++] = val;
+		pt = end;
+	    } else if ( uc_strnmatch(pt,"cvt",3)==0 ) {
+		pt += 3;
+		while ( *pt==' ' || *pt=='\t' ) ++pt;
+		if ( *pt!='(' ) {
+		    IVError(iv,_STR_MissingLParenCvt,pt-text);
+return( false );
+		}
+		temp = u_strtol(pt+1,&end,0);
+		pt = end;
+		while ( *pt==' ' || *pt=='\t' ) ++pt;
+		if ( *pt!=')' ) {
+		    IVError(iv,_STR_MissingRParenCvt,pt-text);
+return( false );
+		}
+		numberstack[npos++] = TTF__getcvtval(iv->instrdata->sf,temp);
+		++pt;
+	    } else
+	break;
+	}
+	while ( *pt==' ' || *pt=='\t' ) ++pt;
+	if ( npos==0 && *pt=='\n' )
+    continue;
+	nread = 0;
+	if ( push_left==-1 ) {
+	    /* we need a push count */
+	    if ( npos==0 )
+		IVError(iv,_STR_NeedPushCount,pt-text);
+	    else if ( numberstack[0]>255 || numberstack[0]<=0 ) {
+		IVError(iv,_STR_InvalidPushCount,pt-text);
+return( false );
+	    } else {
+		nread = 1;
+		instrs[icnt++] = numberstack[0];
+		push_left = numberstack[0];
+	    }
+	}
+	if ( push_left!=0 && push_left<npos-nread && *pt=='\n' ) {
+	    IVError(iv,_STR_ExtraPushes,pt-text);
+return( false );
+	}
+	while ( push_left>0 && nread<npos ) {
+	    if ( push_size==2 ) {
+		instrs[icnt++] = numberstack[nread]>>8;
+		instrs[icnt++] = numberstack[nread++]&0xff;
+	    } else if ( numberstack[0]>255 || numberstack[0]<0 ) {
+		IVError(iv,_STR_InvalidUnsignedByte,pt-text);
+return( false );
+	    } else
+		instrs[icnt++] = numberstack[nread++];
+	    --push_left;
+	}
+	if ( *pt=='\n' )
+    continue;
+	if ( push_left>0 ) {
+	    IVError(iv,_STR_MissingPushes,pt-text);
+return( false );
+	}
+	while ( nread<npos ) {
+	    i = nread;
+	    if ( numberstack[nread]>=0 && numberstack[nread]<=255 ) {
+		while ( i<npos && numberstack[i]>=0 && numberstack[i]<=255 )
+		    ++i;
+		if ( i-nread<=8 )
+		    instrs[icnt++] = ttf_pushb+(i-nread)-1;
+		else {
+		    instrs[icnt++] = ttf_npushb;
+		    instrs[icnt++] = i-nread;
+		}
+		while ( nread<i )
+		    instrs[icnt++] = numberstack[nread++];
+	    } else {
+		while ( i<npos && numberstack[i]<0 && numberstack[i]>255 )
+		    ++i;
+		if ( i-nread<=8 )
+		    instrs[icnt++] = ttf_pushw+(i-nread)-1;
+		else {
+		    instrs[icnt++] = ttf_npushw;
+		    instrs[icnt++] = i-nread;
+		}
+		while ( nread<i ) {
+		    instrs[icnt++] = numberstack[nread]>>8;
+		    instrs[icnt++] = numberstack[nread++]&0xff;
+		}
+	    }
+	}
+	brack = NULL;
+	for ( end=(unichar_t *) pt; *end!='\n' && *end!=' ' && *end!='\0'; ++end )
+	    if ( *end=='[' || *end=='_' ) brack=end;
+	for ( i=0; i<256; ++i )
+	    if ( uc_strnmatch(pt,instrnames[i],end-pt)==0 && end-pt==strlen(instrnames[i]))
+	break;
+	if ( i==256 && brack!=NULL ) {
+	    for ( i=0; i<256; ++i )
+		if ( uc_strnmatch(pt,instrnames[i],brack-pt+1)==0 ) 
+	    break;
+	    val = u_strtol(brack+1,&bend,2);	/* Stuff in brackets should be in binary */
+	    while ( *bend==' ' || *bend=='\t' ) ++bend;
+	    if ( *bend!=']' ) {
+		IVError(iv,_STR_MissingRBracket,pt-text);
+return( false );
+	    }
+	    if ( val>=32 ) {
+		IVError(iv,_STR_BracketNumTooBig,pt-text);
+return( false );
+	    }
+	    i += val;
+	}
+	pt = end;
+	instrs[icnt++] = i;
+	if ( i==ttf_npushb || i==ttf_npushw || (i>=ttf_pushb && i<=ttf_pushw+7)) {
+	    push_size = (i==ttf_npushb || (i>=ttf_pushb && i<=ttf_pushb+7))? 1 : 2;
+	    if ( i==ttf_npushb || i==ttf_npushw )
+		push_left = -1;
+	    else if ( i>=ttf_pushb && i<=ttf_pushb+7 )
+		push_left = i-ttf_pushb+1;
+	    else
+		push_left = i-ttf_pushw+1;
+	}
+	if ( *pt=='\0' )
+    break;
+    }
+    if ( icnt!=iv->instrdata->instr_cnt )
+	iv->instrdata->changed = true;
+    else {
+	for ( i=0; i<icnt; ++i )
+	    if ( instrs[i]!=iv->instrdata->instrs[i])
+	break;
+	if ( i==icnt ) {		/* Unchanged */
+	    free(instrs);
+return( true );
+	}
+    }
+    free( iv->instrdata->instrs );
+    iv->instrdata->instrs = instrs;
+    iv->instrdata->instr_cnt = icnt;
+    iv->instrdata->max = imax;
+    iv->instrdata->changed = true;
+    free(iv->instrdata->bts );
+    iv->instrdata->bts = NULL;
+    instr_typify(&iv->instrinfo);
+    GScrollBarSetBounds(iv->instrinfo.vsb,0,iv->instrinfo.lheight,
+	    iv->instrinfo.vheight/iv->instrinfo.fh);
+return( true );
+}
+
+static void IVOk(InstrDlg *iv) {
+    struct instrdata *id = iv->instrdata;
+
+    if ( id->changed ) {
+	if ( id->sc!=NULL ) {
+	    SplineChar *sc = id->sc;
+	    CharView *cv;
+	    free(sc->ttf_instrs);
+	    sc->ttf_instrs_len = id->instr_cnt;
+	    if ( id->instr_cnt==0 )
+		sc->ttf_instrs = NULL;
+	    else {
+		sc->ttf_instrs = galloc( id->instr_cnt );
+		memcpy(sc->ttf_instrs,id->instrs,id->instr_cnt );
+	    }
+	    for ( cv=sc->views; cv!=NULL; cv=cv->next )
+		cv->showpointnumbers = false;
+	    SCCharChangedUpdate(sc);
+	} else {
+	    struct ttf_table *tab, *prev;
+	    if ( id->instr_cnt==0 ) {
+		for ( prev=NULL, tab=id->sf->ttf_tables; tab!=NULL && tab->tag!=id->tag; prev=tab, tab=tab->next );
+		if ( tab==NULL )
+		    /* Nothing to be done */;
+		else if ( prev==NULL )
+		    id->sf->ttf_tables = tab->next;
+		else
+		    prev->next = tab->next;
+		if ( tab!=NULL ) {
+		    tab->next = NULL;
+		    TtfTablesFree(tab);
+		}
+	    } else {
+		tab = SFFindTable(id->sf,id->tag);
+		if ( tab==NULL ) {
+		    tab = chunkalloc(sizeof(struct ttf_table));
+		    tab->next = id->sf->ttf_tables;
+		    id->sf->ttf_tables = tab;
+		    tab->tag = id->tag;
+		}
+		free( tab->data );
+		tab->data = galloc( id->instr_cnt );
+		memcpy(tab->data,id->instrs,id->instr_cnt );
+		tab->len = id->instr_cnt;
+	    }
+	}
+    }
+    /* Instructions get freed in et_destroy */
+}
+
+static void IVBuildEdit(InstrDlg *iv) {
+    char val[20];
+    unichar_t *ubuf, *pt, *offset, *scroll;
+    int i,l;
+
+    pt = ubuf = offset = scroll = galloc(iv->instrdata->instr_cnt*20*sizeof(unichar_t));
+    for ( i=l=0; i<iv->instrdata->instr_cnt; ++i ) {
+	if ( iv->instrinfo.lpos == l )
+	    scroll = pt;
+	if ( iv->instrinfo.isel_pos == l )
+	    offset = pt;
+	if ( iv->instrdata->bts[i]==bt_wordhi ) {
+	    sprintf( val, " %d", (short) ((iv->instrdata->instrs[i]<<8) | iv->instrdata->instrs[i+1]) );
+	    uc_strcpy(pt,val);
+	    ++i;
+	} else if ( iv->instrdata->bts[i]==bt_cnt || iv->instrdata->bts[i]==bt_byte ) {
+	    sprintf( val, " %d", iv->instrdata->instrs[i]);
+	    uc_strcpy(pt,val);
+	} else {
+	    uc_strcpy(pt, instrnames[iv->instrdata->instrs[i]]);
+	}
+	pt += u_strlen(pt);
+	*pt++ = '\n';
+	++l;
+    }
+    *pt = '\0';
+    GGadgetSetTitle(iv->text,ubuf);
+    GTextFieldSelect(iv->text,offset-ubuf,offset-ubuf);
+    GTextFieldShow(iv->text,scroll-ubuf);
+    free(ubuf);
 }
 
 static void instr_expose(struct instrinfo *ii,GWindow pixmap,GRect *rect) {
@@ -639,7 +905,7 @@ static void instr_expose(struct instrinfo *ii,GWindow pixmap,GRect *rect) {
 	    uc_strcpy(uname,val);
 	} else {
 	    sprintf( ins, "%02x", ii->instrdata->instrs[i] ); uc_strcpy(uins,ins);
-	    uc_strcpy(uname, instrs[ii->instrdata->instrs[i]]);
+	    uc_strcpy(uname, instrnames[ii->instrdata->instrs[i]]);
 	}
 
 	if ( ii->showaddr ) {
@@ -841,20 +1107,52 @@ static int iv_e_h(GWindow gw, GEvent *event) {
 	    instr_scroll(&iv->instrinfo,&event->u.control.u.sb);
 	  break;
 	  case et_buttonactivate:
-	    iv->done = true;
-	    iv->good = event->u.control.g == iv->ok;
+	    if ( event->u.control.g==iv->ok || event->u.control.g==iv->cancel ) {
+		if ( event->u.control.g == iv->ok ) {
+		    if ( iv->inedit )
+			if ( !IVParse(iv))
+      break;
+		    IVOk(iv);
+		}
+		GDrawDestroyWindow(iv->gw);
+	    } else if ( event->u.control.g==iv->edit || event->u.control.g==iv->parse ) {
+		int toedit = event->u.control.g==iv->edit;
+		if ( toedit )
+		    IVBuildEdit(iv);
+		else if ( !IVParse(iv))
+      break;
+		GGadgetSetVisible(iv->parse,toedit);
+		GGadgetSetVisible(iv->text,toedit);
+		GGadgetSetVisible(iv->edit,!toedit);
+		GGadgetSetVisible(iv->instrinfo.vsb,!toedit);
+		GDrawSetVisible(iv->instrinfo.v,!toedit);
+		iv->inedit = toedit;
+	    }
 	  break;
 	}
       break;
       case et_close:
-	iv->done = true;;
+	GDrawDestroyWindow(iv->gw);
       break;
+      case et_destroy: {
+        SplineFont *sf = iv->instrdata->sf;
+	struct instrdata *id, *prev;
+	for ( prev = NULL, id=sf->instr_dlgs; id!=iv->instrdata && id!=NULL; prev=id, id=id->next );
+	if ( prev==NULL )
+	    sf->instr_dlgs = iv->instrdata->next;
+	else
+	    prev->next = iv->instrdata->next;
+	free(iv->instrdata->instrs);
+	free(iv->instrdata->bts);
+	free(iv->instrdata);
+	free(iv);
+      } break;
     }
 return( true );
 }
 
-static int InstrDlgCreate(struct instrdata *id,unichar_t *title) {
-    InstrDlg iv;
+static void InstrDlgCreate(struct instrdata *id,unichar_t *title) {
+    InstrDlg *iv = gcalloc(1,sizeof(*iv));
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
@@ -867,17 +1165,20 @@ static int InstrDlgCreate(struct instrdata *id,unichar_t *title) {
 
     instrhelpsetup();
 
-    memset(&iv,0,sizeof(iv));
-    iv.instrdata = id;
-    iv.instrinfo.instrdata = id;
-    iv.instrinfo.showhex = iv.instrinfo.showaddr = true;
-    instr_typify(&iv.instrinfo);
+    id->next = id->sf->instr_dlgs;
+    id->sf->instr_dlgs = id;
+    id->id = iv;
+
+    iv->instrdata = id;
+    iv->instrinfo.instrdata = id;
+    iv->instrinfo.showhex = iv->instrinfo.showaddr = true;
+    instr_typify(&iv->instrinfo);
 
     if ( ttf_icon==NULL )
 	ttf_icon = GDrawCreateBitmap(NULL,ttf_width,ttf_height,ttf_bits);
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_icon|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_icon;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
@@ -886,9 +1187,9 @@ static int InstrDlgCreate(struct instrdata *id,unichar_t *title) {
     wattrs.icon = ttf_icon;
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,200);
-    iv.oc_height = GDrawPointsToPixels(NULL,37);
-    pos.height = GDrawPointsToPixels(NULL,100) + iv.oc_height;
-    iv.gw = gw = GDrawCreateTopWindow(NULL,&pos,iv_e_h,&iv,&wattrs);
+    iv->oc_height = GDrawPointsToPixels(NULL,37);
+    pos.height = GDrawPointsToPixels(NULL,100) + iv->oc_height;
+    iv->gw = gw = GDrawCreateTopWindow(NULL,&pos,iv_e_h,iv,&wattrs);
 
     memset(&label,0,sizeof(label));
     memset(&gd,0,sizeof(gd));
@@ -898,84 +1199,150 @@ static int InstrDlgCreate(struct instrdata *id,unichar_t *title) {
     label.text_in_resource = true;
     gd.label = &label;
     gd.flags = gg_visible|gg_enabled|gg_but_default;
-    iv.ok = GButtonCreate(gw,&gd,&iv);
+    iv->ok = GButtonCreate(gw,&gd,iv);
     gd.pos.x = -8; gd.pos.y += 3;
     gd.pos.width = -1;
     label.text = (unichar_t *) _STR_Cancel;
     label.text_in_resource = true;
     gd.label = &label;
     gd.flags = gg_visible|gg_enabled|gg_but_cancel;
-    iv.cancel = GButtonCreate(gw,&gd,&iv);
+    iv->cancel = GButtonCreate(gw,&gd,iv);
+
+    label.text = (unichar_t *) _STR_Edit;
+    label.text_in_resource = true;
+    gd.flags = gg_visible|gg_enabled;
+    iv->edit = GButtonCreate(gw,&gd,iv);
+    label.text = (unichar_t *) _STR_Parse;
+    label.text_in_resource = true;
+    gd.flags = gg_enabled;
+    iv->parse = GButtonCreate(gw,&gd,iv);
+
+    gd.label = NULL;
+    gd.pos.x = 0; gd.pos.y = 0;
+    gd.pos.width = pos.width; gd.pos.height = pos.height-GDrawPointsToPixels(NULL,40);
+    gd.flags = gg_enabled|gg_pos_in_pixels|gg_textarea_wrap|gg_pos_use0;
+    iv->text = GTextAreaCreate(gw,&gd,iv);
 
     gd.pos.y = 0; gd.pos.height = pos.height-GDrawPointsToPixels(NULL,40);
     gd.pos.width = GDrawPointsToPixels(gw,_GScrollBar_Width);
     gd.pos.x = pos.width-gd.pos.width;
     gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_sb_vert;
-    iv.instrinfo.vsb = sb = GScrollBarCreate(gw,&gd,&iv);
+    iv->instrinfo.vsb = sb = GScrollBarCreate(gw,&gd,iv);
 
     wattrs.mask = wam_events|wam_cursor;
     pos.x = 0; pos.y = 0;
     pos.width = gd.pos.x; pos.height = gd.pos.height;
-    iv.instrinfo.v = GWidgetCreateSubWindow(gw,&pos,iv_v_e_h,&iv,&wattrs);
-    GDrawSetVisible(iv.instrinfo.v,true);
+    iv->instrinfo.v = GWidgetCreateSubWindow(gw,&pos,iv_v_e_h,iv,&wattrs);
+    GDrawSetVisible(iv->instrinfo.v,true);
 
     memset(&rq,0,sizeof(rq));
     rq.family_name = monospace;
     rq.point_size = -12;
     rq.weight = 400;
-    iv.instrinfo.gfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
-    GDrawSetFont(iv.instrinfo.v,iv.instrinfo.gfont);
-    GDrawFontMetrics(iv.instrinfo.gfont,&as,&ds,&ld);
-    iv.instrinfo.as = as+1;
-    iv.instrinfo.fh = iv.instrinfo.as+ds;
-    iv.instrinfo.isel_pos = -1;
+    iv->instrinfo.gfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+    GDrawSetFont(iv->instrinfo.v,iv->instrinfo.gfont);
+    GGadgetSetFont(iv->text,iv->instrinfo.gfont);
+    GDrawFontMetrics(iv->instrinfo.gfont,&as,&ds,&ld);
+    iv->instrinfo.as = as+1;
+    iv->instrinfo.fh = iv->instrinfo.as+ds;
+    iv->instrinfo.isel_pos = -1;
 
-    lh = iv.instrinfo.lheight;
+    lh = iv->instrinfo.lheight;
     if ( lh>40 ) lh = 40;
     if ( lh<4 ) lh = 4;
-    GDrawResize(iv.gw,pos.width+gd.pos.width,iv.oc_height+lh*iv.instrinfo.fh+4);
+    GDrawResize(iv->gw,pos.width+gd.pos.width,iv->oc_height+lh*iv->instrinfo.fh+4);
 
     GDrawSetVisible(gw,true);
-
-    while ( !iv.done )
-	GDrawProcessOneEvent(NULL);
-    GDrawDestroyWindow(gw);
-
-    free(id->bts); id->bts = NULL;
-return( iv.good );
 }
 
-void SCShowInstructions(SplineChar *sc, CharView *cv) {
-    struct instrdata id;
+void SCEditInstructions(SplineChar *sc) {
+    struct instrdata *id;
     unichar_t title[100];
+    CharView *cv;
 
-    if ( cv!=NULL ) {
+    for ( id = sc->parent->instr_dlgs; id!=NULL && id->sc!=sc; id=id->next );
+    if ( id!=NULL ) {
+	GDrawSetVisible(id->id->gw,true);
+	GDrawRaise(id->id->gw);
+return;
+    }
+
+    for ( cv=sc->views; cv!=NULL; cv=cv->next ) {
 	sc = cv->sc;
 	cv->showpointnumbers = true;
 	SCNumberPoints(sc);
 	GDrawRequestExpose(cv->v,NULL,false);
     }
-    memset(&id,0,sizeof(id));
-    id.instr_cnt = id.max = sc->ttf_instrs_len;
-    id.instrs = galloc(id.max+1);
+    id = gcalloc(1,sizeof(*id));
+    id->instr_cnt = id->max = sc->ttf_instrs_len;
+    id->sf = sc->parent;
+    id->sc = sc;
+    id->instrs = galloc(id->max+1);
     if ( sc->ttf_instrs!=NULL )
-	memcpy(id.instrs,sc->ttf_instrs,id.instr_cnt);
+	memcpy(id->instrs,sc->ttf_instrs,id->instr_cnt);
     u_sprintf(title,GStringGetResource(_STR_TTFInstructionsFor,NULL),sc->name);
-    if ( InstrDlgCreate(&id,title)) {
-	if ( id.changed ) {
-	    free(sc->ttf_instrs);
-	    sc->ttf_instrs_len = id.instr_cnt;
-	    if ( id.instr_cnt==0 )
-		sc->ttf_instrs = NULL;
-	    else {
-		sc->ttf_instrs = galloc( id.instr_cnt );
-		memcpy(sc->ttf_instrs,id.instrs,id.instr_cnt );
-	    }
+    InstrDlgCreate(id,title);
+}
+
+void SFEditTable(SplineFont *sf, uint32 tag) {
+    struct instrdata *id;
+    struct ttf_table *tab;
+    char name[12];
+    unichar_t title[100];
+
+    for ( id = sf->instr_dlgs; id!=NULL && id->tag!=tag; id=id->next );
+    if ( id!=NULL ) {
+	GDrawSetVisible(id->id->gw,true);
+	GDrawRaise(id->id->gw);
+return;
+    }
+
+    id = gcalloc(1,sizeof(*id));
+    id->sf = sf;
+    id->tag = tag;
+    tab = SFFindTable(sf,tag);
+    id->instr_cnt = id->max = tab==NULL ? 1 : tab->len;
+    id->instrs = galloc(id->max+1);
+    if ( tab!=NULL && tab->data!=NULL )
+	memcpy(id->instrs,tab->data,id->instr_cnt);
+    name[0] = name[5] = '\'';
+    name[1] = tag>>24; name[2] = (tag>>16)&0xff; name[3] = (tag>>8)&0xff; name[4] = tag&0xff;
+    name[6] = 0;
+    u_sprintf(title,GStringGetResource(_STR_TTFInstructionsFor,NULL),name);
+    InstrDlgCreate(id,title);
+}
+
+int SFCloseAllInstrs(SplineFont *sf) {
+    struct instrdata *id, *next;
+    int changed;
+    char name[12], *npt;
+    static int buts[] = { _STR_OK, _STR_Cancel, 0 };
+
+    for ( id = sf->instr_dlgs; id!=NULL; id=next ) {
+	next = id->next;
+	changed = id->changed;
+	if ( !changed && id->id->inedit ) {
+	    if ( !IVParse(id->id))
+		changed = true;
+	    else
+		changed = id->changed;
 	}
+	if ( changed ) {
+	    if ( id->tag==0 )
+		npt = id->sc->name;
+	    else {
+		name[0] = name[5] = '\'';
+		name[1] = id->tag>>24; name[2] = (id->tag>>16)&0xff; name[3] = (id->tag>>8)&0xff; name[4] = id->tag&0xff;
+		name[6] = 0;
+		npt = name;
+	    }
+	    GDrawRaise(id->id->gw);
+	    if ( GWidgetAskR(_STR_InstrChanged,buts,0,1,_STR_AskInstrChanged,npt)==1 )
+return( false );
+	}
+	GDrawDestroyWindow(id->id->gw);
     }
-    free( id.instrs );
-    if ( cv!=NULL ) {
-	cv->showpointnumbers = false;
-	GDrawRequestExpose(cv->v,NULL,false);
-    }
+    GDrawSync(NULL);
+    GDrawProcessPendingEvents(NULL);
+return( true );
 }

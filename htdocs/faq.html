@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 18-Feb-2003 -->
+  <!-- AP: Last modified: 1-Mar-2003 -->
   <TITLE>Frequently Asked Questions</TITLE>
 </HEAD>
 <BODY>
@@ -22,6 +22,11 @@
     already?</A>
   <LI>
     <A HREF="#widget-set">Why is PfaEdit based on a non-standard widget set?</A>
+    <UL>
+      <LI>
+	<A HREF="#C_plus_plus">Why isn't PfaEdit written in C++? (or why C++ is not
+	my favorite language)</A>
+    </UL>
   <LI>
     <A HREF="#legal">Is it legal to modify a font? Is it ethical?</A>
   <LI>
@@ -166,6 +171,39 @@
     I also wanted a widget set where I could actually figure out whether the
     checkbox was checked or not checked. In far too many cases my eyes can't
     work out which is which...
+  <DT>
+    <A NAME="C-plus-plus">Why isn't PfaEdit written in C++ (or why C++ is not
+    my favorite language)?</A>
+  <DD>
+    I've been a little surprised to be asked this question, I had not realized
+    my choice of language needed justification, but it appears to do so...
+    <P>
+    Basically because I don't find object-oriented practices helpful in most
+    cases, because I find C++ far too complex and badly designed and because
+    I can't debug it easily.
+    <UL>
+      <LI>
+	I grew up with SIMULA and dabbled with SmallTalk and found after a few years
+	that there were very few problems where an object oriented approach seemed
+	natural to me. In most cases it just seemed to impose unneeded complexities
+	on the problem.
+      <LI>
+	The semantics of a C++ program cannot be specified. The compiler is free
+	to generate temporaries as it wishes. In C this is not a problem, but in
+	C++ the creation of a temporary can involve calling a constructor and a
+	destructor which may have untold side-effects. I find this frightening.
+      <LI>
+	I find it extremely difficult to debug C++. Stepping through a statement
+	often ivolves many unexpected procedure calls (some of which are inlined
+	and not obvious). This distracts from my main purpose in debugging.
+      <LI>
+	Finally I find the language badly specified and too complex. It's various
+	concepts do not fit well together. Each compiler seems to do things slightly
+	differently.
+    </UL>
+    <P>
+    The above are my personal opinions based on my experience and are supposed
+    to explain why <I>I</I> do not use C++. Your opinions may differ.
   <DT>
     <A NAME="legal"><B>Is it legal to modify a font? Is it ethical?</B></A>
   <DD>
