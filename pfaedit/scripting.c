@@ -2169,6 +2169,122 @@ static void bWorthOutputting(Context *c) {
 	error( c, "Bad type of argument to InFont");
 }
 
+static void bDefaultATT(Context *c) {
+    SplineFont *sf = c->curfv->sf;
+    char tag[4];
+    char *str;
+    uint32 ftag;
+    int i;
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_str )
+	error( c, "Bad type for argument");
+
+    memset(tag,' ',4);
+    str = c->a.vals[3].u.sval;
+    if ( *str ) {
+	tag[0] = *str;
+	if ( str[1] ) {
+	    tag[1] = str[1];
+	    if ( str[2] ) {
+		tag[2] = str[2];
+		if ( str[3] ) {
+		    tag[3] = str[3];
+		    if ( str[4] )
+			error(c,"Tags/Scripts/Languages are represented by strings which are at most 4 characters long");
+		}
+	    }
+	}
+    }
+    ftag = (tag[0]<<24)|(tag[1]<<16)|(tag[2]<<8)|tag[3];
+    if ( strcmp(str,"*"))
+	ftag = 0;			/* Everything */
+
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && c->curfv->selected[i])
+	SCTagDefault(sf->chars[i],ftag);
+}
+
+static void bAddATT(Context *c) {
+    SplineChar *sc;
+    PST temp, *pst;
+    char tag[4];
+    char *str;
+    unichar_t *ustr;
+
+    memset(&temp,0,sizeof(temp));
+
+    if ( c->a.argc!=6 && c->a.argc!=9 )
+	error( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str ||
+	    c->a.vals[3].type!=v_str || c->a.vals[4].type!=v_int )
+	error( c, "Bad type for argument");
+    else if ( c->a.argc==6 && c->a.vals[5].type!=v_str )
+	error( c, "Bad type for argument");
+    else if ( c->a.argc==9 && ( c->a.vals[5].type!=v_int ||
+	    c->a.vals[6].type!=v_int || c->a.vals[7].type!=v_int ||
+	    c->a.vals[8].type!=v_int ))
+	error( c, "Bad type for argument");
+
+    if ( strcmp(c->a.vals[1].u.sval,"Position")==0 )
+	temp.type = pst_position;
+    else if ( strcmp(c->a.vals[1].u.sval,"Substitution")==0 )
+	temp.type = pst_substitution;
+    else if ( strcmp(c->a.vals[1].u.sval,"AltSubs")==0 )
+	temp.type = pst_alternate;
+    else if ( strcmp(c->a.vals[1].u.sval,"MultSubs")==0 )
+	temp.type = pst_multiple;
+    else if ( strcmp(c->a.vals[1].u.sval,"Ligature")==0 )
+	temp.type = pst_ligature;
+    else
+	errors(c,"Unknown tag", c->a.vals[1].u.sval);
+
+    memset(tag,' ',4);
+    str = c->a.vals[3].u.sval;
+    if ( *str ) {
+	tag[0] = *str;
+	if ( str[1] ) {
+	    tag[1] = str[1];
+	    if ( str[2] ) {
+		tag[2] = str[2];
+		if ( str[3] ) {
+		    tag[3] = str[3];
+		    if ( str[4] )
+			error(c,"Tags/Scripts/Languages are represented by strings which are at most 4 characters long");
+		}
+	    }
+	}
+    }
+    temp.tag = (tag[0]<<24)|(tag[1]<<16)|(tag[2]<<8)|tag[3];
+    temp.flags = c->a.vals[4].u.ival;
+
+    sc = GetOneSelChar(c);
+
+    if ( c->a.vals[4].u.ival == -1 ) {
+	temp.flags = 0;
+	if ( SCRightToLeft(sc))
+	    temp.flags = pst_r2l;
+	if ( temp.type==pst_ligature )
+	    temp.flags |= pst_ignorecombiningmarks;
+    }
+
+    ustr = uc_copy(c->a.vals[2].u.sval);
+    temp.script_lang_index = SFAddScriptLangRecord(sc->parent,SRParse(ustr));
+    free(ustr);
+
+    if ( temp.type==pst_position ) {
+	temp.u.pos.xoff = c->a.vals[5].u.ival;
+	temp.u.pos.yoff = c->a.vals[6].u.ival;
+	temp.u.pos.h_adv_off = c->a.vals[7].u.ival;
+	temp.u.pos.v_adv_off = c->a.vals[8].u.ival;
+    } else
+	temp.u.subs.variant = copy(c->a.vals[5].u.sval);
+    pst = chunkalloc(sizeof(PST));
+    *pst = temp;
+    pst->next = sc->possub;
+    sc->possub = pst;
+}
+
 static void PosSubInfo(SplineChar *sc,Context *c) {
     uint32 tags[3];
     int i;
@@ -2245,7 +2361,6 @@ static void bCharInfo(Context *c) {
     c->return_val.type = v_int;
     if ( c->a.argc==5 ) {
 	PosSubInfo(sc,c);
-
     } else if ( c->a.argc==3 ) {
 	int ch2 = ParseCharIdent(c,&c->a.vals[2],true);
 	if ( strmatch( c->a.vals[1].u.sval,"Kern")==0 ) {
@@ -2373,6 +2488,8 @@ struct builtins { char *name; void (*func)(Context *); int nofontok; } builtins[
     { "RoundToInt", bRoundToInt },
     { "Autotrace", bAutotrace },
     { "CorrectDirection", bCorrectDirection },
+    { "AddATT", bAddATT },
+    { "DefaultATT", bDefaultATT },
     { "BuildComposit", bBuildComposit },
     { "BuildAccented", bBuildAccented },
     { "MergeFonts", bMergeFonts },

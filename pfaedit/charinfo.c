@@ -669,6 +669,43 @@ return( i );
 return( i );
 }
 
+int SRMatch(struct script_record *sr1,struct script_record *sr2) {
+    int i, j;
+
+    for ( i=0; sr1[i].script!=0 && sr2[i].script!=0 ; ++i ) {
+	if ( sr1[i].script!=sr2[i].script )
+return( false );
+	for ( j=0 ; sr1[i].langs[j]!=0 && sr2[i].langs[j]!=0 ; ++j ) {
+	    if ( sr1[i].langs[j]!= sr2[i].langs[j] )
+return( false );
+	}
+	if ( sr1[i].langs[j]!=0 || sr2[i].langs[j]!=0 )
+return( false );
+    }
+    if ( sr1[i].script!=0 || sr2[i].script!=0 )
+return( false );
+
+return( true );
+}
+
+int SFAddScriptLangRecord(SplineFont *sf,struct script_record *sr) {
+    int i;
+
+    if ( sf->cidmaster ) sf = sf->cidmaster;
+    if ( sf->script_lang==NULL )
+	sf->script_lang = gcalloc(2,sizeof(struct script_record *));
+    for ( i=0; sf->script_lang[i]!=NULL; ++i ) {
+	if ( SRMatch(sf->script_lang[i],sr)) {
+	    ScriptRecordFree(sr);
+return( i );
+	}
+    }
+    sf->script_lang = grealloc(sf->script_lang,(i+2)*sizeof(struct script_record *));
+    sf->script_lang[i] = sr;
+    sf->script_lang[i+1] = NULL;
+return( i );
+}
+
 static unichar_t *ScriptLangLine(struct script_record *sr) {
     int i,j, tot=0;
     unichar_t *line, *pt;
@@ -746,10 +783,10 @@ struct sl_dlg {
     GGadget *list;
 };
 
-static struct script_record *SRParse(const unichar_t *line) {
-    int scnt, lcnt, i, j;
+struct script_record *SRParse(const unichar_t *line) {
+    int scnt, lcnt, i, j, k;
     const unichar_t *pt, *start, *lpt;
-    struct script_record *sr;
+    struct script_record *sr, srtemp;
     unichar_t tag[6];
 
     if ( line==NULL )
@@ -810,6 +847,27 @@ return( NULL );
 	ScriptRecordFree(sr);
 	GWidgetErrorR(_STR_SLError,_STR_SLErrorText);
 return( NULL );
+    }
+
+    /* Order it properly */
+    if ( sr[i].script!=0 ) 
+    for ( i=0; sr[i+1].script!=0; ++i ) for ( j=i+1; sr[j].script!=0; ++j ) {
+	if ( sr[i].script>sr[j].script ) {
+	    srtemp = sr[i];
+	    sr[i] = sr[j];
+	    sr[j] = srtemp;
+	}
+    }
+    for ( k=0; sr[k].script!=0; ++k ) {
+	struct script_record *srpt = &sr[k];
+	if ( srpt->langs[0]!=0 )
+	for ( i=0; srpt->langs[i+1]!=0; ++i ) for ( j=i+1; srpt->langs[j]!=0; ++j ) {
+	    if ( srpt->langs[i]>srpt->langs[j] ) {
+		uint32 temp = srpt->langs[i];
+		srpt->langs[i] = srpt->langs[j];
+		srpt->langs[j] = temp;
+	    }
+	}
     }
 
 return( sr );

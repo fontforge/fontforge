@@ -1024,7 +1024,11 @@ extern void SFFigureGrid(SplineFont *sf);
 #endif
 extern int FVWinInfo(struct fontview *,int *cc,int *rc);
 
+extern struct script_record *SRParse(const unichar_t *line);
+extern int SFAddScriptLangRecord(SplineFont *sf,struct script_record *sr);
 extern int SFAddScriptLangIndex(SplineFont *sf,uint32 script,uint32 lang);
+extern int ScriptLangMatch(struct script_record *sr,uint32 script,uint32 lang);
+extern int SRMatch(struct script_record *sr1,struct script_record *sr2);
 
 struct cidmap;			/* private structure to encoding.c */
 extern int CID2NameEnc(struct cidmap *map,int cid, char *buffer, int len);

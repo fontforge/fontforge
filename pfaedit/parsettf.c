@@ -1283,11 +1283,9 @@ static void readttfglyphs(FILE *ttf,struct ttfinfo *info) {
 	}
     }
     free(goffsets);
-/* Debug */
     for ( i=0; i<info->glyph_cnt ; ++i )
 	if ( info->chars[i]!=NULL )
 	    info->chars[i]->ttf_glyph = i;
-/* End Debug */
     GProgressNextStage();
 }
 
@@ -2728,6 +2726,11 @@ return( 0 );
     for ( i=0; i<gsubs.cnt; ++i )
 	free(gsubs.values[i]);
     free(gsubs.values); free(gsubs.lens);
+
+    for ( i=0; i<info->glyph_cnt ; ++i )
+	if ( info->chars[i]!=NULL )
+	    info->chars[i]->ttf_glyph = i;
+
 return( 1 );
 }
 
@@ -2947,6 +2950,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	    enc = em_unicode4;
 	    encoff = offset;
 	    mod = 0;
+	    info->platform = platform; info->specific = specific;
 	} else if ( (enc!=em_unicode4 || (!prefer_cjk_encodings ||
 		(enc!=em_sjis && enc!=em_wansung && enc!=em_big5 &&
 		 enc!=em_big5hkscs && enc!=em_johab))) &&
@@ -2957,6 +2961,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 		( platform==0 /*&& (specific==0 || specific==3)*/ && enc!=em_symbol ))) {	/* Apple Unicode */
 	    enc = em_unicode;
 	    encoff = offset;
+	    info->platform = platform; info->specific = specific;
 	    mod = 0;
 	/* choose ms symbol over apple unicode. If there's an ms uncode it will */
 	/*  come after ms symbol in the list and we'll get that */
@@ -2964,11 +2969,13 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	    /* Only select symbol if we don't have something better */
 	    enc = em_symbol;
 	    encoff = offset;
+	    info->platform = platform; info->specific = specific;
 	    /* Now I had assumed this would be a 1 byte encoding, but it turns*/
 	    /*  out to map into the unicode private use area at U+f000-U+F0FF */
 	    /*  so it's a 2 byte enc */
 /* Mac platform specific encodings are script numbers. 0=>roman, 1=>jap, 2=>big5, 3=>korean, 4=>arab, 5=>hebrew, 6=>greek, 7=>cyrillic, ... 25=>simplified chinese */
 	} else if ( platform==1 && specific==0 && (enc==em_none||enc==-2) ) {
+	    info->platform = platform; info->specific = specific;
 	    enc = em_mac;
 	    encoff = offset;
 	    trans = unicode_from_mac;
@@ -2978,18 +2985,21 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	    /*  Japanese appears to be sjis */
 	    enc = specific==1?em_sjis:specific==2?em_big5hkscs:specific==3?em_wansung:em_gb2312;
 	    mod = specific==1?2:specific==2?4:specific==3?5:3;		/* convert to ms specific */
+	    info->platform = platform; info->specific = specific;
 	    encoff = offset;
 	} else if ( platform==3 && (specific==2 || specific==4 || specific==5 || specific==6 ) &&
 		(prefer_cjk_encodings || enc!=em_unicode) ) {
 	    /* Old ms docs say that specific==3 => big 5, new docs say specific==4 => big5 */
 	    /*  Ain't that jus' great? */
 	    enc = specific==2? em_sjis : specific==5 ? em_wansung : specific==4? em_big5hkscs : em_johab;
+	    info->platform = platform; info->specific = specific;
 	    mod = specific;
 	    encoff = offset;
 	} else if ( enc==em_none ) {
 	    enc = -2;
 	    mod = -1;
 	    encoff = offset;
+	    info->platform = platform; info->specific = specific;
 	}
     }
     if ( enc!=em_none ) {
@@ -3422,7 +3432,8 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 	if ( info->ordering!=NULL )
 	    sprintf(buffer, "%.20s-%d", info->ordering, i );
 	else if ( info->chars[i]->enc!=0 )
-	    sprintf(buffer, "nounicode-%x", info->chars[i]->enc );
+	    sprintf(buffer, "nounicode-%d-%d-%x", info->platform, info->specific,
+		    info->chars[i]->enc );
 	else
 	    sprintf( buffer, "glyph%d", i );
 	info->chars[i]->name = copy(buffer);
@@ -5950,6 +5961,8 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 	ord->next = sf->orders;
 	sf->orders = ord;
     }
+
+    otf_orderlangs(sf);		/* I thought these had to be ordered, but it seems I was wrong. But I depend on the order, so I enforce it here */
 
 return( sf );
 }
