@@ -147,7 +147,7 @@ return( goodname );
     }
     for ( i=0; testnames[i]!=NULL; ++i ) {
 	test = iconv_open(testnames[i],"ISO-8859-1");
-	if ( test!=(iconv_t) -1 ) {
+	if ( test!=(iconv_t) -1 && test!=NULL ) {
 	    iconv_close(test);
 	    goodname = testnames[i];
 return( goodname );
@@ -156,7 +156,7 @@ return( goodname );
 
     for ( i=0; names[i]!=NULL; ++i ) {
 	test = iconv_open(names[i],"ISO-8859-1");
-	if ( test!=(iconv_t) -1 ) {
+	if ( test!=(iconv_t) -1 && test!=NULL ) {
 	    iconv_close(test);
 	    goodname = names[i];
 return( goodname );
@@ -285,7 +285,7 @@ return( &unicodefull );
     memset(&temp,0,sizeof(temp));
     temp.builtin = true;
     temp.tounicode = iconv_open(FindUCS2Name(),iconv_name);
-    if ( temp.tounicode==(iconv_t) -1 )
+    if ( temp.tounicode==(iconv_t) -1 || temp.tounicode==NULL )
 return( NULL );			/* Iconv doesn't recognize this name */
     temp.fromunicode = iconv_open(iconv_name,FindUCS2Name());
 
