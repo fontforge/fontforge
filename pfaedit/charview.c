@@ -1345,7 +1345,7 @@ void SCOutOfDateBackground(SplineChar *sc) {
 static void CVRegenFill(CharView *cv) {
     if ( cv->showfilled ) {
 	BDFCharFree(cv->filled);
-	cv->filled = SplineCharRasterize(cv->sc,cv->scale*(cv->fv->sf->ascent+cv->fv->sf->descent));
+	cv->filled = SplineCharRasterize(cv->sc,cv->scale*(cv->fv->sf->ascent+cv->fv->sf->descent)+.1);
 	cv->gi.u.image->data = cv->filled->bitmap;
 	cv->gi.u.image->bytes_per_line = cv->filled->bytes_per_line;
 	cv->gi.u.image->width = cv->filled->xmax-cv->filled->xmin+1;
