@@ -18,7 +18,7 @@ pfaedit_OBJECTS =  alignment.obj,autohint.obj,autosave.obj,autowidth.obj,\
 pfaedit_OBJECTS2=displayfonts.obj,combinations.obj,sftextfield.obj,ikarus.obj,\
         cvfreehand.obj,cvhand.obj,simplifydlg.obj,winfonts.obj,freetype.obj,\
 	gotodlg.obj,search.obj,tottfgpos.obj,charinfo.obj,tottfaat.obj,\
-	splineorder2.obj,genttfinstrs.obj,ttfinstrs.objs,cvgridfit.obj,\
+	splineorder2.obj,genttfinstrs.obj,ttfinstrs.obj,cvgridfit.obj,\
 	cvdebug.obj
 
 pfaedit.exe : nomen.h $(pfaedit_OBJECTS) $(pfaedit_OBJECTS2) xlib.opt
