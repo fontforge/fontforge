@@ -106,7 +106,7 @@ PST *PSTCopy(PST *base,SplineChar *sc,SplineFont *from) {
     for ( ; base!=NULL; base = base->next ) {
 	cur = chunkalloc(sizeof(PST));
 	*cur = *base;
-	if ( from!=sc->parent )
+	if ( from!=sc->parent && base->script_lang_index<SLI_NESTED )
 	    cur->script_lang_index = FixupSLI(cur->script_lang_index,from,sc);
 	if ( cur->type==pst_ligature ) {
 	    cur->u.lig.components = copy(cur->u.lig.components);
