@@ -688,7 +688,7 @@ static void dumpgposkerndata(FILE *gpos,SplineFont *sf,int sli,
 	/* Right to left kerns modify the second character's width */
 	/*  this doesn't make sense to me, but who am I to argue */
 	putshort(gpos,0x0000);	/* leave first char alone */
-	putshort(gpos,0x0005);	/* Alter RSideBearing & XAdvance of second character */
+	putshort(gpos,0x0004);	/* Alter XAdvance of second character */
     } else {
 	putshort(gpos,0x0004);	/* Alter XAdvance of first character */
 	putshort(gpos,0x0000);	/* leave second char alone */
@@ -728,8 +728,6 @@ static void dumpgposkerndata(FILE *gpos,SplineFont *sf,int sli,
 	for ( j=0; j<pcnt; ++j ) {
 	    putshort(gpos,seconds[j]);
 	    putshort(gpos,changes[j]);
-	    if ( !isv && isr2l )
-		putshort(gpos,changes[j]);
 	}
     }
     free(seconds);
@@ -871,7 +869,7 @@ static void dumpgposkernclass(FILE *gpos,SplineFont *sf,KernClass *kc,
 	/* Right to left kerns modify the second character's width */
 	/*  this doesn't make sense to me, but who am I to argue */
 	putshort(gpos,0x0000);	/* leave first char alone */
-	putshort(gpos,0x0005);	/* Alter RSideBearing & XAdvance of second character */
+	putshort(gpos,0x0004);	/* Alter RSideBearing & XAdvance of second character */
     } else {
 	putshort(gpos,0x0004);	/* Alter XAdvance of first character */
 	putshort(gpos,0x0000);	/* leave second char alone */
@@ -884,8 +882,6 @@ static void dumpgposkernclass(FILE *gpos,SplineFont *sf,KernClass *kc,
     putshort(gpos,kc->first_cnt);
     putshort(gpos,kc->second_cnt);
     for ( i=0; i<kc->first_cnt*kc->second_cnt; ++i ) {
-	if ( !isv && ScriptIsRightToLeft(script) )
-	    putshort(gpos,kc->offsets[i]);
 	putshort(gpos,kc->offsets[i]);
     }
 
