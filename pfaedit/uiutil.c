@@ -29,6 +29,8 @@
 #include <ustring.h>
 #include <gfile.h>
 
+extern char *helpdir;
+
 #if __CygWin
 #include <unistd.h>
 extern void cygwin_conv_to_full_posix_path(const char *win,char *unx);
@@ -298,13 +300,16 @@ return;
     if ( strstr(file,"http://")==NULL ) {
 	fullspec[0] = 0;
 	if ( *file!='/' ) {
+	    if ( helpdir==NULL || *helpdir=='\0' ) {
 #ifdef DOCDIR
-	    strcpy(fullspec,DOCDIR "/");
+		strcpy(fullspec,DOCDIR "/");
 #elif defined(SHAREDIR)
-	    strcpy(fullspec,SHAREDIR "/../doc/pfaedit/");
+		strcpy(fullspec,SHAREDIR "/../doc/pfaedit/");
 #else
-	    strcpy(fullspec,"/usr/share/doc/pfaedit/");
+		strcpy(fullspec,"/usr/local/share/doc/pfaedit/");
 #endif
+	    } else
+		strcpy(fullspec,helpdir);
 	}
 	strcat(fullspec,file);
 	if (( pt = strrchr(fullspec,'#') )!=NULL ) *pt ='\0';

@@ -93,6 +93,7 @@ int alwaysgenapple = true;
 #else
 int alwaysgenapple = false;
 #endif
+char *helpdir;
 
 
 static int pointless;
@@ -342,6 +343,7 @@ static struct prefs_list {
 	{ "LoadedFontsAsNew", pr_bool, &loaded_fonts_same_as_new, NULL, NULL, 'L', NULL, 0, _STR_PrefsPopupLFN },
 	{ "GreekFixup", pr_bool, &greekfixup, NULL, NULL, 'G', NULL, 0, _STR_PrefsPopupGF },
 	{ "ResourceFile", pr_file, &xdefs_filename, NULL, NULL, 'R', NULL, 0, _STR_PrefsPopupXRF },
+	{ "HelpDir", pr_file, &helpdir, NULL, NULL, 'R', NULL, 0, _STR_PrefsPopupHLP },
 	{ NULL }
 },
   editing_list[] = {
@@ -786,6 +788,23 @@ static void DefaultXUID(void) {
     xuid = copy(buffer);
 }
 
+static void DefaultHelp(void) {
+    if ( helpdir==NULL ) {
+#ifdef DOCDIR
+	helpdir = copy(DOCDIR "/");
+#elif defined(SHAREDIR)
+	helpdir = copy(SHAREDIR "/../doc/pfaedit/");
+#else
+	helpdir = copy("/usr/local/share/doc/pfaedit/");
+#endif
+    }
+}
+
+static void DoDefaults(void) {
+    DefaultXUID();
+    DefaultHelp();
+}
+
 void LoadPrefs(void) {
     char *prefs = getPfaEditPrefs();
     FILE *p;
@@ -801,7 +820,7 @@ void LoadPrefs(void) {
     GreekHack();
 
     if ( prefs==NULL || (p=fopen(prefs,"r"))==NULL ) {
-	DefaultXUID();
+	DoDefaults();
 return;
     }
     while ( fgets(line,sizeof(line),p)!=NULL ) {
@@ -878,6 +897,7 @@ return;
     }
     fclose(p);
     GreekHack();
+    DefaultHelp();
     if ( prefs_encoding==e_unknown )
 	local_encoding = DefaultEncoding();
     else
