@@ -1381,13 +1381,12 @@ static void morxDumpChain(struct alltabs *at,struct feature *features,int chain,
 
     if ( cnt>32 ) GDrawIError("Too many features in chain");
     for ( i=0; i<cnt; ++i ) for ( j=i+1; j<cnt; ++j ) {
-	if ( TTFFeatureIndex(all[i]->otftag,ord)>TTFFeatureIndex(all[j]->otftag,ord)) {
+	if ( TTFFeatureIndex(all[i]->otftag,ord,true)>TTFFeatureIndex(all[j]->otftag,ord,true)) {
 	    ftemp = all[i];
 	    all[i] = all[j];
 	    all[j] = ftemp;
 	}
     }
-	
 
     /* Chain header */
     chain_start = ftell(at->morx);

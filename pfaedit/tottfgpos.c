@@ -2390,7 +2390,7 @@ static struct lookup *GSUBfigureLookups(FILE *lfile,SplineFont *sf,
 return( lookups );
 }
 
-int TTFFeatureIndex( uint32 tag, struct table_ordering *ord ) {
+int TTFFeatureIndex( uint32 tag, struct table_ordering *ord, int isgsub ) {
     /* This is the order in which features should be executed */
 
     if ( ord!=NULL ) {
@@ -2401,7 +2401,7 @@ int TTFFeatureIndex( uint32 tag, struct table_ordering *ord ) {
 return( i );
     }
 
-    switch ( tag ) {
+    if ( isgsub ) switch ( tag ) {
 /* GSUB ordering */
       case CHR('c','c','m','p'):	/* Must be first? */
 return( -2 );
@@ -2409,38 +2409,106 @@ return( -2 );
 return( -1 );
       case CHR('i','s','o','l'):
 return( 0 );
-      case CHR('i','n','i','t'): case CHR('m','e','d','i'): case CHR('f','i','n','a'):
-      /*case CHR('h','i','n','i'): case CHR('h','m','e','d'):*/
-      case CHR('r','t','l','a'):
+      case CHR('j','a','l','t'):		/* must come after 'isol' */
 return( 1 );
-      case CHR('s','m','c','p'): case CHR('c','2','s','c'):
+      case CHR('f','i','n','a'):
 return( 2 );
-      case CHR('l','i','g','a'): case CHR('r','l','i','g'):
-      case CHR('d','l','i','g'): case CHR('h','l','i','g'):
-      case CHR('f','r','a','c'):
-      case CHR('a','b','v','s'): case CHR('a','f','r','c'):
-      case CHR('a','k','h','n'): case CHR('b','l','w','f'):
-      case CHR('b','l','w','s'):
-      case CHR('h','a','l','f'): case CHR('h','a','l','n'):
-      case CHR('l','j','m','o'): case CHR('v','j','m','o'):
-      case CHR('n','u','k','f'): case CHR('v','a','t','u'):
+      case CHR('f','i','n','2'):
+      case CHR('f','a','l','t'):		/* must come after 'fina' */
 return( 3 );
-      case CHR('f','a','l','t'): case CHR('j','a','l','t'):		/* must come after 'fina'/'isol' */
+      case CHR('f','i','n','3'):
 return( 4 );
+      case CHR('m','e','d','i'):
+return( 5 );
+      case CHR('m','e','d','2'):
+return( 6 );
+      case CHR('i','n','i','t'):
+return( 7 );
+
+      case CHR('r','t','l','a'):
+return( 100 );
+      case CHR('s','m','c','p'): case CHR('c','2','s','c'):
+return( 200 );
+
+      case CHR('r','l','i','g'):
+return( 300 );
+      case CHR('c','a','l','t'):
+return( 301 );
+      case CHR('l','i','g','a'):
+return( 302 );
+      case CHR('d','l','i','g'): case CHR('h','l','i','g'):
+return( 303 );
+      case CHR('c','s','w','h'):
+return( 304 );
+      case CHR('m','s','e','t'):
+return( 305 );
+
+      case CHR('f','r','a','c'):
+return( 306 );
+
+/* Indic processing */
+      case CHR('n','u','k','t'):
+      case CHR('p','r','e','f'):
+return( 301 );
+      case CHR('a','k','h','n'):
+return( 302 );
+      case CHR('r','p','h','f'):
+return( 303 );
+      case CHR('b','l','w','f'):
+return( 304 );
+      case CHR('h','a','l','f'):
+      case CHR('a','b','v','f'):
+return( 305 );
+      case CHR('p','s','t','f'):
+return( 306 );
+      case CHR('v','a','t','u'):
+return( 307 );
+
+      case CHR('p','r','e','s'):
+return( 310 );
+      case CHR('b','l','w','s'):
+return( 311 );
+      case CHR('a','b','v','s'):
+return( 312 );
+      case CHR('p','s','t','s'):
+return( 313 );
+      case CHR('c','l','i','g'):
+return( 314 );
+      
+      case CHR('h','a','l','n'):
+return( 320 );
+/* end indic ordering */
+
+      case CHR('a','f','r','c'):
+      case CHR('l','j','m','o'):
+      case CHR('v','j','m','o'):
+return( 350 );
       case CHR('v','r','t','2'): case CHR('v','e','r','t'):
-return( 101 );		/* Documented to come last */
+return( 1010 );		/* Documented to come last */
+
+/* Unknown things come after everything but vert/vrt2 */
+      default:
+return( 1000 );
+
+    } else switch ( tag ) {
 /* GPOS ordering */
       case CHR('c','u','r','s'):
 return( 0 );
-      case CHR('m','k','m','k'):
-return( 1 );
-      case CHR('m','a','r','k'): case CHR('a','b','v','m'): case CHR('b','l','w','m'):
-return( 2 );
-      case CHR('k','e','r','n'):
-return( 3 );
-/* Unknown things come after everything but vert/vrt2 */
-      default:
+      case CHR('d','i','s','t'):
 return( 100 );
+      case CHR('b','l','w','m'):
+return( 201 );
+      case CHR('a','b','v','m'):
+return( 202 );
+      case CHR('k','e','r','n'):
+return( 300 );
+      case CHR('m','a','r','k'):
+return( 400 );
+      case CHR('m','k','m','k'):
+return( 500 );
+/* Unknown things come after everything  */
+      default:
+return( 1000 );
     }
 }
 
@@ -2486,7 +2554,7 @@ return( nested );
 
 static struct lookup *orderlookups(struct lookup **_lookups,
 	struct table_ordering *ord, FILE *ordered, FILE *disordered,
-	struct lookup *nested) {
+	struct lookup *nested,int isgsub) {
     int cnt,i,j;
     struct lookup **array, *l, *features, *temp;
     struct lookup *lookups = *_lookups;
@@ -2500,7 +2568,7 @@ static struct lookup *orderlookups(struct lookup **_lookups,
 
     /* sort by feature execution order */
     for ( i=0; i<cnt-1; ++i ) for ( j=i+1; j<cnt; ++j ) {
-	if ( TTFFeatureIndex(array[i]->feature_tag,ord)>TTFFeatureIndex(array[j]->feature_tag,ord)) {
+	if ( TTFFeatureIndex(array[i]->feature_tag,ord,isgsub)>TTFFeatureIndex(array[j]->feature_tag,ord,isgsub)) {
 	    temp = array[i];
 	    array[i] = array[j];
 	    array[j] = temp;
@@ -2972,7 +3040,7 @@ return( NULL );
     lookups = reverse_list(lookups);
     nested = order_nested(nested);
     lfile2 = tmpfile();
-    features_ordered = orderlookups(&lookups,ord,lfile2,lfile,nested);
+    features_ordered = orderlookups(&lookups,ord,lfile2,lfile,nested,!is_gpos);
     lfile = lfile2;
     features = CoalesceLookups(sf,features_ordered);
 
@@ -3484,9 +3552,10 @@ void OrderTable(SplineFont *sf,uint32 table_tag) {
     static unichar_t monospace[] = { 'c','o','u','r','i','e','r',',','m', 'o', 'n', 'o', 's', 'p', 'a', 'c', 'e',',','c','a','s','l','o','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
     FontRequest rq;
     GFont *font;
+    int isgsub = table_tag==CHR('G','S','U','B');
 
     for ( ord = sf->orders; ord!=NULL && ord->table_tag!=table_tag; ord = ord->next );
-    tags_used = GetTags(sf,table_tag==CHR('G','S','U','B'));
+    tags_used = GetTags(sf,isgsub);
     cnt1 = cnt2 = 0;
     if ( ord!=NULL )
 	for ( cnt1=0; ord->ordered_features[cnt1]!=0; ++cnt1 );
@@ -3494,7 +3563,7 @@ void OrderTable(SplineFont *sf,uint32 table_tag) {
 	for ( cnt2=0; tags_used[cnt2]!=0; ++cnt2 );
 	/* order this list using our default ordering */
 	for ( i=0; i<cnt2; ++i ) for ( j=i+1; j<cnt2; ++j ) {
-	    if ( TTFFeatureIndex(tags_used[i],NULL)>TTFFeatureIndex(tags_used[j],NULL) ) {
+	    if ( TTFFeatureIndex(tags_used[i],NULL,isgsub)>TTFFeatureIndex(tags_used[j],NULL,isgsub) ) {
 		temp = tags_used[i];
 		tags_used[i] = tags_used[j];
 		tags_used[j] = temp;

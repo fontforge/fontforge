@@ -577,7 +577,7 @@ static GTextInfo ligature_tags[] = {
     { (unichar_t *) _STR_LeadingJamo, NULL, 0, 0, (void *) CHR('l','j','m','o'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_TrailingJamo, NULL, 0, 0, (void *) CHR('t','j','m','o'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_VowelJamo, NULL, 0, 0, (void *) CHR('v','j','m','o'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Nukta, NULL, 0, 0, (void *) CHR('n','u','k','f'), NULL, false, false, false, false, false, false, false, true },	/* for numero */
+    { (unichar_t *) _STR_Nukta, NULL, 0, 0, (void *) CHR('n','u','k','t'), NULL, false, false, false, false, false, false, false, true },	/* for numero */
     { (unichar_t *) _STR_Ordinals, NULL, 0, 0, (void *) CHR('o','r','d','n'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_PreBaseForms, NULL, 0, 0, (void *) CHR('p','r','e','f'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_PreBaseSubs, NULL, 0, 0, (void *) CHR('p','r','e','s'), NULL, false, false, false, false, false, false, false, true },

@@ -553,7 +553,7 @@ extern void otf_dumpgsub(struct alltabs *at, SplineFont *sf);
 extern void otf_dumpgdef(struct alltabs *at, SplineFont *sf);
 extern int gdefclass(SplineChar *sc);
 
-extern int TTFFeatureIndex( uint32 tag, struct table_ordering *ord );
+extern int TTFFeatureIndex( uint32 tag, struct table_ordering *ord, int isgsub );
 
     /* Apple Advanced Typography Tables */
 extern void aat_dumpacnt(struct alltabs *at, SplineFont *sf);
