@@ -1874,7 +1874,7 @@ static struct ttf_table *SFDGetTtfTable(FILE *sfd, SplineFont *sf,struct ttf_tab
 	sf->ttf_tables = tab;
     else
 	sf->ttf_tab_saved = tab;
-    lasttab[i] = tab;
+    lasttab[which] = tab;
 return( tab );
 }
 
