@@ -4889,7 +4889,7 @@ return( false );
 	    SFDummyUpCIDs(sf);	/* The advanced typography stuff is easier if we ignore the seperate fonts of a cid keyed fonts and treat it as flat */
 	if ( at->opentypemode ) {
 	    otf_orderlangs(sf);
-	    otf_dumpgpos(at,sf);
+	    otf_dumpgpos(at,sf);	/* Must come before gsub: Uniscribe bug means we need to put all gpos scripts in gsub */
 	    otf_dumpgsub(at,sf);
 	    otf_dumpgdef(at,sf);
 	}

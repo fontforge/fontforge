@@ -599,6 +599,8 @@ struct alltabs {
     short *gn_sid;
     enum fontformat format;
     int fontstyle_name_strid;	/* For GPOS 'size' */
+    int gpos_script_cnt;
+    uint32 *gpos_scripts;
 };
 
 struct subhead { uint16 first, cnt, delta, rangeoff; };	/* a sub header in 8/16 cmap table */
