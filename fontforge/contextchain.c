@@ -260,6 +260,7 @@ return( new );
 /* ************************************************************************** */
 /* ************************ Context/Chaining Dialog ************************* */
 /* ************************************************************************** */
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 struct contextchaindlg {
     struct gfi_data *gfi;
     SplineFont *sf;
@@ -2847,3 +2848,4 @@ struct contextchaindlg *ContextChainEdit(SplineFont *sf,FPST *fpst,
 
 return( ccd );
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <gkeysym.h>
 #include <math.h>
 #include "splinefont.h"
@@ -3108,3 +3109,4 @@ void PalettesChangeDocking(void) {
 int BVPalettesWidth(void) {
 return( GGadgetScale(BV_LAYERS_WIDTH));
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

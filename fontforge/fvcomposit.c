@@ -1078,10 +1078,10 @@ static int SCMakeBaseReference(SplineChar *sc,SplineFont *sf,int ch, int copybmp
 	    if ( ch==0x131 ) ch='i'; else ch = 'j';
 	    rsc = findchar(sf,ch);
 	    if ( rsc!=NULL && !sf->dotlesswarn ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		GWidgetErrorR( _STR_MissingChar,ch=='i'?_STR_Missingdotlessi:_STR_Missingdotlessj);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error( _("Missing Character..."),ch=='i'?_("Your font is missing the dotlessi character,\nplease add it and remake your accented characters"):_("Your font is missing the dotlessj character,\nplease add it and remake your accented characters"));
+#else
+		GWidgetErrorR( _STR_MissingChar,ch=='i'?_STR_Missingdotlessi:_STR_Missingdotlessj);
 #endif
 		sf->dotlesswarn = true;
 	    }

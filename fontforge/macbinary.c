@@ -844,10 +844,10 @@ static uint32 SFToFOND(FILE *res,SplineFont *sf,uint32 id,int dottf,int32 *sizes
     /*  glyph encoding tables. Printer drivers use them ok. ATM will only */
     /*  work on fonts with mac roman encodings */
     if ( sf->encoding_name!=em_mac ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	if ( !dottf ) GWidgetPostNoticeR(_STR_NoATM,_STR_BadEncodingForATM);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	if ( !dottf ) gwwv_post_notice(_("The generated font won't work with ATM"),_("ATM requires that fonts be encoded with the Macintosh Latin encoding. This postscript font will print fine, but only the bitmap versions will be displayed on the screen"));
+#else
+	if ( !dottf ) GWidgetPostNoticeR(_STR_NoATM,_STR_BadEncodingForATM);
 #endif
 	glyphenc = ftell( res );
 	fseek(res,geoffset,SEEK_SET);
@@ -1193,10 +1193,10 @@ static uint32 SFsToFOND(FILE *res,struct sflist *sfs,uint32 id,int format,int bf
     /*  work on fonts with mac roman encodings */
     if ( psfaces[0]->sf->encoding_name!=em_mac ) {
 	if ( format==ff_pfbmacbin )
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetPostNoticeR(_STR_NoATM,_STR_BadEncodingForATM);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_notice(_("The generated font won't work with ATM"),_("ATM requires that fonts be encoded with the Macintosh Latin encoding. This postscript font will print fine, but only the bitmap versions will be displayed on the screen"));
+#else
+	    GWidgetPostNoticeR(_STR_NoATM,_STR_BadEncodingForATM);
 #endif
 	glyphenc = ftell( res );
 	fseek(res,geoffset,SEEK_SET);
@@ -2048,10 +2048,10 @@ return( (SplineFont *) ret );
 	    if ( which==-1 ) {
 		char *fn = copy(filename);
 		fn[lparen-filename] = '\0';
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		GWidgetErrorR(_STR_NotInCollection,_STR_FontNotInCollection,find,fn);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Not in Collection"),_("%s is not in %.100s"),find,fn);
+#else
+		GWidgetErrorR(_STR_NotInCollection,_STR_FontNotInCollection,find,fn);
 #endif
 		free(fn);
 	    }
@@ -2533,10 +2533,10 @@ return( test );
 	if ( which==-1 ) {
 	    char *fn = copy(filename);
 	    fn[lparen-filename] = '\0';
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_NotInCollection,_STR_FontNotInCollection,find,fn);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Not in Collection"),_("%s is not in %.100s"),find,fn);
+#else
+	    GWidgetErrorR(_STR_NotInCollection,_STR_FontNotInCollection,find,fn);
 #endif
 	    free(fn);
 	}

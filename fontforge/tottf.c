@@ -1452,12 +1452,14 @@ static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
 		    dumpglyph(sf->chars[i],gi);
 	    }
 	}
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( !GProgressNext())
 #elif defined(FONTFORGE_CONFIG_GTK)
 	if ( !gwwv_progress_next())
 #endif
 return( false );
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
 
     /* extra location entry points to end of last glyph */

@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include "ustring.h"
 
 int CVTwoForePointsSelected(CharView *cv, SplinePoint **sp1, SplinePoint **sp2) {
@@ -865,3 +866,4 @@ void SCRemoveSelectedMinimumDistances(SplineChar *sc,int inx) {
 	}
     }
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

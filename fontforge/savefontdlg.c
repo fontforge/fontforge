@@ -1692,6 +1692,8 @@ return( 0 );
     if ( !err && (old_ps_flags&ps_flag_afm) && GProgressNextStage()) {
 #elif defined(FONTFORGE_CONFIG_GTK)
     if ( !err && (old_ps_flags&ps_flag_afm) && gwwv_progress_next_stage()) {
+#else
+    if ( !err && (old_ps_flags&ps_flag_afm)) {
 #endif
 	if ( !WriteAfmFile(filename,&temp,oldformatstate)) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
@@ -1713,12 +1715,14 @@ return( 0 );
 	}
     }
     /* ??? Bitmaps */
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #if defined(FONTFORGE_CONFIG_GDRAW)
     if ( !GProgressNextStage())
 #elif defined(FONTFORGE_CONFIG_GTK)
     if ( !gwwv_progress_next_stage())
 #endif
 	err = -1;
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
     /* restore the parent pointers */
     for ( i=0; i<temp.charcnt; ++i ) if ( temp.chars[i]!=NULL )

@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
+#ifdef FONTFORGE_CONFIG_GDRAW
 
 static GClut magnify0_clut = { 2, 0, 1,
     0x0, 0xb0b0b0 };
@@ -3115,3 +3116,4 @@ GImage GIcon_shadow = { 0, &shadow_base };
 GImage GIcon_wireframe = { 0, &wireframe_base };
 
 GImage GIcon_menumark = { 0, &menumark_base };
+#endif

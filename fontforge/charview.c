@@ -26,13 +26,18 @@
  */
 #include "pfaeditui.h"
 #include <math.h>
-#include <ustring.h>
-#include <gkeysym.h>
-#include <utype.h>
 #include <locale.h>
-#include <gresource.h>
-
+#ifndef FONTFORGE_CONFIG_GTK
+# include <ustring.h>
+# include <utype.h>
+# include <gresource.h>
+# ifdef FONTFORGE_CONFIG_GDRAW
 extern int _GScrollBar_Width;
+#  include <gkeysym.h>
+# endif
+#endif
+
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 extern struct lconv localeinfo;
 extern char *coord_sep;
 struct cvshows CVShows = {
@@ -1498,8 +1503,18 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 
     GDrawPopClip(pixmap,&old);
 }
+#endif
 
 void SCUpdateAll(SplineChar *sc) {
+#if defined(FONTFORGE_CONFIG_GTK)
+    CharView *cv;
+    struct splinecharlist *dlist;
+
+    for ( cv=sc->views; cv!=NULL; cv=cv->next )
+	gtk_widget_queue_draw(cv->v);
+    for ( dlist=sc->dependents; dlist!=NULL; dlist=dlist->next )
+	SCUpdateAll(dlist->sc);
+#elif defined(FONTFORGE_CONFIG_GDRAW)
     CharView *cv;
     struct splinecharlist *dlist;
 
@@ -1507,15 +1522,19 @@ void SCUpdateAll(SplineChar *sc) {
 	GDrawRequestExpose(cv->v,NULL,false);
     for ( dlist=sc->dependents; dlist!=NULL; dlist=dlist->next )
 	SCUpdateAll(dlist->sc);
+#endif
 }
 
 void SCOutOfDateBackground(SplineChar *sc) {
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     CharView *cv;
 
     for ( cv=sc->views; cv!=NULL; cv=cv->next )
 	cv->back_img_out_of_date = true;
+#endif
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void CVRegenFill(CharView *cv) {
     if ( cv->showfilled ) {
 	BDFCharFree(cv->filled);
@@ -2611,6 +2630,7 @@ return;
       break;
     }
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 int SCNumberPoints(SplineChar *sc) {
     int pnum=0;
@@ -2733,11 +2753,14 @@ return;
     if ( !SCPointsNumberedProperly(sc)) {
 	free(sc->ttf_instrs); sc->ttf_instrs = NULL;
 	sc->ttf_instrs_len = 0;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	SCMarkInstrDlgAsChanged(sc);
+#endif	/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 return;
     }
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void ptcountcheck(SplineChar *sc) {
     CharView *cv;
 
@@ -2805,25 +2828,34 @@ void SCClearSelPt(SplineChar *sc) {
 	cv->lastselpt = cv->p.sp = NULL;
     }
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 void _SCCharChangedUpdate(SplineChar *sc,int changed) {
     SplineFont *sf = sc->parent;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     extern int updateflex;
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
     if ( changed != -1 ) {
 	sc->changed_since_autosave = true;
 	if ( sc->changed!=changed ) {
 	    sc->changed = changed;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	    FVToggleCharChanged(sc);
 	    SCRefreshTitles(sc);
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	}
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	if ( !sf->changed && sf->fv!=NULL )
 	    FVSetTitle(sf->fv);
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	if ( changed ) {
 	    if ( sc->ttf_instrs )
 		instrcheck(sc);
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	    SCDeGridFit(sc);
 	    ptcountcheck(sc);
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	}
 	sc->changedsincelasthinted = true;
 	sc->changed_since_search = true;
@@ -2834,22 +2866,25 @@ void _SCCharChangedUpdate(SplineChar *sc,int changed) {
     if ( sf->cidmaster!=NULL )
 	sf->cidmaster->changed = sf->cidmaster->changed_since_autosave =
 		sf->cidmaster->changed_since_xuidchanged = true;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     SCRegenDependents(sc);		/* All chars linked to this one need to get the new splines */
     if ( updateflex && sc->views!=NULL )
 	SplineCharIsFlexible(sc);
     SCUpdateAll(sc);
-#ifdef FONTFORGE_CONFIG_TYPE3
+# ifdef FONTFORGE_CONFIG_TYPE3
     SCLayersChange(sc);
-#endif
+# endif
     SCRegenFills(sc);
     if ( sf->fv!=NULL )
 	FVRegenChar(sf->fv,sc);
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 }
 
 void SCCharChangedUpdate(SplineChar *sc) {
     _SCCharChangedUpdate(sc,true);
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 void _CVCharChangedUpdate(CharView *cv,int changed) {
     extern int updateflex;
 
@@ -7982,3 +8017,4 @@ void SVCharViewInits(SearchView *sv) {
     sv->cv_srch.gw = GWidgetCreateSubWindow(sv->gw,&pos,sv_cv_e_h,&sv->cv_srch,&wattrs);
     _CharViewCreate(&sv->cv_srch, &sv->sc_srch, &sv->dummy_fv);
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

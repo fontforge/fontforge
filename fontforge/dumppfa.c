@@ -338,12 +338,14 @@ static int dumpcharstrings(void (*dumpchar)(int ch,void *data), void *data,
 	dumpf(dumpchar,data,"/%s %d RD ", chars->keys[i], chars->lens[i]+leniv );
 	encodestrout(dumpchar,data,chars->values[i],chars->lens[i],leniv);
 	dumpstr(dumpchar,data," ND\n");
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( !GProgressNext())
 #elif defined(FONTFORGE_CONFIG_GTK)
 	if ( !gwwv_progress_next())
 #endif
 return( false );
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
     dumpstr(dumpchar,data,"end end\nreadonly put\n");
 return( true );
@@ -883,12 +885,14 @@ static int dumpcharprocs(void (*dumpchar)(int ch,void *data), void *data, Spline
     for ( ; i<sf->charcnt; ++i ) {
 	if ( SCWorthOutputting(sf->chars[i]) )
 	    dumpproc(dumpchar,data,sf->chars[i]);
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( !GProgressNext())
 #elif defined(FONTFORGE_CONFIG_GTK)
 	if ( !gwwv_progress_next())
 #endif
 return( false );
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
     dumpstr(dumpchar,data,"end\ncurrentdict end\n" );
     dumpf(dumpchar, data, "/%s exch definefont\n", sf->fontname );
@@ -1113,21 +1117,25 @@ return( false );
 #endif
 	SplineFontAutoHint(sf);
     }
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #if defined(FONTFORGE_CONFIG_GDRAW)
     if ( !GProgressNextStage())
 #elif defined(FONTFORGE_CONFIG_GTK)
     if ( !gwwv_progress_next_stage())
 #endif
 return( false );
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
     if ( !hasblue ) {
 	FindBlues(sf,bluevalues,otherblues);
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( !GProgressNextStage())
 #elif defined(FONTFORGE_CONFIG_GTK)
 	if ( !gwwv_progress_next_stage())
 #endif
 return( false );
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
 
     if ( !hash || !hasv )
@@ -1868,6 +1876,7 @@ return( NULL );
 	if ( chars->lens[i]!=0 ) {
 	    leniv = cidbytes->fds[cidbytes->fdind[i]].leniv;
 	    dumpt1str(chrs,chars->values[i],chars->lens[i],leniv);
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	    if ( !GProgressNext()) {
 #elif defined(FONTFORGE_CONFIG_GTK)
@@ -1876,6 +1885,7 @@ return( NULL );
 		fclose(chrs);
 return( NULL );
 	    }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	    if ( leniv>0 )
 		chars->lens[i] += leniv;
 	}

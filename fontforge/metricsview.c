@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <gkeysym.h>
 #include <string.h>
 #include <ustring.h>
@@ -4075,3 +4076,4 @@ void MVRefreshAll(MetricsView *mv) {
 	for ( i=0; i<mv->charcnt; ++i )
 	    MVSetPos(mv,i,mv->perchar[i].sc);
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include "psfont.h"
 #include <ustring.h>
 #include <gkeysym.h>
@@ -929,3 +930,4 @@ void SFHistogram(SplineFont *sf,struct psdict *private, uint8 *selected,
 
     HistDataFree(hist.h);
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

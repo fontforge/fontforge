@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <math.h>
 #include <ustring.h>
 
@@ -184,3 +185,4 @@ return;
 	cv->ruler_w = NULL;
     }
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

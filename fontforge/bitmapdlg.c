@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include "gwidget.h"
 #include "ustring.h"
 #include <math.h>
@@ -72,6 +73,7 @@ static void RemoveBDFWindows(BDFFont *bdf) {
     /*  routines (which they will when they get the destroy window event) */
     /*  because those routines depend on the bdf existing ... */
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 void SFOrderBitmapList(SplineFont *sf) {
     BDFFont *bdf, *prev, *next;
@@ -187,12 +189,14 @@ static void FVScaleBitmaps(FontView *fv,int32 *sizes) {
 	bdf->next = fv->sf->bitmaps;
 	fv->sf->bitmaps = bdf;
 	fv->sf->changed = true;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( !GProgressNext())
 #elif defined(FONTFORGE_CONFIG_GTK)
 	if ( !gwwv_progress_next())
 #endif
     break;
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     } else if ( sizes[i]>0 && (sizes[i]>>16)!=1 && !warned ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_CantScaleGreymap,_STR_CantScaleGreymap);
@@ -324,6 +328,31 @@ return( false );
 return( true );
 }
 
+static void BitmapsDoIt(CreateBitmapData *bd,int32 *sizes,int usefreetype) {
+
+    if ( bd->isavail && bd->sf->onlybitmaps && bd->sf->bitmaps!=NULL ) {
+	if ( sizes[0]!=0 )
+	    FVScaleBitmaps(bd->fv,sizes);
+	else {
+#if defined(FONTFORGE_CONFIG_GDRAW)
+	    GWidgetErrorR(_STR_CantDeleteAllBitmaps,_STR_CantDeleteAllBitmaps);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Can't delete all bitmaps"),_("Can't delete all bitmaps"));
+#endif
+return;
+	}
+    } else if ( bd->isavail )
+	SFFigureBitmaps(bd->sf,sizes,usefreetype);
+    else {
+	if ( !FVRegenBitmaps(bd,sizes,usefreetype))
+	    bd->done = false;
+	else
+	    lastwhich = bd->which;
+    }
+    bd->done = true;
+}
+
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #define CID_Which	1001
 #define CID_Pixel	1002
 #define CID_75		1003
@@ -398,30 +427,6 @@ return( NULL );
 	    ret[i] |= (int) rint(sizes[i]);
     free(sizes);
 return( ret );
-}
-
-static void BitmapsDoIt(CreateBitmapData *bd,int32 *sizes,int usefreetype) {
-
-    if ( bd->isavail && bd->sf->onlybitmaps && bd->sf->bitmaps!=NULL ) {
-	if ( sizes[0]!=0 )
-	    FVScaleBitmaps(bd->fv,sizes);
-	else {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_CantDeleteAllBitmaps,_STR_CantDeleteAllBitmaps);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_post_error(_("Can't delete all bitmaps"),_("Can't delete all bitmaps"));
-#endif
-return;
-	}
-    } else if ( bd->isavail )
-	SFFigureBitmaps(bd->sf,sizes,usefreetype);
-    else {
-	if ( !FVRegenBitmaps(bd,sizes,usefreetype))
-	    bd->done = false;
-	else
-	    lastwhich = bd->which;
-    }
-    bd->done = true;
 }
 
 static int CB_OK(GGadget *g, GEvent *e) {
@@ -792,6 +797,7 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
 	GDrawProcessOneEvent(NULL);
     GDrawDestroyWindow(bd.gw);
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 int BitmapControl(FontView *fv,int32 *sizes,int isavail) {
     CreateBitmapData bd;

@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 
 #ifndef _CursorsMustBe16x16
 # define _CursorsMustBe16x16	0	/* X on Mac OSX can't handle anything bigger than 16x16 cursors (I think, it seems to manage smaller ones) */
@@ -895,3 +896,4 @@ void InitCursors(void) {
     GDrawDestroyWindow(image);
 #endif
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

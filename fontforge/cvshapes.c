@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <math.h>
 
 static struct shapedescrip { BasePoint me, prevcp, nextcp; int nocp; }
@@ -317,3 +318,4 @@ return;
     }
     cv->active_shape = NULL;
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

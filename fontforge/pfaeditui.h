@@ -28,6 +28,9 @@
 #define _PFAEDITUI_H_
 
 #include "pfaedit.h"
+
+extern void help(char *filename);
+
 #if defined(FONTFORGE_CONFIG_GTK)
 # include <gtk/gtk.h>
 # include "interface.h"
@@ -86,7 +89,6 @@ extern real GetCalmRealR(GWindow gw,int cid,int namer,int *err);
 extern real GetRealR(GWindow gw,int cid,int namer,int *err);
 extern int GetIntR(GWindow gw,int cid,int namer,int *err);
 extern void ProtestR(int labelr);
-extern void help(char *filename);
 */
 
 /* I would like these to be const ints, but gcc doesn't treat them as consts */
@@ -151,11 +153,12 @@ extern real GetCalmRealR(GWindow gw,int cid,int namer,int *err);
 extern real GetRealR(GWindow gw,int cid,int namer,int *err);
 extern int GetIntR(GWindow gw,int cid,int namer,int *err);
 extern void ProtestR(int labelr);
-extern void help(char *filename);
 
 /* I would like these to be const ints, but gcc doesn't treat them as consts */
 #define et_sb_halfup et_sb_thumbrelease+1
 #define et_sb_halfdown  et_sb_thumbrelease+2
+#else
+# include "views.h"
 #endif
 
 extern FontView *fv_list;

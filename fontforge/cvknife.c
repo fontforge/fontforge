@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <math.h>
 
 #if defined(KNIFE_CONTINUOUS)	/* Use this code to do cuts as we move along. Probably a bad idea, let's wait till the end */
@@ -169,3 +170,4 @@ void CVMouseUpKnife(CharView *cv) {
 	CVCharChangedUpdate(cv);
 #endif
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

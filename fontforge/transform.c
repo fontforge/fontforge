@@ -25,8 +25,9 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
-#include "ustring.h"
 #include <math.h>
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+#include "ustring.h"
 #include <gkeysym.h>
 
 #define TCnt	3
@@ -91,6 +92,7 @@ static GTextInfo transformtypes[] = {
     { (unichar_t *) _STR_SkewByRulerDDD, NULL, 0, 0, (void *) 0x420, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }};
 
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 void skewselect(BVTFunc *bvtf,real t) {
     real off, bestoff;
     int i, best;
@@ -109,6 +111,7 @@ void skewselect(BVTFunc *bvtf,real t) {
     bvtf->y = best;
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static int Trans_OK(GGadget *g, GEvent *e) {
     GWindow tw;
     real transform[6], trans[6], t[6];
@@ -661,3 +664,4 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
 	GDrawProcessOneEvent(NULL);
     GDrawSetVisible(gw,false);
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

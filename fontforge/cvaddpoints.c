@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <math.h>
 #include "splinefont.h"
 #include "ustring.h"
@@ -523,3 +524,4 @@ void CVMouseUpPoint(CharView *cv,GEvent *event) {
     if ( event->u.mouse.clicks>1 )
 	CVGetInfo(cv);
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

@@ -57,12 +57,14 @@ void FVOutline(FontView *fv, real width) {
 	spl->next = temp;
 	SplineSetsCorrect(sc->layers[ly_fore].splines,&changed);
 	SCCharChangedUpdate(sc);
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( !GProgressNext())
 #elif defined(FONTFORGE_CONFIG_GTK)
 	if ( !gwwv_progress_next())
 #endif
     break;
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
 #if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressEndIndicator();
@@ -71,6 +73,7 @@ void FVOutline(FontView *fv, real width) {
 #endif
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void CVOutline(CharView *cv, real width) {
     StrokeInfo si;
     SplineSet *temp, *spl;
@@ -112,6 +115,7 @@ static void MVOutline(MetricsView *mv, real width) {
 	SCCharChangedUpdate(sc);
     }
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 void FVInline(FontView *fv, real width, real inset) {
     StrokeInfo si;
@@ -143,12 +147,14 @@ void FVInline(FontView *fv, real width, real inset) {
 	spl->next = temp2;
 	SplineSetsCorrect(sc->layers[ly_fore].splines,&changed);
 	SCCharChangedUpdate(sc);
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( !GProgressNext())
 #elif defined(FONTFORGE_CONFIG_GTK)
 	if ( !gwwv_progress_next())
 #endif
     break;
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
 #if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressEndIndicator();
@@ -157,6 +163,7 @@ void FVInline(FontView *fv, real width, real inset) {
 #endif
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void CVInline(CharView *cv, real width, real inset) {
     StrokeInfo si;
     SplineSet *temp, *spl, *temp2;
@@ -381,6 +388,7 @@ void OutlineDlg(FontView *fv, CharView *cv,MetricsView *mv,int isinline) {
 	GDrawProcessOneEvent(NULL);
     GDrawSetVisible(gw,false);
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 static SplineSet *SpMove(SplinePoint *sp,real offset,
 	SplineSet *cur,SplineSet *lines,
@@ -1050,12 +1058,14 @@ void FVShadow(FontView *fv,real angle, real outline_width,
 	SCPreserveState(sc,false);
 	sc->layers[ly_fore].splines = SSShadow(sc->layers[ly_fore].splines,angle,outline_width,shadow_length,sc,wireframe);
 	SCCharChangedUpdate(sc);
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( !GProgressNext())
 #elif defined(FONTFORGE_CONFIG_GTK)
 	if ( !gwwv_progress_next())
 #endif
     break;
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
 #if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressEndIndicator();
@@ -1064,6 +1074,7 @@ void FVShadow(FontView *fv,real angle, real outline_width,
 #endif
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void CVShadow(CharView *cv,real angle, real outline_width,
 	real shadow_length,int wireframe) {
     CVPreserveState(cv);
@@ -1237,3 +1248,4 @@ void ShadowDlg(FontView *fv, CharView *cv,MetricsView *mv,int wireframe) {
 	GDrawProcessOneEvent(NULL);
     GDrawSetVisible(gw,false);
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

@@ -1635,12 +1635,14 @@ void FVReplaceOutlineWithReference( FontView *fv ) {
 	    if ( fv->selected[j] )
 		changed[j] = 1;
 	CopyBufferFree();
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( !GProgressNext())
 #elif defined(FONTFORGE_CONFIG_GTK)
 	if ( !gwwv_progress_next())
 #endif
     break;
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
 #if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressEndIndicator();

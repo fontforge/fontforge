@@ -753,7 +753,9 @@ static void _MergeFont(SplineFont *into,SplineFont *other) {
     if ( other->fv==NULL )
 	SplineFontFree(other);
     into->changed = true;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     FontViewReformatAll(into);
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     GlyphHashFree(into);
 }
 
@@ -793,7 +795,9 @@ static void CIDMergeFont(SplineFont *into,SplineFont *other) {
 	MergeFixupRefChars(i_sf);
 	++k;
     } while ( k<other->subfontcnt );
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     FontViewReformatAll(into);
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     into->changed = true;
     GlyphHashFree(into);
 }
@@ -801,10 +805,10 @@ static void CIDMergeFont(SplineFont *into,SplineFont *other) {
 void MergeFont(FontView *fv,SplineFont *other) {
 
     if ( fv->sf==other ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_MergingProb,_STR_MergingFontSelf);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Merging Problem"),_("Merging a font with itself achieves nothing"));
+#else
+	GWidgetErrorR(_STR_MergingProb,_STR_MergingFontSelf);
 #endif
 return;
     }
@@ -813,10 +817,10 @@ return;
 	     strcmp(fv->sf->cidmaster->ordering,other->ordering)!=0 ||
 	     fv->sf->cidmaster->supplement<other->supplement ||
 	     fv->sf->cidmaster->subfontcnt<other->subfontcnt )) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_MergingProb,_STR_MergingCIDMismatch);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Merging Problem"),_("When merging two CID keyed fonts, they must have the same Registry and Ordering, and the font being merged into (the mergee) must have a supplement which is at least as recent as the other's. Furthermore the mergee must have at least as many subfonts as the merger."));
+#else
+	GWidgetErrorR(_STR_MergingProb,_STR_MergingCIDMismatch);
 #endif
 return;
     }
@@ -830,6 +834,7 @@ return;
 	_MergeFont(fv->sf,other);
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void MergeAskFilename(FontView *fv) {
     char *filename = GetPostscriptFontName(NULL,true);
     SplineFont *sf;
@@ -850,10 +855,10 @@ return;
 	if ( sf==NULL )
 	    /* Do Nothing */;
 	else if ( sf->fv==fv )
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_MergingProb,_STR_MergingFontSelf);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Merging Problem"),_("Merging a font with itself achieves nothing"));
+#else
+	    GWidgetErrorR(_STR_MergingProb,_STR_MergingFontSelf);
 #endif
 	else
 	    MergeFont(fv,sf);
@@ -1026,6 +1031,7 @@ void FVMergeFonts(FontView *fv) {
 	TFFree(gcd[1].gd.u.list);
     }
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 static RefChar *InterpRefs(RefChar *base, RefChar *other, real amount, SplineChar *sc) {
     RefChar *head=NULL, *last=NULL, *cur;
@@ -1318,33 +1324,33 @@ static void InterpFixupRefChars(SplineFont *sf) {
     }
 }
 
-static void InterpolateFont(SplineFont *base, SplineFont *other, real amount) {
+SplineFont *InterpolateFont(SplineFont *base, SplineFont *other, real amount) {
     SplineFont *new;
     int i, index;
 
     if ( base==other ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_InterpolatingProb,_STR_InterpolatingFontSelf);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Interpolating Problem"),_("Interpolating a font with itself achieves nothing"));
+#else
+	GWidgetErrorR(_STR_InterpolatingProb,_STR_InterpolatingFontSelf);
 #endif
-return;
+return( NULL );
     } else if ( base->order2!=other->order2 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_InterpolatingProb,_STR_InterpolatingFontsDiffOrder);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Interpolating Problem"),_("Interpolating between fonts with different spline orders (ie. between postscript and truetype)"));
+#else
+	GWidgetErrorR(_STR_InterpolatingProb,_STR_InterpolatingFontsDiffOrder);
 #endif
-return;
+return( NULL );
     }
 #ifdef FONTFORGE_CONFIG_TYPE3
     else if ( base->multilayer && other->multilayer ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_InterpolatingProb,_STR_InterpolatingFontsDiffLayers);
-#elif defined(FONTFORGE_CONFIG_GTK)
+# if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Interpolating Problem"),_("Interpolating between fonts with different editing types (ie. between type3 and type1)"));
-#endif
-return;
+# else
+	GWidgetErrorR(_STR_InterpolatingProb,_STR_InterpolatingFontsDiffLayers);
+# endif
+return( NULL );
     }
 #endif
     new = SplineFontBlank(base->encoding_name,base->charcnt);
@@ -1368,9 +1374,10 @@ return;
     }
     InterpFixupRefChars(new);
     new->changed = true;
-    FontViewCreate(new);
+return( new );
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void InterAskFilename(FontView *fv, real amount) {
     char *filename = GetPostscriptFontName(NULL,false);
     SplineFont *sf;
@@ -1381,7 +1388,7 @@ return;
     free(filename);
     if ( sf==NULL )
 return;
-    InterpolateFont(fv->sf,sf,amount);
+    FontViewCreate(InterpolateFont(fv->sf,sf,amount));
 }
 
 #define CID_Amount	1000
@@ -1410,7 +1417,7 @@ return( true );
 	if ( fv==NULL )
 	    InterAskFilename(d->fv,last_amount/100.0);
 	else
-	    InterpolateFont(d->fv->sf,fv->sf,last_amount/100.0);
+	    FontViewCreate(InterpolateFont(d->fv->sf,fv->sf,last_amount/100.0));
 	d->done = true;
     }
 return( true );
@@ -1526,3 +1533,4 @@ void FVInterpolateFonts(FontView *fv) {
     GDrawDestroyWindow(gw);
     TFFree(gcd[1].gd.u.list);
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

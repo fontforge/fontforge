@@ -636,10 +636,10 @@ return( NULL );
     if ( !bc_checked && ftc->isttf ) {
 	bc_checked = true;
 	if ( !hasFreeTypeByteCode())
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetPostNoticeR(_STR_NoByteCode,_STR_NoByteCodeMsg);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_notice(_("No ByteCode Interpreter"),_("These results are those of the freetype autohinter. They do not reflect the truetype instructions."));
+#else
+	    GWidgetPostNoticeR(_STR_NoByteCode,_STR_NoByteCodeMsg);
 #endif
     }
 
@@ -718,7 +718,7 @@ return;
 /* ***************************** Debugger Stuff ***************************** */
 /******************************************************************************/
 
-#if FREETYPE_HAS_DEBUGGER
+#if FREETYPE_HAS_DEBUGGER && !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
 #include <pthread.h>
 #include <tterrors.h>
 
@@ -1078,6 +1078,7 @@ int DebuggingFpgm(struct debugger_context *dc) {
 return( dc->debug_fpgm );
 }
 #else
+struct debugger_context;
 
 void DebuggerTerminate(struct debugger_context *dc) {
 }
@@ -1107,4 +1108,4 @@ return( NULL );
 int DebuggingFpgm(struct debugger_context *dc) {
 return( false );
 }
-#endif
+#endif	/* FREETYPE_HAS_DEBUGGER && !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)*/

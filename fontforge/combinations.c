@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include "psfont.h"
 #include <ustring.h>
 #include <gkeysym.h>
@@ -1214,3 +1215,4 @@ return;
     free( kpd.kerns );
     GDrawDestroyWindow(gw);
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <gkeysym.h>
 #include <utype.h>
 #include <ustring.h>
@@ -128,8 +129,12 @@ static void BCCharUpdate(BDFChar *bc) {
 	/*BVRefreshImage(bv);*/		/* Select All gives us a blank image if we do this */
     }
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 void BCCharChangedUpdate(BDFChar *bc) {
+#ifdef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    bc->changed = true;
+#else
     BDFFont *bdf;
     BitmapView *bv;
     int waschanged = bc->changed;
@@ -151,6 +156,7 @@ void BCCharChangedUpdate(BDFChar *bc) {
 		FVToggleCharChanged(fv->sf->chars[bc->enc]);
 	}
     }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 }
 
 BDFChar *BDFMakeChar(BDFFont *bdf,int i) {
@@ -177,6 +183,7 @@ return( NULL );
 return( bc );
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static unichar_t *BVMakeTitles(BitmapView *bv, BDFChar *bc,unichar_t *ubuf) {
     unichar_t *title;
     SplineChar *sc;
@@ -1738,3 +1745,4 @@ void BitmapViewFree(BitmapView *bv) {
     free(bv);
 }
 
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

@@ -246,10 +246,12 @@ static void expect(Context *c,enum token_type expected, enum token_type got) {
     if ( got!=expected ) {
 	fprintf( stderr, "%s: %d Expected %s, got %s",
 		c->filename, c->lineno, toknames[expected], toknames[got] );
-	if ( screen_display!=NULL ) {
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+	if ( !no_windowing_ui ) {
 	    static unichar_t umsg[] = { '%','h','s',':',' ','%','d',' ','E','x','p','e','c','t','e','d',' ','%','h','s',',',' ','g','o','t',' ','%','h','s',  0 };
 	    GWidgetError(NULL,umsg,c->filename, c->lineno, toknames[expected], toknames[got] );
 	}
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	showtoken(c,got);
     }
 }
@@ -257,28 +259,34 @@ static void expect(Context *c,enum token_type expected, enum token_type got) {
 static void unexpected(Context *c,enum token_type got) {
     fprintf( stderr, "%s: %d Unexpected %s found",
 	    c->filename, c->lineno, toknames[got] );
-    if ( screen_display!=NULL ) {
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    if ( !no_windowing_ui ) {
 	static unichar_t umsg[] = { '%','h','s',':',' ','%','d',' ','U','n','e','x','p','e','c','t','e','d',' ','%','h','s',  0 };
 	GWidgetError(NULL,umsg,c->filename, c->lineno, toknames[got] );
     }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     showtoken(c,got);
 }
 
 static void error( Context *c, char *msg ) {
     fprintf( stderr, "%s: %d %s\n", c->filename, c->lineno, msg );
-    if ( screen_display!=NULL ) {
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    if ( !no_windowing_ui ) {
 	static unichar_t umsg[] = { '%','h','s',':',' ','%','d',' ','%','h','s',  0 };
 	GWidgetError(NULL,umsg,c->filename, c->lineno, msg );
     }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     traceback(c);
 }
 
 static void errors( Context *c, char *msg, char *name) {
     fprintf( stderr, "%s: %d %s: %s\n", c->filename, c->lineno, msg, name );
-    if ( screen_display!=NULL ) {
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    if ( !no_windowing_ui ) {
 	static unichar_t umsg[] = { '%','h','s',':',' ','%','d',' ','%','h','s',':',' ','%','h','s',  0 };
 	GWidgetError(NULL,umsg,c->filename, c->lineno, msg, name );
     }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     traceback(c);
 }
 
@@ -337,18 +345,24 @@ static void bError(Context *c) {
 }
 
 static void bPostNotice(Context *c) {
-    static const unichar_t format[] = { '%','.','2','0','0','h','s', '\0' };
-    static const unichar_t notice[] = { 'A','t','t','e','n','t','i','o','n',  '\0' };
 
     if ( c->a.argc!=2 )
 	error( c, "Wrong number of arguments" );
     else if ( c->a.vals[1].type!=v_str )
 	error( c, "Expected string argument" );
 
-    if ( screen_display==NULL )
-	fprintf(stderr,"%s\n", c->a.vals[1].u.sval );
-    else
+#if defined(FONTFORGE_CONFIG_GTK)
+    if ( !no_windowing_ui ) {
+	gwwv_post_notice(_("Attention"), "%.200s", c->a.vals[1].u.sval );
+    } else
+#elif defined(FONTFORGE_CONFIG_GDRAW)
+    if ( !no_windowing_ui ) {
+	static const unichar_t format[] = { '%','.','2','0','0','h','s', '\0' };
+	static const unichar_t notice[] = { 'A','t','t','e','n','t','i','o','n',  '\0' };
 	GWidgetPostNotice( notice, format, c->a.vals[1].u.sval );
+    } else
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+	fprintf(stderr,"%s\n", c->a.vals[1].u.sval );
 }
 
 static void bAskUser(Context *c) {
@@ -361,7 +375,11 @@ static void bAskUser(Context *c) {
     quest = c->a.vals[1].u.sval;
     if ( c->a.argc==3 )
 	def = c->a.vals[2].u.sval;
-    if ( screen_display==NULL ) {
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    if ( no_windowing_ui ) {
+#else
+	{
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	char buffer[300];
 	printf( "%s", quest );
 	buffer[0] = '\0';
@@ -373,6 +391,7 @@ static void bAskUser(Context *c) {
 	    c->return_val.u.sval = copy(def);
 	else
 	    c->return_val.u.sval = copy(buffer);
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     } else {
 	unichar_t *t1, *t2, *ret;
 	static unichar_t format[] = { '%','s', 0 };
@@ -386,6 +405,7 @@ static void bAskUser(Context *c) {
 	    c->return_val.u.sval = copy("");
 	else
 	    free(ret);
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
 }
 
@@ -771,12 +791,10 @@ static void bOpen(Context *c) {
 	errors(c, "Failed to open", c->a.vals[1].u.sval);
     if ( sf->fv!=NULL )
 	/* All done */;
-#ifdef FONTFORGE_CONFIG_GDRAW
-    else if ( screen_display!=NULL )
-#elif defined(FONTFORGE_CONFIG_GTK)
-    else if (
-#endif
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    else if ( !no_windowing_ui )
 	FontViewCreate(sf);
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     else
 	FVAppend(_FontViewCreate(sf));
     c->curfv = sf->fv;
@@ -1697,8 +1715,10 @@ static void bReencode(Context *c) {
 	free( fvs->selected );
 	fvs->selected = gcalloc(fvs->sf->charcnt,1);
     }
-    if ( screen_display!=NULL )
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    if ( !no_windowing_ui )
 	FontViewReformatAll(c->curfv->sf);
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     c->curfv->sf->changed = true;
     c->curfv->sf->changed_since_autosave = true;
     c->curfv->sf->changed_since_xuidchanged = true;
@@ -1724,8 +1744,10 @@ return;
 	for ( i=oldcnt; i<c->a.vals[1].u.ival; ++i )
 	    fvs->selected[i] = false;
     }
-    if ( screen_display!=NULL )
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    if ( !no_windowing_ui )
 	FontViewReformatAll(c->curfv->sf);
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     c->curfv->sf->changed = true;
     c->curfv->sf->changed_since_autosave = true;
     c->curfv->sf->changed_since_xuidchanged = true;
@@ -1775,8 +1797,10 @@ static void bSetFontHasVerticalMetrics(Context *c) {
     c->return_val.type = v_int;
     c->return_val.u.ival = c->curfv->sf->hasvmetrics;
 
-    if ( c->curfv->sf->hasvmetrics!=(c->a.vals[1].u.ival!=0) && screen_display!=NULL )
+#ifdef FONTFORGE_CONFIG_GDRAW
+    if ( c->curfv->sf->hasvmetrics!=(c->a.vals[1].u.ival!=0) && !no_windowing_ui )
 	CVPaletteDeactivate();
+#endif		/* FONTFORGE_CONFIG_GDRAW */
     c->curfv->sf->hasvmetrics = (c->a.vals[1].u.ival!=0);
 }
 
@@ -2582,6 +2606,27 @@ static void bMergeFonts(Context *c) {
     MergeFont(c->curfv,sf);
 }
 
+static void bInterpolateFonts(Context *c) {
+    SplineFont *sf;
+    int openflags=0;
+
+    if ( c->a.argc!=3 && c->a.argc!=4 )
+	error( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_int )
+	error( c, "Bad argument type for first arg");
+    else if ( c->a.vals[2].type!=v_str )
+	error( c, "InterpolateFonts expects a filename" );
+    else if ( c->a.argc==4 ) {
+	if ( c->a.vals[3].type!=v_int )
+	    error( c, "InterpolateFonts expects an integer for third argument" );
+	openflags = c->a.vals[3].u.ival;
+    }
+    sf = LoadSplineFont(c->a.vals[2].u.sval,openflags);
+    if ( sf==NULL )
+	errors(c,"Can't find font", c->a.vals[2].u.sval);
+    c->curfv = FVAppend(_FontViewCreate(InterpolateFont(c->curfv->sf,sf,c->a.vals[1].u.ival/100.0 )));
+}
+
 static void bAutoHint(Context *c) {
     if ( c->a.argc!=1 )
 	error( c, "Wrong number of arguments");
@@ -3053,7 +3098,8 @@ static void bCIDChangeSubFont(Context *c) {
 	errors( c, "Not in the current cid font", c->a.vals[1].u.sval );
     new = sf->cidmaster->subfonts[i];
 
-    if ( screen_display!=NULL ) {
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    if ( !no_windowing_ui ) {
 	MetricsView *mv, *mvnext;
 	for ( mv=c->curfv->metrics; mv!=NULL; mv = mvnext ) {
 	    /* Don't bother trying to fix up metrics views, just not worth it */
@@ -3063,6 +3109,7 @@ static void bCIDChangeSubFont(Context *c) {
 	GDrawSync(NULL);
 	GDrawProcessPendingEvents(NULL);
     }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     if ( sf->charcnt!=new->charcnt ) {
 	FontView *fvs;
 	for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
@@ -3071,10 +3118,12 @@ static void bCIDChangeSubFont(Context *c) {
 	}
     }
     c->curfv->sf = new;
-    if ( screen_display!=NULL ) {
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    if ( !no_windowing_ui ) {
 	FVSetTitle(c->curfv);
 	FontViewReformatAll(c->curfv->sf);
     }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 }
 
 static void bCIDSetFontNames(Context *c) {
@@ -3851,6 +3900,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "BuildComposite", bBuildComposit },
     { "BuildAccented", bBuildAccented },
     { "ReplaceWithReference", bReplaceOutlineWithReference },
+    { "InterpolateFonts", bInterpolateFonts },
     { "MergeFonts", bMergeFonts },
 /*  Menu */
     { "AutoHint", bAutoHint },

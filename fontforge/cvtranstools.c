@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <math.h>
 
 void CVMouseDownTransform(CharView *cv) {
@@ -94,3 +95,4 @@ void CVMouseUpTransform(CharView *cv) {
     } else
 	CVUndoCleanup(cv);
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

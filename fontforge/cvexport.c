@@ -28,13 +28,15 @@
 #include <math.h>
 #include <locale.h>
 #include <string.h>
-#include "ustring.h"
 #include "gfile.h"
-#include "gio.h"
-#include "gicons.h"
 #include <time.h>
 #include <pwd.h>
+#if defined(FONTFORGE_CONFIG_GDRAW)
+#include "ustring.h"
+#include "gio.h"
+#include "gicons.h"
 #include <utype.h>
+#endif
 
 int _ExportEPS(FILE *eps,SplineChar *sc) {
     DBounds b;
@@ -322,6 +324,7 @@ return(0);
 return( ret );
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static unichar_t def[] = { '1', '0', '0',  '\0' };
 static unichar_t def_bits[] = { '1',  '\0' };
 static unichar_t *last = NULL;
@@ -566,6 +569,7 @@ return( 0 );
     }
 return( ret );
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 static int BCExportXBM(char *filename,BDFChar *bdfc, int format) {
     struct _GImage base;
@@ -664,13 +668,14 @@ return;
     else if ( bc!=NULL )
 	good = BCExportXBM(buffer,bc,format-3);
     if ( !good )
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_Savefailedtitle,_STR_Savefailedtitle);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Save Failed"),_("Save Failed"));
+#else
+	GWidgetErrorR(_STR_Savefailedtitle,_STR_Savefailedtitle);
 #endif
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 struct gfc_data {
     int done;
     int ret;
@@ -1050,3 +1055,4 @@ return( _Export(cv->sc,NULL));
 int BVExport(BitmapView *bv) {
 return( _Export(bv->bc->sc,bv->bc));
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

@@ -28,6 +28,7 @@
 #include <math.h>
 #include "ustring.h"
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static int askfraction(int *xoff, int *yoff) {
     static int lastx=1, lasty = 3;
     char buffer[30];
@@ -36,8 +37,12 @@ static int askfraction(int *xoff, int *yoff) {
     int xv, yv;
 
     sprintf( buffer, "%d:%d", lastx, lasty );
+#if defined(FONTFORGE_CONFIG_GDRAW)
     uc_strcpy(ubuffer,buffer);
     ret = GWidgetAskStringR(_STR_Skew,ubuffer,_STR_SkewRatio);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    ret = gwwv_ask_string(_("Skew"),ubuffer,_("Skew Ratio"));
+#endif
     if ( ret==NULL )
 return( 0 );
     xv = u_strtol(ret,&end,10);
@@ -54,6 +59,7 @@ return( 0 );
     *xoff = lastx = xv; *yoff = lasty = yv;
 return( 1 );
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 static void BCTransFunc(BDFChar *bc,enum bvtools type,int xoff,int yoff) {
     int i, j;
@@ -271,6 +277,7 @@ void BCRotateCharForVert(BDFChar *bc,BDFChar *from, BDFFont *frombdf) {
     bc->width = frombdf->pixelsize;
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 void BVRotateBitmap(BitmapView *bv,enum bvtools type ) {
     int xoff=0, yoff=0;
 
@@ -281,6 +288,7 @@ return;
     BCTransFunc(bv->bc,type,xoff,yoff);
     BCCharChangedUpdate(bv->bc);
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 static void BCExpandBitmap(BDFChar *bc, int x, int y) {
     int xmin, xmax, bpl, ymin, ymax;
@@ -322,6 +330,7 @@ static void BCExpandBitmap(BDFChar *bc, int x, int y) {
     }
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 void BCSetPoint(BDFChar *bc, int x, int y, int color ) {
 
     if ( x<bc->xmin || x>bc->xmax || y<bc->ymin || y>bc->ymax ) {
@@ -498,6 +507,7 @@ void BCGeneralFunction(BitmapView *bv,
       break;
     }
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 void BDFFloatFree(BDFFloat *sel) {
     if ( sel==NULL )

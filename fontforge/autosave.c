@@ -25,7 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
-#include "ustring.h"
+/*#include "ustring.h"*/
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <fcntl.h>
@@ -56,12 +56,12 @@ static char *gethomedir(void) {
 return( dir );
     
     if ( (dir=getenv("HOME"))!=NULL )
-return( (dir=copy(dir)) );
+return( (dir=strdup(dir)) );
 
     uid = getuid();
     while ( (pw=getpwent())!=NULL ) {
 	if ( pw->pw_uid==uid ) {
-	    dir = copy(pw->pw_dir);
+	    dir = strdup(pw->pw_dir);
 	    endpwent();
 return( dir );
 	}
@@ -82,7 +82,7 @@ return( NULL );
     if ( access(buffer,F_OK)==-1 )
 	if ( mkdir(buffer,0700)==-1 )
 return( NULL );
-    dir = copy(buffer);
+    dir = strdup(buffer);
 return( dir );
 }
 
@@ -97,7 +97,7 @@ return( NULL );
     if ( access(buffer,F_OK)==-1 )
 	if ( mkdir(buffer,0700)==-1 )
 return( NULL );
-    dir = copy(buffer);
+    dir = strdup(buffer);
 return( dir );
 }
 
@@ -113,7 +113,7 @@ return;
     while ( 1 ) {
 	sprintf( buffer, "%s/auto%06x-%d.asfd", autosavedir, getpid(), ++cnt );
 	if ( access(buffer,F_OK)==-1 ) {
-	    sf->autosavename = copy(buffer);
+	    sf->autosavename = strdup(buffer);
 return;
 	}
     }

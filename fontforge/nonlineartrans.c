@@ -119,10 +119,10 @@ return( op_value );
 	    if ( strcmp(buffer,builtins[i].name)==0 )
 return( builtins[i].op );
 	}
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_BadToken, _STR_BadNameToken, buffer, c->cur );
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Bad Token"), _("Bad token \"%.30s\"\nnear ...%40s"), buffer, c->cur );
+#else
+	GWidgetErrorR(_STR_BadToken, _STR_BadNameToken, buffer, c->cur );
 #endif
 	c->had_error = true;
 	while (( ch = *(c->cur++))==' ' );
@@ -169,10 +169,10 @@ return( op_lt );
 	    ++c->cur;
 return( op_eq );
 	}
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_BadToken, _STR_BadTokenExpected, "==", "=" , c->cur );
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\" got \"%.10s\"\nnear ...%40s"), "==", "=" , c->cur );
+#else
+	GWidgetErrorR(_STR_BadToken, _STR_BadTokenExpected, "==", "=" , c->cur );
 #endif
 	c->had_error = true;
 return( op_eq );
@@ -181,10 +181,10 @@ return( op_eq );
 	    ++c->cur;
 return( op_or );
 	}
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_BadToken, _STR_BadTokenExpected, "||", "|" , c->cur );
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\" got \"%.10s\"\nnear ...%40s"), "||", "|" , c->cur );
+#else
+	GWidgetErrorR(_STR_BadToken, _STR_BadTokenExpected, "||", "|" , c->cur );
 #endif
 	c->had_error = true;
 return( op_or );
@@ -193,10 +193,10 @@ return( op_or );
 	    ++c->cur;
 return( op_and );
 	}
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_BadToken, _STR_BadTokenExpected, "&&", "&" , c->cur );
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\" got \"%.10s\"\nnear ...%40s"), "&&", "&" , c->cur );
+#else
+	GWidgetErrorR(_STR_BadToken, _STR_BadTokenExpected, "&&", "&" , c->cur );
 #endif
 	c->had_error = true;
 return( op_and );
@@ -205,10 +205,10 @@ return( op_if );
       case '(': case ')': case ':':
 return( ch );
       default:
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_BadToken, _STR_BadTokenChar, ch , c->cur );
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Bad Token"), _("Bad token. got \"%c\"\nnear ...%40s"), ch , c->cur );
+#else
+	GWidgetErrorR(_STR_BadToken, _STR_BadTokenChar, ch , c->cur );
 #endif
 	c->had_error = true;
 	*val = 0;
@@ -243,10 +243,10 @@ return( ret );
 	ret = getexpr(c);
 	op = gettoken(c,&val);
 	if ( op!=')' ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_BadToken, _STR_BadTokenExpectedChar, ")" , c->cur );
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\"\nnear ...%40s"), ")" , c->cur );
+#else
+	    GWidgetErrorR(_STR_BadToken, _STR_BadTokenExpectedChar, ")" , c->cur );
 #endif
 	    c->had_error = true;
 	}
@@ -259,20 +259,20 @@ return(ret );
 	ret->operator = op;
 	op = gettoken(c,&val);
 	if ( op!='(' ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_BadToken, _STR_BadTokenExpectedChar, "(" , c->cur );
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\"\nnear ...%40s"), "(" , c->cur );
+#else
+	    GWidgetErrorR(_STR_BadToken, _STR_BadTokenExpectedChar, "(" , c->cur );
 #endif
 	    c->had_error = true;
 	}
 	ret->op1 = getexpr(c);
 	op = gettoken(c,&val);
 	if ( op!=')' ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_BadToken, _STR_BadTokenExpectedChar, ")" , c->cur );
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\"\nnear ...%40s"), ")" , c->cur );
+#else
+	    GWidgetErrorR(_STR_BadToken, _STR_BadTokenExpectedChar, ")" , c->cur );
 #endif
 	    c->had_error = true;
 	}
@@ -285,10 +285,10 @@ return( gete0(c));
 	ret->op1 = gete0(c);
 return( ret );
       default:
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_BadToken, _STR_UnexpectedToken , c->cur );
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Bad Token"), _("Unexpected token.\nbefore ...%40s") , c->cur );
+#else
+	GWidgetErrorR(_STR_BadToken, _STR_UnexpectedToken , c->cur );
 #endif
 	c->had_error = true;
 	ret = gcalloc(1,sizeof(struct expr));
@@ -407,10 +407,10 @@ static struct expr *getexpr(struct context *c) {
 	ret->op2 = getexpr(c);
 	op = gettoken(c,&val);
 	if ( op!=':' ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_BadToken, _STR_BadTokenExpectedChar, ":" , c->cur );
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\"\nnear ...%40s"), ":" , c->cur );
+#else
+	    GWidgetErrorR(_STR_BadToken, _STR_BadTokenExpectedChar, ":" , c->cur );
 #endif
 	    c->had_error = true;
 	}
@@ -430,10 +430,10 @@ static struct expr *parseexpr(struct context *c,char *str) {
     ret = getexpr(c);
     if ( *c->cur!='\0' ) {
 	c->had_error = true;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_BadToken, _STR_UnexpectedTokenAtEnd , c->cur );
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Bad Token"), _("Unexpected token after expression end.\nbefore ...%40s") , c->cur );
+#else
+	GWidgetErrorR(_STR_BadToken, _STR_UnexpectedTokenAtEnd , c->cur );
 #endif
     }
     if ( c->had_error ) {
@@ -465,10 +465,10 @@ return( !evaluate_expr(c,e->op1) );
 	switch ( e->operator ) {
 	  case op_log:
 	    if ( val1<=0 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		GWidgetErrorR(_STR_BadValue,_STR_BadLogarithem, val1, c->sc->name );
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Bad Value"),_("Attempt to take logarithem of %g in %.30s"), val1, c->sc->name );
+#else
+		GWidgetErrorR(_STR_BadValue,_STR_BadLogarithem, val1, c->sc->name );
 #endif
 		c->had_error = true;
 return( 0 );
@@ -476,10 +476,10 @@ return( 0 );
 return( log(val1));
 	  case op_sqrt:
 	    if ( val1<0 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		GWidgetErrorR(_STR_BadValue,_STR_BadSqrt, val1, c->sc->name );
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Bad Value"),_("Attempt to take the square root of %g in %.30s"), val1, c->sc->name );
+#else
+		GWidgetErrorR(_STR_BadValue,_STR_BadSqrt, val1, c->sc->name );
 #endif
 		c->had_error = true;
 return( 0 );
@@ -509,10 +509,10 @@ return( evaluate_expr(c,e->op1) * evaluate_expr(c,e->op2) );
       case op_div: case op_mod:
 	val2 = evaluate_expr(c,e->op2);
 	if ( val2==0 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_BadValue,_STR_DivideByZero, c->sc->name );
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Bad Value"),_("Attempt divide by 0 in %.30s"), c->sc->name );
+#else
+	    GWidgetErrorR(_STR_BadValue,_STR_DivideByZero, c->sc->name );
 #endif
 	    c->had_error = true;
 return( 0 );
@@ -699,28 +699,6 @@ return;
 #endif
 }
 
-static void CVNLTrans(CharView *cv,struct context *c) {
-    SplineSet *ss;
-    RefChar *ref;
-
-    if ( cv->layerheads[cv->drawmode]->splines==NULL && (cv->drawmode!=dm_fore || cv->sc->layers[ly_fore].refs==NULL ))
-return;
-
-    CVPreserveState(cv);
-    c->sc = cv->sc;
-    for ( ss=cv->layerheads[cv->drawmode]->splines; ss!=NULL; ss=ss->next )
-	SplineSetNLTrans(ss,c,false);
-    if ( cv->drawmode==dm_fore ) {
-	for ( ref=cv->layerheads[cv->drawmode]->refs; ref!=NULL; ref=ref->next ) {
-	    c->x = ref->transform[4]; c->y = ref->transform[5];
-	    ref->transform[4] = NL_expr(c,c->x_expr);
-	    ref->transform[5] = NL_expr(c,c->y_expr);
-	    SCReinstanciateRefChar(cv->sc,ref);
-	}
-    }
-    CVCharChangedUpdate(cv);
-}
-
 static void _SFNLTrans(FontView *fv,struct context *c) {
     SplineChar *sc;
     RefChar *ref;
@@ -755,6 +733,29 @@ return( false );
     exprfree(c.x_expr);
     exprfree(c.y_expr);
 return( true );
+}
+
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+static void CVNLTrans(CharView *cv,struct context *c) {
+    SplineSet *ss;
+    RefChar *ref;
+
+    if ( cv->layerheads[cv->drawmode]->splines==NULL && (cv->drawmode!=dm_fore || cv->sc->layers[ly_fore].refs==NULL ))
+return;
+
+    CVPreserveState(cv);
+    c->sc = cv->sc;
+    for ( ss=cv->layerheads[cv->drawmode]->splines; ss!=NULL; ss=ss->next )
+	SplineSetNLTrans(ss,c,false);
+    if ( cv->drawmode==dm_fore ) {
+	for ( ref=cv->layerheads[cv->drawmode]->refs; ref!=NULL; ref=ref->next ) {
+	    c->x = ref->transform[4]; c->y = ref->transform[5];
+	    ref->transform[4] = NL_expr(c,c->x_expr);
+	    ref->transform[5] = NL_expr(c,c->y_expr);
+	    SCReinstanciateRefChar(cv->sc,ref);
+	}
+    }
+    CVCharChangedUpdate(cv);
 }
 
 struct nldlg {
@@ -920,4 +921,5 @@ void NonLinearDlg(FontView *fv,CharView *cv) {
     }
     GDrawDestroyWindow(d.gw);
 }
+# endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 #endif		/* FONTFORGE_CONFIG_NONLINEAR */

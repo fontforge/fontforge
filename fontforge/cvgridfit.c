@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <ustring.h>
 #include <gkeysym.h>
 #include <math.h>
@@ -258,3 +259,4 @@ void CVFtPpemDlg(CharView *cv,int debug) {
 	GDrawProcessOneEvent(NULL);
     GDrawDestroyWindow(gw);
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
