@@ -405,7 +405,8 @@ return( matched );
 int SCIsNotdef(SplineChar *sc,int fixed) {
 return( sc!=NULL && sc->enc==0 && sc->refs==NULL && strcmp(sc->name,".notdef")==0 &&
 	(sc->splines!=NULL || (sc->widthset && fixed==-1) ||
-	 (sc->width!=sc->parent->ascent+sc->parent->descent && fixed==-1 )));
+	 (sc->width!=sc->parent->ascent+sc->parent->descent && fixed==-1 ) ||
+	 (sc->width==fixed && fixed!=-1)));
 }
 
 int SCWorthOutputting(SplineChar *sc) {
