@@ -1619,6 +1619,7 @@ extern SplineSet *FreeType_GridFitChar(void *single_glyph_context,
 extern struct freetype_raster *FreeType_GetRaster(void *single_glyph_context,
 	int enc, real ptsize, int dpi);
 extern void FreeType_FreeRaster(struct freetype_raster *raster);
+extern struct freetype_raster *DebuggerCurrentRasterization(SplineSet *spl,real grid_spacing);
 
 extern int UniFromName(const char *name,enum uni_interp interp, Encoding *encname);
 # ifdef FONTFORGE_CONFIG_GTK

@@ -26,6 +26,7 @@
  */
 #include "pfaedit.h"
 #include "splinefont.h"
+#include "edgelist2.h"
 #include <math.h>
 #include <stdarg.h>
 
@@ -66,24 +67,6 @@
 /*	used.								     */
 /*  The free up our temporary data structures, merge in any open splinesets  */
 /*	free the old closed splinesets					     */
-
-typedef struct monotonic {
-    Spline *s;
-    double tstart, tend;
-    struct monotonic *next, *prev;	/* along original contour */
-    uint8 xup;				/* increasing t => increasing x */
-    uint8 yup;
-    unsigned int isneeded : 1;
-    unsigned int isunneeded : 1;
-    unsigned int exclude : 1;
-    struct intersection *start;
-    struct intersection *end;
-    DBounds b;
-    double other;
-    struct monotonic *linked;		/* singly linked list of all monotonic*/
-    					/*  segments, no contour indication */
-    double when_set;			/* Debugging */
-} Monotonic;
 
 typedef struct mlist {
     Spline *s;
@@ -280,7 +263,7 @@ return( start );
 return( start );
 }
 
-static Monotonic *SSsToMContours(SplineSet *spl, enum overlap_type ot) {
+Monotonic *SSsToMContours(SplineSet *spl, enum overlap_type ot) {
     Monotonic *head=NULL, *last = NULL;
 
     while ( spl!=NULL ) {
@@ -1083,16 +1066,15 @@ return( -1 );
 return( 0 );
 }
 
-static void FigureNeeds(Monotonic *ms,int which, double test, Monotonic **space,
-	enum overlap_type ot) {
+int MonotonicFindAt(Monotonic *ms,int which, double test, Monotonic **space ) {
     /* Find all monotonic sections which intersect the line (x,y)[which] == test */
     /*  find the value of the other coord on that line */
     /*  Order them (by the other coord) */
     /*  then run along that line figuring out which monotonics are needed */
     double t;
-    Monotonic *m;
-    int i, j, winding, ew;
-    const double error = .001;
+    Monotonic *m, *mm;
+    int i, j, k, cnt;
+    const double error = .0001;
     int nw = !which;
 
     for ( m=ms, i=0; m!=NULL; m=m->linked ) {
@@ -1101,15 +1083,71 @@ static void FigureNeeds(Monotonic *ms,int which, double test, Monotonic **space,
 	    t = BoundIterateSplineSolve(&m->s->splines[which],m->tstart,m->tend,test,error);
 	    if ( t==-1 )
     continue;
-	    if ( t==m->tend ) t -= (m->tend-m->tstart)/100;
-	    else if ( t==m->tstart ) t += (m->tend-m->tstart)/100;
+	    m->t = t;
 	    m->other = ((m->s->splines[nw].a*t+m->s->splines[nw].b)*t+
 		    m->s->splines[nw].c)*t+m->s->splines[nw].d;
 	    space[i++] = m;
 	}
     }
-    space[i] = NULL; space[i+1] = NULL;
-    qsort(space,i,sizeof(Monotonic *),mcmp);
+    cnt = i;
+
+    /* Things get a little tricky at end-points */
+    for ( i=0; i<cnt; ++i ) {
+	m = space[i];
+	if ( m->t==m->tend ) {
+	    /* Ignore horizontal/vertical lines (as appropriate) */
+	    for ( mm=m->next; mm!=m; mm=mm->next ) {
+		if ( !mm->s->knownlinear )
+	    break;
+		if (( which==1 && mm->s->from->me.y!=m->s->to->me.y ) ||
+			(which==0 && mm->s->from->me.x!=m->s->to->me.x))
+	    break;
+	    }
+	} else if ( m->t==m->tstart ) {
+	    for ( mm=m->prev; mm!=m; mm=mm->prev ) {
+		if ( !mm->s->knownlinear )
+	    break;
+		if (( which==1 && mm->s->from->me.y!=m->s->to->me.y ) ||
+			(which==0 && mm->s->from->me.x!=m->s->to->me.x))
+	    break;
+	    }
+	} else
+    break;
+	/* If the next monotonic continues in the same direction, and we found*/
+	/*  it too, then don't count both. They represent the same intersect */
+	/* If they are in oposite directions then they cancel each other out */
+	/*  and that is correct */
+	if ( mm!=m &&	/* Should always be true */
+		(&mm->xup)[which]==(&m->xup)[which] ) {
+	    for ( j=cnt-1; j>=0; --j )
+		if ( space[j]==mm )
+	    break;
+	    if ( j!=-1 ) {
+		/* remove mm */
+		for ( k=j+1; k<cnt; ++k )
+		    space[k-1] = space[k];
+		--cnt;
+		if ( i>j ) --i;
+	    }
+	}
+	if ( t==m->tend ) t -= (m->tend-m->tstart)/100;
+	else if ( t==m->tstart ) t += (m->tend-m->tstart)/100;
+    }
+
+    space[cnt] = NULL; space[cnt+1] = NULL;
+    qsort(space,cnt,sizeof(Monotonic *),mcmp);
+return(cnt);
+}
+
+static void FigureNeeds(Monotonic *ms,int which, double test, Monotonic **space,
+	enum overlap_type ot) {
+    /* Find all monotonic sections which intersect the line (x,y)[which] == test */
+    /*  find the value of the other coord on that line */
+    /*  Order them (by the other coord) */
+    /*  then run along that line figuring out which monotonics are needed */
+    int i, j, winding, ew;
+
+    MonotonicFindAt(ms,which,test,space);
 
 #if 0		/* Really slow, and it fixes some problems at the expense of causing others */
     for ( i=0; space[i+1]!=NULL; ++i ) {
@@ -1455,7 +1493,7 @@ static SplineSet *MergeOpenAndFreeClosed(SplineSet *new,SplineSet *old,
 return(new);
 }
 
-static void FreeMonotonics(Monotonic *m) {
+void FreeMonotonics(Monotonic *m) {
     Monotonic *next;
 
     while ( m!=NULL ) {
