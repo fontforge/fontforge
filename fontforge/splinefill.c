@@ -1029,7 +1029,7 @@ static void SetByteMapToGrey(uint8 *bytemap,EdgeList *es,Layer *layer,Layer *alt
     for ( i=0; i<es->cnt; ++i ) {
 	bpt = es->bitmap + i*es->bytes_per_line;
 	pt = bytemap + i*8*es->bytes_per_line;
-	for ( j=0; j<=8*es->bytes_per_line; ++j ) {
+	for ( j=0; j<8*es->bytes_per_line; ++j ) {
 	    if ( bpt[j>>3]&(0x80>>(j&7)) )
 		pt[j] = grey;
 	}
