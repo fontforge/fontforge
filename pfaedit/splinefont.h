@@ -1388,6 +1388,9 @@ extern int32 UniFromEnc(int enc, enum charset encname);
 extern int32 EncFromUni(int32 uni, enum charset encname);
 extern int32 EncFromSF(int32 uni, SplineFont *sf);
 
+enum psstrokeflags { sf_toobigwarn=1, sf_removeoverlap=2, sf_handle_eraser=4 };
+extern enum psstrokeflags PsStrokeFlagsDlg(void);
+
 # if HANYANG
 extern void SFDDumpCompositionRules(FILE *sfd,struct compositionrules *rules);
 extern struct compositionrules *SFDReadCompositionRules(FILE *sfd);

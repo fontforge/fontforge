@@ -1527,7 +1527,9 @@ return( ssplus );
 	    ssplus = ssminus;
 	    ssminus = temp;
 	}
-	if ( si->removeoverlapifneeded && si->gottoobiglocal && ssplus!=NULL )
+	/* I can't always detect an overlap, so let's always do the remove */
+	/* Note: SSFixupOverlap will remove internal/external as needed */
+	if ( si->removeoverlapifneeded && /*si->gottoobiglocal &&*/ ssplus!=NULL )
 	    ssplus = SSFixupOverlap(si,sc,ssplus,ssminus);
 	else if ( si->removeinternal && ssplus!=NULL ) {
 	    SplinePointListFree(ssminus);

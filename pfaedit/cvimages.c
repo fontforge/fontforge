@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
+#include <gkeysym.h>
 #include <math.h>
 #include <ustring.h>
 #include <utype.h>
@@ -79,6 +80,140 @@ static unichar_t *wildfnt[] = { wildbdf, wildttf, wildpk, wildpcf, wildmac, wild
 #endif
 };
 
+#define PSSF_Width 220
+#define PSSF_Height 150
+
+static int PSSF_OK(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate )
+	*(int *) GDrawGetUserData(GGadgetGetWindow(g)) = true;
+return( true );
+}
+
+static int psstrokeflags_e_h(GWindow gw, GEvent *event) {
+    if ( event->type==et_close ) {
+	*(int *) GDrawGetUserData(gw) = true;
+    } else if ( event->type == et_char ) {
+	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
+	    help("filemenu.html#type3-import");
+return( true );
+	}
+return( false );
+    }
+return( true );
+}
+
+enum psstrokeflags PsStrokeFlagsDlg(void) {
+    static enum psstrokeflags oldflags = sf_removeoverlap/*|sf_handle_eraser*/;
+    GRect pos;
+    GWindow gw;
+    GWindowAttrs wattrs;
+    GGadgetCreateData gcd[11];
+    GTextInfo label[11];
+    int done = false;
+    int k, rm_k, he_k;
+
+    if ( screen_display==NULL )
+return( oldflags );
+
+    memset(&wattrs,0,sizeof(wattrs));
+    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+    wattrs.event_masks = ~(1<<et_charup);
+    wattrs.restrict_input_to_me = 1;
+    wattrs.undercursor = 1;
+    wattrs.cursor = ct_pointer;
+    wattrs.window_title = GStringGetResource(_STR_PSInterpretation,NULL);
+    wattrs.is_dlg = true;
+    pos.x = pos.y = 0;
+    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,PSSF_Width));
+    pos.height = GDrawPointsToPixels(NULL,PSSF_Height);
+    gw = GDrawCreateTopWindow(NULL,&pos,psstrokeflags_e_h,&done,&wattrs);
+
+    memset(&label,0,sizeof(label));
+    memset(&gcd,0,sizeof(gcd));
+
+    k = 0;
+    label[k].text = (unichar_t *) _STR_RmOverlapBuggy1;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = 6;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k++].creator = GLabelCreate;
+
+    label[k].text = (unichar_t *) _STR_RmOverlapBuggy2;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+13;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k++].creator = GLabelCreate;
+
+    label[k].text = (unichar_t *) _STR_RmOverlapBuggy3;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+13;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k++].creator = GLabelCreate;
+
+    label[k].text = (unichar_t *) _STR_RmOverlapBuggy4;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+13;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k++].creator = GLabelCreate;
+
+    label[k].text = (unichar_t *) _STR_RmOverlapBuggy5;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+13;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k++].creator = GLabelCreate;
+
+    rm_k = k;
+    label[k].text = (unichar_t *) _STR_CleanupSelfIntersect;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+15;
+    gcd[k].gd.flags = gg_enabled | gg_visible | (oldflags&sf_removeoverlap?gg_cb_on:0);
+    gcd[k].gd.popup_msg = GStringGetResource(_STR_CleanupSelfIntersectPopup,NULL);
+    gcd[k++].creator = GCheckBoxCreate;
+
+    he_k = k;
+    label[k].text = (unichar_t *) _STR_HandleErasers;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+15;
+    gcd[k].gd.flags = gg_enabled | gg_visible | (oldflags&sf_handle_eraser?gg_cb_on:0);
+    gcd[k].gd.popup_msg = GStringGetResource(_STR_HandleErasersPop,NULL);
+    gcd[k++].creator = GCheckBoxCreate;
+
+    gcd[k].gd.pos.x = (PSSF_Width-GIntGetResource(_NUM_Buttonsize))/2; gcd[k].gd.pos.y = PSSF_Height-34;
+    gcd[k].gd.pos.width = -1;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_default;
+    label[k].text = (unichar_t *) _STR_OK;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.handle_controlevent = PSSF_OK;
+    gcd[k++].creator = GButtonCreate;
+
+    gcd[k].gd.pos.x = 1; gcd[k].gd.pos.y = 1;
+    gcd[k].gd.pos.width = PSSF_Width-2; gcd[k].gd.pos.height = PSSF_Height-2;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k++].creator = GGroupCreate;
+
+    GGadgetsCreate(gw,gcd);
+    GDrawSetVisible(gw,true);
+
+    while ( !done )
+	GDrawProcessOneEvent(NULL);
+
+    /* This dlg can't be cancelled */
+    oldflags = 0;
+    if ( GGadgetIsChecked(gcd[rm_k].ret) )
+	oldflags |= sf_removeoverlap;
+    if ( GGadgetIsChecked(gcd[he_k].ret) )
+	oldflags |= sf_handle_eraser;
+    GDrawDestroyWindow(gw);
+return( oldflags );
+}
 
 void SCImportPSFile(SplineChar *sc,enum drawmode dm,FILE *ps,int doclear) {
     SplinePointList *spl, *espl;

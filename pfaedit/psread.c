@@ -1881,12 +1881,68 @@ printf( "-%s-\n", toknames[tok]);
     setlocale(LC_NUMERIC,oldloc);
 }
 
-static SplinePointList *SplinesFromEntities(EntityChar *ec,int *toobigwarn) {
+static SplinePointList *EraseStroke(SplineChar *sc,SplinePointList *head,SplinePointList *erase) {
+    SplineSet *spl, *last;
+    SplinePoint *sp;
+
+    if ( head==NULL ) {
+	/* Pointless, but legal */
+	SplinePointListFree(erase);
+return( NULL );
+    }
+
+    last = NULL;
+    for ( spl=head; spl!=NULL; spl=spl->next ) {
+	for ( sp=spl->first; sp!=NULL; ) {
+	    sp->selected = false;
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==spl->first )
+	break;
+	}
+	last = spl;
+    }
+    for ( spl=erase; spl!=NULL; spl=spl->next ) {
+	for ( sp=spl->first; sp!=NULL; ) {
+	    sp->selected = true;
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==spl->first )
+	break;
+	}
+    }
+    last->next = erase;
+return( SplineSetRemoveOverlap(sc,head,over_exclude) );
+}
+
+static Entity *EntityReverse(Entity *ent) {
+    Entity *next, *last = NULL;
+
+    while ( ent!=NULL ) {
+	next = ent->next;
+	ent->next = last;
+	last = ent;
+	ent = next;
+    }
+return( last );
+}
+
+static SplinePointList *SplinesFromEntities(EntityChar *ec,int *flags) {
     Entity *ent, *next;
     SplinePointList *head=NULL, *last, *new, *nlast, *temp, *each, *transed;
     StrokeInfo si;
     real inversetrans[6];
     /*SplineSet *spl;*/
+    int handle_eraser;
+
+    if ( *flags==-1 )
+	*flags = PsStrokeFlagsDlg();
+	
+    handle_eraser = *flags & sf_handle_eraser;
+    if ( handle_eraser )
+	ec->splines = EntityReverse(ec->splines);
 
     for ( ent=ec->splines; ent!=NULL; ent = next ) {
 	next = ent->next;
@@ -1896,9 +1952,10 @@ static SplinePointList *SplinesFromEntities(EntityChar *ec,int *toobigwarn) {
 		SplineSetReverse(ent->u.splines.splines);
 	    if ( ent->u.splines.stroke.col!=0xffffffff ) {
 		memset(&si,'\0',sizeof(si));
-		si.toobigwarn = *toobigwarn;
+		si.toobigwarn = *flags & sf_toobigwarn ? 1 : 0;
 		si.join = ent->u.splines.join;
 		si.cap = ent->u.splines.cap;
+		si.removeoverlapifneeded = *flags & sf_removeoverlap ? 1 : 0;
 		si.radius = ent->u.splines.stroke_width/2;
 		new = NULL;
 		MatInverse(inversetrans,ent->u.splines.transform);
@@ -1915,25 +1972,38 @@ static SplinePointList *SplinesFromEntities(EntityChar *ec,int *toobigwarn) {
 		}
 		new = SplinePointListTransform(new,ent->u.splines.transform,true);
 		SplinePointListFree(transed);
-		if ( ent->u.splines.fill.col==0xffffffff )
-		    SplinePointListFree(ent->u.splines.splines);
-		else if ( new==NULL )
-		    new = ent->u.splines.splines;
-		else
-		    nlast->next = ent->u.splines.splines;
-		*toobigwarn = si.toobigwarn;
+		if ( handle_eraser && ent->u.splines.stroke.col==0xffffff ) {
+		    head = EraseStroke(ec->sc,head,new);
+		    last = head;
+		    if ( last!=NULL )
+			for ( ; last->next!=NULL; last=last->next );
+		} else {
+		    if ( head==NULL )
+			head = new;
+		    else
+			last->next = new;
+		    if ( new!=NULL )
+			for ( last = new; last->next!=NULL; last=last->next );
+		}
+		if ( si.toobigwarn )
+		    *flags |= sf_toobigwarn;
+	    }
+	    if ( ent->u.splines.fill.col==0xffffffff )
+		SplinePointListFree(ent->u.splines.splines);
+	    else if ( handle_eraser && ent->u.splines.fill.col==0xffffff ) {
+		head = EraseStroke(ec->sc,head,ent->u.splines.splines);
+		last = head;
+		if ( last!=NULL )
+		    for ( ; last->next!=NULL; last=last->next );
 	    } else {
 		new = ent->u.splines.splines;
+		if ( head==NULL )
+		    head = new;
+		else
+		    last->next = new;
+		if ( new!=NULL )
+		    for ( last = new; last->next!=NULL; last=last->next );
 	    }
-/* !!!!! if the fill/stroke color is white then I should probably do a */
-/*  RemoveIntersection rather than add the splines to the list.  But */
-/*  RemoveIntersection doesn't work well enough for me to depend on it here */
-	    if ( head==NULL )
-		head = new;
-	    else
-		last->next = new;
-	    if ( new!=NULL )
-		for ( last = new; last->next!=NULL; last=last->next );
 	}
 	free(ent);
     }
@@ -1942,11 +2012,11 @@ return( head );
 
 SplinePointList *SplinePointListInterpretPS(FILE *ps) {
     EntityChar ec;
-    int toobigwarn = false;
+    int flags = -1;
 
     memset(&ec,'\0',sizeof(ec));
     InterpretPS(ps,&ec);
-return( SplinesFromEntities(&ec,&toobigwarn));
+return( SplinesFromEntities(&ec,&flags));
 }
 
 Entity *EntityInterpretPS(FILE *ps) {
@@ -1957,7 +2027,7 @@ Entity *EntityInterpretPS(FILE *ps) {
 return( ec.splines );
 }
 
-static void SCInterpretPS(FILE *ps,SplineChar *sc, int *toobigwarn) {
+static void SCInterpretPS(FILE *ps,SplineChar *sc, int *flags) {
     EntityChar ec;
     real dval;
     char tokbuf[10];
@@ -1973,7 +2043,7 @@ static void SCInterpretPS(FILE *ps,SplineChar *sc, int *toobigwarn) {
     ec.sc = sc;
     sc->width = ec.width;
     sc->refs = ec.refs;
-    sc->splines = SplinesFromEntities(&ec,toobigwarn);
+    sc->splines = SplinesFromEntities(&ec,flags);
     free(wrapper.top);
 }
     
@@ -1984,7 +2054,7 @@ void PSFontInterpretPS(FILE *ps,struct charprocs *cp) {
     SplineChar *sc; EntityChar dummy;
     RefChar *p, *ref, *next;
     IO wrapper;
-    int toobigwarn = false;
+    int flags = -1;
 
     wrapper.top = NULL;
     pushio(&wrapper,ps,NULL);
@@ -1996,7 +2066,7 @@ void PSFontInterpretPS(FILE *ps,struct charprocs *cp) {
 		cp->keys[cp->next] = copy(tokbuf);
 		cp->values[cp->next++] = sc;
 		sc->name = copy(tokbuf);
-		SCInterpretPS(ps,sc,&toobigwarn);
+		SCInterpretPS(ps,sc,&flags);
        		GProgressNext();
 	    } else {
 		InterpretPS(ps,&dummy);

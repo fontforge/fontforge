@@ -2255,6 +2255,14 @@ static char *str_PixelSize = "Pixel size:";
 static char *str_BitsPerPixel = "Bits/Pixel:";
 static char *str_InvalidBits = "The only valid values for bits/pixel are 1, 2, 4 or 8";
     /* CV Images */
+static char *str_RmOverlapBuggy1 = "PfaEdit has some bugs in its remove overlap"
+static char *str_RmOverlapBuggy2 = "function which may cause you problems, so"
+static char *str_RmOverlapBuggy3 = "I give you the option of turning it off."
+static char *str_RmOverlapBuggy4 = "Leave it on if possible though, it is useful."
+static char *str_RmOverlapBuggy5 = ""
+static char *str_PSInterpretation = "PS Interpretion";
+static char *str_HandleErasers = "Handle Erasers";
+static char *str_HandleErasersPop = "Certain programs use pens with white ink as erasers\nIf you select (blacken) this checkbox, PfaEdit will\nattempt to simulate that.";
 static char *str_CantFindFile = "Can't find the file";
 static char *str_BadXFigFile = "Bad xfig file";
 static char *str_BadImageFile = "Bad image file";
