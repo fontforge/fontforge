@@ -1434,8 +1434,8 @@ static void SPLForceLines(SplineChar *sc,SplineSet *ss,double bump_size) {
 			if ( sp->next==first ) first = NULL;
 			SplineFree(sp->next);
 			if ( s->from==ss->first ) {
-			    ss->first = sp;
 			    if ( ss->first==ss->last ) ss->last = sp;
+			    ss->first = sp;
 			}
 			SplinePointMDFree(sc,s->from);
 			sp->next = s; s->from = sp;
@@ -1460,8 +1460,8 @@ static void SPLForceLines(SplineChar *sc,SplineSet *ss,double bump_size) {
 			if ( sp->prev==first ) first = NULL;
 			SplineFree(sp->prev);
 			if ( s->to==ss->last ) {
-			    ss->last = sp;
 			    if ( ss->first==ss->last ) ss->first = sp;
+			    ss->last = sp;
 			}
 			SplinePointMDFree(sc,s->to);
 			sp->prev = s; s->to = sp;
