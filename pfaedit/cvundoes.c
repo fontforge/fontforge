@@ -1322,7 +1322,7 @@ return;
     free(paste);
 }
 
-static anchor_lost_warning = false;
+static int anchor_lost_warning = false;
 
 static void APMerge(SplineChar *sc,AnchorPoint *anchor) {
     AnchorPoint *ap, *prev, *next, *test;
