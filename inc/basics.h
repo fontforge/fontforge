@@ -47,11 +47,18 @@ typedef unsigned int	uint32;
 typedef long		int32;
 typedef unsigned long	uint32;
 #endif
-/* I don't know of any systems where the following are not true */
+	/* I don't know of any systems where the following are not true */
 typedef short		int16;
 typedef unsigned short	uint16;
 typedef signed char	int8;
 typedef unsigned char	uint8;
+
+	/* An integral type which can hold a pointer */
+#if defined(__WORDSIZE) && __WORDSIZE==64
+typedef long		intpt;
+#else
+typedef int		intpt;
+#endif
 
 typedef uint16 unichar_t;
 
