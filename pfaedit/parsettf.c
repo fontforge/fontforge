@@ -3447,7 +3447,7 @@ static void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 
 #define MAX_LANG 		20		/* Don't support features which appear in more than 10 languages (only rememver first 10) */
 struct scriptlist {
-    uint script;
+    uint32 script;
     uint32 langs[MAX_LANG];
     int lang_cnt;
     struct scriptlist *next;
