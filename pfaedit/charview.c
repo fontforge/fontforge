@@ -1080,10 +1080,10 @@ static void CVNewScale(CharView *cv) {
     CVRegenFill(cv);
     cv->back_img_out_of_date = true;
 
-    GScrollBarSetBounds(cv->vsb,-8000*cv->scale,8000*cv->scale,cv->height);
-    GScrollBarSetBounds(cv->hsb,-8000*cv->scale,8000*cv->scale,cv->width);
-    GScrollBarSetPos(cv->vsb,cv->yoff);
-    GScrollBarSetPos(cv->hsb,cv->xoff);
+    GScrollBarSetBounds(cv->vsb,-20000*cv->scale,8000*cv->scale,cv->height);
+    GScrollBarSetBounds(cv->hsb,-8000*cv->scale,32000*cv->scale,cv->width);
+    GScrollBarSetPos(cv->vsb,cv->yoff-cv->height);
+    GScrollBarSetPos(cv->hsb,-cv->xoff);
 
     GDrawRequestExpose(cv->v,NULL,false);
     if ( cv->showrulers )
@@ -2290,9 +2290,9 @@ static void CVTimer(CharView *cv,GEvent *event) {
 	    cv->xoff += dx; cv->yoff += dy;
 	    cv->back_img_out_of_date = true;
 	    if ( dy!=0 )
-		GScrollBarSetPos(cv->vsb,cv->yoff);
+		GScrollBarSetPos(cv->vsb,cv->yoff-cv->height);
 	    if ( dx!=0 )
-		GScrollBarSetPos(cv->hsb,cv->xoff);
+		GScrollBarSetPos(cv->hsb,-cv->xoff);
 	    GDrawRequestExpose(cv->v,NULL,false);
 	}
 #if _ModKeysAutoRepeat
@@ -2562,9 +2562,9 @@ static void CVHScroll(CharView *cv,struct sbevent *sb) {
         newpos -= cv->width/30;
       break;
     }
-    if ( newpos>8000*cv->scale-cv->width )
-        newpos = 8000*cv->scale-cv->width;
-    if ( newpos<-8000*cv->scale ) newpos = -8000*cv->scale;
+    if ( newpos<-(32000*cv->scale-cv->width) )
+        newpos = -(32000*cv->scale-cv->width);
+    if ( newpos>8000*cv->scale ) newpos = 8000*cv->scale;
     if ( newpos!=cv->xoff ) {
 	int diff = newpos-cv->xoff;
 	cv->xoff = newpos;
@@ -2613,7 +2613,7 @@ static void CVVScroll(CharView *cv,struct sbevent *sb) {
       break;
       case et_sb_thumb:
       case et_sb_thumbrelease:
-        newpos = sb->pos;
+        newpos = sb->pos+cv->height;
       break;
       case et_sb_halfup:
         newpos -= cv->height/30;
@@ -2622,14 +2622,14 @@ static void CVVScroll(CharView *cv,struct sbevent *sb) {
         newpos += cv->height/30;
       break;
     }
-    if ( newpos>8000*cv->scale-cv->height )
-        newpos = 8000*cv->scale-cv->height;
-    if ( newpos<-8000*cv->scale ) newpos = -8000*cv->scale;
+    if ( newpos<-(20000*cv->scale-cv->height) )
+        newpos = -(20000*cv->scale-cv->height);
+    if ( newpos>8000*cv->scale ) newpos = 8000*cv->scale;
     if ( newpos!=cv->yoff ) {
 	int diff = newpos-cv->yoff;
 	cv->yoff = newpos;
 	cv->back_img_out_of_date = true;
-	GScrollBarSetPos(cv->vsb,newpos);
+	GScrollBarSetPos(cv->vsb,newpos-cv->height);
 	GDrawScroll(cv->v,NULL,0,diff);
 	if ( cv->showvhints && cv->sc->vstem!=NULL ) {
 	    GRect r;
