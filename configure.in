@@ -90,13 +90,20 @@ AC_CHECK_LIB(tiff, TIFFOpen, : , AC_DEFINE(_NO_LIBTIFF), -lm )
 AC_CHECK_LIB(xml2, xmlParseFile, : , AC_DEFINE(_NO_LIBXML))
 
 gww_hasbytecode="no"
-AC_CHECK_LIB(freetype, FT_New_Memory_Face, [
-  echo checking for bytecode interpreter in freetype...
-  AC_CHECK_LIB(freetype, TT_RunIns, gww_hasbytecode="yes", : )],
- AC_DEFINE(_NO_FREETYPE))
-if test "$gww_hasbytecode" = "yes" ; then
- AC_CHECK_LIB(pthread, pthread_create, LIBS="$LIBS -lpthread", gww_hasbytecode="no")
-fi
+AC_ARG_WITH(freetype-bytecode,
+ [  --with-freetype-bytecode   Control whether we build with the bytecode interpreter],
+ [
+    gww_hasbytecode="$withval"
+ ],
+ [
+  AC_CHECK_LIB(freetype, FT_New_Memory_Face, [
+    echo checking for bytecode interpreter in freetype...
+    AC_CHECK_LIB(freetype, TT_RunIns, gww_hasbytecode="yes", : )],
+   AC_DEFINE(_NO_FREETYPE))
+  if test "$gww_hasbytecode" = "yes" ; then
+   AC_CHECK_LIB(pthread, pthread_create, LIBS="$LIBS -lpthread", gww_hasbytecode="no")
+  fi
+ ])
 
 if test \( "$gww_hasbytecode" = "yes" \) -a \( "$FreeType2_IncRoot" != "" \); then
  gww_hasbytecode="no"
@@ -169,12 +176,22 @@ echo -n checking for long long ...
 AC_TRY_COMPILE(,[long long foo=0x400000000000;],[ AC_DEFINE(_HAS_LONGLONG)
     echo " " yes] , echo " " no )
 
+gww_regular_link="no"
+AC_ARG_WITH(regular-link,
+ [  --with-regular-link   Don't try to dlopen libraries],
+ [
+    if test "$withval" != "no" >/dev/null 2>&1 ; then
+	gww_regular_link="yes"
+	AC_DEFINE(NODYNAMIC)
+    fi
+ ], : )
+
 dnl If we can't/don't want to use dynamic libraries then we must link with
 dnl the static libraries we've found
 
 AC_SUBST(STATIC_LIBS)
 STATIC_LIBS=
-if test "$gww_nodynamic" = "yes"; then
+if test "$gww_nodynamic" = "yes" -o "$gww_regular_link" = "yes"; then
  if test "$gww_needsstatic" = "yes"; then
   STATIC_LIBS="$STATIC_LIBS -static"
  fi
@@ -203,7 +220,7 @@ if test "$gww_nodynamic" = "yes"; then
    STATIC_LIBS="$STATIC_LIBS -luninameslist"
    AC_DEFINE(_STATIC_LIBUNINAMESLIST) ] , AC_DEFINE(_NO_LIBUNINAMESLIST))
 fi
-if test "$gww_needsstaticimages" = "yes"; then
+if test "$gww_needsstaticimages" = "yes" -a "$gww_regular_link" = "no"; then
  if test "$gww_needsstatic" = "yes"; then
   STATIC_LIBS="$STATIC_LIBS -static"
  fi

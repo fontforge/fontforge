@@ -99,7 +99,7 @@ static FT_Library context;
 #  include "ttinterp.h"
 
 #  define _FT_Set_Debug_Hook FT_Set_Debug_Hook
-#  define _FT_RunIns FT_RunIns
+#  define _TT_RunIns TT_RunIns
 #  define _FT_Done_FreeType FT_Done_FreeType
 # endif
 
