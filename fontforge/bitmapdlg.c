@@ -248,7 +248,7 @@ return;
 		if ( autohint_before_rasterize && 
 			sf->chars[enc]->changedsincelasthinted &&
 			!sf->chars[enc]->manualhints )
-		    SplineCharAutoHint(sf->chars[enc],true);
+		    SplineCharAutoHint(sf->chars[enc],NULL);
 		bdfc = SplineCharAntiAlias(sf->chars[enc],bdf->pixelsize,(1<<(BDFDepth(bdf)/2)));
 	    }
 	    if ( bdf->chars[enc]==NULL )

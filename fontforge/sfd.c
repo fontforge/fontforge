@@ -2053,7 +2053,7 @@ static void SFDGetMinimumDistances(FILE *sfd, SplineChar *sc) {
     int pt,i, val, err;
     int ch;
     SplinePoint **mapping=NULL;
-    MinimumDistance *last, *md;
+    MinimumDistance *last, *md, *mdhead;
 
     for ( i=0; i<2; ++i ) {
 	pt = 0;
@@ -2103,7 +2103,7 @@ static void SFDGetMinimumDistances(FILE *sfd, SplineChar *sc) {
 	}
 	if ( !err ) {
 	    if ( last==NULL )
-		sc->md = md;
+		mdhead = md;
 	    else
 		last->next = md;
 	    last = md;
@@ -2111,6 +2111,9 @@ static void SFDGetMinimumDistances(FILE *sfd, SplineChar *sc) {
 	    chunkfree(md,sizeof(MinimumDistance));
     }
     free(mapping);
+
+    /* Obsolete concept */
+    MinimumDistancesFree(mdhead);
 }
 
 static HintInstance *SFDReadHintInstances(FILE *sfd, StemInfo *stem) {
@@ -2178,7 +2181,8 @@ static DStemInfo *SFDReadDHints(FILE *sfd) {
 	    last->next = cur;
 	last = cur;
     }
-return( head );
+    DStemInfosFree(head);
+return( NULL );
 }
 
 static AnchorPoint *SFDReadAnchorPoints(FILE *sfd,SplineChar *sc,AnchorPoint *lastap) {

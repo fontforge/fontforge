@@ -1683,7 +1683,7 @@ return;
     SCNumberPoints(sc);
     if ( autohint_before_generate && sc->changedsincelasthinted &&
 	    !sc->manualhints )
-	SplineCharAutoHint(sc,true);
+	SplineCharAutoHint(sc,NULL);
 
     if ( sc->vstem==NULL && sc->hstem==NULL && sc->dstem==NULL && sc->md==NULL )
 return;

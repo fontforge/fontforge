@@ -143,7 +143,7 @@ static HistData *HistFindStemWidths(SplineFont *sf,uint8 *selected,int hor) {
 	if ( (sc = sf->chars[i])!=NULL && sc->layers[ly_fore].splines!=NULL && sc->layers[ly_fore].refs==NULL &&
 		(selected==NULL || selected[i])) {
 	    if ( autohint_before_generate && sc->changedsincelasthinted && !sc->manualhints )
-		SplineCharAutoHint(sc,true);
+		SplineCharAutoHint(sc,NULL);
 	    for ( stem = hor ? sc->hstem : sc->vstem ; stem!=NULL; stem = stem->next ) {
 		if ( stem->ghost )
 	    continue;

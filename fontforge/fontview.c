@@ -4255,8 +4255,14 @@ void FontViewMenu_VKernFromH(GtkMenuItem *menuitem, gpointer user_data) {
 }
 #endif
 
-static void FVAutoHint(FontView *fv,int removeOverlap) {
+static void FVAutoHint(FontView *fv) {
     int i, cnt=0;
+    BlueData *bd = NULL, _bd;
+
+    if ( fv->sf->mm==NULL ) {
+	QuickBlues(fv->sf,&_bd);
+	bd = &_bd;
+    }
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
 	++cnt;
@@ -4269,7 +4275,7 @@ static void FVAutoHint(FontView *fv,int removeOverlap) {
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
 	sc->manualhints = false;
-	SplineCharAutoHint(sc,removeOverlap);
+	SplineCharAutoHint(sc,bd);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 # ifdef FONTFORGE_CONFIG_GDRAW
 	if ( !GProgressNext())
@@ -4289,13 +4295,11 @@ static void FVAutoHint(FontView *fv,int removeOverlap) {
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 # ifdef FONTFORGE_CONFIG_GDRAW
 static void FVMenuAutoHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    int removeOverlap = e==NULL || !(e->u.mouse.state&ksm_shift);
 # elif defined(FONTFORGE_CONFIG_GTK)
 void FontViewMenu_AutoHint(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
-    int removeOverlap = false;
 # endif
-    FVAutoHint( (FontView *) GDrawGetUserData(gw), removeOverlap );
+    FVAutoHint( (FontView *) GDrawGetUserData(gw) );
 }
 #endif
 
@@ -5020,16 +5024,12 @@ static void sllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     int anychars = FVAnyCharSelected(fv);
-    int removeOverlap;
     int multilayer = fv->sf->multilayer;
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
 	  case MID_AutoHint:
 	    mi->ti.disabled = anychars==-1 || multilayer;
-	    removeOverlap = e==NULL || !(e->u.mouse.state&ksm_shift);
-	    free(mi->ti.text);
-	    mi->ti.text = u_copy(GStringGetResource(removeOverlap?_STR_Autohint:_STR_FullAutohint,NULL));
 	  break;
 	  case MID_HintSubsPt:
 	    mi->ti.disabled = fv->sf->order2 || anychars==-1 || multilayer;
@@ -9346,7 +9346,7 @@ void FVFakeMenus(FontView *fv,int cmd) {
       break;
 
       case 200:
-	FVAutoHint(fv,true);
+	FVAutoHint(fv);
       break;
       case 201:
 	FVClearHints(fv);

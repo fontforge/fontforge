@@ -2591,7 +2591,7 @@ static unsigned char *SplineChar2PS2(SplineChar *sc,int *len, int nomwid,
 
     if ( autohint_before_generate && sc->changedsincelasthinted &&
 	    !sc->manualhints && !(flags&ps_flag_nohints))
-	SplineCharAutoHint(sc,true);
+	SplineCharAutoHint(sc,NULL);
     if ( !(flags&ps_flag_nohints) && SCNeedsSubsPts(sc,ff_otf))
 	SCFigureHintMasks(sc);
 
@@ -2667,7 +2667,7 @@ static int Type2SpecialCase(SplineChar *sc) {
 	for ( r=d->sc->layers[ly_fore].refs; r!=NULL; r = r->next ) {
 	    if ( autohint_before_generate && r->sc!=NULL &&
 		    r->sc->changedsincelasthinted && !r->sc->manualhints )
-		SplineCharAutoHint(r->sc,true);
+		SplineCharAutoHint(r->sc,NULL);
 	    if ( r->transform[0]!=1 || r->transform[1]!=0 ||
 		    r->transform[2]!=0 || r->transform[3]!=1 )
 	break;
@@ -2696,7 +2696,7 @@ struct pschars *SplineFont2Subrs2(SplineFont *sf,int flags) {
 	if ( autohint_before_generate && sc!=NULL &&
 		sc->changedsincelasthinted && !sc->manualhints &&
 		!(flags&ps_flag_nohints))
-	    SplineCharAutoHint(sc,true);
+	    SplineCharAutoHint(sc,NULL);
 	if ( sc==NULL || sc!=SCDuplicate(sc))
 	    /* Do Nothing */;
 	else if ( SCWorthOutputting(sc) &&

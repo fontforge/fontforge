@@ -250,7 +250,7 @@ static SCI *SCIinit(SplineChar *sc,MetaFontDlg *meta) {
 
     SplinePointListSimplify(sc,sc->layers[ly_fore].splines,&smpl);		/* Get rid of two points at the same location, they cause us problems */
     if ( sc->manualhints || sc->changedsincelasthinted )
-	SplineCharAutoHint(sc,true);
+	SplineCharAutoHint(sc,NULL);
 
     SCCopyFgToBg(sc,false);
 
