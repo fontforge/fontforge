@@ -1,4 +1,6 @@
 #!/usr/local/bin/pfaedit
+Print("....I expect this test to generate some error messages");
+Print(".... But it should not crash, nor terminate with an error status");
 Open("fonts/GillSans.dfont");
 SelectAll();
 Simplify();

@@ -13,11 +13,9 @@ These fonts must be placed in <testdir>/fonts/
 
 test001.pe
   Caliban.sfd		http://pfaedit.sf.net/sfds/Caliban.sfd.gz
-  gulim.ttc		(Korean font provided with Korean Windows)
-			(any other ttc file would do)
-  Munhwa-Regular.otf	ftp://ftp.ora.com/pub/examples/nutshell/ujip/adobe/samples/Munhwa-Regular
-			(any other cid-keyed otf file would do)
-  HYGoThic-Medium-Acro	http://www.adobe.com/products/acrobat/acrrasianfontpack.html
-			(Download the Korean font pack, any other cid-keyed ps font would do)
+  mingliu.ttc		(any other ttc file would do)
+  HanSans-Bold.otf	(any other cid-keyed otf file would do)
+  MunhwaGothic-Bold	ftp://ftp.ora.com/pub/examples/nutshell/ujip/adobe/samples/MunhwaGothic-Bold
+			(any other cid-keyed non-otf file would do)
 test002.pe
   GillSans.dfont	Provided on Mac OS/X (but any truetype font would do)
