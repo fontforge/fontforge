@@ -614,8 +614,9 @@ static void readttfhhea(FILE *ttf,struct ttfinfo *info) {
     int i;
 
     fseek(ttf,info->hhea_start+4,SEEK_SET);		/* skip over the version number */
-    /*info->pfminfo.hhead_ascent = */getushort(ttf);
-    /*info->pfminfo.hhead_descent = */(short) getushort(ttf);
+    info->pfminfo.hhead_ascent = getushort(ttf);
+    info->pfminfo.hhead_descent = (short) getushort(ttf);
+    info->pfminfo.hheadascent_add = info->pfminfo.hheaddescent_add = false;
     info->pfminfo.linegap = getushort(ttf);
     /*info->ascent = info->pfminfo.hhead_ascent;*/
 
@@ -3584,17 +3585,17 @@ static void readttfos2metrics(FILE *ttf,struct ttfinfo *info) {
     info->pfminfo.weight = getushort(ttf);
     info->pfminfo.width = getushort(ttf);
     info->pfminfo.fstype = getushort(ttf);
-    /* sub xsize */ getushort(ttf);
-    /* sub ysize */ getushort(ttf);
-    /* sub xoff */ getushort(ttf);
-    /* sub yoff */ getushort(ttf);
-    /* sup xsize */ getushort(ttf);
-    /* sup ysize */ getushort(ttf);
-    /* sup xoff */ getushort(ttf);
-    /* sup yoff */ getushort(ttf);
-    /* strike ysize */ getushort(ttf);
-    /* strike ypos */ getushort(ttf);
-    /* Family Class */ getushort(ttf);
+    info->pfminfo.os2_subxsize = getushort(ttf);
+    info->pfminfo.os2_subysize = getushort(ttf);
+    info->pfminfo.os2_subxoff = getushort(ttf);
+    info->pfminfo.os2_subyoff = getushort(ttf);
+    info->pfminfo.os2_supxsize = getushort(ttf);
+    info->pfminfo.os2_supysize = getushort(ttf);
+    info->pfminfo.os2_supxoff = getushort(ttf);
+    info->pfminfo.os2_supyoff = getushort(ttf);
+    info->pfminfo.os2_strikeysize = getushort(ttf);
+    info->pfminfo.os2_strikeypos = getushort(ttf);
+    info->pfminfo.os2_family_class = getushort(ttf);
     for ( i=0; i<10; ++i )
 	info->pfminfo.panose[i] = getc(ttf);
     info->pfminfo.pfmfamily = info->pfminfo.panose[0]==2 ? 0x11 :	/* might be 0x21 */ /* Text & Display maps to either serif 0x11 or sans 0x21 or monospace 0x31 */
@@ -3605,7 +3606,10 @@ static void readttfos2metrics(FILE *ttf,struct ttfinfo *info) {
     /* unicoderange[] */ getlong(ttf);
     /* unicoderange[] */ getlong(ttf);
     /* unicoderange[] */ getlong(ttf);
-    /* vendor */ getlong(ttf);
+    info->pfminfo.os2_vendor[0] = getc(ttf);
+    info->pfminfo.os2_vendor[1] = getc(ttf);
+    info->pfminfo.os2_vendor[2] = getc(ttf);
+    info->pfminfo.os2_vendor[3] = getc(ttf);
     /* fsselection */ getushort(ttf);
     /* firstchar */ getushort(ttf);
     /* lastchar */ getushort(ttf);
@@ -3621,7 +3625,9 @@ static void readttfos2metrics(FILE *ttf,struct ttfinfo *info) {
 	/* typographic linegap = */ getushort(ttf);
     info->pfminfo.os2_winascent = getushort(ttf);
     info->pfminfo.os2_windescent = getushort(ttf);
+    info->pfminfo.winascent_add = info->pfminfo.windescent_add = false;
     info->pfminfo.pfmset = true;
+    info->pfminfo.hiddenset = true;
 }
 
 static int cmapEncFromName(struct ttfinfo *info,const char *nm, int glyphid) {
@@ -4366,7 +4372,8 @@ static void MMFillFromVAR(SplineFont *sf, struct ttfinfo *info) {
 }
 
 static void SFRelativeWinAsDs(SplineFont *sf) {
-    if ( !sf->pfminfo.winascent_add || sf->pfminfo.windescent_add ) {
+    if ( !sf->pfminfo.winascent_add || sf->pfminfo.windescent_add ||
+	    !sf->pfminfo.hheadascent_add || !sf->pfminfo.hheaddescent_add ) {
 	DBounds b;
 	CIDFindBounds(sf,&b);
 	if ( !sf->pfminfo.winascent_add ) {
@@ -4382,6 +4389,14 @@ static void SFRelativeWinAsDs(SplineFont *sf) {
 	if ( !sf->pfminfo.windescent_add ) {
 	    sf->pfminfo.windescent_add = true;
 	    sf->pfminfo.os2_windescent += b.miny;
+	}
+	if ( !sf->pfminfo.hheadascent_add ) {
+	    sf->pfminfo.hheadascent_add = true;
+	    sf->pfminfo.hhead_ascent -= b.maxy;
+	}
+	if ( !sf->pfminfo.hheaddescent_add ) {
+	    sf->pfminfo.hheaddescent_add = true;
+	    sf->pfminfo.hhead_descent -= b.miny;
 	}
     }
 }

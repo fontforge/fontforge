@@ -960,15 +960,34 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 	/*putc('\n',sfd);*/
     }
     if ( sf->pfminfo.os2_typoascent!=0 ) {
-	/*fprintf(sfd, "HheadAscent: %d\n", sf->pfminfo.hhead_ascent );*/
-	/*fprintf(sfd, "HheadDescent: %d\n", sf->pfminfo.hhead_descent );*/
 	fprintf(sfd, "OS2TypoAscent: %d\n", sf->pfminfo.os2_typoascent );
 	fprintf(sfd, "OS2TypoDescent: %d\n", sf->pfminfo.os2_typodescent );
+	fprintf(sfd, "OS2TypoLinegap: %d\n", sf->pfminfo.os2_typolinegap );
     }
     fprintf(sfd, "OS2WinAscent: %d\n", sf->pfminfo.os2_winascent );
     fprintf(sfd, "OS2WinAOffset: %d\n", sf->pfminfo.winascent_add );
     fprintf(sfd, "OS2WinDescent: %d\n", sf->pfminfo.os2_windescent );
     fprintf(sfd, "OS2WinDOffset: %d\n", sf->pfminfo.windescent_add );
+    fprintf(sfd, "HheadAscent: %d\n", sf->pfminfo.hhead_ascent );
+    fprintf(sfd, "HheadAOffset: %d\n", sf->pfminfo.hheadascent_add );
+    fprintf(sfd, "HheadDescent: %d\n", sf->pfminfo.hhead_descent );
+    fprintf(sfd, "HheadDOffset: %d\n", sf->pfminfo.hheaddescent_add );
+    if ( sf->pfminfo.hiddenset!=0 ) {
+	fprintf(sfd, "OS2SubXSize: %d\n", sf->pfminfo.os2_subxsize );
+	fprintf(sfd, "OS2SubYSize: %d\n", sf->pfminfo.os2_subysize );
+	fprintf(sfd, "OS2SubXOff: %d\n", sf->pfminfo.os2_subxoff );
+	fprintf(sfd, "OS2SubYOff: %d\n", sf->pfminfo.os2_subyoff );
+	fprintf(sfd, "OS2SupXSize: %d\n", sf->pfminfo.os2_supxsize );
+	fprintf(sfd, "OS2SupYSize: %d\n", sf->pfminfo.os2_supysize );
+	fprintf(sfd, "OS2SupXOff: %d\n", sf->pfminfo.os2_supxoff );
+	fprintf(sfd, "OS2SupYOff: %d\n", sf->pfminfo.os2_supyoff );
+	fprintf(sfd, "OS2StrikeYSize: %d\n", sf->pfminfo.os2_strikeysize );
+	fprintf(sfd, "OS2StrikeYPos: %d\n", sf->pfminfo.os2_strikeypos );
+	fprintf(sfd, "OS2FamilyClass: %d\n", sf->pfminfo.os2_family_class );
+	fprintf(sfd, "OS2Vendor: '%c%c%c%c'\n",
+		sf->pfminfo.os2_vendor[0], sf->pfminfo.os2_vendor[1],
+		sf->pfminfo.os2_vendor[2], sf->pfminfo.os2_vendor[3] );
+    }
     if ( sf->macstyle!=-1 )
 	fprintf(sfd, "MacStyle: %d\n", sf->macstyle );
     if ( sf->script_lang ) {
@@ -3332,8 +3351,49 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	} else if ( strmatch(tok,"OS2WinDOffset:")==0 ) {
 	    int temp;
 	    getint(sfd,&temp); sf->pfminfo.windescent_add = temp;
+	} else if ( strmatch(tok,"HHeadAscent:")==0 ) {
+	    getsint(sfd,&sf->pfminfo.hhead_ascent);
+	} else if ( strmatch(tok,"HHeadDescent:")==0 ) {
+	    getsint(sfd,&sf->pfminfo.hhead_descent);
+	} else if ( strmatch(tok,"HHeadAOffset:")==0 ) {
+	    int temp;
+	    getint(sfd,&temp); sf->pfminfo.hheadascent_add = temp;
+	} else if ( strmatch(tok,"HHeadDOffset:")==0 ) {
+	    int temp;
+	    getint(sfd,&temp); sf->pfminfo.hheaddescent_add = temp;
 	} else if ( strmatch(tok,"MacStyle:")==0 ) {
 	    getsint(sfd,&sf->macstyle);
+	} else if ( strmatch(tok,"OS2SubXSize:")==0 ) {
+	    getsint(sfd,&sf->pfminfo.os2_subxsize);
+	    sf->pfminfo.hiddenset = true;
+	} else if ( strmatch(tok,"OS2SubYSize:")==0 ) {
+	    getsint(sfd,&sf->pfminfo.os2_subysize);
+	} else if ( strmatch(tok,"OS2SubXOff:")==0 ) {
+	    getsint(sfd,&sf->pfminfo.os2_subxoff);
+	} else if ( strmatch(tok,"OS2SubYOff:")==0 ) {
+	    getsint(sfd,&sf->pfminfo.os2_subyoff);
+	} else if ( strmatch(tok,"OS2SupXSize:")==0 ) {
+	    getsint(sfd,&sf->pfminfo.os2_supxsize);
+	} else if ( strmatch(tok,"OS2SupYSize:")==0 ) {
+	    getsint(sfd,&sf->pfminfo.os2_supysize);
+	} else if ( strmatch(tok,"OS2SupXOff:")==0 ) {
+	    getsint(sfd,&sf->pfminfo.os2_supxoff);
+	} else if ( strmatch(tok,"OS2SupYOff:")==0 ) {
+	    getsint(sfd,&sf->pfminfo.os2_supyoff);
+	} else if ( strmatch(tok,"OS2StrikeYSize:")==0 ) {
+	    getsint(sfd,&sf->pfminfo.os2_strikeysize);
+	} else if ( strmatch(tok,"OS2StrikeYPos:")==0 ) {
+	    getsint(sfd,&sf->pfminfo.os2_strikeypos);
+	} else if ( strmatch(tok,"OS2FamilyClass:")==0 ) {
+	    getsint(sfd,&sf->pfminfo.os2_family_class);
+	    sf->pfminfo.hiddenset = true;
+	} else if ( strmatch(tok,"OS2Vendor:")==0 ) {
+	    while ( isspace(getc(sfd)));
+	    sf->pfminfo.os2_vendor[0] = getc(sfd);
+	    sf->pfminfo.os2_vendor[1] = getc(sfd);
+	    sf->pfminfo.os2_vendor[2] = getc(sfd);
+	    sf->pfminfo.os2_vendor[3] = getc(sfd);
+	    (void) getc(sfd);
 	} else if ( strmatch(tok,"DisplaySize:")==0 ) {
 	    getint(sfd,&sf->display_size);
 	} else if ( strmatch(tok,"TopEncoding:")==0 ) {	/* Obsolete */

@@ -2705,8 +2705,14 @@ static void sethhead(struct hhead *hhead,struct hhead *vhead,struct alltabs *at,
 	ymin = -sf->descent;
     }
     hhead->version = 0x00010000;
-    hhead->ascender = ymax;
-    hhead->descender = ymin;
+    if ( sf->pfminfo.hheadascent_add )
+	hhead->ascender = ymax + sf->pfminfo.hhead_ascent;
+    else
+	hhead->ascender = sf->pfminfo.hhead_ascent;
+    if ( sf->pfminfo.hheadascent_add )
+	hhead->descender = ymin + sf->pfminfo.hhead_descent;
+    else
+	hhead->descender = sf->pfminfo.hhead_descent;
     hhead->linegap = _sf->pfminfo.linegap;
 
     vhead->version = 0x00011000;
@@ -3058,13 +3064,26 @@ static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *_sf,
     os2->fstype = 0x8;
     if ( sf->pfminfo.fstype!=-1 )
 	os2->fstype = sf->pfminfo.fstype;
-    os2->ysupYSize = os2->ysubYSize = .7*(sf->ascent+sf->descent);
-    os2->ysupXSize = os2->ysubXSize = .65*(sf->ascent+sf->descent);
-    os2->ysubYOff = .14*(sf->ascent+sf->descent);
-    os2->ysubXOff = os2->ysupXOff = 0;
-    os2->ysupYOff = .48*(sf->ascent+sf->descent);
-    os2->yStrikeoutSize = 102*(sf->ascent+sf->descent)/2048;
-    os2->yStrikeoutPos = 530*(sf->ascent+sf->descent)/2048;
+    if ( sf->pfminfo.hiddenset ) {
+	os2->ysupYSize = sf->pfminfo.os2_supysize;
+	os2->ysubXSize = sf->pfminfo.os2_subxsize;
+	os2->ysubYSize = sf->pfminfo.os2_subysize;
+	os2->ysupXSize = sf->pfminfo.os2_supxsize;
+	os2->ysubYOff = sf->pfminfo.os2_subyoff;
+	os2->ysubXOff = sf->pfminfo.os2_subxoff;
+	os2->ysupXOff = sf->pfminfo.os2_supxoff;
+	os2->ysupYOff = sf->pfminfo.os2_supyoff;
+	os2->yStrikeoutSize = sf->pfminfo.os2_strikeysize;
+	os2->yStrikeoutPos = sf->pfminfo.os2_strikeypos;
+    } else {
+	os2->ysupYSize = os2->ysubYSize = .7*(sf->ascent+sf->descent);
+	os2->ysupXSize = os2->ysubXSize = .65*(sf->ascent+sf->descent);
+	os2->ysubYOff = .14*(sf->ascent+sf->descent);
+	os2->ysubXOff = os2->ysupXOff = 0;
+	os2->ysupYOff = .48*(sf->ascent+sf->descent);
+	os2->yStrikeoutSize = 102*(sf->ascent+sf->descent)/2048;
+	os2->yStrikeoutPos = 530*(sf->ascent+sf->descent)/2048;
+    }
     os2->fsSel = (at->head.macstyle&1?32:0)|(at->head.macstyle&2?1:0);
     if ( sf->fullname!=NULL && strstrmatch(sf->fullname,"outline")!=NULL )
 	os2->fsSel |= 8;
@@ -3090,7 +3109,12 @@ docs are wrong.
 	os2->descender = -sf->descent;		/* Should be neg */
     }
     WinBB(sf,&os2->winascent,&os2->windescent,at);
-    os2->linegap = sf->pfminfo.linegap;
+    if ( sf->pfminfo.hiddenset )
+	os2->linegap = sf->pfminfo.os2_typolinegap;
+    else
+	os2->linegap = sf->pfminfo.linegap;
+    if ( sf->pfminfo.hiddenset )
+	os2->sFamilyClass = sf->pfminfo.os2_family_class;
 
     avg1 = avg2 = last = 0; first = 0x10000;
     cnt1 = cnt2 = 0;

@@ -1824,6 +1824,12 @@ SplineFont *SplineFontEmpty(void) {
     sf->display_antialias = default_fv_antialias;
     sf->display_bbsized = default_fv_bbsized;
     sf->display_size = -default_fv_font_size;
+    sf->pfminfo.winascent_add = sf->pfminfo.windescent_add = true;
+    sf->pfminfo.hheadascent_add = sf->pfminfo.hheaddescent_add = true;
+    if ( TTFFoundry!=NULL )
+	strncpy(sf->pfminfo.os2_vendor,TTFFoundry,4);
+    else
+	memcpy(sf->pfminfo.os2_vendor,"PfEd",4);
 return( sf );
 }
 

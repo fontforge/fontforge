@@ -1967,12 +1967,31 @@ int SFScaleToEm(SplineFont *sf, int as, int des) {
     uint8 *oldselected = sf->fv->selected;
 
     scale = (as+des)/(double) (sf->ascent+sf->descent);
+    sf->pfminfo.hhead_ascent *= scale;
+    sf->pfminfo.hhead_descent *= scale;
+    sf->pfminfo.linegap *= scale;
+    sf->pfminfo.vlinegap *= scale;
+    sf->pfminfo.os2_winascent *= scale;
+    sf->pfminfo.os2_windescent *= scale;
     if ( sf->pfminfo.os2_typoascent!=0 ) {
 	sf->pfminfo.os2_typoascent = as;
 	sf->pfminfo.os2_typodescent = -des;
-	sf->pfminfo.os2_winascent *= scale;
-	sf->pfminfo.os2_windescent *= scale;
     }
+    sf->pfminfo.os2_typolinegap *= scale;
+
+    sf->pfminfo.os2_subxsize *= scale;
+    sf->pfminfo.os2_subysize *= scale;
+    sf->pfminfo.os2_subxoff *= scale;
+    sf->pfminfo.os2_subyoff *= scale;
+    sf->pfminfo.os2_supxsize *= scale;
+    sf->pfminfo.os2_supysize *= scale;
+    sf->pfminfo.os2_supxoff *= scale;
+    sf->pfminfo.os2_supyoff *= scale;
+    sf->pfminfo.os2_strikeysize *= scale;
+    sf->pfminfo.os2_strikeypos *= scale;
+    sf->upos *= scale;
+    sf->uwidth *= scale;
+
     if ( as+des == sf->ascent+sf->descent ) {
 	if ( as!=sf->ascent && des!=sf->descent ) {
 	    sf->ascent = as; sf->descent = des;
