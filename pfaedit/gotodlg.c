@@ -394,7 +394,7 @@ static int NameToEncoding(SplineFont *sf,const unichar_t *name) {
 	    if ( enc==-1 ) {
 		for ( uni=psunicodenames_cnt-1; uni>=0 ; --uni )
 		    if ( psunicodenames[uni]!=NULL )
-			if ( uc_strmatch(name,psunicodenames[uni])== 0 )
+			if ( uc_strcmp(name,psunicodenames[uni])== 0 )
 		break;
 		if ( uni<0 ) {
 		    for ( i=0; specialnames[i].name!=NULL; ++i )

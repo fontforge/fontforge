@@ -73,6 +73,31 @@ Autokern has similar ideas, but is simpler:
     No, I think it is better not to propigate kerning.
 */
 
+static GTextInfo widthlist[] = {
+    { (unichar_t *) _STR_StdCharRange, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_StdCharRangeGreek, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_StdCharRangeCyr, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_All, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Selected, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    NULL };
+static GTextInfo kernllist[] = {
+    { (unichar_t *) _STR_StdCharRangeKernL, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_StdCharRangeGreek, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_StdCharRangeCyr, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_All, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Selected, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    NULL };
+static GTextInfo kernrlist[] = {
+    { (unichar_t *) _STR_StdCharRangeKernR, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_StdCharRangeKernR2, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_StdCharRangeKernRGreek, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_StdCharRangeKernR2Greek, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_StdCharRangeKernRCyr, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_StdCharRangeKernR2Cyr, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_All, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Selected, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    NULL };
+
 static SplineFont *old_sf=NULL;
 static int old_spaceguess;
 
@@ -104,6 +129,8 @@ typedef struct widthinfo {
     real caph;
     real descent;
     real xheight;
+    real n_stem_exterior_width, n_stem_interior_width;
+    real current_I_spacing;
     int serifs[4][2];		/* Four serif zones: descent, baseline, xheight, cap */
     int lcnt, rcnt;		/* count of left and right chars respectively */
     int real_lcnt, real_rcnt;	/* what the user asked for. We might add I */
@@ -651,7 +678,7 @@ static void FindFontParameters(WidthInfo *wi) {
 	    0x3b3, 0x3b9, 0x3ba, 0x3bc, 0x3bd, 0x3c0, 0x3c4, 0x3c5, 0x3c7, 0x3c8,
 	    0x432, 0x433, 0x436, 0x438, 0x43a, 0x43d, 0x43f, 0x442, 0x443, 0x445,
 	    0x446, 0x447, 0x448, 0x449, 0 };
-    static unichar_t easyserif[] = { 'I','B','D','E','F','H','I','K','L','N','P','R',
+    static unichar_t easyserif[] = { 'I','B','D','E','F','H','K','L','N','P','R',
 	    0x399, 0x406, 0x392, 0x393, 0x395, 0x397, 0x39a,
 	    0x3a0, 0x3a1, 0x40a, 0x412, 0x413, 0x415, 0x41a, 0x41d, 0x41f,
 	    0x420, 0x428, 0 };
@@ -749,6 +776,35 @@ static void FindFontParameters(WidthInfo *wi) {
 	serifsize = .06*(sf->ascent+sf->descent);
     serifsize = rint(serifsize);
 
+    if ( (si=SFFindExistingChar(sf,'n',"n"))!=-1 && sf->chars[si]!=NULL ) {
+	SplineChar *sc = sf->chars[si];
+	if ( sc->changedsincelasthinted && !sc->manualhints )
+	    SplineCharAutoHint(sc,true);
+	SplineCharQuickBounds(sc,&bb);
+	if ( sc->vstem!=NULL && sc->vstem->next!=NULL ) {
+	    wi->n_stem_exterior_width = sc->vstem->next->start+sc->vstem->next->width-
+		    sc->vstem->start;
+	    wi->n_stem_interior_width = sc->vstem->next->start-
+		    (sc->vstem->start+sc->vstem->width);
+	}
+	if ( wi->n_stem_exterior_width<bb.maxx-bb.minx-3*seriflength ||
+		wi->n_stem_exterior_width>bb.maxx-bb.minx+seriflength ||
+		wi->n_stem_interior_width <= 0 ) {
+	    wi->n_stem_exterior_width = bb.maxx-bb.minx - 2*seriflength;
+	    /* guess that the stem width is somewhere around the seriflength and */
+	    /*  one quarter of the character width */
+	    wi->n_stem_interior_width = wi->n_stem_exterior_width - seriflength -
+		    wi->n_stem_exterior_width/4;
+	}
+    }
+    if ( ((si=SFFindExistingChar(sf,'I',"I"))!=-1 && sf->chars[si]!=NULL ) ||
+	    ((si=SFFindExistingChar(sf,0x399,"Iota"))!=-1 && sf->chars[si]!=NULL ) ||
+	    ((si=SFFindExistingChar(sf,0x406,"afii10055"))!=-1 && sf->chars[si]!=NULL ) ) {
+	SplineChar *sc = sf->chars[si];
+	SplineCharQuickBounds(sc,&bb);
+	wi->current_I_spacing = sc->width - (bb.maxx-bb.minx);
+    }
+
     wi->caph = caph;
     wi->descent = ds;
     wi->xheight = xh;
@@ -772,6 +828,10 @@ static void FindFontParameters(WidthInfo *wi) {
 
     if ( wi->sf==old_sf )
 	wi->space_guess = old_spaceguess;
+    else if ( wi->autokern && wi->current_I_spacing )
+	wi->space_guess = rint(wi->current_I_spacing);
+    else if ( wi->n_stem_interior_width>0 )
+	wi->space_guess = rint(wi->n_stem_interior_width);
     else if ( caph!=sf->ascent && ds!=-sf->descent )
 	wi->space_guess = rint(.205*(caph-ds));
     else
@@ -870,6 +930,8 @@ static void BuildCharPairs(WidthInfo *wi) {
 static void FreeCharList(struct charone **list) {
     int i;
 
+    if ( list==NULL )
+return;
     for ( i=0; list[i]!=NULL; ++i ) {
 	free( list[i]->ledge );
 	free( list[i]->redge );
@@ -881,6 +943,8 @@ static void FreeCharList(struct charone **list) {
 static void FreeCharPairs(struct charpair **list, int cnt) {
     int i;
 
+    if ( list==NULL )
+return;
     for ( i=0; i<cnt; ++i )
 	free( list[i] );
     free(list);
@@ -951,13 +1015,8 @@ return;
 #define CID_Spacing	1001
 #define CID_Total	1002
 #define CID_Threshold	1003
-#define CID_LeftBase	1010
-#define CID_RightBase	1020
-#define C_All		1
-#define C_Sel		2
-#define C_Typed		3
-#define C_Std		4
-#define C_Text		5
+#define CID_Left	1010
+#define CID_Right	1020
 #define CID_Browse	2001
 #define CID_OK		2002
 
@@ -969,22 +1028,38 @@ static struct charone *MakeCharOne(SplineChar *sc) {
 return( ch );
 }
 
+static void ReplaceGlyphWith(SplineFont *sf, struct charone **ret, int cnt, int ch1, int ch2 ) {
+    int s,e,j;
+
+    for ( s=0; s<cnt; ++s )
+	if ( ret[s]->sc->unicodeenc==ch1 )
+    break;
+    if ( s!=cnt && ( j=SFFindExistingChar(sf,ch2,NULL))!=-1 &&
+	    sf->chars[j]->width==ret[s]->sc->width &&	/* without this, they won't sync up */
+	    ret[s]->sc->refs!=NULL &&
+		    (ret[s]->sc->refs->sc->unicodeenc==ch2 ||
+		     (ret[s]->sc->refs->next!=NULL &&
+			 ret[s]->sc->refs->next->sc->unicodeenc==ch2)) ) {
+	for ( e=0; e<cnt; ++e )
+	    if ( ret[e]->sc->unicodeenc==ch2 )
+	break;
+	if ( e==cnt )
+	    ret[s]->sc = sf->chars[j];
+    }
+}
+
 static struct charone **BuildCharList(SplineFont *sf,GWindow gw, int base,
 	int *tot, int *rtot, int *ipos, int iswidth) {
-    int i, cnt, rcnt, doit, s, e;
+    int i, cnt, rcnt=0, doit, s, e;
     struct charone **ret=NULL;
     int all, sel, parse=false;
     const unichar_t *str, *pt;
 
-    all = GGadgetIsChecked(GWidgetGetControl(gw,base+C_All));
-    sel = GGadgetIsChecked(GWidgetGetControl(gw,base+C_Sel));
-    if ( GGadgetIsChecked(GWidgetGetControl(gw,base+C_Typed))) {
+    str = _GGadgetGetTitle(GWidgetGetControl(gw,base));
+    all = u_strcmp(str,GStringGetResource(_STR_All,NULL))==0;
+    sel = u_strcmp(str,GStringGetResource(_STR_Selected,NULL))==0;
+    if ( !all && !sel )
 	parse = true;
-	str = _GGadgetGetTitle(GWidgetGetControl(gw,base+C_Text));
-    } else {
-	parse = true;
-	str = _GGadgetGetTitle(GWidgetGetControl(gw,base+C_Std));
-    }
 
     for ( doit=0; doit<2; ++doit ) {
 	if ( all ) {
@@ -1028,15 +1103,25 @@ static struct charone **BuildCharList(SplineFont *sf,GWindow gw, int base,
 		}
 	    }
 	}
+	if ( cnt==0 )
+    break;
 	if ( !doit )
 	    ret = galloc((cnt+2)*sizeof(struct charone *));
 	else {
 	    rcnt = cnt;
+	    /* If lower case i is used, and it's a composite, then use */
+	    /*  dotlessi instead */ /* could do the same for dotless j */
+	    if ( iswidth ) {
+		ReplaceGlyphWith(sf,ret,cnt,'i',0x131);
+		ReplaceGlyphWith(sf,ret,cnt,'j',0xf6be);
+	    }
+
 	    if ( iswidth &&		/* I always want 'I' in the character list when doing widths */
 					/*  or at least when doing widths of LGC alphabets where */
 			                /*  concepts like serifs make sense */
 		    (( ret[0]->sc->unicodeenc>='A' && ret[0]->sc->unicodeenc<0x530) ||
 		     ( ret[0]->sc->unicodeenc>=0x1d00 && ret[0]->sc->unicodeenc<0x2000)) ) {
+
 		for ( s=0; s<cnt; ++s )
 		    if ( ret[s]->sc->unicodeenc=='I' )
 		break;
@@ -1337,8 +1422,8 @@ return( true );
 	GDrawProcessPendingEvents(NULL);
 
 	if ( GGadgetGetCid(g)==CID_OK ) {
-	    wi->left = BuildCharList(wi->sf,gw,CID_LeftBase, &wi->lcnt, &wi->real_lcnt, &wi->l_Ipos, !wi->autokern );
-	    wi->right = BuildCharList(wi->sf,gw,CID_RightBase, &wi->rcnt, &wi->real_rcnt, &wi->r_Ipos, !wi->autokern );
+	    wi->left = BuildCharList(wi->sf,gw,CID_Left, &wi->lcnt, &wi->real_lcnt, &wi->l_Ipos, !wi->autokern );
+	    wi->right = BuildCharList(wi->sf,gw,CID_Right, &wi->rcnt, &wi->real_rcnt, &wi->r_Ipos, !wi->autokern );
 	    if ( wi->real_lcnt==0 || wi->real_rcnt==0 ) {
 		FreeCharList(wi->left);
 		FreeCharList(wi->right);
@@ -1383,15 +1468,6 @@ static int AW_Cancel(GGadget *g, GEvent *e) {
 return( true );
 }
 
-static int AW_FocusChange(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_textfocuschanged ) {
-	GWindow gw = GGadgetGetWindow(g);
-	int cid = (int) GGadgetGetUserData(g);
-	GGadgetSetChecked(GWidgetGetControl(gw,cid),true);
-    }
-return( true );
-}
-
 static int AW_e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
 	WidthInfo *wi = GDrawGetUserData(gw);
@@ -1407,13 +1483,14 @@ return( false );
 return( true );
 }
 
-#define SelHeight	51
+#define SelHeight	34
 static int MakeSelGadgets(GGadgetCreateData *gcd, GTextInfo *label,
 	int i, int base, int labr, int y, int pixel_width, GWindow gw,
 	int toomany, int autokern ) {
     int std = !autokern ? _STR_StdCharRange :
-		base==CID_LeftBase ? _STR_StdCharRangeKernL :
+		base==CID_Left ? _STR_StdCharRangeKernL :
 		_STR_StdCharRangeKernR;
+    int epos;
 
     label[i].text = (unichar_t *) labr;
     label[i].text_in_resource = true;
@@ -1422,49 +1499,18 @@ static int MakeSelGadgets(GGadgetCreateData *gcd, GTextInfo *label,
     gcd[i].gd.flags = gg_visible | gg_enabled;
     gcd[i++].creator = GLabelCreate;
 
-    gcd[i].gd.pos.x = 6; gcd[i].gd.pos.y = GDrawPointsToPixels(gw,y+6);
-    gcd[i].gd.pos.width = pixel_width-12; gcd[i].gd.pos.height = GDrawPointsToPixels(gw,SelHeight);
-    gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels;
-    gcd[i++].creator = GGroupCreate;
-
-    label[i].text = (unichar_t *) _STR_All;
-    label[i].text_in_resource = true;
-    gcd[i].gd.label = &label[i];
-    gcd[i].gd.pos.x = 12; gcd[i].gd.pos.y = y+11; 
-    gcd[i].gd.flags = (toomany&1) ? gg_visible : (gg_visible | gg_enabled);
-    gcd[i].gd.cid = base+C_All;
-    gcd[i++].creator = GRadioCreate;
-
     label[i].text = (unichar_t *) std;
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
-    gcd[i].gd.pos.x = 75; gcd[i].gd.pos.y = y+11; 
-    gcd[i].gd.flags = gg_visible | gg_enabled | gg_cb_on;
-    gcd[i].gd.cid = base+C_Std;
-    gcd[i++].creator = GRadioCreate;
-
-    label[i].text = (unichar_t *) _STR_Selected;
-    label[i].text_in_resource = true;
-    gcd[i].gd.label = &label[i];
-    gcd[i].gd.pos.x = 12; gcd[i].gd.pos.y = y+32; 
-    gcd[i].gd.flags = (toomany&2) ? gg_visible : (gg_visible | gg_enabled);
-    gcd[i].gd.cid = base+C_Sel;
-    gcd[i++].creator = GRadioCreate;
-
-    gcd[i].gd.pos.x = 75; gcd[i].gd.pos.y = y+32; 
+    gcd[i].gd.pos.x = 12; gcd[i].gd.pos.y = y+14; 
     gcd[i].gd.flags = gg_visible | gg_enabled;
-    gcd[i].gd.cid = base+C_Typed;
-    gcd[i++].creator = GRadioCreate;
+    gcd[i].gd.u.list = !autokern ? widthlist : base==CID_Left ? kernllist : kernrlist;
+    gcd[i].gd.cid = base;
+    gcd[i++].creator = GListFieldCreate;
 
-    label[i].text = (unichar_t *) std;
-    label[i].text_in_resource = true;
-    gcd[i].gd.label = &label[i];
-    gcd[i].gd.pos.x = 98; gcd[i].gd.pos.y = y+31; 
-    gcd[i].gd.flags = gg_visible | gg_enabled;
-    gcd[i].gd.cid = base+C_Text;
-    gcd[i].gd.handle_controlevent = AW_FocusChange;
-    gcd[i].data = (void *) (base+C_Typed);
-    gcd[i++].creator = GTextFieldCreate;
+    for ( epos = 0; gcd[i-1].gd.u.list[epos].text!=NULL; ++epos );
+    gcd[i-1].gd.u.list[epos-2].disabled = (toomany&1);
+    gcd[i-1].gd.u.list[epos-1].disabled = (toomany&2)?1:0;
 return( i );
 }
 
@@ -1515,7 +1561,7 @@ static void AutoWKDlg(SplineFont *sf,int autokern) {
     wattrs.window_title = GStringGetResource(autokern?_STR_Autokern:_STR_Autowidth,NULL);
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,200));
-    pos.height = GDrawPointsToPixels(NULL,autokern?305:215);
+    pos.height = GDrawPointsToPixels(NULL,autokern?270:180);
     gw = GDrawCreateTopWindow(NULL,&pos,AW_e_h,&wi,&wattrs);
 
     memset(&label,0,sizeof(label));
@@ -1537,10 +1583,10 @@ static void AutoWKDlg(SplineFont *sf,int autokern) {
     gcd[i].gd.flags = gg_visible | gg_enabled;
     gcd[i++].creator = GLabelCreate;
 
-    i = MakeSelGadgets(gcd, label, i, CID_LeftBase, _STR_CharsLeft, 33,
+    i = MakeSelGadgets(gcd, label, i, CID_Left, _STR_CharsLeft, 33,
 	    pos.width, gw, toomany, autokern );
     selfield = i-1;
-    i = MakeSelGadgets(gcd, label, i, CID_RightBase, _STR_CharsRight, 33+SelHeight+9,
+    i = MakeSelGadgets(gcd, label, i, CID_Right, _STR_CharsRight, 33+SelHeight+9,
 	    pos.width, gw, toomany, autokern );
     y = 32+2*(SelHeight+9);
 
@@ -1680,7 +1726,7 @@ void FVRemoveKerns(FontView *fv) {
 
 /* Scripting hooks */
 
-static struct charone **autowidthBuildCharList(SplineFont *sf, int base,
+static struct charone **autowidthBuildCharList(SplineFont *sf,
 	int *tot, int *rtot, int *ipos, int iswidth) {
     int i, cnt, doit, s;
     struct charone **ret=NULL;
@@ -1735,9 +1781,9 @@ int AutoWidthScript(SplineFont *sf,int spacing) {
     if ( spacing>-(sf->ascent+sf->descent) )
 	wi.spacing = spacing;
 
-    wi.left = autowidthBuildCharList(wi.sf,CID_LeftBase, &wi.lcnt, &wi.real_lcnt, &wi.l_Ipos, true );
-    wi.right = autowidthBuildCharList(wi.sf,CID_RightBase, &wi.rcnt, &wi.real_rcnt, &wi.r_Ipos, true );
-    if ( wi.lcnt==0 || wi.rcnt==0 ) {
+    wi.left = autowidthBuildCharList(wi.sf, &wi.lcnt, &wi.real_lcnt, &wi.l_Ipos, true );
+    wi.right = autowidthBuildCharList(wi.sf, &wi.rcnt, &wi.real_rcnt, &wi.r_Ipos, true );
+    if ( wi.real_lcnt==0 || wi.real_rcnt==0 ) {
 	FreeCharList(wi.left);
 	FreeCharList(wi.right);
 return( 0 );
@@ -1765,8 +1811,8 @@ int AutoKernScript(SplineFont *sf,int spacing, int threshold,char *kernfile) {
     wi.threshold = threshold;    
 
     if ( kernfile==NULL ) {
-	wi.left = autowidthBuildCharList(wi.sf,CID_LeftBase, &wi.lcnt, &wi.real_lcnt, &wi.l_Ipos, false );
-	wi.right = autowidthBuildCharList(wi.sf,CID_RightBase, &wi.rcnt, &wi.real_rcnt, &wi.r_Ipos, false );
+	wi.left = autowidthBuildCharList(wi.sf, &wi.lcnt, &wi.real_lcnt, &wi.l_Ipos, false );
+	wi.right = autowidthBuildCharList(wi.sf, &wi.rcnt, &wi.real_rcnt, &wi.r_Ipos, false );
 	if ( wi.lcnt==0 || wi.rcnt==0 ) {
 	    FreeCharList(wi.left);
 	    FreeCharList(wi.right);
