@@ -3141,6 +3141,23 @@ void SplineCharAutoHint( SplineChar *sc, int removeOverlaps ) {
     SCUpdateAll(sc);
     sc->parent->changed = true;
 }
+
+int SFNeedsAutoHint( SplineFont *_sf) {
+    int i,k;
+    SplineFont *sf;
+
+    k=0;
+    do {
+	sf = _sf->subfontcnt==0 ? _sf : _sf->subfonts[k];
+	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	    if ( sf->chars[i]->changedsincelasthinted &&
+		    !sf->chars[i]->manualhints )
+return( true );
+	}
+	++k;
+    } while ( k<_sf->subfontcnt );
+return( false );
+}
     
 void SplineFontAutoHint( SplineFont *_sf) {
     int i,k;

@@ -551,9 +551,11 @@ return( false );
 	     strstrmatch(sf->weight,"Black")!=NULL))
 	isbold = true;
 
-    GProgressChangeLine1R(_STR_AutoHintingFont);
     GProgressChangeStages(2+2-hasblue);
-    SplineFontAutoHint(sf);
+    if ( SFNeedsAutoHint(sf)) {
+	GProgressChangeLine1R(_STR_AutoHintingFont);
+	SplineFontAutoHint(sf);
+    }
     if ( !GProgressNextStage())
 return( false );
 
