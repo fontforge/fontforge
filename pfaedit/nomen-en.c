@@ -50,6 +50,8 @@ static char str_Index[] = "Index";
 static unichar_t mnemonic_Index[] = 'I';
 static char str_About[] = "About...";
 static unichar_t mnemonic_About[] = 'A';
+static char str_LicenseDDD[] = "License...";
+static unichar_t mnemonic_LicenseDDD[] = 'L';
 static char str_Recent[] = "Recent";
 static unichar_t mnemonic_Recent[] = 't';
 static char str_Openoutline[] = "Open Outline Window";
@@ -2648,6 +2650,7 @@ static char *str_CallScript = "Call Script";
 static char *str_FreePress = "A free press discriminates\nagainst the illiterate.";
 static char *str_GaudiamusLigature = "Gaudiamus Ligature!";
 static char *str_InTheBeginning = "In the beginning was the letter...";
+static char *str_LovelyFonts = "  The sad fate of mine:\nA library of lovely fonts,\n   but nothing to say.";
     /* search */
 static char *str_SearchPattern = "Search Pattern:";
 static char *str_ReplacePattern = "Replace Pattern:";
