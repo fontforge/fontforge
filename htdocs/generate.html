@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Sep-2002 -->
-  <!-- AP: Last modified: 14-Aug-2003 -->
+  <!-- AP: Last modified: 17-Aug-2003 -->
   <TITLE>Generate Font Dialog</TITLE>
 </HEAD>
 <BODY>
@@ -91,11 +91,8 @@ The bitmap types are:
     anti-aliased (greymap) fonts as well as bitmaps. A 12pixel high greymap font
     with 8 bits/pixel can be represented as 12@8).
   <LI>
-    In TTF -- Store the bitmap fonts inside the ttf file using the microsoft
-    tables.
-  <LI>
-    In TTF (Apple) -- Store the bitmap fonts inside the ttf file using the apple
-    tables (I wish they were consistent!)
+    In TTF -- Store the bitmap fonts inside the ttf file (the exact format will
+    depend on the settings of the Apple and OpenType bits in the Options dlg).
   <LI>
     In sfnt (dfont) -- Only available if no outline font is generated. Apple
     allows bitmaps to be stored within a truetype file (sfnt) even if there is

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Jan-2003 -->
-  <!-- AP: Last modified: 8-Apr-2003 -->
+  <!-- AP: Last modified: 17-Aug-2003 -->
   <TITLE>More advanced features, ligatures, mark positioning, character variants</TITLE>
 </HEAD>
 <BODY>
@@ -33,6 +33,10 @@
     <A HREF="editexample5.html#Kerning">Kerning</A>
   <LI>
     <A HREF="editexample6.html#Variants">Character variants</A>
+    <UL>
+      <LI>
+	<A HREF="editexample6.html#Conditional">Conditional variants</A>
+    </UL>
   <LI>
     <A HREF="editexample6.html#Marks">Anchoring marks</A>
   <LI>
@@ -87,6 +91,24 @@ to automate this process for you.
 (Note: Type0, Type1 and Type3 PostScript fonts have no notation to handle
 this. You need to be creating an OpenType or TrueType font for these varients
 to be output).
+<H3>
+  <A NAME="Conditional">Conditional</A> Variants
+</H3>
+<P>
+PfaEdit supports OpenType's Contextual Substitution and Chaining Contextual
+Substitution sub-tables, and to a lesser extent, Apple's contextual glyph
+substitution sub-table. This means that you can insert conditional variants
+into your font.
+<P>
+For instance suppose you want to create a latin script font where most letter
+combinations join at the baseline, but some join near the x-height. I was
+taught that the characters "b", "o", "v" and "w" join on the left at the
+x-height. So you need a variant form of all the lower case letters that will
+join on the left at the x-height and you need to use this form of the character
+after either a "b", "o", "v" or "w".
+<P>
+See the <A HREF="fontinfo.html#Contextual">Element-&gt;Font
+Info-&gt;Contextual dialog </A>for more information
 <H2>
   <A NAME="Marks">Anchoring</A> marks
 </H2>
