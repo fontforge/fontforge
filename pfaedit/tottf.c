@@ -7205,8 +7205,12 @@ return;
 		if ( (sc=sf->subfonts[k]->chars[i])!=NULL )
 	    break;
 	}
-	if ( sc!=NULL && sc->ttf_glyph!=-1 )
-	    fprintf( file, "%d\t%s\n", sc->ttf_glyph, sc->name );
+	if ( sc!=NULL && sc->ttf_glyph!=-1 ) {
+	    fprintf( file, "GLYPHID %d\tPSNAME %s", sc->ttf_glyph, sc->name );
+	    if ( sc->unicodeenc!=-1 )
+		fprintf( file, "UNICODE %04X", sc->unicodeenc );
+	    putc('\n',file);
+	}
     }
     fclose(file);
     free(newname);
