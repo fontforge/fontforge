@@ -232,7 +232,7 @@ char *MMMakeMasterFontname(MMSet *mm,int ipos,char **fullname) {
 return( _MMMakeFontname(mm,&mm->positions[ipos*mm->axis_count],fullname));
 }
 
-char *MMGuessWeight(MMSet *mm,int ipos,char *def) {
+static char *_MMGuessWeight(MMSet *mm,real *normalized,char *def) {
     int i;
     char *ret;
     real design;
@@ -243,7 +243,7 @@ char *MMGuessWeight(MMSet *mm,int ipos,char *def) {
     }
     if ( i==mm->axis_count )
 return( def );
-    design = mm->positions[ipos*mm->axis_count + i];
+    design = MMAxisUnmap(mm,i,normalized[i]);
     if ( design<50 || design>1500 )	/* Er... Probably not the 0...1000 range I expect */
 return( def );
     ret = NULL;
@@ -263,6 +263,10 @@ return( def );
 	ret = "Black";
     free( def );
 return( copy(ret) );
+}
+
+char *MMGuessWeight(MMSet *mm,int ipos,char *def) {
+return( _MMGuessWeight(mm,&mm->positions[ipos*mm->axis_count],def));
 }
 
 /* Given a postscript array of scalars, what's the ipos'th element? */
@@ -1062,7 +1066,7 @@ return( private );
 		    ++cnt;
 		}
 	    }
-	    space = pt = galloc((cnt+1)*24+4);
+	    space = pt = galloc((cnt+2)*24+4);
 	    *pt++ = '[';
 	    for ( j=0; j<mm->instance_count; ++j )
 		if ( *values[j]=='[' ) ++values[j];
@@ -1075,6 +1079,7 @@ return( private );
 		    values[j] = end;
 		}
 		sprintf( pt,"%g ", sum);
+		pt += strlen(pt);
 	    }
 	    if ( pt[-1]==' ' ) --pt;
 	    *pt++ = ']';
@@ -1620,6 +1625,7 @@ static int MMCB_OK(GGadget *g, GEvent *e) {
 	SplineFont *hold = mmcb->mm->normal;
 	int i;
 	FontView *fv;
+	real axispos[4];
 
 	if ( !GetWeights(mmcb->gw, blends, mmcb->mm, mmcb->mm->instance_count, mmcb->mm->axis_count))
 return( true );
@@ -1629,15 +1635,26 @@ return( true );
 	    mmcb->mm->defweights[i] = blends[i];
 	}
 	if ( mmcb->tonew ) {
-	    mmcb->mm->normal = MMNewFont(mmcb->mm,-1,hold->familyname);
-	    mmcb->mm->normal->private = BlendPrivate(PSDictCopy(hold->private),mmcb->mm);
-	    mmcb->mm->normal->fv = NULL;
-	    fv = FontViewCreate(mmcb->mm->normal);
+	    SplineFont *new;
+	    FontView *oldfv = hold->fv;
+	    char *fn, *full;
+	    mmcb->mm->normal = new = MMNewFont(mmcb->mm,-1,hold->familyname);
+	    MMWeightsUnMap(blends,axispos,mmcb->mm->axis_count);
+	    fn = _MMMakeFontname(mmcb->mm,axispos,&full);
+	    free(new->fontname); free(new->fullname);
+	    new->fontname = fn; new->fullname = full;
+	    new->weight = _MMGuessWeight(mmcb->mm,axispos,new->weight);
+	    new->private = BlendPrivate(PSDictCopy(hold->private),mmcb->mm);
+	    new->fv = NULL;
+	    fv = FontViewCreate(new);
 	    MMReblend(fv,mmcb->mm);
-	    fv->sf->mm = NULL;
+	    new->mm = NULL;
 	    mmcb->mm->normal = hold;
-	    for ( i=0; i<mmcb->mm->instance_count; ++i )
+	    for ( i=0; i<mmcb->mm->instance_count; ++i ) {
 		mmcb->mm->defweights[i] = oldblends[i];
+		mmcb->mm->instances[i]->fv = oldfv;
+	    }
+	    hold->fv = oldfv;
 	} else {
 	    for ( i=0; i<mmcb->mm->instance_count; ++i )
 		mmcb->mm->defweights[i] = blends[i];
@@ -1749,7 +1766,7 @@ return;
     if ( !mm->apple ) {
 	pt = buffer;
 	for ( i=0; i<mm->instance_count; ++i ) {
-	    sprintf( pt, "%g, ", mm->defweights[i]);
+	    sprintf( pt, "%g ", mm->defweights[i]);
 	    pt += strlen(pt);
 	}
 	if ( pt>buffer )
@@ -1764,7 +1781,7 @@ return;
 	memset(&label,0,sizeof(label));
 
 	k=0;
-	label[k].text = (unichar_t *) _STR_ChangeBlend1;
+	label[k].text = (unichar_t *) (tonew ? _STR_BlendNew1 : _STR_ChangeBlend1);
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = 10;

@@ -3406,6 +3406,7 @@ static char *str_MMNumHints = "This glyph contains a different number of hints i
 static char *str_MMDiffKerns = "This glyph contains different kerning pairs in different instances"
 static char *str_MMVariousErrors = "Various errors occurred at the selected glyphs";
 static char *str_MMSelErr = "The following error occurred on the selected glyphs: %.100s"
+static char *str_BlendNew1 = "You may specify the new instance of this font"
 static char *str_ChangeBlend1 = "You may change the default instance of this font"
 static char *str_ChangeBlend2 = "either by explicitly entering the contribution"
 static char *str_ChangeBlend3 = "of each master design, or by entering the design"
