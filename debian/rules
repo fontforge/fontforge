@@ -44,8 +44,8 @@ clean:
 	dh_testroot
 	rm -f build-stamp configure-stamp
 
-	-$(MAKE) cleaner
-	-rm -f config.cache config.status config.log libs/*.a pfaedit/pfaedit 
+	-$(MAKE) distclean
+	-rm -f config.cache config.status config.log libs/*.a pfaedit/pfaedit pfaedit/sfddiff
 
 	dh_clean
 

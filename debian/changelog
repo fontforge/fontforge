@@ -1,3 +1,16 @@
+pfaedit (0.0.20020905-1) unstable; urgency=low
+
+  * New upstream version
+  * Changed to use libpng3 instead of libpng2
+
+ -- Baruch Even <baruch@debian.org>  Thu,  5 Sep 2002 08:13:28 +0300
+
+pfaedit (0.0.20020618-1) unstable; urgency=low
+
+  * New upstream version
+
+ -- Baruch Even <baruch@debian.org>  Tue, 18 Jun 2002 22:23:30 +0300
+
 pfaedit (0.0.20020416-1) unstable; urgency=low
 
   * New upstream version
