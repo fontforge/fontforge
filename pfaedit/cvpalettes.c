@@ -44,7 +44,7 @@ static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c',
 static GFont *font;
 
 #define CV_TOOLS_WIDTH		53
-#define CV_TOOLS_HEIGHT		(187+4*12+2)
+#define CV_TOOLS_HEIGHT		(214+4*12+2)
 #define CV_LAYERS_HEIGHT	179
 #define BV_TOOLS_WIDTH		53
 #define BV_TOOLS_HEIGHT		80
@@ -153,6 +153,7 @@ return;
 
 /* Note: If you change this ordering, change enum cvtools */
 static int popupsres[] = { _STR_Pointer, _STR_PopMag,
+				    _STR_FreeCurve, _STR_ScrollByHand,
 				    _STR_AddCurvePoint, _STR_AddCornerPoint,
 			            _STR_AddTangentPoint, _STR_AddPenPoint,
 			            _STR_PopKnife, _STR_PopRuler,
@@ -375,6 +376,7 @@ static void ToolsExpose(GWindow pixmap, CharView *cv, GRect *r) {
     GRect old;
     /* Note: If you change this ordering, change enum cvtools */
     static GImage *buttons[][2] = { { &GIcon_pointer, &GIcon_magnify },
+				    { &GIcon_freehand, &GIcon_hand },
 				    { &GIcon_curve, &GIcon_corner },
 				    { &GIcon_tangent, &GIcon_pen },
 			            { &GIcon_knife, &GIcon_ruler },
@@ -383,6 +385,7 @@ static void ToolsExpose(GWindow pixmap, CharView *cv, GRect *r) {
 			            { &GIcon_rect, &GIcon_poly},
 			            { &GIcon_elipse, &GIcon_star}};
     static GImage *smalls[] = { &GIcon_smallpointer, &GIcon_smallmag,
+				    &GIcon_smallpencil, &GIcon_smallhand,
 				    &GIcon_smallcurve, &GIcon_smallcorner,
 				    &GIcon_smalltangent, &GIcon_smallpen,
 			            &GIcon_smallknife, &GIcon_smallruler,
@@ -459,6 +462,8 @@ void CVToolsSetCursor(CharView *cv, int state, char *device) {
     if ( tools[0] == cvt_none ) {
 	tools[cvt_pointer] = ct_mypointer;
 	tools[cvt_magnify] = ct_magplus;
+	tools[cvt_freehand] = ct_pencil;
+	tools[cvt_hand] = ct_myhand;
 	tools[cvt_curve] = ct_circle;
 	tools[cvt_corner] = ct_square;
 	tools[cvt_tangent] = ct_triangle;

@@ -48,12 +48,13 @@ extern GImage GIcon_tangent, GIcon_curve, GIcon_corner, GIcon_ruler,
 	GIcon_miterjoin, GIcon_roundjoin, GIcon_beveljoin,
 	GIcon_rect, GIcon_elipse, GIcon_rrect, GIcon_poly, GIcon_star,
 	GIcon_pencil, GIcon_shift, GIcon_line, GIcon_hand,
-	GIcon_press2ptr;
+	GIcon_press2ptr, GIcon_freehand;
 extern GImage GIcon_smallskew, GIcon_smallscale, GIcon_smallrotate,
 	GIcon_smallflip, GIcon_smalltangent, GIcon_smallcorner,
 	GIcon_smallcurve, GIcon_smallmag, GIcon_smallknife, GIcon_smallpen,
 	GIcon_smallpointer, GIcon_smallruler, GIcon_smallelipse,
 	GIcon_smallrect, GIcon_smallpoly, GIcon_smallstar,
+	GIcon_smallpencil, GIcon_smallhand,
 	GIcon_PfaEditLogo;
 GImage def_image, red_image, blue_image, green_image, magenta_image,
 	yellow_image, cyan_image, white_image;

@@ -77,6 +77,7 @@ typedef struct pressedOn {
 
 /* Note: These are ordered as they are displayed in the tools palette */
 enum cvtools { cvt_pointer, cvt_magnify,
+	cvt_freehand, cvt_hand,
 	cvt_curve, cvt_corner, cvt_tangent, cvt_pen,
 	cvt_knife, cvt_ruler,
 	cvt_scale, cvt_flip,
@@ -546,6 +547,9 @@ extern void CVMouseUpRuler(CharView *cv, GEvent *event);
 extern void CVMouseDownHand(CharView *cv);
 extern void CVMouseMoveHand(CharView *cv, GEvent *event);
 extern void CVMouseUpHand(CharView *cv);
+extern void CVMouseDownFreeHand(CharView *cv, GEvent *event);
+extern void CVMouseMoveFreeHand(CharView *cv, GEvent *event);
+extern void CVMouseUpFreeHand(CharView *cv);
 extern void CVMouseDownTransform(CharView *cv);
 extern void CVMouseMoveTransform(CharView *cv);
 extern void CVMouseUpTransform(CharView *cv);

@@ -1147,6 +1147,8 @@ static char *str_ShapeType = "Shape Type";
 /* Popups */
 static char *str_Pointer = "Pointer";
 static char *str_PopMag = "Magnify (Minify with alt)";
+static char *str_FreeCurve = "Draw a freehand curve";
+static char *str_ScrollByHand = "Scroll by hand";
 static char *str_AddCurvePoint = "Add a curve point";
 static char *str_AddCornerPoint = "Add a corner point";
 static char *str_AddTangentPoint = "Add a tangent point";

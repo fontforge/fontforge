@@ -1977,6 +1977,12 @@ return;
       break;
       case cvt_magnify: case cvt_minify:
       break;
+      case cvt_hand:
+	CVMouseDownHand(cv);
+      break;
+      case cvt_freehand:
+	CVMouseDownFreeHand(cv,event);
+      break;
       case cvt_curve: case cvt_corner: case cvt_tangent: case cvt_pen:
 	CVMouseDownPoint(cv);
       break;
@@ -2093,6 +2099,11 @@ static void CVMouseMove(CharView *cv, GEvent *event ) {
     FindSel fs;
     GEvent fake;
 
+#if 0		/* Debug wacom !!!! */
+ printf( "dev=%s (%d,%d) 0x%x\n", event->u.mouse.device!=NULL?event->u.mouse.device:"<None>",
+     event->u.mouse.x, event->u.mouse.y, event->u.mouse.state);
+#endif
+
     if ( event->u.mouse.device!=NULL )
 	CVToolsSetCursor(cv,event->u.mouse.state,event->u.mouse.device);
 
@@ -2194,6 +2205,12 @@ return;
       break;
       case cvt_magnify: case cvt_minify:
       break;
+      case cvt_hand:
+	CVMouseMoveHand(cv,event);
+      break;
+      case cvt_freehand:
+	CVMouseMoveFreeHand(cv,event);
+      break;
       case cvt_curve: case cvt_corner: case cvt_tangent: 
 	CVMouseMovePoint(cv,&p);
       break;
@@ -2277,6 +2294,12 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
       break;
       case cvt_ruler:
 	CVMouseUpRuler(cv,event);
+      break;
+      case cvt_hand:
+	CVMouseUpHand(cv);
+      break;
+      case cvt_freehand:
+	CVMouseUpFreeHand(cv);
       break;
       case cvt_curve: case cvt_corner: case cvt_tangent: case cvt_pen:
 	CVMouseUpPoint(cv,event);
