@@ -54,9 +54,6 @@ static char *gethomedir(void) {
 
     if ( dir!=NULL )
 return( dir );
-    
-    if ( (dir=getenv("HOME"))!=NULL )
-return( (dir=strdup(dir)) );
 
     uid = getuid();
     while ( (pw=getpwent())!=NULL ) {
@@ -67,6 +64,10 @@ return( dir );
 	}
     }
     endpwent();
+
+    if ( (dir=getenv("HOME"))!=NULL )
+return( (dir=strdup(dir)) );
+
 return( NULL );
 }
 #endif
