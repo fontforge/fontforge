@@ -303,6 +303,8 @@ return( 1 );	/* we successfully read no data */
     kerntab = gcalloc(kern_size,sizeof(int32));
     ligkerntab = gcalloc(ligkern_size,sizeof(int32));
     ext = gcalloc(esize,sizeof(int32));
+    fseek( file,(6+1)*sizeof(int32),SEEK_SET);
+    sf->texdata.designsize = getlong(file);
     fseek( file,
 	    (6+head_len+(last-first+1)+width_size+height_size+depth_size+italic_size)*sizeof(int32),
 	    SEEK_SET);
@@ -1555,22 +1557,42 @@ void TeXDefaultParams(SplineFont *sf) {
     if ( sf->texdata.type!=tex_unset )
 return;
 
-    spacew = .33*(1<<20);	/* 1/3 em for a space seems like a reasonable size */
+    spacew = rint(.33*(1<<20));	/* 1/3 em for a space seems like a reasonable size */
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->unicodeenc==' ' ) {
-	spacew = (sf->chars[i]->width<<20)/(sf->ascent+sf->descent);
+	spacew = rint((sf->chars[i]->width<<20)/(sf->ascent+sf->descent));
     break;
     }
     QuickBlues(sf,&bd);
 
     memset(sf->texdata.params,0,sizeof(sf->texdata.params));
+    sf->texdata.designsize = 10<<20;			/* Default to 10pt */
     sf->texdata.params[0] = rint( -sin(sf->italicangle)*(1<<20) );	/* slant */
     sf->texdata.params[1] = spacew;			/* space */
-    sf->texdata.params[2] = spacew/2;			/* stretch_space */
-    sf->texdata.params[3] = spacew/3;			/* shrink space */
+    sf->texdata.params[2] = rint(spacew/2);		/* stretch_space */
+    sf->texdata.params[3] = rint(spacew/3);		/* shrink space */
     if ( bd.xheight>0 )
-	sf->texdata.params[4] = (bd.xheight*(1<<20))/(sf->ascent+sf->descent);
+	sf->texdata.params[4] = rint((bd.xheight*(1<<20))/(sf->ascent+sf->descent));
     sf->texdata.params[5] = 1<<20;			/* quad */
-    sf->texdata.params[6] = spacew/3;			/* extra space after sentence period */
+    sf->texdata.params[6] = rint(spacew/3);		/* extra space after sentence period */
+
+    /* Let's provide some vaguely reasonable defaults for math fonts */
+    /*  I'll ignore math ext fonts */
+    /* hmm. TeX math fonts have space, stretch, shrink set to 0 */
+    sf->texdata.params[7] = rint(.747*(1<<20));
+    sf->texdata.params[8] = rint(.424*(1<<20));
+    sf->texdata.params[9] = rint(.474*(1<<20));
+    sf->texdata.params[10] = rint(.756*(1<<20));
+    sf->texdata.params[11] = rint(.375*(1<<20));
+    sf->texdata.params[12] = rint(.413*(1<<20));
+    sf->texdata.params[13] = rint(.363*(1<<20));
+    sf->texdata.params[14] = rint(.289*(1<<20));
+    sf->texdata.params[15] = rint(.15*(1<<20));
+    sf->texdata.params[16] = rint(.309*(1<<20));
+    sf->texdata.params[17] = rint(.386*(1<<20));
+    sf->texdata.params[18] = rint(.05*(1<<20));
+    sf->texdata.params[19] = rint(2.39*(1<<20));
+    sf->texdata.params[20] = rint(1.01*(1<<20));
+    sf->texdata.params[21] = rint(.25*(1<<20));
 }
 
 int TfmSplineFont(FILE *tfm, SplineFont *sf, int formattype) {
@@ -1595,10 +1617,11 @@ int TfmSplineFont(FILE *tfm, SplineFont *sf, int formattype) {
     SFLigaturePrepare(sf);
     LigatureClosure(sf);		/* Convert 3 character ligs to a set of two character ones when possible */
     SFKernPrepare(sf);			/* Undoes kern classes */
+    TeXDefaultParams(sf);
 
     memset(&header,0,sizeof(header));
     header.checksum = 0;		/* don't check checksum (I don't know how to calculate it) */
-    header.design_size = 10<<20;	/* default to 10pt */
+    header.design_size = sf->texdata.designsize;
     encname=NULL;
     if ( sf->subfontcnt==0 && sf->encoding_name!=em_custom && !sf->compacted )
 	encname = EncodingName(sf->encoding_name );
@@ -1642,7 +1665,6 @@ int TfmSplineFont(FILE *tfm, SplineFont *sf, int formattype) {
     else if ( style&sf_extend )
 	header.face += 12;
 
-    TeXDefaultParams(sf);
     pcnt = sf->texdata.type==tex_math ? 22 : sf->texdata.type==tex_mathext ? 13 : 7;
 
     memset(widths,0,sizeof(widths));

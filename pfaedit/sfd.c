@@ -900,6 +900,12 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 	fprintf(sfd, "Grid\n" );
 	SFDDumpSplineSet(sfd,sf->gridsplines);
     }
+    if ( sf->texdata.type!=tex_unset ) {
+	fprintf(sfd, "TeXData: %d %d", sf->texdata.type, sf->texdata.designsize );
+	for ( i=0; i<22; ++i )
+	    fprintf(sfd, " %d", sf->texdata.params[i]);
+	putc('\n',sfd);
+    }
     if ( sf->anchor!=NULL ) {
 	AnchorClass *an;
 	fprintf(sfd, "AnchorClass: ");
@@ -2443,6 +2449,13 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 		getint(sfd,&temp);
 		kc->offsets[i] = temp;
 	    }
+	} else if ( strmatch(tok,"TeXData:")==0 ) {
+	    int temp;
+	    getint(sfd,&temp);
+	    sf->texdata.type = temp;
+	    getint(sfd,&sf->texdata.designsize);
+	    for ( i=0; i<22; ++i )
+		getint(sfd,&sf->texdata.params[i]);
 	} else if ( strmatch(tok,"AnchorClass:")==0 ) {
 	    unichar_t *name;
 	    AnchorClass *lastan = NULL, *an;

@@ -37,10 +37,10 @@ static int last_aspect=0;
 struct gfi_data {
     SplineFont *sf;
     GWindow gw;
-    int private_aspect, ttfv_aspect, panose_aspect, tn_aspect;
+    int private_aspect, ttfv_aspect, panose_aspect, tn_aspect, tx_aspect;
     int old_sel, old_aspect, old_lang, old_strid;
     int oldcnt;
-    int ttf_set, names_set;
+    int ttf_set, names_set, tex_set;
     struct psdict *private;
     struct ttflangname *names;
     struct ttflangname def;
@@ -48,7 +48,9 @@ struct gfi_data {
     unsigned int family_untitled: 1;
     unsigned int human_untitled: 1;
     unsigned int done: 1;
+    unsigned int mpdone: 1;
     struct anchor_shows { CharView *cv; SplineChar *sc; int restart; } anchor_shows[2];
+    struct texdata texdata;
 };
 
 GTextInfo emsizes[] = {
@@ -616,6 +618,13 @@ static GTextInfo mark_tags[] = {
 #define CID_ShowMark		7005
 #define CID_ShowBase		7006
 
+#define CID_TeXText		8001
+#define CID_TeXMath		8002
+#define CID_TeXMathExt		8003
+#define CID_DesignSize		8004
+#define CID_MoreParams		8005
+#define CID_TeXExtraSpLabel	8006
+#define CID_TeX			8007	/* through 8014 */
 
 struct psdict *PSDictCopy(struct psdict *dict) {
     struct psdict *ret;
@@ -3166,6 +3175,27 @@ static void BDFsSetAsDs(SplineFont *sf) {
     }
 }
 
+static int texparams[] = { _STR_Slant, _STR_Space, _STR_Stretch, _STR_Shrink, _STR_XHeightC, _STR_Quad, _STR_MathSp, 0 };
+static int texpopups[] = { _STR_SlantPopup, _STR_SpacePopup, _STR_StretchPopup, _STR_ShrinkPopup, _STR_XHeightCPopup, _STR_QuadPopup, _STR_ExtraPopup, 0 };
+
+static int ParseTeX(struct gfi_data *d) {
+    int i, err=false;
+    double em = (d->sf->ascent+d->sf->descent), val;
+
+    for ( i=0; texparams[i]!=0 ; ++i ) {
+	val = GetRealR(d->gw,CID_TeX+i,texparams[i],&err);
+	d->texdata.params[i] = rint( val/em * (1<<20) );
+    }
+    d->texdata.designsize = rint( GetRealR(d->gw,CID_DesignSize,_STR_DesignSize,&err) * (1<<20) );
+    if ( GGadgetIsChecked(GWidgetGetControl(d->gw,CID_TeXText)) )
+	d->texdata.type = tex_text;
+    else if ( GGadgetIsChecked(GWidgetGetControl(d->gw,CID_TeXMath)) )
+	d->texdata.type = tex_math;
+    else
+	d->texdata.type = tex_mathext;
+return( !err );
+}
+
 static int GFI_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	GWindow gw = GGadgetGetWindow(g);
@@ -3225,6 +3255,10 @@ return(true);
 	    linegap = GetIntR(gw,CID_LineGap,_STR_LineGap,&err);
 	    if ( vmetrics )
 		vlinegap = GetIntR(gw,CID_VLineGap,_STR_VLineGap,&err);
+	}
+	if ( d->tex_set ) {
+	    if ( !ParseTeX(d))
+return( true );
 	}
 	if ( err )
 return(true);
@@ -3289,6 +3323,7 @@ return(true);
 	sf->upos = upos;
 	sf->uwidth = uwid;
 	sf->uniqueid = uniqueid;
+	sf->texdata = d->texdata;
 
 	GFI_ProcessAnchor(d);
 
@@ -3488,6 +3523,195 @@ static void TTFSetup(struct gfi_data *d) {
     GGadgetSetTitle(GWidgetGetControl(d->gw,CID_VLineGap),ubuf);
 }
 
+static int mathparams[] = { _STR_Num1, _STR_Num2,  _STR_Num3, _STR_Denom1,
+    _STR_Denom2, _STR_Sup1, _STR_Sup2, _STR_Sup3, _STR_Sub1, _STR_Sub2,
+    _STR_SupDrop, _STR_SubDrop, _STR_Delim1, _STR_Delim2, _STR_AxisHt,
+    0 };
+static int mathpopups[] = { _STR_Num1Popup, _STR_Num2Popup,  _STR_Num3Popup, _STR_Denom1Popup,
+    _STR_Denom2Popup, _STR_Sup1Popup, _STR_Sup2Popup, _STR_Sup3Popup, _STR_Sub1Popup, _STR_Sub2Popup,
+    _STR_SupDropPopup, _STR_SubDropPopup, _STR_Delim1Popup, _STR_Delim2Popup, _STR_AxisHtPopup,
+    0 };
+static int extparams[] = { _STR_DefRuleThick, _STR_BigOpSpace1,  _STR_BigOpSpace2, _STR_BigOpSpace3, _STR_BigOpSpace4, _STR_BigOpSpace5, 0 };
+static int extpopups[] = { _STR_DefRuleThickPopup, _STR_BigOpSpace1Popup,  _STR_BigOpSpace2Popup, _STR_BigOpSpace3Popup, _STR_BigOpSpace4Popup, _STR_BigOpSpace5Popup, 0 };
+
+static int mp_e_h(GWindow gw, GEvent *event) {
+    int i;
+
+    if ( event->type==et_close ) {
+	struct gfi_data *d = GDrawGetUserData(gw);
+	d->mpdone = true;
+    } else if ( event->type == et_char ) {
+return( false );
+    } else if ( event->type==et_controlevent && event->u.control.subtype == et_buttonactivate ) {
+	struct gfi_data *d = GDrawGetUserData(gw);
+	if ( GGadgetGetCid(event->u.control.g)) {
+	    int err=false;
+	    double em = (d->sf->ascent+d->sf->descent), val;
+	    int *params;
+	    if ( GGadgetIsChecked(GWidgetGetControl(d->gw,CID_TeXMath)) )
+		params = mathparams;
+	    else
+		params = extparams;
+	    for ( i=0; params[i]!=0 && !err; ++i ) {
+		val = GetRealR(gw,CID_TeX+i,params[i],&err);
+		if ( !err )
+		    d->texdata.params[i+7] = rint( val/em * (1<<20) );
+	    }
+	    if ( !err )
+		d->mpdone = true;
+	} else
+	    d->mpdone = true;
+    }
+return( true );
+}
+
+static int GFI_MoreParams(GGadget *g, GEvent *e) {
+    int tot;
+    GRect pos;
+    GWindow gw;
+    GWindowAttrs wattrs;
+    GGadgetCreateData txgcd[35];
+    GTextInfo txlabel[35];
+    int i,y,k;
+    int *params, *popups;
+    char values[20][20];
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+	if ( GGadgetIsChecked(GWidgetGetControl(d->gw,CID_TeXText)) )
+return( true );
+	else if ( GGadgetIsChecked(GWidgetGetControl(d->gw,CID_TeXMath)) ) {
+	    tot = 22-7;
+	    params = mathparams;
+	    popups = mathpopups;
+	} else {
+	    tot = 13-7;
+	    params = extparams;
+	    popups = extpopups;
+	}
+
+	memset(&wattrs,0,sizeof(wattrs));
+	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+	wattrs.event_masks = ~(1<<et_charup);
+	wattrs.is_dlg = true;
+	wattrs.restrict_input_to_me = 1;
+	wattrs.undercursor = 1;
+	wattrs.cursor = ct_pointer;
+	wattrs.window_title = GStringGetResource(_STR_MoreParams,NULL);
+	pos.x = pos.y = 0;
+	pos.width =GDrawPointsToPixels(NULL,GGadgetScale(180));
+	pos.height = GDrawPointsToPixels(NULL,tot*26+60);
+	gw = GDrawCreateTopWindow(NULL,&pos,mp_e_h,d,&wattrs);
+
+	memset(&txlabel,0,sizeof(txlabel));
+	memset(&txgcd,0,sizeof(txgcd));
+
+	k=0; y = 10;
+	for ( i=0; params[i]!=0; ++i ) {
+	    txlabel[k].text = (unichar_t *) params[i];
+	    txlabel[k].text_in_resource = true;
+	    txgcd[k].gd.label = &txlabel[k];
+	    txgcd[k].gd.pos.x = 10; txgcd[k].gd.pos.y = y+4;
+	    txgcd[k].gd.flags = gg_visible | gg_enabled;
+	    txgcd[k].gd.popup_msg = GStringGetResource(popups[i],NULL);
+	    txgcd[k++].creator = GLabelCreate;
+
+	    sprintf( values[i], "%g", d->texdata.params[i+7]*(double) (d->sf->ascent+d->sf->descent)/(double) (1<<20));
+	    txlabel[k].text = (unichar_t *) values[i];
+	    txlabel[k].text_is_1byte = true;
+	    txgcd[k].gd.label = &txlabel[k];
+	    txgcd[k].gd.pos.x = 85; txgcd[k].gd.pos.y = y;
+	    txgcd[k].gd.pos.width = 75;
+	    txgcd[k].gd.flags = gg_visible | gg_enabled;
+	    txgcd[k].gd.cid = CID_TeX + i;
+	    txgcd[k++].creator = GTextFieldCreate;
+	    y += 26;
+	}
+
+	txgcd[k].gd.pos.x = 30-3; txgcd[k].gd.pos.y = GDrawPixelsToPoints(NULL,pos.height)-35-3;
+	txgcd[k].gd.pos.width = -1; txgcd[k].gd.pos.height = 0;
+	txgcd[k].gd.flags = gg_visible | gg_enabled | gg_but_default;
+	txlabel[k].text = (unichar_t *) _STR_OK;
+	txlabel[k].text_in_resource = true;
+	txgcd[k].gd.label = &txlabel[k];
+	txgcd[k].gd.cid = true;
+	txgcd[k++].creator = GButtonCreate;
+
+	txgcd[k].gd.pos.x = -30; txgcd[k].gd.pos.y = txgcd[k-1].gd.pos.y+3;
+	txgcd[k].gd.pos.width = -1; txgcd[k].gd.pos.height = 0;
+	txgcd[k].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+	txlabel[k].text = (unichar_t *) _STR_Cancel;
+	txlabel[k].text_in_resource = true;
+	txgcd[k].gd.label = &txlabel[k];
+	txgcd[k].gd.cid = false;
+	txgcd[k++].creator = GButtonCreate;
+
+	txgcd[k].gd.pos.x = 2; txgcd[k].gd.pos.y = 2;
+	txgcd[k].gd.pos.width = pos.width-4; txgcd[k].gd.pos.height = pos.height-4;
+	txgcd[k].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
+	txgcd[k].creator = GGroupCreate;
+
+	GGadgetsCreate(gw,txgcd);
+	d->mpdone = false;
+	GDrawSetVisible(gw,true);
+
+	while ( !d->mpdone )
+	    GDrawProcessOneEvent(NULL);
+	GDrawDestroyWindow(gw);
+    }
+return( true );
+}
+
+static int GFI_TeXChanged(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+	if ( GGadgetGetCid(g)==CID_TeXText ) {
+	    GGadgetSetTitle(GWidgetGetControl(d->gw,CID_TeXExtraSpLabel),
+		    GStringGetResource(_STR_ExtraSp,NULL));
+	    GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_MoreParams),false);
+	} else {
+	    GGadgetSetTitle(GWidgetGetControl(d->gw,CID_TeXExtraSpLabel),
+		    GStringGetResource(_STR_MathSp,NULL));
+	    GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_MoreParams),true);
+	}
+    }
+return( true );
+}
+
+static void DefaultTeX(struct gfi_data *d) {
+    char buffer[20];
+    unichar_t ubuf[20];
+    int i;
+    SplineFont *sf = d->sf;
+
+    d->tex_set = true;
+
+    if ( sf->texdata.type==tex_unset ) {
+	TeXDefaultParams(sf);
+	d->texdata = sf->texdata;
+    }
+
+    sprintf( buffer,"%g", d->texdata.designsize/(double) (1<<20));
+    uc_strcpy(ubuf,buffer);
+    GGadgetSetTitle(GWidgetGetControl(d->gw,CID_DesignSize),ubuf);
+
+    for ( i=0; i<7; ++i ) {
+	sprintf( buffer,"%g", d->texdata.params[i]*(sf->ascent+sf->descent)/(double) (1<<20));
+	uc_strcpy(ubuf,buffer);
+	GGadgetSetTitle(GWidgetGetControl(d->gw,CID_TeX+i),ubuf);
+    }
+    if ( sf->texdata.type==tex_math )
+	GGadgetSetChecked(GWidgetGetControl(d->gw,CID_TeXMath), true);
+    else if ( sf->texdata.type == tex_mathext )
+	GGadgetSetChecked(GWidgetGetControl(d->gw,CID_TeXMathExt), true);
+    else {
+	GGadgetSetChecked(GWidgetGetControl(d->gw,CID_TeXText), true);
+	GGadgetSetTitle(GWidgetGetControl(d->gw,CID_TeXExtraSpLabel),
+		GStringGetResource(_STR_ExtraSp,NULL));
+	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_MoreParams),false);
+    }
+}
+
 static int GFI_AspectChange(GGadget *g, GEvent *e) {
     if ( e==NULL || (e->type==et_controlevent && e->u.control.subtype == et_radiochanged )) {
 	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
@@ -3496,6 +3720,8 @@ static int GFI_AspectChange(GGadget *g, GEvent *e) {
 	    TTFSetup(d);
 	else if ( !d->names_set && new_aspect == d->tn_aspect )
 	    DefaultLanguage(d);
+	else if ( !d->tex_set && new_aspect == d->tx_aspect )
+	    DefaultTeX(d);
 	d->old_aspect = new_aspect;
     }
 return( true );
@@ -3534,18 +3760,18 @@ static int OrderGSUB(GGadget *g, GEvent *e) {
     }
 return( true );
 }
-		
+
 void FontInfo(SplineFont *sf,int defaspect,int sync) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GTabInfo aspects[10];
-    GGadgetCreateData mgcd[10], ngcd[13], egcd[12], psgcd[23], tngcd[7],   pgcd[8], vgcd[16], pangcd[22], comgcd[3], atgcd[7];
-    GTextInfo mlabel[10], nlabel[13], elabel[12], pslabel[23], tnlabel[7], plabel[8], vlabel[16], panlabel[22], comlabel[3], atlabel[7], *list;
+    GTabInfo aspects[11];
+    GGadgetCreateData mgcd[10], ngcd[13], egcd[12], psgcd[23], tngcd[7],   pgcd[8], vgcd[16], pangcd[22], comgcd[3], atgcd[7], txgcd[23];
+    GTextInfo mlabel[10], nlabel[13], elabel[12], pslabel[23], tnlabel[7], plabel[8], vlabel[16], panlabel[22], comlabel[3], atlabel[7], txlabel[23], *list;
     struct gfi_data *d;
     char iabuf[20], upbuf[20], uwbuf[20], asbuf[20], dsbuf[20], ncbuf[20],
 	    vbuf[20], uibuf[12], regbuf[100], vorig[20], embuf[20];
-    int i;
+    int i,k;
     Encoding *item;
     FontView *fvs;
     unichar_t title[130];
@@ -3589,6 +3815,7 @@ return;
     d->old_sel = -2;
     d->uplane = lastplane;
     d->oldcnt = sf->charcnt;
+    d->texdata = sf->texdata;
 
     memset(&nlabel,0,sizeof(nlabel));
     memset(&ngcd,0,sizeof(ngcd));
@@ -4506,6 +4733,76 @@ return;
     atgcd[5].creator = GButtonCreate;
 
 /******************************************************************************/
+    memset(&txlabel,0,sizeof(txlabel));
+    memset(&txgcd,0,sizeof(txgcd));
+
+    k=0;
+    txlabel[k].text = (unichar_t *) _STR_TeXText;
+    txlabel[k].text_in_resource = true;
+    txgcd[k].gd.label = &txlabel[k];
+    txgcd[k].gd.pos.x = 10; txgcd[k].gd.pos.y = 10;
+    txgcd[k].gd.flags = gg_visible | gg_enabled;
+    txgcd[k].gd.cid = CID_TeXText;
+    txgcd[k].gd.handle_controlevent = GFI_TeXChanged;
+    txgcd[k++].creator = GRadioCreate;
+
+    txlabel[k].text = (unichar_t *) _STR_TeXMath;
+    txlabel[k].text_in_resource = true;
+    txgcd[k].gd.label = &txlabel[k];
+    txgcd[k].gd.pos.x = 80; txgcd[k].gd.pos.y = txgcd[k-1].gd.pos.y;
+    txgcd[k].gd.flags = gg_visible | gg_enabled;
+    txgcd[k].gd.cid = CID_TeXMath;
+    txgcd[k].gd.handle_controlevent = GFI_TeXChanged;
+    txgcd[k++].creator = GRadioCreate;
+
+    txlabel[k].text = (unichar_t *) _STR_TeXMathExt;
+    txlabel[k].text_in_resource = true;
+    txgcd[k].gd.label = &txlabel[k];
+    txgcd[k].gd.pos.x = 150; txgcd[k].gd.pos.y = txgcd[k-1].gd.pos.y;
+    txgcd[k].gd.flags = gg_visible | gg_enabled;
+    txgcd[k].gd.cid = CID_TeXMathExt;
+    txgcd[k].gd.handle_controlevent = GFI_TeXChanged;
+    txgcd[k++].creator = GRadioCreate;
+
+    txlabel[k].text = (unichar_t *) _STR_DesignSize;
+    txlabel[k].text_in_resource = true;
+    txgcd[k].gd.label = &txlabel[k];
+    txgcd[k].gd.pos.x = 10; txgcd[k].gd.pos.y = txgcd[k-2].gd.pos.y+26;
+    txgcd[k].gd.flags = gg_visible | gg_enabled;
+    txgcd[k].gd.popup_msg = GStringGetResource(_STR_DesignSizePopup,NULL);
+    txgcd[k++].creator = GLabelCreate;
+
+    txgcd[k].gd.pos.x = 70; txgcd[k].gd.pos.y = txgcd[k-1].gd.pos.y-4;
+    txgcd[k].gd.flags = gg_visible | gg_enabled;
+    txgcd[k].gd.cid = CID_DesignSize;
+    txgcd[k++].creator = GTextFieldCreate;
+
+    for ( i=0; texparams[i]!=0; ++i ) {
+	txlabel[k].text = (unichar_t *) texparams[i];
+	txlabel[k].text_in_resource = true;
+	txgcd[k].gd.label = &txlabel[k];
+	txgcd[k].gd.pos.x = 10; txgcd[k].gd.pos.y = txgcd[k-2].gd.pos.y+26;
+	txgcd[k].gd.flags = gg_visible | gg_enabled;
+	txgcd[k].gd.popup_msg = GStringGetResource(texpopups[i],NULL);
+	txgcd[k++].creator = GLabelCreate;
+
+	txgcd[k].gd.pos.x = 70; txgcd[k].gd.pos.y = txgcd[k-1].gd.pos.y-4;
+	txgcd[k].gd.flags = gg_visible | gg_enabled;
+	txgcd[k].gd.cid = CID_TeX + i;
+	txgcd[k++].creator = GTextFieldCreate;
+    }
+    txgcd[k-2].gd.cid = CID_TeXExtraSpLabel;
+
+    txlabel[k].text = (unichar_t *) _STR_MoreParams;
+    txlabel[k].text_in_resource = true;
+    txgcd[k].gd.label = &txlabel[k];
+    txgcd[k].gd.pos.x = 20; txgcd[k].gd.pos.y = txgcd[k-1].gd.pos.y+26;
+    txgcd[k].gd.flags = gg_visible | gg_enabled;
+    txgcd[k].gd.handle_controlevent = GFI_MoreParams;
+    txgcd[k].gd.cid = CID_MoreParams;
+    txgcd[k++].creator = GButtonCreate;
+
+/******************************************************************************/
 
     memset(&mlabel,0,sizeof(mlabel));
     memset(&mgcd,0,sizeof(mgcd));
@@ -4545,6 +4842,11 @@ return;
     aspects[i].text = (unichar_t *) _STR_Panose;
     aspects[i].text_in_resource = true;
     aspects[i++].gcd = pangcd;
+
+    d->tx_aspect = i;
+    aspects[i].text = (unichar_t *) _STR_TeX;
+    aspects[i].text_in_resource = true;
+    aspects[i++].gcd = txgcd;
 
     aspects[i].text = (unichar_t *) _STR_Comment;
     aspects[i].text_in_resource = true;

@@ -648,6 +648,7 @@ typedef struct splinefont {
     struct kernclasslistdlg *kcld;
     struct texdata {
 	enum { tex_unset, tex_text, tex_math, tex_mathext } type;
+	int32 designsize;
 	int32 params[22];		/* param[6] has different meanings in normal and math fonts */
     } texdata;
 } SplineFont;
