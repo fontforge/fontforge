@@ -989,12 +989,13 @@ return( NULL );
 return( dc );
 }
 
-void DebuggerGo(struct debugger_context *dc,enum debug_gotype dgt) {
+void DebuggerGo(struct debugger_context *dc,enum debug_gotype dgt,DebugView *dv) {
     int opcode;
 
-    if ( !dc->has_thread || dc->has_finished || dc->exc==NULL )
+    if ( !dc->has_thread || dc->has_finished || dc->exc==NULL ) {
+	FreeType_FreeRaster(dv->cv->raster); dv->cv->raster = NULL;
 	DebuggerReset(dc,dc->ptsize,dc->dpi,dc->debug_fpgm);
-    else {
+    } else {
 	switch ( dgt ) {
 	  case dgt_continue:
 	    dc->multi_step = true;

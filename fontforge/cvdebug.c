@@ -472,7 +472,7 @@ static void DVFigureNewState(DebugView *dv,TT_ExecContext exc) {
 }
 
 static void DVGoFigure(DebugView *dv,enum debug_gotype go) {
-    DebuggerGo(dv->dc,go);
+    DebuggerGo(dv->dc,go,dv);
     DVFigureNewState(dv,DebuggerGetEContext(dv->dc));
 }
 
@@ -1319,6 +1319,7 @@ void CVDebugReInit(CharView *cv,int restart_debug,int dbg_fpgm) {
 	dv->scale = scale;
 	dv->cv = cv;
 	dv->dc = DebuggerCreate(cv->sc,cv->ft_pointsize,cv->ft_dpi,dbg_fpgm);
+	FreeType_FreeRaster(cv->raster); cv->raster = NULL;
 	if ( dv->dc==NULL ) {
 	    free(dv);
 	    cv->dv = NULL;
@@ -1473,6 +1474,7 @@ return;
     } else {
 	dv->scale = scale;
 	DebuggerReset(dv->dc,cv->ft_pointsize,cv->ft_dpi,dbg_fpgm);
+	FreeType_FreeRaster(cv->raster); cv->raster = NULL;
 	if (( exc = DebuggerGetEContext(dv->dc))!=NULL )
 	    DVFigureNewState(dv,exc);
     }
