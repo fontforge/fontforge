@@ -115,6 +115,7 @@ static SplinePointList *SplinesFromEntities(Entity *ent, Color bgcol, int ispotr
 			test->last=test->first;
 		    }
 		    SplineSetReverse(test);
+		    last = test;
 		}
 	    } else {
 		for ( test = new; test!=NULL; test=test->next ) {
