@@ -255,7 +255,7 @@ static int gmenu_expose(struct gmenu *m, GEvent *event) {
     r.x = m->tickoff; r.width = m->rightedge-m->tickoff;
     r.y = m->bp; r.height = m->height - 2*m->bp;
     GDrawPushClip(m->w,&r,&old2);
-    for ( i = event->u.expose.rect.y/m->fh+m->offtop;
+    for ( i = event->u.expose.rect.y/m->fh+m->offtop; i<m->mcnt &&
 	    i<=(event->u.expose.rect.y+event->u.expose.rect.height)/m->fh+m->offtop;
 	    ++i ) {
 	if ( i==m->offtop && m->offtop!=0 )
