@@ -3656,7 +3656,7 @@ return( diff );
 static int CheckNames(struct gfi_data *d) {
     const unichar_t *ufamily = _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Family));
     const unichar_t *ufont = _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Fontname));
-    unichar_t *end, *pt;
+    unichar_t *end; const unichar_t *pt;
 
     if ( *ufamily=='\0' ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
@@ -4328,7 +4328,8 @@ return( true );
 	    SMD_Close(d->smd);
 
 	if ( ttfmultuniqueids(sf,d)) {
-	    GWidgetErrorR(_STR_TooManyUniqueIDs,_STR_UniqueIDMustBeUnique);
+	    static int buts[] = { _STR_OK, _STR_Cancel, 0 };
+	    if ( GWidgetAskR(_STR_TooManyUniqueIDs,buts,0,1,_STR_UniqueIDMustBeUnique)==1 )
 return( true );
 	}
 	txt = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Family));
