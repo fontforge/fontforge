@@ -3557,7 +3557,7 @@ static void dumpcffcharset(SplineFont *sf,struct alltabs *at) {
 
     /* First element must be ".notdef" and is omitted */
     /* So if glyph 0 isn't notdef do something special */
-    if ( !SCIsNotdef(sf->chars[0],-1) )
+    if ( !SCIsNotdef(sf->chars[0],-1) && SCWorthOutputting(sf->chars[0]) )
 	putshort(at->charset,storesid(at,sf->chars[0]->name));
 
     for ( i=1; i<sf->charcnt; ++i )
