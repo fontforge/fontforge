@@ -32,7 +32,7 @@ extern char *coord_sep;
 
 /* ********************************* Undoes ********************************* */
 
-static int maxundoes = 12;		/* -1 is infinite */
+int maxundoes = 12;		/* -1 is infinite */
 
 static uint8 *bmpcopy(uint8 *bitmap,int bytes_per_line, int lines) {
     uint8 *ret = galloc(bytes_per_line*lines);
@@ -465,7 +465,12 @@ return( AddUndo(undo,cv->uheads[cv->drawmode],cv->rheads[cv->drawmode]));
 }
 
 Undoes *CVPreserveState(CharView *cv) {
-    Undoes *undo = chunkalloc(sizeof(Undoes));
+    Undoes *undo;
+
+    if ( screen_display==NULL )		/* No use for undoes in scripting */
+return(NULL);
+
+    undo = chunkalloc(sizeof(Undoes));
 
     undo->undotype = ut_state;
     undo->was_modified = cv->sc->changed;
@@ -483,7 +488,12 @@ return( CVAddUndo(cv,undo));
 }
 
 Undoes *SCPreserveState(SplineChar *sc,int dohints) {
-    Undoes *undo = chunkalloc(sizeof(Undoes));
+    Undoes *undo;
+
+    if ( screen_display==NULL )		/* No use for undoes in scripting */
+return(NULL);
+
+    undo = chunkalloc(sizeof(Undoes));
 
     undo->undotype = ut_state;
     undo->was_modified = sc->changed;
@@ -512,7 +522,12 @@ return( AddUndo(undo,&sc->undoes[0],&sc->redoes[0]));
 }
 
 Undoes *SCPreserveBackground(SplineChar *sc) {
-    Undoes *undo = chunkalloc(sizeof(Undoes));
+    Undoes *undo;
+
+    if ( screen_display==NULL )		/* No use for undoes in scripting */
+return(NULL);
+
+    undo = chunkalloc(sizeof(Undoes));
 
     undo->undotype = ut_state;
     undo->was_modified = sc->changed;
@@ -553,7 +568,12 @@ return( undo );
 }
 
 Undoes *CVPreserveWidth(CharView *cv,int width) {
-    Undoes *undo = chunkalloc(sizeof(Undoes));
+    Undoes *undo;
+
+    if ( screen_display==NULL )		/* No use for undoes in scripting */
+return(NULL);
+
+    undo = chunkalloc(sizeof(Undoes));
 
     undo->undotype = ut_width;
     undo->was_modified = cv->sc->changed;
@@ -563,7 +583,12 @@ return( CVAddUndo(cv,undo));
 }
 
 Undoes *CVPreserveVWidth(CharView *cv,int vwidth) {
-    Undoes *undo = chunkalloc(sizeof(Undoes));
+    Undoes *undo;
+
+    if ( screen_display==NULL )		/* No use for undoes in scripting */
+return(NULL);
+
+    undo = chunkalloc(sizeof(Undoes));
 
     undo->undotype = ut_vwidth;
     undo->was_modified = cv->sc->changed;
@@ -573,7 +598,12 @@ return( CVAddUndo(cv,undo));
 }
 
 Undoes *SCPreserveWidth(SplineChar *sc) {
-    Undoes *undo = chunkalloc(sizeof(Undoes));
+    Undoes *undo;
+
+    if ( screen_display==NULL )		/* No use for undoes in scripting */
+return(NULL);
+
+    undo = chunkalloc(sizeof(Undoes));
 
     undo->undotype = ut_width;
     undo->was_modified = sc->changed;
@@ -583,7 +613,12 @@ return( AddUndo(undo,&sc->undoes[0],&sc->redoes[0]));
 }
 
 Undoes *SCPreserveVWidth(SplineChar *sc) {
-    Undoes *undo = chunkalloc(sizeof(Undoes));
+    Undoes *undo;
+
+    if ( screen_display==NULL )		/* No use for undoes in scripting */
+return(NULL);
+
+    undo = chunkalloc(sizeof(Undoes));
 
     undo->undotype = ut_vwidth;
     undo->was_modified = sc->changed;
@@ -593,7 +628,12 @@ return( AddUndo(undo,&sc->undoes[0],&sc->redoes[0]));
 }
 
 Undoes *BCPreserveState(BDFChar *bc) {
-    Undoes *undo = chunkalloc(sizeof(Undoes));
+    Undoes *undo;
+
+    if ( screen_display==NULL )		/* No use for undoes in scripting */
+return(NULL);
+
+    undo = chunkalloc(sizeof(Undoes));
 
     undo->undotype = ut_bitmap;
     /*undo->u.bmpstate.width = bc->width;*/

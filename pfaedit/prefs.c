@@ -63,6 +63,7 @@ char *RecentFiles[RECENT_MAX] = { NULL };
 extern int default_fv_showhmetrics;	/* in fontview */
 extern int default_fv_showvmetrics;	/* in fontview */
 extern int palettes_docked;		/* in cvpalettes */
+extern int maxundoes;			/* in cvundoes */
 extern int prefer_cjk_encodings;	/* in parsettf */
 /* int local_encoding; */		/* in gresource.c *//* not a charset */
 static int prefs_encoding = e_unknown;
@@ -353,6 +354,7 @@ static struct prefs_list {
 	{ "SnapDistance", pr_real, &snapdistance, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupSD },
 	{ "JoinSnap", pr_real, &joinsnap, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupJS },
 	{ "CopyMetaData", pr_bool, &copymetadata, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupCMD },
+	{ "UndoDepth", pr_int, &maxundoes, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupUndo },
 	{ NULL }
 },
  args_list[] = {

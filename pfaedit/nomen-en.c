@@ -1365,6 +1365,7 @@ static char *str_PrefsPopupPCE[] = "When loading a truetype or opentype font whi
 static char *str_PrefsPopupXRF[] = "When pfaedit starts up it loads display related resources from a\nproperty on the screen. Sometimes it is useful to be able to store\nthese resources in a file. These resources are only read at start\nup, so changing this has no effect until the next time you start\npfaedit.";
 static char *str_PrefsPopupCMD[] = "When copying characters from the font view, also copy the\ncharacters' metadata (name, encoding, comment, etc)."
 static char *str_PrefsPopupAGA = "Apple and MS/Adobe differ about the format of truetype and opentype files\nThis controls the default setting of the Apple checkbox in the File->Generate Font dlg.\nThe main differences are:\n The requirements for the 'postscript' name in the name table conflict\n Bitmap data are stored in different tables\n Scaled composit characters are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop"
+static char *str_PrefsPopupUndo = "The maximum number of Undoes/Redoes stored in a character";
 static char *str_Generic[] = "Generic";
 static char *str_PrefsFontInfo[] = "Font Info";
 static char *str_PrefsApps[] = "Apps";
