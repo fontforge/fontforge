@@ -37,8 +37,10 @@ static void ImportPS(CharView *cv,char *path) {
 return;
     spl = SplinePointListInterpretPS(ps);
     fclose(ps);
-    if ( spl==NULL )
+    if ( spl==NULL ) {
+	GDrawError( "I'm sorry this file is too complex for me to understand");
 return;
+    }
     for ( espl=spl; espl->next!=NULL; espl = espl->next );
     CVPreserveState(cv);
     espl->next = *cv->heads[cv->drawmode];
