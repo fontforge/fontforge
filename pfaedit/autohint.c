@@ -297,6 +297,7 @@ void FindBlues( SplineFont *sf, real blues[14], real otherblues[10]) {
 void QuickBlues(SplineFont *_sf, BlueData *bd) {
     real xheight = -1e10, caph = -1e10, ascent = -1e10, descent = 1e10, max, min;
     real xheighttop = -1e10, caphtop = -1e10;
+    real numh = -1e10, numhtop = -1e10;
     real base = -1e10, basebelow = -1e10;
     SplineFont *sf;
     SplinePoint *sp;
@@ -316,6 +317,11 @@ void QuickBlues(SplineFont *_sf, BlueData *bd) {
 	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
 	    int enc = sf->chars[i]->unicodeenc;
 	    if ( enc=='I' || enc=='O' || enc=='x' || enc=='o' || enc=='p' || enc=='l' ||
+/* Jean-Christophe Dubacq points out that x-height should be calculated from */
+/*  various characters and not just x and o. Italic "x"s often have strange */
+/*  shapes */
+		    enc=='u' || enc=='v' || enc=='w' || enc=='y' || enc=='z' ||
+		    enc=='1' || enc=='0' ||
 		    enc==0x399 || enc==0x39f || enc==0x3ba || enc==0x3bf || enc==0x3c1 || enc==0x3be || enc==0x3c7 ||
 		    enc==0x41f || enc==0x41e || enc==0x43e || enc==0x43f || enc==0x440 || enc==0x452 || enc==0x445 ) {
 		t = sf->chars[i];
@@ -354,9 +360,15 @@ void QuickBlues(SplineFont *_sf, BlueData *bd) {
 		    } else {
 			if ( enc=='I' ) { caph = max; base = min; }
 			else if ( enc=='O' ) { caphtop = max; basebelow = min; }
-			else if ( enc=='x' ) xheight = max;
-			else if ( enc=='o' ) xheighttop = max;
-			else if ( enc=='l' ) ascent = max;
+			else if ( enc=='1' ) numh = max;
+			else if ( enc=='0' ) numhtop = max;
+			else if ( enc=='x' || enc=='o' || enc=='u' || enc=='v' ||
+				enc =='w' || enc=='y' || enc=='z' ) {
+			    if ( xheighttop==-1e10 ) xheighttop = max;
+			    if ( xheight==-1e10 ) xheight = max;
+			    if ( max > xheighttop ) xheighttop = max;
+			    else if ( max<xheight && max>20 ) xheight = max;
+			} else if ( enc=='l' ) ascent = max;
 			else descent = min;
 		    }
 		}
@@ -371,6 +383,7 @@ void QuickBlues(SplineFont *_sf, BlueData *bd) {
     if ( xheighttop<xheight ) xheighttop = xheight; else if ( xheight==-1e10 ) xheight=xheighttop;
     bd->xheight = xheight; bd->xheighttop = xheighttop;
     bd->caph = caph; bd->caphtop = caphtop;
+    bd->numh = numh; bd->numhtop = numhtop;
     bd->ascent = ascent; bd->descent = descent;
     bd->base = base; bd->basebelow = basebelow;
 }
@@ -854,6 +867,13 @@ return;
 return;
 }
 
+struct pendinglist {
+    struct pendinglist *next;
+    EI *apt, *e;
+    int checka;
+    real otherpos, mpos;
+};
+
 static StemInfo *StemAddBrief(StemInfo *stems,EI *apt,EI *e,
 	real mstart, real mend, int major) {
     StemInfo *new;
@@ -867,22 +887,41 @@ static StemInfo *StemAddBrief(StemInfo *stems,EI *apt,EI *e,
 	mend = temp;
     }
     new = StemsFind(stems,apt,e,major);
-    if ( new->where==NULL )
+    if ( new->where==NULL ) {
 	stems = StemInsert(stems,new);
-    else if ( new->reordered )
+    } else if ( new->reordered )
 	stems = HintCleanup(stems,false);
     _StemAddBrief(new,mstart,mend);
 return( stems );
 }
 
-static StemInfo *StemAddUpdate(StemInfo *stems,EI *apt,EI *e, int i, int major) {
+static StemInfo *StemAddUpdate(StemInfo *stems,EI *apt,EI *e, int i, int major,
+	struct pendinglist *pendings) {
     StemInfo *new = StemsFind(stems,apt,e,major);
     HintInstance *hi;
     real up, down;
+    struct pendinglist *p;
+    int begun = i;
 
-    if ( new->where==NULL )
+    if ( new->where==NULL ) {
+	if ( !new->haspointleft || !new->haspointright ) {
+	    for ( p=pendings; p!=NULL; p=p->next )
+		if ( p->apt==apt && p->e==e ) {
+		    if ( !new->haspointleft && p->checka ) {
+			new->width += new->start-p->otherpos;
+			new->start = p->otherpos;
+			new->haspointleft = true;
+			begun = p->mpos;
+		    } else if ( !new->haspointright && !p->checka ) {
+			new->width = p->otherpos-new->start;
+			new->haspointright = true;
+			begun = p->mpos;
+		    }
+		}
+	    new->haspoints = new->haspointleft && new->haspointright;
+	}
 	stems = StemInsert(stems,new);
-    else {
+    } else {
 	if ( new->reordered )
 	    stems = HintCleanup(stems,false);
 	if ( new->where->end>=i ) {
@@ -893,10 +932,13 @@ return(stems);
     if ( new->where==NULL || (new->where->closed && new->where->end<i-1) ) {
 	if ( (!apt->spline->from->nonextcp || !apt->spline->to->noprevcp ||
 		!e->spline->from->nonextcp || !e->spline->to->noprevcp ) &&
-		IsNearHV(apt,e,i,&up,&down,major))
+		IsNearHV(apt,e,i,&up,&down,major)) {
+	    if ( down<0 && i+down>begun ) down = begun-i;
+	    else if ( up<0 && i+up>begun ) up = begun-i;
 return( StemAddBrief(stems,apt,e,i+down,i+up,major));
+	}
 	hi = chunkalloc(sizeof(HintInstance));
-	hi->begin = i;
+	hi->begin = begun;
 	hi->end = i;
 	hi->next = new->where;
 	new->where = hi;
@@ -907,13 +949,6 @@ return( StemAddBrief(stems,apt,e,i+down,i+up,major));
     }
 return( stems );
 }
-
-struct pendinglist {
-    struct pendinglist *next;
-    EI *apt, *e;
-    int checka;
-    real otherpos, mpos;
-};
 
 static void PendingListFree( struct pendinglist *pl ) {
     struct pendinglist *n;
@@ -1577,7 +1612,7 @@ static StemInfo *ELFindStems(EIList *el, int major, DStemInfo **dstems, MinimumD
 			((e->hup==e->vup && e->hvbottom) ||
 			 (e->hup!=e->vup && e->hvtop)) ) );
 	    if ( ahv && ehv )
-		stems = StemAddUpdate(stems,apt,e,el->low+i,major);
+		stems = StemAddUpdate(stems,apt,e,el->low+i,major,pendings);
 	    else if ( ahv && IsNearHV(apt,e,i+el->low,&up,&down,major))
 		stems = StemAddBrief(stems,apt,e,el->low+i+down,el->low+i+up,major);
 	    else if ( ehv && IsNearHV(e,apt,i+el->low,&up,&down,major))
@@ -2015,7 +2050,7 @@ static StemInfo *CheckForGhostHints(StemInfo *stems,SplineChar *sc) {
     Spline *spline, *first;
     real base, width;
 
-    /* Get the two alignment zones we care most about */
+    /* Get the alignment zones we care most about */
     QuickBlues(sf,&bd);
 
     /* look for any stems stretching from one zone to another and remove them */
@@ -2025,9 +2060,11 @@ static StemInfo *CheckForGhostHints(StemInfo *stems,SplineChar *sc) {
     for ( prev=NULL, s=stems; s!=NULL; s=snext ) {
 	snext = s->next;
 	if (( s->start==0 || (s->start>=bd.caph && s->start<=bd.caphtop) ||
+		(s->start>=bd.numh && s->start<=bd.numhtop) ||
 		(s->start>=bd.xheight && s->start<=bd.xheighttop) || s->start==bd.descent ) &&
 		(s->start+s->width==0 ||
 		 (s->start+s->width>=bd.caph && s->start+s->width<=bd.caphtop) ||
+		 (s->start+s->width>=bd.numh && s->start+s->width<=bd.numhtop) ||
 		 (s->start+s->width>=bd.xheight  && s->start+s->width<=bd.xheighttop) ||
 		 s->start+s->width==bd.descent)) {
 	    if ( prev==NULL )
@@ -2048,6 +2085,7 @@ static StemInfo *CheckForGhostHints(StemInfo *stems,SplineChar *sc) {
 	    base = spline->from->me.y;
 	    if ( spline->knownlinear && base == spline->to->me.y &&
 		    (base == 0 || (base >= bd.xheight && base<=bd.xheighttop) ||
+		     (base>=bd.numh && base<=bd.numhtop) ||
 		     (base>=bd.caph && base<=bd.caphtop) || base==bd.descent ) &&
 		    spline->from->prev!=NULL && spline->to->next!=NULL &&
 		    (spline->from->prev->from->me.y > base) ==
@@ -3001,6 +3039,21 @@ static void FigureStems( SplineFont *sf, real snaps[12], real cnts[12],
     }
 
     if ( cnt>12 ) {
+	/* Merge width windows */
+	int windsize=3, j;
+	for ( i=smin; i<=smax; ++i ) if ( stemwidths[i]!=0 ) {
+	    if ( (j = i-windsize)<0 ) j=0;
+	    for ( ; j<smax && j<=i+windsize; ++j )
+		if ( stemwidths[i]<stemwidths[j] )
+	    break;
+	    if ( j==smax || j>i+windsize ) {
+		if ( (j = i-windsize)<0 ) j=0;
+		for ( ; j<smax && j<=i+windsize; ++j ) if ( j!=i ) {
+		    stemwidths[i] += stemwidths[j];
+		    stemwidths[j] = 0;
+		}
+	    }
+	}
 	/* Merge adjacent widths */
 	for ( i=smin; i<=smax; ++i ) {
 	    if ( stemwidths[i]!=0 && i<=smax-1 && stemwidths[i+1]!=0 ) {

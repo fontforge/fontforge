@@ -93,11 +93,12 @@ typedef struct dbounds {
 } DBounds;
 
 typedef struct bluedata {
-    real xheight, xheighttop;		/* height of "x" and "o" */
+    real xheight, xheighttop;		/* height of "x" and "o" (u,v,w,x,y,z) */
     real caph, caphtop;			/* height of "I" and "O" */
     real base, basebelow;		/* bottom of "I" and "O" */
     real ascent;			/* height of "l" */
     real descent;			/* depth of "p" */
+    real numh, numhtop;			/* height of "1" and "0" */
 } BlueData;
 
 typedef struct bdffloat {

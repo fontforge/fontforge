@@ -797,6 +797,10 @@ static void ContinueValue(struct fontparse *fp, struct psdict *dict, char *line)
 		else
 	    break;
 	    }
+	    /* In some URW fonts (Nimbus Sans L, n019003l) we get a complex */
+	    /*  expression rather than just an array. This is ok. The expression */
+	    /*  converts itself into an array. We could just truncate to the */
+	    /*  default array, but I don't see any reason to do so */
 	    dict->values[dict->next] = copyn(fp->vbuf,fp->vpt-fp->vbuf);
 	    ++dict->next;
 	    fp->vpt = fp->vbuf;
