@@ -27,7 +27,7 @@ void GProgressChangeLine2R(int line2r) {}
 void GProgressChangeTotal(int tot) { }
 void GProgressChangeStages(int stages) { }
 int GWidgetAskR(int title, int *answers, int def, int cancel,int question,...) { return cancel; }
-SplineFont *LoadSplineFont(char *filename) { return NULL; }
+SplineFont *LoadSplineFont(char *filename, enum openflags of) { return NULL; }
 int SFReencodeFont(SplineFont *sf,enum charset new_map) { return 0 ; }
 void LinearApproxFree(LinearApprox *la) {}
 SplineFont *SplineFontNew(void) {return NULL; }

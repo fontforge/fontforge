@@ -492,7 +492,7 @@ return;
     if ( old->changed )
 	if ( !RevertAskChanged(old->fontname,old->origname))
 return;
-    temp = ReadSplineFont(old->origname);
+    temp = ReadSplineFont(old->origname,0);
     if ( temp==NULL ) {
 return;
     }
@@ -2302,7 +2302,7 @@ return;
     filename = GetPostscriptFontName(NULL,false);
     if ( filename==NULL )
 return;
-    new = LoadSplineFont(filename);
+    new = LoadSplineFont(filename,0);
     free(filename);
     if ( new==NULL )
 return;
@@ -4427,7 +4427,7 @@ return( sf );
 
 /* This does not check currently existing fontviews, and should only be used */
 /*  by LoadSplineFont (which does) and by RevertFile (which knows what it's doing) */
-SplineFont *ReadSplineFont(char *filename) {
+SplineFont *ReadSplineFont(char *filename,enum openflags openflags) {
     SplineFont *sf;
     unichar_t ubuf[150];
     char buf[1500];
@@ -4581,7 +4581,9 @@ return( NULL );
 	sprintf( buf, "%s %s", compressors[i].recomp, filename );
 	system(buf);
     }
-    if ( !fromsfd && sf!=NULL && (sf->pfminfo.fstype&0xff)==0x0002 ) {
+    if ( (openflags&of_fstypepermitted) && sf!=NULL && (sf->pfminfo.fstype&0xff)==0x0002 ) {
+	/* Ok, they have told us from a script they have access to the font */
+    } else if ( !fromsfd && sf!=NULL && (sf->pfminfo.fstype&0xff)==0x0002 ) {
 	static int buts[] = { _STR_Yes, _STR_No, 0 };
 	if ( GWidgetAskR(_STR_RestrictedFont,buts,1,1,_STR_RestrictedRightsFont)==1 ) {
 	    SplineFontFree(sf);
@@ -4612,7 +4614,7 @@ static char *ToAbsolute(char *filename) {
 return( copy(buffer));
 }
 
-SplineFont *LoadSplineFont(char *filename) {
+SplineFont *LoadSplineFont(char *filename,enum openflags openflags) {
     FontView *fv;
     SplineFont *sf;
     char *pt, *ept, *tobefreed1=NULL, *tobefreed2=NULL;
@@ -4681,7 +4683,7 @@ return( NULL );
 	filename = tobefreed2 = ToAbsolute(filename);
 
     if ( sf==NULL )
-	sf = ReadSplineFont(filename);
+	sf = ReadSplineFont(filename,openflags);
 
     free(tobefreed1);
     free(tobefreed2);
@@ -4689,7 +4691,7 @@ return( sf );
 }
 
 FontView *ViewPostscriptFont(char *filename) {
-    SplineFont *sf = LoadSplineFont(filename);
+    SplineFont *sf = LoadSplineFont(filename,0);
     if ( sf==NULL )
 return( NULL );
 #if 0

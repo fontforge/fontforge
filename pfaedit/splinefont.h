@@ -493,6 +493,7 @@ enum style_flags { sf_bold = 1, sf_italic = 2, sf_underline = 4, sf_outline = 8,
 	sf_shadow = 0x10, sf_condense = 0x20, sf_extend = 0x40 };
 
 enum ttf_flags { ttf_flag_shortps = 1, ttf_flag_nohints = 2 };
+enum openflags { of_fstypepermitted=1 };
 
 struct fontdict;
 struct pschars;
@@ -727,8 +728,8 @@ extern SplineFont *_SFReadTTF(FILE *ttf,int flags,char *filename);
 extern SplineFont *SFReadTTF(char *filename,int flags);
 extern SplineFont *CFFParse(FILE *temp,int len,char *fontsetname);
 extern SplineFont *SFReadMacBinary(char *filename);
-extern SplineFont *LoadSplineFont(char *filename);
-extern SplineFont *ReadSplineFont(char *filename);	/* Don't use this, use LoadSF instead */
+extern SplineFont *LoadSplineFont(char *filename,enum openflags);
+extern SplineFont *ReadSplineFont(char *filename,enum openflags);	/* Don't use this, use LoadSF instead */
 extern uint16 MacStyleCode( SplineFont *sf );
 
 extern const char *UnicodeRange(int unienc);

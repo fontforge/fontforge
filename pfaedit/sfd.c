@@ -1974,7 +1974,7 @@ return(NULL);
 	    if ( pt<tok+sizetok-2 )
 		*pt++ = ch;
 	*pt = '\0';
-	sf = LoadSplineFont(tok);
+	sf = LoadSplineFont(tok,0);
     } else {
 	sf = SplineFontNew();
 	sf->onlybitmaps = false;

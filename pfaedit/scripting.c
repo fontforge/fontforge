@@ -547,12 +547,18 @@ return( fv );
 
 static void bOpen(Context *c) {
     SplineFont *sf;
+    int openflags=0;
 
-    if ( c->a.argc!=2 )
+    if ( c->a.argc!=2 && c->a.argc!=3 )
 	error( c, "Wrong number of arguments to Open");
     else if ( c->a.vals[1].type!=v_str )
 	error( c, "Open expects a filename" );
-    sf = LoadSplineFont(c->a.vals[1].u.sval);
+    else if ( c->a.argc==3 ) {
+	if ( c->a.vals[2].type!=v_int )
+	    error( c, "Open expects an integer for second argument" );
+	openflags = c->a.vals[2].u.ival;
+    }
+    sf = LoadSplineFont(c->a.vals[1].u.sval,openflags);
     if ( sf==NULL )
 	errors(c, "Failed to open", c->a.vals[1].u.sval);
     if ( sf->fv!=NULL )
@@ -1427,12 +1433,18 @@ static void bBuildAccented(Context *c) {
 
 static void bMergeFonts(Context *c) {
     SplineFont *sf;
+    int openflags=0;
 
-    if ( c->a.argc!=2 )
-	error( c, "Wrong number of arguments to MergeFonts");
-    if ( c->a.vals[1].type!=v_str )
-	error(c,"Bad argument type in MergeFonts");
-    sf = LoadSplineFont(c->a.vals[1].u.sval);
+    if ( c->a.argc!=2 && c->a.argc!=3 )
+	error( c, "Wrong number of arguments to Open");
+    else if ( c->a.vals[1].type!=v_str )
+	error( c, "MergeFonts expects a filename" );
+    else if ( c->a.argc==3 ) {
+	if ( c->a.vals[2].type!=v_int )
+	    error( c, "MergeFonts expects an integer for second argument" );
+	openflags = c->a.vals[2].u.ival;
+    }
+    sf = LoadSplineFont(c->a.vals[1].u.sval,openflags);
     if ( sf==NULL )
 	errors(c,"Can't find font", c->a.vals[1].u.sval);
     MergeFont(c->curfv,sf);
