@@ -1,17 +1,17 @@
 Name:        pfaedit
-Version:     030730
+Version:     031020
 Release:     1
 Summary:     A PostScript font editor
 Copyright:   BSD
 Group:       Applications/Publishing
 Icon:        pfaicon.gif
 Source0:     http://pfaedit.sourceforge.net/pfaedit_full-%{version}.tgz
+Source1:     pfaedit.desktop
 Url:         http://pfaedit.sourceforge.net/
 Vendor:      George Williams <gww@silcom.com>, Scott Pakin <pakin@uiuc.edu>
 Prefix:      /usr/local
 BuildRoot:   /var/tmp/%{name}-%{version}
 BuildPreReq: libpng-devel, libungif-devel, libuninameslist, libxml2
-#BuildPreReq: libjpeg-devel, libtiff-devel, libpng-devel, libungif-devel, freetype, libxml2
 
 %description
 PfaEdit allows you to edit outline and bitmap fonts.  You can create
@@ -23,7 +23,7 @@ some Type 0s), TrueType, OpenType (Type2), CID-keyed and SVG fonts.
 %setup -T -b 0 -n pfaedit
 
 %build
-%configure
+configure --with-regular-link --with-freetype-bytecode=no
 make
 
 %install
