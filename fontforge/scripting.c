@@ -2927,7 +2927,8 @@ static void bCIDFlattenByCMap(Context *c) {
     else if ( c->a.vals[1].type!=v_str )
 	error( c, "Argument must be a filename");
     
-    SFFlattenByCMap(sf,c->a.vals[1].u.sval);
+    if ( !SFFlattenByCMap(sf,c->a.vals[1].u.sval))
+	errors( c, "Can't find (or can't parse) cmap file",c->a.vals[1].u.sval);
 }
 
 /* **** Info routines **** */
