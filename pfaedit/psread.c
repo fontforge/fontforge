@@ -2261,44 +2261,63 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 	    while ( sp>base+2 ) {
 		dx = dy = dx2 = dy2 = dx3 = dy3 = 0;
 		if ( v==8 || v==25 || v==24 ) {
-		    if ( sp<6+base )
+		    if ( sp<6+base ) {
 			fprintf(stderr, "Stack underflow on rrcurveto in %s\n", name );
-		    dx = stack[base++];
-		    dy = stack[base++];
-		    dx2 = stack[base++];
-		    dy2 = stack[base++];
-		    dx3 = stack[base++];
-		    dy3 = stack[base++];
-		} else if ( v==27 ) {		/* hhcurveto */
-		    if ( sp<4+base ) fprintf(stderr, "Stack underflow on hhcurveto in %s\n", name );
-		    if ( (sp-base)&1 ) dy = stack[base++];
-		    dx = stack[base++];
-		    dx2 = stack[base++];
-		    dy2 = stack[base++];
-		    dx3 = stack[base++];
-		} else if ( v==26 ) {		/* vvcurveto */
-		    if ( sp<4+base ) fprintf(stderr, "Stack underflow on hhcurveto in %s\n", name );
-		    if ( (sp-base)&1 ) dx = stack[base++];
-		    dy = stack[base++];
-		    dx2 = stack[base++];
-		    dy2 = stack[base++];
-		    dy3 = stack[base++];
-		} else if ( (v==31 && !(polarity&1)) || (v==30 && (polarity&1)) ) {
-		    if ( sp<4+base ) fprintf(stderr, "Stack underflow on hvcurveto in %s\n", name );
-		    dx = stack[base++];
-		    dx2 = stack[base++];
-		    dy2 = stack[base++];
-		    dy3 = stack[base++];
-		    if ( sp==base+1 )
+			base = sp;
+		    } else {
+			dx = stack[base++];
+			dy = stack[base++];
+			dx2 = stack[base++];
+			dy2 = stack[base++];
 			dx3 = stack[base++];
-		} else /*if ( (v==30 && !(polarity&1)) || (v==31 && (polarity&1)) )*/ {
-		    if ( sp<4+base ) fprintf(stderr, "Stack underflow on vhcurveto in %s\n", name );
-		    dy = stack[base++];
-		    dx2 = stack[base++];
-		    dy2 = stack[base++];
-		    dx3 = stack[base++];
-		    if ( sp==base+1 )
 			dy3 = stack[base++];
+		    }
+		} else if ( v==27 ) {		/* hhcurveto */
+		    if ( sp<4+base ) {
+			fprintf(stderr, "Stack underflow on hhcurveto in %s\n", name );
+			base = sp;
+		    } else {
+			if ( (sp-base)&1 ) dy = stack[base++];
+			dx = stack[base++];
+			dx2 = stack[base++];
+			dy2 = stack[base++];
+			dx3 = stack[base++];
+		    }
+		} else if ( v==26 ) {		/* vvcurveto */
+		    if ( sp<4+base ) {
+			fprintf(stderr, "Stack underflow on hhcurveto in %s\n", name );
+			base = sp;
+		    } else {
+			if ( (sp-base)&1 ) dx = stack[base++];
+			dy = stack[base++];
+			dx2 = stack[base++];
+			dy2 = stack[base++];
+			dy3 = stack[base++];
+		    }
+		} else if ( (v==31 && !(polarity&1)) || (v==30 && (polarity&1)) ) {
+		    if ( sp<4+base ) {
+			fprintf(stderr, "Stack underflow on hvcurveto in %s\n", name );
+			base = sp;
+		    } else {
+			dx = stack[base++];
+			dx2 = stack[base++];
+			dy2 = stack[base++];
+			dy3 = stack[base++];
+			if ( sp==base+1 )
+			    dx3 = stack[base++];
+		    }
+		} else /*if ( (v==30 && !(polarity&1)) || (v==31 && (polarity&1)) )*/ {
+		    if ( sp<4+base ) {
+			fprintf(stderr, "Stack underflow on vhcurveto in %s\n", name );
+			base = sp;
+		    } else {
+			dy = stack[base++];
+			dx2 = stack[base++];
+			dy2 = stack[base++];
+			dx3 = stack[base++];
+			if ( sp==base+1 )
+			    dy3 = stack[base++];
+		    }
 		}
 		++polarity;
 		if ( cur!=NULL && cur->first!=NULL && (cur->first!=cur->last || cur->first->next==NULL) ) {

@@ -1337,6 +1337,11 @@ BDFFont *SplineFontPieceMeal(SplineFont *sf,int pixelsize,int flags,void *ftc) {
 	SplineFontQuickConservativeBounds(sf,&bb);
 	if ( bb.maxy<sf->ascent ) bb.maxy = sf->ascent;
 	if ( bb.miny>-sf->descent ) bb.miny = -sf->descent;
+	/* Ignore absurd values */
+	if ( bb.maxy>10*(sf->ascent+sf->descent) ) bb.maxy = 2*(sf->ascent+sf->descent);
+	if ( bb.maxx>10*(sf->ascent+sf->descent) ) bb.maxx = 2*(sf->ascent+sf->descent);
+	if ( bb.miny<-10*(sf->ascent+sf->descent) ) bb.miny = -2*(sf->ascent+sf->descent);
+	if ( bb.minx<-10*(sf->ascent+sf->descent) ) bb.minx = -2*(sf->ascent+sf->descent);
 	scale = pixelsize/ (real) (bb.maxy-bb.miny);
 	bdf->ascent = rint(bb.maxy*scale);
 	truesize = rint( (sf->ascent+sf->descent)*scale );
