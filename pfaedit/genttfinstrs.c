@@ -62,6 +62,7 @@ int TTF__getcvtval(SplineFont *sf,int val) {
 return( i );
     }
     if ( sizeof(uint16)*i>=cvt_tab->maxlen ) {
+	if ( cvt_tab->maxlen==0 ) cvt_tab->maxlen = cvt_tab->len;
 	cvt_tab->maxlen += 200;
 	cvt_tab->data = grealloc(cvt_tab->data,cvt_tab->maxlen);
     }
@@ -1717,4 +1718,6 @@ return;
     free(touched);
     free(bp);
     free(contourends);
+
+    SCMarkInstrDlgAsChanged(sc);
 }
