@@ -29,10 +29,14 @@
 #include <ustring.h>
 
 #ifndef FREETYPE_HAS_DEBUGGER
-void CVDebugReInit(CharView *cv,int restart_debug) {
+void CVDebugReInit(CharView *cv,int restart_debug,int debug_fpgm) {
 }
 
 void CVDebugFree(DebugView *dv) {
+}
+
+int DVChar(DebugView *dv, GEvent *event) {
+return( false );
 }
 #else
 #include <ft2build.h>
