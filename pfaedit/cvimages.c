@@ -1294,7 +1294,7 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
     GTextInfo label[9];
     struct gfc_data d;
     int i, format;
-    int bs = GIntGetResource(_NUM_Buttonsize), bsbigger, totwid;
+    int bs = GIntGetResource(_NUM_Buttonsize), bsbigger, totwid, scalewid;
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_restrict;
@@ -1306,9 +1306,9 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
     pos.x = pos.y = 0;
     totwid = 223;
     if ( fv!=NULL ) totwid += 60;
-    totwid = GGadgetScale(totwid);
-    bsbigger = 3*bs+4*14>totwid; totwid = bsbigger?3*bs+4*12:totwid;
-    pos.width = GDrawPointsToPixels(NULL,totwid);
+    scalewid = GGadgetScale(totwid);
+    bsbigger = 3*bs+4*14>scalewid; scalewid = bsbigger?3*bs+4*12:scalewid;
+    pos.width = GDrawPointsToPixels(NULL,scalewid);
     pos.height = GDrawPointsToPixels(NULL,255);
     gw = GDrawCreateTopWindow(NULL,&pos,e_h,&d,&wattrs);
 

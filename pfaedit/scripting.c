@@ -4769,11 +4769,16 @@ struct sd_data {
     int done;
     FontView *fv;
     GWindow gw;
+    int oldh;
 };
 
 #define SD_Width	250
 #define SD_Height	270
 #define CID_Script	1001
+#define CID_Box		1002
+#define CID_OK		1003
+#define CID_Call	1004
+#define CID_Cancel	1005
 
 static int SD_Call(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
@@ -4865,6 +4870,26 @@ return( false );
     } else if ( event->type == et_map ) {
 	/* Above palettes */
 	GDrawRaise(gw);
+    } else if ( event->type == et_resize ) {
+	struct sd_data *sd = GDrawGetUserData(gw);
+	GRect newsize, gpos;
+	int space;
+	GDrawGetSize(gw,&newsize);
+	GGadgetGetSize(GWidgetGetControl(gw,CID_Script),&gpos);
+	space = sd->oldh - gpos.height;
+	GGadgetResize(GWidgetGetControl(gw,CID_Box),newsize.width-4,newsize.height-4);
+	GGadgetResize(GWidgetGetControl(gw,CID_Script),newsize.width-2*gpos.x,newsize.height-space);
+	GGadgetGetSize(GWidgetGetControl(gw,CID_Call),&gpos);
+	space = sd->oldh - gpos.y;
+	GGadgetMove(GWidgetGetControl(gw,CID_Call),gpos.x,newsize.height-space);
+	GGadgetGetSize(GWidgetGetControl(gw,CID_OK),&gpos);
+	space = sd->oldh - gpos.y;
+	GGadgetMove(GWidgetGetControl(gw,CID_OK),gpos.x,newsize.height-space);
+	GGadgetGetSize(GWidgetGetControl(gw,CID_Cancel),&gpos);
+	space = sd->oldh - gpos.y;
+	GGadgetMove(GWidgetGetControl(gw,CID_Cancel),gpos.x,newsize.height-space);
+	sd->oldh = newsize.height;
+	GDrawRequestExpose(gw,NULL,false);
     }
 return( true );
 }
@@ -4892,7 +4917,7 @@ void ScriptDlg(FontView *fv) {
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GDrawPointsToPixels(NULL,GGadgetScale(SD_Width));
-	pos.height = GDrawPointsToPixels(NULL,SD_Height);
+	sd.oldh = pos.height = GDrawPointsToPixels(NULL,SD_Height);
 	gw = GDrawCreateTopWindow(NULL,&pos,sd_e_h,&sd,&wattrs);
 
 	memset(&gcd,0,sizeof(gcd));
@@ -4912,6 +4937,7 @@ void ScriptDlg(FontView *fv) {
 	gcd[1].gd.mnemonic = 'O';
 	gcd[1].gd.label = &label[1];
 	gcd[1].gd.handle_controlevent = SD_OK;
+	gcd[1].gd.cid = CID_OK;
 	gcd[1].creator = GButtonCreate;
 
 	gcd[2].gd.pos.x = -25; gcd[2].gd.pos.y = SD_Height-32;
@@ -4922,6 +4948,7 @@ void ScriptDlg(FontView *fv) {
 	gcd[2].gd.label = &label[2];
 	gcd[2].gd.mnemonic = 'C';
 	gcd[2].gd.handle_controlevent = SD_Cancel;
+	gcd[2].gd.cid = CID_Call;
 	gcd[2].creator = GButtonCreate;
 
 	gcd[3].gd.pos.x = (SD_Width-GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor))/2; gcd[3].gd.pos.y = SD_Height-40;
@@ -4932,11 +4959,13 @@ void ScriptDlg(FontView *fv) {
 	gcd[3].gd.label = &label[3];
 	gcd[3].gd.mnemonic = 'a';
 	gcd[3].gd.handle_controlevent = SD_Call;
+	gcd[3].gd.cid = CID_Cancel;
 	gcd[3].creator = GButtonCreate;
 
 	gcd[4].gd.pos.x = 2; gcd[4].gd.pos.y = 2;
 	gcd[4].gd.pos.width = pos.width-4; gcd[4].gd.pos.height = pos.height-4;
 	gcd[4].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
+	gcd[4].gd.cid = CID_Box;
 	gcd[4].creator = GGroupCreate;
 
 	GGadgetsCreate(gw,gcd);
