@@ -1305,6 +1305,8 @@ static void RemoveSplineChar(SplineFont *sf, int enc) {
     BitmapView *bv, *bvnext;
     RefChar *refs, *rnext;
     FontView *fvs;
+    KernPair *kp, *kprev;
+    int i;
 
     if ( sc!=NULL ) {
 	if ( sc->views ) {
@@ -1341,6 +1343,20 @@ static void RemoveSplineChar(SplineFont *sf, int enc) {
 		    rnext = rf->next;
 		    if ( rf->sc==sc )
 			SCRefToSplines(&fvs->sv->sc_rpl,rf);
+		}
+	    }
+	    /* Are there any kerning pairs that look at this character? */
+	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+		for ( kprev=NULL, kp=sf->chars[i]->kerns; kp!=NULL; kprev = kp, kp=kp->next ) {
+		    if ( kp->sc==sc ) {
+			if ( kprev==NULL )
+			    sf->chars[i]->kerns = kp->next;
+			else
+			    kprev->next = kp->next;
+			kp->next = NULL;
+			KernPairsFree(kp);
+		break;
+		    }
 		}
 	    }
 	}
