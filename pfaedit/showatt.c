@@ -46,9 +46,11 @@ struct node {
     void (*build)(struct node *,struct att_dlg *);
     unichar_t *label;
     uint32 tag;
-    union {
+    union sak {
 	SplineChar *sc;
 	AnchorClass *ac;
+	KernClass *kc;
+	int index;
     } u;
     int lpos;
 };
@@ -275,6 +277,63 @@ static void BuildAnchorLists(struct node *node,struct att_dlg *att,uint32 script
 	free(base);
 	free(lig);
 	free(mkmk);
+    }
+}
+
+static void BuildKC2(struct node *node,struct att_dlg *att) {
+    KernClass *kc = node->parent->u.kc;
+    struct node *seconds;
+    int index=node->u.index,i,cnt, len;
+    char buf[32];
+    unichar_t *name;
+
+    for ( i=1,cnt=0; i<kc->second_cnt; ++i )
+	if ( kc->offsets[index*kc->second_cnt+i]!=0 && strlen(kc->seconds[i])!=0 )
+	    ++cnt;
+
+    node->children = seconds = gcalloc(cnt+1,sizeof(struct node));
+    node->cnt = cnt;
+    cnt = 0;
+    for ( i=1; i<kc->second_cnt; ++i ) if ( kc->offsets[index*kc->second_cnt+i]!=0 && strlen(kc->seconds[i])!=0 ) {
+	sprintf( buf, "%d ", kc->offsets[index*kc->second_cnt+i]);
+	len = strlen(buf)+strlen(kc->seconds[i])+1;
+	name = galloc(len*sizeof(unichar_t));
+	uc_strcpy(name,buf);
+	uc_strcat(name,kc->seconds[i]);
+	seconds[cnt].label = name;
+	seconds[cnt].parent = node;
+	seconds[cnt].build = NULL;
+	seconds[cnt++].u.index = i;
+    }
+}
+
+static void BuildKC(struct node *node,struct att_dlg *att) {
+    KernClass *kc = node->u.kc;
+    struct node *firsts;
+    int i,j,cnt,cnt2;
+
+    for ( i=1,cnt=0; i<kc->first_cnt; ++i ) {
+	for ( j=1,cnt2=0 ; j<kc->second_cnt; ++j ) {
+	    if ( kc->offsets[i*kc->second_cnt+j]!=0 )
+		++cnt2;
+	}
+	if ( cnt2 && strlen(kc->firsts[i])>0 )
+	    ++cnt;
+    }
+
+    node->children = firsts = gcalloc(cnt+1,sizeof(struct node));
+    node->cnt = cnt;
+    for ( i=1,cnt=0; i<kc->first_cnt; ++i ) {
+	for ( j=1,cnt2=0 ; j<kc->second_cnt; ++j ) {
+	    if ( kc->offsets[i*kc->second_cnt+j]!=0 )
+		++cnt2;
+	}
+	if ( cnt2==0 || strlen(kc->firsts[i])==0 )
+    continue;
+	firsts[cnt].label = uc_copy(kc->firsts[i]);
+	firsts[cnt].parent = node;
+	firsts[cnt].build = BuildKC2;
+	firsts[cnt++].u.index = i;
     }
 }
 
@@ -557,12 +616,22 @@ static void BuildGSUBfeatures(struct node *node,struct att_dlg *att) {
 
     if ( !isgsub ) {
 	if ( feat==CHR('k','e','r','n')) {
-	    BuildKerns(node,att,script,lang,BuildKerns2G,false);
+	    if ( node->u.kc == (KernClass *) -1 ) {
+		BuildKerns(node,att,script,lang,BuildKerns2G,false);
 return;
+	    } else if ( node->u.kc != NULL ) {
+		BuildKC(node,att);
+return;
+	    }
 	}
 	if ( feat==CHR('v','k','r','n')) {
-	    BuildKerns(node,att,script,lang,BuildKerns2GV,true);
+	    if ( node->u.kc == (KernClass *) -1 ) {
+		BuildKerns(node,att,script,lang,BuildKerns2GV,true);
 return;
+	    } else if ( node->u.kc != NULL ) {
+		BuildKC(node,att);
+return;
+	    }
 	}
 	for ( ac = att->sf->anchor; ac!=NULL; ac=ac->next ) {
 	    if ( feat==ac->feature_tag ) {
@@ -584,12 +653,14 @@ static void BuildGSUBlang(struct node *node,struct att_dlg *att) {
     struct node *featnodes;
     extern GTextInfo *pst_tags[];
     int haskerns=false, hasvkerns=false;
-    AnchorClass *ac, *ac2, **acs;
+    AnchorClass *ac, *ac2;
+    union sak *acs;
     SplineChar *sc;
     PST *pst;
     KernPair *kp;
     unichar_t ubuf[80];
     int isv;
+    KernClass *kc;
 
     /* Build up the list of features in this lang entry of this script in GSUB/GPOS */
     k=tot=0;
@@ -634,10 +705,10 @@ static void BuildGSUBlang(struct node *node,struct att_dlg *att) {
 				    feats = grealloc(feats,(max+=30)*sizeof(uint32));
 				if ( isv ) {
 				    feats[tot++] = CHR('v','k','r','n');
-				    hasvkerns = true;
+				    hasvkerns = tot;	/* Yes, I know tot has been incremented. I need it to be non-zero */
 				} else {
 				    feats[tot++] = CHR('k','e','r','n');
-				    haskerns = true;
+				    haskerns = tot;	/* Yes, I know tot has been incremented. I need it to be non-zero */
 				}
 		    break;
 			    }
@@ -650,9 +721,11 @@ static void BuildGSUBlang(struct node *node,struct att_dlg *att) {
     } while ( k<_sf->subfontcnt );
     acs = NULL;
     if ( !isgsub ) {
-	acs = gcalloc(max,sizeof(AnchorClass *));
+	acs = gcalloc(max,sizeof(union sak));
 	AnchorClassOrder(_sf);
-	for ( ac=_sf->anchor; ac!=NULL; ) {
+	for ( ac=_sf->anchor; ac!=NULL; ac=ac->next )
+	    ac->processed = false;
+	for ( ac=_sf->anchor; ac!=NULL; ac = ac->next ) if ( !ac->processed ) {
 	    int sli = ac->script_lang_index;
 	    struct script_record *sr = _sf->script_lang[sli];
 	    for ( l=0; sr[l].script!=0 && sr[l].script!=script; ++l );
@@ -662,18 +735,37 @@ static void BuildGSUBlang(struct node *node,struct att_dlg *att) {
 		    /* We expect to get multiple features with the same tag here */
 		    if ( tot>=max ) {
 			feats = grealloc(feats,(max+=30)*sizeof(uint32));
-			acs = grealloc(acs,max*sizeof(AnchorClass *));
+			acs = grealloc(acs,max*sizeof(union sak));
 		    }
-		    acs[tot] = ac;
+		    acs[tot].ac = ac;
 		    feats[tot++] = ac->feature_tag;
 		}
 	    }
 	    /* These all get merged together into one feature */
-	    for ( ac2 = ac->next; ac2!=NULL &&
-		    ac2->feature_tag==ac->feature_tag &&
-		    ac2->script_lang_index == ac->script_lang_index &&
-		    ac2->merge_with == ac->merge_with ; ac2 = ac2->next );
-	    ac = ac2;
+	    for ( ac2 = ac->next; ac2!=NULL ; ac2 = ac2->next ) {
+		if ( ac2->feature_tag==ac->feature_tag &&
+			ac2->script_lang_index == ac->script_lang_index &&
+			ac2->merge_with == ac->merge_with )
+		    ac2->processed = true;
+	    }
+	}
+	for ( isv = 0; isv<2; ++isv ) {
+	    for ( kc=isv ? _sf->vkerns : _sf->kerns; kc!=NULL; kc=kc->next ) {
+		struct script_record *sr = _sf->script_lang[kc->sli];
+		for ( l=0; sr[l].script!=0 && sr[l].script!=script; ++l );
+		if ( sr[l].script!=0 ) {
+		    for ( m=0; sr[l].langs[m]!=0 && sr[l].langs[m]!=lang; ++m );
+		    if ( sr[l].langs[m]!=0 ) {
+			/* We expect to get multiple features with the same tag here */
+			if ( tot>=max ) {
+			    feats = grealloc(feats,(max+=30)*sizeof(uint32));
+			    acs = grealloc(acs,max*sizeof(union sak));
+			}
+			acs[tot].kc = kc;
+			feats[tot++] = isv ? CHR('v','k','r','n') : CHR('k','e','r','n');
+		    }
+		}
+	    }
 	}
     }
 
@@ -702,10 +794,17 @@ static void BuildGSUBlang(struct node *node,struct att_dlg *att) {
 	    else
 		ubuf[7]='\0';
 	}
-	if ( acs!=NULL && acs[i]!=NULL )
-	    featnodes[i].u.ac = acs[i];
+	if ( acs!=NULL )
+	    featnodes[i].u = acs[i];
 	featnodes[i].label = u_copy(ubuf);
     }
+
+    /* We need to distinguish between kerns from our own kern pairs, and a */
+    /*  real pair positioning feature the user added itself named 'kern' */
+    if ( haskerns!=0 )
+	featnodes[haskerns-1].u.kc = (KernClass *) -1;
+    if ( hasvkerns!=0 )
+	featnodes[hasvkerns-1].u.kc = (KernClass *) -1;
 
     qsort(featnodes,tot,sizeof(struct node),compare_tag);
     node->children = featnodes;
@@ -1185,6 +1284,22 @@ return;
 	}
 	++k;
     } while ( k<_sf->subfontcnt );
+
+    if ( isgpos ) {
+	for ( isv=0; isv<2; ++isv ) {
+	    KernClass *kc;
+	    for ( kc = isv ? _sf->vkerns : _sf->kerns; kc!=NULL; kc=kc->next ) {
+		int sli = kc->sli;
+		struct script_record *sr = _sf->script_lang[sli];
+		for ( l=0; sr[l].script!=0 ; ++l ) {
+		    for ( j=0; j<script_max && scriptnodes[j].tag!=sr[l].script; ++j );
+		    if ( j<script_max )
+			scriptnodes[j].used = true;
+		}
+	    }
+	}
+    }
+		
     if ( isgpos && _sf->anchor!=NULL ) {
 	for ( ac=_sf->anchor; ac!=NULL; ac=ac->next ) {
 	    int sli = ac->script_lang_index;
@@ -1196,6 +1311,7 @@ return;
 	    }
 	}
     }
+
     /* And remove any that aren't */
     for ( i=j=0; i<script_max; ++i ) {
 	while ( i<script_max && !scriptnodes[i].used ) ++i;
@@ -1235,12 +1351,14 @@ static void BuildTop(struct att_dlg *att) {
     SplineFont *sf, *_sf = att->sf;
     int hasgsub=0, hasgpos=0, hasgdef=0;
     int hasmorx=0, haskern=0, hasvkern=0, haslcar=0, hasprop=0, hasopbd=0;
+    int haskc=0, hasvkc=0;
     int feat, set;
     struct node *tables;
     PST *pst;
     SplineChar *sc;
     int i,k,j;
     AnchorClass *ac;
+    KernClass *kc;
 
     k=0;
     do {
@@ -1282,6 +1400,12 @@ static void BuildTop(struct att_dlg *att) {
 	}
 	++k;
     } while ( k<_sf->subfontcnt );
+    for ( kc = _sf->kerns; kc!=NULL; kc=kc->next )
+	++hasvkc;
+    for ( kc = _sf->vkerns; kc!=NULL; kc=kc->next )
+	++haskc;
+    if ( haskc || hasvkc )
+	hasgpos = true;
     if ( _sf->anchor!=NULL )
 	hasgpos = true;
     for ( ac = sf->anchor; ac!=NULL; ac=ac->next ) {
@@ -1295,7 +1419,8 @@ static void BuildTop(struct att_dlg *att) {
 	tables = gcalloc(2,sizeof(struct node));
 	tables[0].label = u_copy(GStringGetResource(_STR_NoAdvancedTypography,NULL));
     } else {
-	tables = gcalloc((hasgsub||hasgpos||hasgdef)+(hasmorx||haskern||haslcar||hasopbd||hasprop)+1,sizeof(struct node));
+	tables = gcalloc((hasgsub||hasgpos||hasgdef)+
+	    (hasmorx||haskern||haslcar||hasopbd||hasprop||hasvkern||haskc||hasvkc)+1,sizeof(struct node));
 	i=0;
 	if ( hasgsub || hasgpos || hasgdef) {
 	    tables[i].label = uc_copy("OpenType Tables");
@@ -1326,13 +1451,21 @@ static void BuildTop(struct att_dlg *att) {
 	    int j = 0;
 	    tables[i].label = u_copy(GStringGetResource(_STR_AppleAdvancedTypography,NULL));
 	    tables[i].children_checked = true;
-	    tables[i].children = gcalloc(hasmorx+haskern+haslcar+hasopbd+hasprop+hasvkern+1,sizeof(struct node));
-	    tables[i].cnt = hasmorx+haskern+hasopbd+hasprop+haslcar+hasvkern;
+	    tables[i].children = gcalloc(hasmorx+haskern+haslcar+hasopbd+hasprop+hasvkern+haskc+hasvkc+1,sizeof(struct node));
+	    tables[i].cnt = hasmorx+haskern+hasopbd+hasprop+haslcar+hasvkern+haskc+hasvkc;
 	    if ( haskern ) {
-		tables[i].children[j].label = hasvkern ? uc_copy("'kern' Horizontal Kerning Sub-Table") :
+		tables[i].children[j].label = hasvkern||haskc||hasvkc ?
+				uc_copy("'kern' Horizontal Kerning Sub-Table") :
 				uc_copy("'kern' Horizontal Kerning Table");
 		tables[i].children[j].tag = CHR('k','e','r','n');
 		tables[i].children[j].build = BuildTable;
+		tables[i].children[j++].parent = &tables[i];
+	    }
+	    for ( kc = _sf->kerns; kc!=NULL; kc=kc->next ) {
+		tables[i].children[j].label = uc_copy("'kern' Horizontal Kerning Class");
+		tables[i].children[j].tag = CHR('k','e','r','n');
+		tables[i].children[j].u.kc = kc;
+		tables[i].children[j].build = BuildKC;
 		tables[i].children[j++].parent = &tables[i];
 	    }
 	    if ( hasvkern ) {
@@ -1340,6 +1473,13 @@ static void BuildTop(struct att_dlg *att) {
 				uc_copy("'kern' Vertical Kerning Table");
 		tables[i].children[j].tag = CHR('v','k','r','n');
 		tables[i].children[j].build = BuildTable;
+		tables[i].children[j++].parent = &tables[i];
+	    }
+	    for ( kc = _sf->vkerns; kc!=NULL; kc=kc->next ) {
+		tables[i].children[j].label = uc_copy("'kern' Vertical Kerning Class");
+		tables[i].children[j].tag = CHR('k','e','r','n');
+		tables[i].children[j].u.kc = kc;
+		tables[i].children[j].build = BuildKC;
 		tables[i].children[j++].parent = &tables[i];
 	    }
 	    if ( haslcar ) {
