@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 31-Jul-2003 -->
+  <!-- AP: Last modified: 3-Aug-2003 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -25,7 +25,8 @@ one format to another. PfaEdit has support for many macintosh font formats.
 Contents
 <UL>
   <LI>
-    <A HREF="overview.html"><BIG>User manual</BIG></A><BIG>.</BIG>
+    <A HREF="overview.html"><BIG>User &amp; Reference
+    manual</BIG></A><BIG>.</BIG>
   <LI>
     <A HREF="http://sourceforge.net/projects/pfaedit/">SourceForge Project page</A>
   <LI>
@@ -106,8 +107,8 @@ let me know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-030731.tgz">Download pfaedit linux-i386 Redhat 9.0
-    </A><A NAME="downloads">executable</A> Version: 31-July-2003
+    <A HREF="pfaedit-030803.tgz">Download pfaedit linux-i386 Redhat 9.0
+    </A><A NAME="downloads">executable</A> Version: 3-Aug-2003
   <LI>
     <A HREF="pfaedit-030720-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
     Version: 20-July-2003 (Redhat 9.0)
@@ -115,8 +116,9 @@ let me know when you do</A>.
     <A HREF="pfaedit-030226-1.ppc.rpm">Download pfaedit linux-ppc SUSE 7.1
     </A>binary rpm Version: 26-Feb-2003
   <LI>
-    <A HREF="pfaedit-solaris-030714.tgz">Download pfaedit Solaris 8.0
-    </A>executable Version: 14-July-2003 (no XIM support, no freetype)
+    <A HREF="pfaedit-solaris-030731.tgz">Download pfaedit Solaris 8.0
+    </A>executable Version: 31-July-2003 (no XIM support, no freetype, no SVG
+    import)
   <LI>
     <A HREF="http://packages.debian.org/unstable/x11/pfaedit.html">A debian package
     is available at the debian site.</A>
@@ -152,9 +154,9 @@ If you want to edit CID keyed fonts you probably need these
 <P>
 You can download a <A HREF="pfaedit-030720-1.src.rpm">source RPM</A>: Version:
 20-July-2003<BR>
-Or you can download the <A HREF="pfaedit_full-030731.tgz">entire source tree
+Or you can download the <A HREF="pfaedit_full-030803.tgz">entire source tree
 </A>in one .tgz file: Version
-31-July-2003<!--
+3-Aug-2003<!--
 Or you can download the following three packages. Version: 19-Jan-2002
 <UL>
 <LI>
@@ -198,18 +200,27 @@ they will not be used. If your machine doesn't have them and you want them
 they are available from:
 <UL>
   <LI>
-    <A HREF="http://www.libpng.org/pub/png/libpng.html">libpng</A> (and required
-    helper <A HREF="http://www.gzip.org/zlib/">zlib</A>)
+    Image Libraries (to allow PfaEdit to import images in those formats)
+    <UL>
+      <LI>
+	<A HREF="http://www.libpng.org/pub/png/libpng.html">libpng</A> (and required
+	helper <A HREF="http://www.gzip.org/zlib/">zlib</A>)
+      <LI>
+	<A HREF="http://www.libtiff.org/">libtiff</A>
+      <LI>
+	<A HREF="http://gnuwin32.sourceforge.net/packages/libungif.htm">libungif</A>
+      <LI>
+	<A HREF="http://www.ijg.org/">libjpeg</A>
+    </UL>
   <LI>
-    <A HREF="http://www.libtiff.org/">libtiff</A>
+    <A HREF="http://xmlsoft.org/">libxml2</A><BR>
+    To parse SVG files and fonts
   <LI>
-    <A HREF="http://gnuwin32.sourceforge.net/packages/libungif.htm">libungif</A>
+    <A HREF="http://libuninameslist.sf.net">libuninameslist</A><BR>
+    To display unicode names and annotations
   <LI>
-    <A HREF="http://www.ijg.org/">libjpeg</A>
-  <LI>
-    <A HREF="http://xmlsoft.org/">libxml2</A>
-  <LI>
-    <A HREF="http://freetype.sf.net/">freetype</A>
+    <A HREF="http://freetype.sf.net/">freetype</A><BR>
+    To do a better job rasterizing bitmaps, and to enable the truetype debugger
     <TABLE BORDER CELLPADDING="6" WIDTH="50%" ALIGN=CENTER>
       <TR>
 	<TD BGCOLOR="#ffff00">Some of PfaEdit's commands depend on your compiling
@@ -225,13 +236,6 @@ they are available from:
 	  built (there are some include files there which it depends on)</TD>
       </TR>
     </TABLE>
-</UL>
-<P>
-PfaEdit can display unicode names and annotations if the libuninameslist
-library is available.
-<UL>
-  <LI>
-    <A HREF="http://libuninameslist.sf.net">libuninameslist</A>
 </UL>
 <P>
 Normally PfaEdit depends on the X11 windowing system, but if you are just
@@ -297,7 +301,7 @@ bitmap fonts that pfaedit uses
 </H2>
 <P>
 All the documentation files in this directory bundled up into one
-<A HREF="pfaedit_htdocs-030731.tgz">tgz file</A> 31-July-2003.<BR>
+<A HREF="pfaedit_htdocs-030803.tgz">tgz file</A> 3-Aug-2003.<BR>
 If you do the following then PfaEdit will find the docs for you when you
 press F1 (ie. PfaEdit it will look in /usr/local/share/doc/pfaedit before
 it looks on the web):
