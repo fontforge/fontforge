@@ -1592,7 +1592,7 @@ return;
 	    ContinueValue(fp,NULL,line);
 return;
 	}
-	if ( endtok==NULL && strncmp(line,"end", 3)==0 ) {
+	if ( endtok==NULL && (strncmp(line,"end", 3)==0 || strncmp(line,">>",2)==0)) {
 	    fp->infi=0;
 return;
 	} else if ( endtok==NULL )
@@ -1728,7 +1728,7 @@ return;
 	else if ( mycmp("Supplement",line+1,endtok)==0 )		/* cff spec allows for copyright and notice */
 	    fp->fd->supplement = strtol(endtok,NULL,0);
     } else {
-	if ( strstr(line,"/Private")!=NULL && strstr(line,"dict")!=NULL ) {
+	if ( strstr(line,"/Private")!=NULL && (strstr(line,"dict")!=NULL || strstr(line,"<<")!=NULL )) {
 	    fp->infi = fp->inbb = fp->inmetrics = fp->inmetrics2 = false;
 	    fp->inprivate = fp->inblendprivate = fp->inblendfi = false;
 	    if ( strstr(line,"/Blend")!=NULL ) {
@@ -1740,7 +1740,7 @@ return;
 		InitDict(fp->fd->private->private,line);
 	    }
 return;
-	} else if ( strstr(line,"/FontInfo")!=NULL && strstr(line,"dict")!=NULL ) {
+	} else if ( strstr(line,"/FontInfo")!=NULL && (strstr(line,"dict")!=NULL || strstr(line,"<<")!=NULL)) {
 	    fp->inprivate = fp->inbb = fp->inmetrics = fp->inmetrics2 = false;
 	    fp->infi = fp->inblendprivate = fp->inblendfi = false;
 	    if ( strstr(line,"/Blend")!=NULL ) {
@@ -2471,7 +2471,7 @@ return;
 		fp->insubs = 1;
 		decryptagain(fp,in,rdtok);
 return;
-	    } else if ( strstr(buffer,"/Private")!=NULL && strstr(buffer,"dict")!=NULL ) {
+	    } else if ( strstr(buffer,"/Private")!=NULL && (strstr(buffer,"dict")!=NULL || strstr(buffer,"<<")!=NULL )) {
 		/* files produced by GNU fontutils have some of the same issues */
 		fp->inprivate = 1;
 		fp->infi = false;

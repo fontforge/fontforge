@@ -257,6 +257,8 @@ void SCAppendEntityLayers(SplineChar *sc, Entity *ent) {
     pos = sc->layer_cnt;
     if ( cnt==0 )
 return;
+    EntityDefaultStrokeFill(ent);
+
     sc->layers = grealloc(sc->layers,(sc->layer_cnt+cnt)*sizeof(Layer));
     for ( pos = sc->layer_cnt, e=ent; e!=NULL ; e=enext, ++pos ) {
 	enext = e->next;
