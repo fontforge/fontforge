@@ -41,6 +41,7 @@ int autohint_before_rasterize = 1;
 int ItalicConstrained=true;
 int accent_offset = 6;
 int GraveAcuteCenterBottom = 1;
+int ask_user_for_resolution = true;
 float arrowAmount=1;
 float snapdistance=3.5;
 char *BDFFoundry=NULL;
@@ -134,6 +135,7 @@ static struct prefs_list {
 	{ "DefaultScreenDpiSystem", pr_int, &oldsystem, NULL, NULL, '\0', NULL, 1 },
 	{ "DefaultOutputFormat", pr_int, &oldformatstate, NULL, NULL, '\0', NULL, 1 },
 	{ "DefaultBitmapFormat", pr_int, &oldbitmapstate, NULL, NULL, '\0', NULL, 1 },
+	{ "AskBDFResolution", pr_bool, &ask_user_for_resolution, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupBR },
 	{ NULL }
 },
  oldnames[] = {
@@ -590,11 +592,11 @@ void DoPrefs(void) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData *pgcd, gcd[5], sgcd[40];
-    GTextInfo *plabel, **list, label[5], slabel[40];
+    GGadgetCreateData *pgcd, gcd[5], sgcd[45];
+    GTextInfo *plabel, **list, label[5], slabel[45];
     GTabInfo aspects[4];
     struct pref_data p;
-    int i, gc, j, line, llen, y, y2, ii;
+    int i, gc, sgc, j, line, llen, y, y2, ii;
     char buf[20];
     static unichar_t nullstr[] = { 0 };
 
@@ -622,53 +624,53 @@ void DoPrefs(void) {
     memset(sgcd,0,sizeof(sgcd));
     memset(slabel,0,sizeof(slabel));
 
-    gc = 0;
+    sgc = 0;
     y2=5;
 
-    slabel[gc].text = (unichar_t *) _STR_MenuName;
-    slabel[gc].text_in_resource = true;
-    sgcd[gc].gd.label = &slabel[gc];
-    sgcd[gc].gd.popup_msg = GStringGetResource(_STR_ScriptMenuPopup,NULL);
-    sgcd[gc].gd.pos.x = 8;
-    sgcd[gc].gd.pos.y = y2;
-    sgcd[gc].gd.flags = gg_visible | gg_enabled;
-    sgcd[gc++].creator = GLabelCreate;
+    slabel[sgc].text = (unichar_t *) _STR_MenuName;
+    slabel[sgc].text_in_resource = true;
+    sgcd[sgc].gd.label = &slabel[sgc];
+    sgcd[sgc].gd.popup_msg = GStringGetResource(_STR_ScriptMenuPopup,NULL);
+    sgcd[sgc].gd.pos.x = 8;
+    sgcd[sgc].gd.pos.y = y2;
+    sgcd[sgc].gd.flags = gg_visible | gg_enabled;
+    sgcd[sgc++].creator = GLabelCreate;
 
-    slabel[gc].text = (unichar_t *) _STR_ScriptFile;
-    slabel[gc].text_in_resource = true;
-    sgcd[gc].gd.label = &slabel[gc];
-    sgcd[gc].gd.popup_msg = GStringGetResource(_STR_ScriptMenuPopup,NULL);
-    sgcd[gc].gd.pos.x = 110;
-    sgcd[gc].gd.pos.y = y2;
-    sgcd[gc].gd.flags = gg_visible | gg_enabled;
-    sgcd[gc++].creator = GLabelCreate;
+    slabel[sgc].text = (unichar_t *) _STR_ScriptFile;
+    slabel[sgc].text_in_resource = true;
+    sgcd[sgc].gd.label = &slabel[sgc];
+    sgcd[sgc].gd.popup_msg = GStringGetResource(_STR_ScriptMenuPopup,NULL);
+    sgcd[sgc].gd.pos.x = 110;
+    sgcd[sgc].gd.pos.y = y2;
+    sgcd[sgc].gd.flags = gg_visible | gg_enabled;
+    sgcd[sgc++].creator = GLabelCreate;
 
     y2 += 14;
 
     for ( i=0; i<SCRIPT_MENU_MAX; ++i ) {
-	sgcd[gc].gd.pos.x = 8; sgcd[gc].gd.pos.y = y2;
-	sgcd[gc].gd.flags = gg_visible | gg_enabled;
-	slabel[gc].text = script_menu_names[i]==NULL?nullstr:script_menu_names[i];
-	sgcd[gc].gd.label = &slabel[gc];
-	sgcd[gc].gd.cid = i+5000;
-	sgcd[gc++].creator = GTextFieldCreate;
+	sgcd[sgc].gd.pos.x = 8; sgcd[sgc].gd.pos.y = y2;
+	sgcd[sgc].gd.flags = gg_visible | gg_enabled;
+	slabel[sgc].text = script_menu_names[i]==NULL?nullstr:script_menu_names[i];
+	sgcd[sgc].gd.label = &slabel[sgc];
+	sgcd[sgc].gd.cid = i+5000;
+	sgcd[sgc++].creator = GTextFieldCreate;
 
-	sgcd[gc].gd.pos.x = 110; sgcd[gc].gd.pos.y = y2;
-	sgcd[gc].gd.flags = gg_visible | gg_enabled;
-	slabel[gc].text = (unichar_t *) (script_filenames[i]==NULL?"":script_filenames[i]);
-	slabel[gc].text_is_1byte = true;
-	sgcd[gc].gd.label = &slabel[gc];
-	sgcd[gc].gd.cid = i+5100;
-	sgcd[gc++].creator = GTextFieldCreate;
+	sgcd[sgc].gd.pos.x = 110; sgcd[sgc].gd.pos.y = y2;
+	sgcd[sgc].gd.flags = gg_visible | gg_enabled;
+	slabel[sgc].text = (unichar_t *) (script_filenames[i]==NULL?"":script_filenames[i]);
+	slabel[sgc].text_is_1byte = true;
+	sgcd[sgc].gd.label = &slabel[sgc];
+	sgcd[sgc].gd.cid = i+5100;
+	sgcd[sgc++].creator = GTextFieldCreate;
 
-	sgcd[gc].gd.pos.x = 210; sgcd[gc].gd.pos.y = y2;
-	sgcd[gc].gd.flags = gg_visible | gg_enabled;
-	slabel[gc].text = (unichar_t *) _STR_BrowseForFile;
-	slabel[gc].text_in_resource = true;
-	sgcd[gc].gd.label = &slabel[gc];
-	sgcd[gc].gd.cid = i+5200;
-	sgcd[gc].gd.handle_controlevent = Prefs_ScriptBrowse;
-	sgcd[gc++].creator = GButtonCreate;
+	sgcd[sgc].gd.pos.x = 210; sgcd[sgc].gd.pos.y = y2;
+	sgcd[sgc].gd.flags = gg_visible | gg_enabled;
+	slabel[sgc].text = (unichar_t *) _STR_BrowseForFile;
+	slabel[sgc].text_in_resource = true;
+	sgcd[sgc].gd.label = &slabel[sgc];
+	sgcd[sgc].gd.cid = i+5200;
+	sgcd[sgc].gd.handle_controlevent = Prefs_ScriptBrowse;
+	sgcd[sgc++].creator = GButtonCreate;
 
 	y2 += 26;
     }

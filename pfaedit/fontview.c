@@ -336,7 +336,7 @@ int _FVMenuSave(FontView *fv) {
 	    sf->onlybitmaps && sf->bitmaps!=NULL && sf->bitmaps->next==NULL ) {
 	/* If it's a single bitmap font then just save back to the bdf file */
 	FVFlattenAllBitmapSelections(fv);
-	ret = BDFFontDump(sf->origname,sf->bitmaps,EncodingName(sf->encoding_name));
+	ret = BDFFontDump(sf->origname,sf->bitmaps,EncodingName(sf->encoding_name),sf->bitmaps->res);
 	if ( ret )
 	    SplineFontSetUnChanged(sf);
     } else if ( sf->filename==NULL )

@@ -924,6 +924,7 @@ BDFFont *SplineFontToBDFHeader(SplineFont *_sf, int pixelsize, int indicate) {
     bdf->ascent = rint(sf->ascent*scale);
     bdf->descent = pixelsize-bdf->ascent;
     bdf->encoding_name = sf->encoding_name;
+    bdf->res = -1;
 return( bdf );
 }
 
@@ -1289,6 +1290,7 @@ return( SplineFontRasterize(_sf,pixelsize,true));
     bdf->ascent = rint(sf->ascent*scale);
     bdf->descent = pixelsize-bdf->ascent;
     bdf->encoding_name = sf->encoding_name;
+    bdf->res = -1;
     for ( i=0; i<max; ++i ) {
 	if ( _sf->subfontcnt!=0 ) {
 	    for ( k=0; k<_sf->subfontcnt; ++k ) if ( _sf->subfonts[k]->charcnt>i ) {
@@ -1335,6 +1337,7 @@ BDFFont *SplineFontPieceMeal(SplineFont *sf,int pixelsize,int antialias) {
     bdf->descent = pixelsize-bdf->ascent;
     bdf->encoding_name = sf->encoding_name;
     bdf->piecemeal = true;
+    bdf->res = -1;
     if ( antialias )
 	BDFClut(bdf,4);
 return( bdf );

@@ -307,12 +307,181 @@ return( 8 );
 }
 #endif
 
+static int br_e_h(GWindow gw, GEvent *event) {
+    if ( event->type==et_close ) {
+	int *done = GDrawGetUserData(gw);
+	*done = -1;
+    } else if ( event->type == et_char ) {
+return( false );
+    } else if ( event->type == et_map ) {
+	/* Above palettes */
+	GDrawRaise(gw);
+    } else if ( event->type==et_controlevent && event->u.control.subtype == et_buttonactivate ) {
+	int *done = GDrawGetUserData(gw);
+	if ( GGadgetGetCid(event->u.control.g)==1001 )
+	    *done = true;
+	else
+	    *done = -1;
+    } else if ( event->type==et_controlevent && GGadgetGetCid(event->u.control.g)==1003 ) {
+	static int first = true;
+	if ( first )
+	    first = false;
+	else
+	    GGadgetSetChecked(GWidgetGetControl(gw,1004),true);
+    }
+return( true );
+}
+
+static int AskResolution() {
+    GRect pos;
+    static GWindow gw;
+    GWindowAttrs wattrs;
+    GGadgetCreateData gcd[10];
+    GTextInfo label[10];
+    int done=-3;
+
+    if ( gw==NULL ) {
+	memset(&wattrs,0,sizeof(wattrs));
+	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+	wattrs.event_masks = ~(1<<et_charup);
+	wattrs.restrict_input_to_me = 1;
+	wattrs.undercursor = 1;
+	wattrs.cursor = ct_pointer;
+	wattrs.window_title = GStringGetResource(_STR_BDFResolution,NULL);
+	wattrs.is_dlg = true;
+	pos.x = pos.y = 0;
+	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,150));
+	pos.height = GDrawPointsToPixels(NULL,130);
+	gw = GDrawCreateTopWindow(NULL,&pos,br_e_h,&done,&wattrs);
+
+	memset(&label,0,sizeof(label));
+	memset(&gcd,0,sizeof(gcd));
+
+	label[0].text = (unichar_t *) _STR_BDFResolution;
+	label[0].text_in_resource = true;
+	gcd[0].gd.label = &label[0];
+	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 7; 
+	gcd[0].gd.flags = gg_enabled|gg_visible;
+	gcd[0].creator = GLabelCreate;
+
+	label[1].text = (unichar_t *) "75";
+	label[1].text_is_1byte = true;
+	gcd[1].gd.label = &label[1];
+	gcd[1].gd.mnemonic = '7';
+	gcd[1].gd.pos.x = 20; gcd[1].gd.pos.y = 13+7;
+	gcd[1].gd.flags = gg_enabled|gg_visible;
+	gcd[1].gd.cid = 75;
+	gcd[1].creator = GRadioCreate;
+
+	label[2].text = (unichar_t *) "100";
+	label[2].text_is_1byte = true;
+	gcd[2].gd.label = &label[2];
+	gcd[2].gd.mnemonic = '1';
+	gcd[2].gd.pos.x = 20; gcd[2].gd.pos.y = gcd[1].gd.pos.y+17; 
+	gcd[2].gd.flags = gg_enabled|gg_visible;
+	gcd[2].gd.cid = 100;
+	gcd[2].creator = GRadioCreate;
+
+	label[3].text = (unichar_t *) _STR_Guess;
+	label[3].text_in_resource = true;
+	gcd[3].gd.label = &label[3];
+	gcd[3].gd.pos.x = 20; gcd[3].gd.pos.y = gcd[2].gd.pos.y+17;
+	gcd[3].gd.flags = gg_enabled|gg_visible|gg_cb_on;
+	gcd[3].gd.cid = -1;
+	gcd[3].gd.popup_msg = GStringGetResource(_STR_GuessResPopup,NULL);
+	gcd[3].creator = GRadioCreate;
+
+	label[4].text = (unichar_t *) _STR_Other_;
+	label[4].text_in_resource = true;
+	gcd[4].gd.label = &label[4];
+	gcd[4].gd.pos.x = 20; gcd[4].gd.pos.y = gcd[3].gd.pos.y+17;
+	gcd[4].gd.flags = gg_enabled|gg_visible;
+	gcd[4].gd.cid = 1004;
+	gcd[4].creator = GRadioCreate;
+
+	label[5].text = (unichar_t *) "96";
+	label[5].text_is_1byte = true;
+	gcd[5].gd.label = &label[5];
+	gcd[5].gd.pos.x = 70; gcd[5].gd.pos.y = gcd[4].gd.pos.y-3; gcd[5].gd.pos.width = 40;
+	gcd[5].gd.flags = gg_enabled|gg_visible;
+	gcd[5].gd.cid = 1003;
+	gcd[5].creator = GTextFieldCreate;
+
+	gcd[6].gd.pos.x = 15-3; gcd[6].gd.pos.y = gcd[4].gd.pos.y+24;
+	gcd[6].gd.pos.width = -1; gcd[6].gd.pos.height = 0;
+	gcd[6].gd.flags = gg_visible | gg_enabled | gg_but_default;
+	label[6].text = (unichar_t *) _STR_OK;
+	label[6].text_in_resource = true;
+	gcd[6].gd.mnemonic = 'O';
+	gcd[6].gd.label = &label[6];
+	gcd[6].gd.cid = 1001;
+	/*gcd[6].gd.handle_controlevent = CH_OK;*/
+	gcd[6].creator = GButtonCreate;
+
+	gcd[7].gd.pos.x = -15; gcd[7].gd.pos.y = gcd[6].gd.pos.y+3;
+	gcd[7].gd.pos.width = -1; gcd[7].gd.pos.height = 0;
+	gcd[7].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+	label[7].text = (unichar_t *) _STR_Cancel;
+	label[7].text_in_resource = true;
+	gcd[7].gd.label = &label[7];
+	gcd[7].gd.mnemonic = 'C';
+	/*gcd[7].gd.handle_controlevent = CH_Cancel;*/
+	gcd[7].gd.cid = 1002;
+	gcd[7].creator = GButtonCreate;
+
+	gcd[8].gd.pos.x = 2; gcd[8].gd.pos.y = 2;
+	gcd[8].gd.pos.width = pos.width-4; gcd[8].gd.pos.height = pos.height-2;
+	gcd[8].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
+	gcd[8].creator = GGroupCreate;
+
+	GGadgetsCreate(gw,gcd);
+    }
+
+    GWidgetHidePalettes();
+    GDrawSetVisible(gw,true);
+    while ( true ) {
+	done = 0;
+	while ( !done )
+	    GDrawProcessOneEvent(NULL);
+	if ( GGadgetIsChecked(GWidgetGetControl(gw,1004)) ) {
+	    int err = false;
+	    int res = GetIntR(gw,1003,_STR_Other,&err);
+	    if ( res<10 )
+		ProtestR( _STR_Other_);
+	    else if ( !err ) {
+		GDrawSetVisible(gw,false);
+return( res );
+	    }
+    continue;
+	}
+	GDrawSetVisible(gw,false);
+	if ( done==-1 )
+return( -1 );
+	if ( GGadgetIsChecked(GWidgetGetControl(gw,75)) )
+return( 75 );
+	if ( GGadgetIsChecked(GWidgetGetControl(gw,100)) )
+return( 100 );
+	/*if ( GGadgetIsChecked(GWidgetGetControl(gw,-1)) )*/
+return( -1 );
+    }
+}
+
 static int WriteBitmaps(char *filename,SplineFont *sf, int32 *sizes) {
     char *buf = galloc(strlen(filename)+30), *pt, *pt2;
     int i;
     BDFFont *bdf;
     unichar_t *temp;
     char buffer[100];
+    int res = -1;		/* Guess depending on pixel size of font */
+    extern int ask_user_for_resolution;
+
+    if ( ask_user_for_resolution ) {
+	GProgressPauseTimer();
+	res = AskResolution();
+	GProgressResumeTimer();
+	if ( res==-2 )
+return( false );
+    }
 
     if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
 
@@ -345,7 +514,7 @@ return( false );
 	    sprintf( pt, "-%d@%d.bdf", bdf->pixelsize, BDFDepth(bdf) );
 	
 	GProgressChangeLine2(temp=uc_copy(buf)); free(temp);
-	BDFFontDump(buf,bdf,EncodingName(sf->encoding_name));
+	BDFFontDump(buf,bdf,EncodingName(sf->encoding_name),res);
 	GProgressNextStage();
     }
     free(buf);

@@ -206,8 +206,8 @@ static void BDFDumpChar(FILE *file,BDFFont *font,BDFChar *bdfc,int enc) {
     GProgressNext();
 }
 
-static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding) {
-    int avg, cnt, pnt, res;
+static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding, int res) {
+    int avg, cnt, pnt;
     char *mono;
     char family_name[80], weight_name[60], slant[10], stylename[40], squeeze[40];
     char buffer[400];
@@ -222,7 +222,9 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding) {
 	mono="M";
     else
 	mono="P";
-    if ( font->pixelsize==33 || font->pixelsize==28 || font->pixelsize==17 || font->pixelsize==14 )
+    if ( res!=-1 )
+	/* Already set */;
+    else if ( font->pixelsize==33 || font->pixelsize==28 || font->pixelsize==17 || font->pixelsize==14 )
 	res = 100;
     else
 	res = 75;
@@ -410,7 +412,7 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding) {
     fprintf( file, "CHARS %d\n", cnt );
 }
 
-int BDFFontDump(char *filename,BDFFont *font, char *encodingname) {
+int BDFFontDump(char *filename,BDFFont *font, char *encodingname, int res) {
     char buffer[300];
     FILE *file;
     int i, enc, is94x94=font->sf->encoding_name>=em_jis208 && font->sf->encoding_name<=em_gb2312;
@@ -424,7 +426,7 @@ int BDFFontDump(char *filename,BDFFont *font, char *encodingname) {
     if ( file==NULL )
 	fprintf( stderr, "Can't open %s\n", filename );
     else {
-	BDFDumpHeader(file,font,encodingname);
+	BDFDumpHeader(file,font,encodingname,res);
 	for ( i=0; i<font->charcnt; ++i ) if ( !IsntBDFChar(font->chars[i])) {
 	    enc = i;
 	    if ( is94x94 && i<96*94 )

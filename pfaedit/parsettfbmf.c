@@ -415,6 +415,7 @@ return;
 	bdf->pixelsize = sizes[i].ppem;
 	bdf->ascent = (info->ascent*bdf->pixelsize + info->emsize/2)/info->emsize;
 	bdf->descent = bdf->pixelsize - bdf->ascent;
+	bdf->res = -1;
 	if ( sizes[i].depth!=1 )
 	    BDFClut(bdf,1<<(sizes[i].depth/2));
 	if ( last==NULL )

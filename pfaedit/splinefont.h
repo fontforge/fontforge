@@ -179,6 +179,7 @@ typedef struct bdffont {
     struct bdffont *next;
     struct clut *clut;
     char *foundry;
+    int res;
 } BDFFont;
 
 enum pointtype { pt_curve, pt_corner, pt_tangent };
@@ -615,7 +616,7 @@ extern BDFFont *SplineFontPieceMeal(SplineFont *sf,int pixelsize,int antialias);
 extern BDFFont *BitmapFontScaleTo(BDFFont *old, int to);
 extern void BDFCharFree(BDFChar *bdfc);
 extern void BDFFontFree(BDFFont *bdf);
-extern int  BDFFontDump(char *filename,BDFFont *font, char *encodingname);
+extern int  BDFFontDump(char *filename,BDFFont *font, char *encodingname,int res);
 extern int SplinesIntersect(Spline *s1, Spline *s2, BasePoint pts[4], real t1s[4], real t2s[4]);
 extern int CubicSolve(Spline1D *sp,real ts[3]);
 extern real SplineSolve(Spline1D *sp, real tmin, real tmax, real sought_y, real err);

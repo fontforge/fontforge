@@ -220,6 +220,7 @@ return( i );
 struct metrics {
     int swidth, dwidth, swidth1, dwidth1;	/* Font wide width defaults */
     int metricsset, vertical_origin;
+    int res;
 };
 
 static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b,int depth, struct metrics *defs) {
@@ -413,6 +414,8 @@ static int slurp_header(FILE *bdf, int *_as, int *_ds, int *_enc,
 	} else if ( strcmp(tok,"QUAD_WIDTH")==0 && pixelsize==-1 )
 	    fscanf(bdf, "%d", &pixelsize );
 	    /* For Courier the quad is not an em */
+	else if ( strcmp(tok,"RESOLUTION_X")==0 )
+	    fscanf(bdf, "%d", &defs->res );
 	else if ( strcmp(tok,"FONT_ASCENT")==0 )
 	    fscanf(bdf, "%d", &ascent );
 	else if ( strcmp(tok,"FONT_DESCENT")==0 )
@@ -1386,6 +1389,7 @@ BDFFont *SFImportBDF(SplineFont *sf, char *filename,int ispk, int toback) {
 
     defs.swidth = defs.swidth1 = -1; defs.dwidth=defs.dwidth1=0;
     defs.metricsset = 0; defs.vertical_origin = 0;
+    defs.res = -1;
     foundry[0] = '\0';
 
     bdf = fopen(filename,"r");
@@ -1464,6 +1468,7 @@ return( NULL );
 	b->ascent = ascent;
 	b->descent = pixelsize-b->ascent;
 	b->encoding_name = sf->encoding_name;
+	b->res = defs.res;
 	if ( depth!=1 )
 	    BDFClut(b,(1<<(depth/2)));
 	if ( !toback ) {
