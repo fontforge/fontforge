@@ -706,6 +706,13 @@ static void bOrd(Context *c) {
     }
 }
 
+static void bRand(Context *c) {
+    if ( c->a.argc!=1 )
+	error( c, "Wrong number of arguments" );
+    c->return_val.type = v_int;
+    c->return_val.u.ival = rand();
+}
+
 /* **** File menu **** */
 
 static void bQuit(Context *c) {
@@ -4242,6 +4249,8 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "Chr", bChr, 1 },
     { "Ord", bOrd, 1 },
     { "Utf8", bUtf8, 1 },
+    { "Utf8", bUtf8, 1 },
+    { "Rand", bRand, 1 },
 /* File menu */
     { "Quit", bQuit, 1 },
     { "FontsInFile", bFontsInFile, 1 },
