@@ -60,6 +60,7 @@ struct problems {
     unsigned int badsubs: 1;
     unsigned int missingglyph: 1;
     unsigned int missinglookuptag: 1;
+    unsigned int DFLTscript: 1;
     unsigned int toomanypoints: 1;
     unsigned int toomanyhints: 1;
     unsigned int toodeeprefs: 1;
@@ -96,7 +97,7 @@ static int openpaths=1, pointstooclose=1/*, missing=0*/, doxnear=0, doynear=0;
 static int doynearstd=1, linestd=1, cpstd=1, cpodd=1, hintnopt=0, ptnearhint=0;
 static int hintwidth=0, direction=0, flippedrefs=1, bitmaps=0;
 static int cidblank=0, cidmultiple=1, advancewidth=0, vadvancewidth=0;
-static int irrelevantcp=1, missingglyph=0, missinglookuptag=0;
+static int irrelevantcp=1, missingglyph=0, missinglookuptag=0, DFLTscript=0;
 static int badsubs=1, toomanypoints=1, pointsmax = 1500;
 static int toomanyhints=1, hintsmax=96, toodeeprefs=1, refdepthmax=9;
 static int stem3=0, showexactstem3=0;
@@ -147,6 +148,7 @@ static real irrelevantfactor = .005;
 #define CID_HintsMax		1036
 #define CID_TooDeepRefs		1037
 #define CID_RefDepthMax		1038
+#define CID_DFLTScript		1039
 
 
 static void FixIt(struct problems *p) {
@@ -2049,9 +2051,33 @@ static int CheckForATT(struct problems *p) {
     ASM *sm;
     KernClass *kc;
     SplineFont *_sf, *sf;
+    static int buts[] = { _STR_Yes, _STR_No, 0 };
 
     _sf = p->fv->sf;
     if ( _sf->cidmaster ) _sf = _sf->cidmaster;
+
+    if ( p->DFLTscript && !p->finish ) {
+	sf = _sf;
+	if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
+	if ( sf->script_lang!=NULL ) {
+	    for ( i=0; sf->script_lang[i]!=NULL; ++i ) {
+		if ( sf->script_lang[i][0].script == DEFAULT_SCRIPT ) {
+		    found = true;
+		    if ( GWidgetAskR(_STR_UsedDFLTscript,buts,0,1,_STR_ProbDFLT)==0 ) {
+			unichar_t *dflt, *result;
+			dflt = ScriptLangLine(sf->script_lang[i]);
+			result = ShowScripts(dflt);
+			if ( result!=NULL ) {
+			    ScriptRecordFree(sf->script_lang[i]);
+			    sf->script_lang[i] = SRParse(result);
+			    free(result);
+			}
+			free(dflt);
+		    }
+		}
+	    }
+	}
+    }
 
     if ( p->missingglyph && !p->finish ) {
 	if ( p->cv!=NULL )
@@ -2093,7 +2119,7 @@ static void DoProbs(struct problems *p) {
     SplineChar *sc;
     BDFFont *bdf;
 
-    if ( p->missingglyph || p->missinglookuptag )
+    if ( p->missingglyph || p->missinglookuptag || p->DFLTscript )
 	ret = CheckForATT(p);
     if ( p->cv!=NULL ) {
 	ret |= SCProblems(p->cv,NULL,p);
@@ -2150,9 +2176,9 @@ static int Prob_DoAll(GGadget *g, GEvent *e) {
 	    CID_YNear, CID_YNearStd, CID_HintNoPt, CID_PtNearHint,
 	    CID_HintWidthNear, CID_LineStd, CID_Direction, CID_CpStd,
 	    CID_CpOdd, CID_FlippedRefs, CID_Bitmaps, CID_AdvanceWidth,
-	    CID_MissingGlyph, CID_MissingLookupTag,
+	    CID_BadSubs, CID_MissingGlyph, CID_MissingLookupTag,
 	    CID_Stem3, CID_IrrelevantCP, CID_TooManyPoints,
-	    CID_TooManyHints, CID_TooDeepRefs,
+	    CID_TooManyHints, CID_TooDeepRefs, CID_DFLTScript,
 	    0 };
 	int i;
 	if ( p->fv->cidmaster!=NULL ) {
@@ -2193,6 +2219,7 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	badsubs = p->badsubs = GGadgetIsChecked(GWidgetGetControl(gw,CID_BadSubs));
 	missingglyph = p->missingglyph = GGadgetIsChecked(GWidgetGetControl(gw,CID_MissingGlyph));
 	missinglookuptag = p->missinglookuptag = GGadgetIsChecked(GWidgetGetControl(gw,CID_MissingLookupTag));
+	DFLTscript = p->DFLTscript = GGadgetIsChecked(GWidgetGetControl(gw,CID_DFLTScript));
 	toomanypoints = p->toomanypoints = GGadgetIsChecked(GWidgetGetControl(gw,CID_TooManyPoints));
 	toomanyhints = p->toomanyhints = GGadgetIsChecked(GWidgetGetControl(gw,CID_TooManyHints));
 	toodeeprefs = p->toodeeprefs = GGadgetIsChecked(GWidgetGetControl(gw,CID_TooDeepRefs));
@@ -2238,7 +2265,7 @@ return( true );
 		p->bitmaps || p->advancewidth || p->vadvancewidth || p->stem3 ||
 		p->irrelevantcontrolpoints || p->badsubs || p->missingglyph ||
 		p->missinglookuptag || p->toomanypoints || p->toomanyhints ||
-		p->toodeeprefs ) {
+		p->toodeeprefs || p->DFLTscript ) {
 	    DoProbs(p);
 	}
 	p->done = true;
@@ -2281,8 +2308,8 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData pgcd[13], pagcd[7], hgcd[9], rgcd[7], cgcd[5], mgcd[10], agcd[5], rfgcd[5];
-    GTextInfo plabel[13], palabel[7], hlabel[9], rlabel[7], clabel[5], mlabel[10], alabel[5], rflabel[5];
+    GGadgetCreateData pgcd[13], pagcd[7], hgcd[9], rgcd[7], cgcd[5], mgcd[10], agcd[6], rfgcd[5];
+    GTextInfo plabel[13], palabel[7], hlabel[9], rlabel[7], clabel[5], mlabel[10], alabel[6], rflabel[5];
     GTabInfo aspects[8];
     struct problems p;
     char xnbuf[20], ynbuf[20], widthbuf[20], nearbuf[20], awidthbuf[20],
@@ -2757,6 +2784,16 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     agcd[1].gd.popup_msg = GStringGetResource(_STR_MissingLookupTagPopup,NULL);
     agcd[1].gd.cid = CID_MissingLookupTag;
     agcd[1].creator = GCheckBoxCreate;
+
+    alabel[2].text = (unichar_t *) _STR_UsedDFLTscript;
+    alabel[2].text_in_resource = true;
+    agcd[2].gd.label = &alabel[2];
+    agcd[2].gd.pos.x = 3; agcd[2].gd.pos.y = agcd[1].gd.pos.y+17; 
+    agcd[2].gd.flags = gg_visible | gg_enabled;
+    if ( DFLTscript ) agcd[2].gd.flags |= gg_cb_on;
+    agcd[2].gd.popup_msg = GStringGetResource(_STR_UsedDFLTscriptPopup,NULL);
+    agcd[2].gd.cid = CID_DFLTScript;
+    agcd[2].creator = GCheckBoxCreate;
 
 /* ************************************************************************** */
 

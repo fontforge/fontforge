@@ -518,6 +518,7 @@ extern unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag,uint16 flag
 extern PST *AddSubs(PST *last,uint32 tag,char *name,uint16 flags,
 	uint16 sli,SplineChar *sc);
 extern int  SLICount(SplineFont *sf);
+extern unichar_t *ShowScripts(unichar_t *usedef);
 extern GTextInfo *SFLangList(SplineFont *sf,int addfinal,SplineChar *default_script);
 extern GTextInfo **SFLangArray(SplineFont *sf,int addfinal);
 extern int  ScriptLangList(SplineFont *sf,GGadget *list,int sli);

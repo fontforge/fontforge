@@ -826,6 +826,49 @@ return( i );
 return( i );
 }
 
+static void SFGuessScriptList(SplineFont *sf) {
+    uint32 scripts[32], script;
+    int i, scnt=0, j;
+
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	script = SCScriptFromUnicode(sf->chars[i]);
+	if ( script!=0 && script!=DEFAULT_SCRIPT ) {
+	    for ( j=scnt-1; j>=0 ; --j )
+		if ( scripts[j]==script )
+	    break;
+	    if ( j<0 ) {
+		scripts[scnt++] = script;
+		if ( scnt>=32 )
+    break;
+	    }
+	}
+    }
+    if ( scnt==0 )
+	scripts[scnt++] = CHR('l','a','t','n');
+
+    /* order scripts */
+    for ( i=0; i<scnt-1; ++i ) for ( j=i+1; j<scnt; ++j ) {
+	if ( scripts[i]>scripts[j] ) {
+	    script = scripts[i];
+	    scripts[i] = scripts[j];
+	    scripts[j] = script;
+	}
+    }
+
+    if ( sf->cidmaster ) sf = sf->cidmaster;
+    if ( sf->script_lang!=NULL )
+return;
+    sf->script_lang = gcalloc(2,sizeof(struct script_record *));
+    sf->script_lang[0] = gcalloc(scnt+1,sizeof(struct script_record));
+    for ( j=0; j<scnt; ++j ) {
+	sf->script_lang[0][j].script = scripts[j];
+	sf->script_lang[0][j].langs = galloc(2*sizeof(uint32));
+	sf->script_lang[0][j].langs[0] = DEFAULT_LANG;
+	sf->script_lang[0][j].langs[1] = 0;
+    }
+    sf->script_lang[1] = NULL;
+}
+
 int SRMatch(struct script_record *sr1,struct script_record *sr2) {
     int i, j;
 
@@ -922,8 +965,12 @@ int SCDefaultSLI(SplineFont *sf, SplineChar *default_script) {
 	def_sli = -1;
     } else {
 	script = SCScriptFromUnicode(default_script);
-	if ( sf->script_lang==NULL )
-	    SFAddScriptLangIndex(sf,script,DEFAULT_LANG);
+	if ( sf->script_lang==NULL ) {
+	    if ( script!=DEFAULT_SCRIPT && script!=0 )
+		SFAddScriptLangIndex(sf,script,DEFAULT_LANG);
+	    else
+		SFGuessScriptList(sf);
+	}
 	def_sli = -1;
 	if ( default_script!=NULL ) {
 	    for ( pst=default_script->possub; pst!=NULL; pst=pst->next ) {
@@ -937,7 +984,7 @@ int SCDefaultSLI(SplineFont *sf, SplineChar *default_script) {
 	}
 	if ( def_sli==-1 ) {
 	    best_sli = -1; scnt=0;
-	    if ( script==0 ) {
+	    if ( script==DEFAULT_SCRIPT || script==0 ) {
 		/* Find the entry with the most scripts */
 		for ( i=0; sf->script_lang[i]!=NULL; ++i ) {
 		    for ( j=0; sf->script_lang[i][j].script!=0; ++j);
@@ -1359,7 +1406,7 @@ return( false );
 return( true );
 }
 
-static unichar_t *ShowScripts(unichar_t *usedef) {
+unichar_t *ShowScripts(unichar_t *usedef) {
     struct script_record *sr = SRParse(usedef);
     static struct script_record dummy = { 0 };
     int i,j,done=0;
@@ -3716,7 +3763,7 @@ return( false );
 		*name==')' || *name==']' || *name=='}' || *name=='>' ||
 		*name=='%' || *name=='/' )
 	    bad=true;
-	else if ( !isalnum(*name) || *name!='.' || *name!='_' )
+	else if ( !isalnum(*name) && *name!='.' && *name!='_' )
 	    questionable = true;
 	++name;
     }
