@@ -976,6 +976,7 @@ static void FVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_CopyFeatureToFont	2232
 #define MID_SimplifyMore	2233
 #define MID_ShowDependentSubs	2234
+#define MID_DefaultATT	2235
 #define MID_Center	2600
 #define MID_Thirds	2601
 #define MID_SetWidth	2602
@@ -3511,9 +3512,13 @@ static void delistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void aatlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     FontView *ofv;
+    int anychars = FVAnyCharSelected(fv);
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
+	  case MID_DefaultATT:
+	    mi->ti.disabled = anychars==-1;
+	  break;
 	  case MID_CopyFeatureToFont:
 	    for ( ofv=fv_list; ofv!=NULL && ofv->sf==fv->sf; ofv = ofv->next );
 	    mi->ti.disabled = ofv==NULL;
@@ -3681,7 +3686,7 @@ static GMenuItem balist[] = {
 
 static GMenuItem aatlist[] = {
     { { (unichar_t *) _STR_CopyFeatureToFont, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuCopyFeatureToFont, MID_CopyFeatureToFont },
-    { { (unichar_t *) _STR_DefaultATT, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'D' }, 'I', ksm_control|ksm_meta, aat2list },
+    { { (unichar_t *) _STR_DefaultATT, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'D' }, 'I', ksm_control|ksm_meta, aat2list, NULL, NULL, MID_DefaultATT },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_RemoveAllFeatures, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuRemoveAllFeatures },
     { { (unichar_t *) _STR_RemoveFeature, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuRemoveFeatures },
