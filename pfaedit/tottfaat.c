@@ -30,6 +30,7 @@
 #include "ttf.h"
 
 /* This file contains routines to create some of the Apple Advanced Typography Tables */
+/*  (or GX fonts)  */
 
 /* ************************************************************************** */
 /* *************************    The 'acnt' table    ************************* */

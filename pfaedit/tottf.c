@@ -4008,6 +4008,9 @@ static void AbortTTF(struct alltabs *at, SplineFont *sf) {
     if ( at->morx!=NULL )
 	fclose(at->morx);
 
+    if ( at->pfed!=NULL )
+	fclose(at->pfed);
+
     for ( i=0; i<sf->subfontcnt; ++i ) {
 	if ( at->fds[i].private!=NULL )
 	    fclose(at->fds[i].private);
@@ -4174,6 +4177,8 @@ return( false );
     dumppost(at,sf,format);
     dumpcmap(at,sf,format);
 
+    pfed_dump(at,sf);
+
     if ( format==ff_otf || format==ff_otfcid ) {
 	at->tabdir.version = CHR('O','T','T','O');
     } else if ( at->applemode ) {
@@ -4246,6 +4251,14 @@ return( false );
     at->tabdir.tabs[i].offset = pos;
     at->tabdir.tabs[i++].length = at->os2len;
     pos += ((at->os2len+3)>>2)<<2;
+
+    if ( at->pfed!=NULL ) {
+	at->tabdir.tabs[i].tag = CHR('P','f','E','d');
+	at->tabdir.tabs[i].checksum = filecheck(at->pfed);
+	at->tabdir.tabs[i].offset = pos;
+	at->tabdir.tabs[i++].length = at->pfedlen;
+	pos += ((at->pfedlen+3)>>2)<<2;
+    }
 
     if ( at->vorgf!=NULL ) {
 	at->tabdir.tabs[i].tag = CHR('V','O','R','G');
@@ -4490,6 +4503,8 @@ static void dumpttf(FILE *ttf,struct alltabs *at, enum fontformat format) {
     if ( at->gsub!=NULL )
 	if ( !ttfcopyfile(ttf,at->gsub,at->tabdir.tabs[i++].offset)) at->error = true;
     if ( !ttfcopyfile(ttf,at->os2f,at->tabdir.tabs[i++].offset)) at->error = true;
+    if ( at->pfed!=NULL )
+	if ( !ttfcopyfile(ttf,at->pfed,at->tabdir.tabs[i++].offset)) at->error = true;
     if ( at->vorgf!=NULL )
 	if ( !ttfcopyfile(ttf,at->vorgf,at->tabdir.tabs[i++].offset)) at->error = true;
     if ( at->acnt!=NULL )

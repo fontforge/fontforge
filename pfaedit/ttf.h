@@ -67,6 +67,7 @@ struct ttfinfo {
     enum charset encoding_name;/* from cmap */
     struct pfminfo pfminfo;
     struct ttflangname *names;
+    char *fontcomments;
     SplineChar **chars;		/* from all over, glyf table for contours */
     				/* 		  cmap table for encodings */
 			        /*		  hmtx table for widths */
@@ -125,6 +126,9 @@ struct ttfinfo {
     int vmetrics_start;
 		/* VORG */
     int vorg_start;
+
+		/* PfEd -- PfaEdit specific info */
+    int pfed_start;
 
 		/* Apple Advanced Typography Tables */
     int prop_start;
@@ -474,6 +478,8 @@ struct alltabs {
     int featlen;
     FILE *morx;
     int morxlen;
+    FILE *pfed;
+    int pfedlen;
     int defwid, nomwid;
     int sidcnt;
     int lenpos;
@@ -549,3 +555,9 @@ extern SplineChar **EntryExitDecompose(SplineFont *sf,AnchorClass *ac);
 extern void AnchorClassDecompose(SplineFont *sf,AnchorClass *_ac, int classcnt, int *subcnts,
 	SplineChar ***marks,SplineChar ***base,
 	SplineChar ***lig,SplineChar ***mkmk);
+
+
+    /* Non-standard tables */
+	/* My PfEd table for PfaEdit specific info */
+extern void pfed_dump(struct alltabs *at, SplineFont *sf);
+extern void pfed_read(FILE *ttf,struct ttfinfo *info);

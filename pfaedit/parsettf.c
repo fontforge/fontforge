@@ -608,6 +608,9 @@ return( 0 );			/* Not version 1 of true type, nor Open Type */
 	    info->fpgm_start = offset;
 	    info->fpgm_len = length;
 	  break;
+	  case CHR('P','f','E','d'):
+	    info->pfed_start = offset;
+	  break;
 	}
     }
 return( true );
@@ -5899,6 +5902,8 @@ return( 0 );
 	TtfCopyTableBlindly(info,ttf,info->fpgm_start,info->fpgm_len,CHR('f','p','g','m'));
 	TtfCopyTableBlindly(info,ttf,info->prep_start,info->prep_len,CHR('p','r','e','p'));
     }
+    if ( info->pfed_start!=0 )
+	pfed_read(ttf,info);
     setlocale(LC_NUMERIC,oldloc);
     ttfFixupReferences(info);
 return( true );
@@ -6116,6 +6121,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     sf->familyname = info->familyname;
     sf->onlybitmaps = info->onlystrikes;
     sf->order2 = info->to_order2;
+    sf->comments = info->fontcomments;
     if ( sf->fontname==NULL ) {
 	sf->fontname = copy(sf->fullname);
 	if ( sf->fontname==NULL )

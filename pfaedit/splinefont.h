@@ -672,7 +672,10 @@ typedef struct anchorpos {
     unsigned int ticked: 1;	/* Used as a mark to mark */
 } AnchorPos;
 
-enum ttf_flags { ttf_flag_shortps = 1, ttf_flag_nohints = 2, ttf_flag_applemode=4 };
+enum ttf_flags { ttf_flag_shortps = 1, ttf_flag_nohints = 2,
+		    ttf_flag_applemode=4,
+		    ttf_flag_pfed_comments=8, ttf_flag_pfed_colors=0x10
+		};
 enum openflags { of_fstypepermitted=1 };
 
 struct fontdict;
