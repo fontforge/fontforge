@@ -25,6 +25,16 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/* Under Mac OSX, if we want to deal with dynamic libraries we must include */
+/*  #include <mach-o/dyld.h> */
+/*  And call NSAddLibrary(path), this returns true or false */
+/*	the mac doesn't yet support returning a handle (according to apache) */
+/*  And call NSLookupAndBindSymbol(symbol) to get a routine address */
+/*  We may need to call NSInstallLinkEditErrorHandlers(...), apache does */
+/* see http://cvs.apache.org/viewcvs/jakarta-tomcat-4.0/service/native/dso-dyld.c */
+/* At the moment I shan't bother to implement because MacOSX doesn't ship with*/
+/*  libpng, so it is best just to compile it in (set NODYNAMIC) */
+
 #ifdef _NO_LIBPNG
 static int a_file_must_define_something=0;	/* ANSI says so */
 #elif !defined(_STATIC_LIBPNG) && !defined(NODYNAMIC)	/* I don't know how to deal with dynamic libs on mac OS/X, hence this */
