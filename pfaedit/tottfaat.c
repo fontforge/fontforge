@@ -494,7 +494,7 @@ return( NULL );
 }
 
 static PST *HasAForm(SplineFont *sf,PST *pst) {
-    for ( ; pst!=NULL; pst=pst->next ) {
+    for ( ; pst!=NULL; pst=pst->next ) if ( pst->type==pst_substitution ) {
 	if ( !HasDefaultLang(sf,pst,0))
     continue;
 	if ( pst->tag==CHR('i','n','i','t') ||
@@ -1171,7 +1171,7 @@ static void morxDumpChain(struct alltabs *at,struct feature *features,int chain,
     /* Ordered by tag */
     for ( i=0; i<cnt; ++i ) if ( (f=all[i])->chain==chain ) {
 	putlong(at->morx,f->feature_len+12);		/* Size of header needs to be added */
-	putlong(at->morx,(f->vertOnly?0x80000000:f->r2l?0:0x40000000) | f->subtable_type);
+	putlong(at->morx,(f->vertOnly?0x80000000:f->r2l?0x40000000:0) | f->subtable_type);
 	putlong(at->morx,f->flag);
 	tot = f->feature_len;
 	fseek(temp, f->feature_start, SEEK_SET);
