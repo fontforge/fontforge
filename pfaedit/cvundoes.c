@@ -395,7 +395,7 @@ void UndoesFree(Undoes *undo) {
 	  case ut_state: case ut_tstate: case ut_statehint: case ut_statename:
 	    SplinePointListsFree(undo->u.state.splines);
 	    RefCharsFree(undo->u.state.refs);
-	    MDsFree(undo->u.state.md);
+	    MinimumDistancesFree(undo->u.state.md);
 	    if ( undo->undotype==ut_statehint || undo->undotype==ut_statename )
 		UHintListFree(undo->u.state.u.hints);
 	    else

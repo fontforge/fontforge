@@ -170,15 +170,6 @@ void SplinePointFree(SplinePoint *sp) {
     chunkfree(sp,sizeof(SplinePoint));
 }
 
-void MDsFree(MinimumDistance *md) {
-    MinimumDistance *next;
-
-    for ( ; md!=NULL; md = next ) {
-	next = md->next;
-	chunkfree(md,sizeof(MinimumDistance));
-    }
-}
-
 void SplinePointMDFree(SplineChar *sc, SplinePoint *sp) {
     MinimumDistance *md, *prev, *next;
 

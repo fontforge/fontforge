@@ -535,7 +535,6 @@ extern void LineListFree(LineList *ll);
 extern void LinearApproxFree(LinearApprox *la);
 extern void SplineFree(Spline *spline);
 extern void SplinePointFree(SplinePoint *sp);
-extern void MDsFree(MinimumDistance *md);
 extern void SplinePointMDFree(SplineChar *sc,SplinePoint *sp);
 extern void SplinePointListFree(SplinePointList *spl);
 extern void SplinePointListMDFree(SplineChar *sc,SplinePointList *spl);
