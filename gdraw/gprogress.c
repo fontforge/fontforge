@@ -45,6 +45,7 @@ typedef struct gprogress {
     int16 last_amount;
     unsigned int aborted: 1;
     unsigned int visible: 1;
+    unsigned int dying: 1;
     GWindow gw;
     GFont *font;
     struct gprogress *prev;
@@ -55,7 +56,7 @@ static GProgress *current;
 static void GProgressTimeCheck() {
     struct timeval tv;
 
-    if ( current==NULL || current->visible )
+    if ( current==NULL || current->visible || current->dying )
 return;
     gettimeofday(&tv,NULL);
     if ( tv.tv_sec>current->start_time.tv_sec ||
@@ -260,8 +261,13 @@ void GProgressEndIndicator(void) {
 return;
     current = old->prev;
     
+    old->dying = true;
+    GDrawSync(NULL);		/* the X server sometimes crashes if we: */
+	/* Create a window */
+	/* map it */
+	/* but destroy it before the server can send us the map notify event */
     GDrawDestroyWindow(old->gw);
-    GProgressTimeCheck();
+    /* GProgressTimeCheck();*/	/* This caused X to crash... Why would I do it anyway? */
     GDrawSync(NULL);
     GDrawProcessPendingEvents(NULL);
 }
