@@ -786,13 +786,16 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
     dumpfontinfo(dumpchar,data,sf);
 
     for ( i=0; i<256 && i<sf->charcnt; ++i )
-	if ( sf->chars[i]!=NULL )
+	if ( SCWorthOutputting(sf->chars[i]) )
 	    encoding[i] = sf->chars[i]->name;
 	else
 	    encoding[i] = ".notdef";
     for ( ; i<256; ++i )
 	encoding[i] = ".notdef";
-    if ( isStdEncoding(encoding))
+    /* I think I don't want to check sf->encoding_name because if the font */
+    /*  is incomplete (say it's missing "A") it will still have sf->encod... */
+    /*  equal to em_adobe... but the charstrings won't contain an "A" char */
+    if ( /*sf->encoding_name==em_adobestandard ||*/ isStdEncoding(encoding) )
 	dumpstr(dumpchar,data,"/Encoding StandardEncoding def\n");
     else {
 	dumpstr(dumpchar,data,"/Encoding 256 array\n" );

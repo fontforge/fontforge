@@ -37,9 +37,7 @@ struct lconv localeinfo;
 static void initadobeenc(void) {
     int i,j;
 
-    for ( i=0; i<0xa0; ++i )
-	unicode_from_adobestd[i] = i;
-    for ( ; i<0x100; ++i ) {
+    for ( i=0; i<0x100; ++i ) {
 	if ( strcmp(AdobeStandardEncoding[i],".notdef")==0 )
 	    unicode_from_adobestd[i] = 0xfffd;
 	else {
