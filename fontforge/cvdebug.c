@@ -30,8 +30,6 @@
 #include <gkeysym.h>
 #include <ustring.h>
 
-enum debug_wins { dw_registers=0x1, dw_stack=0x2, dw_storage=0x4, dw_points=0x8,
-	dw_cvt=0x10, dw_raster=0x20 };
 int debug_wins = dw_registers|dw_stack;
 
 #ifndef FREETYPE_HAS_DEBUGGER
@@ -115,7 +113,7 @@ static void DVRegExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 
     GDrawFillRect(pixmap,&event->u.expose.rect,GDrawGetDefaultBackground(screen_display));
     GDrawSetFont(pixmap,dv->ii.gfont);
-    y = 3+dv->ii.as;
+    y = 3+dv->ii.as - dv->reg_offtop*dv->ii.fh;
 
     if ( exc==NULL ) {
 	uc_strcpy(ubuffer,"<not running>");
@@ -204,7 +202,7 @@ static void DVStackExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 
     GDrawFillRect(pixmap,&event->u.expose.rect,GDrawGetDefaultBackground(screen_display));
     GDrawSetFont(pixmap,dv->ii.gfont);
-    y = 3+dv->ii.as;
+    y = 3+dv->ii.as - dv->stack_offtop*dv->ii.fh;
     if ( exc==NULL  || exc->top==0 ) {
 	uc_strcpy(ubuffer,"<empty>");
 	GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0);
@@ -228,7 +226,7 @@ static void DVStorageExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 
     GDrawFillRect(pixmap,&event->u.expose.rect,GDrawGetDefaultBackground(screen_display));
     GDrawSetFont(pixmap,dv->ii.gfont);
-    y = 3+dv->ii.as;
+    y = 3+dv->ii.as - dv->storage_offtop*dv->ii.fh;
     if ( exc==NULL || exc->storeSize==0 ) {
 	uc_strcpy(ubuffer,"<empty>");
 	GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0);
@@ -473,6 +471,29 @@ static SplineSet *SplineSetsFromPoints(TT_GlyphZoneRec *pts, real scale) {
 return( head );
 }
 
+static int DVStackTestSB(DebugView *dv, TT_ExecContext exc) {
+    int min, max, page, offtop;
+    GRect size;
+
+    GScrollBarGetBounds(dv->stacksb,&min,&max,&page);
+    GGadgetGetSize(dv->stacksb,&size);
+    size.height /= dv->ii.fh;
+    if ( max!=exc->top || page!=size.height ) {
+	GScrollBarSetBounds(dv->stacksb,0,exc->top,size.height);
+	offtop = dv->stack_offtop;
+	if ( offtop+size.height > exc->top )
+	    offtop = exc->top-size.height;
+	if ( offtop < 0 )
+	    offtop = 0;
+	if ( offtop!=dv->stack_offtop ) {
+	    dv->stack_offtop = offtop;
+	    GScrollBarSetPos(dv->stacksb,dv->stack_offtop);
+return( true );
+	}
+    }
+return( false );
+}
+
 static void DVFigureNewState(DebugView *dv,TT_ExecContext exc) {
     int range = exc==NULL ? cr_none : exc->curRange;
     CharView *cv = dv->cv;
@@ -522,8 +543,10 @@ static void DVFigureNewState(DebugView *dv,TT_ExecContext exc) {
 	GDrawRequestExpose(cv->v,NULL,false);
     if ( dv->regs!=NULL )
 	GDrawRequestExpose(dv->regs,NULL,false);
-    if ( dv->stack!=NULL )
+    if ( dv->stack!=NULL ) {
+	DVStackTestSB(dv,exc);
 	GDrawRequestExpose(dv->stack,NULL,false);
+    }
     if ( dv->storage!=NULL )
 	GDrawRequestExpose(dv->storage,NULL,false);
     if ( dv->cvt!=NULL )
@@ -532,6 +555,8 @@ static void DVFigureNewState(DebugView *dv,TT_ExecContext exc) {
 	GDrawRequestExpose(dv->points_v,NULL,false);
     if ( dv->raster!=NULL )
 	GDrawRequestExpose(dv->raster,NULL,false);
+    if ( dv->gloss!=NULL )
+	GDrawRequestExpose(dv->gloss,NULL,false);
 }
 
 /* If a glyph has no instructions, it has no execcontext. But it is still */
@@ -630,6 +655,7 @@ return( true );
 #define MID_Points	1004
 #define MID_Cvt		1005
 #define MID_Raster	1006
+#define MID_Gloss	1007
 
 static void DVCreateRegs(DebugView *dv);
 static void DVCreateStack(DebugView *dv);
@@ -645,6 +671,7 @@ static struct { int flag; void (*create)(DebugView *); } wcreat[] = {
     {dw_points, DVCreatePoints},
     {dw_cvt, DVCreateCvt},
     {dw_raster, DVCreateRaster},
+    {dw_gloss, DVCreateGloss},
     { 0, NULL }
 };
 
@@ -668,6 +695,7 @@ static GMenuItem popupwindowlist[] = {
     { { (unichar_t *) _STR_Points, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, '\0' }, '\0', 0, NULL, NULL, DVMenuCreate, MID_Points },
     { { (unichar_t *) _STR_Cvt, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, '\0' }, '\0', 0, NULL, NULL, DVMenuCreate, MID_Cvt },
     { { (unichar_t *) _STR_Raster, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, '\0' }, '\0', 0, NULL, NULL, DVMenuCreate, MID_Raster },
+    { { (unichar_t *) _STR_Gloss, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, '\0' }, '\0', 0, NULL, NULL, DVMenuCreate, MID_Gloss },
     { NULL }
 };
 
@@ -684,6 +712,7 @@ static int DV_WindowMenu(GGadget *g, GEvent *e) {
 	popupwindowlist[3].ti.checked = dv->points!=NULL;
 	popupwindowlist[4].ti.checked = dv->cvt!=NULL;
 	popupwindowlist[5].ti.checked = dv->raster!=NULL;
+	popupwindowlist[6].ti.checked = dv->gloss!=NULL;
 	GGadgetGetSize(g,&pos);
 	memset(&fake,0,sizeof(fake));
 	fake.type = et_mousedown;
@@ -776,8 +805,69 @@ return( DVChar(dv,event));
 return( true );
 }
 
+static const int reg_size = 24;
+
+static void DVReg_SetScrollBar(DebugView *dv) {
+    GRect size;
+    TT_ExecContext exc = DebuggerGetEContext(dv->dc);
+    int lh = exc==NULL ? 0 : reg_size;
+
+    GDrawGetSize(dv->regs,&size);
+    GScrollBarSetBounds(dv->regsb,0,lh,size.height/dv->ii.fh);
+    if ( dv->reg_offtop + size.height/dv->ii.fh > lh ) {
+	int lpos = lh-size.height/dv->ii.fh;
+	if ( lpos<0 ) lpos = 0;
+	dv->reg_offtop = lpos;
+    }
+    GScrollBarSetPos(dv->regsb,dv->reg_offtop);
+}
+
+static void dvreg_scroll(DebugView *dv,struct sbevent *sb) {
+    int newpos = dv->reg_offtop;
+    GRect size;
+    extern int _GScrollBar_Width;
+
+    GDrawGetSize(dv->regs,&size);
+    switch( sb->type ) {
+      case et_sb_top:
+        newpos = 0;
+      break;
+      case et_sb_uppage:
+        newpos -= size.height/dv->ii.fh;
+      break;
+      case et_sb_up:
+        --newpos;
+      break;
+      case et_sb_down:
+        ++newpos;
+      break;
+      case et_sb_downpage:
+        newpos += size.height/dv->ii.fh;
+      break;
+      case et_sb_bottom:
+        newpos = reg_size-size.height/dv->ii.fh;
+      break;
+      case et_sb_thumb:
+      case et_sb_thumbrelease:
+        newpos = sb->pos;
+      break;
+    }
+    if ( newpos>reg_size-size.height/dv->ii.fh )
+        newpos = reg_size-size.height/dv->ii.fh;
+    if ( newpos<0 ) newpos =0;
+    if ( newpos!=dv->reg_offtop ) {
+	int diff = newpos-dv->reg_offtop;
+	dv->reg_offtop = newpos;
+	GScrollBarSetPos(dv->regsb,dv->reg_offtop);
+	size.x = size.y = 0;
+	size.width -= GDrawPointsToPixels(dv->gloss,_GScrollBar_Width);
+	GDrawScroll(dv->regs,&size,0,diff*dv->ii.fh);
+    }
+}
+
 static int dvreg_e_h(GWindow gw, GEvent *event) {
     DebugView *dv = (DebugView *) GDrawGetUserData(gw);
+    GRect r,g;
 
     if ( dv==NULL )
 return( true );
@@ -788,6 +878,21 @@ return( true );
       break;
       case et_char:
 return( DVChar(dv,event));
+      break;
+      case et_controlevent:
+	switch ( event->u.control.subtype ) {
+	  case et_scrollbarchange:
+	    dvreg_scroll(dv,&event->u.control.u.sb);
+	  break;
+	}
+      break;
+      case et_resize:
+	GDrawGetSize(gw,&r);
+	GGadgetGetSize(dv->regsb,&g);
+	GGadgetMove(dv->regsb,r.width-g.width,0);
+	GGadgetResize(dv->regsb,g.width,r.height);
+	DVReg_SetScrollBar(dv);
+	GDrawRequestExpose(dv->regs,NULL,false);
       break;
       case et_close:
 	GDrawDestroyWindow(dv->regs);
@@ -804,8 +909,68 @@ return( DVChar(dv,event));
 return( true );
 }
 
+static void DVStack_SetScrollBar(DebugView *dv) {
+    GRect size;
+    TT_ExecContext exc = DebuggerGetEContext(dv->dc);
+    int lh = exc==NULL ? 0 : exc->top;
+
+    GDrawGetSize(dv->stack,&size);
+    GScrollBarSetBounds(dv->stacksb,0,lh,size.height/dv->ii.fh);
+    if ( dv->stack_offtop + size.height/dv->ii.fh > lh ) {
+	int lpos = lh-size.height/dv->ii.fh;
+	if ( lpos<0 ) lpos = 0;
+	dv->stack_offtop = lpos;
+    }
+    GScrollBarSetPos(dv->stacksb,dv->stack_offtop);
+}
+
+static void dvstack_scroll(DebugView *dv,struct sbevent *sb) {
+    int newpos = dv->stack_offtop;
+    GRect size;
+    TT_ExecContext exc = DebuggerGetEContext(dv->dc);
+    extern int _GScrollBar_Width;
+
+    GDrawGetSize(dv->stack,&size);
+    switch( sb->type ) {
+      case et_sb_top:
+        newpos = 0;
+      break;
+      case et_sb_uppage:
+        newpos -= size.height/dv->ii.fh;
+      break;
+      case et_sb_up:
+        --newpos;
+      break;
+      case et_sb_down:
+        ++newpos;
+      break;
+      case et_sb_downpage:
+        newpos += size.height/dv->ii.fh;
+      break;
+      case et_sb_bottom:
+        newpos = exc->top-size.height/dv->ii.fh;
+      break;
+      case et_sb_thumb:
+      case et_sb_thumbrelease:
+        newpos = sb->pos;
+      break;
+    }
+    if ( newpos>exc->top-size.height/dv->ii.fh )
+        newpos = exc->top-size.height/dv->ii.fh;
+    if ( newpos<0 ) newpos =0;
+    if ( newpos!=dv->stack_offtop ) {
+	int diff = newpos-dv->stack_offtop;
+	dv->stack_offtop = newpos;
+	GScrollBarSetPos(dv->stacksb,dv->stack_offtop);
+	size.x = size.y = 0;
+	size.width -= GDrawPointsToPixels(dv->gloss,_GScrollBar_Width);
+	GDrawScroll(dv->stack,&size,0,diff*dv->ii.fh);
+    }
+}
+
 static int dvstack_e_h(GWindow gw, GEvent *event) {
     DebugView *dv = (DebugView *) GDrawGetUserData(gw);
+    GRect r,g;
 
     if ( dv==NULL )
 return( true );
@@ -817,15 +982,21 @@ return( true );
       case et_char:
 return( DVChar(dv,event));
       break;
-#if 0
       case et_controlevent:
 	switch ( event->u.control.subtype ) {
 	  case et_scrollbarchange:
-	    stack_scroll(dv,&event->u.control.u.sb);
+	    dvstack_scroll(dv,&event->u.control.u.sb);
 	  break;
 	}
       break;
-#endif
+      case et_resize:
+	GDrawGetSize(gw,&r);
+	GGadgetGetSize(dv->stacksb,&g);
+	GGadgetMove(dv->stacksb,r.width-g.width,0);
+	GGadgetResize(dv->stacksb,g.width,r.height);
+	DVStack_SetScrollBar(dv);
+	GDrawRequestExpose(dv->stack,NULL,false);
+      break;
       case et_close:
 	GDrawDestroyWindow(dv->stack);
 	debug_wins &= ~dw_stack;
@@ -841,8 +1012,68 @@ return( DVChar(dv,event));
 return( true );
 }
 
+static void DVStorage_SetScrollBar(DebugView *dv) {
+    GRect size;
+    TT_ExecContext exc = DebuggerGetEContext(dv->dc);
+    int lh = exc==NULL ? 0 : exc->storeSize;
+
+    GDrawGetSize(dv->storage,&size);
+    GScrollBarSetBounds(dv->storagesb,0,lh,size.height/dv->ii.fh);
+    if ( dv->storage_offtop + size.height/dv->ii.fh > lh ) {
+	int lpos = lh-size.height/dv->ii.fh;
+	if ( lpos<0 ) lpos = 0;
+	dv->storage_offtop = lpos;
+    }
+    GScrollBarSetPos(dv->storagesb,dv->storage_offtop);
+}
+
+static void dvstorage_scroll(DebugView *dv,struct sbevent *sb) {
+    int newpos = dv->storage_offtop;
+    GRect size;
+    TT_ExecContext exc = DebuggerGetEContext(dv->dc);
+    extern int _GScrollBar_Width;
+
+    GDrawGetSize(dv->storage,&size);
+    switch( sb->type ) {
+      case et_sb_top:
+        newpos = 0;
+      break;
+      case et_sb_uppage:
+        newpos -= size.height/dv->ii.fh;
+      break;
+      case et_sb_up:
+        --newpos;
+      break;
+      case et_sb_down:
+        ++newpos;
+      break;
+      case et_sb_downpage:
+        newpos += size.height/dv->ii.fh;
+      break;
+      case et_sb_bottom:
+        newpos = exc->storeSize-size.height/dv->ii.fh;
+      break;
+      case et_sb_thumb:
+      case et_sb_thumbrelease:
+        newpos = sb->pos;
+      break;
+    }
+    if ( newpos>exc->storeSize-size.height/dv->ii.fh )
+        newpos = exc->storeSize-size.height/dv->ii.fh;
+    if ( newpos<0 ) newpos =0;
+    if ( newpos!=dv->storage_offtop ) {
+	int diff = newpos-dv->storage_offtop;
+	dv->storage_offtop = newpos;
+	GScrollBarSetPos(dv->storagesb,dv->storage_offtop);
+	size.x = size.y = 0;
+	size.width -= GDrawPointsToPixels(dv->gloss,_GScrollBar_Width);
+	GDrawScroll(dv->storage,&size,0,diff*dv->ii.fh);
+    }
+}
+
 static int dvstore_e_h(GWindow gw, GEvent *event) {
     DebugView *dv = (DebugView *) GDrawGetUserData(gw);
+    GRect r,g;
 
     if ( dv==NULL )
 return( true );
@@ -854,15 +1085,21 @@ return( true );
       case et_char:
 return( DVChar(dv,event));
       break;
-#if 0
       case et_controlevent:
 	switch ( event->u.control.subtype ) {
 	  case et_scrollbarchange:
-	    stack_scroll(dv,&event->u.control.u.sb);
+	    dvstorage_scroll(dv,&event->u.control.u.sb);
 	  break;
 	}
       break;
-#endif
+      case et_resize:
+	GDrawGetSize(gw,&r);
+	GGadgetGetSize(dv->storagesb,&g);
+	GGadgetMove(dv->storagesb,r.width-g.width,0);
+	GGadgetResize(dv->storagesb,g.width,r.height);
+	DVStorage_SetScrollBar(dv);
+	GDrawRequestExpose(gw,NULL,false);
+      break;
       case et_close:
 	GDrawDestroyWindow(dv->storage);
 	debug_wins &= ~dw_storage;
@@ -1050,6 +1287,7 @@ static void dvcvt_scroll(DebugView *dv,struct sbevent *sb) {
     int newpos = dv->cvt_offtop;
     GRect size;
     TT_ExecContext exc = DebuggerGetEContext(dv->dc);
+    extern int _GScrollBar_Width;
 
     GDrawGetSize(dv->cvt,&size);
     switch( sb->type ) {
@@ -1083,7 +1321,9 @@ static void dvcvt_scroll(DebugView *dv,struct sbevent *sb) {
 	int diff = newpos-dv->cvt_offtop;
 	dv->cvt_offtop = newpos;
 	GScrollBarSetPos(dv->cvtsb,dv->cvt_offtop);
-	GDrawScroll(dv->cvt,NULL,0,diff*dv->ii.fh);
+	size.x = size.y = 0;
+	size.width -= GDrawPointsToPixels(dv->gloss,_GScrollBar_Width);
+	GDrawScroll(dv->cvt,&size,0,diff*dv->ii.fh);
     }
 }
 
@@ -1153,6 +1393,8 @@ static void DVCreateRaster(DebugView *dv) {
 static void DVCreateRegs(DebugView *dv) {
     GWindowAttrs wattrs;
     GRect pos;
+    GGadgetData gd;
+    extern int _GScrollBar_Width;
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_wtitle;
@@ -1164,15 +1406,25 @@ static void DVCreateRegs(DebugView *dv) {
     wattrs.window_title = _("Registers (TrueType)");
 #endif
     pos.x = 664; pos.y = 1;
-    pos.width = 133; pos.height = 269;
+    pos.width = 143; pos.height = 269;
     dv->regs = GDrawCreateTopWindow(NULL,&pos,dvreg_e_h,dv,&wattrs);
+
+    memset(&gd,0,sizeof(gd));
+
+    gd.pos.y = 0; gd.pos.height = pos.height;
+    gd.pos.width = GDrawPointsToPixels(dv->regs,_GScrollBar_Width);
+    gd.pos.x = pos.width-gd.pos.width;
+    gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_sb_vert;
+    dv->regsb = GScrollBarCreate(dv->regs,&gd,dv);
+
     GDrawSetVisible(dv->regs,true);
 }
 
 static void DVCreateStack(DebugView *dv) {
     GWindowAttrs wattrs;
     GRect pos;
-    /*extern int _GScrollBar_Width;*/
+    GGadgetData gd;
+    extern int _GScrollBar_Width;
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_wtitle;
@@ -1184,15 +1436,25 @@ static void DVCreateStack(DebugView *dv) {
     wattrs.window_title = _("Stack (TrueType)");
 #endif
     pos.x = 664; pos.y = 302;
-    pos.width = 133; pos.height = 269;
+    pos.width = 143; pos.height = 269;
     dv->stack = GDrawCreateTopWindow(NULL,&pos,dvstack_e_h,dv,&wattrs);
+
+    memset(&gd,0,sizeof(gd));
+
+    gd.pos.y = 0; gd.pos.height = pos.height;
+    gd.pos.width = GDrawPointsToPixels(dv->stack,_GScrollBar_Width);
+    gd.pos.x = pos.width-gd.pos.width;
+    gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_sb_vert;
+    dv->stacksb = GScrollBarCreate(dv->stack,&gd,dv);
+
     GDrawSetVisible(dv->stack,true);
 }
 
 static void DVCreateStore(DebugView *dv) {
     GWindowAttrs wattrs;
     GRect pos;
-    /*extern int _GScrollBar_Width;*/
+    GGadgetData gd;
+    extern int _GScrollBar_Width;
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_wtitle;
@@ -1206,6 +1468,15 @@ static void DVCreateStore(DebugView *dv) {
     pos.x = 664; pos.y = 602;
     pos.width = 133; pos.height = 100;
     dv->storage = GDrawCreateTopWindow(NULL,&pos,dvstore_e_h,dv,&wattrs);
+
+    memset(&gd,0,sizeof(gd));
+
+    gd.pos.y = 0; gd.pos.height = pos.height;
+    gd.pos.width = GDrawPointsToPixels(dv->storage,_GScrollBar_Width);
+    gd.pos.x = pos.width-gd.pos.width;
+    gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_sb_vert;
+    dv->storagesb = GScrollBarCreate(dv->storage,&gd,dv);
+
     GDrawSetVisible(dv->storage,true);
 }
 
@@ -1305,7 +1576,6 @@ static void DVCreatePoints(DebugView *dv) {
 static void DVCreateCvt(DebugView *dv) {
     GWindowAttrs wattrs;
     GRect pos;
-    /*extern int _GScrollBar_Width;*/
     GGadgetData gd;
     extern int _GScrollBar_Width;
 
@@ -1313,11 +1583,7 @@ static void DVCreateCvt(DebugView *dv) {
     wattrs.mask = wam_events|wam_cursor|wam_wtitle;
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
     wattrs.window_title = GStringGetResource(_STR_Cvt,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    wattrs.window_title = _("Cvt");
-#endif
     pos.x = 664; pos.y = 732;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,125)); pos.height = 169;
     dv->cvt = GDrawCreateTopWindow(NULL,&pos,dvcvt_e_h,dv,&wattrs);
@@ -1408,6 +1674,10 @@ void CVDebugFree(DebugView *dv) {
 	if ( dv->storage!=NULL ) {
 	    GDrawSetUserData(dv->storage,NULL);
 	    GDrawDestroyWindow(dv->storage);
+	}
+	if ( dv->gloss!=NULL ) {
+	    GDrawSetUserData(dv->gloss,NULL);
+	    GDrawDestroyWindow(dv->gloss);
 	}
 	if ( dv->dv!=NULL ) {
 	    GDrawDestroyWindow(dv->dv);
