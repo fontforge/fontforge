@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 9-Feb-2002 -->
+  <!-- AP: Last modified: 11-Feb-2002 -->
   <TITLE>The Element Menu</TITLE>
 </HEAD>
 <BODY>
@@ -444,55 +444,10 @@ This menu is not present in the Metrics View.
     the current character were "&Agrave;" then a reference to "A" would be added
     to it, and a reference to "`" would be centered above the "A". <BR>
     If <A HREF="editmenu.html#From">Copy From</A> is set to All Fonts then any
-    bitmaps will have a similar process done (even in the outline character view).
-    <P>
-    Choosing accents can be a slightly tricky process. Unicode says that accented
-    letters should be built out of the accents in the range 0x300-0x340, but
-    this does not work too well in postscript. A Type1 font works better if the
-    accented character is in the Adobe Standard Encoding, which means either
-    using accents around 0x2d0 or ascii characters. Pfaedit will first attempt
-    to find an accent around 0x2d0, then in ascii and finally in the 0x300-0x340
-    range.
-    <P>
-    Not all accents should be centered above the base character, a cedilla is
-    (usually) centered underneath the base, while other accents need to be placed
-    to the left or right, or even overstruck. PfaEdit should know about proper
-    placement of most accents (or at least a rough approximation thereto).
-    <P>
-    Some Unicode characters contain more than one accent. Additional accents
-    will be treated similarly. This command can also be used to generate more
-    general composite characters . Unicode 0x2163 is the roman numeral IV and
-    this command may be used to build it. Greek capital Alpha looks exactly like
-    Latin capital A and can be created. On the other hand the oe ligature will
-    be replaced by an "o" followed by "e", so be a little careful. Some accents
-    (for example cedilla) are treated unexpectedly on certain letters (different
-    ways in different languages), so be careful of g-cedilla. &Aring; often merges
-    the ring into the top of the A, but here it will float above it. Be alert.
-    <P>
-    <FONT COLOR="Red"><STRONG><SMALL>NOTE:</SMALL></STRONG></FONT> My centering
-    algorithms attempt to guess what will look centered to the human eye (centering
-    it in the middle of the character will often not look centered). You should
-    examine all built characters and be prepared to adjust the accent.
-    <P>
-    The algorithms take some account of the italicangle<BR>
-    You can configure how high the accent should float above the base character
-    with the AccentOffsetPercent preference item. This lets you specify the
-    percentage of the em to use as a separation. To avoid accents at slightly
-    different heights, all characters near the x-height are treated as being
-    at the x-height, and similarly for all characters near the cap height. 
-      <HR>
-    When displaying latin (cyrillic, greek, etc.) text amid a CJK characters
-    displayed vertically the convention is that the latin glyphs should be rotated
-    (if you were to rotate the page so that the CJK characters ran left to right
-    rather than top to bottom, then the latin characters would read normally).
-    Certain slots in Adobe's cid assignments have been left for rotated latin
-    letters. If you apply Build Accented Character to one of these slots it will
-    find the appropriate latin letter and rotate it properly.<BR>
-    If a character's name is "vertcid_&lt;cid&gt;" where &lt;cid&gt; is a decimal
-    number, then it is assumed to be a vertically rotated version of the glyph
-    at &lt;cid&gt;. In non-cid-keyed fonts, if a character's name is
-    "vertuni&lt;uni&gt;" where &lt;uni&gt; is a four digit hex number, then it
-    is assumed to be a vertically rotated version of that unicode character.
+    bitmaps will have a similar process done (even in the outline character
+    view).<BR>
+    A more complete description is given in the section on
+    <A HREF="accented.html">accented characters</A>.
   <DT>
     <A NAME="Merge">Merge</A> Fonts...
   <DD>

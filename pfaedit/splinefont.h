@@ -108,7 +108,8 @@ typedef struct bdffloat {
 
 typedef struct undoes {
     struct undoes *next;
-    enum undotype { ut_none=0, ut_state, ut_tstate, ut_statehint, ut_statename, ut_width, ut_vwidth,
+    enum undotype { ut_none=0, ut_state, ut_tstate, ut_statehint, ut_statename,
+	    ut_width, ut_vwidth, ut_lbearing, ut_rbearing,
 	    ut_bitmap, ut_bitmapsel, ut_composit, ut_multiple, ut_noop } undotype;
     union {
 	struct {
@@ -126,6 +127,8 @@ typedef struct undoes {
 	    struct splinefont *copied_from;
 	} state;
 	int width;	/* used by both ut_width and ut_vwidth */
+	int lbearing;	/* used by ut_lbearing */
+	int rbearing;	/* used by ut_rbearing */
 	struct {
 	    /*int16 width;*/	/* width should be controled by postscript */
 	    int16 xmin,xmax,ymin,ymax;

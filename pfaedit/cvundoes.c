@@ -761,9 +761,25 @@ static void CopyBufferFree(void) {
     copybuffer.undotype = ut_none;
 }
 
+enum undotype CopyUndoType(void) {
+    Undoes *paster;
+
+    paster = &copybuffer;
+    while ( paster->undotype==ut_composit || paster->undotype==ut_multiple ) {
+	if ( paster->undotype==ut_multiple )
+	    paster = paster->u.multiple.mult;
+	else if ( paster->u.composit.state==NULL )
+return( ut_none );
+	else
+	    paster = paster->u.composit.state;
+    }
+return( paster->undotype );
+}
+
 int CopyContainsSomething(void) {
 return( copybuffer.undotype==ut_state || copybuffer.undotype==ut_tstate ||
 	copybuffer.undotype==ut_width || copybuffer.undotype==ut_vwidth ||
+	copybuffer.undotype==ut_lbearing || copybuffer.undotype==ut_rbearing ||
 	copybuffer.undotype==ut_composit ||
 	copybuffer.undotype==ut_noop );
 }
@@ -862,20 +878,28 @@ static Undoes *SCCopyAll(SplineChar *sc,int full) {
 return( cur );
 }
 
-void CopyWidth(CharView *cv) {
+void CopyWidth(CharView *cv,enum undotype ut) {
+    DBounds bb;
 
     CopyBufferFree();
 
-    copybuffer.undotype = ut_width;
-    copybuffer.u.width = cv->sc->width;
-}
-
-void CopyVWidth(CharView *cv) {
-
-    CopyBufferFree();
-
-    copybuffer.undotype = ut_vwidth;
-    copybuffer.u.width = cv->sc->vwidth;
+    copybuffer.undotype = ut;
+    switch ( ut ) {
+      case ut_width:
+	copybuffer.u.width = cv->sc->width;
+      break;
+      case ut_vwidth:
+	copybuffer.u.width = cv->sc->width;
+      break;
+      case ut_lbearing:
+	SplineCharFindBounds(cv->sc,&bb);
+	copybuffer.u.lbearing = bb.minx;
+      break;
+      case ut_rbearing:
+	SplineCharFindBounds(cv->sc,&bb);
+	copybuffer.u.rbearing = cv->sc->width-bb.maxx;
+      break;
+    }
 }
 
 static SplineChar *FindCharacter(SplineFont *sf,RefChar *rf) {
@@ -967,6 +991,8 @@ static void PasteNonExistantRefCheck(SplineChar *sc,Undoes *paster,RefChar *ref,
 
 /* when pasting from the fontview we do a clear first */
 static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear) {
+    DBounds bb;
+    real transform[6];
 
     switch ( paster->undotype ) {
       case ut_noop:
@@ -1022,15 +1048,36 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear) {
 	SCCharChangedUpdate(sc);
       break;
       case ut_vwidth:
-	SCPreserveVWidth(sc);
-	sc->vwidth = paster->u.width;
+	if ( !sc->parent->hasvmetrics )
+	    GWidgetErrorR(_STR_NoVerticalMetrics,_STR_FontNoVerticalMetrics);
+	else {
+	    SCPreserveVWidth(sc);
+	    sc->vwidth = paster->u.width;
+	    SCCharChangedUpdate(sc);
+	}
+      break;
+      case ut_rbearing:
+	SCPreserveWidth(sc);
+	SplineCharFindBounds(sc,&bb);
+	SCSynchronizeWidth(sc,bb.maxx + paster->u.rbearing,sc->width,fv);
 	SCCharChangedUpdate(sc);
+      break;
+      case ut_lbearing:
+	SplineCharFindBounds(sc,&bb);
+	transform[0] = transform[3] = 1.0;
+	transform[1] = transform[2] = transform[5] = 0;
+	transform[4] = paster->u.lbearing-bb.minx;
+	if ( transform[4]!=0 )
+	    FVTrans(fv,sc,transform,NULL,false);
+	/* FVTrans will preserver the state and update the chars */
       break;
     }
 }
 
 static void _PasteToCV(CharView *cv,Undoes *paster) {
     int refstate = 0;
+    DBounds bb;
+    real transform[6];
 
     cv->lastselpt = NULL;
     switch ( paster->undotype ) {
@@ -1107,7 +1154,24 @@ static void _PasteToCV(CharView *cv,Undoes *paster) {
 	SCSynchronizeWidth(cv->sc,paster->u.width,cv->sc->width,NULL);
       break;
       case ut_vwidth:
-	cv->sc->vwidth = paster->u.state.vwidth;
+	if ( !cv->sc->parent->hasvmetrics )
+	    GWidgetErrorR(_STR_NoVerticalMetrics,_STR_FontNoVerticalMetrics);
+	else
+	    cv->sc->vwidth = paster->u.state.vwidth;
+      break;
+      case ut_rbearing:
+	SplineCharFindBounds(cv->sc,&bb);
+	SCSynchronizeWidth(cv->sc,bb.maxx + paster->u.rbearing,cv->sc->width,cv->fv);
+      break;
+      case ut_lbearing:
+	SplineCharFindBounds(cv->sc,&bb);
+	transform[0] = transform[3] = 1.0;
+	transform[1] = transform[2] = transform[5] = 0;
+	transform[4] = paster->u.lbearing-bb.minx;
+	if ( transform[4]!=0 )
+	    FVTrans(cv->fv,cv->sc,transform,NULL,false);
+	/* FVTrans will preserver the state and update the chars */
+	/* CVPaste depends on this behavior */
       break;
       case ut_composit:
 	if ( paster->u.composit.state!=NULL )
@@ -1213,18 +1277,35 @@ void PasteToBC(BDFChar *bc,int pixelsize,FontView *fv) {
     _PasteToBC(bc,pixelsize,&copybuffer,false,fv);
 }
 
-void FVCopyWidth(FontView *fv) {
+void FVCopyWidth(FontView *fv,enum undotype ut) {
     Undoes *head=NULL, *last=NULL, *cur;
     int i;
+    SplineChar *sc;
+    DBounds bb;
 
     CopyBufferFree();
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] ) {
 	cur = chunkalloc(sizeof(Undoes));
-	cur->undotype = ut_width;
-	if ( fv->sf->chars[i]!=NULL )
-	    cur->u.width = fv->sf->chars[i]->width;
-	else
+	cur->undotype = ut;
+	if ( (sc=fv->sf->chars[i])!=NULL ) {
+	    switch ( ut ) {
+	      case ut_width:
+		cur->u.width = sc->width;
+	      break;
+	      case ut_vwidth:
+		cur->u.width = sc->width;
+	      break;
+	      case ut_lbearing:
+		SplineCharFindBounds(sc,&bb);
+		cur->u.lbearing = bb.minx;
+	      break;
+	      case ut_rbearing:
+		SplineCharFindBounds(sc,&bb);
+		cur->u.rbearing = sc->width-bb.maxx;
+	      break;
+	    }
+	} else
 	    cur->undotype = ut_noop;
 	if ( head==NULL )
 	    head = cur;
@@ -1367,7 +1448,12 @@ void PasteIntoFV(FontView *fv,int doclear) {
 	  case ut_noop:
 	  break;
 	  case ut_state: case ut_width: case ut_vwidth:
+	  case ut_lbearing: case ut_rbearing:
 	  case ut_statehint: case ut_statename:
+	    if ( !fv->sf->hasvmetrics && cur->undotype==ut_vwidth) {
+		GWidgetErrorR(_STR_NoVerticalMetrics,_STR_FontNoVerticalMetrics);
+ goto err;
+	    }
 	    PasteToSC(SFMakeChar(fv->sf,i),cur,fv,doclear);
 	  break;
 	  case ut_bitmapsel: case ut_bitmap:
@@ -1401,6 +1487,7 @@ void PasteIntoFV(FontView *fv,int doclear) {
 	if ( !GProgressNext())
     break;
     }
+ err:
     GProgressEndIndicator();
     if ( oldsel!=fv->selected )
 	free(oldsel);

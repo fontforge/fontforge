@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 15-Feb-2002 -->
+  <!-- AP: Last modified: 16-Feb-2002 -->
   <TITLE>The Edit Menu</TITLE>
 </HEAD>
 <BODY>
@@ -25,6 +25,12 @@ in text fields.
     <A HREF="#Reference">Copy Reference</A>
   <LI>
     <A HREF="#Width">Copy Width</A>
+  <LI>
+    <A HREF="#VWidth">Copy VWidth</A>
+  <LI>
+    <A HREF="#LBearing">Copy LBearing</A>
+  <LI>
+    <A HREF="#RBearing">Copy RBearing</A>
   <LI>
     <A HREF="#Paste">Paste</A>
   <LI>
@@ -53,9 +59,9 @@ in text fields.
       <LI>
 	<A HREF="#PrevCP">Prev Control Point</A>
       <LI>
-	<A HREF="#SelWidth">Select Width</A>
+	<A HREF="#SelWidth">(De)Select Width</A>
       <LI>
-	<A HREF="#SelVWidth">Select VWidth</A>
+	<A HREF="#SelVWidth">(De)Select VWidth</A>
     </UL>
   <LI>
     <A HREF="#Unlink">Unlink Reference</A>
@@ -141,6 +147,36 @@ in text fields.
     <P>
     This command is not available in the Bitmap View.
   <DT>
+    Copy <A NAME="VWidth">VWidth</A>
+  <DD>
+    In the Font View this command copies the vertical widths of all selected
+    characters and stores them in the clipboard.
+    <P>
+    In the Outline View this command copies the vertical width of the current
+    character and stores it in the clipboard.
+    <P>
+    This command is not available in the Bitmap View.
+  <DT>
+    Copy <A NAME="LBearing">LBearing</A>
+  <DD>
+    In the Font View this command copies the left side bearings of all selected
+    characters and stores them in the clipboard.
+    <P>
+    In the Outline View this command copies the left side bearing of the current
+    character and stores it in the clipboard.
+    <P>
+    This command is not available in the Bitmap View.
+  <DT>
+    Copy <A NAME="RBearing">RBearing</A>
+  <DD>
+    In the Font View this command copies the right side bearings of all selected
+    characters and stores them in the clipboard.
+    <P>
+    In the Outline View this command copies the right side bearing of the current
+    character and stores it in the clipboard.
+    <P>
+    This command is not available in the Bitmap View.
+  <DT>
     <A NAME="Paste">Paste</A>
   <DD>
     In the Font View this command will paste whatever is in the clipboard into
@@ -209,7 +245,10 @@ in text fields.
       <DT>
 	Select <A NAME="All">All</A>
       <DD>
-	Should be self explanatory.
+	In the outline view it selects all points, all references (all images if
+	the background is active) and the width line (and the vertical width line
+	if that is enabled). In the fontview it selects all characters. In the bitmap
+	view it selects the current bitmap region.
       <DT>
 	<A NAME="Deselect">Deselect</A> All
       <DD>
@@ -236,14 +275,14 @@ in text fields.
       <DD>
 	Selects the "Prev Control Point" of the current point.
       <DT>
-	<A NAME="SelWidth">Select</A> Width
+	(De)<A NAME="SelWidth">Select</A> Width
       <DD>
-	Deselects everything and selects the width line.
+	Toggles whether the width line is selected.
       <DT>
-	<A NAME="SelVWidth">Select</A> VWidth
+	<A NAME="SelVWidth">(De)Select</A> VWidth
       <DD>
-	(if vertical metrics are enabled) Deselects everything and selects the vertical
-	width line.
+	(if vertical metrics are enabled) Toggles whether the vertical width line
+	is selected.
     </DL>
   <DT>
     <A NAME="Unlink">Unlink</A> Reference

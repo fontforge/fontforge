@@ -736,6 +736,9 @@ static void FVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_RemoveUndoes	2114
 #define MID_CopyFgToBg	2115
 #define MID_ClearBackground	2116
+#define MID_CopyLBearing	2125
+#define MID_CopyRBearing	2126
+#define MID_CopyVWidth	2127
 #define MID_Convert2CID	2800
 #define MID_Flatten	2801
 #define MID_InsertFont	2802
@@ -788,7 +791,12 @@ static void FVMenuCopyWidth(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     if ( FVAnyCharSelected(fv)==-1 )
 return;
-    FVCopyWidth(fv);
+    if ( mi->mid==MID_CopyVWidth && !fv->sf->hasvmetrics )
+return;
+    FVCopyWidth(fv,mi->mid==MID_CopyWidth?ut_width:
+		   mi->mid==MID_CopyVWidth?ut_vwidth:
+		   mi->mid==MID_CopyLBearing?ut_lbearing:
+					 ut_rbearing);
 }
 
 static void FVMenuPaste(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -1052,10 +1060,14 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
-	  case MID_Cut: case MID_Copy: case MID_Clear: case MID_CopyWidth:
+	  case MID_Cut: case MID_Copy: case MID_Clear:
+	  case MID_CopyWidth: case MID_CopyLBearing: case MID_CopyRBearing:
 	  case MID_Paste: case MID_CopyRef: case MID_UnlinkRef:
 	  case MID_RemoveUndoes: case MID_CopyFgToBg:
 	    mi->ti.disabled = pos==-1;
+	  break;
+	  case MID_CopyVWidth: 
+	    mi->ti.disabled = pos==-1 || !fv->sf->hasvmetrics;
 	  break;
 	  case MID_ClearBackground:
 	    mi->ti.disabled = true;
@@ -2271,6 +2283,9 @@ static GMenuItem edlist[] = {
     { { (unichar_t *) _STR_Copy, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, 'C', ksm_control, NULL, NULL, FVMenuCopy, MID_Copy },
     { { (unichar_t *) _STR_Copyref, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'o' }, 'G', ksm_control, NULL, NULL, FVMenuCopyRef, MID_CopyRef },
     { { (unichar_t *) _STR_Copywidth, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'W' }, 'W', ksm_control, NULL, NULL, FVMenuCopyWidth, MID_CopyWidth },
+    { { (unichar_t *) _STR_CopyVWidth, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'V' }, '\0', ksm_control, NULL, NULL, FVMenuCopyWidth, MID_CopyVWidth },
+    { { (unichar_t *) _STR_CopyLBearing, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'p' }, '\0', ksm_control, NULL, NULL, FVMenuCopyWidth, MID_CopyLBearing },
+    { { (unichar_t *) _STR_CopyRBearing, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'g' }, '\0', ksm_control, NULL, NULL, FVMenuCopyWidth, MID_CopyRBearing },
     { { (unichar_t *) _STR_Paste, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, 'V', ksm_control, NULL, NULL, FVMenuPaste, MID_Paste },
     { { (unichar_t *) _STR_Clear, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'l' }, 0, 0, NULL, NULL, FVMenuClear, MID_Clear },
     { { (unichar_t *) _STR_ClearBackground, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, 0, 0, NULL, NULL, FVMenuClearBackground, MID_ClearBackground },
@@ -4020,7 +4035,7 @@ void FVFakeMenus(FontView *fv,int cmd) {
 	FVCopy(fv,false);
       break;
       case 3:
-	FVCopyWidth(fv);
+	FVCopyWidth(fv,ut_width);
       break;
       case 4:
 	PasteIntoFV(fv,true);
@@ -4039,6 +4054,15 @@ void FVFakeMenus(FontView *fv,int cmd) {
       break;
       case 9:
 	PasteIntoFV(fv,false);
+      break;
+      case 10:
+	FVCopyWidth(fv,ut_vwidth);
+      break;
+      case 11:
+	FVCopyWidth(fv,ut_lbearing);
+      break;
+      case 12:
+	FVCopyWidth(fv,ut_rbearing);
       break;
 
       case 100:

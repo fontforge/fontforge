@@ -2469,6 +2469,9 @@ return( true );
 #define MID_SelNone	2121
 #define MID_SelectWidth	2122
 #define MID_SelectVWidth	2123
+#define MID_CopyLBearing	2124
+#define MID_CopyRBearing	2125
+#define MID_CopyVWidth	2126
 #define MID_Clockwise	2201
 #define MID_Counter	2202
 #define MID_GetInfo	2203
@@ -2862,7 +2865,12 @@ static void CVCopyRef(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void CVCopyWidth(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    CopyWidth(cv);
+    if ( mi->mid==MID_CopyVWidth && !cv->sc->parent->hasvmetrics )
+return;
+    CopyWidth(cv,mi->mid==MID_CopyWidth?ut_width:
+		 mi->mid==MID_CopyVWidth?ut_vwidth:
+		 mi->mid==MID_CopyLBearing?ut_lbearing:
+					 ut_rbearing);
 }
 
 static void CVDoClear(CharView *cv) {
@@ -2913,8 +2921,11 @@ return;
 
 static void CVPaste(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    CVPreserveState(cv);
-    CVClearSel(cv);
+    enum undotype ut = CopyUndoType();
+    if ( ut!=ut_lbearing )	/* The lbearing code does this itself */
+	CVPreserveState(cv);
+    if ( ut!=ut_width && ut!=ut_vwidth && ut!=ut_lbearing && ut!=ut_rbearing )
+	CVClearSel(cv);
     PasteToCV(cv);
     CVCharChangedUpdate(cv);
 }
@@ -2975,8 +2986,7 @@ static void CVSelectNone(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void CVSelectWidth(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    CVClearSel(cv);
-    cv->widthsel = true;
+    cv->widthsel = !cv->widthsel;
     SCUpdateAll(cv->sc);
 }
 
@@ -2984,8 +2994,7 @@ static void CVSelectVWidth(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     if ( !cv->showvmetrics || !cv->sc->parent->hasvmetrics )
 return;
-    CVClearSel(cv);
-    cv->vwidthsel = true;
+    cv->vwidthsel = !cv->widthsel;
     SCUpdateAll(cv->sc);
 }
 
@@ -3046,6 +3055,10 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_Cut: /*case MID_Copy:*/ case MID_Clear:
 	    /* If nothing is selected, copy copies everything */
 	    mi->ti.disabled = !anypoints && !anyrefs && !anyimages;
+	  break;
+	  case MID_CopyLBearing: case MID_CopyRBearing:
+	    mi->ti.disabled = cv->drawmode!=dm_fore ||
+		    (cv->sc->splines==NULL && cv->sc->refs==NULL);
 	  break;
 	  case MID_CopyFgToBg:
 	    mi->ti.disabled = cv->sc->splines==NULL;
@@ -3959,9 +3972,17 @@ static void sllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  break;
 	  case MID_SelectWidth:
 	    mi->ti.disabled = !cv->showhmetrics;
+	    if ( !mi->ti.disabled ) {
+		free(mi->ti.text);
+		mi->ti.text = u_copy(GStringGetResource(cv->widthsel?_STR_DeselectWidth:_STR_SelectWidth,NULL));
+	    }
 	  break;
 	  case MID_SelectVWidth:
 	    mi->ti.disabled = !cv->showvmetrics || !cv->sc->parent->hasvmetrics;
+	    if ( !mi->ti.disabled ) {
+		free(mi->ti.text);
+		mi->ti.text = u_copy(GStringGetResource(cv->vwidthsel?_STR_DeselectVWidth:_STR_SelectVWidth,NULL));
+	    }
 	  break;
 	}
     }
@@ -4094,6 +4115,8 @@ static GMenuItem edlist[] = {
     { { (unichar_t *) _STR_Copy, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, 'C', ksm_control, NULL, NULL, CVCopy, MID_Copy },
     { { (unichar_t *) _STR_Copyref, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'o' }, 'G', ksm_control, NULL, NULL, CVCopyRef, MID_CopyRef },
     { { (unichar_t *) _STR_Copywidth, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'W' }, 'W', ksm_control, NULL, NULL, CVCopyWidth, MID_CopyWidth },
+    { { (unichar_t *) _STR_CopyLBearing, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'p' }, '\0', ksm_control, NULL, NULL, CVCopyWidth, MID_CopyLBearing },
+    { { (unichar_t *) _STR_CopyRBearing, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'g' }, '\0', ksm_control, NULL, NULL, CVCopyWidth, MID_CopyRBearing },
     { { (unichar_t *) _STR_Paste, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, 'V', ksm_control, NULL, NULL, CVPaste, MID_Paste },
     { { (unichar_t *) _STR_Clear, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'l' }, GK_Delete, 0, NULL, NULL, CVClear, MID_Clear },
     { { (unichar_t *) _STR_Merge, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, 'M', ksm_control, NULL, NULL, CVMerge, MID_Merge },

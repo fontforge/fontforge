@@ -690,6 +690,20 @@ static void bCopyWidth(Context *c) {
     doEdit(c,3);
 }
 
+static void bCopyVWidth(Context *c) {
+    if ( c->curfv!=NULL && !c->curfv->sf->hasvmetrics )
+	error(c,"Vertical metrics not enabled in this font");
+    doEdit(c,10);
+}
+
+static void bCopyLBearing(Context *c) {
+    doEdit(c,11);
+}
+
+static void bCopyRBearing(Context *c) {
+    doEdit(c,12);
+}
+
 static void bPaste(Context *c) {
     doEdit(c,4);
 }
@@ -1542,6 +1556,9 @@ struct builtins { char *name; void (*func)(Context *); int nofontok; } builtins[
     { "Copy", bCopy },
     { "CopyReference", bCopyReference },
     { "CopyWidth", bCopyWidth },
+    { "CopyVWidth", bCopyVWidth },
+    { "CopyLBearing", bCopyLBearing },
+    { "CopyRBearing", bCopyRBearing },
     { "Paste", bPaste },
     { "PasteInto", bPasteInto },
     { "Clear", bClear },
