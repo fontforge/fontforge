@@ -1322,7 +1322,34 @@ static void FVMenuCharInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     if ( pos<0 || fv->cidmaster!=NULL )
 return;
     SFMakeChar(fv->sf,pos);
-    SCGetInfo(fv->sf->chars[pos]);
+    SCCharInfo(fv->sf->chars[pos]);
+}
+
+static void FVMenuAAT(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    uint32 tag = (uint32) (mi->ti.userdata);
+    int i;
+
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL )
+	SCTagDefault(fv->sf->chars[i],tag);
+}
+
+static void FVMenuAATSuffix(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    uint32 tag;
+    char *suffix;
+    unichar_t *usuffix;
+    int i;
+    extern GTextInfo simplesubs_tags[];
+
+    usuffix = AskNameTag(_STR_SuffixToTag,NULL,0,simplesubs_tags);
+    if ( usuffix==NULL )
+return;
+    suffix = cu_copy(usuffix);
+    free(usuffix);
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL )
+	SCSuffixDefault(fv->sf->chars[i],tag,suffix);
+    free(suffix);
 }
 
 static void FVMenuShowDependents(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -2832,9 +2859,42 @@ static GMenuItem edlist[] = {
     { NULL }
 };
 
+static GMenuItem aatlist[] = {
+    { { (unichar_t *) _STR_All, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) _STR_Ligatures, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0xffffffff, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_StandardLig, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('l','i','g','a'), NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) _STR_RequiredLig, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('r','l','i','g'), NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) _STR_HistoricLig, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('h','l','i','g'), NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) _STR_DiscretionaryLig, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('d','l','i','g'), NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) _STR_FractionLig, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('f','r','a','c'), NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_R2LAlt, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('r','t','l','a'), NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) _STR_VertRotAlt, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('v','r','t','2'), NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) _STR_SmallCaps, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('s','m','c','p'), NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) _STR_OldstyleFigures, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('o','n','u','m'), NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) _STR_Superscript, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('s','u','p','s'), NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) _STR_Subscript, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('s','u','b','s'), NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) _STR_Swash, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('s','w','s','h'), NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) _STR_PropWidth, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('p','w','i','d'), NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) _STR_FullWidths, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('f','w','i','d'), NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) _STR_HalfWidths, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('h','w','i','d'), NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) _STR_InitialForms, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('i','n','i','t'), NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) _STR_MedialForms, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('m','e','d','i'), NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) _STR_TerminalForms, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('f','i','n','a'), NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) _STR_IsolatedForms, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('i','s','o','l'), NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_LeftBounds, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('l','f','b','d'), NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) _STR_RightBounds, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('r','t','b','d'), NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_SuffixToTag, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAATSuffix },
+    { NULL }
+};
+
 static GMenuItem ellist[] = {
     { { (unichar_t *) _STR_Fontinfo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, 'F', ksm_control|ksm_shift, NULL, NULL, FVMenuFontInfo },
     { { (unichar_t *) _STR_Charinfo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, 'I', ksm_control, NULL, NULL, FVMenuCharInfo, MID_CharInfo },
+    { { (unichar_t *) _STR_DefaultAAT, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'D' }, 'I', ksm_control|ksm_meta, aatlist },
     { { (unichar_t *) _STR_ShowDependents, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'D' }, 'I', ksm_control|ksm_meta, NULL, NULL, FVMenuShowDependents, MID_ShowDependents },
     { { (unichar_t *) _STR_Findprobs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'o' }, 'E', ksm_control, NULL, NULL, FVMenuFindProblems, MID_FindProblems },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
@@ -4284,7 +4344,7 @@ static void FVMouse(FontView *fv,GEvent *event) {
 	    GDrawSetCursor(fv->v,ct_mypointer);
 	    fv->drag_and_drop = false;
 	}
-	if ( !(event->u.mouse.state&ksm_shift) ) {
+	if ( !(event->u.mouse.state&ksm_shift) && event->u.mouse.clicks<=1 ) {
 	    if ( !fv->selected[pos] )
 		FVDeselectAll(fv);
 	    else if ( event->u.mouse.button!=3 ) {

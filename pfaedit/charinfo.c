@@ -118,11 +118,11 @@ static GTextInfo scripts[] = {
 };
 
 static GTextInfo ligature_tags[] = {
-    { (unichar_t *) _STR_Discretionary, NULL, 0, 0, (void *) CHR('d','l','i','g'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Historic, NULL, 0, 0, (void *) CHR('h','l','i','g'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Required, NULL, 0, 0, (void *) CHR('r','l','i','g'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Standard, NULL, 0, 0, (void *) CHR('l','i','g','a'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Fraction, NULL, 0, 0, (void *) CHR('f','r','a','c'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_DiscretionaryLig, NULL, 0, 0, (void *) CHR('d','l','i','g'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_HistoricLig, NULL, 0, 0, (void *) CHR('h','l','i','g'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_RequiredLig, NULL, 0, 0, (void *) CHR('r','l','i','g'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_StandardLig, NULL, 0, 0, (void *) CHR('l','i','g','a'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_FractionLig, NULL, 0, 0, (void *) CHR('f','r','a','c'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_AltFrac, NULL, 0, 0, (void *) CHR('a','f','r','c'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_AboveBaseSubs, NULL, 0, 0, (void *) CHR('a','b','v','s'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_BelowBaseForms, NULL, 0, 0, (void *) CHR('b','l','w','f'), NULL, false, false, false, false, false, false, false, true },
@@ -162,7 +162,7 @@ static GTextInfo simplepos_tags[] = {
     { NULL }
 };
 
-static GTextInfo simplesubs_tags[] = {
+GTextInfo simplesubs_tags[] = {
     { (unichar_t *) _STR_AllAlt, NULL, 0, 0, (void *) CHR('a','a','l','t'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_AboveBaseForms, NULL, 0, 0, (void *) CHR('a','b','v','f'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_CaseSensForms, NULL, 0, 0, (void *) CHR('c','a','s','e'), NULL, false, false, false, false, false, false, false, true },
@@ -173,10 +173,10 @@ static GTextInfo simplesubs_tags[] = {
     { (unichar_t *) _STR_TerminalForms, NULL, 0, 0, (void *) CHR('f','i','n','a'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_FullWidths, NULL, 0, 0, (void *) CHR('f','w','i','d'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_HistoricalForms, NULL, 0, 0, (void *) CHR('h','i','s','t'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Historic, NULL, 0, 0, (void *) CHR('h','l','i','g'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_HorKanaAlt, NULL, 0, 0, (void *) CHR('h','k','n','a'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_Hanja2Hangul, NULL, 0, 0, (void *) CHR('h','n','g','l'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_HalfWidths, NULL, 0, 0, (void *) CHR('h','w','i','d'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_InitialForms, NULL, 0, 0, (void *) CHR('i','n','i','t'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_IsolatedForms, NULL, 0, 0, (void *) CHR('i','s','o','l'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_Italics, NULL, 0, 0, (void *) CHR('i','t','a','l'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_JIS78Forms, NULL, 0, 0, (void *) CHR('j','p','7','8'), NULL, false, false, false, false, false, false, false, true },
@@ -982,7 +982,7 @@ return;
 	}
     }
     if ( i!=0 )
-	SCCharChangedUpdate(sc);
+	sc->parent->changed = true;
 }
 		
 int SCSetMetaData(SplineChar *sc,char *name,int unienc,const unichar_t *comment) {
@@ -1127,7 +1127,8 @@ return( false );
 	    }
 	}
     }
-    if ( ret ) SCCharChangedUpdate(ci->sc);
+    if ( ret )
+	ci->sc->parent->changed = true;
 return( ret );
 }
 
@@ -1377,6 +1378,18 @@ uint32 LigTagFromUnicode(int uni) {
 return( tag );
 }
 
+static PST *AddPos(PST *last,uint32 tag,int dx, int dy, int dxa, int dya) {
+    PST *pos = chunkalloc(sizeof(PST));
+    pos->tag = tag;
+    pos->type = pst_position;
+    pos->next = last;
+    pos->u.pos.xoff = dx;
+    pos->u.pos.yoff = dy;
+    pos->u.pos.h_adv_off = dxa;
+    pos->u.pos.v_adv_off = dya;
+return( pos );
+}
+
 static PST *AddSubs(PST *last,uint32 tag,char *name) {
     PST *sub = chunkalloc(sizeof(PST));
     sub->tag = tag;
@@ -1386,153 +1399,208 @@ static PST *AddSubs(PST *last,uint32 tag,char *name) {
 return( sub );
 }
 
-static PST *LigDefaultList(SplineChar *sc) {
+static SplineChar *SuffixCheck(SplineChar *sc,char *suffix) {
+    SplineChar *alt = NULL;
+    SplineFont *sf = sc->parent;
+    char namebuf[100];
+
+    if ( *suffix=='.' ) ++suffix;
+    if ( sf->cidmaster!=NULL ) {
+	sprintf( namebuf, "cid-%d.%s", sc->enc, suffix );
+	alt = SFGetChar(sf,-1,namebuf);
+    }
+    if ( alt==NULL && sc->unicodeenc!=-1 ) {
+	sprintf( namebuf, "uni%04X.%s", sc->unicodeenc, suffix );
+	alt = SFGetChar(sf,-1,namebuf);
+    }
+    if ( alt==NULL ) {
+	sprintf( namebuf, "%s.%s", sc->name, suffix );
+	alt = SFGetChar(sf,-1,namebuf);
+    }
+return( alt );
+}
+
+static PST *LigDefaultList(SplineChar *sc, uint32 tag) {
     /* This fills in default ligatures as the name suggests */
     /* it also builds up various other default gpos/gsub tables */
     char *components;
-    PST *lig, *lig2, *last=NULL;
+    PST *lig, *last=NULL;
     int i, alt_index;
-    char namebuf[100];
     SplineChar *alt;
     SplineFont *sf = sc->parent;
     const unichar_t *variant;
     static uint32 form_tags[] = { CHR('i','n','i','t'), CHR('m','e','d','i'), CHR('f','i','n','a'), CHR('i','s','o','l'), 0 };
+    DBounds bb;
 
-    for ( alt_index = 0; ; ++alt_index ) {
-	components = LigDefaultStr(sc->unicodeenc,sc->name,alt_index);
-	if ( components==NULL )
-    break;
-	lig = chunkalloc(sizeof(PST));
-	lig->tag = LigTagFromUnicode(sc->unicodeenc);
-	lig->type = pst_ligature;
-	lig->next = last;
-	last = lig;
-	lig->u.lig.lig = sc;
-	lig->u.lig.components = components;
-
-	if ( lig->tag==CHR('r','l','i','g') ) {
-	    lig2 = chunkalloc(sizeof(PST));
-	    *lig2 = *lig;
-	    lig2->tag = CHR('l','i','g','a');
-	    lig2->next = last;
-	    last = lig2;
+    if ( tag==0 || tag==0xffffffff || tag == LigTagFromUnicode(sc->unicodeenc) ) {
+	for ( alt_index = 0; ; ++alt_index ) {
+	    components = LigDefaultStr(sc->unicodeenc,sc->name,alt_index);
+	    if ( components==NULL )
+	break;
+	    lig = chunkalloc(sizeof(PST));
+	    lig->tag = LigTagFromUnicode(sc->unicodeenc);
+	    lig->type = pst_ligature;
+	    lig->next = last;
+	    last = lig;
+	    lig->u.lig.lig = sc;
+	    lig->u.lig.components = components;
+#if 0
+	    if ( lig->tag==CHR('r','l','i','g') ) {
+		lig2 = chunkalloc(sizeof(PST));
+		*lig2 = *lig;
+		lig2->tag = CHR('l','i','g','a');
+		lig2->next = last;
+		last = lig2;
+	    }
+#endif
 	}
     }
 
 	/* Look for left to right mirrored characters */
-    if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 && tomirror(sc->unicodeenc)!=0 ) {
-	alt = SFGetChar(sf,tomirror(sc->unicodeenc),NULL);
-	if ( alt!=NULL )
-	    last=AddSubs(last,CHR('r','t','l','a'),alt->name);
+    if ( tag==0 || tag==CHR('r','t','l','a') ) {
+	if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 && tomirror(sc->unicodeenc)!=0 ) {
+	    alt = SFGetChar(sf,tomirror(sc->unicodeenc),NULL);
+	    if ( alt!=NULL )
+		last=AddSubs(last,CHR('r','t','l','a'),alt->name);
+	}
     }
 
 	/* Look for vertically rotated text */
-    alt = NULL;
-    if ( sf->cidmaster!=NULL ) {
-	sprintf( namebuf, "cid_%d.vert", sc->enc );
-	alt = SFGetChar(sf,-1,namebuf);
+    if ( tag==0 || tag==CHR('v','r','t','2') ) {
+	alt = SuffixCheck(sc,"vert");
+	if ( alt!=NULL )
+	    last=AddSubs(last,CHR('v','r','t','2'),alt->name);
     }
-    if ( alt==NULL && sc->unicodeenc!=-1 ) {
-	sprintf( namebuf, "uni%04X.vert", sc->unicodeenc );
-	alt = SFGetChar(sf,-1,namebuf);
-    }
-    if ( alt==NULL ) {
-	sprintf( namebuf, "%s.vert", sc->name );
-	alt = SFGetChar(sf,-1,namebuf);
-    }
-    if ( alt!=NULL )
-	last=AddSubs(last,CHR('v','r','t','2'),alt->name);
 
 	/* Look for small caps */
-    sprintf( namebuf, "%s.sc", sc->name );
-    alt = SFGetChar(sf,-1,namebuf);
+    if ( tag==0 || tag==CHR('s','m','c','p') ) {
+	alt = SuffixCheck(sc,"sc");
 #if 0		/* Adobe says oldstyles can be included in smallcaps */
-    if ( alt==NULL ) {
-	sprintf( namebuf, "%s.oldstyle", sc->name );
-	alt = SFGetChar(sf,-1,namebuf);
-    }
+	if ( alt==NULL )
+	    alt = SuffixCheck(sc,"oldstyle");
 #endif
-    if ( alt!=NULL )
-	last=AddSubs(last,CHR('s','m','c','p'),alt->name);
+	if ( alt!=NULL )
+	    last=AddSubs(last,CHR('s','m','c','p'),alt->name);
+    }
 
 	/* And for oldstyle */
-    sprintf( namebuf, "%s.oldstyle", sc->name );
-    alt = SFGetChar(sf,-1,namebuf);
-    if ( alt!=NULL )
-	last=AddSubs(last,CHR('o','n','u','m'),alt->name);
-
-	/* Look for superscripts */
-    sprintf( namebuf, "%s.superior", sc->name );
-    alt = SFGetChar(sf,-1,namebuf);
-    if ( alt!=NULL )
-	last=AddSubs(last,CHR('s','u','p','s'),alt->name);
-
-	/* Look for subscripts */
-    sprintf( namebuf, "%s.inferior", sc->name );
-    alt = SFGetChar(sf,-1,namebuf);
-    if ( alt!=NULL )
-	last=AddSubs(last,CHR('s','u','b','s'),alt->name);
-
-	/* Look for swash forms */
-    sprintf( namebuf, "%s.swash", sc->name );
-    alt = SFGetChar(sf,-1,namebuf);
-    if ( alt!=NULL ) {
-	last=AddSubs(last,CHR('s','w','s','h'),alt->name);
-	last->type = pst_alternate;
+    if ( tag==0 || tag==CHR('o','n','u','m') ) {
+	alt = SuffixCheck(sc,"oldstyle");
+	if ( alt!=NULL )
+	    last=AddSubs(last,CHR('o','n','u','m'),alt->name);
     }
 
-    if (( sc->unicodeenc>=0xff01 && sc->unicodeenc<=0xff5e ) ||
-	    ( sc->unicodeenc>=0xffe0 && sc->unicodeenc<0xffe6)) {
-	/* these are full width latin */
-	if ( unicode_alternates[sc->unicodeenc>>8]!=NULL &&
-		(variant = unicode_alternates[sc->unicodeenc>>8][sc->unicodeenc&0xff])!=NULL &&
-		variant[1]=='\0' ) {
-	    alt = SFGetChar(sf,variant[0],NULL);
-	    if ( alt!=NULL )
-		last=AddSubs(last,CHR('p','w','i','d'),alt->name);
+	/* Look for superscripts */
+    if ( tag==0 || tag==CHR('s','u','p','s') ) {
+	alt = SuffixCheck(sc,"superior");
+	if ( alt==NULL ) {
+	    for ( i=0x2070; i<0x2080; ++i ) {
+		if ( unicode_alternates[i>>8]!=NULL &&
+			(variant = unicode_alternates[i>>8][i&0xff])!=NULL && variant[1]=='\0' &&
+			*variant == sc->unicodeenc )
+	    break;
+	    }
+	    if ( i==0x2080 ) {
+		if ( sc->unicodeenc=='1' ) i = 0xb9;
+		else if ( sc->unicodeenc=='2' ) i = 0xb2;
+		else if ( sc->unicodeenc=='3' ) i = 0xb3;
+	    }
+	    if ( i!=0x2080 )
+		alt = SFGetChar(sf,i,NULL);
 	}
-    } else if ( sc->unicodeenc>=0xff61 && sc->unicodeenc<0xffdc ) {
-	/* These are halfwidth katakana and sung */
-	if ( unicode_alternates[sc->unicodeenc>>8]!=NULL &&
-		(variant = unicode_alternates[sc->unicodeenc>>8][sc->unicodeenc&0xff])!=NULL &&
-		variant[1]=='\0' ) {
-	    alt = SFGetChar(sf,variant[0],NULL);
-	    if ( alt!=NULL )
-		last=AddSubs(last,CHR('f','w','i','d'),alt->name);
-	}
-    } else if ( sc->unicodeenc>=0x0021 && sc->unicodeenc<=0x100 ) {
-	for ( i=0xff01; i<0xffef; ++i ) {
-	    if ( unicode_alternates[i>>8]!=NULL &&
-		    (variant = unicode_alternates[i>>8][i&0xff])!=NULL &&
-		    variant[1]=='\0' && variant[0]==sc->unicodeenc )
-	break;
-	}
-	alt = NULL;
-	if ( i<0xffef ) {
-	    alt = SFGetChar(sf,i,NULL);
-	    if ( alt!=NULL )
-		last=AddSubs(last,CHR('f','w','i','d'),alt->name);
-	}
-	if ( alt!=NULL ) {
-	    sprintf( namebuf, "%s.full", sc->name );
-	    alt = SFGetChar(sf,-1,namebuf);
-	    if ( alt!=NULL )
-		last=AddSubs(last,CHR('f','w','i','d'),alt->name);
-	}
-	sprintf( namebuf, "%s.hw", sc->name );
-	alt = SFGetChar(sf,-1,namebuf);
 	if ( alt!=NULL )
-	    last=AddSubs(last,CHR('h','w','i','d'),alt->name);
-    } else if ( sc->unicodeenc>=0x3000 && sc->unicodeenc<=0x31ff ) {
-	/* Japanese katakana & Korean sung full */
-	for ( i=0xff61; i<0xffdf; ++i ) {
-	    if ( unicode_alternates[i>>8]!=NULL &&
-		    (variant = unicode_alternates[i>>8][i&0xff])!=NULL &&
-		    variant[1]=='\0' && variant[0]==sc->unicodeenc )
-	break;
+	    last=AddSubs(last,CHR('s','u','p','s'),alt->name);
+    }
+
+	/* Look for subscripts */
+    if ( tag==0 || tag==CHR('s','u','b','s') ) {
+	alt = SuffixCheck(sc,"inferior");
+	if ( alt==NULL ) {
+	    for ( i=0x2080; i<0x2080; ++i ) {
+		if ( unicode_alternates[i>>8]!=NULL &&
+			(variant = unicode_alternates[i>>8][i&0xff])!=NULL && variant[1]=='\0' &&
+			*variant == sc->unicodeenc )
+	    break;
+	    }
+	    if ( i!=0x2090 )
+		alt = SFGetChar(sf,i,NULL);
 	}
-	if ( i<0xffdf ) {
-	    alt = SFGetChar(sf,i,NULL);
+	if ( alt!=NULL )
+	    last=AddSubs(last,CHR('s','u','b','s'),alt->name);
+    }
+
+	/* Look for swash forms */
+    if ( tag==0 || tag==CHR('s','w','s','h')) {
+	alt = SuffixCheck(sc,"swash");
+	if ( alt!=NULL ) {
+	    last=AddSubs(last,CHR('s','w','s','h'),alt->name);
+	    last->type = pst_alternate;
+	}
+    }
+
+    if ( tag==0 || tag==CHR('p','w','i','d') ) {
+	if (( sc->unicodeenc>=0xff01 && sc->unicodeenc<=0xff5e ) ||
+		( sc->unicodeenc>=0xffe0 && sc->unicodeenc<0xffe6)) {
+	    /* these are full width latin */
+	    if ( unicode_alternates[sc->unicodeenc>>8]!=NULL &&
+		    (variant = unicode_alternates[sc->unicodeenc>>8][sc->unicodeenc&0xff])!=NULL &&
+		    variant[1]=='\0' ) {
+		alt = SFGetChar(sf,variant[0],NULL);
+		if ( alt!=NULL )
+		    last=AddSubs(last,CHR('p','w','i','d'),alt->name);
+	    }
+	}
+    }
+
+    if ( tag==0 || tag==CHR('f','w','i','d') ) {
+	alt = NULL;
+	if ( sc->unicodeenc>=0xff61 && sc->unicodeenc<0xffdc ) {
+	    /* These are halfwidth katakana and sung */
+	    if ( unicode_alternates[sc->unicodeenc>>8]!=NULL &&
+		    (variant = unicode_alternates[sc->unicodeenc>>8][sc->unicodeenc&0xff])!=NULL &&
+		    variant[1]=='\0' ) {
+		alt = SFGetChar(sf,variant[0],NULL);
+		if ( alt!=NULL )
+		    last=AddSubs(last,CHR('f','w','i','d'),alt->name);
+	    }
+	} else if ( sc->unicodeenc>=0x0021 && sc->unicodeenc<=0x100 ) {
+	    for ( i=0xff01; i<0xffef; ++i ) {
+		if ( unicode_alternates[i>>8]!=NULL &&
+			(variant = unicode_alternates[i>>8][i&0xff])!=NULL &&
+			variant[1]=='\0' && variant[0]==sc->unicodeenc )
+	    break;
+	    }
+	    if ( i<0xffef ) {
+		alt = SFGetChar(sf,i,NULL);
+		if ( alt!=NULL )
+		    last=AddSubs(last,CHR('f','w','i','d'),alt->name);
+	    }
+	}
+	if ( alt==NULL ) {
+	    alt = SuffixCheck(sc,"full");
+	    if ( alt!=NULL )
+		last=AddSubs(last,CHR('f','w','i','d'),alt->name);
+	}
+    }
+
+    if ( tag==0 || tag==CHR('h','w','i','d') ) {
+	alt = NULL;
+	if ( sc->unicodeenc>=0x3000 && sc->unicodeenc<=0x31ff ) {
+	    /* Japanese katakana & Korean sung full */
+	    for ( i=0xff61; i<0xffdf; ++i ) {
+		if ( unicode_alternates[i>>8]!=NULL &&
+			(variant = unicode_alternates[i>>8][i&0xff])!=NULL &&
+			variant[1]=='\0' && variant[0]==sc->unicodeenc )
+	    break;
+	    }
+	    if ( i<0xffdf ) {
+		alt = SFGetChar(sf,i,NULL);
+		if ( alt!=NULL )
+		    last=AddSubs(last,CHR('h','w','i','d'),alt->name);
+	    }
+	}
+	if ( alt==NULL ) {
+	    alt = SuffixCheck(sc,"hw");
 	    if ( alt!=NULL )
 		last=AddSubs(last,CHR('h','w','i','d'),alt->name);
 	}
@@ -1540,19 +1608,64 @@ static PST *LigDefaultList(SplineChar *sc) {
 
     if ( sc->unicodeenc>=0x600 && sc->unicodeenc<0x700 ) {
 	/* Arabic forms */
-	for ( i=0; form_tags[i]!=0; ++i ) {
+	for ( i=0; form_tags[i]!=0; ++i ) if ( tag==0 || form_tags[i]==tag ) {
 	    if ( (&(ArabicForms[sc->unicodeenc-0x600].initial))[i]!=0 &&
 		    (&(ArabicForms[sc->unicodeenc-0x600].initial))[i]!=sc->unicodeenc &&
 		    (alt = SFGetChar(sf,(&(ArabicForms[sc->unicodeenc-0x600].initial))[i],NULL))!=NULL )
 		last=AddSubs(last,form_tags[i],alt->name);
 	}
     }
+
+    if ( tag==0 || tag==CHR('l','f','b','d') ) {
+	SplineCharFindBounds(sc,&bb);
+	last = AddPos(last,CHR('l','f','b','d'),-bb.minx,0,-bb.minx,0);
+    }
+
+    if ( tag==0 || tag==CHR('r','t','b','d') ) {
+	SplineCharFindBounds(sc,&bb);
+	last = AddPos(last,CHR('r','t','b','d'),0,0,bb.maxx-sc->width,0);
+    }
 return( last );
+}
+
+static void SCMergePSList(SplineChar *sc,PST *list) {
+    PST *test, *next, *prev;
+
+    for ( ; list!=NULL; list=next ) {
+	next = list->next;
+	prev = NULL;
+	for ( test=sc->possub; test!=NULL && test->tag!=list->tag; prev=test, test=test->next );
+	if ( test!=NULL ) {
+	    if ( prev==NULL )
+		sc->possub = list;
+	    else
+		prev->next = list;
+	    list->next = test->next;
+	    test->next = NULL;
+	    PSTFree(test);
+	} else {
+	    list->next = sc->possub;
+	    sc->possub = list;
+	}
+    }
 }
 
 void SCLigDefault(SplineChar *sc) {
     PSTFree(sc->possub);
-    sc->possub = LigDefaultList(sc);
+    sc->possub = LigDefaultList(sc,0xffffffff);
+}
+
+void SCTagDefault(SplineChar *sc,uint32 tag) {
+
+    SCMergePSList(sc,LigDefaultList(sc,tag));
+}
+
+void SCSuffixDefault(SplineChar *sc,uint32 tag,char *suffix) {
+    SplineChar *alt;
+
+    alt = SuffixCheck(sc,suffix);
+    if ( alt!=NULL )
+	SCMergePSList(sc,AddSubs(NULL,tag,alt->name));
 }
 
 static int CI_SName(GGadget *g, GEvent *e) {	/* Set From Name */
@@ -1866,13 +1979,17 @@ static int CI_NextPrev(GGadget *g, GEvent *e) {
 	int enc = ci->sc->enc + GGadgetGetCid(g);	/* cid is 1 for next, -1 for prev */
 	SplineChar *new;
 
-	if ( enc<0 || enc>=ci->sc->parent->charcnt )
+	if ( enc<0 || enc>=ci->sc->parent->charcnt ) {
+	    GGadgetSetEnabled(g,false);
 return( true );
+	}
 	if ( !_CI_OK(ci))
 return( true );
 	new = SFMakeChar(ci->sc->parent,enc);
-	if ( new->charinfo!=NULL && new->charinfo!=ci )
+	if ( new->charinfo!=NULL && new->charinfo!=ci ) {
+	    GGadgetSetEnabled(g,false);
 return( true );
+	}
 	ci->sc = new;
 	CIFillup(ci);
     }
@@ -1918,7 +2035,7 @@ return( false );
 return( true );
 }
 
-void SCGetInfo(SplineChar *sc) {
+void SCCharInfo(SplineChar *sc) {
     CharInfo *ci;
     GRect pos;
     GWindowAttrs wattrs;

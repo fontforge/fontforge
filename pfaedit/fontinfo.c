@@ -1913,7 +1913,9 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, GTextInfo *tags) 
 	memset(&gcd,0,sizeof(gcd));
 	memset(&label,0,sizeof(label));
 
-	label[0].text = (unichar_t *) (tags==mark_tags?_STR_AnchorClassName:_STR_Components);
+	label[0].text = (unichar_t *) (tags==mark_tags?_STR_AnchorClassName:
+					title!=_STR_SuffixToTag?_STR_Components:
+			                _STR_Suffix);
 	label[0].text_in_resource = true;
 	gcd[0].gd.label = &label[0];
 	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5;

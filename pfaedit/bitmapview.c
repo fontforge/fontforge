@@ -319,7 +319,7 @@ static void BVCharUp(BitmapView *bv, GEvent *event ) {
     if ( event->u.chr.keysym=='I' &&
 	    (event->u.chr.state&ksm_shift) &&
 	    (event->u.chr.state&ksm_meta) )
-	SCGetInfo(bv->bc->sc);
+	SCCharInfo(bv->bc->sc);
 #if _ModKeysAutoRepeat
     /* Under cygwin these keys auto repeat, they don't under normal X */
     else if ( event->u.chr.keysym == GK_Shift_L || event->u.chr.keysym == GK_Shift_R ||
@@ -1337,7 +1337,7 @@ static void BVMenuFontInfo(GWindow gw,struct gmenuitem *mi,GEvent *g) {
 
 static void BVMenuGetInfo(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
-    SCGetInfo(bv->bc->sc);
+    SCCharInfo(bv->bc->sc);
 }
 
 static void BVMenuBitmaps(GWindow gw,struct gmenuitem *mi,GEvent *g) {

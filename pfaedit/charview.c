@@ -4379,7 +4379,7 @@ static void CVMenuGetInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void CVMenuCharInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     if ( cv->fv->cidmaster==NULL )
-	SCGetInfo(cv->sc);
+	SCCharInfo(cv->sc);
 }
 
 static void CVMenuShowDependents(GWindow gw,struct gmenuitem *mi,GEvent *e) {

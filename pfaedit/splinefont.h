@@ -871,6 +871,8 @@ extern SplineChar *SFMakeChar(SplineFont *sf,int i);
 extern char *AdobeLigatureFormat(char *name);
 extern uint32 LigTagFromUnicode(int uni);
 extern void SCLigDefault(SplineChar *sc);
+extern void SCTagDefault(SplineChar *sc,uint32 tag);
+extern void SCSuffixDefault(SplineChar *sc,uint32 tag,char *suffix);
 extern BDFChar *BDFMakeChar(BDFFont *bdf,int i);
 
 extern void SCUndoSetLBearingChange(SplineChar *sc,int lb);

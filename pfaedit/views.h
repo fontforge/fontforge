@@ -553,7 +553,7 @@ extern void FVTile(FontView *fv);
 extern void SCTile(SplineChar *sc);
 extern void MDReplace(MinimumDistance *md,SplineSet *old,SplineSet *rpl);
 extern void SCAppendPosSub(SplineChar *sc,enum possub_type type, char **d);
-extern void SCGetInfo(SplineChar *sc);
+extern void SCCharInfo(SplineChar *sc);
 extern void CharInfoDestroy(struct charinfo *ci);
 extern void CVGetInfo(CharView *cv);
 extern void SCRefBy(SplineChar *sc);
