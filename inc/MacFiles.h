@@ -22,34 +22,34 @@ typedef struct {		/* gcc misaligns this */
 } FSSpec;
 
 typedef struct {
-    uint8 hidden[80];
+    unsigned char hidden[80];
 } FSRef;
 
 typedef struct {
     int fdType;
     int fdCreator;
-    uint16 fdFlags;
-    int16 Point_x, Point_y;
-    int16 fdFldr;
+    unsigned short fdFlags;
+    short Point_x, Point_y;
+    short fdFldr;
     int pad;		/* Just in case I've screwed up the alignment */
 } FInfo;
 
 typedef struct FSCatalogInfo {
-    uint16 nodeFlags;
-    int16 volume;
-    uint32 parentDirID;
-    uint32 nodeID;
-    int32 padding[50];		/* There's a bunch more junk that I don't care about */
+    unsigned short nodeFlags;
+    short volume;
+    unsigned int parentDirID;
+    unsigned int nodeID;
+    int padding[50];		/* There's a bunch more junk that I don't care about */
 } FSCatalogInfo;
 
 short FSpOpenRF(const FSSpec *spec,char permission,short *refNum);
-short FSpCreateResFile(const FSSpec *spec,int creator,int type,int16 script);
+short FSpCreateResFile(const FSSpec *spec,int creator,int type,short script);
 short FSRead(short refNum,int *cnt,char *buf);
 short FSWrite(short refNum,int *cnt,char *buf);
 short FSClose(short refNum );
 short FSpGetFInfo(const FSSpec *spec,FInfo *fndrInfo);
-short SetEOF(int16 refNum,int32 eofpos);
+short SetEOF(short refNum,int eofpos);
 
-short FSMakeFSSpec(int16 volume, int32 dirid,uint8 *,FSSpec *spec);
-short FSPathMakeRef(const uint8 *path,FSRef *ref,int *isDir);
+short FSMakeFSSpec(short volume, int dirid,unsigned char *,FSSpec *spec);
+short FSPathMakeRef(const unsigned char *path,FSRef *ref,int *isDir);
 short FSGetCatalogInfo(FSRef *ref,int whichinfo,FSCatalogInfo *info,void *null2,FSSpec *spec,void *null3);

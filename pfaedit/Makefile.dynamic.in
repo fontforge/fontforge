@@ -44,7 +44,7 @@ pfaedit: nomen.h $(pfaedit_OBJECTS)
 #this makes all the .ui files but wildcarding doesn't work too well if the
 # files don't exist.
 nomen.h pfaedit-ui.c pfaedit.en.ui: $(srcdir)/nomen.*.c makenomenh.c
-	gcc -o makenomenh $(CFLAGS) $(srcdir)/makenomenh.c $(LIBS)
+	$(CC) -o makenomenh $(CFLAGS) $(srcdir)/makenomenh.c $(LIBS)
 	-ln -s $(srcdir)/nomen.*.c .
 	./makenomenh
 	mv pfaedit-ui.en.c pfaedit-ui.c
