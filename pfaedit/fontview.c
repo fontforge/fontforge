@@ -3237,7 +3237,8 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 			    (i=strtol(sc->name+3,&end,16), end-sc->name==7))
 			buf[0] = i;
 		    else for ( i=0; i<psunicodenames_cnt; ++i )
-			if ( psunicodenames[i]!=NULL && strncmp(sc->name,psunicodenames[i],n)==0 ) {
+			if ( psunicodenames[i]!=NULL && strncmp(sc->name,psunicodenames[i],n)==0 &&
+				psunicodenames[i][n]=='\0' ) {
 			    buf[0] = i;
 		    break;
 			}
