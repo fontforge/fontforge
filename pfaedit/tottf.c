@@ -2774,7 +2774,7 @@ static uint8 *DStemInfoGeninst(struct glyphinfo *gi,uint8 *pt,DStemInfo *d,
 	uint8 *touched, BasePoint *bp, int ptcnt) {
     DStem *ds;
 
-    if ( ds==NULL )		/* Comment out this line to turn off diagonal hinting !!!*/
+    /*if ( ds==NULL )		/* Comment out this line to turn off diagonal hinting !!!*/
 return( pt );
     ds = DStemMerge(d,bp,ptcnt,touched);
 
