@@ -331,7 +331,7 @@ return;
     ml->m = m;			/* This may change. We'll fix it up later */
     ml->t = t;
     ml->isend = true;
-    if ( RealNear(m->tstart,t) ) {
+    if ( t-m->tstart < m->tend-t && RealNear(m->tstart,t) ) {
 	if ( m->start!=NULL && m->start!=il )
 	    SOError("Resetting start.\n");
 	m->start = il;
@@ -1110,10 +1110,15 @@ static void FigureNeeds(Monotonic *ms,int which, double test, Monotonic **space,
 
     winding = 0; ew = 0;
     for ( i=0; space[i]!=NULL; ++i ) {
-	int needed = false, unneeded = false;
-	Monotonic *m = space[i];
-	int new=ew;
-	int nwinding=winding;
+	int needed, unneeded, inverted=false;
+	Monotonic *m;
+	int new;
+	int nwinding;
+      retry:
+	needed = false, unneeded = false;
+	nwinding=winding;
+	new=ew;
+	m = space[i];
 	if ( m->exclude )
 	    new += ( (&m->xup)[which] ? 1 : -1 );
 	else
@@ -1139,11 +1144,23 @@ static void FigureNeeds(Monotonic *ms,int which, double test, Monotonic **space,
 	if (( m->isneeded || m->isunneeded ) && m->isneeded!=needed ) {
 	    for ( j=i+1; space[j]!=NULL && space[j]->other-m->other<.5; ++j ) {
 		if ( space[j]->start==m->start && space[j]->end==m->end &&
-			space[j]->isneeded == needed ) {
+			(space[j]->isneeded == needed ||
+			 (!space[j]->isneeded && !space[j]->isunneeded))) {
 		    space[i] = space[j];
 		    space[j] = m;
 		    m = space[i];
 	    break;
+		} else if ( !inverted && space[j]->other-m->other<.001 &&
+			(((&space[j]->xup)[which] == (&m->xup)[which] &&
+			  (space[j]->isneeded == needed ||
+			   (!space[j]->isneeded && !space[j]->isunneeded))) ||
+			 ((&space[j]->xup)[which] != (&m->xup)[which] &&
+			  (space[j]->isneeded != needed ||
+			   (!space[j]->isneeded && !space[j]->isunneeded)))) ) {
+		    space[i] = space[j];
+		    space[j] = m;
+		    inverted = true;
+	      goto retry;
 		}
 	    }
 	}
