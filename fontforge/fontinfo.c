@@ -2665,7 +2665,7 @@ void GListDelSelected(GGadget *list) {
     GGadgetSetList(list,new,false);
 }
 
-void GListChangeLine(GGadget *list,int pos, const unichar_t *line) {
+GTextInfo *GListChangeLine(GGadget *list,int pos, const unichar_t *line) {
     GTextInfo **old, **new;
     int32 i,len;
     
@@ -2681,6 +2681,7 @@ void GListChangeLine(GGadget *list,int pos, const unichar_t *line) {
     }
     new[i] = gcalloc(1,sizeof(GTextInfo));
     GGadgetSetList(list,new,false);
+return( new[pos]);
 }
 
 GTextInfo *GListAppendLine(GGadget *list,const unichar_t *line,int select) {

@@ -1286,7 +1286,6 @@ return( MacStrToUnicode(mn->name,mn->enc,mn->lang));
 }
 
 unichar_t *FindEnglishNameInMacName(struct macname *mn) {
-    struct macname *first=mn, *english=NULL;
 
     while ( mn!=NULL ) {
 	if ( mn->lang==0 )
@@ -2287,6 +2286,7 @@ static GTextInfo maclanguages[] = {
 #define CID_SettingEdit	105
 
 #define CID_NameList	201
+#define CID_NameNew	202
 #define CID_NameDel	203
 #define CID_NameEdit	205
 
@@ -2536,6 +2536,8 @@ static char *AskName(struct macname *changing,struct macname *all,GGadget *list,
 	    maclanguages[i].selected = true;
 	else
 	    maclanguages[i].selected = false;
+	if ( changing->lang==65535 )
+	    maclanguages[0].selected = true;
     }
 
     label[2].text = (unichar_t *) _STR_Name;
@@ -2663,9 +2665,34 @@ static int Pref_NameSel(GGadget *g, GEvent *e) {
 return( true );
 }
 
-static int GCDBuildNames(GGadgetCreateData *gcd,GTextInfo *label,int pos,struct macname *names) {
+struct macname *NameGadgetsGetNames( GWindow gw ) {
+return( GGadgetGetUserData(GWidgetGetControl(gw,CID_NameList)) );
+}
 
-    gcd[pos].gd.pos.x = 6; gcd[pos].gd.pos.y = pos==0 ? 6 : gcd[pos-1].gd.pos.y+14;
+void NameGadgetsSetEnabled( GWindow gw, int enable ) {
+
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_NameList),enable);
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_NameNew),enable);
+    if ( !enable ) {
+	GGadgetSetEnabled(GWidgetGetControl(gw,CID_NameDel),false);
+	GGadgetSetEnabled(GWidgetGetControl(gw,CID_NameEdit),false);
+    } else {
+	int32 len;
+	GGadget *list = GWidgetGetControl(gw,CID_NameList);
+	GTextInfo **ti = GGadgetGetList(list,&len);
+	int i, sel_cnt=0;
+	for ( i=0; i<len; ++i )
+	    if ( ti[i]->selected ) ++sel_cnt;
+	GGadgetSetEnabled(GWidgetGetControl(gw,CID_NameDel),sel_cnt>0);
+	GGadgetSetEnabled(GWidgetGetControl(gw,CID_NameEdit),sel_cnt=1);
+    }
+}
+
+int GCDBuildNames(GGadgetCreateData *gcd,GTextInfo *label,int pos,struct macname *names) {
+
+    gcd[pos].gd.pos.x = 6; gcd[pos].gd.pos.y = pos==0 ? 6 :
+	    gcd[pos-1].creator==GTextFieldCreate ? gcd[pos-1].gd.pos.y+30 :
+						    gcd[pos-1].gd.pos.y+14;
     gcd[pos].gd.pos.width = 250; gcd[pos].gd.pos.height = 5*12+10;
     gcd[pos].gd.flags = gg_visible | gg_enabled | gg_list_alphabetic | gg_list_multiplesel;
     gcd[pos].gd.cid = CID_NameList;
@@ -2680,6 +2707,7 @@ static int GCDBuildNames(GGadgetCreateData *gcd,GTextInfo *label,int pos,struct 
     label[pos].text_in_resource = true;
     gcd[pos].gd.label = &label[pos];
     gcd[pos].gd.handle_controlevent = Pref_NewName;
+    gcd[pos].gd.cid = CID_NameNew;
     gcd[pos++].creator = GButtonCreate;
 
     gcd[pos].gd.pos.x = gcd[pos-1].gd.pos.x+20+GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor);

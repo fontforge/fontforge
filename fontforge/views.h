@@ -528,7 +528,7 @@ extern GTextInfo **SFLangArray(SplineFont *sf,int addfinal);
 extern int  ScriptLangList(SplineFont *sf,GGadget *list,int sli);
 extern void GListDelSelected(GGadget *list);
 extern void GListMoveSelected(GGadget *list,int offset);
-extern void GListChangeLine(GGadget *list,int pos, const unichar_t *line);
+extern GTextInfo *GListChangeLine(GGadget *list,int pos, const unichar_t *line);
 extern GTextInfo *GListAppendLine(GGadget *list,const unichar_t *line,int select);
 extern void FontInfo(SplineFont *sf,int aspect,int sync);
 extern void FontInfoDestroy(FontView *fv);
@@ -846,6 +846,9 @@ extern int GetPrefs(char *name,Val *val);		/* for scripting */
 extern int SetPrefs(char *name,Val *val1, Val *val2);	/* for scripting */
 extern void GListAddStr(GGadget *list,unichar_t *str, void *ud);
 extern void GListReplaceStr(GGadget *list,int index, unichar_t *str, void *ud);
+extern struct macname *NameGadgetsGetNames( GWindow gw );
+extern void NameGadgetsSetEnabled( GWindow gw, int enable );
+extern int GCDBuildNames(GGadgetCreateData *gcd,GTextInfo *label,int pos,struct macname *names);
 extern void GCDFillMacFeat(GGadgetCreateData *mfgcd,GTextInfo *mflabels, int width,
 	MacFeat *all, int fromprefs);
 extern int UserFeaturesDiffer(void);
