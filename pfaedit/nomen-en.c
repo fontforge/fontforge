@@ -469,6 +469,7 @@ static char *str_FamilyNameRequired = "A Font Family name is required";
 static char *str_PSNameNotNumber = "A Postscript name may not be a number";
 static char *str_BadFamilyName = "Bad Font Family Name";
 static char *str_BadFontName = "Bad Font Name";
+static char *str_NameTooLong = "Name too long, at most 63 characters";
 static char *str_BadModifierName = "Bad Font Modifier Name";
 static char *str_BadPSName = "A Postscript name should be ASCII\nand must not contain (){}[]<>%%/ or space";
 static char *str_Names = "Names";

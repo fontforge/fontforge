@@ -2016,6 +2016,10 @@ return( false );
 	}
 	++ufont;
     }
+    if ( u_strlen(ufont)>63 ) {
+	GWidgetErrorR(_STR_BadFontName,_STR_BadPSName);
+return( false );
+    }
 return( true );
 }
 
