@@ -1044,6 +1044,7 @@ static struct lookup *GSUBfigureLookups(FILE *lfile,SplineFont *sf,
 		    ligtags = grealloc(ligtags,max*sizeof(uint32));
 		    flag_sets = grealloc(flag_sets,max*sizeof(uint32));
 		}
+		flag_sets[cnt] = 1<<(ll->lig->flags>>1);
 		ligtags[cnt++] = ll->lig->tag;
 	    }
 	}
@@ -1056,7 +1057,7 @@ static struct lookup *GSUBfigureLookups(FILE *lfile,SplineFont *sf,
 	for ( i=0; i<sf->charcnt; i++ ) 
 		if ( (sc=sf->chars[i])!=NULL && sc->ligofme!=NULL &&
 			sc->script!=0 && !sc->ticked &&
-			LigListMatchTag(sc->ligofme,ligtags[j],flags) ) {
+			LigListMatchTag(sc->ligofme,ligtags[j],flags<<1) ) {
 	    new = chunkalloc(sizeof(struct lookup));
 	    new->script = sc->script;
 	    new->feature_tag = ligtags[j];
@@ -1101,7 +1102,7 @@ static struct lookup *GSUBfigureLookups(FILE *lfile,SplineFont *sf,
 	    for ( i=0; i<sf->charcnt; i++ ) 
 		    if ( (sc=sf->chars[i])!=NULL && sc->possub!=NULL &&
 			    sc->script!=0 && !sc->ticked &&
-			    PosSubMatchTag(sc->possub,ligtags[j],type,flags) ) {
+			    PosSubMatchTag(sc->possub,ligtags[j],type,flags<<1) ) {
 		glyphs = generateGlyphTypeList(sf,type,sc->script,ligtags[j],flags<<1,&map);
 		if ( glyphs!=NULL && glyphs[0]!=NULL ) {
 		    new = chunkalloc(sizeof(struct lookup));
