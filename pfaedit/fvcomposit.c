@@ -1378,7 +1378,7 @@ static void DoSpaces(SplineFont *sf,SplineChar *sc,int copybmp,FontView *fv) {
     if ( copybmp ) {
 	for ( bdf=sf->cidmaster?sf->cidmaster->bitmaps:sf->bitmaps; bdf!=NULL; bdf=bdf->next )
 	    if ( bdf->chars[sc->enc]!=NULL )
-		BCCharChangedUpdate(bdf->chars[sc->enc],fv);
+		BCCharChangedUpdate(bdf->chars[sc->enc]);
     }
 }
 
@@ -1482,7 +1482,7 @@ static void DoRules(SplineFont *sf,SplineChar *sc,int copybmp,FontView *fv) {
     if ( copybmp ) {
 	for ( bdf=sf->cidmaster?sf->cidmaster->bitmaps:sf->bitmaps; bdf!=NULL; bdf=bdf->next )
 	    if ( bdf->chars[sc->enc]!=NULL )
-		BCCharChangedUpdate(bdf->chars[sc->enc],fv);
+		BCCharChangedUpdate(bdf->chars[sc->enc]);
     }
 }
 
@@ -1547,7 +1547,7 @@ return;		/* Can't happen */
 	    from = bdf->chars[scbase->enc];
 	    to = BDFMakeChar(bdf,sc->enc);
 	    BCRotateCharForVert(to,from,bdf);
-	    BCCharChangedUpdate(to,fv);
+	    BCCharChangedUpdate(to);
 	}
     }
 }
@@ -1760,7 +1760,7 @@ return;
     if ( copybmp ) {
 	for ( bdf=sf->cidmaster?sf->cidmaster->bitmaps:sf->bitmaps; bdf!=NULL; bdf=bdf->next )
 	    if ( bdf->chars[sc->enc]!=NULL )
-		BCCharChangedUpdate(bdf->chars[sc->enc],fv);
+		BCCharChangedUpdate(bdf->chars[sc->enc]);
     }
 return;
 }

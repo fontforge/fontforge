@@ -324,6 +324,9 @@ extern void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts,
 extern void FVTrans(FontView *fv,SplineChar *sc,real transform[6],char *sel,
 	int dobackground);
 extern void FVBuildAccent(FontView *fv,int onlyaccents);
+extern void SCClearAll(SplineChar *sc);
+extern void BCClearAll(BDFChar *bc);
+extern void UnlinkThisReference(FontView *fv,SplineChar *sc);
 extern void FVFakeMenus(FontView *fv,int cmd);
 extern void FVMetricsCenter(FontView *fv,int docenter);
 extern void MergeFont(FontView *fv,SplineFont *other);
@@ -413,6 +416,7 @@ extern void CVFindCenter(CharView *cv, BasePoint *bp, int nosel);
 extern void CVStroke(CharView *cv);
 extern void FVStroke(FontView *fv);
 extern void FVStrokeItScript(FontView *fv, StrokeInfo *si);
+extern void SCStroke(SplineChar *sc);
 extern void MDReplace(MinimumDistance *md,SplineSet *old,SplineSet *rpl);
 extern void SCGetInfo(SplineChar *sc,int nextprev);
 extern void CVGetInfo(CharView *cv);
@@ -458,6 +462,8 @@ extern Undoes *CVPreserveWidth(CharView *cv,int width);
 extern Undoes *CVPreserveVWidth(CharView *cv,int vwidth);
 extern void CVDoRedo(CharView *cv);
 extern void CVDoUndo(CharView *cv);
+extern void SCDoRedo(SplineChar *sc,int drawmode);
+extern void SCDoUndo(SplineChar *sc,int drawmode);
 extern void CVRestoreTOriginalState(CharView *cv);
 extern void CVUndoCleanup(CharView *cv);
 extern void CVRemoveTopUndo(CharView *cv);
@@ -490,7 +496,7 @@ extern GImage GIcon_sel2ptr, GIcon_rightpointer, GIcon_angle, GIcon_distance,
 extern BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv);
 extern BitmapView *BitmapViewCreatePick(int enc, FontView *fv);
 extern void BitmapViewFree(BitmapView *bv);
-extern void BCCharChangedUpdate(BDFChar *bc,FontView *fv);
+extern void BCCharChangedUpdate(BDFChar *bc);
 extern void BCFlattenFloat(BDFChar *bc);
 extern BDFFloat *BDFFloatCreate(BDFChar *bc,int xmin,int xmax,int ymin,int ymax, int clear);
 extern BDFFloat *BDFFloatCopy(BDFFloat *sel);
@@ -519,8 +525,8 @@ extern void LoadPfaEditEncodings(void);
 extern void PfaEditSetFallback(void);
 extern void RecentFilesRemember(char *filename);
 
-extern void CVAutoTrace(CharView *cv,int ask);
 extern void FVAutoTrace(FontView *fv,int ask);
+extern void SCAutoTrace(SplineChar *sc,GWindow v,int ask);
 extern char *FindAutoTraceName(void);
 extern char *ProgramExists(char *prog,char *buffer);
 extern void *GetAutoTraceArgs(void);
@@ -534,8 +540,8 @@ extern void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv);
 extern void ShowAboutScreen(void);
 extern void DelayEvent(void (*func)(void *), void *data);
 
-extern void FindProblems(FontView *fv,CharView *cv);
-extern void MetaFont(FontView *fv,CharView *cv);
+extern void FindProblems(FontView *fv,CharView *cv,SplineChar *sc);
+extern void MetaFont(FontView *fv,CharView *cv,SplineChar *sc);
 extern void CVConstrainSelection(CharView *cv,int type);
 extern void CVMakeParallel(CharView *cv);
 

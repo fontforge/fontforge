@@ -574,10 +574,8 @@ Undoes *BCPreserveState(BDFChar *bc) {
 return( AddUndo(undo,&bc->undoes,&bc->redoes));
 }
 
-static void CVUndoAct(CharView *cv,Undoes *undo) {
-    SplineChar *sc;
+static void SCUndoAct(SplineChar *sc,int drawmode, Undoes *undo) {
 
-    sc = cv->sc;
     switch ( undo->undotype ) {
       case ut_noop:
       break;
@@ -593,8 +591,12 @@ static void CVUndoAct(CharView *cv,Undoes *undo) {
 	undo->u.width = vwidth;
       } break;
       case ut_state: case ut_tstate: case ut_statehint: {
-	SplinePointList *spl = *cv->heads[cv->drawmode];
-	if ( cv->drawmode==dm_fore ) {
+	SplinePointList **head = drawmode==dm_fore ? &sc->splines :
+				 drawmode==dm_back ? &sc->backgroundsplines :
+				    &sc->parent->gridsplines;
+	SplinePointList *spl = *head;
+
+	if ( drawmode==dm_fore ) {
 	    int width = sc->width;
 	    int vwidth = sc->vwidth;
 	    if ( sc->width!=undo->u.state.width )
@@ -603,27 +605,27 @@ static void CVUndoAct(CharView *cv,Undoes *undo) {
 	    undo->u.state.width = width;
 	    undo->u.state.vwidth = vwidth;
 	}
-	*cv->heads[cv->drawmode] = undo->u.state.splines;
-	if ( cv->drawmode==dm_fore ) {
+	*head = undo->u.state.splines;
+	if ( drawmode==dm_fore ) {
 	    MinimumDistance *md = sc->md;
 	    sc->md = undo->u.state.md;
 	    undo->u.state.md = md;
 	}
-	if ( cv->drawmode==dm_fore && !RefCharsMatch(undo->u.state.refs,sc->refs)) {
-	    RefChar *refs = RefCharsCopyState(cv->sc);
+	if ( drawmode==dm_fore && !RefCharsMatch(undo->u.state.refs,sc->refs)) {
+	    RefChar *refs = RefCharsCopyState(sc);
 	    FixupRefChars(sc,undo->u.state.refs);
 	    undo->u.state.refs = refs;
-	} else if ( cv->drawmode==dm_fore && undo->undotype==ut_statehint ) {
+	} else if ( drawmode==dm_fore && undo->undotype==ut_statehint ) {
 	    void *hints = UHintCopy(sc,false);
 	    ExtractHints(sc,undo->u.state.u.hints,false);
 	    undo->u.state.u.hints = hints;
 	}
-	if ( cv->drawmode==dm_back && undo->undotype!=ut_statehint &&
+	if ( drawmode==dm_back && undo->undotype!=ut_statehint &&
 		!ImagesMatch(undo->u.state.u.images,sc->backimages)) {
-	    ImageList *images = ImagesCopyState(cv);
+	    ImageList *images = SCImagesCopyState(sc);
 	    FixupImages(sc,undo->u.state.u.images);
 	    undo->u.state.u.images = images;
-	    SCOutOfDateBackground(cv->sc);
+	    SCOutOfDateBackground(sc);
 	}
 	undo->u.state.splines = spl;
 	if ( undo->u.state.lbearingchange ) {
@@ -632,7 +634,7 @@ static void CVUndoAct(CharView *cv,Undoes *undo) {
 	}
       } break;
       default:
-	GDrawIError( "Unknown undo type in CVUndoAct: %d", undo->undotype );
+	GDrawIError( "Unknown undo type in SCUndoAct: %d", undo->undotype );
       break;
     }
 }
@@ -644,7 +646,7 @@ void CVDoUndo(CharView *cv) {
 return;
     *cv->uheads[cv->drawmode] = undo->next;
     undo->next = NULL;
-    CVUndoAct(cv,undo);
+    SCUndoAct(cv->sc,cv->drawmode,undo);
     undo->next = *cv->rheads[cv->drawmode];
     *cv->rheads[cv->drawmode] = undo;
     CVCharChangedUpdate(cv);
@@ -659,11 +661,49 @@ void CVDoRedo(CharView *cv) {
 return;
     *cv->rheads[cv->drawmode] = undo->next;
     undo->next = NULL;
-    CVUndoAct(cv,undo);
+    SCUndoAct(cv->sc,cv->drawmode,undo);
     undo->next = *cv->uheads[cv->drawmode];
     *cv->uheads[cv->drawmode] = undo;
     CVCharChangedUpdate(cv);
     cv->lastselpt = NULL;
+return;
+}
+
+void SCDoUndo(SplineChar *sc,int drawmode) {
+    Undoes *undo = sc->undoes[drawmode];
+
+    if ( drawmode!=dm_fore && drawmode!=dm_back ) {
+	GDrawIError( "Unsupported drawmode in SCDoUndo");
+return;
+    }
+
+    if ( undo==NULL )		/* Shouldn't happen */
+return;
+    sc->undoes[drawmode] = undo->next;
+    undo->next = NULL;
+    SCUndoAct(sc,drawmode,undo);
+    undo->next = sc->redoes[drawmode];
+    sc->redoes[drawmode] = undo;
+    SCCharChangedUpdate(sc);
+return;
+}
+
+void SCDoRedo(SplineChar *sc, int drawmode) {
+    Undoes *undo = sc->redoes[drawmode];
+
+    if ( drawmode!=dm_fore && drawmode!=dm_back ) {
+	GDrawIError( "Unsupported drawmode in SCDoUndo");
+return;
+    }
+
+    if ( undo==NULL )		/* Shouldn't happen */
+return;
+    sc->redoes[drawmode] = undo->next;
+    undo->next = NULL;
+    SCUndoAct(sc,drawmode,undo);
+    undo->next = sc->undoes[drawmode];
+    sc->undoes[drawmode] = undo;
+    SCCharChangedUpdate(sc);
 return;
 }
 
@@ -732,7 +772,7 @@ static void BCUndoAct(BDFChar *bc,Undoes *undo) {
 	sel = bc->selection; bc->selection = undo->u.bmpstate.selection; undo->u.bmpstate.selection = sel;
       } break;
       default:
-	GDrawIError( "Unknown undo type in CVUndoAct: %d", undo->undotype );
+	GDrawIError( "Unknown undo type in BCUndoAct: %d", undo->undotype );
       break;
     }
 }
@@ -747,7 +787,7 @@ return;
     BCUndoAct(bc,undo);
     undo->next = bc->redoes;
     bc->redoes = undo;
-    BCCharChangedUpdate(bc,fv);
+    BCCharChangedUpdate(bc);
 return;
 }
 
@@ -761,7 +801,7 @@ return;
     BCUndoAct(bc,undo);
     undo->next = bc->undoes;
     bc->undoes = undo;
-    BCCharChangedUpdate(bc,fv);
+    BCCharChangedUpdate(bc);
 return;
 }
 
@@ -1278,7 +1318,7 @@ static void _PasteToBC(BDFChar *bc,int pixelsize, Undoes *paster, int clearfirst
 	if ( clearfirst )
 	    memset(bc->bitmap,'\0',bc->bytes_per_line*(bc->ymax-bc->ymin+1));
 	bc->selection = BDFFloatCopy(paster->u.bmpstate.selection);
-	BCCharChangedUpdate(bc,fv);
+	BCCharChangedUpdate(bc);
       break;
       case ut_bitmap:
 	BCPreserveState(bc);
@@ -1292,7 +1332,7 @@ static void _PasteToBC(BDFChar *bc,int pixelsize, Undoes *paster, int clearfirst
 	free(bc->bitmap);
 	bc->bitmap = galloc(bc->bytes_per_line*(bc->ymax-bc->ymin+1));
 	memcpy(bc->bitmap,paster->u.bmpstate.bitmap,bc->bytes_per_line*(bc->ymax-bc->ymin+1));
-	BCCharChangedUpdate(bc,fv);
+	BCCharChangedUpdate(bc);
       break;
       case ut_composit:
 	/* if there's only one bitmap and no outline state (so we only copied a bitmap) */

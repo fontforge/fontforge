@@ -48,7 +48,7 @@ return;
 	    if ( bc->width!=width ) {
 		/*BCPreserveWidth(bc);*/ /* Bitmaps can't set width, so no undo for it */
 		bc->width = width;
-		BCCharChangedUpdate(bc,fv);
+		BCCharChangedUpdate(bc);
 	    }
 	}
     }

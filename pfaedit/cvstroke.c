@@ -86,6 +86,25 @@ static void CVStrokeIt(void *_cv, StrokeInfo *si) {
     CVCharChangedUpdate(cv);
 }
 
+static void SCStrokeIt(void *_sc, StrokeInfo *si) {
+    SplineChar *sc = _sc;
+    SplineSet *spl, *head=NULL, *last=NULL, *cur;
+
+    SCPreserveState(sc,false);
+    for ( spl= sc->splines; spl!=NULL; spl = spl->next ) {
+	cur = SplineSetStroke(spl,si,sc);
+	if ( head==NULL )
+	    head = cur;
+	else
+	    last->next = cur;
+	while ( cur->next!=NULL ) cur = cur->next;
+	last = cur;
+    }
+    SplinePointListsFree( sc->splines );
+    sc->splines = head;
+    SCCharChangedUpdate(sc);
+}
+
 static void FVStrokeIt(void *_fv, StrokeInfo *si) {
     FontView *fv = _fv;
     SplineSet *spl, *head, *last, *cur;
@@ -416,6 +435,10 @@ void CVStroke(CharView *cv) {
 return;
 
     MakeStrokeDlg(cv,CVStrokeIt);
+}
+
+void SCStroke(SplineChar *sc) {
+    MakeStrokeDlg(sc,SCStrokeIt);
 }
 
 void FVStroke(FontView *fv) {

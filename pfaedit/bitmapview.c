@@ -123,27 +123,26 @@ static void BCCharUpdate(BDFChar *bc) {
     }
 }
 
-void BCCharChangedUpdate(BDFChar *bc,FontView *fv) {
+void BCCharChangedUpdate(BDFChar *bc) {
     BDFFont *bdf;
     BitmapView *bv;
     int waschanged = bc->changed;
+    FontView *fv;
 
     bc->changed = true;
     for ( bv = bc->views; bv!=NULL; bv=bv->next ) {
 	GDrawRequestExpose(bv->v, NULL, false );
 	BVRefreshImage(bv);
-	if ( fv==NULL )
-	    fv = bv->fv;
     }
-    if ( fv!=NULL ) {
-	fv->sf->changed = true;
-	if ( fv->show!=fv->filled ) {
-	    for ( bdf=fv->sf->bitmaps; bdf!=NULL && bdf->chars[bc->enc]!=bc; bdf=bdf->next );
-	    if ( bdf!=NULL ) {
-		FVRefreshChar(fv,bdf,bc->enc);
-		if ( fv->sf->onlybitmaps && !waschanged )
-		    FVToggleCharChanged(fv,fv->sf->chars[bc->enc]);
-	    }
+
+    fv = bc->sc->parent->fv;
+    fv->sf->changed = true;
+    if ( fv->show!=fv->filled ) {
+	for ( bdf=fv->sf->bitmaps; bdf!=NULL && bdf->chars[bc->enc]!=bc; bdf=bdf->next );
+	if ( bdf!=NULL ) {
+	    FVRefreshChar(fv,bdf,bc->enc);
+	    if ( fv->sf->onlybitmaps && !waschanged )
+		FVToggleCharChanged(fv,fv->sf->chars[bc->enc]);
 	}
     }
 }
@@ -298,7 +297,7 @@ return;
 		bv->bc->selection->xmin += xoff;  bv->bc->selection->xmax += xoff;
 		bv->bc->selection->ymin += yoff;  bv->bc->selection->ymax += yoff;
 	    }
-	    BCCharChangedUpdate(bv->bc,bv->fv);
+	    BCCharChangedUpdate(bv->bc);
 	}
     } else if ( !(event->u.chr.state&(ksm_control|ksm_meta)) &&
 	    event->type == et_char &&
@@ -669,7 +668,7 @@ static int BVRecalc(GGadget *g, GEvent *e) {
 	bv->bc->ymax = bdfc->ymax;
 	bv->bc->bytes_per_line = bdfc->bytes_per_line;
 	BDFCharFree(bdfc);
-	BCCharChangedUpdate(bv->bc,bv->fv);
+	BCCharChangedUpdate(bv->bc);
     }
 return( true );
 }
@@ -689,7 +688,7 @@ static void BVSetWidth(BitmapView *bv, int x) {
 	    }
 	if ( cnt!=0 )
 	    bv->fv->sf->chars[bc->enc]->width = tot/cnt;
-	BCCharChangedUpdate(bc,bv->fv);
+	BCCharChangedUpdate(bc);
     }
 }
 
@@ -725,12 +724,12 @@ return;
 	BCFlattenFloat(bc);
 	if ( bv->active_tool == bvt_pencil )
 	    BCSetPoint(bc,x,y,bv->clearing);
-	BCCharChangedUpdate(bc,bv->fv);
+	BCCharChangedUpdate(bc);
       break;
       case bvt_elipse: case bvt_filledelipse:
 	BCPreserveState(bc);
 	BCFlattenFloat(bc);
-	BCCharChangedUpdate(bc,bv->fv);
+	BCCharChangedUpdate(bc);
       break;
       case bvt_pointer:
 	if ( (sel = bc->selection)!=NULL ) {
@@ -768,11 +767,11 @@ return;			/* Not pressed */
     switch ( bv->active_tool ) {
       case bvt_pencil:
 	BCSetPoint(bc,x,y,bv->clearing);
-	BCCharChangedUpdate(bc,bv->fv);
+	BCCharChangedUpdate(bc);
       break;
       case bvt_line: case bvt_rect: case bvt_filledrect:
       case bvt_elipse: case bvt_filledelipse:
-	BCCharChangedUpdate(bc,bv->fv);
+	BCCharChangedUpdate(bc);
       break;
       case bvt_hand:
 	newx = bv->xoff + event->u.mouse.x-bv->event_x;
@@ -803,7 +802,7 @@ return;			/* Not pressed */
 	    bc->xmax += x-bv->pressed_x;
 	    bc->ymin += y-bv->pressed_y;
 	    bc->ymax += y-bv->pressed_y;
-	    BCCharChangedUpdate(bc,bv->fv);
+	    BCCharChangedUpdate(bc);
 	    bv->pressed_x = x; bv->pressed_y = y;
 	}
       break;
@@ -818,7 +817,7 @@ return;			/* Not pressed */
 		bc->selection->xmax += x-bv->pressed_x;
 		bc->selection->ymin += y-bv->pressed_y;
 		bc->selection->ymax += y-bv->pressed_y;
-		BCCharChangedUpdate(bc,bv->fv);
+		BCCharChangedUpdate(bc);
 		bv->pressed_x = x; bv->pressed_y = y;
 	    }
 	} else {
@@ -850,7 +849,7 @@ static void BVMouseUp(BitmapView *bv, GEvent *event) {
       case bvt_elipse: case bvt_filledelipse:
 	BCGeneralFunction(bv,BVSetPoint,NULL);
 	bv->active_tool = bvt_none;
-	BCCharChangedUpdate(bv->bc,bv->fv);
+	BCCharChangedUpdate(bv->bc);
       break;
       case bvt_pointer:
 	if ( bv->bc->selection!=NULL ) {
@@ -858,7 +857,7 @@ static void BVMouseUp(BitmapView *bv, GEvent *event) {
 	    GDrawSetCursor(bv->v,ct_mypointer);
 	    if ( !bv->recentchange ) {	/* Oh, we just clicked in it, get rid of it */
 		BCFlattenFloat(bv->bc);
-		BCCharChangedUpdate(bv->bc,bv->fv);
+		BCCharChangedUpdate(bv->bc);
 	    }
 	} else {
 	    int dx,dy;
@@ -869,7 +868,7 @@ static void BVMouseUp(BitmapView *bv, GEvent *event) {
 		BDFFloatCreate(bv->bc,bv->pressed_x,bv->info_x,bv->pressed_y,bv->info_y,true);
 	    }
 	    bv->active_tool = bvt_none;
-	    BCCharChangedUpdate(bv->bc,bv->fv);
+	    BCCharChangedUpdate(bv->bc);
 	}
       break;
       case bvt_setwidth:
@@ -1186,7 +1185,7 @@ return;
     if ( val<0 )
 return;
     bv->bc->width = val;
-    BCCharChangedUpdate(bv->bc,bv->fv);
+    BCCharChangedUpdate(bv->bc);
     for ( bdf=bv->fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next )
 	if ( bdf->pixelsize > mysize )
 return;
@@ -1219,7 +1218,7 @@ static void BVDoClear(BitmapView *bv) {
 	BCPreserveState(bv->bc);
 	BDFFloatFree(bv->bc->selection);
 	bv->bc->selection = NULL;
-	BCCharChangedUpdate(bv->bc,bv->fv);
+	BCCharChangedUpdate(bv->bc);
     }
 }
 

@@ -140,6 +140,7 @@ typedef struct metafont {
     int bcnt, bxh;			/* number of entries and location of xh*/
     FontView *fv;
     CharView *cv;
+    SplineChar *sc;
     SplineFont *sf;
     GWindow gw;
 } MetaFontDlg;
@@ -1903,6 +1904,8 @@ return( true );
 		meta->counters[1].zones[meta->bxh].to = xh;
 	    if ( meta->cv!=NULL )
 		_MetaFont(meta,meta->cv->sc);
+	    else if ( meta->sc!=NULL )
+		_MetaFont(meta,meta->sc);
 	    else {
 		for ( cnt=i=0; i<meta->fv->sf->charcnt; ++i )
 		    if ( meta->fv->sf->chars[i]!=NULL && meta->fv->selected[i] )
@@ -1993,7 +1996,7 @@ static int e_h(GWindow gw, GEvent *event) {
 return( event->type!=et_char );
 }
 
-void MetaFont(FontView *fv,CharView *cv) {
+void MetaFont(FontView *fv,CharView *cv,SplineChar *sc) {
     GRect pos;
     GWindowAttrs wattrs;
     GTabInfo aspects[8];
@@ -2005,7 +2008,7 @@ void MetaFont(FontView *fv,CharView *cv) {
     char buffer[20];
 
     memset(&meta,'\0',sizeof(meta));
-    meta.fv = fv; meta.cv = cv;
+    meta.fv = fv; meta.cv = cv; meta.sc = sc;
     if ( cv!=NULL )
 	meta.sf = cv->sc->parent;
     else

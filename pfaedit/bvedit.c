@@ -173,7 +173,7 @@ return;
 	}
 	BCTransFunc(bc,bvts[i].func,xoff,yoff);
     }
-    BCCharChangedUpdate(bc,fv);
+    BCCharChangedUpdate(bc);
 }
 
 void BCRotateCharForVert(BDFChar *bc,BDFChar *from, BDFFont *frombdf) {
@@ -205,7 +205,7 @@ void BVRotateBitmap(BitmapView *bv,enum bvtools type ) {
 return;
     BCPreserveState(bv->bc);
     BCTransFunc(bv->bc,type,xoff,yoff);
-    BCCharChangedUpdate(bv->bc,bv->fv);
+    BCCharChangedUpdate(bv->bc);
 }
 
 static void BCExpandBitmap(BDFChar *bc, int x, int y) {

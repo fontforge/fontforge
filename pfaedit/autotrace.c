@@ -152,7 +152,7 @@ static int mytempnam(char *buffer) {
 return( mkstemp(buffer));
 }
 
-static void SCAutoTrace(SplineChar *sc, char **args) {
+static void _SCAutoTrace(SplineChar *sc, char **args) {
     ImageList *images;
     char *prog;
     SplineSet *new, *last;
@@ -336,29 +336,6 @@ return( (char **) -1 );
 return( args );
 }
 
-void CVAutoTrace(CharView *cv,int ask) {
-    char **args;
-    GCursor ct;
-
-    if ( cv->sc->backimages==NULL ) {
-	GWidgetErrorR(_STR_NothingToTrace,_STR_NothingToTrace);
-return;
-    } else if ( FindAutoTraceName()==NULL ) {
-	GWidgetErrorR(_STR_NoAutotrace,_STR_NoAutotraceProg);
-return;
-    }
-
-    args = AutoTraceArgs(ask);
-    if ( args==(char **) -1 )
-return;
-    ct = GDrawGetCursor(cv->v);
-    GDrawSetCursor(cv->v,ct_watch);
-    GDrawSync(NULL);
-    GDrawProcessPendingEvents(NULL);
-    SCAutoTrace(cv->sc, args);
-    GDrawSetCursor(cv->v,ct);
-}
-
 void FVAutoTrace(FontView *fv,int ask) {
     char **args;
     int i,cnt;
@@ -386,7 +363,7 @@ return;
 
     for ( i=0; i<fv->sf->charcnt; ++i ) {
 	if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->backimages ) {
-	    SCAutoTrace(fv->sf->chars[i], args);
+	    _SCAutoTrace(fv->sf->chars[i], args);
 	    if ( !GProgressNext())
     break;
 	}
@@ -394,6 +371,29 @@ return;
     GProgressEndIndicator();
     if ( fv->v!=NULL )
 	GDrawSetCursor(fv->v,ct);
+}
+
+void SCAutoTrace(SplineChar *sc,GWindow v,int ask) {
+    char **args;
+    GCursor ct;
+
+    if ( sc->backimages==NULL ) {
+	GWidgetErrorR(_STR_NothingToTrace,_STR_NothingToTrace);
+return;
+    } else if ( FindAutoTraceName()==NULL ) {
+	GWidgetErrorR(_STR_NoAutotrace,_STR_NoAutotraceProg);
+return;
+    }
+
+    args = AutoTraceArgs(ask);
+    if ( args==(char **) -1 )
+return;
+    ct = GDrawGetCursor(v);
+    GDrawSetCursor(v,ct_watch);
+    GDrawSync(NULL);
+    GDrawProcessPendingEvents(NULL);
+    _SCAutoTrace(sc, args);
+    GDrawSetCursor(v,ct);
 }
 
 char *ProgramExists(char *prog,char *buffer) {

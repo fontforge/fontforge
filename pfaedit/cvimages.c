@@ -557,7 +557,7 @@ return(false);
 
     base->data = NULL;
     GImageDestroy(image);
-    BCCharChangedUpdate(bc,NULL);
+    BCCharChangedUpdate(bc);
 return( true );
 }
 

@@ -2703,12 +2703,12 @@ static void CVMenuFontInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void CVMenuFindProblems(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    FindProblems(NULL,cv);
+    FindProblems(NULL,cv,NULL);
 }
 
 static void CVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    MetaFont(NULL,cv);
+    MetaFont(NULL,cv,NULL);
 }
 
 static void CVMenuScale(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -3569,7 +3569,7 @@ return;
 
 static void CVMenuAutotrace(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    CVAutoTrace(cv,e!=NULL && (e->u.mouse.state&ksm_shift));
+    SCAutoTrace(cv->sc,cv->v,e!=NULL && (e->u.mouse.state&ksm_shift));
 }
 
 static void CVMenuBuildAccent(GWindow gw,struct gmenuitem *mi,GEvent *e) {

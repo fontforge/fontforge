@@ -949,8 +949,22 @@ return( true );
 #define MID_NextDef	2012
 #define MID_PrevDef	2013
 #define MID_AntiAlias	2014
+#define MID_CharInfo	2201
+#define MID_FindProblems 2216
+#define MID_MetaFont	2217
+#define MID_Transform	2202
+#define MID_Stroke	2203
+#define MID_RmOverlap	2204
+#define MID_Simplify	2205
+#define MID_Correct	2206
+#define MID_BuildAccent	2208
 #define MID_AvailBitmaps	2210
 #define MID_RegenBitmaps	2211
+#define MID_Autotrace	2212
+#define MID_Round	2213
+#define MID_ShowDependents	2222
+#define MID_AddExtrema	2224
+#define MID_CleanupChar	2225
 #define MID_Center	2600
 #define MID_OpenBitmap	2700
 #define MID_OpenOutline	2701
@@ -959,6 +973,7 @@ return( true );
 #define MID_Paste	2103
 #define MID_Clear	2104
 #define MID_SelAll	2106
+#define MID_UnlinkRef	2108
 #define MID_Undo	2109
 #define MID_Redo	2110
 #define MID_CopyRef	2107
@@ -1025,20 +1040,90 @@ static void MVMenuPrint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void MVUndo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
-    GGadgetActiveGadgetEditCmd(mv->gw,ec_undo);
-    MVTextChanged(mv);
+    int i;
+
+    if ( GGadgetActiveGadgetEditCmd(mv->gw,ec_undo) )
+	MVTextChanged(mv);
+    else {
+	for ( i=mv->charcnt-1; i>=0; --i )
+	    if ( mv->perchar[i].selected )
+	break;
+	if ( i==-1 )
+return;
+	if ( mv->perchar[i].sc->undoes[dm_fore]!=NULL )
+	    SCDoUndo(mv->perchar[i].sc,dm_fore);
+    }
 }
 
 static void MVRedo(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
-    GGadgetActiveGadgetEditCmd(mv->gw,ec_redo);
-    MVTextChanged(mv);
+    int i;
+
+    if ( GGadgetActiveGadgetEditCmd(mv->gw,ec_redo) )
+	MVTextChanged(mv);
+    else {
+	for ( i=mv->charcnt-1; i>=0; --i )
+	    if ( mv->perchar[i].selected )
+	break;
+	if ( i==-1 )
+return;
+	if ( mv->perchar[i].sc->redoes[dm_fore]!=NULL )
+	    SCDoRedo(mv->perchar[i].sc,dm_fore);
+    }
+}
+
+static void MVClear(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    int i;
+    SplineChar *sc;
+    static int buts[] = { _STR_Yes, _STR_Unlink, _STR_Cancel, 0 };
+    BDFFont *bdf;
+    extern int onlycopydisplayed;
+
+    if ( GGadgetActiveGadgetEditCmd(mv->gw,ec_clear) )
+	MVTextChanged(mv);
+    else {
+	for ( i=mv->charcnt-1; i>=0; --i )
+	    if ( mv->perchar[i].selected )
+	break;
+	if ( i==-1 )
+return;
+	sc = mv->perchar[i].sc;
+	if ( sc->dependents!=NULL ) {
+	    int yes = GWidgetAskCenteredR(_STR_BadReference,buts,1,2,_STR_ClearDependent,sc->name);
+	    if ( yes==2 )
+return;
+	    if ( yes==1 )
+		UnlinkThisReference(NULL,sc);
+	}
+
+	if ( onlycopydisplayed && mv->bdf==NULL ) {
+	    SCClearAll(sc);
+	} else if ( onlycopydisplayed ) {
+	    BCClearAll(mv->bdf->chars[i]);
+	} else {
+	    SCClearAll(sc);
+	    for ( bdf=mv->fv->sf->bitmaps; bdf!=NULL; bdf = bdf->next )
+		BCClearAll(bdf->chars[i]);
+	}
+    }
 }
 
 static void MVCut(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
-    GGadgetActiveGadgetEditCmd(mv->gw,ec_cut);
-    MVTextChanged(mv);
+    int i;
+
+    if ( GGadgetActiveGadgetEditCmd(mv->gw,ec_cut) )
+	MVTextChanged(mv);
+    else {
+	for ( i=mv->charcnt-1; i>=0; --i )
+	    if ( mv->perchar[i].selected )
+	break;
+	if ( i==-1 )
+return;
+	MVCopyChar(mv,mv->perchar[i].sc,true);
+	MVClear(gw,mi,e);
+    }
 }
 
 static void MVCopy(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -1105,10 +1190,24 @@ return;
     }
 }
 
-static void MVClear(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+static void MVUnlinkRef(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
-    GGadgetActiveGadgetEditCmd(mv->gw,ec_clear);
-    MVTextChanged(mv);
+    int i;
+    SplineChar *sc;
+    RefChar *rf, *next;
+
+    for ( i=mv->charcnt-1; i>=0; --i )
+	if ( mv->perchar[i].selected )
+    break;
+    if ( i==-1 )
+return;
+    sc = mv->perchar[i].sc;
+    SCPreserveState(sc,false);
+    for ( rf=sc->refs; rf!=NULL ; rf=next ) {
+	next = rf->next;
+	SCRefToSplines(sc,rf);
+    }
+    SCCharChangedUpdate(sc);
 }
 
 static void MVSelectAll(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -1119,6 +1218,42 @@ static void MVSelectAll(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void MVMenuFontInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     DelayEvent(FontMenuFontInfo,mv->fv);
+}
+
+static void MVMenuCharInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    int i;
+
+    for ( i=mv->charcnt-1; i>=0; --i )
+	if ( mv->perchar[i].selected )
+    break;
+    if ( i!=-1 )
+	SCGetInfo(mv->perchar[i].sc,true);
+}
+
+static void MVMenuShowDependents(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    int i;
+
+    for ( i=mv->charcnt-1; i>=0; --i )
+	if ( mv->perchar[i].selected )
+    break;
+    if ( i!=-1 )
+return;
+    if ( mv->perchar[i].sc->dependents==NULL )
+return;
+    SCRefBy(mv->perchar[i].sc);
+}
+
+static void MVMenuFindProblems(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    int i;
+
+    for ( i=mv->charcnt-1; i>=0; --i )
+	if ( mv->perchar[i].selected )
+    break;
+    if ( i!=-1 )
+	FindProblems(mv->fv,NULL,mv->perchar[i].sc);
 }
 
 static void MVMenuBitmaps(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -1132,6 +1267,184 @@ static void MVMenuBitmaps(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	BitmapDlg(mv->fv,mv->perchar[i].sc,mi->mid==MID_AvailBitmaps );
     else if ( mi->mid==MID_AvailBitmaps )
 	BitmapDlg(mv->fv,NULL,true );
+}
+
+static int getorigin(void *d,BasePoint *base,int index) {
+    SplineChar *sc = (SplineChar *) d;
+    DBounds bb;
+
+    base->x = base->y = 0;
+    switch ( index ) {
+      case 0:		/* Character origin */
+	/* all done */
+      break;
+      case 1:		/* Center of selection */
+	SplineCharFindBounds(sc,&bb);
+	base->x = (bb.minx+bb.maxx)/2;
+	base->y = (bb.miny+bb.maxy)/2;
+      break;
+      default:
+return( false );
+    }
+return( true );
+}
+
+static void MVTransFunc(void *_sc,real transform[6],int otype, BVTFunc *bvts,
+	int dobackground ) {
+    SplineChar *sc = _sc;
+
+    FVTrans(sc->parent->fv,sc,transform, NULL,dobackground);
+}
+
+static void MVMenuTransform(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    int i;
+
+    for ( i=mv->charcnt-1; i>=0; --i )
+	if ( mv->perchar[i].selected )
+    break;
+    if ( i!=-1 )
+	TransformDlgCreate( mv->perchar[i].sc,MVTransFunc,getorigin,true );
+}
+
+static void MVMenuStroke(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    int i;
+
+    for ( i=mv->charcnt-1; i>=0; --i )
+	if ( mv->perchar[i].selected )
+    break;
+    if ( i!=-1 )
+	SCStroke(mv->perchar[i].sc);
+}
+
+static void MVMenuOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    int i;
+
+    for ( i=mv->charcnt-1; i>=0; --i )
+	if ( mv->perchar[i].selected )
+    break;
+    if ( i!=-1 ) {
+	SplineChar *sc = mv->perchar[i].sc;
+	SCPreserveState(sc,false);
+	MinimumDistancesFree(sc->md);
+	sc->md = NULL;
+	sc->splines = SplineSetRemoveOverlap(sc->splines);
+	SCCharChangedUpdate(sc);
+    }
+}
+
+static void MVSimplify( MetricsView *mv,int type ) {
+    int i;
+
+    for ( i=mv->charcnt-1; i>=0; --i )
+	if ( mv->perchar[i].selected )
+    break;
+    if ( i!=-1 ) {
+	SplineChar *sc = mv->perchar[i].sc;
+	SCPreserveState(sc,false);
+	sc->splines = SplineCharSimplify(sc,sc->splines,type);
+	SCCharChangedUpdate(sc);
+    }
+}
+
+static void MVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    MVSimplify(mv,false);
+}
+
+static void MVMenuSimplifyMore(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    MVSimplify(mv,true);
+}
+
+static void MVMenuCleanup(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    MVSimplify(mv,-1);
+}
+
+static void MVMenuAddExtrema(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    int i;
+
+    for ( i=mv->charcnt-1; i>=0; --i )
+	if ( mv->perchar[i].selected )
+    break;
+    if ( i!=-1 ) {
+	SplineChar *sc = mv->perchar[i].sc;
+	SCPreserveState(sc,false);
+	SplineCharAddExtrema(sc->splines,false);
+	SCCharChangedUpdate(sc);
+    }
+}
+
+static void MVMenuRound2Int(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    int i;
+
+    for ( i=mv->charcnt-1; i>=0; --i )
+	if ( mv->perchar[i].selected )
+    break;
+    if ( i!=-1 )
+	SCRound2Int( mv->perchar[i].sc, mv->fv);
+}
+
+static void MVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    int i;
+
+    for ( i=mv->charcnt-1; i>=0; --i )
+	if ( mv->perchar[i].selected )
+    break;
+    if ( i!=-1 )
+	MetaFont(NULL, NULL, mv->perchar[i].sc);
+}
+
+static void MVMenuAutotrace(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    int i;
+
+    for ( i=mv->charcnt-1; i>=0; --i )
+	if ( mv->perchar[i].selected )
+    break;
+    if ( i!=-1 )
+	SCAutoTrace(mv->perchar[i].sc,mv->gw,e!=NULL && (e->u.mouse.state&ksm_shift));
+}
+
+static void MVMenuCorrectDir(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    int i;
+
+    for ( i=mv->charcnt-1; i>=0; --i )
+	if ( mv->perchar[i].selected )
+    break;
+    if ( i!=-1 ) {
+	SplineChar *sc = mv->perchar[i].sc;
+	SCPreserveState(sc,false);
+	sc->splines = SplineSetsCorrect(sc->splines);
+	SCCharChangedUpdate(sc);
+    }
+}
+
+static void MVMenuBuildAccent(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    int i;
+    int onlyaccents = e==NULL || !(e->u.mouse.state&ksm_shift);
+    extern int onlycopydisplayed;
+
+    for ( i=mv->charcnt-1; i>=0; --i )
+	if ( mv->perchar[i].selected )
+    break;
+    if ( i!=-1 ) {
+	SplineChar *sc = mv->perchar[i].sc;
+	if ( SFIsRotatable(mv->fv->sf,sc) ||
+		(SCMakeDotless(mv->fv->sf,sc,false,true) && !onlyaccents) ||
+		(SFIsCompositBuildable(mv->fv->sf,sc->unicodeenc) &&
+		 (!onlyaccents || hascomposing(mv->fv->sf,sc->unicodeenc)))) {
+	    SCBuildComposit(mv->fv->sf,sc,!onlycopydisplayed,mv->fv);
+	}
+    }
 }
 
 static void MVResetText(MetricsView *mv) {
@@ -1272,14 +1585,33 @@ static GMenuItem edlist[] = {
     { { (unichar_t *) _STR_Clear, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 0, 1, 0, 'l' }, 0, 0, NULL, NULL, MVClear, MID_Clear },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_SelectAll, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 0, 1, 0, 'A' }, 'A', ksm_control, NULL, NULL, MVSelectAll, MID_SelAll },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_Unlinkref, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'U' }, 'U', ksm_control, NULL, NULL, MVUnlinkRef, MID_UnlinkRef },
     { NULL }
 };
 
 static GMenuItem ellist[] = {
     { { (unichar_t *) _STR_Fontinfo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, 'F', ksm_control|ksm_shift, NULL, NULL, MVMenuFontInfo },
+    { { (unichar_t *) _STR_Charinfo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, 'I', ksm_control, NULL, NULL, MVMenuCharInfo, MID_CharInfo },
+    { { (unichar_t *) _STR_ShowDependents, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'D' }, 'I', ksm_control|ksm_meta, NULL, NULL, MVMenuShowDependents, MID_ShowDependents },
+    { { (unichar_t *) _STR_Findprobs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'o' }, 'E', ksm_control, NULL, NULL, MVMenuFindProblems, MID_FindProblems },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Bitmapsavail, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'A' }, 'B', ksm_control|ksm_shift, NULL, NULL, MVMenuBitmaps, MID_AvailBitmaps },
     { { (unichar_t *) _STR_Regenbitmaps, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, 'B', ksm_control, NULL, NULL, MVMenuBitmaps, MID_RegenBitmaps },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_Transform, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'T' }, '\\', ksm_control, NULL, NULL, MVMenuTransform, MID_Transform },
+    { { (unichar_t *) _STR_Stroke, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'E' }, 'E', ksm_control|ksm_shift, NULL, NULL, MVMenuStroke, MID_Stroke },
+    { { (unichar_t *) _STR_Rmoverlap, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'O' }, 'O', ksm_control|ksm_shift, NULL, NULL, MVMenuOverlap, MID_RmOverlap },
+    { { (unichar_t *) _STR_Simplify, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, 'M', ksm_control|ksm_shift, NULL, NULL, MVMenuSimplify, MID_Simplify },
+    { { (unichar_t *) _STR_CleanupChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'n' }, '\0', ksm_control|ksm_shift, NULL, NULL, MVMenuCleanup, MID_CleanupChar },
+    { { (unichar_t *) _STR_AddExtrema, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'x' }, 'X', ksm_control|ksm_shift, NULL, NULL, MVMenuAddExtrema, MID_AddExtrema },
+    { { (unichar_t *) _STR_Round2int, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '_', ksm_control|ksm_shift, NULL, NULL, MVMenuRound2Int, MID_Round },
+    { { (unichar_t *) _STR_MetaFont, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, '!', ksm_control|ksm_shift, NULL, NULL, MVMenuMetaFont, MID_MetaFont },
+    { { (unichar_t *) _STR_Autotrace, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'r' }, 'T', ksm_control|ksm_shift, NULL, NULL, MVMenuAutotrace, MID_Autotrace },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_Correct, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'D' }, 'D', ksm_control|ksm_shift, NULL, NULL, MVMenuCorrectDir, MID_Correct },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_Buildaccent, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, 'A', ksm_control|ksm_shift, NULL, NULL, MVMenuBuildAccent, MID_BuildAccent },
     { NULL }
 };
 
@@ -1336,10 +1668,20 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	switch ( mi->mid ) {
 	  case MID_Copy: case MID_CopyRef: case MID_CopyWidth:
 	  case MID_CopyLBearing: case MID_CopyRBearing:
+	  case MID_Cut: case MID_Clear:
 	    mi->ti.disabled = i==-1;
 	  break;
 	  case MID_CopyVWidth:
 	    mi->ti.disabled = i==-1 || !mv->fv->sf->hasvmetrics;
+	  break;
+	  case MID_Undo:
+	    mi->ti.disabled = i==-1 || mv->perchar[i].sc->undoes[dm_fore]==NULL;
+	  break;
+	  case MID_Redo:
+	    mi->ti.disabled = i==-1 || mv->perchar[i].sc->redoes[dm_fore]==NULL;
+	  break;
+	  case MID_UnlinkRef:
+	    mi->ti.disabled = i==-1 || mv->perchar[i].sc->refs==NULL;
 	  break;
 	  case MID_Paste:
 	    mi->ti.disabled = i==-1 || !CopyContainsSomething();
@@ -1350,11 +1692,64 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    int i, anybuildable, onlyaccents;
+    SplineChar *sc;
+
+    for ( i=mv->charcnt-1; i>=0; --i )
+	if ( mv->perchar[i].selected )
+    break;
+    if ( i==-1 ) sc = NULL; else sc = mv->perchar[i].sc;
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
 	  case MID_RegenBitmaps:
 	    mi->ti.disabled = mv->fv->sf->bitmaps==NULL;
+	  break;
+	  case MID_CharInfo:
+	    mi->ti.disabled = sc==NULL || mv->fv->cidmaster!=NULL;
+	  break;
+	  case MID_ShowDependents:
+	    mi->ti.disabled = sc==NULL || sc->dependents == NULL;
+	  break;
+	  case MID_FindProblems:
+	  case MID_MetaFont:
+	  case MID_Transform:
+	    mi->ti.disabled = sc==NULL;
+	  break;
+	  case MID_AddExtrema:
+	  case MID_Stroke: case MID_RmOverlap:
+	  case MID_Round: case MID_Correct:
+	    mi->ti.disabled = sc==NULL || mv->fv->sf->onlybitmaps;
+	  break;
+	  case MID_Simplify:
+	    mi->ti.disabled = sc==NULL || mv->fv->sf->onlybitmaps;
+	    free(mi->ti.text);
+	    if ( e==NULL || !(e->u.mouse.state&ksm_shift) ) {
+		mi->ti.text = u_copy(GStringGetResource(_STR_Simplify,NULL));
+		mi->short_mask = ksm_control|ksm_shift;
+		mi->invoke = MVMenuSimplify;
+	    } else {
+		mi->ti.text = u_copy(GStringGetResource(_STR_SimplifyMore,NULL));
+		mi->short_mask = (ksm_control|ksm_meta|ksm_shift);
+		mi->invoke = MVMenuSimplifyMore;
+	    }
+	  break;
+	  case MID_BuildAccent:
+	    anybuildable = false;
+	    onlyaccents = e==NULL || !(e->u.mouse.state&ksm_shift);
+	    if ( sc!=NULL && ( SFIsRotatable(mv->fv->sf,sc) ||
+			(SCMakeDotless(mv->fv->sf,sc,false,true) && !onlyaccents) ||
+			(SFIsCompositBuildable(mv->fv->sf,sc->unicodeenc) &&
+			 (!onlyaccents || hascomposing(mv->fv->sf,sc->unicodeenc))) ) ) {
+		anybuildable = true;
+	    }
+	    mi->ti.disabled = !anybuildable;
+	    free(mi->ti.text);
+	    mi->ti.text = u_copy(GStringGetResource(onlyaccents?_STR_Buildaccent:_STR_Buildcomposit,NULL));
+	  break;
+	  case MID_Autotrace:
+	    mi->ti.disabled = !(FindAutoTraceName()!=NULL && sc!=NULL &&
+		    sc->backimages!=NULL );
 	  break;
 	}
     }
