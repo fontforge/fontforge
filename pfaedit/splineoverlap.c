@@ -695,14 +695,16 @@ return( ilist );
 
 static int bottomcmp(const void *_e1, const void *_e2) {
     const EI *e1 = *(EI *const *) _e1, *e2 = *(EI *const *) _e2;
+    const real min1 = e1->coordmin[e1->major], min2 = e2->coordmin[e1->major];
 
-return( ( e1->coordmin[e1->major]>e2->coordmin[e1->major] ) ? 1 : 0 );
+return( ( min1>min2 ) ? 1 : ( min1<min2 ) ? -1 : 0 );
 }
 
 static int topcmp(const void *_e1, const void *_e2) {
     const EI *e1 = *(EI *const *) _e1, *e2 = *(EI *const *) _e2;
+    const real max1 = e1->coordmax[e1->major], max2 = e2->coordmax[e1->major];
 
-return( ( e1->coordmax[e1->major]>e2->coordmax[e1->major] ) ? 1 : 0 );
+return( ( max1>max2 ) ? 1 : ( max1<max2 ) ? -1 : 0 );
 }
 
 static void ELCarefullOrder(EIList *el, int major) {
