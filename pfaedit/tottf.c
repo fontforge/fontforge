@@ -5853,19 +5853,19 @@ return( false );
     base2 = -1; base2bound = -2;
     if ( sf->encoding_name==em_big5 ) {
 	base = 0xa1;
-	basebound = 0xfc;
+	basebound = 0xf9;	/* wcl-02.ttf's cmap claims to go up to fc, but everything after f9 is invalid (according to what I know of big5, f9 should be the end) */
 	lbase = 0x40;
 	subheadcnt = basebound-base+1;
 	planesize = 191;
     } else if ( sf->encoding_name==em_wansung ) {
 	base = 0xa1;
-	basebound = 0xdf;
+	basebound = 0xfd;
 	lbase = 0xa1;
 	subheadcnt = basebound-base+1;
 	planesize = 0xfe - lbase +1;
     } else if ( sf->encoding_name==em_johab ) {
 	base = 0x84;
-	basebound = 0xf9+1;
+	basebound = 0xf9;
 	lbase = 0x31;
 	subheadcnt = basebound-base+1;
 	planesize = 0xfe -0x31+1;	/* Stupid gcc bug, thinks 0xfe- is ambiguous (exponant) */
@@ -5928,7 +5928,7 @@ return( false );		/* Doesn't have the single byte entries */
     break;
 	}
     if ( i==(base<<8) && base2==-1 )
-	for ( i=(basebound<<8); i<0x10000 && i<sf->charcnt; ++i )
+	for ( i=((basebound+1)<<8); i<0x10000 && i<sf->charcnt; ++i )
 	    if ( SCWorthOutputting(sf->chars[i])) {
 		GWidgetErrorR(_STR_BadEncoding,_STR_OutOfEncoding,i);
 	break;
@@ -5987,13 +5987,13 @@ return( false );		/* Doesn't have the single byte entries */
 	    break;
 	    if ( k==planesize ) {
 		subheads[subheadindex].delta = delta;
-		subheads[subheadindex].rangeoff = i*planesize;
+		subheads[subheadindex].rangeoff = plane0size+(i-1)*planesize;
 	break;
 	    }
 	}
 	if ( subheads[subheadindex].rangeoff==0 ) {
 	    memcpy(glyphs+(pos-1)*planesize+plane0size,tempglyphs,planesize*sizeof(uint16));
-	    subheads[subheadindex].rangeoff = (pos++)*planesize ;
+	    subheads[subheadindex].rangeoff = plane0size+(pos++-1)*planesize ;
 	}
 	++subheadindex;
     }

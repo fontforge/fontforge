@@ -154,7 +154,7 @@ static unichar_t *_readencstring(FILE *ttf,int offset,int len,int enc) {
 		++i;
 	    }
 	}
-    } else if ( enc==em_ksc5601 ) {
+    } else if ( enc==em_wansung ) {
 	str = pt = galloc(2*len+2);	/* Probably more space than we need, but it should be enough */
 	for ( i=0; i<len; ++i ) {
 	    ch = getc(ttf);
@@ -167,7 +167,7 @@ static unichar_t *_readencstring(FILE *ttf,int offset,int len,int enc) {
 		++i;
 	    }
 	}
-    } else if ( enc==em_jis208 ) {
+    } else if ( enc==em_sjis ) {
 	str = pt = galloc(2*len+2);	/* Probably more space than we need, but it should be enough */
 	for ( i=0; i<len; ++i ) {
 	    ch = getc(ttf);
@@ -215,20 +215,20 @@ static int enc_from_platspec(int platform,int specific) {
 	if ( specific==0 )
 	    enc = em_mac;
 	else if ( specific==1 )
-	    enc = em_jis208;
+	    enc = em_sjis;
 	else if ( specific==2 )
 	    enc = em_big5;
 	else if ( specific==3 )
-	    enc = em_ksc5601;
+	    enc = em_wansung;
     } else if ( platform==2 ) {		/* obselete */
 	enc = em_unicode;
     } else if ( platform==3 ) {
 	if ( specific==1 )
 	    enc = em_unicode;
 	else if ( specific==2 )
-	    enc = em_jis208;
+	    enc = em_sjis;
 	else if ( specific==5 )
-	    enc = em_ksc5601;
+	    enc = em_wansung;
 	else if ( specific==4 )
 	    enc = em_big5;
 	else if ( specific==6 )
@@ -2690,6 +2690,7 @@ return( d );
 }
 
 static int modenc(int enc,int modtype) {
+#if 0		/* to convert to jis208 (or later ksc5601) */
     if ( modtype==2 /* SJIS */ ) {
 	if ( enc<=127 ) {
 	    /* Latin */
@@ -2722,6 +2723,7 @@ static int modenc(int enc,int modtype) {
 	} else if ( enc<0x100 )
 	    enc += 96*94;
     }
+#endif
 return( enc );
 }
 
@@ -2828,14 +2830,14 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	} else if ( platform==1 && (specific==2 ||specific==1) /*&& enc!=em_unicode*/ ) {
 	    /* I've seen an example of a big5 encoding so I know this is right*/
 	    /*  Japanese appears to be sjis */
-	    enc = specific==1?em_jis208:specific==2?em_big5:specific==3?em_ksc5601:em_gb2312;
+	    enc = specific==1?em_sjis:specific==2?em_big5:specific==3?em_wansung:em_gb2312;
 	    mod = specific==1?2:specific==2?4:specific==3?5:3;		/* convert to ms specific */
 	    encoff = offset;
 	} else if ( platform==3 && (specific==2 || specific==4 || specific==5 || specific==6 ) /*&&
 		enc!=em_unicode*/ ) {
 	    /* Old ms docs say that specific==3 => big 5, new docs say specific==4 => big5 */
 	    /*  Ain't that jus' great? */
-	    enc = specific==2? em_jis208 : specific==5 ? em_ksc5601 : specific==4? em_big5 : em_johab;
+	    enc = specific==2? em_sjis : specific==5 ? em_wansung : specific==4? em_big5 : em_johab;
 	    mod = specific;
 	    encoff = offset;
 	} else if ( enc==em_none ) {
