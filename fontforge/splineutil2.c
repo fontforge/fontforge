@@ -750,7 +750,10 @@ return( ApproximateSplineFromPoints(from,to,mid,cnt,order2) );
 	    to->prevcp = to->me;
 	} else {
 	    /* If the slopes don't intersect then use a line */
-	    from->nextcp = to->prevcp = nextcp;
+	    /*  (or if the intersection is patently absurd) */
+	    from->nextcp = from->me;
+	    to->prevcp = to->me;
+	    from->nonextcp = to->noprevcp = true;
 	}
 return( SplineMake2(from,to));
     }
