@@ -1177,6 +1177,7 @@ return;
 	sc->layers = grealloc(sc->layers,(sc->layer_cnt+1)*sizeof(Layer));
 	sc->layers[sc->layer_cnt] = temp;
 	cv->layerheads[dm_fore] = &sc->layers[sc->layer_cnt];
+	cv->layerheads[dm_back] = &sc->layers[ly_back];
 	++sc->layer_cnt;
       break;
       case MID_DelLayer:
@@ -1324,6 +1325,9 @@ return( true );
 	    if ( layer<2 ) {
 		cv->drawmode = layer==0 ? dm_grid : dm_back;
 		layer2.active = layer;
+	    } else if ( layer-1+layer2.offtop >= cv->sc->layer_cnt ) {
+		GDrawBeep(NULL);
+return(true);
 	    } else {
 		layer2.active = layer+layer2.offtop;
 		cv->drawmode = dm_fore;
