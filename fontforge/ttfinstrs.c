@@ -1024,6 +1024,9 @@ void instr_scroll(struct instrinfo *ii,struct sbevent *sb) {
 static int IIChar(struct instrinfo *ii,GEvent *event) {
     int pos = ii->isel_pos;
 
+    if ( ii->handle_char )
+return( (ii->handle_char)(ii,event));
+
     if ( event->u.chr.keysym == GK_Up || event->u.chr.keysym == GK_KP_Up )
 	--pos;
     else if ( event->u.chr.keysym == GK_Down || event->u.chr.keysym == GK_KP_Down )
@@ -1033,9 +1036,7 @@ static int IIChar(struct instrinfo *ii,GEvent *event) {
 	pos = 0;
     else if ( event->u.chr.keysym == GK_End || event->u.chr.keysym == GK_KP_End ) {
 	pos = ii->lheight-1;
-    } else if ( ii->handle_char )
-return( (ii->handle_char)(ii,event));
-    else
+    } else
 return( false );
     if ( pos==-2 ) pos = -1;
     if ( pos!=ii->isel_pos ) {
