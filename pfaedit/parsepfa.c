@@ -1197,6 +1197,10 @@ return;
 	else if ( mycmp("UniqueID",line+1,endtok)==0 ) {
 	    if ( fp->fd->uniqueid==0 )
 		fp->fd->uniqueid = strtol(endtok,NULL,10);
+	} else if ( mycmp("UniqueId",line+1,endtok)==0 ) {
+	    fprintf(stderr,"This font contains a \"UniqueId\" variable, but the correct name for it is\n\t\"UniqueID\" (postscript is case concious)\n" );
+	    if ( fp->fd->uniqueid==0 )
+		fp->fd->uniqueid = strtol(endtok,NULL,10);
 	} else if ( mycmp("XUID",line+1,endtok)==0 ) {
 	    if ( fp->fd->xuid[0]==0 )
 		fillintarray(fp->fd->xuid,endtok,20);
