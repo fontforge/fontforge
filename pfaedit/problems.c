@@ -502,7 +502,7 @@ return;
 
     while ( !p->doneexplain )
 	GDrawProcessOneEvent(NULL);
-    GDrawSetVisible(p->explainw,false);
+    /*GDrawSetVisible(p->explainw,false);*/		/* KDE gets unhappy about this and refuses to show the window later. I don't know why */
 
     if ( p->cv!=NULL ) {
 	CVClearSel(p->cv);
