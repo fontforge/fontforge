@@ -213,6 +213,11 @@ static void DoSave(struct gfc_data *d,unichar_t *path) {
 	if ( GWidgetAskR(_STR_NotCID,buts,0,1,_STR_NotCIDOk)==1 )
 return;
     }
+    if ( oldformatstate<ff_ptype0 && d->sf->encoding_name>=em_first2byte ) {
+	static int buts[3] = { _STR_Yes, _STR_Cancel, 0 };
+	if ( GWidgetAskR(_STR_EncodingTooLarge,buts,0,1,_STR_TwoBEncIn1BFont)==1 )
+return;
+    }
     oldbitmapstate = GGadgetGetFirstListSelectedItem(d->bmptype);
     if ( oldbitmapstate!=bf_none )
 	sizes = ParseBitmapSizes(d->bmpsizes,&err);

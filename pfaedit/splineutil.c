@@ -91,6 +91,8 @@ void chunkfree(void *item,int size) {
 # if ALLOC_CHUNK<=1
     free(item);
 # else
+    if ( item==NULL )
+return;
     if ( (size&0x3) || size>=CHUNK_MAX || size<=sizeof(struct chunk)) {
 	fprintf( stderr, "Attempt to free something of size %d\n", size );
 	free(item);
@@ -300,7 +302,7 @@ static real SolveCubicBack(real a, real b, real c, real d, real err, real t0) {
 
 return( t );
 }
-    
+
 /* Remove line segments which are just one point long */
 /* Merge colinear line segments */
 /* Merge two segments each of which involves a single pixel change in one dimension (cut corners) */ 

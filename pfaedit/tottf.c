@@ -1155,8 +1155,15 @@ static void dumpcomposit(SplineChar *sc, RefChar *refs, struct glyphinfo *gi) {
 
     i=ptcnt=ctcnt=0;
     for ( ref=refs; ref!=NULL; ref=ref->next, ++i ) {
-	flags = (1<<1)|(1<<2);		/* Args are always values for me */
+	flags = (1<<1)|(1<<2)|(1<<12);	/* Args are always values for me */
 					/* Always round args to grid */
+	    /* There is some very strange stuff (half-)documented on the apple*/
+	    /*  site about how these should be interpretted when there are */
+	    /*  scale factors, or rotations */
+	    /* It isn't well enough described to be comprehensible */
+	    /*  http://fonts.apple.com/TTRefMan/RM06/Chap6glyf.html */
+	    /* Adobe says that setting bit 12 means that this will not happen */
+	    /*  Apple doesn't mention bit 12 though... */
 	if ( ref->next!=NULL )
 	    flags |= (1<<5);		/* More components */
 	if ( ref->transform[1]!=0 || ref->transform[2]!=0 )

@@ -613,6 +613,8 @@ static char *str_SavingBitmapFonts = "Saving Bitmap Font(s)";
 static char *str_NotCID = "Not a CID format";
 static char *str_NotCIDOk = "You are attempting to save a CID font in a non-CID format. This is ok, but it means that only the current sub-font will be saved.\nIs that what you want?";
 static char *str_PixelList = "Pixel List";
+static char *str_EncodingTooLarge="Encoding Too Large";
+static char *str_TwoBEncIn1BFont = "Your font has a 2 byte encoding, but you are attempting to save it in a format that only supports one byte encodings. This means that you won't be able to access anything after the first 256 characters without reencoding the font.\n\nDo you want to procede anyway?";
     /* Goto character ... */
 static char str_Badnumberin[] = "Bad Number in ";
 static char str_Enternameofchar[] = "Enter the name of a character in the font";

@@ -97,15 +97,15 @@ static int CVSplineOutside(CharView *cv, Spline *spline) {
     x[1] =  cv->xoff + rint(spline->to->me.x*cv->scale);
     y[1] = -cv->yoff + cv->height - rint(spline->to->me.y*cv->scale);
 
-    if ( spline->from->nonextcp && spline->from->noprevcp ) {
+    if ( spline->from->nonextcp && spline->to->noprevcp ) {
 	if ( (x[0]<0 && x[1]<0) || (x[0]>=cv->width && x[1]>=cv->width) ||
 		(y[0]<0 && y[1]<0) || (y[0]>=cv->height && y[1]>=cv->height) )
 return( true );
     } else {
 	x[2] =  cv->xoff + rint(spline->from->nextcp.x*cv->scale);
 	y[2] = -cv->yoff + cv->height - rint(spline->from->nextcp.y*cv->scale);
-	x[3] =  cv->xoff + rint(spline->from->prevcp.x*cv->scale);
-	y[3] = -cv->yoff + cv->height - rint(spline->from->prevcp.y*cv->scale);
+	x[3] =  cv->xoff + rint(spline->to->prevcp.x*cv->scale);
+	y[3] = -cv->yoff + cv->height - rint(spline->to->prevcp.y*cv->scale);
 	if ( (x[0]<0 && x[1]<0 && x[2]<0 && x[3]<0) ||
 		(x[0]>=cv->width && x[1]>=cv->width && x[2]>=cv->width && x[3]>=cv->width ) ||
 		(y[0]<0 && y[1]<0 && y[2]<0 && y[3]<0 ) ||
@@ -738,7 +738,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 		cv->showpoints && cv->drawmode==dm_fore,&clip);
     }
 
-    DrawLine(cv,pixmap,cv->sc->width,-8096,cv->sc->width,8096,0x0);
+    DrawLine(cv,pixmap,cv->sc->width,-32768,cv->sc->width,32767,0x0);
 
     if ( cv->p.rubberbanding )
 	CVDrawRubberRect(pixmap,cv);
@@ -844,6 +844,7 @@ static void CVFit(CharView *cv) {
 
     if ( bottom>0 ) bottom = 0;
     if ( left>0 ) left = 0;
+    if ( right<cv->sc->width ) right = cv->sc->width;
     if ( top<bottom ) GDrawIError("Bottom bigger than top!");
     if ( right<left ) GDrawIError("Left bigger than right!");
     top -= bottom;
@@ -2114,16 +2115,16 @@ static void CVVScroll(CharView *cv,struct sbevent *sb) {
         newpos = 0;
       break;
       case et_sb_uppage:
-        newpos -= 9*cv->width/10;
+        newpos -= 9*cv->height/10;
       break;
       case et_sb_up:
-        newpos -= cv->width/15;
+        newpos -= cv->height/15;
       break;
       case et_sb_down:
-        newpos += cv->width/15;
+        newpos += cv->height/15;
       break;
       case et_sb_downpage:
-        newpos += 9*cv->width/10;
+        newpos += 9*cv->height/10;
       break;
       case et_sb_bottom:
         newpos = 0;

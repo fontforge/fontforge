@@ -63,6 +63,23 @@ return( i );
 }
 
 static void MakeEncChar(SplineFont *sf,int enc,char *name) {
+    BDFFont *b;
+
+    if ( enc>=sf->charcnt ) {
+	int i,n = enc+sf->charcnt;
+	if ( n>65536 ) n=65536;
+	if ( enc>n ) n = enc;
+	sf->chars = grealloc(sf->chars,n*sizeof(SplineChar *));
+	for ( i=sf->charcnt; i<n; ++i )
+	    sf->chars[i] = NULL;
+	sf->charcnt = n;
+	for ( b=sf->bitmaps; b!=NULL; b=b->next ) if ( b->charcnt<n ) {
+	    b->chars = grealloc(b->chars,n*sizeof(BDFChar *));
+	    for ( i=b->charcnt; i<n; ++i )
+		b->chars[i] = NULL;
+	    b->charcnt = n;
+	}
+    }
     if ( sf->chars[enc]==NULL ) {
 	sf->chars[enc] = chunkalloc(sizeof(SplineChar));
 	sf->chars[enc]->parent = sf;

@@ -672,13 +672,18 @@ static void readttfsimpleglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, in
 
 #define _ARGS_ARE_WORDS	1
 #define _ARGS_ARE_XY	2
-#define _ROUND		4		/* to grid? What's that? */
+#define _ROUND		4		/* round offsets so componant is on grid */
 #define _SCALE		8
 #define _XY_SCALE	0x40
 #define _MATRIX		0x80
 #define _MORE		0x20
 #define _INSTR		0x100
 #define _MY_METRICS	0x200
+#define _OVERLAP_COMPOUND	0x400	/* Used in Apple GX fonts */
+	    /* Means the componants overlap (which? this one and what other?) */
+/* Described in OpenType specs, not by Apple */
+#define _SCALED_OFFSETS		0x800	/* Use Apple definition of offset interpretation */
+#define _UNSCALED_OFFSETS	0x1000	/* Use MS definition */
 
 static void readttfcompositglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc) {
     RefChar *head=NULL, *last=NULL, *cur;
@@ -700,8 +705,27 @@ static void readttfcompositglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc) 
 	if ( flags & _ARGS_ARE_XY ) {
 	    cur->transform[4] = arg1;
 	    cur->transform[5] = arg2;
-	} else
-	    GDrawIError("Don't know how to deal with !(flags&_ARGS_ARE_XY)" );
+	    /* There is some very strange stuff (half-)documented on the apple*/
+	    /*  site about how these should be interpretted when there are */
+	    /*  scale factors, or rotations */
+	    /* It isn't well enough described to be comprehensible */
+	    /*  http://fonts.apple.com/TTRefMan/RM06/Chap6glyf.html */
+	    /* Microsoft says nothing about this */
+	    /* Adobe implies this is a difference between MS and Apple */
+	    /*  MS doesn't do this, Apple does (GRRRGH!!!!) */
+	    /* Adobe says that setting bit 12 means that this will not happen */
+	    /* Adobe says that setting bit 11 means that this will happen */
+	    /*  So if either bit is set we know when this happens, if neither */
+	    /*  we guess... But I still don't know how to interpret the */
+	    /*  apple mode under rotation... */
+	} else {
+	    /* Somehow we can get offsets by looking at the points in the */
+	    /*  points so far generated and comparing them to the points in */
+	    /*  the current componant */
+	    /* How exactly is not described on any of the Apple, MS, Adobe */
+	    fprintf( stderr, "TTF IError: I don't understand matching points. Please send me a copy\n" );
+	    fprintf( stderr, "  of whatever ttf file you are loading. Thanks.  gww@silcom.com\n" );
+	}
 	cur->transform[0] = cur->transform[3] = 1.0;
 	if ( flags & _SCALE )
 	    cur->transform[0] = cur->transform[3] = get2dot14(ttf);
@@ -714,6 +738,23 @@ static void readttfcompositglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc) 
 	    cur->transform[2] = get2dot14(ttf);
 	    cur->transform[3] = get2dot14(ttf);
 	}
+	/* If neither SCALED/UNSCALED specified I'll just assume MS interpretation */
+	/*  because I at least understand that method */
+	if ( flags & _SCALED_OFFSETS ) {
+	    cur->transform[4] *= cur->transform[0];
+	    cur->transform[5] *= cur->transform[1];
+	    if ( (RealNear(cur->transform[1],cur->transform[2]) ||
+		    RealNear(cur->transform[1],-cur->transform[2])) &&
+		    !RealNear(cur->transform[1],0)) {
+		/* If it's rotated by a 45 degree angle then multiply by 2 */
+		/*  (presumably not if it's rotated by a multiple of 90) */
+		/*  God knows why, and God knows what we do if it's not a multiple of 45 */
+		cur->transform[4] *= 2;
+		cur->transform[5] *= 2;
+	    }
+	    fprintf( stderr, "TTF IError: I don't understand Apple's scaled offsets. Please send me a copy\n" );
+	    fprintf( stderr, "  of whatever ttf file you are loading. Thanks.  gww@silcom.com\n" );
+	}
 	if ( head==NULL )
 	    head = cur;
 	else
@@ -721,7 +762,9 @@ static void readttfcompositglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc) 
 	last = cur;
     } while ( flags&_MORE );
     /* I'm ignoring many things that I don't understand here */
-    /* Instructions, USE_MY_METRICS, ROUND, what happens if ARGS AREN'T XY */
+    /* Instructions, USE_MY_METRICS, what happens if ARGS AREN'T XY */
+    /* ROUND means that offsets should rounded to the grid before being added */
+    /*  (it's irrelevant for my purposes) */
     sc->refs = head;
 }
 
