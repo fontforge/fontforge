@@ -1176,12 +1176,12 @@ return( lookups );
 
 static void dumpGPOSsimplepos(FILE *gpos,SplineFont *sf,SplineChar **glyphs,
 	struct tagflaglang *tfl) {
-    int cnt;
+    int cnt, cnt2;
     int32 coverage_pos, end;
     PST *pst, *first=NULL;
     int bits = 0, same=true;
 
-    for ( cnt=0; glyphs[cnt]!=NULL; ++cnt) {
+    for ( cnt=cnt2=0; glyphs[cnt]!=NULL; ++cnt) {
 	for ( pst=glyphs[cnt]->possub; pst!=NULL; pst=pst->next ) {
 	    if ( pst->tag==tfl->tag && pst->flags==tfl->flags &&
 		    pst->script_lang_index == tfl->script_lang_index && pst->type==pst_position ) {
@@ -1197,16 +1197,18 @@ static void dumpGPOSsimplepos(FILE *gpos,SplineFont *sf,SplineChar **glyphs,
 		if ( pst->u.pos.yoff!=0 ) bits |= 2;
 		if ( pst->u.pos.h_adv_off!=0 ) bits |= 4;
 		if ( pst->u.pos.v_adv_off!=0 ) bits |= 8;
+		++cnt2;
 	break;
 	    }
 	}
     }
     if ( bits==0 ) bits=1;
+    if ( cnt!=cnt2 )
+	fprintf( stderr, "Count mismatch in dumpGPOSsimplepos#1 %d vs %d\n", cnt, cnt2 );
 
     putshort(gpos,same?1:2);	/* 1 means all value records same */
     coverage_pos = ftell(gpos);
     putshort(gpos,0);		/* offset to coverage table */
-    putshort(gpos,cnt);
     putshort(gpos,bits);
     if ( same ) {
 	if ( bits&1 ) putshort(gpos,first->u.pos.xoff);
@@ -1214,23 +1216,28 @@ static void dumpGPOSsimplepos(FILE *gpos,SplineFont *sf,SplineChar **glyphs,
 	if ( bits&4 ) putshort(gpos,first->u.pos.h_adv_off);
 	if ( bits&8 ) putshort(gpos,first->u.pos.v_adv_off);
     } else {
-	for ( cnt = 0; glyphs[cnt]!=NULL; ++cnt ) {
-	    for ( pst=glyphs[cnt]->possub; pst!=NULL; pst=pst->next ) {
+	putshort(gpos,cnt);
+	for ( cnt2 = 0; glyphs[cnt2]!=NULL; ++cnt2 ) {
+	    for ( pst=glyphs[cnt2]->possub; pst!=NULL; pst=pst->next ) {
 		if ( pst->tag==tfl->tag && pst->flags==tfl->flags &&
 			pst->script_lang_index == tfl->script_lang_index && pst->type==pst_position ) {
 		    if ( bits&1 ) putshort(gpos,pst->u.pos.xoff);
 		    if ( bits&2 ) putshort(gpos,pst->u.pos.yoff);
 		    if ( bits&4 ) putshort(gpos,pst->u.pos.h_adv_off);
 		    if ( bits&8 ) putshort(gpos,pst->u.pos.v_adv_off);
+	    break;
 		}
 	    }
 	}
+	if ( cnt!=cnt2 )
+	    fprintf( stderr, "Count mismatch in dumpGPOSsimplepos#3 %d vs %d\n", cnt, cnt2 );
     }
     end = ftell(gpos);
     fseek(gpos,coverage_pos,SEEK_SET);
     putshort(gpos,end-coverage_pos+2);
     fseek(gpos,end,SEEK_SET);
     dumpcoveragetable(gpos,glyphs);
+    fseek(gpos,0,SEEK_END);
     free(glyphs);
 }
 
