@@ -749,7 +749,14 @@ void GDrawCreateDisplays(char *displayname,char *programname) {
     screen_display = _GXDraw_CreateDisplay(displayname,programname);
     printer_display = _GPSDraw_CreateDisplay();
     if ( screen_display==NULL ) {
-	fprintf( stderr, "Could not open screen\n" );
+	fprintf( stderr, "Could not open screen.\n" );
+#if __Mac
+	fprintf( stderr, "You must start X11 before you can start %s\n", programname);
+	fprintf( stderr, " X11 may be obtained from http://www.apple.com/macosx/x11/download/\n" );
+#elif __CygWin
+	fprintf( stderr, "You must start X11 before you can start %s\n", programname);
+	fprintf( stderr, " X11 may be obtained from the cygwin site in a seperate package.\n" );
+#endif
 exit(1);
     }
 }
