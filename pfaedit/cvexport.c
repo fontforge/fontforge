@@ -120,6 +120,19 @@ return(0);
 return( ret );
 }
 
+static int ExportSVG(char *filename,SplineChar *sc) {
+    FILE *svg;
+    int ret;
+
+    svg = fopen(filename,"w");
+    if ( svg==NULL ) {
+return(0);
+    }
+    ret = _ExportSVG(svg,sc);
+    fclose(svg);
+return( ret );
+}
+
 static void FigDumpPt(FILE *fig,BasePoint *me,real scale,real ascent) {
     fprintf( fig, "%d %d ", (int) rint(me->x*scale), (int) rint(ascent-me->y*scale));
 }
@@ -548,8 +561,10 @@ return;
 	good = ExportEPS(buffer,sc);
     else if ( format==1 )
 	good = ExportFig(buffer,sc);
+    else if ( format==2 )
+	good = ExportSVG(buffer,sc);
     else if ( bc!=NULL )
-	good = BCExportXBM(buffer,bc,format-2);
+	good = BCExportXBM(buffer,bc,format-3);
     if ( !good )
 	GWidgetErrorR(_STR_Savefailedtitle,_STR_Savefailedtitle);
 }
@@ -575,6 +590,7 @@ static GTextInfo bcformats[] = {
 static GTextInfo formats[] = {
     { (unichar_t *) "EPS", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 1, 0, 1 },
     { (unichar_t *) "XFig", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) "SVG", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "X Bitmap", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "BMP", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
 #ifndef _NO_LIBPNG
@@ -597,8 +613,10 @@ static void DoExport(struct gfc_data *d,unichar_t *path) {
 	good = ExportEPS(temp,d->sc);
     else if ( format==1 )
 	good = ExportFig(temp,d->sc);
+    else if ( format==2 )
+	good = ExportSVG(temp,d->sc);
     else
-	good = ExportXBM(temp,d->sc,format-2);
+	good = ExportXBM(temp,d->sc,format-3);
     if ( !good )
 	GWidgetErrorR(_STR_Savefailedtitle,_STR_Savefailedtitle);
     free(temp);
@@ -670,8 +688,9 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 	else
 	    uc_strcpy(pt,format==0?".eps":
 			 format==1?".fig":
-			 format==2?".xbm":
-			 format==3?".bmp":
+			 format==2?".svg":
+			 format==3?".xbm":
+			 format==4?".bmp":
 				   ".png");
 	GGadgetSetTitle(d->gfc,f2);
 	free(f2);

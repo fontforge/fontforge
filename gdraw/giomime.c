@@ -43,6 +43,7 @@ unichar_t textbdffont[] = { 't','e','x','t','/','f','o','n','t','b','d','f', '\0
 unichar_t imagegif[] = { 'i','m','a','g','e','/','g','i','f', '\0' };
 unichar_t imagejpeg[] = { 'i','m','a','g','e','/','j','p','e','g', '\0' };
 unichar_t imagepng[] = { 'i','m','a','g','e','/','p','n','g', '\0' };
+unichar_t imagesvg[] = { 'i','m','a','g','e','/','s','v','g','+','x','m','l', '\0' };
 unichar_t videoquick[] = { 'v','i','d','e','o','/','q','u','i','c','k','t','i','m','e', '\0' };
 unichar_t audiowav[] = { 'a','u','d','i','o','/','w','a','v', '\0' };
 unichar_t object[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','o','b','j','e','c','t', '\0' };
@@ -145,6 +146,8 @@ return( textbdffont );
 return( imagegif );
     else if ( uc_strmatch(pt,".png")==0 )
 return( imagepng );
+    else if ( uc_strmatch(pt,".svg")==0 )
+return( imagesvg );
     else if ( uc_strmatch(pt,".jpeg")==0 || uc_strmatch(pt,".jpg")==0 )
 return( imagejpeg );
     else if ( uc_strmatch(pt,".mov")==0 || uc_strmatch(pt,".movie")==0 )

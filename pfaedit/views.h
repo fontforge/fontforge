@@ -594,6 +594,7 @@ extern void CVCreateHint(CharView *cv,int ishstem);
 extern void SCClearRounds(SplineChar *sc);
 extern void SCRemoveSelectedMinimumDistances(SplineChar *sc,int inx);
 extern int _ExportEPS(FILE *eps,SplineChar *sc);
+extern int _ExportSVG(FILE *svg,SplineChar *sc);
 extern int CVExport(CharView *cv);
 extern int BVExport(BitmapView *bv);
 extern void ScriptExport(SplineFont *sf, BDFFont *bdf, int format, int enc);

@@ -1552,20 +1552,10 @@ static FILE *dumpcffstrings(struct pschars *strs) {
 return( file );
 }
 
-static void dumpcffprivate(SplineFont *sf,struct alltabs *at,int subfont) {
-    char *pt;
-    FILE *private = subfont==-1?at->private:at->fds[subfont].private;
-    int mi,i,j,cnt, allsame=true, sameval = 0x8000000;
-    real bluevalues[14], otherblues[10];
-    real snapcnt[12];
-    real stemsnaph[12], stemsnapv[12];
-    real stdhw[1], stdvw[1];
-    int hasblue=0, hash=0, hasv=0, bs;
-    int maxw=0;
+int SFFigureDefWidth(SplineFont *sf, int *_nomwid) {
     uint16 *widths; uint32 *cumwid;
-    int nomwid, defwid;
-
-    /* The private dict is not in an index, so no index header. Just the data */
+    int nomwid, defwid, i, sameval=0x80000000, maxw=0, allsame=true;
+    int cnt,j;
 
     for ( i=0; i<sf->charcnt; ++i )
 	if ( SCWorthOutputting(sf->chars[i]) ) {
@@ -1604,6 +1594,25 @@ static void dumpcffprivate(SplineFont *sf,struct alltabs *at,int subfont) {
 	    }
 	free(widths); free(cumwid);
     }
+    if ( _nomwid!=NULL )
+	*_nomwid = nomwid;
+return( defwid );
+}
+
+static void dumpcffprivate(SplineFont *sf,struct alltabs *at,int subfont) {
+    char *pt;
+    FILE *private = subfont==-1?at->private:at->fds[subfont].private;
+    int mi,i;
+    real bluevalues[14], otherblues[10];
+    real snapcnt[12];
+    real stemsnaph[12], stemsnapv[12];
+    real stdhw[1], stdvw[1];
+    int hasblue=0, hash=0, hasv=0, bs;
+    int nomwid, defwid;
+
+    /* The private dict is not in an index, so no index header. Just the data */
+
+    defwid = SFFigureDefWidth(sf,&nomwid);
     dumpintoper(private,defwid,20);		/* Default Width */
     if ( subfont==-1 )
 	at->defwid = defwid;

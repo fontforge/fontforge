@@ -33,10 +33,10 @@ pfaedit_OBJECTS =  autohint.o autosave.o autowidth.o bitmapdlg.o \
  problems.o pfaedit-ui.o metafont.o alignment.o parsettfbmf.o \
  macbinary.o crctab.o scripting.o freetype.o gotodlg.o search.o \
  combinations.o tilepath.o sftextfield.o displayfonts.o ikarus.o \
- cvhand.o cvfreehand.o simplifydlg.o winfonts.o tottfgpos.o \
- tottfaat.o charinfo.o splineorder2.o genttfinstrs.o ttfinstrs.o \
- cvgridfit.o cvdebug.o showatt.o kernclass.o nonlineartrans.o \
- effects.o histograms.o ttfspecial.o
+ cvhand.o cvfreehand.o simplifydlg.o winfonts.o tottfgpos.o tottfaat.o \
+ charinfo.o splineorder2.o genttfinstrs.o ttfinstrs.o cvgridfit.o \
+ cvdebug.o showatt.o kernclass.o nonlineartrans.o effects.o \
+ histograms.o ttfspecial.o svg.o
 DIFFOBJS = sfddiff.o sfd.o diffstubs.o stamp.o
 ACORNOBJS = acorn2sfd.o sfd.o diffstubs.o psunicodenames.o stamp.o
 
@@ -45,8 +45,7 @@ CFLAGS = @CFLAGS@ -I$(top_srcdir)/inc -I$(srcdir) -I. $(WFLAGS) $(X_CFLAGS) \
     @DEFS@ '-DSHAREDIR="$(sharedir)"' -DLIBDIR='"$(libdir)"'
 
 LIBS = -rpath $(libdir) $(X_LIBS) ../libgdraw.la ../libgunicode.la \
-    $(X_PRE_LIBS) $(X_11LIB) $(X_EXTRA_LIBS) @LIBS@ $(STATIC_LIBS)
-    -L/usr/lib -lm
+    $(X_PRE_LIBS) $(X_11LIB) $(X_EXTRA_LIBS) @LIBS@ $(STATIC_LIBS) -L/usr/lib -lm
 DLIBS = -rpath $(libdir) ../libgunicode.la -lm
 
 all: pfaedit-en.ui pfaedit sfddiff

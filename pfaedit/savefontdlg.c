@@ -77,12 +77,12 @@ struct gfc_data {
 #if __Mac
 static char *extensions[] = { ".pfa", ".pfb", "", ".mult", ".ps", ".ps", ".cid",
 	".ttf", ".ttf", ".suit", ".dfont", ".otf", ".otf.dfont", ".otf",
-	".otf.dfont", NULL };
+	".otf.dfont", ".svg", NULL };
 static char *bitmapextensions[] = { ".*bdf", ".ttf", ".dfont", ".bmap", ".dfont", ".*fnt", ".otb", ".none", NULL };
 #else
 static char *extensions[] = { ".pfa", ".pfb", ".bin", ".mult", ".ps", ".ps", ".cid",
 	".ttf", ".ttf", ".ttf.bin", ".dfont", ".otf", ".otf.dfont", ".otf",
-	".otf.dfont", NULL };
+	".otf.dfont", ".svg", NULL };
 static char *bitmapextensions[] = { ".*bdf", ".ttf", ".dfont", ".bmap.bin", ".dfont", ".*fnt", ".otb", ".none", NULL };
 #endif
 static GTextInfo formattypes[] = {
@@ -109,6 +109,7 @@ static GTextInfo formattypes[] = {
     { (unichar_t *) "Open Type (Mac dfont)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "Open Type CID", NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "Open Type CID (dfont)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) "SVG font", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) _STR_Nooutlinefont, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }
 };
@@ -1533,6 +1534,9 @@ return( WriteMultiplePSFont(sf,newname,sizes,res,NULL));
 	    oerr = !WriteMacTTFFont(newname,sf,oldformatstate,sizes,
 		    bmap,flags);
 	  break;
+	  case ff_svg:
+	    oerr = !WriteSVGFont(newname,sf,oldformatstate,flags);
+	  break;
 	  case ff_none:		/* only if bitmaps, an sfnt wrapper for bitmaps */
 	    if ( bmap==bf_sfnt_dfont )
 		oerr = !WriteMacTTFFont(newname,sf,oldformatstate,sizes,
@@ -1763,7 +1767,7 @@ return;
 return;
 	    psscalewarned = true;
 	}
-    } else if ( oldformatstate!=ff_none ) {
+    } else if ( oldformatstate!=ff_none && oldformatstate!=ff_svg ) {
 	int val = d->sf->ascent+d->sf->descent;
 	int bit;
 	for ( bit=0x800000; bit!=0; bit>>=1 )
@@ -1785,7 +1789,7 @@ return;
 	if ( GWidgetAskR(_STR_EncodingTooLarge,buts,0,1,_STR_TwoBEncIn1BFont)==1 )
 return;
     }
-    
+
     oldbitmapstate = GGadgetGetFirstListSelectedItem(d->bmptype);
     if ( oldbitmapstate!=bf_none )
 	sizes = ParseBitmapSizes(d->bmpsizes,_STR_PixelList,&err);

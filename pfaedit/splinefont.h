@@ -732,7 +732,7 @@ extern struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
 extern struct pschars *CID2Chrs2(SplineFont *cidmaster,struct fd2data *fds,int flags);
 enum fontformat { ff_pfa, ff_pfb, ff_pfbmacbin, ff_multiple, ff_ptype3, ff_ptype0, ff_cid,
 	ff_ttf, ff_ttfsym, ff_ttfmacbin, ff_ttfdfont, ff_otf, ff_otfdfont,
-	ff_otfcid, ff_otfciddfont, ff_none };
+	ff_otfcid, ff_otfciddfont, ff_svg, ff_none };
 enum bitmapformat { bf_bdf, bf_ttf, bf_sfnt_dfont, 
 	bf_nfntmacbin, bf_nfntdfont, bf_fon, bf_otb, bf_none };
 extern SplineChar *SFFindExistingCharMac(SplineFont *,int unienc);
@@ -748,6 +748,7 @@ extern int WriteMacTTFFont(char *fontname,SplineFont *sf, enum fontformat format
 extern int WriteMacBitmaps(char *filename,SplineFont *sf, int32 *sizes,int is_dfont);
 extern int WriteMacFamily(char *filename,struct sflist *sfs,enum fontformat format,
 	enum bitmapformat bf,int flags);
+extern int WriteSVGFont(char *fontname,SplineFont *sf,enum fontformat format,int flags);
 extern void SfListFree(struct sflist *sfs);
 extern struct ttflangname *TTFLangNamesCopy(struct ttflangname *old);
 extern void TTF_PSDupsDefault(SplineFont *sf);
@@ -1170,6 +1171,8 @@ extern void AnchorPosFree(AnchorPos *apos);
 extern int SFCloseAllInstrs(SplineFont *sf);
 extern void SCMarkInstrDlgAsChanged(SplineChar *sc);
 extern int  SCNumberPoints(SplineChar *sc);
+
+int SFFigureDefWidth(SplineFont *sf, int *_nomwid);
 
 
 # if HANYANG
