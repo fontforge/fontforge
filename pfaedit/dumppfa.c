@@ -511,7 +511,7 @@ static void dumpothersubrs(void (*dumpchar)(int ch,void *data), void *data,
             dumpchar('\n',data);
         }
     }
-    dumpstr(dumpchar,data,"ND\n" );
+    dumpstr(dumpchar,data,incid?"def\n":"ND\n" );
 }
 
 static int dumpprivatestuff(void (*dumpchar)(int ch,void *data), void *data,
