@@ -3913,7 +3913,7 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	struct gfi_data *d = GDrawGetUserData(gw);
 	SplineFont *sf = d->sf, *_sf;
 	int enc, interp;
-	int reformat_fv=0;
+	int reformat_fv=0, enc_changed;
 	int upos, uwid, as, des, nchar, oldcnt=sf->charcnt, err = false, weight=0;
 	int uniqueid, linegap=0, vlinegap;
 	int force_enc=0;
@@ -4079,14 +4079,15 @@ return(true);
 	    GDrawSetCursor(GGadgetGetWindow(GWidgetGetControl(gw,CID_Encoding)),ct_watch);
 	    GDrawSync(NULL);
 	    if ( force_enc )
-		reformat_fv = SFForceEncoding(sf,enc);
+		enc_changed = SFForceEncoding(sf,enc);
 	    else
-		reformat_fv = SFReencodeFont(sf,enc);
-	    if ( reformat_fv && nchar==oldcnt )
+		enc_changed = SFReencodeFont(sf,enc);
+	    if ( enc_changed && nchar==oldcnt )
 		nchar = sf->charcnt;
+	    if ( enc_changed ) reformat_fv = true;
 	}
 	if ( nchar!=sf->charcnt )
-	    reformat_fv = SFAddDelChars(sf,nchar);
+	    reformat_fv |= SFAddDelChars(sf,nchar);
 
 	if ( sf->hasvmetrics!=vmetrics )
 	    CVPaletteDeactivate();		/* Force a refresh later */
