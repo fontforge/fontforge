@@ -1646,6 +1646,28 @@ static int SPLSmoothControlPoints(SplineSet *ss,double tan_bounds,int vert_check
 return( changed );
 }
 
+static void GetNextUnitVector(SplinePoint *sp,BasePoint *uv) {
+    double len;
+
+    if ( sp->next==NULL ) {
+	uv->x = uv->y = 0;
+    } else if ( sp->next->knownlinear ) {
+	uv->x = sp->next->to->me.x - sp->me.x;
+	uv->y = sp->next->to->me.y - sp->me.y;
+    } else if ( sp->nonextcp ) {
+	uv->x = sp->next->to->prevcp.x - sp->me.x;
+	uv->y = sp->next->to->prevcp.y - sp->me.y;
+    } else {
+	uv->x = sp->nextcp.x - sp->me.x;
+	uv->y = sp->nextcp.y - sp->me.y;
+    }
+    len = sqrt(uv->x*uv->x + uv->y*uv->y );
+    if ( len!= 0 ) {
+	uv->x /= len;
+	uv->y /= len;
+    }
+}
+
 /* Cleanup just turns splines with control points which happen to trace out */
 /*  lines into simple lines */
 /* it also checks for really nasty control points which point in the wrong */
@@ -1655,6 +1677,7 @@ return( changed );
 void SplinePointListSimplify(SplineChar *sc,SplinePointList *spl,
 	struct simplifyinfo *smpl) {
     SplinePoint *first, *next, *sp, *nsp;
+    BasePoint suv, nuv;
 
     if ( spl==NULL )
 return;
@@ -1672,25 +1695,35 @@ return;		/* Ignore any splines which are just dots */
 	/* first thing to try is to remove everything between two extrema */
 	/* We do this even if they checked ignore extrema. After this pass */
 	/*  we'll come back and check every point individually */
+	/* However, if we turn through more than 90 degrees we can't approximate */
+	/*  a good match, and it takes us forever to make the attempt and fail*/
+	/*  We take a dot product to prevent that */
 	for ( sp = spl->first; ; ) {
 	    if ( sp->next==NULL )
 	break;
 	    if ( SPisExtremum(sp) ) {
+		GetNextUnitVector(sp,&suv);
 		for ( nsp=sp->next->to; nsp!=sp; nsp = nsp->next->to ) {
 		    if ( nsp->next==NULL )
 		break;
+		    GetNextUnitVector(nsp,&nuv);
+		    if ( suv.x*nuv.x + suv.y*nuv.y < 0 ) {
+			if ( suv.x*nuv.x + suv.y*nuv.y > -.1 )
+		break;
+	      goto nogood;
+		    }
 		    if ( SPisExtremum(nsp))
 		break;
 		}
 		/* nsp is something we don't want to remove */
 		if ( nsp==sp )
-	    break;
+	break;
 		if ( SplinesRemoveBetweenMaybe(sc,sp,nsp,smpl->flags,smpl->err)) {
 		    if ( spl->last==spl->first )
 			spl->last = spl->first = sp;	/* We know this point didn't get removed */
-		    sp = nsp;
-		} else
-		    sp = sp->next->to;
+		}
+	      nogood:
+		sp = nsp;
 	    } else
 		sp = sp->next->to;
 	    if ( sp == spl->first )
