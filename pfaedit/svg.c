@@ -32,6 +32,8 @@
 #include <utype.h>
 #include <chardata.h>
 #include <ustring.h>
+#include <unistd.h>
+#include <pwd.h>
 
 /* ************************************************************************** */
 /* ****************************    SVG Output    **************************** */
@@ -48,6 +50,8 @@ static int svg_outfontheader(FILE *file, SplineFont *sf) {
     BlueData bd;
     char *hash, *hasv, ch;
     int minu, maxu, i;
+    time_t now;
+    struct passwd *pwd;
 
     info = sf->pfminfo;
     SFDefaultOS2Info(&info,sf,sf->fontname);
@@ -70,7 +74,23 @@ static int svg_outfontheader(FILE *file, SplineFont *sf) {
 	    if ( *pt=='\n' ) ++pt;
 	}
     }
-    fprintf( file, "<svg>\n<defs>\n" );
+    fprintf( file, "<svg>\n" );
+    time(&now);
+    fprintf( file, "<metadata>\nCreated by PfaEdit at %s</metadata>\n", ctime(&now) );
+/* Can all be commented out if no pwd routines */
+    pwd = getpwuid(getuid());
+#ifndef __VMS
+    if ( pwd!=NULL && pwd->pw_gecos!=NULL && *pwd->pw_gecos!='\0' )
+	fprintf(file," By %s\n", pwd->pw_gecos);
+    else if ( pwd!=NULL && pwd->pw_name!=NULL && *pwd->pw_name!='\0' )
+#else
+    if ( pwd!=NULL && pwd->pw_name!=NULL && *pwd->pw_name!='\0' )
+#endif
+	fprintf(file," By %s\n", pwd->pw_name);
+    endpwent();
+/* End comment */
+    fprintf( file, "</metadata>\n" );
+    fprintf( file, "<defs>\n" );
     fprintf( file, "<font id=\"%s\" horiz-adv-x=\"%d\" ", sf->fontname, defwid );
     if ( sf->hasvmetrics )
 	fprintf( file, "vert-adv-y=\"%d\" ", sf->ascent+sf->descent );
@@ -164,19 +184,19 @@ static int svg_pathdump(FILE *file, SplineSet *spl, int lineout) {
 		else
 		    sprintf( buffer,"q%g %g %g %g",
 			    sp->to->prevcp.x-last.x, sp->to->prevcp.y-last.y,
-			    sp->to->me.x-sp->to->prevcp.x,sp->to->me.y-sp->to->prevcp.y);
+			    sp->to->me.x-last.x,sp->to->me.y-last.y);
 	    } else {
 		if ( sp->from->prev!=NULL && sp->from!=spl->first &&
 			sp->from->me.x-sp->from->prevcp.x == sp->from->nextcp.x-sp->from->me.x &&
 			sp->from->me.y-sp->from->prevcp.y == sp->from->nextcp.y-sp->from->me.y )
 		    sprintf( buffer,"s%g %g %g %g",
 			    sp->to->prevcp.x-last.x, sp->to->prevcp.y-last.y,
-			    sp->to->me.x-sp->to->prevcp.x,sp->to->me.y-sp->to->prevcp.y);
+			    sp->to->me.x-last.x,sp->to->me.y-last.y);
 		else
 		    sprintf( buffer,"c%g %g %g %g %g %g",
 			    sp->from->nextcp.x-last.x, sp->from->nextcp.y-last.y,
-			    sp->to->prevcp.x-sp->from->nextcp.x, sp->to->prevcp.y-sp->from->nextcp.y,
-			    sp->to->me.x-sp->to->prevcp.x,sp->to->me.y-sp->to->prevcp.y);
+			    sp->to->prevcp.x-last.x, sp->to->prevcp.y-last.y,
+			    sp->to->me.x-last.x,sp->to->me.y-last.y);
 	    }
 	    if ( lineout+strlen(buffer)>=255 ) { putc('\n',file); lineout = 0; }
 	    fputs( buffer,file );
@@ -940,8 +960,8 @@ static SplineSet *SVGParsePath(xmlChar *path) {
 		y = strtod(end,&end);
 		if ( type=='c' ) {
 		    x1 += current.x; y1 += current.y;
-		    x2 += x1; y2 += y1;
-		    x += x2; y += y2;
+		    x2 += current.x; y2 += current.y;
+		    x += current.x; y += current.y;
 		}
 		sp = SplinePointCreate(x,y);
 		sp->prevcp.x = x2; sp->prevcp.y = y2; sp->noprevcp = false;
@@ -962,7 +982,7 @@ static SplineSet *SVGParsePath(xmlChar *path) {
 		y = strtod(end,&end);
 		if ( type=='s' ) {
 		    x2 += current.x; y2 += current.y;
-		    x += x2; y += y2;
+		    x += current.x; y += current.y;
 		}
 		sp = SplinePointCreate(x,y);
 		sp->prevcp.x = x2; sp->prevcp.y = y2; sp->noprevcp = false;
@@ -981,7 +1001,7 @@ static SplineSet *SVGParsePath(xmlChar *path) {
 		y = strtod(end,&end);
 		if ( type=='q' ) {
 		    x1 += current.x; y1 += current.y;
-		    x += x1; y += y1;
+		    x += current.x; y += current.y;
 		}
 		sp = SplinePointCreate(x,y);
 		sp->prevcp.x = x1; sp->prevcp.y = y1; sp->noprevcp = false;
