@@ -353,6 +353,7 @@ static void BVDrawTempPoint(BitmapView *bv,int x, int y,void *pixmap) {
 static void BVDrawSelection(BitmapView *bv,void *pixmap) {
     GRect pixel, rect;
     BDFFloat *sel = bv->bc->selection;
+    GClut *clut = bv->bdf->clut;
     Color bg = GDrawGetDefaultBackground(NULL);
     int i,j;
 
@@ -361,11 +362,15 @@ static void BVDrawSelection(BitmapView *bv,void *pixmap) {
 	for ( j=0; j<=sel->xmax-sel->xmin; ++j ) {
 	    pixel.x = bv->xoff + (sel->xmin+j)*bv->scale;
 	    pixel.y = bv->height-bv->yoff-(sel->ymax-i+1)*bv->scale;
-	    if ( sel->bitmap[i*sel->bytes_per_line+(j>>3)] & (1<<(7-(j&7))) ) {
-		GDrawFillRect(pixmap,&pixel,0x808080);
-	    } else {
-		GDrawFillRect(pixmap,&pixel,bg);
-	    }
+	    if ( clut==NULL ) {
+		if ( sel->bitmap[i*sel->bytes_per_line+(j>>3)] & (1<<(7-(j&7))) ) {
+		    GDrawFillRect(pixmap,&pixel,0x808080);
+		} else {
+		    GDrawFillRect(pixmap,&pixel,bg);
+		}
+	    } else
+		GDrawFillRect(pixmap,&pixel,
+			clut->clut[sel->bitmap[i*sel->bytes_per_line+j]]);
 	}
     }
     GDrawSetStippled(pixmap,1, 0,0);
@@ -384,6 +389,7 @@ static void BVExpose(BitmapView *bv, GWindow pixmap, GEvent *event ) {
     int i,j;
     GRect pixel;
     BDFChar *bc = bv->bc;
+    BDFFont *bdf = bv->bdf;
     RefChar *refs;
 
     GDrawPushClip(pixmap,&event->u.expose.rect,&old);
@@ -393,10 +399,15 @@ static void BVExpose(BitmapView *bv, GWindow pixmap, GEvent *event ) {
 	pixel.width = pixel.height = bv->scale+1;
 	for ( i=bc->ymax-bc->ymin; i>=0; --i ) {
 	    for ( j=0; j<=bc->xmax-bc->xmin; ++j ) {
-		if ( bc->bitmap[i*bc->bytes_per_line+(j>>3)] & (1<<(7-(j&7))) ) {
-		    pixel.x = bv->xoff + (bc->xmin+j)*bv->scale;
-		    pixel.y = bv->height-bv->yoff-(bc->ymax-i+1)*bv->scale;
-		    GDrawFillRect(pixmap,&pixel,0x808080);
+		pixel.x = bv->xoff + (bc->xmin+j)*bv->scale;
+		pixel.y = bv->height-bv->yoff-(bc->ymax-i+1)*bv->scale;
+		if ( bdf->clut==NULL ) {
+		    if ( bc->bitmap[i*bc->bytes_per_line+(j>>3)] & (1<<(7-(j&7))) )
+			GDrawFillRect(pixmap,&pixel,0x808080);
+		} else {
+		    int index = bc->bitmap[i*bc->bytes_per_line+j];
+		    if ( index!=0 )
+			GDrawFillRect(pixmap,&pixel,bdf->clut->clut[index]);
 		}
 	    }
 	}
@@ -517,10 +528,15 @@ return;
 	memset(&base,'\0',sizeof(base));
 	memset(&clut,'\0',sizeof(clut));
 	gi.u.image = &base;
-	base.image_type = it_mono;
-	base.clut = &clut;
-	clut.clut_len = 2;
-	clut.clut[0] = GDrawGetDefaultBackground(NULL);
+	if ( bv->bdf->clut==NULL ) {
+	    base.image_type = it_mono;
+	    base.clut = &clut;
+	    clut.clut_len = 2;
+	    clut.clut[0] = GDrawGetDefaultBackground(NULL);
+	} else {
+	    base.image_type = it_index;
+	    base.clut = bv->bdf->clut;
+	}
 	base.data = bdfc->bitmap;
 	base.bytes_per_line = bdfc->bytes_per_line;
 	base.width = bdfc->xmax-bdfc->xmin+1;

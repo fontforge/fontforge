@@ -1307,6 +1307,7 @@ static int alreadyexists(int pixelsize) {
     u_strcat(ubuf, GStringGetResource(_STR_Duppixelsizepost,NULL));
 
     ret = GWidgetAsk(GStringGetResource(_STR_Duppixelsize,NULL),buts,oc,0,1,ubuf)==0;
+
 return( ret );
 }
 
