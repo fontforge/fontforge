@@ -21,7 +21,7 @@ pfaedit_OBJECTS2=displayfonts.obj,combinations.obj,sftextfield.obj,ikarus.obj,\
 	splineorder2.obj,genttfinstrs.obj,ttfinstrs.obj,cvgridfit.obj,\
 	cvdebug.obj,showatt.obj,kernclass.obj,nonlineartrans.obj,effects.obj,\
 	histograms.obj,ttfspecial.obj,svg.obj,parsettfatt.obj,contextchain.obj,\
-	macenc.obj,statemachine.obj,typofeatures.obj
+	macenc.obj,statemachine.obj,typofeatures.obj,splinerefigure.obj
 
 pfaedit.exe : nomen.h $(pfaedit_OBJECTS) $(pfaedit_OBJECTS2) xlib.opt
         library/create tmp.olb $(pfaedit_OBJECTS)
@@ -140,3 +140,4 @@ contextchain.obj : contextchain.c
 macenc.obj : macenc.c
 statemachine.obj : statemachine.c
 typofeatures.obj : typofeatures.c
+splinerefigure.obj : splinerefigure.c

@@ -197,6 +197,15 @@ SplinePoint *SplinePointCreate(real x, real y) {
 return( sp );
 }
 
+Spline *SplineMake3(SplinePoint *from, SplinePoint *to) {
+    Spline *spline = chunkalloc(sizeof(Spline));
+
+    spline->from = from; spline->to = to;
+    from->next = to->prev = spline;
+    SplineRefigure3(spline);
+return( spline );
+}
+
 void SplinePointFree(SplinePoint *sp) {
     chunkfree(sp,sizeof(SplinePoint));
 }
@@ -317,65 +326,6 @@ void ImageListsFree(ImageList *imgs) {
 	chunkfree(imgs,sizeof(ImageList));
 	imgs = inext;
     }
-}
-
-void SplineRefigure3(Spline *spline) {
-    SplinePoint *from = spline->from, *to = spline->to;
-    Spline1D *xsp = &spline->splines[0], *ysp = &spline->splines[1];
-
-#ifdef DEBUG
-    if ( RealNear(from->me.x,to->me.x) && RealNear(from->me.y,to->me.y))
-	GDrawIError("Zero length spline created");
-#endif
-    xsp->d = from->me.x; ysp->d = from->me.y;
-    if ( from->nonextcp ) from->nextcp = from->me;
-    else if ( from->nextcp.x==from->me.x && from->nextcp.y == from->me.y ) from->nonextcp = true;
-    if ( to->noprevcp ) to->prevcp = to->me;
-    else if ( to->prevcp.x==to->me.x && to->prevcp.y == to->me.y ) to->noprevcp = true;
-    if ( from->nonextcp && to->noprevcp ) {
-	spline->islinear = true;
-	xsp->c = to->me.x-from->me.x;
-	ysp->c = to->me.y-from->me.y;
-	xsp->a = xsp->b = 0;
-	ysp->a = ysp->b = 0;
-    } else {
-	/* from p. 393 (Operator Details, curveto) Postscript Lang. Ref. Man. (Red book) */
-	xsp->c = 3*(from->nextcp.x-from->me.x);
-	ysp->c = 3*(from->nextcp.y-from->me.y);
-	xsp->b = 3*(to->prevcp.x-from->nextcp.x)-xsp->c;
-	ysp->b = 3*(to->prevcp.y-from->nextcp.y)-ysp->c;
-	xsp->a = to->me.x-from->me.x-xsp->c-xsp->b;
-	ysp->a = to->me.y-from->me.y-ysp->c-ysp->b;
-	if ( RealNear(xsp->c,0)) xsp->c=0;
-	if ( RealNear(ysp->c,0)) ysp->c=0;
-	if ( RealNear(xsp->b,0)) xsp->b=0;
-	if ( RealNear(ysp->b,0)) ysp->b=0;
-	if ( RealNear(xsp->a,0)) xsp->a=0;
-	if ( RealNear(ysp->a,0)) ysp->a=0;
-	spline->islinear = false;
-	if ( ysp->a==0 && xsp->a==0 && ysp->b==0 && xsp->b==0 )
-	    spline->islinear = true;	/* This seems extremely unlikely... */
-    }
-    if ( isnan(ysp->a) || isnan(xsp->a) )
-	GDrawIError("NaN value in spline creation");
-    LinearApproxFree(spline->approx);
-    spline->approx = NULL;
-    spline->knowncurved = false;
-    spline->knownlinear = spline->islinear;
-    SplineIsLinear(spline);
-    spline->isquadratic = false;
-    if ( !spline->knownlinear && xsp->a==0 && ysp->a==0 )
-	spline->isquadratic = true;	/* Only likely if we read in a TTF */
-    spline->order2 = false;
-}
-
-Spline *SplineMake3(SplinePoint *from, SplinePoint *to) {
-    Spline *spline = chunkalloc(sizeof(Spline));
-
-    spline->from = from; spline->to = to;
-    from->next = to->prev = spline;
-    SplineRefigure3(spline);
-return( spline );
 }
 
 static double SolveCubic(double a, double b, double c, double d, double err, double t0) {
