@@ -64,7 +64,7 @@ static uint32 scripts[][11] = {
 /* Greek */	{ CHR('g','r','e','k'), 0x0370, 0x03ff, 0x1f00, 0x1fff },
 /* Gujarati */	{ CHR('g','u','j','r'), 0x0a80, 0x0aff },
 /* Gurmukhi */	{ CHR('g','u','r','u'), 0x0a00, 0x0a7f },
-/* Hangul */	{ CHR('h','a','n','g'), 0x1100, 0x11ff, 0x3130, 0x319f, 0xffa0, 0xffdf },
+/* Hangul */	{ CHR('h','a','n','g'), 0xac00, 0xd7af, 0x3130, 0x319f, 0xffa0, 0xff9f },
  /* I'm not sure what the difference is between the 'hang' tag and the 'jamo' */
  /*  tag. 'Jamo' is said to be the precomposed forms, but what's 'hang'? */
 /* CJKIdeogra */{ CHR('h','a','n','i'), 0x3300, 0x9fff, 0xf900, 0xfaff, 0x020000, 0x02ffff },
@@ -72,7 +72,7 @@ static uint32 scripts[][11] = {
 #if 0	/* Hiragana used to have its own tag, but has since been merged with katakana */
 /* Hiragana */	{ CHR('h','i','r','a'), 0x3040, 0x309f },
 #endif
-/* Hangul Jamo*/{ CHR('j','a','m','o'), 0xac00, 0xd7af },
+/* Hangul Jamo*/{ CHR('j','a','m','o'), 0x1100, 0x11ff, 0x3130, 0x319f, 0xffa0, 0xffdf },
 /* Katakana */	{ CHR('k','a','n','a'), 0x3040, 0x30ff, 0xff60, 0xff9f },
 /* Khmer */	{ CHR('k','h','m','r'), 0x1780, 0x17ff },
 /* Kannada */	{ CHR('k','n','d','a'), 0x0c80, 0x0cff },
