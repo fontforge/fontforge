@@ -1992,7 +1992,7 @@ return;
 		SCUpdateAll(cv->sc);
 	    } else if ( CVAnySel(cv,NULL,NULL,NULL,&anya) || cv->widthsel || cv->vwidthsel ) {
 		CVPreserveState(cv);
-		CVMoveSelection(cv,dx*arrowAmount,dy*arrowAmount);
+		CVMoveSelection(cv,dx*arrowAmount,dy*arrowAmount, event->u.chr.state);
 		if ( cv->widthsel )
 		    SCSynchronizeWidth(cv->sc,cv->sc->width,cv->sc->width-dx,NULL);
 		CVCharChangedUpdate(cv);
@@ -2979,7 +2979,7 @@ return;
 
     switch ( cv->active_tool ) {
       case cvt_pointer:
-	stop_motion = CVMouseMovePointer(cv);
+	stop_motion = CVMouseMovePointer(cv,event);
       break;
       case cvt_magnify: case cvt_minify:
 	if ( !cv->p.rubberbanding ) {
