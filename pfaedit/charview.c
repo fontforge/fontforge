@@ -5135,8 +5135,7 @@ static void CVMenuMakeFirst(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     _CVMenuMakeFirst(cv);
 }
 
-static void CVMenuAddAnchor(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    CharView *cv = (CharView *) GDrawGetUserData(gw);
+void CVAddAnchor(CharView *cv) {
     int waslig;
 
     if ( AnchorClassUnused(cv->sc,&waslig)==NULL ) {
@@ -5146,6 +5145,12 @@ static void CVMenuAddAnchor(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 return;
     }
     ApGetInfo(cv,NULL);
+}
+
+static void CVMenuAddAnchor(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+
+    CVAddAnchor(cv);
 }
 
 static void CVMenuAutotrace(GWindow gw,struct gmenuitem *mi,GEvent *e) {

@@ -1226,13 +1226,16 @@ static void CVPopupSelectInvoked(GWindow v, GMenuItem *mi, GEvent *e) {
 	if ( cv->p.ref!=NULL )
 	    CharViewCreate(cv->p.ref->sc,cv->fv);
       break;
+      case 2:
+	CVAddAnchor(cv);
+      break;
     }
 }
 
 void CVToolsPopup(CharView *cv, GEvent *event) {
     GMenuItem mi[125];
-    int i, j;
-    static int selectables[] = { _STR_Getinfo, _STR_OpenReference, 0 };
+    int i, j, anysel;
+    static int selectables[] = { _STR_Getinfo, _STR_OpenReference, _STR_AddAnchor, 0 };
 
     memset(mi,'\0',sizeof(mi));
     for ( i=0;i<16; ++i ) {
@@ -1258,21 +1261,21 @@ void CVToolsPopup(CharView *cv, GEvent *event) {
 	}
     }
 
-    if ( CVTestSelectFromEvent(cv,event) ) {
-	mi[i].ti.line = true;
+    anysel = CVTestSelectFromEvent(cv,event);
+    mi[i].ti.line = true;
+    mi[i].ti.fg = COLOR_DEFAULT;
+    mi[i++].ti.bg = COLOR_DEFAULT;
+    for ( j=0;selectables[j]!=0; ++j, ++i ) {
+	mi[i].ti.text = (unichar_t *) selectables[j];
+	mi[i].ti.text_in_resource = true;
+	if ( (!anysel && j!=2 ) ||
+		( j==0 && cv->p.spline!=NULL ) ||
+		( j==1 && cv->p.ref==NULL ))
+	    mi[i].ti.disabled = true;
 	mi[i].ti.fg = COLOR_DEFAULT;
-	mi[i++].ti.bg = COLOR_DEFAULT;
-	for ( j=0;selectables[j]!=0; ++j, ++i ) {
-	    mi[i].ti.text = (unichar_t *) selectables[j];
-	    mi[i].ti.text_in_resource = true;
-	    if (( j==0 && cv->p.spline!=NULL ) ||
-		    ( j==1 && cv->p.ref==NULL ))
-		mi[i].ti.disabled = true;
-	    mi[i].ti.fg = COLOR_DEFAULT;
-	    mi[i].ti.bg = COLOR_DEFAULT;
-	    mi[i].mid = j;
-	    mi[i].invoke = CVPopupSelectInvoked;
-	}
+	mi[i].ti.bg = COLOR_DEFAULT;
+	mi[i].mid = j;
+	mi[i].invoke = CVPopupSelectInvoked;
     }
 
     cv->had_control = (event->u.mouse.state&ksm_control)?1:0;

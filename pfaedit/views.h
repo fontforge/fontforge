@@ -701,6 +701,7 @@ extern void CVGetInfo(CharView *cv);
 extern void CVPGetInfo(CharView *cv);
 extern void SCRefBy(SplineChar *sc);
 extern void ApGetInfo(CharView *cv, AnchorPoint *ap);
+extern void CVAddAnchor(CharView *cv);
 extern AnchorClass *AnchorClassUnused(SplineChar *sc,int *waslig);
 extern void FVSetWidth(FontView *fv,enum widthtype wtype);
 extern void CVSetWidth(CharView *cv,enum widthtype wtype);

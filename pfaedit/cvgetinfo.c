@@ -851,6 +851,7 @@ return( true );			/* No op */
 	    AI_DisplayClass(ci,ci->ap);
 	    AI_TestOrdering(ci,ci->ap->me.x);
 	}
+	CVCharChangedUpdate(ci->cv);
     }
 return( true );
 }
