@@ -608,7 +608,11 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags, 
     }
     if ( strmatch(end-strlen(".ttf.bin"),".ttf.bin")==0 )
 	i = ff_ttfmacbin;
+    else if ( strmatch(end-strlen(".suit"),".suit")==0 )	/* Different extensions for Mac/non Mac, support both always */
+	i = ff_ttfmacbin;
     else if ( strmatch(end-strlen(".bin"),".bin")==0 )
+	i = ff_pfbmacbin;
+    else if ( strmatch(end-strlen(".res"),".res")==0 )
 	i = ff_pfbmacbin;
     if ( extensions[i]==NULL ) {
 	for ( i=0; bitmaps[i]!=NULL; ++i ) {

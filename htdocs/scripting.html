@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 15-Jul-2002 -->
+  <!-- AP: Last modified: 18-Jul-2002 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -451,7 +451,9 @@ a[4][0] = "Nested array";
       <LI>
 	pfb
       <LI>
-	bin (a mac postscript (pfb) resource in a mac binary wrapper)
+	bin (a mac postscript (pfb) resource in a mac binary wrapper)<BR>
+	res (on the Mac itself PfaEdit will put the result directly into a font suitcase
+	file, and the extension should be ".res" rather than ".bin")
       <LI>
 	ps (type 0)
       <LI>
@@ -459,7 +461,9 @@ a[4][0] = "Nested array";
       <LI>
 	ttf
       <LI>
-	ttf.bin (a mac truetype resource in a mac binary wrapper)
+	ttf.bin (a mac truetype resource in a mac binary wrapper)<BR>
+	suit (on the Mac itself PfaEdit will put the result directly into a font
+	suitcase file, and the extension should be ".suit" not ".ttf.bin")
       <LI>
 	dfont (a mac truetype resource in a dfont file)
       <LI>
