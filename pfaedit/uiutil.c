@@ -123,17 +123,121 @@ int GetIntR(GWindow gw,int cid,int namer,int *err) {
 return( val );
 }
 
+#if __CygWin
+/* Try to find the default browser by looking it up in the windows registry */
+/* The registry is organized as a tree. We are interested in the subtree */
+/*  starting at HKEY_CLASSES_ROOT. This contains two different kinds of things*/
+/*  Extensions and Programs. First we look up the extension and it refers us */
+/*  to a program. So we look up the program, and look up shell->open->command */
+/*  in it. The value of command is a path followed by potential arguments */
+/*  viz: c:\program files\foobar "%1" */
+
+/* Extensions seem to contain the ".", so ".html" not "html" */
+
+#include <w32api/wtypes.h>
+#include <w32api/winbase.h>
+#include <w32api/winreg.h>
+
+static char *win_program_from_extension(char *exten) {
+    DWORD type, dlen, err;
+    char programindicator[1000];
+    char programpath[1000];
+    HKEY hkey_prog, hkey_shell, hkey_open, hkey_exten, hkey_command;
+    char *pt;
+
+    if ( RegOpenKeyEx(HKEY_CLASSES_ROOT,exten,0,KEY_READ,&hkey_exten)!=ERROR_SUCCESS ) {
+	/*fprintf( stderr, "Failed to find extension \"%s\", did it have a period?\n", exten );*/
+return( NULL );
+    }
+    dlen = sizeof(programindicator);
+    if ( (err=RegQueryValueEx(hkey_exten,"",NULL,&type,(uint8 *)programindicator,&dlen))!=ERROR_SUCCESS ) {
+	fprintf( stderr, "Failed to default value of exten \"%s\".\n Error=%ld", exten, err );
+	RegCloseKey(hkey_exten);
+return( NULL );
+    }
+    RegCloseKey(hkey_exten);
+
+    if ( RegOpenKeyEx(HKEY_CLASSES_ROOT,programindicator,0,KEY_READ,&hkey_prog)!=ERROR_SUCCESS ) {
+	fprintf( stderr, "Failed to find program \"%s\"\n", programindicator );
+return( NULL );
+    }
+    if ( RegOpenKeyEx(hkey_prog,"shell",0,KEY_READ,&hkey_shell)!=ERROR_SUCCESS ) {
+	fprintf( stderr, "Failed to find \"%s->shell\"\n", programindicator );
+	RegCloseKey(hkey_prog);
+return( NULL );
+    }
+    if ( RegOpenKeyEx(hkey_shell,"open",0,KEY_READ,&hkey_open)!=ERROR_SUCCESS ) {
+	fprintf( stderr, "Failed to find \"%s->shell->open\"\n", programindicator );
+	RegCloseKey(hkey_prog); RegCloseKey(hkey_shell);
+return( NULL );
+    }
+    if ( RegOpenKeyEx(hkey_open,"command",0,KEY_READ,&hkey_command)!=ERROR_SUCCESS ) {
+	fprintf( stderr, "Failed to find \"%s->shell->open\"\n", programindicator );
+	RegCloseKey(hkey_prog); RegCloseKey(hkey_shell); RegCloseKey(hkey_command);
+return( NULL );
+    }
+
+    dlen = sizeof(programpath);
+    if ( RegQueryValueEx(hkey_command,"",NULL,&type,(uint8 *)programpath,&dlen)!=ERROR_SUCCESS ) {
+	fprintf( stderr, "Failed to find default for \"%s->shell->open->command\"\n", programindicator );
+	RegCloseKey(hkey_prog); RegCloseKey(hkey_shell); RegCloseKey(hkey_open); RegCloseKey(hkey_command);
+return( NULL );
+    }
+
+    RegCloseKey(hkey_prog); RegCloseKey(hkey_shell); RegCloseKey(hkey_open); RegCloseKey(hkey_command);
+
+    pt = strstr(programpath,"%1");
+    if ( pt!=NULL )
+	pt[1] = 's';
+return( copy(programpath));
+}
+
+static void do_windows_browser(char *fullspec) {
+    extern void cygwin_conv_to_full_posix_path(const char *win,char *unx);
+    char *format, *start, *pt, ch, *temp, *cmd;
+
+    format = win_program_from_extension(".html");
+    if ( format==NULL )
+	format = win_program_from_extension(".htm");
+    if ( format==NULL ) {
+	GDrawError("Could not find a browser. Set the BROWSER environment variable to point to one" );
+return;
+    }
+
+    if ( format[0]=='"' || format[0]=='\'' ) {
+	start = format+1;
+	pt = strchr(start,format[0]);
+    } else {
+	start = format;
+	pt = strchr(start,' ');
+    }
+    if ( pt==NULL ) pt = start+strlen(start);
+    ch = *pt; *pt='\0';
+
+    temp = galloc(strlen(start)+300+ (ch==0?0:strlen(pt+1)));
+    cygwin_conv_to_full_posix_path(start,temp+1);
+    temp[0]='"'; strcat(temp,"\" ");
+    if ( ch!='\0' )
+	strcat(temp,pt+1);
+    cmd = galloc(strlen(temp)+strlen(fullspec)+8);
+    sprintf( cmd, temp, fullspec );
+    strcat(cmd," &" );
+    system(cmd);
+    free( cmd ); free( temp ); free( format );
+}
+#endif
+
 static char browser[1025];
 
 static void findbrowser(void) {
+#if __CygWin
+    static char *stdbrowsers[] = { "netscape.exe", "opera.exe", "galeon.exe", "kfmclient.exe",
+	"mozilla.exe", "mosaic.exe", /*"grail",*/
+	"iexplore.exe",
+	/*"lynx.exe",*/
+#else
     static char *stdbrowsers[] = { "netscape", "opera", "galeon", "kfmclient",
 	"mozilla", "mosaic", /*"grail",*/ "lynx",
-#if __CygWin
-	"IEXPLORE.EXE", "NETSCAPE.EXE",
-	"iexplore.exe", "netscape.exe",
-#elif __Mac
-	"/Applications/Internet Exporer/Internet Explorer.app",
-	/* We need to play games with this... */
 #endif
 	NULL };
     int i;
@@ -159,12 +263,8 @@ return;
 return;
 	}
     }
-#if __CygWin
-    /* Well, under Windows, c:\Program Files\* are generally not in the path */
-    if ( access("/cygdrive/c/progra~1/intern~1/iexplore.exe",X_OK)==0 )
-	strcpy(browser,"/cygdrive/c/progra~1/intern~1/iexplore");
-    else if ( access("/cygdrive/c/progra~1/netscape/communicator/program/netscape.exe",X_OK)==0 )
-	strcpy(browser,"/cygdrive/c/progra~1/netscape/communicator/program/netscape");
+#if __Mac
+    strcpy(browser,"open");	/* thanks to riggle */
 #endif
 }
 
@@ -173,10 +273,12 @@ void help(char *file) {
 
     if ( browser[0]=='\0' )
 	findbrowser();
+#ifndef __CygWin
     if ( browser[0]=='\0' ) {
 	GDrawError("Could not find a browser. Set the BROWSER environment variable to point to one" );
 return;
     }
+#endif
 
     if ( strstr(file,"http://")==NULL ) {
 	fullspec[0] = 0;
@@ -206,7 +308,8 @@ return;
     } else
 	strcpy(fullspec,file);
 #if __CygWin
-    if ( strstrmatch(browser,"/cygdrive")!=NULL && strstr(fullspec,":/")==NULL ) {
+    if ( (strstrmatch(browser,"/cygdrive")!=NULL || browser[0]=='\0') &&
+		strstr(fullspec,":/")==NULL ) {
 	/* It looks as though the browser is a windows application, so we */
 	/*  should give it a windows file name */
 	char *pt, *tpt;
@@ -230,8 +333,7 @@ return;
 	strcpy(fullspec,t1);
 	free(t1);
     }
-#if __Mac
-# if 0
+#if 0 && __Mac
     /* Starting a Mac application is weird... system() can't do it */
     /* Thanks to Edward H. Trager giving me an example... */
     if ( strstr(browser,".app")!=NULL ) {
@@ -248,22 +350,24 @@ return;
 	system(temp);
 	GWidgetPostNoticeR(_STR_LeaveX,_STR_LeaveXLong);
     } else {
-# else
+#elif __Mac
     /* This seems a bit easier... Thanks to riggle */
-    if ( strstr(browser,".app")!=NULL ) {
-	strcpy(browser,"open");
+    if ( strcmp(browser,"open")==0 ) {
 	temp = galloc(strlen(browser) + strlen(fullspec) + 20);
-	sprintf( temp, "%s %s &", browser, fullspec );
+	sprintf( temp, "open \"%s\" &", fullspec );
 	system(temp);
 	GWidgetPostNoticeR(_STR_LeaveX,_STR_LeaveXLong);
     } else {
-# endif
+#elif __CygWin
+    if ( browser[0]=='\0' ) {
+	do_windows_browser(fullspec);
+    } else {
+#else
+    {
 #endif
-    temp = galloc(strlen(browser) + strlen(fullspec) + 20);
-    sprintf( temp, "%s %s &", browser, fullspec );
-    system(temp);
-#if __Mac
+	temp = galloc(strlen(browser) + strlen(fullspec) + 20);
+	sprintf( temp, "\"%s\" \"%s\" &", browser, fullspec );
+	system(temp);
     }
-#endif
     free(temp);
 }
