@@ -632,7 +632,7 @@ return;
     el->coordmin[0] = el->coordmax[0] = sc->splines->first->me.x;
     el->coordmin[1] = el->coordmax[1] = sc->splines->first->me.y;
 
-    for ( spl = sc->splines; spl!=NULL; spl = spl->next ) {
+    for ( spl = sc->splines; spl!=NULL; spl = spl->next ) if ( spl->first->prev!=NULL && spl->first->prev->from!=spl->first ) {
 	first = NULL;
 	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
 	    EIAddSpline(spline,el);

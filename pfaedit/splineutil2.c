@@ -2454,13 +2454,11 @@ SplineSet *SplineSetsCorrect(SplineSet *base,int *changed) {
     DBounds b;
     Edge *active=NULL, *apt, *pr, *e;
     int i, winding;
-    SplineSet *open, *tbase;
+    SplineSet *tbase;
 
     *changed = false;
 
     tbase = base;
-    open = SplineSetsExtractOpen(&tbase);
-    base = tbase;
 
     SplineSetsUntick(base);
     for (sscnt=0,spl=base; spl!=NULL; spl=spl->next, ++sscnt );
@@ -2518,11 +2516,6 @@ SplineSet *SplineSetsCorrect(SplineSet *base,int *changed) {
 	}
 	FreeEdges(&es);
     }
-    if ( open!=NULL ) {
-	SplineSet *temp = base;
-	SplineSetsInsertOpen(&temp,open);
-	base = temp;
-    }
 return( base );
 }
 
@@ -2543,11 +2536,9 @@ SplineSet *SplineSetsDetectDir(SplineSet **_base,int *_lastscan) {
     EIList el;
     EI *active=NULL, *apt, *pr, *e;
     int i, winding,change,waschange;
-    SplineSet *open;
     int lastscan = *_lastscan;
     SplineChar dummy;
 
-    open = SplineSetsExtractOpen(_base);
     base = *_base;
 
     memset(&el,'\0',sizeof(el));
@@ -2608,8 +2599,6 @@ SplineSet *SplineSetsDetectDir(SplineSet **_base,int *_lastscan) {
     free(el.ends);
     ElFreeEI(&el);
     *_base = base;
-    if ( open!=NULL )
-	SplineSetsInsertOpen(_base,open);
     *_lastscan = i;
 return( ret );
 }

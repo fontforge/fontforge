@@ -409,7 +409,7 @@ static IntersectionList *FindLinearIntersections(SplineSet *spl, IntersectionLis
     /* This used only to work if both splines were lines. Now it works if */
     /*  at least one of the splines is a line */
 
-    for ( ; spl!=NULL; spl = spl->next ) {
+    for ( ; spl!=NULL; spl = spl->next ) if ( spl->first->prev!=NULL ) {
 	first = NULL;
 	for ( sp = spl->first->next; sp!=NULL && sp!=first; sp=sp->to->next ) {
 	    if ( first==NULL ) first = sp;
@@ -442,7 +442,7 @@ static IntersectionList *FindThisVertextIntersections(SplineSet *spl,
     Spline *spline, *first;
     real t, xpos, ypos;
 
-    while ( spl!=NULL ) {
+    for ( ; spl!=NULL ; spl=spl->next ) if ( spl->first->prev!=NULL ) {
 	first = NULL;
 	for ( spline=spl->first->next; spline!=NULL && spline!=first; spline = spline->to->next ) {
 	    if ( spline->from!=sp && spline->to!=sp &&
@@ -466,7 +466,6 @@ static IntersectionList *FindThisVertextIntersections(SplineSet *spl,
 	    }
 	    if ( first==NULL ) first = spline;
 	}
-	spl = spl->next;
     }
 return( ilist );
 }
@@ -476,7 +475,7 @@ static IntersectionList *FindVertexIntersections(SplineSet *ss,
     SplinePoint *sp;
     SplineSet *spl;
 
-    for ( spl=ss; spl!=NULL ; spl=spl->next ) {
+    for ( spl=ss; spl!=NULL ; spl=spl->next ) if ( spl->first->prev!=NULL ) {
 	for ( sp=spl->first; ; ) {
 	    ilist = FindThisVertextIntersections(ss,sp,ilist);
 	    sp = sp->next->to;			/* paths are all closed */
@@ -1368,7 +1367,7 @@ static SplineSet *SSRemoveAllUnneeded(SplineSet *base, IntersectionList *ilist) 
     int allunneeded;
     SplinePoint *sp, *firstsp;
 
-    for ( spl = base, prev=NULL; spl!=NULL; spl = snext ) {
+    for ( spl = base, prev=NULL; spl!=NULL; spl = snext ) if ( spl->first->prev!=NULL ) {
 	snext = spl->next;
 	first = NULL;
 	allunneeded = true;
@@ -1407,33 +1406,35 @@ static SplineSet *SSRemoveAllNeeded(SplineSet **base, IntersectionList *ilist) {
 
     for ( spl = *base, prev=NULL; spl!=NULL; spl = snext ) {
 	snext = spl->next;
-	first = NULL;
-	allneeded = !spl->first->isintersection;
-	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline = spline->to->next ) {
-	    if ( !spline->isneeded || spline->to->isintersection ) {
-		allneeded = false;
-	break;
+	if ( spl->first->prev!=NULL ) {
+	    first = NULL;
+	    allneeded = !spl->first->isintersection;
+	    for ( spline = spl->first->next; spline!=NULL && spline!=first; spline = spline->to->next ) {
+		if ( !spline->isneeded || spline->to->isintersection ) {
+		    allneeded = false;
+	    break;
+		}
+		if ( first==NULL ) first=spline;
 	    }
-	    if ( first==NULL ) first=spline;
+	    if ( allneeded ) {
+		if ( prev==NULL )
+		    *base = snext;
+		else
+		    prev->next = snext;
+		spl->next = NULL;
+		if ( head==NULL )
+		    head = spl;
+		else
+		    last->next = spl;
+		last = spl;
+		for ( spline = spl->first->next; spline!=NULL && !spline->isticked; spline = spline->to->next ) {
+		    spline->isticked = true;
+		    if ( spline->to->isintersection )
+			GDrawIError("Spline in a fully-needed splineset has an intersection in SSRemoveAllNeeded" );
+		}
+	    } else
+		prev = spl;
 	}
-	if ( allneeded ) {
-	    if ( prev==NULL )
-		*base = snext;
-	    else
-		prev->next = snext;
-	    spl->next = NULL;
-	    if ( head==NULL )
-		head = spl;
-	    else
-		last->next = spl;
-	    last = spl;
-	    for ( spline = spl->first->next; spline!=NULL && !spline->isticked; spline = spline->to->next ) {
-		spline->isticked = true;
-		if ( spline->to->isintersection )
-		    GDrawIError("Spline in a fully-needed splineset has an intersection in SSRemoveAllNeeded" );
-	    }
-	} else
-	    prev = spl;
     }
 return( head );
 }
@@ -1441,7 +1442,7 @@ return( head );
 static void SSValidate(SplineSet *spl) {
     Spline *spline, *first;
     
-    while ( spl!=NULL ) {
+    for ( ;spl!=NULL; spl=spl->next ) if ( spl->first->prev!=NULL ) {
 	first = NULL;
 	for ( spline=spl->first->next; spline!=first && spline!=NULL; spline = spline->to->next ) {
 	    if ( spline->isneeded ^ spline->isunneeded )
@@ -1459,7 +1460,6 @@ static void SSValidate(SplineSet *spl) {
 	    }
 	    if ( first==NULL ) first = spline;
 	}
-	spl = spl->next;
     }
 }
 
@@ -1529,9 +1529,10 @@ static void ShowIntersections(IntersectionList *ilist) {
 	?Correct Direction?	But that alters semantics
 */
 SplineSet *SplineSetRemoveOverlap(SplineSet *base,enum overlap_type ot) {
-    SplineSet *open, *needed, *tbase, *new, *next;
+    SplineSet *needed, *tbase, *new, *next;
     IntersectionList *ilist;
     int changed = false;
+    SplineSet *open;
 
     SplineSetsUntick(base);
 

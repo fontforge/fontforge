@@ -344,6 +344,8 @@ typedef struct spline {
 	/* If neither knownlinear nor curved then we haven't checked */
     unsigned int order2: 1;		/* It's a bezier curve with only one cp */
     unsigned int touched: 1;
+    unsigned int leftedge: 1;
+    unsigned int rightedge: 1;
     SplinePoint *from, *to;
     Spline1D splines[2];		/* splines[0] is the x spline, splines[1] is y */
     struct linearapprox *approx;

@@ -66,96 +66,98 @@ real TOfNextMajor(Edge *e, EdgeList *es, real sought_m ) {
     /* We want to find t so that Mspline(t) = sought_m */
     /*  the curve is monotonic */
     Spline1D *msp = &e->spline->splines[es->major];
-#if 1
-    real new_t;
 
-    /* if we've adjusted the height then we won't be able to find it restricting */
-    /*  t between [0,1] as we do. So it's a special case. (this is to handle */
-    /*  hstem hints) */
-    if ( e->max_adjusted && sought_m==e->mmax ) {
-	e->m_cur = sought_m;
-return( e->up?1.0:0.0 );
-    }
+    if ( es->is_overlap ) {
+	real new_t;
 
-    new_t = SplineSolve(msp,e->t_mmin,e->t_mmax,(sought_m+es->mmin)/es->scale,.001);
-    if ( new_t==-1 )
-	GDrawIError( "No Solution");
-    e->m_cur = (((msp->a*new_t + msp->b)*new_t+msp->c)*new_t + msp->d)*es->scale - es->mmin;
-return( new_t );
-#else
-    real slope = (3.0*msp->a*e->t_cur+2.0*msp->b)*e->t_cur + msp->c;
-    real new_t, old_t, newer_t;
-    real found_m;
-    real t_mmax, t_mmin;
-    real mmax, mmin;
-
-    if ( sp->islinear ) {
-	new_t = e->t_cur + (sought_m-e->m_cur)/(es->scale * msp->c);
-	e->m_cur = (msp->c*new_t + msp->d)*es->scale - es->mmin;
-return( new_t );
-    }
-    /* if we have a spline that is nearly horizontal at its max. endpoint */
-    /*  then finding A value of t for which y has the right value isn't good */
-    /*  enough (at least not when finding intersections) */
-    if ( sought_m+1>e->mmax ) {
-	e->m_cur = e->mmax;
-return( e->t_mmax );
-    }
-
-    /* if we've adjusted the height then we won't be able to find it restricting */
-    /*  t between [0,1] as we do. So it's a special case. (this is to handle */
-    /*  hstem hints) */
-    if ( e->max_adjusted && sought_m==e->mmax ) {
-	e->m_cur = sought_m;
-return( e->up?1.0:0.0 );
-    }
-
-    old_t = e->t_cur;
-    slope *= es->scale;
-    mmax = e->mmax; t_mmax = e->t_mmax;
-    mmin = e->m_cur; t_mmin = old_t;
-
-    if ( slope==0 )	/* we often start at a point of inflection */
-	new_t = old_t + (t_mmax-t_mmin)* (sought_m-mmin)/(mmax-mmin);
-    else {
-	new_t = old_t + 1/slope;
-	if (( new_t>t_mmax && e->up ) ||
-		(new_t<t_mmax && !e->up) ||
-		(new_t<t_mmin && e->up ) ||
-		(new_t>t_mmin && !e->up ))
-	    new_t = old_t + (t_mmax-t_mmin)* (sought_m-mmin)/(mmax-mmin);
-    }
-
-    while ( 1 ) {
-	found_m = ( ((msp->a*new_t+msp->b)*new_t+msp->c)*new_t + msp->d )
-		* es->scale - es->mmin ;
-	if ( found_m>sought_m-.001 && found_m<sought_m+.001 ) {
-	    e->m_cur = found_m;
-return( new_t );
-	}
-	newer_t = (t_mmax+t_mmin)/2 /* * (sought_m-found_m)/(mmax-mmin) */;
-	if ( found_m > sought_m ) {
-	    mmax = found_m;
-	    t_mmax = new_t;
-	} else {
-	    mmin = found_m;
-	    t_mmin = new_t;
-	}
-	if ( t_mmax==t_mmin ) {
-	    GDrawIError("TOfNextMajor failed! on %s", es->sc!=NULL?es->sc->name:"Unknown" );
+	/* if we've adjusted the height then we won't be able to find it restricting */
+	/*  t between [0,1] as we do. So it's a special case. (this is to handle */
+	/*  hstem hints) */
+	if ( e->max_adjusted && sought_m==e->mmax ) {
 	    e->m_cur = sought_m;
+return( e->up?1.0:0.0 );
+	}
+
+	new_t = SplineSolve(msp,e->t_mmin,e->t_mmax,(sought_m+es->mmin)/es->scale,.001);
+	if ( new_t==-1 )
+	    GDrawIError( "No Solution");
+	e->m_cur = (((msp->a*new_t + msp->b)*new_t+msp->c)*new_t + msp->d)*es->scale - es->mmin;
+return( new_t );
+    } else {
+	Spline *sp = e->spline;
+	real slope = (3.0*msp->a*e->t_cur+2.0*msp->b)*e->t_cur + msp->c;
+	real new_t, old_t, newer_t;
+	real found_m;
+	real t_mmax, t_mmin;
+	real mmax, mmin;
+
+	if ( sp->islinear ) {
+	    new_t = e->t_cur + (sought_m-e->m_cur)/(es->scale * msp->c);
+	    e->m_cur = (msp->c*new_t + msp->d)*es->scale - es->mmin;
 return( new_t );
 	}
-	new_t = newer_t;
-# if 0
-	if (( new_t>t_mmax && e->up ) ||
-		(new_t<t_mmax && !e->up) ||
-		(new_t<t_mmin && e->up ) ||
-		(new_t>t_mmin && !e->up ))
-	    new_t = (t_mmax+t_mmin)/2;
+	/* if we have a spline that is nearly horizontal at its max. endpoint */
+	/*  then finding A value of t for which y has the right value isn't good */
+	/*  enough (at least not when finding intersections) */
+	if ( sought_m+1>e->mmax ) {
+	    e->m_cur = e->mmax;
+return( e->t_mmax );
+	}
+
+	/* if we've adjusted the height then we won't be able to find it restricting */
+	/*  t between [0,1] as we do. So it's a special case. (this is to handle */
+	/*  hstem hints) */
+	if ( e->max_adjusted && sought_m==e->mmax ) {
+	    e->m_cur = sought_m;
+return( e->up?1.0:0.0 );
+	}
+
+	old_t = e->t_cur;
+	slope *= es->scale;
+	mmax = e->mmax; t_mmax = e->t_mmax;
+	mmin = e->m_cur; t_mmin = old_t;
+
+	if ( slope==0 )	/* we often start at a point of inflection */
+	    new_t = old_t + (t_mmax-t_mmin)* (sought_m-mmin)/(mmax-mmin);
+	else {
+	    new_t = old_t + 1/slope;
+	    if (( new_t>t_mmax && e->up ) ||
+		    (new_t<t_mmax && !e->up) ||
+		    (new_t<t_mmin && e->up ) ||
+		    (new_t>t_mmin && !e->up ))
+		new_t = old_t + (t_mmax-t_mmin)* (sought_m-mmin)/(mmax-mmin);
+	}
+
+	while ( 1 ) {
+	    found_m = ( ((msp->a*new_t+msp->b)*new_t+msp->c)*new_t + msp->d )
+		    * es->scale - es->mmin ;
+	    if ( found_m>sought_m-.001 && found_m<sought_m+.001 ) {
+		e->m_cur = found_m;
+    return( new_t );
+	    }
+	    newer_t = (t_mmax+t_mmin)/2 /* * (sought_m-found_m)/(mmax-mmin) */;
+	    if ( found_m > sought_m ) {
+		mmax = found_m;
+		t_mmax = new_t;
+	    } else {
+		mmin = found_m;
+		t_mmin = new_t;
+	    }
+	    if ( t_mmax==t_mmin ) {
+		GDrawIError("TOfNextMajor failed! on %s", es->sc!=NULL?es->sc->name:"Unknown" );
+		e->m_cur = sought_m;
+return( new_t );
+	    }
+	    new_t = newer_t;
+#if 0
+	    if (( new_t>t_mmax && e->up ) ||
+		    (new_t<t_mmax && !e->up) ||
+		    (new_t<t_mmin && e->up ) ||
+		    (new_t>t_mmin && !e->up ))
+		new_t = (t_mmax+t_mmin)/2;
 # endif
+	}
     }
-#endif
 }
 
 static int SlopeLess(Edge *e, Edge *p, int other) {
@@ -428,7 +430,7 @@ return;		/* Horizontal line, ignore it */
 void FindEdgesSplineSet(SplinePointList *spl, EdgeList *es) {
     Spline *spline, *first;
 
-    for ( ; spl!=NULL; spl = spl->next ) {
+    for ( ; spl!=NULL; spl = spl->next ) if ( spl->first->prev!=NULL && spl->first->prev->from!=spl->first ) {
 	first = NULL;
 	es->last = es->splinesetfirst = NULL;
 	/* Set so there is no previous point!!! */
@@ -855,7 +857,6 @@ BDFChar *SplineCharRasterize(SplineChar *sc, int pixelsize) {
     EdgeList es;
     DBounds b;
     BDFChar *bdfc;
-    SplineSet *open;
 
     if ( sc==NULL )
 return( NULL );
@@ -865,8 +866,9 @@ return( NULL );
 	es.bitmap = gcalloc(1,1);
 	es.bytes_per_line = 1;
     } else {
-#if 1
+#if 0
 	/* Some truetype fonts have open paths that should be ignored */
+	/* We ignore them now in FindEdgesSplineSet */
 	SCNumberPoints(sc);
 	open = SplineSetsExtractOpen(&sc->splines);
 #endif
@@ -895,7 +897,7 @@ return( NULL );
 	    es.bitmap = gcalloc(1,1);
 	    es.bytes_per_line = 1;
 	}
-#if 1
+#if 0
 	if ( open!=NULL )
 	    SplineSetsInsertOpen(&sc->splines,open);
 #endif
