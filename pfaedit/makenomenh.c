@@ -458,7 +458,7 @@ static void ProcessNames(char *filename,char *lc,char *uc) {
     unichar_t **values, *mn, *init;
     int *ivalues;
     char buffer[1025];
-    char *pt, *bpt;
+    char *pt, *bpt, *npt;
     int off, i, j;
     int isuni, ismn, index, ch;
     int enc=0;
@@ -478,11 +478,18 @@ return;
     while( fgets(buffer,sizeof(buffer),namef)!=NULL ) {
 	if ( strncmp(buffer,"static ",7)!=0 )
     continue;
-	off=7;
-	if ( strncmp(buffer+off,"const ",6)==0 )
-	    off += 6;
-	if ( strncmp(buffer+off,"enum encoding enc =",19)==0 ) {
-	    enc = getencoding(buffer+off+19);
+	pt = buffer+7;
+	if ( (npt = strstr(pt,"const "))!=NULL )
+	    pt = npt+6;
+	if ( (npt = strstr(pt,"enum "))!=NULL ) {
+	    if ( (npt = strstr(npt+5,"encoding "))==NULL )
+    continue;
+	    if ( (npt = strstr(npt+9,"enc "))==NULL )
+    continue;
+	    pt = npt+4;
+	    while ( isspace(*pt)) ++pt;
+	    if ( *pt=='=' ) ++pt;
+	    enc = getencoding(pt);
 	    if ( enc==-1 ) {
 		fprintf(stderr, "Invalid encoding line: %s\n", buffer );
 		fclose(namef);
@@ -490,6 +497,7 @@ return;
 	    }
     continue;
 	}
+	off = pt-buffer;
 	if ( strncmp(buffer+off,"int num_",8)==0 ) {
 	    handleint2(filename,ivalues,buffer,off+8);
     continue;

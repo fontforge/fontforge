@@ -1,6 +1,6 @@
 #include "nomen.h"
 
-static enum encoding enc  =  e_koi8_r;
+static enum encoding enc = e_koi8_r;
 
 static char str_Language[]  =  "Русский";
 static char str_OK[]  =  "OK";
