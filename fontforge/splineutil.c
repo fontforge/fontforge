@@ -2205,6 +2205,7 @@ SplineFont *SplineFontFromPSFont(FontDict *fd) {
 
     memset(&pscontext,0,sizeof(pscontext));
     pscontext.is_type2 = fd->fonttype==2;
+    pscontext.painttype = fd->painttype;
 
     SplineFontMetaData(sf,fd);
     if ( fd->wascff ) {

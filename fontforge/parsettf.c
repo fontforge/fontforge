@@ -2806,6 +2806,7 @@ static void cfffigure(struct ttfinfo *info, struct topdicts *dict,
 /*  the subrs but must wait until we know which font we're working on. */
     cstype = dict->charstringtype;
     pscontext.is_type2 = cstype-1;
+    pscontext.painttype = dict->painttype;
     gsubrs->bias = cstype==1 ? 0 :
 	    gsubrs->cnt < 1240 ? 107 :
 	    gsubrs->cnt <33900 ? 1131 : 32768;

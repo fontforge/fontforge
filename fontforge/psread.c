@@ -3849,10 +3849,13 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
     /* Even in type1 fonts all paths should be closed. But if we close them at*/
     /*  the obvious moveto, that breaks flex hints. So we have a hack here at */
     /*  the end which closes any open paths. */
-    if ( !is_type2 ) for ( cur = ret->layers[ly_fore].splines; cur!=NULL; cur = cur->next ) if ( cur->first->prev==NULL ) {
-	SplineMake3(cur->last,cur->first);
-	cur->last = cur->first;
-    }
+    /* If we do have a PaintType 1 font, then presumably the difference between*/
+    /*  open and closed paths matters */
+    if ( !is_type2 && !context->painttype )
+	for ( cur = ret->layers[ly_fore].splines; cur!=NULL; cur = cur->next ) if ( cur->first->prev==NULL ) {
+	    SplineMake3(cur->last,cur->first);
+	    cur->last = cur->first;
+	}
 
     /* For some reason, when I read splines in, I get their clockwise nature */
     /*  backwards ... at least backwards from fontographer ... so reverse 'em*/
