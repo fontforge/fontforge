@@ -432,6 +432,7 @@ return( false );
 
 void CVMouseDownPointer(CharView *cv, FindSel *fs, GEvent *event) {
     int needsupdate = false;
+    int dowidth, dovwidth;
 
     if ( cv->pressed==NULL )
 	cv->pressed = GDrawRequestTimer(cv->v,200,100,NULL);
@@ -440,32 +441,48 @@ void CVMouseDownPointer(CharView *cv, FindSel *fs, GEvent *event) {
     /*  selected, or if the user held the shift key down */
     if ( ImgRefEdgeSelected(cv,fs,event))
 return;
+    dowidth = ( cv->showhmetrics && cv->p.cx>cv->sc->width-fs->fudge &&
+		cv->p.cx<cv->sc->width+fs->fudge );
+    dovwidth = ( cv->showvmetrics && cv->sc->parent->hasvmetrics &&
+		cv->p.cy>cv->sc->parent->vertical_origin-cv->sc->vwidth-fs->fudge &&
+		cv->p.cy<cv->sc->parent->vertical_origin-cv->sc->vwidth+fs->fudge );
     if ( (fs->p->sp==NULL || !fs->p->sp->selected) &&
 	    (fs->p->ref==NULL || !fs->p->ref->selected) &&
 	    (fs->p->img==NULL || !fs->p->img->selected) &&
+	    (!dowidth || !cv->widthsel) &&
+	    (!dovwidth || !cv->vwidthsel) &&
 	    !(event->u.mouse.state&ksm_shift))
 	needsupdate = CVClearSel(cv);
     if ( !fs->p->anysel ) {
 	/* Nothing else... unless they clicked on the width line, check that */
-	if ( cv->showhmetrics && cv->p.cx>cv->sc->width-fs->fudge &&
-		cv->p.cx<cv->sc->width+fs->fudge ) {
-	    cv->widthsel = true;
-	    cv->oldwidth = cv->sc->width;
-	    fs->p->cx = cv->sc->width;
-	    CVInfoDraw(cv,cv->gw);
-	    fs->p->anysel = true;
-	    cv->expandedge = ee_right;
+	if ( dowidth ) {
+	    if ( event->u.mouse.state&ksm_shift )
+		cv->widthsel = !cv->widthsel;
+	    else
+		cv->widthsel = true;
+	    if ( cv->widthsel ) {
+		cv->oldwidth = cv->sc->width;
+		fs->p->cx = cv->sc->width;
+		CVInfoDraw(cv,cv->gw);
+		fs->p->anysel = true;
+		cv->expandedge = ee_right;
+	    } else
+		cv->expandedge = ee_none;
 	    SetCur(cv);
 	    needsupdate = true;
-	} else if ( cv->showvmetrics && cv->sc->parent->hasvmetrics &&
-		cv->p.cy>cv->sc->parent->vertical_origin-cv->sc->vwidth-fs->fudge &&
-		cv->p.cy<cv->sc->parent->vertical_origin-cv->sc->vwidth+fs->fudge ) {
-	    cv->vwidthsel = true;
-	    cv->oldvwidth = cv->sc->vwidth;
-	    fs->p->cy = cv->sc->parent->vertical_origin-cv->sc->vwidth;
-	    CVInfoDraw(cv,cv->gw);
-	    fs->p->anysel = true;
-	    cv->expandedge = ee_down;
+	} else if ( dovwidth ) {
+	    if ( event->u.mouse.state&ksm_shift )
+		cv->vwidthsel = !cv->vwidthsel;
+	    else
+		cv->vwidthsel = true;
+	    if ( cv->widthsel ) {
+		cv->oldvwidth = cv->sc->vwidth;
+		fs->p->cy = cv->sc->parent->vertical_origin-cv->sc->vwidth;
+		CVInfoDraw(cv,cv->gw);
+		fs->p->anysel = true;
+		cv->expandedge = ee_down;
+	    } else
+		cv->expandedge = ee_none;
 	    SetCur(cv);
 	    needsupdate = true;
 	}
