@@ -442,12 +442,12 @@ typedef struct fontview {
     void *gw, *v;
 #elif defined(FONTFORGE_CONFIG_GTK)
     GtkWidget *gw, *v;
-    PangoFont *header, *iheader;
+    PangoFont **fontset;
     GtkWidget *vsb, *mb;
     guint pressed;			/* gtk timer id */
 #elif defined(FONTFORGE_CONFIG_GDRAW)
     GWindow gw, v;
-    GFont *header, *iheader;
+    GFont **fontset;
     GGadget *vsb, *mb;
     GTimer *pressed;
     GTimer *resize;
