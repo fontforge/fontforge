@@ -938,9 +938,9 @@ static real SolveQuad(real a,real b,real c,real err, real from,int bigger) {
     int i;
 
     if ( bigger )
-	ts[0]=ts[1]=ts[2]=ts[4] = -1;
+	ts[0]=ts[1]=ts[2]=ts[3] = -1;
     else
-	ts[0]=ts[1]=ts[2]=ts[4] = 2;
+	ts[0]=ts[1]=ts[2]=ts[3] = 2;
 
     if ( a!=0 ) {
 	temp = b*b-4*a*(c+err);
@@ -976,7 +976,7 @@ return( bigger ? 1 : 0 );
 LinearApprox *ConicApproximate(Conic *conic, real scale) {
     LinearApprox *test;
     LineList *cur, *last=NULL, *prev;
-    real tx,ty,t;
+    real tx,ty,t, oldt;
     real slpx, slpy;
     real intx, inty;
 
@@ -1024,40 +1024,44 @@ return( test );
 	    inty = (conic->conics[1].a*t+conic->conics[1].b-slpy)*t+conic->conics[1].c;
 	    tx = SolveQuad(conic->conics[0].a,conic->conics[0].b-slpx,conic->conics[0].c-intx,.5/scale,t,true);
 	    ty = SolveQuad(conic->conics[1].a,conic->conics[1].b-slpy,conic->conics[1].c-inty,.5/scale,t,true);
+	    oldt = t;
 	    t = (tx<ty)?tx:ty;
-	    if ( t>.5 ) t=.5;
+	    if ( t>.5 ) { if ( t>=1-oldt ) t=1-oldt; else t=.5; }
 	    cur = chunkalloc(sizeof(LineList));
 	    cur->here.x = rint( ((conic->conics[0].a*t+conic->conics[0].b)*t+conic->conics[0].c)*scale );
 	    cur->here.y = rint( ((conic->conics[1].a*t+conic->conics[1].b)*t+conic->conics[1].c)*scale );
 	    last->next = cur;
 	    last = cur;
 	}
+	oldt = t;
 
-	/* Now start at t=1 and work back to t=.5 */
-	prev = NULL;
-	cur = chunkalloc(sizeof(LineList) );
-	cur->here.x = rint(conic->to->me.x*scale);
-	cur->here.y = rint(conic->to->me.y*scale);
-	prev = cur;
-	t=1.0;
-	while ( 1 ) {
-	    slpx = 2*conic->conics[0].a*t+conic->conics[0].b;
-	    slpy = 2*conic->conics[1].a*t+conic->conics[1].b;
-	    intx = (conic->conics[0].a*t+conic->conics[0].b-slpx)*t+conic->conics[0].c;
-	    inty = (conic->conics[1].a*t+conic->conics[1].b-slpy)*t+conic->conics[1].c;
-	    tx = SolveQuad(conic->conics[0].a,conic->conics[0].b-slpx,conic->conics[0].c-intx,.5/scale,t,false);
-	    ty = SolveQuad(conic->conics[1].a,conic->conics[1].b-slpy,conic->conics[1].c-inty,.5/scale,t,false);
-	    t = (tx>ty)?tx:ty;
-	    if ( t<.5 ) t=.5;
+	if ( t<1 ) {
+	    /* Now start at t=1 and work back to t=.5 */
+	    prev = NULL;
 	    cur = chunkalloc(sizeof(LineList) );
-	    cur->here.x = rint( ((conic->conics[0].a*t+conic->conics[0].b)*t+conic->conics[0].c)*scale );
-	    cur->here.y = rint( ((conic->conics[1].a*t+conic->conics[1].b)*t+conic->conics[1].c)*scale );
-	    cur->next = prev;
+	    cur->here.x = rint(conic->to->me.x*scale);
+	    cur->here.y = rint(conic->to->me.y*scale);
 	    prev = cur;
-	    if ( t<=.5 )
-	break;
+	    t=1.0;
+	    while ( 1 ) {
+		slpx = 2*conic->conics[0].a*t+conic->conics[0].b;
+		slpy = 2*conic->conics[1].a*t+conic->conics[1].b;
+		intx = (conic->conics[0].a*t+conic->conics[0].b-slpx)*t+conic->conics[0].c;
+		inty = (conic->conics[1].a*t+conic->conics[1].b-slpy)*t+conic->conics[1].c;
+		tx = SolveQuad(conic->conics[0].a,conic->conics[0].b-slpx,conic->conics[0].c-intx,.5/scale,t,false);
+		ty = SolveQuad(conic->conics[1].a,conic->conics[1].b-slpy,conic->conics[1].c-inty,.5/scale,t,false);
+		t = (tx>ty)?tx:ty;
+		if ( t<oldt ) t=oldt;
+		cur = chunkalloc(sizeof(LineList) );
+		cur->here.x = rint( ((conic->conics[0].a*t+conic->conics[0].b)*t+conic->conics[0].c)*scale );
+		cur->here.y = rint( ((conic->conics[1].a*t+conic->conics[1].b)*t+conic->conics[1].c)*scale );
+		cur->next = prev;
+		prev = cur;
+		if ( t<=oldt )
+	    break;
+	    }
+	    last->next = cur;
 	}
-	last->next = cur;
 	SimplifyLineList(test->lines);
     }
     if ( test->lines->next==NULL ) {
