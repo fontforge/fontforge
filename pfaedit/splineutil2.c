@@ -2525,6 +2525,16 @@ SplineSet *SplineSetsCorrect(SplineSet *base,int *changed) {
 return( base );
 }
 
+SplineSet *SplineSetsAntiCorrect(SplineSet *base) {
+    int changed;
+    SplineSet *spl;
+
+    SplineSetsCorrect(base,&changed);
+    for ( spl = base; spl!=NULL; spl = spl->next )
+	SplineSetReverse(spl);
+return( base );
+}
+
 /* This is exactly the same as SplineSetsCorrect, but instead of correcting */
 /*  problems we merely search for them and if we find any return the first */
 SplineSet *SplineSetsDetectDir(SplineSet **_base,int *_lastscan) {

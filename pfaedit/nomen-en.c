@@ -2625,6 +2625,12 @@ static char *str_ExprPopup = "These expressions may contain the operators +,-,*,
     /* effects */
 static char *str_Gap = "Gap:";
 static char mnemonic_Gap = 'G';
+static char *str_Outlining = "Outlining characters";
+static char *str_Inlining = "Inlining characters";
+static char *str_Shadowing = "Shadowing characters";
+static char *str_ShadowLen = "Shadow Length:";
+static char *str_LightAngle = "Light Angle:";
+static char *str_OutlineWidth = "Outline Width:";
 
 static int num_buttonsize = 55;
 static int num_ScaleFactor = 100;

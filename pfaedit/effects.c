@@ -28,6 +28,7 @@
 #include <ustring.h>
 #include <gkeysym.h>
 #include <utype.h>
+#include <math.h>
 
 void FVOutline(FontView *fv, real width) {
     StrokeInfo si;
@@ -36,7 +37,7 @@ void FVOutline(FontView *fv, real width) {
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->splines )
 	++cnt;
-    GProgressStartIndicatorR(10,_STR_Stroking,_STR_Stroking,0,cnt,1);
+    GProgressStartIndicatorR(10,_STR_Outlining,_STR_Outlining,0,cnt,1);
 
     memset(&si,0,sizeof(si));
     si.removeexternal = true;
@@ -103,7 +104,7 @@ void FVInline(FontView *fv, real width, real inset) {
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->splines )
 	++cnt;
-    GProgressStartIndicatorR(10,_STR_Stroking,_STR_Stroking,0,cnt,1);
+    GProgressStartIndicatorR(10,_STR_Inlining,_STR_Inlining,0,cnt,1);
 
     memset(&si,0,sizeof(si));
     si.removeexternal = true;
@@ -192,12 +193,12 @@ typedef struct outlinedata {
 static int OD_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	OutlineData *od = GDrawGetUserData(GGadgetGetWindow(g));
-	int width, gap;
+	real width, gap;
 	int err = 0;
 
-	width = GetIntR(od->gw,CID_Width,_STR_Width,&err);
+	width = GetRealR(od->gw,CID_Width,_STR_Width,&err);
 	if ( od->isinline )
-	    gap = GetIntR(od->gw,CID_Gap,_STR_Gap,&err);
+	    gap = GetRealR(od->gw,CID_Gap,_STR_Gap,&err);
 	if ( err )
 return(true);
 	def_outline_width = width;
@@ -337,6 +338,381 @@ void OutlineDlg(FontView *fv, CharView *cv,MetricsView *mv,int isinline) {
 
     GWidgetIndicateFocusGadget(GWidgetGetControl(gw,CID_Width));
     GTextFieldSelect(GWidgetGetControl(gw,CID_Width),0,-1);
+
+    GWidgetHidePalettes();
+    GDrawSetVisible(gw,true);
+    while ( !od.done )
+	GDrawProcessOneEvent(NULL);
+    GDrawSetVisible(gw,false);
+}
+
+static int LineOfInflection(SplinePoint *p,SplinePoint *n) {
+
+    if ( n->next->to->me.y > n->me.y && p->prev->from->me.y > p->me.y )
+return( false );		/* It's a minimum */
+    if ( n->next->to->me.y < n->me.y && p->prev->from->me.y < p->me.y )
+return( false );		/* It's a maximum */
+
+return( true );
+}
+
+static int PrevLineOfInflection(SplinePoint *p) {
+    SplinePoint *n, *nn;
+
+    for ( nn=p ; nn->me.y==p->me.y && n->next->knownlinear; n=nn, nn=nn->next->to);
+return( LineOfInflection(p,n));
+}
+
+static int NextLineOfInflection(SplinePoint *n) {
+    SplinePoint *p, *pp;
+
+    for ( p=pp=n ; n->me.y==pp->me.y && pp->prev->knownlinear; p=pp, pp=pp->prev->from);
+return( LineOfInflection(p,n));
+}
+
+static void AddVerticalExtremaAndMove(SplineSet *base,real shadow_length) {
+    SplineSet *spl;
+    Spline *s, *first;
+    SplinePoint *sp, *found, *new;
+    real pabove, nabove, offset;
+    real t[2];
+    int p;
+
+    if ( shadow_length==0 )
+return;
+
+    t[0] = t[1] = 0;
+    for ( spl=base; spl!=NULL; spl=spl->next ) if ( spl->first->prev!=NULL && spl->first->prev->from!=spl->first ) {
+	/* Add any extrema which aren't already splinepoints */
+	first = NULL;
+	for ( s=spl->first->next; s!=first; s=s->to->next ) {
+	    if ( first==NULL ) first = s;
+	    p=0;
+	    if ( s->splines[1].a!=0 ) {
+		double d = 4*s->splines[1].b*s->splines[1].b-4*3*s->splines[1].a*s->splines[1].c;
+		if ( d>0 ) {
+		    d = sqrt(d);
+		    t[p++] = (-2*s->splines[1].b+d)/(2*3*s->splines[1].a);
+		    t[p++] = (-2*s->splines[1].b-d)/(2*3*s->splines[1].a);
+		}
+	    } else if ( s->splines[1].b!=0 )
+		t[p++] = -s->splines[1].c/(2*s->splines[1].b);
+	    if ( p==2 && (t[1]<=0.0001 || t[1]>=.9999 ))
+		--p;
+	    if ( p>=1 && (t[0]<=0.0001 || t[0]>=.9999 )) {
+		t[0] = t[1];
+		--p;
+	    }
+	    if ( p==2 && t[0]>t[1] )
+		t[0] = t[1];
+	    if ( p>0 ) {
+		sp = SplineBisect(s,t[0]);
+		s = sp->prev;
+		/* If there were any other t values, ignore them here, we'll */
+		/*  find them when we process the next half of the spline */
+	    }
+	}
+	found = NULL;
+	/* Classify each point as either uninteresting, a minimum/maximum or a point of inflection (uninteresting) */
+	for ( sp = spl->first; ; ) {
+	    sp->ticked = false;
+	    if ( sp->nonextcp )
+		nabove = sp->next->to->me.y - sp->me.y;
+	    else
+		nabove = sp->nextcp.y - sp->me.y;
+	    if ( sp->noprevcp )
+		pabove = sp->prev->from->me.y - sp->me.y;
+	    else
+		pabove = sp->prevcp.y - sp->me.y;
+	    if (( pabove>0 && nabove>0 ) || (pabove<0 && nabove<0))
+		sp->ticked = true;	/* It's a corner point */
+	    else if ( nabove==0 && pabove==0 && !sp->next->knownlinear && !sp->prev->knownlinear )
+		sp->ticked = !LineOfInflection(sp,sp);
+	    else if ( nabove==0 || pabove==0 ) {
+		if ( nabove==0 && sp->next->knownlinear &&
+			pabove==0 && sp->prev->knownlinear )
+		    /* not interesting */;
+		else if ( nabove==0 && sp->next->knownlinear &&
+			 sp->next->to->me.x<sp->me.x )
+		    sp->ticked = !PrevLineOfInflection(sp);
+		else if ( pabove==0 && sp->prev->knownlinear &&
+			 sp->prev->from->me.x<sp->me.x )
+		    sp->ticked = !NextLineOfInflection(sp);
+	    }
+	    if ( sp->ticked )
+		found = sp;
+	    sp = sp->next->to;
+	    if ( sp==spl->first )
+	break;
+	}
+	if ( found==NULL )
+    continue;
+	offset = 0;
+	/* Make duplicates of any ticked points and move them over */
+	for ( sp = found; ; ) {
+	    if ( !sp->ticked ) {
+		sp->me.x += offset;
+		sp->nextcp.x += offset;
+		sp->prevcp.x += offset;
+	    } else {
+		new = chunkalloc(sizeof(SplinePoint));
+		*new = *sp;
+		new->ticked = false; sp->ticked = false;
+		if ( (sp->nonextcp && sp->next->to->me.x>sp->me.x) ||
+			(!sp->nonextcp && sp->nextcp.x>sp->me.x)) {
+		    sp->next->from = new;
+		    sp->nonextcp = true;
+		    sp->nextcp = sp->me;
+		    new->me.x += shadow_length;
+		    new->nextcp.x += shadow_length;
+		    new->noprevcp = true;
+		    new->prevcp = new->me;
+		    SplineMake3(sp,new);
+		    offset = shadow_length;
+		    sp = new;
+		} else {
+		    sp->prev->to = new;
+		    sp->noprevcp = true;
+		    sp->prevcp = sp->me;
+		    new->me.x += shadow_length;
+		    new->prevcp.x += shadow_length;
+		    new->nonextcp = true;
+		    new->nextcp = new->me;
+		    SplineMake3(new,sp);
+		    offset = 0;
+		    if ( sp==found ) found=new;
+		}
+	    }
+	    sp = sp->next->to;
+	    if ( sp==found )
+	break;
+	}
+	for ( sp = found; ; ) {
+	    SplineRefigure(sp->prev);
+	    sp = sp->next->to;
+	    if ( sp==found )
+	break;
+	}
+    }
+}
+
+static SplineSet *SSShadow(SplineSet *spl,real angle, real outline_width,
+	real shadow_length,SplineChar *sc) {
+    real trans[6];
+    StrokeInfo si;
+    SplineSet *internal, *temp;
+
+    if ( spl==NULL )
+return( NULL );
+
+    trans[0] = trans[3] = cos(angle);
+    trans[2] = sin(angle);
+    trans[1] = -trans[2];
+    trans[4] = trans[5] = 0;
+    spl = SplinePointListTransform(spl,trans,true);
+
+    internal = NULL;
+    if ( outline_width!=0 ) {
+	memset(&si,0,sizeof(si));
+	si.removeexternal = true;
+	si.radius = outline_width;
+	internal = SSStroke(spl,&si,sc);
+	SplineSetsAntiCorrect(internal);
+    }
+
+    AddVerticalExtremaAndMove(spl,shadow_length);
+    spl = SplineSetRemoveOverlap(spl,over_remove);
+
+    if ( internal!=NULL ) {
+	for ( temp = spl; temp->next!=NULL; temp=temp->next );
+	temp->next = internal;
+    }
+
+    trans[1] = -trans[1]; trans[2] = -trans[2];
+    spl = SplinePointListTransform(spl,trans,true);	/* rotate back */
+return( spl );
+}
+    
+void FVShadow(FontView *fv,real angle, real outline_width,
+	real shadow_length) {
+    int i, cnt=0;
+
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->splines )
+	++cnt;
+    GProgressStartIndicatorR(10,_STR_Shadowing,_STR_Shadowing,0,cnt,1);
+
+    for ( i=0; i<fv->sf->charcnt; ++i )
+	    if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->splines ) {
+	SplineChar *sc = fv->sf->chars[i];
+	SCPreserveState(sc,false);
+	sc->splines = SSShadow(sc->splines,angle,outline_width,shadow_length,sc);
+	SCCharChangedUpdate(sc);
+	if ( !GProgressNext())
+    break;
+    }
+    GProgressEndIndicator();
+}
+
+static void CVShadow(CharView *cv,real angle, real outline_width,
+	real shadow_length) {
+    CVPreserveState(cv);
+    *cv->heads[cv->drawmode] = SSShadow(*cv->heads[cv->drawmode],angle,outline_width,shadow_length,cv->sc);
+    CVCharChangedUpdate(cv);
+}
+
+static void MVShadow(MetricsView *mv,real angle, real outline_width,
+	real shadow_length) {
+    int i;
+
+    for ( i=mv->charcnt-1; i>=0; --i )
+	if ( mv->perchar[i].selected )
+    break;
+    if ( i!=-1 ) {
+	SplineChar *sc = mv->perchar[i].sc;
+	SCPreserveState(sc,false);
+	sc->splines = SSShadow(sc->splines,angle,outline_width,shadow_length,sc);
+	SCCharChangedUpdate(sc);
+    }
+}
+
+static real def_shadow_len=100, def_sun_angle= -45;
+
+#define CID_ShadowLen		1001
+#define CID_LightAngle		1002
+
+static int SD_OK(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	OutlineData *od = GDrawGetUserData(GGadgetGetWindow(g));
+	real width, angle, len;
+	int err = 0;
+
+	width = GetRealR(od->gw,CID_Width,_STR_Width,&err);
+	len = GetRealR(od->gw,CID_ShadowLen,_STR_ShadowLen,&err);
+	angle = GetRealR(od->gw,CID_LightAngle,_STR_LightAngle,&err);
+	if ( err )
+return(true);
+	def_outline_width = width;
+	def_shadow_len = len;
+	def_sun_angle = angle;
+	angle *= 3.1415926535897932/180;
+	if ( od->fv!=NULL )
+	    FVShadow(od->fv,angle,width,len);
+	else if ( od->cv!=NULL )
+	    CVShadow(od->cv,angle,width,len);
+	else if ( od->mv!=NULL )
+	    MVShadow(od->mv,angle,width,len);
+	od->done = true;
+    }
+return( true );
+}
+
+void ShadowDlg(FontView *fv, CharView *cv,MetricsView *mv) {
+    GRect pos;
+    GWindow gw;
+    GWindowAttrs wattrs;
+    GGadgetCreateData gcd[10];
+    GTextInfo label[10];
+    OutlineData od;
+    char buffer[20], buffer2[20], buffer3[20];
+    int i;
+
+    od.done = false;
+    od.fv = fv;
+    od.cv = cv;
+    od.mv = mv;
+
+	memset(&wattrs,0,sizeof(wattrs));
+	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+	wattrs.event_masks = ~(1<<et_charup);
+	wattrs.restrict_input_to_me = 1;
+	wattrs.undercursor = 1;
+	wattrs.cursor = ct_pointer;
+	wattrs.window_title = GStringGetResource(_STR_Shadow,NULL);
+	wattrs.is_dlg = true;
+	pos.x = pos.y = 0;
+	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,160));
+	pos.height = GDrawPointsToPixels(NULL,125);
+	od.gw = gw = GDrawCreateTopWindow(NULL,&pos,od_e_h,&od,&wattrs);
+
+	memset(&label,0,sizeof(label));
+	memset(&gcd,0,sizeof(gcd));
+
+	i = 0;
+	label[i].text = (unichar_t *) _STR_OutlineWidth;
+	label[i].text_in_resource = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.pos.x = 7; gcd[i].gd.pos.y = 7+3; 
+	gcd[i].gd.flags = gg_enabled|gg_visible;
+	gcd[i++].creator = GLabelCreate;
+
+	sprintf( buffer, "%g", def_outline_width );
+	label[i].text = (unichar_t *) buffer;
+	label[i].text_is_1byte = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.pos.x = 90; gcd[i].gd.pos.y = 7; gcd[i].gd.pos.width = 50;
+	gcd[i].gd.flags = gg_enabled|gg_visible;
+	gcd[i].gd.cid = CID_Width;
+	gcd[i++].creator = GTextFieldCreate;
+
+	label[i].text = (unichar_t *) _STR_ShadowLen;
+	label[i].text_in_resource = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.pos.x = gcd[i-2].gd.pos.x; gcd[i].gd.pos.y = gcd[i-2].gd.pos.y+26;
+	gcd[i].gd.flags = gg_enabled|gg_visible;
+	gcd[i++].creator = GLabelCreate;
+
+	sprintf( buffer2, "%g", def_shadow_len );
+	label[i].text = (unichar_t *) buffer2;
+	label[i].text_is_1byte = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.pos.x = gcd[i-2].gd.pos.x; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y-3;  gcd[i].gd.pos.width = gcd[i-2].gd.pos.width;
+	gcd[i].gd.flags = gg_enabled|gg_visible;
+	gcd[i].gd.cid = CID_ShadowLen;
+	gcd[i++].creator = GTextFieldCreate;
+
+	label[i].text = (unichar_t *) _STR_LightAngle;
+	label[i].text_in_resource = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.pos.x = gcd[i-2].gd.pos.x; gcd[i].gd.pos.y = gcd[i-2].gd.pos.y+26;
+	gcd[i].gd.flags = gg_enabled|gg_visible;
+	gcd[i++].creator = GLabelCreate;
+
+	sprintf( buffer3, "%g", def_sun_angle );
+	label[i].text = (unichar_t *) buffer3;
+	label[i].text_is_1byte = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.pos.x = gcd[i-2].gd.pos.x; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y-3;  gcd[i].gd.pos.width = gcd[i-2].gd.pos.width;
+	gcd[i].gd.flags = gg_enabled|gg_visible;
+	gcd[i].gd.cid = CID_LightAngle;
+	gcd[i++].creator = GTextFieldCreate;
+
+	gcd[i].gd.pos.x = 20-3; gcd[i].gd.pos.y = gcd[i-2].gd.pos.y+30;
+	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
+	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_default;
+	label[i].text = (unichar_t *) _STR_OK;
+	label[i].text_in_resource = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.handle_controlevent = SD_OK;
+	gcd[i++].creator = GButtonCreate;
+
+	gcd[i].gd.pos.x = -20; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+3;
+	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
+	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+	label[i].text = (unichar_t *) _STR_Cancel;
+	label[i].text_in_resource = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.handle_controlevent = OD_Cancel;
+	gcd[i++].creator = GButtonCreate;
+
+	gcd[i].gd.pos.x = 2; gcd[i].gd.pos.y = 2;
+	gcd[i].gd.pos.width = pos.width-4; gcd[i].gd.pos.height = pos.height-4;
+	gcd[i].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels;
+	gcd[i].creator = GGroupCreate;
+
+	GGadgetsCreate(gw,gcd);
+
+    GWidgetIndicateFocusGadget(GWidgetGetControl(gw,CID_ShadowLen));
+    GTextFieldSelect(GWidgetGetControl(gw,CID_ShadowLen),0,-1);
 
     GWidgetHidePalettes();
     GDrawSetVisible(gw,true);

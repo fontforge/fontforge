@@ -295,7 +295,8 @@ typedef struct splinepoint {
     unsigned int roundx: 1;	/* For true type hinting */
     unsigned int roundy: 1;	/* For true type hinting */
     unsigned int dontinterpolate: 1;	/* temporary in ttf output */
-	/* 16+3 bits left... */
+    unsigned int ticked: 1;
+	/* 16+2 bits left... */
     uint16 ptindex;		/* Temporary value used by metafont routine */
     uint16 ttfindex;		/* Truetype point index */
 	/* Special values 0xffff => point implied by averaging control points */
@@ -891,6 +892,7 @@ extern SplineSet *SplineSetReverse(SplineSet *spl);
 extern SplineSet *SplineSetsExtractOpen(SplineSet **tbase);
 extern void SplineSetsInsertOpen(SplineSet **tbase,SplineSet *open);
 extern SplineSet *SplineSetsCorrect(SplineSet *base,int *changed);
+extern SplineSet *SplineSetsAntiCorrect(SplineSet *base);
 extern SplineSet *SplineSetsDetectDir(SplineSet **_base, int *lastscan);
 extern void SPAverageCps(SplinePoint *sp);
 extern void SPWeightedAverageCps(SplinePoint *sp);

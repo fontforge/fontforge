@@ -646,7 +646,10 @@ extern void FreeHandStrokeDlg(StrokeInfo *si);
 extern void SCStroke(SplineChar *sc);
 extern void FVOutline(FontView *fv, real width);
 extern void FVInline(FontView *fv, real width, real inset);
+extern void FVShadow(FontView *fv,real angle, real outline_width,
+	real shadow_length);
 extern void OutlineDlg(FontView *fv, CharView *cv,MetricsView *mv,int isinline);
+extern void ShadowDlg(FontView *fv, CharView *cv,MetricsView *mv);
 extern void CVTile(CharView *cv);
 extern void FVTile(FontView *fv);
 extern void SCTile(SplineChar *sc);

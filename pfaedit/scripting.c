@@ -1850,6 +1850,18 @@ static void bInline(Context *c) {
     FVInline(c->curfv,c->a.vals[1].u.ival,c->a.vals[2].u.ival);
 }
 
+static void bShadow(Context *c) {
+    /* Angle, outline width, shadow_len */
+
+    if ( c->a.argc!=4 )
+	error( c, "Wrong number of arguments");
+    if ( c->a.vals[1].type!=v_int || c->a.vals[2].type!=v_int ||
+	    c->a.vals[2].type!=v_int )
+	error(c,"Bad argument type");
+    FVShadow(c->curfv,c->a.vals[1].u.ival*3.1415926535897932/360.,
+	    c->a.vals[2].u.ival, c->a.vals[3].u.ival);
+}
+
 static void bRemoveOverlap(Context *c) {
     if ( c->a.argc!=1 )
 	error( c, "Wrong number of arguments");
@@ -2709,6 +2721,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "ExpandStroke", bExpandStroke },
     { "Inline", bInline },
     { "Outline", bOutline },
+    { "Shadow", bShadow },
     { "RemoveOverlap", bRemoveOverlap },
     { "OverlapIntersect", bOverlapIntersect },
     { "FindIntersections", bFindIntersections },

@@ -1659,6 +1659,12 @@ static void MVMenuOutline(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     OutlineDlg(NULL,NULL,mv,false);
 }
 
+static void MVMenuShadow(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+
+    ShadowDlg(NULL,NULL,mv);
+}
+
 static void MVSimplify( MetricsView *mv,int type ) {
     int i;
     double err = (mv->fv->sf->ascent+mv->fv->sf->descent)/1000.;
@@ -2181,6 +2187,7 @@ static GMenuItem rmlist[] = {
 static GMenuItem eflist[] = {
     { { (unichar_t *) _STR_Inline, &GIcon_inline, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 0, 1, 0, 'O' }, 'O', ksm_control|ksm_shift, NULL, NULL, MVMenuInline },
     { { (unichar_t *) _STR_OutlineMn, &GIcon_outline, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 0, 1, 0, 'I' }, '\0', ksm_control|ksm_shift, NULL, NULL, MVMenuOutline },
+    { { (unichar_t *) _STR_Shadow, &GIcon_shadow, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 0, 1, 0, 'S' }, '\0', ksm_control|ksm_shift, NULL, NULL, MVMenuShadow },
     { NULL }
 };
 
