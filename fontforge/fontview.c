@@ -7094,6 +7094,10 @@ return( sf->chars[i] );
 	l = sc->layers;
 	*sc = dummy;
 	sc->layers = l;		/* It's empty, no need to copy dummy's layers */
+	if ( sf->strokedfont ) {
+	    l[ly_fore].dostroke = true;
+	    l[ly_fore].dofill = false;
+	}
 #else
 	*sc = dummy;
 #endif

@@ -1402,9 +1402,11 @@ static void SCPrintPage(PI *pi,SplineChar *sc) {
 	fprintf(pi->out,"gsave\n %g %g translate\n", pi->xoff, pi->yoff );
 	fprintf(pi->out," %g %g scale\n", pi->scale, pi->scale );
 	SC_PSDump((void (*)(int,void *)) fputc,pi->out,sc,true,false);
-#ifdef FONTFORGE_CONFIG_TYPE3
-	if ( !sc->parent->multilayer )
-#endif
+	if ( sc->parent->multilayer )
+	    /* All done */;
+	else if ( sc->parent->strokedfont )
+	    fprintf( pi->out, "%g setlinewidth stroke\n", sc->parent->strokewidth );
+	else
 	    fprintf( pi->out, "fill\n" );
 	fprintf(pi->out,"grestore\n" );
     } else {
@@ -1418,9 +1420,11 @@ static void SCPrintPage(PI *pi,SplineChar *sc) {
 	fprintf(pi->out,"q \n %g 0 0 %g %g %g cm\n", pi->scale, pi->scale,
 		pi->xoff, pi->yoff );
 	SC_PSDump((void (*)(int,void *)) fputc,pi->out,sc,true,true);
-#ifdef FONTFORGE_CONFIG_TYPE3
-	if ( !sc->parent->multilayer )
-#endif
+	if ( sc->parent->multilayer )
+	    /* All done */;
+	else if ( sc->parent->strokedfont )
+	    fprintf( pi->out, "%g w S\n", sc->parent->strokewidth );
+	else
 	    fprintf( pi->out, "f\n" );
 	fprintf(pi->out,"Q\n" );
     }

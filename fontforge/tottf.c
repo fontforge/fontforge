@@ -2102,7 +2102,10 @@ static void dumpcfftopdict(SplineFont *sf,struct alltabs *at) {
     if ( sf->italicangle!=0 ) dumpdbloper(cfff,sf->italicangle,(12<<8)|2);
     if ( sf->upos!=-100 ) dumpdbloper(cfff,sf->upos,(12<<8)|3);
     if ( sf->uwidth!=50 ) dumpdbloper(cfff,sf->uwidth,(12<<8)|4);
-    /* We'll never set painttype */
+    if ( sf->strokedfont ) {
+	dumpintoper(cfff,2,(12<<8)|5);
+	dumpdbloper(cfff,sf->strokewidth,(12<<8)|8);
+    }
     /* We'll never set CharstringType */
     if ( sf->ascent+sf->descent!=1000 ) {
 	dumpdbl(cfff,1.0/(sf->ascent+sf->descent));

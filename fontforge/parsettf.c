@@ -2967,6 +2967,8 @@ static SplineFont *cffsffillup(struct topdicts *subdict, char **strings,
     sf->uwidth = subdict->underlinewidth;
     sf->xuid = intarray2str(subdict->xuid,sizeof(subdict->xuid)/sizeof(subdict->xuid[0]));
     sf->uniqueid = subdict->uniqueid;
+    sf->strokewidth = subdict->strokewidth;
+    sf->strokedfont = subdict->painttype==2;
 
     if ( subdict->private_size>0 ) {
 	sf->private = gcalloc(1,sizeof(struct psdict));
@@ -3021,6 +3023,8 @@ static void cffinfofillup(struct ttfinfo *info, struct topdicts *dict,
     info->uwidth = dict->underlinewidth;
     info->xuid = intarray2str(dict->xuid,sizeof(dict->xuid)/sizeof(dict->xuid[0]));
     info->uniqueid = dict->uniqueid;
+    info->strokewidth = dict->strokewidth;
+    info->strokedfont = dict->painttype==2;
 
     if ( dict->private_size>0 ) {
 	info->private = gcalloc(1,sizeof(struct psdict));
@@ -3121,6 +3125,7 @@ static void cidfigure(struct ttfinfo *info, struct topdicts *dict,
 /*  the subrs but must wait until we know which font we're working on. */
 	cstype = subdicts[j]->charstringtype;
 	pscontext.is_type2 = cstype-1;
+	pscontext.painttype = subdicts[j]->painttype;
 	gsubrs->bias = cstype==1 ? 0 :
 		gsubrs->cnt < 1240 ? 107 :
 		gsubrs->cnt <33900 ? 1131 : 32768;
@@ -4595,6 +4600,8 @@ static SplineFont *SFFromTuple(SplineFont *basesf,struct variations *v,int tuple
     sf->familyname = copy(basesf->familyname);
     sf->weight = copy("All");
     sf->italicangle = basesf->italicangle;
+    sf->strokewidth = basesf->strokewidth;
+    sf->strokedfont = basesf->strokedfont;
     sf->upos = basesf->upos;
     sf->uwidth = basesf->uwidth;
     sf->ascent = basesf->ascent;
@@ -4786,6 +4793,8 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     sf->copyright = info->copyright;
     sf->version = info->version;
     sf->italicangle = info->italicAngle;
+    sf->strokewidth = info->strokewidth;
+    sf->strokedfont = info->strokedfont;
     sf->upos = info->upos;
     sf->uwidth = info->uwidth;
     sf->ascent = info->ascent;

@@ -926,6 +926,7 @@ typedef struct splinefont {
     unsigned int order2: 1;			/* Font's data are order 2 bezier splines (truetype) rather than order 3 (postscript) */
     unsigned int multilayer: 1;			/* only applies if TYPE3 is set, means this font can contain strokes & fills */
 						/*  I leave it in so as to avoid cluttering up code with #ifdefs */
+    unsigned int strokedfont: 1;
     unsigned int new: 1;			/* A new and unsaved font */
     struct fontview *fv;
     Encoding *encoding_name, *old_encname;
@@ -1030,6 +1031,7 @@ typedef struct splinefont {
     uint16 fontstyle_id;
     struct otfname *fontstyle_name;
     uint16 design_range_bottom, design_range_top;
+    real strokewidth;
 } SplineFont;
 
 /* I am going to simplify my life and not encourage intermediate designs */
@@ -1578,7 +1580,8 @@ extern const unichar_t *SFGetAlternate(SplineFont *sf, int base,SplineChar *sc,i
 
 extern int getAdobeEnc(char *name);
 
-extern void SFSplinesFromLayers(SplineFont *sf);
+extern void SFSplinesFromLayers(SplineFont *sf,int tostroke);
+extern void SFSetLayerWidthsStroked(SplineFont *sf, real strokewidth);
 extern SplineSet *SplinePointListInterpretSVG(char *filename,int em_size, int ascent);
 extern SplinePointList *SplinePointListInterpretPS(FILE *ps,int flags);
 extern void PSFontInterpretPS(FILE *ps,struct charprocs *cp,char **encoding);

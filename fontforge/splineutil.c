@@ -1612,6 +1612,8 @@ static void SplineFontMetaData(SplineFont *sf,struct fontdict *fd) {
 	sf->italicangle = fd->fontinfo->italicangle;
 	sf->upos = fd->fontinfo->underlineposition;
 	sf->uwidth = fd->fontinfo->underlinethickness;
+	sf->strokedfont = fd->painttype==2;
+	sf->strokewidth = fd->strokewidth;
 	sf->ascent = fd->fontinfo->ascent;
 	sf->descent = fd->fontinfo->descent;
     }

@@ -2510,7 +2510,7 @@ return( last );
 }
 
 #ifdef FONTFORGE_CONFIG_TYPE3
-static SplinePointList *SplinesFromLayers(SplineChar *sc,int *flags) {
+static SplinePointList *SplinesFromLayers(SplineChar *sc,int *flags, int tostroke) {
     int layer;
     SplinePointList *head=NULL, *last, *new, *nlast, *temp, *each, *transed;
     StrokeInfo si;
@@ -2518,6 +2518,19 @@ static SplinePointList *SplinesFromLayers(SplineChar *sc,int *flags) {
     int handle_eraser;
     real inversetrans[6], transform[6];
     int changed;
+
+    if ( tostroke ) {
+	for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
+	    if ( sc->layers[layer].splines==NULL )
+	continue;
+	    else if ( head==NULL )
+		head = sc->layers[layer].splines;
+	    else
+		last->next = sc->layers[layer].splines;
+	    for ( last = sc->layers[layer].splines; last->next!=NULL; last=last->next );
+	}
+return( head );
+    }
 
     if ( *flags==-1 )
 	*flags = PsStrokeFlagsDlg();
@@ -2594,7 +2607,7 @@ static SplinePointList *SplinesFromLayers(SplineChar *sc,int *flags) {
 return( head );
 }
 
-void SFSplinesFromLayers(SplineFont *sf) {
+void SFSplinesFromLayers(SplineFont *sf,int tostroke) {
     /* User has turned off multi-layer, flatten the font */
     int i, layer;
     int flags= -1;
@@ -2605,7 +2618,7 @@ void SFSplinesFromLayers(SplineFont *sf) {
 
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
 	SplineChar *sc = sf->chars[i];
-	SplineSet *splines = SplinesFromLayers(sc,&flags);
+	SplineSet *splines = SplinesFromLayers(sc,&flags,tostroke);
 	RefChar *head=NULL, *last=NULL;
 	for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
 	    if ( head==NULL )
@@ -2638,6 +2651,18 @@ void SFSplinesFromLayers(SplineFont *sf) {
 #endif
     }
     SFReinstanciateRefs(sf);
+}
+
+void SFSetLayerWidthsStroked(SplineFont *sf, real strokewidth) {
+    int i;
+    /* We changed from a stroked font to a multilayered font */
+
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	SplineChar *sc = sf->chars[i];
+	sc->layers[ly_fore].dofill = false;
+	sc->layers[ly_fore].dostroke = true;
+	sc->layers[ly_fore].stroke_pen.width = strokewidth;
+    }
 }
 #else
 void SFSplinesFromLayers(SplineFont *sf) {
@@ -3846,7 +3871,8 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 	  break;
 	  case 14: /* endchar */
 	    /* endchar is allowed to terminate processing even within a subroutine */
-	    closepath(cur,is_type2);
+	    if ( context->painttype!=2 )
+		closepath(cur,is_type2);
 	    pcsp = 0;
 	    if ( sp==4 ) {
 		/* In Type2 strings endchar has a depreciated function of doing */
@@ -3887,7 +3913,8 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		    ret->width = stack[0];
 		    stack[0] = stack[1]; stack[1] = stack[2]; --sp;
 		}
-		closepath(cur,true);
+		if ( context->painttype!=2 )
+		    closepath(cur,true);
 	    }
 #if 0	/* This doesn't work. It breaks type1 flex hinting. */
 	/* There's now a special hack just before returning which closes any */
@@ -4140,7 +4167,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
     /* Even in type1 fonts all paths should be closed. But if we close them at*/
     /*  the obvious moveto, that breaks flex hints. So we have a hack here at */
     /*  the end which closes any open paths. */
-    /* If we do have a PaintType 1 font, then presumably the difference between*/
+    /* If we do have a PaintType 2 font, then presumably the difference between*/
     /*  open and closed paths matters */
     if ( !is_type2 && !context->painttype )
 	for ( cur = ret->layers[ly_fore].splines; cur!=NULL; cur = cur->next ) if ( cur->first->prev==NULL ) {
@@ -4148,8 +4175,6 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 	    cur->last = cur->first;
 	}
 
-    /* For some reason, when I read splines in, I get their clockwise nature */
-    /*  backwards ... at least backwards from fontographer ... so reverse 'em*/
     /* Oh, I see. PS and TT disagree on which direction to use, so Fontographer*/
     /*  chose the TT direction and we must reverse postscript */
     for ( cur = ret->layers[ly_fore].splines; cur!=NULL; cur = cur->next )
