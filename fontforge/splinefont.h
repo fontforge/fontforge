@@ -54,10 +54,11 @@
 #define AppleMmMax	26	/* Apple sort of has a limit of 4095, but we only support this many */
 
 typedef struct val {
-    enum val_type { v_int, v_str, v_unicode, v_lval, v_arr, v_arrfree,
+    enum val_type { v_int, v_real, v_str, v_unicode, v_lval, v_arr, v_arrfree,
 	    v_int32pt, v_int16pt, v_int8pt, v_void } type;
     union {
 	int ival;
+	float fval;
 	char *sval;
 	struct val *lval;
 	struct array *aval;

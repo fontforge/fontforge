@@ -62,7 +62,7 @@ typedef struct array {
 } Array;
 
 #define TOK_MAX	100
-enum token_type { tt_name, tt_string, tt_number, tt_unicode,
+enum token_type { tt_name, tt_string, tt_number, tt_unicode, tt_real,
 	tt_lparen, tt_rparen, tt_comma, tt_eos,		/* eos is end of statement, semicolon, newline */
 	tt_lbracket, tt_rbracket,
 	tt_minus, tt_plus, tt_not, tt_bitnot, tt_colon,
@@ -115,7 +115,7 @@ struct keywords { enum token_type tok; char *name; } keywords[] = {
 };
 
 static const char *toknames[] = {
-    "name", "string", "number", "unicode id", 
+    "name", "string", "number", "unicode id", "real number", 
     "lparen", "rparen", "comma", "end of statement",
     "lbracket", "rbracket",
     "minus", "plus", "logical not", "bitwise not", "colon",
@@ -241,6 +241,8 @@ static void showtoken(Context *c,enum token_type got) {
 	fprintf( stderr, " %d (0x%x)\n", c->tok_val.u.ival, c->tok_val.u.ival );
     else if ( got==tt_unicode )
 	fprintf( stderr, " 0u%x\n", c->tok_val.u.ival );
+    else if ( got==tt_real )
+	fprintf( stderr, " %g\n", c->tok_val.u.fval );
     else
 	fprintf( stderr, "\n" );
     traceback(c);
@@ -323,6 +325,8 @@ static void PrintVal(Val *val) {
 	printf( "%d", val->u.ival );
     else if ( val->type==v_unicode )
 	printf( "0u%x", val->u.ival );
+    else if ( val->type==v_real )
+	printf( "%g", val->u.fval );
     else if ( val->type==v_void )
 	printf( "<void>");
     else
@@ -543,6 +547,17 @@ static void bStrtol(Context *c) {
     c->return_val.u.ival = strtol(c->a.vals[1].u.sval,NULL,base);
 }
 
+static void bStrtod(Context *c) {
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type!=v_str )
+	error( c, "Bad type for argument" );
+
+    c->return_val.type = v_real;
+    c->return_val.u.ival = strtod(c->a.vals[1].u.sval,NULL);
+}
+
 static void bStrskipint(Context *c) {
     int base = 10;
     char *end;
@@ -721,6 +736,42 @@ static void bOrd(Context *c) {
 	    c->return_val.u.aval->vals[i].u.ival = (uint8) c->a.vals[1].u.sval[i];
 	}
     }
+}
+
+static void bReal(Context *c) {
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_unicode )
+	error( c, "Bad type for argument" );
+    c->return_val.type = v_real;
+    c->return_val.u.fval = (float) c->a.vals[1].u.ival;
+}
+
+static void bFloor(Context *c) {
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type!=v_real )
+	error( c, "Bad type for argument" );
+    c->return_val.type = v_int;
+    c->return_val.u.ival = floor( c->a.vals[1].u.fval );
+}
+
+static void bCeil(Context *c) {
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type!=v_real )
+	error( c, "Bad type for argument" );
+    c->return_val.type = v_int;
+    c->return_val.u.ival = ceil( c->a.vals[1].u.fval );
+}
+
+static void bRound(Context *c) {
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type!=v_real )
+	error( c, "Bad type for argument" );
+    c->return_val.type = v_int;
+    c->return_val.u.ival = rint( c->a.vals[1].u.fval );
 }
 
 static void bRand(Context *c) {
@@ -1516,9 +1567,18 @@ static void bPasteWithOffset(Context *c) {
     trans[0] = trans[3] = 1;
     if ( c->a.argc!=3 )
 	error( c, "Wrong number of arguments");
-    if ( c->a.vals[1].type!=v_int || c->a.vals[2].type!=v_int )
+    if ( c->a.vals[1].type==v_int )
+	trans[4] = c->a.vals[1].u.ival;
+    else if ( c->a.vals[1].type==v_real )
+	trans[4] = c->a.vals[1].u.fval;
+    else
 	error( c, "Bad type for argument");
-    trans[4] = c->a.vals[1].u.ival; trans[5] = c->a.vals[2].u.ival;
+    if ( c->a.vals[2].type==v_int )
+	trans[5] = c->a.vals[2].u.ival;
+    else if ( c->a.vals[2].type==v_real )
+	trans[5] = c->a.vals[2].u.fval;
+    else
+	error( c, "Bad type for argument");
     PasteIntoFV(c->curfv,3,trans);
 }
 
@@ -2097,7 +2157,8 @@ static void bGetTTFName(Context *c) {
 }
 
 static void bSetItalicAngle(Context *c) {
-    int denom=1;
+    double denom=1;
+    double num;
 
     if ( c->a.argc!=2 && c->a.argc!=3 )
 	error( c, "Wrong number of arguments");
@@ -2106,9 +2167,13 @@ static void bSetItalicAngle(Context *c) {
 	    error(c,"Bad argument type");
 	denom=c->a.vals[2].u.ival;
     }
-    if ( c->a.vals[1].type!=v_int )
+    if ( c->a.vals[1].type==v_real )
+	num = c->a.vals[1].u.fval;
+    else if ( c->a.vals[1].type!=v_int )
+	num = c->a.vals[1].u.ival;
+    else
 	error(c,"Bad argument type");
-    c->curfv->sf->italicangle = c->a.vals[1].u.ival/ (double) denom;
+    c->curfv->sf->italicangle = num / denom;
 }
 
 static void bSetMacStyle(Context *c) {
@@ -2338,19 +2403,18 @@ static void bApplySubstitution(Context *c) {
 static void bTransform(Context *c) {
     real trans[6];
     BVTFunc bvts[1];
+    int i;
 
     if ( c->a.argc!=7 )
 	error( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_int || c->a.vals[2].type!=v_int ||
-	      c->a.vals[3].type!=v_int || c->a.vals[4].type!=v_int ||
-	      c->a.vals[5].type!=v_int || c->a.vals[6].type!=v_int )
+    for ( i=1; i<7; ++i ) {
+	if ( c->a.vals[i].type==v_real )
+	    trans[i-1] = c->a.vals[i].u.fval/100.;
+	else if ( c->a.vals[i].type==v_int )
+	    trans[i-1] = c->a.vals[i].u.ival/100.;
+	else
 	error(c,"Bad argument type in Transform");
-    trans[0] = c->a.vals[1].u.ival/100.;
-    trans[1] = c->a.vals[2].u.ival/100.;
-    trans[2] = c->a.vals[3].u.ival/100.;
-    trans[3] = c->a.vals[4].u.ival/100.;
-    trans[4] = c->a.vals[5].u.ival/100.;
-    trans[5] = c->a.vals[6].u.ival/100.;
+    }
     bvts[0].func = bvt_none;
     FVTransFunc(c->curfv,trans,0,bvts,true);
 }
@@ -2364,10 +2428,13 @@ static void bHFlip(Context *c) {
     trans[1] = trans[2] = trans[4] = trans[5] = 0;
     if ( c->a.argc==1 )
 	/* default to center of char for origin */;
-    else if ( c->a.argc==2 || c->a.argc==3 ) {
-	if ( c->a.vals[1].type!=v_int || ( c->a.argc==3 && c->a.vals[2].type!=v_int ))
+    else if ( c->a.argc==2 ) {
+	if ( c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_real )
 	    error(c,"Bad argument type in HFlip");
-	trans[4] = 2*c->a.vals[1].u.ival;
+	if ( c->a.vals[1].type==v_int )
+	    trans[4] = 2*c->a.vals[1].u.ival;
+	else
+	    trans[4] = 2*c->a.vals[1].u.fval;
 	otype = 0;
     } else
 	error( c, "Wrong number of arguments");
@@ -2385,13 +2452,14 @@ static void bVFlip(Context *c) {
     trans[1] = trans[2] = trans[4] = trans[5] = 0;
     if ( c->a.argc==1 )
 	/* default to center of char for origin */;
-    else if ( c->a.argc==2 || c->a.argc==3 ) {
-	if ( c->a.vals[1].type!=v_int || ( c->a.argc==3 && c->a.vals[2].type!=v_int ))
+    else if ( c->a.argc==2 ) {
+	if (( c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_real ) ||
+		( c->a.argc==3 && c->a.vals[2].type!=v_int ))
 	    error(c,"Bad argument type in VFlip");
-	if ( c->a.argc==2 )
+	if ( c->a.vals[1].type==v_int )
 	    trans[5] = 2*c->a.vals[1].u.ival;
 	else
-	    trans[5] = 2*c->a.vals[2].u.ival;
+	    trans[5] = 2*c->a.vals[1].u.fval;
 	otype = 0;
     } else
 	error( c, "Wrong number of arguments");
@@ -2404,21 +2472,36 @@ static void bRotate(Context *c) {
     real trans[6];
     int otype = 1;
     BVTFunc bvts[2];
-    double a;
+    double a,ox,oy;
 
     if ( c->a.argc==1 || c->a.argc==3 || c->a.argc>4 )
 	error( c, "Wrong number of arguments");
-    if ( c->a.vals[1].type!=v_int || (c->a.argc==4 &&
-	    (c->a.vals[2].type!=v_int || c->a.vals[3].type!=v_int )))
+    if ( (c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_real) || (c->a.argc==4 &&
+	    ((c->a.vals[2].type!=v_int && c->a.vals[2].type!=v_real ) ||
+	     (c->a.vals[3].type!=v_int && c->a.vals[3].type!=v_real))))
 	error(c,"Bad argument type in Rotate");
-    if ( (c->a.vals[1].u.ival %= 360)<0 ) c->a.vals[1].u.ival += 360;
-    a = c->a.vals[1].u.ival *3.1415926535897932/180.;
+    if ( c->a.vals[1].type==v_int )
+	a = c->a.vals[1].u.ival;
+    else
+	a = c->a.vals[1].u.fval;
+    a = fmod(a,360.0);
+    if ( a<0 ) a += 360;
+    a *= 3.1415926535897932/180.;
     trans[0] = trans[3] = cos(a);
     trans[2] = -(trans[1] = sin(a));
     trans[4] = trans[5] = 0;
     if ( c->a.argc==4 ) {
-	trans[4] = c->a.vals[2].u.ival-(trans[0]*c->a.vals[2].u.ival+trans[2]*c->a.vals[3].u.ival);
-	trans[5] = c->a.vals[3].u.ival-(trans[1]*c->a.vals[2].u.ival+trans[3]*c->a.vals[3].u.ival);
+	if ( c->a.vals[2].type==v_int )
+	    ox = c->a.vals[2].u.ival;
+	else
+	    ox = c->a.vals[2].u.fval;
+	if ( c->a.vals[3].type==v_int )
+	    oy = c->a.vals[3].u.ival;
+	else
+	    oy = c->a.vals[3].u.fval;
+
+	trans[4] = ox-(trans[0]*ox+trans[2]*oy);
+	trans[5] = oy-(trans[1]*ox+trans[3]*oy);
 	otype = 0;
     }
     bvts[0].func = bvt_none;
@@ -2438,6 +2521,7 @@ static void bScale(Context *c) {
     BVTFunc bvts[2];
     double xfact, yfact;
     int i;
+    double args[6];
     /* Arguments:
 	1 => same scale factor both directions, origin at center
 	2 => different scale factors for each direction, origin at center
@@ -2448,24 +2532,29 @@ static void bScale(Context *c) {
 
     if ( c->a.argc==1 || c->a.argc>5 )
 	error( c, "Wrong number of arguments");
-    for ( i=1; i<c->a.argc; ++i )
-	if ( c->a.vals[i].type!=v_int )
-	    error(c,"Bad argument type in Scale");
+    for ( i=1; i<c->a.argc; ++i ) {
+	if ( c->a.vals[i].type==v_int )
+	    args[i] = c->a.vals[i].u.ival;
+	else if ( c->a.vals[i].type==v_real )
+	    args[i] = c->a.vals[i].u.fval;
+	else
+	    error(c,"Bad argument type");
+    }
     i = 1;
     if ( c->a.argc&1 ) {
-	xfact = c->a.vals[1].u.ival/100.;
-	yfact = c->a.vals[2].u.ival/100.;
+	xfact = args[1]/100.;
+	yfact = args[2]/100.;
 	i = 3;
     } else {
-	xfact = yfact = c->a.vals[1].u.ival/100.;
+	xfact = yfact = args[1]/100.;
 	i = 2;
     }
     trans[0] = xfact; trans[3] = yfact;
     trans[2] = trans[1] = 0;
     trans[4] = trans[5] = 0;
     if ( c->a.argc>i ) {
-	trans[4] = c->a.vals[i].u.ival-(trans[0]*c->a.vals[i].u.ival);
-	trans[5] = c->a.vals[i+1].u.ival-(trans[3]*c->a.vals[i+1].u.ival);
+	trans[4] = args[i]-(trans[0]*args[i]);
+	trans[5] = args[i+1]-(trans[3]*args[i+1]);
 	otype = 0;
     }
     bvts[0].func = bvt_none;
@@ -2473,6 +2562,8 @@ static void bScale(Context *c) {
 }
 
 static void bSkew(Context *c) {
+    double args[6];
+    int i;
     /* Arguments:
     2 => angle
     3 => angle-numerator, angle-denom
@@ -2487,32 +2578,32 @@ static void bSkew(Context *c) {
 
     if ( c->a.argc==1 || c->a.argc>5 )
     error( c, "Wrong number of arguments");
-    if ( c->a.vals[1].type!=v_int || (c->a.argc==3 && 
-c->a.vals[2].type!=v_int) ||
-        (c->a.argc==4 && (c->a.vals[2].type!=v_int || 
-c->a.vals[3].type!=v_int )) ||
-        (c->a.argc==5 && (c->a.vals[2].type!=v_int || 
-c->a.vals[3].type!=v_int ||
-                          c->a.vals[4].type!=v_int)))
-    error(c,"Bad argument type in Skew");
-    if (c->a.argc==3 || c->a.argc==5)
-        a = c->a.vals[1].u.ival / (double) c->a.vals[2].u.ival;
-    else {
-        if ( (c->a.vals[1].u.ival %= 360)<0 ) c->a.vals[1].u.ival += 360;
-        a = c->a.vals[1].u.ival;
+    for ( i=1; i<c->a.argc; ++i ) {
+	if ( c->a.vals[i].type==v_int )
+	    args[i] = c->a.vals[i].u.ival;
+	else if ( c->a.vals[i].type==v_real )
+	    args[i] = c->a.vals[i].u.fval;
+	else
+	    error(c,"Bad argument type");
     }
+    if (c->a.argc==3 || c->a.argc==5)
+        a = args[1] / args[2];
+    else
+	a = args[1];
+    a = fmod(a,360.0);
+    if ( a<0 ) a+=360;
     a = a *3.1415926535897932/180.;
     trans[0] = trans[3] = 1;
     trans[1] = 0; trans[2] = tan(a);
     trans[4] = trans[5] = 0;
     if ( c->a.argc==4 ) {
-        trans[4] = c->a.vals[2].u.ival-(trans[0]*c->a.vals[2].u.ival+trans[2]*c->a.vals[3].u.ival);
-        trans[5] = c->a.vals[3].u.ival-(trans[1]*c->a.vals[2].u.ival+trans[3]*c->a.vals[3].u.ival);
+        trans[4] = args[2]-(trans[0]*args[2]+trans[2]*args[3]);
+        trans[5] = args[3]-(trans[1]*args[2]+trans[3]*args[3]);
         otype = 0;
     }
     if ( c->a.argc==5 ) {
-        trans[4] = c->a.vals[3].u.ival-(trans[0]*c->a.vals[3].u.ival+trans[2]*c->a.vals[4].u.ival);
-        trans[5] = c->a.vals[4].u.ival-(trans[1]*c->a.vals[3].u.ival+trans[3]*c->a.vals[4].u.ival);
+        trans[4] = args[3]-(trans[0]*args[3]+trans[2]*args[4]);
+        trans[5] = args[4]-(trans[1]*args[3]+trans[3]*args[4]);
         otype = 0;
     }
     skewselect(&bvts[0],trans[2]);
@@ -2527,11 +2618,21 @@ static void bMove(Context *c) {
 
     if ( c->a.argc!=3 )
 	error( c, "Wrong number of arguments");
-    if ( c->a.vals[1].type!=v_int || c->a.vals[2].type!=v_int )
-	error(c,"Bad argument type");
     trans[0] = trans[3] = 1;
     trans[1] = trans[2] = 0;
-    trans[4] = c->a.vals[1].u.ival; trans[5] = c->a.vals[2].u.ival;
+    if ( c->a.vals[1].type==v_int )
+	trans[4] = c->a.vals[1].u.ival;
+    else if ( c->a.vals[1].type==v_real )
+	trans[4] = c->a.vals[1].u.fval;
+    else
+	error(c,"Bad argument type");
+    if ( c->a.vals[2].type==v_int )
+	trans[5] = c->a.vals[2].u.ival;
+    else if ( c->a.vals[2].type==v_real )
+	trans[5] = c->a.vals[2].u.fval;
+    else
+	error(c,"Bad argument type");
+
     bvts[0].func = bvt_transmove;
     bvts[0].x = trans[4]; bvts[0].y = trans[5];
     bvts[1].func = bvt_none;
@@ -2573,6 +2674,8 @@ static void bNonLinearTransform(Context *c) {
 static void bExpandStroke(Context *c) {
     StrokeInfo si;
     real r2;
+    double args[8];
+    int i;
     /* Arguments:
 	2 => stroke width (implied butt, round)
 	4 => stroke width, line cap, line join
@@ -2583,27 +2686,30 @@ static void bExpandStroke(Context *c) {
 
     if ( c->a.argc<2 || c->a.argc>7 )
 	error( c, "Wrong number of arguments");
-    if ( c->a.vals[1].type!=v_int ||
-	    (c->a.argc>=4 && c->a.vals[2].type!=v_int ) ||
-	    (c->a.argc>=4 && c->a.vals[3].type!=v_int ) ||
-	    (c->a.argc>=5 && c->a.vals[4].type!=v_int ) ||
-	    (c->a.argc>=6 && c->a.vals[5].type!=v_int ) ||
-	    (c->a.argc>=7 && c->a.vals[6].type!=v_int ))
-	error(c,"Bad argument type");
+    for ( i=1; i<c->a.argc; ++i ) {
+	if ( c->a.vals[i].type==v_int )
+	    args[i] = c->a.vals[i].u.ival;
+	else if ( c->a.vals[i].type==v_real )
+	    args[i] = c->a.vals[i].u.fval;
+	else
+	    error(c,"Bad argument type");
+    }
     memset(&si,0,sizeof(si));
-    si.radius = c->a.vals[1].u.ival/2.;
+    si.radius = args[1]/2.;
     si.stroke_type = si_std;
     if ( c->a.argc==2 ) {
 	si.join = lj_round;
 	si.cap = lc_butt;
     } else if ( c->a.argc==4 ) {
-	si.cap = c->a.vals[2].u.ival;
-	si.join = c->a.vals[3].u.ival;
+	si.cap = args[2];
+	si.join = args[3];
     } else if ( c->a.argc==6 ) {
-	si.cap = c->a.vals[2].u.ival;
-	si.join = c->a.vals[3].u.ival;
-	if ( c->a.vals[4].u.ival!=0 )
+	si.cap = args[2];
+	si.join = args[3];
+	if ( c->a.vals[4].type!=v_int || c->a.vals[4].u.ival!=0 )
 	    error(c,"If 5 arguments are given, the fourth must be zero");
+	else if ( c->a.vals[5].type!=v_int )
+	    error(c,"Bad argument type");
 	if ( c->a.vals[5].u.ival&1 )
 	    si.removeinternal = true;
 	else if ( c->a.vals[5].u.ival&2 )
@@ -2612,8 +2718,8 @@ static void bExpandStroke(Context *c) {
 	    si.removeoverlapifneeded = true;
     } else if ( c->a.argc==5 ) {
 	si.stroke_type = si_caligraphic;
-	si.penangle = 3.1415926535897932*c->a.vals[2].u.ival/180;
-	si.ratio = c->a.vals[3].u.ival / (double) c->a.vals[4].u.ival;
+	si.penangle = 3.1415926535897932*args[2]/180;
+	si.ratio = args[3] / (double) args[4];
         si.s = sin(si.penangle);
         si.c = cos(si.penangle);
         r2 = si.ratio*si.radius;
@@ -2627,8 +2733,8 @@ static void bExpandStroke(Context *c) {
         si.yoff[3] = si.yoff[7] = -r2*si.c - si.radius*si.s;
     } else {
         si.stroke_type = si_caligraphic;
-        si.penangle = 3.1415926535897932*c->a.vals[2].u.ival/180;
-        si.ratio = c->a.vals[3].u.ival / (double) c->a.vals[4].u.ival;
+	si.penangle = 3.1415926535897932*args[2]/180;
+	si.ratio = args[3] / (double) args[4];
         si.s = sin(si.penangle);
         si.c = cos(si.penangle);
         r2 = si.ratio*si.radius;
@@ -2640,8 +2746,10 @@ static void bExpandStroke(Context *c) {
         si.yoff[2] = si.yoff[6] = r2*si.c - si.radius*si.s;
         si.xoff[3] = si.xoff[7] = -si.radius*si.c + r2*si.s;
         si.yoff[3] = si.yoff[7] = -r2*si.c - si.radius*si.s;
-        if ( c->a.vals[5].u.ival!=0 )
+	if ( c->a.vals[5].type!=v_int || c->a.vals[5].u.ival!=0 )
             error(c,"If 6 arguments are given, the fifth must be zero");
+	else if ( c->a.vals[6].type!=v_int )
+	    error(c,"Bad argument type");
         if ( c->a.vals[6].u.ival&1 )
             si.removeinternal = true;
         else if ( c->a.vals[6].u.ival&2 )
@@ -2672,25 +2780,31 @@ static void bInline(Context *c) {
 
 static void bShadow(Context *c) {
     /* Angle, outline width, shadow_len */
+    double a;
 
     if ( c->a.argc!=4 )
 	error( c, "Wrong number of arguments");
-    if ( c->a.vals[1].type!=v_int || c->a.vals[2].type!=v_int ||
+    if ( (c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_real ) || c->a.vals[2].type!=v_int ||
 	    c->a.vals[2].type!=v_int )
 	error(c,"Bad argument type");
-    FVShadow(c->curfv,c->a.vals[1].u.ival*3.1415926535897932/360.,
+    if ( c->a.vals[1].type == v_int ) a = c->a.vals[1].u.ival;
+    else a = c->a.vals[1].u.fval;
+    FVShadow(c->curfv,a*3.1415926535897932/180.,
 	    c->a.vals[2].u.ival, c->a.vals[3].u.ival,false);
 }
 
 static void bWireframe(Context *c) {
     /* Angle, outline width, shadow_len */
+    double a;
 
     if ( c->a.argc!=4 )
 	error( c, "Wrong number of arguments");
-    if ( c->a.vals[1].type!=v_int || c->a.vals[2].type!=v_int ||
+    if ( (c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_real ) || c->a.vals[2].type!=v_int ||
 	    c->a.vals[2].type!=v_int )
 	error(c,"Bad argument type");
-    FVShadow(c->curfv,c->a.vals[1].u.ival*3.1415926535897932/360.,
+    if ( c->a.vals[1].type == v_int ) a = c->a.vals[1].u.ival;
+    else a = c->a.vals[1].u.fval;
+    FVShadow(c->curfv,a*3.1415926535897932/360.,
 	    c->a.vals[2].u.ival, c->a.vals[3].u.ival,true);
 }
 
@@ -2719,25 +2833,37 @@ static void bSimplify(Context *c) {
     smpl.linelenmax = (c->curfv->sf->ascent+c->curfv->sf->descent)/100.;
 
     if ( c->a.argc>=3 && c->a.argc<=7 ) {
-	if ( c->a.vals[1].type!=v_int || c->a.vals[2].type!=v_int )
+	if ( c->a.vals[1].type!=v_int || (c->a.vals[2].type!=v_int && c->a.vals[2].type!=v_real) )
 	    error( c, "Bad type for argument" );
 	smpl.flags = c->a.vals[1].u.ival;
-	smpl.err = c->a.vals[2].u.ival;
+	if ( c->a.vals[2].type==v_int )
+	    smpl.err = c->a.vals[2].u.ival;
+	else
+	    smpl.err = c->a.vals[2].u.fval;
 	if ( c->a.argc>=4 ) {
-	    if ( c->a.vals[3].type!=v_int )
+	    if ( c->a.vals[3].type==v_int )
+		smpl.tan_bounds = c->a.vals[3].u.ival/100.0;
+	    else if ( c->a.vals[3].type==v_real )
+		smpl.tan_bounds = c->a.vals[3].u.fval/100.0;
+	    else
 		error( c, "Bad type for argument" );
-	    smpl.tan_bounds = c->a.vals[3].u.ival/100.0;
 	    if ( c->a.argc>=5 ) {
-		if ( c->a.vals[4].type!=v_int )
+		if ( c->a.vals[4].type==v_int )
+		    smpl.linefixup = c->a.vals[4].u.ival/100.0;
+		else if ( c->a.vals[4].type==v_real )
+		    smpl.linefixup = c->a.vals[4].u.fval/100.0;
+		else
 		    error( c, "Bad type for argument" );
-		smpl.linefixup = c->a.vals[4].u.ival;
 		if ( c->a.argc>=6 ) {
 		    if ( c->a.vals[5].type!=v_int || c->a.vals[5].u.ival==0 )
 			error( c, "Bad type for argument" );
 		    smpl.err /= (double) c->a.vals[5].u.ival;
 		    if ( c->a.argc>=7 ) {
-			if ( c->a.vals[6].type!=v_int )
-			    error( c, "Bad type for argument" );
+		    if ( c->a.vals[6].type==v_int )
+			smpl.linelenmax = c->a.vals[6].u.ival;
+		    else if ( c->a.vals[6].type==v_real )
+			smpl.linelenmax = c->a.vals[6].u.fval;
+		    else
 			smpl.linelenmax = c->a.vals[6].u.ival;
 		    }
 		}
@@ -2758,9 +2884,12 @@ static void bNearlyHvCps(Context *c) {
     if ( c->a.argc>3 )
 	error( c, "Too many arguments" );
     else if ( c->a.argc>1 ) {
-	if ( c->a.vals[1].type!=v_int )
+	if ( c->a.vals[1].type==v_int )
+	    err = c->a.vals[1].u.ival;
+	else if ( c->a.vals[1].type==v_real )
+	    err = c->a.vals[1].u.fval;
+	else
 	    error( c, "Bad type for argument" );
-	err = c->a.vals[1].u.ival;
 	if ( c->a.argc>2 ) {
 	    if ( c->a.vals[2].type!=v_int )
 		error( c, "Bad type for argument" );
@@ -2787,9 +2916,12 @@ static void bNearlyHvLines(Context *c) {
     if ( c->a.argc>3 )
 	error( c, "Too many arguments" );
     else if ( c->a.argc>1 ) {
-	if ( c->a.vals[1].type!=v_int )
+	if ( c->a.vals[1].type==v_int )
+	    err = c->a.vals[1].u.ival;
+	else if ( c->a.vals[1].type==v_real )
+	    err = c->a.vals[1].u.fval;
+	else
 	    error( c, "Bad type for argument" );
-	err = c->a.vals[1].u.ival;
 	if ( c->a.argc>2 ) {
 	    if ( c->a.vals[2].type!=v_int )
 		error( c, "Bad type for argument" );
@@ -2820,9 +2952,12 @@ static void bRoundToInt(Context *c) {
     if ( c->a.argc!=1 && c->a.argc!=2 )
 	error( c, "Wrong number of arguments");
     else if ( c->a.argc==2 ) {
-	if ( c->a.vals[1].type!=v_int )
+	if ( c->a.vals[1].type==v_int )
+	    factor = c->a.vals[1].u.ival;
+	else if ( c->a.vals[1].type==v_real )
+	    factor = c->a.vals[1].u.fval;
+	else
 	    error( c, "Bad type for argument" );
-	factor = c->a.vals[1].u.ival;
     }
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && c->curfv->selected[i] ) {
 	SCPreserveState(sf->chars[i],false);
@@ -2835,18 +2970,24 @@ static void bRoundToCluster(Context *c) {
     int i;
     SplineFont *sf = c->curfv->sf;
 
-    if ( c->a.argc!=1 && c->a.argc!=3 && c->a.argc!=4 )
+    if ( c->a.argc>3 )
 	error( c, "Wrong number of arguments");
-    else if ( c->a.argc>=3 ) {
-	if ( c->a.vals[1].type!=v_int || c->a.vals[1].u.ival<=0 ||
-		c->a.vals[2].type!=v_int || c->a.vals[2].u.ival<=0 )
+    else if ( c->a.argc>=2 ) {
+	if ( c->a.vals[1].type==v_int )
+	    within = c->a.vals[1].u.ival;
+	else if ( c->a.vals[1].type==v_real )
+	    within = c->a.vals[1].u.fval;
+	else
 	    error( c, "Bad type for argument" );
-	within = c->a.vals[1].u.ival/c->a.vals[2].u.ival;
 	max = 4*within;
-	if ( c->a.argc>=4 ) {
-	    if ( c->a.vals[3].type!=v_int || c->a.vals[3].u.ival<=0 )
+	if ( c->a.argc>=3 ) {
+	    if ( c->a.vals[2].type==v_int )
+		max = c->a.vals[2].u.ival;
+	    else if ( c->a.vals[2].type==v_real )
+		max = c->a.vals[2].u.fval;
+	    else
 		error( c, "Bad type for argument" );
-	    max = c->a.vals[3].u.ival*within;
+	    max *= within;
 	}
     }
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && c->curfv->selected[i] )
@@ -2899,12 +3040,16 @@ static void bCorrectDirection(Context *c) {
 static void bReplaceOutlineWithReference(Context *c) {
     double fudge = .01;
 
-    if ( c->a.argc!=1 && c->a.argc!=3 )
+    if ( c->a.argc>3 )
 	error( c, "Wrong number of arguments");
-    if ( c->a.argc==3 ) {
+    if ( c->a.argc==2 ) {
+	if ( c->a.vals[1].type!=v_real )
+	    error(c,"Bad argument type");
+	fudge = c->a.vals[1].u.fval;
+    } else if ( c->a.argc==3 ) {
 	if ( c->a.vals[1].type!=v_int || c->a.vals[2].type!=v_int ||
 		c->a.vals[2].u.ival==0 )
-	error(c,"Bad argument type");
+	    error(c,"Bad argument type");
 	fudge = c->a.vals[1].u.ival/(double) c->a.vals[2].u.ival;
     }
     FVReplaceOutlineWithReference(c->curfv,fudge);
@@ -2979,10 +3124,11 @@ static void bMergeFonts(Context *c) {
 static void bInterpolateFonts(Context *c) {
     SplineFont *sf;
     int openflags=0;
+    float percent;
 
     if ( c->a.argc!=3 && c->a.argc!=4 )
 	error( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_int )
+    else if ( c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_real )
 	error( c, "Bad argument type for first arg");
     else if ( c->a.vals[2].type!=v_str )
 	error( c, "InterpolateFonts expects a filename" );
@@ -2991,10 +3137,14 @@ static void bInterpolateFonts(Context *c) {
 	    error( c, "InterpolateFonts expects an integer for third argument" );
 	openflags = c->a.vals[3].u.ival;
     }
+    if ( c->a.vals[1].type==v_int )
+	percent = c->a.vals[1].u.ival;
+    else
+	percent = c->a.vals[1].u.fval;
     sf = LoadSplineFont(c->a.vals[2].u.sval,openflags);
     if ( sf==NULL )
 	errors(c,"Can't find font", c->a.vals[2].u.sval);
-    c->curfv = FVAppend(_FontViewCreate(InterpolateFont(c->curfv->sf,sf,c->a.vals[1].u.ival/100.0 )));
+    c->curfv = FVAppend(_FontViewCreate(InterpolateFont(c->curfv->sf,sf,percent/100.0 )));
 }
 
 static void bAutoHint(Context *c) {
@@ -3041,10 +3191,18 @@ static void _AddHint(Context *c,int ish) {
 
     if ( c->a.argc!=3 )
 	error( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_int || c->a.vals[2].type!=v_int )
+    if ( c->a.vals[1].type==v_int )
+	start = c->a.vals[1].u.ival;
+    else if ( c->a.vals[1].type==v_real )
+	start = c->a.vals[1].u.fval;
+    else
 	error( c, "Bad argument type" );
-    start = c->a.vals[1].u.ival;
-    width = c->a.vals[2].u.ival;
+    if ( c->a.vals[2].type!=v_int )
+	width = c->a.vals[2].u.ival;
+    else if ( c->a.vals[2].type==v_real )
+	start = c->a.vals[2].u.fval;
+    else
+	error( c, "Bad argument type" );
     if ( width<=0 && width!=-20 && width!=-21 )
 	error( c, "Bad hint width" );
     any = false;
@@ -4323,11 +4481,11 @@ return;
 		c->return_val.u.aval->argc = 4;
 		c->return_val.u.aval->vals = galloc(4*sizeof(Val));
 		for ( i=0; i<4; ++i )
-		    c->return_val.u.aval->vals[i].type = v_int;
-		c->return_val.u.aval->vals[0].u.ival = floor(b.minx);
-		c->return_val.u.aval->vals[1].u.ival = floor(b.miny);
-		c->return_val.u.aval->vals[2].u.ival = ceil(b.maxx);
-		c->return_val.u.aval->vals[3].u.ival = ceil(b.maxy);
+		    c->return_val.u.aval->vals[i].type = v_real;
+		c->return_val.u.aval->vals[0].u.ival = b.minx;
+		c->return_val.u.aval->vals[1].u.ival = b.miny;
+		c->return_val.u.aval->vals[2].u.ival = b.maxx;
+		c->return_val.u.aval->vals[3].u.ival = b.maxy;
 	    } else
 		errors(c,"Unknown tag", c->a.vals[1].u.sval);
 	}
@@ -4349,6 +4507,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "Strcasestr", bStrcasestr, 1 },
     { "Strcasecmp", bStrcasecmp, 1 },
     { "Strtol", bStrtol, 1 },
+    { "Strtod", bStrtod, 1 },
     { "Strskipint", bStrskipint, 1 },
     { "LoadPrefs", bLoadPrefs, 1 },
     { "SavePrefs", bSavePrefs, 1 },
@@ -4360,6 +4519,10 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "UnicodeFromName", bUnicodeFromName, 1 },
     { "Chr", bChr, 1 },
     { "Ord", bOrd, 1 },
+    { "Real", bReal, 1 },
+    { "Floor", bFloor, 1 },
+    { "Ceil", bCeil, 1 },
+    { "Round", bRound, 1 },
     { "Utf8", bUtf8, 1 },
     { "Utf8", bUtf8, 1 },
     { "Rand", bRand, 1 },
@@ -4596,7 +4759,7 @@ return( c->tok );
     }
     do {
 	ch = cgetc(c);
-	if ( isalpha(ch) || ch=='$' || ch=='_' || ch=='.' || ch=='@' ) {
+	if ( isalpha(ch) || ch=='$' || ch=='_' || /*ch=='.' ||*/ ch=='@' ) {
 	    char *pt = c->tok_text, *end = c->tok_text+TOK_MAX;
 	    int toolong = false;
 	    while ( (isalnum(ch) || ch=='$' || ch=='_' || ch=='.' || ch=='@' ) && pt<end ) {
@@ -4620,13 +4783,53 @@ return( c->tok );
 		break;
 		    }
 	    }
-	} else if ( isdigit(ch) ) {
+	} else if ( isdigit(ch) || ch=='.' ) {
 	    int val=0;
+	    double fval = 0, dval, div;
 	    tok = tt_number;
 	    if ( ch!='0' ) {
 		while ( isdigit(ch)) {
 		    val = 10*val+(ch-'0');
 		    ch = cgetc(c);
+		}
+		fval = val;
+		if ( ch=='.' ) {
+		    tok = tt_real;
+		    dval = 0;
+		    div = 1;
+		    ch = cgetc(c);
+		    while ( isdigit(ch)) {
+			dval = 10*dval+(ch-'0');
+			div *= 10;
+			ch = cgetc(c);
+		    }
+		    fval = val+(dval/div);
+		}
+		if ( ch=='e' || ch=='E' ) {
+		    int s=1, e=0;
+		    tok = tt_real;
+		    ch = cgetc(c);
+		    if ( ch=='+' )
+			ch = cgetc(c);
+		    else if ( ch=='-' ) {
+			s = -1;
+			ch = cgetc(c);
+		    }
+		    while ( isdigit(ch)) {
+			e = 10*e+(ch-'0');
+			ch = cgetc(c);
+		    }
+		    if ( s<0 ) {
+			while ( e>0 ) {
+			    fval /= 10.0;
+			    --e;
+			}
+		    } else {
+			while ( e>0 ) {
+			    fval *= 10.0;
+			    --e;
+			}
+		    }
 		}
 	    } else if ( isdigit(ch=cgetc(c)) ) {
 		while ( isdigit(ch) && ch<'8' ) {
@@ -4648,8 +4851,13 @@ return( c->tok );
 		}
 	    }
 	    cungetc(ch,c);
-	    c->tok_val.u.ival = val;
-	    c->tok_val.type = tok==tt_number ? v_int : v_unicode;
+	    if ( tok==tt_real ) {
+		c->tok_val.u.fval = fval;
+		c->tok_val.type = v_real;
+	    } else {
+		c->tok_val.u.ival = val;
+		c->tok_val.type = tok==tt_number ? v_int : v_unicode;
+	    }
 	} else if ( ch=='\'' || ch=='"' ) {
 	    int quote = ch;
 	    char *pt = c->tok_text, *end = c->tok_text+TOK_MAX;
@@ -4898,6 +5106,8 @@ static void docall(Context *c,char *name,Val *val) {
 		    printf( "%d", args[i].u.ival );
 		else if ( args[i].type == v_unicode )
 		    printf( "0u%x", args[i].u.ival );
+		else if ( args[i].type == v_real )
+		    printf( "%g", args[i].u.fval );
 		else if ( args[i].type == v_str )
 		    printf( "\"%s\"", args[i].u.sval );
 		else if ( args[i].type == v_void )
@@ -5056,8 +5266,8 @@ static void handlename(Context *c,Val *val) {
 		}
 	    } else if ( strcmp(name,"$italicangle")==0 ) {
 		if ( c->curfv==NULL ) error(c,"No current font");
-		val->type = v_int;
-		val->u.ival = rint(c->curfv->sf->italicangle);
+		val->type = v_real;
+		val->u.ival = c->curfv->sf->italicangle;
 	    } else if ( strcmp(name,"$fontchanged")==0 ) {
 		if ( c->curfv==NULL ) error(c,"No current font");
 		val->type = v_int;
@@ -5153,7 +5363,7 @@ static void term(Context *c,Val *val) {
 	expr(c,val);
 	tok = NextToken(c);
 	expect(c,tt_rparen,tok);
-    } else if ( tok==tt_number || tok==tt_unicode ) {
+    } else if ( tok==tt_number || tok==tt_unicode || tok==tt_real ) {
 	*val = c->tok_val;
     } else if ( tok==tt_string ) {
 	val->type = v_str;
@@ -5164,26 +5374,38 @@ static void term(Context *c,Val *val) {
 	term(c,val);
 	if ( !c->donteval ) {
 	    dereflvalif(val);
-	    if ( val->type!=v_int )
+	    if ( val->type==v_real ) {
+		if ( tok==tt_minus )
+		    val->u.ival = -val->u.fval;
+		else
+		    error( c, "Invalid type in integer expression" );
+	    } else if ( val->type==v_int ) {
+		if ( tok==tt_minus )
+		    val->u.ival = -val->u.ival;
+		else if ( tok==tt_not )
+		    val->u.ival = !val->u.ival;
+		else if ( tok==tt_bitnot )
+		    val->u.ival = ~val->u.ival;
+	    } else
 		error( c, "Invalid type in integer expression" );
-	    if ( tok==tt_minus )
-		val->u.ival = -val->u.ival;
-	    else if ( tok==tt_not )
-		val->u.ival = !val->u.ival;
-	    else if ( tok==tt_bitnot )
-		val->u.ival = ~val->u.ival;
 	}
     } else if ( tok==tt_incr || tok==tt_decr ) {
 	term(c,val);
 	if ( !c->donteval ) {
 	    if ( val->type!=v_lval )
 		error( c, "Expected lvalue" );
-	    if ( val->u.lval->type!=v_int && val->u.lval->type!=v_unicode )
+	    if ( val->u.lval->type==v_real ) {
+		if ( tok == tt_incr )
+		    ++val->u.lval->u.fval;
+		else
+		    --val->u.lval->u.fval;
+	    } else if ( val->u.lval->type==v_int || val->u.lval->type==v_unicode ) {
+		if ( tok == tt_incr )
+		    ++val->u.lval->u.ival;
+		else
+		    --val->u.lval->u.ival;
+	    } else
 		error( c, "Invalid type in integer expression" );
-	    if ( tok == tt_incr )
-		++val->u.lval->u.ival;
-	    else
-		--val->u.lval->u.ival;
 	    dereflvalif(val);
 	}
     } else
@@ -5268,13 +5490,19 @@ static void term(Context *c,Val *val) {
 	    Val temp;
 	    if ( val->type!=v_lval )
 		error( c, "Expected lvalue" );
-	    if ( val->u.lval->type!=v_int && val->u.lval->type!=v_unicode )
-		error( c, "Invalid type in integer expression" );
 	    temp = *val->u.lval;
-	    if ( tok == tt_incr )
-		++val->u.lval->u.ival;
-	    else
-		--val->u.lval->u.ival;
+	    if ( val->u.lval->type==v_real ) {
+		if ( tok == tt_incr )
+		    ++val->u.lval->u.fval;
+		else
+		    --val->u.lval->u.fval;
+	    } else if ( val->u.lval->type==v_int || val->u.lval->type==v_unicode ) {
+		if ( tok == tt_incr )
+		    ++val->u.lval->u.ival;
+		else
+		    --val->u.lval->u.ival;
+	    } else
+		error( c, "Invalid type in integer expression" );
 	    *val = temp;
 	}
 	tok = NextToken(c);
@@ -5294,16 +5522,33 @@ static void mul(Context *c,Val *val) {
 	if ( !c->donteval ) {
 	    dereflvalif(val);
 	    dereflvalif(&other);
-	    if ( val->type!=v_int || other.type!=v_int )
+	    if ( val->type==v_int && other.type==v_int ) {
+		if ( (tok==tt_div || tok==tt_mod ) && other.u.ival==0 )
+		    error( c, "Division by zero" );
+		else if ( tok==tt_mul )
+		    val->u.ival *= other.u.ival;
+		else if ( tok==tt_mod )
+		    val->u.ival %= other.u.ival;
+		else
+		    val->u.ival /= other.u.ival;
+	    } else if (( val->type==v_real || val->type==v_int) &&
+		    (other.type==v_real || other.type==v_int)) {
+		if ( val->type==v_int ) {
+		    val->type = v_real;
+		    val->u.fval = val->u.ival;
+		}
+		if ( other.type==v_int )
+		    other.u.fval = other.u.ival;
+		if ( (tok==tt_div || tok==tt_mod ) && other.u.fval==0 )
+		    error( c, "Division by zero" );
+		else if ( tok==tt_mul )
+		    val->u.fval *= other.u.fval;
+		else if ( tok==tt_mod )
+		    val->u.fval = fmod(val->u.fval,other.u.fval);
+		else
+		    val->u.fval /= other.u.fval;
+	    } else
 		error( c, "Invalid type in integer expression" );
-	    else if ( (tok==tt_div || tok==tt_mod ) && other.u.ival==0 )
-		error( c, "Division by zero" );
-	    else if ( tok==tt_mul )
-		val->u.ival *= other.u.ival;
-	    else if ( tok==tt_mod )
-		val->u.ival %= other.u.ival;
-	    else
-		val->u.ival /= other.u.ival;
 	}
 	tok = NextToken(c);
     }
@@ -5336,12 +5581,26 @@ static void add(Context *c,Val *val) {
 		if ( other.type==v_str ) free(other.u.sval);
 		free(val->u.sval);
 		val->u.sval = ret;
-	    } else if ( (val->type!=v_int && val->type!=v_unicode) || (other.type!=v_int&&other.type!=v_unicode) )
+	    } else if (( val->type==v_int || val->type==v_unicode ) &&
+		    ( other.type==v_int || other.type==v_unicode )) {
+		if ( tok==tt_plus )
+		    val->u.ival += other.u.ival;
+		else
+		    val->u.ival -= other.u.ival;
+	    } else if (( val->type==v_real || val->type==v_int) &&
+		    (other.type==v_real || other.type==v_int)) {
+		if ( val->type==v_int ) {
+		    val->type = v_real;
+		    val->u.fval = val->u.ival;
+		}
+		if ( other.type==v_int )
+		    other.u.fval = other.u.ival;
+		if ( tok==tt_plus )
+		    val->u.fval += other.u.fval;
+		else
+		    val->u.fval -= other.u.fval;
+	    } else
 		error( c, "Invalid type in integer expression" );
-	    else if ( tok==tt_plus )
-		val->u.ival += other.u.ival;
-	    else
-		val->u.ival -= other.u.ival;
 	}
 	tok = NextToken(c);
     }
@@ -5365,8 +5624,17 @@ static void comp(Context *c,Val *val) {
 		cmp = strcmp(val->u.sval,other.u.sval);
 		free(val->u.sval); free(other.u.sval);
 	    } else if (( val->type==v_int || val->type==v_unicode ) &&
-		    (other.type==v_int || other.type==v_unicode)) {
+		    ( other.type==v_int || other.type==v_unicode )) {
 		cmp = val->u.ival - other.u.ival;
+	    } else if (( val->type==v_real || val->type==v_int) &&
+		    (other.type==v_real || other.type==v_int)) {
+		if ( val->type==v_int )
+		    val->u.fval = val->u.ival;
+		if ( other.type==v_int )
+		    other.u.fval = other.u.ival;
+		if ( val->u.fval>other.u.fval ) cmp =  1;
+		else if ( val->u.fval<other.u.fval ) cmp = -1;
+		else cmp = 0;
 	    } else 
 		error( c, "Invalid type in integer expression" );
 	    val->type = v_int;
@@ -5479,7 +5747,10 @@ static void assign(Context *c,Val *val) {
 		    arrayfree(temp.u.aval);
 		else if ( temp.type == v_str )
 		    free( temp.u.sval);
-	    } else if (( val->u.lval->type==v_int || val->u.lval->type==v_unicode ) && (other.type==v_int || other.type==v_unicode)) {
+	    } else if (( val->u.lval->type==v_int || val->u.lval->type==v_unicode ) &&
+		    (other.type==v_int || other.type==v_unicode || other.type==v_real)) {
+		if ( other.type==v_real )
+		    other.u.ival = rint(other.u.fval);
 		if ( tok==tt_pluseq ) val->u.lval->u.ival += other.u.ival;
 		else if ( tok==tt_minuseq ) val->u.lval->u.ival -= other.u.ival;
 		else if ( tok==tt_muleq ) val->u.lval->u.ival *= other.u.ival;
@@ -5487,12 +5758,26 @@ static void assign(Context *c,Val *val) {
 		    error(c,"Divide by zero");
 		else if ( tok==tt_modeq ) val->u.lval->u.ival %= other.u.ival;
 		else val->u.lval->u.ival /= other.u.ival;
+	    } else if ( val->u.lval->type==v_real &&
+		    (other.type==v_int || other.type==v_real)) {
+		if ( other.type==v_int )
+		    other.u.fval = other.u.ival;
+		if ( tok==tt_pluseq ) val->u.lval->u.fval += other.u.fval;
+		else if ( tok==tt_minuseq ) val->u.lval->u.fval -= other.u.fval;
+		else if ( tok==tt_muleq ) val->u.lval->u.fval *= other.u.fval;
+		else if ( other.u.fval==0 )
+		    error(c,"Divide by zero");
+		else if ( tok==tt_modeq ) val->u.lval->u.fval = fmod(val->u.lval->u.fval, other.u.fval);
+		else val->u.lval->u.fval /= other.u.fval;
 	    } else if ( tok==tt_pluseq && val->u.lval->type==v_str &&
-		    (other.type==v_str || other.type==v_int)) {
+		    (other.type==v_str || other.type==v_int || other.type==v_real)) {
 		char *ret, *temp;
-		char buffer[10];
+		char buffer[20];
 		if ( other.type == v_int ) {
 		    sprintf(buffer,"%d", other.u.ival);
+		    temp = buffer;
+		} else if ( other.type == v_real ) {
+		    sprintf(buffer,"%g", other.u.fval);
 		    temp = buffer;
 		} else
 		    temp = other.u.sval;
