@@ -1625,12 +1625,10 @@ static void bSelectByATT(Context *c) {
 
 /* **** Element Menu **** */
 #define em_unknown (em_none-3)
-static void bReencode(Context *c) {
+int FontEncodingByName(char *name) {
     Encoding *item=NULL;
     int i;
     enum charset new_map = em_unknown;
-    FontView *fvs;
-    int force = 0;
     static struct encdata {
 	int val;
 	char *name;
@@ -1696,30 +1694,40 @@ static void bReencode(Context *c) {
 	{ em_unicode, "iso10646-1" },
 	{ em_unicode4, "ucs4" },
 	{ 0, NULL}};
+
+    for ( i=0; encdata[i].name!=NULL; ++i )
+	if ( strmatch(encdata[i].name,name)==0 ) {
+	    new_map = encdata[i].val;
+    break;
+	}
+    if ( new_map == em_unknown ) {
+	for ( item=enclist; item!=NULL ; item=item->next )
+	    if ( strmatch(name,item->enc_name )==0 ) {
+		new_map = item->enc_num;
+	break;
+	    }
+    }
+    if ( new_map==em_unknown && strstart(name,"unicode-plane-")!=NULL ) {
+	unsigned plane=0;
+	sscanf( name,"unicode-plane-%x", &plane );
+	if ( plane==0 ) new_map = em_unicode;
+	else new_map = em_unicodeplanes+plane;
+    }
+return( new_map );
+}
+
+static void bReencode(Context *c) {
+    enum charset new_map = em_unknown;
+    FontView *fvs;
+    int force = 0;
+
     if ( c->a.argc!=2 && c->a.argc!=3 )
 	error( c, "Wrong number of arguments");
     else if ( c->a.vals[1].type!=v_str || ( c->a.argc==3 && c->a.vals[2].type!=v_int ))
 	error(c,"Bad argument type");
     if ( c->a.argc==3 )
 	force = c->a.vals[2].u.ival;
-    for ( i=0; encdata[i].name!=NULL; ++i )
-	if ( strmatch(encdata[i].name,c->a.vals[1].u.sval)==0 ) {
-	    new_map = encdata[i].val;
-    break;
-	}
-    if ( new_map == em_unknown ) {
-	for ( item=enclist; item!=NULL ; item=item->next )
-	    if ( strmatch(c->a.vals[1].u.sval,item->enc_name )==0 ) {
-		new_map = item->enc_num;
-	break;
-	    }
-    }
-    if ( new_map==em_unknown && strstart(c->a.vals[1].u.sval,"unicode-plane-")!=NULL ) {
-	unsigned plane=0;
-	sscanf( c->a.vals[1].u.sval,"unicode-plane-%x", &plane );
-	if ( plane==0 ) new_map = em_unicode;
-	else new_map = em_unicodeplanes+plane;
-    }
+    new_map = FontEncodingByName(c->a.vals[1].u.sval);
     if ( new_map==em_unknown )
 	errors(c,"Unknown encoding", c->a.vals[1].u.sval);
     if ( force )

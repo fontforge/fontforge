@@ -1095,6 +1095,7 @@ extern int SLIContainsR2L(SplineFont *sf,int sli);
 extern void SFFindNearTop(SplineFont *);
 extern void SFRestoreNearTop(SplineFont *);
 extern int SFAddDelChars(SplineFont *sf, int nchars);
+extern int FontEncodingByName(char *name);
 #ifdef FONTFORGE_CONFIG_GTK
 extern int SFForceEncoding(SplineFont *sf,char *new_map);
 extern int SFReencodeFont(SplineFont *sf,char *new_map);
