@@ -2311,7 +2311,7 @@ static void figurecids(struct fontparse *fp,FILE *temp) {
     for ( i=0; i<=fd->cidcnt; ++i ) {
 	for ( j=val=0; j<fd->fdbytes; ++j )
 	    val = (val<<8) + getc(temp);
-	if ( val >= fd->fdcnt ) {
+	if ( val >= fd->fdcnt && val!=255 ) {	/* 255 is a special mark */
 	    fprintf( stderr, "Invalid FD (%d) assigned to CID %d.\n", val, i );
 	    val = 0;
 	}
