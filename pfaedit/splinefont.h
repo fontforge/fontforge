@@ -482,6 +482,7 @@ typedef struct splinechar {
 				/*  Or an otf font where it is the subr number of a refered character */
 			        /*  or a ttf font with vert metrics where it is the ymax value */
 				/* Always a temporary value */
+    uint16 orig_pos;		/* Original position in the glyph list */
     int ttf_glyph;		/* only used when writing out a ttf or otf font */
     SplinePointList *splines;
     StemInfo *hstem;		/* hstem hints have a vertical offset but run horizontally */

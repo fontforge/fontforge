@@ -1404,7 +1404,7 @@ return(false);
 
     if ( new_map==em_original ) {
 	for ( i=enc_cnt=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=0 )
-	    sf->chars[i]->ttf_glyph = enc_cnt++;
+	    sf->chars[i]->orig_pos = enc_cnt++;
 	if ( sf->charcnt==enc_cnt )
 return( false );
 return( _SFReencodeFont(sf,em_original,NULL));
@@ -1568,14 +1568,14 @@ return( false );
 	} else if ( new_map==em_original ) {
 	    tlen = 0;
 	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
-		if ( sf->chars[i]->ttf_glyph>tlen ) tlen = sf->chars[i]->ttf_glyph;
+		if ( sf->chars[i]->orig_pos>tlen ) tlen = sf->chars[i]->orig_pos;
 	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
 /* This can happen in two ways: User added characters, or we have one char at */
 /*  two encodings (space, nbspace) */
 /* We could just remove duplicate encoding here, but I think better to leave */
 /* that info in */
-		if ( sf->chars[i]->ttf_glyph==-1 )
-		    sf->chars[i]->ttf_glyph = ++tlen;
+		if ( sf->chars[i]->orig_pos==0xffff )
+		    sf->chars[i]->orig_pos = ++tlen;
 	    ++tlen;
 	    table = NULL;
 	} else
@@ -1600,7 +1600,7 @@ return( false );
     extras = 0;
     if ( target==NULL && new_map==em_original ) {
 	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
-	    sf->chars[i]->enc = sf->chars[i]->ttf_glyph;
+	    sf->chars[i]->enc = sf->chars[i]->orig_pos;
     } else {
 	used = gcalloc((tlen+7)/8,sizeof(uint8));
 	for ( i=0; i<sf->charcnt; ++i ) {

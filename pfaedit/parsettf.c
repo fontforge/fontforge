@@ -1295,7 +1295,7 @@ static void readttfglyphs(FILE *ttf,struct ttfinfo *info) {
     free(goffsets);
     for ( i=0; i<info->glyph_cnt ; ++i )
 	if ( info->chars[i]!=NULL )
-	    info->chars[i]->ttf_glyph = i;
+	    info->chars[i]->orig_pos = i;
     GProgressNextStage();
 }
 
@@ -2739,7 +2739,7 @@ return( 0 );
 
     for ( i=0; i<info->glyph_cnt ; ++i )
 	if ( info->chars[i]!=NULL )
-	    info->chars[i]->ttf_glyph = i;
+	    info->chars[i]->orig_pos = i;
 
 return( 1 );
 }

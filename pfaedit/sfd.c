@@ -550,7 +550,7 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc) {
     PST *liga;
 
     fprintf(sfd, "StartChar: %s\n", sc->name );
-    fprintf(sfd, "Encoding: %d %d %d\n", sc->enc, sc->unicodeenc, sc->ttf_glyph);
+    fprintf(sfd, "Encoding: %d %d %d\n", sc->enc, sc->unicodeenc, sc->orig_pos);
     if ( sc->parent->compacted )
 	fprintf(sfd, "OldEncoding: %d\n", sc->old_enc);
     fprintf(sfd, "Width: %d\n", sc->width );
@@ -1666,7 +1666,7 @@ return( NULL );
 	    while ( (ch=getc(sfd))==' ' || ch=='\t' );
 	    ungetc(ch,sfd);
 	    if ( ch!='\n' && ch!='\r' )
-		getint(sfd,&sc->ttf_glyph);
+		getint(sfd,&sc->orig_pos);
 	} else if ( strmatch(tok,"OldEncoding:")==0 ) {
 	    getint(sfd,&sc->old_enc);
         } else if ( strmatch(tok,"Script:")==0 ) {
@@ -2516,17 +2516,17 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    for ( i=0; i<sf->subfontcnt; ++i )
 		if ( k<sf->subfonts[i]->charcnt &&
 			sf->subfonts[i]->chars[k]!=NULL ) {
-		    sf->subfonts[i]->chars[k]->ttf_glyph = k;
+		    sf->subfonts[i]->chars[k]->orig_pos = k;
 	    break;
 		}
 	}
     } else {
 	glyph = 0;
 	while ( (sc = SFDGetChar(sfd,sf))!=NULL ) {
-	    if ( sc->ttf_glyph==-1 )
-		sc->ttf_glyph = glyph++;
+	    if ( sc->orig_pos==0xffff )
+		sc->orig_pos = glyph++;
 	    else
-		glyph = sc->ttf_glyph+1;
+		glyph = sc->orig_pos+1;
 	    GProgressNext();
 	}
 	if ( cidmaster==NULL ) {

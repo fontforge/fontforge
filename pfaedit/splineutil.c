@@ -1634,7 +1634,7 @@ static void SplineFontFromType1(SplineFont *sf, FontDict *fd) {
 		sf->chars[i] = SplineCharCopy(fd->charprocs->values[k],sf);
 	    used[k] = true;
 	}
-	sf->chars[i]->ttf_glyph = k;
+	sf->chars[i]->orig_pos = k;
 	sf->chars[i]->vwidth = sf->ascent+sf->descent;
 	sf->chars[i]->enc = i;
 	sf->chars[i]->unicodeenc = UniFromName(encoding[i]);
@@ -1728,7 +1728,7 @@ return( NULL );
 	chars[i]->vwidth = sf->subfonts[j]->ascent+sf->subfonts[j]->descent;
 	chars[i]->unicodeenc = uni;
 	chars[i]->enc = i;
-	chars[i]->ttf_glyph = i;
+	chars[i]->orig_pos = i;
 	/* There better not be any references (seac's) because we have no */
 	/*  encoding on which to base any fixups */
 	if ( chars[i]->refs!=NULL )
@@ -2878,7 +2878,7 @@ void TTFLangNamesFree(struct ttflangname *l) {
 SplineChar *SplineCharCreate(void) {
     SplineChar *sc = chunkalloc(sizeof(SplineChar));
     sc->color = COLOR_DEFAULT;
-    sc->ttf_glyph = -1;
+    sc->orig_pos = 0xffff;
 return( sc );
 }
 

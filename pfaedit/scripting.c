@@ -2561,7 +2561,7 @@ static void bCharInfo(Context *c) {
 	else if ( strmatch( c->a.vals[1].u.sval,"Color")==0 )
 	    c->return_val.u.ival = sc->color;
 	else if ( strmatch( c->a.vals[1].u.sval,"GlyphIndex")==0 )
-	    c->return_val.u.ival = sc->ttf_glyph;
+	    c->return_val.u.ival = sc->orig_pos;
 	else if ( strmatch( c->a.vals[1].u.sval,"Comment")==0 ) {
 	    c->return_val.type = v_str;
 	    c->return_val.u.sval = sc->comment?u2def_copy(sc->comment):copy("");
