@@ -1099,13 +1099,15 @@ static void readttfcompositglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, 
 	if ( (flags & _SCALED_OFFSETS) &&
 #endif
 		(flags & _ARGS_ARE_XY) && (flags&(_SCALE|_XY_SCALE|_MATRIX))) {
-	    static int asked = 0;
+	    /*static int asked = 0;*/
 	    /* This is not what Apple documents on their website. But it is */
 	    /*  what appears to match the behavior of their rasterizer */
 	    cur->transform[4] *= sqrt(cur->transform[0]*cur->transform[0]+
 		    cur->transform[1]*cur->transform[1]);
 	    cur->transform[5] *= sqrt(cur->transform[2]*cur->transform[2]+
 		    cur->transform[3]*cur->transform[3]);
+#if 0
+	    /* Apple's Chicago is an example */
 	    if ( info->fontname!=NULL && strcmp(info->fontname,"CompositeMac")!=0 && !asked ) {
 		/* Not interested in the test font I generated myself */
 		asked = true;
@@ -1113,6 +1115,7 @@ static void readttfcompositglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, 
 		fprintf( stderr, "  I've never seen one, could you send me a copy of %s?\n", info->fontname );
 		fprintf( stderr, "  Thanks.  gww@silcom.com\n" );
 	    }
+#endif
 	}
 	}
 	if ( cur->local_enc>=info->glyph_cnt ) {
