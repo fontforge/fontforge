@@ -1903,6 +1903,18 @@ return( true );
 	}
 	free(str);
 
+	if ( xuid!=NULL ) {
+	    char *pt;
+	    for ( pt=xuid; *pt==' ' ; ++pt );
+	    if ( *pt=='[' ) {	/* People who know PS well, might want to put brackets arround the xuid base array, but I don't want them */
+		pt = copy(pt+1);
+		free( xuid );
+		xuid = pt;
+	    }
+	    for ( pt=xuid+strlen(xuid)-1; pt>xuid && *pt==' '; --pt );
+	    if ( pt >= xuid && *pt==']' ) *pt = '\0';
+	}
+
 	p->done = true;
 	SavePrefs();
 	if ( maxundoes==0 ) { FontView *fv;
