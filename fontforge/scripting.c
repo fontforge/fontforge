@@ -3100,6 +3100,50 @@ static void bMMInstanceNames(Context *c) {
     }
 }
 
+static void bMMAxisNames(Context *c) {
+    int i;
+    MMSet *mm = c->curfv->sf->mm;
+
+    if ( c->a.argc!=1 )
+	error( c, "Wrong number of arguments");
+    else if ( mm==NULL )
+	error( c, "Not a multiple master font" );
+
+    c->return_val.type = v_arr;
+    c->return_val.u.aval = galloc(sizeof(Array));
+    c->return_val.u.aval->argc = mm->axis_count;
+    c->return_val.u.aval->vals = galloc(mm->axis_count*sizeof(Val));
+    for ( i=0; i<mm->axis_count; ++i ) {
+	c->return_val.u.aval->vals[i].type = v_str;
+	c->return_val.u.aval->vals[i].u.sval = copy(mm->axes[i]);
+    }
+}
+
+static void bMMAxisBounds(Context *c) {
+    int i, axis;
+    MMSet *mm = c->curfv->sf->mm;
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_int )
+	error( c, "Bad type of argument");
+    else if ( mm==NULL )
+	error( c, "Not a multiple master font" );
+    else if ( c->a.vals[1].u.ival<0 || c->a.vals[1].u.ival>=mm->axis_count )
+	error( c, "Axis out of range");
+    axis = c->a.vals[1].u.ival;
+
+    c->return_val.type = v_arr;
+    c->return_val.u.aval = galloc(sizeof(Array));
+    c->return_val.u.aval->argc = mm->axis_count;
+    c->return_val.u.aval->vals = galloc(3*sizeof(Val));
+    for ( i=0; i<3; ++i )
+	c->return_val.u.aval->vals[i].type = v_int;
+    c->return_val.u.aval->vals[0].u.ival = mm->axismaps[axis].min * 65536;
+    c->return_val.u.aval->vals[1].u.ival = mm->axismaps[axis].def * 65536;
+    c->return_val.u.aval->vals[2].u.ival = mm->axismaps[axis].max * 65536;
+}
+
 static void bMMWeightedName(Context *c) {
     MMSet *mm = c->curfv->sf->mm;
 
@@ -3141,6 +3185,40 @@ static void bMMChangeInstance(Context *c) {
 	}
     } else
 	error( c, "Bad argument" );
+}
+
+static void Reblend(Context *c, int tonew) {
+    real blends[MmMax];
+    MMSet *mm = c->curfv->sf->mm;
+    int i;
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments");
+    else if ( mm==NULL )
+	error( c, "Not a multiple master font" );
+    else if ( c->a.vals[1].type==v_arr )
+	error( c, "Bad type of argument");
+    else if ( c->a.vals[1].u.aval->argc!=mm->axis_count )
+	error( c, "Incorrect number of blend values" );
+
+    for ( i=0; i<mm->axis_count; ++i ) {
+	if ( c->a.vals[1].u.aval->vals[i].type!=v_int )
+	    error( c, "Bad type of array element");
+	blends[i] = c->a.vals[1].u.aval->vals[i].u.ival/65536.0;
+	if ( blends[i]<mm->axismaps[i].min ||
+		blends[i]>mm->axismaps[i].max )
+	    fprintf( stderr, "Warning: %dth axis value (%g) is outside the allowed range [%g,%g]\n",
+		    i,blends[i],mm->axismaps[i].min,mm->axismaps[i].max );
+    }
+    c->curfv = MMCreateBlendedFont(mm,c->curfv,blends,tonew);
+}
+
+static void bMMChangeWeight(Context *c) {
+    Reblend(c,false);
+}
+
+static void bMMBlendToNewFont(Context *c) {
+    Reblend(c,true);
 }
 
 /* **** CID menu **** */
@@ -3278,7 +3356,7 @@ static void bInFont(Context *c) {
 	}
 	c->return_val.u.ival = (enc!=-1);
     } else
-	error( c, "Bad type of argument to InFont");
+	error( c, "Bad type of argument");
 }
 
 static void bWorthOutputting(Context *c) {
@@ -4026,8 +4104,12 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "VKernFromHKern", bVKernFromHKern },
 /* MM Menu */
     { "MMInstanceNames", bMMInstanceNames },
+    { "MMAxisNames", bMMAxisNames },
+    { "MMAxisBounds", bMMAxisBounds },
     { "MMWeightedName", bMMWeightedName },
     { "MMChangeInstance", bMMChangeInstance },
+    { "MMChangeWeight", bMMChangeWeight },
+    { "MMBlendToNewFont", bMMBlendToNewFont },
 /* CID Menu */
     { "ConvertToCID", bConvertToCID },
     { "ConvertByCMap", bConvertByCMap },
