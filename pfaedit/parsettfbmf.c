@@ -495,7 +495,7 @@ static void BDFAddDefaultGlyphs(BDFFont *bdf) {
     glyph1.sc = &sc1; glyph2.sc = &sc2;
     /* xmin and so forth are zero, and are already clear */
     glyph1.width = glyph2.width = width;
-    glyph1.bytes_per_line = glyph2.bytes_per_line = 0;
+    glyph1.bytes_per_line = glyph2.bytes_per_line = 1;	/* Needs to be 1 or BCRegularizeBitmap gets upset */
     glyph1.bitmap = glyph2.bitmap = (uint8 *) "";
     glyph1.enc = 1; glyph2.enc = 2;
     if ( bdf->chars[1]==NULL )
@@ -941,6 +941,7 @@ void ttfdumpbitmap(SplineFont *sf,struct alltabs *at,int32 *sizes) {
     /*  them used, and Apple also has a subtable MS doesn't support, but so what? */
     /* Oh, of course. Apple documents version 0x10000, but it actually uses */
     /*  version 0x20000. How silly of me to think the docs might be right */
+    /* (Apple now documents version 0x20000) */
     /*if ( at->msbitmaps ) {*/
 	putlong(at->bdat,0x20000);
 	putlong(at->bloc,0x20000);

@@ -684,7 +684,7 @@ static void InitializeHints(SplineChar *sc, EdgeList *es) {
     }
 }
 
-/* After a bitmap has been compressed, it's sizes may not complie with the */
+/* After a bitmap has been compressed, it's sizes may not comply with the */
 /*  expectations for saving images */
 void BCRegularizeBitmap(BDFChar *bdfc) {
     int bpl =(bdfc->xmax-bdfc->xmin)/8+1;
