@@ -4864,25 +4864,63 @@ static void redocvt(struct alltabs *at) {
 
 /* scripts (for opentype) that I understand */
 /* these are in alphabetical order */
-enum scripts { script_arabic, script_cyrillic, script_greek, script_cjk,
-	script_hebrew, script_latin, script_max };
-static uint32 scripts[] = {
-    CHR('a','r','a','b'),
-    CHR('c','y','r','l'),
-    CHR('g','r','e','k'),
-    CHR('h','a','n','i'),	/* Er... I'm guessing this is what I should use for CJK 'vrt2' tables */
-    CHR('h','e','b','r'),
-    CHR('l','a','t','n'),
-    -1
+enum scripts { script_arabic, script_armenian, script_bengali, script_bopo,
+	script_cansyl, script_cherokee, script_cyrillic, script_devanagari,
+	script_ethiopic, script_georgian, script_greek, script_gujarati,
+	script_gurmukhi, script_hangul, script_cjk, script_hebrew,
+	script_hiragana, script_jamo
+	/* Incomplete!!! */
 };
 
-/* I'll bundle latin/cyrillic/greek all into one lookup, and hebrew/arabic into*/
-/*  another (the only reason I distinguish is be I need to specify direction) */
-static int FeatureLanguageMask(SplineFont *sf,int iskern) {
-    int mask=0;
+static int scripts[][11] = {
+/* Arabic */	{ CHR('a','r','a','b'), 0x0600, 0x06ff, 0xfb50, 0xfdff, 0xfe70, 0xfeff },
+/* Armenian */	{ CHR('a','r','m','n'), 0x0530, 0x058f, 0xfb13, 0xfb17 },
+/* Bengali */	{ CHR('b','e','n','g'), 0x0980, 0x09ff },
+/* Bopomofo */	{ CHR('b','o','p','o'), 0x3100, 0x312f },
+/* Braille */	{ CHR('b','r','a','i'), 0x2800, 0x28ff },
+/* Canadian Syl*/{CHR('c','a','n','s'), 0x1400, 0x167f },
+/* Cherokee */	{ CHR('c','h','e','r'), 0x13a0, 0x13ff },
+/* Cyrillic */	{ CHR('c','y','r','l'), 0x0500, 0x052f },
+/* Devanagari */{ CHR('d','e','v','a'), 0x0900, 0x097f },
+/* Ethiopic */	{ CHR('e','t','h','i'), 0x1300, 0x139f },
+/* Georgian */	{ CHR('g','e','o','r'), 0x1080, 0x10ff },
+/* Greek */	{ CHR('g','r','e','k'), 0x0370, 0x03ff, 0x1f00, 0x1fff },
+/* Gujarati */	{ CHR('g','u','j','r'), 0x0a80, 0x0aff },
+/* Gurmukhi */	{ CHR('g','u','r','u'), 0x0a00, 0x0a7f },
+/* Hangul */	{ CHR('h','a','n','g'), 0xac00, 0xd7af },
+/* CJKIdeogra */{ CHR('h','a','n','i'), 0x3300, 0x9fff, 0xf900, 0xfaff, 0x020000, 0x02ffff },
+/* Hebrew */	{ CHR('h','e','b','r'), 0x0590, 0x05ff, 0xfb1e, 0xfb4ff },
+/* Hiragana */	{ CHR('h','i','r','a'), 0x3040, 0x309f },
+/* Hangul Jamo*/{ CHR('j','a','m','o'), 0x1100, 0x11ff, 0x3130, 0x319f, 0xffa0, 0xffdf },
+/* Katakana */	{ CHR('k','a','n','a'), 0x30a0, 0x30ff, 0xff60, 0xff9f },
+/* Khmer */	{ CHR('k','h','m','r'), 0x1780, 0x17ff },
+/* Kannada */	{ CHR('k','n','d','a'), 0x0c80, 0x0cff },
+/* Latin */	{ CHR('l','a','t','n'), 0x0000, 0x02af, 0x1d00, 0x1eff, 0xfb00, 0xfb0f, 0xff00, 0xff5f, 0, 0 },
+/* Lao */	{ CHR('l','a','o',' '), 0x0e80, 0x0eff },
+/* Malayalam */	{ CHR('m','l','y','m'), 0x0d00, 0x0d7f },
+/* Mongolian */	{ CHR('m','o','n','g'), 0x1800, 0x18af },
+/* Myanmar */	{ CHR('m','y','m','r'), 0x1000, 0x107f },
+/* Ogham */	{ CHR('o','g','a','m'), 0x1680, 0x169f },
+/* Oriya */	{ CHR('o','r','y','a'), 0x0b00, 0x0b7f },
+/* Runic */	{ CHR('r','u','n','r'), 0x16a0, 0x16ff },
+/* Sinhala */	{ CHR('s','i','n','h'), 0x0d80, 0x0dff },
+/* Syriac */	{ CHR('s','y','r','c'), 0x0700, 0x074f },
+/* Tamil */	{ CHR('t','a','m','l'), 0x0b80, 0x0bff },
+/* Telugu */	{ CHR('t','e','l','u'), 0x0c00, 0x0c7f },
+/* Thaana */	{ CHR('t','h','a','a'), 0x0780, 0x07bf },
+/* Thai */	{ CHR('t','h','a','i'), 0x0e00, 0x0e7f },
+/* Tibetan */	{ CHR('t','i','b','t'), 0x0f00, 0x0fff },
+/* Yi */	{ CHR('y','i',' ',' '), 0xa000, 0xa73f },
+		{ -1 }
+};
+/* I'll bundle all left to right scripts into one lookup, and hebrew/arabic into*/
+/*  another (the only reason I distinguish is because I need to specify direction) */
+static int *FeatureScriptMask(SplineFont *sf,int iskern, int mask[]) {
     SplineFont *sub;
-    int k,i,u;
+    int k,i,u, s;
 
+    for ( s=0; scripts[s][0]!=-1; ++s )
+	mask[s>>5] = 0;
     k = 0;
     do {
 	sub = ( sf->subfontcnt==0 ) ? sf : sf->subfonts[k];
@@ -4891,22 +4929,20 @@ static int FeatureLanguageMask(SplineFont *sf,int iskern) {
 			((iskern && sub->chars[i]->kerns!=NULL) ||
 			 (!iskern && sub->chars[i]->ligofme!=NULL)) &&
 			(u=sub->chars[i]->unicodeenc)!=-1 ) {
-	    if ( isrighttoleft(u)) {
-		/* I assume that right to lefts are either hebrew or arabic */
-		if (( u>=0x0590 && u<=0x05ff ) || ( u>=0xfb1d && u<=0xfb4f ))
-		    mask |= (1<<script_hebrew);
-		else
-		    mask |= (1<<script_arabic);
-	    } else {
-		if ( u>0x0400 && u<=0x52f )
-		    mask |= (1<<script_cyrillic);
-		else if (( u>=0x0370 && u<=0x3ff ) || ( u>=0x1f00 && u<=0x1fff))
-		    /* I include coptic as "greek" script */
-		    mask |= (1<<script_greek);
-		else
-		    /* I assume everything else is latin */
-		    mask |= (1<<script_latin);
+	    for ( s=0; scripts[s][0]!=-1; ++s ) {
+		for ( k=1; scripts[s][k+1]!=0; k += 2 )
+		    if ( u>=scripts[s][k] && u<=scripts[s][k+1] )
+		break;
+		if ( scripts[s][k+1]!=0 )
+	    break;
 	    }
+	    if ( scripts[s][0]==-1 ) {
+		/* Pick a default... */
+		for ( s=0; scripts[s][1]!=0; ++s );	/* Pick latin */
+	    }
+	    if ( !iskern && s==script_jamo )	/* a ligature of jamo is a hangul sylable */
+		s = script_hangul;
+	    mask[s>>5] |= (1<<(s&0x1f));
 	}
 	++k;
     } while ( k<sf->subfontcnt );
@@ -5209,9 +5245,10 @@ static void dumpGSUBvrt2(FILE *gsub,SplineFont *sf,struct simplesubs *subs,struc
 
 static void dumpg___info(struct alltabs *at, SplineFont *sf,int is_gpos) {
     /* Dump out either a gpos or a gsub table. gpos handles kerns, gsub ligs */
-    int mask = FeatureLanguageMask(sf,is_gpos);
+    int mask[3];
     struct simplesubs *subs = is_gpos?NULL : VerticalRotationGlyphs(sf);
-    int i,j,script_cnt=0, lookup_cnt=0, l2r=0, r2l=0, han=0;
+    int i,j,script_cnt=0, lookup_cnt=0, l2r=0, r2l=0, han=0, hansimple=0;
+    int script_size;
     int32 r2l_pos;
     int g___len;
     FILE *g___;
@@ -5220,48 +5257,69 @@ static void dumpg___info(struct alltabs *at, SplineFont *sf,int is_gpos) {
     int tag = is_gpos?CHR('k','e','r','n'):CHR('l','i','g','a');
     int tags[3];
 
-    if ( mask==0 && subs==NULL )	/* No recognizable kerns */
+    memset(mask,0,sizeof(mask));
+    FeatureScriptMask(sf,is_gpos, mask);
+    if ( mask[0]==0 && mask[1]==0 && mask[2]==0 && subs==NULL )	/* No recognizable kerns */
 return;
+    if ( mask[script_cjk>>5] & (1<<(script_cjk&0x1f)) )
+	hansimple=1;
     if ( subs!=NULL )
-	mask |= 1<<script_cjk;
-    for ( i=0; i<script_max; ++i )
-	if ( mask&(1<<i))
+	mask[script_cjk>>5] |= 1<<(script_cjk&0x1f);
+    for ( i=0; scripts[i][0]!=-1; ++i ) {
+	if ( mask[i>>5]&(1<<(i&0x1f))) {
 	    ++script_cnt;
-    if ( mask&((1<<script_latin)|(1<<script_cyrillic)|(1<<script_greek)) )
-	l2r = 1;
-    if ( mask&((1<<script_arabic)|(1<<script_hebrew)) )
-	r2l = 1;
+	    if ( i==script_arabic || i==script_hebrew )
+		r2l = true;
+	    else
+		l2r = true;
+	}
+    }
     if ( subs!=NULL )
 	han = 1;
     lookup_cnt = l2r+r2l+han;
-    tags[0] = tag; tags[1] = tag; tags[l2r+r2l]= CHR('v','r','t','2');
+    tags[0] = tag; tags[1] = tag;
+    if ( han )
+	tags[l2r+r2l]= CHR('v','r','t','2');
     
     g___ = tmpfile();
     if ( is_gpos ) at->gpos = g___; else at->gsub = g___;
     putlong(g___,0x10000);		/* version number */
     putshort(g___,10);		/* offset to script table */
-    putshort(g___,10+2+script_cnt*18);	/* offset to features table */
-    putshort(g___,10+2+script_cnt*18+(lookup_cnt==1?14:lookup_cnt==3?40:
+    script_size = 10+2+script_cnt*18;
+    if ( han && hansimple )
+	script_size += 2;
+    putshort(g___,script_size);	/* offset to features table */
+    putshort(g___,script_size+(lookup_cnt==1?14:lookup_cnt==3?40:
 					subs==NULL?28:26));
 	    /* offset to features table */
 
 /* Now the scripts, first the list */
     putshort(g___,script_cnt);
-    for ( i=j=0; i<script_max; ++i ) if ( mask&(1<<i)) {
-	putlong(g___,scripts[i]);
-	putshort(g___,2+6*script_cnt+j*12);
-	++j;
+    j = 2+6*script_cnt;
+    for ( i=0; scripts[i][0]!=-1; ++i ) if ( mask[i>>5]&(1<<(i&0x1f))) {
+	putlong(g___,scripts[i][0]);
+	putshort(g___,j);
+	j+=12;
+	if ( i==script_cjk && han && hansimple )
+	    j+=2;
     }
 /* Then each script's default language */
-    for ( i=j=0; i<script_max; ++i ) if ( mask&(1<<i)) {
+    for ( i=0; scripts[i][0]!=-1; ++i ) if ( mask[i>>5]&(1<<(i&0x1f))) {
 	putshort(g___,4);			/* Offset from here to start of default language */
 	putshort(g___,0);			/* no other languages */
 	putshort(g___,0);			/* Offset to something not yet defined */
 	putshort(g___,0xffff);			/* No required features */
-	putshort(g___,1);			/* one feature */
-	putshort(g___,(1<<i)&((1<<script_latin)|(1<<script_greek)|(1<<script_cyrillic))?0:
-			(1<<i)&((1<<script_arabic)|(1<<script_hebrew))?l2r:	/* if arabic&latin then arabic has feature 1, else feature 0 */
-			l2r+r2l);		/* if arabic&latin&cjk then cjk has feature 2, else if either latin or arabic and cjk then 1, if just cjk then 0 */
+	if ( i==script_cjk && han && hansimple ) {
+	    putshort(g___,2);			/* two features */
+	    putshort(g___,0);				/* left to right features */
+	    putshort(g___,l2r+r2l);			/* virtical feature */
+	} else if ( i==script_cjk && han ) {
+	    putshort(g___,1);				/* one feature */
+	    putshort(g___,l2r+r2l);			/* virtical feature */
+	} else {
+	    putshort(g___,1);				/* one feature */
+	    putshort(g___,(i!=script_arabic && i!=script_hebrew)?0:l2r );
+	}
     }
 
 /* Now the features */
