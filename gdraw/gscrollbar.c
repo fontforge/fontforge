@@ -458,8 +458,11 @@ return;
     gsb->thumbsize = (gsb->g.vert?gsb->g.inner.height:gsb->g.inner.width);
     if ( sb_max-sb_min > sb_pagesize )
 	gsb->thumbsize = (gsb->thumbsize*gsb->sb_pagesize)/(sb_max-sb_min);
-    if ( gsb->thumbsize<2*gsb->thumbborder )
-	gsb->thumbsize = 2*gsb->thumbborder+2;
+    if ( gsb->thumbsize<2*gsb->thumbborder+4 ) {
+	gsb->thumbsize = 2*gsb->thumbborder+8;
+	if ( gsb->thumbsize>(gsb->g.vert?gsb->g.inner.height:gsb->g.inner.width) )
+	    gsb->thumbsize = (gsb->g.vert?gsb->g.inner.height:gsb->g.inner.width);
+    }
     GScrollBarSetPos(g,gsb->sb_pos);
 }
 
