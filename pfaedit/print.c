@@ -570,8 +570,11 @@ static void samplestartpage(PI *pi ) {
 	fprintf(pi->out,"(Sample Sizes of %s) 80 758 n_show\n", pi->sf->fullname );
     fprintf(pi->out,"40 %d translate\n", pi->pageheight-34-
 	    pi->pointsize*pi->sf->ascent/(pi->sf->ascent+pi->sf->descent) );
-    fprintf(pi->out,"/%s findfont %d scalefont setfont\n", pi->sf->fontname,
-	    pi->pointsize);
+    if ( pi->iscid )
+	fprintf(pi->out,"MyFontDict /%s get setfont\n", pi->psfontname );
+    else
+	fprintf(pi->out,"/%s findfont %d scalefont setfont\n", pi->sf->fontname,
+		pi->pointsize);
 
     pi->ypos = -30;
 }
