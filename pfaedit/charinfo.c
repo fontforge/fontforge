@@ -607,6 +607,8 @@ GTextInfo simplepos_tags[] = {
     { (unichar_t *) _STR_AltVertMet, NULL, 0, 0, (void *) CHR('v','a','l','t'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_AltVertHalfMet, NULL, 0, 0, (void *) CHR('v','h','a','l'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_AltVertPropMet, NULL, 0, 0, (void *) CHR('v','p','a','l'), NULL, false, false, false, false, false, false, false, true },
+/* Added by me so I can do round trip conversion of TeX tfm files */
+    { (unichar_t *) _STR_ItalicCorrection, NULL, 0, 0, (void *) CHR('I','T','L','C'), NULL, false, false, false, false, false, false, false, true },
     { NULL }
 };
 
@@ -2749,6 +2751,18 @@ void SCInsertPST(SplineChar *sc,PST *new) {
 	sc->possub = new;
     else
 	prev->next = new;
+}
+
+PST *SCFindPST(SplineChar *sc,int type,uint32 tag,int sli,int flags) {
+    PST *old;
+
+    for ( old=sc->possub; old!=NULL; old = old->next ) {
+	if ( old->tag==tag && old->type==type &&
+		(old->script_lang_index == sli || sli==-1) &&
+		(old->flags == flags || flags==-1))
+return( old );
+    }
+return( NULL );
 }
 
 void SCAppendPosSub(SplineChar *sc,enum possub_type type, char **d) {

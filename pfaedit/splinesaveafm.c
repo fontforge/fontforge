@@ -179,6 +179,22 @@ static void SubsNew(SplineChar *to,enum possub_type type,int tag,char *component
     pst->script_lang_index = SCDefaultSLI(to->parent,default_script);
     pst->tag = tag;
     pst->u.alt.components = components;
+    if ( type == pst_ligature )
+	pst->u.lig.lig = to;
+    SCInsertPST(to,pst);
+}
+
+static void PosNew(SplineChar *to,int tag,int dx, int dy, int dh, int dv) {
+    PST *pst;
+
+    pst = chunkalloc(sizeof(PST));
+    pst->type = pst_position;
+    pst->script_lang_index = SCDefaultSLI(to->parent,to);
+    pst->tag = tag;
+    pst->u.pos.xoff = dx;
+    pst->u.pos.yoff = dy;
+    pst->u.pos.h_adv_off = dh;
+    pst->u.pos.v_adv_off = dv;
     SCInsertPST(to,pst);
 }
 
@@ -226,6 +242,9 @@ static void tfmDoCharList(SplineFont *sf,int i,int *charlist) {
     int used[256], ucnt, len, was;
     char *components;
 
+    if ( i>=sf->charcnt || sf->chars[i]==NULL )
+return;
+
     ucnt = 0, len=0;
     while ( i!=-1 ) {
 	if ( i<sf->charcnt && sf->chars[i]!=NULL ) {
@@ -253,6 +272,9 @@ static void tfmDoExten(SplineFont *sf,int i,uint8 *ext) {
     int j, len, k;
     char *names[4], *components;
 
+    if ( i>=sf->charcnt || sf->chars[i]==NULL )
+return;
+
     names[0] = names[1] = names[2] = names[3] = ".notdef";
     for ( j=len=0; j<4; ++j ) {
 	k = ext[j];
@@ -270,10 +292,20 @@ static void tfmDoExten(SplineFont *sf,int i,uint8 *ext) {
 	    sf->chars[i]);
 }
 
+static void tfmDoItalicCor(SplineFont *sf,int i,uint8 *ic) {
+    int cor = (ic[0]<<24)|(ic[1]<<16)|(ic[2]<<8)|ic[3];
+
+    if ( i>=sf->charcnt || sf->chars[i]==NULL )
+return;
+
+    PosNew(sf->chars[i],CHR('I','T','L','C'),0,0,
+	    ((double)cor)*(sf->ascent+sf->descent)/(1<<20),0);
+}
+
 int LoadKerningDataFromTfm(SplineFont *sf, char *filename) {
     FILE *file = fopen(filename,"r");
-    int i, tag, left;
-    uint8 *ligkerntab, *kerntab, *ext;
+    int i, tag, left, ictag;
+    uint8 *ligkerntab, *kerntab, *ext, *ictab;
     int head_len, first, last, width_size, height_size, depth_size, italic_size,
 	    ligkern_size, kern_size, esize, param_size;
     int charlist[256], ept[256];
@@ -296,18 +328,16 @@ return( 0 );
 	fclose(file);
 return( 0 );
     }
-    if ( ligkern_size==0 || kern_size==0 ) {
-	fclose(file);
-return( 1 );	/* we successfully read no data */
-    }
     kerntab = gcalloc(kern_size,sizeof(int32));
     ligkerntab = gcalloc(ligkern_size,sizeof(int32));
     ext = gcalloc(esize,sizeof(int32));
+    ictab = gcalloc(italic_size,sizeof(int32));
     fseek( file,(6+1)*sizeof(int32),SEEK_SET);
     sf->texdata.designsize = getlong(file);
     fseek( file,
-	    (6+head_len+(last-first+1)+width_size+height_size+depth_size+italic_size)*sizeof(int32),
+	    (6+head_len+(last-first+1)+width_size+height_size+depth_size)*sizeof(int32),
 	    SEEK_SET);
+    fread( ictab,1,italic_size*sizeof(int32),file);
     fread( ligkerntab,1,ligkern_size*sizeof(int32),file);
     fread( kerntab,1,kern_size*sizeof(int32),file);
     fread( ext,1,esize*sizeof(int32),file);
@@ -324,7 +354,9 @@ return( 1 );	/* we successfully read no data */
     for ( i=first; i<=last; ++i ) {
 	/* width = */ getc(file);
 	/* height<<4 | depth indeces = */ getc( file );
-	tag = (getc(file)&3);
+	ictag = getc(file);
+	tag = (ictag&3);
+	ictag>>=2;
 	left = getc(file);
 	if ( tag==1 )
 	    tfmDoLigKern(sf,i,left,ligkerntab,kerntab);
@@ -332,6 +364,8 @@ return( 1 );	/* we successfully read no data */
 	    charlist[i] = left;
 	else if ( tag==3 )
 	    tfmDoExten(sf,i,ext+left);
+	if ( ictag!=0 )
+	    tfmDoItalicCor(sf,i,ictab+ictag);
     }
 
     for ( i=first; i<=last; ++i ) {
@@ -339,7 +373,7 @@ return( 1 );	/* we successfully read no data */
 	    tfmDoCharList(sf,i,charlist);
     }
     
-    free( ligkerntab); free(kerntab); free(ext);
+    free( ligkerntab); free(kerntab); free(ext); free(ictab);
     fclose(file);
 return( 1 );
 }
@@ -1571,7 +1605,7 @@ return;
     sf->texdata.params[2] = rint(spacew/2);		/* stretch_space */
     sf->texdata.params[3] = rint(spacew/3);		/* shrink space */
     if ( bd.xheight>0 )
-	sf->texdata.params[4] = rint((bd.xheight*(1<<20))/(sf->ascent+sf->descent));
+	sf->texdata.params[4] = rint((((double) bd.xheight)*(1<<20))/(sf->ascent+sf->descent));
     sf->texdata.params[5] = 1<<20;			/* quad */
     sf->texdata.params[6] = rint(spacew/3);		/* extra space after sentence period */
 
@@ -1613,6 +1647,7 @@ int TfmSplineFont(FILE *tfm, SplineFont *sf, int formattype) {
     LigList *l;
     int style, any;
     uint32 *lkarray;
+    PST *pst;
 
     SFLigaturePrepare(sf);
     LigatureClosure(sf);		/* Convert 3 character ligs to a set of two character ones when possible */
@@ -1680,9 +1715,12 @@ int TfmSplineFont(FILE *tfm, SplineFont *sf, int formattype) {
 	    heights[i] = b.maxy;
 	if ( b.miny<0 )
 	    depths[i] = -b.miny;
-	if ( (style&sf_italic) && b.maxx>sf->chars[i]->width )
-	    italics[i] = (b.maxx-sf->chars[i]->width)*(1<<20)/(sf->ascent+sf->descent) +
-		    ((1<<20)>>4);	/* With a 1/16 em white space after it */
+	if ( (pst=SCFindPST(sf->chars[i],pst_position,CHR('I','T','L','C'),-1,-1))!=NULL )
+	    italics[i] = pst->u.pos.h_adv_off;
+	else if ( (style&sf_italic) && b.maxx>sf->chars[i]->width )
+	    italics[i] = (b.maxx-sf->chars[i]->width) +
+			(sf->ascent+sf->descent)/16.0;
+				    /* With a 1/16 em white space after it */
 	if ( first==-1 ) first = i;
 	last = i;
     }

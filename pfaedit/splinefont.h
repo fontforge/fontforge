@@ -800,6 +800,7 @@ extern AnchorClass *AnchorClassMkMkMatch(SplineChar *sc1,SplineChar *sc2,
 	AnchorPoint **_ap1,AnchorPoint **_ap2 );
 extern AnchorClass *AnchorClassCursMatch(SplineChar *sc1,SplineChar *sc2,
 	AnchorPoint **_ap1,AnchorPoint **_ap2 );
+extern PST *SCFindPST(SplineChar *sc,int type,uint32 tag,int sli,int flags);
 extern void SCInsertPST(SplineChar *sc,PST *new);
 extern void PSTFree(PST *lig);
 extern void PSTsFree(PST *lig);

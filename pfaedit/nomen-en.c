@@ -1315,6 +1315,7 @@ static char str_ThirdWidths = "Third Widths";
 static char str_AltVertMet = "Alternate Vertical Metrics";
 static char str_AltVertHalfMet = "Alternate Vertical Half Metrics";
 static char str_AltVertPropMet = "Proportional Alternate Vertical Metrics";
+static char str_ItalicCorrection = "Italic Correction";
  /* simple substitution feature tags */
 static char str_AllAlt = "Access All Alternates";
 static char str_AboveBaseForms = "Above Base Forms";
