@@ -334,6 +334,21 @@ static void bError(Context *c) {
     error( c, c->a.vals[1].u.sval );
 }
 
+static void bPostNotice(Context *c) {
+    static const unichar_t format[] = { '%','.','2','0','0','h','s', '\0' };
+    static const unichar_t notice[] = { 'A','t','t','e','n','t','i','o','n',  '\0' };
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type!=v_str )
+	error( c, "Expected string argument" );
+
+    if ( screen_display==NULL )
+	fprintf(stderr,"%s\n", c->a.vals[1].u.sval );
+    else
+	GWidgetPostNotice( notice, format, c->a.vals[1].u.sval );
+}
+
 static void bAskUser(Context *c) {
     char *quest, *def="";
 
@@ -2057,6 +2072,7 @@ struct builtins { char *name; void (*func)(Context *); int nofontok; } builtins[
     { "Print", bPrint, 1 },
     { "Error", bError, 1 },
     { "AskUser", bAskUser, 1 },
+    { "PostNotice", bPostNotice, 1 },
     { "Array", bArray, 1 },
     { "Strsub", bStrsub, 1 },
     { "Strlen", bStrlen, 1 },
