@@ -1621,6 +1621,7 @@ static void CVChangeChar(CharView *cv, int i ) {
 return;
     if ( (sc = sf->chars[i])==NULL )
 	sc = SFMakeChar(sf,i);
+    sc = SCDuplicate(sc);
 
     if ( sc==NULL || cv->sc == sc )
 return;
@@ -1728,12 +1729,18 @@ return;
 	    (event->u.chr.state&ksm_control) ) {
 	/* some people have remapped keyboards so that shift is needed to get [] */
 	int pos;
-	if ( event->u.chr.keysym=='[' )
-	    pos = cv->sc->enc-1;
-	else
-	    pos = cv->sc->enc+1;
+	SplineFont *sf = cv->sc->parent;
+	if ( event->u.chr.keysym=='[' ) {
+	    for ( pos = cv->sc->enc-1; pos>=0 &&
+		    sf->chars[pos]!=SCDuplicate(sf->chars[pos]); --pos );
+	} else {
+	    for ( pos = cv->sc->enc+1; pos<sf->charcnt &&
+		    sf->chars[pos]!=SCDuplicate(sf->chars[pos]); ++pos );
+	}
+#if 0		/* Werner doesn't want it to wrap */
 	if ( pos<0 ) pos = cv->sc->parent->charcnt-1;
 	else if ( pos>= cv->sc->parent->charcnt ) pos = 0;
+#endif
 	if ( pos>=0 && pos<cv->sc->parent->charcnt )
 	    CVChangeChar(cv,pos);
     } else if ( event->u.chr.keysym == GK_Left ||
@@ -3776,11 +3783,14 @@ static void CVMenuChangeChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     if ( cv->searcher!=NULL )
 return;
     if ( mi->mid == MID_Next ) {
-	pos = cv->sc->enc+1;
+	for ( pos = cv->sc->enc+1; pos<sf->charcnt &&
+		sf->chars[pos]!=SCDuplicate(sf->chars[pos]); ++pos );
     } else if ( mi->mid == MID_Prev ) {
-	pos = cv->sc->enc-1;
+	for ( pos = cv->sc->enc-1; pos>=0 &&
+		sf->chars[pos]!=SCDuplicate(sf->chars[pos]); --pos );
     } else if ( mi->mid == MID_NextDef ) {
-	for ( pos = cv->sc->enc+1; pos<sf->charcnt && sf->chars[pos]==NULL; ++pos );
+	for ( pos = cv->sc->enc+1; pos<sf->charcnt &&
+		(sf->chars[pos]==NULL || sf->chars[pos]!=SCDuplicate(sf->chars[pos])); ++pos );
 	if ( pos>=sf->charcnt ) {
 	    if ( cv->sc->enc<0xa140 && sf->encoding_name==em_big5 )
 		pos = 0xa140;
@@ -3798,7 +3808,8 @@ return;
 return;
 	}
     } else if ( mi->mid == MID_PrevDef ) {
-	for ( pos = cv->sc->enc-1; pos>=0 && sf->chars[pos]==NULL; --pos );
+	for ( pos = cv->sc->enc-1; pos>=0 &&
+		(sf->chars[pos]==NULL || sf->chars[pos]!=SCDuplicate(sf->chars[pos])); --pos );
 	if ( pos<0 )
 return;
     }
@@ -6029,6 +6040,8 @@ CharView *CharViewCreate(SplineChar *sc, FontView *fv) {
     GGadgetData gd;
     GRect gsize;
     unichar_t ubuf[300];
+
+    sc = SCDuplicate(sc);	/* If they open a duplicate encoding point they should go to the real glyph */
 
     cv->sc = sc;
     SCLigCaretCheck(sc,false);

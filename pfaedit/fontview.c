@@ -986,7 +986,7 @@ static void FVSameGlyphAs(FontView *fv) {
     RefChar *base = CopyContainsRef(sf);
     int i;
 
-    if ( FVAnyCharSelected(fv)==-1 || base==NULL )
+    if ( FVAnyCharSelected(fv)==-1 || base==NULL || fv->cidmaster!=NULL )
 return;
     PasteIntoFV(fv,true);
     for ( i=0; i<sf->charcnt; ++i )
@@ -1345,7 +1345,7 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = not_pasteable;
 	  break;
 	  case MID_SameGlyphAs:
-	    mi->ti.disabled = not_pasteable || base==NULL ||
+	    mi->ti.disabled = not_pasteable || base==NULL || fv->cidmaster!=NULL ||
 		    fv->selected[base->local_enc];	/* Can't be self-referential */
 	  break;
 	  case MID_Join:

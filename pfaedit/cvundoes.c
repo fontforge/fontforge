@@ -1189,8 +1189,11 @@ return( cur->undotype==ut_bitmapsel || cur->undotype==ut_noop );
 
 RefChar *CopyContainsRef(SplineFont *sf) {
     Undoes *cur = &copybuffer;
-    if ( cur->undotype==ut_multiple )
+    if ( cur->undotype==ut_multiple ) {
 	cur = cur->u.multiple.mult;
+	if ( cur->next!=NULL )
+return( NULL );
+    }
     if ( cur->undotype==ut_composit )
 	cur = cur->u.composit.state;
     if ( cur==NULL || (cur->undotype!=ut_state && cur->undotype!=ut_tstate &&
@@ -1330,6 +1333,7 @@ static Undoes *SCCopyAll(SplineChar *sc,int full) {
 	    cur->u.state.comment = copymetadata ? u_copy(sc->comment) : NULL;
 	    cur->u.state.possub = copymetadata ? PSTCopy(sc->possub,sc,sc->parent) : NULL;
 	} else {		/* Or just make a reference */
+	    sc = SCDuplicate(sc);
 	    cur->undotype = ut_state;
 	    cur->u.state.refs = ref = chunkalloc(sizeof(RefChar));
 	    ref->unicode_enc = sc->unicodeenc;

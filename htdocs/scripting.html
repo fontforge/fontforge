@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 8-Apr-2003 -->
+  <!-- AP: Last modified: 18-Apr-2003 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -791,6 +791,11 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
   <DD>
     Copies the clipboard into the current font (merging with what was there before)
   <DT>
+    SameGlyphAs
+  <DD>
+    If the clipboard contains a reference to a single character then this makes
+    all selected characters refer to that one.
+  <DT>
     Clear
   <DD>
     Clears out all selected characters
@@ -867,7 +872,9 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
   <DT>
     Reencode(encoding-name[,force])
   <DD>
-    Reencodes the current font into the given encoding which may be:<BR>
+    Reencodes the current font into the given encoding which may
+    be:<BR>
+    compacted,original,<BR>
     iso8859-1, isolatin1, latin1, iso8859-2, latin2, iso8859-3, latin3, iso8859-4,
     latin4, iso8859-5, iso8859-6, iso8859-7, iso8859-8, iso8859-9, iso8859-10,
     iso8859-13, iso8859-14, iso8859-15, latin0, koi8-r, AdobeStandardEncoding,

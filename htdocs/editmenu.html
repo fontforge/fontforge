@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 3-Apr-2003 -->
+  <!-- AP: Last modified: 18-Apr-2003 -->
   <TITLE>The Edit Menu</TITLE>
 </HEAD>
 <BODY>
@@ -37,6 +37,8 @@ in text fields.
     <A HREF="#Paste">Paste</A>
   <LI>
     <A HREF="#PasteInto">Paste Into</A>
+  <LI>
+    <A HREF="#SameGlyphAs">Same Glyph As</A>
   <LI>
     <A HREF="#Clear">Clear</A>
   <LI>
@@ -256,6 +258,15 @@ view this menu will be disabled when one of the text fields has the focus.
   <DD>
     Only available in the fontview. Just like Paste, except it does not clear
     the contents of the character before adding to it.
+  <DT>
+    <A NAME="SameGlyphAs">Same Glyph As</A>
+  <DD>
+    Only available in the fontview. If the clipboard contains a single reference
+    to a glyph then applying this command makes all selected encoding points
+    refer to that same glyph. (For example the non-breaking-space character (U+00A0)
+    frequently uses the same glyph as the space character. To accomplish this,
+    select the space character, Copy Ref, select the non-breaking-space character
+    and Same Glyph As).
   <DT>
     <A NAME="Clear">Clear</A>
   <DD>
