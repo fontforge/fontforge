@@ -1292,25 +1292,34 @@ static void bWritePfm(Context *c) {
 static void bExport(Context *c) {
     int format,i ;
     BDFFont *bdf;
+    char *pt, *format_spec;
+    char buffer[20];
 
     if ( c->a.argc!=2 && c->a.argc!=3 )
 	error( c, "Wrong number of arguments");
     if ( c->a.vals[1].type!=v_str || (c->a.argc==3 && c->a.vals[2].type!=v_int ))
 	error( c, "Bad type of arguments");
-    if ( strmatch(c->a.vals[1].u.sval,"eps")==0 )
+    pt = c->a.vals[1].u.sval;
+    sprintf( buffer, "%%n_%%f.%.4s", pt);
+    format_spec = buffer;
+    if ( strrchr(pt,'.')!=NULL ) {
+	format_spec = pt;
+	pt = strrchr(pt,'.')+1;
+    }
+    if ( strmatch(pt,"eps")==0 )
 	format = 0;
-    else if ( strmatch(c->a.vals[1].u.sval,"fig")==0 )
+    else if ( strmatch(pt,"fig")==0 )
 	format = 1;
-    else if ( strmatch(c->a.vals[1].u.sval,"svg")==0 )
+    else if ( strmatch(pt,"svg")==0 )
 	format = 2;
-    else if ( strmatch(c->a.vals[1].u.sval,"pdf")==0 )
+    else if ( strmatch(pt,"pdf")==0 )
 	format = 3;
-    else if ( strmatch(c->a.vals[1].u.sval,"xbm")==0 )
+    else if ( strmatch(pt,"xbm")==0 )
 	format = 4;
-    else if ( strmatch(c->a.vals[1].u.sval,"bmp")==0 )
+    else if ( strmatch(pt,"bmp")==0 )
 	format = 5;
 #ifndef _NO_LIBPNG
-    else if ( strmatch(c->a.vals[1].u.sval,"png")==0 )
+    else if ( strmatch(pt,"png")==0 )
 	format = 6;
     else
 	error( c, "Bad format (first arg must be eps/fig/xbm/bmp/png)");
@@ -1332,7 +1341,7 @@ static void bExport(Context *c) {
     }
     for ( i=0; i<c->curfv->sf->charcnt; ++i )
 	if ( SCWorthOutputting(c->curfv->sf->chars[i]) )
-	    ScriptExport(c->curfv->sf,bdf,format,i);
+	    ScriptExport(c->curfv->sf,bdf,format,i,format_spec);
 }
 
 static void bMergeKern(Context *c) {

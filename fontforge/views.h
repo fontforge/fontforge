@@ -670,7 +670,8 @@ extern int FVImportImageTemplate(FontView *fv,char *path,int isimage,int toback,
 extern int _ExportPDF(FILE *pdf,SplineChar *sc);
 extern int _ExportEPS(FILE *eps,SplineChar *sc);
 extern int _ExportSVG(FILE *svg,SplineChar *sc);
-extern void ScriptExport(SplineFont *sf, BDFFont *bdf, int format, int enc);
+extern void ScriptExport(SplineFont *sf, BDFFont *bdf, int format, int enc,
+	char *format_spec);
 
 extern void BCFlattenFloat(BDFChar *bc);
 extern void BCTrans(BDFFont *bdf,BDFChar *bc,BVTFunc *bvts,FontView *fv );
@@ -932,7 +933,6 @@ extern void CVCreateHint(CharView *cv,int ishstem);
 extern void SCRemoveSelectedMinimumDistances(SplineChar *sc,int inx);
 extern int CVExport(CharView *cv);
 extern int BVExport(BitmapView *bv);
-extern void ScriptExport(SplineFont *sf, BDFFont *bdf, int format, int enc);
 
 #if defined(FONTFORGE_CONFIG_GTK)
 #elif defined(FONTFORGE_CONFIG_GDRAW)
