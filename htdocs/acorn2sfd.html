@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 23-Jul-2002 -->
-  <!-- AP: Last modified: 24-Jul-2002 -->
+  <!-- AP: Last modified: 26-Jul-2002 -->
   <TITLE>acorn2sfd -- A program for comparing fonts</TITLE>
 </HEAD>
 <BODY>
@@ -16,12 +16,19 @@
 <EM>acorn2sfd</EM> will take several Acorn RISC/OS font directories and convert
 them into <A HREF="overview.html">PfaEdit</A>'s sfd files.
 <P>
-An Acorn RISC/OS font directory should contain two files, one named
-<CODE>Outlines</CODE> and one named <CODE>Intmetrics</CODE> (the
+An Acorn RISC/OS font directory should contain two or three files, one named
+<CODE>Outlines*</CODE> and one named <CODE>Intmetric?</CODE> (the
 <CODE>Intmetrics</CODE> file may be omitted, in which case the advance widths
 will not be known). <I>acorn2sfd</I> will read both files and generate an
 sfd file from them (which <A HREF="overview.html">PfaEdit</A> can turn into
 TrueType or Postscript).
+<P>
+If the <CODE>Outlines</CODE> file ends in a digit (<CODE>Outlines0</CODE>)
+then a third file named <CODE>Base&lt;digit&gt;*</CODE> will be searched
+for in the directory (if not found there then in
+<CODE>&lt;acorndir&gt;/../Encodings</CODE>), and if found encoding information
+will be read from it. If not found then the font will be assumed to be an
+initial subset of Unicode.
 <P>
 <CODE>-help</CODE> will provide a mini description and will list the available
 options.
@@ -35,34 +42,21 @@ options.
 </H3>
 <UL>
   <LI>
-    Some Acorn fonts have different filenames (IntMetric0, Outlines0, etc.).
-    <I>acorn2sfd</I> is stupid, and only looks for IntMetrics and Outlines, if
-    yours are named something else, rename them.
-  <LI>
     Acorn fonts use a different fill rule than either PostScript or TrueType.
     You should run Element-&gt;Correct Direction on the sfd file after converting
     it.
-  <LI>
-    The IntMetrics file for Trinity only seems to contain advance widths for
-    the first 34 characters of the 416 in the font. In general Trinity does not
-    conform well to the
-    <A HREF="http://www.pinknoise.demon.co.uk/Docs/Arc/Fonts/Formats.html">documentation
-    I've got</A>, so presumably I'm missing something and other fonts will probably
-    be messed up too.
-  <LI>
-    Acorn fonts usually do not contain encoding data so <I>acorn2sfd</I> assumes
-    iso-latin1 (or unicode for big fonts).
   <LI>
     Most Acorn fonts I've seen on the web are zipped up with a non-standard zip.
     Don't expect <I>acorn2sfd</I> to be able to unzip them.
   <LI>
     Acorn hinting data are lost.
-  <LI>
-    Acorn kerning data are currently lost.
 </UL>
 <H3>
   See Also
 </H3>
 <P>
 <A HREF="overview.html">PfaEdit</A>
+<P>
+<A HREF="http://www.pinknoise.demon.co.uk/Docs/Arc/Fonts/Formats.html">Acorn
+Font Documentation</A>
 </BODY></HTML>

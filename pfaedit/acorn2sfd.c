@@ -1,11 +1,19 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <dirent.h>
+#include <errno.h>
 
 #include "splinefont.h"
 #include <ustring.h>
 
 extern char *psunicodenames[];
+extern int psunicodenames_cnt;
 
 #define true	1
 #define false	0
@@ -116,6 +124,22 @@ static char *despace(char *fontname) {
 	    *npt++ = *pt;
     *npt = '\0';
 return( fontname );
+}
+
+static int UniFromName(char *name) {
+    int i = -1;
+
+    if ( strncmp(name,"uni",3)==0 ) { char *end;
+	i = strtol(name+3,&end,16);
+	if ( *end )
+	    i = -1;
+    }
+    if ( i==-1 ) for ( i=psunicodenames_cnt-1; i>=0 ; --i ) {
+	if ( psunicodenames[i]!=NULL )
+	    if ( strcmp(name,psunicodenames[i])==0 )
+    break;
+    }
+return( i );
 }
 
 static void readcoords(FILE *file,int is12, int *x, int *y) {
@@ -315,25 +339,165 @@ static void ReadChunk(FILE *file,struct Outlines *outline,int chunk) {
     }
 }
 
+/* Handles *?{}[] wildcards */
+static int WildMatch(char *pattern, char *name,int ignorecase) {
+    char ch, *ppt, *npt, *ept;
+
+    if ( pattern==NULL )
+return( true );
+
+    while (( ch = *pattern)!='\0' ) {
+	if ( ch=='*' ) {
+	    for ( npt=name; ; ++npt ) {
+		if ( WildMatch(pattern+1,npt,ignorecase))
+return( true );
+		if ( *npt=='\0' )
+return( false );
+	    }
+	} else if ( ch=='?' ) {
+	    if ( *name=='\0' )
+return( false );
+	    ++name;
+	} else if ( ch=='[' ) {
+	    /* [<char>...] matches the chars
+	    /* [<char>-<char>...] matches any char within the range (inclusive)
+	    /* the above may be concattenated and the resultant pattern matches
+	    /*		anything thing which matches any of them.
+	    /* [^<char>...] matches any char which does not match the rest of
+	    /*		the pattern
+	    /* []...] as a special case a ']' immediately after the '[' matches
+	    /*		itself and does not end the pattern */
+	    int found = 0, not=0;
+	    ++pattern;
+	    if ( pattern[0]=='^' ) { not = 1; ++pattern; }
+	    for ( ppt = pattern; (ppt!=pattern || *ppt!=']') && *ppt!='\0' ; ++ppt ) {
+		ch = *ppt;
+		if ( ppt[1]=='-' && ppt[2]!=']' && ppt[2]!='\0' ) {
+		    int ch2 = ppt[2];
+		    if ( (*name>=ch && *name<=ch2) ||
+			    (ignorecase && islower(ch) && islower(ch2) &&
+				    *name>=toupper(ch) && *name<=toupper(ch2)) ||
+			    (ignorecase && isupper(ch) && isupper(ch2) &&
+				    *name>=tolower(ch) && *name<=tolower(ch2))) {
+			if ( !not ) {
+			    found = 1;
+	    break;
+			}
+		    } else {
+			if ( not ) {
+			    found = 1;
+	    break;
+			}
+		    }
+		    ppt += 2;
+		} else if ( ch==*name || (ignorecase && tolower(ch)==tolower(*name)) ) {
+		    if ( !not ) {
+			found = 1;
+	    break;
+		    }
+		} else {
+		    if ( not ) {
+			found = 1;
+	    break;
+		    }
+		}
+	    }
+	    if ( !found )
+return( false );
+	    while ( *ppt!=']' && *ppt!='\0' ) ++ppt;
+	    pattern = ppt;
+	    ++name;
+	} else if ( ch=='{' ) {
+	    /* matches any of a comma seperated list of substrings */
+	    for ( ppt = pattern+1; *ppt!='\0' ; ppt = ept ) {
+		for ( ept=ppt; *ept!='}' && *ept!=',' && *ept!='\0'; ++ept );
+		for ( npt = name; ppt<ept; ++npt, ++ppt ) {
+		    if ( *ppt != *npt && (!ignorecase || tolower(*ppt)!=tolower(*npt)) )
+		break;
+		}
+		if ( ppt==ept ) {
+		    char *ecurly = ept;
+		    while ( *ecurly!='}' && *ecurly!='\0' ) ++ecurly;
+		    if ( WildMatch(ecurly+1,npt,ignorecase))
+return( true );
+		}
+		if ( *ept=='}' )
+return( false );
+		if ( *ept==',' ) ++ept;
+	    }
+	} else if ( ch==*name ) {
+	    ++name;
+	} else if ( ignorecase && tolower(ch)==tolower(*name)) {
+	    ++name;
+	} else
+return( false );
+	++pattern;
+    }
+    if ( *name=='\0' )
+return( true );
+
+return( false );
+}
+
+static int dirmatch(char *dirname, char *pattern,char *buffer) {
+    DIR *dir;
+    struct dirent *ent;
+
+    dir = opendir(dirname);
+    if ( dir==NULL )
+return( -1 );		/* No dir */
+
+    while (( ent = readdir(dir))!=NULL ) {
+	if ( WildMatch(pattern,ent->d_name,true) ) {
+	    strcpy(buffer,dirname);
+	    strcat(buffer,"/");
+	    strcat(buffer,ent->d_name);
+	    closedir(dir);
+return( 1 );		/* Good */
+	}
+    }
+    closedir(dir);
+return( 0 );		/* Not found */
+}
+
+static int dirfind(char *dir, char *pattern,char *buffer) {
+    char *pt, *space;
+    int ret = dirmatch(dir,pattern,buffer);
+
+    if ( ret==-1 ) {
+	/* Just in case the give us the pathspec for the Outlines file rather than the dir containing it */
+	space = copy(dir);
+	pt = strrchr(space,'/');
+	if ( pt!=NULL ) {
+	    *pt = '\0';
+	    ret = dirmatch(space,pattern,buffer);
+	}
+	free( space );
+    }
+    if ( ret==-1 )
+	ret = 0;
+    if ( !ret ) {
+	strcpy(buffer,dir);
+	strcat(buffer,"/");
+	strcat(buffer,pattern);
+    }
+return( ret );
+}
+
 static void ReadIntmetrics(char *dir, struct Outlines *outline) {
     char *filename = malloc(strlen(dir)+strlen("/Intmetrics")+3);
-    FILE *file;
+    FILE *file=NULL;
     int i, flags, m, n, left, right;
     int kern_offset, table_base, misc_offset;
     char buffer[100];
     uint8 *mapping=NULL;
     int *widths;
-    /* Order these so that most likely comes last so that error message will */
-    /*  be most meaningful */
-    static char *names[] = { "/IntMetric0", "/Intmetric0", "/intmetrics",
-	    "/INTMETRICS", "/IntMetrics", "/Intmetrics", NULL };
     struct r_kern *kern;
 
-    for ( i=0, file=NULL; names[i]!=NULL && file==NULL; ++i ) {
-	strcpy(filename,dir);
-	strcat(filename,names[i]);
-	file = fopen(filename,"r");
-    }
+    if ( dirfind(dir, "IntMet?",filename) )
+	file = fopen(filename,"rb");
+    else if ( dirfind(dir, "Intmetric?",filename) )
+	file = fopen(filename,"rb");
     if ( file==NULL ) {
 	fprintf(stderr,"Couldn't open %s (for advance width data)\n  Oh well, advance widths will all be wrong.\n", filename );
 	free(filename);
@@ -490,20 +654,69 @@ return;
     }
 }
 
-static SplineFont *ReadOutline(char *dir) {
-    char *filename = malloc(strlen(dir)+strlen("/Outlines")+3);
+static void FindEncoding(SplineFont *sf,char *filename) {
+    char *pt, *end;
+    char pattern[12];
+    char *otherdir;
+    char *encfilename;
     FILE *file;
+    char buffer[200];
+    int pos;
+
+    strcpy(pattern,"Base *");
+    pattern[4] = filename[strlen(filename)-1];
+    pt = strrchr(filename,'/');
+    if ( pt!=NULL )
+	*pt = '\0';
+    otherdir = galloc(strlen(filename)+strlen("/../Encodings")+5);
+    strcpy(otherdir,filename);
+    strcat(otherdir,"/../Encodings");
+    encfilename = galloc(strlen(otherdir)+strlen("base0encoding")+20);
+
+    if ( dirfind(otherdir, pattern,encfilename) )
+	file = fopen(encfilename,"r");
+    else if ( dirfind(filename, pattern,encfilename) )
+	file = fopen(encfilename,"r");
+    free(otherdir);
+
+    if ( file==NULL ) {
+	fprintf(stderr,"Couldn't open %s\n", encfilename );
+	free(encfilename);
+return;
+    }
+
+    pos = 0;
+    while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
+	if ( *buffer=='%' || *buffer=='\n' )
+    continue;
+	for ( pt = buffer; *pt!='\0' ; ) {
+	    while ( isspace(*pt)) ++pt;
+	    if ( *pt=='/' ) {
+		for ( end = ++pt; !isspace(*end) && *end!='\0'; ++end );
+		if ( sf->chars[pos]!=NULL ) {
+		    free(sf->chars[pos]->name);
+		    sf->chars[pos]->name = copyn(pt,end-pt);
+		    sf->chars[pos]->unicodeenc = UniFromName(sf->chars[pos]->name);
+		}
+		++pos;
+		pt = end;
+	    } else
+	break;
+	}
+    }
+    free(encfilename);
+    fclose(file);
+}
+
+static SplineFont *ReadOutline(char *dir) {
+    char *filename = malloc(strlen(dir)+strlen("/Outlines*")+3);
+    FILE *file = NULL;
     struct Outlines outline;
     int i, ch;
     char buffer[100];
-    static char *names[] = { "/outlines0", "/OUTLINES0", "/Outlines0",
-	    "/outlines", "/OUTLINES", "/Outlines", NULL };
 
-    for ( i=0, file=NULL; names[i]!=NULL && file==NULL; ++i ) {
-	strcpy(filename,dir);
-	strcat(filename,names[i]);
-	file = fopen(filename,"r");
-    }
+    if ( dirfind(dir, "Outlines*",filename) )
+	file = fopen(filename,"rb");
     if ( file==NULL ) {
 	fprintf(stderr,"Couldn't open %s\n", filename );
 	free(filename);
@@ -621,6 +834,9 @@ return( NULL );
 
     for ( i=0; i<outline.sf->charcnt; ++i )
 	FixupRefs(outline.sf->chars[i],outline.sf);
+
+    if ( isdigit(filename[strlen(filename)-1]) )
+	FindEncoding(outline.sf,filename);
 
     free(filename);
     fclose(file);
