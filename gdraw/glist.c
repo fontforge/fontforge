@@ -549,7 +549,7 @@ return( true ); /* Do Nothing, nothing selectable */
 		(event->u.mouse.state&(ksm_control|ksm_shift))) {
 	    gl->ti[pos]->selected = false;
 	} else if ( !gl->multiple_sel ||
-		!(event->u.mouse.state&(ksm_control|ksm_shift))) {
+		(!gl->ti[pos]->selected && !(event->u.mouse.state&(ksm_control|ksm_shift)))) {
 	    GListClearSel(gl);
 	    gl->ti[pos]->selected = true;
 	    gl->start = gl->end = pos;
@@ -558,6 +558,9 @@ return( true ); /* Do Nothing, nothing selectable */
 	    gl->start = gl->end = pos;
 	} else if ( event->u.mouse.state&ksm_shift ) {
 	    GListExpandSelection(gl,pos);
+	} else {
+	    gl->ti[pos]->selected = true;
+	    gl->start = gl->end = pos;
 	}
 	_ggadget_redraw(&gl->g);
     } else if ( event->type==et_mouseup && gl->pressed ) {
