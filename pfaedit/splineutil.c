@@ -430,9 +430,9 @@ return;
 LinearApprox *SplineApproximate(Spline *spline, real scale) {
     LinearApprox *test;
     LineList *cur, *last=NULL, *prev;
-    real tx,ty,t;
-    real slpx, slpy;
-    real intx, inty;
+    double tx,ty,t;
+    double slpx, slpy;
+    double intx, inty;
 
     for ( test = spline->approx; test!=NULL && test->scale!=scale; test = test->next );
     if ( test!=NULL )

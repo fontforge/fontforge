@@ -285,7 +285,7 @@ return( true );
 	    bothout = (l->flags&cvli_clipped) && (l->next->flags&cvli_clipped);
 	    if (( l->asstart.x<0 && l->next->asend.x>0 ) ||
 		    ( l->asstart.x>0 && l->next->asend.x<0 )) {
-		y = -(l->next->asend.y-l->asstart.y)*(real)l->asstart.x/(l->next->asend.x-l->asstart.x) +
+		y = -(l->next->asend.y-l->asstart.y)*(double)l->asstart.x/(l->next->asend.x-l->asstart.x) +
 			l->asstart.y;
 		if ( l->asstart.x<0 ) {
 		    l->asstart.x = 0;
@@ -294,10 +294,11 @@ return( true );
 		    l->next->asend.x = 0;
 		    l->next->asend.y = y;
 		}
-	    }
+	    } else if ( l->asstart.x<0 && l->next->asend.x<0 )
+    continue;
 	    if (( l->asstart.x<cv->width && l->next->asend.x>cv->width ) ||
 		    ( l->asstart.x>cv->width && l->next->asend.x<cv->width )) {
-		y = (l->next->asend.y-l->asstart.y)*(real)(cv->width-l->asstart.x)/(l->next->asend.x-l->asstart.x) +
+		y = (l->next->asend.y-l->asstart.y)*(double)(cv->width-l->asstart.x)/(l->next->asend.x-l->asstart.x) +
 			l->asstart.y;
 		if ( l->asstart.x>cv->width ) {
 		    l->asstart.x = cv->width;
@@ -306,10 +307,11 @@ return( true );
 		    l->next->asend.x = cv->width;
 		    l->next->asend.y = y;
 		}
-	    }
+	    } else if ( l->asstart.x>cv->width && l->next->asend.x>cv->width )
+    continue;
 	    if (( l->asstart.y<0 && l->next->asend.y>0 ) ||
 		    ( l->asstart.y>0 && l->next->asend.y<0 )) {
-		x = -(l->next->asend.x-l->asstart.x)*(real)l->asstart.y/(l->next->asend.y-l->asstart.y) +
+		x = -(l->next->asend.x-l->asstart.x)*(double)l->asstart.y/(l->next->asend.y-l->asstart.y) +
 			l->asstart.x;
 		if (( x<0 || x>=cv->width ) && bothout )
     continue;			/* Not on screen */;
@@ -320,10 +322,11 @@ return( true );
 		    l->next->asend.y = 0;
 		    l->next->asend.x = x;
 		}
-	    }
+	    } else if ( l->asstart.y<0 && l->next->asend.y< 0 )
+    continue;
 	    if (( l->asstart.y<cv->height && l->next->asend.y>cv->height ) ||
 		    ( l->asstart.y>cv->height && l->next->asend.y<cv->height )) {
-		x = (l->next->asend.x-l->asstart.x)*(real)(cv->height-l->asstart.y)/(l->next->asend.y-l->asstart.y) +
+		x = (l->next->asend.x-l->asstart.x)*(double)(cv->height-l->asstart.y)/(l->next->asend.y-l->asstart.y) +
 			l->asstart.x;
 		if (( x<0 || x>=cv->width ) && bothout )
     continue;			/* Not on screen */;
@@ -334,7 +337,8 @@ return( true );
 		    l->next->asend.y = cv->height;
 		    l->next->asend.x = x;
 		}
-	    }
+	    } else if ( l->asstart.y>cv->height && l->next->asend.y>cv->height )
+    continue;
 	    l->flags |= cvli_onscreen;
 	    any = true;
 	}
@@ -452,6 +456,20 @@ return;
 	if ( !sp->nonextcp ) {
 	    cx =  cv->xoff + rint(sp->nextcp.x*cv->scale);
 	    cy = -cv->yoff + cv->height - rint(sp->nextcp.y*cv->scale);
+	    if ( cx<-100 ) {		/* Clip */
+		cy = cx==x ? x : (cy-y) * (double)(-100-x)/(cx-x) + y;
+		cx = -100;
+	    } else if ( cx>cv->width+100 ) {
+		cy = cx==x ? x : (cy-y) * (double)(cv->width+100-x)/(cx-x) + y;
+		cx = cv->width+100;
+	    }
+	    if ( cy<-100 ) {
+		cx = cy==y ? y : (cx-x) * (double)(-100-y)/(cy-y) + x;
+		cy = -100;
+	    } else if ( cy>cv->height+100 ) {
+		cx = cy==y ? y : (cx-x) * (double)(cv->height+100-y)/(cy-y) + x;
+		cy = cv->height+100;
+	    }
 	    subcol = nextcpcol;
 	    if ( iscurrent && cv->p.nextcp ) {
 		r.x = cx-3; r.y = cy-3; r.width = r.height = 7;
@@ -490,6 +508,20 @@ return;
 	if ( !sp->noprevcp ) {
 	    cx =  cv->xoff + rint(sp->prevcp.x*cv->scale);
 	    cy = -cv->yoff + cv->height - rint(sp->prevcp.y*cv->scale);
+	    if ( cx<-100 ) {		/* Clip */
+		cy = cx==x ? x : (cy-y) * (double)(-100-x)/(cx-x) + y;
+		cx = -100;
+	    } else if ( cx>cv->width+100 ) {
+		cy = cx==x ? x : (cy-y) * (double)(cv->width+100-x)/(cx-x) + y;
+		cx = cv->width+100;
+	    }
+	    if ( cy<-100 ) {
+		cx = cy==y ? y : (cx-x) * (double)(-100-y)/(cy-y) + x;
+		cy = -100;
+	    } else if ( cy>cv->height+100 ) {
+		cx = cy==y ? y : (cx-x) * (double)(cv->height+100-y)/(cy-y) + x;
+		cy = cv->height+100;
+	    }
 	    subcol = prevcpcol;
 	    if ( iscurrent && cv->p.prevcp ) {
 		r.x = cx-3; r.y = cy-3; r.width = r.height = 7;
