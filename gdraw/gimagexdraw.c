@@ -591,6 +591,8 @@ static void gdraw_8_on_16_nomag_masked(GXDisplay *gdisp, GImage *image, GRect *s
 	pos = &clut[i];
 	col = (pos->red<<16)|(pos->green<<8)|pos->blue;
 	pos->pixel = Pixel16(gdisp,col);
+	if ( gdisp->endian_mismatch )
+	    pos->pixel = FixEndian16(pos->pixel);
     }
 
     for ( i=src->y; i<src->y+src->height; ++i ) {
@@ -639,6 +641,7 @@ static void gdraw_32_on_16_nomag_masked(GXDisplay *gdisp, GImage *image, GRect *
     int trans = base->trans;
     register uint32 *pt, index;
     register uint16 *ipt;
+    int endian_mismatch = gdisp->endian_mismatch;
 #if FAST_BITS==0
     register uint16 *mpt;
 #else
@@ -669,6 +672,8 @@ static void gdraw_32_on_16_nomag_masked(GXDisplay *gdisp, GImage *image, GRect *
 #endif
 	    } else {
 		*ipt++ = Pixel16(gdisp,index);
+		if ( endian_mismatch )
+		    ipt[-1] = FixEndian16(ipt[-1]);
 #if FAST_BITS==0
 		*mpt++ = 0;
 #else
@@ -701,6 +706,8 @@ static void gdraw_8_on_16_nomag_nomask(GXDisplay *gdisp, GImage *image, GRect *s
 	pos = &clut[i];
 	col = (pos->red<<16)|(pos->green<<8)|pos->blue;
 	pos->pixel = Pixel16(gdisp,col);
+	if ( gdisp->endian_mismatch )
+	    pos->pixel = FixEndian16(pos->pixel);
     }
 
     for ( i=src->y; i<src->y+src->height; ++i ) {
@@ -718,6 +725,7 @@ static void gdraw_32_on_16_nomag_nomask(GXDisplay *gdisp, GImage *image, GRect *
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
     register uint32 *pt, index;
     register uint16 *ipt;
+    int endian_mismatch = gdisp->endian_mismatch;
 
     for ( i=src->y; i<src->y+src->height; ++i ) {
 	pt = (uint32 *) (base->data + i*base->bytes_per_line) + src->x;
@@ -725,6 +733,8 @@ static void gdraw_32_on_16_nomag_nomask(GXDisplay *gdisp, GImage *image, GRect *
 	for ( j=src->width-1; j>=0; --j ) {
 	    index = *pt++;
 	    *ipt++ = Pixel16(gdisp,index);
+	    if ( endian_mismatch )
+		ipt[-1] = FixEndian16(ipt[-1]);
 	}
     }
 }
@@ -942,6 +952,8 @@ static void gdraw_8_on_32_nomag_masked(GXDisplay *gdisp, GImage *image, GRect *s
     for ( i=base->clut->clut_len-1; i>=0; --i ) {
 	pos = &clut[i];
 	pos->pixel = Pixel32(gdisp,COLOR_CREATE(pos->red,pos->green,pos->blue));
+	if ( gdisp->endian_mismatch )
+	    pos->pixel = FixEndian32(pos->pixel);
     }
 
     for ( i=src->y; i<src->y+src->height; ++i ) {
@@ -989,6 +1001,7 @@ static void gdraw_32_on_32_nomag_masked(GXDisplay *gdisp, GImage *image, GRect *
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
     int trans = base->trans;
     register uint32 *pt, index, *ipt;
+    int endian_mismatch = gdisp->endian_mismatch;
 #if FAST_BITS==0
     register uint32 *mpt;
 #else
@@ -1019,6 +1032,8 @@ static void gdraw_32_on_32_nomag_masked(GXDisplay *gdisp, GImage *image, GRect *
 #endif
 	    } else {
 		*ipt++ = Pixel32(gdisp,index);
+		if ( endian_mismatch )
+		    ipt[-1] = FixEndian32(ipt[-1]);
 #if FAST_BITS==0
 		*mpt++ = 0;
 #else
@@ -1049,6 +1064,8 @@ static void gdraw_8_on_32_nomag_nomask(GXDisplay *gdisp, GImage *image, GRect *s
     for ( i=base->clut->clut_len-1; i>=0; --i ) {
 	pos = &clut[i];
 	pos->pixel = Pixel32(gdisp,COLOR_CREATE(pos->red,pos->green,pos->blue));
+	if ( gdisp->endian_mismatch )
+	    pos->pixel = FixEndian32(pos->pixel);
     }
 
     for ( i=src->y; i<src->y+src->height; ++i ) {
@@ -1068,6 +1085,7 @@ static void gdraw_32_on_32_nomag_nomask(GXDisplay *gdisp, GImage *image, GRect *
     register uint32 *pt, index, *ipt;
     register uint8 *mpt;
     int mbit;
+    int endian_mismatch = gdisp->endian_mismatch;
 
     for ( i=src->y; i<src->y+src->height; ++i ) {
 	pt = (uint32 *) (base->data + i*base->bytes_per_line) + src->x;
@@ -1084,6 +1102,8 @@ static void gdraw_32_on_32_nomag_nomask(GXDisplay *gdisp, GImage *image, GRect *
 		*mpt |= mbit;
 	    } else {
 		*ipt++ = Pixel32(gdisp,index);
+		if ( endian_mismatch )
+		    ipt[-1] = FixEndian32(ipt[-1]);
 		*mpt &= ~mbit;
 	    }
 	    if ( gdisp->gg.mask->bitmap_bit_order == MSBFirst ) {
@@ -1166,6 +1186,7 @@ static void check_image_buffers(GXDisplay *gdisp, int neww, int newh, int is_bit
     int width = gdisp->gg.iwidth, height = gdisp->gg.iheight;
     char *temp;
     int depth = gdisp->depth, pixel_size;
+    union { int32 foo; uint8 bar[4]; } endian;
 
     if ( is_bitmap ) depth=1;
     if ( neww > gdisp->gg.iwidth ) {
@@ -1227,6 +1248,9 @@ return;
 	    free(temp);
     }
     gdisp->gg.iwidth = width; gdisp->gg.iheight = height;
+    endian.foo = 0xff;
+    if ( (gdisp->gg.img->byte_order==MSBFirst) != ( endian.bar[3]==0xff ))
+	gdisp->endian_mismatch = true;
 }
 
 static void gximage_to_ximage(GXWindow gw, GImage *image, GRect *src) {
@@ -1748,6 +1772,8 @@ static void gdraw_any_on_16_mag(GXDisplay *gdisp, GImage *image,int dwid,int dhi
 	    pos = &clut[i];
 	    col = (pos->red<<16)|(pos->green<<8)|pos->blue;
 	    pos->pixel = Pixel16(gdisp,col);
+	    if ( gdisp->endian_mismatch )
+		pos->pixel = FixEndian16(pos->pixel);
 	}
     }
 
@@ -1760,7 +1786,9 @@ static void gdraw_any_on_16_mag(GXDisplay *gdisp, GImage *image,int dwid,int dhi
 	    /*if ( index>=src->xend ) index = src->xend-1;*/
 	    if ( is_32bit ) {
 	    	index = ((long *) pt)[index];
-		pixel = Pixel24(gdisp,index);
+		pixel = Pixel16(gdisp,index);
+		if ( gdisp->endian_mismatch )
+		    pixel = FixEndian16(pixel);
 	    } else if ( !is_1bit ) {
 		index = pt[index];
 		pixel = clut[index].pixel;
@@ -1879,6 +1907,8 @@ static void gdraw_any_on_32_mag(GXDisplay *gdisp, GImage *image,int dwid,int dhi
 	for ( i=base->clut==NULL?1:base->clut->clut_len-1; i>=0; --i ) {
 	    pos = &clut[i];
 	    pos->pixel = Pixel32(gdisp,COLOR_CREATE(pos->red,pos->green,pos->blue));
+	    if ( gdisp->endian_mismatch )
+		pos->pixel = FixEndian32(pos->pixel);
 	}
     }
 
@@ -1891,7 +1921,9 @@ static void gdraw_any_on_32_mag(GXDisplay *gdisp, GImage *image,int dwid,int dhi
 	    /*if ( index>=src->xend ) index = src->xend-1;*/
 	    if ( is_32bit ) {
 	    	index = ((long *) pt)[index];
-		pixel = Pixel24(gdisp,index);
+		pixel = Pixel32(gdisp,index);
+		if ( gdisp->endian_mismatch )
+		    pixel = FixEndian32(pixel);
 	    } else if ( !is_1bit ) {
 		index = pt[index];
 		pixel = clut[index].pixel;

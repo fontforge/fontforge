@@ -165,6 +165,7 @@ typedef struct gxdisplay /* : GDisplay */ {
     unsigned int top_offsets_set: 1;
     unsigned int wm_breaks_raiseabove: 1;
     unsigned int wm_raiseabove_tested: 1;
+    unsigned int endian_mismatch: 1;
     struct gcstate gcstate[2];			/* 0 is state for normal images, 1 for bitmap (pixmaps) */
     Display *display;
     Window root;
@@ -217,6 +218,8 @@ typedef struct gxdisplay /* : GDisplay */ {
 #define Pixel32(gdisp,col) Pixel16(gdisp,col)
 #define Pixel24(gdisp,col) ( ((((col)>>16)&0xff)<<(gdisp)->cs.red_shift) | ((((col)>>8)&0xff)<<(gdisp)->cs.green_shift) | (((col)&0xff)<<(gdisp)->cs.blue_shift) )
 #define Pixel16(gdisp,col) ( ((((col)>>(gdisp)->cs.red_bits_shift)&(gdisp)->cs.red_bits_mask)<<(gdisp)->cs.red_shift) | ((((col)>>(gdisp)->cs.green_bits_shift)&(gdisp)->cs.green_bits_mask)<<(gdisp)->cs.green_shift) | (((col>>(gdisp)->cs.blue_bits_shift)&(gdisp)->cs.blue_bits_mask)<<(gdisp)->cs.blue_shift) )
+#define FixEndian16(col)	((((col)&0xff)<<8) | ((col>>8)&0xff))
+#define FixEndian32(col)	((((col)&0xff)<<24) | ((col&0xff00)<<8) | ((col>>8)&0xff00))
 
 extern void _GXDraw_Image(GWindow, GImage *, GRect *src, int32 x, int32 y);
 extern void _GXDraw_TileImage(GWindow, GImage *, GRect *src, int32 x, int32 y);
