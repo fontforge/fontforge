@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 21-Mar-2004 -->
+  <!-- AP: Last modified: 4-Apr-2004 -->
   <TITLE>Change log for FontForge</TITLE>
 </HEAD>
 <BODY>
@@ -11,7 +11,60 @@
 </H1>
 <UL>
   <LI>
-    ???
+    04-Apr-2004
+    <UL>
+      <LI>
+	Several more fixes for cff output.
+      <LI>
+	We had a bad habit of including extraniuos hintmask operators in output
+      <LI>
+	Add a proper ff version (well, as much as my versions be proper) to
+	postscript/svg output
+      <LI>
+	Patch from Kanou about reading format 2 bitmaps in a sfnt
+      <LI>
+	Patch from Kanou. MS requires a weird format for GSUB in vertical writing.
+    </UL>
+  <LI>
+    29-Mar-2004
+    <UL>
+      <LI>
+	When Type1 output needed to output a reference as inline splines (as opposed
+	to a subroutine call or using a seac command) then it would lose any translation
+	applied to that reference.
+      <LI>
+	Patch to Type3 output from R.L.Horn
+      <LI>
+	FontForge used to crash when reading in a bdf glyph with a bad bounding box.
+      <LI>
+	Reading a kerning class from an sfd file when that class had more second
+	character classes than first character classes would screw up memory and
+	probably cause a crash.
+      <LI>
+	Attempting to edit a 'cvt ' table in a font without one caused a crash.
+	Attempting to edit a 'cvt ' table in a font with one showed an empty table.
+      <LI>
+	Make scaling from the fontview apply to kerning and positioning data.
+      <LI>
+	Drawing a rectangle by dragging from center out didn't work
+      <LI>
+	Display phantom points when debugging. Be prepared to find either 2 (horizontal
+	metrics) or 4 (both horizontal or vertical) depending on what version of
+	freetype we've got.
+      <LI>
+	Bug in both reading and writing encoding format 0 of cff fonts. I forgot
+	to ignore .notdef so everything was off by 1.
+      <LI>
+	If a glyph was used as a reference in another glyph, and we put it in a
+	subroutine (type1 output), and it had hint conflicts, then the first group
+	of hints never got output.
+      <LI>
+	In multilayered mode, the Revert Glyph command left memory in a potentially
+	bad state. (If you immediately closed the charview, then nothing bad would
+	happen, but if you tried any editing in it, then nasty things happened.)
+    </UL>
+  <LI>
+    21-Mar-2004
     <UL>
       <LI>
 	When flattening a CID file fontforge lost track of the script/lang list (and
@@ -87,6 +140,9 @@
       <LI>
 	Support for Apple's distorable fonts (sort of like truetype multi-master
 	fonts)
+      <LI>
+	Depressing the control key now makes popups live longer (until the mouse
+	moves).
       <LI>
 	new command in MM menu: Blend to new font
     </UL>
