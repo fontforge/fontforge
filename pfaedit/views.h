@@ -255,9 +255,12 @@ typedef struct metricsview {
 	int16 dx, dwidth;	/* position and width of the displayed char */
 	int16 mx, mwidth;	/* position and width of the text underneath */
 	int16 kernafter;
+	int16 xoff, yoff, hoff, voff;	/* adjustments by GPOS other than 'kern' (scaled) */
+	PST *active_pos;	/* Only support one simple positioning GPOS feature at a time */
 	unsigned int selected: 1;
 	GGadget *width, *lbearing, *rbearing, *kern, *name;
     } *perchar;
+    SplineChar **sstr;		/* An array the same size as perchar */
     int16 mwidth, mbase;
     int16 charcnt, max;
     int16 pressed_x;

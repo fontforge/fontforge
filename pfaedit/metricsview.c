@@ -81,7 +81,7 @@ return;
     si = -1;
     for ( i=0; i<mv->charcnt; ++i ) {
 	if ( mv->perchar[i].selected ) si = i;
-	x = mv->perchar[i].dx-mv->xoff;
+	x = mv->perchar[i].dx-mv->xoff+mv->perchar[i].xoff;
 	if ( mv->right_to_left )
 	    x = mv->width - x - mv->perchar[i].dwidth - mv->perchar[i].kernafter;
 	if ( mv->bdf==NULL && mv->showgrid ) {
@@ -97,7 +97,7 @@ return;
 	x += bdfc->xmin;
 	if ( mv->perchar[i].selected )
 	    x += mv->activeoff;
-	y = ybase - bdfc->ymax;
+	y = ybase - bdfc->ymax - mv->perchar[i].yoff;
 	width = bdfc->xmax-bdfc->xmin+1; height = bdfc->ymax-bdfc->ymin+1;
 	if ( !mv->right_to_left && clip->x+clip->width<x )
     break;
@@ -262,6 +262,58 @@ return;
 	    (mv->fv->sf->ascent+mv->fv->sf->descent);
 }
 
+static int MVSetAnchor(MetricsView *mv) {
+    int i, j, changed=false;
+    AnchorPos *apos, *test;
+    int base, newx, newy;
+    int emsize = mv->fv->sf->ascent+mv->fv->sf->descent;
+
+    for ( i=0; i<mv->charcnt; ++i )
+	mv->sstr[i] = mv->perchar[i].sc;
+    mv->sstr[i] = NULL;
+    if ( mv->perchar[i].xoff!=0 || mv->perchar[i].yoff!=0 ) {
+	mv->perchar[i].xoff = mv->perchar[i].yoff = 0;
+	changed = true;
+    }
+    for ( i=0; i<mv->charcnt; ++i ) {
+	apos = AnchorPositioning(mv->sstr[i],NULL,mv->sstr+i+1);
+	base = i;
+	if ( apos!=NULL ) {
+	    for ( test=apos; test->sc!=NULL ; ++test ) {
+		++i;
+		j = base+1+apos->base_index;
+		newx = mv->perchar[j].xoff - (mv->perchar[i].dx-mv->perchar[j].dx) +
+			test->x * mv->pixelsize / emsize;
+		newy = mv->perchar[j].yoff + test->y * mv->pixelsize / emsize;
+		if ( mv->perchar[i].xoff != newx || mv->perchar[i].yoff != newy ) {
+		    mv->perchar[i].xoff = newx; mv->perchar[i].yoff = newy;
+		    changed = true;
+		}
+	    }
+	    if ( i<mv->charcnt ) {
+		if ( mv->perchar[i+1].xoff!=0 || mv->perchar[i+1].yoff!=0 ) {
+		    mv->perchar[i+1].xoff = mv->perchar[i+1].yoff = 0;
+		    changed = true;
+		}
+	    }
+		
+	    if ( test[-1].apm->type==at_centry )
+		--i;
+	    AnchorPosFree(apos);
+	}
+    }
+
+    for ( i=0; i<mv->max; ++i ) if ( mv->perchar[i].width!=NULL ) {
+	if ( mv->perchar[i].active_pos!=NULL ) {
+	    mv->perchar[i].xoff += mv->perchar[i].active_pos->u.pos.xoff*mv->pixelsize/ emsize;
+	    mv->perchar[i].yoff += mv->perchar[i].active_pos->u.pos.yoff*mv->pixelsize/ emsize;
+	    mv->perchar[i].hoff += mv->perchar[i].active_pos->u.pos.h_adv_off*mv->pixelsize/ emsize;
+	    mv->perchar[i].voff += mv->perchar[i].active_pos->u.pos.v_adv_off*mv->pixelsize/ emsize;
+	}
+    }
+return( changed );
+}
+
 static void MVRefreshValues(MetricsView *mv, int i, SplineChar *sc) {
     unichar_t ubuf[40];
     char buf[40];
@@ -316,6 +368,7 @@ void MVReKern(MetricsView *mv) {
     for ( i=1; i<mv->charcnt; ++i )
 	mv->perchar[i].dx = mv->perchar[i-1].dx+mv->perchar[i-1].dwidth+
 		mv->perchar[i-1].kernafter;
+    MVSetAnchor(mv);
     GDrawRequestExpose(mv->gw,NULL,false);
 }
 
@@ -370,7 +423,7 @@ void MVRegenChar(MetricsView *mv, SplineChar *sc) {
 	    MVRefreshValues(mv,i,sc);
 	}
     }
-    if ( xoff!=0 )
+    if ( MVSetAnchor(mv) || xoff!=0 )
 	GDrawRequestExpose(mv->gw,NULL,false);
 }
 
@@ -657,6 +710,7 @@ static void MVSetPos(MetricsView *mv,int i,SplineChar *sc) {
 	int oldmax=mv->max;
 	mv->max = i+10;
 	mv->perchar = grealloc(mv->perchar,mv->max*sizeof(struct metricchar));
+	mv->sstr = grealloc(mv->sstr,(mv->max+1)*sizeof(SplineChar *));
 	memset(mv->perchar+oldmax,'\0',(mv->max-oldmax)*sizeof(struct metricchar));
     }
     mv->perchar[i].sc = sc;
@@ -874,6 +928,7 @@ return;					/* Nothing changed */
 	int oldmax=mv->max;
 	mv->max = u_strlen(ret)+10;
 	mv->perchar = grealloc(mv->perchar,mv->max*sizeof(struct metricchar));
+	mv->sstr = grealloc(mv->sstr,(mv->max+1)*sizeof(SplineChar *));
 	memset(mv->perchar+oldmax,'\0',(mv->max-oldmax)*sizeof(struct metricchar));
     }
 
@@ -930,6 +985,8 @@ return;					/* Nothing changed */
     if ( r.x>oldx ) r.x = oldx;
     if ( i==0 ) r.x = 0;
     r.width = mv->width;
+    if ( MVSetAnchor(mv))
+	r.x = 0;
     if ( direction_change || mv->right_to_left )
 	r.x = 0;
     r.y = mv->topend; r.height = mv->displayend-r.y;
@@ -1607,7 +1664,8 @@ return;
 	    MVSetPos(mv,i,SFMakeChar(mv->fv->sf,pos));
 	    /* May need to adjust start of current char if kerning changed */
 	    for ( /*i++*/ ; i<mv->charcnt; ++i )
-		mv->perchar[i].dx = mv->perchar[i-1].dx + mv->perchar[i-1].dwidth + mv->perchar[i-1].kernafter;
+		mv->perchar[i].dx = mv->perchar[i-1].dx + mv->perchar[i-1].dwidth + mv->perchar[i-1].kernafter + mv->perchar[i-1].hoff;
+	    MVSetAnchor(mv);
 	    GDrawRequestExpose(mv->gw,NULL,false);
 	    MVResetText(mv);
 	}
@@ -2094,6 +2152,7 @@ return;
 	if ( i!=0 )
 	    MVRefreshKern(mv,i);
     }
+    MVSetAnchor(mv);
     GGadgetMove(mv->namelab,2,mv->displayend+2);
     GGadgetMove(mv->widthlab,2,mv->displayend+2+mv->fh+4);
     GGadgetMove(mv->lbearinglab,2,mv->displayend+2+2*(mv->fh+4));
@@ -2127,7 +2186,7 @@ return( bc->bitmap[y*bc->bytes_per_line+(x>>3)]&(1<<(7-(x&7))) );
 }
 
 static void MVMouse(MetricsView *mv,GEvent *event) {
-    int i, x, j, within, sel, ybase;
+    int i, x, y, j, within, sel, ybase;
     SplineChar *sc;
     int diff;
     int onwidth, onkern;
@@ -2157,18 +2216,19 @@ return;
 	    (mv->fv->sf->ascent+mv->fv->sf->descent));
     within = -1;
     for ( i=0; i<mv->charcnt; ++i ) {
-	x = mv->perchar[i].dx;
+	x = mv->perchar[i].dx + mv->perchar[i].xoff;
 	if ( mv->right_to_left )
-	    x = mv->width - x - mv->perchar[i].dwidth - + mv->perchar[i].kernafter;
+	    x = mv->width - x - mv->perchar[i].dwidth - mv->perchar[i].kernafter - mv->perchar[i].hoff;
+	y = ybase - mv->perchar[i].yoff;
 	if ( mv->bdf==NULL )
 	    if ( event->u.mouse.x >= x+mv->perchar[i].show->xmin &&
 		event->u.mouse.x <= x+mv->perchar[i].show->xmax &&
-		event->u.mouse.y <= ybase-mv->perchar[i].show->ymin &&
-		event->u.mouse.y >= ybase-mv->perchar[i].show->ymax &&
+		event->u.mouse.y <= y-mv->perchar[i].show->ymin &&
+		event->u.mouse.y >= y-mv->perchar[i].show->ymax &&
 		hitsbit(mv->perchar[i].show,event->u.mouse.x-x-mv->perchar[i].show->xmin,
-			mv->perchar[i].show->ymax-(ybase-event->u.mouse.y)) )
+			mv->perchar[i].show->ymax-(y-event->u.mouse.y)) )
     break;
-	if ( event->u.mouse.x >= x && event->u.mouse.x < x+mv->perchar[i].dwidth+ mv->perchar[i].kernafter )
+	if ( event->u.mouse.x >= x && event->u.mouse.x < x+mv->perchar[i].dwidth+ mv->perchar[i].kernafter+ mv->perchar[i].hoff )
 	    within = i;
     }
     if ( i==mv->charcnt )
@@ -2192,7 +2252,7 @@ return;
 		    event->u.mouse.x<mv->perchar[within].dx+3 )
 		onkern = true;
 	    else if ( within>=0 &&
-		    event->u.mouse.x>mv->perchar[within].dx+mv->perchar[within].dwidth+mv->perchar[within].kernafter-3 ) {
+		    event->u.mouse.x>mv->perchar[within].dx+mv->perchar[within].dwidth+mv->perchar[within].kernafter+mv->perchar[within].hoff-3 ) {
 		onwidth = true;
 		sel = true;
 	    }
@@ -2208,7 +2268,7 @@ return;
 		    event->u.mouse.x>mv->width-(mv->perchar[within].dx+3) )
 		onkern = true;
 	    else if ( within>=0 &&
-		    event->u.mouse.x<mv->width-(mv->perchar[within].dx+mv->perchar[within].dwidth+mv->perchar[within].kernafter-3) ) {
+		    event->u.mouse.x<mv->width-(mv->perchar[within].dx+mv->perchar[within].dwidth+mv->perchar[within].kernafter+mv->perchar[within].hoff-3) ) {
 		onwidth = true;
 		sel = true;
 	    }
@@ -2264,14 +2324,14 @@ return;
 		}
 	    }
 	} else if ( !mv->right_to_left &&
-		event->u.mouse.x<mv->perchar[mv->charcnt-1].dx+mv->perchar[mv->charcnt-1].dwidth+mv->perchar[mv->charcnt-1].kernafter+3 ) {
+		event->u.mouse.x<mv->perchar[mv->charcnt-1].dx+mv->perchar[mv->charcnt-1].dwidth+mv->perchar[mv->charcnt-1].kernafter+mv->perchar[mv->charcnt-1].hoff+3 ) {
 	    mv->pressed = mv->pressedwidth = true;
 	    GDrawSetCursor(mv->gw,ct_rbearing);
 	    mv->cursor = ct_rbearing;
 	    if ( !mv->perchar[mv->charcnt-1].selected )
 		    MVDoSelect(mv,mv->charcnt-1);
 	} else if ( mv->right_to_left &&
-		event->u.mouse.x>mv->width - (mv->perchar[mv->charcnt-1].dx+mv->perchar[mv->charcnt-1].dwidth+mv->perchar[mv->charcnt-1].kernafter+3) ) {
+		event->u.mouse.x>mv->width - (mv->perchar[mv->charcnt-1].dx+mv->perchar[mv->charcnt-1].dwidth+mv->perchar[mv->charcnt-1].kernafter+mv->perchar[mv->charcnt-1].hoff+3) ) {
 	    mv->pressed = mv->pressedwidth = true;
 	    GDrawSetCursor(mv->gw,ct_rbearing);
 	    mv->cursor = ct_rbearing;
@@ -2287,7 +2347,7 @@ return;
 	    mv->perchar[i].dwidth = mv->perchar[i].show->width + diff;
 	    if ( ow!=mv->perchar[i].dwidth ) {
 		for ( j=i+1; j<mv->charcnt; ++j )
-		    mv->perchar[j].dx = mv->perchar[j-1].dx+mv->perchar[j-1].dwidth+ mv->perchar[j-1].kernafter;
+		    mv->perchar[j].dx = mv->perchar[j-1].dx+mv->perchar[j-1].dwidth+ mv->perchar[j-1].kernafter+ mv->perchar[j-1].hoff;
 		GDrawRequestExpose(mv->gw,NULL,false);
 	    }
 	} else if ( mv->pressedkern ) {
@@ -2301,7 +2361,7 @@ return;
 	    mv->perchar[i-1].kernafter = kpoff + diff;
 	    if ( ow!=mv->perchar[i-1].kernafter ) {
 		for ( j=i; j<mv->charcnt; ++j )
-		    mv->perchar[j].dx = mv->perchar[j-1].dx+mv->perchar[j-1].dwidth+ mv->perchar[j-1].kernafter;
+		    mv->perchar[j].dx = mv->perchar[j-1].dx+mv->perchar[j-1].dwidth+ mv->perchar[j-1].kernafter+ mv->perchar[j-1].hoff;
 		GDrawRequestExpose(mv->gw,NULL,false);
 	    }
 	} else {
@@ -2351,7 +2411,8 @@ return;
 		MVRefreshValues(mv,i-1,mv->perchar[i-1].sc);
 		for ( ; i<mv->charcnt; ++i )
 		    mv->perchar[i].dx = mv->perchar[i-1].dx+mv->perchar[i-1].dwidth +
-			    mv->perchar[i-1].kernafter;
+			    mv->perchar[i-1].kernafter + mv->perchar[i-1].hoff;
+		MVSetAnchor(mv);
 		GDrawRequestExpose(mv->gw,NULL,false);
 		mv->fv->sf->changed = true;
 	    }
@@ -2395,8 +2456,8 @@ return;
     for ( i=0; i<mv->charcnt; ++i ) {
 	x = mv->perchar[i].dx;
 	if ( mv->right_to_left )
-	    x = mv->width - x - mv->perchar[i].dwidth - + mv->perchar[i].kernafter;
-	if ( ex >= x && ex < x+mv->perchar[i].dwidth+ mv->perchar[i].kernafter ) {
+	    x = mv->width - x - mv->perchar[i].dwidth - mv->perchar[i].kernafter - mv->perchar[i].hoff;
+	if ( ex >= x && ex < x+mv->perchar[i].dwidth+ mv->perchar[i].kernafter+ mv->perchar[i].hoff ) {
 	    within = i;
     break;
 	}
@@ -2424,6 +2485,7 @@ return;
 	int oldmax=mv->max;
 	mv->max = mv->charcnt+cnt+10;
 	mv->perchar = grealloc(mv->perchar,mv->max*sizeof(struct metricchar));
+	mv->sstr = grealloc(mv->sstr,(mv->max+1)*sizeof(SplineChar *));
 	memset(mv->perchar+oldmax,'\0',(mv->max-oldmax)*sizeof(struct metricchar));
     }
     oldtext = _GGadgetGetTitle(mv->text);
@@ -2444,6 +2506,7 @@ return;
     mv->charcnt += cnt;
     for ( i=within; i<mv->charcnt; ++i )
 	MVSetPos(mv,i,mv->perchar[i].sc);
+    MVSetAnchor(mv);
     free(founds);
 
     GGadgetSetTitle(mv->text,newtext);
@@ -2576,6 +2639,7 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     mv->fh = as+ds; mv->as = as;
 
     mv->perchar = gcalloc(mv->max=20,sizeof(struct metricchar));
+    mv->sstr = galloc(mv->max*sizeof(SplineChar *));
     if ( sc!=NULL ) {
 	ubuf[0] = sc->unicodeenc==-1 ||sc->unicodeenc>=0x10000 ? 0xfffd: sc->unicodeenc;
 	mv->perchar[0].sc = sc;
@@ -2622,6 +2686,7 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
 	    }
 	}
     }
+    MVSetAnchor(mv);
     MVSetSb(mv);
 
     GDrawSetVisible(gw,true);
