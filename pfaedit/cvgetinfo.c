@@ -158,6 +158,24 @@ static GTextInfo ligature_tags[] = {
     { (unichar_t *) _STR_Required, NULL, 0, 0, (void *) CHR('r','l','i','g'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_Standard, NULL, 0, 0, (void *) CHR('l','i','g','a'), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_Fraction, NULL, 0, 0, (void *) CHR('f','r','a','c'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_AltFrac, NULL, 0, 0, (void *) CHR('a','f','r','c'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_AboveBaseSubs, NULL, 0, 0, (void *) CHR('a','b','v','s'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_BelowBaseForms, NULL, 0, 0, (void *) CHR('b','l','w','f'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_BelowBaseSubs, NULL, 0, 0, (void *) CHR('b','l','w','s'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Akhand, NULL, 0, 0, (void *) CHR('a','k','h','n'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_GlyphCompDecomp, NULL, 0, 0, (void *) CHR('c','c','m','p'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_HalfForm, NULL, 0, 0, (void *) CHR('h','a','l','f'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_HalantForm, NULL, 0, 0, (void *) CHR('h','a','l','n'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_LeadingJamo, NULL, 0, 0, (void *) CHR('l','j','m','o'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_TrailingJamo, NULL, 0, 0, (void *) CHR('t','j','m','o'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_VowelJamo, NULL, 0, 0, (void *) CHR('v','j','m','o'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Nukta, NULL, 0, 0, (void *) CHR('n','u','k','f'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_PreBaseForms, NULL, 0, 0, (void *) CHR('p','r','e','f'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_PreBaseSubs, NULL, 0, 0, (void *) CHR('p','r','e','s'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_PostBaseForms, NULL, 0, 0, (void *) CHR('p','s','t','f'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_PostBaseSubs, NULL, 0, 0, (void *) CHR('p','s','t','s'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Reph, NULL, 0, 0, (void *) CHR('r','e','p','h'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_VattuVariants, NULL, 0, 0, (void *) CHR('v','a','t','u'), NULL, false, false, false, false, false, false, false, true },
     { NULL }
 };
 
@@ -857,6 +875,11 @@ static void CIFillup(GIData *ci) {
     SetScriptFromTag(ci->gw,sc->script);
 
     if ( sc->lig!=NULL ) {
+	for ( i=0; ligature_tags[i].text!=NULL; ++i )
+	    if ( (uint32) ligature_tags[i].userdata == sc->lig->tag )
+	break;
+	if ( ligature_tags[i].text!=NULL )
+	    GGadgetSelectOneListItem(GWidgetGetControl(ci->gw,CID_LigTag),i);
 	temp = uc_copy(sc->lig->components);
 	ubuf[0] = sc->lig->tag>>24;
 	ubuf[1] = (sc->lig->tag>>16)&0xff;

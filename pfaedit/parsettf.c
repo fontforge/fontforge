@@ -3344,7 +3344,7 @@ static void readttfkerns(FILE *ttf,struct ttfinfo *info) {
     }
 }
 
-enum feature_type { fe_none, fe_kern, fe_mark, fe_liga, fe_max } type;
+enum feature_type { fe_none, fe_kern, fe_mark, fe_liga, fe_curs, fe_max } type;
 #define UNUSED_SCRIPT		0
 #define MULTIPLE_SCRIPTS	0xffffffff
 struct feature {
@@ -3783,11 +3783,23 @@ return( NULL );
 	  case CHR('l','i','g','a'): case CHR('h','l','i','g'):
 	  case CHR('d','l','i','g'): case CHR('r','l','i','g'):
 	  case CHR('f','r','a','c'):
+	  case CHR('a','b','v','s'): case CHR('a','f','r','c'):
+	  case CHR('a','k','h','n'): case CHR('b','l','w','f'):
+	  case CHR('b','l','w','s'):
+	  case CHR('h','a','l','f'): case CHR('h','a','l','n'):
+	  case CHR('l','j','m','o'): case CHR('v','j','m','o'):
+	  case CHR('n','u','k','f'): case CHR('v','a','t','u'):
+	  case CHR('c','c','m','p'):	/* This is a special case. It can be a ligature. It can also be the reverse, a decomposition */
 	    if ( !isgpos ) {
 		features[i].type = fe_liga;
 		++j;
 	    }
 	  break;
+	  case CHR('c','u','r','s'):
+	    if ( isgpos ) {
+		features[i].type = fe_curs;
+		++j;
+	    }
 	  case CHR('k','e','r','n'):
 	    if ( isgpos ) {
 		features[i].type = fe_kern;
