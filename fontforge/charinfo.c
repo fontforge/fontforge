@@ -4718,6 +4718,7 @@ static PST *LigDefaultList(SplineChar *sc, uint32 tag) {
 		if ( components!=NULL ) {
 		    lig = chunkalloc(sizeof(PST));
 		    lig->tag = tag;
+		    lig->macfeature = true;
 		    lig->flags = PSTDefaultFlags(pst_ligature,sc);
 		    lig->script_lang_index = SFAddScriptLangIndex(sc->parent,
 				SCScriptFromUnicode(sc),DEFAULT_LANG);
