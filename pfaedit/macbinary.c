@@ -1156,6 +1156,7 @@ static SplineFont *SearchTtfResources(FILE *f,long rlistpos,int subcnt,long rdat
 	    fseek(f,start,SEEK_SET);
 return( sf );
 	}
+	fseek(f,here,SEEK_SET);
     }
     fseek(f,start,SEEK_SET);
 return( NULL );
