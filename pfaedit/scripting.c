@@ -1138,17 +1138,13 @@ static int ParseCharIdent(Context *c, Val *val, int signal_error) {
     if ( val->type==v_int )
 	bottom = val->u.ival;
     else if ( val->type==v_unicode || val->type==v_str ) {
-	int uni = -1;
-	char *str = NULL;
 	if ( val->type==v_unicode )
-	    uni = val->u.ival;
+	    bottom = SFFindChar(sf,val->u.ival,NULL);
 	else {
-	    str = val->u.sval;
-	    if ( sscanf(str,"uni%x", &uni)==0 )
-		if ( sscanf(str,"u%x", &uni)==0 )
-		    sscanf( str, "U+%x", &uni);
+	    unichar_t *temp = uc_copy(val->u.sval);
+	    bottom = NameToEncoding(sf,temp);
+	    free(temp);
 	}
-	bottom = SFFindChar(sf,uni,str);
     } else {
 	if ( signal_error )
 	    error( c, "Bad type for argument");
@@ -2219,17 +2215,14 @@ static void bInFont(Context *c) {
     if ( c->a.vals[1].type==v_int )
 	c->return_val.u.ival = c->a.vals[1].u.ival>=0 && c->a.vals[1].u.ival<sf->charcnt;
     else if ( c->a.vals[1].type==v_unicode || c->a.vals[1].type==v_str ) {
-	int enc, uni = -1;
-	char *str = NULL;
+	int enc;
 	if ( c->a.vals[1].type==v_unicode )
-	    uni = c->a.vals[1].u.ival;
+	    enc = SFFindChar(sf,c->a.vals[1].u.ival,NULL);
 	else {
-	    str = c->a.vals[1].u.sval;
-	    if ( sscanf(str,"uni%x", &uni)==0 )
-		if ( sscanf(str,"u%x", &uni)==0 )
-		    sscanf( str, "U+%x", &uni);
+	    unichar_t *temp = uc_copy(c->a.vals[1].u.sval);
+	    enc = NameToEncoding(sf,temp);
+	    free(temp);
 	}
-	enc = SFFindChar(sf,uni,str);
 	c->return_val.u.ival = (enc!=-1);
     } else
 	error( c, "Bad type of argument to InFont");
@@ -2245,17 +2238,14 @@ static void bWorthOutputting(Context *c) {
 		c->a.vals[1].u.ival<sf->charcnt &&
 		SCWorthOutputting(sf->chars[c->a.vals[1].u.ival]);
     else if ( c->a.vals[1].type==v_unicode || c->a.vals[1].type==v_str ) {
-	int enc, uni = -1;
-	char *str = NULL;
+	int enc;
 	if ( c->a.vals[1].type==v_unicode )
-	    uni = c->a.vals[1].u.ival;
+	    enc = SFFindChar(sf,c->a.vals[1].u.ival,NULL);
 	else {
-	    str = c->a.vals[1].u.sval;
-	    if ( sscanf(str,"uni%x", &uni)==0 )
-		if ( sscanf(str,"u%x", &uni)==0 )
-		    sscanf( str, "U+%x", &uni);
+	    unichar_t *temp = uc_copy(c->a.vals[1].u.sval);
+	    enc = NameToEncoding(sf,temp);
+	    free(temp);
 	}
-	enc = SFFindChar(sf,uni,str);
 	c->return_val.u.ival = enc!=-1 && SCWorthOutputting(sf->chars[enc]);
     } else
 	error( c, "Bad type of argument to InFont");

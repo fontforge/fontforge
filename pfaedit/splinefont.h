@@ -1015,6 +1015,7 @@ extern struct enc *PSSlurpEncodings(FILE *file);
 extern SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 	struct pschars *subrs, struct pschars *gsubrs, const char *name);
 
+extern int NameToEncoding(SplineFont *sf,const unichar_t *uname);
 extern void GlyphHashFree(SplineFont *sf);
 extern int SFFindChar(SplineFont *sf, int unienc, char *name );
 extern int SFCIDFindChar(SplineFont *sf, int unienc, char *name );

@@ -321,7 +321,7 @@ static GTextInfo *AvailableRanges(SplineFont *sf) {
 return( ret );
 }
 
-static int NameToEncoding(SplineFont *sf,const unichar_t *uname) {
+int NameToEncoding(SplineFont *sf,const unichar_t *uname) {
     int enc, uni, i;
     char *end, *dot=NULL, *freeme=NULL;
     char *name = cu_copy(uname);
@@ -341,6 +341,10 @@ return( enc );
 	    uni = strtol(name+3,&end,16);
 	    if ( *end!='\0' )
 		uni = -1;
+	} else if ( name[0]=='g' && name[1]=='l' && name[2]=='y' && name[3]=='p' && name[4]=='h' ) {
+	    enc = strtol(name+5,&end,10);
+	    if ( *end!='\0' )
+		enc = -1;
 	} else if ( isdigit(*name)) {
 	    enc = strtoul(name,&end,0);
 	    if ( *end==',' && ((sf->encoding_name>=em_jis208 && sf->encoding_name<=em_last94x94) ||
@@ -373,11 +377,6 @@ return( enc );
 		}
 	    }
 	} else {
-	    for ( i=0; i<sf->charcnt; ++i )
-		if ( sf->chars[i]!=NULL && strcmp(name,sf->chars[i]->name)==0 ) {
-		    enc = i;
-	    break;
-		}
 	    if ( enc==-1 ) {
 		uni = UniFromName(name);
 		if ( uni<0 ) {
