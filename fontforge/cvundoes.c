@@ -1587,8 +1587,10 @@ static int PasteGuessCorrectWidth(SplineFont *sf,Undoes *paster,int *vwidth) {
     }
     if ( base!=NULL ) {
 	SplineChar *sc = FindCharacter(sf,base);
-	*vwidth = sc->vwidth;
+	if ( sc!=NULL ) {
+	    *vwidth = sc->vwidth;
 return( sc->width );
+	}
     }
     *vwidth = paster->u.state.vwidth;
 return( paster->u.state.width );
