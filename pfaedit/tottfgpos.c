@@ -424,7 +424,7 @@ void AnchorClassDecompose(SplineFont *sf,AnchorClass *_ac, int classcnt, int *su
     memset(marks,0,classcnt*sizeof(SplineChar **));
     for ( j=0; j<2; ++j ) {
 	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	    for ( ac = _ac, k=0; k<classcnt; ++k, ac=ac->next ) {
+	    for ( ac = _ac, k=0; k<classcnt; ac=ac->next ) if ( ac->matches ) {
 		for ( test=sf->chars[i]->anchor; test!=NULL && test->anchor!=ac; test=test->next );
 		if ( test==NULL )
 		    /* Do Nothing */;
@@ -439,6 +439,7 @@ void AnchorClassDecompose(SplineFont *sf,AnchorClass *_ac, int classcnt, int *su
 		    ++heads[test->type].cnt;
 	    break;
 		}
+		++k;
 	    }
 	}
 	if ( j==1 )
@@ -1299,6 +1300,19 @@ void AnchorClassOrder(SplineFont *sf) {
     }
 }
 
+static int AnchorHasMark(SplineFont *sf,AnchorClass *ac) {
+    int i;
+    AnchorPoint *ap;
+
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	for ( ap=sf->chars[i]->anchor; ap!=NULL ; ap=ap->next ) {
+	    if ( ap->anchor==ac && ap->type==at_mark )
+return( true );
+	}
+    }
+return( false );
+}
+
 static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
 	struct alltabs *at) {
     /* When we find a feature, we split it out into various scripts */
@@ -1308,7 +1322,7 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
     SplineChar ***marks;
     int *subcnts;
     SplineChar **base, **lig, **mkmk, ***map, **glyphs;
-    AnchorClass *ac, *p, *ac2;
+    AnchorClass *ac, *ac2;
     struct tagflaglang *ligtags;
     int cmax, classcnt;
     enum possub_type type;
@@ -1396,21 +1410,33 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
 	new->len = ftell(lfile)-new->offset;
     }
 
-    AnchorClassOrder(sf);
+    AnchorClassOrder(sf);	/* Don't really need this any more */
 
     if ( sf->anchor ) {
 	marks = galloc((cmax=20)*sizeof(SplineChar **));
 	subcnts = galloc(cmax*sizeof(int));
     }
     for ( ac=sf->anchor; ac!=NULL; ac = ac->next ) {
-	for ( p=ac, ac2 = ac->next, classcnt=1; ac2!=NULL &&
-		ac2->feature_tag==ac->feature_tag &&
-		ac2->script_lang_index == ac->script_lang_index &&
-		ac2->merge_with == ac->merge_with ; p=ac2, ac2 = ac2->next )
-	    ++classcnt;
+	ac->processed = false;
+	if ( ac->type!=act_curs )
+	    ac->has_mark = AnchorHasMark(sf,ac);
+    }
+    for ( ac=sf->anchor; ac!=NULL; ac = ac->next ) if ( !ac->processed ) {
 	if ( ac->type==act_curs )
 	    lookups = dumpgposCursiveAttach(lfile,ac,sf,lookups);
-	else {
+	else if ( ac->has_mark ) {
+	    ac->matches = ac->processed = true;
+	    for ( ac2 = ac->next, classcnt=1; ac2!=NULL ; ac2 = ac2->next ) {
+		if ( ac2->has_mark && !ac2->processed &&
+			ac2->feature_tag==ac->feature_tag &&
+			ac2->script_lang_index == ac->script_lang_index &&
+			ac2->merge_with == ac->merge_with ) {
+		    ac2->matches = true;
+		    ac2->processed = true;
+		    ++classcnt;
+		} else
+		    ac2->matches = false;
+	    }
 	    if ( classcnt>cmax ) {
 		marks = grealloc(marks,(cmax=classcnt+10)*sizeof(SplineChar **));
 		subcnts = grealloc(subcnts,cmax*sizeof(int));
@@ -1427,7 +1453,6 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
 	    free(base);
 	    free(lig);
 	    free(mkmk);
-	    ac = p;
 	}
     }
     if ( sf->anchor ) {
