@@ -511,6 +511,8 @@ extern unichar_t *DecomposeClassName(const unichar_t *clsnm, unichar_t **name,
 extern unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag,uint16 flags,
 	int script_lang_index, enum possub_type type, SplineFont *sf, SplineChar *default_script,
 	int merge_with,int act_type);
+extern PST *AddSubs(PST *last,uint32 tag,char *name,uint16 flags,
+	uint16 sli,SplineChar *sc);
 extern GTextInfo *SFLangList(SplineFont *sf,int addfinal,SplineChar *default_script);
 extern int  ScriptLangList(SplineFont *sf,GGadget *list,int sli);
 extern void GListDelSelected(GGadget *list);
@@ -934,6 +936,7 @@ extern struct statemachinedlg *StateMachineEdit(SplineFont *sf,ASM *sm,struct gf
 extern void SMD_Close(struct statemachinedlg *smd);
 extern void GFI_FinishSMNew(struct gfi_data *d,ASM *sm, int success);
 extern void GFI_SMDEnd(struct gfi_data *d);
+extern ASM *SMConvertDlg(SplineFont *sf);
 
 
 extern GMenuItem helplist[];

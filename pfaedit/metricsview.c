@@ -3247,7 +3247,7 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     anysc = goodsc = NULL;
     for ( i=0; i<cnt; ++i ) {
 	if ( anysc==NULL ) anysc = mv->perchar[i].sc;
-	if ( (script=SCScriptFromUnicode(mv->perchar[i].sc))!=0 ) {
+	if ( (script=SCScriptFromUnicode(mv->perchar[i].sc))!=DEFAULT_SCRIPT ) {
 	    goodsc = mv->perchar[i].sc;
     break;
 	}

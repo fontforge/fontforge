@@ -2999,6 +2999,19 @@ static int GFI_SMSelChanged(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static int GFI_SMConvert(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+	ASM *sm = SMConvertDlg(d->sf);
+	GGadget *list = GWidgetGetControl(d->gw,CID_SMList+100);
+	while ( sm!=NULL ) {
+	    GListAppendLine(list,FeatSetName(d->sf,sm->feature,sm->setting),false)->userdata = sm;
+	    sm = sm->next;
+	}
+    }
+return( true );
+}
+
 static int GFI_Cancel(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
@@ -5524,6 +5537,16 @@ return;
 	smsubgcd[i][3].gd.cid = CID_SMEdit+i*100;
 	smsubgcd[i][3].gd.handle_controlevent = GFI_SMEdit;
 	smsubgcd[i][3].creator = GButtonCreate;
+
+	if ( i==1 ) {
+	    smsubgcd[i][4].gd.pos.x = 10; smsubgcd[i][4].gd.pos.y = smsubgcd[i][1].gd.pos.y+30;
+	    smsubgcd[i][4].gd.flags = SFAnyConvertableSM(sf) ? gg_visible | gg_enabled : gg_visible;
+	    smsublabel[i][4].text = (unichar_t *) _STR_ConvertFromOpenType;
+	    smsublabel[i][4].text_in_resource = true;
+	    smsubgcd[i][4].gd.label = &smsublabel[i][4];
+	    smsubgcd[i][4].gd.handle_controlevent = GFI_SMConvert;
+	    smsubgcd[i][4].creator = GButtonCreate;
+	}
     }
 
     smaspects[1].selected = true;	/* Contextual glyph subs is most likely to be used, so select it by default */

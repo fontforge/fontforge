@@ -600,7 +600,7 @@ static void BuildMorxScript(struct node *node,struct att_dlg *att) {
 
     fpsts = NULL;
     for ( fpst = _sf->possub; fpst!=NULL; fpst=fpst->next ) {
-	if ( FPSTisMacable(_sf,fpst)) {
+	if ( _sf->sm==NULL && FPSTisMacable(_sf,fpst,true)) {
 	    int sli = fpst->script_lang_index;
 	    struct script_record *sr = _sf->script_lang[sli];
 	    for ( l=0; sr[l].script!=0 && sr[l].script!=script; ++l );
@@ -1736,7 +1736,7 @@ return;
 	for ( fpst = _sf->possub; fpst!=NULL; fpst=fpst->next )
 	    if ((( isgpos && (fpst->type==pst_contextpos || fpst->type==pst_chainpos)) ||
 		    ( isgsub && (fpst->type==pst_contextsub || fpst->type==pst_chainsub || fpst->type==pst_reversesub )) ||
-		    ( ismorx && FPSTisMacable(sf,fpst))) &&
+		    ( ismorx && sf->sm==NULL && FPSTisMacable(sf,fpst,true))) &&
 		    fpst->script_lang_index!=SLI_NESTED && fpst->script_lang_index!=SLI_UNKNOWN ) {
 		int sli = fpst->script_lang_index;
 		struct script_record *sr = _sf->script_lang[sli];
@@ -1853,11 +1853,11 @@ static void BuildTop(struct att_dlg *att) {
 			hasmorx = true;
 		}
 	    }
-	    if ( sc->kerns!=NULL && SCScriptFromUnicode(sc)!=0 ) {
+	    if ( sc->kerns!=NULL && SCScriptFromUnicode(sc)!=DEFAULT_SCRIPT ) {
 		haskern = hasgpos = true;
 		SFAddScriptLangIndex(sf,SCScriptFromUnicode(sc),DEFAULT_LANG);
 	    }
-	    if ( sc->vkerns!=NULL && SCScriptFromUnicode(sc)!=0 ) {
+	    if ( sc->vkerns!=NULL && SCScriptFromUnicode(sc)!=DEFAULT_SCRIPT ) {
 		hasvkern = hasgpos = true;
 		SFAddScriptLangIndex(sf,SCScriptFromUnicode(sc),DEFAULT_LANG);
 	    }
@@ -1883,7 +1883,7 @@ static void BuildTop(struct att_dlg *att) {
 	    hasgpos = true;
 	else
 	    hasgsub = true;
-	if ( FPSTisMacable(sf,fpst))
+	if ( sf->sm==NULL && FPSTisMacable(sf,fpst,true))
 	    hasmorx = true;
     }
     if ( sf->sm != NULL )

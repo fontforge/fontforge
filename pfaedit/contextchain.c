@@ -56,7 +56,7 @@ uint32 SFGenerateNewFeatureTag(struct gentagtype *gentags,enum possub_type type,
     for ( i=0; i<gentags->tt_cur && gentags->tagtype[i].type!=pst_null; ++i );
     if ( i==gentags->tt_cur ) ++gentags->tt_cur;
     if ( suggested_tag==0 ) {
-	sprintf(buf, "%04d", i );
+	sprintf(buf, i<1000 ? "G%03d" : "%04d", i );
 	gentags->tagtype[i].type = type;
 	gentags->tagtype[i].tag = CHR(buf[0],buf[1],buf[2],buf[3]);
     } else {
@@ -91,6 +91,115 @@ void SFFreeGenerateFeatureTag(struct gentagtype *gentags,uint32 tag) {
 	gentags->tagtype[i].tag = CHR(' ',' ',' ',' ');
     } else
 	GDrawIError("Attempt to free an invalid generated tag" );
+}
+
+void SFRemoveThisFeatureTag(SplineFont *sf, uint32 tag, int sli, int flags) {
+    /* if tag==0xffffffff treat as a wildcard (will match any tag) */
+    /* if sli==SLI_UNKNOWN treat as a wildcard */
+    /* if flags==-1 treat as a wildcard */
+    int i,k;
+    SplineChar *sc;
+    PST *prev, *pst, *next;
+    FPST *fprev, *fpst, *fnext;
+    SplineFont *_sf;
+
+    if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
+    _sf = sf;
+    k = 0;
+    do {
+	sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[k];
+	for ( i=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
+	    for ( prev= NULL, pst = sc->possub; pst!=NULL; pst=next ) {
+		next = pst->next;
+		if ( ( tag==0xffffffff || tag==pst->tag ) &&
+			( sli==SLI_UNKNOWN || sli==pst->script_lang_index ) &&
+			( flags==-1 || flags==pst->flags )) {
+		    if ( prev == NULL )
+			sc->possub = next;
+		    else
+			prev->next = next;
+		    pst->next = NULL;
+		    PSTFree(pst);
+		} else
+		    prev = pst;
+	    }
+	}
+	++k;
+    } while ( k<_sf->subfontcnt );
+
+    for ( fprev = NULL, fpst = _sf->possub; fpst!=NULL; fpst=fnext ) {
+	fnext = fpst->next;
+	if ( ( tag==0xffffffff || tag==fpst->tag ) &&
+		( sli==SLI_UNKNOWN || sli==fpst->script_lang_index ) &&
+		( flags==-1 || flags==fpst->flags )) {
+	    if ( fprev == NULL )
+		sf->possub = fnext;
+	    else
+		fprev->next = fnext;
+	    fpst->next = NULL;
+	    FPSTFree(fpst);
+	} else
+	    fprev = fpst;
+    }
+}
+
+void RemoveGeneratedTagsAbove(SplineFont *sf, int old_top) {
+    int k;
+
+    if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
+    for ( k=sf->gentags.tt_cur-1; k>=old_top; --k )
+	SFRemoveThisFeatureTag(sf, sf->gentags.tagtype[k].tag, SLI_NESTED, -1);
+    if ( old_top<sf->gentags.tt_cur )
+	sf->gentags.tt_cur = old_top;
+}
+
+void SFRenameTheseFeatureTags(SplineFont *sf, uint32 tag, int sli, int flags,
+	uint32 totag, int tosli, int toflags, int ismac) {
+    /* if tag==0xffffffff treat as a wildcard (will match any tag) */
+    /* if sli==SLI_UNKNOWN treat as a wildcard */
+    /* if flags==-1 treat as a wildcard */
+    int i,k;
+    SplineChar *sc;
+    PST *pst;
+    SplineFont *_sf;
+    FPST *fpst;
+
+    if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
+    _sf = sf;
+    k = 0;
+    do {
+	sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[k];
+	for ( i=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
+	    for ( pst = sc->possub; pst!=NULL; pst=pst->next ) {
+		if ( ( tag==0xffffffff || tag==pst->tag ) &&
+			( sli==SLI_UNKNOWN || sli==pst->script_lang_index ) &&
+			( flags==-1 || flags==pst->flags )) {
+		    if ( totag!=0xffffffff ) {
+			pst->tag = totag;
+			pst->macfeature = ismac;
+		    }
+		    if ( tosli!=SLI_UNKNOWN )
+			pst->script_lang_index = sli;
+		    if ( toflags!=-1 )
+			pst->flags = flags;
+		}
+	    }
+	}
+	++k;
+    } while ( k<_sf->subfontcnt );
+
+    for ( fpst = _sf->possub; fpst!=NULL; fpst=fpst->next ) {
+	if ( ( tag==0xffffffff || tag==fpst->tag ) &&
+		( sli==SLI_UNKNOWN || sli==fpst->script_lang_index ) &&
+		( flags==-1 || flags==fpst->flags )) {
+	    if ( totag!=0xffffffff )
+		fpst->tag = totag;
+	    if ( tosli!=SLI_UNKNOWN )
+		fpst->script_lang_index = sli;
+	    if ( toflags!=-1 )
+		fpst->flags = flags;
+	}
+    }
 }
 
 static int typematch(int tagtype, int searchtype) {
@@ -1649,7 +1758,7 @@ static void _CCD_DoLEditNew(struct contextchaindlg *ccd,int off,int isedit) {
     wattrs.cursor = ct_pointer;
     wattrs.window_title = GStringGetResource(_STR_SeqLookup,NULL);
     pos.x = pos.y = 0;
-    pos.width =GDrawPointsToPixels(NULL,180);
+    pos.width = GDrawPointsToPixels(NULL,180);
     pos.height = GDrawPointsToPixels(NULL,130);
     gw = GDrawCreateTopWindow(NULL,&pos,seqlook_e_h,&d,&wattrs);
 

@@ -179,6 +179,7 @@ return( CHR('h','a','n','g'));
 return( CHR('h','a','n','i') );
     }
 
+#if 0
     if ( enc==em_jis208 || enc==em_jis212 || enc==em_gb2312 || enc==em_big5 ||
 	    enc == em_big5hkscs || enc==em_sjis || enc==em_jisgb )
 return( CHR('h','a','n','i') );
@@ -199,8 +200,9 @@ return( CHR('k','a','n','a'));
     else if ( (enc>=em_iso8859_1 && enc<=em_iso8859_15 ) || enc==em_mac ||
 	    enc==em_win || enc==em_adobestandard )
 return( CHR('l','a','t','n'));
+#endif
 
-return( 0 );
+return( DEFAULT_SCRIPT );
 }
 
 uint32 SCScriptFromUnicode(SplineChar *sc) {
@@ -210,7 +212,7 @@ uint32 SCScriptFromUnicode(SplineChar *sc) {
     int i;
 
     if ( sc==NULL )
-return( 0 );
+return( DEFAULT_SCRIPT );
 
     sf = sc->parent;
     if ( sc->unicodeenc!=-1 )
@@ -226,7 +228,7 @@ return( ScriptFromUnicode( uni,sf ));
     }
 
     if ( sf==NULL )
-return( 0 );
+return( DEFAULT_SCRIPT );
 
     if ( sf->cidmaster ) sf=sf->cidmaster;
     for ( i=0; i<2; ++i ) {

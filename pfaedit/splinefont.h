@@ -276,6 +276,7 @@ typedef struct generic_asm {		/* Apple State Machine */
 	    } insert;
 	} u;
     } *state;
+    uint32 opentype_tag;		/* If converted from opentype */
 } ASM;
 /* State Flags:
  Indic:
@@ -1333,9 +1334,18 @@ int SFFigureDefWidth(SplineFont *sf, int *_nomwid);
 extern enum possub_type SFGTagUsed(struct gentagtype *gentags,uint32 tag);
 extern uint32 SFGenerateNewFeatureTag(struct gentagtype *gentags,enum possub_type type,uint32 suggestion);
 extern void SFFreeGenerateFeatureTag(struct gentagtype *gentags,uint32 tag);
+extern void SFRemoveThisFeatureTag(SplineFont *sf, uint32 tag, int sli, int flags);
+extern void RemoveGeneratedTagsAbove(SplineFont *sf, int old_top);
+extern void SFRenameTheseFeatureTags(SplineFont *sf, uint32 tag, int sli, int flags,
+	uint32 totag, int tosli, int toflags, int ismac);
 extern int SFHasNestedLookupWithTag(SplineFont *sf,uint32 tag,int ispos);
 extern int ClassesMatch(int cnt1,char **classes1,int cnt2,char **classes2);
 extern FPST *FPSTGlyphToClass(FPST *fpst);
+
+extern ASM *ASMFromOpenTypeForms(SplineFont *sf,int sli,int flags);
+extern ASM *ASMFromFPST(SplineFont *sf,FPST *fpst);
+extern struct sliflag { uint16 sli, flags; } *SFGetFormsList(SplineFont *sf,int test_dflt);
+extern int SFAnyConvertableSM(SplineFont *sf);
 
 extern unichar_t *MacStrToUnicode(const char *str,int macenc,int maclang);
 extern char *UnicodeToMacStr(const unichar_t *ustr,int macenc,int maclang);

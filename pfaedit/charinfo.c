@@ -4011,7 +4011,7 @@ static PST *AddPos(PST *last,uint32 tag,int dx, int dy, int dxa, int dya, uint16
 return( pos );
 }
 
-static PST *AddSubs(PST *last,uint32 tag,char *name,uint16 flags,
+PST *AddSubs(PST *last,uint32 tag,char *name,uint16 flags,
 	uint16 sli,SplineChar *sc) {
     PST *sub = chunkalloc(sizeof(PST));
     sub->tag = tag;

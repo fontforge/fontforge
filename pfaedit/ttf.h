@@ -555,7 +555,7 @@ extern void aat_dumpmorx(struct alltabs *at, SplineFont *sf);
 extern void aat_dumpopbd(struct alltabs *at, SplineFont *sf);
 extern void aat_dumpprop(struct alltabs *at, SplineFont *sf);
 extern int SLIHasDefault(SplineFont *sf,int sli);
-extern int FPSTisMacable(SplineFont *sf, FPST *fpst);
+extern int FPSTisMacable(SplineFont *sf, FPST *fpst, int checktag);
 extern uint32 MacFeatureToOTTag(int featureType,int featureSetting);
 extern int OTTagToMacFeature(uint32 tag, int *featureType,int *featureSetting);
 extern uint16 *props_array(SplineFont *sf,int numGlyphs);

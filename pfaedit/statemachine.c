@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
+#include "ttf.h"
 #include <chardata.h>
 #include <utype.h>
 #include <ustring.h>
@@ -189,6 +190,1301 @@ static int FindMaxReachableStateCnt(SMD *smd) {
     }
 return( max_reachable+1 );		/* The count is one more than the max */
 }
+
+/* ************************************************************************** */
+/* *************** Routines to test conversion from OpenType **************** */
+/* ************************************************************************** */
+
+static int ValidSubs(SplineFont *sf,uint32 tag ) {
+    int i, any=false;
+    PST *pst;
+
+    for ( i = 0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	for ( pst=sf->chars[i]->possub; pst!=NULL && pst->tag!=tag; pst=pst->next );
+	if ( pst!=NULL && pst->script_lang_index==SLI_NESTED ) {
+	    if ( pst->type==pst_substitution )
+		any = true;
+	    else
+return( false );
+	}
+    }
+return( any );
+}
+
+static void TreeFree(struct contexttree *tree) {
+    int i;
+    for ( i=0; i<tree->branch_cnt; ++i )
+	TreeFree(tree->branches[i].branch);
+
+    free( tree->branches );
+    free( tree->rules );
+    chunkfree( tree,sizeof(*tree) );
+}
+
+static int TreeLabelState(struct contexttree *tree, int snum) {
+    int i;
+
+    if ( tree->branch_cnt==0 && tree->ends_here!=NULL ) {
+	tree->state = 0;
+return( snum );
+    }
+
+    tree->state = snum++;
+    for ( i=0; i<tree->branch_cnt; ++i )
+	snum = TreeLabelState(tree->branches[i].branch,snum);
+    tree->next_state = snum;
+
+return( snum );
+}
+
+static uint32 RuleHasSubsHere(struct fpst_rule *rule,int depth) {
+    int i,j;
+
+    if ( depth<rule->u.class.bcnt )
+return( 0 );
+    depth -= rule->u.class.bcnt;
+    if ( depth>=rule->u.class.ncnt )
+return( 0 );
+    for ( i=0; i<rule->lookup_cnt; ++i ) {
+	if ( rule->lookups[i].seq==depth ) {
+	    /* It is possible to have two substitutions applied at the same */
+	    /*  location. I can't deal with that here */
+	    for ( j=i+1; j<rule->lookup_cnt; ++j ) {
+		if ( rule->lookups[j].seq==depth )
+return( 0xffffffff );
+	    }
+return( rule->lookups[i].lookup_tag );
+	}
+    }
+
+return( 0 );
+}
+
+static uint32 RulesAllSameSubsAt(struct contexttree *me,int pos) {
+    int i;
+    uint32 tag=0x01, newtag;	/* Can't use 0 as an "unused" flag because it is perfectly valid for there to be no substititution. But then all rules must have no subs */
+
+    for ( i=0; i<me->rule_cnt; ++i ) {
+	newtag = RuleHasSubsHere(me->rules[i].rule,pos);
+	if ( tag==0x01 )
+	    tag=newtag;
+	else if ( newtag!=tag )
+return( 0xffffffff );
+    }
+return( tag );
+}
+
+static int TreeFollowBranches(SplineFont *sf,struct contexttree *me,int pending_pos) {
+    int i, j;
+
+    me->pending_pos = pending_pos;
+    if ( me->ends_here!=NULL ) {
+	/* If any rule ends here then we have to be able to apply all current */
+	/*  and pending substitutions */
+	if ( pending_pos!=-1 ) {
+	    me->applymarkedsubs = RulesAllSameSubsAt(me,pending_pos);
+	    if ( me->applymarkedsubs==0xffffffff )
+return( false );
+	    if ( !ValidSubs(sf,me->applymarkedsubs))
+return( false );
+	}
+	me->applycursubs = RulesAllSameSubsAt(me,me->depth);
+	if ( me->applycursubs==0xffffffff )
+return( false );
+	if ( me->applycursubs!=0 && !ValidSubs(sf,me->applycursubs))
+return( false );
+	for ( i=0; i<me->branch_cnt; ++i ) {
+	    if ( !TreeFollowBranches(sf,me->branches[i].branch,-1))
+return( false );
+	}
+    } else {
+	for ( i=0; i<me->branch_cnt; ++i ) {
+	    for ( j=0; j<me->rule_cnt; ++j )
+		if ( me->rules[j].branch==me->branches[i].branch &&
+			RuleHasSubsHere(me->rules[j].rule,me->depth))
+	    break;
+	    if ( j<me->rule_cnt ) {
+		if ( pending_pos==-1 ) {
+		    pending_pos = me->pending_pos = me->depth;
+		    me->markme = true;
+		} else
+return( false );
+	    }
+	    if ( !TreeFollowBranches(sf,me->branches[i].branch,pending_pos))
+return( false );
+	}
+    }
+
+return( true );
+}
+
+static struct contexttree *_FPST2Tree(FPST *fpst,struct contexttree *parent,int class) {
+    struct contexttree *me = chunkalloc(sizeof(struct contexttree));
+    int i, rcnt, ccnt, k, thisclass;
+    uint16 *classes;
+
+    if ( fpst!=NULL ) {
+	me->depth = -1;
+	me->rule_cnt = fpst->rule_cnt;
+	me->rules = gcalloc(me->rule_cnt,sizeof(struct ct_subs));
+	for ( i=0; i<me->rule_cnt; ++i )
+	    me->rules[i].rule = &fpst->rules[i];
+	me->parent = NULL;
+    } else {
+	me->depth = parent->depth+1;
+	for ( i=rcnt=0; i<parent->rule_cnt; ++i )
+	    if ( parent->rules[i].rule->u.class.allclasses[me->depth] == class )
+		++rcnt;
+	me->rule_cnt = rcnt;
+	me->rules = gcalloc(me->rule_cnt,sizeof(struct ct_subs));
+	for ( i=rcnt=0; i<parent->rule_cnt; ++i )
+	    if ( parent->rules[i].rule->u.class.allclasses[me->depth] == class )
+		me->rules[rcnt++].rule = parent->rules[i].rule;
+	me->parent = parent;
+    }
+    classes = galloc(me->rule_cnt*sizeof(uint16));
+    for ( i=ccnt=0; i<me->rule_cnt; ++i ) {
+	thisclass = me->rules[i].thisclassnum = me->rules[i].rule->u.class.allclasses[me->depth+1];
+	if ( thisclass==0xffff ) {
+	    if ( me->ends_here==NULL )
+		me->ends_here = me->rules[i].rule;
+	} else {
+	    for ( k=0; k<ccnt; ++k )
+		if ( classes[k] == thisclass )
+	    break;
+	    if ( k==ccnt )
+		classes[ccnt++] = thisclass;
+	}
+    }
+    me->branch_cnt = ccnt;
+    me->branches = gcalloc(ccnt,sizeof(struct ct_branch));
+    for ( i=0; i<ccnt; ++i )
+	me->branches[i].classnum = classes[i];
+    for ( i=0; i<ccnt; ++i ) {
+	me->branches[i].branch = _FPST2Tree(NULL,me,classes[i]);
+	for ( k=0; k<me->rule_cnt; ++k )
+	    if ( classes[i]==me->rules[k].thisclassnum )
+		me->rules[k].branch = me->branches[i].branch;
+    }
+    free(classes );
+return( me );
+}
+
+static void FPSTBuildAllClasses(FPST *fpst) {
+    int i, off,j;
+
+    for ( i=0; i<fpst->rule_cnt; ++i ) {
+	fpst->rules[i].u.class.allclasses = galloc((fpst->rules[i].u.class.bcnt+
+						    fpst->rules[i].u.class.ncnt+
+			                            fpst->rules[i].u.class.fcnt+
+			                            1)*sizeof(uint16));
+	off = fpst->rules[i].u.class.bcnt;
+	for ( j=0; j<off; ++j )
+	    fpst->rules[i].u.class.allclasses[j] = fpst->rules[i].u.class.bclasses[off-1-j];
+	for ( j=0; j<fpst->rules[i].u.class.ncnt; ++j )
+	    fpst->rules[i].u.class.allclasses[off+j] = fpst->rules[i].u.class.nclasses[j];
+	off += j;
+	for ( j=0; j<fpst->rules[i].u.class.fcnt; ++j )
+	    fpst->rules[i].u.class.allclasses[off+j] = fpst->rules[i].u.class.fclasses[j];
+	fpst->rules[i].u.class.allclasses[off+j] = 0xffff;	/* End of rule marker */
+    }
+}
+
+static void FPSTFreeAllClasses(FPST *fpst) {
+    int i;
+
+    for ( i=0; i<fpst->rule_cnt; ++i ) {
+	free( fpst->rules[i].u.class.allclasses );
+	fpst->rules[i].u.class.allclasses = NULL;
+    }
+}
+
+static struct contexttree *FPST2Tree(SplineFont *sf,FPST *fpst) {
+    struct contexttree *ret;
+
+    if ( fpst->format != pst_class )
+return( NULL );
+
+    /* I could check for subclasses rather than ClassesMatch, but then I'd have */
+    /* to make sure that class 0 was used (if at all) consistently */
+    if ( (fpst->bccnt!=0 && !ClassesMatch(fpst->bccnt,fpst->bclass,fpst->nccnt,fpst->nclass)) ||
+	    (fpst->fccnt!=0 && !ClassesMatch(fpst->fccnt,fpst->fclass,fpst->nccnt,fpst->nclass)))
+return( NULL );
+
+    FPSTBuildAllClasses(fpst);
+	
+    ret = _FPST2Tree(fpst,NULL,0);
+
+    if ( !TreeFollowBranches(sf,ret,-1) ) {
+	TreeFree(ret);
+	ret = NULL;
+    }
+
+    FPSTFreeAllClasses(fpst);
+
+    TreeLabelState(ret,1);	/* actually, it's states 0&1, but this will do */
+
+return( ret );
+}
+
+static struct contexttree *TreeNext(struct contexttree *cur) {
+    struct contexttree *p;
+    int i;
+
+    if ( cur->branch_cnt!=0 )
+return( cur->branches[0].branch );
+    else {
+	forever {
+	    p = cur->parent;
+	    if ( p==NULL )
+return( NULL );
+	    for ( i=0; i<p->branch_cnt; ++i ) {
+		if ( p->branches[i].branch==cur ) {
+		    ++i;
+	    break;
+		}
+	    }
+	    if ( i<p->branch_cnt )
+return( p->branches[i].branch );
+	    cur = p;
+	}
+    }
+}
+
+int FPSTisMacable(SplineFont *sf, FPST *fpst, int checktag) {
+    int i;
+    int featureType, featureSetting;
+    struct contexttree *ret;
+
+    if ( fpst->type!=pst_contextsub && fpst->type!=pst_chainsub )
+return( false );
+    if ( !SLIHasDefault(sf,fpst->script_lang_index))
+return( false );
+    if ( checktag && !OTTagToMacFeature(fpst->tag,&featureType,&featureSetting) )
+return( false );
+
+    if ( fpst->format == pst_glyphs ) {
+	FPST *tempfpst = FPSTGlyphToClass(fpst);
+	ret = FPST2Tree(sf, tempfpst);
+	FPSTFree(tempfpst);
+	TreeFree(ret);
+return( ret!=NULL );
+    } else if ( fpst->format == pst_class ) {
+	ret = FPST2Tree(sf, fpst);
+	TreeFree(ret);
+return( ret!=NULL );
+    } else if ( fpst->format != pst_coverage )
+return( false );
+
+    for ( i=0; i<fpst->rule_cnt; ++i ) {
+	if ( fpst->rules[i].u.coverage.ncnt+
+		fpst->rules[i].u.coverage.bcnt+
+		fpst->rules[i].u.coverage.fcnt>=10 )
+return( false );			/* Let's not make a state machine this complicated */
+
+	if ( fpst->rules[i].lookup_cnt==2 ) {
+	    switch ( fpst->format ) {
+	      case pst_coverage:
+		/* Second substitution must be on the final glyph */
+		if ( fpst->rules[i].u.coverage.fcnt!=0 ||
+			fpst->rules[i].lookups[0].seq==fpst->rules[i].lookups[1].seq ||
+			(fpst->rules[i].lookups[0].seq!=fpst->rules[i].u.coverage.ncnt-1 &&
+			 fpst->rules[i].lookups[1].seq!=fpst->rules[i].u.coverage.ncnt-1) )
+return( false );
+	      break;
+	      default:
+return( false );
+	    }
+	    if ( !ValidSubs(sf,fpst->rules[i].lookups[1].lookup_tag) )
+return( false );
+		
+	} else if ( fpst->rules[i].lookup_cnt!=1 )
+return( false );
+	if ( !ValidSubs(sf,fpst->rules[i].lookups[0].lookup_tag) )
+return( false );
+    }
+
+return( fpst->rule_cnt>0 );
+}
+
+/* ************************************************************************** */
+/* *************** Conversion from OpenType Context/Chaining **************** */
+/* ************************************************************************** */
+
+	/* ********************** From Forms ********************** */
+static int IsMarkChar( SplineChar *sc ) {
+    AnchorPoint *ap;
+
+    ap=sc->anchor;
+    while ( ap!=NULL && (ap->type==at_centry || ap->type==at_cexit) )
+	ap = ap->next;
+    if ( ap!=NULL && (ap->type==at_mark || ap->type==at_basemark) )
+return( true );
+
+return( false );
+}
+
+static char *GlyphListToNames(SplineChar **classglyphs) {
+    int i, len;
+    char *ret, *pt;
+
+    for ( i=len=0; classglyphs[i]!=NULL; ++i )
+	len += strlen(classglyphs[i]->name)+1;
+    ret = pt = galloc(len+1);
+    for ( i=0; classglyphs[i]!=NULL; ++i ) {
+	strcpy(pt,classglyphs[i]->name);
+	pt += strlen(pt);
+	*pt++ = ' ';
+    }
+    if ( pt>ret )
+	pt[-1] = '\0';
+    else
+	*ret = '\0';
+return( ret );
+}
+
+static char *BuildMarkClass(SplineFont *sf) {
+    SplineChar *sc, **markglyphs;
+    int i, mg;
+    char *ret;
+
+    mg = 0;
+    markglyphs = galloc(sf->charcnt*sizeof(SplineChar *));
+    for ( i=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
+	if ( IsMarkChar(sc)) {
+	    markglyphs[mg++] = sc;
+	}
+    }
+    markglyphs[mg] = NULL;
+    ret = GlyphListToNames(markglyphs);
+    free(markglyphs);
+return(ret);
+}
+
+static char *BuildClassNames(SplineChar **glyphs,uint16 *map, int classnum) {
+    int i, len;
+    char *ret, *pt;
+
+    for ( i=len=0; glyphs[i]!=NULL; ++i ) {
+	if ( map[i]==classnum )
+	    len += strlen(glyphs[i]->name)+1;
+    }
+    ret = pt = galloc(len+1);
+    for ( i=len=0; glyphs[i]!=NULL; ++i ) {
+	if ( map[i]==classnum ) {
+	    strcpy(pt,glyphs[i]->name);
+	    pt += strlen(pt);
+	    *pt++ = ' ';
+	}
+    }
+    if ( pt>ret )
+	pt[-1] = '\0';
+    else
+	*ret = '\0';
+return( ret );
+}
+
+static void BuildNestedFormSubs(SplineFont *sf,SplineChar **glyphs,
+	SplineChar **forms[4], uint32 tags[4], int flags) {
+    int any[4];
+    int i,j;
+
+    memset(any,0,sizeof(any));
+    for ( i=0; glyphs[i]!=NULL; ++i ) {
+	for ( j=0; j<4; ++j )
+	    if ( forms[j][i])
+		any[j] = true;
+    }
+
+    memset(tags,0,4*sizeof(uint32));
+    for ( j=0; j<4; ++j ) if ( any[j] )
+	tags[j] = SFGenerateNewFeatureTag(&sf->gentags,pst_substitution,0);
+
+    for ( i=0; glyphs[i]!=NULL; ++i ) {
+	for ( j=0; j<4; ++j ) {
+	    if ( forms[j][i]!=NULL ) {
+		if ( glyphs[i]!=forms[j][i] )
+		    glyphs[i]->possub = AddSubs(glyphs[i]->possub,tags[j],forms[j][i]->name,
+			    flags,SLI_NESTED,NULL);
+		if ( j==2 && forms[1][i]!=NULL )	/* Final must be prepared to convert both base chars and medial chars */
+		    forms[i][1]->possub = AddSubs(forms[1][i]->possub,tags[j],forms[j][i]->name,flags,
+			    SLI_NESTED,NULL);
+		else if ( j==3 && forms[0][i]!=NULL )	/* Isolated must convert both base and initial chars */
+		    forms[i][0]->possub = AddSubs(forms[0][i]->possub,tags[j],forms[j][i]->name,flags,
+			    SLI_NESTED,NULL);
+	    }
+	}
+    }
+}
+
+ASM *ASMFromOpenTypeForms(SplineFont *sf,int sli,int flags) {
+    int i, gcnt, f, any, which, cg, mg, ng;
+    SplineChar *sc, *rsc, **glyphs, **classglyphs, **markglyphs;
+    SplineChar **forms[4];
+    PST *pst;
+    uint32 script;
+    uint32 tags[4];
+    int found;
+    ASM *sm;
+
+    glyphs = galloc(sf->charcnt*sizeof(SplineChar *));
+    classglyphs = galloc(sf->charcnt*sizeof(SplineChar *));
+    markglyphs = galloc(sf->charcnt*sizeof(SplineChar *));
+    for ( i=0; i<4; ++i )
+	forms[i] = gcalloc(sf->charcnt,sizeof(SplineChar *));
+
+    gcnt = 0;
+    for ( f=0; f<4; ++f) forms[f][gcnt] = NULL;
+    found = 0;
+    for ( i=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
+	any = false;
+	for ( pst = sc->possub; pst!=NULL; pst=pst->next ) if ( pst->script_lang_index==sli && pst->flags==flags ) {
+	    if ( pst->tag==CHR('i','n','i','t')) which = 0;
+	    else if ( pst->tag==CHR('m','e','d','i')) which = 1;
+	    else if ( pst->tag==CHR('f','i','n','a')) which = 2;
+	    else if ( pst->tag==CHR('i','s','o','l')) which = 3;
+	    else
+	continue;
+	    found |= 1<<which;
+	    rsc = SFGetCharDup(sf,-1,pst->u.subs.variant);
+	    forms[which][gcnt] = rsc;
+	    any = true;
+	}
+	if ( any ) {
+	    /* Currently I transform all isolated chars to initial first */
+	    /*  so if the isolated char, is just the char unchanged, I have to change it back */
+	    /* Similarly for medial & final */
+	    if ( forms[0][gcnt]!=NULL && forms[3][gcnt]==NULL ) forms[3][gcnt] = sc;
+	    if ( forms[1][gcnt]!=NULL && forms[2][gcnt]==NULL ) forms[2][gcnt] = sc;
+	    glyphs[gcnt++] = sc;
+	    for ( f=0; f<4; ++f) forms[f][gcnt] = NULL;
+	}
+    }
+    glyphs[gcnt] = NULL;
+    if ( gcnt==0 ) {
+	for ( f=0; f<4; ++f) free(forms[f]); free(glyphs);
+return( NULL );
+    }
+    script =SCScriptFromUnicode(glyphs[0]);
+
+    sm = chunkalloc(sizeof(ASM));
+    sm->type = asm_context;
+    sm->flags = (flags&pst_r2l) ? asm_descending : 0;
+    sm->opentype_tag =  (found&1) ? CHR('i','n','i','t') :
+			(found&2) ? CHR('m','e','d','i') :
+			(found&4) ? CHR('f','i','n','a') :
+					CHR('i','s','o','l');
+    /* Only one (or two) classes of any importance: Letter in this script */
+    /* might already be formed. Might be a lig. Might be normal */
+    /* Oh, if ignoremarks is true, then combining marks merit a class of their own */
+    sm->class_cnt = (flags&pst_ignorecombiningmarks) ? 6 : 5;
+    sm->classes = gcalloc(sm->class_cnt,sizeof(char *));
+
+    cg = mg = ng = 0;
+    for ( i=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
+	if ( (flags&pst_ignorecombiningmarks) && IsMarkChar(sc)) {
+	    markglyphs[mg++] = sc;
+	    if ( sc==glyphs[ng]) ++ng;
+	} else if ( sc==glyphs[ng] ) {
+	    classglyphs[cg++] = sc;
+	    ++ng;
+	} else if ( SCScriptFromUnicode(sc)==script )
+	    classglyphs[cg++] = sc;
+    }
+    classglyphs[cg] = NULL;
+    sm->classes[4] = GlyphListToNames(classglyphs);
+    if ( flags&pst_ignorecombiningmarks ) {
+	markglyphs[mg] = NULL;
+	sm->classes[5] = GlyphListToNames(markglyphs);
+    }
+    free(classglyphs); free(markglyphs);
+
+    BuildNestedFormSubs(sf,glyphs,forms,tags,flags);
+    free(glyphs);
+    for ( i=0; i<4; ++i ) free(forms[i]);
+
+    /* State 0,1 are start states */
+    /* State 2 means we have found one interesting letter, transformed current to 'init' and marked it (in case we need to make it isolated) */
+    /* State 3 means we have found two interesting letters, transformed current to 'medi' and marked (in case we need to make it final) */
+    sm->state_cnt = 4;
+    sm->state = gcalloc(sm->state_cnt*sm->class_cnt,sizeof(struct asm_state));
+
+    sm->state[4].next_state = 2;
+    sm->state[4].flags = 0x8000;
+    sm->state[4].u.context.cur_tag = tags[0];			  /* Initial */
+
+    sm->state[sm->class_cnt+4] = sm->state[4];
+
+    for ( i=0; i<4; ++i ) {
+	sm->state[2*sm->class_cnt+i].next_state = 0;
+	sm->state[2*sm->class_cnt+i].u.context.mark_tag = tags[3];/* Isolated */
+    }
+
+    sm->state[2*sm->class_cnt+4].next_state = 3;
+    sm->state[2*sm->class_cnt+4].flags = 0x8000;
+    sm->state[2*sm->class_cnt+4].u.context.cur_tag = tags[1];	  /* Medial */
+
+    for ( i=0; i<4; ++i ) {
+	sm->state[3*sm->class_cnt+i].next_state = 0;
+	sm->state[3*sm->class_cnt+i].u.context.mark_tag = tags[2];/* Final */
+    }
+
+    sm->state[3*sm->class_cnt+4] = sm->state[2*sm->class_cnt+4];
+
+    /* Deleted glyph retains same state, just eats the glyph */
+    for ( i=0; i<sm->state_cnt; ++i ) {
+	int pos = i*sm->class_cnt+2, mpos = i*sm->class_cnt+5;
+	sm->state[pos].next_state = i;
+	sm->state[pos].flags = 0;
+	sm->state[pos].u.context.cur_tag = 0;
+	sm->state[pos].u.context.mark_tag = 0;
+	/* same for ignored marks */
+	if ( flags&pst_ignorecombiningmarks )
+	    sm->state[mpos].next_state = i;
+    }
+
+return( sm );
+}
+
+	/* ********************** From Coverage FPST ********************** */
+static SplineChar **morx_cg_FigureClasses(SplineChar ***tables,int match_len,
+	int ***classes, int *cc, uint16 **mp, int *gc,
+	FPST *fpst,SplineFont *sf) {
+    int i,j,k, mask, max, class_cnt, gcnt, gtot;
+    SplineChar ***temp, *sc, **glyphs, **gall;
+    uint16 *map;
+    int *nc;
+    int *next;
+    /* For each glyph used, figure out what coverage tables it gets used in */
+    /*  then all the glyphs which get used in the same set of coverage tables */
+    /*  can form one class */
+
+    if ( match_len>10 )		/* would need too much space to figure out */
+return( NULL );
+
+    gtot = 0;
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
+	sf->chars[i]->ttf_glyph = gtot++;
+
+    max=0;
+    for ( i=0; i<match_len; ++i ) {
+	for ( k=0; tables[i][k]!=NULL; ++k );
+	if ( k>max ) max=k;
+    }
+    next = gcalloc(1<<match_len,sizeof(int));
+    temp = galloc((1<<match_len)*sizeof(SplineChar **));
+
+    for ( i=0; i<gtot; ++i ) if ( sf->chars[i]!=NULL ) {
+	sf->chars[i]->lsidebearing = 0;
+	sf->chars[i]->ticked = false;
+    }
+    for ( i=0; i<match_len; ++i ) {
+	for ( j=0; tables[i][j]!=NULL ; ++j )
+	    tables[i][j]->lsidebearing |= 1<<i;
+    }
+
+    for ( i=0; i<match_len; ++i ) {
+	for ( j=0; (sc=tables[i][j])!=NULL ; ++j ) if ( !sc->ticked ) {
+	    mask = sc->lsidebearing;
+	    if ( next[mask]==0 )
+		temp[mask] = galloc(max*sizeof(SplineChar *));
+	    temp[mask][next[mask]++] = sc;
+	    sc->ticked = true;
+	}
+    }
+
+    gall = gcalloc(gtot+1,sizeof(SplineChar *));
+    class_cnt = gcnt = 0;
+    for ( i=0; i<(1<<match_len); ++i ) {
+	if ( next[i]!=0 ) {
+	    for ( k=0; k<next[i]; ++k ) {
+		gall[temp[i][k]->ttf_glyph] = temp[i][k];
+		temp[i][k]->lsidebearing = class_cnt;
+	    }
+	    ++class_cnt;
+	    gcnt += next[i];
+	    free(temp[i]);
+	}
+    }
+    if ( fpst->flags & pst_ignorecombiningmarks ) {
+	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 ) {
+	    if ( sf->chars[i]->lsidebearing==0 && IsMarkChar(sf->chars[i])) {
+		sf->chars[i]->lsidebearing = class_cnt;
+		++gcnt;
+	    }
+	}
+	++class_cnt;			/* Add a class for the marks so we can ignore them */
+    }
+    *cc = class_cnt+4;
+    glyphs = galloc((gcnt+1)*sizeof(SplineChar *));
+    map = galloc((gcnt+1)*sizeof(uint16));
+    gcnt = 0;
+    for ( i=0; i<gtot; ++i ) if ( gall[i]!=NULL ) {
+	glyphs[gcnt] = gall[i];
+	map[gcnt++] = gall[i]->lsidebearing+4;	/* there are 4 standard classes, so our first class starts at 4 */
+    }
+    free(gall);
+    free(temp);
+    *gc = gcnt;
+    *mp = map;
+
+    nc = gcalloc(match_len,sizeof(int));
+    *classes = galloc((match_len+1)*sizeof(int *));
+    for ( i=0; i<match_len; ++i )
+	(*classes)[i] = galloc((class_cnt+1)*sizeof(int));
+    (*classes)[i] = NULL;
+
+    class_cnt = 0;
+    for ( i=0; i<(1<<match_len); ++i ) {
+	if ( next[i]!=0 ) {
+	    for ( j=0; j<match_len; ++j ) if ( i&(1<<j)) {
+		(*classes)[j][nc[j]++] = class_cnt+4;	/* there are 4 standard classes, so our first class starts at 4 */
+	    }
+	    ++class_cnt;
+	}
+    }
+    for ( j=0; j<match_len; ++j )
+	(*classes)[j][nc[j]] = 0xffff;		/* End marker */
+
+    free(next);
+    free(nc);
+return( glyphs );
+}
+
+static ASM *ASMFromCoverageFPST(SplineFont *sf,FPST *fpst) {
+    SplineChar ***tables, **glyphs;
+    int **classes, class_cnt, gcnt;
+    int i, j, k, match_len;
+    struct fpst_rule *r = &fpst->rules[0];
+    int subspos = r->u.coverage.bcnt+r->lookups[0].seq, hasfinal = false;
+    int substag = r->lookups[0].lookup_tag, finaltag=-1;
+    uint16 *map;
+    ASM *sm;
+
+    /* In one very specific case we can support two substitutions */
+    if ( r->lookup_cnt==2 ) {
+	hasfinal = true;
+	if ( r->lookups[0].seq==r->u.coverage.ncnt-1 ) {
+	    finaltag = substag;
+	    subspos = r->u.coverage.bcnt+r->lookups[1].seq;
+	    substag = r->lookups[1].lookup_tag;
+	} else
+	    finaltag = r->lookups[1].lookup_tag;
+    }
+
+    tables = galloc((r->u.coverage.ncnt+r->u.coverage.bcnt+r->u.coverage.fcnt+1)*sizeof(SplineChar **));
+    for ( j=0, i=r->u.coverage.bcnt-1; i>=0; --i, ++j )
+	tables[j] = SFGlyphsFromNames(sf,r->u.coverage.bcovers[i]);
+    for ( i=0; i<r->u.coverage.ncnt; ++i, ++j )
+	tables[j] = SFGlyphsFromNames(sf,r->u.coverage.ncovers[i]);
+    for ( i=0; i<r->u.coverage.fcnt; ++i, ++j )
+	tables[j] = SFGlyphsFromNames(sf,r->u.coverage.fcovers[i]);
+    tables[j] = NULL;
+    match_len = j;
+
+    for ( i=0; i<match_len; ++i )
+	if ( tables[i]==NULL || tables[i][0]==NULL )
+return( NULL );
+
+    glyphs = morx_cg_FigureClasses(tables,match_len,
+	    &classes,&class_cnt,&map,&gcnt,fpst,sf);
+    if ( glyphs==NULL )
+return( NULL );
+
+    for ( i=0; i<match_len; ++i )
+	free(tables[i]);
+    free(tables);
+
+    sm = chunkalloc(sizeof(ASM));
+    sm->type = asm_context;
+    sm->flags = (fpst->flags&pst_r2l) ? asm_descending : 0;
+    sm->class_cnt = class_cnt;
+    sm->classes = galloc(class_cnt*sizeof(char *));
+    sm->classes[0] = sm->classes[1] = sm->classes[2] = sm->classes[3] = NULL;
+    for ( i=4; i<class_cnt; ++i )
+	sm->classes[i] = BuildClassNames(glyphs,map,i);
+    free(glyphs); free(map);
+
+    /* Now build the state machine */
+    /* we have match_len+1 states (there are 2 initial states) */
+    /*  we transition from the initial state to our first state when we get */
+    /*  any class which makes up the first coverage table. From the first */
+    /*  to the second on any class which makes up the second ... */
+    sm->state_cnt = match_len+1;
+    sm->state = gcalloc(sm->state_cnt*sm->class_cnt,sizeof(struct asm_state));
+    for ( j=0; j<match_len; ++j ) {
+	int off = (j+1)*sm->class_cnt;
+	for ( i=0; i<class_cnt; ++i ) {
+	    for ( k=0; classes[j][k]!=0xffff && classes[j][k]!=i; ++k );
+	    if ( classes[j][k]==i ) {
+		sm->state[off+i].next_state = j+2;
+		if ( j==match_len-1 ) {
+		    sm->state[off+i].next_state = 0;
+		    sm->state[off+i].flags = 0x4000;
+		    if ( subspos==j )
+			sm->state[off+i].u.context.cur_tag = substag;
+		    else {
+			sm->state[off+i].u.context.mark_tag = substag;
+			sm->state[off+i].u.context.cur_tag = finaltag;
+		    }
+		} else if ( subspos==j )
+		    sm->state[off+i].flags = 0x8000;
+	    } else if ( i==2 || ((fpst->flags&pst_ignorecombiningmarks) && i==class_cnt-1 ) )
+		sm->state[off+i].next_state = j+1;	/* Deleted glyph is a noop */
+	    else if ( j!=0 )
+		sm->state[off+i].flags = 0x4000;	/* Don't eat the current glyph, go back to state 0 and see if it will start the sequence over again */
+	}
+    }
+    /* Class 0 and class 1 should be the same. We only filled in class 1 above*/
+    memcpy(sm->state,sm->state+sm->class_cnt,sm->class_cnt*sizeof(struct asm_state));
+return( sm );
+}
+
+	/* ********************** From Class FPST ********************** */
+static void SMSetState(struct asm_state *trans,struct contexttree *cur,int class) {
+    int i;
+
+    for ( i=0; i<cur->branch_cnt; ++i ) {
+	if ( cur->branches[i].classnum==class ) {
+	    trans->next_state = cur->branches[i].branch->state;
+	    trans->flags = cur->branches[i].branch->state!=0
+		    ? cur->branches[i].branch->markme?0x8000:0x0000
+		    : cur->branches[i].branch->markme?0xc000:0x4000;
+	    trans->u.context.mark_tag = cur->branches[i].branch->applymarkedsubs;
+	    trans->u.context.cur_tag = cur->branches[i].branch->applycursubs;
+return;
+	}
+    }
+
+    if ( cur->ends_here!=NULL ) {
+	trans->next_state = 0;
+	trans->flags = 0x4000;
+	trans->u.context.mark_tag = cur->applymarkedsubs;
+	trans->u.context.cur_tag = cur->applycursubs;
+    } else
+	trans->next_state = 0;
+}
+
+static struct asm_state *AnyActiveSubstrings(struct contexttree *tree,
+	struct contexttree *cur,int class, struct asm_state *trans, int classcnt) {
+    struct fpc *any = &cur->rules[0].rule->u.class;
+    int i,rc,j, b;
+
+    for ( i=1; i<=cur->depth; ++i ) {
+	for ( rc=0; rc<tree->rule_cnt; ++rc ) {
+	    struct fpc *r = &tree->rules[rc].rule->u.class;
+	    int ok = true;
+	    for ( j=0; j<=cur->depth-i; ++j ) {
+		if ( any->allclasses[j+i]!=r->allclasses[j] ) {
+		    ok = false;
+	    break;
+		}
+	    }
+	    if ( ok && r->allclasses[j]==class ) {
+		struct contexttree *sub = tree;
+		for ( j=0; j<=cur->depth-i; ++j ) {
+		    for ( b=0; b<sub->branch_cnt; ++b ) {
+			if ( sub->branches[b].classnum==r->allclasses[j] ) {
+			    sub = sub->branches[b].branch;
+		    break;
+			}
+		    }
+		}
+		if ( trans[sub->state*classcnt+class+3].next_state!=0 &&
+			(sub->pending_pos+i == cur->pending_pos ||
+			 sub->pending_pos == -1 ))
+return( &trans[sub->state*classcnt+class+3] );
+	    }
+	}
+    }
+return( &trans[class+3] );
+}
+
+static ASM *ASMFromClassFPST(SplineFont *sf,FPST *fpst, struct contexttree *tree) {
+    ASM *sm;
+    struct contexttree *cur;
+    int i;
+
+    sm = chunkalloc(sizeof(ASM));
+    sm->type = asm_context;
+    sm->flags = (fpst->flags&pst_r2l) ? asm_descending : 0;
+    /* mac class sets have four magic classes, opentype sets only have one */
+    sm->class_cnt = (fpst->flags&pst_ignorecombiningmarks) ? fpst->nccnt+4 : fpst->nccnt+3;
+    sm->classes = galloc(sm->class_cnt*sizeof(char *));
+    sm->classes[0] = sm->classes[1] = sm->classes[2] = sm->classes[3] = NULL;
+    for ( i=1; i<fpst->nccnt; ++i )
+	sm->classes[i+3] = copy(fpst->nclass[i]);
+    if ( fpst->flags&pst_ignorecombiningmarks )
+	sm->classes[sm->class_cnt-1] = BuildMarkClass(sf);
+
+    /* Now build the state machine */
+    sm->state_cnt = tree->next_state;
+    sm->state = gcalloc(sm->state_cnt*sm->class_cnt,sizeof(struct asm_state));
+    for ( cur=tree; cur!=NULL; cur = TreeNext(cur)) if ( cur->state!=0 ) {
+	int off = cur->state*sm->class_cnt;
+
+	SMSetState(&sm->state[off+1],cur,0);		/* Out of bounds state */
+	sm->state[off+2].next_state = cur->state;	/* Deleted glyph gets eaten and ignored */
+	if ( fpst->flags&pst_ignorecombiningmarks )
+	    sm->state[off+sm->class_cnt-1].next_state = cur->state;	/* As do ignored marks */
+	for ( i=1; i<fpst->nccnt; ++i )
+	    SMSetState(&sm->state[off+i+3],cur,i);
+    }
+    /* Class 0 and class 1 should be the same. We only filled in class 1 above*/
+    memcpy(sm->state,sm->state+sm->class_cnt,sm->class_cnt*sizeof(struct asm_state));
+    /* Do a sort of transitive closure on states, so if we are looking for */
+    /*  either "abcd" or "bce", don't lose the "bce" inside "abce" */
+    FPSTBuildAllClasses(fpst);
+    for ( cur = tree; cur!=NULL; cur = TreeNext(cur)) if ( cur->state>1 ) {
+	int off = cur->state*sm->class_cnt;
+	for ( i=1; i<fpst->nccnt; ++i ) if ( sm->state[off+3+i].next_state==0 )
+	    sm->state[off+3+i] = *AnyActiveSubstrings(tree,cur,i, sm->state,sm->class_cnt);
+    }
+    FPSTFreeAllClasses(fpst);
+return( sm );
+}
+
+ASM *ASMFromFPST(SplineFont *sf,FPST *fpst) {
+    FPST *tempfpst=fpst;
+    struct contexttree *tree=NULL;
+    ASM *sm;
+
+    if ( fpst->format==pst_glyphs )
+	tempfpst = FPSTGlyphToClass( fpst );
+    if ( tempfpst->format==pst_coverage )
+return( ASMFromCoverageFPST(sf,fpst));
+
+    tree = FPST2Tree(sf, tempfpst);
+    if ( tree!=NULL ) {
+	sm = ASMFromClassFPST(sf,tempfpst,tree);
+	TreeFree(tree);
+    } else
+	sm = NULL;
+    if ( tempfpst!=fpst )
+	FPSTFree(tempfpst);
+    sm->opentype_tag = fpst->tag;
+return( sm );
+}
+
+/* ************************************************************************** */
+/* ************************* Opentype conversion dlg ************************ */
+/* ************************************************************************** */
+struct cvt_dlg {
+    int done;
+    ASM *ret;
+    GGadget *list;
+    SplineFont *sf;
+};
+
+#define CID_Convert	100
+
+struct fs_dlg {
+    int done, ok;
+    int feature, setting;
+    GTextInfo *mactags;
+};
+
+/*#define CID_FeatSet	306*/
+
+struct sliflag *SFGetFormsList(SplineFont *sf,int test_dflt) {
+    struct sliflag *sliflags;
+    int cur, max;
+    int i,j,k;
+    SplineChar *sc;
+    PST *pst;
+    SplineFont *_sf;
+
+    if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
+    _sf = sf;
+    cur = 0; max = 10;
+    sliflags = galloc(11*sizeof(struct sliflag));
+
+    k = 0;
+    do {
+	sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[k];
+	for ( i=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
+	    for ( pst = sc->possub; pst!=NULL; pst=pst->next ) {
+		if ( pst->script_lang_index==SLI_NESTED )
+	    continue;
+		if ( test_dflt && !SLIHasDefault(sf,pst->script_lang_index))
+	    continue;
+		if ( pst->tag==CHR('i','n','i','t') ||
+			pst->tag==CHR('m','e','d','i') ||
+			pst->tag==CHR('f','i','n','a') ||
+			pst->tag==CHR('i','s','o','l') ) {
+		    for ( j=0; j<cur; ++j )
+			if ( sliflags[j].sli==pst->script_lang_index &&
+				sliflags[j].flags==pst->flags )
+		    break;
+		    if ( j>=cur ) {
+			if ( cur>=max )
+			    sliflags = grealloc(sliflags,((max+=10)+1)*sizeof(struct sliflag));
+			sliflags[cur].sli = pst->script_lang_index;
+			sliflags[cur++].flags = pst->flags;
+		    }
+		}
+	    }
+	}
+	++k;
+    } while ( k<_sf->subfontcnt );
+    if ( cur==0 ) {
+	free(sliflags);
+return( NULL );
+    }
+    sliflags[cur].sli = 0xffff; sliflags[cur].flags = 0xffff;
+return( sliflags );
+}
+
+/* A quick check to see if there is any opentype thing which is LIKELY to be */
+/*  convertable to an apple contextual glyph substitution state machine */
+int SFAnyConvertableSM(SplineFont *sf) {
+    int i,k;
+    SplineChar *sc;
+    PST *pst;
+    SplineFont *_sf;
+    FPST *fpst;
+
+    if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
+    _sf = sf;
+
+    for ( fpst=sf->possub; fpst!=NULL; fpst = fpst->next )
+	if ( fpst->type==pst_contextsub || fpst->type==pst_chainsub )
+return( true );
+
+    k = 0;
+    do {
+	sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[k];
+	for ( i=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
+	    for ( pst = sc->possub; pst!=NULL; pst=pst->next ) {
+		if ( pst->script_lang_index==SLI_NESTED )
+	    continue;
+		if ( pst->tag==CHR('i','n','i','t') ||
+			pst->tag==CHR('m','e','d','i') ||
+			pst->tag==CHR('f','i','n','a') ||
+			pst->tag==CHR('i','s','o','l') )
+return( true );
+	    }
+	}
+	++k;
+    } while ( k<_sf->subfontcnt );
+return( false );
+}
+
+static GTextInfo *ConvertableItems(SplineFont *sf) {
+    int max=10, cur=0;
+    GTextInfo *ret = gcalloc((max+1),sizeof(GTextInfo));
+    struct sliflag *sliflags = SFGetFormsList(sf,false);
+    FPST *fpst;
+    int i;
+    static int types[] = { pst_contextsub, pst_chainsub };
+    static const unichar_t nullstr[] = { 0 };
+    char buffer[100];
+
+    if ( sliflags!=NULL ) {
+	for ( i=0; sliflags[i].sli!=0xffff; ++i ) {
+	    sprintf( buffer, "Forms (init,medi,fina,isol) %c%c%c%c %d",
+		    sliflags[i].flags&pst_r2l ? 'r':' ',
+		    sliflags[i].flags&pst_ignorebaseglyphs ? 'b':' ',
+		    sliflags[i].flags&pst_ignoreligatures ? 'l':' ',
+		    sliflags[i].flags&pst_ignorecombiningmarks ? 'm':' ',
+    		    sliflags[i].sli );
+	    if ( cur>=max ) {
+		ret = grealloc(ret,((max+=10)+1)*sizeof(GTextInfo));
+		memset(ret+max,0,11*sizeof(GTextInfo));
+	    }
+	    ret[cur].text = uc_copy(buffer);
+	    ret[cur].checked = true;
+	    ret[cur++].userdata = (void *) (intpt) ((sliflags[i].sli<<16)|sliflags[i].flags);
+	}
+	free(sliflags);
+    }
+
+    for ( i=0; i<2; ++i ) {
+	if ( cur>=max ) {
+	    ret = grealloc(ret,((max+=10)+1)*sizeof(GTextInfo));
+	    memset(ret+max,0,11*sizeof(GTextInfo));
+	}
+	ret[cur].disabled = true;
+	ret[cur++].line = true;
+
+	for ( fpst=sf->possub; fpst!=NULL; fpst = fpst->next ) if ( fpst->type==types[i] ) {
+	    if ( cur>=max ) {
+		ret = grealloc(ret,((max+=10)+1)*sizeof(GTextInfo));
+		memset(ret+max,0,11*sizeof(GTextInfo));
+	    }
+	    ret[cur].text = ClassName(nullstr,fpst->tag,fpst->flags,
+		fpst->script_lang_index, -1, -1,false);
+	    ret[cur].checked = false;
+	    ret[cur].disabled = !FPSTisMacable(sf,fpst,false);
+	    ret[cur++].userdata = (void *) fpst;
+	}
+    }
+    if ( cur==0 ) {
+	free(ret);
+return( NULL );
+    }
+return( ret );
+}
+
+static int fs_e_h(GWindow gw, GEvent *e) {
+    if ( e->type==et_close ) {
+	struct fs_dlg *d = GDrawGetUserData(gw);
+	d->done = true;
+    } else if ( e->type == et_char ) {
+return( false );
+    } else if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct fs_dlg *d = GDrawGetUserData(gw);
+	if ( (d->ok = GGadgetGetCid(e->u.control.g)) ) {
+	    unichar_t *end;
+	    const unichar_t *ret = _GGadgetGetTitle(GWidgetGetControl(gw,CID_FeatSet));
+	    if ( *ret=='<' ) ++ret;
+	    d->feature = u_strtol(ret,&end,10);
+	    for ( ; isspace(*end); ++end );
+	    d->setting = u_strtol(end+1,&end,10);
+	    for ( ; isspace(*end); ++end );
+	    if ( *end=='>' ) ++end;
+	    for ( ; isspace(*end); ++end );
+	    if ( *end!='\0' ) {
+		GWidgetErrorR(_STR_BadFeatureSetting,_STR_BadFeatureSetting);
+return( true );
+	    }
+	}
+	d->done = true;
+    } else if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
+	if ( e->u.control.u.tf_changed.from_pulldown!=-1 ) {
+	    struct fs_dlg *d = GDrawGetUserData(gw);
+	    uint32 tag = (uint32) d->mactags[e->u.control.u.tf_changed.from_pulldown].userdata;
+	    unichar_t ubuf[20];
+	    char buf[20];
+	    /* If they select something from the pulldown, don't show the human */
+	    /*  readable form, instead show the numeric feature/setting */
+	    sprintf( buf,"<%d,%d>", tag>>16, tag&0xffff );
+	    uc_strcpy(ubuf,buf);
+	    GGadgetSetTitle(e->u.control.g,ubuf);
+	}
+    }
+return( true );
+}
+
+static int GetFeatureSetting(SplineFont *sf, unichar_t *text,
+	int *feature,int *setting) {
+    struct fs_dlg d;
+    GRect pos;
+    GWindow gw;
+    GWindowAttrs wattrs;
+    GGadgetCreateData gcd[8];
+    GTextInfo label[8];
+    int k;
+
+    memset(&d,0,sizeof(d));
+
+    memset(&wattrs,0,sizeof(wattrs));
+    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_restrict;
+    wattrs.event_masks = ~(1<<et_charup);
+    wattrs.restrict_input_to_me = 1;
+    wattrs.undercursor = 1;
+    wattrs.cursor = ct_pointer;
+    wattrs.window_title = GStringGetResource(_STR_ConvertFromOpenType,NULL);
+    pos.x = pos.y = 0;
+    pos.width = GDrawPointsToPixels(NULL,200);
+    pos.height = GDrawPointsToPixels(NULL,96);
+    gw = GDrawCreateTopWindow(NULL,&pos,fs_e_h,&d,&wattrs);
+
+    memset(&label,0,sizeof(label));
+    memset(&gcd,0,sizeof(gcd));
+
+    k=0;
+
+    label[k].text = (unichar_t *) _STR_FeatureSettingFor;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = 5;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k++].creator = GLabelCreate;
+
+    label[k].text = text;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k++].creator = GLabelCreate;
+
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.cid = CID_FeatSet;
+    gcd[k].gd.u.list = d.mactags = AddMacFeatures(NULL,pst_max,sf);
+    gcd[k++].creator = GListFieldCreate;
+
+    label[k].text = (unichar_t *) _STR_OK;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 30; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+26;
+    gcd[k].gd.pos.width = -1;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_default;
+    gcd[k].gd.cid = true;
+    gcd[k++].creator = GButtonCreate;
+
+    label[k].text = (unichar_t *) _STR_Cancel;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = -30; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+3;
+    gcd[k].gd.pos.width = -1;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    gcd[k].gd.cid = false;
+    gcd[k++].creator = GButtonCreate;
+
+    gcd[k].gd.pos.x = gcd[k].gd.pos.y = 2;
+    gcd[k].gd.pos.width = pos.width - 4;
+    gcd[k].gd.pos.height = pos.height - 4;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels;
+    gcd[k++].creator = GGroupCreate;
+
+    GGadgetsCreate(gw,gcd);
+    GDrawSetVisible(gw,true);
+    while ( !d.done )
+	GDrawProcessOneEvent(NULL);
+    GDrawDestroyWindow(gw);
+    *feature = d.feature;
+    *setting = d.setting;
+return( d.ok );
+}
+
+static void _SMCVT_Convert(struct cvt_dlg *d) {
+    ASM *sm, *last;
+    int32 len,i;
+    GTextInfo **ti = GGadgetGetList(d->list,&len);
+    int feature,setting;
+
+    for ( i=0; i<len; ++i ) if ( ti[i]->selected && !ti[i]->disabled ) {
+	if ( !GetFeatureSetting(d->sf,ti[i]->text,&feature,&setting) )
+    continue;
+	if ( ti[i]->checked ) {
+	    uint32 val = (intpt) ti[i]->userdata;
+	    sm = ASMFromOpenTypeForms(d->sf,val>>16,val&0xffff);
+	} else {
+	    sm = ASMFromFPST(d->sf,(FPST *) (ti[i]->userdata));
+	}
+	sm->feature = feature; sm->setting = setting;
+	if ( d->ret==NULL )
+	    d->ret = sm;
+	else
+	    last->next = sm;
+	last = sm;
+    }
+    d->done = true;
+}
+
+static int SMCVT_Convert(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct cvt_dlg *d = GDrawGetUserData(GGadgetGetWindow(g));
+	_SMCVT_Convert(d);
+    }
+return( true );
+}
+
+static int SMCVT_Cancel(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct cvt_dlg *d = GDrawGetUserData(GGadgetGetWindow(g));
+	d->done = true;
+    }
+return( true );
+}
+
+static int SMCVT_Selected(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
+	GGadgetSetEnabled(GWidgetGetControl(GGadgetGetWindow(g),CID_Convert),
+		GGadgetGetFirstListSelectedItem(g)>=0);
+    } else if ( e->type==et_controlevent && e->u.control.subtype == et_listdoubleclick ) {
+	struct cvt_dlg *d = GDrawGetUserData(GGadgetGetWindow(g));
+	_SMCVT_Convert(d);
+    }
+return( true );
+}
+
+static int cvt_e_h(GWindow gw, GEvent *e) {
+    if ( e->type==et_close ) {
+	struct cvt_dlg *d = GDrawGetUserData(gw);
+	d->done = true;
+    } else if ( e->type == et_char ) {
+return( false );
+    }
+return( true );
+}
+
+ASM *SMConvertDlg(SplineFont *sf) {
+    GTextInfo *cvts = ConvertableItems(sf);
+    struct cvt_dlg d;
+    GRect pos;
+    GWindow gw;
+    GWindowAttrs wattrs;
+    GGadgetCreateData gcd[8];
+    GTextInfo label[8];
+    int k;
+
+    if ( cvts==NULL ) {
+	GWidgetErrorR(_STR_NothingToConvert,_STR_NothingToConvert);
+return( NULL );
+    }
+
+    memset(&d,0,sizeof(d));
+    d.sf = sf;
+
+    memset(&wattrs,0,sizeof(wattrs));
+    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_restrict;
+    wattrs.event_masks = ~(1<<et_charup);
+    wattrs.restrict_input_to_me = 1;
+    wattrs.undercursor = 1;
+    wattrs.cursor = ct_pointer;
+    wattrs.window_title = GStringGetResource(_STR_ConvertFromOpenType,NULL);
+    pos.x = pos.y = 0;
+    pos.width = GDrawPointsToPixels(NULL,180);
+    pos.height = GDrawPointsToPixels(NULL,200);
+    gw = GDrawCreateTopWindow(NULL,&pos,cvt_e_h,&d,&wattrs);
+
+    memset(&label,0,sizeof(label));
+    memset(&gcd,0,sizeof(gcd));
+
+    k=0;
+
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = 5;
+    gcd[k].gd.pos.width = 170;
+    gcd[k].gd.pos.height = 150;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_list_multiplesel;
+    gcd[k].gd.handle_controlevent = SMCVT_Selected;
+    gcd[k].gd.u.list = cvts;
+    gcd[k++].creator = GListCreate;
+
+    label[k].text = (unichar_t *) _STR_Convert;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 30; gcd[k].gd.pos.y = 168-3;
+    gcd[k].gd.flags = gg_visible /*| gg_enabled*/ | gg_but_default;
+    gcd[k].gd.handle_controlevent = SMCVT_Convert;
+    gcd[k].gd.cid = CID_Convert;
+    gcd[k++].creator = GButtonCreate;
+
+    label[k].text = (unichar_t *) _STR_Cancel;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = -30; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+3;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    gcd[k].gd.handle_controlevent = SMCVT_Cancel;
+    gcd[k++].creator = GButtonCreate;
+
+    gcd[k].gd.pos.x = gcd[k].gd.pos.y = 2;
+    gcd[k].gd.pos.width = pos.width - 4;
+    gcd[k].gd.pos.height = pos.height - 4;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels;
+    gcd[k++].creator = GGroupCreate;
+
+    GGadgetsCreate(gw,gcd);
+    d.list = gcd[0].ret;
+    GDrawSetVisible(gw,true);
+    while ( !d.done )
+	GDrawProcessOneEvent(NULL);
+    GDrawDestroyWindow(gw);
+return( d.ret );
+}
+
 
 /* ************************************************************************** */
 /* ****************************** Edit a State ****************************** */
