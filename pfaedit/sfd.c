@@ -503,6 +503,7 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 	fprintf(sfd, "Panose:" );
 	for ( i=0; i<10; ++i )
 	    fprintf( sfd, " %d", sf->pfminfo.panose[i]);
+	putc('\n',sfd);
 	fprintf(sfd, "LineGap: %d\n", sf->pfminfo.linegap );
 	fprintf(sfd, "VLineGap: %d\n", sf->pfminfo.vlinegap );
 	putc('\n',sfd);

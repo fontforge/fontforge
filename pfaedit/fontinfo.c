@@ -2019,6 +2019,7 @@ static void TNFinishFormer(struct gfi_data *d) {
 		d->names = cur;
 	    else
 		prev->next = cur;
+	    cur->lang = lang;
 	}
 
 	if ( nothing ) {
@@ -3257,7 +3258,6 @@ void FontInfo(SplineFont *sf) {
     aspects[i].text_in_resource = true;
     aspects[i++].gcd = pangcd;
 
-    d.panose_aspect = i;
     aspects[i].text = (unichar_t *) _STR_Comment;
     aspects[i].text_in_resource = true;
     aspects[i++].gcd = comgcd;

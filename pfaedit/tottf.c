@@ -4408,9 +4408,47 @@ static void setvorg(struct vorg *vorg, SplineFont *sf) {
     vorg->numVertOriginYMetrics = 0;
 }
 
+static void OS2WeightCheck(struct pfminfo *pfminfo,char *weight) {
+    if ( strstrmatch(weight,"medi")!=NULL ) {
+	pfminfo->weight = 500;
+	pfminfo->panose[2] = 6;
+    } else if ( strstrmatch(weight,"demi")!=NULL ||
+		strstrmatch(weight,"halb")!=NULL ||
+		(strstrmatch(weight,"semi")!=NULL &&
+		    strstrmatch(weight,"bold")!=NULL) ) {
+	pfminfo->weight = 600;
+	pfminfo->panose[2] = 7;
+    } else if ( strstrmatch(weight,"bold")!=NULL ||
+		strstrmatch(weight,"fett")!=NULL ||
+		strstrmatch(weight,"gras")!=NULL ) {
+	pfminfo->weight = 700;
+	pfminfo->panose[2] = 8;
+    } else if ( strstrmatch(weight,"heavy")!=NULL ) {
+	pfminfo->weight = 800;
+	pfminfo->panose[2] = 9;
+    } else if ( strstrmatch(weight,"black")!=NULL ) {
+	pfminfo->weight = 900;
+	pfminfo->panose[2] = 10;
+    } else if ( strstrmatch(weight,"nord")!=NULL ) {
+	pfminfo->weight = 950;
+	pfminfo->panose[2] = 11;
+    } else if ( strstrmatch(weight,"thin")!=NULL ) {
+	pfminfo->weight = 100;
+	pfminfo->panose[2] = 2;
+    } else if ( strstrmatch(weight,"extra")!=NULL ||
+	    strstrmatch(weight,"light")!=NULL ) {
+	pfminfo->weight = 200;
+	pfminfo->panose[2] = 3;
+    } else if ( strstrmatch(weight,"light")!=NULL ) {
+	pfminfo->weight = 300;
+	pfminfo->panose[2] = 4;
+    }
+}
+
 void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *_sf,char *fontname) {
     int i, samewid= -1, j;
     SplineFont *sf, *first=NULL;
+    char *weight = _sf->cidmaster==NULL ? _sf->weight : _sf->cidmaster->weight;
 
     if ( !pfminfo->pfmset ) {
 	memset(pfminfo,'\0',sizeof(*pfminfo));
@@ -4445,40 +4483,9 @@ void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *_sf,char *fontname) {
 	pfminfo->weight = 400;
 	pfminfo->panose[2] = 5;
 /* urw uses 4 character abreviations */
-	if ( strstrmatch(fontname,"medi")!=NULL ) {
-	    pfminfo->weight = 500;
-	    pfminfo->panose[2] = 6;
-	} else if ( strstrmatch(fontname,"demi")!=NULL ||
-		    strstrmatch(fontname,"halb")!=NULL ||
-		    (strstrmatch(fontname,"semi")!=NULL &&
-		strstrmatch(fontname,"bold")!=NULL) ) {
-	    pfminfo->weight = 600;
-	    pfminfo->panose[2] = 7;
-	} else if ( strstrmatch(fontname,"bold")!=NULL ||
-		    strstrmatch(fontname,"fett")!=NULL ||
-		    strstrmatch(fontname,"gras")!=NULL ) {
-	    pfminfo->weight = 700;
-	    pfminfo->panose[2] = 8;
-	} else if ( strstrmatch(fontname,"heavy")!=NULL ) {
-	    pfminfo->weight = 800;
-	    pfminfo->panose[2] = 9;
-	} else if ( strstrmatch(fontname,"black")!=NULL ) {
-	    pfminfo->weight = 900;
-	    pfminfo->panose[2] = 10;
-	} else if ( strstrmatch(fontname,"nord")!=NULL ) {
-	    pfminfo->weight = 950;
-	    pfminfo->panose[2] = 11;
-	} else if ( strstrmatch(fontname,"thin")!=NULL ) {
-	    pfminfo->weight = 100;
-	    pfminfo->panose[2] = 2;
-	} else if ( strstrmatch(fontname,"extra")!=NULL ||
-		strstrmatch(fontname,"light")!=NULL ) {
-	    pfminfo->weight = 200;
-	    pfminfo->panose[2] = 3;
-	} else if ( strstrmatch(fontname,"light")!=NULL ) {
-	    pfminfo->weight = 300;
-	    pfminfo->panose[2] = 4;
-	}
+	if ( weight!=NULL )
+	    OS2WeightCheck(pfminfo,weight);
+	OS2WeightCheck(pfminfo,fontname);
 
 	pfminfo->width = 5;
 	pfminfo->panose[3] = 3;
