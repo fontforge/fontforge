@@ -166,6 +166,7 @@ BDFChar *BDFMakeChar(BDFFont *bdf,int i) {
 
     if ( sf->cidmaster!=NULL ) {
 	int j = SFHasCID(sf,i);
+	sf = sf->cidmaster;
 	if ( j==-1 ) {
 	    for ( j=0; j<sf->subfontcnt; ++j )
 		if ( i<sf->subfonts[j]->charcnt )
