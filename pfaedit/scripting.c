@@ -52,6 +52,13 @@ struct dictentry {
     Val val;
 };
 
+struct dictionary {
+    struct dictentry *entries;
+    int cnt, max;
+};
+
+static struct dictionary globals;
+
 typedef struct array {
     int argc;
     Val *vals;
@@ -79,8 +86,7 @@ typedef struct context {
     struct context *caller;
     Array a;		/* args */
     Array **dontfree;
-    struct dictentry *locals;
-    int lc, lmax;
+    struct dictionary locals;
     FILE *script;
     unsigned int backedup: 1;
     unsigned int donteval: 1;
@@ -153,6 +159,53 @@ static Array *arraycopy(Array *a) {
 return( c );
 }
 
+void DictionaryFree(struct dictionary *dica) {
+    int i;
+
+    if ( dica==NULL )
+return;
+
+    for ( i=0; i<dica->cnt; ++i ) {
+	free(dica->entries[i].name );
+	if ( dica->entries[i].val.type == v_str )
+	    free( dica->entries[i].val.u.sval );
+	if ( dica->entries[i].val.type == v_arr )
+	    arrayfree( dica->entries[i].val.u.aval );
+    }
+    free( dica->entries );
+}
+
+static int DicaLookup(struct dictionary *dica,char *name,Val *val) {
+    int i;
+
+    if ( dica!=NULL && dica->entries!=NULL ) {
+	for ( i=0; i<dica->cnt; ++i )
+	    if ( strcmp(dica->entries[i].name,name)==0 ) {
+		val->type = v_lval;
+		val->u.lval = &dica->entries[i].val;
+return( true );
+	    }
+    }
+return( false );
+}
+
+static void DicaNewEntry(struct dictionary *dica,char *name,Val *val) {
+
+    if ( dica->entries==NULL ) {
+	dica->max = 10;
+	dica->entries = galloc(dica->max*sizeof(struct dictentry));
+    } else if ( dica->cnt>=dica->max ) {
+	dica->max += 10;
+	dica->entries = grealloc(dica->entries,dica->max*sizeof(struct dictentry));
+    }
+    dica->entries[dica->cnt].name = copy(name);
+    dica->entries[dica->cnt].val.type = v_void;
+    val->type = v_lval;
+    val->u.lval = &dica->entries[dica->cnt].val;
+    ++dica->cnt;
+}
+
+
 static void calldatafree(Context *c) {
     int i;
 
@@ -162,14 +215,7 @@ static void calldatafree(Context *c) {
 	if ( c->a.vals[i].type == v_arrfree || (c->a.vals[i].type == v_arr && c->dontfree[i]!=c->a.vals[i].u.aval ))
 	    arrayfree( c->a.vals[i].u.aval );
     }
-    for ( i=0; i<c->lc; ++i ) {
-	free(c->locals[i].name );
-	if ( c->locals[i].val.type == v_str )
-	    free( c->locals[i].val.u.sval );
-	if ( c->locals[i].val.type == v_arr )
-	    arrayfree( c->locals[i].val.u.aval );
-    }
-    free( c->locals );
+    DictionaryFree(&c->locals);
 
     if ( c->script!=NULL )
 	fclose(c->script);
@@ -1575,10 +1621,10 @@ return( c->tok );
     }
     do {
 	ch = cgetc(c);
-	if ( isalpha(ch) || ch=='$' || ch=='_' || ch=='.' ) {
+	if ( isalpha(ch) || ch=='$' || ch=='_' || ch=='.' || ch=='@' ) {
 	    char *pt = c->tok_text, *end = c->tok_text+TOK_MAX;
 	    int toolong = false;
-	    while ( (isalnum(ch) || ch=='$' || ch=='_' || ch=='.' ) && pt<end ) {
+	    while ( (isalnum(ch) || ch=='$' || ch=='_' || ch=='.' || ch=='@' ) && pt<end ) {
 		*pt++ = ch;
 		ch = getc(c->script);
 	    }
@@ -2023,27 +2069,25 @@ static void handlename(Context *c,Val *val) {
 		val->type = v_lval;
 		val->u.lval = &c->trace;
 	    }
-	} else if ( c->locals!=NULL ) {
-	    for ( temp=0; temp<c->lc; ++temp )
-		if ( strcmp(c->locals[temp].name,name)==0 ) {
-		    val->type = v_lval;
-		    val->u.lval = &c->locals[temp].val;
-		}
+	} else if ( *name=='@' ) {
+	    if ( c->curfv==NULL ) error(c,"No current font");
+	    DicaLookup(c->curfv->fontvars,name,val);
+	} else if ( *name=='_' ) {
+	    DicaLookup(&globals,name,val);
+	} else {
+	    DicaLookup(&c->locals,name,val);
 	}
 	if ( tok==tt_assign && val->type==v_void && *name!='$' ) {
 	    /* It's ok to create this as a new variable, we're going to assign to it */
-	    if ( c->locals==NULL ) {
-		c->lmax = 10;
-		c->locals = galloc(c->lmax*sizeof(struct dictentry));
-	    } else if ( c->lc>=c->lmax ) {
-		c->lmax += 10;
-		c->locals = grealloc(c->locals,c->lmax*sizeof(struct dictentry));
+	    if ( *name=='@' ) {
+		if ( c->curfv->fontvars==NULL )
+		    c->curfv->fontvars = gcalloc(1,sizeof(struct dictionary));
+		DicaNewEntry(c->curfv->fontvars,name,val);
+	    } else if ( *name=='_' ) {
+		DicaNewEntry(&globals,name,val);
+	    } else {
+		DicaNewEntry(&c->locals,name,val);
 	    }
-	    c->locals[c->lc].name = copy(name);
-	    c->locals[c->lc].val.type = v_void;
-	    val->type = v_lval;
-	    val->u.lval = &c->locals[c->lc].val;
-	    ++c->lc;
 	}
 	if ( val->type==v_void )
 	    errors(c, "Undefined variable", name);

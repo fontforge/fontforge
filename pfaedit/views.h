@@ -263,6 +263,7 @@ typedef struct fontview {
     int32 *mapping;	/* an array mapping grid cells (0=upper left) to font indeces (enc, 0=NUL) */
 		    /* So the default array would contain NUL, ^A, ^B, ... */
     int mapcnt;		/* Number of chars in the current group (mapping) */
+    struct dictionary *fontvars;	/* Scripting */
 } FontView;
 
 typedef struct findsel {
@@ -522,6 +523,7 @@ extern void CVMakeParallel(CharView *cv);
 
 extern void ScriptDlg(FontView *fv);
 extern void ExecuteScriptFile(FontView *fv, char *filename);
+extern void DictionaryFree(struct dictionary *dica);
 
 # if HANYANG
 extern void MenuNewComposition(GWindow gw, struct gmenuitem *, GEvent *);

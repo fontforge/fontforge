@@ -4371,6 +4371,8 @@ return( FontViewCreate(SplineFontNew()));
 void FontViewFree(FontView *fv) {
     SplineFontFree(fv->cidmaster?fv->cidmaster:fv->sf);
     BDFFontFree(fv->filled);
+    DictionaryFree(fv->fontvars);
+    free(fv->fontvars);
     free(fv->selected);
     free(fv);
 }
