@@ -450,7 +450,8 @@ typedef struct splinepoint {
     unsigned int roundy: 1;	/* For true type hinting */
     unsigned int dontinterpolate: 1;	/* temporary in ttf output */
     unsigned int ticked: 1;
-	/* 16+2 bits left... */
+    unsigned int watched: 1;
+	/* 16+1 bits left... */
     uint16 ptindex;		/* Temporary value used by metafont routine */
     uint16 ttfindex;		/* Truetype point index */
 	/* Special values 0xffff => point implied by averaging control points */
