@@ -584,9 +584,9 @@ static void CleanupSplines(IntersectionList *ilist,IntersectionList *ilbase) {
 	for ( sl2 = sl1->next; sl2!=NULL ; sl2 = next ) {
 	    next = sl2->next;
 	    if (( sl2->spline->from->me.x==sl1->spline->from->me.x && sl2->spline->from->me.y==sl1->spline->from->me.y &&
-		    sl2->spline->to->me.x==sl1->spline->to->me.x && sl2->spline->to->me.y==sl1->spline->to->me.x ) ||
+		    sl2->spline->to->me.x==sl1->spline->to->me.x && sl2->spline->to->me.y==sl1->spline->to->me.y ) ||
 		( sl2->spline->from->me.x==sl1->spline->to->me.x && sl2->spline->from->me.y==sl1->spline->to->me.y &&
-		    sl2->spline->to->me.x==sl1->spline->from->me.x && sl2->spline->to->me.y==sl1->spline->from->me.x )) {
+		    sl2->spline->to->me.x==sl1->spline->from->me.x && sl2->spline->to->me.y==sl1->spline->from->me.y )) {
 		prev->next = next;
 		ChangeSpline(ilbase,sl1->spline,sl2->spline);
 		SplineFree(sl2->spline);
