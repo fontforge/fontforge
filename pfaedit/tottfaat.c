@@ -706,6 +706,19 @@ static void morx_dumpLigaFeature(FILE *temp,SplineChar **glyphs,int gcnt,
 	    ++trans_cnt;
 	}
     }
+    /* Oops. Bug. */
+    /* Suppose we have two ligatures f+l=>fl & s+t->st. */
+    /* Suppose we get input "fst"			*/
+    /* Now the state machine we've built so far will go to the f branch, see */
+    /*  the "s" and go back to state 0 */
+    /* Obviously that's wrong, we've lost the st. So either we go back to 0 */
+    /*  but don't advance the glyph, or we take the transition from state 0 */
+    /*  and copy it to here. The second is easier for me just now */
+    for ( i=2; i<state_cnt; ++i ) for ( j=4; j<class; ++j ) {
+	if ( states[i][j].trans_ent == 0 && states[0][j].trans_ent != 0 )
+	    states[i][j].trans_ent = states[0][j].trans_ent;
+    }
+
     /* Dump out the state machine */
     for ( i=0; i<state_cnt; ++i ) for ( j=0; j<class; ++j )
 	putshort( temp, states[i][j].trans_ent );
