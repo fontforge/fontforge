@@ -930,12 +930,12 @@ static void MVMakeLabels(MetricsView *mv) {
     memset(&gd,'\0',sizeof(gd));
     memset(&label,'\0',sizeof(label));
 
-    mv->mwidth = 60;
+    mv->mwidth = GGadgetScale(60);
     mv->displayend = mv->height- mv->sbh - 5*(mv->fh+4);
     mv->pixelsize = mv_scales[mv->scale_index]*(mv->displayend - mv->topend - 4);
 
-    label.text = (unichar_t *) "Name:";
-    label.text_is_1byte = true;
+    label.text = (unichar_t *) _STR_MVName;
+    label.text_in_resource = true;
     label.font = mv->font;
     gd.pos.x = 2; gd.pos.width = mv->mwidth-4;
     gd.pos.y = mv->displayend+2;
@@ -945,19 +945,19 @@ static void MVMakeLabels(MetricsView *mv) {
     gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels | gg_dontcopybox;
     mv->namelab = GLabelCreate(mv->gw,&gd,NULL);
 
-    label.text = (unichar_t *) (mv->vertical ? "Height:" : "Width:");
+    label.text = (unichar_t *) (mv->vertical ? _STR_MVHeight : _STR_MVWidth );
     gd.pos.y += mv->fh+4;
     mv->widthlab = GLabelCreate(mv->gw,&gd,NULL);
 
-    label.text = (unichar_t *) (mv->vertical ? "TBearing:" : "LBearing:");
+    label.text = (unichar_t *) (mv->vertical ? _STR_MVTBearing : _STR_MVLBearing );
     gd.pos.y += mv->fh+4;
     mv->lbearinglab = GLabelCreate(mv->gw,&gd,NULL);
 
-    label.text = (unichar_t *) (mv->vertical ? "BBearing:" : "RBearing:");
+    label.text = (unichar_t *) (mv->vertical ? _STR_MVBBearing : _STR_MVRBearing );
     gd.pos.y += mv->fh+4;
     mv->rbearinglab = GLabelCreate(mv->gw,&gd,NULL);
 
-    label.text = (unichar_t *) (mv->vertical ? "VKern:" : "Kern:");
+    label.text = (unichar_t *) (mv->vertical ? _STR_MVVKern : _STR_MVKern);
     gd.pos.y += mv->fh+4;
     mv->kernlab = GLabelCreate(mv->gw,&gd,NULL);
 }

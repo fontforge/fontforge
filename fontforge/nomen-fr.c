@@ -3084,6 +3084,15 @@ static char *str_RequiredFeature = "Fonctionnalité nécessaire" ;
 static char *str_NewKernClassEntry = "Cette paire de crénage (%.20hs et %.20hs) est dans une classe de crénage\navec un déplacement de 0 pour cette combinaison. Voulez-vous modifier cette partie\nde la classe de crénage (ou créer une nouvelle paire rien que pour ces 2 glyphes) ?" ;
 static char *str_NewKernClassEntTitle = "Utiliser la classe de crénage ?"
 static char *str_MetricsTitle = "Métriques pour %.50hs" ;
+static char *str_MVName = "Nom:";
+static char *str_MVWidth = "Chasse:";
+static char *str_MVHeight = "Hauteur:";
+static char *str_MVLBearing = "ApprocheG:";
+static char *str_MVTBearing = "TBearing:";
+static char *str_MVRBearing = "ApprocheD:";
+static char *str_MVBBearing = "BBearing:";
+static char *str_MVKern = "Crénage:";
+static char *str_MVVKern = "VCrénage:";
  /* Kernclass */
 static char *str_KernClass = "Classe de crénage" ;
 static char *str_ClassCnt = "Nombre de classes :" ;

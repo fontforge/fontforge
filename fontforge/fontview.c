@@ -72,9 +72,11 @@ static unsigned char fontview2_bits[] = {
 extern int _GScrollBar_Width;
 #endif
 
+enum glyphlable { gl_glyph, gl_name, gl_unicode, gl_encoding };
 int default_fv_font_size = 24, default_fv_antialias=true,
 	default_fv_bbsized=true,
-	default_fv_showhmetrics=false, default_fv_showvmetrics=false;
+	default_fv_showhmetrics=false, default_fv_showvmetrics=false,
+	default_fv_glyphlabel = gl_glyph;
 #define METRICS_BASELINE 0x0000c0
 #define METRICS_ORIGIN	 0xc00000
 #define METRICS_ADVANCE	 0x008000
@@ -4020,6 +4022,34 @@ void FontViewMenu_PixelSize(GtkMenuItem *menuitem, gpointer user_data) {
     }
 }
 
+# if defined(FONTFORGE_CONFIG_GDRAW)
+static void FVMenuGlyphLabel(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+
+    default_fv_glyphlabel = fv->glyphlabel = mi->mid;
+
+    GDrawRequestExpose(fv->v,NULL,false);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_PixelSize(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+    G_CONST_RETURN gchar *name = gtk_widget_get_name(menuitem);
+
+    fv->magnify = 1;
+    if ( strstr(name,"glyphimage")!=NULL )
+	default_fv_glyphlabel = fv->glyphlabel = gl_glyph;
+    else if ( strstr(name,"glyphname")!=NULL )
+	default_fv_glyphlabel = fv->glyphlabel = gl_name;
+    else if ( strstr(name,"unicode")!=NULL )
+	default_fv_glyphlabel = fv->glyphlabel = gl_unicode;
+    else if ( strstr(name,"encoding")!=NULL )
+	default_fv_glyphlabel = fv->glyphlabel = gl_encoding;
+
+    gtk_widget_queue_draw(fv->v);
+# endif
+
+    SavePrefs();
+}
+
 # ifdef FONTFORGE_CONFIG_GDRAW
 static void FVMenuShowBitmap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
@@ -5581,6 +5611,23 @@ static void cblistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     }
 }
 
+
+static GMenuItem gllist[] = {
+    { { (unichar_t *) _STR_GlyphImage, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'K' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuGlyphLabel, gl_glyph },
+    { { (unichar_t *) _STR_GlyphName, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'K' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuGlyphLabel, gl_name },
+    { { (unichar_t *) _STR_GlyphUnicode, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'L' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuGlyphLabel, gl_unicode },
+    { { (unichar_t *) _STR_GlyphEncodingHex, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'L' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuGlyphLabel, gl_encoding },
+    NULL
+};
+
+static void gllistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+
+    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
+	mi->ti.checked = fv->glyphlabel == mi->mid;
+    }
+}
+
 static GMenuItem vwlist[] = {
     { { (unichar_t *) _STR_NextChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'N' }, ']', ksm_control, NULL, NULL, FVMenuChangeChar, MID_Next },
     { { (unichar_t *) _STR_PrevChar, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '[', ksm_control, NULL, NULL, FVMenuChangeChar, MID_Prev },
@@ -5594,6 +5641,8 @@ static GMenuItem vwlist[] = {
     { { (unichar_t *) _STR_ShowAtt, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuShowAtt },
     { { (unichar_t *) _STR_DisplaySubstitutions, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'u' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuDisplaySubs, MID_DisplaySubs },
     { { (unichar_t *) _STR_Combinations, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'b' }, '\0', ksm_shift|ksm_control, cblist, cblistcheck },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_LabelGlyphBy, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'b' }, '\0', ksm_shift|ksm_control, gllist, gllistcheck },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_ShowHMetrics, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuShowMetrics, MID_ShowHMetrics },
     { { (unichar_t *) _STR_ShowVMetrics, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'V' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuShowMetrics, MID_ShowVMetrics },
@@ -7482,7 +7531,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 	}
 	if ( index < fv->sf->charcnt && index!=-1 ) {
 	    SplineChar *sc = fv->sf->chars[index];
-	    unichar_t buf[2];
+	    unichar_t buf[60]; char cbuf[8];
 	    Color fg = 0;
 	    FontMods *mods=NULL;
 	    static FontMods for_charset;
@@ -7494,76 +7543,97 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 	    if ( fv->sf->uni_interp==ui_ams && uni>=0xe000 && uni<=0xf8ff &&
 		    amspua[uni-0xe000]!=0 )
 		uni = amspua[uni-0xe000];
-	    if ( uni==0xad )
-		buf[0] = '-';
-	    else if ( Use2ByteEnc(fv,sc,buf,&for_charset))
-		mods = &for_charset;
-	    else if ( uni!=-1 && uni<65536 )
-		buf[0] = uni;
-	    else if ( uni>=0x1d400 && uni<=0x1d7ff ) {
-		int i;
-		for ( i=0; mathmap[i].start!=0; ++i ) {
-		    if ( uni<=mathmap[i].last ) {
-			buf[0] = maps[mathmap[i].charset][uni-mathmap[i].start];
-			styles = mathmap[i].styles;
-		break;
-		    }
-		}
-#if HANYANG
-	    } else if ( sc->compositionunit ) {
-		if ( sc->jamo<19 )
-		    buf[0] = 0x1100+sc->jamo;
-		else if ( sc->jamo<19+21 )
-		    buf[0] = 0x1161 + sc->jamo-19;
-		else	/* Leave a hole for the blank char */
-		    buf[0] = 0x11a8 + sc->jamo-(19+21+1);
-#endif
-	    } else {
-		char *pt = strchr(sc->name,'.');
-		buf[0] = '?';
-		fg = 0xff0000;
-		if ( pt!=NULL ) {
-		    int i, n = pt-sc->name;
-		    char *end;
-		    SplineFont *cm = fv->sf->cidmaster;
-		    if ( n==7 && sc->name[0]=='u' && sc->name[1]=='n' && sc->name[2]=='i' &&
-			    (i=strtol(sc->name+3,&end,16), end-sc->name==7))
-			buf[0] = i;
-		    else if ( n>=5 && n<=7 && sc->name[0]=='u' &&
-			    (i=strtol(sc->name+1,&end,16), end-sc->name==n))
-			buf[0] = i;
-		    else if ( cm!=NULL && (i=CIDFromName(sc->name,cm))!=-1 ) {
-			int uni;
-			uni = CID2Uni(FindCidMap(cm->cidregistry,cm->ordering,cm->supplement,cm),
-				i);
-			if ( uni!=-1 )
-			    buf[0] = uni;
-		    } else for ( i=0; i<psunicodenames_cnt; ++i )
-			if ( psunicodenames[i]!=NULL && strncmp(sc->name,psunicodenames[i],n)==0 &&
-				psunicodenames[i][n]=='\0' ) {
-			    buf[0] = i;
+	    switch ( fv->glyphlabel ) {
+	      case gl_name:
+		uc_strncpy(buf,sc->name,sizeof(buf)/sizeof(buf[0]));
+	      break;
+	      case gl_unicode:
+		if ( sc->unicodeenc!=-1 ) {
+		    sprintf(cbuf,"%04x",sc->unicodeenc);
+		    uc_strcpy(buf,cbuf);
+		} else
+		    uc_strcpy(buf,"?");
+	      break;
+	      case gl_encoding:
+		if ( fv->sf->encoding_name<em_first2byte || fv->sf->encoding_name>=em_base )
+		    sprintf(cbuf,"%02x",index);
+		else
+		    sprintf(cbuf,"%04x",index);
+		uc_strcpy(buf,cbuf);
+	      break;
+	      case gl_glyph:
+		if ( uni==0xad )
+		    buf[0] = '-';
+		else if ( Use2ByteEnc(fv,sc,buf,&for_charset))
+		    mods = &for_charset;
+		else if ( uni!=-1 && uni<65536 )
+		    buf[0] = uni;
+		else if ( uni>=0x1d400 && uni<=0x1d7ff ) {
+		    int i;
+		    for ( i=0; mathmap[i].start!=0; ++i ) {
+			if ( uni<=mathmap[i].last ) {
+			    buf[0] = maps[mathmap[i].charset][uni-mathmap[i].start];
+			    styles = mathmap[i].styles;
 		    break;
 			}
-		    if ( strstr(pt,".vert")!=NULL )
-			rotated = UniGetRotatedGlyph(fv,sc,buf[0]!='?'?buf[0]:-1);
-		    if ( buf[0]!='?' ) {
-			fg = 0;
-			if ( strstr(pt,".italic")!=NULL )
-			    styles = _uni_italic|_uni_mono;
 		    }
-		} else if ( strncmp(sc->name,"hwuni",5)==0 ) {
-		    int uni=-1;
-		    sscanf(sc->name,"hwuni%x", (unsigned *) &uni );
-		    if ( uni!=-1 ) buf[0] = uni;
-		} else if ( strncmp(sc->name,"italicuni",9)==0 ) {
-		    int uni=-1;
-		    sscanf(sc->name,"italicuni%x", (unsigned *) &uni );
-		    if ( uni!=-1 ) { buf[0] = uni; styles=_uni_italic|_uni_mono; }
-		    fg = 0x000000;
-		} else if ( strncmp(sc->name,"vertcid_",8)==0 ||
-			strncmp(sc->name,"vertuni",7)==0 ) {
-		    rotated = UniGetRotatedGlyph(fv,sc,-1);
+#if HANYANG
+		} else if ( sc->compositionunit ) {
+		    if ( sc->jamo<19 )
+			buf[0] = 0x1100+sc->jamo;
+		    else if ( sc->jamo<19+21 )
+			buf[0] = 0x1161 + sc->jamo-19;
+		    else	/* Leave a hole for the blank char */
+			buf[0] = 0x11a8 + sc->jamo-(19+21+1);
+#endif
+		} else {
+		    char *pt = strchr(sc->name,'.');
+		    buf[0] = '?';
+		    fg = 0xff0000;
+		    if ( pt!=NULL ) {
+			int i, n = pt-sc->name;
+			char *end;
+			SplineFont *cm = fv->sf->cidmaster;
+			if ( n==7 && sc->name[0]=='u' && sc->name[1]=='n' && sc->name[2]=='i' &&
+				(i=strtol(sc->name+3,&end,16), end-sc->name==7))
+			    buf[0] = i;
+			else if ( n>=5 && n<=7 && sc->name[0]=='u' &&
+				(i=strtol(sc->name+1,&end,16), end-sc->name==n))
+			    buf[0] = i;
+			else if ( cm!=NULL && (i=CIDFromName(sc->name,cm))!=-1 ) {
+			    int uni;
+			    uni = CID2Uni(FindCidMap(cm->cidregistry,cm->ordering,cm->supplement,cm),
+				    i);
+			    if ( uni!=-1 )
+				buf[0] = uni;
+			} else for ( i=0; i<psunicodenames_cnt; ++i )
+			    if ( psunicodenames[i]!=NULL && strncmp(sc->name,psunicodenames[i],n)==0 &&
+				    psunicodenames[i][n]=='\0' ) {
+				buf[0] = i;
+			break;
+			    }
+			if ( strstr(pt,".vert")!=NULL )
+			    rotated = UniGetRotatedGlyph(fv,sc,buf[0]!='?'?buf[0]:-1);
+			if ( buf[0]!='?' ) {
+			    fg = 0;
+			    if ( strstr(pt,".italic")!=NULL )
+				styles = _uni_italic|_uni_mono;
+			}
+		    } else if ( strncmp(sc->name,"hwuni",5)==0 ) {
+			int uni=-1;
+			sscanf(sc->name,"hwuni%x", (unsigned *) &uni );
+			if ( uni!=-1 ) buf[0] = uni;
+		    } else if ( strncmp(sc->name,"italicuni",9)==0 ) {
+			int uni=-1;
+			sscanf(sc->name,"italicuni%x", (unsigned *) &uni );
+			if ( uni!=-1 ) { buf[0] = uni; styles=_uni_italic|_uni_mono; }
+			fg = 0x000000;
+		    } else if ( strncmp(sc->name,"vertcid_",8)==0 ||
+			    strncmp(sc->name,"vertuni",7)==0 ) {
+			rotated = UniGetRotatedGlyph(fv,sc,-1);
+		    }
 		}
+	      break;
 	    }
 	    bg = COLOR_DEFAULT;
 	    if ( sc->layers[ly_back].splines!=NULL || sc->layers[ly_back].images!=NULL || sc->color!=COLOR_DEFAULT ) {
@@ -7584,9 +7654,18 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		rotated = NULL;
 	    } else {
 		if ( styles!=laststyles ) GDrawSetFont(pixmap,FVCheckFont(fv,styles));
-		width = GDrawGetTextWidth(pixmap,buf,1,mods);
+		width = GDrawGetTextWidth(pixmap,buf,-1,mods);
+		if ( width >= fv->cbw-1 ) {
+		    GRect r;
+		    r.x = j*fv->cbw+1; r.width = fv->cbw-1;
+		    r.y = i*fv->cbh+1; r.height = fv->lab_height-1;
+		    GDrawPushClip(pixmap,&r,&old2);
+		    width = fv->cbw-1;
+		}
 		if ( sc->unicodeenc<0x80 || sc->unicodeenc>=0xa0 )
-		    GDrawDrawText(pixmap,j*fv->cbw+(fv->cbw-1-width)/2,i*fv->cbh+fv->lab_height-2,buf,1,mods,fg);
+		    GDrawDrawText(pixmap,j*fv->cbw+(fv->cbw-1-width)/2,i*fv->cbh+fv->lab_height-2,buf,-1,mods,fg);
+		if ( width >= fv->cbw-1 )
+		    GDrawPopClip(pixmap,&old2);
 		laststyles = styles;
 	    }
 	    changed = sc->changed;
@@ -8629,6 +8708,7 @@ FontView *_FontViewCreate(SplineFont *sf) {
     fv->cbh = (ps*fv->magnify)+1+fv->lab_height+1;
     fv->antialias = sf->display_antialias;
     fv->bbsized = sf->display_bbsized;
+    fv->glyphlabel = default_fv_glyphlabel;
 
     fv->end_pos = -1;
 return( fv );
