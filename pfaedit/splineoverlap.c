@@ -1167,8 +1167,16 @@ static void SSExcludeSet(SplineSet *base) {
 static void SplineSetFindNeeded(SplineChar *realsc,SplineSet *base,enum overlap_type ot) {
     EIList el;
     SplineChar sc;
+#ifdef PFAEDIT_CONFIG_TYPE3
+    Layer layers[2];
+#endif
 
     memset(&sc,'\0',sizeof(sc));
+#ifdef PFAEDIT_CONFIG_TYPE3
+    memset(layers,0,sizeof(layers));
+    sc.layers = layers;
+#endif
+    sc.layer_cnt = 2;
     sc.layers[ly_fore].splines = base;
     sc.name = realsc->name;
 

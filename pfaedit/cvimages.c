@@ -31,6 +31,7 @@
 #include <utype.h>
 #include <sys/types.h>
 #include <dirent.h>
+#include "sd.h"
 
 
 static unichar_t wildimg[] = { '*', '.', '{',
@@ -215,33 +216,71 @@ return( oldflags );
 return( oldflags );
 }
 
-void SCImportPSFile(SplineChar *sc,enum drawmode dm,FILE *ps,int doclear) {
+#ifdef PFAEDIT_CONFIG_TYPE3
+void SCAppendEntityLayers(SplineChar *sc, Entity *ent) {
+    int cnt, pos;
+    Entity *e, *enext;
+
+    for ( e=ent, cnt=0; e!=NULL; e=e->next, ++cnt );
+    pos = sc->layer_cnt;
+    if ( cnt==0 )
+return;
+    sc->layers = grealloc(sc->layers,(sc->layer_cnt+cnt)*sizeof(Layer));
+    for ( pos = sc->layer_cnt, e=ent; e!=NULL ; e=enext, ++pos ) {
+	enext = e->next;
+	LayerDefault(&sc->layers[pos]);
+	sc->layers[pos].splines = NULL;
+	sc->layers[pos].refs = NULL;
+	sc->layers[pos].images = NULL;
+	if ( e->type == et_splines ) {
+	    sc->layers[pos].dofill = e->u.splines.fill.col != 0xffffffff;
+	    sc->layers[pos].dostroke = e->u.splines.stroke.col != 0xffffffff;
+	    sc->layers[pos].fill_brush.col = e->u.splines.fill.col==0xffffffff ? COLOR_INHERITED : e->u.splines.fill.col;
+	    sc->layers[pos].stroke_pen.brush.col = e->u.splines.stroke.col==0xffffffff ? COLOR_INHERITED : e->u.splines.stroke.col;
+	    sc->layers[pos].stroke_pen.width = e->u.splines.stroke_width;
+	    sc->layers[pos].stroke_pen.linejoin = e->u.splines.join;
+	    sc->layers[pos].stroke_pen.linecap = e->u.splines.cap;
+	    memcpy(sc->layers[pos].stroke_pen.trans, e->u.splines.transform,
+		    4*sizeof(real));
+	    sc->layers[pos].splines = e->u.splines.splines;
+	}
+	free(e);
+    }
+    sc->layer_cnt += cnt;
+}
+#endif
+
+void SCImportPSFile(SplineChar *sc,int layer,FILE *ps,int doclear) {
     SplinePointList *spl, *espl;
     SplineSet **head;
 
     if ( ps==NULL )
 return;
-    spl = SplinePointListInterpretPS(ps);
-    if ( spl==NULL ) {
-	GDrawError( "I'm sorry this file is too complex for me to understand");
+#ifdef PFAEDIT_CONFIG_TYPE3
+    if ( sc->parent->multilayer && layer>ly_back ) {
+	SCAppendEntityLayers(sc, EntityInterpretPS(ps));
+    } else
+#endif
+    {
+	spl = SplinePointListInterpretPS(ps);
+	if ( spl==NULL ) {
+	    GDrawError( "I'm sorry this file is too complex for me to understand");
 return;
+	}
+	if ( sc->parent->order2 )
+	    spl = SplineSetsConvertOrder(spl,true);
+	for ( espl=spl; espl->next!=NULL; espl = espl->next );
+	if ( layer==ly_grid )
+	    head = &sc->parent->grid.splines;
+	else {
+	    SCPreserveLayer(sc,layer,false);
+	    head = &sc->layers[layer].splines;
+	}
+	if ( doclear )
+	    SplinePointListsFree(*head);
+	espl->next = *head;
+	*head = spl;
     }
-    if ( sc->parent->order2 )
-	spl = SplineSetsConvertOrder(spl,true);
-    for ( espl=spl; espl->next!=NULL; espl = espl->next );
-    if ( dm==dm_grid )
-	head = &sc->parent->grid.splines;
-    else if ( dm==dm_fore ) {
-	SCPreserveState(sc,false);
-	head = &sc->layers[ly_fore].splines;
-    } else {
-	SCPreserveBackground(sc);
-	head = &sc->layers[ly_back].splines;
-    }
-    if ( doclear )
-	SplinePointListsFree(*head);
-    espl->next = *head;
-    *head = spl;
     SCCharChangedUpdate(sc);
 }
 
@@ -250,64 +289,57 @@ static void ImportPS(CharView *cv,char *path) {
 
     if ( ps==NULL )
 return;
-    SCImportPSFile(cv->sc,cv->drawmode,ps,false);
+    SCImportPSFile(cv->sc,CVLayer(cv),ps,false);
     fclose(ps);
 }
 
 static void SCImportPS(SplineChar *sc,char *path) {
     FILE *ps = fopen(path,"r");
-    SplinePointList *spl, *espl;
 
     if ( ps==NULL )
 return;
-    spl = SplinePointListInterpretPS(ps);
-    if ( sc->parent->order2 )
-	spl = SplineSetsConvertOrder(spl,true);
+    SCImportPSFile(sc,ly_fore,ps,false);
     fclose(ps);
-    if ( spl==NULL ) {
-	GDrawError( "I'm sorry this file is too complex for me to understand");
-return;
-    }
-    for ( espl=spl; espl->next!=NULL; espl = espl->next );
-    SCPreserveState(sc,false);
-    espl->next = sc->layers[ly_fore].splines;
-    sc->layers[ly_fore].splines = spl;
-    SCCharChangedUpdate(sc);
 }
 
 #ifndef _NO_LIBXML
-void SCImportSVG(SplineChar *sc,enum drawmode dm,char *path,int doclear) {
+void SCImportSVG(SplineChar *sc,int layer,char *path,int doclear) {
     SplinePointList *spl, *espl, **head;
 
-    spl = SplinePointListInterpretSVG(path,sc->parent->ascent+sc->parent->descent,
-	    sc->parent->ascent);
-    for ( espl = spl; espl!=NULL && espl->first->next==NULL; espl=espl->next );
-    if ( espl!=NULL )
-	if ( espl->first->next->order2!=sc->parent->order2 )
-	    spl = SplineSetsConvertOrder(spl,sc->parent->order2);
-    if ( spl==NULL ) {
-	GDrawError( "I'm sorry this file is too complex for me to understand");
+#ifdef PFAEDIT_CONFIG_TYPE3
+    if ( sc->parent->multilayer && layer>ly_back ) {
+	SCAppendEntityLayers(sc, EntityInterpretSVG(path,sc->parent->ascent+sc->parent->descent,
+		sc->parent->ascent));
+    } else
+#endif
+    {
+	spl = SplinePointListInterpretSVG(path,sc->parent->ascent+sc->parent->descent,
+		sc->parent->ascent);
+	for ( espl = spl; espl!=NULL && espl->first->next==NULL; espl=espl->next );
+	if ( espl!=NULL )
+	    if ( espl->first->next->order2!=sc->parent->order2 )
+		spl = SplineSetsConvertOrder(spl,sc->parent->order2);
+	if ( spl==NULL ) {
+	    GDrawError( "I'm sorry this file is too complex for me to understand");
 return;
+	}
+	for ( espl=spl; espl->next!=NULL; espl = espl->next );
+	if ( layer==ly_grid )
+	    head = &sc->parent->grid.splines;
+	else {
+	    SCPreserveLayer(sc,layer,false);
+	    head = &sc->layers[layer].splines;
+	}
+	if ( doclear )
+	    SplinePointListsFree(*head);
+	espl->next = *head;
+	*head = spl;
     }
-    for ( espl=spl; espl->next!=NULL; espl = espl->next );
-    if ( dm==dm_grid )
-	head = &sc->parent->grid.splines;
-    else if ( dm==dm_fore ) {
-	SCPreserveState(sc,false);
-	head = &sc->layers[ly_fore].splines;
-    } else {
-	SCPreserveBackground(sc);
-	head = &sc->layers[ly_back].splines;
-    }
-    if ( doclear )
-	SplinePointListsFree(*head);
-    espl->next = *head;
-    *head = spl;
     SCCharChangedUpdate(sc);
 }
 
 static void ImportSVG(CharView *cv,char *path) {
-    SCImportSVG(cv->sc,cv->drawmode,path,false);
+    SCImportSVG(cv->sc,CVLayer(cv),path,false);
 }
 #endif
 
@@ -850,7 +882,8 @@ return( image );
 return( image );
 }
 
-void SCInsertBackImage(SplineChar *sc,GImage *image,real scale,real yoff,real xoff) {
+void SCInsertImage(SplineChar *sc,GImage *image,real scale,real yoff,real xoff,
+	int layer) {
     ImageList *im;
 
     SCPreserveBackground(sc);
@@ -860,35 +893,39 @@ void SCInsertBackImage(SplineChar *sc,GImage *image,real scale,real yoff,real xo
     im->yoff = yoff;
     im->xscale = im->yscale = scale;
     im->selected = true;
-    im->next = sc->layers[ly_back].images;
+    im->next = sc->layers[layer].images;
     im->bb.minx = im->xoff; im->bb.maxy = im->yoff;
     im->bb.maxx = im->xoff + GImageGetWidth(im->image)*im->xscale;
     im->bb.miny = im->yoff - GImageGetHeight(im->image)*im->yscale;
-    sc->layers[ly_back].images = im;
+    sc->layers[layer].images = im;
     sc->parent->onlybitmaps = false;
     SCOutOfDateBackground(sc);
     SCCharChangedUpdate(sc);
 }
 
-void SCAddScaleImage(SplineChar *sc,GImage *image,int doclear) {
+void SCAddScaleImage(SplineChar *sc,GImage *image,int doclear, int layer) {
     double scale;
 
     image = ImageAlterClut(image);
     scale = (sc->parent->ascent+sc->parent->descent)/(real) GImageGetHeight(image);
     if ( doclear )
-	ImageListsFree(sc->layers[ly_back].images); sc->layers[ly_back].images = NULL;
-    SCInsertBackImage(sc,image,scale,sc->parent->ascent,0);
+	ImageListsFree(sc->layers[layer].images); sc->layers[layer].images = NULL;
+    SCInsertImage(sc,image,scale,sc->parent->ascent,0,layer);
 }
 
 static void ImportImage(CharView *cv,char *path) {
     GImage *image;
+    int layer;
 
     image = GImageRead(path);
     if ( image==NULL ) {
 	GWidgetErrorR(_STR_BadImageFile,_STR_BadImageFileName, path);
 return;
     }
-    SCAddScaleImage(cv->sc,image,false);
+    layer = ly_back;
+    if ( cv->sc->parent->multilayer && cv->drawmode!=dm_grid )
+	layer = cv->drawmode-dm_back + ly_back;
+    SCAddScaleImage(cv->sc,image,false,layer);
 }
 
 static int BVImportImage(BitmapView *bv,char *path) {
@@ -996,10 +1033,10 @@ return(false);
 return(false);
 	    }
 	    ++tot;
-	    SCAddScaleImage(sc,image,true);
+	    SCAddScaleImage(sc,image,true,ly_back);
 #ifndef _NO_LIBXML
 	} else if ( format==fv_svg ) {
-	    SCImportSVG(sc,dm_fore,start,false);
+	    SCImportSVG(sc,ly_fore,start,false);
 	    ++tot;
 #endif
 	} else if ( format==fv_eps ) {
@@ -1111,10 +1148,10 @@ return( false );
     continue;
 	    }
 	    ++tot;
-	    SCAddScaleImage(sc,image,true);
+	    SCAddScaleImage(sc,image,true,ly_back);
 #ifndef _NO_LIBXML
 	} else if ( format==fv_svgtemplate ) {
-	    SCImportSVG(sc,dm_fore,start,false);
+	    SCImportSVG(sc,ly_fore,start,false);
 	    ++tot;
 #endif
 	} else {

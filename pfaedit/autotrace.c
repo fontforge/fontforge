@@ -52,7 +52,7 @@ int preferpotrace = false;
 /* http://potrace.sf.net/ */
 
 
-static SplinePointList *SplinesFromEntities(Entity *ent, Color bgcol, int ispotrace) {
+static SplinePointList *localSplinesFromEntities(Entity *ent, Color bgcol, int ispotrace) {
     Entity *enext;
     SplinePointList *head=NULL, *last, *test, *next, *prev, *new, *nlast, *temp;
     int clockwise;
@@ -66,7 +66,7 @@ static SplinePointList *SplinesFromEntities(Entity *ent, Color bgcol, int ispotr
     /*  it didn't work when I tried it, so...). I don't want them, so get */
     /*  rid of them. But we must be a bit tricky. If the contour specifies a */
     /*  counter within the letter (the hole in the O for instance) then we */
-    /*  do want to contour, but we want it to be counterclockwise. */
+    /*  do want the contour, but we want it to be counterclockwise. */
     /* So first turn all background contours counterclockwise, and flatten */
     /*  the list */
     /* potrace does not have this problem */
@@ -300,7 +300,7 @@ return;
 	    waitpid(pid,&status,0);
 	    if ( WIFEXITED(status)) {
 		rewind(ps);
-		new = SplinesFromEntities(EntityInterpretPS(ps),bgcol,ispotrace);
+		new = localSplinesFromEntities(EntityInterpretPS(ps),bgcol,ispotrace);
 		transform[0] = images->xscale; transform[3] = images->yscale;
 		transform[1] = transform[2] = 0;
 		transform[4] = images->xoff;

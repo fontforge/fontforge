@@ -35,8 +35,21 @@ static RefChar *RefCharsCopy(RefChar *ref) {
 
     while ( ref!=NULL ) {
 	cur = RefCharCreate();
+#ifdef PFAEDIT_CONFIG_TYPE3
+	{ struct reflayer *layers = cur->layers; int layer;
+	layers = grealloc(layers,ref->layer_cnt*sizeof(struct reflayer));
+	memcpy(layers,ref->layers,ref->layer_cnt*sizeof(struct reflayer));
+	*cur = *ref;
+	cur->layers = layers;
+	for ( layer=0; layer<cur->layer_cnt; ++layer ) {
+	    cur->layers[layer].splines = NULL;
+	    cur->layers[layer].images = NULL;
+	}
+	}
+#else
 	*cur = *ref;
 	cur->layers[0].splines = NULL;	/* Leave the old sc, we'll fix it later */
+#endif
 	cur->next = NULL;
 	if ( rhead==NULL )
 	    rhead = cur;
@@ -127,17 +140,34 @@ return( head );
 
 SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into) {
     SplineChar *nsc = SplineCharCreate();
+#ifdef PFAEDIT_CONFIG_TYPE3
+    Layer *layers = nsc->layers;
+    int layer;
 
     *nsc = *sc;
+    if ( sc->layer_cnt!=2 )
+	layers = grealloc(layers,sc->layer_cnt*sizeof(Layer));
+    memcpy(layers,sc->layers,sc->layer_cnt*sizeof(Layer));
+    nsc->layers = layers;
+    for ( layer = ly_fore; layer<sc->layer_cnt; ++layer ) {
+	layers[layer].splines = SplinePointListCopy(layers[layer].splines);
+	layers[layer].refs = RefCharsCopy(layers[layer].refs);
+	layers[layer].images = ImageListCopy(layers[layer].images);
+	layers[layer].undoes = NULL;
+	layers[layer].redoes = NULL;
+    }
+#else
+    *nsc = *sc;
+    nsc->layers[ly_fore].splines = SplinePointListCopy(nsc->layers[ly_fore].splines);
+    nsc->layers[ly_fore].refs = RefCharsCopy(nsc->layers[ly_fore].refs);
+#endif
     nsc->parent = into;
     nsc->enc = -2;
     nsc->name = copy(sc->name);
-    nsc->layers[ly_fore].splines = SplinePointListCopy(nsc->layers[ly_fore].splines);
     nsc->hstem = StemInfoCopy(nsc->hstem);
     nsc->vstem = StemInfoCopy(nsc->vstem);
     nsc->dstem = DStemInfoCopy(nsc->dstem);
     nsc->md = MinimumDistanceCopy(nsc->md);
-    nsc->layers[ly_fore].refs = RefCharsCopy(nsc->layers[ly_fore].refs);
     nsc->views = NULL;
     nsc->changed = true;
     nsc->dependents = NULL;		/* Fix up later when we know more */

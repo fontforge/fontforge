@@ -342,7 +342,7 @@ void MatMultiply(real m1[6], real m2[6], real to[6]) {
     memcpy(to,trans,sizeof(trans));
 }
 
-static void MatInverse(real into[6], real orig[6]) {
+void MatInverse(real into[6], real orig[6]) {
     real det = orig[0]*orig[3] - orig[1]*orig[2];
 
     if ( det==0 ) {
@@ -359,13 +359,10 @@ static void MatInverse(real into[6], real orig[6]) {
 }
 
 static void ECCatagorizePoints( EntityChar *ec ) {
-    SplineChar sc;
     Entity *ent;
 
-    memset(&sc,'\0',sizeof(sc));
     for ( ent=ec->splines; ent!=NULL; ent=ent->next ) if ( ent->type == et_splines ) {
-	sc.layers[ly_fore].splines = ent->u.splines.splines;
-	SCCatagorizePoints(&sc);
+	SPLCatagorizePoints( ent->u.splines.splines );
     }
 }
 
@@ -727,6 +724,8 @@ static Entity *EntityCreate(SplinePointList *head,int linecap,int linejoin,
     ent->u.splines.stroke_width = linewidth;
     ent->u.splines.fill.col = 0xffffffff;
     ent->u.splines.stroke.col = 0xffffffff;
+    ent->u.splines.fill.opacity = 1.0;
+    ent->u.splines.stroke.opacity = 1.0;
     memcpy(ent->u.splines.transform,transform,6*sizeof(real));
 return( ent );
 }
@@ -746,6 +745,7 @@ static void InterpretPS(FILE *ps, char *psstr, EntityChar *ec, RetStack *rs) {
 	BasePoint current;
 	real linewidth;
 	int linecap, linejoin;
+	Color fore;
     } gsaves[30];
     int gsp = 0;
     int ccnt=0;
@@ -754,8 +754,8 @@ static void InterpretPS(FILE *ps, char *psstr, EntityChar *ec, RetStack *rs) {
     GrowBuf gb;
     struct pskeydict dict;
     struct pskeyval *kv;
-    Color fore=0;
-    int linecap=lc_butt, linejoin=lj_miter; real linewidth=1;
+    Color fore=COLOR_INHERITED;
+    int linecap=lc_inherited, linejoin=lj_inherited; real linewidth=WIDTH_INHERITED;
     Entity *ent;
     char *oldloc;
     int warned = 0;
@@ -1692,6 +1692,7 @@ printf( "-%s-\n", toknames[tok]);
 		gsaves[gsp].linewidth = linewidth;
 		gsaves[gsp].linecap = linecap;
 		gsaves[gsp].linejoin = linejoin;
+		gsaves[gsp].fore = fore;
 		++gsp;
 		/* I should be saving the "current path" too, but that's too hard */
 	    }
@@ -1709,6 +1710,7 @@ printf( "-%s-\n", toknames[tok]);
 		linewidth = gsaves[gsp].linewidth;
 		linecap = gsaves[gsp].linecap;
 		linejoin = gsaves[gsp].linejoin;
+		fore = gsaves[gsp].fore;
 	    }
 	  break;
 	  case pt_setmiterlimit:
@@ -1992,7 +1994,127 @@ static Entity *EntityReverse(Entity *ent) {
 return( last );
 }
 
-static SplinePointList *SplinesFromEntities(EntityChar *ec,int *flags) {
+#ifdef PFAEDIT_CONFIG_TYPE3
+static SplinePointList *SplinesFromLayers(SplineChar *sc,int *flags) {
+    int layer;
+    SplinePointList *head=NULL, *last, *new, *nlast, *temp, *each, *transed;
+    StrokeInfo si;
+    /*SplineSet *spl;*/
+    int handle_eraser;
+    real inversetrans[6], transform[6];
+
+    if ( *flags==-1 )
+	*flags = PsStrokeFlagsDlg();
+	
+    handle_eraser = *flags & sf_handle_eraser;
+
+    for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
+	if ( sc->layers[layer].dostroke ) {
+	    memset(&si,'\0',sizeof(si));
+	    si.toobigwarn = *flags & sf_toobigwarn ? 1 : 0;
+	    si.join = sc->layers[layer].stroke_pen.linejoin;
+	    si.cap = sc->layers[layer].stroke_pen.linecap;
+	    si.removeoverlapifneeded = *flags & sf_removeoverlap ? 1 : 0;
+	    si.radius = sc->layers[layer].stroke_pen.width/2.0;
+	    if ( sc->layers[layer].stroke_pen.width==WIDTH_INHERITED )
+		si.radius = .5;
+	    if ( si.cap == lc_inherited ) si.cap = lc_butt;
+	    if ( si.join == lc_inherited ) si.join = lj_miter;
+	    new = NULL;
+	    memcpy(transform,sc->layers[layer].stroke_pen.trans,4*sizeof(real));
+	    transform[4] = transform[5] = 0;
+	    MatInverse(inversetrans,transform);
+	    transed = SplinePointListTransform(SplinePointListCopy(
+		    sc->layers[layer].splines),inversetrans,true);
+	    for ( each = transed; each!=NULL; each=each->next ) {
+		temp = SplineSetStroke(each,&si,sc);
+		if ( new==NULL )
+		    new=temp;
+		else
+		    nlast->next = temp;
+		if ( temp!=NULL )
+		    for ( nlast=temp; nlast->next!=NULL; nlast=nlast->next );
+	    }
+	    new = SplinePointListTransform(new,transform,true);
+	    SplinePointListFree(transed);
+	    if ( handle_eraser && sc->layers[layer].stroke_pen.brush.col==0xffffff ) {
+		head = EraseStroke(sc,head,new);
+		last = head;
+		if ( last!=NULL )
+		    for ( ; last->next!=NULL; last=last->next );
+	    } else {
+		if ( head==NULL )
+		    head = new;
+		else
+		    last->next = new;
+		if ( new!=NULL )
+		    for ( last = new; last->next!=NULL; last=last->next );
+	    }
+	    if ( si.toobigwarn )
+		*flags |= sf_toobigwarn;
+	}
+	if ( sc->layers[layer].dofill ) {
+	    if ( handle_eraser && sc->layers[layer].fill_brush.col==0xffffff ) {
+		head = EraseStroke(sc,head,sc->layers[layer].splines);
+		last = head;
+		if ( last!=NULL )
+		    for ( ; last->next!=NULL; last=last->next );
+	    } else {
+		new = sc->layers[layer].splines;
+		if ( head==NULL )
+		    head = new;
+		else
+		    last->next = new;
+		if ( new!=NULL )
+		    for ( last = new; last->next!=NULL; last=last->next );
+	    }
+	}
+    }
+return( head );
+}
+
+void SFSplinesFromLayers(SplineFont *sf) {
+    /* User has turned off multi-layer, flatten the font */
+    int i, layer;
+    int flags= -1;
+    Layer *new;
+
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	SplineChar *sc = sf->chars[i];
+	SplineSet *splines = SplinesFromLayers(sc,&flags);
+	RefChar *head=NULL, *last=NULL;
+	for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
+	    if ( head==NULL )
+		head = last = sc->layers[layer].refs;
+	    else
+		last->next = sc->layers[layer].refs;
+	    if ( last!=NULL )
+		while ( last->next!=NULL ) last = last->next;
+	    sc->layers[layer].refs = NULL;
+	}
+	new = gcalloc(2,sizeof(Layer));
+	new[ly_back] = sc->layers[ly_back];
+	memset(&sc->layers[ly_back],0,sizeof(Layer));
+	LayerDefault(&new[ly_fore]);
+	new[ly_fore].splines = splines;
+	new[ly_fore].refs = head;
+	for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
+	    SplinePointListsFree(sc->layers[layer].splines);
+	    RefCharsFree(sc->layers[layer].refs);
+	    ImageListsFree(sc->layers[layer].images);
+	}
+	free(sc->layers);
+	sc->layers = new;
+	sc->layer_cnt = 2;
+    }
+    SFReinstanciateRefs(sf);
+}
+#else
+void SFSplinesFromLayers(SplineFont *sf) {
+}
+#endif
+
+static SplinePointList *SplinesFromEntityChar(EntityChar *ec,int *flags) {
     Entity *ent, *next;
     SplinePointList *head=NULL, *last, *new, *nlast, *temp, *each, *transed;
     StrokeInfo si;
@@ -2020,6 +2142,10 @@ static SplinePointList *SplinesFromEntities(EntityChar *ec,int *flags) {
 		si.cap = ent->u.splines.cap;
 		si.removeoverlapifneeded = *flags & sf_removeoverlap ? 1 : 0;
 		si.radius = ent->u.splines.stroke_width/2;
+		if ( ent->u.splines.stroke_width==WIDTH_INHERITED )
+		    si.radius = .5;
+		if ( si.cap == lc_inherited ) si.cap = lc_butt;
+		if ( si.join == lc_inherited ) si.join = lj_miter;
 		new = NULL;
 #if 0
 		SSBisectTurners(ent->u.splines.splines);
@@ -2076,13 +2202,21 @@ static SplinePointList *SplinesFromEntities(EntityChar *ec,int *flags) {
 return( head );
 }
 
+SplinePointList *SplinesFromEntities(Entity *ent,int *flags) {
+    EntityChar ec;
+
+    memset(&ec,'\0',sizeof(ec));
+    ec.splines = ent;
+return( SplinesFromEntityChar(&ec,flags));
+}
+
 SplinePointList *SplinePointListInterpretPS(FILE *ps) {
     EntityChar ec;
     int flags = -1;
 
     memset(&ec,'\0',sizeof(ec));
     InterpretPS(ps,NULL,&ec,NULL);
-return( SplinesFromEntities(&ec,&flags));
+return( SplinesFromEntityChar(&ec,&flags));
 }
 
 Entity *EntityInterpretPS(FILE *ps) {
@@ -2108,8 +2242,14 @@ static void SCInterpretPS(FILE *ps,SplineChar *sc, int *flags) {
     InterpretPS(ps,NULL,&ec,NULL);
     ec.sc = sc;
     sc->width = ec.width;
+#ifdef PFAEDIT_CONFIG_TYPE3
+    sc->layer_cnt = 1;
+    SCAppendEntityLayers(sc,ec.splines);
+    if ( sc->layer_cnt==1 ) ++sc->layer_cnt;
+#else
+    sc->layers[ly_fore].splines = SplinesFromEntityChar(&ec,flags);
+#endif
     sc->layers[ly_fore].refs = ec.refs;
-    sc->layers[ly_fore].splines = SplinesFromEntities(&ec,flags);
     free(wrapper.top);
 }
     

@@ -2067,7 +2067,7 @@ static void SFAddToBackground(SplineFont *sf,BDFFont *bdf) {
 	    img = gcalloc(1,sizeof(GImage));
 	    img->u.image = base;
 
-	    SCInsertBackImage(sc,img,scale,yoff+(bdfc->ymax+1)*scale,bdfc->xmin*scale);
+	    SCInsertImage(sc,img,scale,yoff+(bdfc->ymax+1)*scale,bdfc->xmin*scale,ly_back);
 	}
     }
     BDFFontFree(bdf);

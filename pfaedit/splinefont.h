@@ -90,9 +90,10 @@ struct brush {
 #define WIDTH_INHERITED	(-1)
 struct pen {
     struct brush brush;
-    int16 width;
     uint8 linejoin;
     uint8 linecap;
+    float width;
+    real trans[4];
 };
 
 struct spline;
@@ -695,7 +696,7 @@ typedef struct layer {
 #endif
 } Layer;
 
-enum layer_type { ly_back=0, ly_fore=1 };
+enum layer_type { ly_grid= -1, ly_back=0, ly_fore=1 /* Possibly other foreground layers for multi-layered things */ };
     
 typedef struct splinechar {
     char *name;
@@ -1091,6 +1092,7 @@ extern struct gimage *ImageAlterClut(struct gimage *image);
 extern void ImageListsFree(ImageList *imgs);
 extern void TTFLangNamesFree(struct ttflangname *l);
 extern void MinimumDistancesFree(MinimumDistance *md);
+extern void LayerDefault(Layer *);
 extern SplineChar *SplineCharCreate(void);
 extern RefChar *RefCharCreate(void);
 extern void ScriptRecordFree(struct script_record *sr);
@@ -1131,6 +1133,8 @@ extern void SCCatagorizePoints(SplineChar *sc);
 extern SplinePointList *SplinePointListCopy1(SplinePointList *spl);
 extern SplinePointList *SplinePointListCopy(SplinePointList *base);
 extern SplinePointList *SplinePointListCopySelected(SplinePointList *base);
+extern ImageList *ImageListCopy(ImageList *cimg);
+extern ImageList *ImageListTransform(ImageList *cimg,real transform[6]);
 extern void ApTransform(AnchorPoint *ap, real transform[6]);
 extern SplinePointList *SplinePointListTransform(SplinePointList *base, real transform[6], int allpoints );
 extern SplinePointList *SplinePointListShift(SplinePointList *base, real xoff, int allpoints );
@@ -1140,6 +1144,7 @@ extern void SplinePointListSelect(SplinePointList *spl,int sel);
 extern void SCRefToSplines(SplineChar *sc,RefChar *rf);
 extern void SCReinstanciateRefChar(SplineChar *sc,RefChar *rf);
 extern void SCReinstanciateRef(SplineChar *sc,SplineChar *rsc);
+extern void SFReinstanciateRefs(SplineFont *sf);
 extern SplineChar *MakeDupRef(SplineChar *base, int local_enc, int uni_enc);
 extern void SCRemoveDependent(SplineChar *dependent,RefChar *rf);
 extern void SCRemoveDependents(SplineChar *dependent);
@@ -1349,6 +1354,7 @@ extern void SCLigCaretCheck(SplineChar *sc,int clean);
 extern BDFChar *BDFMakeChar(BDFFont *bdf,int i);
 
 extern void SCUndoSetLBearingChange(SplineChar *sc,int lb);
+extern Undoes *SCPreserveLayer(SplineChar *sc,int layer,int dohints);
 extern Undoes *SCPreserveState(SplineChar *sc,int dohints);
 extern Undoes *SCPreserveBackground(SplineChar *sc);
 extern Undoes *SCPreserveWidth(SplineChar *sc);
@@ -1367,6 +1373,7 @@ extern const unichar_t *SFGetAlternate(SplineFont *sf, int base,SplineChar *sc,i
 
 extern int getAdobeEnc(char *name);
 
+extern void SFSplinesFromLayers(SplineFont *sf);
 extern SplineSet *SplinePointListInterpretSVG(char *filename,int em_size, int ascent);
 extern SplinePointList *SplinePointListInterpretPS(FILE *ps);
 extern void PSFontInterpretPS(FILE *ps,struct charprocs *cp);
@@ -1514,6 +1521,8 @@ extern struct macname *FindMacSettingName(SplineFont *sf, int feat, int set);
 extern int32 UniFromEnc(int enc, enum charset encname);
 extern int32 EncFromUni(int32 uni, enum charset encname);
 extern int32 EncFromSF(int32 uni, SplineFont *sf);
+
+extern void MatInverse(real into[6], real orig[6]);
 
 enum psstrokeflags { sf_toobigwarn=1, sf_removeoverlap=2, sf_handle_eraser=4 };
 extern enum psstrokeflags PsStrokeFlagsDlg(void);

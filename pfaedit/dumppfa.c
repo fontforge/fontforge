@@ -423,6 +423,9 @@ static void dumppen(void (*dumpchar)(int ch,void *data), void *data, struct pen 
 	dumpf(dumpchar,data,"%d setlinejoin\n", pen->linejoin );
     if ( pen->linecap!=lc_inherited )
 	dumpf(dumpchar,data,"%d setlinecap\n", pen->linecap );
+    if ( pen->trans[0]!=1.0 || pen->trans[3]!=1.0 || pen->trans[1]!=0 || pen->trans[2]!=0 )
+	dumpf(dumpchar,data,"[%g %g %g %g 0 0] concat\n",
+		pen->trans[0], pen->trans[1], pen->trans[2], pen->trans[3]);
 }
 
 struct psfilter {

@@ -683,6 +683,35 @@ void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
     }
 }
 
+static void CVDrawLayerSplineSet(CharView *cv, GWindow pixmap, Layer *layer,
+	Color fg, int dopoints, DRect *clip ) {
+#ifdef PFAEDIT_CONFIG_TYPE3
+    int active = cv->layerheads[cv->drawmode]==layer;
+
+    if ( layer->dostroke ) {
+	if ( layer->stroke_pen.brush.col!=COLOR_INHERITED &&
+		layer->stroke_pen.brush.col!=GDrawGetDefaultBackground(NULL))
+	    fg = layer->stroke_pen.brush.col;
+	if ( layer->stroke_pen.width!=WIDTH_INHERITED )
+	    GDrawSetLineWidth(pixmap,rint(layer->stroke_pen.width*layer->stroke_pen.trans[0]*cv->scale));
+    }
+    if ( layer->dofill ) {
+	if ( layer->fill_brush.col!=COLOR_INHERITED &&
+		layer->fill_brush.col!=GDrawGetDefaultBackground(NULL))
+	    fg = layer->fill_brush.col;
+    }
+    if ( !active && layer!=&cv->sc->layers[ly_back] )
+	GDrawSetDashedLine(pixmap,5,5,cv->xoff+cv->height-cv->yoff);
+    CVDrawSplineSet(cv,pixmap,layer->splines,fg,dopoints,clip);
+    if ( !active && layer!=&cv->sc->layers[ly_back] )
+	GDrawSetDashedLine(pixmap,0,0,0);
+    if ( layer->dostroke && layer->stroke_pen.width!=WIDTH_INHERITED )
+	GDrawSetLineWidth(pixmap,0);
+#else
+    CVDrawSplineSet(cv,pixmap,layer->splines,fg,dopoints,clip);
+#endif
+}
+
 static void CVDrawTemplates(CharView *cv,GWindow pixmap,SplineChar *template,DRect *clip) {
     RefChar *r;
 
@@ -1272,7 +1301,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
     GRect old;
     DRect clip;
     unichar_t ubuf[20];
-    PST *pst; int i;
+    PST *pst; int i, layer, rlayer;
 
     GDrawPushClip(pixmap,&event->u.expose.rect,&old);
 
@@ -1290,21 +1319,24 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	if ( (cv->showhhints || cv->showvhints || cv->showdhints) && ( cv->sc->layers[ly_back].images==NULL || !cv->showback) )
 	    CVShowHints(cv,pixmap);
 
-	if (( cv->showback || cv->drawmode==dm_back ) && cv->sc->layers[ly_back].images!=NULL ) {
-	    /* This really should be after the grids, but then it would completely*/
-	    /*  hide them. */
-	    GRect r;
-	    if ( cv->backimgs==NULL )
-		cv->backimgs = GDrawCreatePixmap(GDrawGetDisplayOfWindow(cv->v),cv->width,cv->height);
-	    if ( cv->back_img_out_of_date ) {
-		GDrawFillRect(cv->backimgs,NULL,GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(cv->v)));
-		if ( cv->showhhints || cv->showvhints || cv->showdhints)
-		    CVShowHints(cv,cv->backimgs);
-		DrawImageList(cv,cv->backimgs,cv->sc->layers[ly_back].images);
-		cv->back_img_out_of_date = false;
+	for ( layer = ly_back; layer<cv->sc->layer_cnt; ++layer ) if ( cv->sc->layers[layer].images!=NULL ) {
+	    if ( (( cv->showback || cv->drawmode==dm_back ) && layer==ly_back ) ||
+		    (( cv->showfore || cv->drawmode==dm_fore ) && layer>ly_back )) {
+		/* This really should be after the grids, but then it would completely*/
+		/*  hide them. */
+		GRect r;
+		if ( cv->backimgs==NULL )
+		    cv->backimgs = GDrawCreatePixmap(GDrawGetDisplayOfWindow(cv->v),cv->width,cv->height);
+		if ( cv->back_img_out_of_date ) {
+		    GDrawFillRect(cv->backimgs,NULL,GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(cv->v)));
+		    if ( cv->showhhints || cv->showvhints || cv->showdhints)
+			CVShowHints(cv,cv->backimgs);
+		    DrawImageList(cv,cv->backimgs,cv->sc->layers[layer].images);
+		    cv->back_img_out_of_date = false;
+		}
+		r.x = r.y = 0; r.width = cv->width; r.height = cv->height;
+		GDrawDrawPixmap(pixmap,cv->backimgs,&r,0,0);
 	    }
-	    r.x = r.y = 0; r.width = cv->width; r.height = cv->height;
-	    GDrawDrawPixmap(pixmap,cv->backimgs,&r,0,0);
 	}
 	if ( cv->showgrids || cv->drawmode==dm_grid ) {
 	    CVDrawSplineSet(cv,pixmap,cv->fv->sf->grid.splines,guideoutlinecol,
@@ -1321,8 +1353,12 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	    DrawLine(cv,pixmap,-8096,sf->vertical_origin,8096,sf->vertical_origin,coordcol);
 	}
 
-	if ( cv->showback || cv->drawmode==dm_back )
-	    DrawSelImageList(cv,pixmap,cv->sc->layers[ly_back].images);
+	for ( layer = ly_back; layer<cv->sc->layer_cnt; ++layer ) if ( cv->sc->layers[layer].images!=NULL ) {
+	    if ( (( cv->showback || cv->drawmode==dm_back ) && layer==ly_back ) ||
+		    (( cv->showfore || cv->drawmode==dm_fore ) && layer>ly_back ))
+		DrawSelImageList(cv,pixmap,cv->sc->layers[layer].images);
+	}
+
 	if (( cv->showfore || cv->drawmode==dm_fore ) && cv->showfilled ) {
 	    /* Wrong order, I know. But it is useful to have the background */
 	    /*  visible on top of the fill... */
@@ -1385,7 +1421,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	    /*  is to draw to pixmap, dump pixmap a bit earlier */
 	    /* Then when we moved the fill image around, we had to deal with the */
 	    /*  images before the fill... */
-	    CVDrawSplineSet(cv,pixmap,cv->sc->layers[ly_back].splines,backoutlinecol,
+	    CVDrawLayerSplineSet(cv,pixmap,&cv->sc->layers[ly_back],backoutlinecol,
 		    cv->showpoints && cv->drawmode==dm_back,&clip);
 	    if ( cv->template1!=NULL )
 		CVDrawTemplates(cv,pixmap,cv->template1,&clip);
@@ -1398,15 +1434,18 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 
     if ( cv->showfore || (cv->drawmode==dm_fore && !cv->show_ft_results && cv->dv==NULL))  {
 	CVDrawAnchorPoints(cv,pixmap);
-	for ( rf=cv->sc->layers[ly_fore].refs; rf!=NULL; rf = rf->next ) {
-	    CVDrawRefName(cv,pixmap,rf,0);
-	    CVDrawSplineSet(cv,pixmap,rf->layers[0].splines,foreoutlinecol,false,&clip);
-	    if ( rf->selected )
-		CVDrawBB(cv,pixmap,&rf->bb);
-	}
+	for ( layer=ly_fore ; layer<cv->sc->layer_cnt; ++layer ) {
+	    for ( rf=cv->sc->layers[layer].refs; rf!=NULL; rf = rf->next ) {
+		CVDrawRefName(cv,pixmap,rf,0);
+		for ( rlayer=0; rlayer<rf->layer_cnt; ++rlayer )
+		    CVDrawSplineSet(cv,pixmap,rf->layers[rlayer].splines,foreoutlinecol,false,&clip);
+		if ( rf->selected && cv->layerheads[cv->drawmode]==&cv->sc->layers[layer])
+		    CVDrawBB(cv,pixmap,&rf->bb);
+	    }
 
-	CVDrawSplineSet(cv,pixmap,cv->sc->layers[ly_fore].splines,foreoutlinecol,
-		cv->showpoints && cv->drawmode==dm_fore,&clip);
+	    CVDrawLayerSplineSet(cv,pixmap,&cv->sc->layers[layer],foreoutlinecol,
+		    cv->showpoints && cv->drawmode==dm_fore,&clip);
+	}
     }
 
     if ( cv->freehand.current_trace!=NULL )
@@ -2403,6 +2442,7 @@ static void CVDoSnaps(CharView *cv, FindSel *fs) {
 
 static int _CVTestSelectFromEvent(CharView *cv,FindSel *fs) {
     PressedOn temp;
+    ImageList *img;
 
     if ( !InSplineSet(fs,cv->layerheads[cv->drawmode]->splines)) {
 	if ( cv->drawmode==dm_fore) {
@@ -2433,14 +2473,12 @@ static int _CVTestSelectFromEvent(CharView *cv,FindSel *fs) {
 		    cv->p.anysel = true;
 		}
 	    }
-	} else if ( cv->drawmode==dm_back ) {
-	    ImageList *img;
-	    for ( img = cv->sc->layers[ly_back].images; img!=NULL; img=img->next ) {
-		if ( InImage(fs,img)) {
-		    cv->p.img = img;
-		    cv->p.anysel = true;
-	    break;
-		}
+	}
+	for ( img = cv->layerheads[cv->drawmode]->images; img!=NULL; img=img->next ) {
+	    if ( InImage(fs,img)) {
+		cv->p.img = img;
+		cv->p.anysel = true;
+	break;
 	    }
 	}
     }
@@ -4870,12 +4908,11 @@ void CVTransFunc(CharView *cv,real transform[6], enum fvtrans_flags flags) {
     SplinePointListTransform(cv->layerheads[cv->drawmode]->splines,transform,!anysel);
     if ( flags&fvt_round_to_int )
 	SplineSetsRound2Int(cv->layerheads[cv->drawmode]->splines);
-    if ( cv->drawmode==dm_back ) {
-	for ( img = cv->sc->layers[ly_back].images; img!=NULL; img=img->next )
-	    if ( img->selected || !anysel ) {
-		BackgroundImageTransform(cv->sc, img, transform);
-	    }
-    } else if ( cv->drawmode==dm_fore ) {
+    if ( cv->layerheads[cv->drawmode]->images!=NULL ) {
+	ImageListTransform(cv->layerheads[cv->drawmode]->images,transform);
+	SCOutOfDateBackground(cv->sc);
+    }
+    if ( cv->drawmode==dm_fore ) {
 	for ( refs = cv->sc->layers[ly_fore].refs; refs!=NULL; refs=refs->next )
 	    if ( refs->selected || !anysel ) {
 		SplinePointListTransform(refs->layers[0].splines,transform,true);
@@ -6806,6 +6843,8 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv) {
     cv->next = sc->views;
     sc->views = cv;
     cv->fv = fv;
+
+    cv->drawmode = dm_fore;
 
     cv->showback = CVShows.showback;
     cv->showfore = CVShows.showfore;

@@ -2708,12 +2708,20 @@ int SplinePointListIsClockwise(SplineSet *spl) {
     SplineChar dummy;
     SplineSet *next;
     int ret = -1, maybe=-1;
+#ifdef PFAEDIT_CONFIG_TYPE3
+    Layer layers[2];
+#endif
 
     if ( spl->first!=spl->last || spl->first->next == NULL )
 return( -1 );		/* Open paths, (open paths with only one point are a special case) */
 
     memset(&el,'\0',sizeof(el));
     memset(&dummy,'\0',sizeof(dummy));
+#ifdef PFAEDIT_CONFIG_TYPE3
+    memset(layers,0,sizeof(layers));
+    dummy.layers = layers;
+#endif
+    dummy.layer_cnt = 2;
     dummy.layers[ly_fore].splines = spl;
     next = spl->next; spl->next = NULL;
     ELFindEdges(&dummy,&el);

@@ -687,10 +687,9 @@ void CIDFindBounds(SplineFont *cidmaster,DBounds *bounds) {
     }
 }
 
-static void SplineSetFindTop(SplineSet *ss,BasePoint *top) {
+static void _SplineSetFindTop(SplineSet *ss,BasePoint *top) {
     SplinePoint *sp;
 
-    top->y = -1e10;
     for ( ; ss!=NULL; ss=ss->next ) {
 	for ( sp=ss->first; ; ) {
 	    if ( sp->me.y > top->y ) *top = sp->me;
@@ -701,6 +700,12 @@ static void SplineSetFindTop(SplineSet *ss,BasePoint *top) {
 	break;
 	}
     }
+}
+
+static void SplineSetFindTop(SplineSet *ss,BasePoint *top) {
+
+    top->y = -1e10;
+    _SplineSetFindTop(ss,top);
     if ( top->y < -65536 ) top->y = top->x = 0;
 }
 
@@ -897,7 +902,13 @@ void SPLCatagorizePoints(SplinePointList *spl) {
 }
 
 void SCCatagorizePoints(SplineChar *sc) {
+#ifdef PFAEDIT_CONFIG_TYPE3
+    int i;
+    for ( i=ly_fore; i<sc->layer_cnt; ++i )
+	SPLCatagorizePoints(sc->layers[i].splines);
+#else
     SPLCatagorizePoints(sc->layers[ly_fore].splines);
+#endif
 }
 
 static int CharsNotInEncoding(FontDict *fd) {
@@ -1183,6 +1194,51 @@ SplinePointList *SplinePointListRemoveSelected(SplineChar *sc,SplinePointList *b
 	    last = SplinePointListSplit(sc,base);
     }
     if ( last!=NULL ) last->next = NULL;
+return( head );
+}
+
+ImageList *ImageListCopy(ImageList *cimg) {
+    ImageList *head=NULL, *last=NULL, *new;
+
+    for ( ; cimg!=NULL; cimg=cimg->next ) {
+	new = chunkalloc(sizeof(ImageList));
+	*new = *cimg;
+	new->next = NULL;
+	if ( last==NULL )
+	    head = last = new;
+	else {
+	    last->next = new;
+	    last = new;
+	}
+    }
+return( head );
+}
+
+ImageList *ImageListTransform(ImageList *img, real transform[6]) {
+    ImageList *head = img;
+
+	/* Don't support rotating, flipping or skewing images */;
+    if ( transform[0]!=0 && transform[3]!=0 ) {
+	while ( img!=NULL ) {
+	    double x = img->xoff;
+	    img->xoff = transform[0]*x + transform[2]*img->yoff + transform[4];
+	    img->yoff = transform[1]*x + transform[3]*img->yoff + transform[5];
+	    if (( img->xscale *= transform[0])<0 ) {
+		img->xoff += img->xscale *
+		    (img->image->list_len==0?img->image->u.image:img->image->u.images[0])->width;
+		img->xscale = -img->xscale;
+	    }
+	    if (( img->yscale *= transform[3])<0 ) {
+		img->yoff += img->yscale *
+		    (img->image->list_len==0?img->image->u.image:img->image->u.images[0])->height;
+		img->yscale = -img->yscale;
+	    }
+	    img->bb.minx = img->xoff; img->bb.maxy = img->yoff;
+	    img->bb.maxx = img->xoff + GImageGetWidth(img->image)*img->xscale;
+	    img->bb.miny = img->yoff - GImageGetHeight(img->image)*img->yscale;
+	    img = img->next;
+	}
+    }
 return( head );
 }
 
@@ -1584,9 +1640,42 @@ return;		/* It's just the expected matrix */
     }
 }
 
+static void SFInstanciateRefs(SplineFont *sf) {
+    int i, layer;
+    RefChar *refs, *next, *pr;
+
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
+	sf->chars[i]->ticked = false;
+
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	SplineChar *sc = sf->chars[i];
+
+	for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
+	    for ( pr=NULL, refs = sc->layers[layer].refs; refs!=NULL; refs=next ) {
+		next = refs->next;
+		sc->ticked = true;
+		InstanciateReference(sf, refs, refs, refs->transform,sc);
+		if ( refs->sc!=NULL ) {
+		    SplineSetFindBounds(refs->layers[0].splines,&refs->bb);
+		    sc->ticked = false;
+		    pr = refs;
+		} else {
+		    /* In some mal-formed postscript fonts we can have a reference */
+		    /*  to a character that is not actually in the font. I even */
+		    /*  generated one by mistake once... */
+		    if ( pr==NULL )
+			sc->layers[layer].refs = next;
+		    else
+			pr->next = next;
+		}
+	    }
+	}
+    }
+}
+
 static void SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext *pscontext) {
     int i, j, isnotdef;
-    RefChar *refs, *next, *pr;
+    RefChar *refs, *next;
     char **encoding;
     int istype2 = fd->fonttype==2;		/* Easy enough to deal with even though it will never happen... */
     uint8 *used = gcalloc(fd->charprocs->next!=0?fd->charprocs->next:fd->chars->next,sizeof(uint8));
@@ -1663,24 +1752,7 @@ static void SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext *
 	SCLigDefault(sf->chars[i]);		/* Also reads from AFM file, but it probably doesn't exist */
 	GProgressNext();
     }
-    for ( i=0; i<sf->charcnt; ++i ) for ( pr=NULL, refs = sf->chars[i]->layers[ly_fore].refs; refs!=NULL; refs=next ) {
-	next = refs->next;
-	sf->chars[i]->ticked = true;
-	InstanciateReference(sf, refs, refs, refs->transform,sf->chars[i]);
-	if ( refs->sc!=NULL ) {
-	    SplineSetFindBounds(refs->layers[0].splines,&refs->bb);
-	    sf->chars[i]->ticked = false;
-	    pr = refs;
-	} else {
-	    /* In some mal-formed postscript fonts we can have a reference */
-	    /*  to a character that is not actually in the font. I even */
-	    /*  generated one by mistake once... */
-	    if ( pr==NULL )
-		sf->chars[i]->layers[ly_fore].refs = next;
-	    else
-		pr->next = next;
-	}
-    }
+    SFInstanciateRefs(sf);
     if ( fd->metrics!=NULL ) {
 	for ( i=0; i<fd->metrics->next; ++i ) {
 	    int width = strtol(fd->metrics->values[i],NULL,10);
@@ -2013,30 +2085,149 @@ SplineFont *SplineFontFromPSFont(FontDict *fd) {
 return( sf );
 }
 
+#ifdef PFAEDIT_CONFIG_TYPE3
+static void LayerToRefLayer(struct reflayer *rl,Layer *layer) {
+    rl->fill_brush = layer->fill_brush;
+    rl->stroke_pen = layer->stroke_pen;
+    rl->dofill = layer->dofill;
+    rl->dostroke = layer->dostroke;
+    rl->fillfirst = layer->fillfirst;
+}
+#endif
+
 void SCReinstanciateRefChar(SplineChar *sc,RefChar *rf) {
     SplinePointList *spl, *new;
     RefChar *refs;
+#ifdef PFAEDIT_CONFIG_TYPE3
+    int i,j;
+    SplineChar *rsc = rf->sc;
 
+    for ( i=0; i<rf->layer_cnt; ++i )
+	SplinePointListsFree(rf->layers[0].splines);
+    free( rf->layers );
+    rf->layers = NULL;
+    rf->layer_cnt = 0;
+    if ( rsc==NULL )
+return;
+    /* Can be called before sc->parent is set, but only when reading a ttf */
+    /*  file which won't be multilayer */
+    if ( sc->parent!=NULL && sc->parent->multilayer ) {
+	int cnt = 0;
+	RefChar *subref;
+	for ( i=ly_fore; i<rsc->layer_cnt; ++i ) {
+	    if ( rsc->layers[i].splines!=NULL || rsc->layers[i].images!=NULL )
+		++cnt;
+	    for ( subref=rsc->layers[i].refs; subref!=NULL; subref=subref->next )
+		cnt += subref->layer_cnt;
+	}
+    
+	rf->layer_cnt = cnt;
+	rf->layers = gcalloc(cnt,sizeof(struct reflayer));
+	cnt = 0;
+	for ( i=ly_fore; i<rsc->layer_cnt; ++i ) {
+	    if ( rsc->layers[i].splines!=NULL || rsc->layers[i].images!=NULL ) {
+		rf->layers[cnt].splines =
+			SplinePointListTransform(
+			 SplinePointListCopy(rsc->layers[i].splines),rf->transform,true);
+		rf->layers[cnt].images =
+			ImageListTransform(
+			 ImageListCopy(rsc->layers[i].images),rf->transform);
+		LayerToRefLayer(&rf->layers[cnt],&rsc->layers[i]);
+		++cnt;
+	    }
+	    for ( subref=rsc->layers[i].refs; subref!=NULL; subref=subref->next ) {
+		for ( j=0; j<subref->layer_cnt; ++j ) if ( subref->layers[j].images!=NULL || subref->layers[j].splines!=NULL ) {
+		    rf->layers[cnt] = subref->layers[j];
+		    rf->layers[cnt].splines =
+			    SplinePointListTransform(
+			     SplinePointListCopy(subref->layers[j].splines),rf->transform,true);
+		    rf->layers[cnt].images =
+			    ImageListTransform(
+			     ImageListCopy(subref->layers[j].images),rf->transform);
+		    ++cnt;
+		}
+	    }
+	}
+
+	memset(&rf->bb,'\0',sizeof(rf->bb));
+	rf->top.y = -1e10;
+	for ( i=0; i<rf->layer_cnt; ++i ) {
+	    _SplineSetFindBounds(rf->layers[i].splines,&rf->bb);
+	    _SplineSetFindTop(rf->layers[i].splines,&rf->top);
+	}
+	if ( rf->top.y < -65536 ) rf->top.y = rf->top.x = 0;
+    } else {
+	rf->layers = gcalloc(1,sizeof(struct reflayer));
+	rf->layer_cnt = 1;
+	rf->layers[0].dofill = true;
+#else
     SplinePointListsFree(rf->layers[0].splines);
     rf->layers[0].splines = NULL;
     if ( rf->sc==NULL )
 return;
-    new = SplinePointListTransform(SplinePointListCopy(rf->sc->layers[ly_fore].splines),rf->transform,true);
-    if ( new!=NULL ) {
-	for ( spl = new; spl->next!=NULL; spl = spl->next );
-	spl->next = rf->layers[0].splines;
-	rf->layers[0].splines = new;
-    }
-    for ( refs = rf->sc->layers[ly_fore].refs; refs!=NULL; refs = refs->next ) {
-	new = SplinePointListTransform(SplinePointListCopy(refs->layers[0].splines),rf->transform,true);
+    {
+#endif
+	new = SplinePointListTransform(SplinePointListCopy(rf->sc->layers[ly_fore].splines),rf->transform,true);
 	if ( new!=NULL ) {
 	    for ( spl = new; spl->next!=NULL; spl = spl->next );
 	    spl->next = rf->layers[0].splines;
 	    rf->layers[0].splines = new;
 	}
+	for ( refs = rf->sc->layers[ly_fore].refs; refs!=NULL; refs = refs->next ) {
+	    new = SplinePointListTransform(SplinePointListCopy(refs->layers[0].splines),rf->transform,true);
+	    if ( new!=NULL ) {
+		for ( spl = new; spl->next!=NULL; spl = spl->next );
+		spl->next = rf->layers[0].splines;
+		rf->layers[0].splines = new;
+	    }
+	}
+	SplineSetFindBounds(rf->layers[0].splines,&rf->bb);
+	SplineSetFindTop(rf->layers[0].splines,&rf->top);
     }
-    SplineSetFindBounds(rf->layers[0].splines,&rf->bb);
-    SplineSetFindTop(rf->layers[0].splines,&rf->top);
+}
+
+static void _SFReinstanciateRefs(SplineFont *sf) {
+    int i, undone, undoable, j, cnt;
+    RefChar *ref;
+
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
+	sf->chars[i]->ticked = false;
+
+    undone = true;
+    cnt = 0;
+    while ( undone && cnt<200) {
+	undone = false;
+	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	    undoable = false;
+	    for ( j=0; j<sf->chars[i]->layer_cnt; ++j ) {
+		for ( ref=sf->chars[i]->layers[j].refs; ref!=NULL; ref=ref->next ) {
+		    if ( !ref->sc->ticked )
+			undoable = true;
+		}
+	    }
+	    if ( undoable )
+		undone = true;
+	    else {
+		for ( j=0; j<sf->chars[i]->layer_cnt; ++j ) {
+		    for ( ref=sf->chars[i]->layers[j].refs; ref!=NULL; ref=ref->next )
+			SCReinstanciateRefChar(sf->chars[i],ref);
+		}
+		sf->chars[i]->ticked = true;
+	    }
+	}
+	++cnt;
+    }
+}
+	    
+void SFReinstanciateRefs(SplineFont *sf) {
+    int i;
+
+    if ( sf->cidmaster!=NULL || sf->subfontcnt!=0 ) {
+	if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
+	for ( i=0; i<sf->subfontcnt; ++i )
+	    _SFReinstanciateRefs(sf->subfonts[i]);
+    } else
+	_SFReinstanciateRefs(sf);
 }
 
 void SCReinstanciateRef(SplineChar *sc,SplineChar *rsc) {
@@ -3483,6 +3674,19 @@ void TTFLangNamesFree(struct ttflangname *l) {
     }
 }
 
+void LayerDefault(Layer *layer) {
+#ifdef PFAEDIT_CONFIG_TYPE3
+    layer->fill_brush.opacity = layer->stroke_pen.brush.opacity = 1.0;
+    layer->fill_brush.col = layer->stroke_pen.brush.col = COLOR_INHERITED;
+    layer->stroke_pen.width = WIDTH_INHERITED;
+    layer->stroke_pen.linecap = lc_inherited;
+    layer->stroke_pen.linejoin = lj_inherited;
+    layer->dofill = true;
+    layer->stroke_pen.trans[0] = layer->stroke_pen.trans[3] = 1.0;
+    layer->stroke_pen.trans[1] = layer->stroke_pen.trans[2] = 0.0;
+#endif
+}
+
 SplineChar *SplineCharCreate(void) {
     SplineChar *sc = chunkalloc(sizeof(SplineChar));
     sc->color = COLOR_DEFAULT;
@@ -3491,14 +3695,8 @@ SplineChar *SplineCharCreate(void) {
     sc->layer_cnt = 2;
 #ifdef PFAEDIT_CONFIG_TYPE3
     sc->layers = gcalloc(2,sizeof(Layer));
-    sc->layers[0].fill_brush.opacity = sc->layers[0].stroke_pen.brush.opacity = 1.0;
-    sc->layers[1].fill_brush.opacity = sc->layers[1].stroke_pen.brush.opacity = 1.0;
-    sc->layers[0].fill_brush.col = sc->layers[0].stroke_pen.brush.col = COLOR_INHERITED;
-    sc->layers[1].fill_brush.col = sc->layers[1].stroke_pen.brush.col = COLOR_INHERITED;
-    sc->layers[0].stroke_pen.width = sc->layers[1].stroke_pen.width = WIDTH_INHERITED;
-    sc->layers[0].stroke_pen.linecap = sc->layers[1].stroke_pen.linecap = lc_inherited;
-    sc->layers[0].stroke_pen.linejoin = sc->layers[1].stroke_pen.linejoin = lj_inherited;
-    sc->layers[0].dofill = sc->layers[1].dofill = true;
+    LayerDefault(&sc->layers[0]);
+    LayerDefault(&sc->layers[1]);
 #endif
 return( sc );
 }

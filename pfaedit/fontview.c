@@ -4538,6 +4538,9 @@ static SplineChar *_SFMakeChar(SplineFont *sf,int i) {
     SplineChar dummy, *sc;
     SplineFont *ssf;
     int j;
+#ifdef PFAEDIT_CONFIG_TYPE3
+    Layer *l;
+#endif
 
     if ( sf->subfontcnt!=0 ) {
 	ssf = NULL;
@@ -4554,7 +4557,13 @@ return( ssf->chars[i] );
     if ( (sc = sf->chars[i])==NULL ) {
 	SCBuildDummy(&dummy,sf,i);
 	sf->chars[i] = sc = SplineCharCreate();
+#ifdef PFAEDIT_CONFIG_TYPE3
+	l = sc->layers;
 	*sc = dummy;
+	sc->layers = l;		/* It's empty, no need to copy dummy's layers */
+#else
+	*sc = dummy;
+#endif
 	sc->name = copy(sc->name);
 	SCLigDefault(sc);
 	sc->parent = sf;

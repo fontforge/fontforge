@@ -37,6 +37,7 @@ typedef struct entpen {
     Color col;
     struct tile *tile;
     float scale;
+    float opacity;
 } Pen;
 
 typedef struct textunit {
@@ -104,4 +105,7 @@ typedef struct splinedesign {
 } SplineDesign, Design;
 
 extern Entity *EntityInterpretPS(FILE *ps);
+extern Entity *EntityInterpretSVG(char *filename,int em_size,int ascent);
+extern SplinePointList *SplinesFromEntities(Entity *ent,int *flags);
+extern void SCAppendEntityLayers(SplineChar *sc, Entity *ent);
 #endif

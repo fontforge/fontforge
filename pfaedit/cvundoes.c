@@ -41,12 +41,12 @@ static uint8 *bmpcopy(uint8 *bitmap,int bytes_per_line, int lines) {
 return( ret );
 }
 
-static RefChar *RefCharsCopyState(SplineChar *sc) {
+static RefChar *RefCharsCopyState(SplineChar *sc,int layer) {
     RefChar *head=NULL, *last=NULL, *new, *crefs;
 
-    if ( sc->layers[ly_fore].refs==NULL )
+    if ( sc->layers[layer].refs==NULL )
 return( NULL );
-    for ( crefs = sc->layers[ly_fore].refs; crefs!=NULL; crefs=crefs->next ) {
+    for ( crefs = sc->layers[layer].refs; crefs!=NULL; crefs=crefs->next ) {
 	new = RefCharCreate();
 	*new = *crefs;
 	new->layers[0].splines = NULL;
@@ -59,32 +59,6 @@ return( NULL );
 	}
     }
 return( head );
-}
-
-static ImageList *SCImagesCopyState(SplineChar *sc) {
-    ImageList *head=NULL, *last=NULL, *new, *cimg;
-
-    if ( sc->layers[ly_back].images==NULL )
-return( NULL );
-    for ( cimg = sc->layers[ly_back].images; cimg!=NULL; cimg=cimg->next ) {
-	new = chunkalloc(sizeof(ImageList));
-	*new = *cimg;
-	new->next = NULL;
-	if ( last==NULL )
-	    head = last = new;
-	else {
-	    last->next = new;
-	    last = new;
-	}
-    }
-return( head );
-}
-
-static ImageList *ImagesCopyState(CharView *cv) {
-
-    if ( cv->drawmode!=dm_back || cv->sc->layers[ly_back].images==NULL )
-return( NULL );
-return( SCImagesCopyState(cv->sc));
 }
 
 static MinimumDistance *MDsCopyState(SplineChar *sc,SplineSet *rpl) {
@@ -174,8 +148,8 @@ return( list );
 return( NULL );
 }
 
-static void FixupRefChars(SplineChar *sc,RefChar *urefs) {
-    RefChar *crefs = sc->layers[ly_fore].refs, *cend, *cprev, *unext, *cnext;
+static void FixupRefChars(SplineChar *sc,RefChar *urefs,int layer) {
+    RefChar *crefs = sc->layers[layer].refs, *cend, *cprev, *unext, *cnext;
 
     cprev = NULL;
     while ( crefs!=NULL && urefs!=NULL ) {
@@ -205,7 +179,7 @@ static void FixupRefChars(SplineChar *sc,RefChar *urefs) {
 	    unext = urefs->next;
 	    urefs->next = crefs;
 	    if ( cprev==NULL )
-		sc->layers[ly_fore].refs = urefs;
+		sc->layers[layer].refs = urefs;
 	    else
 		cprev->next = urefs;
 	    cprev = urefs;
@@ -222,7 +196,7 @@ static void FixupRefChars(SplineChar *sc,RefChar *urefs) {
 	}
     } else if ( urefs!=NULL ) {
 	if ( cprev==NULL )
-	    sc->layers[ly_fore].refs = urefs;
+	    sc->layers[layer].refs = urefs;
 	else
 	    cprev->next = urefs;
 	while ( urefs!=NULL ) {
@@ -233,8 +207,8 @@ static void FixupRefChars(SplineChar *sc,RefChar *urefs) {
     }
 }
 
-static void FixupImages(SplineChar *sc,ImageList *uimgs) {
-    ImageList *cimgs = sc->layers[ly_back].images, *cend, *cprev, *unext, *cnext;
+static void FixupImages(SplineChar *sc,ImageList *uimgs,int layer) {
+    ImageList *cimgs = sc->layers[layer].images, *cend, *cprev, *unext, *cnext;
 
     cprev = NULL;
     while ( cimgs!=NULL && uimgs!=NULL ) {
@@ -254,7 +228,7 @@ static void FixupImages(SplineChar *sc,ImageList *uimgs) {
 	    /*  img list, then than means we need to delete everything on the */
 	    /*  char's list between the two */
 	    if ( cprev==NULL )
-		sc->layers[ly_back].images = cend;
+		sc->layers[layer].images = cend;
 	    else
 		cprev->next = cend;
 	    while ( cimgs!=cend ) {
@@ -266,7 +240,7 @@ static void FixupImages(SplineChar *sc,ImageList *uimgs) {
 	    unext = uimgs->next;
 	    uimgs->next = cimgs;
 	    if ( cprev==NULL )
-		sc->layers[ly_back].images = uimgs;
+		sc->layers[layer].images = uimgs;
 	    else
 		cprev->next = uimgs;
 	    cprev = uimgs;
@@ -276,12 +250,12 @@ static void FixupImages(SplineChar *sc,ImageList *uimgs) {
     if ( cimgs!=NULL ) {
 	ImageListsFree(cimgs);
 	if ( cprev==NULL )
-	    sc->layers[ly_back].images = NULL;
+	    sc->layers[layer].images = NULL;
 	else
 	    cprev->next = NULL;
     } else if ( uimgs!=NULL ) {
 	if ( cprev==NULL )
-	    sc->layers[ly_back].images = uimgs;
+	    sc->layers[layer].images = uimgs;
 	else
 	    cprev->next = uimgs;
     }
@@ -466,8 +440,16 @@ return( AddUndo(undo,&cv->layerheads[cv->drawmode]->undoes,
 	&cv->layerheads[cv->drawmode]->redoes));
 }
 
+int CVLayer(CharView *cv) {
+    if ( cv->drawmode==dm_grid )
+return( ly_grid );
+
+return( cv->layerheads[cv->drawmode]-cv->sc->layers );
+}
+
 Undoes *CVPreserveState(CharView *cv) {
     Undoes *undo;
+    int layer = CVLayer(cv);
 
     if ( screen_display==NULL || maxundoes==0 )		/* No use for undoes in scripting */
 return(NULL);
@@ -480,16 +462,16 @@ return(NULL);
     undo->u.state.width = cv->sc->width;
     undo->u.state.vwidth = cv->sc->vwidth;
     undo->u.state.splines = SplinePointListCopy(cv->layerheads[cv->drawmode]->splines);
+    undo->u.state.refs = RefCharsCopyState(cv->sc,layer);
     if ( cv->drawmode==dm_fore ) {
-	undo->u.state.refs = RefCharsCopyState(cv->sc);
 	undo->u.state.md = MDsCopyState(cv->sc,undo->u.state.splines);
 	undo->u.state.anchor = AnchorPointsCopy(cv->sc->anchor);
     }
-    undo->u.state.u.images = ImagesCopyState(cv);
+    undo->u.state.u.images = ImageListCopy(cv->sc->layers[layer].images);
 return( CVAddUndo(cv,undo));
 }
 
-Undoes *SCPreserveState(SplineChar *sc,int dohints) {
+Undoes *SCPreserveLayer(SplineChar *sc,int layer, int dohints) {
     Undoes *undo;
 
     if ( screen_display==NULL || maxundoes==0 )		/* No use for undoes in scripting */
@@ -502,11 +484,13 @@ return(NULL);
     undo->was_order2 = sc->parent->order2;
     undo->u.state.width = sc->width;
     undo->u.state.vwidth = sc->vwidth;
-    undo->u.state.splines = SplinePointListCopy(sc->layers[ly_fore].splines);
-    undo->u.state.refs = RefCharsCopyState(sc);
-    undo->u.state.md = MDsCopyState(sc,undo->u.state.splines);
-    undo->u.state.anchor = AnchorPointsCopy(sc->anchor);
-    undo->u.state.u.images = NULL;
+    undo->u.state.splines = SplinePointListCopy(sc->layers[layer].splines);
+    undo->u.state.refs = RefCharsCopyState(sc,layer);
+    if ( layer==ly_fore ) {
+	undo->u.state.md = MDsCopyState(sc,undo->u.state.splines);
+	undo->u.state.anchor = AnchorPointsCopy(sc->anchor);
+    }
+    undo->u.state.u.images = ImageListCopy(sc->layers[layer].images);
     if ( dohints ) {
 	undo->undotype = ut_statehint;
 	undo->u.state.u.hints = UHintCopy(sc,true);
@@ -519,26 +503,15 @@ return(NULL);
 	}
     }
     undo->u.state.copied_from = sc->parent;
-return( AddUndo(undo,&sc->layers[ly_fore].undoes,&sc->layers[ly_fore].redoes));
+return( AddUndo(undo,&sc->layers[layer].undoes,&sc->layers[layer].redoes));
+}
+
+Undoes *SCPreserveState(SplineChar *sc,int dohints) {
+return( SCPreserveLayer(sc,ly_fore,dohints));
 }
 
 Undoes *SCPreserveBackground(SplineChar *sc) {
-    Undoes *undo;
-
-    if ( screen_display==NULL || maxundoes==0 )		/* No use for undoes in scripting */
-return(NULL);
-
-    undo = chunkalloc(sizeof(Undoes));
-
-    undo->undotype = ut_state;
-    undo->was_modified = sc->changed;
-    undo->was_order2 = sc->parent->order2;
-    undo->u.state.width = sc->width;
-    undo->u.state.vwidth = sc->vwidth;
-    undo->u.state.splines = SplinePointListCopy(sc->layers[ly_back].splines);
-    undo->u.state.u.images = SCImagesCopyState(sc);
-    undo->u.state.copied_from = sc->parent;
-return( AddUndo(undo,&sc->layers[ly_back].undoes,&sc->layers[ly_back].redoes));
+return( SCPreserveLayer(sc,ly_back,false));
 }
 
 void SCUndoSetLBearingChange(SplineChar *sc,int lbc) {
@@ -658,7 +631,7 @@ return(NULL);
 return( AddUndo(undo,&bc->undoes,&bc->redoes));
 }
 
-static void SCUndoAct(SplineChar *sc,int drawmode, Undoes *undo) {
+static void SCUndoAct(SplineChar *sc,int layer, Undoes *undo) {
 
     switch ( undo->undotype ) {
       case ut_noop:
@@ -675,12 +648,10 @@ static void SCUndoAct(SplineChar *sc,int drawmode, Undoes *undo) {
 	undo->u.width = vwidth;
       } break;
       case ut_state: case ut_tstate: case ut_statehint: case ut_statename: {
-	SplinePointList **head = drawmode==dm_fore ? &sc->layers[ly_fore].splines :
-				 drawmode==dm_back ? &sc->layers[ly_back].splines :
-				    &sc->parent->grid.splines;
-	SplinePointList *spl = *head;
+	Layer *head = layer==ly_grid ? &sc->parent->grid : &sc->layers[layer];
+	SplinePointList *spl = head->splines;
 
-	if ( drawmode==dm_fore ) {
+	if ( layer==ly_fore ) {
 	    int width = sc->width;
 	    int vwidth = sc->vwidth;
 	    if ( sc->width!=undo->u.state.width )
@@ -689,8 +660,8 @@ static void SCUndoAct(SplineChar *sc,int drawmode, Undoes *undo) {
 	    undo->u.state.width = width;
 	    undo->u.state.vwidth = vwidth;
 	}
-	*head = undo->u.state.splines;
-	if ( drawmode==dm_fore ) {
+	head->splines = undo->u.state.splines;
+	if ( layer==ly_fore ) {
 	    MinimumDistance *md = sc->md;
 	    AnchorPoint *ap = sc->anchor;
 	    sc->md = undo->u.state.md;
@@ -698,19 +669,19 @@ static void SCUndoAct(SplineChar *sc,int drawmode, Undoes *undo) {
 	    sc->anchor = undo->u.state.anchor;
 	    undo->u.state.anchor = ap;
 	}
-	if ( drawmode==dm_fore && !RefCharsMatch(undo->u.state.refs,sc->layers[ly_fore].refs)) {
-	    RefChar *refs = RefCharsCopyState(sc);
-	    FixupRefChars(sc,undo->u.state.refs);
+	if ( layer>=ly_fore && !RefCharsMatch(undo->u.state.refs,sc->layers[layer].refs)) {
+	    RefChar *refs = RefCharsCopyState(sc,layer);
+	    FixupRefChars(sc,undo->u.state.refs,layer);
 	    undo->u.state.refs = refs;
-	} else if ( drawmode==dm_fore && undo->undotype==ut_statehint ) {
+	} else if ( layer==ly_fore && undo->undotype==ut_statehint ) {
 	    void *hints = UHintCopy(sc,false);
 	    ExtractHints(sc,undo->u.state.u.hints,false);
 	    undo->u.state.u.hints = hints;
 	}
-	if ( drawmode==dm_back && undo->undotype!=ut_statehint &&
-		!ImagesMatch(undo->u.state.u.images,sc->layers[ly_back].images)) {
-	    ImageList *images = SCImagesCopyState(sc);
-	    FixupImages(sc,undo->u.state.u.images);
+	if ( undo->undotype!=ut_statehint &&
+		!ImagesMatch(undo->u.state.u.images,sc->layers[layer].images)) {
+	    ImageList *images = ImageListCopy(sc->layers[layer].images);
+	    FixupImages(sc,undo->u.state.u.images,layer);
 	    undo->u.state.u.images = images;
 	    SCOutOfDateBackground(sc);
 	}
@@ -719,7 +690,7 @@ static void SCUndoAct(SplineChar *sc,int drawmode, Undoes *undo) {
 	    undo->u.state.lbearingchange = -undo->u.state.lbearingchange;
 	    SCSynchronizeLBearing(sc,NULL,undo->u.state.lbearingchange);
 	}
-	if ( drawmode==dm_fore && undo->undotype==ut_statename ) {
+	if ( layer==ly_fore && undo->undotype==ut_statename ) {
 	    char *temp = sc->name;
 	    int uni = sc->unicodeenc;
 	    PST *possub = sc->possub;
@@ -747,7 +718,7 @@ void CVDoUndo(CharView *cv) {
 return;
     cv->layerheads[cv->drawmode]->undoes = undo->next;
     undo->next = NULL;
-    SCUndoAct(cv->sc,cv->drawmode,undo);
+    SCUndoAct(cv->sc,CVLayer(cv),undo);
     undo->next = cv->layerheads[cv->drawmode]->redoes;
     cv->layerheads[cv->drawmode]->redoes = undo;
     _CVCharChangedUpdate(cv,undo->was_modified);
@@ -762,7 +733,7 @@ void CVDoRedo(CharView *cv) {
 return;
     cv->layerheads[cv->drawmode]->redoes = undo->next;
     undo->next = NULL;
-    SCUndoAct(cv->sc,cv->drawmode,undo);
+    SCUndoAct(cv->sc,CVLayer(cv),undo);
     undo->next = cv->layerheads[cv->drawmode]->undoes;
     cv->layerheads[cv->drawmode]->undoes = undo;
     CVCharChangedUpdate(cv);
@@ -773,16 +744,11 @@ return;
 void SCDoUndo(SplineChar *sc,int layer) {
     Undoes *undo = sc->layers[layer].undoes;
 
-    if ( layer!=ly_fore && layer!=ly_back ) {
-	GDrawIError( "Unsupported layer in SCDoUndo");
-return;
-    }
-
     if ( undo==NULL )		/* Shouldn't happen */
 return;
     sc->layers[layer].undoes = undo->next;
     undo->next = NULL;
-    SCUndoAct(sc,layer==ly_fore?dm_fore:dm_back,undo);
+    SCUndoAct(sc,layer,undo);
     undo->next = sc->layers[layer].redoes;
     sc->layers[layer].redoes = undo;
     _SCCharChangedUpdate(sc,undo->was_modified);
@@ -792,16 +758,11 @@ return;
 void SCDoRedo(SplineChar *sc, int layer) {
     Undoes *undo = sc->layers[layer].redoes;
 
-    if ( layer!=ly_fore && layer!=ly_back ) {
-	GDrawIError( "Unsupported layer in SCDoRedo");
-return;
-    }
-
     if ( undo==NULL )		/* Shouldn't happen */
 return;
     sc->layers[layer].redoes = undo->next;
     undo->next = NULL;
-    SCUndoAct(sc,layer==ly_fore?dm_fore:dm_back,undo);
+    SCUndoAct(sc,layer,undo);
     undo->next = sc->layers[layer].undoes;
     sc->layers[layer].undoes = undo;
     SCCharChangedUpdate(sc);
@@ -1327,7 +1288,7 @@ static Undoes *SCCopyAll(SplineChar *sc,int full) {
 	if ( full ) {
 	    cur->undotype = copymetadata ? ut_statename : ut_statehint;
 	    cur->u.state.splines = SplinePointListCopy(sc->layers[ly_fore].splines);
-	    cur->u.state.refs = RefCharsCopyState(sc);
+	    cur->u.state.refs = RefCharsCopyState(sc,ly_fore);
 	    cur->u.state.anchor = AnchorPointsCopy(sc->anchor);
 	    cur->u.state.u.hints = UHintCopy(sc,true);
 	    cur->u.state.unicodeenc = sc->unicodeenc;
@@ -1468,7 +1429,7 @@ static void PasteNonExistantRefCheck(SplineChar *sc,Undoes *paster,RefChar *ref,
     }
 }
 
-static void SCCheckXClipboard(GWindow awindow,SplineChar *sc,enum drawmode dm,int doclear) {
+static void SCCheckXClipboard(GWindow awindow,SplineChar *sc,int layer,int doclear) {
     int type, len;
     char *paste;
     FILE *temp;
@@ -1500,7 +1461,7 @@ return;
 	fwrite(paste,1,len,temp);
 	rewind(temp);
 	if ( type==3 ) {
-	    SCImportPSFile(sc,dm,temp,doclear);
+	    SCImportPSFile(sc,layer,temp,doclear);
 	} else {
 #ifndef _NO_LIBPNG
 	    if ( type==1 )
@@ -1508,7 +1469,7 @@ return;
 	    else
 #endif
 		image = GImageRead_Bmp(temp);
-	    SCAddScaleImage(sc,image,doclear);
+	    SCAddScaleImage(sc,image,doclear,layer);
 	}
 	fclose(temp);
     }

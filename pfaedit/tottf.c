@@ -4036,6 +4036,9 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
     SplineFont *sf = _sf;
     SplineChar *sc, notdef, nonmarkingreturn;
     int alreadyprivate = false;
+#ifdef PFAEDIT_CONFIG_TYPE3
+    Layer layers[2];
+#endif
 
     if ( sf->subfontcnt==0 && format!=ff_ttfsym) {
 	for ( i=sf->charcnt-1; i>0 ; --i )
@@ -4051,12 +4054,19 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
 	}
     }
 
+#ifdef PFAEDIT_CONFIG_TYPE3
+    memset(layers,0,sizeof(layers));
+#endif
     if ( sf->subfontcnt==0 && sf->chars[0]==NULL ) {	/* Encode the default notdef char at 0 */
 	memset(&notdef,0,sizeof(notdef));
 	notdef.unicodeenc = -1;
 	notdef.name = ".notdef";
 	notdef.parent = sf;
 	sf->chars[0] = &notdef;
+	notdef.layer_cnt = 2;
+#ifdef PFAEDIT_CONFIG_TYPE3
+	notdef.layers = layers;
+#endif
     }
     if ( sf->subfontcnt==0 && sf->chars[13]==NULL && !at->isotf ) {	/* Encode the default notdef char at 0 */
 	memset(&nonmarkingreturn,0,sizeof(notdef));
@@ -4064,6 +4074,10 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
 	nonmarkingreturn.name = "nonmarkingreturn";
 	nonmarkingreturn.parent = sf;
 	nonmarkingreturn.ttf_glyph = 2;
+	nonmarkingreturn.layer_cnt = 2;
+#ifdef PFAEDIT_CONFIG_TYPE3
+	nonmarkingreturn.layers = layers;
+#endif
 	sf->chars[13] = &nonmarkingreturn;
     }
 

@@ -34,6 +34,7 @@
 #include <ustring.h>
 #include <unistd.h>
 #include <pwd.h>
+#include "sd.h"
 
 /* ************************************************************************** */
 /* ****************************    SVG Output    **************************** */
@@ -218,33 +219,71 @@ return( lineout );
 }
 
 #ifdef PFAEDIT_CONFIG_TYPE3
-static void svg_dumpstroke(FILE *file, struct pen *pen) {
+static void svg_dumpstroke(FILE *file, struct pen *cpen, struct pen *fallback) {
     static char *joins[] = { "miter", "round", "bevel", "inherit", NULL };
     static char *caps[] = { "butt", "round", "square", "inherit", NULL };
+    struct pen pen;
 
-    if ( pen->brush.col!=COLOR_INHERITED )
+    pen = *cpen;
+    if ( fallback!=NULL ) {
+	if ( pen.brush.col == COLOR_INHERITED ) pen.brush.col = fallback->brush.col;
+	if ( pen.brush.opacity <0 ) pen.brush.opacity = fallback->brush.opacity;
+	if ( pen.width == WIDTH_INHERITED ) pen.width = fallback->width;
+	if ( pen.linecap == lc_inherited ) pen.linecap = fallback->linecap;
+	if ( pen.linejoin == lj_inherited ) pen.linejoin = fallback->linejoin;
+    }
+
+    if ( pen.brush.col!=COLOR_INHERITED )
 	fprintf( file, "stroke=\"#%02x%02x%02x\" ",
-		COLOR_RED(pen->brush.col), COLOR_GREEN(pen->brush.col), COLOR_BLUE(pen->brush.col));
+		COLOR_RED(pen.brush.col), COLOR_GREEN(pen.brush.col), COLOR_BLUE(pen.brush.col));
     else
 	fprintf( file, "stroke=\"currentColor\" " );
-    if ( pen->brush.opacity>=0 )
-	fprintf( file, "stroke-opacity=\"%g\" ", pen->brush.opacity);
-    if ( pen->width!=WIDTH_INHERITED )
-	fprintf( file, "stroke-width=\"%d\" ", pen->width );
-    if ( pen->linecap!=lc_inherited )
-	fprintf( file, "stroke-linecap=\"%s\" ", caps[pen->linecap] );
-    if ( pen->linejoin!=lc_inherited )
-	fprintf( file, "stroke-linejoin=\"%s\" ", joins[pen->linejoin] );
+    if ( pen.brush.opacity>=0 )
+	fprintf( file, "stroke-opacity=\"%g\" ", pen.brush.opacity);
+    if ( pen.width!=WIDTH_INHERITED )
+	fprintf( file, "stroke-width=\"%g\" ", pen.width );
+    if ( pen.linecap!=lc_inherited )
+	fprintf( file, "stroke-linecap=\"%s\" ", caps[pen.linecap] );
+    if ( pen.linejoin!=lc_inherited )
+	fprintf( file, "stroke-linejoin=\"%s\" ", joins[pen.linejoin] );
+/* the current transformation matrix will not affect the fill, but it will */
+/*  affect the way stroke looks. So we must include it here. BUT the spline */
+/*  set has already been transformed, so we must apply the inverse transform */
+/*  to the splineset before outputting it, so that applying the transform */
+/*  will give us the splines we desire. */
+    if ( pen.trans[0]!=1.0 || pen.trans[3]!=1.0 || pen.trans[1]!=0 || pen.trans[2]!=0 )
+	fprintf( file, "transform=\"matrix(%g, %g, %g, %g, 0, 0)\" ",
+		pen.trans[0], pen.trans[1], pen.trans[2], pen.trans[3] );
 }
 
-static void svg_dumpfill(FILE *file, struct brush *brush) {
-    if ( brush->col!=COLOR_INHERITED )
+static void svg_dumpfill(FILE *file, struct brush *cbrush, struct brush *fallback) {
+    struct brush brush;
+
+    brush = *cbrush;
+    if ( fallback!=NULL ) {
+	if ( brush.col==COLOR_INHERITED ) brush.col = fallback->col;
+	if ( brush.opacity<0 ) brush.opacity = fallback->opacity;
+    }
+
+    if ( brush.col!=COLOR_INHERITED )
 	fprintf( file, "fill=\"#%02x%02x%02x\" ",
-		COLOR_RED(brush->col), COLOR_GREEN(brush->col), COLOR_BLUE(brush->col));
+		COLOR_RED(brush.col), COLOR_GREEN(brush.col), COLOR_BLUE(brush.col));
     else
 	fprintf( file, "fill=\"currentColor\" " );
-    if ( brush->opacity>=0 )
-	fprintf( file, "fill-opacity=\"%g\" ", brush->opacity);
+    if ( brush.opacity>=0 )
+	fprintf( file, "fill-opacity=\"%g\" ", brush.opacity);
+}
+
+static SplineSet *TransBy(SplineSet *ss, real trans[4] ) {
+    real inversetrans[6], transform[6];
+
+    if ( trans[0]==1.0 && trans[3]==1.0 && trans[1]==0 && trans[2]==0 )
+return( ss );
+    memcpy(transform,trans,4*sizeof(real));
+    transform[4] = transform[5] = 0;
+    MatInverse(inversetrans,transform);
+return( SplinePointListTransform(SplinePointListCopy(
+		    ss),inversetrans,true));
 }
 #endif
 
@@ -252,6 +291,7 @@ static void svg_scpathdump(FILE *file, SplineChar *sc) {
     int i,j;
     RefChar *ref;
     int lineout, any;
+    SplineSet *transed;
 
     any = false;
     for ( i=ly_fore; i<sc->layer_cnt && !any; ++i ) {
@@ -276,32 +316,42 @@ static void svg_scpathdump(FILE *file, SplineChar *sc) {
 	putc('>',file);
 #ifdef PFAEDIT_CONFIG_TYPE3
 	for ( i=ly_fore; i<sc->layer_cnt && !any; ++i ) {
-	    fprintf(file, "  <g " );
-	    if ( sc->layers[i].dostroke )
-		svg_dumpstroke(file,&sc->layers[i].stroke_pen);
-	    if ( sc->layers[i].dofill )
-		svg_dumpfill(file,&sc->layers[i].fill_brush);
-	    fprintf( file, ">\n" );
 	    if ( sc->layers[i].splines!=NULL ) {
+		fprintf(file, "  <g " );
+		transed = sc->layers[i].splines;
+		if ( sc->layers[i].dostroke ) {
+		    svg_dumpstroke(file,&sc->layers[i].stroke_pen,NULL);
+		    transed = TransBy(transed,sc->layers[i].stroke_pen.trans);
+		}
+		if ( sc->layers[i].dofill )
+		    svg_dumpfill(file,&sc->layers[i].fill_brush,NULL);
+		fprintf( file, ">\n" );
 		fprintf(file, "  <path d=\"\n");
-		svg_pathdump(file,sc->layers[i].splines,12);
+		svg_pathdump(file,transed,12);
 		fprintf(file, "/>\n" );
+		if ( transed!=sc->layers[i].splines )
+		    SplinePointListsFree(transed);
+		fprintf(file, "  </g>\n" );
 	    }
 	    for ( ref=sc->layers[i].refs ; ref!=NULL && !any; ref = ref->next ) {
 		for ( j=0; j<ref->layer_cnt && !any; ++j ) if ( ref->layers[j].splines!=NULL ) {
 		    fprintf(file, "   <g " );
-		    if ( ref->layers[j].dostroke )
-			svg_dumpstroke(file,&ref->layers[j].stroke_pen);
+		    transed = ref->layers[j].splines;
+		    if ( ref->layers[j].dostroke ) {
+			svg_dumpstroke(file,&ref->layers[j].stroke_pen,&sc->layers[i].stroke_pen);
+			transed = TransBy(transed,ref->layers[j].stroke_pen.trans);
+		    }
 		    if ( ref->layers[j].dofill )
-			svg_dumpfill(file,&ref->layers[j].fill_brush);
+			svg_dumpfill(file,&ref->layers[j].fill_brush,&sc->layers[i].fill_brush);
 		    fprintf( file, ">\n" );
 		    fprintf(file, "  <path d=\"\n");
-		    svg_pathdump(file,ref->layers[j].splines,12);
+		    svg_pathdump(file,transed,12);
 		    fprintf(file, "/>\n" );
+		    if ( transed!=ref->layers[j].splines )
+			SplinePointListsFree(transed);
 		    fprintf(file, "   </g>\n" );
 		}
 	    }
-	    fprintf(file, "  </g>\n" );
 	}
 #endif
 	fputs(" </glyph>\n",file);
@@ -1414,6 +1464,8 @@ return( cur );
 struct svg_state {
     double linewidth;
     int dofill, dostroke;
+    uint32 fillcol, strokecol;
+    float fillopacity, strokeopacity;
     int isvisible;
     enum linecap lc;
     enum linejoin lj;
@@ -1549,12 +1601,102 @@ return;
     }
 }
 
-static SplineSet *_SVGParseSVG(xmlNodePtr svg, xmlNodePtr top,
+static int xmlParseColor(xmlChar *name,uint32 *color) {
+    int doit, i;
+    static struct { char *name; uint32 col; } stdcols[] = {
+	{ "red", 0xff0000 },
+	{ "green", 0x008000 },
+	{ "blue", 0x0000ff },
+	{ "cyan", 0x00ffff },
+	{ "magenta", 0xff00ff },
+	{ "yellow", 0xffff00 },
+	{ "black", 0x000000 },
+	{ "darkgray", 0x404040 },
+	{ "darkgrey", 0x404040 },
+	{ "gray", 0x808080 },
+	{ "grey", 0x808080 },
+	{ "lightgray", 0xc0c0c0 },
+	{ "lightgrey", 0xc0c0c0 },
+	{ "white", 0xffffff },
+	{ "maroon", 0x800000 },
+	{ "olive", 0x808000 },
+	{ "navy", 0x000080 },
+	{ "purple", 0x800080 },
+	{ "lime", 0x00ff00 },
+	{ "aqua", 0x00ffff },
+	{ "teal", 0x008080 },
+	{ "fuchsia", 0xff0080 },
+	{ "silver", 0xc0c0c0 },
+	{ NULL }};
+
+    doit = _xmlStrcmp(name,(xmlChar *) "none")!=0;
+    if ( doit ) {
+	for ( i=0; stdcols[i].name!=NULL; ++i )
+	    if ( _xmlStrcmp(name,(xmlChar *) stdcols[i].name)==0 )
+	break;
+	if ( stdcols[i].name!=NULL )
+	    *color = stdcols[i].col;
+	else if ( _xmlStrcmp(name,(xmlChar *) "currentColor")==0 )
+	    *color = COLOR_INHERITED;
+	else if ( name[0]=='#' ) {
+	    unsigned int temp;
+	    sscanf( (char *) name, "#%x", &temp );
+	    if ( strlen( (char *) name)==4 ) {
+		*color = (((temp&0xf00)*0x11)<<8) |
+			 (((temp&0x0f0)*0x11)<<4) |
+			 (((temp&0x00f)*0x11)   );
+	    } else if ( strlen( (char *) name)==7 ) {
+		*color = temp;
+	    } else
+		*color = COLOR_INHERITED;
+	} else if ( strncmp( (char *) name, "rgb(",4)==0 ) {
+	    float r,g,b;
+	    sscanf((char *)name + 4, "%g,%g,%g", &r, &g, &b );
+	    if ( strchr((char *) name,'.')!=NULL ) {
+		if ( r>=1 ) r = 1; else if ( r<0 ) r=0;
+		if ( g>=1 ) g = 1; else if ( g<0 ) g=0;
+		if ( b>=1 ) b = 1; else if ( b<0 ) b=0;
+		*color = ( ((int) rint(r*255))<<16 ) |
+			 ( ((int) rint(g*255))<<8  ) |
+			 ( ((int) rint(b*255))     );
+	    } else {
+		if ( r>=255 ) r = 255; else if ( r<0 ) r=0;
+		if ( g>=255 ) g = 255; else if ( g<0 ) g=0;
+		if ( b>=255 ) b = 255; else if ( b<0 ) b=0;
+		*color = ( ((int) r)<<16 ) |
+			 ( ((int) g)<<8  ) |
+			 ( ((int) b)     );
+	    }
+	} else {
+	    fprintf( stderr, "Failed to parse color %s\n", (char *) name );
+	    *color = COLOR_INHERITED;
+	}
+    }
+return( doit );
+}
+
+static Entity *EntityCreate(SplinePointList *head,struct svg_state *state) {
+    Entity *ent = gcalloc(1,sizeof(Entity));
+    ent->type = et_splines;
+    ent->u.splines.splines = head;
+    ent->u.splines.cap = state->lc;
+    ent->u.splines.join = state->lj;
+    ent->u.splines.stroke_width = state->linewidth;
+    ent->u.splines.fill.col = state->dofill ? state->fillcol : state->dostroke ? 0xffffffff : COLOR_INHERITED;
+    ent->u.splines.stroke.col = state->dostroke ? state->strokecol : 0xffffffff;
+    ent->u.splines.fill.opacity = state->fillopacity;
+    ent->u.splines.stroke.opacity = state->strokeopacity;
+    memcpy(ent->u.splines.transform,state->transform,6*sizeof(real));
+return( ent );
+}
+
+static Entity *_SVGParseSVG(xmlNodePtr svg, xmlNodePtr top,
 	struct svg_state *inherit) {
     struct svg_state st;
     xmlChar *name;
     xmlNodePtr kid;
-    SplineSet *head, *last, *ret;
+    Entity *ehead, *elast, *eret;
+    SplineSet *head;
     int treat_symbol_as_g = false;
 
     if ( svg==NULL )
@@ -1577,12 +1719,22 @@ return( NULL );
     }
     name = _xmlGetProp(svg,(xmlChar *) "fill");
     if ( name!=NULL ) {
-	st.dofill = _xmlStrcmp(name,(xmlChar *) "none")!=0;
+	st.dofill = xmlParseColor(name,&st.fillcol);
+	_xmlFree(name);
+    }
+    name = _xmlGetProp(svg,(xmlChar *) "fill-opacity");
+    if ( name!=NULL ) {
+	st.strokeopacity = strtod((char *)name,NULL);
 	_xmlFree(name);
     }
     name = _xmlGetProp(svg,(xmlChar *) "stroke");
     if ( name!=NULL ) {
-	st.dostroke = _xmlStrcmp(name,(xmlChar *) "none")!=0;
+	st.dostroke = xmlParseColor(name,&st.strokecol);
+	_xmlFree(name);
+    }
+    name = _xmlGetProp(svg,(xmlChar *) "stroke-opacity");
+    if ( name!=NULL ) {
+	st.strokeopacity = strtod((char *)name,NULL);
 	_xmlFree(name);
     }
     name = _xmlGetProp(svg,(xmlChar *) "stroke-width");
@@ -1613,19 +1765,19 @@ return( NULL );
     if ( (treat_symbol_as_g && _xmlStrcmp(svg->name,(xmlChar *) "symbol")==0) ||
 	    _xmlStrcmp(svg->name,(xmlChar *) "svg")==0 ||
 	    _xmlStrcmp(svg->name,(xmlChar *) "g")==0 ) {
-	head = last = NULL;
+	ehead = elast = NULL;
 	for ( kid = svg->children; kid!=NULL; kid=kid->next ) {
-	    ret = _SVGParseSVG(kid,top,&st);
-	    if ( ret!=NULL ) {
-		if ( last==NULL )
-		    head = ret;
+	    eret = _SVGParseSVG(kid,top,&st);
+	    if ( eret!=NULL ) {
+		if ( elast==NULL )
+		    ehead = eret;
 		else
-		    last->next = ret;
-		while ( ret->next!=NULL ) ret = ret->next;
-		last = ret;
+		    elast->next = eret;
+		while ( eret->next!=NULL ) eret = eret->next;
+		elast = eret;
 	    }
 	}
-return( head );
+return( ehead );
     } else if ( _xmlStrcmp(svg->name,(xmlChar *) "use")==0 ) {
 	name = _xmlGetProp(svg,(xmlChar *) "href");
 	kid = NULL;
@@ -1672,41 +1824,28 @@ return( NULL );
 
     SPLCatagorizePoints(head);
 
-    head = SplinePointListTransform(head,st.transform,true);
-    if ( !st.dostroke )		/* Pretend they asked for a fill even if they didn't */
-return( head );
-
-    { StrokeInfo si;
-	memset(&si,0,sizeof(si));
-	si.radius = st.linewidth/2;
-	si.join = st.lj;
-	si.cap = st.lc;
-	si.stroke_type = si_std;
-	ret = SSStroke(head,&si,NULL);
-	if ( !st.dofill )
-	    SplinePointListsFree(head);
-	else {
-	    for ( last=ret; last->next!=NULL ; last = last->next );
-	    last->next = head;
-	}
-return( ret );
-    }
+return( EntityCreate(SplinePointListTransform(head,st.transform,true),
+	    &st));
 }
 
-static SplineSet *SVGParseSVG(xmlNodePtr svg,int em_size,int ascent) {
+static Entity *SVGParseSVG(xmlNodePtr svg,int em_size,int ascent) {
     struct svg_state st;
     char *num, *end;
     double x,y,swidth,sheight,width=1,height=1;
 
     memset(&st,0,sizeof(st));
-    st.lc = lc_butt;
-    st.lj = lj_miter;
-    st.linewidth = 1;
+    st.lc = lc_inherited;
+    st.lj = lj_inherited;
+    st.linewidth = WIDTH_INHERITED;
+    st.fillcol = COLOR_INHERITED;
+    st.strokecol = COLOR_INHERITED;
     st.isvisible = true;
     st.transform[0] = 1;
     st.transform[3] = -1;	/* The SVG coord system has y increasing down */
     				/*  Font coords have y increasing up */
     st.transform[5] = ascent;
+    st.strokeopacity = st.fillopacity = 1.0;
+
     num = (char *) _xmlGetProp(svg,(xmlChar *) "width");
     if ( num!=NULL ) {
 	width = strtod(num,NULL);
@@ -1737,16 +1876,24 @@ static SplineSet *SVGParseSVG(xmlNodePtr svg,int em_size,int ascent) {
 return( _SVGParseSVG(svg,svg,&st));
 }
 
-static void SVGParseGlyphBody(SplineChar *sc, xmlNodePtr glyph) {
+static void SVGParseGlyphBody(SplineChar *sc, xmlNodePtr glyph,int *flags) {
     xmlChar *path;
 
     path = _xmlGetProp(glyph,(xmlChar *) "d");
     if ( path!=NULL ) {
 	sc->layers[ly_fore].splines = SVGParsePath(path);
 	_xmlFree(path);
-    } else
-	sc->layers[ly_fore].splines = SVGParseSVG(glyph,sc->parent->ascent+sc->parent->descent,
+    } else {
+	Entity *ent = SVGParseSVG(glyph,sc->parent->ascent+sc->parent->descent,
 		sc->parent->ascent);
+#ifdef PFAEDIT_CONFIG_TYPE3
+	sc->layer_cnt = 1;
+	SCAppendEntityLayers(sc,ent);
+	if ( sc->layer_cnt==1 ) ++sc->layer_cnt;
+#else
+	sc->layers[ly_fore].splines = SplinesFromEntities(ent,flags);
+#endif
+    }
 }
 
 static SplineChar *SVGParseGlyphArgs(xmlNodePtr glyph,int defh, int defv) {
@@ -1816,16 +1963,16 @@ static SplineChar *SVGParseGlyphArgs(xmlNodePtr glyph,int defh, int defv) {
 return( sc );
 }
 
-static SplineChar *SVGParseMissing(SplineFont *sf,xmlNodePtr notdef,int defh, int defv, int enc) {
+static SplineChar *SVGParseMissing(SplineFont *sf,xmlNodePtr notdef,int defh, int defv, int enc, int *flags) {
     SplineChar *sc = SVGParseGlyphArgs(notdef,defh,defv);
     sc->parent = sf; sc->enc = enc;
     sc->name = copy(".notdef");
     sc->unicodeenc = 0;
-    SVGParseGlyphBody(sc,notdef);
+    SVGParseGlyphBody(sc,notdef,flags);
 return( sc );
 }
 
-static SplineChar *SVGParseGlyph(SplineFont *sf,xmlNodePtr glyph,int defh, int defv, int enc) {
+static SplineChar *SVGParseGlyph(SplineFont *sf,xmlNodePtr glyph,int defh, int defv, int enc, int *flags) {
     char buffer[40];
     SplineChar *sc = SVGParseGlyphArgs(glyph,defh,defv);
     sc->parent = sf; sc->enc = enc;
@@ -1840,7 +1987,7 @@ static SplineChar *SVGParseGlyph(SplineFont *sf,xmlNodePtr glyph,int defh, int d
 	    sprintf( buffer, "uni%04X", sc->unicodeenc );
 	sc->name = copy(buffer);
     }
-    SVGParseGlyphBody(sc,glyph);
+    SVGParseGlyphBody(sc,glyph,flags);
 return( sc );
 }
 
@@ -2042,7 +2189,7 @@ return;
 }
 
 static SplineFont *SVGParseFont(xmlNodePtr font) {
-    int cnt;
+    int cnt, flags = -1;
     xmlNodePtr kids;
     int defh=0, defv=0;
     xmlChar *name;
@@ -2232,11 +2379,11 @@ return( NULL );
     cnt = 0;
     for ( kids = font->children; kids!=NULL; kids=kids->next ) {
 	if ( _xmlStrcmp(kids->name,(const xmlChar *) "missing-glyph")==0 ) {
-	    sf->chars[cnt] = SVGParseMissing(sf,kids,defh,defv,cnt);
+	    sf->chars[cnt] = SVGParseMissing(sf,kids,defh,defv,cnt,&flags);
 	    cnt++;
 	    GProgressNext();
 	} else if ( _xmlStrcmp(kids->name,(const xmlChar *) "glyph")==0 ) {
-	    sf->chars[cnt] = SVGParseGlyph(sf,kids,defh,defv,cnt);
+	    sf->chars[cnt] = SVGParseGlyph(sf,kids,defh,defv,cnt,&flags);
 	    cnt++;
 	    GProgressNext();
 	}
@@ -2268,6 +2415,18 @@ static int SPLFindOrder(SplineSet *ss) {
 return( s->order2 );
 	}
 	ss = ss->next;
+    }
+return( -1 );    
+}
+
+static int EntFindOrder(Entity *ent) {
+    int ret;
+
+    while ( ent!=NULL ) {
+	ret = SPLFindOrder(ent->u.splines.splines);
+	if ( ret!=-1 )
+return( ret );
+	ent = ent->next;
     }
 return( -1 );    
 }
@@ -2329,11 +2488,19 @@ static void SPLSetOrder(SplineSet *ss,int order2) {
     }
 }
 
+static void EntSetOrder(Entity *ent,int order2) {
+    while ( ent!=NULL ) {
+	SPLSetOrder(ent->u.splines.splines,order2);
+	ent = ent->next;
+    }
+}
+
 static void SFSetOrder(SplineFont *sf,int order2) {
-    int i;
+    int i,j;
 
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	SPLSetOrder(sf->chars[i]->layers[ly_fore].splines,order2);
+	for ( j=ly_fore; j<sf->chars[i]->layer_cnt; ++j )
+	    SPLSetOrder(sf->chars[i]->layers[j].splines,order2);
     }
 }
 
@@ -2441,11 +2608,11 @@ return( NULL );
 return( ret );
 }
 
-SplineSet *SplinePointListInterpretSVG(char *filename,int em_size,int ascent) {
+Entity *EntityInterpretSVG(char *filename,int em_size,int ascent) {
     xmlDocPtr doc;
     xmlNodePtr top;
     char *oldloc;
-    SplineSet *ret;
+    Entity *ret;
     int order2;
 
     if ( !libxml_init_base()) {
@@ -2473,10 +2640,16 @@ return( NULL );
     if ( loaded_fonts_same_as_new )
 	order2 = new_fonts_are_order2;
     else
-	order2 = SPLFindOrder(ret);
+	order2 = EntFindOrder(ret);
     if ( order2==-1 ) order2 = 0;
-    SPLSetOrder(ret,order2);
+    EntSetOrder(ret,order2);
 
 return( ret );
+}
+
+SplineSet *SplinePointListInterpretSVG(char *filename,int em_size,int ascent) {
+    Entity *ret = EntityInterpretSVG(filename, em_size, ascent);
+    int flags = -1;
+return( SplinesFromEntities(ret,&flags));
 }
 #endif

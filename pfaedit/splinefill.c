@@ -438,10 +438,24 @@ void FindEdgesSplineSet(SplinePointList *spl, EdgeList *es) {
 static void FindEdges(SplineChar *sc, EdgeList *es) {
     RefChar *rf;
 
+#ifdef PFAEDIT_CONFIG_TYPE3
+    int i,j;
+
+    for ( j=ly_fore; j<sc->layer_cnt; ++j ) {
+	for ( rf=sc->layers[j].refs; rf!=NULL; rf = rf->next )
+	    for ( i=0; i<rf->layer_cnt; ++i )
+		if ( rf->layers[i].dofill && rf->layers[i].fill_brush.col!=0xffffff )
+		    FindEdgesSplineSet(rf->layers[i].splines,es);
+
+	if ( sc->layers[j].dofill && sc->layers[j].fill_brush.col!=0xffffff )
+	    FindEdgesSplineSet(sc->layers[j].splines,es);
+    }
+#else
     for ( rf=sc->layers[ly_fore].refs; rf!=NULL; rf = rf->next )
 	FindEdgesSplineSet(rf->layers[0].splines,es);
 
     FindEdgesSplineSet(sc->layers[ly_fore].splines,es);
+#endif
 }
 
 Edge *ActiveEdgesInsertNew(EdgeList *es, Edge *active,int i) {

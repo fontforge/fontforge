@@ -669,10 +669,10 @@ extern void CVInfoDraw(CharView *cv, GWindow pixmap );
 enum fvformats { fv_bdf, fv_ttf, fv_pk, fv_pcf, fv_mac, fv_win, fv_image,
 	fv_imgtemplate, fv_eps, fv_epstemplate, fv_svg, fv_svgtemplate,
 	fv_fig };
-extern void SCImportSVG(SplineChar *sc,enum drawmode dm,char *path,int doclear);
-extern void SCImportPSFile(SplineChar *sc,enum drawmode dm,FILE *ps,int doclear);
-extern void SCAddScaleImage(SplineChar *sc,GImage *image,int doclear);
-extern void SCInsertBackImage(SplineChar *sc,GImage *image,real scale,real yoff, real xoff);
+extern void SCImportSVG(SplineChar *sc,int layer,char *path,int doclear);
+extern void SCImportPSFile(SplineChar *sc,int layer,FILE *ps,int doclear);
+extern void SCAddScaleImage(SplineChar *sc,GImage *image,int doclear,int layer);
+extern void SCInsertImage(SplineChar *sc,GImage *image,real scale,real yoff, real xoff, int layer);
 extern void CVImport(CharView *cv);
 extern void BVImport(BitmapView *bv);
 extern void FVImport(FontView *bv);
@@ -754,6 +754,7 @@ extern void LogoExpose(GWindow pixmap,GEvent *event, GRect *r,enum drawmode dm);
 
 extern int GotoChar(SplineFont *sf);
 
+extern int CVLayer(CharView *cv);
 extern Undoes *CVPreserveState(CharView *cv);
 extern Undoes *CVPreserveTState(CharView *cv);
 extern Undoes *CVPreserveWidth(CharView *cv,int width);

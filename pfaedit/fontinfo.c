@@ -4006,11 +4006,16 @@ return(true);
 return( true );
 	if ( order2!=sf->order2 && !SFCloseAllInstrs(sf))
 return( true );
-	if ( multilayer!=sf->multilayer )
+	if ( multilayer!=sf->multilayer ) {
 	    sf->multilayer = multilayer;
+	    if ( !multilayer )
+		SFSplinesFromLayers(sf);
+	    else
+		SFReinstanciateRefs(sf);
 	    /* I think the layer panes should take care of themselves */
 	    /*  since the focus must be in this dlg, there shouldn't be any */
 	    /*  visible */
+	}
 	TTF_PSDupsChanged(gw,sf,d->names_set ? d->names : sf->names);
 	GDrawSetCursor(gw,ct_watch);
 	namechange = SetFontName(gw,sf);
