@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 15-Jul-2002 -->
+  <!-- AP: Last modified: 21-Jul-2002 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -83,8 +83,8 @@ let me know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-020715.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 15-July-2002
+    <A HREF="pfaedit-020721.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 21-July-2002
   <LI>
     <A HREF="pfaedit-020709-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
     Version: 9-July-2002 (Redhat 7.1)
@@ -121,9 +121,9 @@ If you want to edit CID keyed fonts you probably need these
 <P>
 You can download a <A HREF="pfaedit-020709-1.src.rpm">source RPM</A>: Version:
 9-July-2002<BR>
-Or you can download the <A HREF="pfaedit_full-020715.tgz">entire source tree
+Or you can download the <A HREF="pfaedit_full-020721.tgz">entire source tree
 </A>in one .tgz file: Version
-15-July-2002<!--
+21-July-2002<!--
 Or you can download the following three packages. Version: 19-Jan-2002
 <UL>
 <LI>
@@ -283,6 +283,39 @@ current)
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    21-July-2002
+    <UL>
+      <LI>
+	Various small bugs in build accented characters
+      <LI>
+	On the mac the filenames for mac resource fonts are different from same fonts
+	elsewhere (elsewhere they have an additional ".bin"). Made either extension
+	work from a script file (so they can work cross platform).
+      <LI>
+	Expand Stroke had problems with curved splines where the slope at one of
+	the end-points was 0/0. Since this will happen by default when joining a
+	corner point to a curved point this should have been a frequent occurance.
+      <LI>
+	Bug in generating 'post' table if glyph 0 existed but was not .notdef.
+      <LI>
+	Postscript fonts with one glyph going to multiple encodings cause problems.
+      <LI>
+	Now both PS and TTF load will have consistant names in the above case.
+      <LI>
+	My presumption of how symbol encodings were stored under MicroSoft was wrong.
+	It is not a one byte encoding, it is a map into the private/corporate use
+	area of unicode. 0xf000-0xf0ff. Changed to deal with that.
+      <LI>
+	Loading a font with mac roman encoding often generated a font of 65536 characters
+	(rather than 256+a few extras). Fixed.
+      <LI>
+	New version of autowidth/kern. I don't think it kerns serifed fonts well,
+	might do ok for sans.
+      <LI>
+	Ability to provide autokern with a list of potential kern pairs and have
+	it just check them.
+    </UL>
   <LI>
     15-July-2002
     <UL>
@@ -947,6 +980,10 @@ now placed in graceful retirement by MacroMedia.
   <LI>
     <A HREF="http://www.bitstream.com/categories/developer/truedoc/pfrspec.html">OpenDoc</A>.
     Sadly Proprietary so I shan't support it.
+  <LI>
+    <A HREF="http://www.pinknoise.demon.co.uk/Docs/Arc/Fonts/Formats.html">Acorn
+    RISC OS font format</A> (these fonts are often zipped up with a non-standard
+    zip).
 </UL>
 <P>
 Other font links

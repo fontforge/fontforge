@@ -72,7 +72,6 @@ Autokern has similar ideas, but is simpler:
 
 struct charone {
     real lbearing, rmax;
-    real lstemmin, rstemmax;
     real newl, newr;
     SplineChar *sc;
     int base, top;		/* bottom of character, number of decimation zones we've got */
@@ -94,6 +93,7 @@ typedef struct widthinfo {
     real spacing;		/* desired spacing between letters */
     real decimation;
     real serifsize;
+    real seriflength;
     real caph;
     real descent;
     real xheight;
@@ -206,7 +206,7 @@ return( (max+sum/cnt)/2-left->rmax );
 
 static void FigureLR(WidthInfo *wi) {
     int i;
-    real sum, subsum, subsum_left_I, subsum_right_I, spacing, local_spacing;
+    real sum, subsum, subsum_left_I, subsum_right_I, spacing;
     struct charone *ch;
     struct charpair *cp;
 
@@ -238,8 +238,7 @@ static void FigureLR(WidthInfo *wi) {
 	for ( cp = ch->asleft; cp!=NULL; cp = cp->nextasleft )
 	    subsum += cp->visual;
 	subsum /= wi->rcnt;
-	local_spacing = spacing - (ch->rmax-ch->rstemmax) - (ch->lstemmin - ch->lbearing);
-	ch->newr = rint( local_spacing*2/3.0 + sum-subsum );
+	ch->newr = rint( spacing*2/3.0 + sum-subsum );
     }
     for ( i=0; i<wi->real_rcnt; ++i ) {
 	ch = wi->right[i];
@@ -247,8 +246,7 @@ static void FigureLR(WidthInfo *wi) {
 	for ( cp = ch->asright; cp!=NULL; cp = cp->nextasright )
 	    subsum += cp->visual;
 	subsum /= wi->lcnt;
-	local_spacing = spacing - (ch->rmax-ch->rstemmax) - (ch->lstemmin - ch->lbearing);
-	ch->newl = rint( local_spacing/3.0+ sum-subsum );
+	ch->newl = rint( spacing/3.0+ sum-subsum );
     }
 }
 
@@ -513,7 +511,6 @@ static void SCFindEdges(struct charone *ch,WidthInfo *wi) {
     for ( ref=ch->sc->refs; ref!=NULL; ref=ref->next )
 	SSFindEdges(ref->splines,ch,wi);
     ch->lbearing = ch->rmax = NOTREACHED;
-    ch->lstemmin = ch->rstemmax = NOTREACHED;
     for ( i=0; i<=ch->top-ch->base; ++i ) {
 	if ( ch->ledge[i]!=NOTREACHED )
 	    if ( ch->lbearing==NOTREACHED || ch->ledge[i]<ch->lbearing )
@@ -521,17 +518,6 @@ static void SCFindEdges(struct charone *ch,WidthInfo *wi) {
 	if ( ch->redge[i]!=NOTREACHED )
 	    if ( ch->rmax==NOTREACHED || ch->redge[i]>ch->rmax )
 		ch->rmax = ch->redge[i];
-	if ( (i<wi->serifs[0][0] || i>wi->serifs[0][1]) &&
-		(i<wi->serifs[1][0] || i>wi->serifs[1][1]) &&
-		(i<wi->serifs[2][0] || i>wi->serifs[2][1]) &&
-		(i<wi->serifs[3][0] || i>wi->serifs[3][1]) ) {
-	    if ( ch->ledge[i]!=NOTREACHED )
-		if ( ch->lstemmin==NOTREACHED || ch->ledge[i]<ch->lstemmin )
-		    ch->lstemmin = ch->ledge[i];
-	    if ( ch->redge[i]!=NOTREACHED )
-		if ( ch->rstemmax==NOTREACHED || ch->redge[i]>ch->rstemmax )
-		    ch->rstemmax = ch->redge[i];
-	}
     }
 }
 
@@ -543,7 +529,7 @@ static void SCFindEdges(struct charone *ch,WidthInfo *wi) {
 /*  middle of "z". But that looks really bad. Instead we need a fudge zone */
 /*  that extends around every point on the edge */
 static void PairFindDistance(struct charpair *cp,WidthInfo *wi) {
-    int i,j;
+    int i,j, wasserif, wasseriff;
     real sum, cnt, min, fudge, minf, temp;
     struct charone *left=cp->left, *right=cp->right;
     int fudgerange = rint(wi->caph/(20*wi->decimation) );
@@ -555,32 +541,35 @@ static void PairFindDistance(struct charpair *cp,WidthInfo *wi) {
     else
 	cp->distances = galloc((cp->top-cp->base+1)*sizeof(short));
 
-    min = NOTREACHED;
+    min = NOTREACHED; wasserif = false;
     for ( i=cp->base; i<=cp->top; ++i ) {
 	cp->distances[i-cp->base] = NOTREACHED;
 	if ( i>=left->base && i<=left->top &&
-		left->redge[i-left->base]!=NOTREACHED &&
-		(i<wi->serifs[0][0] || i>wi->serifs[0][1]) &&
-		(i<wi->serifs[1][0] || i>wi->serifs[1][1]) &&
-		(i<wi->serifs[2][0] || i>wi->serifs[2][1]) &&
-		(i<wi->serifs[3][0] || i>wi->serifs[3][1]) ) {
-	    minf = NOTREACHED;
+		left->redge[i-left->base]!=NOTREACHED ) {
+	    minf = NOTREACHED; wasseriff = false;
 	    for ( j=i-fudgerange ; j<=i+fudgerange; ++j ) {
 		if ( j>=right->base && j<=right->top &&
-			right->ledge[j-right->base]!=NOTREACHED &&
-			(j<wi->serifs[0][0] || j>wi->serifs[0][1]) &&
-			(j<wi->serifs[1][0] || j>wi->serifs[1][1]) &&
-			(j<wi->serifs[2][0] || j>wi->serifs[2][1]) &&
-			(j<wi->serifs[3][0] || j>wi->serifs[3][1]) ) {
+			right->ledge[j-right->base]!=NOTREACHED ) {
 		    temp = right->ledge[j-right->base]-right->lbearing +
 			    left->rmax-left->redge[i-left->base];
-		    if ( minf==NOTREACHED || temp<minf )
+		    if ( minf==NOTREACHED || temp<minf ) {
 			minf = temp;
+			wasseriff = ((i<wi->serifs[0][0] || i>wi->serifs[0][1]) &&
+				(i<wi->serifs[1][0] || i>wi->serifs[1][1]) &&
+				(i<wi->serifs[2][0] || i>wi->serifs[2][1]) &&
+				(i<wi->serifs[3][0] || i>wi->serifs[3][1]) &&
+				(j<wi->serifs[0][0] || j>wi->serifs[0][1]) &&
+				(j<wi->serifs[1][0] || j>wi->serifs[1][1]) &&
+				(j<wi->serifs[2][0] || j>wi->serifs[2][1]) &&
+				(j<wi->serifs[3][0] || j>wi->serifs[3][1]));
+		    }
 		}
 	    }
 	    cp->distances[i-cp->base] = minf;
-	    if ( minf!=NOTREACHED && ( min==NOTREACHED || min>minf ))
+	    if ( minf!=NOTREACHED && ( min==NOTREACHED || min>minf )) {
 		min = minf;
+		wasserif = wasseriff;
+	    }
 	}
     }
 
@@ -591,11 +580,7 @@ static void PairFindDistance(struct charpair *cp,WidthInfo *wi) {
 	sum = cnt = 0;
 	for ( i=cp->base; i<=cp->top; ++i ) {
 	    if ( cp->distances[i-cp->base]!=NOTREACHED &&
-		    cp->distances[i-cp->base]<=min+fudge &&
-		    (i<wi->serifs[0][0] || i>wi->serifs[0][1]) &&
-		    (i<wi->serifs[1][0] || i>wi->serifs[1][1]) &&
-		    (i<wi->serifs[2][0] || i>wi->serifs[2][1]) &&
-		    (i<wi->serifs[3][0] || i>wi->serifs[3][1]) ) {
+		    cp->distances[i-cp->base]<=min+fudge ) {
 		++cnt;
 		sum += cp->distances[i-cp->base];
 	    }
@@ -604,6 +589,8 @@ static void PairFindDistance(struct charpair *cp,WidthInfo *wi) {
 	    cp->visual = min;		/* Can't happen */
 	else
 	    cp->visual = (min+sum/cnt)/2;
+	if ( wasserif )
+	    cp->visual -= fudge;
     }
 }
 
@@ -611,7 +598,7 @@ static void FindFontParameters(WidthInfo *wi) {
     DBounds bb;
     SplineFont *sf=wi->sf;
     int i, j, si=-1;
-    real caph, ds, xh, serifsize, angle, ca;
+    real caph, ds, xh, serifsize, angle, ca, seriflength = 0;
     int cnt;
     static unichar_t caps[] = { 'A', 'Z', 0x391, 0x3a9, 0x40f, 0x418, 0x41a, 0x42f, 0 };
 #if 0
@@ -675,6 +662,7 @@ static void FindFontParameters(WidthInfo *wi) {
 	ytop = caph/2; ybottom=0;
 	stemx = SCFindMinXAtY(sf->chars[si],ytop);
 	if ( topx==bottomx ) {
+	    ca = 0;
 	    while ( ytop-ybottom>=.5 ) {
 		y = (ytop+ybottom)/2;
 		testx = SCFindMinXAtY(sf->chars[si],y);
@@ -697,18 +685,27 @@ static void FindFontParameters(WidthInfo *wi) {
 		    ybottom = y;
 	    }
 	}
-	if ( ytop>caph/4 )
-	    serifsize = .08*(sf->ascent+sf->descent);
+	if ( ytop<=.5 )
+	    serifsize = 0;
+	else if ( ytop>caph/4 )
+	    serifsize = .06*(sf->ascent+sf->descent);
 	else
 	    serifsize = ytop;
+
+	if ( serifsize!=0 ) {
+	    y = serifsize/4;
+	    testx = SCFindMinXAtY(sf->chars[si],y)+ (yorig-y)*ca;
+	    seriflength = stemx-testx;
+	}
     } else
-	serifsize = .08*(sf->ascent+sf->descent);
+	serifsize = .06*(sf->ascent+sf->descent);
     serifsize = rint(serifsize);
 
     wi->caph = caph;
     wi->descent = ds;
     wi->xheight = xh;
     wi->serifsize = serifsize;
+    wi->seriflength = seriflength;
     wi->decimation = caph<=1?10:caph/60;
 
     if ( serifsize==0 ) {
