@@ -1251,6 +1251,7 @@ extern void BCRotateCharForVert(BDFChar *bc,BDFChar *from, BDFFont *frombdf);
 extern BDFChar *SplineCharRasterize(SplineChar *sc, double pixelsize);
 extern BDFFont *SplineFontToBDFHeader(SplineFont *_sf, int pixelsize, int indicate);
 extern BDFFont *SplineFontRasterize(SplineFont *sf, int pixelsize, int indicate);
+extern void BDFCAntiAlias(BDFChar *bc, int linear_scale);
 extern BDFChar *SplineCharAntiAlias(SplineChar *sc, int pixelsize,int linear_scale);
 extern BDFFont *SplineFontAntiAlias(SplineFont *sf, int pixelsize,int linear_scale);
 extern struct clut *_BDFClut(int linear_scale);
