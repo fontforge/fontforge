@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 3-Jun-2002 -->
+  <!-- AP: Last modified: 4-Aug-2002 -->
   <TITLE>Frequently Asked Questions</TITLE>
 </HEAD>
 <BODY>
@@ -70,11 +70,17 @@
     a new font. The new font doesn't look anywhere near as nice as the original
     even for characters I didn't change. Why?</A>
   <LI>
+    <A HREF="#mingliu">I looked at kaiu.ttf or mingliu.ttf and the outlines looked
+    nothing like the correct characters. What's wrong?</A>
+  <LI>
     <A HREF="#greek-accents">When I use Element-&gt;Build Accented Character
     to build one of the Extended Greek characters (U+1F00-U+1FFF) PfaEdit picks
     the wrong accents. Why?</A>
   <LI>
     <A HREF="#ttf2afm">Why does ttf2afm crash on PfaEdit ttf files?</A>
+  <LI>
+    <A HREF="index.html#known-bugs">Where can I find a list of known bugs in
+    PfaEdit?</A>
 </UL>
 <P>
   <HR>
@@ -571,6 +577,15 @@ $ xset fp+ `pwd`
     those stems hinted) by AutoHinting the entire font and then clearing the
     hints of the entire font.
   <DT>
+    <A NAME="mingliu"><B>I looked at kaiu.ttf or mingliu.ttf and the outlines
+    looked nothing like the correct characters. What's wrong?</B></A>
+  <DD>
+    Some truetype fonts (kaiu and mingliu) do not store the correct outline.
+    Instead they rely on using the instructions to move points around to generate
+    the outline. The outline does not appear to be grid-fit at all, just positioned.
+    PfaEdit will not read the instructions. In most fonts this would be the wrong
+    thing to do, and I don't know how I could tell when it needs to be done...
+  <DT>
     <A NAME="greek-accents"><B>When I use Element-&gt;Build Accented Character
     to build one of the Extended Greek characters (U+1F00-U+1FFF) PfaEdit picks
     the wrong accents. Why?</B></A>
@@ -588,8 +603,7 @@ $ xset fp+ `pwd`
     does crash. When I downloaded the source from
     <A HREF="http://www.ctan.org/tex-archive/obsolete/systems/pdftex/">pdftex</A>
     area of ctan and built it (with debug) the resultant program did not crash.
-    Therefore I believe this is a bug in ttf2afm and that bug has been
-    fixed.<BR>
+    Therefore I believe this is a bug in ttf2afm and that bug has been fixed.<BR>
     The afm files produced by ttf2afm don't conform to
     <A HREF="http://partners.adobe.com/asn/developer/PDFS/TN/5004.AFM_Spec.pdf">Adobe's
     specifications</A>.

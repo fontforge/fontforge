@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 3-Aug-2002 -->
+  <!-- AP: Last modified: 4-Aug-2002 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -85,8 +85,8 @@ let me know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-020803.tgz">Download pfaedit linux-i386 Redhat 7.3
-    </A><A NAME="downloads">executable</A> Version: 3-August-2002
+    <A HREF="pfaedit-020804.tgz">Download pfaedit linux-i386 Redhat 7.3
+    </A><A NAME="downloads">executable</A> Version: 4-August-2002
   <LI>
     <A HREF="pfaedit-020709-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
     Version: 9-July-2002 (Redhat 7.1)
@@ -95,7 +95,7 @@ let me know when you do</A>.
     </A>binary rpm Version: 22-June-2002
   <LI>
     <A HREF="pfaedit-solaris-020803.tgz">Download pfaedit Solaris 8.0
-    </A>executable Version: 3-August-2002
+    </A>executable Version: 3-August-2002 (no XIM support)
   <LI>
     <A HREF="http://packages.debian.org/unstable/x11/pfaedit.html">A debian package
     is available at the debian site.</A>
@@ -123,9 +123,9 @@ If you want to edit CID keyed fonts you probably need these
 <P>
 You can download a <A HREF="pfaedit-020709-1.src.rpm">source RPM</A>: Version:
 9-July-2002<BR>
-Or you can download the <A HREF="pfaedit_full-020803.tgz">entire source tree
+Or you can download the <A HREF="pfaedit_full-020804.tgz">entire source tree
 </A>in one .tgz file: Version
-3-August-2002<!--
+4-August-2002<!--
 Or you can download the following three packages. Version: 19-Jan-2002
 <UL>
 <LI>
@@ -285,6 +285,18 @@ current)
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    4-Aug-2002
+    <UL>
+      <LI>
+	Yesterday's resize fix didn't quite work
+      <LI>
+	Try to improve conversion of cubic to quadratic spline (actually, we make
+	the conversion worse, but it probably helps rasterizers not to have points
+	quite so close together).
+      <LI>
+	Some more work on the TTF style name
+    </UL>
   <LI>
     3-Aug-2002
     <UL>
