@@ -1394,6 +1394,17 @@ static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
 	for ( cnt=3; i<sf->charcnt; ++i )
 	    if ( SCWorthOutputting(sf->chars[i]) && sf->chars[i]==SCDuplicate(sf->chars[i]))
 		sf->chars[i]->ttf_glyph = cnt++;
+	if ( sf->order2 )
+	    for ( i=0; i<sf->charcnt; ++i ) {
+		SplineChar *sc = sf->chars[i];
+		if ( SCWorthOutputting(sc) && sc==SCDuplicate(sc))
+		    if ( !SCPointsNumberedProperly(sc)) {
+			free(sc->ttf_instrs); sc->ttf_instrs = NULL;
+			sc->ttf_instrs_len = 0;
+			SCMarkInstrDlgAsChanged(sc);
+			SCNumberPoints(sc);
+		    }
+	    }
     }
 
     gi->maxp->numGlyphs = cnt;

@@ -1524,6 +1524,7 @@ extern void AnchorPosFree(AnchorPos *apos);
 extern int SFCloseAllInstrs(SplineFont *sf);
 extern void SCMarkInstrDlgAsChanged(SplineChar *sc);
 extern int  SCNumberPoints(SplineChar *sc);
+extern int  SCPointsNumberedProperly(SplineChar *sc);
 
 int SFFigureDefWidth(SplineFont *sf, int *_nomwid);
 
