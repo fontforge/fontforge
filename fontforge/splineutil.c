@@ -1532,7 +1532,7 @@ static void SplineFontMetaData(SplineFont *sf,struct fontdict *fd) {
     sf->display_size = -default_fv_font_size;
     sf->display_antialias = default_fv_antialias;
     if ( fd->fontinfo!=NULL ) {
-	if ( sf->fontname==NULL && fd->fontinfo->fullname!=NULL ) { char *from, *to;
+	if ( sf->fontname==NULL && fd->fontinfo->fullname!=NULL ) {
 	    sf->fontname = EnforcePostScriptName(fd->fontinfo->fullname);
 	}
 	if ( sf->fontname==NULL ) sf->fontname = EnforcePostScriptName(fd->fontinfo->familyname);
