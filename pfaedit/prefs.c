@@ -63,6 +63,10 @@ extern int oldbitmapstate;		/* in savefontdlg.c */
 extern int oldpsstate;			/* in savefontdlg.c */
 extern int oldttfhintstate;		/* in savefontdlg.c */
 extern int oldsystem;			/* in bitmapdlg.c */
+extern int autotrace_ask;		/* in autotrace.c */
+extern int mf_ask;			/* in autotrace.c */
+extern int mf_clearbackgrounds;		/* in autotrace.c */
+extern char *mf_args;			/* in autotrace.c */
 unichar_t *script_menu_names[SCRIPT_MENU_MAX];
 char *script_filenames[SCRIPT_MENU_MAX];
 
@@ -126,6 +130,14 @@ static struct prefs_list {
 	{ "SnapDistance", pr_real, &snapdistance, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupSD },
 	{ NULL }
 },
+ args_list[] = {
+	{ "AutotraceArgs", pr_string, NULL, GetAutoTraceArgs, SetAutoTraceArgs, '\0', NULL, 0, _STR_PrefsPopupATA },
+	{ "AutotraceAsk", pr_bool, &autotrace_ask, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupATK },
+	{ "MfArgs", pr_string, &mf_args, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupMFA },
+	{ "MfAsk", pr_bool, &mf_ask, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupMFK },
+	{ "MfClearBg", pr_bool, &mf_clearbackgrounds, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupMFB },
+	{ NULL }
+},
  generate_list[] = {
 	{ "FoundryName", pr_string, &BDFFoundry, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupFN },
 	{ "TTFFoundry", pr_string, &TTFFoundry, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupTFN },
@@ -151,18 +163,18 @@ static struct prefs_list {
 	{ "PageHeight", pr_int, &pageheight, NULL, NULL, '\0', NULL, 1 },
 	{ "PrintType", pr_int, &printtype, NULL, NULL, '\0', NULL, 1 },
 	{ "PrintCommand", pr_string, &printcommand, NULL, NULL, '\0', NULL, 1 },
-	{ "AutotraceArgs", pr_string, NULL, GetAutoTraceArgs, SetAutoTraceArgs, '\0', NULL, 1 },
 	{ NULL }
 },
  oldnames[] = {
 	{ "LocalCharset", pr_encoding, &local_encoding, NULL, NULL, 'L', NULL, 0, _STR_PrefsPopupLoc },
 	{ NULL }
 },
- *prefs_list[] = { general_list, generate_list, hidden_list, NULL },
- *load_prefs_list[] = { general_list, generate_list, hidden_list, oldnames, NULL };
+ *prefs_list[] = { general_list, args_list, generate_list, hidden_list, NULL },
+ *load_prefs_list[] = { general_list, args_list, generate_list, hidden_list, oldnames, NULL };
 
 struct visible_prefs_list { int tab_name; struct prefs_list *pl; } visible_prefs_list[] = {
     { _STR_Generic, general_list},
+    { _STR_PrefsArgs, args_list},
     { _STR_PrefsFontInfo, generate_list},
     { 0 }
  };
@@ -575,10 +587,16 @@ return( true );
 	      break;
 	      case pr_string:
 	        ret = _GGadgetGetTitle(GWidgetGetControl(gw,j*1000+1000+i));
-		free( *((char **) (pl->val)) );
-		*((char **) (pl->val)) = NULL;
-		if ( ret!=NULL && *ret!='\0' )
-		    *((char **) (pl->val)) = /* u2def_*/ cu_copy(ret);
+		if ( pl->val!=NULL ) {
+		    free( *((char **) (pl->val)) );
+		    *((char **) (pl->val)) = NULL;
+		    if ( ret!=NULL && *ret!='\0' )
+			*((char **) (pl->val)) = /* u2def_*/ cu_copy(ret);
+		} else {
+		    char *cret = cu_copy(ret);
+		    (pl->set)(cret);
+		    free(cret);
+		}
 	      break;
 	    }
 	}
@@ -627,13 +645,15 @@ void DoPrefs(void) {
     int gcnt[20];
     static unichar_t nullstr[] = { 0 };
     struct prefs_list *pl;
+    char *tempstr;
 
+    MfArgsInit();
     for ( k=line_max=0; visible_prefs_list[k].tab_name!=0; ++k ) {
-	for ( i=line=gcnt[k]=0; prefs_list[k][i].name!=NULL; ++i ) {
-	    if ( prefs_list[k][i].dontdisplay )
+	for ( i=line=gcnt[k]=0; visible_prefs_list[k].pl[i].name!=NULL; ++i ) {
+	    if ( visible_prefs_list[k].pl[i].dontdisplay )
 	continue;
 	    gcnt[k] += 2;
-	    if ( prefs_list[k][i].type==pr_bool ) ++gcnt[k];
+	    if ( visible_prefs_list[k].pl[i].type==pr_bool ) ++gcnt[k];
 	    ++line;
 	}
 	if ( line>line_max ) line_max = line;
@@ -792,7 +812,11 @@ void DoPrefs(void) {
 		y += 28;
 	      break;
 	      case pr_string:
-		if ( *((char **) pl->val)!=NULL )
+		if ( pl->val!=NULL )
+		    tempstr = *((char **) pl->val);
+		else
+		    tempstr = (char *) ((pl->get)());
+		if ( tempstr!=NULL )
 		    plabel[gc].text = /* def2u_*/ uc_copy( *((char **) pl->val));
 		else if ( ((char **) pl->val)==&BDFFoundry )
 		    plabel[gc].text = /* def2u_*/ uc_copy( "PfaEdit" );
@@ -801,6 +825,8 @@ void DoPrefs(void) {
 		plabel[gc].text_is_1byte = false;
 		pgcd[gc++].creator = GTextFieldCreate;
 		y += 26;
+		if ( pl->val==NULL )
+		    free(tempstr);
 	      break;
 	    }
 	    ++line;

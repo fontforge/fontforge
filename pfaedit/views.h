@@ -615,6 +615,7 @@ extern char *FindMFName(void);
 extern char *ProgramExists(char *prog,char *buffer);
 extern void *GetAutoTraceArgs(void);
 extern void SetAutoTraceArgs(void *a);
+extern void MfArgsInit(void);
 
 extern unichar_t *FVOpenFont(const unichar_t *title, const unichar_t *defaultfile,
 	const unichar_t *initial_filter, unichar_t **mimetypes,int mult,int newok);

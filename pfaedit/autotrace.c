@@ -334,6 +334,8 @@ return( NULL );
 }
 
 static char **args=NULL;
+int autotrace_ask=0, mf_ask=0, mf_clearbackgrounds;
+char *mf_args = NULL;
 
 void *GetAutoTraceArgs(void) {
 return( flatten(args));
@@ -352,7 +354,7 @@ void SetAutoTraceArgs(void *a) {
 
 static char **AutoTraceArgs(int ask) {
 
-    if ( ask ) {
+    if ( ask || autotrace_ask ) {
 	char *cdef = flatten(args);
 	unichar_t *def = uc_copy(cdef);
 	unichar_t *ret;
@@ -543,13 +545,34 @@ static void cleantempdir(char *tempdir) {
     rmdir(tempdir);
 }
 
+void MfArgsInit(void) {
+    if ( mf_args==NULL )
+	mf_args = copy("\\scrollmode; mode=proof ; mag=2; input");
+}
+
+static char *MfArgs(void) {
+    MfArgsInit();
+
+    if ( mf_ask ) {
+	unichar_t *def = uc_copy(mf_args);
+	unichar_t *ret;
+
+	ret = GWidgetAskStringR(_STR_AdditionalAutotraceArgs, def,_STR_AdditionalAutotraceArgs);
+	free(def);
+	if ( ret==NULL )
+return( (char *) -1 );
+	mf_args = cu_copy(ret); free(ret);
+	SavePrefs();
+    }
+return( mf_args );
+}
+
 SplineFont *SFFromMF(char *filename) {
     char *tempdir;
-    static char *mfarg="\\scrollmode; mode=proof ; mag=%g; input %s";
-    static double magstep=2;
     char *arglist[8];
     int pid, status, ac, i;
-    SplineFont *sf;
+    SplineFont *sf=NULL;
+    SplineChar *sc;
 
     if ( FindMFName()==NULL ) {
 	GWidgetErrorR(_STR_NoMF,_STR_NoMFProg);
@@ -558,6 +581,8 @@ return( NULL );
 	GWidgetErrorR(_STR_NoAutotrace,_STR_NoAutotraceProg);
 return( NULL );
     }
+    if ( MfArgs()==(char *) -1 || AutoTraceArgs(false)==(char **) -1 )
+return( NULL );
 
     /* I don't know how to tell mf to put its files where I want them. */
     /*  so instead I create a temporary directory, cd mf there, and it */
@@ -570,9 +595,11 @@ return( NULL );
 
     ac = 0;
     arglist[ac++] = FindMFName();
-    arglist[ac++] = galloc(strlen(mfarg)+strlen(filename)+20);
+    arglist[ac++] = galloc(strlen(mf_args)+strlen(filename)+20);
     arglist[ac] = NULL;
-    sprintf(arglist[1],mfarg, magstep, filename);
+    strcpy(arglist[1],mf_args);
+    strcat(arglist[1]," ");
+    strcat(arglist[1],filename);
     if ( (pid=fork())==0 ) {
 	/* Child */
 	int fd;
@@ -581,13 +608,18 @@ return( NULL );
 	fd = open("/dev/null",O_WRONLY);
 	if ( fd!=1 )
 	    dup2(fd,1);
+	close(0);		/* mf sometimes asks the user questions, but I have no answers... */
+	fd = open("/dev/null",O_RDONLY);
+	if ( fd!=0 )
+	    dup2(fd,0);
 	exit(execvp(arglist[0],arglist)==-1);	/* If exec fails, then die */
     } else if ( pid!=-1 ) {
+	GProgressShow();
 	waitpid(pid,&status,0);
 	if ( WIFEXITED(status)) {
 	    char *gffile = FindGfFile(tempdir);
 	    if ( gffile==NULL )
-		GWidgetErrorR(_STR_CantRunMF,_STR_CantRunMF);
+		GWidgetErrorR(_STR_CantRunMF,_STR_MFBadOutput);
 	    else {
 		sf = SFFromBDF(gffile,3,true);
 		free(gffile);
@@ -595,16 +627,22 @@ return( NULL );
 		    GProgressChangeLine1R(_STR_Autotracing);
 		    GProgressChangeTotal(sf->charcnt);
 		    for ( i=0; i<sf->charcnt; ++i ) {
-			if ( sf->chars[i]!=NULL && sf->chars[i]->backimages )
-			    _SCAutoTrace(sf->chars[i], args);
+			if ( (sc = sf->chars[i])!=NULL && sc->backimages ) {
+			    _SCAutoTrace(sc, args);
+			    if ( mf_clearbackgrounds ) {
+				GImageDestroy(sc->backimages->image);
+			        free(sc->backimages);
+			        sc->backimages = NULL;
+			    }
+			}
 			if ( !GProgressNext())
 		    break;
 		    }
 		} else 
-		    GWidgetErrorR(_STR_CantRunMF,_STR_CantRunMF);
+		    GWidgetErrorR(_STR_CantRunMF,_STR_MFBadOutput);
 	    }
 	} else
-	    GWidgetErrorR(_STR_CantRunMF,_STR_CantRunMF);
+	    GWidgetErrorR(_STR_CantRunMF,_STR_MFHadError);
     } else
 	GWidgetErrorR(_STR_CantRunMF,_STR_CantRunMF);
     free(arglist[1]);
