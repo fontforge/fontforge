@@ -67701,3 +67701,4 @@ struct psaltnames  {
 	{ "Upsilondieresissmall", 0xf51a },
 	NULL
 };
+const int psaltuninames_cnt = sizeof(psaltuninames)/sizeof(psaltuninames[0]) -1;
