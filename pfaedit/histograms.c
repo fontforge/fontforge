@@ -501,7 +501,7 @@ static void HistRefigureSB(struct hist_dlg *hist) {
     GGadget *g = GWidgetGetControl(hist->gw,CID_ScrollBar);
     int width = hist->hwidth, hoff;
 
-    GScrollBarSetBounds(g,hist->h->low,hist->h->high,(width-2)/hist->barwidth+1);
+    GScrollBarSetBounds(g,hist->h->low,hist->h->high+1,(width-2)/hist->barwidth);
     if ( hist->hoff+width/hist->barwidth >hist->h->high ) {
 	hoff = hist->h->high-width/hist->barwidth;
 	if ( hoff<0 ) hoff = 0;
