@@ -235,6 +235,7 @@ static SplinePoint *ttfapprox(Spline *ps,real tmin, real tmax, SplinePoint *star
     SplinePoint *sp;
     real cx, cy;
     Spline ttf;
+    int cnt = -1;
 
     if ( RealNear(ps->splines[0].a,0) && RealNear(ps->splines[1].a,0) ) {
 	/* Already Quadratic, just need to find the control point */
@@ -265,6 +266,7 @@ return( sp );
 
     memset(&ttf,'\0',sizeof(ttf));
   tail_recursion:
+    ++cnt;
 
     xmin = start->me.x;
     ymin = start->me.y;
@@ -286,8 +288,16 @@ return( sp );
     }
     other = !dim;
 
-    if ( ddim<2 )
+    if ( ddim<2 ) {
+	if ( cnt==0 || start->noprevcp )
 return( LinearSpline(ps,start,tmax));
+	/* If the end point is very close to where we want to be, then just */
+	/*  pretend it's right */
+	start->prev->splines[0].b += ps->to->me.x-start->me.x;
+	start->prev->splines[1].b += ps->to->me.y-start->me.y;
+	start->me = ps->to->me;
+return( start );
+    }
 
     dt = (tmax-tmin)/ddim;
     for ( t=tmax; t>tmin+dt/128; t-= dt ) {		/* dt/128 is a hack to avoid rounding errors */
