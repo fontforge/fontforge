@@ -1204,7 +1204,8 @@ enum ttfflags { ttf_onlystrikes=1, ttf_onlyonestrike=2, ttf_onlykerns=4, ttf_onl
 extern SplineFont *_SFReadTTF(FILE *ttf,int flags,char *filename);
 extern SplineFont *SFReadTTF(char *filename,int flags);
 extern SplineFont *SFReadSVG(char *filename,int flags);
-extern SplineFont *CFFParse(FILE *temp,int len,char *fontsetname);
+extern SplineFont *_CFFParse(FILE *temp,int len,char *fontsetname);
+extern SplineFont *CFFParse(char *filename);
 extern SplineFont *SFReadMacBinary(char *filename,int flags);
 extern SplineFont *SFReadWinFON(char *filename,int toback);
 extern SplineFont *LoadSplineFont(char *filename,enum openflags);

@@ -156,6 +156,7 @@ struct ttfinfo {
     unsigned int comcomplain: 1;	/* We've complained about composit formats in EBDT */
     unsigned int onlystrikes: 1;	/* Only read in the bitmaps, not the outlines */
     unsigned int onlyonestrike: 1;	/* Only read in one bitmap (strike) */
+    unsigned int barecff: 1;		/* pay attention to the encoding in the cff file, we won't have a cmap */
 
     int platform, specific;		/* values of the encoding we chose to use */
 

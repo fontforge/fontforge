@@ -2214,36 +2214,89 @@ return( NULL );
 return( dicts );
 }
 
-/* I really expect to deal with encodings in ttf cmap, but just in case */
-/*  I need to do more someday, this is the outline... */
-static void readcffenc(FILE *ttf,struct topdicts *dict,char **strings) {
-    int format, cnt, i;
+static const char *getsid(int sid,char **strings) {
+    if ( sid==-1 )
+return( NULL );
+    else if ( sid<nStdStrings )
+return( cffnames[sid] );
+    else
+return( strings[sid-nStdStrings]);
+}
 
-    if ( dict->encodingoff==0 ) {
-	/* Standard Encoding */;
+static struct dup *makedup(SplineChar *sc, int uni, int enc, struct dup *prev) {
+    struct dup *d = gcalloc(1,sizeof(struct dup));
+
+    d->sc = sc;
+    d->uni = uni;
+    d->enc = enc;
+    d->prev = prev;
+return( d );
+}
+
+/* I really expect to deal with encodings in ttf cmap, but ocasionally we */
+/*  get a bare cff */
+static void readcffenc(FILE *ttf,struct topdicts *dict,struct ttfinfo *info,
+	char **strings) {
+    int format, cnt, i, j, pos, first, last, dupenc, sid, next;
+    extern char *AdobeStandardEncoding[], *AdobeExpertEncoding[];
+    const char *name;
+
+    if ( !info->barecff )		/* Use the cmap instead */
 return;
-    } else if ( dict->encodingoff==1 ) {
-	/* Expert Encoding */;
-return;
+
+    for ( i=0; i<info->glyph_cnt; ++i ) {
+	if ( info->chars[i]->unicodeenc==-1 )
+	    info->chars[i]->unicodeenc = UniFromName(info->chars[i]->name);
     }
-    fseek(ttf,dict->cff_start+dict->encodingoff,SEEK_SET);
-    format = getc(ttf);
-    if ( (format&0x7f)==0 ) {
-	cnt = getc(ttf);
-	for ( i=0; i<cnt; ++i )
-	    getc(ttf);
-    } else if ( (format&0x7f)==1 ) {
-	cnt = getc(ttf);
-	for ( i=0; i<cnt; ++i ) {
-	    /* First= */ getc(ttf);
-	    /* nLeft= */ getc(ttf);
+
+    if ( dict->encodingoff==0 || dict->encodingoff==1 ) {
+	/* Standard Encodings */
+	char **enc = dict->encodingoff==0 ? AdobeStandardEncoding : AdobeExpertEncoding;
+	info->encoding_name = dict->encodingoff==0 ? em_adobestandard : em_custom;
+	next = 256;
+	for ( i=0; i<info->glyph_cnt; ++i ) {
+	    for ( pos=0; pos<256; ++pos )
+		if ( strcmp(info->chars[i]->name,enc[pos])==0 )
+	    break;
+	    if ( pos<256 )
+		info->chars[i]->enc = pos;
+	    else
+		info->chars[i]->enc = next++;
 	}
-    }
-    if ( format&0x80 ) {
-	cnt = getc(ttf);
-	for ( i=0; i<cnt; ++i ) {
-	    /* Supplement  Encoding */ getc(ttf);
-	    /* To SID */ getushort(ttf);
+    } else {
+	info->encoding_name = em_custom;
+	fseek(ttf,dict->cff_start+dict->encodingoff,SEEK_SET);
+	format = getc(ttf);
+	if ( (format&0x7f)==0 ) {
+	    cnt = getc(ttf);
+	    for ( i=0; i<cnt && i<info->glyph_cnt; ++i )
+		info->chars[i]->enc = getc(ttf);
+	} else if ( (format&0x7f)==1 ) {
+	    cnt = getc(ttf);
+	    pos = 0;
+	    for ( i=0; i<cnt; ++i ) {
+		first = getc(ttf);
+		last = first + getc(ttf)-1;
+		while ( first<=last ) {
+		    if ( pos<info->glyph_cnt )
+			info->chars[pos]->enc = first;
+		    ++pos;
+		    ++first;
+		}
+	    }
+	}
+	if ( format&0x80 ) {
+	    cnt = getc(ttf);
+	    for ( i=0; i<cnt; ++i ) {
+		dupenc = getc(ttf);
+		sid = getushort(ttf);
+		name = getsid(sid,strings);
+		for ( j=0; j<info->glyph_cnt; ++j )
+		    if ( strcmp(name,info->chars[i]->name)==0 )
+		break;
+		if ( j!=info->glyph_cnt )
+		    info->dups = makedup(info->chars[j],-1,dupenc,info->dups);
+	    }
 	}
     }
 }
@@ -2381,15 +2434,6 @@ static uint8 *readfdselect(FILE *ttf,int numglyphs) {
 return( fdselect );
 }
 
-
-static const char *getsid(int sid,char **strings) {
-    if ( sid==-1 )
-return( NULL );
-    else if ( sid<nStdStrings )
-return( cffnames[sid] );
-    else
-return( strings[sid-nStdStrings]);
-}
 
 static char *intarray2str(int *array, int size) {
     int i,j;
@@ -2735,8 +2779,6 @@ return( 0 );
 	    readcffprivate(ttf,dicts[which]);
 	if ( dicts[which]->charsetoff!=-1 )
 	    readcffset(ttf,dicts[which]);
-	if ( dicts[which]->encodingoff!=-1 )
-	    readcffenc(ttf,dicts[which],strings);
 	if ( dicts[which]->fdarrayoff==-1 )
 	    cfffigure(info,dicts[which],strings,&gsubs);
 	else {
@@ -2755,6 +2797,8 @@ return( 0 );
 		TopDictFree(subdicts[j]);
 	    free(subdicts); free(fdselect);
 	}
+	if ( dicts[which]->encodingoff!=-1 )
+	    readcffenc(ttf,dicts[which],info,strings);
 
     if ( info->to_order2 ) {
 	for ( i=0; i<info->glyph_cnt; ++i )
@@ -2854,16 +2898,6 @@ static void readttfvwidths(FILE *ttf,struct ttfinfo *info) {
 	fseek(ttf,info->vorg_start+4,SEEK_SET);
 	info->vertical_origin = (short) getushort(ttf);
     }
-}
-
-static struct dup *makedup(SplineChar *sc, int uni, int enc, struct dup *prev) {
-    struct dup *d = gcalloc(1,sizeof(struct dup));
-
-    d->sc = sc;
-    d->uni = uni;
-    d->enc = enc;
-    d->prev = prev;
-return( d );
 }
 
 static void dupfree(struct dup *dups) {
@@ -3873,7 +3907,14 @@ static void UseGivenEncoding(SplineFont *sf,struct ttfinfo *info) {
     RefChar *rf;
     int newcharcnt;
 
-    if ( info->is_onebyte ) {
+    if ( info->barecff ) {
+	max = 256;
+	for ( i=0; i<oldcnt; ++i ) if ( oldchars[i]!=NULL ) {
+	    if ( oldchars[i]->enc>=256 )
+		++extras;
+	    oldchars[i]->parent = sf;
+	}
+    } else if ( info->is_onebyte ) {
 	/* We did most of this in CheckEncoding */
 	max = 256;
 	for ( i=0; i<oldcnt; ++i ) if ( oldchars[i]!=NULL ) {
@@ -4107,17 +4148,31 @@ return( NULL );
 return( sf );
 }
 
-/* This routine is for reading any bare CFF data in a stand alone file */
-/*  I doubt it will ever happen, but it's fairly easy... */
-SplineFont *CFFParse(FILE *temp,int len, char *fontsetname) {
+SplineFont *_CFFParse(FILE *temp,int len, char *fontsetname) {
     struct ttfinfo info;
 
     memset(&info,'\0',sizeof(info));
     info.cff_start = 0;
     info.cff_length = len;
+    info.barecff = true;
     if ( !readcffglyphs(temp,&info) )
 return( NULL );
 return( SFFillFromTTF(&info));
+}
+
+SplineFont *CFFParse(char *filename) {
+    FILE *cff = fopen(filename,"r");
+    SplineFont *sf;
+    long len;
+
+    if ( cff == NULL )
+return( NULL );
+    fseek(cff,0,SEEK_END);
+    len = ftell(cff);
+    fseek(cff,0,SEEK_SET);
+    sf = _CFFParse(cff,len,NULL);
+    fclose(cff);
+return( sf );
 }
 
 char **NamesReadTTF(char *filename) {
