@@ -45,7 +45,8 @@ typedef struct enc {
     unsigned int builtin: 1;
 } Encoding;
 
-static const int unicode4_size = 15*65536;
+static const int unicode4_size = 17*65536;
+    /* I think Unicode goes up to 0x10ffff */
 
 enum { em_base = 0x100,		/* an addition to enum charset, used as the base value for the encoding list above */
 	em_sjis = em_max,
