@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 28-Sep-2003 -->
+  <!-- AP: Last modified: 29-Sep-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -11,7 +11,7 @@
 </H1>
 <UL>
   <LI>
-    ???
+    29-Sept-2003
     <UL>
       <LI>
 	When a path was both stroked and filled (in a postscript/eps file), pfaedit
@@ -72,6 +72,28 @@
 	    PfaEdit lets you specify feature/setting names in the font to override the
 	    default values specified in preferences
 	</UL>
+      <LI>
+	Added support for reading Apple's format 3 kern sub-table format (another
+	way of storing a kerning class)
+      <LI>
+	Oops. SVG didn't read relative movetos properly in a path option. Patch by
+	Kengo Ichiki.
+      <LI>
+	Simplify had a bug when passed a path which consisted of a single point with
+	a zero length spline connecting it to itself
+      <LI>
+	Simplify was not greyed out properly in quadratic fonts
+      <LI>
+	Some of the low-level error routines consumed massive amounts of cpu time
+	while waiting for events
+      <LI>
+	The PostScript parsing routines would sometimes think that "noaccess" was
+	part of the value of something in the private dictionary.
+      <LI>
+	Several other patches to importing images by templates from scripts. By Kengo
+	Ichiki
+      <LI>
+	Importing pcf bitmaps into the background had some problems.
     </UL>
   <LI>
     4-Sept-2003
