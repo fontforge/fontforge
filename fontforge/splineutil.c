@@ -1715,22 +1715,22 @@ static void SFInstanciateRefs(SplineFont *sf) {
 }
 
 static void GreekUnicodeCheck(SplineFont *sf) {
-    int i, changed, j;
+    int i, changed, j, fixup;
 
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
 	SplineChar *sc = sf->chars[i];
 	changed = false;
 	if ( sc->unicodeenc==0x2206 && sf->chars[i-1]!=NULL &&
 		sf->chars[i-1]->unicodeenc==0x0393 ) {
-	    sc->unicodeenc = 0x394;		/* Delta should be Greek letter, not increment here */
+	    fixup = 0x394;		/* Delta should be Greek letter, not increment here */
 	    changed = 0x2206;
 	} else if ( sc->unicodeenc==0x2126 && sf->chars[i-1]!=NULL &&
 		sf->chars[i-1]->unicodeenc==0x03a8 ) {
-	    sc->unicodeenc = 0x3a9;		/* Omega should be Greek letter, not Ohm sign here */
+	    fixup = 0x3a9;		/* Omega should be Greek letter, not Ohm sign here */
 	    changed = 0x2126;
 	} else if ( sc->unicodeenc==0xb5 && sf->chars[i-1]!=NULL &&
 		sf->chars[i-1]->unicodeenc==0x03bb ) {
-	    sc->unicodeenc = 0x3bc;		/* mu should be Greek letter, not micro sign here */
+	    fixup = 0x3bc;		/* mu should be Greek letter, not micro sign here */
 	    changed = 0xb5;
 	}
 	if ( changed ) {
@@ -1739,18 +1739,22 @@ static void GreekUnicodeCheck(SplineFont *sf) {
 		if ( sf->chars[j]->unicodeenc == changed ) {
 		    if ( o1pos==-1 ) o1pos = j;
 		    else rm1pos = j;
-		} else if ( sf->chars[j]->unicodeenc == sc->unicodeenc )
+		} else if ( sf->chars[j]->unicodeenc == fixup )
 		    rm2pos = j;
 	    }
 	    if ( rm2pos!=-1 && o1pos==-1 ) {
 		sf->chars[rm2pos]->unicodeenc = changed;
+		sc->unicodeenc = fixup;
 		rm2pos = -1;
 	    }
-	    if ( rm2pos!=-1 ) {
+	    if ( rm2pos!=-1 && sf->chars[rm2pos]->dependents==NULL ) {
+		SCClearContents(sf->chars[rm2pos]);
 		SplineCharFree(sf->chars[rm2pos]);
 		sf->chars[rm2pos] = NULL;
-	    }
-	    if ( rm1pos!=-1 ) {
+	    } else
+		sc->unicodeenc = fixup;
+	    if ( rm1pos!=-1 && sf->chars[rm1pos]->dependents==NULL ) {
+		SCClearContents(sf->chars[rm1pos]);
 		SplineCharFree(sf->chars[rm1pos]);
 		sf->chars[rm1pos] = NULL;
 	    }
