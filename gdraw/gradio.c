@@ -233,6 +233,13 @@ static FontInstance *GRadioGetFont(GGadget *g) {
 return( b->font );
 }
 
+static void _gradio_move(GGadget *g, int32 x, int32 y ) {
+    GRadio *b = (GRadio *) g;
+    b->onoffrect.x = x+(b->onoffrect.x-g->r.x);
+    b->onoffrect.y = y+(b->onoffrect.y-g->r.y);
+    _ggadget_move(g,x,y);
+}
+
 struct gfuncs gradio_funcs = {
     0,
     sizeof(struct gfuncs),
@@ -246,7 +253,7 @@ struct gfuncs gradio_funcs = {
     NULL,
 
     _ggadget_redraw,
-    _ggadget_move,
+    _gradio_move,
     _ggadget_resize,
     _ggadget_setvisible,
     _ggadget_setenabled,
