@@ -3009,6 +3009,7 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     int i,j,cnt;
     int as,ds,ld;
     uint32 script;
+    SplineChar *anysc, *goodsc;
 
     if ( icon==NULL )
 	icon = GDrawCreateBitmap(NULL,metricsicon_width,metricsicon_height,metricsicon_bits);
@@ -3091,16 +3092,20 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     GGadgetGetSize(mv->text,&gsize);
     mv->topend = gsize.y + gsize.height + 2;
 
+    anysc = goodsc = NULL;
     for ( i=0; i<cnt; ++i ) {
+	if ( anysc==NULL ) anysc = mv->perchar[i].sc;
 	if ( (script=SCScriptFromUnicode(mv->perchar[i].sc))!=0 ) {
-	    SFAddScriptLangIndex(mv->fv->sf,script,DEFAULT_LANG);
+	    goodsc = mv->perchar[i].sc;
     break;
 	}
     }
+    if ( goodsc==NULL ) goodsc = anysc;
+
     gd.pos.x = gd.pos.x+gd.pos.width+10;
     gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
     gd.handle_controlevent = MV_SLIChanged;
-    gd.u.list = SFLangList(mv->fv->sf,true);
+    gd.u.list = SFLangList(mv->fv->sf,true,goodsc);
     gd.label = NULL;
     mv->sli_list = GListButtonCreate(gw,&gd,mv);
 

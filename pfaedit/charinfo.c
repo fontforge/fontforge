@@ -751,15 +751,70 @@ static unichar_t *ScriptLangLine(struct script_record *sr) {
 return( line );
 }
 
-GTextInfo *SFLangList(SplineFont *sf,int addfinal) {
-    int i;
+GTextInfo *SFLangList(SplineFont *sf,int addfinal,SplineChar *default_script) {
+    int i,j,k,l,best_sli,scnt,matched;
     GTextInfo *ti;
+    uint32 script;
+    int def_sli;
+    PST *pst;
 
     if ( sf->cidmaster ) sf = sf->cidmaster;
+
+    /* Try to guess a reasonable default */
+    if ( default_script==(SplineChar *) -1 ) {
+	default_script = NULL;
+	def_sli = -1;
+    } else {
+	script = SCScriptFromUnicode(default_script);
+	if ( sf->script_lang==NULL )
+	    SFAddScriptLangIndex(sf,script,DEFAULT_LANG);
+	def_sli = -1;
+	if ( default_script!=NULL ) {
+	    for ( pst=default_script->possub; pst!=NULL; pst=pst->next ) if ( pst->type!=pst_lcaret ) {
+		def_sli = pst->script_lang_index;
+	    break;
+	    }
+	    if ( def_sli==-1 && default_script->kerns!=NULL )
+		def_sli = default_script->kerns->sli;
+	}
+	if ( def_sli==-1 ) {
+	    best_sli = -1; scnt=0;
+	    if ( script==0 ) {
+		/* Find the entry with the most scripts */
+		for ( i=0; sf->script_lang[i]!=NULL; ++i ) {
+		    for ( j=0; sf->script_lang[i][j].script!=0; ++j);
+		    if ( j>scnt ) {
+			scnt = j;
+			best_sli = i;
+		    }
+		}
+	    } else {
+		/* Find the entry with the most languages that includes this script */
+		for ( i=0; sf->script_lang[i]!=NULL; ++i ) {
+		    matched = false;
+		    for ( j=k=0; sf->script_lang[i][j].script!=0; ++j) {
+			if ( sf->script_lang[i][j].script==script ) matched = true;
+			for ( l=0; sf->script_lang[i][j].langs[l]!=0; ++l )
+			    ++k;
+		    }
+		    if ( matched && k>scnt ) {
+			scnt = k;
+			best_sli = i;
+		    }
+		}
+	    }
+	    if ( best_sli==-1 )
+		best_sli = SFAddScriptLangIndex(sf,script,DEFAULT_LANG);
+	    def_sli = best_sli;
+	}
+    }
+	    
     for ( i=0; sf->script_lang[i]!=NULL; ++i );
     ti = gcalloc(i+2,sizeof( GTextInfo ));
     for ( i=0; sf->script_lang[i]!=NULL; ++i )
 	ti[i].text = ScriptLangLine(sf->script_lang[i]);
+    if ( def_sli!=-1 )
+	ti[def_sli].selected = true;
     if ( addfinal ) {
 	ti[i].text = (unichar_t *) _STR_EditLangList;
 	ti[i].text_in_resource = true;
@@ -1365,7 +1420,7 @@ return;
 	gcd[i].gd.pos.width = width-20;
 	gcd[i].gd.pos.height = 8*12+10;
 	gcd[i].gd.flags = gg_enabled|gg_visible;
-	gcd[i].gd.u.list = SFLangList(sf,false);
+	gcd[i].gd.u.list = SFLangList(sf,false,(SplineChar *) -1);
 	gcd[i].gd.cid = i+1;
 	gcd[i++].creator = GListCreate;
 
@@ -1515,7 +1570,8 @@ return( true );
 }
 
 unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
-	int script_lang_index, GTextInfo *tags, SplineFont *sf ) {
+	int script_lang_index, GTextInfo *tags, SplineFont *sf,
+	SplineChar *default_script ) {
     static unichar_t nullstr[] = { 0 };
     struct ac_dlg acd;
     GRect pos;
@@ -1616,8 +1672,15 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 	gcd[5].gd.pos.x = 10; gcd[5].gd.pos.y = gcd[4].gd.pos.y+14;
 	gcd[5].gd.pos.width = 140;
 	gcd[5].gd.flags = gg_enabled|gg_visible;
-	gcd[5].gd.u.list = SFLangList(sf,true);
-	gcd[5].gd.u.list[script_lang_index].selected = true;
+	gcd[5].gd.u.list = SFLangList(sf,true,default_script);
+	if ( script_lang_index!=-1 )
+	    gcd[5].gd.u.list[script_lang_index].selected = true;
+	else {
+	    for ( script_lang_index=0; !gcd[5].gd.u.list[script_lang_index].selected &&
+		    gcd[5].gd.u.list[script_lang_index].text!=NULL; ++script_lang_index );
+	    if ( gcd[5].gd.u.list[script_lang_index].text!=NULL )
+		acd.sli = script_lang_index;
+	}
 	gcd[5].gd.label = &gcd[5].gd.u.list[script_lang_index];
 	gcd[5].creator = GListButtonCreate;
 
@@ -1750,7 +1813,8 @@ return( true );
 }
 
 static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
-	int script_lang_index, GTextInfo *tags,SplineFont *sf) {
+	int script_lang_index, GTextInfo *tags,SplineFont *sf,
+	SplineChar *default_script) {
     static unichar_t nullstr[] = { 0 };
     struct pt_dlg ptd;
     GRect pos;
@@ -1912,8 +1976,15 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
 	gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+14;
 	gcd[i].gd.pos.width = 140;
 	gcd[i].gd.flags = gg_enabled|gg_visible;
-	gcd[i].gd.u.list = SFLangList(sf,true);
-	gcd[i].gd.u.list[script_lang_index].selected = true;
+	gcd[i].gd.u.list = SFLangList(sf,true,default_script);
+	if ( script_lang_index!=-1 )
+	    gcd[i].gd.u.list[script_lang_index].selected = true;
+	else {
+	    for ( script_lang_index=0; !gcd[i].gd.u.list[script_lang_index].selected &&
+		    gcd[i].gd.u.list[script_lang_index].text!=NULL; ++script_lang_index );
+	    if ( gcd[i].gd.u.list[script_lang_index].text!=NULL )
+		ptd.sli = script_lang_index;
+	}
 	gcd[i].gd.label = &gcd[i].gd.u.list[script_lang_index];
 	gcd[i].gd.cid = i+1;
 	gcd[i++].creator = GListButtonCreate;
@@ -2070,7 +2141,7 @@ return( true );
 }
 
 static void CI_DoNew(CharInfo *ci, unichar_t *def) {
-    int len, i, sel, sli;
+    int len, i, sel;
     GTextInfo **old, **new;
     GGadget *list;
     unichar_t *newname;
@@ -2079,11 +2150,9 @@ static void CI_DoNew(CharInfo *ci, unichar_t *def) {
     sel = GTabSetGetSel(GWidgetGetControl(ci->gw,CID_Tabs))-2;
     if ( sel==pst_ligature-1 )
 	flags = pst_ignorecombiningmarks;
-    sli = SFAddScriptLangIndex(ci->sc->parent,
-			SCScriptFromUnicode(ci->sc),DEFAULT_LANG);
     newname = sel==0 
-	    ? AskPosTag(newstrings[sel],def,0,flags,sli,pst_tags[sel],ci->sc->parent)
-	    : AskNameTag(newstrings[sel],def,0,flags,sli,pst_tags[sel],ci->sc->parent);
+	    ? AskPosTag(newstrings[sel],def,0,flags,-1,pst_tags[sel],ci->sc->parent,ci->sc)
+	    : AskNameTag(newstrings[sel],def,0,flags,-1,pst_tags[sel],ci->sc->parent,ci->sc);
     if ( newname!=NULL ) {
 	if ( sel!=0 )
 	    if ( !LigCheck(ci->sc,sel+1,(newname[0]<<24)|(newname[1]<<16)|(newname[2]<<8)|newname[3],
@@ -2197,8 +2266,8 @@ static int CI_Edit(GGadget *g, GEvent *e) {
 	if ( (ti = GGadgetGetListItemSelected(list))==NULL )
 return( true );
 	newname = sel==0 
-		? AskPosTag(editstrings[sel],ti->text,0,0,0,pst_tags[sel],ci->sc->parent)
-		: AskNameTag(editstrings[sel],ti->text,0,0,0,pst_tags[sel],ci->sc->parent);
+		? AskPosTag(editstrings[sel],ti->text,0,0,0,pst_tags[sel],ci->sc->parent,ci->sc)
+		: AskNameTag(editstrings[sel],ti->text,0,0,0,pst_tags[sel],ci->sc->parent,ci->sc);
 	if ( newname!=NULL ) {
 	    old = GGadgetGetList(list,&len);
 	    for ( i=0; i<len; ++i ) if ( old[i]!=ti ) {

@@ -496,8 +496,8 @@ extern GTextInfo **AnchorClassesLList(SplineFont *sf);
 extern unichar_t *ClassName(const unichar_t *name,uint32 feature_tag,
 	uint16 flags, int script_lang_index);
 extern unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag,uint16 flags,
-	int script_lang_index, GTextInfo *tags, SplineFont *sf);
-extern GTextInfo *SFLangList(SplineFont *sf,int addfinal);
+	int script_lang_index, GTextInfo *tags, SplineFont *sf, SplineChar *default_script);
+extern GTextInfo *SFLangList(SplineFont *sf,int addfinal,SplineChar *default_script);
 extern void ScriptLangList(SplineFont *sf,GGadget *list,int sli);
 extern void GListDelSelected(GGadget *list);
 extern void GListMoveSelected(GGadget *list,int offset);

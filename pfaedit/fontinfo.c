@@ -2098,8 +2098,7 @@ static int GFI_AnchorNew(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
 	newname = AskNameTag(_STR_NewAnchorClass,NULL,CHR('m','a','r','k'),0,
-		SFAddScriptLangIndex(d->sf,DEFAULT_SCRIPT,DEFAULT_LANG),
-		mark_tags,d->sf);
+		-1, mark_tags,d->sf,NULL);
 	if ( newname!=NULL ) {
 	    list = GWidgetGetControl(GGadgetGetWindow(g),CID_AnchorClasses);
 	    old = GGadgetGetList(list,&len);
@@ -2251,7 +2250,7 @@ static int GFI_AnchorRename(GGadget *g, GEvent *e) {
 	list = GWidgetGetControl(GGadgetGetWindow(g),CID_AnchorClasses);
 	if ( (ti = GGadgetGetListItemSelected(list))==NULL )
 return( true );
-	newname = AskNameTag(_STR_EditAnchorClass,ti->text,0,0,0,mark_tags,d->sf);
+	newname = AskNameTag(_STR_EditAnchorClass,ti->text,0,0,0,mark_tags,d->sf,NULL);
 	if ( newname!=NULL ) {
 	    old = GGadgetGetList(list,&len);
 	    if (( uc_strncmp(newname,"curs",4)==0 && uc_strncmp(ti->text,"curs",4)!=0 ) ||

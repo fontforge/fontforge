@@ -54,7 +54,7 @@ struct tagflaglang {
 
 /* scripts (for opentype) that I understand */
 
-static uint32 scripts[][11] = {
+static uint32 scripts[][15] = {
 /* Arabic */	{ CHR('a','r','a','b'), 0x0600, 0x06ff, 0xfb50, 0xfdff, 0xfe70, 0xfeff },
 /* Armenian */	{ CHR('a','r','m','n'), 0x0530, 0x058f, 0xfb13, 0xfb17 },
 /* Bengali */	{ CHR('b','e','n','g'), 0x0980, 0x09ff },
@@ -82,7 +82,8 @@ static uint32 scripts[][11] = {
 /* Katakana */	{ CHR('k','a','n','a'), 0x3040, 0x30ff, 0xff60, 0xff9f },
 /* Khmer */	{ CHR('k','h','m','r'), 0x1780, 0x17ff },
 /* Kannada */	{ CHR('k','n','d','a'), 0x0c80, 0x0cff },
-/* Latin */	{ CHR('l','a','t','n'), 0x0000, 0x02af, 0x1d00, 0x1eff, 0xfb00, 0xfb0f, 0xff00, 0xff5f, 0, 0 },
+/* Latin */	{ CHR('l','a','t','n'), 0x0041, 0x005a, 0x0061, 0x007a,
+	0x00c0, 0x02af, 0x1d00, 0x1eff, 0xfb00, 0xfb0f, 0xff00, 0xff5f, 0, 0 },
 /* Lao */	{ CHR('l','a','o',' '), 0x0e80, 0x0eff },
 /* Malayalam */	{ CHR('m','l','y','m'), 0x0d00, 0x0d7f },
 /* Mongolian */	{ CHR('m','o','n','g'), 0x1800, 0x18af },
