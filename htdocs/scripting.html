@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 17-May-2003 -->
+  <!-- AP: Last modified: 18-May-2003 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -1062,6 +1062,17 @@ ApplySubstitution("*","*","vrt2")
     implied.<BR>
     A value of 1 for remove internal/external will remove the internal contour,
     a value of 2 will remove the external contour.
+  <DT>
+    Outline(width)
+  <DD>
+    Strokes all selected characters with a stroke of the specified width (internal
+    to the characters). The bounding box of the character will not change. In
+    other words it produces what the mac calls the "Outline Style".
+  <DT>
+    Inline(width,gap)
+  <DD>
+    Produces an outline as above, and then shrinks the character so that it fits
+    inside the outline. In other words, it produces an inlined character.
   <DT>
     RemoveOverlap()
   <DD>

@@ -731,3 +731,18 @@ return( ssplus );
     /*			  [penangle+90,penangle+180] use (-r,-t/2) */
     /*			  [penangle+180,penangle+270] use (r,-t/2) */
     /*			  [penangle+270,penangle] use (r,t/2) */
+
+SplineSet *SSStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc) {
+    SplineSet *head=NULL, *last=NULL, *cur;
+
+    for ( ; spl!=NULL; spl = spl->next ) {
+	cur = SplineSetStroke(spl,si,sc);
+	if ( head==NULL )
+	    head = cur;
+	else
+	    last->next = cur;
+	while ( cur->next!=NULL ) cur = cur->next;
+	last = cur;
+    }
+return( head );
+}

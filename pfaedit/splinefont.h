@@ -928,6 +928,7 @@ extern int IntersectLinesClip(BasePoint *inter,
 	BasePoint *line2_1, BasePoint *line2_2);
 
 extern SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc);
+extern SplineSet *SSStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc);
 extern SplineSet *SplineSetRemoveOverlap(SplineSet *base,enum overlap_type);
 
 extern void FindBlues( SplineFont *sf, real blues[14], real otherblues[10]);

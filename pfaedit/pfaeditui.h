@@ -58,6 +58,7 @@ extern GImage GIcon_smallskew, GIcon_smallscale, GIcon_smallrotate,
 	GIcon_smallpencil, GIcon_smallhand,
 	GIcon_PfaEditLogo, GIcon_PfaEditBack, GIcon_PfaEditGuide;
 extern GImage GIcon_rmoverlap, GIcon_exclude, GIcon_intersection, GIcon_findinter;
+extern GImage GIcon_outline, GIcon_inline, GIcon_shadow;
 extern GImage def_image, red_image, blue_image, green_image, magenta_image,
 	yellow_image, cyan_image, white_image;
 extern GImage GIcon_continue, GIcon_stepout, GIcon_stepover, GIcon_stepinto,

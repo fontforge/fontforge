@@ -1832,6 +1832,24 @@ static void bExpandStroke(Context *c) {
     FVStrokeItScript(c->curfv, &si);
 }
 
+static void bOutline(Context *c) {
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments");
+    if ( c->a.vals[1].type!=v_int )
+	error(c,"Bad argument type");
+    FVOutline(c->curfv,c->a.vals[1].u.ival);
+}
+
+static void bInline(Context *c) {
+
+    if ( c->a.argc!=3 )
+	error( c, "Wrong number of arguments");
+    if ( c->a.vals[1].type!=v_int || c->a.vals[2].type!=v_int )
+	error(c,"Bad argument type");
+    FVInline(c->curfv,c->a.vals[1].u.ival,c->a.vals[2].u.ival);
+}
+
 static void bRemoveOverlap(Context *c) {
     if ( c->a.argc!=1 )
 	error( c, "Wrong number of arguments");
@@ -2689,6 +2707,8 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "ScaleToEm", bScaleToEm },
     { "NonLinearTransform", bNonLinearTransform },
     { "ExpandStroke", bExpandStroke },
+    { "Inline", bInline },
+    { "Outline", bOutline },
     { "RemoveOverlap", bRemoveOverlap },
     { "OverlapIntersect", bOverlapIntersect },
     { "FindIntersections", bFindIntersections },

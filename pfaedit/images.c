@@ -2818,6 +2818,88 @@ static struct _GImage findinter_base = {
     1
 };
 
+static uint8 outline_data[] = {
+    0xff, 0xff, 
+    0x80, 0xf, 
+    0xbf, 0xef, 
+    0xbf, 0xef, 
+    0xbf, 0xef, 
+    0x87, 0xf, 
+    0xf7, 0x7f, 
+    0xf7, 0x7f, 
+    0xf7, 0x7f, 
+    0xf7, 0x7f, 
+    0x87, 0xf, 
+    0xbf, 0xef, 
+    0xbf, 0xef, 
+    0xbf, 0xef, 
+    0x80, 0xf, 
+    0xff, 0xff, 
+};
+
+static struct _GImage outline_base = {
+    it_mono,
+    15420,16,16,2,
+    (uint8 *) outline_data,
+    &magnify0_clut,
+    1
+};
+
+static uint8 inline_data[] = {
+    0xff, 0xff, 
+    0x80, 0xf, 
+    0xbf, 0xef, 
+    0xa0, 0x2f, 
+    0xbd, 0xef, 
+    0x85, 0xf, 
+    0xf5, 0x7f, 
+    0xf5, 0x7f, 
+    0xf5, 0x7f, 
+    0xf5, 0x7f, 
+    0x85, 0xf, 
+    0xbd, 0xef, 
+    0xa0, 0x2f, 
+    0xbf, 0xef, 
+    0x80, 0xf, 
+    0xff, 0xff, 
+};
+
+static struct _GImage inline_base = {
+    it_mono,
+    15420,16,16,2,
+    (uint8 *) inline_data,
+    &magnify0_clut,
+    1
+};
+
+static uint8 shadow_data[] = {
+    0xff, 0xff, 
+    0xff, 0xff, 
+    0xe0, 0x3f, 
+    0xfd, 0xff, 
+    0xfd, 0xf, 
+    0xfd, 0x7, 
+    0xfd, 0x3f, 
+    0xfd, 0x3f, 
+    0xfd, 0x3f, 
+    0xfd, 0x3f, 
+    0xfd, 0xff, 
+    0xe0, 0x3f, 
+    0xff, 0xff, 
+    0xf8, 0xf, 
+    0xfc, 0x7, 
+    0xff, 0xff, 
+};
+
+static struct _GImage shadow_base = {
+    it_mono,
+    15420,16,16,2,
+    (uint8 *) shadow_data,
+    &magnify0_clut,
+    1
+};
+
+
 GImage GIcon_smallskew = { 0, &smallskew0_base };
 GImage GIcon_smallscale = { 0, &smallscale0_base };
 GImage GIcon_smallrotate = { 0, &smallrotate0_base };
@@ -2855,3 +2937,7 @@ GImage GIcon_exclude = { 0, &exclude_base };
 GImage GIcon_intersection = { 0, &intersection_base };
 GImage GIcon_rmoverlap = { 0, &rmoverlap_base };
 GImage GIcon_findinter = { 0, &findinter_base };
+
+GImage GIcon_outline = { 0, &outline_base };
+GImage GIcon_inline = { 0, &inline_base };
+GImage GIcon_shadow = { 0, &shadow_base };
