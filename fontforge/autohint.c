@@ -2872,6 +2872,12 @@ static StemInfo *SCFindStems(EIList *el, int major, int removeOverlaps,DStemInfo
     StemInfo *stems;
     real big = (el->coordmax[1-major]-el->coordmin[1-major])*.40;
 
+    if ( el->coordmax[major]-el->coordmin[major] > 1.e6 || big>1.e6 ) {
+	if ( el->sc!=NULL )
+	    fprintf( stderr, "Warning: %s has unreasonably big splines. They will be ignored.\n", el->sc->name );
+return( NULL );
+    }
+
     el->major = major;
     ELOrder(el,major);
     stems = ELFindStems(el,major,dstems,mds);

@@ -768,7 +768,7 @@ return( SplineMake2(from,to));
 	from->nextcp.y += fromunit.y * flen/10.0;
 	from->nonextcp = false;
     }
-    if ( to->noprevcp && flen!=0 ) {
+    if ( to->noprevcp && tlen!=0 ) {
 	to->prevcp.x += tounit.x * tlen/10.0;
 	to->prevcp.y += tounit.y * tlen/10.0;
 	to->noprevcp = false;
