@@ -692,6 +692,7 @@ char *GetPostscriptFontName(char *dir, int mult) {
 			                       'b','d','f',',',
 			                       'o','t','f',',',
 			                       'o','t','b',',',
+			                       'c','f','f',',',
 #ifndef _NO_LIBXML
 			                       's','v','g',',',
 #endif
