@@ -884,8 +884,14 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 	    switch ( fpst->format ) {
 	      case pst_glyphs:
 		fprintf( sfd, " String: %d %s\n", strlen(fpst->rules[i].u.glyph.names), fpst->rules[i].u.glyph.names);
-		fprintf( sfd, " BString: %d %s\n", strlen(fpst->rules[i].u.glyph.back), fpst->rules[i].u.glyph.back);
-		fprintf( sfd, " FString: %d %s\n", strlen(fpst->rules[i].u.glyph.fore), fpst->rules[i].u.glyph.fore);
+		if ( fpst->rules[i].u.glyph.back!=NULL )
+		    fprintf( sfd, " BString: %d %s\n", strlen(fpst->rules[i].u.glyph.back), fpst->rules[i].u.glyph.back);
+		else
+		    fprintf( sfd, " BString: 0\n");
+		if ( fpst->rules[i].u.glyph.fore!=NULL )
+		    fprintf( sfd, " FString: %d %s\n", strlen(fpst->rules[i].u.glyph.fore), fpst->rules[i].u.glyph.fore);
+		else
+		    fprintf( sfd, " FString: 0\n");
 	      break;
 	      case pst_class:
 		fprintf( sfd, " %d %d %d\n  ClsList:", fpst->rules[i].u.class.ncnt, fpst->rules[i].u.class.bcnt, fpst->rules[i].u.class.fcnt );
