@@ -157,13 +157,22 @@ static void MakeEncChar(SplineFont *sf,int enc,char *name) {
     /*sf->encoding_name = em_none;*/
 }
 
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
 static int figureProperEncoding(SplineFont *sf,BDFFont *b, int enc,char *name,
 	int swidth, int swidth1, enum charset encname) {
+#else
+static int figureProperEncoding(SplineFont *sf,BDFFont *b, int enc,char *name,
+	int swidth, int swidth1, Encoding *encname) {
+#endif
     int i = -1;
 
     if ( strcmp(name,".notdef")==0 ) {
 	if ( enc<32 || (enc>=127 && enc<0xa0)) i=enc;
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
 	else if ( sf->encoding_name==em_none ) i = enc;
+#else
+	else if ( sf->encoding_name==&custom ) i = enc;
+#endif
 	else if ( sf->onlybitmaps && ((sf->bitmaps==b && b->next==NULL) || sf->bitmaps==NULL) ) i = enc;
 	if ( i>=sf->charcnt ) i = -1;
 	if ( i!=-1 && (sf->chars[i]==NULL || strcmp(sf->chars[i]->name,name)!=0 )) {
@@ -175,8 +184,13 @@ static int figureProperEncoding(SplineFont *sf,BDFFont *b, int enc,char *name,
 		    sf->chars[enc]->vwidth = swidth1;
 	    }
 	}
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     } else if ( sf->encoding_name==encname ||
 	    (sf->encoding_name==em_custom && sf->onlybitmaps)) {
+#else
+    } else if ( sf->encoding_name==encname ||
+	    (sf->encoding_name==&custom && sf->onlybitmaps)) {
+#endif
 	i = enc;
 	if ( i>sf->charcnt )
 	    MakeEncChar(sf,enc,name);
@@ -185,9 +199,11 @@ static int figureProperEncoding(SplineFont *sf,BDFFont *b, int enc,char *name,
 	if ( uni==-1 )
 	    uni = UniFromName(name,sf->uni_interp,sf->encoding_name);
 	i = EncFromSF(uni,sf);
+#if 0
 	if ( uni!=-1 && i>=sf->charcnt &&
 		(sf->encoding_name==em_iso8859_1 || sf->encoding_name==em_unicode))
 	    SFReencodeFont(sf,uni>0xffff ? em_unicode4 : em_unicode);
+#endif
 	if ( i==-1 ) {
 	    for ( i=sf->charcnt-1; i>=0 ; --i ) if ( sf->chars[i]!=NULL ) {
 		if ( strcmp(name,sf->chars[i]->name)==0 )
@@ -242,8 +258,13 @@ struct metrics {
     int res;
 };
 
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
 static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b,int depth,
 	struct metrics *defs, enum charset encname) {
+#else
+static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b,int depth,
+	struct metrics *defs, Encoding *encname) {
+#endif
     BDFChar *bc;
     char name[40], tok[100];
     int enc=-1, width=defs->dwidth, xmin=0, xmax=0, ymin=0, ymax=0, hsz, vsz;
@@ -373,6 +394,7 @@ return;
     }
 }
 
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
 static int BDFParseEnc(char *encname, int encoff) {
     int enc;
 
@@ -424,6 +446,33 @@ static int slurp_header(FILE *bdf, int *_as, int *_ds, int *_enc,
 	char *family, char *mods, char *full, int *depth, char *foundry,
 	char *fontname, char *comments, struct metrics *defs,
 	int *upos, int *uwidth) {
+#else
+static Encoding *BDFParseEnc(char *encname, int encoff) {
+    Encoding *enc;
+    char buffer[200];
+
+    enc = NULL;
+    if ( strmatch(encname,"ISO10646")==0 || strmatch(encname,"ISO-10646")==0 || strmatch(encname,"ISO_10646")==0 ||
+	    strmatch(encname,"Unicode")==0 )
+	enc = FindOrMakeEncoding("Unicode");
+    if ( enc==NULL ) {
+	sprintf( buffer, "%.150s-%d", encname, encoff );
+	enc = FindOrMakeEncoding(buffer);
+    }
+    if ( enc==NULL && strmatch(encname,"ISOLatin1Encoding")==0 )
+	enc = FindOrMakeEncoding("ISO8859-1");
+    if ( enc==NULL )
+	enc = FindOrMakeEncoding(encname);
+    if ( enc==NULL )
+	enc = &custom;
+return( enc );
+}
+
+static int slurp_header(FILE *bdf, int *_as, int *_ds, Encoding **_enc,
+	char *family, char *mods, char *full, int *depth, char *foundry,
+	char *fontname, char *comments, struct metrics *defs,
+	int *upos, int *uwidth) {
+#endif
     int pixelsize = -1;
     int ascent= -1, descent= -1, enc, cnt;
     char tok[100], encname[100], weight[100], italic[100];
@@ -700,8 +749,13 @@ return;
     }
 }
 
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
 static int gf_postamble(FILE *gf, int *_as, int *_ds, int *_enc, char *family,
 	char *mods, char *full, char *filename) {
+#else
+static int gf_postamble(FILE *gf, int *_as, int *_ds, Encoding **_enc, char *family,
+	char *mods, char *full, char *filename) {
+#endif
     int pixelsize=-1;
     int ch;
     int design_size, pixels_per_point;
@@ -740,7 +794,11 @@ return( -2 );
 
     size = (pixels_per_point / (double) (0x10000)) * (design_size / (double) (0x100000));
     pixelsize = size+.5;
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     *_enc = em_none;
+#else
+    *_enc = &custom;
+#endif
     *_as = *_ds = -1;
     *mods = '\0';
     pt = strrchr(filename, '/');
@@ -920,8 +978,13 @@ return;
     }
 }
 
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
 static int pk_header(FILE *pk, int *_as, int *_ds, int *_enc, char *family,
 	char *mods, char *full, char *filename) {
+#else
+static int pk_header(FILE *pk, int *_as, int *_ds, Encoding **_enc, char *family,
+	char *mods, char *full, char *filename) {
+#endif
     int pixelsize=-1;
     int ch,i;
     int design_size, pixels_per_point;
@@ -944,7 +1007,11 @@ return( -2 );
 
     size = (pixels_per_point / 65536.0) * (design_size / (double) (0x100000));
     pixelsize = size+.5;
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     *_enc = em_none;
+#else
+    *_enc = &custom;
+#endif
     *_as = *_ds = -1;
     *mods = '\0';
     pt = strrchr(filename, '/');
@@ -1323,8 +1390,13 @@ return(false);
 return( true );
 }
 
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
 static int pcf_properties(FILE *file,struct toc *toc, int *_as, int *_ds,
 	int *_enc, char *family, char *mods, char *full) {
+#else
+static int pcf_properties(FILE *file,struct toc *toc, int *_as, int *_ds,
+	Encoding **_enc, char *family, char *mods, char *full) {
+#endif
     int pixelsize = -1;
     int ascent= -1, descent= -1, enc;
     char encname[100], weight[100], italic[100];
@@ -1584,8 +1656,13 @@ return( false );
 return( true );
 }
 
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
 static void PcfReadEncodingsNames(FILE *file,struct toc *toc,SplineFont *sf,
 	BDFFont *b, enum charset encname) {
+#else
+static void PcfReadEncodingsNames(FILE *file,struct toc *toc,SplineFont *sf,
+	BDFFont *b, Encoding *encname) {
+#endif
     int format, cnt, i, stringsize;
     int *offsets=NULL;
     char *string=NULL;
@@ -1653,8 +1730,13 @@ return( false );
 return( true );
 }
 
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
 static int PcfParse(FILE *file,struct toc *toc,SplineFont *sf,BDFFont *b,
 	enum charset encname) {
+#else
+static int PcfParse(FILE *file,struct toc *toc,SplineFont *sf,BDFFont *b,
+	Encoding *encname) {
+#endif
     int metrics_cnt;
     struct pcfmetrics *metrics = pcfGetMetricsTable(file,toc,PCF_METRICS,&metrics_cnt);
     int mcnt = metrics_cnt;
@@ -1774,7 +1856,12 @@ return( ret );
 BDFFont *SFImportBDF(SplineFont *sf, char *filename,int ispk, int toback) {
     FILE *bdf;
     char tok[100];
-    int pixelsize, ascent, descent, enc;
+    int pixelsize, ascent, descent;
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
+    int enc;
+#else
+    Encoding *enc;
+#endif
     BDFFont *b;
     char family[100], mods[200], full[300], foundry[100], comments[1000], fontname[300];
     struct toc *toc=NULL;

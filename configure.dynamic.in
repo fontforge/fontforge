@@ -36,7 +36,7 @@ AC_DEFINE(_ModKeysAutoRepeat)
 AC_DEFINE(__CygWin,1)
 AC_DEFINE(NODYNAMIC)
 gww_nodynamic="yes"
-#gww_needsstatic="yes"
+gww_needsstatic="yes"
 
 dnl Although present on my cygwin system the Xi library does not load
 dnl and crashes gdb if we attempt to use it.
@@ -57,7 +57,7 @@ if sh -c "freetype-config --prefix" >/dev/null 2>&1 ; then
  AC_CHECK_FILE($FreeType2_IncRoot/include/freetype2,CFLAGS="$CFLAGS -I$FreeType2_IncRoot/include/freetype2/",FreeType2_IncRoot=)
 fi
 
-if test "FreeType2_IncRoot" = "" >/dev/null 2>&1 ; then
+if test "$FreeType2_IncRoot" = "" >/dev/null 2>&1 ; then
  AC_CHECK_FILE(/usr/include/freetype2,[CFLAGS="$CFLAGS -I/usr/include/freetype2/"
      FreeType2_IncRoot="/usr"
  ],[
@@ -91,6 +91,16 @@ AC_CHECK_LIB(tiff, TIFFOpen, : , AC_DEFINE(_NO_LIBTIFF), -lm )
 AC_CHECK_LIB(xml2, xmlParseFile, : , AC_DEFINE(_NO_LIBXML))
 
 AC_CHECK_HEADERS([iconv.h])
+
+if test "$ac_cv_header_iconv_h" = "yes" >/dev/null 2>&1 ; then
+ AC_ARG_WITH(iconv,
+  [  --with-iconv   Use iconv for encoding definitions rather than gdraw],
+  [
+     if test "$withval" != "no" >/dev/null 2>&1 ; then
+	 AC_DEFINE(FONTFORGE_CONFIG_ICONV_ENCODING)
+     fi
+  ], : )
+fi
 
 gww_hasbytecode="no"
 AC_ARG_WITH(freetype-bytecode,

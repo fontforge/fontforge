@@ -1491,7 +1491,11 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
     int uniqueid;
 
     dumpf(dumpchar,data,"%%!PS-AdobeFont-1.0: %s %s\n", sf->fontname, sf->version?sf->version:"" );
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     if ( format==ff_ptype0 && (sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4))
+#else
+    if ( format==ff_ptype0 && (sf->encoding_name->is_unicodebmp || sf->encoding_name->is_unicodefull))
+#endif
 	dumpf(dumpchar,data,"%%%%DocumentNeededResources: font ZapfDingbats\n" );
     dumpf(dumpchar,data, "%%%%DocumentSuppliedResources: font %s\n", sf->fontname );
     dumpfontcomments(dumpchar,data,sf,format);
@@ -1619,7 +1623,7 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
 	    encoding[i] = ".notdef";
     for ( ; i<256; ++i )
 	encoding[i] = ".notdef";
-    if ( sf->encoding_name==em_adobestandard || isStdEncoding(encoding) )
+    if ( isStdEncoding(encoding) )
 	dumpstr(dumpchar,data,"/Encoding StandardEncoding def\n");
     else {
 	dumpstr(dumpchar,data,"/Encoding 256 array\n" );
@@ -1936,7 +1940,11 @@ static void dumptype0stuff(FILE *out,SplineFont *sf) {
 	    for ( ; j<256; ++j )
 		fprintf( out, " /%s\n", notdefname );
 	    fprintf( out, "] ReEncode\n\n" );
-	} else if ( i==0x27 && sf->encoding_name==em_unicode ) {
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
+	} else if ( i==0x27 && (sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4)) {
+#else
+	} else if ( i==0x27 && (sf->encoding_name->is_unicodebmp || sf->encoding_name->is_unicodefull)) {
+#endif
 	    fprintf( out, "%% Add Zapf Dingbats to unicode font at 0x2700\n" );
 	    fprintf( out, "%%  But only if on the printer, else use notdef\n" );
 	    fprintf( out, "%%  gv, which has no Zapf, maps courier to the name\n" );
@@ -1980,7 +1988,12 @@ static void dumptype0stuff(FILE *out,SplineFont *sf) {
     fprintf( out, "/FDepVector [\n" );
     fprintf( out, " /%sBase findfont\n", sf->fontname );
     for ( i=1; i<256; ++i )
-	if ( somecharsused(sf,i<<8, (i<<8)+0xff) || (i==0x27 && sf->encoding_name==em_unicode) )
+	if ( somecharsused(sf,i<<8, (i<<8)+0xff) ||
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
+		(i==0x27 && (sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4)))
+#else
+		(i==0x27 && (sf->encoding_name->is_unicodebmp || sf->encoding_name->is_unicodefull)) )
+#endif
 	    fprintf( out, " /%s%d findfont\n", sf->fontname, i );
 	else
 	    fprintf( out, " /%sNotDef findfont\n", sf->fontname );

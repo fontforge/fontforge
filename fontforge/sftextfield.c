@@ -195,7 +195,11 @@ static void SFTextAreaProcessBi(SFTextArea *st, int start_of_change) {
 }
 static int FDMap(FontData *fd,int uenc) {
     /* given a unicode code point, find the encoding in this font */
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     if ( fd->sf->encoding_name==em_unicode || fd->sf->encoding_name==em_unicode4 ) {
+#else
+    if ( fd->sf->encoding_name->is_unicodebmp || fd->sf->encoding_name->is_unicodefull ) {
+#endif
 	if ( fd->sf->chars[uenc]==NULL )
 return( -1 );
 return( uenc );
@@ -2437,7 +2441,11 @@ static struct sfmaps *SFMapOfSF(SFTextArea *st,SplineFont *sf) {
     int i, umax;
     struct sfmaps *sfmaps;
 
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     if ( sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4 )
+#else
+    if ( sf->encoding_name->is_unicodebmp || sf->encoding_name->is_unicodefull )
+#endif
 return( NULL );
 
     for ( sfmaps=st->sfmaps; sfmaps!=NULL; sfmaps=sfmaps->next )

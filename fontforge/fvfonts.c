@@ -335,6 +335,7 @@ return( NULL );
 
 static int _SFFindChar(SplineFont *sf, int unienc, const char *name ) {
     int index= -1;
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
 
     if ( (sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4) &&
 	    unienc!=-1 ) {
@@ -354,6 +355,21 @@ static int _SFFindChar(SplineFont *sf, int unienc, const char *name ) {
 	    if ( sf->chars[index]->unicodeenc==unienc )
 	break;
 	}
+#else
+    if ( (sf->encoding_name->is_custom || sf->encoding_name->is_compact ||
+	    sf->encoding_name->is_original) && unienc!=-1 ) {
+	if ( unienc<sf->charcnt && sf->chars[unienc]!=NULL &&
+		sf->chars[unienc]->unicodeenc==unienc )
+	    index = unienc;
+	else for ( index = sf->charcnt-1; index>=0; --index ) if ( sf->chars[index]!=NULL ) {
+	    if ( sf->chars[index]->unicodeenc==unienc )
+	break;
+	}
+    } else if ( unienc!=-1 ) {
+	index = EncFromUni(unienc,sf->encoding_name);
+	if ( index<0 || index>=sf->charcnt || sf->chars[index]==NULL )
+	    index = -1;
+#endif
     } else {
 	SplineChar *sc = SFHashName(sf,name);
 	if ( sc==NULL )
@@ -373,6 +389,7 @@ int SFFindChar(SplineFont *sf, int unienc, const char *name ) {
     int index=-1;
     char *end;
 
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     if ( (sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4) &&
 	    unienc!=-1 ) {
 	index = unienc;
@@ -381,7 +398,7 @@ int SFFindChar(SplineFont *sf, int unienc, const char *name ) {
     } else if ( (sf->encoding_name>=em_unicodeplanes && sf->encoding_name<=em_unicodeplanesmax) &&
 	    unienc!=-1 ) {
 	index = unienc-((sf->encoding_name-em_unicodeplanes)<<16);
-	if ( index<0 || index>=sf->charcnt || sf->chars[index]==NULL )
+	if ( index<0 || index>=sf->charcnt )
 	    index = -1;
     } else if ( unienc!=-1 ) {
 	if ( unienc<sf->charcnt && sf->chars[unienc]!=NULL &&
@@ -391,7 +408,24 @@ int SFFindChar(SplineFont *sf, int unienc, const char *name ) {
 	    if ( sf->chars[index]->unicodeenc==unienc )
 	break;
 	}
-    } else if ( name!=NULL ) {
+    }
+#else
+    if ( (sf->encoding_name->is_custom || sf->encoding_name->is_compact ||
+	    sf->encoding_name->is_original) && unienc!=-1 ) {
+	if ( unienc<sf->charcnt && sf->chars[unienc]!=NULL &&
+		sf->chars[unienc]->unicodeenc==unienc )
+	    index = unienc;
+	else for ( index = sf->charcnt-1; index>=0; --index ) if ( sf->chars[index]!=NULL ) {
+	    if ( sf->chars[index]->unicodeenc==unienc )
+	break;
+	}
+    } else if ( unienc!=-1 ) {
+	index = EncFromUni(unienc,sf->encoding_name);
+	if ( index<0 || index>=sf->charcnt )
+	    index = -1;
+    }
+#endif
+    if ( index==-1 && name!=NULL ) {
 	SplineChar *sc = SFHashName(sf,name);
 	if ( sc!=NULL ) index = sc->enc;
 	if ( index==-1 ) {
@@ -411,8 +445,11 @@ return( SFFindChar(sf,unienc,NULL));
 	}
     }
 
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
  /* Ok. The character is not in the font, but that might be because the font */
  /*  has a hole. check to see if it is in the encoding */
+ /* EncFromUni should have handled all these cases, so there is nothing for */
+ /*  us to do in the ICONV case */
     if ( index==-1 && unienc>=0 && unienc<=65535 && sf->encoding_name!=em_none ) {
 	if ( sf->encoding_name==em_none )
 	    index = -1;
@@ -489,6 +526,7 @@ return( SFFindChar(sf,unienc,NULL));
 	    }
 	}
     }
+#endif
 return( index );
 }
 
@@ -658,7 +696,11 @@ return( index );
 
 static int SFEncodingCnt(SplineFont *sf) {
     int cnt = CountOfEncoding(sf->encoding_name);
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     if ( sf->encoding_name == em_none )
+#else
+    if ( sf->encoding_name->is_custom || sf->encoding_name->is_original || sf->encoding_name->is_compact )
+#endif
 return( sf->charcnt );
     if ( cnt==0 )
 return( sf->charcnt );

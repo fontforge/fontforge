@@ -129,6 +129,7 @@ static uint16 HashToId(char *fontname,SplineFont *sf) {
 		low = 0x7200; high = 0x73ff;
 	    }
 	}
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     } else if ( sf->encoding_name == em_big5 || sf->encoding_name == em_big5hkscs ) {
 	low = 0x4200; high = 0x43ff;
     } else if ( sf->encoding_name == em_jis208 ||
@@ -142,6 +143,16 @@ static uint16 HashToId(char *fontname,SplineFont *sf) {
     } else if ( sf->encoding_name == em_gb2312 ||
 	    sf->encoding_name==em_jisgb ) {
 	low = 0x7200; high = 0x73ff;
+#else
+    } else if ( sf->encoding_name->is_tradchinese ) {
+	low = 0x4200; high = 0x43ff;
+    } else if ( sf->encoding_name->is_japanese ) {
+	low = 0x4000; high = 0x41ff;
+    } else if ( sf->encoding_name->is_korean ) {
+	low = 0x4400; high = 0x45ff;
+    } else if ( sf->encoding_name->is_simplechinese ) {
+	low = 0x7200; high = 0x73ff;
+#endif
     } else for ( i=0; i<sf->charcnt && i<256; ++i ) if ( (sc = sf->chars[i])!=NULL ) {
 	/* Japanese between	0x4000 and 0x41ff */
 	/* Trad Chinese		0x4200 and 0x43ff */
@@ -843,7 +854,13 @@ static uint32 SFToFOND(FILE *res,SplineFont *sf,uint32 id,int dottf,int32 *sizes
     /* GWW: Hmm. ATM refuses to use postscript fonts that have */
     /*  glyph encoding tables. Printer drivers use them ok. ATM will only */
     /*  work on fonts with mac roman encodings */
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     if ( sf->encoding_name!=em_mac ) {
+#else
+    if ( strmatch(sf->encoding_name->enc_name,"mac")!=0 &&
+	    strmatch(sf->encoding_name->enc_name,"macintosh")!=0 &&
+	    strmatch(sf->encoding_name->enc_name,"macroman")!=0 ) {
+#endif
 #if defined(FONTFORGE_CONFIG_GTK)
 	if ( !dottf ) gwwv_post_notice(_("The generated font won't work with ATM"),_("ATM requires that fonts be encoded with the Macintosh Latin encoding. This postscript font will print fine, but only the bitmap versions will be displayed on the screen"));
 #else
@@ -1191,7 +1208,13 @@ static uint32 SFsToFOND(FILE *res,struct sflist *sfs,uint32 id,int format,int bf
     /* GWW: Hmm. ATM refuses to use postscript fonts that have */
     /*  glyph encoding tables. Printer drivers use them ok. ATM will only */
     /*  work on fonts with mac roman encodings */
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     if ( psfaces[0]->sf->encoding_name!=em_mac ) {
+#else
+    if ( strmatch(psfaces[0]->sf->encoding_name->enc_name,"mac")!=0 &&
+	    strmatch(psfaces[0]->sf->encoding_name->enc_name,"macintosh")!=0 &&
+	    strmatch(psfaces[0]->sf->encoding_name->enc_name,"macroman")!=0 ) {
+#endif
 	if ( format==ff_pfbmacbin )
 #if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_notice(_("The generated font won't work with ATM"),_("ATM requires that fonts be encoded with the Macintosh Latin encoding. This postscript font will print fine, but only the bitmap versions will be displayed on the screen"));
@@ -2611,7 +2634,11 @@ return( NULL );
 	}
     }
 
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     sf = SplineFontBlank(em_mac,256);
+#else
+    sf = SplineFontBlank(FindOrMakeEncoding("mac"),256);
+#endif
     free(sf->fontname); sf->fontname = name;
     free(sf->familyname); sf->familyname = copy(fond->fondname);
     sf->fondname = copy(fond->fondname);

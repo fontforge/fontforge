@@ -27,7 +27,9 @@
 #include "pfaedit.h"
 #include "splinefont.h"
 #include <gdraw.h>			/* for the defn of GClut for greymaps */
+#include <string.h>
 #include <ustring.h>
+#include <utype.h>
 
 #define MAX_WIDTH	200
 
@@ -143,12 +145,19 @@ static int GenerateGlyphRanges(BDFFont *font, FILE *file) {
     /*  guessing wrong would present you with a "DEFAULT_CHAR" rather than */
     /*  nothing) */
 
+# ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     if ( font->encoding_name==em_unicode )
 	max = 65536;
     else if ( font->encoding_name==em_unicode4 )
 	max = unicode4_size;
     else
 return( 0 );
+# else
+    if ( font->encoding_name->is_unicodebmp || font->encoding_name->is_unicodefull )
+	max = font->encoding_name->char_cnt;
+    else
+return( 0 );
+# endif
     pt = buffer; end = pt+sizeof(buffer);
     for ( i=0; i<font->charcnt && i<max; ++i ) if ( !IsntBDFChar(font->chars[i]) ) {
 	for ( j=i+1; j<font->charcnt && j<max && !IsntBDFChar(font->chars[j]); ++j );
@@ -397,6 +406,7 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding, int res) {
     fprintf( file, "AVERAGE_WIDTH %d\n", avg );
     if ( font->clut!=NULL )
 	fprintf( file, "BITS_PER_PIXEL %d\n", BDFDepth(font));
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     if ( font->encoding_name==em_none )
 	fprintf( file, "CHARSET_REGISTRY \"FontSpecific\"\n" );
     else if ( font->encoding_name<=em_iso8859_15 )
@@ -409,6 +419,24 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding, int res) {
 	fprintf( file, "CHARSET_REGISTRY \"%s\"\n", encoding );
     if (( pt = strrchr(encoding,'-'))==NULL ) pt = "-0";
     fprintf( file, "CHARSET_ENCODING \"%s\"\n", pt+1 );
+#else
+    if ( font->encoding_name->is_custom || font->encoding_name->is_original )
+	fprintf( file, "CHARSET_REGISTRY \"FontSpecific\"\n" );
+    else if ( strstr(font->encoding_name->enc_name,"8859")!=NULL )
+	fprintf( file, "CHARSET_REGISTRY \"ISO8859\"\n" );
+    else if ( font->encoding_name->is_unicodebmp ||
+	    font->encoding_name->is_unicodefull )
+	fprintf( file, "CHARSET_REGISTRY \"ISO10646\"\n" );
+    else
+	fprintf( file, "CHARSET_REGISTRY \"%s\"\n", encoding );
+    if (( pt = strrchr(encoding,'-'))!=NULL )
+	/* DoNothing */;
+    else if ( (pt = strstr(encoding,"8859"))!=NULL && isdigit(pt[4]))
+	pt += 4;
+    else
+	pt = "0";
+    fprintf( file, "CHARSET_ENCODING \"%s\"\n", pt );
+#endif
 
     OS2FigureCodePages(font->sf,codepages);
     fprintf( file, "CHARSET_COLLECTIONS \"" );
@@ -422,6 +450,7 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding, int res) {
 	if ( i==127 )
 	    fprintf( file, "ASCII ");
     }
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
     if ( (codepages[0]&1) && font->encoding_name!=em_iso8859_1 )
 	fprintf( file, "ISOLatin1Encoding " );
     if ( (codepages[0]&2) && font->encoding_name!=em_iso8859_2 )
@@ -450,6 +479,37 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding, int res) {
 	fprintf( file, "BIG5 " );
     if ( (codepages[0]&0x80000000) && font->encoding_name!=em_symbol )
 	fprintf( file, "Symbol " );
+#else
+    if ( (codepages[0]&1) )
+	fprintf( file, "ISOLatin1Encoding " );
+    if ( (codepages[0]&2) )
+	fprintf( file, "ISO8859-2 " );
+    if ( (codepages[0]&4) )
+	fprintf( file, "ISO8859-5 " );
+    if ( (codepages[0]&8) )
+	fprintf( file, "ISO8859-7 " );
+    if ( (codepages[0]&0x10) )
+	fprintf( file, "ISO8859-9 " );
+    if ( (codepages[0]&0x20) )
+	fprintf( file, "ISO8859-8 " );
+    if ( (codepages[0]&0x40) )
+	fprintf( file, "ISO8859-6 " );
+    if ( (codepages[0]&0x80) )
+	fprintf( file, "ISO8859-4 " );
+    if ( (codepages[0]&0x10000)  )
+	fprintf( file, "ISO8859-11 " );
+    if ( (codepages[0]&0x20000) && (font->encoding_name->is_unicodebmp || font->encoding_name->is_unicodefull ))
+	fprintf( file, "JISX0208.1997 " );
+    if ( (codepages[0]&0x40000) && (font->encoding_name->is_unicodebmp || font->encoding_name->is_unicodefull ) )
+	fprintf( file, "GB2312.1980 " );
+    if ( (codepages[0]&0x80000) && (font->encoding_name->is_unicodebmp || font->encoding_name->is_unicodefull ))
+	fprintf( file, "KSC5601.1992 " );
+    if ( (codepages[0]&0x100000) && (font->encoding_name->is_unicodebmp || font->encoding_name->is_unicodefull ))
+	fprintf( file, "BIG5 " );
+    if ( (codepages[0]&0x80000000) )
+	fprintf( file, "Symbol " );
+#endif
+
 #if 0
     if ( (codepages[0]&0x20000000) && font->encoding_name!=em_mac )
 	fprintf( file, "MacRoman " );
@@ -503,7 +563,11 @@ int BDFFontDump(char *filename,BDFFont *font, char *encodingname, int res) {
 	BDFDumpHeader(file,font,encodingname,res);
 	for ( i=0; i<font->charcnt; ++i ) if ( !IsntBDFChar(font->chars[i])) {
 	    enc = i;
+#ifndef FONTFORGE_CONFIG_ICONV_ENCODING
 	    if ( i>=256 && font->sf->encoding_name<=em_first2byte )
+#else
+	    if ( i>=font->sf->encoding_name->char_cnt )
+#endif
 		enc = -1;
 	    BDFDumpChar(file,font,font->chars[i],enc);
 	}
