@@ -113,13 +113,8 @@ static void SOError(char *format,...) {
 
 static Monotonic *SplineToMonotonic(Spline *s,double startt,double endt,
 	Monotonic *last,int exclude) {
-    Monotonic *m = chunkalloc(sizeof(Monotonic));
+    Monotonic *m;
     BasePoint start, end;
-
-    m->s = s;
-    m->tstart = startt;
-    m->tend = endt;
-    m->exclude = exclude;
 
     start.x = ((s->splines[0].a*startt+s->splines[0].b)*startt+s->splines[0].c)*startt
 		+ s->splines[0].d;
@@ -129,6 +124,22 @@ static Monotonic *SplineToMonotonic(Spline *s,double startt,double endt,
 		+ s->splines[0].d;
     end.y = ((s->splines[1].a*endt+s->splines[1].b)*endt+s->splines[1].c)*endt
 		+ s->splines[1].d;
+    if ( (real) (((start.x+end.x)/2)==start.x || (real) ((start.x+end.x)/2)==end.x) &&
+	    (real) (((start.y+end.y)/2)==start.y || (real) ((start.y+end.y)/2)==end.y) ) {
+	/* The distance between the two points of inflection is so small */
+	/*  as to be unobservable. In other words we'd end up with a zero*/
+	/*  length spline */
+	if ( endt==1.0 && last!=NULL && last->s==s )
+	    last->tend = endt;
+return( last );
+    }
+
+    m = chunkalloc(sizeof(Monotonic));
+    m->s = s;
+    m->tstart = startt;
+    m->tend = endt;
+    m->exclude = exclude;
+
     if ( end.x>start.x ) {
 	m->xup = true;
 	m->b.minx = start.x;
@@ -1546,10 +1557,41 @@ static SplineSet *SSRemoveTiny(SplineSet *base) {
 	    if ( sp==base->first )
 	break;
 	}
+	if ( sp->prev!=NULL && !sp->noprevcp ) {
+	    int refigure = false;
+	    if ( sp->me.x-sp->prevcp.x>-error && sp->me.x-sp->prevcp.x<error ) {
+		sp->prevcp.x = sp->me.x;
+		refigure = true;
+	    }
+	    if ( sp->me.y-sp->prevcp.y>-error && sp->me.y-sp->prevcp.y<error ) {
+		sp->prevcp.y = sp->me.y;
+		refigure = true;
+	    }
+	    if ( sp->me.x==sp->prevcp.x && sp->me.y==sp->prevcp.y )
+		sp->noprevcp = true;
+	    if ( refigure )
+		SplineRefigure(sp->prev);
+	}
+	if ( sp->next!=NULL && !sp->nonextcp ) {
+	    int refigure = false;
+	    if ( sp->me.x-sp->nextcp.x>-error && sp->me.x-sp->nextcp.x<error ) {
+		sp->nextcp.x = sp->me.x;
+		refigure = true;
+	    }
+	    if ( sp->me.y-sp->nextcp.y>-error && sp->me.y-sp->nextcp.y<error ) {
+		sp->nextcp.y = sp->me.y;
+		refigure = true;
+	    }
+	    if ( sp->me.x==sp->nextcp.x && sp->me.y==sp->nextcp.y )
+		sp->nonextcp = true;
+	    if ( refigure )
+		SplineRefigure(sp->next);
+	}
 	if ( base!=NULL )
 	    prev = base;
 	base = ssnext;
     }
+
 return( head );
 }
 
@@ -1562,6 +1604,7 @@ SplineSet *SplineSetRemoveOverlap(SplineChar *sc, SplineSet *base,enum overlap_t
 	glyphname = sc->name;
 
     base = SSRemoveTiny(base);
+    SSRemoveStupidControlPoints(base);
     ms = SSsToMContours(base,ot);
     ilist = FindIntersections(ms,ot);
     Validate(ms,ilist);
