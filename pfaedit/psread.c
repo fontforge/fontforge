@@ -1891,6 +1891,8 @@ static SplinePointList *SplinesFromEntities(EntityChar *ec,int *toobigwarn) {
 	next = ent->next;
 	if ( ent->type == et_splines ) {
 	    if ( ent->u.splines.stroke.col!=0xffffffff ) {
+		if ( ent->u.splines.fill.col!=0xffffffff && !SplinePointListIsClockwise(ent->u.splines.splines))
+		    SplineSetReverse(ent->u.splines.splines);
 		memset(&si,'\0',sizeof(si));
 		si.toobigwarn = *toobigwarn;
 		si.join = ent->u.splines.join;
