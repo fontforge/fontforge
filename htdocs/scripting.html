@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 29-Jan-2004 -->
+  <!-- AP: Last modified: 2-Feb-2004 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -552,6 +552,10 @@ a[4][0] = "Nested array";
       <LI>
 	mult (splits a big font up into multiple pfb fonts each with 256 characters)
       <LI>
+	mm.pfa (multiple master font in ascii format)
+      <LI>
+	mm.pfb (multiple master font in binary format)
+      <LI>
 	ps (type 0)
       <LI>
 	cid (non-otf cid font)
@@ -641,6 +645,8 @@ a[4][0] = "Nested array";
 	fmflags&amp;0x40000 =&gt; do not do flex hints
       <LI>
 	fmflags&amp;0x80000 =&gt; do not include postscript hints
+      <LI>
+	fmflags&amp;0x200000 =&gt; round postscript coordinates
     </UL>
     <P>
     res controls the resolution of generated bdf fonts. A value of -1 means pfaedit

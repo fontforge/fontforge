@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Sep-2002 -->
-  <!-- AP: Last modified: 2-Jan-2004 -->
+  <!-- AP: Last modified: 2-Feb-2004 -->
   <TITLE>Generate Font Dialog</TITLE>
 </HEAD>
 <BODY>
@@ -130,10 +130,14 @@ The bitmap types are:
     None
 </UL>
 <P>
-<IMG SRC="GenerateOptions.png" WIDTH="323" HEIGHT="269" ALIGN="Right">The
+<IMG SRC="GenerateOptions.png" WIDTH="323" HEIGHT="296" ALIGN="Right">The
 <A NAME="Options">options</A> dialog provides the following check boxes.
 Not all are enabled at all times.
 <UL>
+  <LI>
+    [] Round -- Round all coordinates to integral values. If this is not checked
+    then Type1 fonts will be output with 2 decimal digits of precision, and Type2
+    fonts with 16 binary digits (~4 decimal digits) when needed.
   <LI>
     [] Hints -- Include PostScript hints in the output file
   <LI>
