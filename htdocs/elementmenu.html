@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 9-Aug-2002 -->
+  <!-- AP: Last modified: 05-Nov-2002 -->
   <TITLE>The Element Menu</TITLE>
 </HEAD>
 <BODY>
@@ -44,7 +44,8 @@ This menu is not present in the Metrics View.
   <LI>
     <A HREF="#Expand">Expand Stroke...</A>
   <LI>
-    <A HREF="#Remove">Remove Overlap</A>
+    <A HREF="#Remove">Remove Overlap</A><BR>
+    Find Intersections
   <LI>
     <A HREF="#Simplify">Simplify</A><BR>
     Simplify More
@@ -287,6 +288,18 @@ This menu is not present in the Metrics View.
     the command it will save the state to the error recovery file.<BR>
     Warning: Splines which are tangent (or nearly so) cause problems. Points
     which are close together can cause problems.
+  <DT>
+    Find Intersections
+  <DD>
+    This is a varient of the Remove Overlap command, obtainable if you hold down the
+    shift key when invoking from the menu. It does half of what remove overlap does--
+    it finds the places where overlapping contours intersect and inserts points
+    at those locations.
+    <P>
+    If Remove Overlap fails on a character, this command may be useful if you
+    decide to do it manually.
+    <P>
+    I am not aware of any major bugs in Find Intersections...
   <DT>
     <A NAME="Simplify">Simplify</A>
   <DD>

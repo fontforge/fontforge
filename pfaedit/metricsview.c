@@ -1382,7 +1382,7 @@ static void MVMenuOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	SCPreserveState(sc,false);
 	MinimumDistancesFree(sc->md);
 	sc->md = NULL;
-	sc->splines = SplineSetRemoveOverlap(sc->splines);
+	sc->splines = SplineSetRemoveOverlap(sc->splines,e!=NULL && (e->u.mouse.state&ksm_shift));
 	SCCharChangedUpdate(sc);
     }
 }
@@ -1870,8 +1870,17 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_Transform:
 	    mi->ti.disabled = sc==NULL;
 	  break;
+	  case MID_RmOverlap:
+	    mi->ti.disabled = sc==NULL || mv->fv->sf->onlybitmaps;
+	    if ( !mi->ti.disabled ) {
+		if ( e==NULL || !(e->u.mouse.state&ksm_shift) )
+		    mi->ti.text = u_copy(GStringGetResource(_STR_Rmoverlap,NULL));
+		else
+		    mi->ti.text = u_copy(GStringGetResource(_STR_FindIntersections,NULL));
+	    }
+	  break;
 	  case MID_AddExtrema:
-	  case MID_Stroke: case MID_RmOverlap:
+	  case MID_Stroke:
 	  case MID_Round: case MID_Correct:
 	    mi->ti.disabled = sc==NULL || mv->fv->sf->onlybitmaps;
 	  break;

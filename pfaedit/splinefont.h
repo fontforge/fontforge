@@ -723,7 +723,7 @@ extern real SFGuessItalicAngle(SplineFont *sf);
 extern void SFHasSerifs(SplineFont *sf);
 
 extern SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc);
-extern SplineSet *SplineSetRemoveOverlap(SplineSet *base);
+extern SplineSet *SplineSetRemoveOverlap(SplineSet *base,int justintersect);
 
 extern void FindBlues( SplineFont *sf, real blues[14], real otherblues[10]);
 extern void QuickBlues(SplineFont *sf, BlueData *bd);

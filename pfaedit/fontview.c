@@ -1473,7 +1473,7 @@ static void FVMenuTilePath(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 #endif
 
-static void FVOverlap(FontView *fv) {
+static void FVOverlap(FontView *fv,int justintersect) {
     int i, cnt=0;
 
     /* We know it's more likely that we'll find a problem in the overlap code */
@@ -1489,7 +1489,7 @@ static void FVOverlap(FontView *fv) {
 	SCPreserveState(sc,false);
 	MinimumDistancesFree(sc->md);
 	sc->md = NULL;
-	sc->splines = SplineSetRemoveOverlap(sc->splines);
+	sc->splines = SplineSetRemoveOverlap(sc->splines,justintersect);
 	SCCharChangedUpdate(sc);
 	if ( !GProgressNext())
     break;
@@ -1504,7 +1504,7 @@ static void FVMenuOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     /*  than anywhere else, so let's save the current state against a crash */
     DoAutoSaves();
 
-    FVOverlap(fv);
+    FVOverlap(fv,e!=NULL && (e->u.mouse.state&ksm_shift));
 }
 
 static void FVSimplify(FontView *fv,int type) {
@@ -2083,7 +2083,16 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 		mi->invoke = FVMenuSimplifyMore;
 	    }
 	  break;
-	  case MID_Stroke: case MID_RmOverlap:
+	  case MID_RmOverlap:
+	    mi->ti.disabled = anychars==-1 || fv->sf->onlybitmaps;
+	    if ( !mi->ti.disabled ) {
+		if ( e==NULL || !(e->u.mouse.state&ksm_shift) )
+		    mi->ti.text = u_copy(GStringGetResource(_STR_Rmoverlap,NULL));
+		else
+		    mi->ti.text = u_copy(GStringGetResource(_STR_FindIntersections,NULL));
+	    }
+	  break;
+	  case MID_Stroke:
 	  case MID_Round: case MID_Correct:
 	    mi->ti.disabled = anychars==-1 || fv->sf->onlybitmaps;
 	  break;
@@ -5045,7 +5054,7 @@ void FVFakeMenus(FontView *fv,int cmd) {
       break;
 
       case 100:
-	FVOverlap(fv);
+	FVOverlap(fv,false);
       break;
       case 101:
 	FVSimplify(fv,false);

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 26-Oct-2002 -->
+  <!-- AP: Last modified: 05-Nov-2002 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -14,6 +14,16 @@
     ??-Nov-2002
     <UL>
       <LI>
+	Improved behavior of Remove Overlap. Fix inspired by Kanou.
+      <LI>
+	Added a "Find Intersections" command, a varient of remove overlap
+	that stops after it finds the intersections. I think this half of
+	the job has no major bugs.
+   </UL>
+  <LI>
+    04-Nov-2002
+    <UL>
+      <LI>
 	KDE has the lovely habit of losing some resize events when in
 	continuous resize mode. So I've tweaked the fontview resize code
 	so that it is less dependent on individual events.
@@ -21,6 +31,12 @@
 	Added a mode where the user can choose between whether the font shown
 	in the fontview should be scaled so that the em fits in the space provided
 	(this is the old behavior) or so that the bounding box does.
+      <LI>
+	Rewrote the knife tool so that it cuts at the end rather than as it
+	goes along. I think this is easier to use.
+      <LI>
+	Bug in the generation of format=2 truetype encoding tables (used for
+	CJK fonts).
    </UL>
   <LI>
     02-Nov-2002

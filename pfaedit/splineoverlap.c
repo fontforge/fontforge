@@ -117,17 +117,17 @@ return( old );
     }
 
     match = NULL;
-    if ( lefts->from->me.x-xpos>-1 && lefts->from->me.x-xpos<1 &&
-	    lefts->from->me.y-ypos>-1 && lefts->from->me.y-ypos<1 )
+    if ( lefts->from->me.x-xpos>-.1 && lefts->from->me.x-xpos<.1 &&
+	    lefts->from->me.y-ypos>-.1 && lefts->from->me.y-ypos<.1 )
 	match = lefts->from;
-    else if ( lefts->to->me.x-xpos>-1 && lefts->to->me.x-xpos<1 &&
-	    lefts->to->me.y-ypos>-1 && lefts->to->me.y-ypos<1 )
+    else if ( lefts->to->me.x-xpos>-.1 && lefts->to->me.x-xpos<.1 &&
+	    lefts->to->me.y-ypos>-.1 && lefts->to->me.y-ypos<.1 )
 	match = lefts->to;
-    else if ( rights->from->me.x-xpos>-1 && rights->from->me.x-xpos<1 &&
-	    rights->from->me.y-ypos>-1 && rights->from->me.y-ypos<1 )
+    else if ( rights->from->me.x-xpos>-.1 && rights->from->me.x-xpos<.1 &&
+	    rights->from->me.y-ypos>-.1 && rights->from->me.y-ypos<.1 )
 	match = rights->from;
-    else if ( rights->to->me.x-xpos>-1 && rights->to->me.x-xpos<1 &&
-	    rights->to->me.y-ypos>-1 && rights->to->me.y-ypos<1 )
+    else if ( rights->to->me.x-xpos>-.1 && rights->to->me.x-xpos<.1 &&
+	    rights->to->me.y-ypos>-.1 && rights->to->me.y-ypos<.1 )
 	match = rights->to;
     /* fixup some rounding errors */
     if ( match!=NULL ) {
@@ -502,11 +502,39 @@ static void ChangeSpline(IntersectionList *il,Spline *new,Spline *old) {
 
     if ( il==NULL )
 return;
+
     for ( sl = il->splines; sl!=NULL; sl = sl->next )
 	if ( sl->spline == old ) {
 	    sl->spline = new;
     break;
 	}
+}
+
+static void ChangeAndCleanSpline(IntersectionList *il,Spline *new,Spline *old) {
+    /* Spline old just got broken into two pieces (one of which is new) */
+    /*  need to change any reference to the old spline into ones to the new */
+    SplineList *sl, *prev, *next;
+    int sawnew;
+
+    while ( il!=NULL ) {
+	sawnew = false;
+	prev = NULL;
+	for ( sl = il->splines; sl!=NULL; sl = next ) {
+	    next = sl->next;
+	    if ( sawnew && (sl->spline==old || sl->spline==new) ) {
+		prev->next = next;
+		free(sl);
+	    } else {
+		if ( sl->spline == old ) {
+		    sl->spline = new;
+		    sawnew = true;
+		} else if ( sl->spline==new )
+		    sawnew = true;
+		prev = sl;
+	    }
+	}
+	il = il->next;
+    }
 }
 
 static void DoIntersections(SplineTList *me,IntersectionList *ilist) {
@@ -579,6 +607,8 @@ static void DoIntersections(SplineTList *me,IntersectionList *ilist) {
 static void CleanupSplines(IntersectionList *ilist,IntersectionList *ilbase) {
     SplineList *sl1, *sl2, *prev, *next;
 
+return;	/* But it seems we don't need it at all now */
+
     for ( sl1 = ilist->splines; sl1!=NULL; sl1=sl1->next ) {
 	prev = sl1;
 	for ( sl2 = sl1->next; sl2!=NULL ; sl2 = next ) {
@@ -588,7 +618,7 @@ static void CleanupSplines(IntersectionList *ilist,IntersectionList *ilbase) {
 		( sl2->spline->from->me.x==sl1->spline->to->me.x && sl2->spline->from->me.y==sl1->spline->to->me.y &&
 		    sl2->spline->to->me.x==sl1->spline->from->me.x && sl2->spline->to->me.y==sl1->spline->from->me.y )) {
 		prev->next = next;
-		ChangeSpline(ilbase,sl1->spline,sl2->spline);
+		ChangeAndCleanSpline(ilbase,sl1->spline,sl2->spline);
 		SplineFree(sl2->spline);
 		free(sl2);
 	    } else
@@ -1392,7 +1422,7 @@ static void ShowIntersections(IntersectionList *ilist) {
 	bring points that are close together on top of one another
 	?Correct Direction?	But that alters semantics
 */
-SplineSet *SplineSetRemoveOverlap(SplineSet *base) {
+SplineSet *SplineSetRemoveOverlap(SplineSet *base,int justintersect) {
     SplineSet *open, *needed, *tbase, *new, *next;
     IntersectionList *ilist;
     int changed = false;
@@ -1401,44 +1431,50 @@ SplineSet *SplineSetRemoveOverlap(SplineSet *base) {
 
     tbase = base;
     open = SplineSetsExtractOpen(&tbase);
-    tbase = SplineCharRemoveTiny(NULL,tbase);	/* remove tiny (<1unit long) splines. They confuse the needed checker */
-    base = tbase;
-    ilist = SplineSetFindIntersections(base);
-    SplineSetFindNeeded(base);
-    RemoveDuplicates(ilist);
+    if ( justintersect ) {
+	ilist = SplineSetFindIntersections(base);
+	ILFree(ilist);
+	needed = base;
+    } else {
+	tbase = SplineCharRemoveTiny(NULL,tbase);	/* remove tiny (<1unit long) splines. They confuse the needed checker */
+	base = tbase;
+	ilist = SplineSetFindIntersections(base);
+	SplineSetFindNeeded(base);
+	RemoveDuplicates(ilist);
 #ifdef DEBUG
-    ShowIntersections(ilist);
+	ShowIntersections(ilist);
 #endif
-    SSValidate(base);
-    base = SSRemoveAllUnneeded(base,ilist);
+	SSValidate(base);
+	base = SSRemoveAllUnneeded(base,ilist);
 #ifdef DEBUG
-    ShowIntersections(ilist);
+	ShowIntersections(ilist);
 #endif
-    SSValidate(base);
-    tbase = base;
-    needed = SSRemoveAllNeeded(&tbase,ilist);
-    base = tbase;
-    SSValidate(base);
-    ILDisconnect(ilist);
-    ILFreeUnusedSplines(ilist);
-    new = SSRebuild(ilist);
+	SSValidate(base);
+	tbase = base;
+	needed = SSRemoveAllNeeded(&tbase,ilist);
+	base = tbase;
+	SSValidate(base);
+	ILDisconnect(ilist);
+	ILFreeUnusedSplines(ilist);
+	new = SSRebuild(ilist);
 
-    /* Here all splines will be either used or freed, but the old SS headers */
-    /*  will still exist */
-    while ( base!=NULL ) {
-	next = base->next;
-	chunkfree(base,sizeof(SplinePointList));
-	base = next;
-    }
-    ILFree(ilist);
+	/* Here all splines will be either used or freed, but the old SS headers */
+	/*  will still exist */
+	while ( base!=NULL ) {
+	    next = base->next;
+	    chunkfree(base,sizeof(SplinePointList));
+	    base = next;
+	}
+	ILFree(ilist);
 
-    if ( needed==NULL )
-	needed=new;
-    else if ( needed!=NULL ) {
-	for ( next=needed; next->next!=NULL; next = next->next );
-	next->next = new;
+	if ( needed==NULL )
+	    needed=new;
+	else if ( needed!=NULL ) {
+	    for ( next=needed; next->next!=NULL; next = next->next );
+	    next->next = new;
+	}
+	SplineSetsCorrect(needed,&changed);		/* Make sure it's all pointing the right way */
     }
-    SplineSetsCorrect(needed,&changed);		/* Make sure it's all pointing the right way */
     if ( open==NULL )
 	open=needed;
     else if ( needed!=NULL ) {

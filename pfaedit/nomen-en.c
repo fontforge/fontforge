@@ -205,6 +205,7 @@ static char str_TilePath[] = "Tile Path...";
 static unichar_t mnemonic_TilePath[] = 'P';
 static char str_Rmoverlap[] = "Remove Overlap";
 static unichar_t mnemonic_Rmoverlap[] = 'v';
+static char str_FindIntersections[] = "Find Intersections";
 static char str_Simplify[] = "Simplify";
 static unichar_t mnemonic_Simplify[] = 'S';
 static char str_SimplifyMore[] = "SimplifyMore";

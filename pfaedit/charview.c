@@ -3879,7 +3879,7 @@ static void CVMenuTilePath(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 #endif
 
-static void _CVMenuOverlap(CharView *cv) {
+static void _CVMenuOverlap(CharView *cv,int justintersect) {
     /* We know it's more likely that we'll find a problem in the overlap code */
     /*  than anywhere else, so let's save the current state against a crash */
     DoAutoSaves();
@@ -3889,13 +3889,13 @@ static void _CVMenuOverlap(CharView *cv) {
 	MinimumDistancesFree(cv->sc->md);
 	cv->sc->md = NULL;
     }
-    *cv->heads[cv->drawmode] = SplineSetRemoveOverlap(*cv->heads[cv->drawmode]);
+    *cv->heads[cv->drawmode] = SplineSetRemoveOverlap(*cv->heads[cv->drawmode],justintersect);
     CVCharChangedUpdate(cv);
 }
 
 static void CVMenuOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    _CVMenuOverlap(cv);
+    _CVMenuOverlap(cv,e!=NULL && (e->u.mouse.state&ksm_shift));
 }
 
 static void _CVMenuAddExtrema(CharView *cv) {
@@ -4145,8 +4145,17 @@ static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 	  case MID_MetaFont:
 	    mi->ti.disabled = cv->drawmode!=dm_fore || cv->sc->refs!=NULL;
 	  break;
-	  case MID_Stroke: case MID_RmOverlap:
+	  case MID_Stroke:
 	    mi->ti.disabled = ( *cv->heads[cv->drawmode]==NULL );
+	  break;
+	  case MID_RmOverlap:
+	    mi->ti.disabled = ( *cv->heads[cv->drawmode]==NULL );
+	    if ( !mi->ti.disabled ) {
+		if ( e==NULL || !(e->u.mouse.state&ksm_shift) )
+		    mi->ti.text = u_copy(GStringGetResource(_STR_Rmoverlap,NULL));
+		else
+		    mi->ti.text = u_copy(GStringGetResource(_STR_FindIntersections,NULL));
+	    }
 	  break;
 #ifdef PFAEDIT_CONFIG_TILEPATH
 	  case MID_TilePath:
@@ -5293,7 +5302,7 @@ static void SVMenuStroke(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void SVMenuOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SearchView *sv = (SearchView *) GDrawGetUserData(gw);
     CharView *cv = sv->cv_srch.inactive ? &sv->cv_rpl : &sv->cv_srch;
-    _CVMenuOverlap(cv);
+    _CVMenuOverlap(cv,e!=NULL && (e->u.mouse.state&ksm_shift));
 }
 
 static void SVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
