@@ -1496,7 +1496,7 @@ static void FVMenuChangeChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 		else if ( sf->encoding_name==em_sjis && FVAnyCharSelected(fv)<0x8100 )
 		    pos = 0x8100;
 		else if ( sf->encoding_name==em_sjis && FVAnyCharSelected(fv)<0xb000 )
-		    pos = 0xb000;
+		    pos = 0xe000;
 		if ( pos>=sf->charcnt )
 return;
 	    }
@@ -2712,7 +2712,8 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i) {
 	    dummy->unicodeenc = i;
 	else if ( i>=0xa1 && i<=0xdf )
 	    dummy->unicodeenc = unicode_from_jis201[i];
-	else if ( ((i>>8)>=129 && (i>>8)<=159) || ((i>>8)>=176 && (i>>8)<=0xea) ) {
+	else if (( ((i>>8)>=129 && (i>>8)<=159) || ((i>>8)>=224 && (i>>8)<=0xef) ) &&
+		 ( (i&0xff)>=64 && (i&0xff)<=252 && (i&0xff)!=0x127 )) {
 	    int ch1 = i>>8, ch2 = i&0xff;
 	    int temp;
 	    if ( ch1 >= 129 && ch1<= 159 )
