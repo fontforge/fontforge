@@ -151,7 +151,11 @@ return;
 	    if ( strcmp(stdbrowsers[i],"kfmclient")==0 )
 		strcpy(browser,"kfmclient openURL");
 	    else
+#if __CygWin
+		snprintf(browser,sizeof(browser),"%s/%s", path, stdbrowsers[i]);
+#else
 		strcpy(browser,stdbrowsers[i]);
+#endif
 return;
 	}
     }
@@ -218,7 +222,11 @@ return;
 #endif
     if ( strstr(fullspec,":/")==NULL ) {
 	char *t1 = galloc(strlen(fullspec)+strlen("file:")+20);
+#if __CygWin
+	sprintf( t1, "file:\\\\\\%s", fullspec );
+#else
 	sprintf( t1, "file:%s", fullspec);
+#endif
 	strcpy(fullspec,t1);
 	free(t1);
     }
