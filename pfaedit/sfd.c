@@ -480,20 +480,26 @@ return;
     }
 }
 
+static int SFDOmit(SplineChar *sc) {
+    if ( sc==NULL )
+return( true );
+    if ( sc->splines==NULL && sc->refs==NULL && 
+	    sc->backgroundsplines==NULL && sc->backimages==NULL ) {
+	if ( strcmp(sc->name,".null")==0 || strcmp(sc->name,"nonmarkingreturn")==0 )
+return(true);
+	if ( !sc->widthset && sc->width==sc->parent->ascent+sc->parent->descent &&
+		(strcmp(sc->name,".notdef")==0 || sc->enc==sc->unicodeenc ||
+		 strcmp(sc->name,".null")==0 || strcmp(sc->name,"nonmarkingreturn")==0 ))
+return(true);
+    }
+return( false );
+}
+
 static void SFDDumpChar(FILE *sfd,SplineChar *sc) {
     RefChar *ref;
     ImageList *img;
     KernPair *kp;
 
-    if ( sc->splines==NULL && sc->refs==NULL && 
-	    sc->backgroundsplines==NULL && sc->backimages==NULL ) {
-	if ( strcmp(sc->name,".null")==0 || strcmp(sc->name,"nonmarkingreturn")==0 )
-return;
-	if ( !sc->widthset && sc->width==sc->parent->ascent+sc->parent->descent &&
-		(strcmp(sc->name,".notdef")==0 || sc->enc==sc->unicodeenc ||
-		 strcmp(sc->name,".null")==0 || strcmp(sc->name,"nonmarkingreturn")==0 ))
-return;
-    }
     fprintf(sfd, "StartChar: %s\n", sc->name );
     fprintf(sfd, "Encoding: %d %d\n", sc->enc, sc->unicodeenc);
     if ( sc->parent->compacted )
@@ -742,12 +748,12 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 	    realcnt = -1;
 	else {
 	    realcnt = 0;
-	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
+	    for ( i=0; i<sf->charcnt; ++i ) if ( !SFDOmit(sf->chars[i]) )
 		++realcnt;
 	}
 	fprintf(sfd, "BeginChars: %d %d\n", sf->charcnt, realcnt );
 	for ( i=0; i<sf->charcnt; ++i ) {
-	    if ( sf->chars[i]!=NULL )
+	    if ( !SFDOmit(sf->chars[i]) )
 		SFDDumpChar(sfd,sf->chars[i]);
 	    GProgressNext();
 	}
