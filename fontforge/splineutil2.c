@@ -1199,6 +1199,57 @@ SplineSet *SSRemoveZeroLengthSplines(SplineSet *base) {
 return( base );
 }
 
+static void RemoveStupidControlPoints(SplineSet *spl) {
+    double len, normal, dir;
+    Spline *s, *first;
+    BasePoint unit, off;
+
+    /* Also remove really stupid control points: Tiny offsets pointing in */
+    /*  totally the wrong direction. Some of the TeX fonts we get have these */
+    first = NULL;
+    for ( s = spl->first->next; s!=NULL && s!=first; s=s->to->next ) {
+	unit.x = s->to->me.x-s->from->me.x;
+	unit.y = s->to->me.y-s->from->me.y;
+	len = sqrt(unit.x*unit.x+unit.y*unit.y);
+	if ( len!=0 ) {
+	    int refigure = false;
+	    unit.x /= len; unit.y /= len;
+	    if ( !s->from->nonextcp ) {
+		off.x = s->from->nextcp.x-s->from->me.x;
+		off.y = s->from->nextcp.y-s->from->me.y;
+		if ((normal = off.x*unit.y - off.y*unit.x)<0 ) normal = -normal;
+		dir = off.x*unit.x + off.y*unit.y;
+		if (( normal<dir && normal<1 && dir<0 ) || (normal<.5 && dir<-.5)) {
+		    s->from->nextcp = s->from->me;
+		    s->from->nonextcp = true;
+		    refigure = true;
+		}
+	    }
+	    if ( !s->to->noprevcp ) {
+		off.x = s->to->me.x - s->to->prevcp.x;
+		off.y = s->to->me.y - s->to->prevcp.y;
+		if ((normal = off.x*unit.y - off.y*unit.x)<0 ) normal = -normal;
+		dir = off.x*unit.x + off.y*unit.y;
+		if (( normal<-dir && normal<1 && dir<0 ) || (normal<.5 && dir>-.5 && dir<0)) {
+		    s->to->prevcp = s->to->me;
+		    s->to->noprevcp = true;
+		    refigure = true;
+		}
+	    }
+	    if ( refigure )
+		SplineRefigure(s);
+	}
+	if ( first==NULL ) first = s;
+    }
+}
+
+void SSRemoveStupidControlPoints(SplineSet *base) {
+    SplineSet *spl;
+
+    for (spl=base; spl!=NULL; spl=spl->next )
+	RemoveStupidControlPoints(spl);
+}
+
 static SplinePointList *SplinePointListMerge(SplineChar *sc, SplinePointList *spl,int type) {
     Spline *spline, *first;
     SplinePoint *nextp, *curp, *selectme;
@@ -1563,6 +1614,10 @@ return( changed );
 
 /* Cleanup just turns splines with control points which happen to trace out */
 /*  lines into simple lines */
+/* it also checks for really nasty control points which point in the wrong */
+/*  direction but are very close to the base point. We get these from some */
+/*  TeX fonts. I assume they are due to rounding errors (or just errors) in*/
+/*  some autotracer */
 void SplinePointListSimplify(SplineChar *sc,SplinePointList *spl,
 	struct simplifyinfo *smpl) {
     SplinePoint *first, *next, *sp, *nsp;
@@ -1571,6 +1626,7 @@ void SplinePointListSimplify(SplineChar *sc,SplinePointList *spl,
 return;
 
     RemoveZeroLengthSplines(spl,false);
+    RemoveStupidControlPoints(spl);
     if ( spl->first->next!=NULL && spl->first->next->to==spl->first &&
 	    spl->first->nonextcp && spl->first->noprevcp )
 return;		/* Ignore any splines which are just dots */
