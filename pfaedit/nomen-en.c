@@ -1153,6 +1153,9 @@ static char str_TagC = "Tag:";
 static char mnemonic_TagC = 'T';
 static char str_TagTooLong = "Tag too long";
 static char str_ScriptTagTooLong = "Script tags are limited to 4 ASCII characters";
+static char str_IgnoreBaseGlyphs = "Ignore Base Glyphs";
+static char str_IgnoreLigatures = "Ignore Ligatures";
+static char str_IgnoreCombiningMarks = "Ignore Combining Marks";
     /* Import */
 static char str_Duppixelsize[] = "Duplicate pixelsize";
 /* "The font database already contains a bitmap\nfont with this pixelsize (%d)\nDo you want to overwrite it?" */

@@ -905,7 +905,7 @@ static void *copybufferPt2str(void *_copybuffer,int32 *len) {
 	  case ut_composit:
 	    cur = cur->u.composit.state;
 	  break;
-	  case ut_state: case ut_statehint:
+	  case ut_state: case ut_statehint: case ut_statename:
     goto out;
 	  default:
 	    cur = NULL;
@@ -925,6 +925,74 @@ return( copy(""));
     sprintf(buffer,"(%g%s%g)", sp->me.x, coord_sep, sp->me.y );
     *len = strlen(buffer);
 return( copy(buffer));
+}
+
+static void *copybufferName2str(void *_copybuffer,int32 *len) {
+    Undoes *cur = &copybuffer;
+
+    while ( cur ) {
+	switch ( cur->undotype ) {
+	  case ut_multiple:
+	    cur = cur->u.multiple.mult;
+	  break;
+	  case ut_composit:
+	    cur = cur->u.composit.state;
+	  break;
+	  case ut_statename:
+    goto out;
+	  default:
+	    cur = NULL;
+	  break;
+	}
+    }
+    out:
+    if ( cur==NULL || fv_list==NULL || cur->u.state.charname==NULL ) {
+	*len=0;
+return( copy(""));
+    }
+    *len = strlen(cur->u.state.charname);
+return( copy( cur->u.state.charname ));
+}
+
+static void *copybufferPosSub2str(void *_copybuffer,int32 *len) {
+    Undoes *cur = &copybuffer;
+    char *pt, *data;
+    int lcnt, size;
+
+    while ( cur ) {
+	switch ( cur->undotype ) {
+	  case ut_multiple:
+	    cur = cur->u.multiple.mult;
+	  break;
+	  case ut_composit:
+	    cur = cur->u.composit.state;
+	  break;
+	  case ut_possub:
+    goto out;
+	  default:
+	    cur = NULL;
+	  break;
+	}
+    }
+    out:
+    if ( cur==NULL || fv_list==NULL || cur->u.possub.data==NULL ) {
+	*len=0;
+return( copy(""));
+    }
+    for ( lcnt=size=0; cur->u.possub.data[lcnt]!=NULL; ++lcnt )
+	size += strlen(cur->u.possub.data[lcnt])+1;
+    data = pt = galloc(size+1);
+    for ( lcnt=0; cur->u.possub.data[lcnt]!=NULL; ++lcnt ) {
+	strcpy(pt,cur->u.possub.data[lcnt]);
+	pt += strlen(cur->u.possub.data[lcnt]);
+	*pt++='\n';
+    }
+    if ( lcnt!=0 )
+	pt[-1] = '\0';
+    *pt = '\0';
+
+    *len = strlen(data);
+return( data );
 }
 
 static void *copybuffer2eps(void *_copybuffer,int32 *len) {
@@ -991,7 +1059,7 @@ return;
 	  case ut_composit:
 	    cur = cur->u.composit.state;
 	  break;
-	  case ut_state: case ut_statehint:
+	  case ut_state: case ut_statehint: case ut_statename:
 	    GDrawAddSelectionType(fv_list->gw,sn_clipboard,"image/eps",&copybuffer,0,sizeof(char),
 		    copybuffer2eps,noop);
 	    /* If the selection is one point, then export the coordinates as a string */
@@ -1000,6 +1068,14 @@ return;
 		    cur->u.state.splines->first->next==NULL )
 		GDrawAddSelectionType(fv_list->gw,sn_clipboard,"STRING",&copybuffer,0,sizeof(char),
 			copybufferPt2str,noop);
+	    else if ( cur->undotype==ut_statename )
+		GDrawAddSelectionType(fv_list->gw,sn_clipboard,"STRING",&copybuffer,0,sizeof(char),
+			copybufferName2str,noop);
+	    cur = NULL;
+	  break;
+	  case ut_possub:
+	    GDrawAddSelectionType(fv_list->gw,sn_clipboard,"STRING",&copybuffer,0,sizeof(char),
+		    copybufferPosSub2str,noop);
 	    cur = NULL;
 	  break;
 	  default:
@@ -2172,4 +2248,5 @@ void PosSubCopy(enum possub_type type, char **data) {
     copybuffer.undotype = ut_possub;
     copybuffer.u.possub.pst = type;
     copybuffer.u.possub.data = data;
+    XClipCheckEps();
 }

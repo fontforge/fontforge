@@ -1827,16 +1827,23 @@ static void GFI_Close(struct gfi_data *d) {
     /* d will be freed by destroy event */;
 }
 
-static unichar_t *ClassName(const unichar_t *name,uint32 feature_tag) {
-    unichar_t *newname;
+static unichar_t *ClassName(const unichar_t *name,uint32 feature_tag,uint16 flags) {
+    unichar_t *newname, *upt;
 
-    newname = galloc((u_strlen(name)+6)*sizeof(unichar_t));
+    newname = galloc((u_strlen(name)+10)*sizeof(unichar_t));
     if ( (newname[0] = feature_tag>>24)==0 ) newname[0] = ' ';
     if ( (newname[1] = (feature_tag>>16)&0xff)==0 ) newname[1] = ' ';
     if ( (newname[2] = (feature_tag>>8)&0xff)==0 ) newname[2] = ' ';
     if ( (newname[3] = feature_tag&0xff)==0 ) newname[3] = ' ';
     newname[4] = ' ';
-    u_strcpy(newname+5,name);
+    upt = newname+5;
+
+    *upt++ = flags&pst_ignorebaseglyphs?'b':' ';
+    *upt++ = flags&pst_ignoreligatures?'l':' ';
+    *upt++ = flags&pst_ignorecombiningmarks?'m':' ';
+    *upt++ = ' ';
+
+    u_strcpy(upt,name);
 return( newname );
 }
 
@@ -1876,7 +1883,8 @@ return( false );
 return( true );
 }
 
-unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, GTextInfo *tags) {
+unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
+	GTextInfo *tags ) {
     static unichar_t nullstr[] = { 0 };
     struct ac_dlg acd;
     GRect pos;
@@ -1894,6 +1902,16 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, GTextInfo *tags) 
 	if ( def[0]!=' ' )
 	    def_tag = (def[0]<<24) | (def[1]<<16) | (def[2]<<8) | def[3];
 	def += 5;
+	if (( def[0]=='b' || def[0]==' ' ) &&
+		( def[1]=='l' || def[1]==' ' ) &&
+		( def[2]=='m' || def[2]==' ' ) &&
+		def[3]==' ' ) {
+	    flags = 0;
+	    if ( def[0]=='b' ) flags |= pst_ignorebaseglyphs;
+	    if ( def[1]=='l' ) flags |= pst_ignoreligatures;
+	    if ( def[2]=='m' ) flags |= pst_ignorecombiningmarks;
+	    def += 4;
+	}
     }
 
 	memset(&acd,0,sizeof(acd));
@@ -1908,7 +1926,7 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, GTextInfo *tags) 
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,160));
-	pos.height = GDrawPointsToPixels(NULL,122);
+	pos.height = GDrawPointsToPixels(NULL,172);
 	gw = GDrawCreateTopWindow(NULL,&pos,acd_e_h,&acd,&wattrs);
 
 	memset(&gcd,0,sizeof(gcd));
@@ -1944,25 +1962,46 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, GTextInfo *tags) 
 	gcd[3].gd.u.list = tags;
 	gcd[3].creator = GListFieldCreate;
 
-	gcd[4].gd.pos.x = 15-3; gcd[4].gd.pos.y = gcd[3].gd.pos.y+30;
-	gcd[4].gd.pos.width = -1; gcd[4].gd.pos.height = 0;
-	gcd[4].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	label[4].text = (unichar_t *) _STR_OK;
+	gcd[4].gd.pos.x = 5; gcd[4].gd.pos.y = gcd[3].gd.pos.y+28;
+	gcd[4].gd.flags = gg_visible | gg_enabled | (flags&pst_ignorebaseglyphs?gg_cb_on:0);
+	label[4].text = (unichar_t *) _STR_IgnoreBaseGlyphs;
 	label[4].text_in_resource = true;
-	gcd[4].gd.mnemonic = 'O';
 	gcd[4].gd.label = &label[4];
-	gcd[4].gd.cid = true;
-	gcd[4].creator = GButtonCreate;
+	gcd[4].creator = GCheckBoxCreate;
 
-	gcd[5].gd.pos.x = -15; gcd[5].gd.pos.y = gcd[4].gd.pos.y+3;
-	gcd[5].gd.pos.width = -1; gcd[5].gd.pos.height = 0;
-	gcd[5].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	label[5].text = (unichar_t *) _STR_Cancel;
+	gcd[5].gd.pos.x = 5; gcd[5].gd.pos.y = gcd[4].gd.pos.y+15;
+	gcd[5].gd.flags = gg_visible | gg_enabled | (flags&pst_ignoreligatures?gg_cb_on:0);
+	label[5].text = (unichar_t *) _STR_IgnoreLigatures;
 	label[5].text_in_resource = true;
 	gcd[5].gd.label = &label[5];
-	gcd[5].gd.mnemonic = 'C';
-	gcd[5].gd.cid = false;
-	gcd[5].creator = GButtonCreate;
+	gcd[5].creator = GCheckBoxCreate;
+
+	gcd[6].gd.pos.x = 5; gcd[6].gd.pos.y = gcd[5].gd.pos.y+15;
+	gcd[6].gd.flags = gg_visible | gg_enabled | (flags&pst_ignorecombiningmarks?gg_cb_on:0);
+	label[6].text = (unichar_t *) _STR_IgnoreCombiningMarks;
+	label[6].text_in_resource = true;
+	gcd[6].gd.label = &label[6];
+	gcd[6].creator = GCheckBoxCreate;
+
+	gcd[7].gd.pos.x = 15-3; gcd[7].gd.pos.y = gcd[6].gd.pos.y+22;
+	gcd[7].gd.pos.width = -1; gcd[7].gd.pos.height = 0;
+	gcd[7].gd.flags = gg_visible | gg_enabled | gg_but_default;
+	label[7].text = (unichar_t *) _STR_OK;
+	label[7].text_in_resource = true;
+	gcd[7].gd.mnemonic = 'O';
+	gcd[7].gd.label = &label[7];
+	gcd[7].gd.cid = true;
+	gcd[7].creator = GButtonCreate;
+
+	gcd[8].gd.pos.x = -15; gcd[8].gd.pos.y = gcd[7].gd.pos.y+3;
+	gcd[8].gd.pos.width = -1; gcd[8].gd.pos.height = 0;
+	gcd[8].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+	label[8].text = (unichar_t *) _STR_Cancel;
+	label[8].text_in_resource = true;
+	gcd[8].gd.label = &label[8];
+	gcd[8].gd.mnemonic = 'C';
+	gcd[8].gd.cid = false;
+	gcd[8].creator = GButtonCreate;
 
 	GGadgetsCreate(gw,gcd);
 
@@ -1990,7 +2029,11 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, GTextInfo *tags) 
 	    acd.done = false;
  goto tryagain;
 	}
-	ret = ClassName(name,tag);
+	flags = 0;
+	if ( GGadgetIsChecked(gcd[4].ret) ) flags |= pst_ignorebaseglyphs;
+	if ( GGadgetIsChecked(gcd[5].ret) ) flags |= pst_ignoreligatures;
+	if ( GGadgetIsChecked(gcd[6].ret) ) flags |= pst_ignorecombiningmarks;
+	ret = ClassName(name,tag,flags);
     } else
 	ret = NULL;
     GDrawDestroyWindow(gw);
@@ -2005,7 +2048,7 @@ GTextInfo *AnchorClassesList(SplineFont *sf) {
     for ( cnt=0, an=sf->anchor; an!=NULL; ++cnt, an=an->next );
     ti = gcalloc(cnt+1,sizeof(GTextInfo));
     for ( cnt=0, an=sf->anchor; an!=NULL; ++cnt, an=an->next ) {
-	ti[cnt].text = ClassName(an->name,an->feature_tag);
+	ti[cnt].text = ClassName(an->name,an->feature_tag,an->flags);
 	ti[cnt].fg = ti[cnt].bg = COLOR_DEFAULT;
 	ti[cnt].userdata = an;
     }
@@ -2021,7 +2064,7 @@ GTextInfo **AnchorClassesLList(SplineFont *sf) {
     ti = gcalloc(cnt+1,sizeof(GTextInfo*));
     for ( cnt=0, an=sf->anchor; an!=NULL; ++cnt, an=an->next ) {
 	ti[cnt] = gcalloc(1,sizeof(GTextInfo));
-	ti[cnt]->text = ClassName(an->name,an->feature_tag);
+	ti[cnt]->text = ClassName(an->name,an->feature_tag,an->flags);
 	ti[cnt]->fg = ti[cnt]->bg = COLOR_DEFAULT;
 	ti[cnt]->userdata = an;
     }
@@ -2105,7 +2148,7 @@ static int GFI_AnchorNew(GGadget *g, GEvent *e) {
     GGadget *list;
     unichar_t *newname;
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	newname = AskNameTag(_STR_NewAnchorClass,NULL,CHR('m','a','r','k'),mark_tags);
+	newname = AskNameTag(_STR_NewAnchorClass,NULL,CHR('m','a','r','k'),0,mark_tags);
 	if ( newname!=NULL ) {
 	    list = GWidgetGetControl(GGadgetGetWindow(g),CID_AnchorClasses);
 	    old = GGadgetGetList(list,&len);
@@ -2173,11 +2216,12 @@ static int GFI_AnchorRename(GGadget *g, GEvent *e) {
     GTextInfo **old, **new, *ti;
     GGadget *list;
     unichar_t *newname;
+
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	list = GWidgetGetControl(GGadgetGetWindow(g),CID_AnchorClasses);
 	if ( (ti = GGadgetGetListItemSelected(list))==NULL )
 return( true );
-	newname = AskNameTag(_STR_EditAnchorClass,ti->text,0,mark_tags);
+	newname = AskNameTag(_STR_EditAnchorClass,ti->text,0,0,mark_tags);
 	if ( newname!=NULL ) {
 	    old = GGadgetGetList(list,&len);
 	    if (( uc_strncmp(newname,"curs",4)==0 && uc_strncmp(ti->text,"curs",4)!=0 ) ||
@@ -2247,8 +2291,19 @@ return( true );
 static void AnchorClassNameDecompose(AnchorClass *ac,const unichar_t *line) {
 
     free(ac->name);
-    ac->name = u_copy(line+5);
     ac->feature_tag = (line[0]<<24) | (line[1]<<16) | (line[2]<<8) | line[3];
+    line += 5;
+    if (( line[0]=='b' || line[0]==' ' ) &&
+	    ( line[1]=='l' || line[1]==' ' ) &&
+	    ( line[2]=='m' || line[2]==' ' ) &&
+	    line[3]==' ' ) {
+	ac->flags = 0;
+	if ( line[0]=='b' ) ac->flags |= pst_ignorebaseglyphs;
+	if ( line[1]=='l' ) ac->flags |= pst_ignoreligatures;
+	if ( line[2]=='m' ) ac->flags |= pst_ignorecombiningmarks;
+	line += 4;
+    }
+    ac->name = u_copy(line);
 }
 
 static int GFI_Cancel(GGadget *g, GEvent *e) {
@@ -3321,8 +3376,12 @@ return( false );
 	    (event->u.chr.state&ksm_control) &&
 	    (event->u.chr.state&ksm_meta) )
 	MenuSaveAll(NULL,NULL,NULL);
-    else if ( event->u.chr.keysym=='q' && (event->u.chr.state&ksm_control)) 
-	MenuExit(NULL,NULL,NULL);
+    else if ( event->u.chr.keysym=='q' && (event->u.chr.state&ksm_control)) {
+	if ( event->u.chr.state&ksm_shift )
+	    GFI_Close(GDrawGetUserData(gw));
+	else
+	    MenuExit(NULL,NULL,NULL);
+    }
 return( true );
 }
 		

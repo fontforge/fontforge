@@ -1338,17 +1338,35 @@ static void FVMenuAATSuffix(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     uint32 tag;
     char *suffix;
-    unichar_t *usuffix;
+    unichar_t *usuffix, *upt;
     int i;
     extern GTextInfo simplesubs_tags[];
+    uint16 flags;
 
-    usuffix = AskNameTag(_STR_SuffixToTag,NULL,0,simplesubs_tags);
+    usuffix = AskNameTag(_STR_SuffixToTag,NULL,0,0,simplesubs_tags);
     if ( usuffix==NULL )
 return;
-    suffix = cu_copy(usuffix);
+
+    tag  = (*upt++&0xff)<<24;
+    tag |= (*upt++&0xff)<<16;
+    tag |= (*upt++&0xff)<< 8;
+    tag |= (*upt++&0xff)    ;
+    if ( *upt==' ' ) ++upt;
+    if (( upt[0]=='b' || upt[0]==' ' ) &&
+	    ( upt[1]=='l' || upt[1]==' ' ) &&
+	    ( upt[2]=='m' || upt[2]==' ' ) &&
+	    upt[3]==' ' ) {
+	flags = 0;
+	if ( upt[0]=='b' ) flags |= pst_ignorebaseglyphs;
+	if ( upt[1]=='l' ) flags |= pst_ignoreligatures;
+	if ( upt[2]=='m' ) flags |= pst_ignorecombiningmarks;
+	upt += 4;
+    }
+
+    suffix = cu_copy(upt);
     free(usuffix);
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL )
-	SCSuffixDefault(fv->sf->chars[i],tag,suffix);
+	SCSuffixDefault(fv->sf->chars[i],tag,suffix,flags);
     free(suffix);
 }
 

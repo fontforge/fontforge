@@ -286,13 +286,14 @@ return( false );
 return( true );
 }
 
-static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, GTextInfo *tags) {
+static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
+	GTextInfo *tags) {
     static unichar_t nullstr[] = { 0 };
     struct pt_dlg ptd;
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[14];
-    GTextInfo label[14];
+    GGadgetCreateData gcd[17];
+    GTextInfo label[17];
     GWindow gw;
     unichar_t ubuf[8];
     unichar_t *ret, *pt, *end;
@@ -308,6 +309,16 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, GTextInfo *
 	if ( def[0]!=' ' )
 	    def_tag = (def[0]<<24) | (def[1]<<16) | (def[2]<<8) | def[3];
 	def += 5;
+	if (( def[0]=='b' || def[0]==' ' ) &&
+		( def[1]=='l' || def[1]==' ' ) &&
+		( def[2]=='m' || def[2]==' ' ) &&
+		def[3]==' ' ) {
+	    flags = 0;
+	    if ( def[0]=='b' ) flags |= pst_ignorebaseglyphs;
+	    if ( def[1]=='l' ) flags |= pst_ignoreligatures;
+	    if ( def[2]=='m' ) flags |= pst_ignorecombiningmarks;
+	    def += 4;
+	}
     }
 
     for ( pt=def; *pt!='\0' && *pt!='='; ++pt ); if ( *pt=='=' ) ++pt;
@@ -339,7 +350,7 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, GTextInfo *
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,160));
-	pos.height = GDrawPointsToPixels(NULL,195);
+	pos.height = GDrawPointsToPixels(NULL,235);
 	gw = GDrawCreateTopWindow(NULL,&pos,ptd_e_h,&ptd,&wattrs);
 
 	memset(&gcd,0,sizeof(gcd));
@@ -418,7 +429,28 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, GTextInfo *
 	gcd[i].gd.cid = i+1;
 	gcd[i++].creator = GListFieldCreate;
 
-	gcd[i].gd.pos.x = 15-3; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+30;
+	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+28;
+	gcd[i].gd.flags = gg_visible | gg_enabled | (flags&pst_ignorebaseglyphs?gg_cb_on:0);
+	label[i].text = (unichar_t *) _STR_IgnoreBaseGlyphs;
+	label[i].text_in_resource = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i++].creator = GCheckBoxCreate;
+
+	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+15;
+	gcd[i].gd.flags = gg_visible | gg_enabled | (flags&pst_ignoreligatures?gg_cb_on:0);
+	label[i].text = (unichar_t *) _STR_IgnoreLigatures;
+	label[i].text_in_resource = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i++].creator = GCheckBoxCreate;
+
+	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+15;
+	gcd[i].gd.flags = gg_visible | gg_enabled | (flags&pst_ignorecombiningmarks?gg_cb_on:0);
+	label[i].text = (unichar_t *) _STR_IgnoreCombiningMarks;
+	label[i].text_in_resource = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i++].creator = GCheckBoxCreate;
+
+	gcd[i].gd.pos.x = 15-3; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+22;
 	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
 	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_default;
 	label[i].text = (unichar_t *) _STR_OK;
@@ -470,8 +502,15 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, GTextInfo *
 	    ptd.done = false;
  goto tryagain;
 	}
-	sprintf(buf,"%c%c%c%c dx=%d dy=%d dx_adv=%d dy_adv=%d",
+	flags = 0;
+	if ( GGadgetIsChecked(gcd[4].ret) ) flags |= pst_ignorebaseglyphs;
+	if ( GGadgetIsChecked(gcd[5].ret) ) flags |= pst_ignoreligatures;
+	if ( GGadgetIsChecked(gcd[6].ret) ) flags |= pst_ignorecombiningmarks;
+	sprintf(buf,"%c%c%c%c %c%c%c dx=%d dy=%d dx_adv=%d dy_adv=%d",
 		tag>>24, tag>>16, tag>>8, tag,
+		flags&pst_ignorebaseglyphs?'b':' ',
+		flags&pst_ignoreligatures?'l':' ',
+		flags&pst_ignorecombiningmarks?'m':' ',
 		dx, dy, dxa, dya );
 	ret = uc_copy(buf);
     } else
@@ -534,15 +573,18 @@ static void CI_DoNew(CharInfo *ci, unichar_t *def) {
     GTextInfo **old, **new;
     GGadget *list;
     unichar_t *newname;
+    uint16 flags=0;
 
     sel = GTabSetGetSel(GWidgetGetControl(ci->gw,CID_Tabs))-2;
+    if ( sel==pst_ligature-1 )
+	flags = pst_ignorecombiningmarks;
     newname = sel==0 
-	    ? AskPosTag(newstrings[sel],def,0,pst_tags[sel])
-	    : AskNameTag(newstrings[sel],def,0,pst_tags[sel]);
+	    ? AskPosTag(newstrings[sel],def,0,flags,pst_tags[sel])
+	    : AskNameTag(newstrings[sel],def,0,flags,pst_tags[sel]);
     if ( newname!=NULL ) {
 	if ( sel!=0 )
 	    if ( !LigCheck(ci->sc,sel+1,(newname[0]<<24)|(newname[1]<<16)|(newname[2]<<8)|newname[3],
-		    newname+5)) {
+		    newname+9)) {
 		free(newname );
 return;
 	    }
@@ -597,8 +639,8 @@ return;
     }
 
     unames = galloc((strlen(cnames)+6)*sizeof(unichar_t));
-    uc_strcpy(unames, "     ");
-    uc_strcpy(unames+5,cnames);
+    uc_strcpy(unames, "         ");
+    uc_strcpy(unames+9,cnames);
     CI_DoNew(ci,unames);
     free(cnames);
     free(unames);
@@ -652,8 +694,8 @@ static int CI_Edit(GGadget *g, GEvent *e) {
 	if ( (ti = GGadgetGetListItemSelected(list))==NULL )
 return( true );
 	newname = sel==0 
-		? AskPosTag(editstrings[sel],ti->text,0,pst_tags[sel])
-		: AskNameTag(editstrings[sel],ti->text,0,pst_tags[sel]);
+		? AskPosTag(editstrings[sel],ti->text,0,0,pst_tags[sel])
+		: AskNameTag(editstrings[sel],ti->text,0,0,pst_tags[sel]);
 	if ( newname!=NULL ) {
 	    old = GGadgetGetList(list,&len);
 	    for ( i=0; i<len; ++i ) if ( old[i]!=ti ) {
@@ -767,7 +809,9 @@ static void CI_DoPaste(CharInfo *ci,char **data, enum possub_type type) {
     int sel, i,j,k, len, cnt;
     uint32 tag;
     GTextInfo **tis, **newlist;
-    char *tempdata[2];
+    char **tempdata=NULL, *paste = NULL;
+    char *pt;
+    int lcnt;
 
     sel = GTabSetGetSel(GWidgetGetControl(ci->gw,CID_Tabs))-2;
     list = GWidgetGetControl(ci->gw,CID_List+sel*100);
@@ -776,11 +820,19 @@ static void CI_DoPaste(CharInfo *ci,char **data, enum possub_type type) {
 	data = CopyGetPosSubData(&type);
     if ( data==NULL ) {
 	int plen;
-	char *paste = GDrawRequestSelection(ci->gw,sn_clipboard,"STRING",&plen);
+	paste = GDrawRequestSelection(ci->gw,sn_clipboard,"STRING",&plen);
 	if ( paste==NULL || plen==0 )
 return;
+	if ( paste[strlen(paste)-1]=='\n' ) paste[strlen(paste)-1] = '\0';
+	for ( pt=paste, lcnt=1; *pt; ++pt )
+	    if ( *pt=='\n' ) ++lcnt;
+	tempdata = gcalloc(lcnt+1,sizeof(char *));
 	tempdata[0] = paste;
-	tempdata[1] = NULL;
+	for ( pt=paste, lcnt=1; *pt; ++pt )
+	    if ( *pt=='\n' ) {
+		tempdata[lcnt++] = pt+1;
+		*pt = '\0';
+	    }
 	data = tempdata;
 	tag = (((uint8 *) paste)[0]<<24) | (((uint8 *) paste)[1]<<16 ) |
 		    (((uint8 *) paste)[2]<<8) | ((uint8 *) paste)[3];
@@ -795,7 +847,7 @@ return;
 	if ( type==pst_null )
 	    type = PSTGuess(paste);
 	if ( type==pst_null ) {
-	    free(paste);
+	    free(paste); free(tempdata);
 	    GWidgetErrorR(_STR_BadPOSSUB,_STR_BadPOSSUB);
 return;
 	}
@@ -825,6 +877,7 @@ return;
     }
     newlist[len+k] = gcalloc(1,sizeof(GTextInfo));
     GGadgetSetList(list,newlist,false);
+    free(paste); free(tempdata);
 }
 
 static int CI_Paste(GGadget *g, GEvent *e) {
@@ -926,7 +979,7 @@ return;
 
     for ( i=0; d[i]!=NULL; ++i ) {
 	data = d[i];
-	if ( strlen(data)<6 || data[4]!=' ' ) {
+	if ( strlen(data)<10 || data[4]!=' ' || data[8]!=' ' ) {
 	    GWidgetErrorR(_STR_BadPOSSUB,_STR_BadPOSSUBPaste);
 return;
 	}
@@ -942,8 +995,12 @@ return;
 	new->type = type;
 	new->tag = (((uint8 *) data)[0]<<24) | (((uint8 *) data)[1]<<16 ) |
 		    (((uint8 *) data)[2]<<8) | ((uint8 *) data)[3];
+	new->flags = 0;
+	if ( data[5]=='b' ) new->flags |= pst_ignorebaseglyphs;
+	if ( data[6]=='i' ) new->flags |= pst_ignoreligatures;
+	if ( data[7]=='m' ) new->flags |= pst_ignorecombiningmarks;
 	if ( type==pst_position ) {
-	    for ( pt=data+5; *pt!='\0' && *pt!='='; ++pt ); if ( *pt=='=' ) ++pt;
+	    for ( pt=data+9; *pt!='\0' && *pt!='='; ++pt ); if ( *pt=='=' ) ++pt;
 	    new->u.pos.xoff = strtol(pt,&end,10);
 	    for ( pt=end; *pt!='\0' && *pt!='='; ++pt ); if ( *pt=='=' ) ++pt;
 	    new->u.pos.yoff = strtol(pt,&end,10);
@@ -959,11 +1016,11 @@ return;
 	    }
 	    new->u.pos.v_adv_off = strtol(pt,&end,10);
 	} else {
-	    if ( type==pst_substitution && strchr(data+5,' ')!=NULL ) {
+	    if ( type==pst_substitution && strchr(data+9,' ')!=NULL ) {
 		GWidgetErrorR(_STR_BadPOSSUB,_STR_SimpleSubsOneComponent);
 return;
 	    }
-	    new->u.subs.variant = copy(data+5);
+	    new->u.subs.variant = copy(data+9);
 	    if ( type==pst_ligature )
 		new->u.lig.lig = sc;
 	}
@@ -1380,9 +1437,10 @@ uint32 LigTagFromUnicode(int uni) {
 return( tag );
 }
 
-static PST *AddPos(PST *last,uint32 tag,int dx, int dy, int dxa, int dya) {
+static PST *AddPos(PST *last,uint32 tag,int dx, int dy, int dxa, int dya, uint16 flags) {
     PST *pos = chunkalloc(sizeof(PST));
     pos->tag = tag;
+    pos->flags = flags;
     pos->type = pst_position;
     pos->next = last;
     pos->u.pos.xoff = dx;
@@ -1392,9 +1450,10 @@ static PST *AddPos(PST *last,uint32 tag,int dx, int dy, int dxa, int dya) {
 return( pos );
 }
 
-static PST *AddSubs(PST *last,uint32 tag,char *name) {
+static PST *AddSubs(PST *last,uint32 tag,char *name,uint16 flags) {
     PST *sub = chunkalloc(sizeof(PST));
     sub->tag = tag;
+    sub->flags = flags;
     sub->type = pst_substitution;
     sub->next = last;
     sub->u.subs.variant = copy(name);
@@ -1441,6 +1500,7 @@ static PST *LigDefaultList(SplineChar *sc, uint32 tag) {
 	break;
 	    lig = chunkalloc(sizeof(PST));
 	    lig->tag = LigTagFromUnicode(sc->unicodeenc);
+	    lig->flags = pst_ignorecombiningmarks;
 	    lig->type = pst_ligature;
 	    lig->next = last;
 	    last = lig;
@@ -1463,7 +1523,7 @@ static PST *LigDefaultList(SplineChar *sc, uint32 tag) {
 	if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 && tomirror(sc->unicodeenc)!=0 ) {
 	    alt = SFGetChar(sf,tomirror(sc->unicodeenc),NULL);
 	    if ( alt!=NULL )
-		last=AddSubs(last,CHR('r','t','l','a'),alt->name);
+		last=AddSubs(last,CHR('r','t','l','a'),alt->name, 0x0);
 	}
     }
 
@@ -1471,7 +1531,7 @@ static PST *LigDefaultList(SplineChar *sc, uint32 tag) {
     if ( tag==0 || tag==CHR('v','r','t','2') ) {
 	alt = SuffixCheck(sc,"vert");
 	if ( alt!=NULL )
-	    last=AddSubs(last,CHR('v','r','t','2'),alt->name);
+	    last=AddSubs(last,CHR('v','r','t','2'),alt->name, 0x0);
     }
 
 	/* Look for small caps */
@@ -1482,14 +1542,14 @@ static PST *LigDefaultList(SplineChar *sc, uint32 tag) {
 	    alt = SuffixCheck(sc,"oldstyle");
 #endif
 	if ( alt!=NULL )
-	    last=AddSubs(last,CHR('s','m','c','p'),alt->name);
+	    last=AddSubs(last,CHR('s','m','c','p'),alt->name, 0x0);
     }
 
 	/* And for oldstyle */
     if ( tag==0 || tag==CHR('o','n','u','m') ) {
 	alt = SuffixCheck(sc,"oldstyle");
 	if ( alt!=NULL )
-	    last=AddSubs(last,CHR('o','n','u','m'),alt->name);
+	    last=AddSubs(last,CHR('o','n','u','m'),alt->name, 0x0);
     }
 
 	/* Look for superscripts */
@@ -1511,7 +1571,7 @@ static PST *LigDefaultList(SplineChar *sc, uint32 tag) {
 		alt = SFGetChar(sf,i,NULL);
 	}
 	if ( alt!=NULL )
-	    last=AddSubs(last,CHR('s','u','p','s'),alt->name);
+	    last=AddSubs(last,CHR('s','u','p','s'),alt->name, 0x0);
     }
 
 	/* Look for subscripts */
@@ -1528,14 +1588,14 @@ static PST *LigDefaultList(SplineChar *sc, uint32 tag) {
 		alt = SFGetChar(sf,i,NULL);
 	}
 	if ( alt!=NULL )
-	    last=AddSubs(last,CHR('s','u','b','s'),alt->name);
+	    last=AddSubs(last,CHR('s','u','b','s'),alt->name, 0x0);
     }
 
 	/* Look for swash forms */
     if ( tag==0 || tag==CHR('s','w','s','h')) {
 	alt = SuffixCheck(sc,"swash");
 	if ( alt!=NULL ) {
-	    last=AddSubs(last,CHR('s','w','s','h'),alt->name);
+	    last=AddSubs(last,CHR('s','w','s','h'),alt->name, 0x0);
 	    last->type = pst_alternate;
 	}
     }
@@ -1549,7 +1609,7 @@ static PST *LigDefaultList(SplineChar *sc, uint32 tag) {
 		    variant[1]=='\0' ) {
 		alt = SFGetChar(sf,variant[0],NULL);
 		if ( alt!=NULL )
-		    last=AddSubs(last,CHR('p','w','i','d'),alt->name);
+		    last=AddSubs(last,CHR('p','w','i','d'),alt->name, 0x0);
 	    }
 	}
     }
@@ -1563,7 +1623,7 @@ static PST *LigDefaultList(SplineChar *sc, uint32 tag) {
 		    variant[1]=='\0' ) {
 		alt = SFGetChar(sf,variant[0],NULL);
 		if ( alt!=NULL )
-		    last=AddSubs(last,CHR('f','w','i','d'),alt->name);
+		    last=AddSubs(last,CHR('f','w','i','d'),alt->name, 0x0);
 	    }
 	} else if ( sc->unicodeenc>=0x0021 && sc->unicodeenc<=0x100 ) {
 	    for ( i=0xff01; i<0xffef; ++i ) {
@@ -1575,13 +1635,13 @@ static PST *LigDefaultList(SplineChar *sc, uint32 tag) {
 	    if ( i<0xffef ) {
 		alt = SFGetChar(sf,i,NULL);
 		if ( alt!=NULL )
-		    last=AddSubs(last,CHR('f','w','i','d'),alt->name);
+		    last=AddSubs(last,CHR('f','w','i','d'),alt->name, 0x0);
 	    }
 	}
 	if ( alt==NULL ) {
 	    alt = SuffixCheck(sc,"full");
 	    if ( alt!=NULL )
-		last=AddSubs(last,CHR('f','w','i','d'),alt->name);
+		last=AddSubs(last,CHR('f','w','i','d'),alt->name, 0x0);
 	}
     }
 
@@ -1598,13 +1658,13 @@ static PST *LigDefaultList(SplineChar *sc, uint32 tag) {
 	    if ( i<0xffdf ) {
 		alt = SFGetChar(sf,i,NULL);
 		if ( alt!=NULL )
-		    last=AddSubs(last,CHR('h','w','i','d'),alt->name);
+		    last=AddSubs(last,CHR('h','w','i','d'),alt->name, 0x0);
 	    }
 	}
 	if ( alt==NULL ) {
 	    alt = SuffixCheck(sc,"hw");
 	    if ( alt!=NULL )
-		last=AddSubs(last,CHR('h','w','i','d'),alt->name);
+		last=AddSubs(last,CHR('h','w','i','d'),alt->name, 0x0);
 	}
     }
 
@@ -1614,18 +1674,18 @@ static PST *LigDefaultList(SplineChar *sc, uint32 tag) {
 	    if ( (&(ArabicForms[sc->unicodeenc-0x600].initial))[i]!=0 &&
 		    (&(ArabicForms[sc->unicodeenc-0x600].initial))[i]!=sc->unicodeenc &&
 		    (alt = SFGetChar(sf,(&(ArabicForms[sc->unicodeenc-0x600].initial))[i],NULL))!=NULL )
-		last=AddSubs(last,form_tags[i],alt->name);
+		last=AddSubs(last,form_tags[i],alt->name,0);
 	}
     }
 
     if ( tag==0 || tag==CHR('l','f','b','d') ) {
 	SplineCharFindBounds(sc,&bb);
-	last = AddPos(last,CHR('l','f','b','d'),-bb.minx,0,-bb.minx,0);
+	last = AddPos(last,CHR('l','f','b','d'),-bb.minx,0,-bb.minx,0, 0x0);
     }
 
     if ( tag==0 || tag==CHR('r','t','b','d') ) {
 	SplineCharFindBounds(sc,&bb);
-	last = AddPos(last,CHR('r','t','b','d'),0,0,bb.maxx-sc->width,0);
+	last = AddPos(last,CHR('r','t','b','d'),0,0,bb.maxx-sc->width,0, 0x0);
     }
 return( last );
 }
@@ -1662,12 +1722,12 @@ void SCTagDefault(SplineChar *sc,uint32 tag) {
     SCMergePSList(sc,LigDefaultList(sc,tag));
 }
 
-void SCSuffixDefault(SplineChar *sc,uint32 tag,char *suffix) {
+void SCSuffixDefault(SplineChar *sc,uint32 tag,char *suffix,uint16 flags) {
     SplineChar *alt;
 
     alt = SuffixCheck(sc,suffix);
     if ( alt!=NULL )
-	SCMergePSList(sc,AddSubs(NULL,tag,alt->name));
+	SCMergePSList(sc,AddSubs(NULL,tag,alt->name,flags));
 }
 
 static int CI_SName(GGadget *g, GEvent *e) {	/* Set From Name */
@@ -1921,19 +1981,23 @@ static void CIFillup(CharInfo *ci) {
 	j = cnts[pst->type]++;
 	arrays[pst->type][j] = gcalloc(1,sizeof(GTextInfo));
 	if ( pst->type==pst_position ) {
-	    sprintf(buffer,"     dx=%d dy=%d dx_adv=%d dy_adv=%d",
+	    sprintf(buffer,"         dx=%d dy=%d dx_adv=%d dy_adv=%d",
 		    pst->u.pos.xoff, pst->u.pos.yoff,
 		    pst->u.pos.h_adv_off, pst->u.pos.v_adv_off );
 	    arrays[pst->type][j]->text = uc_copy(buffer);
 	} else {
-	    arrays[pst->type][j]->text = galloc((strlen(pst->u.subs.variant)+6)*sizeof(unichar_t));;
-	    uc_strcpy(arrays[pst->type][j]->text+5,pst->u.subs.variant);
-	    arrays[pst->type][j]->text[4] = ' ';
+	    arrays[pst->type][j]->text = galloc((strlen(pst->u.subs.variant)+10)*sizeof(unichar_t));;
+	    uc_strcpy(arrays[pst->type][j]->text+9,pst->u.subs.variant);
 	}
 	arrays[pst->type][j]->text[0] = pst->tag>>24;
 	arrays[pst->type][j]->text[1] = (pst->tag>>16)&0xff;
 	arrays[pst->type][j]->text[2] = (pst->tag>>8)&0xff;
 	arrays[pst->type][j]->text[3] = (pst->tag)&0xff;
+	arrays[pst->type][j]->text[4] = ' ';
+	arrays[pst->type][j]->text[5] = pst->flags&pst_ignorebaseglyphs?'b':' ';
+	arrays[pst->type][j]->text[6] = pst->flags&pst_ignoreligatures?'l':' ';
+	arrays[pst->type][j]->text[7] = pst->flags&pst_ignorecombiningmarks?'m':' ';
+	arrays[pst->type][j]->text[8] = ' ';
 	arrays[pst->type][j]->fg = arrays[pst->type][j]->bg = COLOR_DEFAULT;
     }
     for ( i=pst_null+1; i<pst_max; ++i ) {
@@ -2021,6 +2085,11 @@ return( true );
 	} else if ( event->u.chr.keysym=='v' && (event->u.chr.state&ksm_control)) {
 	    CI_DoPaste(ci,NULL,pst_null);
 return( true );
+	} else if ( event->u.chr.keysym=='q' && (event->u.chr.state&ksm_control)) {
+	    if ( event->u.chr.state&ksm_shift )
+		CI_Finish(ci);
+	    else
+		MenuExit(NULL,NULL,NULL);
 	}
 return( false );
     } else if ( event->type == et_drop ) {

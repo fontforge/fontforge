@@ -44,6 +44,8 @@
 /* For some things I looked at freetype's code to see how they did it */
 /*  (I think only for what happens if !ARGS_ARE_XY) */
 /*  http://freetype.sourceforge.net/ */
+/* It grows on you though... now that I understand it better it seems better designed */
+/*  but the docs remain in conflict. Sometimes badly so */
 
 /* !!!I don't currently parse instructions to get hints */
 
@@ -3354,6 +3356,7 @@ struct feature {
 };
 struct lookup {
     uint32 tag, script;
+    uint16 flags;
     uint16 lookup;
 };
 
@@ -3604,6 +3607,7 @@ static AnchorClass **MarkGlyphsProcessMarks(FILE *ttf,int markoffset,
 	classes[i] = ac = chunkalloc(sizeof(AnchorClass));
 	ac->name = u_copy(ubuf);
 	ac->feature_tag = lookup->tag;
+	ac->flags = lookup->flags;
 	if ( info->ahead==NULL )
 	    info->ahead = ac;
 	else
@@ -3792,6 +3796,7 @@ return;
 	PST *pos = chunkalloc(sizeof(PST));
 	pos->type = pst_position;
 	pos->tag = lookup->tag;
+	pos->flags = lookup->flags;
 	pos->next = info->chars[glyphs[i]]->possub;
 	info->chars[glyphs[i]]->possub = pos;
 	which = format==1 ? &_vr : &vr[i];
@@ -3830,6 +3835,7 @@ return;
 	PST *pos = chunkalloc(sizeof(PST));
 	pos->type = pst_substitution;
 	pos->tag = lookup->tag;
+	pos->flags = lookup->flags;
 	pos->next = info->chars[glyphs[i]]->possub;
 	info->chars[glyphs[i]]->possub = pos;
 	which = format==1 ? glyphs[i]+delta : glyph2s[i];
@@ -3866,6 +3872,7 @@ return;
 	PST *pos = chunkalloc(sizeof(PST));
 	pos->type = lu_type==2?pst_multiple:pst_alternate;
 	pos->tag = lookup->tag;
+	pos->flags = lookup->flags;
 	pos->next = info->chars[glyphs[i]]->possub;
 	info->chars[glyphs[i]]->possub = pos;
 	fseek(ttf,stoffset+offsets[i],SEEK_SET);
@@ -3926,6 +3933,7 @@ return;
 	    liga = chunkalloc(sizeof(PST));
 	    liga->type = pst_ligature;
 	    liga->tag = lookup->tag;
+	    liga->flags = lookup->flags;
 	    liga->next = info->chars[lig]->possub;
 	    info->chars[lig]->possub = liga;
 	    liga->u.lig.lig = info->chars[lig];
@@ -4086,7 +4094,7 @@ static void tagTtfFeaturesWithScript(FILE *ttf,uint32 script_pos,struct feature 
 }
 
 static void readttfgpossub(FILE *ttf,struct ttfinfo *info,int gpos) {
-    int i, j, k, lu_cnt, lu_type, flags, cnt, st;
+    int i, j, k, lu_cnt, lu_type, cnt, st;
     uint16 *lu_offsets, *st_offsets;
     int32 base, lookup_start;
     int32 script_off, feature_off;
@@ -4119,7 +4127,7 @@ return;
     continue;
 	fseek(ttf,lookup_start+lu_offsets[i],SEEK_SET);
 	lu_type = getushort(ttf);
-	flags = getushort(ttf);
+	lookups[k].flags = getushort(ttf);
 	cnt = getushort(ttf);
 	st_offsets = galloc(cnt*sizeof(uint16));
 	for ( j=0; j<cnt; ++j )
@@ -4582,10 +4590,12 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 	bdf->sf = sf;
     }
 
-    for ( i=0; i<info->glyph_cnt; ++i )
+    for ( i=0; i<info->glyph_cnt; ++i ) {
 	if ( info->chars[i]->script==0 )	/* GSUB/GSUB table can fill in some script values */
 	    info->chars[i]->script =
 		    ScriptFromUnicode(info->chars[i]->unicodeenc,sf);
+	SCOrderAP(info->chars[i]);
+    }
 
     if ( info->subfontcnt == 0 ) {
 	UseGivenEncoding(sf,info);

@@ -417,7 +417,7 @@ extern int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype,
 extern int SFGenerateFont(SplineFont *sf,int family);
 extern GTextInfo *AnchorClassesList(SplineFont *sf);
 extern GTextInfo **AnchorClassesLList(SplineFont *sf);
-extern unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag,GTextInfo *tags);
+extern unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag,uint16 flags,GTextInfo *tags);
 extern void FontInfo(SplineFont *sf,int aspect,int sync);
 extern void FontInfoDestroy(FontView *fv);
 extern void FontMenuFontInfo(void *fv);

@@ -123,9 +123,12 @@ typedef struct bdffloat {
     uint8 *bitmap;
 } BDFFloat;
 
+/* I'm not going to give the user access to r2l. They can set the script for that */
+enum pst_flags { pst_r2l=1, pst_ignorebaseglyphs=2, pst_ignoreligatures=4, pst_ignorecombiningmarks=8 };
 typedef struct anchorclass {
     unichar_t *name;
     uint32 feature_tag;
+    uint16 flags;
     struct anchorclass *next;
 } AnchorClass;
 
@@ -146,6 +149,7 @@ typedef struct generic_pst {
     enum possub_type type;
     uint32 tag;
     struct generic_pst *next;
+    uint16 flags;
     union {
 	struct { int16 xoff, yoff, h_adv_off, v_adv_off; } pos;
 	struct { char *variant; } subs;
@@ -874,7 +878,7 @@ extern char *AdobeLigatureFormat(char *name);
 extern uint32 LigTagFromUnicode(int uni);
 extern void SCLigDefault(SplineChar *sc);
 extern void SCTagDefault(SplineChar *sc,uint32 tag);
-extern void SCSuffixDefault(SplineChar *sc,uint32 tag,char *suffix);
+extern void SCSuffixDefault(SplineChar *sc,uint32 tag,char *suffix,uint16 flags);
 extern BDFChar *BDFMakeChar(BDFFont *bdf,int i);
 
 extern void SCUndoSetLBearingChange(SplineChar *sc,int lb);

@@ -581,8 +581,8 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc) {
 	else {
 	    static char *keywords[] = { "Null:", "Position:", "Substitution:",
 		    "AlternateSubs:", "MultipleSubs:", "Ligature:", NULL };
-	    fprintf( sfd, "%s '%c%c%c%c' ",
-		    keywords[liga->type],
+	    fprintf( sfd, "%s %d '%c%c%c%c' ",
+		    keywords[liga->type], liga->flags,
 		    liga->tag>>24, (liga->tag>>16)&0xff,
 		    (liga->tag>>8)&0xff, liga->tag&0xff );
 	    if ( liga->type==pst_position )
@@ -794,6 +794,7 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 		fprintf( sfd, "%c%c%c%c ",
 			an->feature_tag>>24, (an->feature_tag>>16)&0xff,
 			(an->feature_tag>>8)&0xff, an->feature_tag&0xff );
+	    fprintf( sfd, "%d ", an->flags );
 	}
 	putc('\n',sfd);
     }
@@ -1606,6 +1607,14 @@ return( NULL );
 			 pst_alternate;
 	    liga->tag = CHR('l','i','g','a');
 	    while ( (ch=getc(sfd))==' ' || ch=='\t' );
+	    if ( isdigit(ch)) {
+		int temp;
+		ungetc(ch,sfd);
+		getint(sfd,&temp);
+		liga->flags = temp;
+		while ( (ch=getc(sfd))==' ' || ch=='\t' );
+	    } else if ( isliga )
+		liga->flags |= pst_ignorecombiningmarks;
 	    if ( ch=='\'' ) {
 		liga->tag = getc(sfd)<<24;
 		liga->tag |= getc(sfd)<<16;
@@ -1896,7 +1905,7 @@ return( old );
 static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
     SplineFont *sf;
     SplineChar *sc;
-    int realcnt, i, eof, mappos=-1;
+    int realcnt, i, eof, mappos=-1, ch;
 
     sf = SplineFontEmpty();
     sf->cidmaster = cidmaster;
@@ -2064,6 +2073,14 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 		    if ( tok[3]=='\0' ) { tok[3]=' '; tok[4] = 0; }
 		    an->feature_tag = (tok[0]<<24) | (tok[1]<<16) | (tok[2]<<8) | tok[3];
 		}
+		while ((ch=getc(sfd))==' ' );
+		ungetc(ch,sfd);
+		if ( isdigit(ch)) {
+		    int temp;
+		    getint(sfd,&temp);
+		    an->flags = temp;
+		} else if ( an->feature_tag==CHR('c','u','r','s'))
+		    an->flags = pst_ignorecombiningmarks;
 		if ( lastan==NULL )
 		    sf->anchor = an;
 		else

@@ -50,7 +50,7 @@ struct lookup {
     struct lookup *next;
     struct lookup *script_next;
     struct lookup *feature_next;
-    uint32 isligature: 1;
+    uint16 flags;
 };
 
 /* scripts (for opentype) that I understand */
@@ -155,21 +155,21 @@ return( CHR('l','a','t','n'));
 return( 0 );
 }
 
-static int LigListMatchTag(LigList *ligs,uint32 tag) {
+static LigList *LigListMatchTag(LigList *ligs,uint32 tag) {
     LigList *l;
 
     for ( l=ligs; l!=NULL; l=l->next )
 	if ( l->lig->tag == tag )
-return( true );
-return( false );
+return( l );
+return( NULL );
 }
 
-static int PosSubMatchTag(PST *pst,uint32 tag,enum possub_type type) {
+static PST *PosSubMatchTag(PST *pst,uint32 tag,enum possub_type type) {
 
     for ( ; pst!=NULL; pst=pst->next )
 	if ( pst->tag == tag && pst->type==type )
-return( true );
-return( false );
+return( pst );
+return( NULL );
 }
 
 static void GlyphMapFree(SplineChar ***map) {
@@ -542,6 +542,7 @@ return( lookups );
 	new = chunkalloc(sizeof(struct lookup));
 	new->script = glyphs[0]->script;
 	new->feature_tag = ac->feature_tag;
+	new->flags = ac->flags;
 	new->lookup_type = 3;		/* Cursive positioning */
 	new->offset = ftell(gpos);
 	new->next = lookups;
@@ -612,6 +613,7 @@ static struct lookup *dumpgposAnchorData(FILE *gpos,AnchorClass *ac,
 	new = chunkalloc(sizeof(struct lookup));
 	new->script = glyphs[0]->script;
 	new->feature_tag = ac->feature_tag;
+	new->flags = ac->flags;
 	new->lookup_type = 3+at;	/* One of the "mark to *" types 4,5,6 */
 	new->offset = ftell(gpos);
 	new->next = lookups;
@@ -949,12 +951,13 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
 	    for ( i=0; i<sf->charcnt; i++ ) 
 		    if ( (sc=sf->chars[i])!=NULL && sc->possub!=NULL &&
 			    sc->script!=0 && !sc->ticked &&
-			    PosSubMatchTag(sc->possub,ligtags[j],type) ) {
+			    (pst=PosSubMatchTag(sc->possub,ligtags[j],type)) ) {
 		glyphs = generateGlyphTypeList(sf,type,sc->script,ligtags[j],&map);
 		if ( glyphs!=NULL && glyphs[0]!=NULL ) {
 		    new = chunkalloc(sizeof(struct lookup));
 		    new->script = sc->script;
 		    new->feature_tag = ligtags[j];
+		    new->flags = pst->flags;
 		    new->lookup_type = 1;
 		    new->offset = ftell(lfile);
 		    new->next = lookups;
@@ -976,6 +979,7 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
 	new = chunkalloc(sizeof(struct lookup));
 	new->script = sc->script;
 	new->feature_tag = CHR('k','e','r','n');
+	new->flags = pst_ignorecombiningmarks;
 	new->lookup_type = 2;		/* Pair adjustment subtable type */
 	new->offset = ftell(lfile);
 	new->next = lookups;
@@ -1010,29 +1014,15 @@ return( lookups );
 
 static struct lookup *GSUBfigureLookups(FILE *lfile,SplineFont *sf,
 	struct alltabs *at) {
-    /* We are prepared to deal with the following features */
-    /*		liga -- Standard ligatures			   */
-    /*		rlig -- Required ligatures			   */
-    /*		dlig -- discretionary ligatures			   */
-    /*		hlig -- historical ligatures			   */
-    /*		frac -- maps "3/4" to ¾				   */
-    /* and many more ligature tables I'm not going to mention */
-    /*		???? -- user defined ligature subtable		   */
-    /*		vrt2 -- Vertical rotation (for vertical latin)	   */
-    /*		init -- Initial forms (arabic, long-s)		   */
-    /*		medi -- Medial forms (arabic, long-s)		   */
-    /*		fina -- final forms (arabic)			   */
-    /*		isol -- Isolated forms (arabic)			   */
-    /*		c2sc -- maps capitals to small caps		   */
-    /*		smcp -- maps lowercase to small caps, numerals to old style */
     struct lookup *lookups = NULL, *new;
     uint32 *ligtags;
     int i, j, max, cnt;
     LigList *ll;
-    PST *subs;
+    PST *subs, *pst;
     SplineChar *sc;
     enum possub_type type;
     SplineChar **glyphs, ***map;
+    LigList *l;
 
     /* Look for ligature tags used in the font */
     max = 30; cnt = 0;
@@ -1059,12 +1049,12 @@ static struct lookup *GSUBfigureLookups(FILE *lfile,SplineFont *sf,
 	for ( i=0; i<sf->charcnt; i++ ) 
 		if ( (sc=sf->chars[i])!=NULL && sc->ligofme!=NULL &&
 			sc->script!=0 && !sc->ticked &&
-			LigListMatchTag(sc->ligofme,ligtags[j]) ) {
+			(l = LigListMatchTag(sc->ligofme,ligtags[j])) ) {
 	    new = chunkalloc(sizeof(struct lookup));
 	    new->script = sc->script;
 	    new->feature_tag = ligtags[j];
 	    new->lookup_type = 4;		/* Ligature */
-	    new->isligature = true;
+	    new->flags = l->lig->flags;
 	    new->offset = ftell(lfile);
 	    new->next = lookups;
 	    lookups = new;
@@ -1097,12 +1087,13 @@ static struct lookup *GSUBfigureLookups(FILE *lfile,SplineFont *sf,
 	    for ( i=0; i<sf->charcnt; i++ ) 
 		    if ( (sc=sf->chars[i])!=NULL && sc->possub!=NULL &&
 			    sc->script!=0 && !sc->ticked &&
-			    PosSubMatchTag(sc->possub,ligtags[j],type) ) {
+			    (pst = PosSubMatchTag(sc->possub,ligtags[j],type)) ) {
 		glyphs = generateGlyphTypeList(sf,type,sc->script,ligtags[j],&map);
 		if ( glyphs!=NULL && glyphs[0]!=NULL ) {
 		    new = chunkalloc(sizeof(struct lookup));
 		    new->script = sc->script;
 		    new->feature_tag = ligtags[j];
+		    new->flags = pst->flags;
 		    new->lookup_type = type==pst_substitution?1:type==pst_multiple?2:3;
 		    new->offset = ftell(lfile);
 		    new->next = lookups;
@@ -1345,8 +1336,7 @@ return( NULL );
 	/* The right to left flag is not relevant for any of the tables I generate */
 	/* but MS has it in tables where it is not relevant, so... */
 	flags = l->script==CHR('a','r','a','b') || l->script==CHR('h','e','b','r');
-	if ( l->isligature && sf->anchor!=NULL )
-	    flags |= 0x0008;		/* Ignore marks if there might be any */
+	flags |= (l->flags&~1);
 	putshort(g___,flags);
 	putshort(g___,1);		/* Each table controls one lookup */
 	putshort(g___,(cnt-i)*8+l->offset); /* Offset to lookup data which is in the temp file */
@@ -1368,7 +1358,7 @@ return( NULL );
 return( g___ );
 }
 
-void otf_dumpgposkerns(struct alltabs *at, SplineFont *sf) {
+void otf_dumpgpos(struct alltabs *at, SplineFont *sf) {
     /* Open Type, bless its annoying little heart, doesn't store kern info */
     /*  in the kern table. Of course not, how silly of me to think it might */
     /*  be consistent. It stores it in the much more complicated gpos table */
