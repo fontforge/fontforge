@@ -1274,10 +1274,11 @@ static int pcf_properties(FILE *file,struct toc *toc, int *_as, int *_ds,
     int pixelsize = -1;
     int ascent= -1, descent= -1, enc;
     char encname[100], weight[100], italic[100];
-    int cnt, i, format, strl;
+    int cnt, i, format, strl, dash_cnt;
     struct props { int name_offset; int isStr; int val; char *name; char *value; } *props;
-    char *strs;
+    char *strs, *pt;
 
+    family[0] = '\0'; full[0] = '\0';
     if ( !pcfSeekToType(file,toc,PCF_PROPERTIES))
 return(-2);
     format = getint32(file);
@@ -1318,6 +1319,15 @@ return(-2);
 		strcpy(encname,props[i].value);
 	    else if ( strcmp(props[i].name,"CHARSET_ENCODING")==0 )
 		enc = strtol(props[i].value,NULL,10);
+	    else if ( strcmp(props[i].name,"FONT")==0 ) {
+		if ( sscanf(props[i].value,"-%*[^-]-%[^-]-%[^-]-%[^-]-%*[^-]-",
+			family, weight, italic )!=0 ) {
+		    for ( pt = props[i].value, dash_cnt=0; *pt && dash_cnt<7; ++pt )
+			if ( *pt=='-' ) ++dash_cnt;
+		    if ( dash_cnt==7 && isdigit(*pt) )
+			pixelsize = strtol(pt,NULL,10);
+		}
+	    }
 	} else {
 	    if ( strcmp(props[i].name,"PIXEL_SIZE")==0 ||
 		    ( pixelsize==-1 && strcmp(props[i].name,"QUAD_WIDTH")==0 ))
@@ -1350,6 +1360,12 @@ return(-2);
     else if ( strmatch(italic,"R")==0 )
 	strcpy(italic,"");		/* Ignore roman */
     sprintf(mods,"%s%s", weight, italic );
+    if ( full[0]=='\0' ) {
+	if ( *mods )
+	    sprintf(full,"%s-%s", family, mods );
+	else
+	    strcpy(full,family);
+    }
 
     free(strs);
     free(props);
@@ -1540,7 +1556,8 @@ static void PcfReadEncodingsNames(FILE *file,struct toc *toc,SplineFont *sf, BDF
 	if ( def<b->charcnt && def!=0xffff )
 	    b->chars[def]->enc = 0;		/* my standard location for .notdef */
     }
-    for ( i=0; i<b->charcnt; ++i ) {
+    cnt = b->charcnt;
+    for ( i=0; i<cnt; ++i ) {
 	char *name;
 	if ( string!=NULL ) name = string+offsets[i];
 	else name = ".notdef";
@@ -1548,6 +1565,7 @@ static void PcfReadEncodingsNames(FILE *file,struct toc *toc,SplineFont *sf, BDF
 	if ( b->chars[i]->enc!=-1 )
 	    b->chars[i]->sc = sf->chars[b->chars[i]->enc];
     }
+    free(string); free(offsets);
 }
 
 static int PcfReadSWidths(FILE *file,struct toc *toc,BDFFont *b) {
@@ -1600,7 +1618,7 @@ return( false );
     if ( sf->onlybitmaps )
 	PcfReadSWidths(file,toc,b);
     new = gcalloc(sf->charcnt,sizeof(BDFChar *));
-    for ( i=0; i<b->charcnt; ++i ) {
+    for ( i=0; i<mcnt; ++i ) {
 	BDFChar *bc = b->chars[i];
 	if ( bc->enc==-1 || bc->enc>=sf->charcnt )
 	    BDFCharFree(bc);

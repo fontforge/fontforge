@@ -1339,6 +1339,11 @@ int UniFromName(const char *name) {
 	i = strtol(name+1,&end,16);
 	if ( *end )
 	    i = -1;
+    } else if ( name[0]=='U' && name[1]=='+' && strlen(name)==6 ) {
+	/* Unifont uses this convention */
+	i = strtol(name+2,&end,16);
+	if ( *end )
+	    i = -1;
     }
     if ( i==-1 ) {
 	if ( !psnamesinited )
