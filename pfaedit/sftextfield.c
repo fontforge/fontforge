@@ -1654,6 +1654,11 @@ static int sftextarea_mouse(GGadget *g, GEvent *event) {
 return( false );
     if ( event->type == et_crossing )
 return( false );
+    if (( event->type==et_mouseup || event->type==et_mousedown ) &&
+	    (event->u.mouse.button==4 || event->u.mouse.button==5) &&
+	    st->vsb!=NULL )
+return( GGadgetDispatchEvent(&st->vsb->g,event));
+
     if ( st->pressed==NULL && event->type == et_mousemove && g->popup_msg!=NULL &&
 	    GGadgetWithin(g,event->u.mouse.x,event->u.mouse.y))
 	GGadgetPreparePopup(g->base,g->popup_msg);

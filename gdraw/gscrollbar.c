@@ -249,7 +249,7 @@ return( false );
 	active_len = g->inner.width;
     }
 
-    if ( (event->type==et_mouseup || event->type==et_mousedown) ||
+    if ( (event->type==et_mouseup || event->type==et_mousedown) &&
 	    (event->u.mouse.button==4 || event->u.mouse.button==5) ) {
 	/* X treats scroll wheels as though they send events from buttons 4 and 5 */
 	/* Scrolling up gives us: press5 r5 p4 r4, */
