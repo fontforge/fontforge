@@ -294,7 +294,7 @@ static void LigatureNew(SplineChar *sc3,SplineChar *sc1,SplineChar *sc2) {
     char *components = galloc(strlen(sc1->name)+strlen(sc2->name)+2);
     strcpy(components,sc1->name);
     strcat(components," ");
-    strcpy(components,sc2->name);
+    strcat(components,sc2->name);
     SubsNew(sc3,pst_ligature,CHR('l','i','g','a'),components,sc1);
 }
 
