@@ -614,7 +614,7 @@ return;
 }
 
 static void AlterEntry(struct ttf_table *cvt, int i, int delta ) {
-    int val = memushort(cvt->data,2*i);
+    int val = memushort(cvt->data,cvt->len,2*i);
     memputshort(cvt->data,2*i,val+delta);
 }
 

@@ -442,7 +442,8 @@ return( NULL );
     for ( i=0; i<mm->instance_count; ++i ) if ( (icvt=mm->instances[i]->ttf_tables)!=NULL ) {
 	deltas[i] = gcalloc(ptcnt,sizeof(int16));
 	for ( j=0; j<ptcnt; ++j )
-	    deltas[i][j] = memushort(icvt->data,sizeof(uint16)*j)-memushort(cvt->data,sizeof(uint16)*j);
+	    deltas[i][j] = memushort(icvt->data,icvt->len, sizeof(uint16)*j)-
+		    memushort(cvt->data,cvt->len, sizeof(uint16)*j);
     }
 
     /* Ok, each delta now contains the difference between the instance[i] points */

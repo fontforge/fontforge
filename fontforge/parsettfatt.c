@@ -119,9 +119,10 @@ static char *GlyphsToNames(struct ttfinfo *info,uint16 *glyphs) {
     if ( glyphs==NULL )
 return( copy(""));
     for ( i=len=0 ; glyphs[i]!=0xffff; ++i )
-	len += strlen(info->chars[glyphs[i]]->name)+1;
+	if ( info->chars[glyphs[i]]!=NULL )
+	    len += strlen(info->chars[glyphs[i]]->name)+1;
     ret = pt = galloc(len+1); *pt = '\0';
-    for ( i=0 ; glyphs[i]!=0xffff; ++i ) {
+    for ( i=0 ; glyphs[i]!=0xffff; ++i ) if ( info->chars[glyphs[i]]!=NULL ) {
 	strcpy(pt,info->chars[glyphs[i]]->name);
 	pt += strlen(pt);
 	*pt++ = ' ';
@@ -1589,7 +1590,7 @@ return;
 	for ( i=0; glyphs[i]!=0xffff; ++i ) if ( glyphs[i]<info->glyph_cnt ) {
 	    if ( info->chars[glyphs[i]]->name!=NULL ) {
 		which = format==1 ? (uint16) (glyphs[i]+delta) : glyph2s[i];
-		if ( which<info->glyph_cnt && which>=0 &&
+		if ( which<info->glyph_cnt && which>=0 && info->chars[which]!=NULL &&
 			info->chars[which]->name==NULL ) {
 		    char *basename = info->chars[glyphs[i]]->name;
 		    char *str;
@@ -1802,7 +1803,8 @@ return;
 		}
 	    } else if ( info->chars[lig]!=NULL ) {
 		for ( k=len=0; k<cc; ++k )
-		    len += strlen(info->chars[lig_glyphs[k]]->name)+1;
+		    if ( info->chars[lig_glyphs[k]]!=NULL )
+			len += strlen(info->chars[lig_glyphs[k]]->name)+1;
 		liga = chunkalloc(sizeof(PST));
 		liga->type = pst_ligature;
 		liga->tag = lookup->tag;
@@ -1813,9 +1815,11 @@ return;
 		liga->u.lig.lig = info->chars[lig];
 		liga->u.lig.components = pt = galloc(len);
 		for ( k=0; k<cc; ++k ) {
-		    strcpy(pt,info->chars[lig_glyphs[k]]->name);
-		    pt += strlen(pt);
-		    *pt++ = ' ';
+		    if ( info->chars[lig_glyphs[k]]!=NULL ) {
+			strcpy(pt,info->chars[lig_glyphs[k]]->name);
+			pt += strlen(pt);
+			*pt++ = ' ';
+		    }
 		}
 		pt[-1] = '\0';
 		free(lig_glyphs);
@@ -3102,16 +3106,24 @@ static void mortclass_apply_value(struct ttfinfo *info, int gfirst, int glast,FI
 	info->morx_classes[i] = class;
 }
 
-int32 memlong(uint8 *data,int offset) {
-    int ch1 = data[offset], ch2 = data[offset+1], ch3 = data[offset+2], ch4 = data[offset+3];
+int32 memlong(uint8 *data,int len, int offset) {
+    if ( offset>=0 && offset+3<len ) {
+	int ch1 = data[offset], ch2 = data[offset+1], ch3 = data[offset+2], ch4 = data[offset+3];
 return( (ch1<<24)|(ch2<<16)|(ch3<<8)|ch4 );
+    } else {
+	fprintf( stderr, "Bad font, offset out of bounds.\n" );
+return( 0 );
+    }
 }
 
-int memushort(uint8 *data,int offset) {
-    int ch1 = data[offset], ch2 = data[offset+1];
-    if ( offset<0 )
-	fprintf( stderr, "Internal error\n" );
+int memushort(uint8 *data,int len, int offset) {
+    if ( offset>=0 && offset+1<len ) {
+	int ch1 = data[offset], ch2 = data[offset+1];
 return( (ch1<<8)|ch2 );
+    } else {
+	fprintf( stderr, "Bad font, offset out of bounds.\n" );
+return( 0 );
+    }
 }
 
 void memputshort(uint8 *data,int offset,uint16 val) {
@@ -3144,18 +3156,18 @@ static void mort_figure_ligatures(struct statemachine *sm, int lcp, int off, int
     if ( lcp<0 || off+3>sm->length )
 return;
 
-    lig = memlong(sm->data,off);
+    lig = memlong(sm->data,sm->length, off);
     off += sizeof(long);
 
     for ( i=0; i<sm->info->glyph_cnt; ++i ) if ( sm->classes[i]==sm->lig_comp_classes[lcp] ) {
 	sm->lig_comp_glyphs[lcp] = i;
-	lig_offset += memushort(sm->data,2*( ((((int32) lig)<<2)>>2) + i ) );
+	lig_offset += memushort(sm->data,sm->length,2*( ((((int32) lig)<<2)>>2) + i ) );
 	if ( lig&0xc0000000 ) {
 	    if ( lig_offset+1 > sm->length ) {
 		fprintf( stderr, "Invalid ligature offset\n" );
     break;
 	    }
-	    lig_glyph = memushort(sm->data,lig_offset);
+	    lig_glyph = memushort(sm->data,sm->length,lig_offset);
 	    if ( lig_glyph>=sm->info->glyph_cnt ) {
 		fprintf(stderr, "Attempt to make a ligature for glyph %d out of ",
 			lig_glyph );
@@ -3173,30 +3185,34 @@ return;
 		    if ( j!=sm->lcp-1 )
 			strcat(comp," ");
 		}
-		for ( pst=sm->info->chars[lig_glyph]->possub; pst!=NULL; pst=pst->next )
-		    if ( pst->type==pst_ligature && pst->tag==sm->info->mort_subs_tag &&
-			    strcmp(comp,pst->u.lig.components)==0 )
-		break;
-		/* There are cases where there will be multiple entries for */
-		/*  the same lig. ie. if we have "ff" and "ffl" then there */
-		/*  will be multiple entries for "ff" */
-		if ( pst == NULL ) {
-		    pst = chunkalloc(sizeof(PST));
-		    pst->type = pst_ligature;
-		    pst->tag = sm->info->mort_subs_tag;
-		    pst->macfeature = sm->info->mort_tag_mac;
-		    pst->flags = sm->info->mort_r2l ? (pst_r2l|pst_ignorecombiningmarks) : pst_ignorecombiningmarks;
-		    pst->script_lang_index = SLIFromInfo(sm->info,sm->info->chars[lig_glyph],DEFAULT_LANG);
-		    pst->u.lig.components = comp;
-		    pst->u.lig.lig = sm->info->chars[lig_glyph];
-		    pst->next = sm->info->chars[lig_glyph]->possub;
-		    sm->info->chars[lig_glyph]->possub = pst;
-		} else
-		    free(comp);
+		if ( lig_glyph<sm->info->glyph_cnt && sm->info->chars[lig_glyph]!=NULL ) {
+		    for ( pst=sm->info->chars[lig_glyph]->possub; pst!=NULL; pst=pst->next )
+			if ( pst->type==pst_ligature && pst->tag==sm->info->mort_subs_tag &&
+				strcmp(comp,pst->u.lig.components)==0 )
+		    break;
+		    /* There are cases where there will be multiple entries for */
+		    /*  the same lig. ie. if we have "ff" and "ffl" then there */
+		    /*  will be multiple entries for "ff" */
+		    if ( pst == NULL ) {
+			pst = chunkalloc(sizeof(PST));
+			pst->type = pst_ligature;
+			pst->tag = sm->info->mort_subs_tag;
+			pst->macfeature = sm->info->mort_tag_mac;
+			pst->flags = sm->info->mort_r2l ? (pst_r2l|pst_ignorecombiningmarks) : pst_ignorecombiningmarks;
+			pst->script_lang_index = SLIFromInfo(sm->info,sm->info->chars[lig_glyph],DEFAULT_LANG);
+			pst->u.lig.components = comp;
+			pst->u.lig.lig = sm->info->chars[lig_glyph];
+			pst->next = sm->info->chars[lig_glyph]->possub;
+			sm->info->chars[lig_glyph]->possub = pst;
+		    } else
+			free(comp);
+		} else {
+		    fprintf( stderr, "Bad font: Ligature glyph %d is missing\n", lig_glyph );
+		}
 	    }
 	} else
 	    mort_figure_ligatures(sm,lcp-1,off,lig_offset);
-	lig_offset -= memushort(sm->data,2*( ((((int32) lig)<<2)>>2) + i ) );
+	lig_offset -= memushort(sm->data,sm->length,2*( ((((int32) lig)<<2)>>2) + i ) );
     }
 }
 
@@ -3218,8 +3234,8 @@ return;
     else { class_bottom = class; class_top = class+1; }
     for ( class=class_bottom; class<class_top; ++class ) {
 	int ent = sm->data[offset+class];
-	int newState = memushort(sm->data,sm->entryOffset+4*ent);
-	int flags = memushort(sm->data,sm->entryOffset+4*ent+2);
+	int newState = memushort(sm->data,sm->length,sm->entryOffset+4*ent);
+	int flags = memushort(sm->data,sm->length,sm->entryOffset+4*ent+2);
 	/* If we have the same entry as state 0, then presumably we are */
 	/*  ignoring the components read so far and starting over with a new */
 	/*  lig (similarly for state 1) */
@@ -3247,18 +3263,18 @@ static void morx_figure_ligatures(struct statemachine *sm, int lcp, int ligindex
     if ( lcp<0 || sm->ligActOff+4*ligindex+3>sm->length )
 return;
 
-    lig = memlong(sm->data,sm->ligActOff+4*ligindex);
+    lig = memlong(sm->data,sm->length, sm->ligActOff+4*ligindex);
     ++ligindex;
 
     for ( i=0; i<sm->info->glyph_cnt; ++i ) if ( sm->classes[i]==sm->lig_comp_classes[lcp] ) {
 	sm->lig_comp_glyphs[lcp] = i;
-	lig_offset += memushort(sm->data,sm->compOff + 2*( ((((int32) lig)<<2)>>2) + i ) );
+	lig_offset += memushort(sm->data,sm->length,sm->compOff + 2*( ((((int32) lig)<<2)>>2) + i ) );
 	if ( lig&0xc0000000 ) {
 	    if ( sm->ligOff+2*lig_offset+1 > sm->length ) {
 		fprintf( stderr, "Invalid ligature offset\n" );
     break;
 	    }
-	    lig_glyph = memushort(sm->data,sm->ligOff+2*lig_offset);
+	    lig_glyph = memushort(sm->data,sm->length,sm->ligOff+2*lig_offset);
 	    if ( lig_glyph>=sm->info->glyph_cnt ) {
 		fprintf(stderr, "Attempt to make a ligature for glyph %d out of ",
 			lig_glyph );
@@ -3298,7 +3314,7 @@ return;
 	    }
 	} else
 	    morx_figure_ligatures(sm,lcp-1,ligindex,lig_offset);
-	lig_offset -= memushort(sm->data,sm->compOff + 2*( ((((int32) lig)<<2)>>2) + i ) );
+	lig_offset -= memushort(sm->data,sm->length,sm->compOff + 2*( ((((int32) lig)<<2)>>2) + i ) );
     }
 }
 
@@ -3318,15 +3334,15 @@ return;
     if ( class==-1 ) { class_bottom = 0; class_top = sm->nClasses; }
     else { class_bottom = class; class_top = class+1; }
     for ( class=class_bottom; class<class_top; ++class ) {
-	int ent = memushort(sm->data, sm->stateOffset + 2*(state*sm->nClasses+class) );
-	int newState = memushort(sm->data,sm->entryOffset+6*ent);
-	int flags = memushort(sm->data,sm->entryOffset+6*ent+2);
-	int ligindex = memushort(sm->data,sm->entryOffset+6*ent+4);
+	int ent = memushort(sm->data, sm->length,sm->stateOffset + 2*(state*sm->nClasses+class) );
+	int newState = memushort(sm->data,sm->length,sm->entryOffset+6*ent);
+	int flags = memushort(sm->data,sm->length,sm->entryOffset+6*ent+2);
+	int ligindex = memushort(sm->data,sm->length,sm->entryOffset+6*ent+4);
 	/* If we have the same entry as state 0, then presumably we are */
 	/*  ignoring the components read so far and starting over with a new */
 	/*  lig (similarly for state 1) */
-	if (( state!=0 && memushort(sm->data, sm->stateOffset + 2*class) == ent ) ||
-		(state>1 && memushort(sm->data, sm->stateOffset + 2*(sm->nClasses+class))==ent ))
+	if (( state!=0 && memushort(sm->data, sm->length,sm->stateOffset + 2*class) == ent ) ||
+		(state>1 && memushort(sm->data,sm->length, sm->stateOffset + 2*(sm->nClasses+class))==ent ))
     continue;
 	if ( flags&0x8000 )	/* Set component */
 	    sm->lig_comp_classes[sm->lcp++] = class;
@@ -3358,13 +3374,13 @@ return;
     }
     fseek(ttf,here,SEEK_SET);
     if ( ismorx ) {
-	sm.nClasses = memlong(sm.data,0);
-	sm.classOffset = memlong(sm.data,sizeof(long));
-	sm.stateOffset = memlong(sm.data,2*sizeof(long));
-	sm.entryOffset = memlong(sm.data,3*sizeof(long));
-	sm.ligActOff = memlong(sm.data,4*sizeof(long));
-	sm.compOff = memlong(sm.data,5*sizeof(long));
-	sm.ligOff = memlong(sm.data,6*sizeof(long));
+	sm.nClasses = memlong(sm.data,sm.length, 0);
+	sm.classOffset = memlong(sm.data,sm.length, sizeof(long));
+	sm.stateOffset = memlong(sm.data,sm.length, 2*sizeof(long));
+	sm.entryOffset = memlong(sm.data,sm.length, 3*sizeof(long));
+	sm.ligActOff = memlong(sm.data,sm.length, 4*sizeof(long));
+	sm.compOff = memlong(sm.data,sm.length, 5*sizeof(long));
+	sm.ligOff = memlong(sm.data,sm.length, 6*sizeof(long));
 	fseek(ttf,here+sm.classOffset,SEEK_SET);
 	sm.classes = info->morx_classes = galloc(info->glyph_cnt*sizeof(uint16));
 	for ( i=0; i<info->glyph_cnt; ++i )
@@ -3375,18 +3391,18 @@ return;
 	sm.states_in_use = gcalloc(sm.smax,sizeof(uint8));
 	follow_morx_state(&sm,0,-1);
     } else {
-	sm.nClasses = memushort(sm.data,0);
-	sm.classOffset = memushort(sm.data,sizeof(uint16));
-	sm.stateOffset = memushort(sm.data,2*sizeof(uint16));
-	sm.entryOffset = memushort(sm.data,3*sizeof(uint16));
-	sm.ligActOff = memushort(sm.data,4*sizeof(uint16));
-	sm.compOff = memushort(sm.data,5*sizeof(uint16));
-	sm.ligOff = memushort(sm.data,6*sizeof(uint16));
+	sm.nClasses = memushort(sm.data,sm.length, 0);
+	sm.classOffset = memushort(sm.data,sm.length, sizeof(uint16));
+	sm.stateOffset = memushort(sm.data,sm.length, 2*sizeof(uint16));
+	sm.entryOffset = memushort(sm.data,sm.length, 3*sizeof(uint16));
+	sm.ligActOff = memushort(sm.data,sm.length, 4*sizeof(uint16));
+	sm.compOff = memushort(sm.data,sm.length, 5*sizeof(uint16));
+	sm.ligOff = memushort(sm.data,sm.length, 6*sizeof(uint16));
 	sm.classes = galloc(info->glyph_cnt*sizeof(uint16));
 	for ( i=0; i<info->glyph_cnt; ++i )
 	    sm.classes[i] = 1;			/* Out of bounds */
-	first = memushort(sm.data,sm.classOffset);
-	cnt = memushort(sm.data,sm.classOffset+sizeof(uint16));
+	first = memushort(sm.data,sm.length, sm.classOffset);
+	cnt = memushort(sm.data,sm.length, sm.classOffset+sizeof(uint16));
 	for ( i=0; i<cnt; ++i )
 	    sm.classes[first+i] = sm.data[sm.classOffset+2*sizeof(uint16)+i];
 	sm.smax = length/sm.nClasses;
@@ -3423,6 +3439,7 @@ static struct statetable *read_statetable(FILE *ttf, int ent_extras, int ismorx,
     int nclasses, class_off, state_off, entry_off;
     int state_max, ent_max, old_state_max, old_ent_max;
     int i, j, ent, new_state, ent_size;
+    int error;
 
     st->state_start = here;
 
@@ -3448,18 +3465,36 @@ static struct statetable *read_statetable(FILE *ttf, int ent_extras, int ismorx,
 
 	/* parse class subtable */
     fseek(ttf,here+class_off,SEEK_SET);
+    error = 0;
     if ( ismorx ) {
 	st->classes2 = info->morx_classes = galloc(info->glyph_cnt*sizeof(uint16));
 	for ( i=0; i<info->glyph_cnt; ++i )
 	    st->classes2[i] = 1;			/* Out of bounds */
 	readttf_applelookup(ttf,info,
 		mortclass_apply_values,mortclass_apply_value,NULL,NULL);
+	for ( i=0; i<info->glyph_cnt; ++i ) {
+	    if ( /*st->classes2[i]<0 ||*/ st->classes2[i]>=st->nclasses ) {
+		if ( !error )
+		    fprintf(stderr, "Bad class in state machine.\n" );
+		error = true;
+		st->classes2[i] = 1;			/* Out of bounds */
+	    }
+	}
     } else {
 	st->first_glyph = getushort(ttf);
 	st->nglyphs = getushort(ttf);
 	st->classes = galloc(st->nglyphs);
 	fread(st->classes,1,st->nglyphs,ttf);
+	for ( i=0; i<st->nglyphs; ++i ) {
+	    if ( /*st->classes[i]<0 ||*/ st->classes[i]>=st->nclasses ) {
+		if ( !error )
+		    fprintf(stderr, "Bad class in state machine.\n" );
+		error = true;
+		st->classes[i] = 1;			/* Out of bounds */
+	    }
+	}
     }
+
 
     /* The size of an entry is variable. There are 2 uint16 fields at the begin-*/
     /*  ning of all entries. There may be some number of shorts following these*/
@@ -3785,16 +3820,16 @@ return(NULL);
 	int trans;
 	if ( ismorx ) {
 	    trans = st->state_table2[i];
-	    as->state[i].next_state = memushort(st->transitions,trans*st->entry_size);
+	    as->state[i].next_state = memushort(st->transitions,st->nentries*st->entry_size,trans*st->entry_size);
 	} else {
 	    trans = st->state_table[i];
-	    as->state[i].next_state = (memushort(st->transitions,trans*st->entry_size)-st->state_offset)/st->nclasses;
+	    as->state[i].next_state = (memushort(st->transitions,st->nentries*st->entry_size,trans*st->entry_size)-st->state_offset)/st->nclasses;
 	}
-	as->state[i].flags = memushort(st->transitions,trans*st->entry_size+2);
+	as->state[i].flags = memushort(st->transitions,st->nentries*st->entry_size,trans*st->entry_size+2);
 	if ( extras>0 )
-	    as->state[i].u.context.mark_tag = memushort(st->transitions,trans*st->entry_size+2+2);
+	    as->state[i].u.context.mark_tag = memushort(st->transitions,st->nentries*st->entry_size, trans*st->entry_size+2+2);
 	if ( extras>1 )
-	    as->state[i].u.context.cur_tag = memushort(st->transitions,trans*st->entry_size+2+2+2);
+	    as->state[i].u.context.cur_tag = memushort(st->transitions,st->nentries*st->entry_size, trans*st->entry_size+2+2+2);
     }
     /* Indic tables have no attached subtables, just a verb in the flag field */
     /*  so for them we are done. For the others... */

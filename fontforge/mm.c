@@ -1530,7 +1530,7 @@ return;
 	    if ( blends[j]!=0 && deltas[j]!=NULL )
 		diff += blends[j]*deltas[j][i];
 	}
-	memputshort(cvt->data,2*i,memushort(cvt->data,2*i)+rint(diff));
+	memputshort(cvt->data,2*i,memushort(cvt->data,cvt->len,2*i)+rint(diff));
     }
     for ( j=0; j<mm->instance_count; ++j )
 	free( deltas[j]);
