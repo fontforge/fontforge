@@ -710,6 +710,25 @@ static int getint(FILE *sfd, int *val) {
 return( pt!=tokbuf?1:ch==EOF?-1: 0 );
 }
 
+static int gethex(FILE *sfd, int *val) {
+    char tokbuf[100]; int ch;
+    char *pt=tokbuf, *end = tokbuf+100-2;
+
+    while ( isspace(ch = getc(sfd)));
+    if ( ch=='-' || ch=='+' ) {
+	*pt++ = ch;
+	ch = getc(sfd);
+    }
+    while ( isdigit(ch) || (ch>='a' && ch<='f') || (ch>='A' && ch<='F')) {
+	if ( pt<end ) *pt++ = ch;
+	ch = getc(sfd);
+    }
+    *pt='\0';
+    ungetc(ch,sfd);
+    *val = strtol(tokbuf,NULL,16);
+return( pt!=tokbuf?1:ch==EOF?-1: 0 );
+}
+
 static int getsint(FILE *sfd, int16 *val) {
     int val2;
     int ret = getint(sfd,&val2);
@@ -784,7 +803,7 @@ static ImageList *SFDGetImage(FILE *sfd) {
     getint(sfd,&image_type);
     getint(sfd,&bpl);
     getint(sfd,&clutlen);
-    getint(sfd,&trans);
+    gethex(sfd,&trans);
     image = GImageCreate(image_type,width,height);
     base = image->list_len==0?image->u.image:image->u.images[0];
     img = gcalloc(1,sizeof(ImageList));
