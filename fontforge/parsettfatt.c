@@ -574,6 +574,8 @@ static AnchorPoint *readAnchorPoint(FILE *ttf,uint32 base,AnchorClass *class,
     AnchorPoint *ap;
     int format;
 
+    fseek(ttf,base,SEEK_SET);
+
     ap = chunkalloc(sizeof(AnchorPoint));
     ap->anchor = class;
     /* All anchor types have the same initial 3 entries, format */
@@ -587,10 +589,10 @@ static AnchorPoint *readAnchorPoint(FILE *ttf,uint32 base,AnchorClass *class,
 	int devoff;
 	devoff = getushort(ttf);
 	if ( devoff!=0 )
-	    ReadDeviceTable(ttf,&ap->xadjust,base);
+	    ReadDeviceTable(ttf,&ap->xadjust,base+devoff);
 	devoff = getushort(ttf);
 	if ( devoff!=0 )
-	    ReadDeviceTable(ttf,&ap->yadjust,base);
+	    ReadDeviceTable(ttf,&ap->yadjust,base+devoff);
     }
 #endif
     ap->next = last;
@@ -632,13 +634,11 @@ return;
     for ( i=0; i<cnt; ++i ) {
 	sc = info->chars[glyphs[i]];
 	if ( offsets[i].entry!=0 ) {
-	    fseek(ttf,stoffset+offsets[i].entry,SEEK_SET);
-	    sc->anchor = readAnchorPoint(ttf,stoffset,class,
+	    sc->anchor = readAnchorPoint(ttf,stoffset+offsets[i].entry,class,
 		    at_centry,sc->anchor);
 	}
 	if ( offsets[i].exit!=0 ) {
-	    fseek(ttf,stoffset+offsets[i].exit,SEEK_SET);
-	    sc->anchor = readAnchorPoint(ttf,stoffset,class,
+	    sc->anchor = readAnchorPoint(ttf,stoffset+offsets[i].exit,class,
 		    at_cexit,sc->anchor);
 	}
     }
@@ -695,9 +695,8 @@ static AnchorClass **MarkGlyphsProcessMarks(FILE *ttf,int markoffset,
 	sc = info->chars[markglyphs[i]];
 	if ( sc==NULL || at_offsets[i].offset==0 )
     continue;
-	fseek(ttf,markoffset+at_offsets[i].offset,SEEK_SET);
-	sc->anchor = readAnchorPoint(ttf,markoffset,classes[at_offsets[i].class],
-		at_mark,sc->anchor);
+	sc->anchor = readAnchorPoint(ttf,markoffset+at_offsets[i].offset,
+		classes[at_offsets[i].class],at_mark,sc->anchor);
     }
     free(at_offsets);
 return( classes );
@@ -722,9 +721,8 @@ static void MarkGlyphsProcessBases(FILE *ttf,int baseoffset,
 	if ( sc==NULL )
     continue;
 	for ( j=0; j<classcnt; ++j ) if ( offsets[ibase+j]!=0 ) {
-	    fseek(ttf,baseoffset+offsets[ibase+j],SEEK_SET);
-	    sc->anchor = readAnchorPoint(ttf,baseoffset,classes[j],
-		    at,sc->anchor);
+	    sc->anchor = readAnchorPoint(ttf,baseoffset+offsets[ibase+j],
+		    classes[j], at,sc->anchor);
 	}
     }
 }
@@ -752,9 +750,8 @@ static void MarkGlyphsProcessLigs(FILE *ttf,int baseoffset,
 	    aoffsets[k] = getushort(ttf);
 	for ( k=kbase=0; k<compcnt; ++k, kbase+=classcnt ) {
 	    for ( j=0; j<classcnt; ++j ) if ( aoffsets[kbase+j]!=0 ) {
-		fseek(ttf,baseoffset+loffsets[i]+aoffsets[kbase+j],SEEK_SET);
-		sc->anchor = readAnchorPoint(ttf,baseoffset,classes[j],
-			at_baselig,sc->anchor);
+		sc->anchor = readAnchorPoint(ttf,baseoffset+loffsets[i]+aoffsets[kbase+j],
+			classes[j], at_baselig,sc->anchor);
 		sc->anchor->lig_index = k;
 	    }
 	}
