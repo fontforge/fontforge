@@ -1434,6 +1434,7 @@ static int SaveSubFont(SplineFont *sf,char *newname,int32 *sizes,int res,
     temp.subfontcnt = 0;
     temp.uniqueid = 0;
     memset(chars,0,sizeof(chars));
+    temp.glyphnames = NULL;
     used = 0;
     for ( i=0; mapping[i]!=-2; ++i ) if ( (mapping[i]>>8)==subfont ) {
 	k = 0;
