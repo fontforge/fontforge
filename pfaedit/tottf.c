@@ -5665,20 +5665,26 @@ void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf) {
     struct tm *tm;
     char buffer[200];
 
-    if ( dummy->names[0]==NULL ) dummy->names[0] = uc_copy(sf->copyright);
-    if ( dummy->names[1]==NULL ) dummy->names[1] = uc_copy(sf->familyname);
-    if ( dummy->names[2]==NULL ) dummy->names[2] = uc_copy(SFGetModifiers(sf));
-    if ( dummy->names[3]==NULL ) {
+    if ( dummy->names[ttf_copyright]==NULL || *dummy->names[ttf_copyright]=='\0' )
+	dummy->names[ttf_copyright] = uc_copy(sf->copyright);
+    if ( dummy->names[ttf_family]==NULL || *dummy->names[ttf_family]=='\0' )
+	dummy->names[ttf_family] = uc_copy(sf->familyname);
+    if ( dummy->names[ttf_subfamily]==NULL || *dummy->names[ttf_subfamily]=='\0' )
+	dummy->names[ttf_subfamily] = uc_copy(SFGetModifiers(sf));
+    if ( dummy->names[ttf_uniqueid]==NULL || *dummy->names[ttf_uniqueid]=='\0' ) {
 	time(&now);
 	tm = localtime(&now);
 	sprintf( buffer, "%s : %s : %d-%d-%d", BDFFoundry?BDFFoundry:"PfaEdit 1.0",
 		sf->fullname!=NULL?sf->fullname:sf->fontname,
 		tm->tm_mday, tm->tm_mon, tm->tm_year+1970 );
-	dummy->names[3] = uc_copy(buffer);
+	dummy->names[ttf_uniqueid] = uc_copy(buffer);
     }
-    if ( dummy->names[4]==NULL ) dummy->names[4] = uc_copy(sf->fullname);
-    if ( dummy->names[5]==NULL ) dummy->names[5] = uc_copy(sf->version);
-    if ( dummy->names[6]==NULL ) dummy->names[6] = uc_copy(sf->fontname);
+    if ( dummy->names[ttf_fullname]==NULL || *dummy->names[ttf_fullname]=='\0' )
+	dummy->names[ttf_fullname] = uc_copy(sf->fullname);
+    if ( dummy->names[ttf_version]==NULL || *dummy->names[ttf_version]=='\0' )
+	dummy->names[ttf_version] = uc_copy(sf->version);
+    if ( dummy->names[ttf_postscriptname]==NULL || *dummy->names[ttf_postscriptname]=='\0' )
+	dummy->names[ttf_postscriptname] = uc_copy(sf->fontname);
 }
 
 static void dumpnames(struct alltabs *at, SplineFont *sf) {

@@ -1723,8 +1723,8 @@ return( fpt );
 return( "Regular" );
 }
 
-static unichar_t *_uGetModifiers(unichar_t *fontname, unichar_t *familyname) {
-    unichar_t *pt, *fpt;
+static const unichar_t *_uGetModifiers(const unichar_t *fontname, const unichar_t *familyname) {
+    const unichar_t *pt, *fpt;
     static unichar_t regular[] = { 'R','e','g','u','l','a','r', 0 };
     static unichar_t space[20];
     int i,j;
@@ -1825,8 +1825,7 @@ void SFSetFontName(SplineFont *sf, char *family, char *mods,char *full) {
     /* In the URW world fontnames aren't just a simple concatenation of */
     /*  family name and modifiers, so neither the family name nor the modifiers */
     /*  changed, then don't change the font name */
-    if ( strcmp(family,sf->familyname)==0 &&
-	    strcmp(SFGetModifiers(sf),_GetModifiers(n,family))==0 )
+    if ( strcmp(family,sf->familyname)==0 && strcmp(n,sf->fontname)==0 )
 	/* Don't change the fontname */;
 	/* or anything else */
     else {
@@ -2077,6 +2076,102 @@ struct ttflangname *TTFLangNamesCopy(struct ttflangname *old) {
 return( base );
 }
 
+void TTF_PSDupsDefault(SplineFont *sf) {
+    struct ttflangname *english;
+
+    /* Ok, if we've just loaded a ttf file then we've got a bunch of langnames*/
+    /*  we copied some of them (copyright, family, fullname, etc) into equiv */
+    /*  postscript entries in the sf. If we then use FontInfo and change the */
+    /*  obvious postscript entries we are left with the old ttf entries. If */
+    /*  we generate a ttf file and then load it the old values pop up. */
+    /* Solution: Anything we can generate by default should be set to NULL */
+    for ( english=sf->names; english!=NULL && english->lang!=0x409; english=english->next );
+    if ( english==NULL )
+return;
+    if ( english->names[ttf_family]!=NULL &&
+	    uc_strcmp(english->names[ttf_family],sf->familyname)==0 ) {
+	free(english->names[ttf_family]);
+	english->names[ttf_family]=NULL;
+    }
+    if ( english->names[ttf_copyright]!=NULL &&
+	    uc_strcmp(english->names[ttf_copyright],sf->copyright)==0 ) {
+	free(english->names[ttf_copyright]);
+	english->names[ttf_copyright]=NULL;
+    }
+    if ( english->names[ttf_fullname]!=NULL &&
+	    uc_strcmp(english->names[ttf_fullname],sf->fullname)==0 ) {
+	free(english->names[ttf_fullname]);
+	english->names[ttf_fullname]=NULL;
+    }
+    if ( english->names[ttf_version]!=NULL &&
+	    uc_strcmp(english->names[ttf_version],sf->version)==0 ) {
+	free(english->names[ttf_version]);
+	english->names[ttf_version]=NULL;
+    }
+    if ( english->names[ttf_subfamily]!=NULL &&
+	    uc_strcmp(english->names[ttf_subfamily],SFGetModifiers(sf))==0 ) {
+	free(english->names[ttf_subfamily]);
+	english->names[ttf_subfamily]=NULL;
+    }
+
+    /* User should not be allowed any access to this one, not ever */
+    free(english->names[ttf_postscriptname]);
+    english->names[ttf_postscriptname]=NULL;
+}
+
+static void TTF_PSDupsChanged(GWindow gw,SplineFont *sf,struct ttflangname *newnames) {
+    struct ttflangname *english, *sfenglish;
+    const unichar_t *txt, *txt1;
+#define offsetfrom(type,name) (((char *) &(((type *) NULL)->name)) - (char *) NULL)
+    static struct dupttfps { int ttf, cid, sid, off; } dups[] =
+	{{ ttf_copyright, CID_Notice, _STR_Copyright, offsetfrom(SplineFont,copyright) },
+	 { ttf_family, CID_Family, _STR_Family, offsetfrom(SplineFont,familyname) },
+	 { ttf_fullname, CID_Human, _STR_Fullname, offsetfrom(SplineFont,fullname) },
+	 { ttf_version, CID_Version, _STR_Version, offsetfrom(SplineFont,version) },
+	 { ttf_subfamily, CID_Fontname, _STR_Styles, offsetfrom(SplineFont,fontname) },
+	 { -1 }};
+#undef offsetfrom
+    int changeall = -1, i;
+
+    for ( english=newnames; english!=NULL && english->lang!=0x409; english=english->next );
+    if ( english==NULL )
+return;
+    for ( sfenglish=sf->names; sfenglish!=NULL && sfenglish->lang!=0x409; sfenglish=sfenglish->next );
+    for ( i=0; dups[i].ttf!=-1; ++i ) {
+	txt=txt1=_GGadgetGetTitle(GWidgetGetControl(gw,dups[i].cid));
+	if ( dups[i].cid==CID_Fontname )
+	    txt1 = _uGetModifiers(txt,_GGadgetGetTitle(GWidgetGetControl(gw,CID_Family)));
+	if ( english->names[dups[i].ttf]!=NULL &&
+		uc_strcmp(txt,*(char **) (((char *) sf) + dups[i].off))!=0 &&
+		u_strcmp(txt1,english->names[dups[i].ttf])!=0 ) {
+	    /* If we've got an entry for this guy, and the user changed the ps */
+	    /*  version of the name, and the new ps version doesn't match what */
+	    /*  we've got then.... */
+	    if ( sfenglish==NULL || sfenglish->names[dups[i].ttf]==NULL ) {
+		/* User has never set this value, let's set the new value to default */
+		free(english->names[dups[i].ttf]);
+		english->names[dups[i].ttf] = NULL;
+	    } else if ( u_strcmp(sfenglish->names[dups[i].ttf],english->names[dups[i].ttf])!=0 ) {
+		/* User has explicitly changed this from what it was, so presumably */
+		/*  s/he knows what s/he is doing */
+	    } else {
+		int ans=-1;
+		if ( changeall==-1 ) {
+		    static int buts[] = { _STR_Change, _STR_ChangeAll, _STR_RetainAll, _STR_Retain, 0 };
+		    ans = GWidgetAskR(_STR_Mismatch,buts,0,3,_STR_MismatchLong,
+			    GStringGetResource(dups[i].sid,NULL));
+		    if ( ans==1 ) changeall=1;
+		    else if ( ans==2 ) changeall=0;
+		}
+		if ( changeall==1 || ans==0 ) {
+		    free(english->names[dups[i].ttf]);
+		    english->names[dups[i].ttf] = NULL;
+		}
+	    }
+	}
+    }
+}
+
 static int GFI_DefaultStyles(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
@@ -2208,10 +2303,6 @@ static void DefaultLanguage(struct gfi_data *d) {
     d->def.names[ttf_fullname] = GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Human));
     d->def.names[ttf_subfamily] = uGetModifiers(
 	    GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Fontname)),d->def.names[ttf_family]);
-    if ( *d->def.names[ttf_subfamily]=='\0' ) {
-	free( d->def.names[ttf_subfamily]);
-	d->def.names[ttf_subfamily] = uc_copy("Regular");
-    }
     d->def.names[ttf_version] = GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Version));
     DefaultTTFEnglishNames(&d->def, d->sf);
     TNFinishFormer(d);
@@ -2281,6 +2372,7 @@ return( true );
 	}
 	if ( nchar<sf->charcnt && AskTooFew())
 return(true);
+	TTF_PSDupsChanged(gw,sf,d->names_set ? d->names : sf->names);
 	GDrawSetCursor(gw,ct_watch);
 	namechange = SetFontName(gw,sf);
 	txt = _GGadgetGetTitle(GWidgetGetControl(gw,CID_XUID));
@@ -2357,6 +2449,7 @@ return(true);
 	if ( d->names_set ) {
 	    TTFLangNamesFree(sf->names);
 	    sf->names = d->names;
+	    TTF_PSDupsDefault(sf);
 	    d->names = NULL;
 	}
 	if ( d->ttf_set ) {

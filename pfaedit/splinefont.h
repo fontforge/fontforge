@@ -532,6 +532,7 @@ extern int WriteMacTTFFont(char *fontname,SplineFont *sf, enum fontformat format
 	int32 *bsizes, enum bitmapformat bf);
 extern int WriteMacBitmaps(char *filename,SplineFont *sf, int32 *sizes,int is_dfont);
 extern struct ttflangname *TTFLangNamesCopy(struct ttflangname *old);
+extern void TTF_PSDupsDefault(SplineFont *sf);
 extern void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf);
 extern void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]);
 extern void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *sf,char *fontname);

@@ -768,18 +768,19 @@ static void readttfcopyrights(FILE *ttf,struct ttfinfo *info) {
     }
 
     if ( info->copyright==NULL )
-	info->copyright = FindLangEntry(info,0);
+	info->copyright = FindLangEntry(info,ttf_copyright);
     if ( info->familyname==NULL )
-	info->familyname = stripspaces(FindLangEntry(info,1));
+	info->familyname = FindLangEntry(info,ttf_family);
     if ( info->fullname==NULL )
-	info->fullname = FindLangEntry(info,4);
+	info->fullname = FindLangEntry(info,ttf_fullname);
     if ( info->version==NULL )
-	info->version = FindLangEntry(info,5);
+	info->version = FindLangEntry(info,ttf_version);
     if ( info->fontname==NULL )
-	info->fontname = FindLangEntry(info,6);
+	info->fontname = FindLangEntry(info,ttf_postscriptname);
     
     if ( info->version==NULL ) info->version = copy("1.0");
-    if ( info->fontname==NULL && info->fullname!=NULL ) info->fontname = stripspaces(copy(info->fullname));
+    if ( info->fontname==NULL && info->fullname!=NULL )
+	info->fontname = stripspaces(copy(info->fullname));
 }
 
 static void readttfpreglyph(FILE *ttf,struct ttfinfo *info) {
@@ -4012,6 +4013,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 	    sf->subfonts[i]->hasvmetrics = sf->hasvmetrics;
 	}
     }
+    TTF_PSDupsDefault(sf);
 return( sf );
 }
 

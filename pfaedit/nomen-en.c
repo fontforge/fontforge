@@ -465,8 +465,14 @@ static char str_UniqueIDTitle = "Change UniqueID?"
 static char str_UniqueIDChange = "You have changed this font's name without changing the UniqueID (or XUID).\nThis is probably not a good idea, would you like me to\ngenerate a random new value?";
 static char str_Change = "Change";
 static char mnemonic_Change = 'h';
+static char str_ChangeAll = "Change All";
+static char mnemonic_ChangeAll = 'A';
+static char str_RetainAll = "Retain All";
+static char mnemonic_RetainAll = 'l';
 static char str_Retain = "Retain";
 static char mnemonic_Retain = 'R';
+static char *str_Mismatch = "Mismatch";
+static char *str_MismatchLong = "You have changed one version of %s but not the one under TTF Names. Would you like to set the TTF version to the changed one?";
 
     /* Private info */
 static char *str_PrivateKey = "Private Key";
