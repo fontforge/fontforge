@@ -398,6 +398,7 @@ struct glyphinfo {
     int fixed_width;
     int32 *bsizes;
     unsigned int onlybitmaps: 1;
+    unsigned int has_instrs: 1;
     SplineFont *sf;
 };
 
@@ -576,7 +577,7 @@ extern void memputshort(uint8 *data,int offset,uint16 val);
 extern int TTF__getcvtval(SplineFont *sf,int val);
 extern int TTF_getcvtval(SplineFont *sf,int val);
 extern void initforinstrs(SplineChar *sc);
-extern int SSPointCnt(SplineSet *ss,int has_instrs);
+extern int SSPointCnt(SplineSet *ss,int startcnt, int has_instrs);
 extern int SSAddPoints(SplineSet *ss,int ptcnt,BasePoint *bp, char *flags,int has_instrs);
 
     /* Used by both otf and apple */

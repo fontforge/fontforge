@@ -2443,8 +2443,12 @@ int SCNumberPoints(SplineChar *sc) {
     int pnum=0;
     SplineSet *ss;
     SplinePoint *sp;
+    int starts_with_cp;
 
     for ( ss = sc->splines; ss!=NULL; ss=ss->next ) {
+	starts_with_cp = (ss->first->ttfindex == pnum+1 || ss->first->ttfindex==0xffff) &&
+		!ss->first->noprevcp;
+	if ( starts_with_cp ) ++pnum;
 	for ( sp=ss->first; ; ) {
 	    if ( ((sc->ttf_instrs!=NULL && sp->ttfindex==0xffff) ||
 		    ( sp!=ss->first && !sp->nonextcp && !sp->noprevcp &&
@@ -2463,6 +2467,7 @@ int SCNumberPoints(SplineChar *sc) {
 	    if ( sp==ss->first )
 	break;
 	}
+	if ( starts_with_cp ) --pnum;
     }
 return( pnum );
 }
@@ -2471,12 +2476,16 @@ static void instrcheck(SplineChar *sc) {
     int pnum=0, skipit;
     SplineSet *ss;
     SplinePoint *sp;
+    int starts_with_cp;
 
     if ( sc->ttf_instrs==NULL )
 return;
     /* If the points are no longer in order then the instructions are not valid */
     /*  (because they'll refer to the wrong points) and should be removed */
     for ( ss = sc->splines; ss!=NULL; ss=ss->next ) {
+	starts_with_cp = (ss->first->ttfindex == pnum+1 || ss->first->ttfindex==0xffff) &&
+		!ss->first->noprevcp;
+	if ( starts_with_cp ) ++pnum;
 	for ( sp=ss->first; ; ) {
 	    skipit = sp!=ss->first && !sp->nonextcp && !sp->noprevcp &&
 		    !sp->roundx && !sp->roundy && !sp->dontinterpolate &&
@@ -2504,6 +2513,7 @@ return;
 	    if ( sp==ss->first )
 	break;
 	}
+	if ( starts_with_cp ) --pnum;
     }
 }
 

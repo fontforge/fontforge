@@ -1700,7 +1700,7 @@ return;
 
     cnt = contourcnt = 0;
     for ( ss=sc->splines; ss!=NULL; ss=ss->next, ++contourcnt )
-	cnt += SSPointCnt(ss,false);
+	cnt = SSPointCnt(ss,cnt,false);
 
     contourends = galloc((contourcnt+1)*sizeof(int));
     bp = galloc(cnt*sizeof(BasePoint));

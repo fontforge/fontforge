@@ -686,17 +686,19 @@ static SplineSet *SCttfApprox(SplineChar *sc) {
 return( head );
 }
     
-int SSPointCnt(SplineSet *ss,int has_instrs) {
+int SSPointCnt(SplineSet *ss,int startcnt, int has_instrs) {
     SplinePoint *sp, *first=NULL;
-    int cnt;
+    int cnt, starts_with_cp;
 
-    for ( sp=ss->first, cnt=0; sp!=first ; ) {
+    starts_with_cp = (ss->first->ttfindex == startcnt+1 || ss->first->ttfindex==0xffff) &&
+	    !ss->first->noprevcp && has_instrs;
+
+    for ( sp=ss->first, cnt=startcnt; sp!=first ; ) {
 	if ( has_instrs && sp->ttfindex!=0xffff )
 	    cnt = sp->ttfindex+1;
 	else if ( !has_instrs &&
 		    ( sp==ss->first || sp->nonextcp || sp->noprevcp ||
 		    (sp->dontinterpolate || sp->roundx || sp->roundy) ||
-		    (has_instrs && sp->ttfindex!=0xffff) ||
 		    (sp->prevcp.x+sp->nextcp.x)/2!=sp->me.x ||
 		    (sp->prevcp.y+sp->nextcp.y)/2!=sp->me.y ))
 	    ++cnt;
@@ -706,6 +708,9 @@ int SSPointCnt(SplineSet *ss,int has_instrs) {
 	if ( first==NULL ) first = sp;
 	sp = sp->next->to;
     }
+
+    if ( starts_with_cp )	/* We'll have counted it twice */
+	--cnt;
 return( cnt );
 }
 
@@ -716,8 +721,20 @@ return( cnt );
 #define _X_Same		0x10
 #define _Y_Same		0x20
 
-int SSAddPoints(SplineSet *ss,int ptcnt,BasePoint *bp, char *flags,int has_instrs) {
-    SplinePoint *sp, *first;
+int SSAddPoints(SplineSet *ss,int ptcnt,BasePoint *bp, char *flags,
+	int has_instrs) {
+    SplinePoint *sp, *first, *nextsp;
+    int starts_with_cp;
+
+    starts_with_cp = (ss->first->ttfindex == ptcnt+1 || ss->first->ttfindex==0xffff) &&
+	    !ss->first->noprevcp && has_instrs;
+    if ( ss->first->ttfindex!=ptcnt && !starts_with_cp )
+	GDrawIError("Unexpected point count in SSAddPoints" );
+    if ( starts_with_cp ) {
+	if ( flags!=NULL ) flags[ptcnt] = 0;
+	bp[ptcnt].x = rint(ss->first->prevcp.x);
+	bp[ptcnt++].y = rint(ss->first->prevcp.y);
+    }
 
     first = NULL;
     for ( sp=ss->first; sp!=first ; ) {
@@ -737,7 +754,6 @@ int SSAddPoints(SplineSet *ss,int ptcnt,BasePoint *bp, char *flags,int has_instr
 	} else if ( !has_instrs &&
 		    ( sp==ss->first || sp->nonextcp || sp->noprevcp ||
 		    (sp->dontinterpolate || sp->roundx || sp->roundy) ||
-		    (has_instrs && sp->ttfindex!=0xffff) ||
 		    (sp->prevcp.x+sp->nextcp.x)/2!=sp->me.x ||
 		    (sp->prevcp.y+sp->nextcp.y)/2!=sp->me.y )) {
 	    /* If an on curve point is midway between two off curve points*/
@@ -747,15 +763,19 @@ int SSAddPoints(SplineSet *ss,int ptcnt,BasePoint *bp, char *flags,int has_instr
 	    bp[ptcnt].y = rint(sp->me.y);
 	    sp->ttfindex = ptcnt++;
 	}
+	nextsp = sp->next!=NULL ? sp->next->to : NULL;
+	if ( starts_with_cp && nextsp==first )
+	    /* This control point is actually our first point, not our last */
+    break;
 	if ( !sp->nonextcp ) {
 	    if ( flags!=NULL ) flags[ptcnt] = 0;
 	    bp[ptcnt].x = rint(sp->nextcp.x);
 	    bp[ptcnt++].y = rint(sp->nextcp.y);
 	}
-	if ( sp->next==NULL )
+	if ( nextsp==NULL )
     break;
 	if ( first==NULL ) first = sp;
-	sp = sp->next->to;
+	sp = nextsp;
     }
 return( ptcnt );
 }
@@ -990,7 +1010,7 @@ static void dumpspace(SplineChar *sc, struct glyphinfo *gi) {
 static void dumpcomposite(SplineChar *sc, RefChar *refs, struct glyphinfo *gi) {
     struct glyphhead gh;
     DBounds bb;
-    int i, ptcnt, ctcnt, flags;
+    int i, ptcnt, ctcnt, flags, sptcnt, icnt;
     SplineSet *ss;
     RefChar *ref;
     int any = false;
@@ -1010,7 +1030,7 @@ static void dumpcomposite(SplineChar *sc, RefChar *refs, struct glyphinfo *gi) {
     gh.xmax = ceil(bb.maxx); gh.ymax = ceil(bb.maxy);
     dumpghstruct(gi,&gh);
 
-    i=ptcnt=ctcnt=0;
+    i=ptcnt=ctcnt=icnt=0;
     for ( ref=refs; ref!=NULL; ref=ref->next, ++i ) {
 	if ( ref->sc->ttf_glyph==-1 ) {
 	    if ( refs->next==NULL || any )
@@ -1064,20 +1084,26 @@ static void dumpcomposite(SplineChar *sc, RefChar *refs, struct glyphinfo *gi) {
 	} else if ( flags&(1<<3) ) {
 	    put2d14(gi->glyphs,ref->transform[0]);
 	}
-	for ( ss=ref->splines; ss!=NULL ; ss=ss->next ) {
+	for ( ss=ref->splines, sptcnt=0; ss!=NULL ; ss=ss->next ) {
 	    ++ctcnt;
-	    ptcnt += SSPointCnt(ss,false);
+	    sptcnt = SSPointCnt(ss,sptcnt,ref->sc->ttf_instrs_len!=0 || gi->has_instrs );
 	}
+	ptcnt += sptcnt;
+	icnt += ref->sc->ttf_instrs_len;
     }
 
     if ( sc->ttf_instrs_len!=0 )
 	dumpinstrs(gi,sc->ttf_instrs,sc->ttf_instrs_len);
+    icnt += sc->ttf_instrs_len;
+    /* The docs don't mention this, but the instruction count includes nested */
+    /*  instructions */	/* Maybe. I can't figure out how this is calculated */
+    if ( gi->maxp->maxglyphInstr<icnt ) gi->maxp->maxglyphInstr=icnt;
 
     if ( gi->maxp->maxnumcomponents<i ) gi->maxp->maxnumcomponents = i;
 	/* Assume every font has at least one reference character */
 	/* PfaEdit will do a transitive closeur so that we end up with */
-	/*  a maximum depth of 1 (according to apple) or 2 (according to Opentype) */
-    gi->maxp->maxcomponentdepth = /* Apple docs say: 1, Open type docs say: */ 2;
+	/*  a maximum depth of 1 */
+    gi->maxp->maxcomponentdepth = 1;
     if ( gi->maxp->maxCompositPts<ptcnt ) gi->maxp->maxCompositPts=ptcnt;
     if ( gi->maxp->maxCompositCtrs<ctcnt ) gi->maxp->maxCompositCtrs=ctcnt;
 
@@ -1091,7 +1117,7 @@ static void dumpglyph(SplineChar *sc, struct glyphinfo *gi) {
     struct glyphhead gh;
     DBounds bb;
     SplineSet *ss, *ttfss;
-    int contourcnt, ptcnt;
+    int contourcnt, ptcnt, origptcnt;
     BasePoint *bp;
     char *fs;
 
@@ -1117,8 +1143,9 @@ return;
     ttfss = SCttfApprox(sc);
     for ( ss=ttfss; ss!=NULL; ss=ss->next ) {
 	++contourcnt;
-	ptcnt += SSPointCnt(ss,sc->ttf_instrs!=NULL);
+	ptcnt = SSPointCnt(ss,ptcnt,sc->ttf_instrs!=NULL || gi->has_instrs);
     }
+    origptcnt = ptcnt;
 
     SplineCharFindBounds(sc,&bb);
     gh.numContours = contourcnt;
@@ -1132,9 +1159,11 @@ return;
     fs = galloc(ptcnt);
     ptcnt = contourcnt = 0;
     for ( ss=ttfss; ss!=NULL; ss=ss->next ) {
-	ptcnt = SSAddPoints(ss,ptcnt,bp,fs,sc->ttf_instrs!=NULL);
+	ptcnt = SSAddPoints(ss,ptcnt,bp,fs,sc->ttf_instrs!=NULL || gi->has_instrs);
 	putshort(gi->glyphs,ptcnt-1);
     }
+    if ( ptcnt!=origptcnt )
+	GDrawIError( "Point count wrong calculated=%d, actual=%d in %.20s", origptcnt, ptcnt, sc->name );
 
     dumpinstrs(gi,sc->ttf_instrs,sc->ttf_instrs_len);
 	
@@ -2637,8 +2666,8 @@ void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]) {
 		CodePage[1] |= 1<<26;		/* latin2 */
 	    } else if ( sf->chars[i]->unicodeenc==0x411 ) {
 		CodePage[0] |= 1<<2;		/* cyrillic */
-		CodePage[1] |= 1<17;		/* MS DOS Russian */
-		CodePage[1] |= 1<25;		/* IBM Cyrillic */
+		CodePage[1] |= 1<<17;		/* MS DOS Russian */
+		CodePage[1] |= 1<<25;		/* IBM Cyrillic */
 	    } else if ( sf->chars[i]->unicodeenc==0x386 ) {
 		CodePage[0] |= 1<<3;		/* greek */
 		CodePage[1] |= 1<<16;		/* IBM Greek */
@@ -2714,22 +2743,28 @@ static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *_sf,
     k = 0;
     do {
 	sf = ( _sf->subfontcnt==0 ) ? _sf : _sf->subfonts[k];
-	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->unicodeenc!=-1 ) {
-	    if ( sf->chars[i]->unicodeenc > 0xffff )
-		os2->unicoderange[57>>5] |= (1<<(57&31));
-	    for ( j=0; j<sizeof(uniranges)/sizeof(uniranges[0]); ++j )
-		if ( sf->chars[i]->unicodeenc>=uniranges[j][0] &&
-			sf->chars[i]->unicodeenc<=uniranges[j][1] ) {
-		    int bit = uniranges[j][2];
-		    os2->unicoderange[bit>>5] |= (1<<(bit&31));
-	    break;
+	for ( i=0; i<sf->charcnt; ++i ) {
+	    if ( SCWorthOutputting(sf->chars[i]) &&
+		    !SCIsNotdef(sf->chars[i],-1) &&
+		    sf->chars[i]->unicodeenc!=-1 ) {
+		if ( sf->chars[i]->unicodeenc > 0xffff )
+		    os2->unicoderange[57>>5] |= (1<<(57&31));
+		for ( j=0; j<sizeof(uniranges)/sizeof(uniranges[0]); ++j )
+		    if ( sf->chars[i]->unicodeenc>=uniranges[j][0] &&
+			    sf->chars[i]->unicodeenc<=uniranges[j][1] ) {
+			int bit = uniranges[j][2];
+			os2->unicoderange[bit>>5] |= (1<<(bit&31));
+		break;
+		    }
+		if ( sf->chars[i]->unicodeenc<first ) first = sf->chars[i]->unicodeenc;
+		if ( sf->chars[i]->unicodeenc>last ) last = sf->chars[i]->unicodeenc;
+		if ( sf->chars[i]->width!=0 ) {
+		    avg2 += sf->chars[i]->width; ++cnt2;
 		}
-	    if ( sf->chars[i]->unicodeenc<first ) first = sf->chars[i]->unicodeenc;
-	    if ( sf->chars[i]->unicodeenc>last ) last = sf->chars[i]->unicodeenc;
-	    avg2 += sf->chars[i]->width; ++cnt2;
-	    if ( sf->chars[i]->unicodeenc==' ' ||
-		    (sf->chars[i]->unicodeenc>='a' && sf->chars[i]->unicodeenc<='z')) {
-		avg1 += sf->chars[i]->width; ++cnt1;
+		if ( sf->chars[i]->unicodeenc==' ' ||
+			(sf->chars[i]->unicodeenc>='a' && sf->chars[i]->unicodeenc<='z')) {
+		    avg1 += sf->chars[i]->width; ++cnt1;
+		}
 	    }
 	}
 	++k;
@@ -2745,16 +2780,18 @@ static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *_sf,
     for ( pt=os2->achVendID; pt<os2->achVendID && *pt!='\0'; ++pt );
     while ( pt<os2->achVendID ) *pt++ = ' ';	/* Pad with spaces not NUL */
 
-    if ( cnt1==27 )
+    os2->avgCharWid = 500;
+    /*if ( cnt1==27 )
 	os2->avgCharWid = avg1/cnt1;
-    else if ( cnt2!=0 )
+    else*/ if ( cnt2!=0 )
 	os2->avgCharWid = avg2/cnt2;
     memcpy(os2->panose,sf->pfminfo.panose,sizeof(os2->panose));
     if ( format==ff_ttfsym ) {
 	os2->ulCodePage[0] = 0x80000000;
 	os2->ulCodePage[1] = 0;
 	first = 255; last = 0;
-	if ( sf->chars!=NULL && sf->chars[0]!=NULL && sf->chars[0]->ttf_glyph!=-1 &&
+	if ( sf->chars!=NULL && SCWorthOutputting(sf->chars[0]) &&
+		sf->chars[0]->ttf_glyph!=-1 &&
 		!SCIsNotdef(sf->chars[0],at->gi.fixed_width) )
 	    first = 0;
 	for ( i=1; i<sf->charcnt && i<255; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 ) {
@@ -3146,6 +3183,8 @@ return( cnt );
 /*  nameid==6 and that name must be ascii (presumably plat=1, spec=0, lang=0) */
 /* The opentype docs say there must be two (psl=1,0,0 & psl=3,1,0x409) any */
 /*  others are to be ignored */
+/* A representative from Apple says they will change their spec to accept */
+/*  the opentype version */
 /* If we are generating both ot and apple then set as per apple, I think apple */
 /*  fails to load the font if their conventions aren't followed, but I don't */
 /*  think windows does */
@@ -3301,29 +3340,32 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
     }
 
     maxlen = 0;
-    for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL && (i!=6 || !at->applemode) ) {
-	putshort(at->name,3);		/* MS platform */
-	putshort(at->name,1);
-	putshort(at->name,0x0409);	/* american english language */
-	putshort(at->name,i);
-	len = u_strlen(dummy.names[i]);
-	if ( len>maxlen ) maxlen = len;
-	putshort(at->name,2*len);
-	putshort(at->name,posses[i]);
-	++cnt;
-    }
-    for ( cur=sf->names; cur!=NULL; cur=cur->next ) if ( cur->lang!=0x409 ) {
-	for ( i=0; i<ttf_namemax; ++i ) if ( cur->names[i]!=NULL ) {
-	    putshort(at->name,3);	/* MS platform */
-	    putshort(at->name,1);	/* unicode */
-	    putshort(at->name,cur->lang);
-	    putshort(at->name,i);
-	    len = u_strlen(cur->names[i]);
-	    if ( len>maxlen ) maxlen = len;
-	    putshort(at->name,2*len);
-	    putshort(at->name,pos);
-	    pos += 2*u_strlen(cur->names[i])+2;
-	++cnt;
+    for ( cur=sf->names; cur!=NULL; cur=cur->next ) {
+	if ( cur->lang!=0x409 ) {
+	    for ( i=0; i<ttf_namemax; ++i ) if ( cur->names[i]!=NULL ) {
+		putshort(at->name,3);	/* MS platform */
+		putshort(at->name,1);	/* unicode */
+		putshort(at->name,cur->lang);
+		putshort(at->name,i);
+		len = u_strlen(cur->names[i]);
+		if ( len>maxlen ) maxlen = len;
+		putshort(at->name,2*len);
+		putshort(at->name,pos);
+		pos += 2*u_strlen(cur->names[i])+2;
+	    ++cnt;
+	    }
+	} else {
+	    for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL && (i!=6 || !at->applemode) ) {
+		putshort(at->name,3);		/* MS platform */
+		putshort(at->name,1);
+		putshort(at->name,0x0409);	/* american english language */
+		putshort(at->name,i);
+		len = u_strlen(dummy.names[i]);
+		if ( len>maxlen ) maxlen = len;
+		putshort(at->name,2*len);
+		putshort(at->name,posses[i]);
+		++cnt;
+	    }
 	}
     }
 
@@ -4293,7 +4335,7 @@ static int initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
     if ( format==ff_otf || format==ff_otfcid || (format==ff_none && at->applemode) )
 	at->maxp.version = 0x00005000;
     at->maxp.maxnumcomponents = 1;
-    at->maxp.maxcomponentdepth = 1;
+    at->maxp.maxcomponentdepth = 0;
     at->maxp.maxZones = 2;		/* 1 would probably do, don't use twilight */
     at->maxp.maxFDEFs = 1;		/* Not even 1 */
     at->maxp.maxStorage = 1;		/* Not even 1 */
@@ -4314,9 +4356,24 @@ static int initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
 	AssignTTFGlyph(sf,bsizes);
 	aborted = !dumpcffhmtx(at,sf,true);
 	dumpnoglyphs(sf,&at->gi);
-    } else
+    } else {
+	struct ttf_table *tab;
+	/* There's a typo in Adobe's docs, and the instructions in these tables*/
+	/*  need to be included in the max glyph instruction length */
+	if ( (tab = SFFindTable(sf,CHR('f','p','g','m'))) != NULL ) {
+	    at->maxp.maxglyphInstr = tab->len;
+	    at->gi.has_instrs = true;
+	}
+	if ( (tab = SFFindTable(sf,CHR('p','r','e','p'))) != NULL ) {
+	    if ( at->maxp.maxglyphInstr < tab->len )
+		at->maxp.maxglyphInstr = tab->len;
+	    at->gi.has_instrs = true;
+	}
+	at->gi.has_instrs = (SFFindTable(sf,CHR('f','p','g','m')) != NULL ||
+		SFFindTable(sf,CHR('p','r','e','p')) != NULL);
 	/* if format==ff_none the following will put out lots of space glyphs */
 	aborted = !dumpglyphs(sf,&at->gi);
+    }
     if ( bsizes!=NULL && !aborted )
 	ttfdumpbitmap(sf,at,bsizes);
     if ( bsizes!=NULL && format==ff_none && !at->applemode )
