@@ -1048,7 +1048,7 @@ static void bSelectNone(Context *c) {
     memset(c->curfv->selected,0,c->curfv->sf->charcnt);
 }
 
-static int ParseCharIdent(Context *c, Val *val) {
+static int ParseCharIdent(Context *c, Val *val, int signal_error) {
     SplineFont *sf = c->curfv->sf;
     int bottom = -1;
 
@@ -1066,51 +1066,78 @@ static int ParseCharIdent(Context *c, Val *val) {
 		    sscanf( str, "U+%x", &uni);
 	}
 	bottom = SFFindChar(sf,uni,str);
-    } else
-	error( c, "Bad type for argument");
-    if ( bottom==-1 )
-	error( c, "Character not found" );
-    else if ( bottom<0 || bottom>=sf->charcnt )
-	error( c, "Character is not in font" );
+    } else {
+	if ( signal_error )
+	    error( c, "Bad type for argument");
+	else
+return( -1 );
+    }
+    if ( bottom==-1 ) {
+	if ( signal_error )
+	    error( c, "Character not found" );
+return( -1 );
+    } else if ( bottom<0 || bottom>=sf->charcnt ) {
+	if ( signal_error )
+	    error( c, "Character is not in font" );
+return( -1 );
+    }
 return( bottom );
 }
 
-static void bDoSelect(Context *c) {
+static int bDoSelect(Context *c, int signal_error) {
     int top, bottom, i,j;
+    int any = false;
 
     if ( c->a.argc==2 && (c->a.vals[1].type==v_arr || c->a.vals[1].type==v_arrfree)) {
 	struct array *arr = c->a.vals[1].u.aval;
 	for ( i=0; i<arr->argc && i<c->curfv->sf->charcnt; ++i ) {
-	    if ( arr->vals[i].type!=v_int )
-		error(c,"Bad type within selection array");
-	    else if ( arr->vals[i].u.ival )
+	    if ( arr->vals[i].type!=v_int ) {
+		if ( signal_error )
+		    error(c,"Bad type within selection array");
+		else
+return( any ? -1 : -2 );
+	    } else if ( arr->vals[i].u.ival ) {
 		c->curfv->selected[i] = true;
+		++any;
+	    }
 	}
-return;
+return( any );
     }
 
     for ( i=1; i<c->a.argc; i+=2 ) {
-	bottom = ParseCharIdent(c,&c->a.vals[i]);
+	bottom = ParseCharIdent(c,&c->a.vals[i],signal_error);
 	if ( i+1==c->a.argc )
 	    top = bottom;
 	else {
-	    top = ParseCharIdent(c,&c->a.vals[i+1]);
+	    top = ParseCharIdent(c,&c->a.vals[i+1],signal_error);
 	}
+	if ( bottom==-1 || top==-1 )	/* an error occurred in parsing */
+return( any ? -1 : -2 );
+
 	if ( top<bottom ) { j=top; top=bottom; bottom = j; }
-	for ( j=bottom; j<=top; ++j )
+	for ( j=bottom; j<=top; ++j ) {
 	    c->curfv->selected[j] = true;
+	    ++any;
+	}
     }
+return( any );
 }
 
 static void bSelectMore(Context *c) {
     if ( c->a.argc==1 )
 	error( c, "SelectMore needs at least one argument");
-    bDoSelect(c);
+    bDoSelect(c,true);
 }
 
 static void bSelect(Context *c) {
     memset(c->curfv->selected,0,c->curfv->sf->charcnt);
-    bDoSelect(c);
+    bDoSelect(c,true);
+}
+
+static void bSelectIf(Context *c) {
+    memset(c->curfv->selected,0,c->curfv->sf->charcnt);
+    c->return_val.type = v_int;
+    c->return_val.u.ival = bDoSelect(c,false);
 }
 
 /* **** Element Menu **** */
@@ -1848,7 +1875,7 @@ static void bSetKern(Context *c) {
 
     if ( c->a.argc!=3 )
 	error( c, "Wrong number of arguments" );
-    ch2 = ParseCharIdent(c,&c->a.vals[1]);
+    ch2 = ParseCharIdent(c,&c->a.vals[1],true);
     if ( c->a.vals[2].type!=v_int )
 	error(c,"Bad argument type");
     kern = c->a.vals[2].u.ival;
@@ -2026,7 +2053,7 @@ static void bCharInfo(Context *c) {
 
     c->return_val.type = v_int;
     if ( c->a.argc==3 ) {
-	int ch2 = ParseCharIdent(c,&c->a.vals[2]);
+	int ch2 = ParseCharIdent(c,&c->a.vals[2],true);
 	if ( strmatch( c->a.vals[1].u.sval,"Kern")==0 ) {
 	    c->return_val.u.ival = 0;
 	    if ( sf->chars[ch2]!=NULL ) { KernPair *kp;
@@ -2119,6 +2146,7 @@ struct builtins { char *name; void (*func)(Context *); int nofontok; } builtins[
     { "SelectNone", bSelectNone },
     { "SelectMore", bSelectMore },
     { "Select", bSelect },
+    { "SelectIf", bSelectIf },
 /* Element Menu */
     { "Reencode", bReencode },
     { "SetCharCnt", bSetCharCnt },
