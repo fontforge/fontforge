@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Jan-2003 -->
-  <!-- AP: Last modified: 27-Jan-2003 -->
+  <!-- AP: Last modified: 28-Jan-2003 -->
   <TITLE>Building accented characters</TITLE>
 </HEAD>
 <BODY>
@@ -108,6 +108,51 @@ PfaEdit cannot create a nice ligature for you, but what it can do is put
 all the components of the ligature into the character with
 <A HREF="elementmenu.html#Accented">Element-&gt;Build-&gt;Build Composite</A>.
 This makes it slightly easier (at least in latin) to design a ligature.
+<TABLE BORDER CELLPADDING="2">
+  <CAPTION>
+    Steps to building a ligature
+  </CAPTION>
+  <TR>
+    <TD><P ALIGN=Center>
+      <IMG SRC="ffi-refs.png" ALT="ffi ligature as references" WIDTH="156" HEIGHT="295"></TD>
+    <TD><P ALIGN=Center>
+      <IMG SRC="ffi-unlink.png" WIDTH="156" HEIGHT="295" ALT="ffi after unlinking references"></TD>
+    <TD><P ALIGN=Center>
+      <IMG SRC="ffi-moved.png" WIDTH="156" HEIGHT="295" ALT="ffi after lowering first f"></TD>
+    <TD><P ALIGN=Center>
+      <IMG SRC="ffi-rmoverlap.png" WIDTH="156" HEIGHT="295" ALT="ffi after doing remove overlap"></TD>
+    <TD><P ALIGN=Center>
+      <IMG SRC="ffi-caret.png" WIDTH="156" HEIGHT="295" ALT="ffi after adjusting ligature carets"></TD>
+  </TR>
+  <TR VALIGN="Top">
+    <TD>Use the <A HREF="elementmenu.html#CharInfo">Element -&gt; Char Info</A>
+      dialog to name the character and mark it as a ligature. Then use
+      <A HREF="elementmenu.html#Accented">Element -&gt; Build -&gt; Build
+      Composite</A> to insert references to the ligature components.</TD>
+    <TD>Use the <A HREF="editmenu.html#Unlink">Edit-&gt; Unlink References</A>
+      command to turn the references into a set of contours.</TD>
+    <TD>Adjust the components so that they will look better together. Here the
+      stem of the first f has been lowered.</TD>
+    <TD>Use the <A HREF="elementmenu.html#Remove">Element -&gt; Remove Overlap</A>
+      command to clean up the character.</TD>
+    <TD>Finally drag the ligature caret lines from the origin to more appropriate
+      places between the componants.</TD>
+  </TR>
+</TABLE>
+<P>
+Some word processors will allow the editing caret to be placed inside a ligature
+(with a caret position between each component of the ligature). This means
+that the user of that word processor does not need to know they s/he is dealing
+with a ligature and sees behavior very similar to what s/he would see if
+the components were present. But if the word processor is to be able to do
+this it must have some information from the font designer giving the locations
+of appropriate caret possitions. As soon as PfaEdit notices that a character
+is a ligature it will insert in it enough caret location lines to fit between
+the ligature's components. PfaEdit places these on the origin, if you leave
+them on the origin PfaEdit will ignore them. But once you have built your
+ligature you might want to move the pointer tool over to the origin line,
+press the button and drag one of the caret lines to its correct location.
+(Only TrueType and OpenType support this).
 <P>
 There are a good many ligatures needed for the indic scripts, but Unicode
 does not provide an encoding for them. If you wish to build a ligature that
