@@ -551,9 +551,6 @@ void CVCreateHint(CharView *cv,int ishstem) {
     GGadgetCreateData gcd[9];
     GTextInfo label[9];
     static CreateHintData chd;
-    static unichar_t title[] = { 'C','r','e','a','t','e',' ','H','i','n','t','.','.','.',  '\0' };
-    static unichar_t hstem[] = { 'C','r','e','a','t','e',' ', 'H', 'o', 'r', 'i', 'z', 'o', 'n', 't', 'a', 'l', ' ', 'S', 't', 'e', 'm', ' ','H','i','n','t',  '\0' };
-    static unichar_t vstem[] = { 'C','r','e','a','t','e',' ', 'V', 'e', 'r', 't', 'i', 'c', 'a', 'l', ' ', 'S', 't', 'e', 'm', ' ','H','i','n','t',  '\0' };
     char buffer[20]; unichar_t ubuf[20];
 
     chd.done = false;
@@ -567,7 +564,7 @@ void CVCreateHint(CharView *cv,int ishstem) {
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
-	wattrs.window_title = title;
+	wattrs.window_title = GStringGetResource(_STR_CreateHint,NULL);
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width =GDrawPointsToPixels(NULL,170);
@@ -628,7 +625,8 @@ void CVCreateHint(CharView *cv,int ishstem) {
 	gcd[5].gd.handle_controlevent = CH_Cancel;
 	gcd[5].creator = GButtonCreate;
 
-	label[6].text = hstem /*ishstem ? hstem : vstem*/;	/* Initialize to bigger size */
+	label[6].text = (unichar_t *) _STR_CreateHorizontalHint;	/* Initialize to bigger size */
+	label[6].text_in_resource = true;
 	gcd[6].gd.label = &label[6];
 	gcd[6].gd.pos.x = 17; gcd[6].gd.pos.y = 5; 
 	gcd[6].gd.flags = gg_enabled|gg_visible;
@@ -647,7 +645,8 @@ void CVCreateHint(CharView *cv,int ishstem) {
 	uc_strcpy(ubuf,buffer);
 	GGadgetSetTitle(GWidgetGetControl(gw,CID_Base),ubuf);
     }
-    GGadgetSetTitle(GWidgetGetControl(gw,CID_Label),ishstem ? hstem : vstem);
+    GGadgetSetTitle(GWidgetGetControl(gw,CID_Label),GStringGetResource(
+	    ishstem ? _STR_CreateHorizontalHint : _STR_CreateVerticalHint,NULL));
     GWidgetIndicateFocusGadget(GWidgetGetControl(gw,CID_Base));
     GTextFieldSelect(GWidgetGetControl(gw,CID_Base),0,-1);
 

@@ -461,6 +461,7 @@ extern void DelayEvent(void (*func)(void *), void *data);
 
 extern void FindProblems(FontView *fv,CharView *cv);
 extern void MetaFont(FontView *fv,CharView *cv);
+extern void CVConstrainSelection(CharView *cv,int type);
 
 extern GMenuItem helplist[];
 #endif

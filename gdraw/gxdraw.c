@@ -1820,8 +1820,11 @@ static void *GXDrawLoadFontMetrics(GDisplay *gdisp, struct font_data *fd) {
 
  /*printf( "Loading metrics for: %s\n", fd->localname );*/
     fd->info = fs = XLoadQueryFont(((GXDisplay *) gdisp)->display,fd->localname);
-    if ( fs==NULL )
+    if ( fs==NULL ) {
+	fprintf( stderr, "Help! Server claimed font\n\t%s\n existed in the font list, but when I asked for it there was nothing.\n I think I'll crash soon.\n",
+		fd->localname );
 return( NULL );
+    }
     if ( XGetFontProperty(fs,XA_X_HEIGHT,&xh))
 	fd->x_height = xh;
     if ( XGetFontProperty(fs,XA_CAP_HEIGHT,&ch))

@@ -253,6 +253,8 @@ return;			/* We clicked on the active point, that's a no-op */
 	}
     } else if ( cv->p.spline!=NULL ) {
 	sp = SplineBisect(cv->p.spline,cv->p.t);
+	cv->joinvalid = true;
+	cv->joinpos = *sp; cv->joinpos.selected = false;
 	sp->pointtype = ptype;
 	sp->selected = true;
 	ss = cv->p.spl;

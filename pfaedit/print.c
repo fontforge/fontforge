@@ -773,7 +773,7 @@ static int PG_OK(GGadget *g, GEvent *e) {
 	int err=false;
 	int copies, pgwidth, pgheight;
 
-	copies = GetInt(pi->setup,CID_Copies,"Copies",&err);
+	copies = GetIntR(pi->setup,CID_Copies,_STR_Copies,&err);
 	if ( err )
 return(true);
 

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 16-Jul-2001 -->
+  <!-- AP: Last modified: 26-Jul-2001 -->
   <TITLE>The Element Menu</TITLE>
 </HEAD>
 <BODY>
@@ -47,13 +47,23 @@ This menu is not present in the Metrics View.
     <A HREF="#Simplify">Simplify<BR>
     Cleanup Chars</A>
   <LI>
-    <A HREF="#Round">Round to Int</A>
-  <LI>
-    <A HREF="#Make-First">Make First</A>
-  <LI>
     <A HREF="#MetaFont">MetaFont...</A>
   <LI>
     <A HREF="#AutoTrace">AutoTrace</A>
+  <LI>
+    <A HREF="#Align">Align</A>
+    <UL>
+      <LI>
+	<A HREF="#Average">Average Points</A>
+      <LI>
+	<A HREF="#Space-Pt">Space Points</A>
+      <LI>
+	<A HREF="#Space-Region">Space Regions</A>
+    </UL>
+  <LI>
+    <A HREF="#Round">Round to Int</A>
+  <LI>
+    <A HREF="#Make-First">Make First</A>
   <LI>
     <A HREF="#Clockwise">Clockwise</A>
   <LI>
@@ -190,22 +200,6 @@ This menu is not present in the Metrics View.
     actually traces out a line but none the less has control points, then this
     command will remove the control points.
   <DT>
-    <A NAME="Round">Round</A> to Int
-  <DD>
-    Only in the font and outline views. PfaEdit stores point locations as real
-    numbers (ie. it retains fractional values). TrueType and PostScript Type1
-    only support integral values (Well with vast effort Type1 fonts can be made
-    to support real numbers but PfaEdit doesn't), so when generating the font
-    points are rounded to integral values. Open Type allows real numbers easily.
-    But they make the font file bigger. This command will round all selected
-    locations to the closest integer.
-  <DT>
-    <A NAME="Make-First">Make First</A>
-  <DD>
-    Only present in the outline view. If exactly one point is selected and it
-    is on a closed path and it is not the "first point" of that path, then it
-    will become the first point.
-  <DT>
     <A NAME="MetaFont">MetaFont</A>...
   <DD>
     This <A HREF="MetaFont.html">dialog</A> is only present in the font and outline
@@ -223,6 +217,77 @@ This menu is not present in the Metrics View.
     regions, so I may sometimes leave behind a lump which represents a background
     area. Just delete it if it happens (and send me the image so I can fix things
     up).
+  <DT>
+    <A NAME="Align">Align</A> menu
+  <DD>
+    This submenu is only present in the outline view, it allows you to align
+    points or to space them out along an axis.
+    <DL>
+      <DT>
+	<A NAME="Average">Average</A> Points
+      <DD>
+	This will look at all the selected points and find the coordinate with the
+	least change. Then it will average find the median point on that axis and
+	set all the selected points to have that value for the appropriate
+	coordinate.<BR>
+	So if you have a line which is almost horizontal, and select its endpoints
+	and apply this command it will be horizontal.<BR>
+	&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+	<IMG SRC="Constrain2_1.png" WIDTH="122" HEIGHT="90">&nbsp; &nbsp; &nbsp;
+	&nbsp; <IMG SRC="Constrain2_2.png" WIDTH="122" HEIGHT="90"><BR>
+	(if you select exactly two points, and they lie close to a 45 diagonal, then
+	they will be forced to the diagonal rather than to horizontal/vertical)
+      <DT>
+	<A NAME="Space-Pts">Space Points</A>
+      <DD>
+	If you have three or more points selected then PfaEdit will figure out the
+	coordinate that has the greatest change and will space the points out regularly
+	along that axis.<BR>
+	If you select one point (and that point is in the middle of a path) then
+	(internally) the point's location will be expressed in a coordinate system
+	which is rotated so that one axis is parallel to the line between the two
+	points that surround the selected point. The selected point will be moved
+	mid-way between the two on this axis, while it's other coordinate remains
+	fixed.<BR>
+	That's an extremely complicated way of saying: If the selected point is connected
+	to two points which are on a horizontal line, then the selected point's x
+	coordinate will be midway between the two, while its y coordinate remains
+	unchanged.<BR>
+	&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+	<IMG SRC="Constrain1_1.png" WIDTH="122" HEIGHT="90">&nbsp; &nbsp; &nbsp;
+	&nbsp; <IMG SRC="Constrain1_2.png" WIDTH="122" HEIGHT="90">
+      <DT>
+	<A NAME="Space-Regions">Space Regions</A>
+      <DD>
+	This is similar to the above command except that it allows you to make a
+	rather simple definition of a collection of points which should be moved
+	together. Each of these regions will be regularly spaced along the chosen
+	axis. A region is defined as a collection of points, each one of which is
+	within some maximum distance of at least one other point in the region. The
+	purpose of this is to allow you to space out the stems of the letter "m"
+	so that they regularly spaced horizontally. Sadly it won't work in many cases
+	because in a serifed font the serifs will often be closer to each other than
+	to their respective stems.<BR>
+	&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+	<IMG SRC="Spacem_1.png" WIDTH="140" HEIGHT="108"> &nbsp; &nbsp; &nbsp; &nbsp;
+	<IMG SRC="Spacem_2.png" WIDTH="145" HEIGHT="108">
+    </DL>
+  <DT>
+    <A NAME="Round">Round</A> to Int
+  <DD>
+    Only in the font and outline views. PfaEdit stores point locations as real
+    numbers (ie. it retains fractional values). TrueType and PostScript Type1
+    only support integral values (Well with vast effort Type1 fonts can be made
+    to support real numbers but PfaEdit doesn't), so when generating the font
+    points are rounded to integral values. Open Type allows real numbers easily.
+    But they make the font file bigger. This command will round all selected
+    locations to the closest integer.
+  <DT>
+    <A NAME="Make-First">Make First</A>
+  <DD>
+    Only present in the outline view. If exactly one point is selected and it
+    is on a closed path and it is not the "first point" of that path, then it
+    will become the first point.
   <DT>
     <A NAME="Clockwise">Clockwise</A>
   <DD>
