@@ -68,7 +68,7 @@ static int svg_outfontheader(FILE *file, SplineFont *sf) {
     QuickBlues(sf,&bd);
 
     fprintf( file, "<?xml version=\"1.0\" standalone=\"no\"?>\n" );
-    fprintf( file, "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg11.dtd\" >\n" );
+    fprintf( file, "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd\" >\n" );
     if ( sf->comments!=NULL ) {
 	fprintf( file, "<!--\n" );
 	latin1ToUtf8Out(file,sf->comments);
