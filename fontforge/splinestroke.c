@@ -178,6 +178,7 @@ static SplinePoint *StrokeEnd(SplinePoint *base, StrokeInfo *si, int isstart,
 	SplinePoint **_to) {
     BasePoint junk;
     SplinePoint *mid1, *mid2, *cur, *from, *to;
+    real off, len;
     real c,s;
     real angle;
     real sign;
@@ -190,6 +191,12 @@ static SplinePoint *StrokeEnd(SplinePoint *base, StrokeInfo *si, int isstart,
     to = chunkalloc(sizeof(SplinePoint));
     from->nonextcp = to->nonextcp = from->noprevcp = to->noprevcp = true;
     from->pointtype = pt_corner; to->pointtype = pt_corner;
+
+    if ( (len = to->me.x-from->me.x)<0 )
+	len = -len;
+    len += ( to->me.y > from->me.y ) ? (to->me.y - from->me.y) : (from->me.y - to->me.y);
+    off = (len==0) ? .05 : 2/len;
+
     if ( isstart )
 	angle = SplineExpand(base->next,0,0,si,&from->me,&to->me)+ PI;
     else
@@ -1645,15 +1652,106 @@ void splstouchall(SplineSet *ss) {
 }
 #endif
 
-static SplineSet *SSRemoveUTurns(SplineSet *base) {
+static SplineSet *SSRemoveUTurns(SplineSet *base, StrokeInfo *si) {
+    /* All too often in MetaPost output splines have tiny cps which */
+    /*  make the slope at the end-points irrelevant when looking at */
+    /*  the curve.  Since we assume the slope at the end-points is */
+    /*  similar to the slope at t=.01 this confuses us greatly and */
+    /*  produces nasty results. In this case try to approximate a new */
+    /*  spline with very different cps. Note: We break continuity! */
+    /* A special case of this is the following: */
     /* My stroking algorithem gets confused by sharp turns. For example */
     /*  if we have a spline which is all in a line, but the control points */
     /*  are such that it doubles back on itself ( "* +   * +", ie. cps */
     /*  outside of the points) then things get very unhappy */
     SplineSet *spl= base;
-    Spline *first, *s, *next;
-    double dx,dy, offx,offy, diff;
-    int linear;
+    Spline *first, *s, *next, *snew;
+    double dx,dy, offx,offy, diff, n,l, slen, len, bound;
+    int linear, bad, i, cnt;
+    SplinePoint fakefrom, faketo;
+    TPoint *tps;
+
+    bound = si->radius*si->radius;
+    first = NULL;
+  if ( spl->first->next!=NULL && !spl->first->next->order2 )
+    for ( s = spl->first->next; s!=NULL && s!=first; s=s->to->next ) {
+	if ( first==NULL ) first = s;
+
+	bad = false;
+	dx = s->to->me.x-s->from->me.x;
+	dy = s->to->me.y-s->from->me.y;
+	slen = dx*dx + dy*dy;
+
+	offx = s->from->nextcp.x-s->from->me.x;
+	offy = s->from->nextcp.y-s->from->me.y;
+	if ( (l= offx*dx + offy*dy)<0 ) l = -l;
+	if ( (n= offx*dy - offy*dx)<0 ) n = -n;
+	len = offx*offx + offy*offy;
+	if ( (n/l>2*len/si->radius || (n>l/3 && s->from->prev==NULL )) && len<bound && len< slen/4 )
+	    bad = 1;
+
+	offx = s->to->me.x-s->to->prevcp.x;
+	offy = s->to->me.y-s->to->prevcp.y;
+	if ( (l= offx*dx + offy*dy)<0 ) l = -l;
+	if ( (n= offx*dy - offy*dx)<0 ) n = -n;
+	len = offx*offx + offy*offy;
+	if ( (n/l>2*len/si->radius || (n>l/3 && s->to->next==NULL)) && len<bound && len< slen/4 )
+	    bad |= 2;
+
+	if ( bad ) {
+	    fakefrom = *s->from; fakefrom.next = fakefrom.prev = NULL;
+	    faketo   = *s->to;   faketo.next   = faketo.prev   = NULL;
+
+	    slen = sqrt(slen);
+	    dx /= slen; dy/=slen;
+
+	    if ( bad&1 ) {		/* from->nextcp is nasty */
+		offx = s->from->nextcp.x-s->from->me.x;
+		offy = s->from->nextcp.y-s->from->me.y;
+		len = sqrt(offx*offx + offy*offy);
+		offx /= len; offy/=len;
+
+		n = offx*dy - offy*dx;
+		fakefrom.nextcp.x = fakefrom.me.x + slen*dx + 3*len*dy;
+		fakefrom.nextcp.y = fakefrom.me.y + slen*dy - 3*len*dx;
+	    }
+
+	    if ( bad&2 ) {		/* from->nextcp is nasty */
+		offx = s->to->prevcp.x-s->to->me.x;
+		offy = s->to->prevcp.y-s->to->me.y;
+		len = sqrt(offx*offx + offy*offy);
+		offx /= len; offy/=len;
+
+		n = offx*dy - offy*dx;
+		faketo.prevcp.x = faketo.me.x - slen*dx + 3*len*dy;
+		faketo.prevcp.y = faketo.me.y - slen*dy - 3*len*dx;
+	    }
+
+	    if (( cnt = slen/2)<10 ) cnt = 10;
+	    tps = galloc(cnt*sizeof(TPoint));
+	    for ( i=0; i<cnt; ++i ) {
+		double t = ((double) (i+1))/(cnt+1);
+		tps[i].t = t;
+		tps[i].x = ((s->splines[0].a*t + s->splines[0].b)*t + s->splines[0].c)*t + s->splines[0].d;
+		tps[i].y = ((s->splines[1].a*t + s->splines[1].b)*t + s->splines[1].c)*t + s->splines[1].d;
+	    }
+	    snew = ApproximateSplineFromPointsSlopes(&fakefrom,&faketo,tps,cnt,false);
+	    snew->from = s->from;
+	    snew->to = s->to;
+	    snew->from->next = snew;
+	    snew->to->prev = snew;
+	    snew->from->nextcp = fakefrom.nextcp;
+	    snew->from->nonextcp = fakefrom.nonextcp;
+	    if ( bad&1 ) snew->from->pointtype = pt_corner;
+	    snew->to->prevcp = faketo.prevcp;
+	    snew->to->noprevcp = faketo.noprevcp;
+	    if ( bad&2 ) snew->to->pointtype = pt_corner;
+	    if ( first==s ) first=snew;
+	    SplineFree(s);
+	    free(tps);
+	    s = snew;
+	}
+    }
 
     first = NULL;
     for ( s = spl->first->next; s!=NULL && s!=first; s=s->to->next ) {
@@ -1742,10 +1840,11 @@ return( base );
 }
 
 SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc) {
-    SplineSet *ret, *temp;
+    SplineSet *ret, *temp, *temp2;
 
     if ( si->radius==0 )
 	si->radius=1;
+    temp2 = SSRemoveUTurns(SplinePointListCopy(spl),si);
     if ( si->stroke_type == si_elipse ) {
 	real trans[6], factor;
 	StrokeInfo si2;
@@ -1755,7 +1854,7 @@ SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc) {
 	trans[4] = trans[5] = 0;
 	factor = si->radius/si->minorradius;
 	trans[0] *= factor; trans[1] *= factor;
-	temp = SplinePointListCopy(spl);
+	temp = SplinePointListCopy(temp2);
 #if 0 
 	BisectTurners(temp);
 #endif
@@ -1772,7 +1871,8 @@ SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc) {
 	trans[0] *= factor; trans[2] *= factor;
 	ret = SplinePointListTransform(ret,trans,true);
     } else
-	ret = _SplineSetStroke(SSRemoveUTurns(spl),si,sc);
+	ret = _SplineSetStroke(temp2,si,sc);
+    SplinePointListFree(temp2);
 return( ret );
 }
 
