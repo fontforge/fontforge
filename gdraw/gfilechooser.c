@@ -26,6 +26,8 @@
  */
 #include "gdraw.h"
 #include "ggadgetP.h"
+#include "gwidgetP.h"
+#include "../gdraw/gdrawP.h"
 #include "gio.h"
 #include "gfile.h"
 #include "ustring.h"
@@ -568,14 +570,24 @@ return( true );
 /* Routine to be called as the mouse moves across the dlg */
 void GFileChooserPopupCheck(GGadget *g,GEvent *e) {
     GFileChooser *gfc = (GFileChooser *) g;
+    int inside=false;
 
     if ( e->type == et_mousemove && (e->u.mouse.state&ksm_buttons)==0 ) {
 	GGadgetEndPopup();
-	if ( e->u.mouse.x >= gfc->filterb->g.r.x &&
-		 e->u.mouse.x<gfc->filterb->g.r.x+gfc->filterb->g.r.width &&
-		e->u.mouse.y >= gfc->filterb->g.r.y &&
-		 e->u.mouse.y<gfc->filterb->g.r.y+gfc->filterb->g.r.height )
-	    GGadgetPreparePopup(g->base,gfc->wildcard);
+	for ( g=((GContainerD *) (gfc->g.base->widget_data))->gadgets; g!=NULL; g=g->prev ) {
+	    if ( g!=(GGadget *) gfc && g!=(GGadget *) (gfc->filterb) &&
+		     g!=(GGadget *) (gfc->files) &&
+		     g->takes_input &&
+		     e->u.mouse.x >= g->r.x &&
+		     e->u.mouse.x<g->r.x+g->r.width &&
+		     e->u.mouse.y >= g->r.y &&
+		     e->u.mouse.y<g->r.y+g->r.height ) {
+		inside = true;
+	break;
+	    }
+	}
+	if ( !inside )
+	    GGadgetPreparePopup(gfc->g.base,gfc->wildcard);
     }
 }
 
