@@ -1226,6 +1226,18 @@ return;
 	CVClear(cv->gw,NULL,NULL);
     } else if ( event->u.chr.keysym == GK_Help ) {
 	MenuHelp(NULL,NULL,NULL);	/* Menu does F1 */
+    } else if ( (event->u.chr.keysym=='[' || event->u.chr.keysym==']') &&
+	    (event->u.chr.state&ksm_control) ) {
+	/* some people have remapped keyboards so that shift is needed to get [] */
+	int pos;
+	if ( event->u.chr.keysym=='[' )
+	    pos = cv->sc->enc-1;
+	else
+	    pos = cv->sc->enc+1;
+	if ( pos<0 ) pos = cv->sc->parent->charcnt-1;
+	else if ( pos>= cv->sc->parent->charcnt ) pos = 0;
+	if ( pos>=0 && pos<cv->sc->parent->charcnt )
+	    CVChangeChar(cv,pos);
     } else if ( event->u.chr.keysym == GK_Left ||
 	    event->u.chr.keysym == GK_Up ||
 	    event->u.chr.keysym == GK_Right ||

@@ -3304,6 +3304,20 @@ static void FVChar(FontView *fv,GEvent *event) {
 	    FVSimplify(fv,1);
 	else if ( (event->u.chr.state&ksm_shift))
 	    FVSimplify(fv,0);
+    } else if ( (event->u.chr.keysym=='[' || event->u.chr.keysym==']') &&
+	    (event->u.chr.state&ksm_control) ) {
+	/* some people have remapped keyboards so that shift is needed to get [] */
+	int pos = FVAnyCharSelected(fv);
+	if ( pos>=0 ) {
+	    if ( event->u.chr.keysym=='[' )
+		--pos;
+	    else
+		++pos;
+	    if ( pos<0 ) pos = fv->sf->charcnt-1;
+	    else if ( pos>= fv->sf->charcnt ) pos = 0;
+	    if ( pos>=0 && pos<fv->sf->charcnt )
+		FVChangeChar(fv,pos);
+	}
     } else if ( isdigit(event->u.chr.keysym) && (event->u.chr.state&ksm_control) &&
 	    (event->u.chr.state&ksm_meta) ) {
 	/* The Script menu isn't always up to date, so we might get one of */
