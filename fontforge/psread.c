@@ -2645,49 +2645,23 @@ void SFSplinesFromLayers(SplineFont *sf) {
 #endif
 
 static void EntityCharCorrectDir(EntityChar *ec) {
-    SplineSet *head=NULL, *last=NULL, *cur, *ss;
+    SplineSet *ss;
     Entity *ent;
     int changed;
 
     for ( ent=ec->splines; ent!=NULL; ent = ent->next ) {
 	/* ignore splines which are only stoked, but not filled */
 	if ( ent->type == et_splines && ent->u.splines.fill.col!=0xffffffff ) {
-	    for ( ss=ent->u.splines.splines; ss!=NULL; ss=ss->next ) {
-		cur = chunkalloc(sizeof(SplineSet));
-		*cur = *ss;
-		cur->next = NULL;
-		if ( head==NULL )
-		    head = cur;
-		else
-		    last->next = cur;
-		last = cur;
+	    /* Correct the direction of each stroke or fill with respect to */
+	    /*  the splines in it */
+	    SplineSetsCorrect(ent->u.splines.splines,&changed);
+	    if ( ent->u.splines.fill.col==0xffffff ) {
+		/* If they are filling with white, then assume they mean */
+		/*  an internal area that should be drawn backwards */
+		for ( ss=ent->u.splines.splines; ss!=NULL; ss=ss->next )
+		    SplineSetReverse(ss);
 	    }
 	}
-    }
-
-    SplineSetsCorrect(head,&changed);
-    if ( changed ) {
-	cur = head;
-	for ( ent=ec->splines; ent!=NULL; ent = ent->next ) {
-	    if ( ent->type == et_splines && ent->u.splines.fill.col!=0xffffffff ) {
-		for ( ss=ent->u.splines.splines; ss!=NULL; ss=ss->next ) {
-		    if ( cur==NULL ) {
-			IError("SplineSets do not match");
-		break;
-		    }
-		    ss->first = cur->first;
-		    ss->last = cur->last;
-		    cur = cur->next;
-		}
-	    }
-	    if ( cur==NULL )
-	break;
-	}
-    }
-
-    for ( cur=head; cur!=NULL; cur=last ) {
-	last = cur->next;
-	chunkfree(cur,sizeof(SplineSet));
     }
 }
 
@@ -2737,9 +2711,6 @@ static SplinePointList *SplinesFromEntityChar(EntityChar *ec,int *flags) {
     for ( ent=ec->splines; ent!=NULL; ent = next ) {
 	next = ent->next;
 	if ( ent->type == et_splines ) {
-	    if ( ent->u.splines.splines!=NULL && ent->u.splines.splines->next==NULL &&
-		    !SplinePointListIsClockwise(ent->u.splines.splines))
-		SplineSetReverse(ent->u.splines.splines);
 	    if ( ent->u.splines.stroke.col!=0xffffffff &&
 		    (ent->u.splines.fill.col==0xffffffff || ent->u.splines.stroke_width!=0)) {
 		/* What does a stroke width of 0 mean? PS Says minimal width line */
