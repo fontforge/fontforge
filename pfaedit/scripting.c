@@ -551,7 +551,7 @@ static void bSetPrefs(Context *c) {
 
     if ( c->a.argc!=3 && c->a.argc!=4 )
 	error( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type!=v_str || (c->a.argc==4 && c->a.vals[3].type!=v_int) )
+    else if ( c->a.vals[1].type!=v_str && (c->a.argc==4 && c->a.vals[3].type!=v_int) )
 	error( c, "Bad type for argument" );
     if ( (ret=SetPrefs(c->a.vals[1].u.sval,&c->a.vals[2],c->a.argc==4?&c->a.vals[3]:NULL))==0 )
 	errors( c, "Unknown Preference variable", c->a.vals[1].u.sval );
