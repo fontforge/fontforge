@@ -393,23 +393,26 @@ return;
 	    sf->chars[i]);
 }
 
-static void tfmDoItalicCor(SplineFont *sf,int i,uint8 *ic) {
-    int cor = (ic[0]<<24)|(ic[1]<<16)|(ic[2]<<8)|ic[3];
+#define BigEndianWord(pt) ((((uint8 *) pt)[0]<<24) | (((uint8 *) pt)[1]<<16) | (((uint8 *) pt)[2]<<8) | (((uint8 *) pt)[3]))
+
+static void tfmDoItalicCor(SplineFont *sf,int i,real italic_cor) {
 
     if ( i>=sf->charcnt || sf->chars[i]==NULL )
 return;
 
-    PosNew(sf->chars[i],CHR('I','T','L','C'),0,0,
-	    ((double)cor)*(sf->ascent+sf->descent)/(1<<20),0);
+    PosNew(sf->chars[i],CHR('I','T','L','C'),0,0,italic_cor,0);
 }
 
 int LoadKerningDataFromTfm(SplineFont *sf, char *filename) {
     FILE *file = fopen(filename,"rb");
     int i, tag, left, ictag;
-    uint8 *ligkerntab, *kerntab, *ext, *ictab;
+    uint8 *ligkerntab, *kerntab, *ext, *ictab, *httab, *dptab, *widtab;
     int head_len, first, last, width_size, height_size, depth_size, italic_size,
 	    ligkern_size, kern_size, esize, param_size;
     int charlist[256], ept[256];
+    int is_math;
+    int width, height, depth;
+    real scale = (sf->ascent+sf->descent)/(double) (1<<20);
 
     if ( file==NULL )
 return( 0 );
@@ -433,11 +436,17 @@ return( 0 );
     ligkerntab = gcalloc(ligkern_size,sizeof(int32));
     ext = gcalloc(esize,sizeof(int32));
     ictab = gcalloc(italic_size,sizeof(int32));
+    dptab = gcalloc(depth_size,sizeof(int32));
+    httab = gcalloc(height_size,sizeof(int32));
+    widtab = gcalloc(width_size,sizeof(int32));
     fseek( file,(6+1)*sizeof(int32),SEEK_SET);
     sf->design_size = (5*getlong(file)+(1<<18))>>19;	/* TeX stores as <<20, adobe in decipoints */
     fseek( file,
-	    (6+head_len+(last-first+1)+width_size+height_size+depth_size)*sizeof(int32),
+	    (6+head_len+(last-first+1))*sizeof(int32),
 	    SEEK_SET);
+    fread( widtab,1,width_size*sizeof(int32),file);
+    fread( httab,1,height_size*sizeof(int32),file);
+    fread( dptab,1,depth_size*sizeof(int32),file);
     fread( ictab,1,italic_size*sizeof(int32),file);
     fread( ligkerntab,1,ligkern_size*sizeof(int32),file);
     fread( kerntab,1,kern_size*sizeof(int32),file);
@@ -448,13 +457,17 @@ return( 0 );
     else if ( param_size==13 ) sf->texdata.type = tex_mathext;
     else if ( param_size>=7 ) sf->texdata.type = tex_text;
 
+    /* Fields in tfm files have different meanings for math fonts */
+    is_math = sf->texdata.type == tex_mathext || sf->texdata.type == tex_math;
+
     memset(charlist,-1,sizeof(charlist));
     memset(ept,-1,sizeof(ept));
 
     fseek( file, (6+head_len)*sizeof(int32), SEEK_SET);
     for ( i=first; i<=last; ++i ) {
-	/* width = */ getc(file);
-	/* height<<4 | depth indeces = */ getc( file );
+	width = getc(file);
+	height = getc(file);
+	depth = height&0xf; height >>= 4;
 	ictag = getc(file);
 	tag = (ictag&3);
 	ictag>>=2;
@@ -465,8 +478,22 @@ return( 0 );
 	    charlist[i] = left;
 	else if ( tag==3 )
 	    tfmDoExten(sf,i,ext+left);
-	if ( ictag!=0 )
-	    tfmDoItalicCor(sf,i,ictab+4*ictag);
+	if ( sf->chars[i]!=NULL ) {
+	    SplineChar *sc = sf->chars[i];
+/* TFtoPL says very clearly: The actual width of a character is */
+/*  width[width_index], in design-size units. It is not in design units */
+/*  it is stored as a fraction of the design size in a fixed word */
+	    sc->tex_height = BigEndianWord(httab+4*height)*scale;
+	    sc->tex_depth = BigEndianWord(dptab+4*depth)*scale;
+	    if ( !is_math ) {
+		if ( ictag!=0 )
+		    tfmDoItalicCor(sf,i,BigEndianWord(ictab+4*ictag)*scale);
+		/* we ignore the width. I trust the real width in the file more */
+	    } else {
+		sc->tex_sub_pos = BigEndianWord(widtab+4*width)*scale;
+		sc->tex_super_pos = BigEndianWord(ictab+4*ictag)*scale;
+	    }
+	}
     }
 
     for ( i=first; i<=last; ++i ) {
@@ -2087,6 +2114,8 @@ int TfmSplineFont(FILE *tfm, SplineFont *sf, int formattype) {
     PST *pst;
     char *familyname;
     int anyITLC;
+    int is_math = sf->texdata.type==tex_math || sf->texdata.type==tex_mathext;
+    real scale = (1<<20)/(double) (sf->ascent+sf->descent);
 
     SFLigaturePrepare(sf);
     LigatureClosure(sf);		/* Convert 3 character ligs to a set of two character ones when possible */
@@ -2154,6 +2183,8 @@ int TfmSplineFont(FILE *tfm, SplineFont *sf, int formattype) {
     memset(italics,0,sizeof(italics));
     memset(tags,0,sizeof(tags));
     first = last = -1;
+    /* Note: Text fonts for TeX and math fonts use the italic correction & width */
+    /*  fields to mean different things */
     anyITLC = false;
     for ( i=0; i<256 && i<sf->charcnt; ++i ) if ( SCWorthOutputting(sf->chars[i])) {
 	if ( (pst=SCFindPST(sf->chars[i],pst_position,CHR('I','T','L','C'),-1,-1))!=NULL ) {
@@ -2162,16 +2193,31 @@ int TfmSplineFont(FILE *tfm, SplineFont *sf, int formattype) {
 	}
     }
     for ( i=0; i<256 && i<sf->charcnt; ++i ) if ( SCWorthOutputting(sf->chars[i])) {
-	SplineCharFindBounds(sf->chars[i],&b);
-	widths[i] = sf->chars[i]->width;
-	heights[i] = b.maxy;
-	depths[i] = -b.miny;
-	if ( (pst=SCFindPST(sf->chars[i],pst_position,CHR('I','T','L','C'),-1,-1))!=NULL )
-	    italics[i] = pst->u.pos.h_adv_off;
-	else if ( (style&sf_italic) && b.maxx>sf->chars[i]->width && !anyITLC )
-	    italics[i] = (b.maxx-sf->chars[i]->width) +
-			(sf->ascent+sf->descent)/16.0;
-				    /* With a 1/16 em white space after it */
+	SplineChar *sc = sf->chars[i];
+	if ( sc->tex_height==TEX_UNDEF || sc->tex_depth==TEX_UNDEF )
+	    SplineCharFindBounds(sc,&b);
+	heights[i] = (sc->tex_height==TEX_UNDEF ? b.maxy : sc->tex_height)*scale;
+	depths[i] = (sc->tex_height==TEX_UNDEF ? -b.miny : sc->tex_depth)*scale;
+	if ( !is_math ) {
+	    widths[i] = sc->width*scale;
+	    if ( (pst=SCFindPST(sc,pst_position,CHR('I','T','L','C'),-1,-1))!=NULL )
+		italics[i] = pst->u.pos.h_adv_off*scale;
+	    else if ( (style&sf_italic) && b.maxx>sc->width && !anyITLC )
+		italics[i] = ((b.maxx-sc->width) +
+			    (sf->ascent+sf->descent)/16.0)*scale;
+					/* With a 1/16 em white space after it */
+	} else {
+	    if ( sc->tex_sub_pos!=TEX_UNDEF )
+		widths[i] = sc->tex_sub_pos*scale;
+	    else
+		widths[i] = sc->width*scale;
+	    if ( sc->tex_super_pos!=TEX_UNDEF )
+		italics[i] = sc->tex_super_pos*scale;
+	    else if ( sc->tex_sub_pos!=TEX_UNDEF )
+		italics[i] = (sc->width - sc->tex_sub_pos)*scale;
+	    else
+		italics[i] = 0;
+	}
 	if ( first==-1 ) first = i;
 	last = i;
     }

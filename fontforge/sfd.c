@@ -751,6 +751,10 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc) {
 		sc->manualhints?"M":"",
 		sc->widthset?"W":"",
 		sc->views!=NULL?"O":"");
+    if ( sc->tex_height!=TEX_UNDEF || sc->tex_depth!=TEX_UNDEF ||
+	    sc->tex_sub_pos!=TEX_UNDEF || sc->tex_super_pos!=TEX_UNDEF )
+	fprintf( sfd, "TeX: %d %d %d %d\n", sc->tex_height, sc->tex_depth,
+		sc->tex_sub_pos, sc->tex_super_pos );
 #if HANYANG
     if ( sc->compositionunit )
 	fprintf( sfd, "CompositionUnit: %d %d\n", sc->jamo, sc->varient );
@@ -2566,6 +2570,11 @@ return( NULL );
 		else if ( ch=='O' ) sc->wasopen = true;
 		ch = getc(sfd);
 	    }
+	} else if ( strmatch(tok,"TeX:")==0 ) {
+	    getsint(sfd,&sc->tex_height);
+	    getsint(sfd,&sc->tex_depth);
+	    getsint(sfd,&sc->tex_sub_pos);
+	    getsint(sfd,&sc->tex_super_pos);
 #if HANYANG
 	} else if ( strmatch(tok,"CompositionUnit:")==0 ) {
 	    getsint(sfd,&sc->jamo);

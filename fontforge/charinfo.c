@@ -43,7 +43,7 @@ typedef struct charinfo {
 } CharInfo;
 
 #define CI_Width	218
-#define CI_Height	272
+#define CI_Height	292
 
 #define CID_UName	1001
 #define CID_UValue	1002
@@ -55,6 +55,11 @@ typedef struct charinfo {
 #define CID_Color	1009
 #define CID_GClass	1010
 #define CID_Tabs	1011
+
+#define CID_TeX_Height	1012
+#define CID_TeX_Depth	1013
+#define CID_TeX_Sub	1014
+#define CID_TeX_Super	1015
 
 /* Offsets for repeated fields. add 100*index */
 #define CID_List	1020
@@ -4339,6 +4344,14 @@ static void CI_ParseCounters(CharInfo *ci) {
     }
 }
 
+static int gettex(GWindow gw,int cid,int strid,int *err) {
+    const unichar_t *ret = _GGadgetGetTitle(GWidgetGetControl(gw,cid));
+
+    if ( *ret=='\0' )
+return( TEX_UNDEF );
+return( GetIntR(gw,cid,strid,err));
+}
+
 static int _CI_OK(CharInfo *ci) {
     int val;
     int ret, refresh_fvdi=0;
@@ -4346,10 +4359,15 @@ static int _CI_OK(CharInfo *ci) {
     const unichar_t *comment, *nm;
     FontView *fvs;
     int err = false;
+    int tex_height, tex_depth, tex_sub, tex_super;
 
     val = ParseUValue(ci->gw,CID_UValue,true,ci->sc->parent);
     if ( val==-2 )
 return( false );
+    tex_height = gettex(ci->gw,CID_TeX_Height,_STR_Height,&err);
+    tex_depth  = gettex(ci->gw,CID_TeX_Depth ,_STR_Depth ,&err);
+    tex_sub    = gettex(ci->gw,CID_TeX_Sub   ,_STR_SubscriptPosition,&err);
+    tex_super  = gettex(ci->gw,CID_TeX_Super ,_STR_SuperscriptPosition,&err);
     if ( err )
 return( false );
     if ( !CI_ProcessPosSubs(ci))
@@ -4379,6 +4397,10 @@ return( false );
 	    }
 	}
 	CI_ParseCounters(ci);
+	ci->sc->tex_height = tex_height;
+	ci->sc->tex_depth  = tex_depth;
+	ci->sc->tex_sub_pos   = tex_sub;
+	ci->sc->tex_super_pos = tex_super;
     }
     if ( ret )
 	ci->sc->parent->changed = true;
@@ -5525,6 +5547,34 @@ static void CIFillup(CharInfo *ci) {
 	memcpy(ti[i]->userdata,sc->countermasks[i],sizeof(HintMask));
     }
     GGadgetSetList(GWidgetGetControl(ci->gw,CID_List+600),ti,false);
+
+    if ( sc->tex_height!=TEX_UNDEF )
+	sprintf(buffer,"%d",sc->tex_height);
+    else
+	buffer[0] = '\0';
+    uc_strcpy(ubuf,buffer);
+    GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_TeX_Height),ubuf);
+
+    if ( sc->tex_depth!=TEX_UNDEF )
+	sprintf(buffer,"%d",sc->tex_depth);
+    else
+	buffer[0] = '\0';
+    uc_strcpy(ubuf,buffer);
+    GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_TeX_Depth),ubuf);
+
+    if ( sc->tex_sub_pos!=TEX_UNDEF )
+	sprintf(buffer,"%d",sc->tex_sub_pos);
+    else
+	buffer[0] = '\0';
+    uc_strcpy(ubuf,buffer);
+    GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_TeX_Sub),ubuf);
+
+    if ( sc->tex_super_pos!=TEX_UNDEF )
+	sprintf(buffer,"%d",sc->tex_super_pos);
+    else
+	buffer[0] = '\0';
+    uc_strcpy(ubuf,buffer);
+    GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_TeX_Super),ubuf);
 }
 
 static int CI_NextPrev(GGadget *g, GEvent *e) {
@@ -5607,10 +5657,10 @@ void SCCharInfo(SplineChar *sc) {
     CharInfo *ci;
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData ugcd[12], cgcd[6], psgcd[7][7], cogcd[3], mgcd[9];
-    GTextInfo ulabel[12], clabel[6], pslabel[7][6], colabel[3], mlabel[9];
+    GGadgetCreateData ugcd[12], cgcd[6], psgcd[7][7], cogcd[3], mgcd[9], tgcd[10];
+    GTextInfo ulabel[12], clabel[6], pslabel[7][6], colabel[3], mlabel[9], tlabel[10];
     int i;
-    GTabInfo aspects[12];
+    GTabInfo aspects[13];
     static GBox smallbox = { bt_raised, bs_rect, 2, 1, 0, 0, 0,0,0,0, COLOR_DEFAULT,COLOR_DEFAULT };
     static int boxset=0;
     FontRequest rq;
@@ -5862,6 +5912,63 @@ return;
 #endif
 	cogcd[1].creator = GLabelCreate;
 
+
+	memset(&tgcd,0,sizeof(tgcd));
+	memset(&tlabel,0,sizeof(tlabel));
+
+	tlabel[0].text = (unichar_t *) _STR_Height;
+	tlabel[0].text_in_resource = true;
+	tgcd[0].gd.label = &tlabel[0];
+	tgcd[0].gd.pos.x = 5; tgcd[0].gd.pos.y = 5+4; 
+	tgcd[0].gd.flags = gg_enabled|gg_visible;
+	tgcd[0].gd.popup_msg = GStringGetResource(_STR_TeXMetricsPopup,NULL);
+	tgcd[0].creator = GLabelCreate;
+
+	tgcd[1].gd.pos.x = 85; tgcd[1].gd.pos.y = 5;
+	tgcd[1].gd.flags = gg_enabled|gg_visible;
+	tgcd[1].gd.cid = CID_TeX_Height;
+	tgcd[1].creator = GTextFieldCreate;
+
+	tlabel[2].text = (unichar_t *) _STR_Depth;
+	tlabel[2].text_in_resource = true;
+	tgcd[2].gd.label = &tlabel[2];
+	tgcd[2].gd.pos.x = 5; tgcd[2].gd.pos.y = 31+4; 
+	tgcd[2].gd.flags = gg_enabled|gg_visible;
+	tgcd[2].gd.popup_msg = tgcd[0].gd.popup_msg;
+	tgcd[2].creator = GLabelCreate;
+
+	tgcd[3].gd.pos.x = 85; tgcd[3].gd.pos.y = 31;
+	tgcd[3].gd.flags = gg_enabled|gg_visible;
+	tgcd[3].gd.cid = CID_TeX_Depth;
+	tgcd[3].creator = GTextFieldCreate;
+
+	tlabel[4].text = (unichar_t *) _STR_SubscriptPosition;
+	tlabel[4].text_in_resource = true;
+	tgcd[4].gd.label = &tlabel[4];
+	tgcd[4].gd.pos.x = 5; tgcd[4].gd.pos.y = 57+4; 
+	tgcd[4].gd.flags = gg_enabled|gg_visible;
+	tgcd[4].gd.popup_msg = tgcd[0].gd.popup_msg;
+	tgcd[4].creator = GLabelCreate;
+
+	tgcd[5].gd.pos.x = 85; tgcd[5].gd.pos.y = 57;
+	tgcd[5].gd.flags = gg_enabled|gg_visible|gg_text_xim;
+	tgcd[5].gd.cid = CID_TeX_Sub;
+	tgcd[5].creator = GTextFieldCreate;
+
+	tgcd[6].gd.pos.x = 5; tgcd[6].gd.pos.y = 83+4;
+	tgcd[6].gd.flags = gg_visible | gg_enabled;
+	tlabel[6].text = (unichar_t *) _STR_SuperscriptPosition;
+	tlabel[6].text_in_resource = true;
+	tgcd[6].gd.label = &tlabel[6];
+	tgcd[6].gd.popup_msg = tgcd[0].gd.popup_msg;
+	tgcd[6].creator = GLabelCreate;
+
+	tgcd[7].gd.pos.x = 85; tgcd[7].gd.pos.y = 83;
+	tgcd[7].gd.flags = gg_visible | gg_enabled;
+	tgcd[7].gd.cid = CID_TeX_Super;
+	tgcd[7].creator = GTextFieldCreate;
+
+
 	memset(&mgcd,0,sizeof(mgcd));
 	memset(&mlabel,0,sizeof(mlabel));
 	memset(&aspects,'\0',sizeof(aspects));
@@ -5907,6 +6014,10 @@ return;
 	aspects[i].text = (unichar_t *) _STR_Counters;
 	aspects[i].text_in_resource = true;
 	aspects[i++].gcd = psgcd[6];
+
+	aspects[i].text = (unichar_t *) _STR_TeX;
+	aspects[i].text_in_resource = true;
+	aspects[i++].gcd = tgcd;
 
 	mgcd[0].gd.pos.x = 4; mgcd[0].gd.pos.y = 6;
 	mgcd[0].gd.pos.width = CI_Width-10;

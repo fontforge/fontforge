@@ -560,8 +560,13 @@ return( 0 );			/* Not version 1 of true type, nor Open Type */
 	    info->fpgm_start = offset;
 	    info->fpgm_len = length;
 	  break;
+
+	    /* non-standard tables I've added */
 	  case CHR('P','f','E','d'):
 	    info->pfed_start = offset;
+	  break;
+	  case CHR('T','e','X',' '):
+	    info->tex_start = offset;
 	  break;
 
 	    /* Apple's mm fonts */
@@ -4339,6 +4344,8 @@ return( 0 );
     }
     if ( info->pfed_start!=0 )
 	pfed_read(ttf,info);
+    if ( info->tex_start!=0 )
+	tex_read(ttf,info);
     setlocale(LC_NUMERIC,oldloc);
     ttfFixupReferences(info);
 return( true );
@@ -4739,6 +4746,8 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     sf->design_range_top = info->design_range_top;
     sf->fontstyle_id = info->fontstyle_id;
     sf->fontstyle_name = info->fontstyle_name;
+
+    sf->texdata = info->texdata;
 
     if ( info->fd!=NULL ) {		/* Special hack for type42 fonts */
 	sf->fontname = copy(info->fd->fontname);

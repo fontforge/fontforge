@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Sep-2002 -->
-  <!-- AP: Last modified: 4-Oct-2004 -->
+  <!-- AP: Last modified: 16-Jan-2005 -->
   <TITLE>Generate Font Dialog</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -48,7 +48,7 @@ The outline types are:
   <LI>
     Multiple PostScript Type 1 binary fonts (this is used to convert a large
     font with a two byte encoding into a series of smaller pfb (or pfa) files
-    with 256 characters in each. You may be prompted for a file to specify the
+    with 256 glyphs in each. You may be prompted for a file to specify the
     conversion. See the ttf2tfm man page for a description of these SUBFONT
     DEFINITION FILES. <A HREF="Big5.txt">Here is an example of what the file
     should look like</A>)
@@ -58,7 +58,7 @@ The outline types are:
   <LI>
     PostScript Type0 font, this is only available if you have a font encoded
     with Unicode or one of the CJK encodings. Type0 fonts can have up to 65536
-    characters in them (as opposed to 256 for Type1s and Type3s).
+    glyphs in them (as opposed to 256 for Type1s and Type3s).
   <LI>
     PostScript Type42 font (this is really a TrueType font wrapped up in PostScript)
   <LI>
@@ -74,8 +74,8 @@ The outline types are:
     True Type. The instructions (hinting) are probably not very good. No diagonal
     stems are hinted. Instructing is based on the hints used for postscript,
     with some additional work done for serifs, and some recognition that all
-    characters of approximately the same height should have the same height at
-    small pointsizes (equivalent to PostScript's BlueValues).
+    glyphs of approximately the same height should have the same height at small
+    pointsizes (equivalent to PostScript's BlueValues).
   <LI>
     True Type Symbol. Same as True Type, except it uses the 1 byte encoding given
     in the font. This is important on windows as symbol and dingbat encodings
@@ -145,7 +145,7 @@ The bitmap types are:
     None
 </UL>
 <P>
-<IMG SRC="GenerateOptions.png" WIDTH="323" HEIGHT="296" ALIGN="Right">The
+<IMG SRC="GenerateOptions.png" WIDTH="323" HEIGHT="316" ALIGN="Right">The
 <A NAME="Options">options</A> dialog provides the following check boxes.
 Not all are enabled at all times.
 <UL>
@@ -218,6 +218,9 @@ Not all are enabled at all times.
     [] Save Colors -- Save the glyph colors in the
     '<A HREF="non-standard.html#PfEd">PfEd</A>' table as well.
   <LI>
+    [] TeX -- Save TeX metrics in the '<A HREF="non-standard.html#TeX">TeX</A>
+    ' table
+  <LI>
     [] Output Glyph Map -- Output a file (with extension .g2n) mapping TrueType
     (OpenType) glyph IDs to glyphnames (and possibly to unicode values)
 </UL>
@@ -233,7 +236,7 @@ encoding.
 <P>
 Postscript fonts are generated in whatever encoding the font is using (except
 if you take a two byte encoding and generate a Type1 font (rather than a
-Type0) then only the first few (256) characters will be encoded). Type0 does
+Type0) then only the first few (256) glyphs will be encoded). Type0 does
 not support a full Unicode (4 byte) encoding.
 <P>
 PS CID (and OpenType CID in the CFF) are saved with no encoding. The encodings
@@ -243,7 +246,7 @@ live in separate cmap files which are available from
 <P>
 If you save a CID font with a format other than PS CID or OpenType CID, then
 only the currently displayed subfont will be saved, with the current meaningless
-character ordering (I suppose this is useful if you wish to extract a sub-font
+glyph ordering (I suppose this is useful if you wish to extract a sub-font
 from a CID font).
 <P>
 SVG fonts don't really have the concept of an encoding other than Unicode.

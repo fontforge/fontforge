@@ -57,8 +57,9 @@ static int nfnt_warned = false, post_warned = false;
 #define CID_TTF_PfEdComments	1104
 #define CID_TTF_PfEdColors	1105
 #define CID_TTF_PfEd		1106
-#define CID_TTF_OpenTypeMode	1107
-#define CID_TTF_GlyphMap	1108
+#define CID_TTF_TeXTable	1107
+#define CID_TTF_OpenTypeMode	1108
+#define CID_TTF_GlyphMap	1109
 
 
 struct gfc_data {
@@ -472,6 +473,8 @@ return( false );
 		    d->ttf_flags |= ttf_flag_pfed_comments;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdColors)) )
 		    d->ttf_flags |= ttf_flag_pfed_colors;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_TeXTable)) )
+		    d->ttf_flags |= ttf_flag_TeXtable;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_GlyphMap)) )
 		    d->ttf_flags |= ttf_flag_glyphmap;
 	    } else if ( d->sod_which==2 ) {				/* OpenType */
@@ -486,6 +489,8 @@ return( false );
 		    d->otf_flags |= ttf_flag_pfed_comments;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdColors)) )
 		    d->otf_flags |= ttf_flag_pfed_colors;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_TeXTable)) )
+		    d->otf_flags |= ttf_flag_TeXtable;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_GlyphMap)) )
 		    d->otf_flags |= ttf_flag_glyphmap;
 
@@ -522,6 +527,8 @@ return( false );
 		    d->psotb_flags |= ttf_flag_pfed_comments;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdColors)) )
 		    d->psotb_flags |= ttf_flag_pfed_colors;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_TeXTable)) )
+		    d->psotb_flags |= ttf_flag_TeXtable;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_GlyphMap)) )
 		    d->psotb_flags |= ttf_flag_glyphmap;
 	    }
@@ -567,6 +574,7 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
 
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_PfEdComments),flags&ttf_flag_pfed_comments);
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_PfEdColors),flags&ttf_flag_pfed_colors);
+    GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_TeXTable),flags&ttf_flag_TeXtable);
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_GlyphMap),flags&ttf_flag_glyphmap);
 
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Hints),which!=1);
@@ -593,19 +601,20 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_PfEd),which!=0);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_PfEdComments),which!=0);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_PfEdColors),which!=0);
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_TeXTable),which!=0);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_GlyphMap),which!=0);
 }
 
 #define OPT_Width	230
-#define OPT_Height	191
+#define OPT_Height	205
 
 static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     int flags;
     int k,group,group2;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[24];
-    GTextInfo label[23];
+    GGadgetCreateData gcd[26];
+    GTextInfo label[26];
     GRect pos;
 
     d->sod_done = false;
@@ -730,7 +739,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
 
     group2 = k;
     gcd[k].gd.pos.x = 4; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+4;
-    gcd[k].gd.pos.width = OPT_Width-8; gcd[k].gd.pos.height = 72;
+    gcd[k].gd.pos.width = OPT_Width-8; gcd[k].gd.pos.height = 86;
     gcd[k].gd.flags = gg_enabled | gg_visible ;
     gcd[k++].creator = GGroupCreate;
 
@@ -779,7 +788,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.cid = CID_TTF_PfEd;
     gcd[k++].creator = GLabelCreate;
 
-    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x+2; gcd[k].gd.pos.y = gcd[k-4].gd.pos.y;
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x+2; gcd[k].gd.pos.y = gcd[k-4].gd.pos.y-4;
     gcd[k].gd.flags = gg_visible ;
     label[k].text = (unichar_t *) _STR_PfEdComments;
     label[k].text_in_resource = true;
@@ -788,7 +797,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.cid = CID_TTF_PfEdComments;
     gcd[k++].creator = GCheckBoxCreate;
 
-    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-4].gd.pos.y;
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-4].gd.pos.y-4;
     gcd[k].gd.flags = gg_visible ;
     label[k].text = (unichar_t *) _STR_PfEdColors;
     label[k].text_in_resource = true;
@@ -798,6 +807,15 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k++].creator = GCheckBoxCreate;
 
     gcd[k].gd.pos.x = gcd[k-3].gd.pos.x; gcd[k].gd.pos.y = gcd[k-4].gd.pos.y;
+    gcd[k].gd.flags = gg_visible ;
+    label[k].text = (unichar_t *) _STR_TeXTable;
+    label[k].text_in_resource = true;
+    gcd[k].gd.popup_msg = GStringGetResource(_STR_TeXTablePopup,NULL);
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.cid = CID_TTF_TeXTable;
+    gcd[k++].creator = GCheckBoxCreate;
+
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
     gcd[k].gd.flags = gg_visible ;
     label[k].text = (unichar_t *) _STR_OutputGlyphMap;
     label[k].text_in_resource = true;
@@ -1983,6 +2001,7 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 		if ( fmflags&4 ) old_ttf_flags |= ttf_flag_shortps;
 		if ( fmflags&0x20 ) old_ttf_flags |= ttf_flag_pfed_comments;
 		if ( fmflags&0x40 ) old_ttf_flags |= ttf_flag_pfed_colors;
+		if ( fmflags&0x200 ) old_ttf_flags |= ttf_flag_TeXtable;
 	    }
 	} else if ( oldformatstate<=ff_ttfdfont || oldformatstate==ff_none ) {
 	    old_ttf_flags = 0;
