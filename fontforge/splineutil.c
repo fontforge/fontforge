@@ -2716,66 +2716,88 @@ static int QuarticSolve(Quartic *q,double ts[4]) {
     double sq, a, b, c, d, e, f;
     int i;
 
-    work.a = 1;
-    work.b = 0;
-    work.c = (q->c-3*q->b*q->b/(8*q->a))/q->a;
-    work.d = (q->b*q->b*q->b/(8*q->a*q->a) - q->b*q->c/(2*q->a) + q->d)/q->a;
-    work.e = (-3*q->b*q->b*q->b*q->b/(256*q->a*q->a*q->a) + (q->b*q->b*q->c)/(16*q->a*q->a) -
-	    q->b*q->d/(4*q->a) + q->e)/q->a;
+    if ( RealNear(q->a,0) ) {
+	/* I got a quadratic here once so this can happen ... */
+	i = 0;
+	if ( RealNear(q->b,0)) {
+	    if ( RealNear(q->c,0)) {
+		if ( !RealNear(q->d,0))
+		    ts[i++] = -q->e/q->d;
+	    } else {
+		f = q->d*q->d - 4*q->c*q->e;
+		if ( f>=0 ) {
+		    f=sqrt(f);
+		    ts[i++] = (-q->d + f)/(2*q->c);
+		    ts[i++] = (-q->d - f)/(2*q->c);
+		}
+	    }
+	} else {
+	    sp.a = q->b; sp.b = q->c; sp.c = q->d; sp.d = q->e;
+	    ts[3] = -1;
+return( CubicSolve(&sp,ts));
+	}
+    } else {
+	work.a = 1;
+	work.b = 0;
+	work.c = (q->c-3*q->b*q->b/(8*q->a))/q->a;
+	work.d = (q->b*q->b*q->b/(8*q->a*q->a) - q->b*q->c/(2*q->a) + q->d)/q->a;
+	work.e = (-3*q->b*q->b*q->b*q->b/(256*q->a*q->a*q->a) + (q->b*q->b*q->c)/(16*q->a*q->a) -
+		q->b*q->d/(4*q->a) + q->e)/q->a;
 
-    if ( RealNear(work.e,0))
-	work.e = 0;
-    if ( work.e<0 )		/* I hope this means no real roots, my cubic solver doesn't deal with complex coef */
+	if ( RealNear(work.e,0))
+	    work.e = 0;
+	if ( work.e<0 )		/* I hope this means no real roots, my cubic solver doesn't deal with complex coef */
 return( -1 );
-    sq = sqrt(work.e);
-    sp.a = 8;
-    sp.b = 24*sq-4*work.c;
-    sp.c = 16*work.e-8*sq*work.c;
-    sp.d = -work.d*work.d;
-    if ( !_CubicSolve(&sp,zs) )
+	sq = sqrt(work.e);
+	sp.a = 8;
+	sp.b = 24*sq-4*work.c;
+	sp.c = 16*work.e-8*sq*work.c;
+	sp.d = -work.d*work.d;
+	if ( !_CubicSolve(&sp,zs) )
 return( -1 );
-    a=2*sq-work.c+2*zs[0];
-    b= -work.d;
-    c= zs[0]*(zs[0]+2*sq);
-    if ( RealNear(c,0))
-	c = 0;
-    if ( c<0 )
+	a=2*sq-work.c+2*zs[0];
+	b= -work.d;
+	c= zs[0]*(zs[0]+2*sq);
+	if ( RealNear(c,0))
+	    c = 0;
+	if ( c<0 )
 return( -1 );
-    if ( !RealNear(b*b-4*a*c,0) )
-	IError("Failure in quartic");
+	if ( !RealNear(b*b-4*a*c,0) )
+	    IError("Failure in quartic");
 
-    b = -sqrt(a);
-    c = sq+zs[0]-sqrt(c);
-    a = 1;
-    i = 0;
-    f = q->b/(4*q->a);
-    if ( b*b-4*c>= 0 ) {
-	sq = sqrt(b*b-4*c);
-	ts[i++] = (-b+sq)/2-f;
-	if ( sq!=0 )
-	    ts[i++] = (-b-sq)/2-f; 
-    }
-    /* Now the a,b,c polynomial above must be offset by f before it can */
-    /*  represent the roots of q */
-    c += f*f + b*f;
-    b += 2*f;
+	b = -sqrt(a);
+	c = sq+zs[0]-sqrt(c);
+	a = 1;
+	i = 0;
+	f = q->b/(4*q->a);
+	if ( b*b-4*c>= 0 ) {
+	    sq = sqrt(b*b-4*c);
+	    ts[i++] = (-b+sq)/2-f;
+	    if ( sq!=0 )
+		ts[i++] = (-b-sq)/2-f; 
+	}
+	/* Now the a,b,c polynomial above must be offset by f before it can */
+	/*  represent the roots of q */
+	c += f*f + b*f;
+	b += 2*f;
 
-	/* Now divide the original spline by this quadratic, and we will get */
-	/*  another quadratic with the other two roots */
-    d = q->a;
-    work.b = q->b-d*b;
-    work.c = q->c-d*c;
-    e = work.b;
-    work.c -= e*b;
-    work.d = q->d-e*c;
-    f = work.c;
-    if ( !RealNear(work.d-f*b,0) || !RealNear(q->e-f*c,0))
-	IError("Polynomial division failed");
-    if ( e*e-4*d*f >= 0 ) {
-	sq = sqrt(e*e-4*d*f);
-	ts[i++] = (-e+sq)/(2*d);
-	if ( sq!=0 )
-	    ts[i++] = (-e-sq)/(2*d);
+	    /* Now divide the original spline by this quadratic, and we will get */
+	    /*  another quadratic with the other two roots */
+	d = q->a;
+	work.b = q->b-d*b;
+	work.c = q->c-d*c;
+	e = work.b;
+	work.c -= e*b;
+	work.d = q->d-e*c;
+	f = work.c;
+	if ( !RealNear(work.d-f*b,0) || !RealNear(q->e-f*c,0))
+	    IError("Polynomial division failed");
+	if ( e*e-4*d*f >= 0 ) {
+	    sq = sqrt(e*e-4*d*f);
+	    ts[i++] = (-e+sq)/(2*d);
+	    if ( sq!=0 )
+		ts[i++] = (-e-sq)/(2*d);
+	}
     }
     while ( i<4 ) ts[i++] = -1;
     for ( i=0; i<4 && ts[i]!=-1; ++i ) {
