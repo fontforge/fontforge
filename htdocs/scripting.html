@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 16-Feb-2002 -->
+  <!-- AP: Last modified: 18-Feb-2002 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -265,11 +265,14 @@ to (some) already existing ones)
     resides
   <LI>
     <CODE>$firstfont </CODE>the name of the filename of the font which is first
-    on the font list
+    on the font list (Can be used by Open())
   <LI>
     <CODE>$nextfont </CODE>the name of the filename of the font which follows
     the current font on the list (or the empty string if the current font is
     the last one on the list)
+  <LI>
+    <CODE>$fontchanged</CODE> returns 1 if the current font has changed, 0 if
+    it has not changed since it was read in.
   <LI>
     <CODE>$fontname</CODE> the name contained in the postscript FontName field
   <LI>

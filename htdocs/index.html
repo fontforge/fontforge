@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 16-Feb-2002 -->
+  <!-- AP: Last modified: 18-Feb-2002 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -78,8 +78,8 @@ you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-020216.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 16-Feb-2002
+    <A HREF="pfaedit-020218.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 18-Feb-2002
   <LI>
     <A HREF="pfaedit_ppc-020208.tgz">Download pfaedit linux-ppc SUSE 7.1
     </A>executable Version: 8-Feb-2002
@@ -116,9 +116,9 @@ If you want to edit CID keyed fonts you probably need these
 <P>
 You can download a <A HREF="pfaedit-020216-1.src.rpm">source RPM</A>: Version:
 16-Feb-2002<BR>
-Or you can download the <A HREF="pfaedit_full-020216.tgz">entire source tree
+Or you can download the <A HREF="pfaedit_full-020218.tgz">entire source tree
 </A>in one .tgz file: Version
-16-Feb-2002<!--
+18-Feb-2002<!--
 Or you can download the following three packages. Version: 19-Jan-2002
 <UL>
 <LI>
@@ -269,6 +269,26 @@ Or you can just browse the <A HREF="overview.html">docs online</A>.
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    ???
+    <UL>
+      <LI>
+	Cancelling the Point Info dlg would leave minimum distance hints in a bad
+	state.
+      <LI>
+	Using Undo also left the MD hints wonky
+      <LI>
+	added $fontchanged to scripting
+      <LI>
+	Added SaveAll menu item in font view.
+      <LI>
+	Sometimes the underlines for accelerators didn't print in the menu (depended
+	on what PfaEdit thought the screen resolution was).
+      <LI>
+	Added a new minimum distance hint for serifs of diagonal stems.
+      <LI>
+	Fixed a bug where some extra serif stems were hinted.
+    </UL>
   <LI>
     16-Feb-2002
     <UL>

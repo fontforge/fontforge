@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 18-Jan-2002 -->
+  <!-- AP: Last modified: 17-Feb-2002 -->
   <TITLE>Frequently Asked Questions</TITLE>
 </HEAD>
 <BODY>
@@ -161,15 +161,15 @@
 	Change the <CODE>Encoding</CODE> back to whatever it was
     </OL>
   <DT>
-    <A NAME="Open-size">Why isn't my Open Type font much smaller than the .pfb
-    file?</A>
+    <A NAME="Open-size"><B>Why isn't my Open Type font much smaller than the
+    .pfb file?</B></A>
   <DD>
     This is probably because you didn't round to int before saving the font.
     PfaEdit will save the font using fixed point numbers which take up a lot
     more space than normal integers.
   <DT>
-    <A NAME="Open-difference">What's the difference between OpenType and PostScript
-    (or TrueType) fonts?</A>
+    <A NAME="Open-difference"><B>What's the difference between OpenType and
+    PostScript (or TrueType) fonts?</B></A>
   <DD>
     Both PostScript and TrueType define a file format and a glyph format. OpenType
     uses the TrueType file format with a PostScript glyph format (actually OpenType
@@ -182,8 +182,8 @@
     Adobe's extensions to Type1 (flex hints, hint substitution, counter hints)
     by using subroutines have been added to Type2 as direct instructions.
   <DT>
-    <A NAME="save-no-change">After I generate a font and quit, why does PfaEdit
-    ask if I want to save the font? I didn't change anything.</A>
+    <A NAME="save-no-change"><B>After I generate a font and quit, why does PfaEdit
+    ask if I want to save the font? I didn't change anything.</B></A>
   <DD>
     There are two reasons why this might be happening.
     <OL>
@@ -201,7 +201,7 @@
 	caching when you change an old version of the font for a new one).
     </OL>
   <DT>
-    <A NAME="Tex">Why doesn't TeX work with my fonts?</A>
+    <A NAME="Tex"><B>Why doesn't TeX work with my fonts?</B></A>
   <DD>
     I'm a total novice with TeX. I am told that TeX (or some part of the TeX
     chain, dvips perhaps) expects fonts to be encoded in TeX base Encoding --
@@ -210,14 +210,15 @@
     the encoding of your font to TeX Base (Go to Element-&gt;Font Info, select
     the Encoding tab, select TeX Base from the pulldown list).
   <DT>
-    <A NAME="minify-iconify">Why does my window get iconified when I want to
-    minify the view?</A>
+    <A NAME="minify-iconify"><B>Why does my window get iconified when I want
+    to minify the view?</B></A>
   <DD>
     Some window managers (gnome-sawtooth for one) steal meta (alt) clicks from
     PfaEdit. So you can't use meta-middle-click to minify a character, you have
     to use the View menu-&gt;Zoom Out instead.
   <DT>
-    <A NAME="no-mu">Why isn't there a character named "mu" in my greek font?</A>
+    <A NAME="no-mu"><B>Why isn't there a character named "mu" in my greek
+    font?</B></A>
   <DD>
     Adobe was thinking more of backwards compatability than sense when they assigned
     the names of the greek letters in their unicode encoding. Thus the name "mu"
@@ -230,8 +231,8 @@
     to generate characters with names "mu", "uni00B5" and "uni03BC" whenever
     either U+00B5 or U+03BC is defined (and similarly for Omega and Delta).
   <DT>
-    <A NAME="no-copy-names">Why doesn't Edit-&gt;Copy copy character names as
-    well as glyph info?</A>
+    <A NAME="no-copy-names"><B>Why doesn't Edit-&gt;Copy copy character names
+    as well as glyph info?</B></A>
   <DD>
     Firstly because I believe that any attempt to copy a character's name will
     almost certainly be better done by defining a custom
@@ -243,8 +244,8 @@
     in <A HREF="editmenu.html#CharName">Edit-&gt;Copy From-&gt;Char Name</A>
     which allows you to change the default behavior.
   <DT>
-    <A NAME="cidmaps">What on earth are cidmap files and should I care about
-    them?</A>
+    <A NAME="cidmaps"><B>What on earth are cidmap files and should I care about
+    them?</B></A>
   <DD>
     Some background:
     <P>
@@ -280,7 +281,8 @@
     So the cidmap files are only useful for people working on CID keyed CJK fonts.
     So most europeans/americans won't need them.
   <DT>
-    <A NAME="font-install">How do I install the fonts once I've made them?</A>
+    <A NAME="font-install"><B>How do I install the fonts once I've made
+    them?</B></A>
   <DD>
     Well it rather depends on what system you are working on, and what type of
     font you've got:
@@ -393,7 +395,7 @@ $ xset fp+ `pwd`
 	OpenType dfonts do (so if you want to use Postscript use OpenType).
     </DL>
   <DT>
-    <A NAME="How-mac">How do I edit fonts from my macintoy?</A>
+    <A NAME="How-mac"><B>How do I edit fonts from my macintoy?</B></A>
   <DD>
     <DL>
       <DT>
@@ -476,7 +478,7 @@ $ xset fp+ `pwd`
 	described above.
     </DL>
   <DT>
-    Does the <A NAME="simplify">simplify</A> command lose accuracy?
+    <B>Does the <A NAME="simplify">simplify</A> command lose accuracy?</B>
   <DD>
     Yes it does.<BR>
     But not much.<BR>
@@ -506,8 +508,8 @@ $ xset fp+ `pwd`
     This will replace a set of splines with a spline that differs from the original
     by no more than .1 unit.
   <DT>
-    <A NAME="cubic-quadratic">How does PfaEdit convert a cubic spline into a
-    quadratic spline for truetype?</A>
+    <A NAME="cubic-quadratic"><B>How does PfaEdit convert a cubic spline into
+    a quadratic spline for truetype?</B></A>
   <DD>
     Again this can involve a loss of accuracy.<BR>
     First PfaEdit checks to see if the spline happens to be a quadratic already
@@ -519,8 +521,8 @@ $ xset fp+ `pwd`
     slope at those end-points there is only one quadratic spline possible between
     the two).
   <DT>
-    <A NAME="quadratic-cubic">How does PfaEdit convert a quadratic spline into
-    a cubic (when reading truetype)?</A>
+    <A NAME="quadratic-cubic"><B>How does PfaEdit convert a quadratic spline
+    into a cubic (when reading truetype)?</B></A>
   <DD>
     This is easy since any quadratic spline can already be represented as a cubic,
     it will just happen that the cubic term is always 0.
