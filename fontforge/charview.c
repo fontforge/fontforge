@@ -1336,7 +1336,7 @@ static void CVDrawGridRaster(CharView *cv, GWindow pixmap, DRect *clip ) {
 		if ( cv->oldraster->lb<minx ) minx = cv->oldraster->lb;
 		if ( cv->oldraster->lb+cv->oldraster->cols>maxx ) maxx = cv->oldraster->lb+cv->oldraster->cols;
 		if ( cv->oldraster->as>maxy ) maxy = cv->oldraster->as;
-		if ( cv->oldraster->as-cv->oldraster->rows<miny ) miny = cv->oldraster->as-cv->oldraster->rows<miny;
+		if ( cv->oldraster->as-cv->oldraster->rows<miny ) miny = cv->oldraster->as-cv->oldraster->rows;
 	    }
 	    for ( ii=maxy; ii>miny; --ii ) {
 		for ( jj=minx; jj<maxx; ++jj ) {
