@@ -60,9 +60,12 @@ extern int adjustwidth;
 extern int adjustlbearing;
 extern int autohint_before_rasterize;
 extern int seperate_hint_controls;
+extern int ItalicConstrained;
 
 extern char *BDFFoundry;
 extern char *xuid;
+
+extern int pagewidth, pageheight, printtype;	/* Printer defaults */
 
 extern Encoding *enclist;
 

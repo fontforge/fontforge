@@ -1305,7 +1305,7 @@ static void FVMenuRemoveKern(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void FVMenuPrint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 
-    SFPrintFontList(fv->sf);
+    PrintDlg(fv,NULL,NULL);
 }
 
 static void mtlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -1401,7 +1401,7 @@ static unichar_t saveas[] = { 'S', 'a', 'v', 'e', ' ', 'a', 's', '.', '.', '.', 
 static unichar_t generate[] = { 'G', 'e', 'n', 'e', 'r', 'a', 't', 'e', ' ', 'F','o','n','t','s', '.', '.', '.', '\0' };
 static unichar_t import[] = { 'I', 'm', 'p', 'o', 'r', 't',  '.', '.', '.', '\0' };
 static unichar_t close[] = { 'C', 'l', 'o', 's', 'e', '\0' };
-static unichar_t print[] = { 'P', 'r', 'i', 'n', 't', ' ','t','o',' ','f','i','l','e', '.', '.', '.',  '\0' };
+static unichar_t print[] = { 'P', 'r', 'i', 'n', 't', '.', '.', '.',  '\0' };
 static unichar_t prefs[] = { 'P', 'r', 'e', 'f', 'e', 'r', 'e', 'n', 'c', 'e', 's', '.', '.', '.', '\0' };
 static unichar_t quit[] = { 'Q', 'u', 'i', 't', '\0' };
 static unichar_t _24[] = { '2', '4', ' ', 'p', 'i', 'x', 'e', 'l', ' ', 'o', 'u','t','l','i','n','e', '\0' };

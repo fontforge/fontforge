@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 7-May-2001 -->
+  <!-- AP: Last modified: 10-May-2001 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -15,6 +15,10 @@
 <FONT COLOR="Red"><STRONG>PfaEdit</STRONG></FONT> -- A postscript font editor
 that lets you create your own postscript, truetype, opentype and bitmap (bdf)
 fonts, or edit existing ones. Also lets you convert one format to another.
+<P>
+<FONT COLOR="Red"><STRONG><BIG><BIG><BIG>NOTE: I shall be on vacation until
+the start of June. No more bug fixes for a
+while.</BIG></BIG></BIG></STRONG></FONT>
 <P>
 Contents
 <UL>
@@ -50,8 +54,8 @@ I am retaining the 3-May distributions for a while, as I suspect hint
 substitution will be buggy for a bit.
 <UL>
   <LI>
-    <A HREF="pfaedit-070501.tgz">Download pfaedit linux-i386 RedHat 7.0
-    </A><A NAME="downloads">executable</A> Version: 07-May-2001
+    <A HREF="pfaedit-100501.tgz">Download pfaedit linux-i386 RedHat 7.0
+    </A><A NAME="downloads">executable</A> Version: 10-May-2001
   <LI>
     <A HREF="pfaedit-030501.tgz">Download pfaedit linux-i386 RedHat 7.0
     </A><A NAME="downloads">executable</A> Version: 03-May-2001
@@ -68,19 +72,19 @@ substitution will be buggy for a bit.
   <A NAME="source">Source</A> distribution
 </H2>
 <P>
-You must download the following three packages. Version: 07-May-2001
+You must download the following three packages. Version: 10-May-2001
 <UL>
   <LI>
     <A HREF="libgunicode-070501.tgz">Unicode library source</A> (7 May 2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGUnicode/index.html">docs</A>
   <LI>
-    <A HREF="libgdraw-070501.tgz">Unicode widget library source</A> (7 May
+    <A HREF="libgdraw-100501.tgz">Unicode widget library source</A> (10 May
     2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
   <LI>
-    <A HREF="pfaedit_src-070501.tgz">Pfaedit source</A> (7 May 2001)<BR>
+    <A HREF="pfaedit_src-100501.tgz">Pfaedit source</A> (10 May 2001)<BR>
     -- <A HREF="overview.html">docs</A>
   <LI>
     If you want to do autotracing around character images you should also download
@@ -156,6 +160,23 @@ You might also want to pull down some unicode bitmap fonts that pfaedit uses
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    10-May-2001
+    <UL>
+      <LI>
+	Fixed a crash bug which occurred when doing Transformations with the origin
+	set to Center of Selection (default) in a character with an unclosed path.
+      <LI>
+	Fixed a similar crash when generating postscript.
+      <LI>
+	And another when updating control points.
+      <LI>
+	Added much to printing, should be done for now.
+      <LI>
+	Valrk Filippov suggested that things should be constrainable to angles other
+	than horizontal, vertical and 45. In particular constraining to the ItalicAngle
+	of an Italic/Oblique font is very useful. So we do that now. Thanks Val!
+    </UL>
   <LI>
     7 May 2001
     <UL>
@@ -1031,8 +1052,6 @@ prepared to save frequently and always work on a copy of the original.
     fonts (such as those made by itself), will get confused if there's more than
     one font with a chars dictionary.
   <LI>
-    Ironically there is no Print command.
-  <LI>
     No Change Weight command
 </UL>
 <H2>
@@ -1088,6 +1107,8 @@ you run it in gdb you should be able to get a stack trace... Do what you
 can.
 <P>
 <A HREF="mailto:gww@silcom.com">gww@silcom.com</A>
+<P>
+(I'll be gone until 1 June, so I shan't be able to respond till then, sorry)
 <H2>
   <A NAME="Acknowledgements">Acknowledgements</A>
 </H2>
@@ -1124,6 +1145,8 @@ The following people have helped debug pfaedit. Many thanks!
     <A HREF="http://jeff.cs.mcgill.ca/~luc/">Luc Devroye</A>
   <LI>
     <A HREF="http://www-csag.cs.uiuc.edu/individual/pakin">Scott Pakin</A>
+  <LI>
+    Robert Brady
 </UL>
 <P>
 PfaEdit was inspired by AltSys's

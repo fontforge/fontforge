@@ -435,6 +435,5 @@ extern char *FindAutoTraceName(void);
 extern unichar_t *FVOpenFont(const unichar_t *title, const unichar_t *defaultfile,
 	const unichar_t *initial_filter, unichar_t **mimetypes,int mult);
 
-extern void SFPrintFontList(SplineFont *sf);
-extern void SCPrintCharacter(SplineChar *sc);
+extern void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv);
 #endif

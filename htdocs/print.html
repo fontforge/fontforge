@@ -1,0 +1,69 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 10-May-2001 -->
+  <!-- AP: Last modified: 10-May-2001 -->
+  <TITLE>Printing</TITLE>
+</HEAD>
+<BODY>
+<H1 ALIGN=Center>
+  Printing
+</H1>
+<P>
+PfaEdit will only produce postscript when it prints, this may be directed
+to a file, a printer or to ghostview.
+<P>
+When you choose to print you have the option of printing:
+<UL>
+  <LI>
+    All the characters of your font, in a rectangular grid:<BR>
+    <IMG SRC="FontDisplay.png" WIDTH="342" HEIGHT="109">
+  <LI>
+    Certain selected characters, one per page, at a scale to fill up the page<BR>
+    <IMG SRC="CharPrint.png" WIDTH="283" HEIGHT="392">
+  <LI>
+    A sample of the font in use. This will handle kerning, bi-directional text,
+    and composing characters.<BR>
+    <IMG SRC="FontSample.png" WIDTH="388" HEIGHT="537">
+</UL>
+<P>
+<IMG SRC="Print.png" WIDTH="426" HEIGHT="445" ALIGN="Right">The print dialog
+appears at right. The three choices are reflected by the radio buttons (the
+Full Page Character button will print any selected characters in the font
+view, the current character in the outline view, and any characters displayed
+in the metrics view, here it is greyed out because no characters were selected
+in the font view).
+<P>
+The PointSize field applies to the Full Font Display and the Sample Text
+methods.
+<P>
+The Sample Text is fairly self-explanatory. The default sample text is geared
+to your font, if your font does not contain (for instance) greek characters,
+then the greek will not appear. Of course you may change it however you wish...
+<P>
+The Setup button allows you to pick a printer, pagesize, etc.
+<P Clear=All>
+<IMG SRC="PageSetup.png" WIDTH="344" HEIGHT="227" ALIGN="Left">You may choose
+to queue the result with lp or lpr, you may also direct it to ghostview,
+or simply print to a file (if you send it to a file you will be prompted
+for a filename after you click OK in the Print (not the PageSetup) dialog).
+<P>
+PfaEdit knows about certain standard sizes of paper. If you want to use a
+size which isn't on the list then enter it as 8.5x11in or 21x29.7cm.
+<P>
+PfaEdit will read your printcap file to get a list of printers. It also adds
+one magic entry "&lt;default&gt;" if you select this (or if you leave the
+printer blank) then lp or lpr will chose their default printer.
+<P>
+The Printer and Copies arguments are not meaningful when using ghostview
+or printing to a file. 
+  <HR Clear=ALL>
+<P Clear=ALL>
+Obviously my samples are all based on european character sets. If anyone
+has a small section of text in any language not represented please send me
+a copy. Preferably in a unicode encoding...
+<P>
+<P ALIGN=Center>
+-- <A HREF="filemenu.html">File Menu</A> -- <A HREF="overview.html">TOC</A>
+--
+</BODY></HTML>

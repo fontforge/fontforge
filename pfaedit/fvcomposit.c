@@ -406,7 +406,7 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
     double transform[6];
     DBounds bb, rbb;
     double xoff, yoff;
-    double spacing = (sf->ascent+sf->descent)/30;
+    double spacing = (sf->ascent+sf->descent)/25;
     BDFChar *bc, *rbc;
     int ixoff, iyoff, ispacing, pos;
     BDFFont *bdf;
@@ -587,6 +587,8 @@ void SCBuildComposit(SplineFont *sf, SplineChar *sc, int copybmp,FontView *fv) {
     const unichar_t *pt, *apt; unichar_t ch;
     BDFFont *bdf;
     double ia;
+    /* This does not handle arabic ligatures at all. It would need to reverse */
+    /*  the string and deal with <final>, <medial>, etc. info we don't have */
 
     if ( !SFIsCompositBuildable(sf,sc->unicodeenc))
 return;
@@ -613,7 +615,7 @@ return;
     }
     if ( !SCMakeBaseReference(sc,sf,ch,copybmp) )
 return;
-    while ( iscombining(*pt) || *pt==0xb7 ||	/* b7, centered dot is used as a combining accent for Ldot */
+    while ( iscombining(*pt) || (ch!='l' && *pt==0xb7) ||	/* b7, centered dot is used as a combining accent for Ldot but as a lig for ldot */
 	    *pt==0x1fcd || *pt==0x1fdd || *pt==0x1fce || *pt==0x1fde )	/* Special greek accents */
 	SCCenterAccent(sc,sf,*pt++,copybmp,ia, ch);
     while ( *pt )

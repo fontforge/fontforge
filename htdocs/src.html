@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Feb-2001 -->
-  <!-- AP: Last modified: 22-Feb-2001 -->
+  <!-- AP: Last modified: 10-May-2001 -->
   <TITLE>High level description of what each source file contains...</TITLE>
 </HEAD>
 <BODY>
@@ -54,8 +54,7 @@
   <DT>
     autohint.c
   <DD>
-    Contains the routines which guess at postscript hints. There's room for
-    improvement here.
+    Contains the routines which guess at postscript hints. 
   <DT>
     autosave.c
   <DD>
@@ -65,7 +64,7 @@
     autowidth.c
   <DD>
     Guesses at good widths for characters and good kerning for them. Creates
-    a dialog to get guidance from the user and the goes of and tries to guess
+    a dialog to get guidance from the user and the goes off and tries to guess
     reasonable values.
   <DT>
     bitmapdlg.c
@@ -228,6 +227,10 @@
     The main file for the metricsview. Menu dispatcher, event hander. Most of
     the functionality.
   <DT>
+    print.c
+  <DD>
+    Handles the print and pagesetup dialogs.
+  <DT>
     parsepfa.c
   <DD>
     Parses a postscript font. Doesn't get the encoding of a type0 font. Type3s
@@ -237,8 +240,8 @@
   <DT>
     parsettf.c
   <DD>
-    Parses a TTF font file, and converts from quadratic bezier to cubic bezier
-    (easy).
+    Parses a TTF (or OTF) font file, and converts from quadratic bezier to cubic
+    bezier (easy).
   <DT>
     prefs.c
   <DD>
@@ -246,8 +249,8 @@
   <DT>
     psread.c
   <DD>
-    This is our postscript interpreter for things which aren't type1 fonts--
-    eps files, type3s, etc. It can't handle much.
+    This is our postscript interpreter for various flavors of postscript-- eps
+    files, type3s, type1s, type2s, etc. It can't handle much.
   <DT>
     psunicodenames.c
   <DD>
@@ -282,7 +285,7 @@
     splinesave.c
   <DD>
     Various helper routines when saving a postscript (and to a lesser extent
-    TTF) font. Converts to type1 commands. Figures out optimal referencing.
+    TTF) font. Converts to type1 or type2 commands. Figures out optimal referencing.
   <DT>
     splinesaveafm.c
   <DD>
@@ -339,8 +342,8 @@
   <DT>
     tottf.c
   <DD>
-    Saves a true type font. see also splinesave.c for reference character
-    optimization routines.
+    Saves a true type or open type font. see also splinesave.c for reference
+    character optimization and for OpenType Type2 conversion routines.
   <DT>
     transform.c
   <DD>

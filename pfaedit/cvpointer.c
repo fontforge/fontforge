@@ -238,6 +238,8 @@ static void SplineSetFindSelBounds(SplinePointList *spl, DBounds *bounds,
 		if ( sp->me.y>bounds->maxy ) bounds->maxy = sp->me.y;
 	    }
 	    if ( first==NULL ) first = sp;
+	    if ( sp->next==NULL )
+	break;
 	}
     }
 }

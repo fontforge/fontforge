@@ -1196,6 +1196,11 @@ return( event );
     if ( dy >= 2*dx ) {
 	cv->p.x = fake->u.mouse.x = basex;
 	cv->p.cx = base->me.x;
+	if ( ItalicConstrained && cv->sc->parent->italicangle!=0 ) {
+	    cv->p.cx -= tan(cv->sc->parent->italicangle*3.1415926535897932/180)*
+		    (cv->p.cy-base->me.y);
+	    cv->p.x = fake->u.mouse.x = cv->xoff + rint(cv->p.cx*cv->scale);
+	}
     } else if ( dx >= 2*dy ) {
 	fake->u.mouse.y = basey;
 	cv->p.cy = base->me.y;
@@ -1444,6 +1449,11 @@ return;
 	    if ( dy >= 2*dx ) {
 		p.x = fake.u.mouse.x = basex;
 		p.cx = cv->p.constrain.x;
+		if ( ItalicConstrained && cv->sc->parent->italicangle!=0 ) {
+		    p.cx -= tan(cv->sc->parent->italicangle*3.1415926535897932/180)*
+			    (p.cy-cv->p.constrain.y);
+		    p.x = fake.u.mouse.x = cv->xoff + rint(p.cx*cv->scale);
+		}
 	    } else if ( dx >= 2*dy ) {
 		p.y = fake.u.mouse.y = basey;
 		p.cy = cv->p.constrain.y;
@@ -1506,7 +1516,7 @@ return;
       break;
       case cvt_magnify: case cvt_minify:
       break;
-      case cvt_curve: case cvt_corner: case cvt_tangent:
+      case cvt_curve: case cvt_corner: case cvt_tangent: 
 	CVMouseMovePoint(cv,&p);
       break;
       case cvt_pen:
@@ -2046,7 +2056,7 @@ static unichar_t recent[] = { 'R', 'e', 'c', 'e', 'n', 't',  '\0' };
 static unichar_t openoutline[] = { 'O', 'p', 'e', 'n', ' ', 'O', 'u', 't', 'l', 'i', 'n', 'e', '\0' };
 static unichar_t openbitmap[] = { 'O', 'p', 'e', 'n', ' ', 'B', 'i', 't', 'm', 'a', 'p', '\0' };
 static unichar_t openmetrics[] = { 'O', 'p', 'e', 'n', ' ', 'M', 'e', 't', 'r', 'i', 'c', 's', '\0' };
-static unichar_t print[] = { 'P', 'r', 'i', 'n', 't', ' ','t','o',' ','f','i','l','e', '.', '.', '.',  '\0' };
+static unichar_t print[] = { 'P', 'r', 'i', 'n', 't', '.', '.', '.',  '\0' };
 static unichar_t revert[] = { 'R', 'e', 'v', 'e','r','t',' ', 'F','i','l','e','\0' };
 static unichar_t save[] = { 'S', 'a', 'v', 'e',  '\0' };
 static unichar_t saveas[] = { 'S', 'a', 'v', 'e', ' ', 'a', 's', '.', '.', '.', '\0' };
@@ -2169,7 +2179,7 @@ static void CVMenuRevert(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void CVMenuPrint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
-    SCPrintCharacter(cv->sc);
+    PrintDlg(NULL,cv->sc,NULL);
 }
 
 static void fllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -3182,7 +3192,7 @@ static GMenuItem fllist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { print, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'P' }, 'P', ksm_control, NULL, NULL, CVMenuPrint },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { prefs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'P' }, '\0', ksm_control, NULL, NULL, MenuPrefs },
+    { { prefs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'e' }, '\0', ksm_control, NULL, NULL, MenuPrefs },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { quit, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'Q' }, 'Q', ksm_control, NULL, NULL, MenuExit },
     { NULL }

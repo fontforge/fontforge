@@ -596,8 +596,13 @@ return( e->coordmax[major]-e->coordmin[major] );
 	} else
 	    tmin = t;
     }
-    if (( dup<-1 && ddown>-1 && ddown<0 ) || (dup>1 && ddown<1 && ddown>0)) ddown = 0;
-    if (( ddown<-1 && dup>-1 && dup<0 ) || (ddown>1 && dup<1 && dup>0)) dup = 0;
+    if ( dup<0 && ddown<0 ) {
+	if ( ddown>-1 && ddown>dup ) ddown = 0;
+	if ( dup>-1 && dup>ddown ) dup =0;
+    } else if ( dup>0 && ddown>0 ) {
+	if ( ddown<1 && ddown<dup ) ddown = 0;
+	if ( dup<1 && dup<ddown ) dup =0;
+    }
     if ( (dup<0 && ddown<0) || ( dup>0 && ddown>0 ))
 	fprintf( stderr, "Bad values in IsEdgeHorVertHere dup=%g, ddown=%g\n", dup, ddown );
     if ( dup<0 || ddown>0 ) {	/* one might be 0, so test both */

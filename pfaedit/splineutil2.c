@@ -991,7 +991,8 @@ return;
 	base->nextcp.y = base->me.y - len*sin(angle);
 	base->nextcp.x = rint(base->nextcp.x*1024)/1024;
 	base->nextcp.y = rint(base->nextcp.y*1024)/1024;
-	SplineRefigure(base->next);
+	if ( base->next != NULL )
+	    SplineRefigure(base->next);
     }
 }
 
@@ -1060,7 +1061,8 @@ return;
 	base->prevcp.y = base->me.y - len*sin(angle);
 	base->prevcp.x = rint(base->prevcp.x*1024)/1024;
 	base->prevcp.y = rint(base->prevcp.y*1024)/1024;
-	SplineRefigure(base->prev);
+	if ( base->prev!=NULL )
+	    SplineRefigure(base->prev);
     }
 }
 

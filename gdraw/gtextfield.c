@@ -154,11 +154,11 @@ return;
     } else {
 	if (( i -= 2 )<0 ) i = 0;
 	pt = gt->text+gt->lines[i];
-	while ( 1 ) {
+	do {
 	    if ( ( ept = u_strchr(pt,'\n'))==NULL )
 		ept = pt+u_strlen(pt);
-	    while ( 1 ) {
-		GDrawGetTextPtBeforePos(gt->g.base,pt, ept-pt, NULL,
+	    while ( pt<=ept ) {
+		GDrawGetTextPtAfterPos(gt->g.base,pt, ept-pt, NULL,
 			gt->g.inner.width, &end);
 		if ( end!=ept && !isbreakbetweenok(*end,end[1]) ) {
 		    for ( temp=end; temp>pt && !isbreakbetweenok(*temp,temp[1]); --temp );
@@ -173,7 +173,7 @@ return;
        goto break_2_loops;
 		pt = end+1;
 	    }
-	}
+	} while ( *ept!='\0' );
        break_2_loops:;
     }
     if ( gt->lcnt!=i ) {
@@ -1157,6 +1157,8 @@ return( glistfield_mouse(ge,event));
 	}
 	if ( gt->pressed==NULL )
 	    gt->pressed = GDrawRequestTimer(gt->g.base,200,100,NULL);
+	if ( gt->sel_start > u_strlen( gt->text ))
+	    fprintf( stderr, "About to crash\n" );
 	_ggadget_redraw(g);
 return( true );
     } else if ( gt->pressed && (event->type == et_mousemove || event->type == et_mouseup )) {
@@ -1187,6 +1189,8 @@ return( true );
 	    if ( gt->sel_start==gt->sel_end )
 		GTextField_Show(gt,gt->sel_start);
 	}
+	if ( gt->sel_end > u_strlen( gt->text ))
+	    fprintf( stderr, "About to crash\n" );
 	if ( refresh )
 	    _ggadget_redraw(g);
 return( true );

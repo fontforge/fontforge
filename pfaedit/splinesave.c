@@ -546,6 +546,7 @@ return(false);
 	/* Now walk along the splineset adding what hints we can (so we don't */
 	/*  have to call another subroutine on the next point. Give up when we*/
 	/*  get a conflict */
+	if ( to->next!=NULL )
 	for ( tsp=to->next->to; tsp!=to; tsp = tsp->next->to ) {
 	    if ( hdb->sc->hconflicts && tsp->me.y!=lasty ) {
 		h = OnHHint(tsp,sc->hstem);
@@ -563,6 +564,8 @@ return(false);
 		    mask[h->hintnumber>>3] |= (0x80>>(h->hintnumber&7));
 		}
 	    }
+	    if ( tsp->next==NULL )
+	break;
 	}
     }
 return( true );
