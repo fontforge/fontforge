@@ -474,10 +474,37 @@ void GDrawDrawImageMagnified(GWindow w, GImage *img, GRect *dest, int32 x, int32
 
     if ( base->width==width && base->height==height ) {
 	/* Not magnified after all */
-	/*if ( dest==NULL )*/
+	if ( dest==NULL )
 	    GDrawDrawImage(w,img,NULL,x,y);
-	/*else
-	    GDrawDrawImage(w,img,dest,x+dest->x,y+dest->y);*/
+	else {
+	    int old;
+	    temp = *dest; temp.x += x; temp.y += y;
+	    if ( temp.x<x ) {
+		temp.x = 0;
+		temp.width-=x;
+	    } else {
+		old = x;
+		x = temp.x;
+		temp.x -= old;
+		temp.width -= old;
+	    }
+	    if ( temp.y<y ) {
+		temp.y = 0;
+		temp.height-=y;
+	    } else {
+		old = y;
+		y = temp.y;
+		temp.y -= old;
+		temp.height -= old;
+	    }
+	    if ( temp.x>=base->width || temp.y>=base->height || temp.width<=0 || temp.height<=0 )
+return;
+	    if ( temp.x+temp.width>=base->width )
+		temp.width = base->width-temp.x;
+	    if ( temp.y+temp.height>=base->height )
+		temp.height = base->height-temp.y;
+	    GDrawDrawImage(w,img,&temp,x,y);
+	}
 return;
     }
     if ( dest==NULL ) {
