@@ -640,14 +640,17 @@ static void bGenerate(Context *c) {
 }
 
 static void bGenerateFamily(Context *c) {
-    SplineFont *sf = NULL, *plainsf=NULL;
+    SplineFont *sf = NULL;
     char *bitmaptype = "";
     int fmflags = -1;
     struct sflist *sfs, *cur;
     Array *fonts;
     FontView *fv;
     int i;
+    uint16 psstyle;
+    SplineFont *styles[48];
 
+    memset(styles,0,sizeof(styles));
     if ( c->a.argc!=5 )
 	error( c, "Wrong number of arguments");
     if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str ||
@@ -663,7 +666,8 @@ static void bGenerateFamily(Context *c) {
 	if ( fonts->vals[i].type!=v_str )
 	    error(c,"Values in the fontname array must be strings");
 	for ( fv=fv_list; fv!=NULL; fv=fv->next ) if ( fv->sf!=sf )
-	    if ( strcmp(fonts->vals[i].u.sval,fv->sf->filename)==0 )
+	    if ( strcmp(fonts->vals[i].u.sval,fv->sf->origname)==0 ||
+		    (fv->sf->filename!=NULL && strcmp(fonts->vals[i].u.sval,fv->sf->origname)==0 ))
 	break;
 	if ( fv==NULL )
 	    for ( fv=fv_list; fv!=NULL; fv=fv->next ) if ( fv->sf!=sf )
@@ -682,28 +686,32 @@ static void bGenerateFamily(Context *c) {
 	if ( strcmp(fv->sf->familyname,sf->familyname)!=0 )
 	    fprintf( stderr, "Warning: %s has a different family name than does %s (GenerateFamily)\n",
 		    fv->sf->fontname, sf->fontname );
-	if ( MacStyleCode(fv->sf,NULL)==0 ) {
-	    if ( plainsf==NULL || plainsf==fv->sf )
-		plainsf = fv->sf;
-	    else
-		error( c, "Two array entries given with a plain style" );
-	} else {
-	    cur = chunkalloc(sizeof(struct sflist));
-	    cur->next = sfs;
-	    sfs = cur;
-	    cur->sf = fv->sf;
+	MacStyleCode(fv->sf,&psstyle);
+	if ( psstyle>=48 ) {
+	    fprintf( stderr, "%s(%s)\n", fv->sf->origname, fv->sf->fontname );
+	    error( c, "A font can't be both Condensed and Expanded" );
+	} else if ( styles[psstyle]==NULL || styles[psstyle]==fv->sf)
+	    styles[psstyle] = fv->sf;
+	else {
+	    fprintf( stderr, "%s(%s) and %s(%s) 0x%x\n",
+		    styles[psstyle]->origname, styles[psstyle]->fontname,
+		    fv->sf->origname, fv->sf->fontname,
+		    psstyle );
+	    error( c, "Two array entries given with the same style (in the Mac's postscript style set)" );
 	}
     }
-    if ( plainsf==NULL ) {
+    if ( styles[0]==NULL ) {
 	if ( MacStyleCode(c->curfv->sf,NULL)==0 && strcmp(c->curfv->sf->familyname,sf->familyname)!=0 )
-	    plainsf = c->curfv->sf;
-	if ( plainsf==NULL )
+	    styles[0] = c->curfv->sf;
+	if ( styles[0]==NULL )
 	    error(c,"At least one of the specified fonts must have a plain style");
     }
-    cur = chunkalloc(sizeof(struct sflist));
-    cur->next = sfs;
-    sfs = cur;
-    cur->sf = plainsf;
+    for ( i=47; i>=0; --i ) if ( styles[i]!=NULL ) {
+	cur = chunkalloc(sizeof(struct sflist));
+	cur->next = sfs;
+	sfs = cur;
+	cur->sf = styles[i];
+    }
     
     if ( !GenerateScript(sf,c->a.vals[1].u.sval,bitmaptype,fmflags,-1,NULL,sfs) )
 	error(c,"Save failed");

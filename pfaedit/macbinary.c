@@ -645,8 +645,10 @@ uint16 MacStyleCode( SplineFont *sf, uint16 *psstylecode ) {
 	psstyle = psf_bold;
     }
     /* URW uses four leter abbreviations of Italic and Oblique */
+    /* Somebody else uses two letter abbrevs */
     if ( strstrmatch( styles, "Ital" ) || strstrmatch( styles, "Obli" ) ||
-	    strstrmatch(styles, "Kurs")) {
+	    strstrmatch(styles, "Kurs") ||
+	    strstr( styles,"It" ) ) {
 	stylecode |= sf_italic;
 	psstyle |= psf_italic;
     }
@@ -661,13 +663,19 @@ uint16 MacStyleCode( SplineFont *sf, uint16 *psstylecode ) {
 	stylecode |= sf_shadow;
 	psstyle |= psf_shadow;
     }
-    if ( strstrmatch( styles, "Cond" ) ) {
+    if ( strstrmatch( styles, "Cond" ) || strstr( styles,"Cn") ) {
 	stylecode |= sf_condense;
 	psstyle |= psf_condense;
     }
-    if ( strstrmatch( styles, "Exte" ) ) {
+    if ( strstrmatch( styles, "Exte" ) || strstr( styles,"Ex") ) {
 	stylecode |= sf_extend;
 	psstyle |= psf_extend;
+    }
+    if ( (psstyle&psf_extend) && (psstyle&psf_condense) ) {
+	fprintf( stderr, "Warning: %s(%s) is both extended and condensed. That's impossible.\n",
+		sf->fontname, sf->origname );
+	psstyle &= ~psf_extend;
+	stylecode &= ~sf_extend;
     }
     if ( psstylecode!=NULL )
 	*psstylecode = psstyle;
