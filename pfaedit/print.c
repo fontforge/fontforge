@@ -1819,6 +1819,27 @@ static unichar_t _mabinogion[] = {' ','G','a','n',' ','f','o','d',' ','A','r',
     'o','f','i','a','d',' ','y','n',' ','y','r',' ','h','e','n',' ','o','r',
     'g','r','a','f','f','.',  '\0'};
 static unichar_t *mabinogion[] = { _mabinogion, NULL };
+/* Swedish */
+static unichar_t _Pippi[] = { 'O','m',' ','n', 0xe5, 'g','o','n',' ','m', 0xe5,
+    'n','n','i','s','k','a',' ','s','k','u','l','l','e',' ','k','o','m','m','a',
+    ' ','r','e','s','a','n','d','e',' ','t','i','l','l',' ','d','e','n',' ','l',
+    'i','l','l','a',',',' ','l','i','l','l','a',' ','s','t','a','d','e','n',' ',
+    'o','c','h',' ','s', 0xe5, ' ','k','a','n','s','k','e',' ','e','t','t',' ','t',
+    'u',' ','t','r','e',' ','r', 0xe5, 'k','a',' ','f', 0xf6, 'r','i','r','r',
+    'a',' ','s','i','g',' ','l','i','t','e',' ','f', 0xf6, 'r',' ','l', 0xe5,
+    'n','g','t',' ','b','o','r','t',' ', 0xe5, 't',' ','e','n','a',' ','u','t',
+    'k','a','n','t','e','n',',',' ','d', 0xe5, 's','k','u','l','l','e',' ','d',
+    'e','n',' ','m', 0xe5, 'n','n','i','s','k','a','n',' ','f', 0xe5, ' ','s',
+    'e',' ','V','i','l','l','a',' ','V','i','l','l','e','k','u','l','l','a','.',
+    ' ','I','n','t','e',' ','f', 0xf6, 'r',' ','a','t','t',' ','h','u','s','e',
+    't',' ','v','a','r',' ','s', 0xe5, 'm','y','c','k','e','t',' ','a','t','t',
+    ' ','t','i','t','t','a',' ','p', 0xe5, 'j','u','s','t',',',' ','e','n',' ',
+    'r', 0xe4, 't','t',' ','f','a','l','l','f', 0xe5, 'r','d','i','g',' ','g',
+    'a','m','m','a','l',' ','v','i','l','l','a',' ','o','c','h',' ','e','n',' ',
+    'r', 0xa4, 't','t',' ','v','a','n','s','k', 0xf6, 't','t',' ','g','a','m',
+    'm','a','l',' ','t','r', 0xe4, 'd','g', 0xa5, 'r','d',' ','r','u','n','t',
+    ' ','o','m','k','r','i','n','g',',',  0 };
+static unichar_t *PippiGarOmBord[] = { _Pippi, NULL };
 /* Czech */
 static unichar_t _goodsoldier1[] = {' ',0x201e,'T','a','k',' ','n',(uint8)'á','m',
     ' ','z','a','b','i','l','i',' ','F','e','r','d','i','n','a','n','d','a',
@@ -2131,7 +2152,7 @@ static unichar_t *thaijohn[] = { _thaijohn1, NULL };
 
 static unichar_t **sample[] = { simple, simplecyrill, faust, pheadra, antigone,
 	annakarenena, debello, hebrew, hangulsijo, YihKing, LiiBair, Genji,
-	IAmACat, donquixote, inferno, beorwulf, muchado,
+	IAmACat, donquixote, inferno, beorwulf, muchado, PippiGarOmBord,
 	mabinogion, goodsoldier, macedonian, bulgarian, belorussianjohn,
 	churchjohn,
 	lithuanian, polish, slovene, irishjohn, basquejohn, portjohn,
