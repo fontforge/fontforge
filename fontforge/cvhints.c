@@ -812,6 +812,7 @@ void CVCreateHint(CharView *cv,int ishstem) {
 	GDrawProcessOneEvent(NULL);
     GDrawSetVisible(gw,false);
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 void SCClearRounds(SplineChar *sc) {
     SplineSet *ss;
@@ -829,6 +830,7 @@ void SCClearRounds(SplineChar *sc) {
     }
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 void SCRemoveSelectedMinimumDistances(SplineChar *sc,int inx) {
     /* Remove any minimum distance where at least one of the two points is */
     /*  selected */

@@ -338,8 +338,12 @@ void TTFLoadBitmaps(FILE *ttf,struct ttfinfo *info,int onlyone) {
     const unichar_t **choices;
     char *sel;
     char buf[10];
+#if defined(FONTFORGE_CONFIG_GDRAW)
     static int buttons[]= { _STR_Yes, _STR_No };
     unichar_t ubuf[100];
+#elif defined(FONTFORGE_CONFIG_GTK)
+    char buf[300];
+#endif
 
     fseek(ttf,info->bitmaploc_start,SEEK_SET);
     /* version = */ getlong(ttf);		/* Had better be 0x00020000, or 2.0 */
@@ -462,13 +466,11 @@ return;
 	last = bdf;
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	u_snprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),GStringGetResource(_STR_DPixelBitmap,NULL),
-#elif defined(FONTFORGE_CONFIG_GTK)
-	u_snprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),_("%d pixel bitmap"),
-#endif
 		sizes[i].ppem );
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressChangeLine2(ubuf);
 #elif defined(FONTFORGE_CONFIG_GTK)
+	snprintf(buf,sizeof(buf),_("%d pixel bitmap"),
+		sizes[i].ppem );
 	gwwv_progress_change_line2(ubuf);
 #endif
 	readttfbitmapfont(ttf,info,&sizes[i],bdf);

@@ -24,6 +24,7 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#define _DEFINE_SEARCHVIEW_
 #include "pfaeditui.h"
 #include <math.h>
 #include <ustring.h>
@@ -1985,7 +1986,9 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto) 
 	}
 	for ( lc=0, pl = paster->u.multiple.mult; pl!=NULL; pl=pl->next, ++lc )
 	    _PasteToSC(sc,pl,fv,pasteinto,start+lc);
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	SCMoreLayers(sc);
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     } else if ( paster->undotype==ut_layers ) {
 	Undoes *pl;
 	for ( pl = paster->u.multiple.mult; pl!=NULL; pl=pl->next );
@@ -1995,14 +1998,18 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto) 
 }
 #endif
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+/* I wish I could get rid of this if FONTFORGE_CONFIG_NO_WINDOWING_UI	*/
+/*  but FVReplaceOutlineWithReference depends on it, and I want that	*/
+/*  available even if no UI						*/
 static void _PasteToCV(CharView *cv,SplineChar *cvsc,Undoes *paster) {
     int refstate = 0;
     DBounds bb;
     real transform[6];
 
     if ( copybuffer.undotype == ut_none ) {
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	SCCheckXClipboard(cv->gw,cvsc,cv->drawmode,false);
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 return;
     }
 
@@ -2136,10 +2143,10 @@ return;
       break;
       case ut_vwidth:
 	if ( !cvsc->parent->hasvmetrics )
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_NoVerticalMetrics,_STR_FontNoVerticalMetrics);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("No Vertical Metrics"),_("This font does not have vertical metrics enabled\nUse Element->Font Info to enable them."));
+#else
+	    GWidgetErrorR(_STR_NoVerticalMetrics,_STR_FontNoVerticalMetrics);
 #endif
 	else
 	    cvsc->vwidth = paster->u.state.vwidth;
@@ -2177,7 +2184,8 @@ void PasteToCV(CharView *cv) {
 	    _PasteToCV(cv,mm->instances[j]->chars[enc],&copybuffer);
     }
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+/* See comment at _PasteToCV */
+/* #endif */		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 
 SplineSet *ClipBoardToSplineSet(void) {

@@ -28,7 +28,9 @@
 #include <chardata.h>
 #include <utype.h>
 #include <ustring.h>
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <gkeysym.h>
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 enum possub_type SFGTagUsed(struct gentagtype *gentags,uint32 tag) {
     int i;
@@ -892,6 +894,46 @@ int SFRemoveUnusedNestedFeatures(SplineFont *sf) {
 return( any );
 }
 
+int SFHasNestedLookupWithTag(SplineFont *sf,uint32 tag,int ispos) {
+    FPST *fpst;
+    AnchorClass *ac;
+    int i,type,start,end;
+    PST *pst;
+
+    for ( fpst=sf->possub; fpst!=NULL; fpst = fpst->next ) {
+	if ((( ispos && (fpst->type==pst_contextpos || fpst->type==pst_chainpos)) ||
+		(!ispos && (fpst->type==pst_contextsub || fpst->type==pst_chainsub || fpst->type==pst_reversesub ))) &&
+		fpst->script_lang_index==SLI_NESTED && fpst->tag==tag )
+return( true );
+    }
+
+    if ( ispos ) {
+	for ( ac=sf->anchor; ac!=NULL; ac=ac->next )
+	    if ( ac->feature_tag==tag && ac->script_lang_index==SLI_NESTED )
+return( true );
+    }
+
+    if ( ispos ) {
+	start = pst_position;
+	end = pst_pair;
+    } else {
+	start = pst_substitution;
+	end = pst_ligature;
+    }
+    for ( type=start; type<=end; ++type ) {
+	for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL ) {
+	    for ( pst = sf->chars[i]->possub; pst!=NULL; pst=pst->next ) {
+		if ( pst->type==type &&
+			pst->script_lang_index == SLI_NESTED &&
+			pst->tag == tag )
+return( true );
+	    }
+	}
+    }
+return( false );
+}
+
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static int typematch(int tagtype, int searchtype) {
 return( tagtype==searchtype ||
 		    (searchtype==fpst_max &&
@@ -947,45 +989,6 @@ GTextInfo **SFGenTagListFromType(struct gentagtype *gentags,enum possub_type typ
 	    }
     }
 return( ti );
-}
-
-int SFHasNestedLookupWithTag(SplineFont *sf,uint32 tag,int ispos) {
-    FPST *fpst;
-    AnchorClass *ac;
-    int i,type,start,end;
-    PST *pst;
-
-    for ( fpst=sf->possub; fpst!=NULL; fpst = fpst->next ) {
-	if ((( ispos && (fpst->type==pst_contextpos || fpst->type==pst_chainpos)) ||
-		(!ispos && (fpst->type==pst_contextsub || fpst->type==pst_chainsub || fpst->type==pst_reversesub ))) &&
-		fpst->script_lang_index==SLI_NESTED && fpst->tag==tag )
-return( true );
-    }
-
-    if ( ispos ) {
-	for ( ac=sf->anchor; ac!=NULL; ac=ac->next )
-	    if ( ac->feature_tag==tag && ac->script_lang_index==SLI_NESTED )
-return( true );
-    }
-
-    if ( ispos ) {
-	start = pst_position;
-	end = pst_pair;
-    } else {
-	start = pst_substitution;
-	end = pst_ligature;
-    }
-    for ( type=start; type<=end; ++type ) {
-	for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL ) {
-	    for ( pst = sf->chars[i]->possub; pst!=NULL; pst=pst->next ) {
-		if ( pst->type==type &&
-			pst->script_lang_index == SLI_NESTED &&
-			pst->tag == tag )
-return( true );
-	    }
-	}
-    }
-return( false );
 }
 
 /* ************************************************************************** */
@@ -1510,3 +1513,4 @@ void SFRetagFeatureDlg(SplineFont *sf) {
 	gwwv_post_error(_("No Features Retagged"),_("No Features Retagged"));
 #endif
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

@@ -3987,10 +3987,11 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	gwwv_progress_change_stages(2*(mm->instance_count+1));
 #endif
 	for ( i=0; i<mm->instance_count; ++i ) {
-	    if ( i!=0 )
 #if defined(FONTFORGE_CONFIG_GDRAW)
+	    if ( i!=0 )
 		GProgressNextStage();
 #elif defined(FONTFORGE_CONFIG_GTK)
+	    if ( i!=0 )
 		gwwv_progress_next_stage();
 #endif
 	    mm->instances[i] = SFD_GetFont(sfd,NULL,tok);

@@ -895,9 +895,11 @@ return( false );
 return( true );
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static int SRIsRightToLeft(struct script_record *sr) {
 return( ScriptIsRightToLeft(sr[0].script) );
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 int SFFindScriptLangRecord(SplineFont *sf,struct script_record *sr) {
     int i;
@@ -3413,7 +3415,60 @@ uint16 PSTDefaultFlags(enum possub_type type,SplineChar *sc ) {
 return( flags );
 }
 
+static enum possub_type PSTGuess(char *data) {
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    enum possub_type type;
+    int i;
+    uint32 tag;
+
+    if ( data[0]=='<' ) {
+	type=pst_max;
+    } else {
+	tag = (((uint8 *) data)[0]<<24) | (((uint8 *) data)[1]<<16 ) |
+		    (((uint8 *) data)[2]<<8) | ((uint8 *) data)[3];
+	for ( type=pst_position; type<pst_max; ++type ) {
+	    for ( i=0; pst_tags[type-1][i].text!=NULL; ++i ) {
+		if ( (uint32) pst_tags[type-1][i].userdata==tag )
+	    break;
+	    }
+	    if ( pst_tags[type-1][i].text!=NULL )
+	break;
+	}
+    }
+    if ( type==pst_max )
+return( pst_null );
+
+return( type );
+#else
+return( pst_null );
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+}
+
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+static unichar_t *SLICheck(SplineChar *sc,unichar_t *data,SplineFont *copied_from) {
+    /* We've got a string. Don't know what font it came from, can't really */
+    /*  make the sli right. Best we can do is insure against crashes and hope */
+    /*  it was copied from us */
+    int new;
+    int merge, act, macfeat;
+    uint32 tag;
+    uint16 flags, sli;
+    unichar_t *name, *ret;
+
+    DecomposeClassName(data,&name,&tag,&macfeat,&flags,&sli,&merge,&act);
+
+    new = SFConvertSLI(copied_from,sli,sc->parent,sc);
+
+    if ( sli==new ) {
+	free(name);
+return( data );
+    }
+
+    ret = ClassName(name,tag,flags,new,merge,act,macfeat);
+    free(name); free(data);
+return( ret );
+}
+
 static void CI_DoNew(CharInfo *ci, unichar_t *def) {
     int len, i, sel;
     GTextInfo **old, **new;
@@ -3666,55 +3721,6 @@ static int CI_Copy(GGadget *g, GEvent *e) {
 return( true );
 }
 
-static enum possub_type PSTGuess(char *data) {
-    enum possub_type type;
-    int i;
-    uint32 tag;
-
-    if ( data[0]=='<' ) {
-	type=pst_max;
-    } else {
-	tag = (((uint8 *) data)[0]<<24) | (((uint8 *) data)[1]<<16 ) |
-		    (((uint8 *) data)[2]<<8) | ((uint8 *) data)[3];
-	for ( type=pst_position; type<pst_max; ++type ) {
-	    for ( i=0; pst_tags[type-1][i].text!=NULL; ++i ) {
-		if ( (uint32) pst_tags[type-1][i].userdata==tag )
-	    break;
-	    }
-	    if ( pst_tags[type-1][i].text!=NULL )
-	break;
-	}
-    }
-    if ( type==pst_max )
-return( pst_null );
-
-return( type );
-}
-
-static unichar_t *SLICheck(SplineChar *sc,unichar_t *data,SplineFont *copied_from) {
-    /* We've got a string. Don't know what font it came from, can't really */
-    /*  make the sli right. Best we can do is insure against crashes and hope */
-    /*  it was copied from us */
-    int new;
-    int merge, act, macfeat;
-    uint32 tag;
-    uint16 flags, sli;
-    unichar_t *name, *ret;
-
-    DecomposeClassName(data,&name,&tag,&macfeat,&flags,&sli,&merge,&act);
-
-    new = SFConvertSLI(copied_from,sli,sc->parent,sc);
-
-    if ( sli==new ) {
-	free(name);
-return( data );
-    }
-
-    ret = ClassName(name,tag,flags,new,merge,act,macfeat);
-    free(name); free(data);
-return( ret );
-}
-
 static void CI_DoPaste(CharInfo *ci,char **data, enum possub_type type,SplineFont *copied_from) {
     GGadget *list;
     int sel, i,j,k, len, cnt;
@@ -3820,6 +3826,7 @@ static int CI_Paste(GGadget *g, GEvent *e) {
 	CI_DoPaste( GDrawGetUserData(GGadgetGetWindow(g)),NULL,pst_null,NULL );
 return( true );
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 static int MultipleValues(char *name, int local) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
@@ -3847,6 +3854,7 @@ return( true );
 return( false );
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static int ParseUValue(GWindow gw, int cid, int minusoneok, SplineFont *sf) {
     const unichar_t *ret = _GGadgetGetTitle(GWidgetGetControl(gw,cid));
     unichar_t *end;
@@ -4012,11 +4020,13 @@ void SCAppendPosSub(SplineChar *sc,enum possub_type type, char **d,SplineFont *c
     int i, macfeat;
     uint16 flags;
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( sc->charinfo!=NULL && type<pst_kerning ) {
 	CI_DoPaste(sc->charinfo,d,type,copied_from);
 	GDrawRaise(sc->charinfo->gw);
 return;
     }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
     for ( i=0; d[i]!=NULL; ++i ) {
 	data = d[i];
@@ -4180,7 +4190,9 @@ return( false );
     if ( comment!=NULL && *comment!='\0' )
 	sc->comment = u_copy(comment);
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     SCRefreshTitles(sc);
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 return( true );
 }
 
@@ -4663,7 +4675,6 @@ PST *AddSubs(PST *last,uint32 tag,char *name,uint16 flags,
 return( sub );
 }
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static SplineChar *SuffixCheck(SplineChar *sc,char *suffix) {
     SplineChar *alt = NULL;
     SplineFont *sf = sc->parent;
@@ -5001,7 +5012,6 @@ static PST *LigDefaultList(SplineChar *sc, uint32 tag) {
     }
 return( last );
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 static void SCMergePSList(SplineChar *sc,PST *list) {
     PST *test, *next, *prev;
@@ -5935,6 +5945,7 @@ GTextInfo pst_names[] = {
     { (unichar_t *) _STR_LigCaret, NULL, 0, 0, (void *) pst_lcaret, NULL, false, false, false, false, false, false, false, true },
     { NULL }
 };
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 struct match_data {
     SplineFont *sf;
@@ -6052,25 +6063,6 @@ return( _SCMatchKern(sc,md,false));
 static int SCMatchVKern(SplineChar *sc,struct match_data *md) {
 return( _SCMatchKern(sc,md,true));
 }
-
-static GTextInfo **LListFromList(GTextInfo *array) {
-    int cnt;
-    GTextInfo **ti;
-
-    for ( cnt=0; array[cnt].text!=NULL; ++cnt);
-    ti = galloc((cnt+1)*sizeof(GTextInfo *));
-    for ( cnt=0; array[cnt].text!=NULL; ++cnt) {
-	ti[cnt] = gcalloc(1,sizeof(GTextInfo));
-	*(ti[cnt]) = array[cnt];
-	if ( ti[cnt]->text_in_resource ) {
-	    ti[cnt]->text_in_resource = false;
-	    ti[cnt]->text = u_copy(GStringGetResource((int) ti[cnt]->text,NULL));
-	}
-	ti[cnt]->fg = ti[cnt]->bg = COLOR_DEFAULT;
-    }
-    ti[cnt] = gcalloc(1,sizeof(GTextInfo));
-return( ti );
-}
     
 int FVParseSelectByPST(FontView *fv,int type,
 	const unichar_t *tags,const unichar_t *contents,
@@ -6097,10 +6089,10 @@ int FVParseSelectByPST(FontView *fv,int type,
 		md.contains!=NULL ) {
 	    md.kernwith = SFGetCharDup(md.sf,-1,md.contains);
 	    if ( md.kernwith==NULL )
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		GWidgetErrorR(_STR_SelectByATT,_STR_Couldntfindchar,md.contains);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Select By ATT..."),_("Could not find the character: %.70s"),md.contains);
+#else
+		GWidgetErrorR(_STR_SelectByATT,_STR_Couldntfindchar,md.contains);
 #endif
 	    free(md.contains);
 	    md.contains = NULL;
@@ -6115,10 +6107,10 @@ return( false );
 	md.ac = ac;
 	if ( ac==NULL ) {
 	    free( md.contains );
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_SelectByATT,_STR_UnknownAnchorClass,ret);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Select By ATT..."),_("Unknown Anchor Class: %.70s"),ret);
+#else
+	    GWidgetErrorR(_STR_SelectByATT,_STR_UnknownAnchorClass,ret);
 #endif
 return( false );
 	}
@@ -6134,10 +6126,10 @@ return( false );
 		md.tags[i] = (u[0]<<24) | (u[1]<<16) | (u[2]<<8) | u[3];
 	    }
 	    if ( *tags!='\0' ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		GWidgetErrorR(_STR_SelectByATT,_STR_TooManyTags);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Select By ATT..."),_("Too many tags specified"));
+#else
+		GWidgetErrorR(_STR_SelectByATT,_STR_TooManyTags);
 #endif
 		free( md.contains );
 return( false );
@@ -6172,19 +6164,41 @@ return( false );
 	    if ( (fv->selected[i] = tester(sf->chars[i],&md)) && first==-1 )
 		first = i;
     }
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( first!=-1 )
 	FVScrollToChar(fv,first);
-    else if (screen_display!=NULL )
+    else if ( !no_windowing_ui )
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetPostNoticeR(_STR_SelectByATT,_STR_NoMatch);
 #elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_notice(_("Select By ATT..."),_("No characters matched"));
 #endif
-    if ( screen_display!=NULL )
+    if (  !no_windowing_ui )
 	GDrawRequestExpose(fv->v,NULL,false);
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 return( true );
 }
     
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+static GTextInfo **LListFromList(GTextInfo *array) {
+    int cnt;
+    GTextInfo **ti;
+
+    for ( cnt=0; array[cnt].text!=NULL; ++cnt);
+    ti = galloc((cnt+1)*sizeof(GTextInfo *));
+    for ( cnt=0; array[cnt].text!=NULL; ++cnt) {
+	ti[cnt] = gcalloc(1,sizeof(GTextInfo));
+	*(ti[cnt]) = array[cnt];
+	if ( ti[cnt]->text_in_resource ) {
+	    ti[cnt]->text_in_resource = false;
+	    ti[cnt]->text = u_copy(GStringGetResource((int) ti[cnt]->text,NULL));
+	}
+	ti[cnt]->fg = ti[cnt]->bg = COLOR_DEFAULT;
+    }
+    ti[cnt] = gcalloc(1,sizeof(GTextInfo));
+return( ti );
+}
+
 static int SelectStuff(struct sel_dlg *sld,GWindow gw) {
     int type = (int) (GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_PST))->userdata);
     int search_type = GGadgetIsChecked(GWidgetGetControl(gw,CID_SelectResults)) ? 1 :
@@ -6422,7 +6436,6 @@ void FVSelectByPST(FontView *fv) {
     }
     GDrawSetVisible(gw,false);
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 int SCAnyFeatures(SplineChar *sc) {
     PST *pst;
@@ -6591,3 +6604,4 @@ return;
 	free(choices[j]);
     free(choices);
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

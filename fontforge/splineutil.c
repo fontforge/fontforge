@@ -29,7 +29,9 @@
 #include "psfont.h"
 #include "ustring.h"
 #include "utype.h"
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include "views.h"		/* for FindSel structure */
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 /*#define DEBUG 1*/
 
@@ -1926,10 +1928,10 @@ static SplineFont *SplineFontFromMMType1(SplineFont *sf, FontDict *fd, struct ps
 
     if ( fd->weightvector==NULL || fd->fontinfo->blenddesignpositions==NULL ||
 	    fd->fontinfo->blenddesignmap==NULL || fd->fontinfo->blendaxistypes==NULL ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_BadMM,_STR_BadMM);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Bad Multiple Master Font"),_("Bad Multiple Master Font"));
+#else
+	GWidgetErrorR(_STR_BadMM,_STR_BadMM);
 #endif
 	SplineFontFree(sf);
 return( NULL );
@@ -1978,16 +1980,16 @@ return( NULL );
     }
 
     if ( mm->instance_count < (1<<mm->axis_count) )
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_BadMM,_STR_MMTooFewMasters,mm->instance_count,1<<mm->axis_count,mm->axis_count);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Bad Multiple Master Font"),_("This multiple master font has %1$d instance fonts, but it needs at least %2$d master fonts for %3$d axes. FontForge will not be able to edit this correctly"),mm->instance_count,1<<mm->axis_count,mm->axis_count);
+#else
+	GWidgetErrorR(_STR_BadMM,_STR_MMTooFewMasters,mm->instance_count,1<<mm->axis_count,mm->axis_count);
 #endif
     else if ( mm->instance_count > (1<<mm->axis_count) )
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_BadMM,_STR_MMHasInstances,mm->instance_count,1<<mm->axis_count,mm->axis_count);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Bad Multiple Master Font"),_("This multiple master font has %1$d instance fonts, but FontForge can only handle %2$d master fonts for %3$d axes. FontForge will not be able to edit this correctly"),mm->instance_count,1<<mm->axis_count,mm->axis_count);
+#else
+	GWidgetErrorR(_STR_BadMM,_STR_MMHasInstances,mm->instance_count,1<<mm->axis_count,mm->axis_count);
 #endif
     mm->positions = gcalloc(mm->axis_count*mm->instance_count,sizeof(real));
     pt = fd->fontinfo->blenddesignpositions;
@@ -2533,7 +2535,9 @@ void SCRefToSplines(SplineChar *sc,RefChar *rf) {
 	    sc->layers[sc->layer_cnt+layer].dostroke = rf->layers[layer].dostroke;
 	    sc->layers[sc->layer_cnt+layer].fillfirst = rf->layers[layer].fillfirst;
 	}
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	SCMoreLayers(sc);
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     } else {
 #else
     {

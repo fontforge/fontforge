@@ -27,8 +27,8 @@
 #include "pfaeditui.h"
 #include <ustring.h>
 #include <chardata.h>
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <utype.h>
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <gkeysym.h>
 #include <math.h>
 
@@ -1947,7 +1947,6 @@ return( SFUncompactFont(sf));
 return( _SFReencodeFont(sf,new_map,NULL));
 }
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 int SFMatchEncoding(SplineFont *sf,SplineFont *target) {
 return( _SFReencodeFont(sf,em_none,target));
 }
@@ -1955,7 +1954,9 @@ return( _SFReencodeFont(sf,em_none,target));
 static void _SFAddDelChars(SplineFont *sf, int nchars) {
     int i;
     BDFFont *bdf;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     MetricsView *mv, *mnext;
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
     if ( nchars==sf->charcnt )
 return;
@@ -1971,6 +1972,7 @@ return;
 	    bdf->charcnt = nchars;
 	}
     } else {
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	if ( sf->fv->metrics!=NULL ) {
 	    for ( mv=sf->fv->metrics; mv!=NULL; mv = mnext ) {
 		mnext = mv->next;
@@ -1981,6 +1983,7 @@ return;
 	    GDrawSync(NULL);
 	    GDrawProcessPendingEvents(NULL);
 	}
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	for ( i=nchars; i<sf->charcnt; ++i ) {
 	    RemoveSplineChar(sf,i);
 	}
@@ -2011,6 +2014,7 @@ return( false );
 return( true );
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void RegenerateEncList(struct gfi_data *d) {
     Encoding *item;
     GTextInfo **ti;
@@ -2114,6 +2118,7 @@ static int GFI_Make(GGadget *g, GEvent *e) {
     }
 return( true );
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 /* Use URW 4 letter abrieviations */
 static char *knownweights[] = { "Demi", "Bold", "Regu", "Medi", "Book", "Thin",
@@ -2123,6 +2128,7 @@ static char *realweights[] = { "Demi", "Bold", "Regular", "Medium", "Book", "Thi
 	"Light", "Heavy", "Black", "Ultra", "Nord", "Normal", "Gras", "Standard", "Halbfett",
 	"Fett", "Mager", "Mittel", "Buchschrift", NULL};
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static int GFI_NameChange(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
 	GWindow gw = GGadgetGetWindow(g);
@@ -2586,6 +2592,7 @@ static int GFI_AnchorShowBase(GGadget *g, GEvent *e) {
 	GFI_AnchorShow(g,1);
 return( true );
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 int AnchorClassesNextMerge(AnchorClass *ac) {
     int max=0;
@@ -2597,6 +2604,7 @@ int AnchorClassesNextMerge(AnchorClass *ac) {
 return( max + 1 );
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void AnchorClassNameDecompose(AnchorClass *ac,const unichar_t *line) {
     unichar_t *end;
 
@@ -3316,6 +3324,7 @@ static void BadFamily() {
     gwwv_post_error(_("Bad Family Name"),_("Bad Family Name, must begin with an alphabetic character."));
 #endif
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 static char *modifierlist[] = { "Ital", "Obli", "Kursive", "Cursive", "Slanted",
 	"Expa", "Cond", NULL };
@@ -3378,6 +3387,11 @@ return( fpt );
 return( weight==NULL || *weight=='\0' ? "Regular": weight );
 }
 
+char *SFGetModifiers(SplineFont *sf) {
+return( _GetModifiers(sf->fontname,sf->familyname,sf->weight));
+}
+
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static const unichar_t *_uGetModifiers(const unichar_t *fontname, const unichar_t *familyname,
 	const unichar_t *weight) {
     const unichar_t *pt, *fpt;
@@ -3440,10 +3454,6 @@ return( fpt );
 return( weight==NULL || *weight=='\0' ? regular: weight );
 }
 
-char *SFGetModifiers(SplineFont *sf) {
-return( _GetModifiers(sf->fontname,sf->familyname,sf->weight));
-}
-
 static unichar_t *uGetModifiers(unichar_t *fontname, unichar_t *familyname,
 	unichar_t *weight) {
     unichar_t *ret;
@@ -3452,11 +3462,11 @@ static unichar_t *uGetModifiers(unichar_t *fontname, unichar_t *familyname,
     free( fontname );
 return( ret );
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 void SFSetFontName(SplineFont *sf, char *family, char *mods,char *full) {
     char *n;
-    unichar_t *temp; char *pt, *tpt;
-    int i;
+    char *pt, *tpt;
 
     n = galloc(strlen(family)+strlen(mods)+2);
     strcpy(n,family); strcat(n," "); strcat(n,mods);
@@ -3536,7 +3546,10 @@ void SFSetFontName(SplineFont *sf, char *family, char *mods,char *full) {
 	    sf->weight = copy("Medium");
     }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( sf->fv!=NULL && sf->fv->gw!=NULL ) {
+	unichar_t *temp;
+	int i;
 	GDrawSetWindowTitles(sf->fv->gw,temp = uc_copy(sf->fontname),NULL);
 	free(temp);
 	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->views!=NULL ) {
@@ -3547,7 +3560,9 @@ void SFSetFontName(SplineFont *sf, char *family, char *mods,char *full) {
 		GDrawSetWindowTitles(cv->gw,ubuf,NULL);
 	}
     }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 }
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 
 static int SetFontName(GWindow gw, SplineFont *sf) {
     const unichar_t *ufamily = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Family));
@@ -3762,6 +3777,7 @@ struct ttflangname *TTFLangNamesCopy(struct ttflangname *old) {
     }
 return( base );
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 void TTF_PSDupsDefault(SplineFont *sf) {
     struct ttflangname *english;
@@ -3813,6 +3829,7 @@ return;
     english->names[ttf_postscriptname]=NULL;
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static unichar_t versionformatspec[] = { 'V','e','r','s','i','o','n',' ','%','.','2','0','s',' ', '\0' };
 
 static void TTF_PSDupsChanged(GWindow gw,SplineFont *sf,struct ttflangname *newnames) {

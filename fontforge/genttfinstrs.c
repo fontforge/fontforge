@@ -1720,5 +1720,7 @@ return;
     free(bp);
     free(contourends);
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     SCMarkInstrDlgAsChanged(sc);
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 }

@@ -2164,18 +2164,18 @@ static void g___HandleNested(FILE *lfile,SplineFont *sf,int gpos,
 	if ( new!=NULL ) {
 	    new->lookup_cnt = pp->lookup_cnt;
 	    if ( new->next )
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		GWidgetErrorR(_STR_MultipleLookup,_STR_MultipleLookupLong,buf);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Multiple Lookups"),_("Multiple lookups were generated for nested anchor tag '%s', only one will be used"),buf);
+#else
+		GWidgetErrorR(_STR_MultipleLookup,_STR_MultipleLookupLong,buf);
 #endif
 	    new->next = *nested;
 	    *nested = new;
 	} else {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_MissingLookup,_STR_MissingLookupLong,buf);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Missing Lookup"),_("A nested lookup with tag '%s' could not be found. The generated font will not be useable. Try Element->Find Problems"),buf);
+#else
+	    GWidgetErrorR(_STR_MissingLookup,_STR_MissingLookupLong,buf);
 #endif
 	}
 	chunkfree(pp,sizeof(struct postponedlookup));
@@ -3465,6 +3465,7 @@ return;					/* No anchor positioning, no ligature carets */
 /* ************************************************************************** */
 
 #include "pfaeditui.h"
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <gkeysym.h>
 
 struct order_dlg {
@@ -3730,6 +3731,7 @@ void OrderTable(SplineFont *sf,uint32 table_tag) {
 	GDrawProcessOneEvent(NULL);
     GDrawDestroyWindow(gw);
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 void otf_orderlangs(SplineFont *sf) {
     int i,j,k,l, len,max;

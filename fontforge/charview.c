@@ -5145,6 +5145,7 @@ return( false );
     }
 return( true );
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 void BackgroundImageTransform(SplineChar *sc, ImageList *img,real transform[6]) {
     if ( transform[1]==0 && transform[2]==0 && transform[0]>0 && transform[3]>0 ) {
@@ -5160,6 +5161,7 @@ void BackgroundImageTransform(SplineChar *sc, ImageList *img,real transform[6]) 
     SCOutOfDateBackground(sc);
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 void CVTransFunc(CharView *cv,real transform[6], enum fvtrans_flags flags) {
     int anysel = cv->p.transany;
     RefChar *refs;
@@ -5280,6 +5282,7 @@ static void CVMenuNLTransform(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     NonLinearDlg(NULL,cv);
 }
 #endif
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 static void SplinePointRound(SplinePoint *sp) {
     sp->me.x = rint(sp->me.x);
@@ -5419,6 +5422,7 @@ void SCRound2Int(SplineChar *sc) {
     SCCharChangedUpdate(sc);
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void CVMenuConstrain(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     CVConstrainSelection(cv,mi->mid==MID_Average?0:

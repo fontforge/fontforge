@@ -1780,7 +1780,9 @@ static void bSetFontOrder(Context *c) {
 	/* No Op */;
     else {
 	if ( c->a.vals[1].u.ival==2 ) {
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	    SFCloseAllInstrs(c->curfv->sf);
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	    SFConvertToOrder2(c->curfv->sf);
 	} else
 	    SFConvertToOrder3(c->curfv->sf);

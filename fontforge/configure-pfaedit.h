@@ -160,6 +160,10 @@
 /* If there are no freetype header files then define _NO_FREETYPE	      */
 /* If the freetype library has the bytecode debugger then define FREETYPE_HAS_DEBUGGER */
 /* If there is no mmap system call then define _NO_MMAP			      */
+#ifdef FONTFORGE_CONFIG_NO_WINDOWING_UI
+# undef FREETYPE_HAS_DEBUGGER
+/* Debugger is meaningless if we have no UI (and doesn't compile) */
+#endif
 
 /* If there is no ungif library (or if it is out of date) define _NO_LIBUNGIF */
 /* If there is no png (or z) library define _NO_LIBPNG			      */

@@ -24,7 +24,7 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "pfaeditui.h"
+#include "pfaedit.h"
 #include <chardata.h>
 #include <utype.h>
 #include <ustring.h>
@@ -556,10 +556,11 @@ static AnchorClass **MarkGlyphsProcessMarks(FILE *ttf,int markoffset,
     for ( i=0; i<classcnt; ++i ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	u_snprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),GStringGetResource(_STR_UntitledAnchor_n,NULL),
+		info->anchor_class_cnt+i );
 #elif defined(FONTFORGE_CONFIG_GTK)
 	u_snprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),_("Anchor-%d"),
-#endif
 		info->anchor_class_cnt+i );
+#endif
 	classes[i] = ac = chunkalloc(sizeof(AnchorClass));
 	ac->name = u_copy(ubuf);
 	ac->feature_tag = lookup->tag;

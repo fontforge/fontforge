@@ -175,11 +175,13 @@ struct macsettingname macfeat_otftag[] = {
     { 0, 0, 0 }
 }, *user_macfeat_otftag;
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void UserSettingsFree(void) {
 
     free( user_macfeat_otftag );
     user_macfeat_otftag = NULL;
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 static int UserSettingsDiffer(void) {
     int i,j;
@@ -210,6 +212,7 @@ return( false );
 /**************************************************************************** */
 
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static GTextInfo localencodingtypes[] = {
     { (unichar_t *) _STR_Default, NULL, 0, 0, (void *) e_unknown, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { NULL, NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 1, 0 },
@@ -242,6 +245,7 @@ static GTextInfo localencodingtypes[] = {
     { (unichar_t *) _STR_ChineseTrad, NULL, 0, 0, (void *) e_big5, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_ChineseTradHKSCS, NULL, 0, 0, (void *) e_big5hkscs, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { NULL }};
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 /* don't use mnemonics 'C' or 'O' (Cancel & OK) */
 enum pref_types { pr_int, pr_real, pr_bool, pr_enum, pr_encoding, pr_string, pr_file };
@@ -319,7 +323,10 @@ static struct prefs_list {
 	{ "DefaultFVSize", pr_enum, &default_fv_font_size, NULL, NULL, 'S', fvsize_enums, 1 },
 	{ "OnlyCopyDisplayed", pr_bool, &onlycopydisplayed, NULL, NULL, '\0', NULL, 1 },
 	{ "PalettesDocked", pr_bool, &palettes_docked, NULL, NULL, '\0', NULL, 1 },
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	{ "MarkExtrema", pr_int, &CVShows.markextrema, NULL, NULL, '\0', NULL, 1 },
+	{ "ShowRulers", pr_bool, &CVShows.showrulers, NULL, NULL, '\0', NULL, 1, _STR_PrefsPopupRulers },
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	{ "DefaultScreenDpiSystem", pr_int, &oldsystem, NULL, NULL, '\0', NULL, 1 },
 	{ "DefaultOutputFormat", pr_int, &oldformatstate, NULL, NULL, '\0', NULL, 1 },
 	{ "DefaultBitmapFormat", pr_int, &oldbitmapstate, NULL, NULL, '\0', NULL, 1 },
@@ -331,7 +338,6 @@ static struct prefs_list {
 	{ "PrintType", pr_int, &printtype, NULL, NULL, '\0', NULL, 1 },
 	{ "PrintCommand", pr_string, &printcommand, NULL, NULL, '\0', NULL, 1 },
 	{ "PageLazyPrinter", pr_string, &printlazyprinter, NULL, NULL, '\0', NULL, 1 },
-	{ "ShowRulers", pr_bool, &CVShows.showrulers, NULL, NULL, '\0', NULL, 1, _STR_PrefsPopupRulers },
 	{ "RegularStar", pr_bool, &regular_star, NULL, NULL, '\0', NULL, 1 },
 	{ "PolyStar", pr_bool, &polystar, NULL, NULL, '\0', NULL, 1 },
 	{ "RectEllipse", pr_bool, &rectelipse, NULL, NULL, '\0', NULL, 1 },
@@ -352,6 +358,7 @@ static struct prefs_list {
  *prefs_list[] = { general_list, editing_list, accent_list, args_list, generate_list, hidden_list, NULL },
  *load_prefs_list[] = { general_list, editing_list, accent_list, args_list, generate_list, hidden_list, oldnames, NULL };
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 struct visible_prefs_list { int tab_name; struct prefs_list *pl; } visible_prefs_list[] = {
     { _STR_Generic, general_list},
     { _STR_Editing, editing_list},
@@ -360,6 +367,7 @@ struct visible_prefs_list { int tab_name; struct prefs_list *pl; } visible_prefs
     { _STR_PrefsFontInfo, generate_list},
     { 0 }
  };
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 int GetPrefs(char *name,Val *val) {
     int i,j;
@@ -946,6 +954,7 @@ return;
     fclose(p);
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 struct pref_data {
     int done;
 };
@@ -1960,6 +1969,7 @@ void DoPrefs(void) {
 	GDrawProcessOneEvent(NULL);
     GDrawDestroyWindow(gw);
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 void RecentFilesRemember(char *filename) {
     int i;

@@ -32,6 +32,7 @@
 #include <gkeysym.h>
 
 static int oldusefreetype=1;
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 int oldsystem=0 /* X */;
 
 typedef struct createbitmapdata {
@@ -41,16 +42,21 @@ typedef struct createbitmapdata {
     SplineChar *sc;
     int isavail;
     int which;
+#ifdef FONTFORGE_CONFIG_GDRAW
     GWindow gw;
+#elif defined(FONTFORGE_CONFIG_GTK)
+#else
+#endif
 } CreateBitmapData;
 
 enum { bd_all, bd_selected, bd_current };
+static int lastwhich = bd_selected;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static GTextInfo which[] = {
     { (unichar_t *) _STR_AllChars, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) _STR_SelChars, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) _STR_CurChar, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }};
-static int lastwhich = bd_selected;
 
 static void RemoveBDFWindows(BDFFont *bdf) {
     int i;
@@ -108,7 +114,9 @@ void SFOrderBitmapList(SplineFont *sf) {
 
 static void SFRemoveUnwantedBitmaps(SplineFont *sf,int32 *sizes) {
     BDFFont *bdf, *prev, *next;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     FontView *fv;
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     int i;
 
     for ( prev = NULL, bdf=sf->bitmaps; bdf!=NULL; bdf = next ) {
@@ -120,6 +128,7 @@ static void SFRemoveUnwantedBitmaps(SplineFont *sf,int32 *sizes) {
 		sf->bitmaps = next;
 	    else
 		prev->next = next;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	    for ( fv=sf->fv; fv!=NULL; fv=fv->nextsame ) {
 		if ( fv->show==bdf ) {
 		    if ( sf->onlybitmaps )
@@ -129,6 +138,7 @@ static void SFRemoveUnwantedBitmaps(SplineFont *sf,int32 *sizes) {
 		}
 	    }
 	    RemoveBDFWindows(bdf);
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	    BDFFontFree(bdf);
 	    sf->changed = true;
 	} else {
@@ -221,7 +231,9 @@ static void ReplaceBDFC(SplineFont *sf,int32 *sizes,int enc,void *freetypecontex
     BDFFont *bdf;
     BDFChar *bdfc, temp;
     int i;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     BitmapView *bv;
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
     if ( enc>=sf->charcnt || sf->chars[enc]==NULL )
 return;
@@ -247,10 +259,12 @@ return;
 		bdf->chars[enc]->views = bdfc->views;
 		bdfc->views = NULL;
 		BDFCharFree(bdfc);
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 		for ( bv = bdf->chars[enc]->views; bv!=NULL; bv=bv->next ) {
 		    GDrawRequestExpose(bv->v,NULL,false);
 		    /* Mess with selection?????!!!!! */
 		}
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	    }
 	}
     }

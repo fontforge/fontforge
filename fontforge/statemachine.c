@@ -26,6 +26,7 @@
  */
 #include "pfaeditui.h"
 #include "ttf.h"
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <chardata.h>
 #include <utype.h>
 #include <ustring.h>
@@ -215,6 +216,7 @@ static int FindMaxReachableStateCnt(SMD *smd) {
     }
 return( max_reachable+1 );		/* The count is one more than the max */
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 /* ************************************************************************** */
 /* *************** Routines to test conversion from OpenType **************** */
@@ -1116,6 +1118,7 @@ return( ASMFromCoverageFPST(sf,fpst,ordered));
 return( sm );
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 /* ************************************************************************** */
 /* ************************* Opentype conversion dlg ************************ */
 /* ************************************************************************** */
@@ -1135,6 +1138,7 @@ struct fs_dlg {
 };
 
 /*#define CID_FeatSet	306*/
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 struct sliflag *SFGetFormsList(SplineFont *sf,int test_dflt) {
     struct sliflag *sliflags;
@@ -1187,6 +1191,7 @@ return( NULL );
 return( sliflags );
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 /* A quick check to see if there is any opentype thing which is LIKELY to be */
 /*  convertable to an apple contextual glyph substitution state machine */
 int SFAnyConvertableSM(SplineFont *sf) {
@@ -3258,3 +3263,4 @@ return( smd );
 void SMD_Close(SMD *smd) {
     _SMD_Cancel(smd);
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

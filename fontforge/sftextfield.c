@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <gkeysym.h>
 
 #include "../gdraw/ggadgetP.h"
@@ -2619,3 +2620,4 @@ void SFTFRegisterCallback(GGadget *g, void *cbcontext,
     st->cbcontext = cbcontext;
     st->changefontcallback = changefontcallback;
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

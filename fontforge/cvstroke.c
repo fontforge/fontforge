@@ -127,6 +127,7 @@ static void SCStrokeIt(void *_sc, StrokeInfo *si) {
     sc->layers[ly_fore].splines = temp;
     SCCharChangedUpdate(sc);
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 static void FVStrokeIt(void *_fv, StrokeInfo *si) {
     FontView *fv = _fv;
@@ -166,6 +167,7 @@ static void FVStrokeIt(void *_fv, StrokeInfo *si) {
 #endif
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static int Stroke_OK(GGadget *g, GEvent *e) {
     StrokeInfo *si, strokeinfo;
     int err;
@@ -880,11 +882,13 @@ void SCStroke(SplineChar *sc) {
 void FVStroke(FontView *fv) {
     MakeStrokeDlg(fv,FVStrokeIt,NULL);
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 void FVStrokeItScript(FontView *fv, StrokeInfo *si) {
     FVStrokeIt(fv, si);
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 void FreeHandStrokeDlg(StrokeInfo *si) {
     MakeStrokeDlg(NULL,NULL,si);
 }

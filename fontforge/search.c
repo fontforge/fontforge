@@ -24,12 +24,14 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#define _DEFINE_SEARCHVIEW_
 #include "pfaeditui.h"
 #include <math.h>
 #include <ustring.h>
 #include <utype.h>
 #include <gkeysym.h>
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static SearchView *searcher=NULL;
 
 #define CID_Allow	1000
@@ -42,6 +44,7 @@ static SearchView *searcher=NULL;
 #define CID_Replace	1007
 #define CID_ReplaceAll	1008
 #define CID_Cancel	1009
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 static int CoordMatches(real real_off, real search_off, SearchView *s) {
     real fudge;
@@ -711,6 +714,83 @@ static void DoReplaceFull(SplineChar *sc,SearchView *s) {
 
 /* ************************************************************************** */
 
+static void SVResetPaths(SearchView *sv) {
+    SplineSet *spl;
+
+    if ( sv->sc_srch.changed_since_autosave ) {
+	sv->path = sv->sc_srch.layers[ly_fore].splines;
+	SplinePointListsFree(sv->revpath);
+	sv->revpath = SplinePointListCopy(sv->path);
+	for ( spl=sv->revpath; spl!=NULL; spl=spl->next )
+	    spl = SplineSetReverse(spl);
+	sv->sc_srch.changed_since_autosave = false;
+    }
+    if ( sv->sc_rpl.changed_since_autosave ) {
+	sv->replacepath = sv->sc_rpl.layers[ly_fore].splines;
+	SplinePointListsFree(sv->revreplace);
+	sv->revreplace = SplinePointListCopy(sv->replacepath);
+	for ( spl=sv->revreplace; spl!=NULL; spl=spl->next )
+	    spl = SplineSetReverse(spl);
+	sv->sc_rpl.changed_since_autosave = false;
+    }
+}
+
+static int SearchChar(SearchView *sv, int enc,int startafter) {
+
+    sv->curchar = sv->fv->sf->chars[enc];
+
+    sv->wasreversed = false;
+    sv->matched_rot = 0; sv->matched_scale = 1;
+    sv->matched_co = 1; sv->matched_si = 0;
+    sv->matched_flip = flip_none;
+    sv->matched_refs = sv->matched_ss = 0;
+    sv->matched_x = sv->matched_y = 0;
+
+    if ( sv->subpatternsearch )
+return( SCMatchesIncomplete(sv->curchar,sv,startafter));
+    else
+return( SCMatchesFull(sv->curchar,sv));
+}
+
+static void DoRpl(SearchView *sv) {
+    RefChar *r;
+
+    /* Make sure we don't generate any self referential characters... */
+    for ( r = sv->sc_rpl.layers[ly_fore].refs; r!=NULL; r=r->next ) {
+	if ( SCDependsOnSC(r->sc,sv->curchar))
+return;
+    }
+
+    SCPreserveState(sv->curchar,false);
+    if ( sv->subpatternsearch )
+	DoReplaceIncomplete(sv->curchar,sv);
+    else
+	DoReplaceFull(sv->curchar,sv);
+    SCCharChangedUpdate(sv->curchar);
+}
+
+static int _DoFindAll(SearchView *sv) {
+    int i, any=0;
+    SplineChar *startcur = sv->curchar;
+
+    for ( i=0; i<sv->fv->sf->charcnt; ++i ) {
+	if (( !sv->onlyselected || sv->fv->selected[i]) && sv->fv->sf->chars[i]!=NULL ) {
+	    if ( (sv->fv->selected[i] = SearchChar(sv,i,false)) ) {
+		any = true;
+		if ( sv->replaceall ) {
+		    do {
+			DoRpl(sv);
+		    } while ( sv->subpatternsearch && SearchChar(sv,i,true));
+		}
+	    }
+	} else
+	    sv->fv->selected[i] = false;
+    }
+    sv->curchar = startcur;
+return( any );
+}
+
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void SVSelectSC(SearchView *sv) {
     SplineChar *sc = sv->curchar;
     SplinePointList *spl;
@@ -760,106 +840,6 @@ static void SVSelectSC(SearchView *sv) {
     }
     SCUpdateAll(sc);
     sc->changed_since_search = false;
-}
-
-static void SVResetPaths(SearchView *sv) {
-    SplineSet *spl;
-
-    if ( sv->sc_srch.changed_since_autosave ) {
-	sv->path = sv->sc_srch.layers[ly_fore].splines;
-	SplinePointListsFree(sv->revpath);
-	sv->revpath = SplinePointListCopy(sv->path);
-	for ( spl=sv->revpath; spl!=NULL; spl=spl->next )
-	    spl = SplineSetReverse(spl);
-	sv->sc_srch.changed_since_autosave = false;
-    }
-    if ( sv->sc_rpl.changed_since_autosave ) {
-	sv->replacepath = sv->sc_rpl.layers[ly_fore].splines;
-	SplinePointListsFree(sv->revreplace);
-	sv->revreplace = SplinePointListCopy(sv->replacepath);
-	for ( spl=sv->revreplace; spl!=NULL; spl=spl->next )
-	    spl = SplineSetReverse(spl);
-	sv->sc_rpl.changed_since_autosave = false;
-    }
-}
-
-static void SVParseDlg(SearchView *sv) {
-
-    sv->tryreverse = true;
-    sv->tryflips = GGadgetIsChecked(GWidgetGetControl(sv->gw,CID_Flipping));
-    sv->tryscale = GGadgetIsChecked(GWidgetGetControl(sv->gw,CID_Scaling));
-    sv->tryrotate = GGadgetIsChecked(GWidgetGetControl(sv->gw,CID_Rotating));
-    sv->onlyselected = GGadgetIsChecked(GWidgetGetControl(sv->gw,CID_Selected));
-
-    SVResetPaths(sv);
-
-    /* Only do a sub pattern search if we have a single path and it is open */
-    /*  and there is either no replace pattern, or it is also a single open */
-    /*  path */
-    sv->subpatternsearch = sv->path!=NULL && sv->path->next==NULL &&
-	    sv->path->first->prev==NULL && sv->sc_srch.layers[ly_fore].refs==NULL;
-    if ( sv->replacepath!=NULL && (sv->replacepath->next!=NULL ||
-	    sv->replacepath->first->prev!=NULL ))
-	sv->subpatternsearch = false;
-    else if ( sv->sc_rpl.layers[ly_fore].refs!=NULL )
-	sv->subpatternsearch = false;
-
-    if ( sv->subpatternsearch ) {
-	int i;
-	SplinePoint *sp;
-	for ( sp=sv->path->first, i=0; ; ) {
-	    ++i;
-	    if ( sp->next==NULL )
-	break;
-	    sp = sp->next->to;
-	}
-	sv->pointcnt = i;
-	if ( sv->replacepath!=NULL ) {
-	    for ( sp=sv->replacepath->first, i=0; ; ) {
-		++i;
-		if ( sp->next==NULL )
-	    break;
-		sp = sp->next->to;
-	    }
-	    sv->rpointcnt = i;
-	}
-    }
-    sv->fudge = sv->tryrotate ? .01 : .001;
-    sv->fudge_percent = sv->tryrotate ? .01 : .001;
-}
-
-static int SearchChar(SearchView *sv, int enc,int startafter) {
-
-    sv->curchar = sv->fv->sf->chars[enc];
-
-    sv->wasreversed = false;
-    sv->matched_rot = 0; sv->matched_scale = 1;
-    sv->matched_co = 1; sv->matched_si = 0;
-    sv->matched_flip = flip_none;
-    sv->matched_refs = sv->matched_ss = 0;
-    sv->matched_x = sv->matched_y = 0;
-
-    if ( sv->subpatternsearch )
-return( SCMatchesIncomplete(sv->curchar,sv,startafter));
-    else
-return( SCMatchesFull(sv->curchar,sv));
-}
-
-static void DoRpl(SearchView *sv) {
-    RefChar *r;
-
-    /* Make sure we don't generate any self referential characters... */
-    for ( r = sv->sc_rpl.layers[ly_fore].refs; r!=NULL; r=r->next ) {
-	if ( SCDependsOnSC(r->sc,sv->curchar))
-return;
-    }
-
-    SCPreserveState(sv->curchar,false);
-    if ( sv->subpatternsearch )
-	DoReplaceIncomplete(sv->curchar,sv);
-    else
-	DoReplaceFull(sv->curchar,sv);
-    SCCharChangedUpdate(sv->curchar);
 }
 
 static int DoFindOne(SearchView *sv,int startafter) {
@@ -928,37 +908,6 @@ return( false );
 return( true );
 }
 
-static int SV_Find(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	SearchView *sv = (SearchView *) GDrawGetUserData(GGadgetGetWindow(g));
-	SVParseDlg(sv);
-	sv->findall = sv->replaceall = false;
-	DoFindOne(sv,false);
-    }
-return( true );
-}
-
-static int _DoFindAll(SearchView *sv) {
-    int i, any=0;
-    SplineChar *startcur = sv->curchar;
-
-    for ( i=0; i<sv->fv->sf->charcnt; ++i ) {
-	if (( !sv->onlyselected || sv->fv->selected[i]) && sv->fv->sf->chars[i]!=NULL ) {
-	    if ( (sv->fv->selected[i] = SearchChar(sv,i,false)) ) {
-		any = true;
-		if ( sv->replaceall ) {
-		    do {
-			DoRpl(sv);
-		    } while ( sv->subpatternsearch && SearchChar(sv,i,true));
-		}
-	    }
-	} else
-	    sv->fv->selected[i] = false;
-    }
-    sv->curchar = startcur;
-return( any );
-}
-
 static void DoFindAll(SearchView *sv) {
     int any;
 
@@ -970,6 +919,61 @@ static void DoFindAll(SearchView *sv) {
 #elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_notice(_("Not Found"),_("The search pattern was not found in the font %.100s"),sv->fv->sf->fontname);
 #endif
+}
+
+static void SVParseDlg(SearchView *sv) {
+
+    sv->tryreverse = true;
+    sv->tryflips = GGadgetIsChecked(GWidgetGetControl(sv->gw,CID_Flipping));
+    sv->tryscale = GGadgetIsChecked(GWidgetGetControl(sv->gw,CID_Scaling));
+    sv->tryrotate = GGadgetIsChecked(GWidgetGetControl(sv->gw,CID_Rotating));
+    sv->onlyselected = GGadgetIsChecked(GWidgetGetControl(sv->gw,CID_Selected));
+
+    SVResetPaths(sv);
+
+    /* Only do a sub pattern search if we have a single path and it is open */
+    /*  and there is either no replace pattern, or it is also a single open */
+    /*  path */
+    sv->subpatternsearch = sv->path!=NULL && sv->path->next==NULL &&
+	    sv->path->first->prev==NULL && sv->sc_srch.layers[ly_fore].refs==NULL;
+    if ( sv->replacepath!=NULL && (sv->replacepath->next!=NULL ||
+	    sv->replacepath->first->prev!=NULL ))
+	sv->subpatternsearch = false;
+    else if ( sv->sc_rpl.layers[ly_fore].refs!=NULL )
+	sv->subpatternsearch = false;
+
+    if ( sv->subpatternsearch ) {
+	int i;
+	SplinePoint *sp;
+	for ( sp=sv->path->first, i=0; ; ) {
+	    ++i;
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	}
+	sv->pointcnt = i;
+	if ( sv->replacepath!=NULL ) {
+	    for ( sp=sv->replacepath->first, i=0; ; ) {
+		++i;
+		if ( sp->next==NULL )
+	    break;
+		sp = sp->next->to;
+	    }
+	    sv->rpointcnt = i;
+	}
+    }
+    sv->fudge = sv->tryrotate ? .01 : .001;
+    sv->fudge_percent = sv->tryrotate ? .01 : .001;
+}
+
+static int SV_Find(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	SearchView *sv = (SearchView *) GDrawGetUserData(GGadgetGetWindow(g));
+	SVParseDlg(sv);
+	sv->findall = sv->replaceall = false;
+	DoFindOne(sv,false);
+    }
+return( true );
 }
 
 static int SV_FindAll(GGadget *g, GEvent *e) {
@@ -1326,6 +1330,7 @@ return;
 	}
     }
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 static SearchView *SVFillup(SearchView *sv, FontView *fv) {
 
@@ -1368,6 +1373,7 @@ static SearchView *SVFillup(SearchView *sv, FontView *fv) {
 return( sv );
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 SearchView *SVCreate(FontView *fv) {
     SearchView *sv;
     GRect pos, size;
@@ -1551,6 +1557,7 @@ return( NULL );
     GDrawSetVisible(sv->gw,true);
 return( sv );
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 static int IsASingleReferenceOrEmpty(SplineChar *sc) {
     int i, empty = true;
@@ -1579,6 +1586,13 @@ static void CV2SC(CharView *cv, SplineChar *sc, SearchView *sv) {
     cv->layerheads[dm_grid] = NULL;
     cv->drawmode = dm_fore;
     cv->searcher = sv;
+}
+
+static void SVCopyToCV(FontView *fv,int i,CharView *cv,int full) {
+    fv->selected[i] = true;
+    FVCopy(fv,full);
+    SCClearContents(cv->sc);
+    PasteToCV(cv);
 }
 
 void FVReplaceOutlineWithReference( FontView *fv ) {
@@ -1615,22 +1629,18 @@ void FVReplaceOutlineWithReference( FontView *fv ) {
 	if ( IsASingleReferenceOrEmpty(sf->chars[i]))
     continue;		/* No point in replacing something which is itself a ref with a ref to a ref */
 	memset(fv->selected,0,sf->charcnt);
-	fv->selected[i] = true;
-	FVCopy(fv,true);
-	SCClearContents(&sv->sc_srch);
-	PasteToCV(&sv->cv_srch);
-	FVCopy(fv,false);
-	SCClearContents(&sv->sc_rpl);
-	PasteToCV(&sv->cv_rpl);
+	SVCopyToCV(fv,i,&sv->cv_srch,false);
+	SVCopyToCV(fv,i,&sv->cv_rpl,true);
 	sv->sc_srch.changed_since_autosave = sv->sc_rpl.changed_since_autosave = true;
 	SVResetPaths(sv);
 	if ( !_DoFindAll(sv) && selcnt==1 )
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetPostNoticeR(_STR_NotFound,_STR_GlyphNotFound,
+		    sf->fontname,sf->chars[i]->name);
 #elif defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_notice(_("Not Found"),_("The outlines of glyph %2$.30s were not found in the font %1$.60s"),
-#endif
 		    sf->fontname,sf->chars[i]->name);
+#endif
 	for ( j=0; j<sf->charcnt; ++j )
 	    if ( fv->selected[j] )
 		changed[j] = 1;
@@ -1668,8 +1678,10 @@ void FVReplaceOutlineWithReference( FontView *fv ) {
     memcpy(fv->selected,changed,sf->charcnt);
     free(changed);
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( fv->v!=NULL ) {
 	GDrawRequestExpose(fv->v,NULL,false);
 	GDrawSetCursor(fv->v,ct_pointer);
     }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 }

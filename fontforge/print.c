@@ -44,7 +44,9 @@ static int use_gv;
 
 typedef struct printinfo {
     FontView *fv;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     MetricsView *mv;
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     SplineFont *sf;
     SplineChar *sc;
     enum printtype { pt_fontdisplay, pt_chars, pt_multisize, pt_fontsample } pt;
@@ -67,8 +69,12 @@ typedef struct printinfo {
     int page;
     int lastbase;
     real xoff, yoff, scale;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     GWindow gw;
     GWindow setup;
+#else
+    void *gw, *setup;
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     char *printer;
     int copies;
     int pagewidth, pageheight, printtype;
@@ -565,11 +571,13 @@ static void PIChars(PI *pi) {
 		SCPrintPage(pi,pi->sf->chars[i]);
     } else if ( pi->sc!=NULL )
 	SCPrintPage(pi,pi->sc);
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     else {
 	for ( i=0; i<pi->mv->charcnt; ++i )
 	    if ( SCWorthOutputting(pi->mv->perchar[i].sc))
 		SCPrintPage(pi,pi->mv->perchar[i].sc);
     }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     dump_trailer(pi);
 }
 
@@ -1103,11 +1111,13 @@ return;
 		SCPrintSizes(pi,pi->sf->chars[i]);
     } else if ( pi->sc!=NULL )
 	SCPrintSizes(pi,pi->sc);
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     else {
 	for ( i=0; i<pi->mv->charcnt; ++i )
 	    if ( SCWorthOutputting(pi->mv->perchar[i].sc))
 		SCPrintSizes(pi,pi->mv->perchar[i].sc);
     }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
     dump_trailer(pi);
 }
@@ -1123,6 +1133,7 @@ static void PIGetPrinterDefs(PI *pi) {
     pi->copies = 1;
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #define CID_lp		1001
 #define CID_lpr		1002
 #define	CID_ghostview	1003
@@ -1542,11 +1553,13 @@ static int PageSetup(PI *pi) {
     pi->done = false;
 return( pi->printtype!=pt_unknown );
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 /* ************************************************************************** */
 /* ************************* Code for Print dialog ************************** */
 /* ************************************************************************** */
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 /* Slightly different from one in fontview */
 static int FVSelCount(FontView *fv) {
     int i, cnt=0;
@@ -1554,6 +1567,7 @@ static int FVSelCount(FontView *fv) {
 	if ( fv->selected[i] && SCWorthOutputting(fv->sf->chars[i])) ++cnt;
 return( cnt);
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 static void QueueIt(PI *pi) {
     int pid;
@@ -1647,6 +1661,25 @@ static void QueueIt(PI *pi) {
     waitpid(-1,&status,WNOHANG);	/* Clean up any zombie ghostviews */
 }
 
+static void DoPrinting(PI *pi,char *filename,unichar_t *sample) {
+    if ( pi->pt==pt_fontdisplay )
+	PIFontDisplay(pi);
+    else if ( pi->pt==pt_fontsample )
+	PIFontSample(pi,sample);
+    else if ( pi->pt==pt_multisize )
+	PIMultiSize(pi);
+    else
+	PIChars(pi);
+    rewind(pi->out);
+    if ( ferror(pi->out) )
+	GDrawError("Failed to generate postscript in file %s", filename==NULL?"temporary":filename );
+    if ( pi->printtype!=pt_file )
+	QueueIt(pi);
+    if ( fclose(pi->out)!=0 )
+	GDrawError("Failed to generate postscript in file %s", filename==NULL?"temporary":filename );
+}
+
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #define CID_Display	1001
 #define CID_Chars	1002
 #define	CID_MultiSize	1003
@@ -1669,24 +1702,6 @@ static void PRT_SetEnabled(PI *pi) {
     GGadgetSetEnabled(GWidgetGetControl(pi->gw,CID_PointSize),enable_ps);
     GGadgetSetEnabled(GWidgetGetControl(pi->gw,CID_SmpLab),enable_sample);
     GGadgetSetEnabled(GWidgetGetControl(pi->gw,CID_SampleText),enable_sample);
-}
-
-static void DoPrinting(PI *pi,char *filename,unichar_t *sample) {
-    if ( pi->pt==pt_fontdisplay )
-	PIFontDisplay(pi);
-    else if ( pi->pt==pt_fontsample )
-	PIFontSample(pi,sample);
-    else if ( pi->pt==pt_multisize )
-	PIMultiSize(pi);
-    else
-	PIChars(pi);
-    rewind(pi->out);
-    if ( ferror(pi->out) )
-	GDrawError("Failed to generate postscript in file %s", filename==NULL?"temporary":filename );
-    if ( pi->printtype!=pt_file )
-	QueueIt(pi);
-    if ( fclose(pi->out)!=0 )
-	GDrawError("Failed to generate postscript in file %s", filename==NULL?"temporary":filename );
 }
 
 static int PRT_OK(GGadget *g, GEvent *e) {
@@ -1828,6 +1843,7 @@ return( false );
     }
 return( true );
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 /* English */
 static unichar_t _simple1[] = { ' ','A',' ','q','u','i','c','k',' ','b',
@@ -2840,19 +2856,27 @@ return( gcalloc(1,sizeof(unichar_t)));
     }
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void PIInit(PI *pi,FontView *fv,SplineChar *sc,MetricsView *mv) {
+#else
+static void PIInit(PI *pi,FontView *fv,SplineChar *sc,void *mv) {
+#endif
     int di = fv!=NULL?0:sc!=NULL?1:2;
 
     memset(pi,'\0',sizeof(*pi));
     pi->fv = fv;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     pi->mv = mv;
+#endif
     pi->sc = sc;
     if ( fv!=NULL )
 	pi->sf = fv->sf;
     else if ( sc!=NULL )
 	pi->sf = sc->parent;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     else
 	pi->sf = mv->fv->sf;
+#endif
     if ( pi->sf->cidmaster!=NULL ) pi->sf = pi->sf->cidmaster;
     pi->twobyte = (pi->sf->encoding_name>=e_first2byte && pi->sf->encoding_name<em_base) ||
 		pi->sf->encoding_name>=em_unicodeplanes;
@@ -2865,6 +2889,7 @@ static void PIInit(PI *pi,FontView *fv,SplineChar *sc,MetricsView *mv) {
     PIGetPrinterDefs(pi);
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     GRect pos;
     GWindowAttrs wattrs;
@@ -3058,6 +3083,7 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     GDrawDestroyWindow(pi.gw);
     free(pi.printer);
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 /* ************************************************************************** */
 /* ******************************** Scripting ******************************* */
@@ -3135,10 +3161,10 @@ return;
 	outputfile = NULL;
 	pi.out = tmpfile();
 	if ( pi.out==NULL ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_FailedOpenTemp,_STR_FailedOpenTemp);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Failed to open temporary output file"),_("Failed to open temporary output file"));
+#else
+	    GWidgetErrorR(_STR_FailedOpenTemp,_STR_FailedOpenTemp);
 #endif
 return;
 	}

@@ -25,6 +25,14 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
+
+int palettes_docked=0;
+int rectelipse=0, polystar=0, regular_star=1;
+int center_out[2] = { false, true };
+float rr_radius=0;
+int ps_pointcnt=6;
+float star_percent=1.7320508;	/* Regular 6 pointed star */
+
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <gkeysym.h>
 #include <math.h>
@@ -42,7 +50,6 @@ static GWindow cvlayers2;
 #endif
 static GPoint cvtoolsoff = { -9999 }, cvlayersoff = { -9999 }, bvlayersoff = { -9999 }, bvtoolsoff = { -9999 }, bvshadesoff = { -9999 };
 static int palettesmoved=0;
-int palettes_docked=0;
 int palettes_fixed=1;
 static GCursor tools[cvt_max+1] = { cvt_none };
 
@@ -174,11 +181,6 @@ static int popupsres[] = { _STR_Pointer, _STR_PopMag,
 			            _STR_PopRectElipse, _STR_PopPolyStar,
 			            _STR_PopRectElipse, _STR_PopPolyStar};
 static int editablelayers[] = { _STR_Fore, _STR_Back, _STR_Grid };
-int rectelipse=0, polystar=0, regular_star=1;
-int center_out[2] = { false, true };
-float rr_radius=0;
-int ps_pointcnt=6;
-float star_percent=1.7320508;	/* Regular 6 pointed star */
 static real raddiam_x = 20, raddiam_y = 20, rotate_by=0;
 static StrokeInfo expand = { 25, lj_round, lc_butt, si_centerline,
 	    /* toobigwarn */  true,
