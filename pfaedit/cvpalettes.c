@@ -969,6 +969,13 @@ void CVPaletteSetVisible(CharView *cv,int which,int visible) {
     cvvisible[which] = visible;
 }
 
+void CVPalettesRaise(CharView *cv) {
+    if ( cvtools!=NULL && GDrawIsVisible(cvtools))
+	GDrawRaise(cvtools);
+    if ( cvlayers!=NULL && GDrawIsVisible(cvlayers))
+	GDrawRaise(cvlayers);
+}
+
 void CVPaletteActivate(CharView *cv) {
     CharView *old;
 

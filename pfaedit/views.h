@@ -170,6 +170,10 @@ typedef struct charview {
     struct jamodisplay *jamodisplay;
 #endif
     real oldwidth, oldvwidth;
+#if _ModKeysAutoRepeat
+    GTimer *autorpt;
+    int keysym, oldstate;
+#endif
 } CharView;
 
 typedef struct bitmapview {
@@ -344,6 +348,7 @@ extern void CVToolsPopup(CharView *cv, GEvent *event);
 extern void BVToolsPopup(BitmapView *bv, GEvent *event);
 extern int CVPaletteIsVisible(CharView *cv,int which);
 extern void CVPaletteSetVisible(CharView *cv,int which,int visible);
+extern void CVPalettesRaise(CharView *cv);
 extern void CVPaletteActivate(CharView *cv);
 extern void CVPalettesHideIfMine(CharView *cv);
 extern int BVPaletteIsVisible(BitmapView *bv,int which);

@@ -23,6 +23,7 @@ AC_DEFINE(_Keyboard,2)
  ;;
 *-pc-cygwin*)
 AC_DEFINE(_BrokenBitmapImages)
+AC_DEFINE(_ModKeysAutoRepeat)
  ;;
 esac
 

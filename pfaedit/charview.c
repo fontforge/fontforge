@@ -1170,6 +1170,16 @@ static void CVMenuSimplifyMore(GWindow gw,struct gmenuitem *mi,GEvent *e);
 void CVChar(CharView *cv, GEvent *event ) {
     extern float arrowAmount;
 
+#if _ModKeysAutoRepeat
+	/* Under cygwin these keys auto repeat, they don't under normal X */
+	if ( cv->autorpt!=NULL ) {
+	    GDrawCancelTimer(cv->autorpt); cv->autorpt = NULL;
+	    if ( cv->keysym == event->u.chr.keysym )	/* It's an autorepeat, ignore it */
+return;
+	    CVToolsSetCursor(cv,cv->oldstate);
+	}
+#endif
+
 #if MyMemory
     if ( event->u.chr.keysym == GK_F2 ) {
 	fprintf( stderr, "Malloc debug on\n" );
@@ -1281,6 +1291,34 @@ void CVChar(CharView *cv, GEvent *event ) {
 		if ( sf->chars[i]->unicodeenc==event->u.chr.chars[0] )
 		    CVChangeChar(cv,i);
     }
+}
+
+static void CVCharUp(CharView *cv, GEvent *event ) {
+#if _ModKeysAutoRepeat
+    /* Under cygwin these keys auto repeat, they don't under normal X */
+    if ( event->u.chr.keysym == GK_Shift_L || event->u.chr.keysym == GK_Shift_R ||
+	    event->u.chr.keysym == GK_Control_L || event->u.chr.keysym == GK_Control_R ||
+	    event->u.chr.keysym == GK_Meta_L || event->u.chr.keysym == GK_Meta_R ||
+	    event->u.chr.keysym == GK_Alt_L || event->u.chr.keysym == GK_Alt_R ||
+	    event->u.chr.keysym == GK_Super_L || event->u.chr.keysym == GK_Super_R ||
+	    event->u.chr.keysym == GK_Hyper_L || event->u.chr.keysym == GK_Hyper_R ) {
+	if ( cv->autorpt!=NULL ) {
+	    GDrawCancelTimer(cv->autorpt);
+	    CVToolsSetCursor(cv,cv->oldstate);
+	}
+	cv->keysym = event->u.chr.keysym;
+	cv->oldstate = TrueCharState(event);
+	cv->autorpt = GDrawRequestTimer(cv->v,100,0,NULL);
+    } else {
+	if ( cv->autorpt!=NULL ) {
+	    GDrawCancelTimer(cv->autorpt); cv->autorpt=NULL;
+	    CVToolsSetCursor(cv,cv->oldstate);
+	}
+	CVToolsSetCursor(cv,TrueCharState(event));
+    }
+#else
+    CVToolsSetCursor(cv,TrueCharState(event));
+#endif
 }
 
 static void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
@@ -2066,6 +2104,12 @@ static void CVTimer(CharView *cv,GEvent *event) {
 		GScrollBarSetPos(cv->hsb,cv->xoff);
 	    GDrawRequestExpose(cv->v,NULL,false);
 	}
+#if _ModKeysAutoRepeat
+	/* Under cygwin the modifier keys auto repeat, they don't under normal X */
+    } else if ( cv->autorpt==event->u.timer.timer ) {
+	cv->autorpt = NULL;
+	CVToolsSetCursor(cv,cv->oldstate);
+#endif
     }
 }
 
@@ -2095,7 +2139,7 @@ static int v_e_h(GWindow gw, GEvent *event) {
 	CVChar(cv,event);
       break;
       case et_charup:
-	CVToolsSetCursor(cv,TrueCharState(event));
+	CVCharUp(cv,event);
       break;
       case et_timer:
 	CVTimer(cv,event);
@@ -2283,6 +2327,7 @@ return;
     GGadgetResize(cv->hsb,sbwidth,sbsize);
     cv->width = newwidth; cv->height = newheight;
     CVFit(cv);
+    CVPalettesRaise(cv);
 }
 
 static void CVHScroll(CharView *cv,struct sbevent *sb) {
@@ -2392,8 +2437,11 @@ static int cv_e_h(GWindow gw, GEvent *event) {
       case et_expose:
 	InfoExpose(cv,gw,event);
       break;
-      case et_char: case et_charup:
+      case et_char:
 	CVChar(cv,event);
+      break;
+      case et_charup:
+	CVCharUp(cv,event);
       break;
       case et_resize:
 	if ( event->u.resize.sized )
