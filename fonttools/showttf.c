@@ -116,6 +116,12 @@ struct ttfinfo {
 		/* OS/2 */
     int os2_start;
     int os2_len;
+		/* fvar */
+    int fvar_start;
+    int fvar_length;
+		/* gvar */
+    int gvar_start;
+    int gvar_length;
 
     int fpgm_start;
     int fpgm_length;
@@ -129,6 +135,7 @@ struct ttfinfo {
     struct features *features;
 
     uint16 *morx_classes;
+    int fvar_axiscount;
 };
 
 static int getushort(FILE *ttf) {
@@ -297,6 +304,10 @@ exit ( 1 );
 	    info->fpgm_start = offset;
 	    info->fpgm_length = length;
 	  break;
+	  case CHR('f','v','a','r'):
+	    info->fvar_start = offset;
+	    info->fvar_length = length;
+	  break;
 	  case CHR('f','e','a','t'):
 	    info->feat_start = offset;
 	  break;
@@ -317,6 +328,10 @@ exit ( 1 );
 	  break;
 	  case CHR('G','S','U','B'):
 	    info->gsub_start = offset;
+	  break;
+	  case CHR('g','v','a','r'):
+	    info->gvar_start = offset;
+	    info->gvar_length = length;
 	  break;
 	  case CHR('m','o','r','t'):
 	    info->mort_start = offset;
@@ -1717,9 +1732,9 @@ static void readttfencodings(FILE *ttf,FILE *util, struct ttfinfo *info) {
 	    else if ( specific==3 ) printf( "Korean\n" );
 	} else if ( platform==0 ) {
 	    if ( specific==0 ) printf( "Unicode Default\n" );
-	    if ( specific==1 ) printf( "Unicode 1.0\n" );
-	    if ( specific==2 ) printf( "Unicode 1.1\n" );
-	    if ( specific==3 ) printf( "Unicode 2.0+\n" );
+	    else if ( specific==1 ) printf( "Unicode 1.0\n" );
+	    else if ( specific==2 ) printf( "Unicode 1.1\n" );
+	    else if ( specific==3 ) printf( "Unicode 2.0+\n" );
 	    else printf( "???\n" );
 	} else printf( "???\n" );
     }
@@ -1769,7 +1784,7 @@ static void readttfencodings(FILE *ttf,FILE *util, struct ttfinfo *info) {
 	    for ( i=0; i<len/2; ++i )
 		glyphs[i] = getushort(ttf);
 
-	    printf( "Windows unicode, %d segments\n", segCount );
+	    printf( "Format 4 (Windows unicode), %d segments\n", segCount );
 
 	    for ( i=0; i<segCount; ++i ) {
 		printf( "  Segment=%d unicode-start=%04x end=%04x range-offset=%d delta=%d",
@@ -1820,6 +1835,9 @@ static void readttfencodings(FILE *ttf,FILE *util, struct ttfinfo *info) {
 	    free(endchars);
 	} else if ( format==6 ) {
 	    /* Apple's unicode format */
+	    /* Well, the docs say it's for 2byte encodings, but Apple actually*/
+	    /*  uses it for 1 byte encodings which don't fit into the require-*/
+	    /*  ments for a format 0 sub-table. See Zapfino.dfont */
 	    int first, count;
 	    first = getushort(ttf);
 	    count = getushort(ttf);
@@ -1929,7 +1947,6 @@ static void readttfencodings(FILE *ttf,FILE *util, struct ttfinfo *info) {
 	}
     } else
 	printf( "Could not understand encoding table\n" );
- calloc(65536,sizeof(uint16));
 }
 
 static void readttfpost(FILE *ttf, FILE *util, struct ttfinfo *info) {
@@ -2641,6 +2658,7 @@ static void readttfgdef(FILE *ttf, FILE *util, struct ttfinfo *info) {
     if ( lco!=0 ) gdefshowligcaretlist(ttf,info->gdef_start+lco,info);
 }
 
+static void readttfkern_context(FILE *ttf, FILE *util, struct ttfinfo *info, int stab_len);
 static void readttfkern(FILE *ttf, FILE *util, struct ttfinfo *info) {
     int version, ntables;
     int header_size, len, coverage, i;
@@ -2667,7 +2685,7 @@ static void readttfkern(FILE *ttf, FILE *util, struct ttfinfo *info) {
 	    printf( "\t Sub-table %d, version=%d\n", i, getushort(ttf));
 	    len = getushort(ttf);
 	    coverage = getushort(ttf);
-	    printf( "\t  len=%d coverage=%x %s%s%s%s format=%d\n", len, coverage,
+	    printf( "\t  len=%d coverage=%x %s%s%s%s sub table format=%d\n", len, coverage,
 		    ( coverage&1 ) ? "Horizontal": "Vertical",
 		    ( coverage&2 ) ? " Minimum" : "",
 		    ( coverage&4 ) ? " cross-stream" : "",
@@ -2676,32 +2694,39 @@ static void readttfkern(FILE *ttf, FILE *util, struct ttfinfo *info) {
 	} else {
 	    len = getlong(ttf);
 	    coverage = getushort(ttf);
-	    printf( "\t  len=%d coverage=%x %s%s%s format=%d\n", len, coverage,
+	    printf( "\t  len=%d coverage=%x %s%s%s sub table format=%d\n", len, coverage,
 		    ( coverage&0x8000 ) ? "Vertical": "Horizontal",
 		    ( coverage&0x4000 ) ? " cross-stream" : "",
 		    ( coverage&0x2000 ) ? " kern-variation" : "",
 		    ( coverage&0xff ));
 	    printf( "\t  tuple index=%d\n", getushort(ttf));
-	    printf( "\t  row Width=%d\n", getushort(ttf));
-	    printf( "\t  left class offset=%d\n", left =getushort(ttf));
-	    printf( "\t  right class offset=%d\n", right = getushort(ttf));
-	    printf( "\t  array offset=%d\n", array = getushort(ttf));
-	    fseek(ttf,begin+left,SEEK_SET);
-	    printf( "\t  left class table\n" );
-	    printf( "\t   first Glyph=%d\n", getushort(ttf) );
-	    printf( "\t   number of glyphs=%d\n", n = getushort(ttf) );
-	    printf( "\t   " );
-	    for ( i=0; i<n; ++i )
-		printf( " %d", getushort(ttf));
-	    printf( "\n" );
-	    fseek(ttf,begin+right,SEEK_SET);
-	    printf( "\t  right class table\n" );
-	    printf( "\t   first Glyph=%d\n", getushort(ttf) );
-	    printf( "\t   number of glyphs=%d\n", n = getushort(ttf) );
-	    printf( "\t   " );
-	    for ( i=0; i<n; ++i )
-		printf( " %d", getushort(ttf));
-	    printf( "\n" );
+	    switch ( (coverage&0xff) ) {
+	      case 1:
+		readttfkern_context(ttf,util, info, len-6);
+	      break;
+	      case 2:
+		printf( "\t  row Width=%d\n", getushort(ttf));
+		printf( "\t  left class offset=%d\n", left =getushort(ttf));
+		printf( "\t  right class offset=%d\n", right = getushort(ttf));
+		printf( "\t  array offset=%d\n", array = getushort(ttf));
+		fseek(ttf,begin+left,SEEK_SET);
+		printf( "\t  left class table\n" );
+		printf( "\t   first Glyph=%d\n", getushort(ttf) );
+		printf( "\t   number of glyphs=%d\n", n = getushort(ttf) );
+		printf( "\t   " );
+		for ( i=0; i<n; ++i )
+		    printf( " %d", getushort(ttf));
+		printf( "\n" );
+		fseek(ttf,begin+right,SEEK_SET);
+		printf( "\t  right class table\n" );
+		printf( "\t   first Glyph=%d\n", getushort(ttf) );
+		printf( "\t   number of glyphs=%d\n", n = getushort(ttf) );
+		printf( "\t   " );
+		for ( i=0; i<n; ++i )
+		    printf( " %d", getushort(ttf));
+		printf( "\n" );
+	      break;
+	    }
 	    fseek(ttf,begin+header_size,SEEK_SET);
 	}
 	fseek(ttf,len-header_size,SEEK_CUR);
@@ -3234,6 +3259,7 @@ struct statetable {
     uint16 *classes2;
     uint8 *transitions;
     uint32 extra_offsets[3];
+    int len;		/* Size of the entire subtable */
 };
 
 static void show_statetable(struct statetable *st, struct ttfinfo *info, FILE *ttf,
@@ -3477,7 +3503,7 @@ static struct statetable *read_statetable(FILE *ttf, int ent_extras, int ismorx,
 	fread(st->classes,1,st->nglyphs,ttf);
     }
 
-    /* The size of an entry is variable. There are 2 short fields at the begin-*/
+    /* The size of an entry is variable. There are 2 uint16 fields at the begin-*/
     /*  ning of all entries. There may be some number of shorts following these*/
     /*  used for indexing special tables. */
     ent_size = 4 + 2*ent_extras;
@@ -3561,6 +3587,38 @@ return;
     free( st->classes );
     free( st->classes2 );
     free( st );
+}
+
+static void show_contextkerndata(uint8 *entry,struct statetable *st,struct ttfinfo *info, FILE *ttf) {
+    int flags = (entry[2]<<8)|entry[3];
+    int offset = flags&0x3fff;
+    int i;
+
+    printf( "\t   Flags %04x ", flags );
+    if ( flags&0x8000 )
+	printf( "Add to Kern Stack | ");
+    if ( flags&0x4000 )
+	printf( "Don't Advance Glyph" );
+    else
+	printf( "Advance Glyph" );
+    printf( ",  ValueOffset = %d\n", offset );
+    if ( offset!=0 ) {
+	printf( "Offset=%d, len=%d\n", offset, st->len );
+	fseek(ttf,offset+st->state_start,SEEK_SET);
+	printf( "Kerns: " );
+	for ( i=0; i<6; ++i )
+	    printf( "%d ", (short) getushort(ttf));
+	printf( "\n" );
+    }
+}
+
+static void readttfkern_context(FILE *ttf, FILE *util, struct ttfinfo *info, int stab_len) {
+    struct statetable *st;
+
+    st = read_statetable(ttf,0,false,info);
+    st->len = stab_len;
+    show_statetable(st, info, ttf, show_contextkerndata);
+    free_statetable(st);
 }
 
 static void show_indicflags(uint8 *entry,struct statetable *st,struct ttfinfo *info,FILE *ttf) {
@@ -4288,6 +4346,90 @@ static void readttfappleopbd(FILE *ttf, FILE *util, struct ttfinfo *info) {
     printf( "\t version=%g\n", getfixed(ttf));
     printf( "\t data are points=%d\n", getushort(ttf));
     show_applelookuptable(ttf,info,opbd_show);
+}
+
+static void readttfapplefvar(FILE *ttf, FILE *util, struct ttfinfo *info) {
+    int dataoff, countsizepairs, axiscount, instancecount, instancesize, nameid;
+    uint32 tag;
+    char *name;
+    int i,j;
+
+    fseek(ttf,info->fvar_start,SEEK_SET);
+    printf( "\nfvar table (at %d) (Font Variations)\n", info->fvar_start );
+    printf( "\t version=%g\n", getfixed(ttf));
+    printf( "\t offset to data=%d\n", dataoff = getushort(ttf));
+    printf( "\t # size pairs=%d\n", countsizepairs = getushort(ttf));
+    printf( "\t Axis count=%d\n", axiscount = getushort(ttf));
+    info->fvar_axiscount = axiscount;
+    printf( "\t Axis size=%d\n", getushort(ttf));
+    printf( "\t Instance count=%d\n", instancecount = getushort(ttf));
+    printf( "\t Instance size=%d\n", instancesize = getushort(ttf));
+    for ( i=0; i<axiscount; ++i ) {
+	printf( "\t  Axis %d\n", i );
+	tag = getlong(ttf);
+	printf( "\t    Axis Tag '%c%c%c%c'\n",
+		tag>>24, (tag>>16)&0xff, (tag>>8)&0xff, tag&0xff);
+	printf( "\t    minValue=%g\n", getfixed(ttf));
+	printf( "\t    defaultValue=%g\n", getfixed(ttf));
+	printf( "\t    maxValue=%g\n", getfixed(ttf));
+	printf( "\t    flags=%x\n", getushort(ttf));
+	nameid = getushort(ttf);
+	name = getttfname(util,info,nameid);
+	printf( "\t    nameid=%d (%s)\n", nameid, name==NULL ? "Not Found" : name );
+    }
+    for ( i=0; i<instancecount; ++i ) {
+	printf( "\t  Instance %d\n", i );
+	nameid = getushort(ttf);
+	name = getttfname(util,info,nameid);
+	printf( "\t    nameid=%d (%s)\n", nameid, name==NULL ? "Not Found" : name );
+	printf( "\t    flags=%x\n", getushort(ttf));
+	printf( "\t    Blend coefficients: ");
+	for ( j=0; j<axiscount; ++j )
+	    printf( "%g, ", getfixed(ttf));
+	printf( "\n" );
+    }
+    printf( "\n" );
+}
+
+static void readttfapplegvar(FILE *ttf, FILE *util, struct ttfinfo *info) {
+    int axiscount, gcc, glyphCount, flags;
+    uint32 *offsets, offset2Coord, offset2Data;
+    int tupleCount, offset;
+    int i, j;
+
+    fseek(ttf,info->gvar_start,SEEK_SET);
+    printf( "\ngvar table (at %d) (Glyph Variations)\n", info->gvar_start );
+    printf( "\t version=%g\n", getfixed(ttf));
+    printf( "\t Axis count=%d\n", axiscount = getushort(ttf));
+    if ( axiscount!=info->fvar_axiscount )
+	fprintf( stderr, "The axis count in the gvar table differs from that in the fvar table.\n 'gvar' axes=%d, 'fvar' axes=%d\n", axiscount, info->fvar_axiscount );
+    printf( "\t global coord count=%d\n", gcc = getushort(ttf));
+    printf( "\t offset to coord=%d\n", offset2Coord = getlong(ttf));
+    printf( "\t glyph count=%d\n", glyphCount = getushort(ttf));
+    printf( "\t flags=%x\n", flags = getushort(ttf));
+    printf( "\t offset to data=%x\n", offset2Data = getlong(ttf));
+    offsets = malloc(glyphCount*sizeof(uint32));
+    if ( flags&1 ) {
+	for ( i=0; i<glyphCount; ++i )
+	    offsets[i] = getlong(ttf) + offset2Data + info->gvar_start;
+    } else {
+	for ( i=0; i<glyphCount; ++i )
+	    offsets[i] = getushort(ttf) + offset2Data + info->gvar_start;
+    }
+    for ( i=0; i<glyphCount; ++i ) if ( offsets[i]!=offset2Data + info->gvar_start ) {
+	fseek(ttf,offsets[i],SEEK_SET);
+	printf( "\t  Glyph %d %s\n", i, info->glyph_names!=NULL? info->glyph_names[i]: "" );
+	tupleCount = getushort(ttf);
+	offset = getushort(ttf);
+	printf( "\t    Tuple count=%x, (count=%d) tuples %sshare points\n",
+		tupleCount, tupleCount&0xfff,
+		(tupleCount&0x8000)? "" : "do not " );
+	printf( "\t    Offset=%d\n", offset );
+	for ( j=0; j<(tupleCount&0xfff); ++j ) {
+	}
+    }
+
+    printf( "\n" );
 }
 
 static void readttfgasp(FILE *ttf, FILE *util, struct ttfinfo *info) {
@@ -5607,6 +5749,10 @@ return;
 	readttfapplelcar(ttf,util,&info);
     if ( info.opbd_start!=0 )
 	readttfappleopbd(ttf,util,&info);
+    if ( info.fvar_start!=0 )
+	readttfapplefvar(ttf,util,&info);
+    if ( info.gvar_start!=0 )
+	readttfapplegvar(ttf,util,&info);
 }
 
 int main(int argc, char **argv) {
