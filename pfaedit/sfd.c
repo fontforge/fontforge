@@ -1273,7 +1273,9 @@ return( NULL );
 	    sc->lig->components = copy(tok);
 	    sc->lig->lig = sc;
 	} else if ( strmatch(tok,"Colour:")==0 ) {
-	    gethex(sfd,&sc->color);
+	    int temp;
+	    gethex(sfd,&temp);
+	    sc->color = temp;
 	} else if ( strmatch(tok,"Comment:")==0 ) {
 	    sc->comment = SFDReadUTF7Str(sfd);
 	} else if ( strmatch(tok,"EndChar")==0 ) {

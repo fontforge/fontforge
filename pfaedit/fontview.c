@@ -148,6 +148,21 @@ static void FVSelectAll(FontView *fv) {
     }
 }
 
+static void FVSelectColor(FontView *fv, uint32 col, int door) {
+    int i;
+    uint32 sccol;
+    SplineChar **chars = fv->sf->chars;
+
+    for ( i=0; i<fv->sf->charcnt; ++i ) {
+	sccol =  ( chars[i]==NULL ) ? COLOR_DEFAULT : chars[i]->color;
+	if ( (door && !fv->selected[i] && sccol==col) ||
+		(!door && fv->selected[i]!=(sccol==col)) ) {
+	    fv->selected[i] = !fv->selected[i];
+	    FVToggleCharSelected(fv,i);
+	}
+    }
+}
+
 static void FVReselect(FontView *fv, int newpos) {
     int i, start, end;
 
@@ -1071,6 +1086,12 @@ static void FVMenuSelectAll(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 
     FVSelectAll(fv);
+}
+
+static void FVMenuSelectColor(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+
+    FVSelectColor(fv,(uint32) (mi->ti.userdata),(e->u.chr.state&ksm_shift)?1:0);
 }
 
 static void FVMenuFindRpl(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -2364,6 +2385,18 @@ static GMenuItem cflist[] = {
     { NULL }
 };
 
+static GMenuItem sclist[] = {
+    { { (unichar_t *)  _STR_Default, &def_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) COLOR_DEFAULT, NULL, 0, 1, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control, NULL, NULL, FVMenuSelectColor },
+    { { NULL, &white_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0xffffff, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' }, '\0', ksm_control, NULL, NULL, FVMenuSelectColor },
+    { { NULL, &red_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0xff0000, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' }, '\0', ksm_control, NULL, NULL, FVMenuSelectColor },
+    { { NULL, &green_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0x00ff00, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' }, '\0', ksm_control, NULL, NULL, FVMenuSelectColor },
+    { { NULL, &blue_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0x0000ff, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' }, '\0', ksm_control, NULL, NULL, FVMenuSelectColor },
+    { { NULL, &yellow_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0xffff00, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' }, '\0', ksm_control, NULL, NULL, FVMenuSelectColor },
+    { { NULL, &cyan_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0x00ffff, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' }, '\0', ksm_control, NULL, NULL, FVMenuSelectColor },
+    { { NULL, &magenta_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0xff00ff, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' }, '\0', ksm_control, NULL, NULL, FVMenuSelectColor },
+    { NULL }
+};
+
 static GMenuItem edlist[] = {
     { { (unichar_t *) _STR_Undo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 0, 1, 0, 'U' }, 'Z', ksm_control, NULL, NULL, FVMenuUndo, MID_Undo },
     { { (unichar_t *) _STR_Redo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 0, 1, 0, 'R' }, 'Y', ksm_control, NULL, NULL, FVMenuRedo, MID_Redo},
@@ -2381,6 +2414,7 @@ static GMenuItem edlist[] = {
     { { (unichar_t *) _STR_CopyFgToBg, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, 'C', ksm_control|ksm_shift, NULL, NULL, FVMenuCopyFgBg, MID_CopyFgToBg },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_SelectAll, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'A' }, 'A', ksm_control, NULL, NULL, FVMenuSelectAll },
+    { { (unichar_t *) _STR_SelectColor, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control, sclist },
     { { (unichar_t *) _STR_FindReplace, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'i' }, 'F', ksm_control|ksm_meta, NULL, NULL, FVMenuFindRpl },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Unlinkref, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'U' }, 'U', ksm_control, NULL, NULL, FVMenuUnlinkRef, MID_UnlinkRef },

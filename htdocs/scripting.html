@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 20-Jun-2002 -->
+  <!-- AP: Last modified: 23-Jun-2002 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -627,6 +627,17 @@ a[4][0] = "Nested array";
     set-from-value-flag is present and is true then it will also set the name
     and the ligature string to match the value.
   <DT>
+    SetCharColor(color)
+  <DD>
+    Sets the currently selected character to have the given color (expressed
+    as 24 bit rgb (0xff0000 is red) with the special value of -2 meaning the
+    default color.
+  <DT>
+    SetCharComment(comment)
+  <DD>
+    Sets the currently selected character to have the given comment. The comment
+    is converted via the current encoding to unicode.
+  <DT>
     BitmapsAvail(sizes)
   <DD>
     Controls what bitmap sizes are stored in the font's database. It is passed
@@ -823,6 +834,12 @@ a[4][0] = "Nested array";
 	"Kern" (there must be a second argument here which specifies another character
 	as in Select()) Returns the kern offset between the two characters (or 0
 	if none).
+      <LI>
+	"Color" returns the character's color as a 24bit rgb value (or -2 if no color
+	has been assigned to the character).
+      <LI>
+	"Comment" returns the character's comment (it will be converted from unicode
+	into the default encoding).
     </UL>
     <P>
     Examples:

@@ -407,7 +407,7 @@ typedef struct splinechar {
     LigList *ligofme;		/* If this is the first character of a ligature then this gives us the list of possible ones */
 				/*  this field must be regenerated before the font is saved */
     unichar_t *comment;
-    int /*Color*/ color;
+    uint32 /*Color*/ color;
 } SplineChar;
 
 enum ttfnames { ttf_copyright=0, ttf_family, ttf_subfamily, ttf_uniqueid,

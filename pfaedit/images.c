@@ -2013,6 +2013,102 @@ static struct _GImage logo_base = {
     0
 };
 
+static uint8 image_data[] = {
+    0x00, 0x00,
+    0x7f, 0xfe,
+    0x7f, 0xfe,
+    0x7f, 0xfe,
+    0x7f, 0xfe,
+    0x7f, 0xfe,
+    0x7f, 0xfe,
+    0x7f, 0xfe,
+    0x7f, 0xfe,
+    0x7f, 0xfe,
+    0x7f, 0xfe,
+    0x00, 0x00,
+};
+static GClut def_clut = { 2, 0, 1,
+    0x0, 0xb0b0b0 };
+static struct _GImage def_base = {
+    it_mono,
+    0,16,12,2,
+    (uint8 *) image_data,
+    &def_clut,
+    1
+};
+static GClut red_clut = { 2, 0, -1,
+    0x0, 0xff0000 };
+static struct _GImage red_base = {
+    it_mono,
+    0,16,12,2,
+    (uint8 *) image_data,
+    &red_clut,
+    -1
+};
+static GClut blue_clut = { 2, 0, -1,
+    0x0, 0x0000ff };
+static struct _GImage blue_base = {
+    it_mono,
+    0,16,12,2,
+    (uint8 *) image_data,
+    &blue_clut,
+    -1
+};
+static GClut green_clut = { 2, 0, -1,
+    0x0, 0x00ff00 };
+static struct _GImage green_base = {
+    it_mono,
+    0,16,12,2,
+    (uint8 *) image_data,
+    &green_clut,
+    -1
+};
+static GClut magenta_clut = { 2, 0, -1,
+    0x0, 0xff00ff };
+static struct _GImage magenta_base = {
+    it_mono,
+    0,16,12,2,
+    (uint8 *) image_data,
+    &magenta_clut,
+    -1
+};
+static GClut cyan_clut = { 2, 0, -1,
+    0x0, 0x00ffff };
+static struct _GImage cyan_base = {
+    it_mono,
+    0,16,12,2,
+    (uint8 *) image_data,
+    &cyan_clut,
+    -1
+};
+static GClut yellow_clut = { 2, 0, -1,
+    0x0, 0xffff00 };
+static struct _GImage yellow_base = {
+    it_mono,
+    0,16,12,2,
+    (uint8 *) image_data,
+    &yellow_clut,
+    -1
+};
+static GClut white_clut = { 2, 0, -1,
+    0x0, 0xffffff };
+static struct _GImage white_base = {
+    it_mono,
+    0,16,12,2,
+    (uint8 *) image_data,
+    &white_clut,
+    -1
+};
+
+GImage def_image = { 0, &def_base };
+GImage red_image = { 0, &red_base };
+GImage blue_image = { 0, &blue_base };
+GImage green_image = { 0, &green_base };
+GImage magenta_image = { 0, &magenta_base };
+GImage yellow_image = { 0, &yellow_base };
+GImage cyan_image = { 0, &cyan_base };
+GImage white_image = { 0, &white_base };
+
 GImage GIcon_smallskew = { 0, &smallskew0_base };
 GImage GIcon_smallscale = { 0, &smallscale0_base };
 GImage GIcon_smallrotate = { 0, &smallrotate0_base };

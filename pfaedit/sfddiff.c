@@ -26,6 +26,7 @@
  */
 #include "pfaedit.h"
 #include <stdio.h>
+#include <ustring.h>
 
 extern const char *source_modtime_str;
 
@@ -319,6 +320,32 @@ static void dodiff( SplineFont *sf1, SplineFont *sf2, int checkhints,
 	printf( "The two fonts have different encodings\n" );
 	adiff = 1;
     }
+    if ( strcmp(sf1->fontname,sf2->fontname)!=0 ||
+	    strcmp(sf1->familyname,sf2->familyname)!=0 ||
+	    strcmp(sf1->fullname,sf2->fullname)!=0 ) {
+	printf( "The two fonts have different names\n" );
+	++adiff;
+    }
+    if ( strcmp(sf1->version,sf2->version)!=0 ) {
+	printf( "The two fonts have different versions\n" );
+	++adiff;
+    }
+    if ( strcmp(sf1->weight,sf2->weight)!=0 ) {
+	printf( "The two fonts have different weights\n" );
+	++adiff;
+    }
+    if ( strcmp(sf1->copyright,sf2->copyright)!=0 ) {
+	printf( "The two fonts have different copyrights\n" );
+	++adiff;
+    }
+    if ( strcmp(sf1->comments,sf2->comments)!=0 ) {
+	printf( "The two fonts have different comments\n" );
+	++adiff;
+    }
+    if ( !RealApprox(sf1->italicangle,sf2->italicangle) ) {
+	printf( "The two fonts have different italic angles\n" );
+	++adiff;
+    }
 
     /* Look for any char in sf1 not in sf2 */
     any = false;
@@ -358,6 +385,13 @@ static void dodiff( SplineFont *sf1, SplineFont *sf2, int checkhints,
 	    any = SplineDiff(sc,sc1,any);
 	    if ( checkhints ) {
 		HintDiff(sc1,sc,any);
+	    }
+	    if (! ( (sc->comment==NULL && sc1->comment==NULL) ||
+		    (sc->comment!=NULL && sc1->comment!=NULL &&
+			    u_strcmp(sc->comment,sc1->comment)==0) )) {
+		if ( !any ) printf( "Differences in Enc=%-5d U+%04X %s\n",
+			sc1->enc, sc1->unicodeenc, sc1->name );
+		printf( "\tComments are different\n" );
 	    }
 	    if ( any ) {
 		sc1->backgroundsplines = sc->splines;

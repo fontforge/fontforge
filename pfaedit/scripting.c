@@ -1087,6 +1087,28 @@ static void bSetUnicodeValue(Context *c) {
     SCSetMetaData(sc,name,uni,ligature);
 }
 
+static void bSetCharColor(Context *c) {
+    SplineChar *sc;
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_int )
+	error(c,"Bad argument type");
+    sc = GetOneSelChar(c);
+    sc->color = c->a.vals[1].u.ival;
+}
+
+static void bSetCharComment(Context *c) {
+    SplineChar *sc;
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_str )
+	error(c,"Bad argument type");
+    sc = GetOneSelChar(c);
+    sc->comment = *c->a.vals[1].u.sval=='\0'?NULL:def2u_copy(c->a.vals[1].u.sval);
+}
+
 static void bTransform(Context *c) {
     real trans[6];
     BVTFunc bvts[1];
@@ -1624,7 +1646,12 @@ static void bCharInfo(Context *c) {
 	    c->return_val.u.ival = sc->width;
 	else if ( strmatch( c->a.vals[1].u.sval,"VWidth")==0 )
 	    c->return_val.u.ival = sc->vwidth;
-	else {
+	else if ( strmatch( c->a.vals[1].u.sval,"Color")==0 )
+	    c->return_val.u.ival = sc->color;
+	else if ( strmatch( c->a.vals[1].u.sval,"Comment")==0 ) {
+	    c->return_val.type = v_str;
+	    c->return_val.u.sval = sc->comment?u2def_copy(sc->comment):copy("");
+	} else {
 	    SplineCharFindBounds(sc,&b);
 	    if ( strmatch( c->a.vals[1].u.sval,"LBearing")==0 )
 		c->return_val.u.ival = b.minx;
@@ -1684,6 +1711,8 @@ struct builtins { char *name; void (*func)(Context *); int nofontok; } builtins[
     { "SetItalicAngle", bSetItalicAngle },
     { "SetCharName", bSetCharName },
     { "SetUnicodeValue", bSetUnicodeValue },
+    { "SetCharColor", bSetCharColor },
+    { "SetCharComment", bSetCharComment },
     { "BitmapsAvail", bBitmapsAvail },
     { "BitmapsRegen", bBitmapsRegen },
     { "Transform", bTransform },
