@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
+#include <utype.h>
 #include <ustring.h>
 #include <gfile.h>
 
@@ -247,7 +248,7 @@ static void findbrowser(void) {
     if ( getenv("BROWSER")!=NULL ) {
 	strcpy(browser,getenv("BROWSER"));
 #if __CygWin			/* Get rid of any dos style names */
-	if ( isalpha(browser[0] && browser[1]==':' && browser[2]=='\\' )
+	if ( isalpha(browser[0]) && browser[1]==':' && browser[2]=='\\' )
 	    cygwin_conv_to_full_posix_path(getenv("BROWSER"),browser);
 #endif
 	if ( strcmp(browser,"kde")==0 || strcmp(browser,"kfm")==0 ||
