@@ -43,6 +43,7 @@ void FVOutline(FontView *fv, real width) {
     memset(&si,0,sizeof(si));
     si.removeexternal = true;
     si.radius = width;
+    si.removeoverlapifneeded = true;
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->splines ) {
 	SplineChar *sc = fv->sf->chars[i];
@@ -66,6 +67,7 @@ static void CVOutline(CharView *cv, real width) {
     memset(&si,0,sizeof(si));
     si.removeexternal = true;
     si.radius = width;
+    si.removeoverlapifneeded = true;
 
     CVPreserveState(cv);
     temp = SSStroke(*cv->heads[cv->drawmode],&si,cv->sc);
@@ -83,6 +85,7 @@ static void MVOutline(MetricsView *mv, real width) {
     memset(&si,0,sizeof(si));
     si.removeexternal = true;
     si.radius = width;
+    si.removeoverlapifneeded = true;
 
     for ( i=mv->charcnt-1; i>=0; --i )
 	if ( mv->perchar[i].selected )
@@ -109,6 +112,7 @@ void FVInline(FontView *fv, real width, real inset) {
 
     memset(&si,0,sizeof(si));
     si.removeexternal = true;
+    si.removeoverlapifneeded = true;
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->splines ) {
 	SplineChar *sc = fv->sf->chars[i];
@@ -136,6 +140,7 @@ static void CVInline(CharView *cv, real width, real inset) {
 
     memset(&si,0,sizeof(si));
     si.removeexternal = true;
+    si.removeoverlapifneeded = true;
 
     CVPreserveState(cv);
     si.radius = width;
@@ -157,6 +162,7 @@ static void MVInline(MetricsView *mv, real width, real inset) {
 
     memset(&si,0,sizeof(si));
     si.removeexternal = true;
+    si.removeoverlapifneeded = true;
 
     for ( i=mv->charcnt-1; i>=0; --i )
 	if ( mv->perchar[i].selected )
