@@ -725,7 +725,7 @@ static void CVFit(CharView *cv) {
     right -= left;
     if ( top==0 ) top = 1000;
     if ( right==0 ) right = 1000;
-    wsc = cv->width / right;
+    wsc = (cv->width-(cv->palettesdocked?60:0)) / right;
     hsc = cv->height / top;
     if ( wsc<hsc ) hsc = wsc;
 
@@ -736,7 +736,7 @@ static void CVFit(CharView *cv) {
 	cv->scale = 1/ceil(1/cv->scale);
     }
 
-    cv->xoff = -(left - (right/10))*cv->scale;
+    cv->xoff = -(left - (right/10))*cv->scale + (cv->palettesdocked?60:0);
     cv->yoff = -(bottom - (top/10))*cv->scale;
 
     CVNewScale(cv);
@@ -2407,10 +2407,38 @@ static void CVMenuGotoChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	CVChangeChar(cv,pos);
 }
 
+#if 0
+static void CVMenuPaletteControl(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    GWindow palette = mi->mid<MID_LayersFree ? cv->tools : cv->layers;
+
+    switch ( mi->mid%10 ) {
+      case MID_ToolsFree%10:
+	if ( palette==cv->tools )
+	    GPaletteUndock(palette,-60,cv->mbh+20);
+	else
+	    GPaletteUndock(palette,-91,cv->mbh+187+45);
+	GDrawSetVisible(palette,true);
+      break;
+      case MID_ToolsDocked%10:
+	if ( palette==cv->tools )
+	    GPaletteDock(palette,(cv->showrulers?cv->rulerh:0),
+		    cv->mbh+cv->infoh+(cv->showrulers?cv->rulerh:0));
+	else
+	    GPaletteDock(palette,(cv->showrulers?cv->rulerh:0),
+		    cv->mbh+cv->infoh+187+(cv->showrulers?cv->rulerh:0));
+	GDrawSetVisible(palette,true);
+      break;
+      case MID_ToolsHidden%10:
+	GDrawSetVisible(palette,false);
+      break;
+    }
+}
+#endif
+
 static void CVMenuPaletteShow(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     GWindow palette = mi->mid==MID_Tools ? cv->tools : cv->layers;
-
     GDrawSetVisible(palette,!GDrawIsVisible(palette));
 }
 

@@ -31,6 +31,7 @@
 #include "ustring.h"
 
 int seperate_hint_controls=1;
+int palettesdocked = 0;
 
 static unichar_t poppointer[] = { 'P','o','i','n','t','e','r',  '\0' };
 static unichar_t popmag[] = { 'M','a','g','n','i','f','y',' ','(','M','i','n','i','f','y',' ','w','i','t','h',' ','a','l','t',')',  '\0' };
@@ -481,10 +482,17 @@ GWindow CVMakeTools(CharView *cv) {
     wattrs.positioned = true;
     wattrs.window_title = title;
 
-    r.width = 53; r.height = 187;
-    r.x = -r.width-6; r.y = cv->mbh+20;
-    tools = GWidgetCreatePalette( cv->gw, &r, cvtools_e_h, cv, &wattrs );
-    GWidgetRequestVisiblePalette(tools,true);
+    r.width = 53; r.height = 188;
+    if ( palettesdocked ) {
+	r.x = (cv->showrulers?cv->rulerh:0); r.y = cv->mbh+cv->infoh+(cv->showrulers?cv->rulerh:0);
+	tools = GWidgetCreateSubWindow(cv->gw,&r,cvtools_e_h,cv,&wattrs);
+	GDrawSetVisible(tools,true);
+	cv->palettesdocked = true;
+    } else {
+	r.x = -r.width-6; r.y = cv->mbh+20;
+	tools = GWidgetCreatePalette( cv->gw, &r, cvtools_e_h, cv, &wattrs );
+	GWidgetRequestVisiblePalette(tools,true);
+    }
 return( tools );
 }
 
@@ -618,8 +626,14 @@ GWindow CVMakeLayers(CharView *cv) {
 
     r.width = 85; r.height = 94;
     if ( seperate_hint_controls ) { r.height += 17; r.width += 7; }
-    r.x = -r.width-6; r.y = cv->mbh+187+45/*25*/;	/* 45 is right if there's decor, 25 when none. twm gives none, kde gives decor */
-    layers = GWidgetCreatePalette( cv->gw, &r, cvlayers_e_h, cv, &wattrs );
+    if ( palettesdocked ) {
+	r.x = (cv->showrulers?cv->rulerh:0);
+	r.y = cv->mbh+cv->infoh+187+(cv->showrulers?cv->rulerh:0);
+	layers = GWidgetCreateSubWindow(cv->gw,&r,cvlayers_e_h,cv,&wattrs);
+    } else {
+	r.x = -r.width-6; r.y = cv->mbh+188+45/*25*/;	/* 45 is right if there's decor, 25 when none. twm gives none, kde gives decor */
+	layers = GWidgetCreatePalette( cv->gw, &r, cvlayers_e_h, cv, &wattrs );
+    }
 
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
@@ -774,7 +788,10 @@ GWindow CVMakeLayers(CharView *cv) {
 	if ( cv->showhhints || cv->showvhints ) gcd[6].gd.flags |= gg_cb_on;
 
     GGadgetsCreate(layers,gcd);
-    GWidgetRequestVisiblePalette(layers,true);
+    if ( palettesdocked )
+	GDrawSetVisible(layers,true);
+    else
+	GWidgetRequestVisiblePalette(layers,true);
 return( layers );
 }
 

@@ -111,6 +111,7 @@ typedef struct charview {
     unsigned int info_within: 1;		/* cursor is within main window */
     unsigned int back_img_out_of_date: 1;	/* Force redraw of back image pixmap */
     unsigned int cntrldown:1;
+    unsigned int palettesdocked:1;
     SplinePointList **heads[dm_max];
     Undoes **uheads[dm_max];
     Undoes **rheads[dm_max];
