@@ -1511,7 +1511,8 @@ return;
 	for ( i=0; glyphs[i]!=0xffff; ++i ) if ( glyphs[i]<info->glyph_cnt ) {
 	    if ( info->chars[glyphs[i]]->name!=NULL ) {
 		which = format==1 ? (uint16) (glyphs[i]+delta) : glyph2s[i];
-		if ( info->chars[which]->name==NULL ) {
+		if ( which<info->glyph_cnt && which>=0 &&
+			info->chars[which]->name==NULL ) {
 		    char *basename = info->chars[glyphs[i]]->name;
 		    char *str;
 		    char tag[5], *pt=tag;
