@@ -359,7 +359,7 @@ struct feature {
     unsigned int singleMutex: 1;
     uint8 subtable_type;
     int chain;
-    int32 flag;
+    int32 flag, offFlags;
     uint32 feature_start;
     uint32 feature_len;		/* Does not include header yet */
     struct feature *next;
@@ -1497,6 +1497,25 @@ return( 0 );
 	    ++bit;
 	}
     }
+    for ( f=feature; f!=NULL; f=n ) {
+	if ( f->mf!=NULL && f->mf->ismutex ) {
+	    int offFlags = 0;
+	    for ( n=f; n!=NULL && f->featureType==n->featureType; n=n->next )
+		offFlags |= n->flag;
+	    for ( n=f; n!=NULL && f->featureType==n->featureType; n=n->next )
+		n->offFlags = offFlags;
+	} else if ( f->next!=NULL && (f->featureSetting&1)==0 &&
+		f->next->featureType==f->featureType &&
+		f->next->featureSetting==f->featureSetting+1 ) {
+	    n = f->next;
+	    f->offFlags = n->flag;
+	    n->offFlags = f->flag;
+	    n = n->next;
+	} else {
+	    f->offFlags = 0;
+	    n = f->next;
+	}
+    }
 return( chain+1 );
 }
 
@@ -1507,7 +1526,7 @@ static void morxDumpChain(struct alltabs *at,struct feature *features,int chain,
     int subcnt=0, scnt=0;
     uint32 chain_start, end;
     char *buf;
-    int len, tot, cnt, offFlag;
+    int len, tot, cnt;
     struct feature *all[32], *ftemp;
     int i,j;
 
@@ -1552,21 +1571,18 @@ static void morxDumpChain(struct alltabs *at,struct feature *features,int chain,
 	    for ( n=f; n!=NULL && n->featureType==f->featureType; n=n->next ) {
 		putshort(at->morx,n->featureType);
 		putshort(at->morx,n->featureSetting);
-		offFlag = 0;
-		if ( n->needsOff && n->next!=NULL && n->featureSetting+1==n->next->featureSetting )
-		    offFlag = n->next->flag;
 		putlong(at->morx,n->flag);
-		putlong(at->morx,~offFlag);
+		putlong(at->morx,n->flag | ~n->offFlags);
 		if ( n->needsOff ) {
 		    putshort(at->morx,n->featureType);
 		    putshort(at->morx,n->featureSetting+1);
-		    putlong(at->morx,offFlag);
-		    putlong(at->morx,~n->flag);
+		    putlong(at->morx,0);
+		    putlong(at->morx,~n->offFlags);
 		} else if ( n->singleMutex ) {		    
 		    putshort(at->morx,n->featureType);
 		    putshort(at->morx,n->featureSetting==0?1:0);
 		    putlong(at->morx,0);
-		    putlong(at->morx,~n->flag);
+		    putlong(at->morx,~n->offFlags);
 		}
 		if ( n->needsOff && n->next!=NULL && n->featureSetting+1==n->next->featureSetting )
 		    n = n->next;
