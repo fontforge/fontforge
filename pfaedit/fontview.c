@@ -1196,14 +1196,20 @@ static void FVMenuUnlinkRef(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FVUnlinkRef( (FontView *) GDrawGetUserData(gw));
 }
 
-static void FVMenuRemoveUndoes(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    SplineFont *main = fv->cidmaster? fv->cidmaster : fv->sf, *ssf;
-    int i,k;
+void SFRemoveUndoes(SplineFont *sf,uint8 *selected) {
+    SplineFont *main = sf->cidmaster? sf->cidmaster : sf, *ssf;
+    int i,k, max;
     SplineChar *sc;
     BDFFont *bdf;
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] ) {
+    if ( selected!=NULL || main->subfontcnt==0 )
+	max = sf->charcnt;
+    else {
+	max = 0;
+	for ( k=0; k<main->subfontcnt; ++k )
+	    if ( main->subfonts[k]->charcnt>max ) max = main->subfonts[k]->charcnt;
+    }
+    for ( i=0; i<max; ++i ) if ( selected==NULL || selected[i] ) {
 	for ( bdf=main->bitmaps; bdf!=NULL; bdf=bdf->next ) {
 	    if ( bdf->chars[i]!=NULL ) {
 		UndoesFree(bdf->chars[i]->undoes); bdf->chars[i]->undoes = NULL;
@@ -1223,6 +1229,11 @@ static void FVMenuRemoveUndoes(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    ++k;
 	} while ( k<main->subfontcnt );
     }
+}
+
+static void FVMenuRemoveUndoes(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    SFRemoveUndoes(fv->sf,fv->selected);
 }
 
 static void FVMenuUndo(GWindow gw,struct gmenuitem *mi,GEvent *e) {

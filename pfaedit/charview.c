@@ -1021,6 +1021,9 @@ static void DrawSelImageList(CharView *cv,GWindow pixmap,ImageList *backimages) 
 static void DrawOldState(CharView *cv, GWindow pixmap, Undoes *undo, DRect *clip) {
     RefChar *refs;
 
+    if ( undo==NULL )
+return;
+
     CVDrawSplineSet(cv,pixmap,undo->u.state.splines,0x008000,false,clip);
     for ( refs=undo->u.state.refs; refs!=NULL; refs=refs->next )
 	if ( refs->splines!=NULL )
@@ -2517,6 +2520,7 @@ return;
 	SplinePointList *spl;
 	spl = *cv->heads[cv->drawmode];
 	if ( cv->recentchange && cv->active_tool==cvt_pointer &&
+		*cv->uheads[cv->drawmode]!=NULL &&
 		((*cv->uheads[cv->drawmode])->undotype==ut_state ||
 		 (*cv->uheads[cv->drawmode])->undotype==ut_tstate ))
 	    spl = (*cv->uheads[cv->drawmode])->u.state.splines;

@@ -467,7 +467,7 @@ return( AddUndo(undo,cv->uheads[cv->drawmode],cv->rheads[cv->drawmode]));
 Undoes *CVPreserveState(CharView *cv) {
     Undoes *undo;
 
-    if ( screen_display==NULL )		/* No use for undoes in scripting */
+    if ( screen_display==NULL || maxundoes==0 )		/* No use for undoes in scripting */
 return(NULL);
 
     undo = chunkalloc(sizeof(Undoes));
@@ -490,7 +490,7 @@ return( CVAddUndo(cv,undo));
 Undoes *SCPreserveState(SplineChar *sc,int dohints) {
     Undoes *undo;
 
-    if ( screen_display==NULL )		/* No use for undoes in scripting */
+    if ( screen_display==NULL || maxundoes==0 )		/* No use for undoes in scripting */
 return(NULL);
 
     undo = chunkalloc(sizeof(Undoes));
@@ -524,7 +524,7 @@ return( AddUndo(undo,&sc->undoes[0],&sc->redoes[0]));
 Undoes *SCPreserveBackground(SplineChar *sc) {
     Undoes *undo;
 
-    if ( screen_display==NULL )		/* No use for undoes in scripting */
+    if ( screen_display==NULL || maxundoes==0 )		/* No use for undoes in scripting */
 return(NULL);
 
     undo = chunkalloc(sizeof(Undoes));
@@ -552,9 +552,15 @@ Undoes *CVPreserveTState(CharView *cv) {
     Undoes *undo;
     int anyrefs;
     RefChar *refs, *urefs;
+    int was0 = false;
 
     cv->p.transany = CVAnySel(cv,NULL,&anyrefs,NULL,NULL);
     cv->p.transanyrefs = anyrefs;
+
+    if ( maxundoes==0 ) {
+	was0 = true;
+	maxundoes = 1;
+    }
 
     undo = CVPreserveState(cv);
     if ( !cv->p.transany || cv->p.transanyrefs ) {
@@ -564,13 +570,16 @@ Undoes *CVPreserveTState(CharView *cv) {
     }
     undo->undotype = ut_tstate;
 
+    if ( was0 )
+	maxundoes = 0;
+
 return( undo );
 }
 
 Undoes *CVPreserveWidth(CharView *cv,int width) {
     Undoes *undo;
 
-    if ( screen_display==NULL )		/* No use for undoes in scripting */
+    if ( screen_display==NULL || maxundoes==0 )		/* No use for undoes in scripting */
 return(NULL);
 
     undo = chunkalloc(sizeof(Undoes));
@@ -585,7 +594,7 @@ return( CVAddUndo(cv,undo));
 Undoes *CVPreserveVWidth(CharView *cv,int vwidth) {
     Undoes *undo;
 
-    if ( screen_display==NULL )		/* No use for undoes in scripting */
+    if ( screen_display==NULL || maxundoes==0 )		/* No use for undoes in scripting */
 return(NULL);
 
     undo = chunkalloc(sizeof(Undoes));
@@ -600,7 +609,7 @@ return( CVAddUndo(cv,undo));
 Undoes *SCPreserveWidth(SplineChar *sc) {
     Undoes *undo;
 
-    if ( screen_display==NULL )		/* No use for undoes in scripting */
+    if ( screen_display==NULL || maxundoes==0 )		/* No use for undoes in scripting */
 return(NULL);
 
     undo = chunkalloc(sizeof(Undoes));
@@ -615,7 +624,7 @@ return( AddUndo(undo,&sc->undoes[0],&sc->redoes[0]));
 Undoes *SCPreserveVWidth(SplineChar *sc) {
     Undoes *undo;
 
-    if ( screen_display==NULL )		/* No use for undoes in scripting */
+    if ( screen_display==NULL || maxundoes==0 )		/* No use for undoes in scripting */
 return(NULL);
 
     undo = chunkalloc(sizeof(Undoes));
@@ -630,7 +639,7 @@ return( AddUndo(undo,&sc->undoes[0],&sc->redoes[0]));
 Undoes *BCPreserveState(BDFChar *bc) {
     Undoes *undo;
 
-    if ( screen_display==NULL )		/* No use for undoes in scripting */
+    if ( screen_display==NULL || maxundoes==0 )		/* No use for undoes in scripting */
 return(NULL);
 
     undo = chunkalloc(sizeof(Undoes));
