@@ -3091,6 +3091,9 @@ void FVSetTitle(FontView *fv) {
     char *file=NULL;
     int len;
 
+    if ( fv->gw==NULL )		/* In scripting */
+return;
+
     len = strlen(fv->sf->fontname);
     if ( (file = fv->sf->filename)==NULL )
 	file = fv->sf->origname;
