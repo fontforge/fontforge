@@ -2609,7 +2609,7 @@ static StemInfo *CheckForGhostHints(StemInfo *stems,SplineChar *sc) {
     StemInfo *prev, *s, *n, *snext, *ghosts = NULL;
     SplineSet *spl;
     Spline *spline, *first;
-    SplinePoint *sp;
+    SplinePoint *sp, *sp2;
     real base, width/*, toobig = (sc->parent->ascent+sc->parent->descent)/2*/;
     int i,startfound, widthfound;
 
@@ -2659,7 +2659,8 @@ static StemInfo *CheckForGhostHints(StemInfo *stems,SplineChar *sc) {
 		break;
 		}
 		if ( i!=bd.bluecnt ) {
-		    width = (spline->from->prev->from->me.y > spline->from->me.y)?21:20;
+		    for ( sp2= spline->from->prev->from; sp2!=spline->from && sp2->me.y!=spline->from->me.y; sp2=sp2->prev->from );
+		    width = (sp2->me.y > spline->from->me.y)?21:20;
 		    ghosts = GhostAdd(ghosts,stems, base,width,spline->from->me.x,spline->to->me.x);
 		}
 	    }
@@ -2675,7 +2676,8 @@ static StemInfo *CheckForGhostHints(StemInfo *stems,SplineChar *sc) {
 		break;
 		}
 		if ( i!=bd.bluecnt ) {
-		    width = (spline->from->prev->from->me.y > spline->from->me.y)?21:20;
+		    for ( sp2= sp->prev->from; sp2!=sp && sp2->me.y!=spline->from->me.y; sp2=sp2->prev->from );
+		    width = (sp2->me.y > sp->me.y)?21:20;
 		    ghosts = GhostAdd(ghosts,stems, base,width,(sp->me.x+sp->prevcp.x)/2,(sp->me.x+sp->nextcp.x)/2);
 		}
 	    }
