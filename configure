@@ -6947,7 +6947,7 @@ case "$host" in
 _ACEOF
 
 echo I cant get libtool to behave on my mac, so proceding with a static configure
-exec configure.static $*
+exec configure.static $orig_args
 
 gww_nodynamic="yes"
 cat >>confdefs.h <<\_ACEOF
