@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 22-Mar-2005 -->
+  <!-- AP: Last modified: 28-Mar-2005 -->
   <TITLE>Outline Glyph View</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -567,7 +567,8 @@ function.
 Flaw: Currently there is no way to examine the call stack.
 <P>
 The sixth button brings up a menu with which you can control which of various
-debugging palettes are visible. The ones available so far are:
+debugging palettes are visible. The ones available so far are: Registers,
+Stack, Points, Storage, Cvt, Raster and Gloss.
 <TABLE BORDER CELLPADDING="2" WIDTH="500">
   <TR VALIGN="Top">
     <TD><IMG SRC="TTRegisters.png" WIDTH="137" HEIGHT="292"></TD>
@@ -603,8 +604,19 @@ debugging palettes are visible. The ones available so far are:
   </TR>
 </TABLE>
 <P>
-Flaw: most of these palettes should have scrollbars. For now just resize
-them to look at things off the bottom.
+<TABLE BORDER CELLPADDING="2" WIDTH="340">
+  <TR>
+    <TD><P ALIGN=Center>
+      <IMG SRC="TTgloss.png" WIDTH="320" HEIGHT="305"></TD>
+  </TR>
+  <TR>
+    <TD>This window tries to provide a gloss for the current instruction. It
+      gives a brief description of the instruction in the top few lines, then explains
+      what registers it uses, and shows their values, it shows what use is made
+      of the stack and attempts to interpret the data on the stack. Finally it
+      explains what registers will be set, and what will be pushed onto the stack.</TD>
+  </TR>
+</TABLE>
 <P>
 The final button will exit the debugger.
 <P>
