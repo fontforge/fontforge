@@ -17,7 +17,9 @@ gww_rpath=""
 AC_ARG_WITH(static-imagelibs,
  [  --with-static-imagelibs   Control whether to try using static image libaries],
  [
-   gww_needsstaticimages="yes"
+   if test "$withval" \!= "no" ; then
+     gww_needsstaticimages="yes"
+   fi
    dnl Mac doesn't ship with image libraries, so my builds should include
    dnl static versions, else users won't have them.
 
@@ -58,27 +60,18 @@ dnl and crashes gdb if we attempt to use it.
  ;;
 esac
 
-dnl iconv is braindead on solaris 9 and does not support unicode. It is
-dnl therefore useless to us, and finding it prevents us using our internal
-dnl mini-iconv that would work.
+dnl One user seems to have messed up iconv on his system and can't get it
+dnl to work.
 
-echo -n Cursory check if iconv supports unicode ...
-if iconv -f Mac -t UCS-2BE >/dev/null 2>&1 </dev/null ; then
- gww_uselessiconv="no"
-elif iconv -f Mac -t UCS-2LE >/dev/null 2>&1 </dev/null ; then
- gww_uselessiconv="no"
-elif iconv -f Mac -t UNICODEBIG >/dev/null 2>&1 </dev/null ; then
- gww_uselessiconv="no"
-elif iconv -f Mac -t UCS-2 >/dev/null 2>&1 </dev/null ; then
- gww_uselessiconv="no"
-else
- gww_uselessiconv="yes"
-fi
-if test "$gww_uselessiconv" = "no" ; then
- echo " yes"
-else
- echo " no"
-fi
+gww_uselessiconv="no"
+AC_ARG_WITH(iconv,
+ [  --without-iconv   Don't use the system's iconv(3) routines, use fontforge's instead],
+ [
+   if test "$withval" = "no" ; then
+     gww_uselessiconv="yes"
+   fi
+ ])
+
 
 AC_SEARCH_LIBS(dlopen, dl) dnl some systems have this in libc (Darwin uses dyld)
 AC_SEARCH_LIBS(inet_aton, resolv) dnl some systems have this in libc

@@ -150,22 +150,36 @@ return( goodname );
 	if ( test!=(iconv_t) -1 && test!=NULL ) {
 	    iconv_close(test);
 	    goodname = testnames[i];
-return( goodname );
+    break;
 	}
     }
 
-    for ( i=0; names[i]!=NULL; ++i ) {
-	test = iconv_open(names[i],"ISO-8859-1");
-	if ( test!=(iconv_t) -1 && test!=NULL ) {
-	    iconv_close(test);
-	    goodname = names[i];
-return( goodname );
+    if ( goodname==NULL ) {
+	for ( i=0; names[i]!=NULL; ++i ) {
+	    test = iconv_open(names[i],"ISO-8859-1");
+	    if ( test!=(iconv_t) -1 && test!=NULL ) {
+		iconv_close(test);
+		goodname = names[i];
+	break;
+	    }
 	}
     }
 
-    IError( "I can't figure out your version of iconv(). I need a name for the UCS2 encoding and I can't find one. Bye.");
-    exit( 1 );
-return( NULL );
+    if ( goodname==NULL ) {
+	IError( "I can't figure out your version of iconv(). I need a name for the UCS2 encoding and I can't find one. Reconfigure --without-iconv. Bye.");
+	exit( 1 );
+    }
+
+    test = iconv_open(names[i],"Mac");
+    if ( test==(iconv_t) -1 || test==NULL ) {
+	IError( "Your version of iconv does not support the \"Mac Roman\" encoding. Reconfigure --without-iconv." );
+	exit( 1 );
+    } else
+	iconv_close(test);
+
+    /* I really should check for ISO-2022-JP, KR, CN, and all the other encodings */
+    /*  I might find in a ttf 'name' table. But those tables take too long to build */
+return( goodname );
 }
 
 static int TryEscape( Encoding *enc,char *escape_sequence ) {
@@ -288,6 +302,11 @@ return( &unicodefull );
     if ( temp.tounicode==(iconv_t) -1 || temp.tounicode==NULL )
 return( NULL );			/* Iconv doesn't recognize this name */
     temp.fromunicode = iconv_open(iconv_name,FindUCS2Name());
+    if ( temp.fromunicode==(iconv_t) -1 || temp.fromunicode==NULL ) {
+	/* This should never happen, but if it does... */
+	iconv_close(temp.tounicode);
+return( NULL );
+    }
 
     memset(good,0,sizeof(good));
     any = false; all = true;
