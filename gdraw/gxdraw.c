@@ -2411,9 +2411,9 @@ return;
 	gevent.type = event->type==KeyPress?et_char:et_charup;
 	gevent.u.chr.state = event->xkey.state;
 /*#ifdef _CursorsMustBe16x16*/
-	/* On the mac, map the command key to the control key. So Comand-Q=>^Q=>Quit */
+	/* On mac os x, map the command key to the control key. So Comand-Q=>^Q=>Quit */
 	/* I don't think it hurts to leave this enabled... */
-	if ( event->xkey.state&0x20 ) gevent.u.chr.state |= ksm_control;
+	if ( (event->xkey.state&0x20) && gdisp->macosx_cmd ) gevent.u.chr.state |= ksm_control;
 /*#endif*/
 	gevent.u.chr.x = event->xkey.x;
 	gevent.u.chr.y = event->xkey.y;
@@ -2480,6 +2480,8 @@ return;
 	gevent.u.mouse.x = event->xbutton.x;
 	gevent.u.mouse.y = event->xbutton.y;
 	gevent.u.mouse.button = event->xbutton.button;
+	if ( (event->xbutton.state&0x40) && gdisp->twobmouse_win )
+	    gevent.u.mouse.button = 2;
 	if ( event->type == MotionNotify ) {
 	    gevent.type = et_mousemove;
 	    gevent.u.mouse.button = 0;
@@ -3269,6 +3271,7 @@ static void GXResourceInit(GXDisplay *gdisp,char *programname) {
     GResStruct res[20];
     int dithertemp; double sizetemp, sizetempcm;
     int depth = -1, vc = -1, cmpos;
+    int tbf = 1, mxc = 1;
 
     rmatom = XInternAtom(gdisp->display,"RESOURCE_MANAGER",true);
     if ( rmatom!=None ) {
@@ -3300,6 +3303,8 @@ static void GXResourceInit(GXDisplay *gdisp,char *programname) {
     res[i].resname = "ScreenWidthCentimeters"; res[i].type = rt_double; res[i].val = &sizetempcm; ++i;
     res[i].resname = "Depth"; res[i].type = rt_int; res[i].val = &depth; ++i;
     res[i].resname = "VisualClass"; res[i].type = rt_string; res[i].val = &vc; res[i].cvt=vc_cvt; ++i;
+    res[i].resname = "TwoButtonFixup"; res[i].type = rt_int; res[i].val = &tbf; ++i;
+    res[i].resname = "MacOSXCmd"; res[i].type = rt_int; res[i].val = &mxc; ++i;
     res[i].resname = NULL;
     GResourceFind(res,NULL);
 
@@ -3308,6 +3313,8 @@ static void GXResourceInit(GXDisplay *gdisp,char *programname) {
     else if ( sizetemp>=1 )
 	gdisp->res = gdisp->groot->pos.width/sizetemp;
     gdisp->desired_depth = depth; gdisp->desired_vc = vc;
+    gdisp->macosx_cmd = mxc;
+    gdisp->twobmouse_win = tbf;
 }
 
 static GWindow GXPrinterStartJob(GDisplay *gdisp,void *user_data,GPrinterAttrs *attrs) {

@@ -210,10 +210,11 @@ GTextInfo *GTextInfoCopy(GTextInfo *ti) {
     if ( ti->text!=NULL ) {
 	if ( ti->text_in_resource ) {
 	    copy->text = u_copy((unichar_t *) GStringGetResource((int) copy->text,&copy->mnemonic));
-	    copy->text_in_resource = true;
-	} else if ( ti->text_is_1byte )
+	    copy->text_in_resource = false;
+	} else if ( ti->text_is_1byte ) {
 	    copy->text = uc_copy((char *) copy->text);
-	else
+	    copy->text_is_1byte = false;
+	} else
 	    copy->text = u_copy(copy->text);
     }
 return( copy);
@@ -352,6 +353,7 @@ return( NULL );
 		arr[i].ti.text = uc_copy((char *) mi[i].ti.text);
 	    else
 		arr[i].ti.text = u_copy(mi[i].ti.text);
+	    arr[i].ti.text_in_resource = arr[i].ti.text_is_1byte = false;
 	}
 	if ( islower(arr[i].ti.mnemonic))
 	    arr[i].ti.mnemonic = toupper(arr[i].ti.mnemonic);

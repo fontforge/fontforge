@@ -870,6 +870,10 @@ return( true );
 	for ( m=mb->child; m->child!=NULL; m = m->child );
 return( GMenuSpecialKeys(m,event->u.chr.keysym,event));
     }
+
+    if ( event->u.chr.keysym==GK_Menu )
+	GMenuCreatePopupMenu(event->w,event, mb->mi);
+
 return( false );
 }
 

@@ -77,7 +77,10 @@ SOFTWARE.
 #define GK_Page_Down		XK_Page_Down	
 #define GK_End			XK_End		
 #define GK_Begin		XK_Begin	
-                                                
+
+#define GK_Menu			XK_Menu
+#define GK_Help			XK_Help
+
 #define GK_KP_Home		XK_KP_Home	
 #define GK_KP_Left		XK_KP_Left	
 #define GK_KP_Up		XK_KP_Up	
@@ -168,5 +171,4 @@ SOFTWARE.
 #define GK_Hyper_R		XK_Hyper_R	 
 
 
-#define GK_Help			XK_Help
 #endif

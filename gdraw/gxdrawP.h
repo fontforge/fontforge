@@ -166,6 +166,8 @@ typedef struct gxdisplay /* : GDisplay */ {
     unsigned int wm_breaks_raiseabove: 1;
     unsigned int wm_raiseabove_tested: 1;
     unsigned int endian_mismatch: 1;
+    unsigned int macosx_cmd: 1;		/* if set then map state=0x20 to control */
+    unsigned int twobmouse_win: 1;	/* if set then map state=0x40 to mouse button 2 */
     struct gcstate gcstate[2];			/* 0 is state for normal images, 1 for bitmap (pixmaps) */
     Display *display;
     Window root;
