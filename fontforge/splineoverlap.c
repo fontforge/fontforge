@@ -889,6 +889,7 @@ static void FigureProperMonotonicsAtIntersections(Intersection *ilist) {
 		break;
 		}
 		if ( ml2!=NULL ) {
+		    if ( ml2==mlnext ) mlnext = ml2->next;
 		    p2->next = ml2->next;
 		    chunkfree(ml2,sizeof(*ml2));
 		}
