@@ -1895,9 +1895,9 @@ fi
 FreeType2_IncRoot=
 if sh -c "freetype-config --prefix" >/dev/null 2>&1 ; then
  FreeType2_IncRoot=`freetype-config --prefix`
- as_ac_File=`echo "ac_cv_file_$temp/include/freetype2" | $as_tr_sh`
-echo "$as_me:1899: checking for $temp/include/freetype2" >&5
-echo $ECHO_N "checking for $temp/include/freetype2... $ECHO_C" >&6
+ as_ac_File=`echo "ac_cv_file_$FreeType2_IncRoot/include/freetype2" | $as_tr_sh`
+echo "$as_me:1899: checking for $FreeType2_IncRoot/include/freetype2" >&5
+echo $ECHO_N "checking for $FreeType2_IncRoot/include/freetype2... $ECHO_C" >&6
 if eval "test \"\${$as_ac_File+set}\" = set"; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
@@ -1905,7 +1905,7 @@ else
   { { echo "$as_me:1905: error: cannot check for file existence when cross compiling" >&5
 echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
    { (exit 1); exit 1; }; }
-if test -r "$temp/include/freetype2"; then
+if test -r "$FreeType2_IncRoot/include/freetype2"; then
   eval "$as_ac_File=yes"
 else
   eval "$as_ac_File=no"
@@ -1914,7 +1914,7 @@ fi
 echo "$as_me:1914: result: `eval echo '${'$as_ac_File'}'`" >&5
 echo "${ECHO_T}`eval echo '${'$as_ac_File'}'`" >&6
 if test `eval echo '${'$as_ac_File'}'` = yes; then
-  CFLAGS="$CFLAGS -I$temp/include/freetype2/"
+  CFLAGS="$CFLAGS -I$FreeType2_IncRoot/include/freetype2/"
 else
   FreeType2_IncRoot=
 fi
