@@ -577,6 +577,7 @@ static void dumpgposkerndata(FILE *gpos,SplineFont *sf,int sli,
     SplineChar **glyphs;
     KernPair *kp;
     uint32 script = sf->script_lang[sli][0].script;
+    int isr2l = ScriptIsRightToLeft(script);
 
     glyphs = generateGlyphList(sf,true,sli,NULL);
     cnt=0;
@@ -588,13 +589,13 @@ static void dumpgposkerndata(FILE *gpos,SplineFont *sf,int sli,
     putshort(gpos,1);		/* format 1 of the pair adjustment subtable */
     coverage_pos = ftell(gpos);
     putshort(gpos,0);		/* offset to coverage table */
-    if ( ScriptIsRightToLeft(script) ) {
+    if ( isr2l ) {
 	/* Right to left kerns modify the second character's width */
 	/*  this doesn't make sense to me, but who am I to argue */
 	putshort(gpos,0x0000);	/* leave first char alone */
-	putshort(gpos,0x0004);	/* Alter XAdvance of second character */
+	putshort(gpos,0x0004);	/* Alter RSideBearing & XAdvance of second character */
     } else {
-	putshort(gpos,0x0004);	/* Alter XAdvance of first character */
+	putshort(gpos,0x0005);	/* Alter XAdvance of first character */
 	putshort(gpos,0x0000);	/* leave second char alone */
     }
     putshort(gpos,cnt);
@@ -632,6 +633,8 @@ static void dumpgposkerndata(FILE *gpos,SplineFont *sf,int sli,
 	for ( j=0; j<pcnt; ++j ) {
 	    putshort(gpos,seconds[j]);
 	    putshort(gpos,changes[j]);
+	    if ( isr2l )
+		putshort(gpos,changes[j]);
 	}
     }
     free(seconds);
