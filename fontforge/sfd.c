@@ -827,6 +827,13 @@ static void putstring(FILE *sfd, char *header, char *body) {
 const char *EncName(int encname) {
     static char buffer[40];
 
+    if ( encname==em_custom )
+return( "Custom" );
+    if ( encname==em_compacted )
+return( "Compacted" );
+    if ( encname==em_original )
+return( "Original" );
+
     if ( encname>=em_unicodeplanes && encname<=em_unicodeplanesmax ) {
 	sprintf(buffer, "UnicodePlane%d", encname-em_unicodeplanes );
 return( buffer );
@@ -957,9 +964,11 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 	/*fprintf(sfd, "HheadDescent: %d\n", sf->pfminfo.hhead_descent );*/
 	fprintf(sfd, "OS2TypoAscent: %d\n", sf->pfminfo.os2_typoascent );
 	fprintf(sfd, "OS2TypoDescent: %d\n", sf->pfminfo.os2_typodescent );
-	fprintf(sfd, "OS2WinAscent: %d\n", sf->pfminfo.os2_winascent );
-	fprintf(sfd, "OS2WinDescent: %d\n", sf->pfminfo.os2_windescent );
     }
+    fprintf(sfd, "OS2WinAscent: %d\n", sf->pfminfo.os2_winascent );
+    fprintf(sfd, "OS2WinAOffset: %d\n", sf->pfminfo.winascent_add );
+    fprintf(sfd, "OS2WinDescent: %d\n", sf->pfminfo.os2_windescent );
+    fprintf(sfd, "OS2WinDOffset: %d\n", sf->pfminfo.windescent_add );
     if ( sf->macstyle!=-1 )
 	fprintf(sfd, "MacStyle: %d\n", sf->macstyle );
     if ( sf->script_lang ) {
@@ -2761,9 +2770,14 @@ static enum charset SFDGetEncoding(FILE *sfd, char *tok, SplineFont *sf) {
 	if ( encname == em_none &&
 		sscanf(tok,"UnicodePlane%d",&val)==1 )
 	    encname = val+em_unicodeplanes;
-	if ( encname == em_none && strcmp(tok,"compacted")==0 ) {
-	    encname = em_none;
-	    sf->compacted = true;
+	if ( encname == em_none ) {
+	    if ( strmatch(tok,"compacted")==0 ) {
+		encname = em_none;
+		sf->compacted = true;
+	    } else if ( strmatch(tok,"Custom")==0 )
+		encname = em_custom;
+	    else if ( strmatch(tok,"Original")==0 )
+		encname = em_original;
 	}
     }
 return( encname );
@@ -3189,6 +3203,14 @@ static void SFDCleanupFont(SplineFont *sf) {
     SFDCleanupAnchorClasses(sf);
     if ( sf->uni_interp==ui_unset )
 	sf->uni_interp = interp_from_encoding(sf->encoding_name,ui_none);
+
+    /* Fixup for an old bug */
+    if ( sf->pfminfo.os2_winascent < sf->ascent/4 && !sf->pfminfo.winascent_add ) {
+	sf->pfminfo.winascent_add = true;
+	sf->pfminfo.os2_winascent = 0;
+	sf->pfminfo.windescent_add = true;
+	sf->pfminfo.os2_windescent = 0;
+    }
 }
 
 static void MMInferStuff(MMSet *mm) {
@@ -3304,6 +3326,12 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    getsint(sfd,&sf->pfminfo.os2_winascent);
 	} else if ( strmatch(tok,"OS2WinDescent:")==0 ) {
 	    getsint(sfd,&sf->pfminfo.os2_windescent);
+	} else if ( strmatch(tok,"OS2WinAOffset:")==0 ) {
+	    int temp;
+	    getint(sfd,&temp); sf->pfminfo.winascent_add = temp;
+	} else if ( strmatch(tok,"OS2WinDOffset:")==0 ) {
+	    int temp;
+	    getint(sfd,&temp); sf->pfminfo.windescent_add = temp;
 	} else if ( strmatch(tok,"MacStyle:")==0 ) {
 	    getsint(sfd,&sf->macstyle);
 	} else if ( strmatch(tok,"DisplaySize:")==0 ) {
