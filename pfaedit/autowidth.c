@@ -1636,6 +1636,7 @@ int AutoWidthScript(SplineFont *sf,int spacing) {
 return( 0 );
     }
     wi.done = true;
+    InitCharPairs(&wi);
     BuildCharPairs(&wi);
     AutoWidth(&wi);
     FreeCharList(wi.left);
@@ -1644,7 +1645,7 @@ return( 0 );
 return( true );
 }
 
-int AutoKernScript(SplineFont *sf,int spacing, int threshold) {
+int AutoKernScript(SplineFont *sf,int spacing, int threshold,char *kernfile) {
     WidthInfo wi;
 
     memset(&wi,'\0',sizeof(wi));
@@ -1654,11 +1655,17 @@ int AutoKernScript(SplineFont *sf,int spacing, int threshold) {
     wi.spacing = spacing;    
     wi.threshold = threshold;    
 
-    wi.left = autowidthBuildCharList(wi.sf,CID_LeftBase, &wi.lcnt );
-    wi.right = autowidthBuildCharList(wi.sf,CID_RightBase, &wi.rcnt );
-    if ( wi.lcnt==0 || wi.rcnt==0 ) {
-	FreeCharList(wi.left);
-	FreeCharList(wi.right);
+    if ( kernfile==NULL ) {
+	wi.left = autowidthBuildCharList(wi.sf,CID_LeftBase, &wi.lcnt );
+	wi.right = autowidthBuildCharList(wi.sf,CID_RightBase, &wi.rcnt );
+	if ( wi.lcnt==0 || wi.rcnt==0 ) {
+	    FreeCharList(wi.left);
+	    FreeCharList(wi.right);
+return( false );
+	}
+	InitCharPairs(&wi);
+    } else {
+	if ( !ReadKernPairFile(uc_copy(kernfile),&wi))
 return( false );
     }
     wi.done = true;

@@ -1483,11 +1483,13 @@ static void bAutoWidth(Context *c) {
 static void bAutoKern(Context *c) {
     SplineFont *sf = c->curfv->sf;
 
-    if ( c->a.argc != 3 )
-	error( c, "Wrong number of arguments to AutoKern");
-    if ( c->a.vals[1].type!=v_int && c->a.vals[2].type!=v_int)
-	error(c,"Bad argument type in AutoKern");
-    if ( !AutoKernScript(sf,c->a.vals[1].u.ival,c->a.vals[2].u.ival))
+    if ( c->a.argc != 3 && c->a.argc != 4 )
+	error( c, "Wrong number of arguments");
+    if ( c->a.vals[1].type!=v_int || c->a.vals[2].type!=v_int ||
+	    (c->a.argc==4 && c->a.vals[3].type!=v_str))
+	error(c,"Bad argument type");
+    if ( !AutoKernScript(sf,c->a.vals[1].u.ival,c->a.vals[2].u.ival,
+	    c->a.argc==4?c->a.vals[3].u.sval:NULL) )
 	error(c,"No characters selected.");
 }
 

@@ -823,10 +823,11 @@ a[4][0] = "Nested array";
     Guesses at the widths of all selected characters so that two adjacent "I"
     characters will appear to be spacing em-units apart.
   <DT>
-    AutoKern(spacing,threshold)
+    AutoKern(spacing,threshold[,kernfile])
   <DD>
     (AutoKern doesn't work well in general)<BR>
-    Guesses at kerning pairs by looking at all selected characters.
+    Guesses at kerning pairs by looking at all selected characters, or if a kernfile
+    is specified, PfaEdit will read the kern pairs out of the file.
   <DT>
     SetKern(ch2,offset)
   <DD>
