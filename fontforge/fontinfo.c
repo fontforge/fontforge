@@ -292,9 +292,192 @@ static GTextInfo panxheight[] = {
     { (unichar_t *) _STR_DuckingStandard, NULL, 0, 0, (void *) 6, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_DuckingLarge, NULL, 0, 0, (void *) 7, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { NULL }};
+static struct ms_2_locales { char *loc_name; int local_id; } ms_2_locals[] = {
+    { "af", 0x436 },
+    { "sq_AL", 0x41c },
+    { "am", 0x45e },
+    { "ar_SA", 0x401 },
+    { "ar_IQ", 0x801 },
+    { "ar_EG", 0xc01 },
+    { "ar_LY", 0x1001 },
+    { "ar_DZ", 0x1401 },
+    { "ar_MA", 0x1801 },
+    { "ar_TN", 0x1C01 },
+    { "ar_OM", 0x2001 },
+    { "ar_YE", 0x2401 },
+    { "ar_SY", 0x2801 },
+    { "ar_JO", 0x2c01 },
+    { "ar_LB", 0x3001 },
+    { "ar_KW", 0x3401 },
+    { "ar_AE", 0x3801 },
+    { "ar_BH", 0x3c01 },
+    { "ar_QA", 0x4001 },
+    { "hy", 0x42b },
+    { "as", 0x44d },
+    { "az", 0x42c },
+    { "az", 0x82c },
+    { "eu", 0x42d },
+    { "be_BY", 0x423 },
+    { "bn_IN", 0x445 },
+    { "bg_BG", 0x402 },
+    { "my", 0x455 },
+    { "ca", 0x403 },
+    { "km", 0x453 },
+    { "zh_TW", 0x404 },		/* Trad */
+    { "zh_CN", 0x804 },		/* Simp */
+    { "zh_HK", 0xc04 },		/* Trad */
+    { "zh_SG", 0x1004 },	/* Simp */
+    { "zh_MO", 0x1404 },	/* Trad */
+    { "hr", 0x41a },
+    { "cs_CZ", 0x405 },
+    { "da_DK", 0x406 },
+    { "nl_NL", 0x413 },
+    { "nl_BE", 0x813 },
+    { "en_UK", 0x809 },
+    { "en_US", 0x409 },
+    { "en_CA", 0x1009 },
+    { "en_AU", 0xc09 },
+    { "en_NZ", 0x1409 },
+    { "en_IE", 0x1809 },
+    { "en_ZA", 0x1c09 },
+    { "en_JM", 0x2009 },
+    { "en", 0x2409 },
+    { "en_BZ", 0x2809 },
+    { "en_TT", 0x2c09 },
+    { "en_ZW", 0x3009 },
+    { "en_PH", 0x3409 },
+    { "et_EE", 0x425 },
+    { "fo", 0x438 },
+    { "fa", 0x429 },
+    { "fi_FI", 0x40b },
+    { "fr_FR", 0x40c },
+    { "fr_BE", 0x80c },
+    { "fr_CA", 0xc0c },
+    { "fr_CH", 0x100c },
+    { "fr_LU", 0x140c },
+    { "fy", 0x462 },
+    { "gl", 0x456 },
+    { "ka", 0x437 },
+    { "de_DE", 0x407 },
+    { "de_CH", 0x807 },
+    { "de_AT", 0xc07 },
+    { "de_LU", 0x1007 },
+    { "de_LI", 0x1407 },
+    { "el_GR", 0x408 },
+    { "ga", 0x83c },
+    { "gd", 0x43c },
+    { "gn", 0x474 },
+    { "gu", 0x447 },
+    { "ha", 0x468 },
+    { "he_IL", 0x40d },
+    { "iw", 0x40d },		/* Obsolete name for Hebrew */
+    { "hi", 0x439 },
+    { "hu_HU", 0x40e },
+    { "is_IS", 0x40f },
+    { "id", 0x421 },
+    { "in", 0x421 },		/* Obsolete name for Indonesean */
+    { "iu", 0x45d },
+    { "it_IT", 0x410 },
+    { "it_CH", 0x810 },
+    { "ja_JP", 0x411 },
+    { "kn", 0x44b },
+    { "ks_IN", 0x860 },
+    { "kk", 0x43f },
+    { "ky", 0x440 },
+    { "kok", 0x457 },
+    { "ko", 0x412 },
+    { "ko", 0x812 },	/*Johab */
+    { "lo", 0x454 },
+    { "la", 0x476 },
+    { "lv_LV", 0x426 },
+    { "lt_LT", 0x427 },
+    { "lt", 0x827 },	/* Classic */
+    { "mk", 0x42f },
+    { "ms", 0x43e },
+    { "ms", 0x83e },
+    { "ml", 0x44c },
+    { "mt", 0x43a },
+    { "mr", 0x44e },
+    { "mn", 0x450 },
+    { "ne_NP", 0x461 },
+    { "ne_IN", 0x861 },
+    { "no_NO", 0x414 },	/* Bokmal */
+    { "no_NO", 0x814 },	/* Nynorsk */
+    { "or", 0x448 },
+    { "om", 0x472 },
+    { "ps", 0x463 },
+    { "pl_PL", 0x415 },
+    { "pt_PT", 0x416 },
+    { "pt_BR", 0x816 },
+    { "pa", 0x446 },
+    { "rm", 0x417 },
+    { "ro_RO", 0x418 },
+    { "ro_MD", 0x818 },
+    { "ru_RU", 0x419 },
+    { "ru_MD", 0x819 },
+    { "smi", 0x43b },
+    { "sa", 0x43b },
+    { "sr", 0xc1a },	/* Cyrillic */
+    { "sr", 0x81a },	/* Latin */
+    { "sd", 0x459 },
+    { "si", 0x45b },
+    { "sk_SK", 0x41b },
+    { "sl_SI", 0x424 },
+    { "wen", 0x42e },
+    { "es_ES", 0x40a },	/* traditional spanish */
+    { "es_MX", 0x80a },
+    { "es_ES", 0xc0a },	/* Modern spanish */
+    { "es_GT", 0x100a },
+    { "es_CR", 0x140a },
+    { "es_PA", 0x180a },
+    { "es_DO", 0x1c0a },
+    { "es_VE", 0x200a },
+    { "es_CO", 0x240a },
+    { "es_PE", 0x280a },
+    { "es_AR", 0x2c0a },
+    { "es_EC", 0x300a },
+    { "es_CL", 0x340a },
+    { "es_UY", 0x380a },
+    { "es_PY", 0x3c0a },
+    { "es_BO", 0x400a },
+    { "es_SV", 0x440a },
+    { "es_HN", 0x480a },
+    { "es_NI", 0x4c0a },
+    { "es_PR", 0x500a },
+    { "sutu", 0x430 },
+    { "sw_KE", 0x441 },
+    { "sv_SE", 0x41d },
+    { "sv_FI", 0x81d },
+    { "tl", 0x464 },
+    { "tg", 0x464 },
+    { "ta", 0x449 },
+    { "tt", 0x444 },
+    { "te", 0x44a },
+    { "th", 0x41e },
+    { "bo", 0x451 },
+    { "ti", 0x473 },
+    { "ts", 0x431 },
+    { "tn", 0x432 },
+    { "tr_TR", 0x41f },
+    { "tk", 0x442 },
+    { "uk_UA", 0x422 },
+    { "ur_PK", 0x420 },
+    { "ur_IN", 0x820 },
+    { "uz", 0x443 },	/* Latin */
+    { "uz", 0x843 },	/* Cyrillic */
+    { "ven", 0x433 },
+    { "vi", 0x42a },
+    { "cy", 0x452 },
+    { "xh", 0x434 },
+    { "yi", 0x43d },
+    { "ji", 0x43d },	/* Obsolete Yiddish */
+    { "yo", 0x46a },
+    { "zu", 0x435 },
+    { NULL }};
 static GTextInfo mslanguages[] = {
     { (unichar_t *) _STR_Afrikaans, NULL, 0, 0, (void *) 0x436, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Albanian, NULL, 0, 0, (void *) 0x41c, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Amharic, NULL, 0, 0, (void *) 0x45e, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Arabic, NULL, 0, 0, (void *) 0x401, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_IraqArabic, NULL, 0, 0, (void *) 0x801, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_EgyptArabic, NULL, 0, 0, (void *) 0xc01, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -319,7 +502,10 @@ static GTextInfo mslanguages[] = {
     { (unichar_t *) _STR_Byelorussian, NULL, 0, 0, (void *) 0x423, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Bengali, NULL, 0, 0, (void *) 0x445, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Bulgarian, NULL, 0, 0, (void *) 0x402, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Burmese, NULL, 0, 0, (void *) 0x455, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Catalan, NULL, 0, 0, (void *) 0x403, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Cambodian, NULL, 0, 0, (void *) 0x453, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Cherokee, NULL, 0, 0, (void *) 0x45c, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_MSChinese, NULL, 0, 0, (void *) 0x404, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_PRCChinese, NULL, 0, 0, (void *) 0x804, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_HKChinese, NULL, 0, 0, (void *) 0xc04, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -330,6 +516,7 @@ static GTextInfo mslanguages[] = {
     { (unichar_t *) _STR_Danish, NULL, 0, 0, (void *) 0x406, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Dutch, NULL, 0, 0, (void *) 0x413, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Flemish, NULL, 0, 0, (void *) 0x813, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Edo, NULL, 0, 0, (void *) 0x466, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_BrEnglish, NULL, 0, 0, (void *) 0x809, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_AmEnglish, NULL, 0, 0, (void *) 0x409, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_CaEnglish, NULL, 0, 0, (void *) 0x1009, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -352,6 +539,11 @@ static GTextInfo mslanguages[] = {
     { (unichar_t *) _STR_CAFrench, NULL, 0, 0, (void *) 0xc0c, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_CHFrench, NULL, 0, 0, (void *) 0x100c, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_LUFrench, NULL, 0, 0, (void *) 0x140c, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Frisian, NULL, 0, 0, (void *) 0x462, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Fulfulde, NULL, 0, 0, (void *) 0x467, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Galician, NULL, 0, 0, (void *) 0x467, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_ScotGaelic, NULL, 0, 0, (void *) 0x43c, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_IrishGaelic, NULL, 0, 0, (void *) 0x83c, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Georgian, NULL, 0, 0, (void *) 0x437, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_DEGerman, NULL, 0, 0, (void *) 0x407, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_CHGerman, NULL, 0, 0, (void *) 0x807, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -359,32 +551,50 @@ static GTextInfo mslanguages[] = {
     { (unichar_t *) _STR_LUGerman, NULL, 0, 0, (void *) 0x1007, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_LIGerman, NULL, 0, 0, (void *) 0x1407, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Greek, NULL, 0, 0, (void *) 0x408, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Guarani, NULL, 0, 0, (void *) 0x474, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Gujarati, NULL, 0, 0, (void *) 0x447, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Hausa, NULL, 0, 0, (void *) 0x468, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Hawaiian, NULL, 0, 0, (void *) 0x475, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Hebrew, NULL, 0, 0, (void *) 0x40d, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Hindi, NULL, 0, 0, (void *) 0x439, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Hungarian, NULL, 0, 0, (void *) 0x40e, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Ibibio, NULL, 0, 0, (void *) 0x469, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Igbo, NULL, 0, 0, (void *) 0x470, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Icelandic, NULL, 0, 0, (void *) 0x40f, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Indonesian, NULL, 0, 0, (void *) 0x421, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Inuktitut, NULL, 0, 0, (void *) 0x45d, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Italian, NULL, 0, 0, (void *) 0x410, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_CHItalian, NULL, 0, 0, (void *) 0x810, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Japanese, NULL, 0, 0, (void *) 0x411, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Kannada, NULL, 0, 0, (void *) 0x44b, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Kanuri, NULL, 0, 0, (void *) 0x471, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Kashmiri, NULL, 0, 0, (void *) 0x860, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Kazakh, NULL, 0, 0, (void *) 0x43f, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Kirghiz, NULL, 0, 0, (void *) 0x440, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Konkani, NULL, 0, 0, (void *) 0x457, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_LangKorean, NULL, 0, 0, (void *) 0x412, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_LangKoreanJohab, NULL, 0, 0, (void *) 0x812, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Latvian, NULL, 0, 0, (void *) 0x426, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Laothian, NULL, 0, 0, (void *) 0x454, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Latin, NULL, 0, 0, (void *) 0x476, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Lithuanian, NULL, 0, 0, (void *) 0x427, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_ClassLithuanian, NULL, 0, 0, (void *) 0x827, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Macedonian, NULL, 0, 0, (void *) 0x42f, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Malay, NULL, 0, 0, (void *) 0x43e, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_BruMalay, NULL, 0, 0, (void *) 0x83e, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Malayalam, NULL, 0, 0, (void *) 0x44c, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Manipuri, NULL, 0, 0, (void *) 0x458, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Maltese, NULL, 0, 0, (void *) 0x43a, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Marathi, NULL, 0, 0, (void *) 0x44e, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Mongolian, NULL, 0, 0, (void *) 0x450, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Nepali, NULL, 0, 0, (void *) 0x461, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_IndNepali, NULL, 0, 0, (void *) 0x861, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Norwegian, NULL, 0, 0, (void *) 0x414, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_NorwegianN, NULL, 0, 0, (void *) 0x814, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Oriya, NULL, 0, 0, (void *) 0x448, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Oromo, NULL, 0, 0, (void *) 0x472, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Papiamentu, NULL, 0, 0, (void *) 0x479, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Pashto, NULL, 0, 0, (void *) 0x463, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Polish, NULL, 0, 0, (void *) 0x415, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_PTPortuguese, NULL, 0, 0, (void *) 0x416, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_BRPortuguese, NULL, 0, 0, (void *) 0x816, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -399,6 +609,7 @@ static GTextInfo mslanguages[] = {
     { (unichar_t *) _STR_Serbian, NULL, 0, 0, (void *) 0xc1a, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_LatSerbian, NULL, 0, 0, (void *) 0x81a, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Sindhi, NULL, 0, 0, (void *) 0x459, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Sinhalese, NULL, 0, 0, (void *) 0x45b, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Slovak, NULL, 0, 0, (void *) 0x41b, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Slovenian, NULL, 0, 0, (void *) 0x424, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Sorbian, NULL, 0, 0, (void *) 0x42e, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -426,13 +637,19 @@ static GTextInfo mslanguages[] = {
     { (unichar_t *) _STR_Swahili, NULL, 0, 0, (void *) 0x441, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Swedish, NULL, 0, 0, (void *) 0x41d, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_FinSwedish, NULL, 0, 0, (void *) 0x81d, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Tagalog, NULL, 0, 0, (void *) 0x464, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Tajik, NULL, 0, 0, (void *) 0x428, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Tamazight, NULL, 0, 0, (void *) 0x45f, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Tamil, NULL, 0, 0, (void *) 0x449, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Tatar, NULL, 0, 0, (void *) 0x444, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Telugu, NULL, 0, 0, (void *) 0x44a, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_LangThai, NULL, 0, 0, (void *) 0x41e, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Tibetan, NULL, 0, 0, (void *) 0x451, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Tigrinya, NULL, 0, 0, (void *) 0x473, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Tsonga, NULL, 0, 0, (void *) 0x431, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Tswana, NULL, 0, 0, (void *) 0x432, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Turkish, NULL, 0, 0, (void *) 0x41f, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Turkmen, NULL, 0, 0, (void *) 0x442, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Ukrainian, NULL, 0, 0, (void *) 0x422, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Urdu, NULL, 0, 0, (void *) 0x420, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_IndUrdu, NULL, 0, 0, (void *) 0x820, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -440,8 +657,11 @@ static GTextInfo mslanguages[] = {
     { (unichar_t *) _STR_CyrUzbek, NULL, 0, 0, (void *) 0x843, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Venda, NULL, 0, 0, (void *) 0x433, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Vietnamese, NULL, 0, 0, (void *) 0x42a, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Welsh, NULL, 0, 0, (void *) 0x452, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Xhosa, NULL, 0, 0, (void *) 0x434, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Yi, NULL, 0, 0, (void *) 0x478, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Yiddish, NULL, 0, 0, (void *) 0x43d, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Yoruba, NULL, 0, 0, (void *) 0x46a, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Zulu, NULL, 0, 0, (void *) 0x435, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { NULL }};
 static GTextInfo ttfnameids[] = {
@@ -3846,29 +4066,43 @@ static int GFI_LanguageChange(GGadget *g, GEvent *e) {
 return( true );
 }
 
-static int LangSearch(GTextInfo **langs,const char *lang) {
-    int i,reslen, found=-1, samelang=-1;
-    const unichar_t *res;
+static int LangSearch(GTextInfo **langs,int langlocalecode,int langcode) {
+    int i, found=-1, samelang=-1;
+    int code;
 
-    if ( strlen(lang)<5 ) {
-	IError( "Bad language" );
-return( -1 );
-    }
-    
-    for ( i=0; langs[i]->text!=NULL; ++i ) {
-	res = langs[i]->text;
-	if ( res==NULL )
-    continue;
-	reslen = u_strlen(res);
-	if ( langs[i]->fg == COLOR_CREATE(0x00,0x80,0x00) ) {
-	    if ( reslen>=5 && uc_strncmp(res+reslen-5,lang,5)==0 ) {
-		found = i;
-    break;
-	    /* Use the first locale of the language. It usually specifies the standard */
-	    } else if ( samelang==-1 &&
-		    (( reslen>=5 && uc_strncmp(res+reslen-5,lang,2)==0 ) ||
-		     ( reslen>=2 && uc_strncmp(res+reslen-2,lang,2)==0 ))) {
-		samelang = i;
+    /* Special checks for chinese. Tradition & Simplified are distinct */
+    if ( langcode!=0x4 || langlocalecode==-1 ) {
+	for ( i=0; langs[i]->text!=NULL; ++i ) {
+	    code = (intpt) (langs[i]->userdata);
+	    if ( langs[i]->fg == COLOR_CREATE(0x00,0x80,0x00) ) {
+		if ( code==langlocalecode ) {
+		    found = i;
+	break;
+		} else if ( (code&0xff)==langcode )
+		    samelang = i;
+	    }
+	}
+    } else if ( langlocalecode == 0x404 || langlocalecode == 0xc04 || langlocalecode==0x1404 ) {
+    /* Don't confuse simplified & traditional chinese */
+	for ( i=0; langs[i]->text!=NULL; ++i ) {
+	    code = (intpt) (langs[i]->userdata);
+	    if ( langs[i]->fg == COLOR_CREATE(0x00,0x80,0x00) ) {
+		if ( code==langlocalecode ) {
+		    found = i;
+	break;
+		} else if ( code==0x404 || code == 0xc04 || code==0x1404 )
+		    samelang = i;
+	    }
+	}
+    } else {
+	for ( i=0; langs[i]->text!=NULL; ++i ) {
+	    code = (intpt) (langs[i]->userdata);
+	    if ( langs[i]->fg == COLOR_CREATE(0x00,0x80,0x00) ) {
+		if ( code==langlocalecode ) {
+		    found = i;
+	break;
+		} else if ( code==0x804 || code == 0x1004 )
+		    samelang = i;
 	    }
 	}
     }
@@ -3884,7 +4118,8 @@ static void DefaultLanguage(struct gfi_data *d) {
     unichar_t versionbuf[40];
     int32 len;
     GTextInfo **langs;
-    char buffer[6];
+    char langcountry[8], language[4];
+    int langcode, langlocalecode;
 
     d->old_lang = -1;
     d->names_set = true;
@@ -3909,49 +4144,49 @@ static void DefaultLanguage(struct gfi_data *d) {
 	    langlen = strlen(lang);
 	    if (( langlen>5 && lang[5]=='.' && lang[2]=='_' ) ||
 		    (langlen==5 && lang[2]=='_' ) ||
-		    (langlen==2))
+		    (langlen==2) ||
+		    (langlen==3))	/* Some obscure languages have a 3 letter code */
 		/* I understand this language */
     break;
 	}
     }
-    if ( lang==NULL ) {
+    if ( lang==NULL )
 	lang = "en_US";
-    } else if ( langlen==2 ) {
-	/* Guess that the default locale has the same two letter code as language */
-	sprintf( buffer, "%s_%c%c", lang, toupper(lang[0]), toupper(lang[1]));
-	lang = buffer;
+    strncpy(langcountry,lang,5); langcountry[5] = '\0';
+    strncpy(language,lang,3); language[3] = '\0';
+    if ( language[2]=='_' ) language[2] = '\0';
+    langlen = strlen(language);
+
+    langcode = langlocalecode = -1;
+    for ( i=0; ms_2_locals[i].loc_name!=NULL; ++i ) {
+	if ( strmatch(langcountry,ms_2_locals[i].loc_name)==0 ) {
+	    langlocalecode = ms_2_locals[i].local_id;
+	    langcode = langlocalecode&0xff;
+    break;
+	} else if ( strncmp(language,ms_2_locals[i].loc_name,langlen)==0 )
+	    langcode = ms_2_locals[i].local_id&0xff;
     }
-    /* Special checks for chinese. Tradition & Simplified are distinct */
-    if ( strncmp(lang,"zh",2)!=0 )
-	found = LangSearch(langs,lang);
-    else if ( strncmp(lang,"zh_HK",5)==0 || strncmp(lang,"zh_TW",5)==0 ) {
-	for ( found=len-1; found>=0; --found ) {
-	    if ( langs[found]->fg == COLOR_CREATE(0x00,0x80,0x00)) {
-		if ( ((intpt) (langs[found]->userdata)) == 0x404 ||
-			((intpt) (langs[found]->userdata)) == 0xc04 )
-	break;
-	    }
-	}
-    } else {
-	for ( found=len-1; found>=0; --found ) {
-	    if ( langs[found]->fg == COLOR_CREATE(0x00,0x80,0x00)) {
-		if ( ((intpt) (langs[found]->userdata)) == 0x804 )
-	break;
-	    }
-	}
+    if ( langcode==-1 ) {		/* Default to English */
+	langlocalecode = 0x409;
+	langcode = 0x9;
     }
-    if ( found==-1 ) {
-	/* Search for English */
-	for ( found=len-1; found>=0; --found ) {
-	    if ( langs[found]->fg == COLOR_CREATE(0x00,0x80,0x00)) {
-		if ( (((intpt) (langs[found]->userdata)) & 0xff )== 0x09 )
-	break;
-	    }
-	}
-    }
-    if ( found==-1 ) {
+
+    found = LangSearch(langs,langlocalecode,langcode);
+    if ( found==-1 )		/* Search for English */
+	found = LangSearch(langs,0x409,0x9);
+    if ( found==-1 ) {		/* Search for any existing string */
 	for ( found=len-1; found>=0; --found )
 	    if ( langs[found]->fg == COLOR_CREATE(0x00,0x80,0x00))
+	break;
+    }
+    if ( found==-1 ) {		/* Search for non-existant string in correct locale */
+	for ( found=len-1; found>=0; --found )
+	    if ( langs[found]->userdata == (void *) langlocalecode )
+	break;
+    }
+    if ( found==-1 ) {		/* Search for non-existant string in English */
+	for ( found=len-1; found>=0; --found )
+	    if ( langs[found]->userdata == (void *) 0x409 )
 	break;
     }
     if ( found==-1 ) found = 0;
