@@ -1294,7 +1294,7 @@ return( features );
 
 static struct feature *featuresOrderByType(struct feature *features) {
     struct feature *f, **all;
-    int i, j, cnt;
+    int i, j, cnt, saw_default;
 
     for ( cnt=0, f=features; f!=NULL; f=f->next, ++cnt );
     if ( cnt==1 ) {
@@ -1314,11 +1314,22 @@ return( features );
 	}
     }
     for ( i=0; i<cnt; ++i ) {
-	if ( !all[i]->needsOff && (i==cnt-1 || all[i]->featureType!=all[i+1]->featureType))
-	    all[i]->singleMutex = true;
-	else {
+	if ( !all[i]->needsOff && all[i]->mf!=NULL ) {
+	    /* mutexes with just 2 choices don't always follow the rule that 0 is off */
+	    if (i==cnt-1 || all[i]->featureType!=all[i+1]->featureType )
+		all[i]->singleMutex = true;
+	    saw_default = false;
+	    while ( i<cnt-1 && all[i]->featureType==all[i+1]->featureType ) {
+		++i;
+		if ( all[i]->featureSetting==0 ) saw_default = true;
+	    }
+	    --i;
+	    if ( !saw_default )
+		all[i]->singleMutex = true;
+	} else {
 	    while ( i<cnt-1 && all[i]->featureType==all[i+1]->featureType )
 		++i;
+	    --i;
 	}
     }
     for ( i=0; i<cnt-1; ++i )
@@ -1551,10 +1562,7 @@ static void morxDumpChain(struct alltabs *at,struct feature *features,int chain,
 		    putshort(at->morx,n->featureSetting+1);
 		    putlong(at->morx,offFlag);
 		    putlong(at->morx,~n->flag);
-		} else if ( n->singleMutex ) {
-		    /* This doesn't handle cursive connection where there */
-		    /*  are three choices. If we get the two on choices we */
-		    /*  won't generate code to turn them both off with 0 */
+		} else if ( n->singleMutex ) {		    
 		    putshort(at->morx,n->featureType);
 		    putshort(at->morx,n->featureSetting==0?1:0);
 		    putlong(at->morx,0);
