@@ -3666,6 +3666,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "RemoveAnchorClass", bRemoveAnchorClass },
     { "AddAnchorPoint", bAddAnchorPoint },
     { "BuildComposit", bBuildComposit },
+    { "BuildComposite", bBuildComposit },
     { "BuildAccented", bBuildAccented },
     { "MergeFonts", bMergeFonts },
 /*  Menu */
