@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 31-Mar-2003 -->
+  <!-- AP: Last modified: 1-Apr-2003 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -1219,6 +1219,10 @@ ApplySubstitution("*","*","vrt2")
 	"Ligature" takes three additional arguments, a script, a language and a tag
 	(all 4 character strings) and returns a space seperated list of the names
 	of all components with that tag (or a null string if there is none).
+      <LI>
+	"GlyphIndex" returns the index of the current glyph in the ttf 'glyf' table,
+	or -1 if it has been created since. This value may change when a
+	truetype/opentype font is generated (to the index in the generated font).
     </UL>
     <P>
     Examples:

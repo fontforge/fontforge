@@ -1546,6 +1546,7 @@ return;
 
 static void CVClear(GWindow,GMenuItem *mi, GEvent *);
 static void CVMouseMove(CharView *cv, GEvent *event );
+static void CVMouseUp(CharView *cv, GEvent *event );
 static void CVHScroll(CharView *cv,struct sbevent *sb);
 static void CVVScroll(CharView *cv,struct sbevent *sb);
 static void CVElide(GWindow gw,struct gmenuitem *mi,GEvent *e);
@@ -2442,6 +2443,7 @@ static void CVMouseMove(CharView *cv, GEvent *event ) {
     PressedOn p;
     FindSel fs;
     GEvent fake;
+    int stop_motion = false;
 
 #if 0		/* Debug wacom !!!! */
  printf( "dev=%s (%d,%d) 0x%x\n", event->u.mouse.device!=NULL?event->u.mouse.device:"<None>",
@@ -2550,7 +2552,7 @@ return;
 
     switch ( cv->active_tool ) {
       case cvt_pointer:
-	CVMouseMovePointer(cv);
+	stop_motion = CVMouseMovePointer(cv);
       break;
       case cvt_magnify: case cvt_minify:
       break;
@@ -2578,6 +2580,10 @@ return;
       case cvt_rect: case cvt_elipse: case cvt_poly: case cvt_star:
 	CVMouseMoveShape(cv);
       break;
+    }
+    if ( stop_motion ) {
+	event->type = et_mouseup;
+	CVMouseUp(cv,event);
     }
 }
 

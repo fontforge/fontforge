@@ -28,6 +28,8 @@
 #include <math.h>
 #include <utype.h>
 
+extern int stop_at_join;
+
 /* if they changed the width, then change the width on all bitmap chars of */
 /*  ours, and if we are a letter, then change the width on all chars linked */
 /*  to us which had the same width that we used to have (so if we change the */
@@ -832,11 +834,13 @@ return( a>-fudge && a<fudge );
 /*  happened (could be more than one) */
 /* However if two things merge we must start all over again because we will have */
 /*  freed one of the splinesets in the merger */
-static void CVCheckMerges(CharView *cv ) {
+static int CVCheckMerges(CharView *cv ) {
     SplineSet *activess, *mergess;
     real fudge = 1/cv->scale;
+    int cnt= -1;
 
   restart:
+    ++cnt;
     for ( activess=*cv->heads[cv->drawmode]; activess!=NULL; activess=activess->next ) {
 	if ( activess->first->prev==NULL && (activess->first->selected ||
 		activess->last->selected)) {
@@ -875,9 +879,11 @@ static void CVCheckMerges(CharView *cv ) {
 	    }
 	}
     }
+return( cnt>0 && stop_at_join );
 }
 
-void CVMoveSelection(CharView *cv, real dx, real dy) {
+/* Move the selection and return whether we did a merge */
+int CVMoveSelection(CharView *cv, real dx, real dy) {
     real transform[6];
     RefChar *refs;
     ImageList *img;
@@ -887,7 +893,7 @@ void CVMoveSelection(CharView *cv, real dx, real dy) {
     transform[1] = transform[2] = 0.0;
     transform[4] = dx; transform[5] = dy;
     if ( transform[4]==0 && transform[5]==0 )
-return;
+return(false);
     SplinePointListTransform(*cv->heads[cv->drawmode],transform,false);
     if ( cv->drawmode==dm_fore ) {
 	for ( refs = cv->sc->refs; refs!=NULL; refs=refs->next ) if ( refs->selected ) {
@@ -917,7 +923,7 @@ return;
     if ( cv->vwidthsel )
 	cv->sc->vwidth -= dy;
     CVSetCharChanged(cv,true);
-    CVCheckMerges( cv );
+return( CVCheckMerges( cv ));
 }
 
 static int CVExpandEdge(CharView *cv) {
@@ -938,13 +944,14 @@ static int CVExpandEdge(CharView *cv) {
 return( true );
 }
 
-void CVMouseMovePointer(CharView *cv ) {
+int CVMouseMovePointer(CharView *cv ) {
     int needsupdate = false;
+    int did_a_merge = false;
 
     /* if we haven't moved from the original location (ever) then this is a noop */
     if ( !cv->p.rubberbanding && !cv->recentchange &&
 	    RealNear(cv->info.x,cv->p.cx) && RealNear(cv->info.y,cv->p.cy) )
-return;
+return( false );
 
     /* This can happen if they depress on a control point, move it, then use */
     /*  the arrow keys to move the point itself, and then try to move the cp */
@@ -991,12 +998,13 @@ return;
 	needsupdate = true;
     } else {
 	if ( !cv->recentchange ) CVPreserveState(cv);
-	CVMoveSelection(cv,cv->info.x-cv->last_c.x,cv->info.y-cv->last_c.y);
+	did_a_merge = CVMoveSelection(cv,cv->info.x-cv->last_c.x,cv->info.y-cv->last_c.y);
 	needsupdate = true;
     }
     if ( needsupdate )
 	SCUpdateAll(cv->sc);
     cv->last_c.x = cv->info.x; cv->last_c.y = cv->info.y;
+return( did_a_merge );
 }
 
 void CVMouseUpPointer(CharView *cv ) {

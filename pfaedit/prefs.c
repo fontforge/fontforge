@@ -49,6 +49,7 @@ int ItalicConstrained=true;
 int accent_offset = 6;
 int GraveAcuteCenterBottom = 1;
 int ask_user_for_resolution = true;
+int stop_at_join = false;
 float arrowAmount=1;
 float snapdistance=3.5;
 float joinsnap=0;
@@ -357,6 +358,7 @@ static struct prefs_list {
 	{ "JoinSnap", pr_real, &joinsnap, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupJS },
 	{ "CopyMetaData", pr_bool, &copymetadata, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupCMD },
 	{ "UndoDepth", pr_int, &maxundoes, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupUndo },
+	{ "StopAtJoin", pr_bool, &stop_at_join, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupSAJ },
 	{ NULL }
 },
  args_list[] = {
