@@ -4959,7 +4959,7 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     cv_edlistcheck(cv,mi,e,true);
 }
 
-static int Colinear(BasePoint *first, BasePoint *mid, BasePoint *last) {
+int BpColinear(BasePoint *first, BasePoint *mid, BasePoint *last) {
     BasePoint dist_f, unit_f, dist_l, unit_l;
     double len, off_l, off_f;
 
@@ -4977,7 +4977,7 @@ return( false );
 
     off_f = dist_l.x*unit_f.y - dist_l.y*unit_f.x;
     off_l = dist_f.x*unit_l.y - dist_f.y*unit_l.x;
-    if ( ( off_f<-1.5 || off_f>1.5 ) && ( off_l<-1.5 && off_l>1.5 ))
+    if ( ( off_f<-1.5 || off_f>1.5 ) && ( off_l<-1.5 || off_l>1.5 ))
 return( false );
 
 return( true );
@@ -5008,7 +5008,7 @@ return;
 	    sp->nonextcp = true;
 	    sp->nextcp = sp->me;
 	} else if ( sp->prev!=NULL && !sp->nonextcp &&
-		Colinear(&sp->prev->from->me,&sp->me,&sp->nextcp) ) {
+		BpColinear(&sp->prev->from->me,&sp->me,&sp->nextcp) ) {
 	    /* The current control point is reasonable */
 	} else {
 	    SplineCharTangentNextCP(sp);
@@ -5018,13 +5018,13 @@ return;
 	    sp->noprevcp = true;
 	    sp->prevcp = sp->me;
 	} else if ( sp->next!=NULL && !sp->noprevcp &&
-		Colinear(&sp->next->to->me,&sp->me,&sp->prevcp) ) {
+		BpColinear(&sp->next->to->me,&sp->me,&sp->prevcp) ) {
 	    /* The current control point is reasonable */
 	} else {
 	    SplineCharTangentPrevCP(sp);
 	    if ( sp->prev ) SplineRefigure(sp->prev);
 	}
-    } else if ( Colinear(&sp->prevcp,&sp->me,&sp->nextcp) ) {
+    } else if ( BpColinear(&sp->prevcp,&sp->me,&sp->nextcp) ) {
     } else {
 	unitnext.x = sp->nextcp.x-sp->me.x; unitnext.y = sp->nextcp.y-sp->me.y;
 	nextlen = sqrt(unitnext.x*unitnext.x + unitnext.y*unitnext.y);
