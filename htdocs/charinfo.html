@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 29-Dec-2002 -->
-  <!-- AP: Last modified: 27-Jan-2003 -->
+  <!-- AP: Last modified: 26-Mar-2003 -->
   <TITLE>Char Info</TITLE>
 </HEAD>
 <BODY>
@@ -10,7 +10,7 @@
   Char Info
 </H1>
 <H2>
-  <IMG SRC="charinfo.png" WIDTH="305" HEIGHT="400" ALIGN="Right">
+  <IMG SRC="charinfo.png" WIDTH="217" HEIGHT="291" ALIGN="Right">
   <A NAME="Character">Character</A> Info
 </H2>
 <P>
@@ -20,17 +20,7 @@ If you know the name of the character then PfaEdit can tell you the encoding
 can tell you the name.
 <P>
 The name field contains a pull down list with (possibly) several synonyms
-for the name of this unicode code point.
-<P>
-Most characters are part of a script system. All this text I am writing is
-in the latin script. Greek, cyrillic, arabic, hebrew, chinese ideographs,
-katakana, hangul, devangari, etc. are others. Generally PfaEdit is able to
-guess the script correctly, but sometimes it will get it wrong (or will not
-have enough data to hazard a guess). Scripts are important for the
-<A HREF="gposgsub.html">GPOS and GSUB</A> tables in truetype and opentype
-fonts. If you aren't interested in these font formats you may safely ignore
-this item. Otherwise there is a pull-down list with the common scripts
-listed.<BR CLEAR=ALL>
+for the name of this unicode code point.<BR CLEAR=ALL>
 <P>
 <IMG SRC="charinfo-comment.png" WIDTH="307" HEIGHT="359" ALIGN="Right">You
 can assign an arbetrary (unicode) comment to the character. Simply type any
@@ -48,10 +38,10 @@ In the example at right the 'fwid' feature (full width) adds 400 units to
 the character's advance width and moves it horizontally by 200 units.
 <P>
 A new entry in the list may be created by pressing the [New] button and a
-dlg will pop up with fields for the metrics you can change. It will also
-have a field for a feature tag, and a set of check boxes for flags (these
-flags are not relevant here, but are included as an excercise in assinine
-completeness.
+<A HREF="#Feature-Tag">dlg</A> will pop up with fields for the metrics you
+can change. It will also have a field for a feature tag, and a set of check
+boxes for flags (these flags are not relevant here, but are included as an
+excercise in assinine completeness.
 <P>
 The [Delete] and [Edit] buttons should be fairly self-explanitory. [Copy]
 and [Paste] work as expected too. You can also paste something copied here
@@ -63,8 +53,8 @@ substitution replaces one glyph with another. Here the glyph "one" has a
 substitution to "onesuperior" when that 'sups' (Superscript) feature is invoked.
 <P>
 You can generate a substitution most easily by draging a character from the
-font view and droping it here (you will then be prompted for a feature tag
-for the substitution table.
+font view and droping it here (you will then be <A HREF="#Feature-Tag">prompted
+for a feature tag</A> for the substitution table.
 <P>
 The multiple and alternate substitution sub-dialogs are very similar to this
 one except that they can take multiple glyph names. In a multiple substitution
@@ -107,6 +97,86 @@ The Next and Prev buttons allow you to move from one character to the next
 The Done (or Cancel) button only Cancels work in the current character. If
 you have already used Next or Prev then those earlier changes will not be
 cancelled.<BR Clear=Right>
+  <HR>
+<TABLE ALIGN=Right>
+  <TR>
+    <TD><IMG SRC="feature-tag-sub.png" WIDTH="161" HEIGHT="246" ALIGN="Top">
+      <IMG SRC="feature-tag-pos.png" WIDTH="161" HEIGHT="308" ALIGN="Top"></TD>
+  </TR>
+</TABLE>
+<H3>
+  <A NAME="Feature-Tag">Feature Tag Dialog</A>
+</H3>
+<P>
+These two dialogs allow you to specify an otf feature tag and all the other
+impedimentia that go along with it. They are used by
+<A HREF="charinfo.html#Character">Character Info</A> (above) to specify
+substitutions, positions, and ligatures, as well as by
+<A HREF="fontinfo.html#Anchors">Font Info</A> to specify anchor classes.
+<P>
+In addition to a feature tag (see the section on <A HREF="gposgsub.html">GPOS
+and GSUB</A> for feature tags), you must specify a set of flags and a collection
+of scripts and languages for which the substitution will be active. In the
+example above the substitution is active for the greek script and the default
+language (which here means all languages as none have been singled out for
+special treatment), the cyrillic script and the default language, and the
+latin script and several languages.
+<P>
+<IMG SRC="scriptlist-pulldown.png" WIDTH="243" HEIGHT="118">
+<P>
+Clicking on the pulldown list produces a list of choices that are currently
+used in the font. The last choice allows you to change or add to this list.
+<P>
+Most of the time you will want to specify that your item should be active
+in just one script but in all languages of that script. For instance the
+"fi" ligature should probably always be applied in the latin script, no matter
+what the language is, however there is no point in having it active for cyrillic
+users as they will never see that combination of characters. On the other
+hand the es-zet ligature (German double-s, &szlig;) has fallen by the wayside
+in all (I think) languages but German so that ligature should only be active
+for the latin script, german language. And there are some characters that
+don't fall into one single script. The same digits are used for latin, cyrillic,
+greek, hebrew, (sometimes arabic) and many other script systems, so any ligatures
+of the digits (such as fractions) should be available in all script systems.
+<H3>
+  <A NAME="ScriptLang">The Script Language Dialog</A>
+</H3>
+<P>
+<IMG SRC="scriptlist.png" WIDTH="296" HEIGHT="205" ALIGN="Left">This dialog
+shows all the script and language combinations which are in use in the current
+font. You may add a new combination or change an old one by pressing the
+obvious buttons.
+<P>
+If you want to specify a script or language that PfaEdit doesn't know about,
+then hold the control key down when pressing the [New...] or [Edit] buttons
+and you will get an unparsed dlg which will allow you to enter whatever you
+like (OpenType does not give a tag for the default language (it is has a
+special representation which does not involve tags), but for the sake of
+consistance I have assigned it the tag of 'dflt'. No 'dflt' tags will appear
+in the output font, instead they will be converted to the appropirate
+representation for the default language).<BR CLEAR=ALL>
+<H3>
+  <A NAME="Script"><IMG SRC="scriptsdlg.png" WIDTH="152" HEIGHT="215" ALIGN="Right">The
+  Script Dialog</A>
+</H3>
+<P>
+This dialog shows all the scripts currently activated in this script-language
+collection. If you want to add a new script to the collection hold the control
+key down while clicking on the script. New scripts are added with the "default"
+language selected. If you want finer control over languages (ie. want to
+specify a language other than default) then double click on a script and
+you will get a dialog of languages.
+<H3>
+  <IMG SRC="langdlg.png" WIDTH="152" HEIGHT="215" ALIGN="Left">The
+  <A NAME="Language">Language</A> Dialog
+</H3>
+<P>
+This shows all languages active in the current script in the current
+script-language collection. Some languages are not meaningful in a given
+script (but I don't know enough to know which to remove so I include all
+possible languages and appologize for extranious information). Use the control
+key to select multiple languages. At least one language must be
+specified.<BR CLEAR=ALL>
 <P>
 See Also:
 <UL>

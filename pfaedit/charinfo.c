@@ -180,6 +180,7 @@ static GTextInfo languages[] = {
     { (unichar_t *) _STR_OTFCzech, NULL, 0, 0, (void *) CHR('C','S','Y',' '), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_OTFDanish, NULL, 0, 0, (void *) CHR('D','A','N',' '), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_OTFDargwa, NULL, 0, 0, (void *) CHR('D','A','R',' '), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) _STR_Default, NULL, 0, 0, (void *) DEFAULT_LANG, NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_OTFWoodsCree, NULL, 0, 0, (void *) CHR('D','C','R',' '), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_OTFGermanStandard, NULL, 0, 0, (void *) CHR('D','E','U',' '), NULL, false, false, false, false, false, false, false, true },
     { (unichar_t *) _STR_OTFDogri, NULL, 0, 0, (void *) CHR('D','G','R',' '), NULL, false, false, false, false, false, false, false, true },
@@ -642,6 +643,8 @@ static int newstrings[] = { _STR_NewPosition, _STR_NewSubstitution,
 static int editstrings[] = { _STR_EditPosition, _STR_EditSubstitution,
 	_STR_EditAlternate, _STR_EditMultiple, _STR_EditLigature };
 
+static unichar_t monospace[] = { 'c','o','u','r','i','e','r',',','m', 'o', 'n', 'o', 's', 'p', 'a', 'c', 'e',',','c','a','s','l','o','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
+
 int SFAddScriptLangIndex(SplineFont *sf,uint32 script,uint32 lang) {
     int i;
 
@@ -695,7 +698,7 @@ static unichar_t *ScriptLangLine(struct script_record *sr) {
 return( line );
 }
 
-GTextInfo *SFLangList(SplineFont *sf) {
+static GTextInfo *SFLangList(SplineFont *sf,int addfinal) {
     int i;
     GTextInfo *ti;
 
@@ -704,15 +707,940 @@ GTextInfo *SFLangList(SplineFont *sf) {
     ti = gcalloc(i+2,sizeof( GTextInfo ));
     for ( i=0; sf->script_lang[i]!=NULL; ++i )
 	ti[i].text = ScriptLangLine(sf->script_lang[i]);
-    ti[i].text = (unichar_t *) _STR_EditLangList;
-    ti[i].text_in_resource = true;
-    ti[i].userdata = (void *) -1;
+    if ( addfinal ) {
+	ti[i].text = (unichar_t *) _STR_EditLangList;
+	ti[i].text_in_resource = true;
+	ti[i].userdata = (void *) -1;
+    }
 return( ti );
+}
+
+static GTextInfo **SFLangArray(SplineFont *sf,int addfinal) {
+    int i;
+    GTextInfo **ti;
+
+    if ( sf->cidmaster ) sf = sf->cidmaster;
+    for ( i=0; sf->script_lang[i]!=NULL; ++i );
+    ti = gcalloc(i+2,sizeof( GTextInfo * ));
+    for ( i=0; sf->script_lang[i]!=NULL; ++i ) {
+	ti[i] = gcalloc(1,sizeof( GTextInfo));
+	ti[i]->text = ScriptLangLine(sf->script_lang[i]);
+	ti[i]->fg = ti[i]->bg = COLOR_DEFAULT;
+    }
+    if ( addfinal ) {
+	ti[i] = gcalloc(1,sizeof( GTextInfo));
+	ti[i]->text = (unichar_t *) _STR_EditLangList;
+	ti[i]->text_in_resource = true;
+	ti[i]->userdata = (void *) -1;
+	ti[i]->fg = ti[i]->bg = COLOR_DEFAULT;
+	++i;
+    }
+    ti[i] = gcalloc(1,sizeof( GTextInfo));
+return( ti );
+}
+
+struct sl_dlg {
+    int done;
+    int sel;
+    SplineFont *sf;
+    GGadget *list;
+};
+
+static struct script_record *SRParse(const unichar_t *line) {
+    int scnt, lcnt, i, j;
+    const unichar_t *pt, *start, *lpt;
+    struct script_record *sr;
+    unichar_t tag[6];
+
+    if ( line==NULL )
+return( NULL );
+
+    for ( scnt=0, pt=line; *pt; ++pt )
+	if ( *pt=='{' ) ++scnt;
+    sr = gcalloc(scnt+1,sizeof(struct script_record));
+    for ( i=0, pt=line; i<scnt && *pt; ++i ) {
+	start = pt;
+	while ( *pt!='{' && *pt!='\0' ) ++pt;
+	if ( pt-start<4 ) {
+	    tag[0] = tag[1] = tag[2] = tag[3] = ' ';
+	    if ( start<pt ) tag[0] = *start;
+	    if ( start+1<pt ) tag[1] = start[1];
+	    if ( start+2<pt ) tag[2] = start[2];
+	    if ( start+3<pt ) tag[3] = start[3];
+	    start = tag;
+	}
+	if ( *pt!='{' ) {
+	    ScriptRecordFree(sr);
+	    GWidgetErrorR(_STR_SLError,_STR_SLErrorText);
+return( NULL );
+	}
+	sr[i].script = (start[0]<<24) | ((start[1]&0xff)<<16) | ((start[2]&0xff)<<8) | (start[3]&0xff);
+	for ( lcnt=1, lpt=pt+1; *lpt!='}' && *lpt!='\0'; ++lpt )
+	    if ( *lpt==',' ) ++lcnt;
+	if ( *lpt=='\0' ) {
+	    ScriptRecordFree(sr);
+	    GWidgetErrorR(_STR_SLError,_STR_SLErrorText);
+return( NULL );
+	}
+	sr[i].langs = galloc((lcnt+1)*sizeof(uint32));
+	for ( j=0, lpt=start=pt+1; j<lcnt ; ++lpt ) {
+	    if ( *lpt==',' || *lpt=='}' ) {
+		if ( lpt-start<4 ) {
+		    tag[0] = tag[1] = tag[2] = tag[3] = ' ';
+		    if ( start<lpt ) tag[0] = *start;
+		    if ( start+1<lpt ) tag[1] = start[1];
+		    if ( start+2<lpt ) tag[2] = start[2];
+		    if ( start+3<lpt ) tag[3] = start[3];
+		    start = tag;
+		}
+		sr[i].langs[j++] = (start[0]<<24) | ((start[1]&0xff)<<16) | ((start[2]&0xff)<<8) | (start[3]&0xff);
+		start = lpt+1;
+		if ( *lpt=='}' ) {
+		    sr[i].langs[j] = 0;
+	break;
+		}
+	    }
+	}
+	pt = lpt+1;
+	while ( pt[0]==' ' ) ++pt;
+    }
+    sr[i].script = 0;
+
+    if ( *pt!='\0' ) {
+	ScriptRecordFree(sr);
+	GWidgetErrorR(_STR_SLError,_STR_SLErrorText);
+return( NULL );
+    }
+
+return( sr );
+}
+
+static struct script_record **SRParseList(GGadget *list,int *sel) {
+    int32 len, i;
+    GTextInfo **ti = GGadgetGetList(list,&len);
+    struct script_record **sr;
+
+    *sel = -1;
+    sr = gcalloc(len+1,sizeof(struct script_record *));
+    for ( i=0; i<len; ++i ) {
+	sr[i] = SRParse(ti[i]->text);
+	if ( sr[i]==NULL ) {
+	    ScriptRecordListFree(sr);
+return( NULL );
+	}
+	if ( ti[i]->selected )
+	    *sel = i;
+    }
+return( sr );
+}
+
+static int sl_e_h(GWindow gw, GEvent *event) {
+    int *done = GDrawGetUserData(gw);
+
+    if ( event->type==et_close ) {
+	*done = true;
+    } else if ( event->type==et_char ) {
+	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
+	    help("charinfo.html#Language");
+return( true );
+	}
+return( false );
+    } else if ( event->type==et_controlevent && event->u.control.subtype == et_buttonactivate ) {
+	switch ( GGadgetGetCid(event->u.control.g)) {
+	  case _STR_OK:
+	    *done = 2;
+	  break;
+	  case _STR_Cancel:
+	    *done = true;
+	  break;
+	}
+    }
+return( true );
+}
+
+static uint32 *ShowLanguages(uint32 *langs) {
+    int i,j,done=0;
+    GWindowAttrs wattrs;
+    GGadgetCreateData gcd[5];
+    GTextInfo label[5];
+    GRect pos;
+    GWindow gw;
+    int32 len;
+    GTextInfo **ti;
+    const int width = 150;
+    uint32 *ret, *pt;
+    int warned=0;
+
+	memset(&wattrs,0,sizeof(wattrs));
+	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+	wattrs.event_masks = ~(1<<et_charup);
+	wattrs.restrict_input_to_me = 1;
+	wattrs.undercursor = 1;
+	wattrs.cursor = ct_pointer;
+	wattrs.window_title = GStringGetResource( _STR_LanguageList,NULL );
+	wattrs.is_dlg = true;
+	pos.x = pos.y = 0;
+	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,width));
+	pos.height = GDrawPointsToPixels(NULL,193);
+	gw = GDrawCreateTopWindow(NULL,&pos,sl_e_h,&done,&wattrs);
+
+	memset(&gcd,0,sizeof(gcd));
+	memset(&label,0,sizeof(label));
+
+	for ( i=0; languages[i].text!=NULL; ++i )
+	    languages[i].selected = false;
+	for ( i=0; langs[i]!=0; ++i ) {
+	    for ( j=0; languages[j].text!=NULL && (uint32) languages[j].userdata!=langs[i]; ++j );
+	    if ( languages[j].text!=NULL )
+		languages[j].selected = true;
+	    else if ( !warned ) {
+		GWidgetErrorR(_STR_LangMissing,_STR_LangMissingText,
+			langs[i]>>24,
+			(langs[i]>>16)&0xff,
+			(langs[i]>>8)&0xff,
+			langs[i]&0xff);
+		warned = true;
+	    }
+	}
+
+	i = 0;
+	gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = 5;
+	gcd[i].gd.pos.width = width-20;
+	gcd[i].gd.pos.height = 12*12+6;
+	gcd[i].gd.flags = gg_enabled|gg_visible|gg_list_alphabetic|gg_list_multiplesel;
+	gcd[i].gd.u.list = languages;
+	gcd[i].gd.cid = 0;
+	gcd[i++].creator = GListCreate;
+
+	gcd[i].gd.pos.x = 15-3; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+gcd[i-1].gd.pos.height+5;
+	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
+	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_default;
+	label[i].text = (unichar_t *) _STR_OK;
+	label[i].text_in_resource = true;
+	gcd[i].gd.mnemonic = 'O';
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.cid = _STR_OK;
+	gcd[i++].creator = GButtonCreate;
+
+	gcd[i].gd.pos.x = -15; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+3;
+	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
+	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+	label[i].text = (unichar_t *) _STR_Cancel;
+	label[i].text_in_resource = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.mnemonic = 'C';
+	gcd[i].gd.cid = _STR_Cancel;
+	gcd[i++].creator = GButtonCreate;
+
+	GGadgetsCreate(gw,gcd);
+
+    GDrawSetVisible(gw,true);
+ retry:
+    while ( !done )
+	GDrawProcessOneEvent(NULL);
+    ret = NULL;
+    ti = GGadgetGetList(gcd[0].ret,&len);
+    if ( done==2 ) {
+	int lcnt=0;
+	for ( i=0; i<len; ++i ) {
+	    if ( ti[i]->selected )
+		++lcnt;
+	}
+	if ( lcnt==0 ) {
+	    GWidgetErrorR(_STR_LangMissing,_STR_AtLeastOneLang);
+	    done = 0;
+ goto retry;
+	}
+	ret = galloc((lcnt+1)*sizeof(uint32));
+	*ret = '\0';
+    }
+    pt = ret;
+    for ( i=0; i<len; ++i ) {
+	if ( done==2 && ti[i]->selected )
+	    *pt++ = (uint32) (ti[i]->userdata);
+    }
+    if ( pt!=ret )
+	*pt = 0;
+    GDrawDestroyWindow(gw);
+return( ret );
+}
+
+static int FromScriptToList(GTextInfo **ti,int sindex) {
+    /* We've got an index in the script array. We want an index in the ti array*/
+    /* everything in ti should be in script and vice-versa, but ti is in */
+    /* alphabetic order (which may not be english ordering) */
+    int i;
+    const unichar_t *match = GStringGetResource((int) (scripts[sindex].text),NULL);
+
+    for ( i=0; ti[i]->text!=NULL; ++i ) {
+	if ( u_strcmp(ti[i]->text,match)==0 )
+return( i );
+    }
+    GDrawIError("Failed to find corresponding script S2L" );
+return( -1 );
+}
+
+static int FromListToScript(GTextInfo **ti,int tindex) {
+    /* We've got an index in the script array. We want an index in the ti array*/
+    /* everything in ti should be in script and vice-versa, but ti is in */
+    /* alphabetic order (which may not be english ordering) */
+    int i;
+
+    for ( i=0; scripts[i].text!=NULL; ++i ) {
+	const unichar_t *match = GStringGetResource((int) (scripts[i].text),NULL);
+	if ( u_strcmp(ti[tindex]->text,match)==0 )
+return( i );
+    }
+    GDrawIError("Failed to find corresponding script L2S" );
+return( -1 );
+}
+
+static int ss_e_h(GWindow gw, GEvent *event) {
+    int *done = GDrawGetUserData(gw);
+    GTextInfo *ti;
+
+    if ( event->type==et_close ) {
+	*done = true;
+    } else if ( event->type==et_char ) {
+	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
+	    help("charinfo.html#Script");
+return( true );
+	}
+return( false );
+    } else if ( event->type==et_controlevent && event->u.control.subtype == et_listselected ) {
+	if ( event->u.control.u.list.changed_index>=0 ) {
+	    ti = GGadgetGetListItem(event->u.control.g,event->u.control.u.list.changed_index);
+	    if ( ti!=NULL && ti->selected && ti->userdata == NULL ) {
+		ti->userdata = gcalloc(2,sizeof(uint32));
+		((uint32 *) (ti->userdata))[0] = DEFAULT_LANG;
+	    }
+	}
+    } else if ( event->type==et_controlevent && event->u.control.subtype == et_listdoubleclick ) {
+	if ( event->u.control.u.list.changed_index>=0 ) {
+	    ti = GGadgetGetListItem(event->u.control.g,event->u.control.u.list.changed_index);
+	    if ( ti!=NULL && ti->userdata!=NULL ) {
+		uint32 *ret =ShowLanguages(ti->userdata);
+		if ( ret!=NULL ) {
+		    free(ti->userdata);
+		    ti->userdata = ret;
+		}
+	    }
+	}
+    } else if ( event->type==et_controlevent && event->u.control.subtype == et_buttonactivate ) {
+	switch ( GGadgetGetCid(event->u.control.g)) {
+	  case _STR_OK:
+	    *done = 2;
+	  break;
+	  case _STR_Cancel:
+	    *done = true;
+	  break;
+	}
+    }
+return( true );
+}
+
+static unichar_t *ShowScripts(unichar_t *usedef) {
+    struct script_record *sr = SRParse(usedef);
+    static struct script_record dummy = { 0 };
+    int i,j,done=0;
+    GWindowAttrs wattrs;
+    GGadgetCreateData gcd[5];
+    GTextInfo label[5];
+    GRect pos;
+    GWindow gw;
+    int warned = false;
+    int32 len;
+    GTextInfo **ti;
+    const int width = 150;
+    unichar_t *ret, *pt;
+
+    if ( sr==NULL ) sr = &dummy;
+
+	memset(&wattrs,0,sizeof(wattrs));
+	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+	wattrs.event_masks = ~(1<<et_charup);
+	wattrs.restrict_input_to_me = 1;
+	wattrs.undercursor = 1;
+	wattrs.cursor = ct_pointer;
+	wattrs.window_title = GStringGetResource( _STR_ScriptList,NULL );
+	wattrs.is_dlg = true;
+	pos.x = pos.y = 0;
+	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,width));
+	pos.height = GDrawPointsToPixels(NULL,193);
+	gw = GDrawCreateTopWindow(NULL,&pos,ss_e_h,&done,&wattrs);
+
+	memset(&gcd,0,sizeof(gcd));
+	memset(&label,0,sizeof(label));
+
+	i = 0;
+	gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = 5;
+	gcd[i].gd.pos.width = width-20;
+	gcd[i].gd.pos.height = 12*12+6;
+	gcd[i].gd.flags = gg_enabled|gg_visible|gg_list_alphabetic|gg_list_multiplesel;
+	gcd[i].gd.u.list = scripts;
+	gcd[i].gd.cid = 0;
+	gcd[i++].creator = GListCreate;
+
+	gcd[i].gd.pos.x = 15-3; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+gcd[i-1].gd.pos.height+5;
+	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
+	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_default;
+	label[i].text = (unichar_t *) _STR_OK;
+	label[i].text_in_resource = true;
+	gcd[i].gd.mnemonic = 'O';
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.cid = _STR_OK;
+	gcd[i++].creator = GButtonCreate;
+
+	gcd[i].gd.pos.x = -15; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+3;
+	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
+	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+	label[i].text = (unichar_t *) _STR_Cancel;
+	label[i].text_in_resource = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.mnemonic = 'C';
+	gcd[i].gd.cid = _STR_Cancel;
+	gcd[i++].creator = GButtonCreate;
+
+	GGadgetsCreate(gw,gcd);
+
+	ti = GGadgetGetList(gcd[0].ret,&len);
+	for ( i=0; i<len; ++i ) {
+	    ti[i]->selected = false;
+	    ti[i]->userdata = NULL;
+	}
+	for ( i=0; sr[i].script!=0; ++i ) {
+	    for ( j=0; j<len && (uint32) scripts[j].userdata!=sr[i].script; ++j );
+	    if ( j<len ) {
+		int jj = FromScriptToList(ti,j);
+		ti[jj]->selected = true;
+		ti[jj]->userdata = sr[i].langs;
+		sr[i].langs = NULL;
+	    } else if ( !warned ) {
+		GWidgetErrorR(_STR_ScriptMissing,_STR_ScriptMissingText,
+			sr[i].script>>24,
+			(sr[i].script>>16)&0xff,
+			(sr[i].script>>8)&0xff,
+			sr[i].script&0xff);
+		warned = true;
+	    }
+	}
+	if ( sr!=&dummy )
+	    ScriptRecordFree(sr);
+
+    GDrawSetVisible(gw,true);
+ retry:
+    while ( !done )
+	GDrawProcessOneEvent(NULL);
+    ret = NULL;
+    ti = GGadgetGetList(gcd[0].ret,&len);
+    if ( done==2 ) {
+	int scnt=0, lcnt=0;
+	for ( i=0; i<len; ++i ) {
+	    if ( ti[i]->selected ) {
+		++scnt;
+		for ( j=0; ((uint32 *) (ti[i]->userdata))[j]!=0; ++j );
+		lcnt += j;
+	    }
+	}
+	if ( scnt==0 ) {
+	    GWidgetErrorR(_STR_ScriptMissing,_STR_AtLeastOneScript);
+	    done = 0;
+ goto retry;
+	}
+	ret = galloc((7*scnt+5*lcnt+3)*sizeof(unichar_t));
+	*ret = '\0';
+    }
+    pt = ret;
+    for ( i=0; i<len; ++i ) {
+	if ( done==2 && ti[i]->selected ) {
+	    int ii = FromListToScript(ti,i);
+	    *pt++ = ((uint32) (scripts[ii].userdata))>>24;
+	    *pt++ = (((uint32) (scripts[ii].userdata))>>16)&0xff;
+	    *pt++ = (((uint32) (scripts[ii].userdata))>>8)&0xff;
+	    *pt++ = ((uint32) (scripts[ii].userdata))&0xff;
+	    *pt++ = '{';
+	    for ( j=0; ((uint32 *) (ti[i]->userdata))[j]!=0; ++j ) {
+		*pt++ = ((uint32 *) (ti[i]->userdata))[j]>>24;
+		*pt++ = (((uint32 *) (ti[i]->userdata))[j]>>16)&0xff;
+		*pt++ = (((uint32 *) (ti[i]->userdata))[j]>>8)&0xff;
+		*pt++ = ((uint32 *) (ti[i]->userdata))[j]&0xff;
+		*pt++ = ',';
+	    }
+	    pt[-1]= '}';
+	    *pt++ = ' ';
+	}
+	free(ti[i]->userdata);
+    }
+    if ( pt!=ret )
+	pt[-1] = '\0';
+    GDrawDestroyWindow(gw);
+return( ret );
+}
+
+static void SLL_DoChange(struct sl_dlg *sld,unichar_t *def,GEvent *e) {
+    struct script_record *sr;
+    unichar_t *ret;
+    unichar_t *usedef = def;
+
+    forever {
+	if ( e!=NULL && ( e->u.control.u.button.button!=1 ||
+		(e->u.control.u.button.state&(ksm_control|ksm_meta|ksm_shift))) )
+	    ret = GWidgetAskStringR(_STR_ScriptLang,usedef,_STR_ScriptLangEnter);
+	else
+	    ret = ShowScripts(usedef);
+	if ( usedef!=def )
+	    free(usedef);
+	if ( ret==NULL )
+return;
+	sr = SRParse(ret);
+	if ( sr!=NULL ) {
+	    ScriptRecordFree(sr);
+	    if ( def==NULL )
+		GListAppendLine(sld->list,ret,true);
+	    else
+		GListChangeLine(sld->list,GGadgetGetFirstListSelectedItem(sld->list),ret);
+return;
+	}
+	usedef = ret;
+    }
+}
+
+static int sld_e_h(GWindow gw, GEvent *event) {
+    struct sl_dlg *sld = GDrawGetUserData(gw);
+    struct script_record **srl;
+    GTextInfo *ti;
+
+    if ( event->type==et_close ) {
+	sld->done = true;
+    } else if ( event->type==et_char ) {
+	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
+	    help("charinfo.html#ScriptLang");
+return( true );
+	}
+return( false );
+    } else if ( event->type==et_controlevent && event->u.control.subtype == et_listdoubleclick ) {
+	ti = GGadgetGetListItemSelected(sld->list);
+	if ( ti!=NULL )
+	    SLL_DoChange(sld,ti->text,NULL);
+    } else if ( event->type==et_controlevent && event->u.control.subtype == et_buttonactivate ) {
+	switch ( GGadgetGetCid(event->u.control.g)) {
+	  case _STR_OK:
+	    if ( (srl = SRParseList(sld->list,&sld->sel))!=NULL ) {
+		sld->done = true;
+		ScriptRecordListFree(sld->sf->script_lang);
+		sld->sf->script_lang = srl;
+	    }
+	  break;
+	  case _STR_Cancel:
+	    sld->done = true;
+	    sld->sel = -2;
+	  break;
+	  case _STR_NewDDD:
+	    SLL_DoChange(sld,NULL,event);
+	  break;
+	  case _STR_Edit:
+	    ti = GGadgetGetListItemSelected(sld->list);
+	    if ( ti!=NULL )
+		SLL_DoChange(sld,ti->text,event);
+	  break;
+	}
+    }
+return( true );
+}
+
+static void ScriptLangList(SplineFont *sf,GGadget *list,int sli) {
+    int32 len;
+    GTextInfo **ti = GGadgetGetList(list,&len);
+    struct sl_dlg sld;
+    GWindowAttrs wattrs;
+    GGadgetCreateData gcd[8];
+    GTextInfo label[8];
+    GRect pos;
+    GWindow gw;
+    FontRequest rq;
+    GFont *font;
+    int i;
+    const int width = 300;
+
+    if ( !ti[len-1]->selected )
+return;
+    /* the last entry in the script/lang pulldown is the one that allows them */
+    /*  to edit the script lang list. That's what the above check is for */
+
+	memset(&sld,0,sizeof(sld));
+	sld.sf = sf;
+	sld.sel = -2;
+	memset(&wattrs,0,sizeof(wattrs));
+	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+	wattrs.event_masks = ~(1<<et_charup);
+	wattrs.restrict_input_to_me = 1;
+	wattrs.undercursor = 1;
+	wattrs.cursor = ct_pointer;
+	wattrs.window_title = GStringGetResource( _STR_ScriptLangList,NULL );
+	wattrs.is_dlg = true;
+	pos.x = pos.y = 0;
+	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,width));
+	pos.height = GDrawPointsToPixels(NULL,183);
+	gw = GDrawCreateTopWindow(NULL,&pos,sld_e_h,&sld,&wattrs);
+
+	memset(&gcd,0,sizeof(gcd));
+	memset(&label,0,sizeof(label));
+
+	i = 0;
+	gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = 5;
+	gcd[i].gd.pos.width = width-20;
+	gcd[i].gd.pos.height = 8*12+10;
+	gcd[i].gd.flags = gg_enabled|gg_visible;
+	gcd[i].gd.u.list = SFLangList(sf,false);
+	gcd[i].gd.cid = i+1;
+	gcd[i++].creator = GListCreate;
+
+	gcd[i].gd.pos.x = 30; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+gcd[i-1].gd.pos.height+5;
+	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
+	gcd[i].gd.flags = gg_visible | gg_enabled;
+	label[i].text = (unichar_t *) _STR_NewDDD;
+	label[i].text_in_resource = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.cid = _STR_NewDDD;
+	gcd[i++].creator = GButtonCreate;
+
+	gcd[i].gd.pos.x = -30; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y;
+	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
+	gcd[i].gd.flags = gg_visible | gg_enabled;
+	label[i].text = (unichar_t *) _STR_Edit;
+	label[i].text_in_resource = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.cid = _STR_Edit;
+	gcd[i++].creator = GButtonCreate;
+
+	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+28;
+	gcd[i].gd.pos.width = width-10; gcd[i].gd.pos.height = 0;
+	gcd[i].gd.flags = gg_visible ;
+	gcd[i++].creator = GLineCreate;
+
+	gcd[i].gd.pos.x = 15-3; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+5;
+	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
+	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_default;
+	label[i].text = (unichar_t *) _STR_OK;
+	label[i].text_in_resource = true;
+	gcd[i].gd.mnemonic = 'O';
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.cid = _STR_OK;
+	gcd[i++].creator = GButtonCreate;
+
+	gcd[i].gd.pos.x = -15; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+3;
+	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
+	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+	label[i].text = (unichar_t *) _STR_Cancel;
+	label[i].text_in_resource = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.mnemonic = 'C';
+	gcd[i].gd.cid = _STR_Cancel;
+	gcd[i++].creator = GButtonCreate;
+
+	GGadgetsCreate(gw,gcd);
+	GTextInfoListFree(gcd[0].gd.u.list);
+	memset(&rq,0,sizeof(rq));
+	rq.family_name = monospace;
+	rq.point_size = 12;
+	rq.weight = 400;
+	font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+	GGadgetSetFont(gcd[0].ret,font);
+	sld.list = gcd[0].ret;
+
+    GDrawSetVisible(gw,true);
+    while ( !sld.done )
+	GDrawProcessOneEvent(NULL);
+    GDrawDestroyWindow(gw);
+
+    if ( sld.sel!=-2 ) {
+	GTextInfo **ti = SFLangArray(sf,true);
+	if ( sld.sel!=-1 ) {
+	    for ( i=0; ti[i]->text!=NULL; ++i )
+		ti[i]->selected = i==sld.sel;
+	}
+	GGadgetSetList(list,ti,false);
+	if ( sld.sel>=0 )
+	    GGadgetSetTitle(list,ti[sld.sel]->text);
+	else
+	    GGadgetSetTitle(list,ti[sli]->text);
+    } else {
+	int32 len;
+	GTextInfo **old = GGadgetGetList(list,&len);
+	GGadgetSetTitle(list,old[sli]->text);
+    }
+}
+
+unichar_t *ClassName(const unichar_t *name,uint32 feature_tag,
+	uint16 flags, int script_lang_index) {
+    unichar_t *newname, *upt;
+    char index[10];
+
+    newname = galloc((u_strlen(name)+16)*sizeof(unichar_t));
+    if ( (newname[0] = feature_tag>>24)==0 ) newname[0] = ' ';
+    if ( (newname[1] = (feature_tag>>16)&0xff)==0 ) newname[1] = ' ';
+    if ( (newname[2] = (feature_tag>>8)&0xff)==0 ) newname[2] = ' ';
+    if ( (newname[3] = feature_tag&0xff)==0 ) newname[3] = ' ';
+    newname[4] = ' ';
+    upt = newname+5;
+
+    *upt++ = flags&pst_r2l?'r':' ';
+    *upt++ = flags&pst_ignorebaseglyphs?'b':' ';
+    *upt++ = flags&pst_ignoreligatures?'l':' ';
+    *upt++ = flags&pst_ignorecombiningmarks?'m':' ';
+    *upt++ = ' ';
+
+    sprintf( index,"%3d ", script_lang_index );
+    uc_strcpy(upt,index);
+    upt += u_strlen(upt);
+
+    u_strcpy(upt,name);
+return( newname );
+}
+
+struct ac_dlg {
+    int done;
+    int ok;
+    int sli;
+    GTextInfo *tags;
+    GGadget *taglist;
+    SplineFont *sf;
+};
+
+static int acd_e_h(GWindow gw, GEvent *event) {
+    struct ac_dlg *acd = GDrawGetUserData(gw);
+    if ( event->type==et_close ) {
+	acd->done = true;
+	acd->ok = false;
+    } else if ( event->type==et_char ) {
+	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
+	    help("charinfo.html#Feature-Tag");
+return( true );
+	}
+return( false );
+    } else if ( event->type==et_controlevent && event->u.control.subtype == et_buttonactivate ) {
+	acd->done = true;
+	acd->ok = GGadgetGetCid(event->u.control.g);
+    } else if ( event->type==et_controlevent && event->u.control.subtype == et_textchanged &&
+	    event->u.control.g == acd->taglist &&
+	    event->u.control.u.tf_changed.from_pulldown!=-1 ) {
+	uint32 tag = (uint32) acd->tags[event->u.control.u.tf_changed.from_pulldown].userdata;
+	unichar_t ubuf[8];
+	/* If they select something from the pulldown, don't show the human */
+	/*  readable form, instead show the 4 character tag */
+	ubuf[0] = tag>>24;
+	ubuf[1] = (tag>>16)&0xff;
+	ubuf[2] = (tag>>8)&0xff;
+	ubuf[3] = tag&0xff;
+	ubuf[4] = 0;
+	GGadgetSetTitle(event->u.control.g,ubuf);
+    } else if ( event->type==et_controlevent && event->u.control.subtype == et_listselected ) {
+	ScriptLangList(acd->sf,event->u.control.g,acd->sli);
+    }
+return( true );
+}
+
+unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
+	int script_lang_index, GTextInfo *tags, SplineFont *sf ) {
+    static unichar_t nullstr[] = { 0 };
+    struct ac_dlg acd;
+    GRect pos;
+    GWindowAttrs wattrs;
+    GGadgetCreateData gcd[13];
+    GTextInfo label[13];
+    GWindow gw;
+    unichar_t ubuf[8];
+    unichar_t *ret;
+    const unichar_t *name, *utag;
+    unichar_t *end;
+    uint32 tag;
+    int temp;
+
+    if ( def==NULL ) def=nullstr;
+    if ( def_tag==0 && u_strlen(def)>4 && def[4]==' ' && def[0]<0x7f && def[1]<0x7f && def[2]<0x7f && def[3]<0x7f ) {
+	if ( def[0]!=' ' )
+	    def_tag = (def[0]<<24) | (def[1]<<16) | (def[2]<<8) | def[3];
+	def += 5;
+	if (( def[0]=='r' || def[0]==' ' ) &&
+		( def[1]=='b' || def[1]==' ' ) &&
+		( def[2]=='l' || def[2]==' ' ) &&
+		( def[3]=='m' || def[3]==' ' ) &&
+		def[4]==' ' ) {
+	    flags = 0;
+	    if ( def[0]=='r' ) flags |= pst_r2l;
+	    if ( def[1]=='b' ) flags |= pst_ignorebaseglyphs;
+	    if ( def[2]=='l' ) flags |= pst_ignoreligatures;
+	    if ( def[3]=='m' ) flags |= pst_ignorecombiningmarks;
+	    def += 5;
+	}
+	temp = u_strtol(def,&end,10);
+	if ( end!=def ) {
+	    script_lang_index = temp;
+	    def = end;
+	    if ( *def==' ' ) ++def;
+	}
+    }
+
+	memset(&acd,0,sizeof(acd));
+	acd.tags = tags;
+	acd.sf = sf;
+	acd.sli = script_lang_index;
+	memset(&wattrs,0,sizeof(wattrs));
+	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+	wattrs.event_masks = ~(1<<et_charup);
+	wattrs.restrict_input_to_me = 1;
+	wattrs.undercursor = 1;
+	wattrs.cursor = ct_pointer;
+	wattrs.window_title = GStringGetResource( title,NULL );
+	wattrs.is_dlg = true;
+	pos.x = pos.y = 0;
+	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,160));
+	pos.height = GDrawPointsToPixels(NULL,225);
+	gw = GDrawCreateTopWindow(NULL,&pos,acd_e_h,&acd,&wattrs);
+
+	memset(&gcd,0,sizeof(gcd));
+	memset(&label,0,sizeof(label));
+
+	label[0].text = (unichar_t *) (title==_STR_EditAnchorClass||title==_STR_NewAnchorClass?_STR_AnchorClassName:
+					title==_STR_SuffixToTag?_STR_Suffix:
+			                _STR_Components);
+	label[0].text_in_resource = true;
+	gcd[0].gd.label = &label[0];
+	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5;
+	gcd[0].gd.flags = gg_enabled|gg_visible;
+	gcd[0].creator = GLabelCreate;
+
+	label[1].text = def;
+	gcd[1].gd.label = &label[1];
+	gcd[1].gd.pos.x = 10; gcd[1].gd.pos.y = 5+13;
+	gcd[1].gd.pos.width = 140;
+	gcd[1].gd.flags = gg_enabled|gg_visible;
+	gcd[1].creator = GTextFieldCreate;
+
+	label[2].text = (unichar_t *) _STR_TagC;
+	label[2].text_in_resource = true;
+	gcd[2].gd.label = &label[2];
+	gcd[2].gd.pos.x = 5; gcd[2].gd.pos.y = gcd[1].gd.pos.y+26; 
+	gcd[2].gd.flags = gg_enabled|gg_visible;
+	gcd[2].creator = GLabelCreate;
+
+	ubuf[0] = def_tag>>24; ubuf[1] = (def_tag>>16)&0xff; ubuf[2] = (def_tag>>8)&0xff; ubuf[3] = def_tag&0xff; ubuf[4] = 0;
+	label[3].text = ubuf;
+	gcd[3].gd.label = &label[3];
+	gcd[3].gd.pos.x = 10; gcd[3].gd.pos.y = gcd[2].gd.pos.y+14;
+	gcd[3].gd.flags = gg_enabled|gg_visible;
+	gcd[3].gd.u.list = tags;
+	gcd[3].creator = GListFieldCreate;
+
+	label[4].text = (unichar_t *) _STR_ScriptAndLangC;
+	label[4].text_in_resource = true;
+	gcd[4].gd.label = &label[4];
+	gcd[4].gd.pos.x = 5; gcd[4].gd.pos.y = gcd[3].gd.pos.y+26; 
+	gcd[4].gd.flags = gg_enabled|gg_visible;
+	gcd[4].creator = GLabelCreate;
+
+	gcd[5].gd.pos.x = 10; gcd[5].gd.pos.y = gcd[4].gd.pos.y+14;
+	gcd[5].gd.pos.width = 140;
+	gcd[5].gd.flags = gg_enabled|gg_visible;
+	gcd[5].gd.u.list = SFLangList(sf,true);
+	gcd[5].gd.u.list[script_lang_index].selected = true;
+	gcd[5].gd.label = &gcd[5].gd.u.list[script_lang_index];
+	gcd[5].creator = GListButtonCreate;
+
+	gcd[6].gd.pos.x = 5; gcd[6].gd.pos.y = gcd[5].gd.pos.y+28;
+	gcd[6].gd.flags = gg_visible | gg_enabled | (flags&pst_r2l?gg_cb_on:0);
+	label[6].text = (unichar_t *) _STR_RightToLeft;
+	label[6].text_in_resource = true;
+	gcd[6].gd.label = &label[6];
+	gcd[6].creator = GCheckBoxCreate;
+
+	gcd[7].gd.pos.x = 5; gcd[7].gd.pos.y = gcd[6].gd.pos.y+15;
+	gcd[7].gd.flags = gg_visible | gg_enabled | (flags&pst_ignorebaseglyphs?gg_cb_on:0);
+	label[7].text = (unichar_t *) _STR_IgnoreBaseGlyphs;
+	label[7].text_in_resource = true;
+	gcd[7].gd.label = &label[7];
+	gcd[7].creator = GCheckBoxCreate;
+
+	gcd[8].gd.pos.x = 5; gcd[8].gd.pos.y = gcd[7].gd.pos.y+15;
+	gcd[8].gd.flags = gg_visible | gg_enabled | (flags&pst_ignoreligatures?gg_cb_on:0);
+	label[8].text = (unichar_t *) _STR_IgnoreLigatures;
+	label[8].text_in_resource = true;
+	gcd[8].gd.label = &label[8];
+	gcd[8].creator = GCheckBoxCreate;
+
+	gcd[9].gd.pos.x = 5; gcd[9].gd.pos.y = gcd[8].gd.pos.y+15;
+	gcd[9].gd.flags = gg_visible | gg_enabled | (flags&pst_ignorecombiningmarks?gg_cb_on:0);
+	label[9].text = (unichar_t *) _STR_IgnoreCombiningMarks;
+	label[9].text_in_resource = true;
+	gcd[9].gd.label = &label[9];
+	gcd[9].creator = GCheckBoxCreate;
+
+	gcd[10].gd.pos.x = 15-3; gcd[10].gd.pos.y = gcd[9].gd.pos.y+22;
+	gcd[10].gd.pos.width = -1; gcd[10].gd.pos.height = 0;
+	gcd[10].gd.flags = gg_visible | gg_enabled | gg_but_default;
+	label[10].text = (unichar_t *) _STR_OK;
+	label[10].text_in_resource = true;
+	gcd[10].gd.mnemonic = 'O';
+	gcd[10].gd.label = &label[10];
+	gcd[10].gd.cid = true;
+	gcd[10].creator = GButtonCreate;
+
+	gcd[11].gd.pos.x = -15; gcd[11].gd.pos.y = gcd[10].gd.pos.y+3;
+	gcd[11].gd.pos.width = -1; gcd[11].gd.pos.height = 0;
+	gcd[11].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+	label[11].text = (unichar_t *) _STR_Cancel;
+	label[11].text_in_resource = true;
+	gcd[11].gd.label = &label[11];
+	gcd[11].gd.mnemonic = 'C';
+	gcd[11].gd.cid = false;
+	gcd[11].creator = GButtonCreate;
+
+	GGadgetsCreate(gw,gcd);
+	acd.taglist = gcd[3].ret;
+
+    GDrawSetVisible(gw,true);
+    GWidgetIndicateFocusGadget(gcd[1].ret);
+ tryagain:
+    while ( !acd.done )
+	GDrawProcessOneEvent(NULL);
+    if ( acd.ok ) {
+	name = _GGadgetGetTitle(gcd[1].ret);
+	utag = _GGadgetGetTitle(gcd[3].ret);
+	script_lang_index = GGadgetGetFirstListSelectedItem(gcd[5].ret);
+	if ( (ubuf[0] = utag[0])==0 ) {
+	    tag = 0;
+	    ubuf[0] = ubuf[1] = ubuf[2] = ubuf[3] = ' ';
+	} else {
+	    if ( (ubuf[1] = utag[1])==0 )
+		ubuf[1] = ubuf[2] = ubuf[3] = ' ';
+	    else if ( (ubuf[2] = utag[2])==0 )
+		ubuf[2] = ubuf[3] = ' ';
+	    else if ( (ubuf[3] = utag[3])==0 )
+		ubuf[3] = ' ';
+	    tag = (ubuf[0]<<24) | (ubuf[1]<<16) | (ubuf[2]<<8) | ubuf[3];
+	}
+	if ( u_strlen(utag)>4 || ubuf[0]>=0x7f || ubuf[1]>=0x7f || ubuf[2]>=0x7f || ubuf[3]>=0x7f ) {
+	    GWidgetErrorR(_STR_TagTooLong,_STR_FeatureTagTooLong);
+	    acd.done = false;
+ goto tryagain;
+	}
+	flags = 0;
+	if ( GGadgetIsChecked(gcd[6].ret) ) flags |= pst_r2l;
+	if ( GGadgetIsChecked(gcd[7].ret) ) flags |= pst_ignorebaseglyphs;
+	if ( GGadgetIsChecked(gcd[8].ret) ) flags |= pst_ignoreligatures;
+	if ( GGadgetIsChecked(gcd[9].ret) ) flags |= pst_ignorecombiningmarks;
+	ret = ClassName(name,tag,flags,script_lang_index);
+    } else
+	ret = NULL;
+    GDrawDestroyWindow(gw);
+return( ret );
 }
 
 struct pt_dlg {
     int done;
     int ok;
+    int sli;
+    SplineFont *sf;
 };
 
 static int ptd_e_h(GWindow gw, GEvent *event) {
@@ -722,7 +1650,7 @@ static int ptd_e_h(GWindow gw, GEvent *event) {
 	ptd->ok = false;
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("getinfo.html");
+	    help("charinfo.html#Feature-Tag");
 return( true );
 	}
 return( false );
@@ -730,7 +1658,6 @@ return( false );
 	ptd->done = true;
 	ptd->ok = GGadgetGetCid(event->u.control.g);
     } else if ( event->type==et_controlevent && event->u.control.subtype == et_textchanged &&
-	    GGadgetGetCid(event->u.control.g) == 9 &&
 	    event->u.control.u.tf_changed.from_pulldown!=-1 ) {
 	uint32 tag = (uint32) simplepos_tags[event->u.control.u.tf_changed.from_pulldown].userdata;
 	unichar_t ubuf[8];
@@ -742,6 +1669,8 @@ return( false );
 	ubuf[3] = tag&0xff;
 	ubuf[4] = 0;
 	GGadgetSetTitle(event->u.control.g,ubuf);
+    } else if ( event->type==et_controlevent && event->u.control.subtype == et_listselected ) {
+	ScriptLangList(ptd->sf,event->u.control.g,ptd->sli);
     }
 return( true );
 }
@@ -808,6 +1737,8 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
     
 
 	memset(&ptd,0,sizeof(ptd));
+	ptd.sf = sf;
+	ptd.sli = script_lang_index;
 	memset(&wattrs,0,sizeof(wattrs));
 	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
 	wattrs.event_masks = ~(1<<et_charup);
@@ -907,7 +1838,7 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
 	gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+14;
 	gcd[i].gd.pos.width = 140;
 	gcd[i].gd.flags = gg_enabled|gg_visible;
-	gcd[i].gd.u.list = SFLangList(sf);
+	gcd[i].gd.u.list = SFLangList(sf,true);
 	gcd[i].gd.u.list[script_lang_index].selected = true;
 	gcd[i].gd.label = &gcd[i].gd.u.list[script_lang_index];
 	gcd[i].gd.cid = i+1;
@@ -2725,7 +3656,7 @@ static int ci_e_h(GWindow gw, GEvent *event) {
     } else if ( event->type==et_char ) {
 	CharInfo *ci = GDrawGetUserData(gw);
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("getinfo.html");
+	    help("charinfo.html");
 return( true );
 	} else if ( event->u.chr.keysym=='c' && (event->u.chr.state&ksm_control)) {
 	    CI_DoCopy(ci);
@@ -2764,7 +3695,6 @@ void SCCharInfo(SplineChar *sc) {
     GTabInfo aspects[11];
     static GBox smallbox = { bt_raised, bs_rect, 2, 1, 0, 0, 0,0,0,0, COLOR_DEFAULT,COLOR_DEFAULT };
     static int boxset=0;
-    static unichar_t monospace[] = { 'c','o','u','r','i','e','r',',','m', 'o', 'n', 'o', 's', 'p', 'a', 'c', 'e',',','c','a','s','l','o','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
     FontRequest rq;
     GFont *font;
 

@@ -2859,6 +2859,24 @@ void TtfTablesFree(struct ttf_table *tab) {
     }
 }
 
+void ScriptRecordFree(struct script_record *sr) {
+    int i;
+
+    for ( i=0; sr[i].script!=0; ++i )
+	free( sr[i].langs );
+    free( sr );
+}
+
+void ScriptRecordListFree(struct script_record **script_lang) {
+    int i;
+
+    if ( script_lang==NULL )
+return;
+    for ( i=0; script_lang[i]!=NULL; ++i )
+	ScriptRecordFree(script_lang[i]);
+    free( script_lang );
+}
+
 void SplineFontFree(SplineFont *sf) {
     int i;
     BDFFont *bdf, *bnext;
@@ -2898,14 +2916,6 @@ return;
     free(sf->subfonts);
     free(sf->remap);
     GlyphHashFree(sf);
-    if ( sf->script_lang!=0 ) {
-	int i, j;
-	for ( i=0; sf->script_lang[i]!=NULL; ++i ) {
-	    for ( j=0; sf->script_lang[i][j].script!=0; ++j )
-		free( sf->script_lang[i][j].langs );
-	    free( sf->script_lang[i] );
-	}
-	free( sf->script_lang );
-    }
+    ScriptRecordListFree(sf->script_lang);
     free(sf);
 }

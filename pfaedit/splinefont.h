@@ -767,6 +767,8 @@ extern void ImageListsFree(ImageList *imgs);
 extern void TTFLangNamesFree(struct ttflangname *l);
 extern void MinimumDistancesFree(MinimumDistance *md);
 extern SplineChar *SplineCharCreate(void);
+extern void ScriptRecordFree(struct script_record *sr);
+extern void ScriptRecordListFree(struct script_record **script_lang);
 extern void SplineCharListsFree(struct splinecharlist *dlist);
 extern void SplineCharFreeContents(SplineChar *sc);
 extern void SplineCharFree(SplineChar *sc);

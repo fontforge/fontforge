@@ -2,12 +2,14 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 30-Jul-2001 -->
+  <!-- AP: Last modified: 15-Mar-2003 -->
   <TITLE>Spline Font Database File Format</TITLE>
 </HEAD>
 <BODY>
 <H1 ALIGN=Center>
-  Spline Font Database
+  Spline Font Database<FONT COLOR="Red"><BR>
+  <SMALL><SMALL><STRONG>This page is grievously out of
+  date</STRONG></SMALL></SMALL></FONT>
 </H1>
 <P>
 PfaEdit's <A HREF="sfd.html">sfd</A> files are ASCII files (so they can be
@@ -215,7 +217,7 @@ After all the outline characters have been described there is an EndChars
 entry and then follow any bitmap fonts:
 <BLOCKQUOTE>
   <PRE>EndChars
-BitmapFont: 12 285 10 2
+BitmapFont: 12 285 10 2 1
 BDFChar: 32 3 0 0 0 0
 z
 BDFChar: 33 3 0 1 0 9
@@ -225,18 +227,19 @@ BDFChar: 33 3 0 1 0 9
 <P>
 The bitmap font line contains the following numbers: the pixelsize of the
 font, the number of potential characters in the font, the ascent and the
-descent of the font. This is followed by a list of bitmap characters, the
-bitmap character line contains the following numbers: the encoding (local),
-the width, the minimum x value, the minimum y value, the maximum x value
-and the maximum y value. This is followed by another set of binary data encoded
-as above there will be (ymax-ymin+1)* ((xmax-xmin+8)/8) (unencoded) bytes,
-there is no color table here (the high order bit comes first in the image,
-set bits should be colored black, clear bits transparent).
+descent of the font and the depth of font (number of bits in a pixel). This
+is followed by a list of bitmap characters, the bitmap character line contains
+the following numbers: the encoding (local), the width, the minimum x value,
+the minimum y value, the maximum x value and the maximum y value. This is
+followed by another set of binary data encoded as above there will be
+(ymax-ymin+1)* ((xmax-xmin+8)/8) (unencoded) bytes, there is no color table
+here (the high order bit comes first in the image, set bits should be colored
+black, clear bits transparent).
 <P>
 A bitmap font is ended by:
 <BLOCKQUOTE>
   <PRE>EndBitmapFont
-BitmapFont: 17 285 14 3
+BitmapFont: 17 285 14 3 1
 BDFChar: 0 17 0 0 0 0
 z
 ...

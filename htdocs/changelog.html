@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 13-Mar-2003 -->
+  <!-- AP: Last modified: 26-Mar-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,44 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    ??-Mar-2003
+    <UL>
+      <LI>
+	PfaEdit was not reading pfb fonts properly if they had more than one binary
+	section header.
+      <LI>
+	When PfaEdit removed a character it did not remove all the kernpairs that
+	refered to that character.
+      <LI>
+	Fixed more leaks with valgrind.
+      <LI>
+	Added more synonyms for glyph names from Adobe Glyph List (I still rely on
+	Glyph names for New Fonts as my basic set of names)
+      <LI>
+	PfaEdit had problems if the use selected 0 levels of undoes when the UI was
+	active.
+      <LI>
+	Selecting the freehand tool in a quadratic font caused a crash. (The freehand
+	tool doesn't work in quadratic fonts, but it shouldn't crash)
+      <LI>
+	Changed the way scripts are specified. I used to assign a script to every
+	character. I realize that doesn't work. The digits are used in many scripts
+	and the fraction ligatures based on them need to be seen in all those scripts,
+	not just the one that the digit was assigned to. So...
+	<UL>
+	  <LI>
+	    Glyphs no longer have a script assigned to them
+	  <LI>
+	    Substitutions, Ligatures, Anchor Classes and other Advanced Typographic features
+	    now have a list of scripts (and languages) for which they are active.
+	  <LI>
+	    There is now an absurdly complex <A HREF="charinfo.html#Feature-Tag">stream
+	    of dialogs</A> which may be used to set this list.
+	</UL>
+      <LI>
+	Added a new preference item to allow the user to specify a local help directory
+    </UL>
   <LI>
     13-Mar-2003
     <UL>
@@ -20,7 +58,7 @@
       <LI>
 	Added a preference item to control the undo depth from the UI.
       <LI>
-	Try to do better about scaling my chunk allocator to machines with 8 bit
+	Try to do better about scaling my chunk allocator to machines with 8 byte
 	pointers
       <LI>
 	Was doing 32 bit arithmetic when reading GSUB simple substitution lookups
