@@ -209,7 +209,7 @@ uint32 SCScriptFromUnicode(SplineChar *sc) {
     char *pt;
     PST *pst;
     SplineFont *sf;
-    int i;
+    int i; unsigned uni;
 
     if ( sc==NULL )
 return( DEFAULT_SCRIPT );
@@ -226,6 +226,9 @@ return( ScriptFromUnicode( sc->unicodeenc,sf ));
 	if ( uni!=-1 )
 return( ScriptFromUnicode( uni,sf ));
     }
+    /* Adobe ligature uniXXXXXXXX */
+    if ( strncmp(sc->name,"uni",3)==0 && sscanf(sc->name+3,"%4x", &uni)==1 )
+return( ScriptFromUnicode( uni,sf ));
 
     if ( sf==NULL )
 return( DEFAULT_SCRIPT );

@@ -190,7 +190,7 @@ SplinePoint *SplinePointCreate(real x, real y) {
     sp->nextcp = sp->prevcp = sp->me;
     sp->nonextcp = sp->noprevcp = true;
     sp->nextcpdef = sp->prevcpdef = false;
-    sp->ttfindex = 0xfffe;
+    sp->ttfindex = sp->nextcpindex = 0xfffe;
 return( sp );
 }
 
@@ -204,6 +204,7 @@ return( spline );
 }
 
 void SplinePointFree(SplinePoint *sp) {
+    chunkfree(sp->hintmask,sizeof(HintMask));
     chunkfree(sp,sizeof(SplinePoint));
 }
 
@@ -225,6 +226,7 @@ void SplinePointMDFree(SplineChar *sc, SplinePoint *sp) {
 	}
     }
 
+    chunkfree(sp->hintmask,sizeof(HintMask));
     chunkfree(sp,sizeof(SplinePoint));
 }
 
@@ -905,6 +907,10 @@ SplinePointList *SplinePointListCopy1(SplinePointList *spl) {
     for ( pt=spl->first; pt!=NULL && pt!=first; pt = pt->next->to ) {
 	cpt = chunkalloc(sizeof(SplinePoint));
 	*cpt = *pt;
+	if ( pt->hintmask!=NULL ) {
+	    cpt->hintmask = chunkalloc(sizeof(HintMask));
+	    memcpy(cpt->hintmask,pt->hintmask,sizeof(HintMask));
+	}
 	cpt->next = cpt->prev = NULL;
 	if ( cur->first==NULL )
 	    cur->first = cur->last = cpt;
@@ -976,6 +982,7 @@ static SplinePointList *SplinePointListCopySelected1(SplinePointList *spl) {
 	while ( start!=NULL && start->selected && start!=first ) {
 	    cpt = chunkalloc(sizeof(SplinePoint));
 	    *cpt = *start;
+	    cpt->hintmask = NULL;
 	    cpt->next = cpt->prev = NULL;
 	    if ( cur->first==NULL )
 		cur->first = cur->last = cpt;
@@ -3476,6 +3483,7 @@ return;
     SplineCharListsFree(sc->dependents);
     PSTFree(sc->possub);
     free(sc->ttf_instrs);
+    free(sc->countermasks);
 }
 
 void SplineCharFree(SplineChar *sc) {

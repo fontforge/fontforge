@@ -113,6 +113,7 @@ typedef struct reviewhintdata {
     unsigned int ishstem: 1;
     unsigned int oldmanual: 1;
     unsigned int undocreated: 1;
+    unsigned int changed: 1;
     CharView *cv;
     GWindow gw;
     StemInfo *active;
@@ -296,6 +297,7 @@ return( true );
 	    else
 		hd->cv->sc->vconflicts = StemListAnyConflicts(hd->cv->sc->vstem);
 	    hd->cv->sc->manualhints = true;
+	    hd->changed = true;
 	    if ( wasconflict!=hd->active->hasconflicts )
 		GGadgetSetVisible(GWidgetGetControl(hd->gw,CID_Overlap),hd->active->hasconflicts);
 	    SCOutOfDateBackground(hd->cv->sc);
@@ -312,6 +314,8 @@ static int RH_OK(GGadget *g, GEvent *e) {
 	StemInfosFree(hd->oldv);
 	if ( hd->lastactive!=NULL )
 	    hd->lastactive->active = false;
+	if ( hd->changed )
+	    SCClearHintMasks(hd->cv->sc,true);
 	/* Everything else got done as we went along... */
 	SCOutOfDateBackground(hd->cv->sc);
 	SCUpdateAll(hd->cv->sc);
@@ -364,6 +368,7 @@ return( true );			/* Eh? */
 	else
 	    hd->cv->sc->vconflicts = StemListAnyConflicts(hd->cv->sc->vstem);
 	hd->cv->sc->manualhints = true;
+	hd->changed = true;
 	StemInfoFree( hd->active );
 	hd->active = prev;
 	SCOutOfDateBackground(hd->cv->sc);
@@ -610,6 +615,7 @@ void CVReviewHints(CharView *cv) {
     hd.oldh = StemInfoCopy(cv->sc->hstem);
     hd.oldv = StemInfoCopy(cv->sc->vstem);
     hd.oldmanual = cv->sc->manualhints;
+    hd.changed = false;
     RH_SetupHint(&hd);
     if ( hd.active!=NULL ) {
 	GWidgetIndicateFocusGadget(GWidgetGetControl(gw,CID_Base));
@@ -652,6 +658,7 @@ return(true);
 	    hd->cv->sc->vconflicts = StemListAnyConflicts(hd->cv->sc->vstem);
 	}
 	hd->cv->sc->manualhints = true;
+	SCClearHintMasks(hd->cv->sc,true);
 	SCOutOfDateBackground(hd->cv->sc);
 	SCUpdateAll(hd->cv->sc);
 	hd->done = true;

@@ -3668,9 +3668,10 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
 }
 
 static void dumppost(struct alltabs *at, SplineFont *sf, enum fontformat format) {
-    int pos, i,j;
+    int pos, i,j, shouldbe;
     int shorttable = (format==ff_otf || format==ff_otfcid ||
 	    (at->gi.flags&ttf_flag_shortps));
+    uint32 here;
 
     at->post = tmpfile();
 
@@ -3684,19 +3685,26 @@ static void dumppost(struct alltabs *at, SplineFont *sf, enum fontformat format)
     putlong(at->post,0);		/* no idea about memory */
     putlong(at->post,0);		/* no idea about memory */
     if ( !shorttable ) {
+	here = ftell(at->post);
 	putshort(at->post,at->maxp.numGlyphs);
 
-	putshort(at->post,0);		/* glyph 0 is named .notdef */
-	putshort(at->post,1);		/* glyphs 1&2 are tab and cr */
-	putshort(at->post,2);		/* or something */
-	i=1;
-	if ( sf->chars[0]!=NULL && strcmp(sf->chars[0]->name,".notdef")!=0 )
-	    i=0;
-	for ( pos=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 ) {
+	shouldbe = 0;
+	for ( i=0, pos=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 ) {
+	    while ( sf->chars[i]->ttf_glyph>shouldbe ) {
+		if ( shouldbe==0 )
+		    putshort(at->post,0);		/* glyph 0 is named .notdef */
+		else if ( shouldbe==1 )
+		    putshort(at->post,1);		/* glyphs 1&2 are tab and cr */
+		else if ( shouldbe==2 )
+		    putshort(at->post,2);		/* or something */
+		else
+		    putshort(at->post,0);
+		++shouldbe;
+	    }
 	    if ( strcmp(sf->chars[i]->name,".notdef")==0 )
 		putshort(at->post,0);
 	    else {
-		for ( j=127-32+3; j<258; ++j )
+		for ( j=0; j<258; ++j )
 		    if ( strcmp(sf->chars[i]->name,ttfstandardnames[j])==0 )
 		break;
 		if ( j!=258 )
@@ -3706,13 +3714,19 @@ static void dumppost(struct alltabs *at, SplineFont *sf, enum fontformat format)
 		    ++pos;
 		}
 	    }
+	    ++shouldbe;
+	}
+	if ( shouldbe!=at->maxp.numGlyphs ) {
+	    fseek(at->post,here,SEEK_SET);
+	    putshort(at->post,shouldbe);
+	    fseek(at->post,0,SEEK_END);
 	}
 	if ( pos!=0 ) {
 	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 ) {
 		if ( strcmp(sf->chars[i]->name,".notdef")==0 )
 		    /* Do Nothing */;
 		else {
-		    for ( j=127-32+3; j<258; ++j )
+		    for ( j=0; j<258; ++j )
 			if ( strcmp(sf->chars[i]->name,ttfstandardnames[j])==0 )
 		    break;
 		    if ( j!=258 )

@@ -1205,6 +1205,7 @@ static void ILDisconnect(IntersectionList *ilist) {
 		if ( sl->spline->from->prev!=sl->spline && sl->spline->from->prev != NULL ) {
 		    sp = chunkalloc(sizeof(SplinePoint));
 		    *sp = *sl->spline->from;
+		    sp->hintmask = NULL;
 		    sl->spline->from->prev = NULL;
 		    sp->next = NULL;
 		    sp->prev->to = sp;
@@ -1215,6 +1216,7 @@ static void ILDisconnect(IntersectionList *ilist) {
 		if ( sl->spline->to->next!=sl->spline && sl->spline->to->next != NULL ) {
 		    sp = chunkalloc(sizeof(SplinePoint));
 		    *sp = *sl->spline->to;
+		    sp->hintmask = NULL;
 		    sl->spline->to->next = NULL;
 		    sp->prev = NULL;
 		    sp->next->from = sp;

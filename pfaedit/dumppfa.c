@@ -717,7 +717,7 @@ return( false );
     if ( incid==NULL ) {
 	GProgressNextStage();
 	GProgressChangeLine1R(_STR_CvtPS);
-	if ( (chars = SplineFont2Chrs(sf,true,iscjk,subrs,flags,format))==NULL )
+	if ( (chars = SplineFont2Chrs(sf,iscjk,subrs,flags,format))==NULL )
 return( false );
 	GProgressNextStage();
 	GProgressChangeLine1R(_STR_SavingPSFont);

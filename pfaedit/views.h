@@ -698,6 +698,8 @@ extern void MDReplace(MinimumDistance *md,SplineSet *old,SplineSet *rpl);
 extern void SCAppendPosSub(SplineChar *sc,enum possub_type type, char **d);
 extern void SCCharInfo(SplineChar *sc);
 extern void CharInfoDestroy(struct charinfo *ci);
+extern void PI_ShowHints(SplineChar *sc, GGadget *list, int set);
+extern GTextInfo *SCHintList(SplineChar *sc,HintMask *);
 extern void CVGetInfo(CharView *cv);
 extern void CVPGetInfo(CharView *cv);
 extern void SCRefBy(SplineChar *sc);

@@ -38,6 +38,8 @@
 
 #define CHR(ch1,ch2,ch3,ch4) (((ch1)<<24)|((ch2)<<16)|((ch3)<<8)|(ch4))
 
+#define MmMax	16		/* PS says at most this many instances for type1/2 mm fonts */
+
 typedef struct val {
     enum val_type { v_int, v_str, v_unicode, v_lval, v_arr, v_arrfree,
 	    v_int32pt, v_int16pt, v_int8pt, v_void } type;
@@ -432,6 +434,9 @@ typedef struct bdffont {
     int truesize;		/* for bbsized fonts */
 } BDFFont;
 
+#define HntMax	96		/* PS says at most 96 hints */
+typedef uint8 HintMask[HntMax/8];
+
 enum pointtype { pt_curve, pt_corner, pt_tangent };
 typedef struct splinepoint {
     BasePoint me;
@@ -459,6 +464,7 @@ typedef struct splinepoint {
     uint16 nextcpindex;		/* Truetype point index */
     struct spline *next;
     struct spline *prev;
+    HintMask *hintmask;
 } SplinePoint;
 
 typedef struct linelist {
@@ -565,6 +571,8 @@ typedef struct hintinstance {
 } HintInstance;
 
 enum hinttypes { ht_unspecified=0, ht_h, ht_v, ht_d };
+typedef real _MMArray[2][MmMax];
+
 typedef struct steminfo {
     struct steminfo *next;
     unsigned int hinttype: 2;	/* Only used by undoes */
@@ -592,8 +600,11 @@ typedef struct steminfo {
     unsigned int bigsteminfo: 1;/* See following structure */
     int16 hintnumber;		/* when dumping out hintmasks we need to know */
 				/*  what bit to set for this hint */
-    int mask;			/* Mask of all references that use this hint */
+    union {
+	int mask;		/* Mask of all references that use this hint */
 				/*  in type2 output */
+	_MMArray *unblended /*[2][MmMax]*/;	/* Used when reading in type1 mm hints */
+    } u;
     real start;			/* location at which the stem starts */
     real width;			/* or height */
     HintInstance *where;	/* location(s) in the other coord */
@@ -696,6 +707,8 @@ typedef struct splinechar {
     AnchorPoint *anchor;
     uint8 *ttf_instrs;
     int16 ttf_instrs_len;
+    int16 countermask_cnt;
+    HintMask *countermasks;
 } SplineChar;
 
 enum ttfnames { ttf_copyright=0, ttf_family, ttf_subfamily, ttf_uniqueid,
@@ -881,8 +894,9 @@ enum ps_flags { ps_flag_nohintsubs = 0x10000, ps_flag_noflex=0x20000,
 		    ps_flag_nohints = 0x40000, ps_flag_restrict256=0x80000,
 		    ps_flag_afm = 0x100000, ps_flag_pfm = 0x200000,
 		    ps_flag_tfm = 0x400000,
+		    ps_flag_round = 0x800000,
 		    ps_flag_mask = (ps_flag_nohintsubs|ps_flag_noflex|
-			ps_flag_afm|ps_flag_pfm|ps_flag_tfm)
+			ps_flag_afm|ps_flag_pfm|ps_flag_tfm|ps_flag_round)
 		};
 
 struct fontdict;
@@ -908,12 +922,15 @@ enum fontformat { ff_pfa, ff_pfb, ff_pfbmacbin, ff_multiple, ff_mm,
 	ff_ptype3, ff_ptype0, ff_cid, ff_cff, ff_cffcid,
 	ff_ttf, ff_ttfsym, ff_ttfmacbin, ff_ttfdfont, ff_otf, ff_otfdfont,
 	ff_otfcid, ff_otfciddfont, ff_svg, ff_none };
-extern struct pschars *SplineFont2Chrs(SplineFont *sf, int round, int iscjk,
+extern struct pschars *SplineFont2Chrs(SplineFont *sf, int iscjk,
 	struct pschars *subrs,int flags,enum fontformat format);
 struct cidbytes;
 struct fd2data;
 struct ttfinfo;
 struct alltabs;
+struct growbuf;
+extern int CvtPsStem3(struct growbuf *gb, SplineChar *scs[MmMax], int instance_count,
+	int ishstem, int round);
 extern struct pschars *CID2Chrs(SplineFont *cidmaster,struct cidbytes *cidbytes,int flags);
 extern struct pschars *SplineFont2Subrs2(SplineFont *sf,int flags);
 extern struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
@@ -1206,9 +1223,12 @@ extern HintInstance *HICopyTrans(HintInstance *hi, real mul, real offset);
 extern void MDAdd(SplineChar *sc, int x, SplinePoint *sp1, SplinePoint *sp2);
 extern int SFNeedsAutoHint( SplineFont *_sf);
 extern void SCAutoInstr( SplineChar *sc,BlueData *bd );
+extern void SCClearHintMasks(SplineChar *sc,int counterstoo);
+extern void SCFigureCounterMasks(SplineChar *sc);
+extern void SCFigureHintMasks(SplineChar *sc);
 extern void SplineCharAutoHint( SplineChar *sc,int removeOverlaps);
 extern void SplineFontAutoHint( SplineFont *sf);
-extern StemInfo *HintCleanup(StemInfo *stem,int dosort);
+extern StemInfo *HintCleanup(StemInfo *stem,int dosort,int instance_count);
 extern int SplineFontIsFlexible(SplineFont *sf,int flags);
 extern int SCWorthOutputting(SplineChar *sc);
 extern SplineChar *SCDuplicate(SplineChar *sc);
@@ -1300,6 +1320,7 @@ struct pscontext {
     real blend_values[17];
     int blend_warn;
 };
+extern int UnblendedCompare(real u1[MmMax], real u2[MmMax], int cnt);
 extern SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *context,
 	struct pschars *subrs, struct pschars *gsubrs, const char *name);
 extern void MatMultiply(real m1[6], real m2[6], real to[6]);
@@ -1443,7 +1464,7 @@ extern char *MMMakeMasterFontname(MMSet *mm,int ipos,char **fullname);
 extern char *MMGuessWeight(MMSet *mm,int ipos,char *def);
 extern char *MMExtractNth(char *pt,int ipos);
 extern char *MMExtractArrayNth(char *pt,int ipos);
-extern int MMValid(MMSet *mm,int complain,int fullcheck);
+extern int MMValid(MMSet *mm,int complain);
 extern void MMKern(SplineFont *sf,SplineChar *first,SplineChar *second,int diff,
 	int sli,KernPair *oldkp);
 extern SplineChar *SCMostConflictsMM(MMSet *mm,int enc, int ish, int *index);

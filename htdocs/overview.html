@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 4-Jan-2004 -->
+  <!-- AP: Last modified: 29-Jan-2004 -->
   <TITLE>PfaEdit -- An outline font editor for PostScript&reg;, TrueType and
   OpenType fonts</TITLE>
 </HEAD>
@@ -542,15 +542,18 @@ to draw small fonts.
     most serifs could not be described, Adobe then developed a mechanism called
     hint substitution which allows for different sets of non-overlapping hints
     to exist in different parts of the character. There are still shapes which
-    cannot be fully hinted, but hint substitution is an improvement. PfaEdit
-    will use hint substitution when it can.
+    cannot be fully hinted, but hint substitution is an improvement. The
+    Hints-&gt;AutoHint command will figure out what stems overlap and where to
+    change the current set of hints. The Hints-&gt;Hint Substitution Pts command
+    will also figure where hint changes should occur, and the Hint Mask pane
+    of the Point Info dialog gives the user direct control over this.
     <P>
     Most recently Adobe has provide a means to control the counters, the spaces
     between stems, in a character. The original Type1 description provided support
     for the horizontal counters in "m" and the vertical counters in "E" but more
     complex shapes could not be dealt with. Counter Hints (in a type1 font) may
-    only be used with non-latin (non-greek, non-cyrillic) character sets, but
-    in OpenType this restriction appears to have been relaxed. PfaEdit will generate
+    only be used with non-latin (non-greek, non-cyrillic) character sets, in
+    type2 (OpenType) things are a bit more complicated,. PfaEdit will generate
     counter hints when appropriate.
     <P>
     Adobe provides some font-wide hinting mechanisms. The two most obvious are

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 14-Dec-2003 -->
+  <!-- AP: Last modified: 29-Jan-2004 -->
   <TITLE>Get Info</TITLE>
 </HEAD>
 <BODY>
@@ -21,16 +21,16 @@ dialog is brought up.
   Point Info
 </H2>
 <P>
-<IMG SRC="pointinfo.png" WIDTH="307" HEIGHT="417" ALIGN="Right"> This shows
+<IMG SRC="pointinfo.png" WIDTH="321" HEIGHT="459" ALIGN="Right"> This shows
 information about the current point. The Base position is where the point
-itself is. 
+itself is.
 <P>
 The Next CP shows both the location of the next control point, and the offset
 to that point from the base (and whether this setting is the default for
 that point), underneath the offsets it shows the same information in a different
 format -- as a distance from the point itself, and the angle to it.
 <P>
-The Prev CP does the same for the previous control point. 
+The Prev CP does the same for the previous control point.
 <P>
 You may change any of these and the change is reflected in the outline view.
 Your changes are constrained by the point type (for instance with tangent
@@ -45,7 +45,30 @@ points are canceled.
 The colors of the labels reflect the colors of the items they refer to. The
 point itself will be drawn in red, the previous control point will be drawn
 in magenta and the next control point will be drawn in dull cyan.
-<BR Clear=All>
+<BR CLEAR=ALL>
+<H3>
+  <IMG SRC="hintmaskinfo.png" WIDTH="321" HEIGHT="459" ALIGN="Right"><A NAME="HintMask">Hint</A>
+  Mask
+</H3>
+<P>
+<IMG SRC="charwithhintmask.png" WIDTH="309" HEIGHT="322" ALIGN="Left">If
+you want to control what hints are active at a given point (and at all subsequent
+points until an new hintmask is given) you can use the hint mask pane. This
+provides you with a list of all hints in the current glyph, you should select
+the ones which you want active.
+<P>
+As you select hints, the character view will darken those hints so you can
+see what you've selected.
+<P>
+Points with circles drawn around them have hintmasks.
+<P>
+According to Adobe's documentation you should never have two hints which
+conflict active at the same time. PfaEdit will warn you if you do this.
+Unfortunately there are fonts (even fonts from Adobe) which do not follow
+this rule, so I have made this a warning rather than an error.
+<P>
+Remember to hold the control key down when making disjoint
+selections.<BR Clear=All>
 <H2>
   <IMG SRC="agetinfo.png" WIDTH="226" HEIGHT="329" ALIGN="Right"><A NAME="Anchors">Anchor
   Points</A> Info

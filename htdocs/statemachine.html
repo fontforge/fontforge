@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Sep-2003 -->
-  <!-- AP: Last modified: 24-Dec-2003 -->
+  <!-- AP: Last modified: 14-Jan-2004 -->
   <TITLE>The Mac State Machine dialog</TITLE>
 </HEAD>
 <BODY>
@@ -95,7 +95,11 @@ machine.
     transition.
   <LI>
     For kerning transitions the first line shows the first (few) kerning values,
-    the second line shows either "..." if there are more kerning values, or nothing.
+    the second line shows either "..." if there are more kerning values, or
+    nothing.<BR>
+    Note: The number of kerning values
+    <FONT COLOR="Red"><STRONG>MUST</STRONG></FONT> match the number of glyphs
+    pushed on the kern stack, or your application crashes.
 </UL>
 <P>
 For a complete description of what these state machines can do you should
@@ -190,13 +194,13 @@ to the type of state machine.
   </TR>
   <TR>
     <TD><P ALIGN=Center>
-      <IMG SRC="edittransition-indic.png" WIDTH="282" HEIGHT="337"></TD>
+      <IMG SRC="edittransition-indic.png" WIDTH="282" HEIGHT="431"></TD>
     <TD><P ALIGN=Center>
-      <IMG SRC="edittransition-context.png" WIDTH="282" HEIGHT="337"></TD>
+      <IMG SRC="edittransition-context.png" WIDTH="282" HEIGHT="431"></TD>
     <TD><P ALIGN=Center>
-      <IMG SRC="edittransition-insert.png" WIDTH="282" HEIGHT="337"></TD>
+      <IMG SRC="edittransition-insert.png" WIDTH="282" HEIGHT="431"></TD>
     <TD><P ALIGN=Center>
-      <IMG SRC="edittransition-kern.png" WIDTH="282" HEIGHT="337"></TD>
+      <IMG SRC="edittransition-kern.png" WIDTH="282" HEIGHT="431"></TD>
   </TR>
 </TABLE>
 <P>

@@ -3598,6 +3598,8 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 	    for ( i=258; i<gcbig; ++i ) {
 		char *nm;
 		len = getc(ttf);
+		if ( len<0 )		/* Don't crash on EOF */
+	    break;
 		nm = galloc(len+1);
 		for ( j=0; j<len; ++j )
 		    nm[j] = getc(ttf);

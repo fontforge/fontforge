@@ -363,6 +363,7 @@ static SplineSet *SpMove(SplinePoint *sp,real offset,
 
     new = chunkalloc(sizeof(SplinePoint));
     *new = *sp;
+    new->hintmask = NULL;
     new->me.x += offset;
     new->nextcp.x += offset;
     new->prevcp.x += offset;
@@ -501,6 +502,7 @@ return(NULL);
 		} else if ( sp->next->rightedge || sp->prev->rightedge ) {
 		    new = chunkalloc(sizeof(SplinePoint));
 		    *new = *sp;
+		    new->hintmask = NULL;
 		    new->ticked = false; sp->ticked = false;
 		    if ( sp->next->rightedge ) {
 			sp->next->from = new;

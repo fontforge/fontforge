@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 29-Dec-2002 -->
-  <!-- AP: Last modified: 10-Jan-2004 -->
+  <!-- AP: Last modified: 29-Jan-2004 -->
   <TITLE>Char Info</TITLE>
 </HEAD>
 <BODY>
@@ -13,11 +13,36 @@
   <IMG SRC="charinfo.png" WIDTH="307" HEIGHT="409" ALIGN="Right">
   <A NAME="Character">Character</A> Info
 </H2>
+<UL>
+  <LI>
+    <A HREF="charinfo.html#Unicode">Encoding and Unicode data</A>
+  <LI>
+    <A HREF="charinfo.html#comment">Character Comment</A>
+  <LI>
+    <A HREF="charinfo.html#position">Simple Character Positioning </A>(GPOS)
+  <LI>
+    <A HREF="charinfo.html#pairwise">Pair-wise Character Positioning other than
+    kerning </A>(GPOS)
+  <LI>
+    <A HREF="charinfo.html#substitution">Character Simple Substitution</A> (GSUB,
+    morx)
+  <LI>
+    <A HREF="charinfo.html#multiple">Character Alternate Substitution</A> (GSUB)
+  <LI>
+    <A HREF="charinfo.html#multiple">Character Multiple Substitution</A> (GSUB)
+  <LI>
+    <A HREF="charinfo.html#ligature">Character Ligature Substitution </A>(GSUB,
+    morx)
+  <LI>
+    <A HREF="charinfo.html#components">Components</A>
+  <LI>
+    <A HREF="#CounterMasks">Counter Masks</A>
+</UL>
 <P>
-This dialog allows you to set the name and unicode encoding of a given character.
-If you know the name of the character then PfaEdit can tell you the encoding
-(if you press Set From Name), similarly if you know the encoding then PfaEdit
-can tell you the name.
+<A NAME="Unicode">This dialog </A>allows you to set the name and unicode
+encoding of a given character. If you know the name of the character then
+PfaEdit can tell you the encoding (if you press Set From Name), similarly
+if you know the encoding then PfaEdit can tell you the name.
 <P>
 The name field contains a pull down list with (possibly) several synonyms
 for the name of this unicode code point.
@@ -28,18 +53,18 @@ it should be output into GDEF. You can see what PfaEdit does in
 <A HREF="showatt.html">View-&gt;Show ATT</A>.<BR CLEAR=ALL>
 <P>
 <IMG SRC="charinfo-comment.png" WIDTH="307" HEIGHT="359" ALIGN="Right">You
-can assign an arbetrary (unicode) comment to the character. Simply type any
-text into this field. The comment is for your use, it will not go into any
-generated fonts. You may also assign a color to a character to make it stand
-out in the font view.<BR CLEAR=ALL>
+can assign an arbetrary (unicode) <A NAME="comment">comment</A> to the character.
+Simply type any text into this field. The comment is for your use, it will
+not go into any generated fonts. You may also assign a color to a character
+to make it stand out in the font view.<BR CLEAR=ALL>
 <P>
 <IMG SRC="charinfo-pos.png" WIDTH="305" HEIGHT="400" ALIGN="Right">There
 are 6 seperate sub-dialogs to help you edit the
 <A NAME="features">features</A> of the <A HREF="gposgsub.html">GPOS and
 GSUB</A> tables (some of these data can be converted into various of Apple's
-AAT tables, particularly 'morx'). The first of these is the alternate position
-dialog which allows you to associate certain modifications to a character's
-metrics with a feature in the GPOS table.
+AAT tables, particularly 'morx'). The first of these is the alternate
+<A NAME="position">position</A> dialog which allows you to associate certain
+modifications to a character's metrics with a feature in the GPOS table.
 <P>
 In the example at right the 'fwid' feature (full width) adds 400 units to
 the character's advance width and moves it horizontally by 200 units.
@@ -55,14 +80,16 @@ and [Paste] work as expected too. You can also paste something copied here
 into the font view (if you wish to have the same position information available
 in a large block of characters).
 <P>
-The pairwise positioning sub-dialog allows you to change the positions of
-two characters when they occur next to one another. The most common example
-of that is kerning (which is better done elsewhere, the metricsview for example,
-but it can be done here if you really want to do that).<BR Clear=Right>
+The <A NAME="pairwise">pairwise</A> positioning sub-dialog allows you to
+change the positions of two characters when they occur next to one another.
+The most common example of that is kerning (which is better done elsewhere,
+the metricsview for example, but it can be done here if you really want to
+do that).<BR Clear=Right>
 <P>
 <IMG SRC="charinfo-subs.png" WIDTH="305" HEIGHT="400" ALIGN="Right"> A simple
-substitution replaces one glyph with another. Here the glyph "one" has a
-substitution to "onesuperior" when the 'sups' (Superscript) feature is invoked.
+<A NAME="substitution">substitution</A> replaces one glyph with another.
+Here the glyph "one" has a substitution to "onesuperior" when the 'sups'
+(Superscript) feature is invoked.
 <P>
 PfaEdit recognizes a special feature tag ' RQD' to indicate that this feature
 is required for the given script/language. Such a feature will always be
@@ -72,12 +99,13 @@ You can generate a substitution most easily by draging a character from the
 font view and droping it here (you will then be <A HREF="#Feature-Tag">prompted
 for a feature tag</A> for the substitution table.
 <P>
-The multiple and alternate substitution sub-dialogs are very similar to this
-one except that they can take multiple glyph names. In a multiple substitution
-sub table each glyph is replaced by several other glyphs (sort of the reverse
-of a ligature), while in the alternate substitution sub-dialog each glyph
-is to be replaced by exactly one glyph from a list and the user is to be
-given a choice as to which glyph is to be chosen. <BR Clear=Right>
+The <A NAME="multiple">multiple</A> and alternate substitution sub-dialogs
+are very similar to this one except that they can take multiple glyph names.
+In a multiple substitution sub table each glyph is replaced by several other
+glyphs (sort of the reverse of a ligature), while in the alternate substitution
+sub-dialog each glyph is to be replaced by exactly one glyph from a list
+and the user is to be given a choice as to which glyph is to be chosen.
+<BR Clear=Right>
 <P>
 <IMG SRC="charinfo-lig.png" WIDTH="305" HEIGHT="400" ALIGN="Right"> The
 <A NAME="ligature">ligature</A> field allows you to tell PfaEdit that the
@@ -99,13 +127,25 @@ should be, Discretionary ones may be, and Historic ones should only be used
 int appropriate circumstances. The pull down list on the Tag field allows
 you to pick what type of ligature this should be. <BR Clear=Right>
 <P>
-<IMG SRC="charinfo-comp.png" WIDTH="305" HEIGHT="400" ALIGN="Right"> Some
-characters (ligatures, accented characters, Hangul syllables, etc.) are built
-up out of other characters. Displayed underneath the ligature field are the
-components of the current character, if those componants are in the font
-then you can use PfaEdit's Element-&gt;Build Accented or Element-&gt;Build
-Composit commands to create the current character. The information displayed
-here is informative only, you may not change this field directly.<BR CLEAR=ALL>
+<IMG SRC="charinfo-counters.png" WIDTH="307" HEIGHT="409" ALIGN="Right">
+In complicated Asian characters, postscript has a mechanism for controlling
+the width of <A NAME="CounterMasks">counters</A> between stems. These are
+called counter mask
+hints<IMG SRC="newcountermask.png" WIDTH="282" HEIGHT="392" ALIGN="Left">.
+In Latin, Cyrillic, Greek fonts only characters like "m" are allowed to have
+counter masks, and only in very controlled conditions. See the description
+of <A HREF="hinting.html#Counter">counter masks</A>.<BR CLEAR=ALL>
+<P>
+<IMG SRC="charinfo-counters.png" WIDTH="305" HEIGHT="400" ALIGN="Right">
+Some <A NAME="components">characters</A> (ligatures, accented characters,
+Hangul syllables, etc.) are built up out of other characters (at least according
+to unicode). This pane of the dlg shows the components that Unicode says
+make up the current character, if those componants are in the font then you
+can use PfaEdit's Element-&gt;Build Accented or Element-&gt;Build Composit
+commands to create the current character. The information displayed here
+is informative only, you may not change this field directly (it changes when
+you change the unicode value or glyph name associated with this
+glyph).<BR CLEAR=ALL>
 <P>
 The Next and Prev buttons allow you to move from one character to the next
 (if, for example, you need to enter encodings for a range of characters).

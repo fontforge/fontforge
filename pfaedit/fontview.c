@@ -932,6 +932,9 @@ static void FVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_VStemHist	2510
 #define MID_BlueValuesHist	2511
 #define MID_Editcvt	2512
+#define MID_HintSubsPt	2513
+#define MID_AutoCounter	2514
+#define MID_DontAutoHint	2515
 #define MID_OpenBitmap	2700
 #define MID_OpenOutline	2701
 #define MID_Revert	2702
@@ -2781,7 +2784,6 @@ static void FVAutoHint(FontView *fv,int removeOverlap) {
 	SplineChar *sc = fv->sf->chars[i];
 	sc->manualhints = false;
 	SplineCharAutoHint(sc,removeOverlap);
-	SCUpdateAll(sc);
 	if ( !GProgressNext())
     break;
     }
@@ -2791,6 +2793,60 @@ static void FVAutoHint(FontView *fv,int removeOverlap) {
 static void FVMenuAutoHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     int removeOverlap = e==NULL || !(e->u.mouse.state&ksm_shift);
     FVAutoHint( (FontView *) GDrawGetUserData(gw), removeOverlap );
+}
+
+static void FVAutoHintSubs(FontView *fv) {
+    int i, cnt=0;
+
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
+	++cnt;
+    GProgressStartIndicatorR(10,_STR_FindingSubstitutionPts,_STR_FindingSubstitutionPts,0,cnt,1);
+
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
+	SplineChar *sc = fv->sf->chars[i];
+	SCFigureHintMasks(sc);
+	SCUpdateAll(sc);
+	if ( !GProgressNext())
+    break;
+    }
+    GProgressEndIndicator();
+}
+
+static void FVMenuAutoHintSubs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FVAutoHintSubs( (FontView *) GDrawGetUserData(gw) );
+}
+
+static void FVAutoCounter(FontView *fv) {
+    int i, cnt=0;
+
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
+	++cnt;
+    GProgressStartIndicatorR(10,_STR_FindingCounterMasks,_STR_FindingCounterMasks,0,cnt,1);
+
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
+	SplineChar *sc = fv->sf->chars[i];
+	SCFigureCounterMasks(sc);
+	if ( !GProgressNext())
+    break;
+    }
+    GProgressEndIndicator();
+}
+
+static void FVMenuAutoCounter(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FVAutoCounter( (FontView *) GDrawGetUserData(gw) );
+}
+
+static void FVDontAutoHint(FontView *fv) {
+    int i;
+
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
+	SplineChar *sc = fv->sf->chars[i];
+	sc->manualhints = true;
+    }
+}
+
+static void FVMenuDontAutoHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FVDontAutoHint( (FontView *) GDrawGetUserData(gw) );
 }
 
 static void FVAutoInstr(FontView *fv) {
@@ -2863,6 +2919,7 @@ static void FVClearHints(FontView *fv) {
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
 	sc->manualhints = true;
+	SCClearHintMasks(sc,true);
 	StemInfosFree(sc->hstem);
 	StemInfosFree(sc->vstem);
 	sc->hstem = sc->vstem = NULL;
@@ -3175,7 +3232,7 @@ static void FVMenuMMValid(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     if ( mm==NULL )
 return;
-    MMValid(mm,true,true);
+    MMValid(mm,true);
 }
 
 static void FVMenuConvertToMM(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -3184,7 +3241,6 @@ static void FVMenuConvertToMM(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     if ( mm==NULL )
 return;
-    MMValid(mm,true,true);
 }
 
 static void FVMenuMMInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -3207,6 +3263,9 @@ static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    removeOverlap = e==NULL || !(e->u.mouse.state&ksm_shift);
 	    free(mi->ti.text);
 	    mi->ti.text = u_copy(GStringGetResource(removeOverlap?_STR_Autohint:_STR_FullAutohint,NULL));
+	  break;
+	  case MID_HintSubsPt: case MID_AutoCounter: case MID_DontAutoHint:
+	    mi->ti.disabled = fv->sf->order2 || anychars==-1;
 	  break;
 	  case MID_AutoInstr: case MID_EditInstructions:
 	    mi->ti.disabled = !fv->sf->order2 || anychars==-1;
@@ -3717,6 +3776,10 @@ static GMenuItem histlist[] = {
 
 static GMenuItem htlist[] = {
     { { (unichar_t *) _STR_Autohint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, 'H', ksm_control|ksm_shift, NULL, NULL, FVMenuAutoHint, MID_AutoHint },
+    { { (unichar_t *) _STR_HintSubsPts, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAutoHintSubs, MID_HintSubsPt },
+    { { (unichar_t *) _STR_AutoCounterHint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAutoCounter, MID_AutoCounter },
+    { { (unichar_t *) _STR_DontAutoHint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuDontAutoHint, MID_DontAutoHint },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_AutoInstr, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, 'T', ksm_control, NULL, NULL, FVMenuAutoInstr, MID_AutoInstr },
     { { (unichar_t *) _STR_EditInstructions, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'l' }, '\0', 0, NULL, NULL, FVMenuEditInstrs, MID_EditInstructions },
     { { (unichar_t *) _STR_Editfpgm, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', 0, NULL, NULL, FVMenuEditTable, MID_Editfpgm },
@@ -6346,6 +6409,15 @@ void FVFakeMenus(FontView *fv,int cmd) {
       break;
       case 202:
 	FVAutoInstr(fv);
+      break;
+      case 203:
+	FVAutoHintSubs(fv);
+      break;
+      case 204:
+	FVAutoCounter(fv);
+      break;
+      case 205:
+	FVDontAutoHint(fv);
       break;
     }
 }

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 3-May-2001 -->
-  <!-- AP: Last modified: 4-Jan-2004 -->
+  <!-- AP: Last modified: 29-Jan-2004 -->
   <TITLE>Hinting</TITLE>
 </HEAD>
 <BODY>
@@ -31,12 +31,11 @@ stems need to be active, and activates them.
 <P>
 Postscript now allows PfaEdit to control relative counter sizes. Counters
 are the spaces between adjacent stems. In the example at left there are two
-counters of equal sizes on the between the horizontal stems on the left,
-and three counters of equal sizes on the right. These form two independent
-counter groups, and PfaEdit will generate a counter description for each
-of them (Postscript allows type designers to specify the relative importance
-of different counter groups. PfaEdit is not this sophisticated, counters
-are output in left to right (bottom to top for vertical) order.
+counters of equal sizes between the horizontal stems on the left, and three
+counters of equal sizes on the right. These form two independent counter
+groups, and PfaEdit's Hints-&gt;Auto Counter command will generate a counter
+description for each of them. You may also control the counters directly
+by using the Counters pane of the Element-&gt;Char Info dialog.
 <P>
 Counters spaces appear between vertical stems too, and in this case Pfaedit
 would output one counter group for the vertical stems.
@@ -59,11 +58,29 @@ as the distance between the right edge of the stem and the right edge of
 the serif. But doing so would require overlapping hints, active at the same
 time. <SMALL>I think</SMALL>
 <H2>
+  Automatic Hinting
+</H2>
+<P>
+PfaEdit's AutoHint command can be used to figure out horizontal and vertical
+stem hints. It will also find hint substitution points (if any are needed),
+and will check for the simple counter description allowed by OpenType for
+non-Asian fonts (the equivalent of h/vstem3 hints in type1 fonts).
+<P>
+Whenever you change a character PfaEdit keeps track of that fact that the
+hints are out of date (when you autohint a character, or make a manual change
+to the hints PfaEdit resets this flag). If you generate a postscript font
+from something that contains glyphs with out of date hints, then PfaEdit
+will automagically regenerate them.
+<P>
+This may not always be appropriate. You can turn this off in general with
+the HintForGen preference item. You may turn it off for an individual character
+with the Hints-&gt;Don't AutoHint command.
+<H2>
   Manual Hinting
 </H2>
 <P>
 I hope that the PfaEdit's autohint command will be good enough that manual
-efforts will not be needed. But hopes are rarely fulfilled.
+efforts will not be needed. But hopes like this are rarely fulfilled.
 <P>
 The AutoHint command should find all stems in a character. Some of them it
 deems to be useless and will remove them. If you find that PfaEdit is removing
@@ -74,24 +91,103 @@ You may then use Review Hints to prune things yourself.
 If you find that you must create your own hints, PfaEdit will only allow
 you to specify the position and width of the hint, it will then go off and
 try to guess the extents where the hint should be active.
+<P>
+You may manually:
+<UL>
+  <LI>
+    Clear all horizontal stem hints
+  <LI>
+    Clear all vertical stem hints
+  <LI>
+    Select two points and create a vertical stem hint that whose width is horizontal
+    distance between the two points
+  <LI>
+    Select two points and create a horizontal stem hint whose width is the vertical
+    distance between the two points
+  <LI>
+    Create a horizontal hint starting at an arbetrary y location with an arbetrary
+    vertical width.
+  <LI>
+    Create a vertical hint starting at an arbetrary x location with an arbetrary
+    horizontal width.
+  <LI>
+    Review all your hints, manually changing or removing any (or all).
+</UL>
+<P>
+Once you have made a manual change to a character's hints with any of the
+above commands, that character will be marked "Don't AutoHint" until you
+explicitly call the AutoHint command on it. You may also explicitly use the
+Hints-&gt;Don't AutoHint command to turn off PfaEdit's automatic hinting
+attempts.
+<P>
+You may also manually
+<UL>
+  <LI>
+    Set hint change-over points
+  <LI>
+    Set counter groups for a character
+</UL>
+<P>
+These do not set the "Don't AutoHint" bit.
+<H3>
+  Manual Hint Substitution Points
+</H3>
+<P>
+PfaEdit's Hints-&gt;Hint Substitution Pts command will automatically figure
+out where hint substitution should occur, but if this isn't good enough you
+may do it manually with the <A HREF="getinfo.html#HintMask">Element-&gt;Get
+Info</A> command (when the selection is a single point to which you want
+to attach a hintmask).
+<P>
+If a glyph has conflicting hints then the first point in the glyph (the first
+point on the first contour) MUST have a hintmask attached to it. If it does
+not, the PfaEdit will automatically figure substitution points when it generates
+the font. Other points are not required (but may) have a hintmask.
+<P>
+The hintmask specifies what hints should be active when that point is positioned,
+and will control all subsiquent points until a new hintmask is established.
+So in the
+following<IMG SRC="charwithhintmask.png" WIDTH="309" HEIGHT="322" ALIGN="Left"><IMG
+    SRC="hintmaskinfo.png" WIDTH="321" HEIGHT="459" ALIGN="Right"> example, the
+selected point (on left) has the highlit hints active at it, In the character
+view the currently active stems are drawn much darker than the inactive ones.
+Points with hintmasks attached to them have circles drawn arround them.
+<P>
+Remember to hold the control key down when making disjoint
+selections.<BR CLEAR=ALL>
+<H3>
+  Manual <A NAME="Counter">Counter</A> Groups
+</H3>
+<P>
+PfaEdit also has a Hints-&gt;Auto Counter command which tries to figure out
+what stems form a counter group.
+<P>
+Again you can do this manually, with the
+<A HREF="charinfo.html#CounterMasks">Counter</A> pane of the Element-&gt;Char
+Info dialog. When creating a new counter group you are presented with a dialog
+very similar to the one above in which you must select a set of hints that
+bound a set of counters. 
 <H2>
   Hints and previously existing fonts.
 </H2>
 <P>
-PfaEdit will not be able to read hint info out of a TrueType font at all
-(the format is too complex, there are too many posibilities, instead PfaEdit
-stores all the truetype instructions and writes them back out uninterpretted).
+PfaEdit will not be able to convert TrueType instructions into PostScript
+hints when it reads a TrueType font (the format is too complex, there are
+too many posibilities, instead PfaEdit stores all the truetype instructions
+and writes them back out uninterpretted).
 <P>
-From a Type1 font it will happily read all the hints in a character. 
+From a Type1 font it will happily read all the hints in a character, and
+keep track of hint substitution points. It will not read counter hints though.
 <P>
-In an OpenType (Type2) font PfaEdit will read in all the hints.
+In an OpenType (Type2) font PfaEdit will read in all the hints, keep track
+of hint substitution points and the counter hints.
 <H2>
   Hinting and TrueType
 </H2>
 <P>
-PfaEdit does a really bad job of hinting truetype. Generally you will get
-better results with unhinted characters than with characters autoinstructed
-by pfaedit.
+PfaEdit does a really bad job of "hinting" (actually generating instructions
+for) truetype. Generally you will get better results with unhinted characters
+than with characters autoinstructed by pfaedit.
 <P>
 Hinting TrueType fonts opens a far wider range of posibilities. I have added
 several types of hints that are specific to truetype (and will be ignored

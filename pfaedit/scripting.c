@@ -2386,6 +2386,24 @@ static void bAutoHint(Context *c) {
     FVFakeMenus(c->curfv,200);
 }
 
+static void bSubstitutionPoints(Context *c) {
+    if ( c->a.argc!=1 )
+	error( c, "Wrong number of arguments");
+    FVFakeMenus(c->curfv,203);
+}
+
+static void bAutoCounter(Context *c) {
+    if ( c->a.argc!=1 )
+	error( c, "Wrong number of arguments");
+    FVFakeMenus(c->curfv,204);
+}
+
+static void bDontAutoHint(Context *c) {
+    if ( c->a.argc!=1 )
+	error( c, "Wrong number of arguments");
+    FVFakeMenus(c->curfv,205);
+}
+
 static void bAutoInstr(Context *c) {
     if ( c->a.argc!=1 )
 	error( c, "Wrong number of arguments");
@@ -3326,6 +3344,8 @@ static void bCharInfo(Context *c) {
 	    c->return_val.u.ival = sc->vwidth;
 	else if ( strmatch( c->a.vals[1].u.sval,"Changed")==0 )
 	    c->return_val.u.ival = sc->changed;
+	else if ( strmatch( c->a.vals[1].u.sval,"DontAutoHint")==0 )
+	    c->return_val.u.ival = sc->manualhints;
 	else if ( strmatch( c->a.vals[1].u.sval,"Color")==0 )
 	    c->return_val.u.ival = sc->color;
 	else if ( strmatch( c->a.vals[1].u.sval,"GlyphIndex")==0 )
@@ -3471,6 +3491,9 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "MergeFonts", bMergeFonts },
 /*  Menu */
     { "AutoHint", bAutoHint },
+    { "bSubstitutionPoints", bSubstitutionPoints },
+    { "bAutoCounter", bAutoCounter },
+    { "bDontAutoHint", bDontAutoHint },
     { "AutoInstr", bAutoInstr },
     { "ClearHints", bClearHints },
     { "ClearPrivateEntry", bClearPrivateEntry },

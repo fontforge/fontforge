@@ -65,6 +65,8 @@ typedef struct gidata {
 #define CID_NextTheta	2015
 #define CID_PrevR	2016
 #define CID_PrevTheta	2017
+#define CID_HintMask	2020
+#define CID_TabSet	2100
 
 #define CID_X		3001
 #define CID_Y		3002
@@ -87,8 +89,8 @@ typedef struct gidata {
 #define II_Width	130
 #define II_Height	70
 
-#define PI_Width	218
-#define PI_Height	278
+#define PI_Width	228
+#define PI_Height	308
 
 #define AI_Width	160
 #define AI_Height	234
@@ -1211,6 +1213,30 @@ void MDReplace(MinimumDistance *md,SplineSet *old,SplineSet *rpl) {
     }
 }
 
+void PI_ShowHints(SplineChar *sc, GGadget *list, int set) {
+    StemInfo *h;
+    int32 i, len;
+
+    if ( !set ) {
+	for ( h = sc->hstem; h!=NULL; h=h->next )
+	    h->active = false;
+	for ( h = sc->vstem; h!=NULL; h=h->next )
+	    h->active = false;
+    } else {
+	GTextInfo **ti = GGadgetGetList(list,&len);
+	for ( h = sc->hstem, i=0; h!=NULL && i<len; h=h->next, ++i )
+	    h->active = ti[i]->selected;
+	for ( h = sc->vstem; h!=NULL && i<len; h=h->next, ++i )
+	    h->active = ti[i]->selected;
+    }
+    SCOutOfDateBackground(sc);
+    SCUpdateAll(sc);
+}
+
+static void _PI_ShowHints(GIData *ci,int set) {
+    PI_ShowHints(ci->cv->sc,GWidgetGetControl(ci->gw,CID_HintMask),set);
+}
+
 static void PI_DoCancel(GIData *ci) {
     CharView *cv = ci->cv;
     ci->done = true;
@@ -1220,6 +1246,7 @@ static void PI_DoCancel(GIData *ci) {
     *cv->heads[cv->drawmode] = ci->oldstate;
     CVRemoveTopUndo(cv);
     SCClearSelPt(cv->sc);
+    _PI_ShowHints(ci,false);
     SCUpdateAll(cv->sc);
 }
 
@@ -1285,6 +1312,27 @@ static void PI_FigurePrev(GIData *ci) {
     ci->nextchanged = false;
 }
 
+static void PI_FigureHintMask(GIData *ci) {
+    int32 i, len;
+    GTextInfo **ti = GGadgetGetList(GWidgetGetControl(ci->gw,CID_HintMask),&len);
+
+    for ( i=0; i<len; ++i )
+	if ( ti[i]->selected )
+    break;
+
+    if ( i==len )
+	chunkfree(ci->cursp->hintmask,sizeof(HintMask));
+    else {
+	if ( ci->cursp->hintmask==NULL )
+	    ci->cursp->hintmask = chunkalloc(sizeof(HintMask));
+	else
+	    memset(ci->cursp->hintmask,0,sizeof(HintMask));
+	for ( i=0; i<len; ++i )
+	    if ( ti[i]->selected )
+		(*ci->cursp->hintmask)[i>>3] |= (0x80>>(i&7));
+    }
+}
+
 static int PI_Cancel(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	PI_DoCancel( GDrawGetUserData(GGadgetGetWindow(g)));
@@ -1295,6 +1343,9 @@ return( true );
 static int PI_Ok(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+
+	PI_FigureHintMask(ci);
+	_PI_ShowHints(ci,false);
 
 	PI_FigureNext(ci);
 	PI_FigurePrev(ci);
@@ -1416,10 +1467,30 @@ static void PIFillup(GIData *ci, int except_cid) {
     GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_NextTheta), ci->cursp->pointtype!=pt_tangent );
 }
 
+static void PIChangePoint(GIData *ci) {
+    int aspect = GTabSetGetSel(GWidgetGetControl(ci->gw,CID_TabSet));
+    GGadget *list = GWidgetGetControl(ci->gw,CID_HintMask);
+    int32 i, len;
+
+    GGadgetGetList(list,&len);
+
+    PIFillup(ci,0);
+    if ( ci->cursp->hintmask==NULL ) {
+	for ( i=0; i<len; ++i )
+	    GGadgetSelectListItem(list,i,false);
+    } else {
+	for ( i=0; i<len && i<HntMax; ++i )
+	    GGadgetSelectListItem(list,i, (*ci->cursp->hintmask)[i>>3]&(0x80>>(i&7))?true:false );
+    }
+    _PI_ShowHints(ci,aspect);
+}
+
 static int PI_Next(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
 	CharView *cv = ci->cv;
+
+	PI_FigureHintMask(ci);
 
 	PI_FigureNext(ci);
 	PI_FigurePrev(ci);
@@ -1435,7 +1506,7 @@ static int PI_Next(GGadget *g, GEvent *e) {
 	    ci->cursp = ci->curspl->first;
 	}
 	ci->cursp->selected = true;
-	PIFillup(ci,0);
+	PIChangePoint(ci);
 	CVShowPoint(cv,ci->cursp);
 	SCUpdateAll(cv->sc);
     }
@@ -1447,6 +1518,8 @@ static int PI_Prev(GGadget *g, GEvent *e) {
 	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
 	CharView *cv = ci->cv;
 	SplinePointList *spl;
+
+	PI_FigureHintMask(ci);
 
 	PI_FigureNext(ci);
 	PI_FigurePrev(ci);
@@ -1468,7 +1541,7 @@ static int PI_Prev(GGadget *g, GEvent *e) {
 	}
 	ci->cursp->selected = true;
 	cv->p.nextcp = cv->p.prevcp = false;
-	PIFillup(ci,0);
+	PIChangePoint(ci);
 	CVShowPoint(cv,ci->cursp);
 	SCUpdateAll(cv->sc);
     }
@@ -1680,12 +1753,110 @@ static int PI_PTypeChanged(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static int PI_AspectChange(GGadget *g, GEvent *e) {
+    if ( e==NULL || (e->type==et_controlevent && e->u.control.subtype == et_radiochanged )) {
+	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	int aspect = GTabSetGetSel(g);
+
+	_PI_ShowHints(ci,aspect);
+    }
+return( true );
+}
+
+static int PI_HintSel(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
+	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+
+	_PI_ShowHints(ci,true);
+
+	if ( GGadgetIsListItemSelected(g,e->u.control.u.list.changed_index)) {
+	    /* If we just selected something, check to make sure it doesn't */
+	    /*  conflict with any other hints. */
+	    /* Adobe says this is an error, but in "three" in AdobeSansMM */
+	    /*  (in black,extended) we have a hintmask which contains two */
+	    /*  overlapping hints */
+	    /* So just make it a warning */
+	    int i,j;
+	    StemInfo *h, *h2=NULL;
+	    for ( i=0, h=ci->cv->sc->hstem; h!=NULL && i!=e->u.control.u.list.changed_index; h=h->next, ++i );
+	    if ( h!=NULL ) {
+		for ( h2 = ci->cv->sc->hstem, i=0 ; h2!=NULL; h2=h2->next, ++i ) {
+		    if ( h2!=h && GGadgetIsListItemSelected(g,i)) {
+			if (( h2->start<h->start && h2->start+h2->width>h->start ) ||
+			    ( h2->start>=h->start && h->start+h->width>h2->start ))
+		break;
+		    }
+		}
+	    } else {
+		j = i;
+		for ( h=ci->cv->sc->vstem; h!=NULL && i!=e->u.control.u.list.changed_index; h=h->next, ++i );
+		if ( h==NULL )
+		    GDrawIError("Failed to find hint");
+		else {
+		    for ( h2 = ci->cv->sc->hstem, i=j ; h2!=NULL; h2=h2->next, ++i ) {
+			if ( h2!=h && GGadgetIsListItemSelected(g,i)) {
+			    if (( h2->start<h->start && h2->start+h2->width>h->start ) ||
+				( h2->start>=h->start && h->start+h->width>h2->start ))
+		    break;
+			}
+		    }
+		}
+	    }
+	    if ( h2!=NULL )
+		GWidgetErrorR(_STR_OverlappedHints,_STR_OverlappedHintsLong,
+			h2->start,h2->width);
+	}
+    }
+return( true );
+}
+
+GTextInfo *SCHintList(SplineChar *sc,HintMask *hm) {
+    StemInfo *h;
+    int i;
+    GTextInfo *ti;
+    char buffer[100];
+
+    for ( h=sc->hstem, i=0; h!=NULL; h=h->next, ++i );
+    for ( h=sc->vstem     ; h!=NULL; h=h->next, ++i );
+    ti = gcalloc(i+1,sizeof(GTextInfo));
+
+    for ( h=sc->hstem, i=0; h!=NULL; h=h->next, ++i ) {
+	ti[i].fg = ti[i].bg = COLOR_DEFAULT;
+	ti[i].userdata = h;
+	if ( h->ghost && h->width>0 )
+	    sprintf( buffer, "H<%g,%g>",
+		    rint(h->start*100)/100+rint(h->width*100)/100, -rint(h->width*100)/100 );
+	else
+	    sprintf( buffer, "H<%g,%g>",
+		    rint(h->start*100)/100, rint(h->width*100)/100 );
+	ti[i].text = uc_copy(buffer);
+	if ( hm!=NULL && ((*hm)[i>>3]&(0x80>>(i&7))))
+	    ti[i].selected = true;
+    }
+
+    for ( h=sc->vstem    ; h!=NULL; h=h->next, ++i ) {
+	ti[i].fg = ti[i].bg = COLOR_DEFAULT;
+	ti[i].userdata = h;
+	if ( h->ghost && h->width>0 )
+	    sprintf( buffer, "V<%g,%g>",
+		    rint(h->start*100)/100+rint(h->width*100)/100, -rint(h->width*100)/100 );
+	else
+	    sprintf( buffer, "V<%g,%g>",
+		    rint(h->start*100)/100, rint(h->width*100)/100 );
+	ti[i].text = uc_copy(buffer);
+	if ( hm!=NULL && ((*hm)[i>>3]&(0x80>>(i&7))))
+	    ti[i].selected = true;
+    }
+return( ti );
+}
+
 static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
     static GIData gi;
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[37];
-    GTextInfo label[37];
+    GGadgetCreateData gcd[37], hgcd[2], mgcd[8];
+    GTextInfo label[37], mlabel[8];
+    GTabInfo aspects[3];
     static GBox cur, nextcp, prevcp;
     extern Color nextcpcol, prevcpcol;
     GWindow root;
@@ -1733,6 +1904,10 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 
 	memset(&gcd,0,sizeof(gcd));
 	memset(&label,0,sizeof(label));
+	memset(&hgcd,0,sizeof(hgcd));
+	memset(&mgcd,0,sizeof(mgcd));
+	memset(&mlabel,0,sizeof(mlabel));
+	memset(&aspects,0,sizeof(mlabel));
 
 	j=0;
 	label[j].text = (unichar_t *) _STR_Base;
@@ -1962,71 +2137,95 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].creator = GRadioCreate;
 	++j;
 
-	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+18;
-	gcd[j].gd.pos.width = PI_Width-10;
-	gcd[j].gd.flags = gg_enabled|gg_visible;
-	gcd[j].creator = GLineCreate;
+	hgcd[0].gd.pos.x = 5; hgcd[0].gd.pos.y = 5;
+	hgcd[0].gd.pos.width = PI_Width-20; hgcd[0].gd.pos.height = gcd[j-1].gd.pos.y+10;
+	hgcd[0].gd.flags = gg_visible | gg_enabled | gg_list_multiplesel;
+	hgcd[0].gd.cid = CID_HintMask;
+	hgcd[0].gd.u.list = SCHintList(cv->sc,NULL);
+	hgcd[0].gd.handle_controlevent = PI_HintSel;
+	hgcd[0].creator = GListCreate;
+
+	j = 0;
+
+	aspects[j].text = (unichar_t *) _STR_Location;
+	aspects[j].text_in_resource = true;
+	aspects[j++].gcd = gcd;
+
+	aspects[j].text = (unichar_t *) _STR_HintMask;
+	aspects[j].text_in_resource = true;
+	aspects[j++].gcd = hgcd;
+
+	j = 0;
+
+	mgcd[j].gd.pos.x = 4; mgcd[j].gd.pos.y = 6;
+	mgcd[j].gd.pos.width = PI_Width-8;
+	mgcd[j].gd.pos.height = hgcd[0].gd.pos.height+10+24;
+	mgcd[j].gd.u.tabs = aspects;
+	mgcd[j].gd.flags = gg_visible | gg_enabled;
+	mgcd[j].gd.handle_controlevent = PI_AspectChange;
+	mgcd[j].gd.cid = CID_TabSet;
+	mgcd[j++].creator = GTabSetCreate;
+
+	mgcd[j].gd.pos.x = (PI_Width-2*50-10)/2; mgcd[j].gd.pos.y = mgcd[j-1].gd.pos.y+mgcd[j-1].gd.pos.height+5;
+	mgcd[j].gd.pos.width = 53; mgcd[j].gd.pos.height = 0;
+	mgcd[j].gd.flags = gg_visible | gg_enabled;
+	mlabel[j].text = (unichar_t *) _STR_PrevArrow;
+	mlabel[j].text_in_resource = true;
+	mgcd[j].gd.mnemonic = 'P';
+	mgcd[j].gd.label = &mlabel[j];
+	mgcd[j].gd.handle_controlevent = PI_Prev;
+	mgcd[j].creator = GButtonCreate;
 	++j;
 
-	gcd[j].gd.pos.x = (PI_Width-2*50-10)/2; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+5;
-	gcd[j].gd.pos.width = 53; gcd[j].gd.pos.height = 0;
-	gcd[j].gd.flags = gg_visible | gg_enabled;
-	label[j].text = (unichar_t *) _STR_PrevArrow;
-	label[j].text_in_resource = true;
-	gcd[j].gd.mnemonic = 'P';
-	gcd[j].gd.label = &label[j];
-	gcd[j].gd.handle_controlevent = PI_Prev;
-	gcd[j].creator = GButtonCreate;
+	mgcd[j].gd.pos.x = PI_Width-50-(PI_Width-2*50-10)/2; mgcd[j].gd.pos.y = mgcd[j-1].gd.pos.y;
+	mgcd[j].gd.pos.width = 53; mgcd[j].gd.pos.height = 0;
+	mgcd[j].gd.flags = gg_visible | gg_enabled;
+	mlabel[j].text = (unichar_t *) _STR_NextArrow;
+	mlabel[j].text_in_resource = true;
+	mgcd[j].gd.label = &mlabel[j];
+	mgcd[j].gd.mnemonic = 'N';
+	mgcd[j].gd.handle_controlevent = PI_Next;
+	mgcd[j].creator = GButtonCreate;
 	++j;
 
-	gcd[j].gd.pos.x = PI_Width-50-(PI_Width-2*50-10)/2; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y;
-	gcd[j].gd.pos.width = 53; gcd[j].gd.pos.height = 0;
-	gcd[j].gd.flags = gg_visible | gg_enabled;
-	label[j].text = (unichar_t *) _STR_NextArrow;
-	label[j].text_in_resource = true;
-	gcd[j].gd.label = &label[j];
-	gcd[j].gd.mnemonic = 'N';
-	gcd[j].gd.handle_controlevent = PI_Next;
-	gcd[j].creator = GButtonCreate;
+	mgcd[j].gd.pos.x = 5; mgcd[j].gd.pos.y = mgcd[j-1].gd.pos.y+30;
+	mgcd[j].gd.pos.width = PI_Width-10;
+	mgcd[j].gd.flags = gg_enabled|gg_visible;
+	mgcd[j].creator = GLineCreate;
 	++j;
 
-	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+30;
-	gcd[j].gd.pos.width = PI_Width-10;
-	gcd[j].gd.flags = gg_enabled|gg_visible;
-	gcd[j].creator = GLineCreate;
+	mgcd[j].gd.pos.x = 20-3; mgcd[j].gd.pos.y = PI_Height-35-3;
+	mgcd[j].gd.pos.width = -1; mgcd[j].gd.pos.height = 0;
+	mgcd[j].gd.flags = gg_visible | gg_enabled | gg_but_default;
+	mlabel[j].text = (unichar_t *) _STR_OK;
+	mlabel[j].text_in_resource = true;
+	mgcd[j].gd.mnemonic = 'O';
+	mgcd[j].gd.label = &mlabel[j];
+	mgcd[j].gd.handle_controlevent = PI_Ok;
+	mgcd[j].creator = GButtonCreate;
 	++j;
 
-	gcd[j].gd.pos.x = 20-3; gcd[j].gd.pos.y = PI_Height-35-3;
-	gcd[j].gd.pos.width = -1; gcd[j].gd.pos.height = 0;
-	gcd[j].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	label[j].text = (unichar_t *) _STR_OK;
-	label[j].text_in_resource = true;
-	gcd[j].gd.mnemonic = 'O';
-	gcd[j].gd.label = &label[j];
-	gcd[j].gd.handle_controlevent = PI_Ok;
-	gcd[j].creator = GButtonCreate;
+	mgcd[j].gd.pos.x = -20; mgcd[j].gd.pos.y = PI_Height-35;
+	mgcd[j].gd.pos.width = -1; mgcd[j].gd.pos.height = 0;
+	mgcd[j].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+	mlabel[j].text = (unichar_t *) _STR_Cancel;
+	mlabel[j].text_in_resource = true;
+	mgcd[j].gd.label = &mlabel[j];
+	mgcd[j].gd.mnemonic = 'C';
+	mgcd[j].gd.handle_controlevent = PI_Cancel;
+	mgcd[j].creator = GButtonCreate;
 	++j;
 
-	gcd[j].gd.pos.x = -20; gcd[j].gd.pos.y = PI_Height-35;
-	gcd[j].gd.pos.width = -1; gcd[j].gd.pos.height = 0;
-	gcd[j].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	label[j].text = (unichar_t *) _STR_Cancel;
-	label[j].text_in_resource = true;
-	gcd[j].gd.label = &label[j];
-	gcd[j].gd.mnemonic = 'C';
-	gcd[j].gd.handle_controlevent = PI_Cancel;
-	gcd[j].creator = GButtonCreate;
+	mgcd[j].gd.pos.x = 2; mgcd[j].gd.pos.y = 2;
+	mgcd[j].gd.pos.width = pos.width-4; mgcd[j].gd.pos.height = pos.height-4;
+	mgcd[j].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
+	mgcd[j].creator = GGroupCreate;
 	++j;
 
-	gcd[j].gd.pos.x = 2; gcd[j].gd.pos.y = 2;
-	gcd[j].gd.pos.width = pos.width-4; gcd[j].gd.pos.height = pos.height-4;
-	gcd[j].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
-	gcd[j].creator = GGroupCreate;
-	++j;
+	GGadgetsCreate(gi.gw,mgcd);
+	GTextInfoListFree(hgcd[0].gd.u.list);
 
-	GGadgetsCreate(gi.gw,gcd);
-
-	PIFillup(&gi,0);
+	PIChangePoint(&gi);
 
     GWidgetHidePalettes();
     GDrawSetVisible(gi.gw,true);

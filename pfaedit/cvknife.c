@@ -52,6 +52,7 @@ return;					/* Already cut here */
     n = chunkalloc(sizeof(SplinePoint));
     p->sp->pointtype = pt_corner;
     *n = *p->sp;
+    n->hintmask = NULL;
     p->sp->next = NULL;
     n->prev = NULL;
     n->next->from = n;
@@ -143,6 +144,7 @@ void CVMouseUpKnife(CharView *cv) {
 			mid = SplineBisect(s,t1s[i]);
 			mid2 = chunkalloc(sizeof(SplinePoint));
 			*mid2 = *mid;
+			mid2->hintmask = NULL;
 			mid->next = NULL;
 			mid2->prev = NULL;
 			mid2->next->from = mid2;

@@ -1746,7 +1746,8 @@ void BVToolsSetCursor(BitmapView *bv, int state,char *device) {
 	shouldshow = bvt_eyedropper;
     if ( shouldshow!=bv->showing_tool ) {
 	GDrawSetCursor(bv->v,tools[shouldshow]);
-	GDrawSetCursor(bvtools,tools[shouldshow]);
+	if ( bvtools != NULL )
+	    GDrawSetCursor(bvtools,tools[shouldshow]);
 	bv->showing_tool = shouldshow;
     }
 

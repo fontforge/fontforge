@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 10-Jan-2004 -->
+  <!-- AP: Last modified: 30-Jan-2004 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,84 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    ???
+    <UL>
+      <LI>
+	The kerning state machine addition broke the indic state machine dialog
+      <LI>
+	The mac docs claim that the 'feat' table should be sorted by feature id.
+	But if you do this WorldText can't find features. All Apple fonts seem to
+	be sorted by the order the features are used in the 'morx' table's chains.
+	WorldText works if you do this.
+      <LI>
+	Yannis proposed several extensions to the State Machine editor, most notably
+	the ability to move the edit dialog with Up/Down/Left/Right buttons.
+      <LI>
+	I had the feature settings for Linguistic Rearrangement and Vertical Subs.
+	reversed.
+      <LI>
+	In some cases I wasn't outputting anything to turn a feature off.
+      <LI>
+	Fixed many problems with kerning state machine dlg
+      <LI>
+	Fixed several problems with insertion state machines
+      <LI>
+	Fixed several problems with reading in state machines.
+      <LI>
+	Added SetMacStyle() to give the user control over how mac families are built.
+      <LI>
+	Added a fflush after doing Print()s in scripting
+      <LI>
+	PfaEdit would crash when given an extremely long real number in a cff dictionary
+	(in this case the font itself was in error)
+      <LI>
+	PfaEdit did not copy a bitmap character's width when it copied the bitmap.
+      <LI>
+	Char Info didn't handle pairwise positioning properly.
+      <LI>
+	Some more pangrams from
+	<A HREF="http://shair.net/misc/txt/pangram.en">http://shair.net/misc/txt/pangram.en</A>
+	(link provided by David Shaal)
+      <LI>
+	My old approach to hint substitution caused problems with multiple master
+	fonts. So now I keep track of which points are substitution points and what
+	the hint masks are at those points. There is a new command which will
+	automatically figure out these points, and the user may control them directly
+	through Point Info (Element-&gt;Get Info). At the same time I figured I might
+	as well do the same thing for counter masks, so PfaEdit will read counter
+	masks in from otf file (I did not implement this for type1s), there is a
+	new command to try and make a guess as to what they should be, and the user
+	may control them directly through Element-&gt;Char Info. (new scripting commands,
+	SubstitutionPoints() and AutoCounter() do the obvious).
+      <LI>
+	Added a Hints-&gt;Don't AutoHint command to mark a character as having hints
+	the user likes which should not be modified until the user explicitly calls
+	AutoHint(). (and a matching scripting command).
+      <LI>
+	PfaEdit could generate a bad 'post' table for bitmap only fonts.
+      <LI>
+	PfaEdit didn't allow you to create two pairwise positioning items with the
+	same tag.
+      <LI>
+	Hungarian names for mac features and for some standard names like "Bold",
+	etc. provided by Laszlo Karoly.
+      <LI>
+	Pierre HANSER noticed that if PfaEdit mapped a single glyph to two encodings
+	then bitmap generation through freetype got confused.
+      <LI>
+	If a font contained a non-.notdef character at encoding 0, then generating
+	an opentype font from it had a fair chance of crashing.
+      <LI>
+	Added a couple of new select menu items: Select-&gt;Contours, Select-&gt;First
+	Point, Next Contour
+    </UL>
+  <LI>
+    11-Jan-2003
+    <UL>
+      <LI>
+	A patch for reading broken mac tables got lost. I've reinstated it.
+    </UL>
   <LI>
     10-Jan-2003
     <UL>

@@ -546,6 +546,7 @@ static void SplineSetNLTrans(SplineSet *ss,struct context *c,
 
     first = last = chunkalloc(sizeof(SplinePoint));
     *first = *ss->first;
+    first->hintmask = NULL;
     first->next = first->prev = NULL;
     if ( everything || first->selected )
 	NLTransPoint(first,c);
@@ -554,6 +555,7 @@ static void SplineSetNLTrans(SplineSet *ss,struct context *c,
 	for ( sp=ss->first->next->to; sp!=NULL; ) {
 	    next = chunkalloc(sizeof(SplinePoint));
 	    *next = *sp;
+	    next->hintmask = NULL;
 	    next->next = next->prev = NULL;
 	    if ( everything || next->selected )
 		NLTransPoint(next,c);

@@ -47,6 +47,7 @@
 #define CID_PS_Flex		1006
 #define CID_PS_Hints		1007
 #define CID_PS_Restrict256	1008
+#define CID_PS_Round		1009
 #define CID_TTF_Hints		1101
 #define CID_TTF_FullPS		1102
 #define CID_TTF_AppleMode	1103
@@ -144,7 +145,7 @@ int old_otf_flags = ttf_flag_applemode;
 int old_ttf_flags = ttf_flag_otmode;
 int old_otf_flags = ttf_flag_otmode;
 #endif
-int old_ps_flags = ps_flag_afm;
+int old_ps_flags = ps_flag_afm|ps_flag_round;
 int old_psotb_flags = ps_flag_afm;
 
 int oldformatstate = ff_pfb;
@@ -356,6 +357,8 @@ return( false );
 		    d->ps_flags |= ps_flag_noflex;
 		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_Hints)) )
 		    d->ps_flags |= ps_flag_nohints;
+		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_Round)) )
+		    d->ps_flags |= ps_flag_round;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_Restrict256)) )
 		    d->ps_flags |= ps_flag_restrict256;
 	    } else if ( d->sod_which==1 ) {	/* TrueType */
@@ -393,6 +396,8 @@ return( false );
 		    d->otf_flags |= ps_flag_noflex;
 		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_Hints)) )
 		    d->otf_flags |= ps_flag_nohints;
+		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_Round)) )
+		    d->otf_flags |= ps_flag_round;
 	    } else {				/* PS + OpenType Bitmap */
 		d->ps_flags = d->psotb_flags = 0;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_AFM)) )
@@ -403,6 +408,8 @@ return( false );
 		     d->psotb_flags = d->ps_flags |= ps_flag_noflex;
 		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_Hints)) )
 		     d->psotb_flags = d->ps_flags |= ps_flag_nohints;
+		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_Round)) )
+		     d->psotb_flags = d->ps_flags |= ps_flag_round;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_PFM)) )
 		     d->psotb_flags = d->ps_flags |= ps_flag_pfm;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_TFM)) )
@@ -431,6 +438,7 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
     GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_HintSubs),!(flags&ps_flag_nohintsubs));
     GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_Flex),!(flags&ps_flag_noflex));
     GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_Restrict256),flags&ps_flag_restrict256);
+    GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_Round),flags&ps_flag_round);
 
     GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_AFM),flags&ps_flag_afm);
     GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_PFM),(flags&ps_flag_pfm) && !iscid);
@@ -460,6 +468,7 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Hints),which!=1);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_HintSubs),which!=1);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Flex),which!=1);
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Round),which!=1);
     if ( which!=1 && (flags&ps_flag_nohints)) {
 	GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_HintSubs),false);
 	GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Flex),false);
@@ -550,6 +559,15 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.popup_msg = GStringGetResource(_STR_FlexHintsPopup,NULL);
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_PS_Flex;
+    gcd[k++].creator = GCheckBoxCreate;
+
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
+    gcd[k].gd.flags = gg_visible ;
+    label[k].text = (unichar_t *) _STR_Round;
+    label[k].text_in_resource = true;
+    gcd[k].gd.popup_msg = GStringGetResource(_STR_PSRoundPopup,NULL);
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.cid = CID_PS_Round;
     gcd[k++].creator = GCheckBoxCreate;
 
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
@@ -1878,7 +1896,8 @@ return;
 
     if ( d->sf->encoding_name>=em_base )
 	for ( item=enclist; item!=NULL && item->enc_num!=d->sf->encoding_name; item=item->next );
-    if ( ((oldformatstate<ff_ptype0 && oldformatstate!=ff_multiple) || oldformatstate==ff_ttfsym) &&
+    if ( ((oldformatstate<ff_ptype0 && oldformatstate!=ff_multiple) ||
+		oldformatstate==ff_ttfsym || oldformatstate==ff_cff ) &&
 	    ((d->sf->encoding_name>=em_first2byte && d->sf->encoding_name<em_base) ||
 	     (d->sf->encoding_name>=em_base && (item==NULL || item->char_cnt>256))) ) {
 	static int buts[3] = { _STR_Yes, _STR_Cancel, 0 };
@@ -2427,7 +2446,7 @@ return( 0 );
 	formattypes[i].disabled = sf->onlybitmaps;
     formattypes[ff_ptype0].disabled = sf->onlybitmaps ||
 	    ( sf->encoding_name<em_jis208 && sf->encoding_name>=em_base);
-    formattypes[ff_mm].disabled = sf->mm==NULL || MMValid(sf->mm,false,true);
+    formattypes[ff_mm].disabled = sf->mm==NULL || !MMValid(sf->mm,false);
     formattypes[ff_cffcid].disabled = sf->cidmaster==NULL;
     formattypes[ff_cid].disabled = sf->cidmaster==NULL;
     formattypes[ff_otfcid].disabled = sf->cidmaster==NULL;
@@ -2439,6 +2458,8 @@ return( 0 );
 	ofs = ff_pfb;
     else if ( (ofs!=ff_cid && ofs!=ff_cffcid && ofs!=ff_otfcid && ofs!=ff_otfciddfont) && sf->cidmaster!=NULL )
 	ofs = ff_otfcid;
+    else if ( !formattypes[ff_mm].disabled )
+	ofs = ff_mm;
     if ( sf->onlybitmaps )
 	ofs = ff_none;
     if ( family ) {

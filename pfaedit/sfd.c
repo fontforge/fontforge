@@ -261,6 +261,24 @@ return;
     enc->pos = 0;
 }
 
+static void SFDDumpHintMask(FILE *sfd,HintMask *hintmask) {
+    int i, j;
+
+    for ( i=HntMax/8-1; i>0; --i )
+	if ( (*hintmask)[i]!=0 )
+    break;
+    for ( j=0; j<=i ; ++j ) {
+	if ( ((*hintmask)[j]>>4)<10 )
+	    putc('0'+((*hintmask)[j]>>4),sfd);
+	else
+	    putc('a'-10+((*hintmask)[j]>>4),sfd);
+	if ( ((*hintmask)[j]&0xf)<10 )
+	    putc('0'+((*hintmask)[j]&0xf),sfd);
+	else
+	    putc('a'-10+((*hintmask)[j]&0xf),sfd);
+    }
+}
+
 static void SFDDumpSplineSet(FILE *sfd,SplineSet *spl) {
     SplinePoint *first, *sp;
     int order2 = spl->first->next==NULL || spl->first->next->order2;
@@ -282,15 +300,22 @@ static void SFDDumpSplineSet(FILE *sfd,SplineSet *spl) {
 			(sp->roundx<<5)|(sp->roundy<<6)|
 			(sp->ttfindex==0xffff?(1<<7):0) );
 	    if ( order2 ) {
-		putc(',',sfd);
-		if ( sp->ttfindex==0xffff )
-		    fprintf(sfd,"-1,");
-		else if ( sp->ttfindex!=0xfffe )
-		    fprintf(sfd,"%d,",sp->ttfindex);
-		if ( sp->nextcpindex==0xffff )
-		    fprintf(sfd,"-1");
-		else if ( sp->nextcpindex!=0xfffe )
-		    fprintf(sfd,"%d",sp->nextcpindex);
+		if ( sp->ttfindex!=0xfffe && sp->nextcpindex!=0xfffe ) {
+		    putc(',',sfd);
+		    if ( sp->ttfindex==0xffff )
+			fprintf(sfd,"-1");
+		    else if ( sp->ttfindex!=0xfffe )
+			fprintf(sfd,"%d",sp->ttfindex);
+		    if ( sp->nextcpindex==0xffff )
+			fprintf(sfd,",-1");
+		    else if ( sp->nextcpindex!=0xfffe )
+			fprintf(sfd,",%d",sp->nextcpindex);
+		}
+	    } else {
+		if ( sp->hintmask!=NULL ) {
+		    putc('x',sfd);
+		    SFDDumpHintMask(sfd, sp->hintmask);
+		}
 	    }
 	    putc('\n',sfd);
 	    if ( sp==first )
@@ -564,6 +589,7 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc) {
     ImageList *img;
     KernPair *kp;
     PST *liga;
+    int i;
 
     fprintf(sfd, "StartChar: %s\n", sc->name );
     fprintf(sfd, "Encoding: %d %d %d\n", sc->enc, sc->unicodeenc, sc->orig_pos);
@@ -587,6 +613,13 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc) {
     SFDDumpHintList(sfd,"HStem: ", sc->hstem);
     SFDDumpHintList(sfd,"VStem: ", sc->vstem);
     SFDDumpDHintList(sfd,"DStem: ", sc->dstem);
+    if ( sc->countermask_cnt!=0 ) {
+	fprintf( sfd, "CounterMasks: %d", sc->countermask_cnt );
+	for ( i=0; i<sc->countermask_cnt; ++i ) {
+	    putc(' ',sfd);
+	    SFDDumpHintMask(sfd,&sc->countermasks[i]);
+	}
+    }
     if ( sc->ttf_instrs_len!=0 )
 	SFDDumpTtfInstrs(sfd,sc);
     if ( sc->splines!=NULL ) {
@@ -1617,6 +1650,28 @@ return( true );
 return( false );
 }
 
+static void SFDGetHintMask(FILE *sfd,HintMask *hintmask) {
+    int nibble = 0, ch;
+
+    memset(hintmask,0,sizeof(HintMask));
+    forever {
+	ch = getc(sfd);
+	if ( isdigit(ch))
+	    ch -= '0';
+	else if ( ch>='a' || ch<='f' )
+	    ch -= 'a'-10;
+	else if ( ch>='A' || ch<='F' )
+	    ch -= 'A'-10;
+	else {
+	    ungetc(ch,sfd);
+    break;
+	}
+	if ( nibble<2*HntMax/8 )
+	    (*hintmask)[nibble>>1] |= ch<<(4*(1-(nibble&1)));
+	++nibble;
+    }
+}
+
 static SplineSet *SFDGetSplineSet(SplineFont *sf,FILE *sfd) {
     SplinePointList *cur=NULL, *head=NULL;
     BasePoint current;
@@ -1701,7 +1756,10 @@ static SplineSet *SFDGetSplineSet(SplineFont *sf,FILE *sfd) {
 		pt->ttfindex = ttfindex++;
 	    pt->nextcpindex = 0xfffe;
 	    ch = getc(sfd);
-	    if ( ch!=',' )
+	    if ( ch=='x' ) {
+		pt->hintmask = chunkalloc(sizeof(HintMask));
+		SFDGetHintMask(sfd,pt->hintmask);
+	    } else if ( ch!=',' )
 		ungetc(ch,sfd);
 	    else {
 		ch = getc(sfd);
@@ -1981,7 +2039,7 @@ static SplineChar *SFDGetChar(FILE *sfd,SplineFont *sf) {
     RefChar *lastr=NULL, *ref;
     ImageList *lasti=NULL, *img;
     AnchorPoint *lastap = NULL;
-    int isliga, ispos, issubs, ismult, islcar, ispair, temp;
+    int isliga, ispos, issubs, ismult, islcar, ispair, temp, i;
     PST *last = NULL;
     uint32 script = 0;
 
@@ -2054,6 +2112,11 @@ return( NULL );
 	    sc->vconflicts = StemListAnyConflicts(sc->vstem);
 	} else if ( strmatch(tok,"DStem:")==0 ) {
 	    sc->dstem = SFDReadDHints(sfd);
+	} else if ( strmatch(tok,"CounterMasks:")==0 ) {
+	    getsint(sfd,&sc->countermask_cnt);
+	    sc->countermasks = gcalloc(sc->countermask_cnt,sizeof(HintMask));
+	    for ( i=0; i<sc->countermask_cnt; ++i )
+		SFDGetHintMask(sfd,&sc->countermasks[i]);
 	} else if ( strmatch(tok,"AnchorPoint:")==0 ) {
 	    lastap = SFDReadAnchorPoints(sfd,sc,lastap);
 	} else if ( strmatch(tok,"Fore")==0 ) {

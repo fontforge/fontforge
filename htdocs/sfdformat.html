@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 10-Jan-2004 -->
+  <!-- AP: Last modified: 15-Jan-2004 -->
   <TITLE>Spline Font Database File Format</TITLE>
 </HEAD>
 <BODY>
@@ -11,7 +11,7 @@
 </H1>
 <P>
 <FONT COLOR="Red"><STRONG>This page is often grievously out of date. It was
-a fair approximation to reality on 10 Jan 2004.</STRONG></FONT> Even if out
+a fair approximation to reality on 15 Jan 2004.</STRONG></FONT> Even if out
 of date it should be helpful, but if you really need to know the current
 format look at
 <A HREF="http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/pfaedit/pfaedit/pfaedit/sfd.c">sfd.c</A>
@@ -66,6 +66,7 @@ XUID: 3 18 21
 Encoding: unicode
 Order2: 1
 OnlyBitmaps: 0
+MacStyle: 0
 TeXData: 1 10485760 0 269484 134742 89828 526385 1048576 89828
 </PRE>
 </BLOCKQUOTE>
@@ -153,6 +154,9 @@ OS2WinDescent: -200
 <P>
 These represent different definitions of ascent and descent that are stored
 in various places in the truetype file (Horizontal header and OS/2 tables).
+<P>
+The MacStyle field (if present) indicates whether the font is bold, italic,
+condensed, extended, etc.
 <P>
 Some fonts will have Postscript specific information contained in the Private
 dictionary
@@ -583,15 +587,11 @@ meanings:
     <TD>point was interpolated between two control points (when<BR>
       read from a ttf file) and so has no point number of its own</TD>
   </TR>
-  <TR>
-    <TD>0x100</TD>
-    <TD>point should have a flex hint in x</TD>
-  </TR>
-  <TR>
-    <TD>0x200</TD>
-    <TD>point should have a flex hint in y</TD>
-  </TR>
 </TABLE>
+<P>
+Splines for a truetype font will have two additional numbers after the flags.
+These are the truetype point numbers for the point itself and for the subsequent
+control point. If the value is -1 then this point has no number.
 <P>
 A set of splines in the background is similar, it will be introduced by a
 <CODE>Back</CODE> entry.

@@ -498,6 +498,7 @@ SplinePoint *SplineTtfApprox(Spline *ps) {
     SplinePoint *from;
     from = chunkalloc(sizeof(SplinePoint));
     *from = *ps->from;
+    from->hintmask = NULL;
     ttfApprox(ps,0,1,from);
 return( from );
 }
@@ -508,6 +509,7 @@ SplineSet *SSttfApprox(SplineSet *ss) {
 
     ret->first = chunkalloc(sizeof(SplinePoint));
     *ret->first = *ss->first;
+    ret->first->hintmask = NULL;
     ret->last = ret->first;
 
     first = NULL;
@@ -550,12 +552,14 @@ SplineSet *SSPSApprox(SplineSet *ss) {
 
     ret->first = chunkalloc(sizeof(SplinePoint));
     *ret->first = *ss->first;
+    ret->first->hintmask = NULL;
     ret->last = ret->first;
 
     first = NULL;
     for ( spline=ss->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
 	to = chunkalloc(sizeof(SplinePoint));
 	*to = *spline->to;
+	to->hintmask = NULL;
 	if ( !spline->knownlinear ) {
 	    ret->last->nextcp.x = spline->splines[0].c/3 + ret->last->me.x;
 	    ret->last->nextcp.y = spline->splines[1].c/3 + ret->last->me.y;

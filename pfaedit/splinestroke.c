@@ -166,6 +166,7 @@ static void SinglePointStroke(SplinePoint *base, StrokeInfo *si, SplinePoint **_
     } else {
 	*_plus = *_minus = cur = chunkalloc(sizeof(SplinePoint));
 	*cur = *base;
+	cur->hintmask = NULL;
     }
 }
 
@@ -515,6 +516,7 @@ static SplinePoint *SplineMaybeBisect(Spline *s,double t) {
 	temp = chunkalloc(sizeof(SplinePoint));
 	sp = s->from;
 	*temp = *sp;
+	temp->hintmask = NULL;
 	temp->next->from = temp;
 	sp->next = NULL;
 	sp->nextcp = sp->me;
@@ -527,6 +529,7 @@ return( temp );
 	temp = chunkalloc(sizeof(SplinePoint));
 	sp = s->to;
 	*temp = *sp;
+	temp->hintmask = NULL;
 	temp->prev->to = temp;
 	sp->prev = NULL;
 	sp->prevcp = sp->me;
@@ -598,6 +601,7 @@ static SplinePoint *SplineCopyAfter(SplinePoint *from,SplinePoint **end) {
 
     last = head = chunkalloc(sizeof(SplinePoint));
     *head = *from;
+    head->hintmask = NULL;
     head->prev = NULL;
     while ( from->next!=NULL ) {
 	last->next = chunkalloc(sizeof(Spline));
@@ -605,6 +609,7 @@ static SplinePoint *SplineCopyAfter(SplinePoint *from,SplinePoint **end) {
 	last->next->from = last;
 	last->next->to = chunkalloc(sizeof(SplinePoint));
 	*last->next->to = *from->next->to;
+	last->next->to->hintmask = NULL;
 	last->next->to->prev = last->next;
 	last = last->next->to;
 	from = from->next->to;
@@ -618,6 +623,7 @@ static SplinePoint *SplineCopyBefore(SplinePoint *to,SplinePoint **end) {
 
     last = head = chunkalloc(sizeof(SplinePoint));
     *head = *to;
+    head->hintmask = NULL;
     head->next = NULL;
     while ( to->prev!=NULL ) {
 	last->prev = chunkalloc(sizeof(Spline));
@@ -625,6 +631,7 @@ static SplinePoint *SplineCopyBefore(SplinePoint *to,SplinePoint **end) {
 	last->prev->to = last;
 	last->prev->from = chunkalloc(sizeof(SplinePoint));
 	*last->prev->from = *to->prev->from;
+	last->prev->from->hintmask = NULL;
 	last->prev->from->next = last->prev;
 	last = last->prev->from;
 	to = to->prev->from;

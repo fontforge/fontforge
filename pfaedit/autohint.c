@@ -987,14 +987,15 @@ static HintInstance *HIMerge(HintInstance *into, HintInstance *hi) {
 return( first );
 }
 
-StemInfo *HintCleanup(StemInfo *stem,int dosort) {
+StemInfo *HintCleanup(StemInfo *stem,int dosort,int instance_count) {
     StemInfo *s, *p=NULL, *t, *pt, *sn;
+    int swap;
 
     for ( s=stem; s!=NULL; p=s, s=s->next ) {
-	if ( s->width<0 ) {
+	if ( s->backwards ) {
 	    s->start += s->width;
 	    s->width = -s->width;
-	    s->backwards = true;
+	    s->backwards = false;
 	}
 	s->reordered = false;
 	if ( p!=NULL && p->start> s->start )
@@ -1004,7 +1005,20 @@ StemInfo *HintCleanup(StemInfo *stem,int dosort) {
 	for ( p=NULL, s=stem; s!=NULL; p=s, s = sn ) {
 	    sn = s->next;
 	    for ( pt=s, t=sn; t!=NULL; pt=t, t=t->next ) {
-		if ( t->start<s->start || (t->start==s->start && t->width<s->width)) {
+		if ( instance_count>1 &&
+			t->u.unblended!=NULL && s->u.unblended!=NULL ) {
+		    int temp = UnblendedCompare((*t->u.unblended)[0],(*s->u.unblended)[0],instance_count);
+		    if ( temp==0 )
+			swap = UnblendedCompare((*t->u.unblended)[1],(*s->u.unblended)[1],instance_count);
+		    else
+			swap = temp<0;
+		} else if ( t->start<s->start )
+		    swap=true;
+		else if ( t->start>s->start )
+		    swap = false;
+		else
+		    swap = (t->width<s->width);
+		if ( swap ) {
 		    s->next = t->next;
 		    if ( pt==s ) {
 			t->next = s;
@@ -1023,10 +1037,17 @@ StemInfo *HintCleanup(StemInfo *stem,int dosort) {
 		}
 	    }
 	}
+	for ( s=stem; s!=NULL; p=s, s=s->next ) {
+	    if ( s->width<0 ) {
+		s->start += s->width;
+		s->width = -s->width;
+		s->backwards = true;
+	    }
+	}
 	/* Remove duplicates */
 	if ( stem!=NULL ) for ( p=stem, s=stem->next; s!=NULL; s = sn ) {
 	    sn = s->next;
-	    if ( p->start==s->start && p->width==s->width ) {
+	    if ( p->start==s->start && p->width==s->width && p->hintnumber==s->hintnumber ) {
 		p->where = HIMerge(p->where,s->where);
 		s->where = NULL;
 		p->next = sn;
@@ -1147,7 +1168,7 @@ return( stems );
     } else if ( new->where==NULL ) {
 	stems = StemInsert(stems,new);
     } else if ( new->reordered )
-	stems = HintCleanup(stems,false);
+	stems = HintCleanup(stems,false,1);
     _StemAddBrief(new,mstart,mend);
 return( stems );
 }
@@ -1211,7 +1232,7 @@ return( stems );
 	stems = StemInsert(stems,new);
     } else {
 	if ( new->reordered )
-	    stems = HintCleanup(stems,false);
+	    stems = HintCleanup(stems,false,1);
 	if ( new->where->end>=i ) {
 	    new->where->closed = false;
 return(stems);
@@ -2553,6 +2574,7 @@ return(ghosts);
 	s->start = base;
 	s->width = width;
 	s->ghost = true;
+	s->backwards = true;
 	if ( ghosts==NULL || base<ghosts->start ) {
 	    s->next = ghosts;
 	    ghosts = s;
@@ -2576,7 +2598,7 @@ static StemInfo *CheckForGhostHints(StemInfo *stems,SplineChar *sc) {
     /*  that we can't define a horizontal stem hint which stretches from */
     /*  the baseline to the top of a capital I, or the x-height of lower i */
     /*  If we find any such hints we must remove them, and replace them with */
-    /*  ghost hints. The bottom hint has height 21, and the top -20 */
+    /*  ghost hints. The bottom hint has height -21, and the top -20 */
     BlueData bd;
     SplineFont *sf = sc->parent;
     StemInfo *prev, *s, *n, *snext, *ghosts = NULL;
@@ -3141,7 +3163,6 @@ void SCGuessHHintInstancesList(SplineChar *sc) {
     StemInfo *h;
     int any = false;
 
-    sc->hstem = HintCleanup(sc->hstem,false);
     for ( h= sc->hstem; h!=NULL; h=h->next )
 	if ( h->where==NULL ) {
 	    SCGuessHintInstances(sc,h,0);
@@ -3158,7 +3179,6 @@ void SCGuessVHintInstancesList(SplineChar *sc) {
     StemInfo *h;
     int any = false;
 
-    sc->vstem = HintCleanup(sc->vstem,false);
     for ( h= sc->vstem; h!=NULL; h=h->next )
 	if ( h->where==NULL ) {
 	    SCGuessHintInstances(sc,h,1);
@@ -3549,13 +3569,767 @@ static void SCSerifCheck(SplineChar *sc,StemInfo *hint, int xdir) {
 }
 #endif
 
-void SplineCharAutoHint( SplineChar *sc, int removeOverlaps ) {
+static void _SCClearHintMasks(SplineChar *sc,int counterstoo) {
+    SplineSet *spl;
+    SplinePoint *sp;
+    RefChar *ref;
+
+    if ( counterstoo ) {
+	free(sc->countermasks);
+	sc->countermasks = NULL; sc->countermask_cnt = 0;
+    }
+
+    for ( spl = sc->splines; spl!=NULL; spl=spl->next ) {
+	for ( sp = spl->first ; ; ) {
+	    chunkfree(sp->hintmask,sizeof(HintMask));
+	    sp->hintmask = NULL;
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==spl->first )
+	break;
+	}
+    }
+
+    for ( ref = sc->refs; ref!=NULL; ref=ref->next ) {
+	for ( spl = ref->splines; spl!=NULL; spl=spl->next ) {
+	    for ( sp = spl->first ; ; ) {
+		chunkfree(sp->hintmask,sizeof(HintMask));
+		sp->hintmask = NULL;
+		if ( sp->next==NULL )
+	    break;
+		sp = sp->next->to;
+		if ( sp==spl->first )
+	    break;
+	    }
+	}
+    }
+}
+
+static void SCFigureSimpleCounterMasks(SplineChar *sc) {
+    SplineChar *scs[MmMax];
+    int hadh3, hadv3, i;
+    HintMask mask;
+
+    if ( sc->countermask_cnt!=0 )
+return;
+
+    scs[0] = sc;
+    hadh3 = CvtPsStem3(NULL,scs,1,true,false);
+    hadv3 = CvtPsStem3(NULL,scs,1,false,false);
+    if ( hadh3 || hadv3 ) {
+	memset(mask,0,sizeof(mask));
+	if ( hadh3 ) mask[0] = 0x80|0x40|0x20;
+	if ( hadv3 ) {
+	    for ( i=0; i<3 ; ++i ) {
+		int j = i+sc->vstem->hintnumber;
+		mask[j>>3] |= (0x80>>(j&7));
+	    }
+	}
+	sc->countermask_cnt = 1;
+	sc->countermasks = galloc(sizeof(HintMask));
+	memcpy(sc->countermasks[0],mask,sizeof(HintMask));
+return;
+    }
+}
+
+/* find all the other stems (after main) which seem to form a counter group */
+/*  with main. That is their stems have a considerable overlap (in the other */
+/*  coordinate) with main */
+static int stemmatches(StemInfo *main) {
+    StemInfo *last=main, *test;
+    real mlen, olen;
+    int cnt;
+
+    cnt = 1;		/* for the main stem */
+    main->tobeused = true;
+    mlen = HIlen(main);
+    for ( test=main->next; test!=NULL; test=test->next )
+	test->tobeused = false;
+    for ( test=main->next; test!=NULL; test=test->next ) {
+	if ( test->used || last->start+last->width>test->start || test->hintnumber==-1 )
+    continue;
+	olen = HIoverlap(main->where,test->where);
+	if ( olen>mlen/3 && olen>HIlen(test)/3 ) {
+	    test->tobeused = true;
+	    ++cnt;
+	}
+    }
+return( cnt );
+}
+
+static int FigureCounters(StemInfo *stems,HintMask mask ) {
+    StemInfo *h, *first;
+
+    while ( stems!=NULL ) {
+	for ( first=stems; first!=NULL && first->used; first = first->next );
+	if ( first==NULL )
+    break;
+	if ( first->where==NULL || first->hintnumber==-1 || stemmatches(first)<=2 ) {
+	    first->used = true;
+	    stems = first->next;
+    continue;
+	}
+	for ( h = first; h!=NULL; h = h->next ) {
+	    if ( h->tobeused ) {
+		mask[h->hintnumber>>3] |= (0x80>>(h->hintnumber&7));
+		h->used = true;
+	    }
+	}
+return( true );
+    }
+return( false );
+}
+
+void SCFigureCounterMasks(SplineChar *sc) {
+    HintMask masks[30];
+    uint32 script;
+    StemInfo *h;
+    int mc=0, i;
+
+    /* I'm not supporting counter hints for mm fonts */
+
+    free(sc->countermasks);
+    sc->countermask_cnt = 0;
+    sc->countermasks = NULL;
+
+    /* Check for h/vstem3 case */
+    /* Which is allowed even for non-CJK letters */
+    script = SCScriptFromUnicode(sc);
+    if ( script==CHR('l','a','t','n') || script==CHR('c','y','r','l') ||
+	    script==CHR('g','r','e','k') ) {
+	SCFigureSimpleCounterMasks(sc);
+return;
+    }
+
+    for ( h=sc->hstem; h!=NULL ; h=h->next )
+	h->used = false;
+    for ( h=sc->vstem; h!=NULL ; h=h->next )
+	h->used = false;
+
+    mc = 0;
+    
+    while ( mc<sizeof(masks)/sizeof(masks[0]) ) {
+	memset(masks[mc],'\0',sizeof(HintMask));
+	if ( !FigureCounters(sc->hstem,masks[mc]) && !FigureCounters(sc->vstem,masks[mc]))
+    break;
+	++mc;
+    }
+    if ( mc!=0 ) {
+	sc->countermask_cnt = mc;
+	sc->countermasks = galloc(mc*sizeof(HintMask));
+	for ( i=0; i<mc ; ++i )
+	    memcpy(sc->countermasks[i],masks[i],sizeof(HintMask));
+    }
+}
+
+void SCClearHintMasks(SplineChar *sc,int counterstoo) {
+    MMSet *mm = sc->parent->mm;
+    int i;
+
+    if ( mm==NULL )
+	_SCClearHintMasks(sc,counterstoo);
+    else {
+	for ( i=0; i<mm->instance_count; ++i ) {
+	    if ( sc->enc<mm->instances[i]->charcnt )
+		_SCClearHintMasks(mm->instances[i]->chars[i],counterstoo);
+	}
+	if ( sc->enc<mm->normal->charcnt )
+	    _SCClearHintMasks(mm->normal->chars[i],counterstoo);
+    }
+}
+
+static StemInfo *OnHHint(SplinePoint *sp, StemInfo *s) {
+    StemInfo *possible=NULL;
+    HintInstance *hi;
+
+    if ( sp==NULL )
+return( NULL );
+
+    for ( ; s!=NULL; s=s->next ) {
+	if ( sp->me.y<s->start )
+return( possible );
+	if ( s->start==sp->me.y || s->start+s->width==sp->me.y ) {
+	    if ( !s->hasconflicts )
+return( s );
+	    for ( hi=s->where; hi!=NULL; hi=hi->next ) {
+		if ( hi->begin<=sp->me.x && hi->end>=sp->me.x )
+return( s );
+	    }
+	    if ( !s->used )
+		possible = s;
+	}
+    }
+return( possible );
+}
+
+static StemInfo *OnVHint(SplinePoint *sp, StemInfo *s) {
+    StemInfo *possible=NULL;
+    HintInstance *hi;
+
+    if ( sp==NULL )
+return( NULL );
+
+    for ( ; s!=NULL; s=s->next ) {
+	if ( sp->me.x<s->start )
+return( possible );
+	if ( s->start==sp->me.x || s->start+s->width==sp->me.x ) {
+	    if ( !s->hasconflicts )
+return( s );
+	    for ( hi=s->where; hi!=NULL; hi=hi->next ) {
+		if ( hi->begin<=sp->me.y && hi->end>=sp->me.y )
+return( s );
+	    }
+	    if ( !s->used )
+		possible = s;
+	}
+    }
+return( possible );
+}
+
+/* Does h have a conflict with any of the stems in the list which have bits */
+/*  set in the mask */
+static int ConflictsWithMask(StemInfo *stems, HintMask mask,StemInfo *h) {
+    while ( stems!=NULL && stems->start<h->start+h->width ) {
+	if ( stems->start+stems->width>=h->start && stems!=h ) {
+	    if ( stems->hintnumber!=-1 &&
+		    (mask[stems->hintnumber>>3]&(0x80>>(stems->hintnumber&7))) )
+return( true );
+	}
+	stems = stems->next;
+    }
+return( false );
+}
+
+/* All instances of a MM set must have the same hint mask at all points */
+static void FigureHintMask(SplineChar *scs[MmMax], SplinePoint *to[MmMax], int instance_count,
+	HintMask mask) {
+    StemInfo *s;
+    int i;
+    SplinePoint *sp;
+
+    memset(mask,'\0',sizeof(HintMask));
+
+    /* Install all hints that are always active */
+    i=0; {
+	SplineChar *sc = scs[i];
+
+	if ( sc==NULL )
+return;
+
+	for ( s=sc->hstem; s!=NULL; s=s->next )
+	    if ( s->hintnumber!=-1 && !s->hasconflicts )
+		mask[s->hintnumber>>3] |= (0x80>>(s->hintnumber&7));
+	for ( s=sc->vstem; s!=NULL; s=s->next )
+	    if ( s->hintnumber!=-1 && !s->hasconflicts )
+		mask[s->hintnumber>>3] |= (0x80>>(s->hintnumber&7));
+
+	if ( sc->hconflicts ) {
+	    for ( sp=to[i]; sp!=NULL; ) {
+		s = OnHHint(sp,sc->hstem);
+		if ( s!=NULL && s->hintnumber!=-1 ) {
+		    if ( ConflictsWithMask(scs[i]->hstem,mask,s))
+	    break;
+		    mask[s->hintnumber>>3] |= (0x80>>(s->hintnumber&7));
+		}
+		if ( sp->next==NULL )
+	    break;
+		sp = sp->next->to;
+		if ( to[i]==sp )
+	    break;
+	    }
+	}
+	if ( sc->vconflicts ) {
+	    for ( sp=to[i]; sp!=NULL; ) {
+		s = OnVHint(sp,sc->vstem);
+		if ( s!=NULL && s->hintnumber!=-1 ) {
+		    if ( ConflictsWithMask(scs[i]->vstem,mask,s))
+	    break;
+		    mask[s->hintnumber>>3] |= (0x80>>(s->hintnumber&7));
+		}
+		if ( sp->next==NULL )
+	    break;
+		sp = sp->next->to;
+		if ( to[i]==sp )
+	    break;
+	    }
+	}
+    }
+    for ( i=0; i<instance_count; ++i ) if ( to[i]!=NULL ) {
+	to[i]->hintmask = chunkalloc(sizeof(HintMask));
+	memcpy(to[i]->hintmask,mask,sizeof(HintMask));
+    }
+}
+
+static int TestHintMask(SplineChar *scs[MmMax], SplinePoint *to[MmMax], int instance_count,
+	HintMask mask) {
+    StemInfo *h=NULL, *v=NULL;
+    int i;
+
+    for ( i=0; i<instance_count; ++i ) {
+	SplineChar *sc = scs[i];
+
+	if ( sc==NULL || (!sc->hconflicts && !sc->vconflicts ))
+    continue;
+
+	/* Does this point lie on any hints? */
+	if ( scs[i]->hconflicts )
+	    h = OnHHint(to[i],sc->hstem);
+	if ( scs[i]->vconflicts )
+	    v = OnVHint(to[i],sc->vstem);
+
+	/* Need to set this hint */
+	if ( (h!=NULL && h->hintnumber!=-1 && (mask[h->hintnumber>>3]&(0x80>>(h->hintnumber&7)))==0 ) ||
+	     (v!=NULL && v->hintnumber!=-1 && (mask[v->hintnumber>>3]&(0x80>>(v->hintnumber&7)))==0 ))
+    break;
+    }
+    if ( i==instance_count )	/* All hint masks were ok */
+return( false );
+
+    FigureHintMask(scs,to,instance_count,mask);
+return( true );
+}
+
+static void UnnumberHints(SplineChar *sc) {
+    StemInfo *h;
+
+    for ( h=sc->hstem; h!=NULL; h=h->next )
+	h->hintnumber = -1;
+    for ( h=sc->vstem; h!=NULL; h=h->next )
+	h->hintnumber = -1;
+}
+
+static int NumberHints(SplineChar *sc) {
+    StemInfo *h;
+    int hcnt=0;
+
+    for ( h=sc->hstem; h!=NULL; h=h->next )
+	h->hintnumber = hcnt>=HntMax ? -1 : hcnt++;
+    for ( h=sc->vstem; h!=NULL; h=h->next )
+	h->hintnumber = hcnt>=HntMax ? -1 : hcnt++;
+return( hcnt );
+}
+
+static void UntickHints(SplineChar *sc) {
+    StemInfo *h;
+
+    for ( h=sc->hstem; h!=NULL; h=h->next )
+	h->used = false;
+    for ( h=sc->vstem; h!=NULL; h=h->next )
+	h->used = false;
+}
+
+struct coords {
+    real coords[MmMax];
+    struct coords *next;
+};
+
+typedef struct mmh {
+    StemInfo *hints[MmMax], *map[MmMax];
+    struct coords *where;
+    struct mmh *next;
+} MMH;
+
+static void AddCoord(MMH *mmh,SplinePoint *sps[MmMax],int instance_count, int ish) {
+    struct coords *coords;
+    int i;
+
+    coords = chunkalloc(sizeof(struct coords));
+    coords->next = mmh->where;
+    mmh->where = coords;
+    if ( ish )
+	for ( i=0; i<instance_count; ++i )
+	    coords->coords[i] = sps[i]->me.x;
+    else
+	for ( i=0; i<instance_count; ++i )
+	    coords->coords[i] = sps[i]->me.y;
+}
+
+static MMH *AddHintSet(MMH *hints,StemInfo *h[MmMax], int instance_count,
+	SplinePoint *sps[MmMax], int ish) {
+    int i, cnt, bestc;
+    MMH *test, *best;
+
+    for ( i=0; i<instance_count; ++i )
+	if ( h[i]==NULL )
+return( hints );
+
+    best = NULL; bestc = 0;
+    for ( test=hints; test!=NULL; test=test->next ) {
+	cnt = 0;
+	for ( i=0; i<instance_count; ++i )
+	    if ( test->hints[i]==h[i] )
+		++cnt;
+	if ( cnt==instance_count ) {
+	    AddCoord(test,sps,instance_count,ish);
+return( hints );
+	}
+	if ( cnt>bestc ) {
+	    bestc = cnt;
+	    best = test;
+	}
+    }
+    test = chunkalloc(sizeof(MMH));
+    test->next = hints;
+    AddCoord(test,sps,instance_count,ish);
+    for ( i=0; i<instance_count; ++i )
+	test->hints[i]=h[i];
+    if ( bestc!=0 ) {
+	for ( i=0; i<instance_count; ++i ) {
+	    if ( best->hints[i]==h[i] ) {
+		h[i]->hasconflicts = true;
+		test->map[i] = chunkalloc(sizeof(StemInfo));
+		*test->map[i] = *h[i];
+		test->map[i]->where = NULL;
+		test->map[i]->used = true;
+		h[i]->next = test->map[i];
+	    } else
+		test->map[i] = h[i];
+	}
+    }
+return( test );
+}
+
+static int CompareMMH(MMH *mmh1,MMH *mmh2, int instance_count) {
+    int i;
+
+    for ( i=0; i<instance_count; ++i ) {
+	if ( mmh1->map[i]->start!=mmh2->map[i]->start ) {
+	    if ( mmh1->map[i]->start > mmh2->map[i]->start )
+return( 1 );
+	    else
+return( -1 );
+	}
+    }
+    for ( i=0; i<instance_count; ++i ) {
+	if ( mmh1->map[i]->width!=mmh2->map[i]->width ) {
+	    if ( mmh1->map[i]->width > mmh2->map[i]->width )
+return( 1 );
+	    else
+return( -1 );
+	}
+    }
+return( 0 );
+}
+    
+static MMH *SortMMH(MMH *head,int instance_count) {
+    MMH *mmh, *p, *smallest, *psmallest, *test, *ptest;
+
+    for ( mmh = head, p=NULL; mmh!=NULL ; ) {
+	smallest = mmh; psmallest = p;
+	ptest = mmh; test = mmh->next;
+	while ( test!=NULL ) {
+	    if ( CompareMMH(test,smallest,instance_count)<0 ) {
+		smallest = test;
+		psmallest = ptest;
+	    }
+	    ptest = test;
+	    test = test->next;
+	}
+	if ( smallest!=mmh ) {
+	    if ( p==NULL )
+		head = smallest;
+	    else
+		p->next = smallest;
+	    if ( mmh->next==smallest ) {
+		mmh->next = smallest->next;
+		smallest->next = mmh;
+	    } else {
+		test = mmh->next;
+		mmh->next = smallest->next;
+		smallest->next = test;
+		psmallest->next = mmh;
+	    }
+	}
+	p = smallest;
+	mmh = smallest->next;
+    }
+return( head );
+}
+
+static int NumberMMH(MMH *mmh,int hstart,int instance_count) {
+    int i;
+    HintInstance *hi, *n;
+    struct coords *coords;
+
+    while ( mmh!=NULL ) {
+	for ( i=0; i<instance_count; ++i ) {
+	    StemInfo *h = mmh->map[i];
+	    h->hintnumber = hstart++;
+
+	    for ( hi=h->where; hi!=NULL; hi=n ) {
+		n = hi->next;
+		chunkfree(hi,sizeof(HintInstance));
+	    }
+	    for ( coords=mmh->where; coords!=NULL; coords = coords->next ) {
+		hi = chunkalloc(sizeof(HintInstance));
+		hi->next = h->where;
+		h->where = hi;
+		hi->begin = coords->coords[i]-1;
+		hi->end = coords->coords[i]+1;
+	    }
+	}
+    }
+return( hstart );
+}
+	    
+static void SortMMH2(SplineChar *scs[MmMax],MMH *mmh,int instance_count,int ish) {
+    int i;
+    StemInfo *h, *n;
+    MMH *m;
+
+    for ( i=0; i<instance_count; ++i ) {
+	for ( h= ish ? scs[i]->hstem : scs[i]->vstem; h!=NULL; h=n ) {
+	    n = h->next;
+	    if ( h->hintnumber==-1 )
+		StemInfoFree(h);
+	}
+	n = NULL;
+	for ( m = mmh ; m!=NULL; m=m->next ) {
+	    h = mmh->map[i];
+	    if ( n!=NULL )
+		n->next = h;
+	    else if ( ish )
+		scs[i]->hstem = h;
+	    else
+		scs[i]->vstem = h;
+	    n = h;
+	}
+	if ( n!=NULL )
+	    n->next = NULL;
+    }
+}
+
+static void MMHFreeList(MMH *mmh) {
+    MMH *mn;
+    struct coords *c, *n;
+
+    for ( ; mmh!=NULL; mmh = mn ) {
+	mn = mmh->next;
+	for ( c=mmh->where; c!=NULL; c=n ) {
+	    n = c->next;
+	    chunkfree(c,sizeof(struct coords));
+	}
+	chunkfree(mmh,sizeof(struct coords));
+    }
+}
+
+static void SplResolveSplitHints(SplineChar *scs[MmMax], SplineSet *spl[MmMax],
+	int instance_count, MMH **hs, MMH **vs) {
+    SplinePoint *to[MmMax];
+    StemInfo *h[MmMax], *v[MmMax];
+    int i, anymore;
+
+    forever {
+	for ( i=0; i<instance_count; ++i ) {
+	    if ( spl[i]!=NULL )
+		to[i] = spl[i]->first;
+	    else
+		to[i] = NULL;
+	}
+	forever {
+	    for ( i=0; i<instance_count; ++i ) {
+		h[i] = OnHHint(to[i],scs[i]->hstem);
+		v[i] = OnVHint(to[i],scs[i]->vstem);
+	    }
+	    *hs = AddHintSet(*hs,h,instance_count,to,true);
+	    *vs = AddHintSet(*vs,v,instance_count,to,false);
+	    anymore = false;
+	    for ( i=0; i<instance_count; ++i ) if ( to[i]!=NULL ) {
+		if ( to[i]->next==NULL ) to[i] = NULL;
+		else {
+		    to[i] = to[i]->next->to;
+		    if ( to[i]==spl[i]->first ) to[i] = NULL;
+		}
+		if ( to[i]!=NULL ) anymore = true;
+	    }
+	    if ( !anymore )
+	break;
+	}
+	anymore = false;
+	for ( i=0; i<instance_count; ++i ) {
+	    if ( spl[i]!=NULL )
+		spl[i] = spl[i]->next;
+	    if ( spl[i]!=NULL ) anymore = true;
+	}
+	if ( !anymore )
+    break;
+    }
+}
+
+static void ResolveSplitHints(SplineChar *scs[16],int instance_count) {
+    /* It is possible for a single hint in one mm instance to split into two */
+    /*  in a different MM set. For example, we have two stems which happen */
+    /*  to line up in one instance but which do not in another instance. */
+    /* It is even possible that there could be no instance with any conflicts */
+    /*  but some of the intermediate forms might conflict. */
+    /* We can't deal (nor can postscript) with the case where hints change order*/
+    SplinePointList *spl[MmMax];
+    RefChar *ref[MmMax];
+    int i, hcnt, hmax=0, anymore;
+    MMH *hs=NULL, *vs=NULL;
+
+    for ( i=0; i<instance_count; ++i ) {
+	hcnt = NumberHints(scs[i]);
+	UntickHints(scs[i]);
+	if ( hcnt>hmax ) hmax = hcnt;
+	spl[i] = scs[i]->splines;
+    }
+    if ( hmax==0 )
+return;
+
+    SplResolveSplitHints(scs,spl,instance_count,&hs,&vs);
+    anymore = false;
+    for ( i=0; i<instance_count; ++i ) {
+	ref[i] = scs[i]->refs;
+	if ( ref[i]!=NULL ) anymore = true;
+    }
+    while ( anymore ) {
+	for ( i=0; i<instance_count; ++i )
+	    spl[i] = ( ref[i]!=NULL ) ? ref[i]->splines : NULL;
+	SplResolveSplitHints(scs,spl,instance_count,&hs,&vs);
+	anymore = false;
+	for ( i=0; i<instance_count; ++i ) {
+	    if ( ref[i]!=NULL ) {
+		ref[i] = ref[i]->next;
+		if ( ref[i]!=NULL ) anymore = true;
+	    }
+	}
+    }
+
+    for ( i=0; i<instance_count; ++i )
+	UnnumberHints(scs[i]);
+    hs = SortMMH(hs,instance_count);
+    vs = SortMMH(vs,instance_count);
+    hcnt = NumberMMH(hs,0,instance_count);
+    hcnt = NumberMMH(vs,hcnt,instance_count);
+    SortMMH2(scs,hs,instance_count,true);
+    SortMMH2(scs,vs,instance_count,false);
+    MMHFreeList(hs);
+    MMHFreeList(vs);
+}
+
+static int SplFigureHintMasks(SplineChar *scs[MmMax], SplineSet *spl[MmMax],
+	int instance_count, HintMask mask, int inited) {
+    SplinePoint *to[MmMax];
+    int i, anymore;
+
+    anymore = false;
+    for ( i=0; i<instance_count; ++i ) {
+	if ( spl[i]!=NULL ) {
+	    to[i] = spl[i]->first;
+	    anymore = true;
+	} else
+	    to[i] = NULL;
+    }
+
+    /* Assign the initial hint mask */
+    if ( anymore && !inited ) {
+	FigureHintMask(scs,to,instance_count,mask);
+	inited = true;
+    }
+
+    forever {
+	for ( i=0; i<instance_count; ++i ) {
+	    if ( spl[i]!=NULL )
+		to[i] = spl[i]->first;
+	    else
+		to[i] = NULL;
+	}
+	forever {
+	    TestHintMask(scs,to,instance_count,mask);
+	    anymore = false;
+	    for ( i=0; i<instance_count; ++i ) if ( to[i]!=NULL ) {
+		if ( to[i]->next==NULL ) to[i] = NULL;
+		else {
+		    to[i] = to[i]->next->to;
+		    if ( to[i]==spl[i]->first ) to[i] = NULL;
+		}
+		if ( to[i]!=NULL ) anymore = true;
+	    }
+	    if ( !anymore )
+	break;
+	}
+	anymore = false;
+	for ( i=0; i<instance_count; ++i ) {
+	    if ( spl[i]!=NULL )
+		spl[i] = spl[i]->next;
+	    if ( spl[i]!=NULL ) anymore = true;
+	}
+	if ( !anymore )
+    break;
+    }
+return( inited );
+}
+
+void SCFigureHintMasks(SplineChar *sc) {
+    SplineChar *scs[MmMax];
+    SplinePointList *spl[MmMax];
+    RefChar *ref[MmMax];
+    MMSet *mm = sc->parent->mm;
+    int i, instance_count, conflicts, anymore, inited;
+    HintMask mask;
+
+    if ( mm==NULL ) {
+	scs[0] = sc;
+	instance_count = 1;
+	SCClearHintMasks(sc,false);
+    } else {
+	instance_count = mm->instance_count;
+	for ( i=0; i<instance_count; ++i )
+	    if ( sc->enc < mm->instances[i]->charcnt ) {
+		scs[i] = mm->instances[i]->chars[sc->enc];
+		SCClearHintMasks(scs[i],false);
+	    }
+	ResolveSplitHints(scs,instance_count);
+    }
+    conflicts = false;
+    for ( i=0; i<instance_count; ++i ) {
+	NumberHints(scs[i]);
+	if ( scs[i]->hconflicts || scs[i]->vconflicts )
+	    conflicts = true;
+    }
+    if ( !conflicts && instance_count==1 ) {	/* All hints always active */
+	SCFigureSimpleCounterMasks(sc);
+return;						/* In an MM font we may still need to resolve things like different numbers of hints */
+    }
+
+    for ( i=0; i<instance_count; ++i ) {
+	spl[i] = scs[i]->splines;
+	ref[i] = scs[i]->refs;
+    }
+    inited = SplFigureHintMasks(scs,spl,instance_count,mask,false);
+    forever {
+	for ( i=0; i<instance_count; ++i ) {
+	    if ( ref[i]!=NULL )
+		spl[i] = ref[i]->splines;
+	}
+	inited = SplFigureHintMasks(scs,spl,instance_count,mask,inited);
+	anymore = false;
+	for ( i=0; i<instance_count; ++i ) {
+	    if ( ref[i]!=NULL ) {
+		ref[i] = ref[i]->next;
+		if ( ref[i]!=NULL ) anymore = true;
+	    }
+	}
+	if ( !anymore )
+    break;
+    }
+    if ( instance_count==1 )
+	SCFigureSimpleCounterMasks(sc);
+}
+
+static void _SplineCharAutoHint( SplineChar *sc, int removeOverlaps ) {
     EIList el;
 
     StemInfosFree(sc->vstem); sc->vstem=NULL;
     StemInfosFree(sc->hstem); sc->hstem=NULL;
     DStemInfosFree(sc->dstem); sc->dstem=NULL;
     MinimumDistancesFree(sc->md); sc->md=NULL;
+
+    free(sc->countermasks);
+    sc->countermasks = NULL; sc->countermask_cnt = 0;
+    /* We'll free the hintmasks when we call SCFigureHintMasks */
 
     memset(&el,'\0',sizeof(el));
     ELFindEdges(sc, &el);
@@ -3576,8 +4350,24 @@ void SplineCharAutoHint( SplineChar *sc, int removeOverlaps ) {
 
     ElFreeEI(&el);
     SCOutOfDateBackground(sc);
-    SCUpdateAll(sc);
     sc->parent->changed = true;
+}
+
+void SplineCharAutoHint( SplineChar *sc, int removeOverlaps ) {
+    MMSet *mm = sc->parent->mm;
+    int i;
+
+    if ( mm==NULL )
+	_SplineCharAutoHint(sc,removeOverlaps);
+    else {
+	for ( i=0; i<mm->instance_count; ++i )
+	    if ( sc->enc < mm->instances[i]->charcnt )
+		_SplineCharAutoHint(mm->instances[i]->chars[sc->enc],removeOverlaps);
+	if ( sc->enc < mm->normal->charcnt )
+	    _SplineCharAutoHint(mm->normal->chars[sc->enc],removeOverlaps);
+    }
+    SCFigureHintMasks(sc);
+    SCUpdateAll(sc);
 }
 
 int SFNeedsAutoHint( SplineFont *_sf) {

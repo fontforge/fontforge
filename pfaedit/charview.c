@@ -591,7 +591,8 @@ return;
     }
     if ((( sp->roundx || sp->roundy ) &&
 	     (((cv->showrounds&1) && cv->scale>=.3) || (cv->showrounds&2))) ||
-	    (sp->watched && cv->dv!=NULL) ) {
+	    (sp->watched && cv->dv!=NULL) ||
+	    sp->hintmask!=NULL ) {
 	r.x = x-5; r.y = y-5;
 	r.width = r.height = 11;
 	GDrawDrawElipse(pixmap,&r,col);
@@ -983,7 +984,7 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
 		    }
 		}
 	    }
-	    col = hint->hasconflicts? conflicthintcol : col;
+	    col = (!hint->active && hint->hasconflicts) ? conflicthintcol : col;
 	    if ( r.y>=0 && r.y<=cv->height )
 		GDrawDrawLine(pixmap,0,r.y,cv->width,r.y,col);
 	    if ( r.y+r.height>=0 && r.y+r.height<=cv->width )
@@ -1033,7 +1034,7 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
 		    }
 		}
 	    }
-	    col = hint->hasconflicts? conflicthintcol : col;
+	    col = (!hint->active && hint->hasconflicts) ? conflicthintcol : col;
 	    if ( r.x>=0 && r.x<=cv->width )
 		GDrawDrawLine(pixmap,r.x,0,r.x,cv->height,col);
 	    if ( r.x+r.width>=0 && r.x+r.width<=cv->width )
@@ -1391,7 +1392,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	    if ( cv->template2!=NULL )
 		CVDrawTemplates(cv,pixmap,cv->template2,&clip);
 	}
-	if ( cv->showback && cv->mmvisible!=0 )
+	if ( cv->mmvisible!=0 )
 	    DrawMMGhosts(cv,pixmap,&clip);
     }
 
@@ -3670,6 +3671,8 @@ return( true );
 #define MID_Elide	2129
 #define MID_SelectAllPoints	2130
 #define MID_SelectAnchors	2131
+#define MID_FirstPtNextCont	2132
+#define MID_Contours	2133
 #define MID_Clockwise	2201
 #define MID_Counter	2202
 #define MID_GetInfo	2203
@@ -3718,6 +3721,9 @@ return( true );
 #define MID_ClearInstr	2412
 #define MID_EditInstructions 2413
 #define MID_Debug	2414
+#define MID_HintSubsPt	2415
+#define MID_AutoCounter	2416
+#define MID_DontAutoHint	2417
 #define MID_ClearAllMD		2451
 #define MID_ClearSelMDX		2452
 #define MID_ClearSelMDY		2453
@@ -4133,6 +4139,42 @@ void CVShowPoint(CharView *cv, SplinePoint *sp) {
 	CVMagnify(cv,sp->me.x,sp->me.y,0);
 }
 
+static void CVSelectContours(CharView *cv,struct gmenuitem *mi) {
+    SplineSet *spl;
+    SplinePoint *sp;
+    int sel;
+
+    for ( spl=*cv->heads[cv->drawmode]; spl!=NULL; spl=spl->next ) {
+	sel = false;
+	for ( sp=spl->first ; ; ) {
+	    if ( sp->selected ) {
+		sel = true;
+	break;
+	    }
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==spl->first )
+	break;
+	}
+	if ( sel ) {
+	    for ( sp=spl->first ; ; ) {
+		sp->selected = true;
+		if ( sp->next==NULL )
+	    break;
+		sp = sp->next->to;
+		if ( sp==spl->first )
+	    break;
+	    }
+	}
+    }
+}
+
+static void CVMenuSelectContours(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    CVSelectContours(cv,mi);
+}
+
 static void CVNextPrevPt(CharView *cv,struct gmenuitem *mi) {
     SplinePoint *selpt=NULL, *other;
     RefChar *r; ImageList *il;
@@ -4171,18 +4213,26 @@ return;
 return;
 	other = (*cv->heads[cv->drawmode])->first;
 	CVClearSel(cv);
+    } else if ( mi->mid == MID_FirstPtNextCont ) {
+	if ( spl->next!=NULL )
+	    other = spl->next->first;
+	else
+	    other = NULL;
     }
     if ( selpt!=NULL )
 	selpt->selected = false;
-    other->selected = true;
+    if ( other!=NULL )
+	other->selected = true;
     cv->p.sp = NULL;
     cv->lastselpt = other;
 
     /* Make sure the point is visible and has some context around it */
-    x =  cv->xoff + rint(other->me.x*cv->scale);
-    y = -cv->yoff + cv->height - rint(other->me.y*cv->scale);
-    if ( x<40 || y<40 || x>cv->width-40 || y>cv->height-40 )
-	CVMagnify(cv,other->me.x,other->me.y,0);
+    if ( other!=NULL ) {
+	x =  cv->xoff + rint(other->me.x*cv->scale);
+	y = -cv->yoff + cv->height - rint(other->me.y*cv->scale);
+	if ( x<40 || y<40 || x>cv->width-40 || y>cv->height-40 )
+	    CVMagnify(cv,other->me.x,other->me.y,0);
+    }
 
     CVInfoDraw(cv,cv->gw);
     SCUpdateAll(cv->sc);
@@ -5499,6 +5549,25 @@ static void CVMenuAutoHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SCUpdateAll(cv->sc);
 }
 
+static void CVMenuAutoHintSubs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+
+    SCFigureHintMasks(cv->sc);
+    SCUpdateAll(cv->sc);
+}
+
+static void CVMenuAutoCounter(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+
+    SCFigureCounterMasks(cv->sc);
+}
+
+static void CVMenuDontAutoHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+
+    cv->sc->manualhints = !cv->sc->manualhints;
+}
+
 static void CVMenuAutoInstr(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
@@ -5541,6 +5610,7 @@ static void CVMenuClearHints(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	SCRemoveSelectedMinimumDistances(cv->sc,mi->mid==MID_ClearSelMDX);
     }
     cv->sc->manualhints = true;
+    SCClearHintMasks(cv->sc,true);
     SCOutOfDateBackground(cv->sc);
     SCUpdateAll(cv->sc);
 }
@@ -5604,6 +5674,7 @@ return;
 	d->rightedgebottom = sp4->me;
     }
     cv->sc->manualhints = true;
+    SCClearHintMasks(cv->sc,true);
     SCOutOfDateBackground(cv->sc);
     SCUpdateAll(cv->sc);
 }
@@ -5767,6 +5838,13 @@ static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    free(mi->ti.text);
 	    mi->ti.text = u_copy(GStringGetResource(removeOverlap?_STR_Autohint: _STR_FullAutohint,NULL));
 	  break;
+	  case MID_HintSubsPt: case MID_AutoCounter:
+	    mi->ti.disabled = cv->sc->parent->order2;
+	  break;
+	  case MID_DontAutoHint:
+	    mi->ti.disabled = cv->sc->parent->order2;
+	    mi->ti.checked = cv->sc->manualhints;
+	  break;
 	  case MID_AutoInstr:
 	    mi->ti.disabled = !cv->sc->parent->order2;
 	  break;
@@ -5818,9 +5896,10 @@ static void cv_sllistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 	switch ( mi->mid ) {
 	  case MID_NextPt: case MID_PrevPt:
 	  case MID_NextCP: case MID_PrevCP:
+	  case MID_FirstPtNextCont:
 	    mi->ti.disabled = !exactlyone;
 	  break;
-	  case MID_FirstPt:
+	  case MID_FirstPt: case MID_Contours:
 	    mi->ti.disabled = *cv->heads[cv->drawmode]==NULL;
 	  break;
 	  case MID_SelectWidth:
@@ -6045,10 +6124,12 @@ static GMenuItem sllist[] = {
     { { (unichar_t *) _STR_DeselectAll, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'o' }, GK_Escape, 0, NULL, NULL, CVSelectNone, MID_SelNone },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_FirstPoint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, '.', ksm_control, NULL, NULL, CVMenuNextPrevPt, MID_FirstPt },
+    { { (unichar_t *) _STR_FirstPointNextContour, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, '.', ksm_meta|ksm_control, NULL, NULL, CVMenuNextPrevPt, MID_FirstPtNextCont },
     { { (unichar_t *) _STR_Nextpoint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'N' }, '}', ksm_shift|ksm_control, NULL, NULL, CVMenuNextPrevPt, MID_NextPt },
     { { (unichar_t *) _STR_Prevpoint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '{', ksm_shift|ksm_control, NULL, NULL, CVMenuNextPrevPt, MID_PrevPt },
     { { (unichar_t *) _STR_NextControlPoint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'x' }, ';', ksm_control, NULL, NULL, CVMenuNextPrevCPt, MID_NextCP },
     { { (unichar_t *) _STR_PrevControlPoint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'r' }, ':', ksm_shift|ksm_control, NULL, NULL, CVMenuNextPrevCPt, MID_PrevCP },
+    { { (unichar_t *) _STR_Contours, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'r' }, '\0', ksm_shift|ksm_control, NULL, NULL, CVMenuSelectContours, MID_Contours },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_SelectAllPoints, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, 'A', ksm_control|ksm_meta, NULL, NULL, CVSelectAll, MID_SelectAllPoints },
     { { (unichar_t *) _STR_SelectAnchors, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'c' }, '\0', ksm_control, NULL, NULL, CVSelectAll, MID_SelectAnchors },
@@ -6203,6 +6284,10 @@ static GMenuItem mdlist[] = {
 
 static GMenuItem htlist[] = {
     { { (unichar_t *) _STR_Autohint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, 'H', ksm_control|ksm_shift, NULL, NULL, CVMenuAutoHint, MID_AutoHint },
+    { { (unichar_t *) _STR_HintSubsPts, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuAutoHintSubs, MID_HintSubsPt },
+    { { (unichar_t *) _STR_AutoCounterHint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuAutoCounter, MID_AutoCounter },
+    { { (unichar_t *) _STR_DontAutoHint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'H' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuDontAutoHint, MID_DontAutoHint },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_AutoInstr, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, 'T', ksm_control, NULL, NULL, CVMenuAutoInstr, MID_AutoInstr },
     { { (unichar_t *) _STR_EditInstructions, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'l' }, '\0', 0, NULL, NULL, CVMenuEditInstrs, MID_EditInstructions },
     { { (unichar_t *) _STR_DebugDDD, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'l' }, '\0', 0, NULL, NULL, CVMenuDebug, MID_Debug },
@@ -7060,6 +7145,7 @@ static GMenuItem sv_sllist[] = {
     { { (unichar_t *) _STR_DeselectAll, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'o' }, GK_Escape, 0, NULL, NULL, SVSelectNone, MID_SelNone },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_FirstPoint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, '.', ksm_control, NULL, NULL, SVMenuNextPrevPt, MID_FirstPt },
+    { { (unichar_t *) _STR_FirstPointNextContour, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, '.', ksm_meta|ksm_control, NULL, NULL, SVMenuNextPrevPt, MID_FirstPtNextCont },
     { { (unichar_t *) _STR_Nextpoint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'N' }, '}', ksm_shift|ksm_control, NULL, NULL, SVMenuNextPrevPt, MID_NextPt },
     { { (unichar_t *) _STR_Prevpoint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '{', ksm_shift|ksm_control, NULL, NULL, SVMenuNextPrevPt, MID_PrevPt },
     { { (unichar_t *) _STR_NextControlPoint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'x' }, ';', ksm_control, NULL, NULL, SVMenuNextPrevCPt, MID_NextCP },

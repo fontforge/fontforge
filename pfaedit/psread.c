@@ -2218,14 +2218,6 @@ return;		/* The "path" is just a single point created by a moveto */
     }
 }
 
-static void ExtendActiveHints(StemInfo *hints,double val) {
-    while ( hints!=NULL ) {
-	if ( hints->where->begin>val ) hints->where->begin = val;
-	if ( hints->where->end<val ) hints->where->end = val;
-	hints = hints->next;
-    }
-}
-
 static StemInfo *HintsAppend(StemInfo *to,StemInfo *extra) {
     StemInfo *h;
 
@@ -2238,109 +2230,98 @@ return( to );
 return( to );
 }
 
-static HintInstance *HINew(HintInstance *old) {
-    HintInstance *hi;
-
-    hi = chunkalloc(sizeof(HintInstance));
-    hi->next = old;
-    hi->begin = 10000;
-    hi->end = -10000;
-return( hi );
-}
-
 static StemInfo *HintNew(double start,double width) {
     StemInfo *h;
 
     h = chunkalloc(sizeof(StemInfo));
     h->start = start;
     h->width = width;
-    h->where = HINew(NULL);
 return( h );
 }
 
-static void HICleanup(StemInfo *hints) {
-    HintInstance *hi, *p, *n, *rest, *last, *best, *bestp;
+static void RemapHintMask(HintMask *hm,int mapping[96],int max) {
+    HintMask rpl;
+    int i, mb;
 
-    while ( hints!=NULL ) {
-	p = NULL;
-	for ( hi=hints->where; hi!=NULL; hi = n ) {
-	    n = hi->next;
-	    if ( hi->begin == 10000 && hi->end==-10000 ) {
-		if ( p==NULL )
-		    hints->where = n;
-		else
-		    p->next = n;
-		chunkfree(hi,sizeof(*hi));
-	    } else
-		p = hi;
+    if ( hm==NULL )
+return;
+
+    if ( max>96 ) max = 96;
+    mb = (max+7)>>3;
+
+    memset(&rpl,0,mb);
+    for ( i=0; i<max; ++i ) if ( (*hm)[i>>3]&(0x80>>(i&0x7)) )
+	rpl[mapping[i]>>3] |= (0x80>>(mapping[i]&0x7));
+    memcpy(hm,&rpl,mb);
+}
+
+static void HintsRenumber(SplineChar *sc) {
+    /* In a type1 font the hints may get added to our hint list in a semi- */
+    /*  random order. In an incorrect type2 font the same thing could happen. */
+    /*  Force the order to be correct, and then update all masks */
+    int mapping[96];
+    int i, max;
+    StemInfo *h;
+    SplineSet *spl;
+    SplinePoint *sp;
+
+    for ( i=0; i<96; ++i ) mapping[i] = i;
+
+    i = 0;
+    for ( h=sc->hstem; h!=NULL; h=h->next ) {
+	if ( h->hintnumber<96 && i<96 ) {
+	    mapping[h->hintnumber] = i;
+	    h->hintnumber = i++;
 	}
-	if ( hints->where!=NULL && hints->where->next!=NULL ) {
-	    rest = hints->where; last = NULL;
-	    while ( rest!=NULL ) {
-		best = rest;
-		bestp = NULL;
-		p = rest;
-		for ( hi=rest->next; hi!=NULL; p=hi, hi=hi->next )
-		    if ( hi->begin<best->begin ) {
-			best = hi;
-			bestp = p;
-		    }
-		if ( last==NULL )
-		    hints->where = best;
-		else
-		    last->next = best;
-		last = best;
-		if ( bestp==NULL )
-		    rest = best->next;
-		else
-		    bestp->next = best->next;
-	    }
+	chunkfree(h->u.unblended,sizeof(real [2][MmMax]));
+	h->u.unblended = NULL;
+    }
+    for ( h=sc->vstem; h!=NULL; h=h->next ) {
+	if ( h->hintnumber<96 && i<96 ) {
+	    mapping[h->hintnumber] = i;
+	    h->hintnumber = i++;
 	}
-	hints = hints->next;
+	chunkfree(h->u.unblended,sizeof(real [2][MmMax]));
+	h->u.unblended = NULL;
+    }
+    max = i;
+    for ( i=0; i<max; ++i )
+	if ( mapping[i]!=i )
+    break;
+    if ( i==max )
+return;				/* Didn't change the order */
+
+    for ( i=0; i<sc->countermask_cnt; ++i )
+	RemapHintMask(&sc->countermasks[i],mapping,max);
+    for ( spl = sc->splines; spl!=NULL; spl=spl->next ) {
+	for ( sp = spl->first; ; ) {
+	    RemapHintMask(sp->hintmask,mapping,max);
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==spl->first )
+	break;
+	}
     }
 }
 
-static void FindActives(SplineChar *ret,StemInfo **activeh,StemInfo **activev,
-	uint8 *type1,int hint_cnt ) {
+int UnblendedCompare(real u1[MmMax], real u2[MmMax], int cnt) {
     int i;
-    StemInfo *h, *p;
-    StemInfo *ah = *activeh, *av = *activev;
 
-    for ( i=0; i<hint_cnt; ++i ) {
-	if ( type1[i>>3]&(0x80>>(i&7)) ) {
-	    p = NULL;
-	    for ( h=ret->hstem; h!=NULL; p=h, h=h->next )
-		if ( h->hintnumber == i )
-	    break;
-	    if ( h!=NULL ) {
-		if ( p==NULL )
-		    ret->hstem = h->next;
-		else
-		    p->next = h->next;
-		h->next = ah;
-		h->where = HINew(h->where);
-		ah = h;
-	    } else {
-		p = NULL;
-		for ( h=ret->vstem; h!=NULL; p=h, h=h->next )
-		    if ( h->hintnumber == i )
-		break;
-		if ( h!=NULL ) {
-		    if ( p==NULL )
-			ret->vstem = h->next;
-		    else
-			p->next = h->next;
-		    h->next = av;
-		    h->where = HINew(h->where);
-		    av = h;
-		} else {
-		    fprintf( stderr, "Failed to find hint %d\n", i );
-		}
-	    }
-	}
+    for ( i=0; i<cnt; ++i ) {
+	if ( u1[i]!=u2[i] )
+return( u1[i]>u2[i]?1:-1 );
     }
-    *activeh = ah;
-    *activev = av;
+return( 0 );
+}
+
+static real Blend(real u[MmMax],struct pscontext *context) {
+    real sum = u[0];
+    int i;
+
+    for ( i=1; i<context->instance_count; ++i )
+	sum += context->blend_values[i]*u[i];
+return( sum );
 }
 
 /* this handles either Type1 or Type2 charstrings. Type2 charstrings have */
@@ -2362,7 +2343,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
     real dx, dy, dx2, dy2, dx3, dy3, dx4, dy4, dx5, dy5, dx6, dy6;
     SplinePoint *pt;
     /* subroutines may be nested to a depth of 10 */
-    struct substate { unsigned char *type1; int len; } pcstack[11];
+    struct substate { unsigned char *type1; int len; int subnum; } pcstack[11];
     int pcsp=0;
     StemInfo *hint, *hp;
     real pops[30];
@@ -2371,8 +2352,15 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
     real coord;
     struct pschars *s;
     int hint_cnt = 0;
-    StemInfo *activeh=NULL, *activev=NULL;
-    int moved = false;
+    StemInfo *activeh=NULL, *activev=NULL, *sameh;
+    HintMask *pending_hm = NULL;
+    HintMask *counters[96];
+    int cp=0;
+    real unblended[2][MmMax];
+    int last_was_b1=false, old_last_was_b1;
+
+    if ( !is_type2 && context->instance_count>1 )
+	memset(unblended,0,sizeof(unblended));
 
     ret->name = copy( name );
     ret->unicodeenc = -1;
@@ -2387,10 +2375,6 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 	    sp = 48;
 	}
 	base = 0;
-	if ( moved ) {
-	    ExtendActiveHints(activeh,current.x);
-	    ExtendActiveHints(activev,current.y);
-	}
 	--len;
 	if ( (v = *type1++)>=32 ) {
 	    if ( v<=246) {
@@ -2425,6 +2409,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 	/* In the Dict tables of CFF, a 5byte fixed value is prefixed by a */
 	/*  29 code. In Type2 strings the prefix is 255. */
 	} else if ( v==12 ) {
+	    old_last_was_b1 = last_was_b1; last_was_b1 = false;
 	    v = *type1++;
 	    --len;
 	    switch ( v ) {
@@ -2579,7 +2564,6 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 			ret->vstem = HintsAppend(ret->vstem,activev); activev=NULL;
 		      } break;
 		      case 1: {
-			/* We punt for flex too. This is a bit harder */
 			/* Essentially what we want to do is draw a line from */
 			/*  where we are at the beginning to where we are at */
 			/*  the end. So we save the beginning here (this starts*/
@@ -2619,6 +2603,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 				cur->last->nextcp = old_nextcp;
 				cur->last->nonextcp = false;
 				pt = chunkalloc(sizeof(SplinePoint));
+			        pt->hintmask = pending_hm; pending_hm = NULL;
 				pt->prevcp = mid_prevcp;
 				pt->me = mid;
 				pt->nextcp = mid_nextcp;
@@ -2665,6 +2650,23 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 			else if ( tot!=cnt*context->instance_count )
 			    fprintf( stderr, "Multiple master subroutine called with the wrong number of arguments in %s.\n", name );
 			else {
+			    /* Hints need to keep track of the original blends */
+			    if ( cnt==1 && !is_type2 ) {
+				if ( sp-2-tot>=1 && (!old_last_was_b1 || stack[0]!=Blend(unblended[1],context))) {
+				    unblended[0][0] = stack[0];
+				    for ( i=1; i<context->instance_count; ++i )
+					unblended[0][i] = 0;
+			        } else
+				    memcpy(unblended,unblended+1,context->instance_count*sizeof(real));
+			        for ( j=0; j<context->instance_count; ++j )
+				    unblended[1][j] = stack[sp-2-tot+j];
+			    } else if ( cnt==2 && !is_type2 ) {
+				unblended[0][0] = stack[sp-2-tot];
+				unblended[1][0] = stack[sp-2-tot+1];
+				for ( i=0; i<2; ++i )
+				    for ( j=1; j<context->instance_count; ++j )
+					unblended[i][j] = stack[sp-2-tot+2+i*(context->instance_count-1)+(j-1)];
+			    }
 			    popsp = 0;
 			    for ( i=0; i<cnt; ++i ) {
 				double sum = stack[sp-2-tot+ i];
@@ -2809,6 +2811,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		    cur->last->nonextcp = false;
 		    current.x += dx2; current.y += dy2;
 		    pt = chunkalloc(sizeof(SplinePoint));
+		    pt->hintmask = pending_hm; pending_hm = NULL;
 		    pt->prevcp = current;
 		    current.x += dx3; current.y += dy3;
 		    pt->me = current;
@@ -2835,8 +2838,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		fprintf( stderr, "Uninterpreted opcode 12,%d in %s\n", v, name );
 	      break;
 	    }
-	    moved = true;
-	} else switch ( v ) {
+	} else { last_was_b1 = false; switch ( v ) {
 	  case 1: /* hstem */
 	  case 18: /* hstemhm */
 	    base = 0;
@@ -2854,13 +2856,40 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 	    if ( activeh!=NULL )
 		for ( hp=activeh; hp->next!=NULL; hp = hp->next );
 	    while ( sp-base>=2 ) {
+		sameh = NULL;
+		if ( !is_type2 ) {
+		    if ( context->instance_count==0 ) {
+			for ( sameh=ret->hstem; sameh!=NULL; sameh=sameh->next )
+			    if ( sameh->start==stack[base]+coord &&
+				    sameh->width==stack[base+1])
+			break;
+		    } else { int j;
+			for ( j=1; j<context->instance_count; ++j ) {
+			    unblended[0][j] += unblended[0][j-1];
+			    unblended[1][j] += unblended[1][j-1];
+			}
+			for ( sameh=ret->hstem; sameh!=NULL; sameh=sameh->next )
+			    if ( UnblendedCompare((*sameh->u.unblended)[0],unblended[0],context->instance_count)==0 &&
+				    UnblendedCompare((*sameh->u.unblended)[1],unblended[1],context->instance_count)==0)
+			break;
+		    }
+		}
 		hint = HintNew(stack[base]+coord,stack[base+1]);
-		hint->hintnumber = hint_cnt++;
+		hint->hintnumber = sameh!=NULL ? sameh->hintnumber : hint_cnt++;
+		if ( !is_type2 && context->instance_count!=0 ) {
+		    hint->u.unblended = chunkalloc(sizeof(real [2][MmMax]));
+		    memcpy(hint->u.unblended,unblended,sizeof(real [2][MmMax]));
+		}
 		if ( activeh==NULL )
 		    activeh = hint;
 		else
 		    hp->next = hint;
 		hp = hint;
+		if ( !is_type2 && hint->hintnumber<96 ) {
+		    if ( pending_hm==NULL )
+			pending_hm = chunkalloc(sizeof(HintMask));
+		    (*pending_hm)[hint->hintnumber>>3] |= 0x80>>(hint->hintnumber&0x7);
+		}
 		base+=2;
 		coord = hint->start+hint->width;
 	    }
@@ -2873,7 +2902,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 	  case 3: /* vstem */
 	  case 23: /* vstemhm */
 	    if ( cur==NULL || v==3 || v==23 ) {
-		if ( sp&1 ) {
+		if ( (sp&1) && is_type2 ) {
 		    ret->width = stack[0];
 		    base=1;
 		}
@@ -2892,13 +2921,40 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		if ( activev!=NULL )
 		    for ( hp=activev; hp->next!=NULL; hp = hp->next );
 		while ( sp-base>=2 ) {
+		    sameh = NULL;
+		    if ( !is_type2 ) {
+			if ( context->instance_count==0 ) {
+			    for ( sameh=ret->vstem; sameh!=NULL; sameh=sameh->next )
+				if ( sameh->start==stack[base]+coord &&
+					sameh->width==stack[base+1])
+			    break;
+			} else { int j;
+			    for ( j=1; j<context->instance_count; ++j ) {
+				unblended[0][j] += unblended[0][0];
+				unblended[1][j] += unblended[1][0];
+			    }
+			    for ( sameh=ret->vstem; sameh!=NULL; sameh=sameh->next )
+				if ( UnblendedCompare((*sameh->u.unblended)[0],unblended[0],context->instance_count)==0 &&
+					UnblendedCompare((*sameh->u.unblended)[1],unblended[1],context->instance_count)==0)
+			    break;
+			}
+		    }
 		    hint = HintNew(stack[base]+coord,stack[base+1]);
-		    hint->hintnumber = hint_cnt++;
+		    hint->hintnumber = sameh!=NULL ? sameh->hintnumber : hint_cnt++;
+		    if ( !is_type2 && context->instance_count!=0 ) {
+			hint->u.unblended = chunkalloc(sizeof(real [2][MmMax]));
+			memcpy(hint->u.unblended,unblended,sizeof(real [2][MmMax]));
+		    }
 		    if ( activev==NULL )
 			activev = hint;
 		    else
 			hp->next = hint;
 		    hp = hint;
+		    if ( !is_type2 && hint->hintnumber<96 ) {
+			if ( pending_hm==NULL )
+			    pending_hm = chunkalloc(sizeof(HintMask));
+			(*pending_hm)[hint->hintnumber>>3] |= 0x80>>(hint->hintnumber&0x7);
+		    }
 		    base+=2;
 		    coord = hint->start+hint->width;
 		}
@@ -2909,8 +2965,12 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		if ( v==19 ) {
 		    ret->hstem = HintsAppend(ret->hstem,activeh); activeh=NULL;
 		    ret->vstem = HintsAppend(ret->vstem,activev); activev=NULL;
-		    FindActives(ret,&activeh,&activev,type1,hint_cnt);
-		    moved = false;
+		    pending_hm = chunkalloc(sizeof(HintMask));
+		    memcpy(pending_hm,type1,bytes);
+		} else if ( cp<sizeof(counters)/sizeof(counters[0]) ) {
+		    counters[cp] = chunkalloc(sizeof(HintMask));
+		    memcpy(counters[cp],type1,bytes);
+		    ++cp;
 		}
 		type1 += bytes;
 		len -= bytes;
@@ -2953,7 +3013,6 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 	  case 21: /* rmoveto */
 	  case 22: /* hmoveto */
 	  case 4: /* vmoveto */
-	    moved = true;
 	    if ( is_type2 ) {
 		if ( (v==21 && sp==3) || (v!=21 && sp==2)) {
 		    /* Character's width may be specified on the first moveto */
@@ -2971,7 +3030,6 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 	  case 5: /* rlineto */
 	  case 6: /* hlineto */
 	  case 7: /* vlineto */
-	    moved = true;
 	    polarity = 0;
 	    while ( base<sp ) {
 		dx = dy = 0;
@@ -2989,6 +3047,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		++polarity;
 		current.x += dx; current.y += dy;
 		pt = chunkalloc(sizeof(SplinePoint));
+		pt->hintmask = pending_hm; pending_hm = NULL;
 		pt->me = current;
 		pt->noprevcp = true; pt->nonextcp = true;
 		if ( v==4 || v==21 || v==22 ) {
@@ -3022,6 +3081,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		current.x += stack[base++]; current.y += stack[base++];
 		if ( cur!=NULL ) {
 		    pt = chunkalloc(sizeof(SplinePoint));
+		    pt->hintmask = pending_hm; pending_hm = NULL;
 		    pt->me = current;
 		    pt->noprevcp = true; pt->nonextcp = true;
 		    SplineMake3(cur->last,pt);
@@ -3034,7 +3094,6 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 	  case 30: /* vhcurveto */
 	  case 27: /* hhcurveto */
 	  case 26: /* vvcurveto */
-	    moved = true;
 	    polarity = 0;
 	    while ( sp>base+2 ) {
 		dx = dy = dx2 = dy2 = dx3 = dy3 = 0;
@@ -3104,6 +3163,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		    cur->last->nonextcp = false;
 		    current.x += dx2; current.y += dy2;
 		    pt = chunkalloc(sizeof(SplinePoint));
+		    pt->hintmask = pending_hm; pending_hm = NULL;
 		    pt->prevcp = current;
 		    current.x += dx3; current.y += dy3;
 		    pt->me = current;
@@ -3117,6 +3177,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		current.x += stack[base++]; current.y += stack[base++];
 		if ( cur!=NULL ) {	/* In legal code, cur can't be null here, but I got something illegal... */
 		    pt = chunkalloc(sizeof(SplinePoint));
+		    pt->hintmask = pending_hm; pending_hm = NULL;
 		    pt->me = current;
 		    pt->noprevcp = true; pt->nonextcp = true;
 		    SplineMake3(cur->last,pt);
@@ -3140,6 +3201,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 	    else {
 		pcstack[pcsp].type1 = type1;
 		pcstack[pcsp].len = len;
+		pcstack[pcsp].subnum = stack[sp-1];
 		++pcsp;
 		type1 = s->values[(int) stack[sp-1]];
 		len = s->lens[(int) stack[sp-1]];
@@ -3182,7 +3244,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 	  default:
 	    fprintf( stderr, "Uninterpreted opcode %d in %s\n", v, name );
 	  break;
-	}
+	}}
     }
   done:
     if ( pcsp!=0 )
@@ -3191,8 +3253,15 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 
     ret->hstem = HintsAppend(ret->hstem,activeh); activeh=NULL;
     ret->vstem = HintsAppend(ret->vstem,activev); activev=NULL;
-    HICleanup(ret->hstem);
-    HICleanup(ret->vstem);
+
+    if ( cp!=0 ) { int i;
+	ret->countermasks = galloc(cp*sizeof(HintMask));
+	ret->countermask_cnt = cp;
+	for ( i=0; i<cp; ++i ) {
+	    memcpy(&ret->countermasks[i],counters[i],sizeof(HintMask));
+	    chunkfree(counters[i],sizeof(HintMask));
+	}
+    }
 
     /* Even in type1 fonts all paths should be closed. But if we close them at*/
     /*  the obvious moveto, that breaks flex hints. So we have a hack here at */
@@ -3210,12 +3279,13 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 	SplineSetReverse(cur);
     if ( ret->hstem==NULL && ret->vstem==NULL )
 	ret->manualhints = false;
-    ret->hstem = HintCleanup(ret->hstem,true);
-    ret->vstem = HintCleanup(ret->vstem,true);
-    /*SCGuessHHintInstancesList(ret);*/
-    /*SCGuessVHintInstancesList(ret);*/
+    ret->hstem = HintCleanup(ret->hstem,true,context->instance_count);
+    ret->vstem = HintCleanup(ret->vstem,true,context->instance_count);
+    SCGuessHHintInstancesList(ret);
+    SCGuessVHintInstancesList(ret);
     ret->hconflicts = StemListAnyConflicts(ret->hstem);
     ret->vconflicts = StemListAnyConflicts(ret->vstem);
+    HintsRenumber(ret);
     if ( name!=NULL && strcmp(name,".notdef")!=0 )
 	ret->widthset = true;
 return( ret );

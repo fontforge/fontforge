@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 10-Jan-2004 -->
+  <!-- AP: Last modified: 29-Jan-2004 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -329,6 +329,9 @@ to (some) already existing ones)
     <CODE>$nextcid </CODE>returns the fontname of the next font within this cid
     font (or the empty string if the current sub-font is the last)
   <LI>
+    <CODE>$macstyle </CODE>returns the value of the macstyle field (a set of
+    bits indicating whether the font is bold, italic, condensed, etc.)
+  <LI>
     <CODE>$bitmaps </CODE>returns an array containing all bitmap pixelsizes generated
     for this font. (If the font database contains greymaps then they will be
     indicated in the array as
@@ -651,8 +654,8 @@ a[4][0] = "Nested array";
   <DT>
     GenerateFamily(filename,bitmaptype,fmflags,array-of-font-filenames)
   <DD>
-    Generates a mac font family (FOND) the fonts (which must be loaded) in the
-    array-of-font-filenames. filename, bitmaptype, fmflags are as above.
+    Generates a mac font family (FOND) from the fonts (which must be loaded)
+    in the array-of-font-filenames. filename, bitmaptype, fmflags are as above.
     <BLOCKQUOTE>
       <PRE>#!/usr/local/bin/pfaedit
 a = Array($argc-1)
@@ -1035,7 +1038,52 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     then angle will be divided by denom before setting the italic angle field
     (a hack to get real values). The angle should be in degrees.
   <DT>
-    SetTTFName(lang,nameid,utf8-string)
+    SetMacStyle(val)<BR>
+    SetMacStyle(str)
+  <DD>
+    The argument may be either an integer or a string. If an integer it is a
+    set of bits expressing styles as defined on the mac
+    <TABLE CELLPADDING="2">
+      <TR>
+	<TD>0x01</TD>
+	<TD>Bold</TD>
+      </TR>
+      <TR>
+	<TD>0x02</TD>
+	<TD>Italic</TD>
+      </TR>
+      <TR>
+	<TD>0x04</TD>
+	<TD>Underline</TD>
+      </TR>
+      <TR>
+	<TD>0x08</TD>
+	<TD>Outline</TD>
+      </TR>
+      <TR>
+	<TD>0x10</TD>
+	<TD>Shadow</TD>
+      </TR>
+      <TR>
+	<TD>0x20</TD>
+	<TD>Condensed</TD>
+      </TR>
+      <TR>
+	<TD>0x40</TD>
+	<TD>Extended</TD>
+      </TR>
+      <TR>
+	<TD>-1</TD>
+	<TD>PfaEdit should guess the styles from the fontname</TD>
+      </TR>
+    </TABLE>
+    <P>
+    The bits 0x20 and 0x40 (condensed and extended) may not both be set.
+    <P>
+    If the argument is a string then the string should be the concatenation of
+    various style names, as "Bold Italic Condensed"
+  <DT>
+    SetTTFName(lang,nameid,utf8-string)<B></B>
   <DD>
     Sets the indicated truetype name in the MS platform. Lang must be one of
     the
@@ -1328,20 +1376,37 @@ ApplySubstitution("*","*","vrt2")
     language names (with the languages enclosed in curly braces). As:<BR>
     <CODE>&nbsp; &nbsp; grek{dflt} latn{dflt,VIT ,ROM }</CODE><BR>
     The third arg should be a 4 character opentype feature tag (or apple
-    feature/setting). The fourth argument should be the otf flags (or -1 to make
-    PfaEdit guess appropriate flags). The remaining argument(s) vary depending
-    on the value of the first (type) argument. For Position tags there are 4
-    integral arguments which specify how this feature modifies the metrics of
-    this character. For Pair type the next argument is the name of the other
-    character in the pair followed by 8 integral arguments, the first 4 specify
-    the changes in positioning to the first character, the next four the changes
-    for the second char. For substitution tags the fifth argument is the name
-    of another glyph which will replace the current one. For an AltSubs tag the
-    argument is a space seperated list of glyph names any of which will replace
-    the current one. For a MultSubs the argument is a space seperated list of
-    names all of which will replace the current one. For a Ligature the argument
-    is a space seperated list of glyph names all of which will be replaced by
-    the current glyph.
+    feature/setting).
+    <P>
+    The fourth argument should be the <A NAME="otf-flags">otf flags </A>(or -1
+    to make PfaEdit guess appropriate flags).
+    <UL>
+      <LI>
+	0x0001 =&gt; RightToLeft
+      <LI>
+	0x0002 =&gt; IgnoreBaseGlyphs
+      <LI>
+	0x0004 =&gt; IgnoreLigatures
+      <LI>
+	0x0008 =&gt; IgnoreMarks
+      <LI>
+	0x00F0 =&gt; not defined
+      <LI>
+	0xFF00 =&gt; not supported
+    </UL>
+    <P>
+    The remaining argument(s) vary depending on the value of the first (type)
+    argument. For Position tags there are 4 integral arguments which specify
+    how this feature modifies the metrics of this character. For Pair type the
+    next argument is the name of the other character in the pair followed by
+    8 integral arguments, the first 4 specify the changes in positioning to the
+    first character, the next four the changes for the second char. For substitution
+    tags the fifth argument is the name of another glyph which will replace the
+    current one. For an AltSubs tag the argument is a space seperated list of
+    glyph names any of which will replace the current one. For a MultSubs the
+    argument is a space seperated list of names all of which will replace the
+    current one. For a Ligature the argument is a space seperated list of glyph
+    names all of which will be replaced by the current glyph.
   <DT>
     RemoveATT(type,script-lang,tag)
   <DD>
@@ -1356,10 +1421,10 @@ ApplySubstitution("*","*","vrt2")
     third should be a script-lang string like:<BR>
     <CODE>&nbsp; &nbsp; grek{dflt} latn{dflt,VIT ,ROM }</CODE><BR>
     The fourth arg should be a 4 character opentype feature tag. The fifth argument
-    should be the otf flags (or -1 to make PfaEdit guess appropriate flags).
-    The sixth and last argument should be the name of another AnchorClass to
-    be merged into the same lookup (or a null string if this class merges with
-    no other class yet).
+    should be the <A HREF="scripting.html#otf-flags">otf flags </A>(or -1 to
+    make PfaEdit guess appropriate flags). The sixth and last argument should
+    be the name of another AnchorClass to be merged into the same lookup (or
+    a null string if this class merges with no other class yet).
   <DT>
     RemoveAnchorClass(name)
   <DD>
@@ -1388,6 +1453,15 @@ ApplySubstitution("*","*","vrt2")
       <HR>
   <DT>
     <A NAME="AutoHint">AutoHint</A>()
+  <DD>
+  <DT>
+    SubstitutionPoints()
+  <DD>
+  <DT>
+    AutoCounter()
+  <DD>
+  <DT>
+    DontAutoHint()
   <DD>
   <DT>
     AutoInstr()
@@ -1588,6 +1662,8 @@ ApplySubstitution("*","*","vrt2")
       <LI>
 	"Changed" returns whether the character has been changed since the last save
 	or load.
+      <LI>
+	"DontAutoHint" returns the status of the "Don't AutoHint" flag.
       <LI>
 	"Position" takes three additional arguments, a script, a language and a tag
 	(all 4 character strings) and returns whether the character has a Position

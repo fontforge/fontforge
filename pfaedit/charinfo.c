@@ -2957,6 +2957,200 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
 return( ret );
 }
 
+static unichar_t *CounterMaskLine(SplineChar *sc, HintMask *hm) {
+    unichar_t *textmask = NULL;
+    int j,k,len;
+    StemInfo *h;
+    char buffer[100];
+
+    for ( j=0; j<2; ++j ) {
+	len = 0;
+	for ( h=sc->hstem, k=0; h!=NULL && k<HntMax; h=h->next, ++k ) {
+	    if ( (*hm)[k>>3]& (0x80>>(k&7)) ) {
+		sprintf( buffer, "H<%g,%g>, ",
+			rint(h->start*100)/100, rint(h->width*100)/100 );
+		if ( textmask!=NULL )
+		    uc_strcpy(textmask+len,buffer);
+		len += strlen(buffer);
+	    }
+	}
+	for ( h=sc->vstem; h!=NULL && k<HntMax; h=h->next, ++k ) {
+	    if ( (*hm)[k>>3]& (0x80>>(k&7)) ) {
+		sprintf( buffer, "V<%g,%g>, ",
+			rint(h->start*100)/100, rint(h->width*100)/100 );
+		if ( textmask!=NULL )
+		    uc_strcpy(textmask+len,buffer);
+		len += strlen(buffer);
+	    }
+	}
+	if ( textmask==NULL ) {
+	    textmask = galloc((len+1)*sizeof(unichar_t));
+	    *textmask = '\0';
+	}
+    }
+    if ( len>1 && textmask[len-2]==',' )
+	textmask[len-2] = '\0';
+return( textmask );
+}
+
+#define CID_HintMask	2020
+#define HI_Width	200
+#define HI_Height	260
+
+struct hi_data {
+    int done, ok, empty;
+    GWindow gw;
+    HintMask *cur;
+    SplineChar *sc;
+};
+
+static int HI_Ok(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct hi_data *hi = GDrawGetUserData(GGadgetGetWindow(g));
+	int32 i, len;
+	GTextInfo **ti = GGadgetGetList(GWidgetGetControl(hi->gw,CID_HintMask),&len);
+
+	for ( i=0; i<len; ++i )
+	    if ( ti[i]->selected )
+	break;
+
+	memset(hi->cur,0,sizeof(HintMask));
+	if ( i==len ) {
+	    hi->empty = true;
+	} else {
+	    for ( i=0; i<len; ++i )
+		if ( ti[i]->selected )
+		    (*hi->cur)[i>>3] |= (0x80>>(i&7));
+	}
+	PI_ShowHints(hi->sc,GWidgetGetControl(hi->gw,CID_HintMask),false);
+
+	hi->done = true;
+	hi->ok = true;
+    }
+return( true );
+}
+
+static void HI_DoCancel(struct hi_data *hi) {
+    hi->done = true;
+    PI_ShowHints(hi->sc,GWidgetGetControl(hi->gw,CID_HintMask),false);
+}
+
+static int HI_HintSel(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
+	struct hi_data *hi = GDrawGetUserData(GGadgetGetWindow(g));
+
+	PI_ShowHints(hi->sc,g,true);
+	/* Do I need to check for overlap here? */
+    }
+return( true );
+}
+
+static int HI_Cancel(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	HI_DoCancel( GDrawGetUserData(GGadgetGetWindow(g)));
+    }
+return( true );
+}
+
+static int hi_e_h(GWindow gw, GEvent *event) {
+    if ( event->type==et_close ) {
+	HI_DoCancel( GDrawGetUserData(gw));
+    } else if ( event->type==et_char ) {
+	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
+	    help("charinfo.html#Counters");
+return( true );
+	}
+return( false );
+    }
+return( true );
+}
+
+static void CI_AskCounters(CharInfo *ci,HintMask *old) {
+    HintMask *cur = old != NULL ? old : chunkalloc(sizeof(HintMask));
+    struct hi_data hi;
+    GWindowAttrs wattrs;
+    GGadgetCreateData hgcd[4];
+    GTextInfo hlabel[4];
+    GGadget *list = GWidgetGetControl(ci->gw,CID_List+600);
+    int j;
+    GRect pos;
+
+    memset(&hi,0,sizeof(hi));
+    hi.cur = cur;
+    hi.sc = ci->sc;
+
+	memset(&wattrs,0,sizeof(wattrs));
+	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+	wattrs.event_masks = ~(1<<et_charup);
+	wattrs.restrict_input_to_me = 1;
+	wattrs.undercursor = 1;
+	wattrs.cursor = ct_pointer;
+	wattrs.window_title = GStringGetResource(old==NULL?_STR_NewCounterMask:_STR_EditCounterMask,NULL);
+	wattrs.is_dlg = true;
+	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,HI_Width));
+	pos.height = GDrawPointsToPixels(NULL,HI_Height);
+	hi.gw = GDrawCreateTopWindow(NULL,&pos,hi_e_h,&hi,&wattrs);
+
+
+	memset(hgcd,0,sizeof(hgcd));
+	memset(hlabel,0,sizeof(hlabel));
+
+	j=0;
+	hgcd[j].gd.pos.x = 5; hgcd[j].gd.pos.y = 5;
+	hgcd[j].gd.pos.width = HI_Width-10; hgcd[j].gd.pos.height = HI_Height-45;
+	hgcd[j].gd.flags = gg_visible | gg_enabled | gg_list_multiplesel;
+	hgcd[j].gd.cid = CID_HintMask;
+	hgcd[j].gd.u.list = SCHintList(ci->sc,old);
+	hgcd[j].gd.handle_controlevent = HI_HintSel;
+	hgcd[j++].creator = GListCreate;
+
+	hgcd[j].gd.pos.x = 20-3; hgcd[j].gd.pos.y = HI_Height-31-3;
+	hgcd[j].gd.pos.width = -1; hgcd[j].gd.pos.height = 0;
+	hgcd[j].gd.flags = gg_visible | gg_enabled | gg_but_default;
+	hlabel[j].text = (unichar_t *) _STR_OK;
+	hlabel[j].text_in_resource = true;
+	hgcd[j].gd.label = &hlabel[j];
+	hgcd[j].gd.handle_controlevent = HI_Ok;
+	hgcd[j++].creator = GButtonCreate;
+
+	hgcd[j].gd.pos.x = -20; hgcd[j].gd.pos.y = HI_Height-31;
+	hgcd[j].gd.pos.width = -1; hgcd[j].gd.pos.height = 0;
+	hgcd[j].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+	hlabel[j].text = (unichar_t *) _STR_Cancel;
+	hlabel[j].text_in_resource = true;
+	hgcd[j].gd.label = &hlabel[j];
+	hgcd[j].gd.handle_controlevent = HI_Cancel;
+	hgcd[j++].creator = GButtonCreate;
+
+	GGadgetsCreate(hi.gw,hgcd);
+	GTextInfoListFree(hgcd[0].gd.u.list);
+
+	PI_ShowHints(hi.sc,hgcd[0].ret,true);
+
+    GDrawSetVisible(hi.gw,true);
+    while ( !hi.done )
+	GDrawProcessOneEvent(NULL);
+    GDrawDestroyWindow(hi.gw);
+
+    if ( !hi.ok ) {
+	if ( old==NULL ) chunkfree(cur,sizeof(HintMask));
+return;		/* Cancelled */
+    } else if ( old==NULL && hi.empty ) {
+	if ( old==NULL ) chunkfree(cur,sizeof(HintMask));
+return;		/* Didn't add anything new */
+    } else if ( old==NULL ) {
+	GListAddStr(list,CounterMaskLine(hi.sc,cur),cur);
+return;
+    } else if ( !hi.empty ) {
+	GListReplaceStr(list,GGadgetGetFirstListSelectedItem(list),
+		CounterMaskLine(hi.sc,cur),cur);
+return;
+    } else {
+	GListDelSelected(list);
+	chunkfree(cur,sizeof(HintMask));
+    }
+}
+
 static int LigCheck(SplineChar *sc,enum possub_type type,
 	uint32 tag, unichar_t *components) {
     int i;
@@ -3061,6 +3255,11 @@ static void CI_DoNew(CharInfo *ci, unichar_t *def) {
     sel = GTabSetGetSel(GWidgetGetControl(ci->gw,CID_Tabs))-2;
     flags = PSTDefaultFlags(sel+1,ci->sc);
 
+    if ( sel==7 ) {
+	CI_AskCounters(ci,NULL);
+return;
+    }
+
     newname = sel<=1 
 	    ? AskPosTag(newstrings[sel],def,0,flags,-1,sel+1,ci->sc->parent,ci->sc)
 	    : AskNameTag(newstrings[sel],def,0,flags,-1,sel+1,ci->sc->parent,ci->sc,-1,-1);
@@ -3161,6 +3360,10 @@ static int CI_Delete(GGadget *g, GEvent *e) {
 	    ++j;
 	}
 	new[j] = gcalloc(1,sizeof(GTextInfo));
+	if ( offset==600 ) {
+	    for ( i=0; i<len; ++i ) if ( old[i]->selected )
+		chunkfree(old[i]->userdata,sizeof(HintMask));
+	}
 	GGadgetSetList(list,new,false);
 	GGadgetSetEnabled(GWidgetGetControl(GGadgetGetWindow(g),CID_Delete+offset),false);
 	GGadgetSetEnabled(GWidgetGetControl(GGadgetGetWindow(g),CID_Edit+offset),false);
@@ -3179,9 +3382,14 @@ static int CI_Edit(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	ci = GDrawGetUserData(GGadgetGetWindow(g));
 	sel = GTabSetGetSel(GWidgetGetControl(ci->gw,CID_Tabs))-2;
+	if ( sel==7 ) sel=6;
 	list = GWidgetGetControl(GGadgetGetWindow(g),CID_List+sel*100);
 	if ( (ti = GGadgetGetListItemSelected(list))==NULL )
 return( true );
+	if ( sel==6 ) {
+	    CI_AskCounters(ci,ti->userdata);
+return(true);
+	}
 	newname = sel<=1 
 		? AskPosTag(editstrings[sel],ti->text,0,0,0,sel+1,ci->sc->parent,ci->sc)
 		: AskNameTag(editstrings[sel],ti->text,0,0,0,sel+1,ci->sc->parent,ci->sc,-1,-1);
@@ -3789,6 +3997,26 @@ return(false);
 return( true );
 }
 
+static void CI_ParseCounters(CharInfo *ci) {
+    int32 i,len;
+    GTextInfo **ti = GGadgetGetList(GWidgetGetControl(ci->gw,CID_List+600),&len);
+    SplineChar *sc = ci->sc;
+
+    free(sc->countermasks);
+
+    sc->countermask_cnt = len;
+    if ( len==0 )
+	sc->countermasks = NULL;
+    else {
+	sc->countermasks = galloc(len*sizeof(HintMask));
+	for ( i=0; i<len; ++i ) {
+	    memcpy(sc->countermasks[i],ti[i]->userdata,sizeof(HintMask));
+	    chunkfree(ti[i]->userdata,sizeof(HintMask));
+	    ti[i]->userdata = NULL;
+	}
+    }
+}
+
 static int _CI_OK(CharInfo *ci) {
     int val;
     int ret, refresh_fvdi=0;
@@ -3828,6 +4056,7 @@ return( false );
 		    GDrawRequestExpose(fvs->v,NULL,false);	/* Redraw info area just in case this char is selected */
 	    }
 	}
+	CI_ParseCounters(ci);
     }
     if ( ret )
 	ci->sc->parent->changed = true;
@@ -4706,7 +4935,7 @@ static void CIFillup(CharInfo *ci) {
     unichar_t ubuf[200];
     const unichar_t *bits;
     int i,j;
-    GTextInfo **arrays[pst_max];
+    GTextInfo **arrays[pst_max], **ti;
     int cnts[pst_max];
     PST *pst;
 
@@ -4824,6 +5053,17 @@ static void CIFillup(CharInfo *ci) {
 	    GGadgetSelectOneListItem(GWidgetGetControl(ci->gw,CID_Color),i);
     }
     ci->first = sc->comment==NULL;
+
+    ti = galloc((sc->countermask_cnt+1)*sizeof(GTextInfo *));
+    ti[sc->countermask_cnt] = gcalloc(1,sizeof(GTextInfo));
+    for ( i=0; i<sc->countermask_cnt; ++i ) {
+	ti[i] = gcalloc(1,sizeof(GTextInfo));
+	ti[i]->text = CounterMaskLine(sc,&sc->countermasks[i]);
+	ti[i]->fg = ti[i]->bg = COLOR_DEFAULT;
+	ti[i]->userdata = chunkalloc(sizeof(HintMask));
+	memcpy(ti[i]->userdata,sc->countermasks[i],sizeof(HintMask));
+    }
+    GGadgetSetList(GWidgetGetControl(ci->gw,CID_List+600),ti,false);
 }
 
 static int CI_NextPrev(GGadget *g, GEvent *e) {
@@ -4849,10 +5089,19 @@ return( true );
 return( true );
 }
 
+static void CI_DoCancel(CharInfo *ci) {
+    int32 i,len;
+    GTextInfo **ti = GGadgetGetList(GWidgetGetControl(ci->gw,CID_List+600),&len);
+
+    for ( i=0; i<len; ++i )
+	chunkfree(ti[i]->userdata,sizeof(HintMask));
+    CI_Finish(ci);
+}
+
 static int CI_Cancel(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	CharInfo *ci = GDrawGetUserData(GGadgetGetWindow(g));
-	CI_Finish(ci);
+	CI_DoCancel(ci);
     }
 return( true );
 }
@@ -4860,7 +5109,7 @@ return( true );
 static int ci_e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
 	CharInfo *ci = GDrawGetUserData(gw);
-	CI_Finish(ci);
+	CI_DoCancel(ci);
     } else if ( event->type==et_char ) {
 	CharInfo *ci = GDrawGetUserData(gw);
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
@@ -4874,7 +5123,7 @@ return( true );
 return( true );
 	} else if ( event->u.chr.keysym=='q' && (event->u.chr.state&ksm_control)) {
 	    if ( event->u.chr.state&ksm_shift )
-		CI_Finish(ci);
+		CI_DoCancel(ci);
 	    else
 		MenuExit(NULL,NULL,NULL);
 	}
@@ -4897,10 +5146,10 @@ void SCCharInfo(SplineChar *sc) {
     CharInfo *ci;
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData ugcd[12], cgcd[6], psgcd[6][7], cogcd[3], mgcd[9];
-    GTextInfo ulabel[12], clabel[6], pslabel[6][6], colabel[3], mlabel[9];
+    GGadgetCreateData ugcd[12], cgcd[6], psgcd[7][7], cogcd[3], mgcd[9];
+    GTextInfo ulabel[12], clabel[6], pslabel[7][6], colabel[3], mlabel[9];
     int i;
-    GTabInfo aspects[11];
+    GTabInfo aspects[12];
     static GBox smallbox = { bt_raised, bs_rect, 2, 1, 0, 0, 0,0,0,0, COLOR_DEFAULT,COLOR_DEFAULT };
     static int boxset=0;
     FontRequest rq;
@@ -5055,12 +5304,11 @@ return;
 	memset(&psgcd,0,sizeof(psgcd));
 	memset(&pslabel,0,sizeof(pslabel));
 
-	for ( i=0; i<6; ++i ) {
+	for ( i=0; i<7; ++i ) {
 	    psgcd[i][0].gd.pos.x = 5; psgcd[i][0].gd.pos.y = 5;
 	    psgcd[i][0].gd.pos.width = CI_Width-28; psgcd[i][0].gd.pos.height = 7*12+10;
 	    psgcd[i][0].gd.flags = gg_visible | gg_enabled | gg_list_alphabetic | gg_list_multiplesel;
 	    psgcd[i][0].gd.cid = CID_List+i*100;
-	    /*psgcd[i][0].gd.u.list = pst_tags[i];*/	/* Hunh? what was I thinking? */
 	    psgcd[i][0].gd.handle_controlevent = CI_SelChanged;
 	    psgcd[i][0].gd.box = &smallbox;
 	    psgcd[i][0].creator = GListCreate;
@@ -5120,6 +5368,7 @@ return;
 	    psgcd[i][5].gd.box = &smallbox;
 	    psgcd[i][5].creator = GButtonCreate;
 	}
+	psgcd[6][4].gd.flags = psgcd[6][5].gd.flags = 0;	/* No copy, paste for hint masks */
 
 	memset(&cogcd,0,sizeof(cogcd));
 	memset(&colabel,0,sizeof(colabel));
@@ -5181,6 +5430,10 @@ return;
 	aspects[i].text = (unichar_t *) _STR_Components;
 	aspects[i].text_in_resource = true;
 	aspects[i++].gcd = cogcd;
+
+	aspects[i].text = (unichar_t *) _STR_Counters;
+	aspects[i].text_in_resource = true;
+	aspects[i++].gcd = psgcd[6];
 
 	mgcd[0].gd.pos.x = 4; mgcd[0].gd.pos.y = 6;
 	mgcd[0].gd.pos.width = CI_Width-10;

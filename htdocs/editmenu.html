@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 18-Jul-2003 -->
+  <!-- AP: Last modified: 30-Jan-2004 -->
   <TITLE>The Edit Menu</TITLE>
 </HEAD>
 <BODY>
@@ -59,6 +59,8 @@ in text fields.
       <LI>
 	<A HREF="#FirstPt">First Point</A>
       <LI>
+	<A HREF="#NextContour">First Point, Next Contour</A>
+      <LI>
 	<A HREF="#NextP">Next Point</A>
       <LI>
 	<A HREF="#PrevP">Prev Point</A>
@@ -66,6 +68,12 @@ in text fields.
 	<A HREF="#NextCP">Next Control Point</A>
       <LI>
 	<A HREF="#PrevCP">Prev Control Point</A>
+      <LI>
+	<A HREF="#Contours">Contours</A>
+      <LI>
+	<A HREF="#SelectPoints">Select All Points &amp; Refs</A>
+      <LI>
+	<A HREF="#SelectAnchors">Select Anchors</A>
       <LI>
 	<A HREF="#SelWidth">(De)Select Width</A>
       <LI>
@@ -337,6 +345,11 @@ view this menu will be disabled when one of the text fields has the focus.
 	Deselects everything and then selects the first point on the first path of
 	the character.
       <DT>
+	First Point, <A NAME="NextContour">Next Contour</A>
+      <DD>
+	Deselects everything and then selects the first point on the next contour.
+	(If the last contour is selected then deselects everything).
+      <DT>
 	<A NAME="NextP">Next</A> Point
       <DD>
 	Deselects the current point and selects the next point.
@@ -352,6 +365,19 @@ view this menu will be disabled when one of the text fields has the focus.
 	<A NAME="PrevCP">Prev</A> Control Point
       <DD>
 	Selects the "Prev Control Point" of the current point.
+      <DT>
+	<A NAME="Contours">Contours</A>
+      <DD>
+	If a contour contains any selected points, then select all points on the
+	contour.
+      <DT>
+	<A NAME="SelectPoints">Select</A> All Points &amp; Refs
+      <DD>
+	Just like select all, but it doesn't select anchor points or the width lines.
+      <DT>
+	<A NAME="SelectAnchors">Select</A> Anchors
+      <DD>
+	Select all the Anchor points in the glyph.
       <DT>
 	(De)<A NAME="SelWidth">Select</A> Width
       <DD>

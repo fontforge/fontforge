@@ -54,7 +54,6 @@ uint32 SFGenerateNewFeatureTag(struct gentagtype *gentags,enum possub_type type,
 	}
     }
     for ( i=0; i<gentags->tt_cur && gentags->tagtype[i].type!=pst_null; ++i );
-    if ( i==gentags->tt_cur ) ++gentags->tt_cur;
     if ( suggested_tag==0 ) {
 	sprintf(buf, i<1000 ? "G%03d" : "%04d", i );
 	gentags->tagtype[i].type = type;
@@ -75,6 +74,7 @@ uint32 SFGenerateNewFeatureTag(struct gentagtype *gentags,enum possub_type type,
 	gentags->tagtype[i].type = type;
 	gentags->tagtype[i].tag = suggested_tag;
     }
+    if ( i==gentags->tt_cur ) ++gentags->tt_cur;
 return( gentags->tagtype[i].tag );
 }
 

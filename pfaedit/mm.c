@@ -261,6 +261,32 @@ return( false );
 return( true );
 }
 
+static int ContourHintMaskMatch(SplineChar *sc1, SplineChar *sc2) {
+    SplineSet *spl1, *spl2;
+    SplinePoint *sp1, *sp2;
+
+    for ( spl1=sc1->splines, spl2=sc2->splines; spl1!=NULL && spl2!=NULL; spl1=spl1->next, spl2=spl2->next ) {
+	for ( sp1=spl1->first, sp2 = spl2->first; ; ) {
+	    if ( (sp1->hintmask==NULL)!=(sp2->hintmask==NULL) )
+return( false );
+	    if ( sp1->hintmask!=NULL && memcmp(sp1->hintmask,sp2->hintmask,sizeof(HintMask))!=0 )
+return( false );
+	    if ( sp1->next==NULL || sp2->next==NULL ) {
+		if ( sp1->next==NULL && sp2->next==NULL )
+	break;
+return( false );
+	    }
+	    sp1 = sp1->next->to; sp2 = sp2->next->to;
+	    if ( sp1==spl1->first || sp2==spl2->first ) {
+		if ( sp1==spl1->first && sp2==spl2->first )
+	break;
+return( false );
+	    }
+	}
+    }
+return( true );
+}
+
 static int RefMatch(SplineChar *sc1, SplineChar *sc2) {
     RefChar *ref1, *ref2;
     /* I don't require the reference list to be ordered */
@@ -306,14 +332,16 @@ SplineChar *SCMostConflictsMM(MMSet *mm,int enc, int ishor, int *index) {
 return( most );
 }
 
-static int HintsMatch(StemInfo *most,StemInfo *h2) {
-    while ( most!=NULL && h2!=NULL ) {
-	if ( !most->hasconflicts && h2->hasconflicts )
+static int HintsMatch(StemInfo *h1,StemInfo *h2) {
+    while ( h1!=NULL && h2!=NULL ) {
+#if 0		/* Nope. May conflict in one instance and not in another */
+	if ( h1->hasconflicts != h2->hasconflicts )
 return( false );
-	most = most->next;
+#endif
+	h1 = h1->next;
 	h2 = h2->next;
     }
-    if ( most!=NULL || h2!=NULL )
+    if ( h1!=NULL || h2!=NULL )
 return( false );
 
 return( true );
@@ -361,11 +389,10 @@ return( 0 );
 return( cnt );
 }
 
-int MMValid(MMSet *mm,int complain,int fullcheck) {
+int MMValid(MMSet *mm,int complain) {
     int i, j;
     SplineFont *sf;
     static char *arrnames[] = { "BlueValues", "OtherBlues", "FamilyBlues", "FamilyOtherBlues", "StdHW", "StdVW", "StemSnapH", "StemSnapV", NULL };
-    SplineChar *mostconflictedh, *mostconflictedv;
 
     if ( mm==NULL )
 return( false );
@@ -455,7 +482,7 @@ return( false );
 				sf->chars[i]->name,sf->fontname, mm->instances[j]->fontname);
 		    }
 return( false );
-		} else if ( fullcheck && !KernsMatch(sf->chars[i],mm->instances[j]->chars[i])) {
+		} else if ( !KernsMatch(sf->chars[i],mm->instances[j]->chars[i])) {
 		    if ( complain ) {
 			FVChangeChar(sf->fv,i);
 			GWidgetErrorR(_STR_BadMM,_STR_MMMismatchKerns,
@@ -464,25 +491,31 @@ return( false );
 return( false );
 		}
 	    }
-	    if ( fullcheck ) {
-		mostconflictedh = SCMostConflictsMM(mm,i,true,NULL);
-		mostconflictedv = SCMostConflictsMM(mm,i,false,NULL);
-		for ( j=0; j<mm->instance_count; ++j ) {
-		    if ( !HintsMatch(mostconflictedh->hstem,mm->instances[j]->chars[i]->hstem)) {
-			if ( complain ) {
-			    FVChangeChar(sf->fv,i);
-			    GWidgetErrorR(_STR_BadMM,_STR_MMMismatchHints,
-				    "horizontal", sf->chars[i]->name,sf->fontname, mm->instances[j]->fontname);
-			}
-return( false );
-		    } else if ( !HintsMatch(mostconflictedv->vstem,mm->instances[j]->chars[i]->vstem)) {
-			if ( complain ) {
-			    FVChangeChar(sf->fv,i);
-			    GWidgetErrorR(_STR_BadMM,_STR_MMMismatchHints,
-				    "vertical", sf->chars[i]->name,sf->fontname, mm->instances[j]->fontname);
-			}
-return( false );
+	    for ( j=1; j<mm->instance_count; ++j ) {
+		if ( !HintsMatch(sf->chars[i]->hstem,mm->instances[j]->chars[i]->hstem)) {
+		    if ( complain ) {
+			FVChangeChar(sf->fv,i);
+			GWidgetErrorR(_STR_BadMM,_STR_MMMismatchHints,
+				"horizontal", sf->chars[i]->name,sf->fontname, mm->instances[j]->fontname);
 		    }
+return( false );
+		} else if ( !HintsMatch(sf->chars[i]->vstem,mm->instances[j]->chars[i]->vstem)) {
+		    if ( complain ) {
+			FVChangeChar(sf->fv,i);
+			GWidgetErrorR(_STR_BadMM,_STR_MMMismatchHints,
+				"vertical", sf->chars[i]->name,sf->fontname, mm->instances[j]->fontname);
+		    }
+return( false );
+		}
+	    }
+	    for ( j=1; j<mm->instance_count; ++j ) {
+		if ( !ContourHintMaskMatch(sf->chars[i],mm->instances[j]->chars[i])) {
+		    if ( complain ) {
+			FVChangeChar(sf->fv,i);
+			GWidgetErrorR(_STR_BadMM,_STR_MMMismatchHintMask,
+				sf->chars[i]->name,sf->fontname, mm->instances[j]->fontname);
+		    }
+return( false );
 		}
 	    }
 	}
@@ -491,3 +524,4 @@ return( false );
 	GWidgetPostNoticeR(_STR_OK,_STR_NoProblems);
 return( true );
 }
+
