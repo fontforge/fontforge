@@ -365,7 +365,7 @@ typedef struct splinechar {
 				/*  Or an otf font where it is the subr number of a refered character */
 			        /*  or a ttf font with vert metrics where it is the ymax value */
 				/* Always a temporary value */
-    int16 ttf_glyph;		/* only used when writing out a ttf or otf font */
+    int ttf_glyph;		/* only used when writing out a ttf or otf font */
     SplinePointList *splines;
     StemInfo *hstem;		/* hstem hints have a vertical offset but run horizontally */
     StemInfo *vstem;		/* vstem hints have a horizontal offset but run vertically */
@@ -502,7 +502,7 @@ extern struct pschars *CID2Chrs2(SplineFont *cidmaster,struct fd2data *fds);
 enum fontformat { ff_pfa, ff_pfb, ff_pfbmacbin, ff_ptype3, ff_ptype0, ff_cid,
 	ff_ttf, ff_ttfsym, ff_ttfmacbin, ff_ttfdfont, ff_otf, ff_otfdfont,
 	ff_otfcid, ff_otfciddfont, ff_none };
-enum bitmapformat { bf_bdf, bf_ttf_ms, bf_ttf_apple, bf_gdf, bf_nfntmacbin, bf_nfntdfont, bf_none };
+enum bitmapformat { bf_bdf, bf_ttf_ms, bf_ttf_apple, bf_sfnt_dfont, bf_gdf, bf_nfntmacbin, bf_nfntdfont, bf_none };
 extern int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format);
 extern int WritePSFont(char *fontname,SplineFont *sf,enum fontformat format);
 extern int WriteMacPSFont(char *fontname,SplineFont *sf,enum fontformat format);
@@ -663,6 +663,7 @@ extern void SplineFontAutoHint( SplineFont *sf);
 extern StemInfo *HintCleanup(StemInfo *stem,int dosort);
 extern int SplineFontIsFlexible(SplineFont *sf);
 extern int SCWorthOutputting(SplineChar *sc);
+extern int IsntBDFChar(BDFChar *bdfc);
 extern int CIDWorthOutputting(SplineFont *cidmaster, int enc); /* Returns -1 on failure, font number on success */
 extern int AfmSplineFont(FILE *afm, SplineFont *sf,int formattype);
 extern int PfmSplineFont(FILE *pfm, SplineFont *sf,int type0);

@@ -939,6 +939,7 @@ static char *str_EncodingNotInFont = "Encoding value not in font";
 static char *str_EncodingValueNotInFont = "Encoding value (%x) not in font, ignored";
 static char *str_Image = "Image";
 static char *str_Template = "Image Template";
+static char *str_EPSTemplate = "EPS Template";
 static char *str_AsBackground = "As Background";
 static char *str_OnlyOneFont = "Only One Font";
 static char *str_OnlyOneFontBackground = "Only one font may be imported into the background";

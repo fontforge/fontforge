@@ -1273,8 +1273,7 @@ return( false );
 	    /* skip */;
 	else if ( (target==NULL && !infont(sc,table,tlen,item,used)) ||
 		  (target!=NULL && !intarget(sc,target) ) ) {
-	    if ( sc->splines==NULL && sc->refs==NULL && sc->dependents==NULL
-		    /*&& sc->width==sf->ascent+sf->descent*/ ) {
+	    if ( sc->splines==NULL && sc->refs==NULL && sc->dependents==NULL && !sc->widthset ) {
 		RemoveSplineChar(sf,i);
 	    } else
 		++extras;

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 5-Feb-2002 -->
+  <!-- AP: Last modified: 7-Feb-2002 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -242,6 +242,31 @@ up into one <A HREF="pfaedit_htdocs-011116.tgz">tgz file</A> 16-Nov-2001.
 </H2>
 <UL>
   <LI>
+    7-Feb-2002
+    <UL>
+      <LI>
+	I think I've figured out how Apple does asian bitmaps now. They don't use
+	NFNTs at all (or they do, but those NFNT are tiny stubs with no real data
+	in them). All the data are in the sfnt. I should produce them properly
+	now.<BR>
+	-- Except I don't.
+      <LI>
+	I've also added the ability to create bitmap only sfnts for the mac.<BR>
+	-- Which also isn't recognized by the mac.
+      <LI>
+	Made it possible for scripts to generate bitmaps without generating an outline
+	font
+      <LI>
+	Fixed some problems loading bitmaps from ttf files.
+      <LI>
+	Fixed some problems loading bitmaps from anything...
+      <LI>
+	Allowed importation of eps files from the font view (to the extent that I
+	can parse eps files, that is)
+      <LI>
+	Oops, scripting didn't support importation of pcf files.
+    </UL>
+  <LI>
     5-Feb-2002
     <UL>
       <LI>
@@ -253,6 +278,8 @@ up into one <A HREF="pfaedit_htdocs-011116.tgz">tgz file</A> 16-Nov-2001.
 	Started work on 32 bit unicode.
       <LI>
 	Oops. Scripting handled the caligraphic pen angle incorrectly.
+      <LI>
+	Put something into the about box.
     </UL>
   <LI>
     4-Feb-2002
@@ -638,167 +665,6 @@ up into one <A HREF="pfaedit_htdocs-011116.tgz">tgz file</A> 16-Nov-2001.
 	was button2)
     </UL>
   <LI>
-    2 Jan 2002
-    <UL>
-      <LI>
-	Copy From has been made global and sticky (each font used to have a seperate
-	value and it got lost on exit. Now there is one global value and it is saved
-	in the prefs file).
-      <LI>
-	Copy From now allows you to control whether a character's name should be
-	copied along with the glyph data (only in font view).
-      <LI>
-	View-&gt;Fill should now show the current setting.
-      <LI>
-	If there were background images in a glyph then changing the Show/Hide rulers
-	made the display wrong
-      <LI>
-	In the Outline view, the character's popup box would appear if the mouse
-	were over the menubar. Werner thought that inappropriate.
-      <LI>
-	If import bitmaps needed to expand the number of characters in a font (to
-	provide slots for all the bitmaps) it would fail to do so properly. Resulting
-	in a crash.
-      <LI>
-	Hmm. There appears to be a race condition inside the XServer on my machine
-	and if I map a window but destroy it before I read the MapNotify (or possibly
-	Expose) event on the queue, then the server will calmly crash. This can happen
-	if a progress indicator is ended just after we decide to display it. I've
-	tried to work around it, but there may still be holes.
-      <LI>
-	Added an "About..." menu entry to display the splash screen again
-      <LI>
-	Gleep! type1 cid font generation had a couple of problems
-      <LI>
-	Print Sample is now available for cid fonts.
-      <LI>
-	View-AntiAlias didn't work (characters were always displayed as antialiased)
-      <LI>
-	Menus made more responsive to key presses.
-      <LI>
-	The Zoom In and Out commands are now centered around the selection (if there
-	is one, if not they continue to use center of the window)
-      <LI>
-	Changed the order of entries in the Point Info dlg so that Prev is above
-	Next
-      <LI>
-	The Escape key can be used to deselect
-      <LI>
-	New copyright notices.
-    </UL>
-  <LI>
-    29-Dec-2001
-    <UL>
-      <LI>
-	TextFields had numerous display problems. Should have fewer now.
-      <LI>
-	The 15 Dec image crash fix was not complete, turns out there were two memory
-	problems (well, two so far)
-      <LI>
-	Some dialogs could show up half off the right edge of the screen. Should
-	not do so now.
-      <LI>
-	Added a few more language samples for printing.
-      <LI>
-	Bidi display didn't work when there were lots of combining letters around
-      <LI>
-	Bidi printing didn't work when there was more than one line of right to left
-	text
-      <LI>
-	Typing control characters to the fontview will no longer move to that character.
-	<UL>
-	  <LI>
-	    Typing [Return] opens selected characters
-	  <LI>
-	    Typing [Tab] moves to next character with something in it.
-	</UL>
-      <LI>
-	Depressing the right mouse button invokes a popup menu in the fontview now.
-      <LI>
-	Trying to move a control point with the mouse while simultaniously moving
-	the point itself with the arrow keys used to cause a crash
-      <LI>
-	Selecting a bdf font which was in a bad format as a background caused a crash.
-    </UL>
-  <LI>
-    19-Dec-2001
-    <UL>
-      <LI>
-	The german ui file should be in better german
-      <LI>
-	pfaedit would not notice that an iso10646 bdf file was unicode
-      <LI>
-	Support for conversion to and from some 2 byte encodings (LocalCharset preference
-	item)
-      <LI>
-	sfd files store the font's encoding as a string rather than a number now
-	so if we add more standard encodings things won't get screwed up as they
-	were when we added johab.
-    </UL>
-  <LI>
-    18-Dec-2001
-    <UL>
-      <LI>
-	<FONT COLOR="Red"><STRONG>TrueType hints were terrible</STRONG></FONT>. I
-	fixed one huge bug. There are still problems with diagonals and the results
-	are not as nice as Fontographer's, but they are better.
-      <LI>
-	Some more greek fixes.
-      <LI>
-	Metrics window did not handle the transition from a left -&gt; right view
-	to a right-&gt;left one properly (mostly this means if you had a blank metrics
-	view and you put a hebrew/arabic character into it then that character was
-	displayed left to right).
-      <LI>
-	The transform dialog in the fontview now has a checkbox which allows you
-	to control whether you want the background transformed in sync with the
-	foreground.
-    </UL>
-  <LI>
-    17-Dec-2001
-    <UL>
-      <LI>
-	Fixed another bug with cid fonts, this one when attempting to create such
-	a font in the absence of cidmap files
-      <LI>
-	Fixed a bug when outputting otf cid files (bug appeared when I added vertical
-	metrics)
-      <LI>
-	When loading a cid font PfaEdit could get caught up in an semi-infinite loop
-	asking for cidmap files. Should be fixed now.
-      <LI>
-	Finally got rid of the annoying warning about tempnam() when linking.
-    </UL>
-  <LI>
-    16-Dec-2001
-    <UL>
-      <LI>
-	Scrollbars didn't always update in big textfields
-      <LI>
-	Missed the hot key for unlink reference in the font view.
-      <LI>
-	Fixed crash when clearing empty character cells
-      <LI>
-	More greek accent fixes
-      <LI>
-	changed character popups slightly.
-      <LI>
-	Added another problem to find problems. Will now check for flipped references
-	(=&gt;counter-clockwise paths most of the time)
-      <LI>
-	Interesting. The EuroFont uses the endchar opcode in way that both the type1
-	and type2 docs claim to be illegal (it is not the last thing in the subroutine,
-	it is followed by a return). Since EuroFont is from adobe, I presume the
-	docs are wrong, so I ignore this error now.
-      <LI>
-	PfaEdit will be better able to figure out where hints should be active when
-	it reads in a postscript font.
-      <LI>
-	Autohint will no longer find some erroneous hints.
-      <LI>
-	Autohint will now find the serifs in Nimbus Roman
-    </UL>
-  <LI>
     <A HREF="oldchangelog.html">Earlier Changes </A>
 </UL>
 <H2>
@@ -930,8 +796,8 @@ can.
       <LI>
 	Microsoft FON files (bitmap font resource files for windows)
       <LI>
-	And I can't find any description of how mac NFNT and FOND resources are extended
-	to handle double byte encodings.
+	And I can't find any description of how mac FOND resources are extended to
+	handle double byte encodings.
     </UL>
   <LI>
     There are certain c<EM>ommands which don't work very well </EM>and if someone
@@ -1193,14 +1059,20 @@ Other Encodings
     <UL>
       <LI>
 	<A HREF="http://www.gh.cs.su.oz.au/~matty/Spif/">spif</A> -- under development
+	(open source)
       <LI>
 	<A HREF="http://www.levien.com/gfonted/">gfonted</A> -- under development
+	(open source)
       <LI>
 	<A HREF="http://cgm.cs.mcgill.ca/~luc/editors.html">Luc Devroye's page of
-	links to font creation programs</A>
+	links to font creation programs</A> 
+	  <HR>
       <LI>
 	<A HREF="http://www.macromedia.com/software/fontographer/">Fontographer</A>
-	-- my favorite, but commercial, and no longer updated
+	-- my favorite, no longer updated (<STRONG>commercial</STRONG>)
+      <LI>
+	<A HREF="http://www.fontlab.com/">FontLab</A> -- Said to have really good
+	tools for hinting truetype. (<STRONG>commercial</STRONG>)
     </UL>
   <LI>
     MetaFont the original computer vector font editor &amp; other TeX utilities

@@ -2424,7 +2424,7 @@ struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
     chrs->values = galloc(cnt*sizeof(unsigned char *));
 
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
-	sf->chars[i]->ttf_glyph = 0;
+	sf->chars[i]->ttf_glyph = -1;
 /* only honour the width on .notdef in non-fixed pitch fonts (or ones where there is an actual outline in notdef) */
     if ( zero_is_notdef ) {
 	chrs->values[0] = SplineChar2PS2(sf->chars[0],&chrs->lens[0],nomwid,defwid,subrs,NULL);
@@ -2509,7 +2509,7 @@ struct pschars *CID2Chrs2(SplineFont *cidmaster,struct fd2data *fds) {
     for ( i=0; i<cidmaster->subfontcnt; ++i ) {
 	sf = cidmaster->subfonts[i];
 	for ( cid=0; cid<sf->charcnt; ++cid ) if ( sf->chars[cid]!=NULL )
-	    sf->chars[cid]->ttf_glyph = 0;
+	    sf->chars[cid]->ttf_glyph = -1;
     }
 
     for ( cid = cnt = 0; cid<max; ++cid ) {

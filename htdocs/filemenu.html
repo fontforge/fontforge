@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 10-Dec-2000 -->
-  <!-- AP: Last modified: 5-Feb-2002 -->
+  <!-- AP: Last modified: 7-Feb-2002 -->
   <TITLE>The File Menu</TITLE>
 </HEAD>
 <BODY>
@@ -233,6 +233,11 @@
 	In TTF (Apple) -- Store the bitmap fonts inside the ttf file using the apple
 	tables (I wish they were consistent!)
       <LI>
+	In sfnt (dfont) -- Only available if no outline font is generated. Apple
+	allows bitmaps to be stored within a truetype file (sfnt) even if there is
+	no outline font. So this generates a ttf file that just contains bitmaps
+	and wraps it up in a dfont.
+      <LI>
 	NFNT (MacBin) -- Converts the bitmap fonts into Macintosh NFNT resources
 	and wraps them up in a mac binary file.
       <LI>
@@ -307,9 +312,14 @@
     or "cid*" are handled similarly except that they specify the current encoding
     (and the number must be in decimal rather than hex).
     <P>
+    Finally you may load an encapsulated postscript file (or rather the sub-set
+    of postscript that PfaEdit understands) into the foreground of characters.
+    As with images above this may either import depending on the selection or
+    a template.
+    <P>
     In the Outline View this allows you to import an image into the background,
-    or import encapsulated postscript or fig files into the foreground (the xfig
-    conversion is really bad).
+    or import eps or fig files into the foreground (the xfig conversion is really
+    bad, the eps conversion is very limitted).
     <P>
     In the Bitmap View this allows you to import a bitmap image into the character.
     <P>

@@ -70,6 +70,7 @@ static GTextInfo bitmaptypes[] = {
     { (unichar_t *) "BDF", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "In TTF (MS)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "In TTF (Apple)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) "In sfnt (dfont)", NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "GDF", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "NFNT (MacBin)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "NFNT (dfont)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
@@ -216,14 +217,15 @@ static int _DoSave(SplineFont *sf,char *newname,real *sizes) {
 
     path = uc_copy(newname);
     GProgressStartIndicator(10,GStringGetResource(_STR_SavingFont,NULL),
-		GStringGetResource(oldformatstate==ff_ttf || oldformatstate==ff_ttfsym?_STR_SavingTTFont:
-		 (oldformatstate==ff_otf || oldformatstate==ff_otfdfont) ?_STR_SavingOpenTypeFont:
+		GStringGetResource(oldformatstate==ff_ttf || oldformatstate==ff_ttfsym ||
+		     oldformatstate==ff_ttfmacbin ?_STR_SavingTTFont:
+		 oldformatstate==ff_otf || oldformatstate==ff_otfdfont ?_STR_SavingOpenTypeFont:
 		 oldformatstate==ff_cid || oldformatstate==ff_otfcid || oldformatstate==ff_otfciddfont ?_STR_SavingCIDFont:
 		 _STR_SavingPSFont,NULL),
 	    path,sf->charcnt,1);
     free(path);
     GProgressEnableStop(false);
-    if ( oldformatstate!=ff_none ) {
+    if ( oldformatstate!=ff_none || oldbitmapstate==bf_sfnt_dfont ) {
 	int oerr = 0;
 	switch ( oldformatstate ) {
 	  case ff_pfa: case ff_pfb: case ff_ptype3: case ff_ptype0: case ff_cid:
@@ -236,6 +238,7 @@ static int _DoSave(SplineFont *sf,char *newname,real *sizes) {
 	    oerr = !WriteMacPSFont(newname,sf,oldformatstate);
 	  break;
 	  case ff_ttfmacbin: case ff_ttfdfont: case ff_otfdfont: case ff_otfciddfont:
+	  case ff_none:		/* only if bitmaps, an sfnt wrapper for bitmaps */
 	    oerr = !WriteMacTTFFont(newname,sf,oldformatstate,sizes,
 		    oldbitmapstate);
 	  break;
@@ -278,14 +281,23 @@ return( err );
 
 int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype) {
     int i;
-    static char *bitmaps[] = {"bdf", "ms", "apple", "gdf", "bin", "dfont", NULL };
+    static char *bitmaps[] = {"bdf", "ms", "apple", "sfnt", "gdf", "bin", "dfont", NULL };
     real *sizes=NULL;
 
     for ( i=0; extensions[i]!=NULL; ++i ) {
 	if ( strmatch(filename+strlen(filename)-strlen(extensions[i]),extensions[i])==0 )
     break;
     }
-    if ( extensions[i]==NULL ) i = ff_pfb;
+    if ( extensions[i]==NULL ) {
+	for ( i=0; bitmaps[i]!=NULL; ++i ) {
+	    if ( strmatch(filename+strlen(filename)-strlen(bitmaps[i]),bitmaps[i])==0 )
+	break;
+	}
+	if ( bitmaps[i]==NULL )
+	    i = ff_pfb;
+	else
+	    i = ff_none;
+    }
     if ( i==ff_ptype3 && sf->encoding_name>=em_first2byte && sf->encoding_name<=em_unicode4 )
 	i = ff_ptype0;
     else if ( i==ff_ttfdfont && strmatch(filename-strlen(".otf.dfont"),".otf.dfont")==0 )
@@ -303,6 +315,8 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype) {
     break;
     }
     oldbitmapstate = i;
+    if ( i==bf_sfnt_dfont )
+	oldformatstate = ff_none;
 
     oldafmstate = true;
     if ( oldformatstate==ff_ttf || oldformatstate==ff_ttfsym || oldformatstate==ff_otf ||
@@ -346,7 +360,7 @@ return;
     }
     if ( d->sf->encoding_name>=em_base )
 	for ( item=enclist; item!=NULL && item->enc_num!=d->sf->encoding_name; item=item->next );
-    if ( (oldformatstate<ff_ptype0 || oldformatstate==ff_ttfmacbin) &&
+    if ( oldformatstate<ff_ptype0 &&
 	    ((d->sf->encoding_name>=em_first2byte && d->sf->encoding_name<em_base) ||
 	     (d->sf->encoding_name>=em_base && (item==NULL || item->char_cnt>256))) ) {
 	static int buts[3] = { _STR_Yes, _STR_Cancel, 0 };
@@ -484,8 +498,13 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 	if ( !set )				/* Don't default to generating pfms */
 	    GGadgetSetChecked(d->dopfm,set);
 
-	if ( format==ff_none )
+	list = GGadgetGetList(d->bmptype,&len);
+	temp = d->sf->cidmaster ? d->sf->cidmaster : d->sf;
+	if ( format==ff_none ) {
+	    if ( temp->bitmaps!=NULL )
+		list[bf_sfnt_dfont]->disabled = false;
 return( true );
+	}
 
 	ret = GGadgetGetTitle(d->gfc);
 	dup = galloc((u_strlen(ret)+30)*sizeof(unichar_t));
@@ -514,29 +533,56 @@ return( true );
 	}
 
 	bf = GGadgetGetFirstListSelectedItem(d->bmptype);
-	list = GGadgetGetList(d->bmptype,&len);
-	temp = d->sf->cidmaster ? d->sf->cidmaster : d->sf;
+	list[bf_sfnt_dfont]->disabled = true;
 	if ( temp->bitmaps==NULL )
 	    /* Don't worry about what formats are possible, they're disabled */;
 	else if ( set ) {
 	    /* If we're not in a ttf format (set) then we can't output ttf bitmaps */
-	    if ( bf==bf_ttf_ms || bf==bf_ttf_apple )
+	    if ( bf==bf_ttf_ms || bf==bf_ttf_apple ||
+		    bf==bf_nfntmacbin || bf==bf_nfntdfont )
 		GGadgetSelectOneListItem(d->bmptype,bf_bdf);
+	    if ( format==ff_pfbmacbin )
+		GGadgetSelectOneListItem(d->bmptype,bf_nfntmacbin);
+	    else if ( bf==bf_nfntmacbin || bf==bf_nfntdfont )
 	    list[bf_ttf_ms]->disabled = true;
 	    list[bf_ttf_apple]->disabled = true;
 	} else {
 	    list[bf_ttf_ms]->disabled = false;
 	    list[bf_ttf_apple]->disabled = false;
+	    if ( format==ff_ttf || format==ff_ttfsym || format==ff_otf ||
+		    format==ff_otfcid )
+		GGadgetSelectOneListItem(d->bmptype,bf_ttf_ms);
+	    else
+		GGadgetSelectOneListItem(d->bmptype,bf_ttf_apple);
 	}
     }
 return( true );
 }
 
-static int GFD_Bitmap(GGadget *g, GEvent *e) {
+static int GFD_BitmapFormat(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
 	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
-	int bitmapstate = GGadgetGetFirstListSelectedItem(g);
-	GGadgetSetEnabled(d->bmpsizes,bitmapstate!=2);
+	unichar_t *pt, *dup, *tpt, *ret;
+	/*int format = GGadgetGetFirstListSelectedItem(d->pstype);*/
+	int bf = GGadgetGetFirstListSelectedItem(d->bmptype);
+
+	GGadgetSetEnabled(d->bmpsizes,bf!=bf_none);
+	if ( bf==bf_sfnt_dfont ) {
+	    ret = GGadgetGetTitle(d->gfc);
+	    dup = galloc((u_strlen(ret)+30)*sizeof(unichar_t));
+	    u_strcpy(dup,ret);
+	    free(ret);
+	    pt = u_strrchr(dup,'.');
+	    tpt = u_strrchr(dup,'/');
+	    if ( pt<tpt )
+		pt = NULL;
+	    if ( pt==NULL ) pt = dup+u_strlen(dup);
+	    if ( uc_strcmp(pt-4, ".ttf.bin" )==0 ) pt -= 4;
+	    if ( uc_strcmp(pt-4, ".otf.dfont" )==0 ) pt -= 4;
+	    uc_strcpy(pt,".dfont");
+	    GGadgetSetTitle(d->gfc,dup);
+	    free(dup);
+	}
     }
 return( true );
 }
@@ -703,12 +749,14 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
 	bitmaptypes[bf_bdf].disabled = true;
 	bitmaptypes[bf_ttf_ms].disabled = true;
 	bitmaptypes[bf_ttf_apple].disabled = true;
+	bitmaptypes[bf_sfnt_dfont].disabled = true;
 	bitmaptypes[bf_nfntmacbin].disabled = true;
 	bitmaptypes[bf_nfntdfont].disabled = true;
-    }
+    } else if ( ofs!=ff_none )
+	bitmaptypes[bf_sfnt_dfont].disabled = true;
     bitmaptypes[old].selected = true;
     gcd[8].gd.label = &bitmaptypes[old];
-    gcd[8].gd.handle_controlevent = GFD_Bitmap;
+    gcd[8].gd.handle_controlevent = GFD_BitmapFormat;
 
     gcd[9].gd.pos.x = gcd[8].gd.pos.x; gcd[9].gd.pos.y = 219; gcd[9].gd.pos.width = gcd[8].gd.pos.width;
     gcd[9].gd.flags = gg_visible | gg_enabled;

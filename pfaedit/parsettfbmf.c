@@ -114,6 +114,7 @@ return;
 	if ( info->chars[enc]==NULL ) {
 	    info->chars[enc] = chunkalloc(sizeof(SplineChar));
 	    info->chars[enc]->enc = enc;
+	    info->chars[enc]->unicodeenc = -1;
 	    info->chars[enc]->width = info->chars[enc]->vwidth = info->emsize;
 	}
 	bdfc->sc = info->chars[enc];
@@ -372,6 +373,87 @@ return;
 
 /* ************************************************************************** */
 
+static BDFChar glyph0, glyph1, glyph2;
+static SplineChar sc0, sc1, sc2;
+
+static void BDFAddDefaultGlyphs(BDFFont *bdf) {
+    /* when I dump out the glyf table I add 3 glyphs at the start. One is glyph*/
+    /*  0, the one used when there is no match, and the other two are varients*/
+    /*  on space. There will never be glyphs 1 and 2 in the font. There might */
+    /*  be a glyph 0. Add the ones that don't exist */
+    int width, w, i, j, bit;
+    SplineFont *sf = bdf->sf;
+
+    width = 0x7ffff;
+    for ( i=0; i<bdf->charcnt; ++i ) if ( bdf->chars[i]!=NULL ) {
+	if ( width == 0x7ffff )
+	    width = bdf->chars[i]->width;
+	else if ( width!=bdf->chars[i]->width ) {
+	    width = 0x7fffe;
+    break;
+	}
+    }
+    if ( width>0x70000 )
+	/* Proportional */
+	width = bdf->pixelsize/3;
+
+    if ( IsntBDFChar(bdf->chars[0])) {
+	sc0.name = ".notdef";
+	/* sc0.ttf_glyph = 0; /* already done */
+	sc0.parent = sf;
+	if ( width<4 ) w=4; else w=width;
+	sc0.width = w*(sf->ascent+sf->descent)/bdf->pixelsize;
+	sc0.widthset = true;
+	glyph0.sc = &sc0;
+	glyph0.width = w;
+	glyph0.xmin = (w==4)?0:1;
+	glyph0.xmax = w-1;
+	glyph0.ymin = 0;
+	glyph0.ymax = 8*bdf->ascent/10;
+	glyph0.bytes_per_line = (glyph0.xmax-glyph0.xmin+8)/8;
+	glyph0.bitmap = gcalloc((glyph0.ymax-glyph0.ymin+1)*glyph0.bytes_per_line,1);
+	j = (glyph0.xmax-glyph0.xmin)>>3;
+	bit = 0x80>>((glyph0.xmax-glyph0.xmin)&7);
+	for ( i=0; i<=glyph0.ymax; ++i ) {
+	    glyph0.bitmap[i*glyph0.bytes_per_line] |= 0x80;
+	    glyph0.bitmap[i*glyph0.bytes_per_line+j] |= bit;
+	}
+	for ( i=0; i<glyph0.xmax-glyph0.xmin; ++i ) {
+	    glyph0.bitmap[i>>3] |= (0x80>>(i&7));
+	    glyph0.bitmap[glyph0.ymax*glyph0.bytes_per_line+(i>>3)] |= (0x80>>(i&7));
+	}
+	bdf->chars[0] = &glyph0;
+    }
+
+    sc1.ttf_glyph = 1;
+    sc2.ttf_glyph = 2;
+    sc1.name = ".null"; sc2.name = "nonmarkingreturn";
+    sc1.parent = sc2.parent = sf;
+    sc1.width = sc2.width = width*(sf->ascent+sf->descent)/bdf->pixelsize;
+    sc1.widthset = sc2.widthset = 1;
+    glyph1.sc = &sc1; glyph2.sc = &sc2;
+    /* xmin and so forth are zero, and are already clear */
+    glyph1.width = glyph2.width = width;
+    glyph1.bytes_per_line = glyph2.bytes_per_line = 0;
+    glyph1.bitmap = glyph2.bitmap = (uint8 *) "";
+    glyph1.enc = 1; glyph2.enc = 2;
+    if ( bdf->chars[1]==NULL )
+	bdf->chars[1] = &glyph1;
+    if ( bdf->chars[2]==NULL )
+	bdf->chars[2] = &glyph2;
+}
+
+static void BDFCleanupDefaultGlyphs(BDFFont *bdf) {
+    if ( bdf->chars[0] == &glyph0 )
+	bdf->chars[0] = NULL;
+    if ( bdf->chars[1] == &glyph1 )
+	bdf->chars[1] = NULL;
+    if ( bdf->chars[2] == &glyph2 )
+	bdf->chars[2] = NULL;
+    free(glyph0.bitmap);
+    glyph0.bitmap = NULL;
+}
+
 static int32 ttfdumpf2bchar(FILE *bdat, BDFChar *bc) {
     /* format 2 character dump. small metrics, bit aligned data */
     int32 pos = ftell(bdat);
@@ -517,6 +599,10 @@ static struct bitmapSizeTable *ttfdumpstrikelocs(FILE *bloc,FILE *bdat,BDFFont *
 
     for ( i=0; i<bdf->charcnt && (bdf->chars[i]==NULL || bdf->chars[i]->sc->ttf_glyph==0); ++i );
     for ( j=bdf->charcnt-1; j>=0 && (bdf->chars[j]==NULL || bdf->chars[j]->sc->ttf_glyph==0); --j );
+    if ( j==-1 ) {
+	GDrawIError("No characters to output in strikes");
+return(NULL);
+    }
     size->flags = 0x01;		/* horizontal */
     size->bitdepth = 1;
     size->ppemX = size->ppemY = bdf->ascent+bdf->descent;
@@ -721,7 +807,9 @@ void ttfdumpbitmap(SplineFont *sf,struct alltabs *at,real *sizes) {
     for ( i=0; sizes[i]!=0; ++i ) {
 	GProgressNextStage();
 	for ( bdf=sf->bitmaps; bdf!=NULL && bdf->pixelsize!=sizes[i]; bdf=bdf->next );
+	BDFAddDefaultGlyphs(bdf);
 	cur = ttfdumpstrikelocs(at->bloc,at->bdat,bdf);
+	BDFCleanupDefaultGlyphs(bdf);
 	if ( head==NULL )
 	    head = cur;
 	else

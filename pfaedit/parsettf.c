@@ -488,14 +488,15 @@ return( 0 );			/* Not version 1 of true type, nor Open Type */
 	  case CHR('G','S','U','B'):
 	    info->gsub_start = offset;
 	  break;
-	  case CHR('b','d','a','t'):		/* Apple uses a different tag. Great. */
+	  case CHR('b','d','a','t'):		/* Apple/MS use a different tag. Great. */
 	  case CHR('E','B','D','T'):
 	    info->bitmapdata_start = offset;
 	  break;
-	  case CHR('b','l','o','c'):		/* Apple uses a different tag. Great. */
+	  case CHR('b','l','o','c'):		/* Apple/MS use a different tag. Great. */
 	  case CHR('E','B','L','C'):
 	    info->bitmaploc_start = offset;
 	  break;
+	  case CHR('b','h','e','d'):		/* Apple uses bhed for fonts with only bitmaps */
 	  case CHR('h','e','a','d'):
 	    info->head_start = offset;
 	  break;
@@ -3085,7 +3086,8 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 	    if ( val>=258 ) ++gcbig;
 	}
 
-	for ( i=0; i<258; ++i ) if ( indexes[i]!=0 || i==0 ) {
+	/* if we are only loading bitmaps, we can get holes in our data */
+	for ( i=0; i<258; ++i ) if ( indexes[i]!=0 || i==0 ) if ( info->chars[indexes[i]]!=NULL ) {
 	    info->chars[indexes[i]]->name = copy(ttfstandardnames[i]);
 	    if ( info->chars[indexes[i]]->unicodeenc==-1 )
 		info->chars[indexes[i]]->unicodeenc = EncFromName(ttfstandardnames[i]);
@@ -3098,9 +3100,11 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 	    for ( j=0; j<len; ++j )
 		nm[j] = getc(ttf);
 	    nm[j] = '\0';
-	    info->chars[indexes[i]]->name = nm;
-	    if ( info->chars[indexes[i]]->unicodeenc==-1 )
-		info->chars[indexes[i]]->unicodeenc = EncFromName(nm);
+	    if ( info->chars[indexes[i]]!=NULL ) {
+		info->chars[indexes[i]]->name = nm;
+		if ( info->chars[indexes[i]]->unicodeenc==-1 )
+		    info->chars[indexes[i]]->unicodeenc = EncFromName(nm);
+	    }
 	}
 	free(indexes);
     }
@@ -3556,7 +3560,7 @@ return( 0 );
     GProgressChangeTotal(info->glyph_cnt);
 
     if ( info->onlystrikes )
-	info->chars = gcalloc(info->glyph_cnt,sizeof(SplineChar *));
+	info->chars = gcalloc(info->glyph_cnt+1,sizeof(SplineChar *));
     else if ( info->glyphlocations_start!=0 && info->glyph_start!=0 )
 	readttfglyphs(ttf,info);
     else if ( info->cff_start!=0 ) {
@@ -3566,14 +3570,16 @@ return( 0 );
     } else {
 return( 0 );
     }
-    if ( !info->onlystrikes || info->hmetrics_start!=0 )
-	readttfwidths(ttf,info);
-    if ( info->vmetrics_start!=0 && info->vhea_start!=0 )
-	readttfvwidths(ttf,info);
     if ( info->bitmapdata_start!=0 && info->bitmaploc_start!=0 )
 	TTFLoadBitmaps(ttf,info,info->onlyonestrike);
     else if ( info->onlystrikes )
 	GWidgetErrorR( _STR_NoBitmaps, _STR_NoBitmapsInTTF, filename==NULL ? "<unknown>" : filename );
+    if ( info->onlystrikes && info->bitmaps==NULL )
+return( 0 );
+    if ( info->hmetrics_start!=0 )
+	readttfwidths(ttf,info);
+    if ( info->vmetrics_start!=0 && info->vhea_start!=0 )
+	readttfvwidths(ttf,info);
     if ( info->cidregistry==NULL )
 	readttfencodings(ttf,info,false);
     if ( info->os2_start!=0 )

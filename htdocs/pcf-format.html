@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 3-Feb-2002 -->
-  <!-- AP: Last modified: 3-Feb-2002 -->
+  <!-- AP: Last modified: 6-Feb-2002 -->
   <TITLE>Format for X11 pcf bitmap font files</TITLE>
 </HEAD>
 <BODY>
@@ -92,7 +92,13 @@ char padding2[];
 </PRE>
 </BLOCKQUOTE>
 <P>
-These properties are the Font Atoms that X provides to users.
+These properties are the Font Atoms that X provides to users. Many are described
+in
+<A HREF="http://ftp.x.org/pub/R6.4/xc/doc/specs/XLFD/xlfd.tbl.ms">xc/doc/specs/XLFD/xlfd.tbl.ms</A>
+or
+<A HREF="http://rpmfind.net/linux/RPM/redhat/6.2/i386/XFree86-doc-3.3.6-20.i386.html">here</A>
+(the X protocol does not limit these atoms so others could be defined for
+some fonts).
 <P>
 To find the name of a property: <CODE>strings + props[i].name_offset</CODE>
 <H2>

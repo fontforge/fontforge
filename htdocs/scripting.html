@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 28-Jan-2002 -->
+  <!-- AP: Last modified: 7-Feb-2002 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -368,6 +368,8 @@ a[4][0] = "Nested array";
       <LI>
 	apple (for bdat table in truetype)
       <LI>
+	sfnt (for bdat table in truetype without any outline font)
+      <LI>
 	gdf
       <LI>
 	bin (for nfnt in macbinary)
@@ -376,6 +378,9 @@ a[4][0] = "Nested array";
       <LI>
 	"" for no bitmaps
     </UL>
+    <P>
+    If you do not wish to generate an outline font then give the filename the
+    extension of ".bdf".
   <DT>
     Import
   <DD>
@@ -388,7 +393,9 @@ a[4][0] = "Nested array";
     of characters (1).
     <UL>
       <LI>
-	If the extension is ".bdf" then a bdf font will be import
+	If the extension is ".bdf" then a bdf font will be imported
+      <LI>
+	If the extension is ".pcf" then a pcf font will be imported.
       <LI>
 	If the extension is ".ttf" then the EBDT or bdat table of the ttf file will
 	be searched for bitmap fonts
@@ -396,8 +403,8 @@ a[4][0] = "Nested array";
 	If the extension is "pk" then a metafont pk (bitmap font) file will be import
 	and by default placed in the background
       <LI>
-	Otherwise the extension is assumed to be an image extension, and any loaded
-	images will be placed in the background.
+	Otherwise if the extension is an image extension, and any loaded images will
+	be placed in the background.
 	<UL>
 	  <LI>
 	    If the filename contains a "*" then it should be a recognized template in
@@ -408,6 +415,11 @@ a[4][0] = "Nested array";
 	    will be placed in the background of the first selected character, the second
 	    into the background of the second selected character, ...
 	</UL>
+      <LI>
+	Finally if the extension is "eps" then an encapsulated postscript file will
+	be merged into the foreground. The file may be specified as for images (except
+	the extension should be "eps" rather than an image extension). PfaEdit is
+	very limitted in its ability to read eps files.
     </UL>
   <DT>
     Quit(status)

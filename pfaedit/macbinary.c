@@ -436,6 +436,45 @@ static uint32 BDFToNFNT(FILE *res, BDFFont *bdf) {
 return(rlenpos);
 }
 
+static uint32 DummyNFNT(FILE *res, BDFFont *bdf) {
+    /* This produces a stub NFNT which appears when the real data lives inside */
+    /*  an sfnt (truetype) resource. We still need to produce an NFNT to tell */
+    /*  the system that the pointsize is available. This NFNT has almost nothing */
+    /*  in it, just the initial header, no metrics, no bitmaps */
+    int i, width, kernMax=1, descentMax=bdf->descent-1, rectMax=1, widMax=3;
+    uint32 rlenpos = ftell(res);
+
+    for ( i=width=0; i<256 && i<bdf->charcnt; ++i ) if ( bdf->chars[i]!=NULL ) {
+	width += bdf->chars[i]->xmax+1-bdf->chars[i]->xmin;
+	if ( bdf->chars[i]->width>widMax )
+	    widMax = bdf->chars[i]->width;
+	if ( bdf->chars[i]->xmax+1-bdf->chars[i]->xmin>rectMax )
+	    rectMax = bdf->chars[i]->xmax+1-bdf->chars[i]->xmin;
+	if ( bdf->chars[i]->xmin<kernMax )
+	    kernMax = bdf->chars[i]->xmin;
+	if ( bdf->chars[i]->ymin<-descentMax )
+	    descentMax = -bdf->chars[i]->ymin;
+    }
+    if ( descentMax>bdf->descent ) descentMax = bdf->descent;
+
+    putlong(res,26);		/* Length */
+    putshort(res,SFOneWidth(bdf->sf)!=-1?0xf000:0xd000);	/* fontType */
+    putshort(res,0);
+    putshort(res,255);
+    putshort(res,widMax);
+    putshort(res,kernMax);
+    putshort(res,-descentMax);
+    putshort(res,rectMax);
+    putshort(res,bdf->pixelsize);
+    putshort(res,0);
+    putshort(res,bdf->ascent);
+    putshort(res,bdf->descent);
+    putshort(res,(short) (bdf->sf->pfminfo.linegap*bdf->pixelsize/(bdf->sf->ascent+bdf->sf->descent)) );
+    putshort(res,0);
+
+return(rlenpos);
+}
+
 static struct resource *SFToNFNTs(FILE *res, SplineFont *sf, real *sizes) {
     int i, baseresid = HashToId(sf->fontname,sf);
     struct resource *resstarts;
@@ -452,6 +491,27 @@ static struct resource *SFToNFNTs(FILE *res, SplineFont *sf, real *sizes) {
     continue;
 	resstarts[i].id = baseresid+bdf->pixelsize;
 	resstarts[i].pos = BDFToNFNT(res,bdf);
+	/* NFNTs seem to have resource flags of 0 */
+    }
+return(resstarts);
+}
+
+static struct resource *BuildDummyNFNTlist(FILE *res, SplineFont *sf, real *sizes, int baseresid) {
+    int i;
+    struct resource *resstarts;
+    BDFFont *bdf;
+
+    if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
+
+    for ( i=0; sizes[i]!=0; ++i );
+    resstarts = gcalloc(i+1,sizeof(struct resource));
+
+    for ( i=0; sizes[i]!=0; ++i ) {
+	for ( bdf=sf->bitmaps; bdf!=NULL && bdf->pixelsize!=sizes[i]; bdf=bdf->next );
+	if ( bdf==NULL )
+    continue;
+	resstarts[i].id = baseresid++;
+	resstarts[i].pos = DummyNFNT(res,bdf);
 	/* NFNTs seem to have resource flags of 0 */
     }
 return(resstarts);
@@ -875,20 +935,20 @@ return( ret );
 int WriteMacTTFFont(char *filename,SplineFont *sf,enum fontformat format,
 	real *bsizes, enum bitmapformat bf) {
     FILE *res, *tempttf;
-    int ret = 1;
-    struct resourcetype resources[3];
-    struct resource rlist[2][2];
+    int ret = 1, r;
+    struct resourcetype resources[4];
+    struct resource rlist[3][2], *dummynfnts=NULL;
     struct macbinaryheader header;
 
     tempttf = tmpfile();
     if ( tempttf==NULL )
 return( 0 );
 
-    if ( _WriteTTFFont(tempttf,sf,format-1,bsizes,bf)==0 || ferror(tempttf) ) {
+    if ( _WriteTTFFont(tempttf,sf,format==ff_none?ff_none:format-1,bsizes,bf)==0 || ferror(tempttf) ) {
 	fclose(tempttf);
 return( 0 );
     }
-    if ( bf!=bf_ttf_apple && bf!=bf_ttf_ms )
+    if ( bf!=bf_ttf_apple && bf!=bf_ttf_ms && bf!=bf_sfnt_dfont )
 	bsizes = NULL;		/* as far as the FOND for the truetype is concerned anyway */
 
     res = fopen(filename,"w+");
@@ -905,19 +965,25 @@ return( 0 );
     memset(resources,'\0',sizeof(resources));
     rewind(tempttf);
 
-    resources[0].tag = CHR('s','f','n','t');
-    resources[0].res = rlist[0];
+    r = 0;
+    resources[r].tag = CHR('s','f','n','t');
+    resources[r++].res = rlist[0];
     rlist[0][0].pos = TTFToResource(res,tempttf);
     rlist[0][0].id = HashToId(sf->fontname,sf);
     rlist[0][0].flags = 0x00;	/* sfnts generally have resource flags 0x20 */
-    resources[1].tag = CHR('F','O','N','D');
-    resources[1].res = rlist[1];
+    if ( bsizes!=NULL ) {
+	resources[r].tag = CHR('N','F','N','T');
+	resources[r++].res = dummynfnts = BuildDummyNFNTlist(res,sf,bsizes,rlist[0][0].id);
+    }
+    resources[r].tag = CHR('F','O','N','D');
+    resources[r].res = rlist[1];
     rlist[1][0].pos = SFToFOND(res,sf,rlist[0][0].id,true,bsizes);
     rlist[1][0].flags = 0x00;	/* I've seen FONDs with resource flags 0, 0x20, 0x60 */
     rlist[1][0].id = rlist[0][0].id;
     rlist[1][0].name = sf->familyname;
     fclose(tempttf);
     DumpResourceMap(res,resources,format);
+    free(dummynfnts);
 
     if ( format==ff_ttfmacbin ) {
 	header.macfilename = NULL;

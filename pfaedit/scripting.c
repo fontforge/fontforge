@@ -571,7 +571,7 @@ static void bGenerate(Context *c) {
 
 static void bImport(Context *c) {
     char *ext;
-    int format, back, ok;
+    int format, back, ok, isimage;
 
     if ( c->a.argc!=2 && c->a.argc!=3 )
 	error( c, "Wrong number of arguments to Import");
@@ -587,6 +587,8 @@ static void bImport(Context *c) {
     back = 0;
     if ( strmatch(ext,".bdf")==0 )
 	format = 0;
+    else if ( strmatch(ext,".pcf")==0 )
+	format = 5;
     else if ( strmatch(ext,".ttf")==0 )
 	format = 1;
     else if ( strmatch(ext,"pk")==0 || strmatch(ext,".pk")==0 ) {
@@ -596,18 +598,25 @@ static void bImport(Context *c) {
 	format = 3;
     else
 	format = 4;
+    isimage = true;
+    if (( format==3 || format==4 ) &&
+	    (strstrmatch(c->a.vals[1].u.sval,".eps")!=NULL ||
+	     strstrmatch(c->a.vals[1].u.sval,".ps")!=NULL ))
+	isimage = false;
     if ( c->a.argc==3 )
 	back = c->a.vals[2].u.ival;
     if ( format==0 )
 	ok = FVImportBDF(c->curfv,c->a.vals[1].u.sval,false, back);
+    else if ( format==5 )
+	ok = FVImportBDF(c->curfv,c->a.vals[1].u.sval,2, back);
     else if ( format==1 )
 	ok = FVImportTTF(c->curfv,c->a.vals[1].u.sval, back);
     else if ( format==2 )
 	ok = FVImportBDF(c->curfv,c->a.vals[1].u.sval,true, back);
     else if ( format==3 )
-	ok = FVImportImages(c->curfv,c->a.vals[1].u.sval);
+	ok = FVImportImages(c->curfv,c->a.vals[1].u.sval,isimage);
     else
-	ok = FVImportImageTemplate(c->curfv,c->a.vals[1].u.sval);
+	ok = FVImportImageTemplate(c->curfv,c->a.vals[1].u.sval,isimage);
     if ( !ok )
 	error(c,"Import failed" );
 }

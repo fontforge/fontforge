@@ -94,13 +94,13 @@ static int finduniname(char *name) {
 return( i );
 }
 
-static void MakeEncChar(SplineFont *sf,int enc,char *name) {
+static void ExtendSF(SplineFont *sf, int enc, int set) {
     BDFFont *b;
 
     if ( enc>=sf->charcnt ) {
-	int i,n = enc+sf->charcnt;
-	if ( n>65536 ) n=65536;
-	if ( enc>n ) n = enc+1;
+	int i,n = enc;
+	if ( !set )
+	    n += 100;
 	sf->chars = grealloc(sf->chars,n*sizeof(SplineChar *));
 	for ( i=sf->charcnt; i<n; ++i )
 	    sf->chars[i] = NULL;
@@ -111,7 +111,18 @@ static void MakeEncChar(SplineFont *sf,int enc,char *name) {
 		b->chars[i] = NULL;
 	    b->charcnt = n;
 	}
+	if ( sf->fv!=NULL ) {
+	    free(sf->fv->selected);
+	    sf->fv->selected = gcalloc(sf->charcnt,1);
+	    FontViewReformat(sf->fv);
+	}
     }
+}
+
+static void MakeEncChar(SplineFont *sf,int enc,char *name) {
+
+    ExtendSF(sf,enc,false);
+
     if ( sf->chars[enc]==NULL ) {
 	sf->chars[enc] = chunkalloc(sizeof(SplineChar));
 	sf->chars[enc]->parent = sf;
@@ -135,8 +146,13 @@ static int figureProperEncoding(SplineFont *sf,BDFFont *b, int enc,char *name,
 	else if ( sf->encoding_name==em_none ) i = enc;
 	else if ( sf->onlybitmaps && sf->bitmaps==b && b->next==NULL ) i = enc;
 	if ( i>=sf->charcnt ) i = -1;
-	if ( i!=-1 && (sf->chars[i]==NULL || strcmp(sf->chars[i]->name,name)!=0 ))
+	if ( i!=-1 && (sf->chars[i]==NULL || strcmp(sf->chars[i]->name,name)!=0 )) {
 	    MakeEncChar(sf,enc,name);
+	    if ( sf->onlybitmaps ) {
+		sf->chars[enc]->width = swidth;
+		sf->chars[enc]->widthset = true;
+	    }
+	}
     } else {
 	if ( enc!=-1 && enc<sf->charcnt && sf->chars[enc]!=NULL &&
 		strcmp(sf->chars[enc]->name,name)==0 )
@@ -1380,6 +1396,19 @@ return( NULL );
 return( ret );
 }
 
+static void SFSetupBitmap(SplineFont *sf,BDFFont *strike) {
+    int i;
+
+    strike->sf = sf;
+    if ( strike->charcnt>sf->charcnt )
+	ExtendSF(sf,strike->charcnt,true);
+    for ( i=0; i<strike->charcnt; ++i ) if ( strike->chars[i]!=NULL ) {
+	if ( sf->chars[i]==NULL )
+	    MakeEncChar(sf,i,strike->chars[i]->sc->name);
+	strike->chars[i]->sc = sf->chars[i];
+    }
+}
+
 static void SFMergeBitmaps(SplineFont *sf,BDFFont *strikes) {
     BDFFont *b, *prev, *snext;
 
@@ -1390,6 +1419,7 @@ static void SFMergeBitmaps(SplineFont *sf,BDFFont *strikes) {
 	if ( b==NULL ) {
 	    strikes->next = sf->bitmaps;
 	    sf->bitmaps = strikes;
+	    SFSetupBitmap(sf,strikes);
 	} else if ( !alreadyexists(strikes->pixelsize)) {
 	    BDFFontFree(strikes);
 	} else {
@@ -1399,6 +1429,7 @@ static void SFMergeBitmaps(SplineFont *sf,BDFFont *strikes) {
 	    else
 		prev->next = strikes;
 	    BDFFontFree(b);
+	    SFSetupBitmap(sf,strikes);
 	}
 	strikes = snext;
     }

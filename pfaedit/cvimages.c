@@ -50,6 +50,25 @@ return;
     CVCharChangedUpdate(cv);
 }
 
+static void SCImportPS(SplineChar *sc,char *path) {
+    FILE *ps = fopen(path,"r");
+    SplinePointList *spl, *espl;
+
+    if ( ps==NULL )
+return;
+    spl = SplinePointListInterpretPS(ps);
+    fclose(ps);
+    if ( spl==NULL ) {
+	GDrawError( "I'm sorry this file is too complex for me to understand");
+return;
+    }
+    for ( espl=spl; espl->next!=NULL; espl = espl->next );
+    SCPreserveState(sc,false);
+    espl->next = sc->splines;
+    sc->splines = spl;
+    SCCharChangedUpdate(sc);
+}
+
 /**************************** Fig File Import *********************************/
 
 static BasePoint *slurppoints(FILE *fig,SplineFont *sf,int cnt ) {
@@ -542,7 +561,7 @@ return(false);
 return( true );
 }
 
-int FVImportImages(FontView *fv,char *path) {
+int FVImportImages(FontView *fv,char *path,int isimage) {
     GImage *image;
     struct _GImage *base;
     int tot;
@@ -556,22 +575,27 @@ int FVImportImages(FontView *fv,char *path) {
 	sc = SFMakeChar(fv->sf,i);
 	endpath = strchr(start,';');
 	if ( endpath!=NULL ) *endpath = '\0';
-	image = GImageRead(start);
-	if ( image==NULL ) {
-	    GWidgetErrorR(_STR_BadImageFile,_STR_BadImageFileName,start);
+	if ( isimage ) {
+	    image = GImageRead(start);
+	    if ( image==NULL ) {
+		GWidgetErrorR(_STR_BadImageFile,_STR_BadImageFileName,start);
 return(false);
-	}
-	base = image->list_len==0?image->u.image:image->u.images[0];
-	if ( base->image_type!=it_mono ) {
-	    GWidgetErrorR(_STR_BadImageFile,_STR_BadImageFileNotBitmap,start);
-	    GImageDestroy(image);
+	    }
+	    base = image->list_len==0?image->u.image:image->u.images[0];
+	    if ( base->image_type!=it_mono ) {
+		GWidgetErrorR(_STR_BadImageFile,_STR_BadImageFileNotBitmap,start);
+		GImageDestroy(image);
 return(false);
+	    }
+	    ++tot;
+	    ImageAlterClut(image);
+	    scale = (fv->sf->ascent+fv->sf->descent)/(real) GImageGetHeight(image);
+	    ImageListsFree(sc->backimages); sc->backimages = NULL;
+	    SCInsertBackImage(sc,image,scale,fv->sf->ascent,0);
+	} else {
+	    SCImportPS(sc,start);
+	    ++tot;
 	}
-	++tot;
-	ImageAlterClut(image);
-	scale = (fv->sf->ascent+fv->sf->descent)/(real) GImageGetHeight(image);
-	ImageListsFree(sc->backimages); sc->backimages = NULL;
-	SCInsertBackImage(sc,image,scale,fv->sf->ascent,0);
 	if ( endpath==NULL )
     break;
 	start = endpath+1;
@@ -583,7 +607,7 @@ return(false);
 return( true );
 }
 
-int FVImportImageTemplate(FontView *fv,char *path) {
+int FVImportImageTemplate(FontView *fv,char *path,int isimage) {
     GImage *image;
     struct _GImage *base;
     int tot;
@@ -662,22 +686,27 @@ return( false );
 	    }
 	    sc = SFMakeChar(fv->sf,val);
 	}
-	image = GImageRead(entry->d_name);
-	if ( image==NULL ) {
-	    GWidgetErrorR(_STR_BadImageFile,_STR_BadImageFileName,entry->d_name);
+	if ( isimage ) {
+	    image = GImageRead(entry->d_name);
+	    if ( image==NULL ) {
+		GWidgetErrorR(_STR_BadImageFile,_STR_BadImageFileName,entry->d_name);
     continue;
-	}
-	base = image->list_len==0?image->u.image:image->u.images[0];
-	if ( base->image_type!=it_mono ) {
-	    GWidgetErrorR(_STR_BadImageFile,_STR_BadImageFileNotBitmap,entry->d_name);
-	    GImageDestroy(image);
+	    }
+	    base = image->list_len==0?image->u.image:image->u.images[0];
+	    if ( base->image_type!=it_mono ) {
+		GWidgetErrorR(_STR_BadImageFile,_STR_BadImageFileNotBitmap,entry->d_name);
+		GImageDestroy(image);
     continue;
+	    }
+	    ++tot;
+	    ImageAlterClut(image);
+	    scale = (fv->sf->ascent+fv->sf->descent)/(real) GImageGetHeight(image);
+	    ImageListsFree(sc->backimages); sc->backimages = NULL;
+	    SCInsertBackImage(sc,image,scale,fv->sf->ascent,0);
+	} else {
+	    SCImportPS(sc,entry->d_name);
+	    ++tot;
 	}
-	++tot;
-	ImageAlterClut(image);
-	scale = (fv->sf->ascent+fv->sf->descent)/(real) GImageGetHeight(image);
-	ImageListsFree(sc->backimages); sc->backimages = NULL;
-	SCInsertBackImage(sc,image,scale,fv->sf->ascent,0);
     }
     if ( tot==0 )
 	GWidgetErrorR(_STR_NothingLoaded,_STR_NothingLoaded);
@@ -709,7 +738,7 @@ static unichar_t wildimg[] = { '*', '.', '{',
 't','i','f','f',',',
 #endif
 'x','b','m',',', 'b','m','p', '}', '\0' };
-static unichar_t wildtemplate[] = { '{','u','n','i',',','c','i','d',',','e','p','s','}','[','0','-','9','a','-','f','A','-','F',']','*', '.', '{',
+static unichar_t wildtemplate[] = { '{','u','n','i',',','c','i','d',',','e','n','c','}','[','0','-','9','a','-','f','A','-','F',']','*', '.', '{',
 #ifndef _NO_LIBUNGIF
 'g','i','f',',',
 #endif
@@ -720,6 +749,7 @@ static unichar_t wildtemplate[] = { '{','u','n','i',',','c','i','d',',','e','p',
 't','i','f','f',',',
 #endif
 'x','b','m',',', 'b','m','p', '}', '\0' };
+static unichar_t wildepstemplate[] = { '{','u','n','i',',','c','i','d',',','e','n','c','}','[','0','-','9','a','-','f','A','-','F',']','*', '.', '{', 'p','s',',', 'e','p','s',',','}',  0 };
 static unichar_t wildps[] = { '*', '.', '{', 'p','s',',', 'e','p','s',',','}', '\0' };
 static unichar_t wildfig[] = { '*', '.', '{', 'f','i','g',',','x','f','i','g','}',  '\0' };
 static unichar_t wildbdf[] = { '*', '.', 'b', 'd','{', 'f', ',','f','.','g','z',',','f','.','Z',',','f','.','b','z','2','}',  '\0' };
@@ -727,7 +757,7 @@ static unichar_t wildpcf[] = { '*', '.', 'p', 'c','{', 'f', ',','f','.','g','z',
 static unichar_t wildttf[] = { '*', '.', '{', 't', 't','f',',','o','t','f',',','t','t','c','}',  '\0' };
 static unichar_t wildpk[] = { '*', 'p', 'k',  '\0' };		/* pk fonts can have names like cmr10.300pk, not a normal extension */
 static unichar_t *wildchr[] = { wildimg, wildps, wildfig };
-static unichar_t *wildfnt[] = { wildbdf, wildttf, wildpk, wildpcf, wildimg, wildtemplate };
+static unichar_t *wildfnt[] = { wildbdf, wildttf, wildpk, wildpcf, wildimg, wildtemplate, wildps, wildepstemplate };
 
 static GTextInfo formats[] = {
     { (unichar_t *) _STR_Image, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
@@ -742,6 +772,8 @@ static GTextInfo fvformats[] = {
     { (unichar_t *) "PCF", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) _STR_Image, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) _STR_Template, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) "EPS", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) _STR_EPSTemplate, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }};
 
 static int GFD_ImportOk(GGadget *g, GEvent *e) {
@@ -770,9 +802,13 @@ static int GFD_ImportOk(GGadget *g, GEvent *e) {
 	    else if ( format==3 )		/* pcf */
 		d->done = FVImportBDF(d->fv,temp,2, toback);
 	    else if ( format==4 )
-		d->done = FVImportImages(d->fv,temp);
+		d->done = FVImportImages(d->fv,temp,1);
 	    else if ( format==5 )
-		d->done = FVImportImageTemplate(d->fv,temp);
+		d->done = FVImportImageTemplate(d->fv,temp,1);
+	    else if ( format==6 )
+		d->done = FVImportImages(d->fv,temp,0);
+	    else if ( format==7 )
+		d->done = FVImportImageTemplate(d->fv,temp,0);
 	} else if ( d->bc!=NULL )
 	    d->done = BCImportImage(d->bc,temp);
 	else {
@@ -812,6 +848,9 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 	    } else if ( format==2 ) {	/* pk */
 		GGadgetSetChecked(d->background,true);
 		GGadgetSetEnabled(d->background,true);
+	    } else if ( format==6 || format==7 ) {	/* eps */
+		GGadgetSetChecked(d->background,false);
+		GGadgetSetEnabled(d->background,false);
 	    } else {			/* Images */
 		GGadgetSetChecked(d->background,true);
 		GGadgetSetEnabled(d->background,false);

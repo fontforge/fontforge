@@ -31,12 +31,14 @@
 
 #define MAX_WIDTH	200
 
-static int IsntChar(BDFChar *bdfc) {
+int IsntBDFChar(BDFChar *bdfc) {
     if ( bdfc==NULL )
 return( true );
 
-return( bdfc->sc->splines==NULL && bdfc->sc->refs==NULL &&
-	    strcmp(bdfc->sc->name,".notdef")==0 );
+    if ( bdfc->sc->parent->onlybitmaps )
+return( bdfc->enc!=0 && strcmp(bdfc->sc->name,".notdef")==0 );
+
+return( !SCWorthOutputting(bdfc->sc));
 }
 
 static void decomposename(BDFFont *font, char *fontname, char *family_name, char *weight_name,
@@ -104,7 +106,7 @@ static int AllSame(BDFFont *font,int *avg,int *cnt) {
     BDFChar *bdfc;
 
     for ( i=0; i<font->charcnt; ++i ) {
-	if ( (bdfc = font->chars[i])!=NULL && !IsntChar(bdfc)) {
+	if ( (bdfc = font->chars[i])!=NULL && !IsntBDFChar(bdfc)) {
 	    ++c;
 	    a += bdfc->width;
 	    if ( common==-1 ) common = bdfc->width; else if ( common!=bdfc->width ) common = -2;
@@ -374,7 +376,7 @@ int BDFFontDump(char *filename,BDFFont *font, char *encodingname) {
 	fprintf( stderr, "Can't open %s\n", filename );
     else {
 	BDFDumpHeader(file,font,encodingname);
-	for ( i=0; i<font->charcnt; ++i ) if ( !IsntChar(font->chars[i])) {
+	for ( i=0; i<font->charcnt; ++i ) if ( !IsntBDFChar(font->chars[i])) {
 	    enc = i;
 	    if ( is94x94 && i<96*94 )
 		enc = (i/96+'!')*256 + i%96+' ';
