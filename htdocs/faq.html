@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 8-May-2004 -->
+  <!-- AP: Last modified: 19-May-2004 -->
   <TITLE>Frequently Asked Questions</TITLE>
 </HEAD>
 <BODY>
@@ -47,9 +47,6 @@
       <LI>
 	<A HREF="#How-family">How do I create a mac font family? (How do I get the
 	mac to group my fonts so that the italic and bold styles work)?</A>
-      <LI>
-	<A HREF="faq.html#extensive-families">The Generate Mac Family command is
-	very limited. I want more extensive families than it permits...</A>
       <LI>
 	<A HREF="#Mac-ATM">Why doesn't ATM work with my fonts?</A>
     </UL>
@@ -612,18 +609,15 @@ $ xset fp+ `pwd`
     Family</A> command.
     <P>
     All the fonts in a family must have the same Family name (See the
-    <A TARGET="_top" HREF="fontinfo.html">font info</A> dialog). Mac font families
-    only support Italic, Bold, Outline, Expanded, and Condensed styles, they
-    do not support "Black", "DemiBold", "Light" or "Thin" variants.
-  <DT>
-    <B>The Generate Mac Family command is very limited. I want more
-    <A NAME="extensive-families">extensive families</A> than it permits...</B>
-  <DD>
-    The <A HREF="filemenu.html#GenerateMac">Generate Mac Family </A>command is
-    limited by the design of the Mac 'FOND' resource, which reflects the computer
-    font technology of the early 1980s. Modern computer fonts often have variants
-    that can't be expressed in it. FONDs support any combination (except one
-    containing both Extend and Condense) of the following styles:
+    <A TARGET="_top" HREF="fontinfo.html">font info</A> dialog). Font Families
+    are handled rather differently under Carbon (the old font handling mechanism
+    used in OS 9) and under ATSUI (on OS/X).
+    <P>
+    Under Carbon, the font family is limited by the design of the Mac 'FOND'
+    resource, which reflects the computer font technology of the early 1980s.
+    Modern computer fonts often have variants that can't be expressed in it.
+    FONDs support any combination (except one containing both Extend and Condense)
+    of the following styles:
     <UL>
       <LI>
 	Bold
@@ -641,43 +635,38 @@ $ xset fp+ `pwd`
 	Outline
     </UL>
     <P>
-    The following suggestion is determined empirically after looking at the way
-    Apple distributes fonts. It might be wrong or incomplete. It's the best
-    suggestion I can make however.
+    Mac FONDS do not support "Black", "DemiBold", "Light", "Thin" or
+    "Extra-Condensed" variants.
     <P>
-    Apple appears to store all the fonts that should be in one family in the
-    one file. That file may contain several 'FOND's (which is what I call a mac
-    family). The 'FOND's appear to be distributed as follows:
+    Under ATSUI, on the other hand, a family seems to consist of all fonts in
+    a given resources file which have the same FamilyName.
+    <P>
+    In order that a family be useful under both systems, Apple appears to several
+    FONDs inside such a font file. Each FOND contains a sub-family of related
+    fonts. The 'FOND's appear to be distributed as follows:
     <P>
     Suppose you have a family of fonts with the following styles:<BR>
     Regular, Bold, Italic, Bold-Italic, Condense, Condense-Italic, Oblique, Light,
     Light-Italic, Black<BR>
     Then you should create a font family with the styles that the FOND does support,
     which in this case would be<BR>
-    Regular, Bold, Italic, Bold-Italic, Condense, Condense-Italic
+    Regular, Bold, Italic, Bold-Italic, Condense, Condense-Italic<BR>
+    For each of these use
+    <A HREF="fontinfo.html#FONDName" TARGET="_top">Element-&gt;Font
+    Info-&gt;Mac</A> to set the FondName field to the font's family name.
     <P>
-    Change the family name of the other styles, so that the Oblique style has
-    Oblique in the family name, the two Light styles have Light in the family
-    name, and so on. Set the <A HREF="fontinfo.html#Mac-Style">Mac Style</A>
+    Change the fondname of the other styles, so that the Oblique style has Oblique
+    in the fond name, the two Light styles have Light in the fond name, and so
+    on. Set the <A HREF="fontinfo.html#Mac-Style" TARGET="_top">Mac Style</A>
     on the "Light" variant of the font to be Regular (everything unselected)
     and set the style of the "Light-Italic" variant to be "Italic" -- that is,
     forget about the "Light", the FOND can't handle it, that's why we moved it
-    into the family.
+    into its own family.
     <P>
-    For the "families" that just contain one variants use the File-&gt;Generate
-    Fonts command, for the families that contain two or more variants use the
-    File-&gt;Generate Mac Families command. Put everything into mac dfonts.
-    <P>
-    Then use the stand-alone program
-    <A HREF="http://fondu.sf.net/#lumper">lumper</A> (or some other mac resource
-    editor) to move all these families into one font file.
-    <BLOCKQUOTE>
-      <PRE>lumper Foo.dfont FooOblique.dfont FooLight.dfont FooBlack.dfont
-</PRE>
-    </BLOCKQUOTE>
-    <P>
-    The final result is that Foo.dfont will contain all the variants of the font
-    distributed into appropriate 'FOND's.
+    Having done this setup, the <A HREF="filemenu.html#GenerateMac">Generate
+    Mac Family </A>command should be able to put all the fonts into appropriate
+    FONDs, and then place all the FONDs into one file, which the Mac should interpret
+    correctly.
   <DT>
     <B><A NAME="Mac-ATM">Why doesn't ATM work on my fonts?</A></B>
   <DD>

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 25-Apr-2004 -->
+  <!-- AP: Last modified: 16-May-2004 -->
   <TITLE>Outline Character View</TITLE>
 </HEAD>
 <BODY>
@@ -146,15 +146,15 @@ or moved or scaled.
 A simple click on an unselected point selects it and deselects everything
 else. A shift click on a point toggles whether that point is selected or
 not. A double click selects all points on the path containing that point.
-Clicking on the background will deselect everything. Clicking on the background
-and dragging out a rectangle will select everything within the rectangle.
-Clicking on a line or spline will select the two end points of that line
-or spline. Clicking on the dark part of an image (when in the background
-layer) will select the image. Clicking on the outline of a referenced character
-will select that reference (if a reference character happens to have the
-same outline and bounding box, then holding down the meta key will allow
-you to move it once it is selected, without the meta key you will resize
-it).
+A tripple click selects everything in the layer. Clicking on the background
+will deselect everything. Clicking on the background and dragging out a rectangle
+will select everything within the rectangle. Clicking on a line or spline
+will select the two end points of that line or spline. Clicking on the dark
+part of an image (when in the background layer) will select the image. Clicking
+on the outline of a referenced character will select that reference (if a
+reference character happens to have the same outline and bounding box, then
+holding down the meta key will allow you to move it once it is selected,
+without the meta key you will resize it).
 <P>
 If a point has no visible control points, then they are at the same location
 as the point itself. If you want to select one of the control points then
@@ -169,8 +169,9 @@ Info to set the control points.
 Once something is selected you may drag it around. If you select something
 and drag the mouse then it and everything else selected will be moved. If
 you drag an open path and one of the end points happens to fall on the end
-point of another open path, then the two will be merged into one. If you
-drag a control point then it will be moved.
+point of another open path, then the two will be merged into one (If you
+don't want open paths to merge, hold down the Alt key). If you drag a control
+point then it will be moved.
 <P>
 If you selected a spline, then dragging it will drag the location on the
 spline where you pressed the mouse (so you are changing the shape of the
