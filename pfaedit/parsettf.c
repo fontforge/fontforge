@@ -3940,7 +3940,7 @@ return;
 return;
     }
     if ( justinuse ) {
-	for ( i=0; glyphs[i]!=0xffff; ++i ) {
+	for ( i=0; glyphs[i]!=0xffff; ++i ) if ( glyphs[i]<info->glyph_cnt ) {
 	    info->inuse[glyphs[i]]= true;
 	    which = format==1 ? glyphs[i]+delta : glyph2s[i];
 	    info->inuse[which]= true;

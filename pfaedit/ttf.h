@@ -491,3 +491,15 @@ extern void aat_dumpopbd(struct alltabs *at, SplineFont *sf);
 extern void aat_dumpprop(struct alltabs *at, SplineFont *sf);
 extern uint32 MacFeatureToOTTag(int featureType,int featureSetting);
 extern int OTTagToMacFeature(uint32 tag, int *featureType,int *featureSetting);
+extern char *FeatureNameFromType(int featureType);
+
+extern struct macsettingname {
+    int mac_feature_type;
+    int mac_feature_setting;
+    int off_setting;
+    unsigned int ismutex: 1;
+    unsigned int defaultOn: 1;
+    uint32 otf_tag;
+    char *on_name;
+    char *off_name;
+} macfeat_otftag[], *user_macfeat_otftag;

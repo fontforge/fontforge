@@ -232,7 +232,6 @@ struct feature {
     struct feature *next;
 };
 
-static char *FeatureNameFromType(int featureType);
 static struct feature *featureFromTag(uint32 tag);
 
 static void morxfeaturesfree(struct feature *features) {
@@ -1355,130 +1354,26 @@ return;
 /* *************************    utility routines    ************************* */
 /* ************************************************************************** */
 
-static struct {
-    int mac_feature_type;
-    char *feature_name;
-} feature_type_to_name[] = {
-    { 0, "All Features" },
-    { 1, "Ligatures" },
-    { 2, "Cursive Connection" },
-    { 3, "Letter Case" },
-    { 4, "Vertical Substitution" },
-    { 5, "Linguistic Rearrangement" },
-    { 6, "Number Spacing" },
-    { 8, "Smart Swash" },
-    { 9, "Diacritics" },
-    { 10, "Vertical Position" },
-    { 11, "Fractions" },
-    { 13, "Overlapping Characters" },
-    { 14, "Typographic Extras" },
-    { 15, "Mathematical Extras" },
-    { 16, "Ornament Sets" },
-    { 17, "Character Alternates" },
-    { 18, "Design Complexity" },
-    { 19, "Style Options" },
-    { 20, "Character Shape" },
-    { 21, "Number Case" },
-    { 22, "Text Spacing" },
-    { 23, "Transliteration" },
-    { 24, "Annotation" },
-    { 25, "Kana Spacing" },
-    { 26, "Ideographic Spacing" },
-    { 27, "Unicode Decomposition" },
-    { 103, "CJK Roman Spacing" },
-    { -1, NULL }
-};
-
-static char *FeatureNameFromType(int featureType) {
-    int i;
-
-    for ( i=0; feature_type_to_name[i].mac_feature_type!=-1; ++i )
-	if ( feature_type_to_name[i].mac_feature_type==featureType )
-return( feature_type_to_name[i].feature_name );
-
-return( "" );
-}
-
-static struct {
-    int mac_feature_type;
-    int mac_feature_setting;
-    int off_setting;
-    unsigned int ismutex: 1;
-    unsigned int defaultOn: 1;
-    uint32 otf_tag;
-    char *on_name;
-    char *off_name;
-} macfeat_otftag[] = {
-    { 1, 0, 1, 0, 1, CHR('r','l','i','g'), "Required Ligatures", "No Required Ligatures" },	/* Required ligatures */
-    { 1, 2, 3, 0, 1, CHR('l','i','g','a'), "Common Ligatures", "No Common Ligatures" },	/* Common ligatures */
-    { 1, 4, 5, 0, 0, CHR('d','l','i','g'), "Rare Ligatures", "No Rare Ligatures" },	/* rare ligatures => discretionary */
-    { 1, 4, 5, 0, 0, CHR('h','l','i','g'), "Rare Ligatures", "No Rare Ligatures" },	/* rare ligatures => historic */
-    { 1, 6, 7, 0, 0, CHR('M','L','O','G'), "Logos", "No Logos" },
-    { 1, 8, 9, 0, 0, CHR('M','R','E','B'), "Rebus Pictures", "No Rebus Pictures" },
-    { 1, 10, 11, 0, 0, CHR('M','D','L','G'), "Diphthong Ligatures", "No Diphthong Ligatures" },
-    { 1, 12, 13, 0, 0, CHR('M','S','L','G'), "Square Ligatures", "No Square Ligatures" },
-    { 1, 14, 15, 0, 0, CHR('M','A','L','G'), "Abbreviated Square Ligatures", "No Abbreviated Square Ligatures" },
-    /* 2, 1, partially connected cursive */
-    /* 2, 2, connected cursive */
-    /* 3, 2, all caps */
-    /* 3, 3, all lower */
-    { 3, 4, 0, 1, 0, CHR('s','m','c','p'), "Small Caps", "Upper and Lower Case" },	/* small caps */
-    /* 3, 4, initial caps */
-    /* 3, 5, initial caps, small caps */
-    { 4, 0, 1, 0, 1, CHR('v','r','t','2'), "Vertical Forms", "No Vertical Forms" },	/* vertical forms => vertical rotation */
-    { 4, 0, 1, 0, 1, CHR('v','k','n','a'), "Vertical Forms", "No Vertical Forms" },	/* vertical forms => vertical kana */
-    { 6, 0, 1, 1, 0, CHR('t','n','u','m'), "Monospaced Numbers", "Proportional Numbers" },	/* monospace numbers => Tabular numbers */
-    { 8, 0, 1, 0, 1, CHR('M','S','W','I'), "Word Initial Swash", "No Word Initial Swash" },
-    { 8, 2, 3, 0, 1, CHR('M','S','W','F'), "Word Final Swash", "No Word Final Swash" },
-    { 8, 4, 5, 0, 1, CHR('M','S','L','I'), "Line Initial Swash", "No Line Initial Swash" },
-    { 8, 6, 7, 0, 1, CHR('M','S','L','F'), "Line Final Swash", "No Line Final Swash" },
-    { 8, 8, 9, 0, 0, CHR('M','S','N','F'), "Non-Final Swash", "No Non-Final Swash" },
-    { 10, 1, 0, 1, 0, CHR('s','u','p','s'), "Superscript", "Normal Position" },	/* superior vertical position => superscript */
-    { 10, 3, 0, 1, 0, CHR('s','u','p','s'), "Superscript", "Normal Position" },	/* ordinal vertical position => superscript */
-    { 10, 2, 0, 1, 0, CHR('s','u','b','s'), "Subscript", "Normal Position" },	/* inferior vertical position => subscript */
-    { 11, 1, 0, 1, 1, CHR('f','r','a','c'), "Fraction Ligatures", "No Fractions" },	/* vertical fraction => fraction ligature */
-    { 16, 1, 0, 1, 0, CHR('o','r','n','m'), "Dingbats", "No Ornaments" },	/* vertical fraction => fraction ligature */
-    { 20, 0, -1, 1, 0, CHR('t','r','a','d'), "Traditional Characters", NULL },	/* tradictional characters => traditional forms */
-    { 20, 0, -1, 1, 0, CHR('t','n','a','m'), "Traditional Characters", NULL },	/* tradictional characters => traditional names */
-    { 20, 1, 0, 1, 0, CHR('s','m','p','l'), "Simplified Characters", "Traditional Characters" },	/* simplified characters */
-    { 20, 2, -1, 1, 0, CHR('j','p','7','8'), "JIS 1978 Characters", NULL },	/* jis 1978 */
-    { 20, 3, -1, 1, 0, CHR('j','p','8','3'), "JIS 1983 Characters", NULL },	/* jis 1983 */
-    { 20, 4, -1, 1, 0, CHR('j','p','9','0'), "JIS 1990 Characters", NULL },	/* jis 1990 */
-    { 21, 0, 1, 1, 0, CHR('o','n','u','m'), "Lower Case Number", "Upper Case Number" },	/* lower case number => old style numbers */
-    { 22, 0, -1, 1, 1, CHR('p','w','i','d'), "Proportional Text", NULL },	/* proportional text => proportional widths */
-    { 22, 1, 0, 1, 0, CHR('M','W','I','D'), "Monospace Text", "Proportional Text" },	/* proportional text => proportional widths */
-    { 22, 2, 0, 1, 0, CHR('h','w','i','d'), "Half Width Text", "Proportional Text" },	/* half width text => half widths */
-    { 22, 3, 0, 1, 0, CHR('f','w','i','d'), "Full Width Text", "Proportional Text" },	/* full width text => full widths */
-    { 25, 0, -1, 1, 1, CHR('f','w','i','d'), "Full Width Kana", NULL },	/* full width kana => full widths */
-    { 25, 1, 0, 0, 1, CHR('p','w','i','d'), "Proportional Kana", "Full Width Kana"  },	/* proportional kana => proportional widths */
-    { 26, 0, -1, 1, 1, CHR('f','w','i','d'), "Full Width Ideograph", NULL },	/* full width ideograph => full widths */
-    { 26, 1, 0, 1, 0, CHR('p','w','i','d'), "Proportional Ideograph", "Full Width Ideograph" },	/* proportional ideograph => proportional widths */
-    { 27, 1, 0, 0, 1, CHR('M','U','C','M'), "Compose", "Off" },	/* Unicode decomposition */
-    { 103, 0, -1, 1, 1, CHR('h','w','i','d'), "Half Width CJK Roman", NULL },	/* half width cjk roman => half widths */
-    { 103, 1, 0, 1, 0, CHR('p','w','i','d'), "Proportional CJK Roman", "Half Width CJK Roman"  },	/* proportional cjk roman => proportional widths */
-    { 103, 2, 0, 1, 0, CHR('M','W','I','D'), "Monospace CJK Roman", "Half Width CJK Roman" },	/* proportional text => proportional widths */
-    { 103, 3, 0, 1, 0, CHR('f','w','i','d'), "Full Width CJK Roman", "Half Width CJK Roman" },	/* full width cjk roman => full widths */
-    { 0, 0, 0 }
-};
-
 uint32 MacFeatureToOTTag(int featureType,int featureSetting) {
     int i;
+    struct macsettingname *msn = user_macfeat_otftag ? user_macfeat_otftag : macfeat_otftag;
 
-    for ( i=0; macfeat_otftag[i].otf_tag!=0; ++i )
-	if ( macfeat_otftag[i].mac_feature_type == featureType &&
-		macfeat_otftag[i].mac_feature_setting == featureSetting )
-return( macfeat_otftag[i].otf_tag );
+    for ( i=0; msn[i].otf_tag!=0; ++i )
+	if ( msn[i].mac_feature_type == featureType &&
+		msn[i].mac_feature_setting == featureSetting )
+return( msn[i].otf_tag );
 
 return( 0 );
 }
 
 int OTTagToMacFeature(uint32 tag, int *featureType,int *featureSetting) {
     int i;
+    struct macsettingname *msn = user_macfeat_otftag ? user_macfeat_otftag : macfeat_otftag;
 
-    for ( i=0; macfeat_otftag[i].otf_tag!=0; ++i )
-	if ( macfeat_otftag[i].otf_tag == tag ) {
-	    *featureType = macfeat_otftag[i].mac_feature_type;
-	    *featureSetting = macfeat_otftag[i].mac_feature_setting;
+    for ( i=0; msn[i].otf_tag!=0; ++i )
+	if ( msn[i].otf_tag == tag ) {
+	    *featureType = msn[i].mac_feature_type;
+	    *featureSetting = msn[i].mac_feature_setting;
 return( true );
 	}
 
@@ -1490,18 +1385,19 @@ return( 0 );
 static struct feature *featureFromTag(uint32 tag ) {
     int i;
     struct feature *feat;
+    struct macsettingname *msn = user_macfeat_otftag ? user_macfeat_otftag : macfeat_otftag;
 
-    for ( i=0; macfeat_otftag[i].otf_tag!=0; ++i )
-	if ( macfeat_otftag[i].otf_tag == tag ) {
+    for ( i=0; msn[i].otf_tag!=0; ++i )
+	if ( msn[i].otf_tag == tag ) {
 	    feat = chunkalloc(sizeof(struct feature));
 	    feat->otftag = tag;
-	    feat->featureType = macfeat_otftag[i].mac_feature_type;
-	    feat->featureSetting = macfeat_otftag[i].mac_feature_setting;
-	    feat->offSetting = macfeat_otftag[i].off_setting;
-	    feat->name = macfeat_otftag[i].on_name;
-	    feat->offname = macfeat_otftag[i].off_name;
-	    feat->ismutex = macfeat_otftag[i].ismutex;
-	    feat->defaultOn = macfeat_otftag[i].defaultOn;
+	    feat->featureType = msn[i].mac_feature_type;
+	    feat->featureSetting = msn[i].mac_feature_setting;
+	    feat->offSetting = msn[i].off_setting;
+	    feat->name = msn[i].on_name;
+	    feat->offname = msn[i].off_name;
+	    feat->ismutex = msn[i].ismutex;
+	    feat->defaultOn = msn[i].defaultOn;
 	    feat->vertOnly = tag==CHR('v','r','t','2') || tag==CHR('v','k','n','a');
 return( feat );
 	}

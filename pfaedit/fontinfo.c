@@ -79,7 +79,7 @@ GTextInfo encodingtypes[] = {
     { (unichar_t *) _STR_Isohebrew, NULL, 0, 0, (void *) em_iso8859_8, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Isothai, NULL, 0, 0, (void *) em_iso8859_11, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { NULL, NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 1, 0 },
-    { (unichar_t *) _STR_Mac, NULL, 0, 0, (void *) em_mac, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MacLatin, NULL, 0, 0, (void *) em_mac, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Win, NULL, 0, 0, (void *) em_win, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Adobestd, NULL, 0, 0, (void *) em_adobestandard, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Symbol, NULL, 0, 0, (void *) em_symbol, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -2014,9 +2014,10 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
     if ( acd.ok ) {
 	name = _GGadgetGetTitle(gcd[1].ret);
 	utag = _GGadgetGetTitle(gcd[3].ret);
-	if ( (ubuf[0] = utag[0])==0 )
+	if ( (ubuf[0] = utag[0])==0 ) {
 	    tag = 0;
-	else {
+	    ubuf[0] = ubuf[1] = ubuf[2] = ubuf[3] = ' ';
+	} else {
 	    if ( (ubuf[1] = utag[1])==0 )
 		ubuf[1] = ubuf[2] = ubuf[3] = ' ';
 	    else if ( (ubuf[2] = utag[2])==0 )
@@ -2190,22 +2191,27 @@ return( false );
 return( true );
 }
 
-static int GFI_AnchorDel(GGadget *g, GEvent *e) {
+void GListDelSelected(GGadget *list) {
     int len, i,j;
     GTextInfo **old, **new;
+
+    old = GGadgetGetList(list,&len);
+    new = gcalloc(len+1,sizeof(GTextInfo *));
+    for ( i=j=0; i<len; ++i ) if ( !old[i]->selected ) {
+	new[j] = galloc(sizeof(GTextInfo));
+	*new[j] = *old[i];
+	new[j]->text = u_copy(new[j]->text);
+	++j;
+    }
+    new[j] = gcalloc(1,sizeof(GTextInfo));
+    GGadgetSetList(list,new,false);
+}
+
+static int GFI_AnchorDel(GGadget *g, GEvent *e) {
     GGadget *list;
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	list = GWidgetGetControl(GGadgetGetWindow(g),CID_AnchorClasses);
-	old = GGadgetGetList(list,&len);
-	new = gcalloc(len+1,sizeof(GTextInfo *));
-	for ( i=j=0; i<len; ++i ) if ( !old[i]->selected ) {
-	    new[j] = galloc(sizeof(GTextInfo));
-	    *new[j] = *old[i];
-	    new[j]->text = u_copy(new[j]->text);
-	    ++j;
-	}
-	new[j] = gcalloc(1,sizeof(GTextInfo));
-	GGadgetSetList(list,new,false);
+	GListDelSelected(list);
 	GGadgetSetEnabled(GWidgetGetControl(GGadgetGetWindow(g),CID_AnchorDel),false);
 	GGadgetSetEnabled(GWidgetGetControl(GGadgetGetWindow(g),CID_AnchorRename),false);
     }
