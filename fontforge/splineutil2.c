@@ -2077,14 +2077,27 @@ SplineSet *SplineCharRemoveTiny(SplineChar *sc,SplineSet *head) {
 return( head );
 }
 
-Spline *SplineAddExtrema(Spline *s) {
+Spline *SplineAddExtrema(Spline *s,int always,real bound, DBounds *b) {
     /* First find the extrema, if any */
     double t[4], min;
-    int p, i,j;
+    int p, i,j, p_s;
     SplinePoint *sp;
+    real len;
+
+    if ( !always ) {
+	real xlen, ylen;
+	xlen = (s->from->me.x-s->to->me.x);
+	ylen = (s->from->me.y-s->to->me.y);
+	len = xlen*xlen + ylen*ylen;
+	bound *= bound;
+	if ( len < bound ) {
+	    len = SplineLength(s);
+	    len *= len;
+	}
+    }
 
     forever {
-	if ( s->islinear )
+	if ( s->knownlinear )
 return(s);
 	p = 0;
 	if ( s->splines[0].a!=0 ) {
@@ -2096,6 +2109,22 @@ return(s);
 	    }
 	} else if ( s->splines[0].b!=0 )
 	    t[p++] = -s->splines[0].c/(2*s->splines[0].b);
+	if ( !always && len<bound ) {
+	    /* Generally we are only interested in extrema on long splines, or */
+	    /* extrema which are extrema for the entire contour, not just this */
+	    /* spline */
+	    for ( i=0; i<p; ++i ) {
+		real x = ((s->splines[0].a*t[i]+s->splines[0].b)*t[i]+s->splines[0].c)*t[i]+s->splines[0].d;
+		if ( x>b->minx && x<b->maxx ) {
+		    --p;
+		    for ( j=i; j<p; ++j )
+			t[j] = t[j+1];
+		    --i;
+		}
+	    }
+	}
+
+	p_s = p;
 	if ( s->splines[1].a!=0 ) {
 	    double d = 4*s->splines[1].b*s->splines[1].b-4*3*s->splines[1].a*s->splines[1].c;
 	    if ( d>0 ) {
@@ -2105,6 +2134,17 @@ return(s);
 	    }
 	} else if ( s->splines[1].b!=0 )
 	    t[p++] = -s->splines[1].c/(2*s->splines[1].b);
+	if ( !always && len<bound ) {
+	    for ( i=p_s; i<p; ++i ) {
+		real y = ((s->splines[1].a*t[i]+s->splines[1].b)*t[i]+s->splines[1].c)*t[i]+s->splines[1].d;
+		if ( y>b->miny && y<b->maxy ) {
+		    --p;
+		    for ( j=i; j<p; ++j )
+			t[j] = t[j+1];
+		    --i;
+		}
+	    }
+	}
 
 	/* Throw out any t values which are not between 0 and 1 */
 	/*  (we do a little fudging near the endpoints so we don't get confused */
@@ -2117,6 +2157,7 @@ return(s);
 		--i;
 	    }
 	}
+
 	if ( p==0 )
 return(s);
 
@@ -2128,28 +2169,40 @@ return(s);
 	}
 	sp = SplineBisect(s,min);
 	s = sp->next;
+	if ( p==1 )
+return( s );
 	/* Don't try to use any other computed t values, it is easier to */
 	/*  recompute them than to try and figure out what they map to on the */
 	/*  new spline */
     }
 }
 
-void SplineSetAddExtrema(SplineSet *ss,int between_selected) {
+void SplineSetAddExtrema(SplineSet *ss,enum ae_type between_selected, SplineFont *sf) {
     Spline *s, *first;
+    DBounds b;
+    int always = true;
+    real bound = 0;
+
+    if ( between_selected==ae_only_good ) {
+	SplineSetQuickBounds(ss,&b);
+	bound = (sf->ascent+sf->descent)/32.0;
+	always = false;
+    }
 
     first = NULL;
     for ( s = ss->first->next; s!=NULL && s!=first; s = s->to->next ) {
-	if ( !between_selected || (s->from->selected && s->to->selected))
-	    s = SplineAddExtrema(s);
+	if ( between_selected!=ae_between_selected ||
+		(s->from->selected && s->to->selected))
+	    s = SplineAddExtrema(s,always,bound,&b);
 	if ( first==NULL ) first = s;
     }
 }
 
-void SplineCharAddExtrema(SplineSet *head,int between_selected) {
+void SplineCharAddExtrema(SplineSet *head,enum ae_type between_selected,SplineFont *sf) {
     SplineSet *ss;
 
     for ( ss=head; ss!=NULL; ss=ss->next ) {
-	SplineSetAddExtrema(ss,between_selected);
+	SplineSetAddExtrema(ss,between_selected,sf);
     }
 }
 

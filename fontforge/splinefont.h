@@ -1389,9 +1389,10 @@ extern void SplinePointListSimplify(SplineChar *sc,SplinePointList *spl,
 extern SplineSet *SplineCharSimplify(SplineChar *sc,SplineSet *head,
 	struct simplifyinfo *smpl);
 extern SplineSet *SplineSetJoin(SplineSet *start,int doall,real fudge,int *changed);
-extern Spline *SplineAddExtrema(Spline *s);
-extern void SplineSetAddExtrema(SplineSet *ss,int between_selected);
-extern void SplineCharAddExtrema(SplineSet *head,int between_selected);
+enum ae_type { ae_all, ae_between_selected, ae_only_good };
+extern Spline *SplineAddExtrema(Spline *s,int always,real bound,DBounds *b);
+extern void SplineSetAddExtrema(SplineSet *ss,enum ae_type between_selected, SplineFont *sf);
+extern void SplineCharAddExtrema(SplineSet *head,enum ae_type between_selected,SplineFont *sf);
 extern SplineSet *SplineCharRemoveTiny(SplineChar *sc,SplineSet *head);
 extern SplineFont *SplineFontNew(void);
 extern char *GetNextUntitledName(void);
