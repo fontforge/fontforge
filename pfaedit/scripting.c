@@ -735,6 +735,73 @@ static void bMergeKern(Context *c) {
 	error( c, "Failed to find kern info in file" );
 }
 
+static void bPrintSetup(Context *c) {
+
+    if ( c->a.argc!=2 && c->a.argc!=3 && c->a.argc!=5 )
+	error( c, "Wrong number of arguments");
+    if ( c->a.vals[1].type!=v_int )
+	error( c, "Bad type for first argument");
+    if ( c->a.argc>=3 && c->a.vals[2].type!=v_int )
+	error( c, "Bad type for second argument");
+    if ( c->a.argc==5 ) {
+	if ( c->a.vals[3].type!=v_int )
+	    error( c, "Bad type for third argument");
+	if ( c->a.vals[4].type!=v_int )
+	    error( c, "Bad type for fourth argument");
+	pagewidth = c->a.vals[3].u.ival;
+	pageheight = c->a.vals[4].u.ival;
+    }
+    printtype = c->a.vals[1].u.ival;
+    if ( c->a.argc>=3 && printtype==4 )
+	printcommand = copy(c->a.vals[2].u.sval);
+    else if ( c->a.argc>=3 && (printtype==0 || printtype==1) )
+	printlazyprinter = copy(c->a.vals[2].u.sval);
+}
+
+static void bPrintFont(Context *c) {
+    int type, i;
+    int32 *pointsizes=NULL;
+    char *sample=NULL, *output=NULL;
+
+    if ( c->a.argc!=2 && c->a.argc!=3 && c->a.argc!=4 && c->a.argc!=5 )
+	error( c, "Wrong number of arguments");
+    type = c->a.vals[1].u.ival;
+    if ( c->a.vals[1].type!=v_int || type<0 || type>3 )
+	error( c, "Bad type for first argument");
+    if ( c->a.argc>=3 ) {
+	if ( c->a.vals[2].type==v_int ) {
+	    if ( c->a.vals[2].u.ival>0 ) { 
+		pointsizes = gcalloc(2,sizeof(int32));
+		pointsizes[0] = c->a.vals[2].u.ival;
+	    }
+	} else if ( c->a.vals[2].type==v_arr ) {
+	    Array *a = c->a.vals[2].u.aval;
+	    pointsizes = galloc((a->argc+1)*sizeof(int32));
+	    for ( i=0; i<a->argc; ++i ) {
+		if ( a->vals[i].type!=v_int )
+		    error( c, "Bad type for array contents");
+		pointsizes[i] = a->vals[i].u.ival;
+	    }
+	    pointsizes[i] = 0;
+	} else
+	    error( c, "Bad type for second argument");
+    }
+    if ( c->a.argc>=4 ) {
+	if ( c->a.vals[3].type!=v_str )
+	    error( c, "Bad type for third argument");
+	else if ( *c->a.vals[3].u.sval!='\0' )
+	    sample = c->a.vals[3].u.sval;
+    }
+    if ( c->a.argc>=5 ) {
+	if ( c->a.vals[4].type!=v_str )
+	    error( c, "Bad type for fourth argument");
+	else if ( *c->a.vals[4].u.sval!='\0' )
+	    output = c->a.vals[4].u.sval;
+    }
+    ScriptPrint(c->curfv,type,pointsizes,sample,output);
+    free(pointsizes);
+}
+
 /* **** Edit menu **** */
 static void doEdit(Context *c, int cmd) {
     if ( c->a.argc!=1 )
@@ -1768,6 +1835,8 @@ struct builtins { char *name; void (*func)(Context *); int nofontok; } builtins[
     { "Generate", bGenerate },
     { "Import", bImport },
     { "MergeKern", bMergeKern },
+    { "PrintSetup", bPrintSetup },
+    { "PrintFont", bPrintFont },
 /* Edit Menu */
     { "Cut", bCut },
     { "Copy", bCopy },

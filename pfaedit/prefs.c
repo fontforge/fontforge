@@ -163,6 +163,7 @@ static struct prefs_list {
 	{ "PageHeight", pr_int, &pageheight, NULL, NULL, '\0', NULL, 1 },
 	{ "PrintType", pr_int, &printtype, NULL, NULL, '\0', NULL, 1 },
 	{ "PrintCommand", pr_string, &printcommand, NULL, NULL, '\0', NULL, 1 },
+	{ "PageLazyPrinter", pr_string, &printlazyprinter, NULL, NULL, '\0', NULL, 1 },
 	{ NULL }
 },
  oldnames[] = {

@@ -622,6 +622,8 @@ extern unichar_t *FVOpenFont(const unichar_t *title, const unichar_t *defaultfil
 	const unichar_t *initial_filter, unichar_t **mimetypes,int mult,int newok);
 
 extern void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv);
+extern void ScriptPrint(FontView *fv,int type,int32 *pointsizes,char *samplefile,
+	char *outputfile);
 
 extern void ShowAboutScreen(void);
 extern void DelayEvent(void (*func)(void *), void *data);

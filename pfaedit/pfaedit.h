@@ -79,7 +79,7 @@ extern char *BDFFoundry, *TTFFoundry;
 extern char *xuid;
 
 extern int pagewidth, pageheight, printtype;	/* Printer defaults */
-extern char *printcommand;
+extern char *printcommand, *printlazyprinter;
 
 extern Encoding *enclist;
 

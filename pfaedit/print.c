@@ -38,7 +38,7 @@
 
 enum { pt_lp, pt_lpr, pt_ghostview, pt_file, pt_other, pt_unknown=-1 };
 int pagewidth = 595, pageheight=792; 	/* Minimum size for US Letter, A4 paper, should work for either */
-static char *lastprinter=NULL;
+char *printlazyprinter=NULL;
 char *printcommand=NULL;
 int printtype = pt_unknown;
 static int use_gv;
@@ -335,7 +335,7 @@ static void startpage(PI *pi ) {
     else
 	for ( i=0; i<pi->max; ++i )
 	    fprintf(pi->out,"(%X) %d -54.84 n_show\n", i, 60+(pi->pointsize+pi->extrahspace)*i );
-    pi->ypos = -76;
+    pi->ypos = -60-.9*pi->pointsize;
 }
 
 static int DumpLine(PI *pi) {
@@ -405,22 +405,23 @@ return(0);
     for ( i=0; i<pi->max ; ++i ) {
 	if ( i+pi->chline<pi->cidcnt &&
 		    CIDWorthOutputting(pi->sf,i+pi->chline)!=-1) {
+	    int x = 58 + i*(pi->pointsize+pi->extrahspace);
 	    if ( pi->overflow ) {
 		fprintf( pi->out, "<%02x> %d %d n_show\n", pi->chline +i-(pi->lastbase<<8),
-			58+26*i, pi->ypos );
+			x, pi->ypos );
 	    } else if ( pi->iscid ) {
 		fprintf( pi->out, "<%04x> %d %d n_show\n", pi->chline +i,
-			58+(pi->extrahspace+pi->pointsize)*i, pi->ypos );
+			x, pi->ypos );
 	    } else if ( pi->iscjk ) {
 		fprintf( pi->out, "<%02x%02X> %d %d n_show\n",
 			(pi->chline+i)/96 + '!', (pi->chline+i)%96 + ' ',
-			58+(pi->extrahspace+pi->pointsize)*i, pi->ypos );
+			x, pi->ypos );
 	    } else if ( pi->twobyte ) {
 		fprintf( pi->out, "<%04x> %d %d n_show\n", pi->chline +i,
-			58+(pi->extrahspace+pi->pointsize)*i, pi->ypos );
+			x, pi->ypos );
 	    } else {
 		fprintf( pi->out, "<%02x> %d %d n_show\n", pi->chline +i,
-			58+26*i, pi->ypos );
+			x, pi->ypos );
 	    }
 	}
     }
@@ -930,7 +931,7 @@ static void PIGetPrinterDefs(PI *pi) {
     pi->pagewidth = pagewidth;
     pi->pageheight = pageheight;
     pi->printtype = printtype;
-    pi->printer = copy(lastprinter);
+    pi->printer = copy(printlazyprinter);
     pi->copies = 1;
 }
 
@@ -1036,7 +1037,7 @@ return( true );
 	    pi->printtype = pt_file;
 
 	printtype = pi->printtype;
-	free(lastprinter); lastprinter = copy(pi->printer);
+	free(printlazyprinter); printlazyprinter = copy(pi->printer);
 	pagewidth = pgwidth; pageheight = pgheight;
 
 	pi->done = true;
@@ -1467,6 +1468,24 @@ static void PRT_SetEnabled(PI *pi) {
     GGadgetSetEnabled(GWidgetGetControl(pi->gw,CID_SampleText),enable_sample);
 }
 
+static void DoPrinting(PI *pi,char *filename,unichar_t *sample) {
+    if ( pi->pt==pt_fontdisplay )
+	PIFontDisplay(pi);
+    else if ( pi->pt==pt_fontsample )
+	PIFontSample(pi,sample);
+    else if ( pi->pt==pt_multisize )
+	PIMultiSize(pi);
+    else
+	PIChars(pi);
+    rewind(pi->out);
+    if ( ferror(pi->out) )
+	GDrawError("Failed to generate postscript in file %s", filename==NULL?"temporary":filename );
+    if ( pi->printtype!=pt_file )
+	QueueIt(pi);
+    if ( fclose(pi->out)!=0 )
+	GDrawError("Failed to generate postscript in file %s", filename==NULL?"temporary":filename );
+}
+
 static int PRT_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	PI *pi = GDrawGetUserData(GGadgetGetWindow(g));
@@ -1535,21 +1554,7 @@ return(true);
 	free( pdefs[di].text );
 	pdefs[di].text = sample;
 
-	if ( pi->pt==pt_fontdisplay )
-	    PIFontDisplay(pi);
-	else if ( pi->pt==pt_fontsample )
-	    PIFontSample(pi,sample);
-	else if ( pi->pt==pt_multisize )
-	    PIMultiSize(pi);
-	else
-	    PIChars(pi);
-	rewind(pi->out);
-	if ( ferror(pi->out) )
-	    GDrawError("Failed to generate postscript in file %s", file==NULL?"temporary":file );
-	if ( pi->printtype!=pt_file )
-	    QueueIt(pi);
-	if ( fclose(pi->out)!=0 )
-	    GDrawError("Failed to generate postscript in file %s", file==NULL?"temporary":file );
+	DoPrinting(pi,file,sample);
 	free(file);
 
 	pi->done = true;
@@ -2469,6 +2474,31 @@ return( gcalloc(1,sizeof(unichar_t)));
     }
 }
 
+static void PIInit(PI *pi,FontView *fv,SplineChar *sc,MetricsView *mv) {
+    int di = fv!=NULL?0:sc!=NULL?1:2;
+
+    memset(pi,'\0',sizeof(*pi));
+    pi->fv = fv;
+    pi->mv = mv;
+    pi->sc = sc;
+    if ( fv!=NULL )
+	pi->sf = fv->sf;
+    else if ( sc!=NULL )
+	pi->sf = sc->parent;
+    else
+	pi->sf = mv->fv->sf;
+    if ( pi->sf->cidmaster!=NULL ) pi->sf = pi->sf->cidmaster;
+    pi->twobyte = (pi->sf->encoding_name>=e_first2byte && pi->sf->encoding_name<em_base) ||
+		pi->sf->encoding_name>=em_unicodeplanes;
+    pi->iscjk = (pi->sf->encoding_name>=e_first2byte && pi->sf->encoding_name<em_base) &&
+	    pi->sf->encoding_name!=em_unicode && pi->sf->encoding_name!=em_unicode4;
+    pi->iscid = pi->sf->subfontcnt!=0;
+    pi->pointsize = pdefs[di].pointsize;
+    if ( pi->pointsize==0 )
+	pi->pointsize = pi->iscid?18:20;		/* 18 fits 20 across, 20 fits 16 */
+    PIGetPrinterDefs(pi);
+}
+
 void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     GRect pos;
     GWindowAttrs wattrs;
@@ -2479,26 +2509,7 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     int cnt;
     char buf[10];
 
-    memset(&pi,'\0',sizeof(pi));
-    pi.fv = fv;
-    pi.mv = mv;
-    pi.sc = sc;
-    if ( fv!=NULL )
-	pi.sf = fv->sf;
-    else if ( sc!=NULL )
-	pi.sf = sc->parent;
-    else
-	pi.sf = mv->fv->sf;
-    if ( pi.sf->cidmaster!=NULL ) pi.sf = pi.sf->cidmaster;
-    pi.twobyte = (pi.sf->encoding_name>=e_first2byte && pi.sf->encoding_name<em_base) ||
-		pi.sf->encoding_name>=em_unicodeplanes;
-    pi.iscjk = (pi.sf->encoding_name>=e_first2byte && pi.sf->encoding_name<em_base) &&
-	    pi.sf->encoding_name!=em_unicode && pi.sf->encoding_name!=em_unicode4;
-    pi.iscid = pi.sf->subfontcnt!=0;
-    pi.pointsize = pdefs[di].pointsize;
-    if ( pi.pointsize==0 )
-	pi.pointsize = pi.iscid?18:20;		/* 18 fits 20 across, 20 fits 16 */
-    PIGetPrinterDefs(&pi);
+    PIInit(&pi,fv,sc,mv);
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_restrict;
@@ -2657,4 +2668,90 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
 	GDrawProcessOneEvent(NULL);
     GDrawDestroyWindow(pi.gw);
     free(pi.printer);
+}
+
+/* ************************************************************************** */
+/* ******************************** Scripting ******************************* */
+/* ************************************************************************** */
+
+static unichar_t *FileToUString(char *filename,int max) {
+    FILE *file;
+    int ch, ch2;
+    int format=0;
+    unichar_t *space, *upt, *end;
+
+    file = fopen( filename,"r" );
+    if ( file==NULL )
+return( NULL );
+    ch = getc(file); ch2 = getc(file);
+    if ( ch==0xfe && ch2==0xff )
+	format = 1;		/* normal ucs2 */
+    else if ( ch==0xff && ch2==0xfe )
+	format = 2;		/* byte-swapped ucs2 */
+    else
+	rewind(file);
+    space = upt = galloc((max+1)*sizeof(unichar_t));
+    end = space+max;
+    if ( format!=0 ) {
+	while ( upt<end ) {
+	    ch = getc(file); ch2 = getc(file);
+	    if ( ch2==EOF )
+	break;
+	    if ( format==1 )
+		*upt ++ = (ch<<8)|ch2;
+	    else
+		*upt ++ = (ch2<<8)|ch;
+	}
+    } else {
+	char buffer[400];
+	while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
+	    def2u_strncpy(upt,buffer,end-upt);
+	    upt += u_strlen(upt);
+	}
+    }
+    *upt = '\0';
+    fclose(file);
+return( space );
+}
+
+void ScriptPrint(FontView *fv,int type,int32 *pointsizes,char *samplefile,
+	char *outputfile) {
+    PI pi;
+    unichar_t *sample=NULL;
+	char buf[100];
+
+    PIInit(&pi,fv,NULL,NULL);
+    if ( pointsizes!=NULL ) {
+	pi.pointsizes = pointsizes;
+	pi.pointsize = pointsizes[0];
+    }
+    pi.pt = type;
+    if ( type==pt_fontsample ) {
+	if ( samplefile!=NULL )
+	    sample = FileToUString(samplefile,65536);
+	if ( sample==NULL )
+	    sample = BuildDef(pi.sf,pi.twobyte);
+    }
+    if ( pi.printtype==pt_file ) {
+	if ( outputfile==NULL ) {
+	    sprintf(buf,"pr-%.90s.ps", pi.sf->fontname );
+	    outputfile = buf;
+	}
+	pi.out = fopen(outputfile,"w");
+	if ( pi.out==NULL ) {
+	    GDrawError("Failed to open file %s for output", outputfile );
+return;
+	}
+    } else {
+	outputfile = NULL;
+	pi.out = tmpfile();
+	if ( pi.out==NULL ) {
+	    GWidgetErrorR(_STR_FailedOpenTemp,_STR_FailedOpenTemp);
+return;
+	}
+    }
+
+    DoPrinting(&pi,outputfile,sample);
+
+    free(sample);
 }
