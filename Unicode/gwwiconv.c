@@ -64,6 +64,7 @@ static enum encoding name_to_enc(const char *encname) {
 	{ "UCS2", e_unicode },
 	{ "UCS-2", e_unicode },
 	{ "UCS-2-INTERNAL", e_unicode },
+	{ "ISO-10646/USC2", e_unicode },
 	{ "iso8859-1", e_iso8859_1 },
 	{ "iso8859-2", e_iso8859_2 },
 	{ "iso8859-3", e_iso8859_3 },
@@ -128,7 +129,7 @@ gww_iconv_t gww_iconv_open(const char *toenc,const char *fromenc) {
     stuff.from = name_to_enc(fromenc);
     stuff.to = name_to_enc(toenc);
     if ( stuff.from==(enum encoding) -1 || stuff.to==(enum encoding) -1 ) {
-	fprintf( stderr, "Unknown encoding\n" );
+	/*fprintf( stderr, "Unknown encoding\n" );*/
 return( (iconv_t)(-1) );
     } else if ( stuff.from!=e_unicode && stuff.to!=e_unicode ) {
 	fprintf( stderr, "Bad call to gww_iconv_open, neither arg is UCS2\n" );
