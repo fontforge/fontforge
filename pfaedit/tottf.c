@@ -691,7 +691,42 @@ static SplineSet *SCttfApprox(SplineChar *sc) {
     }
 return( head );
 }
-    
+
+static int BadCount(SplineSet *ttfss) {
+    SplinePoint *sp, *first=NULL;
+    int cnt=0, starts_with_cp;
+    SplineSet *ss;
+
+    for ( ss = ttfss ; ss!=NULL; ss=ss->next ) {
+	starts_with_cp = (ss->first->ttfindex == cnt+1 || ss->first->ttfindex==0xffff) &&
+		!ss->first->noprevcp;
+
+	for ( sp=ss->first; sp!=first ; ) {
+	    if ( sp->ttfindex==0xfffe )
+return( true );
+	    else if ( sp->ttfindex!=0xffff ) {
+		if ( cnt!=sp->ttfindex )
+return( true );
+		cnt = sp->ttfindex+1;
+	    } else if (  sp==ss->first || sp->nonextcp || sp->noprevcp ||
+			(sp->dontinterpolate || sp->roundx || sp->roundy) ||
+			(sp->prevcp.x+sp->nextcp.x)/2!=sp->me.x ||
+			(sp->prevcp.y+sp->nextcp.y)/2!=sp->me.y ) {
+return( true );
+	    }
+	    if ( !sp->nonextcp ) ++cnt;
+	    if ( sp->next==NULL )
+	break;
+	    if ( first==NULL ) first = sp;
+	    sp = sp->next->to;
+	}
+
+	if ( starts_with_cp )	/* We'll have counted it twice */
+	    --cnt;
+    }
+return( false );
+}
+
 int SSPointCnt(SplineSet *ss,int startcnt, int has_instrs) {
     SplinePoint *sp, *first=NULL;
     int cnt, starts_with_cp;
@@ -1120,6 +1155,7 @@ static void dumpglyph(SplineChar *sc, struct glyphinfo *gi) {
     int contourcnt, ptcnt, origptcnt;
     BasePoint *bp;
     char *fs;
+    int use_ptcnt = sc->ttf_instrs!=NULL || gi->has_instrs;
 
 /* I haven't seen this documented, but ttf rasterizers are unhappy with a */
 /*  glyph that consists of a single point. Glyphs containing two single points*/
@@ -1141,9 +1177,11 @@ return;
 
     contourcnt = ptcnt = 0;
     ttfss = SCttfApprox(sc);
+    if ( sc->ttf_instrs==NULL && gi->has_instrs )
+	use_ptcnt = !BadCount(ttfss);
     for ( ss=ttfss; ss!=NULL; ss=ss->next ) {
 	++contourcnt;
-	ptcnt = SSPointCnt(ss,ptcnt,sc->ttf_instrs!=NULL || gi->has_instrs);
+	ptcnt = SSPointCnt(ss,ptcnt,use_ptcnt);
     }
     origptcnt = ptcnt;
 
@@ -1165,7 +1203,7 @@ return;
     fs = galloc(ptcnt);
     ptcnt = contourcnt = 0;
     for ( ss=ttfss; ss!=NULL; ss=ss->next ) {
-	ptcnt = SSAddPoints(ss,ptcnt,bp,fs,sc->ttf_instrs!=NULL || gi->has_instrs);
+	ptcnt = SSAddPoints(ss,ptcnt,bp,fs,use_ptcnt);
 	putshort(gi->glyphs,ptcnt-1);
     }
     if ( ptcnt!=origptcnt )
