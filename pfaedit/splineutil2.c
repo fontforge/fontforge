@@ -414,88 +414,132 @@ and only three equations...
 */
 static int _ApproximateSplineFromPoints(SplinePoint *from, SplinePoint *to,
 	TPoint *mid, int cnt, BasePoint *nextcp, BasePoint *prevcp) {
-    double t, t2, t3, t4, x, y, xt, yt, tt, ttn;
-    int i, ret;
+    double tt, ttn;
+    int i, j, ret;
     double vx[3], vy[3], m[3][3];
+    double ts[7], xts[4], yts[4];
+    BasePoint nres, pres;
+    int nrescnt=0, prescnt=0;
+    double nmin, nmax, pmin, pmax, test;
 
-    t = t2 = t3 = t4 = 1;
-    x = from->me.x+to->me.x; y = from->me.y+to->me.y;
-    xt = to->me.x; yt = to->me.y;
+    memset(&nres,0,sizeof(nres)); memset(&pres,0,sizeof(pres));
+
+    /* Add the initial and end points */
+    ts[0] = 2; for ( i=1; i<7; ++i ) ts[i] = 1;
+    xts[0] = from->me.x+to->me.x; yts[0] = from->me.y+to->me.y;
+    xts[3] = xts[2] = xts[1] = to->me.x; yts[3] = yts[2] = yts[1] = to->me.y;
+    nmin = pmin = 0; nmax = pmax = (to->me.x-from->me.x)*(to->me.x-from->me.x)+(to->me.y-from->me.y)*(to->me.y-from->me.y);
     for ( i=0; i<cnt; ++i ) {
-	x += mid[i].x;
-	y += mid[i].y;
+	xts[0] += mid[i].x;
+	yts[0] += mid[i].y;
+	++ts[0];
 	tt = mid[i].t;
-	xt += tt*mid[i].x;
-	yt += tt*mid[i].y;
-	t += tt;
-	t2 += (ttn=tt*tt);
-	t3 += (ttn*=tt);
-	t4 += (ttn*=tt);
+	xts[1] += tt*mid[i].x;
+	yts[1] += tt*mid[i].y;
+	ts[1] += tt;
+	ts[2] += (ttn=tt*tt);
+	xts[2] += ttn*mid[i].x;
+	yts[2] += ttn*mid[i].y;
+	ts[3] += (ttn*=tt);
+	xts[3] += ttn*mid[i].x;
+	yts[3] += ttn*mid[i].y;
+	ts[4] += (ttn*=tt);
+	ts[5] += (ttn*=tt);
+	ts[6] += (ttn*=tt);
+
+	test = (mid[i].x-from->me.x)*(to->me.x-from->me.x) + (mid[i].y-from->me.y)*(to->me.y-from->me.y);
+	if ( test<nmin ) nmin=test;
+	if ( test>nmax ) nmax=test;
+	test = (mid[i].x-to->me.x)*(from->me.x-to->me.x) + (mid[i].y-to->me.y)*(from->me.y-to->me.y);
+	if ( test<pmin ) pmin=test;
+	if ( test>pmax ) pmax=test;
     }
+    pmin *= 1.2; pmax *= 1.2; nmin *= 1.2; nmax *= 1.2;
 
-    vx[0] = xt-t*from->me.x;
-    vx[1] = x-(cnt+2)*from->me.x;
-    vx[2] = to->me.x-from->me.x;
+    for ( j=0; j<3; ++j ) {
+	vx[0] = xts[j+1]-ts[j+1]*from->me.x;
+	vx[1] = xts[j]-ts[j]*from->me.x;
+	vx[2] = to->me.x-from->me.x;		/* always use the defn of spline */
 
-    vy[0] = yt-t*from->me.y;
-    vy[1] = y-(cnt+2)*from->me.y;
-    vy[2] = to->me.y-from->me.y;
+	vy[0] = yts[j+1]-ts[j+1]*from->me.y;
+	vy[1] = yts[j]-ts[j]*from->me.y;
+	vy[2] = to->me.y-from->me.y;
 
-    m[0][0] = t4; m[0][1] = t3; m[0][2] = t2;
-    m[1][0] = t3; m[1][1] = t2; m[1][2] = t;
-    m[2][0] = 1;  m[2][1] = 1;  m[2][2] = 1;
+	m[0][0] = ts[j+4]; m[0][1] = ts[j+3]; m[0][2] = ts[j+2];
+	m[1][0] = ts[j+3]; m[1][1] = ts[j+2]; m[1][2] = ts[j+1];
+	m[2][0] = 1;  m[2][1] = 1;  m[2][2] = 1;
 
-    /* Remove a terms from rows 0 and 1 */
-    vx[0] -= t4*vx[2];
-    vy[0] -= t4*vy[2];
-    m[0][0] = 0; m[0][1] -= t4; m[0][2] -= t4;
-    vx[1] -= t3*vx[2];
-    vy[1] -= t3*vy[2];
-    m[1][0] = 0; m[1][1] -= t3; m[1][2] -= t3;
+	/* Remove a terms from rows 0 and 1 */
+	vx[0] -= ts[j+4]*vx[2];
+	vy[0] -= ts[j+4]*vy[2];
+	m[0][0] = 0; m[0][1] -= ts[j+4]; m[0][2] -= ts[j+4];
+	vx[1] -= ts[j+3]*vx[2];
+	vy[1] -= ts[j+3]*vy[2];
+	m[1][0] = 0; m[1][1] -= ts[j+3]; m[1][2] -= ts[j+3];
 
-    if ( fabs(m[1][1])<fabs(m[0][1]) ) {
-	double temp;
-	temp = vx[1]; vx[1] = vx[0]; vx[0] = temp;
-	temp = vy[1]; vy[1] = vy[0]; vy[0] = temp;
-	temp = m[1][1]; m[1][1] = m[0][1]; m[0][1] = temp;
-	temp = m[1][2]; m[1][2] = m[0][2]; m[0][2] = temp;
-    }
-    /* remove b terms from rows 0 and 2 (first normalize row 1 so m[1][1] is 1*/
-    vx[1] /= m[1][1];
-    vy[1] /= m[1][1];
-    m[1][2] /= m[1][1];
-    m[1][1] = 1;
-    vx[0] -= m[0][1]*vx[1];
-    vy[0] -= m[0][1]*vy[1];
-    m[0][2] -= m[0][1]*m[1][2]; m[0][1] = 0;
-    vx[2] -= m[2][1]*vx[1];
-    vy[2] -= m[2][1]*vy[1];
-    m[2][2] -= m[2][1]*m[1][2]; m[2][1] = 0; 
+	if ( fabs(m[1][1])<fabs(m[0][1]) ) {
+	    double temp;
+	    temp = vx[1]; vx[1] = vx[0]; vx[0] = temp;
+	    temp = vy[1]; vy[1] = vy[0]; vy[0] = temp;
+	    temp = m[1][1]; m[1][1] = m[0][1]; m[0][1] = temp;
+	    temp = m[1][2]; m[1][2] = m[0][2]; m[0][2] = temp;
+	}
+	/* remove b terms from rows 0 and 2 (first normalize row 1 so m[1][1] is 1*/
+	vx[1] /= m[1][1];
+	vy[1] /= m[1][1];
+	m[1][2] /= m[1][1];
+	m[1][1] = 1;
+	vx[0] -= m[0][1]*vx[1];
+	vy[0] -= m[0][1]*vy[1];
+	m[0][2] -= m[0][1]*m[1][2]; m[0][1] = 0;
+	vx[2] -= m[2][1]*vx[1];
+	vy[2] -= m[2][1]*vy[1];
+	m[2][2] -= m[2][1]*m[1][2]; m[2][1] = 0; 
     
-    vx[0] /= m[0][2];			/* This is cx */
-    vy[0] /= m[0][2];			/* This is cy */
-    /*m[0][2] = 1;*/
+	vx[0] /= m[0][2];			/* This is cx */
+	vy[0] /= m[0][2];			/* This is cy */
+	/*m[0][2] = 1;*/
 
-    vx[1] -= m[1][2]*vx[0];		/* This is bx */
-    vy[1] -= m[1][2]*vy[0];		/* This is by */
-    /* m[1][2] = 0; */
-    vx[2] -= m[2][2]*vx[0];		/* This is ax */
-    vy[2] -= m[2][2]*vy[0];		/* This is ay */
-    /* m[2][2] = 0; */
+	vx[1] -= m[1][2]*vx[0];		/* This is bx */
+	vy[1] -= m[1][2]*vy[0];		/* This is by */
+	/* m[1][2] = 0; */
+	vx[2] -= m[2][2]*vx[0];		/* This is ax */
+	vy[2] -= m[2][2]*vy[0];		/* This is ay */
+	/* m[2][2] = 0; */
 
-    nextcp->x = from->me.x + vx[0]/3;
-    nextcp->y = from->me.y + vy[0]/3;
-    prevcp->x = nextcp->x + (vx[0]+vx[1])/3;
-    prevcp->y = nextcp->y + (vy[0]+vy[1])/3;
+	nextcp->x = from->me.x + vx[0]/3;
+	nextcp->y = from->me.y + vy[0]/3;
+	prevcp->x = nextcp->x + (vx[0]+vx[1])/3;
+	prevcp->y = nextcp->y + (vy[0]+vy[1])/3;
+
+	test = (nextcp->x-from->me.x)*(to->me.x-from->me.x) +
+		(nextcp->y-from->me.y)*(to->me.y-from->me.y);
+	if ( test>=nmin && test<=nmax ) {
+	    nres.x += nextcp->x; nres.y += nextcp->y;
+	    ++nrescnt;
+	}
+	test = (prevcp->x-to->me.x)*(from->me.x-to->me.x) +
+		(prevcp->y-to->me.y)*(from->me.y-to->me.y);
+	if ( test>=pmin && test<=pmax ) {
+	    pres.x += prevcp->x; pres.y += prevcp->y;
+	    ++prescnt;
+	}
+	if ( nrescnt==1 && prescnt==1 )
+    break;
+    }
 
     ret = 0;
-    if ( vx[0]*(to->me.x-from->me.x) + vy[0]*(to->me.y-from->me.y)>=0 )
+    if ( nrescnt>0 ) {
 	ret |= 1;
-    else
+	nextcp->x = nres.x/nrescnt;
+	nextcp->y = nres.y/nrescnt;
+    } else
 	*nextcp = from->nextcp;
-    if ( (prevcp->x-to->me.x)*(from->me.x-to->me.x) + (prevcp->y-to->me.y)*(from->me.y-to->me.y)>=0 )
+    if ( prescnt>0 ) {
 	ret |= 2;
-    else
+	prevcp->x = pres.x/prescnt;
+	prevcp->y = pres.y/prescnt;
+    } else
 	*prevcp = to->prevcp;
 return( ret );
 }

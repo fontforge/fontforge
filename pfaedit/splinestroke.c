@@ -138,6 +138,7 @@ return( here );
 
 static void StrokeEnd(SplinePoint *base, StrokeInfo *si, SplinePoint **_plus, SplinePoint **_minus) {
     SplinePoint *plus, *minus, *cur, *mid1, *mid2;
+    BasePoint *dir;
     real c,s;
     real angle;
     real sign;
@@ -193,6 +194,7 @@ static void StrokeEnd(SplinePoint *base, StrokeInfo *si, SplinePoint **_plus, Sp
     } else {
 	plus = chunkalloc(sizeof(SplinePoint));
 	minus = chunkalloc(sizeof(SplinePoint));
+	plus->nonextcp = minus->nonextcp = plus->noprevcp = minus->noprevcp = true;
 	plus->pointtype = pt_corner; minus->pointtype = pt_corner;
 	if ( base->next==NULL ) {	/* the prev spline moves toward base */
 	    SplineIsLinearMake(base->prev);
@@ -211,16 +213,12 @@ static void StrokeEnd(SplinePoint *base, StrokeInfo *si, SplinePoint **_plus, Sp
 	if ( si->cap==lc_butt ) {
 	    SplineMake3(plus,minus);		/* draw a line between */
 	} else if ( si->cap==lc_square ) {
-	    mid1 = chunkalloc(sizeof(SplinePoint));
-	    mid1->me.x = plus->me.x+ sign*(plus->me.y-base->me.y);
-	    mid1->me.y = plus->me.y- sign*(plus->me.x-base->me.x);
-	    mid1->nextcp = mid1->prevcp = mid1->me;
-	    mid1->nonextcp = mid1->noprevcp = true;
-	    mid2 = chunkalloc(sizeof(SplinePoint));
-	    mid2->me.x = minus->me.x+ sign*(plus->me.y-base->me.y);
-	    mid2->me.y = minus->me.y- sign*(plus->me.x-base->me.x);
-	    mid2->nextcp = mid2->prevcp = mid2->me;
-	    mid2->nonextcp = mid2->noprevcp = true;
+	    mid1 = SplinePointCreate(
+		    plus->me.x+ sign*(plus->me.y-base->me.y),
+		    plus->me.y- sign*(plus->me.x-base->me.x));
+	    mid2 = SplinePointCreate(
+		    minus->me.x+ sign*(plus->me.y-base->me.y),
+		    minus->me.y- sign*(plus->me.x-base->me.x));
 	    mid1->pointtype = pt_corner; mid2->pointtype = pt_corner;
 	    SplineMake3(plus,mid1);
 	    SplineMake3(mid1,mid2);
@@ -234,8 +232,10 @@ static void StrokeEnd(SplinePoint *base, StrokeInfo *si, SplinePoint **_plus, Sp
 	    s = .552*si->radius*factor*sin(angle);
 	    plus->nextcp.x = plus->me.x + c;
 	    plus->nextcp.y = plus->me.y + s;
+	    plus->nonextcp = false;
 	    minus->prevcp.x = minus->me.x +c;
 	    minus->prevcp.y = minus->me.y +s;
+	    minus->noprevcp = false;
 	    mid1->prevcp.x = mid1->me.x - sign*s;
 	    mid1->prevcp.y = mid1->me.y + sign*c;
 	    mid1->nextcp.x = mid1->me.x + sign*s;
@@ -243,6 +243,17 @@ static void StrokeEnd(SplinePoint *base, StrokeInfo *si, SplinePoint **_plus, Sp
 	    SplineMake3(plus,mid1);
 	    SplineMake3(mid1,minus);
 	}
+	if ( base->next!=NULL ) {
+	    plus->noprevcp = minus->nonextcp = base->nonextcp;
+	    dir = &base->nextcp;
+	} else {
+	    plus->noprevcp = minus->nonextcp = base->noprevcp;
+	    dir = &base->prevcp;
+	}
+	plus->prevcp.x = dir->x - base->me.x + plus->me.x;
+	plus->prevcp.y = dir->y - base->me.y + plus->me.y;
+	minus->nextcp.x = dir->x - base->me.x + minus->me.x;
+	minus->nextcp.y = dir->y - base->me.y + minus->me.y;
 	*_plus = plus;
 	*_minus = minus;
     }
@@ -352,13 +363,91 @@ static void MakeJoints(JointPoint *ret,StrokeInfo *si,
     }
 }
 
+static int OnEdge(BasePoint *plus,BasePoint *minus,Spline *sp, double t,
+	double heret, Spline *hsp,
+	StrokeInfo *si, double *_ppt, double *_pmt, double *_mpt, double *_mmt) {
+    double rsq = si->radius*si->radius;
+    double tt, xdiff, ydiff, loopdiff;
+    double pptval= -1, pmtval= -1, mptval= -1, mmtval = -1;
+    BasePoint here, test;
+
+    here.x = ((hsp->splines[0].a*heret+hsp->splines[0].b)*heret+hsp->splines[0].c)*heret+hsp->splines[0].d;
+    here.y = ((hsp->splines[1].a*heret+hsp->splines[1].b)*heret+hsp->splines[1].c)*heret+hsp->splines[1].d;
+
+    if ( (xdiff = sp->to->me.x-sp->from->me.x)<0 ) xdiff = -xdiff;
+    if ( (ydiff = sp->to->me.y-sp->from->me.y)<0 ) ydiff = -ydiff;
+    loopdiff = (xdiff+ydiff==0) ? 2 : 1.0/(4*(xdiff+ydiff)/si->radius);
+
+    if ( _ppt!=NULL ) {
+	for ( tt = t+loopdiff; tt<=1 ; tt += loopdiff ) {
+	    test.x = ((sp->splines[0].a*tt+sp->splines[0].b)*tt+sp->splines[0].c)*tt+sp->splines[0].d;
+	    test.y = ((sp->splines[1].a*tt+sp->splines[1].b)*tt+sp->splines[1].c)*tt+sp->splines[1].d;
+	    if ( (test.x-here.x)*(test.x-here.x)+(test.y-here.y)*(test.y-here.y)> 2*rsq )
+	break;
+	    if ( (plus->x-test.x)*(plus->x-test.x)+(plus->y-test.y)*(plus->y-test.y)<= rsq )
+		pptval = tt;
+	    if ( (minus->x-test.x)*(minus->x-test.x)+(minus->y-test.y)*(minus->y-test.y)<= rsq )
+		pmtval = tt;
+	}
+	*_ppt = pptval; *_pmt = pmtval;
+    }
+
+    if ( _mmt!=NULL ) {
+	for ( tt = t-loopdiff; tt>=0 ; tt -= loopdiff ) {
+	    test.x = ((sp->splines[0].a*tt+sp->splines[0].b)*tt+sp->splines[0].c)*tt+sp->splines[0].d;
+	    test.y = ((sp->splines[1].a*tt+sp->splines[1].b)*tt+sp->splines[1].c)*tt+sp->splines[1].d;
+	    if ( (test.x-here.x)*(test.x-here.x)+(test.y-here.y)*(test.y-here.y)> 2*rsq )
+	break;
+	    if ( (plus->x-test.x)*(plus->x-test.x)+(plus->y-test.y)*(plus->y-test.y)< rsq )
+		mptval = tt;
+	    if ( (minus->x-test.x)*(minus->x-test.x)+(minus->y-test.y)*(minus->y-test.y)< rsq )
+		mmtval = tt;
+	}
+	*_mmt = mmtval; *_mpt = mptval;
+    }
+
+return( pptval!=-1 || mmtval!=-1 || pmtval!=-1 || mptval==-1 );
+}
+
+static void SPFigurePrevCP(SplinePoint *sp,Spline *s,double t) {
+    /* All I really care about is the slope, not the length */
+
+    if ( t==1 ) {
+	sp->prevcp.x = s->to->prevcp.x - s->to->me.x + sp->me.x;
+	sp->prevcp.y = s->to->prevcp.y - s->to->me.y + sp->me.y;
+	sp->noprevcp = s->to->noprevcp;
+    } else {
+	sp->prevcp.x = sp->me.x - ((3*s->splines[0].a*t+2*s->splines[0].b)*t+s->splines[0].c)/3;
+	sp->prevcp.y = sp->me.y - ((3*s->splines[1].a*t+2*s->splines[1].b)*t+s->splines[1].c)/3;
+	sp->noprevcp = false;
+    }
+}
+
+static void SPFigureNextCP(SplinePoint *sp,Spline *s,double t) {
+    /* All I really care about is the slope, not the length */
+
+    if ( t==0 ) {
+	sp->nextcp.x = s->from->nextcp.x - s->from->me.x + sp->me.x;
+	sp->nextcp.y = s->from->nextcp.y - s->from->me.y + sp->me.y;
+	sp->nonextcp = s->from->nonextcp;
+    } else {
+	sp->nextcp.x = sp->me.x + ((3*s->splines[0].a*t+2*s->splines[0].b)*t+s->splines[0].c)/3;
+	sp->nextcp.y = sp->me.y + ((3*s->splines[1].a*t+2*s->splines[1].b)*t+s->splines[1].c)/3;
+	sp->nonextcp = false;
+    }
+}
+
 /* Plus joins run from prev to next, minus joins run from next to prev */
 /* This makes plus joins clockwise and minus joins counter */
 static void StrokeJoint(SplinePoint *base,StrokeInfo *si,JointPoint *plus,JointPoint *minus) {
-    BasePoint nplus, nminus, pplus,pminus;
+    BasePoint nplus, nminus, pplus,pminus, temp;
     double nangle, pangle;
     int pinner;
     real factor = si->factor==NULL ? 1.0 : (si->factor)(si->data,base->next,0);
+    double pt, mt, lastpt, lastmt;
+    double oldtt, tt, xdiff, ydiff, loopdiff;
+    int mfound, pfound;
+    int hold;
 
     SplineIsLinearMake(base->prev);
     SplineIsLinearMake(base->next);
@@ -372,14 +461,85 @@ static void StrokeJoint(SplinePoint *base,StrokeInfo *si,JointPoint *plus,JointP
 	    RealNearish(pangle,nangle) ) {
 	/* If the two splines are tangent at the base, then everything is */
 	/*  simple, there is no join, things match up perfectly */
-	plus->from = plus->to = chunkalloc(sizeof(SplinePoint));
+	/* Um. No. If there is a sharp bend or a corner nearby then it may */
+	/*  have the same effect as a corner, in extreme cases the entire */
+	/*  spline may be eaten up */
+	plus->from = plus->to = SplinePointCreate((pplus.x + nplus.x)/2,(pplus.y + nplus.y)/2);
 	plus->from->pointtype = pt_curve;
-	plus->from->me.x = (pplus.x + nplus.x)/2;
-	plus->from->me.y = (pplus.y + nplus.y)/2;
-	minus->from = minus->to = chunkalloc(sizeof(SplinePoint));
-	minus->from->me.x = (pminus.x + nminus.x)/2;
-	minus->from->me.y = (pminus.y + nminus.y)/2;
+	nplus = pplus = plus->from->me;
+	minus->from = minus->to = SplinePointCreate((pminus.x + nminus.x)/2,(pminus.y + nminus.y)/2);
+	nminus = pminus = minus->from->me;
 	minus->from->pointtype = pt_curve;
+
+	if ( (xdiff = base->me.x-base->prev->from->me.x)<0 ) xdiff = -xdiff;
+	if ( (ydiff = base->me.y-base->prev->from->me.y)<0 ) ydiff = -ydiff;
+	loopdiff = (xdiff+ydiff==0) ? 2 : 1.0/(xdiff+ydiff);
+
+	mfound = pfound = false;
+	lastpt = lastmt = 0;
+	for ( tt=1; ; ) {
+	    OnEdge(&pplus,&pminus,base->next,0,tt,base->prev,
+		    si,&pt,&mt,NULL,NULL);
+	    oldtt = tt;
+	    tt -= loopdiff;
+	    if ( !pfound && (pt==-1 || tt<0)) {
+		pfound = true;
+		plus->tprev = 1-lastpt;
+		plus->tnext = 1-oldtt;
+		plus->from->me = pplus;
+	    }
+	    if ( !mfound && (mt==-1 || tt<0)) {
+		mfound = true;
+		minus->tprev = oldtt;
+		minus->tnext = lastmt;
+		minus->from->me = pminus;
+	    }
+	    if ( pfound && mfound )
+	break;
+	    SplineExpand(base->prev,tt,0,si,&pplus,&pminus);
+	    lastpt = pt; lastmt = mt;
+	}
+
+	if ( (xdiff = base->next->to->me.x-base->me.x)<0 ) xdiff = -xdiff;
+	if ( (ydiff = base->next->to->me.y-base->me.y)<0 ) ydiff = -ydiff;
+	loopdiff = (xdiff+ydiff==0) ? 2 : 1.0/(xdiff+ydiff);
+
+	if ( plus->tnext==0 ) pfound = false;
+	if ( minus->tnext==0 ) mfound = false;
+	lastpt = lastmt = 1;
+	for ( tt=0; ; ) {
+	    OnEdge(&nplus,&nminus,base->prev,1.,tt,base->next,
+		    si,NULL,NULL,&pt,&mt);
+	    oldtt = tt;
+	    tt += loopdiff;
+	    if ( !pfound && (pt==-1 || tt>1.0)) {
+		pfound = true;
+		plus->tnext = 1-lastpt;
+		plus->tprev = 1-oldtt;
+		plus->from->me = nplus;
+	    }
+	    if ( !mfound && (mt==-1 || tt>1.0)) {
+		mfound = true;
+		minus->tnext = oldtt;
+		minus->tprev = lastmt;
+		minus->from->me = nminus;
+	    }
+	    if ( pfound && mfound )
+	break;
+	    SplineExpand(base->next,tt,0,si,&nplus,&nminus);
+	    lastpt = pt; lastmt = mt;
+	}
+
+	SPFigurePrevCP(plus->from,base->prev,plus->tprev);
+	SPFigureNextCP(plus->from,base->next,plus->tnext);
+	SPFigurePrevCP(minus->from,base->prev,minus->tprev);
+	SPFigureNextCP(minus->from,base->next,minus->tnext);
+	temp = plus->from->nextcp; plus->from->nextcp = plus->from->prevcp; plus->from->prevcp = temp;
+	hold = plus->from->nonextcp; plus->from->nonextcp = plus->from->noprevcp; plus->from->noprevcp = hold;
+	
+
+	if ( plus->tnext!=0 || plus->tprev!=1 ) plus->from->pointtype = pt_corner;
+	if ( minus->tnext!=0 || minus->tprev!=1 ) minus->from->pointtype = pt_corner;
     } else {
 	pinner = Intersect_Lines(plus,&pplus,
 		 3*base->prev->splines[0].a+2*base->prev->splines[0].b+base->prev->splines[0].c,
@@ -400,8 +560,7 @@ static void StrokeJoint(SplinePoint *base,StrokeInfo *si,JointPoint *plus,JointP
 	    SplineSetReverse(&junk);
 	    plus->from = junk.first; plus->to = junk.last;
 	    plus->tprev = 1; plus->tnext = 0;
-	    minus->from = minus->to = chunkalloc(sizeof(SplinePoint));
-	    minus->from->me = minus->inter;
+	    minus->from = minus->to = SplinePointCreate(minus->inter.x,minus->inter.y);
 	    minus->from->pointtype = pt_corner;
 	} else {
 	    SplineSet junk;
@@ -412,8 +571,7 @@ static void StrokeJoint(SplinePoint *base,StrokeInfo *si,JointPoint *plus,JointP
 	    SplineSetReverse(&junk);
 	    minus->from = junk.first; minus->to = junk.last;
 	    minus->tprev = 1; minus->tnext = 0;
-	    plus->from = plus->to = chunkalloc(sizeof(SplinePoint));
-	    plus->from->me = plus->inter;
+	    plus->from = plus->to = SplinePointCreate(plus->inter.x,plus->inter.y);
 	    plus->from->pointtype = pt_corner;
 	}
     }
@@ -554,7 +712,9 @@ static SplineSet *SSFixupOverlap(StrokeInfo *si,SplineChar *sc,
     }
 return( ssplus );
 }
-    
+
+#define Approx	10
+
 static SplineSet *_SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc) {
     JointPoint first_plus, first_minus, cur_plus, cur_minus;
     SplineSet *ssplus, *ssminus;
@@ -563,7 +723,8 @@ static SplineSet *_SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc)
     SplinePoint *pto, *mto;
     SplinePoint *p_to, *m_to, *p_from, *m_from;
     BasePoint p,m,temp;
-    TPoint pmids[4], mmids[4];
+    int max=Approx;
+    TPoint *pmids=galloc(max*sizeof(TPoint)), *mmids=galloc(max*sizeof(TPoint));
     real p_tlast, m_tlast, p_tcur, m_tcur;
     real t_start, t_end;
     int i,j;
@@ -572,6 +733,9 @@ static SplineSet *_SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc)
     double ts[10];
     int pinners[10];
     int cnt;
+    int pcnt, mcnt;
+    double pt1,pt2, mt1,mt2;
+    double approx, xdiff, ydiff, loopdiff;
 
     if ( spl->first==spl->last && spl->first->next!=NULL ) {
 	/* My routine gets screwed up by counter-clockwise triangles */
@@ -625,6 +789,7 @@ return( ssplus );
 			sc==NULL?"<nameless char>": sc->name );
 	    }
 	}
+
 	if ( spline->knownlinear ||
 /* 0 and 1 are valid values. They happen on circles for example */
 		p_tcur<0 || m_tcur>1 || m_tlast<0 || p_tlast>1 ||
@@ -649,9 +814,9 @@ return( ssplus );
 	    cnt = SplineSolveForPen(spline,si,ts,pinners,t_start,t_end);
 	    p_to = m_to = NULL;
 	    for ( j=1; j<cnt; ++j ) {
-		for ( i=0; i<4; ++i ) {
-		    real t = ts[j-1] + (i+1)*(ts[j]-ts[j-1])/5;
-		    mmids[i].t = (i+1)/5.; pmids[i].t = 1-mmids[i].t;
+		for ( i=0; i<Approx; ++i ) {
+		    real t = ts[j-1] + (i+1)*(ts[j]-ts[j-1])/(Approx+1);
+		    mmids[i].t = (i+1)/(Approx+1); pmids[i].t = 1-mmids[i].t;
 		    SplineExpand(spline,t,0,si,&p,&m);
 		    pmids[i].x = p.x; pmids[i].y = p.y;
 		    mmids[i].x = m.x; mmids[i].y = m.y;
@@ -689,31 +854,50 @@ return( ssplus );
 		    m_to = SplinePointCreate((m.x+temp.x)/2,(m.y+temp.y)/2);
 		    m_to->pointtype = pt_corner;
 		}
-		ApproximateSplineFromPoints(p_to,p_from,pmids,4);
-		ApproximateSplineFromPoints(m_from,m_to,mmids,4);
+		ApproximateSplineFromPoints(p_to,p_from,pmids,Approx);
+		ApproximateSplineFromPoints(m_from,m_to,mmids,Approx);
 		if ( m_from!=minus && m_from->pointtype!=pt_corner )
 		    m_from->pointtype = pt_tangent;
 	    }
 	} else {
-	    for ( i=0; i<4; ++i ) {
-		real t = t_start + (i+1)*(t_end-t_start)/5;
-		pmids[i].t = (t-p_tlast)/(p_tcur-p_tlast);
-		mmids[i].t = (t-m_tlast)/(m_tcur-m_tlast);
-		SplineExpand(spline,t,0,si,&p,&m);
-		pmids[i].x = p.x; pmids[i].y = p.y;
-		mmids[i].x = m.x; mmids[i].y = m.y;
+	    if ( (xdiff = spline->to->me.x-spline->from->me.x)<0 ) xdiff = -xdiff;
+	    if ( (ydiff = spline->to->me.y-spline->from->me.y)<0 ) ydiff = -ydiff;
+	    loopdiff = (xdiff+ydiff==0) ? .1 : 1.0/(4*(xdiff+ydiff)/si->radius);
+	    approx = rint(1.0/loopdiff);
+	    if ( approx>max ) {
+		max = approx+10;
+		pmids = grealloc(pmids,max*sizeof(TPoint));
+		mmids = grealloc(mmids,max*sizeof(TPoint));
 	    }
-	    pto->nextcp.x = pto->me.x+(spline->to->prevcp.x-spline->to->me.x);
-	    pto->nextcp.y = pto->me.y+(spline->to->prevcp.y-spline->to->me.y);
-	    plus->prevcp.x = plus->me.x+(spline->from->nextcp.x-spline->from->me.x);
-	    plus->prevcp.y = plus->me.y+(spline->from->nextcp.y-spline->from->me.y);
-	    pto->pointtype = mto->pointtype = spline->to->pointtype;
-	    ApproximateSplineFromPointsSlopes(pto,plus,pmids,4);
-	    mto->prevcp.x = mto->me.x+(spline->to->prevcp.x-spline->to->me.x);
-	    mto->prevcp.y = mto->me.y+(spline->to->prevcp.y-spline->to->me.y);
-	    minus->nextcp.x = minus->me.x+(spline->from->nextcp.x-spline->from->me.x);
-	    minus->nextcp.y = minus->me.y+(spline->from->nextcp.y-spline->from->me.y);
-	    ApproximateSplineFromPointsSlopes(minus,mto,mmids,4);
+
+	    pcnt = mcnt = 0;
+	    /* I used just to calculate points in the area where both curves */
+	    /*  were defined, and that works fine most of the time, but some */
+	    /*  times we turn sharp corners and we don't get a good sampling */
+	    /*  of the curve which doesn't turn a corner */
+	    for ( i=0; i<approx; ++i ) {
+		real t = (1-p_tlast) - (i+1)*(p_tcur-p_tlast)/(approx+1);
+		pmids[pcnt].t = 1-(i+1)/(approx+1);
+		SplineExpand(spline,t,0,si,&p,&m);
+		pmids[pcnt].x = p.x; pmids[pcnt].y = p.y;
+		OnEdge(&p,&m,spline,t,t,spline,si,&pt1,&mt1,&pt2,&mt2);
+		/* If one of these guys isn't -1 then we should stop here */
+		/*  create a corner point, approximate a spline up to it */
+		/*  ignore points until we're not OnEdge, and then start */
+		/*  accumulating points again. But I'm not sure about figuring*/
+		/*  the control points on the corner point yet */
+		if ( pt1==-1 && pt2==-1 ) ++pcnt;
+	    }
+	    ApproximateSplineFromPointsSlopes(pto,plus,pmids,pcnt);
+	    for ( i=0; i<approx; ++i ) {
+		real t = m_tlast + (i+1)*(m_tcur-m_tlast)/(approx+1);
+		mmids[mcnt].t = (t-m_tlast)/(m_tcur-m_tlast);
+		SplineExpand(spline,t,0,si,&p,&m);
+		mmids[mcnt].x = m.x; mmids[mcnt].y = m.y;
+		OnEdge(&p,&m,spline,t,t,spline,si,&pt1,&mt1,&pt2,&mt2);
+		if ( mt1==-1 && mt2==-1 ) ++mcnt;
+	    }
+	    ApproximateSplineFromPointsSlopes(minus,mto,mmids,mcnt);
 	}
 	if ( spline->to->next!=NULL ) {
 	    plus = cur_plus.from;
@@ -726,6 +910,7 @@ return( ssplus );
 	}
 	if ( first==NULL ) first = spline;
     }
+    free(mmids); free(pmids);
 
     ssplus = chunkalloc(sizeof(SplineSet));
     ssplus->first = ssplus->last = plus;
