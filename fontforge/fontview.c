@@ -6617,13 +6617,22 @@ return( sc->enc );
 }
 
 void FVRefreshChar(FontView *fv,BDFFont *bdf,int enc) {
-    int feat_enc = FeatureTrans(fv,enc);
-    BDFChar *bdfc = feat_enc==-1 ? NULL : bdf->chars[enc];
+    int feat_enc = enc;
+    BDFChar *bdfc = bdf->chars[enc];
     int i, j;
     MetricsView *mv;
 
     if ( fv->v==NULL || fv->colcnt==0 )	/* Can happen in scripts */
 return;
+    if ( fv->cur_feat_tag!=0 && strchr(fv->sf->chars[enc]->name,'.')!=NULL ) {
+	char *temp = copy(fv->sf->chars[enc]->name);
+	SplineChar *sc2;
+	*strchr(temp,'.') = '\0';
+	sc2 = SFGetChar(fv->sf,-1,temp);
+	if ( sc2!=NULL && sc2->enc!=enc )
+	    enc = sc2->enc;
+	free(temp);
+    }
 
     for ( fv=fv->sf->fv; fv!=NULL; fv = fv->nextsame ) {
 	for ( mv=fv->metrics; mv!=NULL; mv=mv->next )
@@ -7007,6 +7016,8 @@ SplineChar *FVMakeChar(FontView *fv,int i) {
     SplineFont *sf = fv->sf;
     SplineChar *base_sc = SFMakeChar(sf,i), *feat_sc = NULL;
     int feat_i = FeatureTrans(fv,i);
+    BDFFont *bdf;
+    FontView *fvs;
 
     if ( fv->cur_feat_tag==0 )
 return( base_sc );
@@ -7030,6 +7041,31 @@ return( feat_sc );
 	feat_i = sf->charcnt ++;
 	sf->chars = grealloc(sf->chars,sf->charcnt*sizeof(SplineChar *));
 	sf->chars[feat_i] = NULL;
+	for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
+	    if ( bdf->charcnt<sf->charcnt ) {
+		int old = bdf->charcnt;
+		bdf->charcnt = sf->charcnt;
+		bdf->chars = grealloc(bdf->chars,sf->charcnt*sizeof(BDFChar *));
+		for ( ; old<sf->charcnt; ++old )
+		    bdf->chars[old] = NULL;
+	    }
+	}
+	if ( fv->filled!=NULL ) {
+	    bdf = fv->filled;
+	    if ( bdf->charcnt<sf->charcnt ) {
+		int old = bdf->charcnt;
+		bdf->charcnt = sf->charcnt;
+		bdf->chars = grealloc(bdf->chars,sf->charcnt*sizeof(BDFChar *));
+		for ( ; old<sf->charcnt; ++old )
+		    bdf->chars[old] = NULL;
+	    }
+	}
+	for ( fvs = sf->fv; fvs!=NULL; fvs=fvs->next ) {
+	    fvs->selected = grealloc(fvs->selected,sf->charcnt);
+	    fvs->selected[sf->charcnt-1] = 0;
+	    fvs->rowltot = (fvs->sf->charcnt+fvs->colcnt-1)/fvs->colcnt;
+	    GScrollBarSetBounds(fvs->vsb,0,fvs->rowltot,fvs->rowcnt);
+	}
 	feat_sc = SFMakeChar(sf,feat_i);
 	free(feat_sc->name);
 	if ( uni!=-1 ) {
@@ -8118,6 +8154,7 @@ return( data );
 
 static void FVMouse(FontView *fv,GEvent *event) {
     int pos = (event->u.mouse.y/fv->cbh + fv->rowoff)*fv->colcnt + event->u.mouse.x/fv->cbw;
+    int realpos = pos;
     SplineChar *sc, dummy;
     int dopopup = true;
 
@@ -8216,8 +8253,8 @@ return;
 	    fv->any_dd_events_sent = false;
 	}
     } else if ( fv->pressed!=NULL ) {
-	int showit = pos!=fv->end_pos;
-	FVReselect(fv,pos);
+	int showit = realpos!=fv->end_pos;
+	FVReselect(fv,realpos);
 	if ( showit )
 	    FVShowInfo(fv);
 	if ( event->type==et_mouseup ) {
