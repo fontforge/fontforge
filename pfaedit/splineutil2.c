@@ -379,7 +379,7 @@ return( ApproximateSplineFromPoints(from,to,mid,cnt) );
      0 0 0 0 ? ?
      0 ? ? 0 ? ?
     */
-    if ( m[1][1]!=0 ) { /* m[4][4] is same as m[1][1] */
+    if ( m[1][1]>.0001 || m[1][1]<-.0001 ) { /* m[4][4] is same as m[1][1] */
 	v[1] /= m[1][1];
 	v[4] /= m[1][1];
 	m[1][2] = m[4][5] /= m[1][1];
@@ -387,6 +387,7 @@ return( ApproximateSplineFromPoints(from,to,mid,cnt) );
 	v[0] -= m[0][1]*v[1];
 	v[3] -= m[0][1]*v[4];
 	m[0][2] -= m[0][1]*m[1][2]; m[0][1] = 0;
+	m[3][5] -= m[3][4]*m[4][5]; m[3][4] = 0;
 	v[5] -= m[5][1]*v[1] + m[5][4]*v[4];
 	m[5][2] -= m[5][1]*m[1][2];
 	m[5][5] -= m[5][4]*m[4][5];
@@ -401,7 +402,7 @@ return( ApproximateSplineFromPoints(from,to,mid,cnt) );
      0 0 0 0 1 ?
      0 0 ? 0 0 ?
     */
-    if ( m[2][2]==0 ) {
+    if ( m[2][2]<.0001 && m[2][2]>-.0001 ) {
 	real temp;
 	m[2][2] = m[5][2];
 	m[5][2] = 0;
@@ -412,7 +413,7 @@ return( ApproximateSplineFromPoints(from,to,mid,cnt) );
 	v[2] = v[5];
 	v[5] = temp;
     }
-    if ( m[2][2]!=0 ) {
+    if ( m[2][2]>=.0001 || m[2][2]<=-.0001 ) {
 	v[2] /= m[2][2];
 	m[2][5] /= m[2][2];
 
@@ -423,7 +424,7 @@ return( ApproximateSplineFromPoints(from,to,mid,cnt) );
 	v[5] -= m[5][2]*v[2];
 	m[5][2] = 0;
     }
-    if ( m[5][5]==0 ) {		/* I have seen this failure mode */
+    if ( m[5][5]<.0001 && m[5][5]>-.0001 ) {	/* I have seen this failure mode */
 	m[5][3] = t5;
 	m[5][4] = t4;
 	m[5][5] = t3;
@@ -439,7 +440,7 @@ return( ApproximateSplineFromPoints(from,to,mid,cnt) );
 	    m[5][4] = 0;
 	}
     }
-    if ( m[5][5]!=0 ) {
+    if ( m[5][5]>=.0001 || m[5][5]<=-.0001 ) {
 	v[5] /= m[5][5];
 	v[4] -= m[4][5]*v[5];
 	v[3] -= m[3][5]*v[5];
