@@ -290,7 +290,7 @@ return( NULL );
 }
 
 static int _SFFindChar(SplineFont *sf, int unienc, char *name ) {
-    int index;
+    int index= -1;
 
     if ( (sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4) &&
 	    unienc!=-1 ) {
@@ -533,20 +533,34 @@ return( -1 );
 }
 
 static void MFixupSC(SplineFont *sf, SplineChar *sc,int i) {
-    RefChar *ref;
+    RefChar *ref, *prev;
     FontView *fvs;
 
     sc->enc = i;
     sc->parent = sf;
+ retry:
     for ( ref=sc->refs; ref!=NULL; ref=ref->next ) {
 	/* The sc in the ref is from the old font. It's got to be in the */
 	/*  new font too (was either already there or just got copied) */
 	ref->local_enc =  _SFFindChar(sf,ref->sc->unicodeenc,ref->sc->name);
-	ref->sc = sf->chars[ref->local_enc];
-	if ( ref->sc->enc==-2 )
-	    MFixupSC(sf,ref->sc,ref->local_enc);
-	SCReinstanciateRefChar(sc,ref);
-	SCMakeDependent(sc,ref->sc);
+	if ( ref->local_enc==-1 ) {
+	    GDrawIError("Bad reference, can't fix it up");
+	    if ( ref==sc->refs ) {
+		sc->refs = ref->next;
+ goto retry;
+	    } else {
+		for ( prev=sc->refs; prev->next!=ref; prev=prev->next );
+		prev->next = ref->next;
+		chunkfree(ref,sizeof(*ref));
+		ref = prev;
+	    }
+	} else {
+	    ref->sc = sf->chars[ref->local_enc];
+	    if ( ref->sc->enc==-2 )
+		MFixupSC(sf,ref->sc,ref->local_enc);
+	    SCReinstanciateRefChar(sc,ref);
+	    SCMakeDependent(sc,ref->sc);
+	}
     }
     /* I shan't automagically generate bitmaps for any bdf fonts */
     /*  but I have copied over the ones which match */
@@ -598,7 +612,7 @@ return( cnt );
 }
 
 static void _MergeFont(SplineFont *into,SplineFont *other) {
-    int i,cnt, doit, emptypos, index, enc_cnt, j,k;
+    int i,cnt, doit, emptypos, index, enc_cnt, k;
     SplineFont *o_sf, *bitmap_into;
     BDFFont *bdf;
     FontView *fvs;
@@ -618,35 +632,35 @@ static void _MergeFont(SplineFont *into,SplineFont *other) {
 	do {
 	    o_sf = ( other->subfonts==NULL ) ? other : other->subfonts[k];
 	    for ( i=0; i<o_sf->charcnt; ++i ) if ( o_sf->chars[i]!=NULL ) {
-		if ( o_sf->chars[i]->splines==NULL && o_sf->chars[i]->refs==NULL &&
-			!o_sf->chars[i]->widthset )
-		    /* Don't bother to copy it */;
-		else if ( !SFHasChar(into,o_sf->chars[i]->unicodeenc,o_sf->chars[i]->name)) {
-		    if ( o_sf->chars[i]->unicodeenc==-1 ) {
-			if ( (index=SFHasName(into,o_sf->chars[i]->name))== -1 )
+		if ( doit && (index = mapping[i])!=-1 ) {
+		    /* Bug here. Suppose someone has a reference to our empty */
+		    /*  char */
+		    SplineCharFree(into->chars[index]);
+		    into->chars[index] = SplineCharCopy(o_sf->chars[i],into);
+		    if ( into->bitmaps!=NULL && other->bitmaps!=NULL )
+			BitmapsCopy(bitmap_into,other,index,i);
+		} else if ( !doit ) {
+		    if ( o_sf->chars[i]->splines==NULL && o_sf->chars[i]->refs==NULL &&
+			    !o_sf->chars[i]->widthset )
+			/* Don't bother to copy it */;
+		    else if ( SCDuplicate(o_sf->chars[i])!=o_sf->chars[i] )
+			/* Don't bother to copy it */;
+		    else if ( !SFHasChar(into,o_sf->chars[i]->unicodeenc,o_sf->chars[i]->name)) {
+			if ( o_sf->chars[i]->unicodeenc==-1 ) {
+			    if ( (index=SFHasName(into,o_sf->chars[i]->name))== -1 )
+				index = emptypos+cnt++;
+			} else if ( (index = SFFindChar(into,o_sf->chars[i]->unicodeenc,NULL))==-1 )
 			    index = emptypos+cnt++;
-		    } else if ( (index = SFFindChar(into,o_sf->chars[i]->unicodeenc,NULL))==-1 )
-			index = emptypos+cnt++;
-		    if ( doit ) {
-			/* Bug here. Suppose someone has a reference to our empty */
-			/*  char */
-			SplineCharFree(into->chars[index]);
-			into->chars[index] = SplineCharCopy(o_sf->chars[i],into);
-			if ( into->bitmaps!=NULL && other->bitmaps!=NULL )
-			    BitmapsCopy(bitmap_into,other,index,i);
-		    } else
 			mapping[i] = index;
+		    }
 		}
 	    }
 	    if ( !doit ) {
 		if ( emptypos+cnt >= into->charcnt ) {
 		    into->chars = grealloc(into->chars,(emptypos+cnt)*sizeof(SplineChar *));
 		    for ( fvs = into->fv; fvs!=NULL; fvs=fvs->nextsame )
-			if ( fvs->sf == into ) {
+			if ( fvs->sf == into )
 			    fvs->selected = grealloc(fvs->selected,emptypos+cnt);
-			    for ( j=into->charcnt; j<emptypos+cnt; ++j )
-				fvs->selected[j] = false;
-			}
 		    for ( bdf = bitmap_into->bitmaps; bdf!=NULL; bdf=bdf->next )
 			if ( emptypos+cnt > bdf->charcnt )
 			    bdf->chars = grealloc(bdf->chars,(emptypos+cnt)*sizeof(SplineChar *));
@@ -680,6 +694,7 @@ static void _MergeFont(SplineFont *into,SplineFont *other) {
     for ( i=0; i<other->charcnt; ++i ) if ( (index=mapping[i])!=-1 )
 	into->chars[index]->kerns = KernsCopy(other->chars[i]->kerns,mapping,into,other);
     free(mapping);
+    GlyphHashFree(into);
     MergeFixupRefChars(into);
     if ( other->fv==NULL )
 	SplineFontFree(other);

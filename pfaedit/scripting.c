@@ -1959,7 +1959,7 @@ static void bFindIntersections(Context *c) {
 }
 
 static void bSimplify(Context *c) {
-    static struct simplifyinfo smpl = { sf_normal,.75,.2,2 };
+    static struct simplifyinfo smpl = { sf_normal,.75,.2,10 };
     smpl.err = (c->curfv->sf->ascent+c->curfv->sf->descent)/1000.;
     smpl.linefixup = (c->curfv->sf->ascent+c->curfv->sf->descent)/500.;
 
