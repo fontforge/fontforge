@@ -53,4 +53,5 @@ extern int GProgressNext(void);		/* Increment progress by one sub-entity */
 extern int GProgressIncrementBy(int cnt);	/* Increment progress by cnt sub-entities */
 extern void GProgressPauseTimer(void);	/* Don't bring up the progress dlg because of */
 extern void GProgressResumeTimer(void);	/*  time spent between a pause and resume */
+extern void GProgressShow(void);	/* Display the damn thing whether we should or not */
 #endif

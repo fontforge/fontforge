@@ -56,6 +56,15 @@ typedef struct gprogress {
 
 static GProgress *current;
 
+static void GProgressDisplay(void) {
+    GDrawSetVisible(current->gw,true);
+    current->visible = true;
+    if ( current->prev!=NULL && current->prev->visible ) {
+	GDrawSetVisible(current->prev->gw,false);
+	current->prev->visible = false;
+    }
+}
+
 static void GProgressTimeCheck() {
     struct timeval tv;
 
@@ -67,12 +76,7 @@ return;
 	if ( current->tot>0 &&
 		current->sofar+current->stage*current->tot>(9*current->stages*current->tot)/10 )
 return;		/* If it's almost done, no point in making it visible */
-	GDrawSetVisible(current->gw,true);
-	current->visible = true;
-	if ( current->prev!=NULL && current->prev->visible ) {
-	    GDrawSetVisible(current->prev->gw,false);
-	    current->prev->visible = false;
-	}
+	GProgressDisplay();
     }
 }
 
@@ -397,4 +401,16 @@ return;
 	++current->start_time.tv_sec;
 	current->start_time.tv_usec -= 1000000;
     }
+}
+
+void GProgressShow(void) {
+
+    if ( current==NULL || current->visible || current->dying )
+return;
+
+    GProgressDisplay();
+    GDrawSync(NULL);
+    GDrawProcessPendingEvents(NULL);
+    GDrawSync(NULL);
+    GDrawProcessPendingEvents(NULL);
 }
