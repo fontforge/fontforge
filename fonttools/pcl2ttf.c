@@ -1194,7 +1194,7 @@ static void freedata(struct ttf_header *hdr) {
 }
 
 static void parsepclfile(char *filename) {
-    FILE *pcl = fopen(filename,"r");
+    FILE *pcl = fopen(filename,"rb");
     struct ttf_header hdr;
 
     if ( pcl==NULL ) {
