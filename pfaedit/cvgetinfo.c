@@ -1159,7 +1159,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[19].creator = GLabelCreate;
 
 	label[20].text = (unichar_t *) _STR_Offset;
-	label[20].text_is_1byte = true;
+	label[20].text_in_resource = true;
 	gcd[20].gd.label = &label[20];
 	gcd[20].gd.pos.x = gcd[3].gd.pos.x+10; gcd[20].gd.pos.y = gcd[9].gd.pos.y+6; 
 	gcd[20].gd.flags = gg_enabled|gg_visible;

@@ -1347,6 +1347,9 @@ static StemInfo *ELFindStems(EIList *el, int major, DStemInfo **dstems ) {
 	for ( apt=active; apt!=NULL; apt = e->aenext ) {
 	    if ( EISkipExtremum(apt,i+el->low,major)) {
 		e = apt->aenext;
+		if ( e==NULL )
+	break;
+		else
 	continue;
 	    }
 	    if ( !apt->hv && apt->aenext!=NULL && apt->aenext->hv &&

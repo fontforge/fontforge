@@ -45,7 +45,7 @@
 /*  into splinefont.h after the (or instead of) the definition of chunkalloc()*/
 
 #ifndef chunkalloc
-#define ALLOC_CHUNK	100
+#define ALLOC_CHUNK	1
 #define CHUNK_MAX	100
 
 #if ALLOC_CHUNK>1
@@ -189,6 +189,9 @@ void SplineRefigure(Spline *spline) {
 #ifdef DEBUG
     if ( RealNear(from->me.x,to->me.x) && RealNear(from->me.y,to->me.y))
 	GDrawIError("Zero length spline created");
+    if (( from->me.x>0 && from->me.x<.001 ) || ( from->me.y>0 && from->me.y<.001 ) ||
+	    ( to->me.x>0 && to->me.x<.001 ) || ( to->me.y>0 && to->me.y<.001 ) )
+	fprintf( stderr, "very small number in SplineRefigure\n" );
 #endif
     xsp->d = from->me.x; ysp->d = from->me.y;
     if ( from->nonextcp ) from->nextcp = from->me;
@@ -217,7 +220,7 @@ void SplineRefigure(Spline *spline) {
 	if ( RealNear(ysp->a,0)) ysp->a=0;
 	spline->islinear = false;
 	if ( ysp->a==0 && xsp->a==0 && ysp->b==0 && xsp->b==0 )
-	    spline->islinear = true;	/* I'm not sure if this can happen */
+	    spline->islinear = true;	/* This seems extremely unlikely... */
     }
     if ( isnan(ysp->a) || isnan(xsp->a) )
 	GDrawIError("NaN value in spline creation");
@@ -1779,8 +1782,8 @@ return( false );
 return( false );
 	if ( fs->yh < spline->from->me.y && fs->yh < spline->to->me.y )
 return( false );
-	if ( xspline->c==0 && yspline->c==0 )	/* It's a point. */
-return( false );	/* if we didn't find it when we checked points we won't now */
+	if ( xspline->c==0 && yspline->c==0 ) 	/* It's a point. */
+return( true );
 	if ( dy>dx ) {
 	    t = (fs->p->cy-yspline->d)/yspline->c;
 	    fs->p->t = t;

@@ -1103,7 +1103,7 @@ static void FVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
 	SCPreserveState(sc,false);
-	SplineCharSimplify(sc->splines,cleanup);
+	sc->splines = SplineCharSimplify(sc->splines,cleanup);
 	SCCharChangedUpdate(sc,fv);
 	if ( !GProgressNext())
     break;

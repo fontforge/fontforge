@@ -360,29 +360,47 @@ Spline *ApproximateSplineFromPoints(SplinePoint *from, SplinePoint *to,
 return( spline );
 }
 
+    /* calculating the actual length of a spline is hard, this gives a very */
+    /*  rough (but quick) approximation */
+static double SplineLenApprox(Spline *spline) {
+    double len, slen, temp;
+
+    if ( (temp = spline->to->me.x-spline->from->me.x)<0 ) temp = -temp;
+    len = temp;
+    if ( (temp = spline->to->me.y-spline->from->me.y)<0 ) temp = -temp;
+    len += temp;
+    if ( !spline->to->noprevcp || !spline->from->nonextcp ) {
+	if ( (temp = spline->from->nextcp.x-spline->from->me.x)<0 ) temp = -temp;
+	slen = temp;
+	if ( (temp = spline->from->nextcp.y-spline->from->me.y)<0 ) temp = -temp;
+	slen += temp;
+	if ( (temp = spline->to->prevcp.x-spline->from->nextcp.x)<0 ) temp = -temp;
+	slen += temp;
+	if ( (temp = spline->to->prevcp.y-spline->from->nextcp.y)<0 ) temp = -temp;
+	slen += temp;
+	if ( (temp = spline->to->me.x-spline->to->prevcp.x)<0 ) temp = -temp;
+	slen += temp;
+	if ( (temp = spline->to->me.y-spline->to->prevcp.y)<0 ) temp = -temp;
+	slen += temp;
+	len = (len + slen)/2;
+    }
+return( len );
+}
+
 static TPoint *SplinesFigureTPsBetween(SplinePoint *from, SplinePoint *to,
 	int *tot) {
     int cnt, i, j;
-    real len, slen, lbase, temp;
+    real len, slen, lbase;
     SplinePoint *np;
     TPoint *tp;
 
-    /* calculating the actual length of a spline is hard, this gives a very */
-    /*  rough approximation */
     cnt = 0; len = 0;
     for ( np = from->next->to; ; np = np->next->to ) {
 	++cnt;
-	temp = (np->me.x-np->prev->from->me.x);
-	if ( temp<0 ) temp = -temp;
-	len += temp;
-	temp = (np->me.y-np->prev->from->me.y);
-	if ( temp<0 ) temp = -temp;
-	len += temp;
+	len += SplineLenApprox(np->prev);
 	if ( np==to )
     break;
     }
-    if ( len==0 )
-	GDrawIError("Zero length spline segment approximation in SplinesFigureTPsBetween" );
 
 #if 0
     extras = fcp = tcp = 0;
@@ -398,23 +416,26 @@ static TPoint *SplinesFigureTPsBetween(SplinePoint *from, SplinePoint *to,
 #endif
 
     tp = galloc(10*(cnt+1)*sizeof(TPoint)); i = 0;
-    lbase = 0;
-    for ( np = from->next->to; ; np = np->next->to ) {
-	temp = (np->me.x-np->prev->from->me.x);
-	if ( temp<0 ) temp = -temp;
-	slen = temp;
-	temp = (np->me.y-np->prev->from->me.y);
-	if ( temp<0 ) temp = -temp;
-	slen += temp;
-	for ( j=0; j<10; ++j ) {
-	    real t = j/10.0;
-	    tp[i].t = (lbase+ t*slen)/len;
-	    tp[i].x = ((np->prev->splines[0].a*t+np->prev->splines[0].b)*t+np->prev->splines[0].c)*t + np->prev->splines[0].d;
-	    tp[i++].y = ((np->prev->splines[1].a*t+np->prev->splines[1].b)*t+np->prev->splines[1].c)*t + np->prev->splines[1].d;
+    if ( len==0 ) {
+	for ( ; i<=10*cnt; ++i ) {
+	    tp[i].t = i/(10.0*cnt);
+	    tp[i].x = from->me.x;
+	    tp[i].y = from->me.y;
 	}
-	lbase += slen;
-	if ( np==to )
-    break;
+    } else {
+	lbase = 0;
+	for ( np = from->next->to; ; np = np->next->to ) {
+	    slen = SplineLenApprox(np->prev);
+	    for ( j=0; j<10; ++j ) {
+		real t = j/10.0;
+		tp[i].t = (lbase+ t*slen)/len;
+		tp[i].x = ((np->prev->splines[0].a*t+np->prev->splines[0].b)*t+np->prev->splines[0].c)*t + np->prev->splines[0].d;
+		tp[i++].y = ((np->prev->splines[1].a*t+np->prev->splines[1].b)*t+np->prev->splines[1].c)*t + np->prev->splines[1].d;
+	    }
+	    lbase += slen;
+	    if ( np==to )
+	break;
+	}
     }
 
 #if 0
@@ -680,28 +701,6 @@ return( false );
     fncp2 = fncp = from->nextcp; tpcp2 = tpcp = to->prevcp;
     fpt = from->pointtype; tpt = to->pointtype;
 
-    good = false;
-    /* if from, to and mid are all at the same location then our normal */
-    /*  methods don't work */
-    if ( mid->me.x==from->me.x && mid->me.y==from->me.y ) {
-	good = true;
-	from->nextcp = mid->nextcp;
-	from->nonextcp = mid->nonextcp;
-	from->nextcpdef = mid->nextcpdef;
-    } else if ( mid->me.x==to->me.x && mid->me.y==to->me.y ) {
-	good = true;
-	to->prevcp = mid->prevcp;
-	to->noprevcp = mid->noprevcp;
-	to->prevcpdef = mid->prevcpdef;
-    }
-    if ( good ) {
-	SplineFree(mid->prev);
-	SplineFree(mid->next);
-	SplinePointFree(mid);
-	SplineMake(from,to);
-return( true );
-    }
-
     /* if from or to is a tangent then we can only remove mid if it's on the */
     /*  line between them */
     if (( from->pointtype==pt_tangent && !from->noprevcp) ||
@@ -760,9 +759,7 @@ void SplinePointListSimplify(SplinePointList *spl,int cleanup) {
     if ( !cleanup && spl->first->prev!=NULL ) {
 	while ( 1 ) {
 	    first = spl->first->prev->from;
-	    if ( first->prev == first->next || (first->next!=NULL &&
-		    first->next->to->next!=NULL &&
-		    first->next->to->next->to == first ))
+	    if ( first->prev == first->next )
 return;
 	    if ( !SplinesRemoveMidMaybe(spl->first))
 	break;
@@ -810,7 +807,7 @@ return;
     }
 }
 
-void SplineCharSimplify(SplineSet *head,int cleanup) {
+SplineSet *SplineCharSimplify(SplineSet *head,int cleanup) {
     SplineSet *spl, *prev, *snext;
     int anysel=0;
 
@@ -837,13 +834,14 @@ void SplineCharSimplify(SplineSet *head,int cleanup) {
 		prev = spl;
 	}
     }
+return( head );
 }
 
-void SplineCharRemoveTiny(SplineSet *head) {
-    SplineSet *spl;
+SplineSet *SplineCharRemoveTiny(SplineSet *head) {
+    SplineSet *spl, *snext, *pr;
     Spline *spline, *next, *first;
 
-    for ( spl = head; spl!=NULL; spl = spl->next ) {
+    for ( spl = head, pr=NULL; spl!=NULL; spl = snext ) {
 	first = NULL;
 	for ( spline=spl->first->next; spline!=NULL && spline!=first; spline=next ) {
 	    next = spline->to->next;
@@ -851,14 +849,31 @@ void SplineCharRemoveTiny(SplineSet *head) {
 		    spline->from->me.y-spline->to->me.y>-1 && spline->from->me.y-spline->to->me.y<1 &&
 		    spline->from->nonextcp && spline->to->noprevcp &&
 		    spline->from->prev!=NULL ) {
+		if ( spline->from==spline->to )
+	    break;
+		if ( spl->last==spline->from ) spl->last = NULL;
+		if ( spl->first==spline->from ) spl->first = NULL;
 		if ( first==spline->from->prev ) first=NULL;
 		SplinesRemoveBetween(spline->from->prev->from,spline->to);
 		if ( first==NULL ) first = next->from->prev;
+		if ( spl->first==NULL ) spl->first = next->from;
+		if ( spl->last==NULL ) spl->last = next->from;
 	    } else {
 		if ( first==NULL ) first = spline;
 	    }
 	}
+	snext = spl->next;
+	if ( spl->first->next==spl->first->prev ) {
+	    spl->next = NULL;
+	    SplinePointListFree(spl);
+	    if ( pr==NULL )
+		head = snext;
+	    else
+		pr->next = snext;
+	} else
+	    pr = spl;
     }
+return( head );
 }
 
 char *GetNextUntitledName(void) {

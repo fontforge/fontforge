@@ -3062,7 +3062,7 @@ static void CVMenuOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void CVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     CVPreserveState(cv);
-    SplineCharSimplify(*cv->heads[cv->drawmode],e!=NULL && (e->u.mouse.state&ksm_shift));
+    *cv->heads[cv->drawmode] = SplineCharSimplify(*cv->heads[cv->drawmode],e!=NULL && (e->u.mouse.state&ksm_shift));
     CVCharChangedUpdate(cv);
 }
 
