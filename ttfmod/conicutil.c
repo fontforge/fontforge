@@ -29,6 +29,9 @@
 #include <string.h>
 #include <math.h>
 
+static int default_to_Apple = 0;	/* Normally we assume the MS interpretation */
+		/* At the moment this only controls composit offsets */
+
 #define _On_Curve	1
 #define _X_Short	2
 #define _Y_Short	4
@@ -338,7 +341,7 @@ ConicPointList *ConicPointListCopy(ConicPointList *base) {
 	    ConicMake(last,cspl->first);
 	}
     }
-return( base );
+return( hspl );
 }
 
 ConicPointList *ConicPointListTransform(ConicPointList *base, real transform[6]) {
@@ -363,6 +366,45 @@ ConicPointList *ConicPointListTransform(ConicPointList *base, real transform[6])
 	}
     }
 return( base );
+}
+
+static BasePoint *CCGetTTFPoint(ConicChar *cc,int pnum) {
+    ConicPointList *spl;
+    ConicPoint *sp;
+    RefChar *rf;
+
+    if ( cc!=NULL )
+return( NULL );
+
+    for ( spl = cc->conics; spl!=NULL; spl = spl->next ) {
+	for ( sp = spl->first; ; ) {
+	    if ( sp->me.pnum==pnum )
+return( &sp->me );
+	    if ( sp->nextcp!=NULL && sp->nextcp->pnum==pnum )
+return( sp->nextcp );
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==spl->first )
+	break;
+	}
+    }
+    for ( rf=cc->refs; rf!=NULL; rf = rf->next ) {
+	for ( spl = rf->conics; spl!=NULL; spl = spl->next ) {
+	    for ( sp = spl->first; ; ) {
+		if ( sp->me.pnum==pnum )
+return( &sp->me );
+		if ( sp->nextcp!=NULL && sp->nextcp->pnum==pnum )
+return( sp->nextcp );
+		if ( sp->next==NULL )
+	    break;
+		sp = sp->next->to;
+		if ( sp==spl->first )
+	    break;
+	    }
+	}
+    }
+return( NULL );
 }
 
 void RefCharRefigure(RefChar *ref) {
@@ -489,6 +531,7 @@ static void readttfsimpleglyph(FILE *ttf,ConicChar *cc, int path_cnt) {
     for ( i=0; i<tot; ++i )
 	pts[i].pnum = i;
 
+    cc->instrdata.in_composit = cc->refs!=NULL;
     cc->instrdata.instr_cnt = getushort(ttf);
     cc->instrdata.instrs = galloc(cc->instrdata.instr_cnt);
     for ( i=0; i<cc->instrdata.instr_cnt; ++i )
@@ -599,11 +642,19 @@ static void readttfcompositglyph(FILE *ttf,ConicFont *cf,ConicChar *cc) {
 	    /*  So if either bit is set we know when this happens, if neither */
 	    /*  we guess... But I still don't know how to interpret the */
 	    /*  apple mode under rotation... */
+	    /* I notice that FreeType does nothing about rotation nor does it */
+	    /*  interpret bits 11&12 */
 	} else {
 	    /* Somehow we can get offsets by looking at the points in the */
 	    /*  points so far generated and comparing them to the points in */
 	    /*  the current componant */
 	    /* How exactly is not described on any of the Apple, MS, Adobe */
+	    /* freetype looks up arg1 in the set of points we've got so far */
+	    /*  looks up arg2 in the new component (before renumbering) */
+	    /*  offset.x = arg1.x - arg2.x; offset.y = arg1.y - arg2.y; */
+	    /* Sadly I don't retain the information I need to deal with this */
+	    /*  I lose the point numbers and the control points... */
+	    cur->point_match = true;
 	    fprintf( stderr, "TTF IError: I don't understand matching points. Please send me a copy\n" );
 	    fprintf( stderr, "  of whatever ttf file you are looking at. Thanks.  gww@silcom.com\n" );
 	}
@@ -621,7 +672,7 @@ static void readttfcompositglyph(FILE *ttf,ConicFont *cf,ConicChar *cc) {
 	}
 	/* If neither SCALED/UNSCALED specified I'll just assume MS interpretation */
 	/*  because I at least understand that method */
-	if ( flags & _SCALED_OFFSETS ) {
+	if ( (default_to_Apple || (flags & _SCALED_OFFSETS)) && (flags & _ARGS_ARE_XY)) {
 	    cur->transform[4] *= cur->transform[0];
 	    cur->transform[5] *= cur->transform[1];
 	    if ( (RealNear(cur->transform[1],cur->transform[2]) ||
@@ -636,8 +687,8 @@ static void readttfcompositglyph(FILE *ttf,ConicFont *cf,ConicChar *cc) {
 	    fprintf( stderr, "TTF IError: I don't understand Apple's scaled offsets. Please send me a copy\n" );
 	    fprintf( stderr, "  of whatever ttf file you are loading. Thanks.  gww@silcom.com\n" );
 	}
-	cur->use_my_metrics = flags&_MY_METRICS;
-	cur->round = flags&_ROUND;
+	cur->use_my_metrics = (flags&_MY_METRICS)?1:0;
+	cur->round = (flags&_ROUND)?1:0;
 	if ( head==NULL )
 	    head = cur;
 	else
@@ -653,6 +704,19 @@ static void readttfcompositglyph(FILE *ttf,ConicFont *cf,ConicChar *cc) {
     }
     for ( cur = head; cur!=NULL; cur = cur->next ) {
 	cur->cc = LoadGlyph(cf,cur->glyph);
+	if ( cur->point_match ) {
+	    BasePoint *p1, *p2;
+	    p1 = CCGetTTFPoint(cc,cur->transform[4]);
+	    p2 = CCGetTTFPoint(cur->cc,cur->transform[5]);
+	    if ( p1==NULL || p2==NULL ) {
+		fprintf( stderr, "Could not do a point match when !ARGS_ARE_XY\n" );
+		cur->transform[4] = cur->transform[5] = 0;
+	    } else {
+		cur->transform[4] = p1->x-p2->x;
+		cur->transform[5] = p1->y-p2->y;
+	    }
+	    cur->point_match = false;
+	}
 	RefCharRefigure(cur);
 	RefCharAddDependant(cur,cc);
     }

@@ -1361,7 +1361,7 @@ return( dstems );
 	new->next = dstems;
 return( new );
     }
-    for ( prev=dstems, test=dstems->next; test!=NULL && d.leftedgetop.x>test->leftedgetop.x;
+    for ( prev=NULL, test=dstems; test!=NULL && d.leftedgetop.x>test->leftedgetop.x;
 	    prev = test, test = test->next );
     if ( test!=NULL &&
 	    d.leftedgetop.x==test->leftedgetop.x && d.leftedgetop.y==test->leftedgetop.y &&

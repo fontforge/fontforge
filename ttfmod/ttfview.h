@@ -137,7 +137,7 @@ typedef struct charview {
     GGadget *mb, *gvsb, *vsb, *hsb;
     int xoff, yoff, gvpos;
     int16 as, fh, sas, sfh, numlen, infoh;
-    int16 vheight, vwidth, gvwidth;
+    int16 vheight, vwidth, gvwidth, gvheight;
     int16 mbh, sbw;
     GFont *gfont, *sfont;
     real scale;

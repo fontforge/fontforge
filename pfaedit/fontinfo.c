@@ -1077,7 +1077,8 @@ static void RemoveSplineChar(SplineFont *sf, int enc) {
 	    /*  but only one dlist entry */
 	    for ( rf = dsc->refs; rf!=NULL; rf=rnext ) {
 		rnext = rf->next;
-		SCRefToSplines(dsc,rf);
+		if ( rf->sc==sc )
+		    SCRefToSplines(dsc,rf);
 	    }
 	}
 	sf->chars[enc] = NULL;
@@ -2866,7 +2867,7 @@ void FontInfo(SplineFont *sf) {
     aspects[i].text_in_resource = true;
     aspects[i++].gcd = pangcd;
 
-    mgcd[0].gd.pos.x = 4; mgcd[0].gd.pos.y = 4;
+    mgcd[0].gd.pos.x = 4; mgcd[0].gd.pos.y = 6;
     mgcd[0].gd.pos.width = 260;
     mgcd[0].gd.pos.height = 280;
     mgcd[0].gd.u.tabs = aspects;
@@ -2892,8 +2893,8 @@ void FontInfo(SplineFont *sf) {
     mgcd[2].gd.handle_controlevent = GFI_Cancel;
     mgcd[2].creator = GButtonCreate;
 
-    mgcd[3].gd.pos.x = 2; mgcd[3].gd.pos.y = 4;
-    mgcd[3].gd.pos.width = pos.width-4; mgcd[3].gd.pos.height = pos.height-2;
+    mgcd[3].gd.pos.x = 2; mgcd[3].gd.pos.y = 2;
+    mgcd[3].gd.pos.width = pos.width-4; mgcd[3].gd.pos.height = pos.height-4;
     mgcd[3].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
     mgcd[3].creator = GGroupCreate;
 

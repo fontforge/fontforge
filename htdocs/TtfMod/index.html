@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 3-Sep-2001 -->
-  <!-- AP: Last modified: 30-Sep-2001 -->
+  <!-- AP: Last modified: 20-Oct-2001 -->
   <TITLE>TtfMod -- A TrueType&reg; Font Modifier</TITLE>
 </HEAD>
 <BODY>
@@ -27,6 +27,12 @@
     <A HREF="../index.html">Downloads</A>
   <LI>
     <A HREF="changelog.html">Change Log</A>
+  <LI>
+    <A HREF="#Configuring">Configuring TtfMod</A>
+  <LI>
+    <A HREF="#Download">Download</A>
+  <LI>
+    <A HREF="#CharView">The TTF Character View</A>
 </UL>
 <H3>
   <A NAME="Overview">Overview</A>
@@ -37,8 +43,12 @@ TtfMod is not a font creation program, look at
 program to PfaEdit, to take an existing TrueType (OpenType, TrueType Collection)
 file and allow you to edit some of the tables. This is primarily to provide
 access to certain features of TrueType that would be awkward to fold into
-PfaEdit's UI, specifically TrueType instructing (hinting). (And perhaps it
-will help me figure out why PfaEdit's TrueType instructing is so bad).
+PfaEdit's UI, specifically TrueType instructing (hinting). (It has helped
+me figure out why PfaEdit's TrueType instructing is so bad).
+<P>
+This program isn't finished yet. <FONT COLOR="Red"><STRONG><BIG>Don't use
+the Save or Save As commands. </BIG></STRONG></FONT>Let's pretend it's called
+ttfview for now...
 <P>
 TrueType is not standardized. It is an evolving specification with at least
 three groups working on it and changing it in different ways. The major players
@@ -52,14 +62,34 @@ are:
     <A HREF="http://partners.adobe.com/asn/developer/opentype/">Adobe</A>
 </UL>
 <P>
-None of these is entirely consistant with the others. Most of the differences
-are small (for instance Apple and Adobe call a field in the cmap table
-"language", while Microsoft (who doesn't use it) calls it "version"), but
-some are quite large (for instance Apple calls the bitmap data table "bdat"
-while MicroSoft and Adobe call it "EBDT". This means that a font's bitmaps
-need to be specified twice to work on both systems).
+None of these is entirely consistant with the others.
+<UL>
+  <LI>
+    Many of the differences are small, for instance:
+    <UL>
+      <LI>
+	Apple and Adobe call a field in the cmap table "language", while Microsoft
+	(who doesn't use it) calls it "version",
+    </UL>
+  <LI>
+    but some are quite large, for instance
+    <UL>
+      <LI>
+	Apple calls the bitmap data table "bdat" while MicroSoft and Adobe call it
+	"EBDT". This means that a font's bitmaps need to be specified twice to work
+	on both systems
+      <LI>
+	Apple and MS interpret the offsets of compound glyphs quite differently when
+	scaling factors/rotations are present. Apple doesn't even describe it's
+	interpretation well enough to implement it. OpenType provides a mechanism
+	for distinguishing between the two (without describing what Apple does),
+	but Apple doesn't mention this, and anyway old fonts won't have it.
+    </UL>
+</UL>
 <P>
 This is unfortunate.
+<P>
+Good luck.
 <H3>
   <A NAME="TTFontView">TrueType Font View</A>
 </H3>
@@ -95,8 +125,11 @@ I shall not attempt to explain what all the tables do, I refer you to the
 True/Open Type docs for that:
 <UL>
   <LI>
+    <A HREF="http://fonts.apple.com/TTRefMan/RM06/Chap6.html">Table descriptions
+    for True Type and Apple's AAT</A>
+  <LI>
     <A HREF="http://partners.adobe.com/asn/developer/opentype/tablist.html">Table
-    descriptions</A>
+    descriptions for Open Type</A>
   <LI>
     <A HREF="http://fonts.apple.com/TTRefMan/RM05/Chap5.html">Instruction
     definitions</A>
@@ -109,5 +142,79 @@ True/Open Type docs for that:
     <A HREF="http://www.microsoft.com/typography/otspec/default.htm">Open/True
     Type top-level at MicroSoft</A>
 </UL>
+<H3>
+  <A NAME="Configuring">Configuring TtfMod</A>
+</H3>
 <P>
+If you want to use TtfMod's grid-fitting debugging capabilities you must
+install <A HREF="http://freetype.sourceforge.net/">FreeType's library</A>.
+You must also either live in a country where Apple's TrueType grid fitting
+patents are not applicable or have obtained a license from Apple allowing
+you to use their patent and then compile the FreeType library with grid-fitting
+enabled (in ftoption.h), then set similar #defines in ttfmod/config.h. For
+more information contact <A HREF="mailto:patents@apple.com">Apple's legal
+department</A> or see
+<A HREF="http://freetype.sourceforge.net/patents2.html">FreeType's patent
+page</A>.
+<P>
+(<SMALL>NOTE</SMALL>: I found that I needed to change options in
+<CODE><SMALL>include/freetype/config/ftoption.h</SMALL> </CODE>even though
+the files says you should make the change in
+<CODE><SMALL>builds/unix/ftoption.h</SMALL></CODE>)
+<H3>
+  <A NAME="Download">Download</A>
+</H3>
+<P>
+Before you do anything else you should download and build
+<A HREF="../index.html#source">PfaEdit</A>. TtfMod also uses libgdraw and
+libgunicode.<BR>
+Then you should download
+<A HREF="http://freetype.sourceforge.net/download.html#stable">libfreetype</A>,
+configure it, build it and install it.
+<P>
+I have not yet designed a configure script for ttfmod. I'll get to it. In
+the meantime I've included a basic makefile in the ttfmod directory which
+assumes you untarred it from the same directory as you untarred pfaedit.
+<UL>
+  <LI>
+    <A HREF="../ttfmod_src-011020.tgz">Source</A> 20-Oct-2001
+  <LI>
+    <A HREF="../ttfmod-011020.tgz">linux (redhat 7.1) executable</A>:
+    20-Oct-2001<BR>
+    (The executable is compiled without the grid-fitting debugger)
+</UL>
+<H3>
+  <A NAME="CharView">The TTF Character View</A>
+</H3>
+<P>
+This will look different depending on what capabilities you have enabled.
+<P>
+<B>If you are not burdened by Apple's patents then the view will look like
+this:</B><BR>
+<IMG SRC="ttfcv-all.png" WIDTH="609" HEIGHT="487"><BR>
+On the left is a list of instructions that define the hints for the current
+character, centered is a gloss on these instructions, and to the far right
+is the image of the character.
+<P>
+If you move the mouse over an instruction you will get an list of what the
+instruction pops off the stack (and perhaps other bits of state), and a
+description of what the instruction does.
+<P>
+If you click on a gloss, the instruction which generates that gloss will
+also be highlit, as will the point which is affected.
+<P>
+The original set of splines that define the character will be displayed with
+red dots for the points and blue crosses for the control points. Numbered
+points will have their numbers displayed somewhere near-by. The grid fit
+version of the spline will be displayed with green dots. The rasterized image
+of the glyph is displayed in grey. (You can change the grid size (the pixels
+per em)) with the view menu.
+<P>
+<B>If you are subject to Apple's patents:</B><BR>
+<IMG SRC="ttfcv-nobytecode.png" WIDTH="697" HEIGHT="487"><BR>
+Note that the grid-fit splines and the rasterized image are missing.
+<P>
+<B>If you are more paranoid than I am:</B><BR>
+<IMG SRC="ttfcv-nodebug.png" WIDTH="374" HEIGHT="487"><BR>
+And have turned off the debugger entirely, then the gloss is also missing.
 </BODY></HTML>

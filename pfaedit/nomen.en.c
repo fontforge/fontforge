@@ -647,6 +647,7 @@ static char *str_RemovingOverlap = "Removing overlaps...";
 static char *str_CorrectingDirection = "Correcting Direction...";
 static char *str_Rounding = "Rounding to integer...";
 static char *str_ClearDependent = "You are attempting to clear %.30hs which is refered to by\nanother character. Are you sure you want to clear it?";
+static char *str_UnlinkAll = "Unlink All";
 static char *str_dPixelBitmap = "%d pixel bitmap";
 static char *str_RestrictedRightsFont = "This font is marked with an FSType of 2 (Restricted\nLicense). That means it is not editable without the\npermission of the legal owner.\n\nDo you have such permission?";
 static char *str_RestrictedFont = "Restricted Font";

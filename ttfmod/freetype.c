@@ -31,8 +31,26 @@
 /*  interpreter */
 #if TT_RASTERIZE_FONTVIEW || TT_CONFIG_OPTION_BYTECODE_INTERPRETER
 
+# ifdef TT_CONFIG_OPTION_BYTECODE_INTERPRETER
+#  undef TT_CONFIG_OPTION_BYTECODE_INTERPRETER
+#  if TT_CONFIG_OPTION_BYTECODE_INTERPRETER
+#   define _TT_CONFIG_OPTION_BYTECODE_INTERPRETER
+#  endif
+# endif
 #include <ft2build.h>
 #include FT_FREETYPE_H
+# if !defined(TT_CONFIG_OPTION_BYTECODE_INTERPRETER) && defined(_TT_CONFIG_OPTION_BYTECODE_INTERPRETER)
+#  warning "You have compiled TtfMod to use FreeType's bytecode interpreter."
+#  warning "But you didn't compile FreeType with it enabled. I suppose you"
+#  warning "might want to examine their AutoHinter, so this is just a warning."
+#  warning "But you should check and make sure that's what you want." 
+# endif
+# ifdef _TT_CONFIG_OPTION_BYTECODE_INTERPRETER
+#  undef TT_CONFIG_OPTION_BYTECODE_INTERPRETER
+#  define TT_CONFIG_OPTION_BYTECODE_INTERPRETER 1
+# else 
+#  define TT_CONFIG_OPTION_BYTECODE_INTERPRETER 0
+# endif
 
 static FT_Library context;
 
@@ -193,7 +211,7 @@ return;
     free(raster);
 }
 
-# if _TT_CONFIG_OPTION_BYTECODE_INTERPRETER
+# if TT_CONFIG_OPTION_BYTECODE_INTERPRETER
 struct ft_context {
     ConicPointList *hcpl, *lcpl, *cpl;
     ConicPoint *last;

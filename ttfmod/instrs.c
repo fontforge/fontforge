@@ -581,6 +581,11 @@ void instr_expose(struct instrinfo *ii,GWindow pixmap,GRect *rect) {
 	y += ii->fh;
     }
     if ( y<=high && ii->instrdata->instr_cnt==0 && i==0 ) {
+	if ( ii->instrdata->in_composit ) {
+	    uc_strcpy(uname,"<instrs inherited>");
+	    GDrawDrawText(pixmap,num_end+2,y+ii->as,uname,-1,NULL,0xff0000);
+	    y += ii->fh;
+	}
 	uc_strcpy(uname,"<no instrs>");
 	GDrawDrawText(pixmap,num_end+2,y+ii->as,uname,-1,NULL,0xff0000);
     } else for ( ; y<=high && i<ii->instrdata->instr_cnt; ++i ) {

@@ -242,6 +242,9 @@ typedef struct splinepointlist {
 typedef struct refchar {
     unsigned int checked: 1;
     unsigned int selected: 1;
+    unsigned int point_match: 1;	/* transform[4:5] are point indexes */
+					/*  and need to be converted to offsets*/
+			                /*  after truetype readin */
     int16 adobe_enc;
     int local_enc;
     int unicode_enc;		/* used by paste */

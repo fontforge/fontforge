@@ -61,7 +61,7 @@ typedef struct binview /* : tableview */ {
 #define MID_SelAll	2106
 
 static int binary_processdata(TableView *tv) {
-    BinView *bv = (BinView *) tv;
+    /*BinView *bv = (BinView *) tv;*/
     /* Do changes!!! */
 return( true );
 }

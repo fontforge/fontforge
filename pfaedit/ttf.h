@@ -329,6 +329,7 @@ struct glyphinfo {
     real blues[14];
     int bcnt;
     int strikecnt;		/* number of bitmaps to dump */
+    int fudge;
 };
 
 struct alltabs {

@@ -143,6 +143,7 @@ struct ttfactions {
     int32 distance;		/* 26.6 fixed */
     unsigned int rounded:2;
     unsigned int min: 1;
+    unsigned int newcontour: 1;
     uint8 *instr;
     BasePoint freedom;
     struct ttfactions *acts;

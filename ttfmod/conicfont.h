@@ -103,6 +103,7 @@ typedef struct refchar {
     unsigned int selected: 1;
     unsigned int use_my_metrics: 1;
     unsigned int round: 1;
+    unsigned int point_match: 1;
     int glyph;
     real transform[6];		/* transformation matrix (first 2 rows of a 3x3 matrix, missing row is 0,0,1) */
     ConicPointList *conics;
@@ -115,6 +116,7 @@ struct instrdata {
     uint8 *instrs;
     int instr_cnt;
     uint8 *bts;
+    unsigned int in_composit: 1;
 };
 
 typedef struct conicchar {

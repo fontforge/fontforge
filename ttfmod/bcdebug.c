@@ -1426,6 +1426,8 @@ static void init_ttfstate(CharView *cv,struct ttfstate *state) {
     NotePoints(state,state->cc->conics);
     for ( r = state->cc->refs; r!=NULL; r = r->next )
 	NotePoints(state,r->conics);
+    /* point n is the origin */
+    state->zones[1].points[state->cc->point_cnt+1].x = state->cc->width;
     memcpy(state->zones[1].moved,state->zones[1].points, state->zones[1].point_cnt*sizeof(IPoint));
 
     state->args = gcalloc(cv->cc->instrdata.instr_cnt,sizeof(struct ttfargs));
@@ -1451,7 +1453,7 @@ static void TtfStateFreeContents(struct ttfstate *state) {
 void CVGenerateGloss(CharView *cv) {
     struct ttfstate state;
     struct ttfactions *acts;
-    int cnt;
+    int cnt, c;
 
     free(cv->instrinfo.args);
     TtfActionsFree(cv->instrinfo.acts);
@@ -1459,9 +1461,26 @@ void CVGenerateGloss(CharView *cv) {
     TtfExecuteInstrs(&state,cv->cc->instrdata.instrs,cv->cc->instrdata.instr_cnt);
     cv->instrinfo.args = state.args; state.args = NULL;
     cv->instrinfo.acts = state.acts; state.acts = NULL;
-    TtfStateFreeContents(&state);
-    for ( cnt=0, acts=cv->instrinfo.acts; acts!=NULL; acts=acts->acts )
+# if 0		/* DEBUG */
+ for ( c=0; c<state.zones[1].point_cnt; ++c )
+  printf( "%d:\t(%d,%d) (%.2f,%.2f) moved (%.2f,%.2f)\n", c,
+	  state.zones[1].points[c].x,state.zones[1].points[c].y,
+	  state.zones[1].points[c].x*state.scale/64.0,state.zones[1].points[c].y*state.scale/64.0,
+	  state.zones[1].moved[c].x*state.scale/64.0,state.zones[1].moved[c].y*state.scale/64.0);
+# endif
+    for ( c=0; c<state.zones[1].point_cnt; ++c )
+	if ( state.zones[1].flags[c]&pt_endcontour )
+    break;
+    for ( cnt=0, acts=cv->instrinfo.acts; acts!=NULL; acts=acts->acts ) {
+	if ( acts->pnum==c+1 ) {
+	    acts->newcontour = true;
+	    for ( ++c; c<state.zones[1].point_cnt; ++c )
+		if ( state.zones[1].flags[c]&pt_endcontour )
+	    break;
+	}
 	++cnt;
+    }
+    TtfStateFreeContents(&state);
     cv->instrinfo.act_cnt = cnt;
 }
 #endif

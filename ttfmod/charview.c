@@ -275,7 +275,7 @@ static BasePoint *CVGetTTFPoint(CharView *cv,int pnum,BasePoint **moved) {
 #if TT_CONFIG_OPTION_BYTECODE_INTERPRETER
     mspl = cv->gridfit;
 #else
-    mspl = NULL;
+    mspl = NULL; msp = NULL;
 #endif
     if ( moved!=NULL ) *moved = NULL;
     for ( spl = cv->cc->conics; spl!=NULL; spl = spl->next ) {
@@ -289,7 +289,7 @@ return( &sp->me );
 		if ( moved!=NULL && msp!=NULL ) *moved = msp->nextcp;
 return( sp->nextcp );
 	    }
-	    if ( msp==NULL );
+	    if ( msp==NULL ) /* Do Nothing */;
 	    else if ( msp->next==NULL ) msp=NULL;
 	    else msp=msp->next->to;
 	    if ( sp->next==NULL )
@@ -406,6 +406,7 @@ return;
     GDrawMove(cv->glossv,pos.x,pos.y);
     GDrawResize(cv->glossv,pos.width,pos.height);
     cv->gvwidth = GLOSS_WIDTH;
+    cv->gvheight = pos.height;
     if ( cv->show.glosspane ) x += GLOSS_WIDTH+cv->sbw;
 
     GScrollBarSetBounds(cv->gvsb,0,cv->instrinfo.act_cnt,cv->instrinfo.vheight/cv->fh);
@@ -844,9 +845,8 @@ static void char_expose(CharView *cv,GWindow pixmap,GRect *rect) {
     GRect old;
     DRect clip;
     real grid_spacing = cv->cc->parent->em / (real) cv->show.ppem;
-    int i;
+    int i,j;
 #if TT_CONFIG_OPTION_BYTECODE_INTERPRETER
-    int j;
     GRect pixel;
 #endif
 
@@ -873,13 +873,22 @@ static void char_expose(CharView *cv,GWindow pixmap,GRect *rect) {
     }
 #endif
     if ( cv->show.grid ) {
-	int max;
+	int max,jmax;
 	for ( i = floor( clip.x/grid_spacing ), max = ceil((clip.x+clip.width)/grid_spacing);
 		i<=max; ++i )
 	    DrawLine(cv,pixmap,i*grid_spacing,-32768,i*grid_spacing,32767,i==0?0x808080:0xb0b0ff);
 	for ( i = floor( clip.y/grid_spacing ), max = ceil((clip.y+clip.height)/grid_spacing);
 		i<=max; ++i )
 	    DrawLine(cv,pixmap,-32768,i*grid_spacing,32767,i*grid_spacing,i==0?0x808080:0xb0b0ff);
+	for ( i = floor( clip.x/grid_spacing ), max = ceil((clip.x+clip.width)/grid_spacing);
+		i<=max; ++i )
+	    for ( j = floor( clip.y/grid_spacing ), jmax = ceil((clip.y+clip.height)/grid_spacing);
+		    j<=jmax; ++j ) {
+		int x = (i+.5)*grid_spacing*cv->scale + cv->xoff;
+		int y = cv->vheight-cv->yoff - rint((j+.5)*grid_spacing*cv->scale);
+		GDrawDrawLine(pixmap,x-2,y,x+2,y,0xb0b0ff);
+		GDrawDrawLine(pixmap,x,y-2,x,y+2,0xb0b0ff);
+	    }
     } else {
 	/* Just draw main axes */
 	DrawLine(cv,pixmap,0,-32768,0,32767,0x808080);
@@ -898,7 +907,7 @@ static void char_expose(CharView *cv,GWindow pixmap,GRect *rect) {
     if ( cv->show.fore ) {
 	for ( rf=cv->cc->refs; rf!=NULL; rf = rf->next ) {
 	    CVDrawConicSet(cv,pixmap,rf->conics,0,true,&clip);
-	    if ( rf->selected )
+	    if ( /*rf->selected*/ true )
 		CVDrawBB(cv,pixmap,&rf->bb);
 	}
 
@@ -919,7 +928,7 @@ static void char_infoexpose(CharView *cv,GWindow pixmap,GRect *rect) {
     else if ( cv->scale<1 )
 	sprintf( bpt, "%.2g%%", cv->scale*100 );
     else
-	sprintf( bpt, "%f%%", rint(cv->scale*100) );
+	sprintf( bpt, "%.0f%%", rint(cv->scale*100) );
     uc_strcpy(ubuf,buf);
     GDrawSetFont(pixmap,cv->sfont);
     GDrawDrawText(pixmap,5,cv->mbh+cv->as,ubuf,-1,NULL,0x000000);
@@ -943,6 +952,8 @@ static void char_glossexpose(CharView *cv,GWindow pixmap,GRect *rect) {
 	    r.y = y-cv->as; r.x = 0; r.height = cv->fh; r.width = cv->gvwidth;
 	    GDrawFillRect(pixmap,&r,0xffff00);
 	}
+	if ( act->newcontour )
+	    GDrawDrawLine(pixmap,0,y-cv->as,cv->gvwidth,y-cv->as,0x000000);
 	sprintf( buf,"Pt%4d.%c ", act->pnum,
 		act->freedom.x==1.0?'x': 
 		act->freedom.y==1.0?'y':'d' );
@@ -1079,7 +1090,7 @@ static void gloss_scroll(CharView *cv,struct sbevent *sb) {
 	int diff = newpos-cv->gvpos;
 	cv->gvpos = newpos;
 	GScrollBarSetPos(cv->gvsb,cv->gvpos);
-	r.x=0; r.y = EDGE_SPACING; r.width=cv->gvwidth; r.height=cv->vheight-2*EDGE_SPACING;
+	r.x=0; r.y = EDGE_SPACING; r.width=cv->gvwidth; r.height=cv->gvheight-2*EDGE_SPACING;
 	GDrawScroll(cv->glossv,&r,0,diff*cv->fh);
     }
 }
@@ -1191,7 +1202,7 @@ static int cv_gv_e_h(GWindow gw, GEvent *event) {
       case et_expose:
 	char_glossexpose(cv,gw,&event->u.expose.rect);
       break;
-      case et_mousemove:
+      case et_mousemove: case et_mouseup:
 	GGadgetEndPopup();
 	ii = &cv->instrinfo;
 	seek = (event->u.mouse.y-2)/cv->fh + cv->gvpos;
@@ -1283,7 +1294,8 @@ static int cv_e_h(GWindow gw, GEvent *event) {
 	char_infoexpose(cv,gw,&event->u.expose.rect);
       break;
       case et_resize:
-	char_resize(cv,event);
+	if ( event->u.resize.sized )
+	    char_resize(cv,event);
       break;
       case et_char:
 	CVChar(cv,event);

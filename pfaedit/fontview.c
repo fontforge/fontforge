@@ -773,7 +773,7 @@ return;
     sc->splines = NULL;
     for ( refs=sc->refs; refs!=NULL; refs = next ) {
 	next = refs->next;
-	RefCharFree(refs);
+	SCRemoveDependent(sc,refs);
     }
     sc->refs = NULL;
     StemInfosFree(sc->hstem); sc->hstem = NULL;
@@ -795,27 +795,61 @@ return( true );
 return( false );
 }
 
+static void UnlinkThisReference(FontView *fv,SplineChar *sc) {
+    /* We are about to clear out sc. But somebody refers to it and that we */
+    /*  aren't going to delete. So (if the user asked us to) instanciate sc */
+    /*  into all characters which refer to it and which aren't about to be */
+    /*  cleared out */
+    struct splinecharlist *dep, *dnext;
+
+    for ( dep=sc->dependents; dep!=NULL; dep=dnext ) {
+	dnext = dep->next;
+	if ( fv==NULL || !fv->selected[dep->sc->enc]) {
+	    SplineChar *dsc = dep->sc;
+	    RefChar *rf, *rnext;
+	    /* May be more than one reference to us, colon has two refs to period */
+	    /*  but only one dlist entry */
+	    for ( rf = dsc->refs; rf!=NULL; rf=rnext ) {
+		rnext = rf->next;
+		if ( rf->sc == sc ) {
+		    /* Even if we were to preserve the state there would be no */
+		    /*  way to undo the operation until we undid the delete... */
+		    SCRefToSplines(dsc,rf);
+		    SCUpdateAll(dsc);
+		}
+	    }
+	}
+    }
+}
+    
 static void FVMenuClear(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     int i;
     BDFFont *bdf;
     int refstate = 0;
-    static int buts[] = { _STR_Yes, _STR_YesToAll, _STR_NoToAll, _STR_No, 0 };
-    int yes;
+    static int buts[] = { _STR_Yes, _STR_YesToAll, _STR_UnlinkAll, _STR_NoToAll, _STR_No, 0 };
+    int yes, unsel;
+    /* refstate==0 => ask, refstate==1 => clearall, refstate==-1 => skip all */
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] ) {
 	if ( !fv->onlycopydisplayed || fv->filled==fv->show ) {
 	    /* If we are messing with the outline character, check for dependencies */
 	    if ( refstate<=0 && fv->sf->chars[i]->dependents!=NULL ) {
-		if ( UnselectedDependents(fv,fv->sf->chars[i])) {
+		unsel = UnselectedDependents(fv,fv->sf->chars[i]);
+		if ( refstate==-2 && unsel ) {
+		    UnlinkThisReference(fv,fv->sf->chars[i]);
+		} else if ( unsel ) {
 		    if ( refstate<0 )
     continue;
-		    yes = GWidgetAskCenteredR(_STR_BadReference,buts,0,3,_STR_ClearDependent,fv->sf->chars[i]->name);
+		    yes = GWidgetAskCenteredR(_STR_BadReference,buts,2,4,_STR_ClearDependent,fv->sf->chars[i]->name);
 		    if ( yes==1 )
 			refstate = 1;
-		    else if ( yes==2 )
+		    else if ( yes==2 ) {
+			UnlinkThisReference(fv,fv->sf->chars[i]);
+			refstate = -2;
+		    } else if ( yes==3 )
 			refstate = -1;
-		    if ( yes>=2 )
+		    if ( yes>=3 )
     continue;
 		}
 	    }

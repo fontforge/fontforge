@@ -58,11 +58,6 @@
 /*  if you are not, then change the following #defined constant to 1 */
 # define TT_CONFIG_OPTION_BYTECODE_INTERPRETER	0
 #endif
-#if TT_CONFIG_OPTION_BYTECODE_INTERPRETER
-# define _TT_CONFIG_OPTION_BYTECODE_INTERPRETER 1
-#else
-# define _TT_CONFIG_OPTION_BYTECODE_INTERPRETER 0
-#endif
 
 #ifndef TT_CONFIG_OPTION_BYTECODE_DEBUG
 /* I also have my own byte code interpreter. It has three modes and is */

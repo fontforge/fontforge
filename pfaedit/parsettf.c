@@ -35,11 +35,18 @@
 
 /* True Type is a really icky format. Nothing is together. It's badly described */
 /*  much of the description is misleading */
-/* http://www.microsoft.com/typography/tt/tt.htm */
-/* An accurate but incomplete description is given at */
-/*  http://www.truetype.demon.co.uk/ttoutln.htm */
 /* Apple's version: */
 /*  http://fonts.apple.com/TTRefMan/index.html */
+/* MS's version: */
+/*  http://www.microsoft.com/typography/tt/tt.htm */
+/* An helpful but incomplete description is given at */
+/*  http://www.truetype.demon.co.uk/ttoutln.htm */
+/* For some things I looked at freetype's code to see how they did it */
+/*  (I think only for what happens if !ARGS_ARE_XY) */
+/*  http://freetype.sourceforge.net/ */
+
+static int default_to_Apple = 0;	/* Normally we assume the MS interpretation */
+		/* At the moment this only controls composit offsets */
 
 /* !!!I don't currently parse instructions to get hints */
 
@@ -718,12 +725,21 @@ static void readttfcompositglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc) 
 	    /*  So if either bit is set we know when this happens, if neither */
 	    /*  we guess... But I still don't know how to interpret the */
 	    /*  apple mode under rotation... */
+	    /* I notice that FreeType does nothing about rotation nor does it */
+	    /*  interpret bits 11&12 */
 	} else {
 	    /* Somehow we can get offsets by looking at the points in the */
 	    /*  points so far generated and comparing them to the points in */
 	    /*  the current componant */
 	    /* How exactly is not described on any of the Apple, MS, Adobe */
-	    fprintf( stderr, "TTF IError: I don't understand matching points. Please send me a copy\n" );
+	    /* freetype looks up arg1 in the set of points we've got so far */
+	    /*  looks up arg2 in the new component (before renumbering) */
+	    /*  offset.x = arg1.x - arg2.x; offset.y = arg1.y - arg2.y; */
+	    /* Sadly I don't retain the information I need to deal with this */
+	    /*  I lose the point numbers and the control points... */
+	    /* I have implemented it in ttfmod where that info is retained */
+	    cur->point_match = true;
+	    fprintf( stderr, "TTF Warning: I mayn't understand matching points. Please send me a copy\n" );
 	    fprintf( stderr, "  of whatever ttf file you are loading. Thanks.  gww@silcom.com\n" );
 	}
 	cur->transform[0] = cur->transform[3] = 1.0;
@@ -740,7 +756,7 @@ static void readttfcompositglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc) 
 	}
 	/* If neither SCALED/UNSCALED specified I'll just assume MS interpretation */
 	/*  because I at least understand that method */
-	if ( flags & _SCALED_OFFSETS ) {
+	if ( (default_to_Apple || (flags & _SCALED_OFFSETS)) && (flags & _ARGS_ARE_XY)) {
 	    cur->transform[4] *= cur->transform[0];
 	    cur->transform[5] *= cur->transform[1];
 	    if ( (RealNear(cur->transform[1],cur->transform[2]) ||

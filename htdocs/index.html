@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 11-Oct-2001 -->
+  <!-- AP: Last modified: 20-Oct-2001 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -66,8 +66,8 @@ know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-011011.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 11-Oct-2001
+    <A HREF="pfaedit-011020.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 20-Oct-2001
   <LI>
     <A HREF="pfaedit-solaris-010901.tgz">Download pfaedit Solaris 8.0
     </A>executable Version: 1-Sept-2001
@@ -101,7 +101,7 @@ know when you do</A>.
 <P>
 You can download a <A HREF="pfaedit-010906-1.src.rpm">source RPM</A>: Version:
 5-Sept-2001<BR>
-Or you can download the following three packages. Version: 11-Oct-2001
+Or you can download the following three packages. Version: 20-Oct-2001
 <UL>
   <LI>
     <A HREF="libgunicode-011011.tgz">Unicode library source</A> (11-Oct-2001)<BR>
@@ -113,10 +113,10 @@ Or you can download the following three packages. Version: 11-Oct-2001
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
   <LI>
-    <A HREF="pfaedit_src-011011.tgz">Pfaedit source</A> (11-Oct-2001)<BR>
+    <A HREF="pfaedit_src-011020.tgz">Pfaedit source</A> (20-Oct-2001)<BR>
     -- <A HREF="overview.html">docs</A>
   <LI>
-    <A HREF="pfaedit_full-011011.tgz">All three bundled together </A>(11-Oct-2001)
+    <A HREF="pfaedit_full-011020.tgz">All three bundled together </A>(20-Oct-2001)
   <LI>
     If you want to do autotracing around character images you should also download
     Martin Weber's <A HREF="http://sourceforge.net/projects/autotrace/">autotrace
@@ -226,6 +226,41 @@ up into one <A HREF="pfaedit_htdocs-010925.tgz">tgz file</A> 25-Sept-2001.
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    20-Oct-2001
+    <UL>
+      <LI>
+	PfaEdit generated awful instructions (hints) for truetype characters. I've
+	fixed some of the more egregious problems (I hope).<BR>
+	In particular:
+	<UL>
+	  <LI>
+	    Diagonal hints were completely broken
+	  <LI>
+	    Overlapping hints didn't work either
+	  <LI>
+	    Normal hints with more than one point on them sometimes had the second (third,
+	    fourth...) point moved by the wrong amount.
+	  <LI>
+	    Points that weren't on any hints were often not interpolated properly.
+	  <LI>
+	    The serif code picked up on things which weren't serifs and tried to hint
+	    them as though they were.
+	</UL>
+	<P>
+	I've written a <A HREF="ttfmod/index.html">tool</A> which will allow you
+	to look at what the instructions are and what they do.
+      <LI>
+	TTF spline approximation (cubic-&gt;quadratic) should be twice as fast.
+      <LI>
+	Clearing/Cutting a character with references from the font view corrupted
+	PfaEdit's internal state. If this were followed by a reduction in the number
+	of characters in the font (Element-&gt;Font Info-&gt;Encoding) a crash could
+	occur.
+      <LI>
+	Clearing/Cutting a character with dependents from the font view now gives
+	the user the option of instanciating the character in all its dependents.
+    </UL>
   <LI>
     11-Oct-2001
     <UL>
