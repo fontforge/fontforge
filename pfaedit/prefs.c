@@ -150,7 +150,8 @@ struct macsettingname macfeat_otftag[] = {
 #if 0
     { 10, 3, CHR('s','u','p','s') },	/* ordinal vertical position => superscript */
 #endif
-    { 11, 1, CHR('f','r','a','c') },	/* vertical fraction => fraction ligature */
+    { 11, 1, CHR('a','f','r','c') },	/* vertical fraction => fraction ligature */
+    { 11, 2, CHR('f','r','a','c') },	/* diagonal fraction => fraction ligature */
     { 16, 1, CHR('o','r','n','m') },	/* vertical fraction => fraction ligature */
     { 20, 0, CHR('t','r','a','d') },	/* traditional characters => traditional forms */
 #if 0
