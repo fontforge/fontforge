@@ -1669,6 +1669,8 @@ static void bCharInfo(Context *c) {
 	    c->return_val.u.ival = sc->width;
 	else if ( strmatch( c->a.vals[1].u.sval,"VWidth")==0 )
 	    c->return_val.u.ival = sc->vwidth;
+	else if ( strmatch( c->a.vals[1].u.sval,"Changed")==0 )
+	    c->return_val.u.ival = sc->changed;
 	else if ( strmatch( c->a.vals[1].u.sval,"Color")==0 )
 	    c->return_val.u.ival = sc->color;
 	else if ( strmatch( c->a.vals[1].u.sval,"Comment")==0 ) {
