@@ -378,8 +378,13 @@ int SFFindChar(SplineFont *sf, int unienc, const char *name ) {
 	}
     } else if ( unienc!=-1 ) {
 	index = EncFromUni(unienc,sf->encoding_name);
-	if ( index<0 || index>=sf->charcnt )
-	    index = -1;
+	if ( index<0 || index>=sf->charcnt ) {
+	    for ( index=sf->encoding_name->char_cnt; index<sf->charcnt; ++index )
+		if ( sf->chars[index]!=NULL && sf->chars[index]->unicodeenc==unienc )
+	    break;
+	    if ( index>sf->charcnt )
+		index = -1;
+	}
     }
     if ( index==-1 && name!=NULL ) {
 	SplineChar *sc = SFHashName(sf,name);
