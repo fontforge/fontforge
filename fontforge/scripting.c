@@ -735,7 +735,7 @@ return( fv );
 }
 
 char **GetFontNames(char *filename) {
-    FILE *foo = fopen(filename,"r");
+    FILE *foo = fopen(filename,"rb");
     char **ret = NULL;
 
     if ( foo!=NULL ) {
@@ -1740,7 +1740,7 @@ static void bLoadTableFromFile(Context *c) {
     tag |= (tstr+2<end ? tstr[2] : ' ')<<8 ;
     tag |= (tstr+3<end ? tstr[3] : ' ')    ;
 
-    file = fopen(c->a.vals[2].u.sval,"r");
+    file = fopen(c->a.vals[2].u.sval,"rb");
     if ( file==NULL )
 	errors(c,"Could not open file: ", c->a.vals[2].u.sval );
     if ( fstat(fileno(file),&statb)==-1 )
@@ -1782,7 +1782,7 @@ static void bSaveTableToFile(Context *c) {
     tag |= (tstr+2<end ? tstr[2] : ' ')<<8 ;
     tag |= (tstr+3<end ? tstr[3] : ' ')    ;
 
-    file = fopen(c->a.vals[2].u.sval,"w");
+    file = fopen(c->a.vals[2].u.sval,"wb");
     if ( file==NULL )
 	errors(c,"Could not open file: ", c->a.vals[2].u.sval );
 
