@@ -1443,13 +1443,14 @@ void PasteToBC(BDFChar *bc,int pixelsize,int depth,FontView *fv) {
 
 void FVCopyWidth(FontView *fv,enum undotype ut) {
     Undoes *head=NULL, *last=NULL, *cur;
-    int i;
+    int i, any=false;
     SplineChar *sc;
     DBounds bb;
 
     CopyBufferFree();
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] ) {
+	any = true;
 	cur = chunkalloc(sizeof(Undoes));
 	cur->undotype = ut;
 	if ( (sc=fv->sf->chars[i])!=NULL ) {
@@ -1479,10 +1480,12 @@ void FVCopyWidth(FontView *fv,enum undotype ut) {
     }
     copybuffer.undotype = ut_multiple;
     copybuffer.u.multiple.mult = head;
+    if ( !any )
+	fprintf( stderr, "No selection\n" );
 }
 
 void FVCopy(FontView *fv, int fullcopy) {
-    int i;
+    int i, any = false;
     BDFFont *bdf;
     Undoes *head=NULL, *last=NULL, *cur;
     Undoes *bhead=NULL, *blast=NULL, *bcur;
@@ -1490,6 +1493,7 @@ void FVCopy(FontView *fv, int fullcopy) {
     extern int onlycopydisplayed;
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] ) {
+	any = true;
 	if ( onlycopydisplayed && fv->filled==fv->show ) {
 	    cur = SCCopyAll(fv->sf->chars[i],fullcopy);
 	} else if ( onlycopydisplayed ) {
@@ -1521,6 +1525,9 @@ void FVCopy(FontView *fv, int fullcopy) {
 	    last = cur;
 	}
     }
+
+    if ( !any )
+	fprintf( stderr, "No selection\n" );
 
     if ( head==NULL )
 return;
@@ -1616,6 +1623,11 @@ void PasteIntoFV(FontView *fv,int doclear) {
     cur = &copybuffer;
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] )
 	++cnt;
+    if ( cnt==0 ) {
+	fprintf( stderr, "No Selection\n" );
+return;
+    }
+
     /* If they select exactly one character but there are more things in the */
     /*  copy buffer, then temporarily change the selection so that everything*/
     /*  in the copy buffer gets pasted (into chars immediately following sele*/
