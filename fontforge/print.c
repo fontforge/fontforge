@@ -590,7 +590,7 @@ static void pdf_build_type0(PI *pi) {
     pdf_addobject(pi);
     fprintf( pi->out, "<< /Length %ld ", len );
     if ( pi->istype42cid )
-	fprintf( pi->out, "/Length2 %ld>>\n", len );
+	fprintf( pi->out, "/Length1 %ld>>\n", len );
     else
 	fprintf( pi->out, "/Subtype /CIDFontType0C>>\n" );
     fprintf( pi->out, "stream\n" );
@@ -599,7 +599,7 @@ static void pdf_build_type0(PI *pi) {
 	putc(ch,pi->out);
     fprintf( pi->out, " endstream\n" );
     fprintf( pi->out, "endobj\n\n" );
-    
+
     fd_obj = figure_fontdesc(pi, &fd,pi->istype42cid?2:3,font_stream);
 
     cidfont_ref = pi->next_object;
@@ -612,8 +612,8 @@ static void pdf_build_type0(PI *pi) {
 	fprintf( pi->out, "    /CIDSystemInfo << /Registry (%s) /Ordering (%s) /Supplement %d >>\n",
 		cidmaster->cidregistry, cidmaster->ordering, cidmaster->supplement );
     else
-	fprintf( pi->out, "    /CIDSystemInfo << /Registry (Adobe) /Ordering (Ident) /Supplement 0>>\n" );
-    fprintf( pi->out, "    /DW /%d\n", defwidth );
+	fprintf( pi->out, "    /CIDSystemInfo << /Registry (Adobe) /Ordering (Identity) /Supplement 0>>\n" );
+    fprintf( pi->out, "    /DW %d\n", defwidth );
     fprintf( pi->out, "    /W %d 0 R\n", pi->next_object );
     fprintf( pi->out, "    /FontDescriptor %d 0 R\n", fd_obj );
     if ( pi->istype42cid )
@@ -688,10 +688,11 @@ static void pdf_build_type0(PI *pi) {
     /* cid2gid */
     if ( pi->istype42cid ) {
 	pdf_addobject(pi);
-	fprintf( pi->out, "  [\n" );
+	fprintf( pi->out, "<< /Length %d >>\n", 2*cidmax );
+	fprintf( pi->out, "stream\n" );
 	for ( i=0; i<cidmax; ++i )
-	    fprintf( pi->out, "\t%d\n", cid2gid[i]);
-	fprintf( pi->out, "  ]\n" );
+	    fprintf( pi->out, "%c%c", cid2gid[i]>>8, cid2gid[i]&0xff);
+	fprintf( pi->out, "\nendstream\n" );
 	fprintf( pi->out, "endobj\n" );
 	free(cid2gid);
     }
@@ -1536,9 +1537,12 @@ return;
 
 static void checkrightfont(PI *pi,SplineChar *sc) {
     if ( pi->printtype==pt_pdf ) {
-	if ( (sc->enc>>8)!=pi->lastfont ) {
+	if ( (sc->enc>>8)!=pi->lastfont && !pi->iscid ) {
 	    if ( pi->intext ) { fprintf( pi->out, "> Tj"); pi->intext = false; }
 	    fprintf( pi->out, "\n/F%d %d Tf\n", pi->fonts[sc->enc>>8], pi->pointsize );
+	} else if ( pi->lastfont==-1 && pi->iscid ) {
+	    if ( pi->intext ) { fprintf( pi->out, "> Tj"); pi->intext = false; }
+	    fprintf( pi->out, "\n/F0 %d Tf\n", pi->pointsize );
 	}
 	if ( !pi->intext ) { fprintf( pi->out, "<" ); pi->intext = true; }
     }
