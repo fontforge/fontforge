@@ -1320,6 +1320,73 @@ return;
     }
 }
 
+static void CVDrawGridRaster(CharView *cv, GWindow pixmap, DRect *clip ) {
+    if ( cv->showgrids ) {
+	/* Draw ppem grid, and the raster for truetype debugging, grid fit */
+	GRect pixel;
+	real grid_spacing = (cv->sc->parent->ascent+cv->sc->parent->descent) / (real) cv->ft_ppem;
+	int max,jmax,ii,i,jj,j;
+	int minx, maxx, miny, maxy, r,or;
+
+	pixel.width = pixel.height = grid_spacing*cv->scale+1;
+	if ( cv->raster!=NULL ) {
+	    minx = cv->raster->lb; maxx = minx+cv->raster->cols;
+	    maxy = cv->raster->as; miny = maxy-cv->raster->rows;
+	    if ( cv->oldraster!=NULL ) {
+		if ( cv->oldraster->lb<minx ) minx = cv->oldraster->lb;
+		if ( cv->oldraster->lb+cv->oldraster->cols>maxx ) maxx = cv->oldraster->lb+cv->oldraster->cols;
+		if ( cv->oldraster->as>maxy ) maxy = cv->oldraster->as;
+		if ( cv->oldraster->as-cv->oldraster->rows<miny ) miny = cv->oldraster->as-cv->oldraster->rows<miny;
+	    }
+	    for ( ii=maxy; ii>miny; --ii ) {
+		for ( jj=minx; jj<maxx; ++jj ) {
+		    i = cv->raster->as-ii; j = jj-cv->raster->lb;
+		    if ( i<0 || i>=cv->raster->rows || j<0 || j>=cv->raster->cols )
+			r = 0;
+		    else
+			r = cv->raster->bitmap[i*cv->raster->bytes_per_row+(j>>3)] & (1<<(7-(j&7)));
+		    if ( cv->oldraster==NULL )
+			or = r;
+		    else {
+			i = cv->oldraster->as-ii; j = jj-cv->oldraster->lb;
+			if ( i<0 || i>=cv->oldraster->rows || j<0 || j>=cv->oldraster->cols )
+			    or = 0;
+			else
+			    or = cv->oldraster->bitmap[i*cv->oldraster->bytes_per_row+(j>>3)] & (1<<(7-(j&7)));
+		    }
+		    if ( r || or ) {
+			pixel.x = jj*grid_spacing*cv->scale + cv->xoff;
+			pixel.y = cv->height-cv->yoff - rint(ii*grid_spacing*cv->scale);
+			GDrawFillRect(pixmap,&pixel,(r && or) ? rastercol : r ? rasternewcol : rasteroldcol );
+		    }
+		}
+	    }
+	}
+
+	for ( i = floor( clip->x/grid_spacing ), max = ceil((clip->x+clip->width)/grid_spacing);
+		i<=max; ++i )
+	    DrawLine(cv,pixmap,i*grid_spacing,-32768,i*grid_spacing,32767,i==0?coordcol:rastergridcol);
+	for ( i = floor( clip->y/grid_spacing ), max = ceil((clip->y+clip->height)/grid_spacing);
+		i<=max; ++i )
+	    DrawLine(cv,pixmap,-32768,i*grid_spacing,32767,i*grid_spacing,i==0?coordcol:rastergridcol);
+	if ( grid_spacing*cv->scale>=7 ) {
+	    for ( i = floor( clip->x/grid_spacing ), max = ceil((clip->x+clip->width)/grid_spacing);
+		    i<=max; ++i )
+		for ( j = floor( clip->y/grid_spacing ), jmax = ceil((clip->y+clip->height)/grid_spacing);
+			j<=jmax; ++j ) {
+		    int x = (i+.5)*grid_spacing*cv->scale + cv->xoff;
+		    int y = cv->height-cv->yoff - rint((j+.5)*grid_spacing*cv->scale);
+		    GDrawDrawLine(pixmap,x-2,y,x+2,y,rastergridcol);
+		    GDrawDrawLine(pixmap,x,y-2,x,y+2,rastergridcol);
+		}
+	}
+    }
+    if ( cv->showback ) {
+	CVDrawSplineSet(cv,pixmap,cv->gridfit,gridfitoutlinecol,
+		cv->showpoints,clip);
+    }
+}
+
 static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
     SplineFont *sf = cv->sc->parent;
     RefChar *rf;
@@ -1390,54 +1457,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	}
     } else {
 	/* Draw FreeType Results */
-	if ( cv->showgrids ) {
-	    /* Draw ppem grid, and the raster */
-	    GRect pixel;
-	    real grid_spacing = (cv->sc->parent->ascent+cv->sc->parent->descent) / (real) cv->ft_ppem;
-	    int max,jmax,j;
-
-	    pixel.width = pixel.height = grid_spacing*cv->scale+1;
-	    if ( cv->raster!=NULL ) {
-		int hasor = cv->oldraster!=NULL &&
-			cv->oldraster->lb==cv->raster->lb &&
-			cv->oldraster->as==cv->raster->as &&
-			cv->oldraster->rows==cv->raster->rows &&
-			cv->oldraster->cols==cv->raster->cols;
-		for ( i=0; i<cv->raster->rows; ++i ) {
-		    for ( j=0; j<cv->raster->cols; ++j ) {
-			int r = cv->raster->bitmap[i*cv->raster->bytes_per_row+(j>>3)] & (1<<(7-(j&7)));
-			int or = hasor ? cv->oldraster->bitmap[i*cv->raster->bytes_per_row+(j>>3)] & (1<<(7-(j&7))) : r;
-			if ( r || or ) {
-			    pixel.x = (j+cv->raster->lb)*grid_spacing*cv->scale + cv->xoff;
-			    pixel.y = cv->height-cv->yoff - rint((cv->raster->as-i)*grid_spacing*cv->scale);
-			    GDrawFillRect(pixmap,&pixel,(r && or) ? rastercol : r ? rasternewcol : rasteroldcol );
-			}
-		    }
-		}
-	    }
-
-	    for ( i = floor( clip.x/grid_spacing ), max = ceil((clip.x+clip.width)/grid_spacing);
-		    i<=max; ++i )
-		DrawLine(cv,pixmap,i*grid_spacing,-32768,i*grid_spacing,32767,i==0?coordcol:rastergridcol);
-	    for ( i = floor( clip.y/grid_spacing ), max = ceil((clip.y+clip.height)/grid_spacing);
-		    i<=max; ++i )
-		DrawLine(cv,pixmap,-32768,i*grid_spacing,32767,i*grid_spacing,i==0?coordcol:rastergridcol);
-	    if ( grid_spacing*cv->scale>=7 ) {
-		for ( i = floor( clip.x/grid_spacing ), max = ceil((clip.x+clip.width)/grid_spacing);
-			i<=max; ++i )
-		    for ( j = floor( clip.y/grid_spacing ), jmax = ceil((clip.y+clip.height)/grid_spacing);
-			    j<=jmax; ++j ) {
-			int x = (i+.5)*grid_spacing*cv->scale + cv->xoff;
-			int y = cv->height-cv->yoff - rint((j+.5)*grid_spacing*cv->scale);
-			GDrawDrawLine(pixmap,x-2,y,x+2,y,rastergridcol);
-			GDrawDrawLine(pixmap,x,y-2,x,y+2,rastergridcol);
-		    }
-	    }
-	}
-	if ( cv->showback ) {
-	    CVDrawSplineSet(cv,pixmap,cv->gridfit,gridfitoutlinecol,
-		    cv->showpoints,&clip);
-	}
+	CVDrawGridRaster(cv,pixmap,&clip);
     }
 
     if ( cv->layerheads[cv->drawmode]->undoes!=NULL && cv->layerheads[cv->drawmode]->undoes->undotype==ut_tstate )
