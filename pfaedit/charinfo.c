@@ -1105,7 +1105,7 @@ return( false );
 	sf->encoding_name = em_none;
 
     free(sc->comment); sc->comment = NULL;
-    if ( *comment!='\0' )
+    if ( comment!=NULL && *comment!='\0' )
 	sc->comment = u_copy(comment);
 
     SCRefreshTitles(sc);
