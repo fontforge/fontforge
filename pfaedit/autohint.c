@@ -564,7 +564,11 @@ return( 0.0 );
 
     if ( osp->a==0 && osp->b==0 && osp->c==0 ) {
 	*up = e->coordmax[major]-i;
+	if ( *up<0 && *up>-1 )
+	    *up = 0;
 	*down = e->coordmin[major]-i;
+	if ( *down>0 && *down<1 )
+	    *down = 0;
 return( e->coordmax[major]-e->coordmin[major] );
     }
 
@@ -791,8 +795,12 @@ static StemInfo *StemAddBrief(StemInfo *stems,EI *apt,EI *e,
     StemInfo *new;
 
     if ( mend<=mstart ) {
+	double temp;
 	fprintf( stderr, "Bad values in StemAddBrief, mstart=%g mend=%g\n", mstart, mend);
-return(stems);
+	/* Have to add some HI, else we might crash later */
+	temp = mstart;
+	mstart = mend;
+	mend = temp;
     }
     new = StemsFind(stems,apt,e,major);
     if ( new->where==NULL )
@@ -1626,6 +1634,46 @@ return( true );
 return( false );
 }
 
+static StemInfo *GhostAdd(StemInfo *ghosts, StemInfo *stems, double base,
+	double width, double xstart, double xend ) {
+    StemInfo *s, *prev, *test;
+    HintInstance *hi;
+
+    if ( xstart>xend ) {
+	double temp = xstart;
+	xstart = xend;
+	xend = temp;
+    }
+    if ( inhints(stems,base,xstart,xend))
+return(ghosts);		/* already recorded */
+    if ( width==20 ) base -= 20;
+    if ( inhints(ghosts,base,xstart,xend))
+return(ghosts);		/* already recorded */
+    for ( s=ghosts; s!=NULL; s=s->next )
+	if ( s->start==base && s->width==width )
+    break;
+    if ( s==NULL ) {
+	s = gcalloc(1,sizeof(StemInfo));
+	s->start = base;
+	s->width = width;
+	s->ghost = true;
+	if ( ghosts==NULL || base<ghosts->start ) {
+	    s->next = ghosts;
+	    ghosts = s;
+	} else {
+	    for ( prev=ghosts, test=ghosts->next; test!=NULL && base<test->start;
+		    prev = test, test = test->next);
+	    prev->next = s;
+	    s->next = test;
+	}
+    }
+    hi = gcalloc(1,sizeof(HintInstance));
+    hi->begin = xstart;
+    hi->end = xend;
+    s->where = HIMerge(s->where,hi);
+return( ghosts );
+}
+
 static StemInfo *CheckForGhostHints(StemInfo *stems,SplineChar *sc) {
     /* PostScript doesn't allow a hint to stretch from one alignment zone to */
     /*  another. (Alignment zones are the things in bluevalues). This means */
@@ -1640,7 +1688,6 @@ static StemInfo *CheckForGhostHints(StemInfo *stems,SplineChar *sc) {
     int i;
     SplineChar *t;
     StemInfo *prev, *s, *n, *snext, *ghosts = NULL;
-    HintInstance *hi;
     SplineSet *spl;
     Spline *spline, *first;
     double base, width;
@@ -1712,32 +1759,40 @@ static StemInfo *CheckForGhostHints(StemInfo *stems,SplineChar *sc) {
 		    (spline->from->prev->from->me.y > base) ==
 			(spline->to->next->to->me.y > base)) {
 		width = (spline->from->prev->from->me.y > spline->from->me.y)?21:20;
-		if ( inhints(stems,base,spline->from->me.x,spline->to->me.x))
-	continue;		/* already recorded */
-		if ( width==20 ) base -= 20;
-		if ( inhints(ghosts,base,spline->from->me.x,spline->to->me.x))
-	continue;		/* already recorded */
-		for ( s=ghosts; s!=NULL; s=s->next )
-		    if ( s->start==base && s->width==width )
-		break;
-		if ( s==NULL ) {
-		    s = gcalloc(1,sizeof(StemInfo));
-		    s->start = base;
-		    s->width = width;
-		    s->ghost = true;
-		    s->next = ghosts;
-		    ghosts = s;
-		}
-		hi = gcalloc(1,sizeof(HintInstance));
-		hi->begin = spline->from->me.x;
-		hi->end = spline->to->me.x;
-		if ( hi->begin>hi->end ) {
-		    hi->begin = hi->end;
-		    hi->end = spline->from->me.x;
-		}
-		s->where = HIMerge(s->where,hi);
+		ghosts = GhostAdd(ghosts,stems, base,width,spline->from->me.x,spline->to->me.x);
 	    }
 	    if ( first==NULL ) first = spline;
+	}
+	for ( sp=spl->first; ; ) {
+	    if ( sp->next==NULL )
+	break;
+	    /* Look for dished serifs */
+	    if ( !sp->nonextcp && !sp->noprevcp && sp->me.y==sp->nextcp.y &&
+		    sp->me.y==sp->prevcp.y &&
+		    sp->prev!=NULL && sp->prev->from->prev!=NULL &&
+		    /* sp->next!=NULL &&*/ sp->next->to->next!=NULL &&
+		    sp->next->to->me.x != sp->me.x &&
+		    sp->prev->from->me.x != sp->me.x &&
+		    sp->next->to->me.y != sp->me.y &&
+		    sp->next->to->me.y == sp->prev->from->me.y &&
+		    sp->next->to->next->knownlinear &&
+		    sp->prev->from->prev->knownlinear &&
+		    (sp->next->to->me.y>sp->next->to->next->to->me.y)==
+		     (sp->prev->from->me.y>sp->prev->from->prev->from->me.y)) {
+		double xstart = (sp->prev->from->me.x-sp->me.x)/(sp->prev->from->me.y-sp->me.y);
+		double xend = (sp->next->to->me.x-sp->me.x)/(sp->next->to->me.y-sp->me.y);
+		if (( xstart<0 && sp->prev->from->me.x>sp->me.x) ||
+			(xstart>0 && sp->prev->from->me.x<sp->me.x))
+		    xstart = -xstart;
+		if (( xend<0 && sp->next->to->me.x>sp->me.x) ||
+			(xend>0 && sp->next->to->me.x<sp->me.x))
+		    xend = -xend;
+		width = (sp->next->to->me.y>sp->next->to->next->to->me.y)?21:20;
+		ghosts = GhostAdd(ghosts,stems, base,width,sp->me.x+xstart,sp->me.x+xend);
+	    }
+	    sp = sp->next->to;
+	    if ( sp==spl->first )
+	break;
 	}
     }
 

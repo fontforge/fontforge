@@ -222,14 +222,11 @@ return(false);
 return( true );
     }
 
-    if ( event->u.chr.keysym == GK_Return || event->u.chr.keysym == GK_Tab ||
-	    event->u.chr.keysym == GK_BackTab || event->u.chr.keysym == GK_Escape )
-return( false );
-
     if ( event->u.chr.chars[0]==' ' ) {
 	GButtonInvoked(gb,0);
-    }
 return( true );
+    }
+return(false);
 }
 
 static int gbutton_focus(GGadget *g, GEvent *event) {

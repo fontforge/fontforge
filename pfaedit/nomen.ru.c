@@ -391,7 +391,7 @@ static unichar_t mnemonic_PrevArrow = 'P';
 static char *str_NextArrow = "След. >";
 static unichar_t mnemonic_NextArrow = 'N';
     /* Auto Width/Kern */
-static char *str_EnterTwoCharRange = "Enter two character ranges";
+static char *str_EnterTwoCharRange = "Введите два диапазона символов";
 static char *str_ToBeAdjusted = "to be adjusted.";
 static char *str_CharsLeft = "Chars on Left";
 static char *str_CharsRight = "Chars on Right";
@@ -419,5 +419,26 @@ static char *str_AddingSizeScale = " Adding a size will create it by scaling.";
 static char *str_SpecifyRegenSizes = "Specify bitmap sizes to be regenerated";
 static char *str_PointSizes75 = "Размер в точках на экране 75 dpi";
 static char *str_PointSizes100 = "Размер в точках на экране 100 dpi";
-
-static int num_buttonsize = 55;
+    /* Bitmap view */
+/* "%s at %d from %s", charactername, pixelsize, fontname */
+static char *str_bvat = " at ";
+static char *str_bvfrom = " from ";
+static char *str_RecalculateBitmaps = "Recalculate Bitmaps";
+    /* BV Edit */
+static char *str_skewRatio = "Enter the ratio of x-skew to y rise";
+static char str_BadNumber[] = "Bad Number";
+    /* Char View */
+/* "%s from %s", charactername, fontname */
+static char *str_cvfrom = " from ";
+    /* CV Export */
+static char *str_PixelSizeQ = "Размер в точках растра?";
+static char *str_PixelSize = "Размер в точках растра:";
+static char *str_BitsPerPixel = "Бит/Точек растра:";
+static char *str_InvalidBits = "Допустимыми значениями для бит/точек растра являются 1, 2, 4 или 8";
+    /* CV Images */
+static char *str_CantFindFile = "Не удалось найти файл";
+static char *str_BadXFigFile = "Неправильный файл xfig";
+static char *str_BadImageFile = "Неправильный файл изображения";
+static char *str_BadImageFileNotBitmap = "Неправильный файл изображения, не является растром";
+static char *str_Image = "Изображение";
+static int num_buttonsize = 70;

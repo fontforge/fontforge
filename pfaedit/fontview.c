@@ -34,6 +34,8 @@
 #include <math.h>
 #include "nomen.h"
 
+#define AUTODECOMPRESS	1
+
 #define XOR_COLOR	0x505050
 #define	FV_LAB_HEIGHT	15
 
@@ -484,7 +486,12 @@ void MenuExit(GWindow base,struct gmenuitem *mi,GEvent *e) {
 
 char *GetPostscriptFontName(int mult) {
     /* Some people use pf3 as an extension for postscript type3 fonts */
+#if AUTODECOMPRESS
+    static unichar_t wild[] = { '*', '.', '{', 'p','f','a',',','p','f','b',',','s','f','d',',','t','t','f',',','b','d','f',',','o','t','f',',','p','f','3','}', 
+	     '{','.','g','z',',','.','Z',',','.','b','z','2',',','}',  '\0' };
+#else
     static unichar_t wild[] = { '*', '.', '{', 'p','f','a',',','p','f','b',',','s','f','d',',','t','t','f',',','b','d','f',',','o','t','f',',','p','f','3','}', '\0' };
+#endif
     static unichar_t title[] = { 'O','p','e','n',' ','p','o','s','t','s','c','r','i','p','t',' ','f','o','n','t', '\0' };
     unichar_t *ret = FVOpenFont(title,NULL,wild,NULL,mult);
     char *temp = cu_copy(ret);
@@ -2450,10 +2457,40 @@ SplineFont *ReadSplineFont(char *filename) {
     static unichar_t reading[] = { 'R','e','a','d','i','n','g',' ','G','l','y','p','h','s',  '\0' };
     static unichar_t interpret[] = { 'I','n','t','e','p','r','e','t','i','n','g',' ','G','l','y','p','h','s',  '\0' };
     unichar_t ubuf[120];
+#if AUTODECOMPRESS
+    char buf[1200];
+    static struct { char *ext, *decomp, *recomp; } compressors[] = {
+	{ "gz", "gunzip", "gzip" },
+	{ "bz2", "bunzip2", "bzip2" },
+	{ "Z", "uncompress", "compress" },
+	NULL
+    };
+    int i;
+    char *pt;
+#else
     char buf[120];
+#endif
 
     if ( filename==NULL )
 return( NULL );
+
+#if AUTODECOMPRESS
+    pt = strrchr(filename,'.');
+    i = -1;
+    if ( pt!=NULL ) for ( i=0; compressors[i].ext!=NULL; ++i )
+	if ( strcmp(compressors[i].ext,pt+1)==0 )
+    break;
+    if ( i!=-1 && compressors[i].ext==NULL ) i=-1;
+    else {
+	sprintf( buf, "%s %s", compressors[i].decomp, filename );
+	if ( system(buf)==0 )
+	    *pt='\0';
+	else {
+	    GDrawError("Decompress failed" );
+return( NULL );
+	}
+    }
+#endif
 
     sprintf(buf, "Loading font from %.100s", GFileNameTail(filename));
     uc_strcpy(ubuf,buf);
@@ -2488,6 +2525,13 @@ return( NULL );
 	GDrawError("Couldn't open font (or in bad format): %s", filename );
     else
 	sf->origname = copy(filename);
+
+#if AUTODECOMPRESS
+    if ( i!=-1 ) {
+	sprintf( buf, "%s %s", compressors[i].recomp, filename );
+	system(buf);
+    }
+#endif
 return( sf );
 }
 

@@ -805,7 +805,7 @@ return;
 	/*  with the dot, then get rid of the dot. (use dotlessi) */
 	for ( apt = pt; *apt && combiningposmask(*apt)!=____ABOVE; ++apt);
 	if ( *apt!='\0' ) {
-	    if ( ch=='i' ) ch = 0x0131;
+	    if ( ch=='i' || ch==0x456 ) ch = 0x0131;
 	    else if ( ch=='j' ) ch = 0xf6be;
 	}
     }

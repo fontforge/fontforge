@@ -109,24 +109,21 @@ return( false );
 	    ++name;
 	} else if ( ch=='{' ) {
 	    /* matches any of a comma seperated list of substrings */
-	    int found = 0;
-	    for ( ppt = pattern+1; *ppt!='}' && *ppt!='\0' ; ppt = ept ) {
+	    for ( ppt = pattern+1; *ppt!='\0' ; ppt = ept ) {
 		for ( ept=ppt; *ept!='}' && *ept!=',' && *ept!='\0'; ++ept );
 		for ( npt = name; ppt<ept; ++npt, ++ppt ) {
 		    if ( *ppt != *npt && (!ignorecase || tolower(*ppt)!=tolower(*npt)) )
 		break;
 		}
 		if ( ppt==ept ) {
-		    found = true;
-		    name = npt;
-	    break;
+		    while ( *ept!='}' && *ept!='\0' ) ++ept;
+		    if ( GGadgetWildMatch(ept+1,npt,ignorecase))
+return( true );
 		}
+		if ( *ept=='}' )
+return( false );
 		if ( *ept==',' ) ++ept;
 	    }
-	    if ( !found )
-return( false );
-	    while ( *ppt!='}' && *ppt!='\0' ) ++ppt;
-	    pattern = ppt;
 	} else if ( ch==*name ) {
 	    ++name;
 	} else if ( ignorecase && tolower(ch)==tolower(*name)) {
