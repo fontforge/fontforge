@@ -553,10 +553,6 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
     current.x = current.y = 0;
 
     while ( (tok = nextpstoken(&wrapper,&dval,tokbuf,sizeof(tokbuf)))!=pt_eof ) {
-	if ( tok == pt_unknown && !warned ) {
-	    fprintf( stderr, "Warning: Unable to parse token %s, some features may be lost\n", tokbuf );
-	    warned = true;
-	}
 	if ( ccnt>0 ) {
 	    if ( tok==pt_closecurly )
 		--ccnt;
@@ -1358,8 +1354,14 @@ static void InterpretPS(FILE *ps, EntityChar *ec) {
 		--sp;
 	  break;
 
-	  default:
 	  case pt_unknown:
+	    if ( !warned ) {
+		fprintf( stderr, "Warning: Unable to parse token %s, some features may be lost\n", tokbuf );
+		warned = true;
+	    }
+	  break;
+
+	  default:
 	  case pt_openarray: case pt_closearray:
 	  break;
 	}
