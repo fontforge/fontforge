@@ -2989,6 +2989,8 @@ static char *str_BlueHistPopup = "Position: %d\nCount: %d\n";
 static char *str_BlueHistSumPopup = "Position: %d-%d (%d)\nCount: %d (%d)\n";
 static char *str_BlueMsg = "BlueValues come in pairs. Select another.";
 static char *str_SmallerNumberFirstInBlues = "The smaller number must be selected first in a pair of bluevalues";
+static char *str_TinySelection = "Tiny Selection";
+static char *str_TinySelectionFull = "There are so few characters selected that it seems unlikely to me that you will get a representative sample of this aspect of your font. If you deselect everything the command will apply to all characters in the font"
     /* contextchain */
 static char *str_ByGlyphs = "By Glyphs";
 static char *str_ByClasses = "By Classes";

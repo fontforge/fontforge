@@ -672,7 +672,20 @@ return( false );
     }
 return( true );
 }
-    
+
+static void CheckSmallSelection(uint8 *selected,SplineFont *sf) {
+    int i, cnt, tot;
+
+    for ( i=cnt=tot=0; i<sf->charcnt; ++i )
+	if ( sf->chars[i]!=NULL ) {
+	    ++tot;
+	    if ( selected[i] )
+		++cnt;
+	}
+    if ( (cnt==1 && tot>1) || (cnt<8 && tot>30) )
+	GWidgetPostNoticeR(_STR_TinySelection,_STR_TinySelectionFull);
+}
+
 void SFHistogram(SplineFont *sf,struct psdict *private, uint8 *selected,
 	enum hist_type which) {
     struct hist_dlg hist;
@@ -708,6 +721,9 @@ void SFHistogram(SplineFont *sf,struct psdict *private, uint8 *selected,
       break;
     }
     HistFindMax(hist.h,hist.sum_around);
+
+    if ( selected!=NULL )
+	CheckSmallSelection(selected,sf);
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
