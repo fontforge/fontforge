@@ -128,7 +128,7 @@ static Encoding *enc_from_platspec(int platform,int specific) {
 	else if ( specific==1 )
 	    enc = "Unicode";
 	else if ( specific==2 )
-	    enc = "ISO-8859-1";
+	    enc = "ISO8859-1";
     } else if ( platform==3 ) {
 	if ( specific==1 || specific==0 )	/* symbol (sp=0) is just unicode (PUA) */
 	    enc = "Unicode";

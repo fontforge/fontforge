@@ -1527,7 +1527,7 @@ return;
 	    fp->fd->encoding_name = FindOrMakeEncoding("AdobeStandard");
 	    setStdEnc(fp->fd->encoding);
 	} else if ( strstr(endtok,"ISOLatin1Encoding")!=NULL ) {
-	    fp->fd->encoding_name = FindOrMakeEncoding("ISO-8859-1");
+	    fp->fd->encoding_name = FindOrMakeEncoding("ISO8859-1");
 	    setLatin1Enc(fp->fd->encoding);
 	} else {
 	    fp->fd->encoding_name = &custom;

@@ -310,6 +310,15 @@ return( NULL );
 	enc->is_simplechinese = true;
     else if ( strstrmatch(iconv_name,"BIG")!=NULL && strstrmatch(iconv_name,"5")!=NULL )
 	enc->is_tradchinese = true;
+
+    if ( strstrmatch(name,"ISO8859")!=NULL &&
+	    strtol(name+strlen(name)-2,NULL,10)>=16 )
+	/* Not in our menu, don't hide */;
+    else if ( iconv_name!=name || strmatch(name,"mac")==0 || strstrmatch(name,"ISO8859")!=NULL ||
+	    strmatch(name,"koi8-r")==0 || strmatch(name,"sjis")==0 ||
+	    strmatch(name,"big5")==0 || strmatch(name,"big5hkscs")==0 )
+	enc->hidden = true;
+
 return( enc );
 }
 
