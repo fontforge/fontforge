@@ -2,9 +2,9 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 7-Jun-2004 -->
-  <LINK REL="icon" href="ffanvil16.png">
+  <!-- AP: Last modified: 30-Jul-2004 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
+  <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
 <BODY>
 <H1 ALIGN=Center>
@@ -471,6 +471,10 @@ a[4][0] = "Nested array";
     the preference item has a real type then a second argument may be passed
     and the value set will be val/val2.
   <DT>
+    GetEnv(str)
+  <DD>
+    Returns the value of the unix environment variable named by str.
+  <DT>
     UnicodeFromName(name)
   <DD>
     Looks the string "name" up in FontForge's database of commonly used glyph
@@ -879,6 +883,22 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     CopyRBearing
   <DD>
     Stores the right side bearing of all selected characters in the clipboard
+  <DT>
+    CopyGlyphFeatures(arg,...)
+  <DD>
+    This copies features from the currently selected glyph (only one) and stores
+    them in the clipboard.
+    <P>
+    arg may be either a string in which case it should be either a four character
+    opentype tag (like "kern") or a mac feature setting (like "&lt;1,1&gt;").
+    Or it may be an integer in which case it must be the integer representation
+    of one of the above. Or arg may be an array of strings and integers (in this
+    case there may be only one argument).
+    <P>
+    The feature 'kern' will match any kerning pair that has the currently selected
+    glyph as the first character of the two. The (made up) feature '_krn' will
+    match any kerning pair that has the currently selected glyph as the last
+    character of the two. Similary for 'vkrn' and '_vkn'.
   <DT>
     Paste
   <DD>
@@ -1527,10 +1547,22 @@ ApplySubstitution("*","*","vrt2")
     in the current font and moves them to the current font. The flags argument
     is the same as that for Open. Currently the only relevant flag is to say
     that you do have a license to use a font with fstype=2. 
+  <DT>
+    InterpolateFonts(percentage,other-font-name[,flags])
+  <DD>
+    Interpolates a font which is percentage of the way from the current font
+    to the one specified by other-font-name (note: percentage may be negative
+    or more than 100, in which case we extrapolate a font). This command changes
+    the current font to be the new font.
+    <FONT COLOR="Red"><STRONG><SMALL>NOTE:</SMALL></STRONG></FONT> You will need
+    to set the fontname of this new font. The flag argument is the same as for
+    Open.
+  <DT>
       <HR>
   <DT>
     <A NAME="AutoHint">AutoHint</A>()
   <DD>
+    <B></B>
   <DT>
     SubstitutionPoints()
   <DD>

@@ -2,15 +2,75 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 3-Jul-2004 -->
-  <LINK REL="icon" href="ffanvil16.png">
+  <!-- AP: Last modified: 1-Aug-2004 -->
   <TITLE>Change log for FontForge</TITLE>
+  <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
 <BODY>
 <H1 ALIGN=Center>
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    01-Aug-2004
+    <UL>
+      <LI>
+	ff did not generate amfm files correctly
+      <LI>
+	Changed the Merge Kern Infor (menu item and scripting command) to
+	<UL>
+	  <LI>
+	    support pfm files
+	  <LI>
+	    detect file type from the file header rather than from the extension
+	</UL>
+      <LI>
+	Added InterpolateFonts as a scripting command
+      <LI>
+	Added GetEnv as a scripting command
+      <LI>
+	The scripting $fontversion and $copyright psuedo variables broke when I added
+	the fond name changes.
+      <LI>
+	More problems with tfm files.
+      <LI>
+	Fixed a couple of problems related to dialog sizing for different languages.
+      <LI>
+	In Windows 3.1 some chinese fonts were released with a ttf version of 2 (rather
+	than 1). Add this to the list of supported TrueType/OpenType versions (see
+	discussion on freetype mailing list, july 2004 for more info)
+      <LI>
+	Added both a menu and scripting command to copy kerning &amp; substitution
+	info from one glyph to another.
+      <LI>
+	FontForge fails to load some svg fonts properly (if they use the "t" directive
+	within a path =&gt; quadratic splines, control point implied, relative to
+	last point). Result is a nasty scribble.
+      <LI>
+	Windows file systems are not case conscious. The file names generated for
+	Export use glyph names (which are case conscious). So on windows exporting
+	"a" and "A" will overwrite the same file. (Add a "$" in front of capital
+	letters to distinguish).
+      <LI>
+	We were not scaling refs/images uniformly when we dragged corners. Instead
+	we changed the sides by the same amount (this works for squares, but nothing
+	else).
+      <LI>
+	XML does not allow backspace as an input character, even when specified by
+	an entity. This means we can't specify the unicode code point for backspace
+	in a an svg font (and many ttf fonts contain a blank backspace char, god
+	only knows why).
+      <LI>
+	The Default ATT-&gt;Unicode decomposition didn't work.
+      <LI>
+	Added a new entry to Default ATT, Caps-&gt;Small Caps (and cleaned up lower
+	case-&gt;small caps too).
+      <LI>
+	Eschew 0 width hints.
+      <LI>
+	Add support for localized unicode glyph names (currently only french is
+	available)
+    </UL>
   <LI>
     3-July-2004
     <UL>

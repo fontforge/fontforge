@@ -2,9 +2,9 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 3-Jul-2004 -->
-  <LINK REL="icon" href="ffanvil16.png">
+  <!-- AP: Last modified: 7-Jul-2004 -->
   <TITLE>The Element Menu</TITLE>
+  <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
 <BODY>
 <H1 ALIGN=Center>
@@ -445,8 +445,15 @@ compiling FontForge.
     <A NAME="Remove">Remove</A> Overlap
   <DD>
     Not in the bitmap view. If two closed paths intersect then there will be
-    overlap. This will get rid of it, leaving one closed path behind. (if the
-    path directions are wonky, strange things result).<BR>
+    overlap. This will get rid of it, leaving one closed path behind.
+    <P>
+    Make sure paths have the correct orientation. Consider the letter "O" with
+    two contours. If both contours run in the same direction then the inner path
+    will be removed (because the outer path overlaps it everywhere), but if the
+    contours run in oposite orientations then the inner path will be retained.
+    Things get very strange if you have intersecting paths with different
+    orientations.
+    <P>
     <IMG SRC="expandedlines.png" WIDTH="247" HEIGHT="247">
     <IMG SRC="overlappedlines.png" WIDTH="247" HEIGHT="247"><BR>
     This command is probably the buggiest in FontForge. So before FontForge invokes
@@ -687,7 +694,7 @@ compiling FontForge.
     <P>
     The first menu item will only build accented letters, the second will build
     general composite characters (fractions, ligatures, digits inside parens,
-    roman numerals, etc.) as well. 
+    roman numerals, etc.) as well.
     <P>
     If the current character is an accented character (and all the base characters
     and accents have already been created) then this command will delete anything
