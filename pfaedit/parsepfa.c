@@ -58,7 +58,7 @@ struct fontparse {
 static void copyenc(char *encoding[256],char *std[256]) {
     int i;
     for ( i=0; i<256; ++i )
-	encoding[i] = strdup(std[i]);
+	encoding[i] = copy(std[i]);
 }
 
 char *AdobeStandardEncoding[] = {
@@ -850,13 +850,95 @@ return;
     ++dict->next;
 }
 
+static int hex(int ch1, int ch2) {
+    if ( ch1>='0' && ch1<='9' )
+	ch1 -= '0';
+    else if ( ch1>='a' )
+	ch1 -= 'a'-10;
+    else 
+	ch1 -= 'A'-10;
+    if ( ch2>='0' && ch2<='9' )
+	ch2 -= '0';
+    else if ( ch2>='a' )
+	ch2 -= 'a'-10;
+    else 
+	ch2 -= 'A'-10;
+return( (ch1<<4)|ch2 );
+}
+
+unsigned short r;
+#define c1	52845
+#define c2	22719
+
+static void initcode(void) {
+    r = 55665;
+}
+
+static int decode(unsigned char cypher) {
+    unsigned char plain = ( cypher ^ (r>>8));
+    r = (cypher + r) * c1 + c2;
+return( plain );
+}
+
+static void dumpzeros(FILE *out, unsigned char *zeros, int zcnt) {
+    while ( --zcnt >= 0 )
+	fputc(*zeros++,out);
+}
+
+static void decodestr(unsigned char *str, int len) {
+    unsigned short r = 4330;
+    unsigned char plain, cypher;
+
+    while ( len-->0 ) {
+	cypher = *str;
+	plain = ( cypher ^ (r>>8));
+	r = (cypher + r) * c1 + c2;
+	*str++ = plain;
+    }
+}
+
+static void findstring(struct fontparse *fp,struct pschars *subrs,int index,char *nametok,char *str) {
+    char buffer[1024], *bpt, *bs, *end = buffer+sizeof(buffer)-1;
+    int val;
+
+    while ( isspace(*str)) ++str;
+    if ( *str=='(' ) {
+	++str;
+	bpt = buffer;
+	while ( *str!=')' ) {
+	    if ( *str!='\\' )
+		val = *str++;
+	    else {
+		if ( isdigit( *++str )) {
+		    val = *str++-'0';
+		    if ( isdigit( *str )) {
+			val = (val<<3) | (*str++-'0');
+			if ( isdigit( *str ))
+			    val = (val<<3) | (*str++-'0');
+		    }
+		} else
+		    val = *str++;
+	    }
+	    if ( bpt<end )
+		*bpt++ = val;
+	}
+	decodestr((unsigned char *) buffer,bpt-buffer);
+	bs = buffer + fp->fd->private->leniv;
+	subrs->lens[index] = bpt-bs;
+	subrs->keys[index] = copy(nametok);
+	subrs->values[index] = galloc(bpt-bs);
+	memcpy(subrs->values[index],bs,bpt-bs);
+	if ( index>=subrs->next ) subrs->next = index+1;
+    }
+}
+
 static void parseline(struct fontparse *fp,char *line,FILE *in) {
     char buffer[200], *pt, *endtok;
 
+    while ( *line==' ' || *line=='\t' ) ++line;
     if ( line[0]=='%' && !fp->multiline )
 return;
 
-    while ( *line==' ' || *line=='\t' ) ++line;
     if ( fp->inencoding && strncmp(line,"dup",3)==0 ) {
 	/* Metamorphasis has multiple entries on a line */
 	while ( strncmp(line,"dup",3)==0 ) {
@@ -868,7 +950,7 @@ return;
 	    for ( pt = buffer; !isspace(*line); *pt++ = *line++ );
 	    *pt = '\0';
 	    if ( pos>=0 && pos<256 )
-		fp->fd->encoding[pos] = strdup(buffer);
+		fp->fd->encoding[pos] = copy(buffer);
 	    while ( isspace(*line)) ++line;
 	    if ( strncmp(line,"put",3)==0 ) line+=3;
 	    while ( isspace(*line)) ++line;
@@ -879,8 +961,43 @@ return;
 	/* 0 1 255 {1 index exch /.notdef put} for */
 	int i;
 	for ( i=0; i<256; ++i )
-	    fp->fd->encoding[i] = strdup(".notdef");
+	    fp->fd->encoding[i] = copy(".notdef");
 return;
+    } else if ( fp->insubs ) {
+	struct pschars *subrs = fp->fd->private->subrs;
+	while ( isspace(*line)) ++line;
+	if ( strncmp(line,"dup ",4)==0 ) {
+	    int i;
+	    char *ept;
+	    for ( line += 4; *line==' '; ++line );
+	    i = strtol(line,&ept,10);
+	    if ( i<subrs->cnt ) {
+		findstring(fp,subrs,i,NULL,ept);
+	    } else
+		fprintf( stderr, "Index too big (must be <%d) |%s", subrs->cnt, line);
+	} else if ( strncmp(line, "readonly put", 12)==0 || strncmp(line, "ND", 2)==0 ) {
+	    fp->insubs = false;
+	} else if ( !fp->alreadycomplained ) {
+	    fprintf( stderr, "Didn't understand |%s", line );
+	    fp->alreadycomplained = true;
+	}
+    } else if ( fp->inchars ) {
+	struct pschars *chars = fp->fd->chars;
+	while ( isspace(*line)) ++line;
+	if ( strncmp(line,"end",3)==0 )
+	    fp->inchars = false;
+	else if ( *line!='/' || !(isalpha(line[1]) || line[1]=='.'))
+	    fprintf( stderr, "No name for CharStrings dictionary |%s", line );
+	else if ( chars->next>=chars->cnt )
+	    fprintf( stderr, "Too many entries in CharStrings dictionary |%s", line );
+	else {
+	    int i = chars->next;
+	    char *namestrt = ++line;
+	    while ( isalnum(*line) || *line=='.' ) ++line;
+	    *line = '\0';
+	    findstring(fp,chars,i,namestrt,line+1);
+	    GProgressNext();
+	}
     }
     fp->inencoding = 0;
 
@@ -1084,53 +1201,6 @@ return;
     }
 }
 
-static int hex(int ch1, int ch2) {
-    if ( ch1>='0' && ch1<='9' )
-	ch1 -= '0';
-    else if ( ch1>='a' )
-	ch1 -= 'a'-10;
-    else 
-	ch1 -= 'A'-10;
-    if ( ch2>='0' && ch2<='9' )
-	ch2 -= '0';
-    else if ( ch2>='a' )
-	ch2 -= 'a'-10;
-    else 
-	ch2 -= 'A'-10;
-return( (ch1<<4)|ch2 );
-}
-
-unsigned short r;
-#define c1	52845
-#define c2	22719
-
-static void initcode(void) {
-    r = 55665;
-}
-
-static int decode(unsigned char cypher) {
-    unsigned char plain = ( cypher ^ (r>>8));
-    r = (cypher + r) * c1 + c2;
-return( plain );
-}
-
-static void dumpzeros(FILE *out, unsigned char *zeros, int zcnt) {
-    while ( --zcnt >= 0 )
-	fputc(*zeros++,out);
-}
-
-static void decodestr(unsigned char *str, int len) {
-    unsigned short r = 4330;
-    unsigned char plain, cypher;
-
-    while ( len-->0 ) {
-	cypher = *str;
-	plain = ( cypher ^ (r>>8));
-	r = (cypher + r) * c1 + c2;
-	*str++ = plain;
-    }
-}
-
 static void addinfo(struct fontparse *fp,char *line,char *tok,char *binstart,int binlen) {
     decodestr((unsigned char *) binstart,binlen);
     binstart += fp->fd->private->leniv;
@@ -1161,7 +1231,7 @@ static void addinfo(struct fontparse *fp,char *line,char *tok,char *binstart,int
 	else {
 	    int i = chars->next;
 	    chars->lens[i] = binlen;
-	    chars->keys[i] = strdup(tok);
+	    chars->keys[i] = copy(tok);
 	    chars->values[i] = galloc(binlen);
 	    memcpy(chars->values[i],binstart,binlen);
 	    ++chars->next;
@@ -1592,18 +1662,10 @@ static void realdecrypt(struct fontparse *fp,FILE *in, FILE *temp) {
 	    hassectionheads = 1;
 	    fp->fd->wasbinary = true;
 	    parseline(fp,buffer+6,in);
-	} else
-	    parseline(fp,buffer,in);
-	first = 0;
-	if ( strstr(buffer,"%%BeginData: ")!=NULL )
-    break;
-	if ( strstr(buffer,"currentfile")!=NULL && strstr(buffer, "eexec")!=NULL )
-    break;
-	if ( strstr(buffer,"CharProcs")!=NULL && strstr(buffer,"begin")!=NULL ) {
+	} else if ( strstr(buffer,"CharProcs")!=NULL && strstr(buffer,"begin")!=NULL ) {
 	    parsetype3(fp,in);
 return;
-	}
-	if ( strstr(buffer,"/CharStrings")!=NULL && strstr(buffer,"begin")!=NULL ) {
+	} else if ( strstr(buffer,"/CharStrings")!=NULL && strstr(buffer,"begin")!=NULL ) {
 	    /* gsf files are not eexec encoded, but the charstrings are encoded*/
 	    InitChars(fp->fd->chars,buffer);
 	    fp->inchars = 1;
@@ -1615,7 +1677,13 @@ return;
 	    fp->insubs = 1;
 	    decryptagain(fp,in,rdtok);
 return;
-	}
+	} else
+	    parseline(fp,buffer,in);
+	first = 0;
+	if ( strstr(buffer,"%%BeginData: ")!=NULL )
+    break;
+	if ( strstr(buffer,"currentfile")!=NULL && strstr(buffer, "eexec")!=NULL )
+    break;
     }
 
     if ( strstr(buffer,"%%BeginData: ")!=NULL ) {
