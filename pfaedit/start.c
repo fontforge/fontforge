@@ -109,6 +109,10 @@ struct delayed_event {
     void (*func)(void *);
 };
 
+void ShowAboutScreen(void) {
+    GDrawSetVisible(splashw,true);
+}
+
 void DelayEvent(void (*func)(void *), void *data) {
     struct delayed_event *info = gcalloc(1,sizeof(struct delayed_event));
 

@@ -287,6 +287,7 @@ extern void MenuPrefs(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuExit(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuOpen(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuHelp(GWindow base,struct gmenuitem *mi,GEvent *e);
+extern void MenuAbout(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuNew(GWindow gw,struct gmenuitem *mi,GEvent *e);
 extern void MergeKernInfo(SplineFont *sf);
 extern int FontMenuGeneratePostscript(SplineFont *sf);
@@ -487,6 +488,7 @@ extern unichar_t *FVOpenFont(const unichar_t *title, const unichar_t *defaultfil
 
 extern void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv);
 
+extern void ShowAboutScreen(void);
 extern void DelayEvent(void (*func)(void *), void *data);
 
 extern void FindProblems(FontView *fv,CharView *cv);

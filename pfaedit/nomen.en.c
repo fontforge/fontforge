@@ -46,6 +46,8 @@ static char str_Window[] = "Window";
 static unichar_t mnemonic_Window[] = 'W';
 static char str_Help[] = "Help";
 static unichar_t mnemonic_Help[] = 'H';
+static char str_About[] = "About...";
+static unichar_t mnemonic_About[] = 'A';
 static char str_Recent[] = "Recent";
 static unichar_t mnemonic_Recent[] = 't';
 static char str_Openoutline[] = "Open Outline";
@@ -773,6 +775,8 @@ static char str_Duppixelsize[] = "Duplicate pixelsize";
 /* "The font database already contains a bitmap\nfont with this pixelsize (%d)\nDo you want to overwrite it?" */
 static char str_Duppixelsizepre[] = "The font database already contains a bitmap\012font with this pixelsize (";
 static char str_Duppixelsizepost[] = ")\012Do you want to overwrite it?";
+static char str_NoBitmapFont = "No Bitmap Font";
+static char str_NoBitmapFontIn = "Could not find a bitmap font in %hs";
     /* Private Info */
 static char str_Bluequest[] = "This will change both BlueValues and OtherBlues.\012Do you want to continue?";
 static char str_Hstemquest[] = "This will change both StdHW and StemSnapH.\012Do you want to continue?";
