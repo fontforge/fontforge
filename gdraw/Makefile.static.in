@@ -3,6 +3,7 @@ top_srcdir = @top_srcdir@
 VPATH = @srcdir@
 prefix = @prefix@
 bindir = @bindir@
+libdir = @libdir@
 
 CC = @CC@
 RANLIB = @RANLIB@
@@ -26,7 +27,7 @@ libgdraw_OBJECTS =  choosericons.o divisors.o drawboxborder.o \
 
 Incs = -I$(top_srcdir)/inc -I/usr/pkg/include -I/usr/pkg/include/giflib
 WFLAGS = -Wmissing-prototypes -Wunused -Wimplicit -Wreturn-type -Wparentheses
-CFLAGS = @CFLAGS@ $(Incs) $(WFLAGS) $(X_CFLAGS) -DNOTHREADS @DEFS@
+CFLAGS = @CFLAGS@ $(Incs) $(WFLAGS) $(X_CFLAGS) -DNOTHREADS @DEFS@ -DLIBDIR='"$(libdir)"'
 
 all: ../libs/libgdraw.a
 

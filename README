@@ -102,16 +102,6 @@ BUILDING without X11
     non-X version on a machine with X type:
 	$ configure --without-x
 
-KNOWN BUILD PROBLEMS
-    * If the configure script doesn't work for you try using
-	$ make -f makefile.orig
-	* The gdraw package expects to find libjpeg, libtiff, libpng and
-	  libungif on your system. If any of these is not present then define
-	  -D_NO_LIBUNGIF etc. in the makefile.
-	* the final link requests -ldl. On some systems (netbsd for instance)
-	  libdl is part of libc and can't be found. Just remove it from the
-	  LIBS list in the pfaedit/makefile and rebuild.
-
 BITMAP FONTS
  The program sort of assumes you've got some unicode fonts lying around.
  The program will choose fonts as best it can depending on what you have
@@ -121,7 +111,20 @@ BITMAP FONTS
 	http://clr.nmsu.edu/~mleisher/cu.html
 	http://savannah.nongnu.org/projects/freefont
         http://bibliofile.mc.duke.edu/gww/fonts/{Monospace,Caliban}
-	
+
+DEPENDENCIES
+ PfaEdit has more functionality if libpng and libungif are installed on your
+ system. If they are not then you can find them at:
+     http://www.libpng.org/pub/png/libpng.html
+	 http://www.gzip.org/zlib/
+     ttp://prtr-13.ucsc.edu/~badger/software/libungif/index.shtml
+
+ PfaEdit also makes use of libuninameslist to be found at:
+     http://libuninameslist.sf.net/
+
+ Finally, if you want to do autotracing you should install
+     http://sourceforge.net/projects/autotrace/
+
 RUNNING
 $ pfaedit -new
  Creates a new font
