@@ -39,7 +39,7 @@ ACORNOBJS = acorn2sfd.o sfd.o diffstubs.o psunicodenames.o stamp.o
 
 _CFLAGS = -I$(top_srcdir)/inc -I$(srcdir) -I. @WFLAGS@ $(X_CFLAGS) \
     @DEFS@ '-DSHAREDIR="$(sharedir)"' -DLIBDIR='"$(libdir)"'
-CFLAGS = @CFLAGS@ $(_CFLAGS)
+CFLAGS = @CFLAGS@ @CPPFLAGS@ $(_CFLAGS)
 
 LDFLAGS = @LDFLAGS@
 LIBS = -L../libs $(X_LIBS) ../libs/libgdraw.a ../libs/libgunicode.a \

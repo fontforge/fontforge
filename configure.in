@@ -11,37 +11,50 @@ AC_PROG_LIBTOOL
 
 gww_nodynamic="no"
 gww_needsstatic="no"
+gww_ismac="no"
 gww_needsstaticimages="no"
+gww_rpath=""
+AC_ARG_WITH(static-imagelibs,
+ [  --with-static-imagelibs   Control whether to try using static image libaries],
+ [
+   gww_needsstaticimages="yes"
+   dnl Mac doesn't ship with image libraries, so my builds should include
+   dnl static versions, else users won't have them.
+
+ ])
+
 case "$host" in
 *-apple-darwin*)
-gww_needsstaticimages="yes"
-dnl Mac doesn't ship with image libraries, so my builds should include
-dnl static versions, else users won't have them. Used just to set NODYNAMIC
-dnl but I've figured out the dynamic loader now.
+ gww_ismac="yes"
+ AC_DEFINE(_CursorsMustBe16x16)
+ AC_DEFINE(_Keyboard,1)
+ AC_DEFINE(__Mac,1)
 
-AC_DEFINE(_CursorsMustBe16x16)
-AC_DEFINE(_Keyboard,1)
-AC_DEFINE(__Mac,1)
-LIBS="/System/Library/Frameworks/CoreServices.framework/CoreServices $LIBS"
+dnl fink puts stuff under /sw
+
+ CPPFLAGS="$CPPFLAGS -I/sw/include"
+ LDFLAGS="$LDFLAGS -L/sw/lib"
+ gww_rpath="-rpath /sw/lib"
+ LIBS="/System/Library/Frameworks/CoreServices.framework/CoreServices $LIBS"
  ;;
 powerpc-*-*linux*)
-AC_DEFINE(_Keyboard,3)
+ AC_DEFINE(_Keyboard,3)
  ;;
 *sparc*)
-AC_DEFINE(_Keyboard,2)
+ AC_DEFINE(_Keyboard,2)
  ;;
 *-pc-cygwin*)
-AC_DEFINE(_BrokenBitmapImages)
-AC_DEFINE(_ModKeysAutoRepeat)
-AC_DEFINE(__CygWin,1)
-AC_DEFINE(NODYNAMIC)
-gww_nodynamic="yes"
-gww_needsstatic="yes"
+ AC_DEFINE(_BrokenBitmapImages)
+ AC_DEFINE(_ModKeysAutoRepeat)
+ AC_DEFINE(__CygWin,1)
+ AC_DEFINE(NODYNAMIC)
+ gww_nodynamic="yes"
+ gww_needsstatic="yes"
 
 dnl Although present on my cygwin system the Xi library does not load
 dnl and crashes gdb if we attempt to use it.
 
-AC_DEFINE(_NO_XINPUT)
+ AC_DEFINE(_NO_XINPUT)
  ;;
 esac
 
@@ -187,6 +200,7 @@ AC_ARG_WITH(regular-link,
     if test "$withval" != "no" >/dev/null 2>&1 ; then
 	gww_regular_link="yes"
 	AC_DEFINE(NODYNAMIC)
+	gww_rpath=""
     fi
  ], : )
 
@@ -276,6 +290,8 @@ if test -e umap >/dev/null 2>&1 ; then
   cp umap/Makefile.dynamic.in umap/Makefile.in
   AC_OUTPUT( umap/Makefile )
 fi
+
+LIBS="$LIBS $gww_rpath"
 
 echo Configuration defines: $DEFS
 echo CFLAGS: $CFLAGS
