@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 10-Jul-2001 -->
+  <!-- AP: Last modified: 19-Jul-2001 -->
   <TITLE>Font Info</TITLE>
 </HEAD>
 <BODY>
@@ -458,7 +458,6 @@ languages.
     <TH>Bold</TH>
     <TH>Demi-Bold</TH>
     <TH>Light</TH>
-    <TH>Demi-Light</TH>
     <TH>Medium</TH>
     <TH>Book</TH>
     <TH>Italic</TH>
@@ -470,7 +469,6 @@ languages.
     <TH>French</TH>
     <TD>Normal</TD>
     <TD>Gras</TD>
-    <TD></TD>
     <TD></TD>
     <TD></TD>
     <TD></TD>
@@ -488,7 +486,6 @@ languages.
     <TD></TD>
     <TD></TD>
     <TD></TD>
-    <TD></TD>
     <TD>Kursiv</TD>
     <TD></TD>
     <TD></TD>
@@ -501,7 +498,6 @@ languages.
     <TD>&Ouml;&Eacute;&Ograve;&Icirc;&Ugrave;&Ecirc;</TD>
     <TD>&ETH;&Iuml;&Igrave;&Otilde;&Ouml;&Eacute;&Ograve;&Icirc;&Ugrave;&Ecirc;</TD>
     <TD>&oacute;&#215;&Aring;&Ocirc;&Igrave;&Ugrave;&Ecirc;</TD>
-    <TD></TD>
     <TD></TD>
     <TD></TD>
     <TD>&euml;&Otilde;&Ograve;&Oacute;&Eacute;&#215;&Icirc;&Ugrave;&Ecirc;</TD>
@@ -517,7 +513,6 @@ languages.
     <TD></TD>
     <TD></TD>
     <TD></TD>
-    <TD></TD>
     <TD>Cursiva</TD>
     <TD></TD>
     <TD></TD>
@@ -527,6 +522,18 @@ languages.
 <P>
 (Any help in expanding/correcting the above table would be greatly appreciated
 <A HREF="mailto:gww@silcom.com">gww@silcom.com</A>)
+<P>
+When you are setting the Style string in American English another button
+appears in the dialog, labelled "Translate Style". If you press this button
+then PfaEdit will attempt to figure out the style of the font and then attempt
+to translate it into whatever other languages in knows about (essentially
+the above table). It will only translate to a language for which it knows
+all the componants and for which you have not already provided a translation.
+So if your style in American English is "BoldItalic" (and you have no other
+style entries) then after you press the "Translate Style" button PfaEdit
+will generate "GrasItalique" for French, "FettKursiv" for German,
+"&Ouml;&Eacute;&Ograve;&Icirc;&Ugrave;&Ecirc;&euml;&Otilde;&Ograve;&Oacute;&Eacute;&#215;&Icirc;&Ugrave;&Ecirc;"
+for Russian and "NigritaCursiva" for Spanish.
 <H2>
   <IMG SRC="fontinfo-panose.png" WIDTH="369" HEIGHT="472" ALIGN="Right"><A
       NAME="Panose">Panose</A>

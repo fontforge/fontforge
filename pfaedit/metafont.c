@@ -163,6 +163,7 @@ typedef struct splineinfo {
     unsigned int spline2backwards: 1;
     unsigned int figured: 1;
     unsigned int freepasscnt: 1;
+    unsigned int major: 1;		/* Direction in which found */
 } SplineInfo;
 
 typedef struct splinelist {
@@ -313,7 +314,7 @@ static void SCIFree(SCI *sci) {
     free(sci);
 }
 
-static SplineInfo *SCIAddStem(SCI *sci,Spline *spline1,Spline *spline2) {
+static SplineInfo *SCIAddStem(SCI *sci,Spline *spline1,Spline *spline2,int major) {
     int i = spline1->from->ptindex;
     SplineList *t;
     SplineInfo *cur;
@@ -326,6 +327,7 @@ return(t->cur);
     cur = gcalloc(1,sizeof(SplineInfo));
     cur->spline1 = spline1;
     cur->spline2 = spline2;
+    cur->major = major;
     t = gcalloc(1,sizeof(SplineList));
     t->cur = cur;
     t->next = sci->pts[i].next;
@@ -368,7 +370,7 @@ static void _SCIFindStems(SCI *sci,EIList *el, int major) {
 	    e = p = EIActiveEdgesFindStem(apt, i+el->low, major);
 	    if ( e==NULL )
 	break;
-	    SCIAddStem(sci,apt->spline,e->spline);
+	    SCIAddStem(sci,apt->spline,e->spline,major);
 	    if ( EISameLine(p,p->aenext,i+el->low,major))	/* There's one case where this doesn't happen in FindStem */
 		e = p->aenext;		/* If the e is horizontal and e->aenext is not */
 	}
@@ -517,14 +519,15 @@ static void SIFigureWidth(SplineInfo *si) {
      si->spline1->from->me.x, si->spline1->from->me.y, si->spline1->to->me.x, si->spline1->to->me.y,
      si->spline2->from->me.x, si->spline2->from->me.y, si->spline2->to->me.x, si->spline2->to->me.y );
 #endif
+    if ( si->spline1->from->me.x==410 && si->spline2->from->me.x==408 )
+ si->spline2->from->me.x=408;
 
     si->fromlen = si->tolen = -1;
     if (( foundfrom = (FindPerpDistance(0,si->spline1,si->spline2,&si->fromvec,&si->fromlen)>0) ))
 	si->from = si->spline1->from;
     if (( foundto = (FindPerpDistance(1,si->spline1,si->spline2,&si->tovec,&si->tolen)>0) ))
 	si->to = si->spline1->to;
-    if ( si->spline1->from->me.y==si->spline1->to->me.y ||
-	    si->spline2->from->me.y==si->spline2->to->me.y ) {
+    if ( !si->major ) {
 	up1 = si->spline1->from->me.x<si->spline1->to->me.x;
 	up2 = si->spline2->from->me.x<si->spline2->to->me.x;
     } else {
@@ -678,7 +681,7 @@ static void SplineFindOtherEdge(SCI *sci,Spline *spline) {
 	rbad = lbad;
     }
     if ( !rbad && right!=NULL ) {
-	SplineInfo *si = SCIAddStem(sci,(bcnt&2)?right:spline,(bcnt&2)?spline:right);
+	SplineInfo *si = SCIAddStem(sci,(bcnt&2)?right:spline,(bcnt&2)?spline:right,2);
 	if ( si!=NULL && !si->figured )
 	    SIFigureWidth(si);
     }
@@ -771,6 +774,9 @@ static int MetaRecognizedStemWidth(MetaFontDlg *meta,double width,int isvert) {
     int i;
 
     /* First look for matches where isvert matches */
+    if ( width==0 )
+return( false );
+
     if ( isvert==0 || isvert==1 ) {
 	for ( i=0; i<meta->stemcnt; ++i ) {
 	    struct stemcntl *c = &meta->stems[i];
@@ -789,38 +795,17 @@ return( true );
 return( false );
 }
 
-static struct map *MapFromZones(struct zonemap *zones, int cnt,
-	struct zonemap *extras, int ecnt) {
-    struct map *map = gcalloc(1,sizeof(struct map));
-    int i;
-
-    /* This map covers the entire character */
-    map->bottom = -1e8;
-    map->top = 1e8;
-
-    map->cnt = cnt + ecnt;
-    map->mapping = galloc(map->cnt*sizeof(struct zonemap));
-
-    i = 0;
-    if ( ecnt!=0 ) {
-	memcpy(map->mapping,extras,ecnt*sizeof(struct zonemap));
-	i = ecnt;
-    }
-    if ( cnt!=0 )
-	memcpy(map->mapping+i,zones,cnt*sizeof(struct zonemap));
-return( map );
-}
-
 static void MapFromCounterGroup(struct map *map,MetaFontDlg *meta,
 	struct countergroup *cg, struct zonemap *extra, int ecnt, int isvert ) {
     double offset=0;
-    int i=0,j;
+    int i=0,j,k;
+    StemInfo *stem;
     double newwidth, lastwidth, counterwidth, newcwidth;
 
     map->bottom = cg->bottom;
     map->top = cg->top;
 
-    map->cnt = ecnt+2*cg->scnt;
+    map->cnt = ecnt+2*cg->scnt+ (meta->counters[isvert].counterchoices==cc_zones?meta->counters[isvert].zonecnt:0);
     map->mapping = galloc(map->cnt*sizeof(struct zonemap));
 
     if ( ecnt!=0 ) {
@@ -829,49 +814,127 @@ static void MapFromCounterGroup(struct map *map,MetaFontDlg *meta,
 	offset = extra[ecnt-1].to - extra[ecnt-1].from;
     }
 
-    newwidth = 0;		/* Irrelevant, but it means compiler doesn't think newwidth uninitialized */
-    for ( j=0; j<cg->scnt; ++j ) {
-	lastwidth = newwidth;
-	newwidth = MetaFontFindWidth(meta,cg->stems[j]->width,isvert);
-	if ( j!=0 ) {
-	    newcwidth = counterwidth =
-		    cg->stems[j]->start - (cg->stems[j-1]->start+cg->stems[j-1]->width);
-	    switch ( meta->counters[isvert].counterchoices ) {
-	      case cc_same:
-		newcwidth = counterwidth;
-	      break;
-	      case cc_centerfixed:
-		newcwidth -= (lastwidth-cg->stems[j-1]->width)/2 +
-			(newwidth - cg->stems[j]->width)/2;
-	      break;
-	      case cc_edgefixed:
-		if ( j==1 )
-		    newcwidth -= (lastwidth-cg->stems[j-1]->width);
-		else
-		    newcwidth -= (lastwidth-cg->stems[j-1]->width)/2;
-		if ( cg->scnt==j+1 )
-		    newcwidth -= (newwidth - cg->stems[j]->width);
-		else
-		    newcwidth -= (newwidth - cg->stems[j]->width)/2;
-	      break;
-	      default:
-		GDrawIError("Shouldn't get here in MapFromCounterGroup" );
-	      break;
+    if ( meta->counters[isvert].counterchoices==cc_zones ) {
+	struct zonemap *zones = meta->counters[isvert].zones;
+	int cnt = meta->counters[isvert].zonecnt;
+	double mid, newmid;
+
+	for ( j=k=0; k<cnt; ++k ) {
+	    for ( ; j<cg->scnt ; ++j ) {
+		stem = cg->stems[j];
+		if ( stem->start+stem->width>=zones[k].from )
+	    break;
+		mid = stem->start+stem->width/2;
+		if ( k==0 ) {
+		    newmid = mid + (zones[0].to-zones[0].from);
+		} else {
+		    newmid = zones[k-1].to + (mid-zones[k-1].from)*
+			     (zones[k].to-zones[k-1].to)/(zones[k].from-zones[k-1].from);
+		}
+		newwidth = MetaFontFindWidth(meta,stem->width,isvert);
+		if ( newwidth==0 ) {
+		    map->mapping[i].from = mid;
+		    map->mapping[i++].to = newmid;
+		} else if ( stem->width==20 && stem->ghost ) {
+		    map->mapping[i].from = stem->start+20;
+		    map->mapping[i++].to = rint(newmid+10);
+		} else if ( stem->width==21 && stem->ghost ) {
+		    map->mapping[i].from = stem->start;
+		    map->mapping[i++].to = rint(newmid-10.5);
+		} else {
+		    map->mapping[i].from = stem->start;
+		    map->mapping[i++].to = rint(newmid-newwidth/2);
+		    map->mapping[i].from = stem->start+stem->width;
+		    map->mapping[i].to = map->mapping[i-1].to+newwidth;
+		    ++i;
+		}
 	    }
-	    newcwidth = meta->counters[isvert].counter.factor*newcwidth +
-		    meta->counters[isvert].counter.add;
-	    if ( newcwidth<meta->counters[isvert].widthmin ) {
-		GWidgetErrorR(_STR_CounterTooSmallT,_STR_CounterTooSmall);
-		newcwidth = meta->counters[isvert].widthmin;
-	    }
-	    offset += newcwidth-counterwidth;
+	    if ( j<cg->scnt && stem->start<=zones[k].from ) {
+		newwidth = MetaFontFindWidth(meta,stem->width,isvert);
+		if ( newwidth==0 || stem->ghost )
+		    map->mapping[i++] = zones[k];
+		else if ( stem->start==zones[k].from ) {
+		    map->mapping[i++] = zones[k];
+		    map->mapping[i].from = stem->start+stem->width;
+		    map->mapping[i++].to = zones[k].to+newwidth;
+		} else if ( stem->start+stem->width==zones[k].from ) {
+		    map->mapping[i].from = stem->start;
+		    map->mapping[i++].to = zones[k].to-newwidth;
+		    map->mapping[i++] = zones[k];
+		} else if ( stem->start<zones[k].from && stem->start+stem->width>zones[k].from ) {
+		    map->mapping[i].from = stem->start;
+		    map->mapping[i++].to = zones[k].to-(newwidth*(zones[k].from-stem->start)/stem->width);
+		    map->mapping[i++].to = zones[k].to-newwidth;
+		    map->mapping[i].from = stem->start+stem->width;
+		    map->mapping[i].to = map->mapping[i-2].to+newwidth;
+		    ++i;
+		} else
+		    map->mapping[i++] = zones[k];
+		++j;
+	    } else
+		map->mapping[i++] = zones[k];
 	}
-	map->mapping[i].from = cg->stems[j]->start;
-	map->mapping[i++].to = rint(cg->stems[j]->start+offset);
-	map->mapping[i].from = cg->stems[j]->start+cg->stems[j]->width;
-	map->mapping[i].to = map->mapping[i-1].to+newwidth;
-	++i;
-	offset += newwidth-cg->stems[j]->width;
+	map->cnt = i;
+    } else {
+	newwidth = 0;		/* Irrelevant, but it means compiler doesn't think newwidth uninitialized */
+	for ( j=0; j<cg->scnt; ++j ) {
+	    lastwidth = newwidth;
+	    newwidth = MetaFontFindWidth(meta,cg->stems[j]->width,isvert);
+	    if ( newwidth==0 )
+	continue;
+	    if ( j!=0 ) {
+		newcwidth = counterwidth =
+			cg->stems[j]->start - (cg->stems[j-1]->start+cg->stems[j-1]->width);
+		switch ( meta->counters[isvert].counterchoices ) {
+		  case cc_same:
+		    newcwidth = counterwidth;
+		  break;
+		  case cc_centerfixed:
+		    newcwidth -= (lastwidth-cg->stems[j-1]->width)/2 +
+			    (newwidth - cg->stems[j]->width)/2;
+		  break;
+		  case cc_edgefixed:
+		    if ( j==1 )
+			newcwidth -= (lastwidth-cg->stems[j-1]->width);
+		    else
+			newcwidth -= (lastwidth-cg->stems[j-1]->width)/2;
+		    if ( cg->scnt==j+1 )
+			newcwidth -= (newwidth - cg->stems[j]->width);
+		    else
+			newcwidth -= (newwidth - cg->stems[j]->width)/2;
+		  break;
+		  break;
+		  case cc_zones:
+		  default:
+		    GDrawIError("Shouldn't get here in MapFromCounterGroup" );
+		  break;
+		}
+		newcwidth = meta->counters[isvert].counter.factor*newcwidth +
+			meta->counters[isvert].counter.add;
+		if ( newcwidth<meta->counters[isvert].widthmin && counterwidth>=meta->counters[isvert].widthmin ) {
+		    GWidgetErrorR(_STR_CounterTooSmallT,_STR_CounterTooSmall);
+		    newcwidth = meta->counters[isvert].widthmin;
+		} else if ( newcwidth<0 ) {
+		    GWidgetErrorR(_STR_CounterTooSmallT,_STR_CounterTooSmall);
+		    newcwidth = 0;
+		}
+		offset += newcwidth-counterwidth;
+	    }
+	    if ( cg->stems[j]->width==20 && cg->stems[j]->ghost ) {
+		map->mapping[i].from = cg->stems[j]->start+20;
+		map->mapping[i++].to = rint(cg->stems[j]->start+20+offset);
+	    } else if ( cg->stems[j]->width==21 && cg->stems[j]->ghost ) {
+		map->mapping[i].from = cg->stems[j]->start;
+		map->mapping[i++].to = rint(cg->stems[j]->start+offset);
+	    } else {
+		map->mapping[i].from = cg->stems[j]->start;
+		map->mapping[i++].to = rint(cg->stems[j]->start+offset);
+		map->mapping[i].from = cg->stems[j]->start+cg->stems[j]->width;
+		map->mapping[i].to = map->mapping[i-1].to+newwidth;
+		++i;
+		offset += newwidth-cg->stems[j]->width;
+	    }
+	}
     }
 }
 
@@ -932,13 +995,77 @@ return( true );
 static struct countergroup *SCIFindCounterGroups(StemInfo *stems) {
     StemInfo *s;
     HintInstance *hi, *best;
-    int cnt, allhi, ctest;
+    int cnt, allhi, ctest, anyconflicts, anynonconflicts, i;
     struct countergroup *cg = NULL, *test, *cur, *prev, *next;
     int cnum=0;
 
-    for ( s=stems; s!=NULL; s=s->next ) {
+    anyconflicts=anynonconflicts = false;
+    for ( s=stems, cnt=0; s!=NULL; s=s->next, ++cnt ) {
 	for ( hi=s->where; hi!=NULL; hi=hi->next )
 	    hi->counternumber = -1;
+	if ( s->hasconflicts ) anyconflicts = true;
+	else anynonconflicts = true;
+    }
+
+    /* if there are no conflicts, then one counter group should hold everything */
+    /* If everything conflicts then pick a stem, there are no counters */
+    if ( !anyconflicts ) {
+	cur = gcalloc(1,sizeof(struct countergroup));
+	cur->scnt = cnt;
+	cur->stems = galloc(cnt*sizeof(StemInfo *));
+	cur->bottom = -1e8; cur->top = 1e8;
+	cur->counternumber = 0;
+	for ( i=0, s=stems; i<cnt; ++i, s=s->next )
+	    cur->stems[i] = s;
+return( cur );
+    } else if ( !anynonconflicts ) {
+	StemInfo *best = stems;
+	for ( s=stems->next; s!=NULL; s=s->next ) {
+	    if ( s->width<best->width )
+		best = s;
+	}
+	cur = gcalloc(1,sizeof(struct countergroup));
+	cur->scnt = 1;
+	cur->stems = galloc(1*sizeof(StemInfo *));
+	cur->bottom = -1e8; cur->top = 1e8;
+	cur->counternumber = 0;
+	cur->stems[0] = best;
+return( cur );
+    } else if ( cnt==3 && anynonconflicts ) {
+	StemInfo *non, *first=NULL, *second;
+	for ( s=stems; s!=NULL; s=s->next ) {
+	    if ( !s->hasconflicts )
+		non=s;
+	    else if ( first==NULL )
+		first = s;
+	    else
+		second = s;
+	}
+	if ( first->where->begin>second->where->end ) {
+	    StemInfo *temp = first; first = second; second = temp;
+	}
+	cg = cur = gcalloc(1,sizeof(struct countergroup));
+	cur->scnt = 2;
+	cur->stems = galloc(2*sizeof(StemInfo *));
+	cur->bottom = -1e8; cur->top = ceil(first->where->end);
+	cur->counternumber = 0;
+	if ( non->start< first->start ) {
+	    cur->stems[0] = non; cur->stems[1] = first;
+	} else {
+	    cur->stems[0] = first; cur->stems[1] = non;
+	}
+	cur = gcalloc(1,sizeof(struct countergroup));
+	cur->scnt = 2;
+	cur->stems = galloc(2*sizeof(StemInfo *));
+	cur->bottom = floor(second->where->begin); cur->top = 1e8;
+	cur->counternumber = 1;
+	if ( non->start< second->start ) {
+	    cur->stems[0] = non; cur->stems[1] = second;
+	} else {
+	    cur->stems[0] = second; cur->stems[1] = non;
+	}
+	cg->next = cur;
+return( cg );
     }
 
     for ( s=stems; s!=NULL; ) {
@@ -959,7 +1086,7 @@ static struct countergroup *SCIFindCounterGroups(StemInfo *stems) {
 	cur = gcalloc(1,sizeof(struct countergroup));
 	cur->scnt = cnt;
 	cur->stems = galloc(cnt*sizeof(StemInfo *));
-	cur->bottom = best->begin; cur->top = best->end;
+	cur->bottom = floor(best->begin); cur->top = ceil(best->end);
 	cur->counternumber = cnum++;
 	if ( cg==NULL || cur->scnt>cg->scnt ) {
 	    cur->next = cg;
@@ -1124,22 +1251,14 @@ static void SCIBuildMaps(SCI *sci, int isvert) {
 	ecnt = 1;
     }
 
-    if ( meta->counters[isvert].counterchoices==cc_zones ) {
-	sci->mapd[isvert].mapcnt = 1;
-	/* add the lbearing zone if it's before the first zone user specified */
-	sci->mapd[isvert].maps = MapFromZones(
-		meta->counters[isvert].zones,meta->counters[isvert].zonecnt,
-		extras,
-		(!isvert && (meta->counters[0].zonecnt==0 ||
-			extras[0].from<meta->counters[0].zones[0].from))?1:0);
-    } else if ( !isvert &&
+    if ( !isvert &&
 	    (sci->sc->vstem==NULL || sci->sc->vstem->next==NULL) &&
 	    sci->sc->dstem!=NULL ) {
 	/* If we're looking for horizontal counters, but we've got no (or at */
 	/*  most one) vertical stem, then see if we can generate any counters */
 	/*  from the diagonal stems */
 	sci->mapd[0].mapcnt = 1;
-	sci->mapd[0].maps = MapFromDiags(sci->meta,sci->sc->vstem,
+	sci->mapd[0].maps = MapFromDiags(meta,sci->sc->vstem,
 		sci->sc->dstem,extras,1);
     } else {
 	/* Horizontal counters need vertical stems, and vice versa */
@@ -1239,14 +1358,33 @@ return( false );
 }
 
 static int IsHVSpline(Spline *spline, SplinePoint *sp) {
+    double rat;
+
     if ( !spline->knownlinear ) {
-	if ( sp==spline->from )
-return( spline->splines[0].c==0 ? 1 : spline->splines[1].c==0 ? 0 : 2 );
-	else if ( sp==spline->to )
-return( DoubleNear(3*spline->splines[0].a+2*spline->splines[0].b+spline->splines[0].c,0) ? 1 :
-	DoubleNear(3*spline->splines[1].a+2*spline->splines[1].b+spline->splines[1].c,0) ? 0 :
-	 2 );
-	 else
+	if ( sp==spline->from ) {
+	    if ( spline->splines[0].c==0 )
+return( 1 );
+	    else if ( spline->splines[1].c==0 )
+return( 0 );
+	    else if ( ( rat = spline->splines[0].c/spline->splines[1].c) < .05 &&
+		    rat>-.05 )
+return( 1 );
+	    else if ( ( rat = spline->splines[1].c/spline->splines[0].c) < .05 &&
+		    rat>-.05 )
+return( 0 );
+	} else if ( sp==spline->to ) {
+	    double xs, ys;
+	    xs = 3*spline->splines[0].a+2*spline->splines[0].b+spline->splines[0].c;
+	    ys = 3*spline->splines[1].a+2*spline->splines[1].b+spline->splines[1].c;
+	    if ( xs==0 )
+return( 1 );
+	    else if ( ys==0 )
+return( 0 );
+	    else if ( ( rat = xs/ys) < .05 && rat>-.05 )
+return( 1 );
+	    else if ( ( rat = ys/xs) < .05 && rat>-.05 )
+return( 0 );
+	}
 return( 2 );
     } else if ( spline->from->me.x==spline->to->me.x )
 return( 1 );
@@ -1389,13 +1527,56 @@ static void PositionFromMidLen(SCI *sci,BasePoint *new,BasePoint *mid,SplinePoin
 		new->y = rint(temp.y+v.y)-2*v.y;
 	}
     } else {
-	SCIMapPoint(sci,mid);
+	temp = *mid;
+	SCIMapPoint(sci,&temp);
 	if ( v.y>0 || (v.x>0 && v.y==0)) {
-	    new->x = rint(mid->x-v.x);
-	    new->y = rint(mid->y-v.y);
+	    new->x = rint(temp.x-v.x);
+	    new->y = rint(temp.y-v.y);
 	} else {
-	    new->x = rint(mid->x+v.x)-2*v.x;
-	    new->y = rint(mid->y+v.y)-2*v.y;
+	    new->x = rint(temp.x+v.x)-2*v.x;
+	    new->y = rint(temp.y+v.y)-2*v.y;
+	}
+    }
+}
+
+static void SplineIntersectWithEdge(SCI *sci,SplinePoint *sp,Spline *s,
+	BasePoint *new,BasePoint *mid,BasePoint *v1) {
+    BasePoint new1 = *new, new2, other;
+    BasePoint v2;
+    double mapped;
+
+    if ( s->knownlinear ) {
+	/* if the other spline is a line then we want the edge */
+	/*  between us and the previous point to be parallel to */
+	/*  that line. If the line is hor/vert we need to check it */
+	/*  against the zones */
+	if ( s->from->me.y==s->to->me.y && SCIIsOnKnownEdge(sci,&sp->me,1)) {
+	    mapped = MapCoord(&sci->mapd[1],sp->me.y,sp->me.x);
+	    if ( DoubleApprox(new1.y,mapped))
+		new->y = mapped;
+	    else if ( v1->y==0 )
+		GDrawIError("Two Parallel vertical lines" );
+	    else {
+		new->y = mapped;
+		new->x = new1.x + (mapped-new1.y)*v1->x/v1->y;
+	    }
+	} else if ( s->from->me.x==s->to->me.x && SCIIsOnKnownEdge(sci,&sp->me,0)) {
+	    mapped = MapCoord(&sci->mapd[0],sp->me.x,sp->me.y);
+	    if ( DoubleApprox(new1.x,mapped))
+		new->x = mapped;
+	    else if ( v1->x==0 )
+		GDrawIError("Two Parallel horizontal lines" );
+	    else {
+		new->x = mapped;
+		new->y = new1.y + (mapped-new1.x)*v1->y/v1->x;
+	    }
+	} else {
+#if 0
+	    v2.y = s->to->me.x-s->from->me.x; v2.x = -(s->to->me.y-s->from->me.y);
+	    len = sqrt(v2.x*v2.x+v2.y*v2.y);
+	    v2.y /= len; v2.x /= len;
+	    off = (v2.x*(
+#endif
 	}
     }
 }
@@ -1447,11 +1628,13 @@ static void SCIPositionPts(SCI *sci) {
 		    new.y = new1.y+ v1.y/v1.x*(new.x-new1.x);
 		}
 	    } else if ( len1!=0 ) {
-		PositionFromMidLen(sci,&new1,&mid1,sp,len1,sp->next);
-		new = new1;
+		v1.y = mid1.x-sp->me.x; v1.x = -(mid1.y-sp->me.y);	/* This vector should be tangent to the spline */
+		PositionFromMidLen(sci,&new,&mid1,sp,len1,sp->next);
+		SplineIntersectWithEdge(sci,sp,sp->prev,&new,&mid1,&v1);
 	    } else if ( len2!=0 ) {
-		PositionFromMidLen(sci,&new2,&mid2,sp,len2,sp->prev);
-		new = new2;
+		v2.y = mid2.x-sp->me.x; v2.x = -(mid2.y-sp->me.y);	/* (it's purp to something that's purp to the spline) */
+		PositionFromMidLen(sci,&new,&mid2,sp,len2,sp->prev);
+		SplineIntersectWithEdge(sci,sp,sp->next,&new,&mid2,&v2);
 	    } else {
 		new = sp->me;
 		SCIMapPoint(sci,&new);
@@ -1502,6 +1685,7 @@ static void SCIFixupHV(SCI *sci) {
     int i;
     SplinePoint *sp, *nsp;
 
+return;		/* Debug !!!! */
     for ( i=0; i<sci->ptcnt; ++i ) {
 	sp = sci->pts[i].cur;
 	nsp = sp->next->to;
@@ -1566,10 +1750,11 @@ return;
 }
     
 static void SCICornerFixups(SCI *sci) {
-    int i;
+    int i,j;
     SplinePoint *sp, *nsp;
     BasePoint *me, *nme;
-
+    double mid, oldmid;
+return;
     for ( i=0; i<sci->ptcnt; ++i ) {
 	sp = sci->pts[i].cur;
 	nsp = sp->next->to;
@@ -1578,14 +1763,29 @@ static void SCICornerFixups(SCI *sci) {
 	if ( sp->me.x==nsp->me.x &&
 		((sp->me.y>nsp->me.y && me->y<nme->y) ||
 		    (sp->me.y<nsp->me.y && me->y>nme->y)) ) {
-	    MovePointToInter(sci,i,sp->prev->from->ptindex,sp->me.y,1);
-	    MovePointToInter(sci,nsp->ptindex,nsp->next->to->ptindex,nsp->me.y,1);
+	    mid = (me->y+nme->y)/2, oldmid = (sp->me.y+nsp->me.y)/2;
+	    j = nsp->ptindex;
+	    MovePointToInter(sci,i,sp->prev->from->ptindex,mid+(sp->me.y-oldmid),1);
+	    MovePointToInter(sci,j,nsp->next->to->ptindex,mid+(nsp->me.y-oldmid),1);
+	    mid = rint((me->x+nme->x)/2);
+	    sci->pts[i].newnext.x += mid-me->x;
+	    sci->pts[i].newprev.x += mid-me->x;
+	    sci->pts[j].newnext.x += mid-nme->x;
+	    sci->pts[j].newprev.x += mid-nme->x;
+	    me->x = nme->x = mid;
 	}
 	if ( sp->me.y==nsp->me.y &&
 		((sp->me.x>nsp->me.x && me->x<nme->x) ||
 		    (sp->me.x<nsp->me.x && me->x>nme->x)) ) {
-	    MovePointToInter(sci,i,sp->prev->from->ptindex,sp->me.x,0);
-	    MovePointToInter(sci,nsp->ptindex,nsp->next->to->ptindex,nsp->me.x,0);
+	    mid = (me->x+nme->x)/2, oldmid = (sp->me.x+nsp->me.x)/2;
+	    MovePointToInter(sci,i,sp->prev->from->ptindex,mid+(sp->me.x-oldmid),0);
+	    MovePointToInter(sci,nsp->ptindex,nsp->next->to->ptindex,mid+(nsp->me.x-oldmid),0);
+	    mid = rint((me->y+nme->y)/2);
+	    sci->pts[i].newnext.y += mid-me->y;
+	    sci->pts[i].newprev.y += mid-me->y;
+	    sci->pts[j].newnext.y += mid-nme->y;
+	    sci->pts[j].newprev.y += mid-nme->y;
+	    me->y = nme->y = mid;
 	}
     }
 }
@@ -1655,7 +1855,7 @@ static GTextInfo simplefuncs[] = {
 
 
 static int MT_OK(GGadget *g, GEvent *e) {
-    int type;
+    int type, func;
     MetaFontDlg *meta;
     int i, cnt;
     double stems, counters, xh=0;
@@ -1665,7 +1865,7 @@ static int MT_OK(GGadget *g, GEvent *e) {
 	meta = GDrawGetUserData(GGadgetGetWindow(g));
 	type = GGadgetGetFirstListSelectedItem(GWidgetGetControl(meta->gw,CID_DlgType));
 	if ( type==0 ) {
-	    /*func = GGadgetGetFirstListSelectedItem(GWidgetGetControl(meta->gw,CID_SimpleFuncs));*/
+	    func = GGadgetGetFirstListSelectedItem(GWidgetGetControl(meta->gw,CID_SimpleFuncs));
 	    err = false;
 	    stems = GetDoubleR(meta->gw,CID_StemScale, _STR_StemScale,&err)/100;
 	    counters = GetDoubleR(meta->gw,CID_CounterScale,_STR_CounterScale,&err)/100;
@@ -1682,7 +1882,10 @@ return( true );
 		meta->stems->factor = stems;
 	    }
 	    meta->counters[0].counter.factor = counters;
-	    meta->lbearing.factor = meta->rbearing.factor = meta->counters[0].counter.factor;
+	    if ( func==2 || func==3 )
+		meta->lbearing.factor = meta->rbearing.factor = meta->counters[0].counter.factor;
+	    else
+		meta->lbearing.factor = meta->rbearing.factor = 1;
 
 	    meta->counters[1].counterchoices = cc_zones;
 	    meta->counters[1].zonecnt = meta->bcnt;

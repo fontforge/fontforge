@@ -40,6 +40,7 @@ struct problems {
     unsigned int ynearval: 1;
     unsigned int ynearstd: 1;		/* baseline, xheight, cap, ascent, descent, etc. */
     unsigned int linenearstd: 1;	/* horizontal, vertical, italicangle */
+    unsigned int cpnearstd: 1;		/* control points near: horizontal, vertical, italicangle */
     unsigned int hintwithnopt: 1;
     unsigned int ptnearhint: 1;
     unsigned int hintwidthnearval: 1;
@@ -58,7 +59,7 @@ struct problems {
 };
 
 static int openpaths=1, pointstooclose=1/*, missing=0*/, doxnear=0, doynear=0;
-static int doynearstd=1, linestd=1, hintnopt=0, ptnearhint=0, hintwidth=0, direction=0;
+static int doynearstd=1, linestd=1, cpstd=1, hintnopt=0, ptnearhint=0, hintwidth=0, direction=0;
 static double near=3, xval=0, yval=0, widthval=50;
 
 #define CID_Stop		2001
@@ -79,6 +80,7 @@ static double near=3, xval=0, yval=0, widthval=50;
 #define CID_YNearVal		1013
 #define CID_LineStd		1014
 #define CID_Direction		1015
+#define CID_CpStd		1016
 
 
 static int explain_e_h(GWindow gw, GEvent *event) {
@@ -286,6 +288,65 @@ static int missinghint(StemInfo *base, StemInfo *findme) {
 return( base==NULL );
 }
 
+static int HVITest(struct problems *p,BasePoint *to, BasePoint *from,
+	Spline *spline, int hasia, double ia) {
+    double yoff, xoff, angle;
+    int ishor=false, isvert=false, isital=false;
+    int type;
+    BasePoint *base, *other;
+    static int hmsgs[5] = { _STR_ProbLineHor, _STR_ProbAboveHor, _STR_ProbBelowHor, _STR_ProbRightHor, _STR_ProbLeftHor };
+    static int vmsgs[5] = { _STR_ProbLineVert, _STR_ProbAboveVert, _STR_ProbBelowVert, _STR_ProbRightVert, _STR_ProbLeftVert };
+    static int imsgs[5] = { _STR_ProbLineItal, _STR_ProbAboveItal, _STR_ProbBelowItal, _STR_ProbRightItal, _STR_ProbLeftItal };
+
+    yoff = to->y-from->y;
+    xoff = to->x-from->x;
+    angle = atan2(yoff,xoff);
+    if ( angle<0 )
+	angle += 3.1415926535897932;
+    if ( angle<.1 || angle>3.1415926535897932-.1 ) {
+	if ( yoff!=0 )
+	    ishor = true;
+    } else if ( angle>1.5707963-.1 && angle<1.5707963+.1 ) {
+	if ( xoff!=0 )
+	    isvert = true;
+    } else if ( hasia && angle>ia-.1 && angle<ia+.1 ) {
+	if ( angle<ia-.03 || angle>ia+.03 )
+	    isital = true;
+    }
+    if ( ishor || isvert || isital ) {
+	if ( &spline->from->me==from || &spline->from->me==to )
+	    spline->from->selected = true;
+	if ( &spline->to->me==from || &spline->to->me==to )
+	    spline->to->selected = true;
+	if ( from==&spline->from->me || from == &spline->to->me ) {
+	    base = from; other = to;
+	} else {
+	    base = to; other = from;
+	}
+	if ( &spline->from->me==from && &spline->to->me==to ) {
+	    type = 0;	/* Line */
+	    if ( (ishor && xoff<0) || (isvert && yoff<0)) {
+		base = from;
+		other = to;
+	    } else {
+		base = to;
+		other = from;
+	    }
+	} else if ( abs(yoff)>abs(xoff) )
+	    type = yoff>0?1:2;
+	else
+	    type = xoff>0?3:4;
+	if ( ishor )
+	    ExplainIt(p,p->sc,hmsgs[type], base->y,other->y);
+	else if ( isvert )
+	    ExplainIt(p,p->sc,vmsgs[type], base->x,other->x);
+	else
+	    ExplainIt(p,p->sc,imsgs[type],0,0);
+return( true );
+    }
+return( false );
+}
+
 static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
     SplineSet *spl, *test;
     Spline *spline, *first;
@@ -484,39 +545,46 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	    first = NULL;
 	    for ( spline = test->first->next; spline!=NULL && spline!=first && !p->finish; spline=spline->to->next ) {
 		if ( spline->knownlinear ) {
-		    double yoff, xoff, angle;
-		    int ishor=false, isvert=false, isital=false;
-		    yoff = spline->to->me.y-spline->from->me.y;
-		    xoff = spline->to->me.x-spline->from->me.x;
-		    angle = atan2(yoff,xoff);
-		    if ( angle<0 )
-			angle += 3.1415926535897932;
-		    if ( angle<.1 || angle>3.1415926535897932-.1 ) {
-			if ( yoff!=0 )
-			    ishor = true;
-		    } else if ( angle>1.5707963-.1 && angle<1.5707963+.1 ) {
-			if ( xoff!=0 )
-			    isvert = true;
-		    } else if ( hasia && angle>ia-.1 && angle<ia+.1 ) {
-			if ( angle<ia-.03 || angle>ia+.03 )
-			    isital = true;
-		    }
-		    if ( ishor || isvert || isital ) {
-			spline->from->selected = true;
-			spline->to->selected = true;
+		    if ( HVITest(p,&spline->to->me,&spline->from->me,spline,
+			    hasia, ia)) {
 			changed = true;
-			if ( ishor )
-			    ExplainIt(p,sc,_STR_ProbLineHor,
-				    xoff<0?spline->from->me.y:spline->to->me.y,
-				    xoff<0?spline->to->me.y:spline->from->me.y);
-			else if ( isvert )
-			    ExplainIt(p,sc,_STR_ProbLineVert,
-				    yoff<0?spline->from->me.x:spline->to->me.x,
-				    yoff<0?spline->to->me.x:spline->from->me.x);
-			else
-			    ExplainIt(p,sc,_STR_ProbLineItal,0,0);
 			if ( p->ignorethis ) {
 			    p->linenearstd = false;
+	    break;
+			}
+			if ( missingspline(p,test,spline))
+  goto restart;
+		    }
+		}
+		if ( first==NULL ) first = spline;
+	    }
+	}
+    }
+
+    if ( p->cpnearstd && !p->finish ) {
+	double ia = (90-p->fv->sf->italicangle)*(3.1415926535897932/180);
+	int hasia = p->fv->sf->italicangle!=0;
+	for ( test=spl; test!=NULL && !p->finish && p->linenearstd; test = test->next ) {
+	    first = NULL;
+	    for ( spline = test->first->next; spline!=NULL && spline!=first && !p->finish; spline=spline->to->next ) {
+		if ( !spline->knownlinear ) {
+		    if ( !spline->to->noprevcp &&
+			    HVITest(p,&spline->to->me,&spline->to->prevcp,spline,
+				hasia, ia)) {
+			changed = true;
+			if ( p->ignorethis ) {
+			    p->cpnearstd = false;
+	    break;
+			}
+			if ( missingspline(p,test,spline))
+  goto restart;
+		    }
+		    if ( !spline->from->nonextcp &&
+			    HVITest(p,&spline->from->nextcp,&spline->from->me,spline,
+				hasia, ia)) {
+			changed = true;
+			if ( p->ignorethis ) {
+			    p->cpnearstd = false;
 	    break;
 			}
 			if ( missingspline(p,test,spline))
@@ -761,6 +829,7 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	doynear = p->ynearval = GGadgetIsChecked(GWidgetGetControl(gw,CID_YNear));
 	doynearstd = p->ynearstd = GGadgetIsChecked(GWidgetGetControl(gw,CID_YNearStd));
 	linestd = p->linenearstd = GGadgetIsChecked(GWidgetGetControl(gw,CID_LineStd));
+	cpstd = p->cpnearstd = GGadgetIsChecked(GWidgetGetControl(gw,CID_CpStd));
 	hintnopt = p->hintwithnopt = GGadgetIsChecked(GWidgetGetControl(gw,CID_HintNoPt));
 	ptnearhint = p->ptnearhint = GGadgetIsChecked(GWidgetGetControl(gw,CID_PtNearHint));
 	hintwidth = p->hintwidthnearval = GGadgetIsChecked(GWidgetGetControl(gw,CID_HintWidthNear));
@@ -815,8 +884,8 @@ void FindProblems(FontView *fv,CharView *cv) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[20];
-    GTextInfo label[20];
+    GGadgetCreateData gcd[21];
+    GTextInfo label[21];
     struct problems p;
     char xnbuf[20], ynbuf[20], widthbuf[20], nearbuf[20];
 
@@ -829,7 +898,7 @@ void FindProblems(FontView *fv,CharView *cv) {
     wattrs.window_title = GStringGetResource(_STR_Findprobs,NULL);
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,200);
-    pos.height = GDrawPointsToPixels(NULL,281);
+    pos.height = GDrawPointsToPixels(NULL,298);
     gw = GDrawCreateTopWindow(NULL,&pos,e_h,&p,&wattrs);
 
     memset(&label,0,sizeof(label));
@@ -942,11 +1011,22 @@ void FindProblems(FontView *fv,CharView *cv) {
     gcd[7].gd.cid = CID_LineStd;
     gcd[7].creator = GCheckBoxCreate;
 
+    label[19].text = (unichar_t *) (fv->sf->italicangle==0?_STR_CpStd:_STR_CpStd2);
+    label[19].text_in_resource = true;
+    gcd[19].gd.label = &label[19];
+    gcd[19].gd.mnemonic = 'C';
+    gcd[19].gd.pos.x = 6; gcd[19].gd.pos.y = gcd[7].gd.pos.y+17; 
+    gcd[19].gd.flags = gg_visible | gg_enabled;
+    if ( cpstd ) gcd[19].gd.flags |= gg_cb_on;
+    gcd[19].gd.popup_msg = GStringGetResource(_STR_CpStdPopup,NULL);
+    gcd[19].gd.cid = CID_CpStd;
+    gcd[19].creator = GCheckBoxCreate;
+
     label[8].text = (unichar_t *) _STR_HintNoPt;
     label[8].text_in_resource = true;
     gcd[8].gd.label = &label[8];
     gcd[8].gd.mnemonic = 'H';
-    gcd[8].gd.pos.x = 6; gcd[8].gd.pos.y = gcd[7].gd.pos.y+17; 
+    gcd[8].gd.pos.x = 6; gcd[8].gd.pos.y = gcd[19].gd.pos.y+17; 
     gcd[8].gd.flags = gg_visible | gg_enabled;
     if ( hintnopt ) gcd[8].gd.flags |= gg_cb_on;
     gcd[8].gd.popup_msg = GStringGetResource(_STR_HintNoPtPopup,NULL);
