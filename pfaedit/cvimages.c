@@ -918,6 +918,7 @@ static unichar_t wildimg[] = { '*', '.', '{',
 #endif
 #ifndef _NO_LIBTIFF
 't','i','f','f',',',
+'t','i','f',',',
 #endif
 'x','b','m',',', 'b','m','p', '}', '\0' };
 static unichar_t wildtemplate[] = { '{','u','n','i',',','u',',','c','i','d',',','e','n','c','}','[','0','-','9','a','-','f','A','-','F',']','*', '.', '{',
@@ -929,6 +930,7 @@ static unichar_t wildtemplate[] = { '{','u','n','i',',','u',',','c','i','d',',',
 #endif
 #ifndef _NO_LIBTIFF
 't','i','f','f',',',
+'t','i','f',',',
 #endif
 'x','b','m',',', 'b','m','p', '}', '\0' };
 /* Hmm. Mac seems to use the extension 'art' for eps files sometimes */
