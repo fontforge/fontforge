@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 10-Dec-2000 -->
-  <!-- AP: Last modified: 12-Feb-2002 -->
+  <!-- AP: Last modified: 13-Feb-2002 -->
   <TITLE>The File Menu</TITLE>
 </HEAD>
 <BODY>
@@ -190,9 +190,12 @@
 	characters of approximately the same height should have the same height at
 	small pointsizes (equivalent to PostScript's BlueValues).
       <LI>
-	True Type Symbol. Same as True Type, except it uses a symbol encoding scheme.
-	This is important on windows as symbol and dingbat encodings often include
-	characters (in the range 0x80-0x9f) which aren't mapped in normal encodings.
+	True Type Symbol. Same as True Type, except it uses the 1 byte encoding given
+	in the font. This is important on windows as symbol and dingbat encodings
+	often include characters (in the range 0x80-0x9f) which aren't mapped in
+	normal encodings. It is important on the Mac because I do not generate the
+	correct encoding tables for any script other than MacRoman, so if you want
+	a MacCyrillic font use this mode.
       <LI>
 	True Type macbinary format, a truetype font wrapped up in a mac resource,
 	wrapped up in a macbinary file. Designed to be used for a mac.
@@ -247,15 +250,18 @@
 	None
     </UL>
     <P>
-    TTF (and Open Type) fonts are usually generated in MicroSoft's Unicode encoding,
-    there will also be a tiny macintosh encoding for the first 256 positions
-    (and a macintosh copy of the unicode encoding) -- the exceptions are: symbol
-    fonts will use the symbol encoding, KSC5601 fonts will use Wansung, and JIS208
-    will use SJIS, Big5 will use big5 encoding. OpenType CID keyed fonts will
-    be saved with Unicode encoding.<BR>
+    TTF (and Open Type) fonts are usually generated in Unicode encoding, there
+    will also be a tiny macintosh encoding of whatever bits of MacRoman fit in
+    the first 256 glyphs (and a macintosh copy of the unicode encoding) -- the
+    exceptions are: symbol fonts will use the symbol encoding, KSC5601 and Wansung
+    fonts will use Wansung, Johab fonts will use johab, JIS208 and SJIS fonts
+    will use SJIS, Big5 will use big5 encoding. Fonts with a "Full Unicode" encoding
+    will have both a 2 byte unicode encoding table and a 4 byte table. OpenType
+    CID keyed fonts will be saved with Unicode encoding.<BR>
     Postscript fonts are generated in whatever encoding the font is using (except
     if you take a two byte encoding and generate a Type1 font (rather than a
-    Type0) then only the first few characters will be encoded).<BR>
+    Type0) then only the first few characters will be encoded). Type0 does not
+    support a full Unicode (4 byte) encoding.<BR>
     PS CID (and OpenType CID in the CFF) are saved with no encoding. The encodings
     live in seperate cmap files which are available from
     <A HREF="http://www.adobe.com/products/acrobat/acrrasianfontpack.html">adobe</A>

@@ -614,16 +614,16 @@ static int CVRectSelect(CharView *cv, real newx, real newy) {
 return( any );
 }
 
-static void CVAdjustControl(CharView *cv,BasePoint *cp) {
+void CVAdjustControl(CharView *cv,BasePoint *cp, BasePoint *to) {
     SplinePoint *sp = cv->p.sp;
     BasePoint *othercp = cp==&sp->nextcp?&sp->prevcp:&sp->nextcp;
 
     if ( sp->pointtype==pt_corner ) {
-	cp->x = cv->info.x;
-	cp->y = cv->info.y;
+	cp->x = to->x;
+	cp->y = to->y;
     } else if ( sp->pointtype==pt_curve ) {
-	cp->x = cv->info.x;
-	cp->y = cv->info.y;
+	cp->x = to->x;
+	cp->y = to->y;
 	if ( cp->x!=sp->me.x || cp->y!=sp->me.y ) {
 	    real angle = atan2(cp->y-sp->me.y,cp->x-sp->me.x)-3.1415926535897932;
 	    real len = sqrt((othercp->y-sp->me.y)*(othercp->y-sp->me.y) + (othercp->x-sp->me.x)*(othercp->x-sp->me.x));
@@ -656,8 +656,8 @@ static void CVAdjustControl(CharView *cv,BasePoint *cp) {
 	    real angle = atan2(bp->y-sp->me.y,bp->x-sp->me.x);
 	    real len = sqrt((bp->x-sp->me.x)*(bp->x-sp->me.x) + (bp->y-sp->me.y)*(bp->y-sp->me.y));
 	    real dotprod =
-		    ((cv->info.x-sp->me.x)*(bp->x-sp->me.x) +
-		     (cv->info.y-sp->me.y)*(bp->y-sp->me.y));
+		    ((to->x-sp->me.x)*(bp->x-sp->me.x) +
+		     (to->y-sp->me.y)*(bp->y-sp->me.y));
 	    if ( len!=0 ) {
 		dotprod /= len;
 		if ( dotprod>0 ) dotprod = 0;
@@ -704,37 +704,6 @@ static void CVAdjustSpline(CharView *cv) {
     old->from->pointtype = pt_corner; old->to->pointtype = pt_corner;
     old->from->nextcpdef = old->to->prevcpdef = false;
     SplineFree(old);
-    CVSetCharChanged(cv,true);
-}
-
-void CVMoveSelection(CharView *cv, real dx, real dy) {
-    real transform[6];
-    RefChar *refs;
-    ImageList *img;
-
-    transform[0] = transform[3] = 1.0;
-    transform[1] = transform[2] = 0.0;
-    transform[4] = dx; transform[5] = dy;
-    if ( transform[4]==0 && transform[5]==0 )
-return;
-    SplinePointListTransform(*cv->heads[cv->drawmode],transform,false);
-    if ( cv->drawmode==dm_fore ) {
-	for ( refs = cv->sc->refs; refs!=NULL; refs=refs->next ) if ( refs->selected ) {
-	    refs->transform[4] += transform[4];
-	    refs->transform[5] += transform[5];
-	    refs->bb.minx += transform[4]; refs->bb.maxx += transform[4];
-	    refs->bb.miny += transform[5]; refs->bb.maxy += transform[5];
-	    SplinePointListTransform(refs->splines,transform,true);
-	}
-    } else if ( cv->drawmode==dm_back ) {
-	for ( img = cv->sc->backimages; img!=NULL; img=img->next ) if ( img->selected ) {
-	    img->xoff += transform[4];
-	    img->yoff += transform[5];
-	    img->bb.minx += transform[4]; img->bb.maxx += transform[4];
-	    img->bb.miny += transform[5]; img->bb.maxy += transform[5];
-	    SCOutOfDateBackground(cv->sc);
-	}
-    }
     CVSetCharChanged(cv,true);
 }
 
@@ -792,6 +761,38 @@ static void CVCheckMerges(CharView *cv ) {
 	    }
 	}
     }
+}
+
+void CVMoveSelection(CharView *cv, real dx, real dy) {
+    real transform[6];
+    RefChar *refs;
+    ImageList *img;
+
+    transform[0] = transform[3] = 1.0;
+    transform[1] = transform[2] = 0.0;
+    transform[4] = dx; transform[5] = dy;
+    if ( transform[4]==0 && transform[5]==0 )
+return;
+    SplinePointListTransform(*cv->heads[cv->drawmode],transform,false);
+    if ( cv->drawmode==dm_fore ) {
+	for ( refs = cv->sc->refs; refs!=NULL; refs=refs->next ) if ( refs->selected ) {
+	    refs->transform[4] += transform[4];
+	    refs->transform[5] += transform[5];
+	    refs->bb.minx += transform[4]; refs->bb.maxx += transform[4];
+	    refs->bb.miny += transform[5]; refs->bb.maxy += transform[5];
+	    SplinePointListTransform(refs->splines,transform,true);
+	}
+    } else if ( cv->drawmode==dm_back ) {
+	for ( img = cv->sc->backimages; img!=NULL; img=img->next ) if ( img->selected ) {
+	    img->xoff += transform[4];
+	    img->yoff += transform[5];
+	    img->bb.minx += transform[4]; img->bb.maxx += transform[4];
+	    img->bb.miny += transform[5]; img->bb.maxy += transform[5];
+	    SCOutOfDateBackground(cv->sc);
+	}
+    }
+    CVSetCharChanged(cv,true);
+    CVCheckMerges( cv );
 }
 
 static int CVExpandEdge(CharView *cv) {
@@ -853,11 +854,11 @@ return;
 	    CVDrawRubberRect(cv->v,cv);
     } else if ( cv->p.nextcp ) {
 	if ( !cv->recentchange ) CVPreserveState(cv);
-	CVAdjustControl(cv,&cv->p.sp->nextcp);
+	CVAdjustControl(cv,&cv->p.sp->nextcp,&cv->info);
 	needsupdate = true;
     } else if ( cv->p.prevcp ) {
 	if ( !cv->recentchange ) CVPreserveState(cv);
-	CVAdjustControl(cv,&cv->p.sp->prevcp);
+	CVAdjustControl(cv,&cv->p.sp->prevcp,&cv->info);
 	needsupdate = true;
     } else if ( cv->p.spline!=NULL ) {
 	if ( !cv->recentchange ) CVPreserveState(cv);
@@ -867,7 +868,6 @@ return;
     } else {
 	if ( !cv->recentchange ) CVPreserveState(cv);
 	CVMoveSelection(cv,cv->info.x-cv->last_c.x,cv->info.y-cv->last_c.y);
-	CVCheckMerges(cv);
 	needsupdate = true;
     }
     if ( needsupdate )

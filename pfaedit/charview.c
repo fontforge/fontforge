@@ -1152,6 +1152,7 @@ static void CVMenuSimplifyMore(GWindow gw,struct gmenuitem *mi,GEvent *e);
 
 
 void CVChar(CharView *cv, GEvent *event ) {
+    extern float arrowAmount;
 
 #if MyMemory
     if ( event->u.chr.keysym == GK_F2 ) {
@@ -1228,11 +1229,22 @@ void CVChar(CharView *cv, GEvent *event ) {
 		CVVScroll(cv,&sb);
 	    else
 		CVHScroll(cv,&sb);
+	} else if (( cv->p.sp!=NULL || cv->lastselpt!=NULL ) &&
+		(cv->p.nextcp || cv->p.prevcp) ) {
+	    SplinePoint *sp = cv->p.sp ? cv->p.sp : cv->lastselpt;
+	    SplinePoint *old = cv->p.sp;
+	    BasePoint *which = cv->p.nextcp ? &sp->nextcp : &sp->prevcp;
+	    BasePoint to;
+	    to.x = which->x + dx*arrowAmount;
+	    to.y = which->y + dy*arrowAmount;
+	    cv->p.sp = sp;
+	    CVPreserveState(cv);
+	    CVAdjustControl(cv,which,&to);
+	    cv->p.sp = old;
+	    SCUpdateAll(cv->sc);
 	} else if ( CVAnySel(cv,NULL,NULL,NULL)) {
-	    extern float arrowAmount;
 	    CVPreserveState(cv);
 	    CVMoveSelection(cv,dx*arrowAmount,dy*arrowAmount);
-	    /* Check for merge!!!! */
 	    CVCharChangedUpdate(cv);
 	    CVInfoDraw(cv,cv->gw);
 	}

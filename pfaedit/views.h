@@ -408,6 +408,7 @@ extern void CVAdjustPoint(CharView *cv, SplinePoint *sp);
 extern void CVMergeSplineSets(CharView *cv, SplinePoint *active, SplineSet *activess,
 	SplinePoint *merge, SplineSet *mergess);
 extern void CVChar(CharView *cv, GEvent *event );
+extern void CVAdjustControl(CharView *cv,BasePoint *cp, BasePoint *to);
 extern void CVMoveSelection(CharView *cv, real dx, real dy);
 extern void CVMouseDownPoint(CharView *cv);
 extern void CVMouseMovePoint(CharView *cv,PressedOn *);

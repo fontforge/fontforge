@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 12-Feb-2002 -->
+  <!-- AP: Last modified: 14-Feb-2002 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -78,8 +78,8 @@ you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-020212.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 12-Feb-2002
+    <A HREF="pfaedit-020214.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 14-Feb-2002
   <LI>
     <A HREF="pfaedit_ppc-020208.tgz">Download pfaedit linux-ppc SUSE 7.1
     </A>executable Version: 8-Feb-2002
@@ -116,9 +116,9 @@ If you want to edit CID keyed fonts you probably need these
 <P>
 You can download a <A HREF="pfaedit-020208-1.src.rpm">source RPM</A>: Version:
 8-Feb-2002<BR>
-Or you can download the <A HREF="pfaedit_full-020212.tgz">entire source tree
+Or you can download the <A HREF="pfaedit_full-020214.tgz">entire source tree
 </A>in one .tgz file: Version
-12-Feb-2002<!--
+14-Feb-2002<!--
 Or you can download the following three packages. Version: 19-Jan-2002
 <UL>
 <LI>
@@ -269,6 +269,27 @@ Or you can just browse the <A HREF="overview.html">docs online</A>.
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    14-Feb-2002
+    <UL>
+      <LI>
+	My TrueType parser will now read cmap subtable formats 8,10 and 12 (the 4
+	byte encoding tables) and will produce format 12 subtables for full unicode
+	fonts.
+      <LI>
+	Cleaned up various encoding problems.
+      <LI>
+	Fixed display of SJIS.
+      <LI>
+	Added better commentary on unicode outside of BMP
+      <LI>
+	Cleaned up the spec file
+      <LI>
+	In pfb files subroutines for references didn't work if the first thing called
+	was untranslated.
+      <LI>
+	The arrow keys can be used to move a control point.
+    </UL>
   <LI>
     12-Feb-2002
     <UL>
@@ -1158,10 +1179,12 @@ Other Encodings
 	  <HR>
       <LI>
 	<A HREF="http://www.macromedia.com/software/fontographer/">Fontographer</A>
-	-- my favorite, no longer updated (<STRONG>commercial</STRONG>)
+	-- my favorite, no longer updated
+	(<FONT COLOR="Red"><STRONG>proprietary</STRONG></FONT>)
       <LI>
 	<A HREF="http://www.fontlab.com/">FontLab</A> -- Said to have really good
-	tools for hinting truetype. (<STRONG>commercial</STRONG>)
+	tools for hinting truetype.
+	(<FONT COLOR="Red"><STRONG>proprietary</STRONG></FONT>)
     </UL>
   <LI>
     MetaFont the original computer vector font editor &amp; other TeX utilities
@@ -1174,6 +1197,9 @@ Other Encodings
       <LI>
 	<A HREF="ftp://ftp.radio-msu.net/pub/tex/tex-archive/fonts/utilities/mf2ps/">mftops</A>,
 	similar
+      <LI>
+	<A HREF="http://www.cs.uu.nl/~hanwen/pktrace/index.html">pktrace</A>, traces
+	pk fonts (bitmap images) and creates pfb/pfa files.
     </UL>
   <LI>
     Postscript utilities
