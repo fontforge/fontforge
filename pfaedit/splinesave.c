@@ -239,6 +239,7 @@ return;
 	if ( max>num_coords ) max = num_coords;
 	while ( max-1>min && alls[max-1] )
 	    --max;
+	if ( max-min==5 ) max=min+4;
 	if ( min<max ) {
 	    for ( j=min; j<max; ++j )
 		AddNumber(gb,data[0][j],round);
@@ -560,8 +561,16 @@ return( subrs->next++ );
 static void HintSetup(GrowBuf *gb,struct hintdb *hdb, SplinePoint *to,
 	int round ) {
     int s;
+    int i;
 
     if ( to->hintmask==NULL )
+return;
+    if ( hdb->scs[0]->hstem==NULL && hdb->scs[0]->vstem==NULL )		/* Hints are turned off. Hint mask still remains though */
+return;
+    for ( i=0; i<HntMax/8; ++i )
+	if ( to->hintmask[i]!=0 )
+    break;
+    if ( i==HntMax/8 )		/* Empty mask */
 return;
 
     s = FindOrBuildHintSubr(hdb,*to->hintmask,round);
@@ -647,12 +656,17 @@ static void splmoveto(GrowBuf *gb,BasePoint *current,SplineSet *spl[MmMax],
 }
 
 static void refmoveto(GrowBuf *gb,BasePoint *current,BasePoint startstop[MmMax*2],
-	int instance_count, int line, int round, struct hintdb *hdb) {
+	int instance_count, int line, int round, struct hintdb *hdb, RefChar *refs[MmMax]) {
     BasePoint to[MmMax];
     int i;
 
-    for ( i=0; i<instance_count; ++i )
+    for ( i=0; i<instance_count; ++i ) {
 	to[i] = startstop[i*2+0];
+	if ( refs!=NULL ) {
+	    to[i].x += refs[i]->transform[4];
+	    to[i].y += refs[i]->transform[5];
+	}
+    }
     _moveto(gb,current,to,instance_count,line,round,hdb);
 }
 
@@ -1091,7 +1105,7 @@ return( false );
 	if ( gb->pt+20>=gb->end )
 	    GrowBuffer(gb);
 	bp = (BasePoint *) (subrs->keys[refs[0]->sc->ttf_glyph]);
-	refmoveto(gb,current,bp,instance_count,false,round,NULL);
+	refmoveto(gb,current,bp,instance_count,false,round,NULL,refs);
 	AddNumber(gb,refs[0]->sc->ttf_glyph,round);
 	*gb->pt++ = 10;				/* callsubr */
 	for ( j=0; j<instance_count; ++j ) {
@@ -1239,6 +1253,9 @@ return( true );
 static int _SCNeedsSubsPts(SplineChar *sc) {
     RefChar *ref;
 
+    if ( sc->hstem==NULL && sc->vstem==NULL )
+return( false );
+
     if ( sc->splines!=NULL )
 return( sc->splines->first->hintmask==NULL );
 
@@ -1341,7 +1358,7 @@ static unsigned char *SplineChar2PS(SplineChar *sc,int *len,int round,int iscjk,
 	    CvtPsRSplineSet(&gb,scs,instance_count,current,round,hdb,NULL,sc->parent->order2);
 	} else {
 	    refmoveto(&gb,current,(BasePoint *) (subrs->keys[sc->ttf_glyph]),
-		    instance_count,false,round,NULL);
+		    instance_count,false,round,NULL,NULL);
 	    AddNumber(&gb,sc->ttf_glyph,round);
 	    if ( gb.pt+1>=gb.end )
 		GrowBuffer(&gb);
