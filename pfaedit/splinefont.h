@@ -885,7 +885,8 @@ extern struct pschars *SplineFont2Subrs2(SplineFont *sf,int flags);
 extern struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
 	struct pschars *subrs,int flags);
 extern struct pschars *CID2Chrs2(SplineFont *cidmaster,struct fd2data *fds,int flags);
-enum fontformat { ff_pfa, ff_pfb, ff_pfbmacbin, ff_multiple, ff_ptype3, ff_ptype0, ff_cid,
+enum fontformat { ff_pfa, ff_pfb, ff_pfbmacbin, ff_multiple,
+	ff_ptype3, ff_ptype0, ff_cid, ff_cff, ff_cffcid,
 	ff_ttf, ff_ttfsym, ff_ttfmacbin, ff_ttfdfont, ff_otf, ff_otfdfont,
 	ff_otfcid, ff_otfciddfont, ff_svg, ff_none };
 enum bitmapformat { bf_bdf, bf_ttf, bf_sfnt_dfont, 

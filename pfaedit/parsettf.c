@@ -2284,7 +2284,8 @@ return;
 		    ++first;
 		}
 	    }
-	}
+	} else
+	    fprintf( stderr, "Unexpected encoding format in cff: %d\n", format );
 	if ( format&0x80 ) {
 	    cnt = getc(ttf);
 	    for ( i=0; i<cnt; ++i ) {
@@ -2401,7 +2402,8 @@ static void readcffset(FILE *ttf,struct topdicts *dict) {
 		for ( j=0; j<cnt; ++j )
 		    dict->charset[i++] = ++first;
 	    }
-	}
+	} else
+	    fprintf( stderr, "Unexpected charset format in cff: %d\n", format );
     }
     while ( i<len ) dict->charset[i++] = 0;
 }

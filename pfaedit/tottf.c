@@ -1571,6 +1571,7 @@ static void dumpcffnames(SplineFont *sf,FILE *cfff) {
 static void dumpcffcharset(SplineFont *sf,struct alltabs *at) {
     int i;
 
+    at->gn_sid = gcalloc(sf->charcnt,sizeof(uint32));
     putc(0,at->charset);
     /* I always use a format 0 charset. ie. an array of SIDs in random order */
 
@@ -1580,8 +1581,10 @@ static void dumpcffcharset(SplineFont *sf,struct alltabs *at) {
 	putshort(at->charset,storesid(at,sf->chars[0]->name));
 
     for ( i=1; i<sf->charcnt; ++i )
-	if ( SCWorthOutputting(sf->chars[i]) )
-	    putshort(at->charset,storesid(at,sf->chars[i]->name));
+	if ( SCWorthOutputting(sf->chars[i]) ) {
+	    at->gn_sid[i] = storesid(at,sf->chars[i]->name);
+	    putshort(at->charset,at->gn_sid[i]);
+	}
 }
 
 static void dumpcffcidset(SplineFont *sf,struct alltabs *at) {
@@ -1658,24 +1661,48 @@ static void dumpcfffdselect(SplineFont *sf,struct alltabs *at) {
 }
 
 static void dumpcffencoding(SplineFont *sf,struct alltabs *at) {
-    int i,offset, pos;
+    int i,j, last, anydups;
+    uint32 start_pos = ftell(at->encoding);
+    SplineChar *sc;
 
     putc(0,at->encoding);
     /* I always use a format 0 encoding. ie. an array of glyph indexes */
-    putc(0xff,at->encoding);
-    /* And I put in 255 of them (with the encoding for 0 implied, I hope) */
+    putc(0xff,at->encoding);		/* fixup later */
 
-    offset = 0;
-    if ( SCIsNotdef(sf->chars[0],at->gi.fixed_width))
-	offset = 1;
-
-    for ( i=pos=1; i<sf->charcnt && i<256; ++i )
-	if ( SCWorthOutputting(sf->chars[i]) )
-	    putc(pos++ +offset,at->encoding);
-	else
-	    putc(0,at->encoding);
-    for ( ; i<256; ++i )
-	putc(0,at->encoding);
+    last = -1;
+    anydups = 0;
+    for ( i=0; i<256 && i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
+	if ( sc != SCDuplicate(sc) ) {
+	    if ( SCDuplicate(sc)->ttf_glyph<256 )
+		++anydups;
+	} else if ( sc->ttf_glyph!=-1 && sc->ttf_glyph>last ) {
+	    if ( sc->ttf_glyph>=256 )
+    break;
+	    for ( j=last+1; j<sc->ttf_glyph && j<255; ++j )
+		putc(0,at->encoding);
+	    putc(i,at->encoding);
+	    last = sc->ttf_glyph;
+	}
+    }
+    if ( anydups ) {
+	fseek(at->encoding,start_pos,SEEK_SET);
+	putc(0x81,at->encoding);
+	putc(last,at->encoding);
+	fseek(at->encoding,0,SEEK_END);
+	putc(anydups,at->encoding);
+	for ( i=0; i<256 && i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
+	    if ( sc != SCDuplicate(sc) ) {
+		putc(i,at->encoding);
+		putshort(at->encoding,at->gn_sid[SCDuplicate(sc)->enc]);
+	    }
+	}
+    } else {
+	fseek(at->encoding,start_pos+1,SEEK_SET);
+	putc(last,at->encoding);
+	fseek(at->encoding,0,SEEK_END);
+    }
+    free( at->gn_sid );
+    at->gn_sid = NULL;
 }
 
 static void _dumpcffstrings(FILE *file, struct pschars *strs) {
@@ -2069,17 +2096,18 @@ static void finishup(SplineFont *sf,struct alltabs *at) {
     base = ftell(at->cfff);
     if ( base+6*3+strlen+glen+enclen+csetlen+cstrlen+prvlen > 32767 ) {
 	at->cfflongoffset = true;
-	base += 5*5+4;
+	base += ( sf->encoding_name!=em_adobestandard ) ? 5*5+4 : 4*5 + 3;
     } else
-	base += 5*3+4;
+	base += ( sf->encoding_name!=em_adobestandard ) ? 5*3+4 : 4*3 + 3;
     strhead = 2+(at->sidcnt>1);
     base += strhead;
 
-    dumpsizedint(at->cfff,at->cfflongoffset,base+strlen+glen,15);
-    dumpsizedint(at->cfff,at->cfflongoffset,base+strlen+glen+csetlen,16);
-    dumpsizedint(at->cfff,at->cfflongoffset,base+strlen+glen+csetlen+enclen,17);
+    dumpsizedint(at->cfff,at->cfflongoffset,base+strlen+glen,15);		/* Charset */
+    if ( sf->encoding_name!=em_adobestandard )					/* default enc to adobe std */
+	dumpsizedint(at->cfff,at->cfflongoffset,base+strlen+glen+csetlen,16);	/* encoding offset */
+    dumpsizedint(at->cfff,at->cfflongoffset,base+strlen+glen+csetlen+enclen,17);/* charstrings */
     dumpsizedint(at->cfff,at->cfflongoffset,at->privatelen,-1);
-    dumpsizedint(at->cfff,at->cfflongoffset,base+strlen+glen+csetlen+enclen+cstrlen,18);
+    dumpsizedint(at->cfff,at->cfflongoffset,base+strlen+glen+csetlen+enclen+cstrlen,18); /* private size */
     eotop = base-strhead-at->lenpos-1;
     if ( at->cfflongoffset ) {
 	fseek(at->cfff,3,SEEK_SET);
@@ -2334,7 +2362,6 @@ static int dumptype2glyphs(SplineFont *sf,struct alltabs *at) {
     dumpcffheader(sf,at->cfff);
     dumpcffnames(sf,at->cfff);
     dumpcffcharset(sf,at);
-    dumpcffencoding(sf,at);
     GProgressChangeStages(2+at->gi.strikecnt);
     dumpcffprivate(sf,at,-1);
     if ((subrs = SplineFont2Subrs2(sf,at->gi.flags))==NULL )
@@ -2345,6 +2372,8 @@ return( false );
     PSCharsFree(subrs);
     if ( at->charstrings == NULL )
 return( false );
+    if ( sf->encoding_name!=em_adobestandard )		/* Do this after we've assigned glyph ids */
+	dumpcffencoding(sf,at);
     dumpcfftopdict(sf,at);
     finishup(sf,at);
 
@@ -2354,7 +2383,8 @@ return( false );
 	    putc('\0',at->cfff);
     }
 
-    dumpcffhmtx(at,sf,false);
+    if ( at->format!=ff_cff )
+	dumpcffhmtx(at,sf,false);
 return( true );
 }
 
@@ -2395,7 +2425,8 @@ return( false );
 	    putc('\0',at->cfff);
     }
 
-    dumpcffcidhmtx(at,sf);
+    if ( at->format!=ff_cffcid )
+	dumpcffcidhmtx(at,sf);
 return( true );
 }
 
@@ -4453,12 +4484,8 @@ static int initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
     if ( sf->encoding_name == em_symbol && format==ff_ttf )
 	format = ff_ttfsym;
 
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
-	sf->chars[i]->ttf_glyph = -1;
-
     SFDefaultOS2Info(&sf->pfminfo,sf,sf->fontname);
 
-    memset(at,'\0',sizeof(struct alltabs));
     at->gi.xmin = at->gi.ymin = 15000;
     at->gi.sf = sf;
     if ( bf!=bf_ttf && bf!=bf_sfnt_dfont && bf!=bf_otb )
@@ -4474,15 +4501,6 @@ static int initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
 	at->gi.strikecnt = i;
 	if ( i==0 ) bsizes=NULL;
     }
-    at->applemode = (flags&ttf_flag_applemode)?1:0;
-    at->opentypemode = (flags&ttf_flag_otmode)?1:0;
-    at->msbitmaps = bsizes!=NULL && !at->applemode && at->opentypemode;
-    at->otbbitmaps = bsizes!=NULL && bf==bf_otb;
-    at->gi.onlybitmaps = format==ff_none;
-    at->gi.flags = flags;
-    at->gi.bsizes = bsizes;
-    at->gi.fixed_width = CIDOneWidth(sf);
-    at->isotf = format==ff_otf || format==ff_otfcid;
 
     at->maxp.version = 0x00010000;
     if ( format==ff_otf || format==ff_otfcid || (format==ff_none && at->applemode) )
@@ -4960,19 +4978,56 @@ return;
     free(newname);
 }
 
+static int dumpcff(struct alltabs *at,SplineFont *sf,enum fontformat format,
+	FILE *cff) {
+    int ret;
+
+    if ( format==ff_cff )
+	ret = dumptype2glyphs(sf,at);
+    else
+	ret = dumpcidglyphs(sf,at);
+
+    if ( !ret )
+	at->error = true;
+    else if ( !ttfcopyfile(cff,at->cfff,0))
+	at->error = true;
+return( !at->error );
+}
+
 int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
 	int32 *bsizes, enum bitmapformat bf,int flags) {
     struct alltabs at;
     char *oldloc;
+    int i;
 
     oldloc = setlocale(LC_NUMERIC,"C");		/* TrueType probably doesn't need this, but OpenType does for floats in dictionaries */
-    if ( format==ff_otfcid ) {
+    if ( format==ff_otfcid || format== ff_cffcid ) {
 	if ( sf->cidmaster ) sf = sf->cidmaster;
     } else {
 	if ( sf->subfontcnt!=0 ) sf = sf->subfonts[0];
     }
-    if ( initTables(&at,sf,format,bsizes,bf,flags))
-	dumpttf(ttf,&at,format);
+
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
+	sf->chars[i]->ttf_glyph = -1;
+
+    memset(&at,'\0',sizeof(struct alltabs));
+    at.gi.flags = flags;
+    at.applemode = (flags&ttf_flag_applemode)?1:0;
+    at.opentypemode = (flags&ttf_flag_otmode)?1:0;
+    at.msbitmaps = bsizes!=NULL && !at.applemode && at.opentypemode;
+    at.otbbitmaps = bsizes!=NULL && bf==bf_otb;
+    at.gi.onlybitmaps = format==ff_none;
+    at.gi.bsizes = bsizes;
+    at.gi.fixed_width = CIDOneWidth(sf);
+    at.isotf = format==ff_otf || format==ff_otfcid;
+    at.format = format;
+
+    if ( format==ff_cff || format==ff_cffcid ) {
+	dumpcff(&at,sf,format,ttf);
+    } else {
+	if ( initTables(&at,sf,format,bsizes,bf,flags))
+	    dumpttf(ttf,&at,format);
+    }
     setlocale(LC_NUMERIC,oldloc);
     if ( at.error || ferror(ttf))
 return( 0 );

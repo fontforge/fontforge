@@ -77,12 +77,14 @@ struct gfc_data {
 };
 
 #if __Mac
-static char *extensions[] = { ".pfa", ".pfb", "", ".mult", ".ps", ".ps", ".cid",
+static char *extensions[] = { ".pfa", ".pfb", "", ".mult", .ps", ".ps",
+	".cid", ".cff", ".cid.cff",
 	".ttf", ".ttf", ".suit", ".dfont", ".otf", ".otf.dfont", ".otf",
 	".otf.dfont", ".svg", NULL };
 static char *bitmapextensions[] = { ".*bdf", ".ttf", ".dfont", ".bmap", ".dfont", ".*fnt", ".otb", ".none", NULL };
 #else
-static char *extensions[] = { ".pfa", ".pfb", ".bin", ".mult", ".ps", ".ps", ".cid",
+static char *extensions[] = { ".pfa", ".pfb", ".bin", ".mult", ".ps", ".ps",
+	".cid", ".cff", ".cid.cff",
 	".ttf", ".ttf", ".ttf.bin", ".dfont", ".otf", ".otf.dfont", ".otf",
 	".otf.dfont", ".svg", NULL };
 static char *bitmapextensions[] = { ".*bdf", ".ttf", ".dfont", ".bmap.bin", ".dfont", ".*fnt", ".otb", ".none", NULL };
@@ -99,6 +101,8 @@ static GTextInfo formattypes[] = {
     { (unichar_t *) "PS Type 3", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "PS Type 0", NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "PS CID", NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) "CFF (Bare)", NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) "CFF CID (Bare)", NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "True Type", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "True Type (Symbol)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
 #if __Mac
@@ -1510,13 +1514,14 @@ return( err );
 static int _DoSave(SplineFont *sf,char *newname,int32 *sizes,int res) {
     unichar_t *path;
     int err=false;
-    int iscid = oldformatstate==ff_cid || oldformatstate==ff_otfcid || oldformatstate==ff_otfciddfont;
+    int iscid = oldformatstate==ff_cid || oldformatstate==ff_cffcid ||
+	    oldformatstate==ff_otfcid || oldformatstate==ff_otfciddfont;
     int flags = 0;
 
     if ( oldformatstate == ff_multiple )
 return( WriteMultiplePSFont(sf,newname,sizes,res,NULL));
 
-    if ( oldformatstate<=ff_cid )
+    if ( oldformatstate<=ff_cffcid )
 	flags = old_ps_flags;
     else if ( oldformatstate<=ff_ttfdfont )
 	flags = old_ttf_flags;
@@ -1524,7 +1529,7 @@ return( WriteMultiplePSFont(sf,newname,sizes,res,NULL));
 	flags = old_otf_flags;
     else
 	flags = old_ttf_flags;
-    if ( oldformatstate<=ff_cid && oldbitmapstate==bf_otb )
+    if ( oldformatstate<=ff_cffcid && oldbitmapstate==bf_otb )
 	flags = old_psotb_flags;
 
     path = def2u_copy(newname);
@@ -1532,7 +1537,8 @@ return( WriteMultiplePSFont(sf,newname,sizes,res,NULL));
 		GStringGetResource(oldformatstate==ff_ttf || oldformatstate==ff_ttfsym ||
 		     oldformatstate==ff_ttfmacbin ?_STR_SavingTTFont:
 		 oldformatstate==ff_otf || oldformatstate==ff_otfdfont ?_STR_SavingOpenTypeFont:
-		 oldformatstate==ff_cid || oldformatstate==ff_otfcid || oldformatstate==ff_otfciddfont ?_STR_SavingCIDFont:
+		 oldformatstate==ff_cid || oldformatstate==ff_cffcid ||
+		  oldformatstate==ff_otfcid || oldformatstate==ff_otfciddfont ?_STR_SavingCIDFont:
 		 _STR_SavingPSFont,NULL),
 	    path,sf->charcnt,1);
     free(path);
@@ -1548,6 +1554,7 @@ return( WriteMultiplePSFont(sf,newname,sizes,res,NULL));
 	    oerr = !WritePSFont(newname,sf,oldformatstate,flags);
 	  break;
 	  case ff_ttf: case ff_ttfsym: case ff_otf: case ff_otfcid:
+	  case ff_cff: case ff_cffcid:
 	    oerr = !WriteTTFFont(newname,sf,oldformatstate,sizes,bmap,
 		flags);
 	  break;
@@ -1670,6 +1677,8 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	i = ff_pfbmacbin;
     else if ( strmatch(end-strlen(".sym.ttf"),".sym.ttf")==0 )
 	i = ff_ttfsym;
+    else if ( strmatch(end-strlen(".cid.cff"),".cid.cff")==0 )
+	i = ff_cffcid;
     if ( extensions[i]==NULL ) {
 	for ( i=0; bitmaps[i]!=NULL; ++i ) {
 	    if ( strmatch(end-strlen(bitmaps[i]),bitmaps[i])==0 )
@@ -1728,7 +1737,7 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	    old_ttf_flags &=~ttf_flag_applemode;
 	}
     } else {
-	if ( oldformatstate<=ff_cid ) {
+	if ( oldformatstate<=ff_cffcid ) {
 	    old_ps_flags = 0;
 	    if ( fmflags&1 ) old_ps_flags |= ps_flag_afm;
 	    if ( fmflags&2 ) old_ps_flags |= ps_flag_pfm;
@@ -1779,7 +1788,7 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 
     if ( sfs!=NULL ) {
 	int flags = 0;
-	if ( oldformatstate<=ff_cid )
+	if ( oldformatstate<=ff_cffcid )
 	    flags = old_ps_flags;
 	else if ( oldformatstate<=ff_ttfdfont )
 	    flags = old_ttf_flags;
@@ -1791,7 +1800,7 @@ return( WriteMacFamily(filename,sfs,oldformatstate,oldbitmapstate,flags));
     if ( oldformatstate == ff_multiple )
 return( !WriteMultiplePSFont(sf,filename,sizes,res,subfontdefinition));
 
-    if ( oldformatstate>ff_cid ) {
+    if ( oldformatstate>ff_cffcid ) {
 	if ( fmflags&1 )
 	    WriteAfmFile(filename,sf,oldformatstate);
 	if ( fmflags&2 )
@@ -1825,13 +1834,14 @@ return;
 
     temp = u2def_copy(path);
     oldformatstate = GGadgetGetFirstListSelectedItem(d->pstype);
-    iscid = oldformatstate==ff_cid || oldformatstate==ff_otfcid || oldformatstate==ff_otfciddfont;
+    iscid = oldformatstate==ff_cid || oldformatstate==ff_cffcid ||
+	    oldformatstate==ff_otfcid || oldformatstate==ff_otfciddfont;
     if ( !iscid && (d->sf->cidmaster!=NULL || d->sf->subfontcnt>1)) {
 	if ( GWidgetAskR(_STR_NotCID,buts,0,1,_STR_NotCIDOk)==1 )
 return;
     }
 
-    if ( oldformatstate<=ff_cid || (oldformatstate>=ff_otf && oldformatstate<=ff_otfciddfont)) {
+    if ( oldformatstate<=ff_cffcid || (oldformatstate>=ff_otf && oldformatstate<=ff_otfciddfont)) {
 	if ( d->sf->ascent+d->sf->descent!=1000 && !psscalewarned ) {
 	    if ( GWidgetAskR(_STR_EmSizeBad,buts,0,1,_STR_PSEmSize1000,
 		    d->sf->ascent+d->sf->descent)==1 )
@@ -1985,11 +1995,11 @@ static int GFD_Options(GGadget *g, GEvent *e) {
 	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
 	int fs = GGadgetGetFirstListSelectedItem(d->pstype);
 	int bf = GGadgetGetFirstListSelectedItem(d->bmptype);
-	int iscid = fs==ff_cid || fs==ff_otfcid || fs==ff_otfciddfont;
+	int iscid = fs==ff_cid || fs==ff_cffcid || fs==ff_otfcid || fs==ff_otfciddfont;
 	int which;
 	if ( fs==ff_none )
 	    which = 1;		/* Some bitmaps get stuffed int ttf files */
-	else if ( fs<=ff_cid )
+	else if ( fs<=ff_cffcid )
 	    which = 0;		/* Postscript options */
 	else if ( fs<=ff_ttfdfont )
 	    which = 1;		/* truetype options */
@@ -2112,7 +2122,8 @@ return( true );
 	free(dup);
 
 	if ( d->sf->cidmaster!=NULL ) {
-	    if ( format!=ff_none && format != ff_cid && format != ff_otfcid && format!=ff_otfciddfont ) {
+	    if ( format!=ff_none && format != ff_cid && format != ff_cffcid &&
+		    format != ff_otfcid && format!=ff_otfciddfont ) {
 		GGadgetSetTitle(d->bmpsizes,nullstr);
 	    }
 	}
@@ -2130,8 +2141,7 @@ return( true );
 		GGadgetSelectOneListItem(d->bmptype,bf_bdf);
 	    if ( format==ff_pfbmacbin )
 		GGadgetSelectOneListItem(d->bmptype,bf_nfntmacbin);
-	    if ( bf==bf_nfntmacbin || bf==bf_nfntdfont )
-		list[bf_ttf]->disabled = true;
+	    list[bf_ttf]->disabled = true;
 	    bf = GGadgetGetFirstListSelectedItem(d->bmptype);
 	    GGadgetSetEnabled(d->bmpsizes, format!=ff_multiple && bf!=bf_none );	/* We know there are bitmaps */
 	} else {
@@ -2403,14 +2413,14 @@ return( 0 );
     formattypes[ff_ptype0].disabled = sf->onlybitmaps ||
 	    ( sf->encoding_name<em_jis208 && sf->encoding_name>=em_base);
     formattypes[ff_cid].disabled = sf->cidmaster==NULL;
+    formattypes[ff_cffcid].disabled = sf->cidmaster==NULL;
     formattypes[ff_otfcid].disabled = sf->cidmaster==NULL;
     formattypes[ff_otfciddfont].disabled = sf->cidmaster==NULL;
-    /*formattypes[ff_otfciddfont].disabled = true;	/* Not ready for this yet! */
     ofs = oldformatstate;
     if (( ofs==ff_ptype0 && formattypes[ff_ptype0].disabled ) ||
-	    ((ofs==ff_cid || ofs==ff_otfcid || ofs==ff_otfciddfont) && formattypes[ff_cid].disabled))
+	    ((ofs==ff_cid || ofs==ff_cffcid || ofs==ff_otfcid || ofs==ff_otfciddfont) && formattypes[ff_cid].disabled))
 	ofs = ff_pfb;
-    else if ( (ofs!=ff_cid && ofs!=ff_otfcid && ofs!=ff_otfciddfont) && sf->cidmaster!=NULL )
+    else if ( (ofs!=ff_cid && ofs!=ff_cffcid && ofs!=ff_otfcid && ofs!=ff_otfciddfont) && sf->cidmaster!=NULL )
 	ofs = ff_otfcid;
     if ( sf->onlybitmaps )
 	ofs = ff_none;
@@ -2418,11 +2428,11 @@ return( 0 );
 	if ( ofs==ff_pfa || ofs==ff_pfb || ofs==ff_multiple || ofs==ff_ptype3 ||
 		ofs==ff_ptype0 )
 	    ofs = ff_pfbmacbin;
-	else if ( ofs==ff_cid || ofs==ff_otfcid )
+	else if ( ofs==ff_cid || ofs==ff_otfcid || ofs==ff_cffcid )
 	    ofs = ff_otfciddfont;
 	else if ( ofs==ff_ttf || ofs==ff_ttfsym )
 	    ofs = ff_ttfmacbin;
-	else if ( ofs==ff_otf )
+	else if ( ofs==ff_otf || ofs==ff_cff )
 	    ofs = ff_otfdfont;
 	formattypes[ff_pfa].disabled = true;
 	formattypes[ff_pfb].disabled = true;
@@ -2433,6 +2443,8 @@ return( 0 );
 	formattypes[ff_ttfsym].disabled = true;
 	formattypes[ff_otf].disabled = true;
 	formattypes[ff_otfcid].disabled = true;
+	formattypes[ff_cff].disabled = true;
+	formattypes[ff_cffcid].disabled = true;
     }
     for ( i=0; i<sizeof(formattypes)/sizeof(formattypes[0]); ++i )
 	formattypes[i].selected = false;

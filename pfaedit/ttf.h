@@ -517,6 +517,8 @@ struct alltabs {
     struct macname2 *ordered_feat;
 
     int next_lookup;	/* for doing nested lookups in contextual features */
+    short *gn_sid;
+    enum fontformat format;
 };
 
 struct subhead { uint16 first, cnt, delta, rangeoff; };	/* a sub header in 8/16 cmap table */
