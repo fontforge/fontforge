@@ -2929,6 +2929,37 @@ return( ts[i] );
 return( -1 );
 }
 
+static void _SplineFindExtrema(Spline1D *sp, double *_t1, double *_t2 ) {
+    double t1= -1, t2= -1;
+    double b2_fourac;
+
+    /* Find the extreme points on the curve */
+    /*  Set to -1 if there are none or if they are outside the range [0,1] */
+    /*  Order them so that t1<t2 */
+    /*  If only one valid extremum it will be t1 */
+    /*  (Does not check the end points unless they have derivative==0) */
+    /*  (Does not check to see if d/dt==0 points are inflection points (rather than extrema) */
+    if ( sp->a!=0 ) {
+	/* cubic, possibly 2 extrema (possibly none) */
+	b2_fourac = 4*sp->b*sp->b - 12*sp->a*sp->c;
+	if ( b2_fourac>=0 ) {
+	    b2_fourac = sqrt(b2_fourac);
+	    t1 = (-2*sp->b - b2_fourac) / (6*sp->a);
+	    t2 = (-2*sp->b + b2_fourac) / (6*sp->a);
+	    if ( t1>t2 ) { double temp = t1; t1 = t2; t2 = temp; }
+	    else if ( t1==t2 ) t2 = -1;
+	    if ( RealNear(t1,0)) t1=0; else if ( RealNear(t1,1)) t1=1;
+	    if ( RealNear(t2,0)) t2=0; else if ( RealNear(t2,1)) t2=1;
+	}
+    } else if ( sp->b!=0 ) {
+	/* Quadratic, at most one extremum */
+	t1 = -sp->c/(2.0*sp->b);
+    } else /*if ( sp->c!=0 )*/ {
+	/* linear, no extrema */
+    }
+    *_t1 = t1; *_t2 = t2;
+}
+
 void SplineFindExtrema(Spline1D *sp, double *_t1, double *_t2 ) {
     double t1= -1, t2= -1;
     double b2_fourac;
@@ -4941,6 +4972,125 @@ return(false);				/* Can't be any clusters */
 	    }
 	}
 	SCCharChangedUpdate(sc);
+    }
+return( changed );
+}
+
+static int SplineRemoveAnnoyingExtrema1(Spline *s,int which,double err_sq) {
+    /* Remove extrema which are very close to one of the spline end-points */
+    /*  and which are in the oposite direction (along the normal of the */
+    /*  close end-point's cp) from the other end-point */
+    double ts[2], t1, t2;
+    double df, dt;
+    double dp, d_o;
+    int i;
+    BasePoint pos, norm;
+    SplinePoint *close, *other;
+    BasePoint *ccp, *ocp;
+    double c_, b_, nextcp, prevcp, prop;
+    int changed = false;
+
+    SplineFindExtrema(&s->splines[which],&ts[0],&ts[1]);
+
+    for ( i=0; i<2; ++i ) if ( ts[i]!=-1 && ts[i]!=0 && ts[i]!=1 ) {
+	pos.x = ((s->splines[0].a*ts[i]+s->splines[0].b)*ts[i]+s->splines[0].c)*ts[i]+s->splines[0].d;
+	pos.y = ((s->splines[1].a*ts[i]+s->splines[1].b)*ts[i]+s->splines[1].c)*ts[i]+s->splines[1].d;
+	df = (pos.x-s->from->me.x)*(pos.x-s->from->me.x) + (pos.y-s->from->me.y)*(pos.y-s->from->me.y);
+	dt = (pos.x-s->to->me.x)*(pos.x-s->to->me.x) + (pos.y-s->to->me.y)*(pos.y-s->to->me.y);
+	if ( df<dt && df<err_sq ) {
+	    close = s->from;
+	    ccp = &s->from->nextcp;
+	    other = s->to;
+	    ocp = &s->to->prevcp;
+	} else if ( dt<df && dt<err_sq ) {
+	    close = s->to;
+	    ccp = &s->to->prevcp;
+	    other = s->from;
+	    ocp = &s->from->nextcp;
+	} else
+    continue;
+	if ( ccp->x==close->me.x && ccp->y==close->me.y )
+    continue;
+
+	norm.x = (ccp->y-close->me.y);
+	norm.y = -(ccp->x-close->me.x);
+	dp = (pos.x-close->me.x)*norm.x + (pos.y-close->me.y)*norm.y;
+	d_o = (other->me.x-close->me.x)*norm.x + (other->me.y-close->me.y)*norm.y;
+	if ( dp!=0 && dp*d_o>=0 )
+    continue;
+
+	_SplineFindExtrema(&s->splines[which],&t1,&t2);
+	if ( t1==ts[i] ) {
+	    if ( close==s->from ) t1=0;
+	    else t1 = 1;
+	} else if ( t2==ts[i] ) {
+	    if ( close==s->from ) t2=0;
+	    else t2 = 1;
+	} else
+    continue;
+
+	if ( t2==-1 )		/* quadratic */
+    continue;			/* Can't happen in a quadratic */
+
+	/* The roots of the "slope" quadratic were t1, t2. We have shifted one*/
+	/*  root so that that extremum is exactly on an end point */
+	/*  Figure out the new slope quadratic, from that what the cubic must */
+	/*  be, and from that what the control points must be */
+	/* Quad = 3at^2 + 2bt + c */
+	/* New quad = 3a * (t^2 -(t1+t2)t + t1*t2) */
+	/* a' = a, b' = -(t1+t2)/6a, c' = t1*t2/3a, d' = d */
+	/* nextcp = from + c'/3, prevcp = nextcp + (b' + c')/3 */
+	/* Then for each cp figure what percentage of the original cp vector */
+	/*  (or at least this one dimension of that vector) this represents */
+	/*  and scale both dimens by this amount */
+	b_ = -(t1+t2)*3*s->splines[which].a/2;
+	c_ = (t1*t2)*3*s->splines[which].a;
+	nextcp = (&s->from->me.x)[which] + c_/3;
+	prevcp = nextcp + (b_ + c_)/3;
+
+	if ( (&s->from->nextcp.x)[which] != (&s->from->me.x)[which] ) {
+	    prop = (c_/3) / ( (&s->from->nextcp.x)[which] - (&s->from->me.x)[which] );
+	    s->from->nextcp.x = s->from->me.x + prop*(s->from->nextcp.x-s->from->me.x);
+	    s->from->nextcp.y = s->from->me.y + prop*(s->from->nextcp.y-s->from->me.y);
+	    s->from->nonextcp = (prop == 0);
+	}
+
+	if ( (&s->to->prevcp.x)[which] != (&s->to->me.x)[which] ) {
+	    prop = ( prevcp - (&s->to->me.x)[which]) /
+			( (&s->to->prevcp.x)[which] - (&s->to->me.x)[which] );
+	    s->to->prevcp.x = s->to->me.x + prop*(s->to->prevcp.x-s->to->me.x);
+	    s->to->prevcp.y = s->to->me.y + prop*(s->to->prevcp.y-s->to->me.y);
+	    s->to->noprevcp = (prop == 0);
+	}
+	SplineRefigure(s);
+	changed = true;
+    }
+return( changed );
+}
+
+static int SplineRemoveAnnoyingExtrema(Spline *s,double err_sq) {
+    int changed;
+
+    changed = SplineRemoveAnnoyingExtrema1(s,0,err_sq);
+    if ( SplineRemoveAnnoyingExtrema1(s,1,err_sq) )
+	changed = true;
+return( changed );
+}
+
+int SplineSetsRemoveAnnoyingExtrema(SplineSet *ss,double err) {
+    int changed = false;
+    double err_sq = err*err;
+    Spline *s, *first;
+
+
+    while ( ss!=NULL ) {
+	first = NULL;
+	for ( s = ss->first->next; s!=NULL && s!=first; s = s->to->next ) {
+	    if ( first == NULL ) first = s;
+	    if ( SplineRemoveAnnoyingExtrema(s,err_sq))
+		changed = true;
+	}
+	ss = ss->next;
     }
 return( changed );
 }

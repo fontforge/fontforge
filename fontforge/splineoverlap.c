@@ -2182,6 +2182,7 @@ SplineSet *SplineSetRemoveOverlap(SplineChar *sc, SplineSet *base,enum overlap_t
 
     base = SSRemoveTiny(base);
     SSRemoveStupidControlPoints(base);
+    SplineSetsRemoveAnnoyingExtrema(base,.3);
     SSOverlapClusterCpAngles(base,.005);
     base = SSRemoveReversals(base);
     ms = SSsToMContours(base,ot);
