@@ -95,7 +95,7 @@ static int svg_outfontheader(FILE *file, SplineFont *sf) {
     putc('>',file); putc('\n',file);
     fprintf( file, "  <font-face \n" );
     fprintf( file, "    font-family=\"%s\"\n", sf->familyname );
-    fprintf( file, "    font-weigth=\"%d\"\n", info.weight );
+    fprintf( file, "    font-weight=\"%d\"\n", info.weight );
     if ( strstrmatch(sf->fontname,"obli") || strstrmatch(sf->fontname,"slanted") )
 	fprintf( file, "    font-style=\"oblique\"\n" );
     else if ( MacStyleCode(sf,NULL)&sf_italic )
