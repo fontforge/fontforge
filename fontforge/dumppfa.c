@@ -352,7 +352,7 @@ return( true );
 }
 
 static void dumpsplineset(void (*dumpchar)(int ch,void *data), void *data,
-	SplineSet *spl, int pdfopers, int forceclose ) {
+	SplineSet *spl, int pdfopers, int forceclose, int makeballs ) {
     SplinePoint *first, *sp;
 
     for ( ; spl!=NULL; spl=spl->next ) {
@@ -376,6 +376,8 @@ static void dumpsplineset(void (*dumpchar)(int ch,void *data), void *data,
 	    if ( sp->next==NULL )
 	break;
 	}
+	if ( makeballs && (spl->first->next==NULL || (spl->first->next->to==spl->first)) )
+	    dumpstr( dumpchar, data, pdfopers ? "\th\n" : "\tclosepath\n" );
 	if ( forceclose || spl->first->prev!=NULL )
 	    dumpstr( dumpchar, data, pdfopers ? "\th\n" : "\tclosepath\n" );
     }
@@ -726,7 +728,8 @@ void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
 #ifdef FONTFORGE_CONFIG_TYPE3
 	    if ( sc->parent->multilayer ) {
 		dumpstr(dumpchar,data,pdfopers ? "q " : "gsave " );
-		dumpsplineset(dumpchar,data,temp,pdfopers,sc->layers[i].dofill);
+		dumpsplineset(dumpchar,data,temp,pdfopers,sc->layers[i].dofill,
+			sc->layers[i].dostroke && sc->layers[i].stroke_pen.linecap==lc_round);
 		if ( sc->layers[i].dofill && sc->layers[i].dostroke ) {
 		    if ( pdfopers ) {
 			dumpbrush(dumpchar,data, &sc->layers[i].fill_brush,pdfopers);
@@ -755,7 +758,7 @@ void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
 		dumpstr(dumpchar,data,pdfopers ? "Q\n" : "grestore\n" );
 	    } else
 #endif
-		dumpsplineset(dumpchar,data,temp,pdfopers,true);
+		dumpsplineset(dumpchar,data,temp,pdfopers,true,false);
 	    if ( sc->parent->order2 ) SplinePointListFree(temp);
 	}
 	if ( sc->layers[i].refs!=NULL ) {
@@ -774,7 +777,8 @@ void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
 #ifdef FONTFORGE_CONFIG_TYPE3
 			if ( sc->parent->multilayer ) {
 			    dumpstr(dumpchar,data,pdfopers ? "q" : "gsave " );
-			    dumpsplineset(dumpchar,data,temp,pdfopers,ref->layers[j].dofill);
+			    dumpsplineset(dumpchar,data,temp,pdfopers,ref->layers[j].dofill,
+				    ref->layers[j].dostroke && ref->layers[j].stroke_pen.linecap==lc_round);
 			    if ( ref->layers[j].dofill && ref->layers[j].dostroke ) {
 				if ( pdfopers ) {
 				    dumpbrush(dumpchar,data, &ref->layers[j].fill_brush,pdfopers);
@@ -803,7 +807,7 @@ void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
 			    dumpstr(dumpchar,data,pdfopers ? "Q\n" : "grestore\n" );
 			} else
 #endif
-			    dumpsplineset(dumpchar,data,temp,pdfopers,true);
+			    dumpsplineset(dumpchar,data,temp,pdfopers,true,false);
 			if ( sc->parent->order2 ) SplinePointListFree(temp);
 		    }
 		}
