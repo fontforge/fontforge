@@ -27,17 +27,351 @@
 #include "pfaeditui.h"
 #include <math.h>
 
+const int min_line_cnt = 10;		/* line segments must be at least this many datapoints to be distinguished */
+const int min_line_len = 20;		/* line segments must be at least this many pixels to be distinguished */
+const double line_wobble = 1.0;		/* data must not stray more than this many pixels from the true line */
+const int extremum_locale = 7;		/* for something to be an extremum in x it must be an extremum for at least this many y pixels. Or vice versa */
+const int extremum_cnt = 4;		/* for something to be an extremum in x it must be an extremum for at least this data samples. Or for y */
+
+enum extreme { e_none=0, e_xmin, e_xmax, e_xflat, e_ymin, e_ymax, e_yflat };
+
+typedef struct tracedata {
+  /* First the data */
+    int x,y;
+    BasePoint here;
+    uint32 time;
+    int32 pressure, xtilt, ytilt, separation;
+
+  /* Then overhead */
+    struct tracedata *next, *prev;
+
+    unsigned int extremum: 3;
+    unsigned int use_as_pt: 1;
+    unsigned int online: 1;
+    uint16 num;
+} TraceData;
+
+static void TraceDataFree(TraceData *td) {
+    TraceData *next;
+
+    while ( td!=NULL ) {
+	next = td->next;
+	chunkfree(td,sizeof(TraceData));
+	td = next;
+    }
+}
+
+static void TraceDataFromEvent(CharView *cv, GEvent *event) {
+    TraceData *new = chunkalloc(sizeof(TraceData));
+
+    if ( cv->freehand.head==NULL )
+	cv->freehand.head = cv->freehand.last = new;
+    else {
+	cv->freehand.last->next = new;
+	new->prev = cv->freehand.last;
+	cv->freehand.last = new;
+    }
+
+    new->here.x = (event->u.mouse.x-cv->xoff)/cv->scale;
+    new->here.y = (cv->height-event->u.mouse.y-cv->yoff)/cv->scale;
+    new->time = event->u.mouse.time;
+    new->pressure = event->u.mouse.pressure;
+    new->xtilt = event->u.mouse.xtilt;
+    new->ytilt = event->u.mouse.ytilt;
+}
+
+static int TraceGoodLine(TraceData *base,TraceData *end) {
+    /* Make sure that we don't stray more than line_wobble pixels */
+    int dx, dy;
+    double diff;
+    TraceData *pt;
+
+    if (( dx = end->x-base->x )<0 ) dx = -dx;
+    if (( dy = end->y-base->y )<0 ) dy = -dy;
+
+    if ( dy>dx ) {
+	dx = end->x-base->x; dy = end->y-base->y;
+	for ( pt=base->next; pt!=end; pt=pt->next ) {
+	    diff = (pt->y-base->y)*dx/(double) dy + base->x - pt->x;
+	    if ( diff>line_wobble || diff<-line_wobble )
+return( false );
+	}
+    } else {
+	dx = end->x-base->x; dy = end->y-base->y;
+	for ( pt=base->next; pt!=end; pt=pt->next ) {
+	    diff = (pt->x-base->x)*dy/(double) dx + base->y - pt->y;
+	    if ( diff>line_wobble || diff<-line_wobble )
+return( false );
+	}
+    }
+return( true );
+}
+
+static TraceData *TraceLineCheck(TraceData *base) {
+    /* Look for a line. To be a line it must be at least min_line_len pixels */
+    /*  long (or reach the end of data with no real bends) */
+    /*  and we can't have strayed more than line_wobble pixels from the center */
+    /*  of the line */
+    TraceData *pt, *end, *last_good;
+    int cnt;
+
+    if ( base->next==NULL || base->next->next==NULL || base->next->next->next==NULL )
+return( base );
+
+    for ( end=base->next, cnt=0; end->next!=NULL; end=end->next, ++cnt )
+	if ( (end->x-base->x)*(end->x-base->x) + (end->y-base->y)*(end->y-base->y)>=
+		min_line_len*min_line_len  &&
+		cnt>=min_line_cnt )
+    break;
+
+    last_good = NULL;
+    while ( TraceGoodLine(base,end) ) {
+	last_good = end;
+	end = end->next;
+	if ( end==NULL )
+    break;
+    }
+    if ( last_good==NULL )
+return( base );			/* No good line */
+    base->use_as_pt = last_good->use_as_pt = true;
+    for ( pt = base; pt!=last_good; pt=pt->next )
+	pt->online = true;
+    last_good->online = true;
+return( last_good );
+}
+
+static enum extreme TraceIsExtremum(TraceData *base) {
+    TraceData *pt;
+    enum extreme type;
+    int i;
+
+    if ( base->online || base->use_as_pt )
+return( e_none );
+
+    type = e_xflat;
+    for ( pt = base->next, i=0; pt!=NULL && type!=e_none; pt=pt->next, ++i ) {
+	if ( i>=extremum_cnt && ( pt->y-base->y > extremum_locale || pt->y-base->y < -extremum_locale ))
+    break;
+	if ( pt->x>base->x ) {
+	    if ( type==e_xmax )
+		type = e_none;
+	    else
+		type = e_xmin;
+	} else if ( pt->x<base->x ) {
+	    if ( type==e_xmin )
+		type = e_none;
+	    else
+		type = e_xmax;
+	}
+    }
+    for ( pt = base->prev, i=0; pt!=NULL && type!=e_none; pt=pt->prev, ++i ) {
+	if ( i>=extremum_cnt && ( pt->y-base->y > extremum_locale || pt->y-base->y < -extremum_locale ))
+    break;
+	if ( pt->x>base->x ) {
+	    if ( type==e_xmax )
+		type = e_none;
+	    else
+		type = e_xmin;
+	} else if ( pt->x<base->x ) {
+	    if ( type==e_xmin )
+		type = e_none;
+	    else
+		type = e_xmax;
+	}
+    }
+    if ( type!=e_none )
+return( type );
+
+    type = e_yflat;
+    for ( pt = base->next, i=0; pt!=NULL && type!=e_none; pt=pt->next, ++i ) {
+	if ( i>=extremum_cnt && ( pt->x-base->x > extremum_locale || pt->x-base->x < -extremum_locale ))
+    break;
+	if ( pt->y>base->y ) {
+	    if ( type==e_ymax )
+		type = e_none;
+	    else
+		type = e_ymin;
+	} else if ( pt->y<base->y ) {
+	    if ( type==e_ymin )
+		type = e_none;
+	    else
+		type = e_ymax;
+	}
+    }
+    for ( pt = base->prev, i=0; pt!=NULL && type!=e_none; pt=pt->prev, ++i ) {
+	if ( i>=extremum_cnt && ( pt->x-base->x > extremum_locale || pt->x-base->x < -extremum_locale ))
+    break;
+	if ( pt->y>base->y ) {
+	    if ( type==e_ymax )
+		type = e_none;
+	    else
+		type = e_ymin;
+	} else if ( pt->y<base->y ) {
+	    if ( type==e_ymin )
+		type = e_none;
+	    else
+		type = e_ymax;
+	}
+    }
+
+return( type );
+}
+
+static SplineSet *TraceCurve(CharView *cv) {
+    TraceData *head = cv->freehand.head, *pt, *base, *e;
+    SplineSet *spl;
+    SplinePoint *last, *cur;
+    int cnt, i, tot;
+    TPoint *mids;
+    double len,sofar;
+
+    /* First we look for straight lines in the data. We will put SplinePoints */
+    /*  at their endpoints */
+    /* Then we find places that are local extrema, or just flat in x,y */
+    /*  SplinePoints here too. */
+    /* Then approximate splines between */
+
+    cnt = 0;
+    for ( pt=head; pt!=NULL; pt = pt->next ) {
+	pt->extremum = e_none;
+	pt->use_as_pt = pt->online = false;
+	/* We recalculate x,y because we might have autoscrolled the window */
+	pt->x =  cv->xoff + rint(pt->here.x*cv->scale);
+	pt->y = -cv->yoff + cv->height - rint(pt->here.y*cv->scale);
+	pt->num = cnt++;
+    }
+    head->use_as_pt = cv->freehand.last->use_as_pt = true;
+
+    /* Look for lines */
+    for ( pt=head->next ; pt!=NULL; pt=pt->next )
+	pt = TraceLineCheck(pt);
+
+    /* Look for extremum */
+    for ( pt=head->next ; pt!=NULL; pt=pt->next )
+	pt->extremum = TraceIsExtremum(pt);
+    /* Find the middle of a range of extremum points, that'll be the one we want */
+    for ( base=head->next; base!=NULL; base = base->next ) {
+	if ( base->extremum>=e_xmin ) {
+	    tot = 0;
+	    if ( base->extremum>=e_ymin ) {
+		for ( pt=base->next ; pt->extremum>=e_ymin ; pt = pt->next ) ++tot;
+	    } else {
+		for ( pt=base->next ; pt->extremum>=e_xmin && pt->extremum<e_ymin ; pt = pt->next ) ++tot;
+	    }
+	    tot /= 2;
+	    e = pt;
+	    for ( pt=base->next, i=0 ; i<tot ; pt = pt->next, ++i );
+	    pt->use_as_pt = true;
+	    base = e;
+	}
+    }
+
+    /* Calculate the mids array */
+    mids = galloc(cnt*sizeof(TPoint));
+    for ( base=head; base!=NULL && base->next!=NULL; base = pt ) {
+	mids[base->num].x = base->here.x;
+	mids[base->num].y = base->here.y;
+	mids[base->num].t = 0;
+	len = 0;
+	if ( base->next->online ) {
+	    pt = base->next;	/* Don't bother to calculate the length, we won't use the data */
+    continue;
+	}
+	for ( pt=base->next; ; pt=pt->next ) {
+	    len += sqrt((double) (
+		    (pt->x-pt->prev->x)*(pt->x-pt->prev->x) +
+		    (pt->y-pt->prev->y)*(pt->y-pt->prev->y) ));
+	    if ( pt->use_as_pt )
+	break;
+	}
+	sofar = 0;
+	for ( pt=base->next; ; pt=pt->next ) {
+	    sofar += sqrt((double) (
+		    (pt->x-pt->prev->x)*(pt->x-pt->prev->x) +
+		    (pt->y-pt->prev->y)*(pt->y-pt->prev->y) ));
+	    mids[pt->num].x = pt->here.x;
+	    mids[pt->num].y = pt->here.y;
+	    mids[pt->num].t = sofar/len;
+	    if ( pt->use_as_pt )
+	break;
+	}
+    }
+
+    /* Splice things together */
+    spl = chunkalloc(sizeof(SplineSet));
+    spl->first = last = SplinePointCreate(head->here.x,head->here.y);
+    last->ptindex = 0;
+
+    for ( base=head; base!=NULL && base->next!=NULL; base = pt ) {
+	for ( pt=base->next; !pt->use_as_pt ; pt=pt->next );
+	cur = SplinePointCreate(pt->here.x,pt->here.y);
+	cur->ptindex = pt->num;
+	if ( base->next->online || base->next==pt )
+	    SplineMake(last,cur);
+	else
+	    ApproximateSplineFromPoints(last,cur,mids+base->num+1,pt->num-base->num-1);
+	last = cur;
+    }
+    spl->last = last;
+
+    /* Now we've got a rough approximation to the contour, but the joins are */
+    /*  probably not smooth. Clean things up a bit... */
+    if ( spl->first->nonextcp )
+	spl->first->pointtype = pt_corner;
+    else
+	spl->first->pointtype = pt_curve;
+    if ( spl->last->noprevcp )
+	spl->last->pointtype = pt_corner;
+    else
+	spl->last->pointtype = pt_curve;
+    if ( spl->first->next!=NULL ) {
+	for ( cur=spl->first->next->to; cur->next!=NULL ; cur = cur->next->to ) {
+	    if ( cur->nonextcp && cur->noprevcp )
+		cur->pointtype = pt_corner;
+	    else {
+		if ( !cur->nonextcp && !cur->noprevcp )
+		    cur->pointtype = pt_curve;
+		else
+		    cur->pointtype = pt_tangent;
+		SPAverageCps(cur);
+		if ( !cur->noprevcp )
+		    ApproximateSplineFromPointsSlopes(cur->prev->from,cur,
+			    mids+cur->prev->from->ptindex+1,
+			    cur->ptindex-cur->prev->from->ptindex-1);
+	    }
+	}
+	if ( !cur->nonextcp )
+	    ApproximateSplineFromPointsSlopes(cur,cur->next->to,
+		    mids+cur->ptindex+1,
+		    cur->next->to->ptindex-cur->ptindex-1);
+    }
+
+    free(mids);
+return( spl );
+}
 
 void CVMouseDownFreeHand(CharView *cv, GEvent *event) {
+    TraceDataFree(cv->freehand.head);
+    cv->freehand.head = cv->freehand.last = NULL;
+    cv->freehand.current_trace = NULL;
+    TraceDataFromEvent(cv,event);
 }
 
 void CVMouseMoveFreeHand(CharView *cv, GEvent *event) {
-    cv->xoff += event->u.mouse.x-cv->p.x; cv->p.x = event->u.mouse.x;
-    cv->yoff -= event->u.mouse.y-cv->p.y; cv->p.y = event->u.mouse.y;
-    GScrollBarSetPos(cv->hsb,-cv->xoff);
-    GScrollBarSetPos(cv->vsb,cv->yoff-cv->height);
+    TraceDataFromEvent(cv,event);
+    SplinePointListFree(cv->freehand.current_trace);
+    cv->freehand.current_trace = TraceCurve(cv);
     GDrawRequestExpose(cv->v,NULL,false);
 }
 
 void CVMouseUpFreeHand(CharView *cv) {
+
+    if ( cv->freehand.current_trace!=NULL ) {
+	cv->freehand.current_trace->next = *cv->heads[cv->drawmode];
+	*cv->heads[cv->drawmode] = cv->freehand.current_trace;
+	cv->freehand.current_trace = NULL;
+    }
+    TraceDataFree(cv->freehand.head);
+    cv->freehand.head = cv->freehand.last = NULL;
+    GDrawRequestExpose(cv->v,NULL,false);
 }

@@ -542,7 +542,9 @@ static void ToolsMouse(CharView *cv, GEvent *event) {
 	else
 	    cv->pressed_display = cv->pressed_tool;
     } else if ( event->type == et_mouseup ) {
-	if ( i==cvt_rect/2 && event->u.mouse.clicks==2 ) {
+	if ( pos==cvt_freehand && event->u.mouse.clicks==2 ) {
+	    GDrawError("    Not Yet Implemented\n\nNeed to get a working wacom\ntablet before there's anything\nto configure here.");
+	} else if ( i==cvt_rect/2 && event->u.mouse.clicks==2 ) {
 	    ((j==0)?CVRectElipse:CVPolyStar)(cv);
 	    mi = i;
 	    if ( (j==0 && rectelipse) || (j==1 && polystar) )

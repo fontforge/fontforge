@@ -164,6 +164,11 @@ typedef struct charview {
     uint16 rfh, ras;
     GFont *rfont;
     BasePoint lastknife;
+    struct freehand {
+	struct tracedata *head, *last;	/* for the freehand tool */
+	SplinePointList *current_trace;
+	int ignore_wobble;		/* Ignore wiggles smaller than this */
+    } freehand;
     GTimer *pressed;
     GWindow backimgs;
     enum expandedge { ee_none, ee_nw, ee_up, ee_ne, ee_right, ee_se, ee_down,

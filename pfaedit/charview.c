@@ -937,9 +937,6 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
     clip.x = (event->u.expose.rect.x-cv->xoff)/cv->scale;
     clip.y = (cv->height-event->u.expose.rect.y-event->u.expose.rect.height-cv->yoff)/cv->scale;
 
-    if ( *cv->uheads[cv->drawmode]!=NULL && (*cv->uheads[cv->drawmode])->undotype==ut_tstate )
-	DrawOldState(cv,pixmap,*cv->uheads[cv->drawmode], &clip);
-
     /* if we've got bg images (and we're showing them) then the hints live in */
     /*  the bg image pixmap (else they get overwritten by the pixmap) */
     if ( (cv->showhhints || cv->showvhints || cv->showdhints) && ( cv->sc->backimages==NULL || !cv->showback) )
@@ -985,6 +982,9 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 		-cv->yoff + cv->height-cv->filled->ymax);
     }
 
+    if ( *cv->uheads[cv->drawmode]!=NULL && (*cv->uheads[cv->drawmode])->undotype==ut_tstate )
+	DrawOldState(cv,pixmap,*cv->uheads[cv->drawmode], &clip);
+
     if ( cv->showback || cv->drawmode==dm_back ) {
 	/* Used to draw the image list here, but that's too slow. Optimization*/
 	/*  is to draw to pixmap, dump pixmap a bit earlier */
@@ -1008,6 +1008,10 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	CVDrawSplineSet(cv,pixmap,cv->sc->splines,0,
 		cv->showpoints && cv->drawmode==dm_fore,&clip);
     }
+
+    if ( cv->freehand.current_trace!=NULL )
+	CVDrawSplineSet(cv,pixmap,cv->freehand.current_trace,0x008000,
+		false,&clip);
 
     if ( cv->showhmetrics && cv->searcher==NULL )
 	DrawLine(cv,pixmap,cv->sc->width,-32768,cv->sc->width,32767,
