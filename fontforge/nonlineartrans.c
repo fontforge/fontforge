@@ -28,6 +28,9 @@
 #include <utype.h>
 #include <ustring.h>
 #include <math.h>
+#ifdef HAVE_IEEEFP_H
+# include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
+#endif
 
 enum operator {
     op_base = 0x100,			/* Bigger than any character */

@@ -7,6 +7,9 @@
 #include <charset.h>
 #include <ustring.h>
 #include <sys/types.h>
+#ifdef HAVE_IEEEFP_H
+# include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
+#endif
 
 int local_encoding = e_iso8859_1;
 char *iconv_local_encoding_name = NULL;

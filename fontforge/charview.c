@@ -36,6 +36,9 @@ extern int _GScrollBar_Width;
 #  include <gkeysym.h>
 # endif
 #endif
+#ifdef HAVE_IEEEFP_H
+# include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
+#endif
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 extern struct lconv localeinfo;

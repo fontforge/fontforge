@@ -28,6 +28,9 @@
 #include <stdio.h>
 #include <math.h>
 #include "splinefont.h"
+#ifdef HAVE_IEEEFP_H
+# include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
+#endif
 
 /* The slight errors introduced by the optimizer turn out to have nasty */
 /*  side effects. An error on the order of 7e-8 in splines[1].b caused */
