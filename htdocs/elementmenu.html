@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 12-May-2003 -->
+  <!-- AP: Last modified: 17-May-2003 -->
   <TITLE>The Element Menu</TITLE>
 </HEAD>
 <BODY>
@@ -48,8 +48,17 @@ This menu is not present in the Metrics View.
   <LI>
     <A HREF="#Expand">Expand Stroke...</A>
   <LI>
-    <A HREF="#Remove">Remove Overlap</A><BR>
-    Find Intersections
+    Overlap
+    <UL>
+      <LI>
+	<A HREF="#Remove">Remove Overlap</A>
+      <LI>
+	<A HREF="#Intersect">Intersect</A>
+      <LI>
+	<A HREF="#Exclude">Exclude</A>
+      <LI>
+	<A HREF="#FindInter">Find Intersections</A>
+    </UL>
   <LI>
     <A HREF="#Simplify">Simplify</A><BR>
     Simplify More
@@ -324,12 +333,14 @@ compiling PfaEdit.
     <IMG SRC="expandedlines.png" WIDTH="247" HEIGHT="247"><BR>
     Above is a simple example of what expand stroke can do. It takes the two
     open paths above left and turns them into the two closed paths right.<BR>
-    <IMG SRC="expandstroke.png" WIDTH="323" HEIGHT="358"><BR>
+    <IMG SRC="expandstroke.png" WIDTH="323" HEIGHT="379"><BR>
     The Expand Stroke dialog gives you control over various aspects of the expansion
     process. You can chose a stroke width, how the ends of an open path should
     be drawn, and how the path should look when two splines (or lines) join which
     do not have the same slope (ie. at a corner point). Or you may choose to
-    have the path be that which would be traced by a calligraphic pen.
+    have the path be that which would be traced by a calligraphic pen. For closed
+    contours you may also choose to remove either the generated contour which
+    is inside the original, or that which is outside.
   <DT>
     <A NAME="TilePath">Tile Path</A>
   <DD>
@@ -350,17 +361,33 @@ compiling PfaEdit.
     Warning: Splines which are tangent (or nearly so) cause problems. Points
     which are close together can cause problems.
   <DT>
+    <A NAME="Intersect">Intersect</A>
+  <DD>
+    <TABLE CELLPADDING="2">
+      <TR>
+	<TD><IMG SRC="exclude-pre.png" WIDTH="174" HEIGHT="174"></TD>
+	<TD><IMG SRC="intersect-post.png" WIDTH="174" HEIGHT="174"></TD>
+      </TR>
+    </TABLE>
+    <P>
+    This will remove everything not in the intersection of two regions.
+  <DT>
+    <A NAME="Exclude">Exclude</A>
+  <DD>
+    <TABLE CELLPADDING="2">
+      <TR>
+	<TD><IMG SRC="exclude-pre.png" WIDTH="174" HEIGHT="174"></TD>
+	<TD><IMG SRC="exclude-post.png" WIDTH="174" HEIGHT="174"></TD>
+      </TR>
+    </TABLE>
+    <P>
+    This will remove the selected contours from the unselected ones. Only available
+    in the outline character view.
+  <DT>
     Find Intersections
   <DD>
-    This is a varient of the Remove Overlap command, obtainable if you hold down
-    the shift key when invoking from the menu. It does half of what remove overlap
-    does-- it finds the places where overlapping contours intersect and inserts
-    points at those locations.
-    <P>
-    If Remove Overlap fails on a character, this command may be useful if you
-    decide to do it manually.
-    <P>
-    I am not aware of any major bugs in Find Intersections...
+    This finds the places where overlapping contours intersect and inserts points
+    at those locations.
   <DT>
     <A NAME="Simplify">Simplify</A>
   <DD>

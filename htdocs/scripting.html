@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 16-May-2003 -->
+  <!-- AP: Last modified: 17-May-2003 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -1054,14 +1054,26 @@ ApplySubstitution("*","*","vrt2")
   <DT>
     ExpandStroke(width)<BR>
     ExpandStroke(width,line cap, line join)<BR>
-    ExpandStroke(width,line cap, line join,0,Kanou's removeinternal flag)<BR>
+    ExpandStroke(width,line cap, line join,0,Kanou's removeinternal /external
+    flag)<BR>
     ExpandStroke(width,caligraphic-angle,height-numerator,height-denom)
   <DD>
-    In the first format a line cap of "butt" and line join of "round" are implied..
+    In the first format a line cap of "butt" and line join of "round" are
+    implied.<BR>
+    A value of 1 for remove internal/external will remove the internal contour,
+    a value of 2 will remove the external contour.
   <DT>
     RemoveOverlap()
   <DD>
     Does the obvious.
+  <DT>
+    OverlapIntersect()
+  <DD>
+    Removes everything but the intersection.
+  <DT>
+    FindIntersections()
+  <DD>
+    Finds everywhere that splines cross and creates points there.
   <DT>
     Simplify()<BR>
     Simplify(flags,error)

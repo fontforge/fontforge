@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 16-May-2003 -->
+  <!-- AP: Last modified: 17-May-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -23,6 +23,18 @@
 	to glyph &lt;nnn&gt; in the original encoding.
       <LI>
 	Kanou provided two scripting commands, ConvertToCID and ConvertByCMap.
+      <LI>
+	Added a Remove External flag to Expand Stroke to complement Kanou's Remove
+	Internal
+      <LI>
+	Expanded on Remove Overlap by adding
+	<UL>
+	  <LI>
+	    Intersection -- which removes everything except the overlap
+	  <LI>
+	    Exclude -- which removes areas where any selected contours cross non-selected
+	    contours (and then removes the selected contours)
+	</UL>
     </UL>
   <LI>
     12-May-2003
