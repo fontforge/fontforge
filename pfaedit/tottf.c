@@ -6153,16 +6153,18 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
     extern int greekfixup;
     int alreadyprivate = false;
 
-    if ( sf->chars[0]==NULL ) {		/* Encode the default notdef char at 0 */
+    if ( sf->subfontcnt==0 && sf->chars[0]==NULL ) {	/* Encode the default notdef char at 0 */
 	memset(&notdef,0,sizeof(notdef));
 	notdef.unicodeenc = -1;
 	notdef.name = ".notdef";
+	notdef.parent = sf;
 	sf->chars[0] = &notdef;
     }
-    if ( sf->chars[13]==NULL ) {		/* Encode the default notdef char at 0 */
+    if ( sf->subfontcnt==0 && sf->chars[13]==NULL ) {	/* Encode the default notdef char at 0 */
 	memset(&nonmarkingreturn,0,sizeof(notdef));
 	nonmarkingreturn.unicodeenc = 13;
 	nonmarkingreturn.name = "nonmarkingreturn";
+	nonmarkingreturn.parent = sf;
 	nonmarkingreturn.ttf_glyph = 2;
 	sf->chars[13] = &nonmarkingreturn;
     }
@@ -6446,9 +6448,9 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
 	    }
 	}
     }
-    if ( sf->chars[0]==&notdef )
+    if ( sf->subfontcnt==0 && sf->chars[0]==&notdef )
 	sf->chars[0] = NULL;
-    if ( sf->chars[13]==&nonmarkingreturn )
+    if ( sf->subfontcnt==0 && sf->chars[13]==&nonmarkingreturn )
 	sf->chars[13] = NULL;
 }
 
