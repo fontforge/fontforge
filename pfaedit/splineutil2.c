@@ -1491,7 +1491,7 @@ static int SPLSmoothControlPoints(SplineSet *ss,double tan_bounds,int vert_check
 		unit2.x = sp->me.x-sp->prevcp.x;
 		unit2.y = sp->me.y-sp->prevcp.y;
 		len2 = sqrt(unit2.x*unit2.x + unit2.y*unit2.y);
-		unit2.x /= len; unit2.y /= len2;
+		unit2.x /= len2; unit2.y /= len2;
 		if ( vert_check ) {
 		    if ( fabs(unit.x)>fabs(unit.y) ) {
 			/* Closer to horizontal */
@@ -1507,9 +1507,8 @@ static int SPLSmoothControlPoints(SplineSet *ss,double tan_bounds,int vert_check
 		    }
 		}
 		if ( !found ) {
-		    unit2.x += unit.x;
-		    unit2.y += unit.y;
-		    unit2.x /= 2.0; unit2.y /= 2.0;
+		    unit2.x = (unit.x*len + unit2.x*len2)/(len+len2);
+		    unit2.y = (unit.y*len + unit2.y*len2)/(len+len2);
 		}
 		sp->nextcp.x = sp->me.x + len*unit2.x;
 		sp->nextcp.y = sp->me.y + len*unit2.y;
