@@ -576,7 +576,10 @@ static void readttfhead(FILE *ttf,struct ttfinfo *info) {
     int i;
     fseek(ttf,info->head_start+4*4+2,SEEK_SET);		/* skip over the version number and a bunch of junk */
     info->emsize = getushort(ttf);
-    for ( i=0; i<15; ++i )
+    for ( i=0; i<12; ++i )
+	getushort(ttf);
+    info->macstyle = getushort(ttf);
+    for ( i=0; i<2; ++i )
 	getushort(ttf);
     info->index_to_loc_is_long = getushort(ttf);
     if ( info->index_to_loc_is_long )

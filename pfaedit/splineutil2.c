@@ -1781,6 +1781,7 @@ SplineFont *SplineFontEmpty(void) {
     sf->pfminfo.fstype = -1;
     sf->encoding_name = em_none;
     sf->top_enc = -1;
+    sf->macstyle = -1;
     sf->desired_row_cnt = 4; sf->desired_col_cnt = 16;
     sf->display_antialias = default_fv_antialias;
     sf->display_bbsized = default_fv_bbsized;

@@ -623,13 +623,8 @@ return(resstarts);
 enum psstyle_flags { psf_bold = 1, psf_italic = 2, psf_outline = 4,
 	psf_shadow = 0x8, psf_condense = 0x10, psf_extend = 0x20 };
 
-uint16 MacStyleCode( SplineFont *sf, uint16 *psstylecode ) {
+uint16 _MacStyleCode( char *styles, SplineFont *sf, uint16 *psstylecode ) {
     unsigned short stylecode= 0, psstyle=0;
-    char *styles;
-
-    if ( sf->cidmaster!=NULL )
-	sf = sf->cidmaster;
-    styles = SFGetModifiers(sf);
 
     if ( strstrmatch( styles, "Bold" ) || strstrmatch(styles,"Demi") ||
 	    strstrmatch( styles,"Heav") || strstrmatch(styles,"Blac") ||
@@ -637,7 +632,7 @@ uint16 MacStyleCode( SplineFont *sf, uint16 *psstylecode ) {
 	    strstrmatch( styles,"Fett") || strstrmatch(styles,"Gras") ) {
 	stylecode = sf_bold;
 	psstyle = psf_bold;
-    } else if ( sf->weight!=NULL &&
+    } else if ( sf!=NULL && sf->weight!=NULL &&
 	    (strstrmatch( sf->weight, "Bold" ) || strstrmatch(sf->weight,"Demi") ||
 	     strstrmatch( sf->weight,"Heav") || strstrmatch(sf->weight,"Blac") ||
 	     strstrmatch( sf->weight,"Fett") || strstrmatch(sf->weight,"Gras")) ) {
@@ -646,7 +641,7 @@ uint16 MacStyleCode( SplineFont *sf, uint16 *psstylecode ) {
     }
     /* URW uses four leter abbreviations of Italic and Oblique */
     /* Somebody else uses two letter abbrevs */
-    if ( sf->italicangle!=0 ||
+    if ( (sf!=NULL && sf->italicangle!=0) ||
 	    strstrmatch( styles, "Ital" ) ||
 	    strstrmatch( styles, "Obli" ) ||
 	    strstrmatch(styles, "Slanted") ||
@@ -676,14 +671,33 @@ uint16 MacStyleCode( SplineFont *sf, uint16 *psstylecode ) {
 	psstyle |= psf_extend;
     }
     if ( (psstyle&psf_extend) && (psstyle&psf_condense) ) {
-	fprintf( stderr, "Warning: %s(%s) is both extended and condensed. That's impossible.\n",
-		sf->fontname, sf->origname );
+	if ( sf!=NULL )
+	    fprintf( stderr, "Warning: %s(%s) is both extended and condensed. That's impossible.\n",
+		    sf->fontname, sf->origname );
+	else
+	    fprintf( stderr, "Warning: Both extended and condensed. That's impossible.\n" );
 	psstyle &= ~psf_extend;
 	stylecode &= ~sf_extend;
     }
     if ( psstylecode!=NULL )
 	*psstylecode = psstyle;
 return( stylecode );
+}
+
+uint16 MacStyleCode( SplineFont *sf, uint16 *psstylecode ) {
+    char *styles;
+
+    if ( sf->cidmaster!=NULL )
+	sf = sf->cidmaster;
+
+    if ( sf->macstyle!=-1 ) {
+	if ( psstylecode!=NULL )
+	    *psstylecode = (sf->macstyle&0xf)|((sf->macstyle&0x60)>>1);
+return( sf->macstyle );
+    }
+
+    styles = SFGetModifiers(sf);
+return( _MacStyleCode(styles,sf,psstylecode));
 }
 
 static uint32 SFToFOND(FILE *res,SplineFont *sf,uint32 id,int dottf,int32 *sizes) {

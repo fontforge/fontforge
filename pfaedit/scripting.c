@@ -1721,6 +1721,18 @@ static void bSetItalicAngle(Context *c) {
     c->curfv->sf->italicangle = c->a.vals[1].u.ival/ (double) denom;
 }
 
+static void bSetMacStyle(Context *c) {
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments");
+    if ( c->a.vals[1].type!=v_int )
+	c->curfv->sf->macstyle = c->a.vals[1].u.ival;
+    else if ( c->a.vals[1].type==v_str )
+	c->curfv->sf->macstyle = _MacStyleCode(c->a.vals[1].u.sval,NULL,NULL);
+    else
+	error(c,"Bad argument type");
+}
+
 static void bSetPanose(Context *c) {
     int i;
 
@@ -3414,6 +3426,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "SetTTFName", bSetTTFName },
     { "GetTTFName", bGetTTFName },
     { "SetItalicAngle", bSetItalicAngle },
+    { "SetMacStyle", bSetMacStyle },
     { "SetPanose", bSetPanose },
     { "SetUniqueID", bSetUniqueID },
     { "SetTeXParams", bSetTeXParams },
@@ -3950,6 +3963,10 @@ static void handlename(Context *c,Val *val) {
 		    val->u.ival = 0;
 		else
 		    val->u.ival = c->curfv->sf->mm->instance_count;
+		val->type = v_int;
+	    } else if ( strcmp(name,"$macstyle")==0 ) {
+		if ( c->curfv==NULL ) error(c,"No current font");
+		val->u.ival = c->curfv->sf->macstyle;
 		val->type = v_int;
 	    } else if ( strcmp(name,"$curcid")==0 || strcmp(name,"$nextcid")==0 ||
 		    strcmp(name,"$firstcid")==0 ) {

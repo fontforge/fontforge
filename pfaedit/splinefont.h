@@ -822,6 +822,7 @@ typedef struct splinefont {
     MacFeat *features;
     char *chosenname;			/* Set for files with multiple fonts in them */
     struct mmset *mm;			/* If part of a multiple master set */
+    int16 macstyle;
 } SplineFont;
 
 /* I am going to simplify my life and not encourage intermediate designs */
@@ -1247,6 +1248,7 @@ extern SplineFont *SFReadMacBinary(char *filename,int flags);
 extern SplineFont *SFReadWinFON(char *filename,int toback);
 extern SplineFont *LoadSplineFont(char *filename,enum openflags);
 extern SplineFont *ReadSplineFont(char *filename,enum openflags);	/* Don't use this, use LoadSF instead */
+extern uint16 _MacStyleCode( char *styles, SplineFont *sf, uint16 *psstyle );
 extern uint16 MacStyleCode( SplineFont *sf, uint16 *psstyle );
 extern SplineFont *SFReadIkarus(char *fontname);
 extern char **NamesReadSFD(char *filename);

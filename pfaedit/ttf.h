@@ -181,6 +181,7 @@ struct ttfinfo {
     MacFeat *features;
     struct gentagtype gentags;
     char *chosenname;
+    int macstyle;
 };
 
 #define MAX_TAB	32

@@ -263,6 +263,7 @@ return;
 
 static void SFDDumpSplineSet(FILE *sfd,SplineSet *spl) {
     SplinePoint *first, *sp;
+    int order2 = spl->first->next==NULL || spl->first->next->order2;
 
     for ( ; spl!=NULL; spl=spl->next ) {
 	first = NULL;
@@ -276,10 +277,22 @@ static void SFDDumpSplineSet(FILE *sfd,SplineSet *spl) {
 			sp->prev->from->nextcp.x, sp->prev->from->nextcp.y,
 			sp->prevcp.x, sp->prevcp.y,
 			sp->me.x, sp->me.y );
-	    fprintf(sfd, "%d\n", sp->pointtype|(sp->selected<<2)|
+	    fprintf(sfd, "%d", sp->pointtype|(sp->selected<<2)|
 			(sp->nextcpdef<<3)|(sp->prevcpdef<<4)|
 			(sp->roundx<<5)|(sp->roundy<<6)|
 			(sp->ttfindex==0xffff?(1<<7):0) );
+	    if ( order2 ) {
+		putc(',',sfd);
+		if ( sp->ttfindex==0xffff )
+		    fprintf(sfd,"-1,");
+		else if ( sp->ttfindex!=0xfffe )
+		    fprintf(sfd,"%d,",sp->ttfindex);
+		if ( sp->nextcpindex==0xffff )
+		    fprintf(sfd,"-1");
+		else if ( sp->nextcpindex!=0xfffe )
+		    fprintf(sfd,"%d",sp->nextcpindex);
+	    }
+	    putc('\n',sfd);
 	    if ( sp==first )
 	break;
 	    if ( first==NULL ) first = sp;
@@ -875,6 +888,8 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 	fprintf(sfd, "OS2WinAscent: %d\n", sf->pfminfo.os2_winascent );
 	fprintf(sfd, "OS2WinDescent: %d\n", sf->pfminfo.os2_windescent );
     }
+    if ( sf->macstyle!=-1 )
+	fprintf(sfd, "MacStyle: %d\n", sf->macstyle );
     if ( sf->script_lang ) {
 	int i,j,k;
 	for ( i=0; sf->script_lang[i]!=NULL; ++i );
@@ -1662,7 +1677,10 @@ static SplineSet *SFDGetSplineSet(SplineFont *sf,FILE *sfd) {
 		    pt->nonextcp = true;
 		    SplineMake(cur->last,pt,sf->order2);
 		    cur->last = pt;
-		    ++ttfindex;
+		    if ( cur->last->nextcpindex==0xfffe )
+			cur->last->nextcpindex = ttfindex++;
+		    else if ( cur->last->nextcpindex!=0xffff )
+			ttfindex = cur->last->nextcpindex+1;
 		}
 		sp -= 6;
 	    } else
@@ -1681,10 +1699,31 @@ static SplineSet *SFDGetSplineSet(SplineFont *sf,FILE *sfd) {
 		pt->ttfindex = 0xffff;
 	    else
 		pt->ttfindex = ttfindex++;
-#if 0
-	    pt->flexx = val&0x100?1:0;
-	    pt->flexy = val&0x200?1:0;
-#endif
+	    pt->nextcpindex = 0xfffe;
+	    ch = getc(sfd);
+	    if ( ch!=',' )
+		ungetc(ch,sfd);
+	    else {
+		ch = getc(sfd);
+		if ( ch==',' )
+		    pt->ttfindex = 0xfffe;
+		else {
+		    ungetc(ch,sfd);
+		    getint(sfd,&val);
+		    pt->ttfindex = val;
+		    getc(sfd);	/* skip comma */
+		    if ( val!=-1 )
+			ttfindex = val+1;
+		}
+		ch = getc(sfd);
+		if ( ch=='\r' || ch=='\n' )
+		    ungetc(ch,sfd);
+		else {
+		    ungetc(ch,sfd);
+		    getint(sfd,&val);
+		    pt->nextcpindex = val;
+		}
+	    }
 	}
     }
     if ( cur!=NULL )
@@ -2930,6 +2969,8 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    getsint(sfd,&sf->pfminfo.os2_winascent);
 	} else if ( strmatch(tok,"OS2WinDescent:")==0 ) {
 	    getsint(sfd,&sf->pfminfo.os2_windescent);
+	} else if ( strmatch(tok,"MacStyle:")==0 ) {
+	    getsint(sfd,&sf->macstyle);
 	} else if ( strmatch(tok,"DisplaySize:")==0 ) {
 	    getint(sfd,&sf->display_size);
 	} else if ( strmatch(tok,"TopEncoding:")==0 ) {	/* Obsolete */
