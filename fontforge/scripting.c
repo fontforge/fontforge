@@ -713,6 +713,15 @@ static void bRand(Context *c) {
     c->return_val.u.ival = rand();
 }
 
+static void bFileAccess(Context *c) {
+    if ( c->a.argc!=3 && c->a.argc!=2 )
+	error( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type!=v_str || (c->a.argc==3 && c->a.vals[2].type!=v_int ))
+	error( c, "Bad type of argument" );
+    c->return_val.type = v_int;
+    c->return_val.u.ival = access(c->a.vals[1].u.sval,c->a.argc==3 ? c->a.vals[2].u.ival : R_OK );
+}
+
 /* **** File menu **** */
 
 static void bQuit(Context *c) {
@@ -4265,6 +4274,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "Utf8", bUtf8, 1 },
     { "Utf8", bUtf8, 1 },
     { "Rand", bRand, 1 },
+    { "FileAccess", bFileAccess, 1 },
 /* File menu */
     { "Quit", bQuit, 1 },
     { "FontsInFile", bFontsInFile, 1 },
