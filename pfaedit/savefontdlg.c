@@ -110,11 +110,7 @@ static int oldafmstate = -1, oldpfmstate = false;
 int oldpsstate = true, oldttfhintstate = false;
 int oldformatstate = ff_pfb;
 int oldbitmapstate = 0;
-#if __Mac
-int oldttfapplestate = 1;
-#else
-int oldttfapplestate = 0;
-#endif
+static int oldttfapplestate;		/* Value is currently irrelevant */
 
 static const char *pfaeditflag = "SplineFontDB:";
 
@@ -1338,7 +1334,7 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 	    if ( format==ff_ttfdfont || format==ff_otfdfont || format==ff_otfciddfont ||
 		    format==ff_ttfmacbin )
 		GGadgetSetChecked(d->ttfapple,true);
-	    else if ( format!=ff_none && !oldttfapplestate )
+	    else if ( format!=ff_none )
 		GGadgetSetChecked(d->ttfapple,false);
 	}
 	GGadgetSetVisible(d->psnames,format==ff_ttf || format==ff_ttfsym ||
@@ -1764,7 +1760,7 @@ return( 0 );
 	gcd[12].gd.flags |=  gg_visible;
 
     gcd[13].gd.pos.x = gcd[10].gd.pos.x; gcd[13].gd.pos.y = gcd[10].gd.pos.y;
-    gcd[13].gd.flags = gg_visible | gg_enabled | ((oldttfapplestate || family )?gg_cb_on : 0 );
+    gcd[13].gd.flags = gg_visible | gg_enabled;
     label[13].text = (unichar_t *) _STR_AppleMode;
     label[13].text_in_resource = true;
     gcd[13].gd.popup_msg = GStringGetResource(_STR_AppleModePopup,NULL);
@@ -1772,11 +1768,16 @@ return( 0 );
     gcd[13].creator = GCheckBoxCreate;
     if ( ofs==ff_ttf || ofs==ff_ttfsym || ofs==ff_otf ||
 	    ofs==ff_ttfdfont || ofs==ff_otfdfont || ofs==ff_otfciddfont ||
-	    ofs==ff_otfcid || ofs==ff_ttfmacbin || ofs==ff_none )
+	    ofs==ff_otfcid || ofs==ff_ttfmacbin || ofs==ff_none ) {
 	gcd[10].gd.flags &= ~gg_visible;
-    else
+	if ( ofs==ff_ttfmacbin || ofs==ff_ttfdfont || ofs==ff_otfdfont ||
+		ofs==ff_otfciddfont || family)
+	    gcd[13].gd.flags |= gg_cb_on;
+	else
+	    gcd[13].gd.flags &= ~gg_cb_on;
+    } else
 	gcd[13].gd.flags &= ~gg_visible;
-    if ( d.family ) {
+    if ( family ) {
 	gcd[13].gd.flags &= ~gg_visible;	/* Apple mode is implied */
 	gcd[10].gd.flags &= ~gg_visible;	/* pfms are pointless */
 	gcd[5].gd.flags &= ~gg_visible;		/* afms are just too hard (and are in the fond anyway) */

@@ -64,7 +64,7 @@ extern int oldformatstate;		/* in savefontdlg.c */
 extern int oldbitmapstate;		/* in savefontdlg.c */
 extern int oldpsstate;			/* in savefontdlg.c */
 extern int oldttfhintstate;		/* in savefontdlg.c */
-extern int oldttfapplestate;		/* in savefontdlg.c */
+/*extern int oldttfapplestate;		/* in savefontdlg.c */
 extern int oldsystem;			/* in bitmapdlg.c */
 extern int autotrace_ask;		/* in autotrace.c */
 extern int mf_ask;			/* in autotrace.c */
@@ -74,6 +74,8 @@ extern char *mf_args;			/* in autotrace.c */
 extern int glyph_2_name_map;		/* in tottf.c */
 unichar_t *script_menu_names[SCRIPT_MENU_MAX];
 char *script_filenames[SCRIPT_MENU_MAX];
+
+static int pointless;
 
 static GTextInfo localencodingtypes[] = {
     { (unichar_t *) _STR_Default, NULL, 0, 0, (void *) e_unknown, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -169,7 +171,6 @@ static struct prefs_list {
 	{ "DefaultBitmapFormat", pr_int, &oldbitmapstate, NULL, NULL, '\0', NULL, 1 },
 	{ "DefaultPSNameLength", pr_int, &oldpsstate, NULL, NULL, '\0', NULL, 1 },
 	{ "DefaultTTFHints", pr_int, &oldttfhintstate, NULL, NULL, '\0', NULL, 1 },
-	{ "DefaultTTFApple", pr_int, &oldttfapplestate, NULL, NULL, '\0', NULL, 1 },
 	{ "PageWidth", pr_int, &pagewidth, NULL, NULL, '\0', NULL, 1 },
 	{ "PageHeight", pr_int, &pageheight, NULL, NULL, '\0', NULL, 1 },
 	{ "PrintType", pr_int, &printtype, NULL, NULL, '\0', NULL, 1 },
@@ -179,6 +180,7 @@ static struct prefs_list {
 },
  oldnames[] = {
 	{ "LocalCharset", pr_encoding, &prefs_encoding, NULL, NULL, 'L', NULL, 0, _STR_PrefsPopupLoc },
+	{ "DefaultTTFApple", pr_int, &pointless, NULL, NULL, '\0', NULL, 1 },
 	{ NULL }
 },
  *prefs_list[] = { general_list, args_list, generate_list, hidden_list, NULL },
