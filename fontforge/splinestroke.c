@@ -1313,7 +1313,8 @@ static struct strokedspline *_SplineSetApprox(SplineSet *spl,StrokeInfo *si,Spli
 		mmids[i].x = m.x; mmids[i].y = m.y;
 		/*if ( !pwascovered )*/ knots[i] |= kt_pgood;
 		/*if ( !mwascovered )*/ knots[i] |= kt_mgood;
-		if ( !pwascovered || !mwascovered ) toobig = true;
+		if ( pwascovered || mwascovered )
+		    toobig = true;
 	    }
 	    anyknots = false;
 	    for ( i=0; i<approx; ++i ) if ( knots[i]&kt_knot ) { anyknots=true; break; }
