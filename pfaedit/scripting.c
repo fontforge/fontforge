@@ -2475,6 +2475,35 @@ static void bAddHint(Context *c) {
 		ish, start, width);
 }
 
+static void bReplaceCounterMasks(Context *c) {
+    HintMask *cm;
+    SplineChar *sc;
+    int i,j,cnt;
+    Array *arr;
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_arr )
+	error( c, "Bad argument type" );
+    arr = c->a.vals[1].u.aval;
+    cnt = arr->argc;
+    cm = gcalloc(cnt,sizeof(HintMask));
+    for ( i=0; i<cnt; ++i ) {
+	if ( arr->vals[i].type!=v_arr || arr->vals[i].u.aval->argc>12 )
+	    error( c, "Argument must be array of array[12] of integers" );
+	for ( j=0; j<arr->vals[i].u.aval->argc; ++j ) {
+	    if ( arr->vals[i].u.aval->vals[j].type!=v_int )
+		error( c, "Argument must be array of array[12] of integers" );
+	    cm[i][j] =  arr->vals[i].u.aval->vals[j].u.ival&0xff;
+	}
+    }
+
+    sc = GetOneSelChar(c);
+    free(sc->countermasks);
+    sc->countermask_cnt = cnt;
+    sc->countermasks = cm;
+}
+
 static void bClearPrivateEntry(Context *c) {
     if ( c->a.argc!=2 )
 	error( c, "Wrong number of arguments");
@@ -3578,6 +3607,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "AutoInstr", bAutoInstr },
     { "ClearHints", bClearHints },
     { "AddHint", bAddHint },
+    { "ReplaceCounterMasks", bReplaceCounterMasks },
     { "ClearPrivateEntry", bClearPrivateEntry },
     { "ChangePrivateEntry", bChangePrivateEntry },
     { "GetPrivateEntry", bGetPrivateEntry },
