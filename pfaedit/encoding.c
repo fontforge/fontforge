@@ -494,7 +494,7 @@ struct cidmap {
     int supplement, maxsupple;
     int cidmax;			/* Max cid found in the charset */
     int namemax;		/* Max cid with useful info */
-    unichar_t *unicode;
+    uint32 *unicode;
     char **name;
     struct cidmap *next;
 };
@@ -680,7 +680,7 @@ static struct cidmap *LoadMapFromFile(char *file,char *registry,char *ordering,
 	ret->cidmax = ret->namemax = 0;
 	ret->unicode = NULL; ret->name = NULL;
     } else {
-	ret->unicode = gcalloc(ret->namemax+1,sizeof(unichar_t));
+	ret->unicode = gcalloc(ret->namemax+1,sizeof(uint32));
 	ret->name = gcalloc(ret->namemax+1,sizeof(char *));
 	while ( 1 ) {
 	    cnt=fscanf( f, "%d..%d %x", &cid1, &cid2, &uni );
