@@ -363,12 +363,14 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding, int res) {
 	     font->sf->chars[0]->refs==NULL && strcmp(font->sf->chars[0]->name,".notdef")==0 ) )
 	def_ch = 0;
 
-    fprintf( file, "STARTPROPERTIES %d\n", 23+(x_h!=-1)+(cap_h!=-1)+
+    fprintf( file, "STARTPROPERTIES %d\n", 25+(x_h!=-1)+(cap_h!=-1)+
 	    GenerateGlyphRanges(font,NULL)+
 	    (def_ch!=-1)+(font->clut!=NULL));
     fprintf( file, "FONT_NAME \"%s\"\n", font->sf->fontname );
     fprintf( file, "FONT_ASCENT %d\n", font->ascent );
     fprintf( file, "FONT_DESCENT %d\n", font->descent );
+    fprintf( file, "UNDERLINE_POSITION %d\n", font->sf->upos );
+    fprintf( file, "UNDERLINE_THICKNESS %d\n", font->sf->uwidth );
     fprintf( file, "QUAD_WIDTH %d\n", font->pixelsize );
     if ( x_h!=-1 )
 	fprintf( file, "X_HEIGHT %d\n", x_h );

@@ -382,7 +382,8 @@ return( enc );
 
 static int slurp_header(FILE *bdf, int *_as, int *_ds, int *_enc,
 	char *family, char *mods, char *full, int *depth, char *foundry,
-	char *fontname, char *comments, struct metrics *defs) {
+	char *fontname, char *comments, struct metrics *defs,
+	int *upos, int *uwidth) {
     int pixelsize = -1;
     int ascent= -1, descent= -1, enc, cnt;
     char tok[100], encname[100], weight[100], italic[100];
@@ -432,6 +433,10 @@ static int slurp_header(FILE *bdf, int *_as, int *_ds, int *_enc,
 	    fscanf(bdf, "%d", &ascent );
 	else if ( strcmp(tok,"FONT_DESCENT")==0 )
 	    fscanf(bdf, "%d", &descent );
+	else if ( strcmp(tok,"UNDERLINE_POSITION")==0 )
+	    fscanf(bdf, "%d", upos );
+	else if ( strcmp(tok,"UNDERLINE_THICKNESS")==0 )
+	    fscanf(bdf, "%d", uwidth );
 	else if ( strcmp(tok,"SWIDTH")==0 )
 	    fscanf(bdf, "%d", &defs->swidth );
 	else if ( strcmp(tok,"SWIDTH1")==0 )
@@ -1690,6 +1695,7 @@ BDFFont *SFImportBDF(SplineFont *sf, char *filename,int ispk, int toback) {
     struct toc *toc=NULL;
     int depth=1;
     struct metrics defs;
+    int upos= 0x80000000, uwidth = 0x80000000;
 
     defs.swidth = defs.swidth1 = -1; defs.dwidth=defs.dwidth1=0;
     defs.metricsset = 0; defs.vertical_origin = 0;
@@ -1737,7 +1743,7 @@ return( NULL );
 return( NULL );
 	}
 	pixelsize = slurp_header(bdf,&ascent,&descent,&enc,family,mods,full,
-		&depth,foundry,fontname,comments,&defs);
+		&depth,foundry,fontname,comments,&defs,&upos,&uwidth);
     }
     if ( pixelsize==-1 )
 	pixelsize = askusersize(filename);
@@ -1760,6 +1766,10 @@ return( NULL );
 	sf->display_size = pixelsize;
 	if ( comments[0]!='\0' )
 	    sf->copyright = copy(comments);
+	if ( upos!=0x80000000 )
+	    sf->upos = upos;
+	if ( uwidth!=0x80000000 )
+	    sf->upos = uwidth;
     }
 
     b = NULL;
