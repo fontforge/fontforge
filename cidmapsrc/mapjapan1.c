@@ -2,7 +2,7 @@
 #include <ctype.h>
 #include <string.h>
 
-static char used[0x100000];
+static char used[0x110000];
 static int cid_2_unicode[0x100000];
 static char *nonuni_names[0x100000];
 static int cid_2_rotunicode[0x100000];
@@ -70,7 +70,7 @@ return( -1 );
 	    buffer = end+1;
 	    vals[i] = strtol(buffer,&end,16);
 	    if ( *end=='v' ) {
-		val += VERTMARK;
+		vals[i] += VERTMARK;
 		++end;
 	    }
 	    ++i;
@@ -99,7 +99,9 @@ int main(int argc, char **argv) {
 	if ( *buffer=='#' )
     continue;
 	cid = getnth(buffer,1);
-	uni = getnth(buffer,18);
+	uni = getnth(buffer,22);
+	if ( uni==-1 )
+	    uni = getnth(buffer,18);
 	if ( uni==-1 )
 	    uni = getnth(buffer,19);
 	if ( cid==-1 )
