@@ -11,6 +11,584 @@
 <P>
 <UL>
   <LI>
+    30-Oct-2002
+    <UL>
+      <LI>
+	GenerateFamily() scripting command had a number of problems.
+   </UL>
+  <LI>
+    26-Oct-2002
+    <UL>
+      <LI>
+	The "Apple" checkbox was sometimes (incorrectly) invisible in the Generate
+	Font/Family dialogs
+      <LI>
+	Minor improvements to the "Insert Character" dialog (to match
+	<A HREF="http://umap.sf.net/">umap</A>)
+      <LI>
+	Minor tweak to text fields
+      <LI>
+	More configuration changes
+    </UL>
+  <LI>
+    25-Oct-2002
+    <UL>
+      <LI>
+	Problems when reading an sfd with references to cleaned up characters.
+      <LI>
+	Removed code from ttf generation that check for points of inflection (but
+	fixed a couple of bugs in it before doing that).
+      <LI>
+	Change the way scripting GenerateFamily behaves. One person has already been
+	unable to figure out how to use it, and I agree that it didn't make much
+	sense the way I had it.
+    </UL>
+  <LI>
+    24-Oct-2002
+    <UL>
+      <LI>
+	Change the default configuration process to use dynamic libaries
+	<UL>
+	  <LI>
+	    Added "configure.static" which will configure for static libaries (On Mac
+	    OS/X the compiler gets internal compiler errors if asked to generate pic
+	    code)
+	</UL>
+      <LI>
+	Enable reading a straight ttf file out of a .bin or .hqx wrapper (ie. doesn't
+	need to be in a resource fork)
+      <LI>
+	The Kern Pairs dlg did not show Hebrew/Arabic right to left. Fixed
+      <LI>
+	Added a popup menu to Kern Pairs which will allow you to reset a kern pair
+      <LI>
+	Added a way to configure the font family used for info messages in the outline
+	and bitmap character views.
+      <LI>
+	New man pages which use the macros supported by Sun. Thanks to R. P. Channing
+	Rodgers.
+    </UL>
+  <LI>
+    22-Oct-2002
+    <UL>
+      <LI>
+	Initial version of Mac Family (FOND) generation
+      <LI>
+	Fix old sfds so that their bad pngs will become bitmaps
+      <LI>
+	optimize the fix to draw magnified.
+    </UL>
+  <LI>
+    21-Oct-2002
+    <UL>
+      <LI>
+	Verbose addition to scripting broke loops
+      <LI>
+	Various changes to make utf8/ucs2 selections work properly with other programs
+      <LI>
+	Hebrew/Arabic drag and drop could cause crashes
+      <LI>
+	The Increment right side bearing command (Metrics-&gt;Set RBearing) set the
+	width to the value rather than incrementing by that value.
+      <LI>
+	Fixes for the local encoding being utf8
+      <LI>
+	Imported bitmap pngs still were seen as indexed
+      <LI>
+	Problems drawing magnified images when the scale factor was 100%
+    </UL>
+  <LI>
+    20-Oct-2002
+    <UL>
+      <LI>
+	Updated French and Japanese UI translations
+      <LI>
+	Use LC_CTYPE (rather than LC_MESSAGES) to determine the current local encoding
+      <LI>
+	If the width line were selected then PfaEdit would sometimes snap cursor
+	movements to an arbetrary x-value (often the axis)
+      <LI>
+	KANOU provided a patch which fixes some remove overlap problems.
+      <LI>
+	I had broken the generation of pure bitmap sfnts from scripts (7-Sept)
+      <LI>
+	Added a verbose mode to scripts (prints script to stdout as it is executed).
+    </UL>
+  <LI>
+    18-Oct-2002
+    <UL>
+      <LI>
+	Tweaked metrics view so that null kerning now displays as an empty string
+	rather than "0"
+      <LI>
+	If a font contained a kerning pair to a character that was omitted when saving
+	the sfd file, then loading that font would leave it in a bad state and eventually
+	cause a crash. Fixed on both ends (don't generate bad sfds any more, and
+	can deal with them properly when found)
+      <LI>
+	Improved the "Insert Character" dialog a bit.
+    </UL>
+  <LI>
+    17-Oct-2002
+    <UL>
+      <LI>
+	More work on Ik format files
+      <LI>
+	Redid UI for Auto Width/Kern to make it easier for cyrillic/greek users to
+	kern their alphabets.
+      <LI>
+	Changed so that CJK encodings will attempt to map directly to a CJK font
+	(rather than going through unicode) when displaying in the fontview.
+      <LI>
+	Added a command to join paths
+      <LI>
+	KANOU points out that support for mimetype cut/paste (11-Sept) broke cut/paste
+	in scripting.
+      <LI>
+	KANOU supplied a patch for the knife tool.
+      <LI>
+	KANOU points out that IsVisible didn't work properly if passed a NULL point
+	(it should never be passed a NULL pointer, but if it is no reason not to
+	work correctly).
+      <LI>
+	KANOU points out that the UniqueID for ttf files used a bad date.
+      <LI>
+	Had the wrong MS language ID for hungarian
+      <LI>
+	Some of Luc Devroye's fonts contain a "div" in the FontMatrix. ATM doesn't
+	support this, but it is easy enough to accept. Still don't support a full
+	expression there, just a div.
+      <LI>
+	If we read in a gsf font and then generated postscript from that, we weren't
+	able to read in the result.
+      <LI>
+	Added an empty glyph-encoding sub-table to mac FONDs
+      <LI>
+	Save multiple postscript did not save the first sub-font
+      <LI>
+	The second count in BeginChars could be wrong in an sfd file (PfaEdit doesn't
+	care, but I suppose some program might).
+      <LI>
+	Add support for local encoding being UTF-8. Prefs now has an option to try
+	and figure out the encoding from the locale
+      <LI>
+	Display filenames in the local encoding.
+      <LI>
+	There was an erroneous test in simplify which caused PfaEdit to complain
+	about an internal error when in truth all was well.
+      <LI>
+	There was a bad test in dumpbdf
+      <LI>
+	Export will now allow the user to generate png files (if s/he's got the png
+	libraries)
+      <LI>
+	It is possible to invoke Export from a script
+    </UL>
+  <LI>
+    11-Sept-2002
+    <UL>
+      <LI>
+	Added a menu in textfields (right mouse button)
+      <LI>
+	Added support for STRING_UTF8 selections
+      <LI>
+	Added support for "image/png", "image/bmp", "image/eps",
+	"text/plain;charset=ISO-10646-UCS-2", "text/plain;charset=UTF-8"
+	<UL>
+	  <LI>
+	    (two image format)
+	  <LI>
+	    (one format for reading spline data)
+	  <LI>
+	    (two more ways of expressing unicode text data)
+	</UL>
+    </UL>
+  <LI>
+    10-Sept-2002
+    <UL>
+      <LI>
+	Added support for UTF8 in display/print dlg imports.
+    </UL>
+  <LI>
+    9-Sept-2002
+    <UL>
+      <LI>
+	Added support for loading Ikarus .IK font files
+      <LI>
+	Fixed a divide by zero problem when generating ttfs
+      <LI>
+	If you type into the Kern Pairs dlg, it will now scroll to the pairs associated
+	with the character you typed.
+    </UL>
+  <LI>
+    8-Sept-2002
+    <UL>
+      <LI>
+	Display crashed on systems without freetype
+      <LI>
+	my xfig reader didn't handle arcs
+      <LI>
+	Merge fonts and Interpolate fonts didn't merge/interpolate kerning pairs
+    </UL>
+  <LI>
+    7-Sept-2002
+    <UL>
+      <LI>
+	The ruler tool will give the length of a spline if applied between the spline's
+	endpoints
+      <LI>
+	Made PfaEdit a little smarter about when to change the xuid field.
+	<!--
+	<LI>
+	Added the tile path command.
+	-->
+      <LI>
+	Added a dlg to <A HREF="display.html">display fonts </A>using freetype.
+      <LI>
+	Added support for the obselete _XFREE86_GLYPH_RANGES property and then turned
+	it off by default.
+      <LI>
+	Improvements to type2 output.
+      <LI>
+	Changed greek accents to use 0x384 rather than 0x30d when substituting for
+	0x301
+      <LI>
+	I've found another case where Apple and MS/Adobe disagree on the format of
+	ttf/otf files. So there's now a check box in the Generate dlg which allows
+	you to select between the two defns. I've removed the two different kinds
+	of bitmaps for ttf files, these are now controlled by this new checkbox too.
+      <LI>
+	PfaEdit would sometimes in otf files generate curves which should have been
+	done as lines.
+      <LI>
+	macbinary resource output broke when I fixed straight resource output the
+	other day.
+      <LI>
+	When a grid line was a line but expressed with control points, then pfaedit
+	would get very confused about how to snap to it.
+      <LI>
+	Fixed a bug in the generation of ttf/otf fonts with big5/sjis/wansung encodings.
+      <LI>
+	The ligature dlg had a bad habit of crashing.
+      <LI>
+	On the Mac, Obliqued fonts are stored in a weird postscript format. Try to
+	support them
+    </UL>
+  <LI>
+    2-Sept-2002
+    <UL>
+      <LI>
+	When in no-x mode, pfaedit did not notice any arguments (except -script).
+	It will now notice -version, -usage and -help.
+      <LI>
+	The PS Names check box would be visible when generating otf fonts. It should
+	not have been.
+      <LI>
+	If a font contained multiple encodings for the same character, then generating
+	an otf font from it would crash pfaedit.
+      <LI>
+	There is now a proper french translation of the ui (Merci Pierre Hanser!)
+      <LI>
+	Under cygwin, PfaEdit would fail to find internet explorer/netscape (because
+	not in user's path) and if it did find them would try to invoke them with
+	a cygwin style name (ie. /usr/local/share/doc/pfaedit/overview.html rather
+	than c:\cygwin\usr/local/share/doc/pfaedit/overview.html )
+      <LI>
+	Added a preference item to allow you to control whether a mapping file from
+	glyph ids to character names is produced along with ttf and otf fonts.
+    </UL>
+  <LI>
+    1-Sept-2002
+    <UL>
+      <LI>
+	Added an #ifdef to an include file to make it work when built without X11
+    </UL>
+  <LI>
+    31-August-2002
+    <UL>
+      <LI>
+	Making a font be a cid-keyed font might screw up all other fontviews and
+	lead to crashes.
+      <LI>
+	type1 cid keyed fonts got the wrong fontmatrix if the em-size was something
+	other than 1000. Doesn't seem to make a difference though, we still get bad
+	output for emsize!=1000
+      <LI>
+	got maxp.numGlyphs wrong for otf cid-keyed fonts which lacked a .notdef character
+      <LI>
+	Added a check to make sure fontnames are less than 63 characters. Needed
+	for ATM.
+      <LI>
+	format 2 Coverage tables (used by GPOS and GSUB tables (kerning &amp; ligatures
+	for otf)) were being generated incorrectly. This meant that windows would
+	refuse to read my otf files which had complex kerning. (presumably complex
+	ligs, but I had no test cases). The mac printer driver has also had problems
+	with my otf files. This may be why.
+      <LI>
+	Added a popup to the kern pair dlg to tell user how many kern pairs there
+	are, and how many characters start kern pairs.
+    </UL>
+  <LI>
+    29-August-2002
+    <UL>
+      <LI>
+	Merge and Elide were backwards
+	<UL>
+	  <LI>
+	    And merge (simplify) had problems when a desired spline at the same slope
+	    at the start and end (or something like that).
+	</UL>
+      <LI>
+	Added a field to Review Hints showing the total number of hints, flag for
+	h/vstem3, ability to move points associated with hint when moving hint. also
+	added a hot key for it.
+      <LI>
+	Added a Find Problem to detect things which are almost but not quite h/vstem3
+      <LI>
+	AutoHint wasn't finding all the ghost hints it should have.
+      <LI>
+	Put in (what I hope is) a better way of detecting extranious hints (the hypen
+	case. At first sight the hstem and vstem appear equally valid) remove hints
+	which are wider than they are long.
+      <LI>
+	More fixes from KANOU for cid fonts
+      <LI>
+	The scale to em checkbox only (sort of) worked if the emsize increased. Fix
+	from KANOU
+      <LI>
+	Autohint could go into an infinite loop on characters containing a 0-length
+	spline.
+      <LI>
+	Problem with cff name table fix of 27-Aug
+      <LI>
+	bdf fonts were loaded into background by default
+      <LI>
+	Scripting problem loading bitmap fonts into background.
+    </UL>
+  <LI>
+    27-August-2002
+    <UL>
+      <LI>
+	Further attempts to fix the fact that PfaEdit in some ways does not believe
+	that monospaced ttf files are monospaced.
+      <LI>
+	Problems with endif
+      <LI>
+	Redid the Find Problems dialog by adding tabs so that related problems are
+	grouped together.
+      <LI>
+	Added a problem which will report advance widths which do not match some
+	standard value.
+      <LI>
+	CID keyed generation was broken again by the (failed) attempt to make things
+	work with FontLab (18-Aug)
+      <LI>
+	cff name table could be off by 1 if there were a real notdef character
+      <LI>
+	Added ability to display blue zones in outline view.
+    </UL>
+  <LI>
+    21-August-2002
+    <UL>
+      <LI>
+	Broke cid-keyed otf generation on 27 July when I enabled the [Stop] button.
+	Fix by KANOU.
+      <LI>
+	Bringing up progress indicator early (20 August) broke scripting without
+	X11.
+      <LI>
+	Added ability to load a font protected by fstype=2 to a scripting (extra
+	argument to open).
+      <LI>
+	Enhanced print abilities.
+      <LI>
+	Added ability to Print to scripting.
+      <LI>
+	Attempt to fix the fact that windows doesn't recognize my monospaced ttf
+	fonts as monspace.
+      <LI>
+	PfaEdit could be confused by strange values of Ascent in the hhea table
+      <LI>
+	Added a Round to Int option to the transform dialogs
+      <LI>
+	Added ability to change the em-size (and rescale the font) to fontinfo
+    </UL>
+  <LI>
+    20-August-2002
+    <UL>
+      <LI>
+	Under KDE my tools palettes are made too wide and without borders. That's
+	ok until they get reparented (docked). Added code in the docking routines
+	to fix these problems.
+      <LI>
+	May have fixed a race condition problem due to reparented windows under freebsd.
+      <LI>
+	TeX sfd files are a little more complicated than I had originally thought,
+	the parser is now more general.
+      <LI>
+	PfaEdit sometimes thought some X fonts had iso8859-1 encoding when they did
+	not.
+      <LI>
+	cleaned up some problems with encodings
+      <LI>
+	Added support for TeX (actually MetaFont) gf files
+      <LI>
+	RLE background images sometimes showed up inverted (with background color
+	as foreground &amp; vice versa)
+      <LI>
+	The Fit in window command should now take docked palettes into consideration.
+      <LI>
+	Added a Japanese translation of the UI, courtesy of KANOU Hiroki.
+      <LI>
+	Added the ability to run <CODE>mf</CODE> on a .mf font, generate a gf file,
+	autotrace the gf file, and leave you with a font based on an mf file.
+      <LI>
+	Menus now do pointer grabs.
+      <LI>
+	Fixed a bug in generating PostScript resource file fonts on Mac OS/X
+    </UL>
+  <LI>
+    18-August-2002
+    <UL>
+      <LI>
+	Added a dlg to show all kern pairs (and another to show all ligatures)
+      <LI>
+	Added a "Find Problems" item to check for missing bitmaps.
+      <LI>
+	Put in some warnings to the ttf parser for bad cmap and glyf tables
+      <LI>
+	PfaEdit was still having trouble about loading space bitmaps (that had been
+	generated with freetype).
+      <LI>
+	PfaEdit did not set the flag indicating manual hinting after changes by Review
+	Hints or Create Hint. Should be set now.
+      <LI>
+	Various small tweaks to the pfa/pfb output because FontLab doesn't like what
+	we currently do. Probably none will make much difference.
+      <LI>
+	The Print command would attempt to print characters outside the encoding
+	of type1 fonts. This did not work well.
+      <LI>
+	The autowidth command got very confused when given a sans-serif script to
+	autowidth when the Latin characters in the font were serifed.
+      <LI>
+	The Print sample text is now ordered so that the language specified in the
+	LANG environment variable comes first in the list.
+      <LI>
+	Added $version
+      <LI>
+	PfaEdit will now read scripts from stdin if you follow the "-script" argument
+	with "-".
+      <LI>
+	Valek points out the using CharInfo to change a character's color did not
+	change it until the fontview was refreshed
+      <LI>
+	Expand Stroke had problems when intersections bent the wrong way.
+    </UL>
+  <LI>
+    9-August-2002
+    <UL>
+      <LI>
+	I've decided to encourage use of the <A HREF="index.html#Mail">mailing
+	lists</A> for reporting bugs. A feeble attempt to cut down on the spam I
+	get by removing my e-mail address from the site.
+      <LI>
+	Bug in the dlg asking for the resolution of a bdf font. The second (and
+	subsequent) time(s) it came up it would have a good chance of never going
+	away again, and potentially crashing PfaEdit into the bargain. (number of
+	other bugs here too)
+      <LI>
+	If the postscript "FontName" contained a hyphen then any generated BDF fonts
+	would have invalid X fontnames (they hyphen would be included which would
+	throw the name parsing off by one hyphen).
+      <LI>
+	Greg Ford points out that generating a bdf font and then loading it back
+	in will often change the fontname. This is because the fontname is not actually
+	stored in bdf files. I've added a FONT_NAME property to the bdf fonts I generate.
+      <LI>
+	PfaEdit would sometimes forget about the first bitmap character in each bitmap
+	font stored in an sfd file. <FONT COLOR="Red"><STRONG><BIG>Please check any
+	sfd files to see if they are missing bitmaps of space, exclamation point,
+	etc. </BIG></STRONG></FONT>Probably introduced 11-June.
+    </UL>
+  <LI>
+    8-Aug-2002
+    <UL>
+      <LI>
+	After yesterday's fix textfields ignored backspaces
+      <LI>
+	More work on the metrics lines. There's now a dlg to control which ones get
+	drawn.
+      <LI>
+	FontInfo would sometimes crash after adding ttf names.
+      <LI>
+	Added minimal ability to dock palettes into their respective views.
+      <LI>
+	Added a way of looking at the fontview where there are now holes in the font
+	(ie. a compacted view where every cell contains a glyph). This is just another
+	encoding, but people have been asking for it and it is slightly easier to
+	get to than normal reencoding of a font. Note: It has no defined relationship
+	to the glyph array in a ttf file.
+    </UL>
+  <LI>
+    7-Aug-2002
+    <UL>
+      <LI>
+	The 21-July autowidth/kern change broke autowidth/kern scripting.
+      <LI>
+	And the serif detection failed if the character I did not reach the baseline.
+      <LI>
+	PfaEdit read RGB png files incorrectly.
+      <LI>
+	PfaEdit used to bring up most dialogs underneath the cursor. Now it only
+	does that if the focus is set to FocusFollowsMouse, and otherwise centers
+	dlgs.
+      <LI>
+	PfaEdit now will draw metrics lines in the fontview if you want it to.
+      <LI>
+	PfaEdit remembers what outline character views were open when a font was
+	saved (as an sfd file) and will automagically reopen them when you next load
+	that font.
+      <LI>
+	Added <CODE>View-&gt;Find In Font View</CODE> command to the outline character
+	view. Will scroll the fontview to display the current character.
+      <LI>
+	Textfields within PfaEdit ignored the numeric keypad
+    </UL>
+  <LI>
+    4-Aug-2002
+    <UL>
+      <LI>
+	Yesterday's resize fix didn't quite work
+      <LI>
+	Try to improve conversion of cubic to quadratic spline (actually, we make
+	the conversion worse, but it probably helps rasterizers not to have points
+	quite so close together).
+      <LI>
+	Some more work on the TTF style name
+    </UL>
+  <LI>
+    3-Aug-2002
+    <UL>
+      <LI>
+	Failed to read ttf fontnames properly for some dfonts (probably some ttc
+	files as well)
+      <LI>
+	Didn't position references by point matching properly (when loading from
+	ttf)
+      <LI>
+	removed some debugging code inadvertantly left in after the rle fix.
+      <LI>
+	Added support for <A HREF="xim.html">X Input Methods</A> (to do CJK character
+	input properly)<BR>
+	This only works if X_HAVE_UTF8_STRING is defined -- an XFree 4.0.2 extension
+	(ie. not on solaris)
+      <LI>
+	Added a possible fix to a resizing problem for some window managers.
+      <LI>
+	Added CIDFlattenByCMap function to scripting.
+    </UL>
+  <LI>
     30-July-2002
     <UL>
       <LI>

@@ -6,6 +6,9 @@
   <TITLE>Frequently Asked Questions</TITLE>
 </HEAD>
 <BODY>
+<TABLE ALIGN="Right">
+<TR><TD><A HREF="faqFS.html" TARGET="_top">Frames</A></TD></TR>
+</TABLE>
 <H1 ALIGN=Center>
   Frequently Asked Questions<BR>
   <SMALL>(or all the questions I've been asked so far)</SMALL>
@@ -17,6 +20,20 @@
     already?</A>
   <LI>
     <A HREF="#widget-set">Why is PfaEdit based on a non-standard widget set?</A>
+  <LI>
+    <A HREF="#legal">Is it legal to modify a font? Is it ethical?</A>
+  <LI>
+    <A HREF="#font-install">How do I install the fonts once I've made them?</A>
+  <LI>
+    <A HREF="#How-mac">How do I edit fonts from my macintoy?</A>
+    <UL>
+      <LI>
+	<A HREF="#How-family">How do create a mac font family? (How do I get the mac to group my fonts so that the italic and bold styles work)?</A>
+    </UL>
+  <LI>
+    <A HREF="#windows">How do I edit fonts on MS windows?</A>
+  <LI>
+    <A HREF="#kern-info">Does Pfaedit read in the old kerning information from fonts?</A>
   <LI>
     <A HREF="#hint-subs">How do I make it use hint substitution?</A>
   <LI>
@@ -52,12 +69,6 @@
   <LI>
     <A HREF="cidmenu.html#CID">(What is a CID-keyed font?)</A>
   <LI>
-    <A HREF="#font-install">How do I install the fonts once I've made them?</A>
-  <LI>
-    <A HREF="#How-mac">How do I edit fonts from my macintoy?</A>
-  <LI>
-    <A HREF="faq.html#windows">How do I edit fonts on MS windows?</A>
-  <LI>
     <A HREF="#simplify">Does the simplify command lose accuracy?</A>
   <LI>
     <A HREF="#cubic-quadratic">How does PfaEdit convert a cubic spline into a
@@ -72,6 +83,8 @@
     <A HREF="#ttf-degrade">I loaded a ttf font, made a few changes and generated
     a new font. The new font doesn't look anywhere near as nice as the original
     even for characters I didn't change. Why?</A>
+  <LI>
+    <A HREF="#type42">Why doesn't pfaedit support Type 42 fonts?</A>
   <LI>
     <A HREF="#otf-diffs">I generated an opentype (or truetype) font and windows
     wouldn't install it. Why not?</A>
@@ -119,6 +132,8 @@
 	</UL>
       <LI>
 	Everybody wants a font of his/her own handwriting.
+      <LI>
+	Playing with fonts is fun.
     </OL>
   <DT>
     <A NAME="widget-set"><B>Why is PfaEdit based on a non-standard widget
@@ -130,6 +145,351 @@
     I also wanted a widget set where I could actually figure out whether the
     checkbox was checked or not checked. In far too many cases my eyes can't
     work out which is which...
+  <DT>
+    <A NAME="legal"><B>Is it legal to modify a font? Is it ethical?</B></A>
+  <DD>
+    Legal matters vary from country to country (and perhaps within countries).
+    You really should consult a lawyer for a definitive answer. Here are some
+    guide lines:
+    <P>
+    Look at the license agreement you received with the font and see what it
+    has to say on this issue.
+    <P>
+    TrueType (and OpenType and potentially CID-keyed fonts) have a field in the
+    OS/2 table called FSType which allows the font designer to place restrictions
+    on what other people can do with the font. If this field prohibits modification
+    pfaedit will ask you to make sure you have an agreement with the font designer
+    which suppercedes this field.
+    <P>
+    My understanding of US law (but check with a lawyer before relying on this)
+    is that:
+    <UL>
+      <LI>There is no legal protection for font designs. So legally in the US
+      glyph images may be traced. Obviously this is not ethical if the font
+      designer is currently alive.
+      <LI>Font programs (such as a postscript or truetype font file, but not
+      a bitmap font file) may be copyrighted.
+      <LI>Font names may be trademarked.
+    </UL>
+    <P>
+    I would welcome any additions or corrections here, as well as info on the
+    laws governing fonts in other countries.
+  <DT>
+    <A NAME="font-install"><B>How do I install the fonts once I've made
+    them?</B></A>
+  <DD>
+    Well it rather depends on what system you are working on, and what type of
+    font you've got:
+    <DL>
+      <DT>
+	<STRONG>Unix &amp; X</STRONG> (but not KDE)
+      <DD>
+	I'd suggest that you look at the
+	<A HREF="http://www.linuxdoc.org/HOWTO/Font-HOWTO.html">linux font HOWTO
+	file</A>, and the <A HREF="http://www.linuxdoc.org/HOWTO/mini/FDU/">font
+	deuglification HOWTO</A> as good starting points. But I'll run over the
+	highlights
+	<P>
+	Essentially you designate one (or several) directories as a "font directory".
+	You move your fonts to that directory. You build up certain data structures
+	that X needs, and you tell X to include this directory in your font path.
+	Sadly different versions of X and the X font server use slightly different
+	conventions. You may need to alter these procedures a bit.
+	<P>
+	For example, if you want to install a <EM>bdf font </EM>called frabnuts-13.bdf
+	then you might:
+	<BLOCKQUOTE>
+	  <PRE>$ mkdir my_fonts
+$ mv frabnuts-13.bdf my_fonts
+$ cd my_fonts
+$ bdftopcf frabnuts-13.bdf &gt;frabnuts-13.pcf
+$ mkfontdir
+$ xset fp+ `pwd`
+</PRE>
+	</BLOCKQUOTE>
+	<P>
+	and your fonts should be installed. After that, whenever you start X you
+	need to remind it of where your fonts live, so you should add<BR>
+	<CODE>&nbsp; &nbsp; $ xset fp+ /home/me/my_fonts</CODE><BR>
+	to your .xsession (or equivalent).
+	<P>
+	If you want to install <EM>postscript fonts</EM><BR>
+	You should generate them as postscript binary (.pfb) files, then move both
+	the .pfb and the .afm file into (one of) your font directory(ies) and run
+	<A HREF="http://rpmfind.net/linux/rpm2html/search.php?query=type1inst">type1inst</A>
+	in it.<BR>
+	type1inst will probably complain that your font doesn't have a foundry and
+	will probably get the encoding wrong. You can either:
+	<UL>
+	  <LI>
+	    Ignore it and nothing bad will happen
+	  <LI>
+	    Manually edit fonts.scale after running type1inst to fix these entries
+	  <LI>
+	    Make your font's Copyright be reasonable, and then edit type1inst and add
+	    your foundry (directions for this are in type1inst itself)
+	</UL>
+	<P>
+	If you want to install <EM>truetype fonts</EM><BR>
+	You move the .ttf file into your font directory and run mkttfdir and
+	mkfontdir.<BR>
+	(<A HREF="http://rpmfind.net/linux/rpm2html/search.php?query=mkttfdir">mkttfdir</A>
+	has a small problem with fonts created by PfaEdit, it will almost invariably
+	complain that it doesn't recognize the foundry. You can safely ignore this,
+	but if it bothers you then add a line to ttmkfdir.c at 936<BR>
+	<CODE> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; { "PFED", "PfaEdit" },</CODE>
+	<P>
+	Some versions of X (ie, those shipped by redhat) rely on the x font server
+	to do font work rather than the X server itself. You may want to use chkfontpath
+	to add your new directory to the font server's font path (rather than xset
+	fp).<BR>
+	You may also need to insure that the font directory (and all its parent
+	directories) are readable to world. (the font server runs as a non-priviledged
+	user)
+	<P>
+	I haven't seen anything that says X supports <EM>opentype</EM> fonts yet,
+	but since freetype does (and I think X's rasterizer uses freetype) then X
+	might support them too. Installing them will require manual editing of
+	fonts.scale though (mkttfdir uses freetype1 which doesn't support otf files).
+	<P>
+	That sounds really confusing. I appologize, I'm not a good writer and there
+	are too many choices in configuring X...
+      <DT>
+	<STRONG>KDE</STRONG>
+      <DD>
+	(I don't know KDE very well, so take my experience with a grain of salt)
+	Under KDE there is a tool called
+	<A HREF="http://www.cpdrummond.uklinux.net/kfontinst/">kfontinst</A> which
+	is supposed to do all the configuration work for you. I was only able to
+	get it to work as root and had to reconfigure my system to follow its
+	conventions, but once that was done it installed X fonts quite handily. I
+	never did figure out how to get it to install ghostview fonts. (I experimented
+	with version 0.9.2)
+      <DT>
+	<STRONG>Windows</STRONG>
+      <DD>
+	You install truetype fonts on windows by dropping them into the \Windows\Fonts
+	directory on your machine.<BR>
+	If you want to use type1 or opentype fonts you may need to install adobe
+	type manager and follow its instructions.<BR>
+	I don't know how to install a bdf font. I'd look for a utility to convert
+	bdf files to FON files and then drop the FON files into \Windows\Fonts.
+      <DT>
+	<STRONG>Macintosh OS 9</STRONG>
+      <DD>
+	Oh dear. The mac sticks fonts into resource forks and wraps them up in its
+	own headers. Mac fonts aren't compatible with anybody else's. PfaEdit can
+	create a resource fork if it wraps the font up in a macbinary encoding. See
+	the <A HREF="faq.html#How-mac">following question</A> for more information.<BR>
+	I've also written <A HREF="http://fondu.sourceforge.net/">some utilities
+	</A>designed to convert from one format to another and they may prove
+	useful.<BR>
+	<A HREF="http://babel.uoregon.edu/yamada/fontconversionfaq.html">University
+	of Oregon has some links that might be helpful</A>.<BR>
+	Once you've converted your fonts you just drop them into the System Folder
+	and they should be available after that.
+      <DT>
+	<STRONG>Macintosh OS X</STRONG>
+      <DD>
+	On OS/X fonts should be placed either in the top-level Library/Fonts directory
+	(By default <CODE>/Mac OS X/Library/Fonts/</CODE>), in the System/Library/Fonts
+	directory, or in the user's appropriate fonts sub-directory
+	(<CODE>~/Library/Fonts</CODE>).<BR>
+	Either a resource font (unwrapped from its macbinary wrapper) or a dfont
+	may be used. I'm not sure whether postscript Type1 resource fonts work, but
+	OpenType dfonts do (so if you want to use Postscript use OpenType).
+    </DL>
+  <DT>
+    <A NAME="How-mac"><B>How do I edit fonts from my macintoy?</B></A>
+  <DD>
+    <DL>
+      <DT>
+	Mac OS/9 (or less)
+      <DD>
+	Traditionally the macintosh has stored fonts in the resource fork of files
+	(after about OS/8.5 I believe the mac also supported bare .ttf files).
+	This causes problems for any machine other than a mac, because the very concept
+	of a resource fork is lacking.<BR>
+	There are several programs whose job it is to store all of a macintosh file
+	in one package that can be manipulated on other systems (mac binary and binhex
+	are the most common). PfaEdit knows how to read both of these formats and
+	can extract a postscript or truetype font from either. PfaEdit can also create
+	fonts in macbinary format (I see no reason to support both output formats,
+	and macbinary is slightly simpler).<BR>
+	So to edit a font on your mac:
+	<OL>
+	  <LI>
+	    Find the file in the <TT>System Folder:Fonts</TT> folder
+	  <LI>
+	    Copy the file over to your unix machine
+	    <UL>
+	      <LI>
+		Use Fetch and specify macbinary format
+	      <LI>
+		Or use some tool like binhex which can create the file directly
+	    </UL>
+	  <LI>
+	    Open it in PfaEdit
+	  <LI>
+	    Edit it
+	  <LI>
+	    Save it back in macbinary format
+	  <LI>
+	    Copy it back to your mac
+	    <UL>
+	      <LI>
+		Fetch will automatically undo the macbinary wrappers and make it be correct
+	      <LI>
+		Or various other tools can unwrap it.
+	    </UL>
+	  <LI>
+	    Drop it back into your system folder (where it is automagically moved to
+	    Fonts)
+	</OL>
+	<P>
+	<STRONG>Note:</STRONG> make sure you either replace the original font
+	files, or that you rename the font within pfaedit and (for postscript
+	fonts) that you give it a new unique id. See the <A HREF="fontinfo.html">Font Info</A>
+	dlg.
+	<P>
+	<STRONG>Caveat:</STRONG> A postscript font is useless on a macintosh unless
+	it is acompanied by at least one bitmap font. If you generate a postscript
+	font make sure you also generate an NFNT as well (this has the FOND).<BR>
+	<STRONG>Caveat:</STRONG> The mac is picky about the filename used to contain
+	a postscript file. It is based on the postscript font name but suffers a
+	transformation. Don't try to rename this file. Basically the rules are (see
+	<A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/0091.Mac_Fond.pdf">Adobe
+	Technical Note 0091</A>):
+	<UL>
+	  <LI>
+	    The fontname is broken into chunks where each chunk starts with a capital
+	    letter.
+	  <LI>
+	    The first chunk may have four lower case letters following the initial capital
+	  <LI>
+	    Subsequent chunks may only have two lower case letters following the capital.
+	  <LI>
+	    Non-letter characters (or at least hyphens) vanish.<BR>
+	    So TimesBold =&gt; TimesBol, Helvetica-BoldItalic =&gt; HelveBolIta,
+	    NCenturySchoolbook =&gt; NCenSch
+	</UL>
+      <DT>
+	Mac OS/X
+      <DD>
+	On Mac OS/X you can run <A HREF="MacOSX.html#Running">PfaEdit
+	directly</A> (if you've got <A HREF="MacOSX.html#binary">XDarwin
+	installed</A>). OS/X has several font formats, some fonts are stored
+	in the old format (see above), while others are stored as data fork resources.
+	The data fork font files generally have the extension ".dfont". On a Mac
+	PfaEdit is able to edit both formats directly. OS/X also supports
+	normal .otf and .ttf font files.
+    </DL>
+  <DT>
+    <B><A NAME="How-family">How do create a mac font family? (How do I get the mac to group my fonts so that the italic and bold styles work)?</A></B>
+  <DD>
+    For the Style menu in most mac applications to work on your fonts, you must create a font family.
+    You do this with the <A HREF="filemenu.html#GenerateMac">File->Generate Mac Family</A> command.
+    <P>
+    All the fonts in a family must have the same Family name (See the <A HREF="fontinfo.html">font info</A> dialog).
+    Mac font families only support Italic, Bold, Outline, Expanded, and Condensed styles, they
+    do not support "Black", "DemiBold", "Light" or "Thin" varients.
+  <DT>
+    <B>How do I edit fonts on MS <A NAME="windows">windows</A>?</B>
+  <DD>
+    To run PfaEdit under MS windows you must first install the
+    <A HREF="http://www.cygwin.com/">cygwin environment</A>.
+    <UL>
+      <LI>
+	First download the setup.exe program from
+	<A HREF="http://www.cygwin.com/">http://www.cygwin.com/</A>
+      <LI>
+	Run it. It will ask you what components of cygwin you wish to install
+      <LI>
+	You will need the base components and the X window system (NOTE: These
+	are seperate packages)
+      <LI>
+	Once you have cygwin installed, start it. This should give you a terminal
+	window running bash (a unix shell)
+      <LI>
+	Download the <A HREF="index.html#binary">cygwin version of PfaEdit</A>, and
+	move it to whatever directory you think most appropriate
+	(<CODE>/usr/local/bin</CODE> is a reasonable choice)
+	<BLOCKQUOTE>
+	  <PRE>$ mkdir -p /usr/local/share/pfaedit /usr/local/bin /usr/local/share/man
+$ cd /usr/local/bin
+$ gunzip pfaedit_cygwin*.tgz
+$ tar xfv pfaedit_cygwin*.tar
+$ mv *.ui /usr/local/share/pfaedit
+$ mv pfaedit.1 /usr/local/share/man/man1
+</PRE>
+	</BLOCKQUOTE>
+	<P>
+	Then edit the file ~/.bashrc by (or by whatever other tool you prefer):
+	<BLOCKQUOTE>
+	  <PRE>$ cat >> ~/.bashrc
+PATH=${PATH}:/usr/local/bin ; export PATH
+MANPATH=${MANPATH:-}:/usr/local/share/man ; export MANPATH
+^D
+</PRE>
+	</BLOCKQUOTE>
+      <LI>
+	Then each time you want to run pfaedit, type:
+	<BLOCKQUOTE>
+	  <PRE>$ xinit
+</PRE>
+	</BLOCKQUOTE>
+      <LI>
+	This should bring up X in a large window that covers the screen and within
+	that should be a subwindow, an xterm, running bash.
+      <LI>
+	From the xterm you should be able start PfaEdit.
+	<BLOCKQUOTE>
+	  <PRE>$ pfaedit -new
+</PRE>
+	</BLOCKQUOTE>
+    </UL>
+    <P>
+    If you want to be able to build PfaEdit under cygwin, you will need to grab
+    some other cygwin components, like gcc, the image processing libraries, freetype,
+    etc.
+  <DT>
+    <B><A NAME="kern-info">Does Pfaedit read in the old kerning information from fonts?</A></B>
+  <DD>
+    This question needs to be broken down into cases:
+    <DL>
+      <DT><B>TrueType and OpenType fonts</B>
+      <DD>Yes. The kerning information is stored in either the 'kern' or 'GPOS'
+      tables of these fonts and PfaEdit can read the most common formats (Apple
+      has made a number of extensions beyond the original truetype spec, and
+      PfaEdit does not handle all the Apple formats).
+      <DT><B>PostScript Type1 fonts anywhere other than the Mac.</B>
+      <DD>
+      The kerning information is not stored in a Type 1 font file. Instead it
+      is stored in a file with the same filename as the font file but with the
+      extension ".afm". When PfaEdit reads a PostScript font it will check for
+      an associated afm file, and if found will read the kerning information
+      from it.
+      <DT><B>PostScript Type1 fonts on the Mac.</B>
+      <DD>
+      No. Again the kerning information is not stored in the font file (it is
+      stored in a bitmap font file), but
+      on the mac it is impossible to guess what name to use for the associated
+      bitmap file, and PfaEdit does not even try.<BR>
+      See the info below on FONDs.
+      <DT><B>AFM and TFM files.</B>
+      <DD>
+      PfaEdit can read kerning information directly from these files and
+      apply those data to a font. See the <A HREF="filemenu.html#Merge-kern">File->Merge Kern Info</A> menu command.
+      <DT><B>Mac resource files containing FOND resources.</B>
+      <DD>
+      The mac stores kerning information in the FOND resource associated with
+      a bitmap font (it is not stored in the file with the postscript font).
+      If you wish kerning data for a mac postscript font, you must find a
+      font file containing a bitmap font with the same family and style as the
+      postscript.
+      PfaEdit can read kerning information directly from these files and
+      apply those data to a font. See the <A HREF="filemenu.html#Merge-kern">File->Merge Kern Info</A> menu command.
+    </DL>
   <DT>
     <A NAME="hint-subs"><B>How do I make PfaEdit use hint substitution?</B></A>
   <DD>
@@ -310,267 +670,6 @@
     So the cidmap files are only useful for people working on CID keyed CJK fonts.
     So most europeans/americans won't need them.
   <DT>
-    <A NAME="font-install"><B>How do I install the fonts once I've made
-    them?</B></A>
-  <DD>
-    Well it rather depends on what system you are working on, and what type of
-    font you've got:
-    <DL>
-      <DT>
-	<STRONG>Unix &amp; X</STRONG> (but not KDE)
-      <DD>
-	I'd suggest that you look at the
-	<A HREF="http://www.linuxdoc.org/HOWTO/Font-HOWTO.html">linux font HOWTO
-	file</A>, and the <A HREF="http://www.linuxdoc.org/HOWTO/mini/FDU/">font
-	deuglification HOWTO</A> as good starting points. But I'll run over the
-	highlights
-	<P>
-	Essentially you designate one (or several) directories as a "font directory".
-	You move your fonts to that directory. You build up certain data structures
-	that X needs, and you tell X to include this directory in your font path.
-	Sadly different versions of X and the X font server use slightly different
-	conventions. You may need to alter these procedures a bit.
-	<P>
-	For example, if you want to install a <EM>bdf font </EM>called frabnuts-13.bdf
-	then you might:
-	<BLOCKQUOTE>
-	  <PRE>$ mkdir my_fonts
-$ mv frabnuts-13.bdf my_fonts
-$ cd my_fonts
-$ bdftopcf frabnuts-13.bdf &gt;frabnuts-13.pcf
-$ mkfontdir
-$ xset fp+ `pwd`
-</PRE>
-	</BLOCKQUOTE>
-	<P>
-	and your fonts should be installed. After that, whenever you start X you
-	need to remind it of where your fonts live, so you should add<BR>
-	<CODE>&nbsp; &nbsp; $ xset fp+ /home/me/my_fonts</CODE><BR>
-	to your .xsession (or equivalent).
-	<P>
-	If you want to install <EM>postscript fonts</EM><BR>
-	You should generate them as postscript binary (.pfb) files, then move both
-	the .pfb and the .afm file into (one of) your font directory(ies) and run
-	<A HREF="http://rpmfind.net/linux/rpm2html/search.php?query=type1inst">type1inst</A>
-	in it.<BR>
-	type1inst will probably complain that your font doesn't have a foundry and
-	will probably get the encoding wrong. You can either:
-	<UL>
-	  <LI>
-	    Ignore it and nothing bad will happen
-	  <LI>
-	    Manually edit fonts.scale after running type1inst to fix these entries
-	  <LI>
-	    Make your font's Copyright be reasonable, and then edit type1inst and add
-	    your foundry (directions for this are in type1inst itself)
-	</UL>
-	<P>
-	If you want to install <EM>truetype fonts</EM><BR>
-	You move the .ttf file into your font directory and run mkttfdir and
-	mkfontdir.<BR>
-	(<A HREF="http://rpmfind.net/linux/rpm2html/search.php?query=mkttfdir">mkttfdir</A>
-	has a small problem with fonts created by PfaEdit, it will almost invariably
-	complain that it doesn't recognize the foundry. You can safely ignore this,
-	but if it bothers you then add a line to ttmkfdir.c at 936<BR>
-	<CODE> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; { "PFED", "PfaEdit" },</CODE>
-	<P>
-	Some versions of X (ie, those shipped by redhat) rely on the x font server
-	to do font work rather than the X server itself. You may want to use chkfontpath
-	to add your new directory to the font server's font path (rather than xset
-	fp).<BR>
-	You may also need to insure that the font directory (and all its parent
-	directories) are readable to world. (the font server runs as a non-priviledged
-	user)
-	<P>
-	I haven't seen anything that says X supports <EM>opentype</EM> fonts yet,
-	but since freetype does (and I think X's rasterizer uses freetype) then X
-	might support them too. Installing them will require manual editing of
-	fonts.scale though (mkttfdir uses freetype1 which doesn't support otf files).
-	<P>
-	That sounds really confusing. I appologize, I'm not a good writer and there
-	are too many choices in configuring X...
-      <DT>
-	<STRONG>KDE</STRONG>
-      <DD>
-	(I don't know KDE very well, so take my experience with a grain of salt)
-	Under KDE there is a tool called
-	<A HREF="http://www.cpdrummond.uklinux.net/kfontinst/">kfontinst</A> which
-	is supposed to do all the configuration work for you. I was only able to
-	get it to work as root and had to reconfigure my system to follow its
-	conventions, but once that was done it installed X fonts quite handily. I
-	never did figure out how to get it to install ghostview fonts. (I experimented
-	with version 0.9.2)
-      <DT>
-	<STRONG>Windows</STRONG>
-      <DD>
-	You install truetype fonts on windows by dropping them into the \Windows\Fonts
-	directory on your machine.<BR>
-	If you want to use type1 or opentype fonts you may need to install adobe
-	type manager and follow its instructions.<BR>
-	I don't know how to install a bdf font. I'd look for a utility to convert
-	bdf files to FON files and then drop the FON files into \Windows\Fonts.
-      <DT>
-	<STRONG>Macintosh OS 9</STRONG>
-      <DD>
-	Oh dear. The mac sticks fonts into resource forks and wraps them up in its
-	own headers. Mac fonts aren't compatible with anybody else's. PfaEdit can
-	create a resource fork if it wraps the font up in a macbinary encoding. See
-	the <A HREF="faq.html#How-mac">following question</A> for more information.<BR>
-	I've also written <A HREF="http://fondu.sourceforge.net/">some utilities
-	</A>designed to convert from one format to another and they may prove
-	useful.<BR>
-	<A HREF="http://babel.uoregon.edu/yamada/fontconversionfaq.html">University
-	of Oregon has some links that might be helpful</A>.<BR>
-	Once you've converted your fonts you just drop them into the System Folder
-	and they should be available after that.
-      <DT>
-	<STRONG>Macintosh OS X</STRONG>
-      <DD>
-	On OS/X fonts should be placed either in the top-level Library/Fonts directory
-	(By default <CODE>/Mac OS X/Library/Fonts/</CODE>), in the System/Library/Fonts
-	directory, or in the user's appropriate fonts sub-directory
-	(<CODE>~/Library/Fonts</CODE>).<BR>
-	Either a resource font (unwrapped from its macbinary wrapper) or a dfont
-	may be used. I'm not sure whether postscript Type1 resource fonts work, but
-	OpenType dfonts do (so if you want to use Postscript use OpenType).
-    </DL>
-  <DT>
-    <A NAME="How-mac"><B>How do I edit fonts from my macintoy?</B></A>
-  <DD>
-    <DL>
-      <DT>
-	Mac OS/9 (or less)
-      <DD>
-	Traditionally the macintosh has stored fonts in the resource fork of files.
-	This causes problems for any machine other than a mac, because the very concept
-	of a resource fork is lacking.<BR>
-	There are several programs whose job it is to store all of a macintosh file
-	in one package that can be manipulated on other systems (mac binary and binhex
-	are the most common). PfaEdit knows how to read both of these formats and
-	can extract a postscript or truetype font from either. PfaEdit can also create
-	fonts in macbinary format (I see no reason to support both output formats,
-	and macbinary is slightly simpler).<BR>
-	So to edit a font on your mac:
-	<OL>
-	  <LI>
-	    Find the file in the System Folder:Fonts folder
-	  <LI>
-	    Copy the file over to your unix machine
-	    <UL>
-	      <LI>
-		Use Fetch and specify macbinary format
-	      <LI>
-		Or use some tool like binhex which can create the file directly
-	    </UL>
-	  <LI>
-	    Open it in PfaEdit
-	  <LI>
-	    Edit it
-	  <LI>
-	    Save it back in macbinary format
-	  <LI>
-	    Copy it back to your mac
-	    <UL>
-	      <LI>
-		Fetch will automatically undo the macbinary wrappers and make it be correct
-	      <LI>
-		Or various other tools can unwrap it.
-	    </UL>
-	  <LI>
-	    Drop it back into your system folder (where it is automagically moved to
-	    Fonts)
-	</OL>
-	<P>
-	<STRONG>Caveat:</STRONG> A postscript font is useless on a macintosh unless
-	it is acompanied by at least one bitmap font. If you generate a postscript
-	font make sure you also generate an NFNT as well (this has the FOND).<BR>
-	<STRONG>Caveat:</STRONG> The mac is picky about the filename used to contain
-	a postscript file. It is based on the postscript font name but suffers a
-	transformation. Don't try to rename this file. Basically the rules are (see
-	<A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/0091.Mac_Fond.pdf">Adobe
-	Technical Note 0091</A>):
-	<UL>
-	  <LI>
-	    The fontname is broken into chunks where each chunk starts with a capital
-	    letter.
-	  <LI>
-	    The first chunk may have four lower case letters following the initial capital
-	  <LI>
-	    Subsequent chunks may only have two lower case letters following the capital.
-	  <LI>
-	    Non-letter characters (or at least hyphens) vanish.<BR>
-	    So TimesBold =&gt; TimesBol, Helvetica-BoldItalic =&gt; HelveBolIta,
-	    NCenturySchoolbook =&gt; NCenSch
-	</UL>
-      <DT>
-	Mac OS/X
-      <DD>
-	On Mac OS/X you can run <A HREF="MacOSX.html#Running">PfaEdit
-	directly</A> (if you've got <A HREF="MacOSX.html#binary">XDarwin
-	installed</A>). OS/X has at least two font formats, some fonts are stored
-	in the old format (see above), while others are stored as data fork resources.
-	The data fork font files generally have the extension ".dfont". On a Mac
-	PfaEdit is able to edit both formats directly. I am told that OS/X also supports
-	normal .otf and .ttf font files. I have not tested this.
-    </DL>
-  <DT>
-    <B>How do I edit fonts on MS <A NAME="windows">windows</A>?</B>
-  <DD>
-    To run PfaEdit under MS windows you must first install the
-    <A HREF="http://www.cygwin.com/">cygwin environment</A>.
-    <UL>
-      <LI>
-	First download the setup.exe program from
-	<A HREF="http://www.cygwin.com/">http://www.cygwin.com/</A>
-      <LI>
-	Run it. It will ask you what components of cygwin you wish to install
-      <LI>
-	You will definitely need the base components and the X window system (you
-	might need some others I have not tested the minimum requirements accurately)
-      <LI>
-	Once you have cygwin installed, start it. This should give you a terminal
-	window running bash (a unix shell)
-      <LI>
-	Download the <A HREF="index.html#binary">cygwin version of PfaEdit</A>, and
-	move it to whatever directory you think most appropriate
-	(<CODE>/usr/local/bin</CODE> is a reasonable choice)
-	<BLOCKQUOTE>
-	  <PRE>$ mkdir -p /usr/local/share/pfaedit /usr/local/bin /usr/local/share/man
-$ cd /usr/local/bin
-$ gunzip pfaedit_cygwin*.tgz
-$ tar xfv pfaedit_cygwin*.tar
-$ mv *.ui /usr/local/share/pfaedit
-$ mv pfaedit.1 /usr/local/share/man/man1
-</PRE>
-	</BLOCKQUOTE>
-	<P>
-	Then edit the file ~/.bashrc to contain the lines:
-	<BLOCKQUOTE>
-	  <PRE>PATH=${PATH}:/usr/local/bin ; export PATH
-MANPATH=${MANPATH:-}:/usr/local/share/man ; export MANPATH
-</PRE>
-	</BLOCKQUOTE>
-      <LI>
-	Then each time you want to run pfaedit, type:
-	<BLOCKQUOTE>
-	  <PRE>$ xinit
-</PRE>
-	</BLOCKQUOTE>
-      <LI>
-	This should bring up X in a large window that covers the screen and within
-	that should be a subwindow, an xterm, running bash.
-      <LI>
-	From the xterm you should be able start PfaEdit.
-	<BLOCKQUOTE>
-	  <PRE>$ pfaedit -new
-</PRE>
-	</BLOCKQUOTE>
-    </UL>
-    <P>
-    If you want to be able to build PfaEdit under cygwin, you will need to grab
-    some other cygwin components, like gcc, the image processing libraries, freetype,
-    etc.
-  <DT>
     <B>Does the <A NAME="simplify">simplify</A> command lose accuracy?</B>
   <DD>
     Yes it does.<BR>
@@ -639,6 +738,16 @@ MANPATH=${MANPATH:-}:/usr/local/share/man ; export MANPATH
     turning off all hinting on the font (some fonts will look worse with just
     those stems hinted) by AutoHinting the entire font and then clearing the
     hints of the entire font.
+  <DT>
+    <A NAME="type42"><B>Why doesn't pfaedit support Type 42 fonts?</B></A>
+  <DD>
+    A Type 42 font is a postscript wrapper around a truetype font. It is used
+    for downloading truetype fonts to postscript printers.
+    <P>
+    PfaEdit does not support these because when PfaEdit loads a TrueType font
+    it loses all the TrueType instructions. So if PfaEdit were to generate a
+    type 42 font the quality would be greatly reduced. You are much better off
+    using <A HREF="http://ftp.giga.or.at/pub/nih/ttftot42/">ttftot42</A>.
   <DT>
     <A NAME="otf-diffs"><B>I generated an opentype font and windows wouldn't
     install it. Why not?</B></A>

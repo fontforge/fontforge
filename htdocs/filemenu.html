@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 10-Dec-2000 -->
-  <!-- AP: Last modified: 13-Dec-2002 -->
+  <!-- AP: Last modified: 23-Dec-2002 -->
   <TITLE>The File Menu</TITLE>
 </HEAD>
 <BODY>
@@ -32,6 +32,8 @@
     <A HREF="#SaveAll">Save All</A>
   <LI>
     <A HREF="#Generate">Generate Fonts...</A>
+  <LI>
+    <A HREF="#GenerateMac">Generate Mac Family...</A>
   <LI>
     <A HREF="#Revert">Revert</A>
   <LI>
@@ -273,15 +275,20 @@
     <A NAME="Merge-kern">Merge Kern Info...</A>
   <DD>
     Only available in the font view window. This command will allow you to search
-    for an afm (or tfm) file containing kerning pairs for the specified font.
+    for an afm, tfm or mac resource file containing kerning pairs for the specified font.
     In many cases it will not be needed because when PfaEdit opens a .pfa or
     .pfb font it will automagically search for an appropriate .afm file in the
     same place. But sometimes afm files are stored in other directories. And
-    sometimes you want to import information from TeX.<BR>
+    sometimes you want to import information from TeX or from mac files.<BR>
     <FONT COLOR="Red"><SMALL><STRONG>NOTE: </STRONG></SMALL></FONT>PfaEdit is
-    unable to read an encoding from tfm files, it is your responsibility to ensure
+    unable to read an encoding from tfm files or from mac resource files, it is your responsibility to ensure
     that the encoding of your font matches that of the tfm file <EM>BEFORE</EM>
     merging kerning information. This is unfortunate, sorry.
+    <P>
+    Note: When loading a postscript font from a mac resource file, the associated
+    kerning data will be found in the FOND stored with a bitmap font for this
+    face. PfaEdit can't guess the name of this file when loading the font. You
+    must figure it out yourself.
   <DT>
     <A NAME="Print">Print</A>...
   <DD>
