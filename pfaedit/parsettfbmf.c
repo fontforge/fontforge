@@ -729,7 +729,7 @@ static void FillLineMetrics(struct bitmapSizeTable *size,BDFFont *bdf) {
     size->hori.caretRise = 1; /* other caret fields may be 0 */
     size->vert.caretRise = 1; /* other caret fields may be 0 */
     first = true;
-    for ( ; i<bdf->charcnt ; ++i ) if ( (bc=bdf->chars[i])!=NULL ) {
+    for ( i=0; i<bdf->charcnt ; ++i ) if ( (bc=bdf->chars[i])!=NULL ) {
 	if ( first ) {
 	    size->hori.ascender = bc->ymax;
 	    size->hori.descender = bc->ymin;
