@@ -448,6 +448,8 @@ return( 0 );
 	fprintf( stderr, "Interesting, I've never seen an example of this type of font, could you\nsend me a copy of %s?\nThanks\n  gww@silcom.com\n", filename );
     }
     if ( version!=0x00010000 && version!=CHR('t','r','u','e') &&
+	    version!=0x00020000 &&	/* Windows 3.1 Chinese version used this version for some arphic fonts */
+					/* See discussion on freetype list, july 2004 */
 	    version!=CHR('O','T','T','O'))
 return( 0 );			/* Not version 1 of true type, nor Open Type */
     info->numtables = getushort(ttf);

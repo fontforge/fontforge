@@ -8630,6 +8630,9 @@ return( NULL );
 	    int ch4 = getc(test);
 	    if ( ch1=='%' ) ok = true;
 	    else if (( ch1==0 && ch2==1 && ch3==0 && ch4==0 ) ||
+		    (  ch1==0 && ch2==2 && ch3==0 && ch4==0 ) ||
+		    /* Windows 3.1 Chinese version used this version for some arphic fonts */
+		    /* See discussion on freetype list, july 2004 */
 		    (ch1=='O' && ch2=='T' && ch3=='T' && ch4=='O') ||
 		    (ch1=='t' && ch2=='r' && ch3=='u' && ch4=='e') ||
 		    (ch1=='t' && ch2=='t' && ch3=='c' && ch4=='f') ) ok = true;
