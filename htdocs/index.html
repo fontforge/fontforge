@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 18-May-2002 -->
+  <!-- AP: Last modified: 3-Jun-2002 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -11,9 +11,6 @@
       src="http://sourceforge.net/sflogo.php?group_id=25752&amp;type=1" width="88"
       height="31" border="0" alt="SourceForge Logo" ALIGN=right> </A> PfaEdit
 </H1>
-<P ALIGN=Center>
-<FONT COLOR="Red"><STRONG><BIG>I will not be responding to bug reports between
-18 May and 3 June.</BIG></STRONG></FONT>
 <P>
 <FONT COLOR="Red"><STRONG>PfaEdit</STRONG></FONT> -- A postscript font editor
 that lets you create your own postscript, truetype, opentype, cid-keyed and
@@ -23,7 +20,7 @@ to another.
 Contents
 <UL>
   <LI>
-    <A HREF="overview.html">User manual</A>.
+    <A HREF="overview.html"><BIG>User manual</BIG></A><BIG>.</BIG>
   <LI>
     <A HREF="sfddiff.html">sfddiff man page</A>
   <LI>
@@ -83,8 +80,8 @@ you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-020518.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 18-May-2002
+    <A HREF="pfaedit-020603.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 3-June-2002
   <LI>
     <A HREF="pfaedit-020312-1.ppc.rpm">Download pfaedit linux-ppc SUSE 7.1
     </A>binary rpm Version: 12-Mar-2002
@@ -121,9 +118,9 @@ If you want to edit CID keyed fonts you probably need these
 <P>
 You can download a <A HREF="pfaedit-020312-1.src.rpm">source RPM</A>: Version:
 12-Mar-2002<BR>
-Or you can download the <A HREF="pfaedit_full-020518.tgz">entire source tree
+Or you can download the <A HREF="pfaedit_full-020603.tgz">entire source tree
 </A>in one .tgz file: Version
-18-May-2002<!--
+3-June-2002<!--
 Or you can download the following three packages. Version: 19-Jan-2002
 <UL>
 <LI>
@@ -282,6 +279,16 @@ Or you can just browse the <A HREF="overview.html">docs online</A>.
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    3-June-2002
+    <UL>
+      <LI>
+	Stopped using my extension to bdf to make it support greymaps and started
+	using that supported by freetype (removed the BITSPERPIXEL keyword and added
+	an extra argument to the SIZE keyword).
+      <LI>
+	More fixes for cid fonts
+    </UL>
   <LI>
     18-May-2002
     <UL>

@@ -34,6 +34,7 @@
 
 typedef struct gprogress {
     struct timeval start_time;	/* Don't pop up unless we're after this */
+    struct timeval pause_time;
     unichar_t *line1;
     unichar_t *line2;
     int sofar;
@@ -46,6 +47,7 @@ typedef struct gprogress {
     unsigned int aborted: 1;
     unsigned int visible: 1;
     unsigned int dying: 1;
+    unsigned int paused: 1;
     GWindow gw;
     GFont *font;
     struct gprogress *prev;
@@ -56,7 +58,7 @@ static GProgress *current;
 static void GProgressTimeCheck() {
     struct timeval tv;
 
-    if ( current==NULL || current->visible || current->dying )
+    if ( current==NULL || current->visible || current->dying || current->paused )
 return;
     gettimeofday(&tv,NULL);
     if ( tv.tv_sec>current->start_time.tv_sec ||
@@ -270,7 +272,9 @@ return;
 	    /* map it */
 	    /* but destroy it before the server can send us the map notify event */
 	    /* next three lines seem to deal with it */
-	GDrawSetVisible(old->gw,false);
+	/*GDrawSetVisible(old->gw,false);*/
+	GDrawSync(NULL);
+	GDrawProcessPendingEvents(NULL);
 	GDrawSync(NULL);
 	GDrawProcessPendingEvents(NULL);
     GDrawDestroyWindow(old->gw);
@@ -364,4 +368,30 @@ return(true);
     if ( current->sofar>=current->tot )
 	current->sofar = current->tot-1;
 return( GProgressProcess(current));
+}
+
+void GProgressPauseTimer(void) {
+    if ( current==NULL || current->visible || current->dying || current->paused )
+return;
+    gettimeofday(&current->pause_time,NULL);
+    current->paused = true;
+}
+
+void GProgressResumeTimer(void) {
+    struct timeval tv, res;
+
+    if ( current==NULL || current->visible || current->dying || !current->paused )
+return;
+    current->paused = false;
+    gettimeofday(&tv,NULL);
+    res.tv_sec = tv.tv_sec - current->pause_time.tv_sec;
+    if ( (res.tv_usec = tv.tv_usec - current->pause_time.tv_usec)<0 ) {
+	--res.tv_sec;
+	res.tv_usec += 1000000;
+    }
+    current->start_time.tv_sec += res.tv_sec;
+    if ( (current->start_time.tv_usec += res.tv_usec)>= 1000000 ) {
+	++current->start_time.tv_sec;
+	current->start_time.tv_usec -= 1000000;
+    }
 }

@@ -51,4 +51,6 @@ extern void GProgressEnableStop(int enabled);		/* Allows you to disable and enab
 extern int GProgressNextStage(void);	/* Move to the next stage in the topmost indicator */
 extern int GProgressNext(void);		/* Increment progress by one sub-entity */
 extern int GProgressIncrementBy(int cnt);	/* Increment progress by cnt sub-entities */
+extern void GProgressPauseTimer(void);	/* Don't bring up the progress dlg because of */
+extern void GProgressResumeTimer(void);	/*  time spent between a pause and resume */
 #endif

@@ -157,6 +157,7 @@ unichar_t *GWidgetSaveAsFile(const unichar_t *title, const unichar_t *defaultfil
     GGadget *pulldown, *files, *tf;
     int bs = GIntGetResource(_NUM_Buttonsize), bsbigger, totwid;
 
+    GProgressPauseTimer();
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
@@ -243,5 +244,6 @@ unichar_t *GWidgetSaveAsFile(const unichar_t *title, const unichar_t *defaultfil
     while ( !d.done )
 	GDrawProcessOneEvent(NULL);
     GDrawDestroyWindow(gw);
+    GProgressResumeTimer();
 return(d.ret);
 }

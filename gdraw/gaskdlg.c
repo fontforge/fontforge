@@ -155,6 +155,7 @@ static GWindow DlgCreate(const unichar_t *title,const unichar_t *question,va_lis
 return( NULL );
     }
 
+    GProgressPauseTimer();
     memset(qlabels,'\0',sizeof(qlabels));
     lb = FindLineBreaks(ubuf,qlabels);
     for ( bcnt=0; answers[bcnt]!=NULL; ++bcnt);
@@ -277,6 +278,7 @@ return( NULL );
     free(gcd);
     for ( i=0; i<lb; ++i )
 	free(qlabels[i].text);
+    GProgressResumeTimer();
 return( gw );
 }
 
@@ -630,6 +632,7 @@ static GWindow ChoiceDlgCreate(struct dlg_info *d,const unichar_t *title,
     int i, y;
     unichar_t ubuf[300];
 
+    GProgressPauseTimer();
     u_vsnprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),question,ap);
     memset(qlabels,'\0',sizeof(qlabels));
     lb = FindLineBreaks(ubuf,qlabels);
@@ -768,6 +771,7 @@ static GWindow ChoiceDlgCreate(struct dlg_info *d,const unichar_t *title,
     free(gcd);
     for ( i=0; i<lb; ++i )
 	free(qlabels[i].text);
+    GProgressResumeTimer();
 return( gw );
 }
 

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 14-Apr-2002 -->
+  <!-- AP: Last modified: 3-Jun-2002 -->
   <TITLE>Frequently Asked Questions</TITLE>
 </HEAD>
 <BODY>
@@ -65,6 +65,16 @@
   <LI>
     <A HREF="faq.html#default-char">How do I set the default character of a
     font?</A>
+  <LI>
+    <A HREF="#ttf-degrade">I loaded a ttf font, made a few changes and generated
+    a new font. The new font doesn't look anywhere near as nice as the original
+    even for characters I didn't change. Why?</A>
+  <LI>
+    <A HREF="#greek-accents">When I use Element-&gt;Build Accented Character
+    to build one of the Extended Greek characters (U+1F00-U+1FFF) PfaEdit picks
+    the wrong accents. Why?</A>
+  <LI>
+    <A HREF="#ttf2afm">Why does ttf2afm crash on PfaEdit ttf files?</A>
 </UL>
 <P>
   <HR>
@@ -541,11 +551,48 @@ $ xset fp+ `pwd`
     This is easy since any quadratic spline can already be represented as a cubic,
     it will just happen that the cubic term is always 0.
   <DT>
-    <A NAME="default-char">How do I set the default character of a font?</A>
+    <A NAME="default-char"><B>How do I set the default character of a
+    font?</B></A>
   <DD>
     If the character at encoding 0 is named ".notdef" and if it contains some
     splines (but no references) then it will be used as the default character
     (that is the character used when an unencoded character is called for).
+  <DT>
+    <A NAME="ttf-degrade"><B>I loaded a ttf font, made a few changes and generated
+    a new font. The new font doesn't look anywhere near as nice as the original
+    even for characters I didn't change. Why?</B></A>
+  <DD>
+    Unfortunately PfaEdit does not hint truetype fonts at all well. And when
+    PfaEdit reads in a truetype font it throws out all the hinting (instructions)
+    that were present in the original. The result is that PfaEdit will degrade
+    the appearance of most truetype fonts (not all, some have no hints.<BR>
+    PfaEdit will hint vertical and horizontal stems. You might experiment with
+    turning off all hinting on the font (some fonts will look worse with just
+    those stems hinted) by AutoHinting the entire font and then clearing the
+    hints of the entire font.
+  <DT>
+    <A NAME="greek-accents"><B>When I use Element-&gt;Build Accented Character
+    to build one of the Extended Greek characters (U+1F00-U+1FFF) PfaEdit picks
+    the wrong accents. Why?</B></A>
+  <DD>
+    For some reason Unicode has unified greek and latin accents even though they
+    don't look at all alike. When PfaEdit follows the simplistic unicode definitions
+    it will probably pick a latin accent for greek characters. Fortunately Unicode
+    also contains code points for the greek accents starting around U+1FBD, if
+    you fill these code points with the appropriate accents then PfaEdit will
+    use these rather than the latin accents.
+  <DT>
+    <A NAME="ttf2afm"><B>Why does ttf2afm crash on PfaEdit ttf files?</B></A>
+  <DD>
+    I don't know. The ttf2afm that was distributed with my redhat linux certainly
+    does crash. When I downloaded the source from
+    <A HREF="http://www.ctan.org/tex-archive/obsolete/systems/pdftex/">pdftex</A>
+    area of ctan and built it (with debug) the resultant program did not crash.
+    Therefore I believe this is a bug in ttf2afm and that bug has been
+    fixed.<BR>
+    The afm files produced by ttf2afm don't conform to
+    <A HREF="http://partners.adobe.com/asn/developer/PDFS/TN/5004.AFM_Spec.pdf">Adobe's
+    specifications</A>.
 </DL>
 <P>
 <P ALIGN=Center>

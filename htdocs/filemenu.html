@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 10-Dec-2000 -->
-  <!-- AP: Last modified: 2-Mar-2002 -->
+  <!-- AP: Last modified: 3-Jun-2002 -->
   <TITLE>The File Menu</TITLE>
 </HEAD>
 <BODY>
@@ -235,11 +235,12 @@
 	select sizes for which you have already generated fonts
       <LI>
 	GDF -- Greymap Distribution Format, used for saving anti-aliased fonts. The
-	format is exactly the same as BDF except for one extra header "BITSPERPIXEL"
-	which may have a value of 2, 4 or 8. You may pick any size you like (within
-	reason), and an anti-aliased font will be generated for that size. As far
-	as I know this is a totally useless format since I just created it, but I
-	thought it a kind of neat idea.
+	format is exactly the same as BDF except that the "SIZE" keyword may have
+	an extra value of 2, 4 or 8 to indicate the depth of the font (bits per pixel).
+	You may pick any size you like (within reason), and an anti-aliased font
+	will be generated for that size. This format is now the same as that used
+	by <A HREF="http://freetype.sf.net/">freetype</A> and
+	<A HREF="http://crl.nmsu.edu/~mleisher/xmbdfed.html">xmbdfed</A>.
       <LI>
 	In TTF (MS) -- Store the bitmap fonts inside the ttf file using the microsoft
 	tables.

@@ -76,6 +76,7 @@ unichar_t *GWidgetOpenFile(const unichar_t *title, const unichar_t *defaultfile,
     struct gfc_data d;
     int bs = GIntGetResource(_NUM_Buttonsize), bsbigger, totwid;
 
+    GProgressPauseTimer();
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
@@ -151,5 +152,6 @@ unichar_t *GWidgetOpenFile(const unichar_t *title, const unichar_t *defaultfile,
     GDrawProcessPendingEvents(NULL);		/* Give the window a chance to vanish... */
     GDrawSync(NULL);
     GDrawProcessPendingEvents(NULL);		/* Give the window a chance to vanish... */
+    GProgressResumeTimer();
 return(d.ret);
 }
