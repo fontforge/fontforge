@@ -3351,6 +3351,7 @@ return(NULL);
     if ( len==0 )
 return( NULL );
     str = galloc(len+1);
+    fseek(ttf,pos,SEEK_SET);
     for ( i=len=0; i<cnt; ++i ) {
 	glyph = getushort(ttf);
 	if ( glyph<info->glyph_cnt ) {
