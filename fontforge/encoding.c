@@ -194,6 +194,10 @@ return;
     for ( i=0, prev=NULL, item=head; item!=NULL; prev = item, item=item->next, ++i ) {
 	item->enc_num = ++enc_num;
 	if ( item->enc_name==NULL ) {
+	    if ( no_windowing_ui ) {
+		GWidgetErrorR(_STR_BadEncFormat,_STR_UnnamableEncoding);
+return;
+	    }
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	    if ( item==head && item->next==NULL )
 		u_strcpy(ubuf,GStringGetResource(_STR_PleaseNameEnc,NULL) );
@@ -212,10 +216,9 @@ return;
 	    name = GWidgetAskString(ubuf,NULL,ubuf);
 #elif defined(FONTFORGE_CONFIG_GTK)
 	    if ( item==head && item->next==NULL )
-	    if ( item==head && item->next==NULL )
 		u_strcpy(buf,_("Please name this encoding") );
 	    else {
-#if defined( _NO_SNPRINTF ) || defined( __VMS )
+# if defined( _NO_SNPRINTF ) || defined( __VMS )
 		if ( i<=3 )
 		    sprintf(buf,
 			    _("Please name the %s encoding in this file"),
@@ -226,7 +229,7 @@ return;
 		    sprintf(buf,sizeof(buf),
 			    _("Please name the %dth encoding in this file"),
 			    i );
-#else
+# else
 		if ( i<=3 )
 		    snprintf(buf,
 			    _("Please name the %s encoding in this file"),
@@ -237,11 +240,9 @@ return;
 		    snprintf(buf,sizeof(buf),
 			    _("Please name the %dth encoding in this file"),
 			    i );
-#endif
+# endif
 	    }
 	    name = gwwv_ask_string(buf,NULL,buf);
-#else
-return;
 #endif
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	    if ( name!=NULL ) {

@@ -2501,6 +2501,7 @@ static char *str_CvtPS = "Converting Postscript";
     /* encoding */
 static char *str_BadEncFormat = "Bad encoding file format";
 static char *str_PleaseNameEnc = "Please name this encoding";
+static char *str_UnnamableEncoding = "This file contains an unnamed encoding, which cannot be named in a script"
 /* Either insert first, second or third, or the number followed by the "th" string (5th, 6th, etc.) */
 /* Please name the %d/first/second/third encoding in this file" */
 static char *str_PleaseNameEncNamed = "Please name the %s encoding in this file";
