@@ -1026,6 +1026,11 @@ static StemInfo *_StemsFind(StemInfo *stems,real start, real end,
 	int shadpt, int ehadpt, int lin) {
     StemInfo *test;
 
+    /* I'm giving up on non integral hints. In post cases it means the user */
+    /*  didn't design his/her font properly */
+    if ( start!=floor(start) || end!=floor(end))
+return( NULL );
+
     for ( test=stems; test!=NULL; test=test->next ) {
 	if ( start-3<test->start && start+3>test->start &&
 		end-3<test->start+test->width && end+3>test->start+test->width ) {
@@ -1104,7 +1109,9 @@ static StemInfo *StemAddBrief(StemInfo *stems,EI *apt,EI *e,
     StemInfo *new;
 
     new = StemsFind(stems,apt,e,major);
-    if ( new->where==NULL ) {
+    if ( new==NULL ) {
+	/* Do Nothing */;
+    } else if ( new->where==NULL ) {
 	stems = StemInsert(stems,new);
     } else if ( new->reordered )
 	stems = HintCleanup(stems,false);
@@ -1147,6 +1154,9 @@ static StemInfo *StemAddUpdate(StemInfo *stems,EI *apt,EI *e, int i, int major,
     }
     new = StemsFind(stems,apt,e,major);
     apt->tcur = atcur; apt->ocur = aocur; e->tcur=etcur; e->ocur = eocur;
+
+    if ( new==NULL )
+return( stems );
 
     if ( new->where==NULL ) {
 	if ( !new->haspointleft || !new->haspointright ) {
@@ -1224,7 +1234,7 @@ static StemInfo *StemsOffsetHack(StemInfo *stems,EI *apt,EI *e, int major) {
 	end = (et==1)?e->spline->to->me.x: e->spline->from->me.x;
 	if ( start>end ) { double temp = start; start = end; end = temp; }
 	new = _StemsFind(stems,start,end,true,true,false);
-	if ( new->where!=NULL )
+	if ( new==NULL || new->where!=NULL )
 return( stems );
 	stems = StemInsert(stems,new);
 	start = (at==1)?apt->spline->to->me.y: apt->spline->from->me.y;
@@ -1247,7 +1257,7 @@ return( stems );
 	end = (et==1)?e->spline->to->me.y: e->spline->from->me.y;
 	if ( start>end ) { double temp = start; start = end; end = temp; }
 	new = _StemsFind(stems,start,end,true,true,false);
-	if ( new->where!=NULL )
+	if ( new==NULL || new->where!=NULL )
 return( stems );
 	stems = StemInsert(stems,new);
 	start = (at==1)?apt->spline->to->me.x: apt->spline->from->me.x;
@@ -1330,6 +1340,9 @@ return( pendings );
 	new = _StemsFind(*stems,ocur<t->otherpos?ocur:t->otherpos,
 		    ocur<t->otherpos?t->otherpos:ocur,
 		    true,true,false);	/* pending hints only happen at endpoints */
+	if ( new==NULL )
+return( pendings );
+
 	if ( new->where==NULL ) {
 	    new->pendingpt = true;
 	    *stems = StemInsert(*stems,new);
@@ -2222,6 +2235,33 @@ return( true );
 return( false );
 }
 
+static int StemWouldConflict(StemInfo *stems,double base, double width) {
+    int found;
+
+    if ( width<0 ) {
+	base += width;
+	width = -width;
+    }
+    while ( stems!=NULL && stems->start<base && stems->start+stems->width<base )
+	stems = stems->next;
+
+    found = false;
+    while ( stems!=NULL && stems->start<base+width && stems->start+stems->width<base+width ) {
+	if (( stems->start==base && stems->width==width ) ||
+		(stems->start+stems->width==base && stems->width==-width ))
+return( false );		/* If it has already been added, then too late to worry about conflicts */
+	if ( stems->width>0 ) {
+	    if ( stems->start+stems->width>=base && stems->start<=base+width )
+		found = true;
+	} else {
+	    if ( stems->start>=base && stems->start+stems->width<=base+width )
+		found = true;
+	}
+	stems = stems->next;
+    }
+return( found );
+}
+
 int StemListAnyConflicts(StemInfo *stems) {
     StemInfo *s;
     int any= false;
@@ -2460,14 +2500,23 @@ static StemInfo *GhostAdd(StemInfo *ghosts, StemInfo *stems, real base,
     StemInfo *s, *prev, *test;
     HintInstance *hi;
 
+    if ( base!=rint(base))
+return( ghosts );
+
     if ( xstart>xend ) {
 	real temp = xstart;
 	xstart = xend;
 	xend = temp;
     }
     if ( width==20 ) base -= 20;
+
     if ( inhints(stems,base,width))
 return(ghosts);		/* already recorded */
+    if ( StemWouldConflict(stems,base,width))
+return(ghosts);		/* Let's not add a conflicting ghost hint */
+    if ( StemWouldConflict(ghosts,base,width))
+return(ghosts);
+
     for ( s=ghosts; s!=NULL; s=s->next )
 	if ( s->start==base && s->width==width )
     break;
