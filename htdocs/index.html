@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 30-Dec-2001 -->
+  <!-- AP: Last modified: 3-Jan-2002 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -64,18 +64,19 @@ Contents
     <A HREF="#tools">Similar tools</A>
 </UL>
 <P>
-This is beta software. Expect to find bugs. <A HREF="#bugs">Please let me
-know when you do</A>.
+I have no one to do QA for me except users on the net, so this is essentially
+beta software. Expect to find bugs. <A HREF="#bugs">Please let me know when
+you do</A>.
 <H2>
   <A NAME="binary">Binary</A> distributions:
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-011229.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 29-Dec-2001
+    <A HREF="pfaedit-020102.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 2-Jan-2002
   <LI>
-    <A HREF="pfaedit-solaris-011229.tgz">Download pfaedit Solaris 8.0
-    </A>executable Version: 29-Dec-2001
+    <A HREF="pfaedit-solaris-011230.tgz">Download pfaedit Solaris 8.0
+    </A>executable Version: 30-Dec-2001
   <LI>
     <A HREF="pfaedit-011219-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
     Version: 19-Dec-2001 (Redhat 7.1)
@@ -107,22 +108,22 @@ If you want to edit CID keyed fonts you need these
 <P>
 You can download a <A HREF="pfaedit-011219-1.src.rpm">source RPM</A>: Version:
 19-Dec-2001<BR>
-Or you can download the following three packages. Version: 18-Dec-2001
+Or you can download the following three packages. Version: 2-Jan-2002
 <UL>
   <LI>
-    <A HREF="libgunicode-011229.tgz">Unicode library source</A> (29-Dec-2001)<BR>
+    <A HREF="libgunicode-020102.tgz">Unicode library source</A> (2-Jan-2002)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGUnicode/index.html">docs</A>
   <LI>
-    <A HREF="libgdraw-011229.tgz">Unicode widget library source</A>
-    (29-Dec-2001)<BR>
+    <A HREF="libgdraw-020102.tgz">Unicode widget library source</A>
+    (2-Jan-2002)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
   <LI>
-    <A HREF="pfaedit_src-011229.tgz">Pfaedit source</A> (29-Dec-2001)<BR>
+    <A HREF="pfaedit_src-020102.tgz">Pfaedit source</A> (2-Jan-2002)<BR>
     -- <A HREF="overview.html">docs</A>
   <LI>
-    <A HREF="pfaedit_full-011229.tgz">All three bundled together </A>(29-Dec-2001)
+    <A HREF="pfaedit_full-020102.tgz">All three bundled together </A>(2-Jan-2002)
 </UL>
 <P>
 If you want to do autotracing around character images you should also download
@@ -233,7 +234,7 @@ up into one <A HREF="pfaedit_htdocs-011116.tgz">tgz file</A> 16-Nov-2001.
 </H2>
 <UL>
   <LI>
-    ???
+    2 Jan 2002
     <UL>
       <LI>
 	Copy From has been made global and sticky (each font used to have a seperate
@@ -247,6 +248,39 @@ up into one <A HREF="pfaedit_htdocs-011116.tgz">tgz file</A> 16-Nov-2001.
       <LI>
 	If there were background images in a glyph then changing the Show/Hide rulers
 	made the display
+      <LI>
+	In the Outline view, the character's popup box would appear if the mouse
+	were over the menubar. Werner thought that inappropriate.
+      <LI>
+	If import bitmaps needed to expand the number of characters in a font (to
+	provide slots for all the bitmaps) it would fail to do so properly. Resulting
+	in a crash.
+      <LI>
+	Hmm. There appears to be a race condition inside the XServer on my machine
+	and if I map a window but destroy it before I read the MapNotify (or possibly
+	Expose) event on the queue, then the server will calmly crash. This can happen
+	if a progress indicator is ended just after we decide to display it. I've
+	tried to work around it, but there may still be holes.
+      <LI>
+	Added an "About..." menu entry to display the splash screen again
+      <LI>
+	Gleep! type1 cid font generation had a couple of problems
+      <LI>
+	Print Sample is now available for cid fonts.
+      <LI>
+	View-AntiAlias didn't work (characters were always displayed as antialiased)
+      <LI>
+	Menus made more responsive to key presses.
+      <LI>
+	The Zoom In and Out commands are now centered around the selection (if there
+	is one, if not they continue to use center of the window)
+      <LI>
+	Changed the order of entries in the Point Info dlg so that Prev is above
+	Next
+      <LI>
+	The Escape key can be used to deselect
+      <LI>
+	New copyright notices.
     </UL>
   <LI>
     29-Dec-2001
