@@ -765,14 +765,21 @@ return( ssplus );
 
 SplineSet *SSStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc) {
     SplineSet *head=NULL, *last=NULL, *cur;
+    int was_clock = true;
 
     for ( ; spl!=NULL; spl = spl->next ) {
+	if ( si->removeinternal || si->removeexternal )
+	    was_clock = SplinePointListIsClockwise(spl);
 	cur = SplineSetStroke(spl,si,sc);
 	if ( head==NULL )
 	    head = cur;
 	else
 	    last->next = cur;
-	while ( cur->next!=NULL ) cur = cur->next;
+	while ( cur->next!=NULL ) {
+	    if ( !was_clock )
+		SplineSetReverse(cur);
+	    cur = cur->next;
+	}
 	last = cur;
     }
 return( head );

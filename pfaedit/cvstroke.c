@@ -370,7 +370,7 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	    /* toobigwarn */  false,
 	    /* removeexternal */ false,
 	    /* removeinternal */ false,
-	    /* removeoverlapif*/ false,
+	    /* removeoverlapif*/ true,
 	    /* gottoobig */    false,
 	    3.1415926535897932/4, .2, 50 };
     StrokeInfo *def = si?si:&defaults;

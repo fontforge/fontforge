@@ -1824,6 +1824,8 @@ static void bExpandStroke(Context *c) {
 	    si.removeinternal = true;
 	else if ( c->a.vals[5].u.ival&2 )
 	    si.removeexternal = true;
+	if ( c->a.vals[5].u.ival&4 )
+	    si.removeoverlapifneeded = true;
     } else {
 	si.caligraphic = true;
 	si.penangle = 3.1415926535897932*c->a.vals[2].u.ival/180;
