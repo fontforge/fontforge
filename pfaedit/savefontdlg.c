@@ -887,7 +887,7 @@ return( 0 );
 	strcat(pt,"]");
     }
 
-    err = !WritePSFont(filename,&temp,oldformatstate);
+    err = !WritePSFont(filename,&temp,ff_pfb);
     if ( err )
 	GWidgetErrorR(_STR_Savefailedtitle,_STR_Savefailedtitle);
     if ( !err && oldafmstate && GProgressNextStage()) {
