@@ -1095,6 +1095,7 @@ void SplinePointPrevCPChanged2(SplinePoint *sp, int fixnext) {
     if ( sp->prev!=NULL ) {
 	p = sp->prev->from;
 	p->nextcp = sp->prevcp;
+	p->nonextcp = sp->noprevcp;
 	if ( sp->noprevcp ) {
 	    p->nonextcp = true;
 	    p->nextcp = p->me;
@@ -1149,6 +1150,7 @@ void SplinePointNextCPChanged2(SplinePoint *sp, int fixprev) {
     if ( sp->next!=NULL ) {
 	n = sp->next->to;
 	n->prevcp = sp->nextcp;
+	n->noprevcp = sp->nonextcp;
 	if ( sp->nonextcp ) {
 	    n->noprevcp = true;
 	    n->prevcp = n->me;
