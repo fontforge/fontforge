@@ -579,7 +579,7 @@ extern void ApGetInfo(CharView *cv, AnchorPoint *ap);
 extern AnchorClass *AnchorClassUnused(SplineChar *sc,int *waslig);
 extern void FVSetWidth(FontView *fv,enum widthtype wtype);
 extern void CVSetWidth(CharView *cv,enum widthtype wtype);
-extern void FVSetWidthScript(FontView *fv,enum widthtype wtype,int val);
+extern void FVSetWidthScript(FontView *fv,enum widthtype wtype,int val,int incr);
 extern void CVChangeSC(CharView *cv, SplineChar *sc );
 extern void SCRefreshTitles(SplineChar *sc);
 

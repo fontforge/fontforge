@@ -1738,35 +1738,47 @@ static void bClearHints(Context *c) {
 }
 
 static void bSetWidth(Context *c) {
-    if ( c->a.argc!=2 )
+    int incr = 0;
+    if ( c->a.argc!=2 && c->a.argc!=3 )
 	error( c, "Wrong number of arguments");
-    if ( c->a.vals[1].type!=v_int )
+    if ( c->a.vals[1].type!=v_int || (c->a.argc==3 && c->a.vals[2].type!=v_int ))
 	error(c,"Bad argument type in SetWidth");
-    FVSetWidthScript(c->curfv,wt_width,c->a.vals[1].u.ival);
+    if ( c->a.argc==3 && c->a.vals[2].u.ival )
+	incr = true;
+    FVSetWidthScript(c->curfv,wt_width,c->a.vals[1].u.ival,incr);
 }
 
 static void bSetVWidth(Context *c) {
-    if ( c->a.argc!=2 )
+    int incr = 0;
+    if ( c->a.argc!=2 && c->a.argc!=3 )
 	error( c, "Wrong number of arguments");
-    if ( c->a.vals[1].type!=v_int )
+    if ( c->a.vals[1].type!=v_int || (c->a.argc==3 && c->a.vals[2].type!=v_int ))
 	error(c,"Bad argument type in SetVWidth");
-    FVSetWidthScript(c->curfv,wt_vwidth,c->a.vals[1].u.ival);
+    if ( c->a.argc==3 && c->a.vals[2].u.ival )
+	incr = true;
+    FVSetWidthScript(c->curfv,wt_vwidth,c->a.vals[1].u.ival,incr);
 }
 
 static void bSetLBearing(Context *c) {
-    if ( c->a.argc!=2 )
+    int incr = 0;
+    if ( c->a.argc!=2 && c->a.argc!=3 )
 	error( c, "Wrong number of arguments");
-    if ( c->a.vals[1].type!=v_int )
+    if ( c->a.vals[1].type!=v_int || (c->a.argc==3 && c->a.vals[2].type!=v_int ))
 	error(c,"Bad argument type in SetLBearing");
-    FVSetWidthScript(c->curfv,wt_lbearing,c->a.vals[1].u.ival);
+    if ( c->a.argc==3 && c->a.vals[2].u.ival )
+	incr = true;
+    FVSetWidthScript(c->curfv,wt_lbearing,c->a.vals[1].u.ival,incr);
 }
 
 static void bSetRBearing(Context *c) {
-    if ( c->a.argc!=2 )
+    int incr = 0;
+    if ( c->a.argc!=2 && c->a.argc!=3 )
 	error( c, "Wrong number of arguments");
-    if ( c->a.vals[1].type!=v_int )
+    if ( c->a.vals[1].type!=v_int || (c->a.argc==3 && c->a.vals[2].type!=v_int ))
 	error(c,"Bad argument type in SetRBearing");
-    FVSetWidthScript(c->curfv,wt_rbearing,c->a.vals[1].u.ival);
+    if ( c->a.argc==3 && c->a.vals[2].u.ival )
+	incr = true;
+    FVSetWidthScript(c->curfv,wt_rbearing,c->a.vals[1].u.ival,incr);
 }
 
 static void bAutoWidth(Context *c) {
