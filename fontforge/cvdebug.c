@@ -527,6 +527,27 @@ static void DVFigureNewState(DebugView *dv,TT_ExecContext exc) {
 	GDrawRequestExpose(dv->raster,NULL,false);
 }
 
+/* If a glyph has no instructions, it has no execcontext. But it is still */
+/*  consistent to provide a current rasterization view (of the non-grid fit */
+/*  splines) */
+static void DVDefaultRaster(DebugView *dv) {
+    CharView *cv = dv->cv;
+
+    if ( cv->oldraster!=NULL )
+	FreeType_FreeRaster(cv->oldraster);
+    cv->oldraster = cv->raster;
+    SplinePointListsFree(cv->gridfit);
+    cv->gridfit = NULL;
+    cv->raster = DebuggerCurrentRasterization(cv->sc->layers[ly_fore].splines,
+		(cv->sc->parent->ascent+cv->sc->parent->descent) / (real) cv->ft_ppem);
+    cv->ft_gridfitwidth = 0;
+
+    if ( cv!=NULL )
+	GDrawRequestExpose(cv->v,NULL,false);
+    if ( dv->raster!=NULL )
+	GDrawRequestExpose(dv->raster,NULL,false);
+}
+
 static void DVGoFigure(DebugView *dv,enum debug_gotype go) {
     DebuggerGo(dv->dc,go,dv);
     DVFigureNewState(dv,DebuggerGetEContext(dv->dc));
@@ -1586,6 +1607,8 @@ return;
 
 	if (( exc = DebuggerGetEContext(dv->dc))!=NULL )
 	    DVFigureNewState(dv,exc);
+	else
+	    DVDefaultRaster(dv);
 	GDrawSetVisible(dv->ii.v,true);
 	GDrawSetVisible(dv->dv,true);
 	CVResize(cv);
@@ -1600,6 +1623,8 @@ return;
 	FreeType_FreeRaster(cv->raster); cv->raster = NULL;
 	if (( exc = DebuggerGetEContext(dv->dc))!=NULL )
 	    DVFigureNewState(dv,exc);
+	else
+	    DVDefaultRaster(dv);
     }
 }
 
