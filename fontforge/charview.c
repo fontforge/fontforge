@@ -1496,7 +1496,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	CVDrawRubberRect(pixmap,cv);
     if ( cv->p.rubberlining )
 	CVDrawRubberLine(pixmap,cv);
-    if ((( cv->active_tool >= cvt_scale && cv->active_tool <= cvt_skew ) ||
+    if ((( cv->active_tool >= cvt_scale && cv->active_tool <= cvt_perspective ) ||
 		cv->active_shape!=NULL ) &&
 	    cv->p.pressed )
 	DrawTransOrigin(cv,pixmap);
@@ -2620,6 +2620,7 @@ return;
 	CVMouseDownRuler(cv,event);
       break;
       case cvt_rotate: case cvt_flip: case cvt_scale: case cvt_skew:
+      case cvt_3d_rotate: case cvt_perspective:
 	CVMouseDownTransform(cv);
       break;
       case cvt_knife:
@@ -3077,6 +3078,7 @@ return;
 	CVMouseMoveRuler(cv,event);
       break;
       case cvt_rotate: case cvt_flip: case cvt_scale: case cvt_skew:
+      case cvt_3d_rotate: case cvt_perspective:
 	CVMouseMoveTransform(cv);
       break;
       case cvt_knife:
@@ -3192,6 +3194,7 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
 	}
       break;
       case cvt_rotate: case cvt_flip: case cvt_scale: case cvt_skew:
+      case cvt_3d_rotate: case cvt_perspective:
 	CVMouseUpTransform(cv);
       break;
       case cvt_knife:

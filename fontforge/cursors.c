@@ -37,6 +37,7 @@
 GdkCursor *ct_magplus, *ct_magminus, *ct_mypointer,
 	*ct_circle, *ct_square, *ct_triangle, *ct_pen,
 	*ct_ruler, *ct_knife, *ct_rotate, *ct_skew, *ct_scale, *ct_flip,
+	*ct_3drotate, *ct_perspective,
 	*ct_updown, *ct_leftright, *ct_nesw, *ct_nwse,
 	*ct_rect, *ct_elipse, *ct_poly, *ct_star, *ct_filledrect, *ct_filledelipse,
 	*ct_pencil, *ct_shift, *ct_line, *ct_myhand, *ct_setwidth,
@@ -44,7 +45,8 @@ GdkCursor *ct_magplus, *ct_magminus, *ct_mypointer,
 	*ct_prohibition, *ct_ddcursor;
 #else
 GCursor ct_magplus, ct_magminus, ct_mypointer, ct_circle, ct_square, ct_triangle,
-	ct_ruler, ct_pen, ct_knife, ct_rotate, ct_skew, ct_scale, ct_flip;
+	ct_ruler, ct_pen, ct_knife, ct_rotate, ct_skew, ct_scale, ct_flip,
+	ct_3drotate, ct_perspective;
 GCursor ct_rect, ct_elipse, ct_poly, ct_star, ct_pencil, ct_shift, ct_line,
 	ct_myhand, ct_filledrect, ct_filledelipse, ct_setwidth, ct_eyedropper;
 GCursor ct_updown, ct_leftright, ct_nesw, ct_nwse;
@@ -281,6 +283,22 @@ static unsigned char skewcurmask_bits[] = {
    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
    0x00, 0x00, 0xff, 0x07, 0x49, 0x02, 0x49, 0x02, 0x45, 0x01, 0x45, 0x01,
    0xc3, 0x00, 0xc3, 0x00, 0x41, 0x00, 0x7f, 0x00};
+#define rotate3dcur_width 16
+#define rotate3dcur_height 16
+#define rotate3dcur_x_hot 1
+#define rotate3dcur_y_hot 13
+static unsigned char rotate3dcur_bits[] = {
+   0x02, 0x00, 0xfa, 0x00, 0x8a, 0x00, 0x8a, 0x00, 0x8a, 0x00, 0x8a, 0x00,
+   0x8a, 0x00, 0xfa, 0x00, 0x02, 0x1c, 0xaa, 0x22, 0x02, 0xaa, 0xaa, 0x72,
+   0x02, 0x22, 0xff, 0x8f, 0x02, 0x02, 0x02, 0x3c};
+#define perspectivecur_width 16
+#define perspectivecur_height 16
+#define perspectivecur_x_hot 0
+#define perspectivecur_y_hot 15
+static unsigned char perspectivecur_bits[] = {
+   0x41, 0x04, 0x41, 0x04, 0x21, 0x08, 0x21, 0x08, 0x11, 0x10, 0xf1, 0x1f,
+   0x31, 0x19, 0x29, 0x28, 0xa9, 0x2a, 0x25, 0x48, 0x65, 0x4c, 0x25, 0x48,
+   0xe3, 0x8f, 0x03, 0x80, 0x01, 0x00, 0xff, 0xff};
 #define setwidthcur_width 16
 #define setwidthcur_height 16
 #define setwidthcur_x_hot 14
@@ -609,10 +627,20 @@ void InitCursors(void) {
     ct_scale = gdk_cursor_new_from_pixmap( image,image,&red,&white,scalecur_x_hot,
 	    scalecur_y_hot);
 
-    image = gdk_pixmap_create_from_data(NULL,scalecur_bits,scalecur_width,scalecur_height,
+    image = gdk_pixmap_create_from_data(NULL,skewcur_bits,skewcur_width,skewcur_height,
 	    24, &black, &white);
-    ct_skew = gdk_cursor_new_from_pixmap( image,image,&red,&white,scalecur_x_hot,
-	    scalecur_y_hot);
+    ct_skew = gdk_cursor_new_from_pixmap( image,image,&red,&white,skewcur_x_hot,
+	    skewcur_y_hot);
+
+    image = gdk_pixmap_create_from_data(NULL,rotate3dcur_bits,rotate3dcur_width,rotate3dcur_height,
+	    24, &black, &white);
+    ct_3drotate = gdk_cursor_new_from_pixmap( image,image,&red,&white,rotate3dcur_x_hot,
+	    rotate3dcur_y_hot);
+
+    image = gdk_pixmap_create_from_data(NULL,perspectivecur_bits,perspectivecur_width,perspectivecur_height,
+	    24, &black, &white);
+    ct_perspective = gdk_cursor_new_from_pixmap( image,image,&red,&white,perspectivecur_x_hot,
+	    perspectivecur_y_hot);
 
     image = gdk_pixmap_create_from_data(NULL,rectcur_bits,rectcur_width,rectcur_height,
 	    24, &black, &white);
@@ -797,6 +825,16 @@ void InitCursors(void) {
     ct_skew = GDrawCreateCursor(image,image,0xff0000,0xffffff,skewcur_x_hot,
 	    skewcur_y_hot);
     GDrawDestroyWindow(image); GDrawDestroyWindow(mask);
+
+    image = GDrawCreateBitmap(NULL,rotate3dcur_width,rotate3dcur_height,rotate3dcur_bits);
+    ct_3drotate = GDrawCreateCursor(image,image,0xff0000,0xffffff,rotate3dcur_x_hot,
+	    rotate3dcur_y_hot);
+    GDrawDestroyWindow(image);
+
+    image = GDrawCreateBitmap(NULL,perspectivecur_width,perspectivecur_height,perspectivecur_bits);
+    ct_perspective = GDrawCreateCursor(image,image,0xff0000,0xffffff,perspectivecur_x_hot,
+	    perspectivecur_y_hot);
+    GDrawDestroyWindow(image);
 
     image = GDrawCreateBitmap(NULL,rectcur_width,rectcur_height,rectcur_bits);
     ct_rect = GDrawCreateCursor(image,image,0xff0000,0xffffff,rectcur_x_hot,
