@@ -3690,8 +3690,8 @@ static SplineChar *SFMakeDupRef(SplineFont *sf, int local_enc, struct dup *dup) 
     }
 
     ref->sc = dup->sc;
-    ref->local_enc = sc->enc;
-    ref->unicode_enc = sc->unicodeenc;
+    ref->local_enc = dup->sc->enc;
+    ref->unicode_enc = dup->sc->unicodeenc;
     ref->adobe_enc = getAdobeEnc(ref->sc->name);
     ref->transform[0] = ref->transform[3] = 1;
     SCReinstanciateRefChar(sc,ref);
@@ -3758,6 +3758,7 @@ static void UseGivenEncoding(SplineFont *sf,struct ttfinfo *info) {
     struct dup *dup;
     BDFFont *bdf;
     BDFChar **obc;
+    RefChar *rf;
 
     for ( i=0; i<oldcnt; ++i ) if ( oldchars[i]!=NULL ) {
 	if ( oldchars[i]->enc>=256 ) {
@@ -3787,6 +3788,13 @@ static void UseGivenEncoding(SplineFont *sf,struct ttfinfo *info) {
 	else {
 	    oldchars[i]->enc = epos;
 	    newchars[epos++] = oldchars[i];
+	}
+    }
+
+    for ( i=0; i<sf->charcnt; ++i ) if ( newchars[i]!=NULL ) {
+	for ( rf = newchars[i]->refs; rf!=NULL; rf = rf->next ) {
+	    rf->local_enc = rf->sc->enc;
+	    rf->unicode_enc = rf->sc->unicodeenc;
 	}
     }
 
