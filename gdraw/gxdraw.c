@@ -2946,6 +2946,21 @@ return;
 	XRefreshKeyboardMapping((XMappingEvent *) event);
       break;
       default:
+#ifndef _NO_XKB
+	if ( event->type==gdisp->xkb.event ) {
+	    switch ( ((XkbAnyEvent *) event)->xkb_type ) {
+	      case XkbNewKeyboardNotify:
+		/* I don't think I need to do anything here. But I think I */
+		/*  need to get the event since otherwise xkb restricts the */
+		/*  keycodes it will send me */
+	      break;
+	      case XkbMapNotify:
+		XkbRefreshKeyboardMapping((XkbMapNotifyEvent *) event);
+	      break;
+	    }
+      break;
+	}
+#endif
 #ifndef _NO_XINPUT
         if ( event->type>=LASTEvent ) {	/* An XInput event */
 	    int i,j;
@@ -3932,6 +3947,24 @@ static struct displayfuncs xfuncs = {
     GXPrinterEndJob
 };
 
+static void GDrawInitXKB(GXDisplay *gdisp) {
+#ifdef _NO_XKB
+    gdisp->has_xkb = false;
+#else
+    int lib_major = XkbMajorVersion, lib_minor = XkbMinorVersion;
+
+    gdisp->has_xkb = false;
+    if ( XkbLibraryVersion(&lib_major, &lib_minor))
+	gdisp->has_xkb = XkbQueryExtension(gdisp->display,
+		&gdisp->xkb.opcode,&gdisp->xkb.event,&gdisp->xkb.error,
+		&lib_major,&lib_minor);
+    if ( gdisp->has_xkb ) {
+	int mask = XkbNewKeyboardNotifyMask | XkbMapNotifyMask;
+	XkbSelectEvents(gdisp->display,XkbUseCoreKbd,mask,mask);
+    }
+#endif
+}
+
 GDisplay *_GXDraw_CreateDisplay(char *displayname,char *programname) {
     GXDisplay *gdisp;
     Display *display;
@@ -4034,6 +4067,8 @@ return( NULL );
 #ifdef _WACOM_DRV_BROKEN
     _GXDraw_Wacom_Init(gdisp);
 #endif
+
+    GDrawInitXKB(gdisp);
 
 return( (GDisplay *) gdisp);
 }
