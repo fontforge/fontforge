@@ -762,6 +762,7 @@ static char *str_NoCharsSelected = "No characters selected.";
 static char *str_NothingToTrace = "Nothing to trace";
 static char *str_NoAutotrace = "Can't find autotrace";
 static char *str_NoAutotraceProg = "Can't find autotrace program (set AUTOTRACE environment variable)";
+static char *str_AdditionalAutotraceArgs = "Additional arguments for autotrace program:";
     /* Bitmap dlg */
 static char *str_AllChars = "All Characters";
 static char *str_SelChars = "Selected Characters";

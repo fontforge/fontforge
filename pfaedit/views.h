@@ -453,10 +453,12 @@ extern void LoadPfaEditEncodings(void);
 extern void PfaEditSetFallback(void);
 extern void RecentFilesRemember(char *filename);
 
-extern void CVAutoTrace(CharView *cv);
-extern void FVAutoTrace(FontView *fv);
+extern void CVAutoTrace(CharView *cv,int ask);
+extern void FVAutoTrace(FontView *fv,int ask);
 extern char *FindAutoTraceName(void);
 extern char *ProgramExists(char *prog,char *buffer);
+extern void *GetAutoTraceArgs(void);
+extern void SetAutoTraceArgs(void *a);
 
 extern unichar_t *FVOpenFont(const unichar_t *title, const unichar_t *defaultfile,
 	const unichar_t *initial_filter, unichar_t **mimetypes,int mult,int newok);

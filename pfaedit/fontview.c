@@ -1150,7 +1150,7 @@ static void FVMenuRound2Int(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void FVMenuAutotrace(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    FVAutoTrace(fv);
+    FVAutoTrace(fv,e!=NULL && (e->u.mouse.state&ksm_shift));
 }
 
 int hascomposing(SplineFont *sf,int u) {

@@ -227,13 +227,24 @@ up into one <A HREF="pfaedit_htdocs-010925.tgz">tgz file</A> 25-Sept-2001.
 </H2>
 <UL>
   <LI>
+    1-Oct-2001
+    <UL>
+      <LI>
+	makefile wouldn't build ui files if "." wasn't in PATH environment variable.
+	Should be fixed.
+      <LI>
+	Holding down the Shift key when invoking Element-&gt;AutoTrace will cause
+	it to prompt for command line arguments to the autotrace program (you have
+	to figure these arguments out yourself).
+    </UL>
+  <LI>
     30-Sept-2001/1-Oct-2001
     <UL>
       <LI>
 	Improved importing background bitmap fonts (scaling factor set more accurately,
 	pk characters whose bitmap width was a factor of 8 had problems).
       <LI>
-	Import with from background bitmap fonts if the outline character is empty.
+	Import width from background bitmap fonts if the outline character is empty.
       <LI>
 	Merge Fonts was disabled except under bizarre circumstances, should be fixed.
       <LI>

@@ -33,7 +33,7 @@ LIBS = $(X_LIBS) ../libgdraw.la ../libgunicode.la \
 
 all: pfaedit pfaedit.en.ui
 
-pfaedit: $(pfaedit_OBJECTS)
+pfaedit: nomen.h $(pfaedit_OBJECTS)
 	$(LIBTOOL) $(CC) -o pfaedit $(pfaedit_OBJECTS) $(LIBS)
 
 #this makes all the .ui files but wildcarding doesn't work too well if the

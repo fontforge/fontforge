@@ -63,14 +63,14 @@ static SplinePointList *SplinesFromEntities(Entity *ent, Color bgcol) {
     for ( ; ent!=NULL; ent = enext ) {
 	enext = ent->next;
 	if ( ent->type == et_splines ) {
-	    if ( ent->u.splines.fill.col==0xffffffff && ent->u.splines.stroke.col!=0xffffffff ) {
+	    if ( /* ent->u.splines.fill.col==0xffffffff && */ ent->u.splines.stroke.col!=0xffffffff ) {
 		memset(&si,'\0',sizeof(si));
 		si.join = ent->u.splines.join;
 		si.cap = ent->u.splines.cap;
 		si.radius = ent->u.splines.stroke_width/2;
 		new = NULL;
-		for ( last = ent->u.splines.splines; last!=NULL; last=last->next ) {
-		    temp = SplineSetStroke(last,&si,NULL);
+		for ( test = ent->u.splines.splines; test!=NULL; test=test->next ) {
+		    temp = SplineSetStroke(test,&si,NULL);
 		    if ( new==NULL )
 			new=temp;
 		    else
@@ -152,7 +152,7 @@ static int mytempnam(char *buffer) {
 return( mkstemp(buffer));
 }
 
-static void SCAutoTrace(SplineChar *sc, char *args) {
+static void SCAutoTrace(SplineChar *sc, char **args) {
     ImageList *images;
     char *prog;
     SplineSet *new, *last;
@@ -161,8 +161,8 @@ static void SCAutoTrace(SplineChar *sc, char *args) {
     real transform[6];
     int changed = false;
     char tempname[1025];
-    char *arglist[10];
-    int ac;
+    char *arglist[30];
+    int ac,i;
     FILE *ps;
     int pid, status, fd;
 
@@ -192,7 +192,10 @@ return;
 	arglist[ac++] = tempname;
 	arglist[ac++] = "--output-format=eps";
 	arglist[ac++] = "--input-format=bmp";
-	if ( args ) arglist[ac++] = args;
+	if ( args ) {
+	    for ( i=0; args[i]!=NULL && ac<sizeof(arglist)/sizeof(arglist[0])-2; ++i )
+		arglist[ac++] = args[i];
+	}
 	arglist[ac] = NULL;
 	/* We can't use AutoTrace's own "background-color" ignorer because */
 	/*  it ignores counters as well as surrounds. So "O" would be a dark */
@@ -232,13 +235,102 @@ return;
 	SCCharChangedUpdate(sc,sc->parent->fv);
 }
 
-static char *AutoTraceArgs(void) {
-    /* We could pop up a dlg here */
+static char **makevector(const char *str) {
+    char **vector;
+    const char *start, *pt;
+    int i,cnt;
+
+    if ( str==NULL )
+return( NULL );
+
+    vector = NULL;
+    for ( i=0; i<2; ++i ) {
+	cnt = 0;
+	for ( start=str; isspace(*start); ++start );
+	while ( *start ) {
+	    for ( pt=start; !isspace(*pt) && *pt!='\0'; ++pt );
+	    if ( vector!=NULL )
+		vector[cnt] = copyn(start,pt-start);
+	    ++cnt;
+	    for ( start=pt; isspace(*start); ++start);
+	}
+	if ( cnt==0 )
+return( NULL );
+	if ( vector ) {
+	    vector[cnt] = NULL;
+return( vector );
+	}
+	vector = galloc((cnt+1)*sizeof(char *));
+    }
 return( NULL );
 }
 
-void CVAutoTrace(CharView *cv) {
-    char *args;
+static char *flatten(char *const *args) {
+    char *ret, *rpt;
+    int j, i, len;
+
+    if ( args==NULL )
+return( NULL );
+
+    ret = rpt = NULL;
+    for ( i=0; i<2; ++i ) {
+	for ( j=0, len=0; args[j]!=NULL; ++j ) {
+	    if ( rpt!=NULL ) {
+		strcpy(rpt,args[j]);
+		rpt += strlen( args[j] );
+		*rpt++ = ' ';
+	    } else
+		len += strlen(args[j])+1;
+	}
+	if ( rpt ) {
+	    rpt[-1] = '\0';
+return( ret );
+	} else if ( len<=1 )
+return( NULL );
+	ret = rpt = galloc(len);
+    }
+return( NULL );
+}
+
+static char **args=NULL;
+
+void *GetAutoTraceArgs(void) {
+return( flatten(args));
+}
+
+void SetAutoTraceArgs(void *a) {
+    int i;
+
+    if ( args!=NULL ) {
+	for ( i=0; args[i]!=NULL; ++i )
+	    free(args[i]);
+	free(args);
+    }
+    args = makevector((char *) a);
+}
+
+static char **AutoTraceArgs(int ask) {
+
+    if ( ask ) {
+	char *cdef = flatten(args);
+	unichar_t *def = uc_copy(cdef);
+	unichar_t *ret;
+	char *cret;
+
+	ret = GWidgetAskStringR(_STR_AdditionalAutotraceArgs, def,_STR_AdditionalAutotraceArgs);
+	free(def); free(cdef);
+	if ( ret==NULL )
+return( (char **) -1 );
+	cret = cu_copy(ret); free(ret);
+	args = makevector(cret);
+	free(cret);
+	SavePrefs();
+    }
+return( args );
+}
+
+void CVAutoTrace(CharView *cv,int ask) {
+    char **args;
 
     if ( cv->sc->backimages==NULL ) {
 	GWidgetErrorR(_STR_NothingToTrace,_STR_NothingToTrace);
@@ -248,12 +340,14 @@ return;
 return;
     }
 
-    args = AutoTraceArgs();
+    args = AutoTraceArgs(ask);
+    if ( args==(char **) -1 )
+return;
     SCAutoTrace(cv->sc, args);
 }
 
-void FVAutoTrace(FontView *fv) {
-    char *args;
+void FVAutoTrace(FontView *fv,int ask) {
+    char **args;
     int i;
 
     if ( FindAutoTraceName()==NULL ) {
@@ -261,7 +355,9 @@ void FVAutoTrace(FontView *fv) {
 return;
     }
 
-    args = AutoTraceArgs();
+    args = AutoTraceArgs(ask);
+    if ( args==(char **) -1 )
+return;
     for ( i=0; i<fv->sf->charcnt; ++i )
 	if ( fv->sf->chars[i] && fv->selected[i] )
 	    SCAutoTrace(fv->sf->chars[i], args);

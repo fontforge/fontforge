@@ -72,25 +72,28 @@ static struct prefs_list {
     char *name;
     enum pref_types type;
     void *val;
+    void *(*get)(void);
+    void (*set)(void *);
     char mn;
     struct enums *enums;
     unsigned int dontdisplay: 1;
     const unichar_t *popup;
 } prefs_list[] = {
-	{ "AutoWidthSync", pr_bool, &adjustwidth, '\0', NULL, 0, aws },
-	{ "AutoLBearingSync", pr_bool, &adjustlbearing, '\0', NULL, 0, als },
-	{ "DefaultFVSize", pr_enum, &default_fv_font_size, 'S', fvsize_enums, 1 },
-	{ "AntiAlias", pr_bool, &default_fv_antialias, '\0', NULL, 1 },
-	{ "AutoHint", pr_bool, &autohint_before_rasterize, 'A', NULL, 0, ah },
-	{ "LocalCharset", pr_encoding, &local_encoding, 'L', NULL, 0, loc },
-	{ "NewCharset", pr_encoding, &default_encoding, 'N', NULL, 0, fornewfonts },
-	{ "ShowRulers", pr_bool, &CVShows.showrulers, '\0', NULL, 0, rulers },
-	{ "FoundryName", pr_string, &BDFFoundry, '\0', NULL, 0, fn },
-	{ "XUID-Base", pr_string, &xuid, '\0', NULL, 0, xu },
-	{ "PageWidth", pr_int, &pagewidth, '\0', NULL, 1 },
-	{ "PageHeight", pr_int, &pageheight, '\0', NULL, 1 },
-	{ "PrintType", pr_int, &printtype, '\0', NULL, 1 },
-	{ "ItalicConstrained", pr_bool, &ItalicConstrained, '\0', NULL, 0, ic },
+	{ "AutoWidthSync", pr_bool, &adjustwidth, NULL, NULL, '\0', NULL, 0, aws },
+	{ "AutoLBearingSync", pr_bool, &adjustlbearing, NULL, NULL, '\0', NULL, 0, als },
+	{ "DefaultFVSize", pr_enum, &default_fv_font_size, NULL, NULL, 'S', fvsize_enums, 1 },
+	{ "AntiAlias", pr_bool, &default_fv_antialias, NULL, NULL, '\0', NULL, 1 },
+	{ "AutoHint", pr_bool, &autohint_before_rasterize, NULL, NULL, 'A', NULL, 0, ah },
+	{ "LocalCharset", pr_encoding, &local_encoding, NULL, NULL, 'L', NULL, 0, loc },
+	{ "NewCharset", pr_encoding, &default_encoding, NULL, NULL, 'N', NULL, 0, fornewfonts },
+	{ "ShowRulers", pr_bool, &CVShows.showrulers, NULL, NULL, '\0', NULL, 0, rulers },
+	{ "FoundryName", pr_string, &BDFFoundry, NULL, NULL, '\0', NULL, 0, fn },
+	{ "XUID-Base", pr_string, &xuid, NULL, NULL, '\0', NULL, 0, xu },
+	{ "PageWidth", pr_int, &pagewidth, NULL, NULL, '\0', NULL, 1 },
+	{ "PageHeight", pr_int, &pageheight, NULL, NULL, '\0', NULL, 1 },
+	{ "PrintType", pr_int, &printtype, NULL, NULL, '\0', NULL, 1 },
+	{ "ItalicConstrained", pr_bool, &ItalicConstrained, NULL, NULL, '\0', NULL, 0, ic },
+	{ "AutotraceArgs", pr_string, NULL, GetAutoTraceArgs, SetAutoTraceArgs, '\0', NULL, 1 },
 	{ NULL }
 };
 
@@ -233,7 +236,10 @@ return;
 	  break;
 	  case pr_string:
 	    if ( *pt=='\0' ) pt=NULL;
-	    *((char **) (prefs_list[i].val)) = copy(pt);
+	    if ( prefs_list[i].val!=NULL )
+		*((char **) (prefs_list[i].val)) = copy(pt);
+	    else
+		(prefs_list[i].set)(copy(pt));
 	  break;
 	}
     }
@@ -244,6 +250,7 @@ void SavePrefs(void) {
     char *prefs = getPfaEditPrefs();
     FILE *p;
     int i, val;
+    char *temp;
 
     if ( prefs==NULL )
 return;
@@ -266,8 +273,14 @@ return;
 	    fprintf( p, "%s:\t%d\n", prefs_list[i].name, *(int *) (prefs_list[i].val) );
 	  break;
 	  case pr_string:
-	    if ( *(char **) (prefs_list[i].val)!=NULL )
-		fprintf( p, "%s:\t%s\n", prefs_list[i].name, *(char **) (prefs_list[i].val) );
+	    if ( (prefs_list[i].val)!=NULL )
+		temp = *(char **) (prefs_list[i].val);
+	    else
+		temp = (char *) (prefs_list[i].get());
+	    if ( temp!=NULL )
+		fprintf( p, "%s:\t%s\n", prefs_list[i].name, temp );
+	    if ( (prefs_list[i].val)==NULL )
+		free(temp);
 	  break;
 	}
     }

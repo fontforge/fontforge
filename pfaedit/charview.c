@@ -3095,7 +3095,7 @@ return;
 
 static void CVMenuAutotrace(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    CVAutoTrace(cv);
+    CVAutoTrace(cv,e!=NULL && (e->u.mouse.state&ksm_shift));
 }
 
 static void CVMenuBuildAccent(GWindow gw,struct gmenuitem *mi,GEvent *e) {
