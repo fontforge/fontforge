@@ -717,7 +717,7 @@ static int SaveSubFont(SplineFont *sf,char *newname,int32 *sizes,int res,
     SplineFont temp;
     SplineChar *chars[256], **newchars;
     SplineFont *_sf;
-    int k, i, pos=0, base, extras;
+    int k, i, pos, used, base, extras;
     char *filename;
     char *spt, *pt, buf[8];
     RefChar *ref;
@@ -733,6 +733,7 @@ static int SaveSubFont(SplineFont *sf,char *newname,int32 *sizes,int res,
     temp.subfontcnt = 0;
     temp.uniqueid = 0;
     memset(chars,0,sizeof(chars));
+    pos = used = 0;
     for ( i=0; mapping[i]>=0; ++i ) if ( mapping[i]==subfont ) {
 	k = 0;
 	do {
@@ -748,10 +749,11 @@ static int SaveSubFont(SplineFont *sf,char *newname,int32 *sizes,int res,
 		_sf->chars[i]->enc = pos;
 	    }
 	    chars[pos++] = _sf->chars[i];
+	    ++used;
 	} else
 	    chars[pos++] = NULL;
     }
-    if ( pos==0 )
+    if ( used==0 )
 return( 0 );
 
     /* check for any references to things outside this subfont and add them */
