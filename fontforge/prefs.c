@@ -786,7 +786,11 @@ static void DefaultHelp(void) {
     }
 }
 
-static void DoDefaults(void) {
+void SetDefaults(void) {
+
+    PfaEditSetFallback();
+    CheckLang();
+
     DefaultXUID();
     DefaultHelp();
 }
@@ -800,14 +804,11 @@ void LoadPrefs(void) {
     char *pt;
     struct prefs_list *pl;
 
-    PfaEditSetFallback();
     LoadPfaEditEncodings();
-    CheckLang();
 
-    if ( prefs==NULL || (p=fopen(prefs,"r"))==NULL ) {
-	DoDefaults();
+    if ( prefs==NULL || (p=fopen(prefs,"r"))==NULL )
 return;
-    }
+
     while ( fgets(line,sizeof(line),p)!=NULL ) {
 	if ( *line=='#' )
     continue;
@@ -874,7 +875,6 @@ return;
 	}
     }
     fclose(p);
-    DefaultHelp();
     if ( prefs_encoding==e_unknown )
 	local_encoding = DefaultEncoding();
     else
@@ -887,7 +887,7 @@ return;
     }
 }
 
-void SavePrefs(void) {
+void _SavePrefs(void) {
     char *prefs = getPfaEditPrefs();
     FILE *p;
     int i, j, val;
@@ -956,6 +956,13 @@ return;
 	SFDDumpMacFeat(p,default_mac_feature_map);
 
     fclose(p);
+}
+
+void SavePrefs(void) {
+    extern int running_script;
+    if ( running_script )
+return;
+    _SavePrefs();
 }
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI

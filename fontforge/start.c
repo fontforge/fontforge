@@ -478,6 +478,7 @@ static void AddR(char *prog, char *name, char *val ) {
 
 int main( int argc, char **argv ) {
     extern const char *source_modtime_str;
+    const char *load_prefs = getenv("FONTFORGE_LOADPREFS");
 #if !defined( FONTFORGE_CONFIG_NO_WINDOWING_UI )
     int i;
     int splash = 1;
@@ -528,7 +529,9 @@ int main( int argc, char **argv ) {
 #else
     GResourceSetProg(argv[0]);
 #endif
-    LoadPrefs();
+    SetDefaults();
+    if ( load_prefs!=NULL && strcasecmp(load_prefs,"Always")==0 )
+	LoadPrefs();
     initadobeenc();
     inituninameannot();
     initrand();
@@ -536,6 +539,10 @@ int main( int argc, char **argv ) {
 					/* If there is no UI, there is always a script */
 			                /*  and we will never return from the above */
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    if ( load_prefs==NULL ||
+	    (strcasecmp(load_prefs,"Always")!=0 &&	/* Already loaded */
+	     strcasecmp(load_prefs,"Never")!=0 ))
+	LoadPrefs();
     for ( i=1; i<argc; ++i ) {
 	char *pt = argv[i];
 	if ( pt[0]=='-' && pt[1]=='-' )

@@ -726,8 +726,10 @@ extern void FVInline(FontView *fv, real width, real inset);
 extern void FVShadow(FontView *fv,real angle, real outline_width,
 	real shadow_length,int wireframe);
 
+extern void SetDefaults(void);
 extern char *getPfaEditShareDir(void);
 extern void LoadPrefs(void);
+extern void _SavePrefs(void);
 extern void SavePrefs(void);
 extern void PfaEditSetFallback(void);
 extern void RecentFilesRemember(char *filename);

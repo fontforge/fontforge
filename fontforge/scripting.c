@@ -39,6 +39,7 @@
 
 static int verbose = -1;
 int no_windowing_ui = false;
+int running_script = false;
 
 struct dictentry {
     char *name;
@@ -556,6 +557,20 @@ static void bStrskipint(Context *c) {
     c->return_val.type = v_int;
     strtol(c->a.vals[1].u.sval,&end,base);
     c->return_val.u.ival = end-c->a.vals[1].u.sval;
+}
+
+static void bLoadPrefs(Context *c) {
+
+    if ( c->a.argc!=1 )
+	error( c, "Wrong number of arguments" );
+    LoadPrefs();
+}
+
+static void bSavePrefs(Context *c) {
+
+    if ( c->a.argc!=1 )
+	error( c, "Wrong number of arguments" );
+    _SavePrefs();
 }
 
 static void bGetPrefs(Context *c) {
@@ -3836,6 +3851,8 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "Strcasecmp", bStrcasecmp, 1 },
     { "Strtol", bStrtol, 1 },
     { "Strskipint", bStrskipint, 1 },
+    { "LoadPrefs", bLoadPrefs, 1 },
+    { "SavePrefs", bSavePrefs, 1 },
     { "GetPref", bGetPrefs, 1 },
     { "SetPref", bSetPrefs, 1 },
     { "GetEnv", bGetEnv, 1 },
@@ -5190,6 +5207,7 @@ static void ProcessScript(int argc, char *argv[], FILE *script) {
     enum token_type tok;
 
     no_windowing_ui = true;
+    running_script = true;
 
     VerboseCheck();
 
@@ -5403,6 +5421,7 @@ static int SD_OK(GGadget *g, GEvent *e) {
 	memset( &c,0,sizeof(c));
 	memset( args,0,sizeof(args));
 	memset( dontfree,0,sizeof(dontfree));
+	running_script = true;
 	c.a.argc = 1;
 	c.a.vals = args;
 	c.dontfree = dontfree;
@@ -5411,8 +5430,10 @@ static int SD_OK(GGadget *g, GEvent *e) {
 	c.return_val.type = v_void;
 	c.err_env = &env;
 	c.curfv = sd->fv;
-	if ( setjmp(env)!=0 )
+	if ( setjmp(env)!=0 ) {
+	    running_script = false;
 return( true );			/* Error return */
+	}
 
 	c.script = tmpfile();
 	if ( c.script==NULL )
@@ -5434,6 +5455,7 @@ return( true );			/* Error return */
 	    fclose(c.script);
 	    sd->done = true;
 	}
+	running_script = false;
     }
 return( true );
 }
