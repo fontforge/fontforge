@@ -1365,7 +1365,11 @@ return;
 }
 
 static void MVChar(MetricsView *mv,GEvent *event) {
-    if ( event->u.chr.keysym == GK_Help ) {
+    if ( event->u.chr.keysym=='s' &&
+	    (event->u.chr.state&ksm_control) &&
+	    (event->u.chr.state&ksm_meta) )
+	MenuSaveAll(NULL,NULL,NULL);
+    else if ( event->u.chr.keysym == GK_Help ) {
 	MenuHelp(NULL,NULL,NULL);	/* Menu does F1 */
     }
 }

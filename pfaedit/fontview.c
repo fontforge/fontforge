@@ -526,6 +526,15 @@ void MenuPrefs(GWindow base,struct gmenuitem *mi,GEvent *e) {
     DoPrefs();
 }
 
+void MenuSaveAll(GWindow base,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv;
+
+    for ( fv = fv_list; fv!=NULL; fv = fv->next ) {
+	if ( fv->sf->changed && !_FVMenuSave(fv))
+return;
+    }
+}
+
 static void _MenuExit(void *junk) {
     FontView *fv, *next;
 
@@ -2250,6 +2259,7 @@ static GMenuItem fllist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Save, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, 'S', ksm_control, NULL, NULL, FVMenuSave },
     { { (unichar_t *) _STR_Saveas, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'a' }, 'S', ksm_control|ksm_shift, NULL, NULL, FVMenuSaveAs },
+    { { (unichar_t *) _STR_SaveAll, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'l' }, 'S', ksm_control|ksm_meta, NULL, NULL, MenuSaveAll },
     { { (unichar_t *) _STR_Generate, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'G' }, 'G', ksm_control|ksm_shift, NULL, NULL, FVMenuGenerate },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Import, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, 'I', ksm_control|ksm_shift, NULL, NULL, FVMenuImport },
@@ -2259,7 +2269,7 @@ static GMenuItem fllist[] = {
     { { (unichar_t *) _STR_Print, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, 'P', ksm_control, NULL, NULL, FVMenuPrint, MID_Print },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_ExecuteScript, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'x' }, '.', ksm_control, NULL, NULL, FVMenuExecute },
-    { { (unichar_t *) _STR_ScriptMenu, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'x' }, '\0', ksm_control, dummyitem, MenuScriptsBuild, NULL, MID_ScriptMenu },
+    { { (unichar_t *) _STR_ScriptMenu, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'r' }, '\0', ksm_control, dummyitem, MenuScriptsBuild, NULL, MID_ScriptMenu },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Prefs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'e' }, '\0', ksm_control, NULL, NULL, MenuPrefs },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
@@ -3152,7 +3162,11 @@ static void FVChar(FontView *fv,GEvent *event) {
     }
 #endif
 
-    if (( event->u.chr.keysym=='M' ||event->u.chr.keysym=='m' ) &&
+    if ( event->u.chr.keysym=='s' &&
+	    (event->u.chr.state&ksm_control) &&
+	    (event->u.chr.state&ksm_meta) )
+	MenuSaveAll(NULL,NULL,NULL);
+    else if (( event->u.chr.keysym=='M' ||event->u.chr.keysym=='m' ) &&
 	    (event->u.chr.state&ksm_control) ) {
 	if ( (event->u.chr.state&ksm_meta) && (event->u.chr.state&ksm_shift))
 	    FVSimplify(fv,1);

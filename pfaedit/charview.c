@@ -1182,7 +1182,11 @@ void CVChar(CharView *cv, GEvent *event ) {
 
     CVPaletteActivate(cv);
     CVToolsSetCursor(cv,TrueCharState(event));
-    if (( event->u.chr.keysym=='M' ||event->u.chr.keysym=='m' ) &&
+    if ( event->u.chr.keysym=='s' &&
+	    (event->u.chr.state&ksm_control) &&
+	    (event->u.chr.state&ksm_meta) )
+	MenuSaveAll(NULL,NULL,NULL);
+    else if (( event->u.chr.keysym=='M' ||event->u.chr.keysym=='m' ) &&
 	    (event->u.chr.state&ksm_control) ) {
 	if ( (event->u.chr.state&ksm_meta) && (event->u.chr.state&ksm_shift))
 	    CVMenuSimplifyMore(cv->gw,NULL,NULL);

@@ -234,7 +234,11 @@ void BVChar(BitmapView *bv, GEvent *event ) {
 
     BVPaletteActivate(bv);
     BVToolsSetCursor(bv,TrueCharState(event));
-    if ( !(event->u.chr.state&(ksm_control|ksm_meta)) &&
+    if ( event->u.chr.keysym=='s' &&
+	    (event->u.chr.state&ksm_control) &&
+	    (event->u.chr.state&ksm_meta) )
+	MenuSaveAll(NULL,NULL,NULL);
+    else if ( !(event->u.chr.state&(ksm_control|ksm_meta)) &&
 	    event->u.chr.keysym == GK_BackSpace ) {
 	/* Menu does delete */
 	BVDoClear(bv);

@@ -293,6 +293,7 @@ extern int _FVMenuSaveAs(FontView *fv);
 extern int _FVMenuGenerate(FontView *fv);
 extern char *GetPostscriptFontName(int mult);
 extern void MenuPrefs(GWindow base,struct gmenuitem *mi,GEvent *e);
+extern void MenuSaveAll(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuExit(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuOpen(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuHelp(GWindow base,struct gmenuitem *mi,GEvent *e);
