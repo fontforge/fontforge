@@ -94,6 +94,7 @@ GTextInfo encodingtypes[] = {
     { (unichar_t *) _STR_KoreanJohab, NULL, 0, 0, (void *) em_johab, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Chinese, NULL, 0, 0, (void *) em_gb2312, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_ChineseTrad, NULL, 0, 0, (void *) em_big5, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_ChineseTradHKSCS, NULL, 0, 0, (void *) em_big5hkscs, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { NULL }};
 static GTextInfo widthclass[] = {
     { (unichar_t *) _STR_UltraCondensed, NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -1074,7 +1075,8 @@ return( true );
     }
     if ( sc->unicodeenc==-1 ) {
 	if ( SCIsNotdef(sc,-1) && !(used[0]&1) &&
-		(table[0]==0 || new_map==em_sjis || new_map==em_wansung || new_map==em_johab || new_map==em_big5)) {
+		(table[0]==0 || new_map==em_sjis || new_map==em_wansung ||
+		 new_map==em_johab || new_map==em_big5 || new_map==em_big5hkscs)) {
 	    if ( table[0]==0 )
 		used[0] |= 1;
 return( true );			/* .notdef goes to encoding 0 */
@@ -1256,7 +1258,7 @@ return(false);
 	    GWidgetErrorR(_STR_InvalidEncoding,_STR_InvalidEncoding);
 return( false );
 	}
-    } else if ( new_map==em_unicode || new_map==em_big5 || new_map==em_johab )
+    } else if ( new_map==em_unicode || new_map==em_big5 || new_map==em_big5hkscs || new_map==em_johab )
 	enc_cnt = 65536;
     else if ( new_map==em_unicode4 )
 	enc_cnt = unicode4_size;
@@ -1355,6 +1357,9 @@ return( false );
 	} else if ( new_map==em_big5 ) {
 	    table = unicode_from_big5;
 	    tlen = 0x10000-0xa100;	/* the big5 table starts at 0xa100 to save space */
+	} else if ( new_map==em_big5hkscs ) {
+	    table = unicode_from_big5hkscs;
+	    tlen = 0x10000-0x8100;	/* the big5 table starts at 0x8100 to save space */
 	} else if ( new_map==em_johab ) {
 	    table = unicode_from_johab;
 	    tlen = 0x10000-0x8400;	/* the johab table starts at 0x8400 to save space */
@@ -1372,7 +1377,7 @@ return( false );
 	/* Done */;
     else if ( tlen == 94*94 )
 	enc_cnt = 94*96;
-    else if ( tlen == 0x10000-0xa100 || tlen==0x10000-0x8400 )
+    else if ( tlen == 0x10000-0xa100 || tlen==0x10000-0x8400 || tlen==0x10000-0x8100 )
 	enc_cnt = 65536;
 
     extras = 0;

@@ -49,7 +49,7 @@ int almaps[] = { em_iso8859_1, em_iso8859_2, em_iso8859_3, em_iso8859_4,
 
 
 char *cjk[] = { "JIS0208.TXT", "JIS0212.TXT", "BIG5.TXT", "GB2312.TXT",
-	"HANGUL.TXT", NULL };
+	"HANGUL.TXT", "Big5HKSCS.txt", NULL };
 /* I'm only paying attention to Wansung encoding (in HANGUL.TXT) which is 94x94 */
 /* I used to look at OLD5601, but that maps to Unicode 1.0, and Hangul's moved*/
 char *adobecjk[] = { "aj14cid2code.txt", "aj20cid2code.txt", "ac13cid2code.txt",
@@ -60,8 +60,8 @@ char *adobecjk[] = { "aj14cid2code.txt", "aj20cid2code.txt", "ac13cid2code.txt",
 /*  up to date. These may be found in: */
 /*	ftp://ftp.ora.com/pub/examples/nutshell/ujip/adobe/samples/{aj14,aj20,ak12,ac13,ag14}/cid2code.txt */
 /* they may be bundled up in a tar file, I forget exactly... */
-char *cjknames[] = { "jis208", "jis212", "big5", "gb2312", "ksc5601", NULL };
-int cjkmaps[] = { em_jis208, em_jis212, em_big5, em_gb2312, em_ksc5601 };
+char *cjknames[] = { "jis208", "jis212", "big5", "gb2312", "ksc5601", "big5hkscs", NULL };
+int cjkmaps[] = { em_jis208, em_jis212, em_big5, em_gb2312, em_ksc5601, em_big5hkscs };
 
 unsigned long *used[256];
 
@@ -450,6 +450,22 @@ static void dumpbig5(FILE *output,FILE *header) {
 	continue;
 	    _unicode = getnth(buffer,8);
 	    if ( _unicode==-1 ) {
+		if ( _orig==0xa1c3 )
+		    _unicode = 0xFFE3;
+		else if ( _orig==0xa1c5 )
+		    _unicode = 0x2cd;
+		else if ( _orig==0xa1fe )
+		    _unicode = 0xff0f;
+		else if ( _orig==0xa240 )
+		    _unicode = 0xff3c;
+		else if ( _orig==0xa2cc )
+		    _unicode = 0x5341;
+		else if ( _orig==0xa2ce )
+		    _unicode = 0x5345;
+		else if ( _orig==0xa15a )
+		    _unicode = 0x2574;
+	    }
+	    if ( _unicode==-1 ) {
 		fprintf( stderr, "Eh? BIG5 %x is unencoded\n", _orig );
 	continue;
 	    }
@@ -465,6 +481,88 @@ static void dumpbig5(FILE *output,FILE *header) {
 	fclose(file);
 
 	fprintf( header, "/* Subtract 0xa100 before indexing this array */\n" );
+	fprintf( header, "extern const unichar_t unicode_from_%s[];\n", cjknames[j] );
+	fprintf( output, "const unichar_t unicode_from_%s[] = {\n", cjknames[j] );
+	for ( i=0; i<sizeof(unicode)/sizeof(unicode[0]); i+=8 )
+	    fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x,\n",
+		    unicode[i], unicode[i+1], unicode[i+2], unicode[i+3],
+		    unicode[i+4], unicode[i+5], unicode[i+6], unicode[i+7]);
+	fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x\n};\n\n",
+		unicode[i], unicode[i+1], unicode[i+2], unicode[i+3],
+		unicode[i+4], unicode[i+5], unicode[i+6], unicode[i+7]);
+
+	first = last = -1;
+	for ( k=0; k<256; ++k ) {
+	    if ( table[k]!=NULL ) {
+		if ( first==-1 ) first = k;
+		last = k;
+		plane = table[k];
+		fprintf( output, "static const unsigned short %s_from_unicode_%x[] = {\n", cjknames[j], k );
+		for ( i=0; i<256-8; i+=8 )
+		    fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x,\n",
+			    plane[i], plane[i+1], plane[i+2], plane[i+3],
+			    plane[i+4], plane[i+5], plane[i+6], plane[i+7]);
+		fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x\n};\n\n",
+			    plane[i], plane[i+1], plane[i+2], plane[i+3],
+			    plane[i+4], plane[i+5], plane[i+6], plane[i+7]);
+	    }
+	}
+	fprintf( output, "static const unsigned short * const %s_from_unicode_[] = {\n", cjknames[j] );
+	for ( k=first; k<=last; ++k )
+	    if ( table[k]!=NULL )
+		fprintf( output, "    %s_from_unicode_%x%s", cjknames[j], k, k!=last?",\n":"\n" );
+	    else
+		fprintf( output, "    u_allzeros,\n" );
+	fprintf( output, "};\n\n" );
+	fprintf( header, "extern struct charmap2 %s_from_unicode;\n", cjknames[j]);
+	fprintf( output, "struct charmap2 %s_from_unicode = { %d, %d, (unsigned short **) %s_from_unicode_, (unsigned short *) unicode_from_%s };\n\n",
+		cjknames[j], first, last, cjknames[j], cjknames[j]);
+
+	for ( k=first; k<=last; ++k )
+	    free(table[k]);
+    }
+}
+
+static void dumpbig5hkscs(FILE *output,FILE *header) {
+    FILE *file;
+    int i,j,k, first, last;
+    long _orig, _unicode;
+    unichar_t unicode[0x8000];
+    unichar_t *table[256], *plane;
+    char buffer[200];
+
+    j=5;
+
+    memset(table,0,sizeof(table));
+
+    file = fopen( cjk[j], "r" );
+    if ( file==NULL ) {
+	fprintf( stderr, "Can't open %s\n", cjk[j] );
+    } else {
+	memset(unicode,0,sizeof(unicode));
+	while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
+	    if ( buffer[0]=='#' )
+	continue;
+	    if ( sscanf( buffer, "U+%x: %x", &_unicode, &_orig )!=2 )
+	continue;
+	    if ( _orig<0x8140 )
+	continue;
+	    if ( _unicode==-1 ) {
+		fprintf( stderr, "Eh? BIG5HKSCS %x is unencoded\n", _orig );
+	continue;
+	    }
+	    unicode[_orig-0x8100] = _unicode;
+	    if ( table[_unicode>>8]==NULL )
+		table[_unicode>>8] = calloc(256,2);
+	    table[_unicode>>8][_unicode&0xff] = _orig;
+	    if ( used[_unicode>>8]==NULL ) {
+		used[_unicode>>8] = calloc(256,sizeof(long));
+	    }
+	    used[_unicode>>8][_unicode&0xff] |= (1<<em_big5hkscs);
+	}
+	fclose(file);
+
+	fprintf( header, "/* Subtract 0x8100 before indexing this array */\n" );
 	fprintf( header, "extern const unichar_t unicode_from_%s[];\n", cjknames[j] );
 	fprintf( output, "const unichar_t unicode_from_%s[] = {\n", cjknames[j] );
 	for ( i=0; i<sizeof(unicode)/sizeof(unicode[0]); i+=8 )
@@ -754,6 +852,7 @@ static void dumpcjks(FILE *output,FILE *header) {
 
     dumpjis(output,header);
     dumpbig5(output,header);
+    dumpbig5hkscs(output,header);
     dumpWansung(output,header);
     dumpgb2312(output,header);
 }

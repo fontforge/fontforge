@@ -123,7 +123,7 @@ static unichar_t *_readencstring(FILE *ttf,int offset,int len,int enc) {
 	    ch = getc(ttf)<<8;
 	    *pt++ = ch | getc(ttf);
 	}
-    } else if ( enc==em_big5 ) {
+    } else if ( enc==em_big5 || enc==em_big5hkscs ) {
 	str = pt = galloc(2*len+2);	/* Probably more space than we need, but it should be enough */
 	for ( i=0; i<len; ++i ) {
 	    ch = getc(ttf);
@@ -133,11 +133,11 @@ static unichar_t *_readencstring(FILE *ttf,int offset,int len,int enc) {
 		/*  I thought we got mixed 8/16 encoding, not straight 16... */
 		*pt++ = getc(ttf);
 		++i;
-	    } else if ( ch<0xa1 )
+	    } else if ( ch<0x81 )
 		*pt++ = ch;
 	    else {
 		ch = ((ch<<8)|getc(ttf));
-		*pt++ = unicode_from_big5[ch-0xa100];
+		*pt++ = unicode_from_big5hkscs[ch-0x8100];
 		++i;
 	    }
 	}
@@ -216,7 +216,7 @@ static int enc_from_platspec(int platform,int specific) {
 	else if ( specific==1 )
 	    enc = em_sjis;
 	else if ( specific==2 )
-	    enc = em_big5;
+	    enc = em_big5hkscs;		/* Or should we just guess big5? Both are wrong sometimes */
 	else if ( specific==3 )
 	    enc = em_wansung;
     } else if ( platform==2 ) {		/* obselete */
@@ -234,7 +234,7 @@ static int enc_from_platspec(int platform,int specific) {
 	else if ( specific==5 )
 	    enc = em_wansung;
 	else if ( specific==4 )
-	    enc = em_big5;
+	    enc = em_big5hkscs;
 	else if ( specific==6 )
 	    enc = em_johab;
     } else if ( platform==7 ) {		/* Used internally in freetype, but */
@@ -2811,8 +2811,8 @@ return( -1 );
 	    enc = unicode_from_jis208[(ch1-0x21)*94+(ch2-0x21)];
 	}
     } else if ( modtype==4 /* BIG5 */ ) {	/* old ms docs say big5 is modtype==3, but new ones say 4 */
-	if ( enc>0xa100 )
-	    enc = unicode_from_big5[enc-0xa100];
+	if ( enc>0x8100 )
+	    enc = unicode_from_big5hkscs[enc-0x8100];
 	else if ( enc>0x100 )
 	    enc = -1;
     } else if ( modtype==5 /* Wansung == KSC 5601-1987, I hope */ ) {
@@ -2862,7 +2862,9 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	    enc = em_unicode4;
 	    encoff = offset;
 	    mod = 0;
-	} else if ( (enc!=em_unicode4 || (!prefer_cjk_encodings || (enc!=em_sjis && enc!=em_wansung && enc!=em_big5 && enc!=em_johab))) &&
+	} else if ( (enc!=em_unicode4 || (!prefer_cjk_encodings ||
+		(enc!=em_sjis && enc!=em_wansung && enc!=em_big5 &&
+		 enc!=em_big5hkscs && enc!=em_johab))) &&
 		(( platform==3 && specific==1 ) || /* MS Unicode */
 /* Well I should only deal with apple unicode specific==0 (default) and 3 (U2.0 semantics) */
 /*  but apple ships dfonts with specific==1 (Unicode 1.1 semantics) */
@@ -2889,14 +2891,14 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 		(prefer_cjk_encodings || enc!=em_unicode) ) {
 	    /* I've seen an example of a big5 encoding so I know this is right*/
 	    /*  Japanese appears to be sjis */
-	    enc = specific==1?em_sjis:specific==2?em_big5:specific==3?em_wansung:em_gb2312;
+	    enc = specific==1?em_sjis:specific==2?em_big5hkscs:specific==3?em_wansung:em_gb2312;
 	    mod = specific==1?2:specific==2?4:specific==3?5:3;		/* convert to ms specific */
 	    encoff = offset;
 	} else if ( platform==3 && (specific==2 || specific==4 || specific==5 || specific==6 ) &&
 		(prefer_cjk_encodings || enc!=em_unicode) ) {
 	    /* Old ms docs say that specific==3 => big 5, new docs say specific==4 => big5 */
 	    /*  Ain't that jus' great? */
-	    enc = specific==2? em_sjis : specific==5 ? em_wansung : specific==4? em_big5 : em_johab;
+	    enc = specific==2? em_sjis : specific==5 ? em_wansung : specific==4? em_big5hkscs : em_johab;
 	    mod = specific;
 	    encoff = offset;
 	} else if ( enc==em_none ) {

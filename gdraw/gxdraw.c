@@ -2786,7 +2786,7 @@ return;
 	gevent.u.mouse.y = event->xbutton.y;
 	gevent.u.mouse.button = event->xbutton.button;
 	gevent.u.mouse.device = NULL;
-	gevent.u.mouse.pressure = gevent.u.mouse.xtilt = gevent.u.mouse.ytilt = 0;
+	gevent.u.mouse.pressure = gevent.u.mouse.xtilt = gevent.u.mouse.ytilt = gevent.u.mouse.separation = 0;
 	if ( (event->xbutton.state&0x40) && gdisp->twobmouse_win )
 	    gevent.u.mouse.button = 2;
 	if ( event->type == MotionNotify ) {
@@ -2985,18 +2985,21 @@ return;
 			if ( ((XDeviceButtonEvent *) event)->first_axis!=0 )
 			    gevent.type = et_noevent;	/* Repeat of previous event to add more axes */
 			if ( ((XDeviceButtonEvent *) event)->axes_count==6 ) {
-			    gevent.u.mouse.pressure = ((XDeviceButtonEvent *) event)->axis_data[5];
+			    gevent.u.mouse.pressure = ((XDeviceButtonEvent *) event)->axis_data[2];
 			    gevent.u.mouse.xtilt = ((XDeviceButtonEvent *) event)->axis_data[3];
 			    gevent.u.mouse.ytilt = ((XDeviceButtonEvent *) event)->axis_data[4];
-			}
+			} else
+			    gevent.u.mouse.pressure = gevent.u.mouse.xtilt = gevent.u.mouse.ytilt = gevent.u.mouse.separation = 0;
 		    } else {
 			if ( ((XDeviceMotionEvent *) event)->first_axis!=0 )
 			    gevent.type = et_noevent;	/* Repeat of previous event to add more axes */
+			gevent.u.mouse.button = 0;
 			if ( ((XDeviceMotionEvent *) event)->axes_count==6 ) {
-			    gevent.u.mouse.pressure = ((XDeviceMotionEvent *) event)->axis_data[5];
+			    gevent.u.mouse.pressure = ((XDeviceMotionEvent *) event)->axis_data[2];
 			    gevent.u.mouse.xtilt = ((XDeviceMotionEvent *) event)->axis_data[3];
 			    gevent.u.mouse.ytilt = ((XDeviceMotionEvent *) event)->axis_data[4];
-			}
+			} else
+			    gevent.u.mouse.pressure = gevent.u.mouse.xtilt = gevent.u.mouse.ytilt = gevent.u.mouse.separation = 0;
 		    }
 		}
 	    }

@@ -49,9 +49,17 @@ unichar_t *encoding2u_strncpy(unichar_t *uto, const char *_from, int n, enum enc
 	switch ( cs ) {
 	  default:
 return( NULL );
-	  case e_johab: case e_big5:
-	    offset = cs==e_big5 ? 0xa100 : 0x8400;
-	    table = cs==e_big5 ? unicode_from_big5 : unicode_from_johab;
+	  case e_johab: case e_big5: case e_big5hkscs:
+	    if ( cs==e_big5 ) {
+		offset = 0xa100;
+		table = unicode_from_big5;
+	    } else if ( cs==e_big5hkscs ) {
+		offset = 0x8100;
+		table = unicode_from_big5hkscs;
+	    } else {
+		offset = 0x8400;
+		table = unicode_from_johab;
+	    }
 	    while ( *from && n>0 ) {
 		if ( *from>=(offset>>8) && from[1]!='\0' ) {
 		    *upt++ = table[ ((*from<<8) | from[1]) - offset ];
@@ -172,8 +180,10 @@ char *u2encoding_strncpy(char *to, const unichar_t *ufrom, int n, enum encoding 
 	switch ( cs ) {
 	  default:
 return( NULL );
-	  case e_johab: case e_big5:
-	    table = cs==e_big5 ? &big5_from_unicode : &johab_from_unicode;
+	  case e_johab: case e_big5: case e_big5hkscs:
+	    table = cs==e_big5 ? &big5_from_unicode :
+		    cs==e_big5hkscs ? &big5hkscs_from_unicode :
+			    &johab_from_unicode;
 	    while ( *ufrom && n>0 ) {
 		int highch = *ufrom>>8, ch;
 		if ( *ufrom<0x80 ) {

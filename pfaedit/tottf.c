@@ -4683,7 +4683,7 @@ void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]) {
 	CodePage[0] |= 1<<18;	/* simplified chinese */
     else if ( sf->encoding_name==em_ksc5601 || sf->encoding_name==em_wansung )
 	CodePage[0] |= 1<<19;	/* korean wansung */
-    else if ( sf->encoding_name==em_big5 )
+    else if ( sf->encoding_name==em_big5 || sf->encoding_name==em_big5hkscs )
 	CodePage[0] |= 1<<20;	/* traditional chinese */
     else if ( sf->encoding_name==em_johab )
 	CodePage[0] |= 1<<21;	/* korean johab */
@@ -5860,7 +5860,8 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
 
     if ( sf->encoding_name==em_ksc5601 || sf->encoding_name==em_wansung ||
 	    sf->encoding_name==em_jis208 || sf->encoding_name==em_sjis ||
-	    sf->encoding_name==em_big5 || sf->encoding_name==em_johab ||
+	    sf->encoding_name==em_big5 || sf->encoding_name==em_big5hkscs ||
+	    sf->encoding_name==em_johab ||
 	    format == ff_ttfsym )
 	extra = 1;
     memset(&dummy,'\0',sizeof(dummy));
@@ -5967,18 +5968,21 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
     enc = em_unicode; space = NULL;
     if ( sf->encoding_name==em_ksc5601 || sf->encoding_name==em_wansung ||
 	    sf->encoding_name==em_jis208 || sf->encoding_name==em_sjis ||
-	    sf->encoding_name==em_big5 || sf->encoding_name==em_johab ) {
+	    sf->encoding_name==em_big5 || sf->encoding_name==em_big5hkscs ||
+	    sf->encoding_name==em_johab ) {
 	specific =  sf->encoding_name==em_ksc5601 ? 5 :	/* Wansung, korean */
 		    sf->encoding_name==em_wansung ? 5 :	/* Wansung, korean */
 		    sf->encoding_name==em_jis208 ? 2 :	/* SJIS */
 		    sf->encoding_name==em_sjis ? 2 :	/* SJIS */
 		    sf->encoding_name==em_big5 ? 4 :	/* Big5, traditional Chinese */
+		    sf->encoding_name==em_big5hkscs ? 4 :
 		    /* sf->encoding_name==em_johab*/ 6;	/* Korean */
 	enc =	    sf->encoding_name==em_ksc5601 ? e_wansung :	/* Wansung, korean */
 		    sf->encoding_name==em_wansung ? e_wansung :	/* Wansung, korean */
 		    sf->encoding_name==em_jis208 ? e_sjis :	/* SJIS */
 		    sf->encoding_name==em_sjis ? e_sjis :	/* SJIS */
 		    sf->encoding_name==em_big5 ? e_big5 :	/* Big5, traditional Chinese */
+		    sf->encoding_name==em_big5hkscs ? e_big5hkscs :
 		    /* sf->encoding_name==em_johab*/ e_johab;	/* Korean */
 	maxlen = 3*maxlen+10;
 	space = galloc(maxlen);
@@ -6123,7 +6127,8 @@ static FILE *Needs816Enc(SplineFont *sf,int *tlen) {
     *tlen = 0;
     if ( sf->cidmaster!=NULL || sf->subfontcnt!=0 )
 return( NULL );
-    if ( sf->encoding_name!=em_big5 && sf->encoding_name!=em_johab &&
+    if ( sf->encoding_name!=em_big5 && sf->encoding_name!=em_big5hkscs &&
+		    sf->encoding_name!=em_johab &&
 		    sf->encoding_name!=em_sjis && sf->encoding_name!=em_wansung )
 return( NULL );
 
@@ -6131,8 +6136,14 @@ return( NULL );
     if ( sf->encoding_name==em_big5 ) {
 	base = 0xa1;
 	basebound = 0xf9;	/* wcl-02.ttf's cmap claims to go up to fc, but everything after f9 is invalid (according to what I know of big5, f9 should be the end) */
-	lbase = 0x40;
 	subheadcnt = basebound-base+1;
+	lbase = 0x40;
+	planesize = 191;
+    } else if ( sf->encoding_name==em_big5hkscs ) {
+	base = 0x81;
+	basebound = 0xfe;
+	subheadcnt = basebound-base+1;
+	lbase = 0x40;
 	planesize = 191;
     } else if ( sf->encoding_name==em_wansung ) {
 	base = 0xa1;
@@ -6387,6 +6398,7 @@ return( -1 );
 
 return( sf->chars[i]->unicodeenc );
       case em_big5:			/* Taiwan, Hong Kong */
+      case em_big5hkscs:		/* ?Hong Kong? */
       case em_johab:			/* Korea */
       case em_wansung:			/* Korea */
       case em_sjis:			/* Japan */
@@ -6531,7 +6543,8 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
 	}
 	if ( _sf->encoding_name!=em_jis208 && _sf->encoding_name!=em_ksc5601 &&
 		_sf->encoding_name!=em_sjis && _sf->encoding_name!=em_wansung &&
-		_sf->encoding_name!=em_big5 && _sf->encoding_name!=em_johab &&
+		_sf->encoding_name!=em_big5 && _sf->encoding_name!=em_big5hkscs &&
+		_sf->encoding_name!=em_johab &&
 		!greekfixup ) {
 	    /* Duplicate glyphs for greek */	/* Only meaningful if unicode */
 	    if ( avail[0xb5]==0xffffffff && avail[0x3bc]!=0xffffffff )
@@ -6664,6 +6677,7 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
 		    sf->encoding_name==em_jis208 ? 2 :	/* SJIS */
 		    sf->encoding_name==em_sjis ? 2 :	/* SJIS */
 		    sf->encoding_name==em_big5 ? 4 :	/* Big5, traditional Chinese */
+		    sf->encoding_name==em_big5hkscs ? 4 :
 		    /*sf->encoding_name==em_johab ?*/ 6);/* Korean */
 	    putlong(at->cmap,cjkpos);		/* offset from tab start to sub tab start */
 	}

@@ -41,7 +41,7 @@ static const char *charset_names[] = {
     "koi8_r",
     "jis201",
     "win", "mac", "symbol", "zapfding", "adobestandard",
-    "jis208", "jis212", "ksc5601", "gb2312", "big5", "johab",
+    "jis208", "jis212", "ksc5601", "gb2312", "big5", "big5hkscs", "johab",
     "unicode", "unicode4", "sjis", "wansung", NULL};
 
 static void SFDDumpSplineSet(FILE *sfd,SplineSet *spl) {

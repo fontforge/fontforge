@@ -1525,7 +1525,7 @@ int CountOfEncoding(enum charset encoding_name) {
 
     if ( encoding_name == em_unicode4 )
 return( unicode4_size );
-    if ( encoding_name == em_unicode || encoding_name == em_big5 ||
+    if ( encoding_name == em_unicode || encoding_name == em_big5 || encoding_name==em_big5hkscs ||
 	    encoding_name == em_johab || encoding_name == em_wansung ||
 	    encoding_name == em_sjis ||
 	    (encoding_name >= em_unicodeplanes && encoding_name <= em_unicodeplanesmax ))

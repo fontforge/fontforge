@@ -231,6 +231,8 @@ return( SFFindChar(sf,index,name));
 		table2 = &ksc5601_from_unicode;
 	    else if ( sf->encoding_name==em_big5 )
 		table2 = &big5_from_unicode;
+	    else if ( sf->encoding_name==em_big5hkscs )
+		table2 = &big5hkscs_from_unicode;
 	    else if ( sf->encoding_name==em_johab )
 		table2 = &johab_from_unicode;
 	    if ( table2!=NULL ) {
@@ -248,7 +250,8 @@ return( SFFindChar(sf,index,name));
 			    (index&0x8000) )
 			index = -1;
 		} else if ( unienc<0x80 &&
-			(sf->encoding_name==em_big5 || sf->encoding_name==em_johab ||
+			(sf->encoding_name==em_big5 || sf->encoding_name==em_big5hkscs ||
+			 sf->encoding_name==em_johab ||
 			 sf->encoding_name==em_sjis || sf->encoding_name==em_wansung ))
 		    index = unienc;
 		else if ( sf->encoding_name==em_sjis && unienc>=0xFF61 &&

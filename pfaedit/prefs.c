@@ -110,6 +110,7 @@ static GTextInfo localencodingtypes[] = {
     { (unichar_t *) _STR_KoreanWansung, NULL, 0, 0, (void *) e_wansung, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_KoreanJohab, NULL, 0, 0, (void *) e_johab, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_ChineseTrad, NULL, 0, 0, (void *) e_big5, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_ChineseTradHKSCS, NULL, 0, 0, (void *) e_big5hkscs, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { NULL }};
 
 /* don't use mnemonics 'C' or 'O' (Cancel & OK) */
@@ -325,6 +326,7 @@ static int encmatch(const char *enc) {
 	{ "KOI8-R", e_koi8_r },
 	{ "CP1252", e_win },
 	{ "Big5", e_big5 },
+	{ "Big5HKSCS", e_big5hkscs },
 	{ "UTF-8", e_utf8 },
 	{ "ISO-10646-1", e_unicode },
 #if 0

@@ -431,6 +431,7 @@ static char str_KoreanJohab[] = "Johab (Korean)";
 static char str_KoreanWansung[] = "Wansung (Korean)";
 static char str_Chinese[] = "GB 2312 (Simp. Chinese)";
 static char str_ChineseTrad[] = "Big5 (Trad. Chinese)";
+static char str_ChineseTradHKSCS[] = "Big5 HKSCS (Trad. Chinese)";
 static char str_Reducing[] = "You are reducing the number of characters below the\012current number. This will delete some characters.\012Is that what you wish to do?";
 static char str_Toofew[] = "Too Few Characters";
 static char str_Badfamilyn[] = "Bad Family Name, must begin with an alphabetic character.";

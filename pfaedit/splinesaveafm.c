@@ -270,6 +270,8 @@ return( "KSC5601" );
 return( "GB2312" );
       case em_big5:
 return( "BIG5" );
+      case em_big5hkscs:
+return( "BIG5HKSCS" );
       case em_johab:
 return( "Johab" );
       default:
@@ -445,7 +447,7 @@ int AfmSplineFont(FILE *afm, SplineFont *sf, int formattype) {
     int i, j, cnt, max;
     int caph, xh, ash, dsh;
     int type0 = ( formattype==ff_ptype0 );
-    int encmax=!type0?256:sf->encoding_name<em_big5?65536:94*94;
+    int encmax=!type0?256:sf->encoding_name<em_big5?94*94:65536;
     int anyzapf;
     int iscid = ( formattype==ff_cid || formattype==ff_otfcid );
     time_t now;

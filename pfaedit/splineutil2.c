@@ -1531,6 +1531,10 @@ SplineFont *SplineFontNew(void) {
 	table = unicode_from_big5;
 	tlen = 0x10000-0xa100;
 	enclen = 65536;
+    } else if ( default_encoding==em_big5hkscs ) {
+	table = unicode_from_big5hkscs;
+	tlen = 0x10000-0x8100;
+	enclen = 65536;
     } else if ( default_encoding==em_johab ) {
 	table = unicode_from_johab;
 	tlen = 0x10000-0x8400;

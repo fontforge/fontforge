@@ -136,7 +136,7 @@ static uint16 HashToId(char *fontname,SplineFont *sf) {
 		low = 0x7200; high = 0x73ff;
 	    }
 	}
-    } else if ( sf->encoding_name == em_big5 ) {
+    } else if ( sf->encoding_name == em_big5 || sf->encoding_name == em_big5hkscs ) {
 	low = 0x4200; high = 0x43ff;
     } else if ( sf->encoding_name == em_jis208 ||
 	    sf->encoding_name == em_jis212 ||

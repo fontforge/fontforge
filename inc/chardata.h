@@ -61,6 +61,9 @@ extern struct charmap2 jis_from_unicode;
 /* Subtract 0xa100 before indexing this array */
 extern const unichar_t unicode_from_big5[];
 extern struct charmap2 big5_from_unicode;
+/* Subtract 0x8100 before indexing this array */
+extern const unichar_t unicode_from_big5hkscs[];
+extern struct charmap2 big5hkscs_from_unicode;
 extern const unichar_t unicode_from_ksc5601[];
 extern struct charmap2 ksc5601_from_unicode;
 /* Subtract 0x8400 before indexing this array */

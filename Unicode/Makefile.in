@@ -5,8 +5,8 @@ VPATH = @srcdir@
 prefix = @prefix@
 bindir = @bindir@
 
-GU_VERSION=0
-GU_REVISION=1
+GU_VERSION=1
+GU_REVISION=0
 GU_AGE=0
 
 LIBTOOL = @LIBTOOL@

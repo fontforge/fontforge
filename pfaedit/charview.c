@@ -3292,6 +3292,8 @@ return;
 	if ( pos>=sf->charcnt ) {
 	    if ( cv->sc->enc<0xa140 && sf->encoding_name==em_big5 )
 		pos = 0xa140;
+	    else if ( cv->sc->enc<0xa140 && sf->encoding_name==em_big5hkscs )
+		pos = 0x8140;
 	    else if ( cv->sc->enc<0x8431 && sf->encoding_name==em_johab )
 		pos = 0x8431;
 	    else if ( cv->sc->enc<0xa1a1 && sf->encoding_name==em_wansung )

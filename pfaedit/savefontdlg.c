@@ -626,19 +626,23 @@ static char *GetWernerSFDFile(SplineFont *sf) {
     int supl = sf->supplement;
 
     for ( supl = sf->supplement; supl<sf->supplement+10 ; ++supl ) {
-	if ( sf->subfontcnt!=0 ) {
-	    sprintf(buffer,"%.40s-%.40s-%d.sfd", sf->cidregistry,sf->ordering,supl);
-	    def = buffer;
-	} else if ( sf->encoding_name==em_big5 )
-	    def = "Big5.sfd";
-	else if ( sf->encoding_name==em_sjis )
-	    def = "Sjis.sfd";
-	else if ( sf->encoding_name==em_wansung )
-	    def = "Wansung.sfd";
-	else if ( sf->encoding_name==em_johab )
-	    def = "Johab.sfd";
-	else if ( sf->encoding_name==em_unicode )
-	    def = "Unicode.sfd";
+	if ( screen_display==NULL ) {
+	    if ( sf->subfontcnt!=0 ) {
+		sprintf(buffer,"%.40s-%.40s-%d.sfd", sf->cidregistry,sf->ordering,supl);
+		def = buffer;
+	    } else if ( sf->encoding_name==em_big5 )
+		def = "Big5.sfd";
+	    else if ( sf->encoding_name==em_big5hkscs )
+		def = "Big5HKSCS.sfd";
+	    else if ( sf->encoding_name==em_sjis )
+		def = "Sjis.sfd";
+	    else if ( sf->encoding_name==em_wansung )
+		def = "Wansung.sfd";
+	    else if ( sf->encoding_name==em_johab )
+		def = "Johab.sfd";
+	    else if ( sf->encoding_name==em_unicode )
+		def = "Unicode.sfd";
+	}
 	if ( def!=NULL ) {
 	    ret = SearchDirForWernerFile(".",def);
 	    if ( ret==NULL )

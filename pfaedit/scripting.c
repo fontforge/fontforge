@@ -1133,6 +1133,7 @@ static void bReencode(Context *c) {
 	{ em_ksc5601, "ksc5601" },
 	{ em_wansung, "wansung" },
 	{ em_big5, "big5" },
+	{ em_big5hkscs, "big5hkscs" },
 	{ em_johab, "johab" },
 	{ em_jis208, "jis208" },
 	{ em_sjis, "sjis" },

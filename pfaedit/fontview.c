@@ -1812,6 +1812,8 @@ static void FVMenuChangeChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    if ( pos>=sf->charcnt ) {
 		if ( sf->encoding_name==em_big5 && FVAnyCharSelected(fv)<0xa140 )
 		    pos = 0xa140;
+		else if ( sf->encoding_name==em_big5hkscs && FVAnyCharSelected(fv)<0x8140 )
+		    pos = 0x8140;
 		else if ( sf->encoding_name==em_johab && FVAnyCharSelected(fv)<0x8431 )
 		    pos = 0x8431;
 		else if ( sf->encoding_name==em_wansung && FVAnyCharSelected(fv)<0xa1a1 )
@@ -3285,6 +3287,13 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i) {
 	    dummy->unicodeenc = unicode_from_big5[i-0xa100];
 	else
 	    dummy->unicodeenc = -1;
+    } else if ( sf->encoding_name==em_big5hkscs ) {
+	if ( i<0x80 )
+	    dummy->unicodeenc = i;
+	else if ( i>=0x8100 )
+	    dummy->unicodeenc = unicode_from_big5hkscs[i-0x8100];
+	else
+	    dummy->unicodeenc = -1;
     } else if ( sf->encoding_name==em_johab ) {
 	if ( i<160 )
 	    dummy->unicodeenc = i;
@@ -3613,7 +3622,7 @@ static int Use2ByteEnc(FontView *fv,SplineChar *sc, unichar_t *buf,FontMods *mod
     int ch1 = sc->enc>>8, ch2 = sc->enc&0xff;
 
     switch ( fv->sf->encoding_name ) {
-      case em_big5:
+      case em_big5: case em_big5hkscs:
 	if ( !GDrawFontHasCharset(fv->header,em_big5))
 return( false);
 	if ( ch1<0xa1 || ch1>0xf9 || ch2<0x40 || ch2>0xfe || sc->enc> 0xf9fe )

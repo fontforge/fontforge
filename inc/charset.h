@@ -41,6 +41,7 @@ enum encoding { e_usascii, e_iso646_no, e_iso646_se, e_iso8859_1,
     e_euc, e_euckorean, e_eucgb,
     e_wansung, e_johab,
     e_big5,
+    e_big5hkscs,
     e_unicode, e_unicode_backwards,			/* wide chars */
     e_utf7, e_utf8,					/* unicode encodings */
     e_ucs4,						/* 4 byte chars */
@@ -54,8 +55,10 @@ enum charset { em_none = -1,
     em_koi8_r,
     em_jis201,
     em_win, em_mac, em_symbol, em_zapfding, em_user, em_adobestandard=em_user,
-    em_jis208, em_jis212, em_ksc5601, em_gb2312, em_big5, em_johab /* Korean*/,
-    em_unicode, em_unicode4, em_max, em_first2byte=em_jis208, em_last94x94=em_gb2312 };
+    em_jis208, em_jis212, em_ksc5601, em_gb2312, em_big5, em_big5hkscs,
+    em_johab /* Korean*/,
+/* 28 */
+    em_unicode, em_unicode4, em_gb18030 , em_max, em_first2byte=em_jis208, em_last94x94=em_gb2312 };
 
 extern int /*enum charset*/ local_encoding;
 extern struct namemap { char *name; int map; } encodingnames[];
