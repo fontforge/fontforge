@@ -49,8 +49,8 @@ static enum { kb_ibm, kb_mac, kb_sun, kb_ppc } keyboard = _Keyboard;
 /*  and the standard mac option conversions are done */
 
 static void GMenuBarChangeSelection(GMenuBar *mb, int newsel,GEvent *);
-static struct gmenu *GMenuCreateSubMenu(struct gmenu *parent,GMenuItem *mi);
-static struct gmenu *GMenuCreatePulldownMenu(GMenuBar *mb,GMenuItem *mi);
+static struct gmenu *GMenuCreateSubMenu(struct gmenu *parent,GMenuItem *mi,int disable);
+static struct gmenu *GMenuCreatePulldownMenu(GMenuBar *mb,GMenuItem *mi, int disabled);
 
 static int menu_grabs=true;
 
@@ -91,6 +91,7 @@ typedef struct gmenu {
     unsigned int initial_press: 1;
     unsigned int scrollup: 1;
     unsigned int freemi: 1;
+    unsigned int disabled: 1;
     int bp;
     int tickoff, tioff, rightedge;
     int width, height;
@@ -221,13 +222,13 @@ static int GMenuDrawMenuLine(struct gmenu *m, GMenuItem *mi, int y) {
 
     if ( mi->ti.fg!=COLOR_DEFAULT && mi->ti.fg!=COLOR_UNKNOWN )
 	fg = mi->ti.fg;
-    if ( mi->ti.disabled )
+    if ( mi->ti.disabled || m->disabled )
 	fg = m->box->disabled_foreground;
     if ( fg==COLOR_DEFAULT )
 	fg = GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(m->w));
 
     h = GTextInfoDraw(m->w,m->tioff,y,&mi->ti,m->font,
-	    mi->ti.disabled?m->box->disabled_foreground:fg,
+	    (mi->ti.disabled || m->disabled )?m->box->disabled_foreground:fg,
 	    m->box->active_border,new.y+new.height);
 
     if ( mi->ti.checkable ) {
@@ -384,7 +385,8 @@ return;
 	if ( m->mi[newsel].moveto!=NULL )
 	    (m->mi[newsel].moveto)(m->owner,&m->mi[newsel],event);
 	if ( m->mi[newsel].sub!=NULL )
-	    m->child = GMenuCreateSubMenu(m,m->mi[newsel].sub);
+	    m->child = GMenuCreateSubMenu(m,m->mi[newsel].sub,
+		    m->disabled || m->mi[newsel].ti.disabled);
     }
 }
 
@@ -412,7 +414,7 @@ return;
 	if ( mi->moveto!=NULL )
 	    (mi->moveto)(mb->g.base,mi,event);
 	if ( mi->sub!=NULL )
-	    mb->child = GMenuCreatePulldownMenu(mb,mi->sub);
+	    mb->child = GMenuCreatePulldownMenu(mb,mi->sub,mi->ti.disabled);
     }
 }
 
@@ -497,6 +499,7 @@ return( true );
 	    int i = l + m->offtop;
 	    if ( !( l==0 && m->offtop!=0 ) &&
 		    !( l==m->lcnt-1 && m->offtop+m->lcnt<m->mcnt ) &&
+		    !m->disabled &&
 		    !m->mi[i].ti.disabled && !m->mi[i].ti.line ) {
 		if ( m->mi[i].ti.checkable )
 		    m->mi[i].ti.checked = !m->mi[i].ti.checked;
@@ -582,11 +585,12 @@ static int GMenuSpecialKeys(struct gmenu *m, unichar_t keysym, GEvent *event) {
 return( true );
       case GK_Return:
 	if ( m->mi[m->line_with_mouse].sub!=NULL && m->child==NULL ) {
-	    m->child = GMenuCreateSubMenu(m,m->mi[m->line_with_mouse].sub);
+	    m->child = GMenuCreateSubMenu(m,m->mi[m->line_with_mouse].sub,
+		    m->disabled || m->mi[m->line_with_mouse].ti.disabled);
 return( true );
 	} else {
 	    int i = m->line_with_mouse;
-	    if ( !m->mi[i].ti.disabled && !m->mi[i].ti.line ) {
+	    if ( !m->disabled && !m->mi[i].ti.disabled && !m->mi[i].ti.line ) {
 		if ( m->mi[i].ti.checkable )
 		    m->mi[i].ti.checked = !m->mi[i].ti.checked;
 		GMenuDismissAll(m);
@@ -634,7 +638,8 @@ return( true );
 return( true );
 	    }
 	} else if ( m->mi[m->line_with_mouse].sub!=NULL && m->child==NULL ) {
-	    m->child = GMenuCreateSubMenu(m,m->mi[m->line_with_mouse].sub);
+	    m->child = GMenuCreateSubMenu(m,m->mi[m->line_with_mouse].sub,
+		    m->disabled || m->mi[m->line_with_mouse].ti.disabled);
 return( true );
 	}
       /* Fall through into the "Down" case */
@@ -680,6 +685,7 @@ static int gmenu_key(struct gmenu *m, GEvent *event) {
 	    m = m->child;
 	for ( i=0; i<m->mcnt; ++i ) {
 	    if ( m->mi[i].ti.mnemonic == keysym &&
+			!m->disabled &&
 			!m->mi[i].ti.disabled ) {
 		GMenuKeyInvoke(m,i);
 return( true );
@@ -742,7 +748,8 @@ return( true );
 return( false );
 }
 
-static GMenu *_GMenu_Create(GWindow owner,GMenuItem *mi, GPoint *where, int awidth, int aheight, GFont *font) {
+static GMenu *_GMenu_Create(GWindow owner,GMenuItem *mi, GPoint *where,
+	int awidth, int aheight, GFont *font, int disable) {
     GMenu *m = gcalloc(1,sizeof(GMenu));
     GRect pos;
     GDisplay *disp = GDrawGetDisplayOfWindow(owner);
@@ -755,6 +762,7 @@ static GMenu *_GMenu_Create(GWindow owner,GMenuItem *mi, GPoint *where, int awid
 
     m->owner = owner;
     m->mi = mi;
+    m->disabled = disable;
     m->font = font;
     m->box = &menu_box;
     m->tickoff = m->tioff = m->bp = GBoxBorderWidth(owner,m->box);
@@ -820,20 +828,21 @@ static GMenu *_GMenu_Create(GWindow owner,GMenuItem *mi, GPoint *where, int awid
 return( m );
 }
 
-static GMenu *GMenuCreateSubMenu(GMenu *parent,GMenuItem *mi) {
+static GMenu *GMenuCreateSubMenu(GMenu *parent,GMenuItem *mi,int disable) {
     GPoint p;
     GMenu *m;
 
     p.x = parent->width;
     p.y = (parent->line_with_mouse-parent->offtop)*parent->fh + parent->bp;
     GDrawTranslateCoordinates(parent->w,GDrawGetRoot(GDrawGetDisplayOfWindow(parent->w)),&p);
-    m = _GMenu_Create(parent->owner,mi,&p,-parent->width,parent->fh,parent->font);
+    m = _GMenu_Create(parent->owner,mi,&p,-parent->width,parent->fh,
+	    parent->font, disable);
     m->parent = parent;
     m->pressed = parent->pressed;
 return( m );
 }
 
-static GMenu *GMenuCreatePulldownMenu(GMenuBar *mb,GMenuItem *mi) {
+static GMenu *GMenuCreatePulldownMenu(GMenuBar *mb,GMenuItem *mi,int disabled) {
     GPoint p;
     GMenu *m;
 
@@ -843,7 +852,7 @@ static GMenu *GMenuCreatePulldownMenu(GMenuBar *mb,GMenuItem *mi) {
     GDrawTranslateCoordinates(mb->g.base,GDrawGetRoot(GDrawGetDisplayOfWindow(mb->g.base)),&p);
     m = _GMenu_Create(mb->g.base,mi,&p,
 	    mb->xs[mb->entry_with_mouse+1]-mb->xs[mb->entry_with_mouse],
-	    -mb->g.r.height,mb->font);
+	    -mb->g.r.height,mb->font, disabled);
     m->menubar = mb;
     m->pressed = mb->pressed;
     _GWidget_SetPopupOwner((GGadget *) mb);
@@ -861,7 +870,7 @@ GWindow GMenuCreatePopupMenu(GWindow owner,GEvent *event, GMenuItem *mi) {
     p.x = event->u.mouse.x;
     p.y = event->u.mouse.y;
     GDrawTranslateCoordinates(owner,GDrawGetRoot(GDrawGetDisplayOfWindow(owner)),&p);
-    m = _GMenu_Create(owner,GMenuItemArrayCopy(mi,NULL),&p,0,0,menu_font);
+    m = _GMenu_Create(owner,GMenuItemArrayCopy(mi,NULL),&p,0,0,menu_font,false);
     GDrawPointerUngrab(GDrawGetDisplayOfWindow(owner));
     GDrawPointerGrab(m->w);
     GDrawGetPointerPosition(m->w,&e);
