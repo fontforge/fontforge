@@ -982,11 +982,14 @@ static void SMSetState(struct asm_state *trans,struct contexttree *cur,int class
     for ( i=0; i<cur->branch_cnt; ++i ) {
 	if ( cur->branches[i].classnum==class ) {
 	    trans->next_state = cur->branches[i].branch->state;
-	    trans->flags = cur->branches[i].branch->ends_here 
-		     ? cur->branches[i].branch->markme?0x8000:0x0000
-		    : cur->branches[i].branch->state!=0
-		     ? cur->branches[i].branch->markme?0x8000:0x0000
-		     : cur->branches[i].branch->markme?0xc000:0x4000;
+	    /* If we go back to state 0, it means we want to start from */
+	    /*  the begining again, and we should check against the */
+	    /*  current glyph (which failed for us, but might be useful */
+	    /*  to start a new operation).  Even if we did not fail we */
+	    /*  should still do this (so don't advance the glyph) */
+	    trans->flags = cur->branches[i].branch->state!=0
+		    ? cur->branches[i].branch->markme?0x8000:0x0000
+		    : cur->branches[i].branch->markme?0xc000:0x4000;
 	    trans->u.context.mark_tag = cur->branches[i].branch->applymarkedsubs;
 	    trans->u.context.cur_tag = cur->branches[i].branch->applycursubs;
 return;
