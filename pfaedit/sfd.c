@@ -41,7 +41,7 @@ static const char *charset_names[] = {
     "jis201",
     "win", "mac", "symbol", "zapfding", "adobestandard",
     "jis208", "jis212", "ksc5601", "gb2312", "big5", "johab",
-    "unicode", NULL};
+    "unicode", "unicode4", "sjis", "wansung", NULL};
 
 static void SFDDumpSplineSet(FILE *sfd,SplineSet *spl) {
     SplinePoint *first, *sp;
@@ -521,6 +521,9 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 	    fprintf(sfd, "Encoding: custom\n" );
 	else
 	    fprintf(sfd, "Encoding: %s\n", item->enc_name );
+    } else if ( sf->encoding_name>=sizeof(charset_names)/sizeof(charset_names[0])-2 ) {
+	fprintf(sfd, "Encoding: %d\n", sf->encoding_name );
+	fprintf(stderr, "Unknown encoding %d\n", sf->encoding_name );
     } else
 	fprintf(sfd, "Encoding: %s\n", charset_names[sf->encoding_name+1] );
     if ( sf->display_size!=0 )

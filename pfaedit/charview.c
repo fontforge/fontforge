@@ -2665,6 +2665,12 @@ static void CVMenuChangeChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 		pos = 0xa140;
 	    else if ( cv->sc->enc<0x8431 && sf->encoding_name==em_johab )
 		pos = 0x8431;
+	    else if ( cv->sc->enc<0xa1a1 && sf->encoding_name==em_wansung )
+		pos = 0xa1a1;
+	    else if ( cv->sc->enc<0x8100 && sf->encoding_name==em_sjis )
+		pos = 0x8100;
+	    else if ( cv->sc->enc<0xb000 && sf->encoding_name==em_sjis )
+		pos = 0xb000;
 	    if ( pos>=sf->charcnt )
 return;
 	}
@@ -2779,8 +2785,8 @@ return(-1);
     }
     if ( pos==-1 ) {
 	pos = u_strtol(ret,&end,10);
-	if ( *end==',' && sf->encoding_name>=em_jis208 && sf->encoding_name<em_base &&
-		sf->encoding_name!=em_big5 ) {
+	if ( *end==',' && ((sf->encoding_name>=em_jis208 && sf->encoding_name<=em_last94x94) ||
+		sf->encoding_name == em_unicode )) {
 	    int j = u_strtol(end+1,&end,10);
 	    /* kuten */
 	    if ( *end!='\0' )

@@ -1172,7 +1172,7 @@ return;
     *bc = new;
 }
 
-static void BDFClut(BDFFont *bdf, int linear_scale) {
+void BDFClut(BDFFont *bdf, int linear_scale) {
     int scale = linear_scale*linear_scale, i;
     Color bg = GDrawGetDefaultBackground(NULL);
     int bgr=COLOR_RED(bg), bgg=COLOR_GREEN(bg), bgb=COLOR_BLUE(bg);

@@ -4550,11 +4550,11 @@ void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]) {
     else if ( sf->encoding_name==em_iso8859_11 )
 	CodePage[0] |= 1<<16;	/* thai */
     else if ( sf->encoding_name==em_jis201 || sf->encoding_name==em_jis208 ||
-	    sf->encoding_name==em_jis212 )
+	    sf->encoding_name==em_jis212 || sf->encoding_name==em_sjis )
 	CodePage[0] |= 1<<17;	/* japanese */
     else if ( sf->encoding_name==em_gb2312 )
 	CodePage[0] |= 1<<18;	/* simplified chinese */
-    else if ( sf->encoding_name==em_ksc5601 )
+    else if ( sf->encoding_name==em_ksc5601 || sf->encoding_name==em_wansung )
 	CodePage[0] |= 1<<19;	/* korean wansung */
     else if ( sf->encoding_name==em_big5 )
 	CodePage[0] |= 1<<20;	/* traditional chinese */
@@ -5677,12 +5677,20 @@ return( false );
 	lbase = 0x40;
 	subheadcnt = 93;
 	planesize = 191;
-    } else {
+    } else if ( sf->encoding_name==em_wansung ) {
+	base = 0xa1;
+	basebound = 0xdf;
+	lbase = 0xa1;
+	subheadcnt = basebound-base+1;
+	planesize = 0xfe - lbase +1;
+    } else if ( sf->encoding_name==em_johab ) {
 	base = 0x84;
 	basebound = 0xf9+1;
 	lbase = 0x31;
 	subheadcnt = 0xf9-0x84+1+1;
 	planesize = 0xfe -0x31+1;	/* Stupid gcc bug, thinks 0xfe- is ambiguous (exponant) */
+    } else {
+	fprintf( stderr, "Unsupported 8/16 encoding %d\n", sf->encoding_name );
     }
     for ( i=0; i<base && i<sf->charcnt; ++i )
 	if ( SCWorthOutputting(sf->chars[i]))
@@ -5795,10 +5803,13 @@ return( false );		/* Doesn't have the single byte entries */
     
     if ( enccnt==3 ) {
 	/* big mac table, just a copy of the ms table */
-	putshort(at->cmap,sf->encoding_name==em_big5||sf->encoding_name==em_jis208?1:0);
+	putshort(at->cmap,sf->encoding_name==em_big5||
+			sf->encoding_name==em_sjis||
+			sf->encoding_name==em_jis208?1:0);
 					/* either mac or mac unicode platform */
 	putshort(at->cmap,
 	    sf->encoding_name==em_jis208? 1 :	/* SJIS */
+	    sf->encoding_name==em_sjis?   1 :	/* SJIS */
 	    /*sf->encoding_name==em_big5?*/ 2 );/* Big5 */
 	putlong(at->cmap,2*sizeof(uint16)+enccnt*(2*sizeof(uint16)+sizeof(uint32)));
     }
@@ -5806,6 +5817,7 @@ return( false );		/* Doesn't have the single byte entries */
     putshort(at->cmap,3);		/* ms platform */
     putshort(at->cmap,
 	sf->encoding_name==em_jis208? 2 :	/* SJIS */
+	sf->encoding_name==em_sjis? 2 :		/* SJIS */
 	sf->encoding_name==em_big5? 4 :		/* Big5 */
 	 6 );					/* Johab */
     putlong(at->cmap,2*sizeof(uint16)+enccnt*(2*sizeof(uint16)+sizeof(uint32)));
@@ -5855,6 +5867,8 @@ return( -1 );
 return( sf->chars[i]->unicodeenc );
       case em_big5:			/* Taiwan, Hong Kong */
       case em_johab:			/* Korea */
+      case em_wansung:			/* Korea */
+      case em_sjis:			/* Japan */
 return( i );
       case em_ksc5601:			/* Wansung */
 	if ( (i/96)>=94 )
@@ -5913,9 +5927,10 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
 	putshort(at->cmap,0);		/* language = meaningless */
 	for ( i=0; i<256; ++i )
 	    putc(table[i],at->cmap);
-    } else if ( sf->encoding_name==em_big5 && Needs816Enc(at,sf)) {
-return;		/* All Done */
-    } else if ( sf->encoding_name==em_johab && Needs816Enc(at,sf)) {
+    } else if ( (sf->encoding_name==em_big5 ||
+		    sf->encoding_name==em_johab ||
+		    /*sf->encoding_name==em_sjis ||*/
+		    sf->encoding_name==em_wansung ) && Needs816Enc(at,sf)) {
 return;		/* All Done */
     } else {
 	uint32 *avail = galloc(65536*sizeof(uint32));
@@ -5943,6 +5958,7 @@ return;		/* All Done */
 	    } while ( k<_sf->subfontcnt );
 	}
 	if ( _sf->encoding_name!=em_jis208 && _sf->encoding_name!=em_ksc5601 &&
+		_sf->encoding_name!=em_sjis && _sf->encoding_name!=em_wansung &&
 		_sf->encoding_name!=em_big5 && _sf->encoding_name!=em_johab &&
 		!greekfixup ) {
 	    /* Duplicate glyphs for greek */	/* Only meaningful if unicode */
@@ -6033,13 +6049,16 @@ return;		/* All Done */
 	    putshort(at->cmap,1);	/* mac platform */
 	    putshort(at->cmap,
 		sf->encoding_name==em_jis208? 1 :	/* SJIS */
+		sf->encoding_name==em_sjis? 1 :		/* SJIS */
 		2 );					/* Big5 */
 	    putlong(at->cmap,2*sizeof(uint16)+enccnt*(2*sizeof(uint16)+sizeof(uint32)));
 	}
 	putshort(at->cmap,3);		/* ms platform */
 	putshort(at->cmap,		/* plat specific enc */
 		sf->encoding_name==em_ksc5601 ? 5 :	/* Wansung, korean */
+		sf->encoding_name==em_wansung ? 5 :	/* Wansung, korean */
 		sf->encoding_name==em_jis208 ? 2 :	/* SJIS */
+		sf->encoding_name==em_sjis ? 2 :	/* SJIS */
 		sf->encoding_name==em_big5 ? 4 :	/* Big5, traditional Chinese */
 		sf->encoding_name==em_johab ? 6 :	/* Korean */
 		 1 );					/* Unicode */

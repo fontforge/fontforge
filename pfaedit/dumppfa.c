@@ -980,7 +980,7 @@ static void dumptype0stuff(FILE *out,SplineFont *sf) {
 
     dumpreencodeproc(out);
     notdefname = dumpnotdefenc(out,sf);
-    if ( sf->encoding_name == em_unicode || sf->encoding_name == em_unicode4 ) {
+    if ( sf->encoding_name >= em_last94x94 ) {
 	for ( i=1; i<256; ++i ) {
 	    if ( somecharsused(sf,i<<8, (i<<8)+0xff)) {
 		fprintf( out, "/%sBase /%s%d [\n", sf->fontname, sf->fontname, i );

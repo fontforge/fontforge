@@ -593,6 +593,7 @@ extern BDFFont *SplineFontToBDFHeader(SplineFont *_sf, int pixelsize, int indica
 extern BDFFont *SplineFontRasterize(SplineFont *sf, int pixelsize, int indicate);
 extern BDFChar *SplineCharAntiAlias(SplineChar *sc, int pixelsize,int linear_scale);
 extern BDFFont *SplineFontAntiAlias(SplineFont *sf, int pixelsize,int linear_scale);
+extern void BDFClut(BDFFont *bdf, int linear_scale);
 extern BDFChar *BDFPieceMeal(BDFFont *bdf, int index);
 extern BDFFont *SplineFontPieceMeal(SplineFont *sf,int pixelsize,int antialias);
 extern BDFFont *BitmapFontScaleTo(BDFFont *old, int to);
@@ -768,8 +769,9 @@ extern void SCCopyFgToBg(SplineChar *sc,int show);
 
 int hasFreeType(void);
 void *FreeTypeFontContext(SplineFont *sf,SplineChar *sc,int doall);
-BDFFont *SplineFontFreeTypeRasterize(void *freetypecontext,int pixelsize);
-BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int enc,int pixelsize);
+BDFFont *SplineFontFreeTypeRasterize(void *freetypecontext,int pixelsize,int bitmap);
+BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int enc,
+	int pixelsize,int bitmap);
 void FreeTypeFreeContext(void *freetypecontext);
 
 # if HANYANG

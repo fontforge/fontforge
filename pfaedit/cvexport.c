@@ -371,6 +371,7 @@ static int ExportXBM(char *filename,SplineChar *sc, int format) {
     int tot, bitsperpixel, i;
     uint8 *pt, *end;
     int scale;
+    void *freetypecontext;
 
     if ( format==1 ) {
 	ans = GWidgetAskStringR(_STR_PixelSizeQ,def,_STR_PixelSizeQ);
@@ -394,7 +395,12 @@ return( 0 );
     gi.u.image = &base;
 
     if ( bitsperpixel==1 ) {
-	bdfc = SplineCharRasterize(sc,pixelsize);
+	if ( (freetypecontext = FreeTypeFontContext(sc->parent,sc,false))==NULL )
+	    bdfc = SplineCharRasterize(sc,pixelsize);
+	else {
+	    bdfc = SplineCharFreeTypeRasterize(freetypecontext,sc->enc,pixelsize,true);
+	    FreeTypeFreeContext(freetypecontext);
+	}
 	BCRegularizeBitmap(bdfc);
 	/* Sigh. Bitmaps use a different defn of set than images do. make it consistant */
 	tot = bdfc->bytes_per_line*(bdfc->ymax-bdfc->ymin+1);
@@ -411,7 +417,12 @@ return( 0 );
 	    ret = GImageWriteBmp(&gi,filename);
 	BDFCharFree(bdfc);
     } else {
-	bdfc = SplineCharAntiAlias(sc,pixelsize,(1<<(bitsperpixel/2)));
+	if ( bitsperpixel!=8 || (freetypecontext = FreeTypeFontContext(sc->parent,sc,false))==NULL )
+	    bdfc = SplineCharAntiAlias(sc,pixelsize,(1<<(bitsperpixel/2)));
+	else {
+	    bdfc = SplineCharFreeTypeRasterize(freetypecontext,sc->enc,pixelsize,false);
+	    FreeTypeFreeContext(freetypecontext);
+	}
 	BCRegularizeGreymap(bdfc);
 	base.image_type = it_index;
 	base.data = bdfc->bitmap;

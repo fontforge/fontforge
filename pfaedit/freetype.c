@@ -154,6 +154,9 @@ static void AddIf(SplineFont *sf,SplineChar **new,SplineChar **old,int unienc) {
 void FreeTypeFreeContext(void *freetypecontext) {
     FTC *ftc = freetypecontext;
 
+    if ( ftc==NULL )
+return;
+
     if ( ftc->face!=NULL )
 	_FT_Done_Face(ftc->face);
     if ( ftc->mappedfile )
@@ -174,6 +177,9 @@ void *FreeTypeFontContext(SplineFont *sf,SplineChar *sc,int doall) {
     SplineChar **old, **new;
     char *selected = sf->fv->selected;
     int i,cnt;
+
+    if ( !hasFreeType())
+return( NULL );
 
     ftc->sf = sf;
     ftc->file = NULL;
@@ -239,7 +245,8 @@ return( ftc );
 return( NULL );
 }
 
-BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int enc,int pixelsize) {
+BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int enc,
+	int pixelsize,int bitmap) {
     FTC *ftc = freetypecontext;
     BDFChar *bdfc;
     SplineChar *sc;
@@ -249,7 +256,8 @@ BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int enc,int pixelsize
  goto fail;
     if ( _FT_Set_Pixel_Sizes(ftc->face,0,pixelsize))
  goto fail;
-    if ( _FT_Load_Glyph(ftc->face,ftc->glyph_indeces[enc],FT_LOAD_RENDER|FT_LOAD_MONOCHROME))
+    if ( _FT_Load_Glyph(ftc->face,ftc->glyph_indeces[enc],
+	    bitmap?(FT_LOAD_RENDER|FT_LOAD_MONOCHROME):FT_LOAD_RENDER))
  goto fail;
 
     slot = ftc->face->glyph;
@@ -260,6 +268,7 @@ BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int enc,int pixelsize
     bdfc->ymax = slot->bitmap_top;
     bdfc->ymin = slot->bitmap_top-slot->bitmap.rows+1;
     bdfc->xmax = slot->bitmap_left+slot->bitmap.width-1;
+    bdfc->byte_data = !bitmap;
     if ( sc!=NULL ) {
 	bdfc->width = rint(sc->width*pixelsize / (real) (sc->parent->ascent+sc->parent->descent));
 	bdfc->enc = enc;
@@ -274,11 +283,13 @@ return( bdfc );
 return( SplineCharRasterize(ftc->sf->chars[enc],pixelsize) );
 }
 
-BDFFont *SplineFontFreeTypeRasterize(void *freetypecontext,int pixelsize) {
+BDFFont *SplineFontFreeTypeRasterize(void *freetypecontext,int pixelsize,int bitmap) {
     FTC *ftc = freetypecontext, *subftc=NULL;
     SplineFont *sf = ftc->sf, *subsf;
     int i,k;
     BDFFont *bdf = SplineFontToBDFHeader(sf,pixelsize,true);
+
+    BDFClut(bdf,16);
 
     k=0;
     do {
@@ -293,10 +304,12 @@ BDFFont *SplineFontFreeTypeRasterize(void *freetypecontext,int pixelsize) {
 	    if ( SCWorthOutputting(subsf->chars[i] ) ) {
 		/* If we could not allocate an ftc for this subfont, the revert to*/
 		/*  our own rasterizer */
-		if ( subftc==NULL )
+		if ( subftc!=NULL )
+		    bdf->chars[i] = SplineCharFreeTypeRasterize(subftc,i,pixelsize,bitmap);
+		else if ( bitmap )
 		    bdf->chars[i] = SplineCharRasterize(subsf->chars[i],pixelsize);
 		else
-		    bdf->chars[i] = SplineCharFreeTypeRasterize(subftc,i,pixelsize);
+		    bdf->chars[i] = SplineCharAntiAlias(subsf->chars[i],pixelsize,16);
 		GProgressNext();
 	    } else
 		bdf->chars[i] = NULL;

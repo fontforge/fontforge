@@ -134,9 +134,13 @@ static uint16 HashToId(char *fontname,SplineFont *sf) {
 	}
     } else if ( sf->encoding_name == em_big5 ) {
 	low = 0x4200; high = 0x43ff;
-    } else if ( sf->encoding_name == em_jis208 || sf->encoding_name == em_jis212 ) {
+    } else if ( sf->encoding_name == em_jis208 ||
+	    sf->encoding_name == em_jis212 ||
+	    sf->encoding_name == em_sjis ) {
 	low = 0x4000; high = 0x41ff;
-    } else if ( sf->encoding_name == em_johab || sf->encoding_name == em_ksc5601 ) {
+    } else if ( sf->encoding_name == em_johab ||
+	    sf->encoding_name == em_ksc5601 ||
+	    sf->encoding_name == em_wansung ) {
 	low = 0x4400; high = 0x45ff;
     } else if ( sf->encoding_name == em_gb2312 ) {
 	low = 0x7200; high = 0x73ff;

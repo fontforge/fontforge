@@ -250,11 +250,11 @@ return( "MacRoman" );
 return( "WinRoman" );
       case em_koi8_r:
 return( "KOI8R" );
-      case em_jis208:
+      case em_jis208: case em_sjis:
 return( "JISX208" );
       case em_jis212:
 return( "JISX212" );
-      case em_ksc5601:
+      case em_ksc5601: case em_wansung:
 return( "KSC5601" );
       case em_gb2312:
 return( "GB2312" );

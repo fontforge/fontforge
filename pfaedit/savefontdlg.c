@@ -169,15 +169,21 @@ static int WriteBitmaps(char *filename,SplineFont *sf, real *sizes, int do_grey)
     BDFFont *bdf;
     unichar_t *temp;
     char buffer[100];
+    void *freetypecontext = NULL;
 
     if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
 
     for ( i=0; sizes[i]!=0; ++i );
     GProgressChangeStages(i);
+    if ( do_grey )
+	freetypecontext = FreeTypeFontContext(sf,NULL,true);
     for ( i=0; sizes[i]!=0; ++i ) {
 	buffer[0] = '\0';
 	if ( do_grey ) {
-	    bdf = SplineFontAntiAlias(sf,(int) sizes[i],4);
+	    if ( freetypecontext==NULL )
+		bdf = SplineFontAntiAlias(sf,(int) sizes[i],4);
+	    else
+		bdf = SplineFontFreeTypeRasterize(freetypecontext,sizes[i],true);
 	    if ( bdf==NULL )
 		sprintf(buffer,"Couldn't generate an anti-aliased font at the requested size (%d)", (int) sizes[i]);
 	} else {
@@ -190,6 +196,7 @@ static int WriteBitmaps(char *filename,SplineFont *sf, real *sizes, int do_grey)
 	    GWidgetPostNotice(temp,temp);
 	    free(temp);
 	    free(buf);
+	    FreeTypeFreeContext(freetypecontext);
 return( false );
 	}
 	strcpy(buf,filename);
@@ -206,6 +213,7 @@ return( false );
 	    BDFFontFree(bdf);
 	GProgressNextStage();
     }
+    FreeTypeFreeContext(freetypecontext);
     free(buf);
 return( true );
 }

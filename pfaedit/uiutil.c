@@ -117,14 +117,15 @@ return( val );
 static char browser[1025];
 
 static void findbrowser(void) {
-    static char *stdbrowsers[] = { "netscape", "opera", "mozilla", "mosaic",
-	"kfmclient", /*"grail",*/ "lynx", NULL };
+    static char *stdbrowsers[] = { "netscape", "opera", "galeon", "kfmclient",
+	"mozilla", "mosaic", /*"grail",*/ "lynx", NULL };
     int i;
     char *path;
 
     if ( getenv("BROWSER")!=NULL ) {
 	strcpy(browser,getenv("BROWSER"));
-	if ( strcmp(browser,"kde")==0 || strcmp(browser,"kfm")==0 || strcmp(browser,"kfmclient")==0 )
+	if ( strcmp(browser,"kde")==0 || strcmp(browser,"kfm")==0 ||
+		strcmp(browser,"konqueror")==0 || strcmp(browser,"kfmclient")==0 )
 	    strcpy(browser,"kfmclient openURL");
 return;
     }
@@ -179,7 +180,10 @@ return;
     } else
 	strcpy(fullspec,file);
     temp = galloc(strlen(browser) + strlen(fullspec) + 20);
-    sprintf( temp, "%s %s &", browser, fullspec );
+    if ( strstr(fullspec,":/")==NULL )
+	sprintf( temp, "%s file:%s &", browser, fullspec );	/* mozilla won't take a filename */
+    else
+	sprintf( temp, "%s %s &", browser, fullspec );
     system(temp);
     free(temp);
 }

@@ -1488,6 +1488,12 @@ static void FVMenuChangeChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 		    pos = 0xa140;
 		else if ( sf->encoding_name==em_johab && FVAnyCharSelected(fv)<0x8431 )
 		    pos = 0x8431;
+		else if ( sf->encoding_name==em_wansung && FVAnyCharSelected(fv)<0xa1a1 )
+		    pos = 0xa1a1;
+		else if ( sf->encoding_name==em_sjis && FVAnyCharSelected(fv)<0x8100 )
+		    pos = 0x8100;
+		else if ( sf->encoding_name==em_sjis && FVAnyCharSelected(fv)<0xb000 )
+		    pos = 0xb000;
 		if ( pos>=sf->charcnt )
 return;
 	    }
@@ -2685,6 +2691,49 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i) {
 	else if ( i>=0x8400 )
 	    dummy->unicodeenc = unicode_from_johab[i-0x8400];
 	else
+	    dummy->unicodeenc = -1;
+    } else if ( sf->encoding_name==em_wansung ) {
+	if ( i<160 )
+	    dummy->unicodeenc = i;
+	else if ( (i&0xff00)>=0xa100 && (i&0xff)>=0xa1 &&
+		    (i&0xff00)<0xa100+(94<<8) && (i&0xff)<0xa1+94 ) {
+	    int temp = i-0xa1a1;
+	    temp = (temp>>8)*94 + (temp&0xff);
+	    temp = unicode_from_ksc5601[temp];
+	    if ( temp==0 ) temp = -1;
+	    dummy->unicodeenc = temp;
+	} else
+	    dummy->unicodeenc = -1;
+    } else if ( sf->encoding_name==em_sjis ) {
+	if ( i<0x80 )
+	    dummy->unicodeenc = i;
+	else if ( i>=0xa1 && i<=0xdf )
+	    dummy->unicodeenc = unicode_from_jis201[i];
+	else if ( ((i>>8)>=129 && (i>>8)<=159) || ((i>>8)>=176 && (i>>8)<=0xea) ) {
+	    int ch1 = i>>8, ch2 = i&0xff;
+	    int temp;
+	    if ( ch1 >= 129 && ch1<= 159 )
+		ch1 -= 112;
+	    else
+		ch1 -= 176;
+	    ch1 <<= 1;
+	    if ( ch2>=159 )
+		ch2-= 126;
+	    else if ( ch2>127 ) {
+		--ch1;
+		ch2 -= 32;
+	    } else {
+		--ch1;
+		ch2 -= 31;
+	    }
+	    temp = (ch1-0x21)*94+(ch2-0x21);
+	    if ( temp>=94*94 )
+		temp = -1;
+	    else
+		temp = unicode_from_jis208[(ch1-0x21)*94+(ch2-0x21)];
+	    if ( temp==0 ) temp = -1;
+	    dummy->unicodeenc = temp;
+	} else
 	    dummy->unicodeenc = -1;
     } else if ( sf->encoding_name==em_jis208 && i<96*94 && i%96!=0 && i%96!=95 )
 	dummy->unicodeenc = unicode_from_jis208[(i/96)*94+(i%96-1)];

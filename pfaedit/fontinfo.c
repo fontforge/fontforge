@@ -73,8 +73,10 @@ GTextInfo encodingtypes[] = {
     { (unichar_t *) _STR_Unicode, NULL, 0, 0, (void *) em_unicode, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Unicode4, NULL, 0, 0, (void *) em_unicode4, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { NULL, NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 1, 0 },
+    { (unichar_t *) _STR_SJIS, NULL, 0, 0, (void *) em_sjis, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Jis208, NULL, 0, 0, (void *) em_jis208, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Jis212, NULL, 0, 0, (void *) em_jis212, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_KoreanWansung, NULL, 0, 0, (void *) em_wansung, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Korean, NULL, 0, 0, (void *) em_ksc5601, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_KoreanJohab, NULL, 0, 0, (void *) em_johab, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Chinese, NULL, 0, 0, (void *) em_gb2312, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -1003,6 +1005,7 @@ return( true );
 static int infont(SplineChar *sc, const unsigned short *table, int tlen,
 	Encoding *item, uint8 *used) {
     int i;
+    int tlen2 = tlen;
     /* for some reason, some encodings have multiple entries for the same */
     /*  glyph. One obvious one is space: 0x20 and 0xA0. The used bit array */
     /*  is designed to handle that unpleasantness */
@@ -1043,14 +1046,25 @@ return( false );
 	}
     }
 
+    if ( table==unicode_from_jis208 || table == unicode_from_ksc5601 )
+	tlen = 94*94;
+
     for ( i=0; i<tlen && (sc->unicodeenc!=table[i] || (used[i>>3]&(1<<(i&7)))); ++i );
-    if ( i==tlen && tlen==0x10000-0xa100 && sc->unicodeenc<160 ) {
-	/* Big 5 often comes with a single byte encoding of ASCII */
+    if ( i==tlen && sc->unicodeenc<0x80 && tlen2==65536 && table == unicode_from_jis208 ) {
+	/* sjis often comes with a single byte encoding of ASCII */
 	sc->enc = sc->unicodeenc;
 return( true );
-    }
-    if ( i==tlen && tlen==0x10000-0x8400 && sc->unicodeenc<160 ) {
-	/* As does Johab */
+    } else if ( i==tlen && sc->unicodeenc>=0xFF61 && sc->unicodeenc<=0xFF9F &&
+	    tlen2==65536 && table == unicode_from_jis208 ) {
+	/* and katakana */
+	for ( i=0xa1; i<=0xdf && (sc->unicodeenc!=unicode_from_jis208[i] || (used[i>>3]&(1<<(i&7)))); ++i );
+	sc->enc = i;
+return( true );
+    } else if ( i==tlen && sc->unicodeenc<160 &&
+	    (tlen==0x10000-0xa100 || tlen==0x10000-0x8400 || (tlen2==65536 && table==unicode_from_ksc5601 ))) {
+	/* Big 5 often comes with a single byte encoding of ASCII */
+	/* As do Johab and Wansung */
+	/* but sjis is more complex... */
 	sc->enc = sc->unicodeenc;
 return( true );
     }
@@ -1059,8 +1073,20 @@ return( true );
 return( false );
     } else {
 	used[i>>3] |= (1<<(i&7));
-	if ( tlen==94*94 ) {
+	if ( tlen2==94*94 ) {
 	    sc->enc = (i/94)*96+(i%94)+1;
+return( true );
+	} else if ( table==unicode_from_ksc5601 ) {
+	    /* Wansung */
+	    sc->enc = 0xa1a1 + ((i/94)<<8) + (i%94);
+return( true );
+	} else if ( table==unicode_from_jis208 ) {
+	    /* sjis */
+	    int ch1, ch2, ro, co;
+	    ch1 = i/96; ch2 = i%96;
+	    ro = ch1<95 ? 112 : 176;
+	    co = (ch1&1) ? (ch2>95?32:31) : 126;
+	    sc->enc = ((((ch1+1)>>1) + ro )<<8 )    |    (ch2+co);
 return( true );
 	} else if ( tlen==0x10000-0xa100 ) {
 	    sc->enc = i+0xa100;
@@ -1233,9 +1259,15 @@ return( false );
 	} else if ( new_map==em_jis208 ) {
 	    table = unicode_from_jis208;
 	    tlen = 94*94;
+	} else if ( new_map==em_sjis ) {
+	    table = unicode_from_jis208;
+	    tlen = 65536;
 	} else if ( new_map==em_jis212 ) {
 	    table = unicode_from_jis212;
 	    tlen = 94*94;
+	} else if ( new_map==em_wansung ) {
+	    table = unicode_from_ksc5601;
+	    tlen = 65536;
 	} else if ( new_map==em_ksc5601 ) {
 	    table = unicode_from_ksc5601;
 	    tlen = 94*94;

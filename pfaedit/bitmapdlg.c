@@ -139,7 +139,7 @@ static void SFFigureBitmaps(SplineFont *sf,real *sizes,int usefreetype) {
 	if ( first && usefreetype )
 	    freetypecontext = FreeTypeFontContext(sf,NULL,true);
 	if ( freetypecontext )
-	    bdf = SplineFontFreeTypeRasterize(freetypecontext,sizes[i]);
+	    bdf = SplineFontFreeTypeRasterize(freetypecontext,sizes[i],true);
 	else
 	    bdf = SplineFontRasterize(sf,sizes[i],true);
 	bdf->next = sf->bitmaps;
@@ -197,7 +197,7 @@ return;
 		SplineCharAutoHint(sf->chars[enc],true);
 	    first = false;
 	    if ( freetypecontext )
-		bdfc = SplineCharFreeTypeRasterize(freetypecontext,enc,bdf->pixelsize);
+		bdfc = SplineCharFreeTypeRasterize(freetypecontext,enc,bdf->pixelsize,true);
 	    else
 		bdfc = SplineCharRasterize(sf->chars[enc],bdf->pixelsize);
 	    if ( bdf->chars[enc]==NULL )

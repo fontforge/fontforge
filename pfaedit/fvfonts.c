@@ -189,11 +189,12 @@ return( SFFindChar(sf,index,name));
 	    unsigned short *plane2;
 	    int highch, temp;
 
-	    if ( sf->encoding_name<=em_jis212 )
+	    if ( sf->encoding_name==em_jis208 || sf->encoding_name==em_jis212 ||
+		    sf->encoding_name==em_sjis )
 		table2 = &jis_from_unicode;
 	    else if ( sf->encoding_name==em_gb2312 )
 		table2 = &gb2312_from_unicode;
-	    else if ( sf->encoding_name==em_ksc5601 )
+	    else if ( sf->encoding_name==em_ksc5601 || sf->encoding_name==em_wansung )
 		table2 = &ksc5601_from_unicode;
 	    else if ( sf->encoding_name==em_big5 )
 		table2 = &big5_from_unicode;
@@ -210,10 +211,22 @@ return( SFFindChar(sf,index,name));
 			    index=-1;
 			else
 			    index &= 0x8000;
-		    } else if ( sf->encoding_name==em_jis208 && (index&0x8000) )
+		    } else if ( (sf->encoding_name==em_jis208 || sf->encoding_name==em_sjis ) &&
+			    (index&0x8000) )
 			index = -1;
-		} else if ( unienc<0x80 && (sf->encoding_name==em_big5 || sf->encoding_name==em_johab ))
+		} else if ( unienc<0x80 &&
+			(sf->encoding_name==em_big5 || sf->encoding_name==em_johab ||
+			 sf->encoding_name==em_sjis || sf->encoding_name==em_wansung ))
 		    index = unienc;
+		else if ( sf->encoding_name==em_sjis && unienc>=0xFF61 &&
+			unienc<=0xFF9F )
+		    index = unienc-0xFF61 + 0xa1;	/* katakana */
+		if ( index!=-1 &&
+			(sf->encoding_name==em_jis208 || sf->encoding_name==em_jis212 ||
+			 sf->encoding_name==em_ksc5601 || sf->encoding_name==em_gb2312 )) {
+		    index -= 0x2121;
+		    index = (index>>8)*96 + (index&0xff)+1;
+		}
 	    }
 	}
     }
@@ -334,70 +347,14 @@ static int SFHasName(SplineFont *sf, char *name ) {
 return( index );
 }
 
-static int EncodingHasChar(SplineFont *sf, int unienc ) {
-    int index;
-    extern unsigned short unicode_from_adobestd[256];
-    struct charmap2 *cm;
-    Encoding *item;
-
-    if ( (sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4) &&
-	    unienc!=-1 )
-return( unienc );
-    else {
-	for ( index = sf->charcnt-1; index>=0; --index ) if ( sf->chars[index]!=NULL ) {
-	    if ( sf->chars[index]->unicodeenc==unienc )
-return( index );
-	}
-    }
-    if ( sf->encoding_name==em_none )
-return( -1 );
-    else if ( sf->encoding_name==em_user ) {
-	for ( index =0; index<256; ++index )
-	    if ( unicode_from_adobestd[index]==unienc )
-return( index );
-    } else if ( sf->encoding_name<em_user ) {
-	for ( index=0; index<256; ++index )
-	    if ( unicode_from_alphabets[sf->encoding_name+3][index]==unienc )
-return( index );
-    } else if ( sf->encoding_name>=em_base ) {
-	for ( item=enclist; item!=NULL && item->enc_num!=sf->encoding_name; item=item->next );
-	if ( item==NULL )
-return( -1 );
-	for ( index=0; index<item->char_cnt; ++index )
-	    if ( item->unicode[index]==unienc )
-return( index );
-    } else {
-	if ( sf->encoding_name==em_jis208 || sf->encoding_name==em_jis212 )
-	    cm = &jis_from_unicode;
-	else if ( sf->encoding_name==em_ksc5601 )
-	    cm = &ksc5601_from_unicode;
-	else if ( sf->encoding_name==em_gb2312 )
-	    cm = &gb2312_from_unicode;
-	else
-	    cm = &big5_from_unicode;
-	if ( (unienc>>8)<cm->first || (unienc>>8)>=cm->last ||
-		cm->table[(unienc>>8)-cm->first]==NULL )
-return( -1 );
-	index = (cm->table[(unienc>>8)-cm->first])[unienc&0xff];
-	if ( index==0 )
-return( -1 );
-	if ( sf->encoding_name==em_jis208 && (index&0x8000) )
-return( -1 );		/* it's in 212 */
-	if ( sf->encoding_name==em_jis212 && !(index&0x8000) )
-return( -1 );		/* it's in 208 */
-	index -= 0x2121;
-	index = (index>>8)*96 + (index&0xff)+1;
-return( index );
-    }
-return( -1 );
-}
-
 static int SFEncodingCnt(SplineFont *sf) {
     Encoding *item=NULL;
 
     if ( sf->encoding_name == em_unicode4 )
 return( unicode4_size );
-    if ( sf->encoding_name == em_unicode || sf->encoding_name == em_big5 || sf->encoding_name == em_johab )
+    if ( sf->encoding_name == em_unicode || sf->encoding_name == em_big5 ||
+	    sf->encoding_name == em_johab || sf->encoding_name == em_wansung ||
+	    sf->encoding_name == em_sjis )
 return( 65536 );
     else if ( sf->encoding_name == em_none )
 return( sf->charcnt );
@@ -437,7 +394,7 @@ return;
 		if ( other->chars[i]->unicodeenc==-1 ) {
 		    if ( (index=SFHasName(fv->sf,other->chars[i]->name))== -1 )
 			index = emptypos+cnt++;
-		} else if ( (index = EncodingHasChar(fv->sf,other->chars[i]->unicodeenc))==-1 )
+		} else if ( (index = SFFindChar(fv->sf,other->chars[i]->unicodeenc,NULL))==-1 )
 		    index = emptypos+cnt++;
 		if ( doit ) {
 		    /* Bug here. Suppose someone has a reference to our empty */
