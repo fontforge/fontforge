@@ -1898,18 +1898,21 @@ static Spline *lineto2(GrowBuf *gb,struct hintdb *hdb,Spline *spline, Spline *do
 	hv = 1;		/* Vertical */
     else if ( spline->from->me.y==spline->to->me.y )
 	hv = 0;		/* Horizontal */
-    if ( hv!=-1 && cnt>1 ) {
-	for ( test=spline->to->next, hvcnt=1; test!=NULL ; test = test->to->next ) {
-	    if ( hv==1 && test->from->me.y==test->to->me.y )
-		hv = 0;
-	    else if ( hv==0 && test->from->me.x==test->to->me.x )
-		hv = 1;
-	    else
-	break;
-	    lasthvgood = test;
-	    ++hvcnt;
-	    if ( test==lastgood )
-	break;
+    if ( hv!=-1 ) {
+	lasthvgood = spline; hvcnt = 1;
+	if ( cnt!=1 ) {
+	    for ( test=spline->to->next; test!=NULL ; test = test->to->next ) {
+		if ( hv==1 && test->from->me.y==test->to->me.y )
+		    hv = 0;
+		else if ( hv==0 && test->from->me.x==test->to->me.x )
+		    hv = 1;
+		else
+	    break;
+		lasthvgood = test;
+		++hvcnt;
+		if ( test==lastgood )
+	    break;
+	    }
 	}
 	if ( hvcnt==cnt || hvcnt>=2 ) {
 	    /* It's more efficient to do some h/v linetos */
@@ -1985,7 +1988,7 @@ static Spline *curveto2(GrowBuf *gb,struct hintdb *hdb,Spline *spline, Spline *d
 	    hdb->current = spline->to->me;
 	    ++cnt;
 	    spline = spline->to->next;
-	    if ( spline==done || spline==NULL || cnt>9 )
+	    if ( spline==done || spline==NULL || cnt>9 || spline->knownlinear )
 	break;
 	}
 	if ( gb->pt+1 >= gb->end )
@@ -2006,12 +2009,12 @@ return( spline );
 	hdb->current = spline->to->me;
 	++cnt;
 	spline = spline->to->next;
-	if ( spline==done || spline==NULL )
+	if ( spline==done || spline==NULL || spline->knownlinear )
     break;
     }
     if ( gb->pt+1 >= gb->end )
 	GrowBuffer(gb);
-    *(gb->pt)++ = 8;		/* rrhcurveto */
+    *(gb->pt)++ = 8;		/* rrcurveto */
 return( spline );
 }
 
