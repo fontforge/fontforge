@@ -2906,6 +2906,17 @@ static void bCIDSetFontNames(Context *c) {
     _SetFontNames(c,sf->cidmaster);
 }
 
+static void bCIDFlatten(Context *c) {
+    SplineFont *sf = c->curfv->sf;
+    
+    if ( sf->cidmaster==NULL )
+	errors( c, "Not a cid-keyed font", sf->fontname );
+    else if ( c->a.argc!=1 )
+	error( c, "Wrong number of arguments");
+    
+    SFFlatten(sf->cidmaster);
+}
+
 static void bCIDFlattenByCMap(Context *c) {
     SplineFont *sf = c->curfv->sf;
     
@@ -3688,6 +3699,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "ConvertByCMap", bConvertByCMap },
     { "CIDChangeSubFont", bCIDChangeSubFont },
     { "CIDSetFontNames", bCIDSetFontNames },
+    { "CIDFlatten", bCIDFlatten },
     { "CIDFlattenByCMap", bCIDFlattenByCMap },
 /* ***** */
     { "CharCnt", bCharCnt },
