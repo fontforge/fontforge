@@ -434,13 +434,13 @@ return( "WinRoman" );
       case em_koi8_r:
 return( "KOI8R" );
       case em_jis208: case em_sjis:
-return( "JISX208" );
+return( "JISX0208.1997" );
       case em_jis212:
-return( "JISX212" );
+return( "JISX0212.1990" );
       case em_ksc5601: case em_wansung:
-return( "KSC5601" );
+return( "KSC5601.1992" );
       case em_gb2312: case em_jisgb:
-return( "GB2312" );
+return( "GB2312.1980" );
       case em_big5:
 return( "BIG5" );
       case em_big5hkscs:

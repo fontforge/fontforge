@@ -437,11 +437,11 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding, int res) {
     if ( (codepages[0]&0x10000) && font->encoding_name!=em_iso8859_11 )
 	fprintf( file, "ISO8859-11 " );
     if ( (codepages[0]&0x20000) && (font->encoding_name==em_unicode || font->encoding_name==em_unicode4 ))
-	fprintf( file, "JISX208 " );
+	fprintf( file, "JISX0208.1997 " );
     if ( (codepages[0]&0x40000) && (font->encoding_name==em_unicode || font->encoding_name==em_unicode4 ) )
-	fprintf( file, "GB2312 " );
+	fprintf( file, "GB2312.1980 " );
     if ( (codepages[0]&0x80000) && (font->encoding_name==em_unicode || font->encoding_name==em_unicode4 ))
-	fprintf( file, "KSC5601 " );
+	fprintf( file, "KSC5601.1992 " );
     if ( (codepages[0]&0x100000) && (font->encoding_name==em_unicode || font->encoding_name==em_unicode4 ))
 	fprintf( file, "BIG5 " );
     if ( (codepages[0]&0x80000000) && font->encoding_name!=em_symbol )

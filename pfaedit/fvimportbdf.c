@@ -363,14 +363,18 @@ static int BDFParseEnc(char *encname, int encoff) {
 	enc = em_win;
     } else if ( strstrmatch(encname,"koi8")!=NULL ) {
 	enc = em_koi8_r;
-    } else if ( strstrmatch(encname,"JISX208")!=NULL ) {
+    } else if ( strstrmatch(encname,"JISX0208")!=NULL ) {
 	enc = em_jis208;
-    } else if ( strstrmatch(encname,"JISX212")!=NULL ) {
+    } else if ( strstrmatch(encname,"JISX0212")!=NULL ) {
 	enc = em_jis212;
     } else if ( strstrmatch(encname,"KSC5601")!=NULL ) {
 	enc = em_ksc5601;
     } else if ( strstrmatch(encname,"GB2312")!=NULL ) {
 	enc = em_gb2312;
+    } else if ( strstrmatch(encname,"BIG5HKSCS")!=NULL ) {
+	enc = em_big5hkscs;
+    } else if ( strstrmatch(encname,"BIG5")!=NULL ) {
+	enc = em_big5;
     } else {
 	Encoding *item;
 	for ( item=enclist; item!=NULL && strstrmatch(encname,item->enc_name)==NULL; item=item->next );
