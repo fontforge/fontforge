@@ -885,6 +885,9 @@ static SplineSet *SVGParsePath(xmlChar *path) {
 	    x = strtod((char *) path,&end);
 	    end = skipcomma(end);
 	    y = strtod(end,&end);
+	    if ( type=='m' ) {
+		x += current.x; y += current.y;
+	    }
 	    sp = SplinePointCreate(x,y);
 	    current = sp->me;
 	    cur = chunkalloc(sizeof(SplineSet));
