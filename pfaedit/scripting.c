@@ -1743,8 +1743,8 @@ static void bSetWidth(Context *c) {
 	error( c, "Wrong number of arguments");
     if ( c->a.vals[1].type!=v_int || (c->a.argc==3 && c->a.vals[2].type!=v_int ))
 	error(c,"Bad argument type in SetWidth");
-    if ( c->a.argc==3 && c->a.vals[2].u.ival )
-	incr = true;
+    if ( c->a.argc==3 )
+	incr = c->a.vals[2].u.ival;
     FVSetWidthScript(c->curfv,wt_width,c->a.vals[1].u.ival,incr);
 }
 
@@ -1754,8 +1754,8 @@ static void bSetVWidth(Context *c) {
 	error( c, "Wrong number of arguments");
     if ( c->a.vals[1].type!=v_int || (c->a.argc==3 && c->a.vals[2].type!=v_int ))
 	error(c,"Bad argument type in SetVWidth");
-    if ( c->a.argc==3 && c->a.vals[2].u.ival )
-	incr = true;
+    if ( c->a.argc==3 )
+	incr = c->a.vals[2].u.ival;
     FVSetWidthScript(c->curfv,wt_vwidth,c->a.vals[1].u.ival,incr);
 }
 
@@ -1765,8 +1765,8 @@ static void bSetLBearing(Context *c) {
 	error( c, "Wrong number of arguments");
     if ( c->a.vals[1].type!=v_int || (c->a.argc==3 && c->a.vals[2].type!=v_int ))
 	error(c,"Bad argument type in SetLBearing");
-    if ( c->a.argc==3 && c->a.vals[2].u.ival )
-	incr = true;
+    if ( c->a.argc==3 )
+	incr = c->a.vals[2].u.ival;
     FVSetWidthScript(c->curfv,wt_lbearing,c->a.vals[1].u.ival,incr);
 }
 
@@ -1776,8 +1776,8 @@ static void bSetRBearing(Context *c) {
 	error( c, "Wrong number of arguments");
     if ( c->a.vals[1].type!=v_int || (c->a.argc==3 && c->a.vals[2].type!=v_int ))
 	error(c,"Bad argument type in SetRBearing");
-    if ( c->a.argc==3 && c->a.vals[2].u.ival )
-	incr = true;
+    if ( c->a.argc==3 )
+	incr = c->a.vals[2].u.ival;
     FVSetWidthScript(c->curfv,wt_rbearing,c->a.vals[1].u.ival,incr);
 }
 
