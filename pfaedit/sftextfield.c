@@ -1671,7 +1671,7 @@ return( true );
 
     if ( event->type == et_mousedown || st->pressed ) {
 	for ( i=st->loff_top; i<st->lcnt-1 &&
-		event->u.mouse.y-g->inner.y>=st->lineheights[i+1].y+st->lineheights[st->loff_top].y;
+		event->u.mouse.y-g->inner.y>=st->lineheights[i+1].y-st->lineheights[st->loff_top].y;
 		++i );
 	if ( i<0 ) i = 0;
 	if ( !st->multi_line ) i = 0;
