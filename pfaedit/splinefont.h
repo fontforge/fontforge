@@ -81,6 +81,7 @@ typedef struct strokeinfo {
     unsigned int caligraphic: 1;
     unsigned int centerline: 1;		/* For freehand tool */
     unsigned int toobigwarn: 1;
+    unsigned int removeinternal: 1;
     real penangle;
     real ratio;				/* ratio of minor pen axis to major */
 /* For freehand tool */

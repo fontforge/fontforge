@@ -544,15 +544,17 @@ SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc) {
     real t_start, t_end;
     int i,j;
     Spline *first, *spline;
-    int changed = false;
+    int changed = false, reversed = false;
     double ts[10];
     int pinners[10];
     int cnt;
 
     if ( spl->first==spl->last && spl->first->next!=NULL ) {
 	/* My routine gets screwed up by counter-clockwise triangles */
-	if ( !SplinePointListIsClockwise(spl))
+	if ( !SplinePointListIsClockwise(spl)) {
+	    reversed = true;
 	    SplineSetReverse(spl);
+	}
 	/* It's a loop, we'll return two SplineSets */
 	StrokeJoint(spl->first,si,&first_plus,&first_minus);
 	plus = first_plus.from;
@@ -698,8 +700,17 @@ return( ssplus );
 	SplineSetFixCPs(ssplus); SplineSetFixCPs(ssminus);
 	if ( SplinePointListIsClockwise(ssplus))
 	    SplineSetReverse(ssplus);
-	ssplus->next = ssminus;
-	SplineSetsCorrect(ssplus,&changed);
+	if ( si->removeinternal ) {
+	    if (reversed)  {
+		SplinePointListFree(ssplus);
+		ssplus = ssminus;
+	    } else
+		SplinePointListFree(ssminus);
+	    SplineSetReverse(ssplus);
+	} else {
+	    ssplus->next = ssminus;
+	    SplineSetsCorrect(ssplus,&changed);
+	}
     } else {
 	/*SplineSetFixRidiculous(ssplus);*/
 	SplineSetFixCPs(ssplus);

@@ -1784,15 +1784,17 @@ static void bExpandStroke(Context *c) {
 	2 => stroke width (implied butt, round)
 	4 => stroke width, line cap, line join
 	5 => stroke width, caligraphic angle, thickness-numerator, thickness-denom
+	6 => stroke width, line cap, line join, 0, kanou's flags
     */
 
-    if ( c->a.argc!=2 && c->a.argc!=4 && c->a.argc!=7 )
+    if ( c->a.argc!=2 && c->a.argc!=4 && c->a.argc!=5 && c->a.argc!=6 )
 	error( c, "Wrong number of arguments");
     if ( c->a.vals[1].type!=v_int ||
 	    (c->a.argc>=4 && c->a.vals[2].type!=v_int ) ||
 	    (c->a.argc>=4 && c->a.vals[3].type!=v_int ) ||
-	    (c->a.argc>=5 && c->a.vals[4].type!=v_int ))
-	error(c,"Bad argument type in ExpandStroke");
+	    (c->a.argc>=5 && c->a.vals[4].type!=v_int ) ||
+	    (c->a.argc>=6 && c->a.vals[5].type!=v_int ))
+	error(c,"Bad argument type");
     memset(&si,0,sizeof(si));
     si.radius = c->a.vals[1].u.ival/2.;
     if ( c->a.argc==2 ) {
@@ -1801,6 +1803,13 @@ static void bExpandStroke(Context *c) {
     } else if ( c->a.argc==4 ) {
 	si.cap = c->a.vals[2].u.ival;
 	si.join = c->a.vals[3].u.ival;
+    } else if ( c->a.argc==6 ) {
+	si.cap = c->a.vals[2].u.ival;
+	si.join = c->a.vals[3].u.ival;
+	if ( c->a.vals[4].u.ival!=0 )
+	    error(c,"If 5 arguments are given, the fourth must be zero");
+	if ( c->a.vals[5].u.ival&1 )
+	    si.removeinternal = true;
     } else {
 	si.caligraphic = true;
 	si.penangle = 3.1415926535897932*c->a.vals[2].u.ival/180;
