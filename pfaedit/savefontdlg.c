@@ -1645,6 +1645,14 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
     char *end = filename+strlen(filename);
     struct sflist *sfi;
 
+    if ( sf->bitmaps==NULL ) i = bf_none;
+    else if ( strmatch(bitmaptype,"otf")==0 ) i = bf_ttf;
+    else for ( i=0; bitmaps[i]!=NULL; ++i ) {
+	if ( strmatch(bitmaptype,bitmaps[i])==0 )
+    break;
+    }
+    oldbitmapstate = i;
+
     for ( i=0; extensions[i]!=NULL; ++i ) {
 	if ( strlen( extensions[i])>0 &&
 		strmatch(end-strlen(extensions[i]),extensions[i])==0 )
@@ -1665,10 +1673,14 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	    if ( strmatch(end-strlen(bitmaps[i]),bitmaps[i])==0 )
 	break;
 	}
-	if ( bitmaps[i]==NULL )
-	    i = ff_pfb;
-	else
+	if ( *filename=='\0' )
 	    i = ff_none;
+	else if ( bitmaps[i]==NULL )
+	    i = ff_pfb;
+	else {
+	    oldbitmapstate = i;
+	    i = ff_none;
+	}
     }
     if ( i==ff_ptype3 && (
 	    (sf->encoding_name>=em_first2byte && sf->encoding_name<em_max2 ) ||
@@ -1682,14 +1694,7 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
     }
     oldformatstate = i;
 
-    if ( sf->bitmaps==NULL ) i = bf_none;
-    else if ( strmatch(bitmaptype,"otf")==0 ) i = bf_ttf;
-    else for ( i=0; bitmaps[i]!=NULL; ++i ) {
-	if ( strmatch(bitmaptype,bitmaps[i])==0 )
-    break;
-    }
-    oldbitmapstate = i;
-    if ( i==bf_sfnt_dfont )
+    if ( oldbitmapstate==bf_sfnt_dfont )
 	oldformatstate = ff_none;
 
     if ( fmflags==-1 ) {
@@ -1757,6 +1762,15 @@ return( WriteMacFamily(filename,sfs,oldformatstate,oldbitmapstate,flags));
 
     if ( oldformatstate == ff_multiple )
 return( !WriteMultiplePSFont(sf,filename,sizes,res,subfontdefinition));
+
+    if ( oldformatstate>ff_cid ) {
+	if ( fmflags&1 )
+	    WriteAfmFile(filename,sf,oldformatstate);
+	if ( fmflags&2 )
+	    WritePfmFile(filename,sf,oldformatstate==ff_ptype0);
+	if ( fmflags&0x10000 )
+	    WriteTfmFile(filename,sf,oldformatstate);
+    }
 
 return( !_DoSave(sf,filename,sizes,res));
 }
