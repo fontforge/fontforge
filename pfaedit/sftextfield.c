@@ -696,6 +696,15 @@ static void *genunicodedata(void *_gt,int32 *len) {
 return( u_copyn(st->text+st->sel_start,st->sel_end-st->sel_start));
 }
 
+static void *genutf8data(void *_gt,int32 *len) {
+    GTextField *gt = _gt;
+    unichar_t *temp =u_copyn(gt->text+gt->sel_start,gt->sel_end-gt->sel_start);
+    char *ret = u2utf8_copy(temp);
+    free(temp);
+    *len = strlen(ret);
+return( ret );
+}
+
 static void *ddgenunicodedata(void *_gt,int32 *len) {
     void *temp = genunicodedata(_gt,len);
     SFTextArea *st = _gt;
@@ -732,6 +741,9 @@ static void SFTextAreaGrabPrimarySelection(SFTextArea *st) {
     GDrawAddSelectionType(st->g.base,sn_primary,"Unicode",st,st->sel_end-st->sel_start,
 	    sizeof(unichar_t),
 	    genunicodedata,noop);
+    GDrawAddSelectionType(st->g.base,sn_primary,"UTF8_STRING",st,st->sel_end-st->sel_start,
+	    sizeof(unichar_t),
+	    genutf8data,noop);
     GDrawAddSelectionType(st->g.base,sn_primary,"STRING",st,st->sel_end-st->sel_start,sizeof(char),
 	    genlocaldata,noop);
 }
@@ -750,9 +762,13 @@ static void SFTextAreaGrabSelection(SFTextArea *st, enum selnames sel ) {
 
     if ( st->sel_start!=st->sel_end ) {
 	unichar_t *temp;
+	char *ctemp;
 	GDrawGrabSelection(st->g.base,sel);
 	temp = u_copyn(st->text+st->sel_start,st->sel_end-st->sel_start);
+	ctemp = u2utf8_copy(temp);
 	GDrawAddSelectionType(st->g.base,sel,"Unicode",temp,u_strlen(temp),sizeof(unichar_t),
+		NULL,NULL);
+	GDrawAddSelectionType(st->g.base,sel,"UTF8_STRING",ctemp,strlen(ctemp),sizeof(char),
 		NULL,NULL);
 	GDrawAddSelectionType(st->g.base,sel,"STRING",u2def_copy(temp),u_strlen(temp),sizeof(char),
 		NULL,NULL);
@@ -850,6 +866,15 @@ static void SFTextAreaPaste(SFTextArea *st,enum selnames sel) {
 	if ( temp!=NULL ) 
 	    SFTextArea_Replace(st,temp);
 	free(temp);
+    } else if ( GDrawSelectionHasType(st->g.base,sel,"UTF8_STRING")) {
+	unichar_t *temp; char *ctemp;
+	int32 len;
+	ctemp = GDrawRequestSelection(st->g.base,sel,"UTF8_STRING",&len);
+	if ( ctemp!=NULL ) {
+	    temp = utf82u_copyn(ctemp,strlen(ctemp));
+	    SFTextArea_Replace(st,temp);
+	    free(ctemp); free(temp);
+	}
     } else if ( GDrawSelectionHasType(st->g.base,sel,"STRING")) {
 	unichar_t *temp; char *ctemp;
 	int32 len;
@@ -1085,6 +1110,7 @@ static void SFTFPopupMenu(SFTextArea *st, GEvent *event) {
     sftf_popuplist[2].ti.disabled = no_sel;		/* Cut */
     sftf_popuplist[3].ti.disabled = no_sel;		/* Copy */
     sftf_popuplist[4].ti.disabled = !GDrawSelectionHasType(st->g.base,sn_clipboard,"Unicode") &&
+	    !GDrawSelectionHasType(st->g.base,sn_clipboard,"UTF8_STRING") &&
 	    !GDrawSelectionHasType(st->g.base,sn_clipboard,"STRING");
     popup_kludge = st;
     GMenuCreatePopupMenu(st->g.base,event, sftf_popuplist);

@@ -502,3 +502,40 @@ unichar_t *utf82u_strncpy(unichar_t *ubuf,const char *utf8buf,int len) {
     *upt = '\0';
 return( ubuf );
 }
+
+unichar_t *utf82u_copyn(const char *utf8buf,int len) {
+    unichar_t *ubuf = galloc((len+1)*sizeof(unichar_t));
+return( utf82u_strncpy(ubuf,utf8buf,len));
+}
+
+char *utf82u_strcpy(char *utf8buf,const unichar_t *ubuf) {
+    char *pt = utf8buf;
+
+    while ( *ubuf ) {
+	if ( *ubuf<0x80 )
+	    *pt++ = *ubuf;
+	else if ( *ubuf<0x800 ) {
+	    *pt++ = 0xc0 | (*ubuf>>6);
+	    *pt++ = 0x80 | (*ubuf&0x3f);
+	} else if ( *ubuf>=0xd800 && *ubuf<0xdc00 && ubuf[1]>=0xdc00 && ubuf[1]<0xe000 ) {
+	    int u = ((*ubuf>>6)&0xf)+1, y = ((*ubuf&3)<<4) | ((ubuf[1]>>6)&0xf);
+	    *pt++ = 0xf0 | (u>>2);
+	    *pt++ = 0x80 | ((u&3)<<4) | ((*ubuf>>2)&0xf);
+	    *pt++ = 0x80 | y;
+	    *pt++ = 0x80 | (ubuf[1]&0x3f);
+	} else {
+	    *pt++ = 0xe0 | (*ubuf>>12);
+	    *pt++ = 0x80 | ((*ubuf>>6)&0x3f);
+	    *pt++ = 0x80 | (*ubuf&0x3f);
+	}
+	++ubuf;
+    }
+    *pt = '\0';
+return( utf8buf );
+}
+
+char *u2utf8_copy(const unichar_t *ubuf) {
+    int len = u_strlen(ubuf);
+    char *utf8buf = galloc((len+1)*3);
+return( utf82u_strcpy(utf8buf,ubuf));
+}

@@ -381,6 +381,15 @@ static void *genunicodedata(void *_gt,int32 *len) {
 return( u_copyn(gt->text+gt->sel_start,gt->sel_end-gt->sel_start));
 }
 
+static void *genutf8data(void *_gt,int32 *len) {
+    GTextField *gt = _gt;
+    unichar_t *temp =u_copyn(gt->text+gt->sel_start,gt->sel_end-gt->sel_start);
+    char *ret = u2utf8_copy(temp);
+    free(temp);
+    *len = strlen(ret);
+return( ret );
+}
+
 static void *ddgenunicodedata(void *_gt,int32 *len) {
     void *temp = genunicodedata(_gt,len);
     GTextField *gt = _gt;
@@ -417,6 +426,9 @@ static void GTextFieldGrabPrimarySelection(GTextField *gt) {
     GDrawAddSelectionType(gt->g.base,sn_primary,"Unicode",gt,gt->sel_end-gt->sel_start,
 	    sizeof(unichar_t),
 	    genunicodedata,noop);
+    GDrawAddSelectionType(gt->g.base,sn_primary,"UTF8_STRING",gt,gt->sel_end-gt->sel_start,
+	    sizeof(unichar_t),
+	    genutf8data,noop);
     GDrawAddSelectionType(gt->g.base,sn_primary,"STRING",gt,gt->sel_end-gt->sel_start,sizeof(char),
 	    genlocaldata,noop);
 }
@@ -435,9 +447,13 @@ static void GTextFieldGrabSelection(GTextField *gt, enum selnames sel ) {
 
     if ( gt->sel_start!=gt->sel_end ) {
 	unichar_t *temp;
+	char *ctemp;
 	GDrawGrabSelection(gt->g.base,sel);
 	temp = u_copyn(gt->text+gt->sel_start,gt->sel_end-gt->sel_start);
+	ctemp = u2utf8_copy(temp);
 	GDrawAddSelectionType(gt->g.base,sel,"Unicode",temp,u_strlen(temp),sizeof(unichar_t),
+		NULL,NULL);
+	GDrawAddSelectionType(st->g.base,sel,"UTF8_STRING",ctemp,strlen(ctemp),sizeof(char),
 		NULL,NULL);
 	GDrawAddSelectionType(gt->g.base,sel,"STRING",u2def_copy(temp),u_strlen(temp),sizeof(char),
 		NULL,NULL);
@@ -535,6 +551,15 @@ static void GTextFieldPaste(GTextField *gt,enum selnames sel) {
 	if ( temp!=NULL ) 
 	    GTextField_Replace(gt,temp);
 	free(temp);
+    } else if ( GDrawSelectionHasType(gt->g.base,sel,"UTF8_STRING")) {
+	unichar_t *temp; char *ctemp;
+	int32 len;
+	ctemp = GDrawRequestSelection(gt->g.base,sel,"UTF8_STRING",&len);
+	if ( ctemp!=NULL ) {
+	    temp = utf82u_copyn(ctemp,strlen(ctemp));
+	    GTextField_Replace(gt,temp);
+	    free(ctemp); free(temp);
+	}
     } else if ( GDrawSelectionHasType(gt->g.base,sel,"STRING")) {
 	unichar_t *temp; char *ctemp;
 	int32 len;
@@ -788,32 +813,32 @@ return;
 static GTextField *popup_kludge;
 
 static void GTFPopupInvoked(GWindow v, GMenuItem *mi,GEvent *e) {
-    GTextField *st;
+    GTextField *gt;
     if ( popup_kludge==NULL )
 return;
-    st = popup_kludge;
+    gt = popup_kludge;
     popup_kludge = NULL;
     switch ( mi->mid ) {
       case MID_Undo:
-	gtextfield_editcmd(&st->g,ec_undo);
+	gtextfield_editcmd(&gt->g,ec_undo);
       break;
       case MID_Cut:
-	gtextfield_editcmd(&st->g,ec_cut);
+	gtextfield_editcmd(&gt->g,ec_cut);
       break;
       case MID_Copy:
-	gtextfield_editcmd(&st->g,ec_copy);
+	gtextfield_editcmd(&gt->g,ec_copy);
       break;
       case MID_Paste:
-	gtextfield_editcmd(&st->g,ec_paste);
+	gtextfield_editcmd(&gt->g,ec_paste);
       break;
       case MID_SelectAll:
-	gtextfield_editcmd(&st->g,ec_selectall);
+	gtextfield_editcmd(&gt->g,ec_selectall);
       break;
       case MID_Save:
-	GTextFieldSave(st);
+	GTextFieldSave(gt);
       break;
       case MID_Import:
-	GTextFieldImport(st);
+	GTextFieldImport(gt);
       break;
     }
 }
@@ -830,15 +855,16 @@ static GMenuItem gtf_popuplist[] = {
     { NULL }
 };
 
-static void GTFPopupMenu(GTextField *st, GEvent *event) {
-    int no_sel = st->sel_start==st->sel_end;
-    gtf_popuplist[0].ti.disabled = st->oldtext==NULL;	/* Undo */
+static void GTFPopupMenu(GTextField *gt, GEvent *event) {
+    int no_sel = gt->sel_start==gt->sel_end;
+    gtf_popuplist[0].ti.disabled = gt->oldtext==NULL;	/* Undo */
     gtf_popuplist[2].ti.disabled = no_sel;		/* Cut */
     gtf_popuplist[3].ti.disabled = no_sel;		/* Copy */
-    gtf_popuplist[4].ti.disabled = !GDrawSelectionHasType(st->g.base,sn_clipboard,"Unicode") &&
-	    !GDrawSelectionHasType(st->g.base,sn_clipboard,"STRING");
-    popup_kludge = st;
-    GMenuCreatePopupMenu(st->g.base,event, gtf_popuplist);
+    gtf_popuplist[4].ti.disabled = !GDrawSelectionHasType(gt->g.base,sn_clipboard,"Unicode") &&
+	    !GDrawSelectionHasType(gt->g.base,sn_clipboard,"UTF8_STRING") &&
+	    !GDrawSelectionHasType(gt->g.base,sn_clipboard,"STRING");
+    popup_kludge = gt;
+    GMenuCreatePopupMenu(gt->g.base,event, gtf_popuplist);
 }
 
 static int GTextFieldDoChange(GTextField *gt, GEvent *event) {
