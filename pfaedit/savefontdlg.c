@@ -79,8 +79,8 @@ static GTextInfo bitmaptypes[] = {
 };
 
 static int oldafmstate = true, oldpfmstate = false;
-static int oldformatstate = ff_pfb;
-static int oldbitmapstate = 0;
+int oldformatstate = ff_pfb;
+int oldbitmapstate = 0;
 
 static real *ParseBitmapSizes(GGadget *g,int *err) {
     const unichar_t *val = _GGadgetGetTitle(g), *pt; unichar_t *end, *end2;
@@ -276,6 +276,8 @@ static int _DoSave(SplineFont *sf,char *newname,real *sizes) {
     }
     free( sizes );
     GProgressEndIndicator();
+    if ( !err )
+	SavePrefs();
 return( err );
 }
 

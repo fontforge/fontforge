@@ -52,6 +52,9 @@ char *RecentFiles[RECENT_MAX] = { NULL };
 int greekfixup = true;
 extern int onlycopydisplayed, copymetadata;
 extern struct cvshows CVShows;
+extern int oldformatstate;		/* in savefontdlg.c */
+extern int oldbitmapstate;		/* in savefontdlg.c */
+extern int oldsystem;			/* in bitmapdlg.c */
 unichar_t *script_menu_names[SCRIPT_MENU_MAX];
 char *script_filenames[SCRIPT_MENU_MAX];
 
@@ -123,6 +126,9 @@ static struct prefs_list {
 	{ "ArrowMoveSize", pr_real, &arrowAmount, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupAA },
 	{ "SnapDistance", pr_real, &snapdistance, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupSD },
 	{ "MarkExtrema", pr_int, &CVShows.markextrema, NULL, NULL, '\0', NULL, 1 },
+	{ "DefaultScreenDpiSystem", pr_int, &oldsystem, NULL, NULL, '\0', NULL, 1 },
+	{ "DefaultOutputFormat", pr_int, &oldformatstate, NULL, NULL, '\0', NULL, 1 },
+	{ "DefaultBitmapFormat", pr_int, &oldbitmapstate, NULL, NULL, '\0', NULL, 1 },
 	{ NULL }
 },
  oldnames[] = {
