@@ -1582,13 +1582,13 @@ static void figurecids(struct fontparse *fp,FILE *temp) {
     for ( k=0; k<fd->fdcnt; ++k ) {
 	struct private *private = fd->fds[k]->private;
 	char *ssubroff = PSDictHasEntry(private->private,"SubrMapOffset");
-	char *ssbbytes = PSDictHasEntry(private->private,"SDBytes");
+	char *ssdbytes = PSDictHasEntry(private->private,"SDBytes");
 	char *ssubrcnt = PSDictHasEntry(private->private,"SubrCount");
-	int subroff, sbbytes, subrcnt;
+	int subroff, sdbytes, subrcnt;
 
-	if ( ssubroff!=NULL && ssbbytes!=NULL && ssubrcnt!=NULL &&
+	if ( ssubroff!=NULL && ssdbytes!=NULL && ssubrcnt!=NULL &&
 		(subroff=strtol(ssubroff,NULL,10))>=0 &&
-		(sbbytes=strtol(ssbbytes,NULL,10))>0 &&
+		(sdbytes=strtol(ssdbytes,NULL,10))>0 &&
 		(subrcnt=strtol(ssubrcnt,NULL,10))>0 ) {
 	    private->subrs->cnt = subrcnt;
 	    private->subrs->values = gcalloc(subrcnt,sizeof(char *));
@@ -1597,7 +1597,7 @@ static void figurecids(struct fontparse *fp,FILE *temp) {
 	    offsets = galloc((subrcnt+1)*sizeof(int));
 	    fseek(temp,subroff,SEEK_SET);
 	    for ( i=0; i<=subrcnt; ++i ) {
-		for ( j=val=0; j<fd->gdbytes; ++j )
+		for ( j=val=0; j<sdbytes; ++j )
 		    val = (val<<8) + getc(temp);
 		offsets[i] = val;
 		if ( i!=0 )
@@ -1691,24 +1691,27 @@ static void realdecrypt(struct fontparse *fp,FILE *in, FILE *temp) {
 	} else if ( strstr(buffer,"CharProcs")!=NULL && strstr(buffer,"begin")!=NULL ) {
 	    parsetype3(fp,in);
 return;
-	} else if ( strstr(buffer,"/CharStrings")!=NULL && strstr(buffer,"begin")!=NULL ) {
-	    /* gsf files are not eexec encoded, but the charstrings are encoded*/
-	    InitChars(fp->fd->chars,buffer);
-	    fp->inchars = 1;
-	    decryptagain(fp,in,rdtok);
+	} else if ( !fp->iscid ) {
+	    if ( strstr(buffer,"/CharStrings")!=NULL && strstr(buffer,"begin")!=NULL ) {
+		/* gsf files are not eexec encoded, but the charstrings are encoded*/
+		InitChars(fp->fd->chars,buffer);
+		fp->inchars = 1;
+		decryptagain(fp,in,rdtok);
 return;
-	} else if ( strstr(buffer,"/Subrs")!=NULL && strstr(buffer,"array")!=NULL ) {
-	    /* Same case as above */
-	    InitChars(fp->fd->private->subrs,buffer);
-	    fp->insubs = 1;
-	    decryptagain(fp,in,rdtok);
+	    } else if ( strstr(buffer,"/Subrs")!=NULL && strstr(buffer,"array")!=NULL ) {
+		/* Same case as above */
+		InitChars(fp->fd->private->subrs,buffer);
+		fp->insubs = 1;
+		decryptagain(fp,in,rdtok);
 return;
-	} else if ( strstr(buffer,"/Private")!=NULL && strstr(buffer,"dict")!=NULL ) {
-	    /* files produced by GNU fontutils have some of the same issues */
-	    fp->inprivate = 1;
-	    fp->infi = false;
-	    decryptagain(fp,in,rdtok);
+	    } else if ( strstr(buffer,"/Private")!=NULL && strstr(buffer,"dict")!=NULL ) {
+		/* files produced by GNU fontutils have some of the same issues */
+		fp->inprivate = 1;
+		fp->infi = false;
+		decryptagain(fp,in,rdtok);
 return;
+	    } else
+		parseline(fp,buffer,in);
 	} else
 	    parseline(fp,buffer,in);
 	first = 0;
@@ -1824,8 +1827,9 @@ static void FontInfoFree(struct fontinfo *fi) {
 void PSFontFree(FontDict *fd) {
     int i;
 
-    for ( i=0; i<256; ++i )
-	free( fd->encoding[i]);
+    if ( fd->encoding!=NULL )
+	for ( i=0; i<256; ++i )
+	    free( fd->encoding[i]);
     free(fd->fontname);
     free(fd->cidfontname);
     free(fd->registry);
@@ -1840,13 +1844,17 @@ void PSFontFree(FontDict *fd) {
 	free(fd->charprocs->values);
 	free(fd->charprocs);
     }
-    for ( i=0; i<fd->cidcnt; ++i )
-	free( fd->cidstrs[i]);
-    free(fd->cidstrs);
+    if ( fd->cidstrs!=NULL ) {
+	for ( i=0; i<fd->cidcnt; ++i )
+	    free( fd->cidstrs[i]);
+	free(fd->cidstrs);
+    }
     free(fd->cidlens);
     free(fd->cidfds);
-    for ( i=0; i<fd->fdcnt; ++i )
-	PSFontFree(fd->fds[i]);
-    free(fd->fds);
+    if ( fd->fds!=NULL ) {
+	for ( i=0; i<fd->fdcnt; ++i )
+	    PSFontFree(fd->fds[i]);
+	free(fd->fds);
+    }
     free(fd);
 }
