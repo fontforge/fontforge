@@ -1216,7 +1216,7 @@ static int32 _GDraw_DrawUnencoded(GWindow gw, FontInstance *fi,
 	    unichar_t accent;
 
 	    apt = altbuf;
-	    if ( !arg->dont_replace ) for ( npt=text; npt<pt && apt<aend ; ++npt ) {
+	    if ( arg!=NULL && !arg->dont_replace ) for ( npt=text; npt<pt && apt<aend ; ++npt ) {
 		ch = *npt;
 		/* If it's not in a mapping see if there's an alternate */
 		/*  representation which might be (ie half vs. full width) */
@@ -1264,7 +1264,7 @@ return( x-xbase-letter_spacing );
 	    /* We've done all the chars for which we've got alternatives */
 	    /*  now find the longest string we can which have no alternates */
 	    /*  (and which aren't in our magic list of known chars) */
-	    if ( !arg->dont_replace && npt<pt ) {
+	    if ( arg!=NULL && !arg->dont_replace && npt<pt ) {
 		/* the first character is allowed to have an alternate */
 		/*  if we failed to find a font for it we'll drop down to here*/
 		for ( npt=text+1 ; npt<pt; ++npt )
