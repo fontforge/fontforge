@@ -583,6 +583,7 @@ static int FT_ConicTo(FT_Vector *_cp, FT_Vector *to,void *user) {
     sp->prevcp.x = _cp->x*context->scale;
     sp->prevcp.y = _cp->y*context->scale;
     context->last->nextcp = sp->prevcp;
+    context->last->nonextcp = false;
     SplineMake2(context->last,sp);
     context->last = sp;
 
