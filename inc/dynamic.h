@@ -12,7 +12,7 @@
 /*   an underscore to symbol names.... */
 #   define dlsym(image,symname) NSAddressOfSymbol(NSLookupSymbolInImage(image,"_" symname,NSLOOKUPSYMBOLINIMAGE_OPTION_BIND|NSLOOKUPSYMBOLINIMAGE_OPTION_RETURN_ON_ERROR))
 #   define DL_CONST	const
-#   define dlclose(image-ptr)	/* Don't know how to do this on mac */
+#   define dlclose(image_ptr)	/* Don't know how to do this on mac */
 #   define dlerror()		"Error when loading dynamic library"
 #  else
 #   include <dlfcn.h>
