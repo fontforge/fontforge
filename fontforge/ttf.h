@@ -454,6 +454,7 @@ struct glyphinfo {
     unsigned int onlybitmaps: 1;
     unsigned int has_instrs: 1;
     SplineFont *sf;
+    int32 *pointcounts;
 };
 
 struct vorg {

@@ -931,6 +931,7 @@ static void dumpmissingglyph(SplineFont *sf,struct glyphinfo *gi,int fixedwidth)
     uint8 instrs[50];
     int stemcvt, stem;
 
+    gi->pointcounts[gi->next_glyph] = 8;
     gi->loca[gi->next_glyph++] = ftell(gi->glyphs);
     gi->maxp->maxContours = 2;
 
@@ -1033,6 +1034,7 @@ static void dumpblankglyph(struct glyphinfo *gi,SplineFont *sf,int fixedwidth) {
     /* even in a mono-spaced font like CourierNew.ttf */
 
     /* These don't get a glyph header, because there are no contours */
+    gi->pointcounts[gi->next_glyph] = 0;
     gi->loca[gi->next_glyph++] = ftell(gi->glyphs);
     putshort(gi->hmtx,advance);
     putshort(gi->hmtx,0);
@@ -1045,6 +1047,7 @@ static void dumpblankglyph(struct glyphinfo *gi,SplineFont *sf,int fixedwidth) {
 static void dumpspace(SplineChar *sc, struct glyphinfo *gi) {
     /* These don't get a glyph header, because there are no contours */
     DBounds b;
+    gi->pointcounts[gi->next_glyph] = 0;
     gi->loca[gi->next_glyph++] = ftell(gi->glyphs);
     memset(&b,0,sizeof(b));
     ttfdumpmetrics(sc,gi,&b);
@@ -1085,6 +1088,35 @@ return( 1 );
 return( rd+1 );
 }
 
+static void CountCompositeMaxPts(SplineChar *sc,struct glyphinfo *gi) {
+    RefChar *ref;
+    int ptcnt = 0, index;
+
+    for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
+	if ( ref->sc->ttf_glyph==-1 )
+    continue;
+	index = ref->sc->ttf_glyph;
+	if ( gi->pointcounts[index]==-1 )
+	    CountCompositeMaxPts(ref->sc,gi);
+	ptcnt += gi->pointcounts[index];
+    }
+    gi->pointcounts[sc->ttf_glyph] = ptcnt;
+    if ( gi->maxp->maxCompositPts<ptcnt ) gi->maxp->maxCompositPts=ptcnt;
+}
+
+/* In order3 fonts we figure out the composite point counts at the end */
+/*  when we know how many points are in each sub-glyph */
+static void RefigureCompositeMaxPts(SplineFont *sf,struct glyphinfo *gi) {
+    int i;
+
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 ) {
+	if ( sf->chars[i]->layers[ly_fore].splines==NULL &&
+		sf->chars[i]->layers[ly_fore].refs!=NULL &&
+		gi->pointcounts[sf->chars[i]->ttf_glyph]== -1 )
+	    CountCompositeMaxPts(sf->chars[i],gi);
+    }
+}
+
 static void dumpcomposite(SplineChar *sc, struct glyphinfo *gi) {
     struct glyphhead gh;
     DBounds bb;
@@ -1101,7 +1133,7 @@ static void dumpcomposite(SplineChar *sc, struct glyphinfo *gi) {
 	    SplineCharAutoHint(sc,true);
 #endif
 
-    gi->loca[gi->next_glyph++] = ftell(gi->glyphs);
+    gi->loca[gi->next_glyph] = ftell(gi->glyphs);
 
     SplineCharFindBounds(sc,&bb);
     gh.numContours = -1;
@@ -1167,7 +1199,12 @@ static void dumpcomposite(SplineChar *sc, struct glyphinfo *gi) {
 	    ++ctcnt;
 	    sptcnt = SSPointCnt(ss,sptcnt,ref->sc->ttf_instrs_len!=0 || gi->has_instrs );
 	}
-	ptcnt += sptcnt;
+	if ( sc->parent->order2 )
+	    ptcnt += sptcnt;
+	else if ( ptcnt>=0 && gi->pointcounts[ref->sc->ttf_glyph==-1?0:ref->sc->ttf_glyph]>=0 )
+	    ptcnt += gi->pointcounts[ref->sc->ttf_glyph==-1?0:ref->sc->ttf_glyph];
+	else
+	    ptcnt = -1;
 	rd = RefDepth(ref);
 	if ( rd>gi->maxp->maxcomponentdepth )
 	    gi->maxp->maxcomponentdepth = rd;
@@ -1176,6 +1213,7 @@ static void dumpcomposite(SplineChar *sc, struct glyphinfo *gi) {
     if ( isc->ttf_instrs_len!=0 )
 	dumpinstrs(gi,isc->ttf_instrs,isc->ttf_instrs_len);
 
+    gi->pointcounts[gi->next_glyph++] = ptcnt;
     if ( gi->maxp->maxnumcomponents<i ) gi->maxp->maxnumcomponents = i;
     if ( gi->maxp->maxCompositPts<ptcnt ) gi->maxp->maxCompositPts=ptcnt;
     if ( gi->maxp->maxCompositCtrs<ctcnt ) gi->maxp->maxCompositCtrs=ctcnt;
@@ -1209,7 +1247,7 @@ static void dumpglyph(SplineChar *sc, struct glyphinfo *gi) {
 return;
     }
 
-    gi->loca[gi->next_glyph++] = ftell(gi->glyphs);
+    gi->loca[gi->next_glyph] = ftell(gi->glyphs);
 
     if ( isc->ttf_instrs!=NULL )
 	initforinstrs(sc);
@@ -1247,6 +1285,7 @@ return;
     }
     if ( ptcnt!=origptcnt )
 	GDrawIError( "Point count wrong calculated=%d, actual=%d in %.20s", origptcnt, ptcnt, sc->name );
+    gi->pointcounts[gi->next_glyph++] = ptcnt;
 
     dumpinstrs(gi,isc->ttf_instrs,isc->ttf_instrs_len);
 	
@@ -1359,6 +1398,8 @@ static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
 
     gi->maxp->numGlyphs = cnt;
     gi->loca = galloc((gi->maxp->numGlyphs+1)*sizeof(uint32));
+    gi->pointcounts = galloc((gi->maxp->numGlyphs+1)*sizeof(int32));
+    memset(gi->pointcounts,-1,(gi->maxp->numGlyphs+1)*sizeof(int32));
     gi->next_glyph = 0;
     gi->glyphs = tmpfile();
     gi->hmtx = tmpfile();
@@ -1414,6 +1455,9 @@ return( false );
 	gi->vmtxlen = ftell(gi->vmtx);
 	if ( gi->vmtxlen&2 ) putshort(gi->vmtx,0);
     }
+    if ( !sf->order2 )
+	RefigureCompositeMaxPts(sf,gi);
+    free(gi->pointcounts);
 
     if ( onepos!=-1 )
 	ReplaceChar(sf,onepos,1,gi->dovariations);
