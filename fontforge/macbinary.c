@@ -1887,7 +1887,8 @@ static SplineFont *SearchPostscriptResources(FILE *f,long rlistpos,int subcnt,lo
     long *offsets, lenpos;
     int rname = -1, tmp;
     int ch1, ch2;
-    int len, type, i, rlen;
+    int len, type, i, j, rlen;
+    unsigned short id, *rsrcids;
     /* I don't pretend to understand the rational behind the format of a */
     /*  postscript font. It appears to be split up into chunks where the */
     /*  maximum chunk size is 0x800, each section (ascii, binary, ascii, eof) */
@@ -1899,9 +1900,10 @@ static SplineFont *SearchPostscriptResources(FILE *f,long rlistpos,int subcnt,lo
     SplineFont *sf;
 
     fseek(f,rlistpos,SEEK_SET);
+    rsrcids = gcalloc(subcnt,sizeof(short));
     offsets = gcalloc(subcnt,sizeof(long));
     for ( i=0; i<subcnt; ++i ) {
-	/* resource id = */ getushort(f);
+	rsrcids[i] = getushort(f);
 	tmp = (short) getushort(f);
 	if ( rname==-1 ) rname = tmp;
 	/* flags = */ getc(f);
@@ -1926,8 +1928,17 @@ return(NULL);
     putc(0,pfb);
     putc(0,pfb);
     len = 0; type = 1;
+    id = 501;
     for ( i=0; i<subcnt; ++i ) {
-	fseek(f,offsets[i],SEEK_SET);
+	for ( j=0; j<subcnt; ++j )
+	    if ( rsrcids[j]==id )
+		break;
+	if ( j == subcnt ) {
+	    fprintf( stderr, "Missing POST resource %u\n", id );
+	    break;
+	}
+	id = id + 1;
+	fseek(f,offsets[j],SEEK_SET);
 	rlen = getlong(f);
 	ch1 = getc(f); ch2 = getc(f);
 	rlen -= 2;	/* those two bytes don't count as real data */
@@ -1968,6 +1979,7 @@ return(NULL);
     }
     free(buffer);
     free(offsets);
+	free(rsrcids);
     putc(0x80,pfb);
     putc(3,pfb);
     fseek(pfb,lenpos,SEEK_SET);
