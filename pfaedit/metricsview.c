@@ -2910,10 +2910,11 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    vwlist[i].ti.disabled = !aselection;
 	  break;
 	  case MID_Substitutions:
+	    PosSubsMenuFree(vwlist[i].sub);
+	    vwlist[i].sub = NULL;
 	    if ( !aselection || mv->perchar[j].sc->possub==NULL )
-		vwlist[i].ti.disabled = false;
+		vwlist[i].ti.disabled = true;
 	    else {
-		PosSubsMenuFree(vwlist[i].sub);
 		vwlist[i].sub = SubsMenuBuild(mv->perchar[j].sc);
 		vwlist[i].ti.disabled = (vwlist[i].sub == NULL);
 	    }
