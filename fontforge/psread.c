@@ -161,8 +161,8 @@ enum pstoks { pt_eof=-1, pt_moveto, pt_rmoveto, pt_curveto, pt_rcurveto,
     pt_if, pt_ifelse, pt_for, pt_loop, pt_repeat, pt_exit,
     pt_stopped, pt_stop,
     pt_def, pt_bind, pt_load,
-    pt_setlinecap, pt_setlinejoin, pt_setlinewidth,
-    pt_currentlinecap, pt_currentlinejoin, pt_currentlinewidth,
+    pt_setlinecap, pt_setlinejoin, pt_setlinewidth, pt_setdash,
+    pt_currentlinecap, pt_currentlinejoin, pt_currentlinewidth, pt_currentdash,
     pt_setgray, pt_currentgray, pt_sethsbcolor, pt_currenthsbcolor,
     pt_setrgbcolor, pt_currentrgbcolor, pt_setcmykcolor, pt_currentcmykcolor,
     pt_currentpoint,
@@ -172,7 +172,7 @@ enum pstoks { pt_eof=-1, pt_moveto, pt_rmoveto, pt_curveto, pt_rcurveto,
 
     /* things we sort of pretend to do, but actually do something wrong */
     pt_gsave, pt_grestore, pt_save, pt_restore, pt_currentmatrix, pt_setmatrix,
-    pt_setdash, pt_null,
+    pt_null,
 
     pt_currentflat, pt_setflat,
     pt_currentglobal, pt_setglobal,
@@ -204,8 +204,8 @@ char *toknames[] = { "moveto", "rmoveto", "curveto", "rcurveto",
 	"if", "ifelse", "for", "loop", "repeat", "exit",
 	"stopped", "stop",
 	"def", "bind", "load",
-	"setlinecap", "setlinejoin", "setlinewidth",
-	"currentlinecap", "currentlinejoin", "currentlinewidth",
+	"setlinecap", "setlinejoin", "setlinewidth", "setdash",
+	"currentlinecap", "currentlinejoin", "currentlinewidth", "currentdash",
 	"setgray", "currentgray", "sethsbcolor", "currenthsbcolor",
 	"setrgbcolor", "currentrgbcolor", "setcmykcolor", "currentcmykcolor",
 	"currentpoint",
@@ -214,7 +214,7 @@ char *toknames[] = { "moveto", "rmoveto", "curveto", "rcurveto",
 	"transform", "itransform", "dtransform", "idtransform",
 
 	"gsave", "grestore", "save", "restore", "currentmatrix", "setmatrix",
-	"setdash", "null",
+	"null",
 
 	"currentflat", "setflat",
 	"currentglobal", "setglobal",
@@ -949,6 +949,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 	real linewidth;
 	int linecap, linejoin;
 	Color fore;
+	DashType dashes[DASH_MAX];
     } gsaves[30];
     int gsp = 0;
     int ccnt=0;
@@ -958,6 +959,8 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
     struct pskeyval *kv;
     Color fore=COLOR_INHERITED;
     int linecap=lc_inherited, linejoin=lj_inherited; real linewidth=WIDTH_INHERITED;
+    DashType dashes[DASH_MAX];
+    int dash_offset = 0;
     Entity *ent;
     char *oldloc;
     int warned = 0;
@@ -970,6 +973,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
     transform[0] = transform[3] = 1.0;
     transform[1] = transform[2] = transform[4] = transform[5] = 0;
     current.x = current.y = 0;
+    dashes[0] = 0; dashes[1] = DASH_INHERITED;
 
     if ( ec->fromtype3 ) {
 	/* My type3 fonts have two things pushed on the stack when they */
@@ -1893,6 +1897,15 @@ printf( "-%s-\n", toknames[tok]);
 	    if ( sp>=1 )
 		linewidth = stack[--sp].u.val;
 	  break;
+	  case pt_setdash:
+	    if ( sp>=2 && stack[sp-1].type==ps_num && stack[sp-2].type==ps_array ) {
+		sp -= 2;
+		dash_offset = stack[sp+1].u.val;
+		for ( i=0; i<DASH_MAX && i<stack[sp].u.dict.cnt; ++i )
+		    dashes[i] = stack[sp].u.dict.entries[i].u.val;
+		dictfree(&stack[sp].u.dict);
+	    }
+	  break;
 	  case pt_currentlinecap: case pt_currentlinejoin:
 	    if ( sp<sizeof(stack)/sizeof(stack[0]) ) {
 		stack[sp].type = ps_num;
@@ -1903,6 +1916,22 @@ printf( "-%s-\n", toknames[tok]);
 	    if ( sp<sizeof(stack)/sizeof(stack[0]) ) {
 		stack[sp].type = ps_num;
 		stack[sp++].u.val = linewidth;
+	    }
+	  break;
+	  case pt_currentdash:
+	    if ( sp+1<sizeof(stack)/sizeof(stack[0]) ) {
+		struct pskeydict dict;
+		for ( i=0; i<DASH_MAX && dashes[i]!=0; ++i );
+		dict.cnt = dict.max = i;
+		dict.entries = gcalloc(i,sizeof(struct pskeyval));
+		for ( j=0; j<i; ++j ) {
+		    dict.entries[j].type = ps_num;
+		    dict.entries[j].u.val = dashes[j];
+		}
+		stack[sp].type = ps_array;
+		stack[sp++].u.dict = dict;
+		stack[sp].type = ps_num;
+		stack[sp++].u.val = dash_offset;
 	    }
 	  break;
 	  case pt_currentgray:
@@ -2097,11 +2126,6 @@ printf( "-%s-\n", toknames[tok]);
 		linejoin = gsaves[gsp].linejoin;
 		fore = gsaves[gsp].fore;
 	    }
-	  break;
-	  case pt_setdash:
-	    /* pop some junk off the stack */
-	    if ( sp>=1 )
-		--sp;
 	  break;
 	  case pt_null:
 	    /* push a 0. I don't handle pointers properly */

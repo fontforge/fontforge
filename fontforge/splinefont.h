@@ -94,12 +94,16 @@ struct brush {
     float opacity;		/* number between [0,1], only for svg */
 };
 #define WIDTH_INHERITED	(-1)
+#define DASH_INHERITED	255	/* if the dashes[0]==0 && dashes[1]==DASH_INHERITED */
+#define DASH_MAX	8
+typedef unsigned char DashType;
 struct pen {
     struct brush brush;
     uint8 linejoin;
     uint8 linecap;
     float width;
     real trans[4];
+    DashType dashes[DASH_MAX];
 };
 
 struct spline;

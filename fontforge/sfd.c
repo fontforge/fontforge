@@ -745,13 +745,20 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc) {
     if ( sc->parent->multilayer ) {
 	fprintf( sfd, "LayerCount: %d\n", sc->layer_cnt );
 	for ( i=ly_fore; i<sc->layer_cnt; ++i ) {
-	    fprintf(sfd, "Layer: %d  %d %d %d  #%06x %g  #%06x %g %g %s %s [%g %g %g %g]\n",
+	    fprintf(sfd, "Layer: %d  %d %d %d  #%06x %g  #%06x %g %g %s %s [%g %g %g %g] [",
 		    i, sc->layers[i].dofill, sc->layers[i].dostroke, sc->layers[i].fillfirst,
 		    sc->layers[i].fill_brush.col, sc->layers[i].fill_brush.opacity,
 		    sc->layers[i].stroke_pen.brush.col, sc->layers[i].stroke_pen.brush.opacity,
 		     sc->layers[i].stroke_pen.width, joins[sc->layers[i].stroke_pen.linejoin], caps[sc->layers[i].stroke_pen.linecap],
 		    sc->layers[i].stroke_pen.trans[0], sc->layers[i].stroke_pen.trans[1],
 		    sc->layers[i].stroke_pen.trans[2], sc->layers[i].stroke_pen.trans[3] );
+	    if ( sc->layers[i].stroke_pen.dashes[0]==0 && sc->layers[i].stroke_pen.dashes[1]==DASH_INHERITED )
+		fprintf(sfd,"0 %d]\n", DASH_INHERITED);
+	    else { int j;
+		for ( j=0; j<DASH_MAX && sc->layers[i].stroke_pen.dashes[j]!=0; ++j )
+		    fprintf( sfd,"%d ", sc->layers[i].stroke_pen.dashes[j]);
+		fprintf(sfd,"]\n");
+	    }
 	    for ( img=sc->layers[i].images; img!=NULL; img=img->next )
 		SFDDumpImage(sfd,img);
 	    if ( sc->layers[i].splines!=NULL ) {
@@ -2398,6 +2405,7 @@ return( NULL );
 	} else if ( strmatch(tok,"Layer:")==0 ) {
 	    int layer, dofill, dostroke, fillfirst, fillcol, strokecol, linejoin, linecap;
 	    real fillopacity, strokeopacity, strokewidth, trans[4];
+	    DashType dashes[DASH_MAX];
 	    int i;
 	    getint(sfd,&layer);
 	    getint(sfd,&dofill);
@@ -2430,6 +2438,20 @@ return( NULL );
 	    getreal(sfd,&trans[1]);
 	    getreal(sfd,&trans[2]);
 	    getreal(sfd,&trans[3]);
+	    while ( (ch=getc(sfd))==' ' || ch==']' );
+	    if ( ch=='[' ) {
+		for ( i=0;; ++i ) { int temp;
+		    if ( !getint(sfd,&temp) )
+		break;
+		    else if ( i<DASH_MAX )
+			dashes[i] = temp;
+		}
+		if ( i<DASH_MAX )
+		    dashes[i] = 0;
+	    } else {
+		ungetc(ch,sfd);
+		memset(dashes,0,sizeof(dashes));
+	    }
 	    current_layer = layer;
 	    sc->layers[current_layer].dofill = dofill;
 	    sc->layers[current_layer].dostroke = dostroke;
@@ -2441,6 +2463,7 @@ return( NULL );
 	    sc->layers[current_layer].stroke_pen.width = strokewidth;
 	    sc->layers[current_layer].stroke_pen.linejoin = linejoin;
 	    sc->layers[current_layer].stroke_pen.linecap = linecap;
+	    memcpy(sc->layers[current_layer].stroke_pen.dashes,dashes,sizeof(dashes));
 	    memcpy(sc->layers[current_layer].stroke_pen.trans,trans,sizeof(trans));
 	    lasti = NULL;
 	    lastr = NULL;

@@ -460,6 +460,13 @@ static void dumppen(void (*dumpchar)(int ch,void *data), void *data,
     if ( pen->trans[0]!=1.0 || pen->trans[3]!=1.0 || pen->trans[1]!=0 || pen->trans[2]!=0 )
 	dumpf(dumpchar,data,(pdfopers ? "[%g %g %g %g 0 0] cm\n" : "[%g %g %g %g 0 0] concat\n"),
 		pen->trans[0], pen->trans[1], pen->trans[2], pen->trans[3]);
+    if ( pen->dashes[0]!=0 || pen->dashes[1]!=DASH_INHERITED ) {
+	int i;
+	dumpchar('[',data);
+	for ( i=0; i<sizeof(pen->dashes)/sizeof(pen->dashes[0]) && pen->dashes[i]!=0; ++i )
+	    dumpf(dumpchar,data,"%d ", pen->dashes[i]);
+	dumpf(dumpchar,data,pdfopers ? "] 0 d\n" : "] 0 setdash\n");
+    }
 }
 
 struct psfilter {
