@@ -58,7 +58,7 @@ static uint32 scripts[][15] = {
 /* Arabic */	{ CHR('a','r','a','b'), 0x0600, 0x06ff, 0xfb50, 0xfdff, 0xfe70, 0xfeff },
 /* Armenian */	{ CHR('a','r','m','n'), 0x0530, 0x058f, 0xfb13, 0xfb17 },
 /* Bengali */	{ CHR('b','e','n','g'), 0x0980, 0x09ff },
-/* Bliss symb */{ CHR('b','l','i','s'), 0x0980, 0x09ff },
+/* Bliss symb */{ CHR('b','l','i','s'), 0x12200, 0x124ff },
 /* Bopomofo */	{ CHR('b','o','p','o'), 0x3100, 0x312f, 0x31a0, 0x31bf },
 /* Braille */	{ CHR('b','r','a','i'), 0x2800, 0x28ff },
 /* Buhid */	{ CHR('b','u','h','d'), 0x1740, 0x1753 },
@@ -106,7 +106,7 @@ static uint32 scripts[][15] = {
 /* Old Permic */{ CHR('p','e','r','m'), 0x10350, 0x1037f },
 /* Pollard */	{ CHR('p','l','r','d'), 0x104b0, 0x104d9 },
 /* Runic */	{ CHR('r','u','n','r'), 0x16a0, 0x16ff },
-/* Shavian */	{ CHR('s','h','a','w'), 0x10450, 0x10450 },
+/* Shavian */	{ CHR('s','h','a','w'), 0x10450, 0x1047f },
 /* Sinhala */	{ CHR('s','i','n','h'), 0x0d80, 0x0dff },
 /* Syriac */	{ CHR('s','y','r','c'), 0x0700, 0x074f },
 /* Tagalog */	{ CHR('t','a','g','l'), 0x1700, 0x1714 },
@@ -1335,7 +1335,7 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
     for ( j=0; j<cnt; ++j ) {
 	new = chunkalloc(sizeof(struct lookup));
 	new->feature_tag = CHR('k','e','r','n');
-	new->flags = pst_ignorecombiningmarks;
+	/* new->flags = pst_ignorecombiningmarks; */	/* yudit doesn't like this flag to be set 2.7.2 */
 	new->script_lang_index = ligtags[j].script_lang_index;
 	new->lookup_type = 2;		/* Pair adjustment subtable type */
 	new->offset = ftell(lfile);
