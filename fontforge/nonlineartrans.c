@@ -61,7 +61,8 @@ struct context {
     real x, y;
     struct expr *x_expr, *y_expr;
     SplineChar *sc;
-    struct pov_data *pov;
+    void *pov;
+    void (*pov_func)(BasePoint *me,void *);
 };
 
 static struct builtins { char *name; enum operator op; } builtins[] = {
@@ -588,30 +589,12 @@ return( -32768 );
 return( val );
 }
 
-static void BpPoV(BasePoint *me,struct pov_data *pov) {
-    double z, div;
-
-    z = pov->z + me->y*pov->sintilt;
-    div = z/pov->d;
-    if ( z< .000001 && z> -.000001 ) {
-	me->x = (me->x<0) ? 32768 : 32767;
-	me->y = (me->y<0) ? 32768 : 32767;
-    } else {
-	me->x /= div;
-	me->y /= div;
-	if ( me->x>32767 ) me->x = 32767;
-	else if ( me->x<-32768 ) me->x = -32768;
-	if ( me->y>32767 ) me->y = 32767;
-	else if ( me->y<-32768 ) me->y = -32768;
-    }
-}
-
 static void NLTransPoint(SplinePoint *sp,struct context *c) {
 
-    if ( c->pov ) {
-	BpPoV(&sp->me,c->pov);
-	BpPoV(&sp->prevcp,c->pov);
-	BpPoV(&sp->nextcp,c->pov);
+    if ( c->pov_func!=NULL ) {
+	(c->pov_func)(&sp->me,c->pov);
+	(c->pov_func)(&sp->prevcp,c->pov);
+	(c->pov_func)(&sp->nextcp,c->pov);
     } else {
 	c->x = sp->me.x; c->y = sp->me.y;
 	sp->me.x = NL_expr(c,c->x_expr);
@@ -663,14 +646,14 @@ static void SplineSetNLTrans(SplineSet *ss,struct context *c,
 		    c->x = ((xsp->a*t+xsp->b)*t+xsp->c)*t + xsp->d;
 		    c->y = ((ysp->a*t+ysp->b)*t+ysp->c)*t + ysp->d;
 		    mids[i].t = t;
-		    if ( c->pov==NULL ) {
+		    if ( c->pov_func==NULL ) {
 			mids[i].x = NL_expr(c,c->x_expr);
 			mids[i].y = NL_expr(c,c->y_expr);
 		    } else {
 			BasePoint temp;
 			temp.x = c->x;
 			temp.y = c->y;
-			BpPoV(&temp,c->pov);
+			(c->pov_func)(&temp,c->pov);
 			mids[i].x = temp.x; mids[i].y = temp.y;
 		    }
 		}
@@ -973,6 +956,60 @@ static GTextInfo originy[] = {
 #define CID_DValue	1006
 #define CID_Tilt	1007
 #define CID_GazeDirection 1008
+#define CID_Vanish	1009
+
+static real GetQuietReal(GWindow gw,int cid,int *err) {
+    const unichar_t *txt; unichar_t *end;
+    real val;
+
+    txt = _GGadgetGetTitle(GWidgetGetControl(gw,cid));
+    val = u_strtod(txt,&end);
+    if ( *end!='\0' )
+	*err = true;
+return( val );
+}
+
+static void PoV_DoVanish(struct nldlg *d) {
+    double x,y,dv,tilt,dir;
+    double t;
+    int err = false;
+    double vp;
+    char buf[80];
+    unichar_t ubuf[80];
+extern char *coord_sep;
+
+    x = GetQuietReal(d->gw,CID_XValue,&err);
+    y = GetQuietReal(d->gw,CID_YValue,&err);
+    /*z = GetQuietReal(d->gw,CID_ZValue,&err);*/
+    dv = GetQuietReal(d->gw,CID_DValue,&err);
+    tilt = GetQuietReal(d->gw,CID_Tilt,&err)*3.1415926535897932/180;
+    dir = GetQuietReal(d->gw,CID_GazeDirection,&err)*3.1415926535897932/180;
+    if ( err )
+return;
+    if ( GGadgetGetFirstListSelectedItem( GWidgetGetControl(d->gw,CID_XType))!=3 )
+	x = 0;
+    if ( GGadgetGetFirstListSelectedItem( GWidgetGetControl(d->gw,CID_YType))!=3 )
+	y = 0;
+    t = tan(tilt);
+    if ( t<.000001 && t>-.000001 )
+	sprintf(buf,"inf%sinf", coord_sep);
+    else {
+	vp = dv/t;
+	x -= sin(dir)*vp;
+	y += cos(dir)*vp;
+	sprintf(buf,"%g%s%g", x, coord_sep, y );
+    }
+    uc_strcpy(ubuf,buf);
+    GGadgetSetTitle( GWidgetGetControl(d->gw,CID_Vanish), ubuf );
+}
+
+static int PoV_Vanish(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
+	struct nldlg *d = GDrawGetUserData(GGadgetGetWindow(g));
+	PoV_DoVanish(d);
+    }
+return( true );
+}
 
 int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     static struct pov_data def = { or_center, or_value, 0, 0, .1,
@@ -981,8 +1018,8 @@ int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     struct nldlg d;
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[22];
-    GTextInfo label[22];
+    GGadgetCreateData gcd[24];
+    GTextInfo label[24];
     int i,k;
     char xval[40], yval[40], zval[40], dval[40], tval[40], dirval[40];
     double x,y,z,dv,tilt,dir;
@@ -1006,7 +1043,7 @@ int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     wattrs.window_title = GStringGetResource(_STR_PoVProj,NULL);
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,240));
-    pos.height = GDrawPointsToPixels(NULL,200);
+    pos.height = GDrawPointsToPixels(NULL,216);
     d.gw = GDrawCreateTopWindow(NULL,&pos,nld_e_h,&d,&wattrs);
 
     memset(gcd,0,sizeof(gcd));
@@ -1043,6 +1080,7 @@ int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 160; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y;  gcd[k].gd.pos.width = 60;
     gcd[k].gd.flags = gg_enabled|gg_visible;
+    gcd[k].gd.handle_controlevent = PoV_Vanish;
     gcd[k].gd.cid = CID_XValue;
     gcd[k++].creator = GTextFieldCreate;
 
@@ -1070,6 +1108,7 @@ int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     gcd[k].gd.pos.x = gcd[k-3].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y;  gcd[k].gd.pos.width = gcd[k-3].gd.pos.width;
     gcd[k].gd.flags = gg_enabled|gg_visible;
     gcd[k].gd.cid = CID_YValue;
+    gcd[k].gd.handle_controlevent = PoV_Vanish;
     gcd[k++].creator = GTextFieldCreate;
 
     label[k].text = (unichar_t *) _STR_DistanceToDrawingPlane;
@@ -1085,6 +1124,7 @@ int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 160; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-4;  gcd[k].gd.pos.width = 60;
     gcd[k].gd.flags = gg_enabled|gg_visible;
+    gcd[k].gd.handle_controlevent = PoV_Vanish;
     gcd[k].gd.cid = CID_ZValue;
     gcd[k++].creator = GTextFieldCreate;
 
@@ -1101,6 +1141,7 @@ int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 160; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-4;  gcd[k].gd.pos.width = 60;
     gcd[k].gd.flags = gg_enabled|gg_visible;
+    gcd[k].gd.handle_controlevent = PoV_Vanish;
     gcd[k].gd.cid = CID_DValue;
     gcd[k++].creator = GTextFieldCreate;
 
@@ -1117,6 +1158,7 @@ int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 160; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-4;  gcd[k].gd.pos.width = 40;
     gcd[k].gd.flags = gg_enabled|gg_visible;
+    gcd[k].gd.handle_controlevent = PoV_Vanish;
     gcd[k].gd.cid = CID_Tilt;
     gcd[k++].creator = GTextFieldCreate;
 
@@ -1140,6 +1182,7 @@ int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 160; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-4;  gcd[k].gd.pos.width = 40;
     gcd[k].gd.flags = gg_enabled|gg_visible;
+    gcd[k].gd.handle_controlevent = PoV_Vanish;
     gcd[k].gd.cid = CID_GazeDirection;
     gcd[k++].creator = GTextFieldCreate;
 
@@ -1150,7 +1193,24 @@ int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k++].creator = GLabelCreate;
 
-    gcd[k].gd.pos.x = 30-3; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+20;
+    label[k].text = (unichar_t *) _STR_VanishingPoint;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+18;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.popup_msg = GStringGetResource(_STR_PopupVanish,NULL);
+    gcd[k++].creator = GLabelCreate;
+
+    label[k].text = (unichar_t *) "123456.,123456.";
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 160; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.popup_msg = GStringGetResource(_STR_PopupVanish,NULL);
+    gcd[k].gd.cid = CID_Vanish;
+    gcd[k++].creator = GLabelCreate;
+
+    gcd[k].gd.pos.x = 30-3; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+18;
     gcd[k].gd.pos.width = -1; gcd[k].gd.pos.height = 0;
     gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_default;
     label[k].text = (unichar_t *) _STR_OK;
@@ -1174,6 +1234,7 @@ int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     gcd[k].creator = GGroupCreate;
 
     GGadgetsCreate(d.gw,gcd);
+    PoV_DoVanish(&d);
     GDrawSetVisible(d.gw,true);
     while ( !d.done ) {
 	GDrawProcessOneEvent(NULL);
@@ -1233,6 +1294,25 @@ void CVPointOfView(CharView *cv,struct pov_data *pov) {
 }
 # endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
+static void BpPoV(BasePoint *me,void *_pov) {
+    struct pov_data *pov = _pov;
+    double z, div;
+
+    z = pov->z + me->y*pov->sintilt;
+    div = z/pov->d;
+    if ( z< .000001 && z> -.000001 ) {
+	me->x = (me->x<0) ? 32768 : 32767;
+	me->y = (me->y<0) ? 32768 : 32767;
+    } else {
+	me->x /= div;
+	me->y /= div;
+	if ( me->x>32767 ) me->x = 32767;
+	else if ( me->x<-32768 ) me->x = -32768;
+	if ( me->y>32767 ) me->y = 32767;
+	else if ( me->y<-32768 ) me->y = -32768;
+    }
+}
+
 static void SPLPoV(SplineSet *base,struct pov_data *pov, int only_selected) {
     SplineSet *spl;
     real transform[6];
@@ -1255,7 +1335,7 @@ return;
 return;
     }
 
-    memset(&c,0,sizeof(c)); c.pov = pov;
+    memset(&c,0,sizeof(c)); c.pov = pov; c.pov_func = BpPoV;
     pov->sintilt = sin(pov->tilt);
     for ( spl = base; spl!=NULL; spl = spl->next ) {
 	SplineSetNLTrans(spl,&c,!only_selected);
@@ -1309,5 +1389,33 @@ void FVPointOfView(FontView *fv,struct pov_data *pov) {
 	for ( layer = ly_fore; layer<sc->layer_cnt; ++layer )
 	    SPLPoV(sc->layers[layer].splines,pov,false);
 	SCCharChangedUpdate(sc);
+    }
+}
+
+struct vanishing_point {
+    double x_vanish;
+    double y_vanish;
+};
+
+static void VanishingTrans(BasePoint *me,void *_vanish) {
+    struct vanishing_point *vanish = _vanish;
+
+    me->x = vanish->x_vanish + (vanish->y_vanish - me->y)/vanish->y_vanish*
+		( me->x-vanish->x_vanish );
+}
+
+void CVYPerspective(CharView *cv,double x_vanish, double y_vanish) {
+    SplineSet *spl;
+    struct context c;
+    struct vanishing_point vanish;
+
+    if ( y_vanish==0 )		/* Leave things unchanged */
+return;
+
+    vanish.x_vanish = x_vanish;
+    vanish.y_vanish = y_vanish;
+    memset(&c,0,sizeof(c)); c.pov = &vanish; c.pov_func = VanishingTrans;
+    for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl = spl->next ) {
+	SplineSetNLTrans(spl,&c,false);
     }
 }

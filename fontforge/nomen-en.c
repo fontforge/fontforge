@@ -3190,6 +3190,8 @@ static char *str_DistanceToDrawingPlane = "Distance to drawing plane:";
 static char *str_DistanceToProjectionPlane = "Distance to projection plane:";
 static char *str_DrawingPlaneTilt = "Drawing plane tilt:";
 static char *str_DirectionOfGaze = "Direction of gaze:";
+static char *str_VanishingPoint = "Vanishing Point:";
+static char *str_PopupVanish = "This is the approximate location of the vanishing point.\nIt does not include the offset induced by \"Center of selection\"\nnor \"Last Press\".";
     /* effects */
 static char *str_Gap = "Gap:";
 static char mnemonic_Gap = 'G';

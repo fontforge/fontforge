@@ -28,36 +28,6 @@
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <math.h>
 
-static void CVYPerspective(CharView *cv,double x_vanish, double y_vanish) {
-    SplineSet *spl;
-    SplinePoint *sp;
-    Spline *first, *s;
-
-    if ( y_vanish==0 )		/* Leave things unchanged */
-return;
-
-    for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl=spl->next ) {
-	for ( sp=spl->first ;; ) {
-	    if ( sp->selected ) {
-		sp->me.x     = x_vanish + (y_vanish - sp->me.y    )/y_vanish * (sp->me.x     - x_vanish);
-		sp->nextcp.x = x_vanish + (y_vanish - sp->nextcp.y)/y_vanish * (sp->nextcp.x - x_vanish);
-		sp->prevcp.x = x_vanish + (y_vanish - sp->prevcp.y)/y_vanish * (sp->prevcp.x - x_vanish);
-	    }
-	    if ( sp->next==NULL )
-	break;
-	    sp = sp->next->to;
-	    if ( sp==spl->first )
-	break;
-	}
-	first = NULL;
-	for ( s = spl->first->next; s!=NULL && s!=first ; s=s->to->next ) {
-	    if ( s->from->selected || s->to->selected )
-		SplineRefigure(s);
-	    if ( first==NULL ) first = s;
-	}
-    }
-}
-
 void CVMouseDownTransform(CharView *cv) {
     CVPreserveTState(cv);
 }

@@ -624,6 +624,7 @@ extern int SFNLTrans(FontView *fv,char *x_expr,char *y_expr);
 extern void FVApplySubstitution(FontView *fv,uint32 script, uint32 lang, uint32 tag);
 extern void NonLinearDlg(FontView *fv,struct charview *cv);
 extern void FVPointOfView(FontView *fv,struct pov_data *);
+extern void CVYPerspective(CharView *cv,double x_vanish, double y_vanish);
 extern void FVBuildAccent(FontView *fv,int onlyaccents);
 extern void FVChangeChar(FontView *fv,int encoding);
 extern void SCClearContents(SplineChar *sc);
