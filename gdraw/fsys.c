@@ -79,6 +79,13 @@ char *GFileGetAbsoluteName(char *name, char *result, int rsiz) {
 return(result);
 }
 
+char *GFileMakeAbsoluteName(char *name) {
+    char buffer[1025];
+
+    GFileGetAbsoluteName(name,buffer,sizeof(buffer));
+return( copy(buffer));
+}
+
 char *GFileBuildName(char *dir,char *fname,char *buffer,int size) {
     int len;
 

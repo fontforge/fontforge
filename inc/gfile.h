@@ -28,6 +28,7 @@
 #define _GFILE_H
 
 extern char *GFileGetAbsoluteName(char *name, char *result, int rsiz);
+extern char *GFileMakeAbsoluteName(char *name);
 extern char *GFileBuildName(char *dir,char *fname,char *buffer,int size);
 extern char *GFileReplaceName(char *oldname,char *fname,char *buffer,int size);
 extern char *GFileNameTail(const char *oldname);
