@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 13-Dec-2004 -->
+  <!-- AP: Last modified: 18-Dec-2004 -->
   <TITLE>FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -60,8 +60,7 @@ Contents
 	    <A HREF="http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/fontforge/fontforge/">Browse
 	    the CVS tree</A>
 	  <LI>
-	    <A HREF="http://sourceforge.net/cvs/?group_id=103338">Brief description of
-	    other ways to get CVS</A>
+	    <A HREF="#Anonymous-cvs">Brief description of other ways to get CVS</A>
 	  <LI>
 	    <A HREF="http://www.cvshome.org/docs/manual/">CVS Manual</A>
 	</UL>
@@ -151,9 +150,8 @@ let me know when you do</A>.
     <A HREF="http://packages.debian.org/unstable/x11/fontforge.html">A debian
     package is available at the debian site.</A>
   <LI>
-    <A HREF="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/fonts/pfaedit/README.html">A
-    netbsd package is available at the netbsd site.</A> (probably still called
-    pfaedit)
+    <A HREF="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/fonts/fontforge/README.html">A
+    netbsd package is available at the netbsd site.</A>
   <LI>
     <!--<A HREF="MacOSX.html#binary">A Mac OS/X distribution</A>. Version
     12-Oct-2004<BR>-->
@@ -178,8 +176,8 @@ FontForge's capabilities.
 <P>
 <!--You can download a <A HREF="fontforge-20041012-1.src.rpm">source RPM</A>:
 Version: 12-Oct-2004<BR>--> You can download the
-<A HREF="fontforge_full-20041212.tgz">source tree </A>in one .tgz file: Version
-12-Dec-2004<!--
+<A HREF="fontforge_full-20041218.tgz">source tree </A>in one .tgz file: Version
+18-Dec-2004<!--
 Or you can download the following three packages. Version: 19-Jan-2002
 <UL>
 <LI>
@@ -198,6 +196,20 @@ Or you can download the following three packages. Version: 19-Jan-2002
 Or you can go to the
 <A HREF="http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/fontforge/fontforge/">cvs
 tree</A> and get the most recent version. (This may be delayed by 24 hours)
+<H4>
+  <A NAME="Anonymous-cvs">Anonymous cvs</A>
+</H4>
+<P>
+To download the entire source package (including documentation), create a
+new directory, cd into it and use anonymous cvs (with no password):
+<PRE>$ cvs -d:pserver:anonymous@cvs1.sourceforge.net:/cvsroot/fontforge login
+CVS password:
+$ cvs -d:pserver:anonymous@cvs1.sourceforge.net:/cvsroot/fontforge checkout fontforge
+</PRE>
+<P>
+Or see <A HREF="http://sourceforge.net/cvs/?group_id=103338">sourceforge's
+description </A>for more information (their information is out of date, the
+correct server is cvs1.sf.net not cvs.sf.net)
 <H2>
   <A NAME="Dependencies">Dependencies</A>
 </H2>
@@ -406,7 +418,7 @@ bitmap fonts that fontforge uses
 </H2>
 <P>
 All the documentation files in this directory bundled up into one
-<A HREF="fontforge_htdocs-20041203.tgz">tgz file</A> 03-Dec-2004.<BR>
+<A HREF="fontforge_htdocs-20041218.tgz">tgz file</A> 18-Dec-2004.<BR>
 If you do the following then FontForge will find the docs for you when you
 press F1 (ie. FontForge it will look in /usr/local/share/doc/fontforge before
 it looks on the web):
