@@ -421,8 +421,8 @@ return( false );
 static IntersectionList *FindLinearIntersections(SplineSet *spl, IntersectionList *sofar) {
     SplineSet *ss;
     Spline *first, *sp, *first2, *sp2;
-    BasePoint pts[4];
-    double t1s[4], t2s[4];
+    BasePoint pts[9];
+    double t1s[10], t2s[10];
     int i;
     /* This used only to work if both splines were lines. Now it works if */
     /*  at least one of the splines is a line */

@@ -100,8 +100,8 @@ void CVMouseUpKnife(CharView *cv) {
     Spline *s, *nexts;
     Spline dummy;
     SplinePoint dummyfrom, dummyto, *mid, *mid2;
-    BasePoint inters[4];
-    double t1s[4], t2s[4];
+    BasePoint inters[9];
+    double t1s[10], t2s[10];
     int foundsomething = true, ever = false;
     int i;
 

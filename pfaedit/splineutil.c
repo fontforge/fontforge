@@ -2060,7 +2060,7 @@ void SplineFindExtrema(Spline1D *sp, double *_t1, double *_t2 ) {
 	    b2_fourac = sqrt(b2_fourac);
 	    t1 = (-2*sp->b - b2_fourac) / (6*sp->a);
 	    t2 = (-2*sp->b + b2_fourac) / (6*sp->a);
-	    if ( t1<t2 ) { double temp = t1; t1 = t2; t2 = temp; }
+	    if ( t1>t2 ) { double temp = t1; t1 = t2; t2 = temp; }
 	    else if ( t1==t2 ) t2 = -1;
 	    if ( RealNear(t1,0)) t1=0; else if ( RealNear(t1,1)) t1=1;
 	    if ( RealNear(t2,0)) t2=0; else if ( RealNear(t2,1)) t2=1;
@@ -2075,6 +2075,30 @@ void SplineFindExtrema(Spline1D *sp, double *_t1, double *_t2 ) {
 	/* linear, no extrema */
     }
     *_t1 = t1; *_t2 = t2;
+}
+
+int Spline2DFindExtrema(Spline *sp, double extrema[4] ) {
+    int i,j;
+
+    SplineFindExtrema(&sp->splines[0],&extrema[0],&extrema[1]);
+    SplineFindExtrema(&sp->splines[1],&extrema[2],&extrema[3]);
+
+    for ( i=0; i<3; ++i ) for ( j=i+1; j<4; ++j ) {
+	if ( (extrema[i]==-1 && extrema[j]!=-1) || extrema[i]>extrema[j] ) {
+	    double temp = extrema[i];
+	    extrema[i] = extrema[j];
+	    extrema[j] = temp;
+	}
+    }
+    for ( i=j=0; i<3 && extrema[i]!=-1; ++i ) {
+	if ( extrema[i]==extrema[i+1] ) {
+	    for ( j=i+1; j<3; ++j )
+		extrema[j] = extrema[j+1];
+	    extrema[3] = -1;
+	}
+    }
+    for ( i=0; i<4 && extrema[i]!=-1; ++i );
+return( i );
 }
 
 /* Ok, if the above routine finds a point of inflection that less than 1 unit */
@@ -2234,18 +2258,158 @@ static void IterateSolve(Spline1D *sp,double ts[3]) {
 	ts[j] = -1;
 }
 
+static double ISolveWithin(Spline1D *sp,double val,double tlow, double thigh) {
+    Spline1D temp;
+    double ts[3];
+    int i;
+
+    temp = *sp;
+    temp.d -= val;
+    IterateSolve(&temp,ts);
+    if ( tlow<thigh ) {
+	for ( i=0; i<3; ++i )
+	    if ( ts[i]>=tlow && ts[i]<=thigh )
+return( ts[i] );
+    } else {
+	for ( i=0; i<3; ++i )
+	    if ( ts[i]>=thigh && ts[i]<=tlow )
+return( ts[i] );
+    }
+return( -1 );
+}
+
+static int ICAddInter(int cnt,BasePoint *foundpos,double *foundt1,double *foundt2,
+	Spline *s1,Spline *s2,double t1,double t2) {
+    foundt1[cnt] = t1;
+    foundt2[cnt] = t2;
+    foundpos[cnt].x = ((s1->splines[0].a*t1+s1->splines[0].b)*t1+
+			s1->splines[0].c)*t1+s1->splines[0].d;
+    foundpos[cnt].y = ((s1->splines[1].a*t1+s1->splines[1].b)*t1+
+			s1->splines[1].c)*t1+s1->splines[1].d;
+return( cnt+1 );
+}
+
+static int ICBinarySearch(int cnt,BasePoint *foundpos,double *foundt1,double *foundt2,
+	int other,
+	Spline *s1,Spline *s2,double t1low,double t1high,double t2low,double t2high) {
+    int major;
+    double t1, t2;
+    double o1o, o2o, o1n, o2n, m;
+
+    major = !other;
+    o1o = ((s1->splines[other].a*t1low+s1->splines[other].b)*t1low+
+		    s1->splines[other].c)*t1low+s1->splines[other].d;
+    o2o = ((s2->splines[other].a*t2low+s2->splines[other].b)*t2low+
+		    s2->splines[other].c)*t2low+s2->splines[other].d;
+    forever {
+	t1 = (t1low+t1high)/2;
+	m = ((s1->splines[major].a*t1+s1->splines[major].b)*t1+
+			s1->splines[major].c)*t1+s1->splines[major].d;
+	t2 = ISolveWithin(&s2->splines[major],m,t2low,t2high);
+	if ( t2==-1 )
+return( cnt );
+
+	o1n = ((s1->splines[other].a*t1+s1->splines[other].b)*t1+
+			s1->splines[other].c)*t1+s1->splines[other].d;
+	o2n = ((s2->splines[other].a*t2+s2->splines[other].b)*t2+
+			s2->splines[other].c)*t2+s2->splines[other].d;
+	if (( o1n-o2n<.001 && o1n-o2n>-.001) ||
+		(t1-t1low<.0001 && t1-t1low>-.0001))
+return( ICAddInter(cnt,foundpos,foundt1,foundt2,s1,s2,t1,t2));
+	if ( (o1o>o2o && o1n<o2n) || (o1o<o2o && o1n>o2n)) {
+	    t1high = t1;
+	    t2high = t2;
+	} else {
+	    t1low = t1;
+	    t2low = t2;
+	}
+    }
+}
+
+static int CubicsIntersect(Spline *s1,double lowt1,double hight1,BasePoint *min1,BasePoint *max1,
+			    Spline *s2,double lowt2,double hight2,BasePoint *min2,BasePoint *max2,
+			    BasePoint *foundpos,double *foundt1,double *foundt2) {
+    int major, other;
+    BasePoint max, min;
+    double t1max, t1min, t2max, t2min, t1, t2, t1diff, oldt2;
+    double o1o, o2o, o1n, o2n, m;
+    int cnt=0;
+
+    if ( (min.x = min1->x)<min2->x ) min.x = min2->x;
+    if ( (min.y = min1->y)<min2->y ) min.y = min2->y;
+    if ( (max.x = max1->x)>max2->x ) max.x = max2->x;
+    if ( (max.y = max1->y)>max2->y ) max.y = max2->y;
+    if ( max.x<min.x || max.y<min.y )
+return( 0 );
+    if ( max.x-min.x > max.y-min.y )
+	major = 0;
+    else
+	major = 1;
+    other = 1-major;
+
+    t1max = ISolveWithin(&s1->splines[major],(&max.x)[major],lowt1,hight1);
+    t1min = ISolveWithin(&s1->splines[major],(&min.x)[major],lowt1,hight1);
+    t2max = ISolveWithin(&s2->splines[major],(&max.x)[major],lowt2,hight2);
+    t2min = ISolveWithin(&s2->splines[major],(&min.x)[major],lowt2,hight2);
+    t1diff = (t1max-t1min)/64.0;
+
+    t1 = t1min; t2 = t2min;
+    o1o = ((s1->splines[other].a*t1+s1->splines[other].b)*t1+
+		    s1->splines[other].c)*t1+s1->splines[other].d;
+    o2o = ((s2->splines[other].a*t2+s2->splines[other].b)*t2+
+		    s2->splines[other].c)*t2+s2->splines[other].d;
+    if ( o1o==o2o )
+	cnt = ICAddInter(cnt,foundpos,foundt1,foundt2,s1,s2,t1,t2);
+    forever {
+	t1 += t1diff;
+	if (( t1max>t1min && t1>=t1max ) || (t1max<t1min && t1<=t1max))
+    break;
+	m = ((s1->splines[major].a*t1+s1->splines[major].b)*t1+
+			s1->splines[major].c)*t1+s1->splines[major].d;
+	oldt2 = t2;
+	t2 = ISolveWithin(&s2->splines[major],m,lowt2,hight2);
+	if ( t2==-1 )
+    continue;
+
+	o1n = ((s1->splines[other].a*t1+s1->splines[other].b)*t1+
+			s1->splines[other].c)*t1+s1->splines[other].d;
+	o2n = ((s2->splines[other].a*t2+s2->splines[other].b)*t2+
+			s2->splines[other].c)*t2+s2->splines[other].d;
+	if ( o1n==o2n )
+	    cnt = ICAddInter(cnt,foundpos,foundt1,foundt2,s1,s2,t1,t2);
+	if ( (o1o>o2o && o1n<o2n) || (o1o<o2o && o1n>o2n))
+	    cnt = ICBinarySearch(cnt,foundpos,foundt1,foundt2,other,
+		    s1,s2,t1-t1diff,t1,oldt2,t2);
+	o1o = o1n; o2o = o2n;
+    }
+return( cnt );
+}
+
 /* returns 0=>no intersection, 1=>at least one, location in pts, t1s, t2s */
 /*  -1 => We couldn't figure it out in a closed form, have to do a numerical */
 /*  approximation */
-int SplinesIntersect(Spline *s1, Spline *s2, BasePoint pts[4], double t1s[4], double t2s[4]) {
+int SplinesIntersect(Spline *s1, Spline *s2, BasePoint pts[9],
+	double t1s[10], double t2s[10]) {	/* One extra for a trailing -1 */
     BasePoint min1, max1, min2, max2;
     int soln = 0;
     double x,y,s,t;
     double d;
-    int i;
+    int i,j,found;
     Spline1D spline, temp;
     Quartic quad;
     double tempts[4];	/* 3 solns for cubics, 4 for quartics */
+    double extrema1[6], extrema2[6];
+    int ecnt1, ecnt2;
+
+    if ( s1->splines[0].a == s2->splines[0].a &&
+	    s1->splines[0].b == s2->splines[0].b &&
+	    s1->splines[0].c == s2->splines[0].c &&
+	    s1->splines[0].d == s2->splines[0].d &&
+	    s1->splines[1].a == s2->splines[1].a &&
+	    s1->splines[1].b == s2->splines[1].b &&
+	    s1->splines[1].c == s2->splines[1].c &&
+	    s1->splines[1].d == s2->splines[1].d )
+return( -1 );			/* Same spline. Intersects everywhere */
 
     t1s[0] = t1s[1] = t1s[2] = t1s[3] = -1;
     t2s[0] = t2s[1] = t2s[2] = t2s[3] = -1;
@@ -2378,7 +2542,48 @@ return( soln!=0 );
     /*  a third degree poly, which must be substituted into a cubic, and */
     /*  then squared to get rid of the sqrts leaving us with an ?18? degree */
     /*  poly. Ick. */
-return( -1 );
+
+    /* So let's do it the hard way... we break the splines into little bits */
+    /*  where they are monotonic in both dimensions, then check these for */
+    /*  possible intersections */
+    extrema1[0] = extrema2[0] = 0;
+    ecnt1 = Spline2DFindExtrema(s1,extrema1+1);
+    ecnt2 = Spline2DFindExtrema(s2,extrema2+1);
+    extrema1[++ecnt1] = 1.0;
+    extrema2[++ecnt2] = 1.0;
+    found=0;
+    for ( i=0; i<ecnt1; ++i ) {
+	min1.x = ((s1->splines[0].a*extrema1[i]+s1->splines[0].b)*extrema1[i]+
+		s1->splines[0].c)*extrema1[i]+s1->splines[0].d;
+	min1.y = ((s1->splines[1].a*extrema1[i]+s1->splines[1].b)*extrema1[i]+
+		s1->splines[1].c)*extrema1[i]+s1->splines[1].d;
+	max1.x = ((s1->splines[0].a*extrema1[i+1]+s1->splines[0].b)*extrema1[i+1]+
+		s1->splines[0].c)*extrema1[i+1]+s1->splines[0].d;
+	max1.y = ((s1->splines[1].a*extrema1[i+1]+s1->splines[1].b)*extrema1[i+1]+
+		s1->splines[1].c)*extrema1[i+1]+s1->splines[1].d;
+	if ( max1.x<min1.x ) { double temp = max1.x; max1.x = min1.x; min1.x = temp; }
+	if ( max1.y<min1.y ) { double temp = max1.y; max1.y = min1.y; min1.y = temp; }
+	for ( j=0; j<ecnt2; ++j ) {
+	    min2.x = ((s2->splines[0].a*extrema2[j]+s2->splines[0].b)*extrema2[j]+
+		    s2->splines[0].c)*extrema2[j]+s2->splines[0].d;
+	    min2.y = ((s2->splines[1].a*extrema2[j]+s2->splines[1].b)*extrema2[j]+
+		    s2->splines[1].c)*extrema2[j]+s2->splines[1].d;
+	    max2.x = ((s2->splines[0].a*extrema2[j+1]+s2->splines[0].b)*extrema2[j+1]+
+		    s2->splines[0].c)*extrema2[j+1]+s2->splines[0].d;
+	    max2.y = ((s2->splines[1].a*extrema2[j+1]+s2->splines[1].b)*extrema2[j+1]+
+		    s2->splines[1].c)*extrema2[j+1]+s2->splines[1].d;
+	    if ( max2.x<min2.x ) { double temp = max2.x; max2.x = min2.x; min2.x = temp; }
+	    if ( max2.y<min2.y ) { double temp = max2.y; max2.y = min2.y; min2.y = temp; }
+	    if ( min1.x>max2.x || min2.x>max1.x || min1.y>max2.y || min2.y>max1.y )
+		/* No possible intersection */;
+	    else
+		found += CubicsIntersect(s1,extrema1[i],extrema1[i+1],&min1,&max1,
+				    s2,extrema2[j],extrema2[j+1],&min2,&max2,
+				    &pts[found],&t1s[found],&t2s[found]);
+	}
+    }
+    t1s[found] = t2s[found] = -1;
+return( found!=0 );
 }
 
 static int XSolve(Spline *spline,real tmin, real tmax,FindSel *fs) {
