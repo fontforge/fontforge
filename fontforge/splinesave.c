@@ -1095,12 +1095,13 @@ static int TrySubrRefs(GrowBuf *gb, struct pschars *subrs, SplineChar *scs[MmMax
 	current[j].x = round?rint(sb.minx):sb.minx; current[j].y = 0;
     }
     if ( self ) {
-	memset(rtemp,0,sizeof(rtemp));
-	for ( j=0; j<instance_count; ++j ) {
-	    refs[j] = &rtemp[j];
-	    rtemp[j].sc = scs[j];
-	    rtemp[j].transform[0] = rtemp[j].transform[3] = 1;
-	}
+	refmoveto(gb,current,(BasePoint *) (subrs->keys[scs[0]->ttf_glyph]),
+		instance_count,false,round,NULL,NULL);
+	AddNumber(gb,scs[0]->ttf_glyph,round);
+	if ( gb->pt+1>=gb->end )
+	    GrowBuffer(gb);
+	*gb->pt++ = 10;
+return( true );
     } else {
 	for ( j=0; j<instance_count; ++j ) {
 	    RefChar *r;
@@ -1392,30 +1393,19 @@ static unsigned char *SplineChar2PS(SplineChar *sc,int *len,int round,int iscjk,
     } else {
 	iscjk &= ~0x100;
 	hdb = NULL;
-	if ( sc->ttf_glyph==0x7fff || ( !scs[0]->hconflicts && !scs[0]->vconflicts && !sc->anyflexes && !AnyRefs(sc) )) {
-	    if ( iscjk && instance_count==1 )
-		CounterHints1(&gb,sc,round);	/* Must come immediately after hsbw */
-	    if ( !scs[0]->vconflicts && !scs[0]->hconflicts && instance_count==1 ) {
-		CvtPsHints(&gb,scs,instance_count,true,round,iscjk,NULL);
-		CvtPsHints(&gb,scs,instance_count,false,round,iscjk,NULL);
-	    } else {
-		memset(&hintdb,0,sizeof(hintdb));
-		hintdb.subrs = subrs; hintdb.iscjk = iscjk; hintdb.scs = scs;
-		hintdb.instance_count = instance_count;
-		hdb = &hintdb;
-	    }
-	}
-	if ( sc->ttf_glyph==0x7fff ) {
-	    CvtPsSplineSet(&gb,scs,instance_count,current,round,hdb,startend,sc->parent->order2);
-	    CvtPsRSplineSet(&gb,scs,instance_count,current,round,hdb,NULL,sc->parent->order2);
+	if ( iscjk && instance_count==1 )
+	    CounterHints1(&gb,sc,round);	/* Must come immediately after hsbw */
+	if ( !scs[0]->vconflicts && !scs[0]->hconflicts && instance_count==1 ) {
+	    CvtPsHints(&gb,scs,instance_count,true,round,iscjk,NULL);
+	    CvtPsHints(&gb,scs,instance_count,false,round,iscjk,NULL);
 	} else {
-	    refmoveto(&gb,current,(BasePoint *) (subrs->keys[sc->ttf_glyph]),
-		    instance_count,false,round,NULL,NULL);
-	    AddNumber(&gb,sc->ttf_glyph,round);
-	    if ( gb.pt+1>=gb.end )
-		GrowBuffer(&gb);
-	    *gb.pt++ = 10;
+	    memset(&hintdb,0,sizeof(hintdb));
+	    hintdb.subrs = subrs; hintdb.iscjk = iscjk; hintdb.scs = scs;
+	    hintdb.instance_count = instance_count;
+	    hdb = &hintdb;
 	}
+	CvtPsSplineSet(&gb,scs,instance_count,current,round,hdb,startend,sc->parent->order2);
+	CvtPsRSplineSet(&gb,scs,instance_count,current,round,hdb,NULL,sc->parent->order2);
     }
     if ( gb.pt+1>=gb.end )
 	GrowBuffer(&gb);
