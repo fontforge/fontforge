@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 13-Oct-2004 -->
+  <!-- AP: Last modified: 6-Jan-2005 -->
   <TITLE>The Hints Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -36,28 +36,6 @@ This menu is only present in the outline glyph view and the font view. <BR>
   <LI>
     <A HREF="#Editcvt">Edit cvt...</A>
   <LI>
-    <A HREF="#MDSubMenu">Minimum Distance</A>
-    <UL>
-      <LI>
-	<A HREF="#ClearMD">Clear All MD</A>
-      <LI>
-	<A HREF="#SelX">Clear Selected x MD</A>
-      <LI>
-	<A HREF="#SelY">Clear Selected y MD</A>
-      <LI>
-	<A HREF="#MDX">Add x MD</A>
-      <LI>
-	<A HREF="#MDY">Add y MD</A>
-      <LI>
-	<A HREF="#RX">Round X</A>
-      <LI>
-	<A HREF="#NRX">No Round X</A>
-      <LI>
-	<A HREF="#RY">Round Y</A>
-      <LI>
-	<A HREF="#NRY">No Round Y</A>
-    </UL>
-  <LI>
     <A HREF="#ClearHints">Clear Hints</A>
   <LI>
     <A HREF="#ClearInstrs">Clear Instructions</A>
@@ -65,8 +43,6 @@ This menu is only present in the outline glyph view and the font view. <BR>
     <A HREF="#Clear">Clear HStem</A>
   <LI>
     <A HREF="#ClearV">Clear VStem</A>
-  <LI>
-    <A HREF="#ClearD">Clear DStem</A>
   <LI>
     <A HREF="#HHint">Add HHint</A>
   <LI>
@@ -177,10 +153,6 @@ This menu is only present in the outline glyph view and the font view. <BR>
   <DD>
     Removes all Vertical Stem hints.
   <DT>
-    <A NAME="ClearD">Clear</A> DStem
-  <DD>
-    Removes all Diagonal Stem hints
-  <DT>
     Add <A NAME="HHint">HHint</A>
   <DD>
     If there are two points selected (exactly two) and if they have different
@@ -218,68 +190,6 @@ This menu is only present in the outline glyph view and the font view. <BR>
 </DL>
 <P>
 <BR CLEAR=All>
-<H2 ALIGN=Center>
-  The <A NAME="MDSubMenu">Minimum</A> Distance SubMenu
-</H2>
-<DL>
-  <DT>
-    <A NAME="ClearMD">Clear</A> All MD
-  <DD>
-    Clears all minimum distance hints and all rounding hints in the glyph.
-  <DT>
-    Clear <A NAME="SelX">Selected</A> x MD
-  <DD>
-    Clears all x minimum distance hints for which at least one point is
-    selected.<BR>
-    Also all selected points are marked not rounding in the x direction.
-  <DT>
-    Clear <A NAME="SelY">Selected</A> y MD
-  <DD>
-    Clears all y minimum distance hints for which at least one point is
-    selected.<BR>
-    Also all selected points are marked not rounding in the y direction.
-  <DT>
-    Add x <A NAME="MDX">MD</A> / Add MD Here to Width
-  <DD>
-    If two points are selected creates a minimum distance hint from the first
-    one to be selected to the second. If one point is selected, creates a minimum
-    distance hint from that point to the width.<BR>
-    If you attempt to create two minimum distance hints to the same point in
-    the same direction, FontForge will only create the more restrictive of the
-    two.
-  <DT>
-    Add y <A NAME="MDY">MD</A>
-  <DD>
-    If two points are selected creates a minimum distance hint from the first
-    one to be selected to the second.
-  <DT>
-    <A NAME="RX">Round X</A>
-  <DD>
-    If checked then all selected points are currently marked to round the x
-    coordinate to the rasterized grid. If you select this entry then all selected
-    points will be changed so that they round the x coordinate to the grid.
-  <DT>
-    <A NAME="NRX">No Round X</A>
-  <DD>
-    If checked then all selected points are currently marked not to round the
-    x coordinate to the rasterized grid. If you select this entry then all selected
-    points will be changed so that they will not round the x coordinate to the
-    grid.
-  <DT>
-    <A NAME="RY">Round Y</A>
-  <DD>
-    If checked then all selected points are currently marked to round the y
-    coordinate to the rasterized grid. If you select this entry then all selected
-    points will be changed so that they round the y coordinate to the grid.
-  <DT>
-    <A NAME="NRY">No Round Y</A>
-  <DD>
-    If checked then all selected points are currently marked not to round the
-    y coordinate to the rasterized grid. If you select this entry then all selected
-    points will be changed so that they will not round the y coordinate to the
-    grid.
-  <DT>
-</DL>
 <H2 ALIGN=Center>
   The <A NAME="Histogram">Histograms</A> SubMenu
 </H2>

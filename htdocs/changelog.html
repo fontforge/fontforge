@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 31-Dec-2004 -->
+  <!-- AP: Last modified: 6-Jan-2005 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -11,6 +11,44 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    6-Jan-2005
+    <UL>
+      <LI>
+	New Copyright message, etc. Get rid of pfaedit message.
+      <LI>
+	Simplify produced strange results on quadratic splines.
+      <LI>
+	Simplify had problems with tangent points
+      <LI>
+	Changing a point's type from a tangent to a curve usually had unexpected
+	results.
+      <LI>
+	Add a warning message in remove overlap when user passes us two intersecting
+	contours which are oriented in oposite directions. Unfortunately it also
+	complains about some other things.
+      <LI>
+	The 18 Dec changes to remove overlap introduced an infinite loop in some
+	rare cases. (When there is a gradient of 0 in distance function between two
+	splines).
+      <LI>
+	In a conditional operator (like &amp;&amp; or ||) in scripting where the
+	second operand was not evaluated and the second operand contained a procedure
+	call, then ff would crash
+      <LI>
+	Tweaked the point info dialog to show small offsets better
+      <LI>
+	Tweaked the merge command to behave better when merging tiny spline segments
+	(where the length of the spline segment is so small that it should just be
+	treated as a zero length spline and its slope ignored).
+      <LI>
+	Added an "Invert selection" command to the outline view, from Yoshiki Hayashi
+      <LI>
+	Pasting from the font view did not clear a glyph's instructions.
+      <LI>
+	New version of AutoHint. I've removed Diagonal Stem hints and mimum distance
+	hints for now.
+    </UL>
   <LI>
     31-Dec-2004
     <UL>
