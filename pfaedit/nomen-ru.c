@@ -1906,7 +1906,7 @@ static char *str_BadFont = "Bad Font"; /*new*/
 static char *str_LeaveX = "Leave X"; /*new*/
 static char *str_LeaveXLong = "A browser is probably running in the native Mac windowing system. You must leave the X environment to view it. Try Cmd-Opt-A"; /*new*/
 static char *str_NoATM = "The generated font won't work with ATM"; /*new*/
-static char *str_BadEncodingForATM = "ATM requires that fonts be encoded with the Mac Roman encoding. This postscript font will print fine, but only the bitmap versions will be displayed on the screen"; /*new*/
+static char *str_BadEncodingForATM = "ATM requires that fonts be encoded with the Macintosh Latin encoding. This postscript font will print fine, but only the bitmap versions will be displayed on the screen"; /*new*/
     /* Simplifydlg */
 static char *str_RemoveExtrema = "Разрешить удаление экстремумов";
 static char mnemonic_RemoveExtrema = 'r';

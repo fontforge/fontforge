@@ -2489,7 +2489,7 @@ static char *str_BadFont = "Police Incorrecte";
 static char *str_LeaveX = "Quitter X";
 static char *str_LeaveXLong = "Un navigateur est probablement déjà en train de tourner Dans une fenêtre native du Mac. Vous devez quitter X pour le voir. Essayez Cmd-Opt-A";
 static char *str_NoATM = "La police créée ne fontionnera pas avec ATM";
-static char *str_BadEncodingForATM = "ATM nécessite que la police soit encodée avec Mac Roman. Cette police postscript s'imprimera bien, mais à l'écran on n'aura que les bitmaps";
+static char *str_BadEncodingForATM = "ATM nécessite que la police soit encodée avec Macintosh Latin. Cette police postscript s'imprimera bien, mais à l'écran on n'aura que les bitmaps";
     /* Simplifydlg */
 static char *str_RemoveExtrema = "Autorise suppression des extrémités";
 static char mnemonic_RemoveExtrema = 'r';

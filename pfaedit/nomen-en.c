@@ -2489,7 +2489,7 @@ static char *str_BadFont = "Bad Font";
 static char *str_LeaveX = "Leave X";
 static char *str_LeaveXLong = "A browser is probably running in the native Mac windowing system. You must leave the X environment to view it. Try Cmd-Opt-A";
 static char *str_NoATM = "The generated font won't work with ATM";
-static char *str_BadEncodingForATM = "ATM requires that fonts be encoded with the Mac Roman encoding. This postscript font will print fine, but only the bitmap versions will be displayed on the screen";
+static char *str_BadEncodingForATM = "ATM requires that fonts be encoded with the Macintosh Latin encoding. This postscript font will print fine, but only the bitmap versions will be displayed on the screen";
     /* Simplifydlg */
 static char *str_RemoveExtrema = "Allow removal of extrema";
 static char mnemonic_RemoveExtrema = 'r';
