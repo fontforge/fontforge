@@ -784,7 +784,7 @@ return;
     SCUndoAct(sc,drawmode,undo);
     undo->next = sc->redoes[drawmode];
     sc->redoes[drawmode] = undo;
-    SCCharChangedUpdate(sc);
+    _SCCharChangedUpdate(sc,undo->was_modified);
 return;
 }
 
