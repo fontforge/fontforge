@@ -969,7 +969,7 @@ static void FVMenuSelectAll(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 
 static void cflistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    /* FontView *fv = (FontView *) GDrawGetUserData(gw);*/
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
