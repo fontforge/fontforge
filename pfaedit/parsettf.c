@@ -3341,7 +3341,9 @@ static void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 		    kp->off = offset;
 		    kp->next = info->chars[left]->kerns;
 		    info->chars[left]->kerns = kp;
-		}
+		} else
+		    fprintf( stderr, "Bad kern pair glyphs %d & %d must be less than %d\n",
+			    left, right, info->glyph_cnt );
 	    }
 	} else {
 	    fseek(ttf,len-6,SEEK_CUR);
@@ -3363,7 +3365,7 @@ struct lookup {
     uint16 lookup;
 };
 
-static uint16 *getCoverageTable(FILE *ttf, int coverage_offset) {
+static uint16 *getCoverageTable(FILE *ttf, int coverage_offset, struct ttfinfo *info) {
     int format, cnt, i,j;
     uint16 *glyphs=NULL;
     int start, end, ind, max;
@@ -3373,8 +3375,13 @@ static uint16 *getCoverageTable(FILE *ttf, int coverage_offset) {
     if ( format==1 ) {
 	cnt = getushort(ttf);
 	glyphs = galloc((cnt+1)*sizeof(uint16));
-	for ( i=0; i<cnt; ++i )
+	for ( i=0; i<cnt; ++i ) {
 	    glyphs[i] = getushort(ttf);
+	    if ( glyphs[i]>=info->glyph_cnt ) {
+		fprintf( stderr, "Bad coverage table. Glyph %d out of range [0,%d)\n", glyphs[i], info->glyph_cnt );
+		glyphs[i] = 0;
+	    }
+	}
     } else if ( format==2 ) {
 	glyphs = galloc((max=256)*sizeof(uint16));
 	cnt = getushort(ttf);
@@ -3382,12 +3389,17 @@ static uint16 *getCoverageTable(FILE *ttf, int coverage_offset) {
 	    start = getushort(ttf);
 	    end = getushort(ttf);
 	    ind = getushort(ttf);
+	    if ( start>end || end>=info->glyph_cnt )
+		fprintf( stderr, "Bad coverage table. Glyph range %d-%d out of range [0,%d)\n", start, end, info->glyph_cnt );
 	    if ( ind+end-start+2 >= max ) {
 		max = ind+end-start+2;
 		glyphs = grealloc(glyphs,max*sizeof(uint16));
 	    }
-	    for ( j=start; j<=end; ++j )
+	    for ( j=start; j<=end; ++j ) {
 		glyphs[j-start+ind] = j;
+		if ( j>=info->glyph_cnt )
+		    glyphs[j-start+ind] = 0;
+	    }
 	}
 	if ( cnt!=0 )
 	    cnt = ind+end-start+1;
@@ -3416,6 +3428,10 @@ static uint16 *getClassDefTable(FILE *ttf, int classdef_offset, int cnt) {
     if ( format==1 ) {
 	start = getushort(ttf);
 	glyphcnt = getushort(ttf);
+	if ( start+glyphcnt>cnt ) {
+	    fprintf( stderr, "Bad class def table. start=%d cnt=%d, max glyph=%d\n", start, glyphcnt, cnt );
+	    glyphcnt = cnt-start;
+	}
 	for ( i=0; i<glyphcnt; ++i )
 	    glist[start+i] = getushort(ttf);
     } else if ( format==2 ) {
@@ -3423,6 +3439,8 @@ static uint16 *getClassDefTable(FILE *ttf, int classdef_offset, int cnt) {
 	for ( i=0; i<rangecnt; ++i ) {
 	    start = getushort(ttf);
 	    end = getushort(ttf);
+	    if ( start>end || end>=cnt )
+		fprintf( stderr, "Bad class def table. Glyph range %d-%d out of range [0,%d)\n", start, end, cnt );
 	    class = getushort(ttf);
 	    for ( j=start; j<=end; ++j )
 		glist[j] = class;
@@ -3464,7 +3482,9 @@ static void addKernPair(struct ttfinfo *info, int glyph1, int glyph2, int16 offs
 	    kp->next = info->chars[glyph1]->kerns;
 	    info->chars[glyph1]->kerns = kp;
 	}
-    }
+    } else
+	fprintf( stderr, "Bad kern pair: glyphs %d & %d should have been < %d\n",
+		glyph1, glyph2, info->glyph_cnt );
 }
 
 static void gposKernSubTable(FILE *ttf, int stoffset, struct ttfinfo *info, struct lookup *lookup) {
@@ -3492,7 +3512,7 @@ return;
 	ps_offsets = galloc(cnt*sizeof(uint16));
 	for ( i=0; i<cnt; ++i )
 	    ps_offsets[i]=getushort(ttf);
-	glyphs = getCoverageTable(ttf,stoffset+coverage);
+	glyphs = getCoverageTable(ttf,stoffset+coverage,info);
 	if ( glyphs==NULL )
 return;
 	for ( i=0; i<cnt; ++i ) {
@@ -3552,7 +3572,7 @@ return;
 	offsets[i].entry = getushort(ttf);
 	offsets[i].exit  = getushort(ttf);
     }
-    glyphs = getCoverageTable(ttf,stoffset+coverage);
+    glyphs = getCoverageTable(ttf,stoffset+coverage,info);
 
     class = chunkalloc(sizeof(AnchorClass));
     class->name = uc_copy("Cursive");
@@ -3743,8 +3763,8 @@ static void gposMarkSubTable(FILE *ttf, uint32 stoffset,
     classcnt = getushort(ttf);
     markoffset = getushort(ttf);
     baseoffset = getushort(ttf);
-    markglyphs = getCoverageTable(ttf,stoffset+markcoverage);
-    baseglyphs = getCoverageTable(ttf,stoffset+basecoverage);
+    markglyphs = getCoverageTable(ttf,stoffset+markcoverage,info);
+    baseglyphs = getCoverageTable(ttf,stoffset+basecoverage,info);
     if ( baseglyphs==NULL || markglyphs==NULL ) {
 	free(baseglyphs); free(markglyphs);
 return;
@@ -3790,7 +3810,7 @@ return;
 	for ( i=0; i<cnt; ++i )
 	    readvaluerecord(&vr[i],vf,ttf);
     }
-    glyphs = getCoverageTable(ttf,stoffset+coverage);
+    glyphs = getCoverageTable(ttf,stoffset+coverage,info);
     if ( glyphs==NULL ) {
 	free(vr);
 return;
@@ -3867,8 +3887,9 @@ return;
 	glyph2s = galloc(cnt*sizeof(uint16));
 	for ( i=0; i<cnt; ++i )
 	    glyph2s[i] = getushort(ttf);
+	    /* in range check comes later */
     }
-    glyphs = getCoverageTable(ttf,stoffset+coverage);
+    glyphs = getCoverageTable(ttf,stoffset+coverage,info);
     if ( glyphs==NULL ) {
 	free(glyph2s);
 return;
@@ -3882,6 +3903,11 @@ return;
     } else {
 	for ( i=0; glyphs[i]!=0xffff; ++i ) if ( info->chars[glyphs[i]]!=NULL ) {
 	    which = format==1 ? glyphs[i]+delta : glyph2s[i];
+	    if ( which>=info->glyph_cnt ) {
+		fprintf( stderr, "Bad substitution glyph: %d not less than %d\n",
+			which, info->glyph_cnt);
+		which = 0;
+	    }
 	    if ( info->chars[which]!=NULL ) {	/* Might be in a ttc file */
 		PST *pos = chunkalloc(sizeof(PST));
 		pos->type = pst_substitution;
@@ -3914,7 +3940,7 @@ return;
     offsets = galloc(cnt*sizeof(uint16));
     for ( i=0; i<cnt; ++i )
 	offsets[i] = getushort(ttf);
-    glyphs = getCoverageTable(ttf,stoffset+coverage);
+    glyphs = getCoverageTable(ttf,stoffset+coverage,info);
     if ( glyphs==NULL ) {
 	free(offsets);
 return;
@@ -3932,6 +3958,12 @@ return;
 	len = 0; bad = false;
 	for ( j=0; j<cnt; ++j ) {
 	    glyph2s[j] = getushort(ttf);
+	    if ( glyph2s[j]>=info->glyph_cnt ) {
+		if ( !justinuse )
+		    fprintf( stderr, "Bad Multiple/Alternate substitution glyph %d not less than %d\n",
+			    glyph2s[j], info->glyph_cnt );
+		glyph2s[j] = 0;
+	    }
 	    if ( justinuse )
 		/* Do Nothing */;
 	    else if ( info->chars[glyph2s[j]]==NULL )
@@ -3976,7 +4008,7 @@ static void gsubLigatureSubTable(FILE *ttf, int stoffset,
     ls_offsets = galloc(cnt*sizeof(uint16));
     for ( i=0; i<cnt; ++i )
 	ls_offsets[i]=getushort(ttf);
-    glyphs = getCoverageTable(ttf,stoffset+coverage);
+    glyphs = getCoverageTable(ttf,stoffset+coverage,info);
     if ( glyphs==NULL )
 return;
     for ( i=0; i<cnt; ++i ) {
@@ -3988,11 +4020,23 @@ return;
 	for ( j=0; j<lig_cnt; ++j ) {
 	    fseek(ttf,stoffset+ls_offsets[i]+lig_offsets[j],SEEK_SET);
 	    lig = getushort(ttf);
+	    if ( lig>=info->glyph_cnt ) {
+		fprintf( stderr, "Bad ligature glyph %d not less than %d\n",
+			lig, info->glyph_cnt );
+		lig = 0;
+	    }
 	    cc = getushort(ttf);
 	    lig_glyphs = galloc(cc*sizeof(uint16));
 	    lig_glyphs[0] = glyphs[i];
-	    for ( k=1; k<cc; ++k )
+	    for ( k=1; k<cc; ++k ) {
 		lig_glyphs[k] = getushort(ttf);
+		if ( lig_glyphs[k]>=info->glyph_cnt ) {
+		    if ( !justinuse )
+			fprintf( stderr, "Bad ligature component glyph %d not less than %d (in ligature %d)\n",
+				lig_glyphs[k], info->glyph_cnt, lig );
+		    lig_glyphs[k] = 0;
+		}
+	    }
 	    for ( k=len=0; k<cc; ++k )
 		len += strlen(info->chars[lig_glyphs[k]]->name)+1;
 	    if ( justinuse ) {
