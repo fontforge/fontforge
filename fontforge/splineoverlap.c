@@ -1100,6 +1100,8 @@ static void FigureNeeds(Monotonic *ms,int which, double test, Monotonic **space,
 	if (( which==0 && test >= m->b.minx && test <= m->b.maxx ) ||
 		( which==1 && test >= m->b.miny && test <= m->b.maxy )) {
 	    t = BoundIterateSplineSolve(&m->s->splines[which],m->tstart,m->tend,test,error);
+	    if ( t==-1 )
+    continue;
 	    if ( t==m->tend ) t -= (m->tend-m->tstart)/100;
 	    else if ( t==m->tstart ) t += (m->tend-m->tstart)/100;
 	    m->other = ((m->s->splines[nw].a*t+m->s->splines[nw].b)*t+
