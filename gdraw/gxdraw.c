@@ -1266,6 +1266,10 @@ static void _GXDraw_CleanUpWindow( GWindow w ) {
 
     XSaveContext(gdisp->display,gw->w,gdisp->mycontext,NULL);
     if ( gdisp->grab_window==w ) gdisp->grab_window = NULL;
+    if ( gdisp->last_dd.gw==w ) {
+	gdisp->last_dd.gw = NULL;
+	gdisp->last_dd.w = None;
+    }
 
     GTimerRemoveWindowTimers(gw);
     _GXDraw_RemoveRedirects(gdisp,gw);
@@ -3246,6 +3250,9 @@ return;
 	gdisp->last_dd.y = mouse->u.mouse.y;
 	gdisp->last_dd.rx = x;
 	gdisp->last_dd.ry = y;
+    } else {
+	gdisp->last_dd.w = None;
+	gdisp->last_dd.gw = NULL;
     }
 }
 
@@ -3717,7 +3724,7 @@ return( false );
     if ( gd->seltypes.timestamp!=gd->last_event_time ) {
 	/* List is not up to date, ask for a new one */
 	gd->seltypes.cnt = 0;
-	XFree(gd->seltypes.types);
+	XFree(gd->seltypes.types); gd->seltypes.types = NULL;
 	XConvertSelection(display, gd->selinfo[sn].sel_atom, GXDrawGetAtom(gd,"TARGETS"),
 	       gd->selinfo[sn].sel_atom, gw->w,gd->last_event_time);
 	if ( !GXDrawWaitForNotifyEvent(gd,&xevent, gw->w) ||
