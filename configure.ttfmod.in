@@ -17,6 +17,7 @@ AC_CHECK_FILE(/usr/include/freetype2,CFLAGS="$CFLAGS -I/usr/include/freetype2/",
 AC_CHECK_FILE(/usr/local/include/freetype2,CFLAGS="$CFLAGS -I/usr/local/include -I/usr/local/include/freetype2/",[
 AC_CHECK_FILE(/usr/X11R6/include/freetype2,CFLAGS="$CFLAGS -I/usr/X11R6/include -I/usr/X11R6/include/freetype2/",)])])
 
+has_bytecode=no
 dnl check for freetype. If it doesn't exist then turn off
 dnl rasterization code (which uses it).
 dnl But if it does exist...
@@ -36,9 +37,37 @@ exit(0);
 A ludicrous error, but so what, it's an error, that's all I need
 #endif], [echo " " yes
     AC_DEFINE(TT_CONFIG_OPTION_BYTECODE_INTERPRETER,1)
+    has_bytecode=yes
     AC_DEFINE(TT_CONFIG_OPTION_BYTECODE_DEBUG,1)], echo " " no)
 ], [ AC_DEFINE(_NO_LIBFREETYPE)
     AC_DEFINE(TT_RASTERIZE_FONTVIEW,0) ])
+
+has_ft2sources="no"
+if test "$has_bytecode" = "yes" >/dev/null 2>&1 ; then
+dnl Need to find the source directory freetype2*/src/truetype/ttobjs.h
+dnl  so as to get at the internals of freetype (if we want to use
+dnl  freetype's debugger). If this finds the wrong source dir, then
+dnl  user should just set FreeType2_TT_SRC_DIR as an environment variable.
+dnl The peculiar use of brackets in the grep expr is because m4 strips out
+dnl  one set of brackets as a quote character or something.
+dnl I hope this works with all versions of sh...
+
+ if test "$FreeType2_TT_SRC_DIR" = "" >/dev/null 2>&1 ; then
+  echo -n "trying to find the freetype source directory (be patient)..."
+  FreeType2_TT_SRC_DIR=`find / -name ttobjs.h -print 2>/dev/null |grep '[freetype[^/\]*2[^/\]*/src/truetype/ttobjs.h]' | sort -r | head -n 1 | sed -e 's/ttobjs.h//'`
+  export FreeType2_TT_SRC_DIR
+  if test "$FreeType2_TT_SRC_DIR" = "" >/dev/null 2>&1 ; then
+   echo " " no
+  else
+   echo " " probably
+  fi
+ fi
+ if test "$FreeType2_TT_SRC_DIR" \!= "" >/dev/null 2>&1 ; then
+  AC_CHECK_FILE($FreeType2_TT_SRC_DIR/ttdriver.h,[CFLAGS="$CFLAGS -I$FreeType2_TT_SRC_DIR"
+	 has_ft2sources=yes
+	 AC_DEFINE(TT_CONFIG_OPTION_FREETYPE_DEBUG,1)],)
+ fi
+fi
 
 dnl older libc's don't have snprintf
 
@@ -48,6 +77,36 @@ AC_C_CONST
 AC_PATH_XTRA
 
 AC_OUTPUT(ttfmod/Makefile)
+
+if test "$has_bytecode" = "no" >/dev/null 2>&1 ; then
+ echo " ******************************************************************"
+ echo " * ttfmod can do a lot more if you build it on a system that has  *"
+ echo " * the byte code interpretter enabled in freetype.  See the free  *"
+ echo " * type patent page (http://freetype.sf.net/patents.html), to see *"
+ echo " * if you can legally do this, and if so read the freetype docs   *"
+ echo " * on how to set TT_CONFIG_OPTION_BYTECODE_INTERPRETER            *"
+ echo " ******************************************************************"
+elif test "has_ft2sources" = "no" >/dev/null 2>&1 ; then
+ echo " ******************************************************************"
+ echo " * ttfmod can do a lot more if you build it on a system that has  *"
+ echo " * the freetype2 sources installed (if your system does have the  *"
+ echo " * freetype sources installed and this configure script did not   *"
+ echo " * find them, then just define the environment variable           *"
+ echo " *           FreeType2_TT_SRC_DIR                                 *"
+ echo " * to point to the directory <freetype-root>/src/truetype). If    *"
+ echo " * you don't have the sources, you can download them from         *"
+ echo " *  http://freetype.sf.net/ (you might not need to rebuild	 *"
+ echo " * the library if there isn't too much of a version mismatch)     *"
+ echo " ******************************************************************"
+else
+ echo " ******************************************************************"
+ echo " * this configure script has picked a freetype source directory   *"
+ echo " * more or less at random. It may not match what you have         *"
+ echo " * installed on your machine. If it does not set                  *"
+ echo " *           FreeType2_TT_SRC_DIR                                 *"
+ echo " * to point to the directory <freetype-root>/src/truetype).       *"
+ echo " ******************************************************************"
+fi
 
 echo Configuration defines: $DEFS
 
