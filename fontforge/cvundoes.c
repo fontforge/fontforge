@@ -49,7 +49,11 @@ return( NULL );
     for ( crefs = sc->layers[layer].refs; crefs!=NULL; crefs=crefs->next ) {
 	new = RefCharCreate();
 	*new = *crefs;
+#ifdef FONTFORGE_CONFIG_TYPE3
+	new->layers = gcalloc(new->layer_cnt,sizeof(struct reflayer));
+#else
 	new->layers[0].splines = NULL;
+#endif
 	new->next = NULL;
 	if ( last==NULL )
 	    head = last = new;
