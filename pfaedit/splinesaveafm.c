@@ -1132,12 +1132,13 @@ static void putlint(int val,FILE *pfm) {
 }
 
 int PfmSplineFont(FILE *pfm, SplineFont *sf, int type0) {
-    int caph, xh, ash, dsh, cnt=0, first=-1, samewid=-1, maxwid= -1, last=0, wid=0;
+    int caph, xh, ash, dsh, cnt=0, first=-1, samewid=-1, maxwid= -1, last=0, wid=0, ymax=0, ymin=0;
     int kerncnt=0, spacepos=0x20;
     int i;
     char *pt;
     KernPair *kp;
     /* my docs imply that pfm files can only handle 1byte fonts */
+    /* Ah, but Adobe's technical note 5178.PFM.PDF gives the two byte format */
     long size, devname, facename, extmetrics, exttable, driverinfo, kernpairs, pos;
     DBounds b;
     int style;
@@ -1152,6 +1153,8 @@ int PfmSplineFont(FILE *pfm, SplineFont *sf, int type0) {
 		    sf->chars[i]->unicodeenc=='H' || sf->chars[i]->unicodeenc=='d' || 
 		    sf->chars[i]->unicodeenc=='p' || sf->chars[i]->unicodeenc=='l' ) {
 		SplineCharFindBounds(sf->chars[i],&b);
+		if ( ymax<b.maxy ) ymax = b.maxy;
+		if ( ymin>b.miny ) ymin = b.miny;
 		if ( sf->chars[i]->unicodeenc=='I' || sf->chars[i]->unicodeenc=='H' )
 		    caph = b.maxy;
 		else if ( sf->chars[i]->unicodeenc=='x' )
@@ -1196,16 +1199,34 @@ int PfmSplineFont(FILE *pfm, SplineFont *sf, int type0) {
     putlshort(10,pfm);			/* point size, not really meaningful */
     putlshort(300,pfm);			/* vert resolution */
     putlshort(300,pfm);			/* hor resolution */
-    putlshort(sf->ascent,pfm);		/* ascent (is this the right defn of ascent?) */
+    putlshort(ymax,pfm);		/* ascent (Adobe says the "ascent" is the max high in the font's bounding box) */
     if ( caph==0 ) caph = ash;
-    putlshort(sf->ascent+sf->descent-caph-dsh,pfm);	/* Internal leading */
-    putlshort(0/*(sf->ascent+sf->descent)/8*/,pfm);	/* External leading */
+    if ( ymax-ymin>=sf->ascent+sf->descent )
+	putlshort(0,pfm);		/* Adobe says so */
+    else
+	putlshort(sf->ascent+sf->descent-(ymax-ymin),pfm);	/* Internal leading */
+    putlshort(196*(sf->ascent+sf->descent)/1000,pfm);	/* External leading, Adobe says 196 */
     style = MacStyleCode(sf,NULL);
     putc(style&sf_italic?1:0,pfm);	/* is italic */
     putc(0,pfm);			/* underline */
     putc(0,pfm);			/* strikeout */
     putlshort(sf->pfminfo.weight,pfm);	/* weight */
-    putc(sf->encoding_name==em_symbol?2:0,pfm);	/* charset. I'm always saying windows roman (ANSI) or symbol because I don't know the other choices */
+    if ( sf->encoding_name==em_jis208 || sf->encoding_name==em_jis212 ||
+	    sf->encoding_name==em_sjis ||
+	    (sf->cidmaster!=NULL && strnmatch(sf->cidmaster->ordering,"Japan",5)==0 ))
+	putc(128,pfm);
+    else if ( sf->encoding_name==em_ksc5601 || sf->encoding_name==em_johab ||
+	    sf->encoding_name==em_wansung ||
+	    (sf->cidmaster!=NULL && strnmatch(sf->cidmaster->ordering,"Korea",5)==0 ))
+	putc(129,pfm);
+    else if ( sf->encoding_name==em_big5 || sf->encoding_name==em_big5hkscs ||
+	    (sf->cidmaster!=NULL && strnmatch(sf->cidmaster->ordering,"CNS",3)==0 ))
+	putc(136,pfm);
+    else if ( sf->encoding_name==em_gb2312 ||
+	    (sf->cidmaster!=NULL && strnmatch(sf->cidmaster->ordering,"GB",2)==0 ))
+	putc(134,pfm);
+    else
+	putc(sf->encoding_name==em_symbol?2:0,pfm);	/* charset. I'm always saying windows roman (ANSI) or symbol because I don't know the other choices */
     putlshort(/*samewid<0?sf->ascent+sf->descent:samewid*/0,pfm);	/* width */
     putlshort(sf->ascent+sf->descent,pfm);	/* height */
     putc(sf->pfminfo.pfmfamily,pfm);	/* family */
@@ -1213,7 +1234,7 @@ int PfmSplineFont(FILE *pfm, SplineFont *sf, int type0) {
     putlshort(maxwid,pfm);		/* max width */
 
     if ( first>255 ) first=last = 0;
-    else if ( last>255 ) last = 255;
+    else if ( last>255 ) { first=32; last = 255;}/* Yes, even for 2 byte fonts we do this (Adobe says so)*/
     putc(first,pfm);			/* first char */
     putc(last,pfm);
     if ( spacepos>=first && spacepos<=last ) {
@@ -1329,13 +1350,16 @@ int PfmSplineFont(FILE *pfm, SplineFont *sf, int type0) {
 	fseek(pfm,kernpairs,SEEK_SET);
 	putlint(pos,pfm);
 	fseek(pfm,pos,SEEK_SET);
+	putlshort(kerncnt,pfm);		/* number of kerning pairs <= 512 */
+	kerncnt = 0;
 	for ( i=first; i<last; ++i ) if ( sf->chars[i]!=NULL ) {
 	    if ( SCWorthOutputting(sf->chars[i]) ) {
 		for ( kp=sf->chars[i]->kerns; kp!=NULL; kp = kp->next )
-		    if ( kp->sc->enc<256 ) {
+		    if ( kp->sc->enc<256 && kerncnt<512 ) {
 			putc(i,pfm);
 			putc(kp->sc->enc,pfm);
 			putlshort(kp->off,pfm);
+			++kerncnt;
 		    }
 	    }
 	}
