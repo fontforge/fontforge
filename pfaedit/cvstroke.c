@@ -410,7 +410,8 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	    /* removeinternal */ false,
 	    /* removeexternal */ false,
 	    /* removeoverlapif*/ true,
-	    /* gottoobig */    false,
+	    /* gottoobig */	 false,
+	    /* gottoobiglocal */ false,
 	    3.1415926535897932/4, .2, 50 };
     StrokeInfo *def = si?si:&defaults;
     char anglebuf[20], ratiobuf[20], widthbuf[20], width2buf[20],

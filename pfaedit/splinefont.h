@@ -79,6 +79,8 @@ enum linecap {
 
 struct spline;
 enum si_type { si_std, si_caligraphic, si_elipse, si_centerline };
+/* If you change this structure you may need to update MakeStrokeDlg
+/*  and cvpalettes.c both contain statically initialized StrokeInfos */
 typedef struct strokeinfo {
     real radius;			/* or major axis of pen */
     enum linejoin join;
@@ -89,6 +91,7 @@ typedef struct strokeinfo {
     unsigned int removeexternal: 1;
     unsigned int removeoverlapifneeded: 1;
     unsigned int gottoobig: 1;
+    unsigned int gottoobiglocal: 1;
     real penangle;
     real ratio;				/* ratio of minor pen axis to major */
 /* For eplipse */

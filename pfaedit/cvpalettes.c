@@ -175,7 +175,8 @@ static StrokeInfo expand = { 25, lj_round, lc_butt, si_centerline,
 	    /* removeexternal */ false,
 	    /* removeinternal */ false,
 	    /* removeoverlapif*/ false,
-	    /* gottoobig */    false,
+	    /* gottoobig */	 false,
+	    /* gottoobiglocal */ false,
 	3.1415926535897932/4, .2, 50 };
 
 real CVRoundRectRadius(void) {
