@@ -184,7 +184,7 @@ unichar_t *GWidgetSaveAsFile(const unichar_t *title, const unichar_t *defaultfil
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
     gcd[0].gd.pos.x = 12; gcd[0].gd.pos.y = 6;
-    gcd[0].gd.pos.width = totwid-24; gcd[0].gd.pos.height = 180;
+    gcd[0].gd.pos.width = 223-24; gcd[0].gd.pos.height = 180;
     gcd[0].gd.flags = gg_visible | gg_enabled;
     gcd[0].creator = GFileChooserCreate;
 
