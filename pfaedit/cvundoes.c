@@ -858,7 +858,7 @@ static void CopyBufferFree(void) {
 
 static void CopyBufferFreeGrab(void) {
     CopyBufferFree();
-    if ( fv_list!=NULL )
+    if ( fv_list!=NULL && screen_display!=NULL )
 	GDrawGrabSelection(fv_list->gw,sn_clipboard);	/* Grab the selection to one of my windows, doesn't matter which, aren't going to export it, but just want to clear things out so no one else thinks they have the selection */
 }
 
@@ -917,6 +917,8 @@ static void XClipCheckEps(void) {
     Undoes *cur = &copybuffer;
 
     if ( fv_list==NULL )
+return;
+    if ( screen_display==NULL )
 return;
 
     while ( cur ) {
@@ -1198,6 +1200,8 @@ static void SCCheckXClipboard(GWindow awindow,SplineChar *sc,enum drawmode dm,in
     FILE *temp;
     GImage *image;
 
+    if ( screen_display==NULL )
+return;
     type = 0;
 #ifndef _NO_LIBPNG
     if ( GDrawSelectionHasType(awindow,sn_clipboard,"image/png") )
