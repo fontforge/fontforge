@@ -956,6 +956,14 @@ return( _StemsFind(stems,start,end,shadpt,ehadpt));
 static void _StemAddBrief(StemInfo *new, real mstart, real mend ) {
     HintInstance *hi, *thi;
 
+    if ( mend<=mstart ) {
+	real temp;
+	fprintf( stderr, "Bad values in StemAddBrief, mstart=%g mend=%g\n", mstart, mend);
+	/* Have to add some HI, else we might crash later */
+	temp = mstart;
+	mstart = mend;
+	mend = temp;
+    }
     thi=new->where;
     if ( thi!=NULL && !(mend<thi->begin || mstart>thi->end) ) {
 	if ( mstart<thi->begin ) thi->begin = mstart;
@@ -982,14 +990,6 @@ static StemInfo *StemAddBrief(StemInfo *stems,EI *apt,EI *e,
 	real mstart, real mend, int major) {
     StemInfo *new;
 
-    if ( mend<=mstart ) {
-	real temp;
-	fprintf( stderr, "Bad values in StemAddBrief, mstart=%g mend=%g\n", mstart, mend);
-	/* Have to add some HI, else we might crash later */
-	temp = mstart;
-	mstart = mend;
-	mend = temp;
-    }
     new = StemsFind(stems,apt,e,major);
     if ( new->where==NULL ) {
 	stems = StemInsert(stems,new);
@@ -1011,12 +1011,12 @@ static StemInfo *StemAddUpdate(StemInfo *stems,EI *apt,EI *e, int i, int major,
 	if ( !new->haspointleft || !new->haspointright ) {
 	    for ( p=pendings; p!=NULL; p=p->next )
 		if ( p->apt==apt && p->e==e ) {
-		    if ( !new->haspointleft && p->checka ) {
+		    if ( !new->haspointleft && p->checka && p->otherpos<e->ocur ) {
 			new->width += new->start-p->otherpos;
 			new->start = p->otherpos;
 			new->haspointleft = true;
 			begun = p->mpos;
-		    } else if ( !new->haspointright && !p->checka ) {
+		    } else if ( !new->haspointright && !p->checka && p->otherpos>apt->ocur ) {
 			new->width = p->otherpos-new->start;
 			new->haspointright = true;
 			begun = p->mpos;
@@ -1039,7 +1039,8 @@ return(stems);
 		IsNearHV(apt,e,i,&up,&down,major)) {
 	    if ( down<0 && i+down>begun ) down = begun-i;
 	    else if ( up<0 && i+up>begun ) up = begun-i;
-return( StemAddBrief(stems,apt,e,i+down,i+up,major));
+	    _StemAddBrief(new,i+down,i+up);
+return( stems );
 	}
 	hi = chunkalloc(sizeof(HintInstance));
 	hi->begin = begun;
@@ -1917,6 +1918,37 @@ int StemListAnyConflicts(StemInfo *stems) {
 return( any );
 }
 
+#if 0
+static StemInfo *StemRemoveConflictingHintsWithoutPoints(StemInfo *stems) {
+    StemInfo *head=stems, *n, *p;
+
+    p = NULL;
+    while ( stems!=NULL ) {
+	n = stems->next;
+	if ( n==NULL )
+    break;
+	if ( stems->start==n->start || stems->start+stems->width>=n->start+n->width ) {
+	    if ( !stems->haspointright || !stems->haspointleft ) {
+		StemInfoFree(stems);
+		if ( p==NULL )
+		    head = n;
+		else
+		    p->next = n;
+		stems = n;
+    continue;
+	    } else if ( !n->haspointright || !n->haspointleft ) {
+		stems->next = n->next;
+		StemInfoFree(n);
+    continue;
+	    }
+	}
+	p = stems;
+	stems = n;
+    }
+return( head );
+}
+#endif
+
 static StemInfo *StemRemoveWideConflictingHintsContainingLittleOnes(StemInfo *stems) {
     /* The crossbar of the H when treated as a vstem is an annoyance */
     /*  There are no points for which the hint applies, but it's existance */
@@ -2349,10 +2381,21 @@ static StemInfo *SCFindStems(EIList *el, int major, int removeOverlaps,DStemInfo
 	if ( major==0 )
 	    stems = CheckForGhostHints(stems,el->sc);
 	if ( StemListAnyConflicts(stems) ) {
-	    stems = StemRemoveConflictingBigHint(stems,el->cnt*.95);
+	    real big = (el->coordmax[1-major]-el->coordmin[1-major])*.40;
+	    char *pt;
+	    if ( (major==1 && (pt=PSDictHasEntry(el->sc->parent->private,"StdVW"))!=NULL ) ||
+		    (major==0 && (pt=PSDictHasEntry(el->sc->parent->private,"StdHW"))!=NULL )) {
+		real val;
+		while ( isspace(*pt) || *pt=='[' ) ++pt;
+		val = strtod(pt,NULL);
+		if ( val>big )
+		    big = val*1.3;
+	    }
+	    stems = StemRemoveConflictingBigHint(stems,big);
 	    /* Now we need to run AnyConflicts again, but we'll have to do that */
 	    /*  anyway after adding hints from References */
 	}
+	/*stems = StemRemoveConflictingHintsWithoutPoints(stems);*/ /* Too extreme */
     }
     if ( dstems!=NULL )
 	*dstems = DStemPrune( *dstems );
@@ -2706,7 +2749,7 @@ static StemInfo *RefHintsMerge(StemInfo *into, StemInfo *rh, real mul, real offs
 	    start += width; width = -width;
 	}
 	for ( h=into, prev=NULL; h!=NULL && (start>h->start || (start==h->start && width>h->width)); prev=h, h=h->next );
-	if ( h==NULL || (start!=h->start && width!=h->width) ) {
+	if ( h==NULL || start!=h->start || width!=h->width ) {
 	    n = chunkalloc(sizeof(StemInfo));
 	    n->start = start; n->width = width;
 	    n->next = h;
