@@ -1826,13 +1826,14 @@ static void EdgeListReverse(EdgeList *es, SplineSet *spl) {
     }
 }
 
-static int SSCheck(SplineSet *base,Edge *active, int up, EdgeList *es) {
+static int SSCheck(SplineSet *base,Edge *active, int up, EdgeList *es,int *changed) {
     SplineSet *spl;
     if ( active->spline->isticked )
 return( 0 );
     spl = SplineSetOfSpline(base,active->spline);
     if ( active->up!=up ) {
 	SplineSetReverse(spl);
+	*changed = true;
 	EdgeListReverse(es,spl);
     }
     SplineSetTick(spl);
@@ -1867,7 +1868,7 @@ return( openhead );
 /* The outermost spline should be clockwise (up), the next splineset we find */
 /*  should be down, if it isn't reverse it (if it's already been dealt with */
 /*  then ignore it) */
-SplineSet *SplineSetsCorrect(SplineSet *base) {
+SplineSet *SplineSetsCorrect(SplineSet *base,int *changed) {
     SplineSet *spl;
     int sscnt, check_cnt;
     EdgeList es;
@@ -1875,6 +1876,8 @@ SplineSet *SplineSetsCorrect(SplineSet *base) {
     Edge *active=NULL, *apt, *pr, *e;
     int i, winding;
     SplineSet *open, *tbase;
+
+    *changed = false;
 
     tbase = base;
     open = SplineSetsExtractOpen(&tbase);
@@ -1911,11 +1914,11 @@ SplineSet *SplineSetsCorrect(SplineSet *base) {
 		    !(i<es.cnt-1 && es.interesting[i+1]))	/* interesting things happen when we add (or remove) entries */
 	continue;			/* and where we have points of inflection */
 	    for ( apt=active; apt!=NULL; apt = e) {
-		check_cnt += SSCheck(base,apt,true,&es);
+		check_cnt += SSCheck(base,apt,true,&es,changed);
 		winding = apt->up?1:-1;
 		for ( pr=apt, e=apt->aenext; e!=NULL && winding!=0; pr=e, e=e->aenext ) {
 		    if ( !e->spline->isticked )
-			check_cnt += SSCheck(base,e,winding<0,&es);
+			check_cnt += SSCheck(base,e,winding<0,&es,changed);
 		    if ( pr->up!=e->up )
 			winding += (e->up?1:-1);
 		    else if ( (pr->before==e || pr->after==e ) &&

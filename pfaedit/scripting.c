@@ -1370,11 +1370,16 @@ static void bAutotrace(Context *c) {
 static void bCorrectDirection(Context *c) {
     int i;
     SplineFont *sf = c->curfv->sf;
+    int changed;
+
     if ( c->a.argc!=1 )
 	error( c, "Wrong number of arguments to CorrectDirection");
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && c->curfv->selected[i] ) {
 	SplineChar *sc = sf->chars[i];
-	sc->splines = SplineSetsCorrect(sc->splines);
+	changed = false;
+	sc->splines = SplineSetsCorrect(sc->splines,&changed);
+	if ( changed )
+	    SCCharChangedUpdate(sc);
     }
 }
 

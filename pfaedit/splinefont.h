@@ -655,7 +655,7 @@ extern void SFIncrementXUID(SplineFont *sf);
 extern void SFRandomChangeXUID(SplineFont *sf);
 extern SplineSet *SplineSetReverse(SplineSet *spl);
 extern SplineSet *SplineSetsExtractOpen(SplineSet **tbase);
-extern SplineSet *SplineSetsCorrect(SplineSet *base);
+extern SplineSet *SplineSetsCorrect(SplineSet *base,int *changed);
 extern SplineSet *SplineSetsDetectDir(SplineSet **_base, int *lastscan);
 extern void SPAverageCps(SplinePoint *sp);
 extern void SplineCharDefaultPrevCP(SplinePoint *base, SplinePoint *prev);

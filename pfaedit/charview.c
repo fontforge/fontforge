@@ -3712,9 +3712,11 @@ return;
 
 static void CVMenuCorrectDir(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
+    int changed=false;
     CVPreserveState(cv);
-    *cv->heads[cv->drawmode] = SplineSetsCorrect(*cv->heads[cv->drawmode]);
-    CVCharChangedUpdate(cv);
+    *cv->heads[cv->drawmode] = SplineSetsCorrect(*cv->heads[cv->drawmode],&changed);
+    if ( changed )
+	CVCharChangedUpdate(cv);
 }
 
 static void CVMenuGetInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -4983,9 +4985,11 @@ static void SVMenuDir(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void SVMenuCorrectDir(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SearchView *sv = (SearchView *) GDrawGetUserData(gw);
     CharView *cv = sv->cv_srch.inactive ? &sv->cv_rpl : &sv->cv_srch;
+    int changed=false;
     CVPreserveState(cv);
-    *cv->heads[cv->drawmode] = SplineSetsCorrect(*cv->heads[cv->drawmode]);
-    CVCharChangedUpdate(cv);
+    *cv->heads[cv->drawmode] = SplineSetsCorrect(*cv->heads[cv->drawmode],&changed);
+    if ( changed )
+	CVCharChangedUpdate(cv);
 }
 
 static void SVMenuPaletteShow(GWindow gw,struct gmenuitem *mi,GEvent *e) {

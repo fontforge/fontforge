@@ -389,6 +389,7 @@ SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc) {
     real t_start, t_end;
     int i;
     Spline *first, *spline;
+    int changed = false;
 
     if ( spl->first==spl->last && spl->first->next!=NULL ) {
 	/* My routine gets screwed up by counter-clockwise triangles */
@@ -481,7 +482,7 @@ return( ssplus );
 	if ( SplinePointListIsClockwise(ssplus))
 	    SplineSetReverse(ssplus);
 	ssplus->next = ssminus;
-	SplineSetsCorrect(ssplus);
+	SplineSetsCorrect(ssplus,&changed);
     } else {
 	/*SplineSetFixRidiculous(ssplus);*/
 	if ( !SplinePointListIsClockwise(ssplus))

@@ -1423,9 +1423,11 @@ static void MVMenuCorrectDir(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     break;
     if ( i!=-1 ) {
 	SplineChar *sc = mv->perchar[i].sc;
+	int changed = false;
 	SCPreserveState(sc,false);
-	sc->splines = SplineSetsCorrect(sc->splines);
-	SCCharChangedUpdate(sc);
+	sc->splines = SplineSetsCorrect(sc->splines,&changed);
+	if ( changed )
+	    SCCharChangedUpdate(sc);
     }
 }
 

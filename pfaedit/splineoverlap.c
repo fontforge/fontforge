@@ -1395,6 +1395,7 @@ static void ShowIntersections(IntersectionList *ilist) {
 SplineSet *SplineSetRemoveOverlap(SplineSet *base) {
     SplineSet *open, *needed, *tbase, *new, *next;
     IntersectionList *ilist;
+    int changed = false;
 
     SplineSetsUntick(base);
 
@@ -1437,7 +1438,7 @@ SplineSet *SplineSetRemoveOverlap(SplineSet *base) {
 	for ( next=needed; next->next!=NULL; next = next->next );
 	next->next = new;
     }
-    SplineSetsCorrect(needed);		/* Make sure it's all pointing the right way */
+    SplineSetsCorrect(needed,&changed);		/* Make sure it's all pointing the right way */
     if ( open==NULL )
 	open=needed;
     else if ( needed!=NULL ) {

@@ -1411,7 +1411,7 @@ static void FVMenuAddExtrema(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void FVMenuCorrectDir(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    int i, cnt=0;
+    int i, cnt=0, changed;
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
 	++cnt;
@@ -1420,8 +1420,10 @@ static void FVMenuCorrectDir(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
 	SCPreserveState(sc,false);
-	sc->splines = SplineSetsCorrect(sc->splines);
-	SCCharChangedUpdate(sc);
+	changed = false;
+	sc->splines = SplineSetsCorrect(sc->splines,&changed);
+	if ( changed )
+	    SCCharChangedUpdate(sc);
 	if ( !GProgressNext())
     break;
     }

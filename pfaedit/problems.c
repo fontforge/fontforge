@@ -103,6 +103,7 @@ static void FixIt(struct problems *p) {
     SplinePoint *sp;
     /*StemInfo *h;*/
     RefChar *r;
+    int changed;
 
 #if 0	/* The ultimate cause (the thing we need to fix) for these two errors */
 	/* is that the stem is wrong, it's too hard to fix that here, so best */
@@ -133,8 +134,10 @@ return;
 	if ( r!=NULL ) {
 	    SCPreserveState(p->sc,false);
 	    SCRefToSplines(p->sc,r);
-	    p->sc->splines = SplineSetsCorrect(p->sc->splines);
-	    SCCharChangedUpdate(p->sc);
+	    changed = false;
+	    p->sc->splines = SplineSetsCorrect(p->sc->splines,&changed);
+	    if ( changed )
+		SCCharChangedUpdate(p->sc);
 	} else
 	    GDrawIError("Could not find referenc");
 return;
