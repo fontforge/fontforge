@@ -1254,6 +1254,8 @@ return( false );
 	free(sf->chars[i]->name);
 	sf->chars[i]->name = copy(dummy.name);
     }
+    free(sf->remap);
+    sf->remap = NULL;
 return( true );
 }
 
@@ -1397,6 +1399,8 @@ return( false );
 	bdf->charcnt = enc_cnt+extras;
 	bdf->encoding_name = new_map;
     }
+    free(sf->remap);
+    sf->remap = NULL;
 return( true );
 }
 
@@ -1671,7 +1675,7 @@ static char *modifierlistfull[] = { "Italic", "Oblique", "Kursive", "Cursive",
 static char **mods[] = { knownweights, modifierlist, NULL };
 static char **fullmods[] = { realweights, modifierlistfull, NULL };
 
-static char *_GetModifiers(char *fontname, char *familyname) {
+static char *_GetModifiers(char *fontname, char *familyname,char *weight) {
     char *pt, *fpt;
     int i, j;
 
@@ -1720,10 +1724,11 @@ return( "BoldOblique" );
 return( fpt );
     }
 
-return( "Regular" );
+return( weight==NULL || *weight=='\0' ? "Regular": weight );
 }
 
-static const unichar_t *_uGetModifiers(const unichar_t *fontname, const unichar_t *familyname) {
+static const unichar_t *_uGetModifiers(const unichar_t *fontname, const unichar_t *familyname,
+	const unichar_t *weight) {
     const unichar_t *pt, *fpt;
     static unichar_t regular[] = { 'R','e','g','u','l','a','r', 0 };
     static unichar_t space[20];
@@ -1779,17 +1784,18 @@ return( space );
 return( fpt );
     }
 
-return( regular );
+return( weight==NULL || *weight=='\0' ? regular: weight );
 }
 
 char *SFGetModifiers(SplineFont *sf) {
-return( _GetModifiers(sf->fontname,sf->familyname));
+return( _GetModifiers(sf->fontname,sf->familyname,sf->weight));
 }
 
-static unichar_t *uGetModifiers(unichar_t *fontname, unichar_t *familyname) {
+static unichar_t *uGetModifiers(unichar_t *fontname, unichar_t *familyname,
+	unichar_t *weight) {
     unichar_t *ret;
 
-    ret = u_copy( _uGetModifiers(fontname,familyname));
+    ret = u_copy( _uGetModifiers(fontname,familyname,weight));
     free( fontname );
 return( ret );
 }
@@ -2140,7 +2146,8 @@ return;
     for ( i=0; dups[i].ttf!=-1; ++i ) {
 	txt=txt1=_GGadgetGetTitle(GWidgetGetControl(gw,dups[i].cid));
 	if ( dups[i].cid==CID_Fontname )
-	    txt1 = _uGetModifiers(txt,_GGadgetGetTitle(GWidgetGetControl(gw,CID_Family)));
+	    txt1 = _uGetModifiers(txt,_GGadgetGetTitle(GWidgetGetControl(gw,CID_Family)),
+		    _GGadgetGetTitle(GWidgetGetControl(gw,CID_Weight)));
 	if ( english->names[dups[i].ttf]!=NULL &&
 		uc_strcmp(txt,*(char **) (((char *) sf) + dups[i].off))!=0 &&
 		u_strcmp(txt1,english->names[dups[i].ttf])!=0 ) {
@@ -2302,7 +2309,9 @@ static void DefaultLanguage(struct gfi_data *d) {
     d->def.names[ttf_family] = GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Family));
     d->def.names[ttf_fullname] = GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Human));
     d->def.names[ttf_subfamily] = uGetModifiers(
-	    GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Fontname)),d->def.names[ttf_family]);
+	    GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Fontname)),
+	    d->def.names[ttf_family],
+	    GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Weight)));
     d->def.names[ttf_version] = GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Version));
     DefaultTTFEnglishNames(&d->def, d->sf);
     TNFinishFormer(d);
