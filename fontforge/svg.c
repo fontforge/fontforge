@@ -2394,6 +2394,12 @@ return( NULL );
 	sf->fontname = copy(sf->familyname);
     sf->fullname = copy(sf->fontname);
 
+    /* Give ourselves an xuid, just in case they want to convert to PostScript*/
+    if ( xuid!=NULL ) {
+	sf->xuid = galloc(strlen(xuid)+20);
+	sprintf(sf->xuid,"[%s %d]", xuid, (rand()&0xffffff));
+    }
+
 #if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressChangeTotal(cnt);
 #elif defined(FONTFORGE_CONFIG_GTK)

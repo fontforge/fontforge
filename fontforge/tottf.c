@@ -3258,7 +3258,10 @@ static void redoloca(struct alltabs *at) {
 	if ( ftell(at->loca)&2 )
 	    putshort(at->loca,0);
     }
-    free(at->gi.loca);
+    if ( at->format!=ff_type42 && at->format!=ff_type42cid ) {
+	free(at->gi.loca);
+	at->gi.loca = NULL;
+    }
 }
 
 static void dummyloca(struct alltabs *at) {
@@ -4740,10 +4743,19 @@ return;
 	for ( i=0; i<sf->subfonts[k]->charcnt; ++i ) if ( sf->subfonts[k]->chars[i]!=NULL )
 	    sf->chars[i] = sf->subfonts[k]->chars[i];
 }
- 
+
 static int tcomp(const void *_t1, const void *_t2) {
     struct taboff *t1 = *((struct taboff **) _t1), *t2 = *((struct taboff **) _t2);
 return( t1->orderingval - t2->orderingval );
+}
+
+static int tcomp2(const void *_t1, const void *_t2) {
+    struct taboff *t1 = *((struct taboff **) _t1), *t2 = *((struct taboff **) _t2);
+    if ( t1->offset>t2->offset )
+return( 1 );
+    else if ( t1->offset < t2->offset )
+return( -1 );
+return( 0 );
 }
 
 static int initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
@@ -4817,10 +4829,12 @@ static int initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
 	/* if format==ff_none the following will put out lots of space glyphs */
 	aborted = !dumpglyphs(sf,&at->gi);
     }
-    if ( bsizes!=NULL && !aborted )
-	ttfdumpbitmap(sf,at,bsizes);
-    if ( bsizes!=NULL && format==ff_none && !at->applemode )
-	ttfdumpbitmapscaling(sf,at,bsizes);
+    if ( format!=ff_type42 && format!=ff_type42cid ) {
+	if ( bsizes!=NULL && !aborted )
+	    ttfdumpbitmap(sf,at,bsizes);
+	if ( bsizes!=NULL && format==ff_none && !at->applemode )
+	    ttfdumpbitmapscaling(sf,at,bsizes);
+    }
     if ( aborted ) {
 	AbortTTF(at,sf);
 return( false );
@@ -4855,43 +4869,47 @@ return( false );
     }
     redomaxp(at,format);
 
-    if (( at->opentypemode || at->applemode ) && sf->subfonts!=NULL )
-	SFDummyUpCIDs(sf);	/* The advanced typography stuff is easier if we ignore the seperate fonts of a cid keyed fonts and treat it as flat */
-    if ( at->opentypemode ) {
-	otf_orderlangs(sf);
-	otf_dumpgpos(at,sf);
-	otf_dumpgsub(at,sf);
-	otf_dumpgdef(at,sf);
+    if ( format!=ff_type42 && format!=ff_type42cid ) {
+	if (( at->opentypemode || at->applemode ) && sf->subfonts!=NULL )
+	    SFDummyUpCIDs(sf);	/* The advanced typography stuff is easier if we ignore the seperate fonts of a cid keyed fonts and treat it as flat */
+	if ( at->opentypemode ) {
+	    otf_orderlangs(sf);
+	    otf_dumpgpos(at,sf);
+	    otf_dumpgsub(at,sf);
+	    otf_dumpgdef(at,sf);
+	}
+	if ( at->dovariations )
+	    ttf_dumpvariations(at,sf);
+	if ( at->applemode ) {
+	    ttf_dumpkerns(at,sf);
+	    aat_dumplcar(at,sf);
+	    aat_dumpmorx(at,sf);		/* Sets the feat table too */
+	    aat_dumpopbd(at,sf);
+	    aat_dumpprop(at,sf);
+	}
+	if (( at->opentypemode || at->applemode ) && sf->subfonts!=NULL ) {
+	    free(sf->chars); sf->chars = NULL;
+	    sf->charcnt = 0;
+	}
+	if ( !at->applemode && !at->opentypemode )
+	    ttf_dumpkerns(at,sf);		/* everybody supports a mimimal kern table */
+    
+	dumpnames(at,sf,format);		/* Must be after dumpmorx which may create extra names */
+	redoos2(at);
     }
-    if ( at->dovariations )
-	ttf_dumpvariations(at,sf);
-    if ( at->applemode ) {
-	ttf_dumpkerns(at,sf);
-	aat_dumplcar(at,sf);
-	aat_dumpmorx(at,sf);		/* Sets the feat table too */
-	aat_dumpopbd(at,sf);
-	aat_dumpprop(at,sf);
-    }
-    if (( at->opentypemode || at->applemode ) && sf->subfonts!=NULL ) {
-	free(sf->chars); sf->chars = NULL;
-	sf->charcnt = 0;
-    }
-    if ( !at->applemode && !at->opentypemode )
-	ttf_dumpkerns(at,sf);		/* everybody supports a mimimal kern table */
-
-    dumpnames(at,sf,format);		/* Must be after dumpmorx which may create extra names */
-    redoos2(at);
     if ( format!=ff_otf && format!=ff_otfcid && format!=ff_none ) {
-	if ( !SFHasInstructions(sf))
+	if ( !SFHasInstructions(sf) && format!=ff_type42 && format!=ff_type42cid )
 	    dumpgasp(at, sf);
 	at->fpgmf = dumpstoredtable(sf,CHR('f','p','g','m'),&at->fpgmlen);
 	at->prepf = dumpstoredtable(sf,CHR('p','r','e','p'),&at->preplen);
 	at->cvtf = dumpstoredtable(sf,CHR('c','v','t',' '),&at->cvtlen);
     }
-    dumppost(at,sf,format);
-    dumpcmap(at,sf,format);
+    if ( format!=ff_type42 && format!=ff_type42cid ) {
+	dumppost(at,sf,format);
+	dumpcmap(at,sf,format);
 
-    pfed_dump(at,sf);
+	pfed_dump(at,sf);
+    }
 
     if ( format==ff_otf || format==ff_otfcid ) {
 	at->tabdir.version = CHR('O','T','T','O');
@@ -4947,9 +4965,11 @@ return( false );
 	at->tabdir.tabs[i++].length = at->gsublen;
     }
 
-    at->tabdir.tabs[i].tag = CHR('O','S','/','2');
-    at->tabdir.tabs[i].data = at->os2f;
-    at->tabdir.tabs[i++].length = at->os2len;
+    if ( at->os2f!=NULL ) {
+	at->tabdir.tabs[i].tag = CHR('O','S','/','2');
+	at->tabdir.tabs[i].data = at->os2f;
+	at->tabdir.tabs[i++].length = at->os2len;
+    }
 
     if ( at->pfed!=NULL ) {
 	at->tabdir.tabs[i].tag = CHR('P','f','E','d');
@@ -5000,9 +5020,11 @@ return( false );
 	}
     }
 
-    at->tabdir.tabs[i].tag = CHR('c','m','a','p');
-    at->tabdir.tabs[i].data = at->cmap;
-    at->tabdir.tabs[i++].length = at->cmaplen;
+    if ( at->cmap!=NULL ) {
+	at->tabdir.tabs[i].tag = CHR('c','m','a','p');
+	at->tabdir.tabs[i].data = at->cmap;
+	at->tabdir.tabs[i++].length = at->cmaplen;
+    }
 
     if ( format!=ff_otf && format!=ff_otfcid && format!=ff_none ) {
 	if ( at->cvtf!=NULL ) {
@@ -5078,9 +5100,11 @@ return( false );
 	at->tabdir.tabs[i++].length = at->morxlen;
     }
 
-    at->tabdir.tabs[i].tag = CHR('n','a','m','e');
-    at->tabdir.tabs[i].data = at->name;
-    at->tabdir.tabs[i++].length = at->namelen;
+    if ( at->name!=NULL ) {
+	at->tabdir.tabs[i].tag = CHR('n','a','m','e');
+	at->tabdir.tabs[i].data = at->name;
+	at->tabdir.tabs[i++].length = at->namelen;
+    }
 
     if ( at->opbd!=NULL ) {
 	at->tabdir.tabs[i].tag = CHR('o','p','b','d');
@@ -5088,9 +5112,11 @@ return( false );
 	at->tabdir.tabs[i++].length = at->opbdlen;
     }
 
-    at->tabdir.tabs[i].tag = CHR('p','o','s','t');
-    at->tabdir.tabs[i].data = at->post;
-    at->tabdir.tabs[i++].length = at->postlen;
+    if ( at->post!=NULL ) {
+	at->tabdir.tabs[i].tag = CHR('p','o','s','t');
+	at->tabdir.tabs[i].data = at->post;
+	at->tabdir.tabs[i++].length = at->postlen;
+    }
 
     if ( format!=ff_otf && format!=ff_otfcid && format!=ff_none ) {
 	if ( at->prepf!=NULL ) {
@@ -5387,4 +5413,124 @@ return( 0 );
 return( ret );
 }
 
-/* Fontograpgher also generates: fpgm, hdmx, prep */
+struct hexout {
+    FILE *type42;
+    int bytesout;
+};
+
+static void dumphex(struct hexout *hexout,FILE *temp,int length) {
+    int i, ch, ch1;
+
+    if ( length&1 )
+	fprintf(stderr, "Table length should not be odd\n" );
+
+    while ( length>65534 ) {
+	dumphex(hexout,temp,65534);
+	length -= 65534;
+    }
+
+    fprintf( hexout->type42, " <\n  " );
+    hexout->bytesout = 0;
+    for ( i=0; i<length; ++i ) {
+	ch = getc(temp);
+	if ( ch==EOF )
+    break;
+	if ( hexout->bytesout>=31 ) {
+	    fprintf( hexout->type42, "\n  " );
+	    hexout->bytesout = 0;
+	}
+	ch1 = ch>>4;
+	if ( ch1>=10 )
+	    ch1 += 'A'-10;
+	else
+	    ch1 += '0';
+	putc(ch1,hexout->type42);
+	ch1 = ch&0xf;
+	if ( ch1>=10 )
+	    ch1 += 'A'-10;
+	else
+	    ch1 += '0';
+	putc(ch1,hexout->type42);
+	++hexout->bytesout;
+    }
+    fprintf( hexout->type42, "\n  00\n >\n" );
+}
+    
+static void dumptype42(FILE *type42,struct alltabs *at, enum fontformat format) {
+    FILE *temp = tmpfile();
+    struct hexout hexout;
+    int i, length;
+
+    dumpttf(temp,at,format);
+    rewind(temp);
+
+    hexout.type42 = type42;
+    hexout.bytesout = 0;
+
+    /* Resort the tables into file order */
+    qsort(at->tabdir.ordered,at->tabdir.numtab,sizeof(struct taboff *),tcomp2);
+
+    dumphex(&hexout,temp,at->tabdir.ordered[0]->offset);
+
+    for ( i=0; i<at->tabdir.numtab; ++i ) {
+	if ( at->tabdir.ordered[i]->length>65534 && at->tabdir.ordered[i]->tag==CHR('g','l','y','f')) {
+	    uint32 last = 0;
+	    int j;
+	    fseek(temp,at->tabdir.ordered[i]->offset,SEEK_SET);
+	    for ( j=0; j<at->maxp.numGlyphs; ++j ) {
+		if ( at->gi.loca[j+1]-last > 65534 ) {
+		    dumphex(&hexout,temp,at->gi.loca[j]-last);
+		    last = at->gi.loca[j];
+		}
+	    }
+	    dumphex(&hexout,temp,at->gi.loca[j]-last);
+	} else {
+	    if ( i<at->tabdir.numtab-1 )
+		length = at->tabdir.ordered[i+1]->offset-at->tabdir.ordered[i]->offset;
+	    else {
+		fseek(temp,0,SEEK_END);
+		length = ftell(temp)-at->tabdir.ordered[i]->offset;
+	    }
+	    fseek(temp,at->tabdir.ordered[i]->offset,SEEK_SET);
+	    dumphex(&hexout,temp,length);
+	}
+    }
+
+    fclose( temp );
+}
+
+int _WriteType42SFNTS(FILE *type42,SplineFont *sf,enum fontformat format,
+	int flags) {
+    struct alltabs at;
+    char *oldloc;
+    int i;
+
+    oldloc = setlocale(LC_NUMERIC,"C");		/* TrueType probably doesn't need this, but OpenType does for floats in dictionaries */
+    if ( sf->subfontcnt!=0 ) sf = sf->subfonts[0];
+
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
+	sf->chars[i]->ttf_glyph = -1;
+
+    memset(&at,'\0',sizeof(struct alltabs));
+    at.gi.flags = flags;
+    at.applemode = false;
+    at.opentypemode = false;
+    at.msbitmaps = false;
+    at.otbbitmaps = false;
+    at.gi.onlybitmaps = false;
+    at.gi.bsizes = NULL;
+    at.gi.fixed_width = CIDOneWidth(sf);
+    at.isotf = false;
+    at.format = format;
+    at.next_strid = 256;
+
+    if ( initTables(&at,sf,format,NULL,bf_none,flags))
+	dumptype42(type42,&at,format);
+    free(at.gi.loca);
+
+    setlocale(LC_NUMERIC,oldloc);
+    if ( at.error || ferror(type42))
+return( 0 );
+
+return( 1 );
+}

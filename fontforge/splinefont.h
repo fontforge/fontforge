@@ -1045,6 +1045,7 @@ extern int SFOneHeight(SplineFont *sf);
 extern int SFIsCJK(SplineFont *sf);
 enum fontformat { ff_pfa, ff_pfb, ff_pfbmacbin, ff_multiple, ff_mma, ff_mmb,
 	ff_ptype3, ff_ptype0, ff_cid, ff_cff, ff_cffcid,
+	ff_type42, ff_type42cid,
 	ff_ttf, ff_ttfsym, ff_ttfmacbin, ff_ttfdfont, ff_otf, ff_otfdfont,
 	ff_otfcid, ff_otfciddfont, ff_svg, ff_none };
 extern struct pschars *SplineFont2Chrs(SplineFont *sf, int iscjk,
@@ -1074,6 +1075,8 @@ extern int _WriteTTFFont(FILE *ttf,SplineFont *sf, enum fontformat format,
 	int32 *bsizes, enum bitmapformat bf,int flags);
 extern int WriteTTFFont(char *fontname,SplineFont *sf, enum fontformat format,
 	int32 *bsizes, enum bitmapformat bf,int flags);
+extern int _WriteType42SFNTS(FILE *type42,SplineFont *sf,enum fontformat format,
+	int flags);
 extern int WriteMacTTFFont(char *fontname,SplineFont *sf, enum fontformat format,
 	int32 *bsizes, enum bitmapformat bf,int flags);
 extern int WriteMacBitmaps(char *filename,SplineFont *sf, int32 *sizes,int is_dfont);

@@ -60,6 +60,7 @@ typedef struct printinfo {
     unsigned int showvm: 1;
     unsigned int twobyte: 1;
     unsigned int iscjk: 1;
+    unsigned int istype42cid: 1;
     unsigned int iscid: 1;
     unsigned int overflow: 1;
     unsigned int done: 1;
@@ -93,8 +94,14 @@ static void DumpIdentCMap(PI *pi) {
     int i, j, k, max;
 
     max = 0;
-    for ( i=0; i<sf->subfontcnt; ++i )
-	if ( sf->subfonts[i]->charcnt>max ) max = sf->subfonts[i]->charcnt;
+    if ( pi->istype42cid )
+	max = sf->charcnt;
+    else {
+	for ( i=0; i<sf->subfontcnt; ++i )
+	    if ( sf->subfonts[i]->charcnt>max ) max = sf->subfonts[i]->charcnt;
+    }
+    if ( max>65535 )
+	max = 65535;
     pi->cidcnt = max;
 
     fprintf( pi->out, "%%%%BeginResource: CMap (Noop)\n" );
@@ -220,7 +227,7 @@ static void dump_prologue(PI *pi) {
 	    fprintf( pi->out, " vmstatus pop /VM1 exch def pop\n" );
 	while ( (ch=getc(pi->fontfile))!=EOF )
 	    putc(ch,pi->out);
-	fprintf( pi->out, "%%%%EndResource\n" );
+	fprintf( pi->out, "\n%%%%EndResource\n" );
 	if ( pi->iscid )
 	    DumpIdentCMap(pi);
 	sprintf(pi->psfontname,"%s__%d", pi->sf->fontname, pi->pointsize );
@@ -290,6 +297,7 @@ return(false);
 #endif
     if ( !_WritePSFont(pi->fontfile,pi->sf,
 		is_mm?ff_mma:
+		pi->istype42cid?ff_type42cid:
 		pi->iscid?ff_cid:
 		pi->sf->multilayer?ff_ptype3:
 		pi->twobyte?ff_ptype0:
@@ -304,6 +312,7 @@ return(false);
 	fclose(pi->fontfile);
 return(false);
     }
+
 #if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressEndIndicator();
 #elif defined(FONTFORGE_CONFIG_GTK)
@@ -359,7 +368,7 @@ static int DumpLine(PI *pi) {
     int i=0, line;
 
     /* First find the next line with stuff on it */
-    if ( !pi->iscid ) {
+    if ( !pi->iscid || pi->istype42cid ) {
 	for ( line = pi->chline ; line<pi->sf->charcnt; line += pi->max ) {
 	    for ( i=0; i<pi->max && line+i<pi->sf->charcnt; ++i )
 		if ( SCWorthOutputting(pi->sf->chars[line+i]) )
@@ -2909,7 +2918,8 @@ static void PIInit(PI *pi,FontView *fv,SplineChar *sc,void *mv) {
 		pi->sf->encoding_name>=em_unicodeplanes;
     pi->iscjk = (pi->sf->encoding_name>=e_first2byte && pi->sf->encoding_name<em_base) &&
 	    pi->sf->encoding_name!=em_unicode && pi->sf->encoding_name!=em_unicode4;
-    pi->iscid = pi->sf->subfontcnt!=0;
+    pi->istype42cid = pi->sf->order2 && pi->sf->encoding_name==em_unicode;
+    pi->iscid = pi->sf->subfontcnt!=0 || pi->istype42cid;
     pi->pointsize = pdefs[di].pointsize;
     if ( pi->pointsize==0 )
 	pi->pointsize = pi->iscid?18:20;		/* 18 fits 20 across, 20 fits 16 */
