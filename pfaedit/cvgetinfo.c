@@ -173,7 +173,7 @@ return( GWidgetAsk(GStringGetResource(_STR_Multiple,NULL),ubuf,buts,ocmn,0,1)==0
 	if ( pt>spt ) pt = spt;
 	ch = *pt; *pt = '\0';
 	if ( strcmp(start,sc->name)==0 ) {
-	    GWidgetPostNoticeR(_STR_Badligature,_STR_Badligature );
+	    GWidgetErrorR(_STR_Badligature,_STR_Badligature );
 	    *pt = ch;
 return( false );
 	}

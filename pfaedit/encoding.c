@@ -167,7 +167,7 @@ return;
 	head = PSSlurpEncodings(file);
     fclose(file);
     if ( head==NULL ) {
-	GWidgetPostNoticeR(_STR_BadEncFormat,_STR_BadEncFormat );
+	GWidgetErrorR(_STR_BadEncFormat,_STR_BadEncFormat );
 return;
     }
 

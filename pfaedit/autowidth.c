@@ -1074,7 +1074,7 @@ return( true );
 	if ( wi->lcnt==0 || wi->rcnt==0 ) {
 	    FreeCharList(wi->left);
 	    FreeCharList(wi->right);
-	    GWidgetPostNoticeR(_STR_NoCharsSelected,_STR_NoCharsSelected);
+	    GWidgetErrorR(_STR_NoCharsSelected,_STR_NoCharsSelected);
 return( true );
 	}
 	wi->done = true;

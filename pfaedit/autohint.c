@@ -1107,7 +1107,7 @@ return( true );
 			(major && !t->hor) || ( !major && !t->vert ))
 return( false );
 	    }
-return( t->up==e->up );
+return( n->up==e->up );
 	} else if ( n->tmin==0 && e->tmax==1 && n->tcur<.2 && e->tcur>.8) {
 	    t = e;
 	    while ( (t = t->splinenext)!=n ) {
@@ -1115,7 +1115,43 @@ return( t->up==e->up );
 			(major && !t->hor) || ( !major && !t->vert ))
 return( false );
 	    }
-return( n->up==t->up );
+return( n->up==e->up );
+	}
+    }
+return( false );
+}
+
+int EISkipExtremum(EI *e, double i, int major) {
+    EI *n = e->aenext, *t;
+
+    if ( n==NULL )
+return( false );
+    if ( 
+	    (ceil(e->coordmin[major])==i || floor(e->coordmin[major])==i || floor(e->coordmax[major])==i || ceil(e->coordmax[major])==i) &&
+	    (ceil(n->coordmin[major])==i || floor(n->coordmin[major])==i || floor(n->coordmax[major])==i || ceil(n->coordmax[major])==i) ) {
+	if (
+	     (n==e->splinenext && n->tmin==e->tmax &&
+		    n->tcur<n->tmin+.2 && e->tcur>e->tmax-.2 ) ||
+	     (n->splinenext==e && n->tmax==e->tmin &&
+		    n->tcur>n->tmax-.2 && e->tcur<e->tmin+.2 ) )
+return( n->up!=e->up );
+	/* can be seperated by a horizontal/vertical line in the other direction */
+	if ( n->tmax==1 && e->tmin==0 && n->tcur>.8 && e->tcur<.2) {
+	    t = n;
+	    while ( (t = t->splinenext)!=e ) {
+		if ( t==NULL || t==n ||
+			(major && !t->hor) || ( !major && !t->vert ))
+return( false );
+	    }
+return( n->up!=e->up );
+	} else if ( n->tmin==0 && e->tmax==1 && n->tcur<.2 && e->tcur>.8) {
+	    t = e;
+	    while ( (t = t->splinenext)!=n ) {
+		if ( t==NULL || t==e ||
+			(major && !t->hor) || ( !major && !t->vert ))
+return( false );
+	    }
+return( n->up!=e->up );
 	}
     }
 return( false );
@@ -1137,6 +1173,10 @@ return( NULL );
 
     for ( ; e!=NULL && cnt!=0; pr=e, e=e->aenext ) {
 	p = e;
+	if ( EISkipExtremum(e,i,major)) {
+	    e = e->aenext;
+    continue;
+	}
 	if ( EISameLine(e,e->aenext,i,major))
 	    e = e->aenext;
 	cnt += (e->up?1:-1);
@@ -1284,6 +1324,10 @@ static StemInfo *ELFindStems(EIList *el, int major, DStemInfo **dstems ) {
     continue;
 	waschange = change;
 	for ( apt=active; apt!=NULL; apt = e->aenext ) {
+	    if ( EISkipExtremum(apt,i+el->low,major)) {
+		e = apt->aenext;
+	continue;
+	    }
 	    if ( !apt->hv && apt->aenext!=NULL && apt->aenext->hv &&
 		    EISameLine(apt,apt->aenext,i+el->low,major))
 		apt = apt->aenext;
@@ -1631,22 +1675,12 @@ static HintInstance *HIMerge(HintInstance *into, HintInstance *hi) {
 return( first );
 }
 
-static int inhints(StemInfo *stems,double base, double xstart, double xend) {
-    double temp;
-    HintInstance *hi;
+static int inhints(StemInfo *stems,double base, double width) {
 
-    if ( xstart>xend ) {
-	temp = xend;
-	xend = xstart;
-	xstart = temp;
-    }
     while ( stems!=NULL ) {
-	if ( stems->start==base || stems->start+stems->width==base ) {
-	    for ( hi=stems->where; hi!=NULL; hi=hi->next ) {
-		if ( xend>=hi->begin && xstart<=hi->end )
+	if ( stems->start==base || stems->start+stems->width==base+width ||
+		stems->start+stems->width==base || stems->start==base+width )
 return( true );
-	    }
-	}
 	stems = stems->next;
     }
 return( false );
@@ -1662,10 +1696,8 @@ static StemInfo *GhostAdd(StemInfo *ghosts, StemInfo *stems, double base,
 	xstart = xend;
 	xend = temp;
     }
-    if ( inhints(stems,base,xstart,xend))
-return(ghosts);		/* already recorded */
     if ( width==20 ) base -= 20;
-    if ( inhints(ghosts,base,xstart,xend))
+    if ( inhints(stems,base,width))
 return(ghosts);		/* already recorded */
     for ( s=ghosts; s!=NULL; s=s->next )
 	if ( s->start==base && s->width==width )
@@ -1700,7 +1732,6 @@ static StemInfo *CheckForGhostHints(StemInfo *stems,SplineChar *sc) {
     /*  If we find any such hints we must remove them, and replace them with */
     /*  ghost hints. The bottom hint has height 21, and the top -20 */
     BlueData bd;
-    SplinePoint *sp;
     SplineFont *sf = sc->parent;
     StemInfo *prev, *s, *n, *snext, *ghosts = NULL;
     SplineSet *spl;
@@ -1749,6 +1780,9 @@ static StemInfo *CheckForGhostHints(StemInfo *stems,SplineChar *sc) {
 	    }
 	    if ( first==NULL ) first = spline;
 	}
+/* It's just too hard to detect what isn't a dished serifs... */
+/* We find so much stuff that is just wrong. */
+#if 0
 	for ( sp=spl->first; ; ) {
 	    if ( sp->next==NULL )
 	break;
@@ -1780,6 +1814,7 @@ static StemInfo *CheckForGhostHints(StemInfo *stems,SplineChar *sc) {
 	    if ( sp==spl->first )
 	break;
 	}
+#endif
     }
 
     /* Finally add any ghosts we've got back into the stem list */
@@ -1827,7 +1862,7 @@ static void SCGuessHintInstances(SplineChar *sc, StemInfo *stem,int major) {
     int sm, wm;
     double ob, oe;
     HintInstance *s=NULL, *w=NULL, *cur, *p, *t, *n, *w2;
-    /* We've got a hint (from somewhere, old data, reading in a font, etc.) */
+    /* We've got a hint (from somewhere, old data, reading in a font, user specified etc.) */
     /*  but we don't have HintInstance info. So see if we can find those data */
     /* Will get confused by stems with holes in them (for example if you make */
     /*  a hint from one side of an H to the other, it will get the whole thing */
@@ -1837,7 +1872,6 @@ static void SCGuessHintInstances(SplineChar *sc, StemInfo *stem,int major) {
 	for ( sp=spl->first; ; sp = np ) {
 	    sm = (major?sp->me.x:sp->me.y)==stem->start;
 	    wm = (major?sp->me.x:sp->me.y)==stem->start+stem->width;
-	    /* Do something about splines tangent to horizontal here??? */
 	    if ( sp->next==NULL )
 	break;
 	    np = sp->next->to;
@@ -1845,11 +1879,23 @@ static void SCGuessHintInstances(SplineChar *sc, StemInfo *stem,int major) {
 		if ( !major ) {
 		    if ( np->me.y==sp->me.y ) {
 			ob = sp->me.x; oe = np->me.x;
+		    } else if ( sp->nextcp.y==sp->me.y ) {
+			ob = sp->me.x; oe = (sp->me.x+sp->nextcp.x)/2;
+			if ( sp->prevcp.y==sp->me.y )
+			    ob = (sp->prevcp.x+sp->me.x)/2;
+		    } else if ( sp->prevcp.y==sp->me.y ) {
+			ob = sp->me.x; oe = (sp->prevcp.x+sp->me.x)/2;
 		    } else
 			sm = wm = false;
 		} else {
 		    if ( np->me.x==sp->me.x ) {
 			ob = sp->me.y; oe = np->me.y;
+		    } else if ( sp->nextcp.x==sp->me.x ) {
+			ob = sp->me.y; oe = (sp->nextcp.y+sp->me.y)/2;
+			if ( sp->prevcp.x==sp->me.x )
+			    ob = (sp->prevcp.y+sp->me.y)/2;
+		    } else if ( sp->prevcp.x==sp->me.x ) {
+			ob = sp->me.y; oe = (sp->prevcp.y+sp->me.y)/2;
 		    } else
 			sm = wm = false;
 		}
@@ -1887,24 +1933,33 @@ static void SCGuessHintInstances(SplineChar *sc, StemInfo *stem,int major) {
     /* Now we know what the right side of the stem looks like, and we know */
     /*  what the left side looks like. They may not look the same (H for example) */
     /*  Figure out the set where both are active */
-    for ( p=NULL, t=s; t!=NULL; t=n ) {
+    /* Unless it's a ghost hint */
+    if ( stem->width==20 && s==NULL && w!=NULL ) {
+	s = w;
+	w = NULL;
+    } else if ( stem->width==21 && s!=NULL && w==NULL) {
+	/* Just use s */;
+    } else for ( p=NULL, t=s; t!=NULL; t=n ) {
 	n = t->next;
 	for ( w2=w; w2!=NULL && w2->begin<t->end ; w2=w2->next ) {
-	    if ( w2->begin==t->begin && w2->end>=t->end ) {
+	    if ( w2->end<=t->begin )
+	continue;
+	    if ( w2->begin<=t->begin && w2->end>=t->end ) {
 		/* Perfect match */
 	break;
-	    } else if ( w2->begin>=t->begin ) {
-		cur = gcalloc(1,sizeof(HintInstance));
-		cur->begin = w2->begin;
-		cur->end = w2->end;
-		cur->next = t;
-		t->begin = w2->end;
-		if ( p==NULL )
-		    s = cur;
-		else
-		    p->next = cur;
-		p = cur;
 	    }
+	    if ( w2->begin>=t->begin )
+		t->begin = w2->begin;
+	    if ( w2->end<=t->end ) {
+		cur = gcalloc(1,sizeof(HintInstance));
+		cur->begin = w2->end;
+		cur->end = t->end;
+		cur->next = n;
+		t->next = cur;
+		n = cur;
+		t->end = w2->end;
+	    }
+	break;
 	}
 	if ( w2==NULL || w2->begin>=t->end ) {
 	    /* No match for t (or if there were it wasn't complete) get rid */

@@ -241,7 +241,7 @@ static int SB_OK(GGadget *g, GEvent *e) {
 	if ( err )
 return( true );
 	if ( *d->bits!=1 && *d->bits!=2 && *d->bits!=4 && *d->bits!=8 ) {
-	    GWidgetPostNoticeR(_STR_InvalidBits,_STR_InvalidBits);
+	    GWidgetErrorR(_STR_InvalidBits,_STR_InvalidBits);
 return( true );
 	}
 	free( last ); free( last_bits );
@@ -501,7 +501,7 @@ static void DoExport(struct gfc_data *d,unichar_t *path) {
     else
 	good = ExportXBM(temp,d->sc,format);
     if ( !good )
-	GWidgetPostNoticeR(_STR_Savefailedtitle,_STR_Savefailedtitle);
+	GWidgetErrorR(_STR_Savefailedtitle,_STR_Savefailedtitle);
     free(temp);
     d->done = good;
     d->ret = good;

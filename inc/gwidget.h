@@ -101,6 +101,8 @@ int GWidgetAskCentered(const unichar_t *title,const unichar_t *question,
 unichar_t *GWidgetAskString(const unichar_t *title,const unichar_t *question,
 	const unichar_t *def);
 void GWidgetPostNotice(const unichar_t *title,const unichar_t *statement);
+void GWidgetError(const unichar_t *title,const unichar_t *statement);
+void GWidgetErrorR(int title,int statement);
 int GWidgetAskR(int title,int question, int *answers, int def, int cancel);
 int GWidgetAskR_(int title,const unichar_t *question, int *answers, int def, int cancel);
 int GWidgetAskCenteredR(int title,int question, int *answers, int def, int cancel);

@@ -225,6 +225,7 @@ static SCI *SCIinit(SplineChar *sc,MetaFontDlg *meta) {
     SCPreserveState(sc);
     SCPreserveBackground(sc);
 
+    SplinePointListSimplify(sc->splines,true);		/* Get rid of two points at the same location, they cause us problems */
     if ( sc->manualhints || sc->changedsincelasthinted )
 	SplineCharAutoHint(sc,true);
 
@@ -357,6 +358,10 @@ static void _SCIFindStems(SCI *sci,EIList *el, int major) {
     continue;
 	waschange = change;
 	for ( apt=active; apt!=NULL; apt = e->aenext ) {
+	    if ( EISkipExtremum(apt,i+el->low,major)) {
+		e = apt->aenext;
+	continue;
+	    }
 	    if ( !apt->hv && apt->aenext!=NULL && apt->aenext->hv &&
 		    EISameLine(apt,apt->aenext,i+el->low,major))
 		apt = apt->aenext;
@@ -389,6 +394,16 @@ static void SCIFindStems(SCI *sci) {
     free(el.ends);
 
     ElFreeEI(&el);
+}
+
+static int SCIReasonableConnections(SCI *sci) {
+    int i;
+
+    for ( i=0; i<sci->ptcnt; ++i )
+	if ( sci->pts[i].next==NULL )
+return( false );
+
+return( true );
 }
 
 /* Generate a line through spline1[t1] perpendicular to it at that point */
@@ -497,9 +512,11 @@ static void SIFigureWidth(SplineInfo *si) {
     int up1, up2;
     int v;
 
+#if 0
  printf( "\nspline1=(%g,%g) -> (%g,%g), spline2=(%g,%g) -> (%g,%g)\n",
      si->spline1->from->me.x, si->spline1->from->me.y, si->spline1->to->me.x, si->spline1->to->me.y,
      si->spline2->from->me.x, si->spline2->from->me.y, si->spline2->to->me.x, si->spline2->to->me.y );
+#endif
 
     si->fromlen = si->tolen = -1;
     if (( foundfrom = (FindPerpDistance(0,si->spline1,si->spline2,&si->fromvec,&si->fromlen)>0) ))
@@ -525,6 +542,7 @@ static void SIFigureWidth(SplineInfo *si) {
 		if ( FindPerpDistance(1,si->spline2,si->spline1,&si->tovec,&si->tolen)>0 )
 		    si->to = si->spline2->to;
 	    }
+#if 0
  printf( "(%g,%g) <-> (%g,%g) mid=(%g,%g) len=%g\n",
 si->spline1->from->me.x, si->spline1->from->me.y,
 si->spline2->from->me.x, si->spline2->from->me.y,
@@ -533,6 +551,7 @@ si->fromvec.x, si->fromvec.y, si->fromlen);
 si->spline1->to->me.x, si->spline1->to->me.y,
 si->spline2->to->me.x, si->spline2->to->me.y,
 si->tovec.x, si->tovec.y, si->tolen);
+#endif
 	} else {
 	    if ( !foundfrom ) {
 		if ( FindPerpDistance(1,si->spline2,si->spline1,&si->fromvec,&si->fromlen) )
@@ -542,6 +561,7 @@ si->tovec.x, si->tovec.y, si->tolen);
 		if ( FindPerpDistance(0,si->spline2,si->spline1,&si->tovec,&si->tolen) )
 		    si->to = si->spline2->from;
 	    }
+#if 0
  printf( "(%g,%g) <-> (%g,%g) mid=(%g,%g) len=%g\n",
 si->spline1->from->me.x, si->spline1->from->me.y,
 si->spline2->to->me.x, si->spline2->to->me.y,
@@ -550,6 +570,7 @@ si->fromvec.x, si->fromvec.y, si->fromlen);
 si->spline1->to->me.x, si->spline1->to->me.y,
 si->spline2->from->me.x, si->spline2->from->me.y,
 si->tovec.x, si->tovec.y, si->tolen);
+#endif
 	}
 	if ( si->from!=NULL && si->from != si->spline1->from ) {
 	    si->fromvec.x = -si->fromvec.x;
@@ -840,7 +861,7 @@ static void MapFromCounterGroup(struct map *map,MetaFontDlg *meta,
 	    newcwidth = meta->counters[isvert].counter.factor*newcwidth +
 		    meta->counters[isvert].counter.add;
 	    if ( newcwidth<meta->counters[isvert].widthmin ) {
-		GWidgetPostNoticeR(_STR_CounterTooSmallT,_STR_CounterTooSmall);
+		GWidgetErrorR(_STR_CounterTooSmallT,_STR_CounterTooSmall);
 		newcwidth = meta->counters[isvert].widthmin;
 	    }
 	    offset += newcwidth-counterwidth;
@@ -1578,6 +1599,11 @@ return;
 
     sci = SCIinit(sc,meta);
     SCIFindStems(sci);
+    if ( !SCIReasonableConnections(sci)) {
+	GDrawIError( "Could not deal with %s, missing stems", sc->name );
+	SCIFree(sci);
+return;
+    }
     SCIFigureWidths(sci);
     SCIBuildMaps(sci,0);		/* Horizontal maps */
     SCIBuildMaps(sci,1);		/* Vertical maps */
@@ -1631,7 +1657,7 @@ static GTextInfo simplefuncs[] = {
 static int MT_OK(GGadget *g, GEvent *e) {
     int type;
     MetaFontDlg *meta;
-    int i;
+    int i, cnt;
     double stems, counters, xh=0;
     int err;
 
@@ -1668,9 +1694,17 @@ return( true );
 	    if ( meta->cv!=NULL )
 		_MetaFont(meta,meta->cv->sc);
 	    else {
-		for ( i=0; i<meta->fv->sf->charcnt; ++i )
+		for ( cnt=i=0; i<meta->fv->sf->charcnt; ++i )
 		    if ( meta->fv->sf->chars[i]!=NULL && meta->fv->selected[i] )
+			++cnt;
+		GProgressStartIndicatorR(10,_STR_MetamorphosingFont,_STR_MetamorphosingFont,0,cnt,1);
+		for ( i=0; i<meta->fv->sf->charcnt; ++i )
+		    if ( meta->fv->sf->chars[i]!=NULL && meta->fv->selected[i] ) {
 			_MetaFont(meta,meta->fv->sf->chars[i]);
+			if ( !GProgressNext())
+		break;
+		    }
+		GProgressEndIndicator();
 	    }
 	}
 	lastdlgtype = type;

@@ -300,7 +300,7 @@ int _FVMenuSave(FontView *fv) {
     else {
 	FVFlattenAllBitmapSelections(fv);
 	if ( !SFDWriteBak(fv->sf) )
-	    GWidgetPostNoticeR(_STR_SaveFailed,_STR_SaveFailed);
+	    GWidgetErrorR(_STR_SaveFailed,_STR_SaveFailed);
 	else {
 	    SplineFontSetUnChanged(fv->sf);
 	    ret = true;
@@ -1006,10 +1006,18 @@ static void FVMenuCorrectDir(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void FVMenuRound2Int(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    int i;
+    int i, cnt=0;
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
+	++cnt;
+    GProgressStartIndicatorR(10,_STR_Rounding,_STR_Rounding,0,cnt,1);
+
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SCRound2Int( fv->sf->chars[i], fv);
+	if ( !GProgressNext())
+    break;
+    }
+    GProgressEndIndicator();
 }
 
 static void FVMenuAutotrace(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -1880,7 +1888,9 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		GDrawDrawRect(pixmap,&box,0xff0000);
 		++box.x; ++box.y; box.width -= 2; box.height -= 2;
 		GDrawDrawRect(pixmap,&box,0xff0000);
-	    } else if ( fv->show!=NULL && fv->show->chars[index]!=NULL ) {
+/* When reencoding a font we can find times where index>=show->charcnt */
+	    } else if ( fv->show!=NULL && index<fv->show->charcnt &&
+		    fv->show->chars[index]!=NULL ) {
 		bdfc = fv->show->chars[index];
 		base.data = bdfc->bitmap;
 		base.bytes_per_line = bdfc->bytes_per_line;

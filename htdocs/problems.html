@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 28-Jun-2001 -->
-  <!-- AP: Last modified: 28-Jun-2001 -->
+  <!-- AP: Last modified: 16-Jul-2001 -->
   <TITLE>Finding common font problems automagically</TITLE>
 </HEAD>
 <BODY>
@@ -99,6 +99,9 @@ has an italic angle) for lines which are almost but not quite parallel to
 the italic angle. If it finds one of these, PfaEdit will select the two end
 points, stop and let you fix things.
 <P>
+For horizontal lines it will tell you the y coordinates of the two end-points,
+for vertical lines it will show you the x coordinates.
+<P>
 <BIG><STRONG>Hints controlling no points</STRONG></BIG>
 <P>
 This is a bit esoteric, and is present to provide a work-around for (what
@@ -133,4 +136,16 @@ Usually one wants many of the characters to have a consstant stem width,
 and this command will check that all stems near the indicated value are that
 value (again near is defined at the bottom of the page). If PfaEdit finds
 a bad stem it will select it, stop and allow you to fix things.
+<P>
+<BIG><STRONG>Path Direction</STRONG></BIG>
+<P>
+Both PostScript and TrueType require that paths be traced in a clockwise
+fashion. This usually doesn't matter, but ghostview will get confused by
+hinted characters which are not clockwise. This command will detect whether
+this constraint is violated. It does not correct the problem (as
+<CODE>Element-&gt;Correct Direction</CODE> would).
+<P>
+Currently the command will report the same error many times if you do not
+fix the problem. That's sort of a bug, but I don't see an easy way around
+it yet.
 </BODY></HTML>

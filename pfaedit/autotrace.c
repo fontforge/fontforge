@@ -217,10 +217,10 @@ void CVAutoTrace(CharView *cv) {
     char *args;
 
     if ( cv->sc->backimages==NULL ) {
-	GWidgetPostNoticeR(_STR_NothingToTrace,_STR_NothingToTrace);
+	GWidgetErrorR(_STR_NothingToTrace,_STR_NothingToTrace);
 return;
     } else if ( FindAutoTraceName()==NULL ) {
-	GWidgetPostNoticeR(_STR_NoAutotrace,_STR_NoAutotraceProg);
+	GWidgetErrorR(_STR_NoAutotrace,_STR_NoAutotraceProg);
 return;
     }
 
@@ -233,7 +233,7 @@ void FVAutoTrace(FontView *fv) {
     int i;
 
     if ( FindAutoTraceName()==NULL ) {
-	GWidgetPostNoticeR(_STR_NoAutotrace,_STR_NoAutotraceProg);
+	GWidgetErrorR(_STR_NoAutotrace,_STR_NoAutotraceProg);
 return;
     }
 

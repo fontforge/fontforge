@@ -319,7 +319,7 @@ int GWidgetAskCenteredR_(int title,const unichar_t *question, int *answers, int 
     int i;
 
     for ( i=0; answers[i]!=0 && answers[i]!=0x80000000; ++i );
-    ans = gcalloc(i+1,sizeof(unichar_t));
+    ans = gcalloc(i+1,sizeof(unichar_t *));
     mn = gcalloc(1,sizeof(unichar_t));
     for ( i=0; answers[i]!=0 && answers[i]!=0x80000000; ++i )
 	ans[i] = GStringGetResource(answers[i],&mn[i]);
@@ -337,7 +337,7 @@ int GWidgetAskCenteredR(int title,int question, int *answers, int def, int cance
     int i;
 
     for ( i=0; answers[i]!=0 && answers[i]!=0x80000000; ++i );
-    ans = gcalloc(i+1,sizeof(unichar_t));
+    ans = gcalloc(i+1,sizeof(unichar_t *));
     mn = gcalloc(1,sizeof(unichar_t));
     for ( i=0; answers[i]!=0 && answers[i]!=0x80000000; ++i )
 	ans[i] = GStringGetResource(answers[i],&mn[i]);
@@ -420,6 +420,33 @@ void GWidgetPostNoticeR(int title,int statement) {
     GDrawRequestTimer(gw,40*1000,0,NULL);
     /* Continue merrily on our way. Window will destroy itself in 40 secs */
     /*  or when user kills it. We can ignore it */
+}
+
+void GWidgetError(const unichar_t *title,const unichar_t *statement) {
+    struct dlg_info d;
+    GWindow gw;
+    const unichar_t *ob[2]; unichar_t omn[1];
+
+    ob[1]=NULL;
+    ob[0] = GStringGetResource( _STR_OK, &omn[0]);
+    gw = DlgCreate(title,statement,ob,omn,0,0,&d,false,true,true);
+    while ( !d.done )
+	GDrawProcessOneEvent(NULL);
+    GDrawDestroyWindow(gw);
+}
+
+void GWidgetErrorR(int title,int statement) {
+    struct dlg_info d;
+    GWindow gw;
+    const unichar_t *oc[2]; unichar_t omn[1];
+
+    oc[1]=NULL;
+    oc[0] = GStringGetResource( _STR_OK, &omn[0]);
+    gw = DlgCreate(GStringGetResource(title,NULL),GStringGetResource(statement,NULL),
+	    oc,omn,0,0,&d,false,true,true);
+    while ( !d.done )
+	GDrawProcessOneEvent(NULL);
+    GDrawDestroyWindow(gw);
 }
 
 /* ************************************************************************** */

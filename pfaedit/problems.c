@@ -43,6 +43,7 @@ struct problems {
     unsigned int hintwithnopt: 1;
     unsigned int ptnearhint: 1;
     unsigned int hintwidthnearval: 1;
+    unsigned int direction: 1;
     unsigned int explain: 1;
     unsigned int done: 1;
     unsigned int doneexplain: 1;
@@ -55,7 +56,7 @@ struct problems {
 };
 
 static int openpaths=1, pointstooclose=1/*, missing=0*/, doxnear=0, doynear=0;
-static int doynearstd=1, linestd=1, hintnopt=0, ptnearhint=0, hintwidth=0, explain=1;
+static int doynearstd=1, linestd=1, hintnopt=0, ptnearhint=0, hintwidth=0, direction=0;
 static double near=3, xval=0, yval=0, widthval=50;
 
 #define CID_Stop		2001
@@ -75,7 +76,7 @@ static double near=3, xval=0, yval=0, widthval=50;
 #define CID_XNearVal		1012
 #define CID_YNearVal		1013
 #define CID_LineStd		1014
-#define CID_Explain		1015
+#define CID_Direction		1015
 
 
 static int explain_e_h(GWindow gw, GEvent *event) {
@@ -99,6 +100,7 @@ static void ExplainIt(struct problems *p, SplineChar *sc, int explain,
     GGadgetCreateData gcd[7];
     GTextInfo label[7];
     unichar_t ubuf[100]; char buf[20];
+    SplinePointList *spl; Spline *spline, *first;
 
     if ( !p->explain || p->finish )
 return;
@@ -175,20 +177,37 @@ return;
     GGadgetSetTitle(p->explainvals,ubuf);
 
     p->doneexplain = false;
-    GDrawSetVisible(p->explainw,true);
 
-    SCUpdateAll(sc);		/* We almost certainly just selected something */
     if ( sc!=p->lastcharopened ) {
 	if ( sc->views!=NULL )
 	    GDrawRaise(sc->views->gw);
 	else
 	    CharViewCreate(sc,p->fv);
+	GDrawProcessPendingEvents(NULL);
+	GDrawProcessPendingEvents(NULL);
 	p->lastcharopened = sc;
     }
+    SCUpdateAll(sc);		/* We almost certainly just selected something */
+
+    GDrawSetVisible(p->explainw,true);
+    GDrawRaise(p->explainw);
 
     while ( !p->doneexplain )
 	GDrawProcessOneEvent(NULL);
     GDrawSetVisible(p->explainw,false);
+
+    if ( p->cv!=NULL ) {
+	CVClearSel(p->cv);
+    } else {
+	for ( spl = p->sc->splines; spl!=NULL; spl = spl->next ) {
+	    spl->first->selected = false;
+	    first = NULL;
+	    for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
+		spline->to->selected = false;
+		if ( first==NULL ) first = spline;
+	    }
+	}
+    }
 }
 
 /* if they deleted a point or a splineset while we were explaining then we */
@@ -443,7 +462,16 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 			spline->from->selected = true;
 			spline->to->selected = true;
 			changed = true;
-			ExplainIt(p,sc,ishor?_STR_ProbLineHor:isvert?_STR_ProbLineVert:_STR_ProbLineItal,0,0);
+			if ( ishor )
+			    ExplainIt(p,sc,_STR_ProbLineHor,
+				    xoff<0?spline->from->me.y:spline->to->me.y,
+				    xoff<0?spline->to->me.y:spline->from->me.y);
+			else if ( isvert )
+			    ExplainIt(p,sc,_STR_ProbLineVert,
+				    yoff<0?spline->from->me.x:spline->to->me.x,
+				    yoff<0?spline->to->me.x:spline->from->me.x);
+			else
+			    ExplainIt(p,sc,_STR_ProbLineItal,0,0);
 			if ( missingspline(p,test,spline))
   goto restart;
 		    }
@@ -589,6 +617,30 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	}
     }
 
+    if ( p->direction && !p->finish ) {
+	SplineSet **base, *ret;
+	if ( cv!=NULL )
+	    base = cv->heads[cv->drawmode];
+	else
+	    base = &sc->splines;
+	while ( !p->finish && (ret=SplineSetsDetectDir(base))!=NULL ) {
+	    sp = ret->first;
+	    changed = true;
+	    while ( 1 ) {
+		sp->selected = true;
+		if ( sp->next==NULL )
+	    break;
+		sp = sp->next->to;
+		if ( sp==ret->first )
+	    break;
+	    }
+	    if ( SplinePointListIsClockwise(ret))
+		ExplainIt(p,sc,_STR_ProbExpectedCounter,0,0);
+	    else
+		ExplainIt(p,sc,_STR_ProbExpectedClockwise,0,0);
+	}
+    }
+
     if ( needsupdate || changed )
 	SCUpdateAll(sc);
 return( changed );
@@ -646,7 +698,8 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	hintnopt = p->hintwithnopt = GGadgetIsChecked(GWidgetGetControl(gw,CID_HintNoPt));
 	ptnearhint = p->ptnearhint = GGadgetIsChecked(GWidgetGetControl(gw,CID_PtNearHint));
 	hintwidth = p->hintwidthnearval = GGadgetIsChecked(GWidgetGetControl(gw,CID_HintWidthNear));
-	explain = p->explain = GGadgetIsChecked(GWidgetGetControl(gw,CID_Explain));
+	direction = p->direction = GGadgetIsChecked(GWidgetGetControl(gw,CID_Direction));
+	p->explain = true;
 	if ( doxnear )
 	    p->xval = xval = GetDoubleR(gw,CID_XNearVal,_STR_XNear,&errs);
 	if ( doynear )
@@ -660,7 +713,8 @@ return( true );
 	    FigureStandardHeights(p);
 	GDrawSetVisible(gw,false);
 	if ( openpaths || pointstooclose /*|| missing*/ || doxnear || doynear ||
-		doynearstd || linestd || hintnopt || ptnearhint || hintwidth ) {
+		doynearstd || linestd || hintnopt || ptnearhint || hintwidth ||
+		direction ) {
 	    DoProbs(p);
 	}
 	p->done = true;
@@ -866,34 +920,35 @@ void FindProblems(FontView *fv,CharView *cv) {
     gcd[11].data = (void *) CID_HintWidthNear;
     gcd[11].creator = GTextFieldCreate;
 
-    label[12].text = (unichar_t *) _STR_PointsNear;
+    label[12].text = (unichar_t *) _STR_CheckDirection;
     label[12].text_in_resource = true;
     gcd[12].gd.label = &label[12];
-    gcd[12].gd.mnemonic = 'N';
-    gcd[12].gd.pos.x = 6; gcd[12].gd.pos.y = gcd[11].gd.pos.y+40; 
+    gcd[12].gd.mnemonic = 'S';
+    gcd[12].gd.pos.x = 6; gcd[12].gd.pos.y = gcd[10].gd.pos.y+20; 
     gcd[12].gd.flags = gg_visible | gg_enabled;
-    gcd[12].creator = GLabelCreate;
+    if ( direction ) gcd[12].gd.flags |= gg_cb_on;
+    gcd[12].gd.popup_msg = GStringGetResource(_STR_CheckDirectionPopup,NULL);
+    gcd[12].gd.cid = CID_Direction;
+    gcd[12].creator = GCheckBoxCreate;
+
+    label[13].text = (unichar_t *) _STR_PointsNear;
+    label[13].text_in_resource = true;
+    gcd[13].gd.label = &label[13];
+    gcd[13].gd.mnemonic = 'N';
+    gcd[13].gd.pos.x = 6; gcd[13].gd.pos.y = gcd[12].gd.pos.y+37; 
+    gcd[13].gd.flags = gg_visible | gg_enabled;
+    gcd[13].creator = GLabelCreate;
 
     sprintf(nearbuf,"%g",near);
-    label[13].text = (unichar_t *) nearbuf;
-    label[13].text_is_1byte = true;
-    gcd[13].gd.label = &label[13];
-    gcd[13].gd.pos.x = 130; gcd[13].gd.pos.y = gcd[12].gd.pos.y-6; gcd[13].gd.pos.width = 40;
-    gcd[13].gd.flags = gg_visible | gg_enabled;
-    gcd[13].gd.cid = CID_Near;
-    gcd[13].creator = GTextFieldCreate;
-
-    label[14].text = (unichar_t *) _STR_ExplainErr;
-    label[14].text_in_resource = true;
+    label[14].text = (unichar_t *) nearbuf;
+    label[14].text_is_1byte = true;
     gcd[14].gd.label = &label[14];
-    gcd[14].gd.mnemonic = 'A';
-    gcd[14].gd.pos.x = 6; gcd[14].gd.pos.y = gcd[12].gd.pos.y+24; 
+    gcd[14].gd.pos.x = 130; gcd[14].gd.pos.y = gcd[13].gd.pos.y-6; gcd[14].gd.pos.width = 40;
     gcd[14].gd.flags = gg_visible | gg_enabled;
-    if ( explain ) gcd[14].gd.flags |= gg_cb_on;
-    gcd[14].gd.cid = CID_Explain;
-    gcd[14].creator = GCheckBoxCreate;
+    gcd[14].gd.cid = CID_Near;
+    gcd[14].creator = GTextFieldCreate;
 
-    gcd[15].gd.pos.x = 15-3; gcd[15].gd.pos.y = gcd[14].gd.pos.y+24;
+    gcd[15].gd.pos.x = 15-3; gcd[15].gd.pos.y = gcd[14].gd.pos.y+30;
     gcd[15].gd.pos.width = -1; gcd[15].gd.pos.height = 0;
     gcd[15].gd.flags = gg_visible | gg_enabled | gg_but_default;
     label[15].text = (unichar_t *) _STR_OK;
@@ -918,7 +973,7 @@ void FindProblems(FontView *fv,CharView *cv) {
     gcd[17].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
     gcd[17].creator = GGroupCreate;
 
-    gcd[18].gd.pos.x = 10; gcd[18].gd.pos.y = gcd[11].gd.pos.y+27;
+    gcd[18].gd.pos.x = 10; gcd[18].gd.pos.y = gcd[12].gd.pos.y+22;
     gcd[18].gd.pos.width = 200-20;
     gcd[18].gd.flags = gg_enabled | gg_visible;
     gcd[18].creator = GLineCreate;

@@ -762,7 +762,7 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv) {
 	    for ( refs = paster->u.state.refs; refs!=NULL; refs=refs->next ) {
 		rsc = FindCharacter(sc->parent,refs);
 		if ( rsc!=NULL && SCDependsOnSC(rsc,sc))
-		    GWidgetPostNoticeR(_STR_SelfRef,_STR_AttemptSelfRef);
+		    GWidgetErrorR(_STR_SelfRef,_STR_AttemptSelfRef);
 		else if ( rsc!=NULL ) {
 		    new = galloc(sizeof(RefChar));
 		    *new = *refs;
@@ -821,7 +821,7 @@ static void _PasteToCV(CharView *cv,Undoes *paster) {
 	    for ( refs = paster->u.state.refs; refs!=NULL; refs=refs->next ) {
 		sc = FindCharacter(cv->sc->parent,refs);
 		if ( sc!=NULL && SCDependsOnSC(sc,cv->sc))
-		    GWidgetPostNoticeR(_STR_SelfRef,_STR_AttemptSelfRef);
+		    GWidgetErrorR(_STR_SelfRef,_STR_AttemptSelfRef);
 		else if ( sc!=NULL ) {
 		    new = galloc(sizeof(RefChar));
 		    *new = *refs;
@@ -1042,7 +1042,6 @@ static BDFFont *BitmapCreateCheck(FontView *fv,int *yestoall, int first, int pix
 	u_strcpy(ubuf,GStringGetResource(_STR_ClipContainsPre,NULL));
 	uc_strcat(ubuf,buf);
 	u_strcat(ubuf,GStringGetResource(_STR_ClipContainsPost,NULL));
-	uc_strcpy(ubuf,buf);
 	yes = GWidgetAskCenteredR_(_STR_BitmapPaste,ubuf,buts,0,2);
 	if ( yes==1 )
 	    *yestoall = true;

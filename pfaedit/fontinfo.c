@@ -1037,6 +1037,7 @@ int SFReencodeFont(SplineFont *sf,enum charset new_map) {
     int tlen = 256;
     Encoding *item=NULL;
     uint8 *used;
+    RefChar *refs;
 
     if ( sf->encoding_name==new_map )
 return(false);
@@ -1052,7 +1053,7 @@ return(false);
 	    tlen = item->char_cnt;
 	    table = item->unicode;
 	} else {
-	    GWidgetPostNoticeR(_STR_InvalidEncoding,_STR_InvalidEncoding);
+	    GWidgetErrorR(_STR_InvalidEncoding,_STR_InvalidEncoding);
 return( false );
 	}
     } else if ( new_map==em_iso8859_1 )
@@ -1160,6 +1161,11 @@ return( false );
     sf->chars = chars;
     sf->charcnt = enc_cnt+extras;
     sf->encoding_name = new_map;
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	for ( refs=sf->chars[i]->refs; refs!=NULL; refs = refs->next )
+	    refs->local_enc = refs->sc->enc;
+    }
+
     for ( bdf=sf->bitmaps; bdf!=NULL; bdf = bdf->next ) {
 	free(bdf->chars);
 	bdf->chars = bdf->temp;
@@ -1360,7 +1366,7 @@ return( GWidgetAskR(_STR_Toofew,_STR_Reducing,buts,0,1) );
 }
 
 static void BadFamily() {
-    GWidgetPostNoticeR(_STR_Badfamily,_STR_Badfamilyn);
+    GWidgetErrorR(_STR_Badfamily,_STR_Badfamilyn);
 }
 
 static char *GetModifiers(char *fontname) {
@@ -1496,7 +1502,7 @@ static int CheckNames(struct gfi_data *d) {
     unichar_t *end;
 
     if ( *ufamily=='\0' ) {
-	GWidgetPostNoticeR(_STR_FamilyNameRequired,_STR_FamilyNameRequired);
+	GWidgetErrorR(_STR_FamilyNameRequired,_STR_FamilyNameRequired);
 return( false );
     }
     /* A postscript name cannot be a number. There are two ways it can be a */
@@ -1505,7 +1511,7 @@ return( false );
     /*  do a cursory test for that */
     u_strtod(ufamily,&end);
     if ( *end=='\0' || (isdigit(ufamily[0]) && u_strchr(ufamily,'#')!=NULL) ) {
-	GWidgetPostNoticeR(_STR_BadFamilyName,_STR_PSNameNotNumber);
+	GWidgetErrorR(_STR_BadFamilyName,_STR_PSNameNotNumber);
 return( false );
     }
     while ( *ufamily ) {
@@ -1513,7 +1519,7 @@ return( false );
 		*ufamily=='(' || *ufamily=='[' || *ufamily=='{' || *ufamily=='<' ||
 		*ufamily==')' || *ufamily==']' || *ufamily=='}' || *ufamily=='>' ||
 		*ufamily=='%' || *ufamily=='/' ) {
-	    GWidgetPostNoticeR(_STR_BadFamilyName,_STR_BadPSName);
+	    GWidgetErrorR(_STR_BadFamilyName,_STR_BadPSName);
 return( false );
 	}
 	++ufamily;
@@ -1522,7 +1528,7 @@ return( false );
     u_strtod(umods,&end);
     if ( (*end=='\0' || (isdigit(umods[0]) && u_strchr(umods,'#')!=NULL)) &&
 	    *umods!='\0' ) {
-	GWidgetPostNoticeR(_STR_BadModifierName,_STR_PSNameNotNumber);
+	GWidgetErrorR(_STR_BadModifierName,_STR_PSNameNotNumber);
 return( false );
     }
     while ( *umods ) {
@@ -1530,7 +1536,7 @@ return( false );
 		*umods=='(' || *umods=='[' || *umods=='{' || *umods=='<' ||
 		*umods==')' || *umods==']' || *umods=='}' || *umods=='>' ||
 		*umods=='%' || *umods=='/' ) {
-	    GWidgetPostNoticeR(_STR_BadModifierName,_STR_BadPSName);
+	    GWidgetErrorR(_STR_BadModifierName,_STR_BadPSName);
 return( false );
 	}
 	++umods;
@@ -1712,7 +1718,7 @@ return(true);
 	if ( err )
 return(true);
 	if ( as+des>16384 || des<0 || as<0 ) {
-	    GWidgetPostNoticeR(_STR_Badascentdescent,_STR_Badascentdescentn);
+	    GWidgetErrorR(_STR_Badascentdescent,_STR_Badascentdescentn);
 return( true );
 	}
 	if ( nchar<sf->charcnt && AskTooFew())

@@ -216,7 +216,7 @@ static void DoSave(struct gfc_data *d,unichar_t *path) {
 		    !WritePSFont(temp,d->sf,oldformatstate)) ||
 		((oldformatstate==ff_ttf || oldformatstate==ff_ttfsym || oldformatstate==ff_otf) &&
 		    !WriteTTFFont(temp,d->sf,oldformatstate)) ) {
-	    GWidgetPostNoticeR(_STR_Savefailedtitle,_STR_Savefailedtitle);
+	    GWidgetErrorR(_STR_Savefailedtitle,_STR_Savefailedtitle);
 	    err = true;
 	}
     }
@@ -226,7 +226,7 @@ static void DoSave(struct gfc_data *d,unichar_t *path) {
 	GProgressChangeLine1(saveafm);
 	GProgressIncrementBy(-d->sf->charcnt);
 	if ( !WriteAfmFile(temp,d->sf,oldformatstate==ff_ptype0)) {
-	    GWidgetPostNoticeR(_STR_Afmfailedtitle,_STR_Afmfailedtitle);
+	    GWidgetErrorR(_STR_Afmfailedtitle,_STR_Afmfailedtitle);
 	    err = true;
 	}
     }
@@ -234,7 +234,7 @@ static void DoSave(struct gfc_data *d,unichar_t *path) {
 	GProgressChangeLine1(savepfm);
 	GProgressIncrementBy(-d->sf->charcnt);
 	if ( !WritePfmFile(temp,d->sf,oldformatstate==ff_ptype0)) {
-	    GWidgetPostNoticeR(_STR_Pfmfailedtitle,_STR_Pfmfailedtitle);
+	    GWidgetErrorR(_STR_Pfmfailedtitle,_STR_Pfmfailedtitle);
 	    err = true;
 	}
     }

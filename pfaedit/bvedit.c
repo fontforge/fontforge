@@ -43,7 +43,7 @@ return( 0 );
     xv = u_strtol(ret,&end,10);
     yv = u_strtol(end+1,&end2,10);
     if ( xv==0 || xv>10 || xv<-10 || yv<=0 || yv>10 || *end!=':' || *end2!='\0' ) {
-	GWidgetPostNoticeR( _STR_BadNumber,_STR_BadNumber );
+	GWidgetErrorR( _STR_BadNumber,_STR_BadNumber );
 	free(ret);
 return( 0 );
     }

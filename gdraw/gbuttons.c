@@ -473,7 +473,7 @@ static void GButtonInit() {
     _GGadgetCopyDefaultBox(&label_box);
     _GGadgetCopyDefaultBox(&button_box);
     button_box.flags = box_foreground_border_inner|box_foreground_border_outer|
-	box_active_border_inner|box_do_depressed_background|box_draw_default;
+	/*box_active_border_inner|*/box_do_depressed_background|box_draw_default;
     label_box.border_type = bt_none;
     label_box.border_width = label_box.padding = label_box.flags = 0;
     label_font = _GGadgetInitDefaultBox("GButton.",&button_box,NULL);

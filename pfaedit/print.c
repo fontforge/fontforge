@@ -184,19 +184,18 @@ static void dump_prologue(PI *pi) {
 }
 
 static int PIDownloadFont(PI *pi) {
-    static unichar_t print[] = { 'P','r','i','n','t','i','n','g',' ','f','o','n','t',  '\0' };
-    static unichar_t saveps[] = { 'G','e','n','e','r','a','t','i','n','g',' ','P','o','s','t','s','c','r','i','p','t',' ','F','o','n','t', '\0' };
 
     pi->fontfile = tmpfile();
     if ( pi->fontfile==NULL ) {
-	GDrawError("Failed to open temporary output file" );
+	GWidgetErrorR(_STR_FailedOpenTemp,_STR_FailedOpenTemp);
 return(false);
     }
-    GProgressStartIndicator(10,print,print, saveps,pi->sf->charcnt,1);
+    GProgressStartIndicatorR(10,_STR_PrintingFont,_STR_PrintingFont,
+	    _STR_GeneratingPostscriptFont,pi->sf->charcnt,1);
     GProgressEnableStop(false);
     if ( !_WritePSFont(pi->fontfile,pi->sf,pi->twobyte?ff_ptype0:ff_pfa)) {
 	GProgressEndIndicator();
-	GDrawError("Failed to generate postscript font" );
+	GWidgetErrorR(_STR_FailedGenPost,_STR_FailedGenPost );
 	fclose(pi->fontfile);
 return(false);
     }
@@ -301,17 +300,17 @@ return(0);
 	if ( i+pi->chline<pi->sf->charcnt && SCWorthOutputting(pi->sf->chars[i+pi->chline])) {
 	    if ( pi->overflow ) {
 		fprintf( pi->out, "<%02x> %d %d n_show\n", pi->chline +i-(pi->lastbase<<8),
-			56+26*i, pi->ypos );
+			58+26*i, pi->ypos );
 	    } else if ( pi->iscjk ) {
 		fprintf( pi->out, "<%02x%02X> %d %d n_show\n",
 			(pi->chline+i)/96 + '!', (pi->chline+i)%96 + ' ',
-			56+(pi->extrahspace+pi->pointsize)*i, pi->ypos );
+			58+(pi->extrahspace+pi->pointsize)*i, pi->ypos );
 	    } else if ( pi->twobyte ) {
 		fprintf( pi->out, "<%04x> %d %d n_show\n", pi->chline +i,
-			56+(pi->extrahspace+pi->pointsize)*i, pi->ypos );
+			58+(pi->extrahspace+pi->pointsize)*i, pi->ypos );
 	    } else {
 		fprintf( pi->out, "<%02x> %d %d n_show\n", pi->chline +i,
-			56+26*i, pi->ypos );
+			58+26*i, pi->ypos );
 	    }
 	}
     }
@@ -667,6 +666,20 @@ static void PIFontSample(PI *pi,unichar_t *sample) {
     int bilen;
     int xstart;
 
+#if 0
+    unichar_t *upt;
+
+    for ( upt=sample; *upt; ++upt ) {
+	if ( *upt=='\n' )
+	    fprintf( pi->out,"  '\\0'}\n");
+	else if ( *upt<256 && *upt!='\\' && *upt!='\'' )
+	    fprintf( pi->out,"'%c',", *upt );
+	else
+	    fprintf( pi->out, "0x%04x,", *upt );
+    }
+return;
+#endif
+
     memset(&bi,'\0',sizeof(bi)); bilen = 0;
 
     pi->extravspace = pi->pointsize/6;
@@ -704,21 +717,6 @@ return;
 	
     dump_trailer(pi);
 }
-
-#if 0
-static void PIFontSample(PI *pi,unichar_t *sample) {
-    unichar_t *upt;
-
-    for ( upt=sample; *upt; ++upt ) {
-	if ( *upt=='\n' )
-	    fprintf( pi->out,"  '\\0'}\n");
-	else if ( *upt<256 && *upt!='\\' && *upt!='\'' )
-	    fprintf( pi->out,"'%c',", *upt );
-	else
-	    fprintf( pi->out, "0x%04x,", *upt );
-    }
-}
-#endif
 
 /* ************************************************************************** */
 /* *********************** Code for Page Setup dialog *********************** */
@@ -898,10 +896,10 @@ static int PageSetup(PI *pi) {
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[14];
     GTextInfo label[14];
-    static unichar_t title[] = { 'P','a','g','e',' ','S','e','t','u','p',  '\0' };
     int cnt;
     char buf[10], pb[30];
     int pt;
+    /* Don't translate these. we compare against the text */
     static GTextInfo pagesizes[] = {
 	{ (unichar_t *) "US Letter", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
 	{ (unichar_t *) "US Legal", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
@@ -917,7 +915,7 @@ static int PageSetup(PI *pi) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.window_title = title;
+    wattrs.window_title = GStringGetResource(_STR_PageSetup,NULL);
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,250);
     pos.height = GDrawPointsToPixels(NULL,150);
@@ -926,6 +924,7 @@ static int PageSetup(PI *pi) {
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
 
+/* program names also don't get translated */
     label[0].text = (unichar_t *) "lp";
     label[0].text_is_1byte = true;
     gcd[0].gd.label = &label[0];
@@ -956,8 +955,8 @@ static int PageSetup(PI *pi) {
     gcd[2].gd.handle_controlevent = PG_RadioSet;
     gcd[2].creator = GRadioCreate;
 
-    label[3].text = (unichar_t *) "To File";
-    label[3].text_is_1byte = true;
+    label[3].text = (unichar_t *) _STR_ToFile;
+    label[3].text_in_resource = true;
     gcd[3].gd.label = &label[3];
     gcd[3].gd.mnemonic = 'F';
     gcd[3].gd.pos.x = gcd[1].gd.pos.x+50; gcd[3].gd.pos.y = gcd[1].gd.pos.y; 
@@ -970,8 +969,8 @@ static int PageSetup(PI *pi) {
     gcd[pt].gd.flags |= gg_cb_on;
 
 
-    label[4].text = (unichar_t *) "PageSize:";
-    label[4].text_is_1byte = true;
+    label[4].text = (unichar_t *) _STR_PageSize;
+    label[4].text_in_resource = true;
     gcd[4].gd.label = &label[4];
     gcd[4].gd.mnemonic = 'S';
     gcd[4].gd.pos.x = 5; gcd[4].gd.pos.y = 22+gcd[3].gd.pos.y+6; 
@@ -1004,8 +1003,8 @@ static int PageSetup(PI *pi) {
     gcd[5].creator = GListFieldCreate;
 
 
-    label[6].text = (unichar_t *) "Copies:";
-    label[6].text_is_1byte = true;
+    label[6].text = (unichar_t *) _STR_Copies;
+    label[6].text_in_resource = true;
     gcd[6].gd.label = &label[6];
     gcd[6].gd.mnemonic = 'C';
     gcd[6].gd.pos.x = 160; gcd[6].gd.pos.y = gcd[4].gd.pos.y; 
@@ -1025,8 +1024,8 @@ static int PageSetup(PI *pi) {
     gcd[7].creator = GTextFieldCreate;
 
 
-    label[8].text = (unichar_t *) "Printer:";
-    label[8].text_is_1byte = true;
+    label[8].text = (unichar_t *) _STR_Printer;
+    label[8].text_in_resource = true;
     gcd[8].gd.label = &label[8];
     gcd[8].gd.mnemonic = 'P';
     gcd[8].gd.pos.x = 5; gcd[8].gd.pos.y = 30+gcd[5].gd.pos.y+6; 
@@ -1184,7 +1183,6 @@ static int PRT_OK(GGadget *g, GEvent *e) {
 	int di = pi->fv!=NULL?0:pi->mv!=NULL?2:1;
 	unichar_t *ret;
 	char *file;
-	static unichar_t title[] = { 'P','r','i','n','t',' ','t','o',' ','F','i','l','e','.','.','.',  '\0' };
 	static unichar_t filter[] = { '*','.','p','s',  '\0' };
 	char buf[100];
 	unichar_t ubuf[100];
@@ -1193,7 +1191,7 @@ static int PRT_OK(GGadget *g, GEvent *e) {
 		GGadgetIsChecked(GWidgetGetControl(pi->gw,CID_Sample))? pt_fontsample:
 		pt_fontdisplay;
 	if ( pi->pt!=pt_chars ) {
-	    pi->pointsize = GetInt(pi->gw,CID_PointSize,"Pointsize",&err);
+	    pi->pointsize = GetIntR(pi->gw,CID_PointSize,_STR_Pointsize,&err);
 	    if ( err )
 return(true);
 	}
@@ -1204,7 +1202,7 @@ return(true);
 	if ( pi->printtype==pt_file ) {
 	    sprintf(buf,"pr-%.90s.ps", pi->sf->fontname );
 	    uc_strcpy(ubuf,buf);
-	    ret = GWidgetSaveAsFile(title,ubuf,filter,NULL);
+	    ret = GWidgetSaveAsFile(GStringGetResource(_STR_PrintToFile,NULL),ubuf,filter,NULL);
 	    if ( ret==NULL )
 return(true);
 	    file = cu_copy(ret);
@@ -1219,7 +1217,7 @@ return(true);
 	    file = NULL;
 	    pi->out = tmpfile();
 	    if ( pi->out==NULL ) {
-		GDrawError("Failed to open temporary output file" );
+		GWidgetErrorR(_STR_FailedOpenTemp,_STR_FailedOpenTemp);
 return(true);
 	    }
 	}
@@ -1285,10 +1283,12 @@ static int e_h(GWindow gw, GEvent *event) {
 return( event->type!=et_char );
 }
 
+/* English */
 static unichar_t _simple[] = { ' ','T','h','e',' ','q','u','i','c','k',' ','b',
 	'r','o','w','n',' ','f','o','x',' ','j','u','m','p','s',' ','o','v','e',
 	'r',' ','t','h','e',' ','l','a','z','y',' ','d','o','g','.',  '\0' };
 static unichar_t *simple[] = { _simple, NULL };
+/* Russian */
 static unichar_t _annakarenena1[] = { ' ',0x412,0x441,0x463,' ',0x441,0x447,0x430,0x441,
 	0x442,0x43b,0x438,0x432,0x44b,0x44f,' ',0x441,0x435,0x43c,0x44c,0x438,
 	' ',0x43d,0x43e,0x445,0x43e,0x436,0x438,' ',0x434,0x440,0x443,0x433,
@@ -1315,6 +1315,7 @@ static unichar_t _annakarenena2[] = { ' ',0x0412,0x0441,0x0435,' ',0x0441,0x043c
 	0x043c,0x044a,' ',0x0432,0x044a,' ',0x043e,0x0434,0x043d,0x043e,0x043c,
 	0x044a,' ',0x0434,0x043e,0x043c,0x0463,'.',  '\0' };
 static unichar_t *annakarenena[] = { _annakarenena1, _annakarenena2, NULL };
+/* Spanish */
 static unichar_t _donquixote[] = { ' ','E','n',' ','u','n',' ','l','u','g','a','r',
 	' ','d','e',' ','l','a',' ','M','a','n','c','h','a',',',' ','d','e',
 	' ','c','u','y','o',' ','n','o','m','b','r','e',' ','n','o',' ','q',
@@ -1327,6 +1328,7 @@ static unichar_t _donquixote[] = { ' ','E','n',' ','u','n',' ','l','u','g','a','
 	' ','r','o','c','í','n',' ','f','l','a','c','o',' ','y',' ','g','a',
 	'l','g','o',' ','c','o','r','r','e','d','o','r','.',  '\0' };
 static unichar_t *donquixote[] = { _donquixote, NULL };
+/* German */
 static unichar_t _faust1[] = { 'I','h','r',' ','n','a','h','t',' ','e','u','c',
 	'h',' ','w','i','e','d','e','r',',',' ','s','c','h','w','a','n','k',
 	'e','n','d','e',' ','G','e','s','t','a','l','t','e','n',',',  '\0'};
@@ -1354,6 +1356,7 @@ static unichar_t _faust8[] = { 'V','o','m',' ','Z','a','u','b','e','r','h','a',
 	'g',' ','u','m','w','i','t','t','e','r','t','.',  '\0' };
 static unichar_t *faust[] = { _faust1, _faust2, _faust3, _faust4, _faust5,
 	_faust6, _faust7, _faust8, NULL };
+/* Anglo Saxon */
 static unichar_t _beorwulf1[] = { 'H','w','æ','t',',',' ','w','e',' ','G','a',
 	'r','-','D','e','n','a',' ',' ','i','n',' ','g','e','a','r','d','a',
 	'g','u','m',  '\0' };
@@ -1388,6 +1391,7 @@ static unichar_t _beorwulf10[] = { 'g','o','m','b','a','n',' ','g','y','l','d',
 static unichar_t *beorwulf[] = { _beorwulf1, _beorwulf1_5, _beorwulf2, _beorwulf3,
 	_beorwulf4,  _beorwulf5, _beorwulf6, _beorwulf7, _beorwulf8,
 	_beorwulf9, _beorwulf10, NULL };
+/* Italian */
 static unichar_t _inferno1[] = { ' ','N','e','l',' ','m','e','z','z','o',' ',
 	'd','e','l',' ','c','a','m','m','i','n',' ','d','i',' ',
 	'n','o','s','t','r','a',' ','v','i','t','a',  '\0' };
@@ -1408,6 +1412,7 @@ static unichar_t _inferno6[] = { 'c','h','e',' ','n','e','l',' ','p','e','n',
 	'v','a','!',  '\0' };
 static unichar_t *inferno[] = { _inferno1, _inferno2, _inferno3, _inferno4,
 	_inferno5, _inferno6, NULL };
+/* Latin */
 static unichar_t _debello1[] = { ' ','G','a','l','l','i','a',' ','e','s','t',
 	' ','o','m','n','i','s',' ','d',0x012b,'v',0x012b,'s','a',' ','i','n',
 	' ','p','a','r','t',0x0113,'s',' ','t','r',0x0113,'s',',',' ','q','u',
@@ -1427,6 +1432,7 @@ static unichar_t _debello1[] = { ' ','G','a','l','l','i','a',' ','e','s','t',
 	's',' ','M','a','t','r','o','n','a',' ','e','t',' ','S',0x0113,'q',
 	'u','a','n','a',' ','d',0x012b,'v','i','d','i','t','.',  '\0' };
 static unichar_t *debello[] = { _debello1, NULL };
+/* French */
 static unichar_t _pheadra1[] = { 'L','e',' ','d','e','s','s','e','i','n',' ',
 	'e','n',' ','e','s','t',' ','p','r','i','s',':',' ','j','e',' ','p',
 	'a','r','s',',',' ','c','h','e','r',' ','T','h','é','r','a','m','è','n'
@@ -1452,6 +1458,7 @@ static unichar_t _pheadra7[] = { 'J',0x0027,'i','g','n','o','r','e',' ','j',
 	'h','e','r','.',  '\0' };
 static unichar_t *pheadra[] = { _pheadra1,  _pheadra2, _pheadra3, _pheadra4,
 	_pheadra5, _pheadra6, _pheadra7, NULL };
+/* Classical Greek */
 static unichar_t _antigone1[] = { 0x1f6e,' ',0x03ba,0x03bf,0x03b9,0x03bd,0x1f78,
     0x03bd,' ',0x03b1,0x1f50,0x03c4,0x1f71,0x03b4,0x03b5,0x03bb,0x03c6,0x03bf,
     0x03bd,' ',0x1f38,0x03c3,0x03bc,0x1f75,0x03bd,0x03b7,0x03c2,' ',0x03ba,
@@ -1467,6 +1474,7 @@ static unichar_t _antigone3[] = { 0x1f41,0x03c0,0x03bf,0x1fd6,0x03bf,0x03bd,' ',
 static unichar_t *antigone[] = { _antigone1, _antigone2, _antigone3, NULL };
 static unichar_t _hebrew[] = { 0x5d0, 0x5d1, 0x5d2, 0x5d3, 0x5d4, 0x5d5, 0 };
 static unichar_t *hebrew[] = { _hebrew, NULL };
+/* Renaisance English with period ligatures */
 static unichar_t _muchado[] = {' ','B','u','t',' ','t','i','l','l',' ','a','l',
 	'l',' ','g','r','a','c','e','s',' ','b','e',' ','i','n',' ','o','n','e'
 	,' ','w','o','m','a','n',',',' ','o','n','e',' ','w','o','m','ã',' ',
@@ -1479,14 +1487,153 @@ static unichar_t _muchado[] = {' ','B','u','t',' ','t','i','l','l',' ','a','l',
 	'r',' ','c','h','e','a','p','e','n',' ','h','e','r','.',  '\0' };
 /* contains long-s, u used as v, tilde over vowel used as nasal, and misspellings */
 static unichar_t *muchado[] = { _muchado, NULL };
+/* Middle Welsh */
+static unichar_t _mabinogion[] = {' ','G','a','n',' ','f','o','d',' ','A','r',
+    'g','r','a','f','f','i','a','d',' ','R','h','y','d','y','c','h','e','n',
+    ' ','o',0x0027,'r',' ','M','a','b','i','n','o','g','i','o','n',' ','y',
+    'n',' ','r','h','o','i',0x0027,'r',' ','t','e','s','t','u','n',' ','y',
+    'n',' ','u','n','i','o','n',' ','f','e','l',' ','y',' ','d','i','g','w',
+    'y','d','d',' ','y','n',' ','y',' ','l','l','a','w','y','s','g','r','i',
+    'f','a','u',',',' ','a','c',' ','f','e','l','l','y',' ','y','n',' ','c',
+    'y','f','a','r','f','o','d',' ','â',' ','g','o','f','y','n',' ','y','r',
+    ' ','y','s','g','o','l','h','a','i','g',',',' ','b','e','r','n','a','i',
+    's',' ','m','a','i',' ','g','w','e','l','l',' ','m','e','w','n',' ','l',
+    'l','a','w','l','y','f','r',' ','f','e','l',' ','h','w','n',' ','o','e',
+    'd','d',' ','g','o','l','y','g','u',' ','p','e','t','h',' ','a','r','n',
+    'o',' ','e','r',' ','m','w','y','n',' ','h','e','l','p','u',0x0027,'r',
+    ' ','i','e','u','a','i','n','c',' ','a',0x0027,'r',' ','d','i','b','r',
+    'o','f','i','a','d',' ','y','n',' ','y','r',' ','h','e','n',' ','o','r',
+    'g','r','a','f','f','.',  '\0'};
+static unichar_t *mabinogion[] = { _mabinogion, NULL };
+/* Czech */
+static unichar_t _goodsoldier1[] = {' ',0x201e,'T','a','k',' ','n','á','m',
+    ' ','z','a','b','i','l','i',' ','F','e','r','d','i','n','a','n','d','a',
+    ',',0x201c,' ',0x0159,'e','k','l','a',' ','p','o','s','l','u','h','o','v',
+    'a',0x010d,'k','a',' ','p','a','n','u',' ',0x0160,'v','e','j','k','o','v',
+    'i',',',' ','k','t','e','r','ý',' ','o','p','u','s','t','i','v',' ','p',
+    0x0159,'e','d',' ','l','é','t','y',' ','v','o','j','e','n','s','k','o',
+    'u',' ','s','l','u',0x017e,'b','u',',',' ','k','d','y',0x017e,' ','b','y',
+    'l',' ','d','e','f','i','n','i','t','i','v','n',0x011b,' ','p','r','o',
+    'h','l','á',0x0161,'e','n',' ','v','o','j','e','n','s','k','o','u',' ',
+    'l','é','k','a',0x0159,'s','k','o','u',' ','k','o','m','i','s','í',' ',
+    'z','a',' ','b','l','b','a',',',' ',0x017e,'i','v','i','l',' ','s','e',
+    ' ','p','r','o','d','e','j','e','m',' ','p','s',0x016f,',',' ','o',0x0161,
+    'k','l','i','v','ý','c','h',' ','n','e',0x010d,'i','s','t','o','k','r',
+    'e','v','n','ý','c','h',' ','o','b','l','u','d',',',' ','k','t','e','r',
+    'ý','m',' ','p','a','d',0x011b,'l','a','l',' ','r','o','d','o','k','m',
+    'e','n','y','.',  '\0'};
+static unichar_t _goodsoldier2[] = {' ','K','r','o','m',0x011b,' ','t','o','h',
+    'o','t','o',' ','z','a','m',0x011b,'s','t','n','á','n','í',' ','b','y','l',
+    ' ','s','t','i',0x017e,'e','n',' ','r','e','v','m','a','t','i','s','m','e',
+    'm',' ','a',' ','m','a','z','a','l',' ','s','i',' ','p','r','á','v',0x011b,
+    ' ','k','o','l','e','n','a',' ','o','p','o','d','e','l','d','o','k','e',
+    'm','.',  '\0'};
+static unichar_t *goodsoldier[] = { _goodsoldier1, _goodsoldier2, NULL };
+/* Lithuanian */
+static unichar_t _lithuanian[] = {' ','K','i','e','k','v','i','e','n','a',' ',
+    0x0161,'v','e','n','t',0x0117,' ','y','r','a',' ','s','u','r','i',0x0161,
+    't','a',' ','s','u',' ','p','r','a','e','i','t','i','m','i','.',' ','N',
+    'e',0x0161,'v','e','n',0x010d,'i','a','m','a','s',' ','g','i','m','t','a',
+    'd','i','e','n','i','s',',',' ','k','a','i',',',' ','k',0x016b,'d','i',
+    'k','i','s',' ','g','i','m','s','t','a','.',' ','I','r',' ','p','o',' ',
+    'k','e','l','i','o','l','i','k','o','s',' ','m','e','t',0x0173,' ','g',
+    'i','m','t','i','n',0x0117,'s',' ','a','r','b','a',' ','v','a','r','d',
+    'i','n',0x0117,'s',' ','n',0x0117,'r','a',' ','t','i','e','k',' ','r','e',
+    'i','k',0x0161,'m','i','n','g','o','s',',',' ','k','a','i','p',' ','s',
+    'u','l','a','u','k','u','s',' ','5','0',' ','a','r',' ','7','5',' ','m',
+    'e','t',0x0173,'.',' ','J','u','o',' ','t','o','l','i','m','e','s','n',
+    'i','s',' ',0x012f,'v','y','k','i','s',',',' ','t','u','o',' ',0x0161,
+    'v','e','n','t',0x0117,' ','d','a','r','o','s','i',' ','s','v','a','r',
+    'b','e','s','n',0x0117,' ','i','r',' ','i',0x0161,'k','i','l','m','i','n',
+    'g','e','s','n',0x0117,'.',  '\0'};
+static unichar_t *lithuanian[] = { _lithuanian, NULL };
+/* Polish */
+static unichar_t _polish[] = {' ','J',0x0119,'z','y','k',' ','p','r','a','s',
+    0x0142,'o','w','i','a',0x0144,'s','k','i',' ','m','i','a',0x0142,' ','w',
+    ' ','z','a','k','r','e','s','i','e',' ','d','e','k','l','i','n','a','c',
+    'j','i',' ','(','f','l','e','k','s','j','i',' ','i','m','i','e','n','n',
+    'e','j',')',' ','n','a','s','t',0x0119,'p','u','j',0x0105,'c','e',' ','k',
+    'a','t','e','g','o','r','i','e',' ','g','r','a','m','a','t','y','c','z',
+    'n','e',':',' ','l','i','c','z','b','y',',',' ','r','o','d','z','a','j',
+    'u',' ','i',' ','p','r','z','y','p','a','d','k','u','.',' ','P','o','z',
+    'a',' ','t','y','m',' ','i','s','t','n','i','a',0x0142,'y',' ','w',' ',
+    'n','i','m',' ','(','w',' ','z','a','k','r','e','s','i','e',' ','f','l',
+    'e','k','s','j','i',' ','r','z','e','c','z','o','w','n','i','k','a',')',
+    ' ','r','ó',0x017c,'n','e',' ','«','o','d','m','i','a','n','y','»',',',
+    ' ','c','z','y','l','i',' ','t','y','p','y',' ','d','e','k','l','i','n',
+    'a','c','y','j','n','e','.',' ','I','m',' ','d','a','w','n','i','e','j',
+    ' ','w',' ','c','z','a','s','i','e',',',' ','t','y','m',' ','o','w','e',
+    ' ','r','ó',0x017c,'n','i','c','e',' ','d','e','k','l','i','n','a','c',
+    'y','j','n','e',' ','m','i','a',0x0142,'y',' ','m','n','i','e','j','s',
+    'z','y',' ','z','w','i',0x0105,'z','e','k',' ','z',' ','s','e','m','a',
+    'n','t','y','k',0x0105,' ','r','z','e','c','z','o','w','n','i','k','a',
+    '.',  '\0'};
+static unichar_t *polish[] = { _polish, NULL };
+/* Slovene */
+static unichar_t _slovene1[] = {' ','R','a','z','v','o','j',' ','g','l','a',
+    's','o','s','l','o','v','j','a',' ','j','e',' ','d','i','a','m','e','t',
+    'r','a','l','n','o',' ','d','r','u','g','a',0x010d,'e','n',' ','o','d',
+    ' ','r','a','z','v','o','j','a',' ','m','o','r','f','o','l','o','g','i',
+    'j','e','.',  '\0'};
+static unichar_t _slovene2[] = {' ','V',' ','g','o','v','o','r','u',' ','s',
+    'i',' ','b','e','s','e','d','e',' ','s','l','e','d','e','.',' ','V',' ',
+    'v','s','a','k','i',' ','s','i','n','t','a','g','m','i',' ','d','o','b',
+    'i',' ','b','e','s','e','d','a',' ','s','v','o','j','o',' ','v','r','e',
+    'd','n','o','s','t',',',' ',0x010d,'e',' ','j','e',' ','z','v','e','z',
+    'a','n','a',' ','z',' ','b','e','s','e','d','o',',',' ','k','i',' ','j',
+    'e',' ','p','r','e','d',' ','n','j','o',',',' ','i','n',' ','z',' ','b',
+    'e','s','e','d','o',',',' ','k','i',' ','j','i',' ','s','l','e','d','i',
+    '.',  '\0' };
+static unichar_t *slovene[] = { _slovene1, _slovene2, NULL };
+/* Macedonian */
+static unichar_t _macedonian[] = {' ',0x041c,0x0430,0x043a,0x0435,0x0434,
+    0x043e,0x043d,0x0441,0x043a,0x0438,0x043e,0x0442,' ',0x0458,0x0430,0x0437,
+    0x0438,0x043a,' ',0x0432,0x043e,' ',0x0431,0x0430,0x043b,0x043a,0x0430,
+    0x043d,0x0441,0x043a,0x0430,0x0442,0x0430,' ',0x0458,0x0430,0x0437,0x0438,
+    0x0447,0x043d,0x0430,' ',0x0441,0x0440,0x0435,0x0434,0x0438,0x043d,0x0430,
+    ' ',0x0438,' ',0x043d,0x0430,0x0441,0x043f,0x0440,0x0435,0x043c,0x0430,' ',
+    0x0441,0x043e,0x0441,0x0435,0x0434,0x043d,0x0438,0x0442,0x0435,' ',0x0441,
+    0x043b,0x043e,0x0432,0x0435,0x043d,0x0441,0x043a,0x0438,' ',0x0458,0x0430,
+    0x0435,0x0438,0x0446,0x0438,'.',' ','1','.',' ',0x041c,0x0430,0x043a,
+    0x0435,0x0434,0x043e,0x043d,0x0441,0x043a,0x0438,0x043e,0x0442,' ',0x0458,
+    0x0430,0x0437,0x0438,0x043a,' ',0x0441,0x0435,' ',0x0433,0x043e,0x0432,
+    0x043e,0x0440,0x0438,' ',0x0432,0x043e,' ',0x0421,0x0420,' ',0x041c,0x0430,
+    0x043a,0x0435,0x0434,0x043e,0x043d,0x0438,0x0458,0x0430,',',' ',0x0438,' ',
+    0x043d,0x0430,0x0434,0x0432,0x043e,0x0440,' ',0x043e,0x0434,' ',0x043d,
+    0x0435,0x0458,0x0437,0x0438,0x043d,0x0438,0x0442,0x0435,' ',0x0433,0x0440,
+    0x0430,0x043d,0x0438,0x0446,0x0438,',',' ',0x0432,0x043e,' ',0x043e,0x043d,
+    0x0438,0x0435,' ',0x0434,0x0435,0x043b,0x043e,0x0432,0x0438,' ',0x043d,
+    0x0430,' ',0x041c,0x0430,0x043a,0x0435,0x0434,0x043e,0x043d,0x0438,0x0458,
+    0x0430,' ',0x0448,0x0442,0x043e,' ',0x043f,0x043e,' ',0x0431,0x0430,0x043b,
+    0x043a,0x0430,0x043d,0x0441,0x043a,0x0438,0x0442,0x0435,' ',0x0432,0x043e,
+    0x0458,0x043d,0x0438,' ',0x0432,0x043b,0x0435,0x0433,0x043e,0x0430,' ',
+    0x0432,0x043e,' ',0x0441,0x043e,0x0441,0x0442,0x0430,0x0432,0x043e,0x0442,
+    ' ',0x043d,0x0430,' ',0x0413,0x0440,0x0446,0x0438,0x0458,0x0430,' ',0x0438,
+    ' ',0x0411,0x0443,0x0433,0x0430,0x0440,0x0438,0x0458,0x0430,'.',  '\0'};
+static unichar_t *macedonian[] = { _macedonian, NULL };
+/* Bulgarian */
+static unichar_t _bulgarian[] = {' ',0x041f,0x0420,0x0415,0x0414,0x041c,0x0415,
+    0x0422,' ',0x0418,' ',0x0417,0x0410,0x0414,0x0410,0x0427,0x0418,' ',0x041d,
+    0x0410,' ',0x0424,0x041e,0x041d,0x0415,0x0422,0x0418,0x041a,0x0410,0x0422,
+    0x0410,' ',0x0414,0x0443,0x043c,0x0430,0x0442,0x0430,' ',0x0444,0x043e,
+    0x043d,0x0435,0x0442,0x0438,0x043a,0x0430,' ',0x043f,0x0440,0x043e,0x0438,
+    0x0437,0x043b,0x0438,0x0437,0x0430,' ',0x043e,0x0442,' ',0x0433,0x0440,
+    0x044a,0x0446,0x043a,0x0430,0x0442,0x0430,' ',0x0434,0x0443,0x043c,0x0430,
+    ' ',0x0440,0x043d,0x043e,0x043f,0x0435,',',' ',0x043a,0x043e,0x044f,0x0442,
+    0x043e,' ',0x043e,0x0437,0x043d,0x0430,0x0447,0x0430,0x0432,0x0430,' ',
+    0x201e,0x0437,0x0432,0x0443,0x043a,0x201c,',',' ',0x201e,0x0433,0x043b,
+    0x0430,0x0441,0x201c,',',' ',0x201e,0x0442,0x043e,0x043d,0x201c,'.',  '\0'};
+static unichar_t *bulgarian[] = { _bulgarian, NULL };
+
 static unichar_t **sample[] = { simple, faust, pheadra, antigone, annakarenena,
-	debello, hebrew, donquixote, inferno, beorwulf, muchado, NULL };
+	debello, hebrew, donquixote, inferno, beorwulf, muchado, mabinogion,
+	goodsoldier, macedonian, bulgarian, lithuanian, polish, slovene, NULL };
 
 static int AllChars( SplineFont *sf, unichar_t *str) {
     int i, ch;
     /* The accented characters above get sign-extended, which is wrong for */
     /*  unicode. Just truncate them. We won't use any characters in the 0xff00 */
-    /*  area anyway so this is save */
+    /*  area anyway so this is safe */
 
     if ( sf->encoding_name==em_unicode ) {
 	while ( (ch = *str)!='\0' ) {
@@ -1561,7 +1708,6 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[12];
     GTextInfo label[12];
-    static unichar_t title[] = { 'P','r','i','n','t',  '\0' };
     int di = fv!=NULL?0:sc!=NULL?1:2;
     PI pi;
     int cnt;
@@ -1590,7 +1736,7 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.window_title = title;
+    wattrs.window_title = GStringGetResource(_STR_Print,NULL);
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,310);
     pos.height = GDrawPointsToPixels(NULL,310);
@@ -1599,8 +1745,8 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
 
-    label[0].text = (unichar_t *) "Full Font Display";
-    label[0].text_is_1byte = true;
+    label[0].text = (unichar_t *) _STR_FullFont;
+    label[0].text_in_resource = true;
     gcd[0].gd.label = &label[0];
     gcd[0].gd.mnemonic = 'F';
     gcd[0].gd.pos.x = 12; gcd[0].gd.pos.y = 6; 
@@ -1614,8 +1760,8 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
 	cnt = FVSelCount(fv);
     else if ( mv!=NULL )
 	cnt = mv->charcnt;
-    label[1].text = (unichar_t *) (cnt==1?"Full Page Character":"Full Page Characters");
-    label[1].text_is_1byte = true;
+    label[1].text = (unichar_t *) (cnt==1?_STR_FullPageChar:_STR_FullPageChars);
+    label[1].text_in_resource = true;
     gcd[1].gd.label = &label[1];
     gcd[1].gd.mnemonic = 'C';
     gcd[1].gd.pos.x = gcd[0].gd.pos.x; gcd[1].gd.pos.y = 18+gcd[0].gd.pos.y; 
@@ -1624,8 +1770,8 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     gcd[1].gd.handle_controlevent = PRT_RadioSet;
     gcd[1].creator = GRadioCreate;
 
-    label[2].text = (unichar_t *) "Sample Text";
-    label[2].text_is_1byte = true;
+    label[2].text = (unichar_t *) _STR_SampleText;
+    label[2].text_in_resource = true;
     gcd[2].gd.label = &label[2];
     gcd[2].gd.mnemonic = 'S';
     gcd[2].gd.pos.x = gcd[0].gd.pos.x; gcd[2].gd.pos.y = 18+gcd[1].gd.pos.y; 
@@ -1639,8 +1785,8 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     gcd[pdefs[di].pt].gd.flags |= gg_cb_on;
 
 
-    label[3].text = (unichar_t *) "Pointsize:";
-    label[3].text_is_1byte = true;
+    label[3].text = (unichar_t *) _STR_Pointsize;
+    label[3].text_in_resource = true;
     gcd[3].gd.label = &label[3];
     gcd[3].gd.mnemonic = 'P';
     gcd[3].gd.pos.x = 5; gcd[3].gd.pos.y = 22+gcd[2].gd.pos.y+6; 
@@ -1660,8 +1806,8 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     gcd[4].creator = GTextFieldCreate;
 
 
-    label[5].text = (unichar_t *) "Sample Text:";
-    label[5].text_is_1byte = true;
+    label[5].text = (unichar_t *) _STR_SampleTextC;
+    label[5].text_in_resource = true;
     gcd[5].gd.label = &label[5];
     gcd[5].gd.mnemonic = 'T';
     gcd[5].gd.pos.x = 5; gcd[5].gd.pos.y = 30+gcd[4].gd.pos.y;
@@ -1684,8 +1830,8 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     gcd[7].gd.pos.x = 235; gcd[7].gd.pos.y = 12;
     gcd[7].gd.pos.width = -1; gcd[7].gd.pos.height = 0;
     gcd[7].gd.flags = gg_visible | gg_enabled ;
-    label[7].text = (unichar_t *) "Setup";
-    label[7].text_is_1byte = true;
+    label[7].text = (unichar_t *) _STR_Setup;
+    label[7].text_in_resource = true;
     gcd[7].gd.mnemonic = 'e';
     gcd[7].gd.label = &label[7];
     gcd[7].gd.handle_controlevent = PRT_Setup;

@@ -715,7 +715,7 @@ return( good );
 
 /* Cleanup just turns splines with control points which happen to trace out */
 /*  lines into simple lines */
-static void SplinePointListSimplify(SplinePointList *spl,int cleanup) {
+void SplinePointListSimplify(SplinePointList *spl,int cleanup) {
     SplinePoint *first, *next, *sp;
 
     if ( !cleanup && spl->first->prev!=NULL ) {
@@ -736,6 +736,30 @@ return;
 	next = sp->next->to;
 	if ( !cleanup )
 	    SplinesRemoveMidMaybe(sp);
+	else {
+	    while ( sp->me.x==next->me.x && sp->me.y==next->me.y &&
+		    sp->nextcp.x>sp->me.x-1 && sp->nextcp.x<sp->me.x+1 &&
+		    sp->nextcp.y>sp->me.y-1 && sp->nextcp.y<sp->me.y+1 &&
+		    next->prevcp.x>next->me.x-1 && next->prevcp.x<next->me.x+1 &&
+		    next->prevcp.y>next->me.y-1 && next->prevcp.y<next->me.y+1 ) {
+		SplineFree(sp->next);
+		sp->next = next->next;
+		if ( sp->next!=NULL )
+		    sp->next->from = sp;
+		sp->nextcp = next->nextcp;
+		sp->nonextcp = next->nonextcp;
+		sp->nextcpdef = next->nextcpdef;
+		SplinePointFree(next);
+		if ( sp->next!=NULL )
+		    next = sp->next->to;
+		else {
+		    next = NULL;
+	    break;
+		}
+	    }
+	    if ( next==NULL )
+    break;
+	}
     }
 }
 
@@ -1418,6 +1442,88 @@ SplineSet *SplineSetsCorrect(SplineSet *base) {
 	spl->next = base;
     }
 return( open );
+}
+
+/* This is exactly the same as SplineSetsCorrect, but instead of correcting */
+/*  problems we merely search for them and if we find any return the first */
+SplineSet *SplineSetsDetectDir(SplineSet **_base) {
+    SplineSet *spl, *ret, *base;
+    EdgeList es;
+    DBounds b;
+    Edge *active=NULL, *apt, *pr, *e;
+    int i, winding;
+    SplineSet *open;
+
+    open = SplineSetsExtractOpen(_base);
+    base = *_base;
+
+    SplineSetFindBounds(base,&b);
+    memset(&es,'\0',sizeof(es));
+    es.scale = 1.0;
+    es.mmin = floor(b.miny*es.scale);
+    es.mmax = ceil(b.maxy*es.scale);
+    es.omin = b.minx*es.scale;
+    es.omax = b.maxx*es.scale;
+    es.cnt = (int) (es.mmax-es.mmin) + 1;
+    es.edges = calloc(es.cnt,sizeof(Edge *));
+    es.interesting = calloc(es.cnt,sizeof(char));
+    es.sc = NULL;
+    es.major = 1; es.other = 0;
+    FindEdgesSplineSet(base,&es);
+
+    ret = NULL;
+    for ( i=0; i<es.cnt && ret==NULL; ++i ) {
+	active = ActiveEdgesRefigure(&es,active,i);
+	if ( es.edges[i]!=NULL )
+    continue;			/* Just too hard to get the edges sorted when we are at a start vertex */
+	if ( /*es.edges[i]==NULL &&*/ !es.interesting[i] &&
+		!(i>0 && es.interesting[i-1]) && !(i>0 && es.edges[i-1]!=NULL) &&
+		!(i<es.cnt-1 && es.edges[i+1]!=NULL) &&
+		!(i<es.cnt-1 && es.interesting[i+1]))	/* interesting things happen when we add (or remove) entries */
+    continue;			/* and where we have points of inflection */
+	for ( apt=active; apt!=NULL && ret==NULL; apt = e) {
+	    if ( !apt->up ) {
+		ret = SplineSetOfSpline(base,active->spline);
+	break;
+	    }
+	    winding = apt->up?1:-1;
+	    for ( pr=apt, e=apt->aenext; e!=NULL && winding!=0; pr=e, e=e->aenext ) {
+		if ( pr->up!=e->up ) {
+		    if ( (winding<=0 && !e->up) || (winding>0 && e->up )) {
+			ret = SplineSetOfSpline(base,active->spline);
+		break;
+		    }
+		    winding += (e->up?1:-1);
+		} else if ( (pr->before==e || pr->after==e ) &&
+			(( pr->mmax==i && e->mmin==i ) ||
+			 ( pr->mmin==i && e->mmax==i )) )
+		    /* This just continues the line and doesn't change count */;
+		else {
+		    if ( (winding<=0 && !e->up) || (winding>0 && e->up )) {
+			ret = SplineSetOfSpline(base,active->spline);
+		break;
+		    }
+		    winding += (e->up?1:-1);
+		}
+	    }
+	    /* color a horizontal line that comes out of the last vertex */
+	    if ( e!=NULL && (e->before==pr || e->after==pr) &&
+			(( pr->mmax==i && e->mmin==i ) ||
+			 ( pr->mmin==i && e->mmax==i )) ) {
+		pr = e;
+		e = e->aenext;
+	    }
+	}
+    }
+    FreeEdges(&es);
+    if ( open==NULL )
+	open = base;
+    else {
+	for ( spl=open; spl->next!=NULL; spl = spl->next );
+	spl->next = base;
+    }
+    *_base = open;
+return( ret );
 }
 
 void SFFigureGrid(SplineFont *sf) {

@@ -246,6 +246,8 @@ static char str_Rotate180[] = "Rotate 180°";
 static unichar_t mnemonic_Rotate180[] = '1';
 static char str_Skew[] = "Skew...";
 static unichar_t mnemonic_Skew[] = 'S';
+static char str_MakeFirst = "Make First";
+static char mnemonic_MakeFirst = 'r';
     /* Font Info dlg */
 static char str_Custom[] = "Custom";
 static char str_Isolatin1[] = "ISO 8859-1  (Latin1)";
@@ -585,6 +587,7 @@ static char *str_Transforming = "Transforming...";
 static char *str_Simplifying = "Simplifying...";
 static char *str_RemovingOverlap = "Removing overlaps...";
 static char *str_CorrectingDirection = "Correcting Direction...";
+static char *str_Rounding = "Rounding to integer...";
     /* Messages from accented characters */
 static char str_Buildingaccented[] = "Building accented letters";
 static char str_Replacearing[] = "Replace Å";
@@ -789,6 +792,8 @@ static char *str_ProbPtNearVHint = "The selected point is near a vertical stem h
 static char *str_ProbHintHWidth = "This character contains a horizontal hint near the specified width";
 static char *str_ProbHintVWidth = "This character contains a vertical hint near the specified width";
 static char *str_ProbHintControl = "This hint does not control any points";
+static char *str_ProbExpectedCounter = "This path should have been drawn in a counter-clockwise direction";
+static char *str_ProbExpectedClockwise = "This path should have been drawn in a clockwise direction";
 static char *str_ProbExplain = "Problem explanation";
 static char *str_Stop = "Stop";
 static char *mnemonic_Stop = 'S';
@@ -825,6 +830,9 @@ static char *str_PtNearHintPopup = "Often if a point is slightly off from a hint
 static char *str_HintWidth = "Hint Width Near";
 static char *mnemonic_HintWidth = 'W';
 static char *str_HintWidthPopup = "Allows you to check that stems have consistant widths..";
+static char *str_CheckDirection = "Check outermost paths clockwise";
+static char *mnemonic_CheckDirection = 'O';
+static char *str_CheckDirectionPopup = "Postscript and TrueType require that paths be drawn\nin a clockwise direction. This lets you check that they\nare.";
 static char *str_PointsNear = "Points are \"Near\" if within";
 static char *mnemonic_PointsNear = 'N';
 static char *str_Near = "Near";
@@ -835,6 +843,7 @@ static char *str_Found = "Found ";
 static char *str_Expected = ", expected ";
 	/* Meta font */
 static char *str_MetaFont = "Meta Font...";
+static char mnemonic_MetaFont = 'M';
 static char *str_CounterTooSmallT = "Counter Too Small";
 static char *str_CounterTooSmall = "A counter was requested to be too small, it has been pegged at its minimum value";
 static char *str_Simple = "Simple";
@@ -849,6 +858,7 @@ static char *str_StemScale = "Scale Stems By:";
 static char *str_CounterScale = "Scale Counters By:";
 static char *str_XHeightFrom = "XHeight From:";
 static char *str_To = "To:";
+static char *str_MetamorphosingFont = "Metamorphosing Font...";
 	/* to ttf */
 static char *str_PickFont = "Pick a font, any font...";
 static char *str_MultipleFontsPick = "There are multiple fonts in this file, pick one";
@@ -860,6 +870,34 @@ static char *str_GenBitmap = "Generating bitmap font";
 static char *str_GenAntiAlias = "Generating anti-alias font";
 /* "%d pixels" (for the size of the font being rasterized) */
 static char *str_Pixels = " pixels";
+	/* print */
+static char *str_PrintingFont = "Printing Font";
+static char *str_GeneratingPostscriptFont = "Generating Postscript Font";
+static char *str_FailedGenPost = "Failed to generate postscript font";
+static char *str_PageSetup = "Page Setup";
+static char *str_Setup = "Setup";
+static char mnemonic_Setup = 'e';
+static char *str_ToFile = "To File";
+static char mnemonic_ToFile = 'F';
+static char *str_PageSize = "PageSize:";
+static char mnemonic_PageSize = 'S';
+static char *str_Copies = "Copies:";
+static char mnemonic_Copies = 'C';
+static char *str_Printer = "Printer:";
+static char mnemonic_Printer = 'P';
+static char *str_PrintToFile = "Print To File...";
+static char *str_Pointsize = "Pointsize:";
+static char mnemonic_Pointsize = 'P';
+static char *str_FullFont = "Full Font Display";
+static char mnemonic_FullFont = 'F';
+static char *str_FullPageChar = "Full Page Character";
+static char mnemonic_FullPageChar = 'C';
+static char *str_FullPageChars = "Full Page Characters";
+static char mnemonic_FullPageChars = 'C';
+static char mnemonic_SampleText = 'S';
+static char *str_SampleTextC = "Sample Text:";
+static char mnemonic_SampleTextC = 'T';
+static char *str_FailedOpenTemp = "Failed to open temporary output file";
 
 
 static int num_buttonsize = 55;

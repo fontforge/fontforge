@@ -680,7 +680,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 
     /* if we've got bg images (and we're showing them) then the hints live in */
     /*  the bg image pixmap (else they get overwritten by the pixmap) */
-    if ( (cv->showhhints || cv->showvhints ) && ( cv->sc->backimages==NULL || !cv->showback) )
+    if ( (cv->showhhints || cv->showvhints || cv->showdhints) && ( cv->sc->backimages==NULL || !cv->showback) )
 	CVShowHints(cv,pixmap);
 
     if (( cv->showback || cv->drawmode==dm_back ) && cv->sc->backimages!=NULL ) {
@@ -691,7 +691,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	    cv->backimgs = GDrawCreatePixmap(GDrawGetDisplayOfWindow(cv->v),cv->width,cv->height);
 	if ( cv->back_img_out_of_date ) {
 	    GDrawFillRect(cv->backimgs,NULL,GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(cv->v)));
-	    if ( cv->showhhints || cv->showvhints )
+	    if ( cv->showhhints || cv->showvhints || cv->showdhints)
 		CVShowHints(cv,cv->backimgs);
 	    DrawImageList(cv,cv->backimgs,cv->sc->backimages);
 	    cv->back_img_out_of_date = false;
@@ -2228,6 +2228,7 @@ return( true );
 #define MID_Autotrace	2212
 #define MID_Round	2213
 #define MID_MetaFont	2217
+#define MID_MakeFirst	2218
 #define MID_Corner	2301
 #define MID_Tangent	2302
 #define MID_Curve	2303
@@ -3023,6 +3024,33 @@ static void CVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CVCharChangedUpdate(cv);
 }
 
+static void CVMenuMakeFirst(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    SplinePoint *selpt;
+    int anypoints = 0, splinepoints;
+    SplinePointList *spl, *sel;
+    Spline *spline, *first;
+
+    sel = NULL;
+    for ( spl = *cv->heads[cv->drawmode]; spl!=NULL; spl = spl->next ) {
+	first = NULL;
+	splinepoints = 0;
+	if ( spl->first->selected ) { splinepoints = 1; sel = spl; selpt=spl->first; }
+	for ( spline=spl->first->next; spline!=NULL && spline!=first && !splinepoints; spline = spline->to->next ) {
+	    if ( spline->to->selected ) { ++splinepoints; sel = spl; selpt=spline->to; }
+	    if ( first == NULL ) first = spline;
+	}
+	anypoints += splinepoints;
+    }
+
+    if ( anypoints!=1 || sel->first->prev==NULL || sel->first==selpt )
+return;
+
+    CVPreserveState(cv);
+    sel->first = sel->last = selpt;
+    CVCharChangedUpdate(cv);
+}
+
 static void CVMenuAutotrace(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     CVAutoTrace(cv);
@@ -3061,20 +3089,22 @@ static void CVMenuBitmaps(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     int anypoints = 0, splinepoints, dir = -2;
-    SplinePointList *spl;
+    SplinePointList *spl, *sel;
+    SplinePoint *selpt=NULL;
     Spline *spline, *first;
     int onlyaccents;
 
+    sel = NULL;
     for ( spl = *cv->heads[cv->drawmode]; spl!=NULL; spl = spl->next ) {
 	first = NULL;
 	splinepoints = 0;
-	if ( spl->first->selected ) splinepoints = true;
+	if ( spl->first->selected ) { splinepoints = 1; sel = spl; selpt = spl->first;}
 	for ( spline=spl->first->next; spline!=NULL && spline!=first && !splinepoints; spline = spline->to->next ) {
-	    if ( spline->to->selected ) splinepoints = true;
+	    if ( spline->to->selected ) { ++splinepoints; sel = spl; selpt = spline->to; }
 	    if ( first == NULL ) first = spline;
 	}
 	if ( splinepoints ) {
-	    anypoints = true;
+	    anypoints += splinepoints;
 	    if ( dir==-1 )
 		/* Do nothing */;
 	    else if ( spl->first!=spl->last || spl->first->next==NULL )
@@ -3107,6 +3137,9 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  break;
 	  case MID_RegenBitmaps:
 	    mi->ti.disabled = cv->fv->sf->bitmaps==NULL;
+	  break;
+	  case MID_MakeFirst:
+	    mi->ti.disabled = anypoints!=1 || sel->first->prev==NULL || sel->first==selpt;
 	  break;
 	  case MID_Simplify:
 	  /* Simplify is always available (it may not do anything though) */
@@ -3404,6 +3437,7 @@ static GMenuItem ellist[] = {
     { { (unichar_t *) _STR_Stroke, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'E' }, 'E', ksm_control|ksm_shift, NULL, NULL, CVMenuStroke, MID_Stroke },
     { { (unichar_t *) _STR_Rmoverlap, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'v' }, 'O', ksm_control|ksm_shift, NULL, NULL, CVMenuOverlap, MID_RmOverlap },
     { { (unichar_t *) _STR_Simplify, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, 'M', ksm_control|ksm_shift, NULL, NULL, CVMenuSimplify, MID_Simplify },
+    { { (unichar_t *) _STR_MakeFirst, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'r' }, '1', ksm_control, NULL, NULL, CVMenuMakeFirst, MID_MakeFirst },
     { { (unichar_t *) _STR_Round2int, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '_', ksm_control|ksm_shift, NULL, NULL, CVMenuRound2Int, MID_Round },
     { { (unichar_t *) _STR_MetaFont, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, '!', ksm_control|ksm_shift, NULL, NULL, CVMenuMetaFont, MID_MetaFont },
     { { (unichar_t *) _STR_Autotrace, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'r' }, 'T', ksm_control|ksm_shift, NULL, NULL, CVMenuAutotrace, MID_Autotrace },

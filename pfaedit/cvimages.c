@@ -413,11 +413,11 @@ static void ImportFig(CharView *cv,char *path) {
 
     fig = fopen(path,"r");
     if ( fig==NULL ) {
-	GWidgetPostNoticeR(_STR_CantFindFile,_STR_CantFindFile);
+	GWidgetErrorR(_STR_CantFindFile,_STR_CantFindFile);
 return;
     }
     if ( fgets(buffer,sizeof(buffer),fig)==NULL || strcmp(buffer,"#FIG 3.2\n")!=0 ) {
-	GWidgetPostNoticeR(_STR_BadXFigFile,_STR_BadXFigFile);
+	GWidgetErrorR(_STR_BadXFigFile,_STR_BadXFigFile);
 	fclose(fig);
 return;
     }
@@ -472,7 +472,7 @@ static void ImportImage(CharView *cv,char *path) {
 
     image = GImageRead(path);
     if ( image==NULL ) {
-	GWidgetPostNoticeR(_STR_BadImageFile,_STR_BadImageFile);
+	GWidgetErrorR(_STR_BadImageFile,_STR_BadImageFile);
 return;
     }
     cv->drawmode = dm_back;
@@ -504,12 +504,12 @@ static int BCImportImage(BDFChar *bc,char *path) {
 
     image = GImageRead(path);
     if ( image==NULL ) {
-	GWidgetPostNoticeR(_STR_BadImageFile,_STR_BadImageFile);
+	GWidgetErrorR(_STR_BadImageFile,_STR_BadImageFile);
 return(false);
     }
     base = image->list_len==0?image->u.image:image->u.images[0];
     if ( base->image_type!=it_mono ) {
-	GWidgetPostNoticeR(_STR_BadImageFile,_STR_BadImageFileNotBitmap);
+	GWidgetErrorR(_STR_BadImageFile,_STR_BadImageFileNotBitmap);
 	GImageDestroy(image);
     }
     BCPreserveState(bc);

@@ -121,9 +121,9 @@ Ghosts:
 "http://sourceforge.net/projects/autotrace/" Up="" Style="" Title="" Type="text/html" 0
 Refs:
 "index.html"
-	1 "pfaedit_src-010715.tgz"
-	1 "libgdraw-010715.tgz"
-	1 "pfaedit-010715.tgz"
+	1 "pfaedit_src-010716.tgz"
+	1 "libgdraw-010716.tgz"
+	1 "pfaedit-010716.tgz"
 	1 "http://sourceforge.net"
 	2 "http://sourceforge.net/sflogo.php?group_id=25752&type=1"
 	5 "overview.html"
@@ -396,7 +396,6 @@ Refs:
 	2 "expandedlines.png"
 	2 "expandstroke.png"
 	2 "overlappedlines.png"
-	1 "metafont.html"
 	1 "http://sourceforge.net/projects/autotrace/"
 	5 "editmenu.html"
 	5 "filemenu.html"
@@ -406,6 +405,7 @@ Refs:
 	5 "metricsmenu.html"
 	5 "windowmenu.html"
 	4 "overview.html"
+	1 "MetaFont.html"
 "pointmenu.html"
 	1 "pointmenu.html"
 	5 "filemenu.html"

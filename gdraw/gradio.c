@@ -287,13 +287,13 @@ static void GRadioInit() {
     radio_off_box.border_type = bt_lowered;
     radio_on_box.border_shape = radio_off_box.border_shape = bs_diamond;
     radio_box.padding = 1;
-    radio_box.flags = box_active_border_inner;
+    /*radio_box.flags = box_active_border_inner;*/
     radio_on_box.flags = radio_off_box.flags = box_do_depressed_background;
     checkbox_box.border_type = bt_none;
     checkbox_on_box.border_type = bt_raised;
     checkbox_off_box.border_type = bt_lowered;
     checkbox_box.padding = 1;
-    checkbox_box.flags = box_active_border_inner;
+    /*checkbox_box.flags = box_active_border_inner;*/
     checkbox_on_box.flags = checkbox_off_box.flags = box_do_depressed_background;
     checkbox_font = _GGadgetInitDefaultBox("GRadio.",&radio_box,NULL);
     checkbox_font = _GGadgetInitDefaultBox("GCheckBox.",&checkbox_box,checkbox_font);
