@@ -1547,8 +1547,10 @@ return( true );
 		GGadgetSelectOneListItem(d->bmptype,bf_bdf);
 	    if ( format==ff_pfbmacbin )
 		GGadgetSelectOneListItem(d->bmptype,bf_nfntmacbin);
-	    else if ( bf==bf_nfntmacbin || bf==bf_nfntdfont )
+	    if ( bf==bf_nfntmacbin || bf==bf_nfntdfont )
 		list[bf_ttf]->disabled = true;
+	    bf = GGadgetGetFirstListSelectedItem(d->bmptype);
+	    GGadgetSetEnabled(d->bmpsizes, format!=ff_multiple && bf!=bf_none );	/* We know there are bitmaps */
 	} else {
 	    list[bf_ttf]->disabled = false;
 	    if ( bf==bf_none )
@@ -1562,6 +1564,7 @@ return( true );
 	    /* The name of the postscript file is fixed and depends solely on */
 	    /*  the font name. If the user tried to change it, the font would */
 	    /*  not be found */
+	    /* See MakeMacPSName for a full description */
 	    GFileChooserGetChildren(d->gfc,&pulldown,&list,&tf);
 	    GGadgetSetVisible(tf,format!=ff_pfbmacbin);
 	}

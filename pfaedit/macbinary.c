@@ -1351,6 +1351,17 @@ static void WriteDummyDFontHeaders(FILE *res) {
 	putc(0,res);
 }
 
+	/* The mac has rules about what the filename should be for a postscript*/
+	/*  font. If you deviate from those rules the font will not be found */
+	/*  The font name must begin with a capital letter */
+	/*  The filename is designed by modifying the font name */
+	/*  After the initial capital there can be at most 4 lower case letters (or digits) */
+	/*   in the filename, any additional lc letters (or digits) in the fontname are ignored */
+	/*  Every subsequent capital will be followed by at most 2 lc letters */
+	/*  special characters ("-$", etc.) are removed entirely */
+	/* So Times-Bold => TimesBol, HelveticaDemiBold => HelveDemBol */
+	/* MacBinary limits the name to 63 characters, I dunno what happens if */
+	/*  we excede that */
 static void MakeMacPSName(char buffer[63],SplineFont *sf) {
     char *pt, *spt, *lcpt;
 
@@ -1358,7 +1369,7 @@ static void MakeMacPSName(char buffer[63],SplineFont *sf) {
 	if ( isupper(*spt) || spt==sf->fontname ) {
 	    *pt++ = *spt;
 	    lcpt = (spt==sf->fontname?spt+5:spt+3);
-	} else if ( islower(*spt) && spt<lcpt )	/* what happens to digits? */
+	} else if ( (islower(*spt) || isdigit(*spt)) && spt<lcpt )
 	    *pt++ = *spt;
     }
     *pt = '\0';
@@ -1383,9 +1394,10 @@ return( 0 );
 	/*  font. If you deviate from those rules the font will not be found */
 	/*  The font name must begin with a capital letter */
 	/*  The filename is designed by modifying the font name */
-	/*  After the initial capital there can be at most 4 lower case letters */
-	/*   in the filename, any additional lc letters in the fontname are ignored */
+	/*  After the initial capital there can be at most 4 lower case letters (or digits) */
+	/*   in the filename, any additional lc letters (or digits) in the fontname are ignored */
 	/*  Every subsequent capital will be followed by at most 2 lc letters */
+	/*  special characters ("-$", etc.) are removed entirely */
 	/* So Times-Bold => TimesBol, HelveticaDemiBold => HelveDemBol */
 	/* MacBinary limits the name to 63 characters, I dunno what happens if */
 	/*  we excede that */
