@@ -207,7 +207,7 @@ char *_GFile_find_program_dir(char *prog) {
 	}
     }
     if ( program_dir==NULL )
-	program_dir=copy(".");
+return( NULL );
     GFileGetAbsoluteName(program_dir,filename,sizeof(filename));
     gfree(program_dir);
     program_dir = copy(filename);
