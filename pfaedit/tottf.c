@@ -1048,13 +1048,47 @@ static void dumpspace(SplineChar *sc, struct glyphinfo *gi) {
     ttfdumpmetrics(sc,gi,&b);
 }
 
-static void dumpcomposite(SplineChar *sc, RefChar *refs, struct glyphinfo *gi) {
+static int IsTTFRefable(SplineChar *sc) {
+    RefChar *ref;
+
+    if ( sc->refs==NULL || sc->splines!=NULL )
+return( false );
+
+    for ( ref=sc->refs; ref!=NULL; ref=ref->next ) {
+	if ( ref->transform[0]<-2 || ref->transform[0]>1.999939 ||
+		ref->transform[1]<-2 || ref->transform[1]>1.999939 ||
+		ref->transform[2]<-2 || ref->transform[2]>1.999939 ||
+		ref->transform[3]<-2 || ref->transform[3]>1.999939 )
+return( false );
+    }
+return( true );
+}
+
+static int RefDepth(RefChar *ref) {
+    int rd, temp;
+    SplineChar *sc = ref->sc;
+
+    if ( sc->refs==NULL || sc->splines!=NULL )
+return( 1 );
+    rd = 0;
+    for ( ref = sc->refs; ref!=NULL; ref=ref->next ) {
+	if ( ref->transform[0]>=-2 || ref->transform[0]<=1.999939 ||
+		ref->transform[1]>=-2 || ref->transform[1]<=1.999939 ||
+		ref->transform[2]>=-2 || ref->transform[2]<=1.999939 ||
+		ref->transform[3]>=-2 || ref->transform[3]<=1.999939 ) {
+	    temp = RefDepth(ref);
+	    if ( temp>rd ) rd = temp;
+	}
+    }
+return( rd+1 );
+}
+
+static void dumpcomposite(SplineChar *sc, struct glyphinfo *gi) {
     struct glyphhead gh;
     DBounds bb;
-    int i, ptcnt, ctcnt, flags, sptcnt;
+    int i, ptcnt, ctcnt, flags, sptcnt, rd;
     SplineSet *ss;
     RefChar *ref;
-    int any = false;
 
 #if 0
     if ( autohint_before_generate && sc->changedsincelasthinted &&
@@ -1072,9 +1106,9 @@ static void dumpcomposite(SplineChar *sc, RefChar *refs, struct glyphinfo *gi) {
     dumpghstruct(gi,&gh);
 
     i=ptcnt=ctcnt=0;
-    for ( ref=refs; ref!=NULL; ref=ref->next, ++i ) {
+    for ( ref=sc->refs; ref!=NULL; ref=ref->next, ++i ) {
 	if ( ref->sc->ttf_glyph==-1 ) {
-	    if ( refs->next==NULL || any )
+	    /*if ( sc->refs->next==NULL || any )*/
     continue;
 	}
 	flags = (1<<1)|(1<<2)|(1<<12);	/* Args are always values for me */
@@ -1130,22 +1164,21 @@ static void dumpcomposite(SplineChar *sc, RefChar *refs, struct glyphinfo *gi) {
 	    sptcnt = SSPointCnt(ss,sptcnt,ref->sc->ttf_instrs_len!=0 || gi->has_instrs );
 	}
 	ptcnt += sptcnt;
+	rd = RefDepth(ref);
+	if ( rd>gi->maxp->maxcomponentdepth )
+	    gi->maxp->maxcomponentdepth = rd;
     }
 
     if ( sc->ttf_instrs_len!=0 )
 	dumpinstrs(gi,sc->ttf_instrs,sc->ttf_instrs_len);
 
     if ( gi->maxp->maxnumcomponents<i ) gi->maxp->maxnumcomponents = i;
-	/* PfaEdit will do a transitive closeur so that we end up with */
-	/*  a maximum depth of 1 */
-    gi->maxp->maxcomponentdepth = 1;
     if ( gi->maxp->maxCompositPts<ptcnt ) gi->maxp->maxCompositPts=ptcnt;
     if ( gi->maxp->maxCompositCtrs<ctcnt ) gi->maxp->maxCompositCtrs=ctcnt;
 
     ttfdumpmetrics(sc,gi,&bb);
     if ( ftell(gi->glyphs)&1 )		/* Pad the file so that the next glyph */
 	putc('\0',gi->glyphs);		/* on a word boundary, can only happen if odd number of instrs */
-    RefCharsFreeRef(refs);
 }
 
 static void dumpglyph(SplineChar *sc, struct glyphinfo *gi) {
@@ -1244,7 +1277,6 @@ return( tg );
 
 static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
     int i, cnt;
-    RefChar *refs;
     int fixed = gi->fixed_width;
 
     GProgressChangeStages(2+gi->strikecnt);
@@ -1290,8 +1322,8 @@ static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
 		dumpspace(sf->chars[i],gi);
 	} else {
 	    if ( SCWorthOutputting(sf->chars[i]) && sf->chars[i]==SCDuplicate(sf->chars[i])) {
-		if ( (refs = SCCanonicalRefs(sf->chars[i],false))!=NULL )
-		    dumpcomposite(sf->chars[i],refs,gi);
+		if ( IsTTFRefable(sf->chars[i]) )
+		    dumpcomposite(sf->chars[i],gi);
 		else
 		    dumpglyph(sf->chars[i],gi);
 	    }
