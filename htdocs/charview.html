@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 16-Apr-2004 -->
+  <!-- AP: Last modified: 25-Apr-2004 -->
   <TITLE>Outline Character View</TITLE>
 </HEAD>
 <BODY>
@@ -134,7 +134,7 @@ buttons. Here mouse button 1 is bound to the pointer tool, mouse button 1
 with the control key pressed is also bound to pointer, mouse button 2 is
 bound to magnify, and mouse button 2 with control is bound to ruler.
 <H3>
-  The pointer tool
+  <IMG SRC="cvarrowicon.png" ALIGN="Middle">The pointer tool
 </H3>
 <P>
 This tool is used for selecting points, images and referenced characters.
@@ -222,7 +222,8 @@ placing the mouse pointer on it, depressing the button and dragging the line
 around. See the description on <A HREF="editexample4.html#ligature">building
 a ligature </A>for a more complete description.
 <H3>
-  The magnifying tool
+  <IMG SRC="cvmagicon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">The magnifying
+  tool
 </H3>
 <P>
 Clicking with the magnifying tool will magnify the view and center it around
@@ -237,12 +238,14 @@ will shift and scale the view so that your rectangle just fits into the window.
 If your mouse has a scroll wheel then holding down the control key with the
 scroll wheel causes it to magnify or minify the window.
 <H3>
-  The hand tool
+  <IMG SRC="cvhandicon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">The hand
+  tool
 </H3>
 <P>
 You can use this tool to scroll the window without using the scroll bars.
 <H3>
-  <IMG SRC="freehandctl.png" ALIGN="Right" WIDTH="224" HEIGHT="311">The
+  <IMG SRC="cvfreehandicon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle"><IMG
+      SRC="freehandctl.png" ALIGN="Right" WIDTH="224" HEIGHT="311">The
   <A NAME="freehand">freehand</A> tool
 </H3>
 <P>
@@ -270,7 +273,10 @@ apply to the stylus. Simply move the stylus around in the two boxes using
 the amount of pressure appropriate for the corresponding pen-size (Stroke
 Width)<BR CLEAR=ALL>
 <H3>
-  Tools for adding curved, corner and tangent points.
+  <IMG SRC="cvcurveicon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">
+  <IMG SRC="cvcornericon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">
+  <IMG SRC="cvtangenticon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">Tools
+  for adding curved, corner and tangent points.
 </H3>
 <P>
 These three tools behave similarly, differing only in what kind of point
@@ -297,7 +303,7 @@ If you double click then a point will be added as above and a
 <A HREF="getinfo.html">Point Info</A> dlg will appear to give you fine control
 over the location of the point and its control points.
 <H3>
-  The pen tool
+  <IMG SRC="cvpenicon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">The pen tool
 </H3>
 <P>
 In many ways this is similar to the tools above, the only differences are
@@ -305,7 +311,8 @@ that the points created are curved points, they are initially created with
 the control points on the point and as you drag you drag out the control
 points rather than moving the point itself around.
 <H3>
-  The knife tool
+  <IMG SRC="cvknifeicon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">The knife
+  tool
 </H3>
 <P>
 This tool is used to cut splines. As you drag it across the view fontforge
@@ -316,17 +323,24 @@ in two connecting to the two new end points. These endpoints are not joined,
 so the spline is now open (or if it were previously open, it is now cut in
 two).
 <H3>
-  The ruler tool
+  <IMG SRC="cvrulericon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">The
+  <A NAME="Ruler">ruler</A> tool
 </H3>
 <P>
 This tool tells you the x-y offsets, distance and angle from the point where
 you depressed the mouse to the mouse's current location. If you depress the
 tool at the end point of a spline and move it to the other endpoint then
-it will also show the length of that spline. If you hold down the Meta (Alt)
-key then the current location will be shown more accurately than on the status
-line.
+it will also show the length of that spline.
+<P>
+If you hold down the Meta (Alt) key when the mouse button is up, then the
+current location will be shown more accurately than on the status line.
+<P>
+Finally if you hold down the Meta (Alt) key when you release the mouse button,
+then the ruler window will remain on the screen until you dismiss it by either:
+clicking in the window, or dragging out a new ruler selection.
 <H3>
-  The scale tool
+  <IMG SRC="cvscaleicon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">The scale
+  tool
 </H3>
 <P>
 This tool allows you to scale the selection by eye rather than by a set amount
@@ -335,37 +349,62 @@ The location of the press will be the origin of the transformation, the further
 you move the point up and to the right the more it will be scaled in that
 dimension. If you want the scaling to be uniform or only in one dimension
 then hold down the shift key.
+<P>
+Double clicking on this will bring up the transform dialog with the "Scale..."
+option selected.
 <H3>
-  The flip tool
+  <IMG SRC="cvflipicon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">The flip
+  tool
 </H3>
 <P>
 This tool allows you to flip the selection either horizontally or vertically.
 Again the point at which you press the mouse is the origin of the transformation.
+<P>
+Double clicking on this will bring up the transform dialog with the "Flip..."
+option selected.
 <H3>
-  The rotate tool
+  <IMG SRC="cvrotateicon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">The rotate
+  tool
 </H3>
 <P>
 This tools allows you to rotate the selection freely.
+<P>
+Double clicking on this will bring up the transform dialog with the "Rotate..."
+option selected.
 <H3>
-  The skew tool
+  <IMG SRC="cvskewicon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">The skew
+  tool
 </H3>
 <P>
 This tool allows you to skew the selection.
+<P>
+Double clicking on this will bring up the transform dialog with the "Skew..."
+option selected.
 <H3>
-  The rectangle/ellipse tool
+  <IMG SRC="cvrecticon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">
+  <IMG SRC="cvellipseicon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">The
+  rectangle/ellipse tool
 </H3>
 <P>
-By default this produces a rectangle, but if you double click on the button
-in the tools palette you can make it produce an ellipse or a rectangle with
-rounded corners.
+By default this produces a rectangle, single-clicking on the tool palette
+will toggle between rectangle and ellipse, and double clicking in the tools
+palette gives you a dialog which allows you to control whether your rectangles
+are drawn with round corners, and how both rectangles and ellipses are specified.
 <P>
 You can choose whether the rectangle (or ellipse) will be drawn between the
 point where you depressed the mouse on the view and the point where you released
 it (bounding box), or whether the point where you depress the mouse becomes
 the center of the rectangle and the point where you release it provides an
 end-point (center out).
+<P>
+If you want even more control, you can double click in the character view
+and get another dialog which allows you to define numerically where the
+rectangle/ellipse should be placed, how big it should be, and whether it
+should be rotated.
 <H3>
-  The polygon/star tool
+  <IMG SRC="cvpolyicon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">
+  <IMG SRC="cvstaricon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">The polygon/star
+  tool
 </H3>
 <P>
 By default this draws a regular polygon, but by double clicking on the button
@@ -549,8 +588,9 @@ execution reaches the instructions associated with this glyph.
 <P>
 In a multiple master font the <A HREF="mmmenu.html#outline-char">MM</A> menu
 gives you control over which style of the font you are editing. It will also
-allow you to display any (or all) of the other styles in the
-background<BR CLEAR=ALL>
+allow you to display any (or all) of the other styles in the background.
+Although the menu is called "MM" it applies equally to Apple's distortable
+fonts ("*var" fonts, like Skia).<BR CLEAR=ALL>
 <H2>
   <A NAME="multilayer">Multiple Layer Editing</A>
 </H2>

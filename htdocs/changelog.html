@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 18-Apr-2004 -->
+  <!-- AP: Last modified: 25-Apr-2004 -->
   <TITLE>Change log for FontForge</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,42 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    25-Apr-2004
+    <UL>
+      <LI>
+	AutoHint produced ghost hints for curved stems that sometimes were outside
+	of the character.
+      <LI>
+	Fixed some uninitialized variables in MetaFont (but the algorthim is still
+	flawed)
+      <LI>
+	FontForge had problems when the fontview was maximized.
+      <LI>
+	The 18-Apr patch for cubic-&gt;quadratic conversion had a bug which generally
+	resulted in a crash.
+      <LI>
+	When flickering in and out of compacted mode, during a Generate Fonts, the
+	encodings in the displayed bitmap could get out of sync with those of the
+	font leading to a crash.
+      <LI>
+	Don't mess with the control points in point type conversion
+	(corner-&gt;curve/tangent) when the they are already reasonable.
+      <LI>
+	Allow rectangles and ellipses to have seperate settings of the center out
+	flag.
+      <LI>
+	Add a dialog which allows you to specify exactly where rectangles/ellipses
+	should go.
+      <LI>
+	Double-clicking on the scale/flap/rotate/skew tool brings up the transform
+	dialog.
+      <LI>
+	Add a couple of entries in the transform dlg option menus which copy information
+	from the last ruler measurement.
+      <LI>
+	Give the user control over how long the ruler window hangs around.
+    </UL>
   <LI>
     18-Apr-2004
     <UL>
