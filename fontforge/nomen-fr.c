@@ -15,7 +15,7 @@ Translated terminology based on:
 	Title = {Fontes \& codages},
 	Year = {2004}}
 
-Enrichi à nouveau par P. Hanser le 2 mai 2004
+Enrichi à nouveau par P. Hanser le 2 mai 2004, le 5 aout 2004
 
 */
 #include "nomen.h"
@@ -1249,8 +1249,8 @@ static char str_CouldntFindSubstitution = "Glyphe de substitution introuvable : 
 static char str_Dontsave[] = "Ne pas enregistrer" ;
 static unichar_t mnemonic_Dontsave[] = 'N' ;
 static char str_Fontchange[] = "Fonte modifiée" ;
-static char str_FontChangedMsg = "La fonte %1$.40s dans le fichier %2$.40s a été modifiée.\012Voulez vous l'enregistrer ?";
-static char str_FontChangedRevertMsg = "La fonte %1$.40s dans le fichier %2$.40s a été modifiée.\012Revenir vous fera perdre toutes les modifications.\012Voulez vous vraiment revenir ?" ;
+static char str_FontChangedMsg = "La fonte %1$.40hs dans le fichier %2$.40hs a été modifiée.\012Voulez vous l'enregistrer ?";
+static char str_FontChangedRevertMsg = "La fonte %1$.40hs dans le fichier %2$.40hs a été modifiée.\012Revenir vous fera perdre toutes les modifications.\012Voulez vous vraiment revenir ?" ;
  /* General messages from fontview.c */
 static char str_Revert[] = "Revenir" ;
 static unichar_t mnemonic_Revert[] = 'R' ;
@@ -1310,13 +1310,13 @@ static char str_Elipse[] = "Ellipse" ;
 static char str_FilledElipse[] = "Ellipse pleine" ;
  /* Get Info ... */
 static char str_Multiple[] = "Plusieurs" ;
-static char str_AlreadyCharUnicode[] = "Il y a déjà un glyphe attaché au même caractère Unicode,\012(nommé %$1.40hs, dans le codage actuel %$2d).\012Est-ce vraiment ce que vous souhaitez ?" ;
+static char str_AlreadyCharUnicode[] = "Il y a déjà un glyphe attaché au même caractère Unicode,\012(nommé %1$.40hs, dans le codage actuel %2$d).\012Est-ce vraiment ce que vous souhaitez ?" ;
 static char str_Alreadycharnamed[] = "Il y a déjà un glyphe portant ce nom,\012voulez vous permuter les noms ?" ;
    /* There is already a ligature made from these components,\n(named %.10s at local encoding %d)\nIs that what you want ? */
 static char str_AlreadyLigature[] = "Il y a déjà une ligature ayant les mêmes composantes,\012(appelée %1$.40hs dans le codage courant %2$d).\012Est-ce vraiment ce que vous souhaitez ?" ;
 static char str_Badligature[] = "Une ligature ne peut pas se composer d'elle même" ;
    /* "The component %.20s is not in this font,\nIs that what you want ?" */
-static char str_MissingComponent[] = "La composante \"%.40s\" n'est pas dans cette fonte,\012est-ce vraiment ce que vous souhaitez ?" ;
+static char str_MissingComponent[] = "La composante \"%.20s\" n'est pas dans cette fonte,\012est-ce vraiment ce que vous souhaitez ?" ;
 static char str_SelfReferential = "Cette substitution s'auto-référence"
 static char str_Done[] = "Fini" ;
 static unichar_t mnemonic_Done[] = 'F' ;
@@ -2128,9 +2128,7 @@ static char *str_PrefsPopupAO[] = "Pourcentage de cadratin pour séparer un accen
 static char *str_PrefsPopupGA[] = "Lorsqu'il met un accent grave ou aigu sur une lettre, FontForge\ndoit-il le centrer en tenant compte du point le plus bas\nde l'accent (on), ou en tenant compte de sa largeur (off) ?" ;
 static char *str_PrefsPopupCH[] = "Lors du centrage d'un accent sur un glyphe, l'accent doit-il être\ncentré par rapport au point le plus haut du glyphe, ou par rapport\nau milieu du glyphe ?"
 static char *str_PrefsPopupAA[] = "Pourcentage de cadratin dont les touches de flèche de déplacement\nvont bouger le point sélectionné" ;
-static char *str_PrefsPopupGN[] = "Adobe a affecté les noms 'Delta', 'Omega' et 'Mu'\nrespectivement à 'Increment', 'Ohm' et 'Micro'.\nCeci paraît étrange aux à nos amis Grecs qui\nutilisent ces noms pour désigner des lettres de l'alphabet.\nActiver ce drapeau fait que les lettres de l'alphabet seront\nappelées 'Delta.greek', 'Omega.greek' et 'mu.greek'." ;
-   /*static char *str_PrefsPopupGF[] = "Adobe a affecté les noms Delta, Omega et Mu aux signes\nIncrément, Ohm et Micro respectivement.\nCela semble très étrange aux dessinateurs de fontes grecques\nqui utilisent ces noms pour les lettres de l'alphabet.\nCes noms sont donc ambigus. FontForge contourne l'ambiguïté\nen créant des fontes avec des glyphes supplémentaires." ;*/
-   /* Now called PrefsPopupGN with slightly different text */
+static char *str_PrefsPopupGN[] = "Adobe a affecté les noms 'Delta', 'Omega' et 'Mu'\nrespectivement à 'Increment', 'Ohm' et 'Micro'.\nCeci paraît étrange à nos amis Grecs qui\nutilisent ces noms pour désigner des lettres de l'alphabet.\nActiver ce drapeau fait que les lettres de l'alphabet seront\nappelées 'Delta.greek', 'Omega.greek' et 'mu.greek'." ;
 static char *str_PrefsPopupSD[] = "Spécifie la distance de magnétisme\nauprès d'une ligne pertinente (ligne de base, chasse,\ngrille, splines, etc...)." ;
 static char *str_PrefsPopupJS[] = "La commande 'Édition->Joindre' joindra les points proches d'au moins\ncette distance. Une valeur de 0 impose que les points coïncident"
 static char *str_PrefsPopupBR[] = "Lors de la création d'un ensemble de fontes BDF,\nFontForge doit-il demander la résolution écran, ou\nla deviner en fonction de la taille du pixel ?" ;
@@ -2322,14 +2320,14 @@ static char *str_CantScaleGreymap = "Impossible de mettre à l'échelle une fonte 
 static char *str_CantDeleteAllBitmaps = "Impossible de supprimer tous les bitmaps" ;
  /* Bitmap view */
    /* "%s at %d size %d from %s", charactername, encoding, pixelsize, fontname */
-static char *str_BvTitle = "%1$.75hs (%2$d) taille %3$d venant de %4$.75hs"
+static char *str_BvTitle = "%1$.80hs (%2$d) taille %3$d venant de %4$.80hs"
 static char *str_RecalculateBitmaps = "Recalculer bitmaps" ;
  /* BV Edit */
 static char *str_skewRatio = "Entrer le rapport largeur/hauteur de l'inclinaison" ;
 static char str_BadNumber[] = "Valeur incorrecte" ;
  /* Char View */
    /* "%s at %d from %s", charactername, encoding, fontname */
-static char *str_CvTitle = "%1$.80hs (%2$d) venant de %3$.80hs"
+static char *str_CvTitle = "%1$.80hs (%2$d) venant de %3$.90hs"
 static char *str_CantFindGlyph = "Impossible de trouver le glyphe" ;
 static char *str_CantRevertGlyph = "Le glyphe %.80hs ne peut être trouvé dans le fichier SFD" ;
 static char *str_GlyphHasRefs = "Problèmes avec les références" ;
@@ -2449,7 +2447,7 @@ static char *mnemonic_DontWarnAgain = 'W' ;
 static char *str_NoVerticalMetrics = "Pas de métriques verticales" ;
 static char *str_FontNoVerticalMetrics = "Les métriques verticales ne sont pas activées dans cette fonte" ;
 static char *str_DupAnchor = "Ancre en double" ;
-static char *str_DupAnchorIn = "Il y a déjà une ancre appelée %$1s dans %$2hs."
+static char *str_DupAnchorIn = "Il y a déjà une ancre appelée %1$.40s dans %2$.40hs."
 static char *str_AnchorLost = "Ancre perdue" ;
 static char *str_AnchorLostPaste = "Au moins une ancre s'est perdue lors du collage, car il n'y avait pas de classe d'ancre ad hoc dans la fonte d'arrivée."
  /* dump pfa */
@@ -3343,8 +3341,8 @@ static char *str_AdvanceToNextGlyph = "Aller au glyphe suivant" ;
 static char *str_MarkCurrentGlyph = "Marquer le glyphe courant" ;
 static char *str_MarkCurrentGlyphAsFirst = "Marquer glyphe courant comme premier" ;
 static char *str_MarkCurrentGlyphAsLast = "Marquer glyphe courant comme dernier" ;
-static char *str_CurrentGlyphIsKashida = "Le glyphe courant se comporte comme un kachidé" ;
-static char *str_MarkedGlyphIsKashida = "Le glyphe marqué se comporte comme un kachidé" ;
+static char *str_CurrentGlyphIsKashida = "Le glyphe courant se comporte comme un kachidé (tatouïl)" ;
+static char *str_MarkedGlyphIsKashida = "Le glyphe marqué se comporte comme un kachidé (tatouïl)" ;
 static char *str_InsertBeforeCurrentGlyph = "Insérer avant le glyphe courant" ;
 static char *str_InsertBeforeMarkedGlyph = "Insérer avant le glyphe marqué" ;
 static char *str_NoChange = "Pas de changement" ;
