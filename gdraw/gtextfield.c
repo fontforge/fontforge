@@ -1328,7 +1328,7 @@ return( false );
 	    GTextFieldDrawLineSel(pixmap,gt,i,fg,sel);
 	}
 	if ( sel==fg && ll!=0 ) {
-	    if ( i!=0 && (*(bitext+gt->lines[i]+ll-1)=='\n' || *(bitext+gt->lines[i]+ll-1)=='\r' ))
+	    if ( (*(bitext+gt->lines[i]+ll-1)=='\n' || *(bitext+gt->lines[i]+ll-1)=='\r' ))
 		--ll;
 	    GDrawDrawText(pixmap,g->inner.x-gt->xoff_left,y+gt->as,
 		    bitext+gt->lines[i],ll,NULL, fg );
@@ -2171,7 +2171,7 @@ static void GTextFieldAddVSb(GTextField *gt) {
     gd.pos.y = gt->g.r.y; gd.pos.height = gt->g.r.height;
     gd.pos.width = GDrawPointsToPixels(gt->g.base,_GScrollBar_Width);
     gd.pos.x = gt->g.r.x+gt->g.r.width - gd.pos.width;
-    gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_sb_vert;
+    gd.flags = (gt->g.state==gs_invisible?0:gg_visible)|gg_enabled|gg_pos_in_pixels|gg_sb_vert;
     gd.handle_controlevent = gtextfield_vscroll;
     gt->vsb = (GScrollBar *) GScrollBarCreate(gt->g.base,&gd,gt);
     gt->vsb->g.contained = true;
@@ -2188,7 +2188,7 @@ static void GTextFieldAddHSb(GTextField *gt) {
     gd.pos.x = gt->g.r.x; gd.pos.width = gt->g.r.width;
     gd.pos.height = GDrawPointsToPixels(gt->g.base,_GScrollBar_Width);
     gd.pos.y = gt->g.r.y+gt->g.r.height - gd.pos.height;
-    gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
+    gd.flags = (gt->g.state==gs_invisible?0:gg_visible)|gg_enabled|gg_pos_in_pixels;
     gd.handle_controlevent = gtextfield_hscroll;
     gt->hsb = (GScrollBar *) GScrollBarCreate(gt->g.base,&gd,gt);
     gt->hsb->g.contained = true;
