@@ -2441,7 +2441,7 @@ return;
 
     for ( i=0; i<info->glyph_cnt; ++i ) {
 	if ( info->chars[i]->unicodeenc==-1 )
-	    info->chars[i]->unicodeenc = UniFromName(info->chars[i]->name);
+	    info->chars[i]->unicodeenc = UniFromName(info->chars[i]->name,info->uni_interp,info->encoding_name);
     }
 
     if ( dict->encodingoff==0 || dict->encodingoff==1 ) {
@@ -3227,7 +3227,23 @@ static int SubtableIsntSupported(FILE *ttf,uint32 offset,int platform,int specif
     fseek(ttf,here,SEEK_SET);
 return( ret );
 }
-    
+
+static enum uni_interp amscheck(struct dup *dups) {
+    int cnt = 0;
+    /* Try to guess if the font uses the AMS math PUA assignments */
+
+    while ( dups!=NULL ) {
+	if (( dups->sc->unicodeenc == 'b' && dups->uni==0xe668 ) ||
+		( dups->sc->unicodeenc == 0x00b7 && dups->uni==0xe626 ) ||
+		( dups->sc->unicodeenc == 0x29e1 && dups->uni==0xe3c8 ) ||
+		( dups->sc->unicodeenc == 0x2A7C && dups->uni==0xE32A ) ||
+		( dups->sc->unicodeenc == 0x2920 && dups->uni==0xE221 ))
+	    ++cnt;
+	dups = dups->prev;
+    }
+return( cnt>=2 ? ui_ams : ui_none );
+}
+
 static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
     int i,j;
     int nencs, version;
@@ -3605,6 +3621,8 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	    }
 	}
     }
+    if ( interp==ui_none )
+	interp = amscheck(info->dups);
     if ( info->chars!=NULL && info->chars[0]!=NULL && info->chars[0]->unicodeenc==0xffff &&
 	    info->chars[0]->name!=NULL && strcmp(info->chars[0]->name,".notdef")==0 )
 	info->chars[0]->unicodeenc = -1;
@@ -3612,9 +3630,9 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
     info->uni_interp = interp;
 }
 
-static int EncFromName(const char *name) {
+static int EncFromName(const char *name,enum uni_interp interp,int encname) {
     int i;
-    i = UniFromName(name);
+    i = UniFromName(name,interp,encname);
     if ( i==-1 && strlen(name)==4 ) {
 	/* MS says use this kind of name, Adobe says use the one above */
 	char *end;
@@ -3680,7 +3698,7 @@ static void readttfos2metrics(FILE *ttf,struct ttfinfo *info) {
 }
 
 static int cmapEncFromName(struct ttfinfo *info,const char *nm, int glyphid) {
-    int uni = EncFromName(nm);
+    int uni = EncFromName(nm,info->uni_interp,info->encoding_name);
     int i;
 
     if ( uni==-1 )
@@ -3790,16 +3808,8 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 	else if ( info->chars[i]->unicodeenc==-1 ) {
 	    /* Do this later */;
 	    name = NULL;
-	} else if ( info->chars[i]->unicodeenc<psunicodenames_cnt &&
-		psunicodenames[info->chars[i]->unicodeenc]!=NULL )
-	    name = psunicodenames[info->chars[i]->unicodeenc];
-	else {
-	    if ( info->chars[i]->unicodeenc<0x10000 )
-		sprintf( buffer, "uni%04X", info->chars[i]->unicodeenc );
-	    else
-		sprintf( buffer, "u%04X", info->chars[i]->unicodeenc );
-	    name = buffer;
-	}
+	} else
+	    name = StdGlyphName(buffer,info->chars[i]->unicodeenc,info->uni_interp);
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressNext();
 #elif defined(FONTFORGE_CONFIG_GTK)
@@ -3808,12 +3818,12 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 	info->chars[i]->name = copy(name);
     }
 
-    /* If we have a GSUB table we can give some unencoded glyphs name */
+    /* If we have a GSUB table we can give some unencoded glyphs names */
     /*  for example if we have a vrt2 substitution of A to <unencoded> */
     /*  we could name the unencoded "A.vrt2" (though in this case we might */
     /*  try A.vert instead */ /* Werner suggested this */
     /* We could try this from morx too, except that apple features don't */
-    /*  meaningful ids. That is A.15,3 isn't very readable */
+    /*  use meaningful ids. That is A.15,3 isn't very readable */
     for ( i=info->glyph_cnt-1; i>=0 ; --i )
 	if ( info->chars[i]!=NULL && info->chars[i]->name==NULL )
     break;
@@ -4162,7 +4172,7 @@ return;
     for ( i=0; i<256; ++i ) if ( (sc = hi[i])!=NULL )
 	chars[sc->enc] = sc;
     for ( i=0; i<256+extras; ++i ) if ( (sc=chars[i])!=NULL ) {
-	uenc = UniFromName(sc->name);
+	uenc = UniFromName(sc->name,info->uni_interp,info->encoding_name);
 	if ( uenc!=-1 )
 	    sc->unicodeenc = uenc;
     }
@@ -4654,6 +4664,7 @@ SplineFont *_SFReadTTF(FILE *ttf, int flags,char *filename) {
     memset(&info,'\0',sizeof(struct ttfinfo));
     info.onlystrikes = (flags&ttf_onlystrikes)?1:0;
     info.onlyonestrike = (flags&ttf_onlyonestrike)?1:0;
+    info.uni_interp = ui_unset;
     ret = readttf(ttf,&info,filename);
     if ( !ret )
 return( NULL );

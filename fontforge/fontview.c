@@ -1394,6 +1394,7 @@ void FontViewMenu_MetaFont(GtkMenuItem *menuitem, gpointer user_data) {
 #define MID_ShowDependentSubs	2234
 #define MID_DefaultATT	2235
 #define MID_POV		2236
+#define MID_BuildDuplicates	2237
 #define MID_Center	2600
 #define MID_Thirds	2601
 #define MID_SetWidth	2602
@@ -3265,6 +3266,97 @@ void FontViewMenu_Transform(GtkMenuItem *menuitem, gpointer user_data) {
 }
 #endif
 
+static int SFIsDuplicatable(SplineFont *sf, SplineChar *sc) {
+    extern const int cns14pua[], amspua[];
+    const int *pua = sf->uni_interp==ui_trad_chinese ? cns14pua : sf->uni_interp==ui_ams ? amspua : NULL;
+    int baseuni = 0;
+    const unichar_t *pt;
+
+    if ( pua!=NULL && sc->unicodeenc>=0xe000 && sc->unicodeenc<=0xf8ff )
+	baseuni = pua[sc->unicodeenc-0xe000];
+    if ( baseuni==0 && ( pt = SFGetAlternate(sf,sc->unicodeenc,sc,false))!=NULL &&
+	    pt[0]!='\0' && pt[1]=='\0' )
+	baseuni = pt[0];
+    if ( baseuni!=0 && SFGetCharDup(sf,baseuni,NULL)!=NULL )
+return( true );
+
+return( false );
+}
+
+void FVBuildDuplicate(FontView *fv) {
+    extern const int cns14pua[], amspua[];
+    const int *pua = fv->sf->uni_interp==ui_trad_chinese ? cns14pua : fv->sf->uni_interp==ui_ams ? amspua : NULL;
+    int i, cnt=0;
+    SplineChar dummy;
+    const unichar_t *pt;
+    RefChar *ref;
+
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] )
+	++cnt;
+# ifdef FONTFORGE_CONFIG_GDRAW
+    GProgressStartIndicatorR(10,_STR_BuildingDuplicates,_STR_BuildingDuplicates,_STR_NULL,cnt,1);
+# elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_start_indicator(10,_("Building duplicate encodings"),_("Building duplicate encodings"),NULL,cnt,1);
+# endif
+
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] ) {
+	SplineChar *sc = fv->sf->chars[i], *basesc;
+	int baseuni = 0;
+	if ( sc==NULL )
+	    sc = SCBuildDummy(&dummy,fv->sf,i);
+	if ( pua!=NULL && sc->unicodeenc>=0xe000 && sc->unicodeenc<=0xf8ff )
+	    baseuni = pua[sc->unicodeenc-0xe000];
+	if ( baseuni==0 && ( pt = SFGetAlternate(fv->sf,sc->unicodeenc,sc,false))!=NULL &&
+		pt[0]!='\0' && pt[1]=='\0' )
+	    baseuni = pt[0];
+	if ( baseuni!=0 && (basesc = SFGetCharDup(fv->sf,baseuni,NULL))!=NULL ) {
+	    if ( fv->sf->chars[i]==NULL )
+		fv->sf->chars[i] = MakeDupRef(basesc,i,sc->unicodeenc);
+	    else {
+		SCPreserveState(sc,2);
+		SCClearContents(sc);
+		free(sc->name);
+		sc->name = basesc->name;
+		sc->width = basesc->width; sc->vwidth = basesc->vwidth;
+		ref = RefCharCreate();
+		sc->layers[ly_fore].refs = ref;
+		ref->sc = basesc;
+		ref->local_enc = basesc->enc;
+		ref->unicode_enc = basesc->unicodeenc;
+		ref->adobe_enc = getAdobeEnc(basesc->name);
+		ref->transform[0] = ref->transform[3] = 1;
+		SCReinstanciateRefChar(sc,ref);
+		SCMakeDependent(sc,basesc);
+	    }
+	    SCCharChangedUpdate(fv->sf->chars[i]);
+	}
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+# ifdef FONTFORGE_CONFIG_GDRAW
+	if ( !GProgressNext())
+# elif defined(FONTFORGE_CONFIG_GTK)
+	if ( !gwwv_progress_next())
+# endif
+    break;
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+    }
+# ifdef FONTFORGE_CONFIG_GDRAW
+    GProgressEndIndicator();
+# elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_end_indicator();
+# endif
+}
+
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+# if defined(FONTFORGE_CONFIG_GDRAW)
+static void FVMenuBuildDuplicate(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FVBuildDuplicate( (FontView *) GDrawGetUserData(gw));
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_Transform(GtkMenuItem *menuitem, gpointer user_data) {
+    FVBuildDuplicate( (FontView *) FV_From_MI(menuitem));
+# endif
+}
+#endif
+
 int ScriptLangMatch(struct script_record *sr,uint32 script,uint32 lang) {
     int i, j;
 
@@ -5058,7 +5150,8 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 		    sc = fv->sf->chars[i];
 		    if ( sc==NULL )
 			sc = SCBuildDummy(&dummy,fv->sf,i);
-		    if ( SFIsSomethingBuildable(fv->sf,sc,false)) {
+		    if ( SFIsSomethingBuildable(fv->sf,sc,false) ||
+			    SFIsDuplicatable(fv->sf,sc)) {
 			anybuildable = true;
 		break;
 		    }
@@ -5144,6 +5237,20 @@ static void balistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 		if ( sc==NULL )
 		    sc = SCBuildDummy(&dummy,fv->sf,i);
 		if ( SFIsSomethingBuildable(fv->sf,sc,onlyaccents)) {
+		    anybuildable = true;
+	    break;
+		}
+	    }
+	    mi->ti.disabled = !anybuildable;
+        } else if ( mi->mid==MID_BuildDuplicates ) {
+	    int anybuildable = false;
+	    int i;
+	    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] ) {
+		SplineChar *sc, dummy;
+		sc = fv->sf->chars[i];
+		if ( sc==NULL )
+		    sc = SCBuildDummy(&dummy,fv->sf,i);
+		if ( SFIsDuplicatable(fv->sf,sc)) {
 		    anybuildable = true;
 	    break;
 		}
@@ -5349,6 +5456,7 @@ static GMenuItem eflist[] = {
 static GMenuItem balist[] = {
     { { (unichar_t *) _STR_Buildaccent, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, 'A', ksm_control|ksm_shift, NULL, NULL, FVMenuBuildAccent, MID_BuildAccent },
     { { (unichar_t *) _STR_Buildcomposit, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuBuildComposite, MID_BuildComposite },
+    { { (unichar_t *) _STR_BuildDuplicates, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuBuildDuplicate, MID_BuildDuplicates },
     { NULL }
 };
 
@@ -6756,6 +6864,66 @@ return( i );
 return( -1 );
 }
 
+char *StdGlyphName(char *buffer, int uni,enum uni_interp interp) {
+    char *name = NULL;
+    int j;
+
+    if ( (uni>=0 && uni<' ') ||
+	    (uni>=0x7f && uni<0xa0) )
+	/* standard controls */;
+    else if ( uni!=-1  ) {
+	if ( uni>=0xe000 && uni<=0xf8ff &&
+		(interp==ui_trad_chinese || interp==ui_ams)) {
+	    extern const int cns14pua[], amspua[];
+	    const int *pua = interp==ui_trad_chinese ? cns14pua : amspua;
+	    if ( pua[uni-0xe000]!=0 )
+		uni = pua[uni-0xe000];
+	}
+	if ( uni<psunicodenames_cnt )
+	    name = (char *) psunicodenames[uni];
+	if ( name==NULL &&
+		(interp==ui_adobe || interp==ui_ams) &&
+		((uni>=0xe000 && uni<=0xf7ff ) ||
+		 (uni>=0xfb00 && uni<=0xfb06 ))) {
+	    int provenance = interp==ui_adobe ? 1 : 2;
+	    /* If we are using Adobe's interpretation of the private use */
+	    /*  area (which means small caps, etc. Then look for those */
+	    /*  names (also include the names for ligatures) */
+	    for ( j=0; psaltuninames[j].name!=NULL; ++j ) {
+		if ( psaltuninames[j].unicode == uni &&
+			psaltuninames[j].provenance == provenance ) {
+		    name = psaltuninames[j].name;
+	    break;
+		}
+	    }
+	}
+	if ( name==NULL ) {
+	    if ( uni==0x2d )
+		name = "hyphen-minus";
+	    else if ( uni==0xad )
+		name = "softhyphen";
+	    else if ( uni==0x00 )
+		name = ".notdef";
+	    else if ( uni==0xa0 )
+		name = "nonbreakingspace";
+	    else if ( uni==0x03bc && interp==ui_greek )
+		name = "mu.greek";
+	    else if ( uni==0x0394 && interp==ui_greek )
+		name = "Delta.greek";
+	    else if ( uni==0x03a9 && interp==ui_greek )
+		name = "Omega.greek";
+	    else {
+		if ( uni>=0x10000 )
+		    sprintf( buffer, "u%04X", uni);
+		else
+		    sprintf( buffer, "uni%04X", uni);
+		name = buffer;
+	    }
+	}
+    }
+return( name );
+}
+
 SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i) {
     static char namebuf[100];
 #ifdef FONTFORGE_CONFIG_TYPE3
@@ -6792,53 +6960,10 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i) {
 
     if ( sf->cidmaster!=NULL )
 	dummy->name = namebuf;
-    else if ( (dummy->unicodeenc>=0 && dummy->unicodeenc<' ') ||
-	    (dummy->unicodeenc>=0x7f && dummy->unicodeenc<0xa0) )
-	/* standard controls */;
-    else if ( dummy->unicodeenc!=-1  ) {
-	if ( dummy->unicodeenc<psunicodenames_cnt )
-	    dummy->name = (char *) psunicodenames[dummy->unicodeenc];
-	if ( dummy->name==NULL &&
-		(sf->uni_interp==ui_adobe || sf->uni_interp==ui_ams) &&
-		((dummy->unicodeenc>=0xe000 && dummy->unicodeenc<=0xf7ff ) ||
-		 (dummy->unicodeenc>=0xfb00 && dummy->unicodeenc<=0xfb06 ))) {
-	    int provenance = sf->uni_interp==ui_adobe ? 1 : 2;
-	    /* If we are using Adobe's interpretation of the private use */
-	    /*  area (which means small caps, etc. Then look for those */
-	    /*  names (also include the names for ligatures) */
-	    for ( j=0; psaltuninames[j].name!=NULL; ++j ) {
-		if ( psaltuninames[j].unicode == dummy->unicodeenc &&
-			psaltuninames[j].provenance == provenance ) {
-		    dummy->name = psaltuninames[j].name;
-	    break;
-		}
-	    }
-	}
-	if ( dummy->name==NULL ) {
-	    if ( dummy->unicodeenc==0x2d )
-		dummy->name = "hyphen-minus";
-	    else if ( dummy->unicodeenc==0xad )
-		dummy->name = "softhyphen";
-	    else if ( dummy->unicodeenc==0x00 )
-		dummy->name = ".notdef";
-	    else if ( dummy->unicodeenc==0xa0 )
-		dummy->name = "nonbreakingspace";
-	    else if ( dummy->unicodeenc==0x03bc && sf->uni_interp==ui_greek )
-		dummy->name = "mu.greek";
-	    else if ( dummy->unicodeenc==0x0394 && sf->uni_interp==ui_greek )
-		dummy->name = "Delta.greek";
-	    else if ( dummy->unicodeenc==0x03a9 && sf->uni_interp==ui_greek )
-		dummy->name = "Omega.greek";
-	    else {
-		if ( dummy->unicodeenc>=0x10000 )
-		    sprintf( namebuf, "u%04X", dummy->unicodeenc);
-		else
-		    sprintf( namebuf, "uni%04X", dummy->unicodeenc);
-		dummy->name = namebuf;
-	    }
-	}
-    } else if ( item!=NULL && item->psnames!=NULL )
+    else if ( item!=NULL && item->psnames!=NULL )
 	dummy->name = item->psnames[i];
+    else
+	dummy->name = StdGlyphName(namebuf,dummy->unicodeenc,sf->uni_interp);
     if ( dummy->name==NULL ) {
 	if ( dummy->unicodeenc!=-1 || i<256 )
 	    dummy->name = ".notdef";
@@ -6863,10 +6988,11 @@ return( dummy );
 static SplineChar *_SFMakeChar(SplineFont *sf,int i) {
     SplineChar dummy, *sc;
     SplineFont *ssf;
-    int j;
+    int j, real_uni;
 #ifdef FONTFORGE_CONFIG_TYPE3
     Layer *l;
 #endif
+    extern const int cns14pua[], amspua[];
 
     if ( sf->subfontcnt!=0 ) {
 	ssf = NULL;
@@ -6881,6 +7007,19 @@ return( ssf->chars[i] );
     }
 
     if ( (sc = sf->chars[i])==NULL ) {
+	if (( sf->encoding_name == em_unicode || sf->encoding_name == em_unicode4 ) &&
+		( i>=0xe000 && i<=0xf8ff ) &&
+		( sf->uni_interp==ui_ams || sf->uni_interp==ui_trad_chinese ) &&
+		( real_uni = (sf->uni_interp==ui_ams ? amspua : cns14pua)[i-0xe000])!=0 ) {
+	    if ( real_uni<sf->charcnt ) {
+		/* if necessary, create the real unicode code point */
+		/*  and then make us be a duplicate of it */
+		sf->chars[i] = MakeDupRef(_SFMakeChar(sf,real_uni),i,i);
+		SCCharChangedUpdate(sf->chars[i]);
+return( sf->chars[i] );
+	    }
+	}
+
 	SCBuildDummy(&dummy,sf,i);
 	sf->chars[i] = sc = SplineCharCreate();
 #ifdef FONTFORGE_CONFIG_TYPE3
@@ -7330,19 +7469,25 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 	    Color fg = 0;
 	    FontMods *mods=NULL;
 	    static FontMods for_charset;
+	    extern const int amspua[];
+	    int uni;
 	    if ( sc==NULL )
 		sc = SCBuildDummy(&dummy,fv->sf,index);
-	    if ( sc->unicodeenc==0xad )
+	    uni = sc->unicodeenc;
+	    if ( fv->sf->uni_interp==ui_ams && uni>=0xe000 && uni<=0xf8ff &&
+		    amspua[uni-0xe000]!=0 )
+		uni = amspua[uni-0xe000];
+	    if ( uni==0xad )
 		buf[0] = '-';
 	    else if ( Use2ByteEnc(fv,sc,buf,&for_charset))
 		mods = &for_charset;
-	    else if ( sc->unicodeenc!=-1 && sc->unicodeenc<65536 )
-		buf[0] = sc->unicodeenc;
-	    else if ( sc->unicodeenc>=0x1d400 && sc->unicodeenc<=0x1d7ff ) {
+	    else if ( uni!=-1 && uni<65536 )
+		buf[0] = uni;
+	    else if ( uni>=0x1d400 && uni<=0x1d7ff ) {
 		int i;
 		for ( i=0; mathmap[i].start!=0; ++i ) {
-		    if ( sc->unicodeenc<=mathmap[i].last ) {
-			buf[0] = maps[mathmap[i].charset][sc->unicodeenc-mathmap[i].start];
+		    if ( uni<=mathmap[i].last ) {
+			buf[0] = maps[mathmap[i].charset][uni-mathmap[i].start];
 			styles = mathmap[i].styles;
 		break;
 		    }

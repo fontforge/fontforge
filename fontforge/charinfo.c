@@ -4511,7 +4511,7 @@ static void psinitnames(void) {
     psnamesinited = true;
 }
 
-int UniFromName(const char *name) {
+int UniFromName(const char *name,enum uni_interp interp,int encname) {
     int i = -1;
     char *end;
     struct psbucket *buck;
@@ -4524,6 +4524,16 @@ int UniFromName(const char *name) {
 	i = strtol(name+1,&end,16);
 	if ( *end )
 	    i = -1;
+	else if ( encname!=em_unicode4 && (interp==ui_ams || interp==ui_trad_chinese)) {
+	    int j;
+	    extern const int cns14pua[], amspua[];
+	    const int *pua = interp==ui_ams ? amspua : cns14pua;
+	    for ( j=0xf8ff-0xe000; j>=0; --j )
+		if ( pua[j]==i ) {
+		    i = j+0xe000;
+	    break;
+		}
+	}
     } else if ( name[0]=='U' && name[1]=='+' && strlen(name)==6 ) {
 	/* Unifont uses this convention */
 	i = strtol(name+2,&end,16);
@@ -4542,7 +4552,7 @@ int UniFromName(const char *name) {
 return( i );
 }
 
-int uUniFromName(const unichar_t *name) {
+int uUniFromName(const unichar_t *name,enum uni_interp interp,int encname) {
     int i = -1;
     unichar_t *end;
 
@@ -4554,6 +4564,16 @@ int uUniFromName(const unichar_t *name) {
 	i = u_strtol(name+1,&end,16);
 	if ( *end )
 	    i = -1;
+	else if ( encname!=em_unicode4 && (interp==ui_ams || interp==ui_trad_chinese)) {
+	    int j;
+	    extern const int cns14pua[], amspua[];
+	    const int *pua = interp==ui_ams ? amspua : cns14pua;
+	    for ( j=0xf8ff-0xe000; j>=0; --j )
+		if ( pua[j]==i ) {
+		    i = j+0xe000;
+	    break;
+		}
+	}
     } else if ( name[0]=='U' && name[1]=='+' && u_strlen(name)==6 ) {
 	/* Unifont uses this convention */
 	i = u_strtol(name+2,&end,16);
@@ -5146,7 +5166,7 @@ static int CI_SName(GGadget *g, GEvent *e) {	/* Set From Name */
 	const unichar_t *ret = _GGadgetGetTitle(GWidgetGetControl(ci->gw,CID_UName));
 	int i;
 	char buf[40]; unichar_t ubuf[2], *temp;
-	i = uUniFromName(ret);
+	i = uUniFromName(ret,ui_none,em_custom);
 	if ( i==-1 ) {
 	    /* Adobe says names like uni00410042 represent a ligature (A&B) */
 	    /*  (that is "uni" followed by two 4-digit codes). */

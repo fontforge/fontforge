@@ -53,7 +53,7 @@ static void initadobeenc(void) {
 	if ( strcmp(AdobeStandardEncoding[i],".notdef")==0 )
 	    unicode_from_adobestd[i] = 0xfffd;
 	else {
-	    j = UniFromName(AdobeStandardEncoding[i]);
+	    j = UniFromName(AdobeStandardEncoding[i],ui_none,em_custom);
 	    if ( j==-1 ) j = 0xfffd;
 	    unicode_from_adobestd[i] = j;
 	}

@@ -1729,6 +1729,72 @@ void SFRestoreNearTop(SplineFont *sf) {
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 }
 
+static void SFToPUA(SplineFont *sf) {
+    int i, j;
+    extern const int cns14pua[], amspua[];
+    const int *pua;
+    int low, high;
+    BDFFont *bdf;
+
+    if ( sf->uni_interp==ui_trad_chinese ) {
+	pua = cns14pua;
+	low = 0x20000;
+	high = 0x2ffff;
+    } else {
+	pua = amspua;
+	low = 0x1d400;
+	high = 0x1d7ff;
+    }
+
+    for ( i=low; i<sf->charcnt && i<=high; ++i ) {
+	if ( sf->chars[i]!=NULL ) {
+	    for ( j=0xf8ff-0xe000; j>=0; --j )
+		if ( pua[j] == i )
+	    break;
+	    if ( j>=0 ) {
+		j += 0xe000;
+		if ( sf->chars[j]!=NULL ) {
+		    sf->chars[j] = sf->chars[i];
+		    sf->chars[i] = NULL;
+		    sf->chars[j]->unicodeenc = j;
+		    sf->chars[j]->enc = j;
+		    for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
+			if ( j<bdf->charcnt && bdf->chars[j]==NULL && bdf->chars[i]!=NULL ) {
+			    bdf->chars[j] = bdf->chars[i];
+			    bdf->chars[i] = NULL;
+			    bdf->chars[j]->enc = j;
+			}
+		    }
+		}
+	    }
+	}
+    }
+}
+
+static void SFFromPUA(SplineFont *sf) {
+    int i, j;
+    extern const int cns14pua[], amspua[];
+    const int *pua = sf->uni_interp==ui_trad_chinese ? cns14pua : amspua;
+    BDFFont *bdf;
+
+    for ( i=0xe000; i<sf->charcnt && i<=0xf8ff; ++i ) {
+	if ( sf->chars[i]!=NULL && (j=pua[i-0xe000])>0x10000 && j<sf->charcnt &&
+		sf->chars[j]==NULL ) {
+	    sf->chars[j] = sf->chars[i];
+	    sf->chars[i] = NULL;
+	    sf->chars[j]->unicodeenc = j;
+	    sf->chars[j]->enc = j;
+	    for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
+		if ( j<bdf->charcnt && bdf->chars[j]==NULL && bdf->chars[i]!=NULL ) {
+		    bdf->chars[j] = bdf->chars[i];
+		    bdf->chars[i] = NULL;
+		    bdf->chars[j]->enc = j;
+		}
+	    }
+	}
+    }
+}
+
 /* see also SplineFontNew in splineutil2.c */
 static int __SFReencodeFont(SplineFont *sf,enum charset new_map,
 	SplineFont *target) {
@@ -1748,6 +1814,8 @@ static int __SFReencodeFont(SplineFont *sf,enum charset new_map,
     if ( target==NULL ) {
 	if ( sf->encoding_name==new_map )
 return(false);
+	if ( sf->encoding_name==em_unicode4 && (sf->uni_interp==ui_ams || sf->uni_interp==ui_trad_chinese))
+	    SFToPUA(sf);
 	if ( new_map==em_custom ) {
 	    sf->encoding_name=em_custom;	/* Custom, it's whatever's there */
 return(false);
@@ -1897,11 +1965,6 @@ return( false );
     sf->chars = chars;
     sf->charcnt = enc_cnt+extras;
     sf->encoding_name = new_map;
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	for ( refs=sf->chars[i]->layers[ly_fore].refs; refs!=NULL; refs = refs->next )
-	    refs->local_enc = refs->sc->enc;
-    }
-
     for ( bdf=sf->bitmaps; bdf!=NULL; bdf = bdf->next ) {
 	free(bdf->chars);
 	bdf->chars = bdf->temp;
@@ -1909,6 +1972,13 @@ return( false );
 	bdf->charcnt = enc_cnt+extras;
 	bdf->encoding_name = new_map;
     }
+    if ( sf->encoding_name==em_unicode4 && (sf->uni_interp==ui_ams || sf->uni_interp==ui_trad_chinese))
+	SFFromPUA(sf);
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	for ( refs=sf->chars[i]->layers[ly_fore].refs; refs!=NULL; refs = refs->next )
+	    refs->local_enc = refs->sc->enc;
+    }
+
     free(sf->remap);
     sf->remap = NULL;
     sf->encodingchanged = true;

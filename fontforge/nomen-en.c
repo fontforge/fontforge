@@ -310,6 +310,8 @@ static char str_Buildaccent[] = "Build Accented Char";
 static unichar_t mnemonic_Buildaccent[] = 'B';
 static char str_Buildcomposit[] = "Build Composite Char";
 static unichar_t mnemonic_Buildcomposit[] = 'C';
+static char str_BuildDuplicates[] = "Build Duplicate Char";
+static unichar_t mnemonic_BuildDuplicates[] = 'D';
 static char str_Clockwise[] = "Clockwise";
 static unichar_t mnemonic_Clockwise[] = 'o';
 static char str_Cclockwise[] = "Counter Clockwise";
@@ -1310,6 +1312,7 @@ static char *str_KerningLoadFailed = "Load of Kerning Metrics Failed";
 static char *str_KerningLoadFailedLong = "Failed to load kern data from %hs";
     /* Messages from accented characters */
 static char str_Buildingaccented[] = "Building accented letters";
+static char str_BuildingDuplicates[] = "Building duplicate encodings";
 static char str_Replacearing[] = "Replace Å";
 static char str_Areyousurearing[] = "Are you sure you want to replace Å?\012The ring will not join to the A.";
 static char str_Yes[] = "Yes";

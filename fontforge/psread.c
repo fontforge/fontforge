@@ -2702,7 +2702,7 @@ return( head );
 		    encs[i] = 0;
 		    if ( i<32 || (i>=0x7f && i<0xa0))
 			encs[i] = i;
-		} else if ( (enc=UniFromName(tokbuf))!=-1 )
+		} else if ( (enc=UniFromName(tokbuf,ui_none,em_custom))!=-1 )
 		    encs[i] = enc;
 		else {
 		    names[i] = copy(tokbuf);

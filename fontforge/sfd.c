@@ -45,7 +45,7 @@ static const char *charset_names[] = {
     "unicode", "unicode4", "sjis", "wansung", "gb2312pk", NULL};
 
 static const char *unicode_interp_names[] = { "none", "adobe", "greek",
-    "japanese", "tradchinese", "simpchinese", "korean", NULL };
+    "japanese", "tradchinese", "simpchinese", "korean", "ams", NULL };
 
 signed char inbase64[256] = {
         -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
@@ -4140,10 +4140,15 @@ static int ModSF(FILE *asfd,SplineFont *sf) {
     if ( getname(asfd,tok)!=1 || strcmp(tok,"Encoding:")!=0 )
 return(false);
     getint(asfd,&newmap);
-    if ( sf->encoding_name!=newmap )
-	SFReencodeFont(sf,newmap);
     if ( getname(asfd,tok)!=1 )
 return( false );
+    if ( strcmp(tok,"UnicodeInterp:")==0 ) {
+	sf->uni_interp = SFDGetUniInterp(asfd,tok,sf);
+	if ( getname(asfd,tok)!=1 )
+return( false );
+    }
+    if ( sf->encoding_name!=newmap )
+	SFReencodeFont(sf,newmap);
     if ( strcmp(tok,"Order2:")==0 ) {
 	getint(asfd,&order2);
 	if ( getname(asfd,tok)!=1 )
@@ -4274,6 +4279,7 @@ return;
     if ( !sf->new && sf->origname!=NULL )	/* might be a new file */
 	fprintf( asfd, "Base: %s\n", sf->origname );
     fprintf( asfd, "Encoding: %d\n", sf->encoding_name );
+    fprintf( asfd, "UnicodeInterp: %s\n", unicode_interp_names[sf->uni_interp]);
     if ( sf->order2 )
 	fprintf( asfd, "Order2: %d\n", sf->order2 );
     fprintf( asfd, "BeginChars: %d\n", max );

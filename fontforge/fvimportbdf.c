@@ -150,7 +150,7 @@ static void MakeEncChar(SplineFont *sf,int enc,char *name) {
     free(sf->chars[enc]->name);
     sf->chars[enc]->name = cleancopy(name);
 
-    uni = UniFromName(name);
+    uni = UniFromName(name,sf->uni_interp,sf->encoding_name);
     if ( uni!=-1 )
 	sf->chars[enc]->unicodeenc = uni;
     sf->chars[enc]->enc = enc;
@@ -183,7 +183,7 @@ static int figureProperEncoding(SplineFont *sf,BDFFont *b, int enc,char *name,
     } else {
 	int32 uni = UniFromEnc(enc,encname);
 	if ( uni==-1 )
-	    uni = UniFromName(name);
+	    uni = UniFromName(name,sf->uni_interp,sf->encoding_name);
 	i = EncFromSF(uni,sf);
 	if ( uni!=-1 && i>=sf->charcnt &&
 		(sf->encoding_name==em_iso8859_1 || sf->encoding_name==em_unicode))
