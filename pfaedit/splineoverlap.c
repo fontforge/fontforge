@@ -793,7 +793,37 @@ static int bottomcmp(const void *_e1, const void *_e2) {
     const EI *e1 = *(EI *const *) _e1, *e2 = *(EI *const *) _e2;
     const double min1 = e1->coordmin[e1->major], min2 = e2->coordmin[e1->major];
 
-return( ( min1>min2 ) ? 1 : ( min1<min2 ) ? -1 : 0 );
+    if ( min1==min2 ) {
+	double tmmin1, tmmax1, tmmin2, tmmax2;
+	double o1, o2;
+	int other = !e1->major;
+	Spline1D *o;
+	if ( e1->up ) { tmmin1 = e1->tmin; tmmax1 = e1->tmax; }
+	else { tmmin1 = e1->tmax; tmmax1 = e1->tmin; }
+	if ( e2->up ) { tmmin2 = e2->tmin; tmmax2 = e2->tmax; }
+	else { tmmin2 = e2->tmax; tmmax2 = e2->tmin; }
+	o = &e1->spline->splines[other];
+	o1 = ((o->a*tmmin1+o->b)*tmmin1+o->c)*tmmin1+o->d;
+	o = &e2->spline->splines[other];
+	o2 = ((o->a*tmmin2+o->b)*tmmin2+o->c)*tmmin2+o->d;
+	if ( o1>o2 )
+return( 1 );
+	else if ( o2<o1 )
+return( -1 );
+	o = &e1->spline->splines[other];
+	o1 = ((o->a*tmmax1+o->b)*tmmax1+o->c)*tmmax1+o->d;
+	o = &e2->spline->splines[other];
+	o2 = ((o->a*tmmax2+o->b)*tmmax2+o->c)*tmmax2+o->d;
+	if ( o1>o2 )
+return( 1 );
+	else if ( o2<o1 )
+return( -1 );
+
+return( 0 );
+    } else if ( min1 > min2 )
+return( 1 );
+    else
+return( -1 );
 }
 
 static int topcmp(const void *_e1, const void *_e2) {
