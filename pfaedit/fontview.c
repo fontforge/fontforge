@@ -5381,9 +5381,11 @@ SplineFont *ReadSplineFont(char *filename,enum openflags openflags) {
 return( NULL );
 
     strippedname = filename;
-    if ( (paren=strchr(filename,'('))!=NULL ) {
+    pt = strrchr(filename,'/');
+    if ( pt==NULL ) pt = filename;
+    if ( (paren=strchr(pt,'('))!=NULL && strchr(paren,')')!=NULL ) {
 	strippedname = copy(filename);
-	*strchr(strippedname,'(') = '\0';
+	strippedname[paren-filename] = '\0';
     }
 
     pt = strrchr(strippedname,'.');

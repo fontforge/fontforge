@@ -404,7 +404,7 @@ return( _readencstring(ttf,stringoffset+fullstr,fulllen,fullenc));
 static int PickTTFFont(FILE *ttf,char *filename) {
     int32 *offsets, cnt, i, choice, j;
     unichar_t **names;
-    char *pt;
+    char *pt, *lparen;
 
     /* TTCF version = */ getlong(ttf);
     cnt = getlong(ttf);
@@ -422,8 +422,10 @@ return( true );
 	names[j] = TTFGetFontName(ttf,offsets[i],0);
 	if ( names[j]!=NULL ) ++j;
     }
-    if ( (pt = strchr(filename,'('))!=NULL ) {
-	char *find = copy(pt+1);
+    pt = strrchr(filename,'/');
+    if ( pt==NULL ) pt = filename;
+    if ( (lparen = strchr(pt,'('))!=NULL && strchr(lparen,')')!=NULL ) {
+	char *find = copy(lparen+1);
 	pt = strchr(find,')');
 	if ( pt!=NULL ) *pt='\0';
 	for ( choice=cnt-1; choice>=0; --choice )
@@ -431,7 +433,7 @@ return( true );
 	break;
 	if ( choice==-1 ) {
 	    char *fn = copy(filename);
-	    *strchr(fn,'(') = '\0';
+	    fn[lparen-filename] = '\0';
 	    GWidgetErrorR(_STR_NotInCollection,_STR_FontNotInCollection,find,fn);
 	    free(fn);
 	}
@@ -6242,11 +6244,13 @@ return( SFFillFromTTF(&info));
 SplineFont *SFReadTTF(char *filename, int flags) {
     FILE *ttf;
     SplineFont *sf;
-    char *temp=filename, *pt;
+    char *temp=filename, *pt, *lparen;
 
-    if ( strchr(filename,'(')!=NULL ) {
+    pt = strrchr(filename,'/');
+    if ( pt==NULL ) pt = filename;
+    if ( (lparen=strchr(pt,'('))!=NULL && strchr(lparen,')')!=NULL ) {
 	temp = copy(filename);
-	pt = strchr(temp,'(');
+	pt = temp + (lparen-filename);
 	*pt = '\0';
     }
     ttf = fopen(temp,"r");

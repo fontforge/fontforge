@@ -1870,7 +1870,7 @@ static SplineFont *SearchTtfResources(FILE *f,long rlistpos,int subcnt,long rdat
     SplineFont *sf;
     int which = 0;
     unichar_t **names;
-    char *pt;
+    char *pt,*lparen;
 
     fseek(f,rlistpos,SEEK_SET);
     if ( subcnt>1 ) {
@@ -1891,8 +1891,9 @@ static SplineFont *SearchTtfResources(FILE *f,long rlistpos,int subcnt,long rdat
 	    }
 	    fseek(f,here,SEEK_SET);
 	}
-	if ( (pt = strchr(filename,'('))!=NULL ) {
-	    char *find = copy(pt+1);
+	if ((pt = strrchr(filename,'/'))==NULL ) pt = filename;
+	if ( (lparen = strchr(pt,'('))!=NULL && strchr(lparen,')')!=NULL ) {
+	    char *find = copy(lparen+1);
 	    pt = strchr(find,')');
 	    if ( pt!=NULL ) *pt='\0';
 	    for ( which=subcnt-1; which>=0; --which )
@@ -1900,7 +1901,7 @@ static SplineFont *SearchTtfResources(FILE *f,long rlistpos,int subcnt,long rdat
 	    break;
 	    if ( which==-1 ) {
 		char *fn = copy(filename);
-		*strchr(fn,'(') = '\0';
+		fn[lparen-filename] = '\0';
 		GWidgetErrorR(_STR_NotInCollection,_STR_FontNotInCollection,find,fn);
 		free(fn);
 	    }
@@ -2256,7 +2257,7 @@ static FOND *PickFOND(FOND *fondlist,char *filename,char **name, int *style) {
     FOND **fonds, *fond;
     int *styles;
     int cnt, which;
-    char *pt;
+    char *pt, *lparen;
 
     /* The file may contain multiple families, and each family may contain */
     /*  multiple styles (and each style may contain multiple sizes, but that's */
@@ -2285,8 +2286,9 @@ static FOND *PickFOND(FOND *fondlist,char *filename,char **name, int *style) {
 	}
     }
 
-    if ( (pt = strchr(filename,'('))!=NULL ) {
-	char *find = copy(pt+1);
+    if ((pt = strrchr(filename,'/'))!=NULL ) pt = filename;
+    if ( (lparen = strchr(filename,'('))!=NULL && strchr(lparen,')')!=NULL ) {
+	char *find = copy(lparen+1);
 	pt = strchr(find,')');
 	if ( pt!=NULL ) *pt='\0';
 	for ( which=cnt-1; which>=0; --which )
@@ -2294,7 +2296,7 @@ static FOND *PickFOND(FOND *fondlist,char *filename,char **name, int *style) {
 	break;
 	if ( which==-1 ) {
 	    char *fn = copy(filename);
-	    *strchr(fn,'(') = '\0';
+	    fn[lparen-filename] = '\0';
 	    GWidgetErrorR(_STR_NotInCollection,_STR_FontNotInCollection,find,fn);
 	    free(fn);
 	}
@@ -2561,12 +2563,12 @@ static SplineFont *HasResourceFork(char *filename,int flags,SplineFont *into) {
     SplineFont *ret;
     FILE *temp;
     char *buf;
-    char *tempfn=filename, *pt;
+    char *tempfn=filename, *pt, *lparen;
 
-    if ( strchr(filename,'(')!=NULL ) {
+    if (( pt=strrchr(filename,'/'))==NULL ) pt = filename;
+    if ( (lparen = strchr(pt,'('))!=NULL && strchr(lparen,')')!=NULL ) {
 	tempfn = copy(filename);
-	pt = strchr(tempfn,'(');
-	*pt = '\0';
+	tempfn[lparen-filename] = '\0';
     }
 
     iret = FSPathMakeRef( (uint8 *) tempfn,&ref,NULL);
@@ -2735,12 +2737,12 @@ static SplineFont *IsResourceInFile(char *filename,int flags,SplineFont *into) {
     FILE *f;
     char *spt, *pt;
     SplineFont *sf;
-    char *temp=filename;
+    char *temp=filename, *lparen;
 
-    if ( strchr(filename,'(')!=NULL ) {
+    if (( pt=strrchr(filename,'/'))==NULL ) pt = filename;
+    if ( (lparen = strchr(pt,'('))!=NULL && strchr(lparen,')')!=NULL ) {
 	temp = copy(filename);
-	pt = strchr(temp,'(');
-	*pt = '\0';
+	temp[lparen-filename] = '\0';
     }
     f = fopen(temp,"r");
     if ( temp!=filename ) free(temp);
