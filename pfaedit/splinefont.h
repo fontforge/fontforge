@@ -275,6 +275,8 @@ typedef struct steminfo {
     unsigned int startdone: 1;	/* Used by ttf instructing */
     unsigned int backwards: 1;	/* If we think this hint is better done with a negative width */
     unsigned int reordered: 1;	/* In AutoHinting. Means we changed the start of the hint, need to test for out of order */
+    unsigned int ghost: 1;	/* this is a ghost stem hint. As such truetype should ignore it, type2 output should negate it, and type1 should use as is */
+		    /* Type2 says: -20 is "width" of top edge, -21 is "width" of bottom edge, type1 accepts either */
     int16 hintnumber;		/* when dumping out hintmasks we need to know */
 				/*  what bit to set for this hint */
     int mask;			/* Mask of all references that use this hint */

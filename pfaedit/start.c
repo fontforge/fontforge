@@ -32,6 +32,7 @@
 #include <unistd.h>
 
 unsigned short unicode_from_adobestd[256];
+struct lconv localeinfo;
 
 static void initadobeenc(void) {
     int i,j;
@@ -138,6 +139,12 @@ int main( int argc, char **argv ) {
     fprintf( stderr, "Copyright \251 2000,2001 by George Williams.\n Executable based on sources from %s.\n",
 	    link_time_str );
     setlocale(LC_ALL,"");
+    localeinfo = *localeconv();
+    if ( *localeinfo.thousands_sep=='\0' ) {
+	if ( *localeinfo.decimal_point=='.' ) localeinfo.thousands_sep=",";
+	else if ( *localeinfo.decimal_point==',' ) localeinfo.thousands_sep=";";
+	else localeinfo.thousands_sep = " ";
+    }
     GResourceAddResourceString(NULL,argv[0]);
     LoadPrefs();
 

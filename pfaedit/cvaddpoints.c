@@ -185,6 +185,7 @@ return;			/* We clicked on the active point, that's a no-op */
     CVClearSel(cv);
     if ( sel!=NULL ) {
 	sp = cv->p.sp;
+	cv->lastselpt = base;
 	ss = sel;
 	if ( base->next!=NULL )
 	    SplineSetReverse(sel);
@@ -270,6 +271,7 @@ return;			/* We clicked on the active point, that's a no-op */
     cv->active_spl = ss;
     cv->active_sp = sp;
     CVSetCharChanged(cv,true);
+    CVInfoDraw(cv,cv->gw);
     SCUpdateAll(sc);
 }
 
@@ -371,6 +373,7 @@ void CVMouseMovePen(CharView *cv, PressedOn *p) {
 return;
     if ( cv->info.x==active->nextcp.x && cv->info.y==active->nextcp.y )
 return;
+    cv->lastselpt = cv->active_sp;
 
     active->nextcp.x = cv->info.x;
     active->nextcp.y = cv->info.y;
@@ -393,6 +396,8 @@ return;
 }
 
 void CVMouseUpPoint(CharView *cv) {
+    cv->lastselpt = cv->active_sp;
     cv->active_spl = NULL;
     cv->active_sp = NULL;
+    CVInfoDraw(cv,cv->gw);
 }

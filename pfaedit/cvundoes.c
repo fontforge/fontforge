@@ -960,9 +960,9 @@ void FVCopyWidth(FontView *fv) {
 	cur = gcalloc(1,sizeof(Undoes));
 	cur->undotype = ut_width;
 	if ( fv->sf->chars[i]!=NULL )
-	    cur->undotype = ut_noop;
+	    cur->u.width = fv->sf->chars[i]->width;
 	else
-	    cur->u.width = fv->sf->ascent+fv->sf->descent;
+	    cur->undotype = ut_noop;
 	if ( head==NULL )
 	    head = cur;
 	else

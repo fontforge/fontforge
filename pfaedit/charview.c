@@ -30,8 +30,10 @@
 #include <ustring.h>
 #include <gkeysym.h>
 #include <utype.h>
+#include <locale.h>
 
 extern int _GScrollBar_Width;
+extern struct lconv localeinfo;
 struct cvshows CVShows = { 1, 1, 1, 1, 1, 1, 1, 0, 1 };
 
 /* Positions on the info line */
@@ -948,8 +950,20 @@ static GWindow CharIcon(CharView *cv, FontView *fv) {
 return( icon );
 }
 
+static unichar_t *CVMakeTitles(CharView *cv,unichar_t *ubuf) {
+    unichar_t *title;
+    SplineChar *sc = cv->sc;
+
+    uc_strncpy(ubuf,sc->name,90);
+    u_strcat(ubuf,GStringGetResource(_STR_Bvfrom,NULL));
+    uc_strncat(ubuf,sc->parent->fontname,90);
+    title = u_copy(ubuf);
+    if ( sc->unicodeenc!=-1 && UnicodeCharacterNames[sc->unicodeenc>>8][sc->unicodeenc&0xff]!=NULL )
+	u_strcat(ubuf, UnicodeCharacterNames[sc->unicodeenc>>8][sc->unicodeenc&0xff]);
+return( title );
+}
+
 void CVChangeSC(CharView *cv, SplineChar *sc ) {
-    char buffer[200];
     unichar_t *title;
     unichar_t ubuf[300];
 
@@ -970,11 +984,7 @@ void CVChangeSC(CharView *cv, SplineChar *sc ) {
     CVNewScale(cv);
 
     CharIcon(cv,cv->fv);
-    sprintf( buffer, "%.90s from %.90s ", sc->name, sc->parent->fontname );
-    title = uc_copy(buffer);
-    u_strcpy(ubuf,title);
-    if ( sc->unicodeenc!=-1 && UnicodeCharacterNames[sc->unicodeenc>>8][sc->unicodeenc&0xff]!=NULL )
-	u_strcat(ubuf, UnicodeCharacterNames[sc->unicodeenc>>8][sc->unicodeenc&0xff]);
+    title = CVMakeTitles(cv,ubuf);
     GDrawSetWindowTitles(cv->gw,ubuf,title);
     CVInfoDraw(cv,cv->gw);
     free(title);
@@ -1068,7 +1078,7 @@ static void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
     unichar_t ubuffer[50];
     int ybase = cv->mbh+(cv->infoh-cv->sfh)/2+cv->sas;
     double xdiff, ydiff;
-    SplinePoint *sp;
+    SplinePoint *sp, dummy;
 
     GDrawSetFont(pixmap,cv->small);
     r.x = RPT_DATA; r.width = 60;
@@ -1089,9 +1099,9 @@ static void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
 return;
 
     if ( cv->info.x>=1000 || cv->info.x<=-1000 || cv->info.y>=1000 || cv->info.y<=-1000 )
-	sprintf(buffer,"%d,%d", (int) cv->info.x, (int) cv->info.y );
+	sprintf(buffer,"%d%s%d", (int) cv->info.x, localeinfo.thousands_sep, (int) cv->info.y );
     else
-	sprintf(buffer,"%.4g,%.4g", cv->info.x, cv->info.y );
+	sprintf(buffer,"%.4g%s%.4g", cv->info.x, localeinfo.thousands_sep, cv->info.y );
     buffer[11] = '\0';
     uc_strcpy(ubuffer,buffer);
     GDrawDrawText(pixmap,RPT_DATA,ybase,ubuffer,-1,NULL,0);
@@ -1102,6 +1112,11 @@ return;
     uc_strcpy(ubuffer,buffer);
     GDrawDrawText(pixmap,MAG_DATA,ybase,ubuffer,-1,NULL,0);
     sp = cv->p.sp!=NULL ? cv->p.sp : cv->lastselpt;
+    if ( sp==NULL ) if ( cv->active_tool==cvt_rect || cv->active_tool==cvt_elipse ||
+	    cv->active_tool==cvt_poly || cv->active_tool==cvt_star ) {
+	dummy.me.x = cv->p.cx; dummy.me.y = cv->p.cy;
+	sp = &dummy;
+    }
     if ( sp ) {
 	double selx, sely;
 	if ( cv->pressed && sp==cv->p.sp ) {
@@ -1115,9 +1130,9 @@ return;
 	ydiff = cv->info.y-sely;
 
 	if ( selx>=1000 || selx<=-1000 || sely>=1000 || sely<=-1000 )
-	    sprintf(buffer,"%d,%d", (int) selx, (int) sely );
+	    sprintf(buffer,"%d%s%d", (int) selx, localeinfo.thousands_sep, (int) sely );
 	else
-	    sprintf(buffer,"%.4g,%.4g", selx, sely );
+	    sprintf(buffer,"%.4g%s%.4g", selx, localeinfo.thousands_sep, sely );
 	buffer[11] = '\0';
 	uc_strcpy(ubuffer,buffer);
 	GDrawDrawText(pixmap,SPT_DATA,ybase,ubuffer,-1,NULL,0);
@@ -1131,9 +1146,9 @@ return;
 return;
 
     if ( xdiff>=1000 || xdiff<=-1000 || ydiff>=1000 || ydiff<=-1000 )
-	sprintf(buffer,"%d,%d", (int) xdiff, (int) ydiff );
+	sprintf(buffer,"%d%s%d", (int) xdiff, localeinfo.thousands_sep, (int) ydiff );
     else
-	sprintf(buffer,"%.4g,%.4g", xdiff, ydiff );
+	sprintf(buffer,"%.4g%s%.4g", xdiff, localeinfo.thousands_sep, ydiff );
     buffer[11] = '\0';
     uc_strcpy(ubuffer,buffer);
     GDrawDrawText(pixmap,SOF_DATA,ybase,ubuffer,-1,NULL,0);
@@ -3190,7 +3205,7 @@ static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_AutoHint:
 	    removeOverlap = e==NULL || !(e->u.mouse.state&ksm_shift);
 	    free(mi->ti.text);
-	    mi->ti.text = uc_copy(removeOverlap?"AutoHint": "Full AutoHint");
+	    mi->ti.text = u_copy(GStringGetResource(removeOverlap?_STR_Autohint: _STR_FullAutohint,NULL));
 	  break;
 	  case MID_AddHHint:
 	    mi->ti.disabled = sp1==NULL || sp2->me.y==sp1->me.y;
@@ -3424,7 +3439,6 @@ CharView *CharViewCreate(SplineChar *sc, FontView *fv) {
     GWindow gw;
     GWindowAttrs wattrs;
     GGadgetData gd;
-    char buffer[200];
     GRect gsize;
     int sbsize;
     FontRequest rq;
@@ -3453,11 +3467,7 @@ CharView *CharViewCreate(SplineChar *sc, FontView *fv) {
     wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_ititle;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.cursor = ct_mypointer;
-    sprintf( buffer, "%.90s from %.90s ", sc->name, sc->parent->fontname );
-    wattrs.icon_title = uc_copy(buffer);
-    uc_strcpy(ubuf,buffer);
-    if ( sc->unicodeenc!=-1 && UnicodeCharacterNames[sc->unicodeenc>>8][sc->unicodeenc&0xff]!=NULL )
-	u_strcat(ubuf, UnicodeCharacterNames[sc->unicodeenc>>8][sc->unicodeenc&0xff]);
+    wattrs.icon_title = CVMakeTitles(cv,ubuf);
     wattrs.window_title = ubuf;
     wattrs.icon = CharIcon(cv, fv);
     if ( wattrs.icon )

@@ -91,7 +91,7 @@ static void RestoreOffsets(GWindow main, GWindow palette, GPoint *off) {
     if ( pt.y+pos.height>screensize.height )
 	pt.y = screensize.height-pos.height;
     palettesmoved = true;
-    GDrawMove(palette,pt.x,pt.y);
+    GDrawTrueMove(palette,pt.x,pt.y);
     GDrawRaise(palette);
 }
 
@@ -920,6 +920,8 @@ void CVPaletteActivate(CharView *cv) {
 	if ( bv!=NULL ) {
 	    SaveOffsets(bv->gw,bvtools,&bvtoolsoff);
 	    SaveOffsets(bv->gw,bvlayers,&bvlayersoff);
+	    GDrawSetUserData(bvtools,NULL);
+	    GDrawSetUserData(bvlayers,NULL);
 	}
 	GDrawSetVisible(bvtools,false);
 	GDrawSetVisible(bvlayers,false);
@@ -1383,6 +1385,8 @@ void BVPaletteActivate(BitmapView *bv) {
 	if ( cv!=NULL ) {
 	    SaveOffsets(cv->gw,cvtools,&cvtoolsoff);
 	    SaveOffsets(cv->gw,cvlayers,&cvlayersoff);
+	    GDrawSetUserData(cvtools,NULL);
+	    GDrawSetUserData(cvlayers,NULL);
 	}
 	GDrawSetVisible(cvtools,false);
 	GDrawSetVisible(cvlayers,false);
@@ -1406,6 +1410,8 @@ void CVPaletteDeactivate(void) {
 	if ( cv!=NULL ) {
 	    SaveOffsets(cv->gw,cvtools,&cvtoolsoff);
 	    SaveOffsets(cv->gw,cvlayers,&cvlayersoff);
+	    GDrawSetUserData(cvtools,NULL);
+	    GDrawSetUserData(cvlayers,NULL);
 	}
 	GDrawSetVisible(cvtools,false);
 	GDrawSetVisible(cvlayers,false);
@@ -1415,8 +1421,10 @@ void CVPaletteDeactivate(void) {
 	if ( bv!=NULL ) {
 	    SaveOffsets(bv->gw,bvtools,&bvtoolsoff);
 	    SaveOffsets(bv->gw,bvlayers,&bvlayersoff);
+	    GDrawSetUserData(bvtools,NULL);
+	    GDrawSetUserData(bvlayers,NULL);
 	}
-	GDrawSetVisible(bvtools,bvvisible[1]);
-	GDrawSetVisible(bvlayers,bvvisible[0]);
+	GDrawSetVisible(bvtools,false);
+	GDrawSetVisible(bvlayers,false);
     }
 }

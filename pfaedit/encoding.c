@@ -428,7 +428,7 @@ Encoding *MakeEncoding(SplineFont *sf) {
     int i;
     Encoding *item, *temp;
 
-    if ( sf->encoding_name!=em_none || sf->charcnt>=1024 )
+    if ( sf->encoding_name!=em_none || sf->charcnt>=1500 )
 return(NULL);
 
     strcpy(buffer,"Please name this encoding" );

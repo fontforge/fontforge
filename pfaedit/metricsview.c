@@ -106,6 +106,8 @@ return;
 	    base.clut = &clut;
 	    clut.clut_len = 2;
 	    clut.clut[0] = 0xffffff;
+	    if ( mv->perchar[i].selected )
+		clut.clut[1] = 0x808080;
 	    base.data = bdfc->bitmap;
 	    base.bytes_per_line = bdfc->bytes_per_line;
 	    base.width = width;
@@ -164,9 +166,10 @@ return;
 }
 
 static void MVDeselectChar(MetricsView *mv, int i) {
-    int x;
 
     mv->perchar[i].selected = false;
+    MVRedrawI(mv,i,0,0);
+#if 0
     if ( mv->bdf==NULL && mv->showgrid ) {
 	x = mv->perchar[i].dx;
 	if ( mv->right_to_left )
@@ -175,12 +178,14 @@ static void MVDeselectChar(MetricsView *mv, int i) {
 	x += mv->perchar[i].dwidth+mv->perchar[i].kernafter;
 	GDrawDrawLine(mv->gw,x,mv->topend,x,mv->displayend,0x808080);
     }
+#endif
 }
 
 static void MVSelectChar(MetricsView *mv, int i) {
-    int x;
 
     mv->perchar[i].selected = true;
+    MVRedrawI(mv,i,0,0);
+#if 0
     if ( mv->bdf==NULL && mv->showgrid ) {
 	x = mv->perchar[i].dx;
 	if ( x==0 )		/* Not set properly yet */
@@ -195,6 +200,7 @@ return;
 	    x += mv->perchar[i].dwidth+mv->perchar[i].kernafter;
 	GDrawDrawLine(mv->gw,x,mv->topend,x,mv->displayend,0x000080);
     }
+#endif
 }
     
 static void MVDoSelect(MetricsView *mv, int i) {
@@ -1213,6 +1219,7 @@ static void MVMouse(MetricsView *mv,GEvent *event) {
     int i, x, j, within, sel, ybase;
     SplineChar *sc;
     int diff;
+    int onwidth, onkern;
 
     GGadgetEndPopup();
     if ( event->u.mouse.y< mv->topend || event->u.mouse.y >= mv->displayend ) {
@@ -1253,56 +1260,79 @@ return;
 
     diff = event->u.mouse.x-mv->pressed_x;
     /*if ( mv->right_to_left ) diff = -diff;*/
+    sel = onwidth = onkern = false;
+    if ( sc==NULL ) {
+	if ( !mv->right_to_left ) {
+	    if ( within>0 && mv->perchar[within-1].selected &&
+		    event->u.mouse.x<mv->perchar[within].dx+3 )
+		onwidth = true;		/* previous char */
+	    else if ( within+1<mv->charcnt && mv->perchar[within+1].selected &&
+		    event->u.mouse.x>mv->perchar[within+1].dx-3 )
+		onkern = true;			/* subsequent char */
+	    else if ( within>0 && mv->perchar[within].selected &&
+		    event->u.mouse.x<mv->perchar[within].dx+3 )
+		onkern = true;
+	    else if ( event->u.mouse.x>mv->perchar[within].dx+mv->perchar[within].dwidth+mv->perchar[within].kernafter-3 ) {
+		onwidth = true;
+		sel = true;
+	    }
+	} else {
+	    if ( i>0 && mv->perchar[within-1].selected &&
+		    event->u.mouse.x>mv->width-(mv->perchar[within].dx+3) )
+		onwidth = true;		/* previous char */
+	    else if ( within+1<mv->charcnt && mv->perchar[within+1].selected &&
+		    event->u.mouse.x<mv->width-(mv->perchar[within+1].dx-3) )
+		onkern = true;			/* subsequent char */
+	    else if ( within>0 && mv->perchar[within].selected &&
+		    event->u.mouse.x>mv->width-(mv->perchar[within].dx+3) )
+		onkern = true;
+	    else if ( event->u.mouse.x<mv->width-(mv->perchar[within].dx+mv->perchar[within].dwidth+mv->perchar[within].kernafter-3) ) {
+		onwidth = true;
+		sel = true;
+	    }
+	}
+    }
+
+    if ( event->type != et_mousemove || !mv->pressed ) {
+	int ct = -1;
+	if ( sc!=NULL ) {
+	    if ( mv->cursor!=ct_lbearing )
+		ct = ct_lbearing;
+	} else if ( onwidth ) {
+	    if ( mv->cursor!=ct_rbearing )
+		ct = ct_rbearing;
+	} else if ( onkern ) {
+	    if ( mv->cursor!=ct_kerning )
+		ct = ct_kerning;
+	} else {
+	    if ( mv->cursor!=ct_mypointer )
+		ct = ct_mypointer;
+	}
+	if ( ct!=-1 ) {
+	    GDrawSetCursor(mv->gw,ct);
+	    mv->cursor = ct;
+	}
+    }
 
     if ( event->type == et_mousemove && !mv->pressed ) {
 	if ( sc==NULL && within!=-1 )
 	    sc = mv->perchar[within].sc;
-	if ( sc!=NULL )
+	if ( sc!=NULL ) 
 	    SCPreparePopup(mv->gw,sc);
 /* Don't allow any editing when displaying a bitmap font */
     } else if ( event->type == et_mousedown && mv->bdf==NULL ) {
 	CVPaletteDeactivate();
 	if ( sc!=NULL ) {
-	    GDrawSetCursor(mv->gw,ct_leftright);
 	    for ( j=0; j<mv->charcnt; ++j )
 		if ( j!=i && mv->perchar[j].selected )
 		    MVDeselectChar(mv,j);
 	    MVSelectChar(mv,i);
 	    mv->pressed = true;
 	} else if ( within!=-1 ) {
-	    sel = false;
-	    if ( !mv->right_to_left ) {
-		if ( within>0 && mv->perchar[within-1].selected &&
-			event->u.mouse.x<mv->perchar[within].dx+3 )
-		    mv->pressedwidth = true;		/* previous char */
-		else if ( within+1<mv->charcnt && mv->perchar[within+1].selected &&
-			event->u.mouse.x>mv->perchar[within+1].dx-3 )
-		    mv->pressedkern = true;			/* subsequent char */
-		else if ( within>0 && mv->perchar[within].selected &&
-			event->u.mouse.x<mv->perchar[within].dx+3 )
-		    mv->pressedkern = true;
-		else if ( event->u.mouse.x>mv->perchar[within].dx+mv->perchar[within].dwidth+mv->perchar[within].kernafter-3 ) {
-		    mv->pressedwidth = true;
-		    sel = true;
-		}
-	    } else {
-		if ( i>0 && mv->perchar[within-1].selected &&
-			event->u.mouse.x>mv->width-(mv->perchar[within].dx+3) )
-		    mv->pressedwidth = true;		/* previous char */
-		else if ( within+1<mv->charcnt && mv->perchar[within+1].selected &&
-			event->u.mouse.x<mv->width-(mv->perchar[within+1].dx-3) )
-		    mv->pressedkern = true;			/* subsequent char */
-		else if ( within>0 && mv->perchar[within].selected &&
-			event->u.mouse.x>mv->width-(mv->perchar[within].dx+3) )
-		    mv->pressedkern = true;
-		else if ( event->u.mouse.x<mv->width-(mv->perchar[within].dx+mv->perchar[within].dwidth+mv->perchar[within].kernafter-3) ) {
-		    mv->pressedwidth = true;
-		    sel = true;
-		}
-	    }
+	    mv->pressedwidth = onwidth;
+	    mv->pressedkern = onkern;
 	    if ( mv->pressedwidth || mv->pressedkern ) {
 		mv->pressed = true;
-		GDrawSetCursor(mv->gw,ct_leftright);
 		if ( sel && !mv->perchar[within].selected ) {
 		    MVDoSelect(mv,within);
 		}
@@ -1310,13 +1340,15 @@ return;
 	} else if ( !mv->right_to_left &&
 		event->u.mouse.x<mv->perchar[mv->charcnt-1].dx+mv->perchar[mv->charcnt-1].dwidth+mv->perchar[mv->charcnt-1].kernafter+3 ) {
 	    mv->pressed = mv->pressedwidth = true;
-	    GDrawSetCursor(mv->gw,ct_leftright);
+	    GDrawSetCursor(mv->gw,ct_rbearing);
+	    mv->cursor = ct_rbearing;
 	    if ( !mv->perchar[mv->charcnt-1].selected )
 		    MVDoSelect(mv,mv->charcnt-1);
 	} else if ( mv->right_to_left &&
 		event->u.mouse.x>mv->width - (mv->perchar[mv->charcnt-1].dx+mv->perchar[mv->charcnt-1].dwidth+mv->perchar[mv->charcnt-1].kernafter+3) ) {
 	    mv->pressed = mv->pressedwidth = true;
-	    GDrawSetCursor(mv->gw,ct_leftright);
+	    GDrawSetCursor(mv->gw,ct_rbearing);
+	    mv->cursor = ct_rbearing;
 	    if ( !mv->perchar[mv->charcnt-1].selected )
 		    MVDoSelect(mv,mv->charcnt-1);
 	}
@@ -1355,7 +1387,6 @@ return;
 	for ( i=0; i<mv->charcnt && !mv->perchar[i].selected; ++i );
 	mv->pressed = false;
 	mv->activeoff = 0;
-	GDrawSetCursor(mv->gw,ct_mypointer);
 	sc = mv->perchar[i].sc;
 	if ( mv->pressedwidth ) {
 	    mv->pressedwidth = false;

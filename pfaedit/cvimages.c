@@ -413,11 +413,11 @@ static void ImportFig(CharView *cv,char *path) {
 
     fig = fopen(path,"r");
     if ( fig==NULL ) {
-	GDrawError("Can't find the file");
+	GWidgetPostNoticeR(_STR_CantFindFile,_STR_CantFindFile);
 return;
     }
     if ( fgets(buffer,sizeof(buffer),fig)==NULL || strcmp(buffer,"#FIG 3.2\n")!=0 ) {
-	GDrawError("Bad xfig file");
+	GWidgetPostNoticeR(_STR_BadXFigFile,_STR_BadXFigFile);
 	fclose(fig);
 return;
     }
@@ -472,7 +472,7 @@ static void ImportImage(CharView *cv,char *path) {
 
     image = GImageRead(path);
     if ( image==NULL ) {
-	GDrawError("Bad Image File");
+	GWidgetPostNoticeR(_STR_BadImageFile,_STR_BadImageFile);
 return;
     }
     cv->drawmode = dm_back;
@@ -504,12 +504,12 @@ static int BCImportImage(BDFChar *bc,char *path) {
 
     image = GImageRead(path);
     if ( image==NULL ) {
-	GDrawError("Bad Image File");
+	GWidgetPostNoticeR(_STR_BadImageFile,_STR_BadImageFile);
 return(false);
     }
     base = image->list_len==0?image->u.image:image->u.images[0];
     if ( base->image_type!=it_mono ) {
-	GDrawError("Bad Image File, not a bitmap");
+	GWidgetPostNoticeR(_STR_BadImageFile,_STR_BadImageFileNotBitmap);
 	GImageDestroy(image);
     }
     BCPreserveState(bc);
@@ -559,7 +559,7 @@ static unichar_t wildfig[] = { '*', '.', '{', 'f','i','g',',','x','f','i','g','}
 static unichar_t wildbdf[] = { '*', '.', 'b', 'd','f',  '\0' };
 
 static GTextInfo formats[] = {
-    { (unichar_t *) "Image", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 1, 0, 1 },
+    { (unichar_t *) _STR_Image, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 1 },
     { (unichar_t *) "EPS", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "XFig", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }};

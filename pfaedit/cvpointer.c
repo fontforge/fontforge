@@ -80,10 +80,23 @@ return;
 void SCSynchronizeLBearing(SplineChar *sc,char *selected,double off) {
     struct splinecharlist *dlist;
     RefChar *ref;
+    DStemInfo *d;
     StemInfo *h;
+    HintInstance *hi;
 
     for ( h=sc->vstem; h !=NULL; h=h->next )
 	h->start += off;
+    for ( h=sc->hstem; h !=NULL; h=h->next )
+	for ( hi = h->where; hi!=NULL; hi=hi->next ) {
+	    hi->begin += off;
+	    hi->end += off;
+	}
+    for ( d=sc->dstem; d !=NULL; d=d->next ) {
+	d->leftedgetop.x += off;
+	d->rightedgetop.x += off;
+	d->leftedgebottom.x += off;
+	d->rightedgebottom.x += off;
+    }
 
     if ( !adjustlbearing )
 return;

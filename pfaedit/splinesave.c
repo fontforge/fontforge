@@ -1041,8 +1041,7 @@ static unsigned char *SplineChar2PS(SplineChar *sc,int *len,int round,int iscjk,
     } else {
 	if ( sc->changedsincelasthinted && !sc->manualhints )
 	    SplineCharAutoHint(sc,true);
-	HintDirection(sc->hstem);
-	HintDirection(sc->vstem);
+	/* Type2 fonts don't support hints with negative widths */
 	if ( iscjk )
 	    CounterHints1(&gb,sc,round);	/* Must come immediately after hsbw */
 	if ( !sc->vconflicts && !sc->hconflicts ) {
@@ -1564,19 +1563,32 @@ return( mh );
 }
 
 static void DumpHints(GrowBuf *gb,StemInfo *h,int oper) {
-    double last = 0;
+    double last = 0, cur;
 
     if ( h==NULL )
 return;
     while ( h!=NULL && h->hintnumber!=-1 ) {
-	if ( h->backwards ) {
+	/* Type2 hints do not support negative widths except in the case of */
+	/*  ghost (now called edge) hints */
+	cur = h->start + h->width;
+	if ( h->width<0 ) {
 	    AddNumber2(gb,h->start-last+h->width);
 	    AddNumber2(gb,-h->width);
+	} else if ( h->ghost ) {
+	    if ( h->width==20 ) {
+		AddNumber2(gb,h->start-last+20);
+		AddNumber2(gb,-20);
+		cur = h->start;
+	    } else {
+		AddNumber2(gb,h->start-last);
+		AddNumber2(gb,-21);
+		cur = h->start-21;
+	    }
 	} else {
 	    AddNumber2(gb,h->start-last);
 	    AddNumber2(gb,h->width);
 	}
-	last = h->start + h->width;
+	last = cur;
 	h = h->next;
     }
     if ( oper!=-1 ) {

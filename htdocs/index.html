@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 19-Jun-2001 -->
+  <!-- AP: Last modified: 21-Jun-2001 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -47,8 +47,8 @@ know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-010619.tgz">Download pfaedit linux-i386 RedHat 7.0
-    </A><A NAME="downloads">executable</A> Version: 19-June-2001
+    <A HREF="pfaedit-010621.tgz">Download pfaedit linux-i386 RedHat 7.0
+    </A><A NAME="downloads">executable</A> Version: 21-June-2001
   <LI>
     <A HREF="pfaedit-010613-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
     Version: 13-June-2001<BR>
@@ -64,19 +64,19 @@ know when you do</A>.
 <P>
 You can download a <A HREF="pfaedit-010613.src.rpm">source RPM</A>: Version:
 13-June-2001<BR>
-Or you can download the following three packages. Version: 19-June-2001
+Or you can download the following three packages. Version: 21-June-2001
 <UL>
   <LI>
-    <A HREF="libgunicode-010507.tgz">Unicode library source</A> (7 May 2001)<BR>
+    <A HREF="libgunicode-010621.tgz">Unicode library source</A> (21-June-2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGUnicode/index.html">docs</A>
   <LI>
-    <A HREF="libgdraw-010618.tgz">Unicode widget library source</A>
-    (18-June-2001)<BR>
+    <A HREF="libgdraw-010621.tgz">Unicode widget library source</A>
+    (21-June-2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
   <LI>
-    <A HREF="pfaedit_src-010619.tgz">Pfaedit source</A> (19-June-2001)<BR>
+    <A HREF="pfaedit_src-010621.tgz">Pfaedit source</A> (21-June-2001)<BR>
     -- <A HREF="overview.html">docs</A>
   <LI>
     If you want to do autotracing around character images you should also download
@@ -133,8 +133,59 @@ You might also want to pull down some unicode bitmap fonts that pfaedit uses
 </H2>
 <UL>
   <LI>
+    21-June-2001
+    <UL>
+      <LI>
+	Copy Width did not work from the font view
+      <LI>
+	made the info display in the outline view more legible if the locale used
+	"," as decimal point.
+      <LI>
+	One more attempt to get palettes right. They would disappear if you went
+	to a non-outline view window and then returned to that same window.
+      <LI>
+	Some useful information will now be displayed in the outline view as you
+	add points to a path.
+      <LI>
+	And during rectangle, elipse, polygon and star generation.
+      <LI>
+	Build Composit Char will now create the characters 0x2000-0x2015 (spaces
+	and rules) if you ask it to.
+      <LI>
+	Fixed several bugs caused by the resource string changed. 
+	<UL>
+	  <LI>
+	    This one showed up in font info when removing characters.
+	  <LI>
+	    And this on adding an encoding (to font info).
+	  <LI>
+	    Any simple request for a string got two OK buttons (ie. no Cancel)
+	</UL>
+      <LI>
+	Added some more strings.
+      <LI>
+	Cleaned up the hint translation code to work with the new (ie. hint subtitution,
+	diagonal)
+      <LI>
+	Improved UI for metrics view as per Valik's suggestions
+	<UL>
+	  <LI>
+	    Before it would wait until you depressed the mouse before changing the cursor,
+	    now it changes the cursor as you move.
+	  <LI>
+	    Better cursors (seperate cursors for kerning, setting rbearing (== width),
+	    setting lbearing)
+	  <LI>
+	    Selected character is drawn in a different color.
+	</UL>
+      <LI>
+	Implement ghost/edge hints. (Oops)
+    </UL>
+  <LI>
     19-June-2001
     <UL>
+      <LI>
+	Initial version of russian menus
       <LI>
 	Recently AutoHint would remove control points from splines which traced out
 	a line (ie. if the control points were on the line segment between the two
@@ -1328,6 +1379,9 @@ Other font links
   <LI>
     <A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/psrefman.pdf">Postscript
     reference manual</A>
+  <LI>
+    <A HREF="http://www.microsoft.com/typography/fontpack/default.htm">Microsoft's
+    downloadable fonts</A>
 </UL>
 <H2>
   Unicode

@@ -32,21 +32,18 @@ static int askfraction(int *xoff, int *yoff) {
     static int lastx=1, lasty = 3;
     char buffer[30];
     unichar_t ubuffer[30];
-    static unichar_t title[] = { 'S', 'k', 'e', 'w',  '\0' };
-    unichar_t quest[60], *ret, *end, *end2;
+    unichar_t *ret, *end, *end2;
     int xv, yv;
 
     sprintf( buffer, "%d:%d", lastx, lasty );
     uc_strcpy(ubuffer,buffer);
-    uc_strcpy(quest, "Enter the ratio of x-skew to y rise");
-    ret = GWidgetAskString(title,quest,ubuffer);
+    ret = GWidgetAskString(GStringGetResource(_STR_Skew,NULL),GStringGetResource(_STR_SkewRatio,NULL),ubuffer);
     if ( ret==NULL )
 return( 0 );
     xv = u_strtol(ret,&end,10);
     yv = u_strtol(end+1,&end2,10);
     if ( xv==0 || xv>10 || xv<-10 || yv<=0 || yv>10 || *end!=':' || *end2!='\0' ) {
-	uc_strcpy(quest, "Bad Number");
-	GWidgetPostNotice( quest,quest );
+	GWidgetPostNoticeR( _STR_BadNumber,_STR_BadNumber );
 	free(ret);
 return( 0 );
     }

@@ -120,7 +120,7 @@ return( ch<sf->charcnt && sf->chars[ch]!=NULL &&
     for ( i=sf->charcnt-1; i>=0; --i ) if ( sf->chars[i]!=NULL )
 	if ( sf->chars[i]->unicodeenc == ch )
     break;
-return( i!=-1 && (sf->chars[i]->splines!=NULL || sf->chars[i]->refs!=NULL) );
+return( i!=-1 && (sf->chars[i]->splines!=NULL || sf->chars[i]->refs!=NULL || (ch==0x20 && sf->chars[i]->widthset)) );
 }
 
 static SplineChar *findchar(SplineFont *sf,int ch) {
@@ -204,6 +204,10 @@ return( upt );
 int SFIsCompositBuildable(SplineFont *sf,int unicodeenc) {
     const unichar_t *pt, *apt, *end; unichar_t ch;
     SplineChar *one, *two;
+
+    if ( iszerowidth(unicodeenc) ||
+	    (unicodeenc>=0x2000 && unicodeenc<=0x2015 ))
+return( true );
 
     if (( pt = SFGetAlternate(sf,unicodeenc))==NULL )
 return( false );
@@ -583,6 +587,190 @@ static void SCPutRefAfter(SplineChar *sc,SplineFont *sf,int ch, int copybmp) {
     }
 }
 
+static void DoSpaces(SplineFont *sf,SplineChar *sc,int copybmp,FontView *fv) {
+    int width;
+    int enc = sc->unicodeenc;
+    int em = sf->ascent+sf->descent;
+    SplineChar *tempsc;
+    BDFChar *bc;
+    BDFFont *bdf;
+
+    if ( iszerowidth(enc))
+	width = 0;
+    else switch ( enc ) {
+      case 0x2000: case 0x2002:
+	width = em/2;
+      break;
+      case 0x2001: case 0x2003:
+	width = em;
+      break;
+      case 0x2004:
+	width = em/3;
+      break;
+      case 0x2005:
+	width = em/4;
+      break;
+      case 0x2006:
+	width = em/6;
+      break;
+      case 0x2009:
+	width = em/10;
+      break;
+      case 0x200a:
+	width = em/100;
+      break;
+      case 0x2007:
+	tempsc = findchar(sf,'0');
+	if ( tempsc!=NULL && tempsc->splines==NULL && tempsc->refs==NULL ) tempsc = NULL;
+	if ( tempsc==NULL ) width = em/2; else width = tempsc->width;
+      break;
+      case 0x2008:
+	tempsc = findchar(sf,'.');
+	if ( tempsc!=NULL && tempsc->splines==NULL && tempsc->refs==NULL ) tempsc = NULL;
+	if ( tempsc==NULL ) width = em/4; else width = tempsc->width;
+      break;
+      case ' ':
+	tempsc = findchar(sf,'I');
+	if ( tempsc!=NULL && tempsc->splines==NULL && tempsc->refs==NULL ) tempsc = NULL;
+	if ( tempsc==NULL ) width = em/4; else width = tempsc->width;
+      break;
+      default:
+	width = em/3;
+      break;
+    }
+
+    sc->width = width;
+    sc->widthset = true;
+    if ( copybmp ) {
+	for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
+	    if ( (bc = bdf->chars[sc->enc])==NULL ) {
+		BDFMakeChar(bdf,sc->enc);
+	    } else {
+		BCPreserveState(bc);
+		BCFlattenFloat(bc);
+		BCCompressBitmap(bc);
+		free(bc->bitmap);
+		bc->xmin = 0;
+		bc->xmax = 1;
+		bc->ymin = 0;
+		bc->ymax = 1;
+		bc->bytes_per_line = 1;
+		bc->width = rint(width*bdf->pixelsize/(double) em);
+		bc->bitmap = gcalloc(bc->bytes_per_line*(bc->ymax-bc->ymin+1),sizeof(char));
+	    }
+	}
+    }
+    SCCharChangedUpdate(sc,fv);
+    if ( copybmp ) {
+	for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next )
+	    if ( bdf->chars[sc->enc]!=NULL )
+		BCCharChangedUpdate(bdf->chars[sc->enc],fv);
+    }
+}
+
+static SplinePoint *MakeSP(double x, double y, SplinePoint *last) {
+    SplinePoint *new = gcalloc(1,sizeof(SplinePoint));
+
+    new->me.x = x; new->me.y = y;
+    new->prevcp = new->nextcp = new->me;
+    new->noprevcp = new->nonextcp = true;
+    if ( last!=NULL )
+	SplineMake(last,new);
+return( new );
+}
+
+static void DoRules(SplineFont *sf,SplineChar *sc,int copybmp,FontView *fv) {
+    int width;
+    int enc = sc->unicodeenc;
+    int em = sf->ascent+sf->descent;
+    SplineChar *tempsc;
+    BDFChar *bc, *tempbc;
+    BDFFont *bdf;
+    DBounds b;
+    double lbearing, rbearing, height, ypos;
+    SplinePoint *first, *sp;
+
+    switch ( enc ) {
+      case '-':
+	width = em/3;
+      break;
+      case 0x2010: case 0x2011:
+	tempsc = findchar(sf,'-');
+	if ( tempsc!=NULL && tempsc->splines==NULL && tempsc->refs==NULL ) tempsc = NULL;
+	if ( tempsc==NULL ) width = (4*em)/10; else width = tempsc->width;
+      break;
+      case 0x2012:
+	tempsc = findchar(sf,'0');
+	if ( tempsc!=NULL && tempsc->splines==NULL && tempsc->refs==NULL ) tempsc = NULL;
+	if ( tempsc==NULL ) width = em/2; else width = tempsc->width;
+      break;
+      case 0x2013:
+	width = em/2;
+      break;
+      case 0x2014: case 0x30fc:
+	width = em;
+      break;
+      case 0x2015:		/* French quotation dash */
+	width = 2*em;
+      break;
+      default:
+	width = em/3;
+      break;
+    }
+
+    tempsc = findchar(sf,'-');
+    if ( tempsc==NULL || (tempsc->splines==NULL && tempsc->refs==NULL )) {
+	height = em/10;
+	lbearing = rbearing = em/10;
+	if ( lbearing+rbearing>2*width/3 )
+	    lbearing = rbearing = width/4;
+	ypos = em/4;
+    } else {
+	SplineCharFindBounds(tempsc,&b);
+	height = b.maxy-b.miny;
+	rbearing = tempsc->width - b.maxx;
+	lbearing = b.minx;
+	ypos = b.miny;
+    }
+    first = sp = MakeSP(lbearing,ypos,NULL);
+    sp = MakeSP(lbearing,ypos+height,sp);
+    sp = MakeSP(width-rbearing,ypos+height,sp);
+    sp = MakeSP(width-rbearing,ypos,sp);
+    SplineMake(sp,first);
+    sc->splines = gcalloc(1,sizeof(SplinePointList));
+    sc->splines->first = sc->splines->last = first;
+    sc->width = width;
+    sc->widthset = true;
+
+    if ( copybmp ) {
+	for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
+	    if ( (bc = bdf->chars[sc->enc])==NULL ) {
+		BDFMakeChar(bdf,sc->enc);
+	    } else {
+		BCPreserveState(bc);
+		BCFlattenFloat(bc);
+		BCCompressBitmap(bc);
+		free(bc->bitmap);
+		tempbc = SplineCharRasterize(sc,bdf->pixelsize);
+		bc->xmin = tempbc->xmin;
+		bc->xmax = tempbc->xmax;
+		bc->ymin = tempbc->ymin;
+		bc->ymax = tempbc->ymax;
+		bc->bytes_per_line = tempbc->bytes_per_line;
+		bc->width = tempbc->width;
+		bc->bitmap = tempbc->bitmap;
+		free(tempbc);
+	    }
+	}
+    }
+    SCCharChangedUpdate(sc,fv);
+    if ( copybmp ) {
+	for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next )
+	    if ( bdf->chars[sc->enc]!=NULL )
+		BCCharChangedUpdate(bdf->chars[sc->enc],fv);
+    }
+}
+
 void SCBuildComposit(SplineFont *sf, SplineChar *sc, int copybmp,FontView *fv) {
     const unichar_t *pt, *apt; unichar_t ch;
     BDFFont *bdf;
@@ -597,6 +785,14 @@ return;
     sc->splines = NULL;
     SCRemoveDependents(sc);
     sc->width = 0;
+
+    if ( iszerowidth(sc->unicodeenc) || (sc->unicodeenc>=0x2000 && sc->unicodeenc<=0x200f )) {
+	DoSpaces(sf,sc,copybmp,fv);
+return;
+    } else if ( sc->unicodeenc>=0x2010 && sc->unicodeenc<=0x2015 ) {
+	DoRules(sf,sc,copybmp,fv);
+return;
+    }
 
     if (( ia = sf->italicangle )==0 )
 	ia = SFGuessItalicAngle(sf);

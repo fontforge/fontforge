@@ -1544,6 +1544,218 @@ static StemInfo *StemRemoveConflictingBigHint(StemInfo *stems,double big) {
 return( head );
 }
 
+static HintInstance *HICopyTrans(HintInstance *hi, double mul, double offset) {
+    HintInstance *first=NULL, *last, *cur, *p;
+
+    while ( hi!=NULL ) {
+	cur = gcalloc(1,sizeof(HintInstance));
+	if ( mul>0 ) {
+	    cur->begin = hi->begin*mul+offset;
+	    cur->end = hi->end*mul+offset;
+	    if ( first==NULL )
+		first = cur;
+	    else
+		last->next = cur;
+	    last = cur;
+	} else {
+	    cur->begin = hi->end*mul+offset;
+	    cur->end = hi->begin*mul+offset;
+	    if ( first==NULL || cur->begin<first->begin ) {
+		cur->next = first;
+		first = cur;
+	    } else {
+		for ( p=first, last=p->next; last!=NULL && cur->begin>last->begin; last=last->next );
+		p->next = cur;
+		cur->next = last;
+	    }
+	}
+	hi = hi->next;
+    }
+return( first );
+}
+
+static HintInstance *HIMerge(HintInstance *into, HintInstance *hi) {
+    HintInstance *n, *first = NULL, *last;
+
+    while ( into!=NULL && hi!=NULL ) {
+	if ( into->begin<hi->begin ) {
+	    n = into;
+	    into = into->next;
+	} else {
+	    n = hi;
+	    hi = hi->next;
+	}
+	if ( first==NULL )
+	    first = n;
+	else
+	    last->next = n;
+	last = n;
+    }
+    if ( into!=NULL ) {
+	if ( first==NULL )
+	    first = into;
+	else
+	    last->next = into;
+    } else if ( hi!=NULL ) {
+	if ( first==NULL )
+	    first = hi;
+	else
+	    last->next = hi;
+    }
+return( first );
+}
+
+static int inhints(StemInfo *stems,double base, double xstart, double xend) {
+    double temp;
+    HintInstance *hi;
+
+    if ( xstart>xend ) {
+	temp = xend;
+	xend = xstart;
+	xstart = temp;
+    }
+    while ( stems!=NULL ) {
+	if ( stems->start==base || stems->start+stems->width==base ) {
+	    for ( hi=stems->where; hi!=NULL; hi=hi->next ) {
+		if ( xend>=hi->begin && xstart<=hi->end )
+return( true );
+	    }
+	}
+	stems = stems->next;
+    }
+return( false );
+}
+
+static StemInfo *CheckForGhostHints(StemInfo *stems,SplineChar *sc) {
+    /* PostScript doesn't allow a hint to stretch from one alignment zone to */
+    /*  another. (Alignment zones are the things in bluevalues). This means */
+    /*  that we can't define a horizontal stem hint which stretches from */
+    /*  the baseline to the top of a capital I, or the x-height of lower i */
+    /*  If we find any such hints we must remove them, and replace them with */
+    /*  ghost hints. The bottom hint has height 21, and the top -20 */
+    double xheight = -1e10, caph = -1e10, descent = 1e10, max, min;
+    double xheighttop = -1e10, caphtop = -1e10;
+    SplinePoint *sp;
+    SplineFont *sf = sc->parent;
+    int i;
+    SplineChar *t;
+    StemInfo *prev, *s, *n, *snext, *ghosts = NULL;
+    HintInstance *hi;
+    SplineSet *spl;
+    Spline *spline, *first;
+    double base, width;
+
+    /* Get the two alignment zones we care most about */
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	if ( sf->chars[i]->unicodeenc=='I' || sf->chars[i]->unicodeenc=='O' ||
+		sf->chars[i]->unicodeenc=='x' || sf->chars[i]->unicodeenc=='o' ||
+		sf->chars[i]->unicodeenc=='p') {
+	    t = sf->chars[i];
+	    while ( t->splines==NULL && t->refs!=NULL )
+		t = t->refs->sc;
+	    max = -1e10; min = 1e10;
+	    if ( t->splines!=NULL ) {
+		for ( spl=t->splines; spl!=NULL; spl=spl->next ) {
+		    for ( sp=spl->first; ; ) {
+			if ( sp->me.y > max ) max = sp->me.y;
+			if ( sp->me.y < min ) min = sp->me.y;
+			if ( sp->next==NULL )
+		    break;
+			sp = sp->next->to;
+			if ( sp==spl->first )
+		    break;
+		    }
+		}
+		if ( sf->chars[i]->unicodeenc=='I' ) caph = max;
+		else if ( sf->chars[i]->unicodeenc=='O' ) caphtop = max;
+		else if ( sf->chars[i]->unicodeenc=='x' ) xheight = max;
+		else if ( sf->chars[i]->unicodeenc=='o' ) xheighttop = max;
+		else descent = min;
+	    }
+	}
+    }
+    if ( caphtop<caph ) caphtop = caph; else if ( caph==-1e10 ) caph=caphtop;
+    if ( xheighttop<xheight ) xheighttop = xheight; else if ( xheight==-1e10 ) xheight=xheighttop;
+
+    /* look for any stems stretching from one zone to another and remove them */
+    /*  (I used to turn them into ghost hints here, but that didn't work (for */
+    /*  example on "E" where we don't need any ghosts from be big stem because*/
+    /*  the narrow stems provide the hints that PS needs */
+    for ( prev=NULL, s=stems; s!=NULL; s=snext ) {
+	snext = s->next;
+	if (( s->start==0 || (s->start>=caph && s->start<=caphtop) ||
+		(s->start>=xheight && s->start<=xheighttop) || s->start==descent ) &&
+		(s->start+s->width==0 ||
+		 (s->start+s->width>=caph && s->start+s->width<=caphtop) ||
+		 (s->start+s->width>=xheight  && s->start+s->width<=xheighttop) ||
+		 s->start+s->width==descent)) {
+	    if ( prev==NULL )
+		stems = snext;
+	    else
+		prev->next = snext;
+	    s->next = NULL;
+	    StemInfoFree(s);
+	} else
+	    prev = s;
+    }
+
+    /* Now look and see if we can find any edges which lie in */
+    /*  these zones.  Edges which are not currently in hints */
+    for ( spl = sc->splines; spl!=NULL; spl = spl->next ) {
+	first = NULL;
+	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline = spline->to->next ) {
+	    base = spline->from->me.y;
+	    if ( spline->knownlinear && base == spline->to->me.y &&
+		    (base == 0 || (base >= xheight && base<=xheighttop) ||
+		     (base>=caph && base<=caphtop) || base==descent ) &&
+		    spline->from->prev!=NULL && spline->to->next!=NULL &&
+		    (spline->from->prev->from->me.y > base) ==
+			(spline->to->next->to->me.y > base)) {
+		width = (spline->from->prev->from->me.y > spline->from->me.y)?21:20;
+		if ( inhints(stems,base,spline->from->me.x,spline->to->me.x))
+	continue;		/* already recorded */
+		if ( width==20 ) base -= 20;
+		if ( inhints(ghosts,base,spline->from->me.x,spline->to->me.x))
+	continue;		/* already recorded */
+		for ( s=ghosts; s!=NULL; s=s->next )
+		    if ( s->start==base && s->width==width )
+		break;
+		if ( s==NULL ) {
+		    s = gcalloc(1,sizeof(StemInfo));
+		    s->start = base;
+		    s->width = width;
+		    s->ghost = true;
+		    s->next = ghosts;
+		    ghosts = s;
+		}
+		hi = gcalloc(1,sizeof(HintInstance));
+		hi->begin = spline->from->me.x;
+		hi->end = spline->to->me.x;
+		if ( hi->begin>hi->end ) {
+		    hi->begin = hi->end;
+		    hi->end = spline->from->me.x;
+		}
+		s->where = HIMerge(s->where,hi);
+	    }
+	    if ( first==NULL ) first = spline;
+	}
+    }
+
+    /* Finally add any ghosts we've got back into the stem list */
+    for ( s=ghosts; s!=NULL; s=snext ) {
+	snext = s->next;
+	for ( prev=NULL, n=stems; n!=NULL && s->start>n->start; prev=n, n=n->next );
+	if ( prev==NULL ) {
+	    s->next = stems;
+	    stems = s;
+	} else {
+	    prev->next = s;
+	    s->next = n;
+	}
+    }
+return( stems );
+}
+
 static StemInfo *SCFindStems(EIList *el, int major, int removeOverlaps,DStemInfo **dstems) {
     StemInfo *stems;
 
@@ -1557,6 +1769,8 @@ static StemInfo *SCFindStems(EIList *el, int major, int removeOverlaps,DStemInfo
 	if ( major==1 )
 	    stems = StemRemoveSerifOverlaps(stems);
 	stems = StemRemoveWideConflictingHintsContainingLittleOnes(stems);
+	if ( major==0 )
+	    stems = CheckForGhostHints(stems,el->sc);
 	if ( StemListAnyConflicts(stems) ) {
 	    stems = StemRemoveConflictingBigHint(stems,el->cnt*.95);
 	    /* Now we need to run AnyConflicts again, but we'll have to do that */
@@ -1805,67 +2019,6 @@ void SCGuessVHintInstancesList(SplineChar *sc) {
     if ( any )
 	for ( h= sc->vstem; h!=NULL; h=h->next )
 	    StemInfoReduceOverlap(h->next,h);
-}
-
-static HintInstance *HICopyTrans(HintInstance *hi, double mul, double offset) {
-    HintInstance *first=NULL, *last, *cur, *p;
-
-    while ( hi!=NULL ) {
-	cur = gcalloc(1,sizeof(HintInstance));
-	if ( mul>0 ) {
-	    cur->begin = hi->begin*mul+offset;
-	    cur->end = hi->end*mul+offset;
-	    if ( first==NULL )
-		first = cur;
-	    else
-		last->next = cur;
-	    last = cur;
-	} else {
-	    cur->begin = hi->end*mul+offset;
-	    cur->end = hi->begin*mul+offset;
-	    if ( first==NULL || cur->begin<first->begin ) {
-		cur->next = first;
-		first = cur;
-	    } else {
-		for ( p=first, last=p->next; last!=NULL && cur->begin>last->begin; last=last->next );
-		p->next = cur;
-		cur->next = last;
-	    }
-	}
-	hi = hi->next;
-    }
-return( first );
-}
-
-static HintInstance *HIMerge(HintInstance *into, HintInstance *hi) {
-    HintInstance *n, *first = NULL, *last;
-
-    while ( into!=NULL && hi!=NULL ) {
-	if ( into->begin<hi->begin ) {
-	    n = into;
-	    into = into->next;
-	} else {
-	    n = hi;
-	    hi = hi->next;
-	}
-	if ( first==NULL )
-	    first = n;
-	else
-	    last->next = n;
-	last = n;
-    }
-    if ( into!=NULL ) {
-	if ( first==NULL )
-	    first = into;
-	else
-	    last->next = into;
-    } else if ( hi!=NULL ) {
-	if ( first==NULL )
-	    first = hi;
-	else
-	    last->next = hi;
-    }
-return( first );
 }
 
 static StemInfo *RefHintsMerge(StemInfo *into, StemInfo *rh, double mul, double offset,

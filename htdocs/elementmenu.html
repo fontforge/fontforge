@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 11-Jun-2001 -->
+  <!-- AP: Last modified: 19-Jun-2001 -->
   <TITLE>The Element Menu</TITLE>
 </HEAD>
 <BODY>
@@ -46,7 +46,8 @@ This menu is not present in the Metrics View.
   <LI>
     <A HREF="#Remove">Remove Overlap</A>
   <LI>
-    <A HREF="#Simplify">Simplify</A>
+    <A HREF="#Simplify">Simplify<BR>
+    Cleanup Chars</A>
   <LI>
     <A HREF="#Round">Round to Int</A>
   <LI>
@@ -58,7 +59,8 @@ This menu is not present in the Metrics View.
   <LI>
     <A HREF="#Correct">Correct Direction</A>
   <LI>
-    <A HREF="#Accented">Build Accented Char</A>
+    <A HREF="#Accented">Build Accented Char<BR>
+    Build Composit Char</A>
   <LI>
     <A HREF="#Merge">Merge Fonts...</A>
   <LI>
@@ -195,6 +197,13 @@ This menu is not present in the Metrics View.
     Only in the font and outline views. If you have lots of points on a path,
     some of which do not materially add to the path's shape, then this command
     will remove the extraneous points.
+  <DT>
+    Cleanup Char
+  <DD>
+    This is a variant on the simplify command, obtainable if you hold down the
+    shift key when invoking the menu. In this case if there is a spline which
+    actually traces out a line but none the less has control points, then this
+    command will remove the control points.
   <DT>
     <A NAME="Round">Round</A> to Int
   <DD>

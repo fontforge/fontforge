@@ -1093,7 +1093,10 @@ SplineFont *SplineFontFromPSFont(FontDict *fd) {
     }
     /*sf->wasbinary = fd->wasbinary;*/
     sf->encoding_name = fd->encoding_name;
-    em = rint(1/fd->fontmatrix[0]);
+    if ( fd->fontmatrix[0]==0 )
+	em = 1000;
+    else
+	em = rint(1/fd->fontmatrix[0]);
     if ( sf->ascent==0 && sf->descent!=0 )
 	sf->ascent = em-sf->descent;
     else if ( fd->fontbb[3]-fd->fontbb[1]==em ) {

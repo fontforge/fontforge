@@ -158,6 +158,8 @@ static char str_Tangent[] = "Tangent";
 static unichar_t mnemonic_Tangent[] = 'T';
 static char str_Autohint[] = "AutoHint";
 static unichar_t mnemonic_Autohint[] = 'H';
+static char str_FullAutohint[] = "Full AutoHint";
+static unichar_t mnemonic_FullAutohint[] = 'H';
 static char str_Clearhstem[] = "Clear HStem";
 static unichar_t mnemonic_Clearhstem[] = 'C';
 static char str_Clearvstem[] = "Clear VStem";
@@ -266,7 +268,7 @@ static char str_Mac[] = "Macintosh Latin";
 static char str_Win[] = "Windows Latin (\042ANSI\042)";
 static char str_Adobestd[] = "Adobe Standard";
 static char str_Symbol[] = "Symbol";
-static unichar_t str_Texbase[] = {  0 };
+static unichar_t str_Texbase[] = { 0x3a4, 0x3b5, 0x3a7, ' ','B','a','s','e',  '\0' };
 static char str_Unicode[] = "ISO 10646-1 (Unicode)";
 static char str_Jis208[] = "JIS 208 (Kanji)";
 static char str_Jis212[] = "JIS 212 (Kanji)";
@@ -432,5 +434,27 @@ static char *str_AddingSizeScale = " Adding a size will create it by scaling.";
 static char *str_SpecifyRegenSizes = "Specify bitmap sizes to be regenerated";
 static char *str_PointSizes75 = "Point sizes on a 75 dpi screen";
 static char *str_PointSizes100 = "Point sizes on a 100 dpi screen";
+    /* Bitmap view */
+/* "%s at %d from %s", charactername, pixelsize, fontname */
+static char *str_bvat = " at ";
+static char *str_bvfrom = " from ";
+static char *str_RecalculateBitmaps = "Recalculate Bitmaps";
+    /* BV Edit */
+static char *str_skewRatio = "Enter the ratio of x-skew to y rise";
+static char str_BadNumber[] = "Bad Number";
+    /* Char View */
+/* "%s from %s", charactername, fontname */
+static char *str_cvfrom = " from ";
+    /* CV Export */
+static char *str_PixelSizeQ = "Pixel size?";
+static char *str_PixelSize = "Pixel size:";
+static char *str_BitsPerPixel = "Bits/Pixel:";
+static char *str_InvalidBits = "The only valid values for bits/pixel are 1, 2, 4 or 8";
+    /* CV Images */
+static char *str_CantFindFile = "Can't find the file";
+static char *str_BadXFigFile = "Bad xfig file";
+static char *str_BadImageFile = "Bad image file";
+static char *str_BadImageFileNotBitmap = "Bad image file, not a bitmap";
+static char *str_Image = "Image";
 
 static int num_buttonsize = 55;

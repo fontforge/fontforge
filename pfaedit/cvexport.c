@@ -217,7 +217,6 @@ return(0);
 return( ret );
 }
 
-static unichar_t title[] = { 'P', 'i', 'x', 'e', 'l', ' ', 's', 'i', 'z', 'e', '?',  '\0' };
 static unichar_t def[] = { '1', '0', '0',  '\0' };
 static unichar_t def_bits[] = { '1',  '\0' };
 static unichar_t *last = NULL;
@@ -237,12 +236,12 @@ static int SB_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct sizebits *d = GDrawGetUserData(GGadgetGetWindow(g));
 	int err=0;
-	*d->pixels = GetInt(d->gw,CID_Size,"Pixel Size",&err);
-	*d->bits   = GetInt(d->gw,CID_Bits,"Bits/Pixel",&err);
+	*d->pixels = GetIntR(d->gw,CID_Size,_STR_PixelSize,&err);
+	*d->bits   = GetIntR(d->gw,CID_Bits,_STR_BitsPerPixel,&err);
 	if ( err )
 return( true );
 	if ( *d->bits!=1 && *d->bits!=2 && *d->bits!=4 && *d->bits!=8 ) {
-	    GDrawError("The only valid values for bits/pixel are 1, 2, 4 or 8" );
+	    GWidgetPostNoticeR(_STR_InvalidBits,_STR_InvalidBits);
 return( true );
 	}
 	free( last ); free( last_bits );
@@ -287,7 +286,7 @@ static int AskSizeBits(int *pixelsize,int *bitsperpixel) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.window_title = title;
+    wattrs.window_title = GStringGetResource(_STR_PixelSizeQ,NULL);
     wattrs.is_dlg = true;
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,140);
@@ -297,8 +296,8 @@ static int AskSizeBits(int *pixelsize,int *bitsperpixel) {
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
 
-    label[0].text = (unichar_t *) "Pixel Size:";
-    label[0].text_is_1byte = true;
+    label[0].text = (unichar_t *) _STR_PixelSize;
+    label[0].text_in_resource = true;
     gcd[0].gd.label = &label[0];
     gcd[0].gd.pos.x = 8; gcd[0].gd.pos.y = 8+6; 
     gcd[0].gd.flags = gg_enabled|gg_visible;
@@ -311,8 +310,8 @@ static int AskSizeBits(int *pixelsize,int *bitsperpixel) {
     gcd[1].gd.cid = CID_Size;
     gcd[1].creator = GTextFieldCreate;
 
-    label[2].text = (unichar_t *) "Bits/Pixel:";
-    label[2].text_is_1byte = true;
+    label[2].text = (unichar_t *) _STR_BitsPerPixel;
+    label[2].text_in_resource = true;
     gcd[2].gd.label = &label[2];
     gcd[2].gd.pos.x = 8; gcd[2].gd.pos.y = 38+6; 
     gcd[2].gd.flags = gg_enabled|gg_visible;
@@ -374,7 +373,7 @@ static int ExportXBM(char *filename,SplineChar *sc, int format) {
     int scale;
 
     if ( format==1 ) {
-	ans = GWidgetAskString(title,title,def);
+	ans = GWidgetAskStringR(_STR_PixelSizeQ,_STR_PixelSizeQ,def);
 	if ( ans==NULL )
 return( 0 );
 	if ( (pixelsize=u_strtol(ans,NULL,10))<=0 )
@@ -589,10 +588,9 @@ static void GFD_dircreatefailed(GIOControl *gio) {
     /* We couldn't create the directory */
     struct gfc_data *d = gio->userdata;
     unichar_t buffer[500];
-    unichar_t title[30];
 
-    uc_strcpy(title, "Couldn't create directory");
-    uc_strcpy(buffer, "Couldn't create directory, ");
+    u_strcpy(buffer, GStringGetResource(_STR_Couldntcreatedir,NULL));
+    uc_strcat(buffer,": ");
     u_strcat(buffer, u_GFileNameTail(gio->path));
     uc_strcat(buffer, ".\n");
     if ( gio->error!=NULL ) {
@@ -601,7 +599,7 @@ static void GFD_dircreatefailed(GIOControl *gio) {
     }
     if ( gio->status[0]!='\0' )
 	u_strcat(buffer,gio->status);
-    GWidgetPostNotice(title,buffer);
+    GWidgetPostNotice(GStringGetResource(_STR_Couldntcreatedir,NULL),buffer);
     GFileChooserReplaceIO(d->gfc,NULL);
 }
 
@@ -609,10 +607,7 @@ static int GFD_NewDir(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
 	unichar_t *newdir;
-	unichar_t title[30], buffer[30];
-	uc_strcpy(title,"Create directory...");
-	uc_strcpy(buffer,"Directory name?");
-	newdir = GWidgetAskString(title,buffer,NULL);
+	newdir = GWidgetAskStringR(_STR_Createdir,_STR_Dirname,NULL);
 	if ( newdir==NULL )
 return( true );
 	if ( !u_GFileIsAbsolute(newdir)) {

@@ -426,6 +426,9 @@ static void RegenerateEncList(struct gfi_data *d) {
 	if ( encodingtypes[i].text_is_1byte ) {
 	    ti[i]->text = uc_copy((char *) ti[i]->text);
 	    ti[i]->text_is_1byte = false;
+	} else if ( encodingtypes[i].text_in_resource ) {
+	    ti[i]->text = u_copy(GStringGetResource((int) ti[i]->text,NULL));
+	    ti[i]->text_in_resource = false;
 	} else {
 	    ti[i]->text = u_copy(ti[i]->text);
 	}
@@ -897,7 +900,7 @@ void FontMenuFontInfo(void *_fv) {
     gcd[25].gd.pos.x = (260-100)/2; gcd[25].gd.pos.y = gcd[28].gd.pos.y;
     gcd[25].gd.pos.width = 100; gcd[25].gd.pos.height = 0;
     gcd[25].gd.flags = gg_visible;
-    if ( sf->encoding_name==em_none ) gcd[25].gd.flags |= gg_enabled;
+    if ( sf->encoding_name==em_none || sf->charcnt>1500 ) gcd[25].gd.flags |= gg_enabled;
     label[25].text = (unichar_t *) _STR_Makefromfont;
     label[25].text_in_resource = true;
     gcd[25].gd.mnemonic = 'k';

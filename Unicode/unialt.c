@@ -1168,6 +1168,7 @@ static const unichar_t str_2012[] = { 0x002d, 0 };
 static const unichar_t str_2013[] = { 0x002d, 0 };
 static const unichar_t str_2014[] = { 0x002d, 0 };
 static const unichar_t str_2015[] = { 0x002d, 0 };
+static const unichar_t str_2016[] = { 0x007c, 0x007c, 0 };
 static const unichar_t str_2017[] = { 0x0020, 0x0333, 0 };
 static const unichar_t str_2018[] = { 0x0060, 0 };
 static const unichar_t str_2019[] = { 0x0027, 0 };
@@ -1176,8 +1177,6 @@ static const unichar_t str_201d[] = { 0x0022, 0 };
 static const unichar_t str_2024[] = { 0x002e, 0 };
 static const unichar_t str_2025[] = { 0x002e, 0x002e, 0 };
 static const unichar_t str_2026[] = { 0x002e, 0x002e, 0x002e, 0 };
-static const unichar_t str_2029[] = { 0x003c, 0 };
-static const unichar_t str_202a[] = { 0x003e, 0 };
 static const unichar_t str_202f[] = { 0x0020, 0 };
 static const unichar_t str_2032[] = { 0x0027, 0 };
 static const unichar_t str_2033[] = { 0x2032, 0x2032, 0 };
@@ -5257,7 +5256,8 @@ str_2012,
 str_2013,
 str_2014,
 str_2015,
-0, str_2017,
+str_2016,
+str_2017,
 str_2018,
 str_2019,
 0, 0, str_201c,
@@ -5265,9 +5265,7 @@ str_201d,
 0, 0, 0, 0, 0, 0, str_2024,
 str_2025,
 str_2026,
-0, 0, str_2029,
-str_202a,
-0, 0, 0, 0, str_202f,
+0, 0, 0, 0, 0, 0, 0, 0, str_202f,
 0, 0, str_2032,
 str_2033,
 str_2034,

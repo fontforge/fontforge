@@ -30,8 +30,10 @@
 #include <ustring.h>
 #include "nomen.h"
 #include <math.h>
+#include <locale.h>
 
 extern int _GScrollBar_Width;
+extern struct lconv localeinfo;
 struct bvshows BVShows = { 1, 1, 1, 0 };
 
 #define RPT_BASE	3		/* Place to draw the pointer icon */
@@ -157,12 +159,28 @@ BDFChar *BDFMakeChar(BDFFont *bdf,int i) {
 return( bc );
 }
 
-void BVChangeBC(BitmapView *bv, BDFChar *bc, int fitit ) {
-    char buffer[210];
+static unichar_t *BVMakeTitles(BitmapView *bv, BDFChar *bc,unichar_t *ubuf) {
+    char buffer[10];
     unichar_t *title;
-    unichar_t ubuf[300];
     SplineChar *sc;
     BDFFont *bdf = bv->bdf;
+
+    sc = bdf->sf->chars[bc->enc];
+    uc_strncpy(ubuf,sc->name,90);
+    u_strcat(ubuf,GStringGetResource(_STR_Bvat,NULL));
+    sprintf( buffer, "%d", bdf->pixelsize);
+    uc_strcat(ubuf,buffer);
+    u_strcat(ubuf,GStringGetResource(_STR_Bvfrom,NULL));
+    uc_strncat(ubuf,sc->parent->fontname,90);
+    title = u_copy(ubuf);
+    if ( sc->unicodeenc!=-1 && UnicodeCharacterNames[sc->unicodeenc>>8][sc->unicodeenc&0xff]!=NULL )
+	u_strcat(ubuf, UnicodeCharacterNames[sc->unicodeenc>>8][sc->unicodeenc&0xff]);
+return( title );
+}
+
+void BVChangeBC(BitmapView *bv, BDFChar *bc, int fitit ) {
+    unichar_t *title;
+    unichar_t ubuf[300];
 
     BVUnlinkView(bv);
     bv->bc = bc;
@@ -175,13 +193,7 @@ void BVChangeBC(BitmapView *bv, BDFChar *bc, int fitit ) {
 	BVNewScale(bv);
     BVRefreshImage(bv);
 
-    sc = bdf->sf->chars[bc->enc];
-    sprintf( buffer, "%.90s at %d from %.90s ", sc->name, bdf->pixelsize,
-	    sc->parent->fontname );
-    title = uc_copy(buffer);
-    u_strcpy(ubuf,title);
-    if ( sc->unicodeenc!=-1 && UnicodeCharacterNames[sc->unicodeenc>>8][sc->unicodeenc&0xff]!=NULL )
-	u_strcat(ubuf, UnicodeCharacterNames[sc->unicodeenc>>8][sc->unicodeenc&0xff]);
+    title = BVMakeTitles(bv,bc,ubuf);
     GDrawSetWindowTitles(bv->gw,ubuf,title);
     free(title);
 }
@@ -398,13 +410,13 @@ static void BVInfoDrawText(BitmapView *bv, GWindow pixmap ) {
     r.y = bv->mbh; r.height = bv->infoh-1;
     GDrawFillRect(pixmap,&r,bg);
 
-    sprintf(buffer,"%d,%d", bv->info_x, bv->info_y );
+    sprintf(buffer,"%d%s%d", bv->info_x, localeinfo.thousands_sep, bv->info_y );
     buffer[11] = '\0';
     uc_strcpy(ubuffer,buffer);
     GDrawDrawText(pixmap,bv->infoh+RPT_DATA,ybase,ubuffer,-1,NULL,0);
 
     if ( bv->active_tool!=cvt_none ) {
-	sprintf(buffer,"%d,%d", bv->info_x-bv->pressed_x, bv->info_y-bv->pressed_y );
+	sprintf(buffer,"%d%s%d", bv->info_x-bv->pressed_x, localeinfo.thousands_sep, bv->info_y-bv->pressed_y );
 	buffer[11] = '\0';
 	uc_strcpy(ubuffer,buffer);
 	GDrawDrawText(pixmap,bv->infoh+RPT_DATA,ybase+bv->sfh+10,ubuffer,-1,NULL,0);
@@ -610,7 +622,7 @@ static void BVMouseDown(BitmapView *bv, GEvent *event) {
 	BVToolsPopup(bv,event);
 return;
     }
-    BVToolsSetCursor(bv,TrueCharState(event));
+    BVToolsSetCursor(bv,event->u.mouse.state|(1<<(7+event->u.mouse.button)) );
     bv->active_tool = bv->showing_tool;
     bv->pressed_x = x; bv->pressed_y = y;
     bv->info_x = x; bv->info_y = y;
@@ -778,7 +790,7 @@ static void BVMouseUp(BitmapView *bv, GEvent *event) {
       break;
     }
     bv->active_tool = bvt_none;
-    BVToolsSetCursor(bv,TrueCharState(event));
+    BVToolsSetCursor(bv,event->u.mouse.state&~(1<<(7+event->u.mouse.button)));		/* X still has the buttons set in the state, even though we just released them. I don't want em */
 }
 
 static int v_e_h(GWindow gw, GEvent *event) {
@@ -800,7 +812,6 @@ static int v_e_h(GWindow gw, GEvent *event) {
       break;
       case et_mouseup:
 	BVMouseUp(bv,event);
-	BVToolsSetCursor(bv,TrueCharState(event));
       break;
       case et_char:
 	BVChar(bv,event);
@@ -1034,7 +1045,7 @@ static void BVMenuGotoChar(GWindow gw,struct gmenuitem *mi,GEvent *g) {
 static void BVMenuPaletteShow(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
 
-    BVPaletteSetVisible(bv, mi->mid==MID_Tools, BVPaletteIsVisible(bv, mi->mid==MID_Tools));
+    BVPaletteSetVisible(bv, mi->mid==MID_Tools, !BVPaletteIsVisible(bv, mi->mid==MID_Tools));
 }
 
 static void BVUndo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -1286,11 +1297,9 @@ BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv) {
     GWindow gw;
     GWindowAttrs wattrs;
     GGadgetData gd;
-    char buffer[210];
     GRect gsize;
     int sbsize;
     unichar_t ubuf[300];
-    SplineChar *sc = bc->sc;
     static GWindow icon = NULL;
     GTextInfo ti;
     FontRequest rq;
@@ -1319,11 +1328,7 @@ BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv) {
     wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_ititle;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.cursor = ct_pointer;
-    sprintf( buffer, "%.90s at %d from %.90s ", bc->sc->name, bdf->pixelsize, fv->sf->fontname );
-    wattrs.icon_title = uc_copy(buffer);
-    uc_strcpy(ubuf,buffer);
-    if ( sc->unicodeenc!=-1 && UnicodeCharacterNames[sc->unicodeenc>>8][sc->unicodeenc&0xff]!=NULL )
-	u_strcat(ubuf, UnicodeCharacterNames[sc->unicodeenc>>8][sc->unicodeenc&0xff]);
+    wattrs.icon_title = BVMakeTitles(bv,bc,ubuf);
     wattrs.window_title = ubuf;
     wattrs.icon = icon;
     if ( wattrs.icon )
@@ -1360,8 +1365,8 @@ BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv) {
     gd.pos.y = bv->mbh + GDrawPointsToPixels(gw,6);
     gd.pos.width = GDrawPointsToPixels(gw,106);
     gd.label = &ti;
-    ti.text = (unichar_t *) "Recalculate Bitmap";
-    ti.text_is_1byte = true;
+    ti.text = (unichar_t *) _STR_RecalculateBitmaps;
+    ti.text_in_resource = true;
     gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
     if ( fv->sf->onlybitmaps )
 	gd.flags = gg_pos_in_pixels;

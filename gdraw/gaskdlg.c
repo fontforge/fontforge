@@ -283,7 +283,7 @@ int GWidgetAskR(int title,int question, int *answers, int def, int cancel) {
     int i;
 
     for ( i=0; answers[i]!=0 && answers[i]!=0x80000000; ++i );
-    ans = gcalloc(i+1,sizeof(unichar_t));
+    ans = gcalloc(i+1,sizeof(unichar_t *));
     mn = gcalloc(1,sizeof(unichar_t));
     for ( i=0; answers[i]!=0 && answers[i]!=0x80000000; ++i )
 	ans[i] = GStringGetResource(answers[i],&mn[i]);
@@ -339,7 +339,7 @@ unichar_t *GWidgetAskString(const unichar_t *title,const unichar_t *question,
 
     ocb[2]=NULL;
     ocb[0] = GStringGetResource( _STR_OK, &ocmn[0]);
-    ocb[1] = GStringGetResource( _STR_OK, &ocmn[1]);
+    ocb[1] = GStringGetResource( _STR_Cancel, &ocmn[1]);
     gw = DlgCreate(title,question,ocb,ocmn,0,1,&d,true,true,false);
     if ( def!=NULL && *def!='\0' )
 	GGadgetSetTitle(GWidgetGetControl(gw,2),def);
