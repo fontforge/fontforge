@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 3-Sep-2001 -->
-  <!-- AP: Last modified: 28-Oct-2001 -->
+  <!-- AP: Last modified: 13-May-2002 -->
   <TITLE>TtfMod -- A TrueType&reg; Font Modifier</TITLE>
 </HEAD>
 <BODY>
@@ -50,9 +50,9 @@ access to certain features of TrueType that would be awkward to fold into
 PfaEdit's UI, specifically TrueType instructing (hinting). (It has helped
 me figure out why PfaEdit's TrueType instructing is so bad).
 <P>
-This program isn't finished yet. <FONT COLOR="Red"><STRONG><BIG>Don't use
-the Save or Save As commands. </BIG></STRONG></FONT>Let's pretend it's called
-ttfview for now...
+This program isn't finished yet. <FONT COLOR="Red"><STRONG><BIG>The Save
+and Save As commands may have problems. </BIG></STRONG></FONT>Let's pretend
+it's called ttfview for now...
 <P>
 TrueType is not standardized. It is an evolving specification with at least
 three groups working on it and changing it in different ways. The major players
@@ -88,6 +88,10 @@ None of these is entirely consistant with the others.
 	interpretation well enough to implement it. OpenType provides a mechanism
 	for distinguishing between the two (without describing what Apple does),
 	but Apple doesn't mention this, and anyway old fonts won't have it.
+      <LI>
+	Old MS docs claim that in the cmap table the big5 encoding_id is 3 (and the
+	PRC encoding is 4), while the new docs claim it is 4 (and the PRC encoding
+	is 3).
     </UL>
 </UL>
 <P>
@@ -192,11 +196,11 @@ $ make
 </PRE>
 <UL>
   <LI>
-    <A HREF="../ttfmod_src-011028.tgz">Source</A> 28-Oct-2001
-  <LI>
+    <A HREF="../ttfmod_src-020513.tgz">Source</A> 13-May-2002
+    <!--  <LI>
     <A HREF="../ttfmod-011025.tgz">linux (redhat 7.1) executable</A>:
     25-Oct-2001<BR>
-    (The executable is compiled without the grid-fitting debugger)
+    (The executable is compiled without the grid-fitting debugger)-->
 </UL>
 <H3>
   <A NAME="CharView">The TTF Character View</A>
@@ -232,6 +236,11 @@ Note that the grid-fit splines and the rasterized image are missing.
 <B>If you are more paranoid than I am:</B><BR>
 <IMG SRC="ttfcv-nodebug.png" WIDTH="374" HEIGHT="487"><BR>
 And have turned off the debugger entirely, then the gloss is also missing.
+<P>
+Clicking on a point selects it and scrolls the debug pane to the first
+instruction that moves that point, and scrolls the instruction pane
+similarly.<BR>
+Clicking with the middle mouse button zooms in. Meta-clicking zooms out.
 <H3>
   Reporting <A NAME="bugs">bugs</A>...
 </H3>
