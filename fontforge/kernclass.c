@@ -1787,6 +1787,7 @@ void ShowKernClasses(SplineFont *sf,MetricsView *mv,int isv) {
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[7];
     GTextInfo label[7];
+    int kcl_width = KCL_Width, temp;
 
     if ( sf->kcld && !isv ) {
 	GDrawSetVisible(sf->kcld->gw,true);
@@ -1822,12 +1823,14 @@ return;
 #endif
     wattrs.is_dlg = false;
     pos.x = pos.y = 0;
-    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,KCL_Width));
+    temp = 40 + 300*GIntGetResource(_NUM_Buttonsize)/GGadgetScale(100);
+    if ( kcl_width<temp ) kcl_width = temp;
+    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,kcl_width));
     pos.height = GDrawPointsToPixels(NULL,KCL_Height);
     kcld->gw = GDrawCreateTopWindow(NULL,&pos,kcl_e_h,kcld,&wattrs);
 
     gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5;
-    gcd[0].gd.pos.width = KCL_Width-28; gcd[0].gd.pos.height = 7*12+10;
+    gcd[0].gd.pos.width = kcl_width-10; gcd[0].gd.pos.height = 7*12+10;
     gcd[0].gd.flags = gg_visible | gg_enabled | gg_list_multiplesel;
     gcd[0].gd.cid = CID_List;
     gcd[0].gd.u.list = KCSLIList(sf,isv);
@@ -1865,11 +1868,11 @@ return;
     gcd[3].creator = GButtonCreate;
 
     gcd[4].gd.pos.x = 10; gcd[4].gd.pos.y = gcd[1].gd.pos.y+28;
-    gcd[4].gd.pos.width = KCL_Width-20;
+    gcd[4].gd.pos.width = kcl_width-20;
     gcd[4].gd.flags = gg_visible;
     gcd[4].creator = GLineCreate;
 
-    gcd[5].gd.pos.x = (KCL_Width-GIntGetResource(_NUM_Buttonsize))/2; gcd[5].gd.pos.y = gcd[4].gd.pos.y+7;
+    gcd[5].gd.pos.x = (kcl_width-GIntGetResource(_NUM_Buttonsize))/2; gcd[5].gd.pos.y = gcd[4].gd.pos.y+7;
     gcd[5].gd.pos.width = -1;
     gcd[5].gd.flags = gg_visible|gg_enabled|gg_but_default|gg_but_cancel;
     label[5].text = (unichar_t *) _STR_Done;
