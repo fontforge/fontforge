@@ -819,6 +819,7 @@ static uint32 SFToFOND(FILE *res,SplineFont *sf,uint32 id,int dottf,int32 *sizes
     /*  glyph encoding tables. Printer drivers use them ok. ATM will only */
     /*  work on fonts with mac roman encodings */
     if ( sf->encoding_name!=em_mac ) {
+	if ( !dottf ) GWidgetPostNoticeR(_STR_NoATM,_STR_BadEncodingForATM);
 	glyphenc = ftell( res );
 	fseek(res,geoffset,SEEK_SET);
 	putlong(res,glyphenc-geoffset+2);
@@ -1066,6 +1067,8 @@ static uint32 SFsToFOND(FILE *res,struct sflist *sfs,uint32 id,int format,int bf
     /*  glyph encoding tables. Printer drivers use them ok. ATM will only */
     /*  work on fonts with mac roman encodings */
     if ( psfaces[0]->sf->encoding_name!=em_mac ) {
+	if ( format==ff_pfbmacbin )
+	    GWidgetPostNoticeR(_STR_NoATM,_STR_BadEncodingForATM);
 	glyphenc = ftell( res );
 	fseek(res,geoffset,SEEK_SET);
 	putlong(res,glyphenc-geoffset+2);
