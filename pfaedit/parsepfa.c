@@ -856,6 +856,7 @@ static void parseline(struct fontparse *fp,char *line,FILE *in) {
     if ( line[0]=='%' && !fp->multiline )
 return;
 
+    while ( *line==' ' || *line=='\t' ) ++line;
     if ( fp->inencoding && strncmp(line,"dup",3)==0 ) {
 	/* Metamorphasis has multiple entries on a line */
 	while ( strncmp(line,"dup",3)==0 ) {
@@ -1277,6 +1278,12 @@ return( 0 );
 	} else if ( wasspace && ch==*rdtok ) {
 	    nowr = 1;
 	    rdpt = rdtok+1;
+	} else if ( wasspace && ch=='-' ) {	/* fonts produced by type1fix seem to define both "RD" and "-|" which confused me. so just respond to either */
+	    nowr = 1;
+	    rdpt = "|";
+	} else if ( wasspace && ch=='R' ) {	/* fonts produced by type1fix seem to define both "RD" and "-|" which confused me. so just respond to either */
+	    nowr = 1;
+	    rdpt = "D";
 	} else if ( inr && ch==*rdpt ) {
 	    if ( *++rdpt =='\0' ) {
 		ch = getc(temp);
