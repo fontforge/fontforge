@@ -1427,12 +1427,19 @@ return( true );
 static void mysprintf( char *buffer, char *format, real v) {
     char *pt;
 
-    sprintf( buffer, format, v );
-    pt = strrchr(buffer,'.');
-    if ( pt[1]=='0' && pt[2]=='0' )
-	*pt='\0';
-    else if ( pt[2]=='0' )
-	pt[2] = '\0';
+    if ( v<.0001 && v>-.0001 && v!=0 )
+	sprintf( buffer, "%e", v );
+    else if ( v<1 && v>0 )
+	sprintf( buffer, "%f", v );
+    else if ( v<0 && v>-1 )
+	sprintf( buffer, "%.5f", v );
+    else
+	sprintf( buffer, format, v );
+    pt = buffer + strlen(buffer);
+    while ( pt>buffer && pt[-1]=='0' )
+	*--pt = '\0';
+    if ( pt>buffer && pt[-1]=='.' )
+	pt[-1] = '\0';
 }
 
 static void mysprintf2( char *buffer, real v1, real v2) {
