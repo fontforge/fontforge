@@ -670,7 +670,7 @@ void MenuExit(GWindow base,struct gmenuitem *mi,GEvent *e) {
 char *GetPostscriptFontName(char *dir, int mult) {
     /* Some people use pf3 as an extension for postscript type3 fonts */
     static unichar_t fontmacsuit[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','m','a','c','-','s','u','i','t', '\0' };
-    static unichar_t wild[] = { '*', '.', '{', 'p','f','a',',','p','f','b',',','s','f','d',',','t','t','f',',','b','d','f',',','o','t','f',',','p','f','3',',','t','t','c',',','g','s','f',',', 'c','i','d',',','b','i','n',',','h','q','x',',','d','f','o','n','t',',','m','f',',','i','k','}', 
+    static unichar_t wild[] = { '*', '.', '{', 'p','f','a',',','p','f','b',',','s','f','d',',','t','t','f',',','b','d','f',',','o','t','f',',','p','f','3',',','t','t','c',',','g','s','f',',', 'c','i','d',',','b','i','n',',','h','q','x',',','d','f','o','n','t',',','m','f',',','i','k',',','f','o','n',',','f','n','t','}', 
 	     '{','.','g','z',',','.','Z',',','.','b','z','2',',','}',  '\0' };
     static unichar_t *mimes[] = { fontmacsuit, NULL };
     unichar_t *ret, *u_dir;
