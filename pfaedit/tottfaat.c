@@ -223,6 +223,7 @@ struct feature {
     unsigned int ismutex: 1;
     unsigned int defaultOn: 1;
     unsigned int vertOnly: 1;
+    unsigned int r2l: 1;	/* I think this is the "descending" flag */
     uint8 subtable_type;
     int chain;
     int32 flag;
@@ -624,6 +625,7 @@ return( features);
 	    if ( (ftell(temp)-cur->feature_start)&2 )
 		putshort(temp,0);
 	    cur->feature_len = ftell(temp)-cur->feature_start;
+	    cur->r2l = sc->script==CHR('a','r','a','b') || sc->script==CHR('h','e','b','r');
 	}
     }
 
@@ -726,7 +728,7 @@ return;
 	}
 	if ( k==0 ) {
 	    ++fcnt;		/* Add one for "All Typographic Features" */
-	    scnt += 1;		/* Add one for All Features Off */
+	    scnt += 2;		/* Add one each for All/No Features */
 	    at->feat = tmpfile();
 	    at->feat_name = galloc((fcnt+scnt+1)*sizeof(struct feat_name));
 	    putlong(at->feat,0x00010000);
@@ -742,9 +744,13 @@ return;
 	    putshort(at->feat,strid);
 	    at->feat_name[fn].name = "All Typographic Features";
 	    at->feat_name[fn++].strid = strid++;
-	    offset += 4;
+	    offset += 2*4;		/* All Features/No Features */
 	} else if ( k==1 ) {
 		/* Setting Name Array for All Typographic Features */
+	    putshort(at->feat,0);
+	    putshort(at->feat,strid);
+	    at->feat_name[fn].name = "All Features";
+	    at->feat_name[fn++].strid = strid++;
 	    putshort(at->feat,1);
 	    putshort(at->feat,strid);
 	    at->feat_name[fn].name = "No Features";
@@ -834,7 +840,7 @@ static void morxDumpChain(struct alltabs *at,struct feature *features,int chain,
     /* Subtables */
     for ( f=features; f!=NULL; f=f->next ) if ( f->chain==chain ) {
 	putlong(at->morx,f->feature_len+12);		/* Size of header needs to be added */
-	putlong(at->morx,(f->vertOnly?0x80000000:0x20000000) | f->subtable_type);
+	putlong(at->morx,(f->vertOnly?0x80000000:f->r2l?0:0x20000000) | f->subtable_type);
 	putlong(at->morx,f->flag);
 	tot = f->feature_len;
 	fseek(temp, f->feature_start, SEEK_SET);
