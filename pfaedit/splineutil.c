@@ -649,6 +649,48 @@ void CIDFindBounds(SplineFont *cidmaster,DBounds *bounds) {
     }
 }
 
+static void SplineSetQuickBounds(SplineSet *ss,DBounds *b) {
+    SplinePoint *sp;
+
+    b->minx = b->miny = 1e10;
+    b->maxx = b->maxy = -1e10;
+    for ( ; ss!=NULL; ss=ss->next ) {
+	for ( sp=ss->first; ; ) {
+	    if ( sp->me.y < b->miny ) b->miny = sp->me.y;
+	    if ( sp->me.x < b->minx ) b->minx = sp->me.x;
+	    if ( sp->me.y > b->maxy ) b->maxy = sp->me.y;
+	    if ( sp->me.x > b->maxx ) b->maxx = sp->me.x;
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==ss->first )
+	break;
+	}
+    }
+    if ( b->minx>65536 ) b->minx = 0;
+    if ( b->miny>65536 ) b->miny = 0;
+    if ( b->maxx<-65536 ) b->maxx = 0;
+    if ( b->maxy<-65536 ) b->maxy = 0;
+}
+
+void SplineCharQuickBounds(SplineChar *sc, DBounds *b) {
+    RefChar *ref;
+    DBounds temp;
+
+    SplineSetQuickBounds(sc->splines,b);
+    for ( ref = sc->refs; ref!=NULL; ref = ref->next ) {
+	SplineSetQuickBounds(ref->splines,&temp);
+	if ( b->minx==0 && b->maxx==0 && b->miny==0 && b->maxy == 0 )
+	    *b = temp;
+	else if ( temp.minx!=0 || temp.maxx != 0 || temp.maxy != 0 || temp.miny!=0 ) {
+	    if ( temp.minx < b->minx ) b->minx = temp.minx;
+	    if ( temp.miny < b->miny ) b->miny = temp.miny;
+	    if ( temp.maxx > b->maxx ) b->maxx = temp.maxx;
+	    if ( temp.maxy > b->maxy ) b->maxy = temp.maxy;
+	}
+    }
+}
+
 void SplinePointCatagorize(SplinePoint *sp) {
 
     sp->pointtype = pt_corner;
@@ -1777,16 +1819,17 @@ return( ts[i] );
 return( -1 );
 }
 
-void SplineFindInflections(Spline1D *sp, real *_t1, real *_t2 ) {
+void SplineFindExtrema(Spline1D *sp, real *_t1, real *_t2 ) {
     real t1= -1, t2= -1;
     real b2_fourac;
 
-    /* Find the points of inflection on the curve discribing x behavior */
+    /* Find the extreme points on the curve */
     /*  Set to -1 if there are none or if they are outside the range [0,1] */
     /*  Order them so that t1<t2 */
     /*  If only one valid inflection it will be t1 */
+    /*  (Does not check the end points unless they have derivative==0) */
     if ( sp->a!=0 ) {
-	/* cubic, possibly 2 inflections (possibly none) */
+	/* cubic, possibly 2 extrema (possibly none) */
 	b2_fourac = 4*sp->b*sp->b - 12*sp->a*sp->c;
 	if ( b2_fourac>=0 ) {
 	    b2_fourac = sqrt(b2_fourac);
@@ -1800,11 +1843,11 @@ void SplineFindInflections(Spline1D *sp, real *_t1, real *_t2 ) {
 	    if ( t1<=0 || t1>=1 ) { t1 = t2; t2 = -1; }
 	}
     } else if ( sp->b!=0 ) {
-	/* Quadratic, at most one inflection */
+	/* Quadratic, at most one extremum */
 	t1 = -sp->c/(2.0*sp->b);
 	if ( t1<=0 || t1>=1 ) t1 = -1;
     } else /*if ( sp->c!=0 )*/ {
-	/* linear, no points of inflection */
+	/* linear, no extrema */
     }
     *_t1 = t1; *_t2 = t2;
 }
@@ -2126,7 +2169,7 @@ static int NearXSpline(FindSel *fs, Spline *spline) {
 
     if ( xspline->a!=0 ) {
 	real t1, t2, tbase;
-	SplineFindInflections(xspline,&t1,&t2);
+	SplineFindExtrema(xspline,&t1,&t2);
 	tbase = 0;
 	if ( t1!=-1 ) {
 	    if ( XSolve(spline,0,t1,fs))
@@ -2235,7 +2278,7 @@ return( true );
 return( true );
 	} else {
 	    real t1, t2, tbase;
-	    SplineFindInflections(yspline,&t1,&t2);
+	    SplineFindExtrema(yspline,&t1,&t2);
 	    tbase = 0;
 	    if ( t1!=-1 ) {
 		if ( YSolve(spline,0,t1,fs))

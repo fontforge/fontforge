@@ -318,7 +318,7 @@ return( max );
     }
 
     xsp = &spline->splines[0];
-    SplineFindInflections(&spline->splines[1], &t1, &t2 );
+    SplineFindExtrema(&spline->splines[1], &t1, &t2 );
     tbase = 0;
     if ( t1!=-1 ) {
 	t = SplineSolve(&spline->splines[1],0,t1,y,.01);
@@ -364,7 +364,7 @@ return( min );
     }
 
     xsp = &spline->splines[0];
-    SplineFindInflections(&spline->splines[1], &t1, &t2 );
+    SplineFindExtrema(&spline->splines[1], &t1, &t2 );
     tbase = 0;
     if ( t1!=-1 ) {
 	t = SplineSolve(&spline->splines[1],0,t1,y,.01);
@@ -421,7 +421,7 @@ static void SplineFillZones(Spline *spline,struct charone *ch, WidthInfo *wi) {
 
     /* then try the extrema of the spline (assuming they are between t=(0,1) */
     xsp = &spline->splines[0]; ysp = &spline->splines[1];
-    SplineFindInflections(xsp, &t1, &t2 );
+    SplineFindExtrema(xsp, &t1, &t2 );
     if ( t1!=-1 )
 	PtFillZones( ((xsp->a*t1+xsp->b)*t1+xsp->c)*t1+xsp->d,
 		((ysp->a*t1+ysp->b)*t1+ysp->c)*t1+ysp->d,
@@ -432,7 +432,7 @@ static void SplineFillZones(Spline *spline,struct charone *ch, WidthInfo *wi) {
 		ch,wi);
 
     /* then try the zone boundaries */
-    SplineFindInflections(ysp, &t1, &t2 );
+    SplineFindExtrema(ysp, &t1, &t2 );
     for ( i=0; i<z_max; ++i ) {
 	if ( wi->zones[i][0]>spline->from->me.y && wi->zones[i][0]>spline->from->nextcp.y &&
 		wi->zones[i][0]>spline->to->me.y && wi->zones[i][0]>spline->to->prevcp.y )

@@ -378,7 +378,7 @@ return;		/* Horizontal line, ignore it */
 	/* Also store up points of inflection in X as interesting (we got the endpoints, just internals now)*/
 	real ot1, ot2;
 	int mpos;
-	SplineFindInflections(osp,&ot1,&ot2);
+	SplineFindExtrema(osp,&ot1,&ot2);
 	if ( ot1>0 && ot1<1 ) {
 	    mpos = (int) ceil( ((msp->a*ot1+msp->b)*ot1+msp->c)*ot1+msp->d-es->mmin );
 	    es->interesting[mpos] = 1;

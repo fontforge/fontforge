@@ -40,6 +40,7 @@ int default_encoding = em_iso8859_1;
 int autohint_before_rasterize = 1;
 int ItalicConstrained=true;
 int accent_offset = 6;
+int GraveAcuteCenterBottom = 1;
 float arrowAmount=1;
 float snapdistance=3.5;
 char *BDFFoundry=NULL;
@@ -119,6 +120,7 @@ static struct prefs_list {
 	{ "PrintType", pr_int, &printtype, NULL, NULL, '\0', NULL, 1 },
 	{ "ItalicConstrained", pr_bool, &ItalicConstrained, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupIC },
 	{ "AccentOffsetPercent", pr_int, &accent_offset, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupAO },
+	{ "AcuteCenterBottom", pr_bool, &GraveAcuteCenterBottom, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupGA },
 	{ "AutotraceArgs", pr_string, NULL, GetAutoTraceArgs, SetAutoTraceArgs, '\0', NULL, 1 },
 	{ "GreekFixup", pr_bool, &greekfixup, NULL, NULL, '\0', NULL, 0, _STR_PrefsPopupGF },
 	{ "OnlyCopyDisplayed", pr_bool, &onlycopydisplayed, NULL, NULL, '\0', NULL, 1 },

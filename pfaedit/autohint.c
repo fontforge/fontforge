@@ -475,8 +475,8 @@ static void EIAddSpline(Spline *spline, EIList *el) {
     int i, j, base, last;
 
     ts[0] = 0; ts[5] = 1.0;
-    SplineFindInflections(&spline->splines[0],&ts[1],&ts[2]);
-    SplineFindInflections(&spline->splines[1],&ts[3],&ts[4]);
+    SplineFindExtrema(&spline->splines[0],&ts[1],&ts[2]);
+    SplineFindExtrema(&spline->splines[1],&ts[3],&ts[4]);
     /* avoid teeny tiny segments, they just confuse us */
     SplineRemoveInflectionsTooClose(&spline->splines[0],&ts[1],&ts[2]);
     SplineRemoveInflectionsTooClose(&spline->splines[1],&ts[3],&ts[4]);

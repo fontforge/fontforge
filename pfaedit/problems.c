@@ -473,8 +473,8 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	    for ( spline = test->first->next; spline!=NULL && spline!=first && !p->finish; spline=spline->to->next ) {
 		if ( !spline->knownlinear ) {
 		    real t1, t2, t3, t4;
-		    SplineFindInflections(&spline->splines[0],&t1,&t2);
-		    SplineFindInflections(&spline->splines[1],&t3,&t4);
+		    SplineFindExtrema(&spline->splines[0],&t1,&t2);
+		    SplineFindExtrema(&spline->splines[1],&t3,&t4);
 		    if (( t1>0 && t1<1 ) || (t2>0 && t2<1 ) || (t3>0 && t3<1) ||
 			    (t4>0 && t4<1)) {
 			spline->from->selected = true;

@@ -822,6 +822,7 @@ static char *str_PrefsPopupRulers[] = "Display rulers in the Outline Character V
 static char *str_PrefsPopupSepHints[] = "Have seperate controls for display horizontal and vertical hints.";
 static char *str_PrefsPopupIC[] = "In the Outline View, the Shift key constrains motion to be parallel to the ItalicAngle rather than the vertical.";
 static char *str_PrefsPopupAO[] = "The percentage of an em by which an accent is offset from its base character in Build Accent";
+static char *str_PrefsPopupGA[] = "When placing grave and acute accents above letters, should\nPfaEdit center them based on their full width, or\nshould it just center based on the lowest point\nof the accent.";
 static char *str_PrefsPopupAA[] = "The number of em-units by which an arrow key will move a selected point";
 static char *str_PrefsPopupGF[] = "Adobe has assigned the names Delta, Omega and mu\nto Increment, Ohm and micro signs respectively\nThis seems very odd to Greek font designers who use\nthe names to refer to letters of the alphabet.\nSo there is ambiguity as to what the names mean.\nSetting this flag tries to deal with the ambiguity\nby generating fonts with extra glyphs.";
 static char *str_PrefsPopupSD[] = "When the mouse pointer is within this many pixels\nof one of the various interesting features (baseline,\nwidth, grid splines, etc.) the pointer will snap\nto that feature.";

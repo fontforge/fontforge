@@ -30,6 +30,9 @@
 #include <utype.h>
 #include <ustring.h>
 
+extern int GraveAcuteCenterBottom;
+extern int accent_offset;	/* in prefs.c */
+
 #define BottomAccent	0x300
 #define TopAccent	0x345
 
@@ -374,6 +377,35 @@ static unichar_t unicode_greekalts[256][3] = {
 /* 1FFF */ { 0 },
 };
 
+static real SplineSetQuickTop(SplineSet *ss) {
+    real max = -1e10;
+    SplinePoint *sp;
+
+    for ( ; ss!=NULL; ss=ss->next ) {
+	for ( sp=ss->first; ; ) {
+	    if ( sp->me.y > max ) max = sp->me.y;
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==ss->first )
+	break;
+	}
+    }
+    if ( max<-65536 ) max = 0;	/* return a reasonable value for an empty glyph */
+return( max );
+}
+
+static real SplineCharQuickTop(SplineChar *sc) {
+    RefChar *ref;
+    real max, temp;
+
+    max = SplineSetQuickTop(sc->splines);
+    for ( ref = sc->refs; ref!=NULL; ref = ref->next )
+	if ( (temp =SplineSetQuickTop(ref->splines))>max )
+	    max = temp;
+return( max );
+}
+
 static int haschar(SplineFont *sf,int ch) {
     int i;
 
@@ -465,6 +497,10 @@ return( SFAlternateFromLigature(sf,base));
 	gpt = unicode_greekalts[base-0x1f00];
 	if ( *gpt && haschar(sf,*gpt) && (gpt[1]=='\0' || haschar(sf,gpt[1])) )
 return( gpt );
+	    /* Similarly for these (korean) jamo */
+    } else if (( base>=0x1176 && base<=0x117e ) || (base>=0x119a && base<=0x119c)) {
+	greekalts[0] = upt[1]; greekalts[1] = upt[0]; greekalts[2] = 0;
+return( greekalts );
     } else if ( base>=0x380 && base<=0x3ff && upt!=NULL ) {
 	/* Use precombined accents when possible */
 	if ( base==0x390 || base==0x3b0 ) {
@@ -474,7 +510,7 @@ return( gpt );
 	    if ( haschar(sf,greekalts[1]))
 return( greekalts );
 	}
-	/* In version 3 of unicode tonos gets converted to accute, which it */
+	/* In version 3 of unicode tonos gets converted to acute, which it */
 	/*  doesn't look like. Convert it back */
 	for ( pt=upt ; *pt && *pt!=0x301; ++pt );
 	if ( *pt ) {
@@ -561,12 +597,14 @@ return( SFIsRotatable(sf,sc));
 static int SPInRange(SplinePoint *sp, real ymin, real ymax) {
     if ( sp->me.y>=ymin && sp->me.y<=ymax )
 return( true );
+#if 0
     if ( sp->prev!=NULL )
 	if ( sp->prev->from->me.y>=ymin && sp->prev->from->me.y<=ymax )
 return( true );
     if ( sp->next!=NULL )
 	if ( sp->next->to->me.y>=ymin && sp->next->to->me.y<=ymax )
 return( true );
+#endif
 return( false );
 }
 
@@ -599,36 +637,92 @@ static void _SplineSetFindXRange(SplinePointList *spl, DBounds *bounds,
     }
 }
 
+static real _SplineSetFindXRangeAtYExtremum(SplinePointList *spl, DBounds *bounds,
+	int findymax, real yextreme, real ia) {
+    Spline *spline;
+    real t0, t1, t2, t3;
+    real y0, y1, y2, y3, x;
+
+    for ( ; spl!=NULL; spl = spl->next ) {
+	for ( spline = spl->first->next; spline!=NULL; spline=spline->to->next ) {
+	    if (( findymax && 
+		    !(yextreme>spline->from->me.y && yextreme>spline->from->nextcp.y &&
+		      yextreme>spline->to->me.y && yextreme>spline->to->prevcp.y )) ||
+		(!findymax &&
+		    !(yextreme<spline->from->me.y && yextreme<spline->from->nextcp.y &&
+		      yextreme<spline->to->me.y && yextreme<spline->to->prevcp.y )) ) {
+		/* Ok this spline might be bigger(less) than our current */
+		/*  extreme value, so check it */
+		SplineFindExtrema(&spline->splines[1],&t1,&t2);
+		y0 = spline->from->me.y; t0 = 0;
+		y3 = spline->to->me.y; t3 = 1;
+		if ( t1!=-1 ) {
+		    y1 = ((spline->splines[1].a*t1+spline->splines[1].b)*t1+spline->splines[1].c)*t1+spline->splines[1].d;
+		    if ( y1>y0 ) { y0 = y1; t0 = t1; }
+		}
+		if ( t2!=-1 ) {
+		    y2 = ((spline->splines[1].a*t2+spline->splines[1].b)*t2+spline->splines[1].c)*t2+spline->splines[1].d;
+		    if ( y2>y3 ) { y3 = y2; t3 = t2; }
+		}
+		if ( (findymax && y0>yextreme+.1) || (!findymax && y0<yextreme-.1) ) {
+		    bounds->miny = bounds->maxy = yextreme = y0;
+		    bounds->minx = bounds->maxx =
+			    ((spline->splines[0].a*t0+spline->splines[0].b)*t0+spline->splines[0].c)*t0+spline->splines[0].d;
+		} else if ( (findymax && y0>=yextreme-.1) || (!findymax && y0<=yextreme+1) ) {
+		    x = ((spline->splines[0].a*t0+spline->splines[0].b)*t0+spline->splines[0].c)*t0+spline->splines[0].d;
+		    if ( x>bounds->maxx ) bounds->maxx = x;
+		    else if ( x<bounds->minx ) bounds->minx = x;
+		}
+		if ( (findymax && y3>yextreme+.1) || (!findymax && y3<yextreme-.1) ) {
+		    bounds->miny = bounds->maxy = yextreme = y3;
+		    bounds->minx = bounds->maxx =
+			    ((spline->splines[0].a*t3+spline->splines[0].b)*t3+spline->splines[0].c)*t3+spline->splines[0].d;
+		} else if ( (findymax && y3>=yextreme-.1) || (!findymax && y3<=yextreme+1) ) {
+		    x = ((spline->splines[0].a*t3+spline->splines[0].b)*t3+spline->splines[0].c)*t3+spline->splines[0].d;
+		    if ( x>bounds->maxx ) bounds->maxx = x;
+		    else if ( x<bounds->minx ) bounds->minx = x;
+		}
+	    }
+	    if ( spline->to == spl->first )
+	break;
+	}
+    }
+return( yextreme );
+}
+
 /* this is called by the accented character routines with bounds set for the */
 /*  entire character. Our job is to make a guess at what the top of the */
 /*  character looks like so that we can do an optical accent placement */
-/* I tried having "top" be the top tenth of the character but that was too small */
+/* I currently think the best bet is to find the very highest point(s) and */
+/*  center on that. I used to find the bounds of the top quarter of the char */
 static real SCFindTopXRange(SplineChar *sc,DBounds *bounds, real ia) {
     RefChar *rf;
-    int ymax = bounds->maxy+1, ymin = ymax-(bounds->maxy-bounds->miny)/4;
+    real yextreme = -0x80000;
 
     /* a char with no splines (ie. a space) must have an lbearing of 0 */
     bounds->minx = bounds->maxx = 0;
 
     for ( rf=sc->refs; rf!=NULL; rf = rf->next )
-	_SplineSetFindXRange(rf->splines,bounds,ymin,ymax,ia);
+	yextreme = _SplineSetFindXRangeAtYExtremum(rf->splines,bounds,true,yextreme,ia);
 
-    _SplineSetFindXRange(sc->splines,bounds,ymin,ymax,ia);
-return( ymin );
+    yextreme = _SplineSetFindXRangeAtYExtremum(sc->splines,bounds,true,yextreme,ia);
+    if ( yextreme == -0x80000 ) yextreme = 0;
+return( yextreme );
 }
 
 static real SCFindBottomXRange(SplineChar *sc,DBounds *bounds, real ia) {
     RefChar *rf;
-    int ymin = bounds->miny-1, ymax = ymin+(bounds->maxy-bounds->miny)/4;
+    real yextreme = 0x80000;
 
     /* a char with no splines (ie. a space) must have an lbearing of 0 */
     bounds->minx = bounds->maxx = 0;
 
     for ( rf=sc->refs; rf!=NULL; rf = rf->next )
-	_SplineSetFindXRange(rf->splines,bounds,ymin,ymax,ia);
+	yextreme = _SplineSetFindXRangeAtYExtremum(rf->splines,bounds,false,yextreme,ia);
 
-    _SplineSetFindXRange(sc->splines,bounds,ymin,ymax,ia);
-return( ymin );
+    yextreme = _SplineSetFindXRangeAtYExtremum(sc->splines,bounds,false,yextreme,ia);
+    if ( yextreme == 0x80000 ) yextreme = 0;
+return( yextreme );
 }
 
 /* the cedilla and ogonec accents do not center on the accent itself but on */
@@ -647,7 +741,7 @@ static real SCFindTopBounds(SplineChar *sc,DBounds *bounds, real ia) {
 return( ymin );
 }
 
-/* And similarly for the floating hook */
+/* And similarly for the floating hook, and often for grave and acute */
 static real SCFindBottomBounds(SplineChar *sc,DBounds *bounds, real ia) {
     RefChar *rf;
     int ymin = bounds->miny-1, ymax = ymin+(bounds->maxy-bounds->miny)/20;
@@ -665,17 +759,8 @@ return( ymin );
 static real SplineCharFindSlantedBounds(SplineChar *sc,DBounds *bounds, real ia) {
     int ymin, ymax;
     RefChar *rf;
-    BlueData bd;
 
     SplineCharFindBounds(sc,bounds);
-
-    QuickBlues(sc->parent,&bd);
-    if ( bounds->maxy >= bd.xheight-bd.xheight/25 && bounds->maxy <= bd.xheight+bd.xheight/25 )
-	bounds->maxy = bd.xheight;
-    else if ( bounds->maxy >= bd.caph-bd.xheight/25 && bounds->maxy <= bd.caph+bd.xheight/25 )
-	bounds->maxy = bd.caph;
-    else if ( bounds->maxy >= bd.ascent-bd.xheight/25 && bounds->maxy <= bd.ascent+bd.xheight/25 )
-	bounds->maxy = bd.ascent;
 
     ymin = bounds->miny-1, ymax = bounds->maxy+1;
 
@@ -710,11 +795,15 @@ return( 0x70000000 );
 		    best = h;
 	    if ( best->start+best->width/2>(bb->maxx+bb->minx)/2 )
 		best = NULL;
-	} else {
+	} else if ( pos&____CENTERLEFT ) {
 	    while ( best->next!=NULL )
 		best = best->next;
 	    if ( best->start+best->width/2<(bb->maxx+bb->minx)/2 )
 		best = NULL;
+	} else {
+	    for ( h=best->next; h!=NULL ; h=h->next )
+		if ( HIlen(h)>HIlen(best))
+		    best = h;
 	}
 	if ( best!=NULL )
 return( best->start + best->width/2 - (rbb->maxx-rbb->minx)/2 - rbb->minx );
@@ -812,14 +901,13 @@ return( 1 );
 
 static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
 	real ia, int basech ) {
-    const unichar_t *apt = accents[ch-BottomAccent], *end = apt+3;
+    const unichar_t *apt, *end = apt;
     int ach= -1;
     int invert = false;
     SplineChar *rsc;
     real transform[6];
     DBounds bb, rbb, bbb;
     real xoff, yoff;
-    extern int accent_offset;	/* in prefs.c */
     real spacing = (sf->ascent+sf->descent)*accent_offset/100;
     BDFChar *bc, *rbc;
     int ixoff, iyoff, ispacing, pos;
@@ -838,6 +926,7 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
     /* cedilla on lower "g" becomes a turned comma above it */
     if ( ch==0x327 && basech=='g' && haschar(sf,0x312))
 	ch = 0x312;
+    apt = accents[ch-BottomAccent]; end = apt+3;
     if ( ch>=BottomAccent && ch<=TopAccent ) {
 	while ( *apt && apt<end && !haschar(sf,*apt)) ++apt;
 	if ( *apt!='\0' && apt<end )
@@ -863,19 +952,17 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
 	ach = ch;
     rsc = findchar(sf,ach);
     SplineCharFindSlantedBounds(rsc,&rbb,ia);
-    if ( ch==0x328 || ch==0x327 ) {
+    if ( ch==0x328 || ch==0x327 ) {	/* cedilla and ogonek */
 	SCFindTopBounds(rsc,&rbb,ia);
 	/* should do more than touch, should overlap a tiny bit... */
 	rbb.maxy -= (rbb.maxy-rbb.miny)/30;
-    } else if ( ch==0x309 )
+    } else if ( (GraveAcuteCenterBottom && (ch==0x300 || ch==0x301 || ch==0x30b || ch==0x30f)) || ch==0x309 )	/* grave, acute, hungarian, Floating hook */
 	SCFindBottomBounds(rsc,&rbb,ia);
     else if ( basech=='A' && ch==0x30a )
 	/* Again, a tiny bit of overlap is usual for Aring */
 	rbb.miny += (rbb.maxy-rbb.miny)/30;
-    if ( ia!=0 || ( basersc = findchar(sf,baserch))==NULL )
-	basersc = sc;
     ybase = SplineCharFindSlantedBounds(sc,&bb,ia);
-    if ( ia==0 ) {
+    if ( ia==0 && baserch!=basech && (basersc = findchar(sf,baserch))!=NULL ) {
 	ybase = SplineCharFindSlantedBounds(basersc,&bbb,ia);
 	if ( ____utype2[1+ch]&(____ABOVE|____BELOW) ) {
 	    bbb.maxy = bb.maxy;
@@ -886,6 +973,24 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
 	    bbb.minx = bb.minx;
 	}
 	bb = bbb;
+    } else
+	basersc = sc;
+ /* try to establish a common line on which all accents lie. The problem being*/
+ /*  that an accent above a,e,o will usually be slightly higher than an accent */
+ /*  above i or u, similarly for upper case. Letters with ascenders shouldn't */
+ /*  have much of a problem because ascenders are (usually) all the same shape*/
+ /* Obviously this test is only meaningful for latin,greek,cyrillic alphas */
+ /*  hence test for isupper,islower. And I'm assuming greek,cyrillic will */
+ /*  be consistant with latin */
+    if ( islower(basech) || isupper(basech)) {
+	SplineChar *common = findchar(sf,islower(basech)?'o':'O');
+	if ( common!=NULL ) {
+	    real top = SplineCharQuickTop(common);
+	    if ( bb.maxy<top ) {
+		bb.maxx += tan(ia)*(top-bb.maxy);
+		bb.maxy = top;
+	    }
+	}
     }
     if ( basech>=0x1f20 && basech<=0x1f27 && ch==0x345 ) {
 	bb.miny = 0;		/* ypogegrammeni rides below baseline, not below bottom stem */
@@ -945,9 +1050,11 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
 
     if ( (pos&____ABOVE) && (pos&(____LEFT|____RIGHT)) )
 	yoff = bb.maxy - rbb.maxy;
-    else if ( pos&____ABOVE )
-	yoff = bb.maxy + spacing - rbb.miny;
-    else if ( pos&____BELOW ) {
+    else if ( pos&____ABOVE ) {
+	yoff = bb.maxy - rbb.miny;
+	if ( !( pos&____TOUCHING) )
+	    yoff += spacing;
+    } else if ( pos&____BELOW ) {
 	yoff = bb.miny - rbb.maxy;
 	if ( !( pos&____TOUCHING) )
 	    yoff -= spacing;
@@ -957,22 +1064,23 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
 	yoff = bb.miny - rbb.miny;
 
     if ( pos&(____ABOVE|____BELOW) ) {
-	if ( !sf->serifcheck ) SFHasSerifs(sf);
-	if ( sf->issans ) {
-	    if ( ia==0 ) {
-		if ( pos&____ABOVE )
-		    ybase = SCFindTopXRange(basersc,&bbb,ia);
-		else if ( pos&____BELOW )
-		    ybase = SCFindBottomXRange(basersc,&bbb,ia);
-		bb.maxx = bbb.maxx;
-		bb.minx = bbb.minx;
-	    } else {
-		if ( pos&____ABOVE )
-		    ybase = SCFindTopXRange(sc,&bb,ia);
-		else if ( pos&____BELOW )
-		    ybase = SCFindBottomXRange(sc,&bb,ia);
-	    }
-	}
+	/* When we center an accent above an asymetric character like "C" we */
+	/*  should not pick the mid point of the char. Rather we should pick */
+	/*  the highest point (mostly anyway, there are exceptions) */
+	if ( pos&____ABOVE ) {
+	    static DBounds pointless;
+	    if ( basech!='b' && basech!='d' && basech!='h' && basech!='n' && basech!='r' &&
+		    basech!='B' && basech!='D' && basech!='L')
+		ybase = SCFindTopXRange(sc,&bb,ia);
+	    if ( ((basech=='h' && ch==0x307) ||	/* dot over the stem in hdot */
+		    basech=='i' || basech=='j' || basech==0x131 || basech==0xf6be ||
+		    (basech=='k' && ch==0x301) ||
+		    (baserch=='L' && ch==0x304) ||
+		    basech=='l' || basech=='t' ) &&
+		    (xoff=SCStemCheck(sf,basech,&bb,&pointless,pos))!=0x70000000 )
+		bb.minx = bb.maxx = xoff;		/* While on "t" we should center over the stem */
+	} else if ( pos&____BELOW )
+	    ybase = SCFindBottomXRange(sc,&bb,ia);
     }
 
     if ( isupper(basech) && ch==0x342)	/* While this guy rides above PSILI on left */
@@ -1059,9 +1167,41 @@ static void SCPutRefAfter(SplineChar *sc,SplineFont *sf,int ch, int copybmp) {
     SplineChar *rsc = findchar(sf,ch);
     BDFFont *bdf;
     BDFChar *bc, *rbc;
+    int full = sc->unicodeenc, normal = false, under = false/*, stationary=false*/;
+    DBounds bb, rbb;
+    real spacing = (sf->ascent+sf->descent)*accent_offset/100;
+    int ispacing;
 
-    SCAddRef(sc,rsc,sc->width,0);
-    sc->width += rsc->width;
+    if ( full<0x1100 || full>0x11ff ) {
+	SCAddRef(sc,rsc,sc->width,0);
+	sc->width += rsc->width;
+	normal = true;
+  /* these two jamo (same consonant really) ride underneath (except sometimes) */
+  /* So should the jungsong */
+    } else if (( ch==0x110b && (full!=0x1135 && full!=0x1147 && full!=0x114d)) ||
+		(ch==0x11bc && full!=0x11ee) ||
+		full==0x1182 || full==0x1183 || full==0x1187 || (full==0x118b && ch==0x1173) ||
+		full==0x118d || full==0x1193 || (full>=0x1195 && full<=0x1197) ||
+		full==0x119d || full==0x11a0 ) {
+	SplineCharQuickBounds(sc,&bb);
+	SplineCharQuickBounds(rsc,&rbb);
+	SCAddRef(sc,rsc,(bb.maxx+bb.minx)/2-(rbb.maxx+rbb.minx)/2,bb.miny-spacing-rbb.maxy);
+	under = true;
+#if 0
+  /* And in these jungsung there is no movement at all (the jamo don't interact) */
+    } else if (( full>=0x116a && full<=0x116c ) || (full>=0x116f && full<=0x1171) ||
+	    full==0x1174 || (full>=0x1176 && full<=0x1181) || (full>=0x1184 && full<=0x1186) ||
+	    (full>=0x1188 && full<=0x118c) || (full>=0x118e && full<=0x1192) ||
+	    full==0x1194 || (full>=0x119a && full<=0x119c) || full==0x119f ||
+	    full==0x11a1 ) {
+	SCAddRef(sc,rsc,0,0);
+	stationary = true;
+#endif
+    } else {	/* Jamo should snuggle right up to one another, and ignore the width */
+	SplineCharQuickBounds(sc,&bb);
+	SplineCharQuickBounds(rsc,&rbb);
+	SCAddRef(sc,rsc,bb.maxx+spacing-rbb.minx,0);
+    }
     if ( copybmp ) {
 	for ( bdf=sf->cidmaster?sf->cidmaster->bitmaps:sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
 	    if ( bdf->chars[rsc->enc]!=NULL && bdf->chars[sc->enc]!=NULL ) {
@@ -1070,8 +1210,20 @@ static void SCPutRefAfter(SplineChar *sc,SplineFont *sf,int ch, int copybmp) {
 		BCFlattenFloat(rbc);
 		BCCompressBitmap(rbc);
 		BCCompressBitmap(bc);
-		BCPasteInto(bc,rbc,bc->width,0,false, false);
-		bc->width += rbc->width;
+		if ( (ispacing = (bdf->pixelsize*accent_offset+50)/100)<=1 ) ispacing = 2;
+		if ( normal ) {
+		    BCPasteInto(bc,rbc,bc->width,0,false, false);
+		    bc->width += rbc->width;
+		} else if ( under ) {
+		    BCPasteInto(bc,rbc,(bc->xmax+rbc->xmin-rbc->xmax-rbc->xmin)/2,
+			    bc->ymin-ispacing-rbc->ymax,false, false);
+#if 0
+		} else if ( stationary ) {
+		    BCPasteInto(bc,rbc,0,0,false, false);
+#endif
+		} else {
+		    BCPasteInto(bc,rbc,bc->xmax-ispacing-rbc->xmin,0,false, false);
+		}
 	    }
 	}
     }

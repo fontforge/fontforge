@@ -565,6 +565,7 @@ extern void SplineSetFindBounds(SplinePointList *spl, DBounds *bounds);
 extern void SplineCharFindBounds(SplineChar *sc,DBounds *bounds);
 extern void SplineFontFindBounds(SplineFont *sf,DBounds *bounds);
 extern void CIDFindBounds(SplineFont *sf,DBounds *bounds);
+extern void SplineCharQuickBounds(SplineChar *sc, DBounds *b);
 extern void SplinePointCatagorize(SplinePoint *sp);
 extern int SplinePointIsACorner(SplinePoint *sp);
 extern void SCCatagorizePoints(SplineChar *sc);
@@ -604,7 +605,7 @@ extern int SplinesIntersect(Spline *s1, Spline *s2, BasePoint pts[4], real t1s[4
 extern int CubicSolve(Spline1D *sp,real ts[3]);
 extern real SplineSolve(Spline1D *sp, real tmin, real tmax, real sought_y, real err);
 extern int SplineSolveFull(Spline1D *sp,real val, real ts[3]);
-extern void SplineFindInflections(Spline1D *sp, real *_t1, real *_t2 );
+extern void SplineFindExtrema(Spline1D *sp, real *_t1, real *_t2 );
 extern void SplineRemoveInflectionsTooClose(Spline1D *sp, real *_t1, real *_t2 );
 extern int NearSpline(struct findsel *fs, Spline *spline);
 extern real SplineNearPoint(Spline *spline, BasePoint *bp, real fudge);

@@ -1370,7 +1370,10 @@ int hascomposing(SplineFont *sf,int u) {
 		    *upt==0x1fee || *upt==0x1ffd || *upt==0x1fbe ||
 		    *upt==0x1fcd || *upt==0x1fdd || *upt==0x1fce || *upt==0x1fde )	/* Special greek accents */
 return( true );
-	    if ( *upt>=0x1100 && *upt<0x11c7 )
+	    /* Only build Jongsung out of chosung when doing a build composit */
+	    /*  not when doing a build accented (that's what the upt[1]!='\0' */
+	    /*  means */
+	    if ( *upt>=0x1100 && *upt<0x11c7 && upt[1]!='\0' )
 return( true );
 	    ++upt;
 	}
