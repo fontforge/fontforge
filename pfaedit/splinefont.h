@@ -487,6 +487,8 @@ typedef struct splinefont {
 enum style_flags { sf_bold = 1, sf_italic = 2, sf_underline = 4, sf_outline = 8,
 	sf_shadow = 0x10, sf_condense = 0x20, sf_extend = 0x40 };
 
+enum ttf_flags { ttf_flag_shortps = 1 };
+
 struct fontdict;
 struct pschars;
 struct findsel;
@@ -515,7 +517,7 @@ extern struct pschars *SplineFont2Subrs2(SplineFont *sf);
 extern struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
 	struct pschars *subrs);
 extern struct pschars *CID2Chrs2(SplineFont *cidmaster,struct fd2data *fds);
-enum fontformat { ff_pfa, ff_pfb, ff_pfbmacbin, ff_ptype3, ff_ptype0, ff_cid,
+enum fontformat { ff_pfa, ff_pfb, ff_pfbmacbin, ff_multiple, ff_ptype3, ff_ptype0, ff_cid,
 	ff_ttf, ff_ttfsym, ff_ttfmacbin, ff_ttfdfont, ff_otf, ff_otfdfont,
 	ff_otfcid, ff_otfciddfont, ff_none };
 enum bitmapformat { bf_bdf, bf_ttf_ms, bf_ttf_apple, bf_sfnt_dfont, 
@@ -525,11 +527,11 @@ extern int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format);
 extern int WritePSFont(char *fontname,SplineFont *sf,enum fontformat format);
 extern int WriteMacPSFont(char *fontname,SplineFont *sf,enum fontformat format);
 extern int _WriteTTFFont(FILE *ttf,SplineFont *sf, enum fontformat format,
-	int32 *bsizes, enum bitmapformat bf);
+	int32 *bsizes, enum bitmapformat bf,int flags);
 extern int WriteTTFFont(char *fontname,SplineFont *sf, enum fontformat format,
-	int32 *bsizes, enum bitmapformat bf);
+	int32 *bsizes, enum bitmapformat bf,int flags);
 extern int WriteMacTTFFont(char *fontname,SplineFont *sf, enum fontformat format,
-	int32 *bsizes, enum bitmapformat bf);
+	int32 *bsizes, enum bitmapformat bf,int flags);
 extern int WriteMacBitmaps(char *filename,SplineFont *sf, int32 *sizes,int is_dfont);
 extern struct ttflangname *TTFLangNamesCopy(struct ttflangname *old);
 extern void TTF_PSDupsDefault(SplineFont *sf);

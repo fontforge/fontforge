@@ -1046,7 +1046,7 @@ return( ret );
 }
 
 int WriteMacTTFFont(char *filename,SplineFont *sf,enum fontformat format,
-	int32 *bsizes, enum bitmapformat bf) {
+	int32 *bsizes, enum bitmapformat bf,int flags) {
     FILE *res, *tempttf;
     int ret = 1, r;
     struct resourcetype resources[4];
@@ -1059,7 +1059,7 @@ return( 0 );
 
     if ( _WriteTTFFont(tempttf,sf,format==ff_none?ff_none:
 				  format==ff_ttfmacbin?ff_ttf:
-			          format-1,bsizes,bf)==0 || ferror(tempttf) ) {
+			          format-1,bsizes,bf,flags)==0 || ferror(tempttf) ) {
 	fclose(tempttf);
 return( 0 );
     }

@@ -28,9 +28,11 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
+#include "utype.h"
 #include "ustring.h"
 #include "gfile.h"
 #include "gio.h"
+#include "gresource.h"
 #include "gicons.h"
 #include "psfont.h"
 
@@ -43,15 +45,16 @@ struct gfc_data {
     GGadget *bmpsizes;
     GGadget *doafm;
     GGadget *dopfm;
+    GGadget *psnames;
     SplineFont *sf;
 };
 
 #if __Mac
-static char *extensions[] = { ".pfa", ".pfb", "", ".ps", ".ps", ".cid",
+static char *extensions[] = { ".pfa", ".pfb", "", ".mult", ".ps", ".ps", ".cid",
 	".ttf", ".ttf", ".suit", ".dfont", ".otf", ".otf.dfont", ".otf",
 	".otf.dfont", NULL };
 #else
-static char *extensions[] = { ".pfa", ".pfb", ".bin", ".ps", ".ps", ".cid",
+static char *extensions[] = { ".pfa", ".pfb", ".bin", ".mult", ".ps", ".ps", ".cid",
 	".ttf", ".ttf", ".ttf.bin", ".dfont", ".otf", ".otf.dfont", ".otf",
 	".otf.dfont", NULL };
 #endif
@@ -63,6 +66,7 @@ static GTextInfo formattypes[] = {
 #else
     { (unichar_t *) "PS Type 1 (MacBin)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
 #endif
+    { (unichar_t *) "PS Type 1 (Multiple)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "PS Type 3", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "PS Type 0", NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "PS CID", NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
@@ -97,6 +101,7 @@ static GTextInfo bitmaptypes[] = {
 };
 
 static int oldafmstate = -1, oldpfmstate = false;
+int oldpsstate = true;
 int oldformatstate = ff_pfb;
 int oldbitmapstate = 0;
 
@@ -151,6 +156,7 @@ static int WriteAfmFile(char *filename,SplineFont *sf, int formattype) {
 	strcat(buf,".afm");
     else
 	strcpy(pt,".afm");
+    GProgressChangeLine1R(_STR_SavingAFM);
     GProgressChangeLine2(temp=uc_copy(buf)); free(temp);
     afm = fopen(buf,"w");
     if ( afm==NULL )
@@ -524,10 +530,326 @@ return( false );
 return( true );
 }
 
+static char *SearchDirForFile(char *dir,char *filename) {
+    char buffer[1025];
+
+    strcpy(buffer,dir);
+    strcat(buffer,"/");
+    strcat(buffer,filename);
+    if ( GFileExists(buffer))
+return( copy(buffer));
+
+return( NULL );
+}
+
+static char *GetWernerSFDFile(SplineFont *sf) {
+    char *def=NULL, *ret;
+    char buffer[100];
+    unichar_t ubuf[100], *uret;
+    int supl = sf->supplement;
+
+    for ( supl = sf->supplement; supl<sf->supplement+10 ; ++supl ) {
+	if ( sf->subfontcnt!=0 ) {
+	    sprintf(buffer,"%.40s-%.40s-%d.sfd", sf->cidregistry,sf->ordering,supl);
+	    def = buffer;
+	} else if ( sf->encoding_name==em_big5 )
+	    def = "Big5.sfd";
+	else if ( sf->encoding_name==em_sjis )
+	    def = "Sjis.sfd";
+	else if ( sf->encoding_name==em_wansung )
+	    def = "Wansung.sfd";
+	else if ( sf->encoding_name==em_johab )
+	    def = "Johab.sfd";
+	else if ( sf->encoding_name==em_unicode )
+	    def = "Unicode.sfd";
+	if ( def!=NULL ) {
+	    ret = SearchDirForFile(".",def);
+	    if ( ret==NULL )
+		ret = SearchDirForFile(GResourceProgramDir,def);
+	    if ( ret==NULL )
+		ret = SearchDirForFile(GResourceProgramDir,def);
+#ifdef SHAREDIR
+	    if ( ret==NULL )
+		ret = SearchDirForFile(SHAREDIR,def);
+#endif
+	    if ( ret==NULL )
+		ret = SearchDirForFile(getPfaEditShareDir(),def);
+	    if ( ret==NULL )
+		ret = SearchDirForFile("/usr/share/pfaedit",def);
+	    if ( ret!=NULL )
+return( ret );
+	}
+	if ( sf->subfontcnt!=0 )
+    break;
+    }
+
+    if ( screen_display==NULL )
+return( NULL );
+
+    if ( def==NULL )
+	def = "*.sfd";
+    uc_strcpy(ubuf,def);
+    uret = GWidgetOpenFile(GStringGetResource(_STR_FindMultipleMap,NULL),NULL,ubuf,NULL);
+    ret = cu_copy(uret);
+    free(uret);
+return( ret );
+}
+
+static short *ParseWernerSFDFile(char *wernerfilename,SplineFont *sf,int *max) {
+    /* one entry for each char, >=1 => that subfont, 0=>not mapped, -1 => end of char mark */
+    int cnt=0;
+    int k, sub,i,r1,r2,warned = false;
+    SplineFont *_sf;
+    short *mapping;
+    FILE *file;
+    char buffer[200];
+    char *end;
+
+    file = fopen(wernerfilename,"r");
+    if ( file==NULL ) {
+	GWidgetErrorR(_STR_NoSubFontDirectoryFile,_STR_NoSubFontDirectoryFile);
+return( NULL );
+    }
+
+    k = 0;
+    do {
+	_sf = sf->subfontcnt==0 ? sf : sf->subfonts[k++];
+	if ( _sf->charcnt>cnt ) cnt = _sf->charcnt;
+    } while ( k<sf->subfontcnt );
+
+    mapping = gcalloc(cnt+1,sizeof(short));
+    mapping[cnt] = -1;
+    *max = 0;
+
+    while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
+	if ( !isdigit(buffer[0]))
+    continue;
+	sub = strtol(buffer,&end,10);
+	if ( sub>*max ) *max = sub;
+	while ( *end!='\0' ) {
+	    while ( isspace(*end)) ++end;
+	    if ( *end=='\0' )
+	break;
+	    r1 = strtol(end,&end,0);
+	    if ( *end=='_' || *end=='-' )
+		r2 = strtol(end+1,&end,0);
+	    else
+		r2 = r1;
+	    for ( i=r1; i<=r2; ++i ) if ( i<cnt ) {
+		if ( mapping[i]!=0 && !warned ) {
+		    fprintf( stderr, "Warning: Encoding %d is mapped to at least two sub-fonts (%d and %d)\n Only one will be used here.\n",
+			    i, sub, mapping[i]);
+		    warned = true;
+		}
+		mapping[i] = sub;
+	    }
+	}
+    }
+    fclose(file);
+return( mapping );
+}
+
+static int SaveSubFont(SplineFont *sf,char *newname,int32 *sizes,int res,
+	short *mapping, int subfont) {
+    SplineFont temp;
+    SplineChar *chars[256], **newchars;
+    SplineFont *_sf;
+    int k, i, pos=0, base, extras;
+    char *filename;
+    char *spt, *pt, buf[8];
+    RefChar *ref;
+    int err = 0;
+    unichar_t *ufile;
+
+    temp = *sf;
+    temp.encoding_name = em_none;
+    temp.charcnt = 256;
+    temp.chars = chars;
+    temp.bitmaps = NULL;
+    temp.subfonts = NULL;
+    temp.subfontcnt = 0;
+    temp.uniqueid = 0;
+    memset(chars,0,sizeof(chars));
+    for ( i=0; mapping[i]>=0; ++i ) if ( mapping[i]==subfont ) {
+	k = 0;
+	do {
+	    _sf = sf->subfontcnt==0 ? sf : sf->subfonts[k++];
+	    if ( i<_sf->charcnt && _sf->chars[i]!=NULL )
+	break;
+	} while ( k<sf->subfontcnt );
+	if ( pos>=256 )
+	    fprintf( stderr, "More that 256 entries in subfont %d\n", subfont );
+	else if ( i<_sf->charcnt ) {
+	    if ( _sf->chars[i]!=NULL ) {
+		_sf->chars[i]->parent = &temp;
+		_sf->chars[i]->enc = pos;
+	    }
+	    chars[pos++] = _sf->chars[i];
+	} else
+	    chars[pos++] = NULL;
+    }
+
+    /* check for any references to things outside this subfont and add them */
+    /*  as unencoded chars */
+    /* We could just replace with splines, I suppose but that would make */
+    /*  korean fonts huge */
+    forever {
+	extras = 0;
+	for ( i=0; i<temp.charcnt; ++i ) if ( temp.chars[i]!=NULL ) {
+	    for ( ref=temp.chars[i]->refs; ref!=NULL; ref=ref->next )
+		if ( ref->sc->parent!=&temp )
+		    ++extras;
+	}
+	if ( extras == 0 )
+    break;
+	newchars = gcalloc(temp.charcnt+extras,sizeof(SplineChar *));
+	memcpy(newchars,temp.chars,temp.charcnt*sizeof(SplineChar *));
+	if ( temp.chars!=chars ) free(temp.chars );
+	base = temp.charcnt;
+	temp.chars = newchars;
+	extras = 0;
+	for ( i=0; i<base; ++i ) if ( temp.chars[i]!=NULL ) {
+	    for ( ref=temp.chars[i]->refs; ref!=NULL; ref=ref->next )
+		if ( ref->sc->parent!=&temp ) {
+		    temp.chars[base+extras] = ref->sc;
+		    ref->sc->parent = &temp;
+		    ref->sc->enc = base+extras++;
+		}
+	}
+	temp.charcnt += extras;	/* this might be a slightly different value from that found before if some references get reused. N'importe */
+    }
+
+    filename = galloc(strlen(newname)+2+10);
+    strcpy(filename,newname);
+    pt = strrchr(filename,'.');
+    spt = strrchr(filename,'/');
+    if ( spt==NULL ) spt = filename; else ++spt;
+    if ( pt>spt )
+	*pt = '\0';
+    sprintf( buf, "%02d", subfont );
+    pt = strstr(spt,"%d");
+    if ( pt==NULL )
+	strcat(filename,buf);
+    else {
+	pt[0] = buf[0];
+	pt[1] = buf[1];
+	if ( buf[2]!='\0' ) {
+	    int l;
+	    for ( l=strlen(pt); l>=2 ; --l )
+		pt[l+1] = pt[l];
+	    pt[2] = buf[2];
+	}
+    }
+    temp.fontname = copy(spt);
+    strcat(spt,".pfb");
+    GProgressChangeLine2(ufile=uc_copy(filename)); free(ufile);
+
+    if ( sf->xuid!=NULL ) {
+	temp.xuid = galloc(strlen(sf->xuid)+strlen(buf)+5);
+	strcpy(temp.xuid,sf->xuid);
+	pt = temp.xuid + strlen( temp.xuid )-1;
+	while ( pt>temp.xuid && *pt==' ' ) --pt;
+	if ( *pt==']' ) --pt;
+	*pt = ' ';
+	strcpy(pt+1,buf);
+	strcat(pt,"]");
+    }
+
+    err = !WritePSFont(filename,&temp,oldformatstate);
+    if ( err )
+	GWidgetErrorR(_STR_Savefailedtitle,_STR_Savefailedtitle);
+    if ( !err && oldafmstate ) {
+	GProgressNextStage();
+	if ( !WriteAfmFile(filename,&temp,oldformatstate)) {
+	    GWidgetErrorR(_STR_Afmfailedtitle,_STR_Afmfailedtitle);
+	    err = true;
+	}
+    }
+    /* ??? Bitmaps */
+    GProgressNextStage();
+
+    /* The parent pointers on chars will be fixed up properly later */
+    /*  for now we just set them to NULL so future reference checks won't be confused */
+    for ( i=0; i<temp.charcnt; ++i ) if ( temp.chars[i]!=NULL )
+	temp.chars[i]->parent = NULL;
+    if ( temp.chars!=chars )
+	free(temp.chars);
+    free( temp.xuid );
+    free( temp.fontname );
+    free( filename );
+return( err );
+}
+
+static void RestoreSF(SplineFont *sf) {
+    SplineFont *_sf;
+    int k, i;
+
+    k = 0;
+    do {
+	_sf = sf->subfontcnt==0 ? sf : sf->subfonts[k++];
+	for ( i=0; i<_sf->charcnt; ++i ) if ( _sf->chars[i]!=NULL ) {
+	    _sf->chars[i]->parent = _sf;
+	    _sf->chars[i]->enc = i;
+	}
+    } while ( k<sf->subfontcnt );
+}
+
+static int WriteMultiplePSFont(SplineFont *sf,char *newname,int32 *sizes,
+	int res, char *wernerfilename) {
+    int err=0, tofree=false, max, filecnt;
+    short *mapping;
+    unichar_t *path;
+    int i;
+
+    if ( wernerfilename==NULL ) {
+	wernerfilename = GetWernerSFDFile(sf);
+	tofree = true;
+    }
+    if ( wernerfilename==NULL )
+return( 0 );
+    mapping = ParseWernerSFDFile(wernerfilename,sf,&max);
+    if ( tofree ) free(wernerfilename);
+    if ( mapping==NULL )
+return( 1 );
+
+    if ( sf->cidmaster!=NULL )
+	sf = sf->cidmaster;
+
+    filecnt = 1;
+    if ( oldafmstate )
+	filecnt = 2;
+#if 0
+    if ( oldbitmapstate==bf_bdf )
+	++filecnt;
+#endif
+    path = uc_copy(newname);
+    GProgressStartIndicator(10,GStringGetResource(_STR_SavingFont,NULL),
+	    GStringGetResource(_STR_SavingMultiplePSFonts,NULL),
+	    path,256,(max+1)*filecnt );
+    free(path);
+    GProgressEnableStop(false);
+
+    for ( i=1; i<=max && !err; ++i )
+	err = SaveSubFont(sf,newname,sizes,res,mapping,i);
+    RestoreSF(sf);
+    free( sizes );
+    GProgressEndIndicator();
+    if ( !err )
+	SavePrefs();
+return( err );
+}
+
 static int _DoSave(SplineFont *sf,char *newname,int32 *sizes,int res) {
     unichar_t *path;
     int err=false;
     int iscid = oldformatstate==ff_cid || oldformatstate==ff_otfcid || oldformatstate==ff_otfciddfont;
+    int flags = 0;
+
+    if ( oldformatstate == ff_multiple )
+return( WriteMultiplePSFont(sf,newname,sizes,res,NULL));
+
+    if ( !oldpsstate )
+	flags = ttf_flag_shortps;
 
     path = uc_copy(newname);
     GProgressStartIndicator(10,GStringGetResource(_STR_SavingFont,NULL),
@@ -545,8 +867,10 @@ static int _DoSave(SplineFont *sf,char *newname,int32 *sizes,int res) {
 	  case ff_pfa: case ff_pfb: case ff_ptype3: case ff_ptype0: case ff_cid:
 	    oerr = !WritePSFont(newname,sf,oldformatstate);
 	  break;
+	  break;
 	  case ff_ttf: case ff_ttfsym: case ff_otf: case ff_otfcid:
-	    oerr = !WriteTTFFont(newname,sf,oldformatstate,sizes,oldbitmapstate);
+	    oerr = !WriteTTFFont(newname,sf,oldformatstate,sizes,oldbitmapstate,
+		flags);
 	  break;
 	  case ff_pfbmacbin:
 	    oerr = !WriteMacPSFont(newname,sf,oldformatstate);
@@ -554,7 +878,7 @@ static int _DoSave(SplineFont *sf,char *newname,int32 *sizes,int res) {
 	  case ff_ttfmacbin: case ff_ttfdfont: case ff_otfdfont: case ff_otfciddfont:
 	  case ff_none:		/* only if bitmaps, an sfnt wrapper for bitmaps */
 	    oerr = !WriteMacTTFFont(newname,sf,oldformatstate,sizes,
-		    oldbitmapstate);
+		    oldbitmapstate,flags);
 	  break;
 	}
 	if ( oerr ) {
@@ -563,7 +887,6 @@ static int _DoSave(SplineFont *sf,char *newname,int32 *sizes,int res) {
 	}
     }
     if ( !err && oldafmstate ) {
-	GProgressChangeLine1R(_STR_SavingAFM);
 	GProgressIncrementBy(-sf->charcnt);
 	if ( !WriteAfmFile(newname,sf,oldformatstate)) {
 	    GWidgetErrorR(_STR_Afmfailedtitle,_STR_Afmfailedtitle);
@@ -595,7 +918,8 @@ static int _DoSave(SplineFont *sf,char *newname,int32 *sizes,int res) {
 return( err );
 }
 
-int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags, int res) {
+int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
+	int res, char *subfontdirectory) {
     int i;
     static char *bitmaps[] = {"bdf", "ms", "apple", "sbit", "bin", "dfont", NULL };
     int32 *sizes=NULL;
@@ -655,9 +979,11 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags, 
 		oldformatstate==ff_otfcid || oldformatstate==ff_ttfmacbin || oldformatstate==ff_none )
 	    oldafmstate = false;
 	oldpfmstate = false;
+	oldpsstate = true;
     } else {
 	oldafmstate = fmflags&1;
 	oldpfmstate = (fmflags&2)?1:0;
+	oldpsstate = (fmflags&4)?0:1;
     }
 
     if ( oldbitmapstate!=bf_none ) {
@@ -676,6 +1002,10 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags, 
 	}
 	sizes[cnt] = 0;
     }
+
+    if ( oldformatstate == ff_multiple )
+return( !WriteMultiplePSFont(sf,filename,sizes,res,subfontdirectory));
+
 return( !_DoSave(sf,filename,sizes,res));
 }
 
@@ -696,7 +1026,7 @@ return;
     }
     if ( d->sf->encoding_name>=em_base )
 	for ( item=enclist; item!=NULL && item->enc_num!=d->sf->encoding_name; item=item->next );
-    if ( oldformatstate<ff_ptype0 &&
+    if ( oldformatstate<ff_ptype0 && oldformatstate!=ff_multiple &&
 	    ((d->sf->encoding_name>=em_first2byte && d->sf->encoding_name<em_base) ||
 	     (d->sf->encoding_name>=em_base && (item==NULL || item->char_cnt>256))) ) {
 	static int buts[3] = { _STR_Yes, _STR_Cancel, 0 };
@@ -709,6 +1039,7 @@ return;
 
     oldafmstate = GGadgetIsChecked(d->doafm);
     oldpfmstate = GGadgetIsChecked(d->dopfm);
+    oldpsstate = GGadgetIsChecked(d->psnames);
 
     err = _DoSave(d->sf,temp,sizes,-1);
 
@@ -833,6 +1164,9 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 	GGadgetSetChecked(d->doafm,set);
 	if ( !set )				/* Don't default to generating pfms */
 	    GGadgetSetChecked(d->dopfm,set);
+	GGadgetSetVisible(d->psnames,format==ff_ttf || format==ff_ttfsym ||
+		format==ff_otf || format==ff_otfdfont ||
+		format==ff_ttfdfont || format==ff_ttfmacbin || format==ff_none);
 
 	list = GGadgetGetList(d->bmptype,&len);
 	temp = d->sf->cidmaster ? d->sf->cidmaster : d->sf;
@@ -902,6 +1236,7 @@ return( true );
 	    GGadgetSetVisible(tf,format!=ff_pfbmacbin);
 	}
 #endif
+	GGadgetSetEnabled(d->bmptype, format!=ff_multiple );
     }
 return( true );
 }
@@ -971,8 +1306,8 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[14];
-    GTextInfo label[14];
+    GGadgetCreateData gcd[15];
+    GTextInfo label[15];
     struct gfc_data d;
     GGadget *pulldown, *files, *tf;
     int i, old, ofs;
@@ -1052,6 +1387,7 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     gcd[5].gd.flags = gg_visible | gg_enabled | (oldafmstate ?gg_cb_on : 0 );
     label[5].text = (unichar_t *) _STR_Outputafm;
     label[5].text_in_resource = true;
+    gcd[5].gd.popup_msg = GStringGetResource(_STR_OutputAfmPopup,NULL);
     gcd[5].gd.label = &label[5];
     gcd[5].creator = GCheckBoxCreate;
 
@@ -1127,8 +1463,20 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     gcd[10].gd.flags = gg_visible | gg_enabled | (oldpfmstate ?gg_cb_on : 0 );
     label[10].text = (unichar_t *) _STR_Outputpfm;
     label[10].text_in_resource = true;
+    gcd[10].gd.popup_msg = GStringGetResource(_STR_OutputPfmPopup,NULL);
     gcd[10].gd.label = &label[10];
     gcd[10].creator = GCheckBoxCreate;
+
+    gcd[11].gd.pos.x = 88; gcd[11].gd.pos.y = gcd[5].gd.pos.y;
+    gcd[11].gd.flags = gg_enabled | (oldpsstate ?gg_cb_on : 0 );
+    label[11].text = (unichar_t *) _STR_PSNames;
+    label[11].text_in_resource = true;
+    gcd[11].gd.popup_msg = GStringGetResource(_STR_PSNamesPopup,NULL);
+    gcd[11].gd.label = &label[11];
+    gcd[11].creator = GCheckBoxCreate;
+    if ( ofs==ff_ttf || ofs==ff_ttfsym || ofs==ff_ttfdfont || ofs==ff_otf ||
+	    ofs==ff_otfdfont || ofs==ff_ttfmacbin || ofs==ff_none )
+	gcd[11].gd.flags |=  gg_visible;
 
     if ( ofs==ff_otfcid || ofs==ff_cid || ofs==ff_otfciddfont) {
 	/*gcd[5].gd.flags &= ~gg_visible;*/
@@ -1165,6 +1513,7 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     d.pstype = gcd[6].ret;
     d.bmptype = gcd[8].ret;
     d.bmpsizes = gcd[9].ret;
+    d.psnames = gcd[11].ret;
 
     GWidgetHidePalettes();
     GDrawSetVisible(gw,true);

@@ -607,21 +607,25 @@ static void bGenerate(Context *c) {
     char *bitmaptype = "";
     int fmflags = -1;
     int res = -1;
+    char *subfontdirectory = NULL;
 
-    if ( c->a.argc!=2 && c->a.argc!=3 && c->a.argc!=4 && c->a.argc!=5 )
+    if ( c->a.argc!=2 && c->a.argc!=3 && c->a.argc!=4 && c->a.argc!=5 && c->a.argc!=6 )
 	error( c, "Wrong number of arguments to Generate");
     if ( c->a.vals[1].type!=v_str ||
 	    (c->a.argc>=3 && c->a.vals[2].type!=v_str ) ||
 	    (c->a.argc>=4 && c->a.vals[3].type!=v_int ) ||
-	    (c->a.argc>=5 && c->a.vals[4].type!=v_int ))
+	    (c->a.argc>=5 && c->a.vals[4].type!=v_int ) ||
+	    (c->a.argc>=6 && c->a.vals[5].type!=v_str ))
 	error( c, "Bad type of argument");
     if ( c->a.argc>=3 )
 	bitmaptype = c->a.vals[2].u.sval;
     if ( c->a.argc>=4 )
 	fmflags = c->a.vals[3].u.ival;
-    if ( c->a.argc>=4 )
+    if ( c->a.argc>=5 )
 	res = c->a.vals[4].u.ival;
-    if ( !GenerateScript(sf,c->a.vals[1].u.sval,bitmaptype,fmflags,res) )
+    if ( c->a.argc>=6 )
+	subfontdirectory = c->a.vals[5].u.sval;
+    if ( !GenerateScript(sf,c->a.vals[1].u.sval,bitmaptype,fmflags,res,subfontdirectory) )
 	error(c,"Save failed");
 }
 

@@ -5770,10 +5770,11 @@ static void dumpnames(struct alltabs *at, SplineFont *sf) {
 
 static void dumppost(struct alltabs *at, SplineFont *sf, enum fontformat format) {
     int pos, i,j;
+    int shorttable = (format==ff_otf || format==ff_otfcid || (at->flags&ttf_flag_shortps));
 
     at->post = tmpfile();
 
-    putlong(at->post,format!=ff_otf && format!=ff_otfcid?0x00020000:0x00030000);	/* formattype */
+    putlong(at->post,shorttable?0x00030000:0x00020000);	/* formattype */
     putfixed(at->post,sf->italicangle);
     putshort(at->post,sf->upos);
     putshort(at->post,sf->uwidth);
@@ -5782,7 +5783,7 @@ static void dumppost(struct alltabs *at, SplineFont *sf, enum fontformat format)
     putlong(at->post,0);		/* no idea about memory */
     putlong(at->post,0);		/* no idea about memory */
     putlong(at->post,0);		/* no idea about memory */
-    if ( format!=ff_otf && format!=ff_otfcid ) {
+    if ( !shorttable ) {
 	putshort(at->post,at->maxp.numGlyphs);
 
 	putshort(at->post,0);		/* glyph 0 is named .notdef */
@@ -6496,7 +6497,7 @@ static void AssignTTFGlyph(SplineFont *sf,int32 *bsizes) {
 }
     
 static void initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
-	int32 *bsizes, enum bitmapformat bf) {
+	int32 *bsizes, enum bitmapformat bf,int flags) {
     int i, j, pos;
     BDFFont *bdf;
 
@@ -6507,6 +6508,7 @@ static void initTables(struct alltabs *at, SplineFont *sf,enum fontformat format
 
     memset(at,'\0',sizeof(struct alltabs));
     at->msbitmaps = bf==bf_ttf_ms;
+    at->flags = flags;
     if ( bf!=bf_ttf_ms && bf!=bf_ttf_apple && bf!=bf_sfnt_dfont)
 	bsizes = NULL;
     if ( bsizes!=NULL ) {
@@ -6840,7 +6842,7 @@ static void dumpttf(FILE *ttf,struct alltabs *at, enum fontformat format) {
 }
 
 int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
-	int32 *bsizes, enum bitmapformat bf) {
+	int32 *bsizes, enum bitmapformat bf,int flags) {
     struct alltabs at;
     char *oldloc;
 
@@ -6850,7 +6852,7 @@ int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
     } else {
 	if ( sf->subfontcnt!=0 ) sf = sf->subfonts[0];
     }
-    initTables(&at,sf,format,bsizes,bf);
+    initTables(&at,sf,format,bsizes,bf,flags);
     dumpttf(ttf,&at,format);
     setlocale(LC_NUMERIC,oldloc);
     if ( ferror(ttf))
@@ -6860,13 +6862,13 @@ return( 1 );
 }
 
 int WriteTTFFont(char *fontname,SplineFont *sf,enum fontformat format,
-	int32 *bsizes, enum bitmapformat bf) {
+	int32 *bsizes, enum bitmapformat bf,int flags) {
     FILE *ttf;
     int ret;
 
     if (( ttf=fopen(fontname,"w+"))==NULL )
 return( 0 );
-    ret = _WriteTTFFont(ttf,sf,format,bsizes,bf);
+    ret = _WriteTTFFont(ttf,sf,format,bsizes,bf,flags);
     if ( fclose(ttf)==-1 )
 return( 0 );
 return( ret );
