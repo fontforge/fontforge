@@ -1050,9 +1050,12 @@ return( false );
 	    }
 	    GTextFieldDrawLineSel(pixmap,gt,i,fg,sel);
 	}
-	if ( sel==fg )
+	if ( sel==fg ) {
+	    if ( *(bitext+gt->lines[i]+ll-1)=='\n' || *(bitext+gt->lines[i]+ll-1)=='\r' )
+		--ll;
 	    GDrawDrawText(pixmap,g->inner.x-gt->xoff_left,y+gt->as,
 		    bitext+gt->lines[i],ll,NULL, fg );
+	}
     }
 
     GDrawPopClip(pixmap,&old2);
