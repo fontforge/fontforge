@@ -3980,7 +3980,9 @@ uint32 LigTagFromUnicode(int uni) {
 
     if (( uni>=0xbc && uni<=0xbe ) || (uni>=0x2153 && uni<=0x215f) )
 	tag = CHR('f','r','a','c');	/* Fraction */
-    else if ( uni>=0xfb2a && uni<=0xfb4f )
+    else if ( uni==0xfb4f )
+	tag = CHR('h','l','i','g');
+    else if ( uni>=0xfb2a && uni<=0xfb4e )
 	tag = CHR('c','c','m','p');
     else switch ( uni ) {
       case 0xfb05:		/* long-s t */
