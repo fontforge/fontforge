@@ -1258,6 +1258,16 @@ static void GXDestroyCursor(GDisplay *gdisp,GCursor ct) {
     XFreeCursor(((GXDisplay *) gdisp)->display, ct-ct_user);
 }
 
+static int GXNativeWindowExists(GDisplay *gdisp,void *native) {
+    void *ret;
+
+    if ( XFindContext(((GXDisplay *) gdisp)->display,(Window) (intpt) native,((GXDisplay *) gdisp)->mycontext,(void *) &ret)==0 &&
+	    ret!=NULL )
+return( true );
+
+return( false );
+}
+
 static void GXDrawSetWindowBorder(GWindow w,int width,Color col) {
     GXWindow gw = (GXWindow) w;
 
@@ -1962,6 +1972,8 @@ static void GXDrawSendExpose(GXWindow gw, int x,int y,int wid,int hei ) {
 return;
 	event.u.expose.rect.width = wid;
 	event.u.expose.rect.height = hei;
+	event.w = (GWindow) gw;
+	event.native_window = ((GWindow) gw)->native_window;
 	(gw->eh)((GWindow ) gw,&event);
     }
 }
@@ -2363,6 +2375,8 @@ return;
 	struct gevent event;
 	event.type = et_expose;
 	event.u.expose.rect = *rect;
+	event.w = gw;
+	event.native_window = gw->native_window;
 	(gw->eh)(gw,&event);
     }
 #endif
@@ -2530,6 +2544,7 @@ return( false );
     if ( timer->owner!=NULL && timer->owner->eh!=NULL && o==NULL ) {
 	gevent.type = et_timer;
 	gevent.w = timer->owner;
+	gevent.native_window = timer->owner->native_window;
 	gevent.u.timer.timer = timer;
 	gevent.u.timer.userdata = timer->userdata;
 	(timer->owner->eh)(timer->owner,&gevent);
@@ -2718,6 +2733,7 @@ return;
     if ( XFilterEvent(event,None))
 return;
     gevent.w = gw;
+    gevent.native_window = (void *) event->xany.window;
     gevent.type = -1;
     switch(event->type) {
       case KeyPress: case KeyRelease:
@@ -3182,6 +3198,7 @@ static void GXDrawEventLoop(GDisplay *gd) {
 static void GXDrawPostEvent(GEvent *e) {
     /* Doesn't check event masks, not sure if that's desirable or not. It's easy though */
     GXWindow gw = (GXWindow) (e->w);
+    e->native_window = ((GWindow) gw)->native_window;
     (gw->eh)((GWindow) gw, e);
 }
 
@@ -3209,6 +3226,7 @@ static void gxdrawSendDragOut(GXDisplay *gdisp) {
 	e.type = et_dragout;
 	e.u.drag_drop.x = gdisp->last_dd.rx;
 	e.u.drag_drop.y = gdisp->last_dd.ry;
+	e.native_window = NULL;
 	if ( gdisp->last_dd.gw->eh!=NULL )
 	    (gdisp->last_dd.gw->eh)(gdisp->last_dd.gw,&e);
     } else {
@@ -3268,6 +3286,7 @@ return;
 	e.type = et;
 	e.u.drag_drop.x = x;
 	e.u.drag_drop.y = y;
+	e.native_window = NULL;
 
 	if ( (parent&0xfff00000)==(gw->w&0xfff00000) &&
 		XFindContext(gdisp->display,parent,gdisp->mycontext,(void *) &vd)==0 ) {
@@ -3916,6 +3935,7 @@ static struct displayfuncs xfuncs = {
     GXDrawCreateCursor,
     GXDrawDestroyWindow,
     GXDestroyCursor,
+    GXNativeWindowExists,
     GXDrawSetZoom,
     GXDrawSetWindowBorder,
     GXSetDither,

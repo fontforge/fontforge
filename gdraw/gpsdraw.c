@@ -87,6 +87,10 @@ static void PSDestroyCursor(GDisplay *gdisp,GCursor ct ) {
     fprintf( stderr, "DestroyCursor not implemented for postscript\n" );
 }
 
+static int PSNativeWindowExists(GDisplay *gdisp,void *native ) {
+return( false );
+}
+
 static void PSSetWindowBorder(GWindow w,int width, Color col ) {
     fprintf( stderr, "SetWindowBorder not implemented for postscript\n" );
 }
@@ -1258,6 +1262,7 @@ static struct displayfuncs psfuncs = {
     PSDrawCreateCursor,
     PSDrawDestroyWindow,
     PSDestroyCursor,
+    PSNativeWindowExists,
     PSSetZoom,
     PSSetWindowBorder,
     PSSetDither,

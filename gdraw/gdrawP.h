@@ -156,6 +156,7 @@ struct displayfuncs {
     GCursor (*createCursor)(GWindow src, GWindow mask, Color fg, Color bg, int16 x, int16 y);
     void (*destroyWindow)(GWindow);
     void (*destroyCursor)(GDisplay *,GCursor);
+    int (*nativeWindowExists)(GDisplay *,void *native_window);
     void (*setZoom)(GWindow,GRect *size,enum gzoom_flags flags);
     void (*setWindowBorder)(GWindow,int width,Color);
     int (*setDither)(GDisplay *,int);
