@@ -246,7 +246,7 @@ return( false );
     sf->changed = true;
     if ( fv->show!=fv->filled ) {
 	for ( i=0; sizes[i]!=0 && sizes[i]!=fv->show->pixelsize; ++i );
-	if ( sizes[i]!=0 )
+	if ( sizes[i]!=0 && fv->v!=NULL )
 	    GDrawRequestExpose(fv->v,NULL,false );
     }
 return( true );

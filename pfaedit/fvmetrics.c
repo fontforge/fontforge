@@ -355,3 +355,15 @@ void CVSetWidth(CharView *cv,enum widthtype wtype) {
     }
     FVCreateWidth(cv,CVDoit,wtype,buf);
 }
+
+void FVSetWidthScript(FontView *fv,enum widthtype wtype,int val) {
+    CreateWidthData wd;
+
+    memset(&wd,0,sizeof(wd));
+    wd._fv = fv;
+    wd.doit = FVDoit;
+    wd.setto = val;
+    wd.type = st_set;
+    wd.wtype = wtype;
+    FVDoit(&wd);
+}

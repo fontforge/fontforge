@@ -362,7 +362,7 @@ return;
 void FVAutoTrace(FontView *fv,int ask) {
     char **args;
     int i,cnt;
-    GCursor ct;
+    GCursor ct=0;
 
     if ( FindAutoTraceName()==NULL ) {
 	GWidgetErrorR(_STR_NoAutotrace,_STR_NoAutotraceProg);
@@ -372,10 +372,12 @@ return;
     args = AutoTraceArgs(ask);
     if ( args==(char **) -1 )
 return;
-    ct = GDrawGetCursor(fv->v);
-    GDrawSetCursor(fv->v,ct_watch);
-    GDrawSync(NULL);
-    GDrawProcessPendingEvents(NULL);
+    if ( fv->v!=NULL ) {
+	ct = GDrawGetCursor(fv->v);
+	GDrawSetCursor(fv->v,ct_watch);
+	GDrawSync(NULL);
+	GDrawProcessPendingEvents(NULL);
+    }
 
     for ( i=cnt=0; i<fv->sf->charcnt; ++i )
 	if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->backimages )
@@ -390,7 +392,8 @@ return;
 	}
     }
     GProgressEndIndicator();
-    GDrawSetCursor(fv->v,ct);
+    if ( fv->v!=NULL )
+	GDrawSetCursor(fv->v,ct);
 }
 
 char *ProgramExists(char *prog,char *buffer) {

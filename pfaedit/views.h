@@ -274,6 +274,7 @@ typedef struct findsel {
 
 enum widthtype { wt_width, wt_lbearing, wt_rbearing, wt_vwidth };
 
+extern FontView *_FontViewCreate(SplineFont *sf);
 extern FontView *FontViewCreate(SplineFont *sf);
 extern void SplineFontSetUnChanged(SplineFont *sf);
 extern FontView *ViewPostscriptFont(char *filename);
@@ -303,8 +304,13 @@ extern void SFPrivateInfo(SplineFont *sf);
 extern void FontViewReformat(FontView *fv);
 extern void FVShowFilled(FontView *fv);
 extern void SCPreparePopup(GWindow gw,SplineChar *sc);
+extern void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts,
+	int dobackground );
 extern void FVTrans(FontView *fv,SplineChar *sc,real transform[6],char *sel,
 	int dobackground);
+extern void FVBuildAccent(FontView *fv,int onlyaccents);
+extern void FVFakeMenus(FontView *fv,int cmd);
+extern void MergeFont(FontView *fv,SplineFont *other);
 extern void FVMergeFonts(FontView *fv);
 extern void FVInterpolateFonts(FontView *fv);
 extern void FVRevert(FontView *fv);
@@ -340,6 +346,7 @@ extern void BVPalettesHideIfMine(BitmapView *bv);
 extern void CVPaletteDeactivate(void);
 extern void BackgroundImageTransform(SplineChar *sc, ImageList *img,real transform[6]);
 extern void CVTransFunc(CharView *cv,real transform[6],int doback);
+extern void skewselect(BVTFunc *bvtf,real t);
 extern void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *,int),
 	int (*getorigin)(void *,BasePoint *,int), int enableback);
 extern void BitmapDlg(FontView *fv,SplineChar *sc, int isavail);
@@ -383,11 +390,13 @@ extern BDFFont *SFImportBDF(SplineFont *sf, char *filename, int ispk, int toback
 extern void CVFindCenter(CharView *cv, BasePoint *bp, int nosel);
 extern void CVStroke(CharView *cv);
 extern void FVStroke(FontView *fv);
+extern void FVStrokeItScript(FontView *fv, StrokeInfo *si);
 extern void SCGetInfo(SplineChar *sc,int nextprev);
 extern void CVGetInfo(CharView *cv);
 extern void SCRefBy(SplineChar *sc);
 extern void FVSetWidth(FontView *fv,enum widthtype wtype);
 extern void CVSetWidth(CharView *cv,enum widthtype wtype);
+extern void FVSetWidthScript(FontView *fv,enum widthtype wtype,int val);
 extern void CVChangeSC(CharView *cv, SplineChar *sc );
 extern void SCRefreshTitles(SplineChar *sc);
 

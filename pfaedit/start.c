@@ -193,6 +193,7 @@ int main( int argc, char **argv ) {
     }
     GResourceAddResourceString(NULL,argv[0]);
     LoadPrefs();
+    CheckIsScript(argc,argv);		/* Will run the script and exit if it is a script */
 
     for ( i=1; i<argc; ++i ) {
 	char *pt = argv[i];

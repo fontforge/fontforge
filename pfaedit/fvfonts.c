@@ -110,7 +110,7 @@ void BitmapsCopy(SplineFont *to, SplineFont *from, int to_index, int from_index 
     }
 }
 
-int SFFindChar(SplineFont *sf, int unienc, char *name ) {
+static int _SFFindChar(SplineFont *sf, int unienc, char *name ) {
     int index;
 
     if ( sf->encoding_name==em_unicode && unienc!=-1 ) {
@@ -134,15 +134,99 @@ int SFFindChar(SplineFont *sf, int unienc, char *name ) {
 return( index );
 }
 
+int SFFindChar(SplineFont *sf, int unienc, char *name ) {
+    int index;
+
+    if ( sf->encoding_name==em_unicode && unienc!=-1 ) {
+	index = unienc;
+	if ( index>=sf->charcnt || sf->chars[index]==NULL )
+	    index = -1;
+    } else if ( unienc!=-1 ) {
+	if ( unienc<sf->charcnt && sf->chars[unienc]!=NULL &&
+		sf->chars[unienc]->unicodeenc==unienc )
+	    index = unienc;
+	else for ( index = sf->charcnt-1; index>=0; --index ) if ( sf->chars[index]!=NULL ) {
+	    if ( sf->chars[index]->unicodeenc==unienc )
+	break;
+	}
+    } else {
+	for ( index = sf->charcnt-1; index>=0; --index ) if ( sf->chars[index]!=NULL ) {
+	    if ( strcmp(sf->chars[index]->name,name)==0 )
+	break;
+	}
+	if ( index==-1 ) {
+	    for ( index=psunicodenames_cnt-1; index>=0; --index )
+		if ( psunicodenames[index]!=NULL &&
+			strcmp(psunicodenames[index],name)==0 )
+return( SFFindChar(sf,index,name));
+	}
+    }
+
+ /* Ok. The character is not in the font, but that might be because the font */
+ /*  has a hole. check to see if it is in the encoding */
+    if ( index==-1 && unienc>=0 && unienc<=65535 && sf->encoding_name!=em_none ) {
+	if ( sf->encoding_name>=em_base ) {
+	    Encoding *item=NULL;
+	    for ( item=enclist; item!=NULL && item->enc_num!=sf->encoding_name; item=item->next );
+	    if ( item!=NULL ) {
+		for ( index=item->char_cnt-1; index>=0; --index )
+		    if ( item->unicode[index]==unienc )
+		break;
+	    }
+	} else if ( sf->encoding_name==em_adobestandard ) {
+	    for ( index=255; index>=0; --index )
+		if ( unicode_from_adobestd[index]==unienc )
+	    break;
+	} else if ( sf->encoding_name<=em_first2byte ) {
+	    unichar_t * table = unicode_from_alphabets[sf->encoding_name+3];
+	    for ( index=255; index>=0; --index )
+		if ( table[index]==unienc )
+	    break;
+	} else {
+	    struct charmap2 *table2 = NULL;
+	    unsigned short *plane2;
+	    int highch, temp;
+
+	    if ( sf->encoding_name<=em_jis212 )
+		table2 = &jis_from_unicode;
+	    else if ( sf->encoding_name==em_gb2312 )
+		table2 = &gb2312_from_unicode;
+	    else if ( sf->encoding_name==em_ksc5601 )
+		table2 = &ksc5601_from_unicode;
+	    else if ( sf->encoding_name==em_big5 )
+		table2 = &big5_from_unicode;
+	    else if ( sf->encoding_name==em_johab )
+		table2 = &johab_from_unicode;
+	    if ( table2!=NULL ) {
+		highch = unienc>>8;
+		if ( highch>=table2->first && highch<=table2->last &&
+			(plane2 = table2->table[highch-table2->first])!=NULL &&
+			(temp=plane2[unienc&0xff])!=0 ) {
+		    index = temp;
+		    if ( sf->encoding_name==em_jis212 ) {
+			if ( !(index&0x8000 ) )
+			    index=-1;
+			else
+			    index &= 0x8000;
+		    } else if ( sf->encoding_name==em_jis208 && (index&0x8000) )
+			index = -1;
+		} else if ( unienc<0x80 && (sf->encoding_name==em_big5 || sf->encoding_name==em_johab ))
+		    index = unienc;
+	    }
+	}
+    }
+return( index );
+}
+
 int SFCIDFindChar(SplineFont *sf, int unienc, char *name ) {
     int j,ret;
 
     if ( sf->subfonts==NULL && sf->cidmaster==NULL )
-return( SFFindChar(sf,unienc,name));
+return( _SFFindChar(sf,unienc,name));
     if ( sf->cidmaster!=NULL )
 	sf=sf->cidmaster;
     for ( j=0; j<sf->subfontcnt; ++j )
-	if (( ret = SFFindChar(sf->subfonts[j],unienc,name))!=-1 )
+	if (( ret = _SFFindChar(sf->subfonts[j],unienc,name))!=-1 )
 return( ret );
 return( -1 );
 }
@@ -169,7 +253,7 @@ return( sf->chars[ind]);
 }
 
 int SFFindExistingChar(SplineFont *sf, int unienc, char *name ) {
-    int i = SFFindChar(sf,unienc,name);
+    int i = _SFFindChar(sf,unienc,name);
 
     if ( i==-1 || sf->chars[i]==NULL )
 return( -1 );
@@ -188,7 +272,7 @@ return( SFFindExistingChar(sf,unienc,name));
     if ( sf->cidmaster!=NULL )
 	sf=sf->cidmaster;
     for ( j=0; j<sf->subfontcnt; ++j )
-	if (( ret = SFFindChar(sf->subfonts[j],unienc,name))!=-1 &&
+	if (( ret = _SFFindChar(sf->subfonts[j],unienc,name))!=-1 &&
 		sf->subfonts[j]->chars[ret]!=NULL )
 return( ret );
 return( -1 );
@@ -202,7 +286,7 @@ static void MFixupSC(SplineFont *sf, SplineChar *sc,int i) {
     for ( ref=sc->refs; ref!=NULL; ref=ref->next ) {
 	/* The sc in the ref is from the old font. It's got to be in the */
 	/*  new font too (was either already there or just got copied) */
-	ref->local_enc =  SFFindChar(sf,ref->sc->unicodeenc,ref->sc->name);
+	ref->local_enc =  _SFFindChar(sf,ref->sc->unicodeenc,ref->sc->name);
 	ref->sc = sf->chars[ref->local_enc];
 	if ( ref->sc->enc==-2 )
 	    MFixupSC(sf,ref->sc,ref->local_enc);
@@ -225,7 +309,7 @@ static void MergeFixupRefChars(SplineFont *sf) {
 static int SFHasChar(SplineFont *sf, int unienc, char *name ) {
     int index;
 
-    index = SFFindChar(sf,unienc,name);
+    index = _SFFindChar(sf,unienc,name);
     if ( index>=0 && index<sf->charcnt && sf->chars[index]!=NULL ) {
 	if ( sf->chars[index]->refs!=NULL ||
 		sf->chars[index]->splines!=NULL ||
@@ -325,7 +409,7 @@ return( item->char_cnt );
 return( sf->charcnt );
 }
 
-static void MergeFont(FontView *fv,SplineFont *other) {
+void MergeFont(FontView *fv,SplineFont *other) {
     int i,cnt, doit, emptypos, index, enc_cnt;
     BDFFont *bdf;
 
@@ -409,8 +493,11 @@ return;
 	    /* Do Nothing */;
 	else if ( sf->fv==fv )
 	    GWidgetErrorR(_STR_MergingProb,_STR_MergingFontSelf);
-	else
+	else {
 	    MergeFont(fv,sf);
+	    if ( sf->fv==NULL )
+		SplineFontFree(sf);
+	}
 	file = fpt+2;
     } while ( fpt!=NULL );
     free(filename);
@@ -726,7 +813,7 @@ static void IFixupSC(SplineFont *sf, SplineChar *sc,int i) {
 	/* The sc in the ref is from the base font. It's got to be in the */
 	/*  new font too (the ref only gets created if it's present in both fonts)*/
 	ref->checked = true;
-	ref->local_enc =  SFFindChar(sf,ref->sc->unicodeenc,ref->sc->name);
+	ref->local_enc = _SFFindChar(sf,ref->sc->unicodeenc,ref->sc->name);
 	ref->sc = sf->chars[ref->local_enc];
 	IFixupSC(sf,ref->sc,ref->local_enc);
 	SCReinstanciateRefChar(sc,ref);
@@ -758,7 +845,7 @@ return;
 	    InterpolateChar(new,i,base->chars[i],other->chars[i],amount);
     } else {
 	for ( i=0; i<base->charcnt; ++i ) if ( base->chars[i]!=NULL ) {
-	    index = SFFindChar(other,base->chars[i]->unicodeenc,base->chars[i]->name);
+	    index = _SFFindChar(other,base->chars[i]->unicodeenc,base->chars[i]->name);
 	    if ( other->chars[index]!=NULL )
 		InterpolateChar(new,i,base->chars[i],other->chars[index],amount);
 	}

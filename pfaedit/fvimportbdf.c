@@ -780,7 +780,7 @@ int FVImportBDF(FontView *fv, char *filename, int ispk, int toback) {
 	if ( b!=NULL ) {
 	    anyb = b;
 	    any = true;
-	    if ( b==fv->show )
+	    if ( b==fv->show && fv->v!=NULL )
 		GDrawRequestExpose(fv->v,NULL,false);
 	}
 	file = fpt+2;

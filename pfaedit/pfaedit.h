@@ -49,6 +49,8 @@ enum { em_base = 0x100 };	/* an addition to enum charset, used as the base value
 extern void GDrawIError(const char *fmt,...);
 extern void GDrawError(const char *fmt,...);
 
+extern void CheckIsScript(int argc, char *argv[]);
+
 extern char *AdobeStandardEncoding[256];
 extern int psunicodenames_cnt;
 extern const char *psunicodenames[];

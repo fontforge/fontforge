@@ -421,3 +421,7 @@ return;
 void FVStroke(FontView *fv) {
     MakeStrokeDlg(fv,FVStrokeIt);
 }
+
+void FVStrokeItScript(FontView *fv, StrokeInfo *si) {
+    FVStrokeIt(fv, si);
+}

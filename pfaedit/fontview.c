@@ -77,6 +77,9 @@ void FVToggleCharChanged(FontView *fv,SplineChar *sc) {
     if ( fv==NULL ) fv = sc->parent->fv;
     if ( fv->sf!=sc->parent )		/* Can happen in CID fonts if char's parent is not currently active */
 return;
+    if ( fv->v==NULL )			/* Can happen in scripts */
+return;
+
     pos = sc->enc;
     if ( fv->mapping!=NULL ) {
 	for ( i=0; i<fv->mapcnt; ++i )
@@ -102,6 +105,9 @@ return;
 
 static void FVToggleCharSelected(FontView *fv,int enc) {
     int i, j;
+
+    if ( fv->v==NULL )			/* Can happen in scripts */
+return;
 
     i = enc / fv->colcnt;
     j = enc - i*fv->colcnt;
@@ -201,7 +207,7 @@ static void _SplineFontSetUnChanged(SplineFont *sf) {
     for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next )
 	for ( i=0; i<bdf->charcnt; ++i ) if ( bdf->chars[i]!=NULL )
 	    bdf->chars[i]->changed = false;
-    if ( was )
+    if ( was && sf->fv->v!=NULL )
 	GDrawRequestExpose(sf->fv->v,NULL,false);
     for ( i=0; i<sf->subfontcnt; ++i )
 	_SplineFontSetUnChanged(sf->subfonts[i]);
@@ -791,13 +797,16 @@ return;
     PasteIntoFV(fv);
 }
 
-static void FVMenuCopyFgBg(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVCopyFgtoBg(FontView *fv) {
     int i;
 
     for ( i=0; i<fv->sf->charcnt; ++i )
 	if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->splines!=NULL )
 	    SCCopyFgToBg(fv->sf->chars[i],true);
+}
+
+static void FVMenuCopyFgBg(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FVCopyFgtoBg( (FontView *) GDrawGetUserData(gw));
 }
 
 static void BCClearAll(BDFChar *bc,FontView *fv) {
@@ -890,8 +899,7 @@ static void UnlinkThisReference(FontView *fv,SplineChar *sc) {
     }
 }
 
-static void FVMenuClear(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVClear(FontView *fv) {
     int i;
     BDFFont *bdf;
     int refstate = 0;
@@ -936,9 +944,11 @@ static void FVMenuClear(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     }
 }
 
+static void FVMenuClear(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FVClear((FontView *) GDrawGetUserData(gw));
+}
 
-static void FVMenuClearBackground(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVClearBackground(FontView *fv) {
     SplineFont *sf = fv->sf;
     int i;
 
@@ -950,8 +960,11 @@ return;
     }
 }
 
-static void FVMenuUnlinkRef(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuClearBackground(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FVClearBackground( (FontView *) GDrawGetUserData(gw) );
+}
+
+static void FVUnlinkRef(FontView *fv) {
     int i;
     SplineChar *sc;
     RefChar *rf, *next;
@@ -965,6 +978,10 @@ static void FVMenuUnlinkRef(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	}
 	SCCharChangedUpdate(sc);
     }
+}
+
+static void FVMenuUnlinkRef(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FVUnlinkRef( (FontView *) GDrawGetUserData(gw));
 }
 
 static void FVMenuRemoveUndoes(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -997,8 +1014,9 @@ static void FVMenuRemoveUndoes(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 
 static void FVMenuCut(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FVMenuCopy(gw,mi,e);
-    FVMenuClear(gw,mi,e);
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    FVCopy(fv,true);
+    FVClear(fv);
 }
 
 static void FVSelectAll(FontView *);
@@ -1153,7 +1171,7 @@ void FVTrans(FontView *fv,SplineChar *sc,real transform[6], char *sel,
     SCCharChangedUpdate(sc);
 }
 
-static void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts,
+void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts,
 	int dobackground ) {
     FontView *fv = _fv;
     real transx = transform[4], transy=transform[5];
@@ -1211,8 +1229,7 @@ static void FVMenuStroke(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FVStroke(fv);
 }
 
-static void FVMenuOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVOverlap(FontView *fv) {
     int i, cnt=0;
 
     /* We know it's more likely that we'll find a problem in the overlap code */
@@ -1236,10 +1253,18 @@ static void FVMenuOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     GProgressEndIndicator();
 }
 
-static void FVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+static void FVMenuOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
+
+    /* We know it's more likely that we'll find a problem in the overlap code */
+    /*  than anywhere else, so let's save the current state against a crash */
+    DoAutoSaves();
+
+    FVOverlap(fv);
+}
+
+static void FVSimplify(FontView *fv,int cleanup) {
     int i, cnt=0;
-    int cleanup = e!=NULL && (e->u.mouse.state&ksm_shift);
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
 	++cnt;
@@ -1256,8 +1281,12 @@ static void FVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     GProgressEndIndicator();
 }
 
-static void FVMenuAddExtrema(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    int cleanup = e!=NULL && (e->u.mouse.state&ksm_shift);
+    FVSimplify( (FontView *) GDrawGetUserData(gw),cleanup );
+}
+
+static void FVAddExtrema(FontView *fv) {
     int i, cnt=0;
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
@@ -1273,6 +1302,10 @@ static void FVMenuAddExtrema(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     break;
     }
     GProgressEndIndicator();
+}
+
+static void FVMenuAddExtrema(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FVAddExtrema( (FontView *) GDrawGetUserData(gw) );
 }
 
 static void FVMenuCorrectDir(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -1294,8 +1327,7 @@ static void FVMenuCorrectDir(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     GProgressEndIndicator();
 }
 
-static void FVMenuRound2Int(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVRound2Int(FontView *fv) {
     int i, cnt=0;
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
@@ -1308,6 +1340,10 @@ static void FVMenuRound2Int(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     break;
     }
     GProgressEndIndicator();
+}
+
+static void FVMenuRound2Int(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FVRound2Int( (FontView *) GDrawGetUserData(gw) );
 }
 
 static void FVMenuAutotrace(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -1336,12 +1372,10 @@ return( true );			/* Yes. they do work, I don't care what it looks like */
     }
 return( false );
 }
-    
-static void FVMenuBuildAccent(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+
+void FVBuildAccent(FontView *fv,int onlyaccents) {
     int i, cnt=0;
     SplineChar dummy;
-    int onlyaccents = e==NULL || !(e->u.mouse.state&ksm_shift);
     static int buts[] = { _STR_Yes, _STR_No, 0 };
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] )
@@ -1352,7 +1386,8 @@ static void FVMenuBuildAccent(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	SplineChar *sc = fv->sf->chars[i];
 	if ( sc==NULL )
 	    sc = SCBuildDummy(&dummy,fv->sf,i);
-	else if ( sc->unicodeenc == 0x00c5 /* Aring */ && sc->splines!=NULL ) {
+	else if ( screen_display==NULL && sc->unicodeenc == 0x00c5 /* Aring */ &&
+		sc->splines!=NULL ) {
 	    if ( GWidgetAskR(_STR_Replacearing,buts,0,1,_STR_Areyousurearing)==1 )
     continue;
 	}
@@ -1366,6 +1401,11 @@ static void FVMenuBuildAccent(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     break;
     }
     GProgressEndIndicator();
+}
+
+static void FVMenuBuildAccent(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    int onlyaccents = e==NULL || !(e->u.mouse.state&ksm_shift);
+    FVBuildAccent( (FontView *) GDrawGetUserData(gw), onlyaccents );
 }
 
 #if HANYANG
@@ -1393,6 +1433,10 @@ static void FVMenuInterpFonts(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 
 static void FVScrollToChar(FontView *fv,int i) {
+
+    if ( fv->v==NULL )			/* Can happen in scripts */
+return;
+
     if ( i!=-1 ) {
 	if ( i/fv->colcnt<fv->rowoff || i/fv->colcnt >= fv->rowoff+fv->rowcnt ) {
 	    fv->rowoff = i/fv->colcnt;
@@ -1459,6 +1503,9 @@ static void FVMenuGotoChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void FVChangeDisplayFont(FontView *fv,BDFFont *bdf) {
     int samesize=0;
+
+    if ( fv->v==NULL )			/* Can happen in scripts */
+return;
 
     if ( fv->show!=bdf ) {
 	if ( fv->show!=NULL && fv->show->pixelsize==bdf->pixelsize )
@@ -1711,10 +1758,8 @@ static void mtlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     }
 }
 
-static void FVMenuAutoHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVAutoHint(FontView *fv,int removeOverlap) {
     int i, cnt=0;
-    int removeOverlap = e==NULL || !(e->u.mouse.state&ksm_shift);
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
 	++cnt;
@@ -1729,6 +1774,11 @@ static void FVMenuAutoHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     break;
     }
     GProgressEndIndicator();
+}
+
+static void FVMenuAutoHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    int removeOverlap = e==NULL || !(e->u.mouse.state&ksm_shift);
+    FVAutoHint( (FontView *) GDrawGetUserData(gw), removeOverlap );
 }
 
 static void FVMenuClearHints(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -1984,7 +2034,8 @@ return;
     if ( new->fv == fv )		/* Already part of us */
 return;
     if ( new->fv != NULL ) {
-	GDrawRaise(new->fv->gw);
+	if ( new->fv->gw!=NULL )
+	    GDrawRaise(new->fv->gw);
 	GWidgetErrorR(_STR_CloseFont,_STR_CloseFontForCID,new->origname);
 return;
     }
@@ -2469,6 +2520,9 @@ void FVRefreshChar(FontView *fv,BDFFont *bdf,int enc) {
     int i, j;
     MetricsView *mv;
 
+    if ( fv->v==NULL )			/* Can happen in scripts */
+return;
+
     for ( mv=fv->metrics; mv!=NULL; mv=mv->next )
 	MVRefreshChar(mv,fv->sf->chars[enc]);
     if ( fv->show != bdf )
@@ -2531,6 +2585,9 @@ return;
 void FVRegenChar(FontView *fv,SplineChar *sc) {
     struct splinecharlist *dlist;
     MetricsView *mv;
+
+    if ( fv->v==NULL )			/* Can happen in scripts */
+return;
 
     sc->changedsincelasthinted = true;
     if ( sc->enc>=fv->filled->charcnt )
@@ -2950,6 +3007,10 @@ return;
 
 static void FVShowInfo(FontView *fv) {
     GRect r;
+
+    if ( fv->v==NULL )			/* Can happen in scripts */
+return;
+
     r.x = 0; r.width = fv->width; r.y = fv->mbh; r.height = fv->infoh;
     GDrawRequestExpose(fv->gw,&r,false);
 }
@@ -3364,6 +3425,9 @@ return;
 void FontViewReformat(FontView *fv) {
     BDFFont *new;
 
+    if ( fv->v==NULL )			/* Can happen in scripts */
+return;
+
     GDrawSetCursor(fv->v,ct_watch);
     fv->rowltot = (fv->sf->charcnt+fv->colcnt-1)/fv->colcnt;
     GScrollBarSetBounds(fv->vsb,0,fv->rowltot,fv->rowcnt);
@@ -3430,28 +3494,9 @@ static int fv_e_h(GWindow gw, GEvent *event) {
 return( true );
 }
 
-FontView *FontViewCreate(SplineFont *sf) {
-    GRect pos;
-    GWindow gw;
-    GWindowAttrs wattrs;
-    GGadgetData gd;
-    GGadget *sb;
-    GRect gsize;
+FontView *_FontViewCreate(SplineFont *sf) {
     FontView *fv = gcalloc(1,sizeof(FontView));
-    FontRequest rq;
-    /* sadly, clearlyu is too big for the space I've got */
-    static unichar_t monospace[] = { 'c','o','u','r','i','e','r',',','m', 'o', 'n', 'o', 's', 'p', 'a', 'c', 'e',',','c','a','s','l','o','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
-    static unichar_t *fontnames=NULL;
-    static GWindow icon = NULL;
-    BDFFont *bdf;
     int i;
-
-    if ( icon==NULL )
-#ifdef BIGICONS
-	icon = GDrawCreateBitmap(NULL,fontview_width,fontview_height,fontview_bits);
-#else
-	icon = GDrawCreateBitmap(NULL,fontview2_width,fontview2_height,fontview2_bits);
-#endif
 
     sf->fv = fv;
     if ( sf->subfontcnt==0 )
@@ -3466,6 +3511,31 @@ FontView *FontViewCreate(SplineFont *sf) {
     fv->cbw = default_fv_font_size+1;
     fv->cbh = default_fv_font_size+1+FV_LAB_HEIGHT+1;
     fv->magnify = 1;
+    fv->antialias = sf->display_antialias;
+return( fv );
+}
+
+FontView *FontViewCreate(SplineFont *sf) {
+    GRect pos;
+    GWindow gw;
+    GWindowAttrs wattrs;
+    GGadgetData gd;
+    GGadget *sb;
+    FontView *fv = _FontViewCreate(sf);
+    GRect gsize;
+    FontRequest rq;
+    /* sadly, clearlyu is too big for the space I've got */
+    static unichar_t monospace[] = { 'c','o','u','r','i','e','r',',','m', 'o', 'n', 'o', 's', 'p', 'a', 'c', 'e',',','c','a','s','l','o','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
+    static unichar_t *fontnames=NULL;
+    static GWindow icon = NULL;
+    BDFFont *bdf;
+
+    if ( icon==NULL )
+#ifdef BIGICONS
+	icon = GDrawCreateBitmap(NULL,fontview_width,fontview_height,fontview_bits);
+#else
+	icon = GDrawCreateBitmap(NULL,fontview2_width,fontview2_height,fontview2_bits);
+#endif
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_icon;
@@ -3508,7 +3578,6 @@ FontView *FontViewCreate(SplineFont *sf) {
     rq.point_size = -13;
     rq.weight = 400;
     fv->header = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
-    fv->antialias = sf->display_antialias;
     GDrawSetFont(fv->v,fv->header);
     bdf = SplineFontPieceMeal(fv->sf,sf->display_size<0?-sf->display_size:default_fv_font_size,
 	    fv->antialias );
@@ -3759,4 +3828,54 @@ void FontViewFree(FontView *fv) {
     BDFFontFree(fv->filled);
     free(fv->selected);
     free(fv);
+}
+
+void FVFakeMenus(FontView *fv,int cmd) {
+    switch ( cmd ) {
+      case 0:	/* Cut */
+	FVCopy(fv,true);
+	FVClear(fv);
+      break;
+      case 1:
+	FVCopy(fv,true);
+      break;
+      case 2:	/* Copy reference */
+	FVCopy(fv,false);
+      break;
+      case 3:
+	FVCopyWidth(fv);
+      break;
+      case 4:
+	PasteIntoFV(fv);
+      break;
+      case 5:
+	FVClear(fv);
+      break;
+      case 6:
+	FVClearBackground(fv);
+      break;
+      case 7:
+	FVCopyFgtoBg(fv);
+      break;
+      case 8:
+	FVUnlinkRef(fv);
+      break;
+
+      case 100:
+	FVOverlap(fv);
+      break;
+      case 101:
+	FVSimplify(fv,false);
+      break;
+      case 102:
+	FVAddExtrema(fv);
+      break;
+      case 103:
+	FVRound2Int(fv);
+      break;
+
+      case 200:
+	FVAutoHint(fv,true);
+      break;
+    }
 }

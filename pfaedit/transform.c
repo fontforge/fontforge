@@ -85,7 +85,7 @@ static GTextInfo transformtypes[] = {
     { (unichar_t *) "Skew...", NULL, 0, 0, (void *) 0x20, 0, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }};
 
-static void skewselect(BVTFunc *bvtf,real t) {
+void skewselect(BVTFunc *bvtf,real t) {
     real off, bestoff;
     int i, best;
 
