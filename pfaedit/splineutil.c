@@ -1647,6 +1647,8 @@ static void SplineFontFromType1(SplineFont *sf, FontDict *fd) {
 	    SCRefToSplines(sf->chars[i],refs);
 	}
     }
+    for( i=0; i<sf->charcnt; ++i )
+        free(encoding[i]);
     free(encoding);
     free(used);
     /* sometimes (some apple oblique fonts) the fontmatrix is not just a */

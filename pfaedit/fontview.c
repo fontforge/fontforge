@@ -767,6 +767,7 @@ return;
 	    strcpy(full,temp); strcat(full,"/"); strcat(full,file);
 	    ViewPostscriptFont(full);
 	    file = fpt+2;
+	    free(full);
 	} while ( fpt!=NULL );
 	free(temp);
 	for ( fvtest=0, test=fv_list; test!=NULL; ++fvtest, test=test->next );
