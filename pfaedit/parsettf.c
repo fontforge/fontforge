@@ -4264,7 +4264,6 @@ static void ttfFixupReferences(struct ttfinfo *info) {
 }
 
 static int readttf(FILE *ttf, struct ttfinfo *info, char *filename) {
-    int i;
     char *oldloc;
 
     GProgressChangeStages(3);
@@ -4316,9 +4315,7 @@ return( 0 );
     if ( info->gsub_start!=0 )
 	readttfgpossub(ttf,info,false);
     else
-	for ( i=0; i<info->glyph_cnt; ++i )
-	    if ( info->chars[i]!=NULL )		/* Might be null in ttc files */
-		SCLigDefault(info->chars[i]);
+	/* We will default the gsub table later... */;
     setlocale(LC_NUMERIC,oldloc);
     ttfFixupReferences(info);
 return( true );
@@ -4603,6 +4600,12 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 	}
     }
     TTF_PSDupsDefault(sf);
+    if ( info->gsub_start==0 ) {		/* Get default ligature values, etc. */
+	for ( i=0; i<sf->subfontcnt; ++i ) {
+	    if ( sf->chars[i]!=NULL )		/* Might be null in ttc files */
+		SCLigDefault(sf->chars[i]);
+	}
+    }
 return( sf );
 }
 

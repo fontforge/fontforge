@@ -581,7 +581,7 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc) {
 	else {
 	    static char *keywords[] = { "Null:", "Position:", "Substitution:",
 		    "AlternateSubs:", "MultipleSubs:", "Ligature:", NULL };
-	    fprintf( sfd, "%s: '%c%c%c%c' ",
+	    fprintf( sfd, "%s '%c%c%c%c' ",
 		    keywords[liga->type],
 		    liga->tag>>24, (liga->tag>>16)&0xff,
 		    (liga->tag>>8)&0xff, liga->tag&0xff );

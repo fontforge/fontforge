@@ -184,12 +184,12 @@ return;
 
 static SplineChar **FindSubs(SplineChar *sc,uint32 tag, enum possub_type type) {
     SplineChar *space[30];
-    int next = 0, cnt;
+    int cnt=0;
     char *pt, *start;
     SplineChar *subssc, **ret;
     PST *pst;
 
-    for ( ; pst!=NULL; pst=pst->next ) {
+    for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
 	if ( pst->tag == tag && pst->type==type ) {
 	    pt = pst->u.subs.variant;
 	    while ( 1 ) {
@@ -200,7 +200,7 @@ static SplineChar **FindSubs(SplineChar *sc,uint32 tag, enum possub_type type) {
 		    *pt = '\0';
 		subssc = SFGetChar(sc->parent,-1,start);
 		if ( subssc!=NULL && subssc->ttf_glyph!=-1 &&
-			next<sizeof(space)/sizeof(space[0]) )
+			cnt<sizeof(space)/sizeof(space[0]) )
 		    space[cnt++] = subssc;
 		if ( pt==NULL )
 	    break;
@@ -890,7 +890,7 @@ static void dumpGSUBmultiplesubs(FILE *gsub,SplineFont *sf,SplineChar **glyphs, 
     for ( cnt = 0; glyphs[cnt]!=NULL; ++cnt ) {
 	for ( gc=0; maps[cnt][gc]!=NULL; ++gc );
 	putshort(gsub,gc);
-	for ( gc=0; maps[cnt][gc]!=NULL; ++gc );
+	for ( gc=0; maps[cnt][gc]!=NULL; ++gc )
 	    putshort(gsub,maps[cnt][gc]->ttf_glyph);
     }
     end = ftell(gsub);
@@ -1383,6 +1383,7 @@ void otf_dumpgposkerns(struct alltabs *at, SplineFont *sf) {
 void otf_dumpgsub(struct alltabs *at, SplineFont *sf) {
     /* Ligatures, cjk vertical rotation replacement, arabic forms, small caps */
     SFLigaturePrepare(sf);
+    at->gsub = dumpg___info(at, sf, false);
     if ( at->gsub!=NULL ) {
 	at->gsub = dumpg___info(at, sf, false);
 	at->gsublen = ftell(at->gsub);

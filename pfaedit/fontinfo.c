@@ -366,8 +366,11 @@ static const unichar_t outlineeng[] = { 'O','u','t','i','n','e',  '\0' };
 
 static const unichar_t regularfren[] = { 'N','o','r','m','a','l',  '\0' };
 static const unichar_t boldfren[] = { 'G','r','a','s',  '\0' };
-static const unichar_t demiboldfren[] = { 'D','e','m','i',  '\0' };
+static const unichar_t demiboldfren[] = { 'D','e','m','i','G','r','a','s',  '\0' };
+static const unichar_t demiboldfren2[] = { 'D','e','m','i',  '\0' };
+static const unichar_t mediumfren[] = { 'N','o','r','m','a','l',  '\0' };
 static const unichar_t lightfren[] = { 'M','a','i','g','r','e',  '\0' };
+static const unichar_t blackfren[] = { 'E','x','t','r','a','G','r','a','s',  '\0' };
 static const unichar_t italicfren[] = { 'I','t','a','l','i','q','u','e',  '\0' };
 static const unichar_t obliquefren[] = { 'O','b','l','i','q','u','e',  '\0' };
 static const unichar_t condensedfren[] = { 'E','t','r','o','i','t','e',  '\0' };
@@ -406,16 +409,16 @@ static const unichar_t condensedru[] = { 0x423, 0x437, 0x43a, 0x438, 0x439,  '\0
 static const unichar_t expandedru[] = { 0x428, 0x438, 0x440, 0x43e, 0x43a, 0x438, 0x439,  '\0' };
 
 static struct langstyle regs[] = { {0x409, regulareng}, { 0x40c, regularfren }, { 0x407, regulargerm }, { 0x40a, regularspan }, { 0x419, regularru }, { 0 }};
-static struct langstyle meds[] = { {0x409, mediumeng}, { 0x407, mediumgerm }, { 0 }};
+static struct langstyle meds[] = { {0x409, mediumeng}, { 0x40c, mediumfren }, { 0x407, mediumgerm }, { 0 }};
 static struct langstyle books[] = { {0x409, bookeng}, { 0x407, bookgerm }, { 0 }};
 static struct langstyle bolds[] = { {0x409, boldeng}, { 0x40c, boldfren }, { 0x407, boldgerm }, { 0x407, boldgerm2 }, { 0x40a, boldspan}, { 0x419, boldru }, { 0 }};
 static struct langstyle italics[] = { {0x409, italiceng}, { 0x40c, italicfren }, { 0x407, italicgerm }, { 0x40a, italicspan}, { 0x419, italicru }, { 0 }};
 static struct langstyle obliques[] = { {0x409, obliqueeng}, { 0x40c, obliquefren }, { 0x407, obliquegerm }, { 0x419, obliqueru }, { 0 }};
 static struct langstyle demibolds[] = { {0x409, demiboldeng}, {0x409, demiboldeng3}, {0x409, demiboldeng5},
-	{ 0x40c, demiboldfren }, { 0x407, demiboldgerm }, { 0x407, demiboldgerm2 },
+	{ 0x40c, demiboldfren }, { 0x40c, demiboldfren2 }, { 0x407, demiboldgerm }, { 0x407, demiboldgerm2 },
 	{ 0x419, demiboldru }, { 0 }};
 static struct langstyle heavys[] = { {0x409, heavyeng}, { 0x419, heavyru }, { 0 }};
-static struct langstyle blacks[] = { {0x409, blackeng}, { 0x407, blackgerm }, { 0x419, blackru }, { 0 }};
+static struct langstyle blacks[] = { {0x409, blackeng}, { 0x40c, blackfren }, { 0x407, blackgerm }, { 0x419, blackru }, { 0 }};
 static struct langstyle thins[] = { {0x409, thineng}, { 0x419, thinru }, { 0 }};
 static struct langstyle lights[] = { {0x409, lighteng}, {0x40c, lightfren}, {0x407, lightgerm}, { 0x419, lightru }, { 0 }};
 static struct langstyle condenseds[] = { {0x409, condensedeng}, {0x40c, condensedfren}, {0x407, condensedgerm}, { 0x419, condensedru }, { 0 }};

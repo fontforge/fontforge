@@ -1498,6 +1498,7 @@ int SFScaleToEm(SplineFont *sf, int as, int des) {
     char *oldselected = sf->fv->selected;
     int i;
     KernPair *kp;
+    PST *pst;
 
     if ( as+des == sf->ascent+sf->descent ) {
 	if ( as!=sf->ascent && des!=sf->descent ) {
@@ -1521,9 +1522,16 @@ return( false );
     free(sf->fv->selected);
     sf->fv->selected = oldselected;
 
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
 	for ( kp=sf->chars[i]->kerns; kp!=NULL; kp=kp->next )
 	    kp->off = rint(scale*kp->off);
+	for ( pst=sf->chars[i]->possub; pst!=NULL; pst=pst->next ) if ( pst->type==pst_position ) {
+	    pst->u.pos.xoff = rint(scale*pst->u.pos.xoff);
+	    pst->u.pos.yoff = rint(scale*pst->u.pos.yoff);
+	    pst->u.pos.h_adv_off = rint(scale*pst->u.pos.h_adv_off);
+	    pst->u.pos.v_adv_off = rint(scale*pst->u.pos.v_adv_off);
+	}
+    }
 
     sf->changed = true;
 return( true );
