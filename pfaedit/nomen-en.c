@@ -2812,7 +2812,7 @@ static char mnemonic_Call = 'a';
 static char *str_CallScript = "Call Script";
     /* start (about box) */
 static char *str_FreePress = "A free press discriminates\nagainst the illiterate.";
-static char *str_GaudiamusLigature = "Gaudiamus Ligature!";
+static char *str_GaudiamusLigature = "Gaudeamus Ligature!";
 static char *str_InTheBeginning = "In the beginning was the letter...";
 static char *str_LovelyFonts = "  The sad fate of mine:\nA library of lovely fonts,\n   but nothing to say.";
     /* search */
