@@ -1886,6 +1886,39 @@ static PST *LigaCreateFromOldStyleMultiple(PST *liga) {
 return( last );
 }
 
+#ifdef PFAEDIT_CONFIG_CVT_OLD_MAC_FEATURES
+static struct { int feature, setting; uint32 tag; } formertags[] = {
+    { 1, 6, CHR('M','L','O','G') },
+    { 1, 8, CHR('M','R','E','B') },
+    { 1, 10, CHR('M','D','L','G') },
+    { 1, 12, CHR('M','S','L','G') },
+    { 1, 14, CHR('M','A','L','G') },
+    { 8, 0, CHR('M','S','W','I') },
+    { 8, 2, CHR('M','S','W','F') },
+    { 8, 4, CHR('M','S','L','I') },
+    { 8, 6, CHR('M','S','L','F') },
+    { 8, 8, CHR('M','S','N','F') },
+    { 22, 1, CHR('M','W','I','D') },
+    { 27, 1, CHR('M','U','C','M') },
+    { 103, 2, CHR('M','W','I','D') },
+    { -1, -1, 0xffffffff },
+};
+
+static void CvtOldMacFeature(PST *pst) {
+    int i;
+
+    if ( pst->macfeature )
+return;
+    for ( i=0; formertags[i].feature!=-1 ; ++i ) {
+	if ( pst->tag == formertags[i].tag ) {
+	    pst->macfeature = true;
+	    pst->tag = (formertags[i].feature<<16) | formertags[i].setting;
+return;
+	}
+    }
+}
+#endif
+
 static SplineChar *SFDGetChar(FILE *sfd,SplineFont *sf) {
     SplineChar *sc;
     char tok[2000], ch;
@@ -2100,6 +2133,9 @@ return( NULL );
 		    last = LigaCreateFromOldStyleMultiple(liga);
 		}
 	    }
+#ifdef PFAEDIT_CONFIG_CVT_OLD_MAC_FEATURES
+	    CvtOldMacFeature(liga);
+#endif
 	} else if ( strmatch(tok,"Colour:")==0 ) {
 	    int temp;
 	    gethex(sfd,&temp);
