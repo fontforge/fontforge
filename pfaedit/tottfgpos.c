@@ -181,7 +181,7 @@ return( 0 );
 
     if ( sf->cidmaster ) sf=sf->cidmaster;
     for ( i=0; i<2; ++i ) {
-	for ( pst=sc->possub; pst!=NULL; pst=pst->next ) if ( pst->script_lang_index!=0xffff ) {
+	for ( pst=sc->possub; pst!=NULL; pst=pst->next ) if ( pst->script_lang_index!=0xff ) {
 	    if ( i==1 || sf->script_lang[pst->script_lang_index][1].script==0 )
 return( sf->script_lang[pst->script_lang_index]->script );
 	}

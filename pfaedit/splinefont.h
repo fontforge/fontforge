@@ -165,7 +165,7 @@ enum possub_type { pst_null, pst_position, pst_substitution, pst_alternate,
 	pst_max};
 typedef struct generic_pst {
     /* enum possub_type*/ uint8 type;
-    uint8 script_lang_index;
+    uint8 script_lang_index;		/* 0xff means none */
     uint16 flags;
     uint32 tag;
     struct generic_pst *next;

@@ -1737,6 +1737,7 @@ return( NULL );
 			 ismult ? pst_multiple :
 			 pst_alternate;
 	    liga->tag = CHR('l','i','g','a');
+	    liga->script_lang_index = 0xff;
 	    while ( (ch=getc(sfd))==' ' || ch=='\t' );
 	    if ( isdigit(ch)) {
 		int temp;
