@@ -2318,8 +2318,13 @@ static void sethhead(struct hhead *hhead,struct hhead *vhead,struct alltabs *at,
     /*  we just won't dump it out if we don't want it */
 
     hhead->version = 0x00010000;
-    hhead->ascender = _sf->ascent;
-    hhead->descender = -_sf->descent;
+    if ( _sf->pfminfo.hhead_ascent!=0 ) {
+	hhead->ascender = _sf->pfminfo.hhead_ascent;
+	hhead->descender = _sf->pfminfo.hhead_descent;
+    } else {
+	hhead->ascender = _sf->ascent;
+	hhead->descender = -_sf->descent;
+    }
     hhead->linegap = _sf->pfminfo.linegap;
 
     vhead->version = 0x00011000;
@@ -2598,9 +2603,16 @@ static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *_sf,
     if ( sf->fullname!=NULL && strstrmatch(sf->fullname,"outline")!=NULL )
 	os2->fsSel |= 8;
     if ( os2->fsSel==0 ) os2->fsSel = 64;		/* Regular */
-    os2->ascender = os2->winascent = at->head.ymax;
-    os2->descender = at->head.ymin;
-    os2->windescent = -at->head.ymin;
+    if ( sf->pfminfo.os2_typoascent!=0 ) {
+	os2->ascender = sf->pfminfo.os2_typoascent;
+	os2->winascent = sf->pfminfo.os2_winascent;
+	os2->descender = sf->pfminfo.os2_typodescent;
+	os2->windescent = sf->pfminfo.os2_windescent;
+    } else {
+	os2->ascender = os2->winascent = at->head.ymax;
+	os2->descender = at->head.ymin;
+	os2->windescent = -at->head.ymin;
+    }
     os2->linegap = sf->pfminfo.linegap;
 
     avg1 = avg2 = last = 0; first = 0x10000;

@@ -588,7 +588,7 @@ typedef struct splinefont {
     struct psdict *private;		/* read in from type1 file or provided by user */
     /*struct pschars *subrs;		/* actually an array, but this will do */
     char *xuid;
-    struct pfminfo {
+    struct pfminfo {		/* A misnomer now. OS/2 info would be more accurate, but that's stuff in here from all over ttf files */
 	unsigned int pfmset: 1;
 	unsigned char pfmfamily;
 	int16 weight;
@@ -597,6 +597,9 @@ typedef struct splinefont {
 	int16 fstype;
 	int16 linegap;
 	int16 vlinegap;
+	int16 hhead_ascent, hhead_descent;
+	int16 os2_typoascent, os2_typodescent;
+	int16 os2_winascent, os2_windescent;
     } pfminfo;
     struct ttflangname *names;
     char *cidregistry, *ordering;

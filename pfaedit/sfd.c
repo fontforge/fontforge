@@ -786,6 +786,14 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 	fprintf(sfd, "VLineGap: %d\n", sf->pfminfo.vlinegap );
 	/*putc('\n',sfd);*/
     }
+    if ( sf->pfminfo.os2_typoascent!=0 ) {
+	fprintf(sfd, "HheadAscent: %d\n", sf->pfminfo.hhead_ascent );
+	fprintf(sfd, "HheadDescent: %d\n", sf->pfminfo.hhead_descent );
+	fprintf(sfd, "OS2TypoAscent: %d\n", sf->pfminfo.os2_typoascent );
+	fprintf(sfd, "OS2TypoDescent: %d\n", sf->pfminfo.os2_typodescent );
+	fprintf(sfd, "OS2WinAscent: %d\n", sf->pfminfo.os2_winascent );
+	fprintf(sfd, "OS2WinDescent: %d\n", sf->pfminfo.os2_windescent );
+    }
     if ( sf->script_lang ) {
 	int i,j,k;
 	for ( i=0; sf->script_lang[i]!=NULL; ++i );
@@ -2266,6 +2274,18 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	} else if ( strmatch(tok,"VLineGap:")==0 ) {
 	    getsint(sfd,&sf->pfminfo.vlinegap);
 	    sf->pfminfo.pfmset = true;
+	} else if ( strmatch(tok,"HheadAscent:")==0 ) {
+	    getsint(sfd,&sf->pfminfo.hhead_ascent);
+	} else if ( strmatch(tok,"HheadDescent:")==0 ) {
+	    getsint(sfd,&sf->pfminfo.hhead_descent);
+	} else if ( strmatch(tok,"OS2TypoAscent:")==0 ) {
+	    getsint(sfd,&sf->pfminfo.os2_typoascent);
+	} else if ( strmatch(tok,"OS2TypoDescent:")==0 ) {
+	    getsint(sfd,&sf->pfminfo.os2_typodescent);
+	} else if ( strmatch(tok,"OS2WinAscent:")==0 ) {
+	    getsint(sfd,&sf->pfminfo.os2_winascent);
+	} else if ( strmatch(tok,"OS2WinDescent:")==0 ) {
+	    getsint(sfd,&sf->pfminfo.os2_windescent);
 	} else if ( strmatch(tok,"DisplaySize:")==0 ) {
 	    getint(sfd,&sf->display_size);
 	} else if ( strmatch(tok,"TopEncoding:")==0 ) {	/* Obsolete */

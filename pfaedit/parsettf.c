@@ -630,9 +630,10 @@ static void readttfhhea(FILE *ttf,struct ttfinfo *info) {
     int i;
 
     fseek(ttf,info->hhea_start+4,SEEK_SET);		/* skip over the version number */
-    info->ascent = getushort(ttf);
-    info->descent = -(short) getushort(ttf);
+    info->pfminfo.hhead_ascent = getushort(ttf);
+    info->pfminfo.hhead_descent = (short) getushort(ttf);
     info->pfminfo.linegap = getushort(ttf);
+    info->ascent = info->pfminfo.hhead_ascent;
 
     /* fontographer puts the max ascender/min descender here instead. idiots */
     if (( info->ascent==0 && info->descent==0 ) || info->ascent>info->emsize )
@@ -3328,19 +3329,22 @@ static void readttfos2metrics(FILE *ttf,struct ttfinfo *info) {
 		      info->pfminfo.panose[0]==3 ? 0x41 :	/* Script */
 		      info->pfminfo.panose[0]==4 ? 0x51 :	/* Decorative */
 		      0x51;					/* And pictorial doesn't fit into pfm */
+    /* unicoderange[] */ getlong(ttf);
+    /* unicoderange[] */ getlong(ttf);
+    /* unicoderange[] */ getlong(ttf);
+    /* unicoderange[] */ getlong(ttf);
+    /* vendor */ getlong(ttf);
+    /* fsselection */ getushort(ttf);
+    /* firstchar */ getushort(ttf);
+    /* lastchar */ getushort(ttf);
+    info->pfminfo.os2_typoascent = getushort(ttf);
+    info->pfminfo.os2_typodescent = (short) getushort(ttf);
     if ( info->pfminfo.linegap==0 ) {
-	/* unicoderange[] */ getlong(ttf);
-	/* unicoderange[] */ getlong(ttf);
-	/* unicoderange[] */ getlong(ttf);
-	/* unicoderange[] */ getlong(ttf);
-	/* vendor */ getlong(ttf);
-	/* fsselection */ getushort(ttf);
-	/* firstchar */ getushort(ttf);
-	/* lastchar */ getushort(ttf);
-	/* typoascender */ getushort(ttf);
-	/* typodescender */ getushort(ttf);
 	info->pfminfo.linegap = getushort(ttf);
-    }
+    } else
+	/* typographic linegap = */ getushort(ttf);
+    info->pfminfo.os2_winascent = getushort(ttf);
+    info->pfminfo.os2_windescent = getushort(ttf);
     info->pfminfo.pfmset = true;
 }
 
