@@ -681,12 +681,12 @@ static void FVMenuFontInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void FVMenuFindProblems(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    FindProblems(fv,NULL);
+    FindProblems(fv,NULL,NULL);
 }
 
 static void FVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    MetaFont(fv,NULL);
+    MetaFont(fv,NULL,NULL);
 }
 
 #define MID_24	2001
@@ -830,17 +830,17 @@ static void FVMenuCopyFgBg(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FVCopyFgtoBg( (FontView *) GDrawGetUserData(gw));
 }
 
-static void BCClearAll(BDFChar *bc,FontView *fv) {
+void BCClearAll(BDFChar *bc) {
     if ( bc==NULL )
 return;
     BCPreserveState(bc);
     BCFlattenFloat(bc);
     memset(bc->bitmap,'\0',bc->bytes_per_line*(bc->ymax-bc->ymin+1));
     BCCompressBitmap(bc);
-    BCCharChangedUpdate(bc,fv);
+    BCCharChangedUpdate(bc);
 }
 
-static void SCClearAll(SplineChar *sc,FontView *fv) {
+void SCClearAll(SplineChar *sc) {
     RefChar *refs, *next;
 
     if ( sc==NULL )
@@ -866,7 +866,7 @@ return;
     SCCharChangedUpdate(sc);
 }
 
-static void SCClearBackground(SplineChar *sc,FontView *fv) {
+static void SCClearBackground(SplineChar *sc) {
 
     if ( sc==NULL )
 return;
@@ -893,7 +893,7 @@ return( true );
 return( false );
 }
 
-static void UnlinkThisReference(FontView *fv,SplineChar *sc) {
+void UnlinkThisReference(FontView *fv,SplineChar *sc) {
     /* We are about to clear out sc. But somebody refers to it and that we */
     /*  aren't going to delete. So (if the user asked us to) instanciate sc */
     /*  into all characters which refer to it and which aren't about to be */
@@ -954,13 +954,13 @@ static void FVClear(FontView *fv) {
 	}
 
 	if ( onlycopydisplayed && fv->filled==fv->show ) {
-	    SCClearAll(fv->sf->chars[i],fv);
+	    SCClearAll(fv->sf->chars[i]);
 	} else if ( onlycopydisplayed ) {
-	    BCClearAll(fv->show->chars[i],fv);
+	    BCClearAll(fv->show->chars[i]);
 	} else {
-	    SCClearAll(fv->sf->chars[i],fv);
+	    SCClearAll(fv->sf->chars[i]);
 	    for ( bdf=fv->sf->bitmaps; bdf!=NULL; bdf = bdf->next )
-		BCClearAll(bdf->chars[i],fv);
+		BCClearAll(bdf->chars[i]);
 	}
     }
 }
@@ -977,7 +977,7 @@ static void FVClearBackground(FontView *fv) {
 return;
 
     for ( i=0; i<sf->charcnt; ++i ) if ( fv->selected[i] && sf->chars[i]!=NULL ) {
-	SCClearBackground(sf->chars[i],fv);
+	SCClearBackground(sf->chars[i]);
     }
 }
 
@@ -1032,6 +1032,22 @@ static void FVMenuRemoveUndoes(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    ++k;
 	} while ( k<main->subfontcnt );
     }
+}
+
+static void FVMenuUndo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    int i;
+    for ( i=0; i<fv->sf->charcnt; ++i )
+	if ( fv->selected[i] && fv->sf->chars[i]!=NULL && fv->sf->chars[i]->undoes[0]!=NULL )
+	    SCDoUndo(fv->sf->chars[i],dm_fore);
+}
+
+static void FVMenuRedo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    int i;
+    for ( i=0; i<fv->sf->charcnt; ++i )
+	if ( fv->selected[i] && fv->sf->chars[i]!=NULL && fv->sf->chars[i]->redoes[0]!=NULL )
+	    SCDoRedo(fv->sf->chars[i],dm_fore);
 }
 
 static void FVMenuCut(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -1093,8 +1109,19 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 			}
 	    }
 	  break;
-	  case MID_Undo: case MID_Redo:
-	    mi->ti.disabled = true;
+	  case MID_Undo:
+	    for ( pos=0; pos<fv->sf->charcnt; ++pos )
+		if ( fv->selected[pos] && fv->sf->chars[pos]!=NULL )
+		    if ( fv->sf->chars[pos]->undoes[0]!=NULL )
+	    break;
+	    mi->ti.disabled = pos==fv->sf->charcnt;
+	  break;
+	  case MID_Redo:
+	    for ( pos=0; pos<fv->sf->charcnt; ++pos )
+		if ( fv->selected[pos] && fv->sf->chars[pos]!=NULL )
+		    if ( fv->sf->chars[pos]->redoes[0]!=NULL )
+	    break;
+	    mi->ti.disabled = pos==fv->sf->charcnt;
 	  break;
 	}
     }
@@ -2295,8 +2322,8 @@ static GMenuItem cflist[] = {
 };
 
 static GMenuItem edlist[] = {
-    { { (unichar_t *) _STR_Undo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 0, 1, 0, 'U' }, 'Z', ksm_control, NULL, NULL },
-    { { (unichar_t *) _STR_Redo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 0, 1, 0, 'R' }, 'Y', ksm_control, NULL, NULL },
+    { { (unichar_t *) _STR_Undo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 0, 1, 0, 'U' }, 'Z', ksm_control, NULL, NULL, FVMenuUndo, MID_Undo },
+    { { (unichar_t *) _STR_Redo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 0, 1, 0, 'R' }, 'Y', ksm_control, NULL, NULL, FVMenuRedo, MID_Redo},
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Cut, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 't' }, 'X', ksm_control, NULL, NULL, FVMenuCut, MID_Cut },
     { { (unichar_t *) _STR_Copy, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, 'C', ksm_control, NULL, NULL, FVMenuCopy, MID_Copy },
