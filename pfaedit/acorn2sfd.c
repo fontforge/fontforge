@@ -74,6 +74,8 @@ static char *GuessFamily(char *fontname) {
 
     if ( (fpt=strchr(fontname,'-'))!=NULL && fpt!=fontname )
 return( copyn(fontname,fpt-fontname));
+    if ( (fpt=strchr(fontname,'.'))!=NULL && fpt!=fontname )
+return( copyn(fontname,fpt-fontname));
 
     for ( i=0; mods[i]!=NULL; ++i ) for ( j=0; mods[i][j]!=NULL; ++j ) {
 	pt = strstr(fontname,mods[i][j]);
@@ -306,7 +308,7 @@ static void ReadChunk(FILE *file,struct Outlines *outline,int chunk) {
 static void ReadIntmetrics(char *dir, struct Outlines *outline) {
     char *filename = malloc(strlen(dir)+strlen("/Intmetrics")+3);
     FILE *file;
-    int i, flags;
+    int i, flags, m;
     char buffer[100];
     char *mapping=NULL, _map[256];
     static char *names[] = { "/intmetrics", "/INTMETRICS", "/IntMetrics", "/Intmetrics", NULL };
@@ -333,13 +335,30 @@ return;
     /* version number = */ getc(file);
     flags = getc(file);
     outline->metrics_n |= getc(file)<<8;	/* high order byte */
+	/* This value is not reliable. In Trinity n==34, m==416 and */
+	/* number of characters given in Outlines==416 */
     if ( flags&(1<<5) ) {
-	int m = r_getushort(file);
+	m = r_getushort(file);
+	if ( outline->metrics_n<m ) {
+	    fprintf( stderr, "This IntMetrics file makes no sense. It claims there are %d characters in\n", outline->metrics_n );
+	    fprintf( stderr, " the font, and then starts talking about %d of them. I have no idea how\n", m );
+	    fprintf( stderr, " how to parse this and have given up. No advance widths are known.\n" );
+	    outline->metrics_n = 0;
+return;
+	}
+    } else
+	m = 256;
+    if ( m<=256 ) {
 	memset(_map,0,sizeof(_map));
 	for ( i=0; i<m; ++i )
 	    _map[i] = getc(file);
 	if ( m>0 )
 	    mapping = _map;
+    } else {
+	/* Documentation clearly states that m must be less than 256 */
+	/*  but Trinity has m of 416 */
+	for ( i=0; i<m; ++i )
+	    getc(file);
     }
     if ( !(flags&1) ) {
 	/* I ignore bbox data */
@@ -471,6 +490,10 @@ return( NULL );
     for ( i=0; (ch=getc(file))!='\0' && ch!=EOF; )
 	if ( i<sizeof(buffer)-1 ) buffer[i++] = ch;
     buffer[i] = '\0';
+    /* Docs say that the word "Outlines" appears here, followed by a nul */
+    /* That appears to be a lie. We seem to get a random comment */
+    /* or perhaps a copyright notice */
+#if 0
     if ( strcmp(buffer,"Outlines")!=0 ) {
 	fprintf( stderr, "Outlines keyword missing after fontname in %s\n", filename );
 	free(filename);
@@ -479,8 +502,9 @@ return( NULL );
 	fclose(file);
 return( NULL );
     }
+#endif
     if ( outline.metrics_fontname!=NULL &&
-	    strcmp(outline.fontname,outline.metrics_fontname)!=0 )
+	    strmatch(outline.fontname,outline.metrics_fontname)!=0 )
 	fprintf( stderr, "Warning: Fontname in metrics (%s) and fontname in outline (%s)\n do not match.\n", outline.metrics_fontname, outline.fontname );
     i = (outline.nchunks<8?8:outline.nchunks)*32;
     if ( outline.metrics_n==0 || outline.metrics_n>i )
@@ -493,6 +517,8 @@ return( NULL );
     outline.sf->fullname = copy(outline.fontname);
     outline.sf->familyname = GuessFamily(outline.fontname);
     outline.sf->weight = GuessWeight(outline.fontname);
+    if ( strcmp(buffer,"Outlines")!=0 )
+	outline.sf->copyright = copy(buffer);
     strcpy(buffer,outline.fontname);
     strcat(buffer,".sfd");
     outline.sf->filename = copy(buffer);
@@ -566,8 +592,10 @@ int main(int argc, char **argv) {
 		dohelp();
 	    else
 		dousage();
-	} else
+	} else {
 	    ReadOutline(argv[i]);
+	    any = true;
+	}
     }
     if ( !any )
 	ReadOutline(".");

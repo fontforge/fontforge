@@ -1057,7 +1057,7 @@ static void bSetCharName(Context *c) {
     name = c->a.vals[1].u.sval;
     ligature = sc->lig==NULL?NULL : copy(sc->lig->components);
 
-    if ( c->a.vals[2].u.ival ) {
+    if ( c->a.argc!=3 || c->a.vals[2].u.ival ) {
 	if ( name[0]=='u' && name[1]=='n' && name[2]=='i' && strlen(name)==7 &&
 		(uni = strtol(name+3,&end,16), *end=='\0'))
 	    /* Good */;
@@ -1084,10 +1084,10 @@ static void bSetUnicodeValue(Context *c) {
 	error(c,"Bad argument type");
     sc = GetOneSelChar(c);
     uni = c->a.vals[1].u.ival;
-    name = copy(name);
+    name = copy(sc->name);
     ligature = sc->lig==NULL?NULL : copy(sc->lig->components);
 
-    if ( c->a.vals[2].u.ival ) {
+    if ( c->a.argc!=3 || c->a.vals[2].u.ival ) {
 	free(name);
 	if ( uni>=0 && uni<psunicodenames_cnt && psunicodenames[uni]!=NULL )
 	    name = copy(psunicodenames[uni]);
