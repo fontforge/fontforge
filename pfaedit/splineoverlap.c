@@ -809,42 +809,88 @@ return( true );
 return( false );
 }
 
-static EI *CountDuplicates(EI *apt,int *_cnt) {
-    int cnt = *_cnt, tot, c;
+static EI *CountDuplicates(enum overlap_type ot, EI *apt,int *_cnt, int *_ecnt) {
+    int cnt = *_cnt, tot, etot, c;
     EI *test, *needed=NULL, *notunneeded=NULL;
 
     /* If we have two (or more) tangent splines then they will add 2 to the */
     /*  count. But they need to be treated carefully. One of them will always */
     /*  have to go, but the other might be needed. And if we get the wrong one*/
     /*  ... */
-    tot = c = 0;
+    tot = c = etot = 0;
     for ( test=apt; test!=NULL && ExactlySame(apt,test); test=test->aenext ) {
 	if ( test->spline->isneeded ) needed = test;
 	if ( !test->spline->isunneeded ) notunneeded = test;
-	tot += test->up?1:-1;
+	if ( ot==over_exclude && test->spline->exclude )
+	    etot += test->up?1:-1;
+	else
+	    tot += test->up?1:-1;
 	++c;
     }
-    if (( cnt==0 && tot==0 ) ||		/* The two (or more) lines cancel out */
-	    (cnt!=0 && cnt+tot!=0)) {	/* Normal case of internal lines */
-	if ( needed!=NULL && !needed->spline->isunneeded )
-	    GDrawIError( c==1?
-		"A spline is both needed and unneeded in CountDuplicates#1":
-		"A set of tangent splines is both needed and unneeded in CountDuplicates#1");
-	for ( test=apt; test!=NULL && ExactlySame(apt,test); test=test->aenext )
-	    test->spline->isunneeded = true;
-    } else if (( cnt==0 && tot!=0 ) || (cnt!=0 && cnt+tot==0)) {
-	if ( needed )
-	    /* Already done */;
-	else if ( notunneeded==NULL )
-	    GDrawIError( c==1?
-		"A spline is both needed and unneeded in CountDuplicates#2":
-		"A set of tangent splines is both needed and unneeded in CountDuplicates#2");
-	for ( test=apt; test!=NULL && ExactlySame(apt,test); test=test->aenext ) {
-	    test->spline->isunneeded = true;
-	    test->spline->isneeded = false;
+    if ( ot == over_remove ) {
+	if (( cnt==0 && tot==0 ) ||		/* The two (or more) lines cancel out */
+		(cnt!=0 && cnt+tot!=0)) {	/* Normal case of internal lines */
+	    if ( needed!=NULL && !needed->spline->isunneeded )
+		GDrawIError( c==1?
+		    "A spline is both needed and unneeded in CountDuplicates#1":
+		    "A set of tangent splines is both needed and unneeded in CountDuplicates#1");
+	    for ( test=apt; test!=NULL && ExactlySame(apt,test); test=test->aenext )
+		test->spline->isunneeded = true;
+	} else /* if (( cnt==0 && tot!=0 ) || (cnt!=0 && cnt+tot==0))*/ {
+	    if ( needed )
+		/* Already done */;
+	    else if ( notunneeded==NULL )
+		GDrawIError( c==1?
+		    "A spline is both needed and unneeded in CountDuplicates#2":
+		    "A set of tangent splines is both needed and unneeded in CountDuplicates#2");
+	    for ( test=apt; test!=NULL && ExactlySame(apt,test); test=test->aenext ) {
+		test->spline->isunneeded = true;
+		test->spline->isneeded = false;
+	    }
+	    apt->spline->isunneeded = false;
+	    apt->spline->isneeded = true;
 	}
-	apt->spline->isunneeded = false;
-	apt->spline->isneeded = true;
+    } else if ( ot == over_intersect ) {
+	if (( cnt>-2 && cnt<2 && cnt+tot>-2 && cnt+tot<2 ) ||
+		((cnt<=-2 || cnt>=2) && (cnt+tot<=-2 || cnt+tot>=2))) {
+	    for ( test=apt; test!=NULL && ExactlySame(apt,test); test=test->aenext )
+		test->spline->isunneeded = true;
+	} else /* if ((cnt>-2 && cnt<2 && (cnt+tot<=-2 || cnt+tot>=2)) ||
+		    ((cnt<=-2 || cnt>=2) && cnt+tot>-2 && cnt+tot<2 ))*/ {
+	    for ( test=apt; test!=NULL && ExactlySame(apt,test); test=test->aenext ) {
+		test->spline->isunneeded = true;
+		test->spline->isneeded = false;
+	    }
+	    apt->spline->isunneeded = false;
+	    apt->spline->isneeded = true;
+	}
+    } else if ( ot == over_exclude ) {
+	int ecnt = *_ecnt;
+	if ( (abs(ecnt) >= abs(cnt) && abs(ecnt+etot) >= abs(cnt+tot)) ||	/* We're inside an excluded region, remove it */
+		( cnt==0 && tot==0 && ecnt==0 && etot==0 ) ||
+		( cnt>ecnt && etot==0 && cnt!=0 && cnt+tot!=0 ) ||
+		( ecnt>cnt && tot==0 && ecnt!=0 && ecnt+etot!=0 ) ) {
+	    if ( needed!=NULL && !needed->spline->isunneeded )
+		GDrawIError( c==1?
+		    "A spline is both needed and unneeded in CountDuplicates#1":
+		    "A set of tangent splines is both needed and unneeded in CountDuplicates#1");
+	    for ( test=apt; test!=NULL && ExactlySame(apt,test); test=test->aenext )
+		test->spline->isunneeded = true;
+	} else {
+	    if ( needed )
+		/* Already done */;
+	    else if ( notunneeded==NULL )
+		GDrawIError( c==1?
+		    "A spline is both needed and unneeded in CountDuplicates#4":
+		    "A set of tangent splines is both needed and unneeded in CountDuplicates#4");
+	    for ( test=apt; test!=NULL && ExactlySame(apt,test); test=test->aenext ) {
+		test->spline->isunneeded = true;
+		test->spline->isneeded = false;
+	    }
+	    apt->spline->isunneeded = false;
+	    apt->spline->isneeded = true;
+	}
+	*_ecnt += etot;
     }
     *_cnt += tot;
 return( test );
@@ -852,7 +898,7 @@ return( test );
 
 static void _FindNeeded(EIList *el, int major) {
     EI *active=NULL, *apt, *e, *npt, *pr;
-    int bpos=0, tpos=0, cnt;
+    int bpos=0, tpos=0, cnt, ecnt;
     real pos, npos;
     int other = !major, subchange;
 
@@ -944,10 +990,10 @@ static void _FindNeeded(EIList *el, int major) {
 	}
 	active = EIActiveListReorder(active,&subchange);
 	for ( apt=active; apt!=NULL; apt = e ) {
-	    cnt = 0;
-	    e = CountDuplicates(apt,&cnt);
-	    for ( ; e!=NULL && cnt!=0; ) {
-		e = CountDuplicates(e,&cnt);
+	    ecnt = cnt = 0;
+	    e = CountDuplicates(el->ot,apt,&cnt,&ecnt);
+	    for ( ; e!=NULL && (cnt!=0 || ecnt!=0); ) {
+		e = CountDuplicates(el->ot,e,&cnt,&ecnt);
 	    }
 	}
     }
@@ -957,7 +1003,34 @@ static void _FindNeeded(EIList *el, int major) {
     free(el->tops);
 }
 
-static void SplineSetFindNeeded(SplineSet *base) {
+static void SSExcludeSet(SplineSet *base) {
+    int selected;
+    SplinePoint *sp;
+    Spline *s, *first;
+
+    while ( base!=NULL ) {
+	selected = false;
+	for ( sp=base->first ; ; ) {
+	    if ( sp->selected ) {
+		selected = true;
+	break;
+	    }
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==base->first )
+	break;
+	}
+	first = NULL;
+	for ( s = base->first->next; s!=NULL && s!=first ; s = s->to->next ) {
+	    if ( first==NULL ) first = s;
+	    s->exclude = selected;
+	}
+	base = base->next;
+    }
+}
+
+static void SplineSetFindNeeded(SplineSet *base,enum overlap_type ot) {
     EIList el;
     SplineChar sc;
 
@@ -967,6 +1040,9 @@ static void SplineSetFindNeeded(SplineSet *base) {
     memset(&el,'\0',sizeof(el));
     el.leavetiny = true;
     ELFindEdges(&sc, &el);
+    el.ot = ot;
+    if ( ot==over_exclude )
+	SSExcludeSet(base);
 
     _FindNeeded(&el,1);
 
@@ -1451,7 +1527,7 @@ static void ShowIntersections(IntersectionList *ilist) {
 	bring points that are close together on top of one another
 	?Correct Direction?	But that alters semantics
 */
-SplineSet *SplineSetRemoveOverlap(SplineSet *base,int justintersect) {
+SplineSet *SplineSetRemoveOverlap(SplineSet *base,enum overlap_type ot) {
     SplineSet *open, *needed, *tbase, *new, *next;
     IntersectionList *ilist;
     int changed = false;
@@ -1460,7 +1536,7 @@ SplineSet *SplineSetRemoveOverlap(SplineSet *base,int justintersect) {
 
     tbase = base;
     open = SplineSetsExtractOpen(&tbase);
-    if ( justintersect ) {
+    if ( ot==over_findinter ) {
 	ilist = SplineSetFindIntersections(base);
 	ILFree(ilist);
 	needed = base;
@@ -1468,7 +1544,7 @@ SplineSet *SplineSetRemoveOverlap(SplineSet *base,int justintersect) {
 	tbase = SplineCharRemoveTiny(NULL,tbase);	/* remove tiny (<1unit long) splines. They confuse the needed checker */
 	base = tbase;
 	ilist = SplineSetFindIntersections(base);
-	SplineSetFindNeeded(base);
+	SplineSetFindNeeded(base,ot);
 	RemoveDuplicates(ilist);
 #ifdef DEBUG
 	ShowIntersections(ilist);

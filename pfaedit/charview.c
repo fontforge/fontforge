@@ -3459,6 +3459,9 @@ return( true );
 #define MID_CleanupChar	2225
 #define MID_TilePath	2226
 #define MID_BuildComposite	2227
+#define MID_Exclude	2228
+#define MID_Intersection	2229
+#define MID_FindInter	2230
 #define MID_CharInfo	2240
 #define MID_Corner	2301
 #define MID_Tangent	2302
@@ -4785,7 +4788,7 @@ static void CVMenuTilePath(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 #endif
 
-static void _CVMenuOverlap(CharView *cv,int justintersect) {
+static void _CVMenuOverlap(CharView *cv,enum overlap_type ot) {
     /* We know it's more likely that we'll find a problem in the overlap code */
     /*  than anywhere else, so let's save the current state against a crash */
     DoAutoSaves();
@@ -4795,18 +4798,16 @@ static void _CVMenuOverlap(CharView *cv,int justintersect) {
 	MinimumDistancesFree(cv->sc->md);
 	cv->sc->md = NULL;
     }
-    *cv->heads[cv->drawmode] = SplineSetRemoveOverlap(*cv->heads[cv->drawmode],justintersect);
+    *cv->heads[cv->drawmode] = SplineSetRemoveOverlap(*cv->heads[cv->drawmode],ot);
     CVCharChangedUpdate(cv);
 }
 
 static void CVMenuOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    _CVMenuOverlap(cv,false);
-}
-
-static void CVMenuFindIntersections(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    CharView *cv = (CharView *) GDrawGetUserData(gw);
-    _CVMenuOverlap(cv,true);
+    _CVMenuOverlap(cv,mi->mid==MID_RmOverlap ? over_remove :
+		      mi->mid==MID_Intersection ? over_intersect :
+		      mi->mid==MID_Exclude ? over_exclude :
+			  over_findinter);
 }
 
 static void _CVMenuAddExtrema(CharView *cv) {
@@ -5121,14 +5122,6 @@ static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 	  break;
 	  case MID_RmOverlap:
 	    mi->ti.disabled = ( *cv->heads[cv->drawmode]==NULL || order2 );
-#if 0
-	    if ( !mi->ti.disabled ) {
-		if ( e==NULL || !(e->u.mouse.state&ksm_shift) )
-		    mi->ti.text = u_copy(GStringGetResource(_STR_Rmoverlap,NULL));
-		else
-		    mi->ti.text = u_copy(GStringGetResource(_STR_FindIntersections,NULL));
-	    }
-#endif
 	  break;
 #ifdef PFAEDIT_CONFIG_TILEPATH
 	  case MID_TilePath:
@@ -5752,8 +5745,10 @@ static GMenuItem smlist[] = {
 };
 
 static GMenuItem rmlist[] = {
-    { { (unichar_t *) _STR_Rmoverlap, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'v' }, 'O', ksm_control|ksm_shift, NULL, NULL, CVMenuOverlap, MID_RmOverlap },
-    { { (unichar_t *) _STR_FindIntersections, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuFindIntersections },
+    { { (unichar_t *) _STR_Rmoverlap, &GIcon_rmoverlap, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 0, 1, 0, 'R' }, 'O', ksm_control|ksm_shift, NULL, NULL, CVMenuOverlap, MID_RmOverlap },
+    { { (unichar_t *) _STR_Intersect, &GIcon_intersection, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 0, 1, 0, 'I' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuOverlap, MID_Intersection },
+    { { (unichar_t *) _STR_Exclude, &GIcon_exclude, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 0, 1, 0, 'E' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuOverlap, MID_Exclude },
+    { { (unichar_t *) _STR_FindIntersections, &GIcon_findinter, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 0, 1, 0, 'F' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuOverlap, MID_FindInter },
     { NULL }
 };
 
@@ -5781,7 +5776,7 @@ static GMenuItem ellist[] = {
 #ifdef PFAEDIT_CONFIG_TILEPATH
     { { (unichar_t *) _STR_TilePath, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuTilePath, MID_TilePath },
 #endif
-    { { (unichar_t *) _STR_Rmoverlap, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'v' }, '\0', ksm_control|ksm_shift, rmlist, NULL, NULL, MID_RmOverlap },
+    { { (unichar_t *) _STR_Overlap, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'v' }, '\0', ksm_control|ksm_shift, rmlist, NULL, NULL, MID_RmOverlap },
     { { (unichar_t *) _STR_Simplify, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, '\0', ksm_control|ksm_shift, smlist, NULL, NULL, MID_Simplify },
     { { (unichar_t *) _STR_AddExtrema, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'x' }, 'X', ksm_control|ksm_shift, NULL, NULL, CVMenuAddExtrema, MID_AddExtrema },
     { { (unichar_t *) _STR_MetaFont, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, '!', ksm_control|ksm_shift, NULL, NULL, CVMenuMetaFont, MID_MetaFont },

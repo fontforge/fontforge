@@ -714,7 +714,6 @@ return( ssplus );
 		SplinePointListFree(ssplus);
 		ssplus = ssminus;
 	    }
-	    SplineSetReverse(ssplus);
 	} else {
 	    ssplus->next = ssminus;
 	    SplineSetsCorrect(ssplus,&changed);

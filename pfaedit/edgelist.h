@@ -129,6 +129,7 @@ typedef struct eilist {
     EI *splinelast, *splinefirst;
     EI **bottoms, **tops;	/* Used only be FindNeeded in RemoveOverlap */
     unsigned leavetiny: 1;
+    enum overlap_type ot;
 } EIList;
 
 extern void ElFreeEI(EIList *el);

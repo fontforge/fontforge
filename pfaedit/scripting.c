@@ -1838,6 +1838,18 @@ static void bRemoveOverlap(Context *c) {
     FVFakeMenus(c->curfv,100);
 }
 
+static void bOverlapIntersect(Context *c) {
+    if ( c->a.argc!=1 )
+	error( c, "Wrong number of arguments");
+    FVFakeMenus(c->curfv,104);
+}
+
+static void bFindIntersections(Context *c) {
+    if ( c->a.argc!=1 )
+	error( c, "Wrong number of arguments");
+    FVFakeMenus(c->curfv,105);
+}
+
 static void bSimplify(Context *c) {
     double err = (c->curfv->sf->ascent+c->curfv->sf->descent)/1000.;
     int type = 0;
@@ -2678,6 +2690,8 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "NonLinearTransform", bNonLinearTransform },
     { "ExpandStroke", bExpandStroke },
     { "RemoveOverlap", bRemoveOverlap },
+    { "OverlapIntersect", bOverlapIntersect },
+    { "FindIntersections", bFindIntersections },
     { "Simplify", bSimplify },
     { "AddExtrema", bAddExtrema },
     { "RoundToInt", bRoundToInt },

@@ -1224,6 +1224,8 @@ return( true );
 #define MID_CleanupChar	2225
 #define MID_TilePath	2226
 #define MID_BuildComposite	2227
+#define MID_Intersection	2229
+#define MID_FindInter	2230
 #define MID_Center	2600
 #define MID_OpenBitmap	2700
 #define MID_OpenOutline	2701
@@ -1621,7 +1623,7 @@ static void MVMenuTilePath(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 #endif
 
-static void _MVMenuOverlap(MetricsView *mv,int interesct) {
+static void _MVMenuOverlap(MetricsView *mv,enum overlap_type ot) {
     int i;
 
     for ( i=mv->charcnt-1; i>=0; --i )
@@ -1632,19 +1634,16 @@ static void _MVMenuOverlap(MetricsView *mv,int interesct) {
 	SCPreserveState(sc,false);
 	MinimumDistancesFree(sc->md);
 	sc->md = NULL;
-	sc->splines = SplineSetRemoveOverlap(sc->splines,interesct);
+	sc->splines = SplineSetRemoveOverlap(sc->splines,ot);
 	SCCharChangedUpdate(sc);
     }
 }
 
 static void MVMenuOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
-    _MVMenuOverlap(mv,false);
-}
-
-static void MVMenuFindIntersections(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
-    _MVMenuOverlap(mv,false);
+    _MVMenuOverlap(mv,mi->mid==MID_RmOverlap ? over_remove :
+		      mi->mid==MID_Intersection ? over_intersect :
+			   over_findinter);
 }
 
 static void MVSimplify( MetricsView *mv,int type ) {
@@ -2160,8 +2159,9 @@ static GMenuItem smlist[] = {
 };
 
 static GMenuItem rmlist[] = {
-    { { (unichar_t *) _STR_Rmoverlap, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'O' }, 'O', ksm_control|ksm_shift, NULL, NULL, MVMenuOverlap, MID_RmOverlap },
-    { { (unichar_t *) _STR_FindIntersections, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'O' }, '\0', ksm_control|ksm_shift, NULL, NULL, MVMenuFindIntersections },
+    { { (unichar_t *) _STR_Rmoverlap, &GIcon_rmoverlap, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 0, 1, 0, 'O' }, 'O', ksm_control|ksm_shift, NULL, NULL, MVMenuOverlap, MID_RmOverlap },
+    { { (unichar_t *) _STR_Intersect, &GIcon_intersection, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 0, 1, 0, 'I' }, '\0', ksm_control|ksm_shift, NULL, NULL, MVMenuOverlap, MID_Intersection },
+    { { (unichar_t *) _STR_FindIntersections, &GIcon_findinter, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 0, 1, 0, 'O' }, '\0', ksm_control|ksm_shift, NULL, NULL, MVMenuOverlap, MID_FindInter },
     { NULL }
 };
 

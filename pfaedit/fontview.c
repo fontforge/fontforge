@@ -865,6 +865,8 @@ static void FVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_TilePath	2226
 #define MID_BuildComposite	2227
 #define MID_NLTransform	2228
+#define MID_Intersection	2229
+#define MID_FindInter	2230
 #define MID_Center	2600
 #define MID_Thirds	2601
 #define MID_SetWidth	2602
@@ -1693,7 +1695,7 @@ static void FVMenuTilePath(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 #endif
 
-static void FVOverlap(FontView *fv,int justintersect) {
+static void FVOverlap(FontView *fv,enum overlap_type ot) {
     int i, cnt=0;
 
     /* We know it's more likely that we'll find a problem in the overlap code */
@@ -1709,7 +1711,7 @@ static void FVOverlap(FontView *fv,int justintersect) {
 	SCPreserveState(sc,false);
 	MinimumDistancesFree(sc->md);
 	sc->md = NULL;
-	sc->splines = SplineSetRemoveOverlap(sc->splines,justintersect);
+	sc->splines = SplineSetRemoveOverlap(sc->splines,ot);
 	SCCharChangedUpdate(sc);
 	if ( !GProgressNext())
     break;
@@ -1724,13 +1726,9 @@ static void FVMenuOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     /*  than anywhere else, so let's save the current state against a crash */
     DoAutoSaves();
 
-    FVOverlap(fv,false);
-}
-
-static void FVMenuFindIntersections(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-
-    FVOverlap(fv,true);
+    FVOverlap(fv,mi->mid==MID_RmOverlap ? over_remove :
+		 mi->mid==MID_Intersection ? over_intersect :
+		      over_findinter);
 }
 
 void _FVSimplify(FontView *fv,int type, double err) {
@@ -3223,8 +3221,9 @@ static GMenuItem smlist[] = {
 };
 
 static GMenuItem rmlist[] = {
-    { { (unichar_t *) _STR_Rmoverlap, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'O' }, 'O', ksm_control|ksm_shift, NULL, NULL, FVMenuOverlap, MID_RmOverlap },
-    { { (unichar_t *) _STR_FindIntersections, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuFindIntersections },
+    { { (unichar_t *) _STR_Rmoverlap, &GIcon_rmoverlap, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 0, 1, 0, 'O' }, 'O', ksm_control|ksm_shift, NULL, NULL, FVMenuOverlap, MID_RmOverlap },
+    { { (unichar_t *) _STR_Intersect, &GIcon_intersection, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 0, 1, 0, 'I' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuOverlap, MID_Intersection },
+    { { (unichar_t *) _STR_FindIntersections, &GIcon_findinter, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 0, 1, 0, 'O' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuOverlap, MID_FindInter },
     { NULL }
 };
 
@@ -5632,7 +5631,7 @@ void FVFakeMenus(FontView *fv,int cmd) {
       break;
 
       case 100:
-	FVOverlap(fv,false);
+	FVOverlap(fv,over_remove);
       break;
       case 101:
 	FVSimplify(fv,false);
@@ -5642,6 +5641,12 @@ void FVFakeMenus(FontView *fv,int cmd) {
       break;
       case 103:
 	FVRound2Int(fv);
+      break;
+      case 104:
+	FVOverlap(fv,over_intersect);
+      break;
+      case 105:
+	FVOverlap(fv,over_findinter);
       break;
 
       case 200:

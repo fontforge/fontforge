@@ -95,6 +95,8 @@ typedef struct strokeinfo {
     double (*factor)(void *data,struct spline *spline,real t);
 } StrokeInfo;
 
+enum overlap_type { over_remove, over_intersect, over_exclude, over_findinter };
+
 typedef struct ipoint {
     int x;
     int y;
@@ -332,8 +334,9 @@ typedef struct spline {
     unsigned int islinear: 1;		/* No control points */
     unsigned int isquadratic: 1;	/* probably read in from ttf */
     unsigned int isticked: 1;
-    unsigned int isneeded: 1;
-    unsigned int isunneeded: 1;
+    unsigned int isneeded: 1;		/* Used in remove overlap */
+    unsigned int isunneeded: 1;		/* Used in remove overlap */
+    unsigned int exclude: 1;		/* Used in remove overlap varient: exclude */
     unsigned int ishorvert: 1;
     unsigned int knowncurved: 1;	/* We know that it curves */
     unsigned int knownlinear: 1;	/* it might have control points, but still traces out a line */
@@ -925,7 +928,7 @@ extern int IntersectLinesClip(BasePoint *inter,
 	BasePoint *line2_1, BasePoint *line2_2);
 
 extern SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc);
-extern SplineSet *SplineSetRemoveOverlap(SplineSet *base,int justintersect);
+extern SplineSet *SplineSetRemoveOverlap(SplineSet *base,enum overlap_type);
 
 extern void FindBlues( SplineFont *sf, real blues[14], real otherblues[10]);
 extern void QuickBlues(SplineFont *sf, BlueData *bd);
