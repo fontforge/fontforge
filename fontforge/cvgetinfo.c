@@ -1091,7 +1091,7 @@ return;
 	gcd[j].creator = GRadioCreate;
 	++j;
 
-	label[j].text = (unichar_t *) _STR_BaseChar;
+	label[j].text = (unichar_t *) _STR_BaseGlyph;
 	label[j].text_in_resource = true;
 	gcd[j].gd.label = &label[j];
 	gcd[j].gd.pos.x = 70; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y;
@@ -1101,7 +1101,7 @@ return;
 	gcd[j].creator = GRadioCreate;
 	++j;
 
-	label[j].text = (unichar_t *) _STR_BaseLig;
+	label[j].text = (unichar_t *) _STR_BaseLigature;
 	label[j].text_in_resource = true;
 	gcd[j].gd.label = &label[j];
 	gcd[j].gd.pos.x = gcd[j-2].gd.pos.x; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+14;

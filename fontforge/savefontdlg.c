@@ -2079,9 +2079,9 @@ static void DoSave(struct gfc_data *d,unichar_t *path) {
     break;
     if ( i!=0 ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	if ( GWidgetAskR(_STR_NotdefName,buts,0,1,_STR_NotdefChar,i)==1 )
+	if ( GWidgetAskR(_STR_NotdefName,buts,0,1,_STR_NotdefGlyph,i)==1 )
 #elif defined(FONTFORGE_CONFIG_GTK)
-	if ( gwwv_ask(_("Notdef name"),buts,0,1,_("The character at encoding %d is named \".notdef\" but contains an outline. Because it is called \".notdef\" it will not be included in the generated font. You may give it a new name using Element->Char Info. Do you wish to continue font generation (and omit this character)?"),i)==1 )
+	if ( gwwv_ask(_("Notdef name"),buts,0,1,_("The glyph at encoding %d is named \".notdef\" but contains an outline. Because it is called \".notdef\" it will not be included in the generated font. You may give it a new name using Element->Char Info. Do you wish to continue font generation (and omit this character)?"),i)==1 )
 #endif
 return;
     }

@@ -937,13 +937,13 @@ void NonLinearDlg(FontView *fv,CharView *cv) {
 }
 
 static GTextInfo originx[] = {
-    { (unichar_t *) _STR_CharacterOrigin, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) _STR_GlyphOrigin, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) _STR_CenterOfSelection, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) _STR_LastPress, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) _STR_Value, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }};
 static GTextInfo originy[] = {
-    { (unichar_t *) _STR_CharacterOrigin, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) _STR_GlyphOrigin, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) _STR_CenterOfSelection, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) _STR_LastPress, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) _STR_Value, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },

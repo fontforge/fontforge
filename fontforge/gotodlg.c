@@ -494,9 +494,9 @@ static int Goto_OK(GGadget *g, GEvent *e) {
 	    if ( d->ret==-1 ) {
 		char *temp=cu_copy(ret);
 #if defined(FONTFORGE_CONFIG_GDRAW)
-		GWidgetPostNoticeR(_STR_Goto,_STR_Couldntfindchar,temp);
+		GWidgetPostNoticeR(_STR_Goto,_STR_CouldntfindGlyph,temp);
 #elif defined(FONTFORGE_CONFIG_GTK)
-		gwwv_post_notice(_("Goto"),_("Could not find the character: %.70s"),temp);
+		gwwv_post_notice(_("Goto"),_("Could not find the glyph: %.70s"),temp);
 #endif
 		free(temp);
 	    } else
@@ -524,7 +524,7 @@ int GotoChar(SplineFont *sf) {
     if ( sf->encoding_name<em_first2byte || sf->encoding_name>=em_base ) {
 	/* In one byte encodings don't bother with the range list. It won't */
 	/*  have enough entries to be useful */
-	ret = GWidgetAskStringR(_STR_Goto,NULL,_STR_Enternameofchar);
+	ret = GWidgetAskStringR(_STR_Goto,NULL,_STR_EnternameofGlyph);
 	if ( ret==NULL )
 return(-1);
 	enc = NameToEncoding(sf,ret);
@@ -532,9 +532,9 @@ return(-1);
 	    enc = -1;
 	if ( enc==-1 )
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetPostNoticeR(_STR_Goto,_STR_CouldntfindcharU,ret);
+	    GWidgetPostNoticeR(_STR_Goto,_STR_CouldntfindGlyphU,ret);
 #elif defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_post_notice(_("Goto"),_("Could not find the character: %.70s"),ret);
+	    gwwv_post_notice(_("Goto"),_("Could not find the glyph: %.70s"),ret);
 #endif
 	free(ret);
 return( enc );
@@ -573,9 +573,9 @@ return( enc );
 
 	GDrawSetFont(gw,GGadgetGetFont(NULL));		/* Default gadget font */
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	wid = GDrawGetTextWidth(gw,GStringGetResource(_STR_Enternameofchar,NULL),-1,NULL);
+	wid = GDrawGetTextWidth(gw,GStringGetResource(_STR_EnternameofGlyph,NULL),-1,NULL);
 #elif defined(FONTFORGE_CONFIG_GTK)
-	wid = GDrawGetTextWidth(gw,_("Enter the name of a character in the font"),-1,NULL);
+	wid = GDrawGetTextWidth(gw,_("Enter the name of a glyph in the font"),-1,NULL);
 #endif
 	for ( i=0; ranges[i].text!=NULL; ++i ) {
 	    uc_strncpy(ubuf,(char *) (ranges[i].text),sizeof(ubuf)/sizeof(ubuf[0])-1);
@@ -591,7 +591,7 @@ return( enc );
 	memset(&label,0,sizeof(label));
 	memset(&gcd,0,sizeof(gcd));
 
-	label[0].text = (unichar_t *) _STR_Enternameofchar;
+	label[0].text = (unichar_t *) _STR_EnternameofGlyph;
 	label[0].text_in_resource = true;
 	gcd[0].gd.label = &label[0];
 	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5; 

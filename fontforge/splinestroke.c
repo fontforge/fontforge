@@ -1644,6 +1644,8 @@ static void touchall(SplineSet *spl) {
     }
 }
 
+/* I know there's no prototype. It's just a useful routine to make valgrind */
+/*  check consistency */
 void splstouchall(SplineSet *ss) {
     while ( ss!=NULL ) {
 	touchall(ss);

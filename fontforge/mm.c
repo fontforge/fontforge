@@ -586,9 +586,9 @@ return( false );
 		sf->encoding_name!=mm->instances[j]->encoding_name ) {
 	    if ( complain )
 #if defined(FONTFORGE_CONFIG_GTK)
-		gwwv_post_error(_("Bad Multiple Master Font"),_("The fonts %1$.30s and %2$.30s have a different number of characters or different encodings"),
+		gwwv_post_error(_("Bad Multiple Master Font"),_("The fonts %1$.30s and %2$.30s have a different number of glyphs or different encodings"),
 #else
-		GWidgetErrorR(_STR_BadMM,_STR_MMDifferentNumChars,
+		GWidgetErrorR(_STR_BadMM,_STR_MMDifferentNumGlyphs,
 #endif
 			sf->fontname, mm->instances[j]->fontname);
 return( false );
@@ -637,16 +637,16 @@ return( false );
 		    FVChangeChar(sf->fv,i);
 		    if ( SCWorthOutputting(sf->chars[i]) )
 #if defined(FONTFORGE_CONFIG_GTK)
-			gwwv_post_error(_("Bad Multiple Master Font"),_("The character %1$.30s is defined in font %2$.30s but not in %3$.30s"),
+			gwwv_post_error(_("Bad Multiple Master Font"),_("The glyph %1$.30s is defined in font %2$.30s but not in %3$.30s"),
 #else
-			GWidgetErrorR(_STR_BadMM,_STR_MMUndefChar,
+			GWidgetErrorR(_STR_BadMM,_STR_MMUndefGlyph,
 #endif
 				sf->chars[i]->name,sf->fontname, mm->instances[j]->fontname);
 		    else
 #if defined(FONTFORGE_CONFIG_GTK)
-			gwwv_post_error(_("Bad Multiple Master Font"),_("The character %1$.30s is defined in font %2$.30s but not in %3$.30s"),
+			gwwv_post_error(_("Bad Multiple Master Font"),_("The glyph %1$.30s is defined in font %2$.30s but not in %3$.30s"),
 #else
-			GWidgetErrorR(_STR_BadMM,_STR_MMUndefChar,
+			GWidgetErrorR(_STR_BadMM,_STR_MMUndefGlyph,
 #endif
 				mm->instances[j]->chars[i]->name, mm->instances[j]->fontname,sf->fontname);
 		}
@@ -658,7 +658,7 @@ return( false );
 		if ( complain ) {
 		    FVChangeChar(sf->fv,i);
 #if defined(FONTFORGE_CONFIG_GTK)
-		    gwwv_post_error(_("Bad Multiple Master Font"),_("The character %1$.30s in %2$.30s has both references and contours. This is not supported in a font with variations"),
+		    gwwv_post_error(_("Bad Multiple Master Font"),_("The glyph %1$.30s in %2$.30s has both references and contours. This is not supported in a font with variations"),
 #else
 		    GWidgetErrorR(_STR_BadMM,_STR_MMBothRefSplines,
 #endif
@@ -672,7 +672,7 @@ return( false );
 		    if ( complain ) {
 			FVChangeChar(sf->fv,i);
 #if defined(FONTFORGE_CONFIG_GTK)
-			gwwv_post_error(_("Bad Multiple Master Font"),_("The character %1$.30s in %2$.30s has both references and contours. This is not supported in a font with variations"),
+			gwwv_post_error(_("Bad Multiple Master Font"),_("The glyph %1$.30s in %2$.30s has both references and contours. This is not supported in a font with variations"),
 #else
 			GWidgetErrorR(_STR_BadMM,_STR_MMBothRefSplines,
 #endif
@@ -684,7 +684,7 @@ return( false );
 		    if ( complain ) {
 			FVChangeChar(sf->fv,i);
 #if defined(FONTFORGE_CONFIG_GTK)
-			gwwv_post_error(_("Bad Multiple Master Font"),_("The character %1$.30s has a different number of contours in font %2$.30s than in %3$.30s"),
+			gwwv_post_error(_("Bad Multiple Master Font"),_("The glyph %1$.30s has a different number of contours in font %2$.30s than in %3$.30s"),
 #else
 			GWidgetErrorR(_STR_BadMM,_STR_MMWrongContourCount,
 #endif
@@ -695,7 +695,7 @@ return( false );
 		    if ( complain ) {
 			FVChangeChar(sf->fv,i);
 #if defined(FONTFORGE_CONFIG_GTK)
-			gwwv_post_error(_("Bad Multiple Master Font"),_("The character %1$.30s in font %2$.30s has a different number of points (or control points) on its contours than in %3$.30s"),
+			gwwv_post_error(_("Bad Multiple Master Font"),_("The glyph %1$.30s in font %2$.30s has a different number of points (or control points) on its contours than in %3$.30s"),
 #else
 			GWidgetErrorR(_STR_BadMM,_STR_MMMismatchContoursPt,
 #endif
@@ -706,7 +706,7 @@ return( false );
 		    if ( complain ) {
 			FVChangeChar(sf->fv,i);
 #if defined(FONTFORGE_CONFIG_GTK)
-			gwwv_post_error(_("Bad Multiple Master Font"),_("The character %1$.30s in font %2$.30s has contours running in a different direction than in %3$.30s"),
+			gwwv_post_error(_("Bad Multiple Master Font"),_("The glyph %1$.30s in font %2$.30s has contours running in a different direction than in %3$.30s"),
 #else
 			GWidgetErrorR(_STR_BadMM,_STR_MMMismatchContoursDir,
 #endif
@@ -717,7 +717,7 @@ return( false );
 		    if ( complain ) {
 			FVChangeChar(sf->fv,i);
 #if defined(FONTFORGE_CONFIG_GTK)
-			gwwv_post_error(_("Bad Multiple Master Font"),_("The character %1$.30s in font %2$.30s has a different number of references than in %3$.30s"),
+			gwwv_post_error(_("Bad Multiple Master Font"),_("The glyph %1$.30s in font %2$.30s has a different number of references than in %3$.30s"),
 #else
 			GWidgetErrorR(_STR_BadMM,_STR_MMMismatchRefs,
 #endif
@@ -728,7 +728,7 @@ return( false );
 		    if ( complain ) {
 			FVChangeChar(sf->fv,i);
 #if defined(FONTFORGE_CONFIG_GTK)
-			gwwv_post_error(_("Bad Multiple Master Font"),_("The character %1$.30s in font %2$.30s has references with different scaling or rotation (etc.) than in %3$.30s"),
+			gwwv_post_error(_("Bad Multiple Master Font"),_("The glyph %1$.30s in font %2$.30s has references with different scaling or rotation (etc.) than in %3$.30s"),
 #else
 			GWidgetErrorR(_STR_BadMM,_STR_MMMismatchRefTrans,
 #endif
@@ -739,7 +739,7 @@ return( false );
 		    if ( complain ) {
 			FVChangeChar(sf->fv,i);
 #if defined(FONTFORGE_CONFIG_GTK)
-			gwwv_post_error(_("Bad Multiple Master Font"),_("The character %1$.30s in font %2$.30s has a different set of kern pairs than in %3$.30s"),
+			gwwv_post_error(_("Bad Multiple Master Font"),_("The glyph %1$.30s in font %2$.30s has a different set of kern pairs than in %3$.30s"),
 #else
 			GWidgetErrorR(_STR_BadMM,_STR_MMMismatchKerns,
 #endif
@@ -752,7 +752,7 @@ return( false );
 		if ( complain ) {
 		    FVChangeChar(sf->fv,i);
 #if defined(FONTFORGE_CONFIG_GTK)
-		    gwwv_post_error(_("Bad Multiple Master Font"),_("The character %1$.30s has a different numbering of points (and control points) on its contours than in the various instances of the font"),
+		    gwwv_post_error(_("Bad Multiple Master Font"),_("The glyph %1$.30s has a different numbering of points (and control points) on its contours than in the various instances of the font"),
 #else
 		    GWidgetErrorR(_STR_BadMM,_STR_MMMismatchContoursPtNum,
 #endif
@@ -766,7 +766,7 @@ return( false );
 			if ( complain ) {
 			    FVChangeChar(sf->fv,i);
 #if defined(FONTFORGE_CONFIG_GTK)
-			    gwwv_post_error(_("Bad Multiple Master Font"),_("The %1$s hints in character \"%2$.30s\" in font %3$.30s do not match those in %4$.30s (different number or different overlap criteria)"),
+			    gwwv_post_error(_("Bad Multiple Master Font"),_("The %1$s hints in glyph \"%2$.30s\" in font %3$.30s do not match those in %4$.30s (different number or different overlap criteria)"),
 #else
 			    GWidgetErrorR(_STR_BadMM,_STR_MMMismatchHints,
 #endif
@@ -777,7 +777,7 @@ return( false );
 			if ( complain ) {
 			    FVChangeChar(sf->fv,i);
 #if defined(FONTFORGE_CONFIG_GTK)
-			    gwwv_post_error(_("Bad Multiple Master Font"),_("The %1$s hints in character \"%2$.30s\" in font %3$.30s do not match those in %4$.30s (different number or different overlap criteria)"),
+			    gwwv_post_error(_("Bad Multiple Master Font"),_("The %1$s hints in glyph \"%2$.30s\" in font %3$.30s do not match those in %4$.30s (different number or different overlap criteria)"),
 #else
 			    GWidgetErrorR(_STR_BadMM,_STR_MMMismatchHints,
 #endif
@@ -791,7 +791,7 @@ return( false );
 			if ( complain ) {
 			    FVChangeChar(sf->fv,i);
 #if defined(FONTFORGE_CONFIG_GTK)
-			    gwwv_post_error(_("Bad Multiple Master Font"),_("The character %1$.30s in font %2$.30s has a different hint mask on its contours than in %3$.30s"),
+			    gwwv_post_error(_("Bad Multiple Master Font"),_("The glyph %1$.30s in font %2$.30s has a different hint mask on its contours than in %3$.30s"),
 #else
 			    GWidgetErrorR(_STR_BadMM,_STR_MMMismatchHintMask,
 #endif
@@ -874,15 +874,15 @@ static int _MMBlendChar(MMSet *mm, int enc) {
 	if ( mm->instances[i]->order2 )
 return( _STR_MMOrder2NoName );
 	if ( enc>=mm->instances[i]->charcnt )
-return( _STR_MMDifferentNumCharsNoName );
+return( _STR_MMDifferentNumGlyphsNoName );
 	if ( SCWorthOutputting(mm->instances[i]->chars[enc]) ) {
 	    if ( worthit == -1 ) worthit = true;
 	    else if ( worthit != true )
-return( _STR_MMUndefCharNoName );
+return( _STR_MMUndefGlyphNoName );
 	} else {
 	    if ( worthit == -1 ) worthit = false;
 	    else if ( worthit != false )
-return( _STR_MMUndefCharNoName );
+return( _STR_MMUndefGlyphNoName );
 	}
     }
 
@@ -1097,7 +1097,7 @@ int MMBlendChar(MMSet *mm, int enc) {
     RefChar *ref;
 
     if ( enc>=mm->normal->charcnt )
-return( _STR_MMDifferentNumCharsNoName );
+return( _STR_MMDifferentNumGlyphsNoName );
     ret = _MMBlendChar(mm,enc);
     if ( mm->normal->chars[enc]!=NULL ) {
 	SplineChar *sc = mm->normal->chars[enc];
