@@ -317,7 +317,16 @@ return;
 	sprintf(buf,"%d", sizes[i].ppem );
 	choices[i] = uc_copy(buf);
     }
-    if ( onlyone ) {
+    if ( screen_display==NULL ) {
+	if ( onlyone ) {
+	    biggest=0;
+	    for ( i=1; i<cnt; ++i )
+		if ( sizes[i].ppem>sizes[biggest].ppem )
+		    biggest = i;
+	    sel[biggest] = true;
+	} else
+	    biggest = -1;
+    } else if ( onlyone ) {
 	biggest=GWidgetChoicesBR(_STR_LoadBitmapFonts, choices,cnt,biggest,buttons,_STR_LoadTTFBitmaps);
 	if ( biggest!=-1 ) sel[biggest] = true;
     } else {
@@ -370,7 +379,7 @@ static int32 ttfdumpf2bchar(FILE *bdat, BDFChar *bc) {
     putc(bc->ymax-bc->ymin+1,bdat);		/* height */
     putc(bc->xmax-bc->xmin+1,bdat);		/* width */
     putc(bc->xmin,bdat);			/* horiBearingX */
-    putc(bc->ymax,bdat);			/* horiBearingY */
+    putc(bc->ymax+1,bdat);			/* horiBearingY */
     putc(bc->width,bdat);			/* advance width */
 
     /* dump image */
@@ -611,6 +620,7 @@ static struct bitmapSizeTable *ttfdumpstrikelocs(FILE *bloc,FILE *bdat,BDFFont *
 	    for ( j=i+1; j<=final ; ++j ) if ( (bc2=bdf->chars[j])!=NULL ) {
 		putlong(subtables,ttfdumpf2bchar(bdat,bc2)-base);
 	    }
+	    putlong(subtables,ftell(bdat)-base);	/* Length of last entry */
 	} else {
 	    met.xmin = bc->xmin; met.xmax = bc->xmax; met.ymin = bc->ymin; met.ymax = bc->ymax;
 	    for ( j=i+1; j<=final ; ++j ) if ( (bc2=bdf->chars[j])!=NULL ) {
