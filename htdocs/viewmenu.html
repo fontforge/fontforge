@@ -2,9 +2,9 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 18-Apr-2004 -->
-  <LINK REL="icon" href="ffanvil16.png">
+  <!-- AP: Last modified: 24-Aug-2004 -->
   <TITLE>The View Menu</TITLE>
+  <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
 <BODY>
 <H1 ALIGN=Center>
@@ -44,11 +44,17 @@
   <LI>
     <A HREF="#ShowATT">Show ATT</A>
   <LI>
-    <A HREF="#KernPairs">Kern Pairs</A>
+    <A HREF="#DspSubs">Display Substitutions</A>
   <LI>
-    <A HREF="#AnchoredPairs">Anchored Pairs</A>
-  <LI>
-    <A HREF="#Ligatures">Ligatures</A>
+    Combinations
+    <UL>
+      <LI>
+	<A HREF="#KernPairs">Kern Pairs</A>
+      <LI>
+	<A HREF="#AnchoredPairs">Anchored Pairs</A>
+      <LI>
+	<A HREF="#Ligatures">Ligatures</A>
+    </UL>
   <LI>
     <A HREF="#HMetrics">View H. Metrics...</A>
   <LI>
@@ -234,6 +240,26 @@
   <DD>
     Only in the font view. Brings up a <A HREF="showatt.html">dlg</A> showing
     the advanced typographic tables (GPOS/GSUB or morx/kern) that FontForge supports.
+  <DT>
+    <A NAME="DspSubs">Display Substitution</A>s
+  <DD>
+    Only in the font view. This allows you to select a simple substitution, any
+    glyph with that substitution attached will be displayed as the substituted
+    glyph. Any glyph without such a substitution will be left blank. Double clicking
+    on a glyph will either go the the substituted version or will create a
+    substituted version and go to that. (However almost no other commands will
+    be aware of this mapping, which will probably be confusing).
+    <TABLE CELLPADDING="2" ALIGN=CENTER>
+      <CAPTION>
+	Displaying small caps ('smcp' substitution)
+      </CAPTION>
+      <TR>
+	<TD><IMG SRC="fv-normal.png" WIDTH="217" HEIGHT="119"></TD>
+	<TD></TD>
+	<TD><IMG SRC="fv-smallcaps.png" WIDTH="217" HEIGHT="119"></TD>
+      </TR>
+    </TABLE>
+    <P>
   <DT>
     Combinations
   <DD>
