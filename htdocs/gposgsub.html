@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 29-Dec-2002 -->
-  <!-- AP: Last modified: 13-Oct-2004 -->
+  <!-- AP: Last modified: 12-Oct-2004 -->
   <TITLE>Advanced Typography tables</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -93,7 +93,7 @@ FontForge will read the following sub tables of the GPOS table:
     <TD>1</TD>
     <TD>single adjustment</TD>
     <TD>This sub-table allows the font designer to change the metrics of a specific
-      glyph. The feature tag will provide a context in which the change should
+      character. The feature tag will provide a context in which the change should
       occur. For instance the 'tnum' (tabular numbers) feature could change a
       proportionally spaced digit by adjusting its advance width to be some set
       value and then centering the digit (by adjusting the left side bearing) within
@@ -105,11 +105,11 @@ FontForge will read the following sub tables of the GPOS table:
     <TD>2</TD>
     <TD>pair adjustment</TD>
     <TD>This sub-table allows the font designer to change the metrics of a specific
-      pair of glyph. The most common use of this is for kerning where the advance
-      width of the first glyph is altered depending on which glyph follows it.
-      But the table is more general than that and could support mark (accent, vowel)
-      positioning over a base glyph (though that is more efficiently done with
-      the mark to base subtable).</TD>
+      pair of character. The most common use of this is for kerning where the advance
+      width of the first character is altered depending on which character follows
+      it. But the table is more general than that and could support mark (accent,
+      vowel) positioning over a base character (though that is more efficiently
+      done with the mark to base subtable).</TD>
     <TD>'kern' feature s may be created from the <A HREF="metricsview.html">Metrics
       View</A>. 'vkrn' with
       <A HREF="metricsmenu.html#VKernFromHKern">Metrics-&gt;VKern From HKern</A>.</TD>
@@ -117,9 +117,9 @@ FontForge will read the following sub tables of the GPOS table:
   <TR>
     <TD>3</TD>
     <TD>cursive attachment</TD>
-    <TD>This sub-table allows the font designer to force adjacent glyphs to join
-      at specific points. It can be used to generate the slanted script style needed
-      for Urdu.</TD>
+    <TD>This sub-table allows the font designer to force adjacent characters
+      to join at specific points. It can be used to generate the slanted script
+      style needed for Urdu.</TD>
     <TD>Only the 'curs' feature is supported for this sub-table. These may be
       created with the <A HREF="pointmenu.html#AddAnchor">Points-&gt;Add Anchor</A>
       command</TD>
@@ -127,10 +127,10 @@ FontForge will read the following sub tables of the GPOS table:
   <TR>
     <TD>4</TD>
     <TD>mark to base</TD>
-    <TD>This sub-table allows the font designer to specify how mark glyphs (accents,
-      vowel signs, etc.) are positioned over base glyphs. Every glyph can have
-      an attachment point and the mark's attachment point will be placed on the
-      base's attachment point so the two join properly. See my
+    <TD>This sub-table allows the font designer to specify how mark characters
+      (accents, vowel signs, etc.) are positioned over base characters. Every character
+      can have an attachment point and the mark's attachment point will be placed
+      on the base's attachment point so the two join properly. See my
       <A HREF="overview.html#Anchors">example</A> in the overview.</TD>
     <TD>These may be created with the
       <A HREF="pointmenu.html#AddAnchor">Points-&gt;Add Anchor</A> command</TD>
@@ -139,8 +139,8 @@ FontForge will read the following sub tables of the GPOS table:
     <TD>5</TD>
     <TD>mark to ligature</TD>
     <TD>This sub-table is very similar to the previous one except that the base
-      glyph is a ligature and may have several different points at which the same
-      type of accent may be placed.</TD>
+      character is a ligature and may have several different points at which the
+      same type of accent may be placed.</TD>
     <TD>These may be created with the
       <A HREF="pointmenu.html#AddAnchor">Points-&gt;Add Anchor</A> command</TD>
   </TR>
@@ -148,10 +148,10 @@ FontForge will read the following sub tables of the GPOS table:
     <TD>6</TD>
     <TD>mark to mark</TD>
     <TD>This sub-table is very similar to the previous two except that the base
-      glyph is itself a mark. This may be used when a glyph has two accents each
-      of which would normally be placed at the same attachment point on a base
-      glyph. The second accent will be place relative to the first accent rather
-      than to the base glyph.</TD>
+      character is itself a mark. This may be used when a character has two accents
+      each of which would normally be placed at the same attachment point on a
+      base character. The second accent will be place relative to the first accent
+      rather than to the base character.</TD>
     <TD>These may be created with the
       <A HREF="pointmenu.html#AddAnchor">Points-&gt;Add Anchor</A> command</TD>
   </TR>
@@ -159,8 +159,8 @@ FontForge will read the following sub tables of the GPOS table:
     <TD>7</TD>
     <TD>contextual positioning</TD>
     <TD>This sub-table allows the font designer to control the positioning of
-      glyphs when they occur within a specific string (or class of strings). For
-      instance this table could say "when you see a digit followed by the string
+      characters when they occur within a specific string (or class of strings).
+      For instance this table could say "when you see a digit followed by the string
       "th" then raise the "th" into a superscript position"</TD>
     <TD>These may be created with the
       <A HREF="fontinfo.html#Contextual">Element-&gt;Font Info-&gt;Contextual
@@ -246,7 +246,7 @@ FontForge will read the following sub tables of the GSUB table:
   <TR>
     <TD>4</TD>
     <TD>ligature substitution</TD>
-    <TD>This sub-table allows the font designer to replace a string of glyphs
+    <TD>This sub-table allows the font designer to replace a string of characters
       with another glyph. A common example is a ligature where the string
       <IMG SRC="f+i.png" WIDTH="24" HEIGHT="25" ALIGN="Middle"> is replaced by
       the <IMG SRC="fi.png" WIDTH="20" HEIGHT="25" ALIGN="Middle"> ligature.</TD>
@@ -380,7 +380,7 @@ the following tables:
     <TD>FontForge will read this table to figure out which glyphs are hebrew
       and arabic, and which have 'r2la' substitutions.</TD>
     <TD>FontForge will generate this table if the font contains some right to
-      left glyphs.</TD>
+      left characters.</TD>
   </TR>
 </TABLE>
 <P>
@@ -737,7 +737,7 @@ capabilities beyond those of AAT. Currently this means:
 	  <LI>
 	    A rule with exactly one substitution is acceptable<BR>
 	    A rule with one substitution in the middle and one substitution on the last
-	    glyph is acceptable.<BR>
+	    character is acceptable.<BR>
 	    A rule may contain more substitutions only if there is another rule which
 	    matches it exactly up to the internal substitution.<BR>
 	    So the following rule set is valid:
@@ -821,7 +821,7 @@ capabilities beyond those of AAT. Currently this means:
 	    </TABLE>
 	    <P>
 	    The two rules have substitutions at different places and that can't be expressed
-	    in an Apple state machine given that they have the same glyphs.
+	    in an Apple state machine given that they have the same characters.
 	</UL>
     </OL>
 </UL>
@@ -970,16 +970,16 @@ If this substitution is given the sequence "abce" it cannot work in AAT.
 When it reads the "a" it will start down the "abcd" branch, the match will
 not fail until it looks for the "d" and finds "e" instead. At that point
 it is too late to switch to the "bce" substitution (which does match) because
-the "b" glyph will not have been marked as a substitution location.
+the "b" character will not have been marked as a substitution location.
 <P>
   <HR>
 On the other hand, Apple's state machines can express things that OpenType
 tables cannot (again I'm restricting myself to contextual glyph substitutions).
-Consider the case of a swash glyph at the beginning (or end) of a word. Let
-us say that a word begins when a letter appears at the start of input or
-following a whitespace character. But OpenType has no way of expressing "start
-of input" (or end of input) in a contextual/chaining context, whereas Apple's
-state machines do.
+Consider the case of a swash character at the beginning (or end) of a word.
+Let us say that a word begins when a letter appears at the start of input
+or following a whitespace character. But OpenType has no way of expressing
+"start of input" (or end of input) in a contextual/chaining context, whereas
+Apple's state machines do.
 <P>
 Since Apple's glyph substitutions can delete glyphs a contextual glyph
 substitution table can create two character ligatures (one glyph is converted
