@@ -879,6 +879,7 @@ static void _CvtPsSplineSet(GrowBuf *gb, SplinePointList *spl[MmMax], int instan
 	if ( start==NULL || !init )
 	    splmoveto(gb,current,spl,instance_count,false,round,hdb);
 	else {
+	    if ( hdb!=NULL ) HintSetup(gb,hdb,spl[0]->first,round);
 	    for ( i=0; i<instance_count; ++i )
 		current[i] = start[2*i] = spl[i]->first->me;
 	    init = false;
