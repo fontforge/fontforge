@@ -95,7 +95,7 @@ struct problems {
 
 static int openpaths=1, pointstooclose=1/*, missing=0*/, doxnear=0, doynear=0;
 static int doynearstd=1, linestd=1, cpstd=1, cpodd=1, hintnopt=0, ptnearhint=0;
-static int hintwidth=0, direction=0, flippedrefs=1, bitmaps=0;
+static int hintwidth=0, direction=1, flippedrefs=1, bitmaps=0;
 static int cidblank=0, cidmultiple=1, advancewidth=0, vadvancewidth=0;
 static int irrelevantcp=1, missingglyph=0, missinglookuptag=0, DFLTscript=0;
 static int badsubs=1, toomanypoints=1, pointsmax = 1500;
