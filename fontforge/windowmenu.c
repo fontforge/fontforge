@@ -46,8 +46,8 @@ static void AddMI(GMenuItem *mi,GWindow gw,int changed, int top) {
 }
 
 /* Builds up a menu containing the titles of all the major windows */
-void WindowMenuBuild(GWindow base,struct gmenuitem *mi,GEvent *e) {
-    int i, cnt;
+void WindowMenuBuild(GWindow basew,struct gmenuitem *mi,GEvent *e, struct gmenuitem *base) {
+    int i, cnt, precnt;
     FontView *fv;
     CharView *cv;
     MetricsView *mv;
@@ -61,7 +61,11 @@ void WindowMenuBuild(GWindow base,struct gmenuitem *mi,GEvent *e) {
 	mi->sub = NULL;
     }
 
-    cnt = 0;
+    precnt = 0;
+    for ( sub = base; sub->ti.text!=NULL || sub->ti.line; ++sub )
+	++precnt;
+    cnt = precnt;
+
     for ( fv = fv_list; fv!=NULL; fv = fv->next ) {
 	++cnt;		/* for the font */
 	for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL ) {
@@ -82,7 +86,14 @@ void WindowMenuBuild(GWindow base,struct gmenuitem *mi,GEvent *e) {
 return;
     }
     sub = gcalloc(cnt+1,sizeof(GMenuItem));
-    cnt = 0;
+    memcpy(sub,base,precnt*sizeof(struct gmenuitem));
+    for ( i=0; sub[i].ti.text!=NULL || sub[i].ti.line; ++i ) {
+	if ( sub[i].ti.text_in_resource )
+	    sub[i].ti.text = u_copy(GStringGetResource((intpt) sub[i].ti.text,NULL));
+	else
+	    sub[i].ti.text = u_copy(sub[i].ti.text);
+    }
+    cnt = precnt;
     for ( fv = fv_list; fv!=NULL; fv = fv->next ) {
 	AddMI(&sub[cnt++],fv->gw,fv->sf->changed,true);
 	for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL ) {

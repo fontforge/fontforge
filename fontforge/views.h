@@ -827,7 +827,7 @@ extern void MenuIndex(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuAbout(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuLicense(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuNew(GWindow gw,struct gmenuitem *mi,GEvent *e);
-extern void WindowMenuBuild(GWindow base,struct gmenuitem *mi,GEvent *);
+extern void WindowMenuBuild(GWindow base,struct gmenuitem *mi,GEvent *,struct gmenuitem *);
 extern void MenuRecentBuild(GWindow base,struct gmenuitem *mi,GEvent *);
 extern void MenuScriptsBuild(GWindow base,struct gmenuitem *mi,GEvent *);
 extern int RecentFilesAny(void);
