@@ -617,14 +617,14 @@ return( true );
       case ec_cut:
 	GTextFieldGrabSelection(gt,sn_clipboard);
 	GTextField_Replace(gt,nullstr);
-return( true );
+      break;
       case ec_copy:
 	GTextFieldGrabSelection(gt,sn_clipboard);
 return( true );
       case ec_paste:
 	GTextFieldPaste(gt,sn_clipboard);
 	GTextField_Show(gt,gt->sel_start);
-return( true );
+      break;
       case ec_undo:
 	if ( gt->oldtext!=NULL ) {
 	    unichar_t *temp = gt->text;
@@ -636,7 +636,7 @@ return( true );
 	    GTextFieldRefigureLines(gt, 0);
 	    GTextField_Show(gt,gt->sel_end);
 	}
-return( true );
+      break;
       case ec_redo:		/* Hmm. not sure */ /* we don't do anything */
 return( true );			/* but probably best to return success */
       case ec_backword:
@@ -649,14 +649,17 @@ return( true );			/* but probably best to return success */
 		gt->sel_start = GTextFieldSelBackword(gt->text,gt->sel_start);
 	}
 	GTextField_Replace(gt,nullstr);
-return( true );
+      break;
       case ec_deleteword:
         if ( gt->sel_start==gt->sel_end && gt->sel_start!=0 )
 	    GTextFieldSelectWord(gt,gt->sel_start,&gt->sel_start,&gt->sel_end);
 	GTextField_Replace(gt,nullstr);
-return( true );
-    }
+      break;
+      default:
 return( false );
+    }
+    GTextFieldChanged(gt,false);
+return( true );
 }
 
 static int _gtextfield_editcmd(GGadget *g,enum editor_commands cmd) {
@@ -1598,6 +1601,7 @@ return( true );
 		GTextFieldPaste(gt,sn_primary);
 	    if ( gt->sel_start==gt->sel_end )
 		GTextField_Show(gt,gt->sel_start);
+	    GTextFieldChanged(gt,false);
 	    if ( gt->sel_start<gt->sel_end && _GDraw_InsCharHook!=NULL && !gt->donthook )
 		(_GDraw_InsCharHook)(GDrawGetDisplayOfWindow(gt->g.base),
 			gt->text[gt->sel_start]);

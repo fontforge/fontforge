@@ -1,88 +1,81 @@
 prefix = @prefix@
 exec_prefix = @exec_prefix@
 
-sharedir = @prefix@/share/fontforge
-srcdir = @srcdir@
-top_srcdir = @top_srcdir@
-top_builddir = ..
-VPATH = @srcdir@
 bindir = @bindir@
 libdir = @libdir@
+mandir = @mandir@
+includedir = @includedir@
+sharedir = $(prefix)/share/fontforge
+
+srcdir = @srcdir@
+top_builddir = .
 
 LIBTOOL = @LIBTOOL@
-CC = @CC@
+INSTALL = @INSTALL@
 
-X_CFLAGS = @X_CFLAGS@
-X_LIBS = @X_LIBS@
-X_11LIB = @X_11LIB@
-X_EXTRA_LIBS = @X_EXTRA_LIBS@
-X_PRE_LIBS = @X_PRE_LIBS@
-STATIC_LIBS = @STATIC_LIBS@
+all: fontforge
 
-fontforge_OBJECTS =  autohint.o autosave.o autowidth.o bitmapdlg.o \
- bitmapview.o bvedit.o charview.o charviewicons.o cursors.o \
- cvaddpoints.o cvexport.o cvgetinfo.o cvhints.o cvimages.o cvknife.o \
- cvpalettes.o cvpointer.o cvruler.o cvshapes.o cvstroke.o cvtranstools.o \
- cvundoes.o dumpbdf.o dumppfa.o fontinfo.o fontview.o fvcomposit.o \
- fvfonts.o fvimportbdf.o fvmetrics.o images.o metricsview.o \
- parsepfa.o parsettf.o prefs.o psread.o psunicodenames.o savefontdlg.o \
- sfd.o splashimage.o splinefill.o splineoverlap.o splinesave.o \
- splinesaveafm.o splinestroke.o splineutil.o splineutil2.o stamp.o \
- start.o tottf.o transform.o uiutil.o utils.o windowmenu.o  \
- zapfnomen.o othersubrs.o autotrace.o openfontdlg.o encoding.o print.o \
- problems.o pfaedit-ui.o metafont.o alignment.o parsettfbmf.o \
- macbinary.o crctab.o scripting.o freetype.o gotodlg.o search.o \
- combinations.o tilepath.o sftextfield.o displayfonts.o ikarus.o \
- cvhand.o cvfreehand.o simplifydlg.o winfonts.o tottfgpos.o tottfaat.o \
- charinfo.o splineorder2.o genttfinstrs.o ttfinstrs.o cvgridfit.o \
- cvdebug.o showatt.o kernclass.o nonlineartrans.o effects.o \
- histograms.o ttfspecial.o svg.o parsettfatt.o contextchain.o \
- macenc.o statemachine.o typofeatures.o splinerefigure.o mm.o \
- parsettfvar.o tottfvar.o pua.o
-DIFFOBJS = sfddiff.o sfd.o diffstubs.o stamp.o
-ACORNOBJS = acorn2sfd.o sfd.o diffstubs.o psunicodenames.o stamp.o
+libs: libgunicode libgdraw
 
-_CFLAGS = -I$(top_srcdir)/inc -I$(srcdir) -I. @WFLAGS@ $(X_CFLAGS) \
-    @DEFS@ '-DSHAREDIR="$(sharedir)"' -DLIBDIR='"$(libdir)"'
-CFLAGS = @CFLAGS@ @CPPFLAGS@ $(_CFLAGS)
+fontforge: libgunicode libgdraw
+	( cd fontforge ; $(MAKE) )
 
-LIBS = -rpath $(libdir) $(X_LIBS) ../libgdraw.la ../libgunicode.la \
-    $(X_PRE_LIBS) $(X_11LIB) $(X_EXTRA_LIBS) @LIBS@ $(STATIC_LIBS) -L/usr/lib -lm
-DLIBS = -rpath $(libdir) ../libgunicode.la @LIBS@ -lm
+libgunicode:
+	( cd Unicode ; $(MAKE) )
 
-all: pfaedit-en.ui fontforge sfddiff
-
-fontforge: nomen.h $(fontforge_OBJECTS)
-	$(LIBTOOL) $(CC) -o fontforge $(fontforge_OBJECTS) $(LIBS)
-
-sfddiff: $(DIFFOBJS)
-	$(LIBTOOL) $(CC) -o sfddiff $(DIFFOBJS) $(DLIBS)
-
-acorn2sfd: $(ACORNOBJS)
-	$(LIBTOOL) $(CC) -o acorn2sfd $(ACORNOBJS) $(DLIBS)
-
-# The slight error introduced occasionally by optimization turns out to have
-# disasterous effects. This file may not be compiled with the optimizer.
-splinerefigure.o: splinerefigure.c
-	$(CC) -g -c -o splinerefigure.o $(_CFLAGS) splinerefigure.c
-
-#this makes all the .ui files but wildcarding doesn't work too well if the
-# files don't exist.
-nomen.h pfaedit-ui.c pfaedit-en.ui: $(srcdir)/nomen-*.c makenomenh.c
-	$(LIBTOOL) $(CC) -o makenomenh $(CFLAGS) $(srcdir)/makenomenh.c $(LIBS)
-	-ln -s $(srcdir)/nomen-*.c .
-	./makenomenh
-	mv pfaedit-ui-en.c pfaedit-ui.c
+libgdraw:
+	( cd gdraw ; $(MAKE) )
 
 clean:
-	-rm -f *.o fontforge *.ui nomen.h pfaedit-ui.c makenomenh _nomen-*.c sfddiff
+	( cd fontforge ; $(MAKE) clean )
+	( cd Unicode ; $(MAKE) clean )
+	( cd gdraw ; $(MAKE) clean )
 	-rm -rf .libs
 
-distclean cleaner: clean
-	-rm -f Makefile
-	-for i in nomen-*.c; do \
-	  test -L $$i && rm $$i; \
-	done;
+distclean cleaner:
+	( cd fontforge ; $(MAKE) distclean )
+	( cd Unicode ; $(MAKE) distclean )
+	( cd gdraw ; $(MAKE) distclean )
+	-rm -rf .libs
+	-rm Makefile config.cache config.log config.status libtool
 
-install:
-	( cd .. ; make install )
+install_libs: libs
+# You may need to be root to do the install
+	mkdir -p $(libdir)
+	#-rm $(libdir)/libgdraw.so* $(libdir)/libgunicode.so.*
+	$(LIBTOOL) $(INSTALL) -c libgdraw.la $(libdir)/libgdraw.la
+	$(LIBTOOL) $(INSTALL) -c libgunicode.la $(libdir)/libgunicode.la
+	#cp .libs/*.so.*.* $(libdir)
+	$(LIBTOOL) --finish $(libdir)
+	mkdir -p $(libdir)/pkgconfig
+	$(LIBTOOL) $(INSTALL) -c fontforge.pc $(libdir)/pkgconfig
+
+install: $(sharedir) all install_libs
+# You may need to be root to do the install
+	mkdir -p $(bindir)
+	mkdir -p $(mandir)/man1
+	mkdir -p $(sharedir)
+	$(LIBTOOL) $(INSTALL) -c fontforge/fontforge $(bindir)
+	$(LIBTOOL) $(INSTALL) -c fontforge/sfddiff $(bindir)
+	-rm -f $(bindir)/pfaedit
+	(cd $(bindir) ; ln -s fontforge pfaedit)
+	cp fontforge/pfaedit-*.ui $(sharedir)
+#The next line will fail for most installs. If you have downloaded the cidmaps
+# this will install them. If you haven't it won't. You only need the cidmaps
+# if you are editing CID keyed files (and even then you can live without them
+	-cp $(srcdir)/cidmap/*.cidmap $(sharedir) >/dev/null 2>&1
+	cp $(srcdir)/fontforge/fontforge.1 $(mandir)/man1
+	cp $(srcdir)/fontforge/sfddiff.1 $(mandir)/man1
+
+uninstall:
+	-rm $(bindir)/fontforge
+	-rm $(bindir)/sfddiff
+	-rm $(sharedir)/pfaedit-*.ui
+	-rm $(mandir)/man1/fontforge.1
+	-rm $(mandir)/man1/sfddiff.1
+	-rm $(libdir)/libgdraw.so*
+	-rm $(libdir)/libgunicode.so*
+	-rm $(sharedir)/*.cidmap
+
+$(sharedir):
+	mkdir -p $(sharedir)

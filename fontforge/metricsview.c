@@ -1624,7 +1624,7 @@ static void MVUndo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     int i;
 
     if ( GGadgetActiveGadgetEditCmd(mv->gw,ec_undo) )
-	MVTextChanged(mv);
+	/* MVTextChanged(mv) */;
     else {
 	for ( i=mv->charcnt-1; i>=0; --i )
 	    if ( mv->perchar[i].selected )
@@ -1641,7 +1641,7 @@ static void MVRedo(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     int i;
 
     if ( GGadgetActiveGadgetEditCmd(mv->gw,ec_redo) )
-	MVTextChanged(mv);
+	/* MVTextChanged(mv) */;
     else {
 	for ( i=mv->charcnt-1; i>=0; --i )
 	    if ( mv->perchar[i].selected )
@@ -1661,7 +1661,7 @@ static void MVClear(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     extern int onlycopydisplayed;
 
     if ( GGadgetActiveGadgetEditCmd(mv->gw,ec_clear) )
-	MVTextChanged(mv);
+	/* MVTextChanged(mv) */;
     else {
 	for ( i=mv->charcnt-1; i>=0; --i )
 	    if ( mv->perchar[i].selected )
@@ -1705,7 +1705,7 @@ static void MVCut(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     int i;
 
     if ( GGadgetActiveGadgetEditCmd(mv->gw,ec_cut) )
-	MVTextChanged(mv);
+	/* MVTextChanged(mv) */;
     else {
 	for ( i=mv->charcnt-1; i>=0; --i )
 	    if ( mv->perchar[i].selected )
@@ -1722,7 +1722,7 @@ static void MVCopy(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     int i;
 
     if ( GGadgetActiveGadgetEditCmd(mv->gw,ec_copy) )
-	MVTextChanged(mv);
+	/* MVTextChanged(mv) */;
     else {
 	for ( i=mv->charcnt-1; i>=0; --i )
 	    if ( mv->perchar[i].selected )
@@ -1789,7 +1789,7 @@ static void MVPaste(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     int i;
 
     if ( GGadgetActiveGadgetEditCmd(mv->gw,ec_paste) )
-	MVTextChanged(mv);
+	/*MVTextChanged(mv)*/;		/* Should get an event now */
     else {
 	for ( i=mv->charcnt-1; i>=0; --i )
 	    if ( mv->perchar[i].selected )
