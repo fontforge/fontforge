@@ -801,7 +801,6 @@ static struct feature *aat_dumpmorx_glyphforms(struct alltabs *at, SplineFont *s
 	}
 	glyphs[gcnt] = NULL;
 	if ( gcnt!=0 && (cur = featureFromTag(CHR('i','s','o','l')))!=NULL ) {
-	    cur = chunkalloc(sizeof(struct feature));
 	    cur->r2l = sc->script==CHR('a','r','a','b') || sc->script==CHR('h','e','b','r');
 	    cur->next = features;
 	    features = cur;
