@@ -1686,7 +1686,7 @@ static SplineChar *DuplicateNameReference(SplineFont *sf,char **encoding,int enc
 	    if ( i!=encindex && strcmp(encoding[i],".notdef")==0 )
 	break;
 
-    if ( i<encindex )
+    if ( i<encindex && sf->chars[i]!=NULL )
 	sc = MakeDupRef(sf->chars[i],encindex,-1);
 return( sc );
 }
