@@ -5310,7 +5310,7 @@ static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 	  case MID_Stroke:
 	    mi->ti.disabled = ( *cv->heads[cv->drawmode]==NULL || order2 );
 	  break;
-	  case MID_RmOverlap:
+	  case MID_RmOverlap: case MID_Effects:
 	    mi->ti.disabled = ( *cv->heads[cv->drawmode]==NULL || order2 );
 	  break;
 #ifdef PFAEDIT_CONFIG_TILEPATH

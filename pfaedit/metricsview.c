@@ -2775,16 +2775,8 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_Transform:
 	    mi->ti.disabled = sc==NULL;
 	  break;
-	  case MID_RmOverlap:
+	  case MID_RmOverlap: case MID_Effects:
 	    mi->ti.disabled = sc==NULL || mv->fv->sf->onlybitmaps || order2;
-#if 0
-	    if ( !mi->ti.disabled ) {
-		if ( e==NULL || !(e->u.mouse.state&ksm_shift) )
-		    mi->ti.text = u_copy(GStringGetResource(_STR_Rmoverlap,NULL));
-		else
-		    mi->ti.text = u_copy(GStringGetResource(_STR_FindIntersections,NULL));
-	    }
-#endif
 	  break;
 	  case MID_Stroke:
 	    mi->ti.disabled = sc==NULL || mv->fv->sf->onlybitmaps || order2;

@@ -2535,9 +2535,6 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_FindProblems:
 	    mi->ti.disabled = anychars==-1;
 	  break;
-	  case MID_MetaFont: case MID_Effects:
-	    mi->ti.disabled = anychars==-1;
-	  break;
 	  case MID_Transform: case MID_NLTransform:
 	    mi->ti.disabled = anychars==-1;
 	    /* some Transformations make sense on bitmaps now */
@@ -2547,31 +2544,9 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  break;
 	  case MID_Simplify:
 	    mi->ti.disabled = anychars==-1 || fv->sf->onlybitmaps;
-#if 0
-	    free(mi->ti.text);
-	    if ( e==NULL || !(e->u.mouse.state&ksm_shift) ) {
-		mi->ti.text = u_copy(GStringGetResource(_STR_Simplify,NULL));
-		mi->short_mask = ksm_control|ksm_shift;
-		mi->invoke = FVMenuSimplify;
-	    } else {
-		mi->ti.text = u_copy(GStringGetResource(_STR_SimplifyMore,NULL));
-		mi->short_mask = (ksm_control|ksm_meta|ksm_shift);
-		mi->invoke = FVMenuSimplifyMore;
-	    }
-#endif
 	  break;
-	  case MID_RmOverlap:
-	    mi->ti.disabled = anychars==-1 || fv->sf->onlybitmaps || order2;
-#if 0
-	    if ( !mi->ti.disabled ) {
-		if ( e==NULL || !(e->u.mouse.state&ksm_shift) )
-		    mi->ti.text = u_copy(GStringGetResource(_STR_Rmoverlap,NULL));
-		else
-		    mi->ti.text = u_copy(GStringGetResource(_STR_FindIntersections,NULL));
-	    }
-#endif
-	  break;
-	  case MID_Stroke:
+	  case MID_MetaFont: case MID_Stroke:
+	  case MID_RmOverlap: case MID_Effects:
 	    mi->ti.disabled = anychars==-1 || fv->sf->onlybitmaps || order2;
 	  break;
 	  case MID_Round: case MID_Correct:
