@@ -34,11 +34,11 @@
 static int lastplane=1;		/* SMP, Supplementary Multilingual Plane */
 
 struct gfi_data {
-    int done;
     SplineFont *sf;
     GWindow gw;
     int private_aspect, ttfv_aspect, panose_aspect, tn_aspect;
     int old_sel, old_aspect, old_lang, old_strid;
+    int oldcnt;
     int ttf_set, names_set;
     struct psdict *private;
     struct ttflangname *names;
@@ -1728,10 +1728,37 @@ static int GFI_GuessItalic(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static void GFI_Close(struct gfi_data *d) {
+    FontView *fvs;
+    SplineFont *sf = d->sf;
+    int i;
+
+    PSDictFree(d->private);
+    for ( i=0; i<ttf_namemax; ++i )
+	free(d->def.names[i]);
+    TTFLangNamesFree(d->names);
+
+    if ( d->oldcnt!=sf->charcnt && sf->fv!=NULL && sf->fv->sf==sf ) {
+	FontView *fvs;
+	for ( fvs=sf->fv; fvs!=NULL; fvs = fvs->nextsame ) {
+	    free(fvs->selected);
+	    fvs->selected = gcalloc(sf->charcnt,sizeof(char));
+	}
+    }
+
+    GDrawDestroyWindow(d->gw);
+    for ( fvs = d->sf->fv; fvs!=NULL; fvs = fvs->nextsame ) {
+	GDrawRequestExpose(sf->fv->v,NULL,false);
+	if ( fvs->fontinfo == d )
+	    fvs->fontinfo = NULL;
+    }
+    free(d);
+}
+
 static int GFI_Cancel(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
-	d->done = true;
+	GFI_Close(d);
     }
 return( true );
 }
@@ -2600,7 +2627,6 @@ return(true);
 	sf->changed = true;
 	sf->changed_since_autosave = true;
 	sf->changed_since_xuidchanged = !xuidchanged;
-	d->done = true;
 	/* Just in case they changed the blue values and we are showing blues */
 	/*  in outline views... */
 	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
@@ -2610,6 +2636,7 @@ return(true);
 		GDrawRequestExpose(cv->v,NULL,false);
 	    }
 	}
+	GFI_Close(d);
     }
 return( true );
 }
@@ -2735,14 +2762,19 @@ return( true );
 static int e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
 	struct gfi_data *d = GDrawGetUserData(gw);
-	d->done = true;
+	GFI_Close(d);
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
 	    help("fontinfo.html");
 return( true );
 	}
 return( false );
-    }
+    } else if ( event->u.chr.keysym=='s' &&
+	    (event->u.chr.state&ksm_control) &&
+	    (event->u.chr.state&ksm_meta) )
+	MenuSaveAll(NULL,NULL,NULL);
+    else if ( event->u.chr.keysym=='q' && (event->u.chr.state&ksm_control)) 
+	MenuExit(NULL,NULL,NULL);
 return( true );
 }
 
@@ -2753,30 +2785,45 @@ void FontInfo(SplineFont *sf) {
     GTabInfo aspects[9];
     GGadgetCreateData mgcd[10], ngcd[13], egcd[12], psgcd[22], tngcd[7],   pgcd[8], vgcd[15], pangcd[22], comgcd[3];
     GTextInfo mlabel[10], nlabel[13], elabel[12], pslabel[22], tnlabel[7], plabel[8], vlabel[15], panlabel[22], comlabel[3], *list;
-    struct gfi_data d;
+    struct gfi_data *d;
     char iabuf[20], upbuf[20], uwbuf[20], asbuf[20], dsbuf[20], ncbuf[20],
 	    vbuf[20], uibuf[12], regbuf[100], vorig[20], embuf[20];
     int i;
-    int oldcnt = sf->charcnt;
     Encoding *item;
+    FontView *fvs;
+    unichar_t title[130];
+
+    for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
+	if ( fvs->fontinfo ) {
+	    GDrawSetVisible(((struct gfi_data *) (fvs->fontinfo))->gw,true);
+	    GDrawRaise( ((struct gfi_data *) (fvs->fontinfo))->gw );
+return;
+	}
+    }
+
+    d = gcalloc(1,sizeof(struct gfi_data));
+    if ( sf->fv!=NULL )
+	sf->fv->fontinfo = d;
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg/*|wam_restrict*/;
     wattrs.event_masks = ~(1<<et_charup);
-    wattrs.restrict_input_to_me = 1;
+    wattrs.is_dlg = true;
+    /*wattrs.restrict_input_to_me = 1;*/
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.window_title = GStringGetResource(_STR_Fontinformation,NULL);
+    u_snprintf(title,sizeof(title)/sizeof(title[0]),GStringGetResource(_STR_Fontinformation,NULL), sf->fontname);
+    wattrs.window_title = title;
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,GGadgetScale(268));
     pos.height = GDrawPointsToPixels(NULL,355);
-    gw = GDrawCreateTopWindow(NULL,&pos,e_h,&d,&wattrs);
+    gw = GDrawCreateTopWindow(NULL,&pos,e_h,d,&wattrs);
 
-    memset(&d,'\0',sizeof(d));
-    d.sf = sf;
-    d.gw = gw;
-    d.old_sel = -2;
-    d.uplane = lastplane;
+    d->sf = sf;
+    d->gw = gw;
+    d->old_sel = -2;
+    d->uplane = lastplane;
+    d->oldcnt = sf->charcnt;
 
     memset(&nlabel,0,sizeof(nlabel));
     memset(&ngcd,0,sizeof(ngcd));
@@ -2815,7 +2862,7 @@ void FontInfo(SplineFont *sf) {
     ngcd[11].gd.handle_controlevent = GFI_FamilyChange;
     ngcd[11].creator = GTextFieldCreate;
     if ( sf->familyname==NULL || strstr(sf->familyname,"Untitled")==sf->familyname )
-	d.family_untitled = true;
+	d->family_untitled = true;
 
     ngcd[4].gd.pos.x = 12; ngcd[4].gd.pos.y = ngcd[11].gd.pos.y+26+6;
     nlabel[4].text = (unichar_t *) _STR_Humanname;
@@ -2834,7 +2881,7 @@ void FontInfo(SplineFont *sf) {
     ngcd[5].gd.handle_controlevent = GFI_HumanChange;
     ngcd[5].creator = GTextFieldCreate;
     if ( sf->fullname==NULL || strstr(sf->fullname,"Untitled")==sf->fullname )
-	d.human_untitled = true;
+	d->human_untitled = true;
 
     nlabel[2].text = (unichar_t *) _STR_Weight;
     nlabel[2].text_in_resource = true;
@@ -2914,7 +2961,7 @@ void FontInfo(SplineFont *sf) {
 	if ( sf->encoding_name>=em_unicodeplanes && sf->encoding_name<=em_unicodeplanesmax &&
 		(void *) em_unicodeplanes==list[i].userdata ) {
 	    list[i].selected = true;
-	    d.uplane = sf->encoding_name-em_unicodeplanes;
+	    d->uplane = sf->encoding_name-em_unicodeplanes;
 	} else if ( (void *) (sf->encoding_name)==list[i].userdata &&
 		list[i].text!=NULL )
 	    list[i].selected = true;
@@ -3611,7 +3658,7 @@ void FontInfo(SplineFont *sf) {
 
     aspects[i].text = (unichar_t *) _STR_Names;
     aspects[i].selected = true;
-    d.old_aspect = 0;
+    d->old_aspect = 0;
     aspects[i].text_in_resource = true;
     aspects[i++].gcd = ngcd;
 
@@ -3623,22 +3670,22 @@ void FontInfo(SplineFont *sf) {
     aspects[i].text_in_resource = true;
     aspects[i++].gcd = psgcd;
 
-    d.private_aspect = i;
+    d->private_aspect = i;
     aspects[i].text = (unichar_t *) _STR_PSPrivate;
     aspects[i].text_in_resource = true;
     aspects[i++].gcd = pgcd;
 
-    d.ttfv_aspect = i;
+    d->ttfv_aspect = i;
     aspects[i].text = (unichar_t *) _STR_TTFValues;
     aspects[i].text_in_resource = true;
     aspects[i++].gcd = vgcd;
 
-    d.tn_aspect = i;
+    d->tn_aspect = i;
     aspects[i].text = (unichar_t *) _STR_TTFNames;
     aspects[i].text_in_resource = true;
     aspects[i++].gcd = tngcd;
 
-    d.panose_aspect = i;
+    d->panose_aspect = i;
     aspects[i].text = (unichar_t *) _STR_Panose;
     aspects[i].text_in_resource = true;
     aspects[i++].gcd = pangcd;
@@ -3696,31 +3743,18 @@ void FontInfo(SplineFont *sf) {
 		GDrawPointsToPixels(NULL,mgcd[3].gd.pos.height)+offset);
     }
     GWidgetIndicateFocusGadget(ngcd[1].ret);
-    ProcessListSel(&d);
+    ProcessListSel(d);
     /*GTextFieldSelect(gcd[1].ret,0,-1);*/
 
     GWidgetHidePalettes();
     GDrawSetVisible(gw,true);
-    while ( !d.done )
-	GDrawProcessOneEvent(NULL);
-    GDrawDestroyWindow(gw);
-
-    PSDictFree(d.private);
-    for ( i=0; i<ttf_namemax; ++i )
-	free(d.def.names[i]);
-    TTFLangNamesFree(d.names);
-
-    if ( oldcnt!=sf->charcnt && sf->fv!=NULL && sf->fv->sf==sf ) {
-	FontView *fvs;
-	for ( fvs=sf->fv; fvs!=NULL; fvs = fvs->nextsame ) {
-	    free(fvs->selected);
-	    fvs->selected = gcalloc(sf->charcnt,sizeof(char));
-	}
-    }
-    if ( sf->fv!=NULL && sf->fv->v!=NULL )
-	GDrawRequestExpose(sf->fv->v,NULL,false);
 }
 
 void FontMenuFontInfo(void *_fv) {
     FontInfo( ((FontView *) _fv)->sf);
+}
+
+void FontInfoDestroy(FontView *fv) {
+    if ( fv->fontinfo )
+	GFI_Close( (struct gfi_data *) (fv->fontinfo) );
 }

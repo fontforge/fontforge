@@ -132,6 +132,7 @@ typedef struct charview {
     unsigned int widthsel:1;
     unsigned int vwidthsel:1;
     unsigned int inactive:1;			/* When in a search view */
+    unsigned int expand_width:1;
     SplinePointList **heads[dm_max];
     Undoes **uheads[dm_max];
     Undoes **rheads[dm_max];
@@ -302,6 +303,7 @@ typedef struct fontview {
     struct searchview *sv;
     GIC *gic;
     GTimer *resize;
+    void *fontinfo;
 } FontView;
 
 typedef struct findsel {
@@ -402,6 +404,7 @@ extern int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype,
 	int fmflags,int res, char *subfontdirectory,struct sflist *sfs);
 extern int SFGenerateFont(SplineFont *sf,int family);
 extern void FontInfo(SplineFont *sf);
+extern void FontInfoDestroy(FontView *fv);
 extern void FontMenuFontInfo(void *fv);
 extern void LoadEncodingFile(void);
 extern struct enc *MakeEncoding(SplineFont *sf);

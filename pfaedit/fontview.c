@@ -436,6 +436,8 @@ return(false);
 	mnext = mv->next;
 	GDrawDestroyWindow(mv->gw);
     }
+    if ( fv->fontinfo!=NULL )
+	FontInfoDestroy(fv);
     SVDetachFV(fv);
     if ( sf->filename!=NULL )
 	RecentFilesRemember(sf->filename);
@@ -533,10 +535,14 @@ return;
     }
     GDrawSync(NULL);
     GDrawProcessPendingEvents(NULL);
-    for ( mv=fv->metrics; mv!=NULL; mv = mvnext ) {
-	/* Don't bother trying to fix up metrics views, just not worth it */
-	mvnext = mv->next;
-	GDrawDestroyWindow(mv->gw);
+    for ( fvs=fv->sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
+	for ( mv=fvs->metrics; mv!=NULL; mv = mvnext ) {
+	    /* Don't bother trying to fix up metrics views, just not worth it */
+	    mvnext = mv->next;
+	    GDrawDestroyWindow(mv->gw);
+	}
+	if ( fvs->fontinfo )
+	    FontInfoDestroy(fvs);
     }
     GDrawSync(NULL);
     GDrawProcessPendingEvents(NULL);
@@ -1841,6 +1847,10 @@ static void FVMenuCompact(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     FontView *fvs;
     int fv_reformat;
+
+    for ( fvs=fv->sf->fv; fvs!=NULL; fvs = fvs->nextsame )
+	if ( fvs->fontinfo )
+	    FontInfoDestroy(fvs->fontinfo);
 
     if ( mi->mid==MID_CompactedView )
 	fv_reformat = SFCompactFont(fv->sf);
