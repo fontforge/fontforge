@@ -1,0 +1,27 @@
+
+I appologize for the roughness of this process, this is all new stuff and it's
+not completely finished.
+
+BUILDING
+    First you must download and build pfaedit (or at least libg{draw,unicode})
+	http://pfaedit.sourceforge.net/
+    Then you should download, build and install libfreetype
+	http://freetype.sourceforge.net/
+    Then download the ttfmod_src package and put it in the same directory
+     whence you gunziped the libraries, gunzip it, then:
+	$ cd pfaedit/ttfmod
+	$ make
+
+INSTALLING
+    Er, I'm not really sure of the best way to do this. If you su root (or
+    	anyone else with write access to /usr/) and type
+	$ cp ttfmod /usr/bin/
+	$ mkdir -p /usr/share/ttfmod
+	$ cp *.ui /usr/share/ttfmod/
+
+Please report any bugs to
+	gww@silcom.com
+
+Documentation is at:
+	http://pfaedit.sourceforge.net/TtfMod/index.html
+(not that there's much of it)
