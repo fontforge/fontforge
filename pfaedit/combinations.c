@@ -1042,7 +1042,7 @@ return;
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.window_title = GStringGetResource(_STR_KernPairs,NULL);
+    wattrs.window_title = GStringGetResource(ac==NULL?_STR_KernPairs:_STR_AnchoredPairs,NULL);
     wattrs.is_dlg = true;
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(200);
