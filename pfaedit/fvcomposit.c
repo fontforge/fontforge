@@ -815,10 +815,15 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
 	ach = ch;
     rsc = findchar(sf,ach);
     SplineCharFindSlantedBounds(rsc,&rbb,ia);
-    if ( ch==0x328 || ch==0x327 )
+    if ( ch==0x328 || ch==0x327 ) {
 	SCFindTopBounds(rsc,&rbb,ia);
-    else if ( ch==0x309 )
+	/* should do more than touch, should overlap a tiny bit... */
+	rbb.maxy -= (rbb.maxy-rbb.miny)/30;
+    } else if ( ch==0x309 )
 	SCFindBottomBounds(rsc,&rbb,ia);
+    else if ( basech=='A' && ch==0x30a )
+	/* Again, a tiny bit of overlap is usual for Aring */
+	rbb.miny += (rbb.maxy-rbb.miny)/30;
     ybase = SplineCharFindSlantedBounds(sc,&bb,ia);
     if ( basech>=0x1f20 && basech<=0x1f27 && ch==0x345 ) {
 	bb.miny = 0;		/* ypogegrammeni rides below baseline, not below bottom stem */
@@ -858,6 +863,8 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
 	pos = ____RIGHT|____OVERSTRIKE;
     else if ( ch==0xb7 )
 	pos = ____OVERSTRIKE;
+    else if ( basech=='A' && ch==0x30a )	/* Aring usually touches */
+	pos = ____ABOVE|____TOUCHING;
     else if (( basech=='A' || basech=='a' || basech=='E' || basech=='u' ) &&
 	    ch == 0x328 )
 	pos = ____BELOW|____CENTERRIGHT|____TOUCHING;	/* ogonek off to the right for these in polish (but not lc e) */
