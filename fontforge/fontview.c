@@ -2069,7 +2069,7 @@ void FontViewMenu_Redo(GtkMenuItem *menuitem, gpointer user_data) {
 # endif
     int i,j,layer;
     MMSet *mm = fv->sf->mm;
-    int was_blended = mm->normal==fv->sf;
+    int was_blended = mm!=NULL && mm->normal==fv->sf;
 
     for ( i=0; i<fv->sf->charcnt; ++i )
 	if ( fv->selected[i] && fv->sf->chars[i]!=NULL ) {
