@@ -216,6 +216,16 @@ void FVDeselectAll(FontView *fv) {
     fv->sel_index = 0;
 }
 
+static void FVInvertSelection(FontView *fv) {
+    int i;
+
+    for ( i=0; i<fv->sf->charcnt; ++i ) {
+	fv->selected[i] = !fv->selected[i];
+	FVToggleCharSelected(fv,i);
+    }
+    fv->sel_index = 1;
+}
+
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void FVSelectAll(FontView *fv) {
     int i;
@@ -2093,6 +2103,17 @@ void FontViewMenu_SelectAll(GtkMenuItem *menuitem, gpointer user_data) {
 # endif
 
     FVSelectAll(fv);
+}
+
+# ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuInvertSelection(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_InvertSelection(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+
+    FVInvertSelection(fv);
 }
 
 # ifdef FONTFORGE_CONFIG_GDRAW
@@ -5407,6 +5428,7 @@ static GMenuItem sclist[] = {
 
 static GMenuItem sllist[] = {
     { { (unichar_t *) _STR_SelectAll, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'A' }, 'A', ksm_control, NULL, NULL, FVMenuSelectAll },
+    { { (unichar_t *) _STR_SelectInvert, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, GK_Escape, ksm_control, NULL, NULL, FVMenuInvertSelection },
     { { (unichar_t *) _STR_DeselectAll, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'o' }, GK_Escape, 0, NULL, NULL, FVMenuDeselectAll },
     { { (unichar_t *) _STR_SelectColor, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control, sclist },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
