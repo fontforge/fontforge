@@ -212,6 +212,22 @@ return( greekalts );
 return( greekalts );
 	    } else
 		/* unicode decomposition should work for lower case */;
+	} else if ( base==0x1fbc || base==0x1fcc || base==0x1ffc ) {
+	    greekalts[0] = *upt;
+	    greekalts[1] = 0x1fbe;	/* ypogegrammeni => prosgegammeni with upper case */
+	    greekalts[2] = 0;
+	    if ( haschar(sf,greekalts[1]))
+return( greekalts );
+	} else if ( base==0x1fbb || base==0x1fcb || base==0x1fdb ||
+		base==0x1feb || base==0x1ffb || base==0x1fc9 || base==0x1ff9) {
+	    /* unicode maps Alpha with oxia to alpha with tonos */
+	    greekalts[0] = base==0x1fbb?0x391:base==0x1fcb?0x397:
+		    base==0x1fdb?0x399:base==0x1feb?0x3a5:base==0x1ffb?0x3a9:
+		    base==0x1fc9?0x395:0x39f;
+	    greekalts[1] = 0x1ffd;
+	    greekalts[2] = 0;
+	    if ( haschar(sf,greekalts[1]))
+return( greekalts );
 	} else if ( base==0x1fd7 || base == 0x1fe7 ) {
 	    greekalts[0] = (base&0xfff0)==0x1fd0?0x03b9:0x03c5;
 	    greekalts[1] = 0x1fc1;
@@ -557,10 +573,11 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
     pos = ____utype2[1+ch];
     /* In greek, PSILI and friends are centered above lower case, and kern left*/
     /*  for upper case */
-    if ( basech>=0x390 && basech<=0x3ff) {
+    if (( basech>=0x390 && basech<=0x3ff) || (basech>=0x1f00 && basech<=0x1fff)) {
 	if ( isupper(basech) &&
 		(ch==0x313 || ch==0x314 || ch==0x301 || ch==0x300 || ch==0x30d ||
 		 ch==0x1ffe || ch==0x1fbf || ch==0x1fcf || ch==0x1fdf ||
+		 ch==0x1fbd || ch==0x1fbe || ch==0x1fef || ch==0x1ffd ||
 		 ch==0x1fcd || ch==0x1fdd || ch==0x1fce || ch==0x1fde ) )
 	    pos = ____ABOVE|____LEFT;
 	else if ( ch==0x1fcd || ch==0x1fdd || ch==0x1fce || ch==0x1fde ||
@@ -572,6 +589,9 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
 	pos = ____RIGHT|____OVERSTRIKE;
     else if ( ch==0xb7 )
 	pos = ____OVERSTRIKE;
+    if ( basech==0x391 && pos==(____ABOVE|____LEFT) ) {
+	bb.minx += (bb.maxx-bb.minx)/4;
+    }
 
     if ( (pos&____ABOVE) && (pos&(____LEFT|____RIGHT)) )
 	yoff = bb.maxy - rbb.maxy;
