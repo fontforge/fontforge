@@ -1135,13 +1135,15 @@ return( sf );
 
 SplineFont *SplineFontBlank(int encoding_name,int charcnt) {
     SplineFont *sf;
-    char buffer[80], *pt;
+    char buffer[200], *pt;
     struct passwd *pwd;
 
     sf = SplineFontEmpty();
     sf->fontname = GetNextUntitledName();
     sf->fullname = copy(sf->fontname);
     sf->familyname = copy(sf->fontname);
+    sprintf( buffer, "%s.sfd", sf->fontname);
+    sf->origname = copy(buffer);
     sf->weight = copy("Medium");
 /* Can all be commented out if no pwd routines */
     pwd = getpwuid(getuid());
