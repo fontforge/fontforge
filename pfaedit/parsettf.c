@@ -5884,6 +5884,19 @@ return( 0 );
 	    info->bitmapdata_start!=0 && info->bitmaploc_start!=0 )
 	info->onlystrikes = true;
 
+    if ( !info->onlystrikes &&
+	    info->glyphlocations_start!=0 && info->glyph_start!=0 &&
+	    info->cff_start!=0 ) {
+	static int buts[] = { _STR_TTFGlyf, _STR_OTFCFF, _STR_Cancel, 0 };
+	int choice = GWidgetAskR(_STR_PickFont,buts,0,2,_STR_GlyfAndCFF);
+	if ( choice==2 )
+return( 0 );
+	else if ( choice==0 )
+	    info->cff_start=0;
+	else
+	    info->glyph_start = info->glyphlocations_start = 0;
+    }
+
     if ( info->onlystrikes ) {
 	info->chars = gcalloc(info->glyph_cnt+1,sizeof(SplineChar *));
 	info->to_order2 = new_fonts_are_order2;

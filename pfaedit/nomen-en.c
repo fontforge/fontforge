@@ -2575,6 +2575,9 @@ static char *str_NoBitmapsInTTF = "No (useable) bitmap strikes in this TTF font:
 static char *str_NotInCollection = "Not in Collection";
 static char *str_FontNotInCollection = "%hs is not in %.100hs";
 static char *str_UntitledAnchor_n = "Anchor-%d";
+static char *str_TTFGlyf = "TTF 'glyf'";
+static char *str_OTFCFF = "OTF 'CFF '";
+static char *str_GlyfAndCFF = "This font contains both a TrueType 'glyf' table and an OpenType 'CFF ' table. PfaEdit can only deal with one at a time, please pick which one you want to use";
     /* sfd */
 static char *str_Saving = "Saving...";
 static char *str_SavingDb = "Saving Spline Font Database";
