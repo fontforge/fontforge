@@ -107,6 +107,7 @@ return( (real) ((val<<16)>>(16+14)) + (mant/16384.0) );
 
 static Encoding *enc_from_platspec(int platform,int specific) {
     char *enc;
+    Encoding *e;
 
     enc = "Custom";
     if ( platform==0 )
@@ -142,6 +143,8 @@ static Encoding *enc_from_platspec(int platform,int specific) {
 	    enc = "EUC-KR";
 	else if ( specific==6 )
 	    enc = "Johab";
+	else if ( specific==10 )
+	    enc = "UnicodeFull";
     } else if ( platform==7 ) {		/* Used internally in freetype, but */
 	if ( specific==0 )		/*  there's no harm in looking for it */
 	    enc = "AdobeStandard";	/*  even if it never happens */
@@ -150,7 +153,11 @@ static Encoding *enc_from_platspec(int platform,int specific) {
 	else if ( specific==2 )
 	    /* adobe_custom */;
     }
-return( FindOrMakeEncoding(enc) );
+    e = FindOrMakeEncoding(enc);
+    if ( e==NULL )
+	fprintf( stderr, "The truetype encoding specified by platform=%d specific=%d (which we map to %s) is not supported by your version of iconv(3).\n",
+		platform, specific, enc );
+return( e );
 }
 
 static unichar_t *_readencstring(FILE *ttf,int offset,int len,
@@ -3465,6 +3472,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
     uint8 *used;
     int badencwarned=false;
     int glyph_tot;
+    Encoding *temp;
 
     fseek(ttf,info->encoding_start,SEEK_SET);
     version = getushort(ttf);
@@ -3477,9 +3485,12 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	offset = getlong(ttf);
 	if ( SubtableIsntSupported(ttf,info->encoding_start+offset,platform,specific))
     continue;
-	interp = interp_from_encoding(enc_from_platspec(platform,specific),interp);
+	temp = enc_from_platspec(platform,specific);
+	if ( temp==NULL )	/* iconv doesn't support this. Some sun iconvs seem limited */
+    continue;
+	interp = interp_from_encoding(temp,interp);
 	if ( platform==3 && specific==10 ) { /* MS Unicode 4 byte */
-	    enc = FindOrMakeEncoding("UnicodeFull");
+	    enc = temp;
 	    encoff = offset;
 	    mod = 0;
 	    info->platform = platform; info->specific = specific;
@@ -3491,7 +3502,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 /*  but apple ships dfonts with specific==1 (Unicode 1.1 semantics) */
 /*  which is stupid of them */
 		( platform==0 /*&& (specific==0 || specific==3)*/ ))) {	/* Apple Unicode */
-	    enc = FindOrMakeEncoding("UnicodeBmp");
+	    enc = temp;
 	    encoff = offset;
 	    info->platform = platform; info->specific = specific;
 	    mod = 0;
@@ -3506,13 +3517,12 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 /* Mac platform specific encodings are script numbers. 0=>roman, 1=>jap, 2=>big5, 3=>korean, 4=>arab, 5=>hebrew, 6=>greek, 7=>cyrillic, ... 25=>simplified chinese */
 	} else if ( platform==1 && specific==0 && enc->is_custom ) {
 	    info->platform = platform; info->specific = specific;
-	    enc = FindOrMakeEncoding("Mac");
+	    enc = temp;
 	    encoff = offset;
 	} else if ( platform==1 && (specific==2 ||specific==1||specific==3||specific==25) &&
 		!enc->is_unicodefull &&
 		(prefer_cjk_encodings || !enc->is_unicodebmp) ) {
-	    enc = FindOrMakeEncoding(specific==1?"Sjis":specific==2?"Big5hkscs":
-		    specific==3?"EUC-KR":"EUC-CN");
+	    enc = temp;
 	    mod = specific==1?2:specific==2?4:specific==3?5:3;		/* convert to ms specific */
 	    info->platform = platform; info->specific = specific;
 	    encoff = offset;
@@ -3521,11 +3531,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 		(prefer_cjk_encodings || !enc->is_unicodebmp) ) {
 	    /* Old ms docs say that specific==3 => big 5, new docs say specific==4 => big5 */
 	    /*  Ain't that jus' great? */
-	    enc = FindOrMakeEncoding( specific==2? "SJis" :
-				      specific==3? "EUC-CN" :
-				      specific==4? "Big5hkscs" :
-				      specific==5? "EUC-KR" :
-					  "Johab");
+	    enc = temp;
 	    info->platform = platform; info->specific = specific;
 	    mod = specific;
 	    encoff = offset;
