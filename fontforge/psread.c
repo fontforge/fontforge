@@ -44,13 +44,43 @@ typedef struct entitychar {
 typedef struct _io {
     char *macro, *start;
     FILE *ps;
-    int backedup, cnt;
+    int backedup, cnt, isloop, isstopped;
     struct _io *prev;
 } _IO;
 
 typedef struct io {
     struct _io *top;
+    int endedstopped;
 } IO;
+
+struct pskeydict {
+    int16 cnt, max;
+    uint8 is_executable;
+    struct pskeyval *entries;
+};
+
+struct psstack {
+    enum pstype { ps_void, ps_num, ps_bool, ps_string, ps_instr, ps_lit,
+		  ps_mark, ps_array, ps_dict } type;
+    union vals {
+	real val;
+	int tf;
+	char *str;
+	struct pskeydict dict;		/* and for arrays too */
+    } u;
+};
+
+struct pskeyval {
+    enum pstype type;
+    union vals u;
+    char *key;
+};
+
+typedef struct retstack {
+    int max;
+    int cnt;
+    real *stack;
+} RetStack;
 
 typedef struct growbuf {
     char *pt;
@@ -84,6 +114,28 @@ static void AddTok(GrowBuf *gb,char *buf,int islit) {
     *gb->pt++ = ' ';
 }
 
+static struct pskeyval *lookup(struct pskeydict *dict,char *tokbuf) {
+    int i;
+
+    for ( i=0; i<dict->cnt; ++i )
+	if ( strcmp(dict->entries[i].key,tokbuf)==0 )
+return( &dict->entries[i] );
+
+return( NULL );
+}
+
+static void dictfree(struct pskeydict *dict) {
+    int i;
+
+    for ( i=0; i<dict->cnt; ++i ) {
+	if ( dict->entries[i].type==ps_string || dict->entries[i].type==ps_instr ||
+		dict->entries[i].type==ps_lit )
+	    free(dict->entries[i].u.str);
+	else if ( dict->entries[i].type==ps_array || dict->entries[i].type==ps_dict )
+	    dictfree(&dict->entries[i].u.dict);
+    }
+}
+
 /**************************** Postscript Importer *****************************/
 /* It's really dumb. It ignores almost everything except linetos and curvetos */
 /*  anything else, function calls, ... is thrown out, if this breaks a lineto */
@@ -100,19 +152,31 @@ enum pstoks { pt_eof=-1, pt_moveto, pt_rmoveto, pt_curveto, pt_rcurveto,
     pt_abs, pt_round, pt_ceiling, pt_floor, pt_truncate, pt_max, pt_min,
     pt_ne, pt_eq, pt_gt, pt_ge, pt_lt, pt_le, pt_and, pt_or, pt_xor, pt_not,
     pt_true, pt_false,
-    pt_if, pt_ifelse, pt_for,
+    pt_if, pt_ifelse, pt_for, pt_loop, pt_repeat, pt_exit,
+    pt_stopped, pt_stop,
     pt_def, pt_bind, pt_load,
     pt_setlinecap, pt_setlinejoin, pt_setlinewidth,
     pt_currentlinecap, pt_currentlinejoin, pt_currentlinewidth,
     pt_setgray, pt_currentgray, pt_sethsbcolor, pt_currenthsbcolor,
     pt_setrgbcolor, pt_currentrgbcolor, pt_setcmykcolor, pt_currentcmykcolor,
+    pt_currentpoint,
     pt_fill, pt_stroke,
 
     pt_transform, pt_itransform, pt_dtransform, pt_idtransform,
 
     /* things we sort of pretend to do, but actually do something wrong */
     pt_gsave, pt_grestore, pt_save, pt_restore, pt_currentmatrix, pt_setmatrix,
-    pt_setmiterlimit, pt_setdash,
+    pt_setdash, pt_null,
+
+    pt_currentflat, pt_setflat,
+    pt_currentglobal, pt_setglobal,
+    pt_currentmiterlimit, pt_setmiterlimit,
+    pt_currentobjectformat, pt_setobjectformat,
+    pt_currentoverprint, pt_setoverprint,
+    pt_currentpacking, pt_setpacking,
+    pt_currentshared,
+    pt_currentsmoothness, pt_setsmoothness,
+    pt_currentstrokeadjust, pt_setstrokeadjust,
 
     pt_mark, pt_counttomark, pt_cleartomark, pt_array, pt_aload, pt_astore,
     pt_print, pt_cvi, pt_cvlit, pt_cvn, pt_cvr, pt_cvrs, pt_cvs, pt_cvx, pt_stringop,
@@ -130,18 +194,30 @@ char *toknames[] = { "moveto", "rmoveto", "curveto", "rcurveto",
 	"abs", "round", "ceiling", "floor", "truncate", "max", "min",
 	"ne", "eq", "gt", "ge", "lt", "le", "and", "or", "xor", "not",
 	"true", "false", 
-	"if", "ifelse", "for",
+	"if", "ifelse", "for", "loop", "repeat", "exit",
+	"stopped", "stop",
 	"def", "bind", "load",
 	"setlinecap", "setlinejoin", "setlinewidth",
 	"currentlinecap", "currentlinejoin", "currentlinewidth",
 	"setgray", "currentgray", "sethsbcolor", "currenthsbcolor",
 	"setrgbcolor", "currentrgbcolor", "setcmykcolor", "currentcmykcolor",
+	"currentpoint",
 	"fill", "stroke",
 
 	"transform", "itransform", "dtransform", "idtransform",
 
 	"gsave", "grestore", "save", "restore", "currentmatrix", "setmatrix",
-	"setmiterlimit", "setdash",
+	"setdash", "null",
+
+	"currentflat", "setflat",
+	"currentglobal", "setglobal",
+	"currentmiterlimit", "setmiterlimit",
+	"currentobjectformat", "setobjectformat",
+	"currentoverprint", "setoverprint",
+	"currentpacking", "setpacking",
+	"currentshared",
+	"currentsmoothness", "setsmoothness",
+	"currentstrokeadjust", "setstrokeadjust",
 
 	"mark", "counttomark", "cleartomark", "array", "aload", "astore",
 	"print", "cvi", "cvlit", "cvn", "cvr", "cvrs", "cvs", "cvx", "string",
@@ -178,6 +254,8 @@ return( nextch(wrapper));
 	    }
 	}
 	wrapper->top = io->prev;
+	if ( io->isstopped )
+	    wrapper->endedstopped = true;
 	free(io->start);
 	free(io);
 	io = wrapper->top;
@@ -197,14 +275,76 @@ return;
 }
 
 static void pushio(IO *wrapper, FILE *ps, char *macro, int cnt) {
-    _IO *io = galloc(sizeof(_IO));
+    _IO *io = gcalloc(1,sizeof(_IO));
 
     io->prev = wrapper->top;
     io->ps = ps;
     io->macro = io->start = copy(macro);
     io->backedup = EOF;
-    io->cnt = cnt;
+    if ( cnt==-1 ) {
+	io->cnt = 1;
+	io->isstopped = true;
+    } else if ( cnt==0 ) {
+	io->cnt = 1;
+	io->isloop = false;
+    } else {
+	io->cnt = cnt;
+	io->isloop = true;
+    }
     wrapper->top = io;
+}
+
+static void ioescapeloop(IO *wrapper) {
+    _IO *io = wrapper->top, *iop;
+    int wasloop;
+
+    while ( io->prev!=NULL && !io->isstopped ) {
+	iop = io->prev;
+	wasloop = io->isloop;
+	free(io->start);
+	free(io);
+	if ( wasloop ) {
+	    wrapper->top = iop;
+return;
+	}
+	io = iop;
+    }
+
+    fprintf( stderr, "Use of \"exit\" when not in a loop\n" );
+    wrapper->top = io;
+}
+
+static int ioescapestopped(IO *wrapper, struct psstack *stack, int sp) {
+    _IO *io = wrapper->top, *iop;
+    int wasstopped;
+
+    while ( io->prev!=NULL ) {
+	iop = io->prev;
+	wasstopped = io->isstopped;
+	free(io->start);
+	free(io);
+	if ( wasstopped ) {
+	    wrapper->top = iop;
+	    if ( sp<sizeof(stack)/sizeof(stack[0]) ) {
+		stack[sp].type = ps_bool;
+		stack[sp++].u.tf = true;
+	    }
+return(sp);
+	}
+	io = iop;
+    }
+
+    fprintf( stderr, "Use of \"stop\" when not in a stopped\n" );
+    wrapper->top = io;
+return( sp );
+}
+
+static int endedstopped(IO *wrapper) {
+    if ( wrapper->endedstopped ) {
+	wrapper->endedstopped = false;
+return( true );
+    }
+return( false );
 }
 
 static int nextpstoken(IO *wrapper, real *val, char *tokbuf, int tbsize) {
@@ -353,8 +493,8 @@ void MatInverse(real into[6], real orig[6]) {
 	into[1] = -orig[1]/det;
 	into[2] = -orig[2]/det;
 	into[3] =  orig[0]/det;
-	into[4] = -orig[4];
-	into[5] = -orig[5];
+	into[4] = -orig[4]*into[0] - orig[5]*into[2];
+	into[5] = -orig[4]*into[1] - orig[5]*into[3];
     }
 }
 
@@ -365,35 +505,6 @@ static void ECCatagorizePoints( EntityChar *ec ) {
 	SPLCatagorizePoints( ent->u.splines.splines );
     }
 }
-
-struct pskeydict {
-    int16 cnt, max;
-    uint8 is_executable;
-    struct pskeyval *entries;
-};
-
-struct psstack {
-    enum pstype { ps_void, ps_num, ps_bool, ps_string, ps_instr, ps_lit,
-		  ps_mark, ps_array, ps_dict } type;
-    union vals {
-	real val;
-	int tf;
-	char *str;
-	struct pskeydict dict;		/* and for arrays too */
-    } u;
-};
-
-struct pskeyval {
-    enum pstype type;
-    union vals u;
-    char *key;
-};
-
-typedef struct retstack {
-    int max;
-    int cnt;
-    real *stack;
-} RetStack;
 
 static int AddEntry(struct pskeydict *dict,struct psstack *stack, int sp) {
     int i;
@@ -429,6 +540,23 @@ return(sp-2);
     dict->entries[i].type = stack[sp-1].type;
     dict->entries[i].u = stack[sp-1].u;
 return(sp-2);
+}
+
+static int forgetstack(struct psstack *stack, int forgets, int sp) {
+    /* forget the bottom most "forgets" entries on the stack */
+    /* we presume they are garbage that has accumulated because we */
+    /*  don't understand all of PS */
+    int i;
+    for ( i=0; i<forgets; ++i ) {
+	if ( stack[i].type==ps_string || stack[i].type==ps_instr ||
+		stack[i].type==ps_lit )
+	    free(stack[i].u.str);
+	else if ( stack[i].type==ps_array || stack[i].type==ps_dict )
+	    dictfree(&stack[i].u.dict);
+    }
+    for ( i=forgets; i<sp; ++i )
+	stack[i-forgets] = stack[i];
+return( sp-forgets );
 }
 
 static int rollstack(struct psstack *stack, int sp) {
@@ -511,28 +639,6 @@ static void circlearcsto(real a1, real a2, real cx, real cy, real r,
 	    last = a;
 	}
 	circlearcto(last,a2,cx,cy,r,cur,transform);
-    }
-}
-
-static struct pskeyval *lookup(struct pskeydict *dict,char *tokbuf) {
-    int i;
-
-    for ( i=0; i<dict->cnt; ++i )
-	if ( strcmp(dict->entries[i].key,tokbuf)==0 )
-return( &dict->entries[i] );
-
-return( NULL );
-}
-
-static void dictfree(struct pskeydict *dict) {
-    int i;
-
-    for ( i=0; i<dict->cnt; ++i ) {
-	if ( dict->entries[i].type==ps_string || dict->entries[i].type==ps_instr ||
-		dict->entries[i].type==ps_lit )
-	    free(dict->entries[i].u.str);
-	else if ( dict->entries[i].type==ps_array || dict->entries[i].type==ps_dict )
-	    dictfree(&dict->entries[i].u.dict);
     }
 }
 
@@ -762,8 +868,8 @@ static void InterpretPS(FILE *ps, char *psstr, EntityChar *ec, RetStack *rs) {
 
     oldloc = setlocale(LC_NUMERIC,"C");
 
-    wrapper.top = NULL;
-    pushio(&wrapper,ps,psstr,1);
+    memset(&wrapper,0,sizeof(wrapper));
+    pushio(&wrapper,ps,psstr,0);
 
     memset(&gb,'\0',sizeof(GrowBuf));
     memset(&dict,'\0',sizeof(dict));
@@ -774,6 +880,19 @@ static void InterpretPS(FILE *ps, char *psstr, EntityChar *ec, RetStack *rs) {
     current.x = current.y = 0;
 
     while ( (tok = nextpstoken(&wrapper,&dval,tokbuf,sizeof(tokbuf)))!=pt_eof ) {
+	if ( endedstopped(&wrapper)) {
+	    if ( sp<sizeof(stack)/sizeof(stack[0]) ) {
+		stack[sp].type = ps_bool;
+		stack[sp++].u.tf = false;
+	    }
+	}
+	if ( sp>sizeof(stack)/sizeof(stack[0])*4/5 ) {
+	    /* We don't interpret all of postscript */
+	    /* Sometimes we leave garbage on the stack that a real PS interp */
+	    /*  would have handled. If the stack gets too deep, clean out the */
+	    /*  oldest entries */
+	    sp = forgetstack(stack,sizeof(stack)/sizeof(stack[0])/3,sp );
+	}
 	if ( ccnt>0 ) {
 	    if ( tok==pt_closecurly )
 		--ccnt;
@@ -789,8 +908,10 @@ static void InterpretPS(FILE *ps, char *psstr, EntityChar *ec, RetStack *rs) {
 		}
 	    }
 	} else if ( tok==pt_unknown && (kv=lookup(&dict,tokbuf))!=NULL ) {
+	    if ( strcmp(tokbuf,"s")==0 )
+		printf( "s => %s\n", kv->u.str );
 	    if ( kv->type == ps_instr )
-		pushio(&wrapper,NULL,copy(kv->u.str),1);
+		pushio(&wrapper,NULL,copy(kv->u.str),0);
 	    else if ( sp<sizeof(stack)/sizeof(stack[0]) ) {
 		stack[sp].type = kv->type;
 		stack[sp++].u = kv->u;
@@ -1112,7 +1233,7 @@ printf( "-%s-\n", toknames[tok]);
 		if ( ((stack[sp-2].type == ps_bool && stack[sp-2].u.tf) ||
 			(stack[sp-2].type == ps_num && strstr(stack[sp-1].u.str,"setcachedevice")!=NULL)) &&
 			stack[sp-1].type==ps_instr )
-		    pushio(&wrapper,NULL,stack[sp-1].u.str,1);
+		    pushio(&wrapper,NULL,stack[sp-1].u.str,0);
 		if ( stack[sp-1].type==ps_string || stack[sp-1].type==ps_instr || stack[sp-1].type==ps_lit )
 		    free(stack[sp-1].u.str);
 		sp -= 2;
@@ -1122,7 +1243,7 @@ printf( "-%s-\n", toknames[tok]);
 		/* about, but the interp needs to learn the width of the char */
 		if ( strstr(stack[sp-1].u.str,"setcachedevice")!=NULL ||
 			strstr(stack[sp-1].u.str,"setcharwidth")!=NULL )
-		    pushio(&wrapper,NULL,stack[sp-1].u.str,1);
+		    pushio(&wrapper,NULL,stack[sp-1].u.str,0);
 		free(stack[sp-1].u.str);
 		sp = 0;
 	    }
@@ -1131,10 +1252,10 @@ printf( "-%s-\n", toknames[tok]);
 	    if ( sp>=3 ) {
 		if ( stack[sp-3].type == ps_bool && stack[sp-3].u.tf ) {
 		    if ( stack[sp-2].type==ps_instr )
-			pushio(&wrapper,NULL,stack[sp-2].u.str,1);
+			pushio(&wrapper,NULL,stack[sp-2].u.str,0);
 		} else {
 		    if ( stack[sp-1].type==ps_instr )
-			pushio(&wrapper,NULL,stack[sp-1].u.str,1);
+			pushio(&wrapper,NULL,stack[sp-1].u.str,0);
 		}
 		if ( stack[sp-1].type==ps_string || stack[sp-1].type==ps_instr || stack[sp-1].type==ps_lit )
 		    free(stack[sp-1].u.str);
@@ -1166,6 +1287,52 @@ printf( "-%s-\n", toknames[tok]);
 		    free(func);
 		}
 	    }
+	  break;
+	  case pt_loop:
+	    if ( sp>=1 ) {
+		char *func;
+		int cnt;
+
+		if ( stack[sp-1].type==ps_instr ) {
+		    cnt = 0x7fffffff;		/* Loop for ever */
+		    func = stack[sp-1].u.str;
+		    --sp;
+		    pushio(&wrapper,NULL,func,cnt);
+		    free(func);
+		}
+	    }
+	  break;
+	  case pt_repeat:
+	    if ( sp>=2 ) {
+		char *func;
+		int cnt;
+
+		if ( stack[sp-2].type==ps_num && stack[sp-1].type==ps_instr ) {
+		    cnt = stack[sp-2].u.val;
+		    func = stack[sp-1].u.str;
+		    sp -= 2;
+		    pushio(&wrapper,NULL,func,cnt);
+		    free(func);
+		}
+	    }
+	  break;
+	  case pt_exit:
+	    ioescapeloop(&wrapper);
+	  break;
+	  case pt_stopped:
+	    if ( sp>=1 ) {
+		char *func;
+
+		if ( stack[sp-1].type==ps_instr ) {
+		    func = stack[sp-1].u.str;
+		    --sp;
+		    pushio(&wrapper,NULL,func,-1);
+		    free(func);
+		}
+	    }
+	  break;
+	  case pt_stop:
+	    sp = ioescapestopped(&wrapper,stack,sp);
 	  break;
 	  case pt_load:
 	    if ( sp>=1 && stack[sp-1].type==ps_lit ) {
@@ -1267,11 +1434,12 @@ printf( "-%s-\n", toknames[tok]);
 		    --sp;
 		}
 	    } else if ( sp>=2 ) {
-		double x = stack[sp-2].u.val-transform[4], y = stack[sp-1].u.val-transform[5];
+		double x = stack[sp-2].u.val, y = stack[sp-1].u.val;
 		MatInverse(t,transform);
 		stack[sp-2].u.val = t[0]*x + t[1]*y + t[4];
 		stack[sp-1].u.val = t[2]*x + t[3]*y + t[5];
 	    }
+	  break;
 	  case pt_dtransform:
 	    if ( sp>=1 && stack[sp-1].type==ps_array ) {
 		if ( sp>=3 ) {
@@ -1656,6 +1824,14 @@ printf( "-%s-\n", toknames[tok]);
 		}
 	    }
 	  break;
+	  case pt_currentpoint:
+	    if ( sp+1<sizeof(stack)/sizeof(stack[0]) ) {
+		stack[sp].type = ps_num;
+		stack[sp++].u.val = current.x;
+		stack[sp].type = ps_num;
+		stack[sp++].u.val = current.y;
+	    }
+	  break;
 	  case pt_fill: case pt_stroke:
 	    if ( head==NULL && ec->splines!=NULL ) {
 		/* assume they did a "gsave fill grestore stroke" (or reverse)*/
@@ -1713,13 +1889,111 @@ printf( "-%s-\n", toknames[tok]);
 		fore = gsaves[gsp].fore;
 	    }
 	  break;
-	  case pt_setmiterlimit:
+	  case pt_setdash:
 	    /* pop some junk off the stack */
 	    if ( sp>=1 )
 		--sp;
 	  break;
-	  case pt_setdash:
-	    /* pop some junk off the stack */
+	  case pt_null:
+	    /* push a 0. I don't handle pointers properly */
+	    if ( sp<sizeof(stack)/sizeof(stack[0]) ) {
+		stack[sp].u.val = 0;
+		stack[sp++].type = ps_num;
+	    }
+	  break;
+	  case pt_currentoverprint:
+	    /* push false. I don't handle this properly */
+	    if ( sp<sizeof(stack)/sizeof(stack[0]) ) {
+		stack[sp].u.val = 0;
+		stack[sp++].type = ps_bool;
+	    }
+	  break;
+	  case pt_setoverprint:
+	    /* pop one item on stack */
+	    if ( sp>=1 )
+		--sp;
+	  break;
+	  case pt_currentflat:
+	    /* push 1.0 (default value). I don't handle this properly */
+	    if ( sp<sizeof(stack)/sizeof(stack[0]) ) {
+		stack[sp].u.val = 1.0;
+		stack[sp++].type = ps_num;
+	    }
+	  break;
+	  case pt_setflat:
+	    /* pop one item on stack */
+	    if ( sp>=1 )
+		--sp;
+	  break;
+	  case pt_currentmiterlimit:
+	    /* push 10.0 (default value). I don't handle this properly */
+	    if ( sp<sizeof(stack)/sizeof(stack[0]) ) {
+		stack[sp].u.val = 10.0;
+		stack[sp++].type = ps_num;
+	    }
+	  break;
+	  case pt_setmiterlimit:
+	    /* pop one item off stack */
+	    if ( sp>=1 )
+		--sp;
+	  break;
+	  case pt_currentpacking:
+	    /* push false (default value). I don't handle this properly */
+	    if ( sp<sizeof(stack)/sizeof(stack[0]) ) {
+		stack[sp].u.val = 0;
+		stack[sp++].type = ps_bool;
+	    }
+	  break;
+	  case pt_setpacking:
+	    /* pop one item on stack */
+	    if ( sp>=1 )
+		--sp;
+	  break;
+	  case pt_currentstrokeadjust:
+	    /* push false (default value). I don't handle this properly */
+	    if ( sp<sizeof(stack)/sizeof(stack[0]) ) {
+		stack[sp].u.val = 0;
+		stack[sp++].type = ps_bool;
+	    }
+	  break;
+	  case pt_setstrokeadjust:
+	    /* pop one item on stack */
+	    if ( sp>=1 )
+		--sp;
+	  break;
+	  case pt_currentsmoothness:
+	    /* default value is installation dependant. I don't handle this properly */
+	    if ( sp<sizeof(stack)/sizeof(stack[0]) ) {
+		stack[sp].u.val = 1.0;
+		stack[sp++].type = ps_num;
+	    }
+	  break;
+	  case pt_setsmoothness:
+	    /* pop one item on stack */
+	    if ( sp>=1 )
+		--sp;
+	  break;
+	  case pt_currentobjectformat:
+	    /* default value is installation dependant. I don't handle this properly */
+	    if ( sp<sizeof(stack)/sizeof(stack[0]) ) {
+		stack[sp].u.val = 0.0;
+		stack[sp++].type = ps_num;
+	    }
+	  break;
+	  case pt_setobjectformat:
+	    /* pop one item on stack */
+	    if ( sp>=1 )
+		--sp;
+	  break;
+	  case pt_currentglobal: case pt_currentshared:
+	    /* push false (default value). I don't handle this properly */
+	    if ( sp<sizeof(stack)/sizeof(stack[0]) ) {
+		stack[sp].u.val = 0;
+		stack[sp++].type = ps_bool;
+	    }
+	  break;
+	  case pt_setglobal:
+	    /* pop one item on stack */
 	    if ( sp>=1 )
 		--sp;
 	  break;
@@ -2236,7 +2510,8 @@ static SplinePointList *SplinesFromEntityChar(EntityChar *ec,int *flags) {
 		if ( si.toobigwarn )
 		    *flags |= sf_toobigwarn;
 	    }
-	    if ( ent->u.splines.fill.col==0xffffffff )
+	    /* If they have neither a stroke nor a fill, pretend they said fill */
+	    if ( ent->u.splines.fill.col==0xffffffff && ent->u.splines.stroke.col!=0xffffffff )
 		SplinePointListFree(ent->u.splines.splines);
 	    else if ( handle_eraser && ent->u.splines.fill.col==0xffffff ) {
 		head = EraseStroke(ec->sc,head,ent->u.splines.splines);
@@ -2268,9 +2543,12 @@ return( SplinesFromEntityChar(&ec,flags));
 
 SplinePointList *SplinePointListInterpretPS(FILE *ps) {
     EntityChar ec;
+    SplineChar sc;
     int flags = -1;
 
     memset(&ec,'\0',sizeof(ec));
+    memset(&sc,0,sizeof(sc)); sc.name = "<No particular character>";
+    ec.sc = &sc;
     InterpretPS(ps,NULL,&ec,NULL);
 return( SplinesFromEntityChar(&ec,&flags));
 }
@@ -2290,7 +2568,7 @@ static void SCInterpretPS(FILE *ps,SplineChar *sc, int *flags) {
     IO wrapper;
 
     wrapper.top = NULL;
-    pushio(&wrapper,ps,NULL,1);
+    pushio(&wrapper,ps,NULL,0);
 
     if ( nextpstoken(&wrapper,&dval,tokbuf,sizeof(tokbuf))!=pt_opencurly )
 	fprintf(stderr, "We don't understand this font\n" );
@@ -2319,7 +2597,7 @@ void PSFontInterpretPS(FILE *ps,struct charprocs *cp) {
     int flags = -1;
 
     wrapper.top = NULL;
-    pushio(&wrapper,ps,NULL,1);
+    pushio(&wrapper,ps,NULL,0);
 
     while ( (tok = nextpstoken(&wrapper,&dval,tokbuf,sizeof(tokbuf)))!=pt_eof && tok!=pt_end ) {
 	if ( tok==pt_namelit ) {
@@ -2383,7 +2661,7 @@ Encoding *PSSlurpEncodings(FILE *file) {
     int tok;
 
     wrapper.top = NULL;
-    pushio(&wrapper,file,NULL,1);
+    pushio(&wrapper,file,NULL,0);
 
     while ( (tok = nextpstoken(&wrapper,&dval,tokbuf,sizeof(tokbuf)))!=pt_eof ) {
 	encname = NULL;
