@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 3-Mar-2003 -->
+  <!-- AP: Last modified: 8-Apr-2003 -->
   <TITLE>PfaEdit -- A postscript&reg; font editor</TITLE>
 </HEAD>
 <BODY>
@@ -116,27 +116,47 @@
 	<A HREF="HotKeys.html">Hot Keys</A>
     </UL>
   <LI>
-    <A HREF="locale.html">Localization</A>
-  <LI>
-    <A HREF="errrecovery.html">Error Recovery</A>
-  <LI>
-    <A HREF="sfdformat.html">Spline Font Database File Format</A>
-  <LI>
-    <A HREF="xres.html">X Resources</A>
-    <UL>
-      <LI>
-	<A HREF="xres.html#Keyboards">Keyboards and Mice</A>
-    </UL>
-  <LI>
-    <A HREF="cliargs.html">Command line arguments</A>
-    <UL>
-      <LI>
-	<A HREF="cliargs.html#Environment">Environment Variables</A>
-    </UL>
-  <LI>
-    <A HREF="files.html">Files</A>
-  <LI>
     <A HREF="scripting.html">Scripting</A>
+  <LI>
+    Apendices...
+    <UL>
+      <LI>
+	<A HREF="PfaEdit-TeX.html">Using PfaEdit with TeX</A>
+      <LI>
+	<A HREF="locale.html">Localization</A>
+      <LI>
+	<A HREF="errrecovery.html">Error Recovery</A>
+      <LI>
+	<A HREF="xres.html">X Resources</A>
+	<UL>
+	  <LI>
+	    <A HREF="xres.html#Keyboards">Keyboards and Mice</A>
+	</UL>
+      <LI>
+	<A HREF="cliargs.html">Command line arguments</A>
+	<UL>
+	  <LI>
+	    <A HREF="cliargs.html#Environment">Environment Variables</A>
+	</UL>
+      <LI>
+	<A HREF="files.html">Files</A>
+      <LI>
+	Internals
+	<UL>
+	  <LI>
+	    <A HREF="src.html">Source file overview</A> (out of date, but goes over the
+	    basics)
+	  <LI>
+	    <A HREF="sfdformat.html">Spline Font Database File Format</A> (also out of
+	    date)
+	  <LI>
+	    <A HREF="bezier.html">PostScript &lt;-&gt; TrueType Conversions</A>
+	  <LI>
+	    <A HREF="corpchar.html">PfaEdit's use of the Unicode Private Use Area</A>
+	</UL>
+      <LI>
+	<A HREF="sfds/index.html">Font samples</A>
+    </UL>
   <LI>
     <A HREF="faqFS.html">Frequently Asked Questions</A>
   <LI>
@@ -147,21 +167,6 @@
     <A HREF="license.html">License and Copyright</A>
   <LI>
     <A HREF="index.html">Download</A>
-  <LI>
-    <A HREF="sfddiff.html">sfddiff man page</A><BR>
-    &nbsp;
-  <LI>
-    Appendix: <A HREF="bezier.html">PostScript &lt;-&gt; TrueType Conversions</A>
-  <LI>
-    Appendix: <A HREF="corpchar.html">PfaEdit's use of the Unicode Private Use
-    Area</A><BR>
-    &nbsp;
-  <LI>
-    <A HREF="src.html">Source file overview</A> (out of date, but goes over the
-    basics)<BR>
-    &nbsp;
-  <LI>
-    <A HREF="sfds/index.html">Font samples</A>
 </UL>
 <H2>
   See Also
@@ -176,8 +181,9 @@
   <A NAME="Overview">Overview</A>
 </H2>
 <P>
-PfaEdit allows you to create and modify postscript fonts. You can save fonts
-in several different postscript formats, and generate bitmaps.
+PfaEdit allows you to create and modify postscript, truetype and opentype
+fonts. You can save fonts in many different outline formats, and generate
+bitmaps.
 <H3>
   <A NAME="Installing">Installing</A> a binary
 </H3>

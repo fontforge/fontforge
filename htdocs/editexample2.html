@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Jan-2003 -->
-  <!-- AP: Last modified: 19-Feb-2003 -->
+  <!-- AP: Last modified: 8-Apr-2003 -->
   <TITLE>Creating the letter "o" -- consistant directions</TITLE>
 </HEAD>
 <BODY>
@@ -32,9 +32,9 @@
   <LI>
     <A HREF="editexample5.html#Kerning">Kerning</A>
   <LI>
-    <A HREF="editexample6.html#Marks">Anchoring marks</A>
-  <LI>
     <A HREF="editexample6.html#Variants">Character variants</A>
+  <LI>
+    <A HREF="editexample6.html#Marks">Anchoring marks</A>
   <LI>
     <A HREF="editexample7.html#checking">Checking your font</A>
   <LI>
@@ -45,8 +45,6 @@
     <A HREF="editexample7.html#summary">Final Summary</A>
   <LI>
     <A HREF="scriptnotes.html#Special">Notes on various scripts</A>
-  <LI>
-    <A HREF="PfaEdit-TeX.html#TeX">PfaEdit and TeX</A>
 </UL>
 <H2>
   <A NAME="Navigating">Navigating to characters.</A>
@@ -64,13 +62,13 @@ is a an inefficient way of finding your character. <CODE>View-&gt;Goto
 </CODE>provides a simple dialog which will allow you to move directly to
 any character for which you know the name (or encoding). If your font is
 a Unicode font, then this dialog will also allow you to find characters by
-block name (ie. Hebrew rather than Aleph).
+block name (ie. Hebrew rather than Alef).
 <P>
-The simplist way to navigate is just to go to the next or previous character.
+The simplest way to navigate is just to go to the next or previous character.
 And <CODE>View-&gt;Next Char</CODE> and <CODE>View-&gt;Prev Char</CODE> will
 do exactly that.
 <H2>
-  <A NAME="Creating-o">Creating </A>the letter "o" -- consistant directions
+  <A NAME="Creating-o">Creating </A>the letter "o" -- consistent directions
 </H2>
 <P>
 In the previous example the bitmap of the letter filled the canvas of the
@@ -79,7 +77,7 @@ the program. But usually when you create the image of the letter you have
 some idea of how much white space there should be around it. If your images
 are exactly one em high then PfaEdit will scale them automatically to be
 the right size. So in the following examples all the images have exactly
-the right amount of whitespace around them to fit perfectly in an em.
+the right amount of white-space around them to fit perfectly in an em.
 <P>
 For the next example double click on the square in the font view that should
 contain "o", and import "o_Ambrosia.png" into it.
@@ -97,12 +95,12 @@ contain "o", and import "o_Ambrosia.png" into it.
 <P>
 Notice that the first outline is drawn clockwise and the second
 counter-clockwise. This change in drawing direction is important. Both PostScript
-and TrueType require that the outer boundry of a character be drawn in a
-certain direction (they happen to be oposite from each other, which is a
-mild annoyance), within PfaEdit all outer boundries must be drawn clockwise,
-while all inner boundries must be drawn counter-clockwise.
+and TrueType require that the outer boundary of a character be drawn in a
+certain direction (they happen to be opposite from each other, which is a
+mild annoyance), within PfaEdit all outer boundaries must be drawn clockwise,
+while all inner boundaries must be drawn counter-clockwise.
 <P>
-If you fail to alternate directions between outer and inner boundries you
+If you fail to alternate directions between outer and inner boundaries you
 may get results like the one on the left
 <IMG SRC="o-baddir.png" WIDTH="51" HEIGHT="28">. If you fail to draw the
 outer contour in a clockwise fashion the errors are more subtle, but will

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Jan-2003 -->
-  <!-- AP: Last modified: 28-Jan-2003 -->
+  <!-- AP: Last modified: 8-Apr-2003 -->
   <TITLE>Building accented characters</TITLE>
 </HEAD>
 <BODY>
@@ -32,9 +32,9 @@
   <LI>
     <A HREF="editexample5.html#Kerning">Kerning</A>
   <LI>
-    <A HREF="editexample6.html#Marks">Anchoring marks</A>
-  <LI>
     <A HREF="editexample6.html#Variants">Character variants</A>
+  <LI>
+    <A HREF="editexample6.html#Marks">Anchoring marks</A>
   <LI>
     <A HREF="editexample7.html#checking">Checking your font</A>
   <LI>
@@ -45,8 +45,6 @@
     <A HREF="editexample7.html#summary">Final Summary</A>
   <LI>
     <A HREF="scriptnotes.html#Special">Notes on various scripts</A>
-  <LI>
-    <A HREF="PfaEdit-TeX.html#TeX">PfaEdit and TeX</A>
 </UL>
 <H2>
   <A NAME="accents">Building</A> accented characters
@@ -136,7 +134,7 @@ This makes it slightly easier (at least in latin) to design a ligature.
     <TD>Use the <A HREF="elementmenu.html#Remove">Element -&gt; Remove Overlap</A>
       command to clean up the character.</TD>
     <TD>Finally drag the ligature caret lines from the origin to more appropriate
-      places between the componants.</TD>
+      places between the components.</TD>
   </TR>
 </TABLE>
 <P>
@@ -146,7 +144,7 @@ that the user of that word processor does not need to know they s/he is dealing
 with a ligature and sees behavior very similar to what s/he would see if
 the components were present. But if the word processor is to be able to do
 this it must have some information from the font designer giving the locations
-of appropriate caret possitions. As soon as PfaEdit notices that a character
+of appropriate caret positions. As soon as PfaEdit notices that a character
 is a ligature it will insert in it enough caret location lines to fit between
 the ligature's components. PfaEdit places these on the origin, if you leave
 them on the origin PfaEdit will ignore them. But once you have built your
@@ -160,7 +158,7 @@ is not part of Unicode you may do so. First <A HREF="faq.html#new-name">add
 an unencoded character to your font</A> (or if your font is a Unicode font,
 use a code point in the private use area), and name the character. The name
 is important, if you name it correctly PfaEdit will be able to figure out
-that it is a ligature and what its componants are. If you want to build a
+that it is a ligature and what its components are. If you want to build a
 ligature out of the characters "longs", "longs" and "l" then name it
 "longs_longs_l", if you want to build a ligature out of Unicode 0D15, 0D4D
 and 0D15 then name it "uni0D15_uni0D4D_uni0D15".

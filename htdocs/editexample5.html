@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Jan-2003 -->
-  <!-- AP: Last modified: 27-Jan-2003 -->
+  <!-- AP: Last modified: 8-Apr-2003 -->
   <TITLE>Examining and controling metrics and kerning</TITLE>
 </HEAD>
 <BODY>
@@ -29,12 +29,16 @@
     <A HREF="editexample4.html#ligature">Building a ligature</A>
   <LI>
     <A HREF="editexample5.html#metrics">Examining metrics</A>
+    <UL>
+      <LI>
+	<A HREF="#Vertical">Vertical metrics</A>
+    </UL>
   <LI>
     <A HREF="editexample5.html#Kerning">Kerning</A>
   <LI>
-    <A HREF="editexample6.html#Marks">Anchoring marks</A>
-  <LI>
     <A HREF="editexample6.html#Variants">Character variants</A>
+  <LI>
+    <A HREF="editexample6.html#Marks">Anchoring marks</A>
   <LI>
     <A HREF="editexample7.html#checking">Checking your font</A>
   <LI>
@@ -45,15 +49,100 @@
     <A HREF="editexample7.html#summary">Final Summary</A>
   <LI>
     <A HREF="scriptnotes.html#Special">Notes on various scripts</A>
-  <LI>
-    <A HREF="PfaEdit-TeX.html#TeX">PfaEdit and TeX</A>
 </UL>
 <H2>
-  <A NAME="metrics">Examining</A> and controling metrics
+  <A NAME="metrics">Examining</A> and controlling metrics
 </H2>
+<P>
+<IMG SRC="sidebearings.png" WIDTH="111" HEIGHT="191" ALIGN="Right">After
+you have created the shapes of your characters you must next figure out the
+spacing between characters. The space between any two character has two
+components, the space after the first character, and the space before the
+second character. In a left to right world these two are called the right
+side bearing and the left side bearing respectively.
+<P>
+The left side bearing may be changed by the simple expedient of
+<CODE>Edit-&gt;Select All</CODE> (in the outline view) and then dragging
+the selected objects to the appropriate place. The right side bearing may
+be changed by selecting the advance width line and adjusting it
+appropriately.<BR CLEAR=ALL>
+<P>
+However it is generally better not to set the metrics of a single character
+in isolation, you should see the character in the context of other characters
+and set it from that perspective. Use the <CODE>File-&gt;Open
+<A HREF="metricsview.html">Metrics Window </A></CODE>command.<BR>
+<IMG SRC="MetricsView.png" WIDTH="428" HEIGHT="323"><BR>
+Any characters selected in the fontview (when you invoke the metrics view)
+will be displayed in the metrics view. You may change which characters are
+displayed by either typing new ones in to the text field at the top of the
+view, or by dragging a character from the fontview.
+<P>
+From here you may adjust any character's metrics by typing into the textfields
+below it, or you may select a character (by clicking on its image) and drag
+it around (to adjust the left side bearing), or drag its width line (to adjust
+its right side bearing).
+<P>
+If you want to generate a "typewriter" style font (where all characters have
+the same width) execute an <CODE>Edit-&gt;Select All</CODE> from the fontview
+and then <CODE>Metrics-&gt;Set Width</CODE>. This will set the widths of
+all characters to the same value. After doing that you might also want to
+execute <CODE>Metrics-&gt;Center in Width</CODE> to set the even out the
+left and right spacing on each character.
+<P>
+If all this manual operation seems too complicated, try
+<CODE>Metrics-&gt;Auto Width</CODE>. This will automagically assign widths
+to characters. These widths are not up to professional standards, but they
+are generally reasonable approximations.
+<H3>
+  <A NAME="Vertical">Vertical</A> Metrics
+</H3>
+<P>
+PfaEdit provides some support for the vertical metrics needed for CJK fonts.
+First you must tell PfaEdit that this font should contain vertical metrics,
+do this with <CODE>Element-&gt;Font Info-&gt;PS General-&gt;Has Vertical
+Metrics</CODE>. Then in each outline character enable VMetrics in the Layers
+palette.
+<P>
+You should now see a vertical advance line somewhere underneath your character.
+You may drag this line just as you would the horizontal advance (width) line.
 <H2>
   <A NAME="Kerning">Kerning</A>
 </H2>
+<P>
+If you are careful in setting the left and right side-bearings you can design
+your font so that the spacing looks nice in almost all cases. But there are
+always some cases which confound simple solutions.
+<P>
+Consider "<FONT FACE="helvetica">To</FONT>" or
+"<FONT FACE="helvetica">Av</FONT>" here the standard choices are inappropriate.
+The "<FONT FACE="helvetica">o</FONT>" will look better if it can slide more
+to the left and snuggle under the top bar of the
+"<FONT FACE="helvetica">T</FONT>". This is called kerning, and it is used
+to control inter-character spacing on a pair-by-pair basis.
+<TABLE BORDER CELLPADDING="2">
+  <CAPTION>
+    Kerning
+  </CAPTION>
+  <TR>
+    <TD><IMG SRC="To-unkerned.png" WIDTH="204" HEIGHT="323"></TD>
+    <TD><IMG SRC="To-kerned.png" WIDTH="204" HEIGHT="323"></TD>
+  </TR>
+</TABLE>
+<P>
+In the above example the left image shows the unkerned text, the right shows
+the kerned text. To create a kerned pair, simply click on the right character
+of the pair, the line (normally the horizontal advance) between the two should
+go green (and becomes the kerned advance). Drag this line around until the
+spacing looks nice.
+<P>
+(Some character combinations are better treated by
+<A HREF="editexample4.html#ligature">creating a ligature </A>than by kerning
+the letters)
+<H3>
+  Vertical Kerning
+</H3>
+<P>
+PfaEdit does not support vertical kerning.
 <P>
 <P>
 <P ALIGN=Center>
