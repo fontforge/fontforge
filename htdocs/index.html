@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 8-Aug-2002 -->
+  <!-- AP: Last modified: 9-Aug-2002 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -316,6 +316,32 @@ to the script and processed (or not) by it.
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    ???
+    <UL>
+      <LI>
+	I've decided to encourage use of the <A HREF="index.html#Mail">mailing
+	lists</A> for reporting bugs. A feeble attempt to cut down on the spam I
+	get by removing my e-mail address from the site.
+      <LI>
+	Bug in the dlg asking for the resolution of a bdf font. The second (and
+	subsequent) time(s) it came up it would have a good chance of never going
+	away again, and potentially crashing PfaEdit into the bargain. (number of
+	other bugs here too)
+      <LI>
+	If the postscript "FontName" contained a hyphen then any generated BDF fonts
+	would have invalid X fontnames (they hyphen would be included which would
+	throw the name parsing off by one hyphen).
+      <LI>
+	Greg Ford points out that generating a bdf font and then loading it back
+	in will often change the fontname. This is because the fontname is not actually
+	stored in bdf files. I've added a FONT_NAME property to the bdf fonts I generate.
+      <LI>
+	PfaEdit would sometimes forget about the first bitmap character in each bitmap
+	font stored in an sfd file. <FONT COLOR="Red"><STRONG><BIG>Please check any
+	sfd files to see if they are missing bitmaps of space, exclamation point,
+	etc. </BIG></STRONG></FONT>
+    </UL>
   <LI>
     8-Aug-2002
     <UL>
@@ -1264,6 +1290,9 @@ Other Encodings
       <LI>
 	<A HREF="http://www.gnu.org/software/gfe/gfe.html">gfe</A> -- GNU font editor.
 	Eventually supposed to support other formats
+      <LI>
+	fstobdf -- Part of the X distribution, reads a font from the server and generates
+	a bdf file from it.
     </UL>
   <LI>
     Postscript/ttf font editors
@@ -1293,14 +1322,17 @@ Other Encodings
       <LI>
 	<A HREF="http://www.tug.org/">(available with the TeX package)</A>
       <LI>
+	<A HREF="http://cm.bell-labs.com/who/hobby/MetaPost.html">MetaPost</A>, Uses
+	the metafont language to produce PostScript pictures.
+      <LI>
 	<A HREF="http://textrace.sf.net/">TeXTrace</A>, generates pfb fonts from
 	TeX fonts by rasterizing at high res and then autotracing them
       <LI>
 	<A HREF="ftp://ftp.radio-msu.net/pub/tex/tex-archive/fonts/utilities/mf2ps/">mftops</A>,
 	similar
       <LI>
-	<A HREF="http://www.cs.uu.nl/~hanwen/pktrace/index.html">pktrace</A>, traces
-	pk fonts (bitmap images) and creates pfb/pfa files.
+	<A HREF="http://www.cs.uu.nl/~hanwen/mftrace/index.html">mftrace</A>, traces
+	pk fonts (bitmap images) and creates pfb/pfa files. (formerly called pktrace)
     </UL>
   <LI>
     Postscript utilities
@@ -1362,6 +1394,10 @@ Other Encodings
   <LI>
     <A HREF="otherlinks.html">Other related links...</A>
 </UL>
+<P>
+If you know of a tool you think should be on this list, please
+<A HREF="mailto:pfaedit-devel@lists.sourceforge.net">let me know</A>. I did
+my research a couple of years ago and expect it is out of date.
 <P ALIGN=Center>
 <P ALIGN=Center>
 <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/MyToys.html"><IMG SRC="http://bibliofile.mc.duke.edu/gww/FreeWare/../uparrow.gif"
