@@ -682,10 +682,7 @@ static void SFDDumpRefs(FILE *sfd,RefChar *refs, char *name) {
     RefChar *ref;
 
     for ( ref=refs; ref!=NULL; ref=ref->next ) if ( ref->sc!=NULL ) {
-	if ( ref->sc->enc==0 && ref->sc->layers[ly_fore].splines==NULL )
-	    fprintf( stderr, "Using a reference to character 0, removed. In %s\n", name);
-	else
-	    fprintf(sfd, "Ref: %d %d %c %g %g %g %g %g %g\n",
+	fprintf(sfd, "Ref: %d %d %c %g %g %g %g %g %g\n",
 		    ref->sc->enc, ref->sc->unicodeenc,
 		    ref->selected?'S':'N',
 		    ref->transform[0], ref->transform[1], ref->transform[2],
