@@ -1283,7 +1283,8 @@ return( new );
 
 void SFFlattenByCMap(SplineFont *sf,char *cmapname) {
     struct cmap *cmap;
-    int i,j,k,l, extras, max, curmax;
+    int i,j,k,l,m, extras, max, curmax, warned;
+    int found[4];
     SplineChar **chars = NULL, *sc;
 
     if ( sf->cidmaster!=NULL )
@@ -1320,6 +1321,7 @@ return;
 	    curmax = sf->subfonts[k]->charcnt;
 
     chars = NULL;
+    warned = false;
     for ( j=0; j<2; ++j ) {
 	extras = 0;
 	for ( i=0; i<curmax; ++i ) {
@@ -1332,27 +1334,45 @@ return;
 	    break;
 		}
 	    if ( sc!=NULL ) {
+		m = 0;
 		for ( l=0; l<cmap->groups[cmt_cid].n; ++l ) {
 		    if ( i>=cmap->groups[cmt_cid].ranges[l].cid &&
 			    i<=cmap->groups[cmt_cid].ranges[l].cid +
 			       cmap->groups[cmt_cid].ranges[l].last -
-				cmap->groups[cmt_cid].ranges[l].first )
-		break;
+				cmap->groups[cmt_cid].ranges[l].first ) {
+			if ( m<sizeof(found)/sizeof(found[0]) )
+			    found[m++] = l;
+			else if ( !warned ) {
+			    GWidgetPostNoticeR(_STR_MultipleEncodingIgnored,
+				    _STR_CIDGlyphMultEncoded, i,
+			            sizeof(found)/sizeof(found[0]),
+			            sizeof(found)/sizeof(found[0]));
+			    warned = true;
+			}
+		    }
 		}
-		if ( l==cmap->groups[cmt_cid].n ) {
+		if ( m==0 ) {
 		    if ( chars!=NULL )
 			chars[max+extras] = sc;
 		    ++extras;
 		} else {
 		    if ( chars!=NULL ) {
-			chars[cmap->groups[cmt_cid].ranges[l].first +
-				i-cmap->groups[cmt_cid].ranges[l].cid] = sc;
+			int p = cmap->groups[cmt_cid].ranges[found[0]].first +
+				i-cmap->groups[cmt_cid].ranges[found[0]].cid;
+			chars[p] = sc;
+			sc->enc = p;
+			for ( l=1; l<m; ++l ) {
+			    int pos = cmap->groups[cmt_cid].ranges[found[l]].first +
+				    i-cmap->groups[cmt_cid].ranges[found[l]].cid;
+			    chars[pos] = MakeDupRef(sc,pos,-1);
+			}
 		    }
 		}
 	    }
 	}
 	if ( chars==NULL )
 	    chars = gcalloc(max+extras,sizeof(SplineChar *));
+	warned = true;
     }
     sf = CIDFlatten(sf,chars,max+extras);
     sf->remap = cmap->remap; cmap->remap = NULL;

@@ -1423,32 +1423,42 @@ static void CleanupGreekNames(FontDict *fd) {
     }
 }
 
-static SplineChar *DuplicateNameReference(SplineFont *sf,char **encoding,int encindex) {
+SplineChar *MakeDupRef(SplineChar *base, int local_enc, int uni_enc) {
     SplineChar *sc = SplineCharCreate();
-    RefChar *ref;
+
+    sc->enc = local_enc;
+    sc->unicodeenc = uni_enc;
+    sc->width = base->width;
+    sc->vwidth = base->vwidth;
+    sc->name = copy(base->name);
+    sc->parent = base->parent;
+
+    /* Used not to bother for spaces, but SCDuplicate depends on the ref */
+    /*if ( dup->sc->refs!=NULL || dup->sc->splines!=NULL )*/ {
+	RefChar *ref = chunkalloc(sizeof(RefChar));
+	sc->refs = ref;
+	ref->sc = base;
+	ref->local_enc = base->enc;
+	ref->unicode_enc = base->unicodeenc;
+	ref->adobe_enc = getAdobeEnc(base->name);
+	ref->transform[0] = ref->transform[3] = 1;
+	SCReinstanciateRefChar(sc,ref);
+	SCMakeDependent(sc,base);
+	ref->checked = true;
+    }
+return( sc );
+}
+
+static SplineChar *DuplicateNameReference(SplineFont *sf,char **encoding,int encindex) {
+    SplineChar *sc = NULL;
     int i;
 
     for ( i=0; i<encindex; ++i )
 	if ( i!=encindex && strcmp(encoding[i],encoding[encindex])==0 )
     break;
 
-    sc->name = copy(encoding[encindex]);
-    sc->unicodeenc = -1;
-    sc->width = sf->chars[i]->width;
-    sc->vwidth = sf->chars[i]->vwidth;
-    sc->parent = sf;
-    /* Used not to do this for spaces but I now use the ref as a mark in */
-    /*  SCDuplicate() which allows me to generate an encoding vector with */
-    /*  duplicates */
-    /*if ( sf->chars[i]->splines!=NULL || sf->chars[i]->refs!=NULL )*/ {
-	sc->refs = ref = gcalloc(1,sizeof(RefChar));
-	ref->sc = sf->chars[i];
-	ref->transform[0] = ref->transform[3] = 1;
-	ref->local_enc = i;
-	ref->adobe_enc = getAdobeEnc(ref->sc->name);
-	SCMakeDependent(sc,ref->sc);
-	ref->checked = true;
-    }
+    if ( i<encindex )
+	sc = MakeDupRef(sf->chars[i],encindex,-1);
 return( sc );
 }
 

@@ -639,13 +639,15 @@ return( ret );
 static short *ParseWernerSFDFile(char *wernerfilename,SplineFont *sf,int *max) {
     /* one entry for each char, >=1 => that subfont, 0=>not mapped, -1 => end of char mark */
     int cnt=0;
-    int k, sub,i,r1,r2,warned = false;
+    int k, sub,warned = false;
+    uint32 r1,r2,i,modi;
     SplineFont *_sf;
     short *mapping;
     FILE *file;
     char buffer[200];
     char *end;
     char *orig;
+    struct remap *map;
 
     file = fopen(wernerfilename,"r");
     if ( file==NULL ) {
@@ -678,20 +680,31 @@ return( NULL );
 	    if ( *end=='\0' )
 	break;
 	    orig = end;
-	    r1 = strtol(end,&end,0);
+	    r1 = strtoul(end,&end,0);
 	    if ( orig==end )
 	break;
 	    if ( *end=='_' || *end=='-' )
-		r2 = strtol(end+1,&end,0);
+		r2 = strtoul(end+1,&end,0);
 	    else
 		r2 = r1;
-	    for ( i=r1; i<=r2; ++i ) if ( i<cnt ) {
-		if ( mapping[i]!=0 && !warned ) {
-		    fprintf( stderr, "Warning: Encoding %d is mapped to at least two sub-fonts (%d and %d)\n Only one will be used here.\n",
-			    i, sub, mapping[i]);
-		    warned = true;
+	    for ( i=r1; i<=r2; ++i ) {
+		modi = i;
+		if ( sf->remap!=NULL ) {
+		    for ( map = sf->remap; map->infont!=-1; ++map ) {
+			if ( i>=map->firstenc && i<=map->lastenc ) {
+			    modi = i-map->firstenc + map->infont;
+		    break;
+			}
+		    }
 		}
-		mapping[i] = sub;
+		if ( modi<cnt ) {
+		    if ( mapping[modi]!=0 && !warned ) {
+			fprintf( stderr, "Warning: Encoding %d is mapped to at least two sub-fonts (%d and %d)\n Only one will be used here.\n",
+				i, sub, mapping[modi]);
+			warned = true;
+		    }
+		    mapping[modi] = sub;
+		}
 	    }
 	}
     }
@@ -738,6 +751,8 @@ static int SaveSubFont(SplineFont *sf,char *newname,int32 *sizes,int res,
 	} else
 	    chars[pos++] = NULL;
     }
+    if ( pos==0 )
+return( 0 );
 
     /* check for any references to things outside this subfont and add them */
     /*  as unencoded chars */
@@ -1333,6 +1348,9 @@ static int e_h(GWindow gw, GEvent *event) {
 	d->ret = false;
     } else if ( event->type == et_char ) {
 return( false );
+    } else if ( event->type == et_mousemove ) {
+	struct gfc_data *d = GDrawGetUserData(gw);
+	GFileChooserPopupCheck(d->gfc,event);
     }
 return( true );
 }

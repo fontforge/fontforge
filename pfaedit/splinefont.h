@@ -611,6 +611,7 @@ extern void SplinePointListSelect(SplinePointList *spl,int sel);
 extern void SCRefToSplines(SplineChar *sc,RefChar *rf);
 extern void SCReinstanciateRefChar(SplineChar *sc,RefChar *rf);
 extern void SCReinstanciateRef(SplineChar *sc,SplineChar *rsc);
+extern SplineChar *MakeDupRef(SplineChar *base, int local_enc, int uni_enc);
 extern void SCRemoveDependent(SplineChar *dependent,RefChar *rf);
 extern void SCRemoveDependents(SplineChar *dependent);
 extern RefChar *SCCanonicalRefs(SplineChar *sc, int isps);

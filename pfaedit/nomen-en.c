@@ -776,6 +776,7 @@ static char *str_OpenPostscript = "Open Postscript Font";
 static char *str_Loading = "Loading...";
 static char *str_LoadingFontFrom = "Loading font from ";
 static char *str_ReadingGlyphs = "Reading Glyphs";
+static char *str_ReadingAFM = "Reading AFM file";
 static char *str_InterpretingGlyphs = "Interpreting Glyphs";
 static char *str_CouldntOpenFontTitle = "Couldn't open font";
 static char *str_CouldntOpenFont = "Couldn't open font (or in bad format): %.100hs";
@@ -1139,6 +1140,8 @@ static char *str_ExtraCharsTitle = "Extraneous characters";
 static char *str_ExtraChars = "The current encoding contains characters which I cannot map to CIDs.\nShould I delete them or add them to the end (where they may conflict with future ros definitions)?";
 static char *str_FindCMap = "Find an adobe CMap file...";
 static char *str_NotACIDFont = "Not a CID-keyed font";
+static char *str_MultipleEncodingIgnored = "MultipleEncodingIgnored";
+static char *str_CIDGlyphMultEncoded = "The glyph at CID %d is mapped to more than %d encodings. Only the first %d are handled.";
 
     /* fv composit */
 static char *str_MissingChar = "Missing Character...";
