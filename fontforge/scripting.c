@@ -5761,7 +5761,7 @@ static void ProcessScript(int argc, char *argv[], FILE *script) {
 	++i;
     else if (( strcmp(argv[1],"-c")==0 || strcmp(argv[1],"--c")==0) &&
 	    argc>=2 ) {
-	i += 2;
+	++i;
 	string = argv[2];
     }
     memset( &c,0,sizeof(c));
