@@ -164,8 +164,8 @@ static unichar_t *_readencstring(FILE *ttf,int offset,int len,
     fseek(ttf,offset,SEEK_SET);
 
     if ( platform==1 ) {
-	/* Mac is screwing, there are several different varients of MacRoman */
-	/*  depending on the language, they didn't get it right when they    */
+	/* Mac is screwy, there are several different varients of MacRoman */
+	/*  depending on the language, they didn't get it right when they  */
 	/*  invented their script system */
 	char *cstr, *cpt;
 	cstr = cpt = galloc(len+1);
@@ -193,6 +193,7 @@ static unichar_t *_readencstring(FILE *ttf,int offset,int len,
 	    char *cstr = galloc(inlen);
 	    char *in = cstr, *out;
 	    str = galloc(outlen+2);
+	    out = (char *) str;
 	    iconv(enc->tounicode,&in,&inlen,&out,&outlen);
 	    out[0] = '\0'; out[1] = '\0';
 	    free(cstr);
@@ -701,7 +702,7 @@ static void uValidatePostScriptFontName(unichar_t *str) {
 	*str = 'a';
 	complained = true;
     }
-    for ( pt=str; *pt; ++pt ) {
+    for ( pt=str; *pt; ) {
 	if ( *pt<=' ' || *pt>=0x7f ||
 		*pt=='(' || *pt=='[' || *pt=='{' || *pt=='<' ||
 		*pt==')' || *pt==']' || *pt=='}' || *pt=='>' ||
@@ -717,7 +718,8 @@ static void uValidatePostScriptFontName(unichar_t *str) {
 	    for ( npt=pt; npt[1]; ++npt )
 		*npt = npt[1];
 	    *npt = '\0';
-	}
+	} else
+	    ++pt;
     }
     if ( u_strlen(str)>63 ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
@@ -820,12 +822,12 @@ return;
     str = _readencstring(ttf,stroff,strlen,plat,spec,language);
     if ( str==NULL )		/* we didn't understand the encoding */
 return;
+    if ( id==ttf_postscriptname )
+	uValidatePostScriptFontName(str);
     if ( *str=='\0' ) {
 	free(str);
 return;
     }
-    if ( id==ttf_postscriptname )
-	uValidatePostScriptFontName(str);
 
     if ( plat==1 || plat==0 )
 	language = WinLangFromMac(language);
@@ -993,6 +995,19 @@ static void readttfcopyrights(FILE *ttf,struct ttfinfo *info) {
 	info->version = FindLangEntry(info,ttf_version);
     if ( info->fontname==NULL )
 	info->fontname = FindLangEntry(info,ttf_postscriptname);
+
+    if ( info->fontname != NULL && *info->fontname=='\0' ) {
+	free(info->fontname);
+	info->fontname = NULL;
+    }
+    if ( info->familyname != NULL && *info->familyname=='\0' ) {
+	free(info->familyname);
+	info->familyname = NULL;
+    }
+    if ( info->fullname != NULL && *info->fullname=='\0' ) {
+	free(info->fullname);
+	info->fullname = NULL;
+    }
 
     /* OpenType spec says the version string should begin with "Version " and */
     /*  end with a space and have a number in between */
@@ -1276,7 +1291,12 @@ static void readttfsimpleglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, in
 
 static void readttfcompositglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, int32 end) {
     RefChar *head=NULL, *last=NULL, *cur;
-    int flags, arg1, arg2;
+    int flags=0, arg1, arg2;
+
+    if ( ftell(ttf)>=end ) {
+	fprintf( stderr, "Empty composite %d\n", sc->enc );
+return;
+    }
 
     do {
 	if ( ftell(ttf)>=end ) {
@@ -1385,15 +1405,16 @@ static void readttfcompositglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, 
     break;
 	}
     } while ( flags&_MORE );
-    if ( (flags & _INSTR ) && info->to_order2 ) {
+    if ( (flags & _INSTR ) && info->to_order2 && ftell(ttf)<end ) {
 	sc->ttf_instrs_len = getushort(ttf);
-	if ( sc->ttf_instrs_len != 0 ) {
+	if ( sc->ttf_instrs_len != 0 && ftell(ttf)+sc->ttf_instrs_len<=end ) {
 	    uint8 *instructions = galloc(sc->ttf_instrs_len);
 	    int i;
 	    for ( i=0; i<sc->ttf_instrs_len; ++i )
 		instructions[i] = getc(ttf);
 	    sc->ttf_instrs = instructions;
-	}
+	} else
+	    sc->ttf_instrs_len = 0;
     }
     /* I'm ignoring many things that I don't understand here */
     /* USE_MY_METRICS, what happens if ARGS AREN'T XY */
