@@ -58,9 +58,33 @@ dnl and crashes gdb if we attempt to use it.
  ;;
 esac
 
+dnl iconv is braindead on solaris 9 and does not support unicode. It is
+dnl therefore useless to us, and finding it prevents us using our internal
+dnl mini-iconv that would work.
+
+echo -n Cursory check if iconv supports unicode ...
+if iconv -f Mac -t UCS-2BE >/dev/null 2>&1 </dev/null ; then
+ gww_uselessiconv="no"
+elif iconv -f Mac -t UCS-2LE >/dev/null 2>&1 </dev/null ; then
+ gww_uselessiconv="no"
+elif iconv -f Mac -t UNICODEBIG >/dev/null 2>&1 </dev/null ; then
+ gww_uselessiconv="no"
+elif iconv -f Mac -t UCS-2 >/dev/null 2>&1 </dev/null ; then
+ gww_uselessiconv="no"
+else
+ gww_uselessiconv="yes"
+fi
+if test "$gww_uselessiconv" = "no" ; then
+ echo " yes"
+else
+ echo " no"
+fi
+
 AC_SEARCH_LIBS(dlopen, dl) dnl some systems have this in libc (Darwin uses dyld)
 AC_SEARCH_LIBS(inet_aton, resolv) dnl some systems have this in libc
-AC_SEARCH_LIBS(libiconv, iconv) dnl linux has iconv in libc, mac,solaris have libiconv in libiconv, and a define to map iconv() to libiconv(), so we can't do the obvious check
+if test "$gww_uselessiconv" = "no" ; then
+ AC_SEARCH_LIBS(libiconv, iconv) dnl linux has iconv in libc, mac,solaris have libiconv in libiconv, and a define to map iconv() to libiconv(), so we can't do the obvious check
+fi
 
 dnl Is there a better way to add a directory to the include path?
 
@@ -103,7 +127,9 @@ AC_CHECK_LIB(jpeg, jpeg_CreateDecompress, :  ,AC_DEFINE(_NO_LIBJPEG))
 AC_CHECK_LIB(tiff, TIFFOpen, : , AC_DEFINE(_NO_LIBTIFF), -lm )
 AC_CHECK_LIB(xml2, xmlParseFile, : , AC_DEFINE(_NO_LIBXML))
 
-AC_CHECK_HEADERS([iconv.h])
+if test "$gww_uselessiconv" = "no" ; then
+ AC_CHECK_HEADERS([iconv.h])
+fi
 
 gww_hasbytecode="no"
 AC_ARG_WITH(freetype-bytecode,

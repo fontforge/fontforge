@@ -7563,6 +7563,25 @@ _ACEOF
  ;;
 esac
 
+
+echo -n Cursory check if iconv supports unicode ...
+if iconv -f Mac -t UCS-2BE >/dev/null 2>&1 </dev/null ; then
+ gww_uselessiconv="no"
+elif iconv -f Mac -t UCS-2LE >/dev/null 2>&1 </dev/null ; then
+ gww_uselessiconv="no"
+elif iconv -f Mac -t UNICODEBIG >/dev/null 2>&1 </dev/null ; then
+ gww_uselessiconv="no"
+elif iconv -f Mac -t UCS-2 >/dev/null 2>&1 </dev/null ; then
+ gww_uselessiconv="no"
+else
+ gww_uselessiconv="yes"
+fi
+if test "$gww_uselessiconv" = "no" ; then
+ echo " yes"
+else
+ echo " no"
+fi
+
 echo "$as_me:$LINENO: checking for library containing dlopen" >&5
 echo $ECHO_N "checking for library containing dlopen... $ECHO_C" >&6
 if test "${ac_cv_search_dlopen+set}" = set; then
@@ -7813,6 +7832,7 @@ if test "$ac_cv_search_inet_aton" != no; then
   test "$ac_cv_search_inet_aton" = "none required" || LIBS="$ac_cv_search_inet_aton $LIBS"
 
 fi
+ if test "$gww_uselessiconv" = "no" ; then
  echo "$as_me:$LINENO: checking for library containing libiconv" >&5
 echo $ECHO_N "checking for library containing libiconv... $ECHO_C" >&6
 if test "${ac_cv_search_libiconv+set}" = set; then
@@ -7938,6 +7958,7 @@ if test "$ac_cv_search_libiconv" != no; then
   test "$ac_cv_search_libiconv" = "none required" || LIBS="$ac_cv_search_libiconv $LIBS"
 
 fi
+ fi
 
 
 FreeType2_IncRoot=
@@ -8666,6 +8687,7 @@ _ACEOF
 fi
 
 
+if test "$gww_uselessiconv" = "no" ; then
 
 for ac_header in iconv.h
 do
@@ -8816,6 +8838,7 @@ fi
 
 done
 
+fi
 
 gww_hasbytecode="no"
 
