@@ -48,7 +48,7 @@ typedef struct quartic {
 /*  into splinefont.h after (or instead of) the definition of chunkalloc()*/
 
 #ifndef chunkalloc
-#define ALLOC_CHUNK	1		/* Number of small chunks to malloc at a time */
+#define ALLOC_CHUNK	100		/* Number of small chunks to malloc at a time */
 #define CHUNK_MAX	40		/* Maximum size (in chunk units) that we are prepared to allocate */
 					/* The size of our data structures */
 # define CHUNK_UNIT	sizeof(void *)	/*  will vary with the word size of */
@@ -1567,7 +1567,7 @@ return(ret);
 
 char *XUIDFromFD(int xuid[20]) {
     int i;
-    char *ret;
+    char *ret=NULL;
 
     for ( i=19; i>=0 && xuid[i]==0; --i );
     if ( i>=0 ) {
@@ -1894,7 +1894,7 @@ static void _SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext 
 	    /* 0 500 hsbw endchar */
 	    sf->chars[i] = PSCharStringToSplines((uint8 *) "\213\370\210\015\016",5,pscontext,fd->private->subrs,NULL,".notdef");
 	    sf->chars[i]->width = sf->ascent+sf->descent;
-	} else if ( used[k] && !isnotdef && strcmp(encoding[i],".notdef")!=0 ) {
+	} else if ( used[k] /*&& !isnotdef && strcmp(encoding[i],".notdef")!=0*/ ) {
 	    sf->chars[i] = DuplicateNameReference(sf,encoding,i);
 	} else if ( k2==-1 ) {
 	    sf->chars[i] = PSCharStringToSplines(fd->chars->values[k],fd->chars->lens[k],
