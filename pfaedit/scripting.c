@@ -640,7 +640,7 @@ static void bGenerate(Context *c) {
 }
 
 static void bGenerateFamily(Context *c) {
-    SplineFont *sf = c->curfv->sf;
+    SplineFont *sf = NULL, *plainsf=NULL;
     char *bitmaptype = "";
     int fmflags = -1;
     struct sflist *sfs, *cur;
@@ -657,8 +657,6 @@ static void bGenerateFamily(Context *c) {
     bitmaptype = c->a.vals[2].u.sval;
     fmflags = c->a.vals[3].u.ival;
 
-    if ( MacStyleCode(sf,NULL)!=0 )
-	error( c, "The current font must have a plain (Normal, Regular) style when generate a mac family");
     fonts = c->a.vals[4].u.aval;
     sfs = NULL;
     for ( i=0; i<fonts->argc; ++i ) {
@@ -673,20 +671,39 @@ static void bGenerateFamily(Context *c) {
 	    break;
 	if ( fv==NULL ) {
 	    fprintf( stderr, "%s\n", fonts->vals[i].u.sval );
-	    error( c, "The font is not loaded" );
+	    error( c, "The above font is not loaded" );
 	}
-	else if ( strcmp(fv->sf->familyname,sf->familyname)!=0 )
+	if ( sf==NULL )
+	    sf = fv->sf;
+	if ( fv->sf->encoding_name!=sf->encoding_name ) {
+	    fprintf( stderr, "%s and %s\n", fv->sf->filename, sf->filename );
+	    error( c, "The above fonts have different encodings" );
+	}
+	if ( strcmp(fv->sf->familyname,sf->familyname)!=0 )
 	    fprintf( stderr, "Warning: %s has a different family name than does %s (GenerateFamily)\n",
 		    fv->sf->fontname, sf->fontname );
-	cur = chunkalloc(sizeof(struct sflist));
-	cur->next = sfs;
-	sfs = cur;
-	cur->sf = fv->sf;
+	if ( MacStyleCode(fv->sf,NULL)==0 ) {
+	    if ( plainsf==NULL || plainsf==fv->sf )
+		plainsf = fv->sf;
+	    else
+		error( c, "Two array entries given with a plain style" );
+	} else {
+	    cur = chunkalloc(sizeof(struct sflist));
+	    cur->next = sfs;
+	    sfs = cur;
+	    cur->sf = fv->sf;
+	}
+    }
+    if ( plainsf==NULL ) {
+	if ( MacStyleCode(c->curfv->sf,NULL)==0 && strcmp(c->curfv->sf->familyname,sf->familyname)!=0 )
+	    plainsf = c->curfv->sf;
+	if ( plainsf==NULL )
+	    error(c,"At least one of the specified fonts must have a plain style");
     }
     cur = chunkalloc(sizeof(struct sflist));
     cur->next = sfs;
     sfs = cur;
-    cur->sf = sf;
+    cur->sf = plainsf;
     
     if ( !GenerateScript(sf,c->a.vals[1].u.sval,bitmaptype,fmflags,-1,NULL,sfs) )
 	error(c,"Save failed");

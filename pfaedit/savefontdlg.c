@@ -1130,7 +1130,7 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	if ( !oldttfhintstate )
 	    flags |= ttf_flag_nohints;
 	flags |= ttf_flag_applemode;
-return( !WriteMacFamily(filename,sfs,oldformatstate,oldbitmapstate,flags));
+return( WriteMacFamily(filename,sfs,oldformatstate,oldbitmapstate,flags));
     }
 
     if ( oldformatstate == ff_multiple )
