@@ -798,17 +798,20 @@ return( ssplus );
 	    }
 	}
 
-	if ( spline->knownlinear ||
-/* 0 and 1 are valid values. They happen on circles for example */
-		p_tcur>1 || m_tcur>1 || m_tlast<0 || p_tlast<0 ||
-		m_tcur<=m_tlast || p_tcur<=p_tlast ) {
-	    pto->nonextcp = plus->noprevcp = true;
-	    minus->nonextcp = mto->noprevcp = true;
-	    SplineMake3(pto,plus);
-	    SplineMake3(minus,mto);
-	    if ( plus->nonextcp && plus->noprevcp ) plus->pointtype = pt_corner;
-	    if ( minus->nonextcp && minus->noprevcp ) minus->pointtype = pt_corner;
-	} else if ( si->stroke_type == si_caligraphic ) {
+	if ( si->stroke_type == si_caligraphic ) {
+	    if ( spline->knownlinear ||
+    /* 0 and 1 are valid values. They happen on circles for example */
+		    p_tcur>1 || m_tcur>1 || m_tlast<0 || p_tlast<0 ||
+		    m_tcur<=m_tlast || p_tcur<=p_tlast ) {
+		/* this isn't really the right thing to do when m_tcur<=m_tlast*/
+		/*  but I'm not sure what is */
+		pto->nonextcp = plus->noprevcp = true;
+		minus->nonextcp = mto->noprevcp = true;
+		SplineMake3(pto,plus);
+		SplineMake3(minus,mto);
+		if ( plus->nonextcp && plus->noprevcp ) plus->pointtype = pt_corner;
+		if ( minus->nonextcp && minus->noprevcp ) minus->pointtype = pt_corner;
+	    } else {
 	    /* At each t where the spline is tangent to one of the pen-angles */
 	    /*  we need to figure out which side is inner and which is outer */
 	    /*  the outer side gets a copy of the appropriate pen side (with corner points tangent) */
@@ -867,6 +870,7 @@ return( ssplus );
 		if ( m_from!=minus && m_from->pointtype!=pt_corner )
 		    m_from->pointtype = pt_tangent;
 	    }
+	    }
 	} else {
 	    if ( (xdiff = spline->to->me.x-spline->from->me.x)<0 ) xdiff = -xdiff;
 	    if ( (ydiff = spline->to->me.y-spline->from->me.y)<0 ) ydiff = -ydiff;
@@ -883,29 +887,42 @@ return( ssplus );
 	    /*  were defined, and that works fine most of the time, but some */
 	    /*  times we turn sharp corners and we don't get a good sampling */
 	    /*  of the curve which doesn't turn a corner */
-	    for ( i=0; i<approx; ++i ) {
-		real t = p_tlast + (i+1)*(p_tcur-p_tlast)/(approx+1);
-		pmids[pcnt].t = 1-(i+1)/(approx+1);
-		SplineExpand(spline,t,0,si,&p,&m);
-		pmids[pcnt].x = p.x; pmids[pcnt].y = p.y;
-		OnEdge(&p,&m,spline,t,t,spline,si,&pt1,&mt1,&pt2,&mt2);
-		/* If one of these guys isn't -1 then we should stop here */
-		/*  create a corner point, approximate a spline up to it */
-		/*  ignore points until we're not OnEdge, and then start */
-		/*  accumulating points again. But I'm not sure about figuring*/
-		/*  the control points on the corner point yet */
-		if ( pt1==-1 && pt2==-1 ) ++pcnt;
+	    if ( spline->knownlinear || p_tcur>1 || p_tlast<0 || p_tcur<=p_tlast ) {
+		pto->nonextcp = plus->noprevcp = true;
+		SplineMake3(pto,plus);
+		if ( plus->nonextcp && plus->noprevcp ) plus->pointtype = pt_corner;
+	    } else {
+		for ( i=0; i<approx; ++i ) {
+		    real t = p_tlast + (i+1)*(p_tcur-p_tlast)/(approx+1);
+		    pmids[pcnt].t = 1-(i+1)/(approx+1);
+		    SplineExpand(spline,t,0,si,&p,&m);
+		    pmids[pcnt].x = p.x; pmids[pcnt].y = p.y;
+		    OnEdge(&p,&m,spline,t,t,spline,si,&pt1,&mt1,&pt2,&mt2);
+		    /* If one of these guys isn't -1 then we should stop here */
+		    /*  create a corner point, approximate a spline up to it */
+		    /*  ignore points until we're not OnEdge, and then start */
+		    /*  accumulating points again. But I'm not sure about figuring*/
+		    /*  the control points on the corner point yet */
+		    if ( pt1==-1 && pt2==-1 ) ++pcnt;
+		}
+		ApproximateSplineFromPointsSlopes(pto,plus,pmids,pcnt,false);
 	    }
-	    ApproximateSplineFromPointsSlopes(pto,plus,pmids,pcnt,false);
-	    for ( i=0; i<approx; ++i ) {
-		real t = m_tlast + (i+1)*(m_tcur-m_tlast)/(approx+1);
-		mmids[mcnt].t = (i+1)*(m_tcur-m_tlast)/(approx+1);
-		SplineExpand(spline,t,0,si,&p,&m);
-		mmids[mcnt].x = m.x; mmids[mcnt].y = m.y;
-		OnEdge(&p,&m,spline,t,t,spline,si,&pt1,&mt1,&pt2,&mt2);
-		if ( mt1==-1 && mt2==-1 ) ++mcnt;
+
+	    if ( spline->knownlinear || m_tcur>1 || m_tlast<0 || m_tcur<=m_tlast ) {
+		minus->nonextcp = mto->noprevcp = true;
+		SplineMake3(minus,mto);
+		if ( minus->nonextcp && minus->noprevcp ) minus->pointtype = pt_corner;
+	    } else {
+		for ( i=0; i<approx; ++i ) {
+		    real t = m_tlast + (i+1)*(m_tcur-m_tlast)/(approx+1);
+		    mmids[mcnt].t = (i+1)*(m_tcur-m_tlast)/(approx+1);
+		    SplineExpand(spline,t,0,si,&p,&m);
+		    mmids[mcnt].x = m.x; mmids[mcnt].y = m.y;
+		    OnEdge(&p,&m,spline,t,t,spline,si,&pt1,&mt1,&pt2,&mt2);
+		    if ( mt1==-1 && mt2==-1 ) ++mcnt;
+		}
+		ApproximateSplineFromPointsSlopes(minus,mto,mmids,mcnt,false);
 	    }
-	    ApproximateSplineFromPointsSlopes(minus,mto,mmids,mcnt,false);
 	}
 	if ( spline->to->next!=NULL ) {
 	    plus = cur_plus.from;
@@ -966,6 +983,69 @@ return( ssplus );
 return( ssplus );
 }
 
+static SplineSet *SSRemoveUTurns(SplineSet *base) {
+    /* My stroking algorithem gets confused by sharp turns. For example */
+    /*  if we have a spline which is all in a line, but the control points */
+    /*  are such that it doubles back on itself ( "* +   * +", ie. cps */
+    /*  outside of the points) then things get very unhappy */
+    SplineSet *spl;
+    Spline *first, *s;
+    double dx,dy, offx,offy, diff;
+    int linear;
+
+    for ( spl=base; spl!=NULL; spl=spl->next ) {
+	first = NULL;
+	for ( s = spl->first->next; s!=NULL && s!=first; s=s->to->next ) {
+	    if ( first==NULL ) first = s;
+	    dx = s->to->me.x-s->from->me.x;
+	    dy = s->to->me.y-s->from->me.y;
+	    offx = s->from->nextcp.x-s->from->me.x;
+	    offy = s->from->nextcp.y-s->from->me.y;
+	    if ( offx*dx + offy*dy<0 ) {
+		diff = offx*dy-offy*dx;
+		linear = ( diff<1 && diff>-1 );
+		if ( offx<0 ) offx=0;
+		if ( offy<0 ) offy=0;
+		if ( offx+offy<1 || linear ) {
+		    s->from->nextcp = s->from->me;
+		    s->from->nonextcp = true;
+		    if ( s->from->pointtype == pt_curve )
+			s->from->pointtype = pt_corner;
+		    if ( s->order2 ) {
+			s->to->prevcp = s->to->me;
+			s->to->noprevcp = true;
+			if ( s->to->pointtype==pt_curve )
+			    s->to->pointtype = pt_corner;
+		    }
+		    SplineRefigure(s);
+		}
+	    }
+	    offx = s->to->me.x-s->to->prevcp.x;
+	    offy = s->to->me.y-s->to->prevcp.y;
+	    if ( offx*dx + offy*dy<0 ) {
+		diff = offx*dy-offy*dx;
+		linear = ( diff<1 && diff>-1 );
+		if ( offx<0 ) offx=0;
+		if ( offy<0 ) offy=0;
+		if ( offx+offy<1 || linear ) {
+		    s->to->prevcp = s->to->me;
+		    s->to->noprevcp = true;
+		    if ( s->to->pointtype==pt_curve )
+			s->to->pointtype = pt_corner;
+		    if ( s->order2 ) {
+			s->from->nextcp = s->from->me;
+			s->from->nonextcp = true;
+			if ( s->from->pointtype == pt_curve )
+			    s->from->pointtype = pt_corner;
+		    }
+		    SplineRefigure(s);
+		}
+	    }
+	}
+    }
+return( base );
+}
+
 SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc) {
     SplineSet *ret, *temp;
 
@@ -991,7 +1071,7 @@ SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc) {
 	trans[0] *= factor; trans[2] *= factor;
 	ret = SplinePointListTransform(ret,trans,true);
     } else
-	ret = _SplineSetStroke(spl,si,sc);
+	ret = _SplineSetStroke(SSRemoveUTurns(spl),si,sc);
 return( ret );
 }
 
@@ -1002,11 +1082,13 @@ return( ret );
 
 SplineSet *SSStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc) {
     SplineSet *head=NULL, *last=NULL, *cur;
-    int was_clock = true;
+    /*int was_clock = true;*/
 
     for ( ; spl!=NULL; spl = spl->next ) {
+#if 0
 	if ( si->removeinternal || si->removeexternal )
 	    was_clock = SplinePointListIsClockwise(spl);
+#endif
 	cur = SplineSetStroke(spl,si,sc);
 	if ( head==NULL )
 	    head = cur;
