@@ -35,15 +35,26 @@
 
 struct lookup {
     /*int script;*/
-    int feature_tag;
+    uint32 feature_tag;
     int lookup_type;
     int lookup_cnt;
-    int feature_cnt;
     uint32 offset, len;
     struct lookup *next;
     struct lookup *feature_next;
     uint16 flags;
     int script_lang_index;
+};
+
+/* Undocumented fact: Only one feature with a given tag allowed per script/lang */
+/*  So if we have multiple lookups with the same tag they must be merged into */
+/*  one feature with many lookups */
+struct feature {
+    uint32 feature_tag;
+    int lcnt;
+    struct lookup **lookups;
+    struct sl { uint32 script, lang; struct sl *next; } *sl;	/* More than one script/lang may use this feature */
+    int feature_cnt;
+    struct feature *feature_next;
 };
 
 struct tagflaglang {
@@ -1623,32 +1634,30 @@ static struct lookup *orderlookups(struct lookup **_lookups,
     }
     for ( i=0; i<cnt-1; ++i ) {
 	array[i]->feature_next = array[i+1];
-	array[i]->feature_cnt = i;
+	/*array[i]->feature_cnt = i;*/
     }
-    array[i]->feature_cnt = i;
+    /*array[i]->feature_cnt = i;*/
     features = array[0];
 
     free(array);
 return( features );
 }
 
-static int SFScriptLangMatch(SplineFont *sf,int sli,uint32 script,uint32 lang) {
-    int i,j;
+static int FeatureScriptLangMatch(struct feature *l,uint32 script,uint32 lang) {
+    struct sl *sl;
 
-    if ( sf->cidmaster ) sf=sf->cidmaster;
-    for ( i=0; sf->script_lang[sli][i].script!=0 && sf->script_lang[sli][i].script!=script ; ++i );
-    if ( sf->script_lang[sli][i].script==0 )
+    for ( sl = l->sl; sl!=NULL; sl = sl->next )
+	if ( sl->script == script && sl->lang == lang )
+return( true );
+
 return( false );
-
-    for ( j=0; sf->script_lang[sli][i].langs[j]!=0 && sf->script_lang[sli][i].langs[j]!=lang; ++j );
-return( sf->script_lang[sli][i].langs[j]==lang );
 }
 
 static void dump_script_table(FILE *g___,SplineFont *sf,
-	struct lookup *features,
+	struct feature *features,
 	uint32 script, int sc, uint8 *used,
 	uint32 *langs, int lc, uint8 *touched) {
-    struct lookup *l;
+    struct feature *f;
     int cnt, dflt_index=-1, total, offset;
     int i,j,k,m;
     uint32 here,base;
@@ -1690,14 +1699,14 @@ static void dump_script_table(FILE *g___,SplineFont *sf,
     if ( dflt_index!=-1 ) {
 	putshort(g___,0);		/* reserved, must be zero */
 	putshort(g___,0xffff);		/* No required feature */
-	for ( l=features, cnt=0; l!=NULL ; l=l->feature_next ) {
-	    if ( SFScriptLangMatch(sf,l->script_lang_index,script,DEFAULT_LANG))
+	for ( f=features, cnt=0; f!=NULL ; f=f->feature_next ) {
+	    if ( FeatureScriptLangMatch(f,script,DEFAULT_LANG))
 		++cnt;
 	}
 	putshort(g___,cnt);		/* Number of features */
-	for ( l=features, cnt=0; l!=NULL ; l=l->feature_next ) {
-	    if ( SFScriptLangMatch(sf,l->script_lang_index,script,DEFAULT_LANG))
-		putshort(g___,l->feature_cnt);	/* Index of each feature */
+	for ( f=features; f!=NULL ; f=f->feature_next ) {
+	    if ( FeatureScriptLangMatch(f,script,DEFAULT_LANG))
+		putshort(g___,f->feature_cnt);	/* Index of each feature */
 	}
     }
     /* Now the language system table for each language */
@@ -1710,14 +1719,14 @@ static void dump_script_table(FILE *g___,SplineFont *sf,
 	offset += 6;
 	putshort(g___,0);		/* reserved, must be zero */
 	putshort(g___,0xffff);		/* No required feature */
-	for ( l=features, cnt=0; l!=NULL ; l=l->feature_next ) {
-	    if ( SFScriptLangMatch(sf,l->script_lang_index,script,langs[i]))
+	for ( f=features, cnt=0; f!=NULL ; f=f->feature_next ) {
+	    if ( FeatureScriptLangMatch(f,script,langs[i]))
 		++cnt;
 	}
 	putshort(g___,cnt);		/* Number of features */
-	for ( l=features, cnt=0; l!=NULL ; l=l->feature_next ) {
-	    if ( SFScriptLangMatch(sf,l->script_lang_index,script,langs[i]))
-		putshort(g___,l->feature_cnt);	/* Index of each feature */
+	for ( f=features; f!=NULL ; f=f->feature_next ) {
+	    if ( FeatureScriptLangMatch(f,script,langs[i]))
+		putshort(g___,f->feature_cnt);	/* Index of each feature */
 	}
     }
 }
@@ -1763,6 +1772,187 @@ return( NULL );
 	++i;
     }
 return( efile );
+}
+
+static int CountLangs(SplineFont *sf,int sli) {
+    int lcnt, l, s;
+    struct script_record *sr = sf->script_lang[sli];
+
+    lcnt = 0;
+    for ( s=0; sr[s].script!=0; ++s )
+	for ( l=0; sr[s].langs[l]!=0; ++l )
+	    ++lcnt;
+return( lcnt );
+}
+
+struct slusage {
+    uint32 script;
+    uint32 lang;
+    int processed;
+    union {
+	uint32 used;
+	uint32 *usedarr;
+    } u;
+};
+
+static int FindSL(struct slusage *slu,int lcnt,uint32 script,uint32 lang) {
+    int i;
+
+    for ( i=lcnt-1; i>=0; --i )
+	if ( slu[i].script==script && slu[i].lang == lang )
+    break;
+return( i );
+}
+
+/* Find all slus that have the same usage as that at this, and add their */
+/*  script/langs to the feature */
+static void AddScriptLangsToFeature(struct feature *f,struct slusage *slu,
+	int this,int lcnt,int cnt ) {
+    int pos, match, i;
+    struct sl *sl;
+
+    f->sl = NULL;
+    for ( pos=0; pos<lcnt; ++pos ) {
+	if ( cnt<=32 )
+	    match = slu[this].u.used == slu[pos].u.used;
+	else {
+	    match = true;
+	    for ( i=((cnt+31)>>5)-1 ; i>=0 ; --i )
+		if ( slu[this].u.usedarr[i] != slu[pos].u.usedarr[i] ) {
+		    match = false;
+	    break;
+		}
+	}
+	if ( match ) {
+	    sl = chunkalloc(sizeof(struct sl));
+	    sl->next = f->sl;
+	    f->sl = sl;
+	    sl->script = slu[pos].script;
+	    sl->lang = slu[pos].lang;
+	    slu[pos].processed = true;
+	}
+    }
+    if ( f->sl==NULL )
+	GDrawIError("Impossible script lang in AddScriptLangsToFeature" );
+}
+
+static void AddSliToFeature(struct feature *f,SplineFont *sf,int sli) {
+    int s, l;
+    struct sl *sl;
+    struct script_record *sr = sf->script_lang[sli];
+
+    f->sl = NULL;
+    for ( s=0; sr[s].script!=0; ++s ) for ( l=0; sr[s].langs[l]!=0; ++l ) {
+	sl = chunkalloc(sizeof(struct sl));
+	sl->next = f->sl;
+	f->sl = sl;
+	sl->script = sr[s].script;
+	sl->lang = sr[s].langs[l];
+    }
+    if ( f->sl==NULL )
+	GDrawIError("Impossible script lang in AddSliToFeature" );
+}
+
+/* Now we have a set of lookups. Each of which is used by some colection of */
+/*  scripts and languages. We need to turn this around so that we know for */
+/*  each script what lookups it uses, and we must also merge all lookups of */
+/*  a given type into one feature per script/lang. Of course some lookup */
+/*  combinations may be shared by several script/lang settings and we should */
+/*  use the same feature when possible */
+static struct feature *CoalesceLookups(SplineFont *sf, struct lookup *lookups) {
+    struct lookup *l, *last;
+    int cnt, lcnt, allsame;
+    struct slusage *slu=NULL;
+    int slumax=0;
+    struct feature *fhead = NULL, *flast=NULL, *f;
+    int lang, s, pos, which, tot;
+    int fcnt = 0;
+
+    for ( ; lookups!=NULL; lookups = last->feature_next ) {
+	cnt = lcnt = 0;
+	allsame = true;
+	for ( l=lookups; l!=NULL && l->feature_tag==lookups->feature_tag; l = l->feature_next ) {
+	    last = l;
+	    ++cnt;
+	    lcnt += CountLangs(sf,lookups->script_lang_index);
+	    if ( l->script_lang_index!=lookups->script_lang_index )
+		allsame = false;
+	}
+	if ( allsame ) {
+	    f = chunkalloc(sizeof(struct feature));
+	    f->feature_tag = lookups->feature_tag;
+	    f->lcnt = cnt;
+	    f->lookups = galloc(cnt*sizeof(struct lookup *));
+	    f->feature_cnt = fcnt++;
+	    cnt = 0;
+	    for ( l=lookups; l!=NULL && l->feature_tag==lookups->feature_tag; l = l->feature_next )
+		f->lookups[cnt++] = l;
+	    AddSliToFeature(f,sf,lookups->script_lang_index);
+	    if ( flast==NULL )
+		fhead = f;
+	    else
+		flast->feature_next = f;
+	    flast = f;
+    continue;
+	}
+	if ( lcnt>slumax ) {
+	    if ( slumax==0 )
+		slu = galloc(lcnt*sizeof(struct slusage));
+	    else
+		slu = grealloc(slu,lcnt*sizeof(struct slusage));
+	    slumax = lcnt;
+	}
+	lcnt = 0; which = 0;
+	for ( l=lookups; l!=NULL && l->feature_tag==lookups->feature_tag; l = l->feature_next ) {
+	    struct script_record *sr = sf->script_lang[l->script_lang_index];
+	    for ( s=0; sr[s].script!=0; ++s ) for ( lang=0; sr[s].langs[lang]!=0; ++lang ) {
+		pos = FindSL(slu,lcnt,sr[s].script,sr[s].langs[lang]);
+		if ( pos==-1 ) {
+		    slu[lcnt].script = sr[s].script;
+		    slu[lcnt].lang = sr[s].langs[lang];
+		    slu[lcnt].processed = false;
+		    if ( cnt<32 )
+			slu[lcnt].u.used = 0;
+		    else
+			slu[lcnt].u.usedarr = gcalloc( (cnt+31)>>5,sizeof(uint32) );
+		    pos = lcnt++;
+		}
+		if ( cnt<=32 )
+		    slu[pos].u.used |= (1<<which);
+		else
+		    slu[pos].u.usedarr[which>>5] |= (1<<(which&0x1f));
+	    }
+	}
+	for ( pos=0; pos<lcnt; ++pos ) if ( !slu[pos].processed ) {
+	    f = chunkalloc(sizeof(struct feature));
+	    f->feature_tag = lookups->feature_tag;
+	    for ( tot=which=0; which<cnt; ++which )
+		if ( (cnt<=32 && (slu[pos].u.used&(1<<which))) ||
+			(cnt>32 && (slu[pos].u.usedarr[which>>5]&(1<<(which&0x1f)))) )
+		++tot;
+	    f->lcnt = tot;
+	    f->lookups = galloc(cnt*sizeof(struct lookup *));
+	    f->feature_cnt = fcnt++;
+	    tot = 0;
+	    for ( which = 0, l=lookups; l!=NULL && l->feature_tag==lookups->feature_tag; l = l->feature_next, ++which )
+		if ( (cnt<=32 && (slu[pos].u.used&(1<<which))) ||
+			(cnt>32 && (slu[pos].u.usedarr[which>>5]&(1<<(which&0x1f)))) )
+		    f->lookups[tot++] = l;
+	    AddScriptLangsToFeature(f,slu,pos,lcnt,cnt);
+	    if ( flast==NULL )
+		fhead = f;
+	    else
+		flast->feature_next = f;
+	    flast = f;
+	}
+	if ( cnt>32 ) {
+	    for ( pos=0; pos<lcnt; ++pos )
+		free(slu[pos].u.usedarr);
+	}
+    }
+    if ( slumax!=0 )
+	free(slu);
+return( fhead );
 }
 
 static uint32 *ScriptsFromFeatures(SplineFont *sf, uint8 *used,
@@ -1822,8 +2012,10 @@ return( scripts );
 static FILE *dumpg___info(struct alltabs *at, SplineFont *sf,int is_gpos) {
     /* Dump out either a gpos or a gsub table. gpos handles kerns, gsub ligs */
     FILE *lfile, *lfile2, *g___, *efile;
-    struct lookup *lookups=NULL, *feature_ordered, *l, *next;
-    int cnt, offset, i;
+    struct lookup *lookups=NULL, *features_ordered, *l, *next;
+    struct feature *features, *f, *fnext;
+    struct sl *sl, *slnext;
+    int cnt, fcnt, offset, i;
     char *buf;
     uint32 *scripts, *langs;
     uint32 lookup_list_table_start, feature_list_table_start, here, scripts_start_offset;
@@ -1847,8 +2039,9 @@ return( NULL );
 
     lookups = reverse_list(lookups);
     lfile2 = tmpfile();
-    feature_ordered = orderlookups(&lookups,ord,lfile2,lfile);
+    features_ordered = orderlookups(&lookups,ord,lfile2,lfile);
     lfile = lfile2;
+    features = CoalesceLookups(sf,features_ordered);
 
     master = ( sf->cidmaster ) ? sf->cidmaster : sf;
     for ( i=0; master->script_lang[i]!=NULL; ++i );
@@ -1883,7 +2076,7 @@ return( NULL );
 	putshort(g___,here-scripts_start_offset);
 	offset+=6;
 	fseek(g___,here,SEEK_SET);
-	dump_script_table(g___,sf,feature_ordered,
+	dump_script_table(g___,sf,features,
 		scripts[i],cnt,used,
 		langs,lc,touched);
     }
@@ -1893,22 +2086,34 @@ return( NULL );
     fseek(g___,6,SEEK_SET);
     putshort(g___,feature_list_table_start);
     fseek(g___,0,SEEK_END);
-    for ( l=feature_ordered, cnt=0; l!=NULL; l=l->feature_next, ++cnt );
-    putshort(g___,cnt);		/* Number of features */
-    offset = 2+6*cnt;		/* Offset to start of first feature table from beginning of feature_list */
-    for ( l=feature_ordered; l!=NULL; l=l->feature_next ) {
-	putlong(g___,l->feature_tag);
+    for ( f=features, fcnt=0; f!=NULL; f=f->feature_next, ++fcnt );
+    putshort(g___,fcnt);	/* Number of features */
+    offset = 2+6*fcnt;		/* Offset to start of first feature table from beginning of feature_list */
+    for ( f=features; f!=NULL; f=f->feature_next ) {
+	putlong(g___,f->feature_tag);
 	putshort(g___,offset);
-	offset += 6;		/* Each of my feature tables will have one entry and be 6 bytes long */
+	offset += 4+2*f->lcnt;
     }
     /* for each feature, one feature table */
-    for ( l=feature_ordered; l!=NULL; l=l->feature_next ) {
-	putshort(g___,0);	/* No feature params */
-	putshort(g___,1);	/* Only one lookup */
-	putshort(g___,l->lookup_cnt);
+    for ( f=features; f!=NULL; f=f->feature_next ) {
+	putshort(g___,0);		/* No feature params */
+	putshort(g___,f->lcnt);		/* this many lookups */
+	for ( i=0; i<f->lcnt; ++i )
+	    putshort(g___,f->lookups[i]->lookup_cnt);	/* index of each lookup */
     }
     /* And that should finish all the features */
+    for ( f=features; f!=NULL; f=fnext ) {
+	fnext = f->feature_next;
+	free(f->lookups);
+	for ( sl=f->sl; sl!=NULL; sl=slnext ) {
+	    slnext = sl->next;
+	    chunkfree(sl,sizeof(struct sl));
+	}
+	chunkfree(f,sizeof(struct feature));
+    }
+    /* So free the feature list */
 
+    for ( cnt=0, l=lookups; l!=NULL; l=l->next, ++cnt );
     lookup_list_table_start = ftell(g___);
     fseek(g___,8,SEEK_SET);
     putshort(g___,lookup_list_table_start);
