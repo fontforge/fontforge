@@ -457,7 +457,7 @@ typedef struct fontview {
     int16 infoh,mbh;
     int16 lab_height;
     int16 colcnt, rowcnt;
-    int16 rowoff, rowltot;
+    int32 rowoff, rowltot;		/* can be really big in full unicode */
     int16 cbw,cbh;			/* width/height of a character box */
     struct fontview *next;		/* Next on list of open fontviews */
     struct fontview *nextsame;		/* Next fv looking at this font */
