@@ -52,6 +52,8 @@ struct problems {
     unsigned int cidmultiple: 1;
     unsigned int cidblank: 1;
     unsigned int bitmaps: 1;
+    unsigned int advancewidth: 1;
+    unsigned int vadvancewidth: 1;
     unsigned int explain: 1;
     unsigned int done: 1;
     unsigned int doneexplain: 1;
@@ -61,6 +63,7 @@ struct problems {
     int explaining;
     real found, expected;
     real xheight, caph, ascent, descent;
+    int advancewidthval, vadvancewidthval;
     GWindow explainw;
     GGadget *explaintext, *explainvals, *ignoregadg;
     SplineChar *lastcharopened;
@@ -70,12 +73,14 @@ struct problems {
 static int openpaths=1, pointstooclose=1/*, missing=0*/, doxnear=0, doynear=0;
 static int doynearstd=1, linestd=1, cpstd=1, cpodd=1, hintnopt=0, ptnearhint=0;
 static int hintwidth=0, direction=0, flippedrefs=1, bitmaps=0;
-static int cidblank=0, cidmultiple=1;
-static real near=3, xval=0, yval=0, widthval=50;
+static int cidblank=0, cidmultiple=1, advancewidth=0, vadvancewidth=0;
+static real near=3, xval=0, yval=0, widthval=50, advancewidthval=0, vadvancewidthval=0;
 
 #define CID_Stop		2001
 #define CID_Next		2002
 #define CID_Fix			2003
+#define CID_ClearAll		2004
+#define CID_SetAll		2005
 
 #define CID_OpenPaths		1001
 #define CID_PointsTooClose	1002
@@ -98,6 +103,10 @@ static real near=3, xval=0, yval=0, widthval=50;
 #define CID_CIDBlank		1019
 #define CID_FlippedRefs		1020
 #define CID_Bitmaps		1021
+#define CID_AdvanceWidth	1022
+#define CID_AdvanceWidthVal	1023
+#define CID_VAdvanceWidth	1024
+#define CID_VAdvanceWidthVal	1025
 
 
 static void FixIt(struct problems *p) {
@@ -245,6 +254,10 @@ return;
 	    sp->pointtype = pt_corner;
     } else if ( p->explaining==_STR_ProbExpectedCounter || p->explaining==_STR_ProbExpectedClockwise ) {
 	SplineSetReverse(spl);
+    } else if ( p->explaining==_STR_ProbBadWidth ) {
+	SCSynchronizeWidth(p->sc,p->advancewidthval,p->sc->width,NULL);
+    } else if ( p->explaining==_STR_ProbBadVWidth ) {
+	p->sc->vwidth=p->vadvancewidthval;
     } else
 	GDrawIError("Did not fix: %d", p->explaining );
     if ( sp->next!=NULL )
@@ -382,7 +395,9 @@ return;
 	    explain==_STR_ProbRightHor || explain==_STR_ProbLeftHor ||
 	    explain==_STR_ProbAboveVert || explain==_STR_ProbBelowVert ||
 	    explain==_STR_ProbRightVert || explain==_STR_ProbLeftVert ||
-	    explain==_STR_ProbExpectedCounter || explain==_STR_ProbExpectedClockwise;
+	    explain==_STR_ProbExpectedCounter || explain==_STR_ProbExpectedClockwise ||
+	    explain==_STR_ProbBadWidth ||
+	    explain==_STR_ProbBadVWidth;
     GGadgetSetVisible(GWidgetGetControl(p->explainw,CID_Fix),fixable);
 
     if ( found==expected )
@@ -1067,6 +1082,24 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	}
     }
 
+    if ( p->advancewidth && !p->finish && SCWorthOutputting(sc)) {
+	if ( sc->width!=p->advancewidthval ) {
+	    changed = true;
+	    ExplainIt(p,sc,_STR_ProbBadWidth,sc->width,p->advancewidthval);
+	    if ( p->ignorethis )
+		p->advancewidth = false;
+	}
+    }
+
+    if ( p->vadvancewidth && !p->finish && SCWorthOutputting(sc)) {
+	if ( sc->vwidth!=p->vadvancewidthval ) {
+	    changed = true;
+	    ExplainIt(p,sc,_STR_ProbBadVWidth,sc->vwidth,p->vadvancewidthval);
+	    if ( p->ignorethis )
+		p->vadvancewidth = false;
+	}
+    }
+
     if ( needsupdate || changed )
 	SCUpdateAll(sc);
 return( changed );
@@ -1149,6 +1182,28 @@ static void FigureStandardHeights(struct problems *p) {
     p->descent = bd.descent;
 }
 
+static int Prob_DoAll(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct problems *p = GDrawGetUserData(GGadgetGetWindow(g));
+	int set = GGadgetGetCid(g)==CID_SetAll;
+	GWindow gw = GGadgetGetWindow(g);
+	static int cbs[] = { CID_OpenPaths, CID_PointsTooClose, CID_XNear,
+	    CID_YNear, CID_YNearStd, CID_HintNoPt, CID_PtNearHint,
+	    CID_HintWidthNear, CID_LineStd, CID_Direction, CID_CpStd,
+	    CID_CpOdd, CID_FlippedRefs, CID_Bitmaps, CID_AdvanceWidth, 0 };
+	int i;
+	if ( p->fv->cidmaster!=NULL ) {
+	    GGadgetSetChecked(GWidgetGetControl(gw,CID_CIDMultiple),set);
+	    GGadgetSetChecked(GWidgetGetControl(gw,CID_CIDBlank),set);
+	}
+	if ( p->fv->sf->hasvmetrics )
+	    GGadgetSetChecked(GWidgetGetControl(gw,CID_VAdvanceWidth),set);
+	for ( i=0; cbs[i]!=0; ++i )
+	    GGadgetSetChecked(GWidgetGetControl(gw,cbs[i]),set);
+    }
+return( true );
+}
+
 static int Prob_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	GWindow gw = GGadgetGetWindow(g);
@@ -1170,10 +1225,15 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	direction = p->direction = GGadgetIsChecked(GWidgetGetControl(gw,CID_Direction));
 	flippedrefs = p->flippedrefs = GGadgetIsChecked(GWidgetGetControl(gw,CID_FlippedRefs));
 	bitmaps = p->bitmaps = GGadgetIsChecked(GWidgetGetControl(gw,CID_Bitmaps));
+	advancewidth = p->advancewidth = GGadgetIsChecked(GWidgetGetControl(gw,CID_AdvanceWidth));
 	if ( p->fv->cidmaster!=NULL ) {
 	    cidmultiple = p->cidmultiple = GGadgetIsChecked(GWidgetGetControl(gw,CID_CIDMultiple));
 	    cidblank = p->cidblank = GGadgetIsChecked(GWidgetGetControl(gw,CID_CIDBlank));
 	}
+	if ( p->fv->sf->hasvmetrics ) {
+	    vadvancewidth = p->vadvancewidth = GGadgetIsChecked(GWidgetGetControl(gw,CID_VAdvanceWidth));
+	} else
+	    p->vadvancewidth = false;
 	p->explain = true;
 	if ( doxnear )
 	    p->xval = xval = GetRealR(gw,CID_XNearVal,_STR_XNear,&errs);
@@ -1181,6 +1241,10 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	    p->yval = yval = GetRealR(gw,CID_YNearVal,_STR_YNear,&errs);
 	if ( hintwidth )
 	    widthval = p->widthval = GetRealR(gw,CID_HintWidth,_STR_HintWidth,&errs);
+	if ( p->advancewidth )
+	    advancewidthval = p->advancewidthval = GetIntR(gw,CID_AdvanceWidthVal,_STR_HintWidth,&errs);
+	if ( p->vadvancewidth )
+	    vadvancewidthval = p->vadvancewidthval = GetIntR(gw,CID_VAdvanceWidthVal,_STR_HintWidth,&errs);
 	near = p->near = GetRealR(gw,CID_Near,_STR_Near,&errs);
 	if ( errs )
 return( true );
@@ -1190,7 +1254,7 @@ return( true );
 	if ( openpaths || pointstooclose /*|| missing*/ || doxnear || doynear ||
 		doynearstd || linestd || hintnopt || ptnearhint || hintwidth ||
 		direction || p->cidmultiple || p->cidblank || p->flippedrefs ||
-		p->bitmaps ) {
+		p->bitmaps || p->advancewidth || p->vadvancewidth ) {
 	    DoProbs(p);
 	}
 	p->done = true;
@@ -1225,11 +1289,14 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[27];
-    GTextInfo label[26];
+    GGadgetCreateData pgcd[9], pagcd[5], hgcd[5], rgcd[6], cgcd[5], mgcd[10];
+    GTextInfo plabel[9], palabel[5], hlabel[5], rlabel[6], clabel[5], mlabel[10];
+    GTabInfo aspects[9];
     struct problems p;
-    char xnbuf[20], ynbuf[20], widthbuf[20], nearbuf[20];
-    int ypos;
+    char xnbuf[20], ynbuf[20], widthbuf[20], nearbuf[20], awidthbuf[20], vawidthbuf[20];
+    int i;
+    SplineFont *sf;
+    /*static GBox smallbox = { bt_raised, bs_rect, 2, 1, 0, 0, 0,0,0,0, COLOR_DEFAULT,COLOR_DEFAULT };*/
 
     memset(&p,0,sizeof(p));
     if ( fv==NULL ) fv = cv->fv;
@@ -1245,280 +1312,398 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     wattrs.cursor = ct_pointer;
     wattrs.window_title = GStringGetResource(_STR_Findprobs,NULL);
     pos.x = pos.y = 0;
-    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,200));
-    pos.height = GDrawPointsToPixels(NULL,fv->cidmaster==NULL?355:392);
+    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,218));
+    pos.height = GDrawPointsToPixels(NULL,290);
     gw = GDrawCreateTopWindow(NULL,&pos,e_h,&p,&wattrs);
 
-    memset(&label,0,sizeof(label));
-    memset(&gcd,0,sizeof(gcd));
+    memset(&plabel,0,sizeof(plabel));
+    memset(&pgcd,0,sizeof(pgcd));
 
-    label[0].text = (unichar_t *) _STR_OpenPaths;
-    label[0].text_in_resource = true;
-    gcd[0].gd.label = &label[0];
-    gcd[0].gd.mnemonic = 'P';
-    gcd[0].gd.pos.x = 6; gcd[0].gd.pos.y = 6; 
-    gcd[0].gd.flags = gg_visible | gg_enabled;
-    if ( openpaths ) gcd[0].gd.flags |= gg_cb_on;
-    gcd[0].gd.popup_msg = GStringGetResource(_STR_OpenPathsPopup,NULL);
-    gcd[0].gd.cid = CID_OpenPaths;
-    gcd[0].creator = GCheckBoxCreate;
+    plabel[0].text = (unichar_t *) _STR_Points2Close;
+    plabel[0].text_in_resource = true;
+    pgcd[0].gd.label = &plabel[0];
+    pgcd[0].gd.mnemonic = 't';
+    pgcd[0].gd.pos.x = 3; pgcd[0].gd.pos.y = 5; 
+    pgcd[0].gd.flags = gg_visible | gg_enabled;
+    if ( pointstooclose ) pgcd[0].gd.flags |= gg_cb_on;
+    pgcd[0].gd.popup_msg = GStringGetResource(_STR_Points2ClosePopup,NULL);
+    pgcd[0].gd.cid = CID_PointsTooClose;
+    pgcd[0].creator = GCheckBoxCreate;
 
-    label[1].text = (unichar_t *) _STR_Points2Close;
-    label[1].text_in_resource = true;
-    gcd[1].gd.label = &label[1];
-    gcd[1].gd.mnemonic = 't';
-    gcd[1].gd.pos.x = 6; gcd[1].gd.pos.y = gcd[0].gd.pos.y+17; 
-    gcd[1].gd.flags = gg_visible | gg_enabled;
-    if ( pointstooclose ) gcd[1].gd.flags |= gg_cb_on;
-    gcd[1].gd.popup_msg = GStringGetResource(_STR_Points2ClosePopup,NULL);
-    gcd[1].gd.cid = CID_PointsTooClose;
-    gcd[1].creator = GCheckBoxCreate;
-
-    label[2].text = (unichar_t *) _STR_XNear;
-    label[2].text_in_resource = true;
-    gcd[2].gd.label = &label[2];
-    gcd[2].gd.mnemonic = 'X';
-    gcd[2].gd.pos.x = 6; gcd[2].gd.pos.y = gcd[1].gd.pos.y+20; 
-    gcd[2].gd.flags = gg_visible | gg_enabled;
-    if ( doxnear ) gcd[2].gd.flags |= gg_cb_on;
-    gcd[2].gd.popup_msg = GStringGetResource(_STR_XNearPopup,NULL);
-    gcd[2].gd.cid = CID_XNear;
-    gcd[2].creator = GCheckBoxCreate;
+    plabel[1].text = (unichar_t *) _STR_XNear;
+    plabel[1].text_in_resource = true;
+    pgcd[1].gd.label = &plabel[1];
+    pgcd[1].gd.mnemonic = 'X';
+    pgcd[1].gd.pos.x = 3; pgcd[1].gd.pos.y = pgcd[0].gd.pos.y+20; 
+    pgcd[1].gd.flags = gg_visible | gg_enabled;
+    if ( doxnear ) pgcd[1].gd.flags |= gg_cb_on;
+    pgcd[1].gd.popup_msg = GStringGetResource(_STR_XNearPopup,NULL);
+    pgcd[1].gd.cid = CID_XNear;
+    pgcd[1].creator = GCheckBoxCreate;
 
     sprintf(xnbuf,"%g",xval);
-    label[3].text = (unichar_t *) xnbuf;
-    label[3].text_is_1byte = true;
-    gcd[3].gd.label = &label[3];
-    gcd[3].gd.pos.x = 60; gcd[3].gd.pos.y = gcd[2].gd.pos.y-1; gcd[3].gd.pos.width = 40;
-    gcd[3].gd.flags = gg_visible | gg_enabled;
-    gcd[3].gd.cid = CID_XNearVal;
-    gcd[5].gd.handle_controlevent = Prob_TextChanged;
-    gcd[5].data = (void *) CID_XNear;
-    gcd[3].creator = GTextFieldCreate;
+    plabel[2].text = (unichar_t *) xnbuf;
+    plabel[2].text_is_1byte = true;
+    pgcd[2].gd.label = &plabel[2];
+    pgcd[2].gd.pos.x = 60; pgcd[2].gd.pos.y = pgcd[1].gd.pos.y-1; pgcd[2].gd.pos.width = 40;
+    pgcd[2].gd.flags = gg_visible | gg_enabled;
+    pgcd[2].gd.cid = CID_XNearVal;
+    pgcd[2].gd.handle_controlevent = Prob_TextChanged;
+    pgcd[2].data = (void *) CID_XNear;
+    pgcd[2].creator = GTextFieldCreate;
 
-    label[4].text = (unichar_t *) _STR_YNear;
-    label[4].text_in_resource = true;
-    gcd[4].gd.label = &label[4];
-    gcd[4].gd.mnemonic = 'Y';
-    gcd[4].gd.pos.x = 6; gcd[4].gd.pos.y = gcd[2].gd.pos.y+26; 
-    gcd[4].gd.flags = gg_visible | gg_enabled;
-    if ( doynear ) gcd[4].gd.flags |= gg_cb_on;
-    gcd[4].gd.popup_msg = GStringGetResource(_STR_YNearPopup,NULL);
-    gcd[4].gd.cid = CID_YNear;
-    gcd[4].creator = GCheckBoxCreate;
+    plabel[3].text = (unichar_t *) _STR_YNear;
+    plabel[3].text_in_resource = true;
+    pgcd[3].gd.label = &plabel[3];
+    pgcd[3].gd.mnemonic = 'Y';
+    pgcd[3].gd.pos.x = 3; pgcd[3].gd.pos.y = pgcd[1].gd.pos.y+26; 
+    pgcd[3].gd.flags = gg_visible | gg_enabled;
+    if ( doynear ) pgcd[3].gd.flags |= gg_cb_on;
+    pgcd[3].gd.popup_msg = GStringGetResource(_STR_YNearPopup,NULL);
+    pgcd[3].gd.cid = CID_YNear;
+    pgcd[3].creator = GCheckBoxCreate;
 
     sprintf(ynbuf,"%g",yval);
-    label[5].text = (unichar_t *) ynbuf;
-    label[5].text_is_1byte = true;
-    gcd[5].gd.label = &label[5];
-    gcd[5].gd.pos.x = 60; gcd[5].gd.pos.y = gcd[4].gd.pos.y-1; gcd[5].gd.pos.width = 40;
-    gcd[5].gd.flags = gg_visible | gg_enabled;
-    gcd[5].gd.cid = CID_YNearVal;
-    gcd[5].gd.handle_controlevent = Prob_TextChanged;
-    gcd[5].data = (void *) CID_YNear;
-    gcd[5].creator = GTextFieldCreate;
+    plabel[4].text = (unichar_t *) ynbuf;
+    plabel[4].text_is_1byte = true;
+    pgcd[4].gd.label = &plabel[4];
+    pgcd[4].gd.pos.x = 60; pgcd[4].gd.pos.y = pgcd[3].gd.pos.y-1; pgcd[4].gd.pos.width = 40;
+    pgcd[4].gd.flags = gg_visible | gg_enabled;
+    pgcd[4].gd.cid = CID_YNearVal;
+    pgcd[4].gd.handle_controlevent = Prob_TextChanged;
+    pgcd[4].data = (void *) CID_YNear;
+    pgcd[4].creator = GTextFieldCreate;
 
-    label[6].text = (unichar_t *) _STR_YNearStd;
-    label[6].text_in_resource = true;
-    gcd[6].gd.label = &label[6];
-    gcd[6].gd.mnemonic = 'S';
-    gcd[6].gd.pos.x = 6; gcd[6].gd.pos.y = gcd[4].gd.pos.y+20; 
-    gcd[6].gd.flags = gg_visible | gg_enabled;
-    if ( doynearstd ) gcd[6].gd.flags |= gg_cb_on;
-    gcd[6].gd.popup_msg = GStringGetResource(_STR_YNearStdPopup,NULL);
-    gcd[6].gd.cid = CID_YNearStd;
-    gcd[6].creator = GCheckBoxCreate;
+    plabel[5].text = (unichar_t *) _STR_YNearStd;
+    plabel[5].text_in_resource = true;
+    pgcd[5].gd.label = &plabel[5];
+    pgcd[5].gd.mnemonic = 'S';
+    pgcd[5].gd.pos.x = 3; pgcd[5].gd.pos.y = pgcd[3].gd.pos.y+20; 
+    pgcd[5].gd.flags = gg_visible | gg_enabled;
+    if ( doynearstd ) pgcd[5].gd.flags |= gg_cb_on;
+    pgcd[5].gd.popup_msg = GStringGetResource(_STR_YNearStdPopup,NULL);
+    pgcd[5].gd.cid = CID_YNearStd;
+    pgcd[5].creator = GCheckBoxCreate;
 
-    label[7].text = (unichar_t *) (fv->sf->italicangle==0?_STR_LineStd:_STR_LineStd2);
-    label[7].text_in_resource = true;
-    gcd[7].gd.label = &label[7];
-    gcd[7].gd.mnemonic = 'E';
-    gcd[7].gd.pos.x = 6; gcd[7].gd.pos.y = gcd[6].gd.pos.y+17; 
-    gcd[7].gd.flags = gg_visible | gg_enabled;
-    if ( linestd ) gcd[7].gd.flags |= gg_cb_on;
-    gcd[7].gd.popup_msg = GStringGetResource(_STR_LineStdPopup,NULL);
-    gcd[7].gd.cid = CID_LineStd;
-    gcd[7].creator = GCheckBoxCreate;
+    plabel[6].text = (unichar_t *) (fv->sf->italicangle==0?_STR_CpStd:_STR_CpStd2);
+    plabel[6].text_in_resource = true;
+    pgcd[6].gd.label = &plabel[6];
+    pgcd[6].gd.mnemonic = 'C';
+    pgcd[6].gd.pos.x = 3; pgcd[6].gd.pos.y = pgcd[5].gd.pos.y+17; 
+    pgcd[6].gd.flags = gg_visible | gg_enabled;
+    if ( cpstd ) pgcd[6].gd.flags |= gg_cb_on;
+    pgcd[6].gd.popup_msg = GStringGetResource(_STR_CpStdPopup,NULL);
+    pgcd[6].gd.cid = CID_CpStd;
+    pgcd[6].creator = GCheckBoxCreate;
 
-    label[19].text = (unichar_t *) (fv->sf->italicangle==0?_STR_CpStd:_STR_CpStd2);
-    label[19].text_in_resource = true;
-    gcd[19].gd.label = &label[19];
-    gcd[19].gd.mnemonic = 'C';
-    gcd[19].gd.pos.x = 6; gcd[19].gd.pos.y = gcd[7].gd.pos.y+17; 
-    gcd[19].gd.flags = gg_visible | gg_enabled;
-    if ( cpstd ) gcd[19].gd.flags |= gg_cb_on;
-    gcd[19].gd.popup_msg = GStringGetResource(_STR_CpStdPopup,NULL);
-    gcd[19].gd.cid = CID_CpStd;
-    gcd[19].creator = GCheckBoxCreate;
+    plabel[7].text = (unichar_t *) _STR_CpOdd;
+    plabel[7].text_in_resource = true;
+    pgcd[7].gd.label = &plabel[7];
+    pgcd[7].gd.mnemonic = 'b';
+    pgcd[7].gd.pos.x = 3; pgcd[7].gd.pos.y = pgcd[6].gd.pos.y+17; 
+    pgcd[7].gd.flags = gg_visible | gg_enabled;
+    if ( cpodd ) pgcd[7].gd.flags |= gg_cb_on;
+    pgcd[7].gd.popup_msg = GStringGetResource(_STR_CpOddPopup,NULL);
+    pgcd[7].gd.cid = CID_CpOdd;
+    pgcd[7].creator = GCheckBoxCreate;
 
-    label[20].text = (unichar_t *) _STR_CpOdd;
-    label[20].text_in_resource = true;
-    gcd[20].gd.label = &label[20];
-    gcd[20].gd.mnemonic = 'b';
-    gcd[20].gd.pos.x = 6; gcd[20].gd.pos.y = gcd[19].gd.pos.y+17; 
-    gcd[20].gd.flags = gg_visible | gg_enabled;
-    if ( cpodd ) gcd[20].gd.flags |= gg_cb_on;
-    gcd[20].gd.popup_msg = GStringGetResource(_STR_CpOddPopup,NULL);
-    gcd[20].gd.cid = CID_CpOdd;
-    gcd[20].creator = GCheckBoxCreate;
+/* ************************************************************************** */
 
-    label[8].text = (unichar_t *) _STR_HintNoPt;
-    label[8].text_in_resource = true;
-    gcd[8].gd.label = &label[8];
-    gcd[8].gd.mnemonic = 'H';
-    gcd[8].gd.pos.x = 6; gcd[8].gd.pos.y = gcd[20].gd.pos.y+17; 
-    gcd[8].gd.flags = gg_visible | gg_enabled;
-    if ( hintnopt ) gcd[8].gd.flags |= gg_cb_on;
-    gcd[8].gd.popup_msg = GStringGetResource(_STR_HintNoPtPopup,NULL);
-    gcd[8].gd.cid = CID_HintNoPt;
-    gcd[8].creator = GCheckBoxCreate;
+    memset(&palabel,0,sizeof(palabel));
+    memset(&pagcd,0,sizeof(pagcd));
 
-    label[9].text = (unichar_t *) _STR_PtNearHint;
-    label[9].text_in_resource = true;
-    gcd[9].gd.label = &label[9];
-    gcd[9].gd.mnemonic = 'H';
-    gcd[9].gd.pos.x = 6; gcd[9].gd.pos.y = gcd[8].gd.pos.y+17; 
-    gcd[9].gd.flags = gg_visible | gg_enabled;
-    if ( ptnearhint ) gcd[9].gd.flags |= gg_cb_on;
-    gcd[9].gd.popup_msg = GStringGetResource(_STR_PtNearHintPopup,NULL);
-    gcd[9].gd.cid = CID_PtNearHint;
-    gcd[9].creator = GCheckBoxCreate;
+    palabel[0].text = (unichar_t *) _STR_OpenPaths;
+    palabel[0].text_in_resource = true;
+    pagcd[0].gd.label = &palabel[0];
+    pagcd[0].gd.mnemonic = 'P';
+    pagcd[0].gd.pos.x = 3; pagcd[0].gd.pos.y = 6; 
+    pagcd[0].gd.flags = gg_visible | gg_enabled;
+    if ( openpaths ) pagcd[0].gd.flags |= gg_cb_on;
+    pagcd[0].gd.popup_msg = GStringGetResource(_STR_OpenPathsPopup,NULL);
+    pagcd[0].gd.cid = CID_OpenPaths;
+    pagcd[0].creator = GCheckBoxCreate;
 
-    label[10].text = (unichar_t *) _STR_HintWidth;
-    label[10].text_in_resource = true;
-    gcd[10].gd.label = &label[10];
-    gcd[10].gd.mnemonic = 'W';
-    gcd[10].gd.pos.x = 6; gcd[10].gd.pos.y = gcd[9].gd.pos.y+21;
-    gcd[10].gd.flags = gg_visible | gg_enabled;
-    if ( hintwidth ) gcd[10].gd.flags |= gg_cb_on;
-    gcd[10].gd.popup_msg = GStringGetResource(_STR_HintWidthPopup,NULL);
-    gcd[10].gd.cid = CID_HintWidthNear;
-    gcd[10].creator = GCheckBoxCreate;
+    palabel[1].text = (unichar_t *) (fv->sf->italicangle==0?_STR_LineStd:_STR_LineStd2);
+    palabel[1].text_in_resource = true;
+    pagcd[1].gd.label = &palabel[1];
+    pagcd[1].gd.mnemonic = 'E';
+    pagcd[1].gd.pos.x = 3; pagcd[1].gd.pos.y = pagcd[0].gd.pos.y+17; 
+    pagcd[1].gd.flags = gg_visible | gg_enabled;
+    if ( linestd ) pagcd[1].gd.flags |= gg_cb_on;
+    pagcd[1].gd.popup_msg = GStringGetResource(_STR_LineStdPopup,NULL);
+    pagcd[1].gd.cid = CID_LineStd;
+    pagcd[1].creator = GCheckBoxCreate;
+
+    palabel[2].text = (unichar_t *) _STR_CheckDirection;
+    palabel[2].text_in_resource = true;
+    pagcd[2].gd.label = &palabel[2];
+    pagcd[2].gd.mnemonic = 'S';
+    pagcd[2].gd.pos.x = 3; pagcd[2].gd.pos.y = pagcd[1].gd.pos.y+17; 
+    pagcd[2].gd.flags = gg_visible | gg_enabled;
+    if ( direction ) pagcd[2].gd.flags |= gg_cb_on;
+    pagcd[2].gd.popup_msg = GStringGetResource(_STR_CheckDirectionPopup,NULL);
+    pagcd[2].gd.cid = CID_Direction;
+    pagcd[2].creator = GCheckBoxCreate;
+
+    palabel[3].text = (unichar_t *) _STR_CheckFlippedRefs;
+    palabel[3].text_in_resource = true;
+    pagcd[3].gd.label = &palabel[3];
+    pagcd[3].gd.mnemonic = 'r';
+    pagcd[3].gd.pos.x = 3; pagcd[3].gd.pos.y = pagcd[2].gd.pos.y+17; 
+    pagcd[3].gd.flags = gg_visible | gg_enabled;
+    if ( flippedrefs ) pagcd[3].gd.flags |= gg_cb_on;
+    pagcd[3].gd.popup_msg = GStringGetResource(_STR_CheckFlippedRefsPopup,NULL);
+    pagcd[3].gd.cid = CID_FlippedRefs;
+    pagcd[3].creator = GCheckBoxCreate;
+
+/* ************************************************************************** */
+
+    memset(&hlabel,0,sizeof(hlabel));
+    memset(&hgcd,0,sizeof(hgcd));
+
+    hlabel[0].text = (unichar_t *) _STR_HintNoPt;
+    hlabel[0].text_in_resource = true;
+    hgcd[0].gd.label = &hlabel[0];
+    hgcd[0].gd.mnemonic = 'H';
+    hgcd[0].gd.pos.x = 3; hgcd[0].gd.pos.y = 5; 
+    hgcd[0].gd.flags = gg_visible | gg_enabled;
+    if ( hintnopt ) hgcd[0].gd.flags |= gg_cb_on;
+    hgcd[0].gd.popup_msg = GStringGetResource(_STR_HintNoPtPopup,NULL);
+    hgcd[0].gd.cid = CID_HintNoPt;
+    hgcd[0].creator = GCheckBoxCreate;
+
+    hlabel[1].text = (unichar_t *) _STR_PtNearHint;
+    hlabel[1].text_in_resource = true;
+    hgcd[1].gd.label = &hlabel[1];
+    hgcd[1].gd.mnemonic = 'H';
+    hgcd[1].gd.pos.x = 3; hgcd[1].gd.pos.y = hgcd[0].gd.pos.y+17; 
+    hgcd[1].gd.flags = gg_visible | gg_enabled;
+    if ( ptnearhint ) hgcd[1].gd.flags |= gg_cb_on;
+    hgcd[1].gd.popup_msg = GStringGetResource(_STR_PtNearHintPopup,NULL);
+    hgcd[1].gd.cid = CID_PtNearHint;
+    hgcd[1].creator = GCheckBoxCreate;
+
+    hlabel[2].text = (unichar_t *) _STR_HintWidth;
+    hlabel[2].text_in_resource = true;
+    hgcd[2].gd.label = &hlabel[2];
+    hgcd[2].gd.mnemonic = 'W';
+    hgcd[2].gd.pos.x = 3; hgcd[2].gd.pos.y = hgcd[1].gd.pos.y+21;
+    hgcd[2].gd.flags = gg_visible | gg_enabled;
+    if ( hintwidth ) hgcd[2].gd.flags |= gg_cb_on;
+    hgcd[2].gd.popup_msg = GStringGetResource(_STR_HintWidthPopup,NULL);
+    hgcd[2].gd.cid = CID_HintWidthNear;
+    hgcd[2].creator = GCheckBoxCreate;
 
     sprintf(widthbuf,"%g",widthval);
-    label[11].text = (unichar_t *) widthbuf;
-    label[11].text_is_1byte = true;
-    gcd[11].gd.label = &label[11];
-    gcd[11].gd.pos.x = 100+5; gcd[11].gd.pos.y = gcd[10].gd.pos.y-1; gcd[11].gd.pos.width = 40;
-    gcd[11].gd.flags = gg_visible | gg_enabled;
-    gcd[11].gd.cid = CID_HintWidth;
-    gcd[11].gd.handle_controlevent = Prob_TextChanged;
-    gcd[11].data = (void *) CID_HintWidthNear;
-    gcd[11].creator = GTextFieldCreate;
+    hlabel[3].text = (unichar_t *) widthbuf;
+    hlabel[3].text_is_1byte = true;
+    hgcd[3].gd.label = &hlabel[3];
+    hgcd[3].gd.pos.x = 100+5; hgcd[3].gd.pos.y = hgcd[2].gd.pos.y-1; hgcd[3].gd.pos.width = 40;
+    hgcd[3].gd.flags = gg_visible | gg_enabled;
+    hgcd[3].gd.cid = CID_HintWidth;
+    hgcd[3].gd.handle_controlevent = Prob_TextChanged;
+    hgcd[3].data = (void *) CID_HintWidthNear;
+    hgcd[3].creator = GTextFieldCreate;
 
-    label[12].text = (unichar_t *) _STR_CheckDirection;
-    label[12].text_in_resource = true;
-    gcd[12].gd.label = &label[12];
-    gcd[12].gd.mnemonic = 'S';
-    gcd[12].gd.pos.x = 6; gcd[12].gd.pos.y = gcd[10].gd.pos.y+20; 
-    gcd[12].gd.flags = gg_visible | gg_enabled;
-    if ( direction ) gcd[12].gd.flags |= gg_cb_on;
-    gcd[12].gd.popup_msg = GStringGetResource(_STR_CheckDirectionPopup,NULL);
-    gcd[12].gd.cid = CID_Direction;
-    gcd[12].creator = GCheckBoxCreate;
+/* ************************************************************************** */
 
-    label[21].text = (unichar_t *) _STR_CheckFlippedRefs;
-    label[21].text_in_resource = true;
-    gcd[21].gd.label = &label[21];
-    gcd[21].gd.mnemonic = 'r';
-    gcd[21].gd.pos.x = 6; gcd[21].gd.pos.y = gcd[12].gd.pos.y+20; 
-    gcd[21].gd.flags = gg_visible | gg_enabled;
-    if ( flippedrefs ) gcd[21].gd.flags |= gg_cb_on;
-    gcd[21].gd.popup_msg = GStringGetResource(_STR_CheckFlippedRefsPopup,NULL);
-    gcd[21].gd.cid = CID_FlippedRefs;
-    gcd[21].creator = GCheckBoxCreate;
+    memset(&rlabel,0,sizeof(rlabel));
+    memset(&rgcd,0,sizeof(rgcd));
 
-    label[22].text = (unichar_t *) _STR_CheckBitmaps;
-    label[22].text_in_resource = true;
-    gcd[22].gd.label = &label[22];
-    gcd[22].gd.mnemonic = 'r';
-    gcd[22].gd.pos.x = 6; gcd[22].gd.pos.y = gcd[21].gd.pos.y+20; 
-    gcd[22].gd.flags = gg_visible | gg_enabled;
-    if ( bitmaps ) gcd[22].gd.flags |= gg_cb_on;
-    gcd[22].gd.popup_msg = GStringGetResource(_STR_CheckBitmapsPopup,NULL);
-    gcd[22].gd.cid = CID_Bitmaps;
-    gcd[22].creator = GCheckBoxCreate;
+    rlabel[0].text = (unichar_t *) _STR_CheckBitmaps;
+    rlabel[0].text_in_resource = true;
+    rgcd[0].gd.label = &rlabel[0];
+    rgcd[0].gd.mnemonic = 'r';
+    rgcd[0].gd.pos.x = 3; rgcd[0].gd.pos.y = 6; 
+    rgcd[0].gd.flags = gg_visible | gg_enabled;
+    if ( bitmaps ) rgcd[0].gd.flags |= gg_cb_on;
+    rgcd[0].gd.popup_msg = GStringGetResource(_STR_CheckBitmapsPopup,NULL);
+    rgcd[0].gd.cid = CID_Bitmaps;
+    rgcd[0].creator = GCheckBoxCreate;
 
-    gcd[18].gd.pos.x = 10; gcd[18].gd.pos.y = gcd[22].gd.pos.y+22;
-    gcd[18].gd.pos.width = 200-20;
-    gcd[18].gd.flags = gg_enabled | gg_visible;
-    gcd[18].creator = GLineCreate;
+    rlabel[1].text = (unichar_t *) _STR_AdvanceWidth;
+    rlabel[1].text_in_resource = true;
+    rgcd[1].gd.label = &rlabel[1];
+    rgcd[1].gd.mnemonic = 'W';
+    rgcd[1].gd.pos.x = 3; rgcd[1].gd.pos.y = rgcd[0].gd.pos.y+21;
+    rgcd[1].gd.flags = gg_visible | gg_enabled;
+    if ( advancewidth ) rgcd[1].gd.flags |= gg_cb_on;
+    rgcd[1].gd.popup_msg = GStringGetResource(_STR_AdvanceWidthPopup,NULL);
+    rgcd[1].gd.cid = CID_AdvanceWidth;
+    rgcd[1].creator = GCheckBoxCreate;
 
-    if ( fv->cidmaster!=NULL ) {
-	label[23].text = (unichar_t *) _STR_CIDMultiple;
-	label[23].text_in_resource = true;
-	gcd[23].gd.label = &label[23];
-	gcd[23].gd.mnemonic = 'S';
-	gcd[23].gd.pos.x = 6; gcd[23].gd.pos.y = gcd[21].gd.pos.y+24;
-	gcd[23].gd.flags = gg_visible | gg_enabled;
-	if ( cidmultiple ) gcd[23].gd.flags |= gg_cb_on;
-	gcd[23].gd.popup_msg = GStringGetResource(_STR_CIDMultiplePopup,NULL);
-	gcd[23].gd.cid = CID_CIDMultiple;
-	gcd[23].creator = GCheckBoxCreate;
+    sf = p.fv->sf;
 
-	label[24].text = (unichar_t *) _STR_CIDBlank;
-	label[24].text_in_resource = true;
-	gcd[24].gd.label = &label[24];
-	gcd[24].gd.mnemonic = 'S';
-	gcd[24].gd.pos.x = 6; gcd[24].gd.pos.y = gcd[23].gd.pos.y+17; 
-	gcd[24].gd.flags = gg_visible | gg_enabled;
-	if ( cidblank ) gcd[24].gd.flags |= gg_cb_on;
-	gcd[24].gd.popup_msg = GStringGetResource(_STR_CIDBlankPopup,NULL);
-	gcd[24].gd.cid = CID_CIDBlank;
-	gcd[24].creator = GCheckBoxCreate;
+    if ( advancewidthval==0 && sf->chars[' ']!=NULL )
+	advancewidthval = sf->chars[' ']->width;
+    sprintf(awidthbuf,"%g",advancewidthval);
+    rlabel[2].text = (unichar_t *) awidthbuf;
+    rlabel[2].text_is_1byte = true;
+    rgcd[2].gd.label = &rlabel[2];
+    rgcd[2].gd.pos.x = 100+15; rgcd[2].gd.pos.y = rgcd[1].gd.pos.y-1; rgcd[2].gd.pos.width = 40;
+    rgcd[2].gd.flags = gg_visible | gg_enabled;
+    rgcd[2].gd.cid = CID_AdvanceWidthVal;
+    rgcd[2].gd.handle_controlevent = Prob_TextChanged;
+    rgcd[2].data = (void *) CID_AdvanceWidth;
+    rgcd[2].creator = GTextFieldCreate;
 
-	ypos = gcd[24].gd.pos.y-2;
+    rlabel[3].text = (unichar_t *) _STR_AdvanceVWidth;
+    rlabel[3].text_in_resource = true;
+    rgcd[3].gd.label = &rlabel[3];
+    rgcd[3].gd.mnemonic = 'W';
+    rgcd[3].gd.pos.x = 3; rgcd[3].gd.pos.y = rgcd[2].gd.pos.y+24;
+    rgcd[3].gd.flags = gg_visible | gg_enabled;
+    if ( !sf->hasvmetrics ) rgcd[3].gd.flags = gg_visible;
+    else if ( vadvancewidth ) rgcd[3].gd.flags |= gg_cb_on;
+    rgcd[3].gd.popup_msg = GStringGetResource(_STR_AdvanceVWidthPopup,NULL);
+    rgcd[3].gd.cid = CID_VAdvanceWidth;
+    rgcd[3].creator = GCheckBoxCreate;
 
-	gcd[25].gd.pos.x = 10; gcd[25].gd.pos.y = gcd[24].gd.pos.y+20;
-	gcd[25].gd.pos.width = 200-20;
-	gcd[25].gd.flags = gg_enabled | gg_visible;
-	gcd[25].creator = GLineCreate;
-    } else
-	ypos = gcd[22].gd.pos.y;
+    if ( vadvancewidth==0 ) vadvancewidth = sf->ascent+sf->descent;
+    sprintf(vawidthbuf,"%g",vadvancewidthval);
+    rlabel[4].text = (unichar_t *) vawidthbuf;
+    rlabel[4].text_is_1byte = true;
+    rgcd[4].gd.label = &rlabel[4];
+    rgcd[4].gd.pos.x = 100+15; rgcd[4].gd.pos.y = rgcd[3].gd.pos.y-1; rgcd[4].gd.pos.width = 40;
+    rgcd[4].gd.flags = gg_visible | gg_enabled;
+    if ( !sf->hasvmetrics ) rgcd[4].gd.flags = gg_visible;
+    rgcd[4].gd.cid = CID_VAdvanceWidthVal;
+    rgcd[4].gd.handle_controlevent = Prob_TextChanged;
+    rgcd[4].data = (void *) CID_VAdvanceWidth;
+    rgcd[4].creator = GTextFieldCreate;
 
-    label[13].text = (unichar_t *) _STR_PointsNear;
-    label[13].text_in_resource = true;
-    gcd[13].gd.label = &label[13];
-    gcd[13].gd.mnemonic = 'N';
-    gcd[13].gd.pos.x = 6; gcd[13].gd.pos.y = ypos+37; 
-    gcd[13].gd.flags = gg_visible | gg_enabled;
-    gcd[13].creator = GLabelCreate;
+/* ************************************************************************** */
+
+    memset(&clabel,0,sizeof(clabel));
+    memset(&cgcd,0,sizeof(cgcd));
+
+    clabel[0].text = (unichar_t *) _STR_CIDMultiple;
+    clabel[0].text_in_resource = true;
+    cgcd[0].gd.label = &clabel[0];
+    cgcd[0].gd.mnemonic = 'S';
+    cgcd[0].gd.pos.x = 3; cgcd[0].gd.pos.y = 6;
+    cgcd[0].gd.flags = gg_visible | gg_enabled;
+    if ( cidmultiple ) cgcd[0].gd.flags |= gg_cb_on;
+    cgcd[0].gd.popup_msg = GStringGetResource(_STR_CIDMultiplePopup,NULL);
+    cgcd[0].gd.cid = CID_CIDMultiple;
+    cgcd[0].creator = GCheckBoxCreate;
+
+    clabel[1].text = (unichar_t *) _STR_CIDBlank;
+    clabel[1].text_in_resource = true;
+    cgcd[1].gd.label = &clabel[1];
+    cgcd[1].gd.mnemonic = 'S';
+    cgcd[1].gd.pos.x = 3; cgcd[1].gd.pos.y = cgcd[0].gd.pos.y+17; 
+    cgcd[1].gd.flags = gg_visible | gg_enabled;
+    if ( cidblank ) cgcd[1].gd.flags |= gg_cb_on;
+    cgcd[1].gd.popup_msg = GStringGetResource(_STR_CIDBlankPopup,NULL);
+    cgcd[1].gd.cid = CID_CIDBlank;
+    cgcd[1].creator = GCheckBoxCreate;
+
+/* ************************************************************************** */
+
+    memset(&mlabel,0,sizeof(mlabel));
+    memset(&mgcd,0,sizeof(mgcd));
+    memset(aspects,0,sizeof(aspects));
+    i = 0;
+
+    aspects[i].text = (unichar_t *) _STR_PointsNoC;
+    aspects[i].selected = true;
+    aspects[i].text_in_resource = true;
+    aspects[i++].gcd = pgcd;
+
+    aspects[i].text = (unichar_t *) _STR_Paths;
+    aspects[i].text_in_resource = true;
+    aspects[i++].gcd = pagcd;
+
+    aspects[i].text = (unichar_t *) _STR_Hints;
+    aspects[i].text_in_resource = true;
+    aspects[i++].gcd = hgcd;
+
+    aspects[i].text = (unichar_t *) _STR_CID;
+    aspects[i].disabled = fv->cidmaster==NULL;
+    aspects[i].text_in_resource = true;
+    aspects[i++].gcd = cgcd;
+
+    aspects[i].text = (unichar_t *) _STR_Random;
+    aspects[i].text_in_resource = true;
+    aspects[i++].gcd = rgcd;
+
+    mgcd[0].gd.pos.x = 4; mgcd[0].gd.pos.y = 6;
+    mgcd[0].gd.pos.width = 210;
+    mgcd[0].gd.pos.height = 190;
+    mgcd[0].gd.u.tabs = aspects;
+    mgcd[0].gd.flags = gg_visible | gg_enabled;
+    mgcd[0].creator = GTabSetCreate;
+
+    mgcd[1].gd.pos.x = 15; mgcd[1].gd.pos.y = 190+10;
+    mgcd[1].gd.flags = gg_visible | gg_enabled | gg_dontcopybox;
+    mlabel[1].text = (unichar_t *) _STR_ClearAll;
+    mlabel[1].text_in_resource = true;
+    mgcd[1].gd.label = &mlabel[1];
+    /*mgcd[1].gd.box = &smallbox;*/
+    mgcd[1].gd.handle_controlevent = Prob_DoAll;
+    mgcd[2].gd.cid = CID_ClearAll;
+    mgcd[1].creator = GButtonCreate;
+
+    mgcd[2].gd.pos.x = mgcd[1].gd.pos.x+1.25*GIntGetResource(_NUM_Buttonsize);
+    mgcd[2].gd.pos.y = mgcd[1].gd.pos.y;
+    mgcd[2].gd.flags = gg_visible | gg_enabled | gg_dontcopybox;
+    mlabel[2].text = (unichar_t *) _STR_SetAll;
+    mlabel[2].text_in_resource = true;
+    mgcd[2].gd.label = &mlabel[2];
+    /*mgcd[2].gd.box = &smallbox;*/
+    mgcd[2].gd.handle_controlevent = Prob_DoAll;
+    mgcd[2].gd.cid = CID_SetAll;
+    mgcd[2].creator = GButtonCreate;
+
+    mgcd[3].gd.pos.x = 6; mgcd[3].gd.pos.y = mgcd[1].gd.pos.y+27;
+    mgcd[3].gd.pos.width = 218-12;
+    mgcd[3].gd.flags = gg_visible | gg_enabled;
+    mgcd[3].creator = GLineCreate;
+
+    mlabel[4].text = (unichar_t *) _STR_PointsNear;
+    mlabel[4].text_in_resource = true;
+    mgcd[4].gd.label = &mlabel[4];
+    mgcd[4].gd.mnemonic = 'N';
+    mgcd[4].gd.pos.x = 6; mgcd[4].gd.pos.y = mgcd[3].gd.pos.y+6+6;
+    mgcd[4].gd.flags = gg_visible | gg_enabled;
+    mgcd[4].creator = GLabelCreate;
 
     sprintf(nearbuf,"%g",near);
-    label[14].text = (unichar_t *) nearbuf;
-    label[14].text_is_1byte = true;
-    gcd[14].gd.label = &label[14];
-    gcd[14].gd.pos.x = 130; gcd[14].gd.pos.y = gcd[13].gd.pos.y-6; gcd[14].gd.pos.width = 40;
-    gcd[14].gd.flags = gg_visible | gg_enabled;
-    gcd[14].gd.cid = CID_Near;
-    gcd[14].creator = GTextFieldCreate;
+    mlabel[5].text = (unichar_t *) nearbuf;
+    mlabel[5].text_is_1byte = true;
+    mgcd[5].gd.label = &mlabel[5];
+    mgcd[5].gd.pos.x = 130; mgcd[5].gd.pos.y = mgcd[4].gd.pos.y-6; mgcd[5].gd.pos.width = 40;
+    mgcd[5].gd.flags = gg_visible | gg_enabled;
+    mgcd[5].gd.cid = CID_Near;
+    mgcd[5].creator = GTextFieldCreate;
 
-    gcd[15].gd.pos.x = 15-3; gcd[15].gd.pos.y = gcd[14].gd.pos.y+30;
-    gcd[15].gd.pos.width = -1; gcd[15].gd.pos.height = 0;
-    gcd[15].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[15].text = (unichar_t *) _STR_OK;
-    label[15].text_in_resource = true;
-    gcd[15].gd.mnemonic = 'O';
-    gcd[15].gd.label = &label[15];
-    gcd[15].gd.handle_controlevent = Prob_OK;
-    gcd[15].creator = GButtonCreate;
+    mgcd[6].gd.pos.x = 15-3; mgcd[6].gd.pos.y = mgcd[5].gd.pos.y+26;
+    mgcd[6].gd.pos.width = -1; mgcd[6].gd.pos.height = 0;
+    mgcd[6].gd.flags = gg_visible | gg_enabled | gg_but_default;
+    mlabel[6].text = (unichar_t *) _STR_OK;
+    mlabel[6].text_in_resource = true;
+    mgcd[6].gd.mnemonic = 'O';
+    mgcd[6].gd.label = &mlabel[6];
+    mgcd[6].gd.handle_controlevent = Prob_OK;
+    mgcd[6].creator = GButtonCreate;
 
-    gcd[16].gd.pos.x = 200-GIntGetResource(_NUM_Buttonsize)-15; gcd[16].gd.pos.y = gcd[15].gd.pos.y+3;
-    gcd[16].gd.pos.width = -1; gcd[16].gd.pos.height = 0;
-    gcd[16].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[16].text = (unichar_t *) _STR_Cancel;
-    label[16].text_in_resource = true;
-    gcd[16].gd.label = &label[16];
-    gcd[16].gd.mnemonic = 'C';
-    gcd[16].gd.handle_controlevent = Prob_Cancel;
-    gcd[16].creator = GButtonCreate;
+    mgcd[7].gd.pos.x = -15; mgcd[7].gd.pos.y = mgcd[6].gd.pos.y+3;
+    mgcd[7].gd.pos.width = -1; mgcd[7].gd.pos.height = 0;
+    mgcd[7].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    mlabel[7].text = (unichar_t *) _STR_Cancel;
+    mlabel[7].text_in_resource = true;
+    mgcd[7].gd.label = &mlabel[7];
+    mgcd[7].gd.mnemonic = 'C';
+    mgcd[7].gd.handle_controlevent = Prob_Cancel;
+    mgcd[7].creator = GButtonCreate;
 
-    gcd[17].gd.pos.x = 2; gcd[17].gd.pos.y = 2;
-    gcd[17].gd.pos.width = pos.width-4; gcd[17].gd.pos.height = pos.height-2;
-    gcd[17].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
-    gcd[17].creator = GGroupCreate;
+    mgcd[8].gd.pos.x = 2; mgcd[8].gd.pos.y = 2;
+    mgcd[8].gd.pos.width = pos.width-4; mgcd[8].gd.pos.height = pos.height-2;
+    mgcd[8].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
+    mgcd[8].creator = GGroupCreate;
 
-    GGadgetsCreate(gw,gcd);
+    GGadgetsCreate(gw,mgcd);
 
     GDrawSetVisible(gw,true);
     while ( !p.done )

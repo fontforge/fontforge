@@ -1262,6 +1262,8 @@ static char *str_ProbExpectedClockwise = "This path should have been drawn in a 
 static char *str_ProbFlippedRef = "This reference has been flipped, so the paths in it are drawn backwards"
 static char *str_ProbMissingBitmap = "This outline character is missing a bitmap version"
 static char *str_ProbMissingOutline = "This blank outline character has an unexpected bitmap version"
+static char *str_ProbBadWidth = "This character's advance width is different from the standard width"
+static char *str_ProbBadVWidth = "This character's vertical advance is different from the standard width"
 static char *str_ProbAboveOdd = "The control point above the selected point is outside the spline segment";
 static char *str_ProbBelowOdd = "The control point below the selected point is outside the spline segment";
 static char *str_ProbRightOdd = "The control point right of the selected point is outside the spline segment";
@@ -1336,6 +1338,16 @@ static char *str_IgnoreProblemFuture = "Ignore this problem in the future";
 /* "Found %g, expected %g" */
 static char *str_Found = "Found ";
 static char *str_Expected = ", expected ";
+static char *str_Paths = "Paths";
+static char *str_Random = "Random";
+static char *str_PointsNoC = "Points";
+static char *str_ClearAll = "Clear All";
+static char *str_SetAll = "Set All";
+static char *str_AdvanceWidth = "Check Advance:
+static char *str_AdvanceWidthPopup = "Check for characters whose advance width is not the displayed value."
+static char *str_AdvanceVWidth = "Check VAdvance:
+static char *str_AdvanceVWidthPopup = "Check for characters whose vertical advance width is not the displayed value."
+
 	/* Meta font */
 static char *str_MetaFont = "Meta Font...";
 static char mnemonic_MetaFont = 'M';

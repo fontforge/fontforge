@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 28-Jun-2001 -->
-  <!-- AP: Last modified: 13-Aug-2002 -->
+  <!-- AP: Last modified: 27-Aug-2002 -->
   <TITLE>Finding common font problems automagically</TITLE>
 </HEAD>
 <BODY>
@@ -10,8 +10,7 @@
   Finding common font problems automagically
 </H1>
 <P>
-<IMG SRC="findprobs.png" WIDTH="276" HEIGHT="502" ALIGN="Right">Nobody is
-perfect.
+Nobody is perfect.
 <P>
 Well, I'm not.
 <P>
@@ -38,16 +37,8 @@ peculiarities of the font design. Don't just blindly press the [Fix] button).
 Behavior in the outline and metrics views is similar, except that only one
 character is searched for problems.
 <P>
-PfaEdit can detect the following potential problems:
-<P>
-<STRONG><BIG>Open Paths</BIG></STRONG>
-<P>
-All of your paths should be closed, that is they shouldn't have any end points
-the way a line segment does, but should connect back to their beginning.
-This is often caused by being a little careless with the last point on a
-path, and instead of joining it to the first, you just put it near the first.
-If PfaEdit detects any open paths it will select the entire path, and stop
-to let you fix things up.
+<IMG SRC="findprobs.png" WIDTH="301" HEIGHT="418" ALIGN="Right">PfaEdit can
+detect the following potential problems:
 <P>
 <STRONG><BIG>Points Too Close</BIG></STRONG>
 <P>
@@ -90,6 +81,32 @@ but not on, these heights. Again where "near" is defined at the bottom of
 the dialog. If it finds such a point, PfaEdit will select it, stop and let
 you fix things.
 <P>
+<STRONG><BIG>Control points near horizontal/vertical/italic</BIG></STRONG>
+<P>
+The above check only looks for straight lines, this one looks for curved
+lines that begin or end near horizontal (vertical, italic angle).
+<P>
+<STRONG><BIG>Control points beyond
+spline</BIG></STRONG><IMG SRC="cpodd.png" WIDTH="210" HEIGHT="215" ALIGN="Right">
+<P>
+Consider the character at right, the selected point has a control point that
+is far outside of what is reasonable and is probably not where it should
+be. This will check for such points.
+<P>
+Technically it will search for all control points, which when projected onto
+the line between the two end points of the spline lie outside of the segment
+between the two.<BR Clear=Right>
+<P>
+<IMG SRC="findprobs-paths.png" WIDTH="301" HEIGHT="418" ALIGN="Right"><STRONG><BIG>Open
+Paths</BIG></STRONG>
+<P>
+All of your paths should be closed, that is they shouldn't have any end points
+the way a line segment does, but should connect back to their beginning.
+This is often caused by being a little careless with the last point on a
+path, and instead of joining it to the first, you just put it near the first.
+If PfaEdit detects any open paths it will select the entire path, and stop
+to let you fix things up.
+<P>
 <STRONG><BIG>Edges near horizontal/vertical/italic</BIG></STRONG>
 <P>
 It is very easy to create a line which is almost, but not quite, vertical.
@@ -101,23 +118,27 @@ points, stop and let you fix things.
 For horizontal lines it will tell you the y coordinates of the two end-points,
 for vertical lines it will show you the x coordinates.
 <P>
-<STRONG><BIG>Control points near horizontal/vertical/italic</BIG></STRONG>
+<BIG><STRONG>Path Direction</STRONG></BIG>
 <P>
-The above check only looks for straight lines, this one looks for curved
-lines that begin or end near horizontal (vertical, italic angle).
+Both PostScript and TrueType require that paths be traced in a clockwise
+fashion. This sometimes doesn't matter, but many rasterizers do a better
+job if this rule is obeyed. This command will detect whether this constraint
+is violated.
 <P>
-<STRONG><BIG>Control points
-odd</BIG></STRONG><IMG SRC="cpodd.png" WIDTH="210" HEIGHT="215" ALIGN="Right">
+Currently the command will report the same error several times if you do
+not fix the problem. That's sort of a bug, but I don't see an easy way around
+it yet.
+<H3>
+  <STRONG>Flipped References</STRONG>
+</H3>
 <P>
-Consider the character at right, the selected point has a control point that
-is far outside of what is reasonable and is probably not where it should
-be. This will check for such points.
+As above PostScript and TrueType like clockwise paths. If you have a flipped
+reference then either the reference or the original character will be drawn
+with a counter-clockwise path. To fix it you should Edit-&gt;Unlink the reference
+and Element-&gt;Correct Direction.<BR Clear=all>
 <P>
-Technically it will search for all control points, which when projected onto
-the line between the two end points of the spline lie outside of the segment
-between the two.<BR Clear=all>
-<P>
-<BIG><STRONG>Hints controlling no points</STRONG></BIG>
+<BIG><STRONG><IMG SRC="findprobs-hint.png" WIDTH="301" HEIGHT="418" ALIGN="Right">Hints
+controlling no points</STRONG></BIG>
 <P>
 This is a bit esoteric, and is present to provide a work-around for (what
 I think is) a bug in ghostview. Consider the following character
@@ -153,36 +174,30 @@ Usually one wants many of the characters to have a constant stem width, and
 this command will check that all stems near the indicated value are that
 value (again near is defined at the bottom of the page). If PfaEdit finds
 a bad stem it will select it, stop and allow you to fix things.
-<P>
-<BIG><STRONG>Path Direction</STRONG></BIG>
-<P>
-Both PostScript and TrueType require that paths be traced in a clockwise
-fashion. This sometimes doesn't matter, but many rasterizers do a better
-job if this rule is obeyed. This command will detect whether this constraint
-is violated.
-<P>
-Currently the command will report the same error several times if you do
-not fix the problem. That's sort of a bug, but I don't see an easy way around
-it yet.
 <H3>
-  <STRONG>Flipped References</STRONG>
-</H3>
-<P>
-As above PostScript and TrueType like clockwise paths. If you have a flipped
-reference then either the reference or the original character will be drawn
-with a counter-clockwise path. To fix it you should Edit-&gt;Unlink the reference
-and Element-&gt;Correct Direction.
-<H3>
-  <STRONG>Missing Bitmaps</STRONG>
+  <IMG SRC="findprobs-random.png" WIDTH="301" HEIGHT="418" ALIGN="Right"><STRONG>Missing
+  Bitmaps</STRONG>
 </H3>
 <P>
 Look through the associated bitmap fonts, and find if there is a bitmap font
 which is missing versions of characters present in the outline font. Conversely
 look for bitmap fonts with characters which are not present in the outline
-font. 
-  <HR>
+font.
 <P>
-If your font is a CID keyed font you will also get:
+<STRONG><BIG>Check Advance</BIG></STRONG>
+<P>
+Check for any characters whose advance width is not the specified value (useful
+for a mono-space font where you want to check that all characters have the
+same width).
+<P>
+<STRONG><BIG>Check Vertical Advance</BIG></STRONG>
+<P>
+Check for any characters whose vertical advance (for fonts with vertical
+metrics) differs from the specified value. 
+  <HR Clear=all>
+<P>
+<IMG SRC="findprobs-cid.png" WIDTH="301" HEIGHT="418" ALIGN="Right">If your
+font is a CID keyed font you will also get:
 <P>
 <STRONG><BIG>Check for CIDs defined twice</BIG></STRONG>
 <P>
@@ -192,5 +207,18 @@ glyphs in two or more fonts.
 <STRONG><BIG>Check for undefined CIDs</BIG></STRONG>
 <P>
 Looks for CIDs which have no glyphs defined for them in any font. This is
-a fairly common occurance in CID fonts, so use this with caution.
+a fairly common occurance in CID fonts, so use this with caution.<BR Clear=all>
+<P>
+At the bottom of the dialog are two buttons (<CODE>[Clear All]</CODE> and
+<CODE>[Set All]</CODE> which will, respectively, clear and set the check
+boxes for all tests -- Well, CID tests will not be set by <CODE>[Set
+All]</CODE> in non cid-keyed fonts).
+<P>
+There is also a text field which allows you to define the meaning of "Near"
+as used in various of these tests. The default value is that things are "near"
+if they are within 3 em-units of the desired value and not equal to that
+value.
+<P ALIGN=Center>
+-- <A HREF="elementmenu.html">Prev</A> -- <A HREF="overview.html">TOC</A>
+-- <A HREF="elementmenu.html">Next</A> --
 </BODY></HTML>
