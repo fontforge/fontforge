@@ -5540,7 +5540,7 @@ static void _CVMenuOverlap(CharView *cv,enum overlap_type ot) {
 					: cv->layerheads[dm_fore] - cv->sc->layers;
 
     DoAutoSaves();
-    if ( !SCRoundToCluster(cv->sc,layer,false,.01,.04))
+    if ( !SCRoundToCluster(cv->sc,layer,false,.03,.12))
 	CVPreserveState(cv);	/* SCRound2Cluster does this when it makes a change, not otherwise */
     if ( cv->drawmode==dm_fore ) {
 	MinimumDistancesFree(cv->sc->md);

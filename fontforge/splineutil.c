@@ -4800,12 +4800,10 @@ int SCRoundToCluster(SplineChar *sc,int layer,int sel,double within,double max) 
 		spl = sc->layers[layer].splines;
 	    for ( ; spl!=NULL; spl=spl->next ) {
 		for ( sp = spl->first; ; ) {
-		    if ( !sel || (sel && sp->selected) ) {
-			if ( k )
-			    ptspace[ptcnt++] = sp;
-			else 
-			    ++ptcnt;
-		    }
+		    if ( k && (!sel || (sel && sp->selected)) )
+			ptspace[ptcnt++] = sp;
+		    else 
+			++ptcnt;
 		    if ( sp->selected ) ++selcnt;
 		    if ( sp->next==NULL )
 		break;
