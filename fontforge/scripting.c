@@ -2167,7 +2167,7 @@ static void bScaleToEm(Context *c) {
 		(c->curfv->sf->ascent+c->curfv->sf->descent));
 	descent = c->a.vals[1].u.ival-ascent;
     }
-    SFScaleToEm(c->curfv->sf,c->a.vals[1].u.ival,c->a.vals[2].u.ival);
+    SFScaleToEm(c->curfv->sf,ascent,descent);
 }
 
 static void bNonLinearTransform(Context *c) {
