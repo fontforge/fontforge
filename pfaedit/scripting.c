@@ -463,7 +463,7 @@ static void bStrsub(Context *c) {
 
     str = c->a.vals[1].u.sval;
     start = c->a.vals[2].u.ival;
-    end = c->a.argc==4? c->a.vals[2].u.ival : strlen(str);
+    end = c->a.argc==4? c->a.vals[3].u.ival : strlen(str);
     if ( start<0 || start>strlen(str) || end<start || end>strlen(str) )
 	error( c, "Arguments out of bounds" );
     c->return_val.type = v_str;
@@ -613,6 +613,36 @@ static void bGenerate(Context *c) {
 	bitmaptype = c->a.vals[2].u.sval;
     if ( !GenerateScript(sf,c->a.vals[1].u.sval,bitmaptype) )
 	error(c,"Save failed");
+}
+
+static void Bitmapper(Context *c,int isavail) {
+    real *sizes;
+    int i;
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments");
+    if ( c->a.vals[1].type!=v_arr )
+	error( c, "Bad type of argument");
+    for ( i=0; i<c->a.vals[1].u.aval->argc; ++i )
+	if ( c->a.vals[1].u.aval->vals[i].type!=v_int ||
+		c->a.vals[1].u.aval->vals[i].u.ival<=2 )
+	    error( c, "Bad type of array component");
+    sizes = galloc((c->a.vals[i].u.aval->argc+1)*sizeof(real));
+    for ( i=0; i<c->a.vals[1].u.aval->argc; ++i )
+	sizes[i] = c->a.vals[1].u.aval->vals[i].u.ival;
+    sizes[i] = 0;
+    
+    if ( !BitmapControl(c->curfv,sizes,isavail) )
+	error(c,"Bitmap operation failed");		/* Storage leak here longjmp avoids free */
+    free(sizes);
+}
+
+static void bBitmapsAvail(Context *c) {
+    Bitmapper(c,true);
+}
+
+static void bBitmapsRegen(Context *c) {
+    Bitmapper(c,false);
 }
 
 static void bImport(Context *c) {
@@ -1576,6 +1606,8 @@ struct builtins { char *name; void (*func)(Context *); int nofontok; } builtins[
     { "SetItalicAngle", bSetItalicAngle },
     { "SetCharName", bSetCharName },
     { "SetUnicodeValue", bSetUnicodeValue },
+    { "BitmapsAvail", bBitmapsAvail },
+    { "BitmapsRegen", bBitmapsRegen },
     { "Transform", bTransform },
     { "HFlip", bHFlip },
     { "VFlip", bVFlip },
@@ -2086,6 +2118,22 @@ static void handlename(Context *c,Val *val) {
 		if ( c->curfv==NULL ) error(c,"No current font");
 		val->type = v_int;
 		val->u.ival = c->curfv->sf->changed;
+	    } else if ( strcmp(name,"$bitmaps")==0 ) {
+		SplineFont *sf;
+		BDFFont *bdf;
+		int cnt;
+		if ( c->curfv==NULL ) error(c,"No current font");
+		sf = c->curfv->sf;
+		if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
+		for ( cnt=0, bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next ) ++cnt;
+		val->type = v_arrfree;
+		val->u.aval = galloc(sizeof(Array));
+		val->u.aval->argc = cnt;
+		val->u.aval->vals = galloc((cnt+1)*sizeof(Val));
+		for ( cnt=0, bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next, ++cnt) {
+		    val->u.aval->vals[cnt].type = v_int;
+		    val->u.aval->vals[cnt].u.ival = bdf->pixelsize;
+		}
 	    } else if ( strcmp(name,"$trace")==0 ) {
 		val->type = v_lval;
 		val->u.lval = &c->trace;

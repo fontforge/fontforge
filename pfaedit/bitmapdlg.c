@@ -60,11 +60,13 @@ static void RemoveBDFWindows(BDFFont *bdf) {
 	    GDrawDestroyWindow(bv->gw);
 	}
     }
-    GDrawSync(NULL);
-    GDrawProcessPendingEvents(NULL);
-    /* Just in case... */
-    GDrawSync(NULL);
-    GDrawProcessPendingEvents(NULL);
+    if ( screen_display!=NULL ) {
+	GDrawSync(NULL);
+	GDrawProcessPendingEvents(NULL);
+	/* Just in case... */
+	GDrawSync(NULL);
+	GDrawProcessPendingEvents(NULL);
+    }
     /* We can't free the bdf until all the windows have executed their destroy*/
     /*  routines (which they will when they get the destroy window event) */
     /*  because those routines depend on the bdf existing ... */
@@ -350,6 +352,21 @@ return( NULL );
 return( sizes );
 }
 
+static void BitmapsDoIt(CreateBitmapData *bd,real *sizes,int usefreetype) {
+
+    bd->done = true;
+    if ( bd->isavail && bd->sf->onlybitmaps && bd->sf->bitmaps!=NULL )
+	FVScaleBitmaps(bd->fv,sizes);
+    else if ( bd->isavail )
+	SFFigureBitmaps(bd->sf,sizes,usefreetype);
+    else {
+	if ( !FVRegenBitmaps(bd,sizes,usefreetype))
+	    bd->done = false;
+	else
+	    lastwhich = bd->which;
+    }
+}
+
 static int CB_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	int err;
@@ -359,18 +376,9 @@ static int CB_OK(GGadget *g, GEvent *e) {
 return( true );
 	oldusefreetype = GGadgetIsChecked(GWidgetGetControl(bd->gw,CID_FreeType));
 	oldsystem = GetSystem(bd->gw)-CID_X;
-	bd->done = true;
-	if ( bd->isavail && bd->fv->sf->onlybitmaps && bd->fv->sf->bitmaps!=NULL )
-	    FVScaleBitmaps(bd->fv,sizes);
-	else if ( bd->isavail )
-	    SFFigureBitmaps(bd->sf,sizes,oldusefreetype);
-	else {
+	if ( !bd->isavail )
 	    bd->which = GGadgetGetFirstListSelectedItem(GWidgetGetControl(bd->gw,CID_Which));
-	    if ( !FVRegenBitmaps(bd,sizes,oldusefreetype))
-		bd->done = false;
-	    else
-		lastwhich = bd->which;
-	}
+	BitmapsDoIt(bd,sizes,oldusefreetype);
 	free(sizes);
 	SavePrefs();
     }
@@ -701,4 +709,15 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     while ( !bd.done )
 	GDrawProcessOneEvent(NULL);
     GDrawDestroyWindow(bd.gw);
+}
+
+int BitmapControl(FontView *fv,real *sizes,int isavail) {
+    CreateBitmapData bd;
+
+    memset(&bd,0,sizeof(bd));
+    bd.fv = fv;
+    bd.sf = fv->sf;
+    bd.isavail = isavail;
+    BitmapsDoIt(&bd,sizes,hasFreeType());
+return( bd.done );
 }

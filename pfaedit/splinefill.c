@@ -1174,7 +1174,7 @@ return;
 
 void BDFClut(BDFFont *bdf, int linear_scale) {
     int scale = linear_scale*linear_scale, i;
-    Color bg = GDrawGetDefaultBackground(NULL);
+    Color bg = screen_display==NULL?0xffffff:GDrawGetDefaultBackground(NULL);
     int bgr=COLOR_RED(bg), bgg=COLOR_GREEN(bg), bgb=COLOR_BLUE(bg);
     GClut *clut;
 

@@ -289,7 +289,8 @@ BDFFont *SplineFontFreeTypeRasterize(void *freetypecontext,int pixelsize,int bit
     int i,k;
     BDFFont *bdf = SplineFontToBDFHeader(sf,pixelsize,true);
 
-    BDFClut(bdf,16);
+    if ( !bitmap )
+	BDFClut(bdf,16);
 
     k=0;
     do {

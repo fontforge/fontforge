@@ -81,7 +81,7 @@ return( ret );
 char *copyn(const char *str,long n) {
     char *ret;
 
-    if ( str==NULL || n==0 )
+    if ( str==NULL )
 return( NULL );
     ret = galloc(n+1);
     memcpy(ret,str,n);
