@@ -60,12 +60,12 @@ struct gfc_data {
 static char *extensions[] = { ".pfa", ".pfb", "", ".mult", ".ps", ".ps", ".cid",
 	".ttf", ".ttf", ".suit", ".dfont", ".otf", ".otf.dfont", ".otf",
 	".otf.dfont", NULL };
-static char *bitmapextensions[] = { ".*bdf", ".ttf", ".dfont", ".bmap", ".dfont", ".none", NULL };
+static char *bitmapextensions[] = { ".*bdf", ".ttf", ".dfont", ".bmap", ".dfont", ".*fnt", ".none", NULL };
 #else
 static char *extensions[] = { ".pfa", ".pfb", ".bin", ".mult", ".ps", ".ps", ".cid",
 	".ttf", ".ttf", ".ttf.bin", ".dfont", ".otf", ".otf.dfont", ".otf",
 	".otf.dfont", NULL };
-static char *bitmapextensions[] = { ".*bdf", ".ttf", ".dfont", ".bmap.bin", ".dfont", ".none", NULL };
+static char *bitmapextensions[] = { ".*bdf", ".ttf", ".dfont", ".bmap.bin", ".dfont", ".*fnt", ".none", NULL };
 #endif
 static GTextInfo formattypes[] = {
     { (unichar_t *) "PS Type 1 (Ascii)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
@@ -104,6 +104,7 @@ static GTextInfo bitmaptypes[] = {
     { (unichar_t *) "NFNT (MacBin)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
 #endif
     { (unichar_t *) "NFNT (dfont)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) "Win FNT", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) _STR_Nobitmapfonts, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }
 };
@@ -352,9 +353,10 @@ return( false );
 return( true );
 }
 
-static int AskResolution(void) {
+static int AskResolution(int bf) {
     GRect pos;
-    static GWindow gw;
+    static GWindow bdf_gw, fon_gw;
+    GWindow gw;
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[10];
     GTextInfo label[10];
@@ -363,6 +365,7 @@ static int AskResolution(void) {
     if ( screen_display==NULL )
 return( -1 );
 
+    gw = bf==bf_bdf ? bdf_gw : fon_gw;
     if ( gw==NULL ) {
 	memset(&wattrs,0,sizeof(wattrs));
 	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
@@ -376,6 +379,10 @@ return( -1 );
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,150));
 	pos.height = GDrawPointsToPixels(NULL,130);
 	gw = GDrawCreateTopWindow(NULL,&pos,br_e_h,&done,&wattrs);
+	if ( bf==bf_bdf )
+	    bdf_gw = gw;
+	else
+	    fon_gw = gw;
 
 	memset(&label,0,sizeof(label));
 	memset(&gcd,0,sizeof(gcd));
@@ -387,16 +394,16 @@ return( -1 );
 	gcd[0].gd.flags = gg_enabled|gg_visible;
 	gcd[0].creator = GLabelCreate;
 
-	label[1].text = (unichar_t *) "75";
+	label[1].text = (unichar_t *) (bf==bf_bdf ? "75" : "96");
 	label[1].text_is_1byte = true;
 	gcd[1].gd.label = &label[1];
-	gcd[1].gd.mnemonic = '7';
+	gcd[1].gd.mnemonic = (bf==bf_bdf ? '7' : '9');
 	gcd[1].gd.pos.x = 20; gcd[1].gd.pos.y = 13+7;
 	gcd[1].gd.flags = gg_enabled|gg_visible;
 	gcd[1].gd.cid = 75;
 	gcd[1].creator = GRadioCreate;
 
-	label[2].text = (unichar_t *) "100";
+	label[2].text = (unichar_t *) (bf==bf_bdf ? "100" : "120");
 	label[2].text_is_1byte = true;
 	gcd[2].gd.label = &label[2];
 	gcd[2].gd.mnemonic = '1';
@@ -422,7 +429,7 @@ return( -1 );
 	gcd[4].gd.cid = 1004;
 	gcd[4].creator = GRadioCreate;
 
-	label[5].text = (unichar_t *) "96";
+	label[5].text = (unichar_t *) (bf == bf_bdf ? "96" : "72");
 	label[5].text_is_1byte = true;
 	gcd[5].gd.label = &label[5];
 	gcd[5].gd.pos.x = 70; gcd[5].gd.pos.y = gcd[4].gd.pos.y-3; gcd[5].gd.pos.width = 40;
@@ -482,26 +489,26 @@ return( res );
 	if ( done==-1 )
 return( -2 );
 	if ( GGadgetIsChecked(GWidgetGetControl(gw,75)) )
-return( 75 );
+return( bf == bf_bdf ? 75 : 96 );
 	if ( GGadgetIsChecked(GWidgetGetControl(gw,100)) )
-return( 100 );
+return( bf == bf_bdf ? 100 : 120 );
 	/*if ( GGadgetIsChecked(GWidgetGetControl(gw,-1)) )*/
 return( -1 );
     }
 }
 
-static int WriteBitmaps(char *filename,SplineFont *sf, int32 *sizes,int res) {
+static int WriteBitmaps(char *filename,SplineFont *sf, int32 *sizes,int res, int bf) {
     char *buf = galloc(strlen(filename)+30), *pt, *pt2;
     int i;
     BDFFont *bdf;
     unichar_t *temp;
-    char buffer[100];
+    char buffer[100], *ext;
     /* res = -1 => Guess depending on pixel size of font */
     extern int ask_user_for_resolution;
 
     if ( ask_user_for_resolution ) {
 	GProgressPauseTimer();
-	res = AskResolution();
+	res = AskResolution(bf);
 	GProgressResumeTimer();
 	if ( res==-2 )
 return( false );
@@ -532,13 +539,17 @@ return( false );
 	if ( pt==NULL )
 	    pt = buf+strlen(buf);
 	if ( strcmp(pt-4,".otf.dfont")==0 || strcmp(pt-4,".ttf.bin")==0 ) pt-=4;
+	ext = bf==bf_bdf ? ".bdf" : ".fnt";
 	if ( bdf->clut==NULL )
-	    sprintf( pt, "-%d.bdf", bdf->pixelsize );
+	    sprintf( pt, "-%d%s", bdf->pixelsize, ext );
 	else
-	    sprintf( pt, "-%d@%d.bdf", bdf->pixelsize, BDFDepth(bdf) );
-	
+	    sprintf( pt, "-%d@%d%s", bdf->pixelsize, BDFDepth(bdf), ext );
+
 	GProgressChangeLine2(temp=uc_copy(buf)); free(temp);
-	BDFFontDump(buf,bdf,EncodingName(sf->encoding_name),res);
+	if ( bf==bf_bdf ) 
+	    BDFFontDump(buf,bdf,EncodingName(sf->encoding_name),res);
+	else
+	    FONFontDump(buf,bdf,res);
 	GProgressNextStage();
     }
     free(buf);
@@ -1055,10 +1066,10 @@ return( WriteMultiplePSFont(sf,newname,sizes,res,NULL));
 	    err = true;
 	}
     }
-    if ( oldbitmapstate==bf_bdf && !err ) {
+    if ( (oldbitmapstate==bf_bdf || oldbitmapstate==bf_fon) && !err ) {
 	GProgressChangeLine1R(_STR_SavingBitmapFonts);
 	GProgressIncrementBy(-sf->charcnt);
-	if ( !WriteBitmaps(newname,sf,sizes,res))
+	if ( !WriteBitmaps(newname,sf,sizes,res,oldbitmapstate))
 	    err = true;
     } else if ( (oldbitmapstate==bf_nfntmacbin || oldbitmapstate==bf_nfntdfont) &&
 	    !err ) {
@@ -1820,7 +1831,7 @@ return( 0 );
     if ( ofs==ff_none && old==bf_ttf )
 	old = bf_bdf;
     if ( family ) {
-	if ( old==bf_bdf ) {
+	if ( old==bf_bdf || old==bf_fon ) {
 	    if ( ofs==ff_otfdfont || ofs==ff_otfciddfont || ofs==ff_ttfdfont )
 		old = bf_nfntdfont;
 	    else
@@ -1832,6 +1843,7 @@ return( 0 );
 		    ( ofs!=ff_otfdfont && ofs!=ff_otfciddfont && ofs!=ff_ttfdfont ))
 	    old = bf_nfntmacbin;
 	bitmaptypes[bf_bdf].disabled = true;
+	bitmaptypes[bf_fon].disabled = true;
     }
     temp = sf->cidmaster ? sf->cidmaster : sf;
     if ( temp->bitmaps==NULL ) {
@@ -1841,6 +1853,7 @@ return( 0 );
 	bitmaptypes[bf_sfnt_dfont].disabled = true;
 	bitmaptypes[bf_nfntmacbin].disabled = true;
 	bitmaptypes[bf_nfntdfont].disabled = true;
+	bitmaptypes[bf_fon].disabled = true;
     } else if ( ofs!=ff_none )
 	bitmaptypes[bf_sfnt_dfont].disabled = true;
     if ( ofs==ff_none )

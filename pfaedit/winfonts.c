@@ -170,6 +170,18 @@ static int lgetlong(FILE *f) {
 return( (ch4<<24)|(ch3<<16)|(ch2<<8)|ch1 );
 }
 
+static void lputshort(FILE *f,int val) {
+    putc(val&0xff,f);
+    putc((val>>8)&0xff,f);
+}
+
+static void lputlong(FILE *f,int val) {
+    putc(val&0xff,f);
+    putc((val>>8),f);
+    putc((val>>16),f);
+    putc((val>>24)&0xff,f);
+}
+
 static int FNT_Load(FILE *fnt,SplineFont *sf) {
     struct fntheader fntheader;
     struct v3chars charinfo[258];	/* Max size */
@@ -309,17 +321,17 @@ return( false );
     bdf->res = fntheader.vertres;
     bdf->pixelsize = rint(fntheader.pointsize*fntheader.vertres/72.27);
     bdf->chars = gcalloc(sf->charcnt,sizeof(BDFChar *));
-    bdf->ascent = fntheader.ascent;
+    bdf->ascent = rint(.8*bdf->pixelsize);		/* shouldn't use typographical ascent */
     bdf->descent = bdf->pixelsize-bdf->ascent;
     bdf->encoding_name = sf->encoding_name;
-    for ( i=fntheader.firstchar; i<=fntheader.lastchar; ++i ) {
+    for ( i=fntheader.firstchar; i<=fntheader.lastchar; ++i ) if ( charinfo[i].width!=0 ) {
 	sf->chars[i] = SFMakeChar(sf,i);
 
 	bdf->chars[i] = bdfc = chunkalloc(sizeof(BDFChar));
 	bdfc->xmin = 0;
 	bdfc->xmax = charinfo[i].width-1;
-	bdfc->ymin = bdf->ascent-fntheader.height;
-	bdfc->ymax = bdf->ascent-1;
+	bdfc->ymin = fntheader.ascent-fntheader.height;
+	bdfc->ymax = fntheader.ascent-1;
 	bdfc->width = charinfo[i].width;
 	bdfc->bytes_per_line = (bdfc->xmax>>3)+1;
 	bdfc->bitmap = gcalloc(bdfc->bytes_per_line*fntheader.height,sizeof(uint8));
@@ -331,6 +343,8 @@ return( false );
 	    for ( k=0; k<fntheader.height; ++k )
 		bdfc->bitmap[k*bdfc->bytes_per_line+j] = getc(fnt);
 	}
+	BCCompressBitmap(bdfc);
+
 	if ( feof(fnt) ) {
 	    BDFFontFree(bdf);
 return( false );
@@ -387,12 +401,11 @@ return( NULL );
 	    if ( id==0 )
 	break;
 	    count = lgetushort(fon);
-	    /* id==0x8007 points to a FONTDIRENTRY */
 	    if ( id==0x8008 ) {
 		/* id==0x8007 seems to point to a Font Dir Entry which is almost */
 		/*  a copy of the fntheader */
 		font_count = count;
-		lgetlong(fon);				/* I don't think I see this in freetype, but I'm not sure I understand the code */
+		lgetlong(fon);
 	break;
 	    }
 	    fseek(fon,4+count*12,SEEK_CUR);
@@ -425,4 +438,199 @@ return( NULL );
 	sf->chars[i]->width = rint(bdf->chars[i]->width*1000.0/bdf->pixelsize);
     sf->onlybitmaps = true;
 return( sf );
+}
+
+static int _FONFontDump(FILE *file,BDFFont *font, int res) {
+    uint32 startpos, endpos, namelocpos, datapos, namepos;
+    int i, j, k, l;
+    int ch;
+    int cnt, badch, defch;
+    int first, last, avgwid, maxwid, samewid, maxy, miny, widbytes, spacesize;
+    struct pfminfo pfminfo;
+    int complained=false;
+
+    if ( font->clut!=NULL )
+return( false );
+
+    avgwid = widbytes = maxwid = maxy = last = cnt = 0;
+    miny = first = 999999;
+    samewid = -1;
+    badch = -1;
+    defch = -1;
+    for ( i=0; i<font->charcnt && i<256; ++i ) if ( font->chars[i]!=NULL && font->chars[i]->width>0 ) {
+	if ( i==0 || (i==0x80 && defch!=0) ) defch=i;
+	else if ( i!=' ' ) defch = i;
+	if ( i<first ) first = i;
+	last = i;
+	++cnt;
+	avgwid += font->chars[i]->width;
+	widbytes += (font->chars[i]->width+7)>>3;
+	if ( font->chars[i]->ymax>maxy ) maxy = font->chars[i]->ymax;
+	if ( font->chars[i]->ymin<miny ) miny = font->chars[i]->ymin;
+	if ( font->chars[i]->width>maxy ) maxwid = font->chars[i]->width;
+	if ( font->chars[i]->width<font->chars[i]->xmax || font->chars[i]->xmin<0 )
+	    badch = i;
+	if ( samewid==-1 ) samewid = font->chars[i]->width;
+	else if ( samewid!=font->chars[i]->width ) samewid = -2;
+    }
+    if (( spacesize = font->pixelsize/4 )==0 ) spacesize=1;
+    if ( font->chars[' ']!=NULL && font->chars[' ']->sc!=NULL &&
+	    font->chars[' ']->sc->unicodeenc == ' ' )
+	spacesize = font->chars[' ']->width;
+    if ( badch!=-1 )
+	fprintf( stderr, "At pixelsize %d the character %s either starts before the origin or extends beyond the advance width.\n",
+		font->pixelsize, font->chars[badch]->sc->name );
+    pfminfo = font->sf->pfminfo;
+    SFDefaultOS2Info(&pfminfo,font->sf,font->sf->fontname);
+    widbytes = avgwid+spacesize;
+    if ( cnt!=0 ) avgwid = rint(avgwid/(double) cnt);
+    if ( font->chars['X']!=NULL && font->chars['X']->sc!=NULL &&
+	    font->chars['X']->sc->unicodeenc == 'X' )
+	avgwid = font->chars['X']->width;
+
+    if ( res<0 ) {
+	switch ( font->pixelsize ) {
+	  case 13: case 16: case 32:
+	    res = 96;
+	  default:
+	    res = 120;
+	  break;
+	}
+    }
+
+    startpos = ftell(file);
+    lputshort(file,0x200);
+    lputlong(file,0);		/* Fix file size up later */
+    i = 0;
+    if ( font->sf->copyright ) {
+	for ( i=0; i<59 && font->sf->copyright[i]!='\0'; ++i )
+	    putc(font->sf->copyright[i],file);
+    }
+    while ( i<60 ) {
+	putc('\0',file);
+	++i;
+    }
+    lputshort(file,0);					/* flags */
+    lputshort(file,rint(font->pixelsize*72.0/res));	/* pointsize */
+    lputshort(file,res);				/* vertical res */
+    lputshort(file,res);				/* horizontal res */
+    lputshort(file,maxy+1);				/* ascent */
+    lputshort(file,0);					/* internal_leading */
+    lputshort(file,					/* external_leading */
+		    rint(pfminfo.linegap*font->pixelsize/(double)(font->sf->ascent+font->sf->descent)) );
+    if ( font->sf->italicangle!=0 ||
+	    strstrmatch(font->sf->fontname,"ital")!=NULL ||
+	    strstrmatch(font->sf->fontname,"kurs")!=NULL ||
+	    strstrmatch(font->sf->fontname,"obli")!=NULL )
+	putc('\1',file);
+    else
+	putc('\0',file);				/* italic */
+    putc('\0',file);					/* underline */
+    putc('\0',file);					/* strikeout */
+    lputshort(file,pfminfo.weight);			/* weight */
+    putc('\0',file);					/* charset */ /* ??? */
+    lputshort(file,samewid>0?samewid:0);		/* fixed width */
+    lputshort(file,maxy-miny+1);			/* bounding box height */
+    putc(pfminfo.pfmfamily,file);			/* pitchfamily */
+    lputshort(file,avgwid);				/* average width */
+    lputshort(file,maxwid);				/* max width */
+    putc(first,file);
+    putc(last,file);
+    putc(defch-first,file);
+    putc(' '-first,file);
+    lputshort(file,widbytes);				/* bytes per row */
+    lputlong(file,0);					/* device name */
+    namelocpos = ftell(file);
+    lputlong(file,0);					/* face name, fill in later */
+    lputlong(file,0);					/* location in ROM */
+    datapos = 118+(last-first+3)*4;
+    lputlong(file,datapos);				/* bitmap data pointer */
+    putc('\0',file);
+/* End of FNT header */
+
+    widbytes = 0;
+    for ( i=first; i<=last; ++i ) {
+	if ( font->chars[i]!=NULL && font->chars[i]->width>0 )
+	    lputshort(file,font->chars[i]->width);
+	else
+	    lputshort(file,0);
+	lputshort(file,datapos+widbytes);
+	if ( font->chars[i]!=NULL && font->chars[i]->width>0 )
+	    widbytes += ((font->chars[i]->width+7)>>3) * (maxy-miny+1);
+    }
+    /* And a space */
+    lputshort(file,spacesize );
+    lputshort(file,widbytes);
+    widbytes += spacesize;
+    /* And an end marker */
+    lputshort(file,0);
+    lputshort(file,widbytes);
+
+    if ( ftell(file)-startpos != datapos ) {
+	fprintf( stderr, "Internal error in creating FNT. file offset wrong\n" );
+	complained = true;
+    }
+
+    /* And finally the character data */
+    widbytes = 0;
+    for ( i=first; i<=last; ++i ) {
+	BDFChar *bdfc = font->chars[i];
+	if ( bdfc!=NULL && bdfc->width>0 ) {
+	    widbytes += ((bdfc->width+7)>>3) * (maxy-miny+1);
+	    for ( k=0 ; k< bdfc->width; k+= 8 ) {
+		for ( j=maxy; j>=miny; --j ) {
+		    if ( j>bdfc->ymax || j<bdfc->ymin )
+			putc('\0',file);
+		    else {
+			ch = 0;
+			for ( l=0; l<8; ++l ) {
+			    if ( k+l>=bdfc->xmin && k+l<=bdfc->xmax &&
+				    (bdfc->bitmap[(bdfc->ymax-j)*bdfc->bytes_per_line+((k+l-bdfc->xmin)>>3)]
+					&(0x80>>((k+l-bdfc->xmin)&7))) )
+				ch |= (0x80>>l);
+			}
+			putc(ch,file);
+		    }
+		}
+	    }
+	    if ( ftell(file)-startpos != datapos+widbytes && !complained ) {
+		fprintf( stderr, "Internal error in creating FNT. file offset wrong in bitmap data\n" );
+		complained = true;
+	    }
+	}
+    }
+    /* And the space character */
+    spacesize = (spacesize+7)>>3;
+    for ( i=0; i<spacesize*(maxy-miny+1); ++i )
+	putc('\0',file);
+
+    /* Now the face name */
+    namepos = ftell(file);
+    fwrite(font->sf->familyname,1,strlen(font->sf->familyname)+1,file);
+
+    /* And now fixup the file size field */
+    endpos = ftell(file);
+    fseek(file,startpos+2,SEEK_SET);
+    lputlong(file,endpos-startpos);
+    fseek(file,namelocpos,SEEK_SET);
+    lputlong(file,namepos);
+    fseek(file,endpos,SEEK_SET);
+return( true );
+}
+
+int FONFontDump(char *filename,BDFFont *font, int res) {
+    FILE *file;
+    int ret;
+
+    file = fopen(filename,"w");
+    if ( file==NULL ) {
+	fprintf( stderr, "Can't open %s\n", filename );
+return( 0 );
+    }
+    ret = _FONFontDump(file,font,res);
+    if ( ferror(file))
+	ret = 0;
+    if ( fclose(file)!=0 )
+	ret = 0;
+return( ret );
 }

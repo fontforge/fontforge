@@ -571,7 +571,7 @@ enum fontformat { ff_pfa, ff_pfb, ff_pfbmacbin, ff_multiple, ff_ptype3, ff_ptype
 	ff_ttf, ff_ttfsym, ff_ttfmacbin, ff_ttfdfont, ff_otf, ff_otfdfont,
 	ff_otfcid, ff_otfciddfont, ff_none };
 enum bitmapformat { bf_bdf, bf_ttf, bf_sfnt_dfont, 
-	bf_nfntmacbin, bf_nfntdfont, bf_none, bf_fon };
+	bf_nfntmacbin, bf_nfntdfont, bf_fon, bf_none };
 extern SplineChar *SFFindExistingCharMac(SplineFont *,int unienc);
 extern int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format);
 extern int WritePSFont(char *fontname,SplineFont *sf,enum fontformat format);
@@ -692,6 +692,7 @@ extern BDFFont *BitmapFontScaleTo(BDFFont *old, int to);
 extern void BDFCharFree(BDFChar *bdfc);
 extern void BDFFontFree(BDFFont *bdf);
 extern int  BDFFontDump(char *filename,BDFFont *font, char *encodingname,int res);
+extern int  FONFontDump(char *filename,BDFFont *font, int res);
 extern int SplinesIntersect(Spline *s1, Spline *s2, BasePoint pts[4], real t1s[4], real t2s[4]);
 extern int CubicSolve(Spline1D *sp,real ts[3]);
 extern real SplineSolve(Spline1D *sp, real tmin, real tmax, real sought_y, real err);
