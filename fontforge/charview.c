@@ -2121,16 +2121,15 @@ static void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
     r.x = CODERANGE_DATA; r.width = 60;
     GDrawFillRect(pixmap,&r,bg);
 
-    if ( !cv->info_within )
-return;
-
-    if ( cv->info.x>=1000 || cv->info.x<=-1000 || cv->info.y>=1000 || cv->info.y<=-1000 )
-	sprintf(buffer,"%d%s%d", (int) cv->info.x, coord_sep, (int) cv->info.y );
-    else
-	sprintf(buffer,"%.4g%s%.4g", cv->info.x, coord_sep, cv->info.y );
-    buffer[11] = '\0';
-    uc_strcpy(ubuffer,buffer);
-    GDrawDrawText(pixmap,RPT_DATA,ybase,ubuffer,-1,NULL,0);
+    if ( cv->info_within ) {
+	if ( cv->info.x>=1000 || cv->info.x<=-1000 || cv->info.y>=1000 || cv->info.y<=-1000 )
+	    sprintf(buffer,"%d%s%d", (int) cv->info.x, coord_sep, (int) cv->info.y );
+	else
+	    sprintf(buffer,"%.4g%s%.4g", cv->info.x, coord_sep, cv->info.y );
+	buffer[11] = '\0';
+	uc_strcpy(ubuffer,buffer);
+	GDrawDrawText(pixmap,RPT_DATA,ybase,ubuffer,-1,NULL,0);
+    }
     if ( cv->scale>=.25 )
 	sprintf( buffer, "%d%%", (int) (100*cv->scale));
     else
@@ -2179,13 +2178,15 @@ return;
 	buffer[11] = '\0';
 	uc_strcpy(ubuffer,buffer);
 	GDrawDrawText(pixmap,SPT_DATA,ybase,ubuffer,-1,NULL,0);
-    } else if ( cv->widthsel ) {
+    } else if ( cv->widthsel && cv->info_within ) {
 	xdiff = cv->info.x-cv->p.cx;
 	ydiff = 0;
-    } else if ( cv->p.rubberbanding ) {
+    } else if ( cv->p.rubberbanding && cv->info_within ) {
 	xdiff=cv->info.x-cv->p.cx;
 	ydiff = cv->info.y-cv->p.cy;
     } else
+return;
+    if ( !cv->info_within )
 return;
 
     if ( xdiff>=1000 || xdiff<=-1000 || ydiff>=1000 || ydiff<=-1000 )
