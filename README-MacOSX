@@ -1,0 +1,66 @@
+BEFORE INSTALLATION
+ Before you install pfaedit under Mac OS/X you must first install the X window
+ system. I did this as a two step process, first installing the XFree86 Darwin
+ distribution,
+	ftp://ftp.xfree86.org/pub/XFree86/4.1.0/binaries/Darwin-ppc/
+ (with docs at
+	http://www.xfree86.org/4.1.0/Darwin.html	and
+	http://www.xfree86.org/4.1.0/Install.html	)
+ and then installing the XonX distribution on top of it
+	http://prdownloads.sourceforge.net/xonx/XDarwin1.0a2.tgz
+
+INSTALLATION NOTES:
+ Currently this distribution just contains an executable:
+ 	pfaedit
+ and some user interface files
+	pfaedit.{en,fr,de,ru}.ui
+ The user interface files should be placed in /usr/share/pfaedit (you may
+ need to create the directory).
+
+ If you want to edit CID-keyed fonts (for CJK fonts) you may want to pull down
+ the cidmap package from http://pfaedit.sf.net/cidmaps.tgz and move the
+ contents to /usr/share/pfaedit also.
+
+BITMAP FONTS
+ The program sort of assumes you've got some unicode fonts lying around. I'm
+ not exactly sure what is needed, the program sort of picks and chooses
+ depending on what's available. I noticed it used my unicode fonts
+ (you can grab them from http://bibliofile.mc.duke.edu/gww/fonts/{Monospace,Cal),
+ and something which I think is now part of the standard X distribution. It
+ might also need to grab the clearlyu fonts which are freeware:
+	http://clr.nmsu.edu/~mleisher/cu.html
+	
+RUNNING
+ Before running PfaEdit you must start XDarwin. It lives in the Applications
+ folder, and you start it by double clicking on it.
+ You can start pfaedit either from one of the xterms it creates, or from a
+ Terminal window. If you start from a Terminal window you must first type:
+$ setenv DISPLAY :0
+
+$ pfaedit -new
+ Creates a new font
+$ pfaedit -nosplash
+ (No splash screen in case you have a very slow X connection)
+$ pfaedit font.pfa font2.pfb font3.ttf font4.otf font4.sfd
+ Opens those fonts (sfd files are pfaedit's own spline font database files)
+$ pfaedit
+ Brings up a file picker dlg.
+
+CAVEATS
+ 1) PfaEdit does not conform to Apple's Human Interface Guidelines, and never
+    will.
+ 2) I do not know what font formats Apple uses on OS/X. PfaEdit is not able
+    to edit fonts from Mac OS/9.
+ 3) The default window manager (twm) does not work well with PfaEdit when
+    run in Rootless mode.
+    PfaEdit allows the window manager to position its windows for it, and
+    twm does this by allowing the user to click anywhere on the screen to
+    mark the upper left corner of the window. Unfortunately if you click on
+    top of an Aqua window (ie. anything that isn't X window) Aqua will put
+    X into the background and the click will be lost to X.
+
+    You can only open a window if you position it so that it's upper left
+    corner is in one of X's already existing windows.
+
+DOCUMENTATION
+	http://pfaedit.sourceforge.net/overview.html
