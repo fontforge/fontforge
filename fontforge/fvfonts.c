@@ -388,9 +388,14 @@ int SFFindChar(SplineFont *sf, int unienc, const char *name ) {
 	    if ( name[0]=='u' && name[1]=='n' && name[2]=='i' && strlen(name)==7 ) {
 		if ( unienc=strtol(name+3,&end,16), *end!='\0' )
 		    unienc = -1;
+	    } else if ( (name[0]=='U' || name[1]=='0') && name[1]=='+' && (strlen( name )==6 || strlen(name)==7)) {
+		if ( unienc=strtol(name+2,&end,16), *end!='\0' )
+		    unienc = -1;
 	    } else if ( name[0]=='u' && strlen(name)<=7 ) {
 		if ( unienc=strtol(name+1,&end,16), *end!='\0' )
 		    unienc = -1;
+	    } else if ( name[1]=='\0' ) {
+		unienc = ((unsigned char *) name)[0];
 	    }
 	    if ( unienc!=-1 )
 return( SFFindChar(sf,unienc,NULL));
