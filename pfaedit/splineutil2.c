@@ -367,7 +367,7 @@ static void CleanupDir(BasePoint *newcp,BasePoint *oldcp,BasePoint *base) {
 	if ( s<1e-6 && s>-1e-6 ) { s=0; if ( c<0 ) c=-1; else c=1; }
 	len = (newcp->x-base->x)*c + (newcp->y-base->y)*s;
 	newcp->x = len*c; newcp->y = len*s;
-	if ( newcp->x*(oldcp->x-base->x) + newcp->x*(oldcp->y-base->y)<0 ) {
+	if ( newcp->x*(oldcp->x-base->x) + newcp->y*(oldcp->y-base->y)<0 ) {
 	    GDrawIError( "Control points in wrong direction" );
 	    newcp->x = -newcp->x; newcp->y = -newcp->y;
 	}

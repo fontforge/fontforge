@@ -409,7 +409,7 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding, int res) {
     else {
 	for ( i=32; i<127 && i<font->sf->charcnt; ++i )
 	    /* I'll accept a missing glyph, but not a badly encoded one */
-	    if ( font->sf->chars[i]!=NULL || font->sf->chars[i]->unicodeenc!=i )
+	    if ( font->sf->chars[i]!=NULL && font->sf->chars[i]->unicodeenc!=i )
 	break;
 	if ( i==127 )
 	    fprintf( file, "ASCII ");
