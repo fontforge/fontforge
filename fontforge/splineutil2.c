@@ -1480,8 +1480,10 @@ return( good );
 static int SplinesRemoveMidMaybe(SplineChar *sc,SplinePoint *mid, int flags,
 	double err, double lenmax2) {
     SplinePoint *from, *to;
+#if 0		/* See comment below */
     BasePoint fncp, tpcp, fncp2, tpcp2;
     int fpt, tpt;
+#endif
 
     if ( mid->prev==NULL || mid->next==NULL )
 return( false );
@@ -1521,6 +1523,8 @@ return( false );
 	}
     }
 
+#if 0		/* Used to try to enforce tangentness of a point */
+		/*  I now think it's better to change the point to a curve */
     fncp2 = fncp = from->nextcp; tpcp2 = tpcp = to->prevcp;
     fpt = from->pointtype; tpt = to->pointtype;
 
@@ -1535,6 +1539,8 @@ return( false );
 			    (mid->me.y-to->me.y)/(mid->me.x-to->me.x)) )
 return( false );
     }
+#endif
+
 return ( SplinesRemoveBetweenMaybe(sc,from,to,flags,err));
 }
 
