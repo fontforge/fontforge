@@ -386,6 +386,11 @@ typedef struct fontview {
     unsigned int drag_and_drop: 1;
     unsigned int has_dd_no_cursor: 1;
     unsigned int any_dd_events_sent: 1;
+    unsigned int resize_expected: 1;
+	/* Some window managers do not honour my resize requests (if window is*/
+	/*  maximized for example), but we depend on the resize request to    */
+	/*  fix up the window. We do get a configure notify, but the window   */
+	/*  stays the same size, so kludge things */
     int16 magnify;
     SplineFont *cidmaster;
     int32 *mapping;	/* an array mapping grid cells (0=upper left) to font indeces (enc, 0=NUL) */
