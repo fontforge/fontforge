@@ -4920,7 +4920,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 	sf->orders = ord;
     }
 
-    otf_orderlangs(sf);		/* I thought these had to be ordered, but it seems I was wrong. But I depend on the order, so I enforce it here */
+    otf_orderlangs(NULL,sf);		/* I thought these had to be ordered, but it seems I was wrong. But I depend on the order, so I enforce it here */
 
     if ( info->variations!=NULL )
 	MMFillFromVAR(sf,info);
