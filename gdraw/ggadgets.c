@@ -914,3 +914,32 @@ void GGadgetsCreate(GWindow base, GGadgetCreateData *gcd) {
     for ( i=0; gcd[i].creator!=NULL; ++i )
 	gcd[i].ret = (gcd[i].creator)(base,&gcd[i].gd,gcd[i].data);
 }
+
+int GGadgetDispatchEvent(GGadget *g, GEvent *event) {
+
+    if ( g==NULL || event==NULL )
+return( false );
+    switch ( event->type ) {
+      case et_expose:
+	  if ( g->funcs->handle_expose )
+return( (g->funcs->handle_expose)(g->base,g,event) );
+      break;
+      case et_mouseup: case et_mousedown: case et_mousemove: case et_crossing:
+	  if ( g->funcs->handle_mouse )
+return( (g->funcs->handle_mouse)(g,event) );
+      break;
+      case et_char: case et_charup:
+	  if ( g->funcs->handle_key )
+return( (g->funcs->handle_key)(g,event) );
+      break;
+      case et_drag: case et_dragout: case et_drop: case et_selclear:
+	  if ( g->funcs->handle_sel )
+return( (g->funcs->handle_sel)(g,event) );
+      break;
+      case et_timer:
+	  if ( g->funcs->handle_timer )
+return( (g->funcs->handle_timer)(g,event) );
+      break;
+    }
+return( false );
+}

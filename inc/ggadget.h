@@ -277,6 +277,8 @@ extern void GGadgetPreparePopup(GWindow base,const unichar_t *msg);
 extern void GGadgetPreparePopupR(GWindow base,int msg);
 extern void GGadgetEndPopup(void);
 
+extern int GGadgetDispatchEvent(GGadget *g,GEvent *e);
+
 /* Handles *?{}[] wildcards */
 int GGadgetWildMatch(unichar_t *pattern, unichar_t *name,int ignorecase);
 enum fchooserret GFileChooserDefFilter(GGadget *g,struct gdirentry *ent,
