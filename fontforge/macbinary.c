@@ -728,7 +728,7 @@ static uint32 SFToFOND(FILE *res,SplineFont *sf,uint32 id,int dottf,int32 *sizes
 
     /* Font association table */
     stylecode = realstylecode = MacStyleCode( sf, NULL );
-  stylecode = 0;		/* Debug !!!! */
+    stylecode = 0;		/* Debug !!!! */
     for ( i=j=0; sizes!=NULL && sizes[i]!=0; ++i )
 	if ( (sizes[i]>>16)==1 && (sizes[i]&0xffff)<256 )
 	    ++j;
@@ -896,6 +896,97 @@ static void putpsstring(FILE *res,char *fontname) {
     }
 }
 
+struct sflistlist {
+    struct sflist *sfs;
+    struct sflistlist *next;
+    char *fondname;
+};
+
+static struct sflistlist *FondSplitter(struct sflist *sfs,int *fondcnt) {
+    struct sflist *psfaces[48], *sfi, *last, *start;
+    struct sflistlist *sfsl=NULL, *lastl=NULL, *cur, *test;
+    uint16 psstyle;
+    int fc = 0;
+
+    sfi = sfs;
+    if ( sfi->sf->fondname==NULL ) {
+	memset(psfaces,0,sizeof(psfaces));
+	MacStyleCode(sfi->sf,&psstyle);
+	while ( sfi->sf->fondname==NULL && psfaces[psstyle]==NULL ) {
+	    psfaces[psstyle] = sfi;
+	    last = sfi;
+	    sfi = sfi->next;
+	    if ( sfi==NULL )
+	break;
+	    MacStyleCode(sfi->sf,&psstyle);
+	}
+	cur = gcalloc(1,sizeof(struct sflistlist));
+	cur->sfs = sfs;
+	last->next = NULL;
+	for ( last=sfi; last!=NULL; last=last->next )
+	    if ( last->sf->fondname!=NULL && strcmp(last->sf->fondname,sfs->sf->familyname)==0 )
+	break;
+	cur->fondname = copy( last==NULL ? sfs->sf->familyname : sfs->sf->fontname );
+	lastl = sfsl = cur;
+	++fc;
+    }
+    while ( sfi!=NULL ) {
+	start = sfi;
+	if ( sfi->sf->fondname==NULL ) {
+	    last = sfi;
+	    sfi = sfi->next;
+	} else {
+	    memset(psfaces,0,sizeof(psfaces));
+	    MacStyleCode(sfi->sf,&psstyle);
+	    while ( sfi!=NULL && sfi->sf->fondname!=NULL &&
+		    strcmp(sfi->sf->fondname,start->sf->fondname)==0 &&
+		    psfaces[psstyle]==NULL ) {
+		psfaces[psstyle] = sfi;
+		last = sfi;
+		sfi = sfi->next;
+		if ( sfi==NULL )
+	    break;
+		MacStyleCode(sfi->sf,&psstyle);
+	    }
+	}
+	cur = gcalloc(1,sizeof(struct sflistlist));
+	test = NULL;
+	if ( start->sf->fondname!=NULL ) {
+	    for ( test = sfsl; test!=NULL; test=test->next )
+		if ( strcmp(test->fondname,start->sf->fondname)==0 )
+	    break;
+	    if ( test==NULL )
+		cur->fondname = copy(start->sf->fondname);
+	}
+	if ( cur->fondname==NULL )
+	    cur->fondname = copy(start->sf->fontname);
+	if ( lastl!=NULL ) lastl->next = cur;
+	lastl = cur;
+	cur->sfs = start;
+	last->next = NULL;
+	if ( sfsl==NULL )
+	    sfsl = cur;
+	++fc;
+    }
+    *fondcnt = fc;
+return( sfsl );
+}
+
+static void SFListListFree(struct sflistlist *sfsl) {
+    struct sflist *last = NULL;
+    struct sflistlist *sfli, *sflnext;
+    /* free the fond list and restore the sfs list */
+
+    for ( sfli=sfsl; sfli!=NULL; sfli = sflnext ) {
+	sflnext = sfli->next;
+	if ( last!=NULL )
+	    last->next = sfli->sfs;
+	for ( last = sfli->sfs; last->next!=NULL; last = last->next );
+	free(sfli->fondname);
+	free(sfli);
+    }
+}
+
 static uint32 SFsToFOND(FILE *res,struct sflist *sfs,uint32 id,int format,int bf) {
     uint32 rlenpos = ftell(res), widoffpos, widoffloc, kernloc, styleloc, end;
     int i,j,k,cnt, scnt, kcnt, pscnt, strcnt, fontclass, glyphenc, geoffset;
@@ -916,6 +1007,8 @@ static uint32 SFsToFOND(FILE *res,struct sflist *sfs,uint32 id,int format,int bf
     memset(psfaces,0,sizeof(psfaces));
     for ( sfi = sfs ; sfi!=NULL; sfi = sfi->next ) {
 	stylecode = MacStyleCode(sfi->sf,&psstyle);
+	if ( sfs->next==NULL )		/* FONDs with a single entry should make that entry be "regular" no matter what we think it really is */
+	    stylecode = psstyle = 0;
 	if ( faces[stylecode]==NULL )
 	    faces[stylecode] = sfi;
 	if ( psfaces[psstyle]==NULL )
@@ -1537,7 +1630,7 @@ return( 0 );
     rlist[1][0].pos = SFToFOND(res,sf,rlist[0][0].id,true,bsizes);
     rlist[1][0].flags = 0x00;	/* I've seen FONDs with resource flags 0, 0x20, 0x60 */
     rlist[1][0].id = rlist[0][0].id;
-    rlist[1][0].name = sf->familyname;
+    rlist[1][0].name = sf->fondname ? sf->fondname : sf->familyname;
     fclose(tempttf);
     DumpResourceMap(res,resources,format);
     free(dummynfnts);
@@ -1603,7 +1696,7 @@ return( 0 );
     resources[1].res = rlist[1];
     rlist[1][0].id = HashToId(sf->fontname,sf);
     rlist[1][0].pos = SFToFOND(res,sf,rlist[1][0].id,false,sizes);
-    rlist[1][0].name = sf->familyname;
+    rlist[1][0].name = sf->fondname ? sf->fondname : sf->familyname;
     DumpResourceMap(res,resources,is_dfont?ff_ttfdfont:ff_ttfmacbin);
 
     ret = true;
@@ -1633,13 +1726,14 @@ int WriteMacFamily(char *filename,struct sflist *sfs,enum fontformat format,
     FILE *res;
     int ret = 1, r, i;
     struct resourcetype resources[4];
-    struct resource rlist[3][2];
+    struct resource *rlist;
     struct macbinaryheader header;
     struct sflist *sfi, *sfsub;
     char buffer[80];
     int freefilename = 0;
     char *pt;
-    int id;
+    int id, fondcnt;
+    struct sflistlist *sfsl, *sfli;
 
     if ( format==ff_pfbmacbin ) {
 	for ( sfi=sfs; sfi!=NULL; sfi = sfi->next ) {
@@ -1703,7 +1797,6 @@ return( 0 );
 	WriteDummyDFontHeaders(res);
     else
 	WriteDummyMacHeaders(res);
-    memset(rlist,'\0',sizeof(rlist));
     memset(resources,'\0',sizeof(resources));
 
     id = HashToId(sfs->sf->fontname,sfs->sf);
@@ -1730,14 +1823,20 @@ return( 0 );
 	resources[r].tag = CHR('N','F','N','T');
 	resources[r++].res = SFsToNFNTs(res,sfs,id);
     }
+
+    sfsl = FondSplitter(sfs,&fondcnt);
+    rlist = gcalloc(fondcnt+1,sizeof(struct resource));
     resources[r].tag = CHR('F','O','N','D');
-    resources[r].res = rlist[1];
-    rlist[1][0].pos = SFsToFOND(res,sfs,id,format,bf);
-    rlist[1][0].flags = 0x00;	/* I've seen FONDs with resource flags 0, 0x20, 0x60 */
-    rlist[1][0].id = id;
-    rlist[1][0].name = sfs->sf->familyname;
+    resources[r++].res = rlist;
+    for ( i=0, sfli=sfsl; i<fondcnt && sfli!=NULL; ++i, sfli = sfli->next ) {
+	rlist[i].pos = SFsToFOND(res,sfli->sfs,id,format,bf);
+	rlist[i].flags = 0x00;	/* I've seen FONDs with resource flags 0, 0x20, 0x60 */
+	rlist[i].id = id+i;
+	rlist[i].name = sfli->fondname;
+    }
     DumpResourceMap(res,resources,format!=ff_none?format:
 	    bf==bf_nfntmacbin?ff_ttfmacbin:ff_ttfdfont);
+    SFListListFree(sfsl);
     for ( i=0; i<r; ++i )
 	free(resources[i].res);
 
@@ -2403,6 +2502,7 @@ return( NULL );
     sf = SplineFontBlank(em_mac,256);
     free(sf->fontname); sf->fontname = name;
     free(sf->familyname); sf->familyname = copy(fond->fondname);
+    sf->fondname = copy(fond->fondname);
     free(sf->fullname); sf->fullname = copy(name);
     free(sf->origname); sf->origname = NULL;
     if ( style & sf_bold ) {

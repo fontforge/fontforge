@@ -719,6 +719,7 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 
 #define CID_MacAutomatic	16000
 #define CID_MacStyles		16001
+#define CID_MacFOND		16002
 
 struct psdict *PSDictCopy(struct psdict *dict) {
     struct psdict *ret;
@@ -3962,7 +3963,7 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	int winaoff=true, windoff=true;
 	int force_enc=0;
 	real ia, cidversion;
-	const unichar_t *txt; unichar_t *end;
+	const unichar_t *txt, *fond; unichar_t *end;
 	int i,j, mcs;
 	int vmetrics, vorigin, namechange, order2;
 	int xuidchanged = false;
@@ -4121,6 +4122,10 @@ return(true);
 		sf->pfminfo.os2_windescent *= scale;
 	    }
 	}
+	fond = _GGadgetGetTitle(GWidgetGetControl(gw,CID_MacFOND));
+	free(sf->fondname); sf->fondname = NULL;
+	if ( *fond )
+	    sf->fondname = cu_copy(fond);
 	sf->macstyle = mcs;
 	sf->italicangle = ia;
 	sf->upos = upos;
@@ -5880,6 +5885,22 @@ return;
     mcgcd[k].gd.cid = CID_MacStyles;
     mcgcd[k].gd.u.list = macstyles;
     mcgcd[k++].creator = GListCreate;
+
+    mclabel[k].text = (unichar_t *) _STR_FONDName;
+    mclabel[k].text_in_resource = true;
+    mcgcd[k].gd.label = &mclabel[k];
+    mcgcd[k].gd.pos.x = 10; mcgcd[k].gd.pos.y = mcgcd[k-1].gd.pos.y + mcgcd[k-1].gd.pos.height+8;
+    mcgcd[k].gd.flags = gg_visible | gg_enabled;
+    mcgcd[k++].creator = GLabelCreate;
+
+    mclabel[k].text = (unichar_t *) sf->fondname;
+    mclabel[k].text_is_1byte = true;
+    mcgcd[k].gd.label = sf->fondname==NULL ? NULL : &mclabel[k];
+    mcgcd[k].gd.pos.x = 90; mcgcd[k].gd.pos.y = mcgcd[k-1].gd.pos.y - 4;
+    mcgcd[k].gd.flags = gg_visible | gg_enabled;
+    mcgcd[k].gd.cid = CID_MacFOND;
+    mcgcd[k++].creator = GTextFieldCreate;
+
 
     mcs = MacStyleCode(sf,NULL);
     for ( i=0; macstyles[i].text!=NULL; ++i )

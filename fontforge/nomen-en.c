@@ -718,6 +718,7 @@ static char str_ShadowNoMn = "Shadow";
 static char str_MacStyleSet = "Mac Style Set:";
 static char str_BadStyle = "Bad Style";
 static char str_NotBothCondenseExtend = "A style may not have both condense and extend set (it makes no sense)";
+static char str_FONDName = "FOND Name:";
 
  /* Names of otf tags for GPOS features for anchor */
 static char *str_abvm = "Above Base Mark";

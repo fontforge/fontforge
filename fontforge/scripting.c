@@ -1663,6 +1663,18 @@ static void bSetFontNames(Context *c) {
     _SetFontNames(c,sf);
 }
 
+static void bSetFondName(Context *c) {
+    SplineFont *sf = c->curfv->sf;
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments");
+    if ( c->a.vals[1].type!=v_str )
+	error(c,"Bad argument type");
+    if ( *c->a.vals[1].u.sval!='\0' ) {
+	free(sf->fondname);
+	sf->fondname = copy(c->a.vals[1].u.sval);
+    }
+}
+
 static void bSetTTFName(Context *c) {
     SplineFont *sf = c->curfv->sf;
     unichar_t *u;
@@ -3633,6 +3645,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "SetFontOrder", bSetFontOrder },
     { "SetFontHasVerticalMetrics", bSetFontHasVerticalMetrics },
     { "SetFontNames", bSetFontNames },
+    { "SetFondName", bSetFondName },
     { "SetTTFName", bSetTTFName },
     { "GetTTFName", bGetTTFName },
     { "SetItalicAngle", bSetItalicAngle },
@@ -4212,7 +4225,7 @@ static void handlename(Context *c,Val *val) {
 	    } else if ( strcmp(name,"$fontname")==0 || strcmp(name,"$familyname")==0 ||
 		    strcmp(name,"$fullname")==0 || strcmp(name,"$weight")==0 ||
 		    strcmp(name,"$copyright")==0 || strcmp(name,"$filename")==0 ||
-		    strcmp(name,"$fontversion")==0 ) {
+		    strcmp(name,"$fontversion")==0 || strcmp(name,"$fondname")==0 ) {
 		if ( c->curfv==NULL ) error(c,"No current font");
 		val->type = v_str;
 		val->u.sval = copy(strcmp(name,"$fontname")==0?c->curfv->sf->fontname:
@@ -4220,8 +4233,11 @@ static void handlename(Context *c,Val *val) {
 			name[2]=='u'?c->curfv->sf->fullname:
 			name[2]=='e'?c->curfv->sf->weight:
 			name[2]=='i'?c->curfv->sf->origname:
+			name[2]=='o'?c->curfv->sf->fondname:
 			name[3]=='p'?c->curfv->sf->copyright:
 				    c->curfv->sf->version);
+		if ( val->u.sval==NULL )
+		    val->u.sval = copy("");
 	    } else if ( strcmp(name,"$cidfontname")==0 || strcmp(name,"$cidfamilyname")==0 ||
 		    strcmp(name,"$cidfullname")==0 || strcmp(name,"$cidweight")==0 ||
 		    strcmp(name,"$cidcopyright")==0 ) {
