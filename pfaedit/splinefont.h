@@ -324,6 +324,7 @@ typedef struct macfeat {
 	uint16 setting;
 	uint16 strid;
 	struct macname *setname;
+	unsigned int initially_enabled: 1;
     } *settings;
 } MacFeat;
 
@@ -1342,6 +1343,9 @@ extern uint16 WinLangToMac(int winlang);
 extern int CanEncodingWinLangAsMac(int winlang);
 extern int MacLangFromLocale(void);
 extern unichar_t *PickNameFromMacName(struct macname *mn);
+extern MacFeat *FindMacFeature(SplineFont *sf, int feat,MacFeat **secondary);
+extern struct macsetting *FindMacSetting(SplineFont *sf, int feat, int set,struct macsetting **secondary);
+extern struct macname *FindMacSettingName(SplineFont *sf, int feat, int set);
 
 # if HANYANG
 extern void SFDDumpCompositionRules(FILE *sfd,struct compositionrules *rules);

@@ -3006,12 +3006,14 @@ static void dumpstr(FILE *file,char *str) {
     } while ( *str++!='\0' );
 }
 
+#if 0
 static void dumpc2ustr(FILE *file,char *str) {
     do {
 	putc('\0',file);
 	putc(*str,file);
     } while ( *str++!='\0' );
 }
+#endif
 
 static void dumpustr(FILE *file,unichar_t *str) {
     do {
@@ -3086,6 +3088,60 @@ void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf) {
 	dummy->names[ttf_postscriptname] = uc_copy(sf->fontname);
 }
 
+struct macname2 {
+    uint16 enc;		/* Platform specific encoding. 0=>mac roman, 1=>sjis, 7=>russian */
+    uint16 lang;	/* Mac languages 0=>english, 1=>french, 2=>german */
+    uint16 strid;
+    char *name;		/* Not a unicode string, uninterpreted mac encoded string */
+};
+
+static int compmacname(const void *_mn1, const void *_mn2) {
+    const struct macname2 *mn1 = _mn1, *mn2 = _mn2;
+
+    if ( mn1->enc!=mn2->enc )
+return( mn1->enc - mn2->enc );
+    if ( mn1->lang!=mn2->lang )
+return( mn1->lang - mn2->lang );
+
+return( mn1->strid-mn2->strid );
+}
+
+static int ATOrderFeatures(struct alltabs *at) {
+    int i, cnt;
+    struct macname *mn, *smn;
+
+    for ( i=cnt=0; at->feat_name[i].strid!=0; ++i ) {
+	for ( mn=at->feat_name[i].mn; mn!=NULL; mn=mn->next )
+	    ++cnt;
+	for ( mn=at->feat_name[i].smn; mn!=NULL; mn=mn->next )
+	    ++cnt;
+    }
+    at->ordered_feat = galloc((cnt+1)*sizeof(struct macname2));
+    for ( i=cnt=0; at->feat_name[i].strid!=0; ++i ) {
+	for ( mn=at->feat_name[i].mn; mn!=NULL; mn=mn->next ) {
+	    at->ordered_feat[cnt].enc = mn->enc;
+	    at->ordered_feat[cnt].lang = mn->lang;
+	    at->ordered_feat[cnt].strid = at->feat_name[i].strid;
+	    at->ordered_feat[cnt++].name = mn->name;
+	}
+	for ( smn=at->feat_name[i].smn; smn!=NULL; smn=smn->next ) {
+	    for ( mn=at->feat_name[i].mn; mn!=NULL; mn=mn->next ) {
+		if ( smn->enc == mn->enc && smn->lang==mn->lang )
+	    break;
+	    }
+	    if ( mn!=NULL )
+	continue;
+	    at->ordered_feat[cnt].enc = smn->enc;
+	    at->ordered_feat[cnt].lang = smn->lang;
+	    at->ordered_feat[cnt].strid = at->feat_name[i].strid;
+	    at->ordered_feat[cnt++].name = smn->name;
+	}
+    }
+    memset(&at->ordered_feat[cnt],0,sizeof(struct macname2));
+    qsort(at->ordered_feat,cnt,sizeof(struct macname2),compmacname);
+return( cnt );
+}
+
 /* There's an inconsistancy here. Apple's docs say there most be only one */
 /*  nameid==6 and that name must be ascii (presumably plat=1, spec=0, lang=0) */
 /* The opentype docs say there must be two (psl=1,0,0 & psl=3,1,0x409) any */
@@ -3094,11 +3150,11 @@ void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf) {
 /*  fails to load the font if their conventions aren't followed, but I don't */
 /*  think windows does */
 static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format) {
-    int pos=0,i,j;
+    int pos=0,i,j,feat_pos;
     struct ttflangname dummy, *cur, *useng;
     int strcnt=0, cnt=0;
     int posses[ttf_namemax];
-    int maxlen, len, enc, specific;
+    int maxlen, len, enc, specific, macenc;
     char *space;
     int extra=0, lang;
     char *temp;
@@ -3133,11 +3189,9 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
     /* once of mac roman encoding, once for mac unicode and once for windows unicode 409 */
 
     /* The examples I've seen of the feature table only contain platform==mac */
-    /*  but I'm including apple unicode too */
-    if ( at->feat_name!=NULL ) {
-	for ( i=0; at->feat_name[i].strid!=0; ++i )
-	    strcnt += 2;
-    }
+    /*  so I'm not including apple unicode */
+    if ( at->feat_name!=NULL )
+	strcnt += ATOrderFeatures(at);
 
     at->name = tmpfile();
     putshort(at->name,0);	/* format */
@@ -3159,57 +3213,64 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
 	    ++cnt;
 	}
     }
-    if ( at->feat_name!=NULL ) {
-	for ( i=0; at->feat_name[i].strid!=0; ++i ) {
-	    putshort(at->name,0);	/* apple unicode */
-	    putshort(at->name,3);	/* Unicode 2.0 */
-	    putshort(at->name,0);	/*  */
-	    putshort(at->name,at->feat_name[i].strid);
-	    putshort(at->name,2*strlen(at->feat_name[i].name));
-	    putshort(at->name,pos);
-	    pos += 2*strlen(at->feat_name[i].name)+2;
-	    ++cnt;
-	}
-    }
     for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL ) {
 	/* here is the one place we always have postscript, nameid==6 */
 	putshort(at->name,1);	/* apple */
-	putshort(at->name,0);	/*  */
 	putshort(at->name,0);	/* Roman alphabet */
+	putshort(at->name,0);	/* English */
 	putshort(at->name,i);
 	putshort(at->name,u_strlen(dummy.names[i]));
 	putshort(at->name,pos);
 	pos += u_strlen(dummy.names[i])+1;
 	++cnt;
     }
-    if ( at->feat_name!=NULL ) {
-	for ( i=0; at->feat_name[i].strid!=0; ++i ) {
+    feat_pos = 0;
+    if ( at->ordered_feat!=NULL ) {
+	while ( at->ordered_feat[feat_pos].enc==0 && at->ordered_feat[feat_pos].lang==0 ) {
 	    putshort(at->name,1);	/* apple */
-	    putshort(at->name,0);	/*  */
 	    putshort(at->name,0);	/* Roman alphabet */
-	    putshort(at->name,at->feat_name[i].strid);
-	    putshort(at->name,strlen(at->feat_name[i].name));
+	    putshort(at->name,0);	/* English */
+	    putshort(at->name,at->ordered_feat[feat_pos].strid);
+	    putshort(at->name,strlen(at->ordered_feat[feat_pos].name));
 	    putshort(at->name,pos);
-	    pos += strlen(at->feat_name[i].name)+1;
+	    pos += strlen(at->ordered_feat[feat_pos].name)+1;
+	    ++feat_pos;
 	    ++cnt;
 	}
     }
     if ( at->applemode ) {
-	for ( lang=1; lang<255; ++lang ) {		/* Have to order my mac language code now */
-	    for ( cur=sf->names; cur!=NULL; cur=cur->next )
-		    if ( cur->lang!=0x409 && CanEncodingWinLangAsMac(cur->lang) &&
-			    WinLangToMac(cur->lang)==lang ) {
-		for ( i=0; i<ttf_namemax; ++i ) if ( cur->names[i]!=NULL ) {
-		    putshort(at->name,1);			/* Apple platform */
-		    putshort(at->name,MacEncFromMacLang(lang));	/* apple script */
-		    putshort(at->name,lang);			/* apple language code */
-		    putshort(at->name,i);
-		    temp = UnicodeToMacStr(cur->names[i],MacEncFromMacLang(lang),lang);
-		    putshort(at->name,strlen(temp));
-		    putshort(at->name,pos);
-		    pos += strlen(temp)+1;
-		    free(temp);
-		    ++cnt;
+	for ( macenc=0; macenc<33; ++macenc ) {
+	    for ( lang=1; lang<255; ++lang ) {
+		if ( MacEncFromMacLang(lang)==macenc ) {		/* Have to order my mac language code now */
+		    for ( cur=sf->names; cur!=NULL; cur=cur->next )
+			    if ( cur->lang!=0x409 && CanEncodingWinLangAsMac(cur->lang) &&
+				    WinLangToMac(cur->lang)==lang ) {
+			for ( i=0; i<ttf_namemax; ++i ) if ( cur->names[i]!=NULL ) {
+			    putshort(at->name,1);			/* Apple platform */
+			    putshort(at->name,macenc);		/* apple script */
+			    putshort(at->name,lang);		/* apple language code */
+			    putshort(at->name,i);
+			    temp = UnicodeToMacStr(cur->names[i],MacEncFromMacLang(lang),lang);
+			    putshort(at->name,strlen(temp));
+			    putshort(at->name,pos);
+			    pos += strlen(temp)+1;
+			    free(temp);
+			    ++cnt;
+			}
+		    }
+		}
+		if ( at->ordered_feat!=NULL ) {
+		    while ( at->ordered_feat[feat_pos].enc==macenc && at->ordered_feat[feat_pos].lang==lang ) {
+			putshort(at->name,1);	/* apple */
+			putshort(at->name,macenc);
+			putshort(at->name,lang);
+			putshort(at->name,at->ordered_feat[feat_pos].strid);
+			putshort(at->name,strlen(at->ordered_feat[feat_pos].name));
+			putshort(at->name,pos);
+			pos += strlen(at->ordered_feat[feat_pos].name)+1;
+			++feat_pos;
+			++cnt;
+		    }
 		}
 	    }
 	}
@@ -3241,7 +3302,7 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
 
     maxlen = 0;
     for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL && (i!=6 || !at->applemode) ) {
-	putshort(at->name,3);	/* MS platform */
+	putshort(at->name,3);		/* MS platform */
 	putshort(at->name,1);
 	putshort(at->name,0x0409);	/* american english language */
 	putshort(at->name,i);
@@ -3322,25 +3383,28 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
 
     for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL )
 	dumpustr(at->name,dummy.names[i]);
-    if ( at->feat_name!=NULL ) {
-	for ( i=0; at->feat_name[i].strid!=0; ++i )
-	    dumpc2ustr(at->name,at->feat_name[i].name);
-    }
     for ( i=0; i<ttf_namemax; ++i ) if ( dummy.names[i]!=NULL )
 	dumpmacstr(at->name,dummy.names[i]);
-    if ( at->feat_name!=NULL ) {
-	for ( i=0; at->feat_name[i].strid!=0; ++i )
-	    dumpstr(at->name,at->feat_name[i].name);
+    feat_pos = 0;
+    if ( at->ordered_feat!=NULL ) {
+	while ( at->ordered_feat[feat_pos].enc==0 && at->ordered_feat[feat_pos].lang==0 )
+	    dumpstr(at->name,at->ordered_feat[feat_pos++].name);
     }
     if ( at->applemode ) {
-	for ( lang=1; lang<255; ++lang ) {		/* Have to order my mac language code now */
-	    for ( cur=sf->names; cur!=NULL; cur=cur->next )
-		    if ( cur->lang!=0x409 && CanEncodingWinLangAsMac(cur->lang) &&
-			    WinLangToMac(cur->lang)==lang ) {
-		for ( i=0; i<ttf_namemax; ++i ) if ( cur->names[i]!=NULL ) {
-		    temp = UnicodeToMacStr(cur->names[i],MacEncFromMacLang(lang),lang);
-		    dumpstr(at->name,temp);
-		    free(temp);
+	for ( macenc=0; macenc<33; ++macenc ) {
+	    for ( lang=1; lang<255; ++lang ) if ( MacEncFromMacLang(lang)==macenc ) {		/* Have to order my mac language code now */
+		for ( cur=sf->names; cur!=NULL; cur=cur->next )
+			if ( cur->lang!=0x409 && CanEncodingWinLangAsMac(cur->lang) &&
+				WinLangToMac(cur->lang)==lang ) {
+		    for ( i=0; i<ttf_namemax; ++i ) if ( cur->names[i]!=NULL ) {
+			temp = UnicodeToMacStr(cur->names[i],MacEncFromMacLang(lang),lang);
+			dumpstr(at->name,temp);
+			free(temp);
+		    }
+		}
+		if ( at->ordered_feat!=NULL ) {
+		    while ( at->ordered_feat[feat_pos].enc==macenc && at->ordered_feat[feat_pos].lang==lang )
+			dumpstr(at->name,at->ordered_feat[feat_pos++].name);
 		}
 	    }
 	}
@@ -3369,6 +3433,7 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
 	if ( useng==NULL || dummy.names[i]!=useng->names[i] )
 	    free( dummy.names[i]);
     free( at->feat_name );
+    free( at->ordered_feat );
 }
 
 static void dumppost(struct alltabs *at, SplineFont *sf, enum fontformat format) {

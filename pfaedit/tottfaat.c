@@ -330,12 +330,12 @@ return;
 /* (only the default language will be used) */
 struct feature {
     uint32 otftag;
-    int16 featureType, featureSetting, offSetting;
-    char *name, *offname;
-    unsigned int ismutex: 1;
-    unsigned int defaultOn: 1;
+    int16 featureType, featureSetting;
+    MacFeat *mf, *smf;
+    struct macsetting *ms, *sms;
     unsigned int vertOnly: 1;
     unsigned int r2l: 1;	/* I think this is the "descending" flag */
+    unsigned int needsOff: 1;
     uint8 subtable_type;
     int chain;
     int32 flag;
@@ -344,7 +344,7 @@ struct feature {
     struct feature *next;
 };
 
-static struct feature *featureFromTag(uint32 tag);
+static struct feature *featureFromTag(SplineFont *sf, uint32 tag);
 
 static void morxfeaturesfree(struct feature *features) {
     struct feature *n;
@@ -454,7 +454,7 @@ static struct feature *aat_dumpmorx_substitutions(struct alltabs *at, SplineFont
 		    pst->type!=pst_position &&
 		    pst->type!=pst_pair &&
 		    pst->type!=pst_lcaret &&
-		    OTTagToMacFeature(pst->tag,&ft,&fs)) {
+		    (pst->macfeature || OTTagToMacFeature(pst->tag,&ft,&fs))) {
 		for ( j=cnt-1; j>=0 && subtags[j]!=pst->tag; --j );
 		if ( j<0 ) {
 		    if ( cnt>=max )
@@ -496,7 +496,7 @@ static struct feature *aat_dumpmorx_substitutions(struct alltabs *at, SplineFont
 	    }
 	    if ( gcnt==0 )
 	continue;
-	    cur = featureFromTag(subtags[j]);
+	    cur = featureFromTag(sf,subtags[j]);
 	    cur->next = features;
 	    features = cur;
 	    cur->subtable_type = 4;
@@ -797,7 +797,8 @@ static struct feature *aat_dumpmorx_ligatures(struct alltabs *at, SplineFont *sf
 
     for ( i=0; i<sf->charcnt; ++i ) if ( (sc = sf->chars[i])!=NULL && sc->ttf_glyph!=-1) {
 	for ( l=sc->ligofme; l!=NULL; l=l->next ) {
-	    if ( HasDefaultLang(sf,l->lig,0) && OTTagToMacFeature(l->lig->tag,&ft,&fs)) {
+	    if ( HasDefaultLang(sf,l->lig,0) &&
+		    (l->lig->macfeature || OTTagToMacFeature(l->lig->tag,&ft,&fs))) {
 		for ( j=cnt-1; j>=0 && ligtags[j]!=l->lig->tag; --j );
 		if ( j<0 ) {
 		    if ( cnt>=max )
@@ -830,7 +831,7 @@ return( features);
 		ssc->ticked = true;
 	    }
 	    glyphs[gcnt] = NULL;
-	    cur = featureFromTag(ligtags[j]);
+	    cur = featureFromTag(sf,ligtags[j]);
 	    cur->next = features;
 	    features = cur;
 	    cur->subtable_type = 2;		/* ligature */
@@ -1074,7 +1075,7 @@ static struct feature *aat_dumpmorx_glyphforms(struct alltabs *at, SplineFont *s
 	    ssc->ticked = true;
 	}
 	glyphs[gcnt] = NULL;
-	if ( gcnt!=0 && (cur = featureFromTag(CHR('i','s','o','l')))!=NULL ) {
+	if ( gcnt!=0 && (cur = featureFromTag(sf,CHR('i','s','o','l')))!=NULL ) {
 	    cur->r2l = SCRightToLeft(sc);
 	    cur->next = features;
 	    features = cur;
@@ -1949,7 +1950,7 @@ static struct feature *aat_dumpmorx_contextchainsubs(struct alltabs *at, SplineF
 	if ( tempfpst->format==pst_class )
 	    tree = FPST2Tree(sf, tempfpst);
 	if ( (tree!=NULL || FPSTisMacable(sf,tempfpst)) &&
-		(cur = featureFromTag(tempfpst->tag))!=NULL ) {
+		(cur = featureFromTag(sf,tempfpst->tag))!=NULL ) {
 	    cur->r2l = tempfpst->flags&pst_r2l ? 1 : 0;
 	    cur->subtable_type = 1;		/* contextual glyph subs */
 	    cur->feature_start = ftell(temp);
@@ -1997,8 +1998,8 @@ return( features );
 	}
     }
     for ( i=0; i<cnt; ++i ) {
-	if ( all[i]->ismutex && (i==cnt-1 || all[i]->featureType!=all[i+1]->featureType))
-	    all[i]->ismutex = false;
+	if ( !all[i]->needsOff && (i==cnt-1 || all[i]->featureType!=all[i+1]->featureType))
+	    all[i]->needsOff = true;
 	else {
 	    while ( i<cnt-1 && all[i]->featureType==all[i+1]->featureType )
 		++i;
@@ -2012,13 +2013,15 @@ return( features );
 return( features );
 }
 
-static void aat_dumpfeat(struct alltabs *at, struct feature *feature) {
+static void aat_dumpfeat(struct alltabs *at, SplineFont *sf, struct feature *feature) {
     int scnt, fcnt, cnt;
     struct feature *f, *n, *p;
     int k;
     uint32 offset;
     int strid = 256;
     int fn=0;
+    MacFeat *mf, *smf;
+    struct macsetting *ms, *sms;
     /* Dump the 'feat' table which is a connection between morx features and */
     /*  the name table */
     /* We do three passes. The first just calculates how much space we will need */
@@ -2035,44 +2038,51 @@ return;
     for ( k=0; k<3; ++k ) {
 	for ( f=feature; f!=NULL; f=n ) {
 	    cnt=1;
-	    if ( !f->ismutex && f->offname!=NULL ) cnt = 2;
 	    if ( k!=2 ) {
-		for ( p=f, n=p->next; n!=NULL && n->featureType==f->featureType; p=n, n=n->next ) {
-		    ++cnt;
-		    if ( !n->ismutex && n->offname!=NULL ) ++cnt;
-		}
-	    } else {
-		for ( p=f; p!=NULL && p->featureType==f->featureType; p=p->next ) {
-		    putshort(at->feat,p->featureSetting);
-		    putshort(at->feat,strid);
-		    at->feat_name[fn].name = p->name;
-		    at->feat_name[fn++].strid = strid++;
-		    if ( !p->ismutex ) {
-			putshort(at->feat,p->offSetting);
-			putshort(at->feat,strid);
-			at->feat_name[fn].name = p->offname;
-			at->feat_name[fn++].strid = strid++;
+		p = f;
+		for ( n=f->next; n!=NULL && n->featureType==f->featureType; n = n->next ) {
+		    if ( p->featureSetting!=n->featureSetting ) {
+			++cnt;
+			p = n;
 		    }
 		}
-		n = p;
+	    } else {
+		p = f;
+		for ( n=f; n!=NULL && n->featureType==f->featureType; n = n->next ) {
+		    if ( n==f || p->featureSetting!=n->featureSetting ) {
+			if (( n->ms!=NULL && n->ms->setname!=NULL ) ||
+				( n->sms!=NULL && n->sms->setname!=NULL)) {
+			    at->feat_name[fn].mn = n->ms!=NULL ? n->ms->setname : NULL;
+			    at->feat_name[fn].smn = n->sms!=NULL ? n->sms->setname : NULL;
+			    at->feat_name[fn++].strid = strid;
+			}
+			putshort(at->feat,n->featureSetting);
+			putshort(at->feat,strid++);
+			p = n;
+		    }
+		}
 	    }
 	    if ( k==0 ) {
 		++fcnt;
 		scnt += cnt;
 	    } else if ( k==1 ) {
+		if ( (f->mf!=NULL && f->mf->featname!=NULL) || (f->smf!=NULL && f->smf->featname!=NULL) ) {
+		    at->feat_name[fn].mn = f->mf!=NULL ? f->mf->featname : NULL;
+		    at->feat_name[fn].smn = f->smf!=NULL ? f->smf->featname : NULL;
+		    at->feat_name[fn++].strid = strid;
+		}
 		putshort(at->feat,f->featureType);
 		putshort(at->feat,cnt);
 		putlong(at->feat,offset);
-		putshort(at->feat,f->ismutex?0xc000:0);
-		putshort(at->feat,strid);
-		at->feat_name[fn].name = FeatureNameFromType(f->featureType);
-		at->feat_name[fn++].strid = strid++;
+		putshort(at->feat,f->mf!=NULL && f->mf->ismutex?(0xc000|f->mf->default_setting):
+			0);
+		putshort(at->feat,strid++);
 		offset += 4*cnt;
 	    }
 	}
 	if ( k==0 ) {
 	    ++fcnt;		/* Add one for "All Typographic Features" */
-	    scnt += 2;		/* Add one each for All/No Features */
+	    ++scnt;		/* Add one for All Features */
 	    at->feat = tmpfile();
 	    at->feat_name = galloc((fcnt+scnt+1)*sizeof(struct feat_name));
 	    putlong(at->feat,0x00010000);
@@ -2081,24 +2091,28 @@ return;
 	    putlong(at->feat,0);
 	    offset = 12 /* header */ + fcnt*12;
 		/* FeatureName entry for All Typographics */
+	    mf = FindMacFeature(sf,0,&smf);
+	    if ( (mf!=NULL && mf->featname!=NULL) || (smf!=NULL && smf->featname!=NULL)) {
+		at->feat_name[fn].mn = mf!=NULL ? mf->featname : NULL;
+		at->feat_name[fn].smn = smf!=NULL ? smf->featname : NULL;
+		at->feat_name[fn++].strid = strid;
+	    }
 	    putshort(at->feat,0);
 	    putshort(at->feat,1);
 	    putlong(at->feat,offset);
 	    putshort(at->feat,0x0000);	/* non exclusive */
-	    putshort(at->feat,strid);
-	    at->feat_name[fn].name = "All Typographic Features";
-	    at->feat_name[fn++].strid = strid++;
-	    offset += 2*4;		/* All Features/No Features */
+	    putshort(at->feat,strid++);
+	    offset += 1*4;		/* (1 setting, 4 bytes) All Features */
 	} else if ( k==1 ) {
 		/* Setting Name Array for All Typographic Features */
+	    ms = FindMacSetting(sf,0,0,&sms);
+	    if ( (ms!=NULL && ms->setname!=NULL) || (sms!=NULL && sms->setname!=NULL)) {
+		at->feat_name[fn].mn = ms!=NULL ? ms->setname: NULL;
+		at->feat_name[fn].smn = sms!=NULL ? sms->setname: NULL;
+		at->feat_name[fn++].strid = strid;
+	    }
 	    putshort(at->feat,0);
-	    putshort(at->feat,strid);
-	    at->feat_name[fn].name = "All Features";
-	    at->feat_name[fn++].strid = strid++;
-	    putshort(at->feat,1);
-	    putshort(at->feat,strid);
-	    at->feat_name[fn].name = "No Features";
-	    at->feat_name[fn++].strid = strid++;
+	    putshort(at->feat,strid++);
 	}
     }
     memset( &at->feat_name[fn],0,sizeof(struct feat_name));
@@ -2109,21 +2123,33 @@ return;
 
 static int featuresAssignFlagsChains(struct feature *feature) {
     int bit=0, cnt, chain = 0;
-    struct feature *f, *n;
+    struct feature *f, *n, *p;
 
     if ( feature==NULL )
 return( 0 );
 
     for ( f=feature; f!=NULL; f=n ) {
 	cnt=0;
-	for ( n=f; n!=NULL && n->featureType==f->featureType; n=n->next ) ++cnt;
+	p = f;
+	for ( n=f; n!=NULL && n->featureType==f->featureType; n=n->next ) {
+	    if ( n->featureSetting != p->featureSetting ) {
+		++cnt;
+		p = n;
+	    }
+	}
 	if ( bit+cnt>=32 ) {
 	    ++chain;
 	    bit = 0;
 	}
-	for ( n=f; n!=NULL && n->featureType==f->featureType; n=n->next ) {
-	    n->flag = 1<<(bit++);
-	    n->chain = chain;
+	for ( n=f; n!=NULL && n->featureType==f->featureType; ) {
+	    p = n;
+	    while ( n!=NULL && n->featureType==p->featureType &&
+		    n->featureSetting == p->featureSetting ) {
+		n->flag = 1<<bit;
+		n->chain = chain;
+		n = n->next;
+	    }
+	    ++bit;
 	}
     }
 return( chain+1 );
@@ -2145,10 +2171,11 @@ static void morxDumpChain(struct alltabs *at,struct feature *features,int chain,
 	    for ( n=f; n!=NULL && n->featureType==f->featureType; n=n->next ) {
 		all[cnt++] = n;
 		++subcnt;
-		if ( n->defaultOn )
+		if ( n->ms!=NULL && n->ms->initially_enabled )
 		    def_flags |= n->flag;
 		++scnt;
-		if ( !n->ismutex && n->offname!=NULL ) ++scnt;
+		if ( n->mf!=NULL && !n->mf->ismutex )
+		    ++scnt;
 	    }
 	} else
 	    n = f->next;
@@ -2168,7 +2195,7 @@ static void morxDumpChain(struct alltabs *at,struct feature *features,int chain,
     chain_start = ftell(at->morx);
     putlong(at->morx,def_flags);
     putlong(at->morx,0);		/* Fix up length later */
-    putlong(at->morx,scnt+1);		/* extra for All Typo features */
+    putlong(at->morx,scnt+2);		/* extra for All Typo features */
     putlong(at->morx,subcnt);		/* subtable cnt */
 
     /* Features */
@@ -2179,9 +2206,9 @@ static void morxDumpChain(struct alltabs *at,struct feature *features,int chain,
 		putshort(at->morx,n->featureSetting);
 		putlong(at->morx,n->flag);
 		putlong(at->morx,0xffffffff);
-		if ( !n->ismutex && n->offname!=NULL ) {
+		if ( n->mf!=NULL && !n->mf->ismutex ) {
 		    putshort(at->morx,n->featureType);
-		    putshort(at->morx,n->offSetting);
+		    putshort(at->morx,n->featureSetting+1);
 		    putlong(at->morx,0);
 		    putlong(at->morx,~n->flag);
 		}
@@ -2189,6 +2216,10 @@ static void morxDumpChain(struct alltabs *at,struct feature *features,int chain,
 	} else
 	    n = f->next;
     }
+    putshort(at->morx,0);		/* All Typo Features */
+    putshort(at->morx,0);		/* All Features */
+    putlong(at->morx,0xffffffff);	/* enable */
+    putlong(at->morx,0xffffffff);	/* disable */
     putshort(at->morx,0);		/* All Typo Features */
     putshort(at->morx,1);		/* No Features */
     putlong(at->morx,0);		/* enable */
@@ -2243,7 +2274,7 @@ void aat_dumpmorx(struct alltabs *at, SplineFont *sf) {
 return;
     }
     features = featuresOrderByType(features);
-    aat_dumpfeat(at, features);
+    aat_dumpfeat(at, sf, features);
     nchains = featuresAssignFlagsChains(features);
 
     at->morx = tmpfile();
@@ -2591,26 +2622,27 @@ return( true );
 return( false );
 }
 
-static struct feature *featureFromTag(uint32 tag ) {
+static struct feature *featureFromTag(SplineFont *sf, uint32 tag ) {
     int i;
     struct feature *feat;
     struct macsettingname *msn = user_macfeat_otftag ? user_macfeat_otftag : macfeat_otftag;
 
     for ( i=0; msn[i].otf_tag!=0; ++i )
-	if ( msn[i].otf_tag == tag ) {
-	    feat = chunkalloc(sizeof(struct feature));
-	    feat->otftag = tag;
-	    feat->featureType = msn[i].mac_feature_type;
-	    feat->featureSetting = msn[i].mac_feature_setting;
-	    feat->offSetting = msn[i].off_setting;
-	    feat->name = msn[i].on_name;
-	    feat->offname = msn[i].off_name;
-	    feat->ismutex = msn[i].ismutex;
-	    feat->defaultOn = msn[i].defaultOn;
-	    feat->vertOnly = tag==CHR('v','r','t','2') || tag==CHR('v','k','n','a');
+	if ( msn[i].otf_tag == tag )
+    break;
+
+    feat = chunkalloc(sizeof(struct feature));
+    feat->otftag = tag;
+    if ( msn[i].otf_tag!=0 ) {
+	feat->featureType = msn[i].mac_feature_type;
+	feat->featureSetting = msn[i].mac_feature_setting;
+    } else {
+	feat->featureType = tag>>16;
+	feat->featureSetting = tag & 0xffff;
+    }
+    feat->mf = FindMacFeature(sf,feat->featureType,&feat->smf);
+    feat->ms = FindMacSetting(sf,feat->featureType,feat->featureSetting,&feat->sms);
+    feat->needsOff = feat->mf!=NULL && !feat->mf->ismutex;
+    feat->vertOnly = tag==CHR('v','r','t','2') || tag==CHR('v','k','n','a');
 return( feat );
-	}
-
-return( NULL );
 }
-

@@ -2779,6 +2779,7 @@ return;
     pst = chunkalloc(sizeof(PST));
     pst->type = pst_substitution;
     pst->tag = info->mort_subs_tag;
+    pst->macfeature = info->mort_tag_mac;
     pst->flags = info->mort_r2l ? pst_r2l : 0;
     pst->script_lang_index = SLIFromInfo(info,sc,DEFAULT_LANG);
     pst->next = sc->possub;
@@ -2902,6 +2903,7 @@ return;
 		    pst = chunkalloc(sizeof(PST));
 		    pst->type = pst_ligature;
 		    pst->tag = sm->info->mort_subs_tag;
+		    pst->macfeature = sm->info->mort_tag_mac;
 		    pst->flags = sm->info->mort_r2l ? (pst_r2l|pst_ignorecombiningmarks) : pst_ignorecombiningmarks;
 		    pst->script_lang_index = SLIFromInfo(sm->info,sm->info->chars[lig_glyph],DEFAULT_LANG);
 		    pst->u.lig.components = comp;
@@ -3004,6 +3006,7 @@ return;
 		    pst->type = pst_ligature;
 		    pst->flags = sm->info->mort_r2l ? (pst_r2l|pst_ignorecombiningmarks) : pst_ignorecombiningmarks;
 		    pst->tag = sm->info->mort_subs_tag;
+		    pst->macfeature = sm->info->mort_tag_mac;
 		    pst->script_lang_index = SLIFromInfo(sm->info,sm->info->chars[lig_glyph],DEFAULT_LANG);
 		    pst->u.lig.components = comp;
 		    pst->u.lig.lig = sm->info->chars[lig_glyph];
@@ -3113,18 +3116,21 @@ return;
     free(sm.classes);
 }
 
+static void FeatMarkAsEnabled(struct ttfinfo *info,int featureType,
+	int featureSetting);
+
 static uint32 readmortchain(FILE *ttf,struct ttfinfo *info, uint32 base, int ismorx) {
-    uint32 chain_len, nfeatures, nsubtables;
+    uint32 chain_len, nfeatures, nsubtables, default_flags;
     uint32 enable_flags, disable_flags, flags;
     int featureType, featureSetting;
     int i,j,k,l;
     uint32 length, coverage;
     uint32 here;
     uint32 tag;
-    struct tagmaskfeature { uint32 tag, enable_flags; } tmf[32];
+    struct tagmaskfeature { uint32 tag, enable_flags; int ismac; } tmf[32];
     int r2l;
 
-    /* default flags = */ getlong(ttf);
+    default_flags = getlong(ttf);
     chain_len = getlong(ttf);
     if ( ismorx ) {
 	nfeatures = getlong(ttf);
@@ -3140,9 +3146,17 @@ static uint32 readmortchain(FILE *ttf,struct ttfinfo *info, uint32 base, int ism
 	featureSetting = getushort(ttf);
 	enable_flags = getlong(ttf);
 	disable_flags = getlong(ttf);
+	if ( enable_flags & default_flags )
+	    FeatMarkAsEnabled(info,featureType,featureSetting);
 	tag = MacFeatureToOTTag(featureType,featureSetting);
-	if ( enable_flags!=0 && tag!=0 && k<32 ) {
-	    tmf[k].tag = tag;
+	if ( enable_flags!=0 && k<32 ) {
+	    if ( tag==0 ) {
+		tmf[k].tag = (featureType<<16) | featureSetting;
+		tmf[k].ismac = true;
+	    } else {
+		tmf[k].tag = tag;
+		tmf[k].ismac = false;
+	    }
 	    tmf[k++].enable_flags = enable_flags;
 	}
     }
@@ -3165,6 +3179,7 @@ return( chain_len );
 	if ( j>=0 ) {
 	    info->mort_subs_tag = tmf[j].tag;
 	    info->mort_r2l = r2l;
+	    info->mort_tag_mac = tmf[j].ismac;
 	    for ( l=0; info->feats[0][l]!=0; ++l )
 		if ( info->feats[0][l]==tmf[j].tag )
 	    break;
@@ -3405,4 +3420,24 @@ void readmacfeaturemap(FILE *ttf,struct ttfinfo *info) {
 	}
     }
     free(fs);
+}
+
+static void FeatMarkAsEnabled(struct ttfinfo *info,int featureType,
+	int featureSetting) {
+    MacFeat *f;
+    struct macsetting *s;
+
+    for ( f = info->features; f!=NULL && f->feature!=featureType; f=f->next );
+    if ( f==NULL )
+return;
+    if ( f->ismutex ) {
+	for ( s=f->settings ; s!=NULL; s=s->next )
+	    s->initially_enabled = ( s->setting==featureSetting );
+	f->default_setting = featureSetting;
+    } else {
+	for ( s=f->settings ; s!=NULL && s->setting!=featureSetting; s=s->next );
+	if ( s!=NULL )
+	    s->initially_enabled = true;
+    }
+return;
 }

@@ -1969,6 +1969,54 @@ static void ACD_ToggleNest(struct ac_dlg *acd) {
     GGadgetSetTitle(acd->taglist,nullstr);
 }
 
+static void ACD_SelectTag(struct ac_dlg *acd) {
+    const unichar_t *utag;
+    unichar_t ubuf[8], *end;
+    uint32 tag;
+    int macfeature;
+    int i,j;
+    int32 len;
+    GTextInfo **ti;
+    GGadget *list = GWidgetGetControl(acd->gw,CID_ACD_Tag);
+
+    utag = _GGadgetGetTitle(list);
+    if ( (ubuf[0] = utag[0])==0 )
+return;
+    else if (( utag[0]=='<' && utag[u_strlen(utag)-1]=='>' ) ||
+	    ((u_strtol(utag,&end,10),*end==',') &&
+	     (u_strtol(end+1,&end,10),*end=='\0')) ) {
+	macfeature = true;
+	if ( utag[0]=='<' ) ++utag;
+	tag = u_strtol(utag,&end,10)<<16;
+	tag |= u_strtol(end+1,&end,10);
+    } else {
+	macfeature = false;
+	if ( utag[0]=='\'' && utag[5]=='\'' ) {
+	    memcpy(ubuf,utag+1,4*sizeof(unichar_t));
+	} else {
+	    if ( (ubuf[1] = utag[1])==0 )
+		ubuf[1] = ubuf[2] = ubuf[3] = ' ';
+	    else if ( (ubuf[2] = utag[2])==0 )
+		ubuf[2] = ubuf[3] = ' ';
+	    else if ( (ubuf[3] = utag[3])==0 )
+		ubuf[3] = ' ';
+	    if ( u_strlen(utag)>4 || ubuf[0]>=0x7f || ubuf[1]>=0x7f || ubuf[2]>=0x7f || ubuf[3]>=0x7f )
+return;
+	}
+	tag = (ubuf[0]<<24) | (ubuf[1]<<16) | (ubuf[2]<<8) | ubuf[3];
+    }
+
+    ti = GGadgetGetList(list,&len);
+    for ( i=0; i<len; ++i ) {
+	if ( ti[i]->userdata == (void *) tag ) {
+	    if ( ti[i]->selected )
+return;
+	    for ( j=0; j<len; ++j ) ti[j]->selected = false;
+	    ti[i]->selected = true;
+	}
+    }
+}
+
 static int acd_e_h(GWindow gw, GEvent *event) {
     struct ac_dlg *acd = GDrawGetUserData(gw);
     if ( event->type==et_close ) {
@@ -2003,7 +2051,8 @@ return( false );
 		uc_strcpy(ubuf,buf);
 	    }
 	    GGadgetSetTitle(event->u.control.g,ubuf);
-	}
+	} else
+	    ACD_SelectTag(acd);
 	ACD_RefigureMerge(acd,-1);
     } else if ( event->type==et_controlevent &&
 	    event->u.control.subtype == et_listselected &&
@@ -2269,6 +2318,7 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 	    ACD_RefigureMerge(&acd,merge_with);
 	if ( acd.sli==SLI_NESTED )
 	    ACD_ToggleNest(&acd);
+	ACD_SelectTag(&acd);
 
     GDrawSetVisible(gw,true);
     GWidgetIndicateFocusGadget(gcd[1].ret);

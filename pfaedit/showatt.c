@@ -41,6 +41,7 @@ struct node {
     unsigned int open: 1;
     unsigned int children_checked: 1;
     unsigned int used: 1;
+    unsigned int macfeat: 1;
     uint16 cnt;
     struct node *children, *parent;
     void (*build)(struct node *,struct att_dlg *);
@@ -552,17 +553,16 @@ static void BuildMorxFeatures(struct node *node,struct att_dlg *att) {
 
 static void BuildMorxScript(struct node *node,struct att_dlg *att) {
     uint32 script = node->tag, lang = DEFAULT_LANG;
-    int i,j,k,l,m, tot, max;
+    int i,k,l,m, tot, max;
     SplineFont *_sf = att->sf, *sf;
     uint32 *feats;
     FPST *fpst, **fpsts;
     struct node *featnodes;
-    extern GTextInfo *pst_tags[];
     int feat, set;
     SplineChar *sc;
     PST *pst;
     char buf[20];
-    unichar_t ubuf[120];
+    unichar_t *setname;
 
     /* Build up the list of features in this "script" entry in morx */
     k=tot=0;
@@ -575,7 +575,8 @@ static void BuildMorxScript(struct node *node,struct att_dlg *att) {
 		    if ( pst->type!=pst_position && pst->type!=pst_lcaret &&
 			    pst->type!=pst_pair &&
 			    pst->script_lang_index!=SLI_NESTED &&
-			    OTTagToMacFeature(pst->tag,&feat,&set)) {
+			    (pst->macfeature ||
+			     OTTagToMacFeature(pst->tag,&feat,&set))) {
 		int sli = pst->script_lang_index;
 		struct script_record *sr = _sf->script_lang[sli];
 		for ( l=0; sr[l].script!=0 && sr[l].script!=script; ++l );
@@ -626,23 +627,26 @@ static void BuildMorxScript(struct node *node,struct att_dlg *att) {
 	    featnodes[i].build = BuildFPST;
 	    featnodes[i].u.fpst = fpsts[i];
 	}
-	for ( k=1; pst_tags[k]!=NULL; ++k ) {
-	    for ( j=0; pst_tags[k][j].text!=NULL && feats[i]!=(uint32) pst_tags[k][j].userdata; ++j );
-	    if ( pst_tags[k][j].text!=NULL )
-	break;
+	if ( !OTTagToMacFeature(feats[i],&feat,&set) ) {
+	    feat = feats[i]>>16;
+	    set = feats[i]&0xffff;
+	    featnodes[i].macfeat = true;
 	}
-	OTTagToMacFeature(feats[i],&feat,&set);
+	setname = PickNameFromMacName(FindMacSettingName(sf,feat,set));
+	if ( setname==NULL )
+	    setname = uc_copy("");
 	featnodes[i].tag = (feat<<16)|set;
-	sprintf( buf, "%d,%d ", feat,set );
-	uc_strcpy(ubuf,buf);
-	if ( pst_tags[k]!=NULL )
-	    u_strcat(ubuf,GStringGetResource((uint32) pst_tags[k][j].text,NULL));
-	featnodes[i].label = u_copy(ubuf);
+	sprintf( buf, "<%d,%d> ", feat,set );
+	featnodes[i].label = galloc((strlen(buf)+u_strlen(setname)+1)*sizeof(unichar_t));
+	uc_strcpy(featnodes[i].label,buf);
+	u_strcat(featnodes[i].label,setname);
+	free(setname);
     }
 
     qsort(featnodes,tot,sizeof(struct node),compare_tag);
     for ( i=0; i<tot; ++i )
-	featnodes[i].tag = MacFeatureToOTTag(featnodes[i].tag>>16,featnodes[i].tag&0xffff);
+	if ( !featnodes[i].macfeat )
+	    featnodes[i].tag = MacFeatureToOTTag(featnodes[i].tag>>16,featnodes[i].tag&0xffff);
     node->children = featnodes;
     node->cnt = tot;
 }
@@ -962,7 +966,8 @@ static void BuildGSUBlang(struct node *node,struct att_dlg *att) {
 		    if ((isgsub && pst->type!=pst_position && pst->type!=pst_lcaret &&
 			    pst->type!=pst_pair) ||
 			    (!isgsub && (pst->type==pst_position || pst->type==pst_pair)) ) {
-		if ( SLIMatches(_sf,pst->script_lang_index,script,lang) ) {
+		if ( SLIMatches(_sf,pst->script_lang_index,script,lang) &&
+			!pst->macfeature ) {
 		    for ( l=0; l<tot && f[l].feats!=pst->tag; ++l );
 		    if ( l>=tot ) {
 			if ( tot>=max ) {
@@ -1535,8 +1540,10 @@ return;
 		int relevant = false;
 		if ( pst->type == pst_position || pst->type==pst_pair )
 		    relevant = isgpos;
-		else
-		    relevant = isgsub || (ismorx && OTTagToMacFeature(pst->tag,&feat,&set));
+		else if ( isgsub )
+		    relevant = !pst->macfeature;
+		else if ( ismorx )
+		    relevant = pst->macfeature || OTTagToMacFeature(pst->tag,&feat,&set);
 		if ( pst->script_lang_index==SLI_NESTED || pst->script_lang_index==SLI_UNKNOWN ) relevant = false;
 		if ( relevant ) {
 		    int sli = pst->script_lang_index;
@@ -1682,9 +1689,11 @@ static void BuildTop(struct att_dlg *att) {
 		    if ( j!=-1 )
 			hasgdef = haslcar = true;
 		} else {
-		    hasgsub = true;
+		    if ( !pst->macfeature )
+			hasgsub = true;
 		    if ( SLIHasDefault(sf,pst->script_lang_index) &&
-			    OTTagToMacFeature(pst->tag,&feat,&set))
+			    (pst->macfeature ||
+			     OTTagToMacFeature(pst->tag,&feat,&set)))
 			hasmorx = true;
 		}
 	    }

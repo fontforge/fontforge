@@ -164,7 +164,7 @@ struct ttfinfo {
     struct script_record **script_lang;
 
     uint32 mort_subs_tag;
-    int mort_r2l;
+    int mort_r2l, mort_tag_mac;
     uint16 *morx_classes;
 
     uint32 *feats[2];			/* Order of gsub/gpos (morx) features */
@@ -502,7 +502,8 @@ struct alltabs {
     int isfixed;
     struct fd2data *fds;
 
-    struct feat_name { int strid; char *name; } *feat_name;
+    struct feat_name { int strid; struct macname *mn, *smn; } *feat_name;
+    struct macname2 *ordered_feat;
 
     int next_lookup;	/* for doing nested lookups in contextual features */
 };

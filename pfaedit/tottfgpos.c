@@ -2273,14 +2273,6 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
 return( lookups );
 }
 
-static int SkipThisTag(uint32 tag) {
-    /* Skip the tags that I've added to deal with mac features which don't */
-    /*  quite match any opentype tag */
-    int type,setting;
-return( isupper(tag>>24) && isupper((tag>>16)&0xff) && isupper((tag>>8)&0xff) && isupper(tag&0xff) &&
-	OTTagToMacFeature(tag,&type,&setting));
-}
-
 static struct lookup *GSUBfigureLookups(FILE *lfile,SplineFont *sf,
 	struct alltabs *at, struct lookup **nested) {
     struct lookup *lookups = NULL, *new, *lo;
@@ -2298,7 +2290,7 @@ static struct lookup *GSUBfigureLookups(FILE *lfile,SplineFont *sf,
     max = 30; cnt = 0;
     ligtags = galloc(max*sizeof(struct tagflaglang));
     for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL ) {
-	for ( ll = sf->chars[i]->ligofme; ll!=NULL; ll=ll->next ) if ( !SkipThisTag(ll->lig->tag) && ll->lig->script_lang_index!=SLI_NESTED ) {
+	for ( ll = sf->chars[i]->ligofme; ll!=NULL; ll=ll->next ) if ( !ll->lig->macfeature && ll->lig->script_lang_index!=SLI_NESTED ) {
 	    for ( j=0; j<cnt; ++j )
 		if ( ligtags[j].tag==ll->lig->tag && ll->lig->flags==ligtags[j].flags &&
 			ll->lig->script_lang_index == ligtags[j].script_lang_index )
@@ -2328,7 +2320,7 @@ static struct lookup *GSUBfigureLookups(FILE *lfile,SplineFont *sf,
     for ( type = pst_substitution; type<=pst_multiple; ++type ) {
 	cnt = 0;
 	for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL ) {
-	    for ( subs = sf->chars[i]->possub; subs!=NULL; subs=subs->next ) if ( subs->type==type && !SkipThisTag(subs->tag) && subs->script_lang_index!=SLI_NESTED ) {
+	    for ( subs = sf->chars[i]->possub; subs!=NULL; subs=subs->next ) if ( subs->type==type && !subs->macfeature && subs->script_lang_index!=SLI_NESTED ) {
 		for ( j=0; j<cnt; ++j )
 		    if ( ligtags[j].tag==subs->tag && subs->flags==ligtags[j].flags &&
 			    subs->script_lang_index == ligtags[j].script_lang_index )
