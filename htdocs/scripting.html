@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 5-Jun-2002 -->
+  <!-- AP: Last modified: 11-Jun-2002 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -306,7 +306,9 @@ to (some) already existing ones)
     font (or the empty string if the current sub-font is the last)
   <LI>
     <CODE>$bitmaps </CODE>returns an array containing all bitmap pixelsizes generated
-    for this font.
+    for this font. (If the font database contains greymaps then they will be
+    indicated in the array as
+    <CODE>(&lt;BitmapDepth&gt;&lt;&lt;16)|&lt;PixelSize&gt;</CODE>)
   <LI>
     <CODE>$trace</CODE> if this is set to one then PfaEdit will trace each procedure
     call.
@@ -632,7 +634,8 @@ a[4][0] = "Nested array";
     will not be touched.<BR>
     If you want to specify greymap fonts then the low-order 16 bits will be the
     pixel size and the high order 16 bits will specify the bits/pixel. Thus 0x8000c
-    would be a 12 pixel font with 8 bits per pixel.
+    would be a 12 pixel font with 8 bits per pixel, while either 0xc or 0x1000c
+    could be used to refer to a 12 pixel bitmap font.
   <DT>
     BitmapsRegen(sizes)
   <DD>
