@@ -112,7 +112,7 @@ return;
 
     while (( ent = readdir(dir))!=NULL ) {
 	cur = gcalloc(1,sizeof(GDirEntry));
-	cur->name = uc_copy(ent->d_name);
+	cur->name = def2u_copy(ent->d_name);
 	strcpy(ept,ent->d_name);
 	stat(buffer,&statb);
 	cur->hasdir = cur->hasexe = cur->hasmode = cur->hassize = cur->hastime = true;
