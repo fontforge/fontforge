@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 13-Oct-2004 -->
+  <!-- AP: Last modified: 28-Oct-2004 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -1476,11 +1476,55 @@ ApplySubstitution("*","*","vrt2")
     If a fifth argument is given then it will be treated as the denominator of
     the error term (so users can express fraction pixel distances).
   <DT>
+    NearlyHvCps([error[,err-denom]])
+  <DD>
+    Checks for control points which are almost, but not quite horzontal or vertical
+    (where almost means (say) that <CODE>abs( (control point).x - point.x ) &lt;
+    error</CODE>, where error is either:
+    <TABLE CELLPADDING="2">
+      <TR>
+	<TD>.1</TD>
+	<TD>if no arguments are given</TD>
+      </TR>
+      <TR>
+	<TD>first-arg</TD>
+	<TD>if one argument is given</TD>
+      </TR>
+      <TR>
+	<TD>first-arg/second-arg</TD>
+	<TD>if two arguments are given</TD>
+      </TR>
+    </TABLE>
+  <DT>
+    NearlyHvLines([error[,err-denom]])
+  <DD>
+    Checks for lines which are almost, but not quite horzontal or vertical (where
+    almost means (say) that <CODE>abs( (end point).x - (start point).x ) &lt;
+    error</CODE>, where error is either:
+    <TABLE CELLPADDING="2">
+      <TR>
+	<TD>.1</TD>
+	<TD>if no arguments are given</TD>
+      </TR>
+      <TR>
+	<TD>first-arg</TD>
+	<TD>if one argument is given</TD>
+      </TR>
+      <TR>
+	<TD>first-arg/second-arg</TD>
+	<TD>if two arguments are given</TD>
+      </TR>
+    </TABLE>
+  <DT>
     AddExtrema()
   <DD>
   <DT>
-    RoundToInt()
+    RoundToInt([factor])
   <DD>
+    Rounds all points/hints/reference-offsets to be integers. If the the "factor"
+    argument is specified then it rounds like <CODE>rint(factor * x) /
+    factor</CODE>, in other words if you set factor to 100 then it will round
+    to hundredths.
   <DT>
     AutoTrace()
   <DD>
@@ -1902,8 +1946,9 @@ ApplySubstitution("*","*","vrt2")
 	alternate with that tag (or a null string if there is none).
       <LI>
 	"AltSubs" takes three additional arguments, a script, a language and a tag
-	(all 4 character strings) and returns a space separated list of the names of
-	all alternate substitutions with that tag (or a null string if there is none).
+	(all 4 character strings) and returns a space separated list of the names
+	of all alternate substitutions with that tag (or a null string if there is
+	none).
       <LI>
 	"MultSubs" takes three additional arguments, a script, a language and a tag
 	(all 4 character strings) and returns a space separated list of all the names
@@ -1911,8 +1956,8 @@ ApplySubstitution("*","*","vrt2")
 	if there is none).
       <LI>
 	"Ligature" takes three additional arguments, a script, a language and a tag
-	(all 4 character strings) and returns a space separated list of the names of
-	all components with that tag (or a null string if there is none).
+	(all 4 character strings) and returns a space separated list of the names
+	of all components with that tag (or a null string if there is none).
       <LI>
 	"GlyphIndex" returns the index of the current glyph in the ttf 'glyf' table,
 	or -1 if it has been created since. This value may change when a
