@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 2-Sep-2002 -->
-  <!-- AP: Last modified: 12-Feb-2003 -->
+  <!-- AP: Last modified: 19-Feb-2003 -->
   <TITLE>Preferences Dialog</TITLE>
 </HEAD>
 <BODY>
@@ -13,29 +13,29 @@
 <IMG SRC="prefs-generic.png" WIDTH="306" HEIGHT="383" ALIGN="Right">
 <DL>
   <DT>
-    AutoHint
+    <A NAME="AutoHint">AutoHint</A>
   <DD>
     Whether characters should be automagically hinted before a bitmap character
     is generated (improves the quality of the bitmap)
   <DT>
-    LocalEncoding
+    <A NAME="LocalEncoding">LocalEncoding</A>
   <DD>
     The default encoding used by the operating system (ie. text that is pasted
     into pfaedit will be assumed to be in this encoding). If you select "Default"
     here, pfaedit will attempt to guess the correct encoding by looking at:
     LC_MESSAGES, LC_ALL, LANG environment variables.
   <DT>
-    NewCharset
+    <A NAME="NewCharset">NewCharset</A>
   <DD>
     The default encoding used to create new fonts. Normally this is ISO 8859-1.
   <DT>
-    NewEmSize
+    <A NAME="NewEmSize">NewEmSize</A>
   <DD>
     Specifies the default number of em-units in the em-square. For PostScript
     fonts this should be 1000, for truetype fonts it should be a power of two
     (often 512, 1024 or 2048 will be used).
   <DT>
-    NewFontsQuadratic
+    <A NAME="NewFontsQuadratic">NewFontsQuadratic</A>
   <DD>
     Splines in fonts may be either in quadratic or cubic format. TrueType fonts
     use quadratic splines while PostScript (and OpenType) fonts use cubic splines.
@@ -44,19 +44,19 @@
     no problem if this is set incorrectly, but setting it correctly for your
     font means you get a clearer idea of what the outlines will look like.
   <DT>
-    LoadedFontsAsNew
+    <A NAME="LoadedFontsAsNew">LoadedFontsAsNew</A>
   <DD>
     When PfaEdit reads in a font it will generally keep the splines in the format
     they used in the font (that is quadratic for truetype fonts and cubic for
     postscript). If you set this flag then all loaded fonts will have the same
     file format as that specified by NewFontsQuadratic above.
   <DT>
-    GreekFixup
+    <A NAME="GreekFixup">GreekFixup</A>
   <DD>
     Whether to accept Adobe's naming conventions for greek letters, or to make
     them a bit more expected.
   <DT>
-    ResourceFile
+    <A NAME="ResourceFile">ResourceFile</A>
   <DD>
     PfaEdit will read <A HREF="xres.html">X Resources</A> from a property on
     the screen. But sometimes this isn't enough. You set this preference item
@@ -67,53 +67,53 @@
 <IMG SRC="prefs-editing.png" WIDTH="294" HEIGHT="369" ALIGN="Right">
 <DL>
   <DT>
-    AutoWidthSync
+    <A NAME="AutoWidthSync">AutoWidthSync</A>
   <DD>
     Whether you want the widths of accented characters to track the width of
     the base character (so if you modify the width of A then the width of &Agrave;
     will automagically change, if &Agrave; is built as a reference to A and a
     reference to grave)
   <DT>
-    AutoLBearingSync
+    <A NAME="AutoLBearingSync">AutoLBearingSync</A>
   <DD>
     Whether you want left side bearings of accented characters to track the left
     side bearing of base characters (so if you shift A left, then the accent
     in &Agrave; will also be shifted left)
   <DT>
-    ItalicConstrained
+    <A NAME="ItalicConstrained">ItalicConstrained</A>
   <DD>
     Whether constrained motion in the character view should allow motion parallel
     to the italic angle as well as horizontal and vertical.
   <DT>
-    AccentOffsetPercent
+    <A NAME="AccentOffsetPercent">AccentOffsetPercent</A>
   <DD>
     The amount of space (as a percentage of the em-square) that should be placed
     between an accent and the character below it by the Build Accented Character
     command.
   <DT>
-    AccentCenterBottom
+    <A NAME="AccentCenterBottom">AccentCenterBottom</A>
   <DD>
     Whether accents should be positioned over letters based on the center of
     the accent, or on the center of the bottom of the accent.
   <DT>
-    ArrowMoveSize
+    <A NAME="ArrowMoveSize">ArrowMoveSize</A>
   <DD>
     The number of em-units an arrow key will move a selected point in the character
     view.
   <DT>
-    SnapDistance
+    <A NAME="SnapDistance">SnapDistance</A>
   <DD>
     The maximum distance at which pointer motion in the character view will be
     snapped to an interesting object (ie. a point, baseline, width line, etc.).
     This is measured in pixels.
   <DT>
-    JoinSnap
+    <A NAME="JoinSnap">JoinSnap</A>
   <DD>
     The maximum distance between the endpoints of two splines before they will
     join with the Edit-&gt;Join command. This is measured in pixels in the char
     view and em-units elsewhere.
   <DT>
-    CopyMetaData
+    <A NAME="CopyMetaData">CopyMetaData</A>
   <DD>
     Controls the behavior of Edit-&gt;Copy from the fontview. Normally Copy does
     not copy a character's metadata (name, encoding, etc.) but if this is set
@@ -123,16 +123,16 @@
 <IMG SRC="prefs-font.png" WIDTH="294" HEIGHT="369" ALIGN="Right">
 <DL>
   <DT>
-    Foundry Name
+    <A NAME="FoundryName">Foundry Name</A>
   <DD>
     Used in generating bdf files (part of the X Windows font naming convention).
   <DT>
-    TTFFoundry
+    <A NAME="TTFFoundry">TTF Foundry</A>
   <DD>
     Similar to the above except that it is used inside ttf files (the achVendID
     field of the OS/2 table) and is limitted to 4 characters.
   <DT>
-    XUID-Base
+    <A NAME="XUID-Base">XUID-Base</A>
   <DD>
     The base
     "<A HREF="http://partners.adobe.com/asn/developer/type/xuid.html">XUID</A>".
@@ -154,7 +154,7 @@
     See also Adobe's comments on
     <A HREF="http://partners.adobe.com/asn/developer/type/uniqueid.html">UniqueID</A>s.
   <DT>
-    AskBDFResolution
+    <A NAME="AskBDFResolution">AskBDFResolution</A>
   <DD>
     Normally PfaEdit will guess at what screen resolution you intend based on
     the pixel size of the font (ie. 17 pixel fonts are usually 100dpi (12pt)
@@ -162,40 +162,41 @@
     desires. Setting this will give you more control, but you have to click through
     another dlg.
   <DT>
-    DumpGlyphMap
+    <A NAME="DumpGlyphMap">DumpGlyphMap</A>
   <DD>
     Sometimes it is useful to have a mapping from ttf (or otf) glyph ID to character
     name. If you turn this on, then each time you generate a ttf/otf font you
     will also get a file with extension .g2n containing this mapping.
   <DT>
-    PreferCJKEncoding
+    <A NAME="PreferCJKEncoding">PreferCJKEncoding</A>
   <DD>
     This controls the loading of truetype and opentype fonts. If a font contains
     both an unicode encoding subtable and a cjk subtable, then this item allows
-    you to pick which one PfaEdit will choose to decode.<BR Clear=ALL>
+    you to pick which one PfaEdit will choose to decode.
   <DT>
-    HintForGen
+    <A NAME="HintForGen">HintForGen</A>
   <DD>
-    Whether characters should be automagically hinted before a font is generated.
+    Whether characters should be automagically hinted before a font is
+    generated.<BR Clear=ALL>
 </DL>
 <DL>
   <DT>
-    <IMG SRC="prefs-apps.png" WIDTH="294" HEIGHT="369" ALIGN="Right">AutotraceArgs
+    <IMG SRC="prefs-apps.png" WIDTH="294" HEIGHT="369" ALIGN="Right"><A NAME="AutotraceArgs">AutotraceArgs</A>
   <DD>
     This allows you to specify any arguments you want passed to the autotrace
     program. Don't try to pass something that will change the input or output
     format or set input or output files.
   <DT>
-    AutotraceAsk
+    <A NAME="AutotraceAsk">AutotraceAsk</A>
   <DD>
     If this is set then each time autotrace is invoked it will ask you for arguments.
   <DT>
-    MfArgs
+    <A NAME="MfArgs">MfArgs</A>
   <DD>
     This is the command passed to the mf (MetaFont) program which controls conversion
     of .mf files into bitmaps.
   <DT>
-    MfClearBg
+    <A NAME="MfClearBg">MfClearBg</A>
   <DD>
     Loading a .mf font is a multi step process, first a bitmap font is generated,
     it is loaded into the background, then autotrace is invoked to trace around
@@ -203,7 +204,7 @@
     you may not want them after they have been autotraced. Selecting this entry
     will remove those bitmaps from the font after they have been used.
   <DT>
-    MfShowErr
+    <A NAME="MfShowErr">MfShowErr</A>
   <DD>
     The mf program generates a fair amount of verbiage even when it is working
     correctly. And if it is working correctly you don't want to see those words.

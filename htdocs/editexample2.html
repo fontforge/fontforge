@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Jan-2003 -->
-  <!-- AP: Last modified: 4-Feb-2003 -->
+  <!-- AP: Last modified: 19-Feb-2003 -->
   <TITLE>Creating the letter "o" -- consistant directions</TITLE>
 </HEAD>
 <BODY>
@@ -106,7 +106,25 @@ If you fail to alternate directions between outer and inner boundries you
 may get results like the one on the left
 <IMG SRC="o-baddir.png" WIDTH="51" HEIGHT="28">. If you fail to draw the
 outer contour in a clockwise fashion the errors are more subtle, but will
-generally result in a less pleasing result once the character has been rasterize.
+generally result in a less pleasing result once the character has been
+rasterized.
+<P>
+<SMALL><STRONG>TECHNICAL AND CONFUSING</STRONG>: the exact behavior of
+rasterizers varies. Early PostScript rasterizers used a "non-zero winding
+number rule" while more recent ones use an "even-odd" rule. TrueType uses
+the "non-zero" rule. The description given above is for the "non-zero" rule.
+The "even-odd" rule would fill the "o" correctly no matter which way the
+paths were drawn (though there would probably be subtle problems with
+hinting).</SMALL>
+<P>
+<SMALL>Filling using the <A NAME="even-odd">even-odd </A>rules that a line
+is drawn from the current pixel to infinity (in any direction) and the number
+of contour crossings is counted. If this number is even the pixel is not
+filled. If the number is odd the pixel is filled. In the
+<A NAME="non-zero">non-zero </A>winding number rule the same line is drawn,
+contour crossings in a clockwise direction add 1 to the crossing count,
+counter-clockwise contours subtract 1. If the result is 0 the pixel is not
+filled, any other result will fill it.</SMALL>
 <P>
 The command <CODE><A HREF="elementmenu.html#Correct">Element-&gt;Correct
 Direction</A></CODE> will look at each selected contour, figure out whether

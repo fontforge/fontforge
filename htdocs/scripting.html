@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 8-Feb-2003 -->
+  <!-- AP: Last modified: 19-Feb-2003 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -337,9 +337,9 @@ to (some) already existing ones)
     <CODE>$version</CODE> returns a string containing the current version of
     pfaedit. This should look something like "020817".
   <LI>
-    <CODE>$</CODE>&lt;Preference Item&gt; (for example <CODE>$AutoHint</CODE>)
-    allows you to examine the value of that preference item (to set it use
-    <CODE><A HREF="#SetPref">SetPref</A></CODE>)
+    <CODE>$</CODE>&lt;<A NAME="Preference">Preference</A> Item&gt; (for example
+    <CODE>$AutoHint</CODE>) allows you to examine the value of that preference
+    item (to set it use <CODE><A HREF="#SetPref">SetPref</A></CODE>)
 </UL>
 <P>
 The following example will perform an action on all loaded fonts:
@@ -427,7 +427,7 @@ a[4][0] = "Nested array";
     Strskipint(str[,base])
   <DD>
     Parses as much of str as possible and returns the offset to the first character
-    that could not be parsed. 
+    that could not be parsed.
   <DT>
     GetPref(str)
   <DD>
@@ -436,7 +436,7 @@ a[4][0] = "Nested array";
     Boolean and real items are returned with integer type and file items are
     returned with string type.
   <DT>
-    SetPrefs(str,val[,val2])
+    <A NAME="SetPrefs">SetPrefs</A>(str,val[,val2])
   <DD>
     Sets the value of the preference item whose name is containted in str. If
     the preference item has a real type then a second argument may be passed
@@ -710,7 +710,7 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     If your PrintSetup specified printing to a file then the fourth argument
     provides the filename of the output file.
   <DT>
-    Quit(status)
+    <A NAME="Quit">Quit</A>(status)
   <DD>
     Causes PfaEdit to exit with the given status. It can execute with no current
     font. 
@@ -991,7 +991,7 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     that you do have a lisence to use a font with fstype=2. 
       <HR>
   <DT>
-    AutoHint()
+    <A NAME="AutoHint">AutoHint</A>()
   <DD>
   <DT>
     ClearHints()
@@ -1228,9 +1228,10 @@ from.
 </H2>
 <P>
 You can use the preference dialog to create a list of frequently used scripts.
-Invoke File-&gt;Preferences and select the Scripts tag. In this dialog are
-ten possible entries, each one should have a name (to be displayed in the
-menu) and an associated script file to be run.
+Invoke <A HREF="prefs.html#scripts">File-&gt;Preferences</A> and select the
+Scripts tag. In this dialog are ten possible entries, each one should have
+a name (to be displayed in the menu) and an associated script file to be
+run.
 <P>
 After you have set up your preferences you can invoke scripts from the font
 view, either directly from the menu (File-&gt;Scripts-&gt;&lt;your name&gt;)
