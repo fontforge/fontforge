@@ -498,6 +498,14 @@ GImage *GDrawCopyScreenToImage(GWindow w, GRect *rect) {
 return( (w->display->funcs->copyScreenToImage)(w,rect) );
 }
 
+GIC *GDrawCreateInputContext(GWindow w,enum gic_style def_style) {
+return(w->display->funcs->createInputContext)(w,def_style);
+}
+
+void GDrawSetGIC(GWindow w, GIC *gic, int x, int y) {
+    (w->display->funcs->setGIC)(w,gic,x,y);
+}
+
 void GDrawGrabSelection(GWindow w,enum selnames sel) {
     (w->display->funcs->grabSelection)(w,sel);
 }

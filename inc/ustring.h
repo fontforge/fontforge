@@ -85,6 +85,7 @@ extern char *strstartmatch(const char *initial,const char *full);
 extern unichar_t *u_strstartmatch(const unichar_t *initial, const unichar_t *full);
 extern unichar_t *cu_strstartmatch(const char *initial, const unichar_t *full);
 
+extern unichar_t *utf82u_strncpy(unichar_t *ubuf,const char *utf8buf,int len);
 extern unichar_t *encoding2u_strncpy(unichar_t *uto, const char *from, int n, enum encoding cs);
 extern char *u2encoding_strncpy(char *to, const unichar_t *ufrom, int n, enum encoding cs);
 extern unichar_t *def2u_strncpy(unichar_t *uto, const char *from, int n);

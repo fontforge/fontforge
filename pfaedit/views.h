@@ -279,6 +279,7 @@ typedef struct fontview {
     int mapcnt;		/* Number of chars in the current group (mapping) */
     struct dictionary *fontvars;	/* Scripting */
     struct searchview *sv;
+    GIC *gic;
 } FontView;
 
 typedef struct findsel {

@@ -277,6 +277,7 @@ typedef struct gtextfield {
     GBiText bidata;
     int32 bilen;		/* allocated size of bidata */
     int16 xmax;
+    GIC *gic;
 } GTextField;
 
 typedef struct glistfield {

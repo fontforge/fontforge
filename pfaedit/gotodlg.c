@@ -409,6 +409,8 @@ static int NameToEncoding(SplineFont *sf,const unichar_t *name) {
 			    if ( u_strmatch(name,UnicodeCharacterNames[uni>>8][uni&0xff])== 0 )
 		    break;
 		}
+		if ( uni<0 && name[1]=='\0' )
+		    uni = name[0];
 	    }
 	}
 	if ( enc>=sf->charcnt || enc<0 )
@@ -585,7 +587,7 @@ return( enc );
 	gcd[0].creator = GLabelCreate;
 
 	gcd[1].gd.pos.x = 5; gcd[1].gd.pos.y = 17;  gcd[1].gd.pos.width = GDrawPixelsToPoints(NULL,wid);
-	gcd[1].gd.flags = gg_enabled|gg_visible;
+	gcd[1].gd.flags = gg_enabled|gg_visible|gg_text_xim;
 	gcd[1].gd.cid = CID_Name;
 	gcd[1].gd.u.list = ranges;
 	gcd[1].creator = GListFieldCreate;

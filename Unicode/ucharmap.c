@@ -30,7 +30,7 @@
 #include <charset.h>
 #include <chardata.h>
 
-/* Does not handle conversions to 2 byte character sets!!!!! */
+/* Does not handle conversions to Extended unix */
 
 unichar_t *encoding2u_strncpy(unichar_t *uto, const char *_from, int n, enum encoding cs) {
     unichar_t *upt=uto;

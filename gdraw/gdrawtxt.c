@@ -34,7 +34,7 @@
 
 /*#define GREEK_BUG	1*/
 
-static unichar_t *normalize_font_names(unichar_t *names) {
+static unichar_t *normalize_font_names(const unichar_t *names) {
     unichar_t *n;
     unichar_t *ipt, *opt;
 

@@ -105,6 +105,7 @@ static void *font_cvt(char *val, void *def) {
     FontInstance *fi;
     char *pt, *end, ch;
     int ret;
+    unichar_t *freeme=NULL;
 
     rq.family_name = helv;
     rq.point_size = 10;
@@ -151,11 +152,11 @@ static void *font_cvt(char *val, void *def) {
     }
 
     if ( *pt!='\0' )
-	rq.family_name = uc_copy(pt);
+	rq.family_name = freeme = uc_copy(pt);
 		
     fi = GDrawInstanciateFont(screen_display,&rq);
     if ( rq.family_name!=courier )
-	free(rq.family_name );
+	free( freeme );
 
     if ( fi==NULL )
 return( def );

@@ -410,7 +410,8 @@ static int CI_CharChanged(GGadget *g, GEvent *e) {
 	    ubuf[0] = '\0';
 	    GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_UChar),ubuf);
 return( true );
-	}
+	} else if ( ret[0]=='\0' )
+return( true );
 
 	SetNameFromUnicode(ci->gw,CID_UName,val);
 
@@ -685,7 +686,7 @@ void SCGetInfo(SplineChar *sc, int nextprev) {
 	gcd[4].creator = GLabelCreate;
 
 	gcd[5].gd.pos.x = 85; gcd[5].gd.pos.y = 57;
-	gcd[5].gd.flags = gg_enabled|gg_visible;
+	gcd[5].gd.flags = gg_enabled|gg_visible|gg_text_xim;
 	gcd[5].gd.mnemonic = 'h';
 	gcd[5].gd.cid = CID_UChar;
 	gcd[5].gd.handle_controlevent = CI_CharChanged;
@@ -777,7 +778,7 @@ void SCGetInfo(SplineChar *sc, int nextprev) {
 	gcd[16].gd.pos.x = 5; gcd[16].gd.pos.y = gcd[15].gd.pos.y+13;
 	gcd[16].gd.pos.width = CI_Width-10;
 	gcd[16].gd.pos.height = GDrawPointsToPixels(NULL,4*12+6);
-	gcd[16].gd.flags = gg_enabled|gg_visible|gg_textarea_wrap;
+	gcd[16].gd.flags = gg_enabled|gg_visible|gg_textarea_wrap|gg_text_xim;
 	gcd[16].gd.cid = CID_Comment;
 	gcd[16].gd.handle_controlevent = CI_CommentChanged;
 	gcd[16].creator = GTextAreaCreate;

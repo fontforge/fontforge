@@ -165,6 +165,15 @@ static void PSDrawFlush(GDisplay *gdisp) {
 	fflush(((GPSWindow) (gdisp->groot))->output_file);
 }
 
+static GIC *PSDrawCreateInputContext(GWindow w,enum gic_style def_style) {
+    /* Not meaningful */
+return( NULL );
+}
+
+static void PSDrawSetGIC(GWindow w, GIC *gic, int x, int y) {
+    /* Not meaningful */
+}
+
 static void PSDrawPointerUngrab(GDisplay *gdisp) {
     /* Not meaningful */
 }
@@ -1277,6 +1286,9 @@ static struct displayfuncs psfuncs = {
     _GPSDraw_LoadFontMetrics,
     _GPSDraw_Text1,
     _GPSDraw_Text2,
+
+    PSDrawCreateInputContext,
+    PSDrawSetGIC,
 
     PSDrawGrabSelection,
     PSDrawAddSelectionType,

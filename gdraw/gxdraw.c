@@ -266,6 +266,44 @@ static void _GXDraw_InitFonts(GXDisplay *gxdisplay) {
     _GDraw_RemoveDuplicateFonts(gxdisplay->fontstate);
     _GDraw_FillLastChance(gxdisplay->fontstate);
     XFreeFontNames(ret);
+
+    /* Input servers need a fontset to draw characters with. Now we don't know*/
+    /*  what the input server is going to need because parsing locale names is*/
+    /*  a somewhat arcane art. So let's just include one font from every encod*/
+    /*  ing we've got. Amazingly that's just what one of our font_instance */
+    /*  structures contains. All we need do is reformat it. */
+    if ( gxdisplay->im!=NULL ) {
+	FontRequest rq;
+	static const unichar_t fam[] = { 'h','e','l','v','e','t','i','c','a',',','a','r','i','a','l',',','f','i','x','e','d',',','m','i','n','g',',','g','o','t','h','i','c',',','m','i','n','c','h','o', '\0' };
+	struct font_instance *fi;
+	int i,len;
+	char *names;
+        char **missing_list;
+        int missing_count;
+        char *def_string;
+
+	memset(&rq,0,sizeof(rq));
+	rq.point_size = -16;
+	rq.weight = 400;
+	rq.family_name = fam;
+	fi = GDrawInstanciateFont( (GDisplay *) gxdisplay,&rq);
+	for ( i=len=0; i<em_max; ++i ) if ( fi->fonts[i]!=NULL )
+	    len += strlen(fi->fonts[i]->localname)+1;
+	names = galloc(len+2); *names = '\0';
+	for ( i=len=0; i<em_max; ++i ) if ( fi->fonts[i]!=NULL ) {
+	    strcat(names,fi->fonts[i]->localname);
+	    strcat(names,",");
+	}
+	names[strlen(names)-1] = '\0';	/* Remove extranious comma */
+	gxdisplay->def_im_fontset = XCreateFontSet(gxdisplay->display, names, &missing_list,
+                               &missing_count, &def_string);
+	if ( gxdisplay->def_im_fontset==NULL ) {
+	    fprintf(stderr,"Failed to create a fontset for the input method\n%s\n", names );
+	    XCloseIM(gxdisplay->im);
+	    gxdisplay->im = NULL;
+	}
+	free(names);
+    }
 }
 
 /* ************************************************************************** */
@@ -1188,6 +1226,7 @@ static void _GXDraw_CleanUpWindow( GWindow w ) {
     GXWindow gw = (GXWindow) w;
     GXDisplay *gdisp = gw->display;
     int i;
+    struct gxinput_context *gic, *next;
 
     XSaveContext(gdisp->display,gw->w,gdisp->mycontext,NULL);
     if ( gdisp->grab_window==w ) gdisp->grab_window = NULL;
@@ -1204,6 +1243,13 @@ static void _GXDraw_CleanUpWindow( GWindow w ) {
 	    GXDrawClearSelData(gdisp,i);
 	    gdisp->selinfo[i].owner = NULL;
 	}
+    }
+
+    /* Does the window have any input contexts? If so get rid of them all */
+    for ( gic = gw->all; gic!=NULL; gic = next ) {
+	next = gic->next;
+	XDestroyIC(gic->ic);
+	free(gic);
     }
 
     gfree(gw->ggc);
@@ -2076,6 +2122,94 @@ static void GXDrawText2(GWindow gw, struct font_data *fd,
     }
 }
 
+static GIC *GXDrawCreateInputContext(GWindow w,enum gic_style def_style) {
+    static int styles[] = { XIMPreeditNone | XIMStatusNone,
+	    XIMPreeditNothing | XIMStatusNothing,
+	    XIMPreeditPosition | XIMStatusNothing };
+    int i;
+    XIC ic = 0;
+    struct gxinput_context *gic;
+    GXDisplay *gdisp = (GXDisplay *) (w->display);
+    unsigned long fevent;
+    XWindowAttributes win_attrs;
+    XVaNestedList listp, lists;
+
+    if ( gdisp->im==NULL )
+return( NULL );
+
+    gic = gcalloc(1,sizeof(struct gxinput_context));
+    gic->w = w;
+    gic->ploc.y = 20; gic->sloc.y = 40;
+    listp = XVaCreateNestedList(0, XNFontSet, gdisp->def_im_fontset,
+		    XNForeground, _GXDraw_GetScreenPixel(gdisp,gdisp->def_foreground),
+		    XNBackground, _GXDraw_GetScreenPixel(gdisp,gdisp->def_background),
+		    XNSpotLocation, &gic->ploc, NULL);
+    lists = XVaCreateNestedList(0, XNFontSet, gdisp->def_im_fontset,
+		    XNForeground, _GXDraw_GetScreenPixel(gdisp,gdisp->def_foreground),
+		    XNBackground, _GXDraw_GetScreenPixel(gdisp,gdisp->def_background),
+		    XNSpotLocation, &gic->sloc, NULL);
+    for ( i=(def_style&gic_type); i>=gic_hidden; --i ) {
+	ic = XCreateIC(gdisp->im,XNInputStyle,styles[i],
+		    XNClientWindow, ((GXWindow) w)->w,
+		    XNFocusWindow, ((GXWindow) w)->w,
+		    XNPreeditAttributes, listp,
+		    XNStatusAttributes, lists,
+		    NULL );
+	if ( ic!=0 )
+    break;
+	if ( !(def_style&gic_orlesser) )
+    break;
+    }
+    XFree(lists); XFree(listp);
+    if ( ic==0 ) {
+	free(gic);
+return( NULL );
+    }
+
+    gic->style = i;
+    gic->w = w;
+    gic->ic = ic;
+    gic->next = ((GXWindow) w)->all;
+    ((GXWindow) w)->all = gic;
+
+    /* Now make sure we get all the events the IC needs */
+    XGetWindowAttributes(gdisp->display, ((GXWindow) w)->w, &win_attrs);
+    XGetICValues(ic, XNFilterEvents, &fevent, NULL);
+    XSelectInput(gdisp->display, ((GXWindow) w)->w, fevent|win_attrs.your_event_mask);
+
+return( (GIC *) gic );
+}
+
+static void GXDrawSetGIC(GWindow w, GIC *_gic, int x, int y) {
+    struct gxinput_context *gic = (struct gxinput_context *) _gic;
+    XVaNestedList listp, lists;
+    GXDisplay *gdisp = (GXDisplay *) (w->display);
+
+    if ( gic!=NULL ) {
+	gic->ploc.x = x;
+	gic->ploc.y = y;
+	gic->sloc.x = x;
+	gic->sloc.y = y+20;
+	XSetICFocus(gic->ic);
+	if ( gic->style==gic_overspot ) {
+	    listp = XVaCreateNestedList(0, XNFontSet, gdisp->def_im_fontset,
+		    XNForeground, _GXDraw_GetScreenPixel(gdisp,gdisp->def_foreground),
+		    XNBackground, _GXDraw_GetScreenPixel(gdisp,gdisp->def_background),
+		    XNSpotLocation, &gic->ploc, NULL);
+	    lists = XVaCreateNestedList(0, XNFontSet, gdisp->def_im_fontset,
+		    XNForeground, _GXDraw_GetScreenPixel(gdisp,gdisp->def_foreground),
+		    XNBackground, _GXDraw_GetScreenPixel(gdisp,gdisp->def_background),
+		    XNSpotLocation, &gic->sloc, NULL);
+	    XSetICValues(gic->ic,
+		    XNPreeditAttributes, listp,
+		    XNStatusAttributes, lists,
+		    NULL );
+	    XFree(listp); XFree(lists);
+	}
+    }
+    ((GXWindow) w)->gic = gic;
+}
+
 static int WindowOrParentsDying(GXWindow gw) {
     while ( gw!=NULL ) {
 	if ( gw->is_dying )
@@ -2444,13 +2578,16 @@ static void dispatchEvent(GXDisplay *gdisp, XEvent *event) {
     struct gevent gevent;
     GWindow gw=NULL, redirect;
     void *ret;
-    char charbuf[10];
+    char charbuf[80], *pt;
+    Status status;
     KeySym keysym; int len;
     GPoint p;
 
     if ( XFindContext(gdisp->display,event->xany.window,gdisp->mycontext,(void *) &ret)==0 )
 	gw = (GWindow) ret;
     if ( gw==NULL || (WindowOrParentsDying((GXWindow) gw) && event->type!=DestroyNotify ))
+return;
+    if ( XFilterEvent(event,None))
 return;
     gevent.w = gw;
     gevent.type = -1;
@@ -2481,20 +2618,42 @@ return;
 	    gw = redirect;
 	}
 	if ( gevent.type==et_char ) {
-	    len = XLookupString((XKeyEvent *) event,charbuf,sizeof(charbuf),&keysym,&gdisp->buildingkeys);
-	    charbuf[len] = '\0';
-	    gevent.u.chr.keysym = keysym;
-	    def2u_strncpy(gevent.u.chr.chars,charbuf,sizeof(gevent.u.chr.chars));
-	    if ( keysym==gdisp->mykey_keysym &&
-		    (event->xkey.state&(ControlMask|Mod1Mask))==gdisp->mykey_mask ) {
-		gdisp->mykeybuild = !gdisp->mykeybuild;
-		gdisp->mykey_state = 0;
-		gevent.u.chr.chars[0] = '\0';
-		gevent.u.chr.keysym = '\0';
-		if ( !gdisp->mykeybuild && _GDraw_BuildCharHook!=NULL )
-		    (_GDraw_BuildCharHook)((GDisplay *) gdisp);
-	    } else if ( gdisp->mykeybuild )
-		_GDraw_ComposeChars((GDisplay *) gdisp,&gevent);
+	    if ( ((GXWindow) gw)->gic==NULL ) {
+		len = XLookupString((XKeyEvent *) event,charbuf,sizeof(charbuf),&keysym,&gdisp->buildingkeys);
+		charbuf[len] = '\0';
+		gevent.u.chr.keysym = keysym;
+		def2u_strncpy(gevent.u.chr.chars,charbuf,
+			sizeof(gevent.u.chr.chars)/sizeof(gevent.u.chr.chars[0]));
+		if ( keysym==gdisp->mykey_keysym &&
+			(event->xkey.state&(ControlMask|Mod1Mask))==gdisp->mykey_mask ) {
+		    gdisp->mykeybuild = !gdisp->mykeybuild;
+		    gdisp->mykey_state = 0;
+		    gevent.u.chr.chars[0] = '\0';
+		    gevent.u.chr.keysym = '\0';
+		    if ( !gdisp->mykeybuild && _GDraw_BuildCharHook!=NULL )
+			(_GDraw_BuildCharHook)((GDisplay *) gdisp);
+		} else if ( gdisp->mykeybuild )
+		    _GDraw_ComposeChars((GDisplay *) gdisp,&gevent);
+	    } else {
+		len = Xutf8LookupString(((GXWindow) gw)->gic->ic,(XKeyPressedEvent*)event,
+				charbuf, sizeof(charbuf), &keysym, &status);
+		pt = charbuf;
+		if ( status==XBufferOverflow ) {
+		    pt = galloc(len+1);
+		    len = Xutf8LookupString(((GXWindow) gw)->gic->ic,(XKeyPressedEvent*)&event,
+				    pt, len, &keysym, &status);
+		}
+		if ( status!=XLookupChars && status!=XLookupBoth )
+		    len = 0;
+		if ( status!=XLookupKeySym && status!=XLookupBoth )
+		    keysym = 0;
+		pt[len] = '\0';
+		gevent.u.chr.keysym = keysym;
+		utf82u_strncpy(gevent.u.chr.chars,pt,
+			sizeof(gevent.u.chr.chars)/sizeof(gevent.u.chr.chars[0]));
+		if ( pt!=charbuf )
+		    free(pt);
+	    }
 	} else {
 	    /* XLookupKeysym doesn't do shifts for us (or I don't know how to use the index arg to make it) */
 	    len = XLookupString((XKeyEvent *) event,charbuf,sizeof(charbuf),&keysym,&gdisp->buildingkeys);
@@ -3469,6 +3628,9 @@ static struct displayfuncs xfuncs = {
     GXDrawText1,
     GXDrawText2,
 
+    GXDrawCreateInputContext,
+    GXDrawSetGIC,
+
     GXDrawGrabSelection,
     GXDrawAddSelectionType,
     GXDrawRequestSelection,
@@ -3573,6 +3735,10 @@ return( NULL );
     gdisp->def_foreground = GResourceFindColor( "Foreground", COLOR_CREATE(0x00,0x00,0x00));
     if ( GResourceFindBool("Synchronize", false ))
 	XSynchronize(gdisp->display,true);
+
+    /* X Input method initialization */
+    XSetLocaleModifiers("");			/* If it fails it means no */
+    gdisp->im = XOpenIM(display, NULL, NULL, NULL);	/* input method. Ok */
 
     (gdisp->funcs->init)((GDisplay *) gdisp);
     gdisp->top_window_count = 0;

@@ -2288,7 +2288,7 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     gd.pos.width = GDrawPointsToPixels(mv->gw,200);
     gd.label = &label;
     label.text = ubuf;
-    gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
+    gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_text_xim;
     gd.handle_controlevent = MV_TextChanged;
     mv->text = GTextFieldCreate(gw,&gd,mv);
     GGadgetGetSize(mv->text,&gsize);

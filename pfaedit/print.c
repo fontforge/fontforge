@@ -2431,7 +2431,7 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     gcd[6].gd.mnemonic = 'T';
     gcd[6].gd.pos.x = 5; gcd[6].gd.pos.y = 13+gcd[5].gd.pos.y; 
     gcd[6].gd.pos.width = 300; gcd[6].gd.pos.height = 160; 
-    gcd[6].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap;
+    gcd[6].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap | gg_text_xim;
     gcd[6].gd.cid = CID_SampleText;
     gcd[6].creator = GTextAreaCreate;
 

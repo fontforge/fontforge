@@ -104,6 +104,13 @@ struct gwindow {
     unsigned int is_popup: 1;
 };
 
+struct ginput_context {
+    GWindow w;
+    enum gic_style style;
+    void *ic;
+    struct ginput_context *next;
+};
+
 struct gtimer {
     long time_sec;				/* longs not int32s to match timeval */
     long time_usec;
@@ -196,6 +203,9 @@ struct displayfuncs {
     /* XFontStruct **/void *(*loadFontMetrics)(GDisplay *, struct font_data *fd);
     void (*drawText1)(GWindow, struct font_data *fd, int32 x, int32 y, char *txt, int32 cnt, FontMods *, Color col);
     void (*drawText2)(GWindow, struct font_data *fd, int32 x, int32 y, GChar2b *txt, int32 cnt, FontMods *, Color col);
+
+    GIC *(*createInputContext)(GWindow, enum gic_style);
+    void (*setGIC)(GWindow, GIC *, int x, int y);
 
     void (*grabSelection)(GWindow w,enum selnames sel);
     void (*addSelectionType)(GWindow w,enum selnames sel,char *type,

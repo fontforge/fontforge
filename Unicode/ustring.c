@@ -472,3 +472,33 @@ unichar_t *c_to_u(const char *buf) {
     uc_strncpy(ubuf,buf,sizeof(ubuf));
 return( ubuf );
 }
+
+unichar_t *utf82u_strncpy(unichar_t *ubuf,const char *utf8buf,int len) {
+    unichar_t *upt=ubuf, *uend=ubuf+len-1;
+    const uint8 *pt = (const uint8 *) utf8buf;
+    int w;
+
+    while ( *pt!='\0' && upt<uend ) {
+	if ( *pt<=127 )
+	    *upt = *pt++;
+	else if ( *pt<=0xdf ) {
+	    *upt = ((*pt&0x1f)<<6) | (pt[1]&0x3f);
+	    pt += 2;
+	} else if ( *pt<=0xef ) {
+	    *upt = ((*pt&0xf)<<12) | ((pt[1]&0x3f)<<6) | (pt[2]&0x3f);
+	    pt += 3;
+	} else if ( upt+1<uend ) {
+	    /* Um... I don't support surrogates */
+	    w = ( ((*pt&0x7)<<2) | ((pt[1]&0x30)>>4) )-1;
+	    *upt++ = 0xd800 | (w<<6) | ((pt[1]&0xf)<<2) | ((pt[2]&0x30)>>4);
+	    *upt   = 0xdc00 | ((pt[2]&0xf)<<6) | (pt[3]&0x3f);
+	    pt += 4;
+	} else {
+	    /* no space for surrogate */
+	    pt += 4;
+	}
+	++upt;
+    }
+    *upt = '\0';
+return( ubuf );
+}

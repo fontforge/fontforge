@@ -195,11 +195,12 @@ return( NULL );
 
     /* Ignore progressive loads for now */
     /* libpng wants me to do it with callbacks, but that doesn't sit well */
-    /*  with our asynchronous cruds... */
+    /*  with my wish to be in control... */
     _png_read_image(png_ptr,row_pointers);
     _png_read_end(png_ptr, NULL);
     _png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
     gfree(row_pointers);
+    /* Note png b&w images come out as indexed */
 return( ret );
 }
 #else

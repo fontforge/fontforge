@@ -58,6 +58,15 @@ typedef struct gcstate {
     struct font_data *cur_font;
 } GCState;
 
+struct gxinput_context {
+    GWindow w;
+    enum gic_style style;
+    XIC ic;
+    struct gxinput_context *next;
+    XPoint ploc;
+    XPoint sloc;
+};
+
 #ifndef X_DISPLAY_MISSING
 typedef struct gxwindow /* :GWindow */ {
     GGC *ggc;
@@ -84,6 +93,7 @@ typedef struct gxwindow /* :GWindow */ {
     GWindow redirect_from;		/* only redirect input from this window and its children */
     GCursor cursor;
     Window parentissimus;
+    struct gxinput_context *gic, *all;
 } *GXWindow;
 
 struct colstate {
@@ -222,6 +232,8 @@ typedef struct gxdisplay /* : GDisplay */ {
 	/* So this field lets us do it right. when the pointer is grabbed the */
 	/* events go to the grab window. It seems so simple... */
     int16 desired_depth, desired_vc, desired_cm;
+    XIM im;				/* Input method for current locale */
+    XFontSet def_im_fontset;
 } GXDisplay;
 
 #define Pixel32(gdisp,col) Pixel16(gdisp,col)

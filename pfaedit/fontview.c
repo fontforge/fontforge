@@ -3801,16 +3801,20 @@ static int v_e_h(GWindow gw, GEvent *event) {
 	FVChar(fv,event);
       break;
       case et_mousemove: case et_mousedown: case et_mouseup:
+	if ( event->type==et_mousedown )
+	    GDrawSetGIC(gw,fv->gic,0,20);
 	FVMouse(fv,event);
       break;
       case et_timer:
 	FVTimer(fv,event);
       break;
       case et_focus:
+	if ( event->u.focus.gained_focus ) {
+	    GDrawSetGIC(gw,fv->gic,0,20);
 #if 0
-	if ( event->u.focus.gained_focus )
 	    CVPaletteDeactivate();
 #endif
+	}
       break;
     }
 return( true );
@@ -4068,6 +4072,9 @@ FontView *FontViewCreate(SplineFont *sf) {
     pos.x = 0; pos.y = fv->mbh+fv->infoh;
     fv->v = GWidgetCreateSubWindow(gw,&pos,v_e_h,fv,&wattrs);
     GDrawSetVisible(fv->v,true);
+
+    fv->gic = GDrawCreateInputContext(fv->v,gic_root|gic_orlesser);
+    GDrawSetGIC(fv->v,fv->gic,0,20);
 
     if ( fontnames==NULL ) {
 	fontnames = uc_copy(GResourceFindString("FontView.FontFamily"));

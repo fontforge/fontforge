@@ -135,7 +135,8 @@ typedef struct ggadgetdata {
 	gg_pos_use0=0x20000000, gg_pos_under=0x40000000,
 	gg_pos_newline = (int) 0x80000000,
 	/* Reuse some flag values for different widgets */
-	gg_file_pulldown=gg_sb_vert, gg_file_multiple = gg_list_multiplesel
+	gg_file_pulldown=gg_sb_vert, gg_file_multiple = gg_list_multiplesel,
+	gg_text_xim = gg_tabset_scroll
 	} flags;
     const unichar_t *popup_msg;		/* Brief help message */
     int (*handle_controlevent)(GGadget *, GEvent *);

@@ -3308,7 +3308,7 @@ void FontInfo(SplineFont *sf) {
 
     tngcd[4].gd.pos.x = 14; tngcd[4].gd.pos.y = tngcd[2].gd.pos.y+30;
     tngcd[4].gd.pos.width = 220; tngcd[4].gd.pos.height = 180;
-    tngcd[4].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap;
+    tngcd[4].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap | gg_text_xim;
     tngcd[4].gd.cid = CID_String;
     tngcd[4].creator = GTextAreaCreate;
 

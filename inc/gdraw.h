@@ -95,7 +95,7 @@ enum text_mods { tm_none, tm_upper=1, tm_lower=2, tm_initialcaps=4, tm_showsofth
 enum text_lines { tl_none, tl_under=1, tl_strike=2, tl_over=4, tl_dash=8 };
 
 typedef struct {
-    unichar_t *family_name;		/* may be more than one */
+    const unichar_t *family_name;	/* may be more than one */
     int16 point_size;			/* negative values are in pixels */
     int16 weight;
     enum font_style style;
@@ -120,6 +120,8 @@ typedef struct gbidata {
 } GBiText;
 
 typedef struct font_instance FontInstance, GFont;
+enum gic_style { gic_overspot=2, gic_root=1, gic_hidden=0, gic_orlesser=4, gic_type=3 };
+typedef struct ginput_context GIC;
 
 typedef struct ggc {
     struct gwindow *w;
@@ -421,6 +423,9 @@ extern int32 GDrawGetBiTextPtFromPos(GWindow gw,unichar_t *text, int32 cnt, Font
 extern int32 GDrawIsAllLeftToRight(unichar_t *text, int32 cnt);
 extern void GDrawBiText1(GBiText *bd, const unichar_t *text, int32 cnt);
 extern void GDrawBiText2(GBiText *bd, int32 start, int32 end);
+
+extern GIC *GDrawCreateInputContext(GWindow w,enum gic_style def_style);
+extern void GDrawSetGIC(GWindow w,GIC *gic,int x, int y);
 
 extern void GDrawClear(GWindow w, GRect *rect);
 extern void GDrawDrawLine(GWindow w, int32 x,int32 y, int32 xend,int32 yend, Color col);

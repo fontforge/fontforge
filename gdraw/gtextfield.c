@@ -41,6 +41,7 @@ static unichar_t nullstr[] = { 0 }, nstr[] = { 'n', 0 },
 
 static void GListFieldSelected(GGadget *g, int i);
 static int GTextField_Show(GTextField *gt, int pos);
+static void GTPositionGIC(GTextField *gt);
 
 static void GTextFieldChanged(GTextField *gt,int src) {
     GEvent e;
@@ -370,6 +371,7 @@ static int GTextField_Show(GTextField *gt, int pos) {
 	    GScrollBarSetPos(&gt->vsb->g,loff);
 	refresh = true;
     }
+    GTPositionGIC(gt);
 return( refresh );
 }
 
@@ -604,6 +606,7 @@ return( false );
 static int _gtextfield_editcmd(GGadget *g,enum editor_commands cmd) {
     if ( gtextfield_editcmd(g,cmd)) {
 	_ggadget_redraw(g);
+	GTPositionGIC((GTextField *) g);
 return( true );
     }
 return( false );
@@ -883,21 +886,39 @@ return( true );
 return( false );
 }
 
-static void gt_draw_cursor(GWindow pixmap, GTextField *gt) {
-    GRect old;
-    int x, y, l, sel;
+static void gt_cursor_pos(GTextField *gt, int *x, int *y) {
+    int l, sel;
     unichar_t *bitext = gt->dobitext || gt->password?gt->bidata.text:gt->text;
 
+    *x = -1; *y= -1;
     GDrawSetFont(gt->g.base,gt->font);
-    if ( !gt->cursor_on || gt->sel_start != gt->sel_end )
-return;
     l = GTextFieldFindLine(gt,gt->sel_start);
     if ( l<gt->loff_top || l>=gt->loff_top + (gt->g.inner.height/gt->fh))
 return;
-    y = (l-gt->loff_top)*gt->fh;
+    *y = (l-gt->loff_top)*gt->fh;
     sel = GTextFieldGetOffsetFromOffset(gt,l,gt->sel_start);
-    x = GDrawGetTextWidth(pixmap,bitext+gt->lines[l],sel-gt->lines[l],NULL)-
+    *x = GDrawGetTextWidth(gt->g.base,bitext+gt->lines[l],sel-gt->lines[l],NULL)-
 	    gt->xoff_left;
+}
+
+static void GTPositionGIC(GTextField *gt) {
+    int x,y;
+
+    if ( !gt->g.has_focus || gt->gic==NULL )
+return;
+    gt_cursor_pos(gt,&x,&y);
+    if ( x<0 )
+return;
+    GDrawSetGIC(gt->g.base,gt->gic,gt->g.inner.x+x,gt->g.inner.y+y+gt->as);
+}
+
+static void gt_draw_cursor(GWindow pixmap, GTextField *gt) {
+    GRect old;
+    int x, y;
+
+    if ( !gt->cursor_on || gt->sel_start != gt->sel_end )
+return;
+    gt_cursor_pos(gt,&x,&y);
 
     if ( x<0 || x>=gt->g.inner.width )
 return;
@@ -1348,6 +1369,8 @@ static int gtextfield_focus(GGadget *g, GEvent *event) {
 	gt->cursor_on = true;
 	if ( event->u.focus.mnemonic_focus != mf_normal )
 	    GTextFieldSelect(&gt->g,0,-1);
+	if ( gt->gic!=NULL )
+	    GTPositionGIC(gt);
     }
     _ggadget_redraw(g);
     GTextFieldFocusChanged(gt,event->u.focus.gained_focus);
@@ -2002,6 +2025,8 @@ static GTextField *_GTextFieldCreate(GTextField *gt, struct gwindow *base, GGadg
     if ( gd->flags & gg_group_end )
 	_GGadgetCloseGroup(&gt->g);
     GWidgetIndicateFocusGadget(&gt->g);
+    if ( gd->flags & gg_text_xim )
+	gt->gic = GDrawCreateInputContext(base,gic_overspot|gic_orlesser);
 return( gt );
 }
 
