@@ -438,7 +438,7 @@ static int _ApproximateSplineFromPoints(SplinePoint *from, SplinePoint *to,
     double ts[7], xts[4], yts[4];
     BasePoint nres, pres;
     int nrescnt=0, prescnt=0;
-    double nmin, nmax, pmin, pmax, test;
+    double nmin, nmax, pmin, pmax, test, ptest;
     double bx, by, cx, cy;
 
     memset(&nres,0,sizeof(nres)); memset(&pres,0,sizeof(pres));
@@ -547,12 +547,15 @@ static int _ApproximateSplineFromPoints(SplinePoint *from, SplinePoint *to,
 
 	test = (nextcp->x-from->me.x)*(to->me.x-from->me.x) +
 		(nextcp->y-from->me.y)*(to->me.y-from->me.y);
+	ptest = (prevcp->x-to->me.x)*(from->me.x-to->me.x) +
+		(prevcp->y-to->me.y)*(from->me.y-to->me.y);
+	if ( order2 &&
+		(test<nmin || test>nmax || ptest<pmin || ptest>pmax))
+    continue;
 	if ( test>=nmin && test<=nmax ) {
 	    nres.x += nextcp->x; nres.y += nextcp->y;
 	    ++nrescnt;
 	}
-	test = (prevcp->x-to->me.x)*(from->me.x-to->me.x) +
-		(prevcp->y-to->me.y)*(from->me.y-to->me.y);
 	if ( test>=pmin && test<=pmax ) {
 	    pres.x += prevcp->x; pres.y += prevcp->y;
 	    ++prescnt;
@@ -574,6 +577,12 @@ static int _ApproximateSplineFromPoints(SplinePoint *from, SplinePoint *to,
 	prevcp->y = pres.y/prescnt;
     } else
 	*prevcp = to->prevcp;
+    if ( order2 && ret!=3 ) {
+	nextcp->x = (nextcp->x + prevcp->x)/2;
+	nextcp->y = (nextcp->y + prevcp->y)/2;
+    }
+    if ( order2 )
+	*prevcp = *nextcp;
 return( ret );
 }
 
