@@ -2149,6 +2149,7 @@ return;
     }
 
     cv->info.x = p.cx; cv->info.y = p.cy;
+    cv->info_sp = p.sp;
     cv->e.x = event->u.mouse.x; cv->e.y = event->u.mouse.y;
     CVInfoDraw(cv,cv->gw);
 

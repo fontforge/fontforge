@@ -37,23 +37,48 @@ static void RulerText(CharView *cv, unichar_t *ubuf) {
 	    xoff,yoff);
     uc_strcpy(ubuf,buf);
 }
+
+static int RulerText2(CharView *cv, unichar_t *ubuf) {
+    char buf[60];
+    double len;
+
+    if ( cv->p.sp!=NULL && cv->info_sp!=NULL &&
+	    ((cv->p.sp->next!=NULL && cv->p.sp->next->to==cv->info_sp) ||
+	     (cv->p.sp->prev!=NULL && cv->p.sp->prev->from==cv->info_sp)) ) {
+	 if ( cv->p.sp->next!=NULL && cv->p.sp->next->to==cv->info_sp )
+	     len = SplineLength(cv->p.sp->next);
+	 else
+	     len = SplineLength(cv->p.sp->prev);
+	sprintf( buf, "Spline Len=%.1f", len);
+	uc_strcpy(ubuf,buf);
+return( true );
+    }
+return( false );
+}
 	
 static void RulerPlace(CharView *cv, GEvent *event) {
     unichar_t ubuf[60];
     int width, x;
     GRect size;
     GPoint pt;
+    int h,w;
 
     GDrawSetFont(cv->ruler_w,cv->rfont);
     RulerText(cv,ubuf);
     width = GDrawGetTextWidth(cv->ruler_w,ubuf,-1,NULL);
+    h = cv->rfh;
+    if ( RulerText2(cv,ubuf)) {
+	w = GDrawGetTextWidth(cv->ruler_w,ubuf,-1,NULL);
+	if ( width<w ) width = w;
+	h += cv->rfh;
+    }
     GDrawGetSize(GDrawGetRoot(NULL),&size);
     pt.x = event->u.mouse.x; pt.y = event->u.mouse.y;
     GDrawTranslateCoordinates(cv->v,GDrawGetRoot(NULL),&pt);
     x = pt.x + 26;
     if ( x+width > size.width )
 	x = pt.x - width-30;
-    GDrawMoveResize(cv->ruler_w,x,pt.y-cv->ras-2,width+4,cv->rfh+4);
+    GDrawMoveResize(cv->ruler_w,x,pt.y-cv->ras-2,width+4,h+4);
 }
 
 static int ruler_e_h(GWindow gw, GEvent *event) {
@@ -66,6 +91,8 @@ static int ruler_e_h(GWindow gw, GEvent *event) {
 	RulerText(cv,ubuf);
 	/*GDrawFillRect(gw,NULL,0xe0e0c0);*/
 	GDrawDrawText(gw,2,cv->ras+1,ubuf,-1,NULL,0x000000);
+	if ( RulerText2(cv,ubuf))
+	    GDrawDrawText(gw,2,cv->rfh+cv->ras+2,ubuf,-1,NULL,0x000000);
       break;
     }
 return( true );

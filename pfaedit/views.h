@@ -142,6 +142,7 @@ typedef struct charview {
     GFont *small;
     int16 sas, sfh;
     BasePoint info;
+    SplinePoint *info_sp;
     GPoint e;					/* mouse location */
     GPoint olde;
     BasePoint last_c;
