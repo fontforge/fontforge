@@ -2,15 +2,18 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 16-Apr-2002 -->
+  <!-- AP: Last modified: 6-May-2002 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
 <H1 ALIGN=Center>
-  <A href="http://sourceforge.net"><IMG src="http://sourceforge.net/sflogo.php?group_id=25752&amp;type=1"
-      width="88" height="31" border="0" alt="SourceForge Logo" ALIGN=right> </A>
-  PfaEdit
+  <IMG SRC="logo3.gif" WIDTH="32" HEIGHT="32" ALIGN="Left"><A href="http://sourceforge.net"><IMG
+      src="http://sourceforge.net/sflogo.php?group_id=25752&amp;type=1" width="88"
+      height="31" border="0" alt="SourceForge Logo" ALIGN=right> </A> PfaEdit
 </H1>
+<P ALIGN=Center>
+<FONT COLOR="Red"><STRONG><BIG>I will not be responding to bug reports between
+18 May and 3 June.</BIG></STRONG></FONT>
 <P>
 <FONT COLOR="Red"><STRONG>PfaEdit</STRONG></FONT> -- A postscript font editor
 that lets you create your own postscript, truetype, opentype, cid-keyed and
@@ -80,14 +83,14 @@ you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-020416.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 16-Apr-2002
+    <A HREF="pfaedit-020506.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 6-May-2002
   <LI>
     <A HREF="pfaedit-020312-1.ppc.rpm">Download pfaedit linux-ppc SUSE 7.1
     </A>binary rpm Version: 12-Mar-2002
   <LI>
-    <A HREF="pfaedit-solaris-020416.tgz">Download pfaedit Solaris 8.0
-    </A>executable Version: 16-Apr-2002
+    <A HREF="pfaedit-solaris-020506.tgz">Download pfaedit Solaris 8.0
+    </A>executable Version: 6-May-2002
   <LI>
     <A HREF="pfaedit-020312-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
     Version: 12-Mar-2002 (Redhat 7.1)
@@ -118,9 +121,9 @@ If you want to edit CID keyed fonts you probably need these
 <P>
 You can download a <A HREF="pfaedit-020312-1.src.rpm">source RPM</A>: Version:
 12-Mar-2002<BR>
-Or you can download the <A HREF="pfaedit_full-020416.tgz">entire source tree
+Or you can download the <A HREF="pfaedit_full-020506.tgz">entire source tree
 </A>in one .tgz file: Version
-16-Apr-2002<!--
+6-May-2002<!--
 Or you can download the following three packages. Version: 19-Jan-2002
 <UL>
 <LI>
@@ -275,6 +278,37 @@ Or you can just browse the <A HREF="overview.html">docs online</A>.
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    ???
+    <UL>
+      <LI>
+	Oops. Adobe describes two naming conventions for ligatures and I only supported
+	one of them. I should support the other one now.
+      <LI>
+	Fixed a number of bugs caused by custom encodings.
+      <LI>
+	If the selection in the font view contained either "dotlessi" or "dotlessj"
+	and the Element menu was pulled down then the dotless characters would be
+	created from their dotted varients (you didn't even have to select anything
+	from the menu) (broken 24-Feb-2002)
+      <LI>
+	PfaEdit had trouble reading non-empty ttf glyphs with 0 contours.
+      <LI>
+	PfaEdit failed to read images from an sfd file without a transparent colour
+      <LI>
+	Allow parens in familyname in the fontinfo dlg.
+      <LI>
+	When the width was selected, depressing a mouse button would snap the logical
+	pointer location to a random x coordinate (often 0).
+      <LI>
+	When generating a ttf file from a subfont of a CID keyed font pfaedit would
+	crash. This has been fixed.
+      <LI>
+	When exiting with multiple font views looking at one (changed) font, there
+	would be no prompt to save the font.
+      <LI>
+	Added a <A HREF="search.html">Find/Replace</A> feature
+    </UL>
   <LI>
     16-Apr-2002
     <UL>
@@ -541,6 +575,13 @@ prepared to save frequently and always work on a copy of the original.
     the ascent and descent).
   <LI>
     The MetaFont command doesn't work well.
+  <LI>
+    On linux boxes the dashed lines representing hints or the outlines of references
+    get screwed up. I think this is a bug in the XServer on linux (it doesn't
+    happen on other systems) but I have not examined it closely.
+  <LI>
+    PfaEdit will not copy and paste large (&gt;XServer transfer (4Meg on my machine))
+    clipboards of text.
   <LI>
     ???
 </UL>
