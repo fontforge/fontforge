@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 29-Dec-2002 -->
-  <!-- AP: Last modified: 2-Mar-2004 -->
+  <!-- AP: Last modified: 16-Apr-2004 -->
   <TITLE>Char Info</TITLE>
 </HEAD>
 <BODY>
@@ -53,13 +53,13 @@ it should be output into GDEF. You can see what FontForge does in
 <A HREF="showatt.html">View-&gt;Show ATT</A>.<BR CLEAR=ALL>
 <P>
 <IMG SRC="charinfo-comment.png" WIDTH="307" HEIGHT="359" ALIGN="Right">You
-can assign an arbetrary (unicode) <A NAME="comment">comment</A> to the character.
+can assign an arbitrary (unicode) <A NAME="comment">comment</A> to the character.
 Simply type any text into this field. The comment is for your use, it will
 not go into any generated fonts. You may also assign a color to a character
 to make it stand out in the font view.<BR CLEAR=ALL>
 <P>
 <IMG SRC="charinfo-pos.png" WIDTH="305" HEIGHT="400" ALIGN="Right">There
-are 6 seperate sub-dialogs to help you edit the
+are 6 separate sub-dialogs to help you edit the
 <A NAME="features">features</A> of the <A HREF="gposgsub.html">GPOS and
 GSUB</A> tables (some of these data can be converted into various of Apple's
 AAT tables, particularly 'morx'). The first of these is the alternate
@@ -73,9 +73,9 @@ A new entry in the list may be created by pressing the [New] button and a
 <A HREF="#Feature-Tag">dlg</A> will pop up with fields for the metrics you
 can change. It will also have a field for a feature tag, and a set of check
 boxes for flags (these flags are not relevant here, but are included as an
-excercise in assinine completeness.
+exercise in asinine completeness.
 <P>
-The [Delete] and [Edit] buttons should be fairly self-explanitory. [Copy]
+The [Delete] and [Edit] buttons should be fairly self-explanatory. [Copy]
 and [Paste] work as expected too. You can also paste something copied here
 into the font view (if you wish to have the same position information available
 in a large block of characters).
@@ -95,9 +95,10 @@ FontForge recognizes a special feature tag ' RQD' to indicate that this feature
 is required for the given script/language. Such a feature will always be
 applied.
 <P>
-You can generate a substitution most easily by draging a character from the
-font view and droping it here (you will then be <A HREF="#Feature-Tag">prompted
-for a feature tag</A> for the substitution table.
+You can generate a substitution most easily by dragging a character from
+the font view and dropping it here (you will then be
+<A HREF="#Feature-Tag">prompted for a feature tag</A> for the substitution
+table.
 <P>
 The <A NAME="multiple">multiple</A> and alternate substitution sub-dialogs
 are very similar to this one except that they can take multiple glyph names.
@@ -140,8 +141,8 @@ of <A HREF="hinting.html#Counter">counter masks</A>.<BR CLEAR=ALL>
 Some <A NAME="components">characters</A> (ligatures, accented characters,
 Hangul syllables, etc.) are built up out of other characters (at least according
 to unicode). This pane of the dlg shows the components that Unicode says
-make up the current character, if those componants are in the font then you
-can use FontForge's Element-&gt;Build Accented or Element-&gt;Build Composit
+make up the current character, if those components are in the font then you
+can use FontForge's Element-&gt;Build Accented or Element-&gt;Build Composite
 commands to create the current character. The information displayed here
 is informative only, you may not change this field directly (it changes when
 you change the unicode value or glyph name associated with this
@@ -165,7 +166,7 @@ cancelled.<BR Clear=Right>
 </TABLE>
 <P>
 These two dialogs allow you to specify an otf feature tag and all the other
-impedimentia that go along with it. They are used by
+impedimenta that go along with it. They are used by
 <A HREF="charinfo.html#Character">Character Info</A> (above) to specify
 substitutions, positions, and ligatures, as well as by
 <A HREF="fontinfo.html#Anchors">Font Info</A> to specify anchor classes.
@@ -180,7 +181,7 @@ In <A NAME="lookup-flags">addition</A> you must specify a set of
 <A HREF="http://partners.adobe.com/asn/tech/type/opentype/appendices/chapter2.jsp">flags</A>
 which control the behavior of the feature. If your feature is to be used
 in right to left text then select that flag. If your feature is to be used
-to combine glyphs even if there are interviening mark glyphs (accents and
+to combine glyphs even if there are intervening mark glyphs (accents and
 such) then select Ignore Combining Marks.
 <P>
 And a collection of scripts and languages for which the substitution will
@@ -219,7 +220,7 @@ as "Lao") are converted to 'lao ' rather than 'Laoo'. I have extended the
 set of opentype scripts with many of those in ISO 15924 by making them all
 lower case (I have not used everything from ISO 15924 because it contains
 script variants for things which I consider to be one script (eg. fraktur
-has a seperate script tag, but I consider it to be latin). I have also guessed
+has a separate script tag, but I consider it to be latin). I have also guessed
 at codes for Limbu, Tai Le, and Ugaritic ('limb','tail','ugrt'), which are
 scripts used in Unicode but not defined in ISO 15924.
 <H3>
@@ -236,8 +237,8 @@ then hold the control key down when pressing the [New...] or [Edit] buttons
 and you will get an unparsed dlg which will allow you to enter whatever you
 like (OpenType does not give a tag for the default language (it is has a
 special representation which does not involve tags), but for the sake of
-consistance I have assigned it the tag of 'dflt'. No 'dflt' tags will appear
-in the output font, instead they will be converted to the appropirate
+consistency I have assigned it the tag of 'dflt'. No 'dflt' tags will appear
+in the output font, instead they will be converted to the appropriate
 representation for the default language).
 <P>
 The language names used by FontForge are those specified by
@@ -269,7 +270,7 @@ you will get a dialog of languages.
 This shows all languages active in the current script in the current
 script-language collection. Some languages are not meaningful in a given
 script (but I don't know enough to know which to remove so I include all
-possible languages and appologize for extranious information). Use the control
+possible languages and apologize for extraneous information). Use the control
 key to select multiple languages. At least one language must be
 specified.<BR CLEAR=ALL>
 <P>

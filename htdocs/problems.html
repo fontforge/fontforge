@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 28-Jun-2001 -->
-  <!-- AP: Last modified: 2-Mar-2004 -->
+  <!-- AP: Last modified: 16-Apr-2004 -->
   <TITLE>Finding common font problems automagically</TITLE>
 </HEAD>
 <BODY>
@@ -67,7 +67,7 @@ both, stop and let you fix things.
 <P>
 <STRONG><BIG>X near [val]</BIG></STRONG>
 <P>
-Often there will be a set of features which should be consistant across the
+Often there will be a set of features which should be consistent across the
 entire file. For example the left side-bearing of the characters "BDEFHIKLMNPR"
 should perhaps all be the same. This will let you enter in the desired
 side-bearing value, and then FontForge will find all characters with points
@@ -228,16 +228,16 @@ a bad stem it will select it, stop and allow you to fix things.
 <P>
 Postscript has a special hint operator (hstem3 and vstem3) which is designed
 to hint the stems of things like "m" where there are three stems of equal
-width and equally far appart. It is easy for a character not to fit the criteria
+width and equally far apart. It is easy for a character not to fit the criteria
 for this operator (which means FontForge won't use it). This will detect
 cases that are close to right. I found that I needed to adjust the "Near"
 value to be bigger than the default.
 <P>
 <STRONG><BIG>Show exact stem3</BIG></STRONG>
 <P>
-(this is not a problem, but I found it helpful to be able to distinuish between
-cases where the "almost stem3" above didn't say anything. It might be because
-it was a stem3 or it might be really far off from a stem3)
+(this is not a problem, but I found it helpful to be able to distinguish
+between cases where the "almost stem3" above didn't say anything. It might
+be because it was a stem3 or it might be really far off from a stem3)
 <H3>
   <STRONG>More Hints Than</STRONG>
 </H3>
@@ -290,7 +290,7 @@ which does not exist in the font. This option will check for that error.
 <P>
 OpenType has depreciated the use of 'DFLT', but FontForge will sometimes
 use it when it can't make a better guess at the appropriate script for a
-glyph without an inate script.
+glyph without an innate script.
 <P>
   <HR Clear=all>
 <P>
@@ -305,7 +305,8 @@ glyphs in two or more fonts.
 <STRONG><BIG>Check for undefined CIDs</BIG></STRONG>
 <P>
 Looks for CIDs which have no glyphs defined for them in any font. This is
-a fairly common occurance in CID fonts, so use this with caution.<BR Clear=all>
+a fairly common occurrence in CID fonts, so use this with
+caution.<BR Clear=all>
 <P>
 At the bottom of the dialog are two buttons (<CODE>[Clear All]</CODE> and
 <CODE>[Set All]</CODE> which will, respectively, clear and set the check

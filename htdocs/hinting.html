@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 3-May-2001 -->
-  <!-- AP: Last modified: 2-Mar-2004 -->
+  <!-- AP: Last modified: 16-Apr-2004 -->
   <TITLE>Hinting</TITLE>
 </HEAD>
 <BODY>
@@ -105,10 +105,10 @@ You may manually:
     Select two points and create a horizontal stem hint whose width is the vertical
     distance between the two points
   <LI>
-    Create a horizontal hint starting at an arbetrary y location with an arbetrary
+    Create a horizontal hint starting at an arbitrary y location with an arbitrary
     vertical width.
   <LI>
-    Create a vertical hint starting at an arbetrary x location with an arbetrary
+    Create a vertical hint starting at an arbitrary x location with an arbitrary
     horizontal width.
   <LI>
     Review all your hints, manually changing or removing any (or all).
@@ -145,13 +145,13 @@ not, the FontForge will automatically figure substitution points when it
 generates the font. Other points are not required (but may) have a hintmask.
 <P>
 The hintmask specifies what hints should be active when that point is positioned,
-and will control all subsiquent points until a new hintmask is established.
+and will control all subsequent points until a new hintmask is established.
 So in the
 following<IMG SRC="charwithhintmask.png" WIDTH="309" HEIGHT="322" ALIGN="Left"><IMG
     SRC="hintmaskinfo.png" WIDTH="321" HEIGHT="459" ALIGN="Right"> example, the
 selected point (on left) has the highlit hints active at it, In the character
 view the currently active stems are drawn much darker than the inactive ones.
-Points with hintmasks attached to them have circles drawn arround them.
+Points with hintmasks attached to them have circles drawn around them.
 <P>
 Remember to hold the control key down when making disjoint
 selections.<BR CLEAR=ALL>
@@ -173,7 +173,7 @@ bound a set of counters.
 <P>
 FontForge will not be able to convert TrueType instructions into PostScript
 hints when it reads a TrueType font (the format is too complex, there are
-too many posibilities, instead FontForge stores all the truetype instructions
+too many possibilities, instead FontForge stores all the truetype instructions
 and writes them back out uninterpretted).
 <P>
 From a Type1 font it will happily read all the hints in a character, and
@@ -189,7 +189,7 @@ FontForge does a really bad job of "hinting" (actually generating instructions
 for) truetype. Generally you will get better results with unhinted characters
 than with characters autoinstructed by fontforge.
 <P>
-Hinting TrueType fonts opens a far wider range of posibilities. I have added
+Hinting TrueType fonts opens a far wider range of possibilities. I have added
 several types of hints that are specific to truetype (and will be ignored
 by the postscript generation routines). These by no means exhaust the
 capabilities of TrueType.

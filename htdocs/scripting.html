@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 8-Mar-2004 -->
+  <!-- AP: Last modified: 16-Apr-2004 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
 </HEAD>
 <BODY>
@@ -134,11 +134,11 @@ Terms can be
 There are three different comments supported:
 <UL>
   <LI>
-    Starting with a "#" character and proceding to end of line
+    Starting with a "#" character and proceeding to end of line
   <LI>
-    Starting with "//" and proceding to end of line
+    Starting with "//" and proceeding to end of line
   <LI>
-    Starting with "/*" and proceding to "*/"
+    Starting with "/*" and proceeding to "*/"
 </UL>
 <P>
 Expressions are similar to those in C, a few operators have been omitted,
@@ -163,7 +163,7 @@ So operators (and their precedences) are:
   <LI>
     *, /, % (binary multiplicative operators)
   <LI>
-    +, - (binary arithmetric operators)<BR>
+    +, - (binary arithmetic operators)<BR>
     If the first operand of + is a string then + will be treated as concatenation
     rather than addition. If the second operand is a number it will be converted
     to a string (decimal representation) and then concatenated.
@@ -425,17 +425,17 @@ a[4][0] = "Nested array";
   <DT>
     Strstr(haystack,needle)
   <DD>
-    Returns the index of the first occurance of the string needle within the
+    Returns the index of the first occurrence of the string needle within the
     string haystack (or -1 if not found).
   <DT>
     Strrstr(haystack,needle)
   <DD>
-    Returns the index of the last occurance of the string needle within the string
-    haystack (or -1 if not found).
+    Returns the index of the last occurrence of the string needle within the
+    string haystack (or -1 if not found).
   <DT>
     Strcasestr(haystack,needle)
   <DD>
-    Returns the index of the first occurance of the string needle within the
+    Returns the index of the first occurrence of the string needle within the
     string haystack ignoring case in the search (or -1 if not found).
   <DT>
     Strcasecmp(str1,str2)
@@ -463,7 +463,7 @@ a[4][0] = "Nested array";
   <DT>
     <A NAME="SetPrefs">SetPrefs</A>(str,val[,val2])
   <DD>
-    Sets the value of the preference item whose name is containted in str. If
+    Sets the value of the preference item whose name is contained in str. If
     the preference item has a real type then a second argument may be passed
     and the value set will be val/val2.
   <DT>
@@ -483,7 +483,7 @@ a[4][0] = "Nested array";
   <DT>
     Ord(string[,pos])
   <DD>
-    Returns an array of integers represenging the encoding of the characters
+    Returns an array of integers representing the encoding of the characters
     in the string. If pos is given it should be an integer less than the string
     length and the function will return the integer encoding of that character
     in the string.
@@ -691,7 +691,7 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     ControlAfmLigatureOutput(script,lang,ligature-tag-list)
   <DD>
     All three arguments must be strings. The first two must be strings containing
-    four or fewer characters, the third a string containing a comma seperated
+    four or fewer characters, the third a string containing a comma separated
     list of 4 (or fewer) character strings. Ligatures will be placed in an AFM
     file only if
     <UL>
@@ -713,7 +713,7 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     Either imports a bitmap font into the database, or imports background image[s]
     into various characters. There may be one or two arguments. The first must
     be a string representing a filename. The extension of the file determines
-    how the import procedes. If present the second argument must be an integer,
+    how the import proceeds. If present the second argument must be an integer,
     if the first argument is a bitmap font then the second argument controls
     whether it is imported into the bitmap list (0) or to fill up the backgrounds
     of characters (1).
@@ -737,7 +737,7 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
 	    which case all images which match that template will be loaded appropriately
 	    and stored in the background
 	  <LI>
-	    Otherwise there may be several filenames (seperated by semicolons), the first
+	    Otherwise there may be several filenames (separated by semicolons), the first
 	    will be placed in the background of the first selected character, the second
 	    into the background of the second selected character, ...
 	</UL>
@@ -745,7 +745,7 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
 	Finally if the extension is "eps" then an encapsulated postscript file will
 	be merged into the foreground. The file may be specified as for images (except
 	the extension should be "eps" rather than an image extension). FontForge
-	is very limitted in its ability to read eps files.
+	is very limited in its ability to read eps files.
     </UL>
   <DT>
     Export(format[,bitmap-size])
@@ -1183,7 +1183,7 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     Controls what bitmap sizes are stored in the font's database. It is passed
     an array of sizes. If a size is specified which is not in the font database
     it will be generated. If a size is not specified which is in the font database
-    it will be removed. A size which is specifed and present in the font database
+    it will be removed. A size which is specified and present in the font database
     will not be touched.<BR>
     If you want to specify greymap fonts then the low-order 16 bits will be the
     pixel size and the high order 16 bits will specify the bits/pixel. Thus 0x8000c
@@ -1292,7 +1292,7 @@ ApplySubstitution("*","*","vrt2")
 </PRE>
     </BLOCKQUOTE>
     <P>
-    Example: To do a perspecitive transformation with a vanishing point at (200,300):
+    Example: To do a perspective transformation with a vanishing point at (200,300):
     <BLOCKQUOTE>
       <PRE>NonLinearTrans("200+(x-200)*abs(y-300)/300","y")
 </PRE>
@@ -1305,7 +1305,7 @@ ApplySubstitution("*","*","vrt2")
     ExpandStroke(width,line cap, line join)<BR>
     ExpandStroke(width,line cap, line join,0,Kanou's removeinternal /external
     flag)<BR>
-    ExpandStroke(width,caligraphic-angle,height-numerator,height-denom)
+    ExpandStroke(width,calligraphic-angle,height-numerator,height-denom)
   <DD>
     In the first format a line cap of "butt" and line join of "round" are
     implied.<BR>
@@ -1398,7 +1398,7 @@ ApplySubstitution("*","*","vrt2")
     Allows you to add an Advanced Typography feature to a single selected character.
     The first argument may be either: Position, Pair, Substitution, AltSubs,
     MultSubs or Ligature. The second argument should be a script-lang list where
-    each 4-character script name is followed by a comma seperated list of 4 character
+    each 4-character script name is followed by a comma separated list of 4 character
     language names (with the languages enclosed in curly braces). As:<BR>
     <CODE>&nbsp; &nbsp; grek{dflt} latn{dflt,VIT ,ROM }</CODE><BR>
     The third arg should be a 4 character opentype feature tag (or apple
@@ -1428,10 +1428,10 @@ ApplySubstitution("*","*","vrt2")
     8 integral arguments, the first 4 specify the changes in positioning to the
     first character, the next four the changes for the second char. For substitution
     tags the fifth argument is the name of another glyph which will replace the
-    current one. For an AltSubs tag the argument is a space seperated list of
+    current one. For an AltSubs tag the argument is a space separated list of
     glyph names any of which will replace the current one. For a MultSubs the
-    argument is a space seperated list of names all of which will replace the
-    current one. For a Ligature the argument is a space seperated list of glyph
+    argument is a space separated list of names all of which will replace the
+    current one. For a Ligature the argument is a space separated list of glyph
     names all of which will be replaced by the current glyph.
   <DT>
     RemoveATT(type,script-lang,tag)
@@ -1469,7 +1469,7 @@ ApplySubstitution("*","*","vrt2")
     next two values specify the location of the point. The final argument is
     only present for things of type "baselig".
   <DT>
-    BuildComposit()
+    BuildComposite()
   <DD>
   <DT>
     BuildAccented()
@@ -1480,7 +1480,7 @@ ApplySubstitution("*","*","vrt2")
     Loads other-font-name, and extracts any characters from it which are not
     in the current font and moves them to the current font. The flags argument
     is the same as that for Open. Currently the only relevant flag is to say
-    that you do have a lisence to use a font with fstype=2. 
+    that you do have a license to use a font with fstype=2. 
       <HR>
   <DT>
     <A NAME="AutoHint">AutoHint</A>()
@@ -1667,12 +1667,12 @@ ApplySubstitution("*","*","vrt2")
     ConvertToCID(registry, ordering, supplement)
   <DD>
     Converts current font to a CID-keyed font using given registry, ordering
-    and supplement. registry and ordering must be strings, supplenmet must be
+    and supplement. registry and ordering must be strings, supplement must be
     a integer.
   <DT>
     ConvertByCMap(cmapfilename)
   <DD>
-    Converts curernt font to a CID-keyed font using specified CMap file. cmapfilename
+    Converts current font to a CID-keyed font using specified CMap file. cmapfilename
     must be a path name of a file conforming Adobe CMap File Format. 
       <HR>
   <DT>
@@ -1752,17 +1752,17 @@ ApplySubstitution("*","*","vrt2")
 	alternate with that tag (or a null string if there is none).
       <LI>
 	"AltSubs" takes three additional arguments, a script, a language and a tag
-	(all 4 character strings) and returns a space seperated list of the names
+	(all 4 character strings) and returns a space separated list of the names
 	of all alternate substitutions with that tag (or a null string if there is
 	none).
       <LI>
 	"MultSubs" takes three additional arguments, a script, a language and a tag
-	(all 4 character strings) and returns a space seperated list of all the names
+	(all 4 character strings) and returns a space separated list of all the names
 	of all glyphs this glyph gets decomposed into with that tag (or a null string
 	if there is none).
       <LI>
 	"Ligature" takes three additional arguments, a script, a language and a tag
-	(all 4 character strings) and returns a space seperated list of the names
+	(all 4 character strings) and returns a space separated list of the names
 	of all components with that tag (or a null string if there is none).
       <LI>
 	"GlyphIndex" returns the index of the current glyph in the ttf 'glyf' table,
@@ -1903,7 +1903,7 @@ somewhere that you want to execute, so there's a button [Call] down at the
 bottom of the dlg. Pressing [Call] will bring up a file picker dlg looking
 for files with the extension *.pe (you can change that by typing a wildcard
 sequence and pressing the [Filter] button). After you have selected your
-scipt the appropriate text to text to invoke it will be placed in the text
+script the appropriate text to text to invoke it will be placed in the text
 area.
 <P>
 The current font of the script will be set to whatever font you invoked it

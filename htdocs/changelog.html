@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 10-Apr-2004 -->
+  <!-- AP: Last modified: 18-Apr-2004 -->
   <TITLE>Change log for FontForge</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,37 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    18-Apr-2004
+    <UL>
+      <LI>
+	Fix a couple of bugs dealing with references in multilayered editing.
+      <LI>
+	Uninitialized variable in creation of 'name' table (introduced on 10-Apr)
+      <LI>
+	Edit-&gt;Merge didn't work properly on quadratic splines
+      <LI>
+	LCarets should have ignored the script assigned to them, but they didn't.
+      <LI>
+	Put in more protection against bad GSUB/GPOS tables. In particular mangal.ttf
+	has a bad GSUB table (with erroneous class specifications).
+      <LI>
+	FontForge wasn't setting <TT>'hhea'.caretSlopeRun</TT> appropriately in italic
+	fonts (should match <TT>tan(italicAngle)</TT>).
+      <LI>
+	Oops. Can do much better converting from cubic to quadratic splines. We were
+	getting far too many linear segments.
+      <LI>
+	Our cubic-&gt;quadratic conversion could generate splines where the endpoints
+	were less than 1 unit apart. Since ttf rounds all coords to ints, this meant
+	we'd get the two endpoints on top of one another.
+      <LI>
+	When generating a truetype font from a cubic database, FontForge calculated
+	'maxp'.maxCompositePoints incorrectly.
+      <LI>
+	Gave the user control over when point numbers are visible (even for cubic
+	fonts)
+    </UL>
   <LI>
     10-Apr-2004
     <UL>
@@ -41,7 +72,7 @@
       <LI>
 	Several more fixes for cff output.
       <LI>
-	We had a bad habit of including extraniuos hintmask operators in output
+	We had a bad habit of including extraneous hintmask operators in output
       <LI>
 	Add a proper ff version (well, as much as my versions be proper) to
 	postscript/svg output
@@ -106,15 +137,15 @@
 	When loading a mac unicode string from the 'name' table, fontforge failed
 	to convert the language correctly.
       <LI>
-	When loading a mac contextual substitution statemachine, fontforge made
-	eggregious errors in guessing to what glyphs were usable for a substitution
-	of the marked glyph.
+	When loading a mac contextual substitution statemachine, fontforge made egregious
+	errors in guessing to what glyphs were usable for a substitution of the marked
+	glyph.
       <LI>
 	Added the current encoding to the font's window title (also display a flag
 	to show whether the font has been changed)
       <LI>
 	When moving points around on an order2 contour fontforge could end up with
-	bad control points and would then produce annoying internal errors alterting
+	bad control points and would then produce annoying internal errors alerting
 	the user to this fact.
       <LI>
 	The CID Flatten commands did not work when the view was compacted.
@@ -136,7 +167,7 @@
 	to ".pfb". Put in a %s to make it obvious that more will be added to the
 	name. Support people who want .pfa fonts too.
       <LI>
-	The dialog for adding/editing correspondances between mac feature/settings
+	The dialog for adding/editing correspondences between mac feature/settings
 	and opentype features never went away.
       <LI>
 	Disable the Default ATT menu if no char is selected in the fontview.
@@ -159,11 +190,11 @@
 	Dragging and dropping a char from the font view into the char info dlg (to
 	create a substitution) created a crash instead.
       <LI>
-	Support more of postscript in the interpretter
+	Support more of postscript in the interpreter
       <LI>
 	Our svg fonts pointed to a not-yet-existing dtd file
       <LI>
-	Support for Apple's distorable fonts (sort of like truetype multi-master
+	Support for Apple's distortable fonts (sort of like truetype multi-master
 	fonts)
       <LI>
 	Depressing the control key now makes popups live longer (until the mouse
@@ -180,7 +211,7 @@
   <LI>
     <A HREF="oldchangelog.html">Earlier Changes </A>
   <LI>
-    <A HREF="pfaeditchangelog.html">Changes to PfaEdit (predeccessor to
+    <A HREF="pfaeditchangelog.html">Changes to PfaEdit (predecessor to
     FontForge)</A>
 </UL>
 </BODY></HTML>
