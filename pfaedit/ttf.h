@@ -172,6 +172,8 @@ struct ttfinfo {
 
     struct ttf_table *tabs;
     FPST *possub;
+    ASM *sm;
+    MacFeat *features;
     struct gentagtype gentags;
     char *chosenname;
 };
@@ -599,6 +601,7 @@ extern void pfed_read(FILE *ttf,struct ttfinfo *info);
 
 
     /* Parsing advanced typography */
+extern void readmacfeaturemap(FILE *ttf,struct ttfinfo *info);
 extern void readttfkerns(FILE *ttf,struct ttfinfo *info);
 extern void readttfmort(FILE *ttf,struct ttfinfo *info);
 extern void readttfopbd(FILE *ttf,struct ttfinfo *info);

@@ -100,6 +100,7 @@ int alwaysgenapple = false;
 int alwaysgenopentype = true;
 #endif
 char *helpdir;
+MacFeat *default_mac_feature_map=NULL;
 
 extern int rectelipse, polystar, regular_star;	/* from cvpalettes.c */
 extern int center_out;				/* from cvpalettes.c */
@@ -799,6 +800,13 @@ static void ParseMacSetting(char *pt,struct macsettingname *ms) {
     if ( *pt++ == 'd' ) ms->defaultOn = true;
 }
 
+static void ParseNewMacFeature(FILE *p,char *line) {
+    fseek(p,-(strlen(line)-strlen("MacFeat:")),SEEK_CUR);
+    line[strlen("MacFeat:")] ='\0';
+    default_mac_feature_map = SFDParseMacFeatures(p,line);
+    fseek(p,-strlen(line),SEEK_CUR);
+}
+
 static void DefaultXUID(void) {
     /* Adobe has assigned PfaEdit a base XUID of 1021. Each new user is going */
     /*  to get a couple of random numbers appended to that, hoping that will */
@@ -897,6 +905,8 @@ return;
 		user_macfeat_otftag = gcalloc(msc+1,sizeof(struct macsettingname));
 	    } else if ( strncmp(line,"MacSetting:",strlen("MacSetting:"))==0 && msp<msc ) {
 		ParseMacSetting(pt,&user_macfeat_otftag[msp++]);
+	    } else if ( strncmp(line,"MacFeat:",strlen("MacFeat:"))==0 ) {
+		ParseNewMacFeature(p,line);
 	    }
     continue;
 	}
@@ -1015,6 +1025,8 @@ return;
 		    user_macfeat_otftag[i].defaultOn ? 'd' : ' ');
 	}
     }
+
+    SFDDumpMacFeat(p,default_mac_feature_map);
 
     fclose(p);
 }

@@ -3226,7 +3226,8 @@ return;
 }
 
 /* Apple's docs imply that kerning info is always provided left to right, even*/
-/*  for right to left scripts. If that be so then we need code in here to reverse */
+/*  for right to left scripts. My guess is that their docs are wrong, as they */
+/*  often are, but if that be so then we need code in here to reverse */
 /*  the order of the characters for right to left since pfaedit's convention */
 /*  is to follow writing order rather than to go left to right */
 void readttfkerns(FILE *ttf,struct ttfinfo *info) {
@@ -3355,4 +3356,53 @@ void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 	    fseek(ttf,len-header_size,SEEK_CUR);
 	}
     }
+}
+
+void readmacfeaturemap(FILE *ttf,struct ttfinfo *info) {
+    MacFeat *last=NULL, *cur;
+    struct macsetting *slast, *scur;
+    struct fs { int n; int off; } *fs;
+    int featcnt, i, j, flags;
+
+    fseek(ttf,info->feat_start,SEEK_SET);
+    /* version =*/ getfixed(ttf);
+    featcnt = getushort(ttf);
+    /* reserved */ getushort(ttf);
+    /* reserved */ getlong(ttf);
+
+    fs = galloc(featcnt*sizeof(struct fs));
+    for ( i=0; i<featcnt; ++i ) {
+	cur = chunkalloc(sizeof(MacFeat));
+	if ( last==NULL )
+	    info->features = cur;
+	else
+	    last->next = cur;
+	last = cur;
+
+	cur->feature = getushort(ttf);
+	fs[i].n = getushort(ttf);
+	fs[i].off = getlong(ttf);
+	flags = getushort(ttf);
+	cur->strid = getushort(ttf);
+	if ( flags&0x8000 ) cur->ismutex = true;
+	if ( flags&0x4000 )
+	    cur->default_setting = flags&0xff;
+    }
+
+    for ( i=0, cur=info->features; i<featcnt; ++i, cur = cur->next ) {
+	fseek(ttf,info->feat_start+fs[i].off,SEEK_SET);
+	slast = NULL;
+	for ( j=0; j<fs[i].n; ++j ) {
+	    scur = chunkalloc(sizeof(struct macsetting));
+	    if ( slast==NULL )
+		cur->settings = scur;
+	    else
+		slast->next = scur;
+	    slast = scur;
+
+	    scur->setting = getushort(ttf);
+	    scur->strid = getushort(ttf);
+	}
+    }
+    free(fs);
 }

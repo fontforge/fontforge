@@ -765,6 +765,44 @@ static void SFDDumpEncoding(FILE *sfd,int encname,char *keyword) {
 	fprintf(sfd, "%s: %s\n", keyword, name );
 }
 
+static void SFDDumpMacName(FILE *sfd,struct macname *mn) {
+    char *pt;
+
+    while ( mn!=NULL ) {
+	fprintf( sfd, "MacName: %d %d %d \"", mn->enc, mn->lang, strlen(mn->name) );
+	for ( pt=mn->name; *pt; ++pt ) {
+	    if ( *pt<' ' || *pt>=0x7f || *pt=='\\' || *pt=='"' )
+		fprintf( sfd, "\\%03o", *(uint8 *) pt );
+	    else
+		putc(*pt,sfd);
+	}
+	fprintf( sfd, "\"\n" );
+	mn = mn->next;
+    }
+}
+
+void SFDDumpMacFeat(FILE *sfd,MacFeat *mf) {
+    struct macsetting *ms;
+
+    if ( mf==NULL )
+return;
+
+    while ( mf!=NULL ) {
+	if ( mf->featname!=NULL ) {
+	    fprintf( sfd, "MacFeat: %d %d %d\n", mf->feature, mf->ismutex, mf->default_setting );
+	    SFDDumpMacName(sfd,mf->featname);
+	    for ( ms=mf->settings; ms!=NULL; ms=ms->next ) {
+		if ( ms->setname!=NULL ) {
+		    fprintf( sfd, "MacSetting: %d\n", ms->setting );
+		    SFDDumpMacName(sfd,ms->setname);
+		}
+	    }
+	}
+	mf = mf->next;
+    }
+    fprintf( sfd,"EndMacFeatures\n" );
+}
+
 static void SFD_Dump(FILE *sfd,SplineFont *sf) {
     int i, j, realcnt;
     BDFFont *bdf;
@@ -936,6 +974,7 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 	}
 	fprintf( sfd, "EndFPST\n" );
     }
+    SFDDumpMacFeat(sfd,sf->features);
     if ( sf->gentags.tt_cur>0 ) {
 	fprintf( sfd, "GenTags: %d", sf->gentags.tt_cur );
 	for ( i=0; i<sf->gentags.tt_cur; ++i ) {
@@ -2449,6 +2488,80 @@ static void SFDParseChainContext(FILE *sfd,SplineFont *sf,FPST *fpst, char *tok)
     getname(sfd,tok);
 }
 
+static struct macname *SFDParseMacNames(FILE *sfd, char *tok) {
+    struct macname *head=NULL, *last=NULL, *cur;
+    int enc, lang, len;
+    char *pt;
+    int ch;
+
+    while ( strcmp(tok,"MacName:")==0 ) {
+	cur = chunkalloc(sizeof(struct macname));
+	if ( last==NULL )
+	    head = cur;
+	else
+	    last->next = cur;
+	last = cur;
+
+	getint(sfd,&enc);
+	getint(sfd,&lang);
+	getint(sfd,&len);
+	cur->enc = enc;
+	cur->lang = lang;
+	cur->name = pt = galloc(len+1);
+	
+	while ( (ch=getc(sfd))==' ');
+	if ( ch=='"' )
+	    ch = getc(sfd);
+	while ( ch!='"' && ch!=EOF && pt<cur->name+len ) {
+	    if ( ch=='\\' ) {
+		*pt  = (getc(sfd)-'0')<<6;
+		*pt |= (getc(sfd)-'0')<<3;
+		*pt |= (getc(sfd)-'0');
+	    } else
+		*pt++ = ch;
+	    ch = getc(sfd);
+	}
+	*pt = '\0';
+	getname(sfd,tok);
+    }
+return( head );
+}
+
+MacFeat *SFDParseMacFeatures(FILE *sfd, char *tok) {
+    MacFeat *cur, *head=NULL, *last=NULL;
+    struct macsetting *slast, *scur;
+    int feat, ism, def, set;
+
+    while ( strcmp(tok,"MacFeat:")==0 ) {
+	cur = chunkalloc(sizeof(MacFeat));
+	if ( last==NULL )
+	    head = cur;
+	else
+	    last->next = cur;
+	last = cur;
+
+	getint(sfd,&feat); getint(sfd,&ism); getint(sfd, &def);
+	cur->feature = feat; cur->ismutex = ism; cur->default_setting = def;
+	getname(sfd,tok);
+	cur->featname = SFDParseMacNames(sfd,tok);
+	slast = NULL;
+	while ( strcmp(tok,"MacSetting:")==0 ) {
+	    scur = chunkalloc(sizeof(struct macsetting));
+	    if ( slast==NULL )
+		cur->settings = scur;
+	    else
+		slast->next = scur;
+	    slast = scur;
+
+	    getint(sfd,&set);
+	    scur->setting = set;
+	    getname(sfd,tok);
+	    scur->setname = SFDParseMacNames(sfd,tok);
+	}
+    }
+return( head );
+}
+
 static void SFDCleanupAnchorClasses(SplineFont *sf) {
     AnchorClass *ac;
     AnchorPoint *ap;
@@ -2731,6 +2844,8 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 		lastfp->next = fpst;
 	    lastfp = fpst;
 	    SFDParseChainContext(sfd,sf,fpst,tok);
+	} else if ( strmatch(tok,"MacFeat:")==0 ) {
+	    sf->features = SFDParseMacFeatures(sfd,tok);
 	} else if ( strmatch(tok,"TeXData:")==0 ) {
 	    int temp;
 	    getint(sfd,&temp);

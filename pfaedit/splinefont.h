@@ -308,8 +308,7 @@ struct macname {
     struct macname *next;
     uint16 enc;		/* Platform specific encoding. 0=>mac roman, 1=>sjis, 7=>russian */
     uint16 lang;	/* Mac languages 0=>english, 1=>french, 2=>german */
-    uint16 strid;
-    char *name;		/* Not a unicode string */
+    char *name;		/* Not a unicode string, uninterpreted mac encoded string */
 };
 
 typedef struct macfeat {
@@ -317,10 +316,12 @@ typedef struct macfeat {
     uint16 feature;
     uint8 ismutex;
     uint8 default_setting;		/* Apple's docs say both that this is a byte and a short. It's a byte */
+    uint16 strid;			/* Temporary value, used when reading in */
     struct macname *featname;
     struct macsetting {
 	struct macsetting *next;
 	uint16 setting;
+	uint16 strid;
 	struct macname *setname;
     } *settings;
 } MacFeat;
@@ -972,6 +973,9 @@ extern KernClass *KernClassCopy(KernClass *kc);
 extern void KernClassListFree(KernClass *kc);
 extern int KernClassContains(KernClass *kc, char *name1, char *name2, int ordered );
 extern void FPSTFree(FPST *fpst);
+extern void MacNameListFree(struct macname *mn);
+extern void MacSettingListFree(struct macsetting *ms);
+extern void MacFeatListFree(MacFeat *mf);
 extern void SplineCharListsFree(struct splinecharlist *dlist);
 extern void SplineCharFreeContents(SplineChar *sc);
 extern void SplineCharFree(SplineChar *sc);
@@ -1161,6 +1165,8 @@ extern KernClass *SFFindKernClass(SplineFont *sf,SplineChar *first,SplineChar *l
 extern int SCSetMetaData(SplineChar *sc,char *name,int unienc,const unichar_t *comment);
 
 extern const char *EncName(int encname);
+extern void SFDDumpMacFeat(FILE *sfd,MacFeat *mf);
+extern MacFeat *SFDParseMacFeatures(FILE *sfd, char *tok);
 extern int SFDWrite(char *filename,SplineFont *sf);
 extern int SFDWriteBak(SplineFont *sf);
 extern SplineFont *SFDRead(char *filename);

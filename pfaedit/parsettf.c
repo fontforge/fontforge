@@ -593,13 +593,7 @@ static void readttfhhea(FILE *ttf,struct ttfinfo *info) {
     info->pfminfo.linegap = getushort(ttf);
     /*info->ascent = info->pfminfo.hhead_ascent;*/
 
-    /* fontographer puts the max ascender/min descender here instead. idiots */
-    /* if (( info->ascent==0 && info->descent==0 ) || info->ascent>info->emsize )*/
-	info->ascent = .8*info->emsize;
-#if 0
-    else if ( info->ascent+info->descent!=info->emsize )
-	info->ascent = info->ascent * ((real) info->emsize)/(info->ascent+info->descent);
-#endif
+    info->ascent = .8*info->emsize;
     info->descent = info->emsize-info->ascent;
 
     for ( i=0; i<12; ++i )
@@ -638,12 +632,59 @@ return( NULL );
 return( base );
 }
 
+static struct macname *AddMacName(FILE *ttf,
+	int strlen, int stroff,int spec,int language, struct macname *last) {
+    struct macname *new = chunkalloc(sizeof(struct macname));
+    long pos = ftell(ttf);
+    char *pt;
+    int i;
+
+    new->next = last;
+    new->enc = spec;
+    new->lang = language;
+    new->name = pt = galloc(strlen+1);
+
+    fseek(ttf,stroff,SEEK_SET);
+
+    for ( i=0; i<strlen; ++i )
+	*pt++ = getc(ttf);
+    *pt = '\0';
+
+    fseek(ttf,pos,SEEK_SET);
+return( new );
+}
+
+static void MacFeatureAdd(FILE *ttf, struct ttfinfo *info, int id,
+	int strlen, int stroff,int spec,int language) {
+    MacFeat *f;
+    struct macsetting *s;
+
+    for ( f=info->features; f!=NULL; f=f->next ) {
+	if ( f->strid==id ) {
+	    f->featname = AddMacName(ttf,strlen,stroff,spec,language,f->featname);
+return;
+	} else {
+	    for ( s=f->settings; s!=NULL; s=s->next ) {
+		if ( s->strid==id ) {
+		    s->setname = AddMacName(ttf,strlen,stroff,spec,language,s->setname);
+return;
+		}
+	    }
+	}
+    }
+    /* Well, there are some things in the name table other than feature/setting*/
+    /*  names. I'm not interested in them yet though */
+}
+
 static void TTFAddLangStr(FILE *ttf, struct ttfinfo *info, int id,
 	int strlen, int stroff,int plat,int spec,int language) {
     struct ttflangname *cur, *prev;
     unichar_t *str;
 
-    if ( id<0 || id>=ttf_namemax )
+    if ( plat==1 && id>=256 && info->features!=NULL ) {
+	MacFeatureAdd(ttf,info,id,strlen,stroff,spec,language);
+return;
+    } else if ( id<0 || id>=ttf_namemax )
 return;
 
     str = _readencstring(ttf,stroff,strlen,plat,spec,language);
@@ -765,25 +806,42 @@ return( NULL );
 return( ret );
 }
 
+static struct macname *reversemacnames(struct macname *mn) {
+    struct macname *next, *prev=NULL;
+
+    next = mn->next;
+    while ( next!=NULL ) {
+	mn->next = prev;
+	prev = mn;
+	mn = next;
+	next = mn->next;
+    }
+    mn->next = prev;
+return( mn );
+}
+
 static void readttfcopyrights(FILE *ttf,struct ttfinfo *info) {
     int i, cnt, tableoff;
     int platform, specific, language, name, str_len, stroff;
 
-    /* All I want here are the names of the font and its copyright */
-    fseek(ttf,info->copyright_start,SEEK_SET);
-    /* format selector = */ getushort(ttf);
-    cnt = getushort(ttf);
-    tableoff = info->copyright_start+getushort(ttf);
-    for ( i=0; i<cnt; ++i ) {
-	platform = getushort(ttf);
-	specific = getushort(ttf);
-	language = getushort(ttf);
-	name = getushort(ttf);
-	str_len = getushort(ttf);
-	stroff = getushort(ttf);
-
-	TTFAddLangStr(ttf,info,name,str_len,tableoff+stroff,
-		platform,specific,language);
+    if ( info->feat_start!=0 )
+	readmacfeaturemap(ttf,info);
+    if ( info->copyright_start!=0 ) {
+	fseek(ttf,info->copyright_start,SEEK_SET);
+	/* format selector = */ getushort(ttf);
+	cnt = getushort(ttf);
+	tableoff = info->copyright_start+getushort(ttf);
+	for ( i=0; i<cnt; ++i ) {
+	    platform = getushort(ttf);
+	    specific = getushort(ttf);
+	    language = getushort(ttf);
+	    name = getushort(ttf);
+	    str_len = getushort(ttf);
+	    stroff = getushort(ttf);
+    
+	    TTFAddLangStr(ttf,info,name,str_len,tableoff+stroff,
+		    platform,specific,language);
+	}
     }
 
     if ( info->copyright==NULL )
@@ -809,6 +867,16 @@ static void readttfcopyrights(FILE *ttf,struct ttfinfo *info) {
     }
     if ( info->fontname==NULL && info->fullname!=NULL )
 	info->fontname = stripspaces(copy(info->fullname));
+
+    if ( info->features ) {
+	MacFeat *mf;
+	struct macsetting *ms;
+	for ( mf=info->features; mf!=NULL; mf = mf->next ) {
+	    mf->featname = reversemacnames(mf->featname);
+	    for ( ms=mf->settings; ms!=NULL; ms=ms->next )
+		ms->setname = reversemacnames(ms->setname);
+	}
+    }
 }
 
 static void readttfpreglyph(FILE *ttf,struct ttfinfo *info) {
@@ -3909,6 +3977,8 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     sf->kerns = info->khead;
     sf->vkerns = info->vkhead;
     sf->possub = info->possub;
+    sf->sm = info->sm;
+    sf->features = info->features;
     sf->gentags = info->gentags;
     sf->script_lang = info->script_lang;
     sf->ttf_tables = info->tabs;
