@@ -864,7 +864,7 @@ static void MapFromCounterGroup(struct map *map,MetaFontDlg *meta,
 		} else if ( stem->start<zones[k].from && stem->start+stem->width>zones[k].from ) {
 		    map->mapping[i].from = stem->start;
 		    map->mapping[i++].to = zones[k].to-(newwidth*(zones[k].from-stem->start)/stem->width);
-		    map->mapping[i++].to = zones[k].to-newwidth;
+		    map->mapping[i++] = zones[k];
 		    map->mapping[i].from = stem->start+stem->width;
 		    map->mapping[i].to = map->mapping[i-2].to+newwidth;
 		    ++i;

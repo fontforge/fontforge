@@ -292,6 +292,7 @@ static int HVITest(struct problems *p,BasePoint *to, BasePoint *from,
 	Spline *spline, int hasia, double ia) {
     double yoff, xoff, angle;
     int ishor=false, isvert=false, isital=false;
+    int isto;
     int type;
     BasePoint *base, *other;
     static int hmsgs[5] = { _STR_ProbLineHor, _STR_ProbAboveHor, _STR_ProbBelowHor, _STR_ProbRightHor, _STR_ProbLeftHor };
@@ -314,10 +315,11 @@ static int HVITest(struct problems *p,BasePoint *to, BasePoint *from,
 	    isital = true;
     }
     if ( ishor || isvert || isital ) {
+	isto = false;
 	if ( &spline->from->me==from || &spline->from->me==to )
 	    spline->from->selected = true;
 	if ( &spline->to->me==from || &spline->to->me==to )
-	    spline->to->selected = true;
+	    spline->to->selected = isto = true;
 	if ( from==&spline->from->me || from == &spline->to->me ) {
 	    base = from; other = to;
 	} else {
@@ -333,13 +335,13 @@ static int HVITest(struct problems *p,BasePoint *to, BasePoint *from,
 		other = from;
 	    }
 	} else if ( abs(yoff)>abs(xoff) )
-	    type = yoff>0?1:2;
+	    type = ((yoff>0) ^ isto)?1:2;
 	else
-	    type = xoff>0?3:4;
+	    type = ((xoff>0) ^ isto)?3:4;
 	if ( ishor )
-	    ExplainIt(p,p->sc,hmsgs[type], base->y,other->y);
+	    ExplainIt(p,p->sc,hmsgs[type], other->y,base->y);
 	else if ( isvert )
-	    ExplainIt(p,p->sc,vmsgs[type], base->x,other->x);
+	    ExplainIt(p,p->sc,vmsgs[type], other->x,base->x);
 	else
 	    ExplainIt(p,p->sc,imsgs[type],0,0);
 return( true );
@@ -568,8 +570,8 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	    first = NULL;
 	    for ( spline = test->first->next; spline!=NULL && spline!=first && !p->finish; spline=spline->to->next ) {
 		if ( !spline->knownlinear ) {
-		    if ( !spline->to->noprevcp &&
-			    HVITest(p,&spline->to->me,&spline->to->prevcp,spline,
+		    if ( !spline->from->nonextcp &&
+			    HVITest(p,&spline->from->nextcp,&spline->from->me,spline,
 				hasia, ia)) {
 			changed = true;
 			if ( p->ignorethis ) {
@@ -579,8 +581,8 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 			if ( missingspline(p,test,spline))
   goto restart;
 		    }
-		    if ( !spline->from->nonextcp &&
-			    HVITest(p,&spline->from->nextcp,&spline->from->me,spline,
+		    if ( !spline->to->noprevcp &&
+			    HVITest(p,&spline->to->me,&spline->to->prevcp,spline,
 				hasia, ia)) {
 			changed = true;
 			if ( p->ignorethis ) {
