@@ -682,7 +682,7 @@ int hascomposing(SplineFont *sf,int u,SplineChar *sc) {
 		    *upt==0x0385 ||	/* dieresis/tonos */
 		    *upt==0x1ffe || *upt==0x1fbf || *upt==0x1fcf || *upt==0x1fdf ||
 		    *upt==0x1fbd || *upt==0x1fef || *upt==0x1fc0 || *upt==0x1fc1 ||
-		    *upt==0x1fee || *upt==0x1ffd || *upt==0x1fbe ||
+		    *upt==0x1fee || *upt==0x1ffd || *upt==0x1fbe || *upt==0x1fed ||
 		    *upt==0x1fcd || *upt==0x1fdd || *upt==0x1fce || *upt==0x1fde )	/* Special greek accents */
 return( true );
 	    /* Only build Jongsung out of chosung when doing a build composit */
