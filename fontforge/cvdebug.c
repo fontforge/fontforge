@@ -243,7 +243,7 @@ static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
     unichar_t ubuffer[100];
     int i, l, y, c;
     FT_Vector *pts;
-    int n, n_watch;
+    int n, n_watch, ph;
     char watched;
     TT_GlyphZoneRec *r;
     uint8 *watches;
@@ -259,6 +259,7 @@ static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 	n = r->n_points;
 	pts = show_current ? r->cur : r->org;
 	c = 0;
+	ph = FreeTypeAtLeast(2,1,8)?4:2;	/* number of phantom pts */
 
 	watches = DebuggerGetWatches(dv->dc,&n_watch);
 
@@ -273,7 +274,7 @@ static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 			    0x000000);
 	    }
 	    if ( i==0 ) l=n-5; else l=i-1;
-	    if ( !show_twilight && i<n-4 &&
+	    if ( !show_twilight && i<n-ph &&
 		    !(r->tags[i]&FT_Curve_Tag_On) && !(r->tags[l]&FT_Curve_Tag_On)) {
 		if ( show_grid )
 		    sprintf(buffer, "   : I    %.2f,%.2f",
@@ -289,7 +290,7 @@ static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 	    watched = i<n_watch && !show_twilight && watches!=NULL && watches[i] ? 'W' : ' ';
 	    if ( show_grid )
 		sprintf(buffer, "%3d: %c%c%c%c %.2f,%.2f", i,
-			show_twilight ? 'T' : i>=n-4? 'F' : r->tags[i]&FT_Curve_Tag_On?'P':'C',
+			show_twilight ? 'T' : i>=n-ph? 'F' : r->tags[i]&FT_Curve_Tag_On?'P':'C',
 			r->tags[i]&FT_Curve_Tag_Touch_X?'H':' ', r->tags[i]&FT_Curve_Tag_Touch_Y?'V':' ', watched,
 			pts[i].x/64.0, pts[i].y/64.0 );
 	    else
@@ -461,10 +462,13 @@ static void DVFigureNewState(DebugView *dv,TT_ExecContext exc) {
 	cv->gridfit = SplineSetsFromPoints(&exc->pts,dv->scale);
 	cv->raster = DebuggerCurrentRasterization(cv->gridfit,
 		(cv->sc->parent->ascent+cv->sc->parent->descent) / (real) cv->ft_ppem);
-	if ( exc->pts.n_points!=0 )
-	    cv->ft_gridfitwidth = exc->pts.cur[exc->pts.n_points-1].x * dv->scale;
-	else
+	if ( exc->pts.n_points<=2 )
 	    cv->ft_gridfitwidth = 0;
+	/* suport for vertical phantom pts */
+	else if ( FreeTypeAtLeast(2,1,8))
+	    cv->ft_gridfitwidth = exc->pts.cur[exc->pts.n_points-3].x * dv->scale;
+	else
+	    cv->ft_gridfitwidth = exc->pts.cur[exc->pts.n_points-1].x * dv->scale;
     }
 
     if ( cv!=NULL )
