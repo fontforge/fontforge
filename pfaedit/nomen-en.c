@@ -2343,7 +2343,7 @@ static char *str_NoBitmaps = "No Bitmap Strikes";
 static char *str_NoBitmapsInTTF = "No (useable) bitmap strikes in this TTF font: %hs";
 static char *str_NotInCollection = "Not in Collection";
 static char *str_FontNotInCollection = "%hs is not in %.100hs";
-static char *str_Untitled_n = "Untitled-%d";
+static char *str_UntitledAnchor_n = "Anchor-%d";
     /* sfd */
 static char *str_Saving = "Saving...";
 static char *str_SavingDb = "Saving Spline Font Database";

@@ -1936,7 +1936,7 @@ static char *str_NoBitmaps = "Pas de Bitmap";
 static char *str_NoBitmapsInTTF = "Pas de bitmap (utilisable) dans cette police ttf: %hs";
 static char *str_NotInCollection = "Pas dans la collection";
 static char *str_FontNotInCollection = "%hs n'est pas dans %.100hs";
-static char *str_Untitled_n = "Untitled-%d";
+static char *str_UntitledAnchor_n = "Ancre-%d";
     /* sfd */
 static char *str_Saving = "Enregistrement...";
 static char *str_SavingDb = "Enregistrement du fichier de Splines";

@@ -3735,7 +3735,7 @@ static AnchorClass **MarkGlyphsProcessMarks(FILE *ttf,int markoffset,
     SplineChar *sc;
 
     for ( i=0; i<classcnt; ++i ) {
-	u_snprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),GStringGetResource(_STR_Untitled_n,NULL),
+	u_snprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),GStringGetResource(_STR_UntitledAnchor_n,NULL),
 		info->anchor_class_cnt+i );
 	classes[i] = ac = chunkalloc(sizeof(AnchorClass));
 	ac->name = u_copy(ubuf);

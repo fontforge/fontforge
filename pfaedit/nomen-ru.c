@@ -1769,7 +1769,7 @@ static char *str_NoBitmaps = "No Bitmap Strikes"; /*new*/
 static char *str_NoBitmapsInTTF = "No (useable) bitmap strikes in this TTF font: %hs"; /*new*/
 static char *str_NotInCollection = "Not in Collection"; /*new*/
 static char *str_FontNotInCollection = "%hs is not in %.100hs"; /*new*/
-static char *str_Untitled_n = "Безымянное-%d";
+static char *str_UntitledAnchor_n = "Безымянное-%d";
     /* sfd */
 static char *str_Saving = "Сохранение...";
 static char *str_SavingDb = "Сохранение SFD (Spline Font Database)";

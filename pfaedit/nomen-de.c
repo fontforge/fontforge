@@ -54,4 +54,6 @@ static unichar_t mnemonic_Yes[] = 'J';
 static char str_No[] = "Nein";
 static unichar_t mnemonic_No[] = 'N';
 
+static char *str_UntitledAnchor_n = "Anker-%d";
+
 static int num_buttonsize = 60;

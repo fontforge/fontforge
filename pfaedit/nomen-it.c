@@ -1761,7 +1761,7 @@ static char *str_NoBitmaps = "Non ci sono bitmap";
 static char *str_NoBitmapsInTTF = "Non c'è nessuna bitmap (utilizzabile) in questo font ttf: %hs";
 static char *str_NotInCollection = "Non è nella collezione";
 static char *str_FontNotInCollection = "%hs non è in %.100hs";
-static char *str_Untitled_n = "Senza nome-%d";
+static char *str_UntitledAnchor_n = "Ancora-%d";
     /* sfd */
 static char *str_Saving = "Sto salvando...";
 static char *str_SavingDb = "Sto salvando un file di spline";

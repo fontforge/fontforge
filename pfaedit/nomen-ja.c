@@ -1945,7 +1945,7 @@ static char *str_NoBitmaps = "ビットマップがありません.";
 static char *str_NoBitmapsInTTF = "このTTFフォントには(利用可能な)ビットマップがありません: %hs";
 static char *str_NotInCollection = "TTCに含まれません.";
 static char *str_FontNotInCollection = "%hs は %.100hs に含まれません.";
-static char *str_Untitled_n = "Untitled-%d";
+static char *str_UntitledAnchor_n = "Untitled-%d";
     /* sfd */
 static char *str_Saving = "保存中...";
 static char *str_SavingDb = "Spline Font Database形式で保存中";
