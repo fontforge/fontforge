@@ -32,8 +32,9 @@
 BasePoint last_ruler_offset[2] = { {0,0}, {0,0} };
 
 static void RulerText(CharView *cv, unichar_t *ubuf) {
-    char buf[60];
+    char buf[80];
     real xoff = cv->info.x-cv->p.cx, yoff = cv->info.y-cv->p.cy;
+    real len = sqrt(xoff*xoff+yoff*yoff);
 
     if ( cv->autonomous_ruler_w ) {
 	xoff = last_ruler_offset[0].x;
@@ -43,15 +44,19 @@ static void RulerText(CharView *cv, unichar_t *ubuf) {
     if ( !cv->autonomous_ruler_w && !cv->p.pressed )
 	/* Give current location accurately */
 	sprintf( buf, "%f,%f", cv->info.x, cv->info.y);
-    else			/* Give displacement from press point */
-	sprintf( buf, "%.1f %.0f\260 (%.0f,%.0f)", sqrt(xoff*xoff+yoff*yoff),
+    else if ( len>1 )			/* Give displacement from press point */
+	sprintf( buf, "%.1f %.0f\260 (%.0f,%.0f)", len,
+		atan2(yoff,xoff)*180/3.1415926535897932,
+		xoff,yoff);
+    else
+	sprintf( buf, "%g %.0f\260 (%g,%g)", len,
 		atan2(yoff,xoff)*180/3.1415926535897932,
 		xoff,yoff);
     uc_strcpy(ubuf,buf);
 }
 
 static int RulerText2(CharView *cv, unichar_t *ubuf) {
-    char buf[60];
+    char buf[80];
     double len;
 
     if ( !cv->p.pressed )
@@ -59,11 +64,14 @@ return( false );
     if ( cv->p.sp!=NULL && cv->info_sp!=NULL &&
 	    ((cv->p.sp->next!=NULL && cv->p.sp->next->to==cv->info_sp) ||
 	     (cv->p.sp->prev!=NULL && cv->p.sp->prev->from==cv->info_sp)) ) {
-	 if ( cv->p.sp->next!=NULL && cv->p.sp->next->to==cv->info_sp )
-	     len = SplineLength(cv->p.sp->next);
-	 else
-	     len = SplineLength(cv->p.sp->prev);
-	sprintf( buf, "Spline Length=%.1f", len);
+	if ( cv->p.sp->next!=NULL && cv->p.sp->next->to==cv->info_sp )
+	    len = SplineLength(cv->p.sp->next);
+	else
+	    len = SplineLength(cv->p.sp->prev);
+	if ( len>1 )
+	    sprintf( buf, "Spline Length=%.1f", len);
+	else
+	    sprintf( buf, "Spline Length=%g", len);
 	uc_strcpy(ubuf,buf);
 return( true );
     }
@@ -72,7 +80,7 @@ return( false );
 
 static int ruler_e_h(GWindow gw, GEvent *event) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    unichar_t ubuf[60];
+    unichar_t ubuf[80];
 
     switch ( event->type ) {
       case et_expose:
@@ -91,7 +99,7 @@ return( true );
 }
 	
 static void RulerPlace(CharView *cv, GEvent *event) {
-    unichar_t ubuf[60];
+    unichar_t ubuf[80];
     int width, x;
     GRect size;
     GPoint pt;
