@@ -57,10 +57,12 @@ static int FixupSLI(int sli,SplineFont *from,SplineChar *sc) {
     /*  font. There are some cases when we don't know what the old font was. */
     /*  well, just make a reasonable guess */
 
-    if ( from==to )
-return( sli );
     if ( from==NULL )
 return( SFAddScriptLangIndex(to,SCScriptFromUnicode(sc),DEFAULT_LANG));
+    if ( from->cidmaster ) from = from->cidmaster;
+    if ( to->cidmaster ) to = to->cidmaster;
+    if ( from==to )
+return( sli );
 
     /* does the new font have exactly what we want? */
     i = 0;
@@ -137,7 +139,6 @@ SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into) {
     nsc->md = MinimumDistanceCopy(nsc->md);
     nsc->refs = RefCharsCopy(nsc->refs);
     nsc->views = NULL;
-    nsc->parent = NULL;
     nsc->changed = true;
     nsc->dependents = NULL;		/* Fix up later when we know more */
     nsc->backgroundsplines = NULL;
