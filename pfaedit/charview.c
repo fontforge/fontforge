@@ -2638,6 +2638,9 @@ return;
     /*  current point as it moves across the screen (jerkily) */
     if ( cv->active_tool == cvt_hand || cv->active_tool == cvt_freehand )
 	/* Don't snap to points */;
+    else if ( cv->active_tool == cvt_pointer &&
+	    ( cv->p.nextcp || cv->p.prevcp))
+	/* Don't snap to points when moving control points */;
     else if ( !cv->joinvalid || !CheckPoint(&fs,&cv->joinpos,NULL)) {
 	SplinePointList *spl;
 	spl = *cv->heads[cv->drawmode];
