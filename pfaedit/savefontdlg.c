@@ -1516,6 +1516,7 @@ return( 0 );
     GProgressChangeLine2(ufile=uc_copy(filename)); free(ufile);
 
     if ( sf->xuid!=NULL ) {
+	sprintf(buf,"%d",subfont);
 	temp.xuid = galloc(strlen(sf->xuid)+strlen(buf)+5);
 	strcpy(temp.xuid,sf->xuid);
 	pt = temp.xuid + strlen( temp.xuid )-1;
