@@ -218,6 +218,8 @@ static char str_ClearBackground[] = "背景をクリア(B)";
 static unichar_t mnemonic_ClearBackground[] = 'B';
 static char str_CopyFgToBg[] = "背景にコピー(F)";
 static unichar_t mnemonic_CopyFgToBg[] = 'F';
++static char str_CopyBgToFg[] = "前面にコピー(Y)";
++static unichar_t mnemonic_CopyBgToFg[] = 'Y';
 static char str_CopyGridFit = "グリッド合わせをコピー(D)";
 static unichar_t mnemonic_CopyGridFit = 'D';
 static char str_Merge[] = "合併(M)";
@@ -643,6 +645,7 @@ static unichar_t mnemonic_Xuid[] = 'X';
 static char str_NumGlyphs[] = "グリフの数(N):";
 static unichar_t mnemonic_NumGlyphs[] = 'N';
 static char str_CIDRegistry[] = "CIDレジストリ:";
+static char str_CIDSupplement[] = "補遺番号:";
 static char str_Guess[] = "推測(G)";
 static unichar_t mnemonic_Guess[] = 'G';
 static char str_Hist[] = "柱状図(H)";
@@ -2270,6 +2273,7 @@ static char *str_PrefsPopupPT  = "4文字のテーブルタグをカンマで区切ったリストを\
 static char *str_PrefsPopupUndo = "1個のグリフに格納されるアンドゥ/リドゥの最大回数";
 static char *str_PrefsPopupHLP = "ヘルプファイルの検索対象となるローカル\nシステム上のディレクトリ. ファイルが\n見つからない場合,FontForgeはネットを検索します";
 static char *str_PrefsPopupOSF = "Adobe製のOtherSubrs配列を自作の物に置き換えたい場合,\nこの変数の値を14個以内のPostScriptサブルーチンを含んだファイルの名前に設定してください.\n各サブルーチンの前には'%%%%'で始まる行を置かなければなりません(最初の'%%%%'行の\n前にあるテキストはすべて先頭に置く著作権表示として扱われます).\n最初の3個のサブルーチンはflexヒントで,その次はヒント置換です(これらは必ず存在する\n必要があります). 14個目(実際には0から始まるので第13番ですが)はカウンタヒント用です.\nサブルーチンは [ ] の対で囲んではなりません."
+static char *str_PrefsPopupFTR = "(利用可能なら)FreeTypeをフォントビューでの\nグリフのラスタライズに使用します.\n一般に,より良い表示品質が得られます."
 static char *str_PrefsPopupSAJ = "アウトラインビュー上で点をドラッグしすると,\n線を一体化することができます(2本の\n開いた輪郭線は,端点同士で結合可能です).\nこのフラグがオンのときは,結合が\n行われると,FontForgeは選択部分の移動を停止します\n(ユーザがマウスボタンを離した時と同様です).\nこれは指先が震えやすい人には便利です";
 static char *str_PrefsPopupUF = "変更を行うごとにflexヒントを表示する";
 static char *str_Generic[] = "一般";
@@ -2854,6 +2858,7 @@ static char *str_Random = "ランダム";
 static char *str_ATT = "ATT";
 static char *str_PointsNoC = "点";
 static char *str_Refs = "参照";
+static char *str_HintsNoC = "ヒント";
 static char *str_ClearAll = "すべてクリア";
 static char *str_SetAll = "すべてセット";
 static char *str_AdvanceWidth = "送り幅をチェック:";
@@ -3080,6 +3085,8 @@ static char mnemonic_TransformBackground = 'B';
 static char *str_TransformKernClass = "カーニングクラスも変形する(C)";
 static char mnemonic_TransformKernClass = 'C';
 static char *str_TransformSimplePosPair = "単純位置指定とカーニングペアも変形する(K)";
+static char str_RoundToInt[] = "座標値を整数に丸める(I)";
+static char mnemonic_RoundToInt='I';
 static char mnemonic_TransformSimplePosPair = 'K';
 static char *str_Warning = "警告する";
 static char *str_RotateSkewWarning = "グリフを回転させたり歪ませた後, [エレメント]→[極大点の追加]を行う必要があるはずです.";
@@ -3228,12 +3235,14 @@ static char *str_TTStack = "スタック(TrueType)";
 static char *str_TTStorage = "ストレージ(TrueType)";
 static char *str_TTPoints = "点(TrueType)";
 static char *str_TTCvt = "Cvt (TrueType)";
-static char *str_TTRaster = "現在のラスタ (TrueType)";
+static char *str_TTRaster = "現在のラスタ(TrueType)";
+static char *str_TTGloss = "命令の説明(TrueType)";
 static char *str_Registers = "レジスタ";
 static char *str_Stack = "スタック";
 static char *str_Storage = "ストレージ";
 static char *str_Cvt = "Cvt";
-+static char *str_Raster = "ラスタ";
+static char *str_Raster = "ラスタ";
+static char *str_Gloss = "説明";
 static char *str_Twilight = "Twilight";
 static char *str_Normal = "通常";
 static char *str_Current = "現在";
@@ -3686,6 +3695,29 @@ static char *str_OverlapBadDir = "グリフ%.40hsには,互いに反対向きの2本の輪郭線が
 static char *str_Mag = "倍率:";
 static char *str_Cor = "補正:";
 
+    /* palmfonts.c */
+static char *str_UnexpectedDensity = "密度が想定外の値です";
+static char *str_UnexpectedDensityLong = "指定されたビットマップフォントの1つである%dが,最小のフォント%dの整数倍ではありません(または倍率が大きすぎます)."
+static char *str_BadMetrics = "メトリックが不正です";
+static char *str_NoCorrespondingGlyph = "フォント%d,%dのどちらかにグリフ%dがありません"
+static char *str_GlyphKernsBadly = "フォント%dに含まれるグリフ%.30hsは左端が0よりも小さいか,送り幅よりも右・高さよりも上・深さよりも下のいずれかにはみ出しています"
+static char *str_AdvanceWidthBad = "In font %d the advance width of glyph %.30hs does not scale the base advance width properly, it shall be forced to the proper value"
+static char *str_AdvanceWidthBad = "フォント%dに含まれるグリフ%.30hsの送り幅は,基本フォントの送り幅に正確に縮小することができません. 適正な値に強制的に変更されます."
+static char *str_AdvanceWidthTooBig = "グリフ%.30hsの送り幅は127未満でなければなりません"
+static char *str_OnlyFirst256 = "エンコーディングの先頭に含まれる256文字のみが使用されます";
+/* On the palm, the word "density" is used to mean resolution */
+/* There are two flavors of fonts: low-res fonts (used on old palms) and */
+/*  multi-res fonts used on new palms. But new palms all seem to have high-res*/
+/*  displays, so there is no real point to having a multi-res font (or rather */
+/*  we want a multi-res font that only contains a high-res image). What we do */
+/*  want is two fonts: a low res font and a multi-res font containing only the*/
+/*  high res image */
+static char *str_WhatTypePalmFont = "どの種類のPalmフォントレコードが必要か?"
+static char *str_MultiDenFont = "複数密度フォント"
+static char *str_SingleDenHighDenFont = "単独フォントと高密度フォント"
+static char *str_SingleDenMultiDenFont = "単独フォントと複数密度フォント"
+static char *str_HighDenFont = "高密度フォント"
+
     /* Adjectives, etc. that are sometimes masculine and sometimes feminine in french (perhaps other langs) */
 static char str_NewDDD_fem[] = "新規(N)...";
 static unichar_t mnemonic_NewDDD_fem[] = 'N';
@@ -3694,4 +3726,4 @@ static char mnemonic_None_fem ='N';
  
 static int num_buttonsize = 80;
 static int num_ScaleFactor = 115;
-/* based on nomen-en.c:1.74 */
+/* based on nomen-en.c:1.89 */
