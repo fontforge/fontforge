@@ -27,6 +27,9 @@
 #ifdef __VMS
 #include <vms_x_fix.h>
 #endif
+
+#include "gxdrawP.h"
+
 #include <stdlib.h>
 #include <math.h>
 
@@ -40,11 +43,10 @@
 #include <sys/un.h>
 #endif
 
-#include "gxdrawP.h"
-#include "ustring.h"
-#include "utype.h"
+#include <ustring.h>
+#include <utype.h>
 #include "fontP.h"
-#include "gresource.h"
+#include <gresource.h>
 
 enum cm_type { cmt_default=-1, cmt_current, cmt_copy, cmt_private };
 
@@ -2271,7 +2273,7 @@ static void GXDrawSetGIC(GWindow w, GIC *_gic, int x, int y) {
     ((GXWindow) w)->gic = gic;
 }
 
-static int WindowOrParentsDying(GXWindow gw) {
+int _GXDraw_WindowOrParentsDying(GXWindow gw) {
     while ( gw!=NULL ) {
 	if ( gw->is_dying )
 return( true );
@@ -2287,7 +2289,7 @@ static void GXDrawRequestExpose(GWindow gw, GRect *rect,int doclear) {
     GXDisplay *display = (GXDisplay *) (gw->display);
     GRect temp;
 
-    if ( !gw->is_visible || WindowOrParentsDying(gxw) )
+    if ( !gw->is_visible || _GXDraw_WindowOrParentsDying(gxw) )
 return;
     if ( rect==NULL ) {
 	temp.x = temp.y = 0;
@@ -2545,6 +2547,10 @@ static void GXDrawWaitForEvent(GXDisplay *gdisp) {
 	gettimeofday(&tv,NULL);
 	GXDrawCheckPendingTimers(gdisp);
 
+#ifdef _WACOM_DRV_BROKEN
+	_GXDraw_Wacom_TestEvents(gdisp);
+#endif
+
 	if ( XEventsQueued(display,QueuedAfterFlush))
 return;
 #ifndef NOTHREADS
@@ -2576,6 +2582,13 @@ return;
 	    if ( gdisp->xthread.sync_sock>fd )
 		fd = gdisp->xthread.sync_sock;
 	}
+#ifdef _WACOM_DRV_BROKEN
+	if ( gdisp->wacom_fd!=-1 ) {
+	    FD_SET(gdisp->wacom_fd,&read);
+	    if ( gdisp->wacom_fd>fd )
+		fd = gdisp->wacom_fd;
+	}
+#endif
 #ifndef __VMS
 	ret = select(fd+1,&read,&write,&except,timeout);
 #endif
@@ -2649,7 +2662,7 @@ static void dispatchEvent(GXDisplay *gdisp, XEvent *event) {
 
     if ( XFindContext(gdisp->display,event->xany.window,gdisp->mycontext,(void *) &ret)==0 )
 	gw = (GWindow) ret;
-    if ( gw==NULL || (WindowOrParentsDying((GXWindow) gw) && event->type!=DestroyNotify ))
+    if ( gw==NULL || (_GXDraw_WindowOrParentsDying((GXWindow) gw) && event->type!=DestroyNotify ))
 return;
     if ( XFilterEvent(event,None))
 return;
@@ -2753,7 +2766,7 @@ return;
 	}
 
 	gdisp->last_event_time = event->xbutton.time;
-	gevent.u.mouse.time = event->xkey.time;
+	gevent.u.mouse.time = event->xbutton.time;
 	if ((redirect = InputRedirection(gdisp->input,gw))!=NULL ) {
 	    if ( event->type==ButtonPress )
 		GXDrawBeep((GDisplay *) gdisp);
@@ -3310,6 +3323,9 @@ static int GXDrawWaitForNotifyEvent(GXDisplay *gdisp,XEvent *event, Window w) {
     forever {
 	gettimeofday(&tv,NULL);
 	GXDrawCheckPendingTimers(gdisp);
+#ifdef _WACOM_DRV_BROKEN
+	_GXDraw_Wacom_TestEvents(gdisp);
+#endif
 #ifndef NOTHREADS
 	if ( gdisp->xthread.sync_sock!=-1 ) {
 	    pthread_mutex_lock(&gdisp->xthread.sync_mutex);
@@ -3355,6 +3371,13 @@ return( false );
 	    if ( gdisp->xthread.sync_sock>fd )
 		fd = gdisp->xthread.sync_sock;
 	}
+#ifdef _WACOM_DRV_BROKEN
+	if ( gdisp->wacom_fd!=-1 ) {
+	    FD_SET(gdisp->wacom_fd,&read);
+	    if ( gdisp->wacom_fd>fd )
+		fd = gdisp->wacom_fd;
+	}
+#endif
 #ifndef __VMS
 	ret = select(fd+1,&read,&write,&except,&offset);
 #endif
@@ -3988,6 +4011,10 @@ return( NULL );
 #endif
     XSetErrorHandler(/*gdisp->display,*/myerrorhandler);
     _GDraw_InitError((GDisplay *) gdisp);
+
+#ifdef _WACOM_DRV_BROKEN
+    _GXDraw_Wacom_Init(gdisp);
+#endif
 
 return( (GDisplay *) gdisp);
 }

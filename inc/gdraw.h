@@ -197,7 +197,7 @@ typedef struct gevent {
 	    int16 x,y;
 	    int16 button;
 	    int16 clicks;
-	    int32 pressure, xtilt, ytilt;
+	    int32 pressure, xtilt, ytilt, separation;
 	} mouse;
 	struct {
 	    GRect rect;
