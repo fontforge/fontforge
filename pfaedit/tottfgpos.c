@@ -2025,6 +2025,27 @@ return;
     }
 }
 
+static int gdefclass(SplineChar *sc) {
+    PST *pst;
+    AnchorPoint *ap;
+    
+    for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
+	if ( pst->type == pst_ligature )
+return( 2 );			/* Ligature */
+    }
+
+    ap=sc->anchor;
+    while ( ap!=NULL && (ap->type==at_centry || ap->type==at_cexit) )
+	ap = ap->next;
+    if ( ap!=NULL && (ap->type==at_mark || ap->type==at_basemark) )
+return( 3 );
+    else
+return( 1 );
+    /* I not quite sure what a componant glyph is. Probably something that */
+    /*  is not in the cmap table and is reference in other glyphs */
+    /* Anyway I never return class 4 */
+}
+
 void otf_dumpgdef(struct alltabs *at, SplineFont *sf) {
     /* In spite of what the open type docs say, this table does appear to be */
     /*  required (at least the glyph class def table) if we do mark to base */
@@ -2038,10 +2059,10 @@ void otf_dumpgdef(struct alltabs *at, SplineFont *sf) {
     /* All my example fonts contain a ligature caret list subtable, which is */
     /*  empty. Odd, but perhaps important */
     AnchorClass *ac;
-    AnchorPoint *ap;
     PST *pst;
     int i,j,k, lcnt;
     int pos, offset;
+    int cnt, start, last, lastval;
     SplineChar **glyphs;
 
     for ( ac = sf->anchor; ac!=NULL; ac=ac->next ) {
@@ -2087,6 +2108,33 @@ return;					/* No anchor positioning, no ligature carets */
 	/* Mark shouldn't conflict with anything */
 	/* Ligature is more important than Base */
 	/* Component is not used */
+#if 1		/* ttx can't seem to support class format type 1 so let's output type 2 */
+	for ( j=0; j<2; ++j ) {
+	    cnt = 0;
+	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 ) {
+		lastval = gdefclass(sf->chars[i]);
+		start = last = i;
+		for ( ; i<sf->charcnt; ++i ) {
+		    if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 ) {
+			if ( gdefclass(sf->chars[i])!=lastval )
+		break;
+			last = i;
+		    }
+		}
+		--i;
+		if ( j==1 ) {
+		    putshort(at->gdef,sf->chars[start]->ttf_glyph);
+		    putshort(at->gdef,sf->chars[last]->ttf_glyph);
+		    putshort(at->gdef,lastval);
+		}
+		++cnt;
+	    }
+	    if ( j==0 ) {
+		putshort(at->gdef,2);	/* class format 2, range list by class */
+		putshort(at->gdef,cnt);
+	    }
+	}
+#else
 	putshort(at->gdef,1);	/* class format 1 complete list of glyphs */
 	putshort(at->gdef,0);	/* First glyph */
 	putshort(at->gdef,at->maxp.numGlyphs );
@@ -2094,21 +2142,10 @@ return;					/* No anchor positioning, no ligature carets */
 	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 ) {
 	    for ( ; j<sf->chars[i]->ttf_glyph; ++j )
 		putshort(at->gdef,1);	/* Any hidden characters (like notdef) default to base */
-	    for ( pst=sf->chars[i]->possub; pst!=NULL; pst=pst->next ) {
-		if ( pst->type == pst_ligature )
-	    break;
-	    }
-	    ap=sf->chars[i]->anchor;
-	    while ( ap!=NULL && (ap->type==at_centry || ap->type==at_cexit) )
-		ap = ap->next;
-	    if ( pst!=NULL )
-		putshort(at->gdef,2);		/* ligature */
-	    else if ( ap!=NULL && (ap->type==at_mark || ap->type==at_basemark) )
-		putshort(at->gdef,3);		/* mark */
-	    else
-		putshort(at->gdef,1);		/* base */
+	    putshort(at->gdef,gdefclass(sf->chars[i]));
 	    ++j;
 	}
+#endif
     }
     pos = ftell(at->gdef);
     fseek(at->gdef,8,SEEK_SET);			/* location of lig caret table offset */
