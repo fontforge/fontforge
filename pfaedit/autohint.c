@@ -783,8 +783,10 @@ return( e->coordmax[major]-e->coordmin[major] );
 	if ( ddown<1 && ddown<dup ) ddown = 0;
 	if ( dup<1 && dup<ddown ) dup =0;
     }
+#if 0
     if ( (dup<0 && ddown<0) || ( dup>0 && ddown>0 ))
 	fprintf( stderr, "Bad values in IsEdgeHorVertHere dup=%g, ddown=%g\n", dup, ddown );
+#endif
     if ( dup<0 || ddown>0 ) {	/* one might be 0, so test both */
 	*down = dup;
 	*up = ddown;
@@ -792,8 +794,10 @@ return( e->coordmax[major]-e->coordmin[major] );
 	*down = ddown;
 	*up = dup;
     }
+#if 0
     if ( *up<0 || *down>0 )
 	fprintf( stderr, "Bad values in IsEdgeHorVertHere dup=%g, ddown=%g\n", dup, ddown );
+#endif
 return( dup+ddown );
 }
 
@@ -963,7 +967,9 @@ static void _StemAddBrief(StemInfo *new, real mstart, real mend ) {
 
     if ( mend<=mstart ) {
 	real temp;
+#if 0
 	fprintf( stderr, "Bad values in StemAddBrief, mstart=%g mend=%g\n", mstart, mend);
+#endif
 	/* Have to add some HI, else we might crash later */
 	temp = mstart;
 	mstart = mend;
@@ -1813,7 +1819,8 @@ static StemInfo *StemRemoveWiderThanLong(StemInfo *stems,real big) {
 
     for ( p=NULL, s=stems; s!=NULL; s = sn ) {
 	sn = s->next;
-	if ( (s->linearedges || s->width>big) && s->width>HIlen(s)) {
+	if ( (s->linearedges || s->width>big || !(s->haspointleft || s->haspointright)) &&
+		s->width>HIlen(s)) {
 	    if ( p==NULL )
 		stems = sn;
 	    else

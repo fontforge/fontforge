@@ -122,11 +122,13 @@ return( false );
 	if ( strcmp(entry->d_name,".")==0 || strcmp(entry->d_name,"..")==0 )
     continue;
 	sprintf(buffer,"%s/%s",recoverdir,entry->d_name);
+	fprintf( stderr, "Recovering from %s... ", buffer);
 	if ( (sf = SFRecoverFile(buffer)) ) {
 	    any=true;
 	    if ( sf->fv==NULL )		/* Doesn't work, cli arguments not parsed yet */
 		FontViewCreate(sf);
 	}
+	fprintf( stderr, " Done\n" );
     }
     closedir(dir);
 return( any );

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 15-Dec-2002 -->
+  <!-- AP: Last modified: 21-Jan-2003 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -913,7 +913,8 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     ScaleToEm(ascent,descent)
   <DD>
     Change the font's ascent and descent and scale everything in the font to
-    be in the same proportion to the new em value that it was to the old value.
+    be in the same proportion to the new em (which is the sum of ascent and descent)
+    value that it was to the old value.
   <DT>
     ExpandStroke(width)<BR>
     ExpandStroke(width,line cap, line join)

@@ -786,8 +786,8 @@ return( NULL );
 		}
 		if ( modi<cnt ) {
 		    if ( mapping[modi]!=-1 && !warned ) {
-			fprintf( stderr, "Warning: Encoding %d is mapped to at least two sub-fonts (%d and %d)\n Only one will be used here.\n",
-				i, subfilecnt, mapping[modi]);
+			fprintf( stderr, "Warning: Encoding %d (%x) is mapped to at least two locations (%s@0x%02x and %s@0x%02x)\n Only one will be used here.\n",
+				i, i, names[subfilecnt], thusfar, names[(mapping[modi]>>8)], mapping[modi]&0xff );
 			warned = true;
 		    }
 		    mapping[modi] = (subfilecnt<<8) | thusfar++;
@@ -839,9 +839,9 @@ static int SaveSubFont(SplineFont *sf,char *newname,int32 *sizes,int res,
 	    if ( _sf->chars[i]!=NULL ) {
 		_sf->chars[i]->parent = &temp;
 		_sf->chars[i]->enc = mapping[i]&0xff;
+		++used;
 	    }
 	    chars[mapping[i]&0xff] = _sf->chars[i];
-	    ++used;
 	} else
 	    chars[mapping[i]&0xff] = NULL;
     }
@@ -901,6 +901,10 @@ return( 0 );
 	}
     }
     temp.fontname = copy(spt);
+    temp.fullname = galloc(strlen(temp.fullname)+strlen(names[subfont])+3);
+    strcpy(temp.fullname,sf->fullname);
+    strcat(temp.fullname," ");
+    strcat(temp.fullname,names[subfont]);
     strcat(spt,".pfb");
     GProgressChangeLine2(ufile=uc_copy(filename)); free(ufile);
 
@@ -936,6 +940,7 @@ return( 0 );
 	free(temp.chars);
     free( temp.xuid );
     free( temp.fontname );
+    free( temp.fullname );
     free( filename );
 return( err );
 }
