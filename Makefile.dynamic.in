@@ -41,6 +41,7 @@ install: $(sharedir)
 	cp pfaedit/sfddiff $(bindir)
 	cp pfaedit/pfaedit.*.ui $(sharedir)
 	cp $(srcdir)/pfaedit/pfaedit.1 $(mandir)/man1
+	cp $(srcdir)/pfaedit/sfddiff.1 $(mandir)/man1
 	-rm $(libdir)/libgdraw.so* $(libdir)/libgunicode.so.*
 	cp .libs/*.so.1.0 $(libdir)
 	ln -s libgdraw.so.1.0 $(libdir)/libgdraw.so.1
@@ -54,6 +55,7 @@ uninstall:
 	-rm $(bindir)/sfddiff
 	-rm $(sharedir)/pfaedit.*.ui
 	-rm $(mandir)/man1/pfaedit.1
+	-rm $(mandir)/man1/sfddiff.1
 	-rm $(libdir)/libgdraw.so*
 	-rm $(libdir)/libgunicode.so*
 #	-rm $(sharedir)/*.cidmap

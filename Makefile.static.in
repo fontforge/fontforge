@@ -42,6 +42,7 @@ install: $(sharedir)
 	cp pfaedit/sfddiff $(bindir)
 	cp pfaedit/pfaedit.*.ui $(sharedir)
 	cp $(srcdir)/pfaedit/pfaedit.1 $(mandir)/man1
+	cp $(srcdir)/pfaedit/sfddiff.1 $(mandir)/man1
 #	cp $(srcdir)/*.cidmap $(sharedir)
 
 uninstall:
@@ -49,6 +50,7 @@ uninstall:
 	-rm $(bindir)/sfddiff
 	-rm $(sharedir)/pfaedit.*.ui
 	-rm $(mandir)/man1/pfaedit.1
+	-rm $(mandir)/man1/sfddiff.1
 #	-rm $(sharedir)/*.cidmap
 
 $(sharedir):

@@ -1,5 +1,5 @@
 .\"	man page for pfaedit by tom harvey, subsequently modified by george
-.Dd September 5, 2001
+.Dd March 9, 2002
 .Dt PFAEDIT 1
 .Os
 .Sh NAME
@@ -8,12 +8,21 @@
 .Sh SYNOPSIS
 .Nm
 .Op Fl new
-.Op Fl recover={none|auto|clean}
-.Nm ""
+.Op Fl recover Ar {none|auto|clean}
+.Op Fl script Ar scriptfile
+.Op Fl help
+.Op Fl usage
+.Op Fl version
+.Op Fl nosplash
+.Op Fl display Ar name
+.Op Fl depth Ar val
+.Op Fl vc Ar type
+.Op Fl sync
+.Op Fl keyboard Ar ibm|mac|sun|ppc
 .Ar fontname
 .Sh DESCRIPTION
 .Nm
-allows you to create and modify PostScript fonts. You can save fonts in
+allows you to create and modify PostScript and TrueType fonts. You can save fonts in
 several different PostScript formats as well as TrueType, OpenType and CID-keyed fonts.
 It will also generate bitmaps.
 .Pp
@@ -30,6 +39,62 @@ in case the crash recovery itself causes problems. -recover=none will not attemp
 to recover from crashes on this run, while -recover=clean will delete any
 recovery information.
 .Pp
+If the
+.Fl script
+flag is specified then the following argument will be treated as the filename
+of a script file, which will be executed.
+.Nm will not open the X display
+and it will pass any other command line arguments to the script file.
+.Pp
+.Fl help
+will list the available options and fork off a browser looking at the online
+documentation. If you have installed the docs locally it will search for them
+in /usr/share/doc/pfaedit (or whatever other location was compiled in), if not
+it will search for them online.
+.Pp
+.Fl usage
+will list the available options.
+.Pp
+.Fl version
+will display the current version of
+.Nm
+(a six digit string containing
+the date stamp of the source files).
+.Pp
+.Fl nosplash
+will not display the splash screen.
+.Pp
+The
+.Fl display 
+flag must be followed by a display-name argument (localhost:0) and allows you
+to specify the display.
+.Pp
+The
+.Fl depth 
+flag must be followed by an integer specifing a pixel depth supported by the
+current X server.
+.Nm
+will attempt to find a visual that matches this depth, and if found will use it.
+.Pp
+The
+.Fl vc 
+flag must be followed by either the name of a visual class or an integer enumerating
+a visual class.
+.Nm
+will attempt to find a visual that matches this class, and if found will use it.
+.Pp
+.Fl sync
+flag will make X synchronous. This is mostly for debugging. It slows X down.
+.Pp
+The
+.Fl keyboard 
+flag must be followed by one of the keywords "ibm", "mac", "sun" or "ppc".
+If specified
+.Nm
+will alter its menus to display modifier keys appropriate for that system. (ppc
+assumes you have a mac keyboard and are running SuSe linux. The mappings are
+different from those used by X on Mac OS/X. Annoying).
+.Pp
 If a
 .Ar fontname
 is given,
@@ -38,13 +103,23 @@ will open a font view looking at each font you selected. This may be a binary
 or ascii PostScript type1 font (.pfa or .pfb extensions) or one of pfaedit's
 spline font database files (.sfd extension), or even a PostScript type 0 font
 (.ps extension, though the encoding will probably be lost here), a true type
-font (.ttf), an opentype font (.otf), a CID-keyed font or a bitmap font (.bdf).
+font (.ttf), an opentype font (.otf), a CID-keyed font (.cid, .otf) or a bitmap font (.bdf).
 .Pp
 Without flags or arguments,
 .Nm
 will open a file picker dialog and allow you to browse your disk to find the
 appropriate font file, or create a new one.
-.\" .Sh ENVIRONMENT
+.Sh ENVIRONMENT
+If any of the following environment variables exist, they are used by
+.Nm pfaedit :
+.Bl -tag -width BROWSER
+.It Ev BROWSER
+Specifies the name of a browser program for examining documentation.
+.El
+.Bl -tag -width AUTOTRACE
+.It Ev AUTOTRACE
+Specifies the location of the autotrace program.
+.El
 .Sh FILES
 .Bl -tag -width ~/.PfaEdit/autosave/ -compact
 .It Pa ~/.PfaEdit/autosave/
@@ -53,6 +128,10 @@ crash recovery directory
 .Bl -tag -width /usr/share/pfaedit/*.ui -compact
 .It Pa /usr/share/pfaedit/*.ui
 translations for the user interface
+.El
+.Bl -tag -width /usr/share/doc/pfaedit/*.html -compact
+.It Pa /usr/share/doc/pfaedit/*.html
+optional location for online documentation.
 .El
 .Bl -tag -width *.cidmap -compact
 .It Pa *.cidmap
@@ -70,4 +149,6 @@ The pfaedit user manual, at
 .Sh AUTHOR
 George Williams
 .Sh BUGS
-No doubt many. But unknown (and ever changing).
+No doubt many. But unknown (and ever changing). See
+.Pa http://pfaedit.sourceforge.net/#known-bugs
+for a current list.

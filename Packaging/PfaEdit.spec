@@ -50,6 +50,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/sfddiff
 %{_bindir}/../share/pfaedit/
 %{_mandir}/man1/pfaedit.1*
+%{_mandir}/man1/sfddiff.1*
 %doc LICENSE README
 
 %changelog
