@@ -2448,8 +2448,7 @@ static void FVMenuAutoHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FVAutoHint( (FontView *) GDrawGetUserData(gw), removeOverlap );
 }
 
-static void FVMenuClearHints(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVClearHints(FontView *fv) {
     int i;
 
 #if 0
@@ -2480,6 +2479,11 @@ static void FVMenuClearHints(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #if 0
     GProgressEndIndicator();
 #endif
+}
+
+static void FVMenuClearHints(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    FVClearHints(fv);
 }
 
 static void FVMenuClearWidthMD(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -5384,6 +5388,9 @@ void FVFakeMenus(FontView *fv,int cmd) {
 
       case 200:
 	FVAutoHint(fv,true);
+      break;
+      case 201:
+	FVClearHints(fv);
       break;
     }
 }
