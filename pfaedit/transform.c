@@ -441,8 +441,8 @@ static void MakeTransBlock(TransData *td,int bnum) {
     gcd[15].gd.cid = CID_YPercent;
     gcd[15].creator = GLabelCreate;
 
-    gcd[16].gd.pos.x = 1; gcd[16].gd.pos.y = 1;
-    gcd[16].gd.pos.width = TBlock_Width-2; gcd[16].gd.pos.height = TBlock_Height-2;
+    gcd[16].gd.pos.x = 2; gcd[16].gd.pos.y = 1;
+    gcd[16].gd.pos.width = TBlock_Width-3; gcd[16].gd.pos.height = TBlock_Height-2;
     gcd[16].gd.flags = gg_enabled | gg_visible;
     gcd[16].data = (void *) -1;
     gcd[16].creator = GGroupCreate;
