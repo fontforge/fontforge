@@ -1335,6 +1335,7 @@ static void GXDrawResize(GWindow w, int32 width, int32 height) {
     if ( gw->is_toplevel ) {
 	XSizeHints s_h;
 	/* for some reason the USPosition bit gets unset if I just set the width */
+	s_h.flags = -1;		/* I don't know if this is needed, but let's be paranoid */
 	XGetNormalHints(gw->display->display,gw->w,&s_h);
 	s_h.flags |= USSize;
 	s_h.width = width;
