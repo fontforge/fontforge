@@ -33,6 +33,8 @@
 #include <ustring.h>
 #include <stdio.h>
 
+#ifndef HAVE_ICONV_H
+
 /* I have written an limited iconv which will convert either to or from UCS2 */
 /*  it will not convert latin1 to latin2, but latin1->UCS2, UCS2->latin2 */
 /*  it uses the encodings built into libgunicode for systems with no iconv */
@@ -571,3 +573,6 @@ return( (size_t) -1 );
     }
 return( char_cnt );
 }
+#else
+static const int a_file_must_define_something=1;
+#endif 	/* HAVE_ICONV_H */
