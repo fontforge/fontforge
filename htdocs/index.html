@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 10-Dec-2001 -->
+  <!-- AP: Last modified: 11-Dec-2001 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -74,11 +74,14 @@ know when you do</A>.
     <A HREF="pfaedit-011209.tgz">Download pfaedit linux-i386 Redhat 7.1
     </A><A NAME="downloads">executable</A> Version: 9-Dec-2001
   <LI>
-    <A HREF="pfaedit-solaris-011102.tgz">Download pfaedit Solaris 8.0
-    </A>executable Version: 2-Nov-2001
+    <A HREF="pfaedit-solaris-011210.tgz">Download pfaedit Solaris 8.0
+    </A>executable Version: 10-Dec-2001
   <LI>
     <A HREF="pfaedit-011102-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
-    Version: 2-Nov-2001
+    Version: 2-Nov-2001 (Redhat 7.1)
+  <LI>
+    <A HREF="pfaedit-011203-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
+    Version: 3-Dec-2001 (Suse 7.2)
   <LI>
     <A HREF="pfaedit-011201-1.ppc.rpm">Download pfaedit linux-ppc suse 7.1
     </A>binary rpm Version: 1-Dec-2001
@@ -107,22 +110,22 @@ If you want to edit CID keyed fonts you need these
 <P>
 You can download a <A HREF="pfaedit-011201-1.src.rpm">source RPM</A>: Version:
 1-Dec-2001<BR>
-Or you can download the following three packages. Version: 9-Dec-2001
+Or you can download the following three packages. Version: 11-Dec-2001
 <UL>
   <LI>
-    <A HREF="libgunicode-011203.tgz">Unicode library source</A> (3-Dec-2001)<BR>
+    <A HREF="libgunicode-011211.tgz">Unicode library source</A> (11-Dec-2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGUnicode/index.html">docs</A>
   <LI>
-    <A HREF="libgdraw-011203.tgz">Unicode widget library source</A>
-    (3-Dec-2001)<BR>
+    <A HREF="libgdraw-011211.tgz">Unicode widget library source</A>
+    (11-Dec-2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
   <LI>
-    <A HREF="pfaedit_src-011209.tgz">Pfaedit source</A> (9-Dec-2001)<BR>
+    <A HREF="pfaedit_src-011211.tgz">Pfaedit source</A> (11-Dec-2001)<BR>
     -- <A HREF="overview.html">docs</A>
   <LI>
-    <A HREF="pfaedit_full-011209.tgz">All three bundled together </A>(9-Dec-2001)
+    <A HREF="pfaedit_full-011211.tgz">All three bundled together </A>(11-Dec-2001)
 </UL>
 <P>
 If you want to do autotracing around character images you should also download
@@ -232,6 +235,25 @@ up into one <A HREF="pfaedit_htdocs-011116.tgz">tgz file</A> 16-Nov-2001.
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    11-Dec-2001
+    <UL>
+      <LI>
+	Fixed a crash if there were no .cidmap files and PfaEdit was not installed
+	in a directory named bin.
+      <LI>
+	Cleaned up the distribution a bit per Werner's requests
+      <LI>
+	Added a ScreenWidthCentimeters resource
+    </UL>
+  <LI>
+    10-Dec-2001
+    <UL>
+      <LI>
+	Fixed a crash when adding (manually) a minimum distance hint to the width.
+      <LI>
+	Fixed a bug in the configure script which caused it to fail on solaris
+    </UL>
   <LI>
     9-Dec-2001
     <UL>
@@ -938,8 +960,8 @@ Other font links
     <A HREF="http://partners.adobe.com/asn/developer/type/corporateuse.txt">Adobe's
     corporate use extensions</A>
   <LI>
-    <A HREF="http://www.egt.ie/standards/iso10646/bmp-roadmap-table.html">Pictures
-    of the characters</A>
+    <A HREF="http://www.unicode.org/roadmaps/bmp-3-1.html">Pictures of the
+    characters</A>
   <LI>
     <A HREF="http://partners.adobe.com/asn/developer/type/unicodegn.html">Postscript
     Unicode names</A>

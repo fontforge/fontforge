@@ -142,7 +142,14 @@ return( false );
 
     avgwid = strtol(pt+1,&pos,10);		/* get the average width. We don't care about it, but it can tell us if the font is scaled */
     pt = pos;
+ /* fonts with avgwid==0 and pixelh!=0 appear to be some weird transients of */
+ /*  scaling (or something). If we ask for them again we probably won't find */
+ /*  them (or if we do they won't have metrics), and that makes us very unhappy */
+ /*  so best just to ignore them now */
     if ( *pt!='-' || (pixelh!=0 && avgwid==0))
+return( false );
+ /* This is a scaleable bitmap. They look ugly when scaled, so don't accept them */
+    if ( pixelh==0 && screenw!=0 )
 return( false );
 
     uc_strcpy(map,pt+1);

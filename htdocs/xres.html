@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 21-Jan-2001 -->
-  <!-- AP: Last modified: 1-Dec-2001 -->
+  <!-- AP: Last modified: 11-Dec-2001 -->
   <TITLE>X Resources</TITLE>
 </HEAD>
 <BODY>
@@ -30,13 +30,18 @@ then the program will look at it.
     A list of font family names to be used in the font view to display an example
     character over each user character.
   <DT>
-    <CODE>Gdraw.ScreenWidthInches</CODE>
+    <CODE>Gdraw.ScreenWidthCentimeters</CODE>
   <DD>
-    A double. (inches)<BR>
+    A double. (centimeters)<BR>
     X usually does not know the physical width of a screen (it knows the logical,
     pixel width). Gdraw's internals are based on points rather than pixels, and
     it will sometimes pick a font that is too small or too large if it relies
     on X's idea of how wide the screen is.
+  <DT>
+    <CODE>Gdraw.ScreenWidthInches</CODE>
+  <DD>
+    A double. (inches)<BR>
+    Same as the above, except measured in inches.
   <DT>
     <CODE>Gdraw.ScreenWidthPixels</CODE>
   <DD>
