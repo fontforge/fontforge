@@ -242,8 +242,6 @@ return( NULL );
 	}
     }
     *len = pt-rle;
- for ( i=0; i<*len; ++i )
-  printf( "%d%c", rle[i], (i&0xf)==15? '\n' : ' ' );
 return( rle );
 }
 
