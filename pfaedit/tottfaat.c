@@ -44,7 +44,7 @@ void aat_dumpacnt(struct alltabs *at, SplineFont *sf) {
 
 
 void ttf_dumpkerns(struct alltabs *at, SplineFont *sf) {
-    int i, cnt, j, k, m, threshold;
+    int i, cnt, j, k, m, threshold=0;
     KernPair *kp;
     uint16 *glnum, *offsets;
 
