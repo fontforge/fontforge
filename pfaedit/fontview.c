@@ -4150,15 +4150,10 @@ static void FVChar(FontView *fv,GEvent *event) {
 	    pos = 0;
 	    if ( fv->sf->top_enc!=-1 && fv->sf->top_enc<fv->sf->charcnt )
 		pos = fv->sf->top_enc;
-	    else for ( i=0; i<fv->sf->charcnt; ++i )
-		if ( fv->sf->chars[i]!=NULL &&
-			(fv->sf->chars[i]->unicodeenc=='A' ||
-			 fv->sf->chars[i]->splines!=NULL ||
-			 fv->sf->chars[i]->refs!=NULL ||
-			 fv->sf->chars[i]->widthset )) {
-		     pos = i;
-	     break;
-		 }
+	    else {
+		pos = SFFindChar(fv->sf,'A',NULL);
+		if ( pos==-1 ) pos = 0;
+	    }
 	  break;
 	  case GK_Page_Up: case GK_KP_Page_Up:
 #if GK_Prior!=GK_Page_Up
@@ -4440,9 +4435,8 @@ static void FVResize(FontView *fv,GEvent *event) {
 	topchar = fv->sf->top_enc;
     else {
 	/* Position on 'A' if it exists */
-	for ( topchar=fv->sf->charcnt-1; topchar>0; --topchar )
-	    if ( fv->sf->chars[topchar]!=NULL && fv->sf->chars[topchar]->unicodeenc=='A' )
-	break;
+	topchar = SFFindChar(fv->sf,'A',NULL);
+	if ( topchar==-1 ) topchar = 0;
     }
     if ( (event->u.resize.size.width-
 		GDrawPointsToPixels(fv->gw,_GScrollBar_Width)-1)%fv->cbw!=0 ||
