@@ -83,7 +83,7 @@ static KernPair *KernsCopy(KernPair *kp,int *mapping,SplineFont *into,SplineFont
     while ( kp!=NULL ) {
 	if ( (index=mapping[kp->sc->enc])>=0 && index<into->charcnt &&
 		into->chars[index]!=NULL ) {
-	    new = chunkalloc(sizeof(KernPair));
+	    new = gcalloc(1,sizeof(KernPair));
 	    new->off = kp->off;
 	    new->sc = into->chars[index];
 	    if ( head==NULL )
@@ -785,6 +785,29 @@ static SplineSet *InterpSplineSets(SplineSet *base, SplineSet *other, real amoun
 return( head );
 }
 
+static KernPair *InterpKerns(KernPair *kp1, KernPair *kp2, real amount, SplineFont *new) {
+    KernPair *head=NULL, *last, *nkp, *k;
+
+    if ( kp1==NULL || kp2==NULL )
+return( NULL );
+    while ( kp1!=NULL ) {
+	for ( k=kp2; k!=NULL && k->sc->enc!=kp1->sc->enc; k=k->next );
+	if ( k!=NULL ) {
+	    if ( k==kp2 ) kp2 = kp2->next;
+	    nkp = gcalloc(1,sizeof(KernPair));
+	    nkp->sc = new->chars[k->sc->enc];
+	    nkp->off = kp1->off + amount*(k->off-kp1->off);
+	    if ( head==NULL )
+		head = nkp;
+	    else
+		last->next = nkp;
+	    last = nkp;
+	}
+	kp1 = kp1->next;
+    }
+return( head );
+}
+
 static void InterpolateChar(SplineFont *new, int enc, SplineChar *base, SplineChar *other, real amount) {
     SplineChar *sc;
 
@@ -853,6 +876,12 @@ return;
 	    if ( other->chars[index]!=NULL )
 		InterpolateChar(new,i,base->chars[i],other->chars[index],amount);
 	}
+    }
+    /* Only do kerns if the encodings match. Too hard otherwise */
+    if ( base->encoding_name==other->encoding_name ) {
+	for ( i=0; i<base->charcnt && i<other->charcnt; ++i )
+	    if ( new->chars[i]!=NULL )
+		new->chars[i]->kerns = InterpKerns(base->chars[i]->kerns,other->chars[i]->kerns,amount,new);
     }
     InterpFixupRefChars(new);
     new->changed = true;
