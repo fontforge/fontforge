@@ -1,0 +1,80 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 9-Mar-2005 -->
+  <!-- AP: Last modified: 9-Mar-2005 -->
+  <TITLE>Palm fonts</TITLE>
+</HEAD>
+<BODY>
+<H1>
+  Palm fonts
+</H1>
+<P>
+Fonts on the palm pilot are rather limited. Each strike is stored in its
+own record of a database with no name or indication of whether it is connected
+to any other font (ie. there is no concept of a family of fonts. Each strike
+is alone).
+<P>
+On old palm pilots the font data structure stored a strike for a single screen
+resolution. On newer pilots there is a different data structure which can
+store multiple strikes for several screen resolutions (called "density" on
+the palm).
+<P>
+The new style font is unusable (causes crashes) on old palms. I am told that
+the old style font causes crashes on new systems.
+<P>
+I'm told that at the moment new systems are all the same (high) density (so
+there is currently no need for a multi-density font -- what is needed is
+a single (high) density font in a multi-density wrapper).
+<P>
+I am told that to be portable an application currently needs to supply an
+old style low-res font for old style palms, and a new-style font containing
+just a high-res strike.
+<P>
+The palm OS reference documents the following densities:
+<UL>
+  <LI>
+    single
+  <LI>
+    one and a half
+  <LI>
+    double
+  <LI>
+    triple
+  <LI>
+    quadruple
+</UL>
+<P>
+I'm told that only single and double are actually used. FontForge does not
+support the 1.5 density font.
+<P>
+If you want to generate an old-style (low-res) palm font you should specify
+a single strike size in the Generate Font bitmap sizes field.
+<P>
+If you specify two or more strike sizes in the bitmap sizes field then all
+sizes must be a small integer multiple (1,2,3,4) of the smallest strike.
+A dlg will come up asking whether you want these strikes:
+<UL>
+  <LI>
+    All within a multi-density font
+  <LI>
+    All (except the smallest) within a multi-density font -- FontForge calls
+    this a high density font
+  <LI>
+    An old style low-res font containing the smallest strike in the first record
+    of the database file and a new style multi density font containing all strikes
+    within the second record of the generated file.
+  <LI>
+    An old style low-res font containing the smallest strike in the first record
+    of the database file and a new style multi density font containing all strikes
+    <EM>except the smallest</EM> within the second record of the generated file.
+</UL>
+<P>
+I believe the last format to be the most useful. This is the default, and
+is the format used for the script Generate command.
+<P>
+Note: You must include the low-density strike. This strike defines the metrics
+for all the others. However you may generate a font which does not include
+this strike (the second choice in the list above).
+<P>
+</BODY></HTML>

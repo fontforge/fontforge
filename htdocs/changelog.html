@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 9-Feb-2005 -->
+  <!-- AP: Last modified: 9-Mar-2005 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -11,6 +11,89 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    9-Mar-2005
+    <UL>
+      <LI>
+	Deleting a glyph class within a kerning by classes object caused a crash
+      <LI>
+	Added some support for palm bitmap fonts
+      <LI>
+	Replace with reference only replaced the first instance.
+      <LI>
+	The Options dlg behaved oddly with respect to Apple &amp; OpenType modes
+      <LI>
+	When given a glyph with conflicting hints for which the first contour contained
+	no hints, then in type2 output the glyph was drawn at a strange offset from
+	its correct position.
+      <LI>
+	When generating an opentype font from a script, and specifying flags, the
+	round coordinates flag was ignored
+      <LI>
+	When generating a font from a script using the default flag setting, we would
+	always generate afm/tfm/pfm files
+      <LI>
+	KANOU pointed out that the stroked font import glyph command only worked
+	if multilayer set.
+      <LI>
+	Added a preview bitmap to eps files.
+      <LI>
+	In a bitmap only font the font metrics menu items behaved in unexpected ways
+	(as if they referred to a postscript font rather than the bitmap fonts)
+      <LI>
+	Various fixes to make importing stroked eps files into stroked fonts work
+	better.
+      <LI>
+	KANOU requests a preference item to turn off use of freetype in font view.
+      <LI>
+	Fix more rounding errors in remove overlap.
+      <LI>
+	Fix some problems in the routine which finds roots of an arbetrary quartic.
+      <LI>
+	The remove bump option of simplify could screw up memory.
+      <LI>
+	Remove overlap got unhappy about control points which caused a very tiny
+	overlap between adjacent splines
+      <LI>
+	Redo from the fontview usually caused a crash.
+      <LI>
+	KANOU provides a MakeLine scripting command
+      <LI>
+	If TYPE3 (multilayer) was not enabled, there was a flow of control through
+	a function which did not return anything.
+      <LI>
+	Recovery files did not contain multilayer marks which lead to strange behavior
+	and crashes
+      <LI>
+	Converting a font to multilayer caused a crash if there were outline glyph
+	windows open.
+      <LI>
+	Make the encoding for scripts be utf8 consistently
+      <LI>
+	Allow the scripting Export command to take a format spec
+      <LI>
+	Add support for reals to the scripting language
+      <LI>
+	NearlyHv{Cps,Lines} scripting commands erroneously complained about too many
+	args
+      <LI>
+	ff had a bug when outputting otf contextual ligatures
+      <LI>
+	Fix various crashes and infinite loops involved in parsing bad font files.
+      <LI>
+	ff had problems with user defined encodings.
+      <LI>
+	Made ff work if the psuedo-type "real" was defined to be a double.
+      <LI>
+	the string += concattonation operator in scripting screwed up memory
+      <LI>
+	Problems with -c &lt;arg&gt; syntax
+      <LI>
+	The font type detector could fail to notice an svg file as such if it began
+	with a byte order character.
+      <LI>
+	Ord didn't do proper type checking on its second argument
+    </UL>
   <LI>
     9-Feb-2005
     <UL>
