@@ -1,7 +1,7 @@
 /* 
 Modified by Yannis Haralambous
 yannis.haralambous@enst-bretagne.fr 
-on: 10/01/04, 11:18
+on: 14/01/04, 00h26
 
 Translated terminology based on:
 
@@ -3225,8 +3225,8 @@ static char *str_AdvanceToNextGlyph = "Aller au glyphe suivant" ;
 static char *str_MarkCurrentGlyph = "Marquer le glyphe courant" ;
 static char *str_MarkCurrentGlyphAsFirst = "Marquer glyphe courant comme premier" ;
 static char *str_MarkCurrentGlyphAsLast = "Marquer glyphe courant comme dernier" ;
-static char *str_CurrentGlyphIsKashida = "Le glyphe courant se comporte comme une kashida" ;
-static char *str_MarkedGlyphIsKashida = "Le glyphe marqué se comporte comme une kashida" ;
+static char *str_CurrentGlyphIsKashida = "Le glyphe courant se comporte comme une keshideh" ;
+static char *str_MarkedGlyphIsKashida = "Le glyphe marqué se comporte comme une keshideh" ;
 static char *str_InsertBeforeCurrentGlyph = "Insérer avant le glyphe courant" ;
 static char *str_InsertBeforeMarkedGlyph = "Insérer avant le glyphe marqué" ;
 static char *str_NoChange = "Pas de changement" ;
