@@ -2119,6 +2119,30 @@ static StemInfo *StemRemoveZeroHIlen(StemInfo *stems) {
 return( stems );
 }
 
+static StemInfo *StemRemoveFlexCandidates(StemInfo *stems) {
+    StemInfo *s, *t, *sn;
+    const real BlueShift = 7;
+    /* Suppose we have something that is a flex candidate */
+    /* We might get two hints from it... one from the two end points */
+    /* and one from the internal point */
+
+    if ( stems==NULL )
+return( NULL );
+
+    for ( s=stems; (sn = s->next)!=NULL; s = sn ) {
+	if ( s->start+BlueShift > sn->start && s->width>0 && sn->width>0 &&
+		s->start+s->width-BlueShift < sn->start+sn->width &&
+		s->start+s->width+BlueShift > sn->start+sn->width ) {
+	    t = sn->next;
+	    sn->next = NULL;
+	    StemInfoFree(sn);
+	    s->next = t;
+	    sn = t;
+	}
+    }
+return( stems );
+}
+
 static int AnyPointsAt(SplineSet *spl,int major,real coord) {
     SplinePoint *sp;
 
@@ -2300,7 +2324,8 @@ static int StemWouldConflict(StemInfo *stems,double base, double width) {
 	stems = stems->next;
 
     found = false;
-    while ( stems!=NULL && stems->start<base+width && stems->start+stems->width<base+width ) {
+    while ( stems!=NULL && ((stems->width>0 && stems->start<base+width) ||
+			    (stems->width<0 && stems->start+stems->width<base+width )) ) {
 	if (( stems->start==base && stems->width==width ) ||
 		(stems->start+stems->width==base && stems->width==-width ))
 return( false );		/* If it has already been added, then too late to worry about conflicts */
@@ -2612,9 +2637,11 @@ static StemInfo *CheckForGhostHints(StemInfo *stems,SplineChar *sc) {
     SplinePoint *sp, *sp2;
     real base, width/*, toobig = (sc->parent->ascent+sc->parent->descent)/2*/;
     int i,startfound, widthfound;
+    DBounds b;
 
     /* Get the alignment zones */
     QuickBlues(sf,&bd);
+    SplineCharQuickBounds(sc,&b);
 
     /* look for any stems stretching from one zone to another and remove them */
     /*  (I used to turn them into ghost hints here, but that didn't work (for */
@@ -2659,8 +2686,14 @@ static StemInfo *CheckForGhostHints(StemInfo *stems,SplineChar *sc) {
 		break;
 		}
 		if ( i!=bd.bluecnt ) {
-		    for ( sp2= spline->from->prev->from; sp2!=spline->from && sp2->me.y==spline->from->me.y; sp2=sp2->prev->from );
-		    width = (sp2->me.y > spline->from->me.y)?21:20;
+		    if ( spline->from->me.y+20 > b.maxy )
+			width = 21;
+		    else if ( spline->from->me.y-21 < b.miny )
+			width = 20;
+		    else {
+			for ( sp2= spline->from->prev->from; sp2!=spline->from && sp2->me.y==spline->from->me.y; sp2=sp2->prev->from );
+			width = (sp2->me.y > spline->from->me.y)?21:20;
+		    }
 		    ghosts = GhostAdd(ghosts,stems, base,width,spline->from->me.x,spline->to->me.x);
 		}
 	    }
@@ -2676,8 +2709,14 @@ static StemInfo *CheckForGhostHints(StemInfo *stems,SplineChar *sc) {
 		break;
 		}
 		if ( i!=bd.bluecnt ) {
-		    for ( sp2= sp->prev->from; sp2!=sp && sp2->me.y==spline->from->me.y; sp2=sp2->prev->from );
-		    width = (sp2->me.y > sp->me.y)?21:20;
+		    if ( sp->me.y+21 > b.maxy )
+			width = 20;
+		    else if ( sp->me.y-20 < b.miny )
+			width = 21;
+		    else {
+			for ( sp2= sp->prev->from; sp2!=sp && sp2->me.y==spline->from->me.y; sp2=sp2->prev->from );
+			width = (sp2->me.y > sp->me.y)?21:20;
+		    }
 		    ghosts = GhostAdd(ghosts,stems, base,width,(sp->me.x+sp->prevcp.x)/2,(sp->me.x+sp->nextcp.x)/2);
 		}
 	    }
@@ -2828,6 +2867,7 @@ static StemInfo *SCFindStems(EIList *el, int major, int removeOverlaps,DStemInfo
     free(el->ordered);
     free(el->ends);
     stems = StemRemoveZeroHIlen(stems);
+    stems = StemRemoveFlexCandidates(stems);
     stems = StemRemoveWiderThanLong(stems,big);
     stems = StemRemovePointlessHints(el->sc,major,stems);
     if ( removeOverlaps ) {
