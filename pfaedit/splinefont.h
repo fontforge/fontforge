@@ -167,6 +167,7 @@ typedef struct anchorclass {
     uint16 merge_with;
     uint16 type;		/* anchorclass_type */
     struct anchorclass *next;
+    uint8 processed, has_mark, matches;
 } AnchorClass;
 
 enum anchor_type { at_mark, at_basechar, at_baselig, at_basemark, at_centry, at_cexit, at_max };
@@ -1076,7 +1077,7 @@ extern const unichar_t *SFGetAlternate(SplineFont *sf, int base,SplineChar *sc,i
 
 extern int getAdobeEnc(char *name);
 
-extern SplineSet *SplinePointListInterpretSVG(char *filename,int em_size);
+extern SplineSet *SplinePointListInterpretSVG(char *filename,int em_size,int ascent);
 extern SplinePointList *SplinePointListInterpretPS(FILE *ps);
 extern void PSFontInterpretPS(FILE *ps,struct charprocs *cp);
 extern struct enc *PSSlurpEncodings(FILE *file);

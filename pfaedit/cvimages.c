@@ -144,7 +144,8 @@ return;
 void SCImportSVG(SplineChar *sc,enum drawmode dm,char *path,int doclear) {
     SplinePointList *spl, *espl, **head;
 
-    spl = SplinePointListInterpretSVG(path,sc->parent->ascent+sc->parent->descent);
+    spl = SplinePointListInterpretSVG(path,sc->parent->ascent+sc->parent->descent,
+	    sc->parent->ascent);
     for ( espl = spl; espl!=NULL && espl->first->next==NULL; espl=espl->next );
     if ( espl!=NULL )
 	if ( espl->first->next->order2!=sc->parent->order2 )

@@ -471,7 +471,7 @@ SplineFont *SFReadSVG(char *filename, int flags) {
 return( NULL );
 }
 
-SplineSet *SplinePointListInterpretSVG(char *filename) {
+SplineSet *SplinePointListInterpretSVG(char *filename,int em_size,int ascent) {
 return( NULL );
 }
 #else
@@ -1577,7 +1577,7 @@ return( ret );
     }
 }
 
-static SplineSet *SVGParseSVG(xmlNodePtr svg,int em_size) {
+static SplineSet *SVGParseSVG(xmlNodePtr svg,int em_size,int ascent) {
     struct svg_state st;
     char *num, *end;
     double x,y,swidth,sheight,width=1,height=1;
@@ -1590,7 +1590,7 @@ static SplineSet *SVGParseSVG(xmlNodePtr svg,int em_size) {
     st.transform[0] = 1;
     st.transform[3] = -1;	/* The SVG coord system has y increasing down */
     				/*  Font coords have y increasing up */
-    st.transform[5] = .8*em_size;	/* Should really be ascent */
+    st.transform[5] = ascent;
     num = (char *) _xmlGetProp(svg,(xmlChar *) "width");
     if ( num!=NULL ) {
 	width = strtod(num,NULL);
@@ -1629,7 +1629,8 @@ static void SVGParseGlyphBody(SplineChar *sc, xmlNodePtr glyph) {
 	sc->splines = SVGParsePath(path);
 	_xmlFree(path);
     } else
-	sc->splines = SVGParseSVG(glyph,sc->parent->ascent+sc->parent->descent);
+	sc->splines = SVGParseSVG(glyph,sc->parent->ascent+sc->parent->descent,
+		sc->parent->ascent);
 }
 
 static SplineChar *SVGParseGlyphArgs(xmlNodePtr glyph,int defh, int defv) {
@@ -2257,7 +2258,7 @@ return( NULL );
 return( sf );
 }
 
-SplineSet *SplinePointListInterpretSVG(char *filename,int em_size) {
+SplineSet *SplinePointListInterpretSVG(char *filename,int em_size,int ascent) {
     xmlDocPtr doc;
     xmlNodePtr top;
     char *oldloc;
@@ -2282,7 +2283,7 @@ return( NULL );
     }
 
     oldloc = setlocale(LC_NUMERIC,"C");
-    ret = SVGParseSVG(top,em_size);
+    ret = SVGParseSVG(top,em_size,ascent);
     setlocale(LC_NUMERIC,oldloc);
     _xmlFreeDoc(doc);
 
