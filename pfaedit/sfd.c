@@ -2350,6 +2350,7 @@ static void SFDParseChainContext(FILE *sfd,SplineFont *sf,FPST *fpst, char *tok)
     fscanf(sfd, "%hd %hd %hd %hd", &fpst->nccnt, &fpst->bccnt, &fpst->fccnt, &fpst->rule_cnt );
     if ( fpst->nccnt!=0 || fpst->bccnt!=0 || fpst->fccnt!=0 ) {
 	fpst->nclass = galloc(fpst->nccnt*sizeof(char *));
+	if ( fpst->nccnt!=0 ) fpst->nclass[0] = NULL;
 	if (fpst->nccnt!=0 ) fpst->nclass[0] = NULL;
 	if ( fpst->bccnt!=0 || fpst->fccnt!=0 ) {
 	    fpst->bclass = galloc(fpst->bccnt*sizeof(char *));

@@ -328,6 +328,94 @@ return( false );
 return( true );
 }
 
+static char **classcopy(char **names,int nextclass) {
+    char **ret;
+    int i;
+
+    if ( nextclass <= 1 )
+return( NULL );
+
+    ret = galloc(nextclass*sizeof(char *));
+    ret[0] = NULL;
+    for ( i=1; i<nextclass; ++i )
+	ret[i] = copy(names[i]);
+return( ret );
+}
+
+FPST *FPSTGlyphToClass(FPST *fpst) {
+    FPST *new;
+    int nextclass=0, i,j,k, max, cnt, ch;
+    char *pt, *end;
+    char **names;
+
+    if ( fpst->format!=pst_glyphs )
+return( NULL );
+
+    new = chunkalloc(sizeof(FPST));
+    new->type = fpst->type;
+    new->format = pst_class;
+    new->script_lang_index = fpst->script_lang_index;
+    new->flags = fpst->flags;
+    new->tag = fpst->tag;
+    new->rule_cnt = fpst->rule_cnt;
+    new->rules = gcalloc(fpst->rule_cnt,sizeof(struct fpst_rule));
+
+    max = 100; nextclass=1;
+    names = galloc(max*sizeof(char *));
+    names[0] = NULL;
+    for ( i=0; i<fpst->rule_cnt; ++i ) {
+	for ( j=0; j<3; ++j ) {
+	    cnt = 0;
+	    if ( (&fpst->rules[i].u.glyph.names)[j]!=NULL && *(&fpst->rules[i].u.glyph.names)[j]!='\0' ) {
+		cnt = 1;
+		for ( pt=(&fpst->rules[i].u.glyph.names)[j]; *pt; ++pt ) {
+		    if ( *pt==' ' ) {
+			++cnt;
+			while ( *pt==' ' ) ++pt;
+			--pt;
+		    }
+		}
+	    }
+	    (&new->rules[i].u.class.ncnt)[j] = cnt;
+	    if ( cnt!=0 ) {
+		(&new->rules[i].u.class.nclasses)[j] = galloc(cnt*sizeof(uint16));
+		cnt = 0;
+		for ( pt=(&fpst->rules[i].u.glyph.names)[j]; *pt; pt=end ) {
+		    while ( *pt==' ' ) ++pt;
+		    if ( *pt=='\0' )
+		break;
+		    for ( end=pt ; *end!=' ' && *end!='\0'; ++end );
+		    ch = *end; *end='\0';
+		    for ( k=1; k<nextclass; ++k )
+			if ( strcmp(pt,names[k])==0 )
+		    break;
+		    if ( k==nextclass ) {
+			if ( nextclass>=max )
+			    names = grealloc(names,(max+=100)*sizeof(char *));
+			names[nextclass++] = copy(pt);
+		    }
+		    *end = ch;
+		    (&new->rules[i].u.class.nclasses)[j][cnt++] = k;
+		}
+	    }
+	}
+	new->rules[i].lookup_cnt = fpst->rules[i].lookup_cnt;
+	new->rules[i].lookups = galloc(fpst->rules[i].lookup_cnt*sizeof(struct seqlookup));
+	memcpy(new->rules[i].lookups,fpst->rules[i].lookups,
+		fpst->rules[i].lookup_cnt*sizeof(struct seqlookup));
+    }
+    new->nccnt = nextclass;
+    new->nclass = names;
+    if ( fpst->type==pst_chainpos || fpst->type==pst_chainsub ) {
+	/* our class set has one "class" for each glyph used anywhere */
+	/*  all three class sets are the same */
+	new->bccnt = new->fccnt = nextclass;
+	new->bclass = classcopy(names,nextclass);
+	new->fclass = classcopy(names,nextclass);
+    }
+return( new );
+}
+
 /* ************************************************************************** */
 /* ************************ Context/Chaining Dialog ************************* */
 /* ************************************************************************** */
@@ -419,16 +507,18 @@ static char *reversenames(char *str) {
     char *rpt, *pt, *start, *spt;
 
     if ( str==NULL )
-return( copy("") );
+return( NULL );
 
     rpt = ret = galloc(strlen(str)+1);
+    *ret = '\0';
     for ( pt=str+strlen(str); pt>str; pt=start ) {
 	for ( start = pt-1; start>=str && *start!=' '; --start );
 	for ( spt=start+1; spt<pt; )
 	    *rpt++ = *spt++;
 	*rpt++ = ' ';
     }
-    rpt[-1] = '\0';
+    if ( rpt>ret )
+	rpt[-1] = '\0';
 return( ret );
 }
 
@@ -865,7 +955,7 @@ static int CCD_NameListCheck(SplineFont *sf,const unichar_t *ret,int empty_bad,i
     static int buts[] = { _STR_Yes, _STR_No, 0 };
     int ans;
 
-    if ( !CCD_ValidNameList(ret,true) ) {
+    if ( !CCD_ValidNameList(ret,empty_bad) ) {
 	GWidgetErrorR(title,title==_STR_BadClass?_STR_BadClassLong :
 		title==_STR_BadCoverage ? _STR_BadCoverageLong :
 		 _STR_BadMatchGlyphLong);
@@ -1081,13 +1171,13 @@ return;
 
 	memset(&dummy,0,sizeof(dummy));
 	val = _GGadgetGetTitle(GWidgetGetControl(ccd->gw,CID_GlyphList));
-	if ( !CCD_NameListCheck(ccd->sf,ret,true,_STR_BadGlyphList) )
+	if ( !CCD_NameListCheck(ccd->sf,val,true,_STR_BadGlyphList) )
 return;
 	val = _GGadgetGetTitle(GWidgetGetControl(ccd->gw,CID_GlyphList+20));
-	if ( !CCD_NameListCheck(ccd->sf,ret,false,_STR_BadBackGlyphList) )
+	if ( !CCD_NameListCheck(ccd->sf,val,false,_STR_BadBackGlyphList) )
 return;
 	val = _GGadgetGetTitle(GWidgetGetControl(ccd->gw,CID_GlyphList+40));
-	if ( !CCD_NameListCheck(ccd->sf,ret,false,_STR_BadForeGlyphList) )
+	if ( !CCD_NameListCheck(ccd->sf,val,false,_STR_BadForeGlyphList) )
 return;
 	CCD_ParseLookupList(&dummy,GWidgetGetControl(ccd->gw,CID_LookupList));
 	if ( dummy.lookup_cnt==0 ) {
@@ -2362,6 +2452,7 @@ struct contextchaindlg *ContextChainEdit(SplineFont *sf,FPST *fpst,
 	    _STR_OTCCSubFormat5, _STR_OTCCSubFormat6,
 	    _STR_OTCCSubFormat7, _STR_OTCCSubFormat8,
 	    _STR_OTCCSubFormat9, _STR_OTCCSubFormat10, 0 };
+    FPST *tempfpst;
 
     ccd = chunkalloc(sizeof(struct contextchaindlg));
     ccd->gfi = gfi;
@@ -2647,14 +2738,14 @@ struct contextchaindlg *ContextChainEdit(SplineFont *sf,FPST *fpst,
 	    clabel[i][l].text = (unichar_t *) _STR_SameAsMatchClasses;
 	    clabel[i][l].text_in_resource = true;
 	    cgcd[i][l].gd.label = &clabel[i][l];
-	    cgcd[i][l].gd.pos.x = 180; cgcd[i][l].gd.pos.y = 2;
+	    cgcd[i][l].gd.pos.x = 185; cgcd[i][l].gd.pos.y = 2;
 	    cgcd[i][l].gd.handle_controlevent = CCD_SameAsClasses;
 	    cgcd[i][l].gd.flags = gg_visible | gg_enabled;
 	    cgcd[i][l].gd.cid = CID_SameAsClasses + i*20;
 	    cgcd[i][l++].creator = GCheckBoxCreate;
 	}
 
-	CCD_AddGList(&cgcd[i][l],&clabel[i][l],300+i*20,cgcd[i][l-1].gd.pos.y+14,
+	CCD_AddGList(&cgcd[i][l],&clabel[i][l],300+i*20,cgcd[i][0].gd.pos.y+15,
 		CCD_WIDTH-20,CCD_HEIGHT-270);
 	faspects[i].gcd = cgcd[i];
     }
@@ -2672,21 +2763,25 @@ struct contextchaindlg *ContextChainEdit(SplineFont *sf,FPST *fpst,
     clgcd[k].creator = GTabSetCreate;
     GGadgetsCreate(ccd->class,clgcd);
 
-    if ( fpst->format==pst_class && fpst->rule_cnt>0 ) {
-	GGadgetSetList(GWidgetGetControl(ccd->class,CID_GList+200),clslistlist(fpst),false);
+    tempfpst = fpst;
+    if ( fpst->format==pst_glyphs && fpst->rule_cnt>0 )
+	tempfpst = FPSTGlyphToClass(fpst);
+    if ( tempfpst->format==pst_class && tempfpst->rule_cnt>0 ) {
+	GGadgetSetList(GWidgetGetControl(ccd->class,CID_GList+200),clslistlist(tempfpst),false);
 	for ( i=0; i<3; ++i ) {
 	    GGadget *list = GWidgetGetControl(ccd->class,CID_GList+300+i*20);
 	    GListAppendLine(list,GStringGetResource(_STR_EverythingElse,NULL),false);
-	    for ( k=1; k<(&fpst->nccnt)[i]; ++k ) {
-		unichar_t *temp = uc_copy((&fpst->nclass)[i][k]);
+	    for ( k=1; k<(&tempfpst->nccnt)[i]; ++k ) {
+		unichar_t *temp = uc_copy((&tempfpst->nclass)[i][k]);
 		GListAppendLine(list,temp,false);
 		free(temp);
 	    }
-	    if ( i!=0 && ClassesMatch((&fpst->nccnt)[i],(&fpst->nclass)[i],fpst->nccnt,fpst->nclass)) {
+	    if ( i!=0 && ClassesMatch((&tempfpst->nccnt)[i],(&tempfpst->nclass)[i],tempfpst->nccnt,tempfpst->nclass)) {
 		GGadgetSetChecked(GWidgetGetControl(ccd->class,CID_SameAsClasses+i*20),true);
 		CCD_SameAsClasses(GWidgetGetControl(ccd->class,CID_SameAsClasses+i*20),NULL);
 	    }
 	}
+	FPSTFree(tempfpst);
     } else {
 	for ( i=0; i<3; ++i )
 	    GListAppendLine(GWidgetGetControl(ccd->class,CID_GList+300+i*20),

@@ -1248,6 +1248,7 @@ extern uint32 SFGenerateNewFeatureTag(struct gentagtype *gentags,enum possub_typ
 extern void SFFreeGenerateFeatureTag(struct gentagtype *gentags,uint32 tag);
 extern int SFHasNestedLookupWithTag(SplineFont *sf,uint32 tag,int ispos);
 extern int ClassesMatch(int cnt1,char **classes1,int cnt2,char **classes2);
+extern FPST *FPSTGlyphToClass(FPST *fpst);
 
 # if HANYANG
 extern void SFDDumpCompositionRules(FILE *sfd,struct compositionrules *rules);

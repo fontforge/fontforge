@@ -92,7 +92,7 @@ static char **ClassToNames(struct ttfinfo *info,int class_cnt,uint16 *class,int 
 	    lens[class[i]] += strlen(info->chars[i]->name)+1;
 	    ret[class[i]][lens[class[i]]-1] = ' ';
 	} else
-	    fprintf( stderr, "Class index out of range in kerning class\n" );
+	    fprintf( stderr, "Class index out of range %d (must be <%d)\n",class[i], class_cnt );
     }
     for ( i=1; i<class_cnt ; ++i )
 	if ( lens[i]==0 )
@@ -996,7 +996,7 @@ static void g___ContextSubTable2(FILE *ttf, int stoffset,
 
     coverage = getushort(ttf);
     classoff = getushort(ttf);
-    rcnt = getushort(ttf);		/* glyph count in coverage table */
+    rcnt = getushort(ttf);		/* class count in coverage table *//* == number of top level rules */
     rules = gcalloc(rcnt,sizeof(struct rule));
     for ( i=0; i<rcnt; ++i )
 	rules[i].offsets = getushort(ttf)+stoffset;
@@ -1045,8 +1045,8 @@ static void g___ContextSubTable2(FILE *ttf, int stoffset,
 
 	fpst->rules = rule = gcalloc(cnt,sizeof(struct fpst_rule));
 	fpst->rule_cnt = cnt;
-	fpst->nccnt = rcnt;
 	class = getClassDefTable(ttf, stoffset+classoff, info->glyph_cnt);
+	fpst->nccnt = ClassFindCnt(class,info->glyph_cnt);
 	fpst->nclass = ClassToNames(info,fpst->nccnt,class,info->glyph_cnt);
 
 	cnt = 0;
@@ -1077,7 +1077,7 @@ static void g___ChainingSubTable2(FILE *ttf, int stoffset,
 	struct ttfinfo *info, struct lookup *lookup, int justinuse,
 	struct lookup *alllooks, int gpos) {
     int i, j, k, rcnt, cnt;
-    uint16 coverage;
+    uint16 coverage, offset;
     uint16 bclassoff, classoff, fclassoff;
     struct subrule {
 	uint32 offset;
@@ -1099,12 +1099,14 @@ static void g___ChainingSubTable2(FILE *ttf, int stoffset,
     bclassoff = getushort(ttf);
     classoff = getushort(ttf);
     fclassoff = getushort(ttf);
-    rcnt = getushort(ttf);		/* glyph count in coverage table */
+    rcnt = getushort(ttf);		/* class count *//* == max number of top level rules */
     rules = gcalloc(rcnt,sizeof(struct rule));
-    for ( i=0; i<rcnt; ++i )
-	rules[i].offsets = getushort(ttf)+stoffset;
+    for ( i=0; i<rcnt; ++i ) {
+	offset = getushort(ttf);
+	rules[i].offsets = offset==0 ? 0 : offset+stoffset;
+    }
     cnt = 0;
-    for ( i=0; i<rcnt; ++i ) if ( rules[i].offsets!=stoffset ) { /* some classes might be unused */
+    for ( i=0; i<rcnt; ++i ) if ( rules[i].offsets!=0 ) { /* some classes might be unused */
 	fseek(ttf,rules[i].offsets,SEEK_SET);
 	rules[i].scnt = getushort(ttf);
 	cnt += rules[i].scnt;
@@ -1146,7 +1148,7 @@ static void g___ChainingSubTable2(FILE *ttf, int stoffset,
 	}
     } else {
 	fpst = chunkalloc(sizeof(FPST));
-	fpst->type = gpos ? pst_contextpos : pst_contextsub;
+	fpst->type = gpos ? pst_chainpos : pst_chainsub;
 	fpst->format = pst_class;
 	fpst->tag = lookup->tag;
 	fpst->script_lang_index = lookup->script_lang_index;
@@ -1156,8 +1158,9 @@ static void g___ChainingSubTable2(FILE *ttf, int stoffset,
 
 	fpst->rules = rule = gcalloc(cnt,sizeof(struct fpst_rule));
 	fpst->rule_cnt = cnt;
-	fpst->nccnt = rcnt;
+
 	class = getClassDefTable(ttf, stoffset+classoff, info->glyph_cnt);
+	fpst->nccnt = ClassFindCnt(class,info->glyph_cnt);
 	fpst->nclass = ClassToNames(info,fpst->nccnt,class,info->glyph_cnt);
 	free(class);
 	class = getClassDefTable(ttf, stoffset+bclassoff, info->glyph_cnt);
@@ -2065,14 +2068,14 @@ static void FigureScriptIndeces(struct ttfinfo *info,struct lookup *lookups) {
     int i,j,k;
     struct scriptlist *sl, *snext;
 
-    for ( i=0; lookups[i].tag!=0; ++i );
+    for ( i=0; lookups[i].script_lang_index!=0xffff; ++i );
     if ( info->script_lang==NULL ) {
 	info->script_lang = gcalloc(i+1,sizeof(struct script_record *));
     } else {
 	for ( j=0; info->script_lang[j]!=NULL; ++j );
 	info->script_lang = grealloc(info->script_lang,(i+j+1)*sizeof(struct script_record *));
     }
-    for ( i=0; lookups[i].tag!=0; ++i ) {
+    for ( i=0; lookups[i].script_lang_index!=0xffff; ++i ) {
 	for ( j=0; info->script_lang[j]!=NULL; ++j )
 	    if ( SLMatch(info->script_lang[j],lookups[i].sl))
 	break;

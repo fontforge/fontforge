@@ -1682,7 +1682,7 @@ static void dumpg___ContextChainClass(FILE *lfile,FPST *fpst,SplineFont *sf,
     uint32 base = ftell(lfile), rulebase, pos, subpos;
     uint16 *initialclasses, *iclass, *bclass, *lclass;
     SplineChar **iglyphs, **bglyphs, **lglyphs, **glyphs;
-    int i,cnt, subcnt, j,k,l , maxcontext,curcontext;
+    int i,ii,cnt, subcnt, j,k,l , maxcontext,curcontext;
     uint8 *exists;
     int lc;
     int ispos = (fpst->type==pst_contextpos || fpst->type==pst_chainpos);
@@ -1697,10 +1697,9 @@ static void dumpg___ContextChainClass(FILE *lfile,FPST *fpst,SplineFont *sf,
 	putshort(lfile,0);	/* offset to lookahead classdef */
     }
     initialclasses = FigureInitialClasses(fpst);
-    for ( cnt=0; initialclasses[cnt]!=0xffff; ++cnt );
-    putshort(lfile,cnt);
+    putshort(lfile,fpst->nccnt);
     rulebase = ftell(lfile);
-    for ( cnt=0; initialclasses[cnt]!=0xffff; ++cnt )
+    for ( cnt=0; cnt<fpst->nccnt; ++cnt )
 	putshort(lfile,0);
 
     iclass = ClassesFromNames(sf,fpst->nclass,fpst->nccnt,at->maxp.numGlyphs,&iglyphs);
@@ -1744,47 +1743,53 @@ static void dumpg___ContextChainClass(FILE *lfile,FPST *fpst,SplineFont *sf,
 	free(iclass); free(bclass); free(lclass);
     }
 
-    for ( i=0; i<cnt; ++i ) {
-	pos = ftell(lfile);
-	fseek(lfile,rulebase+i*sizeof(short),SEEK_SET);
-	putshort(lfile,pos-base);
-	fseek(lfile,pos,SEEK_SET);
-	subcnt = CntRulesStartingWithClass(fpst,initialclasses[i]);
-	putshort(lfile,subcnt);
-	for ( j=0; j<subcnt; ++j )
-	    putshort(lfile,0);
-	for ( j=k=0; k<fpst->rule_cnt; ++k ) if ( initialclasses[i]==fpst->rules[k].u.class.nclasses[0] ) {
-	    subpos = ftell(lfile);
-	    fseek(lfile,pos+(1+j)*sizeof(short),SEEK_SET);
-	    putshort(lfile,subpos-pos);
-	    fseek(lfile,subpos,SEEK_SET);
+    ii=0;
+    for ( i=0; i<fpst->nccnt; ++i ) {
+	if ( initialclasses[ii]!=i ) {
+	    /* This class isn't an initial one, so leave it's rule pointer NULL */
+	} else {
+	    ++ii;
+	    pos = ftell(lfile);
+	    fseek(lfile,rulebase+i*sizeof(short),SEEK_SET);
+	    putshort(lfile,pos-base);
+	    fseek(lfile,pos,SEEK_SET);
+	    subcnt = CntRulesStartingWithClass(fpst,i);
+	    putshort(lfile,subcnt);
+	    for ( j=0; j<subcnt; ++j )
+		putshort(lfile,0);
+	    for ( j=k=0; k<fpst->rule_cnt; ++k ) if ( i==fpst->rules[k].u.class.nclasses[0] ) {
+		subpos = ftell(lfile);
+		fseek(lfile,pos+(1+j)*sizeof(short),SEEK_SET);
+		putshort(lfile,subpos-pos);
+		fseek(lfile,subpos,SEEK_SET);
 
-	    exists = galloc(fpst->rules[k].lookup_cnt*sizeof(uint8));
-	    for ( l=lc=0; l<fpst->rules[k].lookup_cnt; ++l )
-		lc += ( exists[l] = SFHasNestedLookupWithTag(sf,fpst->rules[k].lookups[l].lookup_tag,ispos));
-	    if ( iscontext ) {
-		putshort(lfile,fpst->rules[k].u.class.ncnt);
-		putshort(lfile,lc);
-		for ( l=1; l<fpst->rules[k].u.class.ncnt; ++l )
-		    putshort(lfile,fpst->rules[k].u.class.nclasses[l]);
-	    } else {
-		putshort(lfile,fpst->rules[k].u.class.bcnt);
-		for ( l=0; l<fpst->rules[k].u.class.bcnt; ++l )
-		    putshort(lfile,fpst->rules[k].u.class.bclasses[l]);
-		putshort(lfile,fpst->rules[k].u.class.ncnt);
-		for ( l=1; l<fpst->rules[k].u.class.ncnt; ++l )
-		    putshort(lfile,fpst->rules[k].u.class.nclasses[l]);
-		putshort(lfile,fpst->rules[k].u.class.fcnt);
-		for ( l=0; l<fpst->rules[k].u.class.fcnt; ++l )
-		    putshort(lfile,fpst->rules[k].u.class.fclasses[l]);
-		putshort(lfile,lc);
+		exists = galloc(fpst->rules[k].lookup_cnt*sizeof(uint8));
+		for ( l=lc=0; l<fpst->rules[k].lookup_cnt; ++l )
+		    lc += ( exists[l] = SFHasNestedLookupWithTag(sf,fpst->rules[k].lookups[l].lookup_tag,ispos));
+		if ( iscontext ) {
+		    putshort(lfile,fpst->rules[k].u.class.ncnt);
+		    putshort(lfile,lc);
+		    for ( l=1; l<fpst->rules[k].u.class.ncnt; ++l )
+			putshort(lfile,fpst->rules[k].u.class.nclasses[l]);
+		} else {
+		    putshort(lfile,fpst->rules[k].u.class.bcnt);
+		    for ( l=0; l<fpst->rules[k].u.class.bcnt; ++l )
+			putshort(lfile,fpst->rules[k].u.class.bclasses[l]);
+		    putshort(lfile,fpst->rules[k].u.class.ncnt);
+		    for ( l=1; l<fpst->rules[k].u.class.ncnt; ++l )
+			putshort(lfile,fpst->rules[k].u.class.nclasses[l]);
+		    putshort(lfile,fpst->rules[k].u.class.fcnt);
+		    for ( l=0; l<fpst->rules[k].u.class.fcnt; ++l )
+			putshort(lfile,fpst->rules[k].u.class.fclasses[l]);
+		    putshort(lfile,lc);
+		}
+		for ( l=0; l<fpst->rules[k].lookup_cnt; ++l ) if ( exists[l] ) {
+		    putshort(lfile,fpst->rules[k].lookups[l].seq);
+		    putshort(lfile,g___FigureNest(nested,pp,at,fpst->rules[k].lookups[l].lookup_tag));
+		}
+		free(exists);
+		++j;
 	    }
-	    for ( l=0; l<fpst->rules[k].lookup_cnt; ++l ) if ( exists[l] ) {
-		putshort(lfile,fpst->rules[k].lookups[l].seq);
-		putshort(lfile,g___FigureNest(nested,pp,at,fpst->rules[k].lookups[l].lookup_tag));
-	    }
-	    free(exists);
-	    ++j;
 	}
     }
     free(initialclasses);
@@ -3243,7 +3248,7 @@ return;					/* No anchor positioning, no ligature carets */
 		sc = NULL;
 		do {
 		    sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[l];
-		    if ( l<sf->charcnt && sf->chars[l]!=NULL ) {
+		    if ( l<sf->charcnt && sf->chars[i]!=NULL ) {
 			sc = sf->chars[i];
 		break;
 		    }
@@ -3257,7 +3262,7 @@ return;					/* No anchor positioning, no ligature carets */
 			sc = NULL;
 			do {
 			    sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[l];
-			    if ( l<sf->charcnt && sf->chars[l]!=NULL ) {
+			    if ( l<sf->charcnt && sf->chars[i]!=NULL ) {
 				sc = sf->chars[i];
 			break;
 			    }
