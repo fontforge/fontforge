@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 2-May-2004 -->
+  <!-- AP: Last modified: 9-May-2004 -->
   <TITLE>Change log for FontForge</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,41 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    9-May-2004
+    <UL>
+      <LI>
+	Several problems with tfm files. Didn't handle tfms with more that 128 lig/kerns,
+	and
+      <LI>
+	Failed to set the r2l flag properly in 'morx' tables
+      <LI>
+	More typos in the ghost hint code
+      <LI>
+	Allow users to express error term of the scripting Simplify command as a
+	fraction.
+      <LI>
+	The strings in the context / chaining dlg's initial pane were wrong
+      <LI>
+	Fixed some bugs in converting OT contextual substitutions to Mac state machines
+      <LI>
+	If we wanted to put a glyph with references into a subroutine (in type1 output)
+	we failed miserably
+      <LI>
+	Added a new command
+	<A HREF="editmenu.html#ReplaceRef">Edit-&gt;ReplaceWithReference </A>(and
+	a scripting version too), which searches all glyphs in the font for any selected
+	glyphs, and for each embedded occurance it replaces the outlines of the glyph
+	with a reference to it. This is because reading a postscript (type2 or type1)
+	font generally loses all reference information.
+      <LI>
+	The documentation for OS/2.winAscent makes no sense. I shall ignore it and
+	set winAscent to hhea.ascent
+      <LI>
+	Sivan says that hebrew kerning is broken again.
+      <LI>
+	The search dlg didn't work on quadratic (truetype) fonts
+    </UL>
   <LI>
     2-May-2004
     <UL>
