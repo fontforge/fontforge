@@ -168,7 +168,7 @@ return( il );
 }
 
 static IntersectionList *IntersectionOf(Edge *wasleft,Edge *wasright,
-	IntersectionList *old, real mpos, EdgeList *es) {
+	IntersectionList *old, real mpos, EdgeList *es, real lastincr) {
     /* first find the point of intersection. It's somewhere between oldt and t_cur */
     /*  major coordinate value is somewhere between mpos-1 and mpos */
     real mtop, mbottom, xpos, ypos;
@@ -180,8 +180,22 @@ static IntersectionList *IntersectionOf(Edge *wasleft,Edge *wasright,
     losp = &wasleft->spline->splines[es->other];
     rosp = &wasright->spline->splines[es->other];
     ltop = wasleft->t_cur; lbottom = wasleft->oldt;
+    if ( wasleft->up ) {
+	if ( (ltop+=.001)>wasleft->t_mmax ) ltop = wasleft->t_mmax;
+	if ( (lbottom-=.001)<wasleft->t_mmin ) lbottom = wasleft->t_mmin;
+    } else {
+	if ( (ltop-=.001)<wasleft->t_mmax ) ltop = wasleft->t_mmax;
+	if ( (lbottom+=.001)>wasleft->t_mmin ) lbottom = wasleft->t_mmin;
+    }
     rtop = wasright->t_cur; rbottom = wasright->oldt;
-    mbottom = (mpos-1+es->mmin)/es->scale; mtop = (mpos+es->mmin)/es->scale;
+    if ( wasright->up ) {
+	if ( (rtop+=.001)>wasright->t_mmax ) rtop = wasright->t_mmax;
+	if ( (rbottom-=.001)<wasright->t_mmin ) rbottom = wasright->t_mmin;
+    } else {
+	if ( (rtop-=.001)<wasright->t_mmax ) rtop = wasright->t_mmax;
+	if ( (rbottom+=.001)>wasright->t_mmin ) rbottom = wasright->t_mmin;
+    }
+    mbottom = (mpos-lastincr+es->mmin)/es->scale; mtop = (mpos+es->mmin)/es->scale;
     locur = -1;
     while ( 1 ) {
 	nlt = SplineSolve(lsp,lbottom,ltop,(mbottom+mtop)/2,.0001);
@@ -271,9 +285,16 @@ return( AddIntersection(old,edge->spline,par_major->spline,et,mt,xpos,ypos));
 /*  that we preserve the old value of t each time through and call */
 static IntersectionList *_FindIntersections(EdgeList *es, IntersectionList *sofar) {
     Edge *active=NULL, *apt, *pr;
-    int i, any;
+    real i, incr=1, lastincr,diff;
+    int any;
 
-    for ( i=0; i<es->cnt; ++i ) {
+    for ( i=0; i<es->cnt; i+=incr ) {
+	if ( ( diff = i - floor(i+.00005))<0 ) diff=-diff;
+	if ( diff < .0001 )
+	    i = floor(i+.00005);
+	lastincr = incr;
+	incr = floor(i)+1-i;
+
 	/* first remove any entry which doesn't intersect the new scan line */
 	/*  (ie. stopped on last line) */
 	for ( pr=NULL, apt=active; apt!=NULL; apt = apt->aenext ) {
@@ -303,14 +324,14 @@ static IntersectionList *_FindIntersections(EdgeList *es, IntersectionList *sofa
 			pr = apt;
 			apt = apt->aenext;
 		    } else if ( pr==NULL ) {
-			sofar = IntersectionOf(apt,apt->aenext, sofar, i, es);
+			sofar = IntersectionOf(apt,apt->aenext, sofar, i, es, lastincr);
 			active = apt->aenext;
 			apt->aenext = apt->aenext->aenext;
 			active->aenext = apt;
 			/* don't need to set any, since this reorder can't disorder the list */
 			pr = active;
 		    } else {
-			sofar = IntersectionOf(apt,apt->aenext, sofar, i, es);
+			sofar = IntersectionOf(apt,apt->aenext, sofar, i, es, lastincr);
 			pr->aenext = apt->aenext;
 			apt->aenext = apt->aenext->aenext;
 			pr->aenext->aenext = apt;
@@ -329,7 +350,14 @@ static IntersectionList *_FindIntersections(EdgeList *es, IntersectionList *sofa
 	    }
 	}
 	/* Insert new nodes */
-	active = ActiveEdgesInsertNew(es,active,i);
+	if ( i==floor(i) )
+	    active = ActiveEdgesInsertNew(es,active,i);
+
+	/* If any spline ends soon, adjust the increment so we get one last look at it */
+	for ( apt=active; apt!=NULL; apt = apt->aenext ) {
+	    if ( apt->mmax<i+incr && apt->mmax>i+.0002)
+		incr = apt->mmax-i-.0001;
+	}
     }
 return( sofar );
 }
@@ -587,6 +615,7 @@ static void DoIntersections(SplineTList *me,IntersectionList *ilist) {
 	SplineRefigure(sp->prev);		/* Again fix up any marginal diffs */
 	SplineRefigure(sp->next);
 	if ( t==0 || t==1 ) {
+	    /* Why don't we want to attach both sp->prev, sp->next to the intersect? */
 	    AddSpline(cur->tl->inter,to->prev);
 	} else {
 	    AddSplines(cur->tl->inter,sp->prev,sp->next);

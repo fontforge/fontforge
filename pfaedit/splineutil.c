@@ -2011,7 +2011,7 @@ real SplineSolve(Spline1D *sp, real tmin, real tmax, real sought,real err) {
     Spline1D temp;
     real ts[3];
     int i;
-    real t;
+    real t, low, high, test;
 
     temp = *sp;
     temp.d -= sought;
@@ -2021,6 +2021,30 @@ real SplineSolve(Spline1D *sp, real tmin, real tmax, real sought,real err) {
 	if ( ts[i]>=tmin && ts[i]<=tmax )
 return( ts[i] );
 
+    /* Now the CubicSolver can have rounding errors such that the answer it */
+    /*  gives is actually outside of the allowed range. So use an iterative */
+    /*  approach if it fails */
+    low = ((temp.a*tmin+temp.b)*tmin+temp.c)*tmin+temp.d;
+    high = ((temp.a*tmax+temp.b)*tmax+temp.c)*tmax+temp.d;
+    if ( low==0 )
+return(tmin);
+    if ( high==0 )
+return(tmax);
+    if (( low<0 && high>0 ) ||
+	    ( low>0 && high<0 )) {
+	while ( tmax-tmin>=err ) {
+	    t = (tmax+tmin)/2;
+	    test = ((temp.a*t+temp.b)*t+temp.c)*t+temp.d;
+	    if ( test==0 )
+return( t );
+	    if ( (low<0 && test<0) || (low>0 && test>0) )
+		tmin=t;
+	    else
+		tmax = t;
+	}
+return( (tmax+tmin)/2 );	
+    } else if ( low>0 && high<0 ) {
+    }
 return( -1 );
 }
 
@@ -2792,6 +2816,7 @@ void TTFLangNamesFree(struct ttflangname *l) {
 SplineChar *SplineCharCreate(void) {
     SplineChar *sc = chunkalloc(sizeof(SplineChar));
     sc->color = COLOR_DEFAULT;
+    sc->ttf_glyph = -1;
 return( sc );
 }
 

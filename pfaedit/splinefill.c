@@ -65,8 +65,27 @@ void FreeEdges(EdgeList *es) {
 real TOfNextMajor(Edge *e, EdgeList *es, real sought_m ) {
     /* We want to find t so that Mspline(t) = sought_m */
     /*  the curve is monotonic */
-    Spline *sp = e->spline;
     Spline1D *msp = &e->spline->splines[es->major];
+#if 1
+    real new_t;
+
+    /* if we've adjusted the height then we won't be able to find it restricting */
+    /*  t between [0,1] as we do. So it's a special case. (this is to handle */
+    /*  hstem hints) */
+    if ( e->max_adjusted && sought_m==e->mmax ) {
+	e->m_cur = sought_m;
+return( e->up?1.0:0.0 );
+    }
+
+    if ( e->up )
+	new_t = SplineSolve(msp,e->t_cur,e->t_mmax,(sought_m+es->mmin)/es->scale,.001);
+    else
+	new_t = SplineSolve(msp,e->t_mmax,e->t_cur,(sought_m+es->mmin)/es->scale,.001);
+    if ( new_t==-1 )
+	GDrawIError( "No Solution");
+    e->m_cur = (((msp->a*new_t + msp->b)*new_t+msp->c)*new_t + msp->d)*es->scale - es->mmin;
+return( new_t );
+#else
     real slope = (3.0*msp->a*e->t_cur+2.0*msp->b)*e->t_cur + msp->c;
     real new_t, old_t, newer_t;
     real found_m;
@@ -131,14 +150,15 @@ return( new_t );
 return( new_t );
 	}
 	new_t = newer_t;
-#if 0
+# if 0
 	if (( new_t>t_mmax && e->up ) ||
 		(new_t<t_mmax && !e->up) ||
 		(new_t<t_mmin && e->up ) ||
 		(new_t>t_mmin && !e->up ))
 	    new_t = (t_mmax+t_mmin)/2;
-#endif
+# endif
     }
+#endif
 }
 
 static int SlopeLess(Edge *e, Edge *p, int other) {
@@ -150,18 +170,36 @@ static int SlopeLess(Edge *e, Edge *p, int other) {
 	   ps = (3*psp->a*p->t_cur+2*psp->b)*p->t_cur+psp->c;
     real ms = (3*msp->a*e->t_cur+2*msp->b)*e->t_cur+msp->c,
 	   qs = (3*qsp->a*p->t_cur+2*qsp->b)*p->t_cur+qsp->c;
-    if ( e->t_cur-e->tmin > e->tmax-e->t_cur ) { os = -os; ms = -ms; }
-    if ( p->t_cur-p->tmin > p->tmax-p->t_cur ) { ps = -ps; qs = -qs; }
     if ( ms<.0001 && ms>-.0001 ) ms = 0;
     if ( qs<.0001 && qs>-.0001 ) qs = 0;
+    if ( qs==0 ) {
+	if ( p->t_cur==1 ) {
+	   qs = (3*qsp->a*.9999+2*qsp->b)*.9999+qsp->c;
+	   ps = (3*psp->a*.9999+2*psp->b)*.9999+psp->c;
+       } else {
+	   qs = (3*qsp->a*(p->t_cur+.0001)+2*qsp->b)*(p->t_cur+.0001)+qsp->c;
+	   ps = (3*psp->a*(p->t_cur+.0001)+2*psp->b)*(p->t_cur+.0001)+psp->c;
+       }
+    }
+    if ( ms==0 ) {
+	if ( e->t_cur==1 ) {
+	    ms = (3*msp->a*.9999+2*msp->b)*.9999+msp->c;
+	    os = (3*osp->a*.9999+2*osp->b)*.9999+osp->c;
+	} else {
+	    ms = (3*msp->a*(e->t_cur+.0001)+2*msp->b)*(e->t_cur+.0001)+msp->c;
+	    os = (3*osp->a*(e->t_cur+.0001)+2*osp->b)*(e->t_cur+.0001)+osp->c;
+	}
+    }
+    if ( e->t_cur-e->tmin > e->tmax-e->t_cur ) { os = -os; ms = -ms; }
+    if ( p->t_cur-p->tmin > p->tmax-p->t_cur ) { ps = -ps; qs = -qs; }
     if ( ms!=0 && qs!=0 ) { os /= ms; ps /= qs; }
     else if ( ms==0 && qs==0 ) /* Do Nothing */;
-    else if ( ms==0 )
+    else if ( (ms==0 && os>0) || (qs==0 && ps<0) )		/* Does this make sense? */
 return( false );
-    else if ( qs==0 )
+    else if ( (ms==0 && os<0) || (qs==0 && ps>0) )		/* Does this make sense? */
 return( true );
 
-    if ( os==ps )
+    if ( os==ps || ms==0 || qs==0 )
 return( e->o_mmax<p->o_mmax );
 
 return( os<ps );
