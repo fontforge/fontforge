@@ -217,42 +217,60 @@ Encoding *FindOrMakeEncoding(const char *name) {
     char *fpt, *upt;
     /* iconv is not case sensitive */
 
-    if ( strncmp(name,"iso8859_",8)==0 || strncmp(name,"koi8_",5)==0 ) {
+    if ( strncasecmp(name,"iso8859_",8)==0 || strncasecmp(name,"koi8_",5)==0 ) {
 	/* Fixup for old naming conventions */
 	strncpy(buffer,name,sizeof(buffer));
 	*strchr(buffer,'_') = '-';
 	name = buffer;
-    } else if ( strncmp(name,"iso-8859",8)==0 ) {
+    } else if ( strcasecmp(name,"iso-8859")==0 ) {
 	/* Fixup for old naming conventions */
 	strncpy(buffer,name,3);
 	strncpy(buffer+3,name+4,sizeof(buffer)-3);
 	name = buffer;
-    } else if ( strcmp(name,"AdobeStandardEncoding")==0 )
+    } else if ( strcasecmp(name,"isolatin1")==0 ) {
+        name = "iso8859-1";
+    } else if ( strcasecmp(name,"isocyrillic")==0 ) {
+        name = "iso8859-5";
+    } else if ( strcasecmp(name,"isoarabic")==0 ) {
+        name = "iso8859-6";
+    } else if ( strcasecmp(name,"isogreek")==0 ) {
+        name = "iso8859-7";
+    } else if ( strcasecmp(name,"isohebrew")==0 ) {
+        name = "iso8859-8";
+    } else if ( strcasecmp(name,"isothai")==0 ) {
+        name = "tis-620";	/* TIS doesn't define non-breaking space in 0xA0 */ 
+    } else if ( strcasecmp(name,"latin0")==0 || strcasecmp(name,"latin9")==0 ) {
+        name = "iso8859-15";	/* "latin-9" is supported (libiconv bug?) */ 
+    } else if ( strcasecmp(name,"koi8r")==0 ) {
+        name = "koi8-r";
+    } else if ( strncasecmp(name,"jis201",6)==0 || strncasecmp(name,"jisx0201",8)==0 ) {
+        name = "jis_x0201";
+    } else if ( strcasecmp(name,"AdobeStandardEncoding")==0 || strcasecmp(name,"Adobe")==0 )
 	name = "AdobeStandard";
     for ( enc=enclist; enc!=NULL; enc=enc->next )
 	if ( strmatch(name,enc->enc_name)==0 ||
 		(enc->iconv_name!=NULL && strmatch(name,enc->iconv_name)==0))
 return( enc );
-    if ( strmatch(name,"unicode")==0 )
+    if ( strmatch(name,"unicode")==0 || strmatch(name,"iso10646")==0 || strmatch(name,"iso10646-1")==0 )
 return( &unicodebmp );
-    if ( strmatch(name,"unicode4")==0 )
+    if ( strmatch(name,"unicode4")==0 || strmatch(name,"ucs4")==0 )
 return( &unicodefull );
 
     iconv_name = name;
     /* Mac seems to work ok */
-    if ( strcmp(name,"win")==0 )
+    if ( strcasecmp(name,"win")==0 || strcasecmp(name,"ansi")==0 )
 	iconv_name = "MS-ANSI";		/* "WINDOWS-1252";*/
-    else if ( strcmp(name,"jis208")==0 )
+    else if ( strncasecmp(name,"jis208",6)==0 || strncasecmp(name,"jisx0208",8)==0 )
 	iconv_name = "ISO-2022-JP";
-    else if ( strcmp(name,"jis212")==0 )
+    else if ( strncasecmp(name,"jis212",6)==0 || strncasecmp(name,"jisx0212",8)==0 )
 	iconv_name = "ISO-2022-JP-2";
-    else if ( strcmp(name,"ksc5601")==0 )
+    else if ( strncasecmp(name,"ksc5601",7)==0 )
 	iconv_name = "ISO-2022-KR";
-    else if ( strcmp(name,"gb2312")==0 )
+    else if ( strncasecmp(name,"gb2312",6)==0 )
 	iconv_name = "ISO-2022-CN";
-    else if ( strcmp(name,"wansung")==0 )
+    else if ( strcasecmp(name,"wansung")==0 )
 	iconv_name = "EUC-KR";
-    else if ( strcmp(name,"gb2312pk")==0 )
+    else if ( strcasecmp(name,"gb2312pk")==0 || strcasecmp(name,"gb2312packed")==0 )
 	iconv_name = "EUC-CN";
 
 /* Escape sequences:					*/
