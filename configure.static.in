@@ -107,6 +107,9 @@ fi
 test -d libs || mkdir libs
 
 AC_OUTPUT(Makefile Unicode/Makefile gdraw/Makefile pfaedit/Makefile)
+if test -e toys >/dev/null 2>&1 ; then
+  AC_OUTPUT( toys/Makefile )
+fi
 
 echo Configuration defines: $DEFS
 if test "$STATIC_LIBS" != ""; then

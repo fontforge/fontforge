@@ -12,6 +12,7 @@ X_LIBS = @X_LIBS@
 X_11LIB = @X_11LIB@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
+STATIC_LIBS = @STATIC_LIBS@
 
 pfaedit_OBJECTS =  autohint.o autosave.o autowidth.o bitmapdlg.o \
  bitmapview.o bvedit.o charview.o charviewicons.o cursors.o \
@@ -36,7 +37,7 @@ CFLAGS = @CFLAGS@ -I$(top_srcdir)/inc -I$(srcdir) -I. $(WFLAGS) $(X_CFLAGS) \
 
 LDFLAGS = @LDFLAGS@
 LIBS = -L../libs $(X_LIBS) ../libs/libgdraw.a ../libs/libgunicode.a \
-    $(X_PRE_LIBS) $(X_11LIB) $(X_EXTRA_LIBS) @LIBS@ -L/usr/lib -lm
+    $(X_PRE_LIBS) $(X_11LIB) $(X_EXTRA_LIBS) @LIBS@ $(STATIC_LIBS) -lm
 DLIBS = ../libs/libgunicode.a -lm
 
 all: pfaedit-en.ui pfaedit sfddiff acorn2sfd
@@ -63,6 +64,6 @@ clean:
 
 distclean cleaner: clean
 	-rm -f Makefile
-	-for i in nomen-*.c; do \
+	-for i in nomen.*.c; do \
 	  test -L $$i && rm $$i; \
 	done;

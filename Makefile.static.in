@@ -34,7 +34,6 @@ distclean cleaner:
 	( cd gdraw ; $(MAKE) distclean )
 	-rm Makefile config.cache config.log config.status libtool
 
-
 install: $(sharedir) all
 # You may need to be root to do the install
 	mkdir -p $(bindir)
@@ -53,7 +52,7 @@ install: $(sharedir) all
 uninstall:
 	-rm $(bindir)/pfaedit
 	-rm $(bindir)/sfddiff
-	-rm $(sharedir)/pfaedit.*.ui
+	-rm $(sharedir)/pfaedit-*.ui
 	-rm $(mandir)/man1/pfaedit.1
 	-rm $(mandir)/man1/sfddiff.1
 	-rm $(sharedir)/*.cidmap

@@ -2,8 +2,6 @@ dnl Process this file with autoconf to produce a configure script.
 
 AC_INIT(pfaedit/pfaedit.h)
 AC_PROG_CC
-#AC_PROG_RANLIB
-#AC_DISABLE_SHARED
 AC_DISABLE_STATIC
 AC_CANONICAL_HOST
 AC_PROG_LIBTOOL
@@ -110,6 +108,9 @@ fi
 test -d libs || mkdir libs
 
 AC_OUTPUT(Makefile Unicode/Makefile gdraw/Makefile pfaedit/Makefile)
+if test -e toys >/dev/null 2>&1 ; then
+  AC_OUTPUT( toys/Makefile )
+fi
 
 echo Configuration defines: $DEFS
 if test "$STATIC_LIBS" != ""; then
