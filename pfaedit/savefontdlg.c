@@ -819,7 +819,7 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
 
     gcd[9].gd.pos.x = gcd[8].gd.pos.x; gcd[9].gd.pos.y = 219; gcd[9].gd.pos.width = gcd[8].gd.pos.width;
     gcd[9].gd.flags = gg_visible | gg_enabled;
-    if ( oldbitmapstate==2 )
+    if ( old==bf_none )
 	gcd[9].gd.flags &= ~gg_enabled;
     gcd[9].creator = GTextFieldCreate;
     label[9].text = BitmapList(temp);
