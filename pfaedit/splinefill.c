@@ -783,6 +783,7 @@ BDFChar *SplineCharRasterize(SplineChar *sc, int pixelsize) {
     EdgeList es;
     DBounds b;
     BDFChar *bdfc;
+    SplineSet *open;
 
     if ( sc==NULL )
 return( NULL );
@@ -792,6 +793,10 @@ return( NULL );
 	es.bitmap = gcalloc(1,1);
 	es.bytes_per_line = 1;
     } else {
+#if 1
+	/* Some truetype fonts have open paths that should be ignored */
+	open = SplineSetsExtractOpen(&sc->splines);
+#endif
 	SplineCharFindBounds(sc,&b);
 	es.scale = (pixelsize-.3) / (real) (sc->parent->ascent+sc->parent->descent);
 	es.mmin = floor(b.miny*es.scale);
@@ -817,6 +822,14 @@ return( NULL );
 	    es.bitmap = gcalloc(1,1);
 	    es.bytes_per_line = 1;
 	}
+#if 1
+	if ( open!=NULL ) {
+	    SplineSet *e;
+	    for ( e=open; e->next!=NULL; e = e->next );
+	    e->next = sc->splines;
+	    sc->splines = open;
+	}
+#endif
     }
 
     bdfc = gcalloc(1,sizeof(BDFChar));
@@ -1231,6 +1244,38 @@ BDFFont *SplineFontAntiAlias(SplineFont *_sf, int pixelsize, int linear_scale) {
     }
     BDFClut(bdf,linear_scale);
     GProgressEndIndicator();
+return( bdf );
+}
+
+BDFChar *BDFPieceMeal(BDFFont *bdf, int index) {
+    SplineChar *sc = bdf->sf->chars[index];
+
+    if ( sc==NULL )
+return(NULL);
+    if ( bdf->clut )
+	bdf->chars[index] = SplineCharAntiAlias(sc,bdf->pixelsize,4);
+    else
+	bdf->chars[index] = SplineCharRasterize(sc,bdf->pixelsize);
+return( bdf->chars[index] );
+}
+
+/* Piecemeal fonts are only used as the display font in the fontview */
+/*  as such they are simple fonts (ie. we only display the current cid subfont) */
+BDFFont *SplineFontPieceMeal(SplineFont *sf,int pixelsize,int antialias) {
+    BDFFont *bdf = gcalloc(1,sizeof(BDFFont));
+    real scale;
+
+    scale = pixelsize / (real) (sf->ascent+sf->descent);
+
+    bdf->sf = sf;
+    bdf->charcnt = sf->charcnt;
+    bdf->pixelsize = pixelsize;
+    bdf->chars = gcalloc(sf->charcnt,sizeof(BDFChar *));
+    bdf->ascent = rint(sf->ascent*scale);
+    bdf->descent = pixelsize-bdf->ascent;
+    bdf->encoding_name = sf->encoding_name;
+    bdf->piecemeal = true;
+    BDFClut(bdf,4);
 return( bdf );
 }
 

@@ -386,8 +386,11 @@ static void readttfmaxp(FILE *ttf,struct ttfinfo *info) {
     int cnt;
     fseek(ttf,info->maxp_start+4,SEEK_SET);		/* skip over the version number */
     cnt = getushort(ttf);
-    if ( cnt!=info->glyph_cnt && info->glyph_cnt!=0 )
+    if ( cnt!=info->glyph_cnt && info->glyph_cnt!=0 ) {
 	GDrawError("TTF Font has bad glyph count field %d %d", cnt, info->glyph_cnt);
+	if ( cnt>info->glyph_cnt )
+	    cnt = info->glyph_cnt;		/* Use the smaller of the two values */
+    }
     /* Open Type fonts have no loca table, so we can't calculate the glyph */
     /*  count from it */
     info->glyph_cnt = cnt;
@@ -547,6 +550,8 @@ static SplineSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
     SplinePoint *sp;
 
     for ( path=i=0; path<path_cnt; ++path ) {
+	if ( endpt[path]<i )	/* Sigh. Yes there are fonts with bad endpt info */
+    continue;
 	cur = chunkalloc(sizeof(SplineSet));
 	if ( head==NULL )
 	    head = cur;
@@ -610,8 +615,10 @@ static SplineSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
 	    FigureControls(cur->last,cur->first,&pts[i-1]);
 	else if ( !(flags[start]&_On_Curve) )
 	    FigureControls(cur->last,cur->first,&pts[start]);
-	SplineMake(cur->last,cur->first);
-	cur->last = cur->first;
+	if ( cur->last!=cur->first ) {
+	    SplineMake(cur->last,cur->first);
+	    cur->last = cur->first;
+	}
     }
 return( head );
 }
@@ -643,8 +650,10 @@ static void readttfsimpleglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, in
 	flags[i] = getc(ttf);
 	if ( flags[i]&_Repeat ) {
 	    int cnt = getc(ttf);
-	    if ( i+cnt>=tot )
+	    if ( i+cnt>=tot ) {
 		GDrawIError("Flag count is wrong (or total is): %d %d", i+cnt, tot );
+		cnt = tot-i-1;
+	    }
 	    for ( j=0; j<cnt; ++j )
 		flags[i+j+1] = flags[i];
 	    i += cnt;
@@ -688,6 +697,8 @@ static void readttfsimpleglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, in
     free(flags);
     free(instructions);
     free(pts);
+    if ( feof(ttf))
+	fprintf( stderr, "Reached end of file when reading simple glyph\n" );
 }
 
 #define _ARGS_ARE_WORDS	1
@@ -705,11 +716,15 @@ static void readttfsimpleglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, in
 #define _SCALED_OFFSETS		0x800	/* Use Apple definition of offset interpretation */
 #define _UNSCALED_OFFSETS	0x1000	/* Use MS definition */
 
-static void readttfcompositglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc) {
+static void readttfcompositglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, int32 end) {
     RefChar *head=NULL, *last=NULL, *cur;
     int flags, arg1, arg2;
 
     do {
+	if ( ftell(ttf)>=end ) {
+	    fprintf( stderr, "Bad flags value, implied MORE components at end of glyph\n" );
+    break;
+	}
 	cur = chunkalloc(sizeof(RefChar));
 	flags = getushort(ttf);
 	cur->local_enc = getushort(ttf);
@@ -789,6 +804,10 @@ static void readttfcompositglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc) 
 	else
 	    last->next = cur;
 	last = cur;
+	if ( feof(ttf)) {
+	    fprintf(stderr, "Reached end of file when reading composit glyph\n" );
+    break;
+	}
     } while ( flags&_MORE );
     /* I'm ignoring many things that I don't understand here */
     /* Instructions, USE_MY_METRICS, what happens if ARGS AREN'T XY */
@@ -818,7 +837,7 @@ return( sc );
     if ( path_cnt>=0 )
 	readttfsimpleglyph(ttf,info,sc,path_cnt);
     else
-	readttfcompositglyph(ttf,info,sc);
+	readttfcompositglyph(ttf,info,sc,end);
 return( sc );
 }
 
@@ -2292,8 +2311,10 @@ static void readttfwidths(FILE *ttf,struct ttfinfo *info) {
 	/* lsb = */ getushort(ttf);
     }
     for ( j=i; j<info->glyph_cnt; ++j ) {
-	info->chars[j]->width = info->chars[i-1]->width;
-	info->chars[j]->widthset = true;
+	if ( info->chars[j]!=NULL ) {		/* In a ttc file we may skip some */
+	    info->chars[j]->width = info->chars[i-1]->width;
+	    info->chars[j]->widthset = true;
+	}
     }
 }
 
@@ -3039,7 +3060,8 @@ return( 0 );
 	readttfgpossub(ttf,info,false);
     else
 	for ( i=0; i<info->glyph_cnt; ++i )
-	    info->chars[i]->lig = SCLigDefault(info->chars[i]);
+	    if ( info->chars[i]!=NULL )		/* Might be null in ttc files */
+		info->chars[i]->lig = SCLigDefault(info->chars[i]);
     setlocale(LC_NUMERIC,oldloc);
     ttfFixupReferences(info);
 return( true );
@@ -3132,10 +3154,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 
     sf = SplineFontEmpty();
     sf->display_size = -default_fv_font_size;
-    if ( info->glyph_cnt<2000 )
-	sf->display_antialias = default_fv_antialias;
-    else
-	sf->display_antialias = false;
+    sf->display_antialias = default_fv_antialias;
     sf->fontname = info->fontname;
     sf->fullname = info->fullname;
     sf->familyname = info->familyname;

@@ -1380,10 +1380,13 @@ static void FVMenuSize(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     }
     if ( fv->filled!=fv->show || fv->filled->pixelsize != dspsize || changealias ) {
 	BDFFont *new;
+	new = SplineFontPieceMeal(fv->sf,dspsize,fv->antialias);
+#if 0
 	if ( fv->antialias )
 	    new = SplineFontAntiAlias(fv->sf,dspsize,4);
 	else
 	    new = SplineFontRasterize(fv->sf,dspsize,true);
+#endif
 	BDFFontFree(fv->filled);
 	fv->filled = new;
 	FVChangeDisplayFont(fv,new);
@@ -1973,7 +1976,7 @@ static GMenuItem fllist[] = {
     { { (unichar_t *) _STR_Generate, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'G' }, 'G', ksm_control|ksm_shift, NULL, NULL, FVMenuGenerate },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Import, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, 'I', ksm_control|ksm_shift, NULL, NULL, FVMenuImport },
-    { { (unichar_t *) _STR_Mergekern, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, 'K', ksm_control|ksm_shift, NULL, NULL, FVMenuMergeKern },
+    { { (unichar_t *) _STR_Mergekern, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, 'K', ksm_meta|ksm_shift, NULL, NULL, FVMenuMergeKern },
     { { (unichar_t *) _STR_Revertfile, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'R' }, 'R', ksm_control|ksm_shift, NULL, NULL, FVMenuRevert, MID_Revert },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Print, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, 'P', ksm_control, NULL, NULL, FVMenuPrint, MID_Print },
@@ -2241,6 +2244,9 @@ return;
 	GClut clut;
 	GRect old, box;
 
+	if ( bdfc==NULL )
+	    bdfc = BDFPieceMeal(bdf,enc);
+
 	memset(&gi,'\0',sizeof(gi));
 	memset(&base,'\0',sizeof(base));
 	if ( bdfc->byte_data ) {
@@ -2285,19 +2291,23 @@ return;
 }
 
 void FVRegenChar(FontView *fv,SplineChar *sc) {
-    BDFChar *bdfc;
     struct splinecharlist *dlist;
-    MetricsView *mv;
 
     sc->changedsincelasthinted = true;
+    BDFCharFree(fv->filled->chars[sc->enc]);
+    fv->filled->chars[sc->enc] = NULL;
+#if 0
     if ( fv->antialias )
 	bdfc = SplineCharAntiAlias(sc,fv->filled->pixelsize,4);
     else
 	bdfc = SplineCharRasterize(sc,fv->filled->pixelsize);
     BDFCharFree(fv->filled->chars[sc->enc]);
     fv->filled->chars[sc->enc] = bdfc;
+#endif
+#if 0		/* FVRefreshChar does this for us */
     for ( mv=fv->metrics; mv!=NULL; mv=mv->next )
 	MVRegenChar(mv,sc);
+#endif
 
     FVRefreshChar(fv,fv->filled,sc->enc);
 
@@ -2531,6 +2541,10 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		GDrawFillRect(pixmap,&r,0x000000);
 		GDrawSetCopyMode(pixmap);
 	    }
+
+	    if ( fv->show!=NULL && fv->show->piecemeal &&
+		    fv->show->chars[index]==NULL && fv->sf->chars[index]!=NULL )
+		BDFPieceMeal(fv->show,index);
 
 	    if ( fv->show!=NULL && fv->show->chars[index]==NULL &&
 		    SCWorthOutputting(fv->sf->chars[index]) ) {
@@ -2978,10 +2992,13 @@ void FontViewReformat(FontView *fv) {
 	if ( fv->rowoff<0 ) fv->rowoff =0;
 	GScrollBarSetPos(fv->vsb,fv->rowoff);
     }
+    new = SplineFontPieceMeal(fv->sf,fv->filled->pixelsize,fv->antialias);
+#if 0
     if ( fv->antialias )
 	new = SplineFontAntiAlias(fv->sf,fv->filled->pixelsize,4);
     else
 	new = SplineFontRasterize(fv->sf,fv->filled->pixelsize,true);
+#endif
     BDFFontFree(fv->filled);
     if ( fv->filled == fv->show )
 	fv->show = new;
@@ -3109,12 +3126,16 @@ FontView *FontViewCreate(SplineFont *sf) {
     fv->header = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
     fv->antialias = sf->display_antialias;
     GDrawSetFont(fv->v,fv->header);
+    bdf = SplineFontPieceMeal(fv->sf,sf->display_size<0?-sf->display_size:default_fv_font_size,
+	    fv->antialias );
+#if 0
     if ( fv->antialias )
 	bdf = SplineFontAntiAlias(fv->sf,
 		sf->display_size<0?-sf->display_size:default_fv_font_size,4);
     else
 	bdf = SplineFontRasterize(fv->sf,
 		sf->display_size<0?-sf->display_size:default_fv_font_size,true);
+#endif
     fv->filled = bdf;
     if ( sf->display_size>0 ) {
 	for ( bdf=sf->bitmaps; bdf!=NULL && bdf->pixelsize!=sf->display_size ;

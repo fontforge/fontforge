@@ -162,8 +162,9 @@ typedef struct bdffont {
     int charcnt;
     BDFChar **chars;		/* an array of charcnt entries */
     BDFChar **temp;		/* Used by ReencodeFont routine */
-    int pixelsize;
-    int ascent, descent;
+    int16 pixelsize;
+    int16 ascent, descent;
+    unsigned int piecemeal: 1;
     enum charset encoding_name;
     struct bdffont *next;
     struct clut *clut;
@@ -557,6 +558,8 @@ extern BDFChar *SplineCharRasterize(SplineChar *sc, int pixelsize);
 extern BDFFont *SplineFontRasterize(SplineFont *sf, int pixelsize, int indicate);
 extern BDFChar *SplineCharAntiAlias(SplineChar *sc, int pixelsize,int linear_scale);
 extern BDFFont *SplineFontAntiAlias(SplineFont *sf, int pixelsize,int linear_scale);
+extern BDFChar *BDFPieceMeal(BDFFont *bdf, int index);
+extern BDFFont *SplineFontPieceMeal(SplineFont *sf,int pixelsize,int antialias);
 extern BDFFont *BitmapFontScaleTo(BDFFont *old, int to);
 extern void BDFCharFree(BDFChar *bdfc);
 extern void BDFFontFree(BDFFont *bdf);

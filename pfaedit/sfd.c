@@ -1153,18 +1153,22 @@ return( 1 );
 static int SFDGetBitmapFont(FILE *sfd,SplineFont *sf) {
     BDFFont *bdf, *prev;
     char tok[200];
+    int pixelsize, ascent, descent;
 
     bdf = gcalloc(1,sizeof(BDFFont));
     bdf->encoding_name = sf->encoding_name;
 
-    if ( getint(sfd,&bdf->pixelsize)!=1 || bdf->pixelsize<=0 )
+    if ( getint(sfd,&pixelsize)!=1 || pixelsize<=0 )
 return( 0 );
     if ( getint(sfd,&bdf->charcnt)!=1 || bdf->charcnt<0 )
 return( 0 );
-    if ( getint(sfd,&bdf->ascent)!=1 || bdf->ascent<0 )
+    if ( getint(sfd,&ascent)!=1 || ascent<0 )
 return( 0 );
-    if ( getint(sfd,&bdf->descent)!=1 || bdf->descent<0 )
+    if ( getint(sfd,&descent)!=1 || descent<0 )
 return( 0 );
+    bdf->pixelsize = pixelsize;
+    bdf->ascent = ascent;
+    bdf->descent = descent;
 
     if ( sf->bitmaps==NULL )
 	sf->bitmaps = bdf;

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 12-Nov-2001 -->
+  <!-- AP: Last modified: 15-Nov-2001 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -71,8 +71,8 @@ know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-011112.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 12-Nov-2001
+    <A HREF="pfaedit-011115.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 15-Nov-2001
   <LI>
     <A HREF="pfaedit-solaris-011102.tgz">Download pfaedit Solaris 8.0
     </A>executable Version: 2-Nov-2001
@@ -106,22 +106,22 @@ If you want to edit CID keyed fonts you need these
 <P>
 You can download a <A HREF="pfaedit-011102-1.src.rpm">source RPM</A>: Version:
 2-Nov-2001<BR>
-Or you can download the following three packages. Version: 12-Nov-2001
+Or you can download the following three packages. Version: 15-Nov-2001
 <UL>
   <LI>
     <A HREF="libgunicode-011011.tgz">Unicode library source</A> (11-Oct-2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGUnicode/index.html">docs</A>
   <LI>
-    <A HREF="libgdraw-011111.tgz">Unicode widget library source</A>
-    (11-Nov-2001)<BR>
+    <A HREF="libgdraw-011115.tgz">Unicode widget library source</A>
+    (15-Nov-2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
   <LI>
-    <A HREF="pfaedit_src-011112.tgz">Pfaedit source</A> (12-Nov-2001)<BR>
+    <A HREF="pfaedit_src-011115.tgz">Pfaedit source</A> (15-Nov-2001)<BR>
     -- <A HREF="overview.html">docs</A>
   <LI>
-    <A HREF="pfaedit_full-011112.tgz">All three bundled together </A>(12-Nov-2001)
+    <A HREF="pfaedit_full-011115.tgz">All three bundled together </A>(15-Nov-2001)
 </UL>
 <P>
 If you want to do autotracing around character images you should also download
@@ -231,6 +231,21 @@ up into one <A HREF="pfaedit_htdocs-010925.tgz">tgz file</A> 25-Sept-2001.
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    15-Nov-2001
+    <UL>
+      <LI>
+	PfaEdit had a bug when loading some ttc files which caused it to crash.
+      <LI>
+	PfaEdit wasn't prepared for the erroneous truetype found in wcl-02.ttf, this
+	caused a crash. PfaEdit should do better now.
+      <LI>
+	PfaEdit's scrollbars didn't work very well. Should be much improved now.
+      <LI>
+	PfaEdit used to generate an entire antialiased bitmap font to display in
+	the fontview window. Now it only generates the images when it needs them.
+	This speeds up the loading of large fonts and reduces their memory requirements.
+    </UL>
   <LI>
     12-Nov-2001
     <UL>
@@ -582,6 +597,12 @@ prepared to save frequently and always work on a copy of the original.
   <LI>
     When reading in TrueType PfaEdit will not get the correct offset for composit
     glyphs where offsets are specified by point matching rather than as x,y values.
+  <LI>
+    Some truetype fonts (kaiu and mingliu) do not store the correct outline.
+    Instead they rely on using the instructions to move points around to generate
+    the outline. The outline does not appear to be grid-fit at all, just positioned.
+    PfaEdit will not read the instructions. In most fonts this would be the wrong
+    thing to do, and I don't know how I could tell when it needs to be done...
   <LI>
     PfaEdit's support for the GPOS table output is limitted. Currently it only
     recognizes latin,cyrillic,greek,arabic and hebrew scripts. It assumes everything
