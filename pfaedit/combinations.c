@@ -244,6 +244,39 @@ return;
     KPSortEm(kpd,sb_first);
 }
 
+static void KPScrollTo(KPData *kpd, unichar_t uch, enum sortby sort) {
+    int enc,i;
+
+    enc = SFFindChar(kpd->sf,uch,NULL);
+    if ( enc==-1 ) {
+	GDrawBeep(NULL);
+return;
+    }
+
+    if ( sort==sb_first ) {
+	for ( i=0; i<kpd->kcnt && kpd->kerns[i].first->enc<enc; ++i );
+    } else {
+	for ( i=0; i<kpd->kcnt && kpd->kerns[i].second->enc<enc; ++i );
+    }
+    if ( kpd->wh<=2 )
+	/* As is */;
+    else if ( kpd->wh<5 )
+	--i;
+    else
+	i -= kpd->wh/5;
+
+    if ( i>kpd->kcnt-kpd->wh )
+	i = kpd->kcnt-kpd->wh;
+    if ( i<0 )
+	i = 0;
+    if ( i!=kpd->off_top ) {
+	int off = i-kpd->off_top;
+	kpd->off_top = i;
+	GScrollBarSetPos(GWidgetGetControl(kpd->gw,CID_ScrollBar),kpd->off_top);
+	GDrawScroll(kpd->v,NULL,0,off*kpd->uh);
+    }
+}
+
 static void KP_Resize(KPData *kpd) {
     GRect size, bsize;
     int height;
@@ -725,6 +758,15 @@ static int kpd_e_h(GWindow gw, GEvent *event) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
 	    help("kernpairs.html");
 return( true );
+	}
+	if ( event->u.chr.chars[0]!='\0' && event->u.chr.chars[1]=='\0' ) {
+	    enum sortby sort = GGadgetGetFirstListSelectedItem(GWidgetGetControl(gw,CID_SortBy));
+	    KPData *kpd = GDrawGetUserData(gw);
+	    if ( sort!=sb_kern ) {
+		KPScrollTo(kpd,event->u.chr.chars[0],sort);
+return( true );
+	    } else
+		GDrawBeep(NULL);
 	}
 return( false );
     } else if ( event->type == et_resize && event->u.resize.sized ) {

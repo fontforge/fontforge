@@ -1,5 +1,6 @@
 CFLAGS=/nowarn/incl=([-.inc])/name=(as_is,short)
 
+
 pfaedit_OBJECTS =  alignment.obj,autohint.obj,autosave.obj,autowidth.obj,\
  bitmapdlg.obj,metafont.obj,parsettfbmf.obj,\
  bitmapview.obj,bvedit.obj,charview.obj,charviewicons.obj,cursors.obj,\
@@ -14,17 +15,24 @@ pfaedit_OBJECTS =  alignment.obj,autohint.obj,autosave.obj,autowidth.obj,\
  zapfnomen.obj,othersubrs.obj,autotrace.obj,openfontdlg.obj,encoding.obj,print.obj,\
  problems.obj,pfaedit-ui-en.obj,crctab.obj,macbinary.obj,scripting.obj,\
  freetype.obj,gotodlg.obj,search.obj
+ 
+pfaedit_OBJECTS2=displayfonts.obj,combinations.obj,sftextfield.obj,ikarus.obj
 
-pfaedit.exe : nomen.h $(pfaedit_OBJECTS)
+
+pfaedit.exe : nomen.h $(pfaedit_OBJECTS) $(pfaedit_OBJECTS2)
         library/create tmp.olb $(pfaedit_OBJECTS)
-	link/exec=pfaedit.exe start,tmp/lib,[-.libs]LIBGDRAW/lib,\
-	LIBGUNICODE/lib,[]xlib.opt/opt
+        library tmp.olb $(pfaedit_OBJECTS2)
+        link/exec=pfaedit.exe start,tmp/lib,[-.libs]LIBGDRAW/lib,\
+        LIBGUNICODE/lib,[]xlib.opt/opt
+
 
 nomen.h : makenomenh.exe
-	run makenomenh
+        run makenomenh
+
 
 makenomenh.exe : makenomenh.obj
-	link makenomenh,[-.libs]LIBGDRAW/lib,LIBGUNICODE/lib,[]xlib.opt/opt
+        link makenomenh,[-.libs]LIBGDRAW/lib,LIBGUNICODE/lib,[]xlib.opt/opt
+
 
 tottf.obj : tottf.c
-	  $(CC) $(CFLAGS)/noop tottf
+          $(CC) $(CFLAGS)/noop tottf
