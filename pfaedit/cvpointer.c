@@ -368,6 +368,7 @@ void CVCheckResizeCursors(CharView *cv) {
     real fudge = 3.5/cv->scale;
 
     cv->expandedge = ee_none;
+    cv->expand_width = false;
     if ( cv->drawmode==dm_fore ) {
 	for ( ref=cv->sc->refs; ref!=NULL; ref=ref->next ) if ( ref->selected ) {
 	    if (( cv->expandedge = OnBB(cv,&ref->bb,fudge))!=ee_none )
@@ -381,6 +382,8 @@ void CVCheckResizeCursors(CharView *cv) {
 		    cv->info.y > cv->sc->parent->vertical_origin-cv->sc->vwidth-fudge &&
 		    cv->info.y < cv->sc->parent->vertical_origin-cv->sc->vwidth+fudge )
 		cv->expandedge = ee_down;
+	    if ( cv->expandedge!=ee_none )
+		cv->expand_width = true;
 	}
     }
     if ( cv->drawmode==dm_back ) {

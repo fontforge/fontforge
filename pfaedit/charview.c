@@ -1629,6 +1629,15 @@ return;
     } else if ( cv->p.rubberbanding ) {
 	xdiff=cv->info.x-cv->p.cx;
 	ydiff = cv->info.y-cv->p.cy;
+    } else if ( cv->expand_width ) {
+	/* Werner wants to know where the width line is when he moves the cursor over it. */
+	if ( cv->expandedge==ee_right )	/* Advance width */
+	    sprintf(buffer,"%d", (int) cv->sc->width );
+	else
+	    sprintf(buffer,"%d", (int) cv->sc->vwidth );
+	uc_strcpy(ubuffer,buffer);
+	GDrawDrawText(pixmap,SPT_DATA,ybase,ubuffer,-1,NULL,0);
+return;
     } else
 return;
 

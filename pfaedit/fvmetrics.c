@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
+#include <ustring.h>
 
 typedef struct createwidthdata {
     unsigned int done: 1;
@@ -243,6 +244,10 @@ static void FVCreateWidth(void *_fv,void (*doit)(CreateWidthData *),
 	GGadgetsCreate(cwd.gw,gcd);
 	GWidgetIndicateFocusGadget(GWidgetGetControl(cwd.gw,CID_SetVal));
 	GTextFieldSelect(GWidgetGetControl(cwd.gw,CID_SetVal),0,-1);
+    } else {
+	unichar_t *temp = uc_copy(def);
+	GGadgetSetTitle(GWidgetGetControl(cwd.gw,CID_SetVal),temp);
+	free( temp );
     }
 
     GWidgetHidePalettes();
@@ -330,29 +335,39 @@ static void CVDoit(CreateWidthData *wd) {
     wd->done = true;
 }
 
+static void SCDefWidthVal(char *buf,SplineChar *sc, enum widthtype wtype) {
+    DBounds bb;
+
+    if ( wtype==wt_width )
+	sprintf( buf, "%d", sc->width );
+    else if ( wtype==wt_vwidth )
+	sprintf( buf, "%d", sc->vwidth );
+    else {
+	SplineCharFindBounds(sc,&bb);
+	if ( wtype==wt_lbearing )
+	    sprintf( buf, "%.4g", bb.minx );
+	else
+	    sprintf( buf, "%.4g", sc->width-bb.maxx );
+    }
+}
+
 void FVSetWidth(FontView *fv,enum widthtype wtype) {
     char buffer[12];
+    int i;
 
-    sprintf( buffer, "%d", fv->sf->ascent+fv->sf->descent);
-    FVCreateWidth(fv,FVDoit,wtype,wtype==wt_width?"600":wtype==wt_vwidth?buffer:
-	    "100");
+    strcpy(buffer,wtype==wt_width?"600":wtype==wt_vwidth?"1000": "100" );
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] && fv->sf->chars[i]!=NULL ) {
+	SCDefWidthVal(buffer,fv->sf->chars[i],wtype);
+    break;
+    }
+
+    FVCreateWidth(fv,FVDoit,wtype,buffer);
 }
 
 void CVSetWidth(CharView *cv,enum widthtype wtype) {
     char buf[10];
-    DBounds bb;
 
-    if ( wtype==wt_width )
-	sprintf( buf, "%d", cv->sc->width );
-    else if ( wtype==wt_vwidth )
-	sprintf( buf, "%d", cv->sc->vwidth );
-    else {
-	SplineCharFindBounds(cv->sc,&bb);
-	if ( wtype==wt_lbearing )
-	    sprintf( buf, "%.4g", bb.minx );
-	else
-	    sprintf( buf, "%.4g", cv->sc->width-bb.maxx );
-    }
+    SCDefWidthVal(buf,cv->sc,wtype);
     FVCreateWidth(cv,CVDoit,wtype,buf);
 }
 
