@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 3-Jan-2002 -->
+  <!-- AP: Last modified: 5-Apr-2002 -->
   <TITLE>Get Info</TITLE>
 </HEAD>
 <BODY>
@@ -21,12 +21,11 @@ dialog is brought up.
   Point Info
 </H2>
 <P>
-<IMG SRC="pointinfo.png" WIDTH="254" HEIGHT="295">
-<P>
-This shows information about the current point. The Base position is where
-the point itself is. The Next CP shows both the location of the next control
-point, and the offset to that point from the base (and whether this setting
-is the default for that point), while the Prev CP does the same for the previous
+<IMG SRC="pointinfo.png" WIDTH="254" HEIGHT="295" ALIGN="Right"> This shows
+information about the current point. The Base position is where the point
+itself is. The Next CP shows both the location of the next control point,
+and the offset to that point from the base (and whether this setting is the
+default for that point), while the Prev CP does the same for the previous
 control point. You may change any of these and the change is reflected in
 the outline view. You may move on to the next or previous point on the path.
 If you cancel then all changes to all points are canceled.
@@ -34,14 +33,14 @@ If you cancel then all changes to all points are canceled.
 The colors of the labels reflect the colors of the items they refer to. The
 point itself will be drawn in red, the previous control point will be drawn
 in magenta and the next control point will be drawn in dull cyan.
+<BR Clear=All>
 <H2>
   <A NAME="Character">Character</A> Info
 </H2>
 <P>
-<IMG SRC="charinfo.png" WIDTH="276" HEIGHT="321">
-<P>
-This dialog allows you to set the name and unicode encoding of a given character.
-If you know the name of the character then PfaEdit can tell you the encoding
+<IMG SRC="charinfo.png" WIDTH="276" HEIGHT="362" ALIGN="Right"> This dialog
+allows you to set the name and unicode encoding of a given character. If
+you know the name of the character then PfaEdit can tell you the encoding
 (if you press Set From Name), similarly if you know the encoding then PfaEdit
 can tell you the name.
 <P>
@@ -53,6 +52,14 @@ separated by spaces. If a character may be viewed as two different ligatures
 then they may both be specified separated by a semicolon. For example "ffi"
 may be viewed as a ligature of "f" "f" and "i" or of "ff" and "i", the
 specification should be "f f i; ff i"
+<P>
+Some characters (ligatures, accented characters, Hangul syllables, etc.)
+are built up out of other characters. Displayed underneath the ligature field
+are the components of the current character, if those componants are in the
+font then you can use PfaEdit's Element-&gt;Build Accented or
+Element-&gt;Build Composit commands to create the current character. The
+information displayed here is informative only, you may not change this field
+directly. 
 <P>
 In the font view the Next and Prev buttons are not greyed out and you can
 change move on to the next character (if, for example, you need to enter

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 4-Apr-2002 -->
+  <!-- AP: Last modified: 5-Apr-2002 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -80,14 +80,14 @@ you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-020312.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 12-Mar-2002
+    <A HREF="pfaedit-020405.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 5-Apr-2002
   <LI>
     <A HREF="pfaedit-020312-1.ppc.rpm">Download pfaedit linux-ppc SUSE 7.1
     </A>binary rpm Version: 12-Mar-2002
   <LI>
-    <A HREF="pfaedit-solaris-020312.tgz">Download pfaedit Solaris 8.0
-    </A>executable Version: 12-Mar-2002
+    <A HREF="pfaedit-solaris-020405.tgz">Download pfaedit Solaris 8.0
+    </A>executable Version: 5-Apr-2002
   <LI>
     <A HREF="pfaedit-020312-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
     Version: 12-Mar-2002 (Redhat 7.1)
@@ -118,9 +118,9 @@ If you want to edit CID keyed fonts you probably need these
 <P>
 You can download a <A HREF="pfaedit-020312-1.src.rpm">source RPM</A>: Version:
 12-Mar-2002<BR>
-Or you can download the <A HREF="pfaedit_full-020403.tgz">entire source tree
+Or you can download the <A HREF="pfaedit_full-020405.tgz">entire source tree
 </A>in one .tgz file: Version
-3-Apr-2002<!--
+5-Apr-2002<!--
 Or you can download the following three packages. Version: 19-Jan-2002
 <UL>
 <LI>
@@ -275,6 +275,48 @@ Or you can just browse the <A HREF="overview.html">docs online</A>.
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    5-Apr-2002
+    <UL>
+      <LI>
+	Applied various patches from KANOU Hiroki
+      <LI>
+	Changes to metricsview
+	<UL>
+	  <LI>
+	    Fixed some minor bugs
+	  <LI>
+	    Double clicking on a character will open that character
+	  <LI>
+	    Enabled Copy/(CopyRef/CopyWidth/)Paste but not Cut
+	</UL>
+      <LI>
+	PfaEdit had problems when there were exactly two X resources.
+      <LI>
+	Made the Point Info dlg wider.
+      <LI>
+	Improved printing text samples at large point sizes.
+      <LI>
+	I was generating flex hints incorrectly.
+      <LI>
+	Extended postscript interpretter slightly to recognize the eps files (called
+	"art") produced by fontographer
+      <LI>
+	Additions to the scripting language
+	<UL>
+	  <LI>
+	    CenterInWidth
+	  <LI>
+	    AutoWidth (from Andreas P&aring;hlsson)
+	  <LI>
+	    AutoKern
+	</UL>
+      <LI>
+	The Expand Stroke fix for 4-Mar-2001 was too extreme.
+      <LI>
+	Added a field to Char Info that shows the components out of which this character
+	(accented, ligature, hangul sylable, etc.) may be built.
+    </UL>
   <LI>
     3-Apr-2002
     <UL>

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 4-Mar-2002 -->
+  <!-- AP: Last modified: 5-Apr-2002 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -733,6 +733,19 @@ a[4][0] = "Nested array";
   <DT>
     SetRBearing(rbearing)
   <DD>
+  <DT>
+    CenterInWidth()
+  <DD>
+  <DT>
+    AutoWidth(spacing)
+  <DD>
+    Guesses at the widths of all selected characters so that two adjacent "I"
+    characters will appear to be spacing em-units apart.
+  <DT>
+    AutoKern(spacing,threshold)
+  <DD>
+    (AutoKern doesn't work well in general)<BR>
+    Guesses at kerning pairs by looking at all selected characters.
   <DT>
     SetKern(ch2,offset)
   <DD>
