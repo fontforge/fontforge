@@ -3201,7 +3201,7 @@ return;
 }
 #endif
 
-static void FVRound2Int(FontView *fv) {
+static void FVRound2Int(FontView *fv,real factor) {
     int i, cnt=0;
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
@@ -3214,7 +3214,7 @@ static void FVRound2Int(FontView *fv) {
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SCPreserveState(fv->sf->chars[i],false);
-	SCRound2Int( fv->sf->chars[i],1.0);
+	SCRound2Int( fv->sf->chars[i],factor);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 # ifdef FONTFORGE_CONFIG_GDRAW
 	if ( !GProgressNext())
@@ -3234,10 +3234,57 @@ static void FVRound2Int(FontView *fv) {
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 # if defined(FONTFORGE_CONFIG_GDRAW)
 static void FVMenuRound2Int(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FVRound2Int( (FontView *) GDrawGetUserData(gw) );
+    FVRound2Int( (FontView *) GDrawGetUserData(gw), 1.0 );
 # elif defined(FONTFORGE_CONFIG_GTK)
 void FontViewMenu_Round2Int(GtkMenuItem *menuitem, gpointer user_data) {
-    FVRound2Int( (FontView *) FV_From_MI(menuitem));
+    FVRound2Int( (FontView *) FV_From_MI(menuitem), 1.0);
+# endif
+}
+
+# if defined(FONTFORGE_CONFIG_GDRAW)
+static void FVMenuRound2Hundredths(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FVRound2Int( (FontView *) GDrawGetUserData(gw),100.0 );
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_Round2Hundredths(GtkMenuItem *menuitem, gpointer user_data) {
+    FVRound2Int( (FontView *) FV_From_MI(menuitem),100.0);
+# endif
+}
+
+static void FVCluster(FontView *fv) {
+    int i, cnt=0;
+
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
+	++cnt;
+# ifdef FONTFORGE_CONFIG_GDRAW
+    GProgressStartIndicatorR(10,_STR_Rounding,_STR_Rounding,0,cnt,1);
+# elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_start_indicator(10,_("Rounding to integer..."),_("Rounding to integer..."),0,cnt,1);
+# endif
+
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
+	SCRoundToCluster(fv->sf->chars[i],-2,false,.1,.5);
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+# ifdef FONTFORGE_CONFIG_GDRAW
+	if ( !GProgressNext())
+# elif defined(FONTFORGE_CONFIG_GTK)
+	if ( !gwwv_progress_next())
+# endif
+    break;
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+    }
+# ifdef FONTFORGE_CONFIG_GDRAW
+    GProgressEndIndicator();
+# elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_end_indicator();
+# endif
+}
+
+# if defined(FONTFORGE_CONFIG_GDRAW)
+static void FVMenuCluster(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FVCluster( (FontView *) GDrawGetUserData(gw));
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_Cluster(GtkMenuItem *menuitem, gpointer user_data) {
+    FVCluster( (FontView *) FV_From_MI(menuitem));
 # endif
 }
 
@@ -5597,6 +5644,13 @@ static GMenuItem trlist[] = {
     { NULL }
 };
 
+static GMenuItem rndlist[] = {
+    { { (unichar_t *) _STR_Round2int, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '_', ksm_control|ksm_shift, NULL, NULL, FVMenuRound2Int, MID_Round },
+    { { (unichar_t *) _STR_Round2Hundredths, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuRound2Hundredths, 0 },
+    { { (unichar_t *) _STR_Cluster, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuCluster },
+    { NULL }
+};
+
 static GMenuItem ellist[] = {
     { { (unichar_t *) _STR_Fontinfo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, 'F', ksm_control|ksm_shift, NULL, NULL, FVMenuFontInfo },
     { { (unichar_t *) _STR_GlyphInfo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, 'I', ksm_control, NULL, NULL, FVMenuCharInfo, MID_CharInfo },
@@ -5615,7 +5669,7 @@ static GMenuItem ellist[] = {
     { { (unichar_t *) _STR_Overlap, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'O' }, '\0', ksm_control|ksm_shift, rmlist, NULL, NULL, MID_RmOverlap },
     { { (unichar_t *) _STR_Simplify, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, '\0', ksm_control|ksm_shift, smlist, NULL, NULL, MID_Simplify },
     { { (unichar_t *) _STR_AddExtrema, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'x' }, 'X', ksm_control|ksm_shift, NULL, NULL, FVMenuAddExtrema, MID_AddExtrema },
-    { { (unichar_t *) _STR_Round2int, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '_', ksm_control|ksm_shift, NULL, NULL, FVMenuRound2Int, MID_Round },
+    { { (unichar_t *) _STR_Round_Menu, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '\0', ksm_control|ksm_shift, rndlist, NULL, NULL, MID_Round },
     { { (unichar_t *) _STR_Effects, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, '\0', ksm_control|ksm_shift, eflist, NULL, NULL, MID_Effects },
     { { (unichar_t *) _STR_MetaFont, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, '!', ksm_control|ksm_shift, NULL, NULL, FVMenuMetaFont, MID_MetaFont },
     { { (unichar_t *) _STR_Autotrace, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'r' }, 'T', ksm_control|ksm_shift, NULL, NULL, FVMenuAutotrace, MID_Autotrace },
@@ -9370,7 +9424,7 @@ void FVFakeMenus(FontView *fv,int cmd) {
 	FVAddExtrema(fv);
       break;
       case 103:
-	FVRound2Int(fv);
+	FVRound2Int(fv,1.0);
       break;
       case 104:
 	FVOverlap(fv,over_intersect);

@@ -5467,7 +5467,7 @@ static void CVMenuMakeParallel(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CVMakeParallel(cv);
 }
 
-static void _CVMenuRound2Int(CharView *cv) {
+static void _CVMenuRound2Int(CharView *cv, double factor) {
     int anysel = CVAnySel(cv,NULL,NULL,NULL,NULL);
     SplinePointList *spl;
     SplinePoint *sp;
@@ -5477,7 +5477,7 @@ static void _CVMenuRound2Int(CharView *cv) {
     for ( spl= cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl=spl->next ) {
 	for ( sp=spl->first; ; ) {
 	    if ( sp->selected || !anysel )
-		SplinePointRound(sp,1.0);
+		SplinePointRound(sp,factor);
 	    if ( sp->prev!=NULL )
 		SplineRefigure(sp->prev);
 	    if ( sp->next==NULL )
@@ -5492,8 +5492,8 @@ static void _CVMenuRound2Int(CharView *cv) {
     if ( cv->drawmode==dm_fore ) {
 	for ( r=cv->sc->layers[ly_fore].refs; r!=NULL; r=r->next ) {
 	    if ( r->selected || !anysel ) {
-		r->transform[4] = rint(r->transform[4]*1.0)/1.0;
-		r->transform[5] = rint(r->transform[5]*1.0)/1.0;
+		r->transform[4] = rint(r->transform[4]*factor)/factor;
+		r->transform[5] = rint(r->transform[5]*factor)/factor;
 	    }
 	}
     }
@@ -5502,7 +5502,20 @@ static void _CVMenuRound2Int(CharView *cv) {
 
 static void CVMenuRound2Int(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    _CVMenuRound2Int(cv);
+    _CVMenuRound2Int(cv,1.0);
+}
+
+static void CVMenuRound2Hundredths(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    _CVMenuRound2Int(cv,100.0);
+}
+
+static void CVMenuCluster(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    int layer = cv->drawmode == dm_grid ? -1 :
+		cv->drawmode == dm_back ? 0
+					: cv->layerheads[dm_fore] - cv->sc->layers;
+    SCRoundToCluster(cv->sc,layer,true,.1,.5);
 }
 
 static void CVMenuStroke(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -6869,6 +6882,13 @@ static GMenuItem trlist[] = {
     { NULL }
 };
 
+static GMenuItem rndlist[] = {
+    { { (unichar_t *) _STR_Round2int, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '_', ksm_control|ksm_shift, NULL, NULL, CVMenuRound2Int, MID_Round },
+    { { (unichar_t *) _STR_Round2Hundredths, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuRound2Hundredths, 0 },
+    { { (unichar_t *) _STR_Cluster, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuCluster },
+    { NULL }
+};
+
 static GMenuItem ellist[] = {
     { { (unichar_t *) _STR_Fontinfo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, 'F', ksm_control|ksm_shift, NULL, NULL, CVMenuFontInfo },
     { { (unichar_t *) _STR_GlyphInfo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, 'I', ksm_control|ksm_shift|ksm_meta, NULL, NULL, CVMenuCharInfo, MID_CharInfo },
@@ -6892,7 +6912,7 @@ static GMenuItem ellist[] = {
     { { (unichar_t *) _STR_Autotrace, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'r' }, 'T', ksm_control|ksm_shift, NULL, NULL, CVMenuAutotrace, MID_Autotrace },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Align, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'l' }, '\0', ksm_control|ksm_shift, allist, allistcheck },
-    { { (unichar_t *) _STR_Round2int, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '_', ksm_control|ksm_shift, NULL, NULL, CVMenuRound2Int, MID_Round },
+    { { (unichar_t *) _STR_Round_Menu, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '\0', ksm_control|ksm_shift, rndlist, NULL, NULL, MID_Round },
     { { (unichar_t *) _STR_Order, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, orlist, orlistcheck },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Clockwise, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'o' }, '\0', 0, NULL, NULL, CVMenuDir, MID_Clockwise },
@@ -7696,7 +7716,7 @@ static void SVMenuAddExtrema(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void SVMenuRound2Int(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SearchView *sv = (SearchView *) GDrawGetUserData(gw);
     CharView *cv = sv->cv_srch.inactive ? &sv->cv_rpl : &sv->cv_srch;
-    _CVMenuRound2Int(cv);
+    _CVMenuRound2Int(cv,1.0);
 }
 
 static void SVMenuDir(GWindow gw,struct gmenuitem *mi,GEvent *e) {

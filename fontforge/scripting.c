@@ -2770,6 +2770,28 @@ static void bRoundToInt(Context *c) {
     }
 }
 
+static void bRoundToCluster(Context *c) {
+    real within = .1, max = .5;
+    int i;
+    SplineFont *sf = c->curfv->sf;
+
+    if ( c->a.argc>3 )
+	error( c, "Wrong number of arguments");
+    else if ( c->a.argc>=2 ) {
+	if ( c->a.vals[1].type!=v_int || c->a.vals[1].u.ival<=0 )
+	    error( c, "Bad type for argument" );
+	within = 1.0/c->a.vals[1].u.ival;
+	max = 4*within;
+	if ( c->a.argc>=3 ) {
+	    if ( c->a.vals[2].type!=v_int || c->a.vals[2].u.ival<=0 )
+		error( c, "Bad type for argument" );
+	    max = 1.0/c->a.vals[2].u.ival;
+	}
+    }
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && c->curfv->selected[i] )
+	SCRoundToCluster( sf->chars[i],-2,false,within,max);
+}
+
 static void bAutotrace(Context *c) {
     if ( c->a.argc!=1 )
 	error( c, "Wrong number of arguments");
@@ -4365,6 +4387,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "NearlyHvLines", bNearlyHvLines },
     { "AddExtrema", bAddExtrema },
     { "RoundToInt", bRoundToInt },
+    { "RoundToCluster", bRoundToCluster },
     { "Autotrace", bAutotrace },
     { "CorrectDirection", bCorrectDirection },
     { "AddATT", bAddATT },

@@ -4594,3 +4594,263 @@ void MMSetFree(MMSet *mm) {
 
     chunkfree(mm,sizeof(*mm));
 }
+
+static int xcmp(const void *_p1, const void *_p2) {
+    const SplinePoint * const *_spt1 = _p1, * const *_spt2 = _p2;
+    const SplinePoint *sp1 = *_spt1, *sp2 = *_spt2;
+
+    if ( sp1->me.x>sp2->me.x )
+return( 1 );
+    else if ( sp1->me.x<sp2->me.x )
+return( -1 );
+
+return( 0 );
+}
+
+static int ycmp(const void *_p1, const void *_p2) {
+    const SplinePoint * const *_spt1 = _p1, * const *_spt2 = _p2;
+    const SplinePoint *sp1 = *_spt1, *sp2 = *_spt2;
+
+    if ( sp1->me.y>sp2->me.y )
+return( 1 );
+    else if ( sp1->me.y<sp2->me.y )
+return( -1 );
+
+return( 0 );
+}
+
+struct cluster {
+    int cnt;
+    int first, last;
+};
+
+static void countcluster(SplinePoint **ptspace, struct cluster *cspace,
+	int ptcnt, int is_y, int i, double within, double max) {
+    int j;
+
+    cspace[i].cnt = 1;	/* current point is always within its own cluster */
+    cspace[i].first = cspace[i].last = i;
+    for ( j=i-1; j>=0; --j ) {
+	if ( cspace[j].cnt==0 )		/* Already allocated to a different cluster */
+    break;
+	if ( (&ptspace[j+1]->me.x)[is_y]-(&ptspace[j]->me.x)[is_y]<within &&
+		(&ptspace[i]->me.x)[is_y]-(&ptspace[j]->me.x)[is_y]<max ) {
+	    ++cspace[i].cnt;
+	    cspace[i].first = j;
+	} else
+    break;
+    }
+    for ( j=i+1; j<ptcnt; ++j ) {
+	if ( cspace[j].cnt==0 )		/* Already allocated to a different cluster */
+    break;
+	if ( (&ptspace[j]->me.x)[is_y]-(&ptspace[j-1]->me.x)[is_y]<within &&
+		(&ptspace[j]->me.x)[is_y]-(&ptspace[i]->me.x)[is_y]<max ) {
+	    ++cspace[i].cnt;
+	    cspace[i].last = j;
+	} else
+    break;
+    }
+}
+	
+static int _SplineCharRoundToCluster(SplineChar *sc,SplinePoint **ptspace,
+	struct cluster *cspace,int ptcnt,int is_y,int dohints,
+	int layer, int changed,
+	double within, double max ) {
+    int i,j,best;
+    double low,high,cur;
+
+    for ( i=0; i<ptcnt; ++i )
+	cspace[i].cnt = 1;		/* Initialize to non-zero */
+    for ( i=0; i<ptcnt; ++i )
+	countcluster(ptspace,cspace,ptcnt,is_y,i,within,max);
+
+    forever {
+	j=0; best = cspace[0].cnt;
+	for ( i=1; i<ptcnt; ++i ) {
+	    if ( cspace[i].cnt>best ) {
+		j=i;
+		best = cspace[i].cnt;
+	    }
+	}
+	if ( best<=1 )		/* No more clusters */
+return( changed );
+	for ( i=j+1; i<=cspace[j].last && cspace[i].cnt==cspace[j].cnt; ++i );
+	j = (j+i-1)/2;		/* There are probably several points with the */
+				/* same values for cspace. Pick one in the */
+			        /* middle, so that when round we round to the */
+			        /* middle rather than to an edge */
+	low = (&ptspace[cspace[j].first]->me.x)[is_y];
+	high = (&ptspace[cspace[j].last]->me.x)[is_y];
+	cur = (&ptspace[j]->me.x)[is_y];
+	if ( low==high ) {
+	    for ( i=cspace[j].first; i<=cspace[j].last; ++i )
+		cspace[i].cnt = 0;
+    continue;
+	}
+	if ( !changed ) {
+	    if ( layer==-2 )
+		SCPreserveState(sc,dohints);
+	    else if ( layer!=-1 )
+		SCPreserveLayer(sc,layer,dohints);
+	    changed = true;
+	}
+	for ( i=cspace[j].first; i<=cspace[j].last; ++i ) {
+	    double off = (&ptspace[i]->me.x)[is_y] - cur;
+	    (&ptspace[i]->nextcp.x)[is_y] -= off;
+	    (&ptspace[i]->prevcp.x)[is_y] -= off;
+	    (&ptspace[i]->me.x)[is_y] -= off;
+	    if ( (&ptspace[i]->prevcp.x)[is_y]-cur>-within &&
+		    (&ptspace[i]->prevcp.x)[is_y]-cur<within ) {
+		(&ptspace[i]->prevcp.x)[is_y] = cur;
+		if ( (&ptspace[i]->prevcp.x)[!is_y]==(&ptspace[i]->me.x)[!is_y] )
+		    ptspace[i]->noprevcp = true;
+	    }
+	    if ( (&ptspace[i]->nextcp.x)[is_y]-cur>-within &&
+		    (&ptspace[i]->nextcp.x)[is_y]-cur<within ) {
+		(&ptspace[i]->nextcp.x)[is_y] = cur;
+		if ( (&ptspace[i]->nextcp.x)[!is_y]==(&ptspace[i]->me.x)[!is_y] )
+		    ptspace[i]->nonextcp = true;
+	    }
+	    cspace[i].cnt = 0;
+	}
+	if ( dohints ) {
+	    StemInfo *h = is_y ? sc->hstem : sc->vstem;
+	    while ( h!=NULL && h->start<=high ) {
+		if ( h->start>=low ) {
+		    h->width -= (h->start-cur);
+		    h->start = cur;
+		}
+		if ( h->start+h->width>=low && h->start+h->width<=high )
+		    h->width = cur-h->start;
+		h = h->next;
+	    }
+	}
+	/* Ok, surrounding points can no longer use the ones allocated to */
+	/*  this cluster. So refigure them */
+	for ( i=cspace[j].first-1; i>=0 &&
+		( (&ptspace[i]->me.x)[is_y]-cur>-max && (&ptspace[i]->me.x)[is_y]-cur<max ); --i )
+	    countcluster(ptspace,cspace,ptcnt,is_y,i,within,max);
+	for ( i=cspace[j].last+1; i<ptcnt &&
+		( (&ptspace[i]->me.x)[is_y]-cur>-max && (&ptspace[i]->me.x)[is_y]-cur<max ); ++i )
+	    countcluster(ptspace,cspace,ptcnt,is_y,i,within,max);
+    }
+}
+
+int SCRoundToCluster(SplineChar *sc,int layer,int sel,double within,double max) {
+    /* Do a cluster analysis on the points in this character. Look at each */
+    /* axis in turn. Order all points in char along this axis. For each pt: */
+    /*  look at the two points before & after it. If those to pts are within */
+    /*  the error bound (within) then continue until we reach a point that */
+    /*  is further from its nearest point than "within" or is further from */
+    /*  the center point than "max". Count all the points we have found. */
+    /*  These points make up the cluster centered on this point. */
+    /* Then find the largest cluster & round everything to the center point */
+    /*  (shift each point & its cps to center point. Then if cps are "within" */
+    /*  set the cps to the center point too) */
+    /* Refigure all clusters within "max" of this one, Find the next largest */
+    /* cluster, and continue. We stop when the largest cluster has only one */
+    /* point in it */
+    /* if "sel" is true then we are only interested in selected points */
+    /* (if there are no selected points then all points in the current layer) */
+    /* if "layer"==-1 then use sf->grid. if layer==-2 then all foreground layers*/
+    /* if "layer"==ly_fore or -2 then round hints that fall in our clusters too*/
+    int ptcnt, selcnt;
+    int l,k,changed;
+    SplineSet *spl;
+    SplinePoint *sp;
+    SplinePoint **ptspace;
+    struct cluster *cspace;
+    Spline *s, *first;
+
+    /* First figure out what points we will need */
+    for ( k=0; k<2; ++k ) {
+	ptcnt = selcnt = 0;
+	if ( layer==-2 ) {
+	    for ( l=ly_fore; l<sc->layer_cnt; ++l ) {
+		for ( spl = sc->layers[l].splines; spl!=NULL; spl=spl->next ) {
+		    for ( sp = spl->first; ; ) {
+			if ( k && (!sel || (sel && sp->selected)) )
+			    ptspace[ptcnt++] = sp;
+			else
+			    ++ptcnt;
+			if ( sp->selected ) ++selcnt;
+			if ( sp->next==NULL )
+		    break;
+			sp = sp->next->to;
+			if ( sp==spl->first )
+		    break;
+		    }
+		}
+	    }
+	} else {
+	    if ( layer==-1 )
+		spl = sc->parent->grid.splines;
+	    else
+		spl = sc->layers[layer].splines;
+	    for ( ; spl!=NULL; spl=spl->next ) {
+		for ( sp = spl->first; ; ) {
+		    if ( k && (!sel || (sel && sp->selected)) )
+			ptspace[ptcnt++] = sp;
+		    else
+			++ptcnt;
+		    if ( sp->selected ) ++selcnt;
+		    if ( sp->next==NULL )
+		break;
+		    sp = sp->next->to;
+		    if ( sp==spl->first )
+		break;
+		}
+	    }
+	}
+	if ( sel && selcnt==0 )
+	    sel = false;
+	if ( sel ) ptcnt = selcnt;
+	if ( ptcnt<=1 )
+return(false);				/* Can't be any clusters */
+	if ( k==0 )
+	    ptspace = galloc((ptcnt+1)*sizeof(SplinePoint *));
+	else
+	    ptspace[ptcnt] = NULL;
+    }
+
+    cspace = galloc(ptcnt*sizeof(struct cluster));
+
+    qsort(ptspace,ptcnt,sizeof(SplinePoint *),xcmp);
+    changed = _SplineCharRoundToCluster(sc,ptspace,cspace,ptcnt,false,
+	    (layer==-2 || layer==ly_fore) && !sel,layer,false,within,max);
+
+    qsort(ptspace,ptcnt,sizeof(SplinePoint *),ycmp);
+    changed = _SplineCharRoundToCluster(sc,ptspace,cspace,ptcnt,true,
+	    (layer==-2 || layer==ly_fore) && !sel,layer,changed,within,max);
+
+    free(ptspace);
+    free(cspace);
+
+    if ( changed ) {
+	if ( layer==-2 ) {
+	    for ( l=ly_fore; l<sc->layer_cnt; ++l ) {
+		for ( spl = sc->layers[l].splines; spl!=NULL; spl=spl->next ) {
+		    first = NULL;
+		    for ( s=spl->first->next; s!=NULL && s!=first; s=s->to->next ) {
+			SplineRefigure(s);
+			if ( first==NULL ) first = s;
+		    }
+		}
+	    }
+	} else {
+	    if ( layer==-1 )
+		spl = sc->parent->grid.splines;
+	    else
+		spl = sc->layers[layer].splines;
+	    for ( ; spl!=NULL; spl=spl->next ) {
+		first = NULL;
+		for ( s=spl->first->next; s!=NULL && s!=first; s=s->to->next ) {
+		    SplineRefigure(s);
+		    if ( first==NULL ) first = s;
+		}
+	    }
+	}
+	SCCharChangedUpdate(sc);
+    }
+return( changed );
+}
