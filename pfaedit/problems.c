@@ -1541,7 +1541,8 @@ static void ClearMissingState(struct problems *p) {
     p->rpl_cnt = p->rpl_max = 0;
 }
 	    
-enum missingglyph_type { mg_pst, mg_fpst, mg_kern, mg_vkern, mg_lookups };
+enum missingglyph_type { mg_pst, mg_fpst, mg_kern, mg_vkern, mg_lookups,
+	mg_asm, mg_smlookups };
 struct mgask_data {
     GWindow gw;
     uint8 done, skipped, islookup;
@@ -1661,8 +1662,11 @@ static int mgAsk(struct problems *p,char **_str,char *str, char *end,uint32 tag,
 	"alternate subs", "multiple subs", "ligature", NULL };
     static char *fpstnames[] = { "Contextual position", "Contextual substitution",
 	"Chaining position", "Chaining substitution", "Reverse chaining subs", NULL };
+    static char *asmnames[] = { "Indic reordering", "Contextual substitution",
+	"Contextual insertion", NULL };
     PST *pst = data;
     FPST *fpst = data;
+    ASM *sm = data;
     char end_ch;
     GRect pos;
     GWindow gw;
@@ -1677,16 +1681,27 @@ static int mgAsk(struct problems *p,char **_str,char *str, char *end,uint32 tag,
 	end_ch = *end; *end = '\0';
     }
 
-    if ( which == mg_pst )
-	u_snprintf(buffer,sizeof(buffer)/sizeof(buffer[0]),
-		GStringGetResource(_STR_GlyphPSTTag,NULL),
-		sc->name, pstnames[pst->type],
-		pst->tag>>24, (pst->tag>>16)&0xff, (pst->tag>>8)&0xff, pst->tag&0xff);
-    else if ( which == mg_fpst || which==mg_lookups )
+    if ( which == mg_pst ) {
+	if ( !pst->macfeature )
+	    u_snprintf(buffer,sizeof(buffer)/sizeof(buffer[0]),
+		    GStringGetResource(_STR_GlyphMacPSTTag,NULL),
+		    sc->name, pstnames[pst->type],
+		    pst->tag>>16, pst->tag&0xffff);
+	else
+	    u_snprintf(buffer,sizeof(buffer)/sizeof(buffer[0]),
+		    GStringGetResource(_STR_GlyphPSTTag,NULL),
+		    sc->name, pstnames[pst->type],
+		    pst->tag>>24, (pst->tag>>16)&0xff, (pst->tag>>8)&0xff, pst->tag&0xff);
+    } else if ( which == mg_fpst || which==mg_lookups )
 	u_snprintf(buffer,sizeof(buffer)/sizeof(buffer[0]),
 		GStringGetResource(_STR_FPSTKernTag,NULL),
 		fpstnames[fpst->type-pst_contextpos],
 		fpst->tag>>24, (fpst->tag>>16)&0xff, (fpst->tag>>8)&0xff, fpst->tag&0xff);
+    else if ( which == mg_asm || which==mg_smlookups )
+	u_snprintf(buffer,sizeof(buffer)/sizeof(buffer[0]),
+		GStringGetResource(_STR_MacASMTag,NULL),
+		asmnames[sm->type],
+		sm->feature, sm->setting);
     else
 	u_snprintf(buffer,sizeof(buffer)/sizeof(buffer[0]),
 		GStringGetResource(_STR_FPSTKernTag,NULL),
@@ -1821,12 +1836,14 @@ static int mgAsk(struct problems *p,char **_str,char *str, char *end,uint32 tag,
     gcd[k++].creator = GGroupCreate;
 
     GGadgetsCreate(gw,gcd);
-    if ( which!=mg_lookups )
+    if ( which!=mg_lookups && which!=mg_smlookups )
 	*end = end_ch;
     else {
 	int searchtype;
 	SplineFont *sf = p->fv!=NULL ? p->fv->sf : p->cv!=NULL ? p->cv->sc->parent : p->msc->parent;
-	if ( fpst->type==pst_contextpos || fpst->type==pst_chainpos )
+	if ( which==mg_smlookups )
+	    searchtype = fpst_max+1;	/* Search for substitution tables */
+	else if ( fpst->type==pst_contextpos || fpst->type==pst_chainpos )
 	    searchtype = fpst_max;		/* Search for positioning tables */
 	else
 	    searchtype = fpst_max+1;	/* Search for substitution tables */
@@ -1984,10 +2001,51 @@ return( false );
 return( found );
 }
 
+static int ASMMissingGlyph(struct problems *p,ASM *sm) {
+    int j;
+    int found = false;
+
+    for ( j=4; j<sm->class_cnt; ++j )
+	found |= StrMissingGlyph(p,&sm->classes[j],NULL,mg_asm,sm);
+return( found );
+}
+
+static int ASMMissingLookups(struct problems *p,ASM *sm) {
+    int i, j;
+    SplineFont *sf = p->fv!=NULL ? p->fv->sf : p->cv!=NULL ? p->cv->sc->parent : p->msc->parent;
+    int found = false;
+    uint32 new;
+
+    if ( sm->type!=asm_context )		/* No lookups involved */
+return( false );
+
+    for ( i=0; i<sm->state_cnt*sm->class_cnt; ++i ) {
+	struct asm_state *this = &sm->state[i];
+	for ( j=0; j<2; ++j ) {
+	    uint32 *tagpt = &this->u.context.mark_tag+j;
+	    if ( !SFHasNestedLookupWithTag(sf,*tagpt,false) ) {
+		found = true;
+		if ( (new = missinglookup_tag(p,*tagpt))==0 ) {
+		    if ( !mgAsk(p,NULL,NULL,NULL,*tagpt,NULL,mg_smlookups,sm))
+	continue;
+		}
+		if ( (new = missinglookup_tag(p,*tagpt))!=0 ) {
+		    if ( new==(uint32) -1 )
+			*tagpt = 0;
+		    else
+			*tagpt = new;
+		}
+	    }
+	}
+    }
+return( found );
+}
+
 static int CheckForATT(struct problems *p) {
     int found = false;
     int i,k;
     FPST *fpst;
+    ASM *sm;
     KernClass *kc;
     SplineFont *_sf, *sf;
 
@@ -2013,6 +2071,8 @@ static int CheckForATT(struct problems *p) {
 		found |= KCMissingGlyph(p,kc,true);
 	    for ( fpst=_sf->possub; fpst!=NULL && !p->finish && p->missingglyph; fpst=fpst->next )
 		found |= FPSTMissingGlyph(p,fpst);
+	    for ( sm=_sf->sm; sm!=NULL && !p->finish && p->missingglyph; sm=sm->next )
+		found |= ASMMissingGlyph(p,sm);
 	}
 	ClearMissingState(p);
     }
@@ -2020,6 +2080,8 @@ static int CheckForATT(struct problems *p) {
     if ( p->missinglookuptag && !p->finish ) {
 	for ( fpst=_sf->possub; fpst!=NULL && !p->finish && p->missinglookuptag; fpst=fpst->next )
 	    found |= FPSTMissingLookups(p,fpst);
+	for ( sm=_sf->sm; sm!=NULL && !p->finish && p->missinglookuptag; sm=sm->next )
+	    found |= ASMMissingLookups(p,sm);
 	ClearMissingState(p);
     }
 return( found );

@@ -971,8 +971,8 @@ int SCDefaultSLI(SplineFont *sf, SplineChar *default_script) {
 return( def_sli );
 }
 
-static int sli_names[] = { _STR_HHDefaultHH, _STR_Nested, _STR_EditLangList };
-static int sli_ud[] = { SLI_UNKNOWN, SLI_NESTED, -1 };
+static int sli_names[] = { _STR_AnyScript, _STR_HHDefaultHH, _STR_Nested, _STR_EditLangList };
+static int sli_ud[] = { SLI_UNKNOWN, SLI_UNKNOWN, SLI_NESTED, -1 };
 
 GTextInfo *SFLangList(SplineFont *sf,int addfinal,SplineChar *default_script) {
     int i,j,k,bit;

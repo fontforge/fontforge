@@ -938,6 +938,9 @@ extern void GFI_FinishSMNew(struct gfi_data *d,ASM *sm, int success);
 extern void GFI_SMDEnd(struct gfi_data *d);
 extern ASM *SMConvertDlg(SplineFont *sf);
 
+extern void SFRemoveFeatureDlg(SplineFont *sf);
+extern void SFCopyFeatureToFontDlg(SplineFont *sf);
+extern void SFRetagFeatureDlg(SplineFont *sf);
 
 extern GMenuItem helplist[];
 #endif

@@ -1334,10 +1334,13 @@ int SFFigureDefWidth(SplineFont *sf, int *_nomwid);
 extern enum possub_type SFGTagUsed(struct gentagtype *gentags,uint32 tag);
 extern uint32 SFGenerateNewFeatureTag(struct gentagtype *gentags,enum possub_type type,uint32 suggestion);
 extern void SFFreeGenerateFeatureTag(struct gentagtype *gentags,uint32 tag);
-extern void SFRemoveThisFeatureTag(SplineFont *sf, uint32 tag, int sli, int flags);
+extern int SFRemoveThisFeatureTag(SplineFont *sf, uint32 tag, int sli, int flags);
 extern void RemoveGeneratedTagsAbove(SplineFont *sf, int old_top);
-extern void SFRenameTheseFeatureTags(SplineFont *sf, uint32 tag, int sli, int flags,
+extern int SFRenameTheseFeatureTags(SplineFont *sf, uint32 tag, int sli, int flags,
 	uint32 totag, int tosli, int toflags, int ismac);
+extern int SFCopyTheseFeaturesToSF(SplineFont *sf, uint32 tag, int sli, int flags,
+	SplineFont *tosf);
+extern int SFRemoveUnusedNestedFeatures(SplineFont *sf);
 extern int SFHasNestedLookupWithTag(SplineFont *sf,uint32 tag,int ispos);
 extern int ClassesMatch(int cnt1,char **classes1,int cnt2,char **classes2);
 extern FPST *FPSTGlyphToClass(FPST *fpst);
