@@ -1676,10 +1676,10 @@ static int CoalesceValues(double *values,int max,int *index) {
 	index[backindex[i]] = i;
     top = 257;
     for ( i=0; i<top; ++i ) {
-	for ( j=i+1; j<257 && values[i]==values[j]; ++j );
+	for ( j=i+1; j<top && values[i]==values[j]; ++j );
 	if ( j>i+1 ) {
 	    int diff = j-i-1;
-	    for ( k=i+1; k+diff<257; ++k )
+	    for ( k=i+1; k+diff<top; ++k )
 		values[k] = values[k+diff];
 	    for ( k=0; k<257; ++k ) {
 		if ( index[k]>=j )
