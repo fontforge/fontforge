@@ -30,6 +30,10 @@
 #include <gkeysym.h>
 #include <ustring.h>
 
+enum debug_wins { dw_registers=0x1, dw_stack=0x2, dw_storage=0x4, dw_points=0x8,
+	dw_cvt=0x10, dw_raster=0x20 };
+int debug_wins = dw_registers|dw_stack;
+
 #ifndef FREETYPE_HAS_DEBUGGER
 void CVDebugReInit(CharView *cv,int restart_debug,int debug_fpgm) {
 }
@@ -65,6 +69,42 @@ static void DVToggleBp(struct instrinfo *ii, int ip) {
     if ( exc==NULL )
 return;
     DebuggerToggleBp(dv->dc,exc->curRange,ip);
+}
+
+static void DVRasterExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
+    CharView *cv = dv->cv;
+    int y,x,em;
+    GRect r;
+
+    GDrawGetSize(dv->raster,&r);
+    GDrawFillRect(pixmap,&event->u.expose.rect,GDrawGetDefaultBackground(screen_display));
+    em = cv->ft_ppem;
+    x = (r.width - em)/2;
+    y = (r.height - em)/2 + em*cv->sc->parent->ascent/(cv->sc->parent->ascent+cv->sc->parent->descent);
+
+    GDrawDrawLine(pixmap,0,y,r.width,y,0xa0a0a0);	/* Axes */
+    GDrawDrawLine(pixmap,x,0,x,r.height,0xa0a0a0);
+
+    if ( cv->raster!=NULL ) {
+	GImage gi;
+	struct _GImage base;
+	GClut clut;
+
+	memset(&gi,'\0',sizeof(gi));
+	memset(&base,'\0',sizeof(base));
+	memset(&clut,'\0',sizeof(clut));
+	gi.u.image = &base;
+	base.image_type = it_mono;
+	base.clut = &clut;
+	clut.clut_len = 2;
+	clut.clut[0] = GDrawGetDefaultBackground(NULL);
+	clut.trans_index = 0;
+	base.data = cv->raster->bitmap;
+	base.bytes_per_line = cv->raster->bytes_per_row;
+	base.width = cv->raster->cols;
+	base.height = cv->raster->rows;
+	GDrawDrawImage(pixmap,&gi,NULL, x+cv->raster->lb,y-cv->raster->as);
+    }
 }
 
 static void DVRegExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
@@ -483,6 +523,8 @@ static void DVFigureNewState(DebugView *dv,TT_ExecContext exc) {
 	GDrawRequestExpose(dv->cvt,NULL,false);
     if ( dv->points!=NULL )
 	GDrawRequestExpose(dv->points_v,NULL,false);
+    if ( dv->raster!=NULL )
+	GDrawRequestExpose(dv->raster,NULL,false);
 }
 
 static void DVGoFigure(DebugView *dv,enum debug_gotype go) {
@@ -559,32 +601,36 @@ return( true );
 #define MID_Storage	1003
 #define MID_Points	1004
 #define MID_Cvt		1005
+#define MID_Raster	1006
 
 static void DVCreateRegs(DebugView *dv);
 static void DVCreateStack(DebugView *dv);
 static void DVCreateStore(DebugView *dv);
 static void DVCreatePoints(DebugView *dv);
 static void DVCreateCvt(DebugView *dv);
+static void DVCreateRaster(DebugView *dv);
+
+static struct { int flag; void (*create)(DebugView *); } wcreat[] = {
+    {dw_registers, DVCreateRegs},
+    {dw_stack, DVCreateStack},
+    {dw_storage, DVCreateStore},
+    {dw_points, DVCreatePoints},
+    {dw_cvt, DVCreateCvt},
+    {dw_raster, DVCreateRaster},
+    { 0, NULL }
+};
 
 static void DVMenuCreate(GWindow v, GMenuItem *mi,GEvent *e) {
     DebugView *dv = (DebugView *) GDrawGetUserData(v);
 
-    if ( mi->mid==MID_Registers ) {
-	if ( dv->regs!=NULL ) GDrawDestroyWindow(dv->regs);
-	else DVCreateRegs(dv);
-    } else if ( mi->mid==MID_Stack ) {
-	if ( dv->stack!=NULL ) GDrawDestroyWindow(dv->stack);
-	else DVCreateStack(dv);
-    } else if ( mi->mid==MID_Storage ) {
-	if ( dv->storage!=NULL ) GDrawDestroyWindow(dv->storage);
-	else DVCreateStore(dv);
-    } else if ( mi->mid==MID_Points ) {
-	if ( dv->points!=NULL ) GDrawDestroyWindow(dv->points);
-	else DVCreatePoints(dv);
-    } else if ( mi->mid==MID_Cvt ) {
-	if ( dv->cvt!=NULL ) GDrawDestroyWindow(dv->cvt);
-	else DVCreateCvt(dv);
+    if ( (&dv->regs)[mi->mid-MID_Registers]==NULL ) {
+	(wcreat[mi->mid-MID_Registers].create)(dv);
+	debug_wins |= wcreat[mi->mid-MID_Registers].flag;
+    } else {
+	GDrawDestroyWindow((&dv->regs)[mi->mid-MID_Registers]);
+	debug_wins &= ~wcreat[mi->mid-MID_Registers].flag;
     }
+    SavePrefs();
 }
 
 static GMenuItem popupwindowlist[] = {
@@ -593,6 +639,7 @@ static GMenuItem popupwindowlist[] = {
     { { (unichar_t *) _STR_Storage, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, '\0' }, '\0', 0, NULL, NULL, DVMenuCreate, MID_Storage },
     { { (unichar_t *) _STR_Points, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, '\0' }, '\0', 0, NULL, NULL, DVMenuCreate, MID_Points },
     { { (unichar_t *) _STR_Cvt, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, '\0' }, '\0', 0, NULL, NULL, DVMenuCreate, MID_Cvt },
+    { { (unichar_t *) _STR_Raster, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, '\0' }, '\0', 0, NULL, NULL, DVMenuCreate, MID_Raster },
     { NULL }
 };
 
@@ -607,6 +654,8 @@ static int DV_WindowMenu(GGadget *g, GEvent *e) {
 	popupwindowlist[1].ti.checked = dv->stack!=NULL;
 	popupwindowlist[2].ti.checked = dv->storage!=NULL;
 	popupwindowlist[3].ti.checked = dv->points!=NULL;
+	popupwindowlist[4].ti.checked = dv->cvt!=NULL;
+	popupwindowlist[5].ti.checked = dv->raster!=NULL;
 	GGadgetGetSize(g,&pos);
 	memset(&fake,0,sizeof(fake));
 	fake.type = et_mousedown;
@@ -671,6 +720,34 @@ static int DV_HandleChar(struct instrinfo *ii, GEvent *event) {
 return( DVChar(dv,event));
 }
 
+static int dvraster_e_h(GWindow gw, GEvent *event) {
+    DebugView *dv = (DebugView *) GDrawGetUserData(gw);
+
+    if ( dv==NULL )
+return( true );
+
+    switch ( event->type ) {
+      case et_expose:
+	DVRasterExpose(gw,dv,event);
+      break;
+      case et_char:
+return( DVChar(dv,event));
+      break;
+      case et_close:
+	GDrawDestroyWindow(dv->raster);
+	debug_wins &= ~dw_raster;
+      break;
+      case et_destroy:
+	dv->raster = NULL;
+      break;
+      case et_mouseup: case et_mousedown:
+      case et_mousemove:
+	GGadgetEndPopup();
+      break;
+    }
+return( true );
+}
+
 static int dvreg_e_h(GWindow gw, GEvent *event) {
     DebugView *dv = (DebugView *) GDrawGetUserData(gw);
 
@@ -686,6 +763,7 @@ return( DVChar(dv,event));
       break;
       case et_close:
 	GDrawDestroyWindow(dv->regs);
+	debug_wins &= ~dw_registers;
       break;
       case et_destroy:
 	dv->regs = NULL;
@@ -722,6 +800,7 @@ return( DVChar(dv,event));
 #endif
       case et_close:
 	GDrawDestroyWindow(dv->stack);
+	debug_wins &= ~dw_stack;
       break;
       case et_destroy:
 	dv->stack = NULL;
@@ -758,6 +837,7 @@ return( DVChar(dv,event));
 #endif
       case et_close:
 	GDrawDestroyWindow(dv->storage);
+	debug_wins &= ~dw_storage;
       break;
       case et_destroy:
 	dv->storage = NULL;
@@ -908,6 +988,7 @@ return( DVChar(dv,event));
       break;
       case et_close:
 	GDrawDestroyWindow(dv->points);
+	debug_wins &= ~dw_points;
       break;
       case et_destroy:
 	dv->points = NULL;
@@ -1009,6 +1090,7 @@ return( DVChar(dv,event));
       break;
       case et_close:
 	GDrawDestroyWindow(dv->cvt);
+	debug_wins &= ~dw_cvt;
       break;
       case et_destroy:
 	dv->cvt = NULL;
@@ -1019,6 +1101,25 @@ return( DVChar(dv,event));
       break;
     }
 return( true );
+}
+
+static void DVCreateRaster(DebugView *dv) {
+    GWindowAttrs wattrs;
+    GRect pos;
+
+    memset(&wattrs,0,sizeof(wattrs));
+    wattrs.mask = wam_events|wam_cursor|wam_wtitle;
+    wattrs.event_masks = -1;
+    wattrs.cursor = ct_mypointer;
+#if defined(FONTFORGE_CONFIG_GDRAW)
+    wattrs.window_title = GStringGetResource(_STR_TTRaster,NULL);
+#elif defined(FONTFORGE_CONFIG_GTK)
+    wattrs.window_title = _("Current Raster (TrueType)");
+#endif
+    pos.x = 664; pos.y = 1;
+    pos.width = 50; pos.height = 50;
+    dv->raster = GDrawCreateTopWindow(NULL,&pos,dvraster_e_h,dv,&wattrs);
+    GDrawSetVisible(dv->raster,true);
 }
 
 static void DVCreateRegs(DebugView *dv) {
@@ -1260,6 +1361,10 @@ void CVDebugFree(DebugView *dv) {
 	    GDrawSetUserData(dv->points_v,NULL);
 	    GDrawDestroyWindow(dv->points);
 	}
+	if ( dv->raster!=NULL ) {
+	    GDrawSetUserData(dv->raster,NULL);
+	    GDrawDestroyWindow(dv->raster);
+	}
 	if ( dv->cvt!=NULL ) {
 	    GDrawSetUserData(dv->cvt,NULL);
 	    GDrawDestroyWindow(dv->cvt);
@@ -1321,6 +1426,7 @@ void CVDebugReInit(CharView *cv,int restart_debug,int dbg_fpgm) {
     GTextInfo label[9];
     extern int _GScrollBar_Width;
     double scale;
+    int i;
 
     if ( restart_debug )
 	scale = (cv->sc->parent->ascent+cv->sc->parent->descent)/(cv->ft_pointsize*cv->ft_dpi/72.0) / (1<<6);
@@ -1484,8 +1590,10 @@ return;
 	GDrawSetVisible(dv->dv,true);
 	CVResize(cv);
 	GDrawRequestExpose(cv->v,NULL,false);
-	DVCreateRegs(dv);
-	DVCreateStack(dv);
+	for ( i=0; wcreat[i].create!=NULL; ++i ) {
+	    if ( debug_wins & wcreat[i].flag )
+		(wcreat[i].create)(dv);
+	}
     } else {
 	dv->scale = scale;
 	DebuggerReset(dv->dc,cv->ft_pointsize,cv->ft_dpi,dbg_fpgm);
