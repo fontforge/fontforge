@@ -2901,7 +2901,7 @@ return( components );
 uint32 LigTagFromUnicode(int uni) {
     int tag = CHR('l','i','g','a');	/* standard */
 
-    if (( uni>=0xbc && uni<=0xbe ) || (uni>=0x2153 && uni<=0x215e) )
+    if (( uni>=0xbc && uni<=0xbe ) || (uni>=0x2153 && uni<=0x215f) )
 	tag = CHR('f','r','a','c');	/* Fraction */
     switch ( uni ) {
       case 0xfb05:		/* long-s t */
