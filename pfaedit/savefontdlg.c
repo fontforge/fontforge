@@ -2184,7 +2184,8 @@ static int e_h(GWindow gw, GEvent *event) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
 	    help("generate.html");
 return( true );
-	} else if ( event->u.chr.keysym=='s' &&
+	} else if ( (event->u.chr.keysym=='s' || event->u.chr.keysym=='g' ||
+		event->u.chr.keysym=='G' ) &&
 		(event->u.chr.state&ksm_control) ) {
 	    _GFD_SaveOk(GDrawGetUserData(gw));
 return( true );
