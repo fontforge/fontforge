@@ -404,6 +404,16 @@ static void bArray(Context *c) {
 	c->return_val.u.aval->vals[i].type = v_void;
 }
 
+static void bSizeOf(Context *c) {
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments" );
+    if ( c->a.vals[1].type!=v_arr && c->a.vals[1].type!=v_arrfree )
+	error( c, "Expected array argument" );
+
+    c->return_val.type = v_int;
+    c->return_val.u.ival = c->a.vals[1].u.aval->argc;
+}
+
 static void bStrlen(Context *c) {
 
     if ( c->a.argc!=2 )
@@ -2676,6 +2686,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "AskUser", bAskUser, 1 },
     { "PostNotice", bPostNotice, 1 },
     { "Array", bArray, 1 },
+    { "SizeOf", bSizeOf, 1 },
     { "Strsub", bStrsub, 1 },
     { "Strlen", bStrlen, 1 },
     { "Strstr", bStrstr, 1 },
