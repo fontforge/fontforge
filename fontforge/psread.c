@@ -653,6 +653,30 @@ static int rollstack(struct psstack *stack, int sp) {
 return( sp );
 }
 
+static void CheckMakeB(BasePoint *test, BasePoint *good) {
+    if ( isnan(test->x) || isinf(test->x) || test->x>100000 || test->x<-100000 ) {
+	fprintf( stderr, "Value out of bounds in spline.\n" );
+	if ( good!=NULL )
+	    test->x = good->x;
+	else
+	    test->x = 0;
+    }
+    if ( isnan(test->y) || isinf(test->y) || test->y>100000 || test->y<-100000 ) {
+	fprintf( stderr, "Value out of bounds in spline.\n" );
+	if ( good!=NULL )
+	    test->y = good->y;
+	else
+	    test->y = 0;
+    }
+}
+
+static void CheckMake(SplinePoint *from, SplinePoint *to) {
+    CheckMakeB(&from->me,NULL);
+    CheckMakeB(&from->nextcp,&from->me);
+    CheckMakeB(&to->prevcp,&from->nextcp);
+    CheckMakeB(&to->me,&to->prevcp);
+}
+
 static void circlearcto(real a1, real a2, real cx, real cy, real r,
 	SplineSet *cur, real *transform ) {
     SplinePoint *pt;
@@ -682,6 +706,7 @@ return;
     cp.x = base.x + sign*cplen*s1; cp.y = base.y - sign*cplen*c1;
     Transform(&cur->last->nextcp,&cp,transform);
     cur->last->nonextcp = false;
+    CheckMake(cur->last,pt);
     SplineMake3(cur->last,pt);
     cur->last = pt;
 }
@@ -1257,19 +1282,28 @@ printf( "-%s-\n", toknames[tok]);
 	  break;
 	  case pt_div:
 	    if ( sp>=2 && stack[sp-1].type==ps_num && stack[sp-2].type==ps_num ) {
-		stack[sp-2].u.val /= stack[sp-1].u.val;
+		if ( stack[sp-1].u.val == 0 )
+		    fprintf( stderr, "Divide by zero in postscript code.\n" );
+		else
+		    stack[sp-2].u.val /= stack[sp-1].u.val;
 		--sp;
 	    }
 	  break;
 	  case pt_idiv:
 	    if ( sp>=2 && stack[sp-1].type==ps_num && stack[sp-2].type==ps_num ) {
-		stack[sp-2].u.val = ((int) stack[sp-2].u.val) / ((int) stack[sp-1].u.val);
+		if ( stack[sp-1].u.val == 0 )
+		    fprintf( stderr, "Divide by zero in postscript code.\n" );
+		else
+		    stack[sp-2].u.val = ((int) stack[sp-2].u.val) / ((int) stack[sp-1].u.val);
 		--sp;
 	    }
 	  break;
 	  case pt_mod:
 	    if ( sp>=2 && stack[sp-1].type==ps_num && stack[sp-2].type==ps_num ) {
-		stack[sp-2].u.val = ((int) stack[sp-2].u.val) % ((int) stack[sp-1].u.val);
+		if ( stack[sp-1].u.val == 0 )
+		    fprintf( stderr, "Divide by zero in postscript code.\n" );
+		else
+		    stack[sp-2].u.val = ((int) stack[sp-2].u.val) % ((int) stack[sp-1].u.val);
 		--sp;
 	    }
 	  break;
@@ -1727,6 +1761,7 @@ printf( "-%s-\n", toknames[tok]);
 		    cur = spl;
 		} else {
 		    if ( cur!=NULL && cur->first!=NULL && (cur->first!=cur->last || cur->first->next==NULL) ) {
+			CheckMake(cur->last,pt);
 			SplineMake3(cur->last,pt);
 			cur->last = pt;
 		    }
@@ -1755,6 +1790,7 @@ printf( "-%s-\n", toknames[tok]);
 		    Transform(&pt->prevcp,&temp,transform);
 		    Transform(&pt->me,&current,transform);
 		    pt->nonextcp = true;
+		    CheckMake(cur->last,pt);
 		    SplineMake3(cur->last,pt);
 		    cur->last = pt;
 		}
@@ -1779,6 +1815,7 @@ printf( "-%s-\n", toknames[tok]);
 		    Transform(&pt->me,&temp,transform);
 		    pt->noprevcp = true; pt->nonextcp = true;
 		    if ( cur!=NULL && cur->first!=NULL && (cur->first!=cur->last || cur->first->next==NULL) ) {
+			CheckMake(cur->last,pt);
 			SplineMake3(cur->last,pt);
 			cur->last = pt;
 		    } else {	/* if no current point, then start here */
@@ -1820,6 +1857,7 @@ printf( "-%s-\n", toknames[tok]);
 		    pt = chunkalloc(sizeof(SplinePoint));
 		    Transform(&pt->me,&current,transform);
 		    pt->noprevcp = true; pt->nonextcp = true;
+		    CheckMake(cur->last,pt);
 		    SplineMake3(cur->last,pt);
 		    cur->last = pt;
 		} else {
@@ -1852,6 +1890,7 @@ printf( "-%s-\n", toknames[tok]);
 			pt = chunkalloc(sizeof(SplinePoint));
 			Transform(&pt->me,&temp,transform);
 			pt->noprevcp = true; pt->nonextcp = true;
+			CheckMake(cur->last,pt);
 			SplineMake3(cur->last,pt);
 			cur->last = pt;
 		    }
@@ -1885,6 +1924,7 @@ printf( "-%s-\n", toknames[tok]);
 		    SplineFree(oldlast->prev);
 		    SplinePointFree(oldlast);
 		}
+		CheckMake(cur->last,cur->first);
 		SplineMake3(cur->last,cur->first);
 		cur->last = cur->first;
 	    }
@@ -3071,6 +3111,7 @@ return;		/* The "path" is just a single point created by a moveto */
 	    chunkfree(oldlast->prev,sizeof(*oldlast));
 	    chunkfree(oldlast,sizeof(*oldlast));
 	}
+	CheckMake(cur->last,cur->first);
 	SplineMake3(cur->last,cur->first);
 	cur->last = cur->first;
     }
@@ -3538,12 +3579,14 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 				pt->me = mid;
 				pt->nextcp = mid_nextcp;
 				/*pt->flex = pops[2];*/
+			        CheckMake(cur->last,pt);
 				SplineMake3(cur->last,pt);
 				cur->last = pt;
 				pt = chunkalloc(sizeof(SplinePoint));
 				pt->prevcp = end_prevcp;
 				pt->me = end;
 				pt->nonextcp = true;
+			        CheckMake(cur->last,pt);
 				SplineMake3(cur->last,pt);
 				cur->last = pt;
 			    } else
@@ -3558,6 +3601,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 			    SplinePointListFree(oldcur->next); oldcur->next = NULL; spl = NULL;
 			    cur = oldcur;
 			    if ( cur!=NULL && cur->first!=NULL && (cur->first!=cur->last || cur->first->next==NULL) ) {
+				CheckMake(cur->last,pt);
 				SplineMake3(cur->last,pt);
 				cur->last = pt;
 			    } else
@@ -3748,6 +3792,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		    current.x += dx3; current.y += dy3;
 		    pt->me = current;
 		    pt->nonextcp = true;
+		    CheckMake(cur->last,pt);
 		    SplineMake3(cur->last,pt);
 		    cur->last = pt;
 
@@ -3760,6 +3805,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		    current.x += dx6; current.y += dy6;
 		    pt->me = current;
 		    pt->nonextcp = true;
+		    CheckMake(cur->last,pt);
 		    SplineMake3(cur->last,pt);
 		    cur->last = pt;
 		} else
@@ -3942,14 +3988,23 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 	    while ( base<sp ) {
 		dx = dy = 0;
 		if ( v==5 || v==21 ) {
-		    if ( sp<2 ) fprintf(stderr, "Stack underflow on rlineto/rmoveto in %s\n", name );
+		    if ( sp<base+2 ) {
+			fprintf(stderr, "Stack underflow on rlineto/rmoveto in %s\n", name );
+	    break;
+		    }
 		    dx = stack[base++];
 		    dy = stack[base++];
 		} else if ( (v==6 && !(polarity&1)) || (v==7 && (polarity&1)) || v==22 ) {
-		    if ( sp<1 ) fprintf(stderr, "Stack underflow on hlineto/hmoveto in %s\n", name );
+		    if ( sp<=base ) {
+			fprintf(stderr, "Stack underflow on hlineto/hmoveto in %s\n", name );
+	    break;
+		    }
 		    dx = stack[base++];
 		} else /*if ( (v==7 && !(parity&1)) || (v==6 && (parity&1) || v==4 )*/ {
-		    if ( sp<1 ) fprintf(stderr, "Stack underflow on vlineto/vmoveto in %s\n", name );
+		    if ( sp<=base ) {
+			fprintf(stderr, "Stack underflow on vlineto/vmoveto in %s\n", name );
+	    break;
+		    }
 		    dy = stack[base++];
 		}
 		++polarity;
@@ -3975,10 +4030,13 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 	    break;
 		} else {
 		    if ( cur!=NULL && cur->first!=NULL && (cur->first!=cur->last || cur->first->next==NULL) ) {
+			CheckMake(cur->last,pt);
 			SplineMake3(cur->last,pt);
 			cur->last = pt;
 		    } else
 			fprintf(stderr, "No previous point on path in lineto in %s\n", name );
+		    if ( !is_type2 )
+	    break;
 		}
 	    }
 	    sp = 0;
@@ -3992,6 +4050,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		    pt->hintmask = pending_hm; pending_hm = NULL;
 		    pt->me = current;
 		    pt->noprevcp = true; pt->nonextcp = true;
+		    CheckMake(cur->last,pt);
 		    SplineMake3(cur->last,pt);
 		    cur->last = pt;
 		}
@@ -4076,6 +4135,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		    current.x += dx3; current.y += dy3;
 		    pt->me = current;
 		    pt->nonextcp = true;
+		    CheckMake(cur->last,pt);
 		    SplineMake3(cur->last,pt);
 		    cur->last = pt;
 		} else
@@ -4088,6 +4148,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		    pt->hintmask = pending_hm; pending_hm = NULL;
 		    pt->me = current;
 		    pt->noprevcp = true; pt->nonextcp = true;
+		    CheckMake(cur->last,pt);
 		    SplineMake3(cur->last,pt);
 		    cur->last = pt;
 		}
@@ -4183,6 +4244,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
     /*  open and closed paths matters */
     if ( !is_type2 && !context->painttype )
 	for ( cur = ret->layers[ly_fore].splines; cur!=NULL; cur = cur->next ) if ( cur->first->prev==NULL ) {
+	    CheckMake(cur->last,cur->first);
 	    SplineMake3(cur->last,cur->first);
 	    cur->last = cur->first;
 	}

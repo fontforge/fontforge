@@ -409,7 +409,8 @@ static int addKernPair(struct ttfinfo *info, int glyph1, int glyph2,
 	int16 offset, uint32 devtab, uint16 sli, uint16 flags,int isv,
 	FILE *ttf) {
     KernPair *kp;
-    if ( glyph1<info->glyph_cnt && glyph2<info->glyph_cnt ) {
+    if ( glyph1<info->glyph_cnt && glyph2<info->glyph_cnt &&
+	    info->chars[glyph1]!=NULL && info->chars[glyph2]!=NULL ) {
 	for ( kp=isv ? info->chars[glyph1]->vkerns : info->chars[glyph1]->kerns;
 		kp!=NULL; kp=kp->next ) {
 	    if ( kp->sc == info->chars[glyph2] )
@@ -695,6 +696,10 @@ static AnchorClass **MarkGlyphsProcessMarks(FILE *ttf,int markoffset,
 
     fseek(ttf,markoffset,SEEK_SET);
     cnt = getushort(ttf);
+    if ( feof(ttf) ) {
+	fprintf( stderr, "Bad mark table.\n" );
+return( NULL );
+    }
     at_offsets = galloc(cnt*sizeof(struct mr));
     for ( i=0; i<cnt; ++i ) {
 	at_offsets[i].class = getushort(ttf);
@@ -726,6 +731,10 @@ static void MarkGlyphsProcessBases(FILE *ttf,int baseoffset,
 
     fseek(ttf,baseoffset,SEEK_SET);
     basecnt = getushort(ttf);
+    if ( feof(ttf) ) {
+	fprintf( stderr, "Bad base table.\n" );
+return;
+    }
     offsets = galloc(basecnt*classcnt*sizeof(uint16));
     for ( i=0; i<basecnt*classcnt; ++i )
 	offsets[i] = getushort(ttf);
@@ -751,6 +760,10 @@ static void MarkGlyphsProcessLigs(FILE *ttf,int baseoffset,
 
     fseek(ttf,baseoffset,SEEK_SET);
     basecnt = getushort(ttf);
+    if ( feof(ttf) ) {
+	fprintf( stderr, "Bad ligature base table.\n" );
+return;
+    }
     loffsets = galloc(basecnt*sizeof(uint16));
     for ( i=0; i<basecnt; ++i )
 	loffsets[i] = getushort(ttf);
@@ -760,6 +773,10 @@ static void MarkGlyphsProcessLigs(FILE *ttf,int baseoffset,
     continue;
 	fseek(ttf,baseoffset+loffsets[i],SEEK_SET);
 	compcnt = getushort(ttf);
+	if ( feof(ttf)) {
+	    fprintf(stderr,"Bad ligature anchor count.\n");
+    continue;
+	}
 	aoffsets = galloc(compcnt*classcnt*sizeof(uint16));
 	for ( k=0; k<compcnt*classcnt; ++k )
 	    aoffsets[k] = getushort(ttf);
@@ -795,6 +812,8 @@ return;
 	/* as is the (first) mark table */
     classes = MarkGlyphsProcessMarks(ttf,stoffset+markoffset,
 	    info,lookup,markglyphs,classcnt,lu_type);
+    if ( classes==NULL )
+return;
     switch ( lu_type ) {
       case 4:			/* Mark to Base */
       case 6:			/* Mark to Mark */
@@ -874,7 +893,7 @@ static void ProcessSubLookups(FILE *ttf,struct ttfinfo *info,int gpos,
     int i;
 
     i = sl->lookup_tag;
-    if ( i>=info->lookup_cnt ) {
+    if ( i<0 || i>=info->lookup_cnt ) {
 	fprintf( stderr, "Attempt to reference lookup %d (within a contextual lookup), but there are\n only %d lookups in %s\n",
 		i, info->lookup_cnt, gpos ? "'GPOS'" : "'GSUB'" );
 	sl->lookup_tag = CHR('!','!','!','!');
@@ -1044,12 +1063,20 @@ return;
 	for ( j=0; j<rules[i].scnt; ++j ) {
 	    fseek(ttf,rules[i].subrules[j].offset,SEEK_SET);
 	    rules[i].subrules[j].bcnt = getushort(ttf);
+	    if ( feof(ttf)) {
+		fprintf( stderr, "Unexpected end of file in contextual chaining subtable.\n" );
+return;
+	    }
 	    rules[i].subrules[j].bglyphs = galloc((rules[i].subrules[j].bcnt+1)*sizeof(uint16));
 	    for ( k=0; k<rules[i].subrules[j].bcnt; ++k )
 		rules[i].subrules[j].bglyphs[k] = getushort(ttf);
 	    rules[i].subrules[j].bglyphs[k] = 0xffff;
 
 	    rules[i].subrules[j].gcnt = getushort(ttf);
+	    if ( feof(ttf)) {
+		fprintf( stderr, "Unexpected end of file in contextual chaining subtable.\n" );
+return;
+	    }
 	    rules[i].subrules[j].glyphs = galloc((rules[i].subrules[j].gcnt+1)*sizeof(uint16));
 	    rules[i].subrules[j].glyphs[0] = glyphs[i];
 	    for ( k=1; k<rules[i].subrules[j].gcnt; ++k )
@@ -1057,6 +1084,10 @@ return;
 	    rules[i].subrules[j].glyphs[k] = 0xffff;
 
 	    rules[i].subrules[j].fcnt = getushort(ttf);
+	    if ( feof(ttf)) {
+		fprintf( stderr, "Unexpected end of file in contextual chaining subtable.\n" );
+return;
+	    }
 	    rules[i].subrules[j].fglyphs = galloc((rules[i].subrules[j].fcnt+1)*sizeof(uint16));
 	    for ( k=0; k<rules[i].subrules[j].fcnt; ++k )
 		rules[i].subrules[j].fglyphs[k] = getushort(ttf);
@@ -1075,8 +1106,8 @@ return;
 	    }
 
 	    rules[i].subrules[j].scnt = getushort(ttf);
-	    if ( rules[i].subrules[j].scnt<0 ) {
-		fprintf( stderr, "Bad transformation count in context chaining sub-table.\n" );
+	    if ( feof(ttf)) {
+		fprintf( stderr, "Unexpected end of file in contextual chaining subtable.\n" );
 return;
 	    }
 	    rules[i].subrules[j].sl = galloc(rules[i].subrules[j].scnt*sizeof(struct seqlookup));
@@ -1731,6 +1762,7 @@ static void gsubMultipleSubTable(FILE *ttf, int stoffset, struct ttfinfo *info,
     uint16 *glyphs, *glyph2s;
     char *pt;
     int bad;
+    int badcnt = 0;
 
     if ( justinuse==git_findnames )
 return;
@@ -1740,6 +1772,10 @@ return;
 return;
     coverage = getushort(ttf);
     cnt = getushort(ttf);
+    if ( feof(ttf)) {
+	fprintf( stderr, "Unexpected end of file in GSUB sub-table.\n");
+return;
+    }
     offsets = galloc(cnt*sizeof(uint16));
     for ( i=0; i<cnt; ++i )
 	offsets[i] = getushort(ttf);
@@ -1748,12 +1784,24 @@ return;
 	free(offsets);
 return;
     }
+    for ( i=0; glyphs[i]!=0xffff; ++i );
+    if ( i!=cnt ) {
+	fprintf(stderr, "Coverage table specifies a different number of glyphs than the sub-table expects.\n" );
+	if ( cnt<i )
+	    glyphs[cnt] = 0xffff;
+	else
+	    cnt = i;
+    }
     max = 20;
     glyph2s = galloc(max*sizeof(uint16));
     for ( i=0; glyphs[i]!=0xffff; ++i ) {
 	PST *sub;
 	fseek(ttf,stoffset+offsets[i],SEEK_SET);
 	cnt = getushort(ttf);
+	if ( feof(ttf)) {
+	    fprintf( stderr, "Unexpected end of file in GSUB sub-table.\n");
+return;
+	}
 	if ( cnt>max ) {
 	    max = cnt+30;
 	    glyph2s = grealloc(glyph2s,max*sizeof(uint16));
@@ -1761,10 +1809,16 @@ return;
 	len = 0; bad = false;
 	for ( j=0; j<cnt; ++j ) {
 	    glyph2s[j] = getushort(ttf);
+	    if ( feof(ttf)) {
+		fprintf( stderr, "Unexpected end of file in GSUB sub-table.\n" );
+return;
+	    }
 	    if ( glyph2s[j]>=info->glyph_cnt ) {
 		if ( !justinuse )
 		    fprintf( stderr, "Bad Multiple/Alternate substitution glyph %d not less than %d\n",
 			    glyph2s[j], info->glyph_cnt );
+		if ( ++badcnt>20 )
+return;
 		glyph2s[j] = 0;
 	    }
 	    if ( justinuse==git_justinuse )
@@ -1810,6 +1864,10 @@ static void gsubLigatureSubTable(FILE *ttf, int stoffset,
     /* Format = */ getushort(ttf);
     coverage = getushort(ttf);
     cnt = getushort(ttf);
+    if ( feof(ttf)) {
+	fprintf( stderr, "Unexpected end of file in GSUB ligature sub-table.\n" );
+return;
+    }
     ls_offsets = galloc(cnt*sizeof(uint16));
     for ( i=0; i<cnt; ++i )
 	ls_offsets[i]=getushort(ttf);
@@ -1819,9 +1877,17 @@ return;
     for ( i=0; i<cnt; ++i ) {
 	fseek(ttf,stoffset+ls_offsets[i],SEEK_SET);
 	lig_cnt = getushort(ttf);
+	if ( feof(ttf)) {
+	    fprintf( stderr, "Unexpected end of file in GSUB ligature sub-table.\n" );
+return;
+	}
 	lig_offsets = galloc(lig_cnt*sizeof(uint16));
 	for ( j=0; j<lig_cnt; ++j )
 	    lig_offsets[j] = getushort(ttf);
+	if ( feof(ttf)) {
+	    fprintf( stderr, "Unexpected end of file in GSUB ligature sub-table.\n" );
+return;
+	}
 	for ( j=0; j<lig_cnt; ++j ) {
 	    fseek(ttf,stoffset+ls_offsets[i]+lig_offsets[j],SEEK_SET);
 	    lig = getushort(ttf);
@@ -3295,13 +3361,18 @@ return;
 	    } else {
 		char *comp;
 		for ( len=0, j=lcp; j<sm->lcp; ++j )
-		    len += strlen(sm->info->chars[sm->lig_comp_glyphs[j]]->name)+1;
-		comp = galloc(len);
+		    if ( sm->lig_comp_glyphs[j]<sm->info->glyph_cnt &&
+			    sm->info->chars[sm->lig_comp_glyphs[j]]!=NULL )
+			len += strlen(sm->info->chars[sm->lig_comp_glyphs[j]]->name)+1;
+		comp = galloc(len+1);
 		*comp = '\0';
 		for ( j=lcp; j<sm->lcp; ++j ) {
-		    strcat(comp,sm->info->chars[sm->lig_comp_glyphs[j]]->name);
-		    if ( j!=sm->lcp-1 )
-			strcat(comp," ");
+		    if ( sm->lig_comp_glyphs[j]<sm->info->glyph_cnt &&
+			    sm->info->chars[sm->lig_comp_glyphs[j]]!=NULL ) {
+			if ( *comp!='\0' )
+			    strcat(comp," ");
+			strcat(comp,sm->info->chars[sm->lig_comp_glyphs[j]]->name);
+		    }
 		}
 		if ( lig_glyph<sm->info->glyph_cnt && sm->info->chars[lig_glyph]!=NULL ) {
 		    for ( pst=sm->info->chars[lig_glyph]->possub; pst!=NULL; pst=pst->next )
@@ -3406,9 +3477,9 @@ return;
 		comp = galloc(len);
 		*comp = '\0';
 		for ( j=lcp; j<sm->lcp; ++j ) {
-		    strcat(comp,sm->info->chars[sm->lig_comp_glyphs[j]]->name);
-		    if ( j!=sm->lcp-1 )
+		    if ( *comp!='\0' )
 			strcat(comp," ");
+		    strcat(comp,sm->info->chars[sm->lig_comp_glyphs[j]]->name);
 		}
 		for ( pst=sm->info->chars[lig_glyph]->possub; pst!=NULL; pst=pst->next )
 		    if ( pst->type==pst_ligature && pst->tag==sm->info->mort_subs_tag &&
@@ -4025,7 +4096,7 @@ return(NULL);
 		as->state[i].u.context.cur_tag = TagFromInfo(info,index);
 	    }
 	}
-	used = gcalloc((subtab_len-st->extra_offsets[0])/2,sizeof(uint8));
+	used = gcalloc((subtab_len-st->extra_offsets[0]+1)/2,sizeof(uint8));
 	/* first figure things that only appear in current subs */
 	/*  then go back and work on things that apply to things which are also in marked subs */
 	for ( j=0; j<2; ++j ) for ( i=0; i<=lookup_max; ++i ) if ( evermarked[i]==j ) {
@@ -4128,6 +4199,8 @@ static uint32 readmortchain(FILE *ttf,struct ttfinfo *info, uint32 base, int ism
 	featureSetting = getushort(ttf);
 	enable_flags = getlong(ttf);
 	disable_flags = getlong(ttf);
+	if ( feof(ttf))
+return( chain_len );
 	if ( enable_flags & default_flags )
 	    FeatMarkAsEnabled(info,featureType,featureSetting);
 	tag = MacFeatureToOTTag(featureType,featureSetting);
@@ -4228,12 +4301,20 @@ void readttfmort(FILE *ttf,struct ttfinfo *info) {
     if ( version!=0x00010000 && version != 0x00020000 )
 return;
     nchains = getlong(ttf);
+    if ( feof(ttf)) {
+	fprintf( stderr, "Unexpected end of file found in morx chain.\n" );
+return;
+    }
     info->mort_max = nchains*33;		/* Maximum of one feature per bit ? */
     info->feats[0] = galloc((info->mort_max+1)*sizeof(uint32));
     info->feats[0][0] = 0;
     for ( i=0; i<nchains; ++i ) {
 	here = ftell(ttf);
 	len = readmortchain(ttf,info,base,ismorx);
+	if ( feof(ttf)) {
+	    fprintf( stderr, "Unexpected end of file found in morx chain.\n");
+    break;
+	}
 	fseek(ttf,here+len,SEEK_SET);
     }
 }
@@ -4432,6 +4513,10 @@ void readmacfeaturemap(FILE *ttf,struct ttfinfo *info) {
     featcnt = getushort(ttf);
     /* reserved */ getushort(ttf);
     /* reserved */ getlong(ttf);
+    if ( feof(ttf)) {
+	fprintf( stderr, "End of file in feat table.\n" );
+return;
+    }
 
     fs = galloc(featcnt*sizeof(struct fs));
     for ( i=0; i<featcnt; ++i ) {
@@ -4450,6 +4535,10 @@ void readmacfeaturemap(FILE *ttf,struct ttfinfo *info) {
 	if ( flags&0x8000 ) cur->ismutex = true;
 	if ( flags&0x4000 )
 	    cur->default_setting = flags&0xff;
+	if ( feof(ttf)) {
+	    fprintf( stderr, "End of file in feat table.\n" );
+return;
+	}
     }
 
     for ( i=0, cur=info->features; i<featcnt; ++i, cur = cur->next ) {
@@ -4465,6 +4554,10 @@ void readmacfeaturemap(FILE *ttf,struct ttfinfo *info) {
 
 	    scur->setting = getushort(ttf);
 	    scur->strid = getushort(ttf);
+	    if ( feof(ttf)) {
+		fprintf( stderr, "End of file in feat table.\n" );
+return;
+	    }
 	}
     }
     free(fs);

@@ -2301,6 +2301,10 @@ return;
 	ch = getc(sfd);		/* Should be '-' */
 	getint(sfd,&last);
 	len = last-first+1;
+	if ( len<=0 ) {
+	    fprintf( stderr, "Bad device table, invalid length.\n" );
+return;
+	}
 	adjust->first_pixel_size = first;
 	adjust->last_pixel_size = last;
 	adjust->corrections = galloc(len);
