@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 27-Feb-2004 -->
+  <!-- AP: Last modified: 1-Mar-2004 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,43 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    1-Mar-2004
+    <UL>
+      <LI>
+	The Check directions option of Find Problems caused multilayer mode to crash.
+      <LI>
+	Various cosmetic changes to find problems
+	<OL>
+	  <LI>
+	    Specify that "nearness" is measured in em-units
+	  <LI>
+	    change "refs deeper than" to "refs nested deeper than"
+	  <LI>
+	    make check dir be on by default
+	</OL>
+      <LI>
+	Put in more comments about fontforge. We now have a domain under
+	<A HREF="http://fontforge.sf.net/">fontforge</A>, future releases will be
+	found there.
+    </UL>
+  <LI>
+    29-Feb-2004
+    <UL>
+      <LI>
+	PfaEdit could crash if given a bad 'cmap' subtable
+      <LI>
+	Clean up generation of OS/2 a bit
+      <LI>
+	Pass motion events to windows even when a dlg is active (so that the mouse
+	location will be shown in an outline window when the Point info dlg is active).
+      <LI>
+	Put in a comment about changing to FontForge in the copyright notice the
+	program prints at start up.
+      <LI>
+	The "preflight" script on the mac had problems if the program had never been
+	installed before
+    </UL>
   <LI>
     27-Feb-2004
     <UL>
