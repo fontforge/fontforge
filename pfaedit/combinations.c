@@ -369,7 +369,7 @@ static void KPBuildAnchorList(KPData *kpd) {
 			CheckLeftRight(k);
 			if ( k->r2l ) {
 			    SplineCharQuickBounds(k->second,&bb);
-			    k->newoff = -ap1->me.x+bb.maxx-ap2->me.x;
+			    k->newoff = k->second->width-ap1->me.x + ap2->me.x;
 			} else
 			    k->newoff = -k->first->width+ap1->me.x-ap2->me.x;
 			k->newyoff = ap1->me.y-ap2->me.y;
@@ -404,7 +404,7 @@ return;
 			    CheckLeftRight(k);
 			    if ( k->r2l ) {
 				SplineCharQuickBounds(k->second,&bb);
-				k->newoff = -ap1->me.x+bb.maxx-ap2->me.x;
+				k->newoff = k->second->width-ap1->me.x + ap2->me.x;
 			    } else
 				k->newoff = -k->first->width+ap1->me.x-ap2->me.x;
 			    k->newyoff = ap1->me.y-ap2->me.y;
@@ -843,7 +843,7 @@ static int KP_OK(GGadget *g, GEvent *e) {
 	int i;
 	FontView *fv; MetricsView *mv;
 
-	for ( i=0; i<kpd->kcnt; ++i )
+	for ( i=0; i<kpd->kcnt; ++i ) if ( kpd->kerns[i].kp!=NULL )
 	    if ( kpd->kerns[i].newoff != kpd->kerns[i].kp->off ) {
 		kpd->kerns[i].kp->off = kpd->kerns[i].newoff;
 		kpd->sf->changed = true;
