@@ -2223,13 +2223,14 @@ static void handlename(Context *c,Val *val) {
 		val->u.sval = copy(sf==NULL?"":sf->fontname);
 	    } else if ( strcmp(name,"$fontname")==0 || strcmp(name,"familyname")==0 ||
 		    strcmp(name,"$fullname")==0 || strcmp(name,"$weight")==0 ||
-		    strcmp(name,"$copyright")==0 ) {
+		    strcmp(name,"$copyright")==0 || strcmp(name,"$filename")==0 ) {
 		if ( c->curfv==NULL ) error(c,"No current font");
 		val->type = v_str;
 		val->u.sval = copy(strcmp(name,"$fontname")==0?c->curfv->sf->fontname:
 			name[2]=='a'?c->curfv->sf->familyname:
 			name[2]=='u'?c->curfv->sf->fullname:
 			name[2]=='e'?c->curfv->sf->weight:
+			name[2]=='i'?c->curfv->sf->origname:
 				     c->curfv->sf->copyright);
 	    } else if ( strcmp(name,"$cidfontname")==0 || strcmp(name,"cidfamilyname")==0 ||
 		    strcmp(name,"$cidfullname")==0 || strcmp(name,"$cidweight")==0 ||
