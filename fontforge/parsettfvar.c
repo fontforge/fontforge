@@ -250,6 +250,8 @@ static int *readpackedpoints(FILE *ttf) {
     int n, runcnt, i, j, first;
 
     n = getc(ttf);
+    if ( n==EOF )
+	n = 0;
     if ( n&0x80 )
 	n = getc(ttf)|((n&0x7f)<<8);
     points = galloc((n+1)*sizeof(int));
