@@ -465,7 +465,7 @@ return( EOF );
 return( (ch<<8)|getc(file));
 }
 
-int GStringSetResourceFile(char *filename) {
+int GStringSetResourceFileV(char *filename,uint32 checksum) {
     FILE *res;
     int scnt, icnt;
     int strlen;
@@ -483,6 +483,12 @@ return( 1 );
     res = fopen(filename,"r");
     if ( res==NULL )
 return( 0 );
+
+    if ( getint(res)!=checksum && checksum!=0xffffffff ) {
+	fprintf( stderr, "Warning: The checksum of the resource file\n\t%s\ndoes not match the expected checksum.\nA set of fallback resources will be used instead.\n", filename );
+	fclose(res);
+return( 0 );
+    }
 
     scnt = getushort(res);
     icnt = getushort(res);
@@ -526,6 +532,10 @@ return( 0 );
     slen = scnt; ilen = icnt;
     
 return( true );
+}
+
+int GStringSetResourceFile(char *filename) {
+return( GStringSetResourceFileV(filename,0xffffffff));
 }
 
 /* Read a resource from a file without loading the file */

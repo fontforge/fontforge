@@ -566,7 +566,7 @@ return;
 	    !CheckLangDir(full,sizeof(full),"/usr/share/pfaedit",loc) )
 return;
 
-    GStringSetResourceFile(full);
+    GStringSetResourceFileV(full,__NOMEN_CHECKSUM);
 }
 
 static int encmatch(const char *enc) {

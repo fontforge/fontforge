@@ -190,6 +190,7 @@ extern GTextInfo **GTextInfoFromChars(char **array, int len);
 extern const unichar_t *GStringGetResource(int index,unichar_t *mnemonic);
 extern int GGadgetScale(int xpos);
 extern int GIntGetResource(int index);
+extern int GStringSetResourceFileV(char *filename,uint32 checksum);
 extern int GStringSetResourceFile(char *filename);	/* returns 1 for success, 0 for failure */
 /* fallback string arrays are null terminated. mnemonics is same length as string */
 /* fallback integer arrays are terminated by 0x80000000 (negative infinity) */

@@ -5,6 +5,9 @@
 #include <sys/types.h>
 #include <dirent.h>
 
+#include <sys/stat.h>
+#include <unistd.h>
+
 #include <ggadget.h>
 #include <ustring.h>
 #include <charset.h>
@@ -23,6 +26,7 @@ static unichar_t **names, **inames;
 static char *hadmn;
 static int nlen=__STR_LastStd+1000, npos=__STR_LastStd+1;
 static int ilen=__NUM_LastStd+1, ipos=__NUM_LastStd+1;
+static int checksum;
 
 static int isstandard(char *name) {
     int i;
@@ -89,6 +93,7 @@ static int makenomenh() {
     char *pt;
     int off, i;
     int ismn;
+    struct stat stat_buf;
 
     names = malloc(nlen*sizeof(unichar_t *));
     hadmn = calloc(nlen,sizeof(char));
@@ -99,6 +104,7 @@ static int makenomenh() {
     for ( i=0; istandard[i]!=NULL; ++i )
 	inames[i] = uc_copy(istandard[i]);
 
+    stat("nomen-en.c",&stat_buf);
     in = fopen("nomen-en.c","r");
     if ( in==NULL ) {
 	fprintf(stderr, "Missing required input file: nomen-en.c\n" );
@@ -110,6 +116,10 @@ static int makenomenh() {
     fprintf( out, "#include <basics.h>\n" );
     fprintf( out, "#include <stdio.h>\n" );
     fprintf( out, "#include <ggadget.h>\n\n" );
+
+    fprintf( out, "#define __NOMEN_CHECKSUM\t%d\n\n", stat_buf.st_size );
+    checksum = stat_buf.st_size;
+
     while( fgets(buffer,sizeof(buffer),in)!=NULL ) {
 	if ( (buffer[0]=='/' && buffer[1]=='*') || buffer[0]=='\n' ) {
 	    fprintf( out, "%s", buffer );
@@ -720,6 +730,7 @@ return;
 	fprintf( stderr, "Could not open %s for writing\n", buffer);
     else {
 	int last = -1, ilast = -1;
+	putint(out,checksum);
 	for ( i=0; i<npos; ++i )
 	    if ( values[i]!=NULL ) last = i;
 	putshort(out,last+1);
