@@ -1702,7 +1702,7 @@ BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv) {
 
     memset(&gd, '\0', sizeof(gd));
     memset(&ti, '\0', sizeof(ti));
-    gd.pos.x = pos.width - GDrawPointsToPixels(gw,118);
+    gd.pos.x = pos.width - GDrawPointsToPixels(gw,111);
     gd.pos.y = bv->mbh + GDrawPointsToPixels(gw,6);
     gd.pos.width = GDrawPointsToPixels(gw,106);
     gd.label = &ti;
