@@ -1189,6 +1189,7 @@ return( sc );
 }
 
 static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse);
+static void readttfgsubUsed(FILE *ttf,struct ttfinfo *info);
 
 static void readttfglyphs(FILE *ttf,struct ttfinfo *info) {
     int i, anyread;
@@ -1219,6 +1220,8 @@ static void readttfglyphs(FILE *ttf,struct ttfinfo *info) {
 	/*  to tell us what is used */
 	info->inuse = gcalloc(info->glyph_cnt,sizeof(char));
 	readttfencodings(ttf,info,true);
+	if ( info->gsub_start!=0 )		/* Some glyphs may appear in substitutions and not in the encoding... */
+	    readttfgsubUsed(ttf,info);
 	anyread = true;
 	while ( anyread ) {
 	    anyread = false;
@@ -3808,7 +3811,8 @@ return;
     free(vr);
 }
 
-static void gsubSimpleSubTable(FILE *ttf, int stoffset, struct ttfinfo *info, struct lookup *lookup) {
+static void gsubSimpleSubTable(FILE *ttf, int stoffset, struct ttfinfo *info,
+	struct lookup *lookup, int justinuse) {
     int coverage, cnt, i, which;
     uint16 format;
     uint16 *glyphs, *glyph2s=NULL;
@@ -3831,16 +3835,24 @@ return;
 	free(glyph2s);
 return;
     }
-    for ( i=0; glyphs[i]!=0xffff; ++i ) if ( info->chars[glyphs[i]]!=NULL ) {
-	which = format==1 ? glyphs[i]+delta : glyph2s[i];
-	if ( info->chars[which]!=NULL ) {	/* Might be in a ttc file */
-	    PST *pos = chunkalloc(sizeof(PST));
-	    pos->type = pst_substitution;
-	    pos->tag = lookup->tag;
-	    pos->flags = lookup->flags;
-	    pos->next = info->chars[glyphs[i]]->possub;
-	    info->chars[glyphs[i]]->possub = pos;
-	    pos->u.subs.variant = copy(info->chars[which]->name);
+    if ( justinuse ) {
+	for ( i=0; glyphs[i]!=0xffff; ++i ) {
+	    info->inuse[glyphs[i]]= true;
+	    which = format==1 ? glyphs[i]+delta : glyph2s[i];
+	    info->inuse[which]= true;
+	}
+    } else {
+	for ( i=0; glyphs[i]!=0xffff; ++i ) if ( info->chars[glyphs[i]]!=NULL ) {
+	    which = format==1 ? glyphs[i]+delta : glyph2s[i];
+	    if ( info->chars[which]!=NULL ) {	/* Might be in a ttc file */
+		PST *pos = chunkalloc(sizeof(PST));
+		pos->type = pst_substitution;
+		pos->tag = lookup->tag;
+		pos->flags = lookup->flags;
+		pos->next = info->chars[glyphs[i]]->possub;
+		info->chars[glyphs[i]]->possub = pos;
+		pos->u.subs.variant = copy(info->chars[which]->name);
+	    }
 	}
     }
     free(glyph2s);
@@ -3848,7 +3860,7 @@ return;
 
 /* Multiple and alternate substitution lookups have the same format */
 static void gsubMultipleSubTable(FILE *ttf, int stoffset, struct ttfinfo *info,
-	struct lookup *lookup, int lu_type) {
+	struct lookup *lookup, int lu_type, int justinuse) {
     int coverage, cnt, i, j, len, max;
     uint16 format;
     uint16 *offsets;
@@ -3882,12 +3894,18 @@ return;
 	len = 0; bad = false;
 	for ( j=0; j<cnt; ++j ) {
 	    glyph2s[j] = getushort(ttf);
-	    if ( info->chars[glyph2s[j]]==NULL )
+	    if ( justinuse )
+		/* Do Nothing */;
+	    else if ( info->chars[glyph2s[j]]==NULL )
 		bad = true;
 	    else
 		len += strlen( info->chars[glyph2s[j]]->name) +1;
 	}
-	if ( info->chars[glyphs[i]]!=NULL && !bad ) {
+	if ( justinuse ) {
+	    info->inuse[glyphs[i]] = 1;
+	    for ( j=0; j<cnt; ++j )
+		info->inuse[glyph2s[j]] = 1;
+	} else if ( info->chars[glyphs[i]]!=NULL && !bad ) {
 	    pos = chunkalloc(sizeof(PST));
 	    pos->type = lu_type==2?pst_multiple:pst_alternate;
 	    pos->tag = lookup->tag;
@@ -3907,7 +3925,7 @@ return;
 }
 
 static void gsubLigatureSubTable(FILE *ttf, int stoffset,
-	struct ttfinfo *info, struct lookup *lookup) {
+	struct ttfinfo *info, struct lookup *lookup, int justinuse) {
     int coverage, cnt, i, j, k, lig_cnt, cc, len;
     uint16 *ls_offsets, *lig_offsets;
     uint16 *glyphs, *lig_glyphs, lig;
@@ -3939,7 +3957,11 @@ return;
 		lig_glyphs[k] = getushort(ttf);
 	    for ( k=len=0; k<cc; ++k )
 		len += strlen(info->chars[lig_glyphs[k]]->name)+1;
-	    if ( info->chars[lig]!=NULL ) {
+	    if ( justinuse ) {
+		info->inuse[lig] = 1;
+		for ( k=0; k<cc; ++k )
+		    info->inuse[lig_glyphs[k]] = 1;
+	    } else if ( info->chars[lig]!=NULL ) {
 		liga = chunkalloc(sizeof(PST));
 		liga->type = pst_ligature;
 		liga->tag = lookup->tag;
@@ -4104,6 +4126,52 @@ static void tagTtfFeaturesWithScript(FILE *ttf,uint32 script_pos,struct feature 
     free(scripts);
 }
 
+static void readttfgsubUsed(FILE *ttf,struct ttfinfo *info) {
+    int i, j, lu_cnt, lu_type, cnt, st;
+    uint16 *lu_offsets, *st_offsets;
+    int32 base, lookup_start;
+    int32 script_off, feature_off;
+
+    base = info->gsub_start;
+    fseek(ttf,base,SEEK_SET);
+    /* version = */ getlong(ttf);
+    script_off = getushort(ttf);
+    feature_off = getushort(ttf);
+    lookup_start = base+getushort(ttf);
+    
+    fseek(ttf,lookup_start,SEEK_SET);
+
+    lu_cnt = getushort(ttf);
+    lu_offsets = galloc(lu_cnt*sizeof(uint16));
+    for ( i=0; i<lu_cnt; ++i )
+	lu_offsets[i] = getushort(ttf);
+    for ( i=0; i<lu_cnt; ++i ) {
+	fseek(ttf,lookup_start+lu_offsets[i],SEEK_SET);
+	lu_type = getushort(ttf);
+	/* flags =*/ getushort(ttf);
+	cnt = getushort(ttf);
+	st_offsets = galloc(cnt*sizeof(uint16));
+	for ( j=0; j<cnt; ++j )
+	    st_offsets[j] = getushort(ttf);
+	for ( j=0; j<cnt; ++j ) {
+	    fseek(ttf,st = lookup_start+lu_offsets[i]+st_offsets[j],SEEK_SET);
+	    switch ( lu_type ) {
+	      case 1:
+		gsubSimpleSubTable(ttf,st,info,NULL,true);
+	      break;
+	      case 2: case 3:	/* Multiple and alternate have same format, different semantics */
+		gsubMultipleSubTable(ttf,st,info,NULL,lu_type,true);
+	      break;
+	      case 4:
+		gsubLigatureSubTable(ttf,st,info,NULL,true);
+	      break;
+	    }
+	}
+	free(st_offsets);
+    }
+    free(lu_offsets);
+}
+
 static void readttfgpossub(FILE *ttf,struct ttfinfo *info,int gpos) {
     int i, j, k, lu_cnt, lu_type, cnt, st;
     uint16 *lu_offsets, *st_offsets;
@@ -4165,13 +4233,13 @@ return;
 	    } else {
 		switch ( lu_type ) {
 		  case 1:
-		    gsubSimpleSubTable(ttf,st,info,&lookups[k]);
+		    gsubSimpleSubTable(ttf,st,info,&lookups[k],false);
 		  break;
 		  case 2: case 3:	/* Multiple and alternate have same format, different semantics */
-		    gsubMultipleSubTable(ttf,st,info,&lookups[k],lu_type);
+		    gsubMultipleSubTable(ttf,st,info,&lookups[k],lu_type,false);
 		  break;
 		  case 4:
-		    gsubLigatureSubTable(ttf,st,info,&lookups[k]);
+		    gsubLigatureSubTable(ttf,st,info,&lookups[k],false);
 		  break;
 		}
 	    }
