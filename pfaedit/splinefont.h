@@ -791,7 +791,6 @@ extern void SplineFontQuickConservativeBounds(SplineFont *sf,DBounds *b);
 extern void SplinePointCatagorize(SplinePoint *sp);
 extern int SplinePointIsACorner(SplinePoint *sp);
 extern void SCCatagorizePoints(SplineChar *sc);
-extern int UnicodeNameLookup(char *name);
 extern SplinePointList *SplinePointListCopy1(SplinePointList *spl);
 extern SplinePointList *SplinePointListCopy(SplinePointList *base);
 extern SplinePointList *SplinePointListCopySelected(SplinePointList *base);
@@ -1025,6 +1024,7 @@ extern void SFFigureGrid(SplineFont *sf);
 extern int FVWinInfo(struct fontview *,int *cc,int *rc);
 
 extern struct script_record *SRParse(const unichar_t *line);
+extern int SFFindScriptLangRecord(SplineFont *sf,struct script_record *sr);
 extern int SFAddScriptLangRecord(SplineFont *sf,struct script_record *sr);
 extern int SFAddScriptLangIndex(SplineFont *sf,uint32 script,uint32 lang);
 extern int ScriptLangMatch(struct script_record *sr,uint32 script,uint32 lang);

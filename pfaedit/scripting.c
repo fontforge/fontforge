@@ -549,6 +549,15 @@ static void bSetPrefs(Context *c) {
 	errors( c, "Bad type for preference variable",  c->a.vals[1].u.sval);
 }
 
+static void bUnicodeFromName(Context *c) {
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type!=v_str )
+	error( c, "Bad type for argument" );
+    c->return_val.type = v_int;
+    c->return_val.u.ival = UniFromName(c->a.vals[1].u.sval);
+}
+
 /* **** File menu **** */
 
 static void bQuit(Context *c) {
@@ -1923,6 +1932,45 @@ static void bClearHints(Context *c) {
     FVFakeMenus(c->curfv,201);
 }
 
+static void bClearPrivateEntry(Context *c) {
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_str )
+	error( c, "Bad argument type" );
+    if ( c->curfv->sf->private!=NULL )
+	PSDictRemoveEntry( c->curfv->sf->private,c->a.vals[1].u.sval);
+}
+
+static void bChangePrivateEntry(Context *c) {
+    SplineFont *sf = c->curfv->sf;
+    if ( c->a.argc!=3 )
+	error( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str )
+	error( c, "Bad argument type" );
+    if ( sf->private==NULL ) {
+	sf->private = gcalloc(1,sizeof(struct psdict));
+	sf->private->cnt = 10;
+	sf->private->keys = gcalloc(10,sizeof(char *));
+	sf->private->values = gcalloc(10,sizeof(char *));
+    }
+    PSDictChangeEntry(sf->private,c->a.vals[1].u.sval,c->a.vals[2].u.sval);
+}
+
+static void bGetPrivateEntry(Context *c) {
+    int i;
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_str )
+	error( c, "Bad argument type" );
+    c->return_val.type = v_str;
+    if ( c->curfv->sf->private==NULL ||
+	    (i = PSDictFindEntry(c->curfv->sf->private,c->a.vals[1].u.sval))==-1 )
+	c->return_val.u.sval = copy("");
+    else
+	c->return_val.u.sval = copy(c->curfv->sf->private->values[i]);
+}
+
 static void bSetWidth(Context *c) {
     int incr = 0;
     if ( c->a.argc!=2 && c->a.argc!=3 )
@@ -2182,7 +2230,7 @@ static void bDefaultATT(Context *c) {
 	error( c, "Bad type for argument");
 
     memset(tag,' ',4);
-    str = c->a.vals[3].u.sval;
+    str = c->a.vals[1].u.sval;
     if ( *str ) {
 	tag[0] = *str;
 	if ( str[1] ) {
@@ -2283,6 +2331,86 @@ static void bAddATT(Context *c) {
     *pst = temp;
     pst->next = sc->possub;
     sc->possub = pst;
+}
+
+static void bRemoveATT(Context *c) {
+    SplineFont *sf = c->curfv->sf;
+    char tag[4];
+    char *str;
+    uint32 ftag;
+    int i;
+    int type, sli;
+    struct script_record *sr;
+    PST *pst, *prev, *next;
+
+    if ( c->a.argc!=4 )
+	error( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str || c->a.vals[3].type!=v_str )
+	error( c, "Bad type for argument");
+
+    if ( strcmp(c->a.vals[1].u.sval,"Position")==0 )
+	type = pst_position;
+    else if ( strcmp(c->a.vals[1].u.sval,"Substitution")==0 )
+	type = pst_substitution;
+    else if ( strcmp(c->a.vals[1].u.sval,"AltSubs")==0 )
+	type = pst_alternate;
+    else if ( strcmp(c->a.vals[1].u.sval,"MultSubs")==0 )
+	type = pst_multiple;
+    else if ( strcmp(c->a.vals[1].u.sval,"Ligature")==0 )
+	type = pst_ligature;
+    else if ( strcmp(c->a.vals[1].u.sval,"*")==0 )
+	type = -1;
+    else
+	errors(c,"Unknown tag", c->a.vals[1].u.sval);
+
+    if ( strcmp(c->a.vals[2].u.sval,"*")==0 )
+	sli = -1;
+    else {
+	unichar_t *utemp;
+	sr = SRParse(utemp = uc_copy(c->a.vals[2].u.sval));
+	sli = SFFindScriptLangRecord(sf,sr);
+	ScriptRecordFree(sr);
+	free(utemp);
+	if ( sli==-1 )		/* Can't be any matches, that script record didn't exist */
+return;
+    }
+
+    memset(tag,' ',4);
+    str = c->a.vals[3].u.sval;
+    if ( *str ) {
+	tag[0] = *str;
+	if ( str[1] ) {
+	    tag[1] = str[1];
+	    if ( str[2] ) {
+		tag[2] = str[2];
+		if ( str[3] ) {
+		    tag[3] = str[3];
+		    if ( str[4] )
+			error(c,"Tags/Scripts/Languages are represented by strings which are at most 4 characters long");
+		}
+	    }
+	}
+    }
+    ftag = (tag[0]<<24)|(tag[1]<<16)|(tag[2]<<8)|tag[3];
+    if ( strcmp(str,"*"))
+	ftag = 0;			/* Everything */
+
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && c->curfv->selected[i]) {
+	for ( prev=NULL, pst = sf->chars[i]->possub; pst!=NULL; pst = next ) {
+	    next = pst->next;
+	    if ( (pst->type==type || type==-1 ) &&
+		    (pst->script_lang_index==sli || sli==-1 ) &&
+		    (pst->tag==ftag || ftag==0)) {
+		if ( prev==NULL )
+		    sf->chars[i]->possub = next;
+		else
+		    prev->next = next;
+		pst->next = NULL;
+		PSTFree(pst);
+	    } else
+		prev = pst;
+	}
+    }
 }
 
 static void PosSubInfo(SplineChar *sc,Context *c) {
@@ -2422,6 +2550,7 @@ struct builtins { char *name; void (*func)(Context *); int nofontok; } builtins[
     { "Strskipint", bStrskipint, 1 },
     { "GetPref", bGetPrefs, 1 },
     { "SetPref", bSetPrefs, 1 },
+    { "UnicodeFromName", bUnicodeFromName, 1 },
 /* File menu */
     { "Quit", bQuit, 1 },
     { "Open", bOpen, 1 },
@@ -2490,6 +2619,7 @@ struct builtins { char *name; void (*func)(Context *); int nofontok; } builtins[
     { "CorrectDirection", bCorrectDirection },
     { "AddATT", bAddATT },
     { "DefaultATT", bDefaultATT },
+    { "RemoveATT", bRemoveATT },
     { "BuildComposit", bBuildComposit },
     { "BuildAccented", bBuildAccented },
     { "MergeFonts", bMergeFonts },
@@ -2497,6 +2627,9 @@ struct builtins { char *name; void (*func)(Context *); int nofontok; } builtins[
     { "AutoHint", bAutoHint },
     { "AutoInstr", bAutoInstr },
     { "ClearHints", bClearHints },
+    { "ClearPrivateEntry", bClearPrivateEntry },
+    { "ChangePrivateEntry", bChangePrivateEntry },
+    { "GetPrivateEntry", bGetPrivateEntry },
     { "SetWidth", bSetWidth },
     { "SetVWidth", bSetVWidth },
     { "SetLBearing", bSetLBearing },

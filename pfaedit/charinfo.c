@@ -688,6 +688,21 @@ return( false );
 return( true );
 }
 
+int SFFindScriptLangRecord(SplineFont *sf,struct script_record *sr) {
+    int i;
+
+    if ( sf->cidmaster ) sf = sf->cidmaster;
+    if ( sf->script_lang==NULL )
+return( -1 );
+    for ( i=0; sf->script_lang[i]!=NULL; ++i ) {
+	if ( SRMatch(sf->script_lang[i],sr)) {
+	    ScriptRecordFree(sr);
+return( i );
+	}
+    }
+return( -1 );
+}
+
 int SFAddScriptLangRecord(SplineFont *sf,struct script_record *sr) {
     int i;
 
