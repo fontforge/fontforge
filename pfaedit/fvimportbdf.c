@@ -32,6 +32,37 @@
 #include <chardata.h>
 #include <unistd.h>
 
+static char *cleancopy(char *name) {
+    char *fpt, *tpt;
+    char *temp = NULL;
+
+    fpt=tpt=name;
+    if ( isdigit(*fpt)) {
+	tpt = temp = galloc(strlen(name)+2);
+	*tpt++ = '$';
+    }
+    for ( ; *fpt; ++fpt ) {
+	if ( *fpt>' ' && *fpt<127 &&
+		*fpt!='(' &&
+		*fpt!=')' &&
+		*fpt!='[' &&
+		*fpt!=']' &&
+		*fpt!='{' &&
+		*fpt!='}' &&
+		*fpt!='<' &&
+		*fpt!='>' &&
+		*fpt!='/' &&
+		*fpt!='%' )
+	    *tpt++ = *fpt;
+    }
+    *tpt = '\0';
+
+    if ( temp!=NULL )
+return( temp );
+
+return( copy(name));
+}
+
 /* The pcf code is adapted from... */
 /*
 
@@ -115,7 +146,7 @@ static void MakeEncChar(SplineFont *sf,int enc,char *name) {
     if ( sf->chars[enc]==NULL )
 	SFMakeChar(sf,enc);
     free(sf->chars[enc]->name);
-    sf->chars[enc]->name = copy(name);
+    sf->chars[enc]->name = cleancopy(name);
 
     uni = UniFromName(name);
     if ( uni!=-1 )
@@ -182,7 +213,7 @@ static int figureProperEncoding(SplineFont *sf,BDFFont *b, int enc,char *name,
 	SFMakeChar(sf,i);
 	if ( sf->onlybitmaps && ((sf->bitmaps==b && b->next==NULL) || sf->bitmaps==NULL) ) {
 	    free(sf->chars[i]->name);
-	    sf->chars[i]->name = copy(name);
+	    sf->chars[i]->name = cleancopy(name);
 	}
     }
     if ( i!=-1 && swidth!=-1 &&
@@ -581,7 +612,7 @@ static BDFChar *SFGrowTo(SplineFont *sf,BDFFont *b, int cc) {
     if ( sf->onlybitmaps && ((sf->bitmaps==b && b->next==NULL) || sf->bitmaps==NULL) ) {
 	free(sf->chars[cc]->name);
 	sprintf( buf, "enc-%d", cc);
-	sf->chars[cc]->name = copy( buf );
+	sf->chars[cc]->name = cleancopy( buf );
 	sf->chars[cc]->unicodeenc = -1;
     }
     if ( cc>=b->charcnt )
@@ -707,17 +738,6 @@ return( -2 );
     strcpy(full,family);
 
 return( pixelsize );
-}
-
-static char *cleancopy(char *name) {
-    char *fpt, *tpt;
-
-    for ( fpt=tpt=name; *fpt; ++fpt ) {
-	if ( isalnum(*fpt) || *fpt=='-' )
-	    *tpt++ = *fpt;
-    }
-    *tpt = '\0';
-return( copy(name));
 }
 
 static int gf_char(FILE *gf, SplineFont *sf, BDFFont *b) {
