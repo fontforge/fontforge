@@ -683,6 +683,25 @@ static void putstring(FILE *sfd, char *header, char *body) {
     putc('\n',sfd);
 }
 
+static void SFDDumpEncoding(FILE *sfd,int encname,char *keyword) {
+
+    if ( encname>=em_unicodeplanes && encname<=em_unicodeplanesmax ) {
+	fprintf(sfd, "%s: UnicodePlane%d\n", keyword, encname-em_unicodeplanes );
+    } else if ( encname>=em_base ) {
+	Encoding *item;
+	for ( item = enclist; item!=NULL && item->enc_num!=encname; item = item->next );
+	if ( item==NULL )
+	    fprintf(sfd, "%s: keyword, custom\n" );
+	else
+	    fprintf(sfd, "%s: %s\n", keyword, item->enc_name );
+    } else if ( encname>=sizeof(charset_names)/sizeof(charset_names[0])-2 &&
+	    encname!=em_none ) {
+	fprintf(sfd, "%s: %d\n", keyword, encname );
+	fprintf(stderr, "Unknown encoding %d\n", encname );
+    } else
+	fprintf(sfd, "%s: %s\n", keyword, charset_names[encname+1] );
+}
+
 static void SFD_Dump(FILE *sfd,SplineFont *sf) {
     int i, realcnt;
     BDFFont *bdf;
@@ -738,21 +757,10 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 	fprintf(sfd, "CIDVersion: %g\n", sf->cidversion );	/* This is a number whereas "version" is a string */
     } else if ( sf->compacted ) {
 	fprintf(sfd, "Encoding: compacted\n" );
-    } else if ( sf->encoding_name>=em_unicodeplanes && sf->encoding_name<=em_unicodeplanesmax ) {
-	fprintf(sfd, "Encoding: UnicodePlane%d\n", sf->encoding_name-em_unicodeplanes );
-    } else if ( sf->encoding_name>=em_base ) {
-	Encoding *item;
-	for ( item = enclist; item!=NULL && item->enc_num!=sf->encoding_name; item = item->next );
-	if ( item==NULL )
-	    fprintf(sfd, "Encoding: custom\n" );
-	else
-	    fprintf(sfd, "Encoding: %s\n", item->enc_name );
-    } else if ( sf->encoding_name>=sizeof(charset_names)/sizeof(charset_names[0])-2 &&
-	    sf->encoding_name!=em_none ) {
-	fprintf(sfd, "Encoding: %d\n", sf->encoding_name );
-	fprintf(stderr, "Unknown encoding %d\n", sf->encoding_name );
+	SFDDumpEncoding(sfd,sf->old_encname,"OldEncoding");
     } else
-	fprintf(sfd, "Encoding: %s\n", charset_names[sf->encoding_name+1] );
+	SFDDumpEncoding(sfd,sf->encoding_name,"Encoding");
+	
     if ( sf->remap!=NULL ) {
 	struct remap *map;
 	int n;
@@ -1902,6 +1910,35 @@ return( cur );
 return( old );
 }
 
+static enum charset SFDGetEncoding(FILE *sfd, char *tok, SplineFont *sf) {
+    int encname = em_none;
+    int i;
+
+    if ( !getint(sfd,&encname) ) {
+	Encoding *item; int val;
+	geteol(sfd,tok);
+	encname = em_none;
+	for ( i=0; charset_names[i]!=NULL; ++i )
+	    if ( strcmp(tok,charset_names[i])==0 ) {
+		encname = i-1;
+	break;
+	    }
+	if ( charset_names[i]==NULL ) {
+	    for ( item = enclist; item!=NULL && strcmp(item->enc_name,tok)!=0; item = item->next );
+	    if ( item!=NULL )
+		encname = item->enc_num;
+	}
+	if ( encname == em_none &&
+		sscanf(tok,"UnicodePlane%d",&val)==1 )
+	    encname = val+em_unicodeplanes;
+	if ( encname == em_none && strcmp(tok,"compacted")==0 ) {
+	    encname = em_none;
+	    sf->compacted = true;
+	}
+    }
+return( encname );
+}
+
 static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
     SplineFont *sf;
     SplineChar *sc;
@@ -2005,28 +2042,9 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    geteol(sfd,tok);
 	    sf->xuid = copy(tok);
 	} else if ( strmatch(tok,"Encoding:")==0 ) {
-	    if ( !getint(sfd,&sf->encoding_name) ) {
-		Encoding *item; int val;
-		geteol(sfd,tok);
-		sf->encoding_name = em_none;
-		for ( i=0; charset_names[i]!=NULL; ++i )
-		    if ( strcmp(tok,charset_names[i])==0 ) {
-			sf->encoding_name = i-1;
-		break;
-		    }
-		if ( charset_names[i]==NULL ) {
-		    for ( item = enclist; item!=NULL && strcmp(item->enc_name,tok)!=0; item = item->next );
-		    if ( item!=NULL )
-			sf->encoding_name = item->enc_num;
-		}
-		if ( sf->encoding_name == em_none &&
-			sscanf(tok,"UnicodePlane%d",&val)==1 )
-		    sf->encoding_name = val+em_unicodeplanes;
-		if ( sf->encoding_name == em_none && strcmp(tok,"compacted")==0 ) {
-		    sf->encoding_name = em_none;
-		    sf->compacted = true;
-		}
-	    }
+	    sf->encoding_name = SFDGetEncoding(sfd,tok,sf);
+	} else if ( strmatch(tok,"OldEncoding:")==0 ) {
+	    sf->old_encname = SFDGetEncoding(sfd,tok,sf);
 	} else if ( strmatch(tok,"Registry:")==0 ) {
 	    geteol(sfd,tok);
 	    sf->cidregistry = copy(tok);
