@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 29-Jan-2004 -->
+  <!-- AP: Last modified: 30-Jan-2004 -->
   <TITLE>The Hints Menu</TITLE>
 </HEAD>
 <BODY>
@@ -11,20 +11,18 @@
 </H1>
 <P>
 This menu is only present in the outline character view and the font view.
-In the font view it only contains two entries:
-<A HREF="hintsmenu.html#AutoHint">AutoHint</A> and <A HREF="#ClearHints">Clear
-Hints</A><BR>
+<BR>
 <A HREF="hinting.html">A more detailed description of the hinting UI</A>.
 <P>
 <UL>
   <LI>
     <A HREF="#AutoHint">AutoHint</A>
   <LI>
-    Hint Substitution Pts
+    <A HREF="#SubstitutionPt">Hint Substitution Pts</A>
   <LI>
-    Auto Counter
+    <A HREF="#Counter">Auto Counter</A>
   <LI>
-    Don't AutoHint
+    <A HREF="hintsmenu.html#DontAutoHint">Don't AutoHint</A>
   <LI>
     <A HREF="#AutoInstr">AutoInstr</A>
   <LI>
@@ -106,6 +104,29 @@ Hints</A><BR>
     <A HREF="fontinfo.html#Private">Element-&gt;Font Info-&gt;PS Private</A>.
     These in turn depend on the hints so it is best to autohint the entire font,
     then set the above values, and then autohint the font again.
+  <DT>
+    Hint <A NAME="SubstitutionPt">Substitution</A> Pts
+  <DD>
+    In the font view this figures substitution points for all selected characters.
+    In the outline character view, this figures substitution points for the current
+    character using the current hint set.
+  <DT>
+    Auto <A NAME="Counter">Counter</A>
+  <DD>
+    Attempt to figure out counter groups for the selected characters (font view)
+    or the current character (outline character view).
+  <DT>
+    <A NAME="DontAutoHint">Don</A>'t AutoHint
+  <DD>
+    Tells PfaEdit not to do any implicit hinting on the selected characters.
+    (PfaEdit will normally perform an autohint on a character if the character's
+    contours have changed since it was last hinted and the user has not explicitly
+    changed the hints). The user may turn this flag off by invoking AutoHint
+    explicitly.
+    <P>
+    In the outline character view, behavior is a bit more complicated. This command
+    will toggle the current setting of the "Don't AutoHint" flag. If the flag
+    is currently on the menu entry will be checked.
   <DT>
     <A NAME="AutoInstr">AutoInstr</A>
   <DD>

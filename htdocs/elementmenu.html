@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 28-Sep-2003 -->
+  <!-- AP: Last modified: 30-Jan-2004 -->
   <TITLE>The Element Menu</TITLE>
 </HEAD>
 <BODY>
@@ -110,6 +110,18 @@ This menu is not present in the Metrics View.
     </UL>
   <LI>
     <A HREF="#Round">Round to Int</A>
+  <LI>
+    <A HREF="#Order">Order</A>
+    <UL>
+      <LI>
+	First
+      <LI>
+	Earlier
+      <LI>
+	Later
+      <LI>
+	Last
+    </UL>
   <LI>
     <A HREF="#Clockwise">Clockwise</A>
   <LI>
@@ -624,6 +636,18 @@ compiling PfaEdit.
     rounded to integral values. Open Type allows real numbers easily. But they
     make the font file bigger. This command will round all selected locations
     to the closest integer.
+  <DT>
+    <A NAME="Order">Order</A>
+  <DD>
+    This changes the order in which contours, references and images are drawn.
+    It is almost useless because this order of contours and references does not
+    affect the final appearance of the character. The only relevance it has is
+    when interpolating fonts and in multiple master fonts. Here similar contours
+    must appear in the same order.
+    <P>
+    If you have a character which contains both contours and references, PfaEdit
+    does not specify whether references or contours are drawn first (or whether
+    the two are intermixed). If this matters to you, unlink your references.
   <DT>
     <A NAME="Clockwise">Clockwise</A>
   <DD>
