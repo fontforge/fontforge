@@ -29,7 +29,7 @@
 #include "ttfinstrs.h"
 #include <math.h>
 
-#define TRACEINSTR 1
+/*#define TRACEINSTR 1*/
 
 #if TT_CONFIG_OPTION_BYTECODE_DEBUG
 static int ttrint(double val) {
