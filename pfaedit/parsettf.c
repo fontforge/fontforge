@@ -3353,6 +3353,7 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
     char buffer[30];
     uint16 *indexes;
     extern const char *ttfstandardnames[];
+    int notdefwarned = false;
 
     GProgressChangeLine2R(_STR_ReadingNames);
     fseek(ttf,info->postscript_start,SEEK_SET);
@@ -3437,7 +3438,22 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 
     for ( i=0; i<info->glyph_cnt; ++i ) {
 	/* info->chars[i] can be null in some TTC files */
-	if ( info->chars[i]==NULL || info->chars[i]->name!=NULL )
+	if ( info->chars[i]==NULL )
+    continue;
+	if ( i!=0 && info->chars[i]->name!=NULL &&
+		strcmp(info->chars[i]->name,".notdef")==0 ) {
+	    /* for some reason MS puts out fonts where several characters */
+	    /* are called .notdef (and only one is a real notdef). So if we */
+	    /* find a glyph other than 0 called ".notdef" then pretend it had */
+	    /* no name */
+	    if ( !notdefwarned ) {
+		notdefwarned = true;
+		fprintf( stderr, "Glyph %d is called \".notdef\", a signularly inept choice of name.\nPfaEdit will rename it.\n", i );
+	    }
+	    free(info->chars[i]->name);
+	    info->chars[i]->name = NULL;
+	}
+	if ( info->chars[i]->name!=NULL )
     continue;
 	if ( info->ordering!=NULL )
 	    sprintf(buffer, "%.20s-%d", info->ordering, i );
