@@ -107,6 +107,8 @@ return;
 return;
 
     for ( dlist=sc->dependents; dlist!=NULL; dlist=dlist->next ) {
+	if ( sc->width!=dlist->sc->width )
+    continue;
 	if ( selected==NULL || !selected[dlist->sc->enc] ) {
 	    SCPreserveState(dlist->sc,false);
 	    SplinePointListShift(dlist->sc->splines,off,true);
