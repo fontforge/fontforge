@@ -2926,6 +2926,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
     SCGuessVHintInstancesList(ret);
     ret->hconflicts = StemListAnyConflicts(ret->hstem);
     ret->vconflicts = StemListAnyConflicts(ret->vstem);
-    ret->widthset = true;
+    if ( name!=NULL && strcmp(name,".notdef")!=0 )
+	ret->widthset = true;
 return( ret );
 }
