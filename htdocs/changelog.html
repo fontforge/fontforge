@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 30-Jan-2004 -->
+  <!-- AP: Last modified: 31-Jan-2004 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -11,7 +11,17 @@
 </H1>
 <UL>
   <LI>
-    ???
+    31-Jan-2004
+    <UL>
+      <LI>
+	In Type2 output, when putting a glyph into a subroutine, if that glyph had
+	no conflicts but had a hintmask pfaedit produced a bad font (which crashed
+	PfaEdit when it tried to read it in).
+      <LI>
+	configure script still wasn't working on solaris (or mac with libiconv probably)
+    </UL>
+  <LI>
+    30-Jan-2004
     <UL>
       <LI>
 	The kerning state machine addition broke the indic state machine dialog

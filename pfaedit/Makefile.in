@@ -49,7 +49,7 @@ CFLAGS = @CFLAGS@ $(_CFLAGS)
 
 LIBS = -rpath $(libdir) $(X_LIBS) ../libgdraw.la ../libgunicode.la \
     $(X_PRE_LIBS) $(X_11LIB) $(X_EXTRA_LIBS) @LIBS@ $(STATIC_LIBS) -L/usr/lib -lm
-DLIBS = -rpath $(libdir) ../libgunicode.la -lm
+DLIBS = -rpath $(libdir) ../libgunicode.la @LIBS@ -lm
 
 all: pfaedit-en.ui pfaedit sfddiff
 
