@@ -3921,7 +3921,25 @@ static void DefaultLanguage(struct gfi_data *d) {
 	sprintf( buffer, "%s_%c%c", lang, toupper(lang[0]), toupper(lang[1]));
 	lang = buffer;
     }
-    found = LangSearch(langs,lang);
+    /* Special checks for chinese. Tradition & Simplified are distinct */
+    if ( strncmp(lang,"zh",2)!=0 )
+	found = LangSearch(langs,lang);
+    else if ( strncmp(lang,"zh_HK",5)==0 || strncmp(lang,"zh_TW",5)==0 ) {
+	for ( found=len-1; found>=0; --found ) {
+	    if ( langs[found]->fg == COLOR_CREATE(0x00,0x80,0x00)) {
+		if ( ((intpt) (langs[found]->userdata)) == 0x404 ||
+			((intpt) (langs[found]->userdata)) == 0xc04 )
+	break;
+	    }
+	}
+    } else {
+	for ( found=len-1; found>=0; --found ) {
+	    if ( langs[found]->fg == COLOR_CREATE(0x00,0x80,0x00)) {
+		if ( ((intpt) (langs[found]->userdata)) == 0x804 )
+	break;
+	    }
+	}
+    }
     if ( found==-1 ) {
 	/* Search for English */
 	for ( found=len-1; found>=0; --found ) {
