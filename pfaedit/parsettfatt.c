@@ -3365,8 +3365,10 @@ void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 	    /* format 3, horizontal kerning data (as classes limited to 256 entries) not perpendicular */
 	    /*  OpenType's spec doesn't document this */
 	    fseek(ttf,len-header_size,SEEK_CUR);
+#if 0		/* I've got an example now, SkiaRegular.ttf */
     fprintf( stderr, "This font has a format 3 kerning table. I've never seen that and don't know\nhow to parse it. Could you send a copy of %s to gww@silcom.com?\nThanks!\n",
 	info->fontname );
+#endif
 	} else {
 	    fseek(ttf,len-header_size,SEEK_CUR);
 	}
