@@ -46,6 +46,8 @@ static int svg_outfontheader(FILE *file, SplineFont *sf) {
 	"extra-expanded", "ultra-expanded", "broad" };
     DBounds bb;
     BlueData bd;
+    char *hash, *hasv, ch;
+    int minu, maxu, i;
 
     info = sf->pfminfo;
     SFDefaultOS2Info(&info,sf,sf->fontname);
@@ -82,7 +84,7 @@ static int svg_outfontheader(FILE *file, SplineFont *sf) {
 	fprintf( file, "    font-style=\"italic\"\n" );
     if ( strstrmatch(sf->fontname,"small") || strstrmatch(sf->fontname,"cap") )
 	fprintf( file, "    font-variant=small-caps\n" );
-    fprintf(file, "    font-stretch=\"%s\"\n", condexp[info.width]);
+    fprintf( file, "    font-stretch=\"%s\"\n", condexp[info.width]);
     fprintf( file, "    units-per-em=\"%d\"\n", sf->ascent+sf->descent );
     fprintf( file, "    panose-1=\"%d %d %d %d %d %d %d %d %d %d\"\n", info.panose[0],
 	info.panose[1], info.panose[2], info.panose[3], info.panose[4], info.panose[5],
@@ -92,12 +94,33 @@ static int svg_outfontheader(FILE *file, SplineFont *sf) {
     fprintf( file, "    x-height=\"%g\"\n", bd.xheight );
     fprintf( file, "    cap-height=\"%g\"\n", bd.caph );
     fprintf( file, "    bbox=\"%g %g %g %g\"\n", bb.minx, bb.miny, bb.maxx, bb.maxy );
-/* !!!! Check bounding box format */
     fprintf( file, "    underline-thickness=\"%g\"\n", sf->uwidth );
     fprintf( file, "    underline-position=\"%g\"\n", sf->upos );
     if ( sf->italicangle!=0 )
-	fprintf(file, "    slope=\"%d\"\n", sf->italicangle );
-/* !!!! Check slope format */
+	fprintf(file, "    slope=\"%g\"\n", sf->italicangle );
+    hash = PSDictHasEntry(sf->private,"StdHW");
+    hasv = PSDictHasEntry(sf->private,"StdVW");
+    if ( hash!=NULL ) {
+	if ( *hash=='[' ) ++hash;
+	ch = hash[strlen(hash)-1];
+	if ( ch==']' ) hash[strlen(hash)-1] = '\0';
+	fprintf(file, "    stemh=\"%s\"\n", hash );
+	if ( ch==']' ) hash[strlen(hash)] = ch;
+    }
+    if ( hasv!=NULL ) {
+	if ( *hasv=='[' ) ++hasv;
+	ch = hasv[strlen(hasv)-1];
+	if ( ch==']' ) hasv[strlen(hasv)-1] = '\0';
+	fprintf(file, "    stemv=\"%s\"\n", hasv );
+	if ( ch==']' ) hasv[strlen(hasv)] = ch;
+    }
+    minu = 0x7fffff; maxu = 0;
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->unicodeenc>0 ) {
+	if ( sf->chars[i]->unicodeenc<minu ) minu = sf->chars[i]->unicodeenc;
+	if ( sf->chars[i]->unicodeenc>maxu ) maxu = sf->chars[i]->unicodeenc;
+    }
+    if ( maxu!=0 )
+	fprintf(file, "    unicode-range=\"U+%04X-U+%04X\"\n", minu, maxu );
     fprintf( file, "  />\n" );
 return( defwid );
 }
@@ -172,13 +195,21 @@ return( lineout );
 
 static void svg_scpathdump(FILE *file, SplineChar *sc) {
     RefChar *ref;
-    int lineout;
+    int lineout, any;
 
-    fprintf( file,"d=\"");
-    lineout = svg_pathdump(file,sc->splines,3);
-    for ( ref= sc->refs; ref!=NULL; ref=ref->next )
-	lineout = svg_pathdump(file,ref->splines,lineout);
-    if ( lineout>=255-4 ) putc('\n',file );
+    any = sc->splines!=NULL;
+    for ( ref=sc->refs ; ref!=NULL && !any; ref = ref->next )
+	any = ref->splines!=NULL;
+    if ( !any ) {
+	/* I think a space is represented by leaving out the d (path) entirely*/
+	/*  rather than having d="" */
+    } else {
+	fprintf( file,"d=\"");
+	lineout = svg_pathdump(file,sc->splines,3);
+	for ( ref= sc->refs; ref!=NULL; ref=ref->next )
+	    lineout = svg_pathdump(file,ref->splines,lineout);
+	if ( lineout>=255-4 ) putc('\n',file );
+    }
     fputs("\" />\n",file);
 }
 
@@ -292,8 +323,9 @@ static void svg_notdefdump(FILE *file, SplineFont *sf,int defwid) {
 	svg_scpathdump(file,sc);
     } else {
 	/* We'll let both the horiz and vert advances default to the values */
-	/*  specified by the font */
-	fprintf(file,"    <missing-glyph d=\"\" />\n");	/* Is this a blank space? */
+	/*  specified by the font, and I think a space is done by omitting */
+	/*  d (the path) altogether */
+	fprintf(file,"    <missing-glyph />\n");	/* Is this a blank space? */
     }
 }
 
@@ -413,7 +445,9 @@ int _ExportSVG(FILE *svg,SplineChar *sc) {
     fprintf(svg, "<?xml version=\"1.0\" standalone=\"no\"?>\n" );
     fprintf(svg, "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg11.dtd\" >\n" ); 
     em_size = sc->parent->ascent+sc->parent->descent;
-    fprintf(svg, "<svg viewBox=\"0 %d %d %d\" >\n", -sc->parent->descent, em_size, em_size );
+    fprintf(svg, "<svg viewBox=\"0 %d %d %d\" transform=\"matrix(1 0 0 -1 0 %d)\">\n",
+	    -sc->parent->descent, em_size, em_size,
+	    sc->parent->ascent );
     fprintf(svg, "  <g stroke=\"green\" stroke-width=\"1\">\n" );
     fprintf(svg, "    <line x1=\"0\" y1=\"0\" x2=\"%d\" y2=\"0\" />\n", sc->width );
     fprintf(svg, "    <line x1=\"0\" y1=\"10\" x2=\"0\" y2=\"-10\" />\n" );
@@ -615,6 +649,164 @@ return( fonts[choice] );
 return( NULL );
 }
 
+#define PI	3.1415926535897932
+
+/* I don't see where the spec says that the seperator between numbers is */
+/*  comma or whitespace (both is ok too) */
+/* But the style sheet spec says it, so I probably just missed it */
+static char *skipcomma(char *pt) {
+    while ( isspace(*pt))++pt;
+    if ( *pt==',' ) ++pt;
+return( pt );
+}
+
+static void SVGTraceArc(SplineSet *cur,BasePoint *current,
+	double x,double y,double rx,double ry,double axisrot,
+	int large_arc,int sweep) {
+    double cosr, sinr;
+    double x1p, y1p;
+    double lambda, factor;
+    double cxp, cyp, cx, cy;
+    double tmpx, tmpy, t2x, t2y;
+    double startangle, delta, a;
+    SplinePoint *final, *sp;
+    BasePoint arcp[4], prevcp[4], nextcp[4], firstcp[2];
+    int i, j, ia, firstia;
+    static double sines[] = { 0, 1, 0, -1, 0, 1, 0, -1, 0, 1, 0, -1 };
+    static double cosines[]={ 1, 0, -1, 0, 1, 0, -1, 0, 1, 0, -1, 0 };
+
+    final = SplinePointCreate(x,y);
+    if ( rx < 0 ) rx = -rx;
+    if ( ry < 0 ) ry = -ry;
+    if ( rx!=0 && ry!=0 ) {
+	/* Page 647 in the SVG 1.1 spec describes how to do this */
+	/* This is Appendix F (Implementation notes) section 6.5 */
+	cosr = cos(axisrot); sinr = sin(axisrot);
+	x1p = cosr*(current->x-x)/2 + sinr*(current->y-y)/2;
+	y1p =-sinr*(current->x-x)/2 + cosr*(current->y-y)/2;
+	/* Correct for bad radii */
+	lambda = x1p*x1p/(rx*rx) + y1p*y1p/(ry*ry);
+	if ( lambda>1 ) {
+	   lambda = sqrt(lambda);
+	   rx *= lambda;
+	   ry *= lambda;
+	}
+	factor = rx*rx*ry*ry - rx*rx*y1p*y1p - ry*ry*x1p*x1p;
+	if ( RealNear(factor,0))
+	    factor = 0;		/* Avoid rounding errors that lead to small negative values */
+	else
+	    factor = sqrt(factor/(rx*rx*y1p*y1p+ry*ry*x1p*x1p));
+	if ( large_arc==sweep )
+	    factor = -factor;
+	cxp = factor*(rx*y1p)/ry;
+	cyp =-factor*(ry*x1p)/rx;
+	cx = cosr*cxp - sinr*cyp + (current->x+x)/2;
+	cy = sinr*cxp + cosr*cyp + (current->y+y)/2;
+
+	tmpx = (x1p-cxp)/rx; tmpy = (y1p-cyp)/ry;
+	startangle = acos(tmpx/sqrt(tmpx*tmpx+tmpy*tmpy));
+	if ( tmpy<0 )
+	    startangle = -startangle;
+	t2x = (-x1p-cxp)/rx; t2y = (-y1p-cyp)/ry;
+	delta = acos((tmpx*t2x+tmpy*t2y)/
+		sqrt((tmpx*tmpx+tmpy*tmpy)*(t2x*t2x+t2y*t2y)));
+	if ( tmpx*t2y-tmpy*t2x<0 )
+	    delta = -delta;
+	if ( sweep==0 && delta>0 )
+	    delta -= 2*PI;
+	if ( sweep && delta<0 )
+	    delta += 2*PI;
+
+	if ( delta>0 ) {
+	    i = 0;
+	    ia = firstia = floor(startangle/(PI/2))+1;
+	    for ( a=ia*(PI/2), ia+=4; a<startangle+delta && !RealNear(a,startangle+delta); a += PI/2, ++i, ++ia ) {
+		t2x = rx*cosines[ia]; t2y = ry*sines[ia];
+		arcp[i].x = cosr*t2x - sinr*t2y + cx;
+		arcp[i].y = sinr*t2x + cosr*t2y + cy;
+		if ( t2x==0 ) {
+		    t2x = rx*cosines[ia+1]; t2y = 0;
+		} else {
+		    t2x = 0; t2y = ry*sines[ia+1];
+		}
+		prevcp[i].x = arcp[i].x - .552*(cosr*t2x - sinr*t2y);
+		prevcp[i].y = arcp[i].y - .552*(sinr*t2x + cosr*t2y);
+		nextcp[i].x = arcp[i].x + .552*(cosr*t2x - sinr*t2y);
+		nextcp[i].y = arcp[i].y + .552*(sinr*t2x + cosr*t2y);
+	    }
+	} else {
+	    i = 0;
+	    ia = firstia = ceil(startangle/(PI/2))-1;
+	    for ( a=ia*(PI/2), ia += 8; a>startangle+delta && !RealNear(a,startangle+delta); a -= PI/2, ++i, --ia ) {
+		t2x = rx*cosines[ia]; t2y = ry*sines[ia];
+		arcp[i].x = cosr*t2x - sinr*t2y + cx;
+		arcp[i].y = sinr*t2x + cosr*t2y + cy;
+		if ( t2x==0 ) {
+		    t2x = rx*cosines[ia+1]; t2y = 0;
+		} else {
+		    t2x = 0; t2y = ry*sines[ia+1];
+		}
+		prevcp[i].x = arcp[i].x + .552*(cosr*t2x - sinr*t2y);
+		prevcp[i].y = arcp[i].y + .552*(sinr*t2x + cosr*t2y);
+		nextcp[i].x = arcp[i].x - .552*(cosr*t2x - sinr*t2y);
+		nextcp[i].y = arcp[i].y - .552*(sinr*t2x + cosr*t2y);
+	    }
+	}
+	if ( i!=0 ) {
+	    double firsta=firstia*PI/2;
+	    double d = (firsta-startangle)/2;
+	    double th = startangle+d;
+	    double hypot = 1/cos(d);
+	    BasePoint temp;
+	    t2x = rx*cos(th)*hypot; t2y = ry*sin(th)*hypot;
+	    temp.x = cosr*t2x - sinr*t2y + cx;
+	    temp.y = sinr*t2x + cosr*t2y + cy;
+	    firstcp[0].x = cur->last->me.x + .552*(temp.x-cur->last->me.x);
+	    firstcp[0].y = cur->last->me.y + .552*(temp.y-cur->last->me.y);
+	    firstcp[1].x = arcp[0].x + .552*(temp.x-arcp[0].x);
+	    firstcp[1].y = arcp[0].y + .552*(temp.y-arcp[0].y);
+	}
+	for ( j=0; j<i; ++j ) {
+	    sp = SplinePointCreate(arcp[j].x,arcp[j].y);
+	    if ( j!=0 ) {
+		sp->prevcp = prevcp[j];
+		cur->last->nextcp = nextcp[j-1];
+	    } else {
+		sp->prevcp = firstcp[1];
+		cur->last->nextcp = firstcp[0];
+	    }
+	    sp->noprevcp = cur->last->nonextcp = false;
+	    SplineMake(cur->last,sp,false);
+	    cur->last = sp;
+	}
+	{ double hypot, c, s;
+	BasePoint temp;
+	if ( i==0 ) {
+	    double th = startangle+delta/2;
+	    hypot = 1.0/cos(delta/2);
+	    c = cos(th); s=sin(th);
+	} else {
+	    double lasta = delta<0 ? a+PI/2 : a-PI/2;
+	    double d = (startangle+delta-lasta);
+	    double th = lasta+d/2;
+	    hypot = 1.0/cos(d/2);
+	    c = cos(th); s=sin(th);
+	}
+	t2x = rx*c*hypot; t2y = ry*s*hypot;
+	temp.x = cosr*t2x - sinr*t2y + cx;
+	temp.y = sinr*t2x + cosr*t2y + cy;
+	cur->last->nextcp.x = cur->last->me.x + .552*(temp.x-cur->last->me.x);
+	cur->last->nextcp.y = cur->last->me.y + .552*(temp.y-cur->last->me.y);
+	final->prevcp.x = final->me.x + .552*(temp.x-final->me.x);
+	final->prevcp.y = final->me.y + .552*(temp.y-final->me.y);
+	cur->last->nonextcp = final->noprevcp = false;
+	}
+    }
+    *current = final->me;
+    SplineMake(cur->last,final,false);
+    cur->last = final;
+}
+
 static SplineSet *SVGParsePath(xmlChar *path) {
     BasePoint current;
     SplineSet *head=NULL, *last=NULL, *cur=NULL;
@@ -647,6 +839,7 @@ static SplineSet *SVGParsePath(xmlChar *path) {
 		cur->last = cur->first;
 	    }
 	    x = strtod((char *) path,&end);
+	    end = skipcomma(end);
 	    y = strtod(end,&end);
 	    sp = SplinePointCreate(x,y);
 	    current = sp->me;
@@ -687,6 +880,7 @@ static SplineSet *SVGParsePath(xmlChar *path) {
 	    switch ( type ) {
 	      case 'l': case'L':
 		x = strtod((char *) path,&end);
+		end = skipcomma(end);
 		y = strtod(end,&end);
 		if ( type=='l' ) {
 		    x += current.x; y += current.y;
@@ -720,10 +914,15 @@ static SplineSet *SVGParsePath(xmlChar *path) {
 	      break;
 	      case 'c': case 'C':
 		x1 = strtod((char *) path,&end);
+		end = skipcomma(end);
 		y1 = strtod(end,&end);
+		end = skipcomma(end);
 		x2 = strtod(end,&end);
+		end = skipcomma(end);
 		y2 = strtod(end,&end);
+		end = skipcomma(end);
 		x = strtod(end,&end);
+		end = skipcomma(end);
 		y = strtod(end,&end);
 		if ( type=='c' ) {
 		    x1 += current.x; y1 += current.y;
@@ -741,8 +940,11 @@ static SplineSet *SVGParsePath(xmlChar *path) {
 		x1 = 2*cur->last->me.x - cur->last->prevcp.x;
 		y1 = 2*cur->last->me.y - cur->last->prevcp.y;
 		x2 = strtod((char *) path,&end);
+		end = skipcomma(end);
 		y2 = strtod(end,&end);
+		end = skipcomma(end);
 		x = strtod(end,&end);
+		end = skipcomma(end);
 		y = strtod(end,&end);
 		if ( type=='s' ) {
 		    x2 += current.x; y2 += current.y;
@@ -757,8 +959,11 @@ static SplineSet *SVGParsePath(xmlChar *path) {
 	      break;
 	      case 'Q': case 'q':
 		x1 = strtod((char *) path,&end);
+		end = skipcomma(end);
 		y1 = strtod(end,&end);
+		end = skipcomma(end);
 		x = strtod(end,&end);
+		end = skipcomma(end);
 		y = strtod(end,&end);
 		if ( type=='q' ) {
 		    x1 += current.x; y1 += current.y;
@@ -774,6 +979,7 @@ static SplineSet *SVGParsePath(xmlChar *path) {
 	      break;
 	      case 'T': case 't':
 		x = strtod((char *) path,&end);
+		end = skipcomma(end);
 		y = strtod(end,&end);
 		if ( type=='q' ) {
 		    x += current.x; y += current.y;
@@ -790,36 +996,30 @@ static SplineSet *SVGParsePath(xmlChar *path) {
 	      break;
 	      case 'A': case 'a':
 		rx = strtod((char *) path,&end);
+		end = skipcomma(end);
 		ry = strtod(end,&end);
-		axisrot = strtod(end,&end);
+		end = skipcomma(end);
+		axisrot = strtod(end,&end)*3.1415926535897932/180;
+		end = skipcomma(end);
 		large_arc = strtol(end,&end,10);
+		end = skipcomma(end);
 		sweep = strtol(end,&end,10);
+		end = skipcomma(end);
 		x = strtod(end,&end);
+		end = skipcomma(end);
 		y = strtod(end,&end);
 		if ( type=='a' ) {
 		    x += current.x; y += current.y;
 		}
-		if ( x!=current.x || y!=current.y ) {
-		    sp = SplinePointCreate(x,y);
-		    current = sp->me;
-		    if ( rx < 0 ) rx = -rx;
-		    if ( ry < 0 ) ry = -ry;
-		    if ( rx!=0 && ry!=0 ) {
-			/* Page 647 in the SVG 1.1 spec describes how to do this */
-			/* Sadly the pdf file is broken and all that shows is	 */
-			/*  whitespace						 */
-			/* This is Appendix F (Implementation notes) section 6	 */
-		    }
-		    SplineMake(cur->last,sp,0);
-		    cur->last = sp;
-		}
+		if ( x!=current.x || y!=current.y )
+		    SVGTraceArc(cur,&current,x,y,rx,ry,axisrot,large_arc,sweep);
 	      break;
 	      default:
 		fprintf(stderr,"Unknown type '%c' found in path specification\n", type );
 	      break;
 	    }
 	}
-	path = end;
+	path = skipcomma(end);
     }
 return( head );
 }
@@ -1104,14 +1304,6 @@ struct svg_state {
     real transform[6];
 };
 
-/* It is not clear to me from the spec whether the comma is required or not */
-/*  in a transform list */
-static char *skipcomma(char *pt) {
-    while ( isspace(*pt))++pt;
-    if ( *pt==',' ) ++pt;
-return( pt );
-}
-
 static void SVGFigureTransform(struct svg_state *st,char *name) {
     real trans[6], res[6];
     double a, cx,cy;
@@ -1137,10 +1329,8 @@ static void SVGFigureTransform(struct svg_state *st,char *name) {
 	    trans[4] = strtod(skipcomma(end),&end);
 	    trans[5] = strtod(skipcomma(end),&end);
 	} else if ( strncmp(pt,"rotate",paren-pt)==0 ) {
-	    /* The rotations in the svg spec seem backwards to me */
-	    /*  perhaps the angle is measured clockwise */
 	    trans[4] = trans[5] = 0;
-	    a = -strtod(paren+1,&end)*3.1415926535897932/180;
+	    a = strtod(paren+1,&end)*3.1415926535897932/180;
 	    trans[0] = trans[3] = cos(a);
 	    trans[1] = sin(a);
 	    trans[2] = -trans[1];
@@ -1397,7 +1587,10 @@ static SplineSet *SVGParseSVG(xmlNodePtr svg,int em_size) {
     st.lj = lj_miter;
     st.linewidth = 1;
     st.isvisible = true;
-    st.transform[0] = st.transform[3] = 1;
+    st.transform[0] = 1;
+    st.transform[3] = -1;	/* The SVG coord system has y increasing down */
+    				/*  Font coords have y increasing up */
+    st.transform[5] = .8*em_size;	/* Should really be ascent */
     num = _xmlGetProp(svg,"width");
     if ( num!=NULL ) {
 	width = strtod(num,NULL);
