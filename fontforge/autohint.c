@@ -1084,6 +1084,9 @@ static StemInfo *_StemsFind(StemInfo *stems,real start, real end,
     /*  didn't design his/her font properly */
     if ( start!=floor(start) || end!=floor(end))
 return( NULL );
+    /* similarly for 0-width hints */
+    if ( start == end )
+return( NULL );
 
     for ( test=stems; test!=NULL; test=test->next ) {
 	if ( start-3<test->start && start+3>test->start &&
