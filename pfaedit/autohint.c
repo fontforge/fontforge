@@ -1686,7 +1686,7 @@ static StemInfo *StemRemoveSerifOverlaps(StemInfo *stems) {
 	    real left, right, sh, top, bottom;
 	    left = main->start-serif->start;
 	    right = serif->start+serif->width - (main->start+main->width);
-	    if ( left-right<-10 || left-right>10 )
+	    if ( left-right<-20 || left-right>20 || left==0 || right==0 )
 	continue;
 	    /* In "H" the main stem is broken in two */
 	    bottom = main->where->begin; top = main->where->end;
