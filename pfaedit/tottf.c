@@ -7117,7 +7117,7 @@ return( true );
 
 static void dumpttf(FILE *ttf,struct alltabs *at, enum fontformat format) {
     int32 checksum;
-    int i, head_index;
+    int i, head_index=-1;
     /* I can't use fwrite because I (may) have to byte swap everything */
 
     putlong(ttf,at->tabdir.version);
@@ -7164,7 +7164,7 @@ static void dumpttf(FILE *ttf,struct alltabs *at, enum fontformat format) {
 	    if ( !ttfcopyfile(ttf,at->gaspf,at->tabdir.tabs[i++].offset)) at->error = true;
 	if ( !ttfcopyfile(ttf,at->gi.glyphs,at->tabdir.tabs[i++].offset)) at->error = true;
     }
-    if ( format!=ff_none ) {
+    if ( format!=ff_none || at->msbitmaps ) {
 	head_index = i;
 	if ( !ttfcopyfile(ttf,at->headf,at->tabdir.tabs[i++].offset)) at->error = true;
     }

@@ -1079,6 +1079,9 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	oldpsstate = true;
 	oldttfhintstate = true;
 	oldttfapplestate = false;
+	if ( oldformatstate==ff_ttfdfont || oldformatstate==ff_otfdfont || oldformatstate==ff_otfciddfont ||
+		oldformatstate==ff_pfbmacbin || oldformatstate==ff_ttfmacbin || oldformatstate==ff_none )
+	oldttfapplestate = true;
     } else {
 	oldafmstate = fmflags&1;
 	oldpfmstate = (fmflags&2)?1:0;
