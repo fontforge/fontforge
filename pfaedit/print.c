@@ -573,7 +573,7 @@ return(NULL);
     if ( sf->encoding_name==em_unicode ) {
 	if ( SCWorthOutputting(sf->chars[ch]))
 return( sf->chars[ch]);
-    } else {
+    } else if ( !pi->iscid ) {
 	max = 256;
 	if ( pi->iscjk ) max = 96*94;
 	for ( i=0 ; i<sf->charcnt && i<max; ++i )
@@ -583,7 +583,22 @@ return( sf->chars[i]);
 		else
 return( NULL );
 	    }
+    } else {
+	int j;
+	for ( i=max=0; i<sf->subfontcnt; ++i )
+	    if ( sf->subfonts[i]->charcnt>max ) max = sf->subfonts[i]->charcnt;
+	for ( i=0; i<max; ++i ) {
+	    for ( j=0; j<sf->subfontcnt; ++j )
+		if ( i<sf->subfonts[j]->charcnt && sf->subfonts[j]->chars[i]!=NULL )
+	    break;
+	    if ( j!=sf->subfontcnt )
+		if ( sf->subfonts[j]->chars[i]->unicodeenc == ch )
+	break;
+	}
+	if ( i!=max && SCWorthOutputting(sf->subfonts[j]->chars[i]))
+return( sf->subfonts[j]->chars[i] );
     }
+
 return( NULL );
 }
 
@@ -591,7 +606,9 @@ static void outputchar(PI *pi, SplineChar *sc) {
 
     if ( sc==NULL )
 return;
-    if ( pi->iscjk ) {
+    if ( pi->iscid ) {
+	fprintf( pi->out, "%04X", sc->enc );
+    } else if ( pi->iscjk ) {
 	fprintf( pi->out, "%02x%02X", (sc->enc)/96 + '!', (sc->enc)%96 + ' ' );
     } else if ( pi->twobyte ) {
 	fprintf( pi->out, "%04X", sc->unicodeenc );
@@ -1950,7 +1967,7 @@ static int AllChars( SplineFont *sf, unichar_t *str) {
 return( false );
 	    ++str;
 	}
-    } else {
+    } else if ( sf->subfontcnt==0 ) {
 	while ( (ch = *str)!='\0' ) {
 	    if ( (ch&0xff00)==0xff00 ) ch &= 0xff;
 	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
@@ -1958,6 +1975,24 @@ return( false );
 	    break;
 	    }
 	    if ( i==sf->charcnt || !SCWorthOutputting(sf->chars[i]))
+return( false );
+	    ++str;
+	}
+    } else {
+	int max = 0, j;
+	for ( i=0; i<sf->subfontcnt; ++i )
+	    if ( sf->subfonts[i]->charcnt>max ) max = sf->subfonts[i]->charcnt;
+	while ( (ch = *str)!='\0' ) {
+	    if ( (ch&0xff00)==0xff00 ) ch &= 0xff;
+	    for ( i=0; i<max; ++i ) {
+		for ( j=0; j<sf->subfontcnt; ++j )
+		    if ( i<sf->subfonts[j]->charcnt && sf->subfonts[j]->chars[i]!=NULL )
+		break;
+		if ( j!=sf->subfontcnt )
+		    if ( sf->subfonts[j]->chars[i]->unicodeenc == ch )
+	    break;
+	    }
+	    if ( i==max || !SCWorthOutputting(sf->subfonts[j]->chars[i]))
 return( false );
 	    ++str;
 	}
@@ -2121,7 +2156,7 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     gcd[2].gd.cid = CID_Sample;
     gcd[2].gd.handle_controlevent = PRT_RadioSet;
     gcd[2].creator = GRadioCreate;
-    if ( pi.iscid ) gcd[2].gd.flags = gg_visible;
+    /*if ( pi.iscid ) gcd[2].gd.flags = gg_visible;*/
 
     if ( pdefs[di].pt==pt_chars && cnt==0 )
 	pdefs[di].pt = (fv!=NULL?pt_fontdisplay:pt_fontsample);
