@@ -26,8 +26,9 @@ INSTALLATION NOTES:
 	fontforge-*.ui --	various user interface string files for different
 			languages
     You should:
-	$ gunzip fontforge_cygwin-*.tgz; tar xf fontforge_cygwin-*.tar
+	$ tar xfz fontforge_cygwin-*.tar
 	$ mkdir -p /usr/local/bin /usr/local/man/man1 /usr/local/share/fontforge
+	$ cd fontforge
 	$ mv fontforge /usr/local/bin
 	$ mv fontforge.1 /usr/local/man/man1
 	$ mv *.ui /usr/local/share/fontforge
