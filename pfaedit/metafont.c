@@ -423,7 +423,7 @@ return( true );
 static int FindPerpDistance(real t1,Spline *spline1, Spline *spline2,
 	BasePoint *vec, real *len) {
     BasePoint pt, slope, pslope, end[3], ss2;
-    real x, y, slope1, slope2, ts[3], lens[3], angle;
+    double x, y, slope1, slope2, ts[3], lens[3], angle;
     Spline1D temp;
     int i,j;
 
@@ -1721,7 +1721,7 @@ static void MovePointToInter(SCI *sci,int i,int j, real val, int isvert) {
     /* Move the new version of point i to the place where the spline between */
     /*  it and point j intersects the horizontal/vertical line through val */
     SplinePoint pti, ptj, *midsp;
-    real ts[3], t;
+    double ts[3], t;
     int k;
     Spline *spline;
 

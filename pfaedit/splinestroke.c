@@ -531,9 +531,10 @@ static void SplineSetFixCPs(SplineSet *ss) {
     }
 }
 
-static SplineSet *SSFixupOverlap(StrokeInfo *si,SplineSet *ssplus,SplineSet *ssminus) {
+static SplineSet *SSFixupOverlap(StrokeInfo *si,SplineChar *sc,
+	SplineSet *ssplus,SplineSet *ssminus) {
     ssplus->next = ssminus;
-    ssplus = SplineSetRemoveOverlap(ssplus,over_remove);
+    ssplus = SplineSetRemoveOverlap(sc,ssplus,over_remove);
     if ( si->removeinternal || si->removeexternal ) {
 	SplineSet *prev, *spl, *next;
 	prev = NULL;
@@ -729,7 +730,7 @@ return( ssplus );
 	    ssminus = temp;
 	}
 	if ( si->removeoverlapifneeded && si->gottoobig )
-	    ssplus = SSFixupOverlap(si,ssplus,ssminus);
+	    ssplus = SSFixupOverlap(si,sc,ssplus,ssminus);
 	else if ( si->removeinternal ) {
 	    SplinePointListFree(ssminus);
 	    SplineSetReverse(ssplus);

@@ -62,13 +62,49 @@ void FreeEdges(EdgeList *es) {
     HintsFree(es->vhints);
 }
 
-real TOfNextMajor(Edge *e, EdgeList *es, real sought_m ) {
+double IterateSplineSolve(Spline1D *sp, double tmin, double tmax,
+	double sought,double err) {
+    double t, low, high, test;
+    Spline1D temp;
+    int cnt;
+
+    /* Now the closed form CubicSolver can have rounding errors so if we know */
+    /*  the spline to be monotonic, an iterative approach is more accurate */
+
+    temp = *sp;
+    temp.d -= sought;
+
+    low = ((temp.a*tmin+temp.b)*tmin+temp.c)*tmin+temp.d;
+    high = ((temp.a*tmax+temp.b)*tmax+temp.c)*tmax+temp.d;
+    if ( low<err && low>-err )
+return(tmin);
+    if ( high<err && high>-err )
+return(tmax);
+    if (( low<0 && high>0 ) ||
+	    ( low>0 && high<0 )) {
+	
+	for ( cnt=0; cnt<1000; ++cnt ) {	/* Avoid impossible error limits */
+	    t = (tmax+tmin)/2;
+	    test = ((temp.a*t+temp.b)*t+temp.c)*t+temp.d;
+	    if ( test>-err && test<err )
+return( t );
+	    if ( (low<0 && test<0) || (low>0 && test>0) )
+		tmin=t;
+	    else
+		tmax = t;
+	}
+return( (tmax+tmin)/2 );	
+    }
+return( -1 );
+}
+
+double TOfNextMajor(Edge *e, EdgeList *es, double sought_m ) {
     /* We want to find t so that Mspline(t) = sought_m */
     /*  the curve is monotonic */
     Spline1D *msp = &e->spline->splines[es->major];
+    double new_t;
 
     if ( es->is_overlap ) {
-	real new_t;
 
 	/* if we've adjusted the height then we won't be able to find it restricting */
 	/*  t between [0,1] as we do. So it's a special case. (this is to handle */
@@ -78,18 +114,13 @@ real TOfNextMajor(Edge *e, EdgeList *es, real sought_m ) {
 return( e->up?1.0:0.0 );
 	}
 
-	new_t = SplineSolve(msp,e->t_mmin,e->t_mmax,(sought_m+es->mmin)/es->scale,.001);
+	new_t = IterateSplineSolve(msp,e->t_mmin,e->t_mmax,(sought_m+es->mmin)/es->scale,.001);
 	if ( new_t==-1 )
 	    GDrawIError( "No Solution");
 	e->m_cur = (((msp->a*new_t + msp->b)*new_t+msp->c)*new_t + msp->d)*es->scale - es->mmin;
 return( new_t );
     } else {
 	Spline *sp = e->spline;
-	real slope = (3.0*msp->a*e->t_cur+2.0*msp->b)*e->t_cur + msp->c;
-	real new_t, old_t, newer_t;
-	real found_m;
-	real t_mmax, t_mmin;
-	real mmax, mmin;
 
 	if ( sp->islinear ) {
 	    new_t = e->t_cur + (sought_m-e->m_cur)/(es->scale * msp->c);
@@ -111,52 +142,11 @@ return( e->t_mmax );
 	    e->m_cur = sought_m;
 return( e->up?1.0:0.0 );
 	}
-
-	old_t = e->t_cur;
-	slope *= es->scale;
-	mmax = e->mmax; t_mmax = e->t_mmax;
-	mmin = e->m_cur; t_mmin = old_t;
-
-	if ( slope==0 )	/* we often start at a point of inflection */
-	    new_t = old_t + (t_mmax-t_mmin)* (sought_m-mmin)/(mmax-mmin);
-	else {
-	    new_t = old_t + 1/slope;
-	    if (( new_t>t_mmax && e->up ) ||
-		    (new_t<t_mmax && !e->up) ||
-		    (new_t<t_mmin && e->up ) ||
-		    (new_t>t_mmin && !e->up ))
-		new_t = old_t + (t_mmax-t_mmin)* (sought_m-mmin)/(mmax-mmin);
-	}
-
-	while ( 1 ) {
-	    found_m = ( ((msp->a*new_t+msp->b)*new_t+msp->c)*new_t + msp->d )
-		    * es->scale - es->mmin ;
-	    if ( found_m>sought_m-.001 && found_m<sought_m+.001 ) {
-		e->m_cur = found_m;
-    return( new_t );
-	    }
-	    newer_t = (t_mmax+t_mmin)/2 /* * (sought_m-found_m)/(mmax-mmin) */;
-	    if ( found_m > sought_m ) {
-		mmax = found_m;
-		t_mmax = new_t;
-	    } else {
-		mmin = found_m;
-		t_mmin = new_t;
-	    }
-	    if ( t_mmax==t_mmin ) {
-		GDrawIError("TOfNextMajor failed! on %s", es->sc!=NULL?es->sc->name:"Unknown" );
-		e->m_cur = sought_m;
+	new_t = IterateSplineSolve(msp,e->t_mmin,e->t_mmax,(sought_m+es->mmin)/es->scale,.001);
+	if ( new_t==-1 )
+	    GDrawIError( "No Solution");
+	e->m_cur = (((msp->a*new_t + msp->b)*new_t+msp->c)*new_t + msp->d)*es->scale - es->mmin;
 return( new_t );
-	    }
-	    new_t = newer_t;
-#if 0
-	    if (( new_t>t_mmax && e->up ) ||
-		    (new_t<t_mmax && !e->up) ||
-		    (new_t<t_mmin && e->up ) ||
-		    (new_t>t_mmin && !e->up ))
-		new_t = (t_mmax+t_mmin)/2;
-# endif
-	}
     }
 }
 
@@ -413,7 +403,7 @@ return;		/* Horizontal line, ignore it */
     AddEdge(es,sp,t,1.0);
     if ( es->interesting ) {
 	/* Also store up points of inflection in X as interesting (we got the endpoints, just internals now)*/
-	real ot1, ot2;
+	double ot1, ot2;
 	int mpos;
 	SplineFindExtrema(osp,&ot1,&ot2);
 	if ( ot1>0 && ot1<1 ) {

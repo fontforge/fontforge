@@ -77,7 +77,7 @@ typedef struct edgelist {
 } EdgeList;
 
 extern void FreeEdges(EdgeList *es);
-extern real TOfNextMajor(Edge *e, EdgeList *es, real sought_y );
+extern double TOfNextMajor(Edge *e, EdgeList *es, double sought_y );
 extern void FindEdgesSplineSet(SplinePointList *spl, EdgeList *es);
 extern Edge *ActiveEdgesInsertNew(EdgeList *es, Edge *active,int i);
 extern Edge *ActiveEdgesRefigure(EdgeList *es, Edge *active,real i);

@@ -840,6 +840,7 @@ return;
 	    r.y = other;
 	} else
 	    r.height = other-r.y;
+	if ( r.height==0 ) r.height = 1;	/* show something */
 	GDrawSetStippled(pixmap,2, 0,0);
 	GDrawFillRect(pixmap,&r,col);
 	GDrawSetStippled(pixmap,0, 0,0);
@@ -4677,6 +4678,35 @@ void SplineSetsRound2Int(SplineSet *spl) {
     }
 }
 
+void SplineSetsRound2Sixtyfourths(SplineSet *spl) {
+    SplinePoint *sp;
+
+    for ( ; spl!=NULL; spl=spl->next ) {
+	for ( sp=spl->first; ; ) {
+	    sp->me.x = rint(sp->me.x*64)/64.0;
+	    sp->me.y = rint(sp->me.y*64)/64.0;
+	    sp->nextcp.x = rint(sp->nextcp.x*64)/64.0;
+	    sp->nextcp.y = rint(sp->nextcp.y*64)/64.0;
+	    if ( sp->next!=NULL && sp->next->order2 )
+		sp->next->to->prevcp = sp->nextcp;
+	    sp->prevcp.x = rint(sp->prevcp.x*64)/64.0;
+	    sp->prevcp.y = rint(sp->prevcp.y*64)/64.0;
+	    if ( sp->prev!=NULL && sp->prev->order2 )
+		sp->prev->from->nextcp = sp->prevcp;
+
+	    if ( sp->prev!=NULL )
+		SplineRefigure(sp->prev);
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==spl->first )
+	break;
+	}
+	if ( spl->first->prev!=NULL )
+	    SplineRefigure(spl->first->prev);
+    }
+}
+
 static void SplineSetsChangeCoord(SplineSet *spl,real old, real new,int isy) {
     SplinePoint *sp;
 
@@ -4823,7 +4853,7 @@ static void _CVMenuOverlap(CharView *cv,enum overlap_type ot) {
 	MinimumDistancesFree(cv->sc->md);
 	cv->sc->md = NULL;
     }
-    *cv->heads[cv->drawmode] = SplineSetRemoveOverlap(*cv->heads[cv->drawmode],ot);
+    *cv->heads[cv->drawmode] = SplineSetRemoveOverlap(cv->sc,*cv->heads[cv->drawmode],ot);
     CVCharChangedUpdate(cv);
 }
 

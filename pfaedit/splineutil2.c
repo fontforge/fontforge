@@ -87,7 +87,7 @@ return( b>=a-fudge && b<=a+fudge );
 }
 
 int SplineIsLinear(Spline *spline) {
-    real t1,t2;
+    double t1,t2;
     int ret;
 
     if ( spline->knownlinear )
@@ -294,11 +294,11 @@ SplinePoint *SplineBisect(Spline *spline, double t) {
 return( mid );
 }
 
-Spline *SplineSplit(Spline *spline, real ts[3]) {
+Spline *SplineSplit(Spline *spline, double ts[3]) {
     /* Split the current spline in up to 3 places */
     Spline1 splines[2][4];
     int i,cnt;
-    real base;
+    double base;
     SplinePoint *last, *sp;
     Spline *new;
     int order2 = spline->order2;
@@ -414,7 +414,7 @@ and only three equations...
 */
 static int _ApproximateSplineFromPoints(SplinePoint *from, SplinePoint *to,
 	TPoint *mid, int cnt, BasePoint *nextcp, BasePoint *prevcp) {
-    real t, t2, t3, t4, x, y, xt, yt, tt, ttn;
+    double t, t2, t3, t4, x, y, xt, yt, tt, ttn;
     int i, ret;
     double vx[3], vy[3], m[3][3];
 
@@ -454,7 +454,7 @@ static int _ApproximateSplineFromPoints(SplinePoint *from, SplinePoint *to,
     m[1][0] = 0; m[1][1] -= t3; m[1][2] -= t3;
 
     if ( fabs(m[1][1])<fabs(m[0][1]) ) {
-	real temp;
+	double temp;
 	temp = vx[1]; vx[1] = vx[0]; vx[0] = temp;
 	temp = vy[1]; vy[1] = vy[0]; vy[0] = temp;
 	temp = m[1][1]; m[1][1] = m[0][1]; m[0][1] = temp;
@@ -513,9 +513,9 @@ return( ret );
 /* cnt is not quite n because we add in two more points, first and last */
 static int _ApproximateSplineFromPointsSlopes(SplinePoint *from, SplinePoint *to,
 	TPoint *mid, int cnt, BasePoint *nextcp, BasePoint *prevcp) {
-    real t, t2, t3, t4, t5, x, y, xt, xt2, yt, yt2, tt, ttn;
-    real sx, sy;
-    real minx, maxx, miny, maxy;
+    double t, t2, t3, t4, t5, x, y, xt, xt2, yt, yt2, tt, ttn;
+    double sx, sy;
+    double minx, maxx, miny, maxy;
     int i;
     double v[6], m[6][6];	/* Yes! rounding errors cause problems here */
     BasePoint *p, *n;
@@ -613,7 +613,7 @@ static int _ApproximateSplineFromPointsSlopes(SplinePoint *from, SplinePoint *to
      0 0 ? 0 0 ?
     */
     if ( m[2][2]<.0001 && m[2][2]>-.0001 ) {
-	real temp;
+	double temp;
 	m[2][2] = m[5][2];
 	m[5][2] = 0;
 	temp = m[2][5];
@@ -779,14 +779,14 @@ return( spline );
 return( spline );
 }
 
-static real ClosestSplineSolve(Spline1D *sp,real sought,real close_to_t) {
+static double ClosestSplineSolve(Spline1D *sp,double sought,double close_to_t) {
     /* We want to find t so that spline(t) = sought */
     /*  find the value which is closest to close_to_t */
     /* on error return closetot */
     Spline1D temp;
-    real ts[3];
+    double ts[3];
     int i;
-    real t, best, test;
+    double t, best, test;
 
     temp = *sp;
     temp.d -= sought;
@@ -814,8 +814,8 @@ return( t );
 Spline *ApproximateSplineFromPointsSlopes(SplinePoint *from, SplinePoint *to,
 	TPoint *mid, int cnt) {
     BasePoint tounit, fromunit;
-    real len,flen,tlen,f2len,t2len;
-    real ydiff, xdiff;
+    double len,flen,tlen,f2len,t2len;
+    double ydiff, xdiff;
     Spline *spline;
     SplinePoint ff, ft;
     BasePoint nextcp, prevcp;
@@ -883,7 +883,7 @@ return( ApproximateSplineFromPoints(from,to,mid,cnt) );
     if ( (ydiff = to->me.y-from->me.y)<0 ) ydiff = -ydiff;
 
     for ( i=0; i<cnt; ++i ) {
-	real t;
+	double t;
 	if ( ydiff>2*xdiff ) {
 	    t = ClosestSplineSolve(&spline->splines[1],mid[i].y,mid[i].t);
 	} else if ( xdiff>2*ydiff ) {
@@ -954,7 +954,7 @@ return( len );
 static TPoint *SplinesFigureTPsBetween(SplinePoint *from, SplinePoint *to,
 	int *tot) {
     int cnt, i, j;
-    real len, slen, lbase;
+    double len, slen, lbase;
     SplinePoint *np;
     TPoint *tp;
 
@@ -991,7 +991,7 @@ static TPoint *SplinesFigureTPsBetween(SplinePoint *from, SplinePoint *to,
 	for ( np = from->next->to; ; np = np->next->to ) {
 	    slen = SplineLenApprox(np->prev);
 	    for ( j=0; j<10; ++j ) {
-		real t = j/10.0;
+		double t = j/10.0;
 		tp[i].t = (lbase+ t*slen)/len;
 		tp[i].x = ((np->prev->splines[0].a*t+np->prev->splines[0].b)*t+np->prev->splines[0].c)*t + np->prev->splines[0].d;
 		tp[i++].y = ((np->prev->splines[1].a*t+np->prev->splines[1].b)*t+np->prev->splines[1].c)*t + np->prev->splines[1].d;
@@ -1175,6 +1175,13 @@ static void RemoveZeroLengthSplines(SplineSet *spl, int onlyselected) {
      }
 }
 
+void SSRemoveZeroLengthSplines(SplineSet *base) {
+    SplineSet *spl;
+
+    for ( spl=base; spl!=NULL; spl=spl->next )
+	RemoveZeroLengthSplines(spl,false);
+}
+
 static SplinePointList *SplinePointListMerge(SplineChar *sc, SplinePointList *spl,int type) {
     Spline *spline, *first;
     SplinePoint *nextp, *curp, *selectme;
@@ -1342,7 +1349,7 @@ return( false );
 	/* Don't treat exterma specially, can remove them too */;
     else if ( (!mid->nonextcp && (mid->nextcp.x==mid->me.x || mid->nextcp.y==mid->me.y)) ||
 	    (!mid->noprevcp && (mid->prevcp.x==mid->me.x || mid->prevcp.y==mid->me.y)) ) {
-	real x=mid->me.x, y=mid->me.y;
+	double x=mid->me.x, y=mid->me.y;
 	if (( mid->nextcp.x==x && mid->prevcp.x==x &&
 		 to->me.x==x && to->prevcp.x==x &&
 		 from->me.x==x && from->nextcp.x==x ) ||
@@ -1584,13 +1591,14 @@ return(start);
 SplineSet *SplineCharRemoveTiny(SplineChar *sc,SplineSet *head) {
     SplineSet *spl, *snext, *pr;
     Spline *spline, *next, *first;
+    const double err = 1.0/64.0;
 
     for ( spl = head, pr=NULL; spl!=NULL; spl = snext ) {
 	first = NULL;
 	for ( spline=spl->first->next; spline!=NULL && spline!=first; spline=next ) {
 	    next = spline->to->next;
-	    if ( spline->from->me.x-spline->to->me.x>-1 && spline->from->me.x-spline->to->me.x<1 &&
-		    spline->from->me.y-spline->to->me.y>-1 && spline->from->me.y-spline->to->me.y<1 &&
+	    if ( spline->from->me.x-spline->to->me.x>-err && spline->from->me.x-spline->to->me.x<err &&
+		    spline->from->me.y-spline->to->me.y>-err && spline->from->me.y-spline->to->me.y<err &&
 		    (spline->from->nonextcp || spline->to->noprevcp) &&
 		    spline->from->prev!=NULL ) {
 		if ( spline->from==spline->to )
@@ -1938,7 +1946,7 @@ void SFRandomChangeXUID(SplineFont *sf) {
 }
 
 void SPWeightedAverageCps(SplinePoint *sp) {
-    real pangle, nangle, angle, plen, nlen, c, s;
+    double pangle, nangle, angle, plen, nlen, c, s;
     if ( sp->noprevcp || sp->nonextcp )
 	SPAverageCps(sp);
     else if ( sp->pointtype==pt_curve && sp->prev && sp->next ) {
@@ -1969,7 +1977,7 @@ void SPWeightedAverageCps(SplinePoint *sp) {
 }
 
 void SPAverageCps(SplinePoint *sp) {
-    real pangle, nangle, angle, plen, nlen, c, s;
+    double pangle, nangle, angle, plen, nlen, c, s;
     if ( sp->pointtype==pt_curve && sp->prev && sp->next ) {
 	if ( sp->noprevcp )
 	    pangle = atan2(sp->me.y-sp->prev->from->me.y,sp->me.x-sp->prev->from->me.x);
@@ -2018,7 +2026,7 @@ void SPAverageCps(SplinePoint *sp) {
 }
 
 void SplineCharTangentNextCP(SplinePoint *sp) {
-    real angle, len;
+    double angle, len;
     BasePoint *bp;
 
     if ( sp->prev==NULL )
@@ -2036,7 +2044,7 @@ return;
 }
 
 void SplineCharTangentPrevCP(SplinePoint *sp) {
-    real angle, len;
+    double angle, len;
     BasePoint *bp;
 
     if ( sp->next==NULL )
@@ -2056,8 +2064,8 @@ return;
 #define NICE_PROPORTION	.39
 void SplineCharDefaultNextCP(SplinePoint *base) {
     SplinePoint *prev=NULL, *next;
-    real len;
-    real angle, pangle, plen, ca;
+    double len;
+    double angle, pangle, plen, ca;
 
     if ( base->next==NULL )
 return;
@@ -2135,8 +2143,8 @@ return;
 
 void SplineCharDefaultPrevCP(SplinePoint *base) {
     SplinePoint *next=NULL, *prev;
-    real len, nlen;
-    real angle, nangle, ca;
+    double len, nlen;
+    double angle, nangle, ca;
 
     if ( base->prev==NULL )
 return;
@@ -2609,7 +2617,7 @@ int SplinePointListIsClockwise(SplineSet *spl) {
     int i, change,waschange;
     SplineChar dummy;
     SplineSet *next;
-    int ret = -1;
+    int ret = -1, maybe=-1;
 
     if ( spl->first!=spl->last || spl->first->next == NULL )
 return( -1 );		/* Open paths, (open paths with only one point are a special case) */
@@ -2625,13 +2633,11 @@ return( -1 );		/* Open paths, (open paths with only one point are a special case
     waschange = false;
     for ( i=0; i<el.cnt && ret==-1; ++i ) {
 	active = EIActiveEdgesRefigure(&el,active,i,1,&change);
-	if ( el.ordered[i]!=NULL || el.ends[i] ) {
+	if ( el.ordered[i]!=NULL || el.ends[i] || waschange || change ) {
 	    waschange = change;
+	    maybe = active->up;
     continue;			/* Just too hard to get the edges sorted when we are at a start vertex */
 	}
-	if ( !( waschange || change || el.ends[i] || el.ordered[i]!=NULL ||
-		(i!=el.cnt-1 && (el.ends[i+1] || el.ordered[i+1]!=NULL)) ))
-    continue;
 	waschange = change;
 	for ( apt=active; apt!=NULL && ret==-1; apt = e) {
 	    if ( EISkipExtremum(apt,i+el.low,1)) {
@@ -2646,6 +2652,8 @@ return( -1 );		/* Open paths, (open paths with only one point are a special case
     free(el.ends);
     ElFreeEI(&el);
     spl->next = next;
+    if ( ret==-1 )
+	ret = maybe;
 return( ret );
 }
 

@@ -667,7 +667,7 @@ return( NULL );
 
     frame = AddVerticalExtremaAndMove(spl,shadow_length,wireframe,sc);
     if ( !wireframe ) 
-	spl = SplineSetRemoveOverlap(spl,over_remove);	/* yes, spl, NOT frame. frame is always NULL if !wireframe */
+	spl = SplineSetRemoveOverlap(sc,spl,over_remove);	/* yes, spl, NOT frame. frame is always NULL if !wireframe */
     else {
 	if ( outline_width!=0 ) {
 	    memset(&si,0,sizeof(si));
@@ -683,12 +683,12 @@ return( NULL );
 	    for ( temp=mask; temp->next!=NULL; temp=temp->next);
 	    temp->next = frame;
 return( mask );
-	    frame = SplineSetRemoveOverlap(mask,over_exclude);
+	    frame = SplineSetRemoveOverlap(sc,mask,over_exclude);
 #if 0
 	    SplinePointListsFree(spl);
 	    for ( temp=outline; temp->next!=NULL; temp=temp->next);
 	    temp->next = frame;
-	    spl = SplineSetRemoveOverlap(outline,over_remove);
+	    spl = SplineSetRemoveOverlap(sc,outline,over_remove);
 #else
 	    SplinePointListsFree(spl);
 	    for ( temp=outline; temp->next!=NULL; temp=temp->next);

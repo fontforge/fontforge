@@ -858,17 +858,18 @@ extern void BDFCharFree(BDFChar *bdfc);
 extern void BDFFontFree(BDFFont *bdf);
 extern int  BDFFontDump(char *filename,BDFFont *font, char *encodingname,int res);
 extern int  FONFontDump(char *filename,BDFFont *font, int res);
-extern int SplinesIntersect(Spline *s1, Spline *s2, BasePoint pts[4], real t1s[4], real t2s[4]);
-extern int CubicSolve(Spline1D *sp,real ts[3]);
-extern real SplineSolve(Spline1D *sp, real tmin, real tmax, real sought_y, real err);
-extern int SplineSolveFull(Spline1D *sp,real val, real ts[3]);
-extern void SplineFindExtrema(Spline1D *sp, real *_t1, real *_t2 );
-extern void SplineRemoveInflectionsTooClose(Spline1D *sp, real *_t1, real *_t2 );
+extern int SplinesIntersect(Spline *s1, Spline *s2, BasePoint pts[4], double t1s[4], double t2s[4]);
+extern int CubicSolve(Spline1D *sp,double ts[3]);
+extern double IterateSplineSolve(Spline1D *sp, double tmin, double tmax, double sought_y, double err);
+extern double SplineSolve(Spline1D *sp, real tmin, real tmax, real sought_y, real err);
+extern int SplineSolveFull(Spline1D *sp,double val, double ts[3]);
+extern void SplineFindExtrema(Spline1D *sp, double *_t1, double *_t2 );
+extern void SplineRemoveInflectionsTooClose(Spline1D *sp, double *_t1, double *_t2 );
 extern int NearSpline(struct findsel *fs, Spline *spline);
 extern real SplineNearPoint(Spline *spline, BasePoint *bp, real fudge);
 extern void SCMakeDependent(SplineChar *dependent,SplineChar *base);
 extern SplinePoint *SplineBisect(Spline *spline, double t);
-extern Spline *SplineSplit(Spline *spline, real ts[3]);
+extern Spline *SplineSplit(Spline *spline, double ts[3]);
 extern Spline *ApproximateSplineFromPoints(SplinePoint *from, SplinePoint *to,
 	TPoint *mid, int cnt);
 extern Spline *ApproximateSplineFromPointsSlopes(SplinePoint *from, SplinePoint *to,
@@ -877,6 +878,7 @@ extern double SplineLength(Spline *spline);
 extern int SplineIsLinear(Spline *spline);
 extern int SplineIsLinearMake(Spline *spline);
 extern int SplineInSplineSet(Spline *spline, SplineSet *spl);
+extern void SSRemoveZeroLengthSplines(SplineSet *base);
 extern void SplineCharMerge(SplineChar *sc,SplineSet **head,int type);
 enum simpify_flags { sf_cleanup=-1, sf_normal=0, sf_ignoreslopes=1, sf_ignoreextremum=2 };
 extern void SplinePointListSimplify(SplineChar *sc,SplinePointList *spl,int flags,double err);
@@ -936,7 +938,7 @@ extern int IntersectLinesClip(BasePoint *inter,
 
 extern SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc);
 extern SplineSet *SSStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc);
-extern SplineSet *SplineSetRemoveOverlap(SplineSet *base,enum overlap_type);
+extern SplineSet *SplineSetRemoveOverlap(SplineChar *sc,SplineSet *base,enum overlap_type);
 
 extern void FindBlues( SplineFont *sf, real blues[14], real otherblues[10]);
 extern void QuickBlues(SplineFont *sf, BlueData *bd);
@@ -1055,6 +1057,7 @@ extern int PSDictRemoveEntry(struct psdict *dict, char *key);
 extern int PSDictChangeEntry(struct psdict *dict, char *key, char *newval);
 
 extern void SplineSetsRound2Int(SplineSet *spl);
+extern void SplineSetsRound2Sixtyfourths(SplineSet *spl);
 extern void SCRound2Int(SplineChar *sc);
 extern int hascomposing(SplineFont *sf,int u,SplineChar *sc);
 #if 0

@@ -404,7 +404,7 @@ static void AutoKern(WidthInfo *wi) {
 }
 
 static real SplineFindMinXAtY(Spline *spline,real y,real min) {
-    real t,t1,t2,tbase,val;
+    double t,t1,t2,tbase,val;
     Spline1D *xsp;
 
     if ( y>spline->from->me.y && y>spline->from->nextcp.y &&
@@ -465,7 +465,7 @@ static void PtFindEdges(real x, real y,struct charone *ch, WidthInfo *wi) {
 
 static void SplineFindEdges(Spline *spline,struct charone *ch, WidthInfo *wi) {
     Spline1D *xsp, *ysp;
-    real t1, t2, t, toff, ymin, ymax;
+    double t1, t2, t, toff, ymin, ymax;
 
     /* first try the end points */
     PtFindEdges(spline->to->me.x,spline->to->me.y,ch,wi);

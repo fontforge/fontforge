@@ -1635,7 +1635,7 @@ static void _MVMenuOverlap(MetricsView *mv,enum overlap_type ot) {
 	SCPreserveState(sc,false);
 	MinimumDistancesFree(sc->md);
 	sc->md = NULL;
-	sc->splines = SplineSetRemoveOverlap(sc->splines,ot);
+	sc->splines = SplineSetRemoveOverlap(sc,sc->splines,ot);
 	SCCharChangedUpdate(sc);
     }
 }

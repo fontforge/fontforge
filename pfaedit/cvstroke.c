@@ -128,7 +128,7 @@ static void FVStrokeIt(void *_fv, StrokeInfo *si) {
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
 	++cnt;
-    GProgressStartIndicatorR(10,_STR_Stroking,_STR_Stroking,NULL,cnt,1);
+    GProgressStartIndicatorR(10,_STR_Stroking,_STR_Stroking,0,cnt,1);
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];

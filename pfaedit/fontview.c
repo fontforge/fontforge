@@ -1713,7 +1713,7 @@ static void FVOverlap(FontView *fv,enum overlap_type ot) {
 	SCPreserveState(sc,false);
 	MinimumDistancesFree(sc->md);
 	sc->md = NULL;
-	sc->splines = SplineSetRemoveOverlap(sc->splines,ot);
+	sc->splines = SplineSetRemoveOverlap(sc,sc->splines,ot);
 	SCCharChangedUpdate(sc);
 	if ( !GProgressNext())
     break;

@@ -1884,6 +1884,8 @@ static char *str_PressurePopup = "Press in this square with a wacom pressure sen
 static char *str_RmInternalContour = "Remove Internal Contour";
 static char *str_RmExternalContour = "Remove External Contour";
 static char *str_NotInternalAndExternal = "Removing both the internal and the external contours makes no sense";
+static char *str_CleanupSelfIntersect = "Cleanup Self Intersect";
+static char *str_CleanupSelfIntersectPopup = "When PfaEdit detects that an expanded stroke will self-intersect,\nthen setting this option will cause it to try to make things nice\nby removing the intersections";
     /* Auto Width/Kern */
 static char *str_EnterTwoCharRange = "Enter two character ranges";
 static char *str_ToBeAdjusted = "to be adjusted.";

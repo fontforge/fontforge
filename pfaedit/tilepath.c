@@ -182,7 +182,7 @@ static void TDAddPoints(TD *td) {
     SplineSet *spl;
     Spline *spline, *first, *tsp;
     double len;
-    real ts[3];
+    double ts[3];
 
     first = NULL; len = 0;
     for ( spline=td->path->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
@@ -207,7 +207,7 @@ static void TDAddPoints(TD *td) {
 }
 
 static void SplineSplitAtY(Spline *spline,real y) {
-    real ts[3];
+    double ts[3];
     SplinePoint *last;
 
     if ( spline->from->me.y<=y && spline->from->nextcp.y<=y &&

@@ -765,8 +765,8 @@ static void _SplineSetFindXRange(SplinePointList *spl, DBounds *bounds,
 static real _SplineSetFindXRangeAtYExtremum(SplinePointList *spl, DBounds *bounds,
 	int findymax, real yextreme, real ia) {
     Spline *spline;
-    real t0, t1, t2, t3;
-    real y0, y1, y2, y3, x;
+    double t0, t1, t2, t3;
+    double y0, y1, y2, y3, x;
 
     for ( ; spl!=NULL; spl = spl->next ) {
 	for ( spline = spl->first->next; spline!=NULL; spline=spline->to->next ) {
