@@ -902,9 +902,13 @@ static void InterpretPS(FILE *ps, char *psstr, EntityChar *ec, RetStack *rs) {
 		AddTok(&gb,tokbuf,tok==pt_namelit);
 	    else {
 		if ( sp<sizeof(stack)/sizeof(stack[0]) ) {
-		    *gb.pt = '\0'; gb.pt = gb.base;
 		    stack[sp].type = ps_instr;
-		    stack[sp++].u.str = copy(gb.base);
+		    if ( gb.pt==NULL )
+			stack[sp++].u.str = copy("");
+		    else {
+			*gb.pt = '\0'; gb.pt = gb.base;
+			stack[sp++].u.str = copy(gb.base);
+		    }
 		}
 	    }
 	} else if ( tok==pt_unknown && (kv=lookup(&dict,tokbuf))!=NULL ) {
