@@ -1665,7 +1665,9 @@ static int mgAsk(struct problems *p,char **_str,char *str, char *end,uint32 tag,
     static char *fpstnames[] = { "Contextual position", "Contextual substitution",
 	"Chaining position", "Chaining substitution", "Reverse chaining subs", NULL };
     static char *asmnames[] = { "Indic reordering", "Contextual substitution",
-	"Contextual insertion", NULL };
+	"Lig", NULL, "Simple", "Contextual insertion", NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	"Kerning", NULL };
     PST *pst = data;
     FPST *fpst = data;
     ASM *sm = data;
@@ -1885,9 +1887,12 @@ return( false );
 	    if ( (new = missinglookup(p,str))!=NULL ) {
 		mgreplace(_str, str,end, new, sc, which==mg_pst ? data : NULL);
 		changed = true;
+		off += (strlen(new)-(end-str));
 	    } else {
-		if ( mgAsk(p,_str,str,end,0,sc,which,data))
+		if ( mgAsk(p,_str,str,end,0,sc,which,data)) {
 		    changed = true;
+		    off = 0;
+		}
 		found = true;
 	    }
 	    if ( changed ) {
