@@ -1551,9 +1551,8 @@ extern char *PSDictHasEntry(struct psdict *dict, char *key);
 extern int PSDictRemoveEntry(struct psdict *dict, char *key);
 extern int PSDictChangeEntry(struct psdict *dict, char *key, char *newval);
 
-extern void SplineSetsRound2Int(SplineSet *spl);
-extern void SplineSetsRound2Sixtyfourths(SplineSet *spl);
-extern void SCRound2Int(SplineChar *sc);
+extern void SplineSetsRound2Int(SplineSet *spl,real factor);
+extern void SCRound2Int(SplineChar *sc,real factor);
 extern int hascomposing(SplineFont *sf,int u,SplineChar *sc);
 #if 0
 extern void SFFigureGrid(SplineFont *sf);
