@@ -444,6 +444,7 @@ static void FVReattachCVs(SplineFont *old,SplineFont *new) {
 		for ( cv=old->chars[i]->views; cv!=NULL; cv = cvnext ) {
 		    cvnext = cv->next;
 		    CVChangeSC(cv,sub->chars[enc]);
+		    cv->heads[dm_grid] = &new->gridsplines;
 		}
 	    }
 	    GDrawProcessPendingEvents(NULL);
@@ -2696,6 +2697,8 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i) {
 	dummy->unicodeenc = i<65536 ? i : -1;
     else if ( sf->encoding_name==em_unicode4 )
 	dummy->unicodeenc = i<=0x7fffffff ? i : -1;
+    else if ( sf->encoding_name>=em_unicodeplanes && sf->encoding_name<=em_unicodeplanesmax )
+	dummy->unicodeenc = i<65536 ? i+((sf->encoding_name-em_unicodeplanes)<<16) : -1;
     else if ( sf->encoding_name==em_adobestandard )
 	dummy->unicodeenc = i>=256?-1:unicode_from_adobestd[i];
     else if ( sf->encoding_name==em_none )
