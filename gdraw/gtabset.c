@@ -622,6 +622,10 @@ GGadget *GTabSetCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     if ( gd->flags & gg_group_end )
 	_GGadgetCloseGroup(&gts->g);
 
+    for ( i=0; gd->u.tabs[i].text!=NULL && !gd->u.tabs[i].selected; ++i );
+    if ( i!=0 && gd->u.tabs[i].text!=NULL )
+	GTabSetChangeSel(gts,i,false);
+
 return( &gts->g );
 }
 
