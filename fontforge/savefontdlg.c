@@ -91,7 +91,7 @@ static char *extensions[] = { ".pfa", ".pfb", "", "%s.pfb", ".pfa", ".pfb", ".pt
 	".ttf", ".ttf", ".suit", ".dfont", ".otf", ".otf.dfont", ".otf",
 	".otf.dfont", ".svg", NULL };
 # ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-static char *bitmapextensions[] = { ".*bdf", ".ttf", ".dfont", ".bmap", ".dfont", ".*fnt", ".otb", ".none", NULL };
+static char *bitmapextensions[] = { ".*bdf", ".ttf", ".dfont", ".bmap", ".dfont", ".*fnt", ".otb", ".pdb", ".none", NULL };
 # endif
 #else
 static char *extensions[] = { ".pfa", ".pfb", ".bin", "%s.pfb", ".pfa", ".pfb", ".pt3", ".ps",
@@ -100,7 +100,7 @@ static char *extensions[] = { ".pfa", ".pfb", ".bin", "%s.pfb", ".pfa", ".pfb", 
 	".ttf", ".ttf", ".ttf.bin", ".dfont", ".otf", ".otf.dfont", ".otf",
 	".otf.dfont", ".svg", NULL };
 # ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-static char *bitmapextensions[] = { ".*bdf", ".ttf", ".dfont", ".bmap.bin", ".*fnt", ".otb", ".none", NULL };
+static char *bitmapextensions[] = { ".*bdf", ".ttf", ".dfont", ".bmap.bin", ".*fnt", ".otb", ".pdb", ".none", NULL };
 # endif
 #endif
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
@@ -151,6 +151,7 @@ static GTextInfo bitmaptypes[] = {
 /*  { (unichar_t *) "NFNT (dfont)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },*/
     { (unichar_t *) "Win FNT", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "OpenType Bitmap", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) "Palm OS Bitmap", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) _STR_Nobitmapfonts, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }
 };
@@ -1854,6 +1855,9 @@ return( true );
 #endif
 	if ( !WriteBitmaps(newname,sf,sizes,res,oldbitmapstate))
 	    err = true;
+    } else if ( oldbitmapstate==bf_palm && !err ) {
+	if ( !WritePalmBitmaps(newname,sf,sizes))
+	    err = true;
     } else if ( (oldbitmapstate==bf_nfntmacbin /*|| oldbitmapstate==bf_nfntdfont*/) &&
 	    !err ) {
 	if ( !WriteMacBitmaps(newname,sf,sizes,false/*oldbitmapstate==bf_nfntdfont*/))
@@ -1893,7 +1897,7 @@ return( sizes );
 int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	int res, char *subfontdefinition, struct sflist *sfs) {
     int i;
-    static char *bitmaps[] = {"bdf", "ttf", "sbit", "bin", /*"dfont", */"fnt", "otb", NULL };
+    static char *bitmaps[] = {"bdf", "ttf", "sbit", "bin", /*"dfont", */"fnt", "otb", "pdb", NULL };
     int32 *sizes=NULL;
     char *end = filename+strlen(filename);
     struct sflist *sfi;

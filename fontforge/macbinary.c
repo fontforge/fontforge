@@ -1326,12 +1326,25 @@ static void DumpResourceMap(FILE *res,struct resourcetype *rtypes,enum fontforma
     putlong(res,mend-rend);		/* length of map section */
 }
 
+long mactime(void) {
+    time_t now;
+    int i;
+
+    time(&now);
+    /* convert from 1970 based time to 1904 based time */
+    now += (1970-1904)*365L*24*60*60;
+    for ( i=1904; i<1970; i+=4 )
+	now += 24*60*60;
+    /* Ignore any leap seconds -- Sorry Steve */
+return( now );
+}
+
 static int DumpMacBinaryHeader(FILE *res,struct macbinaryheader *mb) {
 #if !__Mac
     uint8 header[128], *hpt; char buffer[256], *pt, *dpt;
     uint32 len;
     time_t now;
-    int i,crc;
+    int crc;
 
     if ( mb->macfilename==NULL ) {
 	char *pt = strrchr(mb->binfilename,'/');
@@ -1380,12 +1393,8 @@ static int DumpMacBinaryHeader(FILE *res,struct macbinaryheader *mb) {
 	{ putc('\0',res); ++len; }
 
 	/* Creation time, (seconds from 1/1/1904) */
+    now = mactime();
     time(&now);
-    /* convert from 1970 based time to 1904 based time */
-    now += (1970-1904)*365L*24*60*60;
-    for ( i=1904; i<1970; i+=4 )
-	now += 24*60*60;
-    /* Ignore any leap seconds */
     *hpt++ = now>>24; *hpt++ = now>>16; *hpt++ = now>>8; *hpt++ = now;
 	/* Modification time, (seconds from 1/1/1904) */
     *hpt++ = now>>24; *hpt++ = now>>16; *hpt++ = now>>8; *hpt++ = now;
