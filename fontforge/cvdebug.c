@@ -478,15 +478,16 @@ return( head );
 static int DVStackTestSB(DebugView *dv, TT_ExecContext exc) {
     int min, max, page, offtop;
     GRect size;
+    int top = exc==NULL ? 1 : exc->top;
 
     GScrollBarGetBounds(dv->stacksb,&min,&max,&page);
     GGadgetGetSize(dv->stacksb,&size);
     size.height /= dv->ii.fh;
-    if ( max!=exc->top || page!=size.height ) {
-	GScrollBarSetBounds(dv->stacksb,0,exc->top,size.height);
+    if ( max!=top || page!=size.height ) {
+	GScrollBarSetBounds(dv->stacksb,0,top,size.height);
 	offtop = dv->stack_offtop;
-	if ( offtop+size.height > exc->top )
-	    offtop = exc->top-size.height;
+	if ( offtop+size.height > top )
+	    offtop = top-size.height;
 	if ( offtop < 0 )
 	    offtop = 0;
 	if ( offtop!=dv->stack_offtop ) {
