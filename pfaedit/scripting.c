@@ -74,7 +74,7 @@ enum token_type { tt_name, tt_string, tt_number, tt_unicode,
 	tt_assign, tt_pluseq, tt_minuseq, tt_muleq, tt_diveq, tt_modeq,
 	tt_incr, tt_decr,
 
-	tt_if, tt_else, tt_elseif, tt_endif, tt_while, tt_endloop,
+	tt_if, tt_else, tt_elseif, tt_endif, tt_while, tt_foreach, tt_endloop,
 	tt_shift, tt_return,
 
 	tt_eof,
@@ -109,6 +109,7 @@ struct keywords { enum token_type tok; char *name; } keywords[] = {
     { tt_elseif, "elseif" },
     { tt_endif, "endif" },
     { tt_while, "while" },
+    { tt_foreach, "foreach" },
     { tt_endloop, "endloop" },
     { tt_shift, "shift" },
     { tt_return, "return" },
@@ -124,7 +125,7 @@ static const char *toknames[] = {
     "equal to", "not equal to", "greater than", "less than", "greater than or equal to", "less than or equal to",
     "assignment", "plus equals", "minus equals", "mul equals", "div equals", "mod equals",
     "increment", "decrement",
-    "if", "else", "elseif", "endif", "while", "endloop",
+    "if", "else", "elseif", "endif", "while", "foreach", "endloop",
     "shift", "return",
     "End Of File",
     NULL };
@@ -820,6 +821,17 @@ return( bottom );
 static void bDoSelect(Context *c) {
     int top, bottom, i,j;
 
+    if ( c->a.argc==2 && (c->a.vals[1].type==v_arr || c->a.vals[1].type==v_arrfree)) {
+	struct array *arr = c->a.vals[1].u.aval;
+	for ( i=0; i<arr->argc && i<c->curfv->sf->charcnt; ++i ) {
+	    if ( arr->vals[i].type!=v_int )
+		error(c,"Bad type within selection array");
+	    else if ( arr->vals[i].u.ival )
+		c->curfv->selected[i] = true;
+	}
+return;
+    }
+
     for ( i=1; i<c->a.argc; i+=2 ) {
 	bottom = ParseCharIdent(c,&c->a.vals[i]);
 	if ( i+1==c->a.argc )
@@ -1096,6 +1108,7 @@ static void bSetCharColor(Context *c) {
 	error(c,"Bad argument type");
     sc = GetOneSelChar(c);
     sc->color = c->a.vals[1].u.ival;
+    c->curfv->sf->changed = true;
 }
 
 static void bSetCharComment(Context *c) {
@@ -1107,6 +1120,7 @@ static void bSetCharComment(Context *c) {
 	error(c,"Bad argument type");
     sc = GetOneSelChar(c);
     sc->comment = *c->a.vals[1].u.sval=='\0'?NULL:def2u_copy(c->a.vals[1].u.sval);
+    c->curfv->sf->changed = true;
 }
 
 static void bTransform(Context *c) {
@@ -2247,6 +2261,19 @@ static void handlename(Context *c,Val *val) {
 		    if ( bdf->clut!=NULL )
 			val->u.aval->vals[cnt].u.ival |= BDFDepth(bdf)<<16;
 		}
+	    } else if ( strcmp(name,"$selection")==0 ) {
+		SplineFont *sf;
+		int i;
+		if ( c->curfv==NULL ) error(c,"No current font");
+		sf = c->curfv->sf;
+		val->type = v_arrfree;
+		val->u.aval = galloc(sizeof(Array));
+		val->u.aval->argc = sf->charcnt;
+		val->u.aval->vals = galloc((sf->charcnt+1)*sizeof(Val));
+		for ( i=0; i<sf->charcnt; ++i) {
+		    val->u.aval->vals[i].type = v_int;
+		    val->u.aval->vals[i].u.ival = c->curfv->selected[i];
+		}
 	    } else if ( strcmp(name,"$trace")==0 ) {
 		val->type = v_lval;
 		val->u.lval = &c->trace;
@@ -2646,6 +2673,52 @@ static void expr(Context *c,Val *val) {
     assign(c,val);
 }
 
+static void doforeach(Context *c) {
+    long here = ftell(c->script);
+    int lineno = c->lineno;
+    enum token_type tok;
+    int i, selsize;
+    char *sel;
+    int nest;
+
+    if ( c->curfv==NULL )
+	error(c,"foreach requires an active font");
+    selsize = c->curfv->sf->charcnt;
+    sel = galloc(selsize);
+    memcpy(sel,c->curfv->selected,selsize);
+    memset(c->curfv->selected,0,selsize);
+    i = 0;
+
+    while ( 1 ) {
+	while ( i<selsize && i<c->curfv->sf->charcnt && !sel[i]) ++i;
+	if ( i>=selsize || i>=c->curfv->sf->charcnt )
+    break;
+	c->curfv->selected[i] = true;
+	while ( (tok=NextToken(c))!=tt_endloop && tok!=tt_eof && !c->returned ) {
+	    backuptok(c);
+	    statement(c);
+	}
+	c->curfv->selected[i] = false;
+	if ( tok==tt_eof )
+	    error(c,"End of file found in foreach loop" );
+	fseek(c->script,here,SEEK_SET);
+	c->lineno = lineno;
+	++i;
+    }
+
+    nest = 0;
+    while ( (tok=NextToken(c))!=tt_endloop || nest>0 ) {
+	if ( tok==tt_eof )
+	    error(c,"End of file found in foreach loop" );
+	else if ( tok==tt_while ) ++nest;
+	else if ( tok==tt_foreach ) ++nest;
+	else if ( tok==tt_endloop ) --nest;
+    }
+    if ( selsize==c->curfv->sf->charcnt )
+	memcpy(c->curfv->selected,sel,selsize);
+    free(sel);
+}
+
 static void dowhile(Context *c) {
     long here = ftell(c->script);
     int lineno = c->lineno;
@@ -2680,6 +2753,7 @@ static void dowhile(Context *c) {
 	if ( tok==tt_eof )
 	    error(c,"End of file found in while loop" );
 	else if ( tok==tt_while ) ++nest;
+	else if ( tok==tt_foreach ) ++nest;
 	else if ( tok==tt_endloop ) --nest;
     }
 }
@@ -2760,6 +2834,8 @@ static void statement(Context *c) {
 
     if ( tok==tt_while )
 	dowhile(c);
+    else if ( tok==tt_foreach )
+	doforeach(c);
     else if ( tok==tt_if )
 	doif(c);
     else if ( tok==tt_shift )
@@ -3075,6 +3151,6 @@ void ScriptDlg(FontView *fv) {
     GDrawSetVisible(gw,false);
 
     /* Selection may be out of date, force a refresh */
-    for ( list = fv_list; list->next!=NULL; list=list->next )
+    for ( list = fv_list; list!=NULL; list=list->next )
 	GDrawRequestExpose(list->v,NULL,false);
 }

@@ -210,6 +210,10 @@ A statement may be
     &nbsp; &nbsp; statements<BR>
     endloop</CODE>
   <LI>
+    <CODE>foreach<BR>
+    &nbsp; &nbsp; statements<BR>
+    endloop</CODE>
+  <LI>
     <CODE>return [ expression ]</CODE>
   <LI>
     <CODE>shift</CODE>
@@ -220,6 +224,11 @@ A return statement may be followed by a return value (the expression) or
 a procedure may return nothing (void).<BR>
 The shift statement is stolen from shell scripts and shifts all arguments
 down by one. (argument 0, the name of the script file, remains unchanged.<BR>
+The foreach statement requires that there be a current font. It executes
+the statements once for each character in the selection. Within the statements
+only one character at a time will be selected. After execution the selection
+will be restored to what it was initially. (Caveat: Don't reencode the font
+within a foreach statement).<BR>
 Statements are terminated either by a new line or a semicolon.
 <P>
 Trivial example:
@@ -309,6 +318,10 @@ to (some) already existing ones)
     for this font. (If the font database contains greymaps then they will be
     indicated in the array as
     <CODE>(&lt;BitmapDepth&gt;&lt;&lt;16)|&lt;PixelSize&gt;</CODE>)
+  <LI>
+    <CODE>$selection</CODE> returns an array containing one entry for each character
+    in the current font indicating whether that character is selected or not
+    (0=&gt;not, 1=&gt;selected)
   <LI>
     <CODE>$trace</CODE> if this is set to one then PfaEdit will trace each procedure
     call.
@@ -582,6 +595,12 @@ a[4][0] = "Nested array";
 	a postscript unicode name which gets mapped into the current font's encoding
       <LI>
 	a unicode code point (0u61) which gets mapped to the current font's encoding
+      <LI>
+	If Select is given exactly one argument and that argument is an array then
+	the selection will be set to that specified in the array. So array[0] would
+	set the selection of the character at encoding 0 and so forth. The array
+	may have a different number of elements from that number of characters in
+	the font.
     </UL>
   <DT>
     SelectMore(arg1, arg2, ...)
@@ -856,12 +875,24 @@ SetKern(0u41e,kern)
 <P>
   <HR>
 <H3>
-  <A NAME="Example">Example</A>:
+  <A NAME="Example">Example 1</A>:
+</H3>
+<BLOCKQUOTE>
+  <PRE>#Set the color of all selected characters to be yellow
+#designed to be run within an interactive pfaedit session.
+foreach
+  SetCharColor(0xffff00)
+endloop
+</PRE>
+</BLOCKQUOTE>
+<H3>
+  Example 2:
 </H3>
 <BLOCKQUOTE>
   <PRE>#!/usr/local/bin/pfaedit
 #Take a Latin font and apply some simple transformations to it
 #prepriotory to adding cyrillic letters.
+#can be run in a non-interactive pfaedit session.
 Open($1);
 Reencode("KOI8-R");
 Select(0xa0,0xff);
