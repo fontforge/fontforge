@@ -321,6 +321,17 @@ static void SVBuildTrans(SearchView *s,real transform[6]) {
     transform[5] = s->matched_y;
 }
 
+static void SVFigureTranslation(SearchView *s,BasePoint *p,SplinePoint *sp) {
+    real transform[6];
+    BasePoint res;
+
+    SVBuildTrans(s,transform);
+    res.x = transform[0]*p->x + transform[2]*p->y + transform[4];
+    res.y = transform[1]*p->x + transform[3]*p->y + transform[5];
+    s->matched_x = sp->me.x - res.x;
+    s->matched_y = sp->me.y - res.y;
+}
+
 static int SPMatches(SplinePoint *sp, SearchView *s, SplineSet *path, int oriented ) {
     real transform[6];
     BasePoint *p, res;
@@ -337,12 +348,7 @@ return( SPMatchesO(sp,s,path));
     } else {
 	if ( !SPMatchesF(sp,s,path,false))
 return( false );
-	SVBuildTrans(s,transform);
-	p = &path->first->me;
-	res.x = transform[0]*p->x + transform[2]*p->y + transform[4];
-	res.y = transform[1]*p->x + transform[3]*p->y + transform[5];
-	s->matched_x = sp->me.x - res.x;
-	s->matched_y = sp->me.y - res.y;
+	SVFigureTranslation(s,&path->first->me,sp);
 return( true );
     }
 }
@@ -357,9 +363,11 @@ static int SCMatchesIncomplete(SplineChar *sc,SearchView *s,int startafter) {
     for ( spl=startafter?s->matched_spl:sc->splines; spl!=NULL; spl=spl->next ) {
 	s->matched_spl = spl;
 	for ( sp=startafter?s->last_sp:spl->first; ; ) {
-	    if ( SPMatchesF(sp,s,s->path,true))
+	    if ( SPMatchesF(sp,s,s->path,true)) {
+		SVFigureTranslation(s,&s->path->first->me,sp);
 return( true );
-	    if ( s->tryreverse && SPMatchesF(sp,s,s->revpath,true)) {
+	    } else if ( s->tryreverse && SPMatchesF(sp,s,s->revpath,true)) {
+		SVFigureTranslation(s,&s->revpath->first->me,sp);
 		s->wasreversed = true;
 return( true );
 	    }
@@ -439,23 +447,10 @@ return( true );
 
 static void AdjustBP(BasePoint *changeme,BasePoint *rel,
 	BasePoint *shouldbe, BasePoint *shouldberel,
-	BasePoint *search, BasePoint *searchrel,
 	BasePoint *fudge,
 	SearchView *s) {
     real xoff,yoff;
 
-    if ( s->pointcnt==s->rpointcnt ) {
-	xoff = (changeme->x-rel->x);
-	yoff = (changeme->y-rel->y);
-	if ( s->matched_flip&1 )
-	    xoff=-xoff;
-	if ( s->matched_flip&2 )
-	    yoff =-yoff;
-	xoff *= s->matched_scale;
-	yoff *= s->matched_scale;
-	fudge->x = xoff*s->matched_co + yoff*s->matched_si - (search->x-searchrel->x);
-	fudge->y = yoff*s->matched_co - xoff*s->matched_si - (search->y-searchrel->y);
-    }
     xoff = (shouldbe->x-shouldberel->x);
     yoff = (shouldbe->y-shouldberel->y);
     if ( s->matched_flip&1 )
@@ -466,6 +461,18 @@ static void AdjustBP(BasePoint *changeme,BasePoint *rel,
     yoff *= s->matched_scale;
     changeme->x = xoff*s->matched_co + yoff*s->matched_si + fudge->x  + rel->x;
     changeme->y = yoff*s->matched_co - xoff*s->matched_si + fudge->y  + rel->y;
+}
+
+static void AdjustAll(SplinePoint *change,BasePoint *rel,
+	BasePoint *shouldbe, BasePoint *shouldberel,
+	BasePoint *fudge,
+	SearchView *s) {
+    BasePoint old;
+
+    old = change->me;
+    AdjustBP(&change->me,rel,shouldbe,shouldberel,fudge,s);
+    change->nextcp.x += change->me.x-old.x; change->nextcp.y += change->me.y-old.y;
+    change->prevcp.x += change->me.x-old.x; change->prevcp.y += change->me.y-old.y;
 }
 
 static SplinePoint *RplInsertSP(SplinePoint *after,SplinePoint *rpl,SearchView *s, BasePoint *fudge) {
@@ -480,14 +487,17 @@ static SplinePoint *RplInsertSP(SplinePoint *after,SplinePoint *rpl,SearchView *
     new->prevcp.y = transform[1]*rpl->prevcp.x + transform[3]*rpl->prevcp.y + transform[5];
     new->nextcp.x = transform[0]*rpl->nextcp.x + transform[2]*rpl->nextcp.y + transform[4];
     new->nextcp.y = transform[1]*rpl->nextcp.x + transform[3]*rpl->nextcp.y + transform[5];
+    new->pointtype = rpl->pointtype;
+    new->selected = true;
     if ( after->next==NULL ) {
 	SplineMake(after,new);
 	s->matched_spl->last = new;
     } else {
 	SplinePoint *nsp = after->next->to;
 	after->next->to = new;
+	new->prev = after->next;
 	SplineRefigure(after->next);
-	SplineMake(after,nsp);
+	SplineMake(new,nsp);
     }
 return( new );
 }
@@ -502,7 +512,7 @@ return;						/*  => no fudge */
 
     foundrel = s->matched_sp; searchrel=path->first;
     for ( found=foundrel, search=searchrel ; ; ) {
-	if ( found->next==NULL )
+	if ( found->next==NULL || search->next==NULL )
     break;
 	found = found->next->to;
 	search = search->next->to;
@@ -546,12 +556,11 @@ static void DoReplaceIncomplete(SplineChar *sc,SearchView *s) {
     yoff = yoff*s->matched_co - xoff*s->matched_si;
     xoff = temp;
 
-    if ( s->pointcnt!=s->rpointcnt ) {
-	/* Total "fudge" amount should be spread evenly over each point */
-	FudgeFigure(sc,s,path,&fudge);
+    /* Total "fudge" amount should be spread evenly over each point */
+    FudgeFigure(sc,s,path,&fudge);
+    if ( s->pointcnt!=s->rpointcnt )
 	MinimumDistancesFree(sc->md); sc->md = NULL;
-    } else
-	/* else any "fudges" should be transfered point by point */;
+
     for ( sc_p = s->matched_sp, p_p = path->first, r_p = rpath->first; ; ) {
 	if ( p_p->next==NULL && r_p->next==NULL ) {
 	    s->last_sp = sc_p;
@@ -588,19 +597,22 @@ return;
 	    }
 	    np_p = p_p->next->to; nsc_p = sc_p->next->to; nr_p = r_p->next->to;
 	    if ( p_p==path->first ) {
-		AdjustBP(&sc_p->nextcp,&sc_p->me,&r_p->nextcp,&r_p->me,&p_p->nextcp,&p_p->me,&fudge,s);
+		AdjustBP(&sc_p->nextcp,&sc_p->me,&r_p->nextcp,&r_p->me,&fudge,s);
 		if ( p_p->prev!=NULL )
-		    AdjustBP(&sc_p->prevcp,&sc_p->me,&r_p->prevcp,&r_p->me,&p_p->prevcp,&p_p->me,&fudge,s);
+		    AdjustBP(&sc_p->prevcp,&sc_p->me,&r_p->prevcp,&r_p->me,&fudge,s);
 		sc_p->me.x += xoff; sc_p->me.y += yoff;
 		sc_p->nextcp.x += xoff; sc_p->nextcp.y += yoff;
 		sc_p->prevcp.x += xoff; sc_p->prevcp.y += yoff;
+		if ( sc_p->prev!=NULL )
+		    SplineRefigure(sc_p->prev);
 	    }
 	    if ( np_p==path->first )
 return;
 	    if ( np_p->next!=NULL )
-		AdjustBP(&nsc_p->nextcp,&nsc_p->me,&nr_p->nextcp,&nr_p->me,&np_p->nextcp,&np_p->me,&fudge,s);
-	    AdjustBP(&nsc_p->prevcp,&nsc_p->me,&nr_p->prevcp,&nr_p->me,&np_p->prevcp,&np_p->me,&fudge,s);
-	    AdjustBP(&nsc_p->me,&sc_p->me,&nr_p->me,&r_p->me,&np_p->me,&p_p->me,&fudge,s);
+		AdjustBP(&nsc_p->nextcp,&nsc_p->me,&nr_p->nextcp,&nr_p->me,&fudge,s);
+	    AdjustBP(&nsc_p->prevcp,&nsc_p->me,&nr_p->prevcp,&nr_p->me,&fudge,s);
+	    AdjustAll(nsc_p,&sc_p->me,&nr_p->me,&r_p->me,&fudge,s);
+	    nsc_p->pointtype = nr_p->pointtype;
 	    if ( nsc_p->next!=NULL )
 		SplineRefigure(nsc_p->next);
 	    if ( nsc_p->prev!=NULL )
@@ -615,6 +627,7 @@ static void DoReplaceFull(SplineChar *sc,SearchView *s) {
     RefChar *r, *rnext, *new;
     SplinePointList *spl, *snext, *sprev, *temp;
     real transform[6], subtrans[6];
+    SplinePoint *sp;
 
     /* first remove those bits that matched */
     for ( r = sc->refs, i=0; r!=NULL; r=rnext, ++i ) {
@@ -652,6 +665,7 @@ static void DoReplaceFull(SplineChar *sc,SearchView *s) {
 	memcpy(new->transform,subtrans,sizeof(subtrans));
 	new->splines = NULL;
 	new->next = sc->refs;
+	new->selected = true;
 	sc->refs = new;
 	SCReinstanciateRefChar(sc,new);
 	SCMakeDependent(sc,new->sc);
@@ -662,6 +676,16 @@ static void DoReplaceFull(SplineChar *sc,SearchView *s) {
     else {
 	for ( spl=sc->splines; spl->next!=NULL; spl = spl->next );
 	spl->next = temp;
+	for ( ; temp!=NULL; temp=temp->next ) {
+	    for ( sp=temp->first; ; ) {
+		sp->selected = true;
+		if ( sp->next==NULL )
+	    break;
+		sp = sp->next->to;
+		if ( sp==temp->first )
+	    break;
+	    }
+	}
     }
 }
 
@@ -690,10 +714,10 @@ static void SVSelectSC(SearchView *sv) {
 
     if ( sv->subpatternsearch ) {
 	spl = sv->matched_spl;
-	for ( sp = sv->matched_sp, i=0; i<sv->pointcnt; ++i ) {
+	for ( sp = sv->matched_sp; ; ) {
 	    sp->selected = true;
-	    if ( sp->next == NULL )
-	break;	/* should not happen */
+	    if ( sp->next == NULL || sp==sv->last_sp )
+	break;
 	    sp = sp->next->to;
 	    /* Ok to wrap back to first */
 	}
@@ -788,6 +812,7 @@ static int SearchChar(SearchView *sv, int enc,int startafter) {
     sv->matched_co = 1; sv->matched_si = 0;
     sv->matched_flip = flip_none;
     sv->matched_refs = sv->matched_ss = 0;
+    sv->matched_x = sv->matched_y = 0;
 
     if ( sv->subpatternsearch )
 return( SCMatchesIncomplete(sv->curchar,sv,startafter));

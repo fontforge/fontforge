@@ -1067,12 +1067,16 @@ static void FVMenuCut(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FVClear(fv);
 }
 
-static void FVSelectAll(FontView *);
-
 static void FVMenuSelectAll(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 
     FVSelectAll(fv);
+}
+
+static void FVMenuFindRpl(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+
+    SVCreate(fv);
 }
 
 static void cflistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -2372,6 +2376,7 @@ static GMenuItem edlist[] = {
     { { (unichar_t *) _STR_CopyFgToBg, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, 'C', ksm_control|ksm_shift, NULL, NULL, FVMenuCopyFgBg, MID_CopyFgToBg },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_SelectAll, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'A' }, 'A', ksm_control, NULL, NULL, FVMenuSelectAll },
+    { { (unichar_t *) _STR_FindReplace, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'i' }, 'F', ksm_control|ksm_meta, NULL, NULL, FVMenuFindRpl },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Unlinkref, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'U' }, 'U', ksm_control, NULL, NULL, FVMenuUnlinkRef, MID_UnlinkRef },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
@@ -3388,10 +3393,6 @@ static void FVChar(FontView *fv,GEvent *event) {
 	    (event->u.chr.state&ksm_control) &&
 	    (event->u.chr.state&ksm_meta) )
 	MenuExit(NULL,NULL,NULL);
-    else if ( event->u.chr.keysym=='f' &&
-	    (event->u.chr.state&ksm_control) &&
-	    (event->u.chr.state&ksm_meta) )
-	SVCreate(fv);
     else if (( event->u.chr.keysym=='M' ||event->u.chr.keysym=='m' ) &&
 	    (event->u.chr.state&ksm_control) ) {
 	if ( (event->u.chr.state&ksm_meta) && (event->u.chr.state&ksm_shift))

@@ -1392,6 +1392,8 @@ static char *str_BadRefInSearchRpl = "The %1$s contains a reference to %2$.20hs 
 static char *str_NotFound = "Not Found"
 static char *str_PatternNotFound = "The search pattern was not found in the font %.100hs";
 static char *str_PatternNotFoundAgain = "The search pattern was not found again in the font %.100hs";
+static char *str_FindReplace = "Find / Replace"
+static char *mnemonic_FindReplace = "i";
 
 static int num_buttonsize = 55;
 static int num_ScaleFactor = 100;
