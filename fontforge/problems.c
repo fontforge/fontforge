@@ -927,7 +927,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
     if ( p->intersectingpaths && !p->finish ) {
 	BasePoint pts[9];
 	double t1s[10], t2s[10];
-	int found = false;
+	int found = false,i;
 	for ( test=spl; test!=NULL ; test=test->next ) {
 	    first = NULL;
 	    for ( spline = test->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
@@ -938,7 +938,15 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 			    spline2!=NULL && spline2!=first2; spline2 = spline2->to->next ) {
 			if ( first2==NULL ) first2 = spline2;
 			if ( SplinesIntersect(spline,spline2,pts,t1s,t2s)) {
-			    found = true;
+			    if ( spline->to->next!=spline2 && spline->from->prev!=spline2 )
+				found = true;
+			    else for ( i=0; i<10 && t1s[i]!=-1; ++i ) {
+				if ( (t1s[i]<.9 && t1s[i]>.1) || (t2s[i]<.9 && t2s[i]>.1)) {
+				    found = true;
+			    break;
+				}
+			    }
+			    if ( found )
 		    break;
 			}
 		    }
