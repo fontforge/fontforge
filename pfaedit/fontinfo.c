@@ -1632,9 +1632,8 @@ return( false );
 		sf->chars[i]->enc = epos++;
 	    chars[sf->chars[i]->enc] = sf->chars[i];
 	    for ( bdf=sf->bitmaps; bdf!=NULL; bdf = bdf->next ) {
-		if ( i<bdf->charcnt && bdf->chars[i]!=NULL ) {
-		    if ( sf->chars[i]!=NULL )
-			bdf->chars[i]->enc = sf->chars[i]->enc;
+		if ( i<bdf->charcnt && bdf->chars[i]!=NULL && sf->chars[i]!=NULL ) {
+		    bdf->chars[i]->enc = sf->chars[i]->enc;
 		    bdf->temp[sf->chars[i]->enc] = bdf->chars[i];
 		}
 	    }
@@ -3111,6 +3110,7 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	int i,j;
 	int vmetrics, vorigin, namechange, order2;
 	int xuidchanged = false;
+	GTextInfo *pfmfam, *fstype;
 
 	if ( !CheckNames(d))
 return( true );
@@ -3265,8 +3265,16 @@ return(true);
 	if ( d->ttf_set ) {
 	    sf->pfminfo.weight = weight;
 	    sf->pfminfo.width = GGadgetGetFirstListSelectedItem(GWidgetGetControl(gw,CID_WidthClass))+1;
-	    sf->pfminfo.pfmfamily = (int) (GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_PFMFamily))->userdata);
-	    sf->pfminfo.fstype = (int) (GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_FSType))->userdata);
+	    pfmfam = GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_PFMFamily));
+	    if ( pfmfam!=NULL )
+		sf->pfminfo.pfmfamily = (int) (pfmfam->userdata);
+	    else
+		sf->pfminfo.pfmfamily = 0x11;
+	    fstype = GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_FSType));
+	    if ( fstype!=NULL )
+		sf->pfminfo.fstype = (int) (fstype->userdata);
+	    else
+		sf->pfminfo.fstype = 0xc;
 	    if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_NoSubsetting)))
 		sf->pfminfo.fstype |=0x100;
 	    if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_OnlyBitmaps)))
