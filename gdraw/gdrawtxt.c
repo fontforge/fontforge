@@ -218,7 +218,6 @@ return( best );
     for ( try = fn->data[enc]; try!=NULL; try = try->next ) {
 	/* this is an inline version of FindFontDiff */
 	if (( diff = try->weight - rq->weight )<0 ) diff = -diff;
-	diff *= 2;
 	if ( (try->style & fs_italic) != ( rq->style & fs_italic )) diff += 500;
 	if ( (try->style & fs_smallcaps) != ( rq->style & fs_smallcaps )) diff += 200;
 	if ( (try->style & fs_condensed) != ( rq->style & fs_condensed )) diff += 200;
@@ -233,7 +232,7 @@ return( best );
 	}
 	diff += temp*200;
 	/* End inline version */
-	if ( diff< *best_val ) {
+	if ( diff+(i-*best_pos)*100< *best_val ) {
 	    best = try;
 	    *best_val = diff;
 	    *best_pos = i;
