@@ -1,4 +1,4 @@
-/* Copyright (C) 2001 by George Williams */
+/* Copyright (C) 2001-2002 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -144,7 +144,8 @@ return( NULL );
 	FILE *test = fopen(filename,"r");
 	if ( test!=NULL ) {
 	    int magic = getlong(test);
-	    if ( magic==0x00010000 || magic == CHR('O','T','T','O') || magic == CHR('t','t','c','f'))
+	    if ( magic==0x00010000 || magic == CHR('O','T','T','O') ||
+		    magic == CHR('t','r','u','e') || magic == CHR('t','t','c','f'))
 		ok = true;
 	    fclose(test);
 	}

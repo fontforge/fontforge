@@ -1,4 +1,4 @@
-/* Copyright (C) 2001 by George Williams */
+/* Copyright (C) 2001-2002 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -36,6 +36,7 @@ extern struct lconv localeinfo;
 #define CID_Count	1001
 #define CID_OK		1010
 #define CID_Cancel	1011
+#define CID_Group	1020
 
 typedef struct gaspview /* : tableview */ {
     Table *table;
@@ -50,15 +51,37 @@ typedef struct gaspview /* : tableview */ {
     GFont *gfont;
     int as, fh;
     int ybase, yend;
+    int width;
     int fieldx, fieldxend;
     int gfx, gfxend;
     int aax, aaxend;
+    GGadget *tf;
+    int tfpos;
+    unsigned int changed: 1;
 } gaspView;
+
+static int gvFinishUp(gaspView *gv) {
+    const unichar_t *ret = _GGadgetGetTitle(gv->tf); unichar_t *end;
+    int val = u_strtol(ret,&end,10);
+
+    if ( gv->tfpos==-1 )
+return( true );
+    if ( *end!='\0' ) {
+	GWidgetErrorR( _STR_BadInteger, _STR_BadInteger );
+return( false );
+    }
+    gv->gasps[gv->tfpos].ppem = val;
+    gv->tfpos = -1;
+return( true );
+}
 
 static int gasp_processdata(TableView *tv) {
     uint8 *data;
     int len,i;
     gaspView *gv = (gaspView *) tv;
+
+    if ( !gvFinishUp(gv))
+return( false );
 
     free(tv->table->data);
     len = 4+4*gv->cnt;
@@ -89,6 +112,30 @@ return( false );
 }
 
 static struct tableviewfuncs gaspfuncs = { gasp_close, gasp_processdata };
+
+static int gasp_CountChange(GGadget *g, GEvent *e) {
+    GWindow gw;
+    int val,i;
+    gaspView *gv;
+    struct gasps last;
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
+	const unichar_t *ret = _GGadgetGetTitle(g);
+	val = u_strtol(ret,NULL,10);
+	gw = GGadgetGetWindow(g);
+	gv = GDrawGetUserData(gw);
+	if ( gv->cnt != val && val>0 ) {
+	    last = gv->gasps[gv->cnt-1];
+	    gv->gasps = grealloc(gv->gasps,val*sizeof(struct gasps));
+	    for ( i=gv->cnt-1 ; i<val; ++i )
+		gv->gasps[i].ppem = gv->gasps[i].flags = 0;
+	    gv->gasps[val-1] = last;
+	    GDrawResize(gw,gv->width,gv->ybase+(val+1)*gv->fh+GDrawPointsToPixels(NULL,34));
+	    gv->cnt = val;
+	}
+    }
+return( true );
+}
 
 static int gasp_Cancel(GGadget *g, GEvent *e) {
     GWindow gw;
@@ -149,6 +196,57 @@ static void gvExpose(GWindow pixmap, gaspView *gv,GRect *exp) {
     GDrawPopClip(pixmap,&old);
 }
 
+static void gvMouseDown(gaspView *gv,GEvent *e) {
+    int index = (e->u.mouse.y-gv->ybase)/gv->fh;
+    int x, xtf;
+    unichar_t ubuf[60]; char buf[60];
+
+    if ( e->u.mouse.y<gv->ybase || index>=gv->cnt )
+return;
+
+    GDrawSetFont(gv->gw,gv->gfont);
+    uc_strcpy(ubuf, "Sizes less than ");
+    xtf = 8+GDrawGetTextWidth(gv->gw,ubuf,-1,NULL);
+    if ( e->u.mouse.x<xtf )
+return;
+    sprintf( buf, "Sizes less than %6d:", gv->gasps[index].ppem );
+    uc_strcpy(ubuf,buf);
+    x = 8+GDrawGetTextWidth(gv->gw,ubuf,22,NULL);
+    if ( e->u.mouse.x<x ) {
+	if ( index==gv->cnt-1 ) {	/* Can't change last one, must be 0xffff */
+	    GDrawBeep(screen_display);
+	} else if ( index!=gv->tfpos ) {
+	    if ( gvFinishUp(gv)) {
+		GGadgetMove(gv->tf,xtf,gv->ybase+index*gv->fh);
+		sprintf( buf, "%6d", gv->gasps[index].ppem );
+		uc_strcpy(ubuf,buf);
+		GGadgetResize(gv->tf,GDrawGetTextWidth(gv->gw,ubuf,6,NULL),gv->fh);
+		sprintf( buf, "%d", gv->gasps[index].ppem );
+		uc_strcpy(ubuf,buf);
+		GGadgetSetTitle(gv->tf,ubuf);
+		GGadgetSetVisible(gv->tf,true);
+		gv->tfpos = index;
+		GDrawRequestExpose(gv->gw,NULL,false);
+	    }
+	}
+return;
+    }
+    x = 8+GDrawGetTextWidth(gv->gw,ubuf,-1,NULL)+5;
+    if ( e->u.mouse.x>=x && e->u.mouse.x<x+gv->fh ) {
+	gv->gasps[index].flags ^= 1;
+	gv->changed = true;
+	GDrawRequestExpose(gv->gw,NULL,false);
+return;
+    }
+    x += gv->fh + GDrawGetTextWidth(gv->gw,GStringGetResource(_STR_GridFit,NULL),-1,NULL)+5;
+    if ( e->u.mouse.x>=x && e->u.mouse.x<x+gv->fh ) {
+	gv->gasps[index].flags ^= 2;
+	gv->changed = true;
+	GDrawRequestExpose(gv->gw,NULL,false);
+return;
+    }
+}
+
 static void gvResize(gaspView *gv,GEvent *event) {
     GRect pos;
     int yend;
@@ -158,7 +256,10 @@ static void gvResize(gaspView *gv,GEvent *event) {
     GGadgetMove(GWidgetGetControl(gv->gw,CID_OK),pos.x,pos.y+yend-gv->yend);
     GGadgetGetSize(GWidgetGetControl(gv->gw,CID_Cancel),&pos);
     GGadgetMove(GWidgetGetControl(gv->gw,CID_Cancel),pos.x,pos.y+yend-gv->yend);
+    GGadgetResize(GWidgetGetControl(gv->gw,CID_Group),event->u.resize.size.width-4,
+	    event->u.resize.size.height-4);
     gv->yend = yend;
+    gv->width = event->u.resize.size.width;
     GDrawRequestExpose(gv->gw,NULL,false);
 }
 
@@ -181,6 +282,8 @@ return( true );
 	    MenuExit(NULL,NULL,NULL);
 	}
 return( false );
+    } else if ( event->type == et_mousedown ) {
+	gvMouseDown(gv,event);
     } else if ( event->type == et_resize ) {
 	gvResize(gv,event);
     } else if ( event->type == et_expose ) {
@@ -207,14 +310,16 @@ void gaspCreateEditor(Table *tab,TtfView *tfv) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[34];
-    GTextInfo label[34];
+    GGadgetCreateData gcd[12];
+    GTextInfo label[12];
     int i;
     static unichar_t title[60];
     char version[20], cnt[8];
     FontRequest rq;
     static unichar_t monospace[] = { 'c','o','u','r','i','e','r',',','m', 'o', 'n', 'o', 's', 'p', 'a', 'c', 'e',',','c','a','s','l','o','n',',','u','n','i','f','o','n','t', '\0' };
     int as,ds,ld;
+    static GBox tfbox;
+    static unichar_t num[] = { '0',  '\0' };
 
     gv->table = tab;
     gv->virtuals = &gaspfuncs;
@@ -269,7 +374,7 @@ void gaspCreateEditor(Table *tab,TtfView *tfv) {
     label[1].text_is_1byte = true;
     gcd[1].gd.label = &label[1];
     gcd[1].gd.pos.x = 55; gcd[1].gd.pos.y = gcd[0].gd.pos.y-6;  gcd[1].gd.pos.width = 50;
-    gcd[1].gd.flags = gg_enabled|gg_visible;
+    gcd[1].gd.flags = /*gg_enabled|*/gg_visible;
     gcd[1].gd.cid = CID_Version;
     /*gcd[1].gd.handle_controlevent = gasp_VersionChange;*/
     gcd[1].creator = GTextFieldCreate;
@@ -288,10 +393,12 @@ void gaspCreateEditor(Table *tab,TtfView *tfv) {
     gcd[3].gd.pos.x = 155; gcd[3].gd.pos.y = gcd[2].gd.pos.y-6;  gcd[3].gd.pos.width = 50;
     gcd[3].gd.flags = gg_enabled|gg_visible;
     gcd[3].gd.cid = CID_Count;
+    gcd[3].gd.handle_controlevent = gasp_CountChange;
     gcd[3].creator = GTextFieldCreate;
 
     gv->ybase = GDrawPointsToPixels(NULL,gcd[3].gd.pos.y+24+8);
     gv->yend = gv->ybase+(gv->cnt+1)*gv->fh;
+    gv->width = pos.width;
     i = 4;
 
     gcd[i].gd.pos.x = 20-3; gcd[i].gd.pos.y = GDrawPixelsToPoints(NULL,gv->yend);
@@ -319,9 +426,22 @@ void gaspCreateEditor(Table *tab,TtfView *tfv) {
     gcd[i].gd.pos.x = 2; gcd[i].gd.pos.y = 2;
     gcd[i].gd.pos.width = pos.width-4; gcd[i].gd.pos.height = pos.height-4;
     gcd[i].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
-    gcd[i].creator = GGroupCreate;
+    gcd[i].gd.cid = CID_Group;
+    gcd[i++].creator = GGroupCreate;
+
+    tfbox.main_background = tfbox.main_foreground = COLOR_DEFAULT;
+    label[i].text = num+1;
+    label[i].font = gv->gfont;
+    gcd[i].gd.label = &label[i];
+    gcd[i].gd.box = &tfbox;
+    gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = 10;
+    gcd[i].gd.pos.width = 30; gcd[i].gd.pos.height = gv->fh;
+    gcd[i].gd.flags = gg_enabled | gg_pos_in_pixels|gg_dontcopybox;
+    gcd[i].creator = GTextFieldCreate;
 
     GGadgetsCreate(gw,gcd);
+    gv->tf = gcd[i].ret;
+    gv->tfpos = -1;
     GDrawResize(gw,pos.width,gv->yend+GDrawPointsToPixels(NULL,34));
     GDrawSetVisible(gw,true);
 }

@@ -1,4 +1,4 @@
-/* Copyright (C) 2001 by George Williams */
+/* Copyright (C) 2001-2002 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -797,7 +797,8 @@ return( NULL );
     version=getlong(ttf);
     if ( version==CHR('t','t','c','f'))
 return( readttcfheader(ttf,filename));
-    if ( version==0x00010000 || version == CHR('O','T','T','O')) {
+    if ( version==0x00010000 || version == CHR('O','T','T','O') ||
+	    version == CHR('t','r','u','e')) {
 	fseek(ttf,0,SEEK_SET);
 return( readttfheader(ttf,filename));
     }

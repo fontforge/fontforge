@@ -1,4 +1,4 @@
-/* Copyright (C) 2001 by George Williams */
+/* Copyright (C) 2001-2002 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -324,7 +324,7 @@ return;
 return;
     }
 
-    if ( _FT_Load_Glyph(face,cv->cc->glyph,FT_LOAD_DEFAULT/*FT_LOAD_NO_HINTING*/)) {
+    if ( _FT_Load_Glyph(face,cv->cc->glyph,FT_LOAD_NO_BITMAP)) {
 	_FT_Done_Face(face);
 return;
     }
@@ -340,6 +340,10 @@ return;
     }
     cv->gridwidth = outline_context.scale*slot->advance.x;
 
+#if 0		/* If I want to look at bitmaps... */
+    _FT_Load_Glyph(face,cv->cc->glyph,FT_LOAD_DEFAULT);
+    if ( slot->format!=ft_glyph_format_bitmap )
+#endif
     if ( _FT_Render_Glyph(slot,ft_render_mode_mono)) {
 	_FT_Done_Face(face);
 return;

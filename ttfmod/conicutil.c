@@ -1,4 +1,4 @@
-/* Copyright (C) 2001 by George Williams */
+/* Copyright (C) 2001-2002 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -535,8 +535,13 @@ static void readttfsimpleglyph(FILE *ttf,ConicChar *cc, int path_cnt) {
 
     for ( i=0; i<path_cnt; ++i )
 	endpt[i] = getushort(ttf);
-    tot = endpt[path_cnt-1]+1;
-    pts = galloc(tot*sizeof(BasePoint));
+    if ( path_cnt==0 ) {
+	tot = 0;
+	pts = galloc(sizeof(BasePoint));
+    } else {
+	tot = endpt[path_cnt-1]+1;
+	pts = galloc(tot*sizeof(BasePoint));
+    }
     for ( i=0; i<tot; ++i )
 	pts[i].pnum = i;
 
@@ -778,7 +783,7 @@ return( cc );
 
     fseek(ttf,cf->glyphs->start+cc->glyph_offset,SEEK_SET);
     path_cnt = (short) getushort(ttf);
-    /* xmin = */ getushort(ttf);
+    cc->ptn = getushort(ttf)-cc->lbearing;
     /* ymin = */ getushort(ttf);
     /* xmax = */ getushort(ttf);
     /* ymax = */ getushort(ttf);
@@ -841,10 +846,14 @@ return( NULL );
     }
 
     mcnt = ptgetushort(hheader->data+34);
-    for ( i=0; i<mcnt; ++i )
+    for ( i=0; i<mcnt; ++i ) {
 	cf->chars[i]->width = ptgetushort(hmetrics->data+4*i);
-    for ( i=mcnt; i<cf->glyph_cnt; ++i )
+	cf->chars[i]->lbearing = ptgetushort(hmetrics->data+4*i+2);
+    }
+    for ( i=mcnt; i<cf->glyph_cnt; ++i ) {
 	cf->chars[i]->width = cf->chars[mcnt-1]->width;
+	cf->chars[i]->lbearing = ptgetushort(hmetrics->data+4*mcnt+2*(i-mcnt));
+    }
 
     cf->em = ptgetushort(head->data+18);	/* units per em */
     if ( ptgetushort(head->data+50)) {		/* Long format */

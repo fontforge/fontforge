@@ -122,6 +122,7 @@ struct instrdata {
 typedef struct conicchar {
     int glyph;
     int width;
+    int16 lbearing, ptn;
     ConicPointList *conics;
     RefChar *refs;
     int point_cnt;

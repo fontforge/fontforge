@@ -1,4 +1,4 @@
-/* Copyright (C) 2001 by George Williams */
+/* Copyright (C) 2001-2002 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -151,6 +151,9 @@ static int maxp_VersionChange(GGadget *g, GEvent *e) {
     const unichar_t *ret = _GGadgetGetTitle(g);
     double val = u_strtod(ret,NULL);
     int i;
+
+    if ( e->type!=et_controlevent || e->u.control.subtype != et_textchanged )
+return( true );
 
     if ( val==.5 || val==1.0 ) {
 	for ( i=CID_Points; i<=CID_CDepth; ++i ) {

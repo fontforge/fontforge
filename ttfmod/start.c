@@ -1,4 +1,4 @@
-/* Copyright (C) 2001 by George Williams */
+/* Copyright (C) 2001-2002 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -136,13 +136,13 @@ int main( int argc, char **argv ) {
     int i;
     GRect pos;
     GWindowAttrs wattrs;
-    extern const char *link_time_str;
+    extern const char *source_modtime_str;
     int splash = 1;
     int any;
     char *display = NULL;
 
-    fprintf( stderr, "Copyright \251 2001 by George Williams.\n Executable based on sources from %s.\n",
-	    link_time_str );
+    fprintf( stderr, "Copyright \251 2001-2002 by George Williams.\n Executable based on sources from %s.\n",
+	    source_modtime_str );
     setlocale(LC_ALL,"");
     localeinfo = *localeconv();
     if ( *localeinfo.thousands_sep=='\0' ) {

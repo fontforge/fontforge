@@ -861,6 +861,7 @@ static char *str_CantRecoverFromSave="Can't recover from failed save.";
 static char *str_Count = "Count:";
 static char *str_GridFit = "GridFit";
 static char *str_AntiAlias = "AntiAlias";
+static char *str_BadInteger = "Bad Integer";
     /* VORG */
 static char *str_Minor = "Minor:";
 static char *str_DefYOrig = "Default Y Origin:";
@@ -897,3 +898,4 @@ static char *str_ValueMustBeShort = "Value must be between -32768 and 32767";
 
 
 static int num_buttonsize = 55;
+static int num_ScaleFactor = 100;

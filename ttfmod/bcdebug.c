@@ -1,4 +1,4 @@
-/* Copyright (C) 2001 by George Williams */
+/* Copyright (C) 2001-2002 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -29,7 +29,7 @@
 #include "ttfinstrs.h"
 #include <math.h>
 
-#define TRACEINSTR 0
+#define TRACEINSTR 1
 
 #if TT_CONFIG_OPTION_BYTECODE_DEBUG
 static int ttrint(double val) {
@@ -1371,9 +1371,9 @@ return;
 #if TT_CONFIG_OPTION_BYTECODE_INTERPRETER
 		IPoint *pa0 = &state->zones[state->zp0].moved[a0],
 			*pa1 = &state->zones[state->zp0].moved[a1],
-			*pb0 = &state->zones[state->zp0].moved[b0],
-			*pb1 = &state->zones[state->zp0].moved[b1],
-			*pp = &state->zones[state->zp0].moved[p];
+			*pb0 = &state->zones[state->zp1].moved[b0],
+			*pb1 = &state->zones[state->zp1].moved[b1],
+			*pp = &state->zones[state->zp2].moved[p];
 		int denom = (pb1->y-pb0->y)*(pa1->x-pa0->x)-(pa1->y-pa0->y)*(pb1->x-pb0->x);
 		if ( denom==0 ) {		/* parallel */
 		    pp->x = (pa0->x+pa1->x+pb0->x+pb1->x)/4;
@@ -1387,7 +1387,7 @@ return;
 		    else
 			pp->y = (pb1->y-pb0->y)*(pp->x-pb0->x)/(pb1->x-pb0->x) + pb0->y;
 		}
-		state->zones[state->zp0].flags[p] |= pt_xtouched|pt_ytouched;
+		state->zones[state->zp2].flags[p] |= pt_xtouched|pt_ytouched;
 #if TRACEINSTR
  fprintf( stderr, "\n(%d,%d)<->(%d,%d) (%d,%d)<->(%d,%d) = (%d,%d)",
      pa0->x, pa0->y, pa1->x, pa1->y, pb0->x, pb0->y, pb1->x, pb1->y, pp->x, pp->y );
@@ -1537,7 +1537,7 @@ return;
 			    state->zones[state->zp0].points[state->rp0].x +
 			    state->freedom.x*val2;
 		    state->zones[0].points[val].y =
-			    state->zones[state->zp0].points[state->rp0].x +
+			    state->zones[state->zp0].points[state->rp0].y +
 			    state->freedom.y*val2;
 		    state->zones[0].moved[val] = state->zones[0].points[val];
 		}

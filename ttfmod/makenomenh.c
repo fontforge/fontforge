@@ -10,7 +10,9 @@
 #include <charset.h>
 #include <chardata.h>
 
-static char *istandard[] = { "buttonsize", NULL };
+#define e_hexjis	100
+
+static char *istandard[] = { "buttonsize", "ScaleFactor", NULL };
 
 static char *standard[] = { "Language", "OK", "Cancel", "Open", "Save",
 	"Filter", "New", "Replace", "Fileexists", "Fileexistspre",
@@ -204,7 +206,7 @@ return( val );
 }
 
 static int twocharval(char **buffer,int enc) {
-    /* Currently only support korean... */
+    /* Currently only support a few */
     int ch1, ch2;
 
     if ( enc==e_wansung ) {
@@ -216,6 +218,45 @@ return( ch1 );
 	ch1 = ch1*94 + ch2;
 	ch1 = unicode_from_ksc5601[ch1];
 return( ch1 );
+    } else if ( enc==e_big5 ) {
+	ch1 = charval(buffer);
+	if ( ch1<0xa1 )
+return( ch1 );
+	ch2 = charval(buffer);
+	ch1 = (ch1<<8) + ch2;
+	ch1 = unicode_from_big5[ch1-0xa100];
+return( ch1 );
+    } else if ( enc==e_johab ) {
+	ch1 = charval(buffer);
+	if ( ch1<0xa1 )
+return( ch1 );
+	ch2 = charval(buffer);
+	ch1 = (ch1<<8) + ch2;
+	ch1 = unicode_from_johab[ch1-0x8400];
+return( ch1 );
+    } else if ( enc==e_sjis ) {
+	ch1 = charval(buffer);
+	if ( ch1<0x80 )
+return( ch1 );
+	else if ( ch1>=161 && ch1<=223 )
+	    /* Katakana */
+return( unicode_from_jis201[ch1]);
+	ch2 = charval(buffer);
+	if ( ch1 >= 129 && ch1<= 159 )
+	    ch1 -= 112;
+	else
+	    ch1 -= 176;
+	ch1 <<= 1;
+	if ( ch2>=159 )
+	    ch2-= 126;
+	else if ( ch2>127 ) {
+	    --ch1;
+	    ch2 -= 32;
+	} else {
+	    --ch1;
+	    ch2 -= 31;
+	}
+return( unicode_from_jis208[(ch1-0x21)*94+(ch2-0x21)]);
     } else {
 	fprintf( stderr, "Don't support this encoding\n" );
 	exit( 1 );
@@ -381,7 +422,10 @@ static int getencoding(char *str) {
 	{ e_mac, "e_mac" },
 	{ e_utf8, "e_utf8" },
 	{ e_wansung, "e_wansung" },
+	{ e_big5, "e_big5" },
 	{ e_johab, "e_johab" },
+	{ e_sjis, "e_sjis" },
+	{ e_hexjis, "e_hexjis" },
 	{ 0, NULL}};
     int i;
     char *pt;
@@ -414,7 +458,7 @@ static void ProcessNames(char *filename,char *lc,char *uc) {
     unichar_t **values, *mn, *init;
     int *ivalues;
     char buffer[1025];
-    char *pt, *bpt;
+    char *pt, *bpt, *npt;
     int off, i, j;
     int isuni, ismn, index, ch;
     int enc=0;
@@ -434,18 +478,26 @@ return;
     while( fgets(buffer,sizeof(buffer),namef)!=NULL ) {
 	if ( strncmp(buffer,"static ",7)!=0 )
     continue;
-	off=7;
-	if ( strncmp(buffer+off,"const ",6)==0 )
-	    off += 6;
-	if ( strncmp(buffer+off,"enum encoding enc =",19)==0 ) {
-	    enc = getencoding(buffer+off+19);
+	pt = buffer+7;
+	if ( (npt = strstr(pt,"const "))!=NULL )
+	    pt = npt+6;
+	if ( (npt = strstr(pt,"enum "))!=NULL ) {
+	    if ( (npt = strstr(npt+5,"encoding "))==NULL )
+    continue;
+	    if ( (npt = strstr(npt+9,"enc "))==NULL )
+    continue;
+	    pt = npt+4;
+	    while ( isspace(*pt)) ++pt;
+	    if ( *pt=='=' ) ++pt;
+	    enc = getencoding(pt);
 	    if ( enc==-1 ) {
-		fprintf(stderr, "Invalid encoding line: %s", buffer );
+		fprintf(stderr, "Invalid encoding line: %s\n", buffer );
 		fclose(namef);
 return;
 	    }
     continue;
 	}
+	off = pt-buffer;
 	if ( strncmp(buffer+off,"int num_",8)==0 ) {
 	    handleint2(filename,ivalues,buffer,off+8);
     continue;

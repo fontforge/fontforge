@@ -1,4 +1,4 @@
-/* Copyright (C) 2001 by George Williams */
+/* Copyright (C) 2001-2002 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -859,6 +859,7 @@ static void char_expose(CharView *cv,GWindow pixmap,GRect *rect) {
     DRect clip;
     real grid_spacing = cv->cc->parent->em / (real) cv->show.ppem;
     int i,j;
+    BasePoint bp;
 #if TT_CONFIG_OPTION_BYTECODE_INTERPRETER
     GRect pixel;
 #endif
@@ -933,6 +934,11 @@ static void char_expose(CharView *cv,GWindow pixmap,GRect *rect) {
 	}
 
 	CVDrawConicSet(cv,pixmap,cv->cc->conics,0x000000,true,&clip);
+
+	bp.x = cv->cc->ptn; bp.y = 0; bp.pnum = cv->cc->point_cnt;
+	DrawBasePoint(cv,pixmap,&bp);
+	bp.x += cv->cc->width; ++bp.pnum;
+	DrawBasePoint(cv,pixmap,&bp);
     }
 
     GDrawPopClip(pixmap,&old);

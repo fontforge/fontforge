@@ -1,4 +1,4 @@
-/* Copyright (C) 2000,2001 by George Williams */
+/* Copyright (C) 2000-2002 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -98,11 +98,13 @@ unichar_t *FVOpenFont(const unichar_t *title, const unichar_t *defaultfile,
     wattrs.window_title = (unichar_t *) title;
     pos.x = pos.y = 0;
     if ( newok ) {
-	bsbigger = 4*bs+4*14>295; totwid = bsbigger?4*bs+4*12:295;
+	totwid = GGadgetScale(295);
+	bsbigger = 4*bs+4*14>totwid; totwid = bsbigger?4*bs+4*12:totwid;
 	spacing = (totwid-4*bs-2*12)/3;
     } else {
-	bsbigger = 3*bs+3*14>230; totwid = bsbigger?3*bs+3*12:230;
-	spacing = -bs;
+	totwid = GGadgetScale(230);
+	bsbigger = 3*bs+3*14>totwid; totwid = bsbigger?3*bs+3*12:totwid;
+	spacing = (totwid-3*bs-2*12)/2;
     }
     pos.width = GDrawPointsToPixels(NULL,totwid);
     pos.height = GDrawPointsToPixels(NULL,223);
@@ -110,7 +112,7 @@ unichar_t *FVOpenFont(const unichar_t *title, const unichar_t *defaultfile,
 
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
-    gcd[0].gd.pos.x = 12; gcd[0].gd.pos.y = 6; gcd[0].gd.pos.width = totwid-24; gcd[0].gd.pos.height = 180;
+    gcd[0].gd.pos.x = 12; gcd[0].gd.pos.y = 6; gcd[0].gd.pos.width = totwid*100/GIntGetResource(_NUM_ScaleFactor)-24; gcd[0].gd.pos.height = 180;
     gcd[0].gd.flags = gg_visible | gg_enabled;
     if ( RecentFiles[0]!=NULL )
 	gcd[0].gd.flags = gg_visible | gg_enabled | gg_file_pulldown;
@@ -119,7 +121,7 @@ unichar_t *FVOpenFont(const unichar_t *title, const unichar_t *defaultfile,
     gcd[0].creator = GFileChooserCreate;
 
     gcd[1].gd.pos.x = 12; gcd[1].gd.pos.y = 192-3;
-    gcd[1].gd.pos.width = GIntGetResource(_NUM_Buttonsize);
+    gcd[1].gd.pos.width = -1;
     gcd[1].gd.flags = gg_visible | gg_enabled | gg_but_default;
     label[1].text = (unichar_t *) _STR_OK;
     label[1].text_in_resource = true;
@@ -130,8 +132,8 @@ unichar_t *FVOpenFont(const unichar_t *title, const unichar_t *defaultfile,
 
     i=2;
     if ( newok ) {
-	gcd[2].gd.pos.x = (totwid-spacing)/2-bs; gcd[2].gd.pos.y = 192;
-	gcd[2].gd.pos.width = GIntGetResource(_NUM_Buttonsize);
+	gcd[2].gd.pos.x = -(spacing+bs)*100/GIntGetResource(_NUM_ScaleFactor)-12; gcd[2].gd.pos.y = 192;
+	gcd[2].gd.pos.width = -1;
 	gcd[2].gd.flags = gg_visible | gg_enabled;
 	label[2].text = (unichar_t *) _STR_New;
 	label[2].text_in_resource = true;
@@ -143,8 +145,8 @@ unichar_t *FVOpenFont(const unichar_t *title, const unichar_t *defaultfile,
     }
 
     filter = i;
-    gcd[i].gd.pos.x = (totwid+spacing)/2; gcd[i].gd.pos.y = 192;
-    gcd[i].gd.pos.width = GIntGetResource(_NUM_Buttonsize);
+    gcd[i].gd.pos.x = (spacing+bs)*100/GIntGetResource(_NUM_ScaleFactor)+12; gcd[i].gd.pos.y = 192;
+    gcd[i].gd.pos.width = -1;
     gcd[i].gd.flags = gg_visible | gg_enabled;
     label[i].text = (unichar_t *) _STR_Filter;
     label[i].text_in_resource = true;
@@ -153,8 +155,8 @@ unichar_t *FVOpenFont(const unichar_t *title, const unichar_t *defaultfile,
     gcd[i].gd.handle_controlevent = GFileChooserFilterEh;
     gcd[i++].creator = GButtonCreate;
 
-    gcd[i].gd.pos.x = totwid-bs-12; gcd[i].gd.pos.y = 192;
-    gcd[i].gd.pos.width = GIntGetResource(_NUM_Buttonsize);
+    gcd[i].gd.pos.x = -12; gcd[i].gd.pos.y = 192;
+    gcd[i].gd.pos.width = -1;
     gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
     label[i].text = (unichar_t *) _STR_Cancel;
     label[i].text_in_resource = true;

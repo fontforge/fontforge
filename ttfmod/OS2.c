@@ -1,4 +1,4 @@
-/* Copyright (C) 2001 by George Williams */
+/* Copyright (C) 2001-2002 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -631,6 +631,9 @@ static int OS2_VersionChange(GGadget *g, GEvent *e) {
     GWindow gw = GDrawGetParentWindow(GGadgetGetWindow(g));
     const unichar_t *ret = _GGadgetGetTitle(g);
     int val = u_strtol(ret,NULL,10);
+
+    if ( e->type!=et_controlevent || e->u.control.subtype != et_textchanged )
+return( true );
 
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_CodePageLab),val>0);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_CodePageRanges),val>0);
