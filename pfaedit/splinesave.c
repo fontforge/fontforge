@@ -1013,6 +1013,19 @@ return( NULL );
 return( sofar );
 }
 	
+static RefChar *reverserefs(RefChar *cur) {
+    RefChar *n, *p;
+
+    p = NULL;
+    while ( cur!=NULL ) {
+	n = cur->next;
+	cur->next = p;
+	p = cur;
+	cur = n;
+    }
+return( p );
+}
+
 /* Postscript can only make refs to things which are in the Adobe encoding */
 /*  Suppose Cyrillic A with breve consists of two refs, one to cyrillic A and */
 /*  one to nospacebreve (neither in adobe). But if cyrillic A was just a ref */
@@ -1067,7 +1080,7 @@ return( NULL );
 	RefCharsFreeRef(ret);
 return( NULL );
     }
-return( ret );
+return( reverserefs(ret) );
 }
 
 static int TrySubrRefs(GrowBuf *gb, struct pschars *subrs, SplineChar *sc,
