@@ -49,13 +49,15 @@ static void GListSelected(GList *l,int frommouse,int index) {
 	GDrawPostEvent(&e);
 }
 
-static void GListDoubleClick(GList *l) {
+static void GListDoubleClick(GList *l,int frommouse,int index) {
     GEvent e;
 
     e.type = et_controlevent;
     e.w = l->g.base;
     e.u.control.subtype = et_listdoubleclick;
     e.u.control.g = &l->g;
+    e.u.control.u.list.from_mouse = frommouse;
+    e.u.control.u.list.changed_index = index;
     if ( l->g.handle_controlevent != NULL )
 	(l->g.handle_controlevent)(&l->g,&e);
     else
@@ -563,7 +565,7 @@ return( true ); /* Do Nothing, nothing selectable */
 	if ( GGadgetInnerWithin(&gl->g,event->u.mouse.x,event->u.mouse.y) ) {
 	    glist_scroll_selbymouse(gl,event);
 	    if ( event->u.mouse.clicks==2 )
-		GListDoubleClick(gl);
+		GListDoubleClick(gl,true,GListIndexFromPos(gl,event->u.mouse.y));
 	    else
 		GListSelected(gl,true,GListIndexFromPos(gl,event->u.mouse.y));
 	}
@@ -586,7 +588,7 @@ return( false );
 return(false );
 
     if ( gl->ispopup && event->u.chr.keysym == GK_Return ) {
-	GListDoubleClick(gl);
+	GListDoubleClick(gl,false,-1);
 return( true );
     } else if ( gl->ispopup && event->u.chr.keysym == GK_Escape ) {
 	GListClose(gl);
@@ -764,8 +766,12 @@ return;
 }
 
 static void GListSetFont(GGadget *g,FontInstance *new) {
-    GList *b = (GList *) g;
-    b->font = new;
+    GList *gl = (GList *) g;
+    int same;
+
+    gl->font = new;
+    gl->hmax = GTextInfoGetMaxHeight(gl->g.base,gl->ti,gl->font,&same);
+    gl->sameheight = same;
 }
 
 static FontInstance *GListGetFont(GGadget *g) {
