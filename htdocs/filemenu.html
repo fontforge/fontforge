@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 10-Dec-2000 -->
-  <!-- AP: Last modified: 18-Feb-2002 -->
+  <!-- AP: Last modified: 2-Mar-2002 -->
   <TITLE>The File Menu</TITLE>
 </HEAD>
 <BODY>
@@ -178,7 +178,9 @@
       <LI>
 	PostScript Type1 font, macbinary format (a postscript font wrapped up in
 	a set of mac resources wrapped up in a macbinary file, to be copied to a
-	mac, unmacbinaried, and installed there)
+	mac, unmacbinaried, and installed there)<BR>
+	If you are on a mac then a resource fork will be generated directly, macbinary
+	will not be used.
       <LI>
 	PostScript Type3 font (a .ps font, this is also used by printers and is not
 	encrypted)
@@ -205,7 +207,9 @@
 	a MacCyrillic font use this mode.
       <LI>
 	True Type macbinary format, a truetype font wrapped up in a mac resource,
-	wrapped up in a macbinary file. Designed to be used for a mac.
+	wrapped up in a macbinary file. Designed to be used for a mac.<BR>
+	If you are on a mac, then a file with a resource fork will be generated directly
+	(macbinary will not be used).
       <LI>
 	True Type dfont format, a truetype font wrapped up in a mac dfont (data fork
 	resource file). Mac OS/X font.
@@ -249,7 +253,9 @@
 	and wraps it up in a dfont.
       <LI>
 	NFNT (MacBin) -- Converts the bitmap fonts into Macintosh NFNT resources
-	and wraps them up in a mac binary file.
+	and wraps them up in a mac binary file.<BR>
+	NFNT (Resource) -- On a mac the NFNT font will be generated in a resource
+	fork directly.
       <LI>
 	NFNT (dfont) -- Converts the bitmap fonts into Macintosh NFNT resources and
 	stores them in a mac (OS/X) dfont file.

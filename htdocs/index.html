@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 24-Feb-2002 -->
+  <!-- AP: Last modified: 2-Mar-2002 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -16,6 +16,10 @@
 that lets you create your own postscript, truetype, opentype, cid-keyed and
 bitmap (bdf) fonts, or edit existing ones. Also lets you convert one format
 to another.
+<P ALIGN=Center>
+<FONT COLOR="Red"><STRONG><BIG><BIG><BIG>I will not be responding to bug
+reports (etc.) between 14-Mar and
+3-Apr.</BIG></BIG></BIG></STRONG></FONT>
 <P>
 Contents
 <UL>
@@ -78,14 +82,14 @@ you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-020224.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 24-Feb-2002
+    <A HREF="pfaedit-020302.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 2-Mar-2002
   <LI>
     <A HREF="pfaedit_ppc-020208.tgz">Download pfaedit linux-ppc SUSE 7.1
     </A>executable Version: 8-Feb-2002
   <LI>
-    <A HREF="pfaedit-solaris-020220.tgz">Download pfaedit Solaris 8.0
-    </A>executable Version: 20-Feb-2002
+    <A HREF="pfaedit-solaris-020302.tgz">Download pfaedit Solaris 8.0
+    </A>executable Version: 2-Mar-2002
   <LI>
     <A HREF="pfaedit-020220-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
     Version: 20-Feb-2002 (Redhat 7.1)
@@ -94,7 +98,7 @@ you do</A>.
     is available at the debian site.</A>
   <LI>
     <A HREF="Problems-MacOSX.html#binary">A Mac OS/X distribution</A> (with Caveats).
-    Version 16-Feb-2001
+    Version 2-Mar-2002
   <LI>
     <A HREF="pfaedit_cygwin-020220.tgz">A cygwin version</A>. Version: 20-Feb-2002
   <LI>
@@ -116,9 +120,9 @@ If you want to edit CID keyed fonts you probably need these
 <P>
 You can download a <A HREF="pfaedit-020220-1.src.rpm">source RPM</A>: Version:
 20-Feb-2002<BR>
-Or you can download the <A HREF="pfaedit_full-020224.tgz">entire source tree
+Or you can download the <A HREF="pfaedit_full-020302.tgz">entire source tree
 </A>in one .tgz file: Version
-20-Feb-2002<!--
+2-Mar-2002<!--
 Or you can download the following three packages. Version: 19-Jan-2002
 <UL>
 <LI>
@@ -270,6 +274,38 @@ Or you can just browse the <A HREF="overview.html">docs online</A>.
 </H2>
 <UL>
   <LI>
+    2-Mar-2002
+    <UL>
+      <LI>
+	Rounding errors could accumulate when generating Type1 fonts.
+      <LI>
+	Fix for some overlap problems due to KANOU Hiroki
+      <LI>
+	If PfaEdit crashed (or was interrupted) after making some (unsaved) changes
+	to a font, and that font was subsequently deleted, the PfaEdit's autorecovery
+	would complain about a missing file each time it was started. Now it will
+	notice the problem and ask whether it should delete the recovery file (whereupon
+	it will stop complaining).
+      <LI>
+	Enabled a fix from Greg Ford so that PfaEdit set the mac style bits
+	appropriately.
+    </UL>
+  <LI>
+    28-Feb-2002
+    <UL>
+      <LI>
+	When running under Mac OS/X PfaEdit is now able to open/create mac resource
+	forks
+      <LI>
+	I may have fixed a bug displaying images on solaris screens with bit depth
+	8
+      <LI>
+	Cleaned up a problem with the postscript name table (in a ttf file) when
+	there was a .notdef character
+      <LI>
+	Fixed some problems with references when reading in truetype.
+    </UL>
+  <LI>
     24-Feb-2002
     <UL>
       <LI>
@@ -294,7 +330,7 @@ Or you can just browse the <A HREF="overview.html">docs online</A>.
       <LI>
 	Fixed a bug in Revert
       <LI>
-	More work on hints.
+	More work on hints. 
 	  <HR>
       <LI>
 	Build Composit will now build a dotlessi from an "i" (and same for dotlessj)
@@ -1044,6 +1080,17 @@ Other font links
   <LI>
     <A HREF="http://partners.adobe.com/asn/developer/type/unicodegn.html">Postscript
     Unicode names</A>
+  <LI>
+    Linux issues
+    <UL>
+      <LI>
+	<A HREF="http://www.cl.cam.ac.uk/~mgk25/unicode.html">FAQ</A>
+      <LI>
+	<A HREF="ftp://ftp.ilog.fr/pub/Users/haible/utf8/Unicode-HOWTO.html">HOWTO</A>
+      <LI>
+	<A HREF="http://bobo.fuw.edu.pl/cgi-bin/man2html/usr/share/man/man7/unicode.7.gz">Linux
+	Unicode man page</A>
+    </UL>
 </UL>
 <P>
 Other Encodings
