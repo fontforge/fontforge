@@ -1238,7 +1238,7 @@ return;
 /* ************************************************************************** */
 
 
-static int haslrbounds(SplineChar *sc, PST **left, PST **right) {
+int haslrbounds(SplineChar *sc, PST **left, PST **right) {
     PST *pst;
 
     *left = *right = NULL;
@@ -1258,36 +1258,41 @@ return( true );
 return( *left!=NULL || *right!=NULL );
 }
 
-void aat_dumpopbd(struct alltabs *at, SplineFont *sf) {
-    int i, j, k, l, seg_cnt, tot, last, offset;
+void aat_dumpopbd(struct alltabs *at, SplineFont *_sf) {
+    int i, j, k, l, cmax, seg_cnt, tot, last, offset;
     PST *left, *right;
     FILE *opbd=NULL;
     /* We do four passes. The first just calculates how much space we will need (if any) */
     /*  the second provides the top-level lookup table structure */
     /*  the third provides the arrays of offsets needed for type 4 lookup tables */
     /*  the fourth provides the actual data on the optical bounds */
+    SplineFont *sf;
+    SplineChar *sc;
+
+    cmax = 0;
+    l = 0;
+    do {
+	sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[l];
+	if ( cmax<sf->charcnt ) cmax = sf->charcnt;
+	++l;
+    } while ( l<_sf->subfontcnt );
 
     for ( k=0; k<4; ++k ) {
-	for ( i=seg_cnt=tot=0; i<sf->charcnt; ++i )
-		if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 &&
-		    haslrbounds(sf->chars[i],&left,&right) ) {
-	    if ( k==1 )
-		tot = 0;
-	    else if ( k==2 ) {
-		putshort(opbd,offset);
-		offset += 8;
-	    } else if ( k==3 ) {
-		putshort(opbd,left!=NULL?left->u.pos.xoff:0);
-		putshort(opbd,0);		/* top */
-		putshort(opbd,right!=NULL?-right->u.pos.h_adv_off:0);
-		putshort(opbd,0);		/* bottom */
-	    }
-	    for ( j=i+1, ++tot; j<sf->charcnt; ++j ) if ( sf->chars[j]!=NULL && sf->chars[j]->ttf_glyph!=-1 ) {
-		if ( !haslrbounds(sf->chars[j],&left,&right) )
+	for ( i=seg_cnt=tot=0; i<cmax; ++i ) {
+	    l = 0;
+	    sc = NULL;
+	    do {
+		sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[l];
+		if ( l<sf->charcnt && sf->chars[l]!=NULL ) {
+		    sc = sf->chars[i];
 	    break;
-		++tot;
-		last = j;
-		if ( k==2 ) {
+		}
+		++l;
+	    } while ( l<_sf->subfontcnt );
+	    if ( sc!=NULL && sc->ttf_glyph!=-1 && haslrbounds(sc,&left,&right) ) {
+		if ( k==1 )
+		    tot = 0;
+		else if ( k==2 ) {
 		    putshort(opbd,offset);
 		    offset += 8;
 		} else if ( k==3 ) {
@@ -1296,15 +1301,30 @@ void aat_dumpopbd(struct alltabs *at, SplineFont *sf) {
 		    putshort(opbd,right!=NULL?-right->u.pos.h_adv_off:0);
 		    putshort(opbd,0);		/* bottom */
 		}
+		for ( j=i+1, ++tot; j<sf->charcnt; ++j ) if ( sf->chars[j]!=NULL && sf->chars[j]->ttf_glyph!=-1 ) {
+		    if ( !haslrbounds(sf->chars[j],&left,&right) )
+		break;
+		    ++tot;
+		    last = j;
+		    if ( k==2 ) {
+			putshort(opbd,offset);
+			offset += 8;
+		    } else if ( k==3 ) {
+			putshort(opbd,left!=NULL?left->u.pos.xoff:0);
+			putshort(opbd,0);		/* top */
+			putshort(opbd,right!=NULL?-right->u.pos.h_adv_off:0);
+			putshort(opbd,0);		/* bottom */
+		    }
+		}
+		if ( k==1 ) {
+		    putshort(opbd,sf->chars[last]->ttf_glyph);
+		    putshort(opbd,sf->chars[i]->ttf_glyph);
+		    putshort(opbd,offset);
+		    offset += 2*tot;
+		}
+		++seg_cnt;
+		i = j-1;
 	    }
-	    if ( k==1 ) {
-		putshort(opbd,sf->chars[last]->ttf_glyph);
-		putshort(opbd,sf->chars[i]->ttf_glyph);
-		putshort(opbd,offset);
-		offset += 2*tot;
-	    }
-	    ++seg_cnt;
-	    i = j-1;
 	}
 	if ( k==0 ) {
 	    if ( seg_cnt==0 )
@@ -1339,90 +1359,114 @@ return;
 /* *************************    The 'prop' table    ************************* */
 /* ************************************************************************** */
 
-static uint16 *props_array(SplineFont *sf,struct alltabs *at) {
+uint16 *props_array(SplineFont *_sf,int numGlyphs) {
     uint16 *props;
     int i;
     SplineChar *sc, *bsc;
     int dir, isfloat, isbracket, offset, doit=false;
     AnchorPoint *ap;
     PST *pst;
+    SplineFont *sf;
+    int l,cmax;
 
-    props = gcalloc(at->maxp.numGlyphs,sizeof(uint16));
-    for ( i=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL && sc->ttf_glyph!=-1 ) {
-	dir = 0;
-	if ( sc->unicodeenc>=0x10300 && sc->unicodeenc<=0x103ff )
+    props = gcalloc(numGlyphs+1,sizeof(uint16));
+    props[numGlyphs] = -1;
+
+    cmax = 0;
+    l = 0;
+    do {
+	sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[l];
+	if ( cmax<sf->charcnt ) cmax = sf->charcnt;
+	++l;
+    } while ( l<_sf->subfontcnt );
+
+    for ( i=0; i<cmax; ++i ) {
+	l = 0;
+	sc = NULL;
+	do {
+	    sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[l];
+	    if ( i<sf->charcnt && sf->chars[i]!=NULL ) {
+		sc = sf->chars[i];
+	break;
+	    }
+	    ++l;
+	} while ( l<_sf->subfontcnt );
+	if ( sc!=NULL && sc->ttf_glyph!=-1 ) {
 	    dir = 0;
-	else if ( sc->unicodeenc>=0x10800 && sc->unicodeenc<=0x103ff )
-	    dir = 1;
-	else if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10fff ) {
-	    if ( iseuronumeric(sc->unicodeenc) )
-		dir = 3;
-	    else if ( iseuronumsep(sc->unicodeenc))
-		dir = 4;
-	    else if ( iseuronumterm(sc->unicodeenc))
-		dir = 5;
-	    else if ( isarabnumeric(sc->unicodeenc))
-		dir = 6;
-	    else if ( iscommonsep(sc->unicodeenc))
-		dir = 7;
-	    else if ( isspace(sc->unicodeenc))
-		dir = 10;
-	    else if ( islefttoright(sc->unicodeenc) )
+	    if ( sc->unicodeenc>=0x10300 && sc->unicodeenc<=0x103ff )
 		dir = 0;
-	    else if ( isrighttoleft(sc->unicodeenc) )
+	    else if ( sc->unicodeenc>=0x10800 && sc->unicodeenc<=0x103ff )
 		dir = 1;
-	    else if ( SCScriptFromUnicode(sc)==CHR('a','r','a','b') )
+	    else if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10fff ) {
+		if ( iseuronumeric(sc->unicodeenc) )
+		    dir = 3;
+		else if ( iseuronumsep(sc->unicodeenc))
+		    dir = 4;
+		else if ( iseuronumterm(sc->unicodeenc))
+		    dir = 5;
+		else if ( isarabnumeric(sc->unicodeenc))
+		    dir = 6;
+		else if ( iscommonsep(sc->unicodeenc))
+		    dir = 7;
+		else if ( isspace(sc->unicodeenc))
+		    dir = 10;
+		else if ( islefttoright(sc->unicodeenc) )
+		    dir = 0;
+		else if ( isrighttoleft(sc->unicodeenc) )
+		    dir = 1;
+		else if ( SCScriptFromUnicode(sc)==CHR('a','r','a','b') )
+		    dir = 2;
+		else if ( SCScriptFromUnicode(sc)==CHR('h','e','b','r') )
+		    dir = 1;
+		else
+		    dir = 11;		/* Other neutrals */
+		/* Not dealing with unicode 3 classes */
+		/* nor block seperator/ segment seperator */
+	    } else if ( SCScriptFromUnicode(sc)==CHR('a','r','a','b') )
 		dir = 2;
 	    else if ( SCScriptFromUnicode(sc)==CHR('h','e','b','r') )
 		dir = 1;
-	    else
-		dir = 11;		/* Other neutrals */
-	    /* Not dealing with unicode 3 classes */
-	    /* nor block seperator/ segment seperator */
-	} else if ( SCScriptFromUnicode(sc)==CHR('a','r','a','b') )
-	    dir = 2;
-	else if ( SCScriptFromUnicode(sc)==CHR('h','e','b','r') )
-	    dir = 1;
 
-	if ( dir==1 || dir==2 ) doit = true;
-	isfloat = false;
-	if ( sc->width==0 &&
-		((sc->anchor!=NULL && sc->anchor->type==at_mark) ||
-		 (sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 && iscombining(sc->unicodeenc))))
-	    isfloat = doit = true;
-	isbracket = offset = 0;
-	if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 && tomirror(sc->unicodeenc)!=0 ) {
-	    bsc = SFGetCharDup(sf,tomirror(sc->unicodeenc),NULL);
-	    if ( bsc!=NULL && bsc->ttf_glyph-sc->ttf_glyph>-8 && bsc->ttf_glyph-sc->ttf_glyph<8 ) {
-		isbracket = true;
-		offset = bsc->ttf_glyph-sc->ttf_glyph;
+	    if ( dir==1 || dir==2 ) doit = true;
+	    isfloat = false;
+	    if ( sc->width==0 &&
+		    ((sc->anchor!=NULL && sc->anchor->type==at_mark) ||
+		     (sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 && iscombining(sc->unicodeenc))))
+		isfloat = doit = true;
+	    isbracket = offset = 0;
+	    if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 && tomirror(sc->unicodeenc)!=0 ) {
+		bsc = SFGetCharDup(sf,tomirror(sc->unicodeenc),NULL);
+		if ( bsc!=NULL && bsc->ttf_glyph-sc->ttf_glyph>-8 && bsc->ttf_glyph-sc->ttf_glyph<8 ) {
+		    isbracket = true;
+		    offset = bsc->ttf_glyph-sc->ttf_glyph;
+		}
 	    }
-	}
-	if ( !isbracket ) {
-	    for ( pst=sc->possub; pst!=NULL && pst->tag!=CHR('r','t','l','a'); pst=pst->next );
-	    if ( pst!=NULL && pst->type==pst_substitution &&
-		    (bsc=SFGetCharDup(sf,-1,pst->u.subs.variant))!=NULL &&
-		    bsc->ttf_glyph!=-1 && bsc->ttf_glyph-sc->ttf_glyph>-8 && bsc->ttf_glyph-sc->ttf_glyph<8 ) {
-		isbracket = true;
-		offset = bsc->ttf_glyph-sc->ttf_glyph;
-		doit = true;
+	    if ( !isbracket ) {
+		for ( pst=sc->possub; pst!=NULL && pst->tag!=CHR('r','t','l','a'); pst=pst->next );
+		if ( pst!=NULL && pst->type==pst_substitution &&
+			(bsc=SFGetCharDup(sf,-1,pst->u.subs.variant))!=NULL &&
+			bsc->ttf_glyph!=-1 && bsc->ttf_glyph-sc->ttf_glyph>-8 && bsc->ttf_glyph-sc->ttf_glyph<8 ) {
+		    isbracket = true;
+		    offset = bsc->ttf_glyph-sc->ttf_glyph;
+		    doit = true;
+		}
 	    }
+	    if ( SCRightToLeft(sc) ) {
+		/* Apple docs say attached right. So for r2l scripts we look for */
+		/*  a cursive entry, and for l2r a cursive exit */
+		for ( ap=sc->anchor; ap!=NULL && ap->type!=at_centry; ap=ap->next );
+	    } else {
+		for ( ap=sc->anchor; ap!=NULL && ap->type!=at_cexit; ap=ap->next );
+	    }
+	    props[sc->ttf_glyph] = dir |
+		    (isfloat ? 0x8000 : 0 ) |
+		    (isbracket ? 0x1000 : 0 ) |
+		    (ap!=NULL ? 0x80 : 0 ) |
+		    ((offset&0xf)<<8);
+	    /* not dealing with */
+	    /*	hang left 0x4000 */
+	    /*	hang right 0x2000 */
 	}
-	if ( SCRightToLeft(sc) ) {
-	    /* Apple docs say attached right. So for r2l scripts we look for */
-	    /*  a cursive entry, and for l2r a cursive exit */
-	    for ( ap=sc->anchor; ap!=NULL && ap->type!=at_centry; ap=ap->next );
-	} else {
-	    for ( ap=sc->anchor; ap!=NULL && ap->type!=at_cexit; ap=ap->next );
-	}
-	props[sc->ttf_glyph] = dir |
-		(isfloat ? 0x8000 : 0 ) |
-		(isbracket ? 0x1000 : 0 ) |
-		(ap!=NULL ? 0x80 : 0 ) |
-		((offset&0xf)<<8);
-	/* not dealing with */
-	/*	hang left 0x4000 */
-	/*	hang right 0x2000 */
     }
 
     if ( !doit ) {
@@ -1434,7 +1478,7 @@ return( props );
 }
 
 void aat_dumpprop(struct alltabs *at, SplineFont *sf) {
-    uint16 *props = props_array(sf,at);
+    uint16 *props = props_array(sf,at->maxp.numGlyphs);
     uint32 bin_srch_header;
     int i, j, cnt;
 
