@@ -4125,6 +4125,22 @@ return( NULL );
 return( out );
 }
 
+static void SFDummyUpCIDs(SplineFont *sf) {
+    int i,k,max;
+
+    max = 0;
+    for ( k=0; k<sf->subfontcnt; ++k )
+	if ( sf->subfonts[k]->charcnt>max ) max = sf->subfonts[k]->charcnt;
+    if ( max == 0 )
+return;
+
+    sf->chars = gcalloc(max,sizeof(SplineChar *));
+    sf->charcnt = max;
+    for ( k=0; k<sf->subfontcnt; ++k )
+	for ( i=0; i<sf->subfonts[k]->charcnt; ++i ) if ( sf->subfonts[k]->chars[i]!=NULL )
+	    sf->chars[i] = sf->subfonts[k]->chars[i];
+}
+    
 static int initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
 	int32 *bsizes, enum bitmapformat bf,int flags) {
     int i, j, pos, aborted, ebdtpos, eblcpos;
@@ -4222,6 +4238,8 @@ return( false );
     }
     redomaxp(at,format);
 
+    if (( at->opentypemode || at->applemode ) && sf->subfonts!=NULL )
+	SFDummyUpCIDs(sf);	/* The advanced typography stuff is easier if we ignore the seperate fonts of a cid keyed fonts and treat it as flat */
     if ( at->opentypemode ) {
 	otf_orderlangs(sf);
 	otf_dumpgpos(at,sf);
@@ -4235,6 +4253,10 @@ return( false );
 	aat_dumpmorx(at,sf);		/* Sets the feat table too */
 	aat_dumpopbd(at,sf);
 	aat_dumpprop(at,sf);
+    }
+    if (( at->opentypemode || at->applemode ) && sf->subfonts!=NULL ) {
+	free(sf->chars); sf->chars = NULL;
+	sf->charcnt = 0;
     }
     if ( !at->applemode && !at->opentypemode )
 	ttf_dumpkerns(at,sf);		/* everybody supports a mimimal kern table */

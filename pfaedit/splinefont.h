@@ -1246,6 +1246,7 @@ int SFFigureDefWidth(SplineFont *sf, int *_nomwid);
 extern enum possub_type SFGTagUsed(struct gentagtype *gentags,uint32 tag);
 extern uint32 SFGenerateNewFeatureTag(struct gentagtype *gentags,enum possub_type type,uint32 suggestion);
 extern void SFFreeGenerateFeatureTag(struct gentagtype *gentags,uint32 tag);
+extern int SFHasNestedLookupWithTag(SplineFont *sf,uint32 tag,int ispos);
 
 # if HANYANG
 extern void SFDDumpCompositionRules(FILE *sfd,struct compositionrules *rules);

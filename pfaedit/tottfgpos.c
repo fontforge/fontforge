@@ -1594,6 +1594,9 @@ static void dumpg___ContextChainGlyphs(FILE *lfile,FPST *fpst,SplineFont *sf,
     uint32 base = ftell(lfile);
     int i,cnt, subcnt, j,k,l, maxcontext,curcontext;
     SplineChar **glyphs, **subglyphs;
+    uint8 *exists;
+    int lc;
+    int ispos = (fpst->type==pst_contextpos || fpst->type==pst_chainpos);
 
     glyphs = OrderedInitialGlyphs(sf,fpst);
     for ( cnt=0; glyphs[cnt]!=NULL; ++cnt );
@@ -1622,12 +1625,15 @@ static void dumpg___ContextChainGlyphs(FILE *lfile,FPST *fpst,SplineFont *sf,
 	    putshort(lfile,subpos-pos);
 	    fseek(lfile,subpos,SEEK_SET);
 
+	    exists = galloc(fpst->rules[k].lookup_cnt*sizeof(uint8));
+	    for ( l=lc=0; l<fpst->rules[k].lookup_cnt; ++l )
+		lc += ( exists[l] = SFHasNestedLookupWithTag(sf,fpst->rules[k].lookups[l].lookup_tag,ispos));
 	    if ( iscontext ) {
 		subglyphs = SFGlyphsFromNames(sf,fpst->rules[k].u.glyph.names);
 		for ( l=0; subglyphs[l]!=NULL; ++l );
 		putshort(lfile,l);
 		curcontext = l;
-		putshort(lfile,fpst->rules[k].lookup_cnt);
+		putshort(lfile,lc);
 		for ( l=1; subglyphs[l]!=NULL; ++l )
 		    putshort(lfile,subglyphs[l]->ttf_glyph);
 		free(subglyphs);
@@ -1653,12 +1659,13 @@ static void dumpg___ContextChainGlyphs(FILE *lfile,FPST *fpst,SplineFont *sf,
 		for ( l=0; subglyphs[l]!=NULL; ++l )
 		    putshort(lfile,subglyphs[l]->ttf_glyph);
 		free(subglyphs);
-		putshort(lfile,fpst->rules[k].lookup_cnt);
+		putshort(lfile,lc);
 	    }
-	    for ( l=0; l<fpst->rules[k].lookup_cnt; ++l ) {
+	    for ( l=0; l<fpst->rules[k].lookup_cnt; ++l ) if ( exists[l] ) {
 		putshort(lfile,fpst->rules[k].lookups[l].seq);
 		putshort(lfile,g___FigureNest(nested,pp,at,fpst->rules[k].lookups[l].lookup_tag));
 	    }
+	    free(exists);
 	    ++j;
 	    if ( curcontext>maxcontext ) maxcontext = curcontext;
 	}
@@ -1676,6 +1683,9 @@ static void dumpg___ContextChainClass(FILE *lfile,FPST *fpst,SplineFont *sf,
     uint16 *initialclasses, *iclass, *bclass, *lclass;
     SplineChar **iglyphs, **bglyphs, **lglyphs, **glyphs;
     int i,cnt, subcnt, j,k,l , maxcontext,curcontext;
+    uint8 *exists;
+    int lc;
+    int ispos = (fpst->type==pst_contextpos || fpst->type==pst_chainpos);
 
     putshort(lfile,2);		/* Sub format 2 => class */
     putshort(lfile,0);		/* offset to coverage table */
@@ -1749,9 +1759,12 @@ static void dumpg___ContextChainClass(FILE *lfile,FPST *fpst,SplineFont *sf,
 	    putshort(lfile,subpos-pos);
 	    fseek(lfile,subpos,SEEK_SET);
 
+	    exists = galloc(fpst->rules[k].lookup_cnt*sizeof(uint8));
+	    for ( l=lc=0; l<fpst->rules[k].lookup_cnt; ++l )
+		lc += ( exists[l] = SFHasNestedLookupWithTag(sf,fpst->rules[k].lookups[l].lookup_tag,ispos));
 	    if ( iscontext ) {
 		putshort(lfile,fpst->rules[k].u.class.ncnt);
-		putshort(lfile,fpst->rules[k].lookup_cnt);
+		putshort(lfile,lc);
 		for ( l=1; l<fpst->rules[k].u.class.ncnt; ++l )
 		    putshort(lfile,fpst->rules[k].u.class.nclasses[l]);
 	    } else {
@@ -1764,12 +1777,13 @@ static void dumpg___ContextChainClass(FILE *lfile,FPST *fpst,SplineFont *sf,
 		putshort(lfile,fpst->rules[k].u.class.fcnt);
 		for ( l=0; l<fpst->rules[k].u.class.fcnt; ++l )
 		    putshort(lfile,fpst->rules[k].u.class.fclasses[l]);
-		putshort(lfile,fpst->rules[k].lookup_cnt);
+		putshort(lfile,lc);
 	    }
-	    for ( l=0; l<fpst->rules[k].lookup_cnt; ++l ) {
+	    for ( l=0; l<fpst->rules[k].lookup_cnt; ++l ) if ( exists[l] ) {
 		putshort(lfile,fpst->rules[k].lookups[l].seq);
 		putshort(lfile,g___FigureNest(nested,pp,at,fpst->rules[k].lookups[l].lookup_tag));
 	    }
+	    free(exists);
 	    ++j;
 	}
     }
@@ -1791,6 +1805,9 @@ static void dumpg___ContextChainCoverage(FILE *lfile,FPST *fpst,SplineFont *sf,
     int i;
     SplineChar **glyphs;
     int curcontext;
+    uint8 *exists;
+    int lc;
+    int ispos = (fpst->type==pst_contextpos || fpst->type==pst_chainpos);
 
     if ( fpst->rule_cnt!=1 )
 	GDrawIError("Bad rule cnt in coverage context lookup");
@@ -1798,12 +1815,15 @@ static void dumpg___ContextChainCoverage(FILE *lfile,FPST *fpst,SplineFont *sf,
 	GDrawIError("Bad input count in reverse coverage lookup" );
 
     putshort(lfile,3);		/* Sub format 3 => coverage */
+    exists = galloc(fpst->rules[0].lookup_cnt*sizeof(uint8));
+    for ( i=lc=0; i<fpst->rules[0].lookup_cnt; ++i )
+	lc += ( exists[i] = SFHasNestedLookupWithTag(sf,fpst->rules[0].lookups[i].lookup_tag,ispos));
     if ( iscontext ) {
 	putshort(lfile,fpst->rules[0].u.coverage.ncnt);
-	putshort(lfile,fpst->rules[0].lookup_cnt);
+	putshort(lfile,lc);
 	for ( i=0; i<fpst->rules[0].u.coverage.ncnt; ++i )
 	    putshort(lfile,0);
-	for ( i=0; i<fpst->rules[0].lookup_cnt; ++i ) {
+	for ( i=0; i<fpst->rules[0].lookup_cnt; ++i ) if ( exists[i] ) {
 	    putshort(lfile,fpst->rules[0].lookups[i].seq);
 	    putshort(lfile,g___FigureNest(nested,pp,at,fpst->rules[0].lookups[i].lookup_tag));
 	}
@@ -1836,8 +1856,8 @@ static void dumpg___ContextChainCoverage(FILE *lfile,FPST *fpst,SplineFont *sf,
 	for ( i=0; i<fpst->rules[0].u.coverage.fcnt; ++i )
 	    putshort(lfile,0);
 	if ( fpst->format==pst_coverage ) {
-	    putshort(lfile,fpst->rules[0].lookup_cnt);
-	    for ( i=0; i<fpst->rules[0].lookup_cnt; ++i ) {
+	    putshort(lfile,lc);
+	    for ( i=0; i<fpst->rules[0].lookup_cnt; ++i ) if ( exists[i] ) {
 		putshort(lfile,fpst->rules[0].lookups[i].seq);
 		putshort(lfile,g___FigureNest(nested,pp,at,fpst->rules[0].lookups[i].lookup_tag));
 	    }

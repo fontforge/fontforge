@@ -2104,6 +2104,7 @@ static void sftextarea_resize(GGadget *g, int32 width, int32 height ) {
 	    st->loff_top = st->lcnt-1;
 	for ( l = st->loff_top; l>=0 && st->lineheights[st->lcnt-1].y-st->lineheights[l].y<=st->g.inner.height; --l );
 	++l;
+	if ( l<0 ) l = 0;
 	if ( l!=st->loff_top ) {
 	    st->loff_top = l;
 	    GScrollBarSetPos(&st->vsb->g,st->lineheights[l].y);

@@ -150,6 +150,45 @@ GTextInfo **SFGenTagListFromType(struct gentagtype *gentags,enum possub_type typ
 return( ti );
 }
 
+int SFHasNestedLookupWithTag(SplineFont *sf,uint32 tag,int ispos) {
+    FPST *fpst;
+    AnchorClass *ac;
+    int i,type,start,end;
+    PST *pst;
+
+    for ( fpst=sf->possub; fpst!=NULL; fpst = fpst->next ) {
+	if ((( ispos && (fpst->type==pst_contextpos || fpst->type==pst_chainpos)) ||
+		(!ispos && (fpst->type==pst_contextsub || fpst->type==pst_chainsub || fpst->type==pst_reversesub ))) &&
+		fpst->script_lang_index==SLI_NESTED && fpst->tag==tag )
+return( true );
+    }
+
+    if ( ispos ) {
+	for ( ac=sf->anchor; ac!=NULL; ac=ac->next )
+	    if ( ac->feature_tag==tag && ac->script_lang_index==SLI_NESTED )
+return( true );
+    }
+
+    if ( ispos ) {
+	start = pst_position;
+	end = pst_pair;
+    } else {
+	start = pst_substitution;
+	end = pst_ligature;
+    }
+    for ( type=start; type<=end; ++type ) {
+	for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL ) {
+	    for ( pst = sf->chars[i]->possub; pst!=NULL; pst=pst->next ) {
+		if ( pst->type==type &&
+			pst->script_lang_index == SLI_NESTED &&
+			pst->tag == tag )
+return( true );
+	    }
+	}
+    }
+return( false );
+}
+
 static void FPSTRuleContentsFree(struct fpst_rule *r, enum fpossub_format format) {
     int j;
 

@@ -4058,17 +4058,19 @@ static int e_h(GWindow gw, GEvent *event) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
 	    help("fontinfo.html");
 return( true );
+	} else if ( event->u.chr.keysym=='s' &&
+		(event->u.chr.state&ksm_control) &&
+		(event->u.chr.state&ksm_meta) ) {
+	    MenuSaveAll(NULL,NULL,NULL);
+return( true );
+	} else if ( event->u.chr.keysym=='q' && (event->u.chr.state&ksm_control)) {
+	    if ( event->u.chr.state&ksm_shift )
+		GFI_Close(GDrawGetUserData(gw));
+	    else
+		MenuExit(NULL,NULL,NULL);
+return( true );
 	}
 return( false );
-    } else if ( event->u.chr.keysym=='s' &&
-	    (event->u.chr.state&ksm_control) &&
-	    (event->u.chr.state&ksm_meta) )
-	MenuSaveAll(NULL,NULL,NULL);
-    else if ( event->u.chr.keysym=='q' && (event->u.chr.state&ksm_control)) {
-	if ( event->u.chr.state&ksm_shift )
-	    GFI_Close(GDrawGetUserData(gw));
-	else
-	    MenuExit(NULL,NULL,NULL);
     }
 return( true );
 }

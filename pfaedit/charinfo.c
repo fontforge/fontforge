@@ -2750,7 +2750,7 @@ return( GWidgetAskR(_STR_Multiple,buts,0,1,_STR_AlreadyLigature,sf->chars[i]->na
 
     start = components;
     while ( 1 ) {
-	pt = u_strchr(start,' ');
+	pt = u_strchr(start+1,' ');
 	if ( pt==NULL ) pt = start+u_strlen(start);
 	ch = *pt; *pt = '\0';
 	if ( uc_strcmp(start,sc->name)==0 ) {
@@ -2830,7 +2830,7 @@ static void CI_DoNew(CharInfo *ci, unichar_t *def) {
 	    : AskNameTag(newstrings[sel],def,0,flags,-1,sel+1,ci->sc->parent,ci->sc,-1,-1);
     if ( newname!=NULL ) {
 	if ( sel>1 ) {
-	    pt = newname+10;
+	    pt = newname+14;
 	    while ( isdigit(*pt)) ++pt; if ( *pt==' ' ) ++pt;
 	    if ( !LigCheck(ci->sc,sel+1,(newname[0]<<24)|(newname[1]<<16)|(newname[2]<<8)|newname[3],
 		    pt)) {
