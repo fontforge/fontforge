@@ -929,6 +929,51 @@ static int SetupBiText(GBiText *bi,unichar_t *pt, unichar_t *ept,int bilen) {
 return( bilen );
 }
 
+static int iscombineormark(SplineFont *sf,unichar_t uni) {
+    SplineChar *sc;
+
+    if ( iscombining(uni) )
+return( true );
+
+    sc = SFGetChar(sf,uni,NULL);
+    if ( sc==NULL || sc->anchor==NULL )
+return( false );
+    if ( sc->anchor->type==at_mark || sc->anchor->type==at_basemark )
+return( true );
+
+return( false );
+}
+
+static void PI_BiText2(SplineFont *sf, GBiText *bd,int start, int end) {
+    int pos, epos, i,j;
+
+    if ( end==-1 || end>bd->len ) end = bd->len;
+
+    _GDrawBiText2(bd,start,end);
+
+    /* do combiners */
+    /* combiners must always follow (in string order) the character they modify*/
+    /*  but now combiners in r2l text will precede it */
+    for ( pos = start; pos<end; ++pos ) {
+	if ( iscombineormark(sf,bd->text[pos]) && (bd->level[pos]&1) /*&& pos!=start*/ ) {
+	    for ( epos = pos; epos<end && iscombineormark(sf,bd->text[epos]) ; ++epos );
+	    if ( epos<end ) {
+		for ( i=pos,j=epos; i<j; ++i, --j ) {
+		    unichar_t temp = bd->text[i], *tpt = bd->original[i];
+		    bd->text[i] = bd->text[j];
+		    bd->text[j] = temp;
+		    bd->original[i] = bd->original[j];
+		    bd->original[j] = tpt;
+		}
+	    }
+	    pos = epos;
+	}
+    }
+
+    if ( bd->interpret_arabic )
+	GDrawArabicForms(bd,start,end);
+}
+
 /* We handle kerning, composits, and bidirectional text */
 static void PIFontSample(PI *pi,unichar_t *sample) {
     unichar_t *pt, *base, *ept, *end, *temp;
@@ -980,7 +1025,7 @@ return;
 			for ( temp=end; temp<ept && !isbreakbetweenok(*temp,temp[1]); ++temp );
 		    end = temp;
 		}
-		GDrawBiText2(&bi,pt-base,end-base);
+		PI_BiText2(pi->sf,&bi,pt-base,end-base);
 		if ( !bi.base_right_to_left )
 		    xstart = 20;
 		else

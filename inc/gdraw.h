@@ -446,6 +446,8 @@ extern int32 GDrawGetBiTextPtFromPos(GWindow gw,unichar_t *text, int32 cnt, Font
 extern int GDrawFontHasCharset(FontInstance *fi,/*enum charset*/int charset);
 extern int32 GDrawIsAllLeftToRight(unichar_t *text, int32 cnt);
 extern void GDrawBiText1(GBiText *bd, const unichar_t *text, int32 cnt);
+extern void GDrawArabicForms(GBiText *bd, int32 start, int32 end);
+extern void _GDrawBiText2(GBiText *bd, int32 start, int32 end);
 extern void GDrawBiText2(GBiText *bd, int32 start, int32 end);
 
 extern GIC *GDrawCreateInputContext(GWindow w,enum gic_style def_style);

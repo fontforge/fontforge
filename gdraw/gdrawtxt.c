@@ -2107,7 +2107,7 @@ return( fi!=NULL && fi->fonts[charset]!=NULL );
 /* We must decide which form (initial, medial, final, isolated) to use for    */
 /*  each arabic letter */
 
-static void GDrawArabicForms(GBiText *bd, int32 start, int32 end) {
+void GDrawArabicForms(GBiText *bd, int32 start, int32 end) {
     unichar_t *pt, *last = bd->text+end, *rpt, *alef_pt=NULL;
     int letter_left = false, was_alef=false;
 
@@ -2251,7 +2251,7 @@ void GDrawBiText1(GBiText *bd, const unichar_t *text, int32 cnt) {
 
 /* This routine must be called for each line after GDrawBiText1 has been called */
 /*  for the paragraph containing the lines. */
-void GDrawBiText2(GBiText *bd, int32 start, int32 end) {
+void _GDrawBiText2(GBiText *bd, int32 start, int32 end) {
     int level, maxlevel;
     int last, next, truelast;
     unichar_t ch;
@@ -2347,22 +2347,6 @@ void GDrawBiText2(GBiText *bd, int32 start, int32 end) {
 	    bd->text[pos] = ch;
     }
 
-#if 0
-    /* do combiners */
-    /* combiners must always follow (in string order) the character they modify*/
-    for ( pos = start; pos<end; ++pos ) {
-	if ( iscombining(bd->text[pos]) && (bd->level[pos]&1) && pos!=start ) {
-	    ++bd->level[pos-1];
-	    while ( iscombining(bd->text[pos])) {
-		bd->level[pos]= bd->level[pos-1];
-		++pos;
-	    }
-	    --pos;
-	    if ( bd->level[pos]>maxlevel ) maxlevel = bd->level[pos];
-	}
-    }
-#endif
-
     /* Reverse text */
     for ( level = maxlevel; level>0; --level ) {
 	for ( pos=start; pos<end; ++pos ) if ( bd->level[pos]>=level ) {
@@ -2377,12 +2361,23 @@ void GDrawBiText2(GBiText *bd, int32 start, int32 end) {
 	    pos = epos;
 	}
     }
+}
+
+
+/* This routine must be called for each line after GDrawBiText1 has been called */
+/*  for the paragraph containing the lines. */
+void GDrawBiText2(GBiText *bd, int32 start, int32 end) {
+    int pos, epos, i,j;
+
+    if ( end==-1 || end>bd->len ) end = bd->len;
+
+    _GDrawBiText2(bd,start,end);
 
     /* do combiners */
     /* combiners must always follow (in string order) the character they modify*/
     /*  but now combiners in r2l text will precede it */
     for ( pos = start; pos<end; ++pos ) {
-	if ( iscombining(bd->text[pos]) && (bd->level[pos]&1) && pos!=start ) {
+	if ( iscombining(bd->text[pos]) && (bd->level[pos]&1) /*&& pos!=start*/ ) {
 	    for ( epos = pos; epos<end && iscombining(bd->text[epos]) ; ++epos );
 	    if ( epos<end ) {
 		for ( i=pos,j=epos; i<j; ++i, --j ) {
