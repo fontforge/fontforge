@@ -344,94 +344,139 @@ const char *ttfstandardnames[258] = {
 "dcroat"
 };
 
-static unichar_t uniranges[][2] = {
-    { 0x20, 0x7e },
-    { 0xa0, 0xff },
-    { 0x100, 0x17f },
-    { 0x180, 0x24f },
-    { 0x250, 0x2af },
-    { 0x2b0, 0x2ff },
-    { 0x300, 0x36f },
-    { 0x370, 0x3ff },
-    { 0,0 },		/* Obsolete */
-    { 0x400, 0x4ff },
-    { 0x530, 0x58f },
-    { 0x590, 0x5ff },
-    { 0,0 },		/* Obsolete */
-    { 0x600, 0x6ff },
-    { 0,0 },		/* Obsolete */
-    { 0x900, 0x97f },
-    { 0x980, 0x9ff },
-    { 0xa00, 0xa7f },
-    { 0xa80, 0xaff },
-    { 0xb00, 0xb7f },
-    { 0xb80, 0xbff },		/* bit 20, tamil */
-    { 0xc00, 0xc7f },
-    { 0xc80, 0xcff },
-    { 0xd00, 0xd7f },
-    { 0xe00, 0xe7f },
-    { 0xe80, 0xeff },		/* bit 25, lao */
-    { 0x10a0, 0x10ff },
-    { 0, 0 },			/* bit 27, obsolete */
-    { 0x1100, 0x11ff },
-    { 0x1e00, 0x1eff },
-    { 0x1f00, 0x1fff },		/* bit 30, greek extended */
-    { 0x2000, 0x206f },
+static int uniranges[][3] = {
+    { 0x20, 0x7e, 0 },		/* Basic Latin */
+    { 0xa0, 0xff, 1 },		/* Latin-1 Supplement */
+    { 0x100, 0x17f, 2 },	/* Latin Extended-A */
+    { 0x180, 0x24f, 3 },	/* Latin Extended-B */
+    { 0x250, 0x2af, 4 },	/* IPA Extensions */
+    { 0x2b0, 0x2ff, 5 },	/* Spacing Modifier Letters */
+    { 0x300, 0x36f, 6 },	/* Combining Diacritical Marks */
+    { 0x370, 0x3ff, 7 },	/* Greek */
+    { 0x400, 0x52f, 9 },	/* Cyrillic / Cyrillic Supplement */
+    { 0x530, 0x58f, 10 },	/* Armenian */
+    { 0x590, 0x5ff, 11 },	/* Hebrew */
+    { 0x600, 0x6ff, 13 },	/* Arabic */
+    { 0x700, 0x74f, 71 },	/* Syriac */
+    { 0x780, 0x7bf, 72 },	/* Thaana */
+    { 0x900, 0x97f, 15 },	/* Devanagari */
+    { 0x980, 0x9ff, 16 },	/* Bengali */
+    { 0xa00, 0xa7f, 17 },	/* Gurmukhi */
+    { 0xa80, 0xaff, 18 },	/* Gujarati */
+    { 0xb00, 0xb7f, 19 },	/* Oriya */
+    { 0xb80, 0xbff, 20 },	/* Tamil */
+    { 0xc00, 0xc7f, 21 },	/* Telugu */
+    { 0xc80, 0xcff, 22 },	/* Kannada */
+    { 0xd00, 0xd7f, 23 },	/* Malayalam */
+    { 0xd80, 0xdff, 73 },	/* Sinhala */
+    { 0xe00, 0xe7f, 24 },	/* Thai */
+    { 0xe80, 0xeff, 25 },	/* Lao */
+    { 0xf00, 0xfbf, 70 },	/* Tibetan */
+    { 0x1000, 0x109f, 74 },	/* Myanmar */
+    { 0x10a0, 0x10ff, 26 },	/* Georgian */
+    { 0x1100, 0x11ff, 28 },	/* Hangul Jamo */
+    { 0x1200, 0x137f, 75 },	/* Ethiopic */
+    { 0x13a0, 0x13ff, 76 },	/* Cherokee */
+    { 0x1400, 0x167f, 77 },	/* Unified Canadian Aboriginal Symbols */
+    { 0x1680, 0x169f, 78 },	/* Ogham */
+    { 0x16a0, 0x16ff, 79 },	/* Runic */
+    { 0x1700, 0x177f, 84 },	/* Tagalog / Harunoo / Buhid / Tagbanwa */
+    { 0x1780, 0x17ff, 80 },	/* Khmer */
+    { 0x1800, 0x18af, 81 },	/* Mongolian */
+    /* { 0x1900, 0x194f, },	   Limbu */
+    /* { 0x1950, 0x197f, },	   Tai le */
+    /* { 0x19e0, 0x19ff, },	   Khmer Symbols */
+    /* { 0x1d00, 0x1d7f, },	   Phonetic Extensions */
+    { 0x1e00, 0x1eff, 29 },	/* Latin Extended Additional */
+    { 0x1f00, 0x1fff, 30 },	/* Greek Extended */
+    { 0x2000, 0x206f, 31 },	/* General Punctuation */
+    { 0x2070, 0x209f, 32 },	/* Superscripts and Subscripts */
+    { 0x20a0, 0x20cf, 33 },	/* Currency Symbols */
+    { 0x20d0, 0x20ff, 34 },	/* Combining Marks for Symbols */
+    { 0x2100, 0x214f, 35 },	/* Letterlike Symbols */
+    { 0x2150, 0x218f, 36 },	/* Number Forms */
+    { 0x2190, 0x21ff, 37 },	/* Arrows */
+    { 0x2200, 0x22ff, 38 },	/* Mathematical Operators */
+    { 0x2300, 0x237f, 39 },	/* Miscellaneous Technical */
+    { 0x2400, 0x243f, 40 },	/* Control Pictures */
+    { 0x2440, 0x245f, 41 },	/* Optical Character Recognition */
+    { 0x2460, 0x24ff, 42 },	/* Enclosed Alphanumerics */
+    { 0x2500, 0x257f, 43 },	/* Box Drawing */
+    { 0x2580, 0x259f, 44 },	/* Block Elements */
+    { 0x25a0, 0x25ff, 45 },	/* Geometric Shapes */
+    { 0x2600, 0x267f, 46 },	/* Miscellaneous Symbols */
+    { 0x2700, 0x27bf, 47 },	/* Dingbats */
+    { 0x27c0, 0x27ef, 38 },	/* Miscellaneous Mathematical Symbols-A */
+    { 0x27f0, 0x27ff, 37 },	/* Supplementary Arrows-A */
+    { 0x2800, 0x28ff, 82 },	/* Braille Patterns */
+    { 0x2900, 0x297f, 37 },	/* Supplementary Arrows-B */
+    { 0x2980, 0x2aff, 38 },	/* Miscellaneous Mathematical Symbols-B /
+				   Supplemental Mathematical Operators */
+    { 0x2e80, 0x2fff, 59 },	/* CJK Radicals Supplement / Kangxi Radicals /
+				   Ideographic Description Characters */
+    { 0x3000, 0x303f, 48 },	/* CJK Symbols and Punctuation */
+    { 0x3040, 0x309f, 49 },	/* Hiragana */
+    { 0x30a0, 0x30ff, 50 },	/* Katakana */
+    { 0x3100, 0x312f, 51 },	/* Bopomofo */
+    { 0x3130, 0x318f, 52 },	/* Hangul Compatibility Jamo */
+    { 0x3190, 0x319f, 59 },	/* Kanbun */
+    { 0x31a0, 0x31bf, 51 },	/* Bopomofo Extended */
+    { 0x31f0, 0x31ff, 50 },	/* Katakana Phonetic Extensions */
+    { 0x3200, 0x32ff, 54 },	/* Enclosed CJK Letters and Months */
+    { 0x3300, 0x33ff, 55 },	/* CJK compatability */
+    { 0x3400, 0x4dbf, 59 },	/* CJK Unified Ideographs Extension A */
+    /* { 0x4dc0, 0x4dff, },	   Yijing Hexagram Symbols */
+    { 0x4e00, 0x9fff, 59 },	/* CJK Unified Ideographs */
+    { 0xa000, 0xa4cf, 81 },	/* Yi Syllables / Yi Radicals */
+    { 0xac00, 0xd7af, 56 },	/* Hangul */
+    { 0xe000, 0xf8ff, 60 },	/* Private Use Area */
 
-    { 0x2070, 0x209f },		/* bit 32, subscripts, super scripts */
-    { 0x20a0, 0x20cf },
-    { 0x20d0, 0x20ff },
-    { 0x2100, 0x214f },
-    { 0x2150, 0x218f },
-    { 0x2190, 0x21ff },
-    { 0x2200, 0x22ff },
-    { 0x2300, 0x237f },
-    { 0x2400, 0x243f },		/* bit 40 control pictures */
-    { 0x2440, 0x245f },
-    { 0x2460, 0x24ff },
-    { 0x2500, 0x257f },
-    { 0x2580, 0x259f },
-    { 0x25a0, 0x25ff },		/* bit 45 geometric shapes */
-    { 0x2600, 0x267f },
-    { 0x2700, 0x27bf },		/* bit 47 zapf dingbats */
-    { 0x3000, 0x303f },
-    { 0x3040, 0x309f },
-    { 0x30a0, 0x30ff },		/* bit 50 katakana */
-    { 0x3100, 0x312f },			/* Also includes 3180-31AF */
-    { 0x3130, 0x318f },
-    { 0x3190, 0x31ff },
-    { 0x3200, 0x32ff },
-    { 0x3300, 0x33ff },		/* bit 55 CJK compatability */
-    { 0xac00, 0xd7af },		/* bit 56 Hangul */
-    { 0, 0 },			/* subranges */
-    { 0, 0 },			/* subranges */
-    { 0x3400, 0x9fff },		/* bit 59, CJK */ /* also 2E80-29FF */
-    { 0xE000, 0xF8FF },		/* bit 60, private use */
-    { 0xf900, 0xfaff },
-    { 0xfb00, 0xfb4f },
-    { 0xfb50, 0xfdff },
+    { 0xf900, 0xfaff, 61 },	/* CJK Compatibility Ideographs */
+    /* 12 ideographs in The IBM 32 Compatibility Additions are CJK unified
+       ideographs despite their names: see The Unicode Standard 4.0, p.475 */
+    { 0xfa0e, 0xfa0f, 59 },
+    { 0xfa10, 0xfa10, 61 },
+    { 0xfa11, 0xfa11, 59 },
+    { 0xfa12, 0xfa12, 61 },
+    { 0xfa13, 0xfa14, 59 },
+    { 0xfa15, 0xfa1e, 61 },
+    { 0xfa1f, 0xfa1f, 59 },
+    { 0xfa20, 0xfa20, 61 },
+    { 0xfa21, 0xfa21, 59 },
+    { 0xfa22, 0xfa22, 61 },
+    { 0xfa23, 0xfa24, 59 },
+    { 0xfa25, 0xfa26, 61 },
+    { 0xfa27, 0xfa29, 59 },
+    { 0xfa2a, 0xfaff, 61 },	/* CJK Compatibility Ideographs */
 
-    { 0xfe20, 0xfe2f },		/* bit 64 combining half marks */
-    { 0xfe30, 0xfe4f },
-    { 0xfe50, 0xfe6f },
-    { 0xfe70, 0xfeef },
-    { 0xff00, 0xffef },
-    { 0xfff0, 0xffff },
-    { 0x0f00, 0x0fff },		/* bit 70 tibetan */
-    { 0x0700, 0x074f },
-    { 0x0780, 0x07Bf },
-    { 0x0D80, 0x0Dbf },
-    { 0x1000, 0x109f },
-    { 0x1200, 0x12ff },		/* bit 75 ethiopic */
-    { 0x13A0, 0x13ff },
-    { 0x1400, 0x167f },
-    { 0x1680, 0x169f },
-    { 0x16A0, 0x16ff },
-    { 0x1780, 0x17ff },		/* bit 80 khmer */
-    { 0x1800, 0x18af },
-    { 0x2800, 0x28ff },
-    { 0xA000, 0xa4af },		/* bit 83, Yi & Yi radicals */
-    { 0xffff, 0xffff}
+    { 0xfb00, 0xfb4f, 62 },	/* Alphabetic Presentation Forms */
+    { 0xfb50, 0xfdff, 63 },	/* Arabic Presentation Forms-A */
+    { 0xfe00, 0xfe0f, 91 },	/* Variation Selectors */
+    { 0xfe20, 0xfe2f, 64 },	/* Combining Half Marks */
+    { 0xfe30, 0xfe4f, 65 },	/* CJK Compatibility Forms */
+    { 0xfe50, 0xfe6f, 66 },	/* Small Form Variants */
+    { 0xfe70, 0xfeef, 67 },	/* Arabic Presentation Forms-B */
+    { 0xff00, 0xffef, 68 },	/* Halfwidth and Fullwidth Forms */
+    { 0xfff0, 0xffff, 69 },	/* Specials */
+
+    /* { 0x10000, 0x1007f, },   Linear B Syllabary */
+    /* { 0x10080, 0x100ff, },   Linear B Ideograms */
+    /* { 0x10100, 0x1013f, },   Aegean Numbers */
+    { 0x10300, 0x1032f, 85 },	/* Old Italic */
+    { 0x10330, 0x1034f, 86 },	/* Gothic */
+    { 0x10400, 0x1044f, 87 },	/* Deseret */
+    /* { 0x10450, 0x1047f, },   Shavian */
+    /* { 0x10480, 0x104af, },   Osmanya */
+    /* { 0x10800, 0x1083f, },   Cypriot Syllabary */
+    { 0x1d000, 0x1d1ff, 88 },	/* Byzantine Musical Symbols / Musical Symbols */
+    /* { 0x1d300, 0x1d35f, },   Tai Xuan Jing Symbols */
+    { 0x1d400, 0x1d7ff, 89 },	/* Mathematical Alphanumeric Symbols */
+    { 0x20000, 0x2a6df, 59 },	/* CJK Unified Ideographs Extension B */
+    { 0x2f800, 0x2fa1f, 61 },	/* CJK Compatibility Ideographs Supplement */
+    { 0xe0000, 0xe007f, 92 },	/* Tags */
+    { 0xe0100, 0xe01ef, 91 },	/* Variation Selectors Supplement */
+    { 0xf0000, 0xffffd, 90 },	/* Supplementary Private Use Area-A */
+    { 0x100000, 0x10fffd, 90 },	/* Supplementary Private Use Area-B */
 };
 
 static int32 getuint32(FILE *ttf) {
@@ -494,8 +539,11 @@ int ttfcopyfile(FILE *ttf, FILE *other, int pos) {
     int ch;
     int ret = 1;
 
-    if ( pos!=ftell(ttf))
+    if ( ferror(ttf) || ferror(other)) {
+	GDrawIError("Disk error of some nature. Perhaps no space on device?\nGenerated font will be unusable" );
+    } else if ( pos!=ftell(ttf)) {
 	GDrawIError("File Offset wrong for ttf table, %d expected %d", ftell(ttf), pos );
+    }
     rewind(other);
     while (( ch = getc(other))!=EOF )
 	putc(ch,ttf);
@@ -2666,10 +2714,13 @@ static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *_sf,
     do {
 	sf = ( _sf->subfontcnt==0 ) ? _sf : _sf->subfonts[k];
 	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->unicodeenc!=-1 ) {
+	    if ( sf->chars[i]->unicodeenc > 0xffff )
+		os2->unicoderange[57>>5] |= (1<<(57&31));
 	    for ( j=0; j<sizeof(uniranges)/sizeof(uniranges[0]); ++j )
 		if ( sf->chars[i]->unicodeenc>=uniranges[j][0] &&
 			sf->chars[i]->unicodeenc<=uniranges[j][1] ) {
-		    os2->unicoderange[j>>5] |= (1<<(j&31));
+		    int bit = uniranges[j][2];
+		    os2->unicoderange[bit>>5] |= (1<<(bit&31));
 	    break;
 		}
 	    if ( sf->chars[i]->unicodeenc<first ) first = sf->chars[i]->unicodeenc;
