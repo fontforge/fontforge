@@ -19,7 +19,7 @@ build: configure-stamp build-stamp
 build-stamp:
 	dh_testdir
 
-	$(MAKE)
+	$(MAKE) DOCDIR=/usr/share/doc/pfaedit/html
 
 	touch build-stamp
 
