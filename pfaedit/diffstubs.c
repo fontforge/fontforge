@@ -43,6 +43,7 @@ int StemListAnyConflicts(StemInfo *stems) { return 0 ; }
 int getAdobeEnc(char *name) { return -1; }
 SplineChar *SFMakeChar(SplineFont *sf, int enc) { return NULL; }
 GDisplay *screen_display=NULL;
+int FVWinInfo(struct fontview *sf,int *cc,int *rc) { return 0 ; }
 
 /* ************************************************************************** */
 /* And some routines we actually do need */
