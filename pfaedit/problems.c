@@ -34,6 +34,7 @@ struct problems {
     FontView *fv;
     CharView *cv;
     SplineChar *sc;
+    SplineChar *msc;
     unsigned int openpaths: 1;
     unsigned int pointstooclose: 1;
     /*unsigned int missingextrema: 1;*/
@@ -56,6 +57,8 @@ struct problems {
     unsigned int finish: 1;
     unsigned int ignorethis: 1;
     real near, xval, yval, widthval;
+    int explaining;
+    real found, expected;
     real xheight, caph, ascent, descent;
     GWindow explainw;
     GGadget *explaintext, *explainvals, *ignoregadg;
@@ -71,6 +74,7 @@ static real near=3, xval=0, yval=0, widthval=50;
 
 #define CID_Stop		2001
 #define CID_Next		2002
+#define CID_Fix			2003
 
 #define CID_OpenPaths		1001
 #define CID_PointsTooClose	1002
@@ -94,6 +98,153 @@ static real near=3, xval=0, yval=0, widthval=50;
 #define CID_FlippedRefs		1020
 
 
+static void FixIt(struct problems *p) {
+    SplinePointList *spl;
+    SplinePoint *sp;
+    StemInfo *h;
+    RefChar *r;
+
+    if ( p->explaining==_STR_ProbHintHWidth ) {
+	for ( h=p->sc->hstem; h!=NULL && !h->active; h=h->next );
+	if ( h!=NULL ) {
+	    h->width = p->widthval;
+	    SCOutOfDateBackground(p->sc);
+	    SCUpdateAll(p->sc);
+	} else
+	    GDrawIError("Could not find hint");
+return;
+    }
+    if ( p->explaining==_STR_ProbHintVWidth ) {
+	for ( h=p->sc->vstem; h!=NULL && !h->active; h=h->next );
+	if ( h!=NULL ) {
+	    h->width = p->widthval;
+	    SCOutOfDateBackground(p->sc);
+	    SCUpdateAll(p->sc);
+	} else
+	    GDrawIError("Could not find hint");
+return;
+    }
+    if ( p->explaining==_STR_ProbFlippedRef ) {
+	for ( r=p->sc->refs; r!=NULL && !r->selected; r = r->next );
+	if ( r!=NULL ) {
+	    SCPreserveState(p->sc,false);
+	    SCRefToSplines(p->sc,r);
+	    p->sc->splines = SplineSetsCorrect(p->sc->splines);
+	    SCCharChangedUpdate(p->sc);
+	} else
+	    GDrawIError("Could not find referenc");
+return;
+    }
+
+    for ( spl=p->sc->splines; spl!=NULL; spl=spl->next ) {
+	for ( sp = spl->first; ; ) {
+	    if ( sp->selected )
+	break;
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==spl->first )
+	break;
+	}
+	if ( sp->selected )
+    break;
+    }
+    if ( sp==NULL ) {
+	GDrawIError("Nothing selected");
+return;
+    }
+
+/* I do not handle:
+    _STR_ProbOpenPath
+    _STR_ProbPointsTooClose
+    _STR_ProbLineItal, _STR_ProbAboveItal, _STR_ProbBelowItal, _STR_ProbRightItal, _STR_ProbLeftItal
+    _STR_ProbAboveOdd, _STR_ProbBelowOdd, _STR_ProbRightOdd, _STR_ProbLeftOdd
+    _STR_ProbHintControl
+*/
+
+    SCPreserveState(p->sc,false);
+    if ( p->explaining==_STR_ProbXNear || p->explaining==_STR_ProbPtNearVHint) {
+	sp->prevcp.x += p->expected-sp->me.x;
+	sp->nextcp.x += p->expected-sp->me.x;
+	sp->me.x = p->expected;
+    } else if ( p->explaining==_STR_ProbYNear || p->explaining==_STR_ProbPtNearHHint ||
+	    p->explaining==_STR_ProbYBase || p->explaining==_STR_ProbYXHeight ||
+	    p->explaining==_STR_ProbYCapHeight || p->explaining==_STR_ProbYAs ||
+	    p->explaining==_STR_ProbYDs ) {
+	sp->prevcp.y += p->expected-sp->me.y;
+	sp->nextcp.y += p->expected-sp->me.y;
+	sp->me.y = p->expected;
+    } else if ( p->explaining==_STR_ProbLineHor ) {
+	if ( sp->me.y!=p->found ) {
+	    sp=sp->next->to;
+	    if ( !sp->selected || sp->me.y!=p->found ) {
+		GDrawIError("Couldn't find line");
+return;
+	    }
+	}
+	sp->prevcp.y += p->expected-sp->me.y;
+	sp->nextcp.y += p->expected-sp->me.y;
+	sp->me.y = p->expected;
+    } else if ( p->explaining==_STR_ProbAboveHor || p->explaining==_STR_ProbBelowHor ||
+	    p->explaining==_STR_ProbRightHor || p->explaining==_STR_ProbLeftHor ) {
+	BasePoint *tofix, *other;
+	if ( sp->nextcp.y==p->found ) {
+	    tofix = &sp->nextcp;
+	    other = &sp->prevcp;
+	} else {
+	    tofix = &sp->prevcp;
+	    other = &sp->nextcp;
+	}
+	if ( tofix->y!=p->found ) {
+	    GDrawIError("Couldn't find control point");
+return;
+	}
+	tofix->y = p->expected;
+	if ( sp->pointtype==pt_curve )
+	    other->y = p->expected;
+	else
+	    sp->pointtype = pt_corner;
+    } else if ( p->explaining==_STR_ProbLineVert ) {
+	if ( sp->me.x!=p->found ) {
+	    sp=sp->next->to;
+	    if ( !sp->selected || sp->me.x!=p->found ) {
+		GDrawIError("Couldn't find line");
+return;
+	    }
+	}
+	sp->prevcp.x += p->expected-sp->me.x;
+	sp->nextcp.x += p->expected-sp->me.x;
+	sp->me.x = p->expected;
+    } else if ( p->explaining==_STR_ProbAboveVert || p->explaining==_STR_ProbBelowVert ||
+	    p->explaining==_STR_ProbRightVert || p->explaining==_STR_ProbLeftVert ) {
+	BasePoint *tofix, *other;
+	if ( sp->nextcp.x==p->found ) {
+	    tofix = &sp->nextcp;
+	    other = &sp->prevcp;
+	} else {
+	    tofix = &sp->prevcp;
+	    other = &sp->nextcp;
+	}
+	if ( tofix->x!=p->found ) {
+	    GDrawIError("Couldn't find control point");
+return;
+	}
+	tofix->x = p->expected;
+	if ( sp->pointtype==pt_curve )
+	    other->x = p->expected;
+	else
+	    sp->pointtype = pt_corner;
+    } else if ( p->explaining==_STR_ProbExpectedCounter || p->explaining==_STR_ProbExpectedClockwise ) {
+	SplineSetReverse(spl);
+    } else
+	GDrawIError("Did not fix: %d", p->explaining );
+    if ( sp->next!=NULL )
+	SplineRefigure(sp->next);
+    if ( sp->prev!=NULL )
+	SplineRefigure(sp->prev);
+    SCCharChangedUpdate(p->sc);
+}
+
 static int explain_e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
 	struct problems *p = GDrawGetUserData(gw);
@@ -103,6 +254,8 @@ static int explain_e_h(GWindow gw, GEvent *event) {
 	struct problems *p = GDrawGetUserData(gw);
 	if ( GGadgetGetCid(event->u.control.g)==CID_Stop )
 	    p->finish = true;
+	else if ( GGadgetGetCid(event->u.control.g)==CID_Fix )
+	    FixIt(p);
 	p->doneexplain = true;
     } else if ( event->type==et_controlevent &&
 	    event->u.control.subtype == et_radiochanged ) {
@@ -122,10 +275,11 @@ static void ExplainIt(struct problems *p, SplineChar *sc, int explain,
 	real found, real expected ) {
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[8];
-    GTextInfo label[8];
+    GGadgetCreateData gcd[9];
+    GTextInfo label[9];
     unichar_t ubuf[100]; char buf[20];
     SplinePointList *spl; Spline *spline, *first;
+    int fixable;
 
     if ( !p->explain || p->finish )
 return;
@@ -190,12 +344,37 @@ return;
 	gcd[3].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
 	gcd[3].creator = GGroupCreate;
 
+	gcd[6].gd.pos.x = 200-30; gcd[6].gd.pos.y = gcd[2].gd.pos.y;
+	gcd[6].gd.pos.width = -1; gcd[6].gd.pos.height = 0;
+	gcd[6].gd.flags = /*gg_visible |*/ gg_enabled;
+	label[6].text = (unichar_t *) _STR_Fix;
+	label[6].text_in_resource = true;
+	gcd[6].gd.mnemonic = 'N';
+	gcd[6].gd.label = &label[6];
+	gcd[6].gd.cid = CID_Fix;
+	gcd[6].creator = GButtonCreate;
+
 	GGadgetsCreate(p->explainw,gcd);
 	p->explaintext = gcd[0].ret;
 	p->explainvals = gcd[4].ret;
 	p->ignoregadg = gcd[5].ret;
     } else
 	GGadgetSetTitle(p->explaintext,GStringGetResource(explain,NULL));
+    p->explaining = explain;
+    fixable = explain==_STR_ProbHintHWidth || explain==_STR_ProbHintVWidth ||
+	    explain==_STR_ProbFlippedRef ||
+	    explain==_STR_ProbXNear || explain==_STR_ProbPtNearVHint ||
+	    explain==_STR_ProbYNear || explain==_STR_ProbPtNearHHint ||
+	    explain==_STR_ProbYBase || explain==_STR_ProbYXHeight ||
+	    explain==_STR_ProbYCapHeight || explain==_STR_ProbYAs ||
+	    explain==_STR_ProbYDs ||
+	    explain==_STR_ProbLineHor || explain==_STR_ProbLineVert ||
+	    explain==_STR_ProbAboveHor || explain==_STR_ProbBelowHor ||
+	    explain==_STR_ProbRightHor || explain==_STR_ProbLeftHor ||
+	    explain==_STR_ProbAboveVert || explain==_STR_ProbBelowVert ||
+	    explain==_STR_ProbRightVert || explain==_STR_ProbLeftVert ||
+	    explain==_STR_ProbExpectedCounter || explain==_STR_ProbExpectedClockwise;
+    GGadgetSetVisible(GWidgetGetControl(p->explainw,CID_Fix),fixable);
 
     if ( found==expected )
 	ubuf[0]='\0';
@@ -207,6 +386,7 @@ return;
 	sprintf(buf,"%.4g", expected );
 	uc_strcat(ubuf,buf);
     }
+    p->found = found; p->expected = expected;
     GGadgetSetTitle(p->explainvals,ubuf);
     GGadgetSetChecked(p->ignoregadg,false);
 
@@ -465,33 +645,6 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	break;
 	}
     }
-
-#if 0
-    if ( p->missingextrema && !p->finish ) {
-	for ( test=spl; test!=NULL && !p->finish && p->missingextrema; test = test->next ) {
-	    first = NULL;
-	    for ( spline = test->first->next; spline!=NULL && spline!=first && !p->finish; spline=spline->to->next ) {
-		if ( !spline->knownlinear ) {
-		    real t1, t2, t3, t4;
-		    SplineFindExtrema(&spline->splines[0],&t1,&t2);
-		    SplineFindExtrema(&spline->splines[1],&t3,&t4);
-		    if (( t1>0 && t1<1 ) || (t2>0 && t2<1 ) || (t3>0 && t3<1) ||
-			    (t4>0 && t4<1)) {
-			spline->from->selected = true;
-			spline->to->selected = true;
-			changed = true;
-			ExplainIt(p,sc,_STR_ProbMissingExtreme,0,0);
-			if ( p->ignorethis ) {
-			    p->missingextrema = false;
-	    break;
-			}
-		    }
-		}
-		if ( first==NULL ) first = spline;
-	    }
-	}
-    }
-#endif
 
     if ( p->xnearval && !p->finish ) {
 	for ( test=spl; test!=NULL && !p->finish && p->xnearval; test=test->next ) {
@@ -928,6 +1081,9 @@ static void DoProbs(struct problems *p) {
     if ( p->cv!=NULL ) {
 	ret = SCProblems(p->cv,NULL,p);
 	ret |= CIDCheck(p,p->cv->sc->enc);
+    } else if ( p->msc!=NULL ) {
+	ret = SCProblems(NULL,p->msc,p);
+	ret |= CIDCheck(p,p->msc->enc);
     } else {
 	ret = false;
 	for ( i=0; i<p->fv->sf->charcnt && !p->finish; ++i )
@@ -1031,7 +1187,7 @@ static int e_h(GWindow gw, GEvent *event) {
 return( event->type!=et_char );
 }
 
-void FindProblems(FontView *fv,CharView *cv) {
+void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
@@ -1043,7 +1199,7 @@ void FindProblems(FontView *fv,CharView *cv) {
 
     memset(&p,0,sizeof(p));
     if ( fv==NULL ) fv = cv->fv;
-    p.fv = fv; p.cv=cv;
+    p.fv = fv; p.cv=cv; p.msc = sc;
     if ( cv!=NULL )
 	p.lastcharopened = cv->sc;
 
@@ -1083,19 +1239,6 @@ void FindProblems(FontView *fv,CharView *cv) {
     gcd[1].gd.popup_msg = GStringGetResource(_STR_Points2ClosePopup,NULL);
     gcd[1].gd.cid = CID_PointsTooClose;
     gcd[1].creator = GCheckBoxCreate;
-
-#if 0
-    label[2].text = (unichar_t *) _STR_MissingExtrema;
-    label[2].text_in_resource = true;
-    gcd[2].gd.label = &label[2];
-    gcd[2].gd.mnemonic = 'E';
-    gcd[2].gd.pos.x = 6; gcd[2].gd.pos.y = gcd[1].gd.pos.y+17; 
-    gcd[2].gd.flags = gg_visible | gg_enabled;
-    if ( missing ) gcd[2].gd.flags |= gg_cb_on;
-    gcd[2].gd.popup_msg = me;
-    gcd[2].gd.cid = CID_MissingExtrema;
-    gcd[2].creator = GCheckBoxCreate;
-#endif
 
     label[2].text = (unichar_t *) _STR_XNear;
     label[2].text_in_resource = true;
