@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 16-Apr-2004 -->
+  <!-- AP: Last modified: 9-May-2004 -->
   <TITLE>The Edit Menu</TITLE>
 </HEAD>
 <BODY>
@@ -87,6 +87,8 @@ in text fields.
     </UL>
   <LI>
     <A HREF="#Find">Find / Replace</A>
+  <LI>
+    <A HREF="#ReplaceRef">Replace With Reference</A>
   <LI>
     <A HREF="#Unlink">Unlink Reference</A>
   <LI>
@@ -415,6 +417,24 @@ view this menu will be disabled when one of the text fields has the focus.
     Only in the font view, this brings up a <A HREF="search.html">dialog</A>
     that allows you to find patterns within characters and replace them with
     other patterns.
+  <DT>
+    <A NAME="ReplaceRef">Replace </A>With Reference
+  <DD>
+    Only in the font view, this command will search the font finding any glyph
+    which contains an inline copy of one of the selected glyphs, and converts
+    that copy into a reference to the appropriate glyph. In other words it finds
+    things which should be references and makes them be.
+    <P>
+    This is primarily for use after reading a postscript (type1, otf or cff)
+    font. The reference information will usually be lost, and this command can
+    find it again.
+    <P>
+    Suppose the font contains a glyph "Acircumflex" which contains an embedded
+    copy of "A" (a copy of the contours, not a references), then if you select
+    "A" and apply this command it will search all glyphs in the font for something
+    that looks like "A", remove it from any glyphs in which it is found and replace
+    it with a reference. It applies this same algorithm for all selected glyphs.
+    If you want to check for every possibility, just select all glyphs first.
   <DT>
     <A NAME="Unlink">Unlink</A> Reference
   <DD>

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 16-Apr-2004 -->
+  <!-- AP: Last modified: 8-May-2004 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
 </HEAD>
 <BODY>
@@ -1344,7 +1344,7 @@ ApplySubstitution("*","*","vrt2")
     Finds everywhere that splines cross and creates points there.
   <DT>
     Simplify()<BR>
-    Simplify(flags,error[,tan_bounds[,bump_size]])
+    Simplify(flags,error[,tan_bounds[,bump_size[,error_denom]]])
   <DD>
     With no arguments it does the obvious. If flags is -1 it does a Cleanup,
     otherwise flags should be a bitwise or of
@@ -1364,10 +1364,12 @@ ApplySubstitution("*","*","vrt2")
     <P>
     The error argument is the number of pixels by which the modified path is
     allowed to stray from the true path.<BR>
-    The tan_bounds argument specifies the angle between the curves at which smoothing
-    will stop<BR>
+    The tan_bounds argument specifies the tangent of the angle between the curves
+    at which smoothing will stop (argument is multiplied by .01 before use).<BR>
     And bump_size gives the maximum distance a bump can move from the line and
-    still be smoothed out.
+    still be smoothed out.<BR>
+    If a fifth argument is given then it will be treated as the denominator of
+    the error term (so users can express fraction pixel distances).
   <DT>
     AddExtrema()
   <DD>
@@ -1474,6 +1476,11 @@ ApplySubstitution("*","*","vrt2")
   <DT>
     BuildAccented()
   <DD>
+  <DT>
+    ReplaceWithReference()
+  <DD>
+    Finds any glyph which contains an inline copy of one of the selected glyphs,
+    and converts that copy into a reference to the appropriate glyph.
   <DT>
     MergeFonts(other-font-name[,flags])
   <DD>
