@@ -3092,6 +3092,8 @@ static char *str_TransformKernClass = "Transform kerning classes too";
 static char mnemonic_TransformKernClass = 'C';
 static char *str_TransformSimplePosPair = "Transform simple positioning features & kern pairs";
 static char mnemonic_TransformSimplePosPair = 'K';
+static char str_RoundToInt[] = "Round To Int";
+static char mnemonic_RoundToInt='I';
 static char *str_Warning = "Warning";
 static char *str_RotateSkewWarning = "After rotating or skewing a glyph you should probably apply Element->Add Extrema";
     /* scripting */

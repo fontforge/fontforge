@@ -633,9 +633,8 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
 
 	    gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = y;
 	    gcd[i].gd.flags = gg_visible | gg_enabled;
-	    label[i].text = (unichar_t *) _STR_Round2int;
+	    label[i].text = (unichar_t *) _STR_RoundToInt;
 	    label[i].text_in_resource = true;
-	    gcd[i].gd.mnemonic = 'R';
 	    gcd[i].gd.label = &label[i];
 	    gcd[i].gd.cid = CID_Round2Int;
 	    gcd[i++].creator = GCheckBoxCreate;
