@@ -222,10 +222,6 @@ if test "$gww_needsstaticimages" = "yes"; then
   STATIC_LIBS="$STATIC_LIBS -ljpeg"
   AC_DEFINE(_STATIC_LIBJPEG)
  fi
- if test "$ac_cv_lib_xml2_xmlParseFile" = "yes"; then
-  STATIC_LIBS="$STATIC_LIBS -lxml2"
-  AC_DEFINE(_STATIC_LIBXML2)
- fi
 fi
 
 test -d libs || mkdir libs

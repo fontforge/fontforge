@@ -10084,13 +10084,6 @@ _ACEOF
 _ACEOF
 
  fi
- if test "$ac_cv_lib_xml2_xmlParseFile" = "yes"; then
-  STATIC_LIBS="$STATIC_LIBS -lxml2"
-  cat >>confdefs.h <<\_ACEOF
-#define _STATIC_LIBXML2 1
-_ACEOF
-
- fi
 fi
 
 test -d libs || mkdir libs
