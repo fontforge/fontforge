@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 19-Dec-2001 -->
+  <!-- AP: Last modified: 29-Dec-2001 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -11,9 +11,6 @@
       width="88" height="31" border="0" alt="SourceForge Logo" ALIGN=right> </A>
   PfaEdit
 </H1>
-<P>
-<BIG><BIG><STRONG><FONT COLOR="Red">I will not be responding to bug reports
-between 19 Dec and 28 Dec.</FONT></STRONG></BIG></BIG>
 <P>
 <FONT COLOR="Red"><STRONG>PfaEdit</STRONG></FONT> -- A postscript font editor
 that lets you create your own postscript, truetype, opentype, cid-keyed and
@@ -74,17 +71,14 @@ know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-011219.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 19-Dec-2001
+    <A HREF="pfaedit-011229.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 29-Dec-2001
   <LI>
     <A HREF="pfaedit-solaris-011211.tgz">Download pfaedit Solaris 8.0
     </A>executable Version: 11-Dec-2001
   <LI>
-    <A HREF="pfaedit-011102-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
-    Version: 2-Nov-2001 (Redhat 7.1)
-  <LI>
-    <A HREF="pfaedit-011203-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
-    Version: 3-Dec-2001 (Suse 7.2)
+    <A HREF="pfaedit-011219-1.i386.rpm">Download pfaedit linux-i386 binary rpm</A>.
+    Version: 19-Dec-2001 (Redhat 7.1)
   <LI>
     <A HREF="pfaedit-011201-1.ppc.rpm">Download pfaedit linux-ppc suse 7.1
     </A>binary rpm Version: 1-Dec-2001
@@ -111,24 +105,24 @@ If you want to edit CID keyed fonts you need these
   <A NAME="source">Source</A> distribution
 </H2>
 <P>
-You can download a <A HREF="pfaedit-011201-1.src.rpm">source RPM</A>: Version:
-1-Dec-2001<BR>
+You can download a <A HREF="pfaedit-011219-1.src.rpm">source RPM</A>: Version:
+19-Dec-2001<BR>
 Or you can download the following three packages. Version: 18-Dec-2001
 <UL>
   <LI>
-    <A HREF="libgunicode-011219.tgz">Unicode library source</A> (19-Dec-2001)<BR>
+    <A HREF="libgunicode-011229.tgz">Unicode library source</A> (29-Dec-2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGUnicode/index.html">docs</A>
   <LI>
-    <A HREF="libgdraw-011219.tgz">Unicode widget library source</A>
-    (19-Dec-2001)<BR>
+    <A HREF="libgdraw-011229.tgz">Unicode widget library source</A>
+    (29-Dec-2001)<BR>
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
   <LI>
-    <A HREF="pfaedit_src-011219.tgz">Pfaedit source</A> (19-Dec-2001)<BR>
+    <A HREF="pfaedit_src-011229.tgz">Pfaedit source</A> (29-Dec-2001)<BR>
     -- <A HREF="overview.html">docs</A>
   <LI>
-    <A HREF="pfaedit_full-011219.tgz">All three bundled together </A>(19-Dec-2001)
+    <A HREF="pfaedit_full-011229.tgz">All three bundled together </A>(29-Dec-2001)
 </UL>
 <P>
 If you want to do autotracing around character images you should also download
@@ -238,6 +232,40 @@ up into one <A HREF="pfaedit_htdocs-011116.tgz">tgz file</A> 16-Nov-2001.
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
+  <LI>
+    29-Dec-2001
+    <UL>
+      <LI>
+	TextFields had numerous display problems. Should have fewer now.
+      <LI>
+	The 15 Dec image crash fix was not complete, turns out there were two memory
+	problems (well, two so far)
+      <LI>
+	Some dialogs could show up half off the right edge of the screen. Should
+	not do so now.
+      <LI>
+	Added a few more language samples for printing.
+      <LI>
+	Bidi display didn't work when there were lots of combining letters around
+      <LI>
+	Bidi printing didn't work when there was more than one line of right to left
+	text
+      <LI>
+	Typing control characters to the fontview will no longer move to that character.
+	<UL>
+	  <LI>
+	    Typing [Return] opens selected characters
+	  <LI>
+	    Typing [Tab] moves to next character with something in it.
+	</UL>
+      <LI>
+	Depressing the right mouse button invokes a popup menu in the fontview now.
+      <LI>
+	Trying to move a control point with the mouse while simultaniously moving
+	the point itself with the arrow keys used to cause a crash
+      <LI>
+	Selecting a bdf font which was in a bad format as a background caused a crash.
+    </UL>
   <LI>
     19-Dec-2001
     <UL>

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 26-Nov-2001 -->
+  <!-- AP: Last modified: 29-Dec-2001 -->
   <TITLE>The Font View</TITLE>
 </HEAD>
 <BODY>
@@ -36,12 +36,15 @@ unicode character). Next the postscript name for the character, and finally
 the unicode name. Not all unicode characters will have unicode names (the
 CJK characters do not for example)
 <P>
-Or you may display any of the bitmap fonts you have generated from the outline
-characters. Simply go to the View menu and select the one you want.
+You may also display any of the bitmap fonts you have generated from the
+outline characters. Simply go to the View menu and select the one you want.
 <P>
 You may select any number of characters in the font by dragging through them.
 You may use shift-click to select (or deselect) additional characters. You
 may also use the arrow keys to move around (and shift-arrow to select).
+<P>
+The [Tab] key will move to the next character with something in it, and
+Shift-[Tab] will move to the previous character with something interesting.
 <P>
 You can perform various operations on the selected characters:
 <UL>
@@ -89,6 +92,8 @@ There is also a dialog which allows a slightly more general way of jumping
 around. You may type in the character's name (all characters in a font will
 be named), its encoding value, its unicode encoding value, or (for 2 byte
 fonts) its ku ten specification.
+<P>
+Pressing the right mouse button invokes a popup menu.
 <H2>
   <A NAME="Encodings">Encodings and Character Sets</A>
 </H2>
@@ -96,7 +101,9 @@ fonts) its ku ten specification.
 A Character Set is a set of characters (for example all the letters of the
 alphabet would be one character set). An encoding is a function that takes
 a number (often between 0 and 255) and maps it to a character. Often these
-two are used synonymously as an encoding implies a given character set.
+two are used synonymously as an encoding generally implies a given character
+set. (strictly speaking a character set is an unordered collection with no
+implied encoding, and some encodings work with multiple character sets).
 <P>
 All fonts in pfaedit have both a character set and an encoding. The character
 set is just the set of characters in the font. The encoding is the way those
@@ -108,8 +115,8 @@ be placed at the end of the font and when the font is output (ie. postscript
 is generated, or a bitmap font created) the characters will be included in
 the font but they will not be encoded (this can be useful, especially in
 postscript where it is possible to reencode a font at run time. Thus a font
-might have all the characters needed both for a cyrillic font and for a latin
-font, but only one character set at a time would be encoded).
+might have all the characters needed both for a cyrillic character set and
+for a latin one, but only one character set at a time would be encoded).
 <P>
 You may also create a custom encoding. (Custom encodings may not have more
 than 256 encoded characters). You may change the name of any character in
@@ -119,12 +126,13 @@ to have a custom encoding.
 There are many standard encodings built in to the program. There are 14 ISO
 8859 encodings, the encoding used by the Macintosh for the US and Western
 Europe, the encoding used by MS Windows for the US and Europe (which is a
-slight extension of ISO 8859-1). There are also 5 2-byte encodings built
+slight extension of ISO 8859-1). There are also 7 2-byte encodings built
 in. One of these is unicode whose goal is to specify every character currently
-used by humans. The other 4 are CJK (Chinese, Japanese, Korean) 94x94 encodings
+used by humans. There are 4 CJK (Chinese, Japanese, Korean) 94x94 encodings
 (two bytes where each byte ranges over the 94 ASCII printable characters
-excluding the space character). You can also add your own encodings with
-the <A HREF="fontinfo.html">Element-&gt;Font Info</A> dialog. A brief description
+excluding the space character). And there are big5 (Taiwanese) and johab
+(korean) which aren't 94x94. You can also add your own encodings with the
+<A HREF="fontinfo.html">Element-&gt;Font Info</A> dialog. A brief description
 of what's in the encodings also appears <A HREF="fontinfo.html#Encodings">on
 that page</A>.
 <P>
@@ -171,12 +179,12 @@ nobreak space and the soft-hyphen)..
   <A NAME="CID">CID keyed fonts</A>
 </H2>
 <P>
-The standard mechanisms the postscript provides work reasonably well for
+The standard mechanisms that postscript provides work reasonably well for
 alphabets and syllibaries, but the massive number of characters needed for
-CJK (Chinese, Japanese or Korean) fonts require more complex fonts. Adobe's
-current solution is the CID-keyed font, a font consisting of several subfonts
-each a collection of glyph descriptions with no encoding imposed on them
-and no names given to them.
+CJK (Chinese, Japanese or Korean) fonts require more complex machinations.
+Adobe's current solution is the CID-keyed font, a font consisting of several
+subfonts each a collection of glyph descriptions with no encoding imposed
+on them and no names given to them.
 <P>
 If PfaEdit loads in a CID keyed font it will enable a special menu called
 <A HREF="cidmenu.html">CID</A> which (among other things) displays the list
@@ -191,14 +199,18 @@ needs to know what character set you will be using. A character set is just
 a collection of characters, and you may define your own if you wish (but
 if you do you have to define your own cmap files, etc and it's probably not
 worth it). Adobe has defined character sets for Japanese (actually there
-are two, one corresponding to JIS208 and one to JIS212), Korean (Wansung),
-Traditional Chinese (Big5) and Simplified Chinese (GB2312). Although these
-character sets are based on the standards mentioned, they each have many
-additional characters. They also define a charset that works for Unicode,
-but it is called "Identity" instead. PfaEdit does not have these character
-sets built in to it, each must be loaded the first time it is used. I provide
-one file for each of the above character sets, they have an extension of
-".cidmap", and you may download them all <A HREF="cidmaps.tgz">from here</A>.
+are two, one corresponding to JIS208 and one to JIS212), Korean (Wansung
+&amp; Johab), Traditional Chinese (Big5) and Simplified Chinese (GB2312).
+Although these character sets are based on the standards mentioned, they
+each have many additional characters. Adobe also defines a charset that works
+for Unicode, but it is called "Identity" instead. PfaEdit does not have these
+character sets built in to it, each must be loaded the first time it is used.
+I provide one file for each of the above character sets, they have an extension
+of ".cidmap", and you may download them all <A HREF="cidmaps.tgz">from
+here</A>.
+<P>
+(There are also a few other character sets floating around but they aren't
+in the public domain and I haven't been able to get my hands on them).
 <P>
 Adobe identifies each character set by a three values: a registry, an ordering
 and a supplement. The registry is the name of the organization that is defining
@@ -207,7 +219,7 @@ character set (Japan1, Korea1, etc.) and the supplement indicates how many
 times the ordering has been revised. Characters may only be added to an ordering,
 never removed, so an old font will be perfectly described by a newer character
 set, while a new font described by an old character set will have some
-unattainable characters. So a full cidmap name will look like:<BR>
+unavailable characters. So a full cidmap name will look like:<BR>
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
 Adobe-Japan1-4.cidmap<BR>
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Adobe-Korea1-2.cidmap
@@ -229,14 +241,14 @@ the OS just sends it a SIGKILL signal.
 <P>
 CJK fonts generally should have vertical metrics. Latin (Cyrillic, Greek)
 fonts generally should not. If PfaEdit reads in a font with vertical metrics
-it will retain those metrics, if PfaEdit creates a new font then that font
-will not have vertical metrics enabled. 
+it will retain those metrics, but when PfaEdit creates a new font then that
+font will not have vertical metrics enabled.
 <P>
 To enable vertical metrics for a font go to
 <CODE><A HREF="fontinfo.html#vertical">Element-&gt;Font Info</A></CODE> and
 select the <CODE>PS General</CODE> tab and check the <CODE>[*] Has Vertical
 Metrics </CODE>checkbox. This will allow you to set the vertical origin for
-the font and will give every character a default vertical advance of the
+the font and it will give every character a default vertical advance of the
 emsize of the font (ascent+descent).
 <P>
 The vertical origin is the y height (in the design coordinate system) of
