@@ -2209,6 +2209,8 @@ static void handlename(Context *c,Val *val) {
 		for ( cnt=0, bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next, ++cnt) {
 		    val->u.aval->vals[cnt].type = v_int;
 		    val->u.aval->vals[cnt].u.ival = bdf->pixelsize;
+		    if ( bdf->clut!=NULL )
+			val->u.aval->vals[cnt].u.ival |= BDFDepth(bdf)<<16;
 		}
 	    } else if ( strcmp(name,"$trace")==0 ) {
 		val->type = v_lval;
