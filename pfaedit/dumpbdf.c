@@ -140,7 +140,8 @@ static void BDFDumpChar(FILE *file,BDFFont *font,BDFChar *bdfc,int enc) {
     int bpl;
     int em = ( font->sf->ascent+font->sf->descent );	/* Just in case em isn't 1000, be prepared to normalize */
 
-    BCCompressBitmap(bdfc);
+    if ( font->clut==NULL )
+	BCCompressBitmap(bdfc);
     if ( bdfc->enc==0xa0 && strcmp(bdfc->sc->name,"space")==0 )
 	fprintf( file, "STARTCHAR %s\n", "nonbreakingspace" );
     else if ( bdfc->enc==0xad && strcmp(bdfc->sc->name,"hyphen")==0 )
