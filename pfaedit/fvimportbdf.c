@@ -377,7 +377,7 @@ return( enc );
 
 static int slurp_header(FILE *bdf, int *_as, int *_ds, int *_enc,
 	char *family, char *mods, char *full, int *depth, char *foundry,
-	char *comments, struct metrics *defs) {
+	char *fontname, char *comments, struct metrics *defs) {
     int pixelsize = -1;
     int ascent= -1, descent= -1, enc, cnt;
     char tok[100], encname[100], weight[100], italic[100];
@@ -397,8 +397,10 @@ static int slurp_header(FILE *bdf, int *_as, int *_ds, int *_enc,
 	if ( strcmp(tok,"FONT")==0 ) {
 	    fscanf(bdf," -%*[^-]-%[^-]-%[^-]-%[^-]-%*[^-]-", family, weight, italic );
 	    while ( (ch = getc(bdf))!='-' && ch!='\n' && ch!=EOF );
-	    if ( ch=='-' )
+	    if ( ch=='-' ) {
 		fscanf(bdf,"%d", &pixelsize );
+		if ( pixelsize<0 ) pixelsize = -pixelsize;	/* An extra - screwed things up once... */
+	    }
 	} else if ( strcmp(tok,"SIZE")==0 ) {
 	    int size, res;
 	    fscanf(bdf, "%d %d %d", &size, &res, &res );
@@ -434,6 +436,8 @@ static int slurp_header(FILE *bdf, int *_as, int *_ds, int *_enc,
 	    fscanf(bdf, "%*d %d", &defs->vertical_origin );
 	else if ( strcmp(tok,"FOUNDRY")==0 )
 	    fscanf(bdf, " \"%[^\"]", foundry );
+	else if ( strcmp(tok,"FONT_NAME")==0 )
+	    fscanf(bdf, " \"%[^\"]", fontname );
 	else if ( strcmp(tok,"CHARSET_REGISTRY")==0 )
 	    fscanf(bdf, " \"%[^\"]", encname );
 	else if ( strcmp(tok,"CHARSET_ENCODING")==0 ) {
@@ -1382,7 +1386,7 @@ BDFFont *SFImportBDF(SplineFont *sf, char *filename,int ispk, int toback) {
     char tok[100];
     int pixelsize, ascent, descent, enc;
     BDFFont *b;
-    char family[100], mods[200], full[300], foundry[100], comments[1000];
+    char family[100], mods[200], full[300], foundry[100], comments[1000], fontname[300];
     struct toc *toc=NULL;
     int depth=1;
     struct metrics defs;
@@ -1391,6 +1395,7 @@ BDFFont *SFImportBDF(SplineFont *sf, char *filename,int ispk, int toback) {
     defs.metricsset = 0; defs.vertical_origin = 0;
     defs.res = -1;
     foundry[0] = '\0';
+    fontname[0] = '\0';
 
     bdf = fopen(filename,"r");
     if ( bdf==NULL ) {
@@ -1423,7 +1428,7 @@ return( NULL );
 return( NULL );
 	}
 	pixelsize = slurp_header(bdf,&ascent,&descent,&enc,family,mods,full,
-		&depth,foundry,comments,&defs);
+		&depth,foundry,fontname,comments,&defs);
     }
     if ( pixelsize==-1 )
 	pixelsize = askusersize(filename);
@@ -1434,6 +1439,10 @@ return( NULL );
     if ( !toback && sf->bitmaps==NULL && sf->onlybitmaps ) {
 	/* Loading first bitmap into onlybitmap font sets the name and encoding */
 	SFSetFontName(sf,family,mods,full);
+	if ( fontname[0]!='\0' ) {
+	    free(sf->fontname);
+	    sf->fontname = copy(fontname);
+	}
 	SFReencodeFont(sf,enc);
 	if ( defs.metricsset!=0 ) {
 	    sf->hasvmetrics = true;

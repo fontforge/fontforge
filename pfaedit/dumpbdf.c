@@ -42,9 +42,10 @@ return( !SCWorthOutputting(bdfc->sc));
 }
 
 static void decomposename(BDFFont *font, char *fontname, char *family_name, char *weight_name,
-	char *slant, char *stylename, char *squeeze ) {
+	char *slant, char *stylename, char *squeeze, char *sffamily, char *sfweight ) {
     char *ital, *bold, *style, *compress;
     char ich='\0', bch='\0', sch='\0', cch='\0';
+    char *pt;
 
     if ( *fontname=='-' ) {
 	sscanf(fontname,"-%*[^-]-%[^-]-%[^-]-%[^-]-%[^-]-%[^-]",
@@ -68,6 +69,7 @@ static void decomposename(BDFFont *font, char *fontname, char *family_name, char
 		( bold = strstr(fontname,"Blac"))==NULL &&
 		( bold = strstr(fontname,"Roma"))==NULL &&
 		( bold = strstr(fontname,"Book"))==NULL &&
+		( bold = strstr(fontname,"Regu"))==NULL &&
 		( bold = strstr(fontname,"Medi"))==NULL );	/* Again, URW */
     
 	if (( style = strstr(fontname,"Sans"))==NULL );
@@ -87,6 +89,8 @@ static void decomposename(BDFFont *font, char *fontname, char *family_name, char
 	    strcpy(weight_name,bold);
 	    *bold = '\0';
 	}
+	if ( sfweight!=NULL && *sfweight!='\0' )
+	    strcpy(weight_name,sfweight);
 	if ( style!=NULL ) {
 	    *style = sch;
 	    strcpy(stylename,style);
@@ -100,6 +104,10 @@ static void decomposename(BDFFont *font, char *fontname, char *family_name, char
 	if ( bold!=NULL ) *bold = bch; 
 	if ( ital!=NULL ) *ital = ich;
     }
+    if ( sffamily!=NULL && *sffamily!='\0' )
+	strcpy(family_name,sffamily);
+    while ( (pt=strchr(family_name,'-'))!=NULL )
+	strcpy(pt,pt+1);
 }
 
 static int AllSame(BDFFont *font,int *avg,int *cnt) {
@@ -236,7 +244,8 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding, int res) {
     if ( strcmp(encoding,"ISOLatin1Encoding")==0 )
 	encoding = "ISO8859-1";
 
-    decomposename(font, font->sf->fontname, family_name, weight_name, slant, stylename, squeeze);
+    decomposename(font, font->sf->fontname, family_name, weight_name, slant,
+	    stylename, squeeze, font->sf->familyname, font->sf->weight);
     if ( *font->sf->fontname=='-' ) {
 	strcpy(buffer,font->sf->fontname);
 	sprintf(fontname,"%s%s%s%s", family_name, stylename,
@@ -300,8 +309,9 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding, int res) {
 	     font->sf->chars[0]->refs==NULL && strcmp(font->sf->chars[0]->name,".notdef")==0 ) )
 	def_ch = 0;
 
-    fprintf( file, "STARTPROPERTIES %d\n", 22+(x_h!=-1)+(cap_h!=-1)+
+    fprintf( file, "STARTPROPERTIES %d\n", 23+(x_h!=-1)+(cap_h!=-1)+
 	    (def_ch!=-1)+(font->clut!=NULL));
+    fprintf( file, "FONT_NAME \"%s\"\n", font->sf->fontname );
     fprintf( file, "FONT_ASCENT %d\n", font->ascent );
     fprintf( file, "FONT_DESCENT %d\n", font->descent );
     fprintf( file, "QUAD_WIDTH %d\n", font->pixelsize );
