@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 30-Jun-2003 -->
+  <!-- AP: Last modified: 5-Jul-2003 -->
   <TITLE>Spline Font Database File Format</TITLE>
 </HEAD>
 <BODY>
@@ -51,6 +51,7 @@ XUID: 3 18 21
 Encoding: unicode
 Order2: 1
 OnlyBitmaps: 0
+TeXData: 1 10485760 0 269484 134742 89828 526385 1048576 89828
 </PRE>
 </BLOCKQUOTE>
 <P>
@@ -60,6 +61,15 @@ some fairly self-explanatory items (if they don't make sense, look them up
 in the <A HREF="fontinfo.html">font info</A> dlg). A few things need some
 explaination:
 <DL>
+  <DT>
+    TeXData
+  <DD>
+    These are the TeX font parameters (and some similar info). The first number
+    is 1,2 or 3 and indicates that the font is a text, math or math ext font.
+    The next number is the design pointsize (times (1&lt;&lt;20)). Then follow
+    the font parameters. These values are usually in TeX fix_word format where
+    there is a binary point after the first 20 binary digits (so to get the number
+    divide by (1&lt;&lt;20)).
   <DT>
     DisplaySize
   <DD>
@@ -378,7 +388,7 @@ here by drawing a comma and stacking a period on top of it). The first number
 is the local encoding of the character being refered to, the N says the reference
 is not selected, the remaining 6 numbers are a postscript transformation
 matrix, the one for comma (44) is the identity matrix, while the one for
-period (46) just translates it vertically 414 units. 
+period (46) just translates it vertically 414 units.
 <P>
 If a font has been loaded from a truetype file it may containing hinting
 information (PfaEdit does not attempt to understand truetype hints, just

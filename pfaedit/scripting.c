@@ -1466,30 +1466,32 @@ static void bSetUniqueID(Context *c) {
 static void bSetTeXParams(Context *c) {
     int i;
 
-    if ( c->a.argc!=10 )
-	error( c, "Wrong number of arguments");
     for ( i=1; i<c->a.argc; ++i )
 	if ( c->a.vals[1].type!=v_int )
 	    error(c,"Bad argument type");
+    switch ( c->a.vals[1].u.ival ) {
+      case 1:
+	if ( c->a.argc!=10 )
+	    error( c, "Wrong number of arguments");
+      break;
+      case 2:
+	if ( c->a.argc!=25 )
+	    error( c, "Wrong number of arguments");
+      break;
+      case 3:
+	if ( c->a.argc!=16 )
+	    error( c, "Wrong number of arguments");
+      break;
+      default:
+	error(c, "Bad value for first argument, must be 1,2 or 3");
+      break;
+    }
     c->curfv->sf->texdata.type = c->a.vals[1].u.ival;
     c->curfv->sf->texdata.designsize = c->a.vals[2].u.ival<<20;
     /* slant is a percentage */
     c->curfv->sf->texdata.params[0] = ((double) c->a.vals[3].u.ival)*(1<<20)/100.0;
-    for ( i=1; i<7; ++i )
+    for ( i=1; i<c->a.argc-3; ++i )
 	c->curfv->sf->texdata.params[i] = ((double) c->a.vals[3+i].u.ival)*(1<<20)/
-		(c->curfv->sf->ascent+c->curfv->sf->descent);
-}
-
-static void bSetTeXMathParams(Context *c) {
-    int i;
-
-    if ( c->a.argc!=6 && c->a.argc!=15 )
-	error( c, "Wrong number of arguments");
-    for ( i=1; i<c->a.argc; ++i )
-	if ( c->a.vals[1].type!=v_int )
-	    error(c,"Bad argument type");
-    for ( i=0; i<c->a.argc; ++i )
-	c->curfv->sf->texdata.params[7+i] = ((double) c->a.vals[i].u.ival)*(1<<20)/
 		(c->curfv->sf->ascent+c->curfv->sf->descent);
 }
 
@@ -2776,7 +2778,6 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "SetItalicAngle", bSetItalicAngle },
     { "SetUniqueID", bSetUniqueID },
     { "SetTeXParams", bSetTeXParams },
-    { "SetTeXMathParams", bSetTeXMathParams },
     { "SetCharName", bSetCharName },
     { "SetUnicodeValue", bSetUnicodeValue },
     { "SetCharColor", bSetCharColor },
@@ -3144,7 +3145,7 @@ static void backuptok(Context *c) {
     c->backedup = true;
 }
 
-#define PE_ARG_MAX	20
+#define PE_ARG_MAX	25
 
 static void docall(Context *c,char *name,Val *val) {
     /* Be prepared for c->donteval */
