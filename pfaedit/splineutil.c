@@ -1447,7 +1447,7 @@ static SplineChar *DuplicateNameReference(SplineFont *sf,char **encoding,int enc
     int i;
 
     for ( i=0; i<encindex; ++i )
-	if ( strcmp(encoding[i],encoding[encindex])==0 )
+	if ( i!=encindex && strcmp(encoding[i],encoding[encindex])==0 )
     break;
 
     encoding[encindex] = FindUnusedName(encoding,encoding[encindex],sf->charcnt);
@@ -1469,7 +1469,7 @@ return( sc );
 }
 
 static void SplineFontFromType1(SplineFont *sf, FontDict *fd) {
-    int i;
+    int i, isnotdef;
     RefChar *refs, *next, *pr;
     char **encoding;
     int istype2 = fd->fonttype==2;		/* Easy enough to deal with even though it will never happen... */
@@ -1513,8 +1513,10 @@ static void SplineFontFromType1(SplineFont *sf, FontDict *fd) {
     for ( i=0; i<sf->charcnt; ++i ) {
 	int k= -1, k2=-1;
 	k = LookupCharString(encoding[i],fd->chars);
+	isnotdef = false;
 	if ( k==-1 ) {
 	    k = k2 = LookupCharString(encoding[i],(struct pschars *) (fd->charprocs));
+	    isnotdef = (k==-1);
 	    if ( k==-1 )
 		k = LookupCharString(".notdef",fd->chars);
 	    if ( k==-1 )
@@ -1524,7 +1526,7 @@ static void SplineFontFromType1(SplineFont *sf, FontDict *fd) {
 	    /* 0 500 hsbw endchar */
 	    sf->chars[i] = PSCharStringToSplines((uint8 *) "\213\370\210\015\016",5,false,fd->private->subrs,NULL,".notdef");
 	    sf->chars[i]->width = sf->ascent+sf->descent;
-	} else if ( used[k] && strcmp(encoding[i],".notdef")!=0 ) {
+	} else if ( used[k] && !isnotdef && strcmp(encoding[i],".notdef")!=0 ) {
 	    sf->chars[i] = DuplicateNameReference(sf,encoding,i);
 	} else if ( k2==-1 ) {
 	    sf->chars[i] = PSCharStringToSplines(fd->chars->values[k],fd->chars->lens[k],
