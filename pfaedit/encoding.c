@@ -1477,13 +1477,17 @@ SplineFont *MakeCIDMaster(SplineFont *sf,int bycmap,char *cmapfilename, struct c
 	    freeme = true;
 	    free(uret);
 	}
-	if ( cmapfilename==NULL )
+	if ( cmapfilename==NULL ) {
+	    SplineFontFree(cidmaster);
 return(NULL);
+	}
 	cmap = ParseCMap(cmapfilename);
 	if ( freeme )
 	    free(cmapfilename);
-	if ( cmap==NULL )
+	if ( cmap==NULL ) {
+	    SplineFontFree(cidmaster);
 return(NULL);
+	}
 	CompressCMap(cmap);
 	SFEncodeToCMap(cidmaster,sf,cmap);
 	cmapfree(cmap);
@@ -1517,6 +1521,7 @@ return(NULL);
 	fvs->cidmaster = cidmaster;
     cidmaster->fv = sf->fv;
     sf->cidmaster = cidmaster;
+    sf->compacted = false;
     cidmaster->subfontcnt = 1;
     cidmaster->subfonts = gcalloc(2,sizeof(SplineFont *));
     cidmaster->subfonts[0] = sf;
