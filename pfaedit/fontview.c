@@ -3928,7 +3928,7 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i) {
 		    (i&0xff00)<0xa100+(94<<8) && (i&0xff)<0xa1+94 ) {
 	    int temp = i-0xa1a1;
 	    temp = (temp>>8)*94 + (temp&0xff);
-	    if ( sf->encoding_name = em_wansung )
+	    if ( sf->encoding_name == em_wansung )
 		temp = unicode_from_ksc5601[temp];
 	    else
 		temp = unicode_from_gb2312[temp];
