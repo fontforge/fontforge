@@ -1,6 +1,6 @@
 libgunicode_OBJECTS =  ArabicForms.obj,alphabet.obj,backtrns.obj,char.obj,\
 	cjk.obj,memory.obj,ucharmap.obj,unialt.obj,ustring.obj,\
-	utype.obj,usprintf.obj
+	utype.obj,usprintf.obj,gwwiconv.obj
 
 CFLAGS=/incl=([-.inc])/name=(as_is,short)/nowarn/define=("NODYNAMIC=1")
 
@@ -21,3 +21,4 @@ unialt.obj : unialt.c
 ustring.obj : ustring.c
 utype.obj : utype.c
 usprintf.obj : usprintf.c
+gwwiconv.obj : gwwiconv.c
