@@ -4078,6 +4078,7 @@ static void FVChar(FontView *fv,GEvent *event) {
 		else if ( pos<0 ) pos = fv->sf->charcnt-1;
 	    } while ( pos!=end_pos && !SCWorthOutputting(fv->sf->chars[pos]));
 	    if ( pos==end_pos ) ++pos;
+	    if ( pos>=fv->sf->charcnt ) pos = 0;
 	  break;
 #if GK_Tab!=GK_BackTab
 	  case GK_BackTab:
@@ -4087,6 +4088,12 @@ static void FVChar(FontView *fv,GEvent *event) {
 		if ( pos<0 ) pos = fv->sf->charcnt-1;
 	    } while ( pos!=end_pos && !SCWorthOutputting(fv->sf->chars[pos]));
 	    if ( pos==end_pos ) --pos;
+	    if ( pos<0 ) {
+		if ( SCWorthOutputting(fv->sf->chars[fv->sf->charcnt-1]))
+		    pos = fv->sf->charcnt-1;
+		else
+		    pos = 0;
+	    }
 	  break;
 #endif
 	  case GK_Left: case GK_KP_Left:
@@ -4153,9 +4160,9 @@ static void FVChar(FontView *fv,GEvent *event) {
 		CharViewCreate(sc,fv);
 	    } else {
 		BDFFont *bdf = fv->show;
-		if ( bdf->chars[pos]==NULL )
-		    bdf->chars[pos] = SplineCharRasterize(sc,bdf->pixelsize);
-		BitmapViewCreate(bdf->chars[pos],bdf,fv);
+		if ( bdf->chars[i]==NULL )
+		    bdf->chars[i] = SplineCharRasterize(sc,bdf->pixelsize);
+		BitmapViewCreate(bdf->chars[i],bdf,fv);
 	    }
 	    ++cnt;
 	}
