@@ -55,9 +55,9 @@ static int loadgif() {
 	GDrawIError("%s", dlerror());
 return( 0 );
     }
-    _DGifOpenFileName = dlsym(libgif,"DGifOpenFileName");
-    _DGifSlurp = dlsym(libgif,"DGifSlurp");
-    _DGifCloseFile = dlsym(libgif,"DGifCloseFile");
+    _DGifOpenFileName = (GifFileType *(*)(char *)) dlsym(libgif,"DGifOpenFileName");
+    _DGifSlurp = (int (*)(GifFileType *)) dlsym(libgif,"DGifSlurp");
+    _DGifCloseFile = (int (*)(GifFileType *)) dlsym(libgif,"DGifCloseFile");
     if ( _DGifOpenFileName && _DGifSlurp && _DGifCloseFile )
 return( 1 );
     dlclose(libgif);

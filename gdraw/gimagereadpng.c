@@ -74,17 +74,17 @@ return( 0 );
 	GDrawIError("%s", dlerror());
 return( 0 );
     }
-    _png_create_read_struct = dlsym(libpng,"png_create_read_struct");
-    _png_create_info_struct = dlsym(libpng,"png_create_info_struct");
-    _png_destroy_read_struct = dlsym(libpng,"png_destroy_read_struct");
-    _png_init_io = dlsym(libpng,"png_init_io");
-    _png_read_info = dlsym(libpng,"png_read_info");
-    _png_set_strip_16 = dlsym(libpng,"png_set_strip_16");
-    _png_set_packing = dlsym(libpng,"png_set_packing");
-    _png_set_filler = dlsym(libpng,"png_set_filler");
-    _png_read_image = dlsym(libpng,"png_read_image");
-    _png_read_end = dlsym(libpng,"png_read_end");
-    _png_set_strip_alpha = dlsym(libpng,"png_set_strip_alpha");
+    _png_create_read_struct = (png_structp (*)(char *, png_voidp, png_error_ptr, png_error_ptr)) dlsym(libpng,"png_create_read_struct");
+    _png_create_info_struct = (png_infop (*)(png_structp)) dlsym(libpng,"png_create_info_struct");
+    _png_destroy_read_struct = (void (*)(png_structpp, png_infopp, png_infopp)) dlsym(libpng,"png_destroy_read_struct");
+    _png_init_io = (void (*)(png_structp, FILE *)) dlsym(libpng,"png_init_io");
+    _png_read_info = (void (*)(png_structp, png_infop)) dlsym(libpng,"png_read_info");
+    _png_set_strip_16 = (void (*)(png_structp)) dlsym(libpng,"png_set_strip_16");
+    _png_set_strip_alpha = (void (*)(png_structp)) dlsym(libpng,"png_set_strip_alpha");
+    _png_set_packing = (void (*)(png_structp)) dlsym(libpng,"png_set_packing");
+    _png_set_filler = (void (*)(png_structp,png_uint_32,int)) dlsym(libpng,"png_set_filler");
+    _png_read_image = (void (*)(png_structp,png_bytep*)) dlsym(libpng,"png_read_image");
+    _png_read_end = (void (*)(png_structp,png_infop)) dlsym(libpng,"png_read_end");
     if ( _png_create_read_struct && _png_create_info_struct && _png_destroy_read_struct &&
 	    _png_init_io && _png_read_info && _png_set_strip_16 && _png_set_packing &&
 	    _png_set_filler && _png_read_image && _png_read_end &&

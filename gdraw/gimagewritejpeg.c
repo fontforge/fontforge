@@ -60,17 +60,28 @@ static int loadjpeg() {
 	GDrawIError("%s", dlerror());
 return( 0 );
     }
-    _jpeg_std_error = dlsym(libjpeg,"jpeg_std_error");
-    _jpeg_destroy_compress = dlsym(libjpeg,"jpeg_destroy_compress");
-    _jpeg_create_compress = dlsym(libjpeg,"jpeg_CreateCompress");
-    _jpeg_stdio_src = dlsym(libjpeg,"jpeg_stdio_src");
-    _jpeg_set_defaults = dlsym(libjpeg,"jpeg_set_defaults");
-    _jpeg_set_quality = dlsym(libjpeg,"jpeg_set_quality");
-    _jpeg_simple_progression = dlsym(libjpeg,"jpeg_simple_progression");
-    _jpeg_start_compress = dlsym(libjpeg,"jpeg_start_compress");
-    _jpeg_write_scanlines = dlsym(libjpeg,"jpeg_write_scanlines");
-    _jpeg_finish_compress = dlsym(libjpeg,"jpeg_finish_compress");
-    _jpeg_stdio_dest = dlsym(libjpeg,"jpeg_stdio_dest");
+    _jpeg_std_error = (struct jpeg_error_mgr *(*)(struct jpeg_error_mgr *))
+		dlsym(libjpeg,"jpeg_std_error");
+    _jpeg_destroy_compress = (void (*)(j_compress_ptr))
+		dlsym(libjpeg,"jpeg_destroy_compress");
+    _jpeg_create_compress = (void (*)(j_compress_ptr,int,size_t))
+		dlsym(libjpeg,"jpeg_CreateCompress");
+    _jpeg_stdio_src = (void (*)(j_compress_ptr, FILE *))
+		dlsym(libjpeg,"jpeg_stdio_src");
+    _jpeg_set_defaults = (int (*)(j_compress_ptr))
+		dlsym(libjpeg,"jpeg_set_defaults");
+    _jpeg_set_quality = (int (*)(j_compress_ptr,int,boolean))
+		dlsym(libjpeg,"jpeg_set_quality");
+    _jpeg_simple_progression = (int (*)(j_compress_ptr))
+		dlsym(libjpeg,"jpeg_simple_progression");
+    _jpeg_start_compress = (boolean (*)(j_compress_ptr,boolean))
+		dlsym(libjpeg,"jpeg_start_compress");
+    _jpeg_write_scanlines = (boolean (*)(j_compress_ptr, JSAMPARRAY, JDIMENSION))
+		dlsym(libjpeg,"jpeg_write_scanlines");
+    _jpeg_finish_compress = (boolean (*)(j_compress_ptr))
+		dlsym(libjpeg,"jpeg_finish_compress");
+    _jpeg_stdio_dest = (void (*)(j_compress_ptr, FILE *))
+		dlsym(libjpeg,"jpeg_stdio_dest");
     if ( _jpeg_std_error && _jpeg_destroy_compress && _jpeg_create_compress &&
 	    _jpeg_stdio_src && _jpeg_set_defaults && _jpeg_set_quality &&
 	    _jpeg_simple_progression && _jpeg_start_compress && _jpeg_write_scanlines &&

@@ -1789,7 +1789,7 @@ BDFFont *SFImportBDF(SplineFont *sf, char *filename,int ispk, int toback) {
     struct toc *toc=NULL;
     int depth=1;
     struct metrics defs;
-    int upos= 0x80000000, uwidth = 0x80000000;
+    int upos= (int) 0x80000000, uwidth = (int) 0x80000000;
 
     defs.swidth = defs.swidth1 = -1; defs.dwidth=defs.dwidth1=0;
     defs.metricsset = 0; defs.vertical_origin = 0;

@@ -67,15 +67,24 @@ return( 0 );
 	GDrawIError("%s", dlerror());
 return( 0 );
     }
-    _png_create_write_struct = dlsym(libpng,"png_create_write_struct");
-    _png_create_info_struct = dlsym(libpng,"png_create_info_struct");
-    _png_destroy_write_struct = dlsym(libpng,"png_destroy_write_struct");
-    _png_init_io = dlsym(libpng,"png_init_io");
-    _png_write_info = dlsym(libpng,"png_write_info");
-    _png_set_packing = dlsym(libpng,"png_set_packing");
-    _png_set_filler = dlsym(libpng,"png_set_filler");
-    _png_write_image = dlsym(libpng,"png_write_image");
-    _png_write_end = dlsym(libpng,"png_write_end");
+    _png_create_write_struct = (png_structp (*)(char *, png_voidp, png_error_ptr, png_error_ptr))
+	    dlsym(libpng,"png_create_write_struct");
+    _png_create_info_struct = (png_infop (*)(png_structp))
+	    dlsym(libpng,"png_create_info_struct");
+    _png_destroy_write_struct = (void (*)(png_structpp, png_infopp))
+	    dlsym(libpng,"png_destroy_write_struct");
+    _png_init_io = (void (*)(png_structp, FILE *))
+	    dlsym(libpng,"png_init_io");
+    _png_write_info = (void (*)(png_structp, png_infop))
+	    dlsym(libpng,"png_write_info");
+    _png_set_packing = (void (*)(png_structp))
+	    dlsym(libpng,"png_set_packing");
+    _png_set_filler = (void (*)(png_structp,png_uint_32,int))
+	    dlsym(libpng,"png_set_filler");
+    _png_write_image = (void (*)(png_structp,png_bytep*))
+	    dlsym(libpng,"png_write_image");
+    _png_write_end = (void (*)(png_structp,png_infop))
+	    dlsym(libpng,"png_write_end");
     if ( _png_create_write_struct && _png_create_info_struct && _png_destroy_write_struct &&
 	    _png_init_io && _png_set_filler && _png_write_info && _png_set_packing &&
 	    _png_write_image && _png_write_end)

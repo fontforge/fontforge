@@ -95,9 +95,9 @@ return( false );
 return( false );
 	}
 	protocols[plen].handle = handle;
-	protocols[plen].dispatcher = dlsym(handle,"GIO_dispatch");
-	protocols[plen].cancel = dlsym(handle,"GIO_cancel");
-	protocols[plen].term = dlsym(handle,"GIO_term");
+	protocols[plen].dispatcher = (void *(*)(GIOControl *)) dlsym(handle,"GIO_dispatch");
+	protocols[plen].cancel = (void (*)(GIOControl *)) dlsym(handle,"GIO_cancel");
+	protocols[plen].term = (void (*)(void *)) dlsym(handle,"GIO_term");
 	init = dlsym(handle,"GIO_init");
 	if ( init!=NULL )
 	    (init)(handle,&_GIO_stdfuncs,plen);
