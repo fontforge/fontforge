@@ -79,6 +79,7 @@ extern int seperate_hint_controls;
 extern int ItalicConstrained;
 extern int no_windowing_ui;
 extern uint32 default_background;
+extern int use_utf8_in_script;
 
 extern int new_em_size;
 extern int new_fonts_are_order2;
