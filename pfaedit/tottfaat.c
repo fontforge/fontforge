@@ -119,7 +119,87 @@ return;
 /* *************************    The 'lcar' table    ************************* */
 /* ************************************************************************** */
 
+static PST *haslcaret(SplineChar *sc) {
+    PST *pst; int j;
+
+    for ( pst=sc->possub; pst!=NULL && pst->type!=pst_lcaret; pst=pst->next );
+    if ( pst!=NULL ) {
+	for ( j=pst->u.lcaret.cnt-1; j>=0 && pst->u.lcaret.carets[j]==0; --j );
+	if ( j==-1 )
+	    pst = NULL;
+    }
+return( pst );
+}
+
 void aat_dumplcar(struct alltabs *at, SplineFont *sf) {
+    int i, j, k, l, seg_cnt, tot, last, offset;
+    PST *pst;
+    FILE *lcar=NULL;
+
+    for ( k=0; k<4; ++k ) {
+	for ( i=seg_cnt=tot=0; i<sf->charcnt; ++i )
+		if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 &&
+		    (pst = haslcaret(sf->chars[i]))!=NULL ) {
+	    if ( k==1 )
+		tot = 0;
+	    else if ( k==2 ) {
+		putshort(lcar,offset);
+		offset += 2 + 2*pst->u.lcaret.cnt;
+	    } else if ( k==3 ) {
+		putshort(lcar,pst->u.lcaret.cnt);
+		for ( l=0; l<pst->u.lcaret.cnt; ++l )
+		    putshort(lcar,pst->u.lcaret.carets[l]);
+	    }
+	    for ( j=i+1, ++tot; j<sf->charcnt; ++j ) if ( sf->chars[j]!=NULL && sf->chars[j]->ttf_glyph!=-1 ) {
+		if ( (pst = haslcaret(sf->chars[j]))== NULL )
+	    break;
+		++tot;
+		last = j;
+		if ( k==2 ) {
+		    putshort(lcar,offset);
+		    offset += 2 + 2*pst->u.lcaret.cnt;
+		} else if ( k==3 ) {
+		    putshort(lcar,pst->u.lcaret.cnt);
+		    for ( l=0; l<pst->u.lcaret.cnt; ++l )
+			putshort(lcar,pst->u.lcaret.carets[l]);
+		}
+	    }
+	    if ( k==1 ) {
+		putshort(lcar,sf->chars[last]->ttf_glyph);
+		putshort(lcar,sf->chars[i]->ttf_glyph);
+		putshort(lcar,offset);
+		offset += 2*tot;
+	    }
+	    ++seg_cnt;
+	    i = j-1;
+	}
+	if ( k==0 ) {
+	    if ( seg_cnt==0 )
+return;
+	    lcar = tmpfile();
+	    putlong(lcar, 0x00010000);	/* version */
+	    putshort(lcar,0);		/* data are distances (not points) */
+
+	    putshort(lcar,4);		/* Lookup table format 4 */
+		/* Binary search header */
+	    putshort(lcar,6);		/* Entry size */
+	    putshort(lcar,seg_cnt);	/* Number of segments */
+	    for ( j=0,l=1; l<=seg_cnt; l<<=1, ++j );
+	    --j; l>>=1;
+	    putshort(lcar,6*l);
+	    putshort(lcar,j);
+	    putshort(lcar,6*(seg_cnt-l));
+	    offset = 4+7*2 + seg_cnt*6 + 6;
+	} else if ( k==1 ) {		/* flag entry */
+	    putshort(lcar,0xffff);
+	    putshort(lcar,0xffff);
+	    putshort(lcar,0);
+	}
+    }
+    at->lcar = lcar;
+    at->lcarlen = ftell(at->lcar);
+    if ( at->lcarlen&2 )
+	putshort(at->lcar,0);
 }
 
 /* ************************************************************************** */

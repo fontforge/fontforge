@@ -1412,7 +1412,7 @@ void CVChangeSC(CharView *cv, SplineChar *sc ) {
 	cv->expandedge = ee_none;
     }
 
-    SCLigCaretCheck(sc);
+    SCLigCaretCheck(sc,false);
 
     CVUnlinkView(cv);
     cv->p.nextcp = cv->p.prevcp = cv->widthsel = cv->vwidthsel = false;
@@ -5549,7 +5549,7 @@ CharView *CharViewCreate(SplineChar *sc, FontView *fv) {
     unichar_t ubuf[300];
 
     cv->sc = sc;
-    SCLigCaretCheck(sc);
+    SCLigCaretCheck(sc,false);
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_ititle;

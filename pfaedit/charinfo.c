@@ -1177,7 +1177,7 @@ static int CI_ProcessPosSubs(CharInfo *ci) {
     }
     ci->sc->charinfo = ci;
     PSTFree(old);
-    SCLigCaretCheck(ci->sc);
+    SCLigCaretCheck(ci->sc,true);
 return( true );
 }
 
@@ -1824,20 +1824,22 @@ void SCSuffixDefault(SplineChar *sc,uint32 tag,char *suffix,uint16 flags) {
 	SCMergePSList(sc,AddSubs(NULL,tag,alt->name,flags));
 }
 
-void SCLigCaretCheck(SplineChar *sc) {
-    PST *pst, *carets=NULL;
+void SCLigCaretCheck(SplineChar *sc,int clean) {
+    PST *pst, *carets=NULL, *prev_carets, *prev;
     int lig_comp_max=0, lc, i;
     char *pt;
     /* Check to see if this is a ligature character, and if so, does it have */
     /*  a ligature caret structure. If a lig but no lig caret structure then */
     /*  create a lig caret struct */
 
-    for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
+    for ( pst=sc->possub, prev=NULL; pst!=NULL; prev = pst, pst=pst->next ) {
 	if ( pst->type == pst_lcaret ) {
 	    if ( carets!=NULL )
 		GDrawIError("Too many ligature caret structures" );
-	    else
+	    else {
 		carets = pst;
+		prev_carets = prev;
+	    }
 	} else if ( pst->type==pst_ligature ) {
 	    for ( lc=0, pt=pst->u.lig.components; *pt; ++pt )
 		if ( *pt==' ' ) ++lc;
@@ -1845,8 +1847,17 @@ void SCLigCaretCheck(SplineChar *sc) {
 		lig_comp_max = lc;
 	}
     }
-    if ( lig_comp_max == 0 )
+    if ( lig_comp_max == 0 ) {
+	if ( clean && carets!=NULL ) {
+	    if ( prev_carets==NULL )
+		sc->possub = carets->next;
+	    else
+		prev_carets->next = carets->next;
+	    carets->next = NULL;
+	    PSTFree(carets);
+	}
 return;
+    }
     if ( carets==NULL ) {
 	carets = chunkalloc(sizeof(PST));
 	carets->type = pst_lcaret;

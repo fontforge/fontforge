@@ -4466,6 +4466,84 @@ return;
     free(glyphs);
 }
 
+static void readttf_applelookup(FILE *ttf,struct ttfinfo *info,uint32 base,
+	void (*apply_values)(struct ttfinfo *info, int gfirst, int glast,FILE *ttf),
+	void (*apply_value)(struct ttfinfo *info, int gfirst, int glast,FILE *ttf),
+	void (*apply_default)(struct ttfinfo *info, int gfirst, int glast,void *def),
+	void *def) {
+    int format, i, first, last, data_off, cnt, prev;
+    uint32 here;
+
+    switch ( format = getushort(ttf)) {
+      case 0:	/* Simple array */
+	apply_values(info,0,info->glyph_cnt-1,ttf);
+      break;
+      case 2:	/* Segment Single */
+	/* Entry size  */ getushort(ttf);
+	cnt = getushort(ttf);
+	/* search range */ getushort(ttf);
+	/* log2(cnt)    */ getushort(ttf);
+	/* range shift  */ getushort(ttf);
+	prev = 0;
+	for ( i=0; i<cnt; ++i ) {
+	    last = getushort(ttf);
+	    first = getushort(ttf);
+	    if ( apply_default!=NULL )
+		apply_default(info,prev,first-1,def);
+	    apply_value(info,first,last,ttf);
+	    prev = last+1;
+	}
+      break;
+      case 4:	/* Segment multiple */
+	/* Entry size  */ getushort(ttf);
+	cnt = getushort(ttf);
+	/* search range */ getushort(ttf);
+	/* log2(cnt)    */ getushort(ttf);
+	/* range shift  */ getushort(ttf);
+	prev = 0;
+	for ( i=0; i<cnt; ++i ) {
+	    last = getushort(ttf);
+	    first = getushort(ttf);
+	    data_off = getushort(ttf);
+	    here = ftell(ttf);
+	    if ( apply_default!=NULL )
+		apply_default(info,prev,first-1,def);
+	    fseek(ttf,base+data_off,SEEK_SET);
+	    apply_values(info,first,last,ttf);
+	    fseek(ttf,here,SEEK_SET);
+	    prev = last+1;
+	}
+      break;
+      case 6:	/* Single table */
+	/* Entry size  */ getushort(ttf);
+	cnt = getushort(ttf);
+	/* search range */ getushort(ttf);
+	/* log2(cnt)    */ getushort(ttf);
+	/* range shift  */ getushort(ttf);
+	prev = 0;
+	for ( i=0; i<cnt; ++i ) {
+	    first = getushort(ttf);
+	    if ( apply_default!=NULL )
+		apply_default(info,prev,first-1,def);
+	    apply_value(info,first,first,ttf);
+	    prev = first+1;
+	}
+      break;
+      case 8:	/* Simple array */
+	first = getushort(ttf);
+	cnt = getushort(ttf);
+	if ( apply_default!=NULL ) {
+	    apply_default(info,0,first-1,def);
+	    apply_default(info,first+cnt,info->glyph_cnt-1,def);
+	}
+	apply_values(info,first,first+cnt-1,ttf);
+      break;
+      default:
+	fprintf( stderr, "Invalid lookup table format. %d\n", format );
+      break;
+    }
+}
+
 static void TTF_SetProp(struct ttfinfo *info,int gnum, int prop) {
     int dir, offset;
     PST *pst;
@@ -4495,8 +4573,32 @@ return;
     }
 }
 
+static void prop_apply_values(struct ttfinfo *info, int gfirst, int glast,FILE *ttf) {
+    int i;
+
+    for ( i=gfirst; i<=glast; ++i )
+	TTF_SetProp(info,i, getushort(ttf));
+}
+
+static void prop_apply_value(struct ttfinfo *info, int gfirst, int glast,FILE *ttf) {
+    int i;
+    int prop;
+
+    prop = getushort(ttf);
+    for ( i=gfirst; i<=glast; ++i )
+	TTF_SetProp(info,i, prop);
+}
+
+static void prop_apply_default(struct ttfinfo *info, int gfirst, int glast,void *def) {
+    int def_prop, i;
+
+    def_prop = (int) def;
+    for ( i=gfirst; i<=glast; ++i )
+	TTF_SetProp(info,i, def_prop);
+}
+    
 static void readttfprop(FILE *ttf,struct ttfinfo *info) {
-    int def, format, i, j, first, last, prop, cnt, prev;
+    int def;
 
     fseek(ttf,info->prop_start,SEEK_SET);
     /* The one example that I've got has a wierd version, so I don't check it */
@@ -4504,70 +4606,61 @@ static void readttfprop(FILE *ttf,struct ttfinfo *info) {
     /* version = */ getlong(ttf);
     /* format = */ getushort(ttf);
     def = getushort(ttf);
-    switch ( format = getushort(ttf)) {
-      case 0:	/* Simple array */
-	for ( i=0; i<info->glyph_cnt; ++i )
-	    TTF_SetProp(info,i,getushort(ttf));
-      break;
-      case 2:	/* Segment Single */
-	/* Entry size  */ getushort(ttf);
-	cnt = getushort(ttf);
-	/* search range */ getushort(ttf);
-	/* log2(cnt)    */ getushort(ttf);
-	/* range shift  */ getushort(ttf);
-	prev = 0;
-	for ( i=0; i<cnt; ++i ) {
-	    last = getushort(ttf);
-	    first = getushort(ttf);
-	    prop = getushort(ttf);
-	    for ( j=prev; j<first ; ++j ) TTF_SetProp(info,j,def);
-	    for ( j=first; j<=last ; ++j ) TTF_SetProp(info,j,prop);
-	    prev = j;
-	}
-      break;
-      case 4:	/* Segment multiple */
-	/* Entry size  */ getushort(ttf);
-	cnt = getushort(ttf);
-	/* search range */ getushort(ttf);
-	/* log2(cnt)    */ getushort(ttf);
-	/* range shift  */ getushort(ttf);
-	prev = 0;
-	for ( i=0; i<cnt; ++i ) {
-	    last = getushort(ttf);
-	    first = getushort(ttf);
-	    for ( j=prev; j<first ; ++j ) TTF_SetProp(info,j,def);
-	    for ( j=first; j<=last ; ++j ) TTF_SetProp(info,j,getushort(ttf));
-	    prev = j;
-	}
-      break;
-      case 6:	/* Single table */
-	/* Entry size  */ getushort(ttf);
-	cnt = getushort(ttf);
-	/* search range */ getushort(ttf);
-	/* log2(cnt)    */ getushort(ttf);
-	/* range shift  */ getushort(ttf);
-	prev = 0;
-	for ( i=0; i<cnt; ++i ) {
-	    first = getushort(ttf);
-	    for ( j=prev; j<first ; ++j ) TTF_SetProp(info,j,def);
-	    TTF_SetProp(info,first,getushort(ttf));
-	    prev = first+1;
-	}
-      break;
-      case 8:	/* Simple array */
-	first = getushort(ttf);
-	cnt = getushort(ttf);
-	for ( i=0; i<cnt; ++i )
-	    TTF_SetProp(info,i+first,getushort(ttf));
-	for ( i=0; i<first; ++i )
-	    TTF_SetProp(info,i,def);
-	for ( i=first+cnt; i<info->glyph_cnt; ++i )
-	    TTF_SetProp(info,i,def);
-      break;
-      default:
-	fprintf( stderr, "Invalid lookup table format in 'prop' table. %d\n", format );
-      break;
-    }
+    readttf_applelookup(ttf,info,info->prop_start,
+	    prop_apply_values,prop_apply_value,
+	    prop_apply_default,(void *) def);
+}
+
+static void TTF_SetLcaret(struct ttfinfo *info, int gnum, int offset, FILE *ttf) {
+    uint32 here = ftell(ttf);
+    PST *pst;
+    SplineChar *sc;
+    int cnt, i;
+
+    if ( gnum<0 || gnum>=info->glyph_cnt ) {
+	fprintf( stderr, "Glyph out of bounds in 'prop' table %d\n", gnum );
+return;
+    } else if ( (sc=info->chars[gnum])==NULL )
+return;
+
+    fseek(ttf,info->lcar_start+offset,SEEK_SET);
+    cnt = getushort(ttf);
+    pst = chunkalloc(sizeof(PST));
+    pst->type = pst_lcaret;
+    pst->tag = CHR(' ',' ',' ',' ');
+    pst->next = sc->possub;
+    sc->possub = pst;
+    pst->u.lcaret.cnt = cnt;
+    pst->u.lcaret.carets = galloc(cnt*sizeof(uint16));
+    for ( i=0; i<cnt; ++i )
+	pst->u.lcaret.carets[i] = getushort(ttf);
+    fseek(ttf,here,SEEK_SET);
+}
+
+static void lcar_apply_values(struct ttfinfo *info, int gfirst, int glast,FILE *ttf) {
+    int i;
+
+    for ( i=gfirst; i<=glast; ++i )
+	TTF_SetLcaret(info,i, getushort(ttf), ttf);
+}
+
+static void lcar_apply_value(struct ttfinfo *info, int gfirst, int glast,FILE *ttf) {
+    int i;
+    int offset;
+
+    offset = getushort(ttf);
+    for ( i=gfirst; i<=glast; ++i )
+	TTF_SetLcaret(info,i, offset, ttf);
+}
+    
+static void readttflcar(FILE *ttf,struct ttfinfo *info) {
+
+    fseek(ttf,info->lcar_start,SEEK_SET);
+    /* version = */ getlong(ttf);
+    if ( getushort(ttf)!=0 )	/* A format type of 1 has the caret locations */
+return;				/*  indicated by points */
+    readttf_applelookup(ttf,info,info->lcar_start,
+	    lcar_apply_values,lcar_apply_value,NULL,NULL);
 }
 
 static void UnfigureControls(Spline *spline,BasePoint *pos) {
@@ -4719,8 +4812,12 @@ return( 0 );
 	readttfkerns(ttf,info);
     if ( info->gdef_start!=0 )		/* ligature caret positioning info */
 	readttfgdef(ttf,info);
-    else if ( info->prop_start!=0 )
-	readttfprop(ttf,info);
+    else {
+	if ( info->prop_start!=0 )
+	    readttfprop(ttf,info);
+	if ( info->lcar_start!=0 )
+	    readttflcar(ttf,info);
+    }
     if ( info->gpos_start!=0 )		/* kerning info may live in the gpos table too */
 	readttfgpossub(ttf,info,true);
     if ( info->gsub_start!=0 )
