@@ -1421,6 +1421,226 @@ static void morx_dumpnestedsubs(FILE *temp,SplineFont *sf,uint32 tag) {
     free(map);
 }
 
+static uint16 *NamesToGlyphs(SplineFont *sf,char *names,uint16 *cnt) {
+    char *pt, *start;
+    int c, ch;
+    uint16 *ret;
+    SplineChar *sc;
+
+    for ( c=0, pt=names; *pt; ++pt )
+	if ( *pt==' ' ) ++c;
+    ret = galloc((c+1)*sizeof(uint16));
+
+    for ( c=0, pt=names; *pt; ) {
+	while ( *pt==' ' ) ++pt;
+	if ( *pt=='\0' )
+    break;
+	start = pt;
+	while ( *pt!=' ' && *pt!='\0' ) ++pt;
+	ch = *pt; *pt='\0';
+	sc = SFGetCharDup(sf,-1,start);
+	*pt = ch;
+	if ( sc!=NULL && sc->ttf_glyph!=-1 )
+	    ret[c++] = sc->ttf_glyph;
+    }
+    *cnt = c;
+return( ret );
+}
+
+static int morx_dumpASM(FILE *temp,ASM *sm, struct alltabs *at, SplineFont *sf ) {
+    int i, j, gcnt, ch;
+    char *pt, *end;
+    uint16 *map;
+    SplineChar **glyphs, *sc;
+    int stcnt, tcnt;
+    struct ins { char *names; uint16 len,pos; uint16 *glyphs; } *subsins=NULL;
+    uint32 *substags=NULL;
+    uint32 start, here, substable_pos;
+    struct transdata { uint16 transition, mark_index, cur_index; } *transdata;
+    struct trans { uint16 ns, flags, mi, ci; } *trans;
+
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
+	sf->chars[i]->lsidebearing = 1;
+
+    gcnt = 0;
+    for ( i=4; i<sm->class_cnt; ++i ) {
+	for ( pt = sm->classes[i]; ; pt=end ) {
+	    while ( *pt==' ' ) ++pt;
+	    if ( *pt=='\0' )
+	break;
+	    for ( end=pt; *end!='\0' && *end!=' '; ++end );
+	    ch = *end; *end = '\0';
+	    sc = SFGetCharDup(sf,-1,pt);
+	    *end = ch;
+	    if ( sc!=NULL ) {
+		sc->lsidebearing = i;
+		++gcnt;
+	    }
+	}
+    }
+    glyphs = galloc((gcnt+1)*sizeof(SplineChar *));
+    map = galloc((gcnt+1)*sizeof(uint16));
+    gcnt = 0;
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->lsidebearing!=1 ) {
+	glyphs[gcnt] = sf->chars[i];
+	map[gcnt++] = sf->chars[i]->lsidebearing;
+    }
+    glyphs[gcnt] = NULL;
+
+    /* Give each subs tab an index into the mac's substitution lookups */
+    transdata = gcalloc(sm->state_cnt*sm->class_cnt,sizeof(struct transdata));
+    stcnt = 0;
+    substags = NULL; subsins = NULL;
+    if ( sm->type==asm_context ) {
+	substags = galloc(2*sm->state_cnt*sm->class_cnt*sizeof(uint32));
+	for ( j=0; j<sm->state_cnt*sm->class_cnt; ++j ) {
+	    struct asm_state *this = &sm->state[j];
+	    transdata[j].mark_index = transdata[j].cur_index = 0xffff;
+	    if ( this->u.context.mark_tag!=0 ) {
+		for ( i=0; i<stcnt; ++i )
+		    if ( substags[i]==this->u.context.mark_tag )
+		break;
+		if ( i==stcnt )
+		    substags[stcnt++] = this->u.context.mark_tag;
+		transdata[j].mark_index = i;
+	    }
+	    if ( this->u.context.cur_tag!=0 ) {
+		for ( i=0; i<stcnt; ++i )
+		    if ( substags[i]==this->u.context.cur_tag )
+		break;
+		if ( i==stcnt )
+		    substags[stcnt++] = this->u.context.cur_tag;
+		transdata[j].cur_index = i;
+	    }
+	}
+    } else if ( sm->type==asm_insert ) {
+	subsins = galloc(2*sm->state_cnt*sm->class_cnt*sizeof(struct ins));
+	for ( j=0; j<sm->state_cnt*sm->class_cnt; ++j ) {
+	    struct asm_state *this = &sm->state[j];
+	    transdata[j].mark_index = transdata[j].cur_index = 0xffff;
+	    if ( this->u.insert.mark_ins!=0 ) {
+		for ( i=0; i<stcnt; ++i )
+		    if ( strcmp(subsins[i].names,this->u.insert.mark_ins)==0 )
+		break;
+		if ( i==stcnt ) {
+		    subsins[stcnt].pos = stcnt==0 ? 0 : subsins[stcnt-1].pos +
+							subsins[stcnt-1].len;
+		    subsins[stcnt].names = this->u.insert.mark_ins;
+		    subsins[stcnt].glyphs = NamesToGlyphs(sf,subsins[stcnt].names,&subsins[stcnt].len);
+		    ++stcnt;
+		}
+		transdata[j].mark_index = subsins[i].pos;
+	    }
+	    if ( this->u.insert.cur_ins!=0 ) {
+		for ( i=0; i<stcnt; ++i )
+		    if ( strcmp(subsins[i].names,this->u.insert.cur_ins)==0 )
+		break;
+		if ( i==stcnt ) {
+		    subsins[stcnt].pos = stcnt==0 ? 0 : subsins[stcnt-1].pos +
+							subsins[stcnt-1].len;
+		    subsins[stcnt].names = this->u.insert.mark_ins;
+		    subsins[stcnt].glyphs = NamesToGlyphs(sf,subsins[stcnt].names,&subsins[stcnt].len);
+		    ++stcnt;
+		}
+		transdata[j].cur_index = subsins[i].pos;
+	    }
+	}
+    }
+
+    trans = galloc(sm->state_cnt*sm->class_cnt*sizeof(struct trans));
+    tcnt = 0;
+    for ( j=0; j<sm->state_cnt*sm->class_cnt; ++j ) {
+	struct asm_state *this = &sm->state[j];
+	for ( i=0; i<tcnt; ++i )
+	    if ( trans[i].ns==this->next_state && trans[i].flags==this->flags &&
+		    trans[i].mi==transdata[j].mark_index &&
+		    trans[i].ci==transdata[j].cur_index )
+	break;
+	if ( i==tcnt ) {
+	    trans[tcnt].ns = this->next_state;
+	    trans[tcnt].flags = this->flags;
+	    trans[tcnt].mi = transdata[j].mark_index;
+	    trans[tcnt++].ci = transdata[j].cur_index;
+	}
+	transdata[j].transition = i;
+    }
+    
+
+    /* Output the header */
+    start = ftell(temp);
+    putlong(temp,sm->class_cnt);
+    if ( sm->type==asm_indic ) {
+	putlong(temp,4*sizeof(uint32));		/* class offset */
+	putlong(temp,0);			/* state offset */
+	putlong(temp,0);			/* transition entry offset */
+    } else {
+	putlong(temp,5*sizeof(uint32));		/* class offset */
+	putlong(temp,0);			/* state offset */
+	putlong(temp,0);			/* transition entry offset */
+	putlong(temp,0);			/* substitution/insertion table offset */
+    }
+    morx_lookupmap(temp,glyphs,map,gcnt);/* dump the class lookup table */
+    free(glyphs); free(map);
+
+
+    here = ftell(temp);
+    fseek(temp,start+2*sizeof(uint32),SEEK_SET);
+    putlong(temp,here-start);			/* Point to start of state arrays */
+    fseek(temp,0,SEEK_END);
+
+    for ( j=0; j<sm->state_cnt*sm->class_cnt; ++j )
+	putshort(temp,transdata[j].transition);
+    free(transdata);
+
+    here = ftell(temp);
+    fseek(temp,start+3*sizeof(uint32),SEEK_SET);
+    putlong(temp,here-start);			/* Point to start of transition arrays */
+    fseek(temp,0,SEEK_END);
+
+    /* Now the transitions */
+    for ( i=0; i<tcnt; ++i ) {
+	putshort(temp,trans[i].ns);
+	putshort(temp,trans[i].flags);
+	if ( sm->type!=asm_indic ) {
+	    putshort(temp,trans[i].mi );
+	    putshort(temp,trans[i].ci );
+	}
+    }
+    free(trans);
+
+    if ( sm->type==asm_context ) {
+	substable_pos = ftell(temp);
+	fseek(temp,start+4*sizeof(uint32),SEEK_SET);
+	putlong(temp,substable_pos-start);		/* Point to start of substitution lookup offsets */
+	fseek(temp,0,SEEK_END);
+
+	/* And finally the substitutions */
+	for ( i=0; i<stcnt; ++i )
+	    putlong(temp,0);	/* offsets to the substitutions */
+	for ( i=0; i<stcnt; ++i ) {
+	    here = ftell(temp);
+	    fseek(temp,substable_pos+i*sizeof(uint32),SEEK_SET);
+	    putlong(temp,here-substable_pos);
+	    fseek(temp,0,SEEK_END);
+	    morx_dumpnestedsubs(temp,sf,substags[i]);
+	}
+	free(substags);
+    } else if ( sm->type==asm_insert ) {
+	substable_pos = ftell(temp);
+	fseek(temp,start+4*sizeof(uint32),SEEK_SET);
+	putlong(temp,substable_pos-start);		/* Point to start of insertions */
+	fseek(temp,0,SEEK_END);
+
+	for ( i=0; i<stcnt; ++i ) {
+	    for ( j=0; j<subsins[i].len; ++j )
+		putshort(temp,subsins[i].glyphs[j]);
+	    free(subsins[i].glyphs);
+	}
+	free(subsins);
+    }
+return( true );
+}
+
 static struct contexttree *TreeNext(struct contexttree *cur) {
     struct contexttree *p;
     int i;
@@ -1545,7 +1765,7 @@ static int morx_dumpContGlyphFeatureFromClass(FILE *temp,FPST *fpst,
     uint32 start, here, substable_pos;
 
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
-	sf->chars[i]->lsidebearing = 0;
+	sf->chars[i]->lsidebearing = 1;		/* Class for things not in other classes */
 
     /* Figure classes. Just use those in the fpst->nclass */
     gcnt = 0;
@@ -1577,7 +1797,7 @@ static int morx_dumpContGlyphFeatureFromClass(FILE *temp,FPST *fpst,
     glyphs = galloc((gcnt+1)*sizeof(SplineChar *));
     map = galloc((gcnt+1)*sizeof(uint16));
     gcnt = 0;
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->lsidebearing!=0 ) {
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->lsidebearing!=1 ) {
 	glyphs[gcnt] = sf->chars[i];
 	map[gcnt++] = sf->chars[i]->lsidebearing;
     }
@@ -1982,6 +2202,37 @@ static struct feature *aat_dumpmorx_contextchainsubs(struct alltabs *at, SplineF
 return( features);
 }
 
+static struct feature *aat_dumpmorx_asm(struct alltabs *at, SplineFont *sf,
+	FILE *temp, struct feature *features) {
+    ASM *sm;
+    struct feature *cur;
+
+    for ( sm = sf->sm; sm!=NULL; sm=sm->next ) {
+	cur = chunkalloc(sizeof(struct feature));
+	cur->otftag = (sm->feature<<16)|sm->setting;
+	cur->featureType = sm->feature;
+	cur->featureSetting = sm->setting;
+	cur->mf = FindMacFeature(sf,cur->featureType,&cur->smf);
+	cur->ms = FindMacSetting(sf,cur->featureType,cur->featureSetting,&cur->sms);
+	cur->needsOff = cur->mf!=NULL && !cur->mf->ismutex;
+	cur->vertOnly = sm->flags&0x8000?1:0;
+	cur->r2l = sm->flags&0x4000?1:0;
+	cur->subtable_type = sm->type;		/* contextual glyph subs */
+	cur->feature_start = ftell(temp);
+	if ( morx_dumpASM(temp,sm,at,sf)) {
+	    cur->next = features;
+	    features = cur;
+	    if ( (ftell(temp)-cur->feature_start)&1 )
+		putc('\0',temp);
+	    if ( (ftell(temp)-cur->feature_start)&2 )
+		putshort(temp,0);
+	    cur->feature_len = ftell(temp)-cur->feature_start;
+	} else
+	    chunkfree(cur,sizeof(struct feature));
+    }
+return( features);
+}
+
 static struct feature *featuresOrderByType(struct feature *features) {
     struct feature *f, **all;
     int i, j, cnt;
@@ -2272,6 +2523,7 @@ void aat_dumpmorx(struct alltabs *at, SplineFont *sf) {
     features = aat_dumpmorx_glyphforms(at,sf,temp,features);
     features = aat_dumpmorx_contextchainsubs(at,sf,temp,features);
     features = aat_dumpmorx_ligatures(at,sf,temp,features);
+    features = aat_dumpmorx_asm(at,sf,temp,features);
     if ( features==NULL ) {
 	fclose(temp);
 return;

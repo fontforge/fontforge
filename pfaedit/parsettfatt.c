@@ -3287,7 +3287,7 @@ static char **ClassesFromStateTable(struct statetable *st,int ismorx,struct ttfi
 	*classes[i] = '\0';
     }
     if ( ismorx ) {
-	for ( i=0; i<info->glyph_cnt; ++i ) if ( st->classes[2]>=4 ) {
+	for ( i=0; i<info->glyph_cnt; ++i ) if ( st->classes2[i]>=4 ) {
 	    strcat(classes[st->classes2[i]],info->chars[i]->name );
 	    strcat(classes[st->classes2[i]]," ");
 	}
@@ -3611,7 +3611,9 @@ return( chain_len );
 	}
 	r2l = (coverage & 0x40000000)? 1 : 0;
 	flags = getlong(ttf);
-	for ( j=k-1; j>=0 && !(flags&tmf[j].enable_flags); --j );
+	for ( j=k-1; j>=0 && (!(flags&tmf[j].enable_flags) || (tmf[j].enable_flags&~flags)!=0); --j );
+	if ( j==-1 )
+	    for ( j=k-1; j>=0 && (!(flags&tmf[j].enable_flags) || tmf[j].feat==0); --j );
 	if ( j>=0 ) {
 	    if ( !tmf[j].ismac &&
 		    ((coverage&0xff)==0 ||

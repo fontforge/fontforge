@@ -3185,6 +3185,7 @@ static char *str_NextState = "Next State:";
 static char *str_TooManyGlyphs = "Too Many Glyphs";
 static char *str_AtMost31Glyphs = "At most 31 glyphs may be specified in an insert list";
 static char *str_BadFeatureSetting = "Bad Feature Setting";
+static char *str_VerticalOnly = "Vertical Only";
 
 
 static int num_buttonsize = 55;

@@ -53,6 +53,9 @@
 #define CID_Next	316
 #define CID_Prev	317
 
+#define CID_RightToLeft	318
+#define CID_VertOnly	319
+
 #define SMD_WIDTH	350
 #define SMD_HEIGHT	400
 #define SMD_CANCELDROP	32
@@ -249,6 +252,13 @@ static int smdedit_e_h(GWindow gw, GEvent *event) {
       case et_char:
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
 	    help("statemachine.html#EditTransition");
+return( true );
+	} else if ( event->u.chr.keysym == GK_Escape ) {
+	    smd->edit_done = true;
+return( true );
+	} else if ( event->u.chr.chars[0] == '\r' ) {
+	    smd->edit_done = true;
+	    smd->edit_ok = true;
 return( true );
 	}
 return( false );
@@ -818,6 +828,9 @@ return( true );
 		sm->type);
 	sm->state_cnt = smd->state_cnt;
 	sm->state = smd->states;
+	sm->flags = (sm->flags & ~0xc000) |
+		(GGadgetIsChecked(GWidgetGetControl(smd->gw,CID_RightToLeft))?0x4000:0) |
+		(GGadgetIsChecked(GWidgetGetControl(smd->gw,CID_VertOnly))?0x8000:0);
 	_SMD_Finish(smd,true);
     }
 return( true );
@@ -832,6 +845,13 @@ static void SMD_Mouse(SMD *smd,GEvent *event) {
 	    (event->u.mouse.x-smd->xstart2)/smd->statew;
 
     GGadgetEndPopup();
+
+    if (( event->type==et_mouseup || event->type==et_mousedown ) &&
+	    (event->u.mouse.button==4 || event->u.mouse.button==5) ) {
+	GGadgetDispatchEvent(smd->vsb,event);
+return;
+    }
+    
     if ( event->u.mouse.x<smd->xstart || event->u.mouse.x>smd->xstart2+smd->width ||
 	    event->u.mouse.y<smd->ystart || event->u.mouse.y>smd->ystart2+smd->height )
 return;
@@ -879,7 +899,7 @@ static void SMD_Expose(SMD *smd,GWindow pixmap,GEvent *event) {
     unichar_t ubuf[8];
     char buf[8];
 
-    if ( area->y+area->width<smd->ystart )
+    if ( area->y+area->height<smd->ystart )
 return;
     if ( area->y>smd->ystart2+smd->height )
 return;
@@ -1047,7 +1067,7 @@ static void SMD_HScroll(SMD *smd,struct sbevent *sb) {
       break;
       case et_sb_thumb:
       case et_sb_thumbrelease:
-        newpos = -sb->pos;
+        newpos = sb->pos;
       break;
     }
     if ( newpos + (smd->width/smd->statew) >= smd->class_cnt )
@@ -1057,8 +1077,8 @@ static void SMD_HScroll(SMD *smd,struct sbevent *sb) {
 	int diff = newpos-smd->offleft;
 	smd->offleft = newpos;
 	GScrollBarSetPos(smd->hsb,newpos);
-	rect.x = smd->xstart2; rect.y = smd->ystart;
-	rect.width = smd->width;
+	rect.x = smd->xstart2+1; rect.y = smd->ystart;
+	rect.width = smd->width-1;
 	rect.height = smd->height+(smd->ystart2-smd->ystart);
 	GDrawScroll(smd->gw,&rect,-diff*smd->statew,0);
     }
@@ -1095,7 +1115,7 @@ static void SMD_VScroll(SMD *smd,struct sbevent *sb) {
       break;
       case et_sb_thumb:
       case et_sb_thumbrelease:
-        newpos = -sb->pos;
+        newpos = sb->pos;
       break;
     }
     if ( newpos + (smd->height/smd->stateh) >= smd->state_cnt )
@@ -1105,9 +1125,9 @@ static void SMD_VScroll(SMD *smd,struct sbevent *sb) {
 	int diff = newpos-smd->offtop;
 	smd->offtop = newpos;
 	GScrollBarSetPos(smd->vsb,newpos);
-	rect.x = smd->xstart; rect.y = smd->ystart2;
+	rect.x = smd->xstart; rect.y = smd->ystart2+1;
 	rect.width = smd->width+(smd->xstart2-smd->xstart);
-	rect.height = smd->height;
+	rect.height = smd->height-1;
 	GDrawScroll(smd->gw,&rect,0,diff*smd->stateh);
     }
 }
@@ -1295,7 +1315,23 @@ SMD *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
     gcd[k].gd.cid = CID_FeatSet;
     gcd[k++].creator = GListFieldCreate;
 
-    gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = GDrawPointsToPixels(gw,gcd[k-1].gd.pos.y+27);
+    label[k].text = (unichar_t *) _STR_RightToLeft;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 150; gcd[k].gd.pos.y = 5;
+    gcd[k].gd.flags = gg_enabled|gg_visible | (sm->flags&0x4000?gg_cb_on:0);
+    gcd[k].gd.cid = CID_RightToLeft;
+    gcd[k++].creator = GCheckBoxCreate;
+
+    label[k].text = (unichar_t *) _STR_VerticalOnly;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 150; gcd[k].gd.pos.y = 5+16;
+    gcd[k].gd.flags = gg_enabled|gg_visible | (sm->flags&0x8000?gg_cb_on:0);
+    gcd[k].gd.cid = CID_VertOnly;
+    gcd[k++].creator = GCheckBoxCreate;
+
+    gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = GDrawPointsToPixels(gw,gcd[k-3].gd.pos.y+27);
     gcd[k].gd.pos.width = pos.width-20;
     gcd[k].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels;
     gcd[k].gd.cid = CID_Line1;

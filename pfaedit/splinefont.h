@@ -257,7 +257,7 @@ typedef struct generic_asm {		/* Apple State Machine */
     struct generic_asm *next;
     uint16 /*enum asm_type*/ type;
     uint16 feature, setting;
-    uint16 flags;
+    uint16 flags;	/* 0x8000=>vert, 0x4000=>r2l, 0x2000=>hor&vert */
     uint8 ticked;
 
     uint16 class_cnt, state_cnt;
