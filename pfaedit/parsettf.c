@@ -3811,6 +3811,44 @@ return;
     free(vr);
 }
 
+static void gposExtensionSubTable(FILE *ttf, int stoffset,
+	struct ttfinfo *info, struct lookup *lookup) {
+    uint32 base = ftell(ttf), st, offset;
+    int lu_type;
+
+    /* Format = */ getushort(ttf);
+    lu_type = getushort(ttf);
+    offset = getlong(ttf);
+
+    fseek(ttf,st = base+offset,SEEK_SET);
+    switch ( lu_type ) {
+      case 1:
+	gposSimplePos(ttf,st,info,lookup);
+      break;  
+      case 2:
+	if ( lookup->tag==CHR('k','e','r','n') )
+	    gposKernSubTable(ttf,st,info,lookup);
+      break;  
+      case 3:
+	if ( lookup->tag==CHR('c','u','r','s') )
+	    gposCursiveSubTable(ttf,st,info,lookup);
+      break;
+      case 4: case 5: case 6:
+	gposMarkSubTable(ttf,st,info,lookup,lu_type);
+      break;
+/* Any cases added here also need to go in the readttfgpossub */
+      case 9:
+	fprintf( stderr, "This font is erroneous it has a GPOS extension subtable that points to\nanother extension sub-table.\n" );
+      break;
+    }
+
+    if ( !info->extensionrequested ) {
+	info->extensionrequested = true;
+	fprintf( stderr, "Hi. This font uses GPOS extension sub-tables, and I've never seen one that\ndoes. I'd like to be able to look at it to test my code. Would you\nsend a copy of %s to\n   gww@silcom.com\nThanks!",
+		info->fontname );
+    }
+}
+
 static void gsubSimpleSubTable(FILE *ttf, int stoffset, struct ttfinfo *info,
 	struct lookup *lookup, int justinuse) {
     int coverage, cnt, i, which;
@@ -3932,7 +3970,7 @@ static void gsubLigatureSubTable(FILE *ttf, int stoffset,
     char *pt;
     PST *liga;
 
-    /* Type = */ getushort(ttf);
+    /* Format = */ getushort(ttf);
     coverage = getushort(ttf);
     cnt = getushort(ttf);
     ls_offsets = galloc(cnt*sizeof(uint16));
@@ -3984,6 +4022,39 @@ return;
 	free(lig_offsets);
     }
     free(ls_offsets); free(glyphs);
+}
+
+static void gsubExtensionSubTable(FILE *ttf, int stoffset,
+	struct ttfinfo *info, struct lookup *lookup, int justinuse) {
+    uint32 base = ftell(ttf), st, offset;
+    int lu_type;
+
+    /* Format = */ getushort(ttf);
+    lu_type = getushort(ttf);
+    offset = getlong(ttf);
+
+    fseek(ttf,st = base+offset,SEEK_SET);
+    switch ( lu_type ) {
+      case 1:
+	gsubSimpleSubTable(ttf,st,info,lookup,justinuse);
+      break;
+      case 2: case 3:	/* Multiple and alternate have same format, different semantics */
+	gsubMultipleSubTable(ttf,st,info,lookup,lu_type,justinuse);
+      break;
+      case 4:
+	gsubLigatureSubTable(ttf,st,info,lookup,justinuse);
+      break;
+/* Any cases added here also need to go in the readttfgpossub and readttfgsubUsed */
+      case 7:
+	fprintf( stderr, "This font is erroneous it has a GSUB extension subtable that points to\nanother extension sub-table.\n" );
+      break;
+    }
+
+    if ( !info->extensionrequested ) {
+	info->extensionrequested = true;
+	fprintf( stderr, "Hi. This font uses GSUB extension sub-tables, and I've never seen one that\ndoes. I'd like to be able to look at it to test my code. Would you\nsend a copy of %s to\n   gww@silcom.com\nThanks!",
+		info->fontname );
+    }
 }
 
 static struct feature *readttffeatures(FILE *ttf,int32 pos,int isgpos) {
@@ -4165,6 +4236,10 @@ static void readttfgsubUsed(FILE *ttf,struct ttfinfo *info) {
 	      case 4:
 		gsubLigatureSubTable(ttf,st,info,NULL,true);
 	      break;
+/* Any cases added here also need to go in the gsubExtensionSubTable and readttfgsubUsed */
+	      case 7:
+		gsubExtensionSubTable(ttf,st,info,NULL,true);
+	      break;
 	    }
 	}
 	free(st_offsets);
@@ -4229,6 +4304,10 @@ return;
 		  case 4: case 5: case 6:
 		    gposMarkSubTable(ttf,st,info,&lookups[k],lu_type);
 		  break;
+/* Any cases added here also need to go in the gposExtensionSubTable */
+		  case 9:
+		    gposExtensionSubTable(ttf,st,info,&lookups[k]);
+		  break;
 		}
 	    } else {
 		switch ( lu_type ) {
@@ -4240,6 +4319,10 @@ return;
 		  break;
 		  case 4:
 		    gsubLigatureSubTable(ttf,st,info,&lookups[k],false);
+		  break;
+/* Any cases added here also need to go in the gsubExtensionSubTable and readttfgsubUsed */
+		  case 7:
+		    gsubExtensionSubTable(ttf,st,info,&lookups[k],false);
 		  break;
 		}
 	    }

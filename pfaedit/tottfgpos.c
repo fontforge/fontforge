@@ -1247,9 +1247,52 @@ static struct lookup *dump_script_table(FILE *g___,struct lookup *scripts) {
 return( l );
 }
     
+static FILE *g___FigureExtensionSubTables(struct lookup *lookups,int is_gpos) {
+    struct lookup *l;
+    int cnt, estart, gotmore;
+    FILE *efile;
+    int i;
+
+    if ( lookups==NULL )
+return( NULL );
+    for ( l=lookups, cnt=1; l->next!=NULL; l=l->next, ++cnt );
+    if ( l->offset<65536 )
+return( NULL );
+
+    estart=cnt; gotmore = true;
+    while ( gotmore ) {
+	gotmore = false;
+	for ( i=0, l=lookups; l!=NULL && i<estart; l=l->next, ++i ) {
+	    if ( (cnt-i)*8+l->offset+(cnt-estart)*8 >=65536 ) {
+		estart = i;
+		gotmore = true;
+	break;
+	    }
+	}
+    }
+    if ( estart==cnt ) {	/* Eh?, should never happen */
+	fprintf( stderr, "Internal error in GPOS/SUB extension calculation\n" );
+return( NULL );
+    }
+
+    efile = tmpfile();
+    for ( i=0, l=lookups; l!=NULL && i<estart; l=l->next, ++i )
+	l->offset += (cnt-estart)*8;
+    while ( l!=NULL ) {
+	putshort(efile,1);	/* Only one format for extensions */
+	putshort(efile,l->lookup_type);
+	putlong(efile,(cnt-i+estart)*8 + l->offset);
+	l->lookup_type = is_gpos ? 9 : 7;
+	l->offset = (i-estart)*8;
+	l = l->next;
+	++i;
+    }
+return( efile );
+}
+
 static FILE *dumpg___info(struct alltabs *at, SplineFont *sf,int is_gpos) {
     /* Dump out either a gpos or a gsub table. gpos handles kerns, gsub ligs */
-    FILE *lfile, *g___;
+    FILE *lfile, *g___, *efile;
     struct lookup *lookups=NULL, *script_ordered, *feature_ordered, *l, *prev, *next;
     int cnt, offset, i, flags, subcnt;
     char *buf;
@@ -1346,6 +1389,8 @@ return( NULL );
 	offset += 8;		/* 8 bytes per lookup table */
     }
     /* now the lookup tables */
+      /* do we need any extension sub-tables? */
+    efile=g___FigureExtensionSubTables(lookups,is_gpos);
     for ( i=0, l=lookups; l!=NULL; l=l->next, ++i ) {
 	putshort(g___,l->lookup_type);
 	/* The right to left flag is not relevant for any of the tables I generate */
@@ -1358,10 +1403,18 @@ return( NULL );
 	    /* there are (cnt-i) lookup tables (of size 8) between here and */
 	    /* the place where the temp file will start, and then we need to */
 	    /* skip l->offset bytes in the temp file */
+	    /* If it's a big GPOS/SUB table we may also need some extension */
+	    /*  pointers, but FigureExtension will adjust for that */
     }
 
-    rewind(lfile);
     buf = galloc(1024);
+    if ( efile!=NULL ) {
+	rewind(efile);
+	while ( (i=fread(buf,1,1024,efile))>0 )
+	    fwrite(buf,1,i,g___);
+	fclose(efile);
+    }
+    rewind(lfile);
     while ( (i=fread(buf,1,1024,lfile))>0 )
 	fwrite(buf,1,i,g___);
     fclose(lfile);

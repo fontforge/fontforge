@@ -47,6 +47,7 @@ struct ttfinfo {
     unsigned int is_onebyte:1;			/* Is it a one byte encoding? */
     unsigned int twobytesymbol:1;		/* it had a symbol encoding which we converted to unicode */
     unsigned int complainedbeyondglyfend:1;	/* Don't complain about this more than once */
+    unsigned int extensionrequested:1;		/* Only ask once for a copy of a font containing extension subtables */
     /* Mac fonts platform=0/1, platform specific enc id, roman=0, english is lang code 0 */
     /* iso platform=2, platform specific enc id, latin1=0/2, no language */
     /* microsoft platform=3, platform specific enc id, 1, english is lang code 0x??09 */
