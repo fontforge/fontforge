@@ -2276,7 +2276,7 @@ static FOND *BuildFondList(FILE *f,long rlistpos,int subcnt,long rdata_pos,
 	}
 	if ( styleoff!=0 ) {
 	    uint8 stringoffsets[48];
-	    int strcnt, strlen, format;
+	    int strcnt, stringlen, format;
 	    char **strings, *pt;
 	    fseek(f,styleoff,SEEK_SET);
 	    /* class = */ getushort(f);
@@ -2287,11 +2287,11 @@ static FOND *BuildFondList(FILE *f,long rlistpos,int subcnt,long rdata_pos,
 	    strcnt = getushort(f);
 	    strings = galloc(strcnt*sizeof(char *));
 	    for ( j=0; j<strcnt; ++j ) {
-		strlen = getc(f);
-		strings[j] = galloc(strlen+2);
-		strings[j][0] = strlen;
-		strings[j][strlen+1] = '\0';
-		for ( k=0; k<strlen; ++k )
+		stringlen = getc(f);
+		strings[j] = galloc(stringlen+2);
+		strings[j][0] = stringlen;
+		strings[j][stringlen+1] = '\0';
+		for ( k=0; k<stringlen; ++k )
 		    strings[j][k+1] = getc(f);
 	    }
 	    for ( j=0; j<48; ++j ) {
@@ -2301,11 +2301,11 @@ static FOND *BuildFondList(FILE *f,long rlistpos,int subcnt,long rdata_pos,
 		if ( k!=-1 )
 	    continue;		/* this style doesn't exist */
 		format = stringoffsets[j]-1;
-		strlen = strings[0][0];
+		stringlen = strings[0][0];
 		if ( format!=0 )
 		    for ( k=0; k<strings[format][0]; ++k )
-			strlen += strings[ strings[format][k+1]-1 ][0];
-		pt = cur->psnames[j] = galloc(strlen+1);
+			stringlen += strings[ strings[format][k+1]-1 ][0];
+		pt = cur->psnames[j] = galloc(stringlen+1);
 		strcpy(pt,strings[ 0 ]+1);
 		pt += strings[ 0 ][0];
 		if ( format!=0 )
