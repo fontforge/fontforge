@@ -13,7 +13,7 @@ libgdraw_OBJECTS =  choosericons.obj,divisors.obj,drawboxborder.obj,\
  gresourceimage.obj,gsavefiledlg.obj,gscrollbar.obj,gtabset.obj,\
  gtextfield.obj,gtextinfo.obj,gwidgets.obj,gxdraw.obj
 
-CFLAGS=/nowarn/incl=([-.inc])/name=(as_is,short)/define=("NOTHREADS=1")
+CFLAGS=/nowarn/incl=([-.inc])/name=(as_is,short)/define=("NOTHREADS=1","_NO_XKB=1")
 
 all : [-.libs]libgdraw.olb
 	write sys$output "gdraw finished"
