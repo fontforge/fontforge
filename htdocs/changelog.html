@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 26-Jan-2005 -->
+  <!-- AP: Last modified: 9-Feb-2005 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -12,7 +12,7 @@
 </H1>
 <UL>
   <LI>
-    ???
+    9-Feb-2005
     <UL>
       <LI>
 	Use freetype's FT_Outline_Get_Bitmap to make freetype rasterize from our
@@ -50,6 +50,65 @@
 	iconv
       <LI>
 	worked on a couple of other configuration problems for the mac
+      <LI>
+	Some people install libraries without headers. Be prepared.
+      <LI>
+	Uniscribe (MS unicode text layout routines) may ignore either the GPOS or
+	the GSUB table depending on the script, and may even refuse to use the font
+	at all if it doesn't have the right stuff in GPOS/GSUB. A Hebrew font must
+	have both a GPOS and a GSUB. If it doesn't the font is not used. A latin
+	font need not have either, but if it doesn't have GSUB then GPOS won't be
+	used.
+	<P>
+	Sergey Malkin from MicroSoft tells me:
+	<BLOCKQUOTE>
+	  Each shaping engine in Uniscribe can decide on its requirements for layout
+	  tables - some of them require both GSUB and GPOS, in some cases any table
+	  present is enough, or it can work without any table.
+	  <P>
+	  Sometimes, purpose of the check is to determine if font is supporting particular
+	  script - if required tables are not there font is just rejected by this shaping
+	  engine. Sometimes, shaping engine can not just reject the font because there
+	  are fonts using older shaping technologies we still have to support, so it
+	  uses some logic when to fallback to legacy layout code.
+	  <P>
+	  In your case this is Hebrew, where both tables are required to use OpenType
+	  processing. Arabic requires both tables too, Latin requires GSUB to execute
+	  GPOS. But in general, if you have both tables you should be safe with any
+	  script to get fully featured OpenType shaping.
+	</BLOCKQUOTE>
+	<P>
+	So the script sub-table of both GPOS/GSUB should contain all scripts used
+	in either (rather than just the scripts used in the current one).
+      <LI>
+	The AddATT scripting command didn't understand Nested.
+      <LI>
+	Add a cli argument "-c" to introduce a scripting command in an argument.
+      <LI>
+	Someone ran ff on a solaris box without iconv. (Odd because iconv is there
+	by default). FF ran fine (Odder, why didn't it demand the library?), but
+	crashed when it tried to use a conversion which didn't exist.
+      <LI>
+	There's another ASCII map in Unicode (0xe0000-0xe007f).
+      <LI>
+	Allow user to supply their own OtherSubrs routines (Some people object to
+	Adobe's copyright).
+      <LI>
+	Codes to handle identifying a loaded font by relative filespec didn't work.
+      <LI>
+	Change Add Extrema so that it only adds extrema if
+	<OL>
+	  <LI>
+	    The spline length is &gt;= em_size/32
+	  <LI>
+	    The extremum is an extremum of the entire contour containing the spline.
+	</OL>
+	<P>
+	(Behavior in the outline view when there is a selection remains the same.
+	So if the endpoints of a spline are both selected then all local extrema
+	will be added to that spline, no matter how long it may be).
+      <LI>
+	Patch by Ralf Stubner. Fonts without UniqueID had a bad syntax.
     </UL>
   <LI>
     17-Jan-2005

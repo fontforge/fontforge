@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 2-Feb-2005 -->
+  <!-- AP: Last modified: 9-Feb-2005 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -1661,7 +1661,8 @@ ApplySubstitution("*","*","vrt2")
     The first argument may be either: Position, Pair, Substitution, AltSubs,
     MultSubs or Ligature. The second argument should be a script-lang list where
     each 4-character script name is followed by a comma separated list of 4 character
-    language names (with the languages enclosed in curly braces). As:<BR>
+    language names (with the languages enclosed in curly braces) -- or the special
+    string "Nested". As:<BR>
     <CODE>&nbsp; &nbsp; grek{dflt} latn{dflt,VIT ,ROM }</CODE><BR>
     The third arg should be a 4 character opentype feature tag (or apple
     feature/setting).
