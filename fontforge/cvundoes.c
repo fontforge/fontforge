@@ -394,6 +394,9 @@ void UndoesFree(Undoes *undo) {
 	    free(undo->u.bmpstate.bitmap);
 	    BDFFloatFree(undo->u.bmpstate.selection);
 	  break;
+	  case ut_multiple: case ut_layers:
+	    UndoesFree( undo->u.multiple.mult );
+	  break;
 	  case ut_composit:
 	    UndoesFree(undo->u.composit.state);
 	    UndoesFree(undo->u.composit.bitmaps);
@@ -912,7 +915,7 @@ static void CopyBufferFree(void) {
       case ut_bitmapsel:
 	BDFFloatFree(copybuffer.u.bmpstate.selection);
       break;
-      case ut_multiple:
+      case ut_multiple: case ut_layers:
 	UndoesFree( copybuffer.u.multiple.mult );
       break;
       case ut_composit:
@@ -1279,6 +1282,15 @@ void CopySelected(CharView *cv) {
 	    copybuffer.u.state.u.images = new;
 	}
     }
+#ifdef PFAEDIT_CONFIG_TYPE3
+    if ( cv->drawmode==dm_fore || cv->drawmode==dm_back ) {
+	copybuffer.u.state.fill_brush = cv->layerheads[cv->drawmode]->fill_brush;
+	copybuffer.u.state.stroke_pen = cv->layerheads[cv->drawmode]->stroke_pen;
+	copybuffer.u.state.dofill = cv->layerheads[cv->drawmode]->dofill;
+	copybuffer.u.state.dostroke = cv->layerheads[cv->drawmode]->dostroke;
+	copybuffer.u.state.fillfirst = cv->layerheads[cv->drawmode]->fillfirst;
+    }
+#endif
     copybuffer.u.state.copied_from = cv->sc->parent;
 
     XClipCheckEps();
@@ -1839,7 +1851,7 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int doclear) {
 		LayerDefault(&sc->layers[layer]);
 	    sc->layer_cnt = start+lc;
 	}
-	for ( lc=0, pl = paster->u.multiple.mult; pl!=NULL; pl=pl->next, ++lc );
+	for ( lc=0, pl = paster->u.multiple.mult; pl!=NULL; pl=pl->next, ++lc )
 	    _PasteToSC(sc,pl,fv,doclear,start+lc);
 	SCMoreLayers(sc);
     } else if ( paster->undotype==ut_layers ) {

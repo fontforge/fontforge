@@ -909,7 +909,7 @@ static int Layer_OK(GGadget *g, GEvent *e) {
 	if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_FillOInherit)) )
 	    temp.fill_brush.opacity = -1;
 	else
-	    temp.fill_brush.col = GetRealR(gw,CID_FillOpacity,_STR_Opacity,&err);
+	    temp.fill_brush.opacity = GetRealR(gw,CID_FillOpacity,_STR_Opacity,&err);
 
 	if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_StrokeCInherit)) )
 	    temp.stroke_pen.brush.col = COLOR_INHERITED;
@@ -918,7 +918,7 @@ static int Layer_OK(GGadget *g, GEvent *e) {
 	if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_StrokeOInherit)) )
 	    temp.stroke_pen.brush.opacity = -1;
 	else
-	    temp.stroke_pen.brush.col = GetRealR(gw,CID_StrokeOpacity,_STR_Opacity,&err);
+	    temp.stroke_pen.brush.opacity = GetRealR(gw,CID_StrokeOpacity,_STR_Opacity,&err);
 	if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_StrokeWInherit)) )
 	    temp.stroke_pen.width = WIDTH_INHERITED;
 	else
@@ -1068,7 +1068,6 @@ int LayerDialog(Layer *layer) {
 
     label[gcdoff].text = (unichar_t *) _STR_Opacity;
     label[gcdoff].text_in_resource = true;
-    gcd[gcdoff].gd.mnemonic = 'W';
     gcd[gcdoff].gd.label = &label[gcdoff];
     gcd[gcdoff].gd.pos.x = 5; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+25;
     gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
@@ -1077,7 +1076,7 @@ int LayerDialog(Layer *layer) {
     sprintf( fopac, "%g", layer->fill_brush.opacity );
     label[gcdoff].text = (unichar_t *) fopac;
     label[gcdoff].text_is_1byte = true;
-    if ( layer->stroke_pen.brush.opacity<0 ) 
+    if ( layer->fill_brush.opacity<0 ) 
 	gcd[gcdoff].gd.flags = gg_visible;
     else {
 	gcd[gcdoff].gd.label = &label[gcdoff];
