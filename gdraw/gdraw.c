@@ -496,6 +496,8 @@ return( (w->display->funcs->selectionHasType)(w,sn,typename));
 }
 
 void GDrawRequestExpose(GWindow w, GRect *rect, int doclear) {
+    if ( !GDrawIsVisible(w))
+return;
     (w->display->funcs->requestExpose)(w,rect,doclear);
 }
 

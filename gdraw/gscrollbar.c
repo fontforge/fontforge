@@ -279,6 +279,11 @@ return( false );
 	}
     } else if ( event->type == et_mousemove && gsb->thumbpressed ) {
 	GDrawSkipMouseMoveEvents(gsb->g.base,event);
+	if ( gsb->g.vert ) {
+	    active_pos = event->u.mouse.y-g->inner.y;
+	} else {
+	    active_pos = event->u.mouse.x-g->inner.x;
+	}
 	GScrollBarChanged(gsb,et_sb_thumb,active_pos);
     } else if ( event->type == et_mouseup && (gsb->thumbpressed || gsb->pressed)) {
 	if ( gsb->thumbpressed )

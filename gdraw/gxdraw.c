@@ -1745,8 +1745,14 @@ static void GXDrawSendExpose(GXWindow gw, int x,int y,int wid,int hei ) {
     if ( gw->eh!=NULL ) {
 	struct gevent event;
 	event.type = et_expose;
+	if ( x<0 ) { wid += x; x = 0; }
+	if ( y<0 ) { hei += y; y = 0; }
 	event.u.expose.rect.x = x;
 	event.u.expose.rect.y = y;
+	if ( x+wid>gw->pos.width ) wid = gw->pos.width-x;
+	if ( y+hei>gw->pos.height ) hei = gw->pos.height-y;
+	if ( wid<0 || hei<0 )
+return;
 	event.u.expose.rect.width = wid;
 	event.u.expose.rect.height = hei;
 	(gw->eh)((GWindow ) gw,&event);
@@ -2038,8 +2044,20 @@ return;
 	temp.x = temp.y = 0;
 	temp.width = gxw->pos.width; temp.height = gxw->pos.height;
 	rect = &temp;
+    } else if ( rect->x<0 || rect->y<0 || rect->x+rect->width>gw->pos.width ||
+	    rect->y+rect->height>gw->pos.height ) {
+	temp = *rect;
+	if ( temp.x < 0 ) { temp.width += temp.x; temp.x = 0; }
+	if ( temp.y < 0 ) { temp.height += temp.y; temp.y = 0; }
+	if ( temp.x+temp.width>gw->pos.width )
+	    temp.width = gw->pos.width - temp.x;
+	if ( temp.y+temp.height>gw->pos.height )
+	    temp.height = gw->pos.height - temp.y;
+	if ( temp.height<=0 || temp.width <= 0 )
+return;
+	rect = &temp;
     }
-#if 0		/* don't do it this way */
+#if 0		/* don't do it this way, flicker is noticeable */
     XClearArea(display->display,gxw->w,rect->x,rect->y,rect->width,rect->height, true );
 #else
     if ( doclear )
