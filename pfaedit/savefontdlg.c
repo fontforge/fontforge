@@ -786,9 +786,14 @@ return( NULL );
 		}
 		if ( modi<cnt ) {
 		    if ( mapping[modi]!=-1 && !warned ) {
-			fprintf( stderr, "Warning: Encoding %d (%x) is mapped to at least two locations (%s@0x%02x and %s@0x%02x)\n Only one will be used here.\n",
-				i, i, names[subfilecnt], thusfar, names[(mapping[modi]>>8)], mapping[modi]&0xff );
-			warned = true;
+			if (( i==0xffff || i==0xfffe ) &&
+				(sf->encoding_name==em_unicode || sf->encoding_name==em_unicode4))
+			    /* Not a character anyway. just ignore it */;
+			else {
+			    fprintf( stderr, "Warning: Encoding %d (%x) is mapped to at least two locations (%s@0x%02x and %s@0x%02x)\n Only one will be used here.\n",
+				    i, i, names[subfilecnt], thusfar, names[(mapping[modi]>>8)], mapping[modi]&0xff );
+			    warned = true;
+			}
 		    }
 		    mapping[modi] = (subfilecnt<<8) | thusfar++;
 		}
@@ -1158,7 +1163,7 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	    (sf->encoding_name>=em_first2byte && sf->encoding_name<em_max2 ) ||
 	    (sf->encoding_name>=em_unicodeplanes && sf->encoding_name<=em_unicodeplanesmax )) )
 	i = ff_ptype0;
-    else if ( i==ff_ttfdfont && strmatch(filename-strlen(".otf.dfont"),".otf.dfont")==0 )
+    else if ( i==ff_ttfdfont && strmatch(end-strlen(".otf.dfont"),".otf.dfont")==0 )
 	i = ff_otfdfont;
     if ( sf->cidmaster!=NULL ) {
 	if ( i==ff_otf ) i = ff_otfcid;

@@ -712,7 +712,7 @@ static void bGenerateFamily(Context *c) {
 	sfs = cur;
 	cur->sf = styles[i];
     }
-    
+
     if ( !GenerateScript(sf,c->a.vals[1].u.sval,bitmaptype,fmflags,-1,NULL,sfs) )
 	error(c,"Save failed");
 }
