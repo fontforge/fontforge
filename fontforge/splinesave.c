@@ -75,6 +75,8 @@ typedef struct growbuf {
     unsigned char *end;
 } GrowBuf;
 
+static int CanBeSeaced(SplineChar *scs[MmMax], int instance_count, int iscjk);
+
 static void GrowBuffer(GrowBuf *gb) {
     if ( gb->base==NULL ) {
 	gb->base = gb->pt = galloc(200);
@@ -1070,6 +1072,16 @@ return( NULL );
 return( reverserefs(ret) );
 }
 
+static int AnyRefs(SplineChar *sc) {
+    int i;
+
+    for ( i=ly_fore; i<sc->layer_cnt; ++i )
+	if ( sc->layers[i].refs!=NULL )
+return( true );
+
+return( false );
+}
+
 static int TrySubrRefs(GrowBuf *gb, struct pschars *subrs, SplineChar *scs[MmMax],
 	int instance_count, int round, int self) {
     RefChar *refs[MmMax], rtemp[MmMax];
@@ -1093,10 +1105,10 @@ static int TrySubrRefs(GrowBuf *gb, struct pschars *subrs, SplineChar *scs[MmMax
 	    RefChar *r;
 	    refs[j] = scs[j]->layers[ly_fore].refs;
 	    for ( r=scs[j]->layers[ly_fore].refs; r!=NULL; r=r->next ) {
-		if ( r->sc->hconflicts || r->sc->vconflicts || r->sc->anyflexes )
+		if ( r->sc->hconflicts || r->sc->vconflicts || r->sc->anyflexes || AnyRefs(r->sc) )
 		    SplineCharFindBounds(r->sc,&rb);
 		if ( r->sc->ttf_glyph==0x7fff ||
-			(( r->sc->hconflicts || r->sc->vconflicts || r->sc->anyflexes ) &&
+			(( r->sc->hconflicts || r->sc->vconflicts || r->sc->anyflexes || AnyRefs(r->sc) ) &&
 				(r->transform[4]!=0 || r->transform[5]!=0 ||
 					current[j].x!=rb.minx))) {
 return( false );
@@ -1112,7 +1124,7 @@ return( false );
     /*  then its hints are built in */
     /* Then we need to do an rmoveto to do the appropriate translation */
     while ( refs[0]!=NULL ) {
-	if ( refs[0]->sc->hconflicts || refs[0]->sc->vconflicts || refs[0]->sc->anyflexes )
+	if ( refs[0]->sc->hconflicts || refs[0]->sc->vconflicts || refs[0]->sc->anyflexes || AnyRefs(refs[0]->sc) )
 	    /* Hints already done */;
 	else if ( refs[0]->sc->hstem!=NULL || refs[0]->sc->vstem!=NULL ) {
 	    int s = BuildTranslatedHintSubr(subrs,scs,refs,instance_count,round);
@@ -1126,7 +1138,8 @@ return( false );
 	if ( gb->pt+20>=gb->end )
 	    GrowBuffer(gb);
 	bp = (BasePoint *) (subrs->keys[refs[0]->sc->ttf_glyph]);
-	refmoveto(gb,current,bp,instance_count,false,round,NULL,refs);
+	if ( !CanBeSeaced(&refs[0]->sc,1,0) )
+	    refmoveto(gb,current,bp,instance_count,false,round,NULL,refs);
 	AddNumber(gb,refs[0]->sc->ttf_glyph,round);
 	*gb->pt++ = 10;				/* callsubr */
 	for ( j=0; j<instance_count; ++j ) {
@@ -1168,6 +1181,76 @@ static RefChar *RefFindAdobe(RefChar *r, RefChar *t) {
 	t->sc = t->sc->layers[ly_fore].refs->sc;
     }
 return( t );
+}
+
+static int CanBeSeaced(SplineChar *scs[MmMax], int instance_count, int iscjk) {
+    /* can be at most two chars in a seac (actually must be exactly 2, but */
+    /*  I'll put in a space if there's only one */
+    RefChar *r1, *r2, *rt, *refs;
+    RefChar space, t1, t2;
+    int i, j, swap;
+
+    for ( j=0 ; j<instance_count; ++j )
+	if ( !IsPSRefable(scs[j]))
+return( false );
+
+    refs = scs[0]->layers[ly_fore].refs;
+    if ( refs==NULL )
+return( false );
+
+    r1 = refs;
+    if ((r2 = r1->next)==NULL ) {
+	r2 = &space;
+	memset(r2,'\0',sizeof(space));
+	space.adobe_enc = ' ';
+	space.transform[0] = space.transform[3] = 1.0;
+	for ( i=0; i<scs[0]->parent->charcnt; ++i )
+	    if ( scs[0]->parent->chars[i]!=NULL &&
+		    strcmp(scs[0]->parent->chars[i]->name,"space")==0 )
+	break;
+	if ( i==scs[0]->parent->charcnt )
+	    r2 = NULL;			/* No space???? */
+	else {
+	    space.sc = scs[0]->parent->chars[i];
+	    if ( space.sc->layers[ly_fore].splines!=NULL || space.sc->layers[ly_fore].refs!=NULL )
+		r2 = NULL;
+	}
+    } else if ( r2->next!=NULL )
+	r2 = NULL;
+
+    /* check for something like "AcyrillicBreve" which has a ref to Acyril */
+    /*  (which doesn't have an adobe enc) which in turn has a ref to A (which */
+    /*  does) */
+    if ( r2!=NULL ) {
+	if ( r1->adobe_enc==-1 )
+	    r1 = RefFindAdobe(r1,&t1);
+	if ( r2->adobe_enc==-1 )
+	    r2 = RefFindAdobe(r2,&t2);
+    }
+
+/* CID fonts have no encodings. So we can't use seac to reference characters */
+/*  in them. The other requirements are just those of seac */
+    if ( (iscjk&0x100) || r2==NULL ||
+	    r1->adobe_enc==-1 ||
+	    r2->adobe_enc==-1 ||
+	    ((r1->transform[4]!=0 || r1->transform[5]!=0 || r1->sc->width!=scs[0]->width ) &&
+		 (r2->transform[4]!=0 || r2->transform[5]!=0 || r2->sc->width!=scs[0]->width)) )
+return( false );
+
+    swap = false;
+    if ( r1->transform[4]!=0 || r1->transform[5]!=0 ) {
+	rt = r1; r1 = r2; r2 = rt;
+	swap = !swap;
+    }
+    if ( r1->sc->width!=scs[0]->width && r2->sc->width==scs[0]->width &&
+	    r2->transform[4]==0 && r2->transform[5]==0 ) {
+	rt = r1; r1 = r2; r2 = rt;
+	swap = !swap;
+    }
+    if ( r1->sc->width!=scs[0]->width || r1->transform[4]!=0 || r1->transform[5]!=0 )
+return( false );
+
+return( true );
 }
 
 static int IsSeacable(GrowBuf *gb, struct pschars *subrs, SplineChar *scs[MmMax],
@@ -1374,7 +1457,7 @@ static unsigned char *SplineChar2PS(SplineChar *sc,int *len,int round,int iscjk,
     } else {
 	iscjk &= ~0x100;
 	hdb = NULL;
-	if ( sc->ttf_glyph==0x7fff || ( !scs[0]->hconflicts && !scs[0]->vconflicts && !sc->anyflexes )) {
+	if ( sc->ttf_glyph==0x7fff || ( !scs[0]->hconflicts && !scs[0]->vconflicts && !sc->anyflexes && !AnyRefs(sc) )) {
 	    if ( iscjk && instance_count==1 )
 		CounterHints1(&gb,sc,round);	/* Must come immediately after hsbw */
 	    if ( !scs[0]->vconflicts && !scs[0]->hconflicts && instance_count==1 ) {
@@ -1553,7 +1636,7 @@ static void SplineFont2Subrs1(SplineFont *sf,int round, int iscjk,
 
 		/* None of the generated subrs starts with a moveto operator */
 		/*  The invoker is expected to move to the appropriate place */
-		if ( sc->hconflicts || sc->vconflicts || sc->anyflexes ) {
+		if ( sc->hconflicts || sc->vconflicts || sc->anyflexes || AnyRefs(sc) ) {
 		    temp = SplineChar2PS(sc,&len,round,iscjk,subrs,bp,flags,format);
 		} else {
 		    memset(&gb,'\0',sizeof(gb));
