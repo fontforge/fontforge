@@ -464,7 +464,7 @@ return;
     if ( sb_max-sb_min > sb_pagesize )
 	gsb->thumbsize = (gsb->thumbsize*gsb->sb_pagesize)/(sb_max-sb_min);
     if ( gsb->thumbsize<2*gsb->thumbborder+4 ) {
-	gsb->thumbsize = 2*gsb->thumbborder+8;
+	gsb->thumbsize = 2*gsb->thumbborder+6;
 	if ( gsb->thumbsize>(gsb->g.vert?gsb->g.inner.height:gsb->g.inner.width) )
 	    gsb->thumbsize = (gsb->g.vert?gsb->g.inner.height:gsb->g.inner.width);
     }
