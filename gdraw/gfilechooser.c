@@ -148,6 +148,8 @@ enum fchooserret GFileChooserDefFilter(GGadget *g,GDirEntry *ent) {
 return( fc_hide );
     if ( ent->isdir )			/* Show all other directories */
 return( fc_show );
+    if ( gfc->wildcard==NULL && gfc->mimetypes==NULL )
+return( fc_show );
 					/* If we've got a wildcard, and it matches, then show */
     if ( gfc->wildcard!=NULL && GGadgetWildMatch(gfc->wildcard,ent->name,true))
 return( fc_show );
