@@ -2,23 +2,31 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 13-May-2003 -->
+  <!-- AP: Last modified: 30-Jun-2003 -->
   <TITLE>Spline Font Database File Format</TITLE>
 </HEAD>
 <BODY>
 <H1 ALIGN=Center>
-  Spline Font Database<FONT COLOR="Red"><BR>
-  <SMALL><SMALL><STRONG>This page is grievously out of
-  date</STRONG></SMALL></SMALL></FONT>
+  Spline Font Database
 </H1>
 <P>
+<FONT COLOR="Red"><STRONG>This page is often grievously out of date. It was
+a fair approximation to reality on 30 June 2003.</STRONG></FONT> Even if
+out of date it should be helpful, but if you really need to know the current
+format look at
+<A HREF="http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/pfaedit/pfaedit/pfaedit/sfd.c">sfd.c</A>
+and see what it parses.
+<P>
 PfaEdit's <A HREF="sfd.html">sfd</A> files are ASCII files (so they can be
-copied easily across the internet). They contain a full description of your
-font.
+copied easily across the internet and so that diffs are somewhat meaningful).
+They contain a full description of your font.
 <P>
 They are vaguely modeled on bdf files. The first few lines contain general
 font properties, then there's a section for each character, then a section
 for each bitmap font.
+<H3>
+  Font Header
+</H3>
 <P>
 Here is an example of what the first few lines look like:
 <BLOCKQUOTE>
@@ -28,69 +36,188 @@ FullName: Ambrosia
 FamilyName: Ambrosia
 Weight: Medium
 Copyright: Copyright (C) 1995-2000 by George Williams
+Comments: This is a funny font.
 Version: 001.000
 ItalicAngle: 0
 UnderlinePosition: -133
 UnderlineWidth: 20
 Ascent: 800
 Descent: 200
-DisplaySize: 24
+DisplaySize: -24
 AntiAlias: 1
+WinInfo: 64 16 4
+FitToEm: 1
 XUID: 3 18 21
-Encoding: -1
+Encoding: unicode
+Order2: 1
+OnlyBitmaps: 0
 </PRE>
 </BLOCKQUOTE>
 <P>
 The first line just identifies the file as an sfd file. The next few lines
 give the various different names that postscript allows fonts to have. Then
-some fairly self-explanatory items. The thing that probably needs explanation
-is the encoding, this is an enum some of whose values are:
-<UL>
-  <LI>
-    -1 -- custom encoding
-  <LI>
-    0 -- ISO 8859-1
-  <LI>
-    1 -- ISO 8859-2
-  <LI>
-    ... (there is no ISO 8859-12 so)
-  <LI>
-    11 -- ISO 8859-13
-  <LI>
-    ...
-  <LI>
-    16 -- Windows
-  <LI>
-    17 -- Macintosh
-  <LI>
-    20 -- Adobe Standard
-  <LI>
-    23 -- JIS 208
-  <LI>
-    28 -- Unicode
-</UL>
-<P>
-We also support user defined encodings, these are listed not as a number
-but as a string that names the encoding. CID fonts have no encodings, instead
-they have
+some fairly self-explanatory items (if they don't make sense, look them up
+in the <A HREF="fontinfo.html">font info</A> dlg). A few things need some
+explaination:
+<DL>
+  <DT>
+    DisplaySize
+  <DD>
+    This is the number of pixels per em that will be used by default to display
+    the font in fontviews (it may be changed of course). Negative numbers mean
+    to rasterize the display from the outlines, positive numbers mean to use
+    a prebuilt bitmap font of that size.
+  <DT>
+    AntiAlias
+  <DD>
+    Whether the fontview should display the font as antialiased or black and
+    white. (AntiAliased looks better, but will be slower)
+  <DT>
+    FitToEm
+  <DD>
+    Controls whether Fit to Em is checked by default in a fontview that displays
+    this font.
+  <DT>
+    WinInfo
+  <DD>
+    Has three pieces of data on the default display of windows containing this
+    font. The first datum says that the window should be scrolled so that glyph
+    at encoding 64 should be visible, the second that the window should have
+    16 character columns horizontally, and the last that there should be 4 character
+    rows vertically.
+  <DT>
+    Encoding
+  <DD>
+    For normal fonts this will be one of the names (or a close approximation
+    thereto) that appears in the Encoding pulldown list. CID keyed fonts will
+    not have encodings. Instead they'll have something like:
+</DL>
 <BLOCKQUOTE>
   <PRE>Registry: Adobe
 Ordering: japan1
 Supplement: 4
+CIDVersion: 1.2
 </PRE>
 </BLOCKQUOTE>
 <P>
 Some fonts will have some TrueType information in them too (look at the
 <A HREF="http://www.microsoft.com/typography/tt/tt.htm">truetype spec</A>
-for the meanings of these).
+for the meanings of these, they usually live in the OS/2 table).
 <BLOCKQUOTE>
   <PRE>FSType: 4
 PFMFamily: 17
 TTFWeight: 400
 TTFWidth: 5
 Panose: 2 0 5 3 0 0 0 0 0 0
+LineGap: 252
+VLineGap: 0
 </PRE>
 </BLOCKQUOTE>
+<P>
+If loaded from a font with an OS/2 table there may also be the following
+fields (there is no ui to set these fields, but PfaEdit preserves them)
+<BLOCKQUOTE>
+  <PRE>HheadAscent: 892
+HheadDescent: -200
+OS2TypoAscent: 892
+OS2TypoDescent: -200
+OS2WinAscent: 892
+OS2WinDescent: -200
+</PRE>
+</BLOCKQUOTE>
+<P>
+These represent different definitions of ascent and descent that are stored
+in various places in the truetype file (Horizontal header and OS/2 tables).
+<P>
+Some fonts will have Postscript specific information contained in the Private
+dictionary
+<BLOCKQUOTE>
+  <PRE>BeginPrivate: 1
+BlueValues 23 [-19 0 502 517 750 768]
+EndPrivate
+</PRE>
+</BLOCKQUOTE>
+<P>
+If the font has any opentype features it will have a list of
+<A HREF="charinfo.html#ScriptLang">script language</A> entries:
+<BLOCKQUOTE>
+  <PRE>ScriptLang: 3
+ 1 latn 1 ROM   
+ 1 latn 4 DEU  ROM  VIT  dflt 
+ 3 cyrl 1 dflt grek 1 dflt latn 5 DEU  ROM  TRK  VIT  dflt
+</PRE>
+</BLOCKQUOTE>
+<P>
+The first line says that there are 3 sets of script lang entries. The next
+line says that this entry is only active for one script ('latn') and then
+only if the language is 'ROM '. The next line says the entry is again only
+active for one script, but that this time any of the four languages 'DEU
+', 'ROM ', 'VIT ' or the default language apply to it. And the last line
+gives an example of an entry that is active for several scripts with several
+languages.
+<P>
+If your font has any kerning classes
+<BLOCKQUOTE>
+  <PRE>KernClass: 31 64 5 0
+ 1 F
+ 41 L Lacute glyph78 Lcommaaccent Ldot Lslash
+ 1 P
+...
+ 6 hyphen
+ 5 space
+...
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -152 -195 -152 -225 0 0 0 0 0 0 0 0 0 0 0 0 0 -145 -145 -130
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -130 0 0 0 0 0 0 0 0 0 0 -145 0 -115 0 0 0 0 -65 0 -140 -120 -120
+...
+</PRE>
+</BLOCKQUOTE>
+<P>
+The first line says that this Kerning Class has 31 different classes for
+the first character, and 64 for the second. It is active for entry 5 in the
+script lang list above. The <A HREF="charinfo.html#Feature-Tag">OpenType
+flags </A>will be 0. The next line says that class 1 of the first character
+(class 0 is reserved and never present) consists of only one character "F"
+(the number in front is the string length of the line. It speeds up processing
+the sfd file but has no semantic content). The next line is for class 2 of
+the first character, it has more characters in it and a longer string length.
+After 30 entries we start on the classes for the second character. They look
+exactly like classes for the first character. After all the second character
+classes have been defined we have an array of numbers, &lt;char1 class
+cnt&gt;*&lt;char2 class cnt&gt; of them in fact. This specified the amount
+of kerning that should be placed between a characters of the given classes
+of left and right characters (ie. if char1 was in left class 2 and char2
+was in right class 4 then we would index this array with 3*&lt;char2 class
+cnt&gt; + 4).
+<P>
+The order of opentype features within GPOS/GSUB tables may be stored:
+<BLOCKQUOTE>
+  <PRE>TableOrder: GPOS 4
+	'subs'
+	'sinf'
+	'mark'
+	'kern'
+TableOrder: GSUB 2
+	'frac'
+	'nutf'
+</PRE>
+</BLOCKQUOTE>
+<P>
+If the font contains ttf hinting, then the file may contain unparsed truetype
+tables (understanding ttf hinting is beyond PfaEdit's abilities, but it can
+at least preserve the data):
+<BLOCKQUOTE>
+  <PRE>TtfTable: prep 4360
+5S;o3()It?eJ8r@H[HSJH[H^@!b&amp;BQ*?Vcm@'XSh+1MACZ&gt;Up/\,o1+Ca't2!&lt;ocH+Wn2p"@,t&amp;
++Wo+[()Is6G8:u7D/^7,*,KO/(E=N5!=s)LCMjn,:Mp3:DSL&amp;j05dG#cY`hLCN"!&lt;CBO$@s(_ZX
+...
+</PRE>
+</BLOCKQUOTE>
+<P>
+The first line says that the 'prep' table is 4360 bytes long. Subsequent
+lines will provide 4360 bytes of data, packed in Enc85 (which takes binary
+data and packs it into ASCII without too much expansion. See the PostScript
+Reference Manual for a description of this packing).
 <P>
 The <CODE>LangName</CODE> entries represent the TrueType names table the
 number represents the language and is followed by a list of strings encoded
@@ -101,11 +228,39 @@ equivalent postscript item then that name will be omitted (this makes it
 easier to handle updates, users only have to change the copyright in one
 place)
 <BLOCKQUOTE>
-  <PRE>
-LangName: 1033 "" "" "Regular" "GWW:Caliban Regular: Version 1.0" "" "Version 1.0"
+  <PRE>LangName: 1033 "" "" "Regular" "GWW:Caliban Regular: Version 1.0" "" "Version 1.0"
 LangName: 1032 "" "" "+A5oDsQ09A78DvQ05A7oDrAAA"
 </PRE>
 </BLOCKQUOTE>
+<P>
+If your font has any anchor classes:
+<BLOCKQUOTE>
+  <PRE>AnchorClass: "top" mark 4 7 1 "bottom" mark 4 7 1 "Anchor-2" mark 4 7 1 "Anchor-3" mark 4 7 2 "Anchor-4" mark 4 7 2 "Anchor-5" mark 4 7 3 "Anchor-6" mark 4 7 4 
+</PRE>
+</BLOCKQUOTE>
+<P>
+There is an Anchor Class named "top" which has feature tag 'mark', opentype
+flags 4, a script lang index of 7, and it should be merged with other anchor
+classes marked with "1". The next class is named "bottom", the next "Anchor-2"
+and so forth. (Anchor class names are output in UTF7)
+<P>
+There may be a Grid entry near the top of the font, this specifies the splines
+to be drawn in the grid layer for the font, <A HREF="#splineset">see below
+for a description of the splineset format</A>:
+<BLOCKQUOTE>
+  <PRE>Grid
+678 -168 m 5
+ -40 -168 l 5
+-678 729 m 1
+ 1452 729 l 1
+-678 525 m 1
+ 1452 525 l 1
+EndSplineSet
+</PRE>
+</BLOCKQUOTE>
+<H3>
+  Outline Character Data
+</H3>
 <P>
 Then for non-CID fonts:
 <BLOCKQUOTE>
@@ -121,8 +276,8 @@ looks like:
 Encoding: 33 33
 Width: 258
 Flags: 
-HStem: 736 13  -14 88  
-VStem: 71 84  
+HStem: 736 13&lt;39 155&gt;  -14 88&lt;162 180&gt;
+VStem: 71 84&lt;49 396&gt; 
 Fore
 195 742 m 0
  195 738 193 736 189 736 c 0
@@ -146,18 +301,65 @@ EndChar
 </BLOCKQUOTE>
 <P>
 The first line names the character, the next line gives the encoding, first
-in the current font, then in unicode. Then the width. Then a set of flags
-(there are currently four flags: "H" =&gt; the character has been changed
-since last hinted, "M" the character's hints have been adjusted manually,
-"W" the width has been set explicitly, and "O" =&gt; the character was open
-when last saved). Then horizontal and vertical stem hints (set of several
-two number pairs, the first number in the pair is the location of the stem,
-the next number is the width of the stem). The entry <CODE>Fore</CODE> starts
-the foreground splines, they are encoded as postscript commands with moveto
-abbreviated to m, curveto to c and lineto to l (lower case el). The digit
-after after the letter indicates whether the point is curve (0), corner (1)
-or tangent (2). A set of splines in the background is similar, it will be
-introduced by a <CODE>Back</CODE> entry.
+in the current font, then in unicode. Then the advance width.
+<P>
+Then a set of flags (there are currently four flags: "H" =&gt; the character
+has been changed since last hinted, "M" the character's hints have been adjusted
+manually, "W" the width has been set explicitly, and "O" =&gt; the character
+was open when last saved).
+<P>
+Then horizontal and vertical (postscript) stem hints (set of several two
+number pairs, the first number in the pair is the location of the stem, the
+next number is the width of the stem, the numbers in brokets (&lt;&gt;) indicate
+where the hint is valid).
+<P>
+For fonts with vertical metrics there may also be a
+<BLOCKQUOTE>
+  <PRE>VWidth: 1000
+</PRE>
+</BLOCKQUOTE>
+<P>
+specifying the vertical advance width.
+<P>
+The entry <CODE>Fore</CODE> starts the foreground
+<A NAME="splineset">splines</A>, they are encoded as postscript commands
+with moveto abbreviated to m, curveto to c and lineto to l (lower case el).
+The digit after after the letter indicates whether the point is curve (0),
+corner (1) or tangent (2). A set of splines in the background is similar,
+it will be introduced by a <CODE>Back</CODE> entry.
+<P>
+While a background image is stored in the following horrible format:
+<BLOCKQUOTE>
+  <PRE>StartChar: A
+...
+Image: 167 301 0 21 2 1 23 753 2.53892 2.53892
+J:N0SYd"0-qu?]szzz!!#7`s7cQozzz!!!!(s8Viozzzz"98E!zzzz!!3-"rVuouzzz!!!'"
+s8N'!zzz!!!!$s8W,7zzzz"98E$huE`WzJ+s!Dz!"],0s6p!g!!!!"s8W-!n,NFg!!!Q0s8Vio
+z5QCc`s82is!!!!`s8W,gz!WW3"s8W&amp;uzJ,fQKp](9o!!iQ(s8W-!z!&lt;&lt;*!s7cQo!!",@s8W-!
+...
+EndImage
+EndChar
+</PRE>
+</BLOCKQUOTE>
+<P>
+Where the numbers on the image line mean respectively: width (of image in
+pixels), height, image type (0=&gt;mono, 1=&gt;indexed, 2=&gt;true), bytes
+per line, number of color entries in the color table, the index in the color
+table of the transparent color (or for true color images the transparent
+color itself), the x and y coordinates of the upper left corner of the image,
+the x and y scale factors to convert image pixels into character units. Then
+follows a bunch of binary data encoded using Adobe's Encode85 filter (See
+the PostScript Reference manual for a description). These data contain all
+the colors in the color table followed by a dump of the image pixel data.
+<P>
+Bitmap data will be compressed by run length encoding. I'm not going to go
+into that in detail, if you want to understand it I suggest you look at the
+file sfd.c and search for image2rle to see how it is done. The image is
+compressed using rle and then output as above, only now there is one more
+parameter on the "Image:" line which gives the number of bytes to be read
+from the data stream.
+<P>
+A character need not contain any splines:
 <BLOCKQUOTE>
   <PRE>StartChar: semicolon
 Encoding: 59 59
@@ -171,50 +373,90 @@ EndChar
 </PRE>
 </BLOCKQUOTE>
 <P>
-A character need not contain any splines. Here is one with just references
-to other characters (a semi-colon is drawn here by drawing a comma and stacking
-a period on top of it). The first number is the local encoding of the character
-being refered to, the N says the reference is not selected, the remaining
-6 numbers are a postscript transformation matrix, the one for comma (44)
-is the identity matrix, while the one for period (46) just translates it
-vertically 414 units. A background image is store in the following horrible
-format:
+Above is one with just references to other characters (a semi-colon is drawn
+here by drawing a comma and stacking a period on top of it). The first number
+is the local encoding of the character being refered to, the N says the reference
+is not selected, the remaining 6 numbers are a postscript transformation
+matrix, the one for comma (44) is the identity matrix, while the one for
+period (46) just translates it vertically 414 units. 
+<P>
+If a font has been loaded from a truetype file it may containing hinting
+information (PfaEdit does not attempt to understand truetype hints, just
+to preserve them)
 <BLOCKQUOTE>
-  <PRE>StartChar: A
-...
-Image: 167 301 0 21 2 1 23 753 2.53892 2.53892
-J:N0SYd"0-qu?]szzz!!#7`s7cQozzz!!!!(s8Viozzzz"98E!zzzz!!3-"rVuouzzz!!!'"
-s8N'!zzz!!!!$s8W,7zzzz"98E$huE`WzJ+s!Dz!"],0s6p!g!!!!"s8W-!n,NFg!!!Q0s8Vio
-z5QCc`s82is!!!!`s8W,gz!WW3"s8W&amp;uzJ,fQKp](9o!!iQ(s8W-!z!&lt;&lt;*!s7cQo!!",&#64;s8W-!
-...
-EndImage
-EndChar
+  <PRE>TtfInstrs: 107
+5Xtqo&amp;gTLA(_S)TQj!Kq"UP8&lt;!&lt;rr:&amp;$QcW!"K,K&amp;kWe?(^pl]#mUY&lt;!s\f7"U&gt;G:!%\s-3WRec
+$pP.r$uZOWNsl$t"H&gt;'?EW%CM&amp;Cer:&amp;f3P&gt;eEnad5&lt;Qq=rQYuk3AE2g&gt;q7E*
+EndTtf
 </PRE>
 </BLOCKQUOTE>
 <P>
-Where the numbers on the image line mean respectively: width (of image in
-pixels), height, image type (0=&gt;mono, 1=&gt;indexed, 2=&gt;true), bytes
-per line, number of color entries in the color table, the index in the color
-table of the transparent color (or for true color images the transparent
-color itself), the x and y coordinates of the upper left corner of the image,
-the x and y scale factors to convert image pixels into character units. Then
-follows a bunch of binary data encoded using Adobe's Encode85 filter. These
-data contain all the colors in the color table followed by a dump of the
-image pixel data.
+This is 107 bytes of Enc85 encoded binary data.
 <P>
-There may be a Grid entry near the top of the font, this specifies the splines
-to be drawn in the grid layer for the font, and looks like any other splineset:
+If the character contains Anchor Points these will be included:
 <BLOCKQUOTE>
-  <PRE>Grid
-678 -168 m 5
- -40 -168 l 5
--678 729 m 1
- 1452 729 l 1
--678 525 m 1
- 1452 525 l 1
-EndSplineSet
+  <PRE>AnchorPoint: "botom" 780 -60 basechar 0
+AnchorPoint: "top" 803 1487 basechar 0
 </PRE>
 </BLOCKQUOTE>
+<P>
+the point names the anchor class it belongs to (in UTF-7), its location,
+what type of point it is (basechar, mark, baselig, basemark, entry, exit),
+and for ligatures a number indicating which ligature component it refers
+to.
+<P>
+If the character is the first in any kern pairs (not a pair defined by a
+kern class, however)
+<BLOCKQUOTE>
+  <PRE>KernsSLIF: 114 -100 1 0 117 -92 1 0 101 -123 1 0 97 -107 1 0 111 -107 1 0
+</PRE>
+</BLOCKQUOTE>
+<P>
+Where each kern pair is represented by 4 numbers. The first is the encoding
+of the second character (using the current encoding for the font), the next
+is the horizontal kerning amount, then the script lang index, and finally
+the open type flags. Then we start over with the next kernpair.
+<P>
+Data that are to go into other GPOS, GSUB or GDEF sub-tables are stored like
+this:
+<BLOCKQUOTE>
+  <PRE>Position: 12 0 'sinf' dx=0 dy=-900 dh=0 dv=0
+Ligature: 12 0 'frac' one slash four
+Substitution: 12 3 'smcp' agrave.sc
+AlternateSubs: 12 0 'swsh' glyph490 A.swash
+MultipleSubs: 12 0 'ccmp' a grave
+Ligature: 12 4 'liga' f f
+LCarets: 0 0 '    ' 1 650 
+</PRE>
+</BLOCKQUOTE>
+<P>
+In most of these lines the first two numbers provide a script lang index
+and a set of opentype flags (except for LCarets where they are ignored).
+This is followed by an opentype tag (also ignored for ligature carets). A
+simple position change is expressed by the amount of movement of the glyph
+and of the glyph's advance width. A ligature contains the names of the characters
+that make it up. A simple substitution contains the name of the character
+that it will become. An alternate sub contains the list of characters that
+the user may choose from. A multiple substitution contains the characters
+the current glyph is to be decomposed into. A ligature caret contains a count
+of the number of carets defined, and the a list of the locations of those
+carets.
+<P>
+A glyph may have an arbetrary comment associated with it, this will be output
+in UTF-7
+<BLOCKQUOTE>
+  <PRE>Comment: Hi
+</PRE>
+</BLOCKQUOTE>
+<P>
+or a color
+<BLOCKQUOTE>
+  <PRE>Colour: ff0000
+</PRE>
+</BLOCKQUOTE>
+<H3>
+  Bitmap Fonts
+</H3>
 <P>
 After all the outline characters have been described there is an EndChars
 entry and then follow any bitmap fonts:
@@ -250,25 +492,9 @@ EndBitmapFont
 EndSplineFont
 </PRE>
 </BLOCKQUOTE>
-<P>
-If the font has been read in from a type1 postscript font, then there may
-also be entries for a subroutine list. These are type1 strings (similar to
-origtype1 in the character entry). A subroutine list starts with at
-<CODE>BeginSubrs:</CODE> keyword which is followed by the number of subroutines.
-Then a new line, on which the length of each subroutine will appear (this
-may take more than one line if there are lots of subroutines). Then (on the
-next line) an encode85ed string containing all the bytes in all the subroutines
-(the lengths above provide enough information to map a byte to the appropriate
-subroutine). Finally a keyword <CODE>EndSubrs</CODE>.
-<P>
-A font may also have some private data (either from reading at type1 font,
-or because the user created it), this is mostly hinting information. Private
-data begins with the keyword <CODE>BeginPrivate:</CODE> and is followed by
-the count of private items. Each private item starts on a new line, it begins
-with the name of the entry, is followed by a number (containing the length
-of the entry's value) and then then entry's value. The value may contain
-new lines. There will be a newline after the value. The private list is ended
-by an <CODE>EndPrivate</CODE> keyword.
+<H3>
+  CID keyed fonts
+</H3>
 <P>
 A CID font is saved slighlty differently. It begins with the normal font
 header which contains the information in the top level CID font dictionary.
@@ -285,7 +511,7 @@ The <CODE>CIDVersion</CODE> is self-explanitory. The
 of which contains slots for 8318 characters (again some of these may not
 be defined). This will be followed by a list of the subfonts (dumped out
 just like normal fonts) and their characters. Only the top level font will
-contain any bitmap characters.
+contain any bitmap characters, anchor classes, etc.
 <H2>
   Autosave Format
 </H2>
