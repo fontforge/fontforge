@@ -440,12 +440,9 @@ static void DVFigureNewState(DebugView *dv,TT_ExecContext exc) {
 	CVInfoDraw(cv,cv->gw);
     }
 
-    if ( cv!=NULL && cv->raster!=NULL ) {
-	FreeType_FreeRaster(cv->raster);
-	cv->raster = NULL;
-    }
-
     if ( exc!=NULL ) {
+	if ( cv->raster!=NULL )
+	    FreeType_FreeRaster(cv->raster);
 	SplinePointListsFree(cv->gridfit);
 	cv->gridfit = SplineSetsFromPoints(&exc->pts,dv->scale);
 	cv->raster = DebuggerCurrentRasterization(cv->gridfit,
