@@ -800,7 +800,9 @@ return( _TT_RunIns(exc));	/* This should run to completion */
 	dc->initted_pts = true;
     }
 
+    pthread_mutex_lock(&dc->parent_mutex);
     pthread_cond_signal(&dc->parent_cond);
+    pthread_mutex_unlock(&dc->parent_mutex);
     pthread_cond_wait(&dc->child_cond,&dc->child_mutex);
     if ( dc->terminate )
 return( TT_Err_Execution_Too_Long );
@@ -817,7 +819,9 @@ return( TT_Err_Execution_Too_Long );
 		GWidgetPostNoticeR(_STR_HitWatchPoint,_STR_HitWatchPointn,dc->wp_ptindex);
 		dc->found_wp = true;
 	    }
+	    pthread_mutex_lock(&dc->parent_mutex);
 	    pthread_cond_signal(&dc->parent_cond);
+	    pthread_mutex_unlock(&dc->parent_mutex);
 	    pthread_cond_wait(&dc->child_cond,&dc->child_mutex);
 	}
     } while ( !dc->terminate );
@@ -852,7 +856,9 @@ static void *StartChar(void *_dc) {
  finish:
     dc->has_finished = true;
     dc->exc = NULL;
+    pthread_mutex_lock(&dc->parent_mutex);
     pthread_cond_signal(&dc->parent_cond);	/* Wake up parent and get it to clean up after itself */
+    pthread_mutex_unlock(&dc->parent_mutex);
     pthread_mutex_unlock(&dc->child_mutex);
 return( NULL );
 }
@@ -861,7 +867,9 @@ void DebuggerTerminate(struct debugger_context *dc) {
     if ( dc->has_thread ) {
 	if ( !dc->has_finished ) {
 	    dc->terminate = true;
+	    pthread_mutex_lock(&dc->child_mutex);
 	    pthread_cond_signal(&dc->child_cond);	/* Wake up child and get it to clean up after itself */
+	    pthread_mutex_unlock(&dc->child_mutex);
 	}
 	pthread_join(dc->thread,NULL);
 	dc->has_thread = false;
@@ -975,7 +983,9 @@ void DebuggerGo(struct debugger_context *dc,enum debug_gotype dgt) {
 	    dc->multi_step = false;
 	  break;
 	}
+	pthread_mutex_lock(&dc->child_mutex);
 	pthread_cond_signal(&dc->child_cond);	/* Wake up child and get it to clean up after itself */
+	pthread_mutex_unlock(&dc->child_mutex);
 	pthread_cond_wait(&dc->parent_cond,&dc->parent_mutex);	/* Wait for the child to initialize itself (and stop) then we can look at its status */
     }
 }
