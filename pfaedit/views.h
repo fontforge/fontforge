@@ -155,7 +155,8 @@ typedef struct debugview {
     int dwidth, toph;
     struct charview *cv;
     double scale;
-    GWindow points, cvt, regs, stack, storage;
+    GWindow points, points_v, cvt, regs, stack, storage;
+    int pts_head;
 } DebugView;
 
 typedef struct charview {

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 12-Jan-2003 -->
+  <!-- AP: Last modified: 5-Mar-2003 -->
   <TITLE>The Edit Menu</TITLE>
 </HEAD>
 <BODY>
@@ -31,6 +31,8 @@ in text fields.
     <A HREF="#LBearing">Copy LBearing</A>
   <LI>
     <A HREF="#RBearing">Copy RBearing</A>
+  <LI>
+    <A HREF="#CopyGridFit">Copy Grid Fit</A>
   <LI>
     <A HREF="#Paste">Paste</A>
   <LI>
@@ -140,12 +142,11 @@ view this menu will be disabled when one of the text fields has the focus.
     <P>
     To external applications selected points (and associated contours) will be
     exported to the clipboard with format "image/eps", while a selected image
-    will be exported with formats "image/png" and "image/bmp".
-    If you Copy a series of characters into the clipboard, the only the first
-    one will be exported to external applications.
-    If the clipboard contains a single point, then this will also be exported in
-    STRING format (giving the coordinates of the point); the intent is to make
-    it easier to people to identify the point.
+    will be exported with formats "image/png" and "image/bmp". If you Copy a
+    series of characters into the clipboard, the only the first one will be exported
+    to external applications. If the clipboard contains a single point, then
+    this will also be exported in STRING format (giving the coordinates of the
+    point); the intent is to make it easier to people to identify the point.
     See the section on <A HREF="selections.html">selections</A>
   <DT>
     Copy <A NAME="Reference">Reference</A>
@@ -198,19 +199,26 @@ view this menu will be disabled when one of the text fields has the focus.
     <P>
     This command is not available in the Bitmap View.
   <DT>
+    <A NAME="CopyGridFit">Copy Grid Fit</A>
+  <DD>
+    Only available in the outline character view and only if
+    <A HREF="viewmenu.html#ShowGridFit">View-&gt;Show Grid Fit </A>is selected.
+    This will place a copy of the grid fit version of the character into the
+    clipboard.
+  <DT>
     <A NAME="Paste">Paste</A>
   <DD>
     In the Font View this command will paste whatever is in the clipboard into
     the foregrounds of all selected characters (exception: if the clipboard contains
     an image it will not go into the foreground), clearing out whatever was there.
-    If there are more selected
-    characters than there is information in the clipboard then the clipboard
-    will be repeated until all selected characters have had something pasted
-    in them (that is if characters A and B were selected when the copy happened
-    and now characters C, D and E are selected, the C will get A, D will get
-    B and E will also get A). If exactly one character is selected but the clipboard
-    contains more that one character, the the selection will be extended so that
-    enough characters are selected that something may be pasted in each. <BR>
+    If there are more selected characters than there is information in the clipboard
+    then the clipboard will be repeated until all selected characters have had
+    something pasted in them (that is if characters A and B were selected when
+    the copy happened and now characters C, D and E are selected, the C will
+    get A, D will get B and E will also get A). If exactly one character is selected
+    but the clipboard contains more that one character, the the selection will
+    be extended so that enough characters are selected that something may be
+    pasted in each. <BR>
     If the clipboard contains outline information then that information will
     go into the character outline regardless of the setting of Copy From. If
     the clipboard contains a bitmap and the display is set to outline then the
@@ -374,8 +382,8 @@ view this menu will be disabled when one of the text fields has the focus.
 	<A NAME="CharName">Char Metadata</A>
       <DD>
 	Normally Copy does not copy the metadata (name, unicode encoding, comment,
-	ligature
-	info) associated with a character, but if this is checked then it will.
+	ligature info) associated with a character, but if this is checked then it
+	will.
     </DL>
     <P>
     This also controls the behavior of the

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 2-Mar-2003 -->
+  <!-- AP: Last modified: 3-Mar-2003 -->
   <TITLE>Frequently Asked Questions</TITLE>
 </HEAD>
 <BODY>
@@ -103,8 +103,8 @@
     font?</A>
   <LI>
     <A HREF="#ttf-degrade">I loaded a ttf font, made a few changes and generated
-    a new font. The new font doesn't look anywhere near as nice as the original
-    even for characters I didn't change. Why?</A>
+    a new font. The changed characters don't look anywhere near as nice as the
+    originals. Why?</A>
   <LI>
     <A HREF="#type42">Why doesn't pfaedit support Type 42 fonts?</A>
   <LI>
@@ -904,28 +904,28 @@ MANPATH=${MANPATH:-}:/usr/local/share/man ; export MANPATH
     (that is the character used when an unencoded character is called for).
   <DT>
     <A NAME="ttf-degrade"><B>I loaded a ttf font, made a few changes and generated
-    a new font. The new font doesn't look anywhere near as nice as the original
-    even for characters I didn't change. Why?</B></A>
+    a new font. The changed characters don't look anywhere near as nice as the
+    originals. Why?</B></A>
   <DD>
     Unfortunately PfaEdit does not hint truetype fonts at all well. And when
-    PfaEdit reads in a truetype font it throws out all the hinting (instructions)
-    that were present in the original. The result is that PfaEdit will degrade
-    the appearance of most truetype fonts (not all, some have no hints.<BR>
-    PfaEdit will hint vertical and horizontal stems. You might experiment with
-    turning off all hinting on the font (some fonts will look worse with just
-    those stems hinted) by AutoHinting the entire font and then clearing the
-    hints of the entire font.
+    PfaEdit reads in a truetype font it saves all the hinting (instructions)
+    that were present in the original. But if you change a character in any
+    significant way those instructions are no longer valid (they depend intimately
+    on the details of the outlines), so PfaEdit removes them when you make a
+    change. The result is that changing a character with PfaEdit will degrade
+    its appearance in most truetype fonts (not all, some have no hints).<BR>
+    PfaEdit will hint vertical and horizontal stems.
   <DT>
     <A NAME="type42"><B>Why doesn't pfaedit support Type 42 fonts?</B></A>
   <DD>
     A Type 42 font is a postscript wrapper around a truetype font. It is used
     for downloading truetype fonts to postscript printers.
     <P>
-    PfaEdit does not support these because when PfaEdit loads a TrueType font
-    it loses all the TrueType instructions. So if PfaEdit were to generate a
-    type 42 font the quality would be greatly reduced. You are much better off
-    using
-    <A TARGET="_top" HREF="http://ftp.giga.or.at/pub/nih/ttftot42/">ttftot42</A>.
+    PfaEdit does not support these because support for truetype hints (such as
+    it is) is relatively recent and I haven't had time to look at type42 recently.
+    You are much better off using
+    <A TARGET="_top" HREF="http://ftp.giga.or.at/pub/nih/ttftot42/">ttftot42</A>
+    for now.
   <DT>
     <A NAME="otf-diffs"><B>I generated an opentype font and windows wouldn't
     install it. Why not?</B></A>

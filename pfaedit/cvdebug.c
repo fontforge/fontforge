@@ -155,11 +155,93 @@ return;
     GDrawSetFont(pixmap,dv->ii.gfont);
     y = 3+dv->ii.as;
     for ( i=exc->top-1; i>=0; --i ) {
-	sprintf(buffer, "%3d: %3d (0x%x)", i, exc->stack[i], exc->stack[i] );
+	sprintf(buffer, "%3d: %3d (%.2f)", i, exc->stack[i], exc->stack[i]/64.0 );
 	uc_strcpy(ubuffer,buffer);
 	GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0);
+	if ( y>event->u.expose.rect.y+event->u.expose.rect.height )
+    break;
 	y += dv->ii.fh;
     }
+    if ( exc->top==0 ) {
+	uc_strcpy(ubuffer,"<empty>");
+	GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0);
+    }
+}
+
+static void DVStorageExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
+    TT_ExecContext exc = DebuggerGetEContext(dv->dc);
+    char buffer[100];
+    unichar_t ubuffer[100];
+    int i, y;
+
+    GDrawFillRect(pixmap,&event->u.expose.rect,0xb0b0b0);
+    if ( exc==NULL )
+return;
+    GDrawSetFont(pixmap,dv->ii.gfont);
+    y = 3+dv->ii.as;
+    for ( i=0; i<exc->storeSize; ++i ) {
+	sprintf(buffer, "%3d: %3d (%.2f)", i, exc->storage[i], exc->storage[i]/64.0 );
+	uc_strcpy(ubuffer,buffer);
+	GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0);
+	if ( y>event->u.expose.rect.y+event->u.expose.rect.height )
+    break;
+	y += dv->ii.fh;
+    }
+    if ( exc->storeSize==0 ) {
+	uc_strcpy(ubuffer,"<empty>");
+	GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0);
+    }
+}
+
+#define CID_Twilight	1001
+#define CID_Normal	1002
+#define CID_Grid	1003
+#define CID_EmUnit	1004
+#define CID_Current	1005
+#define CID_Original	1006
+static int show_twilight = true, show_grid=true, show_current=true;
+
+static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
+    TT_ExecContext exc = DebuggerGetEContext(dv->dc);
+    char buffer[100];
+    unichar_t ubuffer[100];
+    int i, y;
+    FT_Vector *pts;
+    int n;
+    TT_GlyphZoneRec *r;
+
+    GDrawFillRect(pixmap,&event->u.expose.rect,0xb0b0b0);
+    if ( exc==NULL )
+return;
+
+    show_twilight = GGadgetIsChecked(GWidgetGetControl(dv->points,CID_Twilight));
+    show_grid = GGadgetIsChecked(GWidgetGetControl(dv->points,CID_Grid));
+    show_current = GGadgetIsChecked(GWidgetGetControl(dv->points,CID_Current));
+    r = show_twilight ? &exc->twilight : &exc->pts;
+    n = r->n_points;
+    pts = show_current ? r->cur : r->org;
+
+    GDrawSetFont(pixmap,dv->ii.gfont);
+    y = 3+dv->ii.as;
+    for ( i=0; i<n; ++i ) {
+	if ( show_grid )
+	    sprintf(buffer, "%3d: %.2f,%.2f", i, pts[i].x/64.0, pts[i].y/64.0 );
+	else
+	    sprintf(buffer, "%3d: %g,%g", i, pts[i].x*dv->scale, pts[i].y*dv->scale );
+	uc_strcpy(ubuffer,buffer);
+	GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0);
+	if ( y>event->u.expose.rect.y+event->u.expose.rect.height )
+    break;
+	y += dv->ii.fh;
+    }
+    if ( n==0 ) {
+	uc_strcpy(ubuffer,"<none>");
+	GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0);
+    }
+}
+
+static void DVPointsExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
+    GDrawDrawLine(pixmap,event->u.expose.rect.x,dv->pts_head-1,event->u.expose.rect.x+event->u.expose.rect.width,dv->pts_head-1,0x000000);
 }
 
 static SplineSet *SplineSetsFromPoints(TT_GlyphZoneRec *pts, real scale) {
@@ -277,6 +359,8 @@ static void DVFigureNewState(DebugView *dv,TT_ExecContext exc) {
 	    GDrawRequestExpose(dv->regs,NULL,false);
 	if ( dv->stack!=NULL )
 	    GDrawRequestExpose(dv->stack,NULL,false);
+	if ( dv->storage!=NULL )
+	    GDrawRequestExpose(dv->storage,NULL,false);
     }
 }
 
@@ -337,6 +421,64 @@ return( true );
 	    watches = NULL;
 	}
 	DebuggerSetWatches(dv->dc,n,watches);
+    }
+return( true );
+}
+
+#define MID_Registers	1001
+#define MID_Stack	1002
+#define MID_Storage	1003
+#define MID_Points	1004
+
+static void DVCreateRegs(DebugView *dv);
+static void DVCreateStack(DebugView *dv);
+static void DVCreateStore(DebugView *dv);
+static void DVCreatePoints(DebugView *dv);
+
+static void DVMenuCreate(GWindow v, GMenuItem *mi,GEvent *e) {
+    DebugView *dv = (DebugView *) GDrawGetUserData(v);
+
+    if ( mi->mid==MID_Registers ) {
+	if ( dv->regs!=NULL ) GDrawDestroyWindow(dv->regs);
+	else DVCreateRegs(dv);
+    } else if ( mi->mid==MID_Stack ) {
+	if ( dv->stack!=NULL ) GDrawDestroyWindow(dv->stack);
+	else DVCreateStack(dv);
+    } else if ( mi->mid==MID_Storage ) {
+	if ( dv->storage!=NULL ) GDrawDestroyWindow(dv->storage);
+	else DVCreateStore(dv);
+    } else if ( mi->mid==MID_Points ) {
+	if ( dv->points!=NULL ) GDrawDestroyWindow(dv->points);
+	else DVCreatePoints(dv);
+    }
+}
+
+static GMenuItem popupwindowlist[] = {
+    { { (unichar_t *) _STR_Registers, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, '\0' }, '\0', 0, NULL, NULL, DVMenuCreate, MID_Registers },
+    { { (unichar_t *) _STR_Stack, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, '\0' }, '\0', 0, NULL, NULL, DVMenuCreate, MID_Stack },
+    { { (unichar_t *) _STR_Storage, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, '\0' }, '\0', 0, NULL, NULL, DVMenuCreate, MID_Storage },
+    { { (unichar_t *) _STR_Points, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, '\0' }, '\0', 0, NULL, NULL, DVMenuCreate, MID_Points },
+    { NULL }
+};
+
+static int DV_WindowMenu(GGadget *g, GEvent *e) {
+    DebugView *dv;
+    GEvent fake;
+    GRect pos;
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonpress ) {
+	dv = GDrawGetUserData(GGadgetGetWindow(g));
+	popupwindowlist[0].ti.checked = dv->regs!=NULL;
+	popupwindowlist[1].ti.checked = dv->stack!=NULL;
+	popupwindowlist[2].ti.checked = dv->storage!=NULL;
+	popupwindowlist[3].ti.checked = dv->points!=NULL;
+	GGadgetGetSize(g,&pos);
+	memset(&fake,0,sizeof(fake));
+	fake.type = et_mousedown;
+	fake.w = dv->dv;
+	fake.u.mouse.x = pos.x;
+	fake.u.mouse.y = pos.y+pos.height;
+	GMenuCreatePopupMenu(dv->dv,&fake, popupwindowlist);
     }
 return( true );
 }
@@ -429,6 +571,94 @@ return( DVChar(dv,event));
 return( true );
 }
 
+static int dvstore_e_h(GWindow gw, GEvent *event) {
+    DebugView *dv = (DebugView *) GDrawGetUserData(gw);
+
+    switch ( event->type ) {
+      case et_expose:
+	DVStorageExpose(gw,dv,event);
+      break;
+      case et_char:
+return( DVChar(dv,event));
+      break;
+#if 0
+      case et_controlevent:
+	switch ( event->u.control.subtype ) {
+	  case et_scrollbarchange:
+	    stack_scroll(dv,&event->u.control.u.sb);
+	  break;
+	}
+      break;
+#endif
+      case et_close:
+	GDrawDestroyWindow(dv->storage);
+      break;
+      case et_destroy:
+	dv->storage = NULL;
+      break;
+      case et_mouseup: case et_mousedown:
+      case et_mousemove:
+	GGadgetEndPopup();
+      break;
+    }
+return( true );
+}
+
+static int dvpointsv_e_h(GWindow gw, GEvent *event) {
+    DebugView *dv = (DebugView *) GDrawGetUserData(gw);
+
+    switch ( event->type ) {
+      case et_expose:
+	DVPointsVExpose(gw,dv,event);
+      break;
+      case et_char:
+return( DVChar(dv,event));
+      break;
+      case et_mouseup: case et_mousedown:
+      case et_mousemove:
+	GGadgetEndPopup();
+      break;
+    }
+return( true );
+}
+
+static int dvpoints_e_h(GWindow gw, GEvent *event) {
+    DebugView *dv = (DebugView *) GDrawGetUserData(gw);
+    GRect r;
+
+    switch ( event->type ) {
+      case et_expose:
+	DVPointsExpose(gw,dv,event);
+      break;
+      case et_char:
+return( DVChar(dv,event));
+      break;
+      case et_controlevent:
+	switch ( event->u.control.subtype ) {
+	  case et_radiochanged:
+	    GDrawRequestExpose(dv->points_v,NULL,false);
+	  break;
+	}
+      break;
+      case et_resize:
+	GDrawGetSize(gw,&r);
+	GDrawResize(dv->points_v,r.width,r.height-dv->pts_head);
+      break;
+      case et_close:
+	GDrawDestroyWindow(dv->points);
+      break;
+      case et_destroy:
+	dv->points = NULL;
+	dv->points_v = NULL;
+      break;
+      case et_mouseup: case et_mousedown:
+      case et_mousemove:
+	GGadgetEndPopup();
+      break;
+    }
+return( true );
+}
+
 static void DVCreateRegs(DebugView *dv) {
     GWindowAttrs wattrs;
     GRect pos;
@@ -458,6 +688,99 @@ static void DVCreateStack(DebugView *dv) {
     pos.width = 133; pos.height = 269;
     dv->stack = GDrawCreateTopWindow(NULL,&pos,dvstack_e_h,dv,&wattrs);
     GDrawSetVisible(dv->stack,true);
+}
+
+static void DVCreateStore(DebugView *dv) {
+    GWindowAttrs wattrs;
+    GRect pos;
+    /*extern int _GScrollBar_Width;*/
+
+    memset(&wattrs,0,sizeof(wattrs));
+    wattrs.mask = wam_events|wam_cursor|wam_wtitle;
+    wattrs.event_masks = -1;
+    wattrs.cursor = ct_mypointer;
+    wattrs.window_title = GStringGetResource(_STR_TTStorage,NULL);
+    pos.x = 0; pos.y = 0;
+    pos.width = 133; pos.height = 100;
+    dv->storage = GDrawCreateTopWindow(NULL,&pos,dvstore_e_h,dv,&wattrs);
+    GDrawSetVisible(dv->storage,true);
+}
+
+static void DVCreatePoints(DebugView *dv) {
+    GWindowAttrs wattrs;
+    GRect pos;
+    /*extern int _GScrollBar_Width;*/
+    GGadgetCreateData gcd[8];
+    GTextInfo label[8];
+
+    memset(&wattrs,0,sizeof(wattrs));
+    wattrs.mask = wam_events|wam_cursor|wam_wtitle;
+    wattrs.event_masks = -1;
+    wattrs.cursor = ct_mypointer;
+    wattrs.window_title = GStringGetResource(_STR_TTPoints,NULL);
+    pos.x = 0; pos.y = 0;
+    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,125)); pos.height = 269;
+    dv->points = GDrawCreateTopWindow(NULL,&pos,dvpoints_e_h,dv,&wattrs);
+
+    memset(&label,0,sizeof(label));
+    memset(&gcd,0,sizeof(gcd));
+
+    label[0].text = (unichar_t *) _STR_Twilight;
+    label[0].text_in_resource = true;
+    gcd[0].gd.label = &label[0];
+    gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 3;
+    gcd[0].gd.flags = gg_visible | gg_enabled | (show_twilight ? gg_cb_on : 0 );
+    gcd[0].gd.cid = CID_Twilight;
+    gcd[0].creator = GRadioCreate;
+
+    label[1].text = (unichar_t *) _STR_Normal;
+    label[1].text_in_resource = true;
+    gcd[1].gd.label = &label[1];
+    gcd[1].gd.pos.x = 60; gcd[1].gd.pos.y = gcd[0].gd.pos.y;
+    gcd[1].gd.flags = gg_visible | gg_enabled | (!show_twilight ? gg_cb_on : 0 );
+    gcd[1].gd.cid = CID_Normal;
+    gcd[1].creator = GRadioCreate;
+
+    label[2].text = (unichar_t *) _STR_Current;
+    label[2].text_in_resource = true;
+    gcd[2].gd.label = &label[2];
+    gcd[2].gd.pos.x = 5; gcd[2].gd.pos.y = gcd[0].gd.pos.y+16;
+    gcd[2].gd.flags = gg_visible | gg_enabled | gg_rad_startnew | (show_current ? gg_cb_on : 0 );
+    gcd[2].gd.cid = CID_Current;
+    gcd[2].creator = GRadioCreate;
+
+    label[3].text = (unichar_t *) _STR_Original;
+    label[3].text_in_resource = true;
+    gcd[3].gd.label = &label[3];
+    gcd[3].gd.pos.x = gcd[1].gd.pos.x; gcd[3].gd.pos.y = gcd[2].gd.pos.y;
+    gcd[3].gd.flags = gg_visible | gg_enabled | (!show_current ? gg_cb_on : 0 );
+    gcd[3].gd.cid = CID_Original;
+    gcd[3].creator = GRadioCreate;
+
+    label[4].text = (unichar_t *) _STR_GridUnit;
+    label[4].text_in_resource = true;
+    gcd[4].gd.label = &label[4];
+    gcd[4].gd.pos.x = 5; gcd[4].gd.pos.y = gcd[2].gd.pos.y+16;
+    gcd[4].gd.flags = gg_visible | gg_enabled | gg_rad_startnew | (show_current ? gg_cb_on : 0 );
+    gcd[4].gd.cid = CID_Grid;
+    gcd[4].creator = GRadioCreate;
+
+    label[5].text = (unichar_t *) _STR_EmUnit;
+    label[5].text_in_resource = true;
+    gcd[5].gd.label = &label[5];
+    gcd[5].gd.pos.x = gcd[1].gd.pos.x; gcd[5].gd.pos.y = gcd[4].gd.pos.y;
+    gcd[5].gd.flags = gg_visible | gg_enabled | (!show_current ? gg_cb_on : 0 );
+    gcd[5].gd.cid = CID_EmUnit;
+    gcd[5].creator = GRadioCreate;
+
+    GGadgetsCreate(dv->points,gcd);
+
+    dv->pts_head = GDrawPointsToPixels(NULL,GGadgetScale(5+3*16+3));
+    pos.y = dv->pts_head;
+    pos.height -= dv->pts_head;
+    dv->points_v = GWidgetCreateSubWindow(dv->points,&pos,dvpointsv_e_h,dv,&wattrs);
+    GDrawSetVisible(dv->points_v,true);
+    GDrawSetVisible(dv->points,true);
 }
 
 static int dv_e_h(GWindow gw, GEvent *event) {
@@ -605,6 +928,15 @@ return;
 	gcd[5].gd.handle_controlevent = DV_WatchPnt;
 	gcd[5].gd.popup_msg = GStringGetResource(_STR_WatchPointPopup,NULL);
 	gcd[5].creator = GButtonCreate;
+
+	gcd[6].gd.pos.y = 2; gcd[6].gd.pos.x = 182;
+	gcd[6].gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
+	/*gcd[6].gd.cid = dgt_continue;*/
+	gcd[6].gd.label = &label[6];
+	label[6].image = &GIcon_menudelta;
+	gcd[6].gd.handle_controlevent = DV_WindowMenu;
+	gcd[6].gd.popup_msg = GStringGetResource(_STR_Window,NULL);
+	gcd[6].creator = GButtonCreate;
 
 	GGadgetsCreate(dv->dv,gcd);
 

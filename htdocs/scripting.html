@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 27-Feb-2003 -->
+  <!-- AP: Last modified: 4-Mar-2003 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -283,7 +283,9 @@ to (some) already existing ones)
     resides
   <LI>
     <CODE>$firstfont </CODE>the name of the filename of the font which is first
-    on the font list (Can be used by Open())
+    on the font list (Can be used by Open()), if there are no fonts loaded this
+    returns an empty string. This can be used to determine if any font at all
+    is loaded into pfaedit.
   <LI>
     <CODE>$nextfont </CODE>the name of the filename of the font which follows
     the current font on the list (or the empty string if the current font is
@@ -993,6 +995,9 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
       <HR>
   <DT>
     <A NAME="AutoHint">AutoHint</A>()
+  <DD>
+  <DT>
+    AutoInstr()
   <DD>
   <DT>
     ClearHints()

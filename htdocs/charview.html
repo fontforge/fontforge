@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 2-Mar-2003 -->
+  <!-- AP: Last modified: 9-Mar-2003 -->
   <TITLE>Outline Character View</TITLE>
 </HEAD>
 <BODY>
@@ -385,9 +385,82 @@ Fit...
 <P>
 The Show Grid Fit command will ask you for some basic information first.
 It needs to know the pointsize and resolution for which you want the action
-performed (the example at right is 12pt on a 72dpi
-screen).<BR>
+performed (the example at right is 12pt on a 72dpi screen).<BR>
 <IMG SRC="ShowGridFit.png" WIDTH="268" HEIGHT="148"><BR CLEAR=ALL>
+<H2>
+  <IMG SRC="cvdebug.png" WIDTH="544" HEIGHT="563" ALIGN="Right">The
+  <A NAME="Debugging">Debugging</A> View
+</H2>
+<P>
+PfaEdit has a truetype debugger -- provided you have a version of freetype
+on your machine with the bytecode interpreter enabled
+<FONT COLOR="Red"><STRONG>(Note: you need a license from Apple to enable
+this. It is protected by several patents)</STRONG></FONT>.
+<P>
+The image to the right shows an example of this mode. You invoke it with
+Hints-&gt;Debug, and as with the grid-fit view above you must establish a
+pointsize and and resolution. The view divides into two panes, the left of
+which is similar to the grid fit view above (except that it changes as you
+step through the instructions), the right pane provides a list of the
+instructions to be executed.
+<P>
+There are a series of buttons at the top of the instruction view. The first
+will single step the truetype program (step into), the second will step over
+procedure calls, the third will set a break point at the return point for
+the current function and continue until that is hit, and the fourth will
+continue until:
+<UL>
+  <LI>
+    It hits a break point
+  <LI>
+    It hits a watch point
+  <LI>
+    It reaches the end of the glyph program
+  <LI>
+    An error occurs
+</UL>
+<P>
+The red "STOPPED" arrow shows the current location of the instruction pointer
+(and what instruction will be executed next).
+<P>
+The fifth button allows you to set a watch point. You select a point (or
+several points) in the left hand pane, and press this button. Thereafter,
+whenever one of those points is moved PfaEdit will stop the glyph program.
+<P>
+Flaw: Currently there is no good way watch several control points.
+<P>
+You can set a more conventional break point by clicking on an instruction.
+A little red stop sign will appear on top of the address area, and the program
+will halt when the instruction pointer reaches that instruction. Clicking
+on the instruction again will remove the breakpoint.
+<P>
+Flaw: Currently there is no way to set breakpoints outside of the current
+function.
+<P>
+Flaw: Currently there is no way to examine the call stack.
+<P>
+The final button brings up a menu with which you can control which of various
+debugging palettes are visible. The ones available so far are:
+<TABLE BORDER CELLPADDING="2" WIDTH=500>
+  <TR VALIGN="Top">
+    <TD><IMG SRC="TTRegisters.png" WIDTH="137" HEIGHT="292"></TD>
+    <TD><IMG SRC="TTStack.png" WIDTH="137" HEIGHT="292"></TD>
+    <TD><IMG SRC="TTPoints.png" WIDTH="178" HEIGHT="334"></TD>
+    <TD><IMG SRC="TTStorage.png" WIDTH="137" HEIGHT="123"></TD>
+  </TR>
+  <TR VALIGN="Top">
+    <TD>Shows the truetype graphics state.</TD>
+    <TD>Shows the truetype stack. The value in parentheses is a 26.6 number.</TD>
+    <TD>Shows the points. You may choose to view the twilight points, or the
+      points displayed in the glyph pane (the normal points). You may view the
+      current location or the original location. You may view them in the units
+      of the current grid, or in em-units.</TD>
+    <TD>Shows the truetype storage locations.</TD>
+  </TR>
+</TABLE>
+<P>
+Flaw: most of these palettes should have scrollbars. For now just resize
+them to look at things off the bottom.
 <P ALIGN=Center>
 -- <A HREF="fontview.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
 <A HREF="bitmapview.html">Next</A> --

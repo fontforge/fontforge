@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 28-Oct-2002 -->
-  <!-- AP: Last modified: 19-Feb-2003 -->
+  <!-- AP: Last modified: 3-Mar-2003 -->
   <TITLE>Glossary of (some) typographical terms</TITLE>
 </HEAD>
 <BODY>
@@ -247,6 +247,11 @@
 	  A collection of related <A HREF=#font>fonts</A>. Often including plain, italic
 	  and bold <A HREF="#style">styles</A>.
 	<DT>
+	  <A NAME="FreeType" HREF="http://freetype.sf.net/">FreeType</A>
+	<DD>
+	  A library for rasterizing fonts. Used extensively in PfaEdit to understand
+	  the behavior of truetype fonts.
+	<DT>
 	  <A NAME="fractur">Fractur</A>
 	<DD>
 	  The old black letter writing style used in Germany up until the end of world
@@ -275,6 +280,13 @@
 	  <A HREF="#font">Fonts</A> are collections of glyphs with some form of mapping
 	  from character to glyph.
 	<DT>
+	  <A NAME="Grid-Fitting">Grid</A> Fitting
+	<DD>
+	  Before TrueType glyphs are rasterized they go through a process called
+	  <A HREF="overview.html#TrueType">grid fitting</A> where a tiny program is
+	  run which moves the points on the glyph's outlines around until they fit
+	  the pixel grid better.
+	<DT>
 	  <A NAME="gothic">Gothic</A>
 	<DD>
 	  The German monks at the time of Gutenburg used a black-letter writing style,
@@ -296,7 +308,7 @@
 	  <A NAME="hints">Hints</A>
 	<DD>
 	  These are described in detail in <A HREF="overview.html#Hints">the main
-	  manual</A>. They help the rasterize to draw a <A HREF="#glyph">glyph</A>
+	  manual</A>. They help the rasterizer to draw a <A HREF="#glyph">glyph</A>
 	  well at small pointsizes.
       </DL>
     </TD>

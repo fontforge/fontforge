@@ -2456,6 +2456,33 @@ static struct _GImage watchpnt_base = {
     1
 };
 
+static uint8 menudelta_data[] = {
+    0xff, 0xff, 
+    0xff, 0xff, 
+    0xe0, 0x3, 
+    0xef, 0xfb, 
+    0xf7, 0xf7, 
+    0xf7, 0xf7, 
+    0xfb, 0xef, 
+    0xfb, 0xef, 
+    0xfd, 0xdf, 
+    0xfd, 0xdf, 
+    0xfe, 0xbf, 
+    0xfe, 0xbf, 
+    0xff, 0x7f, 
+    0xff, 0x7f, 
+    0xff, 0xff, 
+    0xff, 0xff, 
+};
+
+static struct _GImage menudelta_base = {
+    it_mono,
+    15420,16,16,2,
+    (uint8 *) menudelta_data,
+    &magnify0_clut,
+    1
+};
+
 static uint8 stopped_data[] = {
     1, 1, 1, 1, 1, 1, 1, 1, 
 	1, 1, 1, 1, 1, 1, 1, 1, 
@@ -2619,6 +2646,7 @@ GImage GIcon_stepout = { 0, &stepout_base };
 GImage GIcon_stepover = { 0, &stepover_base };
 GImage GIcon_stepinto = { 0, &stepinto_base };
 GImage GIcon_watchpnt = { 0, &watchpnt_base };
+GImage GIcon_menudelta = { 0, &menudelta_base };
 
 GImage GIcon_Stopped = { 0, &stopped_base };
 GImage GIcon_Stop = { 0, &stop_base };

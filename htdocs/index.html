@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 2-Mar-2003 -->
+  <!-- AP: Last modified: 9-Mar-2003 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -112,8 +112,8 @@ let me know when you do</A>.
     <A HREF="pfaedit-030226-1.ppc.rpm">Download pfaedit linux-ppc SUSE 7.1
     </A>binary rpm Version: 26-Feb-2003
   <LI>
-    <A HREF="pfaedit-solaris-030226.tgz">Download pfaedit Solaris 8.0
-    </A>executable Version: 26-Feb-2003 (no XIM support)
+    <A HREF="pfaedit-solaris-030303.tgz">Download pfaedit Solaris 8.0
+    </A>executable Version: 3-Mar-2003 (no XIM support)
   <LI>
     <A HREF="http://packages.debian.org/unstable/x11/pfaedit.html">A debian package
     is available at the debian site.</A>
@@ -122,12 +122,12 @@ let me know when you do</A>.
     netbsd package is available at the netbsd site.</A>
   <LI>
     <A HREF="MacOSX.html#binary">A Mac OS/X distribution</A> (with Caveats).
-    Version 26-Feb-2003<BR>
+    Version 3-Mar-2003<BR>
     &nbsp; &nbsp; How to install <A HREF="MacOSX.html#binary">PfaEdit on Mac
     OS/X</A>
   <LI>
-    <A HREF="pfaedit_cygwin-030226.tgz">A cygwin version</A>. Version:
-    26-Feb-2003<BR>
+    <A HREF="pfaedit_cygwin-030303.tgz">A cygwin version</A>. Version:
+    3-Mar-2003<BR>
     &nbsp; &nbsp; How to install <A HREF="faq.html#windows">PfaEdit under
     windows</A>
   <LI>
@@ -179,7 +179,7 @@ Martin Weber's <A HREF="http://sourceforge.net/projects/autotrace/">autotrace
 program.</A>(there's a new version as of Dec 2001)
 <P>
 If you want to edit CID keyed fonts you need these <A HREF="#cidmaps">character
-set descriptions</A>. (These were last updated 3-Jan-2003)
+set descriptions</A>. (These were last updated 3-Mar-2003)
 <P>
 With the appropriate <A NAME="image-libs">libraries</A>, PfaEdit can import
 png, tiff, and gif images to act as character backgrounds for tracing purposes
@@ -199,7 +199,13 @@ have them and you want them they are available from:
   <LI>
     <A HREF="http://www.ijg.org/">libjpeg</A>
   <LI>
-    <A HREF="http://freetype.sf.net/">freetype</A>
+    <A HREF="http://freetype.sf.net/">freetype</A><BR>
+    Some of PfaEdit's commands depend on your compiling freetype with the byte
+    code interpreter enabled. This is disabled by default because it infringes
+    on certain <A HREF="http://freetype.sourceforge.net/patents.html">patents
+    granted to Apple</A>. If you have a license from Apple then you may enable
+    the interpreter by setting the appropriate macro in
+    .../include/freetype/config/ftoption.h before you build the library.
 </UL>
 <P>
 PfaEdit can display unicode names and annotations if the libuninameslist
@@ -238,7 +244,7 @@ If you are editing <A NAME="cidmaps">CID keyed fonts </A>you should pull
 down the following file
 <UL>
   <LI>
-    <A HREF="cidmaps.tgz">cidmaps.tgz</A> (These were last updated 3-Jan-2003)<BR>
+    <A HREF="cidmaps.tgz">cidmaps.tgz</A> (These were last updated 3-Mar-2003)<BR>
     and then<BR>
     <CODE>$ gunzip cidmaps.tgz<BR>
     $ tar xf cidmaps.tar <BR>
@@ -651,6 +657,9 @@ The following people have helped debug pfaedit. Many thanks!
     And many others!
 </UL>
 <P>
+I owe David Turner of <A HREF="http://freetype.sf.net/">FreeType</A> a debt
+for providing an API which allows me to debug truetype instructions.
+<P>
 PfaEdit was inspired by AltSys's
 <A HREF="http://www.macromedia.com/software/fontographer/">Fontographer</A>
 now placed in graceful retirement by MacroMedia.
@@ -924,7 +933,8 @@ Other Encodings
 	(<FONT COLOR="Red"><STRONG>proprietary</STRONG></FONT>)
     </UL>
   <LI>
-    MetaFont the original computer vector font editor &amp; other TeX utilities
+    MetaFont -- Knuth's font generation which produces bitmaps from a program
+    based on splines (&amp; other TeX utilities)
     <UL>
       <LI>
 	<A HREF="http://www.tug.org/">(available with the TeX package)</A>
@@ -978,7 +988,8 @@ Other Encodings
 	and hinting truetype fonts</A>
       <LI>
 	<A HREF="http://www.letterror.com/code/ttx/">TTX</A> provides an opensource
-	way of editing all the strange tables in a opentype font.
+	way of editing all the strange tables in a opentype font (by converting them
+	from/to XML)
       <LI>
 	Microsoft provides a bunch of stuff (for windows only of course)
 	<UL>
