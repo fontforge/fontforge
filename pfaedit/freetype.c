@@ -38,6 +38,10 @@ int hasFreeTypeDebugger(void) {
 return( false );
 }
 
+int hasFreeTypeByteCode(void) {
+return( false );
+}
+
 void *_FreeTypeFontContext(SplineFont *sf,SplineChar *sc,FontView *fv,
 	enum fontformat ff,int flags, void *share) {
 return( NULL );
@@ -170,6 +174,32 @@ return( true );
 #endif
 
 return( false );
+}
+
+int hasFreeTypeByteCode(void) {
+    if ( !hasFreeType())
+return( false );
+#if defined(_STATIC_LIBFREETYPE) || defined(NODYNAMIC)
+    /* In a static library, we can assume our headers are accurate */
+# ifdef TT_CONFIG_OPTION_BYTECODE_INTERPRETER
+return( true );
+# else
+return( false );
+# endif
+#elif FREETYPE_HAS_DEBUGGER
+    /* Have we already checked for these data? */
+    if ( _FT_Set_Debug_Hook!=NULL && _TT_RunIns!=NULL )
+return( true );
+    else
+return( false );
+#else
+    {
+    static int found = -1;
+    if ( found==-1 )
+	found = dlsym(libfreetype,"TT_RunIns")!=NULL;
+return( found );
+    }
+#endif
 }
 
 typedef struct freetypecontext {
@@ -568,9 +598,16 @@ SplineSet *FreeType_GridFitChar(void *single_glyph_context,
     FT_GlyphSlot slot;
     FTC *ftc = (FTC *) single_glyph_context;
     struct ft_context outline_context;
+    static int bc_checked = false;
 
     if ( ftc->face==(void *) -1 )
 return( NULL );
+
+    if ( !bc_checked && ftc->isttf ) {
+	bc_checked = true;
+	if ( !hasFreeTypeByteCode())
+	    GWidgetPostNoticeR(_STR_NoByteCode,_STR_NoByteCodeMsg);
+    }
 
     if ( _FT_Set_Char_Size(ftc->face,0,(int) (ptsize*64), dpi, dpi))
 return( NULL );	/* Error Return */

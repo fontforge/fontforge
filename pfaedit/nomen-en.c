@@ -2112,6 +2112,8 @@ static char mnemonic_DPI = 'D';
 static char *str_ShowGridFit = "Show Grid Fit";
 static char mnemonic_ShowGridFit = 'G';
 static char *str_FreeTypeParams = "Grid Fit Parameters";
+static char *str_NoByteCode = "No ByteCode Interpreter";
+static char *str_NoByteCodeMsg = "These results are those of the freetype autohinter. They do not reflect the truetype instructions."
 
 static int num_buttonsize = 55;
 static int num_ScaleFactor = 100;
