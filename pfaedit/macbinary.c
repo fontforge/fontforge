@@ -1639,7 +1639,8 @@ return( 0 );
     rlist[1][0].flags = 0x00;	/* I've seen FONDs with resource flags 0, 0x20, 0x60 */
     rlist[1][0].id = id;
     rlist[1][0].name = sfs->sf->familyname;
-    DumpResourceMap(res,resources,format);
+    DumpResourceMap(res,resources,format!=ff_none?format:
+	    bf==bf_nfntmacbin?ff_ttfmacbin:ff_ttfdfont);
     for ( i=0; i<r; ++i )
 	free(resources[i].res);
 
@@ -1892,6 +1893,408 @@ return( sf );
 return( NULL );
 }
 
+typedef struct fond {
+    char *fondname;
+    int first, last;
+    int assoc_cnt;
+    struct assoc {
+	short size, style, id;
+    } *assoc;
+	/* size==0 => scalable */
+	/* style>>8 is the bit depth (0=>1, 1=>2, 2=>4, 3=>8) */
+	/* search order for ID is sfnt, NFNT, FONT */
+    int stylewidthcnt;
+    struct stylewidths {
+	short style;
+	short *widthtab;		/* 4.12 fixed number with the width specified as a fraction of an em */
+    } *stylewidths;
+    int stylekerncnt;
+    struct stylekerns {
+	short style;
+	int kernpairs;
+	struct kerns {
+	    unsigned char ch1, ch2;
+	    short offset;		/* 4.12 */
+	} *kerns;
+    } *stylekerns;
+    struct fond *next;
+} FOND;
+
+struct MacFontRec {
+   short fontType;
+   short firstChar;
+   short lastChar;
+   short widthMax;
+   short kernMax;		/* bb learing */
+   short Descent;		/* maximum negative distance below baseline*/
+   short fRectWidth;		/* bounding box width */
+   short fRectHeight;		/* bounding box height */
+   unsigned short *offsetWidths;/* offset to start of offset/width table */
+   	/* 0xffff => undefined, else high byte is offset in locTable, */
+   	/*  low byte is width */
+   short ascent;
+   short descent;
+   short leading;
+   short rowWords;		/* shorts per row */
+   unsigned short *fontImage;	/* rowWords*fRectHeight */
+   	/* Images for all characters plus one extra for undefined */
+   unsigned short *locs;	/* lastchar-firstchar+3 words */
+   	/* Horizontal offset to start of n'th character. Note: applies */
+   	/*  to each row. Missing characters have same loc as following */
+};
+
+static void FondListFree(FOND *list) {
+    FOND *next;
+    int i;
+
+    while ( list!=NULL ) {
+	next = list->next;
+	free(list->assoc);
+	for ( i=0; i<list->stylewidthcnt; ++i )
+	    free(list->stylewidths[i].widthtab);
+	free(list->stylewidths);
+	for ( i=0; i<list->stylekerncnt; ++i )
+	    free(list->stylekerns[i].kerns);
+	free(list->stylekerns);
+	free(list);
+	list = next;
+    }
+}
+
+/* There's probably only one fond in the file, but there could be more so be */
+/*  prepared... */
+/* I want the fond: */
+/*  to get the fractional widths for the SWIDTH entry on bdf */
+/*  to get the font name */
+/*  to get the font association tables */
+/*  to get the style flags */
+/* http://developer.apple.com/techpubs/mac/Text/Text-269.html */
+static FOND *BuildFondList(FILE *f,long rlistpos,int subcnt,long rdata_pos,
+	long name_list) {
+    long here, start = ftell(f);
+    long offset;
+    int rname = -1;
+    char name[300];
+    int ch1, ch2;
+    int i, j, k, cnt, isfixed;
+    FOND *head=NULL, *cur;
+    long widoff, kernoff, styleoff;
+
+    fseek(f,rlistpos,SEEK_SET);
+    for ( i=0; i<subcnt; ++i ) {
+	/* resource id = */ getushort(f);
+	rname = (short) getushort(f);
+	/* flags = */ getc(f);
+	ch1 = getc(f); ch2 = getc(f);
+	offset = rdata_pos+((ch1<<16)|(ch2<<8)|getc(f));
+	/* mbz = */ getlong(f);
+	here = ftell(f);
+
+	cur = calloc(1,sizeof(FOND));
+	cur->next = head;
+	head = cur;
+
+	if ( rname!=-1 ) {
+	    fseek(f,name_list+rname,SEEK_SET);
+	    ch1 = getc(f);
+	    fread(name,1,ch1,f);
+	    name[ch1] = '\0';
+	    cur->fondname = strdup(name);
+	}
+
+	offset += 4;
+	fseek(f,offset,SEEK_SET);
+	isfixed = getushort(f)&0x8000?1:0;
+	/* family id = */ getushort(f);
+	cur->first = getushort(f);
+	cur->last = getushort(f);
+/* on a 1 point font... */
+	/* ascent = */ getushort(f);
+	/* descent = */ (short) getushort(f);
+	/* leading = */ getushort(f);
+	/* widmax = */ getushort(f);
+	if ( (widoff = getlong(f))!=0 ) widoff += offset;
+	if ( (kernoff = getlong(f))!=0 ) kernoff += offset;
+	if ( (styleoff = getlong(f))!=0 ) styleoff += offset;
+	for ( j=0; j<9; ++j )
+	    getushort(f);
+	/* internal & undefined, for international scripts = */ getlong(f);
+	/* version = */ getushort(f);
+	cur->assoc_cnt = getushort(f)+1;
+	cur->assoc = calloc(cur->assoc_cnt,sizeof(struct assoc));
+	for ( j=0; j<cur->assoc_cnt; ++j ) {
+	    cur->assoc[j].size = getushort(f);
+	    cur->assoc[j].style = getushort(f);
+	    cur->assoc[j].id = getushort(f);
+	}
+	if ( widoff!=0 ) {
+	    fseek(f,widoff,SEEK_SET);
+	    cnt = getushort(f)+1;
+	    cur->stylewidthcnt = cnt;
+	    cur->stylewidths = calloc(cnt,sizeof(struct stylewidths));
+	    for ( j=0; j<cnt; ++j ) {
+		cur->stylewidths[j].style = getushort(f);
+		cur->stylewidths[j].widthtab = malloc((cur->last-cur->first+1)*sizeof(short));
+		for ( k=cur->first; k<=cur->last; ++k )
+		    cur->stylewidths[j].widthtab[k] = getushort(f);
+	    }
+	}
+#if 0
+	if ( kernoff!=0 && doafm ) {
+	    /* The only point of generating an afm file is to make the kerning*/
+	    /*  info available to pfaedit. So we only do this if there is kern*/
+	    fseek(f,kernoff,SEEK_SET);
+	    cnt = getushort(f)+1;
+	    cur->stylekerncnt = cnt;
+	    cur->stylekerns = calloc(cnt,sizeof(struct stylekerns));
+	    for ( j=0; j<cnt; ++j ) {
+		cur->stylekerns[j].style = getushort(f);
+		cur->stylekerns[j].kernpairs = getushort(f)+1;
+		cur->stylekerns[j].kerns = malloc(cur->stylekerns[j].kernpairs*sizeof(struct kerns));
+		for ( k=0; k<cur->stylekerns[j].kernpairs; ++k ) {
+		    cur->stylekerns[j].kerns[k].ch1 = getc(f);
+		    cur->stylekerns[j].kerns[k].ch2 = getc(f);
+		    cur->stylekerns[j].kerns[k].offset = getushort(f);
+		}
+	    }
+	    MakeAfmFiles(cur,f,styleoff,isfixed);
+	}
+#endif
+	fseek(f,here,SEEK_SET);
+    }
+    fseek(f,start,SEEK_SET);
+return( head );
+}
+
+static BDFChar *NFNTCvtBitmap(struct MacFontRec *font,int index,SplineFont *sf) {
+    BDFChar *bdfc;
+    int i,j, bits, bite, bit;
+
+    bdfc = chunkalloc(sizeof(BDFChar));
+    bdfc->xmin = (font->offsetWidths[index]>>8)+font->kernMax;
+    bdfc->xmax = bdfc->xmin + font->locs[index+1]-font->locs[index]-1;
+    bdfc->ymin = -font->descent;
+    bdfc->ymax = font->ascent-1;
+    bdfc->width = font->offsetWidths[index]&0xff;
+    bdfc->bytes_per_line = ((bdfc->xmax-bdfc->xmin)>>3) + 1;
+    bdfc->bitmap = gcalloc(bdfc->bytes_per_line*font->fRectHeight,sizeof(uint8));
+    bdfc->enc = index + font->firstChar;
+    bdfc->sc = sf->chars[bdfc->enc];
+
+    bits = font->locs[index]; bite = font->locs[index+1];
+    for ( i=0; i<font->fRectHeight; ++i ) {
+	uint16 *test = font->fontImage + i*font->rowWords;
+	uint8 *bpt = bdfc->bitmap + i*bdfc->bytes_per_line;
+	for ( bit=bits, j=0; bit<bite; ++bit, ++j ) {
+	    if ( test[bit>>4]&(0x8000>>(bit&0xf)) )
+		bpt[j>>3] |= (0x80>>(j&7));
+	}
+    }
+return( bdfc );
+}
+
+static void LoadNFNT(FILE *f,long offset, SplineFont *sf, int size) {
+    long here = ftell(f);
+    long baseow;
+    long ow;
+    int i;
+    struct MacFontRec font;
+    BDFFont *bdf;
+
+    offset += 4;		/* skip over the length */
+    fseek(f,offset,SEEK_SET);
+    memset(&font,'\0',sizeof(struct MacFontRec));
+    font.fontType = getushort(f);
+    font.firstChar = getushort(f);
+    font.lastChar = getushort(f);
+    font.widthMax = getushort(f);
+    font.kernMax = (short) getushort(f);
+    font.Descent = (short) getushort(f);
+    font.fRectWidth = getushort(f);
+    font.fRectHeight = getushort(f);
+    baseow = ftell(f);
+    ow = getushort(f);
+    font.ascent = getushort(f);
+    font.descent = getushort(f);
+    if ( font.Descent>=0 ) {
+	ow |= (font.Descent<<16);
+	font.Descent = -font.descent;		/* Possibly overkill, but should be safe */
+    }
+    font.leading = getushort(f);
+    font.rowWords = getushort(f);
+    if ( font.rowWords!=0 ) {
+	font.fontImage = calloc(font.rowWords*font.fRectHeight,sizeof(short));
+	font.locs = calloc(font.lastChar-font.firstChar+3,sizeof(short));
+	font.offsetWidths = calloc(font.lastChar-font.firstChar+3,sizeof(short));
+	for ( i=0; i<font.rowWords*font.fRectHeight; ++i )
+	    font.fontImage[i] = getushort(f);
+	for ( i=0; i<font.lastChar-font.firstChar+3; ++i )
+	    font.locs[i] = getushort(f);
+	fseek(f,baseow+2*ow,SEEK_SET);
+	for ( i=0; i<font.lastChar-font.firstChar+3; ++i )
+	    font.offsetWidths[i] = getushort(f);
+    }
+    fseek(f,here,SEEK_SET);
+    if ( font.rowWords==0 )
+return;
+
+    /* Now convert the FONT record to one of my BDF structs */
+    bdf = gcalloc(1,sizeof(BDFFont));
+    bdf->sf = sf;
+    bdf->next = sf->bitmaps;
+    sf->bitmaps = bdf;
+    bdf->charcnt = sf->charcnt;
+    bdf->pixelsize = font.ascent+font.descent;
+    bdf->chars = gcalloc(sf->charcnt,sizeof(BDFChar *));
+    bdf->ascent = font.ascent;
+    bdf->descent = font.descent;
+    bdf->encoding_name = sf->encoding_name;
+    bdf->res = 72;
+    for ( i=font.firstChar; i<=font.lastChar; ++i )
+	bdf->chars[i] = NFNTCvtBitmap(&font,i-font.firstChar,sf);
+
+    free(font.fontImage);
+    free(font.locs);
+    free(font.offsetWidths);
+}
+
+static unichar_t *BuildName(char *family,int style) {
+    char buffer[350];
+
+    strncpy(buffer,family,200);
+    if ( style&sf_bold )
+	strcat(buffer,"Bold");
+    if ( style&sf_italic )
+	strcat(buffer,"Italic");
+    if ( style&sf_underline )
+	strcat(buffer,"Underline");
+    if ( style&sf_outline )
+	strcat(buffer,"Outline");
+    if ( style&sf_shadow )
+	strcat(buffer,"Shadow");
+    if ( style&sf_condense )
+	strcat(buffer,"Condensed");
+    if ( style&sf_extend )
+	strcat(buffer,"Extended");
+return( uc_copy(buffer));
+}
+
+static SplineFont *SearchBitmapResources(FILE *f,long rlistpos,int subcnt,long rdata_pos,
+	long name_list,char *filename,FOND *fondlist) {
+    long here, start = ftell(f);
+    long roff;
+    int rname = -1;
+    int ch1, ch2;
+    int i,j;
+    int res_id;
+    FOND *test;
+    uint8 stylesused[96];
+    unichar_t **names; char *name;
+    FOND **fonds, *fond;
+    int *styles, style;
+    int cnt, which;
+    SplineFont *sf;
+    char *pt;
+
+    /* The file may contain multiple families, and each family may contain */
+    /*  multiple styles (and each style may contain multiple sizes, but we */
+    /*  can handle multiple sizes) */
+    names = NULL;
+    for ( i=0; i<2; ++i ) {
+	cnt = 0;
+	for ( test=fondlist; test!=NULL; test=test->next ) if ( test->fondname!=NULL ) {
+	    memset(stylesused,0,sizeof(stylesused));
+	    for ( j=0; j<test->assoc_cnt; ++j ) {
+		if ( test->assoc[j].size!=0 && !stylesused[test->assoc[j].style]) {
+		    stylesused[test->assoc[j].style]=true;
+		    if ( names!=NULL ) {
+			names[cnt] = BuildName(test->fondname,test->assoc[j].style);
+			styles[cnt] = test->assoc[j].style;
+			fonds[cnt] = test;
+		    }
+		    ++cnt;
+		}
+	    }
+	}
+	if ( names==NULL ) {
+	    names = gcalloc(cnt+1,sizeof(char *));
+	    fonds = galloc(cnt*sizeof(FOND *));
+	    styles = galloc(cnt*sizeof(int));
+	}
+    }
+
+    if ( (pt = strchr(filename,'('))!=NULL ) {
+	char *find = copy(pt+1);
+	pt = strchr(find,')');
+	if ( pt!=NULL ) *pt='\0';
+	for ( which=cnt-1; which>=0; --which )
+	    if ( uc_strcmp(names[which],find)==0 )
+	break;
+	if ( which==-1 ) {
+	    char *fn = copy(filename);
+	    *strchr(fn,'(') = '\0';
+	    GWidgetErrorR(_STR_NotInCollection,_STR_FontNotInCollection,find,fn);
+	    free(fn);
+	}
+	free(find);
+    } else if ( cnt==1 )
+	which = 0;
+    else
+	which = GWidgetChoicesR(_STR_PickFont,(const unichar_t **) names,cnt,0,_STR_MultipleFontsPick);
+
+    if ( which!=-1 ) {
+	fond = fonds[which];
+	name = cu_copy(names[which]);
+	style = styles[which];
+    }
+    for ( i=0; i<subcnt; ++i )
+	free(names[i]);
+    free(names); free(fonds); free(styles);
+    if ( which==-1 )
+return( NULL );
+
+    sf = SplineFontBlank(em_mac,256);
+    free(sf->fontname); sf->fontname = name;
+    free(sf->familyname); sf->familyname = copy(fond->fondname);
+    free(sf->fullname); sf->fullname = copy(name);
+    free(sf->origname); sf->origname = NULL;
+    if ( style & sf_bold ) {
+	free(sf->weight); sf->weight = copy("Bold");
+    }
+    free(sf->copyright); sf->copyright = NULL;
+    free(sf->comments); sf->comments = NULL;
+
+    for ( i=0; i<fond->stylewidthcnt; ++i ) {
+	if ( fond->stylewidths[i].style == style ) {
+	    short *widths = fond->stylewidths[i].widthtab;
+	    for ( j=fond->first; j<=fond->last; ++j ) {
+		sf->chars[j] = SFMakeChar(sf,j);
+		sf->chars[j]->width = ((widths[j-fond->first]*1000L+(1<<11))>>12);
+	    }
+	}
+    }
+
+    fseek(f,rlistpos,SEEK_SET);
+    for ( i=0; i<subcnt; ++i ) {
+	res_id = getushort(f);
+	rname = (short) getushort(f);
+	/* flags = */ getc(f);
+	ch1 = getc(f); ch2 = getc(f);
+	roff = rdata_pos+((ch1<<16)|(ch2<<8)|getc(f));
+	/* mbz = */ getlong(f);
+	here = ftell(f);
+	for ( j=fond->assoc_cnt-1; j>=0; --j )
+	    if ( fond->assoc[j].style==style && fond->assoc[j].id==res_id &&
+		    fond->assoc[j].size!=0 )
+		LoadNFNT(f,roff,sf,fond->assoc[j].size);
+    }
+    fseek(f,start,SEEK_SET);
+
+    sf->onlybitmaps = true;
+    SFOrderBitmapList(sf);
+return( sf );
+}
+
 /* Look for a bare truetype font in a binhex/macbinary wrapper */
 static SplineFont *MightBeTrueType(FILE *binary,int32 pos,int32 dlen) {
     FILE *temp = tmpfile();
@@ -1924,9 +2327,11 @@ static SplineFont *IsResourceFork(FILE *f, long offset,char *filename) {
     unsigned char buffer[16], buffer2[16];
     long rdata_pos, map_pos, type_list, name_list, rpos;
     int32 rdata_len, map_len;
+    uint32 nfnt_pos, font_pos, fond_pos;
     unsigned long tag;
-    int i, cnt, subcnt;
+    int i, cnt, subcnt, nfnt_subcnt=0, font_subcnt=0, fond_subcnt;
     SplineFont *sf;
+    FOND *fondlist=NULL;
 
     fseek(f,offset,SEEK_SET);
     if ( fread(buffer,1,16,f)!=16 )
@@ -1935,7 +2340,7 @@ return( NULL );
     map_pos = offset + ((buffer[4]<<24)|(buffer[5]<<16)|(buffer[6]<<8)|buffer[7]);
     rdata_len = ((buffer[8]<<24)|(buffer[9]<<16)|(buffer[10]<<8)|buffer[11]);
     map_len = ((buffer[12]<<24)|(buffer[13]<<16)|(buffer[14]<<8)|buffer[15]);
-    if ( rdata_pos+rdata_len!=map_pos )
+    if ( rdata_pos+rdata_len!=map_pos || rdata_len==0 )
 return( NULL );
     fseek(f,map_pos,SEEK_SET);
     buffer2[15] = buffer[15]+1;	/* make it be different */
@@ -1970,6 +2375,30 @@ return( NULL );
 	    sf = SearchPostscriptResources(f,rpos,subcnt,rdata_pos,name_list);
 	else if ( tag==CHR('s','f','n','t'))
 	    sf = SearchTtfResources(f,rpos,subcnt,rdata_pos,name_list,filename);
+	else if ( tag==CHR('N','F','N','T') ) {
+	    nfnt_pos = rpos;
+	    nfnt_subcnt = subcnt;
+	} else if ( tag==CHR('F','O','N','T') ) {
+	    font_pos = rpos;
+	    font_subcnt = subcnt;
+	} else if ( tag==CHR('F','O','N','D') ) {
+	    fond_pos = rpos;
+	    fond_subcnt = subcnt;
+	}
+	if ( sf!=NULL )
+return( sf );
+    }
+    /* Ok. If no outline font, try for a bitmap */
+    if ( nfnt_subcnt==0 ) {
+	nfnt_pos = font_pos;
+	nfnt_subcnt = font_subcnt;
+    }
+    if ( nfnt_subcnt!=0 ) {
+	if ( fond_subcnt!=0 )
+	    fondlist = BuildFondList(f,fond_pos,fond_subcnt,rdata_pos,name_list);
+	sf = SearchBitmapResources(f,nfnt_pos,nfnt_subcnt,rdata_pos,name_list,
+		filename,fondlist);
+	FondListFree(fondlist);
 	if ( sf!=NULL )
 return( sf );
     }
