@@ -241,13 +241,24 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,char *encoding) {
 
     fprintf( file, "STARTFONT 2.1\n" );
     fprintf( file, "FONT %s\n", buffer );	/* FONT ... */
+#if !OLD_GREYMAP_FORMAT
+    if ( font->clut==NULL )
+	fprintf( file, "SIZE %d %d %d\n", pnt/10, res, res );
+    else
+	fprintf( file, "SIZE %d %d %d  %d\n", pnt/10, res, res,
+		font->clut->clut_len==256 ? 8 :
+		font->clut->clut_len==16 ? 4 : 2);
+#else
     fprintf( file, "SIZE %d %d %d\n", pnt/10, res, res );
+#endif
     calculate_bounding_box(font,&fbb_width,&fbb_height,&fbb_lbearing,&fbb_descent);
     fprintf( file, "FONTBOUNDINGBOX %d %d %d %d\n", fbb_width, fbb_height, fbb_lbearing, fbb_descent);
+#if OLD_GREYMAP_FORMAT
     if ( font->clut!=NULL )
 	fprintf( file, "BITSPERPIXEL %d\n",
 		font->clut->clut_len==256 ? 8 :
 		font->clut->clut_len==16 ? 4 : 2);
+#endif
     if ( !font->sf->onlybitmaps )
 	fprintf(file, "COMMENT \"This bdf font was generated from a postscript font, %s, by pfaedit\"\n", font->sf->fontname );
 

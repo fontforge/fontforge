@@ -341,10 +341,18 @@ static int slurp_header(FILE *bdf, int *_as, int *_ds, int *_enc, char *family, 
 	    while ( (ch = getc(bdf))!='-' && ch!='\n' && ch!=EOF );
 	    if ( ch=='-' )
 		fscanf(bdf,"%d", &pixelsize );
-	} else if ( strcmp(tok,"SIZE")==0 && pixelsize==-1 ) {
+	} else if ( strcmp(tok,"SIZE")==0 ) {
 	    int size, res;
 	    fscanf(bdf, "%d %d", &size, &res );
-	    pixelsize = rint( size*res/72.0 );
+	    if ( pixelsize==-1 )
+		pixelsize = rint( size*res/72.0 );
+	    while ((ch = getc(bdf))==' ' || ch=='\t' );
+	    if ( isdigit(ch))
+		fprintf( stderr, "PfaEdit does not support bdf files with a depth other than 1\n" );
+	    else
+		ungetc(ch,bdf);
+	} else if ( strcmp(tok,"BITSPERPIXEL")==0 ) {
+	    fprintf( stderr, "PfaEdit does not support bdf files with a depth other than 1\n" );
 	} else if ( strcmp(tok,"QUAD_WIDTH")==0 && pixelsize==-1 )
 	    fscanf(bdf, "%d", &pixelsize );
 	    /* For Courier the quad is not an em */
