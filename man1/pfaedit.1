@@ -1,5 +1,5 @@
 .\"	man page for pfaedit by tom harvey, subsequently modified by george
-.Dd March 9, 2002
+.Dd March 11, 2002
 .Dt PFAEDIT 1
 .Os
 .Sh NAME
@@ -17,6 +17,7 @@
 .Op Fl display Ar name
 .Op Fl depth Ar val
 .Op Fl vc Ar type
+.Op Fl cmap Ar type
 .Op Fl sync
 .Op Fl keyboard Ar ibm|mac|sun|ppc
 .Ar fontname
@@ -82,6 +83,22 @@ flag must be followed by either the name of a visual class or an integer enumera
 a visual class.
 .Nm
 will attempt to find a visual that matches this class, and if found will use it.
+.Pp
+The
+.Fl cmap 
+flag must be followed by one of the strings: "Current", "Copy", or "Private".
+It gives the user some control over how colormaps are handled on 8bit screens.
+If you select "Current",
+.Nm
+will attempt to allocate its colors in the current (shared) colormap. It probably
+won't get everything it wants. If you specify "Copy" then
+.Nm
+will allocate what it can and then copy the current colormap. This means it can
+make use of cells other programs are using. If you specify "Private" then
+.Nm
+will create a new colormap and fill it up with exactly what it likes.
+.Nm
+will attempt to find a visual that matches this depth, and if found will use it.
 .Pp
 .Fl sync
 flag will make X synchronous. This is mostly for debugging. It slows X down.
