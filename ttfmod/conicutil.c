@@ -41,7 +41,7 @@ static int default_to_Apple = 0;	/* Normally we assume the MS interpretation */
 
 #ifndef chunkalloc
 #define ALLOC_CHUNK	100
-#define CHUNK_MAX	100
+#define CHUNK_MAX	120
 
 #if ALLOC_CHUNK>1
 struct chunk { struct chunk *next; };
@@ -59,7 +59,11 @@ return( gcalloc(1,size));
 	fprintf( stderr, "Attempt to allocate something of size %d\n", size );
 return( gcalloc(1,size));
     }
-    index = size>>2;
+    if ( sizeof(int *)==8 ) {
+	size = ((size+7)>>3)<<3;
+	index = size>>3;
+    } else
+	index = size>>2;
     if ( chunklists[index]==NULL ) {
 	char *pt, *end;
 	pt = galloc(ALLOC_CHUNK*size);
@@ -84,9 +88,13 @@ void chunkfree(void *item,int size) {
 # else
     if ( item==NULL )
 return;
+
     if ( (size&0x3) || size>=CHUNK_MAX || size<=sizeof(struct chunk)) {
 	fprintf( stderr, "Attempt to free something of size %d\n", size );
 	free(item);
+    } else if ( sizeof(int *)==8 ) {
+	((struct chunk *) item)->next = chunklists[size>>3];
+	chunklists[size>>3] = (struct chunk *) item;
     } else {
 	((struct chunk *) item)->next = chunklists[size>>2];
 	chunklists[size>>2] = (struct chunk *) item;
