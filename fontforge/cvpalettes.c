@@ -51,13 +51,13 @@ static GWindow cvlayers2;
 static GPoint cvtoolsoff = { -9999 }, cvlayersoff = { -9999 }, bvlayersoff = { -9999 }, bvtoolsoff = { -9999 }, bvshadesoff = { -9999 };
 static int palettesmoved=0;
 int palettes_fixed=1;
-static GCursor tools[cvt_max+1] = { cvt_none };
+static GCursor tools[cvt_max+1] = { ct_pointer };
 
 static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c','a','l','i','b','a','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
 static GFont *font;
 
 #define CV_TOOLS_WIDTH		53
-#define CV_TOOLS_HEIGHT		(214+4*12+2)
+#define CV_TOOLS_HEIGHT		(242+4*12+2)
 #define CV_LAYERS_WIDTH		104
 #define CV_LAYERS_HEIGHT	196
 #define CV_LAYERS2_WIDTH	120
@@ -178,6 +178,7 @@ static int popupsres[] = { _STR_Pointer, _STR_PopMag,
 			            _STR_PopKnife, _STR_PopRuler,
 			            _STR_PopScale, _STR_PopFlip,
 			            _STR_PopRotate, _STR_PopSkew,
+			            _STR_PopRotate3D, _STR_PopPerspective,
 			            _STR_PopRectElipse, _STR_PopPolyStar,
 			            _STR_PopRectElipse, _STR_PopPolyStar};
 static int editablelayers[] = { _STR_Fore, _STR_Back, _STR_Grid };
@@ -639,6 +640,7 @@ static void ToolsExpose(GWindow pixmap, CharView *cv, GRect *r) {
 			            { &GIcon_knife, &GIcon_ruler },
 			            { &GIcon_scale, &GIcon_flip },
 			            { &GIcon_rotate, &GIcon_skew },
+			            { &GIcon_3drotate, &GIcon_perspective },
 			            { &GIcon_rect, &GIcon_poly},
 			            { &GIcon_elipse, &GIcon_star}};
     static GImage *smalls[] = { &GIcon_smallpointer, &GIcon_smallmag,
@@ -648,6 +650,7 @@ static void ToolsExpose(GWindow pixmap, CharView *cv, GRect *r) {
 			            &GIcon_smallknife, &GIcon_smallruler,
 			            &GIcon_smallscale, &GIcon_smallflip,
 			            &GIcon_smallrotate, &GIcon_smallskew,
+			            &GIcon_small3drotate, &GIcon_smallperspective,
 			            &GIcon_smallrect, &GIcon_smallpoly,
 			            &GIcon_smallelipse, &GIcon_smallstar };
     static const unichar_t _Mouse[][9] = {
@@ -721,7 +724,7 @@ void CVToolsSetCursor(CharView *cv, int state, char *device) {
     int shouldshow;
     int cntrl;
 
-    if ( tools[0] == cvt_none ) {
+    if ( tools[0] == ct_pointer ) {
 	tools[cvt_pointer] = ct_mypointer;
 	tools[cvt_magnify] = ct_magplus;
 	tools[cvt_freehand] = ct_pencil;
@@ -736,6 +739,8 @@ void CVToolsSetCursor(CharView *cv, int state, char *device) {
 	tools[cvt_flip] = ct_flip;
 	tools[cvt_rotate] = ct_rotate;
 	tools[cvt_skew] = ct_skew;
+	tools[cvt_3d_rotate] = ct_3drotate;
+	tools[cvt_perspective] = ct_perspective;
 	tools[cvt_rect] = ct_rect;
 	tools[cvt_poly] = ct_poly;
 	tools[cvt_elipse] = ct_elipse;

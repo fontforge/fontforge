@@ -28,6 +28,33 @@
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <math.h>
 
+static void CVYPerspective(CharView *cv,double x_vanish, double y_vanish) {
+    SplineSet *spl;
+    SplinePoint *sp;
+    Spline *first, *s;
+
+    if ( y_vanish==0 )		/* Leave things unchanged */
+return;
+
+    for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl=spl->next ) {
+	for ( sp=spl->first ;; ) {
+	    sp->me.x     = x_vanish + (y_vanish - sp->me.y    )/y_vanish * (sp->me.x     - x_vanish);
+	    sp->nextcp.x = x_vanish + (y_vanish - sp->nextcp.y)/y_vanish * (sp->nextcp.x - x_vanish);
+	    sp->prevcp.x = x_vanish + (y_vanish - sp->prevcp.y)/y_vanish * (sp->prevcp.x - x_vanish);
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==spl->first )
+	break;
+	}
+	first = NULL;
+	for ( s = spl->first->next; s!=NULL && s!=first ; s=s->to->next ) {
+	    SplineRefigure(s);
+	    if ( first==NULL ) first = s;
+	}
+    }
+}
+
 void CVMouseDownTransform(CharView *cv) {
     CVPreserveTState(cv);
 }
@@ -69,16 +96,48 @@ void CVMouseMoveTransform(CharView *cv) {
 	    real angle = atan2(cv->info.y-cv->p.cy,cv->info.x-cv->p.cx);
 	    transform[2] = sin(angle);
 	  } break;
+	  case cvt_3d_rotate: {
+	    real angle = atan2(cv->info.y-cv->p.cy,cv->info.x-cv->p.cx);
+/* Allow one pixel per degree */
+	    real zangle = sqrt( (cv->info.x-cv->p.cx)*(cv->info.x-cv->p.cx) +
+		    (cv->info.y-cv->p.cy)*(cv->info.y-cv->p.cy) ) * cv->scale *
+		    3.1415926535897932/180;
+	    real s = sin(angle), c = cos(angle);
+	    real cz = cos(zangle);
+	    transform[0] = c*c + s*s*cz;
+	    transform[3] = s*s + c*c*cz;
+	    transform[2] = transform[1] = c*s * (cz-1);
+	  } break;
+/* Perspective takes three points: origin, start point, cur point */
+/*  first rotate so that orig/start are the x axis	*/
+/*  then define perspective so that:			*/
+/*      y' = y						*/
+/*	x' = cur.x + (cur.y - y)/cur.y * (x - cur.x)	*/
+/*  then rotate back					*/
+	  case cvt_perspective: {
+	    real angle = atan2(cv->p.cy,cv->p.cx);
+	    real s = sin(angle), c = cos(angle);
+	    transform[0] = transform[3] = c;
+	    transform[2] = -(transform[1] = -s);
+	    transform[4] = transform[5] = 0;
+	    CVTransFunc(cv,transform,false);
+	    CVYPerspective(cv,
+			     c*cv->info.x + s*cv->info.y,
+			    -s*cv->info.x + c*cv->info.y);
+	    transform[2] = -(transform[1] = s);
+	  } break;
 	  default:
 	  break;
 	}
 	    /* Make the pressed point be the center of the transformation */
-	transform[4] = -cv->p.cx*transform[0] -
-			cv->p.cy*transform[2] +
-			cv->p.cx;
-	transform[5] = -cv->p.cy*transform[3] -
-			cv->p.cx*transform[1] +
-			cv->p.cy;
+	if ( cv->active_tool!=cvt_perspective ) {
+	    transform[4] = -cv->p.cx*transform[0] -
+			    cv->p.cy*transform[2] +
+			    cv->p.cx;
+	    transform[5] = -cv->p.cy*transform[3] -
+			    cv->p.cx*transform[1] +
+			    cv->p.cy;
+	}
 	CVSetCharChanged(cv,true);
 	CVTransFunc(cv,transform,false);
     }
