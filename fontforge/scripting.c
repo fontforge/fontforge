@@ -1701,6 +1701,8 @@ static void bSelectByColor(Context *c) {
 	else if ( strmatch(c->a.vals[1].u.sval,"none")==0 ||
 		strmatch(c->a.vals[1].u.sval,"Default")==0 )
 	    col = COLOR_DEFAULT;
+	else
+	    errors(c,"Unknown color", c->a.vals[1].u.sval);
     }
 
     for ( i=0; i<c->curfv->sf->charcnt; ++i ) {
