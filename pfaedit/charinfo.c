@@ -1200,6 +1200,7 @@ static int _CI_OK(CharInfo *ci) {
     const unichar_t *comment;
     FontView *fvs;
     int err = false;
+    static int buts[] = { _STR_Yes, _STR_No, 0 };
 
     val = ParseUValue(ci->gw,CID_UValue,true,ci->sc->parent);
     if ( val==-2 )
@@ -1212,13 +1213,15 @@ return( false );
     if ( tag==0 && ci->sc->possub!=NULL ) {
 	tag = GuessScriptFromSubs(ci->sc);
 	if ( tag!=0 ) {
-	    int buts[] = { _STR_Yes, _STR_No, 0 };
 	    if ( GWidgetAskR(_STR_NoScript,buts,0,1,_STR_NeedsScriptForSubsGuess,
 		    tag>>24, (tag>>16)&0xff, (tag>>8)&0xff, tag&0xff)==1 )
 		tag = 0;
 	} else
 	    GWidgetErrorR(_STR_NoScript, _STR_NeedsScriptForSubs);
 	if ( tag==0 )
+return( false );
+    } else if ( tag==0 ) {
+	if ( GWidgetAskR(_STR_NoScript,buts,0,1,_STR_ReallyNoScript)==1 )
 return( false );
     }
     name = cu_copy( _GGadgetGetTitle(GWidgetGetControl(ci->gw,CID_UName)) );
