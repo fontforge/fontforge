@@ -37,7 +37,7 @@
 #include <gkeysym.h>
 #include "psfont.h"
 
-static int nfnt_warned = false;
+static int nfnt_warned = false, post_warned = false;
 
 #define CID_Family	2000
 
@@ -2025,6 +2025,9 @@ return;
 	    (oldbitmapstate!=bf_nfntmacbin || sizes[0]==0)) {
 	GWidgetErrorR(_STR_Type1NeedsNFNTTit,_STR_Type1NeedsNFNT);
 return;
+    } else if ( oldformatstate==ff_pfbmacbin && !post_warned) {
+	post_warned = true;
+	GWidgetPostNoticeR(_STR_POSTDepreciatedTit,_STR_POSTDepreciated);
     }
 
     if ( d->family ) {

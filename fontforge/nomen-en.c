@@ -1230,6 +1230,8 @@ static char *str_PfEdColors = "Save Colors";
 static char *str_PfEdColorsPopup = "Save glyph colors in the PfEd table"
 static char *str_NFNTObsolete = "The 'NFNT' bitmap format is not used under OS/X (though you still need to create a (useless) bitmap font if you are saving a type1 PostScript resource)"
 static char *str_NFNTObsoleteTit = "The 'NFNT' bitmap format is obsolete"
+static char *str_POSTDepreciatedTit = "The 'POST' type1 format is probably depreciated"
+static char *str_POSTDepreciated = "The 'POST' type1 format is probably depreciated and may not work in future version of the mac."
 static char *str_Type1NeedsNFNT = "When generating a Mac Type1 resource font, you MUST generate at least one NFNT bitmap font to go with it. If you have not created any bitmaps for this font, cancel this dlg and use the Element->Bitmaps Available command to create one"
 static char *str_Type1NeedsNFNTTit = "Needs bitmap font"
     /* Goto character ... */
