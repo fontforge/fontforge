@@ -1361,7 +1361,7 @@ static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
     else {
 	if ( sf->chars[1]==NULL || sf->chars[2]==NULL ) {
 	    for ( i=0; i<sf->charcnt; ++i ) {
-		if ( sf->chars[i]!=NULL && sc->unicodeenc < ' ') {
+		if ( sf->chars[i]!=NULL && sf->chars[i]->unicodeenc < ' ') {
 		    sc = sf->chars[i];
 		    if ( sc->orig_pos==1 && sc->layers[ly_fore].splines==NULL &&
 			    sc->layers[ly_fore].refs==NULL && sf->chars[1]==NULL ) {
