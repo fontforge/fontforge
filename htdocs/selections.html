@@ -1,0 +1,32 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 1-Nov-2002 -->
+  <!-- AP: Last modified: 1-Nov-2002 -->
+  <TITLE>X Selections and the X Clipboard</TITLE>
+</HEAD>
+<BODY>
+<H1 ALIGN=Center>
+  X Selections and the X Clipboard
+</H1>
+<P>
+The general description of how selections and the clipboard works under X is given in
+<A HREF="http://www.freedesktop.org/standards/clipboards.txt">clipboards.txt</A>. PfaEdit
+tries to follow this.
+<P>
+PfaEdit only supports the PRIMARY selection within textfields. Text is exported as
+<UL>
+<LI>STRING
+<LI>UTF8_STRING
+<LI>text/plain;charset=UTF8
+<LI>text/plain;charset=ISO-10646-USC2
+</UL>
+<P>
+Traditionally the PRIMARY selection is available for pasting by clicking on the
+middle mouse button.
+<P>
+After a Copy command PfaEdit will place data in the X CLIPBOARD. For text selections (in textfields)
+the above format types are supported. For contour data (ie. the contents of an
+outline character) the format "image/eps" will be used. For bitmap image data either
+"image/bmp" or "image/png" (assuming you have libpng on your system).
+</BODY></HTML>
