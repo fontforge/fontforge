@@ -752,7 +752,7 @@ extern void SplineCharListsFree(struct splinecharlist *dlist);
 extern void SplineCharFreeContents(SplineChar *sc);
 extern void SplineCharFree(SplineChar *sc);
 extern void SplineFontFree(SplineFont *sf);
-extern void SFRemoveUndoes(SplineFont *sf,uint8 *selected);
+extern void SFRemoveUndoes(SplineFont *sf,char *selected);
 extern void SplineRefigure3(Spline *spline);
 extern void SplineRefigure(Spline *spline);
 extern Spline *SplineMake3(SplinePoint *from, SplinePoint *to);

@@ -1196,7 +1196,7 @@ static void FVMenuUnlinkRef(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FVUnlinkRef( (FontView *) GDrawGetUserData(gw));
 }
 
-void SFRemoveUndoes(SplineFont *sf,uint8 *selected) {
+void SFRemoveUndoes(SplineFont *sf,char *selected) {
     SplineFont *main = sf->cidmaster? sf->cidmaster : sf, *ssf;
     int i,k, max;
     SplineChar *sc;
