@@ -1541,6 +1541,16 @@ static char *str_NoGroups = "This varient of this jamo is not actually used";
 static char *str_UniVarient = "Unicode %04X, Varient %d, %s";
 static char *str_BuildingKoreanFont = "Building Korean Font";
     /* Transform */
+static char *str_CharacterOrigin = "Character Origin";
+static char *str_CenterOfSelection = "Center of Selection";
+static char *str_LastPress = "Last Press";
+static char *str_DoNothing = "Do Nothing";
+static char *str_MoveDDD = "Move...";
+static char *str_RotateDDD = "Rotate...";
+static char *str_ScaleDDD = "Scale...";
+static char *str_ScaleUniformlyDDD = "Scale Uniformly...";
+static char *str_FlipDDD = "Flip...";
+static char *str_SkewDDD = "Skew...";
 static char *str_TransformBackground = "Transform Background Too";
 static char mnemonic_TransformBackground = 'B';
 static char *str_Warning = "Warning";

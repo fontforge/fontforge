@@ -58,6 +58,8 @@ static char str_Openmetrics[] = "Открыть метрики";
 static unichar_t mnemonic_Openmetrics[] = 'M';
 static char str_Print[] = "Печать...";
 static unichar_t mnemonic_Print[] = 'P';
+static char str_Display[] = "Показать...";
+static unichar_t mnemonic_Display[] = 'D'; 
 static char str_ExecuteScript[] = "Выполнить скрипт...";
 static unichar_t mnemonic_ExecuteScript[] = 'x';
 static char str_Revertfile[] = "Восст. файл";
@@ -68,6 +70,8 @@ static char str_SaveAll[] = "Сохранить все";
 static unichar_t mnemonic_SaveAll = 'l';
 static char str_Generate[] = "Создать шрифты...";
 static unichar_t mnemonic_Generate[] = 'G';
+static char str_GenerateMac[] = "Generate Mac Family..."; /*new*/
+static unichar_t mnemonic_GenerateMac[] = 'F';
 static char str_Import[] = "Импортировать...";
 static unichar_t mnemonic_Import[] = 'I';
 static char str_Close[] = "Закрыть";
@@ -102,6 +106,22 @@ static char str_Hiderulers[] = "Скрыть прокрутку";
 static unichar_t mnemonic_Hiderulers[] = 'R';
 static char str_Showrulers[] = "Показ. прокрутку";
 static unichar_t mnemonic_Showrulers[] = 'R';
+static char *str_ShowHMetrics="Показ. Гор.метрики...";
+static char mnemonic_ShowHMetrics = 'H';
+static char *str_ShowVMetrics="Показ. Верт.метрики...";
+static char mnemonic_ShowVMetrics = 'V';
+static char *str_EncodedView="Encoded View"; /*new*/
+static char mnemonic_EncodedView = 'E';
+static char *str_CompactedView="Сжатый вид";
+static char mnemonic_CompactedView = 'C';
+static char *str_Combinations="Комбинации";
+static char mnemonic_Combinations = 'b';
+static char *str_KernPairs="Керн. пары";
+static char mnemonic_KernPairs = 'K';
+static char *str_Ligatures="Лигатуры";
+static char mnemonic_Ligatures = 'L';
+static char *str_FindInFontView="Find In Font View"; /*new*/
+static char mnemonic_FindInFontView = 'V';
 static char str_Fill[] = "Залить";
 static unichar_t mnemonic_Fill[] = 'l';
 static char str_Select[] = "Выделить";
@@ -115,7 +135,7 @@ static unichar_t mnemonic_Nextpoint[] = 'N';
 static char str_Prevpoint[] = "Пред. точка";
 static unichar_t mnemonic_Prevpoint[] = 'P';
 static char str_NextControlPoint[] = "След. упр. точка";
-static unichar_t mnemonic_NextControlPoint[] = 'x';
+static unichar_t mnemonic_NextControlPoint[] = 'r';
 static char str_PrevControlPoint[] = "Пред. упр. точка";
 static unichar_t mnemonic_NextControlPoint[] = 'r';
 static char str_SelectWidth[] = "Ширина";
@@ -155,8 +175,12 @@ static unichar_t mnemonic_CopyFgToBg[] = 'F';
 static char str_Merge[] = "Объединить";
 static unichar_t mnemonic_Merge[] = 'M';
 static char str_Elide = "Elide";
+static char str_Join[] = "Соединить";
+static unichar_t mnemonic_Join[] = 'J';
 static char str_Unlinkref[] = "Разымен. ссылку";
 static unichar_t mnemonic_Unlinkref[] = 'n';
+static char str_SelectColor[] = "Выбрать цвет";
+static unichar_t mnemonic_SelectColor[] = 'S';
 static char str_RemoveUndoes[] = "Удалить откаты";
 static unichar_t mnemonic_RemoveUndoes[] = 'e';
 static char str_Fontinfo[] = "Информ. о шрифте...";
@@ -177,6 +201,8 @@ static char str_Transform[] = "Преобразовать...";
 static unichar_t mnemonic_Transform[] = 'T';
 static char str_Stroke[] = "Расширить штрих...";
 static unichar_t mnemonic_Stroke[] = 'E';
+static char str_TilePath[] = "Tile Path..."; /*new*/
+static unichar_t mnemonic_TilePath[] = 'P';
 static char str_Rmoverlap[] = "Удалить пересечения";
 static unichar_t mnemonic_Rmoverlap[] = 'v';
 static char str_Simplify[] = "Упростить";
@@ -270,6 +296,10 @@ static char str_Tools[] = "Инструменты";
 static unichar_t mnemonic_Tools[] = 'T';
 static char str_Layers[] = "Слои";
 static unichar_t mnemonic_Layers[] = 'L';
+static char str_DockedPalettes[] = "Docked Palettes"; /*new*/
+static unichar_t mnemonic_DockedPalettes[] = 'D';
+static char str_Shades[] = "Shades"; /*new*/
+static unichar_t mnemonic_Shades[] = 'S';
 static char str_Center[] = "Центрир. по ширине";
 static unichar_t mnemonic_Center[] = 'C';
 static char str_Thirds[] = "Трети по ширине";
@@ -298,6 +328,8 @@ static char str_96[] = "Контур 96 точек";
 static unichar_t mnemonic_96[] = '9';
 static char str_Antialias[] = "Сглаживание";
 static unichar_t mnemonic_Antialias[] = 'A';
+static char str_FitToEm[] = "Fit to em"; /*new*/
+static unichar_t mnemonic_FitToEm[] = 'F';
 static char str_Charinfo[] = "Информ. о символе...";
 static unichar_t mnemonic_Charinfo[] = 'I';
 static char str_Mergefonts[] = "Объединить шрифты...";
@@ -346,8 +378,12 @@ static char *str_CID = "CID";
 static char mnemonic_CID = 'C';
 static char *str_Convert2CID = "Преобразовать в CID";
 static char mnemonic_Convert2CID = 'C';
+static char *str_ConvertByCMap = "Convert By CMap"; /*new*/
+static char mnemonic_ConvertByCMap = 'M';
 static char *str_Flatten = "Flatten";
 static char mnemonic_Flatten = 'F';
+static char *str_FlattenByCMap = "FlattenByCMap"; /*new*/
+static char mnemonic_FlattenByCMap = 'a';
 static char *str_InsertFont = "Вставить шрифт...";
 static char mnemonic_InsertFont = 'o';
 static char *str_InsertBlank = "Вставить пустой";
@@ -357,8 +393,9 @@ static char mnemonic_RemoveFont = 'R';
 static char *str_CIDFontInfo = "Информ. о шрифте CID...";
 static char mnemonic_CIDFontInfo = 'I';
 
-  /* Font Info dlg */
+    /* Font Info dlg */
 static char str_Custom[] = "Другая";
+static char str_Compacted[] = "Сжатый";
 static char str_Isolatin1[] = "ISO 8859-1 (Latin1)";
 static char str_Isolatin0[] = "ISO 8859-15 (Latin0)";
 static char str_Isolatin2[] = "ISO 8859-2 (Latin2)";
@@ -425,6 +462,10 @@ static char str_Ascent[] = "Ascent:";
 static unichar_t mnemonic_Ascent[] = 'A';
 static char str_Descent[] = "Descent:";
 static unichar_t mnemonic_Descent[] = 'D';
+static char str_EmSize[] = "Em Size:"; /*new*/
+static unichar_t mnemonic_EmSize[] = 'E';
+static char str_ScaleOutlines[] = "Scale Outlines"; /*new*/
+static unichar_t mnemonic_ScaleOutlines[] = 'S';
 static char str_Copyright[] = "Авторское право:";
 static unichar_t mnemonic_Copyright[] = 'r';
 static char str_Xuid[] = "XUID:";
@@ -438,6 +479,7 @@ static char *str_FamilyNameRequired = "Необходимо название гарнитуры";
 static char *str_PSNameNotNumber = "Название Postscript не должно быть числом";
 static char *str_BadFamilyName = "Bad Font Family Name";
 static char *str_BadFontName = "Bad Font Name";
+static char *str_NameTooLong = "Name too long, at most 63 characters"; /*new*/
 static char *str_BadModifierName = "Bad Font Modifier Name";
 static char *str_BadPSName = "A Postscript name should be ASCII\nand must not contain (){}[]<>%%/";
 static char *str_Names = "Названия";
@@ -457,12 +499,25 @@ static char *str_HasVerticalMetrics = "Содержит вертикальные метрики";
 static char mnemonic_HasVerticalMetrics = 'V';
 static char *str_VOrigin = "Нач. коорд. по вертикали:";
 static char mnemonic_VOrigin = 'O';
-  /* Private info */
+static char str_UniqueIDTitle = "Изменить UniqueID?"
+static char str_UniqueIDChange = "You have changed this font's name without changing the UniqueID (or XUID).\nThis is probably not a good idea, would you like me to\ngenerate a random new value?"; /*new*/
+static char str_Change = "Изменить";
+static char mnemonic_Change = 'h';
+static char str_ChangeAll = "Изменить все";
+static char mnemonic_ChangeAll = 'A';
+static char str_RetainAll = "Retain All"; /*new*/
+static char mnemonic_RetainAll = 'l';
+static char str_Retain = "Retain"; /*new*/
+static char mnemonic_Retain = 'R';
+static char *str_Mismatch = "Mismatch"; /*new*/
+static char *str_MismatchLong = "You have changed one version of %s but not the one under TTF Names. Would you like to set the TTF version to the changed one?"; /*new*/
+
+    /* Private info */
 static char *str_PrivateKey = "Приватный ключ";
 static char *str_KeyInPrivate = "Ключ (в приватном словаре)";
 static char *str_Add = "Добавить";
 static char mnemonic_Add = 'A';
-  /* TTF Values */
+    /* TTF Values */
 static char *str_UltraCondensed = "Сверхузкий (50%)";
 static char *str_ExtraCondensed = "Extra-Condensed (62.5%)";
 static char *str_Condensed75 = "Узкий (75%)";
@@ -597,8 +652,8 @@ static char *str_WidthClass ="Width Class"; /*new*/
 static char mnemonic_WidthClass ='C'; /*new*/
 static char *str_WeightClass ="Weight Class"; /*new*/
 static char mnemonic_WeightClass ='W'; /*new*/
-static char *str_PFMFamily ="PFM Family"; /*new*/
-static char mnemonic_PFMFamily ='F'; /*new*/
+static char *str_PFMFamily ="PFM Семейство";
+static char mnemonic_PFMFamily ='F';
 static char *str_Family ="Гарнитура";
 static char mnemonic_Family ='F';
 static char *str_Serifs ="Засечки";
@@ -612,16 +667,16 @@ static char mnemonic_Contrast ='C';
 static char *str_StrokeVar ="Вариации штриха";
 static char mnemonic_StrokeVar ='V';
 static char *str_ArmStyle ="Arm Style"; /*new*/
-static char mnemonic_ArmStyle ='A'; /*new*/
+static char mnemonic_ArmStyle ='A';
 static char *str_Letterform ="Letterform"; /*new*/
-static char mnemonic_Letterform ='L'; /*new*/
+static char mnemonic_Letterform ='L';
 static char *str_MidLine ="Midline"; /*new*/
-static char mnemonic_MidLine ='M'; /*new*/
+static char mnemonic_MidLine ='M';
 static char *str_XHeight ="X-Height"; /*new*/
-static char mnemonic_XHeight ='X'; /*new*/
-  /* TTF Names */
-static char *str_Styles = "Styles (SubFamily)"; /*new*/
-static char *str_UniqueID = "UniqueID"; /*new*/
+static char mnemonic_XHeight ='X';
+    /* TTF Names */
+static char *str_Styles = "Стили (Подсемейство)";
+static char *str_UniqueID = "UniqueID";
 static char *str_Version = "Версия";
 static char mnemonic_Version = 'V';
 static char *str_Fullname = "Полное название";
@@ -638,9 +693,9 @@ static char *str_OTFStyles = "Предпочтительные стили";
 static char *str_CompatableFull = "Compatable Full"; /*new*/
 static char *str_SampleText = "Образец текста";
 static char *str_TranslateStyle = "Перевести стиль";
-  /* MS Language list */
+    /* MS Language list */
 /* Language & Country (where applicable) in the native language if I can find */
-/* it, in english if I can't. Followed by the 2char language _ 2char country */
+/*  it, in english if I can't. Followed by the 2char language _ 2char country */
 /* (again country isn't always applicable. Should basque be ES, FR? */
 static char *str_Albanian = "Албанский sq_AL";
 static char *str_Arabic = "Арабский ar";
@@ -696,17 +751,22 @@ static char *str_ModSpanish = "EspaЯol EspaЯol es_ES";
 static char *str_Swedish = "Шведский sv_SE";
 static char *str_Turkish = "Турецкий tr_TR";
 static char *str_Ukrainian = "Украинский uk_UA";
-  /* Generate fonts */ /* savefontdlg */
+    /* Generate fonts */ /* savefontdlg */
 static char str_Format[] = "Формат:";
 static char str_Savefailedtitle[] = "Не удалось сохранить";
 static char str_Outputafm[] = "Создавать AFM";
 static char str_Outputpfm[] = "Создавать PFM";
+static char *str_OutputAfmPopup = "Файл AFM содержит информацию о метриках, которую будут использовать большинство текстовых процессоров при работе с PostScript\256 шрифтом.";
+static char *str_OutputPfmPopup = "The PFM file contains information Windows needs to install a PostScript\256 font."; /*new*/
+static char str_AppleMode[] = "Apple";
+static char *str_AppleModePopup = "Apple and MS/Adobe differ about the format of truetype and opentype files\nThis allows you to select which standard to follow for your font." /*new*/
 static char str_Nooutlinefont[] = "Без контурного";
 static char str_Nobitmapfonts[] = "Без растрового";
 static char str_Afmfailedtitle[] = "Сбой сохранения AFM";
 static char str_Pfmfailedtitle[] = "Сбой сохранения PFM";
 static char *str_SavingFont = "Сохранение шрифта";
 static char *str_SavingPSFont = "Сохранение шрифта Postscript";
+static char *str_SavingMultiplePSFonts = "Saving Multiple Postscript Fonts"; /*new*/
 static char *str_SavingTTFont = "Сохранение шрифта TrueType";
 static char *str_SavingCIDFont = "Сохранение шрифта CID";
 static char *str_SavingAFM = "Сохранение файла AFM";
@@ -715,13 +775,31 @@ static char *str_SavingBitmapFonts = "Сохранение растровых шрифтов";
 static char *str_NotCID = "Не в формате CID";
 static char *str_NotCIDOk = "Вы пытаетесь сохранить шрифт CID не в формате CID. Это допустимо, но означает, что будет сохранён только текущий вложенный шрифт.\nВы действительно хотите этого?";
 static char *str_PixelList = "Pixel List";
-static char *str_EncodingTooLarge = "Слишком большая кодировка";
+static char *str_EncodingTooLarge="Слишком большая кодировка";
 static char *str_TwoBEncIn1BFont = "У вашего шрифта 2-х байтная кодировка, а вы пытаетесь сохранить его в формате, который поддерживает только однобайтные кодировки. Это значит, что вы не сможете получить доступ ни к чему после первых 256 символов без перекодирования шрифта.\n\nХотите продолжить?";
-  /* Goto character ... */
-static char str_Badnumberin[] = "Bad Number in "; /*new*/
+static char *str_GreymapDepth = "Bits per Pixel in the greymap" /*new*/
+static char *str_BDFResolution = "Разрешение BDF"
+static char *str_Other_ = "Другое";
+static char *mnemonic_Other_ = "O";
+static char *str_GuessResPopup = "Определять разрешение каждого шрифта на основе его размеров";
+static char *str_FindMultipleMap = "Find Sub Font Definition file"; /*new*/
+static char *str_NoSubFontDefinitionFile = "No Sub Font Definition file"; /*new*/
+static char *str_PSNames = "PS Названия";
+static char *str_PSNamesPopup = "Do you want the font file to contain the names of each character in the font?"; /*new*/
+static char *str_TTFHintsPopup = "Do you want the font file to contain truetype hints? Currently PfaEdit's\nhinting mechanism is very poor and you are probably better off without them." /*new*/
+static char *str_WrongSFDFile = "Неправильный тип файла SFD";
+static char *str_BadSFDFile = "This looks like one of PfaEdit's SplineFont DataBase files.\nNot one of TeX's SubFont Definition files.\nAn unfortunate confusion of extensions."; /*new*/
+static char *str_BadFamilyForMac = "Bad Mac Family"; /*new*/
+static char *str_BadMacFamily = "To generate a Mac family file, the current font must have plain (Normal, Regular, etc.) style, and there must be other open fonts with the same family name."; /*new*/
+static char *str_TwoFontsSameStyle = "There are two open fonts with the current family name and the same style. %.30hs and %.30hs"; /*new*/
+static char *str_DifferentEncodings = "The font %1$.30hs has a different encoding than that of %2$.30hs"; /*new*/
+static char *str_NotdefName = "Notdef name"; /*new*/
+static char *str_NotdefChar = "The character at encoding %d is named \".notdef\" but contains an outline. Because it is called \".notdef\" it will not be included in the generated font. You may give it a new name using Element->Char Info. Do you wish to continue font generation (and omit this character)?"; /*new*/
+    /* Goto character ... */
+static char str_Badnumberin[] = "Неправильный номер в ";
 static char str_Enternameofchar[] = "Введите название символа в шрифте";
 static char str_Couldntfindchar[] = "Не удалось найти символ: ";
-  /* Font has changed dlg */
+    /* Font has changed dlg */
 static char str_Dontsave[] = "Не сохранять";
 static unichar_t mnemonic_Dontsave[] = 'D';
 static char str_Fontchange[] = "Шрифт изменён";
@@ -730,7 +808,7 @@ static char str_Fontchangepre[] = "Шрифт ";
 static char str_Fontchangemid[] = " в файле ";
 static char str_Fontchangepost[] = " был изменён.\012Хотите сохранить его?";
 static char str_Fontchangerevertpost[] = " был изменён.\012Восстановление файла уничтожит все изменения.\012Это то чего вы хотите?";
-  /* General messages from fontview.c */
+    /* General messages from fontview.c */
 static char str_Revert[] = "Восстановить";
 static unichar_t mnemonic_Revert[] = 'R';
 static char str_Manywin[] = "Много окон";
@@ -740,6 +818,7 @@ static char *str_OpenPostscript = "Открыть шрифт Postscript";
 static char *str_Loading = "Загрузка...";
 static char *str_LoadingFontFrom = "Загружается шрифт из ";
 static char *str_ReadingGlyphs = "Чтение глифов";
+static char *str_ReadingAFM = "Чтение файла AFM";
 static char *str_InterpretingGlyphs = "Интерпретация глифов";
 static char *str_CouldntOpenFontTitle = "Не удалось открыть шрифт";
 static char *str_CouldntOpenFont = "Не удалось открыть шрифт (или он в неподходящем формате): %hs";
@@ -753,13 +832,23 @@ static char *str_Rounding = "Округление до целого...";
 static char *str_Autotracing = "Автотрассировка...";
 static char *str_ClearDependent = "Вы пытаетесь очистить %.30hs, который ссылается на\nдругой символ. Вы уверены в том что хотите очистить его?";
 static char *str_UnlinkAll = "Разыменовать все";
+static char *str_Unlink = "Разыменовать";
 static char *str_dPixelBitmap = "Растр %d точек";
+static char *str_ddPixelBitmap = "%d@%d pixel bitmap"; /*new*/
 static char *str_RestrictedRightsFont = "Этот шрифт помечен как FSType 2 (Ограниченная\nЛицензия). Это означает, что его нельзя редактировать без\nразрешения законного владельца.\n\nУ вас есть такое разрешение?";
 static char *str_RestrictedFont = "Шрифт с ограничениями";
 static char *str_CloseFont = "Пожалуйста, закройте шрифт";
 static char *str_CloseFontForCID = "Please close %hs before inserting it into a CID font"; /*new*/
 static char *str_CIDRemoveFontCheck = "Are you sure you wish to remove sub-font %1$.40hs from the CID font %2$.40hs"; /*new*/
-  /* Messages from accented characters */
+static char *str_FlippedRef = "Зеркальная ссылка";
+static char *str_FlippedRefUnlink = "%.50hs contains a flipped reference. This cannot be corrected as is. Would you like me to unlink it and then correct it?"; /*new*/
+static char *str_Baseline = "Базовая линия";
+static char *str_Origin = "Origin"; /*new*/
+static char *str_AdvanceWidthAsBar = "Advance Width as a Bar"; /*new*/
+static char *str_AdvanceWidthAsLine = "Advance Width as a Line"; /*new*/
+static char *str_AdvanceBarPopup = "Display the advance width as a bar under the character\nshowing the extent of the advance"; /*new*/
+static char *str_AdvanceLinePopup = "Display the advance width as a line\nperpendicular to the advance direction" /*new*/
+    /* Messages from accented characters */
 static char str_Buildingaccented[] = "Создание акцентированных символов";
 static char str_Replacearing[] = "Заменить е";
 static char str_Areyousurearing[] = "Are you sure you want to replace е?\012The ring will not join to the A."; /*new*/
@@ -767,12 +856,12 @@ static char str_Yes[] = "Да";
 static unichar_t mnemonic_Yes[] = 'Y';
 static char str_No[] = "Нет";
 static unichar_t mnemonic_No[] = 'N';
-  /* Choices from bitmap editing */
-static char str_Rectangle[] = "Прямоугольник";
+    /* Choices from bitmap editing */
+static char str_Rectangle[] = "Прямоуглнк";
 static char str_FilledRectangle[] = "Заполненный прямоугольник";
 static char str_Elipse[] = "Эллипс";
 static char str_FilledElipse[] = "Заполненный эллипс";
-  /* Get Info ... */
+    /* Get Info ... */
 static char str_Multiple[] = "Multiple"; /*new*/
 /* "There is already a character with this Unicode encoding,\n(named %.10s at local encoding %d)\nIs that what you want?" */
 static char str_Alreadycharpre[] = "There is already a character with this Unicode encoding,\012(named "; /*new*/
@@ -784,7 +873,7 @@ static char str_Alreadyligpre[] = "There is already a ligature made from these c
 static char str_Alreadyligmid[] = " at local encoding "; /*new*/
 static char str_Alreadyligpost[] = ")\012Is that what you want?"; /*new*/
 static char str_Badligature[] = "A ligature may not be made up of itself"; /*new*/
-/* "The componant %.20s is not in this font,\nIs that what you want?" */
+/* "The component %.20s is not in this font,\nIs that what you want?" */
 static char str_Missingcomponantpre[] = "The componant "; /*new*/
 static char str_Missingcomponantpost[] = " is not in this font,\012Is that what you want?"; /*new*/
 static char str_Done[] = "Сделано";
@@ -817,17 +906,26 @@ static char *str_SetFromValue = "По значению";
 static char mnemonic_SetFromValue = 'u';
 static char *str_Ligature = "Лигатура:";
 static char mnemonic_Ligature = 'L';
-static char *str_TransformedBy = "Transformed by:"; /*new*/
+static char *str_AccentedComponents = "Акц. символ состоит из:";
+static char *str_CompositComponents = "Символ состоит из:";
+static char *str_NoComponents = "Нет компонентов";
+static char *str_Color = "Цвет:";
+static char *str_TransformedBy = "Изменён:";
 static char *str_NotUnicodeBMP = "Warning: This value is outside of the Unicode BMP.\nIs that really what you want?"; /*new*/
-static char *str_PossiblyTooBig = "Возможно это значение вне диапазона"; /*new*/
-  /* Import */
+static char *str_PossiblyTooBig = "Возможно это значение вне диапазона";
+static char *str_OutOfRange = "Значение вне диапазона";
+static char *str_TransformationMatrix = "Матрица преобразования";
+static char *str_TransformChanged = "Transformation Matrix Changed"; /*new*/
+static char *str_TransformChangedApply = "You have changed the transformation matrix, do you wish to use the new version?"; /*new*/
+static char *str_TransformPopup = "The transformation matrix specifies how the points in\nthe source character should be transformed before\nthey are drawn in the current character.\n x(new) = tm[1,1]*x + tm[2,1]*y + tm[3,1]\n y(new) = tm[1,2]*x + tm[2,2]*y + tm[3,2]"; /*new*/
+    /* Import */
 static char str_Duppixelsize[] = "Duplicate pixelsize"; /*new*/
 /* "The font database already contains a bitmap\nfont with this pixelsize (%d)\nDo you want to overwrite it?" */
 static char str_Duppixelsizepre[] = "The font database already contains a bitmap\012font with this pixelsize ("; /*new*/
 static char str_Duppixelsizepost[] = ")\012Do you want to overwrite it?"; /*new*/
 static char str_NoBitmapFont = "No Bitmap Font"; /*new*/
 static char str_NoBitmapFontIn = "Could not find a bitmap font in %hs"; /*new*/
-  /* Private Info */
+    /* Private Info */
 static char str_Bluequest[] = "This will change both BlueValues and OtherBlues.\012Do you want to continue?"; /*new*/
 static char str_Hstemquest[] = "This will change both StdHW and StemSnapH.\012Do you want to continue?"; /*new*/
 static char str_Vstemquest[] = "This will change both StdVW and StemSnapV.\012Do you want to continue?"; /*new*/
@@ -838,14 +936,16 @@ static char str_Codequest[] = "Expected code\012Procede anyway?"; /*new*/
 static char str_Badtype[] = "Bad type"; /*new*/
 static char str_Delete[] = "Удалить";
 static char mnemonic_Delete[] = 'D';
-  /* Prefs */
-static char str_Default[] = "Default"; /*new*/
+    /* Prefs */
+static char str_UTF_8[] = "UTF-8 (Unicode)";
+static char str_Default[] = "Исходный";
 static char *str_PrefsPopupAWS[] = "Changing the width of a character\nchanges the widths of all accented\ncharacters based on it."; /*new*/
 static char *str_PrefsPopupALS[] = "Changing the left side bearing\nof a character adjusts the lbearing\nof other references in all accented\ncharacters based on it.'"; /*new*/
 static char *str_PrefsPopupForNewFonts[] = "Default encoding for\nnew fonts"; /*new*/
 static char *str_PrefsPopupLoc[] = "Character set used by the local\nclipboard, filesystem, etc. (only\n8bit charsets currently supported\nhere)"; /*new*/
 static char *str_PrefsPopupAH[] = "AutoHint before rasterizing"; /*new*/
 static char *str_PrefsPopupFN[] = "Name used for foundry field in bdf\nfont generation"; /*new*/
+static char *str_PrefsPopupTFN[] = "Name used for Vendor ID field in\nttf (OS/2 table) font generation.\nMust be no more than 4 characters"; /*new*/
 static char *str_PrefsPopupXU[] = "If specified this should be a space seperated list of integers each\nless than 16777216 which uniquely identify your organization\nPfaEdit will generate a random number for the final componant."; /*new*/
 static char *str_PrefsPopupRulers[] = "Display rulers in the Outline Character View"; /*new*/
 static char *str_PrefsPopupSepHints[] = "Have seperate controls for display horizontal and vertical hints."; /*new*/
@@ -855,7 +955,17 @@ static char *str_PrefsPopupGA[] = "When placing grave and acute accents above le
 static char *str_PrefsPopupAA[] = "The number of em-units by which an arrow key will move a selected point"; /*new*/
 static char *str_PrefsPopupGF[] = "Adobe has assigned the names Delta, Omega and mu\nto Increment, Ohm and micro signs respectively\nThis seems very odd to Greek font designers who use\nthe names to refer to letters of the alphabet.\nSo there is ambiguity as to what the names mean.\nSetting this flag tries to deal with the ambiguity\nby generating fonts with extra glyphs."; /*new*/
 static char *str_PrefsPopupSD[] = "When the mouse pointer is within this many pixels\nof one of the various interesting features (baseline,\nwidth, grid splines, etc.) the pointer will snap\nto that feature."; /*new*/
+static char *str_PrefsPopupBR[] = "When generating a set of BDF fonts ask the user\nto specify the screen resolution of the fonts\notherwise PfaEdit will guess depending on the pixel size."; /*new*/
+static char *str_PrefsPopupATA[] = "Extra arguments for configuring the autotrace program"; /*new*/
+static char *str_PrefsPopupATK[] = "Ask the user for autotrace arguments each time autotrace is invoked" /*new*/
+static char *str_PrefsPopupMFA[] = "Commands to pass to mf (metafont) program, the filename will follow these"; /*new*/
+static char *str_PrefsPopupMFK[] = "Ask the user for mf commands each time mf is invoked" /*new*/
+static char *str_PrefsPopupMFB[] = "PfaEdit loads large images into the background of each character\nprior to autotracing them. You may retain those\nimages to look at after mf processing is complete, or\nremove them to save space" /*new*/
+static char *str_PrefsPopupMFE[] = "MetaFont (mf) generates lots of verbiage to stdout.\nMost of the time I find it an annoyance but it is\nimportant to see if something goes wrong." /*new*/
+static char *str_PrefsPopupG2N[] = "When generating a truetype or opentype font it is occasionally\nuseful to know the mapping between truetype glyph ids and\ncharacter names. Setting this option will cause PfaEdit to\nproduce a file (with extension .g2n) containing those data."; /*new*/
 static char *str_Generic[] = "Общее";
+static char *str_PrefsFontInfo[] = "Инф. о шрифте";
+static char *str_PrefsApps[] = "Apps"; /*new*/
 static char *str_ScriptMenu[] = "Меню скрипта";
 static char *str_MenuName[] = "Название меню";
 static char *str_ScriptMenuPopup[] = "You may create a script menu containing up to 10 frequently used scripts\nEach entry in the menu needs both a name to display in the menu and\na script file to execute. The menu name may contain any unicode characters.\nThe button labeled \"...\" will allow you to browse for a script file."; /*new*/
@@ -863,7 +973,7 @@ static char *str_ScriptFile[] = "Файл скрипта";
 static char *str_BrowseForFile[] = "...";
 static char *str_MenuNameWithNoScript[] = "Menu name with no associated script"; /*new*/
 static char *str_ScriptWithNoMenuName[] = "Script with no associated menu name"; /*new*/
-  /* Hints */
+    /* Hints */
 static char *str_base = "Начало:";
 static unichar_t mnemonic_base = 'B';
 static char *str_size = "Размер:";
@@ -878,22 +988,25 @@ static char *str_PrevArrow = "< Пред.";
 static unichar_t mnemonic_PrevArrow = 'P';
 static char *str_NextArrow = "След. >";
 static unichar_t mnemonic_NextArrow = 'N';
+static char *str_MovePoints = "Переместить точки";
+static unichar_t mnemonic_MovePoints = 'M';
+static char *str_MovePointsPopup = "When the hint's position is changed\nadjust the postion of any points\nwhich lie on that hint"; /*new*/
 static char *str_CreateHint = "Создать инструкцию...";
 static char *str_CreateHorizontalHint = "Create Horizontal Stem Hint"; /*new*/
 static char *str_CreateVerticalHint = "Create Vertical Stem Hint"; /*new*/
-  /* expand stroke */
+    /* expand stroke */
 static char *str_LineCap = "Конец линии";
 static char *str_Butt = "Butt"; /*new*/
-static unichar_t mnemonic_Butt = 'B'; /*new*/
-static char *str_Round = "Круглый"; /*new*/
-static unichar_t mnemonic_Round = 'R'; /*new*/
-static char *str_Squareq = "Квадратный"; /*new*/
-static unichar_t mnemonic_Squareq = 'q'; /*new*/
-static char *str_LineJoin = "Соединение"; /*new*/
+static unichar_t mnemonic_Butt = 'B';
+static char *str_Round = "Круглый";
+static unichar_t mnemonic_Round = 'R';
+static char *str_Squareq = "Квадратный";
+static unichar_t mnemonic_Squareq = 'q';
+static char *str_LineJoin = "Соединение";
 static char *str_Miter = "Miter"; /*new*/
-static unichar_t mnemonic_Miter = 'M'; /*new*/
-static char *str_Roundu = "Круглое"; /*new*/
-static unichar_t mnemonic_Roundu = 'u'; /*new*/
+static unichar_t mnemonic_Miter = 'M';
+static char *str_Roundu = "Круглое";
+static unichar_t mnemonic_Roundu = 'u';
 static char *str_Bevel = "Bevel"; /*new*/
 static unichar_t mnemonic_Bevel = 'v'; /*new*/
 static char *str_StrokeWidth = "Ширина штриха:";
@@ -904,24 +1017,45 @@ static char *str_Caligraphic = "Caligraphic"; /*new*/
 static unichar_t mnemonic_Caligraphic = 'C';
 static char *str_PenAngle = "Pen Angle:"; /*new*/
 static unichar_t mnemonic_PenAngle = 'A';
-  /* Auto Width/Kern */
+static char *str_BadStroke = "Bad Stroke"; /*new*/
+static char *str_StrokeWidthTooBig = "The stroke width is so big that the generated path\nmay intersect itself in %.100hs"; /*new*/
+    /* Auto Width/Kern */
 static char *str_EnterTwoCharRange = "Enter two character ranges"; /*new*/
 static char *str_ToBeAdjusted = "to be adjusted."; /*new*/
 static char *str_CharsLeft = "Символы слева";
 static char *str_CharsRight = "Символы справа";
 static char *str_All = "Все";
 static char *str_stdCharRange = "A-Za-z0-9";
+static unichar_t *str_stdCharRangeGreek = { 0x391, '-', 0x3a1, 0x3a3, '-', 0x3a9, 0x3b1, '-', 0x3c9, '\0'  };
+static unichar_t *str_stdCharRangeCyr = { 0x402, 0x404, '-', 0x406, 0x408, '-', 0x40b, 0x40f, '-', 0x418, 0x41a, '-', 0x42f, 0x430, '-', 0x438, 0x43a, '-', 0x44f, 0x452, 0x454, '-', 0x456, 0x458, '-', 0x45b, 0x45f, '\0'  };
+static char *str_StdCharRangeKernL = "A-Za-z";
+static char *str_StdCharRangeKernR = "a-z.,:;-";
+static char *str_StdCharRangeKernR2 = "A-Za-z.,:;-";
+static unichar_t *str_StdCharRangeKernRCyr = { 0x430, '-', 0x438, 0x43a, '-', 0x44f, 0x452, 0x454, '-', 0x456, 0x458, '-', 0x45b, 0x45f, '.', ',', ':', ';', '-', '\0' };
+static unichar_t *str_StdCharRangeKernR2Cyr = { 0x402, 0x404, '-', 0x406, 0x408, '-', 0x40b, 0x40f, '-', 0x418, 0x41a, '-', 0x42f, 0x430, '-', 0x438, 0x43a, '-', 0x44f, 0x452, 0x454, '-', 0x456, 0x458, '-', 0x45b, 0x45f, '.', ',', ':', ';', '-', '\0' };
+static unichar_t *str_stdCharRangeKernRGreek = { 0x3b1, '-', 0x3c9, '.', ',', ':', ';', '-', '\0' '  };
+static unichar_t *str_stdCharRangeKernR2Greek = { 0x391, '-', 0x3a1, 0x3a3, '-', 0x3a9, 0x3b1, '-', 0x3c9, '.', ',', ':', ';', '-', '\0' '  };
 static char *str_Selected = "Выбранные";
 static char *str_Spacing = "Интервал";
 static char *str_TotalKerns = "Всего пар:";
 static char *str_Threshold = "Предел:";
 static char *str_NoCharsSelected = "Символы не выбраны.";
-  /* Auto Trace */
+static char *str_KernPairFilePopup = "Browse for a file containing a list of kerning pairs\ntwo characters per line. PfaEdit will only check\nthose pairs for kerning info."; /*new*/
+static char *str_LoadKernPairs = "Загрузить керн. пары";
+static char *str_NoKernPairs = "No Kern Pairs"; /*new*/
+static char *str_NoKernPairsFile = "No kerning pairs found in %.200hs"; /*new*/
+    /* Auto Trace */
 static char *str_NothingToTrace = "Нечего трассировать";
 static char *str_NoAutotrace = "Не удалось найти autotrace";
 static char *str_NoAutotraceProg = "Не удалось найти программу autotrace (установите переменную окружения AUTOTRACE)";
 static char *str_AdditionalAutotraceArgs = "Дополнительные аргументы для программы autotrace:";
-  /* Bitmap dlg */
+static char *str_NoMF = "Не найден mf";
+static char *str_NoMFProg = "Can't find mf program -- metafont (set MF environment variable) or download from:\n  http://www.tug.org/\n  http://www.ctan.org/\nIt's part of the TeX distribution"; /*new*/
+static char *str_NoTempDir = "Не удалось создать временный каталог";
+static char *str_CantRunMF = "Не удалось запустить mf";
+static char *str_MFHadError = "MetaFont exited with an error"; /*new*/
+static char *str_MFBadOutput = "Could not read (or perhaps find) mf output file"; /*new*/
+    /* Bitmap dlg */
 static char *str_AllChars = "Все символы";
 static char *str_SelChars = "Выбранные символы";
 static char *str_CurChar = "Текущий символ";
@@ -942,23 +1076,25 @@ static char *str_WinSizes = "Win";
 static char *str_MacSizes = "Mac";
 static char *str_UseFreeType = "Использовать FreeType";
 static char *str_ScalingBitmaps = "Scaling Bitmaps"; /*new*/
-  /* Bitmap view */
+static char *str_CantScaleGreymap = "Can't scale a greymap font"; /*new*/
+static char *str_CantDeleteAllBitmaps = "Can't delete all bitmaps"; /*new*/
+    /* Bitmap view */
 /* "%s at %d from %s", charactername, pixelsize, fontname */
 static char *str_bvat = " at "; /*new*/
 static char *str_bvfrom = " from "; /*new*/
 static char *str_RecalculateBitmaps = "Пересчитать растры";
-  /* BV Edit */
+    /* BV Edit */
 static char *str_skewRatio = "Enter the ratio of x-skew to y rise"; /*new*/
 static char str_BadNumber[] = "Bad Number"; /*new*/
-  /* Char View */
+    /* Char View */
 /* "%s from %s", charactername, fontname */
 static char *str_cvfrom = " from "; /*new*/
-  /* CV Export */
+    /* CV Export */
 static char *str_PixelSizeQ = "Pixel size?"; /*new*/
 static char *str_PixelSize = "Pixel size:"; /*new*/
 static char *str_BitsPerPixel = "Bits/Pixel:"; /*new*/
 static char *str_InvalidBits = "The only valid values for bits/pixel are 1, 2, 4 or 8"; /*new*/
-  /* CV Images */
+    /* CV Images */
 static char *str_CantFindFile = "Не удалось найти файл";
 static char *str_BadXFigFile = "Неправильный файл xfig";
 static char *str_BadImageFile = "Неправильный файл изображения";
@@ -975,16 +1111,17 @@ static char *str_UnicodeValueNotInFont = "Unicode value (%x) not in font, ignore
 static char *str_EncodingNotInFont = "Encoding value not in font"; /*new*/
 static char *str_EncodingValueNotInFont = "Encoding value (%x) not in font, ignored"; /*new*/
 static char *str_Image = "Изображение";
+static char *str_TeXBitmap = "TeX Bitmap"; /*new*/
 static char *str_Template = "Image Template"; /*new*/
 static char *str_EPSTemplate = "EPS Template"; /*new*/
 static char *str_AsBackground = "Как фон";
 static char *str_OnlyOneFont = "Только один шрифт";
 static char *str_OnlyOneFontBackground = "Только один шрифт может быть импортирован в фон";
-  /* CV Palettes */
+    /* CV Palettes */
 static char *str_SizeOfPoints="Size of Points"; /*new*/
 static char *str_Regular="Regular"; /*new*/
 static char *str_Points="Points:";
-static char *str_RRRad="Round Rectangle Radius"; /*new*/
+static char *str_RRRad="Радиус закруглений";
 static char *str_Polygon="Многоугольник";
 static char *str_Star="Звезда";
 static char *str_NumPSVert="Number of star points/Polygon verteces"; /*new*/
@@ -1001,9 +1138,10 @@ static char *str_Grid="Сетка";
 static char *str_HHints="Г.инстр.";
 static char *str_VHints="В.инстр.";
 static char *str_DHints="Д.инстр.";
-static char *str_HMetrics = "Г.метрики";
-static char *str_VMetrics = "В.метрики";
-static char *str_Bitmap = "Растр";
+static char *str_HMetrics="Г.метрики";
+static char *str_VMetrics="В.метрики";
+static char *str_Blues="Blues"; /*new*/
+static char *str_Bitmap="Растр";
 static char *str_ShapeType = "Shape Type"; /*new*/
 /* Popups */
 static char *str_Pointer = "Указатель";
@@ -1024,7 +1162,7 @@ static char *str_popPencil = "Нарисовать/Очистить точки";
 static char *str_popLine = "Нарисовать линию";
 static char *str_popShift = "Сдвинуть весь растр";
 static char *str_popHand = "Scroll Bitmap";
-  /* Undoes */
+    /* Undoes */
 static char *str_BitmapPaste = "Вставить растр";
 static char *str_YesToAll = "Да для всех";
 static char *mnemonic_YesToAll = 'A';
@@ -1036,16 +1174,16 @@ static char *str_ClipContainsPost = ",\na size which is not in your database.\nW
 static char *str_Pasting = "Вставка...";
 static char *str_SelfRef = "Self-referential character" /*new*/
 static char *str_AttemptSelfRef = "Попытка сделать символ, который ссылается сам на себя";
-static char *str_BadReference = "Bad Reference"; /*new*/
+static char *str_BadReference = "Неправильная ссылка";
 static char *str_FontNoRef = "You are attempting to paste a reference to %1$hs into %2$hs.\nBut %1$hs does not exist in this font.\nWould you like to copy the original splines (or delete the reference)?"; /*new*/
 static char *str_FontNoRefNoOrig = "You are attempting to paste a reference to %1$hs into %2$hs.\nBut %1$hs does not exist in this font, nor can I find the original character refered to.\nIt will not be copied."; /*new*/
 static char *str_DontWarnAgain = "Не предупреждать больше";
 static char *mnemonic_DontWarnAgain = 'W';
 static char *str_NoVerticalMetrics = "Нет вертикальных метрик";
 static char *str_FontNoVerticalMetrics = "This font does not have vertical metrics enabled"; /*new*/
-  /* dump pfa */
+    /* dump pfa */
 static char *str_CvtPS = "Преобразование Postscript";
-  /* encoding */
+    /* encoding */
 static char *str_BadEncFormat = "Bad encoding file format"; /*new*/
 static char *str_PleaseNameEnc = "Please name this encoding"; /*new*/
 /* Either insert first, second or third, or the number followed by the "th" string (5th, 6th, etc.) */
@@ -1066,18 +1204,25 @@ static char *str_Search = "Поиск";
 static char mnemonic_Search = 'S';
 static char *str_GiveUp = "Give Up"; /*new*/
 static char mnemonic_GiveUp = 'G';
+static char *str_NoCidmap = "No cidmap file..." /*new*/
+static char *str_LookForCidmap = "PfaEdit was unable to find a cidmap file for this font. It is not essential to have one, but some things will work better if you do. If you have not done so you might want to download the cidmaps from:\n   http://pfaedit.sourceforge.net/cidmaps.tgz\nand then gunzip and untar them and move them to:\n  %.80hs\n\nWould you like to search your local disk for an appropriate file?" /*new*/
 static char *str_AreYouSureCharset = "Are you sure you don't want to use the character set I found?"; /*new*/
 static char *str_FindCharset = "Find a charset file..." /*new*/
 static char *str_Browse = "Просмотр...";
+static char mnemonic_Browse = 'B';
 static char *str_SelectCIDOrdering = "Please select a CID ordering" /*new*/
 static char *str_ExtraCharsTitle = "Extraneous characters"; /*new*/
 static char *str_ExtraChars = "The current encoding contains characters which I cannot map to CIDs.\nShould I delete them or add them to the end (where they may conflict with future ros definitions)?"; /*new*/
+static char *str_FindCMap = "Find an adobe CMap file..."; /*new*/
+static char *str_NotACIDFont = "Not a CID-keyed font"; /*new*/
+static char *str_MultipleEncodingIgnored = "MultipleEncodingIgnored"; /*new*/
+static char *str_CIDGlyphMultEncoded = "The glyph at CID %d is mapped to more than %d encodings. Only the first %d are handled."; /*new*/
 
-  /* fv composit */
+    /* fv composit */
 static char *str_MissingChar = "Missing Character..."; /*new*/
-static char *str_Missingdotlessi = "Your font is missing the dotlessi character,\nplease add it and remake your accented characters"; /*new*/
-static char *str_Missingdotlessj = "Your font is missing the dotlessj character,\nplease add it and remake your accented characters"; /*new*/
-  /* fv fonts */
+static char *str_Missingdotlessi="Your font is missing the dotlessi character,\nplease add it and remake your accented characters"; /*new*/
+static char *str_Missingdotlessj="Your font is missing the dotlessj character,\nplease add it and remake your accented characters"; /*new*/
+    /* fv fonts */
 static char *str_MergingProb = "Merging Problem"; /*new*/
 static char *str_MergingFontSelf = "Merging a font with itself achieves nothing"; /*new*/
 static char *str_Other = "Другое ..."
@@ -1087,7 +1232,7 @@ static char *str_InterpolatingFontSelf = "Interpolating a font with itself achie
 static char *str_Amount = "Amount"; /*new*/
 static char *str_InterpBetween = "Interpolating between %.20hs and:"; /*new*/
 static char *str_by = "by"; /*new*/
-  /* fv metrics */
+    /* fv metrics */
 static char *str_SetWidthTo = "Установить ширину:";
 static char *str_SetLBearingTo = "Установить лев.границу:";
 static char *str_SetRBearingTo = "Установить прав.границу:";
@@ -1100,7 +1245,7 @@ static char *str_ScaleWidthBy = "Scale Width By:"; /*new*/
 static char *str_ScaleLBearingBy = "Scale LBearing By:"; /*new*/
 static char *str_ScaleRBearingBy = "Scale RBearing By:"; /*new*/
 static char *str_ScaleVWidthBy =  "Scale VAdvance By:"; /*new*/
-  /* Import bdf */
+    /* Import bdf */
 static char *str_PixelSizeFont = "What is the pixel size of the font in this file?"; /*new*/
 static char *str_CouldNotOpenFile = "Не удалось открыть файл"
 static char *str_CouldNotOpenFileName = "Couldn't open file %.200hs" /*new*/
@@ -1108,12 +1253,14 @@ static char *str_NotBdfFile = "Not a bdf file" /*new*/
 static char *str_NotBdfFileName = "Not a bdf file %.200hs" /*new*/
 static char *str_NotPkFile = "Not a pk file" /*new*/
 static char *str_NotPkFileName = "Not a (metafont) pk file %.200hs" /*new*/
+static char *str_NotGfFile = "Not a pk file" /*new*/
+static char *str_NotGfFileName = "Not a (metafont) gf file %.200hs" /*new*/
 static char *str_NotPcfFile = "Not a pcf file" /*new*/
 static char *str_NotPcfFileName = "Not an X11 pcf file %.200hs" /*new*/
 static char *str_LoadingFrom = "Загрузка шрифта из %.100hs";
 static char *str_DuplicateName = "Повторение названия";
 static char *str_DuplicateCharName = "Duplicate character name (%hs) in font"; /*new*/
-  /* problems */
+    /* problems */
 static char *str_ProbOpenPath = "The two selected points are the endpoints of an open path"; /*new*/
 static char *str_ProbPointsTooClose = "The selected points are too close to each other"; /*new*/
 static char *str_ProbMissingExtreme = "The selected spline does not have a point at its extremum(a)"; /*new*/
@@ -1144,9 +1291,17 @@ static char *str_ProbPtNearVHint = "The selected point is near a vertical stem h
 static char *str_ProbHintHWidth = "This character contains a horizontal hint near the specified width"; /*new*/
 static char *str_ProbHintVWidth = "This character contains a vertical hint near the specified width"; /*new*/
 static char *str_ProbHintControl = "This hint does not control any points"; /*new*/
+static char *str_ProbHint3Width = "This hint has the wrong width for a stem3 hint"; /*new*/
+static char *str_ProbHint3Spacing = "The counters between these hints are not the same size, bad for a stem3 hint"; /*new*/
+static char *str_ProbHint3Four = "This character has four hints, but if this one were omitted it would fit a stem3 hint" /*new*/
+static char *str_NoProbHint3 = "This character can use a stem3 hint"; /*new*/
 static char *str_ProbExpectedCounter = "This path should have been drawn in a counter-clockwise direction"; /*new*/
 static char *str_ProbExpectedClockwise = "This path should have been drawn in a clockwise direction"; /*new*/
 static char *str_ProbFlippedRef = "This reference has been flipped, so the paths in it are drawn backwards" /*new*/
+static char *str_ProbMissingBitmap = "This outline character is missing a bitmap version" /*new*/
+static char *str_ProbMissingOutline = "This blank outline character has an unexpected bitmap version" /*new*/
+static char *str_ProbBadWidth = "This character's advance width is different from the standard width" /*new*/
+static char *str_ProbBadVWidth = "This character's vertical advance is different from the standard width" /*new*/
 static char *str_ProbAboveOdd = "The control point above the selected point is outside the spline segment"; /*new*/
 static char *str_ProbBelowOdd = "The control point below the selected point is outside the spline segment"; /*new*/
 static char *str_ProbRightOdd = "The control point right of the selected point is outside the spline segment"; /*new*/
@@ -1154,6 +1309,7 @@ static char *str_ProbLeftOdd = "The control point left of the selected point is 
 static char *str_ProbCIDMult = "This character is defined in more than one of the CID subfonts"; /*new*/
 static char *str_ProbCIDBlank = "This character is not defined in any of the CID subfonts"; /*new*/
 static char *str_ProbExplain = "Объяснение проблемы";
+static char *str_Fix = "Исправ.";
 static char *str_Stop = "Стоп";
 static char *mnemonic_Stop = 'S';
 static char *str_Next = "След.";
@@ -1162,23 +1318,23 @@ static char *str_OpenPaths = "Открытые контуры";
 static char *mnemonic_OpenPaths = 'P';
 static char *str_OpenPathsPopup = "All paths should be closed loops, there should be no exposed endpoints"; /*new*/
 static char *str_Points2Close = "Точки расположены слишком близко";
-static char *mnemonic_Points2Close = 't'; /*new*/
+static char *mnemonic_Points2Close = 't';
 static char *str_Points2ClosePopup = "If two adjacent points on the same path are less than a few\nemunits apart they will cause problems for some of pfaedit's\ncommands. PostScript shouldn't care though."; /*new*/
 /*static char *str_MissingExtrema = "Missing Extrema";
 /*static char *mnemonic_MissingExtrema = 'E';
 /*static char *str_MissingExtremaPopup = "Ghostview (perhaps other interpreters) has a problem when a\nhint exists without any points that lie on it. Usually this is because\nthere are no points at the extrema";*/
 static char *str_XNear = "X near"; /*new*/
-static char *mnemonic_XNear = 'X'; /*new*/
+static char *mnemonic_XNear = 'X';
 static char *str_XNearPopup = "Allows you to check that vertical stems in several\ncharacters start at the same location."; /*new*/
 static char *str_YNear = "Y near"; /*new*/
-static char *mnemonic_YNear = 'Y'; /*new*/
+static char *mnemonic_YNear = 'Y';
 static char *str_YNearPopup = "Allows you to check that horizontal stems in several\ncharacters start at the same location."; /*new*/
 static char *str_YNearStd = "Y near standard heights"; /*new*/
-static char *mnemonic_YNearStd = 'S'; /*new*/
+static char *mnemonic_YNearStd = 'S';
 static char *str_YNearStdPopup = "Allows you to find points which are slightly\noff from the baseline, xheight,cap height,\nascender, descender heights."; /*new*/
 static char *str_LineStd = "Края почти горизонтальны/вертикальны";
 static char *str_LineStd2 = "Edges near horizontal/vertical/italic"; /*new*/
-static char *mnemonic_LineStd = 'E'; /*new*/
+static char *mnemonic_LineStd = 'E';
 static char *str_LineStdPopup = "Allows you to find lines which are almost,\nbut not quite horizontal or vertical\n(or at the italic angle)."; /*new*/
 static char *str_CpStd = "Управляющие точки почти горизонтальны/вертикальны";
 static char *str_CpStd2 = "Управляющие точки почти горизонтальны/вертикальны/под углом наклона шрифта";
@@ -1188,35 +1344,54 @@ static char *str_CpOdd = "Control Points beyond spline"; /*new*/
 static char *mnemonic_CpOdd = 'b';
 static char *str_CpOddPopup = "Allows you to find control points which when projected\nonto the line segment between the two end points lie\noutside of those end points"; /*new*/
 static char *str_HintNoPt = "Hints controlling no points"; /*new*/
-static char *mnemonic_HintNoPt = 'H'; /*new*/
+static char *mnemonic_HintNoPt = 'H';
 static char *str_HintNoPtPopup = "Ghostview (perhaps other interpreters) has a problem when a\nhint exists without any points that lie on it."; /*new*/
 static char *str_PtNearHint = "Points near hint edges"; /*new*/
-static char *mnemonic_PtNearHint = 'P'; /*new*/
+static char *mnemonic_PtNearHint = 'P';
 static char *str_PtNearHintPopup = "Often if a point is slightly off from a hint\nit is because a stem is made up\nof several segments, and one of them\nhas the wrong width."; /*new*/
 static char *str_HintWidth = "Hint Width Near"; /*new*/
-static char *mnemonic_HintWidth = 'W'; /*new*/
+static char *mnemonic_HintWidth = 'W';
 static char *str_HintWidthPopup = "Allows you to check that stems have consistant widths.."; /*new*/
+static char *str_Hint3 = "Almost stem3 hint"; /*new*/
+static char *mnemonic_Hint3 = '3';
+static char *str_Hint3Popup = "This checks if the character almost, but not exactly,\nconforms to the requirements for a stem3 hint.\nThat is, either vertically or horizontally, there must\nbe exactly three hints, and they must have the same\nwidth and they must be evenly spaced." /*new*/
+static char *str_ShowExactHint3 = "Show Exact *stem3"; /*new*/
+static char *mnemonic_ShowExactHint3 = 'S';
+static char *str_ShowExactHint3Popup = "Shows when this character is exactly a stem3 hint"; /*new*/
 static char *str_CheckDirection = "Check outermost paths clockwise"; /*new*/
 static char *mnemonic_CheckDirection = 'o';
 static char *str_CheckDirectionPopup = "Postscript and TrueType require that paths be drawn\nin a clockwise direction. This lets you check that they\nare."; /*new*/
 static char *str_CheckFlippedRefs = "Check flipped references"; /*new*/
-static char *mnemonic_CheckFlippedRefs = 'r'; /*new*/
+static char *mnemonic_CheckFlippedRefs = 'r';
 static char *str_CheckFlippedRefsPopup = "Postscript and TrueType require that paths be drawn\nin a clockwise direction. If you have a reference\nthat has been flipped then the paths in that reference will\nprobably be counter-clockwise. You should unlink it and do\nCorect direction on it."; /*new*/
+static char *str_CheckBitmaps = "Check missing bitmaps"; /*new*/
+static char *mnemonic_CheckBitmaps = 'b';
+static char *str_CheckBitmapsPopup = "Are there any outline characters which don't have a bitmap version in one of the bitmap fonts?\nConversely are there any bitmap characters without a corresponding outline character?" /*new*/
 static char *str_CIDMultiple = "Check for CIDs defined twice"; /*new*/
-static char *mnemonic_CIDMultiple = 'O'; /*new*/
+static char *mnemonic_CIDMultiple = 'O';
 static char *str_CIDMultiplePopup = "Check whether a CID is defined in more than one sub-font"; /*new*/
 static char *str_CIDBlank = "Check for undefined CIDs"; /*new*/
-static char *mnemonic_CIDBlank = 'O'; /*new*/
+static char *mnemonic_CIDBlank = 'O';
 static char *str_CIDBlankPopup = "Check whether a CID is undefined in all sub-fonts"; /*new*/
 static char *str_PointsNear = "Points are \"Near\" if within"; /*new*/
-static char *mnemonic_PointsNear = 'N'; /*new*/
-static char *str_Near = "Near"; /*new*/
-static char *str_ExplainErr = "Stop after each error and explain"; /*new*/
-static char *mnemonic_ExplainErr = 'A'; /*new*/
-static char *str_IgnoreProblemFuture = "Ignore this problem in the future"; /*new*/
+static char *mnemonic_PointsNear = 'N';
+static char *str_Near = "Возле";
+static char *str_ExplainErr = "Остановка и объяснение для каждой ошибки";
+static char *mnemonic_ExplainErr = 'A';
+static char *str_IgnoreProblemFuture = "Игнорировать в дальнейшем";
 /* "Found %g, expected %g" */
-static char *str_Found = "Found "; /*new*/
-static char *str_Expected = ", expected "; /*new*/
+static char *str_Found = "Обнаружено ";
+static char *str_Expected = ", ожидалось ";
+static char *str_Paths = "Paths"; /*new*/
+static char *str_Random = "Random"; /*new*/
+static char *str_PointsNoC = "Points"; /*new*/
+static char *str_ClearAll = "Очистить все";
+static char *str_SetAll = "Set All"; /*new*/
+static char *str_AdvanceWidth = "Check Advance: /*new*/
+static char *str_AdvanceWidthPopup = "Check for characters whose advance width is not the displayed value." /*new*/
+static char *str_AdvanceVWidth = "Check VAdvance: /*new*/
+static char *str_AdvanceVWidthPopup = "Check for characters whose vertical advance width is not the displayed value." /*new*/
+
 	/* Meta font */
 static char *str_MetaFont = "Meta Font..."; /*new*/
 static char mnemonic_MetaFont = 'M';
@@ -1249,7 +1424,7 @@ static char *str_NotNormallyEncoded = "There is a character (%d) which is not no
 	/* Spline Fill */
 static char *str_Rasterizing = "Растеризация...";
 static char *str_GenBitmap = "Создание растрового шрифта";
-static char *str_GenAntiAlias = "Generating anti-alias font"; /*new*/
+static char *str_GenAntiAlias = "Создание сглаженного шрифта";
 /* "%d pixels" (for the size of the font being rasterized) */
 static char *str_Pixels = " pixels"; /*new*/
 	/* print */
@@ -1275,44 +1450,57 @@ static char *str_Pointsize = "Размер в пунктах:";
 static char mnemonic_Pointsize = 'P';
 static char *str_FullFont = "Отобразить весь шрифт";
 static char mnemonic_FullFont = 'F';
+static char *str_FullFontPopup = "Displays all the glyphs in the font on a rectangular grid at the given point size"; /*new*/
 static char *str_FullPageChar = "Символ во всю страницу";
 static char mnemonic_FullPageChar = 'C';
 static char *str_FullPageChars = "Символы во всю страницу";
 static char mnemonic_FullPageChars = 'C';
+static char *str_FullPageCharPopup = "Displays all the selected characters, each on its own page, at an extremely large point size"; /*new*/
+static char *str_MultiSizeChar = "Multi Size Character"; /*new*/
+static char mnemonic_MultiSizeChar = 'M';
+static char *str_MultiSizeChars = "Multi Size Characters"; /*new*/
+static char mnemonic_MultiSizeChars = 'M';
+static char *str_MultiSizeCharPopup = "Displays all the selected characters, at several different point sizes"; /*new*/
+static char *str_SampleTextPopup = "Prints the text below at the specified point size(s)" /*new*/
 static char mnemonic_SampleText = 'S';
 static char *str_SampleTextC = "Образец текста:";
 static char mnemonic_SampleTextC = 'T';
 static char *str_FailedOpenTemp = "Не удалось открыть временный файл";
 static char *str_NoCommandSpecified = "Не указана команда";
-  /* alignment */
+static char *str_InvalidPointsize = "Invalid point size"; /*new*/
+    /* alignment */
 static char *str_CoordinateAlongWhich = "Coordinate along which to space"; /*new*/
 static char *str_X = "X";
 static char mnemonic_X = 'X';
 static char *str_Y = "Y";
 static char mnemonic_Y = 'Y';
 static char *str_MaximumDistanceBetweenPts = "Maximum distance between points in a region"; /*new*/
-static char mnemonic_MaximumDistanceBetweenPts = 'M'; /*new*/
+static char mnemonic_MaximumDistanceBetweenPts = 'M';
 static char *str_NotEnoughLines = "Not enough lines"; /*new*/
 static char *str_CantParallel = "Can't Parallel"; /*new*/
 static char *str_ShareCommonEndpoint = "These two lines share a common endpoint, I can't make them parallel"; /*new*/
-  /* parsettf */
+    /* parsettf */
 static char *str_ReadingNames = "Чтение названий";
 static char *str_FixingupReferences = "Fixing up References"; /*new*/
 static char *str_NoBitmaps = "No Bitmap Strikes"; /*new*/
 static char *str_NoBitmapsInTTF = "No (useable) bitmap strikes in this TTF font: %hs"; /*new*/
 static char *str_NotInCollection = "Not in Collection"; /*new*/
 static char *str_FontNotInCollection = "%hs is not in %.100hs"; /*new*/
-  /* sfd */
+    /* sfd */
 static char *str_Saving = "Сохранение...";
 static char *str_SavingDb = "Saving Spline Font Database";
 static char *str_SavingOutlines = "Сохранение контуров";
 static char *str_SavingBitmaps = "Сохранение растров";
-  /* start.c */
+static char *str_RecoveryFailed = "Recovery Failed"; /*new*/
+static char *str_RecoveryOfFailed = "Automagic recovery of changes to %.80hs failed.\nShould PfaEdit try again to recover next time you start it?"; /*new*/
+static char *str_TryAgain = "Попробовать ещё";
+static char *str_ForgetIt = "Забыть об этом";
+    /* start.c */
 static char *str_PfaEdit = "PfaEdit";
-  /* cvpointer.c */
+    /* cvpointer.c */
 static char *str_NegativeWidth = "Отрицательная ширина";
 static char *str_NegativeWidthCheck = "Negative character widths are not allowed in TrueType\nDo you really want a negative width?"; /*new*/
-  /* hanyang.c */
+    /* hanyang.c */
 static char *str_Hangul = "Hangul"; /*new*/
 static char mnemonic_Hangul = 'H';
 static char *str_NewComposition = "New Composition..."; /*new*/
@@ -1331,6 +1519,8 @@ static char *str_Mapping = "Mapping...";
 static char mnemonic_Mapping = 'M';
 static char *str_Width = "Ширина...";
 static char mnemonic_Width = 'W';
+static char *str_WidthDDD = "Ширина...";
+static char mnemonic_WidthDDD = 'W';
 static char *str_Reset = "Сбросить";
 static char *str_LoadFrom = "Загрузить из...";
 static char mnemonic_LoadFrom = 'L';
@@ -1341,24 +1531,83 @@ static char *str_JamoHole = "For group %d of %s, glyph variant %d is not used bu
 static char *str_NoRules = "No Rules"; /*new*/
 static char *str_FileHasNoRules = "%.100hs contains no composition rules"; /*new*/
 static char *str_DeleteNo = "Удалить";	/* With no mnemonic */
-  /* Need a different mnemonic */
+    /* Need a different mnemonic */
 static char *str_AddAll = "Добавить все";
-static char mnemonic_AddAll = 'd'; /*new*/
+static char mnemonic_AddAll = 'd';
 static char *str_DisplayCompositions = "Display Compositions..."; /*new*/
 static char mnemonic_DisplayCompositions = 'D';
 static char *str_NoGroups = "This varient of this jamo is not actually used"; /*new*/
 static char *str_UniVarient = "Unicode %04X, Varient %d, %s"; /*new*/
 static char *str_BuildingKoreanFont = "Создание корейского шрифта";
-  /* Transform */
+    /* Transform */
 static char *str_TransformBackground = "Transform Background Too"; /*new*/
-static char mnemonic_TransformBackground = 'B'; /*new*/
-  /* scripting */
+static char mnemonic_TransformBackground = 'B';
+static char *str_Warning = "Внимание";
+static char *str_RotateSkewWarning = "After rotating or skewing a character you should probably apply Element->Add Extrema"; /*new*/
+    /* scripting */
 static char *str_Call = "Запустить...";
 static char mnemonic_Call = 'a';
 static char *str_CallScript = "Запустить скрипт";
-  /* start (about box) */
+    /* start (about box) */
 static char *str_FreePress = "A free press discriminates\nagainst the illiterate."; /*new*/
 static char *str_GaudiamusLigature = "Gaudiamus Ligature!"; /*new*/
+static char *str_InTheBeginning = "In the beginning was the letter..."; /*new*/
+    /* search */
+static char *str_SearchPattern = "Шаблон поиска:";
+static char *str_ReplacePattern = "Шаблон замены:";
+static char *str_Allow = "Разрешить:";
+static char *str_Flipping = "Отражения";
+static char *str_Scaling = "Масштабир.";
+static char *str_Rotating = "Вращение";
+static char *str_AllowTransPopup = "Allow a match even if the search pattern has\nto be transformed by a combination of the\nfollowing transformations."; /*new*/
+static char *str_SearchSelected = "Search Selected Chars"; /*new*/
+static char *str_SearchSelectedPopup = "Only search selected characters in the fontview\nNormally we search all characters in the font."; /*new*/
+static char *str_Find = "Найти";
+static char *str_FindIn = "Find in %.100hs"; /*new*/
+static char *str_FindNext = "Найти след.";
+static char *str_FindAll = "Найти все";
+static char *str_ReplaceFind = "Поиск/Замена";
+static char *str_ReplaceAll = "Заменить все";
+static char *str_BadRefInSearchRpl = "The %1$s contains a reference to %2$.20hs which does not exist in the new font.\nShould I remove the reference?"; /*new*/
+static char *str_NotFound = "Not Found" /*new*/
+static char *str_PatternNotFound = "The search pattern was not found in the font %.100hs"; /*new*/
+static char *str_PatternNotFoundAgain = "The search pattern was not found again in the font %.100hs"; /*new*/
+static char *str_FindReplace = "Поиск / Замена"
+static char *mnemonic_FindReplace = "i";
+    /* combinations */
+static char *str_SelectLigature = "Select a ligature to view" /*new*/
+static char *str_SortBy = "Сортировать по:"
+static char *str_FirstChar = "Left Char" /*new*/
+static char *str_SecondChar = "Right Char" /*new*/
+static char *str_KernSize = "Kern Size" /*new*/
+    /* tilepath */
+static char *str_Center_ = "Center"; /*new*/
+static char mnemonic_Center_ = 'e';
+static char *str_CenterPopup = "The tile (in the clipboard) should be centered on the path" /*new*/
+static char *str_Left = "Left"; /*new*/
+static char mnemonic_Left = 'L'; /*new*/
+static char *str_LeftPopup = "The tile (in the clipboard) should be placed to the left of the path\nas the path is traced from its start point to its end" /*new*/
+static char *str_Right = "Right"; /*new*/
+static char mnemonic_Right = 'R'; /*new*/
+static char *str_RightPopup = "The tile (in the clipboard) should be placed to the right of the path\nas the path is traced from its start point to its end" /*new*/
+static char *str_Tile = "Tile"; /*new*/
+static char mnemonic_Tile = 'T';
+static char *str_TilePopup = "Multiple copies of the selection should be tiled onto the path" /*new*/
+static char *str_Scale = "Scale"; /*new*/
+static char mnemonic_Scale = 'S';
+static char *str_ScalePopup = "The selection should be scaled so that it will cover the path's length" /*new*/
+static char *str_TileScale = "Scale & Tile"; /*new*/
+static char mnemonic_TileScale = 'a';
+static char *str_TileScalePopup = "An integral number of the selection will be used to cover the path\nAnd if the path length is not evenly divisible by the selection's\nheight then the selection should be scaled slightly." /*new*/
+    /* Display fonts */
+static char *str_AA = "AA";
+static char mnemonic_AA = 'A';
+static char *str_AAPopup = "AntiAlias (greymap) characters, or bitmap characters"; /*new*/
+static char *str_PixelSizePopup = "Specifies the pixel size of the characters on display"; /*new*/
+static char *str_FormatPopup = "Specifies file format used to pass the font to freetype\n  pfb -- is the standard postscript type1\n  ttf -- is truetype\n  httf-- is hinted truetype\n  otf -- is opentype\n  bitmap -- not passed to freetype for rendering\n    bitmap fonts must already be generated\n  pfaedit -- uses pfaedit's own rasterizer, not\n    freetype's. Only as last resort"; /*new*/
+static char *str_BadSize = "Bad Size"; /*new*/
+static char *str_RequestedSizeNotAvail = "Requested bitmap size not available in font. Font supports %hs"; /*new*/
+static char *str_BadFont = "Bad Font"; /*new*/
 
-static int num_buttonsize = 55;
-static int num_ScaleFactor = 120;
+static int num_buttonsize = 70;
+static int num_ScaleFactor = 140;

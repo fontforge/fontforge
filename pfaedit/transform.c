@@ -70,20 +70,20 @@ typedef struct transdata {
 #define TBlock_XStart	125
 
 static GTextInfo origin[] = {
-    { (unichar_t *) "Character Origin", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "Center of Selection", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "Last Press", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) _STR_CharacterOrigin, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) _STR_CenterOfSelection, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) _STR_LastPress, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }};
 
 static int selcid[] = { 0, CID_XMove, CID_Angle, CID_Scale, CID_XScale, 0, CID_SkewAng };
 static GTextInfo transformtypes[] = {
-    { (unichar_t *) "Do Nothing", NULL, 0, 0, (void *) 0x1000, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "Move...", NULL, 0, 0, (void *) 0x1, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "Rotate...", NULL, 0, 0, (void *) 0x2, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "Scale Uniformly...", NULL, 0, 0, (void *) 0x4, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "Scale...", NULL, 0, 0, (void *) 0x8, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "Flip...", NULL, 0, 0, (void *) 0x10, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "Skew...", NULL, 0, 0, (void *) 0x20, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) _STR_DoNothing, NULL, 0, 0, (void *) 0x1000, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) _STR_MoveDDD, NULL, 0, 0, (void *) 0x1, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) _STR_RotateDDD, NULL, 0, 0, (void *) 0x2, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) _STR_ScaleUniformlyDDD, NULL, 0, 0, (void *) 0x4, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) _STR_ScaleDDD, NULL, 0, 0, (void *) 0x8, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) _STR_FlipDDD, NULL, 0, 0, (void *) 0x10, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) _STR_SkewDDD, NULL, 0, 0, (void *) 0x20, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }};
 
 void skewselect(BVTFunc *bvtf,real t) {
