@@ -221,11 +221,16 @@ return( SFFindChar(sf,index,name));
 		else if ( sf->encoding_name==em_sjis && unienc>=0xFF61 &&
 			unienc<=0xFF9F )
 		    index = unienc-0xFF61 + 0xa1;	/* katakana */
-		if ( index!=-1 &&
+		if ( index>0x100 &&
 			(sf->encoding_name==em_jis208 || sf->encoding_name==em_jis212 ||
 			 sf->encoding_name==em_ksc5601 || sf->encoding_name==em_gb2312 )) {
 		    index -= 0x2121;
 		    index = (index>>8)*96 + (index&0xff)+1;
+		} else if ( index>0x100 && sf->encoding_name==em_sjis ) {
+		    int j1 = index>>8, j2 = index&0xff;
+		    int ro = j1<95 ? 112 : 176;
+		    int co = (j1&1) ? (j2>95?32:31) : 126;
+		    index = ( (((j1+1)>>1) + ro )<<8 ) | (j2+co);
 		}
 	    }
 	}
