@@ -3730,7 +3730,7 @@ static void handlename(Context *c,Val *val) {
 			name[2]=='a'?c->curfv->sf->familyname:
 			name[2]=='u'?c->curfv->sf->fullname:
 			name[2]=='e'?c->curfv->sf->weight:
-			name[3]=='i'?c->curfv->sf->origname:
+			name[2]=='i'?c->curfv->sf->origname:
 			name[3]=='p'?c->curfv->sf->copyright:
 				    c->curfv->sf->version);
 	    } else if ( strcmp(name,"$cidfontname")==0 || strcmp(name,"$cidfamilyname")==0 ||
