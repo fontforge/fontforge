@@ -1,29 +1,3 @@
-/* Copyright (C) 2000-2002 by George Williams */
-/*
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
-
- * Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
-
- * Redistributions in binary form must reproduce the above copyright notice,
- * this list of conditions and the following disclaimer in the documentation
- * and/or other materials provided with the distribution.
-
- * The name of the author may not be used to endorse or promote products
- * derived from this software without specific prior written permission.
-
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
- * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
- * EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
 #include <stdio.h>
 #include <gdraw.h>
 
@@ -42,10 +16,8 @@ static unichar_t Left[] = { 'L', 'e', 'f', 't', '\0' };
 static unichar_t Up[] = { 'U', 'p', '\0' };
 static unichar_t Right[] = { 'R', 'i', 'g', 'h', 't', '\0' };
 static unichar_t Down[] = { 'D', 'o', 'w', 'n', '\0' };
-/*static unichar_t Prior[] = { 'P', 'r', 'i', 'o', 'r', '\0' };*/
-static unichar_t Page_Up[] = { 'P', 'a', 'g', 'e', '_', 'U', 'p', '\0' };
-/*static unichar_t Next[] = { 'N', 'e', 'x', 't', '\0' };*/
-static unichar_t Page_Down[] = { 'P', 'a', 'g', 'e', '_', 'D', 'o', 'w', 'n', '\0' };
+static unichar_t Page_Up[] = { 'P', 'a', 'g', 'e', 'U', 'p', '\0' };
+static unichar_t Page_Down[] = { 'P', 'a', 'g', 'e', 'D', 'o', 'w', 'n', '\0' };
 static unichar_t End[] = { 'E', 'n', 'd', '\0' };
 static unichar_t Begin[] = { 'B', 'e', 'g', 'i', 'n', '\0' };
 static unichar_t KP_Home[] = { 'K', 'P', '_', 'H', 'o', 'm', 'e', '\0' };
@@ -53,10 +25,8 @@ static unichar_t KP_Left[] = { 'K', 'P', '_', 'L', 'e', 'f', 't', '\0' };
 static unichar_t KP_Up[] = { 'K', 'P', '_', 'U', 'p', '\0' };
 static unichar_t KP_Right[] = { 'K', 'P', '_', 'R', 'i', 'g', 'h', 't', '\0' };
 static unichar_t KP_Down[] = { 'K', 'P', '_', 'D', 'o', 'w', 'n', '\0' };
-/*static unichar_t KP_Prior[] = { 'K', 'P', '_', 'P', 'r', 'i', 'o', 'r', '\0' };*/
-static unichar_t KP_Page_Up[] = { 'K', 'P', '_', 'P', 'a', 'g', 'e', '_', 'U', 'p', '\0' };
-/*static unichar_t KP_Next[] = { 'K', 'P', '_', 'N', 'e', 'x', 't', '\0' };*/
-static unichar_t KP_Page_Down[] = { 'K', 'P', '_', 'P', 'a', 'g', 'e', '_', 'D', 'o', 'w', 'n', '\0' };
+static unichar_t KP_Page_Up[] = { 'K', 'P', '_', 'P', 'a', 'g', 'e', 'U', 'p', '\0' };
+static unichar_t KP_Page_Down[] = { 'K', 'P', '_', 'P', 'a', 'g', 'e', 'D', 'o', 'w', 'n', '\0' };
 static unichar_t KP_End[] = { 'K', 'P', '_', 'E', 'n', 'd', '\0' };
 static unichar_t KP_Begin[] = { 'K', 'P', '_', 'B', 'e', 'g', 'i', 'n', '\0' };
 static unichar_t F1[] = { 'F', '1', '\0' };
@@ -70,55 +40,30 @@ static unichar_t F8[] = { 'F', '8', '\0' };
 static unichar_t F9[] = { 'F', '9', '\0' };
 static unichar_t F10[] = { 'F', '1', '0', '\0' };
 static unichar_t F11[] = { 'F', '1', '1', '\0' };
-/*static unichar_t L1[] = { 'L', '1', '\0' };*/
 static unichar_t F12[] = { 'F', '1', '2', '\0' };
-/*static unichar_t L2[] = { 'L', '2', '\0' };*/
 static unichar_t F13[] = { 'F', '1', '3', '\0' };
-/*static unichar_t L3[] = { 'L', '3', '\0' };*/
 static unichar_t F14[] = { 'F', '1', '4', '\0' };
-/*static unichar_t L4[] = { 'L', '4', '\0' };*/
 static unichar_t F15[] = { 'F', '1', '5', '\0' };
-/*static unichar_t L5[] = { 'L', '5', '\0' };*/
 static unichar_t F16[] = { 'F', '1', '6', '\0' };
-/*static unichar_t L6[] = { 'L', '6', '\0' };*/
 static unichar_t F17[] = { 'F', '1', '7', '\0' };
-/*static unichar_t L7[] = { 'L', '7', '\0' };*/
 static unichar_t F18[] = { 'F', '1', '8', '\0' };
-/*static unichar_t L8[] = { 'L', '8', '\0' };*/
 static unichar_t F19[] = { 'F', '1', '9', '\0' };
-/*static unichar_t L9[] = { 'L', '9', '\0' };*/
 static unichar_t F20[] = { 'F', '2', '0', '\0' };
-/*static unichar_t L10[] = { 'L', '1', '0', '\0' };*/
 static unichar_t F21[] = { 'F', '2', '1', '\0' };
-/*static unichar_t R1[] = { 'R', '1', '\0' };*/
 static unichar_t F22[] = { 'F', '2', '2', '\0' };
-/*static unichar_t R2[] = { 'R', '2', '\0' };*/
 static unichar_t F23[] = { 'F', '2', '3', '\0' };
-/*static unichar_t R3[] = { 'R', '3', '\0' };*/
 static unichar_t F24[] = { 'F', '2', '4', '\0' };
-/*static unichar_t R4[] = { 'R', '4', '\0' };*/
 static unichar_t F25[] = { 'F', '2', '5', '\0' };
-/*static unichar_t R5[] = { 'R', '5', '\0' };*/
 static unichar_t F26[] = { 'F', '2', '6', '\0' };
-/*static unichar_t R6[] = { 'R', '6', '\0' };*/
 static unichar_t F27[] = { 'F', '2', '7', '\0' };
-/*static unichar_t R7[] = { 'R', '7', '\0' };*/
 static unichar_t F28[] = { 'F', '2', '8', '\0' };
-/*static unichar_t R8[] = { 'R', '8', '\0' };*/
 static unichar_t F29[] = { 'F', '2', '9', '\0' };
-/*static unichar_t R9[] = { 'R', '9', '\0' };*/
 static unichar_t F30[] = { 'F', '3', '0', '\0' };
-/*static unichar_t R10[] = { 'R', '1', '0', '\0' };*/
 static unichar_t F31[] = { 'F', '3', '1', '\0' };
-/*static unichar_t R11[] = { 'R', '1', '1', '\0' };*/
 static unichar_t F32[] = { 'F', '3', '2', '\0' };
-/*static unichar_t R12[] = { 'R', '1', '2', '\0' };*/
 static unichar_t F33[] = { 'F', '3', '3', '\0' };
-/*static unichar_t R13[] = { 'R', '1', '3', '\0' };*/
 static unichar_t F34[] = { 'F', '3', '4', '\0' };
-/*static unichar_t R14[] = { 'R', '1', '4', '\0' };*/
 static unichar_t F35[] = { 'F', '3', '5', '\0' };
-/*static unichar_t R15[] = { 'R', '1', '5', '\0' };*/
 static unichar_t Shift_L[] = { 'S', 'h', 'i', 'f', 't', '_', 'L', '\0' };
 static unichar_t Shift_R[] = { 'S', 'h', 'i', 'f', 't', '_', 'R', '\0' };
 static unichar_t Control_L[] = { 'C', 'o', 'n', 't', 'r', 'o', 'l', '_', 'L', '\0' };
