@@ -4235,12 +4235,23 @@ void SplineSetsRound2Int(SplineSet *spl,int order2) {
 
 void SCRound2Int(SplineChar *sc) {
     RefChar *r;
+    StemInfo *stems;
 
     SCPreserveState(sc,false);
     SplineSetsRound2Int(sc->splines,sc->parent->order2);
     for ( r=sc->refs; r!=NULL; r=r->next ) {
 	r->transform[4] = rint(r->transform[4]);
 	r->transform[5] = rint(r->transform[5]);
+    }
+    for ( stems = sc->hstem; stems!=NULL; stems=stems->next ) {
+	real temp = rint(stems->start+stems->width);
+	stems->start = rint(stems->start);
+	stems->width = temp-stems->start;
+    }
+    for ( stems = sc->vstem; stems!=NULL; stems=stems->next ) {
+	real temp = rint(stems->start+stems->width);
+	stems->start = rint(stems->start);
+	stems->width = temp-stems->start;
     }
     SCCharChangedUpdate(sc);
 }
