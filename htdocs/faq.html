@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 17-Feb-2002 -->
+  <!-- AP: Last modified: 14-Apr-2002 -->
   <TITLE>Frequently Asked Questions</TITLE>
 </HEAD>
 <BODY>
@@ -62,6 +62,9 @@
   <LI>
     <A HREF="#quadratic-cubic">How does PfaEdit convert a quadratic spline into
     a cubic (when reading truetype)?</A>
+  <LI>
+    <A HREF="faq.html#default-char">How do I set the default character of a
+    font?</A>
 </UL>
 <P>
   <HR>
@@ -288,7 +291,7 @@
     font you've got:
     <DL>
       <DT>
-	<STRONG>Unix &amp; X</STRONG>
+	<STRONG>Unix &amp; X</STRONG> (but not KDE)
       <DD>
 	I'd suggest that you look at the
 	<A HREF="http://www.linuxdoc.org/HOWTO/Font-HOWTO.html">linux font HOWTO
@@ -360,6 +363,17 @@ $ xset fp+ `pwd`
 	<P>
 	That sounds really confusing. I appologize, I'm not a good writer and there
 	are too many choices in configuring X...
+      <DT>
+	<STRONG>KDE</STRONG>
+      <DD>
+	(I don't know KDE very well, so take my experience with a grain of salt)
+	Under KDE there is a tool called
+	<A HREF="http://www.cpdrummond.uklinux.net/kfontinst/">kfontinst</A> which
+	is supposed to do all the configuration work for you. I was only able to
+	get it to work as root and had to reconfigure my system to follow its
+	conventions, but once that was done it installed X fonts quite handily. I
+	never did figure out how to get it to install ghostview fonts. (I experimented
+	with version 0.9.2)
       <DT>
 	<STRONG>Windows</STRONG>
       <DD>
@@ -526,6 +540,12 @@ $ xset fp+ `pwd`
   <DD>
     This is easy since any quadratic spline can already be represented as a cubic,
     it will just happen that the cubic term is always 0.
+  <DT>
+    <A NAME="default-char">How do I set the default character of a font?</A>
+  <DD>
+    If the character at encoding 0 is named ".notdef" and if it contains some
+    splines (but no references) then it will be used as the default character
+    (that is the character used when an unencoded character is called for).
 </DL>
 <P>
 <P ALIGN=Center>

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 16-Sep-2001 -->
-  <!-- AP: Last modified: 24-Feb-2002 -->
+  <!-- AP: Last modified: 16-Apr-2002 -->
   <TITLE>Older changes to PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,427 @@
 <A HREF="index.html#change-log">Current changes</A>
 <P>
 <UL>
+  <LI>
+    28-Feb-2002
+    <UL>
+      <LI>
+	When running under Mac OS/X PfaEdit is now able to open/create mac resource
+	forks
+      <LI>
+	I may have fixed a bug displaying images on solaris screens with bit depth
+	8
+      <LI>
+	Cleaned up a problem with the postscript name table (in a ttf file) when
+	there was a .notdef character
+      <LI>
+	Fixed some problems with references when reading in truetype.
+    </UL>
+  <LI>
+    24-Feb-2002
+    <UL>
+      <LI>
+	Substr() did not work when given three arguments
+      <LI>
+	Added
+	<UL>
+	  <LI>
+	    $bitmaps (returns an array of all bitmap sizes rasterized for the current
+	    font)
+	  <LI>
+	    BitmapsAvail()
+	  <LI>
+	    BitmapsRegen()
+	</UL>
+      <LI>
+	Changed the FontInfo dlg to give direct access to the postscript names rather
+	than trying to build the fontname out of family and modifiers.
+      <LI>
+	Added the ability to create an encoding which is any given plane of unicode
+	(ie BMP is plane 0, SMP is plane 1, SIP is plane 2...)
+      <LI>
+	Fixed a bug in Revert
+      <LI>
+	More work on hints. 
+	  <HR>
+      <LI>
+	Build Composit will now build a dotlessi from an "i" (and same for dotlessj)
+    </UL>
+  <LI>
+    20-Feb-2002
+    <UL>
+      <LI>
+	Made Shift-Arrow keys move along italic axis.
+      <LI>
+	$argv didn't work in scripting. (broken when I added arrays)
+    </UL>
+  <LI>
+    19-Feb-2002
+    <UL>
+      <LI>
+	Bugs in the generation of MacRoman encoding tables in ttf output (introduced
+	14-Feb)
+      <LI>
+	The Goto Dlg sometimes didn't notice Returns (ie. OK button wasn't always
+	invoked)
+      <LI>
+	Some linear splines were not noticed as such.
+    </UL>
+  <LI>
+    18-Feb-2002
+    <UL>
+      <LI>
+	Cancelling the Point Info dlg would leave minimum distance hints in a bad
+	state.
+      <LI>
+	Using Undo also left the MD hints wonky
+      <LI>
+	added $fontchanged to scripting
+      <LI>
+	Added SaveAll menu item in font view.
+      <LI>
+	Sometimes the underlines for accelerators didn't print in the menu (depended
+	on what PfaEdit thought the screen resolution was).
+      <LI>
+	Added a new minimum distance hint for serifs of diagonal stems.
+      <LI>
+	Fixed a bug where some extra serif stems were hinted.
+    </UL>
+  <LI>
+    16-Feb-2002
+    <UL>
+      <LI>
+	Created a "Select" submenu of the edit menu in the outline view. Moved
+	Edit-&gt;Select All, View-&gt;Next Point, View-&gt;Prev Point into it.
+      <LI>
+	Added Deselect All, Select Next Control Point, Select Prev Control Point,
+	Select First Point, Select Width, Select VWidth
+      <LI>
+	It is now possible to select the width (right bearing) line and move it with
+	the arrow keys or transform dlg (or to move points and the width line
+	concurrently). VWidth too.
+      <LI>
+	Added variables with global and font scope to Scripting.
+      <LI>
+	Yet another bug in the new simplify/merge code
+      <LI>
+	Cleaned up unicode range names a bit more. 
+	  <HR>
+      <LI>
+	Changed the Goto Character dialog so that it will now (for two/four byte
+	encodings) display a list of unicode ranges which are in the font and allow
+	you to go to a range by name.
+      <LI>
+	Made it possible to copy and paste the left and right side bearings (from
+	menus and scripts)
+    </UL>
+  <LI>
+    14-Feb-2002
+    <UL>
+      <LI>
+	My TrueType parser will now read cmap subtable formats 8,10 and 12 (the 4
+	byte encoding tables) and will produce format 12 subtables for full unicode
+	fonts.
+      <LI>
+	Cleaned up various encoding problems.
+      <LI>
+	Fixed display of SJIS.
+      <LI>
+	Added better commentary on unicode outside of BMP
+      <LI>
+	Cleaned up the spec file
+      <LI>
+	In pfb files subroutines for references didn't work if the first thing called
+	was untranslated.
+      <LI>
+	The arrow keys can be used to move a control point.
+    </UL>
+  <LI>
+    12-Feb-2002
+    <UL>
+      <LI>
+	Added sjis and Wansung encodings
+      <LI>
+	Used freetype for a couple of other things (generating gdf files and exporting
+	bitmaps)
+      <LI>
+	Textfields didn't respond to middle button clicks (to paste the primary
+	selection).
+      <LI>
+	PfaEdit would sometimes fail to exit properly if you brought up a script
+	dlg.
+      <LI>
+	Added a --version command line option.
+      <LI>
+	Fixed another bug in generating postscript.
+      <LI>
+	Added a user defined print command option to the print dlg.
+      <LI>
+	Fixed a bug in Simplify/Merge
+      <LI>
+	Fixed a bug in loading integer resources
+      <LI>
+	Cleaned up the help command line option.
+    </UL>
+  <LI>
+    9-Feb-2002
+    <UL>
+      <LI>
+	PfaEdit will now use freetype (if available) to generate bitmaps for the
+	fonts (results are much better).<BR>
+	It still does its own rasterizing for the fontview (there's a lot of overhead
+	involved with freetype, and this needs to be fastish)
+      <LI>
+	Made the Generate Font dlg settings sticky across invocations of pfaedit.
+    </UL>
+  <LI>
+    8-Feb-2002
+    <UL>
+      <LI>
+	PfaEdit would crash when generating a PostScript font from ARIAL.TTF.
+      <LI>
+	Changed the bitmap dlgs so that they allow you to specify some control over
+	interesting screen resolutions. (before just support X standard res. of 75
+	and 100, now support MS 96&amp;120 and Mac 72).
+      <LI>
+	Oops, Apple now documents that the bdat and bloc tables should have version
+	number 0x20000. But when I last looked it said 0x10000 and that didn't work.
+      <LI>
+	Put the docs in their own rpm file.
+    </UL>
+  <LI>
+    7-Feb-2002
+    <UL>
+      <LI>
+	I think I've figured out how Apple does asian bitmaps now. They don't use
+	NFNTs at all (or they do, but those NFNT are tiny stubs with no real data
+	in them). All the data are in the sfnt. I should produce them properly now.<BR>
+	-- Except I don't.
+      <LI>
+	I've also added the ability to create bitmap only sfnts for the mac.<BR>
+	-- Which also isn't recognized by the mac.
+      <LI>
+	Made it possible for scripts to generate bitmaps without generating an outline
+	font
+      <LI>
+	Fixed some problems loading bitmaps from ttf files.
+      <LI>
+	Fixed some problems loading bitmaps from anything...
+      <LI>
+	Allowed importation of eps files from the font view (to the extent that I
+	can parse eps files, that is)
+      <LI>
+	Oops, scripting didn't support importation of pcf files.
+    </UL>
+  <LI>
+    5-Feb-2002
+    <UL>
+      <LI>
+	Sometimes popup windows (tool tips) would show up with nothing in them. That
+	should be fixed now.
+      <LI>
+	Added icons for pcf files
+      <LI>
+	Started work on 32 bit unicode.
+      <LI>
+	Oops. Scripting handled the caligraphic pen angle incorrectly.
+      <LI>
+	Put something into the about box.
+    </UL>
+  <LI>
+    4-Feb-2002
+    <UL>
+      <LI>
+	Oops. PfaEdit was misusing the type1 "seac" command in some cases. I had
+	not realized that the character being built needed to have the same width
+	as the base (non-accent) character. This has been fixed.
+      <LI>
+	When using the charinfo dlg to change the name of a char, and that name was
+	in use, and you cancelled the dlg after being warned about it then PfaEdit
+	would crash (it would muck up memory).
+      <LI>
+	PfaEdit wasn't always calling subroutines (in postscript) when a character
+	was in a subr.
+      <LI>
+	PfaEdit will now read in X11 pcf font files (they can be compressed, if so
+	PfaEdit will decompress them first).
+      <LI>
+	Bug in wildcard processing for file chooser window.
+    </UL>
+  <LI>
+    1-Feb-2002
+    <UL>
+      <LI>
+	Nifty! SUSE ships some greek (bitmap) fonts with iso8859-1 encodings rather
+	than iso8859-7. PfaEdit is now alert and when it sees a bitmap font with
+	foundary "greek" and encoding "iso8859-1" it will pretend it has encoding
+	"iso8859-7".
+      <LI>
+	PfaEdit got confused by some fonts produced by type1fix.pl. Should be fixed.
+      <LI>
+	Build Composit Characters will now check the user defined ligature string
+	to see what characters to use to build a ligature.
+    </UL>
+  <LI>
+    31-Jan-2002
+    <UL>
+      <LI>
+	Conversion tables between JIS0201 (Katakana) and Unicode were wrong. KANOU
+	Hiroki provided correct ones.
+    </UL>
+  <LI>
+    30-Jan-2002
+    <UL>
+      <LI>
+	Oops. I'd left diagonal stems enabled in ttf generation. Caused problems.
+	Disabled now.
+      <LI>
+	More work on accented characters.
+    </UL>
+  <LI>
+    29-Jan-2002
+    <UL>
+      <LI>
+	Sped up background image drawing (finally)
+    </UL>
+  <LI>
+    28-Jan-2002
+    <UL>
+      <LI>
+	Added
+	<UL>
+	  <LI>
+	    Strtol
+	  <LI>
+	    Strskipint
+	  <LI>
+	    AskUser
+	  <LI>
+	    Error
+	</UL>
+      <LI>
+	Added a menu of commonly used scripts which the user can specify with the
+	preference dlg.
+    </UL>
+  <LI>
+    25-Jan-2002
+    <UL>
+      <LI>
+	Oops. Generate command in scripting language only generated pfb fonts
+      <LI>
+	PfaEdit would get confused if it loaded a font from a script when running
+	with windows. Eventually it would crash, but perhaps not until you exited.
+      <LI>
+	Added
+	<UL>
+	  <LI>
+	    $italicangle
+	  <LI>
+	    $cidfontname, $cidfamilyname, $cidfullname
+	  <LI>
+	    $weight, $copyright
+	  <LI>
+	    $cidweight, $cidcopyright
+	  <LI>
+	    SetItalicAngle
+	</UL>
+      <LI>
+	Removed $cidname (replaced with $cidfontname)
+      <LI>
+	Added a Call... button to the execute script dlg to allow you to insert a
+	call to a script file easily
+    </UL>
+  <LI>
+    24-Jan-2002
+    <UL>
+      <LI>
+	Added a way to scale dlgs in different languages.
+    </UL>
+  <LI>
+    23-Jan-2002
+    <UL>
+      <LI>
+	Fixed a crash in merge (caused by selecting all points on a path and merging
+	it (to remove the path))
+      <LI>
+	Improved positioning of ogonek and cedilla accents in Build Accented Character
+    </UL>
+  <LI>
+    22-Jan-2002
+    <UL>
+      <LI>
+	Added:
+	<UL>
+	  <LI>
+	    SetCharCnt
+	  <LI>
+	    SetCharName
+	  <LI>
+	    SetUnicodeValue
+	  <LI>
+	    CIDChangeSubFont
+	  <LI>
+	    SetFontNames
+	  <LI>
+	    CIDSetFontNames
+	  <LI>
+	    $curcid, $nextcid, $firstcid, $cidname
+	</UL>
+      <LI>
+	Cleaned up ligature handling in char info dlg
+      <LI>
+	Cleaned up array freeing in scripting.
+      <LI>
+	Fixed a crash in FontInfo introduced yesterday
+    </UL>
+  <LI>
+    21-Jan-2002
+    <UL>
+      <LI>
+	Import will now allow you to import background images from the font view<BR>
+	(and the default setting of "Background" for "pk" files has been set to true)
+      <LI>
+	Added a scripting command to access
+	<UL>
+	  <LI>
+	    Import
+	  <LI>
+	    strlen
+	  <LI>
+	    strstr
+	  <LI>
+	    strcasecmp
+	  <LI>
+	    strsub
+	  <LI>
+	    arrays
+	  <LI>
+	    access to the postscript names of the font
+	  <LI>
+	    access to information about individual characters
+	</UL>
+      <LI>
+	Cleaned up some display oddities in the fontview.
+      <LI>
+	Added a Set Width command to the bitmap view IF there is no outline font.
+      <LI>
+	Added a menu item to invoke a script
+      <LI>
+	Added a "Comment" field to FontInfo. This does not correspond to any postscript
+	or truetype entity. It is to be used for a changelog within the sfd file
+	(or something similar).
+    </UL>
+  <LI>
+    19-Jan-2002
+    <UL>
+      <LI>
+	Initial version of <A HREF="scripting.html">scripting</A>.
+      <LI>
+	Optimizer caused rounding errors which caused test for divide by zero to
+	fail leading to errors in Simplify and Merge commands.
+      <LI>
+	bdf fonts with an encoding which did not itself include "-1" (or similar)
+	failed to get the implied "-0" added.
+    </UL>
   <LI>
     17-Jan-2002
     <UL>
