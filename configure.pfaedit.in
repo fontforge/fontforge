@@ -9,6 +9,7 @@ AC_PROG_LIBTOOL
 
 gww_nodynamic="no"
 AC_CANONICAL_HOST
+case "$host" in
 *-apple-darwin*) AC_DEFINE(NODYNAMIC)
 gww_nodynamic="yes"
 AC_DEFINE(_CursorsMustBe16x16)
@@ -65,6 +66,8 @@ if test "$gww_nodynamic" = "yes"; then
   STATIC_LIBS="$STATIC_LIBS -ljpeg"
  fi
 fi
+
+test -d libs || mkdir libs
 
 AC_OUTPUT(Makefile Unicode/Makefile gdraw/Makefile pfaedit/Makefile)
 
