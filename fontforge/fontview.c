@@ -259,6 +259,9 @@ static void FVSelectColor(FontView *fv, uint32 col, int door) {
 static void FVReselect(FontView *fv, int newpos) {
     int i, start, end;
 
+    if ( newpos<0 ) newpos = 0;
+    else if ( newpos>=fv->sf->charcnt ) newpos = fv->sf->charcnt-1;
+
     start = fv->pressed_pos; end = fv->end_pos;
 
     if ( fv->pressed_pos<fv->end_pos ) {
@@ -7799,7 +7802,8 @@ return;
 
     r.x = 0; r.width = fv->width; r.y = fv->mbh; r.height = fv->infoh;
     GDrawFillRect(pixmap,&r,bg);
-    if ( fv->end_pos>=sf->charcnt || fv->pressed_pos>=sf->charcnt )
+    if ( fv->end_pos>=sf->charcnt || fv->pressed_pos>=sf->charcnt ||
+	    fv->end_pos<0 || fv->pressed_pos<0 )
 	fv->end_pos = fv->pressed_pos = -1;	/* Can happen after reencoding */
     if ( fv->end_pos == -1 )
 return;
