@@ -3175,7 +3175,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     aspects[i].text_in_resource = true;
     aspects[i++].gcd = rfgcd;
 
-    aspects[i].text = (unichar_t *) _STR_Hints;
+    aspects[i].text = (unichar_t *) _STR_HintsNoC;
     aspects[i].text_in_resource = true;
     aspects[i++].gcd = hgcd;
 

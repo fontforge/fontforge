@@ -2861,6 +2861,7 @@ static char *str_Random = "Random";
 static char *str_ATT = "ATT";
 static char *str_PointsNoC = "Points";
 static char *str_Refs = "Refs";
+static char *str_HintsNoC = "Hints";
 static char *str_ClearAll = "Clear All";
 static char *str_SetAll = "Set All";
 static char *str_AdvanceWidth = "Check Advance:

@@ -1664,6 +1664,7 @@ static char *str_Expected = ", atteso ";
 static char *str_Paths = "Percorso";
 static char *str_Random = "Diversi";
 static char *str_PointsNoC = "Punti";
+static char *str_HintsNoC = "Hints";
 static char *str_ClearAll = "Cancella tutto";
 static char *str_SetAll = "Seleziona tutto";
 static char *str_AdvanceWidth = "Controlla l'avanzamento:";

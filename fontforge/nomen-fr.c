@@ -2750,6 +2750,7 @@ static char *str_Random = "Divers" ;
 static char *str_ATT = "ATT" ;
 static char *str_PointsNoC = "Points" ;
 static char *str_Refs = "Références" ;
+static char *str_HintsNoC = "Hints" ;
 static char *str_ClearAll = "Effacer tout" ;
 static char *str_SetAll = "Sélectionner tout" ;
 static char *str_AdvanceWidth = "Vérifier la chasse :" ;
