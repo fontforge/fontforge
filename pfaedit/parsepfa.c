@@ -1479,15 +1479,17 @@ static void decrypteexec(FILE *in,FILE *temp, int hassectionheads) {
     int ch1, ch2, ch3, ch4, binary;
     int zcnt;
     unsigned char zeros[EODMARKLEN+6+1];
+    int sect_len;
 
     while ( (ch1=getc(in))!=EOF && isspace(ch1));
     if ( ch1==0200 && hassectionheads ) {
 	/* skip the 6 byte section header in pfb files that follows eexec */
 	ch1 = getc(in);
-	ch1 = getc(in);
-	ch1 = getc(in);
-	ch1 = getc(in);
-	ch1 = getc(in);
+	sect_len = getc(in);
+	sect_len |= getc(in)<<8;
+	sect_len |= getc(in)<<16;
+	sect_len |= getc(in)<<24;
+	sect_len -= 3;
 	ch1 = getc(in);
     }
     ch2 = getc(in); ch3 = getc(in); ch4 = getc(in);
@@ -1509,14 +1511,16 @@ return;
 	nrandombytes[3] = decode(ch4);
 	zcnt = 0;
 	while (( ch1=getc(in))!=EOF ) {
+	    --sect_len;
 	    if ( hassectionheads ) {
-		if ( (zcnt>=1 && zcnt<6) || ( ch1==0200 && zcnt==0 ))
-		    zeros[zcnt++] = decode(ch1);
-		else if ( zcnt>=6 && isspace(ch1) )
-		    zeros[zcnt++] = decode(ch1);
-		else if ( zcnt>=6 && ch1=='0' ) {
-		    zeros[zcnt++] = decode(ch1);
-		    if ( zcnt>EODMARKLEN+7 )
+		if ( sect_len==0 && ch1==0200 ) {
+		    ch1 = getc(in);
+		    sect_len = getc(in);
+		    sect_len |= getc(in)<<8;
+		    sect_len |= getc(in)<<16;
+		    sect_len |= getc(in)<<24;
+		    sect_len += 1;
+		    if ( ch1=='\1' )
 	break;
 		} else {
 		    dumpzeros(temp,zeros,zcnt);
