@@ -1112,6 +1112,27 @@ static void FillImages(uint8 *bytemap,EdgeList *es,ImageList *img,Layer *layer,L
 	img = img->next;
     }
 }
+#endif
+
+static void ProcessLayer(uint8 *bytemap,EdgeList *es,Layer *layer,
+	Layer *alt) {
+    ImageList *img;
+
+    if ( !layer->fillfirst && layer->dostroke )
+	StrokePaths(bytemap,es,layer,alt);
+    if ( layer->dofill ) {
+	memset(es->bitmap,0,es->cnt*es->bytes_per_line);
+	FindEdgesSplineSet(layer->splines,es);
+	FillChar(es);
+	SetByteMapToGrey(bytemap,es,layer,alt);
+	_FreeEdgeList(es);
+    }
+    for ( img = layer->images; img!=NULL; img=img->next )
+	FillImages(bytemap,es,img,layer,alt);
+    if ( layer->fillfirst && layer->dostroke )
+	StrokePaths(bytemap,es,layer,alt);
+}
+#endif
 
 static void FlattenBytemap(EdgeList *es,uint8 *bytemap) {
     int i,j;
@@ -1138,27 +1159,6 @@ return( 8 );
 return( 0 );
     }
 }
-#endif
-
-static void ProcessLayer(uint8 *bytemap,EdgeList *es,Layer *layer,
-	Layer *alt) {
-    ImageList *img;
-
-    if ( !layer->fillfirst && layer->dostroke )
-	StrokePaths(bytemap,es,layer,alt);
-    if ( layer->dofill ) {
-	memset(es->bitmap,0,es->cnt*es->bytes_per_line);
-	FindEdgesSplineSet(layer->splines,es);
-	FillChar(es);
-	SetByteMapToGrey(bytemap,es,layer,alt);
-	_FreeEdgeList(es);
-    }
-    for ( img = layer->images; img!=NULL; img=img->next )
-	FillImages(bytemap,es,img,layer,alt);
-    if ( layer->fillfirst && layer->dostroke )
-	StrokePaths(bytemap,es,layer,alt);
-}
-#endif
 
 /* Yes, I really do want a double, even though it will almost always be an */
 /*  integer value there are a few cases (fill pattern for charview) where */
