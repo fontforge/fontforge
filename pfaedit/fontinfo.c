@@ -1686,7 +1686,7 @@ return( false );
 	    tlen = 0x10000-0x8400;	/* the johab table starts at 0x8400 to save space */
 	} else if ( new_map==em_original ) {
 	    tlen = 0;
-	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
+	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->orig_pos!=0xffff )
 		if ( sf->chars[i]->orig_pos>tlen ) tlen = sf->chars[i]->orig_pos;
 	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
 /* This can happen in two ways: User added characters, or we have one char at */
