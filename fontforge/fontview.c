@@ -106,9 +106,16 @@ return;
  /*  lines */
 	if ( i>=0 && i<=fv->rowcnt ) {
 	    GRect r;
+	    Color bg;
 	    r.x = j*fv->cbw+1; r.width = fv->cbw-1;
 	    r.y = i*fv->cbh+1; r.height = FV_LAB_HEIGHT-1;
-	    GDrawSetXORBase(fv->v,GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(fv->v)));
+	    if ( sc->color!=COLOR_DEFAULT )
+		bg = sc->color;
+	    else if ( sc->layers[ly_back].splines!=NULL || sc->layers[ly_back].images!=NULL )
+		bg = 0x808080;
+	    else
+		bg = GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(fv->v));
+	    GDrawSetXORBase(fv->v,bg);
 	    GDrawSetXORMode(fv->v);
 	    GDrawFillRect(fv->v,&r,0x000000);
 	    GDrawSetCopyMode(fv->v);
@@ -4969,6 +4976,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
     GImage *rotated=NULL;
     int em = fv->sf->ascent+fv->sf->descent;
     int yorg = fv->magnify*(fv->show->ascent-fv->sf->vertical_origin*fv->show->pixelsize/em);
+    Color bg;
 
     memset(&gi,'\0',sizeof(gi));
     memset(&base,'\0',sizeof(base));
@@ -5079,11 +5087,13 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		    rotated = UniGetRotatedGlyph(fv->sf,sc,-1);
 		}
 	    }
+	    bg = COLOR_DEFAULT;
 	    if ( sc->layers[ly_back].splines!=NULL || sc->layers[ly_back].images!=NULL || sc->color!=COLOR_DEFAULT ) {
 		GRect r;
 		r.x = j*fv->cbw+1; r.width = fv->cbw-1;
 		r.y = i*fv->cbh+1; r.height = FV_LAB_HEIGHT-1;
-		GDrawFillRect(pixmap,&r,sc->color!=COLOR_DEFAULT?sc->color:0x808080);
+		bg = sc->color!=COLOR_DEFAULT?sc->color:0x808080;
+		GDrawFillRect(pixmap,&r,bg);
 	    }
 	    if ( rotated!=NULL ) {
 		GRect r;
@@ -5108,7 +5118,9 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		GRect r;
 		r.x = j*fv->cbw+1; r.width = fv->cbw-1;
 		r.y = i*fv->cbh+1; r.height = FV_LAB_HEIGHT-1;
-		GDrawSetXORBase(pixmap,GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(fv->v)));
+		if ( bg == COLOR_DEFAULT )
+		    bg = GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(fv->v));
+		GDrawSetXORBase(pixmap,bg);
 		GDrawSetXORMode(pixmap);
 		GDrawFillRect(pixmap,&r,0x000000);
 		GDrawSetCopyMode(pixmap);
