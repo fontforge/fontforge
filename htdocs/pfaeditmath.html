@@ -12,7 +12,7 @@
 <P>
 <EM>Being a brief description of the mathematics underlying various of PfaEdit's
 commands<BR>
-It is presumed that you understand about parametrized splines, if not look
+It is presumed that you understand about parameterized splines, if not look
 at the description of <A HREF="bezier.html">Bezier curves</A>.</EM>
 <H2>
   <A NAME="Approximating">Approximating</A> a spline
@@ -40,7 +40,7 @@ We want:
   c<SUB>y</SUB>*t +d<SUB>y</SUB>
 </BLOCKQUOTE>
 <P>
-That best fit these points. Well, from the definition of a paramaterized
+That best fit these points. Well, from the definition of a parameterized
 spline (and the fact that we know the end-points):
 <TABLE CELLPADDING="2">
   <TR>
@@ -174,7 +174,7 @@ the end point to its control point be a unit vector, but if the control point
 lies on top of the end point other methods must be used (setting t=.001 or
 t=.999 and calculating a difference vector is one method).
 <P>
-Then apply the original algorithem.
+Then apply the original algorithm.
 <P>
 Now I look at the end points, and calculate vectors from them to their new
 control points. Then find the dot-products of these vectors with the original
@@ -208,7 +208,7 @@ the two splines.
   A circular pen
 </H3>
 <P>
-PostScript supports several varients on the theme of a circular pen, and
+PostScript supports several variants on the theme of a circular pen, and
 PfaEdit tries to emulate them all. Basically PostScript "stroke"s a path
 at a certain width by:
 <P>
@@ -218,7 +218,7 @@ at every location on the curve<BR>
 &nbsp; &nbsp; filling in between those two points<BR>
 end
 <P>
-This is essentially what a circular pen does. The only aberations appear
+This is essentially what a circular pen does. The only aberrations appear
 at the end-points of a contour, or at points where two splines join but their
 slopes are not continuous. PostScript allows the user to specify the behavior
 at joints and at end-points. I shall only consider here the case where both
@@ -231,9 +231,9 @@ different).
 For the main body of the spline we can use the above method to generate two
 sets of points (one to the left and one to the right of the original curve)
 and then use the approximation method above to generate a spline from that
-(note the slopes of the new splines at their end points should be paralel
+(note the slopes of the new splines at their end points should be parallel
 to those of the original, so we can use the slope of the original in the
-above algorithem).
+above algorithm).
 <P>
 For the end-points we just draw a semi-circle (making sure it goes in the
 right direction).
@@ -245,24 +245,24 @@ the green lines in the right image show where the path would have gone had
 it not been constrained by a joint, so on the inside of the joint PfaEdit
 must figure out where this intersection occurs.
 <H3>
-  An eliptical pen
+  An elliptical pen
 </H3>
 <P>
-This is really just the same as a circular pen. Let us say we want an elipse
+This is really just the same as a circular pen. Let us say we want an ellipse
 which is twice as wide as it is high. The before stroking the path, let's
 scale it to 50% in the horizontal direction, then stroke it with a circular
 pen, and then scale it back by 200% horizontally. The result will be as if
-we had used an eliptical pen.
+we had used an elliptical pen.
 <P>
-Obviously if the elipse is at an angle to the character's axes, we can apply
+Obviously if the ellipse is at an angle to the character's axes, we can apply
 a more complicated transformation which involves both rotation and scaling.
 <H3>
-  A rectangular pen (a caligraphic pen)
+  A rectangular pen (a calligraphic pen)
 </H3>
 <P>
 Things are subtly different with a rectangular pen and a circular pen. We
 can no longer just find the points which are a given distance away and normal
-to the curve. Except where the spline is paralell to one edge of the pen,
+to the curve. Except where the spline is parallel to one edge of the pen,
 a the outer contour of a rectangular pen will be stroked by one of its
 end-points. So all we need do is figure out where a spline is parallel to
 the pen's sides, and look at the problem in little chunks between those difficult
@@ -278,10 +278,10 @@ When we reach a point where the spline's slope is parallel to one edge of
 the pen, then on the outside path we draw a copy of that edge of of the pen,
 and on the inside edge we calculate a join as above.
 <H3>
-  An arbetrary convex polygonal pen
+  An arbitrary convex polygonal pen
 </H3>
 <P>
-PfaEdit does not currently do this (the UI for specifying an arbetrary polygon
+PfaEdit does not currently do this (the UI for specifying an arbitrary polygon
 is a little difficult), but the same method which works for a rectangle can
 be extended without too much difficulty to any convex polygon.
 <H3>
@@ -289,7 +289,7 @@ be extended without too much difficulty to any convex polygon.
 </H3>
 <P>
 If you have a wacom tablet then PfaEdit also supports variable width pens.
-Extending the above algorithems is fairly simple.
+Extending the above algorithms is fairly simple.
 <H3>
   A pen at a varying angle
 </H3>
