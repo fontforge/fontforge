@@ -278,8 +278,8 @@ BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int enc,
     bdfc = gcalloc(1,sizeof(BDFChar));
     bdfc->sc = sc;
     bdfc->xmin = slot->bitmap_left;
-    bdfc->ymax = slot->bitmap_top;
-    bdfc->ymin = slot->bitmap_top-slot->bitmap.rows+1;
+    bdfc->ymax = slot->bitmap_top-1;
+    bdfc->ymin = slot->bitmap_top-slot->bitmap.rows;
     bdfc->xmax = slot->bitmap_left+slot->bitmap.width-1;
     bdfc->byte_data = (depth!=1);
     if ( sc!=NULL ) {
