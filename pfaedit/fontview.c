@@ -1898,6 +1898,9 @@ static void SCReplaceWith(SplineChar *dest, SplineChar *src) {
     struct splinecharlist *scl = dest->dependents;
     RefChar *refs;
 
+    if ( src==dest )
+return;
+
     SCPreserveState(src,2);
     SCPreserveState(dest,2);
     u[0] = dest->undoes[0]; u[1] = dest->undoes[1]; r1 = dest->redoes[1];
@@ -1943,6 +1946,8 @@ static void SCReplaceWith(SplineChar *dest, SplineChar *src) {
 	    if ( scl->sc==src )
 		scl->sc = dest;
     }
+    SCCharChangedUpdate(src);
+    SCCharChangedUpdate(dest);
 }
 
 void FVApplySubstitution(FontView *fv,uint32 script, uint32 lang, uint32 tag) {
