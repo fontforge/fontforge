@@ -1679,7 +1679,7 @@ static void dumpg___ContextChainGlyphs(FILE *lfile,FPST *fpst,SplineFont *sf,
 static void dumpg___ContextChainClass(FILE *lfile,FPST *fpst,SplineFont *sf,
 	struct lookup **nested, struct postponedlookup **pp, struct alltabs *at) {
     int iscontext = fpst->type==pst_contextpos || fpst->type==pst_contextsub;
-    uint32 base = ftell(lfile), rulebase, pos, subpos;
+    uint32 base = ftell(lfile), rulebase, pos, subpos, npos;
     uint16 *initialclasses, *iclass, *bclass, *lclass;
     SplineChar **iglyphs, **bglyphs, **lglyphs, **glyphs;
     int i,ii,cnt, subcnt, j,k,l , maxcontext,curcontext;
@@ -1730,16 +1730,33 @@ static void dumpg___ContextChainClass(FILE *lfile,FPST *fpst,SplineFont *sf,
 	putshort(lfile,pos-base);
 	fseek(lfile,pos,SEEK_SET);
 	DumpClass(lfile,bclass,at->maxp.numGlyphs);
-	pos = ftell(lfile);
-	fseek(lfile,base+3*sizeof(uint16),SEEK_SET);
-	putshort(lfile,pos-base);
-	fseek(lfile,pos,SEEK_SET);
-	DumpClass(lfile,iclass,at->maxp.numGlyphs);
-	pos = ftell(lfile);
-	fseek(lfile,base+4*sizeof(uint16),SEEK_SET);
-	putshort(lfile,pos-base);
-	fseek(lfile,pos,SEEK_SET);
-	DumpClass(lfile,lclass,at->maxp.numGlyphs);
+	if ( ClassesMatch(fpst->bccnt,fpst->bclass,fpst->nccnt,fpst->nclass)) {
+	    npos = pos;
+	    fseek(lfile,base+3*sizeof(uint16),SEEK_SET);
+	    putshort(lfile,npos-base);
+	    fseek(lfile,0,SEEK_END);
+	} else {
+	    npos = ftell(lfile);
+	    fseek(lfile,base+3*sizeof(uint16),SEEK_SET);
+	    putshort(lfile,npos-base);
+	    fseek(lfile,npos,SEEK_SET);
+	    DumpClass(lfile,iclass,at->maxp.numGlyphs);
+	}
+	if ( ClassesMatch(fpst->fccnt,fpst->fclass,fpst->bccnt,fpst->bclass)) {
+	    fseek(lfile,base+4*sizeof(uint16),SEEK_SET);
+	    putshort(lfile,pos-base);
+	    fseek(lfile,0,SEEK_END);
+	} else if ( ClassesMatch(fpst->fccnt,fpst->fclass,fpst->nccnt,fpst->nclass)) {
+	    fseek(lfile,base+4*sizeof(uint16),SEEK_SET);
+	    putshort(lfile,npos-base);
+	    fseek(lfile,0,SEEK_END);
+	} else {
+	    pos = ftell(lfile);
+	    fseek(lfile,base+4*sizeof(uint16),SEEK_SET);
+	    putshort(lfile,pos-base);
+	    fseek(lfile,pos,SEEK_SET);
+	    DumpClass(lfile,lclass,at->maxp.numGlyphs);
+	}
 	free(iclass); free(bclass); free(lclass);
     }
 
