@@ -2406,7 +2406,7 @@ static void bExpandStroke(Context *c) {
 	7 => stroke width, caligraphic angle, thickness-numerator, thickness-denom, 0, knaou's flags
     */
 
-    if ( c->a.argc!=2 && c->a.argc!=4 && c->a.argc!=5 && c->a.argc!=6 )
+    if ( c->a.argc<2 || c->a.argc>7 )
 	error( c, "Wrong number of arguments");
     if ( c->a.vals[1].type!=v_int ||
 	    (c->a.argc>=4 && c->a.vals[2].type!=v_int ) ||
