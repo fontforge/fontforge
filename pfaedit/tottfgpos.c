@@ -990,7 +990,7 @@ static void dumpGPOSsimplepos(FILE *gsub,SplineFont *sf,SplineChar **glyphs,
     free(glyphs);
 }
 
-static void dumpgsubligdata(FILE *gsub,SplineFont *sf,uint32 script,
+static void dumpgsubligdata(FILE *gsub,SplineFont *sf,
 	struct tagflaglang *ligtag, struct alltabs *at) {
     int32 coverage_pos, next_val_pos, here, lig_list_start;
     int cnt, i, pcnt, lcnt, max=100, j;
@@ -999,7 +999,7 @@ static void dumpgsubligdata(FILE *gsub,SplineFont *sf,uint32 script,
     LigList *ll;
     struct splinecharlist *scl;
 
-    glyphs = generateGlyphList(sf,false,script,ligtag);
+    glyphs = generateGlyphList(sf,false,0,ligtag);
     cnt=0;
     if ( glyphs!=NULL ) for ( ; glyphs[cnt]!=NULL; ++cnt );
 
@@ -1174,23 +1174,16 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
 
 	/* Look for positions matching these tags */
 	for ( j=0; j<cnt; ++j ) {
-	    for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL )
-		sf->chars[i]->ticked = false;
-	    for ( i=0; i<sf->charcnt; i++ ) 
-		    if ( (sc=sf->chars[i])!=NULL && sc->possub!=NULL &&
-			    !sc->ticked &&
-			    PosSubMatchTag(sc->possub,&ligtags[j],type) ) {
-		glyphs = generateGlyphTypeList(sf,type,&ligtags[j],&map);
-		if ( glyphs!=NULL && glyphs[0]!=NULL ) {
-		    new = LookupFromTagFlagLang(&ligtags[j]);
-		    new->script = SCScriptFromUnicode(sc);
-		    new->lookup_type = 1;
-		    new->offset = ftell(lfile);
-		    new->next = lookups;
-		    lookups = new;
-		    dumpGPOSsimplepos(lfile,sf,glyphs,&ligtags[j]);
-		    new->len = ftell(lfile)-new->offset;
-		}
+	    glyphs = generateGlyphTypeList(sf,type,&ligtags[j],&map);
+	    if ( glyphs!=NULL && glyphs[0]!=NULL ) {
+		new = LookupFromTagFlagLang(&ligtags[j]);
+		new->script = SCScriptFromUnicode(sc);
+		new->lookup_type = 1;
+		new->offset = ftell(lfile);
+		new->next = lookups;
+		lookups = new;
+		dumpGPOSsimplepos(lfile,sf,glyphs,&ligtags[j]);
+		new->len = ftell(lfile)-new->offset;
 	    }
 	}
     }
@@ -1278,7 +1271,6 @@ static struct lookup *GSUBfigureLookups(FILE *lfile,SplineFont *sf,
     int i, j, max, cnt;
     LigList *ll;
     PST *subs;
-    SplineChar *sc;
     enum possub_type type;
     SplineChar **glyphs, ***map;
 
@@ -1303,20 +1295,13 @@ static struct lookup *GSUBfigureLookups(FILE *lfile,SplineFont *sf,
 
     /* Look for ligatures matching these tags */
     for ( j=0; j<cnt; ++j ) {
-	for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL )
-	    sf->chars[i]->ticked = false;
-	for ( i=0; i<sf->charcnt; i++ ) 
-		if ( (sc=sf->chars[i])!=NULL && sc->ligofme!=NULL &&
-			!sc->ticked &&
-			LigListMatchTag(sc->ligofme,&ligtags[j]) ) {
-	    new = LookupFromTagFlagLang(&ligtags[j]);
-	    new->lookup_type = 4;		/* Ligature */
-	    new->offset = ftell(lfile);
-	    new->next = lookups;
-	    lookups = new;
-	    dumpgsubligdata(lfile,sf,0,&ligtags[j],at);
-	    new->len = ftell(lfile)-new->offset;
-	}
+	new = LookupFromTagFlagLang(&ligtags[j]);
+	new->lookup_type = 4;		/* Ligature */
+	new->offset = ftell(lfile);
+	new->next = lookups;
+	lookups = new;
+	dumpgsubligdata(lfile,sf,&ligtags[j],at);
+	new->len = ftell(lfile)-new->offset;
     }
 
     /* Now do something very similar for substitution simple, mult & alt tags */
@@ -1340,27 +1325,20 @@ static struct lookup *GSUBfigureLookups(FILE *lfile,SplineFont *sf,
 
 	/* Look for substitutions/decompositions matching these tags */
 	for ( j=0; j<cnt; ++j ) {
-	    for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL )
-		sf->chars[i]->ticked = false;
-	    for ( i=0; i<sf->charcnt; i++ ) 
-		    if ( (sc=sf->chars[i])!=NULL && sc->possub!=NULL &&
-			    !sc->ticked &&
-			    PosSubMatchTag(sc->possub,&ligtags[j],type) ) {
-		glyphs = generateGlyphTypeList(sf,type,&ligtags[j],&map);
-		if ( glyphs!=NULL && glyphs[0]!=NULL ) {
-		    new = LookupFromTagFlagLang(&ligtags[j]);
-		    new->lookup_type = type==pst_substitution?1:type==pst_multiple?2:3;
-		    new->offset = ftell(lfile);
-		    new->next = lookups;
-		    lookups = new;
-		    if ( type==pst_substitution )
-			dumpGSUBsimplesubs(lfile,sf,glyphs,map);
-		    else /* the format for multiple and alternate subs is the same. Only the semantics differ */
-			dumpGSUBmultiplesubs(lfile,sf,glyphs,map);
-		    free(glyphs);
-		    GlyphMapFree(map);
-		    new->len = ftell(lfile)-new->offset;
-		}
+	    glyphs = generateGlyphTypeList(sf,type,&ligtags[j],&map);
+	    if ( glyphs!=NULL && glyphs[0]!=NULL ) {
+		new = LookupFromTagFlagLang(&ligtags[j]);
+		new->lookup_type = type==pst_substitution?1:type==pst_multiple?2:3;
+		new->offset = ftell(lfile);
+		new->next = lookups;
+		lookups = new;
+		if ( type==pst_substitution )
+		    dumpGSUBsimplesubs(lfile,sf,glyphs,map);
+		else /* the format for multiple and alternate subs is the same. Only the semantics differ */
+		    dumpGSUBmultiplesubs(lfile,sf,glyphs,map);
+		free(glyphs);
+		GlyphMapFree(map);
+		new->len = ftell(lfile)-new->offset;
 	    }
 	}
     }
@@ -1606,7 +1584,7 @@ return( NULL );
     while ( gotmore ) {
 	gotmore = false;
 	for ( i=0, l=lookups; l!=NULL && i<estart; l=l->next, ++i ) {
-	    if ( (cnt-i)*8+l->offset+(cnt-estart)*8 >=65536 ) {
+	    if ( (cnt-i)*8+l->offset+(cnt-i-1)*8 >=65536 ) {
 		estart = i;
 		gotmore = true;
 	break;
@@ -1624,7 +1602,7 @@ return( NULL );
     while ( l!=NULL ) {
 	putshort(efile,1);	/* Only one format for extensions */
 	putshort(efile,l->lookup_type);
-	putlong(efile,(cnt-i+estart)*8 + l->offset);
+	putlong(efile,(cnt-i)*8 + l->offset);
 	l->lookup_type = is_gpos ? 9 : 7;
 	l->offset = (i-estart)*8;
 	l = l->next;
