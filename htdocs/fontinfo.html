@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 26-Jun-2001 -->
+  <!-- AP: Last modified: 2-Jul-2001 -->
   <TITLE>Font Info</TITLE>
 </HEAD>
 <BODY>
@@ -56,10 +56,90 @@ in the Number box will be ignored and the correct number will come from the
 encoding process.
 <P>
   <HR>
+<H2>
+  Built in <A NAME="Encodings">Encodings</A>
+</H2>
 <P>
-You can also use this dialog to add new encodings to the set that PfaEdit
-knows about. There are three buttons that manipulate a set of user defined
-encodings. As always these specify both a character set and an encoding.
+PfaEdit knows about the following encodings by default:
+<UL>
+  <LI>
+    ISO-8859-1 (Latin1) -- traditional encoding for western european characters.
+    Default encoding for http. Does not include the Euro sign.
+  <LI>
+    ISO-8859-15 (Latin0) -- Replacement for Latin1. Does include the Euro.
+  <LI>
+    ISO-8859-2 (Latin2) -- Central &amp; Eastern European (Czch, Hungarian, Polish,
+    Romanian, Croatian, Slovak, Slovnian.
+  <LI>
+    ISO-8859-3 (Latin3) -- Southern European (Esperanto, Maltese)
+  <LI>
+    ISO-8859-4 (Latin4) -- Northern European (Estonian, Latvian, Lithuanian,
+    Greenlandic, Lappish)
+  <LI>
+    ISO-8859-9 (Latin5) -- Turkish
+  <LI>
+    ISO-8859-10 (Latin6) -- Nordic (reworking of Latin4&amp;Latin1)
+  <LI>
+    ISO-8859-13 (Latin7) -- Another Baltic character set
+  <LI>
+    ISO-8859-14 (Latin8) -- Celtic (Gaelic &amp; Welsh)
+  <LI>
+    ISO-8859-5 (Cyrillic)
+  <LI>
+    ISO-8859-6 (Arabic)
+  <LI>
+    ISO-8859-7 (Greek)
+  <LI>
+    ISO-8859-8 (Hebrew) -- (and Yiddish)
+  <LI>
+    ISO-8859-11 (Thai) -- Also know as TIS 620<BR>
+    &lt;there is no ISO-8859-12&gt;
+      <HR>
+  <LI>
+    KOI8-R -- Cyrillic
+  <LI>
+    Macintosh Roman
+  <LI>
+    Windows "ANSI" (CodePage1252)
+  <LI>
+    Adobe Standard
+  <LI>
+    Symbol
+  <LI>
+    TeX Base
+      <HR>
+  <LI>
+    ISO-10646-1 (Unicode)
+      <HR>
+  <LI>
+    JIS 208 -- Japanese Kanji (first 8000 characters)
+  <LI>
+    JIS 212 -- Japanese Kanji (next 8000 characters)
+  <LI>
+    KSC 5601 -- Korean (this is the 94x94 version of KSC 5601)
+  <LI>
+    GB 2312 -- Chinese
+</UL>
+<P>
+Encoding sources:
+<UL>
+  <LI>
+    <A HREF="http://czyborra.com/charsets/iso8859.html">ISO 8859 Alphabet Soup</A>
+  <LI>
+    <A HREF="http://www.unicode.org/Public/MAPPINGS/">Unicode Mapping Tables</A>
+</UL>
+<P>
+<A HREF="http://www.unicode.org/charts/">An index to images of all the glyphs
+in unicode</A>.
+<P>
+  <HR>
+<H2>
+  User Defined Encodings
+</H2>
+<P>
+You can also use the font info dialog to add new encodings to the set that
+PfaEdit knows about. There are three buttons that manipulate a set of user
+defined encodings. As always these specify both a character set and an encoding.
 The encoding has a maximum of 256 entries, but the character set may be larger
 (up to 1024). This means that you can define a font with extra characters.
 Since postscript fonts can be reencoded at runtime this can be useful.
@@ -91,17 +171,67 @@ There may be more than one encoding in a postscript file. The encoding parser
 is not smart. It will only read arrays specified like this, don't try any
 of the innumerable other ways of specifying an array in postscript.
 <P>
-Here's an <A HREF="Encodings.ps.gz">example of a postscript encoding file</A>.
-It contains 3 encodings used by TeX, one encoding which specifies a character
-set that includes all characters in ISO 8859 Latin fonts, and the Adobe Expert
-Encoding, the windows unicode glyph list, and MS Codepage 1255 (Hebrew).
-<P>
 If the font has a custom encoding then the <CODE>[Make From Font]</CODE>
 button is enabled. This allows you to name the encoding you have defined
 for the current font.
 <P>
 The <CODE>[Remove]</CODE> button brings up a list showing all the custom
 encodings and allows you to delete them.
+<P>
+Here's an <A HREF="Encodings.ps.gz">example of a postscript encoding file</A>.
+It contains:
+<UL>
+  <LI>
+    TeXMathItalicEncoding
+  <LI>
+    TeXMathSymbolEncoding
+  <LI>
+    TeXMathExtensionEncoding
+      <HR>
+  <LI>
+    IsoLatin -- (which specifies all the characters used in any of the ISO-Latin-*
+    fonts
+      <HR>
+  <LI>
+    AdobeExpert -- (Which contains things like lower case numbers, small caps,
+    fractions, sub/superscript numbers, etc.)
+      <HR>
+  <LI>
+    CodePage1250 -- Microsoft's encoding for Central European characters
+  <LI>
+    CodePage1251 -- Microsoft's Cyrillic encoding
+  <LI>
+    CodePage1252 -- Microsoft's Western European encoding (a superset of Latin1.
+    Sometimes called "ANSI" though I can find no ANSI standard that it follows)
+  <LI>
+    CodePage1253 -- Microsoft's Greek encoding
+  <LI>
+    CodePage1254 -- Microsoft's Turkish encoding
+  <LI>
+    CodePage1255 -- Microsoft's Hebrew encoding (an extension of ISO-8859-8)
+  <LI>
+    CodePage1256 -- Microsoft's Arabic encoding
+  <LI>
+    CodePage1257 -- Microsoft's Baltic encoding
+  <LI>
+    CodePage1258 -- Microsoft's Viet Namese encoding
+  <LI>
+    CodePage874 -- Microsoft's Thai encoding
+      <HR>
+  <LI>
+    MacCentralEuropean
+  <LI>
+    MacCyrillic
+  <LI>
+    MacGreek
+  <LI>
+    MacHebrew
+      <HR>
+  <LI>
+    US-ASCII -- Not realy useful by itself any more, but provides the first 128
+    characters of almost every other encoding.
+</UL>
+<P>
 <P>
 <P ALIGN=Center>
 -- <A HREF="elementmenu.html">Prev</A> -- <A HREF="overview.html">TOC</A>
