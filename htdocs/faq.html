@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 13-Oct-2004 -->
+  <!-- AP: Last modified: 26-Jan-2005 -->
   <TITLE>Frequently Asked Questions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -37,6 +37,10 @@
   <LI>
     <A HREF="#pointsize">What is a 12point font?</A> (What measurement of the
     font determines the point size)
+    <UL>
+      <LI>
+	<A HREF="#linespace">How do I set the line spacing on a font?</A>
+    </UL>
   <LI>
     <A HREF="#font-install">How do I install the fonts once I've made them?</A>
   <LI>
@@ -131,8 +135,6 @@
     <A HREF="#ttf-degrade">I loaded a ttf font, made a few changes and generated
     a new font. The changed glyphs don't look anywhere near as nice as the originals.
     Why?</A>
-  <LI>
-    <A HREF="#type42">Why doesn't fontforge support Type 42 fonts?</A>
   <LI>
     <A HREF="#otf-diffs">I generated an opentype (or truetype) font and windows
     wouldn't install it. Why not?</A>
@@ -345,6 +347,46 @@
     (Of course now most Europeans are probably forced to use the pica point by
     their desktop software, while must computer fonts now contain accented glyphs,
     so the distinction and the reason for it may have vanished).
+  <DT>
+    <A NAME="linespace"><B>How do I set the line spacing on a font?</B></A>
+  <DD>
+    It depends on the kind of font you are generating, the operating system under
+    which you are running, and luck.
+    <UL>
+      <LI>
+	For Type1 fonts there is no way to set the line spacing. Applications will
+	often take the values specified in the fonts bounding box and use those to
+	set the line spacing. This is a really bad idea on their part, but it is
+	common practice.
+      <LI>
+	For True/Open Type fonts the answer is complicated.
+	<UL>
+	  <LI>
+	    On the mac<BR>
+	    The line spacing is set by the ascender and descender values of the 'hhea'
+	    table. These in turn are set to the bounding box values of the font. Not
+	    a good choice.
+	  <LI>
+	    On windows<BR>
+	    Line spacing is supposed to be set to the Typo Ascent/Typo Desent values
+	    specified in the OS/2 table. And these in turn are supposed to sum to the
+	    emsize. (FontForge sets these values to the ascent/descent values you specify
+	    for your font). Unfortunately most windows applications don't follow this
+	    rule, and instead set them to the Win Ascent/Descent values of the OS/2 table.
+	    These values are supposed to specify a clipping region for the font (not
+	    line spacing). The clipping region should be as big as the font's bounding
+	    box, but in some cases needs to be bigger.
+	    <P>
+	    (The clipping region should be bigger than the bounding box if a GPOS lookup
+	    could move a glyph so that it extended beyond the bounding box. I'm not sure
+	    how this applies to cursive positioning in Urdu where GPOS lookups can make
+	    lines arbetrarily tall)
+	  <LI>
+	    On linux<BR>
+	    I don't know that there is a general consensus. An application will probably
+	    use one of the above methods.
+	</UL>
+    </UL>
   <DT>
     <A NAME="font-install"><B>How do I install the fonts once I've made
     them?</B></A>
@@ -1065,8 +1107,8 @@ MANPATH=${MANPATH:-}:/usr/local/man ; export MANPATH
     Some background:
     <P>
     When postscript was invented every glyph in a font was given a name, and
-    an encoding which was specified by a 256 element array mapping character codes
-    to names.
+    an encoding which was specified by a 256 element array mapping character
+    codes to names.
     <P>
     Then they started thinking about CJK fonts (and perhaps Unicode), which have
     huge glyph sets, and coming up with reasonable ASCII names for 10,000 glyphs
@@ -1166,17 +1208,6 @@ MANPATH=${MANPATH:-}:/usr/local/man ; export MANPATH
     glyphs FontForge's attempt at hinting makes things worse (because the diagonals
     don't match the horizontals/verticals). So if you want this to happen you
     must explicitly call the Hints-&gt;AutoInstr command.
-  <DT>
-    <A NAME="type42"><B>Why doesn't fontforge support Type 42 fonts?</B></A>
-  <DD>
-    A Type 42 font is a postscript wrapper around a truetype font. It is used
-    for downloading truetype fonts to postscript printers.
-    <P>
-    FontForge does not support these because support for truetype hints (such
-    as it is) is relatively recent and I haven't had time to look at type42 recently.
-    You are much better off using
-    <A TARGET="_top" HREF="http://ftp.giga.or.at/pub/nih/ttftot42/">ttftot42</A>
-    for now.
   <DT>
     <A NAME="otf-diffs"><B>I generated an opentype font and windows wouldn't
     install it. Why not?</B></A>
