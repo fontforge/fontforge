@@ -1,0 +1,78 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 14-Dec-2000 -->
+  <!-- AP: Last modified: 22-Aug-2002 -->
+  <TITLE>Transform Dialog</TITLE>
+</HEAD>
+<BODY>
+<H1 ALIGN=Center>
+  Transform Dialog
+</H1>
+<P>
+<IMG SRC="transform.png" WIDTH="372" HEIGHT="336">
+<P>
+This dialog is available in the font, outline and metrics views. In the font
+view it applies to all selected characters. In the outline view if there
+is a selection then it applies to that. if there is no selection then it
+applies to the entire character.
+<P>
+You may choose whether you want the transformation to be centered at the
+character's origin, the center of the selection (or of the character as a
+whole if there is no selection), or the location of the last point on which
+you clicked the mouse.
+<P>
+You may apply several different transformations at once:
+<DL>
+  <DT>
+    Do Nothing
+  <DD>
+    A very simple transformation.
+  <DT>
+    Move
+  <DD>
+    You may more the selection an arbitrary amount in the x and y directions
+  <DT>
+    Rotate
+  <DD>
+    You may rotate the selection an arbitrary number of degrees.
+  <DT>
+    Scale
+  <DD>
+    You may scale the two coordinates differently
+  <DT>
+    Scale Uniformly
+  <DD>
+    You may scale the two coordinates the same amount (which can of course be
+    done above, but it's slightly easier only to set one number).
+  <DT>
+    Flip
+  <DD>
+    You may flip either horizontally or vertically
+  <DT>
+    Skew
+  <DD>
+    You may skew the selection a certain number of degrees (to create an oblique
+    font for example).
+</DL>
+<P>
+If you are in the font view, and if <A HREF="editmenu.html#From">Copy From</A>
+is set to all fonts, then the transformation will also be applied to the
+bitmaps. Not all of these transforms can be mapped to ones on the bitmap
+font (arbitrary rotations, scales, etc. do not map). Only rotations by 90
+degrees, flips, skews and moves will be approximated on the bitmap characters.
+<P>
+If you are in the font view or the outline view and there is no selection
+(and you are in the foreground) there is a "[] Transform Background Too"
+check box. If you check this then anything in the background will be transformed
+with the foreground.
+<P>
+If you check [] Round to Int then after the transformation has been applied
+everything will be rounded to an integer value.
+<P>
+Transformations in the Outline character view are not applied to any bitmaps.
+(Nor are transformations in the bitmap window mapped back to the outline).
+<P ALIGN=Center>
+-- <A HREF="elementmenu.html">Prev</A> -- <A HREF="overview.html">TOC</A>
+-- <A HREF="elementmenu.html">Next</A> --
+</BODY></HTML>

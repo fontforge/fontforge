@@ -1,0 +1,932 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 14-Dec-2000 -->
+  <!-- AP: Last modified: 2-Mar-2004 -->
+  <TITLE>Font Info</TITLE>
+</HEAD>
+<BODY>
+<H1 ALIGN=Center>
+  Font Info
+</H1>
+<P>
+<IMG SRC="fontinfo.png" WIDTH="376" HEIGHT="608" ALIGN="Right">
+<P>
+The Font Info dialog is available from all views. It allows you to name your
+font, to set its <A HREF="fontview.html#Encodings">encoding</A> and various
+other useful bits of information. In a <A HREF="fontview.html#CID">CID keyed
+font</A>, there is a <A HREF="cidmenu.html#FontInfo">seperate command</A>
+to access the information for the font as a whole, the dialog looks the same.
+The dialog is composed of many different sub dialogs.
+<UL>
+  <LI>
+    <A HREF="fontinfo.html#Names">Names</A>
+  <LI>
+    <A HREF="fontinfo.html#Encoding">Encoding</A>
+  <LI>
+    <A HREF="fontinfo.html#PS-General">General</A>
+  <LI>
+    <A HREF="fontinfo.html#Private">PostScript Private Dictionary</A>
+  <LI>
+    <A HREF="fontinfo.html#TTF-Values">TTF Values</A>
+  <LI>
+    <A HREF="fontinfo.html#TTF-Names">TTF Names</A>
+  <LI>
+    <A HREF="fontinfo.html#Panose">Panose</A>
+  <LI>
+    <A HREF="fontinfo.html#TeX">TeX</A>
+  <LI>
+    <A HREF="fontinfo.html#Comment">Comment</A>
+  <LI>
+    <A HREF="fontinfo.html#Anchors">Anchor Classes</A>
+  <LI>
+    <A HREF="fontinfo.html#Contextual">Contextual</A>
+  <LI>
+    <A HREF="#Mac-Style">Mac Style</A>
+  <LI>
+    <A HREF="#Mac-Features">Mac Features</A>
+  <LI>
+    <A HREF="#Mac-SM">Mac State Machines</A>
+</UL>
+<H2>
+  <A NAME="Names">Names</A>
+</H2>
+<P>
+Postscript fonts have several different names, but basically there are two
+important ones: the family name (like Times) and the fontname (which is the
+family name with a bunch of modifiers like Bold Italic Condensed tacked on
+to the end. The FullName is designed to be read by humans, while the others
+are for machines, this name can contain spaces (like "New Century Schoolbook-Bold
+Condensed"). Finally there is the weight name. All of these names should
+be in ASCII. If you wish to enter names with characters outside this range
+look at the <A HREF="#TTF-Names">TTF Names</A> Section.
+<P>
+The copyright field can contain whatever you want to put there, but it's
+a good place to put a copyright.
+<P>
+In most fonts the version field is a string (and so has minimal constraints
+on it), but in CID keyed fonts it must be a floating point number.
+<P>
+Many of these names are similar to the english names of the TTF Names section.
+If nothing is specified in that section then the names specified here will
+be used by default in ttf files.<BR Clear=ALL>
+<H2>
+  <IMG SRC="fontinfo-encoding.png" WIDTH="369" HEIGHT="472" ALIGN="Right"><A
+      NAME="Encoding">Encoding</A>
+</H2>
+<P>
+This sub dialog allows you to specify the encoding for your font, and to
+teach FontForge about new encodings.
+<P>
+There are two ways to change the encoding. The default assumes that the font
+currently has a reasonable encoding, but you want it to have a different
+one, here each character will be moved to the appropriate position in the
+new font. However if you check the <SAMP>[ ] Force Encoding box</SAMP>, then
+FontForge will assume that the characters are in the right order, but have
+got the wrong names. It will go through and rename every character to match
+what it should be in the new encoding (this is for cases where people have
+given a font an inappropriate encoding but where the mapping from character
+code to glyph is correct).
+<P>
+You may want to add characters to or removed characters from your font. You
+can specify how many characters you want in the font here.
+<P>
+<STRONG>Note</STRONG> some encodings have different numbers of characters,
+and it may be hard to guess how many will be used. But if you have changed
+the encoding but not altered the "Number of Characters" box, then the value
+in the Number box will be ignored and the correct number will come from the
+encoding process.
+<P>
+In a CID keyed font you are not allowed to change the encoding (in essence
+because there is none), but the dialog will show you the
+Registry/Ordering/Supplement for this font.
+<P>
+Not all font formats support all encodings. SVG fonts will always be output
+in a unicode encoding, truetype fonts in either unicode or one of the CJK
+encodings, type1 fonts only support single byte encodings, etc.
+<P>
+<A NAME="Interpretation">Sadly</A> the encoding is not always sufficient
+for understanding the font's behavior. For example a unicode font designed
+for a chinese system will look very different from a unicode font for a japanese
+system (The same unicode character may map to very different chinese or japanese
+glyphs). To handle this (and some other cases) FontForge has the concept
+of "Interpretation". There are several cases in which this field is useful.
+<UL>
+  <LI>
+    To allow FontForge to know whether a Unicode (or any other non-CJK encoding
+    which includes CJK glyphs) font should be viewed as Japanese, Chinese or
+    Korean.
+  <LI>
+    Can cause FontForge to use the names "Delta.greek", "Omega.greek" and "mu.greek"
+    for U+0396, U+03a9, U+03bc (instead of uni0396, etc.).
+  <LI>
+    Can cause FontForge to name glyphs in the private use area after Adobe's
+    assignments to that area (ie. small caps, etc.)
+</UL>
+<P>
+  <HR>
+<H3>
+  Built in <A NAME="Encodings">Encodings</A>
+</H3>
+<P>
+FontForge knows about the following encodings by default:
+<UL>
+  <LI>
+    ISO-8859-1 (Latin1) -- traditional encoding for western european characters.
+    Default encoding for http. Does not include the Euro sign.
+  <LI>
+    ISO-8859-15 (Latin0) -- Replacement for Latin1. Does include the Euro.
+  <LI>
+    ISO-8859-2 (Latin2) -- Central &amp; Eastern European (Czch, Hungarian, Polish,
+    Romanian, Croatian, Slovak, Slovnian.
+  <LI>
+    ISO-8859-3 (Latin3) -- Southern European (Esperanto, Maltese)
+  <LI>
+    ISO-8859-4 (Latin4) -- Northern European (Estonian, Latvian, Lithuanian,
+    Greenlandic, Lappish)
+  <LI>
+    <IMG SRC="fontinfo-cid.png" WIDTH="369" HEIGHT="472" ALIGN="Right">ISO-8859-9
+    (Latin5) -- Turkish
+  <LI>
+    ISO-8859-10 (Latin6) -- Nordic (reworking of Latin4&amp;Latin1)
+  <LI>
+    ISO-8859-13 (Latin7) -- Another Baltic character set
+  <LI>
+    ISO-8859-14 (Latin8) -- Celtic (Gaelic &amp; Welsh)
+  <LI>
+    ISO-8859-5 (Cyrillic)
+  <LI>
+    ISO-8859-6 (Arabic)
+  <LI>
+    ISO-8859-7 (Greek)
+  <LI>
+    ISO-8859-8 (Hebrew) -- (and Yiddish)
+  <LI>
+    ISO-8859-11 (Thai) -- Also know as TIS 620<BR>
+    &lt;there is no ISO-8859-12&gt; 
+      <HR>
+  <LI>
+    KOI8-R -- Cyrillic
+  <LI>
+    Macintosh Roman
+  <LI>
+    Windows "ANSI" (CodePage1252)
+  <LI>
+    Adobe Standard
+  <LI>
+    Symbol
+  <LI>
+    TeX Base 
+      <HR>
+  <LI>
+    ISO-10646-1 (Unicode, BMP)
+  <LI>
+    ISO-10646-1 (Unicode, Full)
+  <LI>
+    ISO-10646-? (Unicode, by plane)<BR>
+    (You can select a specific plane of unicode as an encoding (ie BMP, SMP,
+    SIP,...) 
+      <HR>
+  <LI>
+    SJIS
+  <LI>
+    JIS 208 -- Japanese Kanji (first 8000 characters)
+  <LI>
+    JIS 212 -- Japanese Kanji (next 8000 characters)
+  <LI>
+    Wansung
+  <LI>
+    KSC 5601 -- Korean (this is the 94x94 version of KSC 5601)
+  <LI>
+    Johab
+  <LI>
+    GB 2312 -- Simplified Chinese
+  <LI>
+    Packed GB 2312 -- (I don't know what the proper name for this is, ASCII for
+    bytes&lt;0x80, and GB 2312 EUC offset by 0x8080)
+  <LI>
+    Big5 -- Traditional Chinese 
+      <HR>
+  <LI>
+    Custom -- An unknown encoding
+  <LI>
+    Compacted -- An encoding with no holes in it
+  <LI>
+    Original -- the glyph ordering used in the original font file.
+</UL>
+<P>
+Encoding sources:
+<UL>
+  <LI>
+    <A HREF="http://czyborra.com/charsets/iso8859.html">ISO 8859 Alphabet Soup</A>
+  <LI>
+    <A HREF="http://www.unicode.org/Public/MAPPINGS/">Unicode Mapping Tables</A>
+</UL>
+<P>
+<A HREF="http://www.unicode.org/charts/">An index to images of all the glyphs
+in unicode</A>.
+<P>
+  <HR>
+<H3>
+  <A NAME="User-def">User Defined Encodings</A>
+</H3>
+<P>
+You can also use the font info dialog to add new encodings to the set that
+FontForge knows about. There are three buttons that manipulate a set of user
+defined encodings. As always these specify both a character set and an encoding.
+The encoding has a maximum of 256 entries, but the character set may be larger
+(up to 1024). This means that you can define a font with extra characters.
+Since postscript fonts can be reencoded at runtime this can be useful.
+<P>
+The button <CODE>[Load]</CODE> allows you to load an encoding(s) from a file.
+Currently the file must either be in the format used by the unicode consortium
+for <A HREF="http://www.unicode.org/Public/MAPPINGS/ISO8859/">mapping ISO
+8859</A> encodings to unicode, or it must be a postscript encoding array.
+The first format looks like this:
+<BLOCKQUOTE>
+  <PRE>0x20	0x0020	#	SPACE
+0x21	0x0021	#	EXCLAMATION MARK
+...
+</PRE>
+</BLOCKQUOTE>
+<P>
+A postscript file looks like:
+<BLOCKQUOTE>
+  <PRE>/TeXBase1Encoding [
+ % 00
+ /.notdef /dotaccent /fi /fl
+ /fraction /hungarianumlaut /Lslash /lslash
+ ...
+] def
+</PRE>
+</BLOCKQUOTE>
+<P>
+There may be more than one encoding in a postscript file. The encoding parser
+is not smart. It will only read arrays specified like this, don't try any
+of the innumerable other ways of specifying an array in postscript.
+<P>
+If the font has a custom encoding then the <CODE>[Make From Font]</CODE>
+button is enabled. This allows you to name the encoding you have defined
+for the current font.
+<P>
+The <CODE>[Remove]</CODE> button brings up a list showing all the custom
+encodings and allows you to delete them.
+<P>
+Here's an <A HREF="Encodings.ps.gz">example of a postscript encoding file</A>.
+It contains:
+<UL>
+  <LI>
+    TeXMathItalicEncoding
+  <LI>
+    TeXMathSymbolEncoding
+  <LI>
+    TeXMathExtensionEncoding 
+      <HR>
+  <LI>
+    IsoLatin -- (which specifies all the characters used in any of the ISO-Latin-*
+    fonts 
+      <HR>
+  <LI>
+    AdobeExpert -- (Which contains things like lower case numbers, small caps,
+    fractions, sub/superscript numbers, etc.) 
+      <HR>
+  <LI>
+    CodePage1250 -- Microsoft's encoding for Central European characters
+  <LI>
+    CodePage1251 -- Microsoft's Cyrillic encoding
+  <LI>
+    CodePage1252 -- Microsoft's Western European encoding (a superset of Latin1.
+    Sometimes called "ANSI" though I can find no ANSI standard that it follows)
+  <LI>
+    CodePage1253 -- Microsoft's Greek encoding
+  <LI>
+    CodePage1254 -- Microsoft's Turkish encoding
+  <LI>
+    CodePage1255 -- Microsoft's Hebrew encoding (an extension of ISO-8859-8)
+  <LI>
+    CodePage1256 -- Microsoft's Arabic encoding
+  <LI>
+    CodePage1257 -- Microsoft's Baltic encoding
+  <LI>
+    CodePage1258 -- Microsoft's Viet Namese encoding
+  <LI>
+    CodePage874 -- Microsoft's Thai encoding 
+      <HR>
+  <LI>
+    MacCentralEuropean
+  <LI>
+    MacCyrillic
+  <LI>
+    MacGreek
+  <LI>
+    MacHebrew 
+      <HR>
+  <LI>
+    US-ASCII -- Not realy useful by itself any more, but provides the first 128
+    characters of almost every other encoding.
+</UL>
+<H2>
+  <IMG SRC="fontinfo-ps.png" WIDTH="376" HEIGHT="544" ALIGN="Right"><A NAME="PS-General">General</A>
+</H2>
+<P>
+This sub dialog contains a rather random collection of settings.
+<P>
+The Ascent and Descent are (in this current definition) Macintosh concepts
+rather than Postscript, their sum, however, provides the size of the em-square
+and that is very much a postscript concept. For postscript fonts this number
+is set by strong convention to be 1000, while in most TrueType fonts it will
+be 2048 (also a convention, but TrueType claims rasterization is faster if
+the sum is a power of 2). Since both TrueType and Type1 (postscript) fonts
+represent numbers as 16-bit integers ascent and descent must be less than
+32767. TrueType is more restrictive and requires their sum to be less than
+16384.
+<P>
+If you change the size of the Em you may choose to have all the outlines
+(and kerning info) scaled to have the same proportion to the new value that
+they had to the old.
+<P>
+The Italic Angle indicates the slant of the font. FontForge can attempt to
+guess a good value for you by looking at the stems of certain letters ("I"
+for instance).
+<P>
+The underline position and height provide a program using this font a hint
+as to where it should place a line if it wants to underline text printed
+in this font.
+<P>
+The XUID field is a collection of numbers separated by spaces and enclosed
+in brackets. This allows you to specify the extended unique ID of the font.
+If you have set the XUID preference entry then FontForge will assign values
+to all new fonts (by appending a number unique to this font to the end of
+your preference item). Adobe recommends that the XUID be changed every time
+the font is changed, so each time you generate a postscript font, that font's
+XUID (if present) will be incremented by 1 (This incrementing does not happen
+in CID-keyed fonts, where the XUID behavior is too complex for this simple
+trick). (The XUID field is only meaningfull in PostScript fonts)
+<P>
+The UniqueID field is an older convention for the same purpose as XUID. If
+you do not fill in this field then FontForge will pick a random number for
+you in the allowable range. If you want your font to have no unique id then
+give this the value of -1. If you have talked to Adobe and been assigned
+a real UniqueID then you may use this field, otherwise leave it blank. (The
+UniqueID field is only meaningfull in PostScript fonts)
+<P>
+If you want your font to have <A NAME="vertical">vertical</A> metrics (generally
+this means you are working on a CJK font) then check the <CODE>[*] Has Vertical
+Metrics</CODE> checkbox. This will enable the Vertical Origin field, and
+will mean that when you generate a truetype or opentype font a vertical metrics
+table will be added. The Vertical Origin is the vertical offset from the
+origin of the design coordinate system to the origin for the purposes of
+vertical metrics.
+<P>
+If you check <CODE>[*] Quadratic Splines </CODE>then FontForge will use quadratic
+<A HREF="overview.html#spline">B&eacute;zier</A> splines for this font rather
+than cubic B&eacute;ziers, this means that FontForge will be using the native
+spline format of truetype rather than postscript (or opentype). When FontForge
+generates a font it will convert from whatever format is used internally
+to whatever format is required for the font, so there will be no problem
+if this is set incorrectly, but setting it correctly for your font means
+you get a clearer idea of what the outlines will look like. I find quadratic
+splines harder to edit with because each spline is less flexible (and a number
+of FontForge's commands will not work on them), but the advantage of actually
+seeing what your truetype font will look like may outweigh that.
+<P>
+If you have configured FontForge for <A HREF="multilayer.html">multi-layered
+editing</A> there will also be a checkbox here to turn that on.<BR Clear=ALL>
+<H2>
+  <A NAME="Private">Private</A> -- <SMALL>(font-wide postscript hinting)</SMALL>
+</H2>
+<P>
+<IMG SRC="fontinfo-private.png" WIDTH="376" HEIGHT="544" ALIGN="Right">This
+sub-dialog shows most entries in the font's Private dictionary. The interesting
+things in this dictionary are mostly concerned with hints appropriate for
+the entire font. I shall not go into detail about the meanings of the various
+entries, that is best understood by reading
+<A HREF="http://partners.adobe.com/asn/developer/PDFS/TN/T1_SPEC.PDF">Adobe's
+Type1 specification</A>.
+<P>
+Don't try to change these until you understand what they mean.
+<P>
+The dialog is shown at right. It consists of a list, an editable region and
+a series of buttons. The list gives the names (keys) of the dictionary entries,
+while the editable region displays the value of the currently selected entry.
+To change an entry, simply select its key and then modify the value below.
+<P>
+For example the <CODE>BlueValues</CODE> entry specifies certain key regions
+of the font in a vertical direction. For instance it might contain the baseline
+serif, the x-height serif, the cap-height serif. It is expressed as an array
+of numbers, grouped in pairs. The first number of a pair is the low end of
+the region and the second is the high end. So in the example at right, the
+value of <CODE>BlueValues</CODE> is <CODE>[-20 0 437 457 583 603 623
+643</CODE>.
+<P>
+When the <CODE>[Guess]</CODE> button is enabled FontForge thinks it can make
+a reasonable guess for the value of the currently selected entry. Often two
+entries in the dictionary will be closely linked and guessing at one will
+also guess at the value of the other (FontForge will warn you of this). In
+this case if FontForge were to guess the value of <CODE>BlueValues</CODE>
+it would also guess the value of <CODE>OtherBlues</CODE>.
+<P>
+The [Hist] button is similar, it will bring up a
+<A HREF="histogram.html">dialog showing a histogram</A> of the values of
+an attribute of the font. The hope is that this will allow you to pick a
+good value for the entry.
+<P>
+You may also delete an entry from the dictionary with the <CODE>[Remove]
+</CODE>button. Some entries (such as <CODE>BlueValues</CODE>) are required
+to be present in any type1 font, but you may still delete them. FontForge
+will simply guess at a reasonable value when it needs to generate the
+font.<BR Clear=Right>
+<P>
+<IMG SRC="privatekey.png" WIDTH="208" HEIGHT="146" ALIGN="Left"><IMG SRC="privatekeymenu.png"
+    WIDTH="208" HEIGHT="202" ALIGN="Right">The <CODE>[Add]</CODE> button allows
+you to add new keys to the dictionary. Every key will be added with a blank
+value, and you will almost certainly need to provide an appropriate value
+for it. When you press <CODE>[Add]</CODE> a dialog pops up which allows you
+to enter the key's name. There is a pull down list of known keys (that aren't
+already in the dictionary), or you may add keys by typing them in.
+<P>
+Certain keys affect things other than hints. The <CODE>lenIV</CODE> entry
+controls how much random padding is placed around the type1 strings when
+the font is generated. Normally this will be 4, but if you want to save space
+(4 bytes per character in pfb format, 8 bytes in pfa) you may choose another
+value. The UniqueID key represents the font's Unique postscript ID. If you
+provide a value here then FontForge will copy it into the UniqueID field
+in the Font Dictionary. If you do not provide a UniqueID here, FontForge
+will generate a random one itself (this is different from True Type's UniqueID.
+They perform the same function but are formatted differently).
+<P>
+These entries are only meaningfull for PostScript fonts.<BR CLEAR=ALL>
+<H2>
+  <IMG SRC="fontinfo-ttfvals.png" WIDTH="376" HEIGHT="544" ALIGN="Right"><A
+      NAME="TTF-Values">TTF Values</A>
+</H2>
+<P>
+This sub dialog contains a few settings important on Windows platforms.
+<P>
+The weight class provides a numeric value describing the boldness of the
+font. A normal face will usually have a boldness of 400, and a bold face
+will usually be 700. This must be a number between 100 and 900.
+<P>
+The width class allows you to provide a numeric value saying how condensed
+or expanded this font is.
+<P>
+The PFM Family is used when generating PFM files and classifies the font
+into some rather broad catagories (Serif, Sans, Monospace, Script, Decorative).
+<P>
+You can control whether you want to allow your font to be embedded into other
+documents (most commonly pdf). You can restrict it so that it can never be
+embedded, it can be embedded into documents that can be printed (but not
+edited), it can be embedded into documents that can be edited, or it can
+be embedded into and editable document and later extracted and installed
+on a different system. You can also control whether the document producer
+is allowed to extract the characters it needs and make a new font from them
+(which saves space) or whether they must include the entire font if they
+use any of it. Finally you can restrict the embedding so that only bitmap
+versions of the font may be embedded. (meaningful in CID fonts as well as
+TTF).
+<P>
+You can also specify the default line gap, or leading between lines.
+<P>
+And if your font has vertical metrics enabled (See General above) you will
+be able to set the default spacing between vertical columns of text. (the
+equivalent to LineGap in vertical text).
+<P>
+These entries are only meaningful in TrueType and OpenType fonts (though
+the Embeddable entry (generally called FSType) will be set on CID keyed fonts
+even if they are not in an OpenType wrapper.<BR Clear=ALL>
+<H3>
+  <CODE><A NAME="Order"><IMG SRC="GSUB-Order.png" WIDTH="185" HEIGHT="294"
+      ALIGN="Right">GSUB/morx</A></CODE> Ordering
+</H3>
+<P>
+This dialog allows you to control the order features in which are to be executed
+by the word processing program. If you have loaded an opentype or truetype
+font then the original order will be maintained. As you add more features
+they will appear at the bottom of the list (which may not be appropriate).
+You may select a feature name and use the buttons to move it up and down
+in the list. Things at the top of the list are executed first, things at
+the bottom last.<BR CLEAR=ALL>
+<H2>
+  <IMG SRC="fontinfo-ttfname.png" WIDTH="369" HEIGHT="472" ALIGN="Right"><A
+      NAME="TTF-Names">TTF Names</A>
+</H2>
+<P>
+TrueType (and OpenType) fonts are allowed to have different names in different
+languages. So a French user might see CaslonItalic displayed as CaslonItalique
+in a font menu, while a German user might see CaslonKursive. There are about
+20 different strings which may be customized into various different languages.
+Customizing one string does not mean that you must customize the others (indeed,
+usually only the Style string is customized).
+<P>
+If you don't include any values here when FontForge saves a font as truetype
+it will create an entry with an American English language containing the
+postscript versions of the strings.
+<P>
+The various strings and a brief description of their meanings are:
+<DL>
+  <DT>
+    Copyright
+  <DD>
+    Allows you to specify the copyright message
+  <DT>
+    Family
+  <DD>
+    The font's family name
+  <DT>
+    Styles (SubFamily)
+  <DD>
+    This should (in English) have values like "BoldItalicCondensed". This is
+    the most likely string to change in different languages.
+  <DT>
+    Fullname
+  <DD>
+    The concatenation of the Family name and the Styles name
+  <DT>
+    UniqueID
+  <DD>
+    This is a string that uniquely identifies the font in a human readable fashion.
+    It's format is quite different from postscript's UniqueID and FontForge will
+    create an appropriate string if you don't specify one (rather than copying
+    from postscript).
+  <DT>
+    Version
+  <DD>
+    A string containing the version number of the font.
+  <DT>
+    Postscript Name
+  <DD>
+    (FontForge will not let you set this. It will always be set directly the
+    the postscript fontname, only one instance of the tag is allowed in the font
+    and it must be ASCII)
+  <DT>
+    Trademark
+  <DD>
+    A string containing any trademark information for the font.
+  <DT>
+    Manufacturer
+  <DD>
+    The name of the company that distributes the font.
+  <DT>
+    Designer
+  <DD>
+    The name of the person who designed the font.
+  <DT>
+    Descriptor
+  <DD>
+    A description of the font and its characteristics.
+  <DT>
+    VenderURL
+  <DD>
+    An URL pointing to the font's vender.
+  <DT>
+    DesignerURL
+  <DD>
+    An URL (often an e-mail address) pointing to the font's designer
+  <DT>
+    License
+  <DD>
+    A string describing the license terms under which the font is marketted
+  <DT>
+    License
+  <DD>
+    An URL pointing to a page describing the terms of the license
+  <DT>
+    Prefered Family
+  <DD>
+    This is to get around a quirk of windows where only four Style names are
+    allowed per family, so font families with more than four styles would get
+    different family names above, but the preferred family name would be the
+    same. This should only be specified if it differs from the family
+  <DT>
+    Prefered Style
+  <DD>
+    This is similar to the above, except it applies to the style.
+  <DT>
+    Compatible Full
+  <DD>
+    This is to get around a quirk on the Mac.
+  <DT>
+    Sample Text
+  <DD>
+    Whatever.
+</DL>
+<P>
+These are described in the
+<A HREF="http://fonts.apple.com/TTRefMan/RM06/Chap6name.html">original true
+type docs</A>, but they apply to
+<A HREF="http://partners.adobe.com/asn/tech/type/opentype/recom.jsp">open
+type</A> as well.
+<P>
+These settings specify strings for the windows platform. If you specify []
+Apple Mode when generating the font it will also generate equivalent entries
+for the mac (It will, always, generate two additional string sets by taking
+the american english entries and creating a "Mactintosh English" and an "Apple
+Unicode (2.0)" set even if you don't specify [] Apple Mode).
+<P>
+Generally fonts will have a fairly complete set of strings in the American
+English entry, with the Style string (and nothing else) translated into different
+languages.
+<TABLE BORDER CELLPADDING="2">
+  <TR>
+    <TH>English</TH>
+    <TH>Regular</TH>
+    <TH>Bold</TH>
+    <TH>Demi-Bold</TH>
+    <TH>Light</TH>
+    <TH>Medium</TH>
+    <TH>Book</TH>
+    <TH>Black</TH>
+    <TH>Italic</TH>
+    <TH>Oblique</TH>
+    <TH>Condensed</TH>
+    <TH>Expanded</TH>
+    <TH>Outline</TH>
+  </TR>
+  <TR>
+    <TH>French</TH>
+    <TD>Normal</TD>
+    <TD>Gras</TD>
+    <TD>Demi-Gras</TD>
+    <TD>Maigre</TD>
+    <TD>Normal</TD>
+    <TD></TD>
+    <TD>Extra-Gras</TD>
+    <TD>Italique</TD>
+    <TD>Oblique</TD>
+    <TD>&Eacute;troite</TD>
+    <TD>Large</TD>
+    <TD>Contour</TD>
+  </TR>
+  <TR>
+    <TH>Spanish</TH>
+    <TD>Normal</TD>
+    <TD>Nigrita</TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD>
+    <TD>Cursiva</TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD>
+  </TR>
+  <TR>
+    <TH>Italian</TH>
+    <TD>Normale</TD>
+    <TD>Nero</TD>
+    <TD>Neretto</TD>
+    <TD>Chiaro</TD>
+    <TD>Medio</TD>
+    <TD>Libro</TD>
+    <TD>ExtraNero</TD>
+    <TD>Corsivo</TD>
+    <TD>Obliquo</TD>
+    <TD>Condensato</TD>
+    <TD>Allargato</TD>
+    <TD></TD>
+  </TR>
+  <TR>
+    <TH>German</TH>
+    <TD>Standard</TD>
+    <TD>Fett</TD>
+    <TD>Halbfett</TD>
+    <TD>mager</TD>
+    <TD>mittel<BR>
+      normal</TD>
+    <TD>Buchschrift</TD>
+    <TD>Schwarz</TD>
+    <TD>Kursiv</TD>
+    <TD>schr&auml;g</TD>
+    <TD>schmal</TD>
+    <TD>breit</TD>
+    <TD>Kontur</TD>
+  </TR>
+  <TR>
+    <TH>Hungarian</TH>
+    <TD>Norm&agrave;l</TD>
+    <TD>K&ouml;v&eacute;r</TD>
+    <TD>F&eacute;lk&ouml;v&eacute;rK&ouml;v&eacute;r</TD>
+    <TD>Vil&aacute;gos</TD>
+    <TD>K&ouml;zepes</TD>
+    <TD>S&ouml;t&eacute;tes</TD>
+    <TD>Fekete</TD>
+    <TD><!--D&amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;#x151;lt-->
+      Do"lt</TD>
+    <TD>D&ouml;nt&ouml;tt</TD>
+    <TD>Keskeny</TD>
+    <TD>Sz&eacute;les</TD>
+    <TD>Kont&uacute;ros</TD>
+  </TR>
+  <TR>
+    <TH>Russian<BR>
+      <SMALL>(koi8r)</SMALL></TH>
+    <TD></TD>
+    <TD>&Ouml;&Eacute;&Ograve;&Icirc;&Ugrave;&Ecirc;</TD>
+    <TD>&ETH;&Iuml;&Igrave;&Otilde;&Ouml;&Eacute;&Ograve;&Icirc;&Ugrave;&Ecirc;</TD>
+    <TD>&oacute;&#215;&Aring;&Ocirc;&Igrave;&Ugrave;&Ecirc;</TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD>
+    <TD>&euml;&Otilde;&Ograve;&Oacute;&Eacute;&#215;&Icirc;&Ugrave;&Ecirc;</TD>
+    <TD>&icirc;&Aacute;&Euml;&Igrave;&Iuml;&Icirc;&Icirc;&Ugrave;&Ecirc;</TD>
+    <TD>&oacute;&Ouml;&Aacute;&Ocirc;&Ugrave;&Ecirc;</TD>
+    <TD>&ucirc;&Eacute;&Ograve;&Iuml;&Euml;&Eacute;&Ecirc;</TD>
+    <TD></TD>
+  </TR>
+</TABLE>
+<P>
+(Any help in expanding/correcting the above table would be greatly appreciated
+<A HREF="mailto:pfaedit@users.sourceforge.net">pfaedit@users.sourceforge.net</A>)
+<P>
+When you are setting the Style string in American English another button
+appears in the dialog, labelled "Translate Style". If you press this button
+then FontForge will attempt to figure out the style of the font and then
+attempt to translate it into whatever other languages in knows about (essentially
+the above table). It will only translate to a language for which it knows
+all the componants and for which you have not already provided a translation.
+So if your style in American English is "BoldItalic" (and you have no other
+style entries) then after you press the "Translate Style" button FontForge
+will generate "GrasItalique" for French, "FettKursiv" for German,
+"&Ouml;&Eacute;&Ograve;&Icirc;&Ugrave;&Ecirc;&euml;&Otilde;&Ograve;&Oacute;&Eacute;&#215;&Icirc;&Ugrave;&Ecirc;"
+for Russian and "NigritaCursiva" for Spanish.
+<P>
+These names are only meaningful for TrueType and OpenType fonts.
+<H2>
+  <IMG SRC="fontinfo-panose.png" WIDTH="369" HEIGHT="472" ALIGN="Right"><A
+      NAME="Panose">Panose</A>
+</H2>
+<P>
+This sub-dialog allows you to describe your font in 10 different dimensions.
+The exact meanings of many of these entries are not clear to me, I have merely
+typed them in as specified in the
+<A HREF="http://fonts.apple.com/TTRefMan/RM06/Chap6OS2.html">true type
+docs</A>. Better information is available from
+<A HREF="http://www.agfamonotype.com/hardware/pan1.asp">AGFA</A> and
+<A HREF="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/gdi/fontext_48aa.asp">MS</A>.
+<P>
+These entries are only meaningfull for TrueType, OpenType and SVG
+fonts.<BR Clear=All>
+<H2>
+  <IMG SRC="fontinfo-tex.png" WIDTH="376" HEIGHT="544" ALIGN="Right"><A NAME="TeX">TeX</A>
+</H2>
+<P>
+This allows you to set the TeX font parameters (which are described in Appendix
+F, pp 98-100 of the MetaFont Book). There seem to be 3 different types of
+font parameters, those for text fonts, those for math fonts and those for
+math extension fonts. The later two have additional parameters which are
+accessable through the [More Params] button. The default values for the Math
+parameters are probably reasonable. <FONT COLOR="Red"><STRONG>The default
+values for the Math Extension parameters are probably
+unreasonable</STRONG></FONT>.
+<P>
+These values are stored in tfm files (should you generate a tfm file with
+your font).<BR Clear=All>
+<H2>
+  <IMG SRC="fontinfo-comment.png" WIDTH="369" HEIGHT="506" ALIGN="Right"><A
+      NAME="Comment">Comment</A>
+</H2>
+<P>
+This allows you to keep track of arbetrary comments inside your font database.
+It does not correspond to any postscript or truetype entity. It is intended
+to store a changelog for the font itself, but could be used for other purposes...
+<P>
+Various font formats allow a random comment to be place in the font, but
+no format makes use of it. This is primarily to be used inside FontForge.
+The comment should be in ISO Latin1.
+<P>
+<BR Clear=ALL>
+<H2>
+  <A NAME="Anchors">Anchor Classes</A>
+</H2>
+<P>
+<IMG SRC="fontinfo-anchors.png" WIDTH="376" HEIGHT="544" ALIGN="Right" ALT="Font Info Anchors">
+This sub-dialog allows you to control the
+<A HREF="overview.html#Anchors">Anchor Classes</A> used in your font. Anchor
+classes need a name and a tag. Generally you want to use the default tag
+of 'mark' (but see the discussion in the
+<A HREF="overview.html#Anchors">overview</A> of when you might not).
+<P>
+From here you may add new classes, delete old ones or rename old ones. You
+may also bring up outline character views looking at the characters which
+use these classes.
+<P>
+<IMG SRC="newanchor.png" WIDTH="226" HEIGHT="391" ALIGN="Left">The dialog
+for creating a new (or modifying an old) anchor class allows you to give
+that class a name and requires that you associate it with a set of
+<A HREF="charinfo.html#Feature-Tag">scripts and languages</A>. You may also
+set some standard OTF flags.
+<P>
+There are three different types of anchor classes (well there are four, but
+FontForge doesn't need to distinguish between two of them), Mark to Base,
+Mark to Mark and Cursive. When you create an anchor class you must select
+which type it will be.
+<UL>
+  <LI>
+    Mark to Base is used for connecting marks (diacritic marks such as accents)
+    to base letters or ligatures
+  <LI>
+    Mark to Mark is used for connecting two marks together (when you have several
+    marks that interact in their positioning when applied to the same letter)
+  <LI>
+    Cursive is used to join two letters so they will give the illusion of cursive
+    script.
+</UL>
+<P>
+Generally in OpenType fonts several Anchor Classes will be treated as one
+unit if they refer to approximately the same set of base characters and have
+non-overlapping marks An example: there could be two types of marks that
+attach to the same set of letters, one attaching below and one above the
+letter, each would have its own anchor class, but you would tell FontForge
+to associate the two together by having them "Merge With" each other.
+<P>
+FontForge recognizes a special feature tag ' RQD' to indicate that this feature
+is required for the given script/language. Such a feature will always be
+applied.
+<P>
+Anchor classes are only meaningful when generating a truetype (ttf or otf)
+like font with OpenType tables.<BR Clear=ALL>
+<H2>
+  <IMG SRC="fontinfo-context.png" WIDTH="376" HEIGHT="544" ALIGN="Right" ALT="Font Info Contextual Tables">
+  <A NAME="Contextual">Contextual</A>
+</H2>
+<P>
+This sub-dialog allows you to create and remove contextual substitutions
+and position features in your font.
+<P>
+For a description of what a contextual feature might be
+<A HREF="contextchain.html">see here</A>
+<P>
+This dialog allows you to create a new contextual feature by pressing the
+[New] button. This is a two part operation, first you will be prompted for
+the standard tag, script&amp;language combination, and flags, then (in a
+<A HREF="contextchain.html">seperate dialog</A>) you will be prompted for
+the contents of the feature.
+<P>
+The [Edit] button will allow you to change the tags, script and flags (it
+corresponds to the first part of [New]) and the [Edit Data] button allows
+you to change the contents of the feature.
+<P>
+Contextual/chaining tables are only meaningful when generating a truetype
+(ttf or otf) like font with OpenType tables (in a few cases they can be converted
+into Apple Advanced Typography tables too).<BR CLEAR=ALL>
+<H2>
+  <IMG SRC="fontinfo-macstyle.png" WIDTH="376" HEIGHT="608" ALIGN="Right" ALT="Font Info Mac Styles">
+  <A NAME="Mac-Style">Mac Style</A>
+</H2>
+<P>
+This sub-dialog allows you to set the mac style of your font. Normally FontForge
+will be able to guess the style from the fontname (and various other clues),
+but sometimes the name will be non-standard (or perhaps just in a language
+FontForge doesn't know about), and other times you may wish to override this
+default setting.
+<P>
+If you are happy with the default, just leave the Automatic button checked,
+if you wish to override check the button next to the list box. You may select
+any combination of styles (remember to hold down the control key to get multiple
+selections) except for one containing both "Condense" and "Expand".
+<P>
+Note: If you want the style to be "Regular" then leave all styles unselected.
+<P>
+The mac style is stored in the header of an sfnt (truetype or opentype font
+file), but is most important in creating mac font families.<BR Clear=ALL>
+<H2>
+  <IMG SRC="fontinfo-macfeat.png" WIDTH="376" HEIGHT="600" ALIGN="Right" ALT="Font Info Mac Features">
+  <A NAME="Mac-Features">Mac Features</A>
+</H2>
+<P>
+This sub-dialog allows you to create and remove Mac features from your font.
+This will override the Mac features specified in the
+<A HREF="prefs.html#Mac">preferences dialog </A>for this particular font
+(for example to give a more appropriate but local name to a certain feature
+setting).<BR Clear=ALL>
+<H2>
+  <IMG SRC="fontinfo-statemach.png" WIDTH="376" HEIGHT="608" ALIGN="Right"
+      ALT="Font Info State Machines"> <A NAME="Mac-SM">Mac State Machines</A>
+</H2>
+<P>
+This sub-dialog allows you to create and remove Apple's state machines from
+your font. These have some similarities to
+<A HREF="fontinfo.html#Contextual">Contextual/Chaining substitutions </A>(see
+the previous section).
+<P>
+For a description of what a state machine might look like
+<A HREF="statemachine.html">see here</A>.
+<P>
+These state machines are only meaningful when generating a truetype or opentype
+font with the Apple option set in the Options dialog.<BR CLEAR=ALL>
+<P>
+See Also:
+<UL>
+  <LI>
+    <A HREF="charinfo.html">The char info dialog</A>
+  <LI>
+    <A HREF="getinfo.html">The get info dialogs</A>
+  <LI>
+    <A HREF="contextchain.html">The contextual / chaining dialog</A>
+</UL>
+<P ALIGN=Center>
+-- <A HREF="elementmenu.html">Prev</A> -- <A HREF="overview.html">TOC</A>
+-- <A HREF="elementmenu.html">Next</A> --
+</BODY></HTML>

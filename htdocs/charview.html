@@ -1,0 +1,559 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 6-Dec-2000 -->
+  <!-- AP: Last modified: 2-Mar-2004 -->
+  <TITLE>Outline Character View</TITLE>
+</HEAD>
+<BODY>
+<H1 ALIGN=Center>
+  Outline Character View
+</H1>
+<P>
+<IMG SRC="charview2.png" WIDTH="544" HEIGHT="656">
+<P>
+The outline character view is the window in which most editing happens.
+<P>
+At the top of the window, underneath the menu bar is an information line.
+The first item is the location of the mouse pointer (in the internal coordinate
+system of the character). If there is a single selected point then the next
+item gives its location, and the next three are, respectively, the offsets
+from the selected point to the current location, the distance from the selected
+point, and the angle from the horizontal (measured counter-clockwise). Then
+we have the current scale factor, and the layer which is active. Finally
+(in the debugging view) is an indication of whether the instruction pointer
+is in the glyph program, the 'prep' program of the 'fpgm'.
+<P>
+Underneath the information is a ruler showing the current pointer location
+as a red line. There's a similar ruler on the left side.
+<P>
+Underneath that is the character itself. On the left edge of the screen is
+a grey line indicating the x=0 line, further right is a black line showing
+where the character's width is currently set. There are also grey lines showing
+the ascent, descent and baseline.
+<P>
+Background images and background splines are drawn in grey. Grid lines are
+also drawn in grey. Vertical hinting regions are drawn in light blue, Horizontal
+hints are drawn in light green. If any hints overlap the boundaries are drawn
+in cyan.
+<P>
+The points of the character are of three types, corner points drawn as filled
+squares, curve points drawn as filled circles and tangent points drawn as
+filled triangles. If a point is selected then it will be drawn as an outlined
+square, circle or triangle and its control points are drawn as little magenta
+or dull-cyan xs at the end of a similarly colored line. (in a curved point
+the control points will be collinear). (the "Next" control point will be
+drawn dull cyan, and the Prev point will be magenta).
+<P>
+The initial point in a contour will be drawn in green, and beside it will
+be a tiny arrow pointing in the direction of the contour.
+<P>
+Sometimes it is important to know which points are at the extrema of splines
+(postscript likes for there to be points at the extrema of all splines),
+if this is important to you set the "Mark Extrema" flag in the View menu.
+After that points at extrema will show up as dull purple.
+<P>
+There are also two palettes, one, a layer palette, allowing you to control
+<A HREF="#Layers">which layers are visible</A>, and one, a tool palette,
+from which you <A HREF="#Tools">may pick editing tools</A>. Normally these
+are free floating windows, but you may choose to dock them in the window
+with View-&gt;Palettes-&gt;Dock Palettes.
+<P>
+You select an editing tool by clicking on the appropriate button on the tools
+palette, or you may depress the right mouse button and select a tool from
+a popup menu (you may also change layers and do a few other things with this
+menu). There are four different tools bindings available to you (this may
+be a complication with no utility). The left mouse button has a tool bound
+to it, and this tool will be displayed when the program is idle. If you hold
+down the control key, another tool is available, by default this is a pointer
+but if you click on the tools palette with the control key down you can select
+something else. If you depress the middle mouse button you get a third tool
+(by default a magnifying glass), and the control key and middle button give
+you the fourth (a ruler).
+<P>
+If the mouse pointer is close to a point (within a few pixels) when you depress
+the mouse, then the effective location of the press will be the location
+of the point.
+<P>
+If you drag a character from the font view and drop it into a character view
+then FontForge will drop a reference to the dragged character into the view.
+<H2>
+  <A NAME="Layers">Layers</A>
+</H2>
+<P>
+<IMG SRC="layers.png" WIDTH="108" HEIGHT="219" ALIGN="Left"> There are several
+layers in the outline view, three of which are editable. Each layer has a
+check box (indicating whether it is visible or not) and the editable layers
+also have a radio button (indicating whether it is editable).
+<P>
+You may use the indicated mnemonics to change the editable layer (even if
+the focus is not in the layers window).
+<P>
+The first is the foreground layer, this contains the splines that actually
+make up the character that will be placed into the font.
+<P>
+The second is the background layer, this contains background images and splines.
+These do not go into the font, but may be helpful to you in tracing the outline
+of your character. It is possible to paste an image into the background if
+you have an image manipulation program that supports selection by mime type
+(the kde family of applications does this, perhaps others), then FontForge
+will be able to read images in either "image/png" or "image/bmp".
+<P>
+The third layer is a set of guide lines/splines. These are common to all
+characters in the font. A few lines are provided for you (the x=0 line, the
+ascent, descent and baseline). Other handy lines might be the x-height of
+the font, the cap-height, ascender-height, descender-height, ... When you
+are working in any of the other layers, points will snap to splines in this
+layer (making it easy to force a consistant x-height for example).
+<P>
+The next 4 entries control what hints for this character are visible. Most
+hints may be created with the <CODE>Hints-&gt;AutoHint</CODE> command, the
+presence of hints will sometimes improve rasterization. The blues entry displays
+the BlueValues zones. These may be set with <CODE>Element-&gt;Font Info-&gt;PS
+Private</CODE>.
+<P>
+The Anchors entry controls what whether anchor points are displayed.
+<P>
+The last two entries control whether the horizontal or vertical metrics for
+the character are visible. When editing Latin (Cyrillic, Greek, Hebrew, Arabic,
+etc.) glyphs only horizontal metrics are generally present. When editing
+Chinese, Japanese, Korean fonts both horizontal and vertical metrics are
+needed. By default vertical metrics are not available, if you want them go
+to
+<A HREF="fontinfo.html#vertical"><CODE>Element-&gt;FontInfo-&gt;General</CODE></A>.
+<H2>
+  <A NAME="Tools">Tools</A>
+</H2>
+<P>
+<IMG SRC="tools.png" WIDTH="57" HEIGHT="287" ALIGN="Left"> There are 16 different
+editing tools of which two (rectangle/ellipse and polygon/star) come in two
+forms.
+<P>
+At the bottom of the palette is a list of the current bindings of the mouse
+buttons. Here mouse button 1 is bound to the pointer tool, mouse button 1
+with the control key pressed is also bound to pointer, mouse button 2 is
+bound to magnify, and mouse button 2 with control is bound to ruler.
+<H3>
+  The pointer tool
+</H3>
+<P>
+This tool is used for selecting points, images and referenced characters.
+It can also move these and scale images and referenced characters.
+<P>
+Only things that are in the layer that is currently editable may be selected
+or moved or scaled.
+<P>
+A simple click on an unselected point selects it and deselects everything
+else. A shift click on a point toggles whether that point is selected or
+not. A double click selects all points on the path containing that point.
+Clicking on the background will deselect everything. Clicking on the background
+and dragging out a rectangle will select everything within the rectangle.
+Clicking on a line or spline will select the two end points of that line
+or spline. Clicking on the dark part of an image (when in the background
+layer) will select the image. Clicking on the outline of a referenced character
+will select that reference (if a reference character happens to have the
+same outline and bounding box, then holding down the meta key will allow
+you to move it once it is selected, without the meta key you will resize
+it).
+<P>
+If a point has no visible control points, then they are at the same location
+as the point itself. If you want to select one of the control points then
+first select the point (to make the control points active) then hold down
+the meta key and depress the mouse on the point. This should allow you to
+drag one of the control points (if you get the wrong point the first time
+drag it out of the way, repeat the process to get the other control and then
+put the first one back). Sadly some window managers (gnome-sawtooth for one)
+will steal meta-clicks. If this happens you will need to use Element-&gt;Get
+Info to set the control points.
+<P>
+Once something is selected you may drag it around. If you select something
+and drag the mouse then it and everything else selected will be moved. If
+you drag an open path and one of the end points happens to fall on the end
+point of another open path, then the two will be merged into one. If you
+drag a control point then it will be moved.
+<P>
+If you selected a spline, then dragging it will drag the location on the
+spline where you pressed the mouse (so you are changing the shape of the
+spline).
+<P>
+If you hold the shift key down when you drag then the motion will be constrained
+to be either horizontal, vertical, or at a 45&#176; angle. (When moving control
+points the combination of shift and meta (alt) will mean that the control
+point is constrained to be the same angle from the base point as it was before
+you started moving it).
+<P>
+If your font has an ItalicAngle set, and the ItalicConstrain preference item
+is set, then motion that would normally be constrained to the vertical is
+constrained to be along the ItalicAngle.
+<P>
+If you move the mouse to the bounding box of a selected image or reference
+character and drag it then you will scale that object.
+<P>
+If you move the mouse to the <A NAME="set-width">width</A> line, then dragging
+it will change the width of the current character. If there are any bitmaps
+of this character then their widths will also be updated. If there are any
+other characters which depend on this character (ie. include this character
+as a reference) and their width was the same as the character's, then their
+widths will also be updated (so if you change the width of A, then the width
+of &Agrave;, &Aacute;, &Acirc;, &Atilde;, &Auml; and &Aring; might also be
+changed).
+<P>
+It is also possible to use the arrow keys to move selected items around.
+Each arrow will move the selection one em-unit (this can be changed in
+preferences to be any number of em-units) in the obvious direction. The selection
+may include the width (right bearing) line (or vertical with line). If the
+last thing you selected was a control point then that point will be moved.
+If you hold down the shift key at the same time the up and down arrows will
+move parallel to the italic angle (be careful of this: this leads to non-integral
+values). If you hold down the meta (alt) key, then the motion will be 10
+times the normal amount.
+<P>
+If you hold down the control key while working with the arrows then the view
+will be scrolled rather than moving the selection.
+<P>
+If the character is a ligature (and has a ligature entry in Char Info) then
+it has the potential of having "ligature caret locations". Essentially this
+means that between each ligature component it is possible to place a caret
+location (so that the word processor will place be able to place a caret
+between each component of the ligature). In a ligature window a series of
+vertical lines will be drawn across the screen at the caret locations. By
+default these lines will be placed at the origin, but you may move one by
+placing the mouse pointer on it, depressing the button and dragging the line
+around. See the description on <A HREF="editexample4.html#ligature">building
+a ligature </A>for a more complete description.
+<H3>
+  The magnifying tool
+</H3>
+<P>
+Clicking with the magnifying tool will magnify the view and center it around
+the point you clicked on. Holding down the Alt (Meta) key and clicking will
+minify the view, again centered around the point at which you clicked. Again
+some window managers will steal meta-clicks, so you may have to use the View
+menu to minify (It's called Zoom Out
+<P>
+If you drag out a rectangle with this tool then when you release, FontForge
+will shift and scale the view so that your rectangle just fits into the window.
+<P>
+If your mouse has a scroll wheel then holding down the control key with the
+scroll wheel causes it to magnify or minify the window.
+<H3>
+  The hand tool
+</H3>
+<P>
+You can use this tool to scroll the window without using the scroll bars.
+<H3>
+  <IMG SRC="freehandctl.png" ALIGN="Right" WIDTH="224" HEIGHT="311">The
+  <A NAME="freehand">freehand</A> tool
+</H3>
+<P>
+You can use this tool to draw a random curve which FontForge will then attempt
+to convert into a set of splines. If you hold down the Alt (Meta) key then
+FontForge will close the curve when you release the mouse.
+<P>
+If you double click on the icon in the tool palette you get a dialog similar
+to the <A HREF="elementmenu.html#Expand">Element-&gt;Expand Stroke</A> which
+will give you more control over the results. You can:
+<UL>
+  <LI>
+    have the output be the path you traced out
+  <LI>
+    have the output be the region you would trace if you used a ball-point pen
+    with a large ball
+  <LI>
+    have the output be the region you would trace if you used a caligraphic pen.
+</UL>
+<P>
+If you have a <A HREF="wacom.html">wacom</A> graphics tablet you can configure
+these pens to have variable sizes depending on the amount of pressure you
+apply to the stylus. Simply move the stylus around in the two boxes using
+the amount of pressure appropriate for the corresponding pen-size (Stroke
+Width)<BR CLEAR=ALL>
+<H3>
+  Tools for adding curved, corner and tangent points.
+</H3>
+<P>
+These three tools behave similarly, differing only in what kind of point
+is added to the view.
+<P>
+If a single point is selected, and if that point is at the end of a path
+then depressing the mouse button will create a new point where the mouse
+was depressed and draw a spline from the selected point to new point. If
+this new location happens to be the end of a path then the two paths will
+be joined (or if it is the end of the current path then the path will be
+closed).
+<P>
+Otherwise if the mouse is depressed while being on a spline then a point
+will be added to that spline.
+<P>
+Otherwise a new point is created not on any path at the location of the press.
+<P>
+Once the point has been created then it becomes selected and all others are
+deselected. You may drag the point around, and if the point is on an open
+path and you drag it to the end point of another open path then the two paths
+will be joined.
+<P>
+If you double click then a point will be added as above and a
+<A HREF="getinfo.html">Point Info</A> dlg will appear to give you fine control
+over the location of the point and its control points.
+<H3>
+  The pen tool
+</H3>
+<P>
+In many ways this is similar to the tools above, the only differences are
+that the points created are curved points, they are initially created with
+the control points on the point and as you drag you drag out the control
+points rather than moving the point itself around.
+<H3>
+  The knife tool
+</H3>
+<P>
+This tool is used to cut splines. As you drag it across the view fontforge
+draws a line showing where the cut will happen. When you release, every spline
+you intersect will be cut-- that is at the location where this line intersects
+the spline two new points will be created and the old spline will be split
+in two connecting to the two new end points. These endpoints are not joined,
+so the spline is now open (or if it were previously open, it is now cut in
+two).
+<H3>
+  The ruler tool
+</H3>
+<P>
+This tool tells you the x-y offsets, distance and angle from the point where
+you depressed the mouse to the mouse's current location. If you depress the
+tool at the end point of a spline and move it to the other endpoint then
+it will also show the length of that spline. If you hold down the Meta (Alt)
+key then the current location will be shown more accurately than on the status
+line.
+<H3>
+  The scale tool
+</H3>
+<P>
+This tool allows you to scale the selection by eye rather than by a set amount
+(if there is no selection then everything in the current layer will be scaled).
+The location of the press will be the origin of the transformation, the further
+you move the point up and to the right the more it will be scaled in that
+dimension. If you want the scaling to be uniform or only in one dimension
+then hold down the shift key.
+<H3>
+  The flip tool
+</H3>
+<P>
+This tool allows you to flip the selection either horizontally or vertically.
+Again the point at which you press the mouse is the origin of the transformation.
+<H3>
+  The rotate tool
+</H3>
+<P>
+This tools allows you to rotate the selection freely.
+<H3>
+  The skew tool
+</H3>
+<P>
+This tool allows you to skew the selection.
+<H3>
+  The rectangle/ellipse tool
+</H3>
+<P>
+By default this produces a rectangle, but if you double click on the button
+in the tools palette you can make it produce an ellipse or a rectangle with
+rounded corners.
+<P>
+You can choose whether the rectangle (or ellipse) will be drawn between the
+point where you depressed the mouse on the view and the point where you released
+it (bounding box), or whether the point where you depress the mouse becomes
+the center of the rectangle and the point where you release it provides an
+end-point (center out).
+<H3>
+  The polygon/star tool
+</H3>
+<P>
+By default this draws a regular polygon, but by double clicking on the button
+in the tools palette you can make it draw a star, or select the number of
+verteces in your polygon.
+<P>
+The polygon is drawn as though it were inscribed in the circle whose center
+is the point where you depressed the mouse and whose radius is the distance
+between the press point and the release point. One of the polygon's verteces
+will be at the release point.
+<P>
+A star is drawn similarly. It will be a star generated from a regular polygon.
+As the number of verteces of the polygon gets larger the star will look more
+and more like a circle, for this reason the dialog box that allows you to
+pick the number of verteces will also allow you to pick how far the star's
+points should extend beyond the circle in which the polygon is inscribed
+(this will make a non-regular star, but it might look nicer).
+<H2>
+  <A NAME="Vertical">Vertical View</A>
+</H2>
+<P>
+<IMG SRC="charview-vert.png" WIDTH="544" HEIGHT="563" ALIGN="Right"> In this
+view the vertical metrics of the character are shown. You can change the
+vertical advance just as you changed the character's width (by selecting
+the pointer tool and draging the vertical advance line up or
+down).<BR Clear=Right>
+<H2>
+  <A NAME="GridFit">Grid Fit View</A>
+</H2>
+<P>
+<IMG SRC="GridFit.png" WIDTH="327" HEIGHT="368" ALIGN="Right">If you have
+the freetype library, then you can see the results of rasterizing your character.
+If you have freetype's bytecode interpreter enabled you can also see how
+the truetype instructions in the character have moved the points around (if
+you don't have the bytecode interpreter enabled you will see what freetype's
+autohinter does to points). This mode can be invoked with View-&gt;Show Grid
+Fit...
+<P>
+The Show Grid Fit command will ask you for some basic information first.
+It needs to know the pointsize and resolution for which you want the action
+performed (the example at right is 12pt on a 72dpi screen).<BR>
+<IMG SRC="ShowGridFit.png" WIDTH="268" HEIGHT="148"><BR CLEAR=ALL>
+<H2>
+  <IMG SRC="cvdebug.png" WIDTH="544" HEIGHT="563" ALIGN="Right">The
+  <A NAME="Debugging">Debugging</A> View
+</H2>
+<P>
+FontForge has a truetype debugger -- provided you have a version of freetype
+on your machine with the bytecode interpreter enabled
+<FONT COLOR="Red"><STRONG>(Note: you need a license from Apple to enable
+this. It is protected by several patents)</STRONG></FONT>.
+<P>
+The image to the right shows an example of this mode. You invoke it with
+Hints-&gt;Debug, and as with the grid-fit view above you must establish a
+pointsize and and resolution. The view divides into two panes, the left of
+which is similar to the grid fit view above (except that it changes as you
+step through the instructions), the right pane provides a list of the
+instructions to be executed.
+<P>
+There are a series of buttons at the top of the instruction view. The first
+will single step the truetype program (step into), the second will step over
+procedure calls, the third will set a break point at the return point for
+the current function and continue until that is hit, and the fourth will
+continue until:
+<UL>
+  <LI>
+    It hits a break point
+  <LI>
+    It hits a watch point
+  <LI>
+    It reaches the end of the glyph program
+  <LI>
+    An error occurs
+</UL>
+<P>
+The red "STOPPED" arrow shows the current location of the instruction pointer
+(and what instruction will be executed next).
+<P>
+The fifth button allows you to set a watch point. You select a point (or
+several points) in the left hand pane, and press this button. Thereafter,
+whenever one of those points is moved FontForge will stop the glyph program.
+<P>
+Flaw: FontForge only allows you to select a single control point (multiple
+on-curve points, but only one control point) so currently there is no good
+way to watch several control points.
+<P>
+You can set a more conventional break point by clicking on an instruction.
+A little red stop sign will appear on top of the address area, and the program
+will halt when the instruction pointer reaches that instruction. Clicking
+on the instruction again will remove the breakpoint.
+<P>
+Flaw: Currently there is no way to set breakpoints outside of the current
+function.
+<P>
+Flaw: Currently there is no way to examine the call stack.
+<P>
+The sixth button brings up a menu with which you can control which of various
+debugging palettes are visible. The ones available so far are:
+<TABLE BORDER CELLPADDING="2" WIDTH=500>
+  <TR VALIGN="Top">
+    <TD><IMG SRC="TTRegisters.png" WIDTH="137" HEIGHT="292"></TD>
+    <TD><IMG SRC="TTStack.png" WIDTH="137" HEIGHT="292"></TD>
+    <TD><IMG SRC="TTPoints.png" WIDTH="178" HEIGHT="334"></TD>
+    <TD><IMG SRC="TTStorage.png" WIDTH="137" HEIGHT="123"></TD>
+    <TD><IMG SRC="TTCvt.png" WIDTH="178" HEIGHT="200"></TD>
+  </TR>
+  <TR VALIGN="Top">
+    <TD>Shows the truetype graphics state.</TD>
+    <TD>Shows the truetype stack. The value in parentheses is a 26.6 number.</TD>
+    <TD>Shows the points. You may choose to view the twilight points, or the
+      points displayed in the glyph pane (the normal points). You may view the
+      current location or the original location. You may view them in the units
+      of the current grid, or in em-units.
+      <P>
+      The points may have some flags associated with them 'H' means the horizontal
+      touch flag has been set, 'V' means the vertical touch flag has been set and
+      'W' means that the point has a watch point set on it.</TD>
+    <TD>Shows the truetype storage locations.</TD>
+    <TD>Shows the current values in the cvt array.</TD>
+  </TR>
+</TABLE>
+<P>
+Flaw: most of these palettes should have scrollbars. For now just resize
+them to look at things off the bottom.
+<P>
+The final button will exit the debugger.
+<P>
+The debugger also responds to some single character commands common to many
+debuggers:
+<TABLE BORDER CELLPADDING="2">
+  <TR>
+    <TD>s</TD>
+    <TD>step into</TD>
+  </TR>
+  <TR>
+    <TD>n</TD>
+    <TD>step over (next)</TD>
+  </TR>
+  <TR>
+    <TD>c</TD>
+    <TD>continue</TD>
+  </TR>
+  <TR>
+    <TD>r</TD>
+    <TD>restart (with same grid)</TD>
+  </TR>
+  <TR>
+    <TD>f</TD>
+    <TD>step out (finish routine)</TD>
+  </TR>
+  <TR>
+    <TD>k</TD>
+    <TD>kill the debugger</TD>
+  </TR>
+  <TR>
+    <TD>q</TD>
+    <TD>kill the debugger</TD>
+  </TR>
+</TABLE>
+<P>
+The Hints-&gt;Debug menu command can also be used to exit the debugger (by
+turning off the debug check box), or to restart the debugger with different
+values for the point size and resolution. This dlg can also control whether
+the fpgm and prep tables are debugged. Usually debugging will start when
+execution reaches the instructions associated with this glyph.
+<TABLE ALIGN=RIGHT>
+  <TR>
+    <TD><IMG SRC="mmcharview.png" WIDTH="431" HEIGHT="435" ALT='Intermediate version of "A" showing two other styles in background'><BR>
+      Intermediate version of "A" with two other styles in the background</TD>
+  </TR>
+</TABLE>
+<H2>
+  <A NAME="MM">Multiple Master View</A>
+</H2>
+<P>
+In a multiple master font the <A HREF="mmmenu.html#outline-char">MM</A> menu
+gives you control over which style of the font you are editing. It will also
+allow you to display any (or all) of the other styles in the
+background<BR CLEAR=ALL>
+<H2>
+  <A NAME="multilayer">Multiple Layer Editing</A>
+</H2>
+<P>
+<IMG SRC="charview-multilayer.png" WIDTH="348" HEIGHT="571" ALIGN="Right">If
+you wish to <A HREF="multilayer.html">edit type3 fonts</A>, and you have
+configured FontForge correctly, the FontForge can display a glyph broken
+down into a series of strokes and fills and allow you to edit each one.
+<P>
+<P ALIGN=Center>
+-- <A HREF="fontview.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
+<A HREF="bitmapview.html">Next</A> --
+</BODY></HTML>

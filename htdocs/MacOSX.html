@@ -1,0 +1,140 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 06-Dec-2002 -->
+  <!-- AP: Last modified: 2-Mar-2004 -->
+  <TITLE>Special issues for FontForge on Mac OS/X</TITLE>
+</HEAD>
+<BODY>
+<H1 ALIGN=Center>
+  FontForge on Mac OS/X
+</H1>
+<H2>
+  Building FontForge
+</H2>
+<P>
+Before you do anything you must get a copy of the Mac Developer Tools. You
+can get this <A HREF="http://connect.apple.com/">from Apple</A> (you can
+either download a 250Meg file, or pay them $20 to FedEx you a CD.
+<P>
+Then you must install X11. <A HREF="http://www.osxgnu.org/">The GNU Mac OS/X
+site contains a complete X11 package</A>, probably other sites do too.
+<P>
+Neat. <A HREF="http://www.apple.com/macosx/x11/download/">Now Apple is also
+distributing X11</A>.
+<P>
+It is possible to build FontForge without X11. There will be no user interface,
+but you can run scripts.
+<P>
+Thirdly you may choose to install some image libraries (I recommend at least
+installing libpng). Currently FontForge only tries to link statically with
+these libraries.
+<UL>
+  <LI>
+    <A HREF="http://www.libpng.org/pub/png/libpng.html">libpng</A> (and required
+    helper <A HREF="http://www.gzip.org/zlib/">zlib</A>)
+  <LI>
+    <A HREF="http://www.libtiff.org/">libtiff</A>
+  <LI>
+    <A HREF="http://gnuwin32.sourceforge.net/packages/libungif.htm">libungif</A>
+  <LI>
+    (see the <A HREF="index.html#Dependencies">dependencies</A> entry for a more
+    complete list)
+</UL>
+<P>
+Finally you are ready to build fontforge. Download the most recent sources
+<A HREF="index.html#source">from this site.</A> then:
+<BLOCKQUOTE>
+  <PRE>$ gunzip fontforge_full-*.tgz
+$ tar xf fontforge_full-*.tar
+$ cd fontforge
+$ configure
+$ make
+$ sudo make install
+</PRE>
+</BLOCKQUOTE>
+<H2>
+  Installing the Mac OS/X <A NAME="binary">binary</A> distribution
+</H2>
+<P>
+Before installing FontForge you should ensure that you have X windows up
+and running. You can get this
+<A HREF="http://www.apple.com/macosx/x11/download/">from apple</A>, or from
+<A HREF="http://www.osxgnu.org/">the GNU Mac OS/X site</A>. (Or you can download
+the package built without X, which has no user interface but will let you
+run scripts).
+<P>
+After that you should just be able to unpack the packages provided.
+<UL>
+  <LI>
+    <A HREF="PfaEdit-040301.pkg.sitx">Download fontforge Mac OS/X executable
+    </A>Version: 1-Mar-2004<BR>
+    (if you can't unstuff the sitx format, download a new version of stuffit
+    expander from
+    <A HREF="http://www.aladdinsys.com/downloads/software.html">http://www.aladdinsys.com/downloads/software.html)</A><BR>
+    I'm told that the package still doesn't work on some systems. I have no idea
+    why. So once again I am posting a nice simple
+    .<A HREF="pfaedit_macosx-040211.tgz">tgz</A> package that does work. 11-Feb
+  <LI>
+    <A HREF="PfaEdit-NoX-021205.pkg.sit">Download fontforge Mac OS/X WITHOUT
+    X11</A> Version: 05-Dec-2002 (a year and more out of date)<BR>
+    You might want this version if you aren't interested in downloading X onto
+    your machine.<BR>
+    Without X11 you will have no user interface, but you can run scripts.
+</UL>
+<P>
+These packages install into /usr/local/bin. You may need to add that to your
+PATH environment variable, and do something similar for MANPATH:
+<BLOCKQUOTE>
+  <PRE>$ vi ~/.cshrc
+setenv PATH /usr/local/bin:$PATH
+setenv MANPATH /usr/local/share/man:$MANPATH
+</PRE>
+</BLOCKQUOTE>
+<P>
+If your shell is bash
+<BLOCKQUOTE>
+  <PRE>$ vi ~/.bashrc
+PATH=/usr/local/bin:$PATH ; export PATH
+MANPATH=/usr/local/share/man:$MANPATH ; export MANPATH
+</PRE>
+</BLOCKQUOTE>
+<P>
+See the <A HREF="index.html#Dependencies">dependencies</A> section for external
+libraries/programs you may want to add to your system to enhance FontForge's
+capabilities.
+<H2>
+  <A NAME="Running">Running</A> FontForge on Mac OS/X
+</H2>
+<P>
+The X server (XDarwin) must be running before FontForge can start. XDarwin
+lives in the Applications folder and may be started by double clicking on
+it.
+<P>
+You may start FontForge either from an xterm or from a Terminal window. If
+you start it from a Terminal window you must first type:<BR>
+$ setenv DISPLAY :0
+<P>
+The default window manager (twm) doesn't work well with FontForge when X
+is running in rootless mode.
+<P>
+FontForge allows the window manager to position its windows for it, and twm
+does this by allowing the user to click anywhere on the screen to position
+the upper left corner of the new window. Unfortunately unless X has a window
+under the location where you want the upper left corner to be Aqua will put
+X into the background and steal the click from X.
+<P>
+<FONT COLOR="Red"><STRONG>You can only open a window if you position it so
+that it's upper left corner is on one of X's already existing
+windows.</STRONG></FONT>
+<H2>
+  Caveats for Mac OS/X
+</H2>
+<OL>
+  <LI>
+    FontForge does not conform to Apple's Human Interface Guidelines
+</OL>
+<P>
+<A HREF="http://www.hexley.com/"><IMG SRC="hexley.png" WIDTH="113" HEIGHT="127"></A><BR>
+(Hexley the platypus, unofficial Darwin mascot, copyright Jon Hooper)
+</BODY></HTML>
