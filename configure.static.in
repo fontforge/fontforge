@@ -29,9 +29,12 @@ esac
 AC_SEARCH_LIBS(dlopen, dl) dnl some systems have this in libc
 AC_SEARCH_LIBS(inet_aton, resolv) dnl some systems have this in libc
 
+dnl Is there a better way to search for the freetype2 includes?
 dnl Is there a better way to add a directory to the include path?
 
-CFLAGS="$CFLAGS -I/usr/include/freetype2/"
+AC_CHECK_FILE(/usr/include/freetype2,CFLAGS="$CFLAGS -I/usr/include/freetype2/",[
+AC_CHECK_FILE(/usr/local/include/freetype2,CFLAGS="$CFLAGS -I/usr/local/include/freetype2/",[
+AC_CHECK_FILE(/usr/X11R6/include/freetype2,CFLAGS="$CFLAGS -I/usr/X11R6/include/freetype2/",)])])
 
 dnl Some old versions of lib(un)gif don't work for us, they've got the
 dnl Function argument in the wrong place. So two checks for gif.
@@ -76,11 +79,14 @@ if test "$gww_nodynamic" = "yes"; then
  if test "$ac_cv_lib_png_png_create_read_struct" = "yes"; then
   STATIC_LIBS="$STATIC_LIBS -lpng -lz"
  fi
- if test "$ac_cv_lib_png_tiff_TIFFOpen" = "yes"; then
+ if test "$ac_cv_lib_tiff_TIFFOpen" = "yes"; then
   STATIC_LIBS="$STATIC_LIBS -ltiff"
  fi
- if test "$ac_cv_lib_png_jpeg_jpeg_CreateDecompress" = "yes"; then
+ if test "$ac_cv_lib_jpeg_jpeg_CreateDecompress" = "yes"; then
   STATIC_LIBS="$STATIC_LIBS -ljpeg"
+ fi
+ if test "$ac_cv_lib_freetype_FT_New_Face" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -lfreetype"
  fi
 fi
 
@@ -89,6 +95,9 @@ test -d libs || mkdir libs
 AC_OUTPUT(Makefile Unicode/Makefile gdraw/Makefile pfaedit/Makefile)
 
 echo Configuration defines: $DEFS
+if test "$STATIC_LIBS" != ""; then
+  echo Static Libraries: $STATIC_LIBS
+fi
 
 if test "$no_x" = "yes"; then
  echo " *****************************************************************"
