@@ -38,7 +38,7 @@ dnl Is there a better way to add a directory to the include path?
 FreeType2_IncRoot=
 if sh -c "freetype-config --prefix" >/dev/null 2>&1 ; then
  FreeType2_IncRoot=`freetype-config --prefix`
- AC_CHECK_FILE($temp/include/freetype2,CFLAGS="$CFLAGS -I$temp/include/freetype2/",FreeType2_IncRoot=)
+ AC_CHECK_FILE($FreeType2_IncRoot/include/freetype2,CFLAGS="$CFLAGS -I$FreeType2_IncRoot/include/freetype2/",FreeType2_IncRoot=)
 fi
 
 if test "FreeType2_IncRoot" = "" >/dev/null 2>&1 ; then
