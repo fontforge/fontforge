@@ -3201,6 +3201,17 @@ static void GFI_ProcessAnchor(struct gfi_data *d) {
     }
 }
 
+static void BDFsSetAsDs(SplineFont *sf) {
+    BDFFont *bdf;
+    real scale;
+
+    for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
+	scale = bdf->pixelsize / (real) (sf->ascent+sf->descent);
+	bdf->ascent = rint(sf->ascent*scale);
+	bdf->descent = bdf->pixelsize-bdf->ascent;
+    }
+}
+
 static int GFI_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	GWindow gw = GGadgetGetWindow(g);
@@ -3312,9 +3323,11 @@ return(true);
 	if ( as+des != sf->ascent+sf->descent && GGadgetIsChecked(GWidgetGetControl(gw,CID_Scale)) ) {
 	    SFScaleToEm(sf,as,des);
 	    reformat_fv = true;
+	    BDFsSetAsDs(sf);
 	} else if ( as!=sf->ascent || des!=sf->descent ) {
 	    sf->ascent = as;
 	    sf->descent = des;
+	    BDFsSetAsDs(sf);
 	    reformat_fv = true;
 	}
 	sf->italicangle = ia;
