@@ -142,7 +142,10 @@ static GWindow DlgCreate(const unichar_t *title,const unichar_t *question,
 	blabels[bcnt].text = answers[bcnt];
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor;
+    /* If we have many questions in quick succession the dlg will jump around*/
+    /*  as it tracks the cursor (which moves to the buttons). That's not good*/
+    /*  So I don't do undercursor here */
+    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_centered;
     if ( restrict_input )
 	wattrs.mask |= wam_restrict;
     else 
@@ -150,7 +153,8 @@ static GWindow DlgCreate(const unichar_t *title,const unichar_t *question,
     wattrs.not_restricted = true;
     wattrs.restrict_input_to_me = 1;
     wattrs.event_masks = ~(1<<et_charup);
-    wattrs.undercursor = 1;
+    /*wattrs.undercursor = 1;*/
+    wattrs.centered = 2;
     wattrs.cursor = ct_pointer;
     wattrs.window_title = (unichar_t *) title;
     pos.x = pos.y = 0;

@@ -134,7 +134,7 @@ typedef struct ggadgetdata {
 	/* Reuse some flag values for different widgets */
 	gg_file_pulldown=gg_sb_vert, gg_file_multiple = gg_list_multiplesel
 	} flags;
-    unichar_t *popup_msg;		/* Brief help message */
+    const unichar_t *popup_msg;		/* Brief help message */
     int (*handle_controlevent)(GGadget *, GEvent *);
 } GGadgetData;
 
@@ -180,6 +180,7 @@ int GGadgetEditCmd(GGadget *g,enum editor_commands cmd);
 int GGadgetActiveGadgetEditCmd(GWindow gw,enum editor_commands cmd);
 
 void GTextFieldSelect(GGadget *g,int sel_start, int sel_end);
+void GTextFieldShow(GGadget *g,int pos);
 void GGadgetClearList(GGadget *g);
 void GGadgetSetList(GGadget *g, GTextInfo **ti, int32 copyit);
 GTextInfo **GGadgetGetList(GGadget *g,int32 *len);	/* Do not free!!! */

@@ -128,7 +128,7 @@ static void FVFigureBitmaps(FontView *fv,double *sizes) {
     for ( i=0; sizes[i]!=0 ; ++i ) if ( sizes[i]>0 ) {
 	if ( first && autohint_before_rasterize )
 	    SplineFontAutoHint(fv->sf);
-	bdf = SplineFontRasterize(fv->sf,sizes[i]);
+	bdf = SplineFontRasterize(fv->sf,sizes[i],true);
 	bdf->next = fv->sf->bitmaps;
 	fv->sf->bitmaps = bdf;
 	fv->sf->changed = true;
@@ -175,9 +175,9 @@ static void ReplaceBDFC(SplineFont *sf,double *sizes,int enc) {
 	for ( i=0; sizes[i]!=0 && sizes[i]!=bdf->pixelsize; ++i );
 	if ( sizes[i]!=0 ) {
 	    if ( first && autohint_before_rasterize && 
-		    (sf->chars[enc]->changedsincelasthhinted || sf->chars[enc]->changedsincelastvhinted ) &&
+		    sf->chars[enc]->changedsincelasthinted &&
 		    !sf->chars[enc]->manualhints )
-		SplineCharAutoHint(sf->chars[enc]);
+		SplineCharAutoHint(sf->chars[enc],true);
 	    first = false;
 	    bdfc = SplineCharRasterize(sf->chars[enc],bdf->pixelsize);
 	    if ( bdf->chars[enc]==NULL )

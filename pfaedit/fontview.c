@@ -598,6 +598,7 @@ static void FVMenuPrivateInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_Stroke	2203
 #define MID_RmOverlap	2204
 #define MID_Simplify	2205
+#define MID_Correct	2206
 #define MID_BuildAccent	2208
 #define MID_AvailBitmaps	2210
 #define MID_RegenBitmaps	2211
@@ -967,6 +968,26 @@ static void FVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     GProgressEndIndicator();
 }
 
+static void FVMenuCorrectDir(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    int i, cnt=0;
+    static unichar_t correcting[] = { 'C','o','r','r','e','c','t','i','n','g',' ','D','i','r','e','c','t','i','o','n','.','.','.',  '\0' };
+
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
+	++cnt;
+    GProgressStartIndicator(10,correcting,correcting,NULL,cnt,1);
+
+    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
+	SplineChar *sc = fv->sf->chars[i];
+	SCPreserveState(sc);
+	sc->splines = SplineSetsCorrect(sc->splines);
+	SCCharChangedUpdate(sc,fv);
+	if ( !GProgressNext())
+    break;
+    }
+    GProgressEndIndicator();
+}
+
 static void FVMenuRound2Int(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     int i;
@@ -1146,7 +1167,7 @@ static void FVMenuSize(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	if ( fv->antialias )
 	    new = SplineFontAntiAlias(fv->sf,dspsize,4);
 	else
-	    new = SplineFontRasterize(fv->sf,dspsize);
+	    new = SplineFontRasterize(fv->sf,dspsize,true);
 	BDFFontFree(fv->filled);
 	fv->filled = new;
 	FVChangeDisplayFont(fv,new);
@@ -1184,7 +1205,7 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    /* some Transformations make sense on bitmaps now */
 	  break;
 	  case MID_Stroke: case MID_RmOverlap:
-	  case MID_Simplify: case MID_Round:
+	  case MID_Simplify: case MID_Round: case MID_Correct:
 	    mi->ti.disabled = anychars==-1 || fv->sf->onlybitmaps;
 	  break;
 	  case MID_RegenBitmaps:
@@ -1297,6 +1318,7 @@ static void FVMenuAutoHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     int i, cnt=0;
     static unichar_t autohint[] = { 'A','u','t','o','h','i','n','t','i','n','g',' ','f','o','n','t',  '\0' };
+    int removeOverlap = e==NULL || !(e->u.mouse.state&ksm_shift);
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
 	++cnt;
@@ -1305,7 +1327,7 @@ static void FVMenuAutoHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
 	sc->manualhints = false;
-	SplineCharAutoHint(sc);
+	SplineCharAutoHint(sc,removeOverlap);
 	SCUpdateAll(sc);
 	if ( !GProgressNext())
     break;
@@ -1316,11 +1338,15 @@ static void FVMenuAutoHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     int anychars = FVAnyCharSelected(fv);
+    int removeOverlap;
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
 	  case MID_AutoHint:
 	    mi->ti.disabled = anychars==-1;
+	    removeOverlap = e==NULL || !(e->u.mouse.state&ksm_shift);
+	    free(mi->ti.text);
+	    mi->ti.text = uc_copy(removeOverlap?"AutoHint": "Full AutoHint");
 	  break;
 	}
     }
@@ -1385,6 +1411,7 @@ static unichar_t autotrace[] = { 'A','u','t','o','t','r','a','c', 'e', /*'.', '.
 static unichar_t transform[] = { 'T','r','a','n','s','f','o','r', 'm', '.', '.', '.',  '\0' };
 static unichar_t stroke[] = { 'E','x','p','a','n','d',' ','S', 't', 'r', 'o','k', 'e', '.', '.', '.',  '\0' };
 static unichar_t rmoverlap[] = { 'R','e','m','o','v','e',' ','O', 'v', 'e', 'r','l', 'a', 'p',  '\0' };
+static unichar_t correct[] = { 'C','o','r','r','e','c','t',' ','D','i','r','e','c','t','i','o','n',  '\0' };
 static unichar_t simplify[] = { 'S','i','m','p','l','i','f','y',  '\0' };
 static unichar_t round2int[] = { 'R','o','u','n','d',' ','t','o',' ','I','n','t',  '\0' };
 static unichar_t buildaccent[] = { 'B','u','i','l','d',' ','A','c','c','e','n','t','e','d',' ','C','h','a','r','s',  '\0' };
@@ -1427,7 +1454,7 @@ static GMenuItem fllist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { save, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'S' }, 'S', ksm_control, NULL, NULL, FVMenuSave },
     { { saveas, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'a' }, 'S', ksm_control|ksm_shift, NULL, NULL, FVMenuSaveAs },
-    { { generate, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'G' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuGenerate },
+    { { generate, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'G' }, 'G', ksm_control|ksm_shift, NULL, NULL, FVMenuGenerate },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { import, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'I' }, 'I', ksm_control|ksm_shift, NULL, NULL, FVMenuImport },
     { { mergekern, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'M' }, 'K', ksm_control|ksm_shift, NULL, NULL, FVMenuMergeKern },
@@ -1478,6 +1505,8 @@ static GMenuItem ellist[] = {
     { { simplify, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'S' }, 'M', ksm_control|ksm_shift, NULL, NULL, FVMenuSimplify, MID_Simplify },
     { { round2int, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'I' }, '_', ksm_control|ksm_shift, NULL, NULL, FVMenuRound2Int, MID_Round },
     { { autotrace, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'r' }, 'T', ksm_control|ksm_shift, NULL, NULL, FVMenuAutotrace, MID_Autotrace },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { correct, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'C' }, '\0', 0, NULL, NULL, FVMenuCorrectDir, MID_Correct },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { buildaccent, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'B' }, 'A', ksm_control|ksm_shift, NULL, NULL, FVMenuBuildAccent, MID_BuildAccent },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
@@ -1564,7 +1593,7 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 }
 
 static GMenuItem htlist[] = {
-    { { autohint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'H' }, 'H', ksm_control|ksm_shift, NULL, NULL, FVMenuAutoHint },
+    { { autohint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'H' }, 'H', ksm_control|ksm_shift, NULL, NULL, FVMenuAutoHint, MID_AutoHint },
     { NULL }
 };
 
@@ -2291,7 +2320,7 @@ void FontViewReformat(FontView *fv) {
     if ( fv->antialias )
 	new = SplineFontAntiAlias(fv->sf,fv->filled->pixelsize,4);
     else
-	new = SplineFontRasterize(fv->sf,fv->filled->pixelsize);
+	new = SplineFontRasterize(fv->sf,fv->filled->pixelsize,true);
     BDFFontFree(fv->filled);
     if ( fv->filled == fv->show )
 	fv->show = new;
@@ -2412,7 +2441,7 @@ FontView *FontViewCreate(SplineFont *sf) {
 		sf->display_size<0?-sf->display_size:default_fv_font_size,4);
     else
 	bdf = SplineFontRasterize(fv->sf,
-		sf->display_size<0?-sf->display_size:default_fv_font_size);
+		sf->display_size<0?-sf->display_size:default_fv_font_size,true);
     fv->filled = bdf;
     if ( sf->display_size>0 ) {
 	for ( bdf=sf->bitmaps; bdf!=NULL && bdf->pixelsize!=sf->display_size ;

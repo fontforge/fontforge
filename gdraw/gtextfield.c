@@ -275,7 +275,7 @@ return( sel );
 return( i );
 }
 
-static void GTextFieldShow(GTextField *gt, int pos) {
+static void GTextField_Show(GTextField *gt, int pos) {
     int i, ll, m, xoff, loff;
     unichar_t *bitext = gt->dobitext || gt->password?gt->bidata.text:gt->text;
 
@@ -503,19 +503,19 @@ static int gtextfield_editcmd(GGadget *g,enum editor_commands cmd) {
 return( true );
       case ec_clear:
 	GTextFieldReplace(gt,nullstr);
-	GTextFieldShow(gt,gt->sel_start);
+	GTextField_Show(gt,gt->sel_start);
 return( true );
       case ec_cut:
 	GTextFieldGrabSelection(gt,sn_clipboard);
 	GTextFieldReplace(gt,nullstr);
-	GTextFieldShow(gt,gt->sel_start);
+	GTextField_Show(gt,gt->sel_start);
 return( true );
       case ec_copy:
 	GTextFieldGrabSelection(gt,sn_clipboard);
 return( true );
       case ec_paste:
 	GTextFieldPaste(gt,sn_clipboard);
-	GTextFieldShow(gt,gt->sel_start);
+	GTextField_Show(gt,gt->sel_start);
 return( true );
       case ec_undo:
 	if ( gt->oldtext!=NULL ) {
@@ -526,7 +526,7 @@ return( true );
 	    s = gt->sel_end; gt->sel_end = gt->sel_oldend; gt->sel_oldend = s;
 	    s = gt->sel_base; gt->sel_base = gt->sel_oldbase; gt->sel_oldbase = s;
 	    GTextFieldRefigureLines(gt, 0);
-	    GTextFieldShow(gt,gt->sel_end);
+	    GTextField_Show(gt,gt->sel_end);
 	}
 return( true );
       case ec_redo:		/* Hmm. not sure */ /* we don't do anything */
@@ -541,13 +541,13 @@ return( true );			/* but probably best to return success */
 		gt->sel_start = GTextFieldSelBackword(gt->text,gt->sel_start);
 	}
 	GTextFieldReplace(gt,nullstr);
-	GTextFieldShow(gt,gt->sel_start);
+	GTextField_Show(gt,gt->sel_start);
 return( true );
       case ec_deleteword:
         if ( gt->sel_start==gt->sel_end && gt->sel_start!=0 )
 	    GTextFieldSelectWord(gt,gt->sel_start,&gt->sel_start,&gt->sel_end);
 	GTextFieldReplace(gt,nullstr);
-	GTextFieldShow(gt,gt->sel_start);
+	GTextField_Show(gt,gt->sel_start);
 return( true );
     }
 return( false );
@@ -642,7 +642,7 @@ return( true );
 	    } else {
 		gt->sel_end = gt->sel_base = gt->sel_start;
 	    }
-	    GTextFieldShow(gt,gt->sel_start);
+	    GTextField_Show(gt,gt->sel_start);
 	  break;
 	  case GK_Right: case GK_KP_Right:
 	    if ( gt->sel_start==gt->sel_end ) {
@@ -658,7 +658,7 @@ return( true );
 	    } else {
 		gt->sel_start = gt->sel_base = gt->sel_end;
 	    }
-	    GTextFieldShow(gt,gt->sel_end);
+	    GTextField_Show(gt,gt->sel_end);
 	  break;
 	  case GK_Up: case GK_KP_Up:
 	    if ( !gt->multi_line )
@@ -686,7 +686,7 @@ return( true );
 		    gt->sel_start = gt->sel_end = gt->sel_base = pos;
 		}
 	    }
-	    GTextFieldShow(gt,gt->sel_start);
+	    GTextField_Show(gt,gt->sel_start);
 	  break;
 	  case GK_Down: case GK_KP_Down:
 	    if ( !gt->multi_line )
@@ -714,7 +714,7 @@ return( true );
 		    gt->sel_start = gt->sel_end = gt->sel_base = pos;
 		}
 	    }
-	    GTextFieldShow(gt,gt->sel_start);
+	    GTextField_Show(gt,gt->sel_start);
 	  break;
 	  case GK_Home: case GK_Begin: case GK_KP_Home: case GK_KP_Begin:
 	    if ( !(event->u.chr.state&ksm_shift) ) {
@@ -722,7 +722,7 @@ return( true );
 	    } else {
 		gt->sel_start = 0; gt->sel_end = gt->sel_base;
 	    }
-	    GTextFieldShow(gt,gt->sel_start);
+	    GTextField_Show(gt,gt->sel_start);
 	  break;
 	  case GK_End: case GK_KP_End:
 	    if ( !(event->u.chr.state&ksm_shift) ) {
@@ -730,7 +730,7 @@ return( true );
 	    } else {
 		gt->sel_start = gt->sel_base; gt->sel_end = u_strlen(gt->text);
 	    }
-	    GTextFieldShow(gt,gt->sel_end);
+	    GTextField_Show(gt,gt->sel_end);
 	  break;
 	  case 'A': case 'a':
 	    if ( event->u.chr.state&ksm_control ) {	/* Select All */
@@ -775,7 +775,7 @@ return( false );
 	  case GK_Return: case GK_Linefeed:
 	    if ( gt->accepts_returns ) {
 		GTextFieldReplace(gt,newlinestr);
-		GTextFieldShow(gt,gt->sel_start);
+		GTextField_Show(gt,gt->sel_start);
 return( true );
 	    }
 	  break;
@@ -786,14 +786,14 @@ return( false );
 	  case GK_Tab:
 	    if ( gt->accepts_tabs ) {
 		GTextFieldReplace(gt,tabstr);
-		GTextFieldShow(gt,gt->sel_start);
+		GTextField_Show(gt,gt->sel_start);
 return( true );
 	    }
 	  break;
 	}
     } else {
 	GTextFieldReplace(gt,event->u.chr.chars);
-	GTextFieldShow(gt,gt->sel_start);
+	GTextField_Show(gt,gt->sel_start);
 return( true );
     }
 
@@ -1185,7 +1185,7 @@ return( true );
 	if ( event->type==et_mouseup ) {
 	    GDrawCancelTimer(gt->pressed); gt->pressed = NULL;
 	    if ( gt->sel_start==gt->sel_end )
-		GTextFieldShow(gt,gt->sel_start);
+		GTextField_Show(gt,gt->sel_start);
 	}
 	if ( refresh )
 	    _ggadget_redraw(g);
@@ -1333,7 +1333,7 @@ return( false );
     } else if ( event->type == et_drop ) {
 	gt->sel_start = gt->sel_end = gt->sel_base = end-gt->text;
 	GTextFieldPaste(gt,sn_drag_and_drop);
-	GTextFieldShow(gt,gt->sel_start);
+	GTextField_Show(gt,gt->sel_start);
 	_ggadget_redraw(&gt->g);
     } else
 return( false );
@@ -1384,7 +1384,7 @@ return;
     free(old);
     gt->sel_start = gt->sel_end = gt->sel_base = u_strlen(tit);
     GTextFieldRefigureLines(gt,0);
-    GTextFieldShow(gt,gt->sel_start);
+    GTextField_Show(gt,gt->sel_start);
     _ggadget_redraw(g);
 }
 
@@ -1402,6 +1402,13 @@ static void GTextFieldSetFont(GGadget *g,FontInstance *new) {
 static FontInstance *GTextFieldGetFont(GGadget *g) {
     GTextField *gt = (GTextField *) g;
 return( gt->font );
+}
+
+void GTextFieldShow(GGadget *g,int pos) {
+    GTextField *gt = (GTextField *) g;
+
+    GTextField_Show(gt,pos);
+    _ggadget_redraw(g);
 }
 
 void GTextFieldSelect(GGadget *g,int start, int end) {

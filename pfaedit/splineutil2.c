@@ -991,6 +991,7 @@ return;
 	base->nextcp.y = base->me.y - len*sin(angle);
 	base->nextcp.x = rint(base->nextcp.x*1024)/1024;
 	base->nextcp.y = rint(base->nextcp.y*1024)/1024;
+	SplineRefigure(base->next);
     }
 }
 
@@ -1059,6 +1060,7 @@ return;
 	base->prevcp.y = base->me.y - len*sin(angle);
 	base->prevcp.x = rint(base->prevcp.x*1024)/1024;
 	base->prevcp.y = rint(base->prevcp.y*1024)/1024;
+	SplineRefigure(base->prev);
     }
 }
 
@@ -1310,9 +1312,14 @@ SplineSet *SplineSetsCorrect(SplineSet *base) {
 
     check_cnt = 0;
     for ( i=0; i<es.cnt && check_cnt<sscnt; ++i ) {
-	if ( es.edges[i]==NULL && !es.interesting[i])	/* interesting things happen when we add (or remove) entries */
-    continue;			/* and where we have points of inflection */
 	active = ActiveEdgesRefigure(&es,active,i);
+	if ( es.edges[i]!=NULL )
+    continue;			/* Just too hard to get the edges sorted when we are at a start vertex */
+	if ( /*es.edges[i]==NULL &&*/ !es.interesting[i] &&
+		!(i>0 && es.interesting[i-1]) && !(i>0 && es.edges[i-1]!=NULL) &&
+		!(i<es.cnt-1 && es.edges[i+1]!=NULL) &&
+		!(i<es.cnt-1 && es.interesting[i+1]))	/* interesting things happen when we add (or remove) entries */
+    continue;			/* and where we have points of inflection */
 	for ( apt=active; apt!=NULL; apt = e) {
 	    check_cnt += SSCheck(base,apt,true,&es);
 	    winding = apt->up?1:-1;

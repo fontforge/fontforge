@@ -30,6 +30,8 @@
 #include "splinefont.h"
 #include "ustring.h"
 
+int seperate_hint_controls=1;
+
 static unichar_t poppointer[] = { 'P','o','i','n','t','e','r',  '\0' };
 static unichar_t popmag[] = { 'M','a','g','n','i','f','y',' ','(','M','i','n','i','f','y',' ','w','i','t','h',' ','a','l','t',')',  '\0' };
 static unichar_t popcurve[] = { 'A','d','d',' ','a',' ','c','u','r','v','e',' ','p','o','i','n','t',  '\0' };
@@ -528,9 +530,11 @@ void CVToolsPopup(CharView *cv, GEvent *event) {
 #define CID_VBack	1002
 #define CID_VGrid	1003
 #define CID_VHints	1004
-#define CID_EFore	1005
-#define CID_EBack	1006
-#define CID_EGrid	1007
+#define CID_VHHints	1005
+#define CID_VVHints	1006
+#define CID_EFore	1007
+#define CID_EBack	1008
+#define CID_EGrid	1009
 
 static int cvlayers_e_h(GWindow gw, GEvent *event) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
@@ -554,8 +558,20 @@ static int cvlayers_e_h(GWindow gw, GEvent *event) {
 	      case CID_VGrid:
 		CVShows.showgrids = cv->showgrids = GGadgetIsChecked(event->u.control.g);
 	      break;
+	      case CID_VHHints:
+		CVShows.showhhints = cv->showhhints =
+			GGadgetIsChecked(event->u.control.g);
+		cv->back_img_out_of_date = true;	/* only this cv */
+	      break;
+	      case CID_VVHints:
+		CVShows.showvhints = cv->showvhints =
+			GGadgetIsChecked(event->u.control.g);
+		cv->back_img_out_of_date = true;	/* only this cv */
+	      break;
 	      case CID_VHints:
-		CVShows.showhints = cv->showhints = GGadgetIsChecked(event->u.control.g);
+		CVShows.showhhints = cv->showhhints =
+		    CVShows.showvhints = cv->showvhints =
+			GGadgetIsChecked(event->u.control.g);
 		cv->back_img_out_of_date = true;	/* only this cv */
 	      break;
 	      case CID_EFore:
@@ -580,15 +596,15 @@ GWindow CVMakeLayers(CharView *cv) {
     GWindowAttrs wattrs;
     unichar_t title[] = { 'L', 'a', 'y', 'e', 'r', 's', '\0' };
     GWindow layers;
-    GGadgetCreateData gcd[13];
-    GTextInfo label[13];
+    GGadgetCreateData gcd[15];
+    GTextInfo label[15];
     static GBox radio_box = { bt_none, bs_rect, 0, 0, 0, 0, 0,0,0,0, COLOR_DEFAULT,COLOR_DEFAULT };
     static unichar_t isvis[] =  { 'I', 's', ' ', 'L', 'a', 'y', 'e', 'r', ' ', 'V', 'i', 's', 'i', 'b', 'l', 'e', '?',  '\0' };
     static unichar_t isedit[] = { 'I', 's', ' ', 'L', 'a', 'y', 'e', 'r', ' ', 'E', 'd', 'i', 't', 'a', 'b', 'l', 'e', '?',  '\0' };
     static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a', '\0' };
     GFont *font;
     FontRequest rq;
-    int i;
+    int i, base;
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_positioned|wam_wtitle;
@@ -598,6 +614,7 @@ GWindow CVMakeLayers(CharView *cv) {
     wattrs.window_title = title;
 
     r.width = 85; r.height = 94;
+    if ( seperate_hint_controls ) { r.height += 17; r.width += 7; }
     r.x = -r.width-6; r.y = cv->mbh+187+45/*25*/;	/* 45 is right if there's decor, 25 when none. twm gives none, kde gives decor */
     layers = GWidgetCreatePalette( cv->gw, &r, cvlayers_e_h, cv, &wattrs );
 
@@ -657,61 +674,101 @@ GWindow CVMakeLayers(CharView *cv) {
     gcd[5].gd.box = &radio_box;
     gcd[5].creator = GCheckBoxCreate;
 
-    gcd[6].gd.pos.x = 5; gcd[6].gd.pos.y = 72; 
-    gcd[6].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
-    gcd[6].gd.cid = CID_VHints;
-    gcd[6].gd.popup_msg = isvis;
-    gcd[6].gd.box = &radio_box;
-    gcd[6].creator = GCheckBoxCreate;
+    if ( seperate_hint_controls ) {
+	gcd[6].gd.pos.x = 5; gcd[6].gd.pos.y = 72; 
+	gcd[6].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
+	gcd[6].gd.cid = CID_VHHints;
+	gcd[6].gd.popup_msg = isvis;
+	gcd[6].gd.box = &radio_box;
+	gcd[6].creator = GCheckBoxCreate;
+
+	gcd[7].gd.pos.x = 5; gcd[7].gd.pos.y = 89; 
+	gcd[7].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
+	gcd[7].gd.cid = CID_VVHints;
+	gcd[7].gd.popup_msg = isvis;
+	gcd[7].gd.box = &radio_box;
+	gcd[7].creator = GCheckBoxCreate;
+	base = 8;
+    } else {
+	gcd[6].gd.pos.x = 5; gcd[6].gd.pos.y = 72; 
+	gcd[6].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
+	gcd[6].gd.cid = CID_VHints;
+	gcd[6].gd.popup_msg = isvis;
+	gcd[6].gd.box = &radio_box;
+	gcd[6].creator = GCheckBoxCreate;
+	base = 7;
+    }
 
 
-    label[7].text = (unichar_t *) "Fore";
-    label[7].text_is_1byte = true;
-    gcd[7].gd.label = &label[7];
-    gcd[7].gd.pos.x = 27; gcd[7].gd.pos.y = 21; 
-    gcd[7].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
-    gcd[7].gd.cid = CID_EFore;
-    gcd[7].gd.popup_msg = isedit;
-    gcd[7].gd.box = &radio_box;
-    gcd[7].creator = GRadioCreate;
+    label[base].text = (unichar_t *) "Fore";
+    label[base].text_is_1byte = true;
+    gcd[base].gd.label = &label[base];
+    gcd[base].gd.pos.x = 27; gcd[base].gd.pos.y = 21; 
+    gcd[base].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
+    gcd[base].gd.cid = CID_EFore;
+    gcd[base].gd.popup_msg = isedit;
+    gcd[base].gd.box = &radio_box;
+    gcd[base].creator = GRadioCreate;
 
-    label[8].text = (unichar_t *) "Back";
-    label[8].text_is_1byte = true;
-    gcd[8].gd.label = &label[8];
-    gcd[8].gd.pos.x = 27; gcd[8].gd.pos.y = 38; 
-    gcd[8].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
-    gcd[8].gd.cid = CID_EBack;
-    gcd[8].gd.popup_msg = isedit;
-    gcd[8].gd.box = &radio_box;
-    gcd[8].creator = GRadioCreate;
+    label[base+1].text = (unichar_t *) "Back";
+    label[base+1].text_is_1byte = true;
+    gcd[base+1].gd.label = &label[base+1];
+    gcd[base+1].gd.pos.x = 27; gcd[base+1].gd.pos.y = 38; 
+    gcd[base+1].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
+    gcd[base+1].gd.cid = CID_EBack;
+    gcd[base+1].gd.popup_msg = isedit;
+    gcd[base+1].gd.box = &radio_box;
+    gcd[base+1].creator = GRadioCreate;
 
-    label[9].text = (unichar_t *) "Grid";
-    label[9].text_is_1byte = true;
-    gcd[9].gd.label = &label[9];
-    gcd[9].gd.pos.x = 27; gcd[9].gd.pos.y = 55; 
-    gcd[9].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
-    gcd[9].gd.cid = CID_EGrid;
-    gcd[9].gd.popup_msg = isedit;
-    gcd[9].gd.box = &radio_box;
-    gcd[9].creator = GRadioCreate;
+    label[base+2].text = (unichar_t *) "Grid";
+    label[base+2].text_is_1byte = true;
+    gcd[base+2].gd.label = &label[base+2];
+    gcd[base+2].gd.pos.x = 27; gcd[base+2].gd.pos.y = 55; 
+    gcd[base+2].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
+    gcd[base+2].gd.cid = CID_EGrid;
+    gcd[base+2].gd.popup_msg = isedit;
+    gcd[base+2].gd.box = &radio_box;
+    gcd[base+2].creator = GRadioCreate;
 
-    label[10].text = (unichar_t *) "Hints";
-    label[10].text_is_1byte = true;
-    gcd[10].gd.label = &label[10];
-    gcd[10].gd.pos.x = 47; gcd[10].gd.pos.y = 72; 
-    gcd[10].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
-    gcd[10].creator = GLabelCreate;
+    gcd[base+cv->drawmode].gd.flags |= gg_cb_on;
+    base += 3;
 
-    gcd[11].gd.pos.x = 1; gcd[11].gd.pos.y = 1;
-    gcd[11].gd.pos.width = 83; gcd[11].gd.pos.height = 92;
-    gcd[11].gd.flags = gg_enabled | gg_visible|gg_pos_in_pixels;
-    gcd[11].creator = GGroupCreate;
+    if ( seperate_hint_controls ) {
+	label[base].text = (unichar_t *) "HHints";
+	label[base].text_is_1byte = true;
+	gcd[base].gd.label = &label[base];
+	gcd[base].gd.pos.x = 47; gcd[base].gd.pos.y = 72; 
+	gcd[base].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
+	gcd[base++].creator = GLabelCreate;
 
-    gcd[7+cv->drawmode].gd.flags |= gg_cb_on;
+	label[base].text = (unichar_t *) "VHints";
+	label[base].text_is_1byte = true;
+	gcd[base].gd.label = &label[base];
+	gcd[base].gd.pos.x = 47; gcd[base].gd.pos.y = 89; 
+	gcd[base].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
+	gcd[base++].creator = GLabelCreate;
+    } else {
+	label[base].text = (unichar_t *) "Hints";
+	label[base].text_is_1byte = true;
+	gcd[base].gd.label = &label[base];
+	gcd[base].gd.pos.x = 47; gcd[base].gd.pos.y = 72; 
+	gcd[base].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
+	gcd[base++].creator = GLabelCreate;
+    }
+
+    gcd[base].gd.pos.x = 1; gcd[base].gd.pos.y = 1;
+    gcd[base].gd.pos.width = r.width-2; gcd[base].gd.pos.height = r.height-2;
+    gcd[base].gd.flags = gg_enabled | gg_visible|gg_pos_in_pixels;
+    gcd[base++].creator = GGroupCreate;
+
     if ( cv->showfore ) gcd[3].gd.flags |= gg_cb_on;
     if ( cv->showback ) gcd[4].gd.flags |= gg_cb_on;
     if ( cv->showgrids ) gcd[5].gd.flags |= gg_cb_on;
-    if ( cv->showhints ) gcd[6].gd.flags |= gg_cb_on;
+    if ( seperate_hint_controls ) {
+	if ( cv->showhhints ) gcd[6].gd.flags |= gg_cb_on;
+	if ( cv->showvhints ) gcd[7].gd.flags |= gg_cb_on;
+    } else
+	if ( cv->showhhints || cv->showvhints ) gcd[6].gd.flags |= gg_cb_on;
 
     GGadgetsCreate(layers,gcd);
     GWidgetRequestVisiblePalette(layers,true);

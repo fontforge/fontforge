@@ -277,7 +277,7 @@ typedef struct gwindow_attrs {
     struct gwindow *icon;		/* A bitmap pixmap, or NULL */
     unsigned int nodecoration: 1;	/* no wm decoration */
     unsigned int positioned: 1;		/* position information is important */
-    unsigned int centered: 1;		/* center the window on the screen. pos.width&pos.height are used */
+    unsigned int centered: 2;		/* center the window on the screen. pos.width&pos.height are used */
     unsigned int undercursor: 1;	/* center the window under the cursor. */
     unsigned int noresize: 1;		/* set min and max sizes to current size */
     unsigned int restrict_input_to_me: 1;/* for dialogs, no input outside of dlg */

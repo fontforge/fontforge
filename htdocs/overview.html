@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 29-Apr-2001 -->
+  <!-- AP: Last modified: 6-May-2001 -->
   <TITLE>PfaEdit -- A postscript&reg; font editor</TITLE>
 </HEAD>
 <BODY>
@@ -400,9 +400,24 @@ to draw small fonts.
     you to override its choices.
     <P>
     Adobe also has a mechanism for handling dished serifs called flex hinting.
-    This means a curve that is only slightly deformed from being a horizontal
-    (or vertical) line will display as a line at small point sizes and as a curve
-    at larger ones. PfaEdit will use these when it seems appropriate.
+    This means a curve that is only slightly deformed from the horizontal (or
+    vertical) will display as a line at small point sizes and as a curve at larger
+    ones. PfaEdit will use these when it seems appropriate.
+    <P>
+    The original version of hints did not allow them to overlap, this meant that
+    most serifs could not be described, Adobe then developed a mechanism called
+    hint substitution which allows for different sets of non-overlapping hints
+    to exist in different parts of the character. There are still shapes which
+    cannot be fully hinted, but hint substitution is an improvement. PfaEdit
+    will use hint substitution when it can.
+    <P>
+    Most recently Adobe has provide a means to control the counters -- the spaces
+    between stems -- in a character. The original Type1 description provided
+    support for the horizontal counters in "m" and the vertical counters in "E"
+    but more complex shapes could not be dealt with. Counter Hints (in a type1
+    font) may only be used with non-latin (non-greek, non-cyrillic) character
+    sets, but in OpenType this restriction appears to have been relaxed. PfaEdit
+    will generate counter hints when appropriate.
     <P>
     Adobe provides some font-wide hinting mechanisms. The two most obvious are
     the BlueValues and StemSnap settings in the private dictionary. BlueValues
@@ -442,6 +457,9 @@ to draw small fonts.
     BlueValues to generate cvt entries that force characters to have the same
     height at small pointsizes.
 </DL>
+<P>
+Most of my <A HREF="hinting.html">hinting user interface</A> is designed
+with PostScript fonts in mind.
 <H3>
   <A NAME="References">References</A>
 </H3>
@@ -559,7 +577,7 @@ that was just to keep them from crowding things, you can move them around)
 are two palettes, one a palette of tools, and the other a palette controlling
 what layers (foreground, background, grid, hints) are visible and editable.
 <P>
-<IMG SRC="CharView.png" WIDTH="544" HEIGHT="615">
+<IMG SRC="charview2.png" WIDTH="544" HEIGHT="656">
 <H3>
   <A NAME="BitmapView">Bitmap View</A>
 </H3>

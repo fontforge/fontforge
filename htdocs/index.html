@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 30-Apr-2001 -->
+  <!-- AP: Last modified: 6-May-2001 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -29,6 +29,8 @@ Contents
   <LI>
     <A HREF="#change-log">Change Log</A>
   <LI>
+    <A HREF="index.html#Lacks">Things missing...</A>
+  <LI>
     <A HREF="#known-bugs">Known Bugs</A>
   <LI>
     <A HREF="#bugs">Reporting Bugs</A>
@@ -43,10 +45,16 @@ know when you do</A>.
 <H2>
   <A NAME="binary">Binary</A> distributions:
 </H2>
+<P>
+I am retaining the 3-May distributions for a while, as I suspect hint
+substitution will be buggy for a bit.
 <UL>
   <LI>
-    <A HREF="pfaedit-280401.tgz">Download pfaedit linux-i386 RedHat 7.0
-    </A><A NAME="downloads">executable</A> Version: 28-Apr-2001
+    <A HREF="pfaedit-060501.tgz">Download pfaedit linux-i386 RedHat 7.0
+    </A><A NAME="downloads">executable</A> Version: 06-May-2001
+  <LI>
+    <A HREF="pfaedit-030501.tgz">Download pfaedit linux-i386 RedHat 7.0
+    </A><A NAME="downloads">executable</A> Version: 03-May-2001
   <LI>
     <A HREF="pfaedit_nbsd_alpha_tar.gz">Download pfaedit netbsd-alpha</A> executable
     with library Version: 14-Dec-2000<BR>
@@ -60,7 +68,27 @@ know when you do</A>.
   <A NAME="source">Source</A> distribution
 </H2>
 <P>
-You must download the following three packages. Version: 30-Apr-2001
+You must download the following three packages. Version: 03-May-2001
+<UL>
+  <LI>
+    <A HREF="libgunicode-060501.tgz">Unicode library source</A> (6 May 2001)<BR>
+    --
+    <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGUnicode/index.html">docs</A>
+  <LI>
+    <A HREF="libgdraw-060501.tgz">Unicode widget library source</A> (6 May
+    2001)<BR>
+    --
+    <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
+  <LI>
+    <A HREF="pfaedit_src-060501.tgz">Pfaedit source</A> (06 May 2001)<BR>
+    -- <A HREF="overview.html">docs</A>
+  <LI>
+    If you want to do autotracing around character images you should also download
+    Martin Weber's
+    <A HREF="http://homepages.go.com/~martweb/AutoTrace.htm">autotrace program.</A>
+</UL>
+<P>
+You must download the following three packages. Version: 03-May-2001
 <UL>
   <LI>
     <A HREF="libgunicode-280401.tgz">Unicode library source</A> (28 Apr 2001)<BR>
@@ -72,7 +100,7 @@ You must download the following three packages. Version: 30-Apr-2001
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
   <LI>
-    <A HREF="pfaedit_src-300401.tgz">Pfaedit source</A> (30 Apr 2001)<BR>
+    <A HREF="pfaedit_src-030501.tgz">Pfaedit source</A> (03 May 2001)<BR>
     -- <A HREF="overview.html">docs</A>
   <LI>
     If you want to do autotracing around character images you should also download
@@ -128,9 +156,68 @@ You might also want to pull down some unicode bitmap fonts that pfaedit uses
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H2>
 <UL>
- <LI>3 May 2001
- <UL><LI>Oops. Poscript generation would crash if there were many blank
- characters.</UL>
+  <LI>
+    6 May 2001
+    <UL>
+      <LI>
+	Redid <A HREF="hinting.html">hinting</A> to support hint substitution and
+	counter hinting in Postscript (&amp; opentype)
+	<UL>
+	  <LI>
+	    Hints now have an extent in both dimensions, indicating over what parts of
+	    a character they should be active.
+	  <LI>
+	    Dotted lines are used to show the extent of a hint in the primary dimension
+	  <LI>
+	    I draw horizontal hints and vertical hints in different colors now, otherwise
+	    it was too confusing guessing which was which.
+	  <LI>
+	    If a hint conflicts with another its dotted lines are shown in cyan (rather
+	    than light blue/green)
+	  <LI>
+	    When the Review hints dlg is active the current hint is shown in dark blue/green.
+	  <LI>
+	    The Review hints dlg shows whether a hint overlaps (conflicts with) another.
+	  <LI>
+	    Auto Hinting will generate a list of all horizontal and vertical stems, and
+	    then use some heuristics to remove some of the more annoying and less useful
+	    stems from the Hint list. If you don't want this automatic pruning then holding
+	    the Shift key down when you invoke AutoHint from the menu will leave you
+	    with the full stem list.
+	  <LI>
+	    Minor changes to truetype output to deal with the new hint list.
+	  <LI>
+	    Major changes to PostScript output to deal with counters and hint substitution
+	  <LI>
+	    <FONT COLOR="Red"><STRONG>No longer saves Type1 charstrings when loading
+	    a type1 font</STRONG></FONT>
+	</UL>
+      <LI>
+	The icon for outline character windows was <EM>still</EM> wrong for anti-alias
+	fonts if there were no bitmap fonts installed. Sigh.
+      <LI>
+	Added a Correct Direction command to the font view.
+      <LI>
+	Fixed many bugs with Correct Direction
+      <LI>
+	Improved accent placement when we have serifs (I hope), don't want to center
+	on top serif of "i" for example.
+      <LI>
+	Slight improvements when pasting bitmaps.
+      <LI>
+	Oops. 0x2d should be "hyphen" in the Adobe Standard Encoding rather than
+	"minus" as I had it.
+    </UL>
+  <LI>
+    3 May 2001
+    <UL>
+      <LI>
+	Opps. Generating postscript could crash if there were many blank characters.
+      <LI>
+	<FONT COLOR="Red"><STRONG>This is the last version which will allow you to
+	make small modifications to fonts while retaining the original hint
+	substitution</STRONG></FONT>
+    </UL>
   <LI>
     28 Apr 2001
     <UL>
@@ -901,7 +988,7 @@ You might also want to pull down some unicode bitmap fonts that pfaedit uses
     </UL>
 </UL>
 <H2>
-  Lacks
+  <A NAME="Lacks">Lacks</A>
 </H2>
 <P>
 PfaEdit is by no means complete. And probably doesn't work very well. Be
@@ -912,12 +999,19 @@ prepared to save frequently and always work on a copy of the original.
   <LI>
     No attempt has been made to read truetype instructions (hints)
   <LI>
+    No attempt has been made to generate instructions for diagonal stems
+  <LI>
+    No attempt has been made to retain the change over points for hint substitution.
+    PfaEdit will refigure this when it saves the font.
+  <LI>
     Many type 3 fonts will not be read in correctly (those generated by pfaedit
     should always be acceptable)
   <LI>
     Importing a type0 font loses the encoding. PfaEdit only imports simple type0
     fonts (such as those made by itself), will get confused if there's more than
     one font with a chars dictionary.
+  <LI>
+    Ironically there is no Print command.
   <LI>
     No Change Weight command
 </UL>
@@ -930,6 +1024,14 @@ prepared to save frequently and always work on a copy of the original.
     tested this under twm, kde and gnome sawtooth.
   <LI>
     My rasterizer will never be as good as adobe's.
+  <LI>
+    I think there are problems on Remove Overlaps.
+  <LI>
+    I'm told AutoKern doesn't work too well.
+  <LI>
+    PfaEdit is confused by small splines, on the order of one em unit. If you
+    need something that small, scale the font up by a factor of 2 or more (including
+    the ascent and descent).
   <LI>
     ???
 </UL>

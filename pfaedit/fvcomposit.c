@@ -397,7 +397,8 @@ return( 0 );
 return( 1 );
 }
 
-static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp, double ia, int basech) {
+static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp,
+	double ia, int basech ) {
     const unichar_t *apt = accents[ch-BottomAccent], *end = apt+3;
     int ach= -1;
     int invert = false;
@@ -474,10 +475,15 @@ static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, int copybmp, do
     else /* If neither Above, Below, nor overstrike then should use the same baseline */
 	yoff = bb.miny - rbb.miny;
 
-    if ( pos&____ABOVE )
-	ybase = SCFindTopXRange(sc,&bb,ia);
-    else if ( pos&____BELOW )
-	ybase = SCFindBottomXRange(sc,&bb,ia);
+    if ( pos&(____ABOVE|____BELOW) ) {
+	if ( !sf->serifcheck ) SFHasSerifs(sf);
+	if ( sf->issans ) {
+	    if ( pos&____ABOVE )
+		ybase = SCFindTopXRange(sc,&bb,ia);
+	    else if ( pos&____BELOW )
+		ybase = SCFindBottomXRange(sc,&bb,ia);
+	}
+    }
     if ( isupper(basech) && ch==0x342)	/* While this guy rides above PSILI on left */
 	xoff = bb.minx - rbb.minx;
     else if ( pos&____LEFT )

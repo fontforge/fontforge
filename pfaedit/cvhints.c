@@ -65,14 +65,16 @@ return( false );
 #define CID_Prev	1007
 #define CID_Remove	1008
 #define CID_Add		1009
+#define CID_Overlap	1010
 
 typedef struct reviewhintdata {
     unsigned int done: 1;
     unsigned int ishstem: 1;
     CharView *cv;
     GWindow gw;
-    Hints *active;
-    Hints *oldh, *oldv;
+    StemInfo *active;
+    StemInfo *lastactive;
+    StemInfo *oldh, *oldv;
 } ReviewHintData;
 
 static void RH_SetNextPrev(ReviewHintData *hd) {
@@ -98,21 +100,35 @@ static void RH_SetNextPrev(ReviewHintData *hd) {
 static void RH_SetupHint(ReviewHintData *hd) {
     char buffer[20]; unichar_t ubuf[20];
     static unichar_t nullstr[] = {'\0'};
+
+    if ( hd->lastactive!=NULL )
+	hd->lastactive->active = false;
     if ( hd->active==NULL ) {
 	GGadgetSetTitle(GWidgetGetControl(hd->gw,CID_Base),nullstr);
 	GGadgetSetTitle(GWidgetGetControl(hd->gw,CID_Width),nullstr);
+	GGadgetSetVisible(GWidgetGetControl(hd->gw,CID_Overlap),false);
     } else {
-	sprintf( buffer,"%g", hd->active->base );
+	hd->active->active = true;
+	sprintf( buffer,"%g", hd->active->start );
 	uc_strcpy(ubuf,buffer);
 	GGadgetSetTitle(GWidgetGetControl(hd->gw,CID_Base),ubuf);
+	GTextFieldShow(GWidgetGetControl(hd->gw,CID_Base),0);
 	sprintf( buffer,"%g", hd->active->width );
 	uc_strcpy(ubuf,buffer);
 	GGadgetSetTitle(GWidgetGetControl(hd->gw,CID_Width),ubuf);
+	GTextFieldShow(GWidgetGetControl(hd->gw,CID_Width),0);
+	GGadgetSetVisible(GWidgetGetControl(hd->gw,CID_Overlap),hd->active->hasconflicts);
+    }
+    if ( hd->lastactive!=hd->active ) {
+	hd->lastactive = hd->active;
+	SCOutOfDateBackground(hd->cv->sc);
+	SCUpdateAll(hd->cv->sc);	/* Changing the active Hint means we should redraw everything */
     }
     RH_SetNextPrev(hd);
 }
 
 static int RH_TextChanged(GGadget *g, GEvent *e) {
+    int wasconflict;
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
 	ReviewHintData *hd = GDrawGetUserData(GGadgetGetWindow(g));
 	if ( hd->active!=NULL ) {
@@ -122,9 +138,16 @@ static int RH_TextChanged(GGadget *g, GEvent *e) {
 	    if ( err )
 return( true );
 	    if ( cid==CID_Base )
-		hd->active->base = val;
+		hd->active->start = val;
 	    else
 		hd->active->width = val;
+	    wasconflict = hd->active->hasconflicts;
+	    if ( hd->ishstem )
+		hd->cv->sc->hconflicts = StemListAnyConflicts(hd->cv->sc->hstem);
+	    else
+		hd->cv->sc->vconflicts = StemListAnyConflicts(hd->cv->sc->vstem);
+	    if ( wasconflict!=hd->active->hasconflicts )
+		GGadgetSetVisible(GWidgetGetControl(hd->gw,CID_Overlap),hd->active->hasconflicts);
 	    SCOutOfDateBackground(hd->cv->sc);
 	    SCUpdateAll(hd->cv->sc);
 	}
@@ -135,19 +158,25 @@ return( true );
 static int RH_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	ReviewHintData *hd = GDrawGetUserData(GGadgetGetWindow(g));
-	HintsFree(hd->oldh);
-	HintsFree(hd->oldv);
+	StemInfosFree(hd->oldh);
+	StemInfosFree(hd->oldv);
+	if ( hd->lastactive!=NULL )
+	    hd->lastactive->active = false;
 	/* Everything else got done as we went along... */
+	SCOutOfDateBackground(hd->cv->sc);
+	SCUpdateAll(hd->cv->sc);
 	hd->done = true;
     }
 return( true );
 }
 
 static void DoCancel(ReviewHintData *hd) {
-    HintsFree(hd->cv->sc->hstem);
-    HintsFree(hd->cv->sc->vstem);
+    StemInfosFree(hd->cv->sc->hstem);
+    StemInfosFree(hd->cv->sc->vstem);
     hd->cv->sc->hstem = hd->oldh;
     hd->cv->sc->vstem = hd->oldv;
+    hd->cv->sc->hconflicts = StemListAnyConflicts(hd->cv->sc->hstem);
+    hd->cv->sc->vconflicts = StemListAnyConflicts(hd->cv->sc->vstem);
     SCOutOfDateBackground(hd->cv->sc);
     SCUpdateAll(hd->cv->sc);
     hd->done = true;
@@ -163,7 +192,7 @@ return( true );
 static int RH_Remove(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	ReviewHintData *hd = GDrawGetUserData(GGadgetGetWindow(g));
-	Hints *prev;
+	StemInfo *prev;
 	if ( hd->active==NULL )
 return( true );			/* Eh? */
 	if ( hd->active==hd->cv->sc->hstem ) {
@@ -177,11 +206,15 @@ return( true );			/* Eh? */
 	    for ( ; prev->next!=hd->active && prev->next!=NULL; prev = prev->next );
 	    prev->next = hd->active->next;
 	}
+	if ( hd->ishstem )
+	    hd->cv->sc->hconflicts = StemListAnyConflicts(hd->cv->sc->hstem);
+	else
+	    hd->cv->sc->vconflicts = StemListAnyConflicts(hd->cv->sc->vstem);
 	free( hd->active );
 	hd->active = prev;
 	SCOutOfDateBackground(hd->cv->sc);
-	SCUpdateAll(hd->cv->sc);
 	RH_SetupHint(hd);
+	/*SCUpdateAll(hd->cv->sc);*/	/* Done in RH_SetupHint now */
     }
 return( true );
 }
@@ -199,7 +232,7 @@ return( true );
 static int RH_NextPrev(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	ReviewHintData *hd = GDrawGetUserData(GGadgetGetWindow(g));
-	Hints *prev;
+	StemInfo *prev;
 	if ( GGadgetGetCid(g)==CID_Next ) {
 	    if ( hd->active->next !=NULL )
 		hd->active = hd->active->next;
@@ -258,7 +291,7 @@ void CVReviewHints(CharView *cv) {
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width =GDrawPointsToPixels(NULL,170);
-	pos.height = GDrawPointsToPixels(NULL,150);
+	pos.height = GDrawPointsToPixels(NULL,164);
 	hd.gw = gw = GDrawCreateTopWindow(NULL,&pos,rh_e_h,&hd,&wattrs);
 
 	memset(&label,0,sizeof(label));
@@ -290,7 +323,7 @@ void CVReviewHints(CharView *cv) {
 	gcd[3].gd.handle_controlevent = RH_TextChanged;
 	gcd[3].creator = GTextFieldCreate;
 
-	gcd[4].gd.pos.x = 20-3; gcd[4].gd.pos.y = 17+37+60;
+	gcd[4].gd.pos.x = 20-3; gcd[4].gd.pos.y = 17+37+14+60;
 	gcd[4].gd.pos.width = 55+6; gcd[4].gd.pos.height = 0;
 	gcd[4].gd.flags = gg_visible | gg_enabled | gg_but_default;
 	label[4].text = (unichar_t *) "OK";
@@ -300,7 +333,7 @@ void CVReviewHints(CharView *cv) {
 	gcd[4].gd.handle_controlevent = RH_OK;
 	gcd[4].creator = GButtonCreate;
 
-	gcd[5].gd.pos.x = 170-55-20; gcd[5].gd.pos.y = 17+37+3+60;
+	gcd[5].gd.pos.x = 170-55-20; gcd[5].gd.pos.y = 17+37+3+14+60;
 	gcd[5].gd.pos.width = 55; gcd[5].gd.pos.height = 0;
 	gcd[5].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
 	label[5].text = (unichar_t *) "Cancel";
@@ -328,12 +361,12 @@ void CVReviewHints(CharView *cv) {
 	gcd[7].gd.handle_controlevent = RH_HVStem;
 	gcd[7].creator = GRadioCreate;
 
-	gcd[8].gd.pos.x = 5; gcd[8].gd.pos.y = 17+31+30;
+	gcd[8].gd.pos.x = 5; gcd[8].gd.pos.y = 17+31+14+30;
 	gcd[8].gd.pos.width = 170-10;
 	gcd[8].gd.flags = gg_enabled|gg_visible;
 	gcd[8].creator = GLineCreate;
 
-	gcd[9].gd.pos.x = 20; gcd[9].gd.pos.y = 17+33;
+	gcd[9].gd.pos.x = 20; gcd[9].gd.pos.y = 17+14+33;
 	gcd[9].gd.pos.width = 55; gcd[9].gd.pos.height = 0;
 	gcd[9].gd.flags = gg_visible | gg_enabled;
 	label[9].text = (unichar_t *) "Create";
@@ -344,7 +377,7 @@ void CVReviewHints(CharView *cv) {
 	gcd[9].gd.handle_controlevent = RH_Add;
 	gcd[9].creator = GButtonCreate;
 
-	gcd[10].gd.pos.x = 170-55-20; gcd[10].gd.pos.y = 17+33;
+	gcd[10].gd.pos.x = 170-55-20; gcd[10].gd.pos.y = 17+14+33;
 	gcd[10].gd.pos.width = 55; gcd[10].gd.pos.height = 0;
 	gcd[10].gd.flags = gg_visible | gg_enabled;
 	label[10].text = (unichar_t *) "Remove";
@@ -355,7 +388,7 @@ void CVReviewHints(CharView *cv) {
 	gcd[10].gd.handle_controlevent = RH_Remove;
 	gcd[10].creator = GButtonCreate;
 
-	gcd[11].gd.pos.x = 20; gcd[11].gd.pos.y = 17+37+30;
+	gcd[11].gd.pos.x = 20; gcd[11].gd.pos.y = 17+37+14+30;
 	gcd[11].gd.pos.width = 55; gcd[11].gd.pos.height = 0;
 	gcd[11].gd.flags = gg_visible | gg_enabled;
 	label[11].text = (unichar_t *) "< Prev";
@@ -366,7 +399,7 @@ void CVReviewHints(CharView *cv) {
 	gcd[11].gd.handle_controlevent = RH_NextPrev;
 	gcd[11].creator = GButtonCreate;
 
-	gcd[12].gd.pos.x = 170-55-20; gcd[12].gd.pos.y = 17+37+30;
+	gcd[12].gd.pos.x = 170-55-20; gcd[12].gd.pos.y = 17+37+14+30;
 	gcd[12].gd.pos.width = 55; gcd[12].gd.pos.height = 0;
 	gcd[12].gd.flags = gg_visible | gg_enabled;
 	label[12].text = (unichar_t *) "Next >";
@@ -376,6 +409,15 @@ void CVReviewHints(CharView *cv) {
 	gcd[12].gd.cid = CID_Next;
 	gcd[12].gd.handle_controlevent = RH_NextPrev;
 	gcd[12].creator = GButtonCreate;
+
+	gcd[13].gd.pos.x = 66; gcd[13].gd.pos.y = 17+30;
+	gcd[13].gd.flags = gg_visible | gg_enabled;
+	label[13].text = (unichar_t *) "Overlap";
+	label[13].text_is_1byte = true;
+	label[13].fg = 0xff0000; label[13].bg = COLOR_DEFAULT;	/* Doesn't work, needs to be in box */
+	gcd[13].gd.label = &label[13];
+	gcd[13].gd.cid = CID_Overlap;
+	gcd[13].creator = GLabelCreate;
 
 	GGadgetsCreate(gw,gcd);
     } else
@@ -395,8 +437,8 @@ void CVReviewHints(CharView *cv) {
 	hd.active = cv->sc->vstem;
     }
     hd.ishstem = (hd.active==cv->sc->hstem);
-    hd.oldh = HintsCopy(cv->sc->hstem);
-    hd.oldv = HintsCopy(cv->sc->vstem);
+    hd.oldh = StemInfoCopy(cv->sc->hstem);
+    hd.oldv = StemInfoCopy(cv->sc->vstem);
     RH_SetupHint(&hd);
     if ( hd.active!=NULL ) {
 	GWidgetIndicateFocusGadget(GWidgetGetControl(gw,CID_Base));
@@ -422,21 +464,21 @@ static int CH_OK(GGadget *g, GEvent *e) {
 	CreateHintData *hd = GDrawGetUserData(GGadgetGetWindow(g));
 	int base, width;
 	int err = 0;
-	Hints *h;
+	StemInfo *h;
 
 	base = GetInt(hd->gw,CID_Base,"Base",&err);
 	width = GetInt(hd->gw,CID_Width,"Size",&err);
 	if ( err )
 return(true);
-	h = calloc(1,sizeof(Hints));
-	h->base = base;
+	h = calloc(1,sizeof(StemInfo));
+	h->start = base;
 	h->width = width;
 	if ( hd->ishstem ) {
-	    h->next = hd->cv->sc->hstem;
-	    hd->cv->sc->hstem = h;
+	    SCGuessHHintInstancesAndAdd(hd->cv->sc,h);
+	    hd->cv->sc->hconflicts = StemListAnyConflicts(hd->cv->sc->hstem);
 	} else {
-	    h->next = hd->cv->sc->vstem;
-	    hd->cv->sc->vstem = h;
+	    SCGuessVHintInstancesAndAdd(hd->cv->sc,h);
+	    hd->cv->sc->vconflicts = StemListAnyConflicts(hd->cv->sc->vstem);
 	}
 	SCOutOfDateBackground(hd->cv->sc);
 	SCUpdateAll(hd->cv->sc);

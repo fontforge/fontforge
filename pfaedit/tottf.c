@@ -1449,7 +1449,7 @@ return( instrs );
 /*  hinted stem. It must be to the left of the left edge, or to the right of */
 /*  the right edge of the hint. */
 /* This is a pretty dumb detector, but it gets simple cases */
-static uint8 *serifcheck(struct glyphinfo *gi, uint8 *instrs,Hints *hint,
+static uint8 *serifcheck(struct glyphinfo *gi, uint8 *instrs,StemInfo *hint,
 	int *contourends, BasePoint *bp, int ptcnt, int pt) {
     int up, right, prev;
     int i;
@@ -1476,8 +1476,8 @@ static uint8 *serifcheck(struct glyphinfo *gi, uint8 *instrs,Hints *hint,
     } else		/* no vertical stem here, unlikely to be serifs */
 return( instrs );
 
-    right = (( hint->base==bp[pt].x && hint->width<0 ) ||
-	    (hint->base+hint->width==bp[pt].x && hint->width>0 ));
+    right = (( hint->start==bp[pt].x && hint->width<0 ) ||
+	    (hint->start+hint->width==bp[pt].x && hint->width>0 ));
     if ( prev ) {	/* the vstem comes before the point, serif must come after */
 	for ( i=pt+1; i<=ce; ++i ) {
 	    if ( (right && bp[i].x<=bp[i-1].x) || (!right && bp[i].x>=bp[i-1].x) ||
@@ -1510,14 +1510,32 @@ return( instrs );
 return( instrs );
 }
 
-static uint8 *geninstrs(struct glyphinfo *gi, uint8 *instrs,Hints *hint,
+/* Run through all points. For any on this hint's start, position them */
+/*  If the first point of this hint falls in a blue zone, do a cvt based */
+/*	positioning, else
+/*  The first point on the first hint is positioned to where it is (dull) */
+/*  The first point of this hint is positioned offset from the last hint */
+/*  Any other points are moved by the same amount as the last move */
+/* Run through the points again, for any pts on this hint's end: */
+/*  Position them offset from the hint's start */
+/* Complications: */
+/*  If the hint start isn't in a blue zone, but the hint end is, then */
+/*	treat the end as the start with a negative width */
+/*  If we have overlapping hints then either the points on the start or end */
+/*	may already have been positioned. We won't be called if both have been*/
+/*	positioned. If the end points have been positioned then reverse the */
+/*	hint again. If either edge has been done, then all we need to do is */
+/*	establish a reference point on that edge, don't need to position all */
+/*	the points again. */
+static uint8 *geninstrs(struct glyphinfo *gi, uint8 *instrs,StemInfo *hint,
 	int *contourends, BasePoint *bp, int ptcnt, int first, int xdir) {
     int i;
     int last= -1;
     int stem, basecvt=-1;
-    double base;
+    double hbase, base, width;
+    StemInfo *h;
 
-    base = hint->base;
+    hbase = base = hint->start; width = hint->width;
     if ( !xdir ) {
 	/* check the "bluevalues" for things like cap height and xheight */
 	for ( i=0; i<gi->bcnt; i+=2 ) {
@@ -1527,45 +1545,76 @@ static uint8 *geninstrs(struct glyphinfo *gi, uint8 *instrs,Hints *hint,
 	break;
 	    }
 	}
+	if ( basecvt == -1 && !hint->startdone ) {
+	    hbase = (base += width);
+	    for ( i=0; i<gi->bcnt; i+=2 ) {
+		if ( base>=gi->blues[i] && base<=gi->blues[i+1] ) {
+		    base = (gi->blues[i]+gi->blues[i+1])/2;
+		    basecvt = getcvtval(gi,(int)base);
+	    break;
+		}
+	    }
+	    if ( basecvt!=-1 )
+		width = -width;
+	    else
+		hbase = (base -= width);
+	}
+    }
+    if ( width>0 && hint->enddone ) {
+	hbase = (base += width);
+	width = -width;
+	basecvt = -1;
     }
 
     /* Position all points on this hint's base */
-    for ( i=0; i<ptcnt; ++i ) {
-	if ( (xdir && bp[i].x==hint->base) || (!xdir && bp[i].y==hint->base) ) {
-	    if ( 0 && last!=-1 && i==last+1 )
-		/* Don't need to touch this guy */;
-		/* Er, maybe, but if I do that my hinting doesn't work */
-		/* I don't understand how IUP works I guess */
-	    else if ( basecvt!=-1 && last==-1 ) {
-		instrs = pushpointstem(instrs,i,basecvt);
-		*instrs++ = 0x3f;		/* MIAP, rounded */
-	    } else {
-		instrs = pushpoint(instrs,i);
-		if ( first ) {
-		    /* set rp0 */
-		    *instrs++ = 0x2f;		/* MDAP, rounded */
-		    first = false;
-		} else if ( last==-1 ) {
-		    /* set rp0 relative to last hint */
-		    *instrs++ = 0xc0+0x1c;	/* MDRP, set rp0, minimum, rounded, grey */
+    if (( width>0 && !hint->startdone) || (width<0 && !hint->enddone)) {
+	for ( i=0; i<ptcnt; ++i ) {
+	    if ( (xdir && bp[i].x==hbase) || (!xdir && bp[i].y==hbase) ) {
+		if ( 0 && last!=-1 && i==last+1 )
+		    /* Don't need to touch this guy */;
+		    /* Er, maybe, but if I do that my hinting doesn't work */
+		    /* I don't understand how IUP works I guess */
+		else if ( basecvt!=-1 && last==-1 ) {
+		    instrs = pushpointstem(instrs,i,basecvt);
+		    *instrs++ = 0x3f;		/* MIAP, rounded */
 		} else {
-		    *instrs++ = 0x33;		/* SHP, rp1 */
+		    instrs = pushpoint(instrs,i);
+		    if ( first ) {
+			/* set rp0 */
+			*instrs++ = 0x2f;		/* MDAP, rounded */
+			first = false;
+		    } else if ( last==-1 ) {
+			/* set rp0 relative to last hint */
+			*instrs++ = 0xc0+0x1c;	/* MDRP, set rp0, minimum, rounded, grey */
+		    } else {
+			*instrs++ = 0x33;		/* SHP, rp1 */
+		    }
 		}
+		if ( xdir )
+		    instrs = serifcheck(gi,instrs,hint,contourends,bp,ptcnt,i);
+		last = i;
 	    }
-	    if ( xdir )
-		instrs = serifcheck(gi,instrs,hint,contourends,bp,ptcnt,i);
-	    last = i;
 	}
-    }
-    if ( last==-1 )		/* I'm confused. But if the hint doesn't start*/
+	if ( last==-1 )		/* I'm confused. But if the hint doesn't start*/
 return(instrs);			/*  anywhere, can't give it a width */
 				/* Some hints aren't associated with points */
+    } else {
+	/* Need to find something to be a reference point, doesn't matter */
+	/*  what. Note that it should already have been positioned */
+	for ( i=0; i<ptcnt; ++i ) {
+	    if ( (xdir && bp[i].x==hbase) || (!xdir && bp[i].y==hbase) ) {
+		instrs = pushpoint(instrs,i);
+		*instrs++ = 0x10;		/* Set RP0, SRP0 */
+	break;
+	    }
+	}
+    }
 
     /* Position all points on this hint's base+width */
-    stem = getcvtval(gi,hint->width);
+    stem = getcvtval(gi,width);
     last = -1;
     for ( i=0; i<ptcnt; ++i ) {
-	if ( (xdir && bp[i].x==hint->base+hint->width) || (!xdir && bp[i].y==hint->base+hint->width) ) {
+	if ( (xdir && bp[i].x==hbase+width) || (!xdir && bp[i].y==hbase+width) ) {
 	    if ( 0 && last!=-1 && i==last+1 )
 		/* Don't need to touch this guy */;
 	    else {
@@ -1577,12 +1626,20 @@ return(instrs);			/*  anywhere, can't give it a width */
 	    last = i;
 	}
     }
+
+    for ( h=hint->next; h->start<=hint->start+hint->width; ++hint ) {
+	if ( h->start==hint->start || h->start==hint->start+hint->width )
+	    h->startdone = true;
+	if ( h->start+h->width == hint->start+hint->width )
+	    h->enddone = true;
+    }
+
 return( instrs );
 }
 
 static void dumpgeninstructions(SplineChar *sc, struct glyphinfo *gi,
 	int *contourends, BasePoint *bp, int ptcnt) {
-    Hints *hint, *first;
+    StemInfo *hint;
     uint8 *instrs, *pt, *ystart;
     int max;
 
@@ -1599,27 +1656,21 @@ return;
     max += 6*ptcnt;			/* paranoia */
     instrs = pt = galloc(max);
 
-    first = sc->vstem;
-    if ( first!=NULL ) {
-	for ( hint=first->next; hint!=NULL; hint=hint->next )
-	    if ( hint->base<first->base )
-		first = hint;
-	pt = geninstrs(gi,pt,first,contourends,bp,ptcnt,true,true);
-	for ( hint=sc->vstem; hint!=NULL; hint=hint->next ) if ( hint!=first ) {
+    for ( hint=sc->vstem; hint!=NULL; hint=hint->next )
+	hint->enddone = hint->startdone = false;
+    for ( hint=sc->vstem; hint!=NULL; hint=hint->next ) {
+	if ( !hint->startdone || !hint->enddone )
 	    pt = geninstrs(gi,pt,hint,contourends,bp,ptcnt,pt==instrs,true);
-	}
     }
 	
-    first = sc->hstem;
-    if ( first!=NULL ) {
+    if ( sc->hstem!=NULL ) {
 	*pt++ = 0x00;	/* Set Vectors to y */
 	ystart = pt;
-	for ( hint=first->next; hint!=NULL; hint=hint->next )
-	    if ( hint->base<first->base )
-		first = hint;
-	pt = geninstrs(gi,pt,first,contourends,bp,ptcnt,true,false);
-	for ( hint=sc->hstem; hint!=NULL; hint=hint->next ) if ( hint!=first ) {
-	    pt = geninstrs(gi,pt,hint,contourends,bp,ptcnt,pt==ystart,false);
+	for ( hint=sc->hstem; hint!=NULL; hint=hint->next )
+	    hint->enddone = hint->startdone = false;
+	for ( hint=sc->hstem; hint!=NULL; hint=hint->next ) {
+	    if ( !hint->startdone || !hint->enddone )
+		pt = geninstrs(gi,pt,hint,contourends,bp,ptcnt,pt==ystart,false);
 	}
     }
     /* there seems some discention as to which of these does x and which does */
@@ -1646,9 +1697,8 @@ static void dumpglyph(SplineChar *sc, struct glyphinfo *gi) {
 
     gi->loca[gi->next_glyph++] = ftell(gi->glyphs);
 
-    if ( (sc->changedsincelasthhinted || sc->changedsincelastvhinted ) &&
-	    !sc->manualhints )	/* origtype1 is irrelevant to truetype */
-	SplineCharAutoHint(sc);
+    if ( sc->changedsincelasthinted && !sc->manualhints )
+	SplineCharAutoHint(sc,true);
 
     contourcnt = ptcnt = 0;
     for ( ss=sc->splines; ss!=NULL; ss=ss->next ) {
@@ -2027,6 +2077,8 @@ static void dumpcffprivate(SplineFont *sf,struct alltabs *at) {
     int hasblue=0, hash=0, hasv=0, bs;
     int maxw=0;
     uint16 *widths; uint32 *cumwid;
+    static unichar_t autohinting[] = { 'A','u','t','o',' ','H','i','n','t','i','n','g',' ','F','o','n','t',  '\0' };
+    static unichar_t saveotf[] = { 'S','a','v','i','n','g',' ','O','p','e','n','T','y','p','e',' ','F','o','n','t', '\0' };
 
     /* The private dict is not in an index, so no index header. Just the data */
 
@@ -2076,7 +2128,11 @@ static void dumpcffprivate(SplineFont *sf,struct alltabs *at) {
     hasblue = PSDictHasEntry(sf->private,"BlueValues")!=NULL;
     hash = PSDictHasEntry(sf->private,"StdHW")!=NULL;
     hasv = PSDictHasEntry(sf->private,"StdVW")!=NULL;
-    GProgressChangeStages(2+!hasblue+!hash+!hasv);
+    GProgressChangeStages(3+!hasblue);
+    GProgressChangeLine1(autohinting);
+    SplineFontAutoHint(sf);
+    GProgressNextStage();
+
     if ( !hasblue ) {
 	FindBlues(sf,bluevalues,otherblues);
 	GProgressNextStage();
@@ -2085,7 +2141,6 @@ static void dumpcffprivate(SplineFont *sf,struct alltabs *at) {
     stdhw[0] = stdvw[0] = 0;
     if ( !hash ) {
 	FindHStems(sf,stemsnaph,snapcnt);
-	GProgressNextStage();
 	mi = -1;
 	for ( i=0; stemsnaph[i]!=0 && i<12; ++i )
 	    if ( mi==-1 ) mi = i;
@@ -2095,13 +2150,13 @@ static void dumpcffprivate(SplineFont *sf,struct alltabs *at) {
 
     if ( !hasv ) {
 	FindVStems(sf,stemsnapv,snapcnt);
-	GProgressNextStage();
 	mi = -1;
 	for ( i=0; stemsnapv[i]!=0 && i<12; ++i )
 	    if ( mi==-1 ) mi = i;
 	    else if ( snapcnt[i]>snapcnt[mi] ) mi = i;
 	if ( mi!=-1 ) stdvw[0] = stemsnapv[mi];
     }
+    GProgressChangeLine1(saveotf);
 
     if ( hasblue )
 	DumpStrArray(PSDictHasEntry(sf->private,"BlueValues"),private,6);

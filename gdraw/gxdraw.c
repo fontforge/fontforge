@@ -909,6 +909,8 @@ return( NULL );
     if ( (wattrs->mask&wam_centered) && wattrs->centered && gw == gdisp->groot) {
 	pos->x = (gdisp->groot->pos.width-pos->width)/2;
 	pos->y = (gdisp->groot->pos.height-pos->height)/2;
+	if ( wattrs->centered==2 )
+	    pos->y = (gdisp->groot->pos.height-pos->height)/3;
 	nw->pos = *pos;
     }
     if ( (wattrs->mask&wam_undercursor) && wattrs->undercursor && gw == gdisp->groot) {

@@ -824,14 +824,44 @@ double SFGuessItalicAngle(SplineFont *sf) {
 return( 0 );
 
     SplineCharFindBounds(sf->chars[si],&bb);
-    as = bb.maxy;
+    as = bb.maxy-bb.miny;
 
-    topx = SCFindMinXAtY(sf->chars[si],2*as/3);
-    bottomx = SCFindMinXAtY(sf->chars[si],as/3);
+    topx = SCFindMinXAtY(sf->chars[si],2*as/3+bb.miny);
+    bottomx = SCFindMinXAtY(sf->chars[si],as/3+bb.miny);
     if ( topx==bottomx )
 return( 0 );
 
 return( atan2(as/3,topx-bottomx)*180/3.1415926535897932-90 );
+}
+
+void SFHasSerifs(SplineFont *sf) {
+    static char *easyserif = "IBDEFHKLNPR";
+    int i,si;
+    double as, topx, bottomx, serifbottomx, seriftopx;
+    DBounds bb;
+
+    for ( i=0; easyserif[i]!='\0'; ++i )
+	if ( (si=SFFindExistingChar(sf,easyserif[i],NULL))!=-1 && sf->chars[si]!=NULL )
+    break;
+    if ( easyserif[i]=='\0' )		/* can't guess */
+return;
+    sf->serifcheck = true;
+
+    SplineCharFindBounds(sf->chars[si],&bb);
+    as = bb.maxy-bb.miny;
+
+    topx = SCFindMinXAtY(sf->chars[si],2*as/3+bb.miny);
+    bottomx = SCFindMinXAtY(sf->chars[si],as/3+bb.miny);
+    serifbottomx = SCFindMinXAtY(sf->chars[si],1+bb.miny);
+    seriftopx = SCFindMinXAtY(sf->chars[si],bb.maxy-1);
+    if ( DoubleNear(topx,bottomx) ) {
+	if ( DoubleNear(serifbottomx,bottomx) && DoubleNear(seriftopx,topx))
+	    sf->issans = true;
+	else if ( DoubleNear(serifbottomx,seriftopx) && topx-seriftopx>0 )
+	    sf->isserif = true;
+    } else {
+	/* It's Italic. I'm just going to give up.... */
+    }
 }
 
 static void BuildCharPairs(WidthInfo *wi) {

@@ -55,8 +55,8 @@ SplineChar *SplineCharCopy(SplineChar *sc) {
     nsc->enc = -2;
     nsc->name = copy(sc->name);
     nsc->splines = SplinePointListCopy(nsc->splines);
-    nsc->hstem = HintsCopy(nsc->hstem);
-    nsc->vstem = HintsCopy(nsc->vstem);
+    nsc->hstem = StemInfoCopy(nsc->hstem);
+    nsc->vstem = StemInfoCopy(nsc->vstem);
     nsc->refs = RefCharsCopy(nsc->refs);
     nsc->views = NULL;
     nsc->parent = NULL;
@@ -492,24 +492,6 @@ void FVMergeFonts(FontView *fv) {
     }
 }
 
-static Hints *InterpHints(Hints *base, Hints *other, double amount) {
-    Hints *head=NULL, *last=NULL, *cur;
-
-    while ( base!=NULL && other!=NULL ) {
-	cur = gcalloc(1,sizeof(Hints));
-	cur->base = base->base + amount*(other->base-base->base);
-	cur->width = base->width + amount*(other->width-base->width);
-	if ( head==NULL )
-	    head = cur;
-	else
-	    last->next = cur;
-	last = cur;
-	base = base->next;
-	other = other->next;
-    }
-return( head );
-}
-
 static RefChar *InterpRefs(RefChar *base, RefChar *other, double amount, SplineChar *sc) {
     RefChar *head=NULL, *last=NULL, *cur;
     RefChar *test;
@@ -651,10 +633,9 @@ return;
     sc->name = copy(sc->name);
     sc->width = base->width + amount*(other->width-base->width);
     sc->lsidebearing = base->lsidebearing + amount*(other->lsidebearing-base->lsidebearing);
-    sc->hstem = InterpHints(base->hstem,other->hstem,amount);
-    sc->vstem = InterpHints(base->vstem,other->vstem,amount);
     sc->splines = InterpSplineSets(base->splines,other->splines,amount,sc);
     sc->refs = InterpRefs(base->refs,other->refs,amount,sc);
+    sc->changedsincelasthinted = true;
 }
 
 static void IFixupSC(SplineFont *sf, SplineChar *sc,int i) {

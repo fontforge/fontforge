@@ -166,6 +166,7 @@ static void SFDDumpImage(FILE *sfd,ImageList *img) {
     fprintf(sfd,"\nEndImage\n" );
 }
 
+#if 0
 static void SFDDumpType1(FILE *sfd,SplineChar *sc) {
     struct enc85 enc;
     uint8 *pt, *end;
@@ -184,9 +185,26 @@ static void SFDDumpType1(FILE *sfd,SplineChar *sc) {
 	fprintf(sfd,"\nEndType1\n" );
     }
 }
+#endif
+
+static void SFDDumpHintList(FILE *sfd,char *key, StemInfo *h) {
+    HintInstance *hi;
+
+    if ( h==NULL )
+return;
+    fprintf(sfd, "%s", key );
+    for ( ; h!=NULL; h=h->next ) {
+	fprintf(sfd, "%g %g", h->start,h->width );
+	if ( h->where!=NULL ) {
+	    putc('<',sfd);
+	    for ( hi=h->where; hi!=NULL; hi=hi->next )
+		fprintf(sfd, "%g %g%c", hi->begin, hi->end, hi->next?' ':'>');
+	}
+	putc(h->next?' ':'\n',sfd);
+    }
+}
 
 static void SFDDumpChar(FILE *sfd,SplineChar *sc) {
-    Hints *h;
     RefChar *ref;
     ImageList *img;
     KernPair *kp;
@@ -201,21 +219,13 @@ return;
     fprintf(sfd, "StartChar: %s\n", sc->name );
     fprintf(sfd, "Encoding: %d %d\n", sc->enc, sc->unicodeenc);
     fprintf(sfd, "Width: %d\n", sc->width );
-    if ( sc->changedsincelasthhinted||sc->changedsincelastvhinted ||
-	    sc->manualhints || sc->widthset )
+    if ( sc->changedsincelasthinted|| sc->manualhints || sc->widthset )
 	fprintf(sfd, "Flags: %s%s%s\n",
-		sc->changedsincelasthhinted||sc->changedsincelastvhinted?"H":"",
+		sc->changedsincelasthinted?"H":"",
 		sc->manualhints?"M":"",
 		sc->widthset?"W":"");
-    if ( sc->hstem!=NULL || sc->vstem!=NULL ) {
-	fprintf(sfd, "HStem: ");
-	for ( h=sc->hstem; h!=NULL; h=h->next )
-	    fprintf(sfd, "%g %g  ", h->base,h->width );
-	fprintf(sfd, "\nVStem: " );
-	for ( h=sc->vstem; h!=NULL; h=h->next )
-	    fprintf(sfd, "%g %g  ", h->base,h->width );
-	putc('\n',sfd);
-    }
+    SFDDumpHintList(sfd,"HStem: ", sc->hstem);
+    SFDDumpHintList(sfd,"VStem: ", sc->vstem);
     if ( sc->splines!=NULL ) {
 	fprintf(sfd, "Fore\n" );
 	SFDDumpSplineSet(sfd,sc->splines);
@@ -229,7 +239,9 @@ return;
 		ref->transform[0], ref->transform[1], ref->transform[2],
 		ref->transform[3], ref->transform[4], ref->transform[5]);
     }
+#if 0
     SFDDumpType1(sfd,sc);
+#endif
     if ( sc->backgroundsplines!=NULL ) {
 	fprintf(sfd, "Back\n" );
 	SFDDumpSplineSet(sfd,sc->backgroundsplines);
@@ -286,6 +298,7 @@ static void SFDDumpBitmapFont(FILE *sfd,BDFFont *bdf) {
     fprintf( sfd, "EndBitmapFont\n" );
 }
 
+#if 0
 static void SFDDumpSubrs(FILE *sfd,struct pschars *subrs) {
     int i;
     uint8 *pt, *end;
@@ -310,6 +323,7 @@ static void SFDDumpSubrs(FILE *sfd,struct pschars *subrs) {
     SFDEnc85EndEnc(&enc);
     fprintf( sfd, "EndSubrs\n" );
 }
+#endif
 
 static void SFDDumpPrivate(FILE *sfd,struct psdict *private) {
     int i;
@@ -374,8 +388,10 @@ static void SFDDump(FILE *sfd,SplineFont *sf) {
 	fprintf(sfd, "Grid\n" );
 	SFDDumpSplineSet(sfd,sf->gridsplines);
     }
+#if 0
     if ( sf->subrs!=NULL )
 	SFDDumpSubrs(sfd,sf->subrs);
+#endif
     if ( sf->private!=NULL )
 	SFDDumpPrivate(sfd,sf->private);
 
@@ -596,19 +612,23 @@ return( img );
 static void SFDGetType1(FILE *sfd, SplineChar *sc) {
     /* We've read the OrigType1 token */
     int len;
-    uint8 *pt, *end;
     struct enc85 dec;
 
     memset(&dec,'\0', sizeof(dec)); dec.pos = -1;
     dec.sfd = sfd;
 
     getint(sfd,&len);
+#if 0
     sc->origtype1 = pt = galloc(len);
     sc->origlen = len;
     end = pt+len;
     while ( pt<end ) {
 	*pt++ = Dec85(&dec);
     }
+#else
+    while ( --len >= 0 )
+	Dec85(&dec);
+#endif
 }
 
 static void SFDCloseCheck(SplinePointList *spl) {
@@ -705,14 +725,41 @@ static SplineSet *SFDGetSplineSet(FILE *sfd) {
 return( head );
 }
 
-static Hints *SFDReadHints(FILE *sfd) {
-    Hints *head=NULL, *last=NULL, *cur;
-    double base, width;
+static HintInstance *SFDReadHintInstances(FILE *sfd) {
+    HintInstance *head=NULL, *last=NULL, *cur;
+    double begin, end;
+    int ch;
 
-    while ( getdouble(sfd,&base)==1 && getdouble(sfd,&width)) {
-	cur = gcalloc(1,sizeof(Hints));
-	cur->base = base;
+    while ( (ch=getc(sfd))==' ' || ch=='\t' );
+    if ( ch!='<' ) {
+	ungetc(ch,sfd);
+return(NULL);
+    }
+    while ( getdouble(sfd,&begin)==1 && getdouble(sfd,&end)) {
+	cur = gcalloc(1,sizeof(HintInstance));
+	cur->begin = begin;
+	cur->end = end;
+	if ( head == NULL )
+	    head = cur;
+	else
+	    last->next = cur;
+	last = cur;
+    }
+    while ( (ch=getc(sfd))==' ' || ch=='\t' );
+    if ( ch!='>' )
+	ungetc(ch,sfd);
+return( head );
+}
+
+static StemInfo *SFDReadHints(FILE *sfd) {
+    StemInfo *head=NULL, *last=NULL, *cur;
+    double start, width;
+
+    while ( getdouble(sfd,&start)==1 && getdouble(sfd,&width)) {
+	cur = gcalloc(1,sizeof(StemInfo));
+	cur->start = start;
 	cur->width = width;
+	cur->where = SFDReadHintInstances(sfd);
 	if ( head == NULL )
 	    head = cur;
 	else
@@ -766,15 +813,19 @@ return( NULL );
 	} else if ( strmatch(tok,"Flags:")==0 ) {
 	    while ( isspace(ch=getc(sfd)) && ch!='\n' && ch!='\r');
 	    while ( ch!='\n' && ch!='\r' ) {
-		if ( ch=='H' ) sc->changedsincelasthhinted=sc->changedsincelastvhinted=true;
+		if ( ch=='H' ) sc->changedsincelasthinted=true;
 		else if ( ch=='M' ) sc->manualhints = true;
 		else if ( ch=='W' ) sc->widthset = true;
 		ch = getc(sfd);
 	    }
 	} else if ( strmatch(tok,"HStem:")==0 ) {
 	    sc->hstem = SFDReadHints(sfd);
+	    SCGuessHHintInstancesList(sc);		/* For reading in old .sfd files with no HintInstance data */
+	    sc->hconflicts = StemListAnyConflicts(sc->hstem);
 	} else if ( strmatch(tok,"VStem:")==0 ) {
 	    sc->vstem = SFDReadHints(sfd);
+	    SCGuessVHintInstancesList(sc);		/* For reading in old .sfd files */
+	    sc->vconflicts = StemListAnyConflicts(sc->vstem);
 	} else if ( strmatch(tok,"Fore")==0 ) {
 	    sc->splines = SFDGetSplineSet(sfd);
 	} else if ( strmatch(tok,"Back")==0 ) {
@@ -786,7 +837,7 @@ return( NULL );
 	    else
 		lastr->next = ref;
 	    lastr = ref;
-	} else if ( strmatch(tok,"OrigType1:")==0 ) {
+	} else if ( strmatch(tok,"OrigType1:")==0 ) {	/* Accept, slurp, ignore contents */
 	    SFDGetType1(sfd,sc);
 	} else if ( strmatch(tok,"Image:")==0 ) {
 	    img = SFDGetImage(sfd);
@@ -988,6 +1039,7 @@ static void SFDGetPrivate(FILE *sfd,SplineFont *sf) {
 }
 
 static void SFDGetSubrs(FILE *sfd,SplineFont *sf) {
+#if 0
     int i, cnt;
     struct enc85 dec;
     unsigned char *pt, *end;
@@ -1009,6 +1061,22 @@ static void SFDGetSubrs(FILE *sfd,SplineFont *sf) {
 	    *pt = Dec85(&dec);
 	*pt = '\0';
     }
+#else
+    int i, cnt, tot, len;
+    struct enc85 dec;
+
+    getint(sfd,&cnt);
+    tot = 0;
+    for ( i=0; i<cnt; ++i ) {
+	getint(sfd,&len);
+	tot += len;
+    }
+
+    memset(&dec,'\0', sizeof(dec)); dec.pos = -1;
+    dec.sfd = sfd;
+    for ( i=0; i<tot; ++i )
+	Dec85(&dec);
+#endif
 }
 
 static SplineFont *SFDGetFont(FILE *sfd) {

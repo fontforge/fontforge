@@ -207,7 +207,7 @@ static const unichar_t *_GRadioGetTitle(GGadget *g) {
 return( b->label );
 }
 
-static void GRadioSetImageTitle(GGadget *g,GImage *img,unichar_t *tit, int before) {
+static void GRadioSetImageTitle(GGadget *g,GImage *img,const unichar_t *tit, int before) {
     GRadio *b = (GRadio *) g;
     if ( b->g.free_box )
 	free( b->g.box );

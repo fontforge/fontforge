@@ -26,6 +26,7 @@
  */
 #include "pfaeditui.h"
 #include <math.h>
+#include <ustring.h>
 
 /* ********************************* Undoes ********************************* */
 
@@ -1016,11 +1017,43 @@ return;
     copybuffer.u.multiple.mult = head;
 }
 
+static BDFFont *BitmapCreateCheck(FontView *fv,int *yestoall, int first, int pixelsize) {
+    int yes = 0;
+    BDFFont *bdf = NULL;
+
+    if ( !*yestoall && first ) {
+	static unichar_t title[] = { 'B','i','t','m','a','p',' ','P','a','s','t','e',  '\0' };
+	static unichar_t yesb[] = { 'Y','e','s',  '\0' };
+	static unichar_t yestoallb[] = { 'Y','e','s',' ','t','o',' ','A','l','l',  '\0' };
+	static unichar_t no[] = { 'N','o',  '\0' };
+	static unichar_t *buts[] = { yesb, yestoallb, no, NULL };
+	static unichar_t mn[] = { 'Y', 'A', 'N', '\0' };
+	char buf[300]; unichar_t ubuf[300];
+	sprintf( buf, "The clipboard contains a bitmap character of size %d,\na size which is not in your database.\nWould you like to create a bitmap font of that size,\nor ignore this character?",
+		pixelsize );
+	uc_strcpy(ubuf,buf);
+	yes = GWidgetAsk(title,ubuf,buts,mn,0,2);
+	if ( yes==1 )
+	    *yestoall = true;
+	else
+	    yes= yes!=2;
+    }
+    if ( yes || *yestoall ) {
+	bdf = SplineFontRasterize(fv->sf,pixelsize,false);
+	bdf->next = fv->sf->bitmaps;
+	fv->sf->bitmaps = bdf;
+	fv->sf->changed = true;
+	SFOrderBitmapList(fv->sf);
+    }
+return( bdf );
+}
+
 void PasteIntoFV(FontView *fv) {
     Undoes *cur=NULL, *bmp;
     BDFFont *bdf;
     int i, cnt=0;
     static unichar_t pasting[] = { 'P','a','s','t','i','n','g',' ','.','.','.',  '\0' };
+    int yestoall=0, first=true;
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] )
 	++cnt;
@@ -1043,6 +1076,10 @@ void PasteIntoFV(FontView *fv) {
 		_PasteToBC(BDFMakeChar(fv->show,i),fv->show->pixelsize,cur,true,fv);
 	    else {
 		for ( bdf=fv->sf->bitmaps; bdf!=NULL && bdf->pixelsize!=cur->u.bmpstate.pixelsize; bdf=bdf->next );
+		if ( bdf==NULL ) {
+		    bdf = BitmapCreateCheck(fv,&yestoall,first,cur->u.bmpstate.pixelsize);
+		    first = false;
+		}
 		if ( bdf!=NULL )
 		    _PasteToBC(BDFMakeChar(bdf,i),bdf->pixelsize,cur,true,fv);
 	    }
@@ -1053,9 +1090,12 @@ void PasteIntoFV(FontView *fv) {
 	    for ( bmp=cur->u.composit.bitmaps; bmp!=NULL; bmp = bmp->next ) {
 		for ( bdf=fv->sf->bitmaps; bdf!=NULL &&
 			bdf->pixelsize!=bmp->u.bmpstate.pixelsize; bdf=bdf->next );
+		if ( bdf==NULL )
+		    bdf = BitmapCreateCheck(fv,&yestoall,first,bmp->u.bmpstate.pixelsize);
 		if ( bdf!=NULL )
 		    _PasteToBC(BDFMakeChar(bdf,i),bdf->pixelsize,bmp,true,fv);
 	    }
+	     first = false;
 	  break;
 	}
 	cur = cur->next;

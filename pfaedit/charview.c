@@ -31,7 +31,7 @@
 #include <utype.h>
 
 extern int _GScrollBar_Width;
-struct cvshows CVShows = { 1, 1, 1, 1, 1, 0, 1 };
+struct cvshows CVShows = { 1, 1, 1, 1, 1, 1, 0, 1 };
 
 /* Positions on the info line */
 #define RPT_BASE	5		/* Place to draw the pointer icon */
@@ -426,18 +426,23 @@ void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
 }
 
 static void CVShowHints(CharView *cv, GWindow pixmap) {
-    Hints *hint;
+    StemInfo *hint;
     GRect r;
+    HintInstance *hi;
+    int end;
+    Color col;
 
-    for ( hint = cv->sc->hstem; hint!=NULL; hint = hint->next ) {
+    GDrawSetDashedLine(pixmap,5,5,0);
+
+    if ( cv->showhhints ) for ( hint = cv->sc->hstem; hint!=NULL; hint = hint->next ) {
 	if ( hint->width<0 ) {
-	    r.y = -cv->yoff + cv->height - rint(hint->base*cv->scale);
-	    r.height = rint(-hint->width*cv->scale);
+	    r.y = -cv->yoff + cv->height - rint(hint->start*cv->scale);
+	    r.height = rint(-hint->width*cv->scale)+1;
 	} else {
-	    r.y = -cv->yoff + cv->height - rint((hint->base+hint->width)*cv->scale);
-	    r.height = rint(hint->width*cv->scale);
+	    r.y = -cv->yoff + cv->height - rint((hint->start+hint->width)*cv->scale);
+	    r.height = rint(hint->width*cv->scale)+1;
 	}
-	r.x = -8000; r.width = 32000;
+	col = hint->active ? 0x00a000 : 0xa0d0a0;
 	/* XRectangles are shorts! */
 	if ( r.y<32767 && r.y+r.height>-32768 ) {
 	    if ( r.y<-32768 ) {
@@ -446,18 +451,30 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
 	    }
 	    if ( r.y+r.height>32767 )
 		r.height = 32767-r.y;
-	    GDrawFillRect(pixmap,&r,0xc0c0ff);
+	    for ( hi=hint->where; hi!=NULL; hi=hi->next ) {
+		r.x = cv->xoff + rint(hi->begin*cv->scale);
+		end = cv->xoff + rint(hi->end*cv->scale);
+		if ( end>=0 && r.x<=cv->width ) {
+		    r.width = end-r.x+1;
+		    GDrawFillRect(pixmap,&r,col);
+		}
+	    }
 	}
+	col = hint->hasconflicts? 0x00ffff : col;
+	if ( r.y>=0 && r.y<=cv->height )
+	    GDrawDrawLine(pixmap,0,r.y,cv->width,r.y,col);
+	if ( r.y+r.height>=0 && r.y+r.height<=cv->width )
+	    GDrawDrawLine(pixmap,0,r.y+r.height-1,cv->width,r.y+r.height-1,col);
     }
-    for ( hint = cv->sc->vstem; hint!=NULL; hint = hint->next ) {
+    if ( cv->showvhints ) for ( hint = cv->sc->vstem; hint!=NULL; hint = hint->next ) {
 	if ( hint->width<0 ) {
-	    r.x = cv->xoff + rint( (hint->base+hint->width)*cv->scale );
-	    r.width = rint(-hint->width*cv->scale);
+	    r.x = cv->xoff + rint( (hint->start+hint->width)*cv->scale );
+	    r.width = rint(-hint->width*cv->scale)+1;
 	} else {
-	    r.x = cv->xoff + rint(hint->base*cv->scale);
-	    r.width = rint(hint->width*cv->scale);
+	    r.x = cv->xoff + rint(hint->start*cv->scale);
+	    r.width = rint(hint->width*cv->scale)+1;
 	}
-	r.y = -8000; r.height = 32000;
+	col = hint->active ? 0x0000ff : 0xc0c0ff;
 	if ( r.x<32767 && r.x+r.width>-32768 ) {
 	    if ( r.x<-32768 ) {
 		r.width -= (-32768-r.x);
@@ -465,9 +482,22 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
 	    }
 	    if ( r.x+r.width>32767 )
 		r.width = 32767-r.x;
-	    GDrawFillRect(pixmap,&r,0xc0c0ff);
+	    for ( hi=hint->where; hi!=NULL; hi=hi->next ) {
+		r.y = -cv->yoff + cv->height - rint(hi->end*cv->scale);
+		end = -cv->yoff + cv->height - rint(hi->begin*cv->scale);
+		if ( end>=0 && r.y<=cv->height ) {
+		    r.height = end-r.y+1;
+		    GDrawFillRect(pixmap,&r,col);
+		}
+	    }
 	}
+	col = hint->hasconflicts? 0x00ffff : col;
+	if ( r.x>=0 && r.x<=cv->width )
+	    GDrawDrawLine(pixmap,r.x,0,r.x,cv->height,col);
+	if ( r.x+r.width>=0 && r.x+r.width<=cv->width )
+	    GDrawDrawLine(pixmap,r.x+r.width-1,0,r.x+r.width-1,cv->height,col);
     }
+    GDrawSetDashedLine(pixmap,0,0,0);
 }
 
 static void DrawImageList(CharView *cv,GWindow pixmap,ImageList *backimages) {
@@ -529,7 +559,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 
     /* if we've got bg images (and we're showing them) then the hints live in */
     /*  the bg image pixmap (else they get overwritten by the pixmap) */
-    if ( cv->showhints && ( cv->sc->backimages==NULL || !cv->showback) )
+    if ( (cv->showhhints || cv->showvhints ) && ( cv->sc->backimages==NULL || !cv->showback) )
 	CVShowHints(cv,pixmap);
 
     if (( cv->showback || cv->drawmode==dm_back ) && cv->sc->backimages!=NULL ) {
@@ -540,7 +570,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	    cv->backimgs = GDrawCreatePixmap(GDrawGetDisplayOfWindow(cv->v),cv->width,cv->height);
 	if ( cv->back_img_out_of_date ) {
 	    GDrawFillRect(cv->backimgs,NULL,GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(cv->v)));
-	    if ( cv->showhints )
+	    if ( cv->showhhints || cv->showvhints )
 		CVShowHints(cv,cv->backimgs);
 	    DrawImageList(cv,cv->backimgs,cv->sc->backimages);
 	    cv->back_img_out_of_date = false;
@@ -741,7 +771,7 @@ static GWindow CharIcon(CharView *cv, FontView *fv) {
 	if ( bdfc==NULL || bdfc->byte_data )
 	    bdfc = fv->filled->chars[sc->enc];
 	if ( bdfc==NULL || bdfc->byte_data ) {
-	    bdf2 = NULL;
+	    bdf2 = NULL; bdfc = NULL;
 	    for ( bdf=fv->sf->bitmaps; bdf!=NULL && bdf->pixelsize<24 ; bdf=bdf->next )
 		bdf2 = bdf;
 	    if ( bdf2!=NULL && bdf!=NULL ) {
@@ -1287,11 +1317,13 @@ return;
     }
 }
 
+#if 0
 void SCClearOrig(SplineChar *sc) {
     free(sc->origtype1);
     sc->origtype1 = NULL;
     sc->origlen = 0;
 }
+#endif
 
 void CVSetCharChanged(CharView *cv,int changed) {
     if ( cv->drawmode==dm_grid ) {
@@ -1300,8 +1332,10 @@ void CVSetCharChanged(CharView *cv,int changed) {
     } else {
 	if ( cv->drawmode==dm_fore )
 	    cv->sc->parent->onlybitmaps = false;
+#if 0
 	if ( cv->drawmode==dm_fore && cv->sc->origtype1!=NULL )
 	    SCClearOrig(cv->sc);
+#endif
 	if ( cv->sc->changed != changed ) {
 	    cv->sc->changed = changed;
 	    FVToggleCharChanged(cv->fv,cv->sc);
@@ -1315,7 +1349,7 @@ void CVSetCharChanged(CharView *cv,int changed) {
 	}
 	if ( cv->drawmode==dm_fore ) {
 	    if ( changed )
-		cv->sc->changedsincelasthhinted = cv->sc->changedsincelastvhinted = true;
+		cv->sc->changedsincelasthinted = true;
 	    cv->needsrasterize = true;
 	}
     }
@@ -1328,8 +1362,10 @@ void SCCharChangedUpdate(SplineChar *sc,FontView *fv) {
 	sc->changed_since_autosave = true;
 	FVToggleCharChanged(fv,sc);
     }
+#if 0
     if ( sc->origtype1!=NULL )
 	SCClearOrig(sc);
+#endif
     fv->sf->changed = true;
     fv->sf->changed_since_autosave = true;
     SCRegenDependents(sc);		/* All chars linked to this one need to get the new splines */
@@ -1967,6 +2003,7 @@ return( true );
 #define MID_Corner	2301
 #define MID_Tangent	2302
 #define MID_Curve	2303
+#define MID_AutoHint	2400
 #define MID_ClearHStem	2401
 #define MID_ClearVStem	2402
 #define MID_AddHHint	2403
@@ -2880,10 +2917,11 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void CVMenuAutoHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
+    int removeOverlap = e==NULL || !(e->u.mouse.state&ksm_shift);
 
     /* !!!! Hint undoes???? */
     cv->sc->manualhints = false;
-    SplineCharAutoHint(cv->sc);
+    SplineCharAutoHint(cv->sc,removeOverlap);
     SCUpdateAll(cv->sc);
 }
 
@@ -2891,11 +2929,13 @@ static void CVMenuClearHints(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
     if ( mi->mid==MID_ClearHStem ) {
-	free(cv->sc->hstem);
+	StemInfoFree(cv->sc->hstem);
 	cv->sc->hstem = NULL;
+	cv->sc->hconflicts = false;
     } else {
-	free(cv->sc->vstem);
+	StemInfoFree(cv->sc->vstem);
 	cv->sc->vstem = NULL;
+	cv->sc->hconflicts = false;
     }
     cv->sc->manualhints = true;
     SCOutOfDateBackground(cv->sc);
@@ -2905,7 +2945,7 @@ static void CVMenuClearHints(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void CVMenuAddHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     SplinePoint *sp1, *sp2;
-    Hints *h;
+    StemInfo *h;
 
     if ( !CVTwoForePointsSelected(cv,&sp1,&sp2))
 return;
@@ -2913,29 +2953,29 @@ return;
     if ( mi->mid==MID_AddHHint ) {
 	if ( sp1->me.y==sp2->me.y )
 return;
-	h = calloc(1,sizeof(Hints));
+	h = calloc(1,sizeof(StemInfo));
 	if ( sp2->me.y>sp1->me.y ) {
-	    h->base = sp1->me.y;
+	    h->start = sp1->me.y;
 	    h->width = sp2->me.y-sp1->me.y;
 	} else {
-	    h->base = sp2->me.y;
+	    h->start = sp2->me.y;
 	    h->width = sp1->me.y-sp2->me.y;
 	}
-	h->next = cv->sc->hstem;
-	cv->sc->hstem = h;
+	SCGuessHHintInstancesAndAdd(cv->sc,h);
+	cv->sc->hconflicts = StemListAnyConflicts(cv->sc->hstem);
     } else {
 	if ( sp1->me.x==sp2->me.x )
 return;
-	h = calloc(1,sizeof(Hints));
+	h = calloc(1,sizeof(StemInfo));
 	if ( sp2->me.x>sp1->me.x ) {
-	    h->base = sp1->me.x;
+	    h->start = sp1->me.x;
 	    h->width = sp2->me.x-sp1->me.x;
 	} else {
-	    h->base = sp2->me.x;
+	    h->start = sp2->me.x;
 	    h->width = sp1->me.x-sp2->me.x;
 	}
-	h->next = cv->sc->vstem;
-	cv->sc->vstem = h;
+	SCGuessVHintInstancesAndAdd(cv->sc,h);
+	cv->sc->vconflicts = StemListAnyConflicts(cv->sc->vstem);
     }
     cv->sc->manualhints = true;
     SCOutOfDateBackground(cv->sc);
@@ -2961,12 +3001,18 @@ return;
 static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     SplinePoint *sp1, *sp2;
+    int removeOverlap;
 
     sp1 = sp2 = NULL;
     CVTwoForePointsSelected(cv,&sp1,&sp2);
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
+	  case MID_AutoHint:
+	    removeOverlap = e==NULL || !(e->u.mouse.state&ksm_shift);
+	    free(mi->ti.text);
+	    mi->ti.text = uc_copy(removeOverlap?"AutoHint": "Full AutoHint");
+	  break;
 	  case MID_AddHHint:
 	    mi->ti.disabled = sp1==NULL || sp2->me.y==sp1->me.y;
 	  break;
@@ -3047,7 +3093,7 @@ static GMenuItem fllist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { save, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'S' }, 'S', ksm_control, NULL, NULL, CVMenuSave },
     { { saveas, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'a' }, 'S', ksm_control|ksm_shift, NULL, NULL, CVMenuSaveAs },
-    { { generate, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'G' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuGenerate },
+    { { generate, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'G' }, 'G', ksm_control|ksm_shift, NULL, NULL, CVMenuGenerate },
     { { export, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 't' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuExport },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { import, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'I' }, 'I', ksm_control|ksm_shift, NULL, NULL, CVMenuImport },
@@ -3108,7 +3154,7 @@ static GMenuItem ellist[] = {
 };
 
 static GMenuItem htlist[] = {
-    { { autohint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'H' }, 'H', ksm_control|ksm_shift, NULL, NULL, CVMenuAutoHint },
+    { { autohint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'H' }, 'H', ksm_control|ksm_shift, NULL, NULL, CVMenuAutoHint, MID_AutoHint },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { clearhstem, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'C' }, '\0', ksm_control, NULL, NULL, CVMenuClearHints, MID_ClearHStem },
     { { clearvstem, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 'V' }, '\0', ksm_control, NULL, NULL, CVMenuClearHints, MID_ClearVStem },
@@ -3192,7 +3238,8 @@ CharView *CharViewCreate(SplineChar *sc, FontView *fv) {
     cv->showback = CVShows.showback;
     cv->showfore = CVShows.showfore;
     cv->showgrids = CVShows.showgrids;
-    cv->showhints = CVShows.showhints;
+    cv->showhhints = CVShows.showhhints;
+    cv->showvhints = CVShows.showvhints;
     cv->showpoints = CVShows.showpoints;
     cv->showrulers = CVShows.showrulers;
     cv->showfilled = CVShows.showfilled;

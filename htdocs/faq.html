@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 29-Apr-2001 -->
+  <!-- AP: Last modified: 3-May-2001 -->
   <TITLE>Frequently Asked Questions</TITLE>
 </HEAD>
 <BODY>
@@ -26,6 +26,9 @@
   <LI>
     <A HREF="faq.html#Open-difference">What's the difference between OpenType
     and PostScript (or TrueType) fonts?</A>
+  <LI>
+    <A HREF="#save-no-change">After I generate a font and quit, why does PfaEdit
+    ask if I want to save the font? I didn't change anything.</A>
 </UL>
 <P>
   <HR>
@@ -104,6 +107,25 @@
     is almost a superset of Type1 with a few minor changes and many extension.
     Adobe's extensions to Type1 (flex hints, hint substitution, counter hints)
     by using subroutines have been added to Type2 as direct instructions.
+  <DT>
+    <A NAME="save-no-change">After I generate a font and quit, why does PfaEdit
+    ask if I want to save the font? I didn't change anything.</A>
+  <DD>
+    There are two reasons why this might be happening.
+    <OL>
+      <LI>
+	Even though you haven't changed anything in this session, PfaEdit may need
+	to (re)generate hinting information on one or several characters (if, for
+	example those characters have been changed (in an earlier session) but no
+	hints have been generated for them since). These new hints will mark the
+	font as changed.
+      <LI>
+	If your font has an XUID field in the Font Info, then PfaEdit will increment
+	the final number in the XUID each time a postscript font is generated --
+	and this also counts as a change. (Why does PfaEdit do this? Because Adobe
+	says it should. A minor annoyance, but it avoids some problems with font
+	caching when you change an old version of the font for a new one).
+    </OL>
 </DL>
 <P>
 <P ALIGN=Center>

@@ -33,6 +33,14 @@
 #include "splinefont.h"
 #include "edgelist.h"
 
+static void HintsFree(Hints *h) {
+    Hints *hnext;
+    for ( ; h!=NULL; h = hnext ) {
+	hnext = h->next;
+	free(h);
+    }
+}
+
 void FreeEdges(EdgeList *es) {
     int i;
 
@@ -50,6 +58,8 @@ void FreeEdges(EdgeList *es) {
     }
     free(es->edges);
     free(es->interesting);
+    HintsFree(es->hhints);
+    HintsFree(es->vhints);
 }
 
 double TOfNextMajor(Edge *e, EdgeList *es, double sought_m ) {
@@ -131,6 +141,32 @@ return( new_t );
     }
 }
 
+static int SlopeLess(Edge *e, Edge *p, int other) {
+    Spline1D *osp = &e->spline->splines[other];
+    Spline1D *psp = &p->spline->splines[other];
+    Spline1D *msp = &e->spline->splines[!other];
+    Spline1D *qsp = &p->spline->splines[!other];
+    double os = (3*osp->a*e->t_cur+2*osp->b)*e->t_cur+osp->c,
+	   ps = (3*psp->a*p->t_cur+2*psp->b)*p->t_cur+psp->c;
+    double ms = (3*msp->a*e->t_cur+2*msp->b)*e->t_cur+msp->c,
+	   qs = (3*qsp->a*p->t_cur+2*qsp->b)*p->t_cur+qsp->c;
+    if ( e->t_cur-e->tmin > e->tmax-e->t_cur ) { os = -os; ms = -ms; }
+    if ( p->t_cur-p->tmin > p->tmax-p->t_cur ) { ps = -ps; qs = -qs; }
+    if ( ms<.0001 && ms>-.0001 ) ms = 0;
+    if ( qs<.0001 && qs>-.0001 ) qs = 0;
+    if ( ms!=0 && qs!=0 ) { os /= ms; ps /= qs; }
+    else if ( ms==0 && qs==0 ) /* Do Nothing */;
+    else if ( ms==0 )
+return( false );
+    else if ( qs==0 )
+return( true );
+
+    if ( os==ps )
+return( e->o_mmax<p->o_mmax );
+
+return( os<ps );
+}
+
 static void AddEdge(EdgeList *es, Spline *sp, double tmin, double tmax ) {
     Edge *e, *pr;
     double m1, m2;
@@ -158,16 +194,18 @@ static void AddEdge(EdgeList *es, Spline *sp, double tmin, double tmax ) {
     }
     if ( DoubleNear(e->mmin,es->mmin)) e->mmin = es->mmin;
     e->o_mmin = ( ((osp->a*e->t_mmin+osp->b)*e->t_mmin+osp->c)*e->t_mmin + osp->d ) * es->scale;
+    e->o_mmax = ( ((osp->a*e->t_mmax+osp->b)*e->t_mmax+osp->c)*e->t_mmax + osp->d ) * es->scale;
     e->mmin -= es->mmin; e->mmax -= es->mmin;
     e->t_cur = e->t_mmin;
     e->o_cur = e->o_mmin;
     e->m_cur = e->mmin;
     e->last_opos = e->last_mpos = -2;
+    e->tmin = tmin; e->tmax = tmax;
 
     if ( e->mmin<0 || e->mmin>=e->mmax )
 	GDrawIError("Grg!");
 
-    if ( es->sc!=NULL ) for ( hint=es->sc->hstem; hint!=NULL; hint=hint->next ) {
+    if ( es->sc!=NULL ) for ( hint=es->hhints; hint!=NULL; hint=hint->next ) {
 	if ( hint->adjustb ) {
 	    if ( e->m_cur>hint->b1 && e->m_cur<hint->b2 ) {
 		e->m_cur = e->mmin = hint->ab;
@@ -207,8 +245,7 @@ return;
     es->last = e;
 
     if ( es->edges[mpos]==NULL || e->o_cur<es->edges[mpos]->o_cur ||
-	    (e->o_cur==es->edges[mpos]->o_cur &&
-	     e->o_cur>( ((osp->a*e->t_mmax+osp->b)*e->t_mmax+osp->c)*e->t_mmax + osp->d ) * es->scale )) {
+	    (e->o_cur==es->edges[mpos]->o_cur && SlopeLess(e,es->edges[mpos],es->other))) {
 	e->esnext = es->edges[mpos];
 	es->edges[mpos] = e;
     } else {
@@ -218,10 +255,11 @@ return;
 	/*  o_cur will be equal for both (to the vertex's o value) and so */
 	/*  the above code randomly picked one to go first. That screws up */
 	/*  the overlap code, which wants them properly ordered from the */
-	/*  start. so look at the end point */
-	if ( pr->esnext!=NULL && pr->esnext->o_cur==e->o_cur ) {
-	    if ( e->o_cur<( ((osp->a*e->t_mmax+osp->b)*e->t_mmax+osp->c)*e->t_mmax + osp->d ) * es->scale )
-		pr = pr->esnext;
+	/*  start. so look at the end point, nope the end point isn't always */
+	/*  meaningful, look at the slope... */
+	if ( pr->esnext!=NULL && pr->esnext->o_cur==e->o_cur &&
+		SlopeLess(e,pr->esnext,es->other)) {
+	    pr = pr->esnext;
 	}
 	e->esnext = pr->esnext;
 	pr->esnext = e;
@@ -496,7 +534,7 @@ return( e );
 static int isvstem(EdgeList *es,double stem,int *vval) {
     Hints *hint;
 
-    for ( hint=es->sc->vstem; hint!=NULL ; hint=hint->next ) {
+    for ( hint=es->vhints; hint!=NULL ; hint=hint->next ) {
 	if ( stem>=hint->b1 && stem<=hint->b2 ) {
 	    *vval = hint->ab;
 return( true );
@@ -569,7 +607,8 @@ static void FillChar(EdgeList *es) {
 }
 
 static void InitializeHints(SplineChar *sc, EdgeList *es) {
-    Hints *hint;
+    Hints *hint, *last;
+    StemInfo *s;
     double t1, t2;
     int k,end,width;
 
@@ -578,7 +617,13 @@ static void InitializeHints(SplineChar *sc, EdgeList *es) {
     /*  or bottom position so that a boundary forcing is crossed.   Any */
     /*  vertexes at those points will be similarly adjusted later... */
 
-    for ( hint=sc->hstem; hint!=NULL; hint=hint->next ) {
+    last = NULL; es->hhints = NULL;
+    for ( s=sc->hstem; s!=NULL; s=s->next ) {
+	hint = gcalloc(1,sizeof(Hints));
+	hint->base = s->start; hint->width = s->width;
+	if ( last==NULL ) es->hhints = hint;
+	else last->next = hint;
+	last = hint;
 	hint->adjuste = hint->adjustb = false;
 	t1 = hint->base*es->scale	-es->mmin;
 	t2 = (hint->base+hint->width)*es->scale	-es->mmin;
@@ -606,7 +651,13 @@ static void InitializeHints(SplineChar *sc, EdgeList *es) {
     }
 
     /* Nope. We care about vstems too now, but in a different case */
-    for ( hint=sc->vstem; hint!=NULL; hint=hint->next ) {
+    last = NULL; es->vhints = NULL;
+    for ( s=sc->vstem; s!=NULL; s=s->next ) {
+	hint = gcalloc(1,sizeof(Hints));
+	hint->base = s->start; hint->width = s->width;
+	if ( last==NULL ) es->hhints = hint;
+	else last->next = hint;
+	last = hint;
 	if ( hint->width<0 ) {
 	    width = -rint(-hint->width*es->scale);
 	    t1 = (hint->base+hint->width)*es->scale;
@@ -785,7 +836,7 @@ return( bdfc );
 static unichar_t rasterizing[] = { 'R','a','s','t','e','r','i','z','i','n','g','.','.','.',  '\0' };
 static unichar_t bitmap[] = { 'G','e','n','e','r','a','t','i','n','g',' ','b','i','t','m','a','p',' ','f','o','n','t',  '\0' };
 static unichar_t aamap[] = { 'G','e','n','e','r','a','t','i','n','g',' ','a','n','t','i','-','a','l','i','a','s','e','d',' ','f','o','n','t',  '\0' };
-BDFFont *SplineFontRasterize(SplineFont *sf, int pixelsize) {
+BDFFont *SplineFontRasterize(SplineFont *sf, int pixelsize, int indicate) {
     BDFFont *bdf = gcalloc(1,sizeof(BDFFont));
     int i;
     double scale = pixelsize / (double) (sf->ascent+sf->descent);
@@ -793,8 +844,10 @@ BDFFont *SplineFontRasterize(SplineFont *sf, int pixelsize) {
 
     sprintf(csize,"%d pixels", pixelsize );
     uc_strcpy(size,csize);
-    GProgressStartIndicator(10,rasterizing,bitmap,size,sf->charcnt,1);
-    GProgressEnableStop(0);
+    if ( indicate ) {
+	GProgressStartIndicator(10,rasterizing,bitmap,size,sf->charcnt,1);
+	GProgressEnableStop(0);
+    }
     bdf->sf = sf;
     bdf->charcnt = sf->charcnt;
     bdf->pixelsize = pixelsize;
@@ -804,9 +857,9 @@ BDFFont *SplineFontRasterize(SplineFont *sf, int pixelsize) {
     bdf->encoding_name = sf->encoding_name;
     for ( i=0; i<sf->charcnt; ++i ) {
 	bdf->chars[i] = SplineCharRasterize(sf->chars[i],pixelsize);
-	GProgressNext();
+	if ( indicate ) GProgressNext();
     }
-    GProgressEndIndicator();
+    if ( indicate ) GProgressEndIndicator();
 return( bdf );
 }
 

@@ -235,14 +235,48 @@ typedef struct kernpair {
     struct kernpair *next;
 } KernPair;
 
-typedef struct hints {
-    double base, width;
-    double b1, b2, e1, e2;
-    double ab, ae;
-    unsigned int adjustb: 1;
-    unsigned int adjuste: 1;
-    struct hints *next;
-} Hints;
+/* Some stems may appear, disappear, reapear several times */
+/* Serif stems on I which appear at 0, disappear, reappear at top */
+/* Or the major vertical stems on H which disappear at the cross bar */
+typedef struct hintinstance {
+    double begin;			/* location in the non-major direction*/
+    double end;				/* width/height in non-major direction*/
+    unsigned int closed: 1;
+    struct hintinstance *next;
+} HintInstance;
+
+typedef struct steminfo {
+    double start;			/* location at which the stem starts */
+    double width;			/* or height */
+    HintInstance *where;		/* location(s) in the other coord */
+    struct steminfo *next;
+    unsigned int asedges:1;	/* only do a set of edge hints for this guy */
+    				/*  or remove entirely if the edges overlap */
+			        /*  something else */
+    unsigned int haspointleft:1;
+    unsigned int haspointright:1;
+    unsigned int haspoints:1;	/* both edges of the stem have points on them */
+				/*  at the stem left and right edge */
+			        /*  trivially true for horizontal/vertical lines */
+			        /*  true for curves if extrema have points */
+			        /*  except we aren't smart enough to detect that yet */
+    unsigned int hasconflicts:1;/* Does this stem have conflicts within its cluster? */
+    unsigned int used: 1;	/* Temporary for counter hints or hint substitution */
+    unsigned int tobeused: 1;	/* Temporary for counter hints or hint substitution */
+    unsigned int active: 1;	/* Currently active hint in Review Hints dlg */
+				/*  displayed differently in char display */
+    unsigned int enddone: 1;	/* Used by ttf instructing, indicates a prev */
+				/*  hint had the same end as this one (so */
+			        /*  the points on the end line have been */
+			        /*  instructed already */
+    unsigned int startdone: 1;	/* Used by ttf instructing */
+    unsigned int backwards: 1;	/* If we think this hint is better done with a negative width */
+    unsigned int reordered: 1;	/* In AutoHinting. Means we changed the start of the hint, need to test for out of order */
+    int16 hintnumber;		/* when dumping out hintmasks we need to know */
+				/*  what bit to set for this hint */
+    int mask;			/* Mask of all references that use this hint */
+				/*  in type2 output */
+} StemInfo ;
 
 typedef struct imagelist {
     struct gimage *image;
@@ -271,19 +305,19 @@ typedef struct splinechar {
 				/*  Or an otf font where it is the subr number of a refered character */
     int16 ttf_glyph;		/* only used when writing out a ttf or otf font */
     SplinePointList *splines;
-    Hints *hstem;		/* hstem hints have a vertical offset but run horizontally */
-    Hints *vstem;		/* vstem hints have a horizontal offset but run vertically */
+    StemInfo *hstem;		/* hstem hints have a vertical offset but run horizontally */
+    StemInfo *vstem;		/* vstem hints have a horizontal offset but run vertically */
     RefChar *refs;
     struct charview *views;
     struct splinefont *parent;
     unsigned int changed: 1;
-    unsigned int changedsincelasthhinted: 1;
-    unsigned int changedsincelastvhinted: 1;
+    unsigned int changedsincelasthinted: 1;
     unsigned int manualhints: 1;
     unsigned int ticked: 1;	/* For reference character processing */
     unsigned int changed_since_autosave: 1;
     unsigned int widthset: 1;	/* needed so an emspace char doesn't disappear */
-    unsigned int origistype2: 1;
+    unsigned int vconflicts: 1;	/* Any hint overlaps in the vstem list? */
+    unsigned int hconflicts: 1;	/* Any hint overlaps in the hstem list? */
     struct splinecharlist { struct splinechar *sc; struct splinecharlist *next;} *dependents;
 	    /* The dependents list is a list of all characters which refenence*/
 	    /*  the current character directly */
@@ -292,8 +326,10 @@ typedef struct splinechar {
     Undoes *undoes[2];
     Undoes *redoes[2];
     KernPair *kerns;
+#if 0			/* If I do my own hint substitution, integrating with an old set of hint subroutines is too hard. give up on this feature */
     uint8 *origtype1;		/* Original string from Type1 file (unencoded) (or type2 from cff) */
     int origlen;		/* Length of string */
+#endif
     Ligature *lig;		/* If we are a ligature then this tells us what */
     LigList *ligofme;		/* If this is the first character of a ligature then this gives us the list of possible ones */
 				/*  this field must be regenerated before the font is saved */
@@ -312,9 +348,12 @@ typedef struct splinefont {
     unsigned int changed_since_autosave: 1;
     unsigned int display_antialias: 1;
     unsigned int dotlesswarn: 1;		/* User warned that font doesn't have a dotless i character */
-    unsigned int subrsgood: 1;			/* the subrs & othersubrs arrays are correct for flex&hint subs */
+    /*unsigned int subrsgood: 1;		/* the subrs & othersubrs arrays are correct for flex&hint subs */
     /*unsigned int wasbinary: 1;*/
     unsigned int onlybitmaps: 1;		/* it's a bdf editor, not a postscript editor */
+    unsigned int serifcheck: 1;			/* Have we checked to see if we have serifs? */
+    unsigned int issans: 1;			/* We have no serifs */
+    unsigned int isserif: 1;			/* We have serifs. If neither set then we don't know. */
     struct fontview *fv;
     enum charset encoding_name;
     SplinePointList *gridsplines;
@@ -324,7 +363,7 @@ typedef struct splinefont {
     char *autosavename;
     int display_size;
     struct psdict *private;		/* read in from type1 file or provided by user */
-    struct pschars *subrs;		/* actually an array, but this will do */
+    /*struct pschars *subrs;		/* actually an array, but this will do */
     char *xuid;
 } SplineFont;
 
@@ -339,7 +378,9 @@ extern SplineFont *SplineFontFromPSFont(struct fontdict *fd);
 extern int CheckAfmOfPostscript(SplineFont *sf,char *psname);
 extern int LoadKerningDataFromAfm(SplineFont *sf, char *filename);
 extern int SFOneWidth(SplineFont *sf);
-extern struct pschars *SplineFont2Chrs(SplineFont *sf, int round);
+extern int SFIsCJK(SplineFont *sf);
+extern struct pschars *SplineFont2Chrs(SplineFont *sf, int round, int iscjk,
+	struct pschars *subrs);
 extern struct pschars *SplineFont2Subrs2(SplineFont *sf);
 extern struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
 	struct pschars *subrs);
@@ -362,10 +403,11 @@ extern void SplinePointListsFree(SplinePointList *head);
 extern void RefCharFree(RefChar *ref);
 extern void RefCharsFree(RefChar *ref);
 extern void UndoesFree(Undoes *undo);
-extern void HintsFree(Hints *h);
+extern void StemInfosFree(StemInfo *h);
+extern void StemInfoFree(StemInfo *h);
 extern void KernPairsFree(KernPair *kp);
 extern void LigatureFree(Ligature *lig);
-extern Hints *HintsCopy(Hints *h);
+extern StemInfo *StemInfoCopy(StemInfo *h);
 extern SplineChar *SplineCharCopy(SplineChar *sc);
 extern BDFChar *BDFCharCopy(BDFChar *bc);
 extern void ImageListsFree(ImageList *imgs);
@@ -400,7 +442,7 @@ extern void BCRegularizeBitmap(BDFChar *bdfc);
 extern void BCRegularizeGreymap(BDFChar *bdfc);
 extern void BCPasteInto(BDFChar *bc,BDFChar *rbc,int ixoff,int iyoff, int invert);
 extern BDFChar *SplineCharRasterize(SplineChar *sc, int pixelsize);
-extern BDFFont *SplineFontRasterize(SplineFont *sf, int pixelsize);
+extern BDFFont *SplineFontRasterize(SplineFont *sf, int pixelsize, int indicate);
 extern BDFChar *SplineCharAntiAlias(SplineChar *sc, int pixelsize,int linear_scale);
 extern BDFFont *SplineFontAntiAlias(SplineFont *sf, int pixelsize,int linear_scale);
 extern BDFFont *BitmapFontScaleTo(BDFFont *old, int to);
@@ -436,6 +478,7 @@ extern void SplineSetsUntick(SplineSet *spl);
 extern void SFOrderBitmapList(SplineFont *sf);
 extern int KernThreshold(SplineFont *sf, int cnt);
 extern double SFGuessItalicAngle(SplineFont *sf);
+extern void SFHasSerifs(SplineFont *sf);
 
 extern SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc);
 extern SplineSet *SplineSetRemoveOverlap(SplineSet *base);
@@ -443,7 +486,15 @@ extern SplineSet *SplineSetRemoveOverlap(SplineSet *base);
 extern void FindBlues( SplineFont *sf, double blues[14], double otherblues[10]);
 extern void FindHStems( SplineFont *sf, double snaps[12], double cnt[12]);
 extern void FindVStems( SplineFont *sf, double snaps[12], double cnt[12]);
-extern void SplineCharAutoHint( SplineChar *sc);
+extern void SCGuessHHintInstancesAndAdd(SplineChar *sc, StemInfo *stem);
+extern void SCGuessVHintInstancesAndAdd(SplineChar *sc, StemInfo *stem);
+extern void SCGuessHHintInstancesList(SplineChar *sc);
+extern void SCGuessVHintInstancesList(SplineChar *sc);
+extern double HIlen( StemInfo *stems);
+extern double HIoverlap( HintInstance *mhi, HintInstance *thi);
+extern int StemInfoAnyOverlaps(StemInfo *stems);
+extern int StemListAnyConflicts(StemInfo *stems);
+extern void SplineCharAutoHint( SplineChar *sc,int removeOverlaps);
 extern void SplineFontAutoHint( SplineFont *sf);
 extern int SplineFontIsFlexible(SplineFont *sf);
 extern int SCWorthOutputting(SplineChar *sc);
@@ -493,8 +544,6 @@ extern int DoAutoRecovery(void);
 extern SplineFont *SFRecoverFile(char *autosavename);
 extern void SFAutoSave(SplineFont *sf);
 extern void SFClearAutoSave(SplineFont *sf);
-
-extern void SCClearOrig(SplineChar *sc);
 
 extern void PSCharsFree(struct pschars *chrs);
 extern void PSDictFree(struct psdict *chrs);

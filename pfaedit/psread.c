@@ -1506,7 +1506,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
     /* subroutines may be nested to a depth of 10 */
     struct substate { unsigned char *type1; int len; } pcstack[11];
     int pcsp=0;
-    Hints *hint, *hp;
+    StemInfo *hint, *hp;
     double pops[30];
     int popsp=0;
     int base, polarity;
@@ -1518,6 +1518,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
     ret->unicodeenc = -1;
     ret->width = 0x8000000;
     if ( name==NULL ) name = "unnamed";
+    ret->manualhints = true;
 
     current.x = current.y = 0;
     while ( len>0 ) {
@@ -1568,8 +1569,8 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 	      break;
 	      case 1: /* vstem3 */	/* specifies three v hints zones at once */
 		if ( sp<6 ) fprintf(stderr, "Stack underflow on vstem3 in %s\n", name );
-		hint = calloc(1,sizeof(Hints));
-		hint->base = stack[0] + ret->lsidebearing;
+		hint = calloc(1,sizeof(StemInfo));
+		hint->start = stack[0] + ret->lsidebearing;
 		hint->width = stack[1];
 		if ( ret->vstem==NULL )
 		    ret->vstem = hp = hint;
@@ -1578,20 +1579,20 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 		    hp->next = hint;
 		    hp = hint;
 		}
-		hint = calloc(1,sizeof(Hints));
-		hint->base = stack[2] + ret->lsidebearing;
+		hint = calloc(1,sizeof(StemInfo));
+		hint->start = stack[2] + ret->lsidebearing;
 		hint->width = stack[3];
 		hp->next = hint; hp = hint;
-		hint = calloc(1,sizeof(Hints));
-		hint->base = stack[4] + ret->lsidebearing;
+		hint = calloc(1,sizeof(StemInfo));
+		hint->start = stack[4] + ret->lsidebearing;
 		hint->width = stack[5];
 		hp->next = hint; 
 		sp = 0;
 	      break;
 	      case 2: /* hstem3 */	/* specifies three h hints zones at once */
 		if ( sp<6 ) fprintf(stderr, "Stack underflow on hstem3 in %s\n", name );
-		hint = calloc(1,sizeof(Hints));
-		hint->base = stack[0];
+		hint = calloc(1,sizeof(StemInfo));
+		hint->start = stack[0];
 		hint->width = stack[1];
 		if ( ret->hstem==NULL )
 		    ret->hstem = hp = hint;
@@ -1600,12 +1601,12 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 		    hp->next = hint;
 		    hp = hint;
 		}
-		hint = calloc(1,sizeof(Hints));
-		hint->base = stack[2];
+		hint = calloc(1,sizeof(StemInfo));
+		hint->start = stack[2];
 		hint->width = stack[3];
 		hp->next = hint; hp = hint;
-		hint = calloc(1,sizeof(Hints));
-		hint->base = stack[4];
+		hint = calloc(1,sizeof(StemInfo));
+		hint->start = stack[4];
 		hint->width = stack[5];
 		hp->next = hint; 
 		sp = 0;
@@ -1710,11 +1711,14 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 		    /* othersubrs 0-3 must be interpretted. 0-2 are Flex, 3 is Hint Replacement */
 		    /* othersubrs 12,13 are for counter hints. We don't need to */
 		    /*  do anything to ignore them */
-		    if ( stack[sp-1]==3 )
+		    if ( stack[sp-1]==3 ) {
 			/* we aren't capabable of hint replacement so we punt */
 			/*  we punt by putting 3 on the stack (T1 spec page 70) */
 			pops[popsp-1] = 3;
-		    else if ( stack[sp-1]==1 ) {
+			ret->manualhints = false;
+			/* We can manage hint substitution from hintmask though*/
+			/*  well enough that we needn't clear the manualhints bit */
+		    } else if ( stack[sp-1]==1 ) {
 			/* We punt for flex too. This is a bit harder */
 			/* Essentially what we want to do is draw a line from */
 			/*  where we are at the beginning to where we are at */
@@ -1941,8 +1945,8 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 	    /* stack[1] is relative y for height of hint zone */
 	    coord = 0;
 	    while ( sp-base>=2 ) {
-		hint = calloc(1,sizeof(Hints));
-		hint->base = stack[base]+coord;
+		hint = calloc(1,sizeof(StemInfo));
+		hint->start = stack[base]+coord;
 		hint->width = stack[base+1];
 		if ( ret->hstem==NULL )
 		    ret->hstem = hint;
@@ -1951,7 +1955,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 		    hp->next = hint;
 		}
 		base+=2;
-		coord = hint->base+hint->width;
+		coord = hint->start+hint->width;
 		++hint_cnt;
 	    }
 	    sp = 0;
@@ -1979,8 +1983,8 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 		/* stack[1] is relative x for height of hint zone */
 		coord = 0;
 		while ( sp-base>=2 ) {
-		    hint = calloc(1,sizeof(Hints));
-		    hint->base = stack[base] + coord + ret->lsidebearing;
+		    hint = calloc(1,sizeof(StemInfo));
+		    hint->start = stack[base] + coord + ret->lsidebearing;
 		    hint->width = stack[base+1];
 		    if ( ret->vstem==NULL )
 			ret->vstem = hint;
@@ -1989,7 +1993,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 			hp->next = hint;
 		    }
 		    base+=2;
-		    coord = hint->base+hint->width;
+		    coord = hint->start+hint->width;
 		    ++hint_cnt;
 		}
 		sp = 0;
@@ -1998,10 +2002,6 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
 		int bytes = (hint_cnt+7)/8;
 		type1 += bytes;
 		len -= bytes;
-		/* if we have a hintmask, then we probably have overlapping */
-		/*  hints. And we can't deal with those, so force a regen */
-		if ( v==19 )
-		    ret->changedsincelasthhinted = ret->changedsincelastvhinted = true;
 	    }
 	  break;
 	  case 14: /* endchar */
@@ -2212,5 +2212,11 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, int is_type2,
     /*  backwards ... at least backwards from fontographer ... so reverse 'em*/
     for ( cur = ret->splines; cur!=NULL; cur = cur->next )
 	SplineSetReverse(cur);
+    if ( ret->hstem==NULL && ret->vstem==NULL )
+	ret->manualhints = false;
+    SCGuessHHintInstancesList(ret);
+    SCGuessVHintInstancesList(ret);
+    ret->hconflicts = StemListAnyConflicts(ret->hstem);
+    ret->vconflicts = StemListAnyConflicts(ret->vstem);
 return( ret );
 }

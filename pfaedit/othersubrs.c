@@ -15,6 +15,10 @@ static const uint8 subrs3[] = { 11 };
 const uint8 *const subrs[4] = { subrs0, subrs1, subrs2, subrs3 };
 const int subrslens[4] = { sizeof(subrs0), sizeof(subrs1), sizeof(subrs2), sizeof(subrs3)};
 
+/* Assumption: We always want to do hint substitution (anyway, it's small) */
+/* If we also want flex output the "othersubrs" array. If no flex the "othersubrsnoflex" */
+/* If we want to do counters, output "othersubrscounters" too */
+/* Finish up with othersubrsend */
 const char *othersubrs[] = {
 	"",
 	"% Copyright (c) 1987-1990 Adobe Systems Incorporated.",
@@ -196,6 +200,46 @@ const char *othersubrs[] = {
 	"ifelse}",
 	"ifelse",
 	"} executeonly",
+	NULL
+};
+
+const char *othersubrsnoflex[] = {
+	"",
+	"% Copyright (c) 1987-1990 Adobe Systems Incorporated.",
+	"% All Rights Reserved.",
+	"% This code to be used for Flex and hint replacement.",
+	"% Version 1.1",
+	"[ {} {} {}",
+	"{systemdict /internaldict known not",
+	"{pop 3}",
+	"{1183615869 systemdict /internaldict get exec",
+	"dup /startlock known",
+	"{/startlock get exec}",
+	"{dup /strtlck known",
+	"{/strtlck get exec}",
+	"{pop 3}",
+	"ifelse}",
+	"ifelse}",
+	"ifelse",
+	"} executeonly",
+	NULL
+};
+
+const char *othersubrscounters[] = {
+	"{}",		/* Other subr 4 */
+	"{}",		/* Other subr 5 */
+	"{}",		/* Other subr 6 */
+	"{}",		/* Other subr 7 */
+	"{}",		/* Other subr 8 */
+	"{}",		/* Other subr 9 */
+	"{}",		/* Other subr 10 */
+	"{}",		/* Other subr 11 */
+	"{}",		/* Other Subr 12, for counter hints */
+	"{ 2 { cvi { { pop 0 lt { exit } if } loop } repeat } repeat }",	/* Other Subr 13 for counter hints */
+	NULL
+};
+
+const char *othersubrsend[] = {
 	"] noaccess ",
 	NULL
 };

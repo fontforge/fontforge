@@ -161,7 +161,7 @@ static void encodestrout(void (*dumpchar)(int ch,void *data), void *data,
     }
 }
 
-static void dumpstr(void (*dumpchar)(int ch,void *data), void *data, char *buf) {
+static void dumpstr(void (*dumpchar)(int ch,void *data), void *data, const char *buf) {
     while ( *buf )
 	dumpchar(*buf++,data);
 }
@@ -253,36 +253,34 @@ static void dumpintmaxarray(void (*dumpchar)(int ch,void *data), void *data,
 }
 #endif
 
-static void dumpsubrs(void (*dumpchar)(int ch,void *data), void *data, SplineFont *sf ) {
+static void dumpsubrs(void (*dumpchar)(int ch,void *data), void *data,
+	SplineFont *sf, struct pschars *subrs ) {
     int leniv = 4;
     int i;
     char *pt;
 
-    if ( sf->subrs==NULL )
+    if ( subrs==NULL )
 return;
     if ( (pt=PSDictHasEntry(sf->private,"lenIV"))!=NULL )
 	leniv = strtol(pt,NULL,10);
-    dumpf(dumpchar,data,"/Subrs %d array\n",sf->subrs->cnt);
-    for ( i=0; i<sf->subrs->cnt; ++i ) {
-	dumpf(dumpchar,data,"dup %d %d RD ", i, sf->subrs->lens[i]+leniv );
-	encodestrout(dumpchar,data,sf->subrs->values[i],sf->subrs->lens[i],leniv);
+    dumpf(dumpchar,data,"/Subrs %d array\n",subrs->cnt);
+    for ( i=0; i<subrs->next; ++i ) {
+	dumpf(dumpchar,data,"dup %d %d RD ", i, subrs->lens[i]+leniv );
+	encodestrout(dumpchar,data,subrs->values[i],subrs->lens[i],leniv);
 	dumpstr(dumpchar,data," NP\n");
     }
     dumpstr(dumpchar,data,"ND\n");
 }
 
 /* Dumped within the private dict to get access to ND and RD */
-static void dumpcharstrings(void (*dumpchar)(int ch,void *data), void *data, SplineFont *sf ) {
-    struct pschars *chars;
+static void dumpcharstrings(void (*dumpchar)(int ch,void *data), void *data,
+	SplineFont *sf, struct pschars *chars ) {
     int leniv = 4;
     int i;
     char *pt;
 
     if ( (pt=PSDictHasEntry(sf->private,"lenIV"))!=NULL )
 	leniv = strtol(pt,NULL,10);
-    GProgressChangeStages(2);
-    chars = SplineFont2Chrs(sf,true);
-    GProgressNextStage();
     dumpf(dumpchar,data,"2 index /CharStrings %d dict dup begin\n",chars->cnt);
     for ( i=0; i<chars->next; ++i ) {
 	if ( chars->keys[i]==NULL )
@@ -293,8 +291,6 @@ static void dumpcharstrings(void (*dumpchar)(int ch,void *data), void *data, Spl
 	GProgressNext();
     }
     dumpstr(dumpchar,data,"end readonly put\n");
-    PSCharsFree(chars);
-    GProgressChangeStages(1);
 }
 
 static void dumpsplineset(void (*dumpchar)(int ch,void *data), void *data, SplineSet *spl ) {
@@ -432,59 +428,52 @@ static void dumpcharprocs(void (*dumpchar)(int ch,void *data), void *data, Splin
     dumpf(dumpchar, data, "/%s exch definefont\n", sf->fontname );
 }
 
-static void massagesubrs(SplineFont *sf) {
+static struct pschars *initsubrs(int needsflex) {
     extern const uint8 *const subrs[4];
     extern const int subrslens[4];
-    extern const char *othersubrs[];
-    int i, cnt;
-    char *val, *pt;
+    int i;
+    struct pschars *sub;
 
-    if ( sf->subrsgood )
-return;
-    if ( sf->subrs==NULL ) {
-	sf->subrs = gcalloc(1,sizeof(struct pschars));
-	sf->subrs->cnt = 4;
-	sf->subrs->lens = galloc(4*sizeof(int));
-	sf->subrs->values = galloc(4*sizeof(uint8 *));
-    }
-    if ( sf->subrs->cnt<4 ) {
-	sf->subrs->cnt = 4;
-	sf->subrs->lens = grealloc(sf->subrs->lens,4*sizeof(int));
-	sf->subrs->values = grealloc(sf->subrs->values,4*sizeof(uint8 *));
-    }
+    sub = gcalloc(1,sizeof(struct pschars));
+    sub->cnt = 4;
+    sub->lens = galloc(4*sizeof(int));
+    sub->values = galloc(4*sizeof(uint8 *));
     for ( i=0; i<4; ++i ) {
-	if ( i<sf->subrs->next )
-	    free(sf->subrs->values[i]);
-	else
-	    ++sf->subrs->next;
-	sf->subrs->values[i] = (uint8 *) copyn((const char *) subrs[i],subrslens[i]);
-	sf->subrs->lens[i] = subrslens[i];
+	++sub->next;
+	sub->values[i] = (uint8 *) copyn((const char *) subrs[i],subrslens[i]);
+	sub->lens[i] = subrslens[i];
     }
-
-    /* parsing the othersubrs array is hard. It's not just a set of routines */
-    /* but code for generating routines. So I'm just going to throw out whatever */
-    /* was there and replace it with Adobe's text. This will only be wrong if */
-    /* they've created a fifth othersubrs entry (the first four must be adobe's*/
-    /* or noops */
-    for ( i=cnt=0; othersubrs[i]!=NULL; ++i )
-	cnt += strlen( othersubrs[i])+1;
-    ++cnt;
-    val = pt = galloc(cnt*sizeof(char));
-    for ( i=0; othersubrs[i]!=NULL; ++i ) {
-	strcpy(pt,othersubrs[i]);
-	pt += strlen( pt );
-	*pt++ = '\n';
-    }
-    if ( pt!=val )
-	pt[-1] = '\0';
-    else
-	*pt = '\0';
-    if ( sf->private==NULL )
-	sf->private = gcalloc(1,sizeof(struct psdict));
-    PSDictChangeEntry(sf->private,"OtherSubrs",val);
-    sf->subrsgood = true;
+return( sub );
 }
-    
+
+static void dumpothersubrs(void (*dumpchar)(int ch,void *data), void *data,
+	int needsflex, int needscounters ) {
+    extern const char *othersubrs[];
+    extern const char *othersubrsnoflex[];
+    extern const char *othersubrscounters[];
+    extern const char *othersubrsend[];
+    int i;
+    const char **subs;
+
+    dumpstr(dumpchar,data,"/OtherSubrs \n" );
+    subs = needsflex ? othersubrs : othersubrsnoflex;
+    for ( i=0; subs[i]!=NULL; ++i ) {
+	dumpstr(dumpchar,data,subs[i]);
+	dumpchar('\n',data);
+    }
+    if ( needscounters ) {
+	for ( i=0; othersubrscounters[i]!=NULL; ++i ) {
+	    dumpstr(dumpchar,data,othersubrscounters[i]);
+	    dumpchar('\n',data);
+	}
+    }
+    for ( i=0; othersubrsend[i]!=NULL; ++i ) {
+	dumpstr(dumpchar,data,othersubrsend[i]);
+	dumpchar('\n',data);
+    }
+    dumpstr(dumpchar,data,"def\n" );
+}
+
 static void dumpprivatestuff(void (*dumpchar)(int ch,void *data), void *data, SplineFont *sf ) {
     int cnt, mi;
     double bluevalues[14], otherblues[10];
@@ -492,24 +481,25 @@ static void dumpprivatestuff(void (*dumpchar)(int ch,void *data), void *data, Sp
     double stemsnaph[12], stemsnapv[12];
     double stdhw[1], stdvw[1];
     int i;
+    static unichar_t cvtps[] = { 'C','o','n','v','e','r','t','i','n','g',' ','P','o','s','t','s','c','r','i','p','t', '\0' };
     static unichar_t saveps[] = { 'S','a','v','i','n','g',' ','P','o','s','t','s','c','r','i','p','t',' ','F','o','n','t', '\0' };
     static unichar_t autohinting[] = { 'A','u','t','o',' ','H','i','n','t','i','n','g',' ','F','o','n','t',  '\0' };
     int hasblue=0, hash=0, hasv=0, hasshift, haso, hasxuid, hasbold, haslg;
     int flex_max;
     int isbold=false;
     int iscjk;
+    struct pschars *subrs, *chars;
 
     flex_max = SplineFontIsFlexible(sf);
-    if ( flex_max>0 )
-	massagesubrs(sf);
-    iscjk = (sf->encoding_name>=em_first2byte && sf->encoding_name<em_unicode);
+    memset(&subrs,'\0',sizeof(subrs));
+    subrs = initsubrs(flex_max>0);
+    iscjk = SFIsCJK(sf);
 
     hasbold = PSDictHasEntry(sf->private,"ForceBold")!=NULL;
     hasblue = PSDictHasEntry(sf->private,"BlueValues")!=NULL;
     hash = PSDictHasEntry(sf->private,"StdHW")!=NULL;
     hasv = PSDictHasEntry(sf->private,"StdVW")!=NULL;
     hasshift = PSDictHasEntry(sf->private,"BlueShift")!=NULL;
-    haso = PSDictHasEntry(sf->private,"OtherSubrs")!=NULL;
     hasxuid = PSDictHasEntry(sf->private,"XUID")!=NULL;
     haslg = PSDictHasEntry(sf->private,"LanguageGroup")!=NULL;
     if ( sf->weight!=NULL &&
@@ -517,15 +507,17 @@ static void dumpprivatestuff(void (*dumpchar)(int ch,void *data), void *data, Sp
 	     strstrmatch(sf->weight,"Black")!=NULL))
 	isbold = true;
 
-    if ( hasblue+hash+hasv!=3 ) {
-	GProgressChangeLine1(autohinting);
-	GProgressChangeStages(3-hasblue-hash-hasv);
-    }
+    GProgressChangeLine1(autohinting);
+    GProgressChangeStages(2+2-hasblue);
+    SplineFontAutoHint(sf);
+    GProgressNextStage();
+
     if ( !hasblue ) {
 	FindBlues(sf,bluevalues,otherblues);
 	GProgressNextStage();
     }
 
+    if ( !hash || !hasv )
     stdhw[0] = stdvw[0] = 0;
     if ( !hash ) {
 	FindHStems(sf,stemsnaph,snapcnt);
@@ -534,7 +526,6 @@ static void dumpprivatestuff(void (*dumpchar)(int ch,void *data), void *data, Sp
 	    if ( mi==-1 ) mi = i;
 	    else if ( snapcnt[i]>snapcnt[mi] ) mi = i;
 	if ( mi!=-1 ) stdhw[0] = stemsnaph[mi];
-	GProgressNextStage();
     }
 
     if ( !hasv ) {
@@ -546,9 +537,11 @@ static void dumpprivatestuff(void (*dumpchar)(int ch,void *data), void *data, Sp
 	if ( mi!=-1 ) stdvw[0] = stemsnapv[mi];
     }
 
-    GProgressChangeStages(1);
+    GProgressNextStage();
+    GProgressChangeLine1(cvtps);
+    chars = SplineFont2Chrs(sf,true,iscjk,subrs);
+    GProgressNextStage();
     GProgressChangeLine1(saveps);
-    GProgressIncrementBy(-sf->charcnt);
 
     dumpstr(dumpchar,data,"dup\n");
     cnt = 0;
@@ -570,7 +563,7 @@ static void dumpprivatestuff(void (*dumpchar)(int ch,void *data), void *data, Sp
 	if ( stemsnapv[0]!=0 ) ++cnt;
     }
     cnt += sf->private!=NULL?sf->private->next:0;
-    if ( sf->subrs!=NULL || flex_max>0 ) ++cnt;
+    ++cnt;			/* Subrs entry */
     if ( !haso && flex_max>0 ) ++cnt;
     if ( hasbold || isbold ) ++cnt;
 
@@ -611,38 +604,15 @@ static void dumpprivatestuff(void (*dumpchar)(int ch,void *data), void *data, Sp
 	    dumpstr(dumpchar,data," def\n");
 	}
     }
-    dumpsubrs(dumpchar,data,sf);
-#if 0
-    if ( private->bluefuzz!=0 )
-	dumpf(dumpchar,data,"/BlueFuzz %d def\n", private->bluefuzz );
-    if ( private->bluescale!=0 )
-	dumpf(dumpchar,data,"/BlueScale %g def\n", private->bluescale );
-    if ( private->blueshift!=0 )
-	dumpf(dumpchar,data,"/BlueShift %d def\n", private->blueshift );
-    if ( private->expansionfactor!=0 )
-	dumpf(dumpchar,data,"/ExpansionFactor %f def\n", private->expansionfactor );
-    if ( private->familyblues[0]!=0 || private->familyblues[1]!=0 )
-	dumpblues(dumpchar,data,"FamilyBlues",private->familyblues,14);
-    if ( private->familyotherblues[0]!=0 || private->familyotherblues[1]!=0 )
-	dumpblues(dumpchar,data,"FamilyOtherBlues",private->familyotherblues,10);
-    if ( private->forcebold )
-	dumpf(dumpchar,data,"/ForceBold true def\n" );
-    if ( private->languagegroup!=0 ) 
-	dumpf(dumpchar,data,"/LanguageGroup %d def\n", private->languagegroup );
-    if ( private->leniv!=4 )
-	dumpf(dumpchar,data,"/lenIV %d def\n", private->leniv );
-    if ( private->rndstemup )
-	dumpf(dumpchar,data,"/RndStemUp true def\n" );
-    if ( private->uniqueid!=0 )
-	dumpf(dumpchar,data,"/UniqueID %d def\n", private->uniqueid );
-    if ( private->othersubrs!=NULL && private->othersubrs->cnt!=0 )
-	dumpsubarray(dumpchar,data,"OtherSubrs",private->othersubrs,private->leniv);
-    if ( private->subrs!=NULL && private->subrs->cnt!=0 )
-	dumpsubarray(dumpchar,data,"Subrs",private->subrs,private->leniv);
-#endif
+    dumpothersubrs(dumpchar,data,flex_max>0,iscjk);
+    dumpsubrs(dumpchar,data,sf,subrs);
 
-    dumpcharstrings(dumpchar,data,sf );
+    dumpcharstrings(dumpchar,data,sf, chars );
     dumpstr(dumpchar,data,"end put\n");
+
+    PSCharsFree(chars);
+    PSCharsFree(subrs);
+    GProgressChangeStages(1);
 }
 
 static void dumpfontinfo(void (*dumpchar)(int ch,void *data), void *data, SplineFont *sf ) {

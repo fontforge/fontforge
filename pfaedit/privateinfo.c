@@ -287,7 +287,11 @@ struct pi_data {
 };
 
 static GTextInfo *PI_ListSet(SplineFont *sf) {
+#if 1
+    GTextInfo *ti = gcalloc((sf->private==NULL?0:sf->private->next)+1,sizeof( GTextInfo ));
+#else
     GTextInfo *ti = gcalloc((sf->private==NULL?0:sf->private->next)+(sf->subrs==NULL?0:1)+1,sizeof( GTextInfo ));
+#endif
     int i=0;
 
     if ( sf->private!=NULL ) {
@@ -295,16 +299,22 @@ static GTextInfo *PI_ListSet(SplineFont *sf) {
 	    ti[i].text = uc_copy(sf->private->keys[i]);
 	}
     }
+#if 0
     if ( sf->subrs!=NULL ) {
 	ti[i++].text = uc_copy("Subrs");
     }
+#endif
     if ( i!=0 )
 	ti[0].selected = true;
 return( ti );
 }
 
 static GTextInfo **PI_ListArray(SplineFont *sf) {
+#if 1
+    GTextInfo **ti = gcalloc((sf->private==NULL?0:sf->private->next)+1,sizeof( GTextInfo *));
+#else
     GTextInfo **ti = gcalloc((sf->private==NULL?0:sf->private->next)+(sf->subrs==NULL?0:1)+1,sizeof( GTextInfo *));
+#endif
     int i=0;
 
     if ( sf->private!=NULL ) {
@@ -314,11 +324,13 @@ static GTextInfo **PI_ListArray(SplineFont *sf) {
 	    ti[i]->text = uc_copy(sf->private->keys[i]);
 	}
     }
+#if 0
     if ( sf->subrs!=NULL ) {
 	ti[i] = gcalloc(1,sizeof(GTextInfo));
 	ti[i]->fg = ti[i]->bg = COLOR_DEFAULT;
 	ti[i++]->text = uc_copy("Subrs");
     }
+#endif
     ti[i] = gcalloc(1,sizeof(GTextInfo));
     if ( i!=0 )
 	ti[0]->selected = true;
@@ -394,6 +406,7 @@ return;
 	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Guess),false);
 	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_PrivateValues),false);
 	GGadgetSetTitle(GWidgetGetControl(d->gw,CID_PrivateValues),nullstr);
+#if 0
     } else if ( sf->private==NULL || sel==sf->private->next ) {
 	/* Subrs entry */
 	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Remove),true);
@@ -402,6 +415,7 @@ return;
 	GGadgetSetTitle(GWidgetGetControl(d->gw,CID_PrivateValues),
 		temp = uc_copy( "<Subroutine array,\n not human readable>" ));
 	free( temp );
+#endif
     } else {
 	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Remove),true);
 	if ( strcmp(sf->private->keys[sel],"BlueValues")==0 ||
@@ -563,7 +577,6 @@ static int PI_Delete(GGadget *g, GEvent *e) {
     GGadget *list;
     int sel;
     SplineFont *sf;
-    int i;
     GTextInfo **ti;
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
@@ -572,6 +585,7 @@ static int PI_Delete(GGadget *g, GEvent *e) {
 	sf = d->sf;
 	list = GWidgetGetControl(d->gw,CID_PrivateEntries);
 	sel = GGadgetGetFirstListSelectedItem(list);
+#if 0
 	if ( sf->private==NULL || sel == sf->private->next ||
 		strcmp(sf->private->keys[sel],"OtherSubrs")==0 ) {
 	    static const unichar_t quest[] = { 'D','e','l','e','t','i','n','g',' ','t','h','i','s',' ','e','n','t','r','y',' ','w','i','l','l',' ','l','o','s','e',' ','a','l','l',' ','h','i','n','t',' ','s','u','b','s','t','i','t','u','t','i','o','n',' ','a','n','d',' ','f','l','e','x',' ','h','i','n','t',' ','i','n','f','o','r','m','a','t','i','o','n','\n','D','o',' ','y','o','u',' ','s','t','i','l','l',' ','w','a','n','t',' ','t','o',' ','d','e','l','e','t','e',' ','i','t','?',  '\0' };
@@ -592,9 +606,9 @@ return ( true );
 		    sf->chars[i]->origlen = 0;
 		}
 	    }
-	} else {
+	} else
+#endif
 	    PSDictRemoveEntry(sf->private, sf->private->keys[sel]);
-	}
 	sf->changed = true;
 	ti = PI_ListArray(sf);
 	--sel;

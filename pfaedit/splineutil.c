@@ -1135,8 +1135,10 @@ SplineFont *SplineFontFromPSFont(FontDict *fd) {
 	} else if ( k2==-1 ) {
 	    sf->chars[i] = PSCharStringToSplines(fd->chars->values[k],fd->chars->lens[k],
 		    false,fd->private->subrs,NULL,encoding[i]);
+#if 0
 	    sf->chars[i]->origtype1 = (uint8 *) copyn((char *)fd->chars->values[k],fd->chars->lens[k]);
 	    sf->chars[i]->origlen = fd->chars->lens[k];
+#endif
 	} else {
 	    if ( fd->charprocs->values[k]->unicodeenc==-2 )
 		sf->chars[i] = fd->charprocs->values[k];
@@ -1167,8 +1169,11 @@ SplineFont *SplineFontFromPSFont(FontDict *fd) {
     }
     free(encoding);
     sf->private = fd->private->private; fd->private->private = NULL;
+    PSDictRemoveEntry(sf->private, "OtherSubrs");
     if ( fd->private->subrs->cnt!=0 ) {
+#if 0
 	sf->subrs = fd->private->subrs; fd->private->subrs = NULL;
+#endif
     }
 return( sf );
 }
@@ -1370,14 +1375,14 @@ static int XSolve(Spline *spline,double tmin, double tmax,FindSel *fs) {
 	y = ((yspline->a*t+yspline->b)*t+yspline->c)*t + yspline->d;
 	if ( fs->yl<y && fs->yh>y )
 return( true );
-	/* Although we know that globaly there's more x change, locally there */
-	/*  maybe more y change */
-	fs->p->t = t = SplineSolve(yspline,tmin,tmax,fs->p->cy,.001);
-	if ( t>=0 && t<=1 ) {
-	    x = ((xspline->a*t+xspline->b)*t+xspline->c)*t + xspline->d;
-	    if ( fs->xl<x && fs->xh>x )
+    }
+    /* Although we know that globaly there's more x change, locally there */
+    /*  maybe more y change */
+    fs->p->t = t = SplineSolve(yspline,tmin,tmax,fs->p->cy,.001);
+    if ( t>=0 && t<=1 ) {
+	x = ((xspline->a*t+xspline->b)*t+xspline->c)*t + xspline->d;
+	if ( fs->xl<x && fs->xh>x )
 return( true );
-	}
     }
 return( false );
 }
@@ -1391,14 +1396,14 @@ static int YSolve(Spline *spline,double tmin, double tmax,FindSel *fs) {
 	x = ((xspline->a*t+xspline->b)*t+xspline->c)*t + xspline->d;
 	if ( fs->xl<x && fs->xh>x )
 return( true );
-	/* Although we know that globaly there's more y change, locally there */
-	/*  maybe more x change */
-	fs->p->t = t = SplineSolve(xspline,tmin,tmax,fs->p->cx,.001);
-	if ( t>=0 && t<=1 ) {
-	    y = ((yspline->a*t+yspline->b)*t+yspline->c)*t + yspline->d;
-	    if ( fs->yl<y && fs->yh>y )
+    }
+    /* Although we know that globaly there's more y change, locally there */
+    /*  maybe more x change */
+    fs->p->t = t = SplineSolve(xspline,tmin,tmax,fs->p->cx,.001);
+    if ( t>=0 && t<=1 ) {
+	y = ((yspline->a*t+yspline->b)*t+yspline->c)*t + yspline->d;
+	if ( fs->yl<y && fs->yh>y )
 return( true );
-	}
     }
 return( false );
 }
@@ -1555,18 +1560,36 @@ return( -1 );
 return( p.t );
 }
 
-void HintsFree(Hints *h) {
-    Hints *hnext;
+void StemInfoFree(StemInfo *h) {
+    HintInstance *hi, *n;
+
+    for ( hi=h->where; hi!=NULL; hi=n ) {
+	n = hi->next;
+	free(hi);
+    }
+    free(h);
+}
+
+void StemInfosFree(StemInfo *h) {
+    StemInfo *hnext;
+    HintInstance *hi, *n;
+
     for ( ; h!=NULL; h = hnext ) {
+	for ( hi=h->where; hi!=NULL; hi=n ) {
+	    n = hi->next;
+	    free(hi);
+	}
 	hnext = h->next;
 	free(h);
     }
 }
 
-Hints *HintsCopy(Hints *h) {
-    Hints *head=NULL, *last=NULL, *cur;
+StemInfo *StemInfoCopy(StemInfo *h) {
+    StemInfo *head=NULL, *last=NULL, *cur;
+    HintInstance *hilast, *hicur, *hi;
+
     for ( ; h!=NULL; h = h->next ) {
-	cur = galloc(sizeof(Hints));
+	cur = galloc(sizeof(StemInfo));
 	*cur = *h;
 	cur->next = NULL;
 	if ( head==NULL )
@@ -1574,6 +1597,18 @@ Hints *HintsCopy(Hints *h) {
 	else {
 	    last->next = cur;
 	    last = cur;
+	}
+	cur->where = hilast = NULL;
+	for ( hi=h->where; hi!=NULL; hi=hi->next ) {
+	    hicur = galloc(sizeof(StemInfo));
+	    *hicur = *hi;
+	    hicur->next = NULL;
+	    if ( hilast==NULL )
+		cur->where = hilast = hicur;
+	    else {
+		hilast->next = hicur;
+		hilast = hicur;
+	    }
 	}
     }
 return( head );
@@ -1605,8 +1640,8 @@ return;
     RefCharsFree(sc->refs);
     ImageListsFree(sc->backimages);
     /* image garbage collection????!!!! */
-    HintsFree(sc->hstem);
-    HintsFree(sc->vstem);
+    StemInfosFree(sc->hstem);
+    StemInfosFree(sc->vstem);
     KernPairsFree(sc->kerns);
     UndoesFree(sc->undoes[0]); UndoesFree(sc->undoes[1]);
     UndoesFree(sc->redoes[0]); UndoesFree(sc->redoes[1]);
@@ -1614,7 +1649,9 @@ return;
 	dnext = dlist->next;
 	free(dlist);
     }
+#if 0
     free(sc->origtype1);
+#endif
     LigatureFree(sc->lig);
     free(sc);
 }
@@ -1638,6 +1675,8 @@ void SplineFontFree(SplineFont *sf) {
     UndoesFree(sf->gundoes);
     UndoesFree(sf->gredoes);
     PSDictFree(sf->private);
+#if 0
     PSCharsFree(sf->subrs);
+#endif
     free(sf);
 }

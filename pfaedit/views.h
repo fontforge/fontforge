@@ -31,7 +31,7 @@
 #include "ggadget.h"
 
 extern struct cvshows {
-    int showfore, showback, showgrids, showhints;
+    int showfore, showback, showgrids, showhhints, showvhints;
     int showpoints, showfilled;
     int showrulers;
 } CVShows;
@@ -100,7 +100,8 @@ typedef struct charview {
     unsigned int showback:1;
     unsigned int showfore:1;
     unsigned int showgrids:1;
-    unsigned int showhints:1;
+    unsigned int showhhints:1;
+    unsigned int showvhints:1;
     unsigned int showpoints:1;
     unsigned int showfilled:1;
     unsigned int showrulers:1;

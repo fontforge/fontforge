@@ -28,6 +28,15 @@
 #define _EDGELIST_H
 #include "splinefont.h"
 
+typedef struct hints {
+    double base, width;
+    double b1, b2, e1, e2;
+    double ab, ae;
+    unsigned int adjustb: 1;
+    unsigned int adjuste: 1;
+    struct hints *next;
+} Hints;
+
 /* Instead of y and x coordinates these are based on major and other */
 /*  major maybe either x or y depending on what we're interested in */
 /*  at the moment, and other will be the other one. Of course it's */
@@ -35,6 +44,7 @@
 typedef struct edge {
     double mmin, mmax;		/* relative to es->mmin */
     double t_mmin, t_mmax;
+    double tmin, tmax;
     double o_mmin, o_mmax;
     double t_cur, o_cur, m_cur;
     unsigned int up: 1;		/* line is directed up in the spline list */
@@ -62,6 +72,7 @@ typedef struct edgelist {
     unsigned int genmajoredges: 1;	/* generate a list of edges parrallel to the major axis */
     Edge *majors;		/* ordered so that lowest edge is first */
     Edge *majorhold;		/* to hold major edges as we pass them and they become useless */
+    Hints *hhints, *vhints;
 } EdgeList;
 
 extern void FreeEdges(EdgeList *es);
