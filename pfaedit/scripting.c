@@ -322,6 +322,7 @@ static void bPrint(Context *c) {
     for ( i=1; i<c->a.argc; ++i )
 	PrintVal(&c->a.vals[i] );
     printf( "\n" );
+    fflush(stdout);
 }
 
 static void bError(Context *c) {
