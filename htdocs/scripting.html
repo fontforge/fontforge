@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 22-Dec-2004 -->
+  <!-- AP: Last modified: 31-Dec-2004 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -1483,7 +1483,7 @@ ApplySubstitution("*","*","vrt2")
     Finds everywhere that splines cross and creates points there.
   <DT>
     Simplify()<BR>
-    Simplify(flags,error[,tan_bounds[,bump_size[,error_denom]]])
+    Simplify(flags,error[,tan_bounds[,bump_size[,error_denom,line_len_max]]])
   <DD>
     With no arguments it does the obvious. If flags is -1 it does a Cleanup,
     otherwise flags should be a bitwise or of
@@ -1508,7 +1508,12 @@ ApplySubstitution("*","*","vrt2")
     And bump_size gives the maximum distance a bump can move from the line and
     still be smoothed out.<BR>
     If a fifth argument is given then it will be treated as the denominator of
-    the error term (so users can express fraction pixel distances).
+    the error term (so users can express fraction pixel distances).<BR>
+    Generally it is a bad idea to merge a line segment with any other than a
+    colinear line segment. The longer the line segment, the more likely that
+    such a merge will produce unpleasing results. The sixth argument, if present,
+    specifies the maximum length for lines which may be merged (anything longer
+    will not be merged).
   <DT>
     NearlyHvCps([error[,err-denom]])
   <DD>

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 18-Dec-2004 -->
+  <!-- AP: Last modified: 31-Dec-2004 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -12,10 +12,73 @@
 </H1>
 <UL>
   <LI>
-    ???
+    31-Dec-2004
+    <UL>
+      <LI>
+	Ah, windows pfm files expect the metrics to be output in win latin encoding
+	order, not in the encoding defined by the pfb file. (Actually there are other
+	posibilities for encoding, but as none is documented, I must ignore them).
+      <LI>
+	ReplaceWithReference broke at some point
+      <LI>
+	Add an argument-pair to the ReplaceWithReference() scripting command to allow
+	the user to specify the amount of error that will be accepted.
+      <LI>
+	When generating a Type1 font, if a glyph had a single reference to a glyph
+	not in adobe encoding, and that glyph itself had a single reference (in adobe
+	enc) and some splines, then ff would make a reference to the ref in adobe
+	enc and ignore the splines.
+      <LI>
+	Upgrade to Adobe-Japan1-6
+      <LI>
+	Various fixes to svg output
+	<UL>
+	  <LI>
+	    export glyph to svg didn't work
+	  <LI>
+	    multilayered generation had problems
+	</UL>
+      <LI>
+	Ghost hints could get outside a glyphs bounding box in a type2 font.
+      <LI>
+	The generated truetype unique id string had an off by one error in the month
+      <LI>
+	Add support for dashed lines in multilayered mode
+      <LI>
+	In Full Page Glyph printing, the glyph was offset slightly from where it
+	should have been.
+      <LI>
+	Pasting a reference into a multi-layered font produced a very odd layer
+      <LI>
+	ff didn't update the metrics view if the user pasted the selection with the
+	middle mouse button.
+      <LI>
+	if a character were not in the current encoding then ff would not display
+	it in the metrics view (even if it were in the font)
+      <LI>
+	Make the behavior of control points at the ends of open paths more reasonable.
+      <LI>
+	The Point-&gt;Curve command did not adust control points correctly.
+      <LI>
+	The View-&gt;Display Substitutions had numerous problems.
+      <LI>
+	Fix several problems from unicode unification of accents. Many characters
+	which are said to be based on cedilla actually use a comma, other characters
+	said to be carons also use comma. Make the n-with-apostrophe character be
+	treated as an accented letter.
+      <LI>
+	Werner points out that straight lines should generally not be simplified
+	(as they will no longer be straight afterwards). Add this knowledge to the
+	simplify command.
+    </UL>
+  <LI>
+    18-Dec-2004
     <UL>
       <LI>
 	Added a raster debugger wndow
+      <LI>
+	Each time debugger starts, remember what debug windows were open last time
+	it was used.
       <LI>
 	Constraining the pen tool did not do what I expected
       <LI>
@@ -24,6 +87,14 @@
 	encoding would have the wrong width (ie. there would be an extra entry in
 	the horizontal metrics table corresponding to a (non-existant) copy of the
 	doubly encoded glyph)
+      <LI>
+	If a type1 font never defined .notdef but used it at least twice it the Encoding
+	vector, then ff would crash.
+      <LI>
+	Updated Japanese UI (by KANOU)
+      <LI>
+	Werner found some crashes related to calling isalnum (etc.) using an index
+	outside of bmp.
       <LI>
 	More changes (I hope improvements) to remove overlap
     </UL>

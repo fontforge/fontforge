@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 22-Dec-2004 -->
+  <!-- AP: Last modified: 31-Dec-2004 -->
   <TITLE>Spline Font Database File Format</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -12,7 +12,7 @@
 </H1>
 <P>
 <FONT COLOR="Red"><STRONG>This page is often grievously out of date. It was
-a fair approximation to reality on 24 Feb 2004.</STRONG></FONT> Even if out
+a fair approximation to reality on 31 Dec 2004.</STRONG></FONT> Even if out
 of date it should be helpful, but if you really need to know the current
 format look at
 <A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/fontforge/sfd.c">sfd.c</A>
@@ -805,11 +805,11 @@ a splineset, a list of references and a list of images (any or all may be
 omitted). The syntax for these is the same as in the normal case above.
 <BLOCKQUOTE>
   <PRE>LayerCount: 3
-Layer: 1  1 1 1  #fffffffe 1  #fffffffe 1 40 round round [1 0 0 1]
+Layer: 1  1 1 1  #fffffffe 1  #fffffffe 1 40 round round [1 0 0 1] []
 SplineSet
 ...
 EndSplineSet
-Layer: 2  1 0 1  #00ff00 1  #0000ff 1 19 miter butt [0.5 0 0 1]
+Layer: 2  1 0 1  #00ff00 1  #0000ff 1 19 miter butt [0.5 0 0 1] [10 5]
 SplineSet
 ...
 EndSplineSet
@@ -830,8 +830,8 @@ of the fill color (the special value of #fffffffe means the the color is
 inherited), then the opacity (the special value -1 means inherited), then
 the stroke color and opacity. Then the stroke width (again -1 means inherited),
 the linejoin type (miter, round, bevel, inherited), the linecap type (butt,
-round,square,inherited) and finally the transformation matrix to be applied
-to the pen.
+round,square,inherited), the transformation matrix to be applied to the pen
+and finally the dash array.
 <P>
 Any SplineSet, Ref, Images between this Layer and the next (or the end of
 the character) are part of this layer.
