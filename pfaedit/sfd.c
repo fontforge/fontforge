@@ -619,6 +619,7 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc) {
 	    putc(' ',sfd);
 	    SFDDumpHintMask(sfd,&sc->countermasks[i]);
 	}
+	putc('\n',sfd);
     }
     if ( sc->ttf_instrs_len!=0 )
 	SFDDumpTtfInstrs(sfd,sc);
