@@ -1,0 +1,27 @@
+dnl Process this file with autoconf to produce a configure script.
+
+AC_INIT(pfaedit/pfaedit.h)
+AC_PROG_CC
+AC_PROG_RANLIB
+
+AC_SEARCH_LIBS(dlopen, dl) dnl some systems have this in libc
+
+dnl Some old versions of lib(un)gif don't work for us, they've got the
+dnl Function argument in the wrong place. So two checks for gif.
+
+AC_CHECK_LIB(ungif, DGifOpenFileName, :  , AC_DEFINE(_NO_LIBUNGIF))
+echo -n checking for ExtensionBlock.Function in gif_lib.h...
+AC_TRY_COMPILE([#include <gif_lib.h>], [ ExtensionBlock foo; foo.Function=3; ], echo " " yes , [echo " " no
+    AC_DEFINE(_NO_LIBUNGIF)])
+AC_CHECK_LIB(png, png_create_read_struct, : ,AC_DEFINE(_NO_LIBPNG), -lz -lm) 
+AC_CHECK_LIB(jpeg, jpeg_CreateDecompress, :  ,AC_DEFINE(_NO_LIBJPEG)) 
+AC_CHECK_LIB(tiff, TIFFOpen, : , AC_DEFINE(_NO_LIBTIFF), -lm )
+
+AC_C_CONST
+AC_PATH_XTRA
+
+AC_OUTPUT(Makefile Unicode/Makefile gdraw/Makefile pfaedit/Makefile)
+
+echo Configuration defines: $DEFS
+
+dnl EOF

@@ -1,0 +1,60 @@
+
+I appologize for the roughness of this process, this is all new stuff and it's
+not completely finished.
+
+BUILDING
+    This distribution comes in three parts which should merge nicely
+    If you just are interested in pfaedit then
+	cd to this directory
+	$ setenv CFLAGS -g
+	$ configure
+	$ make
+
+    The first part is a unicode data library, to build it
+	cd to this directory
+	$ configure
+	$ make libgunicode
+    The second part is a unicode widget package, to build it
+	cd to this directory
+	$ configure
+	$ make gdraw
+    The third part is pfaedit.
+	cd to this directory
+	$ configure
+	$ make pfaedit
+
+NOTE:
+    During the beta process I have the program linked with static versions of
+    libgdraw and libgunicode. I intend to link with the dynamic ones once
+    debugging is not an issue. Similarly I suggest that you set CFLAGS to
+    -g before running configure (otherwise it sets -O2 as well), I don't trust
+    debug information after the optimizer has run.
+
+KNOWN BUILD PROBLEMS
+    * The configure script is new. If it doesn't work try using
+	$ make -f makefile.orig
+    * The gdraw package expects to find libjpeg, libtiff, libpng and libungif on
+      your system. If any of these is not present then define -D_NO_LIBUNGIF
+      etc. in the makefile (I hope the configure script can deal with this).
+    * the final link requests -ldl. On some systems (netbsd for instance)
+      libdl is part of libc and can't be found. Just remove it from the LIBS
+      list in the pfaedit/makefile and rebuild. (I hope the configure script
+      takes care of this now).
+
+INSTALLING
+    Er, I'm not really sure of the best way to do this. If you su root (or
+    	anyone else with write access to /usr/local) and type
+	$ make install
+	then it will copy the various bits to the appropriate places in
+	/usr/local.
+	On my system you still will need to set LD_LIBRARY_PATH to include
+	/usr/local/lib (during beta this comment is irrelevant)
+
+At some point I'm going to provide docs for gdraw and make it useful. For now
+It's just included as something pfaedit needs.
+
+Please report any bugs to
+	gww@silcom.com
+
+Documentation is at:
+	http://bibliofile.mc.duke.edu/gww/FreeWare/PfaEdit/index.html

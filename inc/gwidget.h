@@ -1,0 +1,144 @@
+/* Copyright (C) 2000,2001 by George Williams */
+/*
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+
+ * Redistributions of source code must retain the above copyright notice, this
+ * list of conditions and the following disclaimer.
+
+ * Redistributions in binary form must reproduce the above copyright notice,
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
+
+ * The name of the author may not be used to endorse or promote products
+ * derived from this software without specific prior written permission.
+
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+ * EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+#ifndef _GWIDGET_H
+#define _GWIDGET_H
+
+#include "gdraw.h"
+#include "gprogress.h"
+
+struct ggadget;
+struct ggadgetcreatedata;
+struct gtimer;
+
+typedef GWindow GWidget;
+
+typedef struct gwidgetcreatedata {
+    GRect r;
+    struct ggadgetcreatedata *gcd;
+    struct gwidgetcreatedata *wcd;
+    unichar_t *title;
+    unsigned int trap_input: 1;
+    unsigned int tab_navigation: 1;
+    unsigned int arrow_navigation: 1;
+    unsigned int do_default: 1;
+    unsigned int do_cancel: 1;
+    Color fore, back;
+    void (*e_h)(GWindow, GEvent *);		/* User's event function for window, our eh will call it */
+#if 0 /* should expect these events: */
+    void (*create)(Widget *);
+    void (*close)(Widget *);
+    void (*expose)(Widget *,XEvent *);
+    void (*mouse)(Widget *,XEvent *,int count);
+    void (*key)(Widget *,XEvent *);
+    void (*resize)(Widget *,XEvent *);
+    void (*map)(Widget *,XEvent *);
+    void (*time)(Widget *,struct timer *timer);
+    void (*paste)(Widget *,void *data, long length);
+#endif
+} GWidgetData;
+
+typedef struct gwidgetcreatordata {
+    GWidget *(*creator)(GWidget *parent, GWidgetData *, void *data);
+    GWidgetData wd;
+    void *data;
+} GWidgetCreateData;
+
+extern GWindow GWidgetCreateTopWindow(GDisplay *gdisp, GRect *pos, int (*eh)(GWindow,GEvent *), void *user_data, GWindowAttrs *wattrs);
+extern GWindow GWidgetCreateSubWindow(GWindow w, GRect *pos, int (*eh)(GWindow,GEvent *), void *user_data, GWindowAttrs *wattrs);
+extern GWindow GWidgetCreatePalette(GWindow w, GRect *pos, int (*eh)(GWindow,GEvent *), void *user_data, GWindowAttrs *wattrs);
+
+GWindow GWindowGetCurrentFocusTopWindow(void);
+GWindow GWidgetGetCurrentFocusWindow(void);
+GWindow GWidgetGetPreviousFocusTopWindow(void);
+struct ggadget *GWindowGetCurrentFocusGadget(void);
+struct ggadget *GWindowGetFocusGadgetOfWindow(GWindow gw);
+void GWidgetIndicateFocusGadget(struct ggadget *g);
+void GWidgetNextFocus(GWindow);
+void GWidgetPrevFocus(GWindow);
+void GWidgetRequestVisiblePalette(GWindow palette,int visible);
+void GWidgetHidePalettes(void);
+
+struct ggadget *GWidgetGetControl(GWindow gw, int cid);
+GWindow GWidgetGetParent(GWindow gw);
+GWindow GWidgetGetTopWidget(GWindow gw);
+
+	/* Built in dialogs */
+unichar_t *GWidgetOpenFile(const unichar_t *title, const unichar_t *defaultfile,
+	const unichar_t *initial_filter, unichar_t **mimetypes);
+unichar_t *GWidgetSaveAsFile(const unichar_t *title, const unichar_t *defaultfile,
+	const unichar_t *initial_filter, unichar_t **mimetypes);
+int GWidgetAsk(const unichar_t *title,const unichar_t *question,
+	unichar_t **answers, const unichar_t *mn, int def, int cancel);
+unichar_t *GWidgetAskString(const unichar_t *title,const unichar_t *question,
+	const unichar_t *def);
+void GWidgetPostNotice(const unichar_t *title,const unichar_t *statement);
+void GWidgetCreateInsChar(void);	/* takes input even when a modal dlg is active */
+		/* but is not modal itself */
+void GInsCharSetChar(unichar_t ch);	/* Sets current selection in ins char dlg */
+
+#if 0
+Widget *CreateCenteredDialog(Widget *parent, WidgetData *wd,void *data);
+Widget *CreateDialog(Widget *parent, WidgetData *wd,void *data);
+Widget *CreateTopWindow(Widget *parent, WidgetData *wd,void *data);
+Widget *CreateCanvas(Widget *parent, WidgetData *wd,void *data);
+Widget *CreateWidgets(Widget *parent, WidgetCreateData *wcd);
+
+unichar_t *CreateFileDialog(unichar_t *title,unichar_t *dir,unichar_t *file,unichar_t *mimetypes, unichar_t *wildcard, unichar_t *open, unichar_t *cancel);
+int CreateQuestionDialog(unichar_t *title, unichar_t *question,unichar_t *but1, unichar_t *but2, unichar_t *but3, unichar_t *but4, unichar_t *but5);
+unichar_t *CreateStringDialog(unichar_t *title, unichar_t *question, unichar_t *def, unichar_t *ok, unichar_t *cancel);
+TextInfo *CreateListDialog(unichar_t *title, unichar_t *question, TextInfo *list, unichar_t *ok, unichar_t *cancel);
+void CreateNoteDlg(unichar_t *title,unichar_t *text,unichar_t *ok);	/* does not take focus, vanishes if ignored */
+void CreateWarningDlg(unichar_t *title,unichar_t *text,unichar_t *ok);	/* does not take focus, vanishes if ignored */
+void CreateErrorDlg(unichar_t *title,unichar_t *text,unichar_t *ok);	/* does take focus */
+void CreateFatalDlg(unichar_t *title,unichar_t *text,unichar_t *ok);	/* does not return, preallocated */
+void CreateCharDialog();	/* takes input even when a modal dlg is active */
+		/* but is not modal itself */
+void CreatePrefsDialog();
+
+void WidgetSetTitle(Widget *widg,unichar_t *title);
+unichar_t_t WidgetGetTitle(Widget *widg);
+
+void WidgetChangeMenu(Widget *widg,MenuItem *bar);
+void WidgetChangeInvisibleCommands(Widget *widg,MenuItem *invisible);
+MenuItem *WidgetGetMenu(Widget *widg);
+MenuItem *WidgetGetInvisibleCommands(Widget *widg);
+
+enum handler_mask { hm_close=1, hm_expose=2, hm_mouse=4, hm_key=8, hm_resize=16, hm_map=32, hm_time=64, hm_paste=128 };
+void WidgetSetHandlers(Widget *widg,enum handler_mask hm, WidgetData *wd);
+
+void WidgetMove(Widget *widg, int x, int y);
+void WidgetResize(Widget *widg, int width, int height);
+void WidgetReposition(Widget *widg, Rect *r);
+Rect *WidgetGetPos(Widget *widg);
+
+void WidgetRaise(Widget *widg);
+void WidgetLower(Widget *widg);
+
+void WidgetSetIconName(Widget *widg,unichar_t *name);
+void WidgetSetIconPixmap(Widget *widg,Pixmap p);
+#endif
+#endif

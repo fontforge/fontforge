@@ -1,0 +1,598 @@
+/* Copyright (C) 2000,2001 by George Williams */
+/*
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+
+ * Redistributions of source code must retain the above copyright notice, this
+ * list of conditions and the following disclaimer.
+
+ * Redistributions in binary form must reproduce the above copyright notice,
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
+
+ * The name of the author may not be used to endorse or promote products
+ * derived from this software without specific prior written permission.
+
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+ * EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+#include <stdio.h>
+#include <stdlib.h>
+#include "../inc/charset.h"
+#include "../inc/basics.h"
+
+char *alphabets[] = { "8859-1.TXT", "8859-2.TXT", "8859-3.TXT", "8859-4.TXT",
+    "8859-5.TXT", "8859-6.TXT", "8859-7.TXT", "8859-8.TXT", "8859-9.TXT",
+    "8859-10.TXT", "8859-11.TXT", "8859-13.TXT", "8859-14.TXT", "8859-15.TXT",
+    "koi8r.TXT", "jis201.TXT", "WIN.TXT", "MacRoman.TXT",
+    "MacSYMBOL.TXT", "zapfding.TXT", /*"MacCYRILLIC.TXT",*/ NULL };
+char *alnames[] = { "i8859_1", "i8859_2", "i8859_3", "i8859_4",
+    "i8859_5", "i8859_6", "i8859_7", "i8859_8", "i8859_9",
+    "i8859_10", "i8859_11", "i8859_13", "i8859_14", "i8859_15",
+    "koi8_r", "jis201", "win", "mac",
+    "MacSymbol", "ZapfDingbats", /*"MacCyrillic",*/ NULL };
+int almaps[] = { em_iso8859_1, em_iso8859_2, em_iso8859_3, em_iso8859_4,
+    em_iso8859_5, em_iso8859_6, em_iso8859_7, em_iso8859_8, em_iso8859_9,
+    em_iso8859_10, em_iso8859_11, em_iso8859_13, em_iso8859_14, em_iso8859_15,
+    em_koi8_r, em_jis201, em_win, em_mac, em_symbol, em_zapfding,
+    -1 };
+
+
+char *cjk[] = { "JIS0208.TXT", "JIS0212.TXT", "BIG5.TXT", "GB2312.TXT",
+	"OLD5601.TXT", NULL };
+/* There's another version of KSC5601 which is not 94x94, I'm ignoring it */
+char *cjknames[] = { "jis208", "jis212", "big5", "gb2312", "ksc5601", NULL };
+int cjkmaps[] = { em_jis208, em_jis212, em_big5, em_gb2312, em_ksc5601 };
+
+unsigned long *used[256];
+
+static void dumpalphas(FILE *output, FILE *header) {
+    FILE *file;
+    int i,j,k, first, last;
+    long _orig, _unicode, mask;
+    unichar_t unicode[256];
+    unsigned char *table[256], *plane;
+    char buffer[200];
+
+    fprintf(output, "#include <chardata.h>\n\n" );
+    fprintf(output, "const char c_allzeros[256] = { 0 };\n\n" );
+
+    for ( k=0; k<256; ++k ) table[k] = NULL;
+
+    for ( j=0; alphabets[j]!=NULL; ++j ) {
+	file = fopen( alphabets[j], "r" );
+	if ( file==NULL ) {
+	    fprintf( stderr, "Can't open %s\n", alphabets[j]);
+	} else {
+	    for ( i=0; i<160; ++i )
+		unicode[i] = i;
+	    for ( ; i<256; ++i )
+		unicode[i] = 0;
+	    while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
+		if ( buffer[0]=='#' )
+	    continue;
+		sscanf(buffer, "0x%lx 0x%lx", &_orig, &_unicode);
+		unicode[_orig] = _unicode;
+		if ( table[_unicode>>8]==NULL ) {
+		    plane = table[_unicode>>8] = calloc(256,1);
+		    if ( j==0 && (_unicode>>8)==0 )
+			for ( k=0; k<256; ++k )
+			    plane[k] = k;
+		    else if ( j==0 )
+			for ( k=0; k<128; ++k )
+			    plane[k] = k;
+		}
+		table[_unicode>>8][_unicode&0xff] = _orig;
+		if ( used[_unicode>>8]==NULL ) {
+		    used[_unicode>>8] = calloc(256,sizeof(long));
+		}
+		if ( almaps[j]!=-1 )
+		    used[_unicode>>8][_unicode&0xff] |= (1<<almaps[j]);
+	    }
+	    fclose(file);
+
+	    fprintf( header, "extern const unichar_t unicode_from_%s[];\n", alnames[j] );
+	    fprintf( output, "const unichar_t unicode_from_%s[] = {\n", alnames[j] );
+	    for ( i=0; i<256-8; i+=8 )
+		fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x,\n",
+			unicode[i], unicode[i+1], unicode[i+2], unicode[i+3],
+			unicode[i+4], unicode[i+5], unicode[i+6], unicode[i+7]);
+	    fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x\n};\n\n",
+		    unicode[i], unicode[i+1], unicode[i+2], unicode[i+3],
+		    unicode[i+4], unicode[i+5], unicode[i+6], unicode[i+7]);
+
+	    first = last = -1;
+	    for ( k=0; k<256; ++k ) {
+		if ( table[k]!=NULL ) {
+		    if ( first==-1 ) first = k;
+		    last = k;
+		    plane = table[k];
+		    fprintf( output, "static const unsigned char %s_from_unicode_%x[] = {\n", alnames[j], k );
+		    for ( i=0; i<256-16; i+=16 )
+			fprintf( output, "  0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x,\n",
+				plane[i], plane[i+1], plane[i+2], plane[i+3],
+				plane[i+4], plane[i+5], plane[i+6], plane[i+7],
+				plane[i+8], plane[i+9], plane[i+10], plane[i+11],
+				plane[i+12], plane[i+13], plane[i+14], plane[i+15]);
+		    fprintf( output, "  0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x\n};\n\n",
+				plane[i], plane[i+1], plane[i+2], plane[i+3],
+				plane[i+4], plane[i+5], plane[i+6], plane[i+7],
+				plane[i+8], plane[i+9], plane[i+10], plane[i+11],
+				plane[i+12], plane[i+13], plane[i+14], plane[i+15]);
+		}
+	    }
+	    fprintf( output, "static const unsigned char * const %s_from_unicode_[] = {\n", alnames[j] );
+	    for ( k=first; k<=last; ++k )
+		if ( table[k]!=NULL )
+		    fprintf( output, "    %s_from_unicode_%x%s", alnames[j], k, k!=last?",\n":"\n" );
+		else
+		    fprintf( output, "    c_allzeros,\n" );
+	    fprintf( output, "};\n\n" );
+	    fprintf( header, "extern struct charmap %s_from_unicode;\n", alnames[j]);
+	    fprintf( output, "struct charmap %s_from_unicode = { %d, %d, (unsigned char **) %s_from_unicode_, (unichar_t *) unicode_from_%s };\n\n",
+		    alnames[j], first, last, alnames[j], alnames[j]);
+
+	    for ( k=first; k<=last; ++k ) {
+		free(table[k]);
+		table[k]=NULL;
+	    }
+	}
+    }
+
+/*	Mac Symbol appears as a font even on unix.  Cyrillic does not but so what?
+    for ( j=0; alphabets[j]!=NULL; ++j )
+	if ( strcmp(alphabets[j],"MacSYMBOL.TXT")==0 ) alphabets[j]=NULL;
+*/
+
+    fprintf( header, "\nextern unichar_t *unicode_from_alphabets[];\n" );
+#if 0
+    fprintf( output, "\n/* the windows charset is a superset of latin1.  Many PC centric users think */\n" );
+    fprintf( output, "/*  IT is the standard charset for the web and try to use &#153; for &#2122; */\n" );
+    fprintf( output, "/* so even if we expect latin1, let's check for windows too, can't hurt. */\n" );
+    fprintf( output, "unichar_t *unicode_from_alphabets[]={\n" );
+    fprintf( output, "    unicode_from_win, 0,0, unicode_from_win, \n" );
+#else
+    fprintf( output, "unichar_t *unicode_from_alphabets[]={\n" );
+    fprintf( output, "    (unichar_t *) unicode_from_win, 0,0,\n    (unichar_t *) unicode_from_i8859_1, \n" );
+#endif
+    for ( j=1; alphabets[j]!=NULL; ++j )
+	fprintf( output, "    (unichar_t *) unicode_from_%s,\n", alnames[j] );
+    fprintf( output, "    (unichar_t *) unicode_from_%s,\t/* Place holder for user-defined map */\n", alnames[0] );
+    fprintf( output, "    0\n" );
+    fprintf( output, "};\n" );
+    fprintf( header, "extern struct charmap *alphabets_from_unicode[];\n" );
+    fprintf( output, "\nstruct charmap *alphabets_from_unicode[]={ 0,0,0,\n" );
+    for ( j=0; alphabets[j]!=NULL; ++j )
+	fprintf( output, "    &%s_from_unicode,\n", alnames[j] );
+    fprintf( output, "    &%s_from_unicode,\t/* Place holder for user-defined map*/\n", alnames[0] );
+    fprintf( output, "    0\n" );
+    fprintf( output, "};\n" );
+	
+    fprintf( header, "\n" );
+
+    for ( i=0; i<=255; ++i )
+	used[0][i] |= 1;		/* Map this plane entirely to 8859-1 */
+    mask = 0;
+    for ( j=0; alphabets[j]!=NULL; ++j )
+	if ( almaps[j]!=-1 )
+	    mask |= (1<<almaps[j]);
+    for ( i=0; i<' '; ++i )
+	used[0][i] |= mask;
+}
+
+#if 0
+static char base64[64] = {
+ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
+ 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
+ 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
+ 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'};
+
+static unsigned char nigori[48] = {
+    0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,
+    1,1,1,1,1,0,0,0,0,0,1,1,1,1,1,0,
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+};
+static unsigned char maru[48] = {
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,2,2,2,2,2,0,
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+};
+
+static void dumprandom(FILE *output,FILE *header) {
+    int inbase64[128], i;
+
+    for ( i=0; i<128; ++i )
+	inbase64[i] = -1;
+    for ( i=0; i<64; ++i )
+	inbase64[base64[i]] = i;
+    fprintf( header, "extern signed char inbase64[128];\n" );
+    fprintf( output, "signed char inbase64[128] = {\n" );
+    for ( i=0; i<128; i+= 16 )
+	fprintf( output, "  %2d, %2d, %2d, %2d, %2d, %2d, %2d, %2d, %2d, %2d, %2d, %2d, %2d, %2d, %2d, %2d%s\n",
+		inbase64[i], inbase64[i+1], inbase64[i+2], inbase64[i+3],
+		inbase64[i+4], inbase64[i+5], inbase64[i+6], inbase64[i+7],
+		inbase64[i+8], inbase64[i+9], inbase64[i+10], inbase64[i+11],
+		inbase64[i+12], inbase64[i+13], inbase64[i+14], inbase64[i+15],
+		i==128-16?"":",");
+    fprintf( output, "};\n" );
+
+    fprintf( header, "/* Need to subtract 0xb0 from jis206 before indexing this array */\n" );
+    fprintf( header, "extern char nigori[48];\n" );
+    fprintf( output, "char nigori[48] = {\n" );
+    for ( i=0; i<48; i+= 16 )
+	fprintf( output, "  %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d%s\n",
+		nigori[i], nigori[i+1], nigori[i+2], nigori[i+3],
+		nigori[i+4], nigori[i+5], nigori[i+6], nigori[i+7],
+		nigori[i+8], nigori[i+9], nigori[i+10], nigori[i+11],
+		nigori[i+12], nigori[i+13], nigori[i+14], nigori[i+15],
+		i==48-16?"":",");
+    fprintf( output, "};\n" );
+
+    fprintf( header, "/* Need to subtract 0xb0 from jis206 before indexing this array */\n" );
+    fprintf( header, "extern char maru[48];\n" );
+    fprintf( output, "char maru[48] = {\n" );
+    for ( i=0; i<48; i+= 16 )
+	fprintf( output, "  %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d%s\n",
+		maru[i], maru[i+1], maru[i+2], maru[i+3],
+		maru[i+4], maru[i+5], maru[i+6], maru[i+7],
+		maru[i+8], maru[i+9], maru[i+10], maru[i+11],
+		maru[i+12], maru[i+13], maru[i+14], maru[i+15],
+		i==48-16?"":",");
+    fprintf( output, "};\n" );
+
+    fprintf( header, "\n" );
+}
+#endif
+
+static void dumpjis(FILE *output,FILE *header) {
+    FILE *file;
+    int i,j,k, first, last;
+    long _orig, _unicode, sjis;
+    unichar_t unicode208[94*94], unicode212[94*94];
+    unichar_t *table[256], *plane;
+    char buffer[200];
+
+    for ( k=0; k<256; ++k ) table[k] = NULL;
+
+    j=0;
+    file = fopen( cjk[j], "r" );
+    if ( file==NULL ) {
+	fprintf( stderr, "Can't open %s\n", cjk[j]);
+    } else {
+	for ( i=0; i<sizeof(unicode208)/sizeof(unicode208[0]); ++i )
+	    unicode208[i] = 0;
+	while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
+	    if ( buffer[0]=='#' )
+	continue;
+	    sscanf(buffer, "0x%lx 0x%lx 0x%lx", &sjis, &_orig, &_unicode);
+	    if ( table[_unicode>>8]==NULL )
+		table[_unicode>>8] = calloc(256,2);
+	    table[_unicode>>8][_unicode&0xff] = _orig;
+	    _orig -= 0x2121;
+	    _orig = (_orig>>8)*94 + (_orig&0xff);
+	    unicode208[_orig] = _unicode;
+	    if ( used[_unicode>>8]==NULL ) {
+		used[_unicode>>8] = calloc(256,sizeof(long));
+	    }
+	    used[_unicode>>8][_unicode&0xff] |= (1<<em_jis208);
+	}
+	fclose(file);
+    }
+
+    j=1;
+    file = fopen( cjk[j], "r" );
+    if ( file==NULL ) {
+	fprintf( stderr, "Can't open %s\n", cjk[j]);
+    } else {
+	for ( i=0; i<sizeof(unicode212)/sizeof(unicode212[0]); ++i )
+	    unicode212[i] = 0;
+	while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
+	    if ( buffer[0]=='#' )
+	continue;
+	    sscanf(buffer, "0x%lx 0x%lx", &_orig, &_unicode);
+	    if ( table[_unicode>>8]==NULL )
+		table[_unicode>>8] = calloc(256,2);
+	    table[_unicode>>8][_unicode&0xff] = _orig|0x8000;
+	    _orig -= 0x2121;
+	    _orig = (_orig>>8)*94 + (_orig&0xff);
+	    unicode212[_orig] = _unicode;
+	    if ( used[_unicode>>8]==NULL ) {
+		used[_unicode>>8] = calloc(256,sizeof(long));
+	    }
+	    used[_unicode>>8][_unicode&0xff] |= (1<<em_jis212);
+	}
+	fclose(file);
+    }
+
+    j=0;
+    fprintf( header, "extern const unichar_t unicode_from_%s[];\n", cjknames[j] );
+    fprintf( output, "const unichar_t unicode_from_%s[] = {\n", cjknames[j] );
+    for ( i=0; i<sizeof(unicode208)/sizeof(unicode208[0]); i+=8 )
+	fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x,\n",
+		unicode208[i], unicode208[i+1], unicode208[i+2], unicode208[i+3],
+		unicode208[i+4], unicode208[i+5], unicode208[i+6], unicode208[i+7]);
+    fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x\n};\n\n",
+	    unicode208[i], unicode208[i+1], unicode208[i+2], unicode208[i+3],
+	    unicode208[i+4], unicode208[i+5], unicode208[i+6], unicode208[i+7]);
+    j=1;
+    fprintf( header, "extern const unichar_t unicode_from_%s[];\n", cjknames[j] );
+    fprintf( output, "const unichar_t unicode_from_%s[] = {\n", cjknames[j] );
+    for ( i=0; i<sizeof(unicode212)/sizeof(unicode212[0]); i+=8 )
+	fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x,\n",
+		unicode212[i], unicode212[i+1], unicode212[i+2], unicode212[i+3],
+		unicode212[i+4], unicode212[i+5], unicode212[i+6], unicode212[i+7]);
+    fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x\n};\n\n",
+	    unicode212[i], unicode212[i+1], unicode212[i+2], unicode212[i+3],
+	    unicode212[i+4], unicode212[i+5], unicode212[i+6], unicode212[i+7]);
+
+    first = last = -1;
+    for ( k=0; k<256; ++k ) {
+	if ( table[k]!=NULL ) {
+	    if ( first==-1 ) first = k;
+	    last = k;
+	    plane = table[k];
+	    fprintf( output, "static const unsigned short jis_from_unicode_%x[] = {\n", k );
+	    for ( i=0; i<256-8; i+=8 )
+		fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x,\n",
+			plane[i], plane[i+1], plane[i+2], plane[i+3],
+			plane[i+4], plane[i+5], plane[i+6], plane[i+7]);
+	    fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x\n};\n\n",
+			plane[i], plane[i+1], plane[i+2], plane[i+3],
+			plane[i+4], plane[i+5], plane[i+6], plane[i+7]);
+	}
+    }
+    fprintf( output, "static const unsigned short * const jis_from_unicode_[] = {\n" );
+    for ( k=first; k<=last; ++k )
+	if ( table[k]!=NULL )
+	    fprintf( output, "    jis_from_unicode_%x%s", k, k!=last?",\n":"\n" );
+	else
+	    fprintf( output, "    u_allzeros,\n" );
+    fprintf( output, "};\n\n" );
+    fprintf( header, "extern struct charmap2 jis_from_unicode;\n", cjknames[j]);
+    fprintf( output, "struct charmap2 jis_from_unicode = { %d, %d, (unsigned short **) jis_from_unicode_, (unsigned short *) unicode_from_%s };\n\n",
+	    first, last, cjknames[j], cjknames[j]);
+
+    for ( k=first; k<=last; ++k )
+	free(table[k]);
+}
+
+static void dumpbig5(FILE *output,FILE *header) {
+    FILE *file;
+    int i,j,k, first, last;
+    long _orig, _unicode;
+    unichar_t unicode[0x6000];
+    unichar_t *table[256], *plane;
+    char buffer[200];
+
+    j = 2;
+
+    for ( k=0; k<256; ++k ) table[k] = NULL;
+
+    file = fopen( cjk[j], "r" );
+    if ( file==NULL ) {
+	fprintf( stderr, "Can't open %s\n", cjk[j]);
+    } else {
+	for ( i=0; i<sizeof(unicode)/sizeof(unicode[0]); ++i )
+	    unicode[i] = 0;
+	while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
+	    if ( buffer[0]=='#' )
+	continue;
+	    sscanf(buffer, "0x%lx 0x%lx", &_orig, &_unicode);
+	    unicode[_orig-0xa100] = _unicode;
+	    if ( table[_unicode>>8]==NULL )
+		table[_unicode>>8] = calloc(256,2);
+	    table[_unicode>>8][_unicode&0xff] = _orig;
+	    if ( used[_unicode>>8]==NULL ) {
+		used[_unicode>>8] = calloc(256,sizeof(long));
+	    }
+	    used[_unicode>>8][_unicode&0xff] |= (1<<em_big5);
+	}
+	fclose(file);
+
+	fprintf( header, "/* Subtract 0xa140 before indexing this array */\n", cjknames[j] );
+	fprintf( header, "extern const unichar_t unicode_from_%s[];\n", cjknames[j] );
+	fprintf( output, "const unichar_t unicode_from_%s[] = {\n", cjknames[j] );
+	for ( i=0; i<sizeof(unicode)/sizeof(unicode[0]); i+=8 )
+	    fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x,\n",
+		    unicode[i], unicode[i+1], unicode[i+2], unicode[i+3],
+		    unicode[i+4], unicode[i+5], unicode[i+6], unicode[i+7]);
+	fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x\n};\n\n",
+		unicode[i], unicode[i+1], unicode[i+2], unicode[i+3],
+		unicode[i+4], unicode[i+5], unicode[i+6], unicode[i+7]);
+
+	first = last = -1;
+	for ( k=0; k<256; ++k ) {
+	    if ( table[k]!=NULL ) {
+		if ( first==-1 ) first = k;
+		last = k;
+		plane = table[k];
+		fprintf( output, "static const unsigned short %s_from_unicode_%x[] = {\n", cjknames[j], k );
+		for ( i=0; i<256-8; i+=8 )
+		    fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x,\n",
+			    plane[i], plane[i+1], plane[i+2], plane[i+3],
+			    plane[i+4], plane[i+5], plane[i+6], plane[i+7]);
+		fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x\n};\n\n",
+			    plane[i], plane[i+1], plane[i+2], plane[i+3],
+			    plane[i+4], plane[i+5], plane[i+6], plane[i+7]);
+	    }
+	}
+	fprintf( output, "static const unsigned short * const %s_from_unicode_[] = {\n", cjknames[j] );
+	for ( k=first; k<=last; ++k )
+	    if ( table[k]!=NULL )
+		fprintf( output, "    %s_from_unicode_%x%s", cjknames[j], k, k!=last?",\n":"\n" );
+	    else
+		fprintf( output, "    u_allzeros,\n" );
+	fprintf( output, "};\n\n" );
+	fprintf( header, "extern struct charmap2 %s_from_unicode;\n", cjknames[j]);
+	fprintf( output, "struct charmap2 %s_from_unicode = { %d, %d, (unsigned short **) %s_from_unicode_, (unsigned short *) unicode_from_%s };\n\n",
+		cjknames[j], first, last, cjknames[j], cjknames[j]);
+
+	for ( k=first; k<=last; ++k )
+	    free(table[k]);
+    }
+}
+
+static void dump94x94(FILE *output,FILE *header) {
+    FILE *file;
+    int i,j,k, first, last;
+    long _orig, _unicode;
+    unichar_t unicode[94*94];
+    unichar_t *table[256], *plane;
+    char buffer[200];
+
+    for ( k=0; k<256; ++k ) table[k] = NULL;
+
+    for ( j=3; cjk[j]!=NULL; ++j ) {
+	file = fopen( cjk[j], "r" );
+	if ( file==NULL ) {
+	    fprintf( stderr, "Can't open %s\n", cjk[j]);
+	} else {
+	    for ( i=0; i<sizeof(unicode)/sizeof(unicode[0]); ++i )
+		unicode[i] = 0;
+	    while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
+		if ( buffer[0]=='#' )
+	    continue;
+		sscanf(buffer, "0x%lx 0x%lx", &_orig, &_unicode);
+		if ( table[_unicode>>8]==NULL )
+		    table[_unicode>>8] = calloc(256,2);
+		table[_unicode>>8][_unicode&0xff] = _orig;
+		_orig -= 0x2121;
+		_orig = (_orig>>8)*94 + (_orig&0xff);
+		unicode[_orig] = _unicode;
+		if ( used[_unicode>>8]==NULL ) {
+		    used[_unicode>>8] = calloc(256,sizeof(long));
+		}
+		used[_unicode>>8][_unicode&0xff] |= (1<<cjkmaps[j]);
+	    }
+	    fclose(file);
+	}
+
+	fprintf( header, "extern const unichar_t unicode_from_%s[];\n", cjknames[j] );
+	fprintf( output, "const unichar_t unicode_from_%s[] = {\n", cjknames[j] );
+	for ( i=0; i<sizeof(unicode)/sizeof(unicode[0]); i+=8 )
+	    fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x,\n",
+		    unicode[i], unicode[i+1], unicode[i+2], unicode[i+3],
+		    unicode[i+4], unicode[i+5], unicode[i+6], unicode[i+7]);
+	fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x\n};\n\n",
+		unicode[i], unicode[i+1], unicode[i+2], unicode[i+3],
+		unicode[i+4], unicode[i+5], unicode[i+6], unicode[i+7]);
+
+	first = last = -1;
+	for ( k=0; k<256; ++k ) {
+	    if ( table[k]!=NULL ) {
+		if ( first==-1 ) first = k;
+		last = k;
+		plane = table[k];
+		fprintf( output, "static unsigned short %s_from_unicode_%x[] = {\n", cjknames[j], k );
+		for ( i=0; i<256-8; i+=8 )
+		    fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x,\n",
+			    plane[i], plane[i+1], plane[i+2], plane[i+3],
+			    plane[i+4], plane[i+5], plane[i+6], plane[i+7]);
+		fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x\n};\n\n",
+			    plane[i], plane[i+1], plane[i+2], plane[i+3],
+			    plane[i+4], plane[i+5], plane[i+6], plane[i+7]);
+	    }
+	}
+	fprintf( output, "static const unsigned short * const %s_from_unicode_[] = {\n", cjknames[j] );
+	for ( k=first; k<=last; ++k )
+	    if ( table[k]!=NULL )
+		fprintf( output, "    %s_from_unicode_%x%s", cjknames[j], k, k!=last?",\n":"\n" );
+	    else
+		fprintf( output, "    u_allzeros,\n" );
+	fprintf( output, "};\n\n" );
+	fprintf( header, "extern struct charmap2 %s_from_unicode;\n", cjknames[j]);
+	fprintf( output, "struct charmap2 %s_from_unicode = { %d, %d, (unsigned short **) %s_from_unicode_, (unsigned short *) unicode_from_%s };\n\n",
+		cjknames[j], first, last, cjknames[j], cjknames[j]);
+
+	for ( k=first; k<=last; ++k ) {
+	    free(table[k]);
+	    table[k]=NULL;
+	}
+    }
+}
+
+static void dumpcjks(FILE *output,FILE *header) {
+
+    fprintf(output, "#include <chardata.h>\n\n" );
+    fprintf(output, "const unsigned short u_allzeros[256] = { 0 };\n\n" );
+
+    dumpjis(output,header);
+    dumpbig5(output,header);
+    dump94x94(output,header);
+}
+
+static void dumptrans(FILE *output, FILE *header) {
+    long *plane;
+    int k, i;
+
+    fprintf(output, "static const unsigned long l_allzeros[256] = { 0 };\n" );
+    for ( k=0; k<256; ++k ) {
+	if ( used[k]!=NULL ) {
+	    plane = used[k];
+	    fprintf( output, "static const unsigned long unicode_backtrans_%x[] = {\n", k );
+	    for ( i=0; i<256-8; i+=8 )
+		fprintf( output, "  0x%06x, 0x%06x, 0x%06x, 0x%06x, 0x%06x, 0x%06x, 0x%06x, 0x%06x,\n",
+			plane[i], plane[i+1], plane[i+2], plane[i+3],
+			plane[i+4], plane[i+5], plane[i+6], plane[i+7]);
+	    fprintf( output, "  0x%06x, 0x%06x, 0x%06x, 0x%06x, 0x%06x, 0x%06x, 0x%06x, 0x%06x\n};\n\n",
+			plane[i], plane[i+1], plane[i+2], plane[i+3],
+			plane[i+4], plane[i+5], plane[i+6], plane[i+7]);
+	}
+    }
+    fprintf( header, "\n/* a mask for each character saying what charset(s) it may be found in */\n" );
+    fprintf( header, "extern const unsigned long * const unicode_backtrans[];\n" );
+    fprintf( output, "const unsigned long *const unicode_backtrans[] = {\n" );
+    for ( k=0; k<256; ++k )
+	if ( used[k]!=NULL )
+	    fprintf( output, "    unicode_backtrans_%x%s", k, k!=255?",\n":"\n" );
+	else
+	    fprintf( output, "    l_allzeros,\n" );
+    fprintf( output, "};\n" );
+}
+
+int main(int argc, char **argv) {
+    FILE *output, *header;
+
+    if (( output = fopen( "alphabet.c", "w" ))==NULL ) {
+	fprintf( stderr, "Can't open %s\n", "alphabet.c" );
+return 1;
+    }
+    if (( header = fopen( "chardata.h", "w" ))==NULL ) {
+	fprintf( stderr, "Can't open %s\n", "chardata.h" );
+return 1;
+    }
+
+    fprintf( header, "#include \"basics.h\"\n\n" );
+    fprintf( header, "struct charmap {\n    int first, last;\n    unsigned char **table;\n    unichar_t *totable;\n};\n" );
+    fprintf( header, "struct charmap2 {\n    int first, last;\n    unsigned short **table;\n    unichar_t *totable;\n};\n\n" );
+
+    dumpalphas(output,header);
+    /*dumprandom(output,header);*/
+    fclose(output);
+
+    if (( output = fopen( "cjk.c", "w" ))==NULL ) {
+	fprintf( stderr, "Can't open %s\n", "cjk.c" );
+return 1;
+    }
+    dumpcjks(output,header);
+    if (( output = fopen( "backtrns.c", "w" ))==NULL ) {
+	fprintf( stderr, "Can't open %s\n", "cjk.c" );
+return 1;
+    }
+    dumptrans(output,header);
+
+    /* This really should be in make ctype, but putting it there causes all */
+    /*  sorts of build problems in things happen out of order */
+    fprintf( header,"\nextern const unichar_t *const * const unicode_alternates[];\n" );
+
+    fclose(output); fclose(header);
+return 0;
+}

@@ -1,0 +1,231 @@
+/* Copyright (C) 2000,2001 by George Williams */
+/*
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+
+ * Redistributions of source code must retain the above copyright notice, this
+ * list of conditions and the following disclaimer.
+
+ * Redistributions in binary form must reproduce the above copyright notice,
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
+
+ * The name of the author may not be used to endorse or promote products
+ * derived from this software without specific prior written permission.
+
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+ * EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+#ifndef _XDRAW_H
+#define _XDRAW_H
+
+#include <X11/X.h>
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+
+#ifndef NOTHREADS
+# include <pthread.h>
+#endif
+
+#include "gdrawP.h"
+
+typedef struct gcstate {
+    void *gc;
+    Color fore_col;		/* desired */
+    Color back_col;		/* desired */
+    GRect clip;
+    enum draw_func func;
+    unsigned int copy_through_sub_windows: 1;
+    unsigned int bitmap_col: 1;			/* fore_col is mapped for bitmap */
+    int16 dash_len, skip_len;
+    int16 line_width;
+    int16 dash_offset;
+    int16 ts;
+    int32 ts_xoff, ts_yoff;
+    struct font_data *cur_font;
+} GCState;
+
+typedef struct gxwindow /* :GWindow */ {
+    GGC *ggc;
+    struct gxdisplay *display;
+    int (*eh)(GWindow,GEvent *);
+    GRect pos;				/* Filled in when Resize events happen */
+    struct gxwindow *parent;
+    void *user_data;
+    void *widget_data;
+    Window w;
+    unsigned int is_visible: 1;		/* Filled in when MapNotify events happen */
+    unsigned int is_pixmap: 1;
+    unsigned int is_toplevel: 1;
+    unsigned int visible_request: 1;
+    unsigned int is_dying: 1;
+    unsigned int is_popup: 1;
+    unsigned int is_dlg: 1;
+    unsigned int not_restricted: 1;
+    unsigned int was_positioned: 1;
+	/* is_bitmap can be found in the bitmap_col field of the ggc */
+    unsigned int restrict_input_to_me: 1;/* for dialogs, no input outside of dlg */
+    unsigned int redirect_chars_to_me: 1;/* ditto, we get any input outside of us */
+    unsigned int istransient: 1;	/* has transient for hint set */
+    GWindow redirect_from;		/* only redirect input from this window and its children */
+    GCursor cursor;
+    Window parentissimus;
+} *GXWindow;
+
+struct colstate {
+    int16 red_shift, green_shift, blue_shift;
+    int32 red_bits_mask, green_bits_mask, blue_bits_mask;
+    int16 red_bits_shift, green_bits_shift, blue_bits_shift;
+    RevCMap *rev;
+    unsigned int is_grey: 1;
+};
+
+struct gatoms {
+    Atom wm_del_window;
+    Atom wm_protocols;
+    Atom drag_and_drop;
+};
+
+/* Input states:
+    normal => input goes to the expected window
+    restricted => input only goes to one window (and its children)
+    redirected => characters from any window go to one window
+    targetted_redirect => characters from one special window (and its children) go to another window
+*/
+struct inputRedirect {
+    enum inputtype { it_normal, it_restricted, it_redirected, it_targetted } it;
+    GWindow cur_dlg;		/* This one always gets input */
+    GWindow inactive;		/* This one gives its input to the dlg */
+    struct inputRedirect *prev;
+};
+
+struct button_state {
+    Time release_time;
+    Window release_w;
+    int16 release_x, release_y;
+    int16 release_button;
+    int16 cur_click;
+    int16 double_time;		/* max milliseconds between release & click */
+    int16 double_wiggle;	/* max pixel wiggle allowed between release&click */
+};
+
+struct gxselinfo {
+    int32 sel_atom;		/* Either XA_PRIMARY or CLIPBOARD */
+    GXWindow owner;
+    Time timestamp;
+    struct seldata {
+	int32 typeatom;
+	int32 cnt;
+	int32 unitsize;
+	void *data;
+	void *(*gendata)(void *,int32 *len);
+		/* Either the data are stored here, or we use this function to generate them on the fly */
+	void (*freedata)(void *);
+	struct seldata *next;
+    } *datalist;
+};
+
+struct gxseltypes {
+    Time timestamp;		/* for last request for selection types */
+    int cnt;			/* number of types return */
+    Atom *types;		/* array of selection types */
+};
+
+struct xthreaddata {
+#ifndef NOTHREADS
+    pthread_mutex_t sync_mutex;		/* controls access to the rest of this structure */
+    struct things_to_do { void (*func)(void *); void *data; struct things_to_do *next; } *things_to_do;
+#endif
+    int sync_sock, send_sock;		/* socket on which to send sync events to thread displaying screen */
+};
+
+typedef struct gxdisplay /* : GDisplay */ {
+    struct displayfuncs *funcs;
+    void *semaphore;				/* To lock the display against multiple threads */
+    struct font_state *fontstate;
+    int16 res;
+    int16 scale_screen_by;			/* When converting screen pixels to printer pixels: multiply by this then divide by 16 */
+    GXWindow groot;
+    Color def_background, def_foreground;
+    uint16 mykey_state;
+    uint16 mykey_keysym;
+    uint16 mykey_mask;
+    unsigned int mykeybuild: 1;
+    unsigned int default_visual: 1;
+    unsigned int do_dithering: 1;
+    unsigned int focusfollowsmouse: 1;
+    unsigned int top_offsets_set: 1;
+    unsigned int wm_breaks_raiseabove: 1;
+    unsigned int wm_raiseabove_tested: 1;
+    struct gcstate gcstate[2];			/* 0 is state for normal images, 1 for bitmap (pixmaps) */
+    Display *display;
+    Window root;
+    Window virtualRoot;				/* Some window managers create a "virtual root" that is bigger than the real root and all decoration windows live in it */
+    int16 screen;
+    int16 depth;
+    int16 pixel_size;				/* 32bit displays usually have a 24bit depth */
+    Visual *visual;
+    Colormap cmap;
+    struct colstate cs;
+    struct gatoms atoms;
+    struct button_state bs;
+    XComposeStatus buildingkeys;
+    struct inputRedirect *input;
+    struct gimageglobals {
+	XImage *img, *mask;
+	int16 *red_dith, *green_dith, *blue_dith;
+	int32 iwidth, iheight;
+    } gg;
+    Pixmap grey_stipple;
+    int32 mycontext;
+    int16 top_window_count;
+    GTimer *timers;
+    Time last_event_time;
+    struct gxselinfo selinfo[sn_max];
+    int amax, alen;
+    struct atomdata { char *atomname; int32 xatom; } *atomdata;
+    struct gxseltypes seltypes;
+    int32 SelNotifyTimeout;		/* In seconds (time to give up on requests for selections) */
+    struct {
+	Window w;
+	GWindow gw;
+	int x,y;
+	int rx,ry;
+    } last_dd;
+    struct xthreaddata xthread;
+    int16 off_x, off_y;			/* The difference between where I asked */
+    					/*  to put a top level window, and where */
+			                /*  it ended up */
+    GWindow grab_window;		/* For reasons I don't understand the */
+	/* X Server seems to deliver events to my windows even when the pointer*/
+	/* is grabbed by another window. If the pointer is outside of any of my*/
+	/* windows then the event goes to my grab window, but if it's in one of*/
+	/* my other windows, then that window gets it and is mightily confused*/
+	/* So this field lets us do it right. when the pointer is grabbed the */
+	/* events go to the grab window. It seems so simple... */
+    int16 desired_depth, desired_vc;
+} GXDisplay;
+
+#define Pixel32(gdisp,col) Pixel16(gdisp,col)
+#define Pixel24(gdisp,col) ( ((((col)>>16)&0xff)<<(gdisp)->cs.red_shift) | ((((col)>>8)&0xff)<<(gdisp)->cs.green_shift) | (((col)&0xff)<<(gdisp)->cs.blue_shift) )
+#define Pixel16(gdisp,col) ( ((((col)>>(gdisp)->cs.red_bits_shift)&(gdisp)->cs.red_bits_mask)<<(gdisp)->cs.red_shift) | ((((col)>>(gdisp)->cs.green_bits_shift)&(gdisp)->cs.green_bits_mask)<<(gdisp)->cs.green_shift) | (((col>>(gdisp)->cs.blue_bits_shift)&(gdisp)->cs.blue_bits_mask)<<(gdisp)->cs.blue_shift) )
+
+extern void _GXDraw_Image(GWindow, GImage *, GRect *src, int32 x, int32 y);
+extern void _GXDraw_TileImage(GWindow, GImage *, GRect *src, int32 x, int32 y);
+extern void _GXDraw_ImageMagnified(GWindow, GImage *, GRect *src, int32 x, int32 y, int32 width, int32 height);
+extern GImage *_GXDraw_CopyScreenToImage(GWindow, GRect *rect);
+
+extern void _GXDraw_SetClipFunc(GXDisplay *gdisp, GGC *mine);
+extern struct gcol *_GXDraw_GetScreenPixelInfo(GXDisplay *gdisp, int red, int green, int blue);
+extern unsigned long _GXDraw_GetScreenPixel(GXDisplay *gdisp, Color col);
+
+extern void _XSyncScreen(void);
+#endif

@@ -1,0 +1,147 @@
+/* Copyright (C) 2000,2001 by George Williams */
+/*
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+
+ * Redistributions of source code must retain the above copyright notice, this
+ * list of conditions and the following disclaimer.
+
+ * Redistributions in binary form must reproduce the above copyright notice,
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
+
+ * The name of the author may not be used to endorse or promote products
+ * derived from this software without specific prior written permission.
+
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+ * EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+#ifndef _FONTP_H
+#define _FONTP_H
+
+#include <X11/Xlib.h>		/* For XFontStruct */
+
+#include "gdrawP.h"
+#include "charset.h"
+
+struct fontabbrev {
+    char *abbrev;
+    enum font_type ft;
+    unsigned int italic: 1;
+    unsigned int bold: 1;
+    unsigned int dont_search: 1;
+    unsigned int searched: 1;
+    struct font_name *found;
+};
+
+struct kern_info {
+    int16 following;		/* second character */
+    int16 kern;			/* amount to kern by */
+    struct kern_info *next;
+};
+
+#define AFM_KERN	0x0001	/* For per_char attributes, has kerning info */
+#define AFM_EXISTS	0x0002	/* For per_char attributes, this char exists in the font */
+
+struct font_data {
+    struct font_data *next;
+    struct font_name *parent;
+    int16 point_size;		/* on current monitor */
+    int16 weight;
+    int16 x_height, cap_height;
+    enum font_style style;
+    enum charset map;
+    unichar_t *charmap_name;	/* only set if non-standard, might be parsed later */
+    char *localname;		/* xfontname, postscript fontname, etc. */
+    char *fontfile, *metricsfile;	/* for postscript (.ps, .pfb), (.afm) */
+    XFontStruct *info;		/* width info for characters, created for postscript, etc. */
+    struct kern_info **kerns;	/* not implemented for 2byte fonts yet */
+
+    uint32 scale_metrics_by;	/* Scale the result of postscript width */
+		/* after calculating it: multiply by this, divide by 72000 */
+		/* normally the scale factor is point_size*printer resolution*/
+		/* (ps metrics data in 1000ths of a point) */
+		/* but when scaling screen fonts it can be weird */
+    unsigned int needsremap: 1;	/* ps font needs to be mapped to 8859-1 */
+    unsigned int remapped: 1;	/* mapping has been done */
+    unsigned int includenoted: 1;	/* for postscript %%IncludeFont directive */
+    unsigned int copiedtoprinter: 1;	/* font description has been copied to the printer */
+    unsigned int needsprocessing: 1;	/* font description has not been given to postscript */
+    unsigned int copy_from_screen: 1;	/* need to copy the bitmaps from the screen font */
+    unsigned int was_scaled: 1;
+    unsigned int is_scalable: 1;
+    struct font_data *screen_font;	/* if the printer doesn't have a font, see if we can do magic with a screen font instead */
+    struct font_data *base;		/* of a scaled font */
+    uint8 *exists;			/* Bit mask. set bits indicate contains a glyph for that index */
+};
+
+struct font_name {
+    struct font_name *next;
+    unichar_t *family_name;
+    enum font_type ft;
+    int32 map_mask;		/* all charsets */
+    struct font_data *data[em_max+1];	/* list of all fonts with this name & type */
+};
+
+struct family_info {
+    unichar_t *family_names;	/* A list of names as allowed for font-family: property */
+    int16 name_cnt;		/* number of family names in the list */
+    enum font_type ft;		/* Of the LAST name in the family list which we can classify */
+				/* ie. "times, serif, daewoo" would give "ft_serif" for serif */
+    struct font_name **fonts;	/* one for each name_cnt */
+    struct family_info *next;
+    struct font_instance *instanciations;
+    struct family_info *screen_fam;	/* If the printer doesn't have an */
+			     /* encoding, see if we can use a screen font */
+};
+
+struct font_instance {
+    FontRequest rq;		/* identification of this instance */
+    struct family_info *fam;
+    struct font_instance *next;	/* next instanciation in our family */
+    struct font_data *fonts[em_max];
+    struct font_data **smallcaps;/* either NULL or an array of em_max fonts to match the above but smaller */
+    struct font_data **unifonts;/* an array of fam->name_cnt+ft_max possible unicode fonts */
+    uint32 *level_masks;	/* an array of fam->name_cnt+3 masks */
+    				/* showing which encodings are at which level */
+			        /* there's one level for each family name */
+			        /* one level that for font type matches (ie serif) */
+			        /* one level for last chance */
+			        /* one final level for really bad last chances */
+			        /*  scaled fonts from the screen fall here */
+    GDisplay *mapped_to;
+};
+
+typedef struct font_state {
+    long mappings_avail;
+    int res, res_closer_to;
+    struct font_name *font_names[26];
+    struct family_info *fam_hash[26];
+    struct font_name *lastchance[em_max+1][ft_max];
+    struct font_name *lastchance2[em_max+1][ft_max];
+    /*struct font_data *nomaps;*/
+    struct font_data *StolenFromScreen;		/* Fonts not on the printer, but on the screen */
+    unsigned int allow_scaling: 1;
+    unsigned int names_loaded: 1;
+    unsigned int use_screen_fonts: 1;
+} FState;
+
+
+extern struct fontabbrev _gdraw_fontabbrev[];
+
+extern int _GDraw_ClassifyFontName(unichar_t *fontname, int *italic, int *bold);
+extern enum charset _GDraw_ParseMapping(unichar_t *setname);
+extern int _GDraw_FontFigureWeights(unichar_t *weight_str);
+extern struct font_name *_GDraw_HashFontFamily(FState *fonts,unichar_t *name, int prop);
+extern void _GDraw_RemoveDuplicateFonts(FState *fonts);
+extern void _GDraw_FillLastChance(FState *fonts);
+extern void _GDraw_FreeFD(struct font_data *fd);
+#endif

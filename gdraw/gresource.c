@@ -1,0 +1,380 @@
+/* Copyright (C) 2000,2001 by George Williams */
+/*
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+
+ * Redistributions of source code must retain the above copyright notice, this
+ * list of conditions and the following disclaimer.
+
+ * Redistributions in binary form must reproduce the above copyright notice,
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
+
+ * The name of the author may not be used to endorse or promote products
+ * derived from this software without specific prior written permission.
+
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+ * EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <ustring.h>
+#include <utype.h>
+
+#include <gdraw.h>
+#include <gresource.h>
+#include <fileutil.h>
+#include "charset.h"
+#include "fontP.h"
+
+#include "gresourceP.h"
+
+char *GResourceProgramName, *GResourceFullProgram, *GResourceProgramDir;
+char *usercharset_names;
+int local_encoding = e_iso8859_1;
+
+static int rcur, rmax=0;
+static int rbase = 0, rsummit=0, rskiplen=0;	/* when restricting a search */
+struct _GResource_Res *_GResource_Res;
+
+static int rcompar(const void *_r1,const void *_r2) {
+    const struct _GResource_Res *r1 = _r1, *r2 = _r2;
+return( strcmp(r1->res,r2->res));
+}
+
+int _GResource_FindResName(char *name) {
+    int top=rsummit, bottom = rbase;
+    int test, cmp;
+
+    if ( rcur==0 )
+return( -1 );
+
+    forever {
+	if ( top==bottom )
+return( -1 );
+	test = (top+bottom)/2;
+	cmp = strcmp(name,_GResource_Res[test].res+rskiplen);
+	if ( cmp==0 )
+return( test );
+	if ( test==bottom )
+return( -1 );
+	if ( cmp>0 )
+	    bottom=test+1;
+	else
+	    top = test;
+    }
+}
+
+static int GResourceRestrict(char *prefix) {
+    int top=rcur, bottom = 0;
+    int test, cmp;
+    int plen;
+    int oldtest, oldtop;
+
+    if ( prefix==NULL || *prefix=='\0' ) {
+	rbase = rskiplen = 0; rsummit = rcur;
+return( rcur==0?-1:0 );
+    }
+    if ( rcur==0 )
+return( -1 );
+
+    plen = strlen(prefix);
+
+    forever {
+	test = (top+bottom)/2;
+	cmp = strncmp(prefix,_GResource_Res[test].res,plen);
+	if ( cmp==0 )
+    break;
+	if ( test==bottom )
+return( -1 );
+	if ( cmp>0 ) {
+	    bottom=test+1;
+	    if ( bottom==top )
+return( -1 );
+	} else
+	    top = test;
+    }
+    /* at this point the resource at test begins with the prefix */
+    /* we want to find the first and last resources that do */
+    oldtop = top; oldtest = top = test;		/* find the first resource */
+    forever {
+	test = (top+bottom)/2;
+	cmp = strncmp(prefix,_GResource_Res[test].res,plen);
+	if ( cmp<0 ) {
+	    GDrawIError("Resource list out of order");
+return( -1 );
+	}
+	if ( test==bottom ) {
+	    if ( cmp!=0 ) ++test;
+    break;
+	}
+	if ( cmp>0 )
+	    bottom=test+1;
+	else
+	    top = test;
+    }
+    rbase = test;
+
+    top = oldtop; bottom = oldtest+1;		/* find the last resource */
+    forever {
+	test = (top+bottom)/2;
+	cmp = strncmp(prefix,_GResource_Res[test].res,plen);
+	if ( cmp>0 ) {
+	    GDrawIError("Resource list out of order");
+return( -1 );
+	}
+	if ( test==bottom ) {
+	    if ( cmp==0 ) ++test;
+    break;
+	}
+	if ( cmp==0 )
+	    bottom=test+1;
+	else
+	    top = test;
+    }
+    rsummit = test;
+    rskiplen = plen;
+return( 0 );
+}
+
+static void GResourceSetProg(char *prog) {
+    char filename[1025], *pt;
+    extern char *_GFile_find_program_dir(char *prog);
+
+    if ( prog!=NULL ) {
+	gfree(GResourceProgramName);
+	if (( pt=strrchr(prog,'/'))!=NULL )
+	    prog = pt+1;
+	GResourceProgramName = copy(prog);
+    } else if ( GResourceProgramName==NULL )
+	GResourceProgramName = copy("gdraw");
+    else
+return;
+
+    gfree(GResourceProgramDir);
+    GResourceProgramDir = _GFile_find_program_dir(GResourceProgramName);
+    gfree(GResourceFullProgram);
+    GResourceFullProgram = copy(
+	    GFileBuildName(GResourceProgramDir,GResourceProgramName,filename,sizeof(filename)));
+}
+
+void GResourceAddResourceString(char *string,char *prog) {
+    char *pt, *ept, *next;
+    int cnt, plen;
+    struct _GResource_Res temp;
+    int i,j,k, off;
+
+    GResourceSetProg(prog);
+    plen = strlen(GResourceProgramName);
+
+    if ( string==NULL )
+return;
+
+    cnt = 0;
+    pt = string;
+    while ( *pt!='\0' ) {
+	next = strchr(pt,'\n');
+	if ( next==NULL ) next = pt+strlen(pt);
+	else ++next;
+	if ( strncmp(pt,"Gdraw.",6)==0 ) ++cnt;
+	else if ( strncmp(pt,GResourceProgramName,plen)==0 && pt[plen]=='.' ) ++cnt;
+	else if ( strncmp(pt,"*",1)==0 ) ++cnt;
+	pt = next;
+    }
+
+    if ( rcur+cnt>=rmax ) {
+	if ( rmax==0 )
+	    _GResource_Res = galloc(cnt*sizeof(struct _GResource_Res));
+	else
+	    _GResource_Res = grealloc(_GResource_Res,(rcur+cnt)*sizeof(struct _GResource_Res));
+	rmax += cnt;
+    }
+
+    pt = string;
+    while ( *pt!='\0' ) {
+	next = strchr(pt,'\n');
+	if ( next==NULL ) next = pt+strlen(pt);
+	if ( strncmp(pt,"Gdraw.",6)==0 || strncmp(pt,"*",1)==0 ||
+		(strncmp(pt,GResourceProgramName,plen)==0 && pt[plen]=='.' )) {
+	    temp.generic = false;
+	    if ( strncmp(pt,"Gdraw.",6)==0 ) {
+		temp.generic = true;
+		off = 6;
+	    } else if ( strncmp(pt,"*",1)==0 ) {
+		temp.generic = true;
+		off = 1;
+	    } else
+		off = plen+1;
+	    ept = strchr(pt+off,':');
+	    if ( ept==NULL )
+	goto bad;
+	    temp.res = copyn(pt+off,ept-(pt+off));
+	    pt = ept+1;
+	    while ( isspace( *pt ) && pt<next ) ++pt;
+	    temp.val = copyn(pt,next-pt);
+	    temp.new = true;
+	    _GResource_Res[rcur++] = temp;
+	}
+	bad:
+	if ( *next ) ++next;
+	pt = next;
+    }
+
+    if ( rcur!=0 )
+	qsort(_GResource_Res,rcur,sizeof(struct _GResource_Res),rcompar);
+
+    for ( i=j=0; i<rcur; ) {
+	if ( i!=j )
+	    _GResource_Res[j] = _GResource_Res[i];
+	for ( k=i+1; k<rcur && strcmp(_GResource_Res[i].res,_GResource_Res[k].res)==0; ++k ) {
+	    if (( !_GResource_Res[k].generic && (_GResource_Res[i].generic || _GResource_Res[i+1].new)) ||
+		    (_GResource_Res[k].generic && _GResource_Res[i].generic && _GResource_Res[i+1].new)) {
+		gfree(_GResource_Res[i].res); gfree(_GResource_Res[i].val);
+		_GResource_Res[j] = _GResource_Res[k];
+	    } else {
+		gfree(_GResource_Res[k].res); gfree(_GResource_Res[k].val);
+	    }
+	}
+	i = k; ++j;
+    }
+    rcur = rsummit = j;
+    for ( i=0; i<j; ++i )
+	_GResource_Res[i].new = false;
+
+    if ( (i=_GResource_FindResName("LocalCharSet"))!=-1 ) {
+	local_encoding = _GDraw_ParseMapping(c_to_u(_GResource_Res[i].val));
+	if ( local_encoding==em_none )
+	    local_encoding = em_iso8859_1;
+	local_encoding += e_iso8859_1-em_iso8859_1;
+    }
+}
+
+void GResourceFind( GResStruct *info,char *prefix) {
+    int pos;
+
+    if ( GResourceRestrict(prefix)== -1 ) {
+	rbase = rskiplen = 0; rsummit = rcur;
+return;
+    }
+    while ( info->resname!=NULL ) {
+	pos = _GResource_FindResName(info->resname);
+	if ( pos==-1 )
+	    /* Do Nothing */;
+	else if ( info->type == rt_string ) {
+	    if ( info->cvt!=NULL )
+		*(void **) (info->val) = (info->cvt)( _GResource_Res[pos].val, *(void **) (info->val) );
+	    else
+		*(char **) (info->val) = copy( _GResource_Res[pos].val );
+	} else if ( info->type == rt_color ) {
+	    Color temp = _GImage_ColourFName(_GResource_Res[pos].val );
+	    if ( temp==-1 )
+		fprintf( stderr, "Can't convert %s to a Color for resource: %s\n",
+			_GResource_Res[pos].val, info->resname );
+	    else
+		*(Color *) (info->val) = temp;
+	} else if ( info->type == rt_int ) {
+	    char *end;
+	    int val = strtol(_GResource_Res[pos].val,&end,0);
+	    if ( *end!='\0' )
+		fprintf( stderr, "Can't convert %s to an int for resource: %s\n",
+			_GResource_Res[pos].val, info->resname );
+	    else
+		*(int *) (info->val) = val;
+	} else if ( info->type == rt_bool ) {
+	    int val = -1;
+	    if ( strmatch(_GResource_Res[pos].val,"true")==0 ||
+		    strmatch(_GResource_Res[pos].val,"on")==0 || strcmp(_GResource_Res[pos].val,"1")==0 )
+		val = 1;
+	    else if ( strmatch(_GResource_Res[pos].val,"false")==0 ||
+		    strmatch(_GResource_Res[pos].val,"off")==0 || strcmp(_GResource_Res[pos].val,"0")==0 )
+		val = 0;
+	    if ( val==-1 )
+		fprintf( stderr, "Can't convert %s to a boolean for resource: %s\n",
+			_GResource_Res[pos].val, info->resname );
+	    else
+		*(int *) (info->val) = val;
+	} else if ( info->type == rt_double ) {
+	    char *end;
+	    double val = strtod(_GResource_Res[pos].val,&end);
+	    if ( *end!='\0' )
+		fprintf( stderr, "Can't convert %s to a double for resource: %s\n",
+			_GResource_Res[pos].val, info->resname );
+	    else
+		*(double *) (info->val) = val;
+	} else
+	    fprintf( stderr, "Invalid resource type for: %s\n", info->resname );
+	++info;
+    }
+    rbase = rskiplen = 0; rsummit = rcur;
+}
+
+char *GResourceFindString(char *name) {
+    int pos;
+
+    pos = _GResource_FindResName(name);
+    if ( pos==-1 )
+return( NULL );
+    else
+return( copy(_GResource_Res[pos].val));
+}
+
+int GResourceFindBool(char *name, int def) {
+    int pos;
+    int val = -1;
+
+    pos = _GResource_FindResName(name);
+    if ( pos==-1 )
+return( def );
+
+    if ( strmatch(_GResource_Res[pos].val,"true")==0 ||
+	    strmatch(_GResource_Res[pos].val,"on")==0 || strcmp(_GResource_Res[pos].val,"1")==0 )
+	val = 1;
+    else if ( strmatch(_GResource_Res[pos].val,"false")==0 ||
+	    strmatch(_GResource_Res[pos].val,"off")==0 || strcmp(_GResource_Res[pos].val,"0")==0 )
+	val = 0;
+
+    if ( val==-1 )
+return( def );
+
+return( val );
+}
+
+long GResourceFindInt(char *name, long def) {
+    int pos;
+    char *end;
+    long ret;
+
+    pos = _GResource_FindResName(name);
+    if ( pos==-1 )
+return( def );
+
+    ret = strtol(_GResource_Res[pos].val,&end,10);
+    if ( *end!='\0' )
+return( def );
+
+return( ret );
+}
+
+Color GResourceFindColor(char *name, Color def) {
+    int pos;
+    Color ret;
+
+    pos = _GResource_FindResName(name);
+    if ( pos==-1 )
+return( def );
+
+    ret = _GImage_ColourFName(_GResource_Res[pos].val );
+    if ( ret==-1 )
+return( def );
+
+return( ret );
+}

@@ -1,0 +1,1279 @@
+/* Copyright (C) 2000,2001 by George Williams */
+/*
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+
+ * Redistributions of source code must retain the above copyright notice, this
+ * list of conditions and the following disclaimer.
+
+ * Redistributions in binary form must reproduce the above copyright notice,
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
+
+ * The name of the author may not be used to endorse or promote products
+ * derived from this software without specific prior written permission.
+
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+ * EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+#include <stdio.h>
+#include <math.h>
+#include <time.h>
+
+#include "gpsdrawP.h"
+#include "gresource.h"
+#include "colorP.h"
+#include "fontP.h"
+#include "ustring.h"
+#include "fileutil.h"
+
+/* ************************************************************************** */
+/* ********************** Noops & Meaningless functions ********************* */
+/* ************************************************************************** */
+
+static void PSDrawInit(GDisplay *gdisp) {
+    /* delay any real initialization until they actually want to print */
+    /*  no point in reading up on a bunch of fonts which never get used */
+}
+
+static void PSDrawTerm(GDisplay *gdisp) {
+}
+
+static GWindow PSDrawCreateSubWindow(GWindow w, GRect *pos,
+	int (*eh)(GWindow,GEvent *), void *user_data, GWindowAttrs *wattrs) {
+    fprintf( stderr, "CreateSubWindow not implemented for postscript\n" );
+return NULL;
+}
+
+static GWindow PSDrawCreatePixmap(GDisplay *gdisp, uint16 width, uint16 height) {
+    fprintf( stderr, "CreatePixmap not implemented for postscript\n" );
+return NULL;
+}
+
+static GWindow PSDrawCreateBitmap(GDisplay *gdisp, uint16 width, uint16 height, uint8 *data) {
+    fprintf( stderr, "CreateBitmap not implemented for postscript\n" );
+return NULL;
+}
+
+static GCursor PSDrawCreateCursor(GWindow src,GWindow mask,Color fg,Color bg,
+	int16 x, int16 y ) {
+    fprintf( stderr, "CreateCursor not implemented for postscript\n" );
+return 0;
+}
+
+static void PSDestroyCursor(GDisplay *gdisp,GCursor ct ) {
+    fprintf( stderr, "DestroyCursor not implemented for postscript\n" );
+}
+
+static int PSSetDither(GDisplay *gdisp,int dither ) {
+    fprintf( stderr, "SetDither not implemented for postscript\n" );
+return( true );
+}
+
+static void PSDrawSetVisible(GWindow w,int vis ) {
+    /* It's a noop */
+}
+
+static void PSDrawMove(GWindow w, int32 x, int32 y) {
+    /* Not meaningful */
+}
+
+static void PSDrawResize(GWindow w, int32 width, int32 height) {
+    /* Not meaningful */
+}
+
+static void PSDrawMoveResize(GWindow w, int32 x, int32 y, int32 width, int32 height) {
+    /* Not meaningful */
+}
+
+static void PSDrawRaise(GWindow w) {
+    /* Not meaningful */
+}
+
+static void PSDrawRaiseAbove(GWindow w,GWindow below) {
+    /* Not meaningful */
+}
+
+static int PSDrawIsAbove(GWindow w,GWindow below) {
+return( -1 );		/* Not meaningful */
+}
+
+static void PSDrawLower(GWindow w) {
+    /* Not meaningful */
+}
+
+static void PSDrawSetWindowTitles(GWindow w, unichar_t *title, unichar_t *icontit) {
+    /* Not meaningful */
+}
+
+static void PSDrawGetPointerPosition(GWindow w, GEvent *ret) {
+    /* Not meaningful */
+
+    ret->u.mouse.state = 0;
+    ret->u.mouse.x = 0;
+    ret->u.mouse.y = 0;
+}
+
+static void PSDrawSetCursor(GWindow w, GCursor ct) {
+    /* Not meaningful */
+}
+
+static GCursor PSDrawGetCursor(GWindow w) {
+    /* Not meaningful */
+return( ct_default );
+}
+
+static GWindow PSDrawGetRedirectWindow(GDisplay *gd) {
+    /* Not meaningful */
+return( NULL );
+}
+
+static unichar_t *PSDrawGetWindowTitle(GWindow w) {
+return(NULL);
+}
+
+static void PSDrawTranslateCoordinates(GWindow _from,GWindow _to, GPoint *pt) {
+    /* Only one window active at a time, translation is a noop */
+}
+
+static void PSDrawScroll(GWindow w, GRect *rect, int32 hor, int32 vert) {
+    /* Not meaningful */
+}
+
+static void PSDrawBeep(GDisplay *gdisp) {
+    /* Not meaningful */
+}
+
+static void PSDrawFlush(GDisplay *gdisp) {
+    /* Not meaningful */
+    if ( gdisp->groot!=NULL )
+	fflush(((GPSWindow) (gdisp->groot))->output_file);
+}
+
+static void PSDrawPointerUngrab(GDisplay *gdisp) {
+    /* Not meaningful */
+}
+
+static void PSDrawPointerGrab(GWindow w) {
+    /* Not meaningful */
+}
+
+static void PSDrawGrabSelection(GWindow w,enum selnames sel) {
+    /* Not meaningful */
+}
+
+static void PSDrawAddSelectionType(GWindow w,enum selnames sel,char *type,
+	void *data,int32 len,int32 unitsize,void *(*gendata)(void *,int32 *len),
+	void (*freedata)(void *)) {
+    /* Not meaningful */
+}
+
+static void *PSDrawRequestSelection(GWindow w,enum selnames sn, char *typename, int32 *len) {
+    /* Not meaningful */
+return( NULL );
+}
+
+static int PSDrawSelectionHasType(GWindow w,enum selnames sn, char *typename) {
+    /* Not meaningful */
+return( false );
+}
+
+static void PSDrawRequestExpose(GWindow gw, GRect *rect,int doclear) {
+    /* Not meaningful */
+}
+
+static GTimer *PSDrawRequestTimer(GWindow w,int32 time_from_now,int32 frequency,
+	void *userdata) {
+return( NULL );
+}
+
+static void PSDrawCancelTimer(GTimer *timer) {
+}
+
+static void PSDrawSyncThread(GDisplay *gdisp, void (*func)(void *), void *data) {
+    (func)(data);
+}
+
+static void PSDrawForceUpdate(GWindow gw) {
+}
+
+static void PSDrawSync(GDisplay *gdisp) {
+}
+
+static void PSDrawSkipMouseMoveEvents(GWindow gw, GEvent *last) {
+}
+
+static void PSDrawProcessPendingEvents(GDisplay *gdisp) {
+}
+
+static void PSDrawEventLoop(GDisplay *gd) {
+}
+
+static void PSDrawPostEvent(GEvent *e) {
+}
+
+static void PSDrawPostDragEvent(GWindow w,GEvent *mouse,enum event_type et) {
+}
+
+static GImage *_PSDraw_CopyScreenToImage(GWindow w, GRect *rect) {
+return( NULL );
+}
+
+static void _PSDraw_Pixmap( GWindow _w, GWindow _pixmap, GRect *src, int32 x, int32 y) {
+}
+
+static void _PSDraw_TilePixmap( GWindow _w, GWindow _pixmap, GRect *src, int32 x, int32 y) {
+}
+
+/* ************************************************************************** */
+/* ******************************* Draw Stuff ******************************* */
+/* ************************************************************************** */
+
+double _GSPDraw_Distance(GPSWindow ps,int x) {
+return( 72.0*(double) x/(double)ps->display->res );
+}
+
+double _GSPDraw_XPos(GPSWindow ps,int x) {
+return( 72.0*(double) x/(double)ps->display->res );
+}
+
+double _GSPDraw_YPos(GPSWindow ps,int y) {
+return( -72.0*(double) y/(double)ps->display->res );
+}
+
+static void PSUnbufferLine(GPSWindow ps) {
+    if ( ps->buffered_line ) {
+	fprintf( ps->output_file,"  %g %g lineto\n", _GSPDraw_XPos(ps,ps->line_x), _GSPDraw_YPos(ps,ps->line_y) );
+	++ps->pnt_cnt;
+	ps->buffered_line = false;
+    }
+}
+
+void _GPSDraw_FlushPath(GPSWindow ps) {
+    if ( ps->buffered_line )
+	PSUnbufferLine(ps);
+    if ( ps->pnt_cnt>0 ) {
+	fprintf( ps->output_file,"stroke\n" );
+	ps->pnt_cnt = 0;
+	ps->cur_x = ps->cur_y = -1;
+    }
+}
+
+static void PSDrawNewpath(GPSWindow ps) {
+    if ( ps->pnt_cnt!=0 ) {
+	_GPSDraw_FlushPath(ps);
+	fprintf( ps->output_file,"newpath\n" );
+	ps->pnt_cnt = 0;
+	ps->cur_x = ps->cur_y = -1;
+    }
+}
+
+static void PSMoveTo(GPSWindow ps, int x, int y) {
+    if ( ps->pnt_cnt>=STROKE_CACHE )
+	_GPSDraw_FlushPath(ps);
+    if ( ps->pnt_cnt==-1 )
+	PSDrawNewpath(ps);
+    if ( ps->cur_x!=x || ps->cur_y!=y ) {
+	if ( ps->buffered_line )
+	    PSUnbufferLine(ps);
+	fprintf( ps->output_file,"  %g %g moveto\n", _GSPDraw_XPos(ps,x), _GSPDraw_YPos(ps,y) );
+	++ps->pnt_cnt;
+	ps->cur_x = x; ps->cur_y = y;
+    }
+}
+
+static void PSLineTo(GPSWindow ps, int x, int y) {
+    if ( ps->pnt_cnt>=STROKE_CACHE )
+	_GPSDraw_FlushPath(ps);
+    if ( ps->pnt_cnt==-1 )
+	PSDrawNewpath(ps);
+    if ( ps->cur_x!=x || ps->cur_y!=y ) {
+	if ( !ps->buffered_line && ps->cur_y==y ) {
+	    ps->line_x = x; ps->line_y = y;
+	    ps->buffered_line = true;
+	} else if ( ps->buffered_line && ps->cur_y==y ) {
+	    ps->line_x = x;
+	} else {
+	    if ( ps->buffered_line )
+		PSUnbufferLine(ps);
+	    fprintf( ps->output_file,"  %g %g lineto\n", _GSPDraw_XPos(ps,x), _GSPDraw_YPos(ps,y) );
+	    ++ps->pnt_cnt;
+	}
+	ps->cur_x = x; ps->cur_y = y;
+    }
+}
+
+/* This is my version of the postscript "arc" function. I've written it because*/
+/*  I can't use arc for stroking elipses. The obvious thing to do is to scale */
+/*  x and y differently so that the circle becomes an elipse. Sadly that also */
+/*  scales the line width so I get a different width at different points on   */
+/*  the elipse. Can't have that. */
+/* So here we approximate an elipse by four bezier curves. There is one curve */
+/*  for each quadrant of the elipse (0->90), (90->180), (180->270), (270-360) */
+/*  of course if we're just doing bits of the arc (rather than the whole      */
+/*  elipse) we'll not have all of those, nor will they be filled in. The      */
+/*  magic numbers here do indeed produce a good fit to an elipse */
+static void PSDoArc(GPSWindow ps, double cx, double cy, double radx, double rady,
+	double sa, double ea ) {
+    double ss, sc, es, ec;
+    double lenx, leny;
+    double sx, sy, ex, ey;
+    double c1x, c1y, c2x, c2y;
+
+    lenx = ((ea-sa)/90.0) * radx * .552;
+    leny = ((ea-sa)/90.0) * rady * .552;
+    sa *= 3.1415926535897932/180; ea *= 3.1415926535897932/180;
+    ss = -sin(sa); sc = cos(sa); es = -sin(ea); ec = cos(ea);
+    sx = cx+sc*radx; sy = cy+ss*rady;
+    PSMoveTo(ps,sx,sy);
+    ex = cx+ec*radx; ey = cy+es*rady;
+    c1x = sx + lenx*ss; c1y = sy - leny*sc;
+    c2x = ex - lenx*es; c2y = ey + leny*ec;
+    fprintf( ps->output_file, " %g %g %g %g %g %g curveto",
+	    _GSPDraw_XPos(ps,c1x), _GSPDraw_YPos(ps,c1y),
+	    _GSPDraw_XPos(ps,c2x), _GSPDraw_YPos(ps,c2y),
+	    _GSPDraw_XPos(ps,ex), _GSPDraw_YPos(ps,ey) );
+    ps->cur_x = ex; ps->cur_y = ey;
+}
+
+static void PSMyArc(GPSWindow ps, double cx, double cy, double radx, double rady,
+	double sa, double ta ) {
+    double ea, temp;
+
+    if ( ta<0 ) {
+	sa += ta;
+	ta = -ta;
+    }
+    if ( ta>360 ) ta = 360;
+    if ( ta==360 ) sa = 0;
+    while ( sa<0 ) sa+= 360;
+    while ( sa>=360 ) sa -= 360;
+    ea = sa+ta;
+
+    while ( sa<ea ) {
+	temp = ((int) ((sa+90)/90))*90;
+	PSDoArc(ps,cx,cy,radx,rady,sa,ea<temp?ea:temp);
+	sa = temp;
+    }
+}
+    
+static void PSDrawElipse(GPSWindow ps, GRect *rct,char *command) {
+    float cx, cy, radx, rady;
+    /* This does not make a very good stroked elipse if it isn't a circle */
+    /*  the line width is scaled along with the elipse and so it varies!!! */
+
+    _GPSDraw_FlushPath(ps);
+    radx = rct->width/2.0;
+    rady = rct->height/2.0;
+    cx = rct->x + radx;
+    cy = rct->y + rady;
+    PSDrawNewpath(ps);
+
+    /* I can't use arc to draw an elipse. Doing so would mean scaling the */
+    /*  x and y axes differently, which will also scale the stroke width */
+    /*  differently. So I've written my own version that will work for */
+    /*  elipses without scaling. I use arc for circles because it produces */
+    /*  less text in the printing file */
+    if ( radx!=rady )
+	PSMyArc(ps,cx,cy,radx,rady,0,360);
+    else
+	fprintf( ps->output_file, "  %g %g %g 0 360 arc", _GSPDraw_XPos(ps,cx), _GSPDraw_YPos(ps,cy), _GSPDraw_Distance(ps,radx));
+    fprintf( ps->output_file, " closepath %s\n", command );
+    ps->pnt_cnt = 0;
+    ps->cur_x = ps->cur_y = -1;
+}
+
+static void PSDrawDoPoly(GPSWindow ps, GPoint *pt, int cnt, char *command) {
+    int i;
+
+    if ( pt[cnt-1].x==pt[0].x && pt[cnt-1].y==pt[0].y )
+	--cnt;		/* We close paths differently in postscript */
+    _GPSDraw_FlushPath(ps);
+    if ( cnt==4 ) {
+	fprintf( ps->output_file, "  %g %g  %g %g  %g %g  %g %g g_quad ",
+		_GSPDraw_XPos(ps,pt[3].x), _GSPDraw_YPos(ps,pt[3].y),
+		_GSPDraw_XPos(ps,pt[2].x), _GSPDraw_YPos(ps,pt[2].y),
+		_GSPDraw_XPos(ps,pt[1].x), _GSPDraw_YPos(ps,pt[1].y),
+		_GSPDraw_XPos(ps,pt[0].x), _GSPDraw_YPos(ps,pt[0].y));
+    } else {
+	PSMoveTo(ps,pt[0].x,pt[0].y);
+	for ( i=1; i<cnt; ++i ) 
+	    PSLineTo(ps,pt[i].x,pt[i].y);
+    }
+    fprintf( ps->output_file, "closepath %s %%Polygon\n", command );
+    ps->pnt_cnt = 0;
+    ps->cur_x = ps->cur_y = -1;
+}
+
+void _GPSDraw_SetClip(GPSWindow ps) {
+
+    if ( ps->ggc->clip.x!=ps->cur_clip.x ||
+	    ps->ggc->clip.width!=ps->cur_clip.width ||
+	    ps->ggc->clip.y!=ps->cur_clip.y ||
+	    ps->ggc->clip.height!=ps->cur_clip.height ) {
+	_GPSDraw_FlushPath(ps);
+	if ( ps->ggc->clip.x<ps->cur_clip.x ||
+		ps->ggc->clip.x+ps->ggc->clip.width>ps->cur_clip.x+ps->cur_clip.width ||
+		ps->ggc->clip.y<ps->cur_clip.y ||
+		ps->ggc->clip.y+ps->ggc->clip.height>ps->cur_clip.y+ps->cur_clip.height )
+	    fprintf( ps->output_file, "initclip " );	/* we hope never to fall into this case, postscript doesn't like it */
+	fprintf( ps->output_file, "  %g %g  %g %g  %g %g  %g %g g_quad clip newpath\n",
+		_GSPDraw_XPos(ps,ps->ggc->clip.x), _GSPDraw_YPos(ps,ps->ggc->clip.y+ps->ggc->clip.height),
+		_GSPDraw_XPos(ps,ps->ggc->clip.x+ps->ggc->clip.width), _GSPDraw_YPos(ps,ps->ggc->clip.y+ps->ggc->clip.height),
+		_GSPDraw_XPos(ps,ps->ggc->clip.x+ps->ggc->clip.width), _GSPDraw_YPos(ps,ps->ggc->clip.y),
+		_GSPDraw_XPos(ps,ps->ggc->clip.x), _GSPDraw_YPos(ps,ps->ggc->clip.y));
+	ps->cur_clip = ps->ggc->clip;
+    }
+}
+
+void _GPSDraw_SetColor(GPSWindow ps,Color fg) {
+    if ( ps->display->do_color ) {
+	fprintf( ps->output_file, "%g %g %g setrgbcolor\n", COLOR_RED(fg)/255.0,
+		COLOR_GREEN(fg)/255.0, COLOR_BLUE(fg)/255.0 );
+    } else {
+	fprintf( ps->output_file, "%g setgray\n", COLOR2GREYR(fg));
+    }
+    ps->cur_fg = fg;
+}
+
+static int PSDrawSetcol(GPSWindow ps) {
+
+    _GPSDraw_SetClip(ps);
+    if ( ps->ggc->fg!=ps->cur_fg || ps->ggc->ts!=ps->cur_ts ) {
+	_GPSDraw_FlushPath(ps);
+	if ( ps->ggc->ts!=ps->cur_ts ) {
+	    if ( ps->ggc->ts ) {
+		fprintf( ps->output_file, "currentcolor DotPattern setpattern\n" );
+		ps->cur_ts = ps->ggc->ts;
+	    } else {
+		fprintf( ps->output_file, "%s setcolorspace\n",
+			ps->display->do_color?"/DeviceRGB":"/DeviceGray" );
+		ps->cur_ts = 0;
+	    }
+	}
+	_GPSDraw_SetColor(ps,ps->ggc->fg);
+    }
+return( true );
+}
+
+static int PSDrawSetline(GPSWindow ps) {
+
+    PSDrawSetcol(ps);
+    if ( ps->ggc->line_width!=ps->cur_line_width ) {
+	_GPSDraw_FlushPath(ps);
+	fprintf( ps->output_file, "%g setlinewidth\n", _GSPDraw_XPos(ps,ps->ggc->line_width) );
+	ps->cur_line_width = ps->ggc->line_width;
+    }
+    if ( ps->ggc->dash_len != ps->cur_dash_len || ps->ggc->skip_len != ps->cur_skip_len ||
+	    ps->ggc->dash_offset != ps->cur_dash_offset ) {
+	_GPSDraw_FlushPath(ps);
+	if ( ps->ggc->dash_len==0 ) {
+	    fprintf( ps->output_file, "[] 0 setdash\n" );
+	} else {
+	    fprintf( ps->output_file, "[%d %d] %d setdash\n",
+		    ps->ggc->dash_len, ps->ggc->skip_len,
+		    PixelToPoint(ps->ggc->dash_offset,ps->res)%(ps->ggc->dash_len+ps->ggc->skip_len) );
+	}
+	ps->cur_dash_offset = ps->ggc->dash_offset;
+	ps->cur_dash_len = ps->ggc->dash_len;
+	ps->cur_skip_len = ps->ggc->skip_len;
+    }
+return( true );
+}
+
+static void PSDrawPushClip(GWindow w,GRect *rct, GRect *old) {
+    GPSWindow ps = (GPSWindow ) w;
+
+    _GPSDraw_FlushPath(ps);
+    fprintf( ps->output_file,"gsave\n" );
+    ps->last_dash_len = ps->cur_dash_len;
+    ps->last_skip_len = ps->cur_skip_len;
+    ps->last_dash_offset = ps->cur_dash_offset;
+    ps->last_line_width = ps->cur_line_width;
+    ps->last_ts = ps->cur_ts;
+    ps->last_fg = ps->cur_fg;
+    ps->last_font = ps->cur_font;
+    *old = ps->ggc->clip;
+    ps->ggc->clip = *rct;
+}
+
+static void PSDrawPopClip(GWindow w,GRect *old) {
+    GPSWindow ps = (GPSWindow ) w;
+
+    _GPSDraw_FlushPath(ps);
+    ps->cur_clip = *old;
+    fprintf( ps->output_file,"grestore\n" );
+    ps->cur_dash_len = ps->last_dash_len;
+    ps->cur_skip_len = ps->last_skip_len;
+    ps->cur_line_width = ps->last_line_width;
+    ps->cur_dash_offset = ps->last_dash_offset;
+    ps->cur_ts = ps->last_ts;
+    ps->cur_fg = ps->last_fg;
+    ps->cur_font = ps->last_font;
+    ps->last_dash_len = -1;
+    ps->last_skip_len = -1;
+    ps->last_line_width = -1;
+    ps->last_dash_offset = -1;
+    ps->last_ts = -1;
+    ps->last_fg = -1;
+    ps->last_font = NULL;
+    ps->ggc->clip = *old;
+}
+
+static void PSDrawDrawLine(GWindow w, int32 x,int32 y,int32 xend,int32 yend,Color col) {
+    GPSWindow ps = (GPSWindow ) w;
+
+    ps->ggc->fg = col;
+    PSDrawSetline(ps);
+    PSMoveTo(ps,x,y);
+    PSLineTo(ps,xend,yend);
+}
+
+static void PSDrawArrow(GPSWindow ps, int32 x, int32 y, int32 xother, int32 yother ) {
+    GPoint points[3];
+    double a;
+    int off1, off2;
+    double len;
+    int line_width = ps->ggc->line_width;
+
+    if ( x==xother && y==yother )
+return;
+    a = atan2(y-yother,x-xother);
+    len = 72.0*sqrt((double) (x-xother)*(x-xother)+(y-yother)*(y-yother))/ps->res;
+    if ( len>30 ) len = 10+3*line_width/2; else len = (len+line_width)/3;
+    if ( len<2 )
+return;
+    len *= ps->res/72.0;
+
+    points[0].x = x; points[0].y = y;
+    if ( line_width!=0 ) {
+	points[0].x += line_width*1.3*cos(a); points[0].y += line_width*1.3*sin(a);
+    }
+    off1 = len*sin(a+3.1415926535897932/8)+.5; off2 = len*cos(a+3.1415926535897932/8)+.5;
+    points[1].x = x-off2; points[1].y = y-off1;
+    off1 = len*sin(a-3.1415926535897932/8)+.5; off2 = len*cos(a-3.1415926535897932/8)+.5;
+    points[2].x = x-off2; points[2].y = y-off1;
+    PSDrawDoPoly(ps,points,3,"fill");
+}
+
+static void PSDrawDrawArrowLine(GWindow w, int32 x,int32 y,int32 xend,int32 yend,int16 arrows,Color col) {
+    GPSWindow ps = (GPSWindow ) w;
+
+    ps->ggc->fg = col;
+    PSDrawSetline(ps);
+    PSMoveTo(ps,x,y);
+    PSLineTo(ps,xend,yend);
+    if ( arrows&1 )
+	PSDrawArrow(ps,x,y,xend,yend);
+    if ( arrows&2 )
+	PSDrawArrow(ps,xend,yend,x,y);
+}
+
+static void PSDrawDrawRect(GWindow w, GRect *rct,Color col) {
+    GPSWindow ps = (GPSWindow ) w;
+
+    ps->ggc->fg = col;
+    PSDrawSetline(ps);
+    fprintf( ps->output_file, "  %g %g  %g %g  %g %g  %g %g g_quad stroke\n",
+	    _GSPDraw_XPos(ps,rct->x), _GSPDraw_YPos(ps,rct->y+rct->height),
+	    _GSPDraw_XPos(ps,rct->x+rct->width), _GSPDraw_YPos(ps,rct->y+rct->height),
+	    _GSPDraw_XPos(ps,rct->x+rct->width), _GSPDraw_YPos(ps,rct->y),
+	    _GSPDraw_XPos(ps,rct->x), _GSPDraw_YPos(ps,rct->y));
+    ps->pnt_cnt = 0;
+}
+
+static void PSDrawFillRect(GWindow w, GRect *rct,Color col) {
+    GPSWindow ps = (GPSWindow ) w;
+
+    ps->ggc->fg = col;
+    PSDrawSetcol(ps);
+    _GPSDraw_FlushPath(ps);
+    fprintf( ps->output_file, "  %g %g  %g %g  %g %g  %g %g g_quad fill\n",
+	    _GSPDraw_XPos(ps,rct->x), _GSPDraw_YPos(ps,rct->y+rct->height),
+	    _GSPDraw_XPos(ps,rct->x+rct->width), _GSPDraw_YPos(ps,rct->y+rct->height),
+	    _GSPDraw_XPos(ps,rct->x+rct->width), _GSPDraw_YPos(ps,rct->y),
+	    _GSPDraw_XPos(ps,rct->x), _GSPDraw_YPos(ps,rct->y));
+    ps->pnt_cnt = 0;
+}
+
+static void PSDrawClear(GWindow w,GRect *rect) {
+    GPSWindow ps = (GPSWindow ) w;
+    if ( rect==NULL )
+	rect = &ps->ggc->clip;
+    PSDrawFillRect(w,rect,COLOR_CREATE(255,255,255));
+}
+
+static void PSDrawDrawCircle(GWindow w, GRect *rct,Color col) {
+    GPSWindow ps = (GPSWindow ) w;
+
+    ps->ggc->fg = col;
+    PSDrawSetline(ps);
+    PSDrawElipse(ps,rct,"stroke");
+}
+
+static void PSDrawFillCircle(GWindow w, GRect *rct,Color col) {
+    GPSWindow ps = (GPSWindow ) w;
+
+    ps->ggc->fg = col;
+    PSDrawSetcol(ps);
+    _GPSDraw_FlushPath(ps);
+    PSDrawElipse(ps,rct,"fill");
+}
+
+static void PSDrawDrawArc(GWindow w, GRect *rct,int32 sa, int32 ta, Color col) {
+    GPSWindow ps = (GPSWindow ) w;
+    float cx, cy, radx, rady;
+
+    ps->ggc->fg = col;
+    PSDrawSetline(ps);
+    _GPSDraw_FlushPath(ps);
+
+    radx = rct->width/2.0;
+    rady = rct->height/2.0;
+    cx = rct->x + radx;
+    cy = rct->y + rady;
+    if ( radx==0 || rady==0 )
+return;
+#if 0
+    if ( radx!=rady ) {
+	sa = atan2((double) (sx-cx),(double) (sy-cy)*radx);
+	ea = atan2((double) (ex-cx),(double) (ey-cy)*rady);
+	fprintf( ps->output_file, "gsave %g %g translate 1.0 %g scale\n",
+		cx, cy, rady/radx );
+	cx = cy = 0;
+    } else {
+	sa = atan2((double) (sx-cx),(double) (sy-cy));
+	ea = atan2((double) (ex-cx),(double) (ey-cy));
+    }
+    PSDrawNewpath(ps);
+    fprintf( ps->output_file, "  %g %g %g %g %g arc\n", _GSPDraw_XPos(cx), _GSPDraw_YPos(cy), radx,
+		sa*(360./(2*3.1415926535897932)),
+		ea*(360./(2*3.1415926535897932)) );
+    fprintf( ps->output_file, "stroke %s\n", radx!=rady?"grestore":"" );
+#else
+    PSDrawNewpath(ps);
+    if ( radx!=rady )
+	PSMyArc(ps,cx,cy,radx,rady,sa/64.0,ta/64.0);
+    else
+	fprintf( ps->output_file, "  %g %g %g %g %g arc", _GSPDraw_XPos(ps,cx), _GSPDraw_YPos(ps,cy), _GSPDraw_Distance(ps,radx),
+		    sa/64.0, (sa+ta)/64.0 );
+    fprintf( ps->output_file, " stroke\n" );
+#endif
+    ps->pnt_cnt = 0;
+    ps->cur_x = ps->cur_y = -1;
+}
+
+static void PSDrawDrawPoly(GWindow w, GPoint *pt, int16 cnt,Color col) {
+    GPSWindow ps = (GPSWindow ) w;
+
+    ps->ggc->fg = col;
+    PSDrawSetline(ps);
+    PSDrawDoPoly(ps,pt,cnt,"stroke");
+}
+
+static void PSDrawFillPoly(GWindow w, GPoint *pt, int16 cnt,Color col) {
+    GPSWindow ps = (GPSWindow ) w;
+
+    ps->ggc->fg = col;
+    PSDrawSetcol(ps);
+    _GPSDraw_FlushPath(ps);
+    PSDrawDoPoly(ps,pt,cnt,"fill");
+}
+
+static void PSSetFontCol(GPSWindow ps, struct font_data *font, Color col) {
+
+    ps->ggc->fg = col;
+    PSDrawSetcol(ps);
+    if ( font!=ps->cur_font ) {
+	if ( font->screen_font==NULL )
+	    fprintf( ps->output_file, "MyFontDict /%s get setfont\n", font->localname );
+	ps->cur_font = font;
+    }
+}
+
+static int usehex(char *transbuf,int len) {
+    int i, norm, bad;
+
+    norm=bad=0;
+    for ( i=0; i<len; ++i ) {
+	if ( transbuf[i]>=' ' && transbuf[i]<'\177' && transbuf[i]!='(' && transbuf[i]!=')' )
+	    ++norm;
+	else
+	    ++bad;
+    }
+return( 4*bad+norm>2*len );
+}
+
+static void _GPSDraw_Text1(GWindow gw, struct font_data *fd,
+	int32 x, int32 y, char *txt, int32 cnt, FontMods *mods, Color col) {
+    GPSWindow ps = (GPSWindow) gw;
+    int i;
+
+    _GPSDraw_FlushPath(ps);
+    if ( fd->needsprocessing )
+	_GPSDraw_ProcessFont(ps,fd);
+    PSSetFontCol(ps,fd,col);
+    if ( mods->letter_spacing!=0 )
+	fprintf(ps->output_file,"%g 0 ", _GSPDraw_XPos(ps,mods->letter_spacing) );
+    if ( usehex(txt,cnt)) {
+	fputc('<',ps->output_file);
+	for ( i=0; i<cnt; ++i )
+	    fprintf(ps->output_file,"%02X", ((unsigned char *) txt)[i]);
+	fputc('>',ps->output_file);
+    } else {
+	fputc('(',ps->output_file);
+	for ( i=0; i<cnt; ++i ) {
+	    if ( txt[i]=='\\' )
+		fprintf(ps->output_file,"\\\\");
+	    else if ( txt[i]>=' ' && txt[i]<'\177' && txt[i]!='(' && txt[i]!=')' )
+		fputc(txt[i],ps->output_file);
+	    else
+		fprintf(ps->output_file,"\\%03o", ((unsigned char *) txt)[i]);
+	}
+	fputc(')',ps->output_file);
+    }
+    fprintf( ps->output_file," %g %g %s\n", _GSPDraw_XPos(ps,x), _GSPDraw_YPos(ps,y),
+	    mods->letter_spacing==0? "g_show": "g_ashow" );
+    
+    ps->cur_x = ps->cur_y = -1;
+}
+
+static void _GPSDraw_Text2(GWindow gw, struct font_data *fd,
+	int32 x, int32 y, GChar2b *txt, int32 cnt, FontMods *mods, Color col) {
+    _GPSDraw_Text1(gw,fd,x,y,(char *)txt,2*cnt,mods,col);
+}
+
+static void PSPageSetup(GPSWindow ps,FILE *out, float thumbscale) {
+    GPSDisplay *gdisp = ps->display;
+    /* I want to put this somewhere in the document header, but DSC conventions*/
+    /*  don't let me. Frustrating. Or I don't understand how, also frustrating*/
+
+    fprintf( out, "  %g %g translate\t\t%%Left & Top Margins\n",
+	    gdisp->lmargin*72.0, (gdisp->yheight-gdisp->tmargin)*72.0 );
+    fprintf( out, "  %g %g  %g %g  %g %g  %g %g g_quad clip newpath\t%%Clip to margins\n",
+	    _GSPDraw_XPos(ps,0), _GSPDraw_YPos(ps,0),
+	    _GSPDraw_XPos(ps,0), _GSPDraw_YPos(ps,(gdisp->yheight-gdisp->tmargin-gdisp->bmargin)*gdisp->res),
+	    _GSPDraw_XPos(ps,(gdisp->xwidth-gdisp->lmargin-gdisp->rmargin)*gdisp->res), _GSPDraw_YPos(ps,(gdisp->yheight-gdisp->tmargin-gdisp->bmargin)*gdisp->res),
+	    _GSPDraw_XPos(ps,(gdisp->xwidth-gdisp->lmargin-gdisp->rmargin)*gdisp->res), _GSPDraw_YPos(ps,0));
+    if ( gdisp->scale*thumbscale!=1 )
+	fprintf( out, "  %g %g scale\n", gdisp->scale*thumbscale, gdisp->scale*thumbscale );
+}
+
+static void PSPageInit(GPSWindow ps) {
+    GPSDisplay *gdisp = (GPSDisplay *) (ps->display);
+    int thumb_per_page = gdisp->linear_thumb_cnt*gdisp->linear_thumb_cnt;
+    int real_page = ( ps->page_cnt%thumb_per_page == 0 );
+
+    ++ps->page_cnt;
+    if ( gdisp->eps ) {
+	fprintf( ps->output_file, "\n%%%%Page: 1 1\n" );
+	fprintf( ps->output_file, "%%%%BeginPageSetup\n" );
+	PSPageSetup(ps,ps->output_file,1.0);
+	fprintf( ps->output_file, "%%%%EndPageSetup\n" );
+    } else if ( real_page ) {
+	int page = (ps->page_cnt+thumb_per_page-1)/thumb_per_page;
+	fprintf( ps->output_file, "\n%%%%Page: %d %d\n", page, page );
+	fprintf( ps->output_file, "%%%%BeginPageSetup\n" );
+	fprintf( ps->output_file, "g_startpage\n" );
+	fprintf( ps->output_file, "%%%%EndPageSetup\n" );
+    } else
+	fprintf( ps->output_file, "\n%% Psuedo Page: \ng_startpage\n" );
+    ps->ggc->clip.y = ps->ggc->clip.x = 0;
+    ps->ggc->clip.height = ps->pos.height; ps->ggc->clip.width = ps->pos.width;
+    ps->cur_clip = ps->ggc->clip;
+    ps->cur_skip_len = ps->cur_dash_len = ps->cur_line_width = ps->cur_dash_offset = ps->cur_ts = 0;
+    ps->cur_font = NULL; ps->cur_fg = 0;
+}
+
+static void PSPageTerm(GPSWindow ps, int last) {
+    GPSDisplay *gdisp = (GPSDisplay *) (ps->display);
+    int thumb_per_page = gdisp->linear_thumb_cnt*gdisp->linear_thumb_cnt;
+
+    _GPSDraw_FlushPath(ps);
+    if ( gdisp->eps )
+return;
+    if ( last || ps->page_cnt%thumb_per_page==0 ) {
+	fprintf( ps->output_file, "%%%%PageTrailer\n" );
+	if ( last )
+	    fprintf( ps->output_file, "g_finalpage\t\t%%End of Page\n" );
+	else
+	    fprintf( ps->output_file, "g_endpage\t\t%%End of Page\n" );
+	fprintf( ps->output_file, "%%%%EndPageTrailer\n" );
+    } else
+	fprintf( ps->output_file, "g_endpage\t\t%%End of Psuedo Page\n" );
+}
+
+static void PSTrailer(GPSWindow ps) {
+    GPSDisplay *gdisp = (GPSDisplay *) (ps->display);
+    int thumb_per_page = gdisp->linear_thumb_cnt*gdisp->linear_thumb_cnt;
+
+    fprintf( ps->output_file, "%%%%Trailer\n" );
+    if ( !gdisp->eps )
+	fprintf( ps->output_file, "%%%%Pages: %d\n",
+		(ps->page_cnt+thumb_per_page-1)/thumb_per_page);
+    _GPSDraw_ListNeededFonts(ps);
+    fprintf( ps->output_file, "%%%%EndTrailer\n" );
+    fprintf( ps->output_file, "%%%%EOF\n" );
+}
+
+static void PSInitJob(GPSWindow ps, unichar_t *title) {
+    GPSDisplay *gdisp = ps->display;
+    char buf[200];
+    time_t now;
+
+    /* output magic line to tell lpr this is a postscript file */
+    if ( gdisp->eps ) {
+	fprintf( ps->init_file, "%%!PS-Adobe-3.0 EPSF-3.0\n" );
+	fprintf( ps->init_file, "%%%%Pages: 1\n" );
+    } else {
+	fprintf( ps->init_file, "%%!PS-Adobe-3.0%s\n", gdisp->eps?" EPSF-3.0":"" );
+	fprintf( ps->init_file, "%%%%Pages: (atend)\n" );
+    }
+    fprintf( ps->init_file, "%%%%BoundingBox: %g %g %g %g\n",
+	    72.0*gdisp->lmargin, 72.0*gdisp->bmargin,
+	    72.0*(gdisp->xwidth-gdisp->rmargin), 72.0*(gdisp->yheight-gdisp->tmargin));
+    fprintf( ps->init_file, "%%%%Creator: %s\n", GResourceProgramName );
+    time(&now);
+    fprintf( ps->init_file, "%%%%CreationDate: %s", ctime(&now) );
+    if ( title!=NULL )
+	fprintf( ps->init_file, "%%%%Title: %s\n", u2def_strncpy(buf,title,sizeof(buf)) );
+    fprintf( ps->init_file, "%%%%DocumentData: Clean7Bit\n" );
+    fprintf( ps->init_file, "%%%%LanguageLevel: 2\n" );
+    fprintf( ps->init_file, "%%%%Orientation: %s\n", gdisp->landscape?
+	    "Landscape":"Portrait" );
+    fprintf( ps->init_file, "%%%%PageOrder: Ascend\n" );
+    fprintf( ps->init_file, "%%%%DocumentNeededResources: (atend)\n" );
+    fprintf( ps->init_file, "%%%%DocumentSuppliedResources: (atend)\n" );
+    fprintf( ps->init_file, "%%%%EndComments\n\n" );
+
+    /* Need to output a setdevice thing to specify the page size (num copies?) ??? */
+    fprintf( ps->init_file, "%%%%BeginPrologue\n" );
+
+    /* Any predefined functions? */
+	/* Need one to remap an adobe encoding to some other encoding */
+    fprintf( ps->init_file, "%% <font> <encoding> font_remap <font>\t; from the cookbook\n" );
+    fprintf( ps->init_file, "/reencodedict 5 dict def\n" );
+    fprintf( ps->init_file, "/g_font_remap { reencodedict begin\n" );
+    fprintf( ps->init_file, "  /newencoding exch def\n" );
+    fprintf( ps->init_file, "  /basefont exch def\n" );
+    fprintf( ps->init_file, "  /newfont basefont  maxlength dict def\n" );
+    fprintf( ps->init_file, "  basefont {\n" );
+    fprintf( ps->init_file, "    exch dup dup /FID ne exch /Encoding ne and\n" );
+    fprintf( ps->init_file, "\t{ exch newfont 3 1 roll put }\n" );
+    fprintf( ps->init_file, "\t{ pop pop }\n" );
+    fprintf( ps->init_file, "    ifelse\n" );
+    fprintf( ps->init_file, "  } forall\n" );
+    fprintf( ps->init_file, "  newfont /Encoding newencoding put\n" );
+    fprintf( ps->init_file, "  newfont\t%%Leave on stack\n" );
+    fprintf( ps->init_file, "  end } def\n" );
+	/* Simple routine to move somewhere and draw a string */
+    fprintf( ps->init_file, "/g_show { moveto show } bind def\n" );
+    fprintf( ps->init_file, "/g_ashow { moveto ashow } bind def\n" );
+    fprintf( ps->init_file, "/g_quad { moveto lineto lineto lineto closepath } bind def\n" );
+	/* Routines to start and end pages. simple unless we do thumbnails */
+    if ( gdisp->eps ) {
+	/* No page procedures at all */
+    } else if ( gdisp->linear_thumb_cnt <= 1 ) {
+	fprintf( ps->init_file, "/g_startpage { save \n" );
+	PSPageSetup(ps,ps->init_file,1.0);
+	fprintf( ps->init_file, "} bind def\n" );
+	fprintf( ps->init_file, "/g_endpage { restore showpage } bind def\n" );
+	fprintf( ps->init_file, "/g_finalpage { g_endpage } bind def\n" );
+    } else {
+	float stemp, thumbscale;
+	thumbscale = (gdisp->xwidth-gdisp->lmargin-gdisp->rmargin)/
+		(gdisp->linear_thumb_cnt*gdisp->xwidth-gdisp->lmargin-gdisp->rmargin);
+	stemp = (gdisp->yheight-gdisp->tmargin-gdisp->bmargin)/
+		(gdisp->linear_thumb_cnt*gdisp->yheight-gdisp->tmargin-gdisp->bmargin);
+	if ( stemp<thumbscale ) thumbscale = stemp;
+	thumbscale *= .97;	/* rounding errors make the real thing slightly too big */
+	fprintf( ps->init_file, "/g_thumbnum 0 def\n" );
+	fprintf( ps->init_file, "/g_startpage { \n" );
+	fprintf( ps->init_file, "  g_thumbnum %d mod 0 eq { save \n",
+		gdisp->linear_thumb_cnt*gdisp->linear_thumb_cnt );
+	PSPageSetup(ps,ps->init_file,thumbscale);
+	fprintf( ps->init_file, "  } if\n" );
+	fprintf( ps->init_file, "  save\n" );
+	fprintf( ps->init_file, "  g_thumbnum %d mod %d mul g_thumbnum %d idiv %d mul translate\n",
+		gdisp->linear_thumb_cnt, ps->pos.width,
+		gdisp->linear_thumb_cnt, -ps->pos.height );
+	fprintf( ps->init_file, "  %g %g  %g %g  %g %g  %g %g g_quad clip newpath\n",
+		_GSPDraw_XPos(ps,0), _GSPDraw_YPos(ps,0),
+		_GSPDraw_XPos(ps,0), _GSPDraw_YPos(ps,ps->pos.height),
+		_GSPDraw_XPos(ps,ps->pos.width), _GSPDraw_YPos(ps,ps->pos.height),
+		_GSPDraw_XPos(ps,ps->pos.width), _GSPDraw_YPos(ps,0));
+	fprintf(ps->init_file, "} bind def\n" );
+	fprintf( ps->init_file, "/g_endpage { restore /g_thumbnum g_thumbnum 1 add def\n   g_thumbnum %d eq { restore /g_thumbnum 0 def showpage } if\n } bind def\n",
+		gdisp->linear_thumb_cnt*gdisp->linear_thumb_cnt );
+	fprintf( ps->init_file, "/g_finalpage { restore restore showpage } bind def\n" );
+    }
+    _GPSDraw_InitPatterns(ps);
+    _GPSDraw_InitFonts(gdisp->fontstate);
+
+    fprintf( ps->init_file, "%% Font Initialization (download needed fonts, remap locals)\n" );
+    fprintf( ps->init_file, "/MyFontDict 100 dict def\n" );
+
+    fprintf( ps->output_file, "\n%%%%EndProlog\n\n" );
+    fprintf( ps->output_file, "\n%%%%BeginSetup\n" );
+    if ( !gdisp->eps )
+	fprintf( ps->output_file, "<< /PageSize [%g %g] >> setpagedevice\n\n",
+		72.0*gdisp->xwidth, 72.0*gdisp->yheight );
+    /* Could set NumCopies in the InputAttributes sub-dictionary but I think */
+    /*  that is best done on the lpr command line */
+    fprintf( ps->output_file, "%%%%EndSetup\n\n" );
+    ps->cur_clip.x = ps->cur_clip.y = 0;
+    ps->cur_clip.width = ps->pos.width;
+    ps->cur_clip.height = ps->pos.height;
+    ps->ggc->clip = ps->cur_clip;
+    PSPageInit(ps);
+}
+
+static int PSFinishJob(GPSWindow ps,int cancel) {
+    GPSDisplay *gdisp = ps->display;
+    int error = ferror(ps->output_file);
+
+    if ( ps->output_file!=ps->init_file ) {
+	rewind(ps->output_file);
+	_GPSDraw_CopyFile(ps->init_file,ps->output_file);
+	fclose(ps->output_file);
+	GFileUnlink(gdisp->tempname); gfree(gdisp->tempname); gdisp->tempname=NULL;
+    }
+    error |= ferror(ps->init_file);
+    fclose(ps->init_file);
+    if ( error || cancel ) {
+	if ( !cancel )
+	    GDrawError("An error occured while saving the print job to disk.\nNot printed." );
+	GFileUnlink(gdisp->filename);
+return(false);
+    }
+    if ( !gdisp->print_to_file ) {
+	char buffer[1000];
+	char *parg, *carg;
+	if ( gdisp->use_lpr ) {
+	    strcpy(buffer,"lpr -r ");
+	    parg = "P";
+	    carg = "#";
+	} else {
+	    strcpy(buffer,"lp -s ");
+	    parg = "d";
+	    carg = "n";
+	}
+	if ( gdisp->printer_name!=NULL )
+	    sprintf(buffer+strlen(buffer), "-%s%s ", parg, gdisp->printer_name );
+	if ( gdisp->num_copies!=0 )
+	    sprintf(buffer+strlen(buffer), "-%s%d ", carg, gdisp->num_copies );
+	if ( gdisp->lpr_args!=NULL )
+	    sprintf(buffer+strlen(buffer), "%s ", gdisp->lpr_args );
+	strcat(buffer, gdisp->filename );
+	if ( !gdisp->use_lpr ) {
+	    strcat(buffer, " ; rm " );
+	    strcat(buffer, gdisp->filename );
+	}
+	if ( system(buffer)!=0 ) {
+	    GDrawError("Could not queue print job" );
+return( false );
+	}
+    }
+return( true );
+}
+
+static void PSDestroyContext(GPSDisplay *gd) {
+    gfree(gd->groot->ggc);
+    gfree(gd->groot);
+    gd->groot = NULL;
+}
+
+static GGC *_GPSDraw_NewGGC(GPSDisplay *ps) {
+    GGC *ggc = gcalloc(1,sizeof(GGC));
+    ggc->clip.width = ggc->clip.height = 0x7fff;
+    ggc->fg = 0;
+    ggc->bg = 0xffffff;
+    ggc->line_width = ps->scale_screen_by;
+return( ggc );
+}
+
+static GWindow GPSPrinterStartJob(GDisplay *gd,void *user_data,GPrinterAttrs *attrs) {
+    GPSDisplay *gdisp = (GPSDisplay *) gd;
+    double factor = 1;
+    char *oldpn, *oldea, *oldfn;
+    FILE *output, *init;
+    GPSWindow groot;
+
+    if ( gd->groot!=NULL ) {
+	GDrawError("Please wait for current print job to complete before starting a new one" );
+return( NULL );
+    }
+
+    if ( attrs!=NULL ) {
+	if ( attrs->units==pu_mm )
+	    factor = 25.4;
+	else if ( attrs->units == pu_points )
+	    factor = 72;
+
+	if ( attrs->mask&pam_pagesize ) {
+	    gdisp->xwidth = attrs->width/factor;
+	    gdisp->yheight = attrs->height/factor;
+	}
+	if ( attrs->mask&pam_margins ) {
+	    gdisp->lmargin = attrs->lmargin/factor;
+	    gdisp->rmargin = attrs->rmargin/factor;
+	    gdisp->tmargin = attrs->tmargin/factor;
+	    gdisp->bmargin = attrs->bmargin/factor;
+	}
+	if ( attrs->mask&pam_scale )
+	    gdisp->scale = attrs->scale;
+	if ( gdisp->scale<=0 ) gdisp->scale = 1.0;
+	gdisp->last_units = attrs->units;
+	if ( attrs->mask&pam_res )
+	    gdisp->res = attrs->res;
+	gdisp->scale_screen_by = gdisp->res/screen_display->res;
+	if ( gdisp->scale_screen_by==0 ) gdisp->scale_screen_by =1;
+	if ( attrs->mask&pam_copies )
+	    gdisp->num_copies = attrs->num_copies;
+	else
+	    gdisp->num_copies = 1;
+	if ( attrs->mask&pam_thumbnails )
+	    gdisp->linear_thumb_cnt = attrs->thumbnails;
+	else
+	    gdisp->linear_thumb_cnt = 1;
+	if ( gdisp->linear_thumb_cnt<=0 )
+	    gdisp->linear_thumb_cnt = 1;
+	if ( attrs->mask&pam_transparent )
+	    gdisp->do_transparent = attrs->do_transparent;
+	if ( attrs->mask&pam_color )
+	    gdisp->do_color = attrs->do_color;
+	if ( attrs->mask&pam_lpr )
+	    gdisp->use_lpr = attrs->use_lpr;
+	if ( attrs->mask&pam_queue )
+	    gdisp->print_to_file = attrs->donot_queue;
+	if ( attrs->mask&pam_eps )
+	    gdisp->eps = attrs->eps;
+	else
+	    gdisp->eps = false;
+	if ( gdisp->eps ) {
+	    gdisp->print_to_file = true;
+	    gdisp->linear_thumb_cnt = 1;
+	    gdisp->scale_screen_by =1;
+	}
+	if ( attrs->mask&pam_landscape )
+	    gdisp->landscape = attrs->landscape;
+
+	oldpn = gdisp->printer_name; oldea = gdisp->lpr_args; oldfn = gdisp->filename;
+	if ( gdisp->print_to_file && (attrs->mask&pam_filename) )
+	    gdisp->filename = copy(attrs->file_name);
+	else
+	    gdisp->filename = NULL;
+	if ( attrs->mask&pam_printername )
+	    gdisp->printer_name = copy(attrs->printer_name);
+	else
+	    oldpn = NULL;
+	if ( attrs->mask&pam_args )
+	    gdisp->lpr_args = copy(attrs->extra_lpr_args);
+	else
+	    oldea = NULL;
+	gfree(oldfn); gfree(oldpn); gfree(oldea);
+    }
+    if ( gdisp->filename==NULL )
+	gdisp->filename = tempnam(NULL,"gprnt");
+    gdisp->tempname = tempnam(NULL,"gprt");
+    if (( init = fopen(gdisp->filename,"w"))==NULL ) {
+	GDrawError("Can't open %s: %s", gdisp->print_to_file?"user file":"printer spooling file",
+		gdisp->filename);
+return( NULL );
+    }
+    output = fopen(gdisp->tempname,"w+");
+    if ( output==NULL )
+	output = init;
+
+    gdisp->fontstate->res = gdisp->res;
+
+    gdisp->groot = gcalloc(1,sizeof(struct gpswindow));
+    groot = (GPSWindow)(gdisp->groot);
+    groot->ggc = _GPSDraw_NewGGC(gdisp);
+    groot->display = gdisp;
+    groot->pos.width = (gdisp->xwidth-gdisp->lmargin-gdisp->rmargin)*gdisp->res/gdisp->scale;
+    groot->pos.height = (gdisp->yheight-gdisp->tmargin-gdisp->bmargin)*gdisp->res/gdisp->scale;
+    groot->user_data = user_data;
+    groot->output_file = output;
+    groot->init_file = init;
+    groot->cur_x = groot->cur_y = -1;
+    groot->cur_fg = COLOR_UNKNOWN;
+    groot->pnt_cnt = -1;
+    groot->res = gdisp->res;
+    groot->cur_dash_len = groot->cur_skip_len = -1;
+    groot->cur_line_width = -1;
+    groot->cur_dash_offset = -1;
+    groot->cur_ts = -1;
+    groot->last_dash_len = groot->last_skip_len = -1;
+    groot->last_line_width = -1;
+    groot->last_dash_offset = -1;
+    groot->last_ts = -1;
+    groot->last_fg = COLOR_UNKNOWN;
+    groot->is_toplevel = true;
+    groot->is_visible = true;
+
+    PSInitJob(groot,(attrs->mask&pam_title)?attrs->title:NULL);
+return( (GWindow) groot);
+}
+
+static void GPSPrinterNextPage(GWindow w) {
+    GPSWindow ps = (GPSWindow) w;
+    if (ps->display->eps )
+	GDrawIError("Attempt to start a new page within an encapsulated postscript document");
+    else {
+	PSPageTerm(ps,false);
+	PSPageInit(ps);
+    }
+}
+
+static int GPSPrinterEndJob(GWindow w,int cancel) {
+    GPSWindow ps = (GPSWindow) w;
+    GPSDisplay *gdisp = ps->display;
+    int ret;
+
+    PSPageTerm(ps,true);
+    PSTrailer(ps);
+    ret = PSFinishJob(ps,cancel);
+    _GPSDraw_ResetFonts(gdisp->fontstate);
+    PSDestroyContext(gdisp);
+    gfree(gdisp->filename); gdisp->filename=NULL;
+return( ret );
+}
+
+static GWindow PSDrawCreateTopWindow(GDisplay *gdisp, GRect *pos,
+	int (*eh)(GWindow,GEvent *), void *user_data, GWindowAttrs *wattrs) {
+return( GPSPrinterStartJob(gdisp,wattrs==NULL?NULL:user_data,NULL));
+}
+
+static void PSDrawDestroyWindow(GWindow w) {
+    GPSPrinterEndJob(w,true);
+}
+
+static struct displayfuncs psfuncs = {
+    PSDrawInit,
+    PSDrawTerm,
+
+    PSDrawCreateTopWindow,
+    PSDrawCreateSubWindow,
+    PSDrawCreatePixmap,
+    PSDrawCreateBitmap,
+    PSDrawCreateCursor,
+    PSDrawDestroyWindow,
+    PSDestroyCursor,
+    PSSetDither,
+
+    PSDrawSetVisible,
+    PSDrawMove,
+    PSDrawMove,
+    PSDrawResize,
+    PSDrawMoveResize,
+    PSDrawRaise,
+    PSDrawRaiseAbove,
+    PSDrawIsAbove,
+    PSDrawLower,
+    PSDrawSetWindowTitles,
+    PSDrawGetWindowTitle,
+    PSDrawGetPointerPosition,
+    PSDrawSetCursor,
+    PSDrawGetCursor,
+    PSDrawGetRedirectWindow,
+    PSDrawTranslateCoordinates,
+
+    PSDrawBeep,
+    PSDrawFlush,
+
+    PSDrawPushClip,
+    PSDrawPopClip,
+    
+    PSDrawClear,
+    PSDrawDrawLine,
+    PSDrawDrawArrowLine,
+    PSDrawDrawRect,
+    PSDrawFillRect,
+    PSDrawDrawCircle,
+    PSDrawFillCircle,
+    PSDrawDrawArc,
+    PSDrawDrawPoly,
+    PSDrawFillPoly,
+    PSDrawScroll,
+
+    _GPSDraw_Image,
+    _GPSDraw_TileImage,
+    _GPSDraw_ImageMagnified,
+    _PSDraw_CopyScreenToImage,
+    _PSDraw_Pixmap,
+    _PSDraw_TilePixmap,
+
+    _GPSDraw_ScaleFont,
+    _GPSDraw_StylizeFont,
+    _GPSDraw_LoadFontMetrics,
+    _GPSDraw_Text1,
+    _GPSDraw_Text2,
+
+    PSDrawGrabSelection,
+    PSDrawAddSelectionType,
+    PSDrawRequestSelection,
+    PSDrawSelectionHasType,
+
+    PSDrawPointerUngrab,
+    PSDrawPointerGrab,
+    PSDrawRequestExpose,
+    PSDrawForceUpdate,
+    PSDrawSync,
+    PSDrawSkipMouseMoveEvents,
+    PSDrawProcessPendingEvents,
+    PSDrawProcessPendingEvents,		/* Same as for OneEvent */
+    PSDrawEventLoop,
+    PSDrawPostEvent,
+    PSDrawPostDragEvent,
+
+    PSDrawRequestTimer,
+    PSDrawCancelTimer,
+
+    PSDrawSyncThread,
+
+    GPSPrinterStartJob,
+    GPSPrinterNextPage,
+    GPSPrinterEndJob
+};
+
+GDisplay *_GPSDraw_CreateDisplay() {
+    GPSDisplay *gdisp;
+
+    gdisp = gcalloc(1,sizeof(GPSDisplay));
+    if ( gdisp==NULL ) {
+return( NULL );
+    }
+
+    gdisp->funcs = &psfuncs;
+    gdisp->res = 600;
+    gdisp->scale_screen_by = gdisp->res/screen_display->res;
+    if ( gdisp->scale_screen_by==0 ) gdisp->scale_screen_by =1;
+
+    gdisp->scale = 1.;
+    gdisp->xwidth = 8.5;
+    gdisp->yheight = 11;
+    gdisp->lmargin = gdisp->rmargin = gdisp->tmargin = gdisp->bmargin = 1;
+    gdisp->use_lpr = true;
+    gdisp->do_transparent = true;
+    gdisp->num_copies = 1;
+    gdisp->linear_thumb_cnt = 1;
+    gdisp->fontstate = gcalloc(1,sizeof(FState));
+    gdisp->fontstate->res = gdisp->res;
+    gdisp->fontstate->allow_scaling = true;
+    gdisp->fontstate->use_screen_fonts = true;
+
+    gdisp->def_background = COLOR_CREATE(0xff,0xff,0xff);
+    gdisp->def_background = COLOR_CREATE(0x00,0x00,0x00);
+    
+    (gdisp->funcs->init)((GDisplay *) gdisp);
+return( (GDisplay *) gdisp);
+}
