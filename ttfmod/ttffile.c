@@ -393,7 +393,7 @@ return;
 	enc->len = getushort(ttf);
 	enc->language = getushort(ttf);		/* or version for ms */
 	if ( enc->format==0 ) {
-	    for ( i=0; i<len-6; ++i )
+	    for ( i=0; i<enc->len-6; ++i )
 		table[i] = getc(ttf);
 	    for ( i=0; i<256 && table[i]<enc->cnt && i<enc->len-6; ++i )
 		enc->enc[table[i]] = i;

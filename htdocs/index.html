@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 20-Oct-2001 -->
+  <!-- AP: Last modified: 21-Oct-2001 -->
   <TITLE>PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -66,8 +66,8 @@ know when you do</A>.
 </H2>
 <UL>
   <LI>
-    <A HREF="pfaedit-011020.tgz">Download pfaedit linux-i386 Redhat 7.1
-    </A><A NAME="downloads">executable</A> Version: 20-Oct-2001
+    <A HREF="pfaedit-011021.tgz">Download pfaedit linux-i386 Redhat 7.1
+    </A><A NAME="downloads">executable</A> Version: 21-Oct-2001
   <LI>
     <A HREF="pfaedit-solaris-010901.tgz">Download pfaedit Solaris 8.0
     </A>executable Version: 1-Sept-2001
@@ -101,7 +101,7 @@ know when you do</A>.
 <P>
 You can download a <A HREF="pfaedit-010906-1.src.rpm">source RPM</A>: Version:
 5-Sept-2001<BR>
-Or you can download the following three packages. Version: 20-Oct-2001
+Or you can download the following three packages. Version: 21-Oct-2001
 <UL>
   <LI>
     <A HREF="libgunicode-011011.tgz">Unicode library source</A> (11-Oct-2001)<BR>
@@ -113,10 +113,10 @@ Or you can download the following three packages. Version: 20-Oct-2001
     --
     <A HREF="http://bibliofile.mc.duke.edu/gww/FreeWare/LibGDraw/index.html">docs</A>
   <LI>
-    <A HREF="pfaedit_src-011020.tgz">Pfaedit source</A> (20-Oct-2001)<BR>
+    <A HREF="pfaedit_src-011021.tgz">Pfaedit source</A> (21-Oct-2001)<BR>
     -- <A HREF="overview.html">docs</A>
   <LI>
-    <A HREF="pfaedit_full-011020.tgz">All three bundled together </A>(20-Oct-2001)
+    <A HREF="pfaedit_full-011021.tgz">All three bundled together </A>(21-Oct-2001)
   <LI>
     If you want to do autotracing around character images you should also download
     Martin Weber's <A HREF="http://sourceforge.net/projects/autotrace/">autotrace
@@ -227,6 +227,12 @@ up into one <A HREF="pfaedit_htdocs-010925.tgz">tgz file</A> 25-Sept-2001.
 </H2>
 <UL>
   <LI>
+    21-Oct-2001
+    <UL>
+      <LI>
+	PfaEdit could crash when autohinting a diagonal hint.
+    </UL>
+  <LI>
     20-Oct-2001
     <UL>
       <LI>
@@ -248,7 +254,7 @@ up into one <A HREF="pfaedit_htdocs-010925.tgz">tgz file</A> 25-Sept-2001.
 	    them as though they were.
 	</UL>
 	<P>
-	I've written a <A HREF="ttfmod/index.html">tool</A> which will allow you
+	I've written a <A HREF="TtfMod/index.html">tool</A> which will allow you
 	to look at what the instructions are and what they do.
       <LI>
 	TTF spline approximation (cubic-&gt;quadratic) should be twice as fast.
@@ -375,97 +381,7 @@ up into one <A HREF="pfaedit_htdocs-010925.tgz">tgz file</A> 25-Sept-2001.
 	Fixed a bug in Point Info.
     </UL>
   <LI>
-    14-Sept-2001
-    <UL>
-      <LI>
-	Fixed a couple more memory problems (caused by the chunk allocation), one
-	in remove overlap, one in autotrace
-      <LI>
-	I'm told that yesterday's executable upload didn't work. Hope today's does
-	better
-    </UL>
-  <LI>
-    13-Sept-2001
-    <UL>
-      <LI>
-	Fixed a crash when joining two paths
-      <LI>
-	More tweaking of search path for ui files.
-    </UL>
-  <LI>
-    11-Sept-2001
-    <UL>
-      <LI>
-	more configuration fixes
-      <LI>
-	Fixed many simplify bugs
-      <LI>
-	otf output would crash if given an open path. Fixed
-    </UL>
-  <LI>
-    8-Sept-2001
-    <UL>
-      <LI>
-	Font View Paste has changed slightly. If the copy buffer contains more than
-	one character, and the selection is exactly one character, then the selection
-	will be changed so that it will exactly fit the copy buffer.
-      <LI>
-	Also Font View Copy will copy the hints of the character.
-      <LI>
-	Fixed a bug with reading CID keyed Type1 fonts
-      <LI>
-	cleaned up some compilation problems on older systems (I hope)
-      <LI>
-	Inserted Olaf's bug fix in gresource.c
-      <LI>
-	Cleaned up behavior on zero-length splines
-    </UL>
-  <LI>
-    5-Sept-2001
-    <UL>
-      <LI>
-	Ug. yesterday's install changes weren't complete. I forgot to remove the
-	old files from /usr/local/bin so pfaedit used out of data translation tables
-	and things looked confused for non-English users. Also libgunicode had an
-	old version of some header files so there were compilation problems if this
-	was tar x'ed last (the other packages had the correct headers).
-      <LI>
-	Also I posted a bad libgdraw source.
-      <LI>
-	And got the dates wrong.
-      <LI>
-	Added a tiny bit of German to the ui (hope it's right)
-    </UL>
-  <LI>
-    4-Sept-2001 (but posted as 5-Sept-2001)
-    <UL>
-      <LI>
-	Menubar should be redrawn properly after a resize now.
-      <LI>
-	File chooser should be smarter about retaining filenames after changing
-	directories.
-      <LI>
-	Various fixes to support URW's odd habit of abbreviating everything to 4
-	characters (ie. recognize "obli" for "oblique", and "medi" for "medium")
-      <LI>
-	Fixed a crash bug in postscript generation when character 0 was deemed worth
-	outputting
-      <LI>
-	Tweaked XHeight calculation to look for greek/cyrillic "x"
-      <LI>
-	Changed install process to put user-interface files into /usr/share/pfaedit
-	instead of into the bin directory.
-    </UL>
-  <LI>
-    1-Sept-2001
-    <UL>
-      <LI>
-	Small fixes to (my implementation of) Adobe Standard Encoding.
-      <LI>
-	Small tweaks to get things to compile on solaris again.
-    </UL>
-  <LI>
-    <A HREF="oldchangelog.html">Changes before Sept 2001</A>
+    <A HREF="oldchangelog.html">Earlier Changes </A>
 </UL>
 <H2>
   <A NAME="Lacks">Lacks</A>

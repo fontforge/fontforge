@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 16-Sep-2001 -->
-  <!-- AP: Last modified: 16-Sep-2001 -->
+  <!-- AP: Last modified: 21-Oct-2001 -->
   <TITLE>Older changes to PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,96 @@
 <A HREF="index.html#change-log">Current changes</A>
 <P>
 <UL>
+  <LI>
+    14-Sept-2001
+    <UL>
+      <LI>
+	Fixed a couple more memory problems (caused by the chunk allocation), one
+	in remove overlap, one in autotrace
+      <LI>
+	I'm told that yesterday's executable upload didn't work. Hope today's does
+	better
+    </UL>
+  <LI>
+    13-Sept-2001
+    <UL>
+      <LI>
+	Fixed a crash when joining two paths
+      <LI>
+	More tweaking of search path for ui files.
+    </UL>
+  <LI>
+    11-Sept-2001
+    <UL>
+      <LI>
+	more configuration fixes
+      <LI>
+	Fixed many simplify bugs
+      <LI>
+	otf output would crash if given an open path. Fixed
+    </UL>
+  <LI>
+    8-Sept-2001
+    <UL>
+      <LI>
+	Font View Paste has changed slightly. If the copy buffer contains more than
+	one character, and the selection is exactly one character, then the selection
+	will be changed so that it will exactly fit the copy buffer.
+      <LI>
+	Also Font View Copy will copy the hints of the character.
+      <LI>
+	Fixed a bug with reading CID keyed Type1 fonts
+      <LI>
+	cleaned up some compilation problems on older systems (I hope)
+      <LI>
+	Inserted Olaf's bug fix in gresource.c
+      <LI>
+	Cleaned up behavior on zero-length splines
+    </UL>
+  <LI>
+    5-Sept-2001
+    <UL>
+      <LI>
+	Ug. yesterday's install changes weren't complete. I forgot to remove the
+	old files from /usr/local/bin so pfaedit used out of data translation tables
+	and things looked confused for non-English users. Also libgunicode had an
+	old version of some header files so there were compilation problems if this
+	was tar x'ed last (the other packages had the correct headers).
+      <LI>
+	Also I posted a bad libgdraw source.
+      <LI>
+	And got the dates wrong.
+      <LI>
+	Added a tiny bit of German to the ui (hope it's right)
+    </UL>
+  <LI>
+    4-Sept-2001 (but posted as 5-Sept-2001)
+    <UL>
+      <LI>
+	Menubar should be redrawn properly after a resize now.
+      <LI>
+	File chooser should be smarter about retaining filenames after changing
+	directories.
+      <LI>
+	Various fixes to support URW's odd habit of abbreviating everything to 4
+	characters (ie. recognize "obli" for "oblique", and "medi" for "medium")
+      <LI>
+	Fixed a crash bug in postscript generation when character 0 was deemed worth
+	outputting
+      <LI>
+	Tweaked XHeight calculation to look for greek/cyrillic "x"
+      <LI>
+	Changed install process to put user-interface files into /usr/share/pfaedit
+	instead of into the bin directory.
+    </UL>
+  <LI>
+    1-Sept-2001
+    <UL>
+      <LI>
+	Small fixes to (my implementation of) Adobe Standard Encoding.
+      <LI>
+	Small tweaks to get things to compile on solaris again.
+    </UL>
   <LI>
     31-August-2001
     <UL>

@@ -872,7 +872,7 @@ static void char_expose(CharView *cv,GWindow pixmap,GRect *rect) {
 	}
     }
 #endif
-    if ( cv->show.grid ) {
+    if ( cv->show.grid && grid_spacing*cv->scale>=2 ) {
 	int max,jmax;
 	for ( i = floor( clip.x/grid_spacing ), max = ceil((clip.x+clip.width)/grid_spacing);
 		i<=max; ++i )
@@ -880,15 +880,17 @@ static void char_expose(CharView *cv,GWindow pixmap,GRect *rect) {
 	for ( i = floor( clip.y/grid_spacing ), max = ceil((clip.y+clip.height)/grid_spacing);
 		i<=max; ++i )
 	    DrawLine(cv,pixmap,-32768,i*grid_spacing,32767,i*grid_spacing,i==0?0x808080:0xb0b0ff);
-	for ( i = floor( clip.x/grid_spacing ), max = ceil((clip.x+clip.width)/grid_spacing);
-		i<=max; ++i )
-	    for ( j = floor( clip.y/grid_spacing ), jmax = ceil((clip.y+clip.height)/grid_spacing);
-		    j<=jmax; ++j ) {
-		int x = (i+.5)*grid_spacing*cv->scale + cv->xoff;
-		int y = cv->vheight-cv->yoff - rint((j+.5)*grid_spacing*cv->scale);
-		GDrawDrawLine(pixmap,x-2,y,x+2,y,0xb0b0ff);
-		GDrawDrawLine(pixmap,x,y-2,x,y+2,0xb0b0ff);
-	    }
+	if ( grid_spacing*cv->scale>=7 ) {
+	    for ( i = floor( clip.x/grid_spacing ), max = ceil((clip.x+clip.width)/grid_spacing);
+		    i<=max; ++i )
+		for ( j = floor( clip.y/grid_spacing ), jmax = ceil((clip.y+clip.height)/grid_spacing);
+			j<=jmax; ++j ) {
+		    int x = (i+.5)*grid_spacing*cv->scale + cv->xoff;
+		    int y = cv->vheight-cv->yoff - rint((j+.5)*grid_spacing*cv->scale);
+		    GDrawDrawLine(pixmap,x-2,y,x+2,y,0xb0b0ff);
+		    GDrawDrawLine(pixmap,x,y-2,x,y+2,0xb0b0ff);
+		}
+	}
     } else {
 	/* Just draw main axes */
 	DrawLine(cv,pixmap,0,-32768,0,32767,0x808080);

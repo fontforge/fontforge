@@ -40,11 +40,38 @@ static int doround(struct ttfstate *state, int val) {
       case rnd_up: dval = ceil(dval); break;
       case rnd_off: dval = dval; break;
       case rnd_sround:
-      case rnd_sround45:
-	/* er... this is hardish, is it ever used? */
-	fprintf(stderr, "Don't support sround yet\n" );
-	dval = dval;
-      break;
+      case rnd_sround45: {
+	int period = ((state->sround_value)&0xc0)>>6;
+	int phase = (state->sround_value&0x30)>>4;
+	int threshold = (state->sround_value&0xf);	/* Docs say it's 3 bits, but they lie */
+	if ( period==0 )	/* half grid */
+	    period = 64/2;
+	else if ( period==2 )
+	    period = 128;
+	else
+	    period = 64;
+	phase = period*phase / 4;
+	if ( threshold==0 )
+	    threshold = period-1;
+	else
+	    threshold = (threshold-4) * period/8;
+	if ( val>=0 ) {
+	    if ( state->rounding==rnd_sround )
+		val = (val-phase+threshold) & -period;
+	    else 
+		val = ((val-phase+threshold) / period) * period;
+	    if ( val<0 ) val = 0;
+	    val += phase;
+	} else {
+	    if ( state->rounding==rnd_sround )
+		val = -((threshold-phase-val) & -period);
+	    else 
+		val = -((threshold-phase-val)/ period ) * period;
+	    if ( val>0 ) val = 0;
+	    val -= phase;
+	}
+return( val );
+      } break;
       default:
 	fprintf(stderr, "Unknown rounding mode %d\n", state->rounding );
     }
@@ -66,6 +93,9 @@ static int pop(struct ttfstate *state,struct ttfargs *args) {
 	else if ( !(args->used&ttf_sp2) ) { args->spvals[2] = val; args->used |= ttf_sp2; }
 	else if ( !(args->used&ttf_sp3) ) { args->spvals[3] = val; args->used |= ttf_sp3; }
     }
+# if 0		/* DEBUG */
+ fprintf(stderr, "pop: %d ", val );
+#endif
 return( val );
 }
 
@@ -84,6 +114,12 @@ static void push(struct ttfstate *state,int val,struct ttfargs *args) {
 	state->stack_max = state->sp+1;
     }
     state->stack[state->sp++] = val;
+# if 0		/* DEBUG */
+ /* Don't show pushes, just too much junk if we do (doesn't work, push increments pc as it goes) */
+ if ( !(state->pc[-1]==ttf_npushb || state->pc[-1]==ttf_npushw ||
+     (state->pc[-1]>=ttf_pushb && state->pc[-1]<=ttf_pushw+7)) )
+  fprintf(stderr, "push: %d ", val );
+#endif
 }
 
 static void AddAction(struct ttfstate *state, int pt,int base, int interp, int offset,
@@ -210,7 +246,7 @@ static void TtfExecuteInstrs(struct ttfstate *state,uint8 *data,int len) {
     struct ttfargs *args;
     double dval, dval2;
 
-    state->pc = data;
+    state->pc = state->startcall = data;
     state->end_pc = data+len;
 
     while ( true ) {
@@ -227,6 +263,9 @@ return;
 		state->end_pc = state->ends[state->retsp];
 		state->callcnt = state->cnts[state->retsp];
 		state->startcall = state->starts[state->retsp];
+#if 0		/* Debug */
+ fprintf( stderr, "Return\n" );
+#endif
 	    }
 	}
 	instr= *state->pc++;
@@ -262,6 +301,13 @@ return;
 	    }
 	    ++args->loopcnt;
 	}
+
+# if 0		/* DEBUG */
+ fprintf( stderr, "%4d: %s rp0=%d rp1=%d rp2=%d zs=%x loop=%d ",
+	 state->pc-1-state->startcall, instrs[instr],
+	 state->rp0, state->rp1, state->rp2, (state->zp0?1:0)|(state->zp1?2:0)|(state->zp2?4:0),
+	 state->loop );
+#endif
 
 	switch( instr ) {
 	  case ttf_pushb: case ttf_pushb+1: case ttf_pushb+2: case ttf_pushb+3:
@@ -338,13 +384,13 @@ return;
 		    val = ((short) state->cvtvals[val])*state->scale;
 	      break;
 	      /* the white, black, grey distinctions depend on engine characteristics */
-	      /*  so to me they are all the same.
+	      /*  so to me they are all the same. */
 	      case ttf_round: case ttf_round+1: case ttf_round+2: case ttf_round+3:
 		val = doround(state,val);
 	      break;
 	      case ttf_rs:
 		if ( state->storage==NULL || val<0 || val>=state->store_max ) {
-		    fprintf( stderr, "Attempt to read storage out of bounds %d\n" val );
+		    fprintf( stderr, "Attempt to read storage out of bounds %d\n", val );
 		    val = 0;
 		} else
 		    val = state->storage[val];
@@ -367,12 +413,12 @@ return;
 	  case ttf_gteq: case ttf_lt: case ttf_lteq: case ttf_max: case ttf_mul:
 	  case ttf_min: case ttf_neq:
 	  case ttf_or: case ttf_sub:
-	    val = pop(state,args);
 	    val2 = pop(state,args);
+	    val = pop(state,args);
 	    switch ( instr ) {
 	      case ttf_add: val += val2; break;
-	      case ttf_sub: val = val2-val; break;
-	      case ttf_div: val = rint((val2*64.0)/val); break;
+	      case ttf_sub: val -= val2; break;
+	      case ttf_div: val = rint((val*64.0)/val2); break;
 	      case ttf_mul: val = rint((val/64.0)*val2); break;
 	      case ttf_and: val &= val2; break;
 	      case ttf_or: val |= val2; break;
@@ -664,7 +710,7 @@ return;
 	  case ttf_gc: case ttf_gc+1:
 	    val = pop(state,args);
 	    if ( val<0 || val>=state->zones[state->zp2].point_cnt )
-		fprintf( stderr, "Point out of bounds in GC: %d\n", val );
+		fprintf( stderr, "Point out of bounds in GC: pt=%d zone=%d\n", val, state->zp2 );
 	    else {
 		IPoint *p;
 		if ( instr==ttf_gc )	/* original */
@@ -682,9 +728,9 @@ return;
 	    val2 = pop(state,args);
 	    val = pop(state,args);
 	    if ( val<0 || val>=state->zones[state->zp0].point_cnt )
-		fprintf( stderr, "Point 1 out of bounds in MD: %d\n", val );
+		fprintf( stderr, "Point 1 out of bounds in MD: %d zone=%d\n", val, state->zp0 );
 	    else if ( val2<0 || val2>=state->zones[state->zp1].point_cnt )
-		fprintf( stderr, "Point 2 out of bounds in MD: %d\n", val2 );
+		fprintf( stderr, "Point 2 out of bounds in MD: %d zone=%d\n", val2, state->zp1 );
 	    else {
 		/* Marvelous. Apple's docs are contradictory within the space*/
 		/* of a few sentences about which measures the grid-fit distance */
@@ -725,8 +771,8 @@ return;
 		fprintf( stderr, "Value out of bounds in cindex\n" );
 	    else {
 		int temp = state->stack[state->sp-val];
-		for ( i=val; ; --i )
-		    state->stack[state->sp-val] = state->stack[state->sp-val+1];
+		for ( i=val; i>1 ; --i )
+		    state->stack[state->sp-i] = state->stack[state->sp-i+1];
 		state->stack[state->sp-1] = temp;
 	    }
 	  break;
@@ -749,11 +795,18 @@ return;
 	  break;
 /* conditional */
 	  case ttf_if:
-	    while ( state->pc<state->end_pc && *state->pc!=ttf_eif && *state->pc!=ttf_else )
-		++state->pc;
+	    val = pop(state,args);
+	    if ( !val ) {
+		while ( state->pc<state->end_pc && *state->pc!=ttf_eif && *state->pc!=ttf_else )
+		    ++state->pc;
+		if ( state->pc<state->end_pc )
+		    ++state->pc;
+	    }
 	  break;
 	  case ttf_else:
 	    while ( state->pc<state->end_pc && *state->pc!=ttf_eif )
+		++state->pc;
+	    if ( state->pc<state->end_pc )
 		++state->pc;
 	  break;
 	  case ttf_eif:
@@ -764,7 +817,7 @@ return;
 	    val = pop(state,args);
 	    if ( state->in_glyf )
 		fprintf( stderr, "Functions may only be defined in the font or cvt programs (fpgm, prep)\n" );
-	    else if ( val<=0 || val>=65536 )
+	    else if ( val<0 || val>=65536 )
 		fprintf( stderr, "Attempt to define a function out of bounds: %d\n", val );
 	    else {
 		if ( val>=state->fdefcnt ) {
@@ -779,7 +832,7 @@ return;
 		    state->fdefcnt = val+1;
 		}
 		state->fdefs[val].data = state->pc;
-		while ( state->pc<state->end_pc && *state->pc!=ttf_endf );
+		while ( state->pc<state->end_pc && *state->pc!=ttf_endf )
 		    ++state->pc;
 		/* spec doesn't allow for nested function defs */
 		state->fdefs[val].len = state->pc - state->fdefs[val].data;
@@ -792,7 +845,7 @@ return;
 	    val = pop(state,args);
 	    if ( state->in_glyf )
 		fprintf( stderr, "Instructions may only be defined in the font or cvt programs (fpgm, prep)\n" );
-	    else if ( val<=0 || val>=0xff )
+	    else if ( val<0 || val>=0xff )
 		fprintf( stderr, "Attempt to define an opcode out of bounds: %d\n", val );
 	    else {
 		if ( state->in_prep )
@@ -834,16 +887,16 @@ return;
 /* Jumps */
 	  case ttf_jmpr:
 	    state->pc += pop(state,args);
-	    if ( state->pc>state->end_pc )
-		fprintf( stderr, "Jump beyond end\n" );
+	    if ( state->pc>state->end_pc+1 || state->pc<state->startcall )
+		fprintf( stderr, "Jump beyond end (or before start)\n" );
 	  break;
 	  case ttf_jrof:
 	    val = pop(state,args);
 	    val2 = pop(state,args);
 	    if ( val==0 ) {
 		state->pc += val;
-		if ( state->pc>state->end_pc )
-		    fprintf( stderr, "Jump beyond end\n" );
+	    if ( state->pc>state->end_pc+1 || state->pc<state->startcall )
+		    fprintf( stderr, "Jump beyond end (or before start)\n" );
 	    }
 	  break;
 	  case ttf_jrot:
@@ -851,8 +904,8 @@ return;
 	    val2 = pop(state,args);
 	    if ( val!=0 ) {
 		state->pc += val;
-		if ( state->pc>state->end_pc )
-		    fprintf( stderr, "Jump beyond end\n" );
+	    if ( state->pc>state->end_pc+1 || state->pc<state->startcall )
+		    fprintf( stderr, "Jump beyond end (or before start)\n" );
 	    }
 	  break;
 /* Flip from on to off curve */
@@ -917,10 +970,10 @@ return;
 	    val = pop(state,args);
 	    ppem_base = state->delta_base + (instr==ttf_deltap1?0:instr==ttf_deltap2?16:32);
 	    for ( i=0; i<val; ++i ) {
-		arg = pop(state,args);
 		pt = pop(state,args);
+		arg = pop(state,args);
 		if ( pt>=state->zones[state->zp0].point_cnt )
-		    fprintf( stderr, "Point %d out of bounds in DELTAP instruction: %d\n", i, pt);
+		    fprintf( stderr, "Point %d (at index %d) out of bounds in DELTAP instruction\n", pt, i);
 		else if ( ppem_base + ((arg>>4)&0xf) == state->cv->show.ppem ) {
 		    arg&=0xf;
 		    if ( arg<=7 ) arg -= 8;
@@ -1290,6 +1343,9 @@ return;
 	    fprintf(stderr, "Unknown truetype instruction %x\n", instr );
 	  break;
 	}
+# if 0		/* DEBUG */
+ fprintf( stderr, "\n");
+#endif
     }
 }
 
@@ -1321,6 +1377,25 @@ static void NotePoints(struct ttfstate *state,ConicPointList *head) {
 	}
 	state->zones[1].flags[last] |= pt_endcontour;
     }
+}
+
+static void init_ttfgs(struct ttfstate *state) {
+    /* The graphics state is initialized before each glyph. It is not inherited */
+    /*  from the prep routine. I'm not sure whether prep inherits from fpgm or */
+    /*  not... */
+
+    state->loop = 1;		/* loop instructions default to being run once*/
+    state->rounding = rnd_grid;
+
+    state->zp0 = state->zp1 = state->zp2 = 1;	/* Normal zone */
+    /* the rp? registers default to 0 */
+
+    /* the freedom/projection vectors are always unit vectors. defaulting to x-axis */
+    state->projection.x = 1; state->projection.y = 0;
+    state->freedom = state->projection;
+    state->dual = state->projection;		/* Dual has no default, It should be a unit vector though */
+
+    state->sp = 0;
 }
 
 static void init_ttfstate(CharView *cv,struct ttfstate *state) {
@@ -1363,11 +1438,11 @@ static void init_ttfstate(CharView *cv,struct ttfstate *state) {
 	state->zones[0].point_cnt = 100;
     } else {
 	TableFillup(maxp);
-	state->store_max = ptgetushort(maxp->data+18);
-	state->stack_max = ptgetushort(maxp->data+24);
+	state->store_max = ptgetushort(maxp->data+18)+1;	/* maxp gives max but I want number of 'em, they start at 0 */
+	state->stack_max = ptgetushort(maxp->data+24)+1;
 	state->idefcnt = ptgetushort(maxp->data+22);
-	state->fdefcnt = ptgetushort(maxp->data+20);
-	state->zones[0].point_cnt = ptgetushort(maxp->data+16);
+	state->fdefcnt = ptgetushort(maxp->data+20)+1;
+	state->zones[0].point_cnt = ptgetushort(maxp->data+16)+1;
     }
     state->idefs = gcalloc(256,sizeof(struct ifdef));/* one for each opcode */
     if ( state->fdefcnt!=0 )
@@ -1380,15 +1455,6 @@ static void init_ttfstate(CharView *cv,struct ttfstate *state) {
 	state->zones[0].moved = gcalloc(state->zones[0].point_cnt,sizeof(IPoint));
 	state->zones[0].flags = gcalloc(state->zones[0].point_cnt,sizeof(uint8));
     }
-
-    state->loop = 1;		/* loop instructions default to being run once*/
-
-    state->zp0 = state->zp1 = state->zp2 = 1;	/* Normal zone */
-    /* the rp? registers default to 0 */
-
-    /* the freedom/projection vectors are always unit vectors. defaulting to x-axis */
-    state->freedom.x = state->projection.x = 1;
-    state->dual.x = 1;				/* Dual has no default, It should be a unit vector though */
 
     state->auto_flip = true;
 
@@ -1403,22 +1469,23 @@ static void init_ttfstate(CharView *cv,struct ttfstate *state) {
     state->instruction_control = 0;
     state->scancontrol = false;
 
-    state->rounding = rnd_grid;
-
 /* these two execute in a context where there is no character, so no zone1 */
     if ( fpgm!=NULL ) {
 	TableFillup(fpgm);
+    init_ttfgs(state);
 	state->in_fpgm = true;
 	TtfExecuteInstrs(state,fpgm->data,fpgm->newlen);
 	state->in_fpgm = false;
     }
     if ( prep!=NULL ) {
 	TableFillup(prep);
+	init_ttfgs(state);
 	state->in_prep = true;
 	TtfExecuteInstrs(state,prep->data,prep->newlen);
 	state->in_prep = false;
     }
 
+    init_ttfgs(state);
     state->zones[1].point_cnt = state->cc->point_cnt+2;	/* Include the two virtual points */
     state->zones[1].points = gcalloc(state->zones[1].point_cnt,sizeof(IPoint));
     state->zones[1].moved = galloc(state->zones[1].point_cnt*sizeof(IPoint));
@@ -1432,6 +1499,8 @@ static void init_ttfstate(CharView *cv,struct ttfstate *state) {
 
     state->args = gcalloc(cv->cc->instrdata.instr_cnt,sizeof(struct ttfargs));
     state->in_glyf = true;
+    if ( state->sp!=0 )
+	fprintf( stderr, "Junk left on stack by fpgm/prep\n" );
 }
 
 static void TtfStateFreeContents(struct ttfstate *state) {

@@ -1372,6 +1372,8 @@ return( dstems );
     new = chunkalloc(sizeof(DStemInfo));
     *new = d;
     new->next = test;
+    if ( prev==NULL )
+return( new );
     prev->next = new;
 return( dstems );
 }
