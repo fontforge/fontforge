@@ -1359,18 +1359,18 @@ return( true );
 		 RealWithin(sp->me.y,sp->next->to->me.y,.02))))
 return( true );
 
-    if ( !sp->noprevcp && !sp->prev->knownlinear )
-	prev = &sp->prevcp;
-    else if ( !psp->nonextcp && !sp->prev->knownlinear )
-	prev = &psp->nextcp;
-    else
+    if ( sp->prev->knownlinear )
 	prev = &psp->me;
-    if ( !sp->nonextcp && !sp->next->knownlinear )
-	next = &sp->nextcp;
-    else if ( !nsp->noprevcp && !sp->next->knownlinear )
-	next = &nsp->prevcp;
+    else if ( !sp->noprevcp )
+	prev = &sp->prevcp;
     else
+	prev = &psp->nextcp;
+    if ( sp->next->knownlinear )
 	next = &nsp->me;
+    else if ( !sp->nonextcp )
+	next = &sp->nextcp;
+    else
+	next = &nsp->prevcp;
 
     if ( sp->next->knownlinear && sp->prev->knownlinear &&
 	    ((sp->me.x==nsp->me.x && sp->me.x==psp->me.x &&
@@ -1385,8 +1385,13 @@ return( false );	/* A point in the middle of a horizontal/vertical line */
     if ( prev->x==sp->me.x && next->x==sp->me.x ) {
 	if ( prev->y==sp->me.y && next->y==sp->me.y )
 return( false );		/* this should be caught above */
+#if 0	/* no matter what the control points look like this guy is either an */
+	/*  an extremum or a point of inflection, so we don't need to check */
 	if (( prev->y<=sp->me.y && sp->me.y <= next->y ) ||
 		(prev->y>=sp->me.y && sp->me.y >= next->y ))
+#endif
+return( true );
+    } else if ( prev->y==sp->me.y && next->y==sp->me.y ) {
 return( true );
     } else if (( prev->x<=sp->me.x && next->x<=sp->me.x ) ||
 	    (prev->x>=sp->me.x && next->x>=sp->me.x ))
