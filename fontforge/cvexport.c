@@ -71,6 +71,9 @@ int _ExportEPS(FILE *eps,SplineChar *sc) {
 	fprintf( eps, "grestore\n" );
     else
 #endif
+    if ( sc->parent->strokedfont )
+	fprintf( eps, "%g setlinewidth stroke grestore\n", sc->parent->strokewidth );
+    else
 	fprintf( eps, "fill grestore\n" );
     fprintf( eps, "%%%%EOF\n" );
     ret = !ferror(eps);
@@ -129,8 +132,13 @@ int _ExportPDF(FILE *pdf,SplineChar *sc) {
     streamstart = ftell(pdf);
     SC_PSDump((void (*)(int,void *)) fputc,pdf,sc,true,true);
 #ifdef FONTFORGE_CONFIG_TYPE3
-    if ( !sc->parent->multilayer )
+    if ( sc->parent->multilayer )
+	/* Already filled or stroked */;
+    else
 #endif
+    if ( sc->parent->strokedfont )
+	fprintf( pdf, "%g w S\n", sc->parent->strokewidth );
+    else
 	fprintf( pdf, "f\n" );
     streamlength = ftell(pdf)-streamstart;
     fprintf( pdf, " endstream\n" );

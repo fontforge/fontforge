@@ -869,7 +869,6 @@ void BCCompressBitmap(BDFChar *bdfc) {
     }
 }
 
-#ifdef FONTFORGE_CONFIG_TYPE3
 static void Bresenham(uint8 *bytemap,EdgeList *es,int x1,int x2,int y1,int y2,
 	int grey) {
     int dx, dy, incr1, incr2, d, x, y;
@@ -973,14 +972,38 @@ static void StrokeLine(uint8 *bytemap,IPoint *from, IPoint *to,EdgeList *es,int 
 	Bresenham(bytemap,es,x1,x2,y1,y2,grey);
 }
 
+static void StrokeSS(uint8 *bytemap,EdgeList *es,int width,int grey,SplineSet *ss) {
+    LinearApprox *lap;
+    LineList *line, *prev;
+    Spline *spline, *first;
+
+    for ( ; ss!=NULL; ss=ss->next ) {
+	first = NULL;
+	for ( spline = ss->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
+	    lap = SplineApproximate(spline,es->scale);
+	    if ( lap->lines!=NULL ) {
+		for ( prev = lap->lines, line=prev->next; line!=NULL; prev = line, line=line->next )
+		    StrokeLine(bytemap,&prev->here,&line->here,es,grey,width);
+	    }
+	    if ( first == NULL ) first = spline;
+	}
+    }
+}
+
+static void StrokeGlyph(uint8 *bytemap,EdgeList *es,real wid, SplineChar *sc) {
+    RefChar *ref;
+    int width = rint(wid*es->scale);
+
+    StrokeSS(bytemap,es,width,0xff,sc->layers[ly_fore].splines);
+    for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref = ref->next )
+	StrokeSS(bytemap,es,width,0xff,ref->layers[0].splines);
+}
+
+#ifdef FONTFORGE_CONFIG_TYPE3
 static void StrokePaths(uint8 *bytemap,EdgeList *es,Layer *layer,Layer *alt) {
     uint32 col;
     int width;
     int grey;
-    SplineSet *spl;
-    LinearApprox *lap;
-    LineList *line, *prev;
-    Spline *spline, *first;
 
     if ( layer->stroke_pen.brush.col!=COLOR_INHERITED )
 	col = layer->stroke_pen.brush.col;
@@ -998,17 +1021,7 @@ static void StrokePaths(uint8 *bytemap,EdgeList *es,Layer *layer,Layer *alt) {
     /* but our internal greymap convention is backwards */
     grey = 255-grey;
 
-    for ( spl=layer->splines; spl!=NULL; spl=spl->next ) {
-	first = NULL;
-	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
-	    lap = SplineApproximate(spline,es->scale);
-	    if ( lap->lines!=NULL ) {
-		for ( prev = lap->lines, line=prev->next; line!=NULL; prev = line, line=line->next )
-		    StrokeLine(bytemap,&prev->here,&line->here,es,grey,width);
-	    }
-	    if ( first == NULL ) first = spline;
-	}
-    }
+    StrokeSS(bytemap,es,width,grey,layer->splines);
 }
 
 static void SetByteMapToGrey(uint8 *bytemap,EdgeList *es,Layer *layer,Layer *alt) {
@@ -1099,6 +1112,32 @@ static void FillImages(uint8 *bytemap,EdgeList *es,ImageList *img,Layer *layer,L
 	img = img->next;
     }
 }
+
+static void FlattenBytemap(EdgeList *es,uint8 *bytemap) {
+    int i,j;
+    uint8 *bpt, *pt;
+
+    memset(es->bitmap,0,es->cnt*es->bytes_per_line);
+    for ( i=0; i<es->cnt; ++i ) {
+	bpt = es->bitmap + i*es->bytes_per_line;
+	pt = bytemap + i*8*es->bytes_per_line;
+	for ( j=0; j<8*es->bytes_per_line; ++j )
+	    if ( pt[j]>=128 )
+		bpt[j>>3] |= (0x80>>(j&7));
+    }
+}
+
+static int FigureBitmap(EdgeList *es,uint8 *bytemap, int is_aa) {
+    if ( is_aa ) {
+	free(es->bitmap);
+	es->bitmap = bytemap;
+return( 8 );
+    } else {
+	FlattenBytemap(es,bytemap);
+	free(bytemap);
+return( 0 );
+    }
+}
 #endif
 
 static void ProcessLayer(uint8 *bytemap,EdgeList *es,Layer *layer,
@@ -1118,20 +1157,6 @@ static void ProcessLayer(uint8 *bytemap,EdgeList *es,Layer *layer,
 	FillImages(bytemap,es,img,layer,alt);
     if ( layer->fillfirst && layer->dostroke )
 	StrokePaths(bytemap,es,layer,alt);
-}
-
-static void FlattenBytemap(EdgeList *es,uint8 *bytemap) {
-    int i,j;
-    uint8 *bpt, *pt;
-
-    memset(es->bitmap,0,es->cnt*es->bytes_per_line);
-    for ( i=0; i<es->cnt; ++i ) {
-	bpt = es->bitmap + i*es->bytes_per_line;
-	pt = bytemap + i*8*es->bytes_per_line;
-	for ( j=0; j<8*es->bytes_per_line; ++j )
-	    if ( pt[j]>=128 )
-		bpt[j>>3] |= (0x80>>(j&7));
-    }
 }
 #endif
 
@@ -1184,19 +1209,14 @@ return( NULL );
 			}
 		    }
 		}
-		if ( is_aa ) {
-		    depth = 8;
-		    free(es.bitmap);
-		    es.bitmap = bytemap;
-		} else {
-		    depth = 0;
-		    FlattenBytemap(&es,bytemap);
-		    free(bytemap);
-		}
-	    } else {
-#else
-	    {
+		depth = FigureBitmap(&es,bytemap,is_aa);
+	    } else
 #endif
+	    if ( sc->parent->strokedfont ) {
+		uint8 *bytemap = gcalloc(es.cnt*es.bytes_per_line*8,1);
+		StrokeGlyph(bytemap,&es,sc->parent->strokewidth,sc);
+		depth = FigureBitmap(&es,bytemap,is_aa);
+	    } else {
 		FindEdges(sc,&es);
 		FillChar(&es);
 		depth = 0;
@@ -1746,7 +1766,7 @@ return(NULL);
 	bdf->chars[index] = SplineCharFreeTypeRasterize(bdf->freetype_context,
 		sc->enc,bdf->truesize,bdf->clut?8:1);
     else {
-	if ( !sc->parent->multilayer )
+	if ( !sc->parent->multilayer && !sc->parent->strokedfont )
 	    bdf->chars[index] = SplineCharFreeTypeRasterizeNoHints(sc,
 		    bdf->truesize,bdf->clut?4:1);
 	else

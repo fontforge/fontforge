@@ -912,6 +912,8 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_IsOrder2	1019
 #define CID_IsMultiLayer	1020
 #define CID_Interpretation	1021
+#define CID_IsStrokedFont	1022
+#define CID_StrokeWidth		1023
 
 #define CID_Make	1111
 #define CID_Delete	1112
@@ -4707,6 +4709,8 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	int32 len;
 	GTextInfo **ti;
 	int design_size, size_top, size_bottom, styleid;
+	int strokedfont = false;
+	real strokewidth;
 #ifdef FONTFORGE_CONFIG_TYPE3
 	int multilayer = false;
 #endif
@@ -4739,6 +4743,8 @@ return( true );
 return(true);
 	}
 	order2 = GGadgetIsChecked(GWidgetGetControl(gw,CID_IsOrder2));
+	strokedfont = GGadgetIsChecked(GWidgetGetControl(gw,CID_IsStrokedFont));
+	strokewidth = GetRealR(gw,CID_StrokeWidth,_STR_StrokeWidth,&err);
 #ifdef FONTFORGE_CONFIG_TYPE3
 	multilayer = GGadgetIsChecked(GWidgetGetControl(gw,CID_IsMultiLayer));
 #endif
@@ -4816,15 +4822,19 @@ return( true );
 	if ( order2!=sf->order2 && !SFCloseAllInstrs(sf))
 return( true );
 #ifdef FONTFORGE_CONFIG_TYPE3
-	if ( multilayer!=sf->multilayer ) {
-	    sf->multilayer = multilayer;
-	    if ( !multilayer )
-		SFSplinesFromLayers(sf);
-	    else
-		SFReinstanciateRefs(sf);
-	    SFLayerChange(sf);
+	if ( strokedfont!=sf->strokedfont || multilayer!=sf->multilayer ) {
+	    if ( sf->strokedfont && multilayer )
+		SFSetLayerWidthsStroked(sf,sf->strokewidth);
+	    else if ( sf->multilayer )
+		SFSplinesFromLayers(sf,strokedfont);
+	    SFReinstanciateRefs(sf);
+	    if ( multilayer!=sf->multilayer )
+		SFLayerChange(sf);
 	}
+	sf->multilayer = multilayer;
 #endif
+	sf->strokedfont = strokedfont;
+	sf->strokewidth = strokewidth;
 	TTF_PSDupsChanged(gw,sf,d->names_set ? d->names : sf->names);
 	GDrawSetCursor(gw,ct_watch);
 	namechange = SetFontName(gw,sf);
@@ -5469,18 +5479,18 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
     GWindow gw;
     GWindowAttrs wattrs;
     GTabInfo aspects[16], conaspects[7], smaspects[5];
-    GGadgetCreateData mgcd[10], ngcd[13], egcd[14], psgcd[24], tngcd[7],
+    GGadgetCreateData mgcd[10], ngcd[13], egcd[14], psgcd[28], tngcd[7],
 	pgcd[8], vgcd[22], pangcd[22], comgcd[3], atgcd[7], txgcd[23],
 	congcd[3], csubgcd[fpst_max-pst_contextpos][6], smgcd[3], smsubgcd[4][6],
 	mfgcd[8], mcgcd[8], szgcd[19];
-    GTextInfo mlabel[10], nlabel[13], elabel[14], pslabel[24], tnlabel[7],
+    GTextInfo mlabel[10], nlabel[13], elabel[14], pslabel[28], tnlabel[7],
 	plabel[8], vlabel[22], panlabel[22], comlabel[3], atlabel[7], txlabel[23],
 	csublabel[fpst_max-pst_contextpos][6], smsublabel[4][6],
 	mflabel[8], mclabel[8], *list, szlabel[17];
     struct gfi_data *d;
     char iabuf[20], upbuf[20], uwbuf[20], asbuf[20], dsbuf[20], ncbuf[20],
 	    vbuf[20], uibuf[12], regbuf[100], vorig[20], embuf[20];
-    char dszbuf[20], dsbbuf[20], dstbuf[21], sibuf[20];
+    char dszbuf[20], dsbbuf[20], dstbuf[21], sibuf[20], swbuf[20];
     int i,k;
     int mcs;
     Encoding *item;
@@ -5972,7 +5982,7 @@ return;
     psgcd[17].gd.cid = CID_UniqueID;
     psgcd[17].creator = GTextFieldCreate;
 
-    psgcd[18].gd.pos.x = 12; psgcd[18].gd.pos.y = psgcd[17].gd.pos.y+26+6;
+    psgcd[18].gd.pos.x = 12; psgcd[18].gd.pos.y = psgcd[17].gd.pos.y+26;
     pslabel[18].text = (unichar_t *) _STR_HasVerticalMetrics;
     pslabel[18].text_in_resource = true;
     psgcd[18].gd.label = &pslabel[18];
@@ -5984,7 +5994,7 @@ return;
     psgcd[18].gd.handle_controlevent = GFI_VMetricsCheck;
     psgcd[18].creator = GCheckBoxCreate;
 
-    psgcd[19].gd.pos.x = 12; psgcd[19].gd.pos.y = psgcd[18].gd.pos.y+22+4;
+    psgcd[19].gd.pos.x = 12; psgcd[19].gd.pos.y = psgcd[18].gd.pos.y+22;
     pslabel[19].text = (unichar_t *) _STR_VOrigin;
     pslabel[19].text_in_resource = true;
     psgcd[19].gd.label = &pslabel[19];
@@ -6005,7 +6015,7 @@ return;
     psgcd[20].gd.cid = CID_VOrigin;
     psgcd[20].creator = GTextFieldCreate;
 
-    psgcd[21].gd.pos.x = 12; psgcd[21].gd.pos.y = psgcd[20].gd.pos.y+26;
+    psgcd[21].gd.pos.x = 12; psgcd[21].gd.pos.y = psgcd[20].gd.pos.y+22;
     pslabel[21].text = (unichar_t *) _STR_Order2Splines;
     pslabel[21].text_in_resource = true;
     psgcd[21].gd.label = &pslabel[21];
@@ -6019,19 +6029,62 @@ return;
 #endif
 
 #ifdef FONTFORGE_CONFIG_TYPE3
-    psgcd[22].gd.pos.x = 12; psgcd[22].gd.pos.y = psgcd[21].gd.pos.y+16;
-    pslabel[22].text = (unichar_t *) _STR_MultiLayer;
+    psgcd[22].gd.pos.x = 12; psgcd[22].gd.pos.y = psgcd[21].gd.pos.y+18;
+    pslabel[22].text = (unichar_t *) _STR_OutlineFont;
     pslabel[22].text_in_resource = true;
     psgcd[22].gd.label = &pslabel[22];
-    psgcd[22].gd.flags = sf->multilayer ? (gg_visible | gg_enabled | gg_cb_on) : (gg_visible | gg_enabled);
-    psgcd[22].gd.cid = CID_IsMultiLayer;
+    psgcd[22].gd.flags = (!sf->strokedfont && !sf->multilayer)?
+	    (gg_visible | gg_enabled | gg_cb_on) : (gg_visible | gg_enabled);
+    psgcd[22].creator = GRadioCreate;
+
+    psgcd[23].gd.pos.x = 12; psgcd[23].gd.pos.y = psgcd[22].gd.pos.y+14;
+    pslabel[23].text = (unichar_t *) _STR_MultiLayer;
+    pslabel[23].text_in_resource = true;
+    psgcd[23].gd.label = &pslabel[23];
+    psgcd[23].gd.flags = sf->multilayer ? (gg_visible | gg_enabled | gg_cb_on) : (gg_visible | gg_enabled);
+    psgcd[23].gd.cid = CID_IsMultiLayer;
+    psgcd[23].creator = GRadioCreate;
+    psgcd[23].gd.popup_msg = GStringGetResource(_STR_PopupMultiLayer,NULL);
+
+    psgcd[24].gd.pos.x = 12; psgcd[24].gd.pos.y = psgcd[23].gd.pos.y+14;
+    pslabel[24].text = (unichar_t *) _STR_StrokedFont;
+    pslabel[24].text_in_resource = true;
+    psgcd[24].gd.label = &pslabel[24];
+    psgcd[24].gd.flags = sf->strokedfont ? (gg_visible | gg_enabled | gg_cb_on) : (gg_visible | gg_enabled);
+    psgcd[24].gd.cid = CID_IsStrokedFont;
+    psgcd[24].creator = GRadioCreate;
+    psgcd[24].gd.popup_msg = GStringGetResource(_STR_PopupStroked,NULL);
+
+    k=25;
+#else
+    psgcd[22].gd.pos.x = 12; psgcd[22].gd.pos.y = psgcd[21].gd.pos.y+16;
+    pslabel[22].text = (unichar_t *) _STR_StrokedFont;
+    pslabel[22].text_in_resource = true;
+    psgcd[22].gd.label = &pslabel[22];
+    psgcd[22].gd.flags = sf->strokedfont ? (gg_visible | gg_enabled | gg_cb_on) : (gg_visible | gg_enabled);
+    psgcd[22].gd.cid = CID_IsStrokedFont;
     psgcd[22].creator = GCheckBoxCreate;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    psgcd[22].gd.popup_msg = GStringGetResource(_STR_PopupMultiLayer,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    psgcd[22].gd.popup_msg = _("Allow editing of multiple colors and shades, fills and strokes.\nMulti layered fonts can only be output as type3 or svg fonts.");
+    psgcd[22].gd.popup_msg = GStringGetResource(_STR_PopupStroked,NULL);
+
+    k=23;
 #endif
-#endif
+
+    psgcd[k].gd.pos.x = 12; psgcd[k].gd.pos.y = psgcd[k-1].gd.pos.y+20;
+    pslabel[k].text = (unichar_t *) _STR_StrokeWidth;
+    pslabel[k].text_in_resource = true;
+    psgcd[k].gd.label = &pslabel[k];
+    psgcd[k].gd.flags = gg_visible | gg_enabled;
+    psgcd[k++].creator = GLabelCreate;
+
+    sprintf( swbuf,"%g", sf->strokewidth );
+    psgcd[k].gd.pos.x = 115; psgcd[k].gd.pos.y = psgcd[k-1].gd.pos.y-6; psgcd[k].gd.pos.width = 137;
+    psgcd[k].gd.flags = gg_visible | gg_enabled;
+    pslabel[k].text = (unichar_t *) swbuf;
+    pslabel[k].text_is_1byte = true;
+    psgcd[k].gd.label = &pslabel[k];
+    psgcd[k].gd.cid = CID_StrokeWidth;
+    psgcd[k++].creator = GTextFieldCreate;
+
 
     if ( sf->subfontcnt!=0 ) {
 	for ( i=0; i<=13; ++i )

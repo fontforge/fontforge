@@ -2858,6 +2858,13 @@ return( 0 );
 	formattypes[ff_cffcid].disabled = true;
 	if ( ofs!=ff_svg )
 	    ofs = ff_ptype3;
+    } else if ( sf->strokedfont ) {
+	formattypes[ff_ttf].disabled = true;
+	formattypes[ff_ttfsym].disabled = true;
+	formattypes[ff_ttfmacbin].disabled = true;
+	formattypes[ff_ttfdfont].disabled = true;
+	if ( ofs==ff_ttf || ofs==ff_ttfsym || ofs==ff_ttfmacbin || ofs==ff_ttfdfont )
+	    ofs = ff_otf;
     }
     if ( family ) {
 	if ( ofs==ff_pfa || ofs==ff_pfb || ofs==ff_multiple || ofs==ff_ptype3 ||

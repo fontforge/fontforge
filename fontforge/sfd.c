@@ -1090,6 +1090,8 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 	fprintf(sfd, "Version: %s\n", sf->version );
     if ( sf->fondname!=NULL )
 	fprintf(sfd, "FONDName: %s\n", sf->fondname );
+    if ( sf->strokewidth!=0 )
+	fprintf(sfd, "StrokeWidth: %g\n", sf->strokewidth );
     fprintf(sfd, "ItalicAngle: %g\n", sf->italicangle );
     fprintf(sfd, "UnderlinePosition: %g\n", sf->upos );
     fprintf(sfd, "UnderlineWidth: %g\n", sf->uwidth );
@@ -1097,7 +1099,9 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
     fprintf(sfd, "Descent: %d\n", sf->descent );
     if ( sf->order2 )
 	fprintf(sfd, "Order2: %d\n", sf->order2 );
-    if ( sf->multilayer )
+    if ( sf->strokedfont )
+	fprintf(sfd, "StrokedFont: %d\n", sf->strokedfont );
+    else if ( sf->multilayer )
 	fprintf(sfd, "MultiLayer: %d\n", sf->multilayer );
     if ( sf->hasvmetrics )
 	fprintf(sfd, "VerticalOrigin: %d\n", sf->vertical_origin );
@@ -3707,6 +3711,8 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    sf->fondname = copy(tok);
 	} else if ( strmatch(tok,"ItalicAngle:")==0 ) {
 	    getreal(sfd,&sf->italicangle);
+	} else if ( strmatch(tok,"StrokeWidth:")==0 ) {
+	    getreal(sfd,&sf->strokewidth);
 	} else if ( strmatch(tok,"UnderlinePosition:")==0 ) {
 	    getreal(sfd,&sf->upos);
 	} else if ( strmatch(tok,"UnderlineWidth:")==0 ) {
@@ -3836,6 +3842,10 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    int temp;
 	    getint(sfd,&temp);
 	    sf->order2 = temp;
+	} else if ( strmatch(tok,"StrokedFont:")==0 ) {
+	    int temp;
+	    getint(sfd,&temp);
+	    sf->strokedfont = temp;
 	} else if ( strmatch(tok,"MultiLayer:")==0 ) {
 	    int temp;
 	    getint(sfd,&temp);

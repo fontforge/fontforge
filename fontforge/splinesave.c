@@ -859,7 +859,7 @@ static void flexto(GrowBuf *gb,BasePoint current[MmMax],Spline *pspline[MmMax],
 
 static void _CvtPsSplineSet(GrowBuf *gb, SplinePointList *spl[MmMax], int instance_count,
 	BasePoint current[MmMax],
-	int round, struct hintdb *hdb, BasePoint *start, int is_order2 ) {
+	int round, struct hintdb *hdb, BasePoint *start, int is_order2, int stroked ) {
     Spline *spline[MmMax], *first;
     SplinePointList temp[MmMax], *freeme=NULL;
     int init=true;
@@ -915,9 +915,11 @@ static void _CvtPsSplineSet(GrowBuf *gb, SplinePointList *spl[MmMax], int instan
 	    for ( i=0; i<instance_count; ++i )
 		spline[i] = spline[i]->to->next;
 	}
-	if ( gb->pt+1 >= gb->end )
-	    GrowBuffer(gb);
-	*(gb->pt)++ = 9;			/* closepath */
+	if ( !stroked || spl[0]->first->prev!=NULL ) {
+	    if ( gb->pt+1 >= gb->end )
+		GrowBuffer(gb);
+	    *(gb->pt)++ = 9;			/* closepath */
+	}
 	for ( i=0; i<instance_count; ++i ) {
 	    SplineSetReverse(spl[i]);
 	    /* Of course, I have to Reverse again to get back to my convention after*/
@@ -930,18 +932,20 @@ static void _CvtPsSplineSet(GrowBuf *gb, SplinePointList *spl[MmMax], int instan
 
 static void CvtPsSplineSet(GrowBuf *gb, SplineChar *scs[MmMax], int instance_count,
 	BasePoint current[MmMax],
-	int round, struct hintdb *hdb, BasePoint *start, int is_order2 ) {
+	int round, struct hintdb *hdb, BasePoint *start, int is_order2,
+	int stroked ) {
     SplinePointList *spl[MmMax];
     int i;
 
     for ( i=0; i<instance_count; ++i )
 	spl[i] = scs[i]->layers[ly_fore].splines;
-    _CvtPsSplineSet(gb,spl,instance_count,current,round,hdb,start,is_order2);
+    _CvtPsSplineSet(gb,spl,instance_count,current,round,hdb,start,is_order2,stroked);
 }
 
 static void CvtPsRSplineSet(GrowBuf *gb, SplineChar *scs[MmMax], int instance_count,
 	BasePoint *current,
-	int round, struct hintdb *hdb, BasePoint *startend, int is_order2 ) {
+	int round, struct hintdb *hdb, BasePoint *startend, int is_order2,
+	int stroked ) {
     RefChar *refs[MmMax];
     SplineSet *spls[MmMax];
     int i;
@@ -953,7 +957,7 @@ static void CvtPsRSplineSet(GrowBuf *gb, SplineChar *scs[MmMax], int instance_co
 	    spls[i] = refs[i]->layers[0].splines;
 	    refs[i] = refs[i]->next;
 	}
-	_CvtPsSplineSet(gb,spls,instance_count,current,round,hdb,startend,scs[0]->parent->order2);
+	_CvtPsSplineSet(gb,spls,instance_count,current,round,hdb,startend,scs[0]->parent->order2,stroked);
     }
 }
 
@@ -1415,8 +1419,8 @@ static unsigned char *SplineChar2PS(SplineChar *sc,int *len,int round,int iscjk,
 	    hintdb.instance_count = instance_count;
 	    hdb = &hintdb;
 	}
-	CvtPsSplineSet(&gb,scs,instance_count,current,round,hdb,startend,sc->parent->order2);
-	CvtPsRSplineSet(&gb,scs,instance_count,current,round,hdb,NULL,sc->parent->order2);
+	CvtPsSplineSet(&gb,scs,instance_count,current,round,hdb,startend,sc->parent->order2,sc->parent->strokedfont);
+	CvtPsRSplineSet(&gb,scs,instance_count,current,round,hdb,NULL,sc->parent->order2,sc->parent->strokedfont);
     }
     if ( gb.pt+1>=gb.end )
 	GrowBuffer(&gb);
@@ -1480,7 +1484,7 @@ static void CvtSimpleHints(GrowBuf *gb, SplineChar *sc,BasePoint *startend,
 	scs[i]->lsidebearing = 0;
     memset(current,0,instance_count*sizeof(BasePoint));
     CvtPsSplineSet(gb,scs,instance_count,current,round,NULL,startend,
-	    sc->parent->order2);
+	    sc->parent->order2,sc->parent->strokedfont);
     for ( i=0; i<instance_count; ++i )
 	startend[2*i+1] = current[i];
 }
@@ -2307,11 +2311,10 @@ static void CvtPsSplineSet2(GrowBuf *gb, SplinePointList *spl,
     for ( ; spl!=NULL; spl = spl->next ) {
 	first = NULL;
 	SplineSetReverse(spl);
-	/* For some reason fontographer reads its spline in in the reverse */
-	/*  order from that I use. I'm not sure how they do that. The result */
-	/*  being that what I call clockwise they call counter. Oh well. */
-	/*  If I reverse the splinesets after reading them in, and then again*/
-	/*  when saving them out, all should be well */
+	/* PostScript and TrueType store their splines in in reverse */
+	/*  orientations. Annoying. Oh well. I shall adopt TrueType and */
+	/*  If I reverse the PS splinesets after reading them in, and then */
+	/*  again when saving them out, all should be well */
 	if ( spl->first->flexy || spl->first->flexx ) {
 	    /* can't handle a flex (mid) point as the first point. rotate the */
 	    /* list by one, this is possible because only closed paths have */
@@ -2344,6 +2347,7 @@ static void CvtPsSplineSet2(GrowBuf *gb, SplinePointList *spl,
 	    else
 		spline = curveto2(gb,hdb,spline,first,round);
 	}
+	/* No closepath oper in type2 fonts */
 	SplineSetReverse(spl);
 	/* Of course, I have to Reverse again to get back to my convention after*/
 	/*  saving */

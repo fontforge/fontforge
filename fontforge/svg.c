@@ -143,7 +143,7 @@ static int svg_outfontheader(FILE *file, SplineFont *sf) {
 return( defwid );
 }
 
-static int svg_pathdump(FILE *file, SplineSet *spl, int lineout) {
+static int svg_pathdump(FILE *file, SplineSet *spl, int lineout, int forceclosed) {
     BasePoint last;
     char buffer[60];
     int closed=false;
@@ -201,7 +201,7 @@ static int svg_pathdump(FILE *file, SplineSet *spl, int lineout) {
 	    lineout += strlen( buffer );
 	    last = sp->to->me;
 	}
-	if ( !closed ) {
+	if ( !closed && (forceclosed || spl->first->prev!=NULL) ) {
 	    if ( lineout>=254 ) { putc('\n',file); lineout=0; }
 	    putc('z',file);
 	    ++lineout;
@@ -325,11 +325,22 @@ static void svg_scpathdump(FILE *file, SplineChar *sc,char *endpath) {
 	/* I think a space is represented by leaving out the d (path) entirely*/
 	/*  rather than having d="" */
 	fputs(" />\n",file);
+    } else if ( sc->parent->strokedfont ) {
+	/* Can't be done with a path, requires nested elements (I think) */
+	fprintf(file,">\n  <g stroke=\"currentColor\" stroke-width=\"%g\" fill=\"none\">\n", sc->parent->strokewidth );
+	fprintf( file,"    <path d=\"");
+	lineout = svg_pathdump(file,sc->layers[ly_fore].splines,3,false);
+	for ( ref= sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next )
+	    lineout = svg_pathdump(file,ref->layers[0].splines,lineout,false);
+	if ( lineout>=255-4 ) putc('\n',file );
+	putc('"',file);
+	fputs(" />\n  </g>\n",file);
+	fputs(endpath,file);
     } else if ( !sc->parent->multilayer ) {
 	fprintf( file,"d=\"");
-	lineout = svg_pathdump(file,sc->layers[ly_fore].splines,3);
+	lineout = svg_pathdump(file,sc->layers[ly_fore].splines,3,true);
 	for ( ref= sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next )
-	    lineout = svg_pathdump(file,ref->layers[0].splines,lineout);
+	    lineout = svg_pathdump(file,ref->layers[0].splines,lineout,true);
 	if ( lineout>=255-4 ) putc('\n',file );
 	putc('"',file);
 	fputs(" />\n",file);
@@ -347,7 +358,7 @@ static void svg_scpathdump(FILE *file, SplineChar *sc,char *endpath) {
 		svg_dumpfill(file,&sc->layers[i].fill_brush,NULL,sc->layers[i].dofill);
 		fprintf( file, ">\n" );
 		fprintf(file, "  <path d=\"\n");
-		svg_pathdump(file,transed,12);
+		svg_pathdump(file,transed,12,!sc->layers[i].dostroke);
 		fprintf(file, "\"/>\n" );
 		if ( transed!=sc->layers[i].splines )
 		    SplinePointListsFree(transed);
@@ -364,7 +375,7 @@ static void svg_scpathdump(FILE *file, SplineChar *sc,char *endpath) {
 		    svg_dumpfill(file,&ref->layers[j].fill_brush,&sc->layers[i].fill_brush,ref->layers[j].dofill);
 		    fprintf( file, ">\n" );
 		    fprintf(file, "  <path d=\"\n");
-		    svg_pathdump(file,transed,12);
+		    svg_pathdump(file,transed,12,!ref->layers[j].dostroke);
 		    fprintf(file, "\"/>\n" );
 		    if ( transed!=ref->layers[j].splines )
 			SplinePointListsFree(transed);
@@ -651,12 +662,12 @@ int _ExportSVG(FILE *svg,SplineChar *sc) {
 	    sc->width, sc->width );
     fprintf(svg, "   </g>\n\n" );
 #endif
-    if ( !sc->parent->multilayer || !svg_sc_any(sc)) {
-	fprintf(svg, "   <path fill=\"currentColor\"\n");
-	end = "   </path>\n";
-    } else {
+    if ( sc->parent->multilayer || sc->parent->strokedfont || !svg_sc_any(sc)) {
 	fprintf(svg, "   <g ");
 	end = "   </g>\n";
+    } else {
+	fprintf(svg, "   <path fill=\"currentColor\"\n");
+	end = "   </path>\n";
     }
     svg_scpathdump(svg,sc,end);
     fprintf(svg, "  </g>\n\n" );

@@ -321,7 +321,7 @@ static void *__FreeTypeFontContext(FT_Library context,
 
     if ( !hasFreeType())
 return( NULL );
-    if ( sf->multilayer )
+    if ( sf->multilayer || sf->strokedfont )
 return( NULL );
 
     ftc = gcalloc(1,sizeof(FTC));
@@ -877,18 +877,24 @@ static void FillOutline(SplineSet *spl,FT_Outline *outline,int *pmax,int *cmax,
     }
 }
 
-#ifdef FONTFORGE_CONFIG_TYPE3
 static SplineSet *StrokeOutline(Layer *layer,SplineChar *sc) {
     StrokeInfo si;
 
     memset(&si,0,sizeof(si));
-    si.radius = layer->stroke_pen.width/2;
-    si.join = layer->stroke_pen.linejoin;
-    si.cap = layer->stroke_pen.linecap;
+    if ( sc->parent->strokedfont ) {
+	si.radius = sc->parent->strokewidth/2;
+	si.join = lj_bevel;
+	si.cap = lc_butt;
+    } else {
+	si.radius = layer->stroke_pen.width/2;
+	si.join = layer->stroke_pen.linejoin;
+	si.cap = layer->stroke_pen.linecap;
+    }
     si.stroke_type = si_std;
 return( SSStroke(layer->splines,&si,sc));
 }
 
+#ifdef FONTFORGE_CONFIG_TYPE3
 static void MergeBitmaps(FT_Bitmap *bitmap,FT_Bitmap *newstuff,uint32 col) {
     int i, j;
 
@@ -933,6 +939,8 @@ BDFChar *SplineCharFreeTypeRasterizeNoHints(SplineChar *sc,
 
     if ( !hasFreeType())
 return( NULL );
+    if ( sc->parent->order2 && sc->parent->strokedfont )
+return( NULL );
 #ifdef FONTFORGE_CONFIG_TYPE3
     if ( sc->parent->order2 && sc->parent->multilayer ) {
 	/* I don't support stroking of order2 splines */
@@ -975,10 +983,20 @@ return( NULL );
     memset(&outline,0,sizeof(outline));
     pmax = cmax = 0;
 
+    if ( sc->parent->strokedfont ) {
+	SplineSet *stroked = StrokeOutline(&sc->layers[ly_fore],sc);
+	memset(temp.buffer,0,temp.pitch*temp.rows);
+	FillOutline(stroked,&outline,&pmax,&cmax,
+		scale,&b,sc->parent->order2);
+	err |= (_FT_Outline_Get_Bitmap)(context,&outline,&bitmap);
+	SplinePointListFree(stroked);
+    } else 
 #ifndef FONTFORGE_CONFIG_TYPE3
-    FillOutline(sc->layers[ly_fore].splines,&outline,&pmax,&cmax,
-	    scale,&b,sc->parent->order2);
-    err = (_FT_Outline_Get_Bitmap)(context,&outline,&bitmap);
+    {
+	FillOutline(sc->layers[ly_fore].splines,&outline,&pmax,&cmax,
+		scale,&b,sc->parent->order2);
+	err = (_FT_Outline_Get_Bitmap)(context,&outline,&bitmap);
+    }
 #else
     if ( temp.buffer==NULL ) {
 	FillOutline(sc->layers[ly_fore].splines,&outline,&pmax,&cmax,

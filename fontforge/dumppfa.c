@@ -758,7 +758,7 @@ void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
 		dumpstr(dumpchar,data,pdfopers ? "Q\n" : "grestore\n" );
 	    } else
 #endif
-		dumpsplineset(dumpchar,data,temp,pdfopers,true,false);
+		dumpsplineset(dumpchar,data,temp,pdfopers,!sc->parent->strokedfont,false);
 	    if ( sc->parent->order2 ) SplinePointListFree(temp);
 	}
 	if ( sc->layers[i].refs!=NULL ) {
@@ -807,7 +807,7 @@ void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
 			    dumpstr(dumpchar,data,pdfopers ? "Q\n" : "grestore\n" );
 			} else
 #endif
-			    dumpsplineset(dumpchar,data,temp,pdfopers,true,false);
+			    dumpsplineset(dumpchar,data,temp,pdfopers,!sc->parent->strokedfont,false);
 			if ( sc->parent->order2 ) SplinePointListFree(temp);
 		    }
 		}
@@ -1535,6 +1535,7 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
     char *encoding[256];
     DBounds b;
     int uniqueid;
+    char buffer[50];
 
     dumpf(dumpchar,data,"%%!PS-AdobeFont-1.0: %s %s\n", sf->fontname, sf->version?sf->version:"" );
     if ( format==ff_ptype0 && (sf->encoding_name->is_unicodebmp || sf->encoding_name->is_unicodefull))
@@ -1552,6 +1553,8 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
     ++cnt;		/* fontbb */
     if ( sf->uniqueid!=-1 ) ++cnt;
     ++cnt;		/* painttype */
+    if ( sf->strokedfont )
+	++cnt;		/* StrokeWidth */
     if ( format==ff_ptype3 ) {
 	++cnt;		/* charprocs */
 	++cnt;		/* buildglyph */
@@ -1596,7 +1599,9 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
 	if ( sf->changed_since_xuidchanged )
 	    SFIncrementXUID(sf);
     }
-    dumpf(dumpchar,data,"/PaintType %d def\n", 0/*fd->painttype*/ );
+    dumpf(dumpchar,data,"/PaintType %d def\n", sf->strokedfont?2:0 );
+    if ( sf->strokedfont )
+	dumpf(dumpchar,data,"/StrokeWidth %g def\n", sf->strokewidth );
     dumpfontinfo(dumpchar,data,sf,format);
     if ( format==ff_mma || format==ff_mmb ) {
 	MMSet *mm = sf->mm;
@@ -1684,8 +1689,14 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
 	dumpstr(dumpchar,data,"%  do a setcachedevice, otherwise (for referenced chars) it will not. The\n" );
 	dumpstr(dumpchar,data,"%  fontdict argument is so a char can invoke a referenced char. BuildGlyph\n" );
 	dumpstr(dumpchar,data,"%  itself will remove the arguments from the stack, the CharProc will leave 'em\n" );
+	if ( sf->multilayer )
+	    *buffer = '\0';
+	else if ( sf->strokedfont )
+	    sprintf( buffer, "%g setlinewidth stroke", sf->strokewidth );
+	else
+	    strcpy(buffer, "fill");
 	dumpf(dumpchar,data,"/BuildGlyph { 2 copy exch /CharProcs get exch 2 copy known not { pop /.notdef} if get exch pop 0 exch exec pop pop %s} bind def\n",
-		sf->multilayer ? "" : "fill " );
+		buffer );
     }
 }
 
@@ -2011,10 +2022,11 @@ static void dumptype0stuff(FILE *out,SplineFont *sf) {
 	}
     }
 
-    fprintf( out, "/%s 20 dict dup begin\n", sf->fontname );
+    fprintf( out, "/%s 21 dict dup begin\n", sf->fontname );
     fprintf( out, "/FontInfo /%sBase findfont /FontInfo get def\n", sf->fontname );
-    fprintf( out, "/FontName /%s def\n", sf->fontname );
-    fprintf( out, "/PaintType 0 def\n" );
+    fprintf( out, "/PaintType %d def\n", sf->strokedfont?2:0 );
+    if ( sf->strokedfont )
+	fprintf( out, "/StrokeWidth %g def\n", sf->strokewidth );
     fprintf( out, "/FontType 0 def\n" );
     fprintf( out, "/LanguageLevel 2 def\n" );
     fprintf( out, "/FontMatrix [1 0 0 1 0 0] readonly def\n" );
@@ -2258,13 +2270,15 @@ return( 0 );
 	/*  extra entries, so I'll put them in */
 	fprintf( out, "dup %d\n", i );
 	fprintf( out, "\n%%ADOBeginFontDict\n" );
-	fprintf( out, "14 dict\n  begin\n" );
+	fprintf( out, "15 dict\n  begin\n" );
 	fprintf( out, "  /FontName /%s def\n", sf->fontname );
 	fprintf( out, "  /FontType 1 def\n" );
 	factor = 1.0/(sf->ascent+sf->descent);
 	fprintf( out, "  /FontMatrix [ %g 0 0 %g 0 0 ] def\n",
 		factor, factor );
-	fprintf( out, "  /PaintType 0 def\n" );
+	fprintf( out, "/PaintType %d def\n", sf->strokedfont?2:0 );
+	if ( sf->strokedfont )
+	    fprintf( out, "/StrokeWidth %g def\n", sf->strokewidth );
 	fprintf( out, "\n  %%ADOBeginPrivateDict\n" );
 	dumpprivatestuff((DumpChar) fputc,out,sf,&cidbytes.fds[i],flags,ff_cid);
 	fprintf( out, "\n  %%ADOEndPrivateDict\n" );
