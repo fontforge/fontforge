@@ -1731,7 +1731,7 @@ return( true );
 	}
 	if ( ci->sc->parent->order2 )
 	    SplinePointNextCPChanged2(cursp,false);
-	else if ( cursp->next!=NULL )
+	if ( cursp->next!=NULL )
 	    SplineRefigure3(cursp->next);
 	CVCharChangedUpdate(ci->cv);
 	PIFillup(ci,GGadgetGetCid(g));
@@ -1786,7 +1786,7 @@ return( true );
 	}
 	if ( ci->sc->parent->order2 )
 	    SplinePointPrevCPChanged2(cursp,false);
-	else if ( cursp->prev!=NULL )
+	if ( cursp->prev!=NULL )
 	    SplineRefigure(cursp->prev);
 	CVCharChangedUpdate(ci->cv);
 	PIFillup(ci,GGadgetGetCid(g));
