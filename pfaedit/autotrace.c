@@ -34,11 +34,16 @@
 
 #include <sys/types.h>		/* for waitpid */
 #include <sys/wait.h>		/* for waitpid */
-#include <unistd.h>		/* for access, unlink, fork, execvp */
+#include <unistd.h>		/* for access, unlink, fork, execvp, getcwd */
+#include <sys/stat.h>		/* for open */
+#include <fcntl.h>		/* for open */
 #include <stdlib.h>		/* for getenv */
+#include <errno.h>		/* for errors */
+#include <dirent.h>		/* for opendir,etc. */
 
 /* Interface to Martin Weber's autotrace program   */
 /*  http://homepages.go.com/~martweb/AutoTrace.htm */
+/*  Oops, now at http://sourceforge.net/projects/autotrace/ */
 
 
 static SplinePointList *SplinesFromEntities(Entity *ent, Color bgcol) {
@@ -153,6 +158,32 @@ static int mytempnam(char *buffer) {
 	strcpy(buffer,P_tmpdir);
     strcat(buffer,"/PfaEdXXXXXX");
 return( mkstemp(buffer));
+}
+
+static char *mytempdir(void) {
+    char buffer[300];
+    char *dir, *eon;
+    static int cnt=0;
+    int tries=0;
+
+    if ( (dir=getenv("TMPDIR"))!=NULL )
+	strcpy(buffer,dir);
+#ifndef P_tmpdir
+#define P_tmpdir	"/tmp"
+#endif
+    else
+	strcpy(buffer,P_tmpdir);
+    strcat(buffer,"/PfaEd");
+    eon = buffer+strlen(buffer);
+    while ( 1 ) {
+	sprintf( eon, "%04X_mf%d", getpid(), ++cnt );
+	if ( mkdir(buffer,0770)==0 )
+return( copy(buffer) );
+	else if ( errno!=EEXIST )
+return( NULL );
+	if ( ++tries>100 )
+return( NULL );
+    }
 }
 
 static void _SCAutoTrace(SplineChar *sc, char **args) {
@@ -439,4 +470,144 @@ return( name );
     if ( ProgramExists("autotrace",buffer)!=NULL )
 	name = "autotrace";
 return( name );
+}
+
+char *FindMFName(void) {
+    static int searched=0;
+    static char *name = NULL;
+    char buffer[1025];
+
+    if ( searched )
+return( name );
+
+    searched = true;
+    if (( name = getenv("MF"))!=NULL )
+return( name );
+    if ( ProgramExists("mf",buffer)!=NULL )
+	name = "mf";
+return( name );
+}
+
+static char *FindGfFile(char *tempdir) {
+    DIR *temp;
+    struct dirent *ent;
+    char buffer[1025], *ret=NULL;
+
+    temp = opendir(tempdir);
+    if ( temp!=NULL ) {
+	while ( (ent=readdir(temp))!=NULL ) {
+	    if ( strcmp(ent->d_name,".")==0 || strcmp(ent->d_name,"..")==0 )
+	continue;
+	    if ( strlen(ent->d_name)>2 && strcmp(ent->d_name+strlen(ent->d_name)-2,"gf")==0 ) {
+		strcpy(buffer,tempdir);
+		strcat(buffer,"/");
+		strcat(buffer,ent->d_name);
+		ret = copy(buffer);
+	break;
+	    }
+	}
+	closedir(temp);
+    }
+return( ret );
+}
+
+static void cleantempdir(char *tempdir) {
+    DIR *temp;
+    struct dirent *ent;
+    char buffer[1025], *eod;
+    char *todelete[100];
+    int cnt=0;
+
+    temp = opendir(tempdir);
+    if ( temp!=NULL ) {
+	strcpy(buffer,tempdir);
+	strcat(buffer,"/");
+	eod = buffer+strlen(buffer);
+	while ( (ent=readdir(temp))!=NULL ) {
+	    if ( strcmp(ent->d_name,".")==0 || strcmp(ent->d_name,"..")==0 )
+	continue;
+	    strcpy(eod,ent->d_name);
+	    /* Hmm... doing an unlink right here means changing the dir file */
+	    /*  which might mean we could not read it properly. So save up the*/
+	    /*  things we need to delete and trash them later */
+	    if ( cnt<99 )
+		todelete[cnt++] = copy(buffer);
+	}
+	closedir(temp);
+	todelete[cnt] = NULL;
+	for ( cnt=0; todelete[cnt]!=NULL; ++cnt ) {
+	    unlink(todelete[cnt]);
+	    free(todelete[cnt]);
+	}
+    }
+    rmdir(tempdir);
+}
+
+SplineFont *SFFromMF(char *filename) {
+    char *tempdir;
+    static char *mfarg="\\scrollmode; mode=proof ; mag=%g; input %s";
+    static double magstep=2;
+    char *arglist[8];
+    int pid, status, ac, i;
+    SplineFont *sf;
+
+    if ( FindMFName()==NULL ) {
+	GWidgetErrorR(_STR_NoMF,_STR_NoMFProg);
+return( NULL );
+    } else if ( FindAutoTraceName()==NULL ) {
+	GWidgetErrorR(_STR_NoAutotrace,_STR_NoAutotraceProg);
+return( NULL );
+    }
+
+    /* I don't know how to tell mf to put its files where I want them. */
+    /*  so instead I create a temporary directory, cd mf there, and it */
+    /*  will put the files there. */
+    tempdir = mytempdir();
+    if ( tempdir==NULL ) {
+	GWidgetErrorR(_STR_NoTempDir,_STR_NoTempDir);
+return( NULL );
+    }
+
+    ac = 0;
+    arglist[ac++] = FindMFName();
+    arglist[ac++] = galloc(strlen(mfarg)+strlen(filename)+20);
+    arglist[ac] = NULL;
+    sprintf(arglist[1],mfarg, magstep, filename);
+    if ( (pid=fork())==0 ) {
+	/* Child */
+	int fd;
+	chdir(tempdir);
+	close(1);		/* mf generates a lot of verbiage to stdout. Throw it away */
+	fd = open("/dev/null",O_WRONLY);
+	if ( fd!=1 )
+	    dup2(fd,1);
+	exit(execvp(arglist[0],arglist)==-1);	/* If exec fails, then die */
+    } else if ( pid!=-1 ) {
+	waitpid(pid,&status,0);
+	if ( WIFEXITED(status)) {
+	    char *gffile = FindGfFile(tempdir);
+	    if ( gffile==NULL )
+		GWidgetErrorR(_STR_CantRunMF,_STR_CantRunMF);
+	    else {
+		sf = SFFromBDF(gffile,3,true);
+		free(gffile);
+		if ( sf!=NULL ) {
+		    GProgressChangeLine1R(_STR_Autotracing);
+		    GProgressChangeTotal(sf->charcnt);
+		    for ( i=0; i<sf->charcnt; ++i ) {
+			if ( sf->chars[i]!=NULL && sf->chars[i]->backimages )
+			    _SCAutoTrace(sf->chars[i], args);
+			if ( !GProgressNext())
+		    break;
+		    }
+		} else 
+		    GWidgetErrorR(_STR_CantRunMF,_STR_CantRunMF);
+	    }
+	} else
+	    GWidgetErrorR(_STR_CantRunMF,_STR_CantRunMF);
+    } else
+	GWidgetErrorR(_STR_CantRunMF,_STR_CantRunMF);
+    free(arglist[1]);
+    cleantempdir(tempdir);
+return( sf );
 }

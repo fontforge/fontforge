@@ -593,7 +593,7 @@ void MenuExit(GWindow base,struct gmenuitem *mi,GEvent *e) {
 char *GetPostscriptFontName(char *dir, int mult) {
     /* Some people use pf3 as an extension for postscript type3 fonts */
     static unichar_t fontmacsuit[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','m','a','c','-','s','u','i','t', '\0' };
-    static unichar_t wild[] = { '*', '.', '{', 'p','f','a',',','p','f','b',',','s','f','d',',','t','t','f',',','b','d','f',',','o','t','f',',','p','f','3',',','t','t','c',',','g','s','f',',', 'c','i','d',',','b','i','n',',','h','q','x',',','d','f','o','n','t','}', 
+    static unichar_t wild[] = { '*', '.', '{', 'p','f','a',',','p','f','b',',','s','f','d',',','t','t','f',',','b','d','f',',','o','t','f',',','p','f','3',',','t','t','c',',','g','s','f',',', 'c','i','d',',','b','i','n',',','h','q','x',',','d','f','o','n','t',',','m','f','}', 
 	     '{','.','g','z',',','.','Z',',','.','b','z','2',',','}',  '\0' };
     static unichar_t *mimes[] = { fontmacsuit, NULL };
     unichar_t *ret, *u_dir;
@@ -4496,6 +4496,7 @@ return( NULL );
     /*  immediately. Otherwise delay a bit */
     GProgressStartIndicator(fv_list==NULL?0:10,GStringGetResource(_STR_Loading,NULL),ubuf,GStringGetResource(_STR_ReadingGlyphs,NULL),0,1);
     GProgressEnableStop(0);
+    if ( fv_list==NULL ) { GDrawSync(NULL); GDrawProcessPendingEvents(NULL); }
 
     sf = NULL;
     if ( strmatch(fullname+strlen(fullname)-4, ".sfd")==0 ||
@@ -4523,8 +4524,10 @@ return( NULL );
 		strmatch(fullname+strlen(fullname)-4, ".pf3")==0 ||
 		strmatch(fullname+strlen(fullname)-4, ".cid")==0 ||
 		strmatch(fullname+strlen(fullname)-4, ".gsf")==0 ||
-		strmatch(fullname+strlen(fullname)-4, ".ps")==0 ) {
+		strmatch(fullname+strlen(fullname)-3, ".ps")==0 ) {
 	sf = SFReadPostscript(fullname);
+    } else if ( strmatch(fullname+strlen(fullname)-3, ".mf")==0 ) {
+	sf = SFFromMF(fullname);
     } else {
 	FILE *foo = fopen(strippedname,"r");
 	if ( foo!=NULL ) {
@@ -4541,6 +4544,10 @@ return( NULL );
 		sf = SFReadTTF(fullname,0);
 	    } else if ( ch1=='%' && ch2=='!' ) {
 		sf = SFReadPostscript(fullname);
+#if 0		/* I'm not sure if this is a good test for mf files... */
+	    } else if ( ch1=='%' && ch2==' ' ) {
+		sf = SFFromMF(fullname);
+#endif
 	    } else if ( ch1=='S' && ch2=='p' && ch3=='l' && ch4=='i' ) {
 		sf = SFDRead(fullname);
 		fromsfd = true;

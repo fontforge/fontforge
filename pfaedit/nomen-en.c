@@ -1005,8 +1005,12 @@ static char *str_NoKernPairsFile = "No kerning pairs found in %.200hs";
     /* Auto Trace */
 static char *str_NothingToTrace = "Nothing to trace";
 static char *str_NoAutotrace = "Can't find autotrace";
-static char *str_NoAutotraceProg = "Can't find autotrace program (set AUTOTRACE environment variable)";
+static char *str_NoAutotraceProg = "Can't find autotrace program (set AUTOTRACE environment variable) or download from:\n  http://sf.net/projects/autotrace/";
 static char *str_AdditionalAutotraceArgs = "Additional arguments for autotrace program:";
+static char *str_NoMF = "Can't find mf";
+static char *str_NoMFProg = "Can't find mf program -- metafont (set MF environment variable) or download from:\n  http://www.tug.org/\n  http://www.ctan.org/\nIt's part of the TeX distribution";
+static char *str_NoTempDir = "Can't create temporary directory";
+static char *str_CantRunMF = "Can't run mf";
     /* Bitmap dlg */
 static char *str_AllChars = "All Characters";
 static char *str_SelChars = "Selected Characters";
