@@ -3933,6 +3933,9 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i) {
     if ( dummy->name==NULL )
 	dummy->name = ".notdef";
     dummy->width = dummy->vwidth = sf->ascent+sf->descent;
+    if ( dummy->unicodeenc>0 && dummy->unicodeenc<0x10000 &&
+	    iscombining(dummy->unicodeenc))
+	dummy->width = 0;		/* Mark characters should be 0 width */
     dummy->parent = sf;
     dummy->orig_pos = 0xffff;
 return( dummy );
