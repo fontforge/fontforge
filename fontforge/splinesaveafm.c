@@ -36,6 +36,12 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#ifdef __CygWin
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <unistd.h>
+#endif
+
 extern char *zapfnomen[];
 extern short zapfwx[];
 extern short zapfbb[][4];
@@ -1682,6 +1688,17 @@ int PfmSplineFont(FILE *pfm, SplineFont *sf, int type0) {
     putlint(pos,pfm);
 
     SFKernCleanup(sf,false);
+
+#ifdef __CygWin
+    /* Modern versions of windows want the execute bit set on a pfm file */
+    /* I've no idea what this corresponds to in windows, nor any idea on */
+    /*  how to set it from the windows UI, but this seems to work */
+    {
+	struct stat buf;
+	fstat(fileno(pfm),&buf);
+	fchmod(fileno(pfm),S_IXUSR | buf.st_mode );
+    }
+#endif
 
 return( !ferror(pfm));
 }
