@@ -4896,25 +4896,30 @@ static void CVMenuAddExtrema(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void CVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
+    static struct simplifyinfo smpl = { sf_normal,.75,.05,0 };
+    smpl.err = (cv->sc->parent->ascent+cv->sc->parent->descent)/1000.;
     CVPreserveState(cv);
-    *cv->heads[cv->drawmode] = SplineCharSimplify(cv->sc,*cv->heads[cv->drawmode],sf_normal,
-	    (cv->sc->parent->ascent+cv->sc->parent->descent)/1000.);
+    *cv->heads[cv->drawmode] = SplineCharSimplify(cv->sc,*cv->heads[cv->drawmode],
+	    &smpl);
     CVCharChangedUpdate(cv);
 }
 
 static void CVMenuSimplifyMore(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    double err;
-    int type = SimplifyDlg(cv->sc->parent,&err);
+    static struct simplifyinfo smpl = { sf_normal,.75,.05,0 };
+
+    if ( !SimplifyDlg(cv->sc->parent,&smpl))
+return;
     CVPreserveState(cv);
-    *cv->heads[cv->drawmode] = SplineCharSimplify(cv->sc,*cv->heads[cv->drawmode],type,err);
+    *cv->heads[cv->drawmode] = SplineCharSimplify(cv->sc,*cv->heads[cv->drawmode],&smpl);
     CVCharChangedUpdate(cv);
 }
 
 static void CVMenuCleanupChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
+    static struct simplifyinfo smpl = { sf_cleanup };
     CVPreserveState(cv);
-    *cv->heads[cv->drawmode] = SplineCharSimplify(cv->sc,*cv->heads[cv->drawmode],sf_cleanup,0);
+    *cv->heads[cv->drawmode] = SplineCharSimplify(cv->sc,*cv->heads[cv->drawmode],&smpl);
     CVCharChangedUpdate(cv);
 }
 
@@ -6488,8 +6493,10 @@ static void SVMenuOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void SVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SearchView *sv = (SearchView *) GDrawGetUserData(gw);
     CharView *cv = sv->cv_srch.inactive ? &sv->cv_rpl : &sv->cv_srch;
+    static struct simplifyinfo smpl = { sf_normal,.75,.05,0 };
+    smpl.err = (cv->sc->parent->ascent+cv->sc->parent->descent)/1000.;
     CVPreserveState(cv);
-    *cv->heads[cv->drawmode] = SplineCharSimplify(cv->sc,*cv->heads[cv->drawmode],sf_normal,.75);
+    *cv->heads[cv->drawmode] = SplineCharSimplify(cv->sc,*cv->heads[cv->drawmode],&smpl);
     CVCharChangedUpdate(cv);
 }
 
@@ -6497,19 +6504,21 @@ static void SVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void SVMenuSimplifyMore(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SearchView *sv = (SearchView *) GDrawGetUserData(gw);
     CharView *cv = sv->cv_srch.inactive ? &sv->cv_rpl : &sv->cv_srch;
-    double err;
-    int type = SimplifyDlg(&err);
+    static struct simplifyinfo smpl = { sf_normal,.75,.05,0 };
+    if ( !SimplifyDlg(&smpl))
+return;
     CVPreserveState(cv);
-    *cv->heads[cv->drawmode] = SplineCharSimplify(cv->sc,*cv->heads[cv->drawmode],type,err);
+    *cv->heads[cv->drawmode] = SplineCharSimplify(cv->sc,*cv->heads[cv->drawmode],&smpl);
     CVCharChangedUpdate(cv);
 }
 #endif
 
 static void SVMenuCleanupChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SearchView *sv = (SearchView *) GDrawGetUserData(gw);
+    static struct simplifyinfo smpl = { sf_cleanup };
     CharView *cv = sv->cv_srch.inactive ? &sv->cv_rpl : &sv->cv_srch;
     CVPreserveState(cv);
-    *cv->heads[cv->drawmode] = SplineCharSimplify(cv->sc,*cv->heads[cv->drawmode],sf_cleanup,0);
+    *cv->heads[cv->drawmode] = SplineCharSimplify(cv->sc,*cv->heads[cv->drawmode],&smpl);
     CVCharChangedUpdate(cv);
 }
 

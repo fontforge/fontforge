@@ -101,6 +101,16 @@ typedef struct strokeinfo {
 
 enum overlap_type { over_remove, over_intersect, over_exclude, over_findinter };
 
+enum simpify_flags { sf_cleanup=-1, sf_normal=0, sf_ignoreslopes=1,
+	sf_ignoreextremum=2, sf_smoothcurves=4, sf_choosehv=8,
+	sf_forcelines=0x10 };
+struct simplifyinfo {
+    int flags;
+    double err;
+    double tan_bounds;
+    double linefixup;
+};
+
 typedef struct ipoint {
     int x;
     int y;
@@ -911,9 +921,10 @@ extern int SplineInSplineSet(Spline *spline, SplineSet *spl);
 extern int SSPointWithin(SplineSet *spl,BasePoint *pt);
 extern void SSRemoveZeroLengthSplines(SplineSet *base);
 extern void SplineCharMerge(SplineChar *sc,SplineSet **head,int type);
-enum simpify_flags { sf_cleanup=-1, sf_normal=0, sf_ignoreslopes=1, sf_ignoreextremum=2 };
-extern void SplinePointListSimplify(SplineChar *sc,SplinePointList *spl,int flags,double err);
-extern SplineSet *SplineCharSimplify(SplineChar *sc,SplineSet *head,int flags,double err);
+extern void SplinePointListSimplify(SplineChar *sc,SplinePointList *spl,
+	struct simplifyinfo *smpl);
+extern SplineSet *SplineCharSimplify(SplineChar *sc,SplineSet *head,
+	struct simplifyinfo *smpl);
 extern SplineSet *SplineSetJoin(SplineSet *start,int doall,real fudge,int *changed);
 extern void SplineCharAddExtrema(SplineSet *head,int between_selected);
 extern SplineSet *SplineCharRemoveTiny(SplineChar *sc,SplineSet *head);

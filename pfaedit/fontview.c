@@ -1771,7 +1771,7 @@ static void FVMenuWireframe(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     ShadowDlg(fv,NULL,NULL,true);
 }
 
-void _FVSimplify(FontView *fv,int type, double err) {
+void _FVSimplify(FontView *fv,struct simplifyinfo *smpl) {
     int i, cnt=0;
 
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
@@ -1781,7 +1781,7 @@ void _FVSimplify(FontView *fv,int type, double err) {
     for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = fv->sf->chars[i];
 	SCPreserveState(sc,false);
-	sc->splines = SplineCharSimplify(sc,sc->splines,type,err);
+	sc->splines = SplineCharSimplify(sc,sc->splines,smpl);
 	SCCharChangedUpdate(sc);
 	if ( !GProgressNext())
     break;
@@ -1790,14 +1790,15 @@ void _FVSimplify(FontView *fv,int type, double err) {
 }
 
 static void FVSimplify(FontView *fv,int type) {
-    double err = (fv->sf->ascent+fv->sf->descent)/1000.;
+    static struct simplifyinfo smpl = { sf_normal,.75,.05,0 };
+
+    smpl.err = (fv->sf->ascent+fv->sf->descent)/1000.;
 
     if ( type==1 ) {
-	type = SimplifyDlg(fv->sf,&err);
-	if ( type==-1 )
+	if ( !SimplifyDlg(fv->sf,&smpl))
 return;
     }
-    _FVSimplify(fv,type,err);
+    _FVSimplify(fv,&smpl);
 }
 
 static void FVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e) {

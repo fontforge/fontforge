@@ -1673,11 +1673,12 @@ static void MVMenuWireframe(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void MVSimplify( MetricsView *mv,int type ) {
     int i;
-    double err = (mv->fv->sf->ascent+mv->fv->sf->descent)/1000.;
+    static struct simplifyinfo smpl = { sf_normal,.75,.05,0 };
+
+    smpl.err = (mv->fv->sf->ascent+mv->fv->sf->descent)/1000.;
 
     if ( type==1 ) {
-	type = SimplifyDlg(mv->fv->sf,&err);
-	if ( type==-1 )
+	if ( !SimplifyDlg(mv->fv->sf,&smpl))
 return;
     }
 
@@ -1687,7 +1688,7 @@ return;
     if ( i!=-1 ) {
 	SplineChar *sc = mv->perchar[i].sc;
 	SCPreserveState(sc,false);
-	sc->splines = SplineCharSimplify(sc,sc->splines,type,err);
+	sc->splines = SplineCharSimplify(sc,sc->splines,&smpl);
 	SCCharChangedUpdate(sc);
     }
 }

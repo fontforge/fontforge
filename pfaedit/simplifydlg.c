@@ -30,14 +30,24 @@
 #define CID_Extrema	1000
 #define CID_Slopes	1001
 #define CID_Error	1002
+#define CID_Smooth	1003
+#define CID_SmoothTan	1004
+#define CID_SmoothHV	1005
+#define CID_FlattenBumps	1006
+#define CID_FlattenBound	1007
 
-static double olderr_rat = 1/1000.;
+static double olderr_rat = 1/1000., oldsmooth_tan=.2, oldlinefixup_rat = 10./1000.;
 static int oldextrema = false;
 static int oldslopes = false;
+static int oldsmooth = true;
+static int oldsmoothhv = true;
+static int oldlinefix = false;
 
-typedef struct simplifyinfo {
+typedef struct simplifydlg {
     int flags;
     double err;
+    double tan_bounds;
+    double linefixup;
     int done;
     int cancelled;
     int em_size;
@@ -47,17 +57,36 @@ static int Sim_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	Simple *sim = GDrawGetUserData(GGadgetGetWindow(g));
 	int badparse=false;
-	sim->err = GetRealR(GGadgetGetWindow(g),CID_Error,_STR_ErrorLimit,&badparse);
-	if ( badparse )
-return( true );
-	olderr_rat = sim->err/sim->em_size;
 	sim->flags = 0;
 	if ( GGadgetIsChecked(GWidgetGetControl(GGadgetGetWindow(g),CID_Extrema)) )
 	    sim->flags = sf_ignoreextremum;
 	if ( GGadgetIsChecked(GWidgetGetControl(GGadgetGetWindow(g),CID_Slopes)) )
 	    sim->flags |= sf_ignoreslopes;
+	if ( GGadgetIsChecked(GWidgetGetControl(GGadgetGetWindow(g),CID_Smooth)) )
+	    sim->flags |= sf_smoothcurves;
+	if ( GGadgetIsChecked(GWidgetGetControl(GGadgetGetWindow(g),CID_SmoothHV)) )
+	    sim->flags |= sf_choosehv;
+	if ( GGadgetIsChecked(GWidgetGetControl(GGadgetGetWindow(g),CID_FlattenBumps)) )
+	    sim->flags |= sf_forcelines;
+	sim->err = GetRealR(GGadgetGetWindow(g),CID_Error,_STR_ErrorLimit,&badparse);
+	if ( sim->flags&sf_smoothcurves )
+	    sim->tan_bounds= GetRealR(GGadgetGetWindow(g),CID_SmoothTan,_STR_Tangent,&badparse);
+	if ( sim->flags&sf_forcelines )
+	    sim->linefixup= GetRealR(GGadgetGetWindow(g),CID_FlattenBound,_STR_BumpSize,&badparse);
+	if ( badparse )
+return( true );
+	olderr_rat = sim->err/sim->em_size;
 	oldextrema = (sim->flags&sf_ignoreextremum);
 	oldslopes = (sim->flags&sf_ignoreslopes);
+	oldsmooth = (sim->flags&sf_smoothcurves);
+	oldlinefix = (sim->flags&sf_forcelines);
+	if ( oldsmooth ) {
+	    oldsmooth_tan = sim->tan_bounds;
+	    oldsmoothhv = (sim->flags&sf_choosehv);
+	}
+	if ( oldlinefix )
+	    oldlinefixup_rat = sim->linefixup/sim->em_size;
+	
 	sim->done = true;
     }
 return( true );
@@ -84,14 +113,14 @@ return( false );
 return( true );
 }
 
-int SimplifyDlg(SplineFont *sf, double *err) {
+int SimplifyDlg(SplineFont *sf, struct simplifyinfo *smpl) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[17];
     GTextInfo label[17];
     Simple sim;
-    char buffer[12];
+    char buffer[12], buffer2[12], buffer3[12];
 
     memset(&sim,0,sizeof(sim));
     sim.em_size = sf->ascent+sf->descent;
@@ -105,84 +134,159 @@ int SimplifyDlg(SplineFont *sf, double *err) {
     wattrs.window_title = GStringGetResource(_STR_Simplify,NULL);
     wattrs.is_dlg = true;
     pos.x = pos.y = 0;
-    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,170));
-    pos.height = GDrawPointsToPixels(NULL,115);
+    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,180));
+    pos.height = GDrawPointsToPixels(NULL,215);
     gw = GDrawCreateTopWindow(NULL,&pos,sim_e_h,&sim,&wattrs);
 
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
 
-    label[0].text = (unichar_t *) _STR_RemoveExtrema;
+    label[0].text = (unichar_t *) _STR_ErrorLimit;
     label[0].text_in_resource = true;
     gcd[0].gd.label = &label[0];
-    gcd[0].gd.pos.x = 8; gcd[0].gd.pos.y = 8; 
+    gcd[0].gd.pos.x = 10; gcd[0].gd.pos.y = 12;
     gcd[0].gd.flags = gg_enabled|gg_visible;
-    if ( oldextrema )
-	gcd[0].gd.flags |= gg_cb_on;
-    gcd[0].gd.popup_msg = GStringGetResource(_STR_RemoveExtremaPopup,NULL);
-    gcd[0].gd.cid = CID_Extrema;
-    gcd[0].creator = GCheckBoxCreate;
-
-    label[1].text = (unichar_t *) _STR_ChangeSlopes;
-    label[1].text_in_resource = true;
-    gcd[1].gd.label = &label[1];
-    gcd[1].gd.pos.x = 8; gcd[1].gd.pos.y = 26;
-    gcd[1].gd.flags = gg_enabled|gg_visible;
-    if ( oldslopes )
-	gcd[1].gd.flags |= gg_cb_on;
-    gcd[1].gd.cid = CID_Slopes;
-    gcd[1].gd.popup_msg = GStringGetResource(_STR_ChangeSlopesPopup,NULL);
-    gcd[1].creator = GCheckBoxCreate;
-
-    label[2].text = (unichar_t *) _STR_ErrorLimit;
-    label[2].text_in_resource = true;
-    gcd[2].gd.label = &label[2];
-    gcd[2].gd.pos.x = 8; gcd[2].gd.pos.y = 44+6;
-    gcd[2].gd.flags = gg_enabled|gg_visible;
-    gcd[2].creator = GLabelCreate;
+    gcd[0].creator = GLabelCreate;
 
     sprintf( buffer, "%.3g", olderr_rat*sim.em_size );
-    label[3].text = (unichar_t *) buffer;
-    label[3].text_is_1byte = true;
-    gcd[3].gd.label = &label[3];
-    gcd[3].gd.pos.x = 70; gcd[3].gd.pos.y = gcd[2].gd.pos.y-6;
-    gcd[3].gd.pos.width = 40;
-    gcd[3].gd.flags = gg_enabled|gg_visible;
-    gcd[3].gd.cid = CID_Error;
-    gcd[3].creator = GTextFieldCreate;
+    label[1].text = (unichar_t *) buffer;
+    label[1].text_is_1byte = true;
+    gcd[1].gd.label = &label[1];
+    gcd[1].gd.pos.x = 70; gcd[1].gd.pos.y = gcd[0].gd.pos.y-6;
+    gcd[1].gd.pos.width = 40;
+    gcd[1].gd.flags = gg_enabled|gg_visible;
+    gcd[1].gd.cid = CID_Error;
+    gcd[1].creator = GTextFieldCreate;
 
-    gcd[4].gd.pos.x = gcd[3].gd.pos.x+gcd[3].gd.pos.width+3;
-    gcd[4].gd.pos.y = gcd[2].gd.pos.y;
-    gcd[4].gd.flags = gg_visible | gg_enabled ;
-    label[4].text = (unichar_t *) _STR_EmUnits;
+    gcd[2].gd.pos.x = gcd[1].gd.pos.x+gcd[1].gd.pos.width+3;
+    gcd[2].gd.pos.y = gcd[0].gd.pos.y;
+    gcd[2].gd.flags = gg_visible | gg_enabled ;
+    label[2].text = (unichar_t *) _STR_EmUnits;
+    label[2].text_in_resource = true;
+    gcd[2].gd.label = &label[2];
+    gcd[2].creator = GLabelCreate;
+
+    label[3].text = (unichar_t *) _STR_CurveSmoothing;
+    label[3].text_in_resource = true;
+    gcd[3].gd.label = &label[3];
+    gcd[3].gd.pos.x = 8; gcd[3].gd.pos.y = gcd[1].gd.pos.y+24; 
+    gcd[3].gd.flags = gg_enabled|gg_visible;
+    if ( oldsmooth )
+	gcd[3].gd.flags |= gg_cb_on;
+    gcd[3].gd.popup_msg = GStringGetResource(_STR_CurveSmoothingPopup,NULL);
+    gcd[3].gd.cid = CID_Smooth;
+    gcd[3].creator = GCheckBoxCreate;
+
+    label[4].text = (unichar_t *) _STR_IfTan;
     label[4].text_in_resource = true;
     gcd[4].gd.label = &label[4];
+    gcd[4].gd.pos.x = 20; gcd[4].gd.pos.y = gcd[3].gd.pos.y+24;
+    gcd[4].gd.flags = gg_enabled|gg_visible;
     gcd[4].creator = GLabelCreate;
 
-    gcd[5].gd.pos.x = 20-3; gcd[5].gd.pos.y = gcd[4].gd.pos.y+30;
-    gcd[5].gd.pos.width = -1; gcd[5].gd.pos.height = 0;
-    gcd[5].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[5].text = (unichar_t *) _STR_OK;
-    label[5].text_in_resource = true;
-    gcd[5].gd.mnemonic = 'O';
+    sprintf( buffer2, "%.3g", oldsmooth_tan );
+    label[5].text = (unichar_t *) buffer2;
+    label[5].text_is_1byte = true;
     gcd[5].gd.label = &label[5];
-    gcd[5].gd.handle_controlevent = Sim_OK;
-    gcd[5].creator = GButtonCreate;
+    gcd[5].gd.pos.x = 94; gcd[5].gd.pos.y = gcd[4].gd.pos.y-6;
+    gcd[5].gd.pos.width = 40;
+    gcd[5].gd.flags = gg_enabled|gg_visible;
+    gcd[5].gd.cid = CID_SmoothTan;
+    gcd[5].creator = GTextFieldCreate;
 
-    gcd[6].gd.pos.x = -20; gcd[6].gd.pos.y = gcd[5].gd.pos.y+3;
-    gcd[6].gd.pos.width = -1; gcd[6].gd.pos.height = 0;
-    gcd[6].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[6].text = (unichar_t *) _STR_Cancel;
+    label[6].text = (unichar_t *) _STR_SnapToHV;
     label[6].text_in_resource = true;
     gcd[6].gd.label = &label[6];
-    gcd[6].gd.mnemonic = 'C';
-    gcd[6].gd.handle_controlevent = Sim_Cancel;
-    gcd[6].creator = GButtonCreate;
+    gcd[6].gd.pos.x = 17; gcd[6].gd.pos.y = gcd[5].gd.pos.y+24; 
+    gcd[6].gd.flags = gg_enabled|gg_visible;
+    if ( oldsmoothhv )
+	gcd[6].gd.flags |= gg_cb_on;
+    gcd[6].gd.popup_msg = GStringGetResource(_STR_SnapToHVPopup,NULL);
+    gcd[6].gd.cid = CID_SmoothHV;
+    gcd[6].creator = GCheckBoxCreate;
 
-    gcd[7].gd.pos.x = 2; gcd[7].gd.pos.y = 2;
-    gcd[7].gd.pos.width = pos.width-4; gcd[7].gd.pos.height = pos.height-4;
-    gcd[7].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
-    gcd[7].creator = GGroupCreate;
+    label[7].text = (unichar_t *) _STR_FlattenBumps;
+    label[7].text_in_resource = true;
+    gcd[7].gd.label = &label[7];
+    gcd[7].gd.pos.x = 8; gcd[7].gd.pos.y = gcd[6].gd.pos.y+14; 
+    gcd[7].gd.flags = gg_enabled|gg_visible;
+    if ( oldlinefix )
+	gcd[7].gd.flags |= gg_cb_on;
+    gcd[7].gd.popup_msg = GStringGetResource(_STR_FlattenBumpsPopup,NULL);
+    gcd[7].gd.cid = CID_FlattenBumps;
+    gcd[7].creator = GCheckBoxCreate;
+
+    label[8].text = (unichar_t *) _STR_IfSmallerThan;
+    label[8].text_in_resource = true;
+    gcd[8].gd.label = &label[8];
+    gcd[8].gd.pos.x = 20; gcd[8].gd.pos.y = gcd[7].gd.pos.y+24;
+    gcd[8].gd.flags = gg_enabled|gg_visible;
+    gcd[8].creator = GLabelCreate;
+
+    sprintf( buffer3, "%.3g", oldlinefixup_rat*sim.em_size );
+    label[9].text = (unichar_t *) buffer3;
+    label[9].text_is_1byte = true;
+    gcd[9].gd.label = &label[9];
+    gcd[9].gd.pos.x = 90; gcd[9].gd.pos.y = gcd[8].gd.pos.y-6;
+    gcd[9].gd.pos.width = 40;
+    gcd[9].gd.flags = gg_enabled|gg_visible;
+    gcd[9].gd.cid = CID_FlattenBound;
+    gcd[9].creator = GTextFieldCreate;
+
+    gcd[10].gd.pos.x = gcd[9].gd.pos.x+gcd[9].gd.pos.width+3;
+    gcd[10].gd.pos.y = gcd[8].gd.pos.y;
+    gcd[10].gd.flags = gg_visible | gg_enabled ;
+    label[10].text = (unichar_t *) _STR_EmUnits;
+    label[10].text_in_resource = true;
+    gcd[10].gd.label = &label[10];
+    gcd[10].creator = GLabelCreate;
+
+    label[11].text = (unichar_t *) _STR_RemoveExtrema;
+    label[11].text_in_resource = true;
+    gcd[11].gd.label = &label[11];
+    gcd[11].gd.pos.x = 8; gcd[11].gd.pos.y = gcd[9].gd.pos.y+24;
+    gcd[11].gd.flags = gg_enabled|gg_visible;
+    if ( oldextrema )
+	gcd[11].gd.flags |= gg_cb_on;
+    gcd[11].gd.popup_msg = GStringGetResource(_STR_RemoveExtremaPopup,NULL);
+    gcd[11].gd.cid = CID_Extrema;
+    gcd[11].creator = GCheckBoxCreate;
+
+    label[12].text = (unichar_t *) _STR_ChangeSlopes;
+    label[12].text_in_resource = true;
+    gcd[12].gd.label = &label[12];
+    gcd[12].gd.pos.x = 8; gcd[12].gd.pos.y = gcd[11].gd.pos.y+14;
+    gcd[12].gd.flags = gg_enabled|gg_visible;
+    if ( oldslopes )
+	gcd[12].gd.flags |= gg_cb_on;
+    gcd[12].gd.cid = CID_Slopes;
+    gcd[12].gd.popup_msg = GStringGetResource(_STR_ChangeSlopesPopup,NULL);
+    gcd[12].creator = GCheckBoxCreate;
+
+    gcd[13].gd.pos.x = 20-3; gcd[13].gd.pos.y = gcd[12].gd.pos.y+30;
+    gcd[13].gd.pos.width = -1; gcd[13].gd.pos.height = 0;
+    gcd[13].gd.flags = gg_visible | gg_enabled | gg_but_default;
+    label[13].text = (unichar_t *) _STR_OK;
+    label[13].text_in_resource = true;
+    gcd[13].gd.mnemonic = 'O';
+    gcd[13].gd.label = &label[13];
+    gcd[13].gd.handle_controlevent = Sim_OK;
+    gcd[13].creator = GButtonCreate;
+
+    gcd[14].gd.pos.x = -20; gcd[14].gd.pos.y = gcd[13].gd.pos.y+3;
+    gcd[14].gd.pos.width = -1; gcd[14].gd.pos.height = 0;
+    gcd[14].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    label[14].text = (unichar_t *) _STR_Cancel;
+    label[14].text_in_resource = true;
+    gcd[14].gd.label = &label[14];
+    gcd[14].gd.mnemonic = 'C';
+    gcd[14].gd.handle_controlevent = Sim_Cancel;
+    gcd[14].creator = GButtonCreate;
+
+    gcd[15].gd.pos.x = 2; gcd[15].gd.pos.y = 2;
+    gcd[15].gd.pos.width = pos.width-4; gcd[15].gd.pos.height = pos.height-4;
+    gcd[15].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
+    gcd[15].creator = GGroupCreate;
 
     GGadgetsCreate(gw,gcd);
     GWidgetIndicateFocusGadget(GWidgetGetControl(gw,CID_Error));
@@ -194,8 +298,11 @@ int SimplifyDlg(SplineFont *sf, double *err) {
 	GDrawProcessOneEvent(NULL);
     GDrawSetVisible(gw,false);
     if ( sim.cancelled )
-return( -1 );
+return( false );
 
-    *err = sim.err;
-return( sim.flags );
+    smpl->flags = sim.flags;
+    smpl->err = sim.err;
+    smpl->tan_bounds = sim.tan_bounds;
+    smpl->linefixup = sim.linefixup;
+return( true );
 }

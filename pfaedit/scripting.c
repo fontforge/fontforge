@@ -1959,17 +1959,28 @@ static void bFindIntersections(Context *c) {
 }
 
 static void bSimplify(Context *c) {
-    double err = (c->curfv->sf->ascent+c->curfv->sf->descent)/1000.;
-    int type = 0;
+    static struct simplifyinfo smpl = { sf_normal,.75,.2,2 };
+    smpl.err = (c->curfv->sf->ascent+c->curfv->sf->descent)/1000.;
+    smpl.linefixup = (c->curfv->sf->ascent+c->curfv->sf->descent)/500.;
 
-    if ( c->a.argc==3 ) {
+    if ( c->a.argc>=3 && c->a.argc<=5 ) {
 	if ( c->a.vals[1].type!=v_int || c->a.vals[2].type!=v_int )
 	    error( c, "Bad type for argument" );
-	type = c->a.vals[1].u.ival;
-	err = c->a.vals[2].u.ival;
+	smpl.flags = c->a.vals[1].u.ival;
+	smpl.err = c->a.vals[2].u.ival;
+	if ( c->a.argc>=4 ) {
+	    if ( c->a.vals[3].type!=v_int )
+		error( c, "Bad type for argument" );
+	    smpl.tan_bounds = c->a.vals[3].u.ival/100.0;
+	    if ( c->a.argc>=5 ) {
+		if ( c->a.vals[4].type!=v_int )
+		    error( c, "Bad type for argument" );
+		smpl.linefixup = c->a.vals[4].u.ival;
+	    }
+	}
     } else if ( c->a.argc!=1 )
 	error( c, "Wrong number of arguments");
-    _FVSimplify(c->curfv,type,err);
+    _FVSimplify(c->curfv,&smpl);
 }
 
 static void bAddExtrema(Context *c) {

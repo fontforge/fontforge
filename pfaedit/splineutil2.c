@@ -1108,9 +1108,10 @@ static void SplinesRemoveBetween(SplineChar *sc, SplinePoint *from, SplinePoint 
     SplinePoint *np, oldfrom;
     Spline *sp;
     BasePoint fncp, tpcp;
+    int order2 = from->next->order2;
 
     oldfrom = *from;
-    if ( sc->parent->order2 ) {
+    if ( order2 ) {
 	if ( from->nonextcp || to->noprevcp ||
 		!IntersectLines(&fncp,&from->nextcp,&from->me,&to->prevcp,&to->me) ) {
 	    from->nonextcp = to->noprevcp = true;
@@ -1140,10 +1141,11 @@ static void SplinesRemoveBetween(SplineChar *sc, SplinePoint *from, SplinePoint 
 	sp = np->next;
 	SplinePointMDFree(sc,np);
     }
-    if ( type==0 && !sc->parent->order2 )
+    if ( type==0 && !order2 )
 	FixupCurveTanPoints(from,to,&fncp,&tpcp);
     free(tp);
 }
+
 
 static void RemoveZeroLengthSplines(SplineSet *spl, int onlyselected) {
     SplinePoint *curp, *next, *prev;
@@ -1392,9 +1394,137 @@ return( false );
 return ( SplinesRemoveBetweenMaybe(sc,from,to,flags,err));
 }
 
+static void SPLForceLines(SplineChar *sc,SplineSet *ss,double bump_size) {
+    Spline *s, *first=NULL;
+    SplinePoint *sp;
+    int any;
+    BasePoint unit;
+    double len, minlen = (sc->parent->ascent+sc->parent->descent)/20.0;
+    double diff, xoff, yoff, len2;
+
+    for ( s = ss->first->next; s!=NULL && s!=first; s=s->to->next ) {
+	if ( first==NULL ) first = s;
+	if ( s->knownlinear ) {
+	    unit.x = s->to->me.x-s->from->me.x;
+	    unit.y = s->to->me.y-s->from->me.y;
+	    len = sqrt(unit.x*unit.x + unit.y*unit.y);
+	    if ( len<minlen )
+    continue;
+	    unit.x /= len; unit.y /= len;
+	    do {
+		any = false;
+		if ( s->from->prev!=NULL ) {
+		    sp = s->from->prev->from;
+		    diff = (sp->me.x-s->from->me.x)*unit.y - (sp->me.y-s->from->me.y)*unit.x;
+		    if ( fabs(diff)<=bump_size ) {
+			xoff = diff*unit.y; yoff = -diff*unit.x;
+			sp->me.x -= xoff; sp->me.y -= yoff;
+			sp->prevcp.x -= xoff; sp->prevcp.y -= yoff;
+			sp->nextcp = sp->me; sp->nonextcp = true;
+			SplineFree(sp->next);
+			SplinePointMDFree(sc,s->from);
+			sp->next = s; s->from = sp;
+			SplineRefigure(s);
+			any = true;
+		    }
+		}
+		if ( s->to->next!=NULL ) {
+		    sp = s->to->next->to;
+		    /* If the next spline is a longer line than we are, then don't */
+		    /*  merge it to us, rather merge us into it next time through the loop */
+		    if ( sp->prev->knownlinear )
+			len2 = sqrt((sp->me.x-s->to->me.x)*(sp->me.x-s->to->me.x) + (sp->me.y-s->to->me.y)*(sp->me.y-s->to->me.y));
+		    else
+			len2 = len/2;
+		    diff = (sp->me.x-s->to->me.x)*unit.y - (sp->me.y-s->to->me.y)*unit.x;
+		    if ( len2<len && fabs(diff)<=bump_size ) {
+			xoff = diff*unit.y; yoff = -diff*unit.x;
+			sp->me.x -= xoff; sp->me.y -= yoff;
+			sp->nextcp.x -= xoff; sp->nextcp.y -= yoff;
+			sp->prevcp = sp->me; sp->noprevcp = true;
+			SplineFree(sp->prev);
+			SplinePointMDFree(sc,s->to);
+			sp->prev = s; s->to = sp;
+			SplineRefigure(s);
+			any = true;
+		    }
+		}
+	    } while ( any );
+	}
+    }
+}
+
+static int SPLSmoothControlPoints(SplineSet *ss,double tan_bounds,int vert_check) {
+    SplinePoint *sp;
+    /* If a point has control points, and if those cps are in nearly the same */
+    /*  direction (within tan_bounds) then adjust them so that they are in the*/
+    /*  same direction */
+    BasePoint unit, unit2;
+    double len, len2, para, norm, tn;
+    int changed=false, found;
+
+    for ( sp = ss->first; ; ) {
+	if ( !sp->nonextcp && !sp->noprevcp && sp->pointtype==pt_corner ) {
+	    unit.x = sp->nextcp.x-sp->me.x;
+	    unit.y = sp->nextcp.y-sp->me.y;
+	    len = sqrt(unit.x*unit.x + unit.y*unit.y);
+	    unit.x /= len; unit.y /= len;
+	    para = (sp->me.x-sp->prevcp.x)*unit.x + (sp->me.y-sp->prevcp.y)*unit.y;
+	    norm = (sp->me.x-sp->prevcp.x)*unit.y - (sp->me.y-sp->prevcp.y)*unit.x;
+	    if ( para==0 )
+		tn = 1000;
+	    else
+		tn = norm/para;
+	    if ( tn<0 ) tn = -tn;
+	    if ( tn<tan_bounds ) {
+		found = 0;
+		unit2.x = sp->me.x-sp->prevcp.x;
+		unit2.y = sp->me.y-sp->prevcp.y;
+		len2 = sqrt(unit2.x*unit2.x + unit2.y*unit2.y);
+		unit2.x /= len; unit2.y /= len2;
+		if ( vert_check ) {
+		    if ( fabs(unit.x)>fabs(unit.y) ) {
+			/* Closer to horizontal */
+			if ( (unit.y<=0 && unit2.y>=0) || (unit.y>=0 && unit2.y<=0) ) {
+			    unit2.x = 1; unit2.y = 0;
+			    found = 1;
+			}
+		    } else {
+			if ( (unit.x<=0 && unit2.x>=0) || (unit.x>=0 && unit2.x<=0) ) {
+			    unit2.y = 1; unit2.x = 0;
+			    found = 1;
+			}
+		    }
+		}
+		if ( !found ) {
+		    unit2.x += unit.x;
+		    unit2.y += unit.y;
+		    unit2.x /= 2.0; unit2.y /= 2.0;
+		}
+		sp->nextcp.x = sp->me.x + len*unit2.x;
+		sp->nextcp.y = sp->me.y + len*unit2.y;
+		sp->prevcp.x = sp->me.x - len2*unit2.x;
+		sp->prevcp.y = sp->me.y - len2*unit2.y;
+		if ( sp->prev )
+		    SplineRefigure(sp->prev);
+		if ( sp->next )
+		    SplineRefigure(sp->next);
+		changed = true;
+	    }
+	}
+	if ( sp->next==NULL )
+    break;
+	sp = sp->next->to;
+	if ( sp==ss->first )
+    break;
+    }
+return( changed );
+}
+
 /* Cleanup just turns splines with control points which happen to trace out */
 /*  lines into simple lines */
-void SplinePointListSimplify(SplineChar *sc,SplinePointList *spl,int flags,double err) {
+void SplinePointListSimplify(SplineChar *sc,SplinePointList *spl,
+	struct simplifyinfo *smpl) {
     SplinePoint *first, *next, *sp, *nsp;
 
     if ( spl==NULL )
@@ -1402,10 +1532,10 @@ return;
 
     RemoveZeroLengthSplines(spl,false);
 
-	/* Special case checks for paths containing only one point */
-	/*  else we get lots of nans (or only two) */
+    if ( smpl->flags!=sf_cleanup && (smpl->flags&sf_forcelines))
+	SPLForceLines(sc,spl,smpl->linefixup);
 
-    if ( flags!=sf_cleanup && spl->first->prev!=NULL && spl->first->prev!=spl->first->next ) {
+    if ( smpl->flags!=sf_cleanup && spl->first->prev!=NULL && spl->first->prev!=spl->first->next ) {
 	/* first thing to try is to remove everything between two extrema */
 	/* We do this even if they checked ignore extrema. After this pass */
 	/*  we'll come back and check every point individually */
@@ -1430,7 +1560,7 @@ return;
 		/* nsp is something we don't want to remove */
 		if ( nsp==sp )
 	    break;
-		if ( SplinesRemoveBetweenMaybe(sc,sp,nsp,flags,err)) {
+		if ( SplinesRemoveBetweenMaybe(sc,sp,nsp,smpl->flags,smpl->err)) {
 		    if ( spl->last==spl->first )
 			spl->last = spl->first = sp;	/* We know this point didn't get removed */
 		    sp = nsp;
@@ -1446,13 +1576,16 @@ return;
 	    first = spl->first->prev->from;
 	    if ( first->prev == first->next )
 return;
-	    if ( !SplinesRemoveMidMaybe(sc,spl->first,flags,err))
+	    if ( !SplinesRemoveMidMaybe(sc,spl->first,smpl->flags,smpl->err))
 	break;
 	    if ( spl->first==spl->last )
 		spl->last = first;
 	    spl->first = first;
 	}
     }
+
+	/* Special case checks for paths containing only one point */
+	/*  else we get lots of nans (or only two) */
     if ( spl->first->next == NULL )
 return;
     for ( sp = spl->first->next->to; sp!=spl->last && sp->next!=NULL; sp = next ) {
@@ -1463,8 +1596,8 @@ return;
 		(sp->next!=NULL && sp->next->to->next!=NULL &&
 		    sp->next->to->next->to == sp ))
 return;
-	if ( flags!=sf_cleanup )
-	    SplinesRemoveMidMaybe(sc,sp,flags,err);
+	if ( smpl->flags!=sf_cleanup )
+	    SplinesRemoveMidMaybe(sc,sp,smpl->flags,smpl->err);
 	else {
 	    while ( sp->me.x==next->me.x && sp->me.y==next->me.y &&
 		    sp->nextcp.x>sp->me.x-1 && sp->nextcp.x<sp->me.x+1 &&
@@ -1490,10 +1623,13 @@ return;
     break;
 	}
     }
+    if ( smpl->flags!=sf_cleanup && (smpl->flags&sf_smoothcurves))
+	SPLSmoothControlPoints(spl,smpl->tan_bounds,smpl->flags&sf_choosehv);
 }
 
 /* cleanup may be: -1 => lines become lines, 0 => simplify & retain slopes, 1=> simplify and discard slopes, 2=>discard extrema */
-SplineSet *SplineCharSimplify(SplineChar *sc,SplineSet *head,int flags,double err) {
+SplineSet *SplineCharSimplify(SplineChar *sc,SplineSet *head,
+	struct simplifyinfo *smpl) {
     SplineSet *spl, *prev, *snext;
     int anysel=0;
 
@@ -1505,7 +1641,7 @@ SplineSet *SplineCharSimplify(SplineChar *sc,SplineSet *head,int flags,double er
     for ( spl = head; spl!=NULL; spl = snext ) {
 	snext = spl->next;
 	if ( !anysel || PointListIsSelected(spl)) {
-	    SplinePointListSimplify(sc,spl,flags,err);
+	    SplinePointListSimplify(sc,spl,smpl);
 	    /* remove any singleton points */
 	    if ( spl->first->prev==spl->first->next &&
 		    (spl->first->prev==NULL ||

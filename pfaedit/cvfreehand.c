@@ -833,10 +833,10 @@ return;
     if ( cv->freehand.current_trace!=NULL ) {
 #if 0
 	SplinePointListSimplify(cv->sc,cv->freehand.current_trace,
-		sf_ignoreextremum,.75/cv->scale);
+		sf_ignoreextremum,.75/cv->scale,0);
 	SplineCharAddExtrema(cv->freehand.current_trace,false);
 	SplinePointListSimplify(cv->sc,cv->freehand.current_trace,
-		sf_normal,.75/cv->scale);
+		sf_normal,.75/cv->scale,0);
 #endif
 	CVPreserveState(cv);
 	if ( CVFreeHandInfo()->stroke_type==si_centerline ) {

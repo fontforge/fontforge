@@ -239,10 +239,11 @@ static SCI *SCIinit(SplineChar *sc,MetaFontDlg *meta) {
     SplinePoint *sp;
     int cnt;
     SCI *sci;
+    static struct simplifyinfo smpl = { sf_cleanup };
 
     SCPreserveState(sc,true);
 
-    SplinePointListSimplify(sc,sc->splines,sf_cleanup,0);		/* Get rid of two points at the same location, they cause us problems */
+    SplinePointListSimplify(sc,sc->splines,&smpl);		/* Get rid of two points at the same location, they cause us problems */
     if ( sc->manualhints || sc->changedsincelasthinted )
 	SplineCharAutoHint(sc,true);
 

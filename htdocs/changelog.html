@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 4-Jul-2003 -->
+  <!-- AP: Last modified: 7-Jul-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,33 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    ???
+    <UL>
+      <LI>
+	Remove weirdness in scripting interface to TeX font parameters
+      <LI>
+	Kanou points out that the code for reading format 4 embedded (ttf) bitmaps
+	was ambiguous and would behave incorrectly sometimes. He provided a patch.
+      <LI>
+	PfaEdit used not to create ghost hints for curved splines. It does now.
+      <LI>
+	PfaEdit did not find some of the hints needed for n021004l.pfb
+      <LI>
+	New French UI
+      <LI>
+	PfaEdit would sometimes crash when autotracing characters
+      <LI>
+	Don't snap to points when moving control points
+      <LI>
+	Directory browsing didn't work if the local encoding wasn't latin1 and the
+	directory name contain non-ascii characters.
+      <LI>
+	Add an entry to find problems to look for 'GSUB' entries to non-existant
+	characters.
+      <LI>
+	Expanded the simplify more command
+    </UL>
   <LI>
     4-July-2003
     <UL>

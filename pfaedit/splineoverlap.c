@@ -1729,7 +1729,7 @@ SplineSet *SplineSetRemoveOverlap(SplineChar *sc, SplineSet *base,enum overlap_t
     SplineSetsUntick(base);
 
     tbase = base;
-    /*tbase = SplineCharSimplify(sc,tbase,sf_cleanup,1.0/64.0);*/
+    /*tbase = SplineCharSimplify(sc,tbase,sf_cleanup,1.0/64.0,0);*/
     open = SplineSetsExtractOpen(&tbase);
     base = tbase;
     if ( ot==over_findinter ) {
