@@ -11,7 +11,7 @@ INSTALLATION NOTES:
         http://pfaedit.sourceforge.net/MacOSX.html#binary
     There should be a mac package there which will do the installation for you.
     You may need to add /usr/local/bin to your PATH environment variable (and
-    /usr/local/share/man to your MANPATH environment variable)
+    /usr/local/share/man to your MANPATH environment variable).
     If your shell is tcsh (or csh), edit ~/.cshrc and add:
         setenv PATH ${PATH}:/usr/local/bin
         if ( "$MANPATH" == "" ) then
@@ -22,6 +22,8 @@ INSTALLATION NOTES:
     If your shell is bash then edit your ~/.bashrc and add
         PATH=${PATH}:/usr/local/bin   
         MANPATH=${MANPATH:-}:/usr/local/share/man ; export MANPATH
+    At least one person also needed to define DYLD_LIBRARY_PATH to contain
+    /usr/local/lib
 
 BUILDING
     Just download the file pfaedit_full-*.tgz which you will find on

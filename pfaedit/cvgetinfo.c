@@ -459,6 +459,38 @@ return(NULL);
 return( ap );
 }
 
+void SCOrderAP(SplineChar *sc) {
+    int lc=0, cnt=0, out=false, i,j;
+    AnchorPoint *ap, **array;
+    /* Order so that first ligature index comes first */
+
+    for ( ap=sc->anchor; ap!=NULL; ap=ap->next ) {
+	if ( ap->lig_index<lc ) out = true;
+	if ( ap->lig_index>lc ) lc = ap->lig_index;
+	++cnt;
+    }
+    if ( !out )
+return;
+
+    array = galloc(cnt*sizeof(AnchorPoint *));
+    for ( i=0, ap=sc->anchor; ap!=NULL; ++i, ap=ap->next )
+	array[i] = ap;
+    for ( i=0; i<cnt-1; ++i ) {
+	for ( j=i+1; j<cnt; ++j ) {
+	    if ( array[i]->lig_index>array[j]->lig_index ) {
+		ap = array[i];
+		array[i] = array[j];
+		array[j] = ap;
+	    }
+	}
+    }
+    sc->anchor = array[0];
+    for ( i=0; i<cnt-1; ++i )
+	array[i]->next = array[i+1];
+    array[cnt-1]->next = NULL;
+    free( array );
+}
+
 static void AI_SelectList(GIData *ci,AnchorPoint *ap) {
     int i;
     AnchorClass *an;
@@ -809,6 +841,8 @@ static int AI_Ok(GGadget *g, GEvent *e) {
 	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
 	ci->done = true;
 	/* All the work has been done as we've gone along */
+	/* Well, we should reorder the list... */
+	SCOrderAP(ci->cv->sc);
     }
 return( true );
 }
@@ -1000,8 +1034,8 @@ return;
 	gcd[j].gd.pos.x = 15; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+28;
 	gcd[j].gd.pos.width = -1;
 	gcd[j].gd.flags = gg_enabled|gg_visible;
-	gcd[j].gd.cid = CID_Next;	/* Yes, I really do mean the name to be reversed */
-	gcd[j].gd.handle_controlevent = AI_Next;
+	gcd[j].gd.cid = CID_Prev;
+	gcd[j].gd.handle_controlevent = AI_Prev;
 	gcd[j].creator = GButtonCreate;
 	++j;
 
@@ -1011,8 +1045,8 @@ return;
 	gcd[j].gd.pos.x = -15; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y;
 	gcd[j].gd.pos.width = -1;
 	gcd[j].gd.flags = gg_enabled|gg_visible;
-	gcd[j].gd.cid = CID_Prev;
-	gcd[j].gd.handle_controlevent = AI_Prev;
+	gcd[j].gd.cid = CID_Next;
+	gcd[j].gd.handle_controlevent = AI_Next;
 	gcd[j].creator = GButtonCreate;
 	++j;
 

@@ -6331,7 +6331,7 @@ return( false );
     }
     redomaxp(at,format);
     if ( format==ff_otf || format==ff_otfcid || !at->applemode ) {
-	otf_dumpgposkerns(at,sf);
+	otf_dumpgpos(at,sf);
 	otf_dumpgsub(at,sf);
     } else
 	ttf_dumpkerns(at,sf);
