@@ -1063,6 +1063,19 @@ static unichar_t *CVMakeTitles(CharView *cv,unichar_t *ubuf) {
 return( title );
 }
 
+void SCRefreshTitles(SplineChar *sc) {
+    /* Called if the user changes the unicode encoding or the character name */
+    CharView *cv;
+    unichar_t ubuf[300], *title;
+
+    if ( sc->views==NULL )
+return;
+    title = CVMakeTitles(sc->views,ubuf);
+    for ( cv = sc->views; cv!=NULL; cv=cv->next )
+	GDrawSetWindowTitles(cv->gw,ubuf,title);
+    free(title);
+}
+
 void CVChangeSC(CharView *cv, SplineChar *sc ) {
     unichar_t *title;
     unichar_t ubuf[300];
@@ -1145,6 +1158,9 @@ void CVChar(CharView *cv, GEvent *event ) {
 	    event->u.chr.keysym == GK_BackSpace ) {
 	/* Menu does delete */
 	CVClear(cv->gw,NULL,NULL);
+    } else if ( event->u.chr.keysym == GK_Escape ) {
+	if ( CVClearSel(cv))
+	    SCUpdateAll(cv->sc);
     } else if ( event->u.chr.keysym == GK_Help ) {
 	MenuHelp(NULL,NULL,NULL);	/* Menu does F1 */
     } else if ( event->u.chr.keysym == GK_Left ||
@@ -2479,9 +2495,12 @@ static void CVMenuScale(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     if ( mi->mid == MID_Fit ) {
 	CVFit(cv);
     } else {
-	real midx = (cv->width/2-cv->xoff)/cv->scale;
-	real midy = (cv->height/2-cv->yoff)/cv->scale;
-	CVMagnify(cv,midx,midy,mi->mid==MID_ZoomOut?-1:1);
+	BasePoint c;
+	c.x = (cv->width/2-cv->xoff)/cv->scale;
+	c.y = (cv->height/2-cv->yoff)/cv->scale;
+	if ( CVAnySel(cv,NULL,NULL,NULL))
+	    CVFindCenter(cv,&c,false);
+	CVMagnify(cv,c.x,c.y,mi->mid==MID_ZoomOut?-1:1);
     }
 }
 
@@ -3960,8 +3979,8 @@ static GMenuItem pllist[] = {
 
 static GMenuItem vwlist[] = {
     { { (unichar_t *) _STR_Fit, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, 'F', ksm_control, NULL, NULL, CVMenuScale, MID_Fit },
-    { { (unichar_t *) _STR_Zoomout, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'o' }, '\0', ksm_control, NULL, NULL, CVMenuScale, MID_ZoomOut },
-    { { (unichar_t *) _STR_Zoomin, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'i' }, '\0', ksm_control, NULL, NULL, CVMenuScale, MID_ZoomIn },
+    { { (unichar_t *) _STR_Zoomout, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'o' }, '-', ksm_control, NULL, NULL, CVMenuScale, MID_ZoomOut },
+    { { (unichar_t *) _STR_Zoomin, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'i' }, '+', ksm_shift|ksm_control, NULL, NULL, CVMenuScale, MID_ZoomIn },
 #if HANYANG
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_DisplayCompositions, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'i' }, '\0', ksm_control, NULL, NULL, CVDisplayCompositions, MID_DisplayCompositions },

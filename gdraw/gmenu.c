@@ -551,14 +551,37 @@ return( ret );
 return( NULL );
 }
 
-static int GMenuSpecialKeys(struct gmenu *m, unichar_t keysym) {
+static int GMenuSpecialKeys(struct gmenu *m, unichar_t keysym, GEvent *event) {
     switch ( keysym ) {
       case GK_Escape:
 	GMenuDestroy(m);
 return( true );
+      case GK_Return:
+	if ( m->mi[m->line_with_mouse].sub!=NULL && m->child==NULL ) {
+	    m->child = GMenuCreateSubMenu(m,m->mi[m->line_with_mouse].sub);
+return( true );
+	} else {
+	    int i = m->line_with_mouse;
+	    if ( !m->mi[i].ti.disabled && !m->mi[i].ti.line ) {
+		if ( m->mi[i].ti.checkable )
+		    m->mi[i].ti.checked = !m->mi[i].ti.checked;
+		GMenuDismissAll(m);
+		if ( m->mi[i].invoke!=NULL )
+		    (m->mi[i].invoke)(m->owner,&m->mi[i],event);
+	    } else
+		GMenuDismissAll(m);
+return( true );
+	}
       case GK_Left: case GK_KP_Left:
 	if ( m->parent!=NULL ) {
 	    GMenuDestroy(m);
+return( true );
+	} else if ( m->line_with_mouse==-1 && m->menubar!=NULL ) {
+	    GMenuBar *mb = m->menubar;
+	    int en = mb->entry_with_mouse;
+	    if ( en>0 ) {
+		GMenuBarChangeSelection(mb,en-1,event);
+	    }
 return( true );
 	}
 	/* Else fall into the "Up" case */
@@ -575,8 +598,15 @@ return( true );
       }
       case GK_Right: case GK_KP_Right:
 	if ( m->line_with_mouse==-1 ) {
-	    if ( m->mcnt!=0 ) {
-		GMenuChangeSelection(m,m->line_with_mouse+1,NULL);
+	    if ( m->parent==NULL && m->menubar!=NULL ) {
+		GMenuBar *mb = m->menubar;
+		int en = mb->entry_with_mouse;
+		if ( en<mb->lastmi ) {
+		    GMenuBarChangeSelection(mb,en+1,event);
+		}
+return( true );
+	    } else if ( m->mcnt!=0 ) {
+		GMenuChangeSelection(m,m->line_with_mouse+1,event);
 return( true );
 	    }
 	} else if ( m->mi[m->line_with_mouse].sub!=NULL && m->child==NULL ) {
@@ -590,7 +620,7 @@ return( true );
 	if ( m->line_with_mouse==-1 && m->parent!=NULL )
 	    GMenuDestroy(m);		/*  stay in parent */
 	else if ( ns!=m->mcnt )
-	    GMenuChangeSelection(m,ns,NULL);
+	    GMenuChangeSelection(m,ns,event);
 	else if ( m->parent!=NULL )	/* If we've reached the end of a child */
 	    GMenuDestroy(m);		/*  go back to the parent */
 return( true );
@@ -637,7 +667,7 @@ return( true );
 return( true );
 	}
 	for ( ; m->child!=NULL ; m = m->child );
-return( GMenuSpecialKeys(m,event->u.chr.keysym));
+return( GMenuSpecialKeys(m,event->u.chr.keysym,event));
     }
     
 return( false );
@@ -838,7 +868,7 @@ return( true );
     if ( mb->child!=NULL ) {
 	GMenu *m;
 	for ( m=mb->child; m->child!=NULL; m = m->child );
-return( GMenuSpecialKeys(m,event->u.chr.keysym));
+return( GMenuSpecialKeys(m,event->u.chr.keysym,event));
     }
 return( false );
 }

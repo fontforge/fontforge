@@ -5,10 +5,10 @@ AC_PROG_CC
 #AC_PROG_RANLIB
 #AC_DISABLE_SHARED
 AC_DISABLE_STATIC
+AC_CANONICAL_HOST
 AC_PROG_LIBTOOL
 
 gww_nodynamic="no"
-AC_CANONICAL_HOST
 case "$host" in
 *-apple-darwin*) AC_DEFINE(NODYNAMIC)
 gww_nodynamic="yes"

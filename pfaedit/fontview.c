@@ -2693,7 +2693,16 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 	    }
 #endif
 	    else {
+		char *pt = strchr(sc->name,'.');
 		buf[0] = '?';
+		if ( pt!=NULL ) {
+		    int i, n = pt-sc->name;
+		    for ( i=0; i<psunicodenames_cnt; ++i )
+			if ( psunicodenames[i]!=NULL && strncmp(sc->name,psunicodenames[i],n)==0 ) {
+			    buf[0] = i;
+		    break;
+			}
+		}
 		fg = 0xff0000;
 	    }
 	    width = GDrawGetTextWidth(pixmap,buf,1,NULL);
@@ -2908,6 +2917,8 @@ static void FVChar(FontView *fv,GEvent *event) {
 	FVScrollToChar(fv,pos);
     } else if ( event->u.chr.keysym == GK_Help ) {
 	MenuHelp(NULL,NULL,NULL);	/* Menu does F1 */
+    } else if ( event->u.chr.keysym == GK_Escape ) {
+	FVDeselectAll(fv);
     } else if ( event->u.chr.chars[0]=='\r' || event->u.chr.chars[0]=='\n' ) {
 	for ( i=cnt=0; i<fv->sf->charcnt && cnt<10; ++i ) if ( fv->selected[i] ) {
 	    SplineChar *sc = SFMakeChar(fv->sf,i);

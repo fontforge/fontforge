@@ -226,7 +226,9 @@ struct maxp {
     uint16 maxStack;	/* 0 */
     uint16 maxglyphInstr;/* 0 */
     uint16 maxnumcomponents;	/* Maximum number of refs in any composit */
-    uint16 maxcomponentdepth;	/* 0 (if no composits), 1 else */
+    uint16 maxcomponentdepth;
+	/* Apple docs say: 0 (if no composits), maximum value 1 (one level of composit) */
+	/* OpenType docs say: 1 (if no composits), any depth allowed */
     uint16 mbz;		/* pad out to a 4byte boundary */
 };
 
@@ -343,6 +345,8 @@ struct glyphinfo {
     int fudge;
     int lasthwidth, lastvwidth;	/* encoding of last glyph for which we generate a full metrics entry */
     int hfullcnt, vfullcnt;
+    FILE *fpgmf;
+    int fpgmlen;
 };
 
 struct vorg {

@@ -1403,9 +1403,9 @@ SplineFont *SFReadMacBinary(char *filename) {
     SplineFont *sf = FindResourceFile(filename);
 
     if ( sf==NULL )
-	fprintf( stderr, "Couldn't find a resource file named %s\n", filename );
+	fprintf( stderr, "Couldn't find a font file named %s\n", filename );
     else if ( sf==(SplineFont *) (-1) ) {
-	fprintf( stderr, "%s is a resource file but contains no postscript or truetype fonts\n", filename );
+	fprintf( stderr, "%s is a mac resource file but contains no postscript or truetype fonts\n", filename );
 	sf = NULL;
     }
 return( sf );

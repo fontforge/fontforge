@@ -1275,7 +1275,8 @@ BDFFont *SplineFontPieceMeal(SplineFont *sf,int pixelsize,int antialias) {
     bdf->descent = pixelsize-bdf->ascent;
     bdf->encoding_name = sf->encoding_name;
     bdf->piecemeal = true;
-    BDFClut(bdf,4);
+    if ( antialias )
+	BDFClut(bdf,4);
 return( bdf );
 }
 

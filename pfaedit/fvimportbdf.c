@@ -652,7 +652,7 @@ return( NULL );
 	}
 	pixelsize = slurp_header(bdf,&ascent,&descent,&enc,family,mods,full);
     }
-    /*if ( pixelsize==-1 )*/
+    if ( pixelsize==-1 )
 	pixelsize = askusersize(filename);
     if ( pixelsize==-1 ) {
 	fclose(bdf);

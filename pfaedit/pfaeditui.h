@@ -58,6 +58,7 @@ extern void InitCursors(void);
 extern real GetReal(GWindow gw,int cid,char *name,int *err);
 extern int GetInt(GWindow gw,int cid,char *name,int *err);
 extern void Protest(char *label);
+extern real GetCalmRealR(GWindow gw,int cid,int namer,int *err);
 extern real GetRealR(GWindow gw,int cid,int namer,int *err);
 extern int GetIntR(GWindow gw,int cid,int namer,int *err);
 extern void ProtestR(int labelr);

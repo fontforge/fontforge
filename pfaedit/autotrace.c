@@ -331,6 +331,7 @@ return( args );
 
 void CVAutoTrace(CharView *cv,int ask) {
     char **args;
+    GCursor ct;
 
     if ( cv->sc->backimages==NULL ) {
 	GWidgetErrorR(_STR_NothingToTrace,_STR_NothingToTrace);
@@ -343,7 +344,11 @@ return;
     args = AutoTraceArgs(ask);
     if ( args==(char **) -1 )
 return;
+    ct = GDrawGetCursor(cv->v);
+    GDrawSetCursor(cv->v,ct_watch);
+    GDrawSync(NULL);
     SCAutoTrace(cv->sc, args);
+    GDrawSetCursor(cv->v,ct);
 }
 
 void FVAutoTrace(FontView *fv,int ask) {

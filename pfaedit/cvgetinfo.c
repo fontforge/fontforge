@@ -256,6 +256,7 @@ return( false );
 	    sc->unicodeenc!=-1 )
 	sf->encoding_name = em_none;
     LigSet(sc,lig);
+    SCRefreshTitles(sc);
 return( true );
 }
 
@@ -968,9 +969,9 @@ static int PI_NextChanged(GGadget *g, GEvent *e) {
 	SplinePoint *cursp = ci->cursp;
 
 	if ( GGadgetGetCid(g)==CID_NextXOff )
-	    dx = GetRealR(ci->gw,CID_NextXOff,_STR_NextCPX,&err)-(cursp->nextcp.x-cursp->me.x);
+	    dx = GetCalmRealR(ci->gw,CID_NextXOff,_STR_NextCPX,&err)-(cursp->nextcp.x-cursp->me.x);
 	else
-	    dy = GetRealR(ci->gw,CID_NextYOff,_STR_NextCPY,&err)-(cursp->nextcp.y-cursp->me.y);
+	    dy = GetCalmRealR(ci->gw,CID_NextYOff,_STR_NextCPY,&err)-(cursp->nextcp.y-cursp->me.y);
 	if ( (dx==0 && dy==0) || err )
 return( true );
 	cursp->nextcp.x += dx;
@@ -996,9 +997,9 @@ static int PI_PrevChanged(GGadget *g, GEvent *e) {
 	SplinePoint *cursp = ci->cursp;
 
 	if ( GGadgetGetCid(g)==CID_PrevXOff )
-	    dx = GetRealR(ci->gw,CID_PrevXOff,_STR_PrevCPX,&err)-(cursp->prevcp.x-cursp->me.x);
+	    dx = GetCalmRealR(ci->gw,CID_PrevXOff,_STR_PrevCPX,&err)-(cursp->prevcp.x-cursp->me.x);
 	else
-	    dy = GetRealR(ci->gw,CID_PrevYOff,_STR_PrevCPY,&err)-(cursp->prevcp.y-cursp->me.y);
+	    dy = GetCalmRealR(ci->gw,CID_PrevYOff,_STR_PrevCPY,&err)-(cursp->prevcp.y-cursp->me.y);
 	if ( (dx==0 && dy==0) || err )
 return( true );
 	cursp->prevcp.x += dx;
@@ -1027,7 +1028,8 @@ static int PI_NextDefChanged(GGadget *g, GEvent *e) {
 	if ( cursp->nextcpdef ) {
 	    BasePoint temp = cursp->prevcp;
 	    SplineCharDefaultNextCP(cursp,cursp->next==NULL?NULL:cursp->next->to);
-	    cursp->prevcp = temp;
+	    if ( !cursp->prevcpdef )
+		cursp->prevcp = temp;
 	    CVCharChangedUpdate(ci->cv);
 	    PIFillup(ci,GGadgetGetCid(g));
 	}
@@ -1046,7 +1048,8 @@ static int PI_PrevDefChanged(GGadget *g, GEvent *e) {
 	if ( cursp->prevcpdef ) {
 	    BasePoint temp = cursp->nextcp;
 	    SplineCharDefaultPrevCP(cursp,cursp->prev==NULL?NULL:cursp->prev->from);
-	    cursp->nextcp = temp;
+	    if ( !cursp->nextcpdef )
+		cursp->nextcp = temp;
 	    CVCharChangedUpdate(ci->cv);
 	    PIFillup(ci,GGadgetGetCid(g));
 	}
@@ -1103,7 +1106,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[2].gd.handle_controlevent = PI_BaseChanged;
 	gcd[2].creator = GTextFieldCreate;
 
-	label[3].text = (unichar_t *) _STR_NextCP;
+	label[3].text = (unichar_t *) _STR_PrevCP;
 	label[3].text_in_resource = true;
 	gcd[3].gd.label = &label[3];
 	gcd[3].gd.pos.x = 9; gcd[3].gd.pos.y = 35; 
@@ -1112,7 +1115,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 
 	gcd[4].gd.pos.x = 60; gcd[4].gd.pos.y = 35; gcd[4].gd.pos.width = 60;
 	gcd[4].gd.flags = gg_enabled|gg_visible;
-	gcd[4].gd.cid = CID_NextPos;
+	gcd[4].gd.cid = CID_PrevPos;
 	gcd[4].creator = GLabelCreate;
 
 	label[21].text = (unichar_t *) _STR_Default;
@@ -1120,23 +1123,23 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[21].gd.label = &label[21];
 	gcd[21].gd.pos.x = 125; gcd[21].gd.pos.y = gcd[4].gd.pos.y-3;
 	gcd[21].gd.flags = gg_enabled|gg_visible;
-	gcd[21].gd.cid = CID_NextDef;
-	gcd[21].gd.handle_controlevent = PI_NextDefChanged;
+	gcd[21].gd.cid = CID_PrevDef;
+	gcd[21].gd.handle_controlevent = PI_PrevDefChanged;
 	gcd[21].creator = GCheckBoxCreate;
 
 	gcd[5].gd.pos.x = 60; gcd[5].gd.pos.y = 49; gcd[5].gd.pos.width = 53;
 	gcd[5].gd.flags = gg_enabled|gg_visible;
-	gcd[5].gd.cid = CID_NextXOff;
-	gcd[5].gd.handle_controlevent = PI_NextChanged;
+	gcd[5].gd.cid = CID_PrevXOff;
+	gcd[5].gd.handle_controlevent = PI_PrevChanged;
 	gcd[5].creator = GTextFieldCreate;
 
 	gcd[6].gd.pos.x = 120; gcd[6].gd.pos.y = 49; gcd[6].gd.pos.width = 53;
 	gcd[6].gd.flags = gg_enabled|gg_visible;
-	gcd[6].gd.cid = CID_NextYOff;
-	gcd[6].gd.handle_controlevent = PI_NextChanged;
+	gcd[6].gd.cid = CID_PrevYOff;
+	gcd[6].gd.handle_controlevent = PI_PrevChanged;
 	gcd[6].creator = GTextFieldCreate;
 
-	label[7].text = (unichar_t *) _STR_PrevCP;
+	label[7].text = (unichar_t *) _STR_NextCP;
 	label[7].text_in_resource = true;
 	gcd[7].gd.label = &label[7];
 	gcd[7].gd.pos.x = gcd[3].gd.pos.x; gcd[7].gd.pos.y = 82; 
@@ -1145,7 +1148,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 
 	gcd[8].gd.pos.x = 60; gcd[8].gd.pos.y = 82;  gcd[8].gd.pos.width = 60;
 	gcd[8].gd.flags = gg_enabled|gg_visible;
-	gcd[8].gd.cid = CID_PrevPos;
+	gcd[8].gd.cid = CID_NextPos;
 	gcd[8].creator = GLabelCreate;
 
 	label[22].text = (unichar_t *) _STR_Default;
@@ -1153,20 +1156,20 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[22].gd.label = &label[22];
 	gcd[22].gd.pos.x = gcd[21].gd.pos.x; gcd[22].gd.pos.y = gcd[8].gd.pos.y-3;
 	gcd[22].gd.flags = gg_enabled|gg_visible;
-	gcd[22].gd.cid = CID_PrevDef;
-	gcd[22].gd.handle_controlevent = PI_PrevDefChanged;
+	gcd[22].gd.cid = CID_NextDef;
+	gcd[22].gd.handle_controlevent = PI_NextDefChanged;
 	gcd[22].creator = GCheckBoxCreate;
 
 	gcd[9].gd.pos.x = 60; gcd[9].gd.pos.y = 96; gcd[9].gd.pos.width = 53;
 	gcd[9].gd.flags = gg_enabled|gg_visible;
-	gcd[9].gd.cid = CID_PrevXOff;
-	gcd[9].gd.handle_controlevent = PI_PrevChanged;
+	gcd[9].gd.cid = CID_NextXOff;
+	gcd[9].gd.handle_controlevent = PI_NextChanged;
 	gcd[9].creator = GTextFieldCreate;
 
 	gcd[10].gd.pos.x = 120; gcd[10].gd.pos.y = 96; gcd[10].gd.pos.width = 53;
 	gcd[10].gd.flags = gg_enabled|gg_visible;
-	gcd[10].gd.cid = CID_PrevYOff;
-	gcd[10].gd.handle_controlevent = PI_PrevChanged;
+	gcd[10].gd.cid = CID_NextYOff;
+	gcd[10].gd.handle_controlevent = PI_NextChanged;
 	gcd[10].creator = GTextFieldCreate;
 
 	gcd[11].gd.pos.x = (PI_Width-2*50-10)/2; gcd[11].gd.pos.y = 127;

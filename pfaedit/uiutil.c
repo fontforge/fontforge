@@ -73,6 +73,21 @@ void ProtestR(int labelr) {
     GWidgetPostNotice(ubuf,ubuf);
 }
 
+real GetCalmRealR(GWindow gw,int cid,int namer,int *err) {
+    const unichar_t *txt; unichar_t *end;
+    real val;
+
+    txt = _GGadgetGetTitle(GWidgetGetControl(gw,cid));
+    val = u_strtod(txt,&end);
+    if ( *txt=='-' && end==txt )
+return( 0 );
+    if ( *end!='\0' ) {
+	ProtestR(namer);
+	*err = true;
+    }
+return( val );
+}
+
 real GetRealR(GWindow gw,int cid,int namer,int *err) {
     const unichar_t *txt; unichar_t *end;
     real val;
