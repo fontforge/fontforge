@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 21-Jun-2003 -->
+  <!-- AP: Last modified: 1-Jul-2003 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -562,7 +562,7 @@ a[4][0] = "Nested array";
 	fmflags&amp;4 =&gt; generate a short 'post' table with no character name
 	info in it.
       <LI>
-	fmflags&amp;8 =&gt; include ttf instructions
+	fmflags&amp;8 =&gt; do not include ttf instructions
       <LI>
 	fmflags&amp;16 =&gt; where apple and ms/adobe differ about the format of
 	a true/open type file, use apple's definition (otherwise use ms/adobe)<BR>
@@ -570,6 +570,18 @@ a[4][0] = "Nested array";
 	'bdat', ms/adobe 'EBDT'), the PostScript name in the 'name' table (Apple
 	says it must occur exactly once, ms/adobe say at least twice), and whether
 	morx/feat/kern/opbd/prop/lcar or GSUB/GPOS/GDEF tables are generated.
+      <LI>
+	fmflags&amp;0x20 =&gt; generate a '<A HREF="non-standard.html#PfEd">PfEd</A>'
+	table and store glyph comments
+      <LI>
+	fmflags&amp;0x40 =&gt; generate a '<A HREF="non-standard.html#PfEd">PfEd</A>'
+	table and store glyph colors
+      <LI>
+	fmflags&amp;0x10000 =&gt; generate a tfm file
+      <LI>
+	fmflags&amp;0x40000 =&gt; do not do flex hints
+      <LI>
+	fmflags&amp;0x80000 =&gt; do not include postscript hints
     </UL>
     <P>
     res controls the resolution of generated bdf fonts. A value of -1 means pfaedit

@@ -1236,13 +1236,22 @@ return( true );
 }
 
 static unsigned char *SplineChar2PS(SplineChar *sc,int *len,int round,int iscjk,
-	struct pschars *subrs,BasePoint *startend) {
+	struct pschars *subrs,BasePoint *startend,int flags) {
     DBounds b;
     GrowBuf gb;
     BasePoint current;
     RefChar *rf;
     unsigned char *ret;
     struct hintdb hintdb, *hdb=NULL;
+    StemInfo *oldh, *oldv;
+    int hc, vc;
+
+    if ( flags&ps_flag_nohints ) {
+	oldh = sc->hstem; oldv = sc->vstem;
+	hc = sc->hconflicts; vc = sc->vconflicts;
+	sc->hstem = NULL; sc->vstem = NULL;
+	sc->hconflicts = false; sc->vconflicts = false;
+    }
 
     memset(&gb,'\0',sizeof(gb));
     memset(&current,'\0',sizeof(current));
@@ -1302,6 +1311,10 @@ static unsigned char *SplineChar2PS(SplineChar *sc,int *len,int round,int iscjk,
     free(gb.base);
     if ( startend!=NULL )
 	startend[1] = current;
+    if ( flags&ps_flag_nohints ) {
+	sc->hstem = oldh; sc->vstem = oldv;
+	sc->hconflicts = hc; sc->vconflicts = vc;
+    }
 return( ret );
 }
 
@@ -1368,7 +1381,7 @@ return( false );
 }
 
 static void SplineFont2Subrs1(SplineFont *sf,int round, int iscjk,
-	struct pschars *subrs) {
+	struct pschars *subrs,int flags) {
     int i,cnt;
     SplineChar *sc;
     uint8 *temp;
@@ -1396,7 +1409,7 @@ static void SplineFont2Subrs1(SplineFont *sf,int round, int iscjk,
 	    /* None of the generated subrs starts with a moveto operator */
 	    /*  The invoker is expected to move to the appropriate place */
 	    if ( sc->hconflicts || sc->vconflicts || sc->anyflexes ) {
-		temp = SplineChar2PS(sc,&len,round,iscjk,subrs,bp);
+		temp = SplineChar2PS(sc,&len,round,iscjk,subrs,bp,flags);
 	    } else {
 		memset(&gb,'\0',sizeof(gb));
 		bp[1] = bp[0];
@@ -1518,7 +1531,7 @@ return( false );
 /*  name "mu", "uni00B5" or "uni03BC" */
 /* Same applies to "Delta", 394, 2206 and to "Omega", 3a9, 2126 */
 static int AddGreekDuplicates(struct pschars *chrs,SplineFont *sf,int cnt,
-	int round,int iscjk,struct pschars *subrs,int c1,int c2) {
+	int round,int iscjk,struct pschars *subrs,int c1,int c2, int flags) {
     int i1, i2, hasrealname1=false, hasrealname2=false, hasrealname;
     const char *name; char uname[12];
 
@@ -1551,7 +1564,7 @@ return(cnt);
 	}
 	chrs->keys[cnt] = copy(name);
 	chrs->values[cnt] = SplineChar2PS(sf->chars[i1==-1?i2:i1],&chrs->lens[cnt],
-		round,iscjk,subrs,NULL);
+		round,iscjk,subrs,NULL,flags);
 	++cnt;
     }
     if ( i2 == -1 || hasrealname2 ) {
@@ -1561,7 +1574,7 @@ return(cnt);
 	}
 	chrs->keys[cnt] = copy(name);
 	chrs->values[cnt] = SplineChar2PS(sf->chars[i2==-1?i1:i2],&chrs->lens[cnt],
-		round,iscjk,subrs,NULL);
+		round,iscjk,subrs,NULL,flags);
 	++cnt;
     }
     if ( !hasrealname ) {
@@ -1569,7 +1582,7 @@ return(cnt);
 	    name = psunicodenames[c2];
 	chrs->keys[cnt] = copy(name);
 	chrs->values[cnt] = SplineChar2PS(sf->chars[i1==-1?i2:i1],&chrs->lens[cnt],
-		round,iscjk,subrs,NULL);
+		round,iscjk,subrs,NULL,flags);
 	++cnt;
     }
 return( cnt );
@@ -1595,7 +1608,7 @@ return( cnt );
 }
 
 struct pschars *SplineFont2Chrs(SplineFont *sf, int round, int iscjk,
-	struct pschars *subrs) {
+	struct pschars *subrs,int flags) {
     struct pschars *chrs = gcalloc(1,sizeof(struct pschars));
     int i, cnt;
     char notdefentry[20];
@@ -1627,12 +1640,12 @@ struct pschars *SplineFont2Chrs(SplineFont *sf, int round, int iscjk,
     chrs->lens = galloc(cnt*sizeof(int));
     chrs->values = galloc(cnt*sizeof(unsigned char *));
 
-    SplineFont2Subrs1(sf,round,iscjk,subrs);
+    SplineFont2Subrs1(sf,round,iscjk,subrs,flags);
 
     i = cnt = 0;
     chrs->keys[0] = copy(".notdef");
     if ( zero_is_notdef ) {
-	chrs->values[0] = SplineChar2PS(sf->chars[0],&chrs->lens[0],round,iscjk,subrs,NULL);
+	chrs->values[0] = SplineChar2PS(sf->chars[0],&chrs->lens[0],round,iscjk,subrs,NULL,flags);
 	i = 1;
     } else {
 	char *pt = notdefentry;
@@ -1674,7 +1687,7 @@ struct pschars *SplineFont2Chrs(SplineFont *sf, int round, int iscjk,
 	if ( SCWorthOutputting(sf->chars[i]) && sf->chars[i]==SCDuplicate(sf->chars[i])) {
 	    chrs->keys[cnt] = copy(sf->chars[i]->name);
 	    chrs->values[cnt] = SplineChar2PS(sf->chars[i],&chrs->lens[cnt],
-		    round,iscjk,subrs,NULL);
+		    round,iscjk,subrs,NULL,flags);
 	    ++cnt;
 	}
 	if ( !GProgressNext()) {
@@ -1683,18 +1696,18 @@ return( NULL );
 	}
     }
     if ( exists[0] || exists[1] )
-	cnt = AddGreekDuplicates(chrs,sf,cnt,round,iscjk,subrs,0xb5,0x3bc);
+	cnt = AddGreekDuplicates(chrs,sf,cnt,round,iscjk,subrs,0xb5,0x3bc,flags);
     if ( exists[2] || exists[3] )
-	cnt = AddGreekDuplicates(chrs,sf,cnt,round,iscjk,subrs,0x394,0x2206);
+	cnt = AddGreekDuplicates(chrs,sf,cnt,round,iscjk,subrs,0x394,0x2206,flags);
     if ( exists[4] || exists[5] )
-	cnt = AddGreekDuplicates(chrs,sf,cnt,round,iscjk,subrs,0x3a9,0x2126);
+	cnt = AddGreekDuplicates(chrs,sf,cnt,round,iscjk,subrs,0x3a9,0x2126,flags);
     chrs->next = cnt;
     if ( chrs->next>chrs->cnt )
 	GDrawIError("Character estimate failed, about to die..." );
 return( chrs );
 }
 
-struct pschars *CID2Chrs(SplineFont *cidmaster,struct cidbytes *cidbytes) {
+struct pschars *CID2Chrs(SplineFont *cidmaster,struct cidbytes *cidbytes,int flags) {
     struct pschars *chrs = gcalloc(1,sizeof(struct pschars));
     int i, cnt, cid;
     char notdefentry[20];
@@ -1710,7 +1723,7 @@ struct pschars *CID2Chrs(SplineFont *cidmaster,struct cidbytes *cidbytes) {
     for ( i=0; i<cidmaster->subfontcnt; ++i ) {
 	sf = cidmaster->subfonts[i];
 	fd = &cidbytes->fds[i];
-	SplineFont2Subrs1(sf,true,fd->iscjk|0x100,fd->subrs);
+	SplineFont2Subrs1(sf,true,fd->iscjk|0x100,fd->subrs,flags);
     }
 
     chrs->cnt = cnt;
@@ -1762,7 +1775,7 @@ struct pschars *CID2Chrs(SplineFont *cidmaster,struct cidbytes *cidbytes) {
 	    fd = &cidbytes->fds[i];
 	    cidbytes->fdind[cid] = i;
 	    chrs->values[cid] = SplineChar2PS(sf->chars[cid],&chrs->lens[cid],
-		    true,fd->iscjk|0x100,fd->subrs,NULL);
+		    true,fd->iscjk|0x100,fd->subrs,NULL,flags);
 	}
 	if ( !GProgressNext()) {
 	    PSCharsFree(chrs);
@@ -2355,11 +2368,20 @@ return( ret );
 }
 
 static unsigned char *SplineChar2PSOutline2(SplineChar *sc,int *len,
-	BasePoint *startend ) {
+	BasePoint *startend, int flags ) {
     GrowBuf gb;
     struct hintdb hdb;
     RefChar *rf;
     unsigned char *ret;
+    StemInfo *oldh, *oldv;
+    int hc, vc;
+
+    if ( flags&ps_flag_nohints ) {
+	oldh = sc->hstem; oldv = sc->vstem;
+	hc = sc->hconflicts; vc = sc->vconflicts;
+	sc->hstem = NULL; sc->vstem = NULL;
+	sc->hconflicts = false; sc->vconflicts = false;
+    }
 
     memset(&gb,'\0',sizeof(gb));
     memset(&hdb,'\0',sizeof(hdb));
@@ -2375,16 +2397,29 @@ static unsigned char *SplineChar2PSOutline2(SplineChar *sc,int *len,
     *len = gb.pt-gb.base;
     free(gb.base);
     startend[1] = hdb.current;
+    if ( flags&ps_flag_nohints ) {
+	sc->hstem = oldh; sc->vstem = oldv;
+	sc->hconflicts = hc; sc->vconflicts = vc;
+    }
 return( ret );
 }
 
 static unsigned char *SplineChar2PS2(SplineChar *sc,int *len, int nomwid,
-	int defwid, struct pschars *subrs, BasePoint *startend ) {
+	int defwid, struct pschars *subrs, BasePoint *startend, int flags ) {
     GrowBuf gb;
     RefChar *rf;
     unsigned char *ret;
     struct hintdb hdb;
     uint8 mask[12];
+    StemInfo *oldh, *oldv;
+    int hc, vc;
+
+    if ( flags&ps_flag_nohints ) {
+	oldh = sc->hstem; oldv = sc->vstem;
+	hc = sc->hconflicts; vc = sc->vconflicts;
+	sc->hstem = NULL; sc->vstem = NULL;
+	sc->hconflicts = false; sc->vconflicts = false;
+    }
 
     memset(&gb,'\0',sizeof(gb));
 
@@ -2432,6 +2467,10 @@ static unsigned char *SplineChar2PS2(SplineChar *sc,int *len, int nomwid,
     ret = (unsigned char *) copyn((char *) gb.base,gb.pt-gb.base);
     *len = gb.pt-gb.base;
     free(gb.base);
+    if ( flags&ps_flag_nohints ) {
+	sc->hstem = oldh; sc->vstem = oldv;
+	sc->hconflicts = hc; sc->vconflicts = vc;
+    }
 return( ret );
 }
 
@@ -2462,7 +2501,7 @@ return( true );
 return( false );
 }
 
-struct pschars *SplineFont2Subrs2(SplineFont *sf) {
+struct pschars *SplineFont2Subrs2(SplineFont *sf,int flags) {
     struct pschars *subrs = gcalloc(1,sizeof(struct pschars));
     int i,cnt;
     SplineChar *sc;
@@ -2474,7 +2513,8 @@ struct pschars *SplineFont2Subrs2(SplineFont *sf) {
     for ( i=cnt=0; i<sf->charcnt; ++i ) {
 	sc = sf->chars[i];
 	if ( autohint_before_generate && sc!=NULL &&
-		sc->changedsincelasthinted && !sc->manualhints )
+		sc->changedsincelasthinted && !sc->manualhints &&
+		!(flags&ps_flag_nohints))
 	    SplineCharAutoHint(sc,true);
 	if ( sc==NULL || sc!=SCDuplicate(sc))
 	    /* Do Nothing */;
@@ -2509,12 +2549,12 @@ return( subrs);
 	    /* Do Nothing */;
 	else if ( sc->lsidebearing!=0x7fff ) {
 	    subrs->keys[cnt] = gcalloc(2,sizeof(BasePoint));
-	    if ( !sc->hconflicts && !sc->vconflicts )
+	    if (( !sc->hconflicts && !sc->vconflicts ) || (flags&ps_flag_nohints))
 		subrs->values[cnt] = SplineChar2PSOutline2(sc,&subrs->lens[cnt],
-			(BasePoint *) (subrs->keys[cnt]));
+			(BasePoint *) (subrs->keys[cnt]),flags);
 	    else
 		subrs->values[cnt] = SplineChar2PS2(sc,&subrs->lens[cnt],0,0,
-			subrs,(BasePoint *) (subrs->keys[cnt]));
+			subrs,(BasePoint *) (subrs->keys[cnt]),flags);
 	    sc->lsidebearing = cnt++ - subrs->bias;
 	}
 	if ( !GProgressNext()) {
@@ -2527,7 +2567,7 @@ return( subrs );
 }
     
 struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
-	struct pschars *subrs) {
+	struct pschars *subrs,int flags) {
     struct pschars *chrs = gcalloc(1,sizeof(struct pschars));
     int i, cnt;
     char notdefentry[20];
@@ -2563,7 +2603,7 @@ struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
 	sf->chars[i]->ttf_glyph = -1;
 /* only honour the width on .notdef in non-fixed pitch fonts (or ones where there is an actual outline in notdef) */
     if ( zero_is_notdef ) {
-	chrs->values[0] = SplineChar2PS2(sf->chars[0],&chrs->lens[0],nomwid,defwid,subrs,NULL);
+	chrs->values[0] = SplineChar2PS2(sf->chars[0],&chrs->lens[0],nomwid,defwid,subrs,NULL,flags);
 	sf->chars[0]->ttf_glyph = 0;
 	i = 1;
     } else {
@@ -2604,7 +2644,7 @@ struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
 	else
 #endif
 	if ( SCWorthOutputting(sc) && sc==SCDuplicate(sc)) {
-	    chrs->values[cnt] = SplineChar2PS2(sc,&chrs->lens[cnt],nomwid,defwid,subrs,NULL);
+	    chrs->values[cnt] = SplineChar2PS2(sc,&chrs->lens[cnt],nomwid,defwid,subrs,NULL,flags);
 	    sf->chars[i]->ttf_glyph = cnt++;
 	}
 	if ( !GProgressNext()) {
@@ -2616,7 +2656,7 @@ return( NULL );
 return( chrs );
 }
     
-struct pschars *CID2Chrs2(SplineFont *cidmaster,struct fd2data *fds) {
+struct pschars *CID2Chrs2(SplineFont *cidmaster,struct fd2data *fds,int flags) {
     struct pschars *chrs = gcalloc(1,sizeof(struct pschars));
     int i, cnt, cid, max;
     char notdefentry[20];
@@ -2700,7 +2740,7 @@ struct pschars *CID2Chrs2(SplineFont *cidmaster,struct fd2data *fds) {
 	} else {
 	    sc = sf->chars[cid];
 	    chrs->values[cnt] = SplineChar2PS2(sc,&chrs->lens[cnt],
-		    fds[i].nomwid,fds[i].defwid,fds[i].subrs,NULL);
+		    fds[i].nomwid,fds[i].defwid,fds[i].subrs,NULL,flags);
 	    sc->ttf_glyph = cnt++;
 	}
 	GProgressNext();

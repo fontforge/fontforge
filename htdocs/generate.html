@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Sep-2002 -->
-  <!-- AP: Last modified: 3-Apr-2003 -->
+  <!-- AP: Last modified: 1-Jul-2003 -->
   <TITLE>Generate Font Dialog</TITLE>
 </HEAD>
 <BODY>
@@ -10,7 +10,7 @@
   Generate Font Dialog
 </H1>
 <P>
-<IMG SRC="generate.png" WIDTH="406" HEIGHT="411" ALIGN="Right">This generates
+<IMG SRC="generate.png" WIDTH="414" HEIGHT="419" ALIGN="Right">This generates
 font files, both outline and bitmap. You may choose not to generate either,
 you may generate an afm file or a pfm file, you may select the type of postscript
 output, you may select which pixelsizes of bitmap to generate.
@@ -87,7 +87,7 @@ The bitmap types are:
     BDF -- The internal bitmap fonts will be saved in bdf format. You may only
     select sizes for which you have already generated fonts (you may output
     anti-aliased (greymap) fonts as well as bitmaps. A 12pixel high greymap font
-    with 8 bits/pixel can be represented as 12&#64;8).
+    with 8 bits/pixel can be represented as 12@8).
   <LI>
     In TTF -- Store the bitmap fonts inside the ttf file using the microsoft
     tables.
@@ -115,8 +115,14 @@ The bitmap types are:
     None
 </UL>
 <P>
-There are also the following check boxes. Not all are visible at all times.
+<IMG SRC="GenerateOptions.png" WIDTH="323" HEIGHT="269" ALIGN="Right">The
+<A NAME="Options">options</A> dialog provides the following check boxes.
+Not all are enabled at all times.
 <UL>
+  <LI>
+    [] Hints -- Include PostScript hints in the output file
+  <LI>
+    [] Flex Hints -- Include PostScript flex hints in the output file
   <LI>
     [] AFM -- Generate an adobe font metrics file<BR>
     Note: Only 'liga' and 'rlig' ligatures will be output in the AFM file. If
@@ -125,6 +131,9 @@ There are also the following check boxes. Not all are visible at all times.
     scripting command.
   <LI>
     [] PFM -- Generate a windows printer font metrics file
+  <LI>
+    [] TFM -- Generate a TeX font metrics file (and a TeX enc encoding file)
+      <HR>
   <LI>
     [] Hints -- Include truetype hints in a truetype font. NOTE: This used to
     generate bad truetype instructions, now it merely inserts whatever truetype
@@ -159,6 +168,14 @@ There are also the following check boxes. Not all are visible at all times.
 	does not support GPOS/GSUB tables. MicroSoft still supports kern tables for
 	some fonts but requires GPOS for others.
     </UL>
+  <LI>
+    [] Save Comments -- I have added my own table
+    ('<A HREF="non-standard.html#PfEd">PfEd</A>') in the truetype format in which
+    I can store whatever data I want. Checking this box saves all the glyph comments
+    into the output file.
+  <LI>
+    [] Save Colors -- Save the glyph colors in the
+    '<A HREF="non-standard.html#PfEd">PfEd</A>' table as well.
 </UL>
 <P>
 TTF (and Open Type) fonts are usually generated in Unicode encoding, there
@@ -195,7 +212,7 @@ then the fontname textfield will not be present (as the filename is determined
 by the fontname). You can still select a directory however.
 <P>
 The bitmap sizes must all be present in the font database. AntiAliased fonts
-can be indicated by following the pixelsize by "&#64;&lt;depth&gt;" (ie. "&#64;8").
+can be indicated by following the pixelsize by "@&lt;depth&gt;" (ie. "@8").
 <P>
 If you are generating a bdf font then you will be prompted for a resolution
 later.

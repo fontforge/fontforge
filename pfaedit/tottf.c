@@ -1593,7 +1593,7 @@ static void dumpcffprivate(SplineFont *sf,struct alltabs *at,int subfont) {
     else
 	at->fds[subfont].nomwid = nomwid;
 
-    bs = SplineFontIsFlexible(sf);
+    bs = SplineFontIsFlexible(sf,at->gi.flags);
     hasblue = PSDictHasEntry(sf->private,"BlueValues")!=NULL;
     hash = PSDictHasEntry(sf->private,"StdHW")!=NULL;
     hasv = PSDictHasEntry(sf->private,"StdVW")!=NULL;
@@ -2143,11 +2143,11 @@ static int dumptype2glyphs(SplineFont *sf,struct alltabs *at) {
     dumpcffencoding(sf,at);
     GProgressChangeStages(2+at->gi.strikecnt);
     dumpcffprivate(sf,at,-1);
-    if ((subrs = SplineFont2Subrs2(sf))==NULL )
+    if ((subrs = SplineFont2Subrs2(sf,at->gi.flags))==NULL )
 return( false );
     _dumpcffstrings(at->private,subrs);
     GProgressNextStage();
-    at->charstrings = dumpcffstrings(SplineFont2Chrs2(sf,at->nomwid,at->defwid,subrs));
+    at->charstrings = dumpcffstrings(SplineFont2Chrs2(sf,at->nomwid,at->defwid,subrs,at->gi.flags));
     PSCharsFree(subrs);
     if ( at->charstrings == NULL )
 return( false );
@@ -2178,7 +2178,7 @@ static int dumpcidglyphs(SplineFont *sf,struct alltabs *at) {
     for ( i=0; i<sf->subfontcnt; ++i ) {
 	at->fds[i].private = tmpfile();
 	dumpcffprivate(sf->subfonts[i],at,i);
-	if ( (at->fds[i].subrs = SplineFont2Subrs2(sf->subfonts[i]))==NULL )
+	if ( (at->fds[i].subrs = SplineFont2Subrs2(sf->subfonts[i],at->gi.flags))==NULL )
 return( false );
 	_dumpcffstrings(at->fds[i].private,at->fds[i].subrs);
     }
@@ -2188,7 +2188,7 @@ return( false );
     dumpcffcidset(sf,at);
     dumpcfffdselect(sf,at);
     dumpcffdictindex(sf,at);
-    if ( (at->charstrings = dumpcffstrings(CID2Chrs2(sf,at->fds)))==NULL )
+    if ( (at->charstrings = dumpcffstrings(CID2Chrs2(sf,at->fds,at->gi.flags)))==NULL )
 return( false );
     for ( i=0; i<sf->subfontcnt; ++i )
 	PSCharsFree(at->fds[i].subrs);

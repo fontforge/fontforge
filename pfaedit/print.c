@@ -285,7 +285,7 @@ return(false);
     GProgressStartIndicatorR(10,_STR_PrintingFont,_STR_PrintingFont,
 	    _STR_GeneratingPostscriptFont,pi->sf->charcnt,1);
     GProgressEnableStop(false);
-    if ( !_WritePSFont(pi->fontfile,pi->sf,pi->iscid?ff_cid:pi->twobyte?ff_ptype0:ff_pfa)) {
+    if ( !_WritePSFont(pi->fontfile,pi->sf,pi->iscid?ff_cid:pi->twobyte?ff_ptype0:ff_pfa,0)) {
 	GProgressEndIndicator();
 	GWidgetErrorR(_STR_FailedGenPost,_STR_FailedGenPost );
 	fclose(pi->fontfile);

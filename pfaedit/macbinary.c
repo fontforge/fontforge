@@ -1376,7 +1376,7 @@ static void MakeMacPSName(char buffer[63],SplineFont *sf) {
     *pt = '\0';
 }
 
-int WriteMacPSFont(char *filename,SplineFont *sf,enum fontformat format) {
+int WriteMacPSFont(char *filename,SplineFont *sf,enum fontformat format,int flags) {
     FILE *res, *temppfb;
     int ret = 1;
     struct resourcetype resources[2];
@@ -1406,7 +1406,7 @@ return( 0 );
     if ( islower(*sf->familyname)) { *sf->familyname = toupper(*sf->familyname); lcfam = true; }
     MakeMacPSName(buffer,sf);
 
-    ret = _WritePSFont(temppfb,sf,ff_pfb);
+    ret = _WritePSFont(temppfb,sf,ff_pfb,flags);
     if ( lcfn ) *sf->fontname = tolower(*sf->fontname);
     if ( lcfam ) *sf->familyname = tolower(*sf->familyname);
     if ( ret==0 || ferror(temppfb) ) {
@@ -1639,7 +1639,7 @@ int WriteMacFamily(char *filename,struct sflist *sfs,enum fontformat format,
 		strcpy(pt-1,".fam.bin");
 #endif
 	    }
-	    if ( WriteMacPSFont(tempname,sfi->sf,format)==0 )
+	    if ( WriteMacPSFont(tempname,sfi->sf,format,flags)==0 )
 return( 0 );
 	    free(tempname);
 	}

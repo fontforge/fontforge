@@ -313,7 +313,7 @@ return( NULL );
 	}
 	switch ( ff ) {
 	  case ff_pfb: case ff_pfa:
-	    if ( !_WritePSFont(ftc->file,sf,ff))
+	    if ( !_WritePSFont(ftc->file,sf,ff,0))
  goto fail;
 	  break;
 	  case ff_ttf: case ff_ttfsym:

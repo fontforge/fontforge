@@ -3469,7 +3469,26 @@ static int SplineCharIsFlexible(SplineChar *sc, int blueshift) {
 return( max );
 }
 
-int SplineFontIsFlexible(SplineFont *sf) {
+static void SCUnflex(SplineChar *sc) {
+    SplineSet *spl;
+    SplinePoint *sp;
+
+    for ( spl = sc->splines; spl!=NULL; spl=spl->next ) {
+	/* Mark everything on the path as inflexible */
+	sp=spl->first;
+	while ( 1 ) {
+	    sp->flexx = sp->flexy = false;
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==spl->first )
+	break;
+	} 
+    }
+    sc->anyflexes = false;
+}
+
+int SplineFontIsFlexible(SplineFont *sf,int flags) {
     int i;
     int max=0, val;
     char *pt;
@@ -3479,6 +3498,12 @@ int SplineFontIsFlexible(SplineFont *sf) {
     /* If the first point in a spline set is flexible, then we must rotate */
     /*  the splineset */
 
+    if ( flags&(ps_flag_nohints|ps_flag_noflex)) {
+	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
+	    SCUnflex(sf->chars[i]);
+return( 0 );
+    }
+	
     pt = PSDictHasEntry(sf->private,"BlueShift");
     blueshift = 21;		/* maximum posible flex, not default */
     if ( pt!=NULL ) {

@@ -519,7 +519,7 @@ static void dumpothersubrs(void (*dumpchar)(int ch,void *data), void *data,
 }
 
 static int dumpprivatestuff(void (*dumpchar)(int ch,void *data), void *data,
-	SplineFont *sf, struct fddata *incid ) {
+	SplineFont *sf, struct fddata *incid, int flags ) {
     int cnt, mi;
     real bluevalues[14], otherblues[10];
     real snapcnt[12];
@@ -534,7 +534,7 @@ static int dumpprivatestuff(void (*dumpchar)(int ch,void *data), void *data,
     char *ND="def";
 
     if ( incid==NULL ) {
-	flex_max = SplineFontIsFlexible(sf);
+	flex_max = SplineFontIsFlexible(sf,flags);
 	if ( (subrs = initsubrs(flex_max>0))==NULL )
 return( false );
 	iscjk = SFIsCJK(sf);
@@ -556,7 +556,8 @@ return( false );
 	isbold = true;
 
     GProgressChangeStages(2+2-hasblue);
-    if ( autohint_before_generate && SFNeedsAutoHint(sf)) {
+    if ( autohint_before_generate && SFNeedsAutoHint(sf) &&
+	    !(flags&ps_flag_nohints)) {
 	GProgressChangeLine1R(_STR_AutoHintingFont);
 	SplineFontAutoHint(sf);
     }
@@ -592,7 +593,7 @@ return( false );
     if ( incid==NULL ) {
 	GProgressNextStage();
 	GProgressChangeLine1R(_STR_CvtPS);
-	if ( (chars = SplineFont2Chrs(sf,true,iscjk,subrs))==NULL )
+	if ( (chars = SplineFont2Chrs(sf,true,iscjk,subrs,flags))==NULL )
 return( false );
 	GProgressNextStage();
 	GProgressChangeLine1R(_STR_SavingPSFont);
@@ -906,12 +907,12 @@ static void dumpinitialascii(void (*dumpchar)(int ch,void *data), void *data,
 }
 
 static void dumpencodedstuff(void (*dumpchar)(int ch,void *data), void *data,
-	SplineFont *sf, int format ) {
+	SplineFont *sf, int format, int flags ) {
     struct fileencryptdata fed;
     void (*func)(int ch,void *data);
 
     func = startfileencoding(dumpchar,data,&fed,format==ff_pfb);
-    dumpprivatestuff(func,&fed,sf,NULL);
+    dumpprivatestuff(func,&fed,sf,NULL,flags);
     if ( format==ff_ptype0 ) {
 	dumpstr(func,&fed, "/" );
 	dumpstr(func,&fed, sf->fontname );
@@ -949,7 +950,7 @@ static void mkheadercopyfile(FILE *temp,FILE *out,int headertype) {
     fclose(temp);		/* deletes the temporary file */
 }
 
-static void dumpfontdict(FILE *out, SplineFont *sf, int format ) {
+static void dumpfontdict(FILE *out, SplineFont *sf, int format, int flags ) {
 
 /* a pfb header consists of 6 bytes, the first is 0200, the second is a */
 /*  binary/ascii flag where 1=>ascii, 2=>binary, 3=>eof??, the next four */
@@ -961,7 +962,7 @@ static void dumpfontdict(FILE *out, SplineFont *sf, int format ) {
 	dumpinitialascii((DumpChar) fputc,temp,sf );
 	mkheadercopyfile(temp,out,1);
 	temp = tmpfile();
-	dumpencodedstuff((DumpChar) fputc,temp,sf,format);
+	dumpencodedstuff((DumpChar) fputc,temp,sf,format,flags);
 	mkheadercopyfile(temp,out,2);
 	temp = tmpfile();
 	dumpfinalascii((DumpChar) fputc,temp);
@@ -973,7 +974,7 @@ static void dumpfontdict(FILE *out, SplineFont *sf, int format ) {
 	dumpcharprocs((DumpChar) fputc,out,sf);
     } else {
 	dumpinitialascii((DumpChar) (fputc),out,sf );
-	dumpencodedstuff((DumpChar) (fputc),out,sf,format);
+	dumpencodedstuff((DumpChar) (fputc),out,sf,format,flags);
 	dumpfinalascii((DumpChar) (fputc),out);
     }
 }
@@ -1146,7 +1147,7 @@ static void dump_index(FILE *binary,int size,int val) {
 	putc((val)&0xff,binary);
 }
 
-static FILE *gencidbinarydata(SplineFont *cidmaster,struct cidbytes *cidbytes) {
+static FILE *gencidbinarydata(SplineFont *cidmaster,struct cidbytes *cidbytes,int flags) {
     int i,j, leniv, subrtot;
     SplineFont *sf;
     struct fddata *fd;
@@ -1163,7 +1164,7 @@ static FILE *gencidbinarydata(SplineFont *cidmaster,struct cidbytes *cidbytes) {
     for ( i=0; i<cidbytes->fdcnt; ++i ) {
 	sf = cidmaster->subfonts[i];
 	fd = &cidbytes->fds[i];
-	fd->flexmax = SplineFontIsFlexible(sf);
+	fd->flexmax = SplineFontIsFlexible(sf,flags);
 	fd->subrs = initsubrs(fd->flexmax>0);
 	if ( fd->subrs==NULL ) {
 	    int j;
@@ -1180,7 +1181,7 @@ return( NULL );
 	    fd->leniv = 4;
     }
     GProgressChangeLine1R(_STR_CvtPS);
-    if ( (chars = CID2Chrs(cidmaster,cidbytes))==NULL )
+    if ( (chars = CID2Chrs(cidmaster,cidbytes,flags))==NULL )
 return( NULL );
     GProgressNextStage();
     GProgressChangeLine1R(_STR_SavingPSFont);
@@ -1274,7 +1275,7 @@ return( NULL );
 return( binary );
 }
 
-static int dumpcidstuff(FILE *out,SplineFont *cidmaster) {
+static int dumpcidstuff(FILE *out,SplineFont *cidmaster,int flags) {
     int i;
     DBounds res;
     FILE *binary;
@@ -1327,7 +1328,7 @@ static int dumpcidstuff(FILE *out,SplineFont *cidmaster) {
 
     dumpfontinfo((DumpChar) fputc,out,cidmaster);
 
-    if ((binary = gencidbinarydata(cidmaster,&cidbytes))==NULL )
+    if ((binary = gencidbinarydata(cidmaster,&cidbytes,flags))==NULL )
 return( 0 );
 
     fprintf( out, "\n/CIDMapOffset %d def\n", cidbytes.cidmapoffset );
@@ -1352,7 +1353,7 @@ return( 0 );
 		factor, factor );
 	fprintf( out, "  /PaintType 0 def\n" );
 	fprintf( out, "\n  %%ADOBeginPrivateDict\n" );
-	dumpprivatestuff((DumpChar) fputc,out,sf,&cidbytes.fds[i]);
+	dumpprivatestuff((DumpChar) fputc,out,sf,&cidbytes.fds[i],flags);
 	fprintf( out, "\n  %%ADOEndPrivateDict\n" );
 	fprintf( out, "  currentdict end\n%%ADOEndFontDict\n put\n\n" );
     }
@@ -1375,16 +1376,16 @@ return( 0 );
 return( !cidbytes.errors );
 }
 
-int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format) {
+int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format,int flags) {
     char *oldloc;
     int err = false;
 
     /* make sure that all reals get output with '.' for decimal points */
     oldloc = setlocale(LC_NUMERIC,"C");
     if ( format==ff_cid )
-	err = !dumpcidstuff(out,sf->subfontcnt>0?sf:sf->cidmaster);
+	err = !dumpcidstuff(out,sf->subfontcnt>0?sf:sf->cidmaster,flags);
     else {
-	dumpfontdict(out,sf,format);
+	dumpfontdict(out,sf,format,flags);
 	if ( format==ff_ptype0 )
 	    dumptype0stuff(out,sf);
     }
@@ -1395,13 +1396,13 @@ return( 0 );
 return( true );
 }
 
-int WritePSFont(char *fontname,SplineFont *sf,enum fontformat format) {
+int WritePSFont(char *fontname,SplineFont *sf,enum fontformat format,int flags) {
     FILE *out;
     int ret;
 
     if (( out=fopen(fontname,"w"))==NULL )
 return( 0 );
-    ret = _WritePSFont(out,sf,format);
+    ret = _WritePSFont(out,sf,format,flags);
     if ( fclose(out)==-1 )
 	ret = 0;
 return( ret );

@@ -39,8 +39,26 @@
 
 #define CID_Family	2000
 
+#define CID_OK		1001
+#define CID_PS_AFM		1002
+#define CID_PS_PFM		1003
+#define CID_PS_TFM		1004
+#define CID_PS_HintSubs		1005
+#define CID_PS_Flex		1006
+#define CID_PS_Hints		1007
+#define CID_PS_Restrict256	1008
+#define CID_TTF_Hints		1101
+#define CID_TTF_ShortPS		1102
+#define CID_TTF_AppleMode	1103
+#define CID_TTF_PfEdComments	1104
+#define CID_TTF_PfEdColors	1105
+#define CID_TTF_PfEd		1106
+
+
 struct gfc_data {
     int done;
+    int sod_done;
+    int sod_which;
     int ret;
     int family, familycnt;
     GWindow gw;
@@ -48,11 +66,10 @@ struct gfc_data {
     GGadget *pstype;
     GGadget *bmptype;
     GGadget *bmpsizes;
-    GGadget *doafm;
-    GGadget *dopfm;
-    GGadget *psnames;
-    GGadget *ttfhints;
-    GGadget *ttfapple;
+    GGadget *options;
+    int ps_flags;
+    int ttf_flags;
+    int otf_flags;
     SplineFont *sf;
 };
 
@@ -109,12 +126,16 @@ static GTextInfo bitmaptypes[] = {
     { NULL }
 };
 
-static int oldafmstate = -1, oldpfmstate = false;
-int oldpsstate = true, oldttfhintstate = true;
+#if __Mac
+int old_ttf_flags = ttf_flag_applemode;
+#else
+int old_ttf_flags = 0;
+#endif
+int old_ps_flags = ps_flag_afm;
+int old_otf_flags = 0;
 int oldformatstate = ff_pfb;
 int oldbitmapstate = 0;
 extern int alwaysgenapple;
-static int oldttfapplestate;		/* Value is currently irrelevant */
 
 static const char *pfaeditflag = "SplineFontDB:";
 
@@ -184,6 +205,61 @@ return( 0 );
 return( ret );
 }
 
+static int WriteTfmFile(char *filename,SplineFont *sf, int formattype) {
+    char *buf = galloc(strlen(filename)+6), *pt, *pt2;
+    FILE *tfm, *enc;
+    int ret;
+    unichar_t *temp;
+    int i;
+
+    strcpy(buf,filename);
+    pt = strrchr(buf,'.');
+    if ( pt!=NULL && (pt2=strrchr(buf,'/'))!=NULL && pt<pt2 )
+	pt = NULL;
+    if ( pt==NULL )
+	strcat(buf,".tfm");
+    else
+	strcpy(pt,".tfm");
+    GProgressChangeLine1R(_STR_SavingTFM);
+    GProgressChangeLine2(temp=uc_copy(buf)); free(temp);
+    tfm = fopen(buf,"w");
+    if ( tfm==NULL )
+return( false );
+    ret = /*TfmSplineFont(tfm,sf,formattype)*/ true;	/* !!!!!!! */
+    if ( fclose(tfm)==-1 )
+	ret = 0;
+
+    pt = strrchr(buf,'.');
+    strcpy(pt,".enc");
+    enc = fopen(buf,"w");
+    free(buf);
+    if ( enc==NULL )
+return( false );
+
+    fprintf( enc, "/%s-Enc [\n", sf->fontname );
+    for ( i=0; i<sf->charcnt && i<256; ++i ) {
+	if ( sf->chars[i]==NULL )
+	    fprintf( enc, " /.notdef" );
+	else
+	    fprintf( enc, " /%s", sf->chars[i]->name );
+	if ( (i&0xf)==0 )
+	    fprintf( enc, "\t\t%% 0x%02x", i );
+	putc('\n',enc);
+    }
+    while ( i<256 ) {
+	fprintf( enc, " /.notdef" );
+	if ( (i&0xf0)==0 )
+	    fprintf( enc, "\t\t% 0x%02x", i );
+	putc('\n',enc);
+	++i;
+    }
+    fprintf( enc, "] def\n" );
+
+    if ( fclose(enc)==-1 )
+	ret = 0;
+return( ret );
+}
+
 #ifndef PFAEDIT_CONFIG_WRITE_PFM
 static
 #endif
@@ -210,6 +286,355 @@ return( false );
     if ( fclose(pfm)==-1 )
 return( 0 );
 return( ret );
+}
+
+static int OPT_PSHints(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	GWindow gw = GGadgetGetWindow(g);
+	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+	if ( GGadgetIsChecked(g)) {
+	    int flags = (&d->ps_flags)[d->sod_which];
+	    GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_HintSubs),true);
+	    GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Flex),true);
+	    GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_HintSubs),!(flags&ps_flag_nohintsubs));
+	    GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_Flex),!(flags&ps_flag_noflex));
+	} else {
+	    GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_HintSubs),false);
+	    GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Flex),false);
+	    GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_HintSubs),false);
+	    GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_Flex),false);
+	}
+    }
+return( true );
+}
+
+static int sod_e_h(GWindow gw, GEvent *event) {
+    if ( event->type==et_close ) {
+	struct gfc_data *d = GDrawGetUserData(gw);
+	d->sod_done = true;
+    } else if ( event->type == et_char ) {
+	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
+	    help("generate.html#Options");
+return( true );
+	}
+return( false );
+    } else if ( event->type==et_controlevent && event->u.control.subtype == et_buttonactivate ) {
+	struct gfc_data *d = GDrawGetUserData(gw);
+	if ( GGadgetGetCid(event->u.control.g)==CID_OK ) {
+	    if ( d->sod_which==0 ) {		/* PostScript */
+		d->ps_flags = 0;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_AFM)) )
+		    d->ps_flags |= ps_flag_afm;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_PFM)) )
+		    d->ps_flags |= ps_flag_pfm;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_TFM)) )
+		    d->ps_flags |= ps_flag_tfm;
+		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_HintSubs)) )
+		    d->ps_flags |= ps_flag_nohintsubs;
+		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_Flex)) )
+		    d->ps_flags |= ps_flag_noflex;
+		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_Hints)) )
+		    d->ps_flags |= ps_flag_nohints;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_Restrict256)) )
+		    d->ps_flags |= ps_flag_restrict256;
+	    } else if ( d->sod_which==1 ) {	/* TrueType */
+		d->ttf_flags = 0;
+		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_Hints)) )
+		    d->ttf_flags |= ttf_flag_nohints;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_ShortPS)) )
+		    d->ttf_flags |= ttf_flag_shortps;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_AppleMode)) )
+		    d->ttf_flags |= ttf_flag_applemode;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdComments)) )
+		    d->ttf_flags |= ttf_flag_pfed_comments;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdColors)) )
+		    d->ttf_flags |= ttf_flag_pfed_colors;
+	    } else {				/* OpenType */
+		d->otf_flags = 0;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_ShortPS)) )
+		    d->otf_flags |= ttf_flag_shortps;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_AppleMode)) )
+		    d->otf_flags |= ttf_flag_applemode;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdComments)) )
+		    d->otf_flags |= ttf_flag_pfed_comments;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdColors)) )
+		    d->otf_flags |= ttf_flag_pfed_colors;
+
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_AFM)) )
+		    d->otf_flags |= ps_flag_afm;
+		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_HintSubs)) )
+		    d->otf_flags |= ps_flag_nohintsubs;
+		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_Flex)) )
+		    d->otf_flags |= ps_flag_noflex;
+		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_Hints)) )
+		    d->otf_flags |= ps_flag_nohints;
+	    }
+	}
+	d->sod_done = true;
+    }
+return( true );
+}
+
+static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
+    int flags = (&d->ps_flags)[which];
+    int fs = GGadgetGetFirstListSelectedItem(d->pstype);
+    int bf = GGadgetGetFirstListSelectedItem(d->bmptype);
+
+    GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_Hints),!(flags&ps_flag_nohints));
+    GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_HintSubs),!(flags&ps_flag_nohintsubs));
+    GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_Flex),!(flags&ps_flag_noflex));
+    GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_Restrict256),flags&ps_flag_restrict256);
+
+    GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_AFM),flags&ps_flag_afm);
+    GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_PFM),(flags&ps_flag_pfm) && !iscid);
+    GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_TFM),flags&ps_flag_tfm);
+
+    GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_Hints),!(flags&ttf_flag_nohints));
+    GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_ShortPS),flags&ttf_flag_shortps);
+    if ( which==0 )	/* Postscript */
+	GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_AppleMode),false);
+    else if ( alwaysgenapple ||
+	    fs==ff_ttfmacbin || fs==ff_ttfdfont || fs==ff_otfdfont ||
+	    fs==ff_otfciddfont || d->family || (fs==ff_none && bf==bf_sfnt_dfont))
+	GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_AppleMode),true);
+    else
+	GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_AppleMode),false);
+
+    GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_PfEdComments),flags&ttf_flag_pfed_comments);
+    GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_PfEdColors),flags&ttf_flag_pfed_colors);
+
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Hints),which!=1);
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_HintSubs),which!=1);
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Flex),which!=1);
+    if ( which!=1 && (flags&ttf_flag_nohints)) {
+	GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_HintSubs),false);
+	GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Flex),false);
+	GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_HintSubs),false);
+	GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_Flex),false);
+    }
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Restrict256),which==0 && !iscid);
+
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_AFM),which!=1);
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_PFM),which==0);
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_TFM),which==0);
+
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_Hints),which==1);
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_ShortPS),which!=0);
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_AppleMode),which!=0);
+
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_PfEd),which!=0);
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_PfEdComments),which!=0);
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_PfEdColors),which!=0);
+}
+
+#define OPT_Width	230
+#define OPT_Height	177
+
+static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
+    int flags;
+    int k,group,group2;
+    GWindow gw;
+    GWindowAttrs wattrs;
+    GGadgetCreateData gcd[21];
+    GTextInfo label[21];
+    GRect pos;
+
+    d->sod_done = false;
+    d->sod_which = which;
+    flags = (&d->ps_flags)[which];
+
+    memset(&wattrs,0,sizeof(wattrs));
+    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+    wattrs.event_masks = ~(1<<et_charup);
+    wattrs.restrict_input_to_me = 1;
+    wattrs.undercursor = 1;
+    wattrs.cursor = ct_pointer;
+    wattrs.window_title = GStringGetResource(_STR_Options,NULL);
+    wattrs.is_dlg = true;
+    pos.x = pos.y = 0;
+    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,OPT_Width));
+    pos.height = GDrawPointsToPixels(NULL,OPT_Height);
+    gw = GDrawCreateTopWindow(NULL,&pos,sod_e_h,d,&wattrs);
+
+    memset(&label,0,sizeof(label));
+    memset(&gcd,0,sizeof(gcd));
+
+    k = 0;
+    gcd[k].gd.pos.x = 2; gcd[k].gd.pos.y = 2;
+    gcd[k].gd.pos.width = pos.width-4; gcd[k].gd.pos.height = pos.height-4;
+    gcd[k].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
+    gcd[k++].creator = GGroupCreate;
+
+    label[k].text = (unichar_t *) _STR_PostScript;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 8; gcd[k].gd.pos.y = 5;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k++].creator = GLabelCreate;
+
+    group = k;
+    gcd[k].gd.pos.x = 4; gcd[k].gd.pos.y = 9;
+    gcd[k].gd.pos.width = OPT_Width-8; gcd[k].gd.pos.height = 58;
+    gcd[k].gd.flags = gg_enabled | gg_visible ;
+    gcd[k++].creator = GGroupCreate;
+
+    gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = 16;
+    gcd[k].gd.flags = gg_visible ;
+    label[k].text = (unichar_t *) _STR_Hints;
+    label[k].text_in_resource = true;
+    gcd[k].gd.popup_msg = GStringGetResource(_STR_PSHintsPopup,NULL);
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.handle_controlevent = OPT_PSHints;
+    gcd[k].gd.cid = CID_PS_Hints;
+    gcd[k++].creator = GCheckBoxCreate;
+
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x+4; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
+    gcd[k].gd.flags = gg_visible ;
+    label[k].text = (unichar_t *) _STR_FlexHints;
+    label[k].text_in_resource = true;
+    gcd[k].gd.popup_msg = GStringGetResource(_STR_FlexHintsPopup,NULL);
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.cid = CID_PS_Flex;
+    gcd[k++].creator = GCheckBoxCreate;
+
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
+    gcd[k].gd.flags = 0 ;
+    label[k].text = (unichar_t *) _STR_HintSubs;
+    label[k].text_in_resource = true;
+    gcd[k].gd.popup_msg = GStringGetResource(_STR_HintSubsPopup,NULL);
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.cid = CID_PS_HintSubs;
+    gcd[k++].creator = GCheckBoxCreate;
+
+    gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
+    gcd[k].gd.flags = 0 ;
+    label[k].text = (unichar_t *) _STR_First256;
+    label[k].text_in_resource = true;
+    gcd[k].gd.popup_msg = GStringGetResource(_STR_First256Popup,NULL);
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.cid = CID_PS_Restrict256;
+    gcd[k++].creator = GCheckBoxCreate;
+
+    gcd[k].gd.pos.x = 110; gcd[k].gd.pos.y = gcd[k-4].gd.pos.y;
+    gcd[k].gd.flags = gg_visible ;
+    label[k].text = (unichar_t *) _STR_Outputafm;
+    label[k].text_in_resource = true;
+    gcd[k].gd.popup_msg = GStringGetResource(_STR_OutputAfmPopup,NULL);
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.cid = CID_PS_AFM;
+    gcd[k++].creator = GCheckBoxCreate;
+
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-4].gd.pos.y;
+    gcd[k].gd.flags = gg_visible ;
+    label[k].text = (unichar_t *) _STR_Outputpfm;
+    label[k].text_in_resource = true;
+    gcd[k].gd.popup_msg = GStringGetResource(_STR_OutputPfmPopup,NULL);
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.cid = CID_PS_PFM;
+    gcd[k++].creator = GCheckBoxCreate;
+
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-4].gd.pos.y;
+    gcd[k].gd.flags = gg_visible ;
+    label[k].text = (unichar_t *) _STR_Outputtfm;
+    label[k].text_in_resource = true;
+    gcd[k].gd.popup_msg = GStringGetResource(_STR_OutputTfmPopup,NULL);
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.cid = CID_PS_TFM;
+    gcd[k++].creator = GCheckBoxCreate;
+
+
+    label[k].text = (unichar_t *) _STR_TrueType;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 8; gcd[k].gd.pos.y = gcd[group].gd.pos.y+gcd[group].gd.pos.height+6;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k++].creator = GLabelCreate;
+
+    group2 = k;
+    gcd[k].gd.pos.x = 4; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+4;
+    gcd[k].gd.pos.width = OPT_Width-8; gcd[k].gd.pos.height = 58;
+    gcd[k].gd.flags = gg_enabled | gg_visible ;
+    gcd[k++].creator = GGroupCreate;
+
+    gcd[k].gd.pos.x = gcd[group+1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+8;
+    gcd[k].gd.flags = gg_visible ;
+    label[k].text = (unichar_t *) _STR_Hints;
+    label[k].text_in_resource = true;
+    gcd[k].gd.popup_msg = GStringGetResource(_STR_TTFHintsPopup,NULL);
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.cid = CID_TTF_Hints;
+    gcd[k++].creator = GCheckBoxCreate;
+
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
+    gcd[k].gd.flags = gg_visible ;
+    label[k].text = (unichar_t *) _STR_PSNames;
+    label[k].text_in_resource = true;
+    gcd[k].gd.popup_msg = GStringGetResource(_STR_PSNamesPopup,NULL);
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.cid = CID_TTF_ShortPS;
+    gcd[k++].creator = GCheckBoxCreate;
+
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
+    gcd[k].gd.flags = gg_visible ;
+    label[k].text = (unichar_t *) _STR_AppleMode;
+    label[k].text_in_resource = true;
+    gcd[k].gd.popup_msg = GStringGetResource(_STR_AppleModePopup,NULL);
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.cid = CID_TTF_AppleMode;
+    gcd[k++].creator = GCheckBoxCreate;
+
+    gcd[k].gd.pos.x = gcd[group+5].gd.pos.x; gcd[k].gd.pos.y = gcd[k-3].gd.pos.y;
+    gcd[k].gd.flags = gg_visible ;
+    label[k].text = (unichar_t *) _STR_PfaEditTable;
+    label[k].text_in_resource = true;
+    gcd[k].gd.popup_msg = GStringGetResource(_STR_PfaEditTablePopup,NULL);
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.cid = CID_TTF_PfEd;
+    gcd[k++].creator = GLabelCreate;
+
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x+2; gcd[k].gd.pos.y = gcd[k-3].gd.pos.y;
+    gcd[k].gd.flags = gg_visible ;
+    label[k].text = (unichar_t *) _STR_PfEdComments;
+    label[k].text_in_resource = true;
+    gcd[k].gd.popup_msg = GStringGetResource(_STR_PfEdCommentsPopup,NULL);
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.cid = CID_TTF_PfEdComments;
+    gcd[k++].creator = GCheckBoxCreate;
+
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-3].gd.pos.y;
+    gcd[k].gd.flags = gg_visible ;
+    label[k].text = (unichar_t *) _STR_PfEdColors;
+    label[k].text_in_resource = true;
+    gcd[k].gd.popup_msg = GStringGetResource(_STR_PfEdColorsPopup,NULL);
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.cid = CID_TTF_PfEdColors;
+    gcd[k++].creator = GCheckBoxCreate;
+
+    gcd[k].gd.pos.x = 30-3; gcd[k].gd.pos.y = gcd[group2].gd.pos.y+gcd[group2].gd.pos.height+10-3;
+    gcd[k].gd.pos.width = -1;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_default;
+    label[k].text = (unichar_t *) _STR_OK;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.cid = CID_OK;
+    gcd[k++].creator = GButtonCreate;
+
+    gcd[k].gd.pos.x = -30; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+3;
+    gcd[k].gd.pos.width = -1;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    label[k].text = (unichar_t *) _STR_Cancel;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k++].creator = GButtonCreate;
+
+    GGadgetsCreate(gw,gcd);
+
+    OptSetDefaults(gw,d,which,iscid);
+
+    GDrawSetVisible(gw,true);
+    while ( !d->sod_done )
+	GDrawProcessOneEvent(NULL);
+    GDrawDestroyWindow(gw);
 }
 
 #if 0
@@ -927,12 +1352,18 @@ return( 0 );
 	strcat(pt,"]");
     }
 
-    err = !WritePSFont(filename,&temp,ff_pfb);
+    err = !WritePSFont(filename,&temp,ff_pfb,old_ps_flags);
     if ( err )
 	GWidgetErrorR(_STR_Savefailedtitle,_STR_Savefailedtitle);
-    if ( !err && oldafmstate && GProgressNextStage()) {
+    if ( !err && (old_ps_flags&ps_flag_afm) && GProgressNextStage()) {
 	if ( !WriteAfmFile(filename,&temp,oldformatstate)) {
 	    GWidgetErrorR(_STR_Afmfailedtitle,_STR_Afmfailedtitle);
+	    err = true;
+	}
+    }
+    if ( !err && (old_ps_flags&ps_flag_tfm) ) {
+	if ( !WriteTfmFile(filename,&temp,oldformatstate)) {
+	    GWidgetErrorR(_STR_Tfmfailedtitle,_STR_Tfmfailedtitle);
 	    err = true;
 	}
     }
@@ -992,7 +1423,7 @@ return( 1 );
 	sf = sf->cidmaster;
 
     filecnt = 1;
-    if ( oldafmstate )
+    if ( (old_ps_flags&ps_flag_afm) )
 	filecnt = 2;
 #if 0
     if ( oldbitmapstate==bf_bdf )
@@ -1027,12 +1458,12 @@ static int _DoSave(SplineFont *sf,char *newname,int32 *sizes,int res) {
     if ( oldformatstate == ff_multiple )
 return( WriteMultiplePSFont(sf,newname,sizes,res,NULL));
 
-    if ( !oldpsstate )
-	flags = ttf_flag_shortps;
-    if ( !oldttfhintstate )
-	flags |= ttf_flag_nohints;
-    if ( oldttfapplestate )
-	flags |= ttf_flag_applemode;
+    if ( oldformatstate<=ff_cid )
+	flags = old_ps_flags;
+    else if ( oldformatstate<=ff_ttfdfont )
+	flags = old_ttf_flags;
+    else
+	flags = old_otf_flags;
 
     path = uc_copy(newname);
     GProgressStartIndicator(10,GStringGetResource(_STR_SavingFont,NULL),
@@ -1050,7 +1481,7 @@ return( WriteMultiplePSFont(sf,newname,sizes,res,NULL));
 	int oerr = 0;
 	switch ( oldformatstate ) {
 	  case ff_pfa: case ff_pfb: case ff_ptype3: case ff_ptype0: case ff_cid:
-	    oerr = !WritePSFont(newname,sf,oldformatstate);
+	    oerr = !WritePSFont(newname,sf,oldformatstate,flags);
 	  break;
 	  break;
 	  case ff_ttf: case ff_ttfsym: case ff_otf: case ff_otfcid:
@@ -1058,7 +1489,7 @@ return( WriteMultiplePSFont(sf,newname,sizes,res,NULL));
 		flags);
 	  break;
 	  case ff_pfbmacbin:
-	    oerr = !WriteMacPSFont(newname,sf,oldformatstate);
+	    oerr = !WriteMacPSFont(newname,sf,oldformatstate,flags);
 	  break;
 	  case ff_ttfmacbin: case ff_ttfdfont: case ff_otfdfont: case ff_otfciddfont:
 	    oerr = !WriteMacTTFFont(newname,sf,oldformatstate,sizes,
@@ -1078,14 +1509,20 @@ return( WriteMultiplePSFont(sf,newname,sizes,res,NULL));
 	    err = true;
 	}
     }
-    if ( !err && oldafmstate ) {
+    if ( !err && (flags&ps_flag_tfm) ) {
+	if ( !WriteTfmFile(newname,sf,oldformatstate)) {
+	    GWidgetErrorR(_STR_Tfmfailedtitle,_STR_Tfmfailedtitle);
+	    err = true;
+	}
+    }
+    if ( !err && (flags&ps_flag_afm) ) {
 	GProgressIncrementBy(-sf->charcnt);
 	if ( !WriteAfmFile(newname,sf,oldformatstate)) {
 	    GWidgetErrorR(_STR_Afmfailedtitle,_STR_Afmfailedtitle);
 	    err = true;
 	}
     }
-    if ( !err && oldpfmstate && !iscid ) {
+    if ( !err && (flags&ps_flag_pfm) && !iscid ) {
 	GProgressChangeLine1R(_STR_SavingPFM);
 	GProgressIncrementBy(-sf->charcnt);
 	if ( !WritePfmFile(newname,sf,oldformatstate==ff_ptype0)) {
@@ -1186,24 +1623,38 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	oldformatstate = ff_none;
 
     if ( fmflags==-1 ) {
-	oldafmstate = true;
-	if ( oldformatstate==ff_ttf || oldformatstate==ff_ttfsym || oldformatstate==ff_otf ||
-		oldformatstate==ff_ttfdfont || oldformatstate==ff_otfdfont || oldformatstate==ff_otfciddfont ||
-		oldformatstate==ff_otfcid || oldformatstate==ff_ttfmacbin || oldformatstate==ff_none )
-	    oldafmstate = false;
-	oldpfmstate = false;
-	oldpsstate = true;
-	oldttfhintstate = true;
-	oldttfapplestate = false;
-	if ( oldformatstate==ff_ttfdfont || oldformatstate==ff_otfdfont || oldformatstate==ff_otfciddfont ||
-		oldformatstate==ff_pfbmacbin || oldformatstate==ff_ttfmacbin || oldformatstate==ff_none )
-	oldttfapplestate = true;
+	/* Use the default flags */
     } else {
-	oldafmstate = fmflags&1;
-	oldpfmstate = (fmflags&2)?1:0;
-	oldpsstate = (fmflags&4)?0:1;
-	oldttfhintstate = (fmflags&8)?1:0;
-	oldttfapplestate = (fmflags&16)?1:0;
+	if ( oldformatstate<=ff_cid ) {
+	    old_ps_flags = 0;
+	    if ( fmflags&1 ) old_ps_flags |= ps_flag_afm;
+	    if ( fmflags&2 ) old_ps_flags |= ps_flag_pfm;
+	    if ( fmflags&0x10000 ) old_ps_flags |= ps_flag_tfm;
+	    if ( fmflags&0x20000 ) old_ps_flags |= ps_flag_nohintsubs;
+	    if ( fmflags&0x40000 ) old_ps_flags |= ps_flag_noflex;
+	    if ( fmflags&0x80000 ) old_ps_flags |= ps_flag_nohints;
+	    if ( fmflags&0x100000 ) old_ps_flags |= ps_flag_restrict256;
+	} else if ( oldformatstate<=ff_ttfdfont ) {
+	    old_ttf_flags = 0;
+	    if ( fmflags&4 ) old_ttf_flags |= ttf_flag_shortps;
+	    if ( fmflags&8 ) old_ttf_flags |= ttf_flag_nohints;
+	    if ( fmflags&0x10 ) old_ttf_flags |= ttf_flag_applemode;
+	    if ( fmflags&0x20 ) old_ttf_flags |= ttf_flag_pfed_comments;
+	    if ( fmflags&0x40 ) old_ttf_flags |= ttf_flag_pfed_colors;
+	} else {
+	    old_otf_flags = 0;
+		/* Applicable postscript flags */
+	    if ( fmflags&1 ) old_otf_flags |= ps_flag_afm;
+	    if ( fmflags&2 ) old_otf_flags |= ps_flag_pfm;
+	    if ( fmflags&0x20000 ) old_otf_flags |= ps_flag_nohintsubs;
+	    if ( fmflags&0x40000 ) old_otf_flags |= ps_flag_noflex;
+	    if ( fmflags&0x80000 ) old_otf_flags |= ps_flag_nohints;
+		/* Applicable truetype flags */
+	    if ( fmflags&4 ) old_ttf_flags |= ttf_flag_shortps;
+	    if ( fmflags&0x10 ) old_ttf_flags |= ttf_flag_applemode;
+	    if ( fmflags&0x20 ) old_ttf_flags |= ttf_flag_pfed_comments;
+	    if ( fmflags&0x40 ) old_ttf_flags |= ttf_flag_pfed_colors;
+	}
     }
 
     if ( oldbitmapstate!=bf_none ) {
@@ -1216,11 +1667,12 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 
     if ( sfs!=NULL ) {
 	int flags = 0;
-	if ( !oldpsstate )
-	    flags = ttf_flag_shortps;
-	if ( !oldttfhintstate )
-	    flags |= ttf_flag_nohints;
-	flags |= ttf_flag_applemode;
+	if ( oldformatstate<=ff_cid )
+	    flags = old_ps_flags;
+	else if ( oldformatstate<=ff_ttfdfont )
+	    flags = old_ttf_flags;
+	else
+	    flags = old_otf_flags;
 return( WriteMacFamily(filename,sfs,oldformatstate,oldbitmapstate,flags));
     }
 
@@ -1239,6 +1691,7 @@ static void DoSave(struct gfc_data *d,unichar_t *path) {
     struct sflist *sfs=NULL, *cur;
     static int buts[] = { _STR_Yes, _STR_No, 0 };
     static int psscalewarned=0, ttfscalewarned=0;
+    int flags;
 
     for ( i=d->sf->charcnt-1; i>=1; --i )
 	if ( d->sf->chars[i]!=NULL && strcmp(d->sf->chars[i]->name,".notdef")==0 &&
@@ -1315,23 +1768,17 @@ return;
 	cur->sizes = sizes;
     }
 
-    oldafmstate = GGadgetIsChecked(d->doafm);
-    oldpfmstate = GGadgetIsChecked(d->dopfm);
-    oldpsstate = GGadgetIsChecked(d->psnames);
-    oldttfhintstate = GGadgetIsChecked(d->ttfhints);
-    oldttfapplestate = GGadgetIsChecked(d->ttfapple);
+    if ( oldformatstate<=ff_cid )
+	flags = old_ps_flags = d->ps_flags;
+    else if ( oldformatstate<=ff_ttfdfont )
+	flags = old_ttf_flags = d->ttf_flags;
+    else
+	flags = old_otf_flags = d->otf_flags;
 
     if ( !d->family )
 	err = _DoSave(d->sf,temp,sizes,-1);
-    else {
-	int flags = 0;
-	if ( !oldpsstate )
-	    flags = ttf_flag_shortps;
-	if ( !oldttfhintstate )
-	    flags |= ttf_flag_nohints;
-	flags |= ttf_flag_applemode;
+    else
 	err = !WriteMacFamily(temp,sfs,oldformatstate,oldbitmapstate,flags);
-    }
 
     free(temp);
     d->done = !err;
@@ -1385,6 +1832,26 @@ static int GFD_Cancel(GGadget *g, GEvent *e) {
 	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
 	d->done = true;
 	d->ret = false;
+    }
+return( true );
+}
+
+static int GFD_Options(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+	int fs = GGadgetGetFirstListSelectedItem(d->pstype);
+	/*int bf = GGadgetGetFirstListSelectedItem(d->bmptype);*/
+	int iscid = fs==ff_cid || fs==ff_otfcid || fs==ff_otfciddfont;
+	int which;
+	if ( fs==ff_none )
+	    which = 1;		/* Some bitmaps get stuffed int ttf files */
+	else if ( fs<=ff_cid )
+	    which = 0;
+	else if ( fs<=ff_ttfdfont )
+	    which = 1;
+	else
+	    which = 2;
+	SaveOptionsDlg(d,which,iscid);
     }
 return( true );
 }
@@ -1466,37 +1933,10 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
 	unichar_t *pt, *dup, *tpt, *ret;
 	int format = GGadgetGetFirstListSelectedItem(d->pstype);
-	int set, len, bf;
+	int len, bf;
 	static unichar_t nullstr[] = { 0 };
 	GTextInfo **list;
 	SplineFont *temp;
-
-	set = true;
-	if ( format==ff_ttf || format==ff_ttfsym || format==ff_otf ||
-		format==ff_ttfdfont || format==ff_otfdfont || format==ff_otfciddfont ||
-		format==ff_otfcid || format==ff_ttfmacbin || format==ff_none )
-	    set = false;
-	GGadgetSetChecked(d->doafm,set);
-	if ( !set )				/* Don't default to generating pfms */
-	    GGadgetSetChecked(d->dopfm,set);
-	GGadgetSetVisible(d->dopfm,set);
-	GGadgetSetVisible(d->ttfapple,!set);
-	if ( !set ) {
-	    if ( format==ff_ttfdfont || format==ff_otfdfont || format==ff_otfciddfont ||
-		    format==ff_ttfmacbin || alwaysgenapple )
-		GGadgetSetChecked(d->ttfapple,true);
-	    else if ( format!=ff_none )
-		GGadgetSetChecked(d->ttfapple,false);
-	    else {
-		int bf = GGadgetGetFirstListSelectedItem(d->bmptype);
-		GGadgetSetChecked(d->ttfapple,bf==bf_sfnt_dfont);
-	    }
-	}
-	GGadgetSetVisible(d->psnames,format==ff_ttf || format==ff_ttfsym ||
-		/*format==ff_otf || format==ff_otfdfont ||*/
-		format==ff_ttfdfont || format==ff_ttfmacbin || format==ff_none);
-	GGadgetSetVisible(d->ttfhints,format==ff_ttf || format==ff_ttfsym ||
-		format==ff_ttfdfont || format==ff_ttfmacbin || format==ff_none);
 
 	list = GGadgetGetList(d->bmptype,&len);
 	temp = d->sf->cidmaster ? d->sf->cidmaster : d->sf;
@@ -1528,11 +1968,6 @@ return( true );
 	if ( d->sf->cidmaster!=NULL ) {
 	    if ( format!=ff_none && format != ff_cid && format != ff_otfcid && format!=ff_otfciddfont ) {
 		GGadgetSetTitle(d->bmpsizes,nullstr);
-		/*GGadgetSetVisible(d->doafm,true);*/
-		/*GGadgetSetVisible(d->dopfm,true);*/
-	    } else {
-		/*GGadgetSetVisible(d->doafm,false);*/
-		/*GGadgetSetVisible(d->dopfm,false);*/
 	    }
 	}
 
@@ -1540,8 +1975,10 @@ return( true );
 	list[bf_sfnt_dfont]->disabled = true;
 	if ( temp->bitmaps==NULL )
 	    /* Don't worry about what formats are possible, they're disabled */;
-	else if ( set ) {
-	    /* If we're not in a ttf format (set) then we can't output ttf bitmaps */
+	else if ( format!=ff_ttf && format!=ff_ttfsym && format!=ff_otf &&
+		format!=ff_ttfdfont && format!=ff_otfdfont && format!=ff_otfciddfont &&
+		format!=ff_otfcid && format!=ff_ttfmacbin && format!=ff_none ) {
+	    /* If we're not in a ttf format then we can't output ttf bitmaps */
 	    if ( bf==bf_ttf ||
 		    bf==bf_nfntmacbin || bf==bf_nfntdfont )
 		GGadgetSelectOneListItem(d->bmptype,bf_bdf);
@@ -1570,11 +2007,6 @@ return( true );
 	}
 #endif
 	GGadgetSetEnabled(d->bmptype, format!=ff_multiple );
-	if ( d->family ) {
-	    GGadgetSetVisible(d->doafm,false);
-	    GGadgetSetVisible(d->dopfm,false);
-	    GGadgetSetVisible(d->ttfapple,false);
-	}
     }
 return( true );
 }
@@ -1593,10 +2025,6 @@ static int GFD_BitmapFormat(GGadget *g, GEvent *e) {
 			bf!=bf_none);
 	}
 	BitmapName(d);
-	if ( bf==bf_sfnt_dfont || alwaysgenapple )
-	    GGadgetSetChecked(d->ttfapple,true);
-	else if ( bf==bf_ttf )
-	    GGadgetSetChecked(d->ttfapple,false);
     }
 return( true );
 }
@@ -1791,21 +2219,14 @@ return( 0 );
     gcd[4].gd.handle_controlevent = GFD_NewDir;
     gcd[4].creator = GButtonCreate;
 
-    if ( oldafmstate==-1 ) {
-	oldafmstate = true;
-	if ( oldformatstate==ff_ttf || oldformatstate==ff_ttfsym || oldformatstate==ff_otf ||
-		oldformatstate==ff_ttfdfont || oldformatstate==ff_otfdfont || oldformatstate==ff_otfciddfont ||
-		oldformatstate==ff_otfcid || oldformatstate==ff_ttfmacbin || oldformatstate==ff_none )
-	    oldafmstate = false;
-    }
-
-    gcd[5].gd.pos.x = 12; gcd[5].gd.pos.y = 214; gcd[5].gd.pos.width = 0; gcd[5].gd.pos.height = 0;
-    gcd[5].gd.flags = gg_visible | gg_enabled | (oldafmstate ?gg_cb_on : 0 );
-    label[5].text = (unichar_t *) _STR_Outputafm;
+    gcd[5].gd.pos.x = 12; gcd[5].gd.pos.y = 218; gcd[5].gd.pos.width = 0; gcd[5].gd.pos.height = 0;
+    gcd[5].gd.flags = gg_visible | gg_enabled;
+    label[5].text = (unichar_t *) _STR_Options;
     label[5].text_in_resource = true;
-    gcd[5].gd.popup_msg = GStringGetResource(_STR_OutputAfmPopup,NULL);
+    gcd[5].gd.popup_msg = GStringGetResource(_STR_OptionsPopup,NULL);
     gcd[5].gd.label = &label[5];
-    gcd[5].creator = GCheckBoxCreate;
+    gcd[5].gd.handle_controlevent = GFD_Options;
+    gcd[5].creator = GButtonCreate;
 
     gcd[6].gd.pos.x = 12; gcd[6].gd.pos.y = 190; gcd[6].gd.pos.width = 0; gcd[6].gd.pos.height = 0;
     gcd[6].gd.flags = gg_visible | gg_enabled ;
@@ -1905,66 +2326,7 @@ return( 0 );
     label[9].text = BitmapList(temp);
     gcd[9].gd.label = &label[9];
 
-    gcd[10].gd.pos.x = 12; gcd[10].gd.pos.y = 231; gcd[10].gd.pos.width = 0; gcd[10].gd.pos.height = 0;
-    gcd[10].gd.flags = gg_visible | gg_enabled | (oldpfmstate ?gg_cb_on : 0 );
-    label[10].text = (unichar_t *) _STR_Outputpfm;
-    label[10].text_in_resource = true;
-    gcd[10].gd.popup_msg = GStringGetResource(_STR_OutputPfmPopup,NULL);
-    gcd[10].gd.label = &label[10];
-    gcd[10].creator = GCheckBoxCreate;
-
-    gcd[11].gd.pos.x = 88; gcd[11].gd.pos.y = gcd[5].gd.pos.y;
-    gcd[11].gd.flags = gg_enabled | (oldpsstate ?gg_cb_on : 0 );
-    label[11].text = (unichar_t *) _STR_PSNames;
-    label[11].text_in_resource = true;
-    gcd[11].gd.popup_msg = GStringGetResource(_STR_PSNamesPopup,NULL);
-    gcd[11].gd.label = &label[11];
-    gcd[11].creator = GCheckBoxCreate;
-    if ( ofs==ff_ttf || ofs==ff_ttfsym || ofs==ff_ttfdfont || /*ofs==ff_otf ||
-	    ofs==ff_otfdfont ||*/ ofs==ff_ttfmacbin || ofs==ff_none )
-	gcd[11].gd.flags |=  gg_visible;
-
-    gcd[12].gd.pos.x = gcd[11].gd.pos.x; gcd[12].gd.pos.y = gcd[10].gd.pos.y;
-    gcd[12].gd.flags = gg_enabled | (oldttfhintstate ?gg_cb_on : 0 );
-    label[12].text = (unichar_t *) _STR_Hints;
-    label[12].text_in_resource = true;
-    gcd[12].gd.popup_msg = GStringGetResource(_STR_TTFHintsPopup,NULL);
-    gcd[12].gd.label = &label[12];
-    gcd[12].creator = GCheckBoxCreate;
-    if ( ofs==ff_ttf || ofs==ff_ttfsym || ofs==ff_ttfdfont || ofs==ff_ttfmacbin )
-	gcd[12].gd.flags |=  gg_visible;
-
-    gcd[13].gd.pos.x = gcd[10].gd.pos.x; gcd[13].gd.pos.y = gcd[10].gd.pos.y;
-    gcd[13].gd.flags = gg_visible | gg_enabled;
-    label[13].text = (unichar_t *) _STR_AppleMode;
-    label[13].text_in_resource = true;
-    gcd[13].gd.popup_msg = GStringGetResource(_STR_AppleModePopup,NULL);
-    gcd[13].gd.label = &label[13];
-    gcd[13].creator = GCheckBoxCreate;
-    if ( ofs==ff_ttf || ofs==ff_ttfsym || ofs==ff_otf ||
-	    ofs==ff_ttfdfont || ofs==ff_otfdfont || ofs==ff_otfciddfont ||
-	    ofs==ff_otfcid || ofs==ff_ttfmacbin || ofs==ff_none ) {
-	gcd[10].gd.flags &= ~gg_visible;
-	if ( alwaysgenapple ||
-		ofs==ff_ttfmacbin || ofs==ff_ttfdfont || ofs==ff_otfdfont ||
-		ofs==ff_otfciddfont || family || (ofs==ff_none && old==bf_sfnt_dfont))
-	    gcd[13].gd.flags |= gg_cb_on;
-	else
-	    gcd[13].gd.flags &= ~gg_cb_on;
-    } else
-	gcd[13].gd.flags &= ~gg_visible;
-    if ( family ) {
-	gcd[13].gd.flags &= ~gg_visible;	/* Apple mode is implied */
-	gcd[10].gd.flags &= ~gg_visible;	/* pfms are pointless */
-	gcd[5].gd.flags &= ~gg_visible;		/* afms are just too hard (and are in the fond anyway) */
-    }
-
-    if ( ofs==ff_otfcid || ofs==ff_cid || ofs==ff_otfciddfont) {
-	/*gcd[5].gd.flags &= ~gg_visible;*/
-	gcd[10].gd.flags &= ~gg_visible;
-    }
-
-    k = 14;
+    k = 10;
     if ( family ) {
 	y = 250;
 	k = 14;
@@ -2039,15 +2401,14 @@ return( 0 );
     d.family = family;
     d.familycnt = familycnt;
     d.gfc = gcd[0].ret;
-    d.doafm = gcd[5].ret;
-    d.dopfm = gcd[10].ret;
     d.pstype = gcd[6].ret;
     d.bmptype = gcd[8].ret;
     d.bmpsizes = gcd[9].ret;
-    d.psnames = gcd[11].ret;
-    d.ttfhints = gcd[12].ret;
-    d.ttfapple = gcd[13].ret;
     d.gw = gw;
+
+    d.ps_flags = old_ps_flags;
+    d.ttf_flags = old_ttf_flags;
+    d.otf_flags = old_otf_flags;
 
     GWidgetHidePalettes();
     GDrawSetVisible(gw,true);

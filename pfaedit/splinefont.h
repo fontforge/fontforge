@@ -677,6 +677,11 @@ enum ttf_flags { ttf_flag_shortps = 1, ttf_flag_nohints = 2,
 		    ttf_flag_pfed_comments=8, ttf_flag_pfed_colors=0x10
 		};
 enum openflags { of_fstypepermitted=1 };
+enum ps_flags { ps_flag_nohintsubs = 0x10000, ps_flag_noflex=0x20000,
+		    ps_flag_nohints = 0x40000, ps_flag_restrict256=0x80000,
+		    ps_flag_afm = 0x100000, ps_flag_pfm = 0x200000,
+		    ps_flag_tfm = 0x400000
+		};
 
 struct fontdict;
 struct pschars;
@@ -698,25 +703,25 @@ extern int CIDOneWidth(SplineFont *sf);
 extern int SFOneHeight(SplineFont *sf);
 extern int SFIsCJK(SplineFont *sf);
 extern struct pschars *SplineFont2Chrs(SplineFont *sf, int round, int iscjk,
-	struct pschars *subrs);
+	struct pschars *subrs,int flags);
 struct cidbytes;
 struct fd2data;
 struct ttfinfo;
 struct alltabs;
-extern struct pschars *CID2Chrs(SplineFont *cidmaster,struct cidbytes *cidbytes);
-extern struct pschars *SplineFont2Subrs2(SplineFont *sf);
+extern struct pschars *CID2Chrs(SplineFont *cidmaster,struct cidbytes *cidbytes,int flags);
+extern struct pschars *SplineFont2Subrs2(SplineFont *sf,int flags);
 extern struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
-	struct pschars *subrs);
-extern struct pschars *CID2Chrs2(SplineFont *cidmaster,struct fd2data *fds);
+	struct pschars *subrs,int flags);
+extern struct pschars *CID2Chrs2(SplineFont *cidmaster,struct fd2data *fds,int flags);
 enum fontformat { ff_pfa, ff_pfb, ff_pfbmacbin, ff_multiple, ff_ptype3, ff_ptype0, ff_cid,
 	ff_ttf, ff_ttfsym, ff_ttfmacbin, ff_ttfdfont, ff_otf, ff_otfdfont,
 	ff_otfcid, ff_otfciddfont, ff_none };
 enum bitmapformat { bf_bdf, bf_ttf, bf_sfnt_dfont, 
 	bf_nfntmacbin, bf_nfntdfont, bf_fon, bf_none };
 extern SplineChar *SFFindExistingCharMac(SplineFont *,int unienc);
-extern int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format);
-extern int WritePSFont(char *fontname,SplineFont *sf,enum fontformat format);
-extern int WriteMacPSFont(char *fontname,SplineFont *sf,enum fontformat format);
+extern int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format,int flags);
+extern int WritePSFont(char *fontname,SplineFont *sf,enum fontformat format,int flags);
+extern int WriteMacPSFont(char *fontname,SplineFont *sf,enum fontformat format,int flags);
 extern int _WriteTTFFont(FILE *ttf,SplineFont *sf, enum fontformat format,
 	int32 *bsizes, enum bitmapformat bf,int flags);
 extern int WriteTTFFont(char *fontname,SplineFont *sf, enum fontformat format,
@@ -977,7 +982,7 @@ extern void SCAutoInstr( SplineChar *sc,BlueData *bd );
 extern void SplineCharAutoHint( SplineChar *sc,int removeOverlaps);
 extern void SplineFontAutoHint( SplineFont *sf);
 extern StemInfo *HintCleanup(StemInfo *stem,int dosort);
-extern int SplineFontIsFlexible(SplineFont *sf);
+extern int SplineFontIsFlexible(SplineFont *sf,int flags);
 extern int SCWorthOutputting(SplineChar *sc);
 extern SplineChar *SCDuplicate(SplineChar *sc);
 extern int SCIsNotdef(SplineChar *sc,int isfixed);
