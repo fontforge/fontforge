@@ -543,7 +543,7 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc) {
     if ( sc->kerns!=NULL ) {
 	fprintf( sfd, "Kerns:" );
 	for ( kp = sc->kerns; kp!=NULL; kp=kp->next )
-	    if ( kp->off!=0 )
+	    if ( kp->off!=0 && !SFDOmit(kp->sc))
 		fprintf( sfd, " %d %d", kp->sc->enc, kp->off );
 	fprintf(sfd, "\n" );
     }
@@ -1579,7 +1579,7 @@ static void SFDFixupRefs(SplineFont *sf) {
     int i;
     RefChar *refs;
     /*int isautorecovery = sf->changed;*/
-    KernPair *kp;
+    KernPair *kp, *prev, *next;
 
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
 	/* A changed character is one that has just been recovered */
@@ -1598,8 +1598,19 @@ static void SFDFixupRefs(SplineFont *sf) {
 	}
 	/*if ( isautorecovery && !sf->chars[i]->changed )*/
     /*continue;*/
-	for ( kp=sf->chars[i]->kerns; kp!=NULL; kp=kp->next )
+	for ( prev = NULL, kp=sf->chars[i]->kerns; kp!=NULL; kp=next ) {
+	    next = kp->next;
 	    kp->sc = sf->chars[(int) (kp->sc)];
+	    if ( kp->sc!=NULL )
+		prev = kp;
+	    else{
+		if ( prev==NULL )
+		    sf->chars[(int) (kp->sc)]->kerns = next;
+		else
+		    prev->next = next;
+		free(kp);
+	    }
+	}
     }
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
 	for ( refs = sf->chars[i]->refs; refs!=NULL; refs=refs->next ) {
