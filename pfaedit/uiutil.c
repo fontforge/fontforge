@@ -28,6 +28,10 @@
 #include <ustring.h>
 #include <gfile.h>
 
+#if __CygWin
+#include <unistd.h>
+#endif
+
 void Protest(char *label) {
     char buffer[80];
     unichar_t ubuf[80];
@@ -123,7 +127,15 @@ static char browser[1025];
 
 static void findbrowser(void) {
     static char *stdbrowsers[] = { "netscape", "opera", "galeon", "kfmclient",
-	"mozilla", "mosaic", /*"grail",*/ "lynx", NULL };
+	"mozilla", "mosaic", /*"grail",*/ "lynx",
+#if __CygWin
+	"IEXPLORE.EXE", "netscape.exe",
+#elif __Mac
+	/* Hmm. I don't know what to do here. The obvious thing : */
+	/*  /Applications/Internet Exporer/Internet Explorer.app  */
+	/* says bad permissions */
+#endif
+	NULL };
     int i;
     char *path;
 
@@ -143,6 +155,14 @@ return;
 return;
 	}
     }
+#if __CygWin
+printf( "Here\n" );
+    /* Well, under Windows, c:\Program Files\* are generally not in the path */
+    if ( access("/cygdrive/c/progra~1/intern~1/iexplore.exe",X_OK)==0 )
+	strcpy(browser,"/cygdrive/c/progra~1/intern~1/iexplore");
+    else if ( access("/cygdrive/c/progra~1/netscape/communicator/program/netscape.exe",X_OK)==0 )
+	strcpy(browser,"/cygdrive/c/progra~1/netscape/communicator/program/netscape");
+#endif
 }
 
 void help(char *file) {
@@ -182,9 +202,20 @@ return;
 	    *pt = '#';
     } else
 	strcpy(fullspec,file);
+#if __CygWin
+    if ( strstrmatch(browser,"/cygdrive")!=NULL && strstr(fullspec,":/")==NULL ) {
+	/* It looks as though the browser is a windows application, so we */
+	/*  should give it a windows file name */
+	extern void cygwin_conv_to_full_win32_path(const char *unx,char *win);
+	temp = galloc(1024);
+	cygwin_conv_to_full_win32_path(fullspec,temp);
+	strncpy(fullspec,temp,1024); fullspec[1023]='\0';
+	free(temp);
+    }
+#endif
     temp = galloc(strlen(browser) + strlen(fullspec) + 20);
     if ( strstr(fullspec,":/")==NULL )
-	sprintf( temp, "%s file:%s &", browser, fullspec );	/* mozilla won't take a filename */
+	sprintf( temp, "%s 'file:%s' &", browser, fullspec );	/* mozilla won't take a filename */
     else
 	sprintf( temp, "%s %s &", browser, fullspec );
     system(temp);

@@ -1,33 +1,100 @@
-INSTALLATION NOTES:
- Currently this distribution just contains an executable:
- 	pfaedit
- and some user interface files
-	pfaedit.{en,fr,de,ru}.ui
- The user interface files should be placed in /usr/share/pfaedit (you may
- need to create the directory).
+INSTALLING A BINARY DISTRIBUTION
+    If I have an rpm for your system, use that. (my redhat rpms work on mandrake
+    too, they probably work on other i386 systems). There are debian packages
+    available on the debian site. 
+    Download the appropriate binary from
+    	http://pfaedit.sourceforge.net/index.html#binary
+    If it is a .tgz file then it should contain
+	A README file or two
+	pfaedit      -- the executable
+	pfaedit.1    --	the man page.
+	pfaedit-*.ui --	various user interface string files for different
+			languages
+    You should:
+    	$ su
+	# mkdir -p /usr/local/bin /usr/local/man/man1 /usr/local/share/pfaedit
+	# mv pfaedit /usr/local/bin
+	# mv pfaedit.1 /usr/local/man/man1
+	# mv *.ui /usr/local/share/pfaedit
 
- If you want to edit CID-keyed fonts (for CJK fonts) you may want to pull down
- the cidmap package from http://pfaedit.sf.net/cidmaps.tgz and move the
- contents to /usr/share/pfaedit also.
+    You may need to add /usr/local/bin to your PATH environment variable (and
+    /usr/local/man to your MANPATH environment variable). If you use bash edit
+    ~/.bashrc and add
+    	PATH=${PATH}:/usr/local/bin
+	MANPATH=${MANPATH:-}:/usr/local/man ; export MANPATH
+    Or if you use csh, tcsh, etc. edit your ~/.cshrc and add:
+    	setenv PATH ${PATH}:/usr/local/bin
+	if ( $?MANPATH == "0" ) then
+	    setenv MANPATH /usr/local/man
+	else
+	    setenv MANPATH ${MANPATH}:/usr/local/man
+	endif
 
-BITMAP FONTS
- The program sort of assumes you've got some unicode fonts lying around. I'm
- not exactly sure what is needed, the program sort of picks and chooses
- depending on what's available. I noticed it used my unicode fonts
- (you can grab them from http://bibliofile.mc.duke.edu/gww/fonts/{Monospace,Cal),
- and something which I think is now part of the standard X distribution. It
- might also need to grab the clearlyu fonts which are freeware:
-	http://clr.nmsu.edu/~mleisher/cu.html
-	
-RUNNING
-$ pfaedit -new
- Creates a new font
-$ pfaedit -nosplash
- (No splash screen in case you have a very slow X connection)
-$ pfaedit font.pfa font2.pfb font3.ttf font4.otf font4.sfd
- Opens those fonts (sfd files are pfaedit's own spline font database files)
-$ pfaedit
- Brings up a file picker dlg.
+BUILDING
+    Just download the file pfaedit_full-*.tgz which you will find on
+	http://pfaedit.sourceforge.net/index.html#source
+    Move it somewhere appropriate (/usr/local/src perhaps?) and type:
+	$ gunzip pfaedit_full-*.tgz ; tar xf pfaedit_full-*.tar
+	$ cd pfaedit
+	$ configure
+	$ make
+	$ su
+	# make install
 
-DOCUMENTATION
-	http://pfaedit.sourceforge.net/overview.html
+More complex installations
+    "make install" will also install a few other things which are not part of
+    the standard package, but which are useful for some people.
+    CIDMAPS:
+	If you are going to be editing CID keyed fonts you should also down-
+	load my cidmap files from
+		http://pfaedit.sourceforge.net/cidmaps.tgz
+	put that file in the same place as you put pfaedit_full*.tgz, then
+	    $ mkdir -p pfaedit/cidmaps
+	    $ mv cidmaps.tgz pfaedit/cidmaps
+	    $ cd pfaedit/cidmaps
+	    $ gunzip *.tgz ; tar xf *.tar
+	    $ cd ../..
+	And then proceed to do the normal install.
+    DOCUMENTATION:
+	You can choose to install PfaEdit's documentation on your system, then
+	pressing the [Help] or [F1] key within PfaEdit will go to the local
+	docs rather than those on the web.
+	Download the doc bundle from
+	    http://pfaedit.sourceforge.net/index.html#docs
+	Then (assuming you have not changed the install prefix)
+	    # mkdir -p /usr/local/share/doc/pfaedit
+	    # mv pfaedit_htdocs-*.tgz /usr/local/share/doc/pfaedit
+	    # cd /usr/local/share/doc/pfaedit
+	    # gunzip *.tgz; tar xf *.tar
+
+BUILDING for OpenVMS
+    Jouk Jansen has provided me with OpenVMS makefile scripts. There should
+    be mms files in all the appropriate directories.
+
+BUILDING without X11
+    PfaEdit can be built without X11. You will probably only want to do this
+    if your system lacks X (in which case configure should figure that out and
+    do it automagically). But if, for some strange reason you wish to build a
+    non-X version on a machine with X type:
+	$ configure --without-x
+
+NOTE:
+    During the beta process I have the program linked with static versions of
+    libgdraw and libgunicode. I intend to link with the dynamic ones once
+    debugging is not an issue (Ha!).
+
+KNOWN BUILD PROBLEMS
+    * If the configure script doesn't work for you try using
+	$ make -f makefile.orig
+	* The gdraw package expects to find libjpeg, libtiff, libpng and
+	  libungif on your system. If any of these is not present then define
+	  -D_NO_LIBUNGIF etc. in the makefile.
+	* the final link requests -ldl. On some systems (netbsd for instance)
+	  libdl is part of libc and can't be found. Just remove it from the
+	  LIBS list in the pfaedit/makefile and rebuild.
+
+Please report any bugs to
+	pfaedit-devel@lists.sourceforge.net
+
+Documentation is at:
+	http://pfaedit.sourceforge.net/index.html

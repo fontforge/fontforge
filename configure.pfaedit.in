@@ -14,6 +14,8 @@ case "$host" in
 gww_nodynamic="yes"
 AC_DEFINE(_CursorsMustBe16x16)
 AC_DEFINE(_Keyboard,1)
+AC_DEFINE(__Mac,1)
+LIBS="/System/Library/Frameworks/CoreServices.framework/CoreServices $LIBS"
  ;;
 powerpc-*-*linux*)
 AC_DEFINE(_Keyboard,3)
@@ -24,6 +26,7 @@ AC_DEFINE(_Keyboard,2)
 *-pc-cygwin*)
 AC_DEFINE(_BrokenBitmapImages)
 AC_DEFINE(_ModKeysAutoRepeat)
+AC_DEFINE(__CygWin,1)
  ;;
 esac
 

@@ -1,5 +1,5 @@
 BEFORE INSTALLATION
- Before you install pfaedit under Mac OS/X you must first install the X window
+ Before you install pfaedit under Mac OS/X you should first install the X window
  system. I did this as a two step process, first installing the XFree86 Darwin
  distribution,
 	ftp://ftp.xfree86.org/pub/XFree86/4.1.0/binaries/Darwin-ppc/
@@ -9,27 +9,86 @@ BEFORE INSTALLATION
  and then installing the XonX distribution on top of it
 	http://prdownloads.sourceforge.net/xonx/XDarwin1.0a2.tgz
 
+ It is possible to use pfaedit without X, but in this case there is no user
+ interface and you are limited to running scripts.
+
 INSTALLATION NOTES:
- Currently this distribution just contains an executable:
- 	pfaedit
- and some user interface files
-	pfaedit.{en,fr,de,ru}.ui
- The user interface files should be placed in /usr/share/pfaedit (you may
- need to create the directory).
+    Download the appropriate binary from
+    	http://pfaedit.sourceforge.net/Problems-MacOSX.html#binary
+    If it is a .tgz file then it should contain
+	A README file or two
+	pfaedit      -- the executable
+	pfaedit.1    --	the man page.
+	pfaedit-*.ui --	various user interface string files for different
+			languages
+    You should:
+	$ gunzip pfaedit_MacOSX*.tgz; tar xf pfaedit_MacOSX*.tar
+    	$ su
+	# mkdir -p /usr/local/bin /usr/local/man/man1 /usr/local/share/pfaedit
+	# mv pfaedit /usr/local/bin
+	# mv pfaedit.1 /usr/local/man/man1
+	# mv *.ui /usr/local/share/pfaedit
+    You may need to add /usr/local/bin to your PATH environment variable (and
+    /usr/local/man to your MANPATH environment variable)
+    If your shell is tcsh (or csh), edit ~/.cshrc and add:
+    	setenv PATH ${PATH}:/usr/local/bin
+	if ( "$MANPATH" == "" ) then
+	    setenv MANPATH /usr/local/man
+	else
+	    setenv MANPATH ${MANPATH}:/usr/local/man
+	endif
+    If your shell is bash then edit your ~/.bashrc and add
+    	PATH=${PATH}:/usr/local/bin
+	MANPATH=${MANPATH:-}:/usr/local/man ; export MANPATH
 
- If you want to edit CID-keyed fonts (for CJK fonts) you may want to pull down
- the cidmap package from http://pfaedit.sf.net/cidmaps.tgz and move the
- contents to /usr/share/pfaedit also.
+BUILDING
+    Just download the file pfaedit_full-*.tgz which you will find on
+	http://pfaedit.sourceforge.net/index.html#source
+    Move it somewhere appropriate (/usr/local/src perhaps?) and type:
+	$ gunzip pfaedit_full-*.tgz ; tar xf pfaedit_full-*.tar
+	$ cd pfaedit
+	$ configure
+	$ make
+	$ su
+	# make install
 
-BITMAP FONTS (for PfaEdit's use, not to edit)
- The program sort of assumes you've got some unicode fonts lying around. I'm
- not exactly sure what is needed, the program sort of picks and chooses
- depending on what's available. I noticed it used my unicode fonts
- (you can grab them from http://bibliofile.mc.duke.edu/gww/fonts/{Monospace,Cal),
- and something which I think is now part of the standard X distribution. It
- might also need to grab the clearlyu fonts which are freeware:
-	http://clr.nmsu.edu/~mleisher/cu.html
-	
+More complex installations
+    "make install" will also install a few other things which are not part of
+    the standard package, but which are useful for some people.
+    CIDMAPS:
+	If you are going to be editing CID keyed fonts you should also down-
+	load my cidmap files from
+		http://pfaedit.sourceforge.net/cidmaps.tgz
+	put that file in the same place as you put pfaedit_full*.tgz, then
+	    $ mkdir -p pfaedit/cidmaps
+	    $ mv cidmaps.tgz pfaedit/cidmaps
+	    $ cd pfaedit/cidmaps
+	    $ gunzip *.tgz ; tar xf *.tar
+	    $ cd ../..
+	And then proceed to do the normal install.
+	Or install them manually:
+	    # mkdir -p /usr/local/share/pfaedit
+	    # mv pfaedit/cidmaps/* /usr/local/share/pfaedit
+    DOCUMENTATION:
+	You can choose to install PfaEdit's documentation on your system, then
+	pressing the [Help] or [F1] key within PfaEdit will go to the local
+	docs rather than those on the web.
+	Download the doc bundle from
+	    http://pfaedit.sourceforge.net/index.html#docs
+	Then (assuming you have not changed the install prefix)
+	    # mkdir -p /usr/local/share/doc/pfaedit
+	    # mv pfaedit_htdocs-*.tgz /usr/local/share/doc/pfaedit
+	    # cd /usr/local/share/doc/pfaedit
+	    # gunzip *.tgz; tar xf *.tar
+
+BUILDING without X11
+    PfaEdit can be built without X11. You will probably only want to do this
+    if your system lacks X (in which case configure should figure that out and
+    do it automagically). But if, for some strange reason you wish to build a
+    non-X version on a machine with X type:
+	$ configure --without-x
+    during the build process instead of "$ configure"
+
 RUNNING
  Before running PfaEdit you must start XDarwin. It lives in the Applications
  folder, and you start it by double clicking on it.
@@ -45,6 +104,9 @@ $ pfaedit font.pfa font2.pfb font3.ttf font4.otf font4.sfd
  Opens those fonts (sfd files are pfaedit's own spline font database files)
 $ pfaedit
  Brings up a file picker dlg.
+$ pfaedit -script script-file [script arguments]
+ Starts pfaedit up without bringing up any windows. It will run the script-file
+ (passing it any other arguments given on the command line) and then exit.
 
 Either the Command (Apple, Cloverleaf) key or the Control key may be used for
 invoking menu items (that is both ^Q and Cmd-Q will cause PfaEdit to quit).
@@ -63,17 +125,17 @@ CAVEATS
     You can only open a window if you position it so that it's upper left
     corner is in one of X's already existing windows.
 
+Please report any bugs to
+	pfaedit-devel@lists.sourceforge.net
+
 DOCUMENTATION
 	http://pfaedit.sourceforge.net/overview.html
 
 FONTS UNDER Mac OS/X
  Fonts live in /Library/Fonts, /System/Library/Fonts or ~/Library/Fonts.
- PfaEdit can read .dfont fonts, PfaEdit cannot edit resource fork fonts
- directly.
-
- If you see a font file where ls tells you the size is zero then it will
- probably be a font in a resource fork. If you want to edit it, first package
- it up in macbinary (or binhex) format, PfaEdit can read it out of the package.
+ On Mac OS/X PfaEdit can edit .dfont and resource fork fonts. On other systems
+ PfaEdit can only edit Mac .dfonts (the concept of a resource fork is Mac 
+ specific).
 
 FONTS UNDER Mac OS/9
  Note Bene: As far as I know PfaEdit has not been ported to Mac OS/9 (or 8 or 7)
