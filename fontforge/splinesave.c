@@ -844,21 +844,17 @@ static void flexto(GrowBuf *gb,BasePoint current[MmMax],Spline *pspline[MmMax],
     *current = *end;
 }
 
-static void CvtPsSplineSet(GrowBuf *gb, SplineChar *scs[MmMax], int instance_count,
+static void _CvtPsSplineSet(GrowBuf *gb, SplinePointList *spl[MmMax], int instance_count,
 	BasePoint current[MmMax],
 	int round, struct hintdb *hdb, BasePoint *start, int is_order2 ) {
     Spline *spline[MmMax], *first;
-    SplinePointList *spl[MmMax];
     SplinePointList temp[MmMax], *freeme=NULL;
     int init=true;
     int i;
 
     if ( is_order2 ) {
-	freeme = spl[0] = SplineSetsPSApprox(scs[0]->layers[ly_fore].splines);
+	freeme = spl[0] = SplineSetsPSApprox(spl[0]);
 	instance_count = 1;
-    } else {
-	for ( i=0; i<instance_count; ++i )
-	    spl[i] = scs[i]->layers[ly_fore].splines;
     }
     while ( spl[0]!=NULL ) {
 	first = NULL;
@@ -918,21 +914,32 @@ static void CvtPsSplineSet(GrowBuf *gb, SplineChar *scs[MmMax], int instance_cou
     SplinePointListFree(freeme);
 }
 
+static void CvtPsSplineSet(GrowBuf *gb, SplineChar *scs[MmMax], int instance_count,
+	BasePoint current[MmMax],
+	int round, struct hintdb *hdb, BasePoint *start, int is_order2 ) {
+    SplinePointList *spl[MmMax];
+    int i;
+
+    for ( i=0; i<instance_count; ++i )
+	spl[i] = scs[i]->layers[ly_fore].splines;
+    _CvtPsSplineSet(gb,spl,instance_count,current,round,hdb,start,is_order2);
+}
+
 static void CvtPsRSplineSet(GrowBuf *gb, SplineChar *scs[MmMax], int instance_count,
 	BasePoint *current,
 	int round, struct hintdb *hdb, BasePoint *startend, int is_order2 ) {
     RefChar *refs[MmMax];
-    SplineChar *rscs[MmMax];
+    SplineSet *spls[MmMax];
     int i;
 
     for ( i=0; i<instance_count; ++i )
 	refs[i] = scs[i]->layers[ly_fore].refs;
     while ( refs[0]!=NULL ) {
 	for ( i=0; i<instance_count; ++i ) {
-	    rscs[i] = refs[i]->sc;
+	    spls[i] = refs[i]->layers[0].splines;
 	    refs[i] = refs[i]->next;
 	}
-	CvtPsSplineSet(gb,rscs,instance_count,current,round,hdb,startend,scs[0]->parent->order2);
+	_CvtPsSplineSet(gb,spls,instance_count,current,round,hdb,startend,scs[0]->parent->order2);
     }
 }
 
