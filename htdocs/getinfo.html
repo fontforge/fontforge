@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 13-Oct-2004 -->
+  <!-- AP: Last modified: 5-Dec-2004 -->
   <TITLE>Get Info</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -12,24 +12,25 @@
 </H1>
 <P>
 In the Outline View the Get Info command can generate one of four different
-dialogs depending on what is selected. If one thing is selected, and that
-thing is a point then the point info dialog is brought up, if one thing is
-selected and that thing is a reference then the reference dialog is brought
-up, if one thing is selected and it is a background image then the image
-dialog is brought up. If one anchor point is selected then the anchor point
-dialog is brought up.
+dialogs depending on what is selected. If a single thing is selected, and
+that thing is a point then the point info dialog is brought up, if it is
+a reference then the reference dialog is brought up, if it is a background
+image then the image dialog is brought up. If it is an anchor point then
+the anchor point dialog is brought up.
 <H2>
   Point Info
 </H2>
 <P>
-<IMG SRC="pointinfo.png" WIDTH="321" HEIGHT="459" ALIGN="Right"> This shows
+<IMG SRC="pointinfo.png" WIDTH="321" HEIGHT="495" ALIGN="Right"> This shows
 information about the current point. The Base position is where the point
 itself is.
 <P>
 The Next CP shows both the location of the next control point, and the offset
 to that point from the base (and whether this setting is the default for
-that point), underneath the offsets it shows the same information in a different
-format -- as a distance from the point itself, and the angle to it.
+that point, if this point is the last on an open contour then the [] Default
+button will be grey), underneath the offsets it shows the same information
+in a different format -- as a distance from the point itself, and the angle
+to it. 
 <P>
 The Prev CP does the same for the previous control point.
 <P>
@@ -40,8 +41,8 @@ points, you may not change the angle fields as these are fixed).
 You may also change whether a point is a curve, corner or tangent point (Caution:
 Changing from a corner point to a curve point and back to a corner point
 is NOT a no op. It may change the control points) You may move on to the
-next or previous point on the path. If you cancel then all changes to all
-points are canceled.
+next or previous point on the path, or the next/previous point of the current
+contour. If you cancel then all changes to all points are canceled.
 <P>
 The colors of the labels reflect the colors of the items they refer to. The
 point itself will be drawn in red, the previous control point will be drawn

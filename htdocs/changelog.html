@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 3-Dec-2004 -->
+  <!-- AP: Last modified: 5-Dec-2004 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -11,6 +11,20 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    ???
+    <UL>
+      <LI>
+	Some fixes to the raster display of the debug window
+      <LI>
+	Conversion of cubic to quadratic had a rounding error introduced by -O2.
+	Made it a bit more forgiving about rounding errors.
+      <LI>
+	Added two new buttons to the point info dialog to allow the user to walk
+	around the current contour (Normally the Next button skips to the start of
+	the next contour if you are at the end of the current one, the "Next On Contour"
+	button returns to the first point on the contour)
+    </UL>
   <LI>
     3-Dec-2004
     <UL>
