@@ -459,6 +459,24 @@ static void BuildVKernScript(struct node *node,struct att_dlg *att) {
     BuildKerns(node,att,node->tag,DEFAULT_LANG,BuildKerns2MV,true);
 }
 
+static int PSTAllComponentsExist(SplineFont *sf,char *glyphnames ) {
+    char *start, *end, ch;
+    int ret;
+
+    if ( glyphnames==NULL )
+return( false );
+    for ( start=glyphnames; *start; start = end ) {
+	while ( *start==' ' ) ++start;
+	for ( end = start; *end!=' ' && *end!='\0'; ++end );
+	ch = *end; *end = '\0';
+	ret = SCWorthOutputting(SFGetCharDup(sf,-1,start));
+	*end = ch;
+	if ( !ret )
+return( false );
+    }
+return( true );
+}
+
 static void BuildFeatures(struct node *node,struct att_dlg *att,
 	uint32 script, uint32 lang, uint32 tag, int ispos) {
     int i,j,k, maxc, tot, maxl, len;
@@ -513,6 +531,8 @@ static void BuildFeatures(struct node *node,struct att_dlg *att,
 					pst->u.pair.vr[1].h_adv_off, pst->u.pair.vr[1].v_adv_off );
 				uc_strcat(ubuf,buf);
 			    } else {
+				if ( !PSTAllComponentsExist(_sf,pst->u.subs.variant ))
+		continue;
 				if ( pst->type==pst_ligature )
 				    uc_strcat(ubuf, " <= " );
 				else
