@@ -28,6 +28,7 @@
 #include <gkeysym.h>
 #include <ustring.h>
 #include <utype.h>
+#include "ttfinstrs.h"
 
 extern int _GScrollBar_Width;
 
@@ -562,6 +563,13 @@ void instr_expose(struct instrinfo *ii,GWindow pixmap,GRect *rect) {
     low = ( (rect->y-2)/ii->fh ) * ii->fh +2;
     high = ( (rect->y+rect->height+ii->fh-1-2)/ii->fh ) * ii->fh +2;
 
+    if ( ii->isel_pos!=-1 ) {
+	GRect r;
+	r.x = 0; r.width = ii->vwidth;
+	r.y = (ii->isel_pos-ii->lpos)*ii->fh+2; r.height = ii->fh;
+	GDrawFillRect(pixmap,&r,0xffff00);
+    }
+
     if ( ii->showaddr )
 	GDrawDrawLine(pixmap,addr_end,rect->y,addr_end,rect->y+rect->height,0x000000);
     if ( ii->showhex )
@@ -605,8 +613,8 @@ void instr_expose(struct instrinfo *ii,GWindow pixmap,GRect *rect) {
 
 void instr_mousemove(struct instrinfo *ii,int pos) {
     int i,y;
-    static unichar_t buffer[120]; const
-    unichar_t *msg;
+    static unichar_t buffer[1025];
+    const unichar_t *msg;
 
     pos = ((pos-2)/ii->fh) * ii->fh + 2;
 
@@ -629,7 +637,34 @@ void instr_mousemove(struct instrinfo *ii,int pos) {
 	msg = buffer;
       break;
       case bt_instr:
-	if ( (msg = instrhelppopup[ii->instrdata->instrs[i]])==NULL ) {
+	msg = instrhelppopup[ii->instrdata->instrs[i]];
+#if TT_CONFIG_OPTION_BYTECODE_DEBUG
+	if ( ii->args!=NULL ) {
+	    char temp[80];
+	    temp[0]='\0';
+	    if ( ii->args[i].used&ttf_sp0 ) {
+		sprintf( temp, "Pop: %d", ii->args[i].spvals[0] );
+		if ( ii->args[i].used&ttf_sp1 )
+		    sprintf( temp+strlen(temp), ", Pop: %d", ii->args[i].spvals[1] );
+	    }
+	    if ( ii->args[i].used&ttf_rp0 )
+		sprintf( temp+strlen(temp), ", rp0: %d", ii->args[i].rp0val );
+	    if ( ii->args[i].used&ttf_rp1 )
+		sprintf( temp+strlen(temp), ", rp1: %d", ii->args[i].rp1val );
+	    if ( ii->args[i].used&ttf_rp2 )
+		sprintf( temp+strlen(temp), ", rp2: %d", ii->args[i].rp2val );
+	    if ( temp[0]!='\0' ) {
+		strcat(temp,"\n");
+		uc_strcpy(buffer,temp);
+		if ( msg!=NULL )
+		    u_strcat(buffer,msg);
+		else
+		    uc_strcat(buffer,"???");
+		msg = buffer;
+	    }
+	}
+#endif
+	if ( msg==NULL ) {
 	    uc_strcpy(buffer,"???");
 	    msg = buffer;
 	}
@@ -887,6 +922,7 @@ void instrCreateEditor(Table *tab,TtfView *tfv) {
     GDrawFontMetrics(iv->instrinfo.gfont,&as,&ds,&ld);
     iv->instrinfo.as = as+1;
     iv->instrinfo.fh = iv->instrinfo.as+ds;
+    iv->instrinfo.isel_pos = -1;
 
     lh = iv->instrinfo.lheight;
     if ( lh>40 ) lh = 40;

@@ -29,7 +29,6 @@
 
 #include "ttffont.h"
 #include "config.h"
-#include "ttfinstrs.h"
 
 typedef struct ipoint {
     int x;
@@ -123,6 +122,7 @@ typedef struct conicchar {
     int width;
     ConicPointList *conics;
     RefChar *refs;
+    int point_cnt;
     struct instrdata instrdata;
     struct charview *views;
     struct conicfont *parent;

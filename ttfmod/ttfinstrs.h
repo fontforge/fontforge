@@ -57,6 +57,7 @@ enum ttf_instructions {
 
 #define SUB_MAX	30
 
+enum ttf_ptflags { pt_oncurve=1, pt_xtouched=2, pt_ytouched=4, pt_endcontour=8 };
 struct ttfstate {
     int idefcnt, fdefcnt, stack_max;
     struct ifdef { uint8 *data; int len; } *idefs, *fdefs;
@@ -91,39 +92,61 @@ struct ttfstate {
     BasePoint projection;/* Projection vector */
     BasePoint freedom;	/* Freedom vector */
     BasePoint dual;	/* Dual projection vector */
-    uint8 *pc, *end_pc;
+    uint8 *pc, *end_pc, *startcall;
+    int callcnt;
     uint8 *returns[SUB_MAX];
     uint8 *ends[SUB_MAX];
+    uint8 *starts[SUB_MAX];
+    int cnts[SUB_MAX];
     int retsp;
+    struct {
+	int point_cnt;
+	IPoint *points;
+	IPoint *moved;
+	uint8 *flags;
+    } zones[2];
+    int16 *cvtvals;		/* Need a copy because instructions can change */
+				    /* values, but not the originals in table */
     Table *cvt, *maxp;
     TtfFont *tfont;
     ConicChar *cc;
+    CharView *cv;
 	/* This is the order tables get run in (I think) */
-    unsigned int in_fpgm: 1;	/* Don't know if this ever matters */
+    unsigned int in_fpgm: 1;	/* some instructions are only legal in fpgm/prep */
     unsigned int in_prep: 1;	/* some instructions only legal in cvt program (prep) */
-    unsigned int in_glyf: 1;	/* Don't know if this ever matters */
+    unsigned int in_glyf: 1;	/* otherwise */
+    unsigned int in_instr: 1;	/* no instruction redefinition inside an instr redef */
     struct ttfargs *args;
     struct ttfactions *acts;
 };
 
 struct ttfargs {
-    enum ttf_set { ttf_sp1=0x1, ttf_sp2=0x2, ttf_sp3=0x4, ttf_sp4=0x8,
+    enum ttf_set { ttf_sp0=0x1, ttf_sp1=0x2, ttf_sp2=0x4, ttf_sp3=0x8,
 	    ttf_inloop = 0x10,
-	    ttf_rp0=0x20, ttf_rp1=0x40, ttf_rp2=0x80
+	    ttf_rp0=0x20, ttf_rp1=0x40, ttf_rp2=0x80,
+	    ttf_pushed=0x100, ttf_pushedmore=0x200
     } used;			/* Things this instruction uses */
     int loopcnt;
     int spvals[4];
     int rp0val, rp1val, rp2val;
+    int zs;
+    int pushed;
 };
 
 struct ttfactions {
-    int pnum;			/* This is the point that got acted upon */
-    int basedon;		/* This is the reference point (-1 if absolute) */
+    int16 pnum;			/* This is the point that got acted upon */
+    int16 basedon;		/* This is the reference point (-1 if absolute) */
+				/* Set to pnum if a shift from where it was */
+    int16 interp;		/* If this isn't -1 then it and basedon define*/
+				/*  a region between which pnum is interpolated*/
+    int16 cvt_entry;		/* Did it come from the cvt table? */
     int32 distance;		/* 26.6 fixed */
-    int cvt_offset;		/* Did it come from the cvt table? */
     unsigned int rounded:2;
     unsigned int min: 1;
     uint8 *instr;
+    BasePoint freedom;
     struct ttfactions *acts;
 };
+
+extern const char *instrs[];
 #endif

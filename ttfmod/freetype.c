@@ -43,6 +43,7 @@ static FT_Library context;
 /* So one case boils down to linking against the standard names, while the  */
 /*  other does the link at run time if it's possible */
 
+/*#define _STATIC_LIBFREETYPE 1		/* Debug */
 # if defined(_STATIC_LIBFREETYPE) || defined(NODYNAMIC)
 
 #define _FT_Init_FreeType FT_Init_FreeType
@@ -192,6 +193,7 @@ return;
     free(raster);
 }
 
+# if _TT_CONFIG_OPTION_BYTECODE_INTERPRETER
 struct ft_context {
     ConicPointList *hcpl, *lcpl, *cpl;
     ConicPoint *last;
@@ -343,6 +345,7 @@ return;
     cv->raster = ret;
     _FT_Done_Face(face);
 }
+# endif
 #else
 /* ANSI C says a file must define something. It might as well defined a noop */
 /*  version of one of the things it is supposed to define */

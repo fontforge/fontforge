@@ -76,9 +76,21 @@ real get2dot14(FILE *ttf) {
 return( (real) ((val<<16)>>(16+14)) + (mant/16384.0) );
 }
 
+Table *TableFind(TtfFont *tfont, int name) {
+    int i;
+
+    for ( i=0; i<tfont->tbl_cnt; ++i ) {
+	if ( tfont->tbls[i]->name==name)
+return( tfont->tbls[i] );
+    }
+return( NULL );
+}
+
 void TableFillup(Table *tbl) {
     int i;
 
+    if ( tbl==NULL )
+return;
     if ( tbl->data!=NULL )
 return;
     tbl->data = galloc( ((tbl->len+3)/4)*4 );

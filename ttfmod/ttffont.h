@@ -108,6 +108,7 @@ extern int32 getlong(FILE *ttf);
 extern real getfixed(FILE *ttf);
 extern real getvfixed(FILE *ttf);		/* Reads table version numbers which are some weird (undocumented) bcd format */
 extern real get2dot14(FILE *ttf);
+Table *TableFind(TtfFont *tfont, int name);
 void TableFillup(Table *tbl);
 int tgetushort(Table *tab,int pos);
 int32 tgetlong(Table *tab,int pos);

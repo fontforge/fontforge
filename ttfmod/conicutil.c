@@ -499,6 +499,10 @@ static void readttfsimpleglyph(FILE *ttf,ConicChar *cc, int path_cnt) {
 	flags[i] = getc(ttf);
 	if ( flags[i]&_Repeat ) {
 	    int cnt = getc(ttf);
+	    if ( cnt==EOF ) {
+		GDrawIError("Unexpected End of File when reading a simple glyph\n" );
+    break;
+	    }
 	    if ( i+cnt>=tot )
 		GDrawIError("Flag count is wrong (or total is): %d %d", i+cnt, tot );
 	    for ( j=0; j<cnt; ++j )
@@ -538,6 +542,7 @@ static void readttfsimpleglyph(FILE *ttf,ConicChar *cc, int path_cnt) {
     }
 
     cc->conics = ttfbuildcontours(path_cnt,endpt,flags,pts);
+    cc->point_cnt = tot;
     CCCatagorizePoints(cc);
     free(endpt);
     free(flags);
@@ -563,7 +568,9 @@ static void readttfsimpleglyph(FILE *ttf,ConicChar *cc, int path_cnt) {
 static void readttfcompositglyph(FILE *ttf,ConicFont *cf,ConicChar *cc) {
     RefChar *head=NULL, *last=NULL, *cur;
     int flags, arg1, arg2;
-    int i;
+    int i, pnum;
+    ConicPointList *cpl;
+    ConicPoint *sp;
 
     do {
 	cur = chunkalloc(sizeof(RefChar));
@@ -649,6 +656,25 @@ static void readttfcompositglyph(FILE *ttf,ConicFont *cf,ConicChar *cc) {
 	RefCharRefigure(cur);
 	RefCharAddDependant(cur,cc);
     }
+
+    pnum = 0;
+    for ( cur = head; cur!=NULL; cur = cur->next ) {
+	for ( cpl = cur->conics; cpl!=NULL ; cpl = cpl->next ) {
+	    sp = cpl->first;
+	    while ( 1 ) {
+		if ( sp->me.pnum!=-1 )
+		    sp->me.pnum = pnum++;
+		if ( sp->nextcp != NULL )
+		    sp->nextcp->pnum = pnum++;
+		if ( sp->next==NULL )
+	    break;
+		sp = sp->next->to;
+		if ( sp==cpl->first )
+	    break;
+	    }
+	}
+    }
+    cc->point_cnt = pnum;
 }
 /* End section copied out of parsettf.c */
 
@@ -737,11 +763,12 @@ return( NULL );
 	    start = next;
 	}
     } else {					/* Short format */
+	/* since low bit is always 0, short format hides it, so must multiply by 2 */
 	start = ptgetushort(loca->data);
 	for ( i=0; i<cf->glyph_cnt; ++i ) {
-	    next = ptgetushort(loca->data+4*i+4);
-	    cf->chars[i]->glyph_offset = start;
-	    cf->chars[i]->glyph_len = next-start;
+	    next = ptgetushort(loca->data+2*i+2);
+	    cf->chars[i]->glyph_offset = 2*start;
+	    cf->chars[i]->glyph_len = 2*(next-start);
 	    start = next;
 	}
     }
@@ -820,7 +847,7 @@ static real SolveQuad(real a,real b,real c,real err, real from,int bigger) {
 	else if ( temp>0 ) {
 	    temp = sqrt(temp);
 	    ts[2] = (-b+temp)/(2*a);
-	    ts[4] = (-b-temp)/(2*a);
+	    ts[3] = (-b-temp)/(2*a);
 	}
 	if ( bigger ) {
 	    best = 1;

@@ -547,3 +547,32 @@ void maxpCreateEditor(Table *tab,TtfView *tfv) {
     GGadgetsCreate(gw,gcd);
     GDrawSetVisible(gw,true);
 }
+
+static void MaxPSetUShort(Table *maxp,int newval,int cid,int offset) {
+    char buf[8]; unichar_t ubuf[8];
+
+    TableFillup(maxp);
+    if ( maxp->tv!=NULL ) {
+	sprintf( buf, "%d", newval );
+	uc_strcpy(ubuf, buf);
+	GGadgetSetTitle(GWidgetGetControl(maxp->tv->gw,cid),ubuf);
+    }
+    ptputushort(maxp->data+offset,newval);
+    if ( !maxp->changed ) {
+	maxp->changed = true;
+	maxp->container->changed = true;
+	GDrawRequestExpose(maxp->container->tfv->v,NULL,false);
+    }
+}
+
+void MaxPSetStack(Table *maxp,int newval) {
+    MaxPSetUShort(maxp,newval,CID_SEl,24);
+}
+
+void MaxPSetStorage(Table *maxp,int newval) {
+    MaxPSetUShort(maxp,newval,CID_Storage,18);
+}
+
+void MaxPSetFDef(Table *maxp,int newval) {
+    MaxPSetUShort(maxp,newval,CID_FDefs,20);
+}

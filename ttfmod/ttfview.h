@@ -32,6 +32,9 @@
 #include <ggadget.h>
 #include <gwidget.h>
 
+struct ttfargs;
+struct ttfactions;
+
 struct tableviewfuncs {
     int (*closeme)(struct tableview *);		/* 1 return => closed, 0 => cancelled */
     int (*processdata) (struct tableview *);	/* bring table->data up to date */
@@ -115,6 +118,13 @@ struct instrinfo {
     int16 as, fh;
     struct instrdata *instrdata;
     GFont *gfont;
+#if TT_CONFIG_OPTION_BYTECODE_DEBUG
+    struct ttfargs *args;
+    struct ttfactions *acts;
+    int act_cnt;
+    int gsel_pos;
+#endif
+    int isel_pos;
     unsigned int changed: 1;
     unsigned int showaddr: 1;
     unsigned int showhex: 1;
@@ -141,6 +151,7 @@ typedef struct charview {
     struct freetype_raster *raster;
     real gridwidth;
 #endif
+    Table *cvt;
 } CharView;
 
 typedef struct drect {
@@ -173,6 +184,9 @@ void MenuRecentBuild(GWindow base,struct gmenuitem *mi,GEvent *e);
 
 void _heaChangeLongMetrics(Table *_hea,int newlongcnt);
 void headViewUpdateModifiedCheck(Table *tab);
+void MaxPSetStack(Table *maxp,int newval);
+void MaxPSetStorage(Table *maxp,int newval);
+void MaxPSetFDef(Table *maxp,int newval);
 
 void headCreateEditor(Table *tab,TtfView *tfv);
 void maxpCreateEditor(Table *tab,TtfView *tfv);
@@ -200,8 +214,12 @@ void instrhelpsetup(void);
 struct freetype_raster *FreeType_GetRaster(FontView *fv,int index);
 void FreeType_ShowRaster(GWindow pixmap,int x,int y,
 			struct freetype_raster *raster);
-void FreeType_FreeRaster(struct freetype_raster *);
 void FreeType_GridFitChar(CharView *cv);
 #endif
+void FreeType_FreeRaster(struct freetype_raster *);
+#if TT_CONFIG_OPTION_BYTECODE_DEBUG
+void CVGenerateGloss(CharView *cv);
+#endif
+void TtfActionsFree(struct ttfactions *acts);
 
 #endif

@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "ttfmodui.h"
+#include "ttfinstrs.h"
 #include <gkeysym.h>
 #include <ustring.h>
 #include <utype.h>
@@ -47,8 +48,8 @@ struct charshows charshows = {
 };
 
 #define EDGE_SPACING	2
-#define INSTR_WIDTH	(3*EDGE_SPACING+21*cv->numlen)
-#define GLOSS_WIDTH	(8*EDGE_SPACING+20*cv->numlen)
+#define INSTR_WIDTH	(2*EDGE_SPACING+21*cv->numlen)
+#define GLOSS_WIDTH	(2*EDGE_SPACING+28*cv->numlen)
 #define CHAR_WIDTH	400
 #define MIN_CHAR_WIDTH	50
 
@@ -212,17 +213,150 @@ return;
     GDrawSetWindowTitles(cv->gw,title,NULL);
 
     cv->instrinfo.instrdata = &new->instrdata;
+    cv->instrinfo.isel_pos = -1;
     instr_typify(&cv->instrinfo);
-    if ( cv->instrinfo.lpos + cv->instrinfo.vheight/cv->fh > cv->instrinfo.lheight )
-	cv->instrinfo.lpos = cv->instrinfo.lheight-cv->instrinfo.vheight/cv->fh;
-    if ( cv->instrinfo.lpos < 0 ) cv->instrinfo.lpos = 0;
+    GScrollBarSetBounds(cv->instrinfo.vsb,0,cv->instrinfo.lheight,cv->instrinfo.vheight/cv->fh);
+    cv->instrinfo.lpos = 0;
     GScrollBarSetPos(cv->instrinfo.vsb,cv->instrinfo.lpos);
 
 #if TT_CONFIG_OPTION_BYTECODE_INTERPRETER
     FreeType_GridFitChar(cv);
 #endif
+#if TT_CONFIG_OPTION_BYTECODE_DEBUG
+    CVGenerateGloss(cv);
+    cv->instrinfo.gsel_pos = -1;
+    cv->gvpos = 0;
+    GScrollBarSetBounds(cv->gvsb,0,cv->instrinfo.act_cnt,cv->instrinfo.vheight/cv->fh);
+    GScrollBarSetPos(cv->gvsb,cv->gvpos);
+#endif
+
     GDrawRequestExpose(cv->v,NULL,false);
     GDrawRequestExpose(cv->instrinfo.v,NULL,false);
+#if TT_CONFIG_OPTION_BYTECODE_DEBUG
+    GDrawRequestExpose(cv->glossv,NULL,false);
+#endif
+}
+
+static int CVClearSel(CharView *cv) {
+    ConicPointList *spl;
+    Conic *spline, *first;
+    RefChar *rf;
+    int needsupdate = false;
+
+    for ( spl = cv->cc->conics; spl!=NULL; spl = spl->next ) {
+	if ( spl->first->selected ) { needsupdate = true; spl->first->selected = false; }
+	first = NULL;
+	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
+	    if ( spline->to->selected )
+		{ needsupdate = true; spline->to->selected = false; }
+	    if ( first==NULL ) first = spline;
+	}
+    }
+    for ( rf=cv->cc->refs; rf!=NULL; rf = rf->next ) {
+	if ( rf->selected ) { needsupdate = true; rf->selected = false; }
+	for ( spl = rf->conics; spl!=NULL; spl = spl->next ) {
+	    if ( spl->first->selected ) { needsupdate = true; spl->first->selected = false; }
+	    first = NULL;
+	    for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
+		if ( spline->to->selected )
+		    { needsupdate = true; spline->to->selected = false; }
+		if ( first==NULL ) first = spline;
+	    }
+	}
+    }
+return( needsupdate );
+}
+
+static BasePoint *CVGetTTFPoint(CharView *cv,int pnum,BasePoint **moved) {
+    ConicPointList *spl, *mspl;
+    ConicPoint *sp, *msp;
+    RefChar *rf;
+
+#if TT_CONFIG_OPTION_BYTECODE_INTERPRETER
+    mspl = cv->gridfit;
+#else
+    mspl = NULL;
+#endif
+    if ( moved!=NULL ) *moved = NULL;
+    for ( spl = cv->cc->conics; spl!=NULL; spl = spl->next ) {
+	if ( mspl!=NULL ) msp = mspl->first;
+	for ( sp = spl->first; ; ) {
+	    if ( sp->me.pnum==pnum ) {
+		if ( moved!=NULL && msp!=NULL ) *moved = &msp->me;
+return( &sp->me );
+	    }
+	    if ( sp->nextcp!=NULL && sp->nextcp->pnum==pnum ) {
+		if ( moved!=NULL && msp!=NULL ) *moved = msp->nextcp;
+return( sp->nextcp );
+	    }
+	    if ( msp==NULL );
+	    else if ( msp->next==NULL ) msp=NULL;
+	    else msp=msp->next->to;
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==spl->first )
+	break;
+	}
+	if ( mspl!=NULL ) mspl = mspl->next;
+    }
+    for ( rf=cv->cc->refs; rf!=NULL; rf = rf->next ) {
+	if ( mspl!=NULL ) msp = mspl->first;
+	for ( spl = rf->conics; spl!=NULL; spl = spl->next ) {
+	    for ( sp = spl->first; ; ) {
+		if ( sp->me.pnum==pnum ) {
+		    if ( moved!=NULL && msp!=NULL ) *moved = &msp->me;
+return( &sp->me );
+		}
+		if ( sp->nextcp!=NULL && sp->nextcp->pnum==pnum ) {
+		    if ( moved!=NULL && msp!=NULL ) *moved = msp->nextcp;
+return( sp->nextcp );
+		}
+		if ( msp==NULL );
+		else if ( msp->next==NULL ) msp=NULL;
+		else msp=msp->next->to;
+		if ( sp->next==NULL )
+	    break;
+		sp = sp->next->to;
+		if ( sp==spl->first )
+	    break;
+	    }
+	    if ( mspl!=NULL ) mspl = mspl->next;
+	}
+    }
+return( NULL );
+}
+
+static ConicPoint *CVGetPoint(CharView *cv,int pnum) {
+    ConicPointList *spl;
+    ConicPoint *sp;
+    RefChar *rf;
+
+    for ( spl = cv->cc->conics; spl!=NULL; spl = spl->next ) {
+	for ( sp = spl->first; ; ) {
+	    if ( sp->me.pnum==pnum )
+return( sp );
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==spl->first )
+	break;
+	}
+    }
+    for ( rf=cv->cc->refs; rf!=NULL; rf = rf->next ) {
+	for ( spl = rf->conics; spl!=NULL; spl = spl->next ) {
+	    for ( sp = spl->first; ; ) {
+		if ( sp->me.pnum==pnum )
+return( sp );
+		if ( sp->next==NULL )
+	    break;
+		sp = sp->next->to;
+		if ( sp==spl->first )
+	    break;
+	    }
+	}
+    }
+return( NULL );
 }
 
 static void char_resize(CharView *cv,GEvent *event) {
@@ -263,6 +397,7 @@ return;
     GScrollBarSetPos(cv->instrinfo.vsb,cv->instrinfo.lpos);
 
 
+#if TT_CONFIG_OPTION_BYTECODE_DEBUG
     pos.width = cv->sbw;
     pos.x = x+GLOSS_WIDTH;
     GGadgetResize(cv->gvsb,pos.width,pos.height);
@@ -270,8 +405,15 @@ return;
     pos.width = pos.x-x; pos.x = x;
     GDrawMove(cv->glossv,pos.x,pos.y);
     GDrawResize(cv->glossv,pos.width,pos.height);
+    cv->gvwidth = GLOSS_WIDTH;
     if ( cv->show.glosspane ) x += GLOSS_WIDTH+cv->sbw;
-    /* fixup gloss scrollbars */
+
+    GScrollBarSetBounds(cv->gvsb,0,cv->instrinfo.act_cnt,cv->instrinfo.vheight/cv->fh);
+    if ( cv->gvpos + cv->instrinfo.vheight/cv->fh > cv->instrinfo.act_cnt )
+	cv->gvpos = cv->instrinfo.act_cnt-cv->instrinfo.vheight/cv->fh;
+    if ( cv->gvpos < 0 ) cv->gvpos = 0;
+    GScrollBarSetPos(cv->gvsb,cv->gvpos);
+#endif
 
 
     pos.width = cv->sbw;
@@ -699,10 +841,14 @@ static void CVDrawConicSet(CharView *cv, GWindow pixmap, ConicPointList *set,
 
 static void char_expose(CharView *cv,GWindow pixmap,GRect *rect) {
     RefChar *rf;
-    GRect old, pixel;
+    GRect old;
     DRect clip;
     real grid_spacing = cv->cc->parent->em / (real) cv->show.ppem;
-    int i,j;
+    int i;
+#if TT_CONFIG_OPTION_BYTECODE_INTERPRETER
+    int j;
+    GRect pixel;
+#endif
 
     GDrawPushClip(pixmap,rect,&old);
     GDrawSetFont(pixmap,cv->sfont);
@@ -742,9 +888,11 @@ static void char_expose(CharView *cv,GWindow pixmap,GRect *rect) {
 
     DrawLine(cv,pixmap,cv->cc->width,-8096,cv->cc->width,8096,0x404040);
 #if TT_CONFIG_OPTION_BYTECODE_INTERPRETER
-    DrawLine(cv,pixmap,cv->gridwidth,-8096,cv->gridwidth,8096,0x008000);
+    if ( cv->show.gridspline ) {
+	DrawLine(cv,pixmap,cv->gridwidth,-8096,cv->gridwidth,8096,0x008000);
 
-    CVDrawConicSet(cv,pixmap,cv->gridfit,0x008000,true,&clip);
+	CVDrawConicSet(cv,pixmap,cv->gridfit,0x008000,true,&clip);
+    }
 #endif
 
     if ( cv->show.fore ) {
@@ -777,6 +925,47 @@ static void char_infoexpose(CharView *cv,GWindow pixmap,GRect *rect) {
     GDrawDrawText(pixmap,5,cv->mbh+cv->as,ubuf,-1,NULL,0x000000);
     GDrawDrawLine(pixmap,0,cv->mbh+cv->infoh-1,32767,cv->mbh+cv->infoh-1,0x000000);
 }
+
+#if TT_CONFIG_OPTION_BYTECODE_DEBUG
+static void char_glossexpose(CharView *cv,GWindow pixmap,GRect *rect) {
+    int i,y;
+    struct ttfactions *act;
+    char buf[100];
+    unichar_t ubuf[100];
+
+    GDrawSetFont(pixmap,cv->gfont);
+    y = EDGE_SPACING+cv->as;
+    for ( i=0, act = cv->instrinfo.acts; i<cv->gvpos && i<cv->instrinfo.act_cnt && y<rect->y+rect->height; ++i )
+	act = act->acts;
+    while ( i<cv->instrinfo.act_cnt && y<rect->y+rect->height+cv->fh ) {
+	if ( i==cv->instrinfo.gsel_pos ) {
+	    GRect r;
+	    r.y = y-cv->as; r.x = 0; r.height = cv->fh; r.width = cv->gvwidth;
+	    GDrawFillRect(pixmap,&r,0xffff00);
+	}
+	sprintf( buf,"Pt%4d.%c ", act->pnum,
+		act->freedom.x==1.0?'x': 
+		act->freedom.y==1.0?'y':'d' );
+	if ( act->basedon==-1 )
+	    strcat(buf,"Absolute At ");
+	else if ( act->interp!=-1 )
+	    /* Interpolated between */
+	    sprintf(buf+strlen(buf), "<%3d:%-3d>To ", act->basedon, act->interp );
+	else if ( act->basedon==act->pnum )
+	    strcat(buf,"Shifted  By ");
+	else
+	    sprintf(buf+strlen(buf), "Base%4d By ", act->basedon );
+	sprintf(buf+strlen(buf), "%.2f %c%c", act->distance/64.0,
+	    act->rounded ? 'r' : ' ',
+	    act->min ? 'm' : ' ');
+	uc_strcpy(ubuf,buf);
+	GDrawDrawText(pixmap,EDGE_SPACING,y,ubuf,-1,NULL,0x000000);
+	++i;
+	y+= cv->fh;
+	act = act->acts;
+    }
+}
+#endif
 
 static void char_vscroll(CharView *cv,struct sbevent *sb) {
     int newpos = cv->yoff;
@@ -854,9 +1043,9 @@ static void char_hscroll(CharView *cv,struct sbevent *sb) {
     }
 }
 
+#if TT_CONFIG_OPTION_BYTECODE_DEBUG
 static void gloss_scroll(CharView *cv,struct sbevent *sb) {
-#if 0
-    int newpos = cv->lpos;
+    int newpos = cv->gvpos;
 
     switch( sb->type ) {
       case et_sb_top:
@@ -875,24 +1064,26 @@ static void gloss_scroll(CharView *cv,struct sbevent *sb) {
         newpos += cv->vheight/cv->fh;
       break;
       case et_sb_bottom:
-        newpos = cv->rows-cv->vheight/cv->fh;
+        newpos = cv->instrinfo.act_cnt-cv->vheight/cv->fh;
       break;
       case et_sb_thumb:
       case et_sb_thumbrelease:
         newpos = sb->pos;
       break;
     }
-    if ( newpos>cv->rows-cv->vheight/cv->boxh )
-        newpos = cv->rows-cv->vheight/cv->boxh;
+    if ( newpos>cv->instrinfo.act_cnt-cv->vheight/cv->fh )
+        newpos = cv->instrinfo.act_cnt-cv->vheight/cv->fh;
     if ( newpos<0 ) newpos =0;
-    if ( newpos!=cv->lpos ) {
-	int diff = newpos-cv->lpos;
-	cv->lpos = newpos;
-	GScrollBarSetPos(cv->vsb,cv->lpos);
-	GDrawScroll(cv->v,NULL,0,diff*cv->boxh);
+    if ( newpos!=cv->gvpos ) {
+	GRect r;
+	int diff = newpos-cv->gvpos;
+	cv->gvpos = newpos;
+	GScrollBarSetPos(cv->gvsb,cv->gvpos);
+	r.x=0; r.y = EDGE_SPACING; r.width=cv->gvwidth; r.height=cv->vheight-2*EDGE_SPACING;
+	GDrawScroll(cv->glossv,&r,0,diff*cv->fh);
     }
-#endif
 }
+#endif
 
 static void CharViewFree(CharView *cv) {
     ConicChar *cc = cv->cc;
@@ -986,6 +1177,101 @@ return( true );
 }
 
 static int cv_gv_e_h(GWindow gw, GEvent *event) {
+#if TT_CONFIG_OPTION_BYTECODE_DEBUG
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    struct ttfactions *acts;
+    int i, seek;
+    ConicPoint *sp;
+    BasePoint *bp, *mbp;
+    struct instrinfo *ii;
+    char buf[200];
+    static unichar_t msg[200];
+
+    switch ( event->type ) {
+      case et_expose:
+	char_glossexpose(cv,gw,&event->u.expose.rect);
+      break;
+      case et_mousemove:
+	GGadgetEndPopup();
+	ii = &cv->instrinfo;
+	seek = (event->u.mouse.y-2)/cv->fh + cv->gvpos;
+	for ( i=0, acts=ii->acts; acts!=NULL && i<seek; ++i )
+	    acts = acts->acts;
+	if ( acts!=NULL ) {
+	    sprintf( buf,"Point %d.%s ", acts->pnum,
+		    acts->freedom.x==1.0?"x": 
+		    acts->freedom.y==1.0?"y":"diagonal" );
+	    if ( acts->basedon==-1 )
+		strcat(buf,"is positioned to ");
+	    else if ( acts->interp!=-1 )
+		/* Interpolated between */
+		sprintf(buf+strlen(buf), "interpolated between %d and %d to ",
+			acts->basedon, acts->interp );
+	    else if ( acts->basedon==acts->pnum )
+		strcat(buf,"Shifted  By ");
+	    else
+		sprintf(buf+strlen(buf), "offset from base point %d by ", acts->basedon );
+	    sprintf(buf+strlen(buf), "%.2f", acts->distance/64.0 );
+	    if ( acts->rounded || acts->min || acts->cvt_entry!=-1 ) {
+		sprintf(buf+strlen(buf), "\n%s%s",
+		    acts->rounded ? "rounded " : "",
+		    acts->min ? "minimum distance ": "" );
+		if ( acts->cvt_entry!=-1 && cv->cvt!=NULL ) {
+		    int val = (short) ptgetushort(cv->cvt->data+2*acts->cvt_entry);
+		    sprintf(buf+strlen(buf), " cvt entry=%d fword=%d pixel=%.2f",
+			acts->cvt_entry, val,
+				val*(double) cv->show.ppem/cv->cc->parent->em );
+		}
+	    }
+	    bp = CVGetTTFPoint(cv,acts->pnum,&mbp);
+	    if ( bp!=NULL ) {
+		double scale = cv->show.ppem/(double) (cv->cc->parent->em);
+		sprintf(buf+strlen(buf), "\nPoint originally at: (%g,%g) (%.2f,%.2f)",
+			bp->x,bp->y, bp->x*scale, bp->y*scale);
+#if TT_CONFIG_OPTION_BYTECODE_INTERPRETER
+		if ( mbp!=NULL )
+		    sprintf(buf+strlen(buf), "\nPoint moved to: (%g,%g) (%.2f,%.2f)",
+			    mbp->x,mbp->y, mbp->x*scale, mbp->y*scale);
+#endif
+	    }
+	    uc_strcpy(msg,buf);
+	    GGadgetPreparePopup(GDrawGetParentWindow(ii->v),msg);
+	}
+      break;
+      case et_mousedown:
+	GGadgetEndPopup();
+	ii = &cv->instrinfo;
+	ii->gsel_pos = (event->u.mouse.y-2)/cv->fh + cv->gvpos;
+	ii->isel_pos = -1;
+	for ( i=0, acts=ii->acts; acts!=NULL && i<ii->gsel_pos; ++i )
+	    acts = acts->acts;
+	sp = NULL;
+	ii->isel_pos = -1;
+	if ( acts!=NULL ) {
+	    sp = CVGetPoint(cv,acts->pnum);
+	    if ( acts->instr >= ii->instrdata->instrs &&
+		    acts->instr < ii->instrdata->instrs+ii->instrdata->instr_cnt ) {
+		ii->isel_pos = acts->instr - ii->instrdata->instrs;
+		if ( ii->isel_pos<ii->lpos ||
+			ii->isel_pos>=ii->lpos + cv->vheight/cv->fh ) {
+		    ii->lpos = ii->isel_pos-cv->vheight/(3*cv->fh);
+		    if ( ii->lpos >= ii->lheight-cv->vheight/cv->fh )
+			ii->lpos = ii->lheight-cv->vheight/cv->fh;
+		    if ( ii->lpos<0 ) ii->lpos = 0;
+		    GScrollBarSetPos(ii->vsb,ii->lpos);
+		}
+	    }
+	} else
+	    ii->gsel_pos = -1;
+	GDrawRequestExpose(cv->glossv,NULL,false);
+	GDrawRequestExpose(cv->instrinfo.v,NULL,false);
+	if ( CVClearSel(cv) || sp!=NULL ) {
+	    if ( sp ) sp->selected = true;
+	    GDrawRequestExpose(cv->v,NULL,false);
+	}
+      break;
+    }
+#endif
 return( true );
 }
 
@@ -1011,8 +1297,10 @@ static int cv_e_h(GWindow gw, GEvent *event) {
 		char_hscroll(cv,&event->u.control.u.sb);
 	    else if ( event->u.control.g == cv->instrinfo.vsb )
 		instr_scroll(&cv->instrinfo,&event->u.control.u.sb);
+#if TT_CONFIG_OPTION_BYTECODE_DEBUG
 	    else if ( event->u.control.g == cv->gvsb )
 		gloss_scroll(cv,&event->u.control.u.sb);
+#endif
 	  break;
 	}
       break;
@@ -1175,16 +1463,18 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  break;
 	  case MID_HideGrid:
 	    free(mi->ti.text);
-	    mi->ti.text = u_copy(GStringGetResource(cv->show.glosspane?_STR_HideGrid: _STR_ShowGrid,NULL));
+	    mi->ti.text = u_copy(GStringGetResource(cv->show.grid?_STR_HideGrid: _STR_ShowGrid,NULL));
 	  break;
+#if TT_CONFIG_OPTION_BYTECODE_INTERPRETER
 	  case MID_HideGridFit:
 	    free(mi->ti.text);
-	    mi->ti.text = u_copy(GStringGetResource(cv->show.glosspane?_STR_HideGridFit: _STR_ShowGridFit,NULL));
+	    mi->ti.text = u_copy(GStringGetResource(cv->show.gridspline?_STR_HideGridFit: _STR_ShowGridFit,NULL));
 	  break;
 	  case MID_HideRaster:
 	    free(mi->ti.text);
-	    mi->ti.text = u_copy(GStringGetResource(cv->show.glosspane?_STR_HideRaster: _STR_ShowRaster,NULL));
+	    mi->ti.text = u_copy(GStringGetResource(cv->show.raster?_STR_HideRaster: _STR_ShowRaster,NULL));
 	  break;
+#endif
 	}
     }
 }
@@ -1367,10 +1657,17 @@ return;
     GDrawResize(cv->gw,x,cv->mbh+cv->infoh+CHAR_WIDTH+cv->sbw);
 
     cv->instrinfo.instrdata = &cv->cc->instrdata;
+    cv->instrinfo.isel_pos = -1;
     instr_typify(&cv->instrinfo);
 
 #if TT_CONFIG_OPTION_BYTECODE_INTERPRETER
     FreeType_GridFitChar(cv);
+#endif
+#if TT_CONFIG_OPTION_BYTECODE_DEBUG
+    cv->instrinfo.gsel_pos = -1;
+    CVGenerateGloss(cv);
+    cv->cvt = TableFind(cv->cc->parent->tfont,CHR('c','v','t',' '));
+    TableFillup(cv->cvt);
 #endif
 
     GDrawSetVisible(gw,true);

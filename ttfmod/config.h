@@ -24,8 +24,9 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _CONFIG_H
-#define _CONFIG_H
+ 
+#ifndef _TTFMOD_CONFIG_H
+#define _TTFMOD_CONFIG_H
 
  /****************************************************************************/
  /*			   USER CONFIGURATION OPTIONS			     */
@@ -57,13 +58,22 @@
 /*  if you are not, then change the following #defined constant to 1 */
 # define TT_CONFIG_OPTION_BYTECODE_INTERPRETER	0
 #endif
-
+#if TT_CONFIG_OPTION_BYTECODE_INTERPRETER
+# define _TT_CONFIG_OPTION_BYTECODE_INTERPRETER 1
+#else
+# define _TT_CONFIG_OPTION_BYTECODE_INTERPRETER 0
+#endif
 
 #ifndef TT_CONFIG_OPTION_BYTECODE_DEBUG
-/* My byte code debugger does not actually move points around or rasterize them*/
-/*  it just figures out which points would be moved. I believe it does not fall*/
-/*  under the terms of Apple's patents. If you are concerned about this, set   */
-/*  the following #define to 0 */
+/* I also have my own byte code interpreter. It has three modes and is */
+/*  dependent on both TT_CONFIG_OPTION_BYTECODE_INTERPRETER and the above flag*/
+/*  If the above flag is off then there will be no byte code debugger or */
+/*  interpreter in the program. If it is on and TT_CONFIG_OPTION_BYTECODE_INTERPRETER */
+/*  is off then the interpreter will run but will not actually move any points*/
+/*  (it just figures out what points would be moved). If both are on then it */
+/*  will be a full interpreter and will be in violation of the patent */
+/* I believe that the intermediate mode is perfectly legal, so I leave it on */
+/*  by default. */
 # define TT_CONFIG_OPTION_BYTECODE_DEBUG	1
 #endif
 
