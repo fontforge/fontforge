@@ -30,12 +30,19 @@ esac
 AC_SEARCH_LIBS(dlopen, dl) dnl some systems have this in libc (Darwin uses dyld)
 AC_SEARCH_LIBS(inet_aton, resolv) dnl some systems have this in libc
 
-dnl Is there a better way to search for the freetype2 includes?
 dnl Is there a better way to add a directory to the include path?
 
-AC_CHECK_FILE(/usr/include/freetype2,CFLAGS="$CFLAGS -I/usr/include/freetype2/",[
-AC_CHECK_FILE(/usr/local/include/freetype2,CFLAGS="$CFLAGS -I/usr/local/include -I/usr/local/include/freetype2/",[
-AC_CHECK_FILE(/usr/X11R6/include/freetype2,CFLAGS="$CFLAGS -I/usr/X11R6/include -I/usr/X11R6/include/freetype2/",)])])
+FreeType2_IncRoot=
+if sh -c "freetype-config --prefix" >/dev/null 2>&1 ; then
+ FreeType2_IncRoot=`freetype-config --prefix`
+ AC_CHECK_FILE($temp/include/freetype2,CFLAGS="$CFLAGS -I$temp/include/freetype2/",FreeType2_IncRoot=)
+fi
+
+if test "FreeType2_IncRoot" = "" >/dev/null 2>&1 ; then
+ AC_CHECK_FILE(/usr/include/freetype2,CFLAGS="$CFLAGS -I/usr/include/freetype2/",[
+ AC_CHECK_FILE(/usr/local/include/freetype2,CFLAGS="$CFLAGS -I/usr/local/include -I/usr/local/include/freetype2/",[
+ AC_CHECK_FILE(/usr/X11R6/include/freetype2,CFLAGS="$CFLAGS -I/usr/X11R6/include -I/usr/X11R6/include/freetype2/",)])])
+fi
 
 dnl Some old versions of lib(un)gif don't work for us, they've got the
 dnl Function argument in the wrong place. So two checks for gif.
