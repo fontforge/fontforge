@@ -36,6 +36,7 @@ struct problems {
     SplineChar *sc;
     SplineChar *msc;
     unsigned int openpaths: 1;
+    unsigned int intersectingpaths: 1;
     unsigned int pointstooclose: 1;
     /*unsigned int missingextrema: 1;*/
     unsigned int xnearval: 1;
@@ -57,6 +58,8 @@ struct problems {
     unsigned int stem3: 1;
     unsigned int showexactstem3: 1;
     unsigned int irrelevantcontrolpoints: 1;
+    unsigned int multuni: 1;
+    unsigned int multname: 1;
     unsigned int badsubs: 1;
     unsigned int missingglyph: 1;
     unsigned int missinglookuptag: 1;
@@ -91,14 +94,18 @@ struct problems {
 	uint32 search;
 	uint32 rpl;
     } *mlt;
+    char *glyphname;
+    int glyphenc;
 };
 
 static int openpaths=1, pointstooclose=1/*, missing=0*/, doxnear=0, doynear=0;
+static int intersectingpaths=1;
 static int doynearstd=1, linestd=1, cpstd=1, cpodd=1, hintnopt=0, ptnearhint=0;
 static int hintwidth=0, direction=1, flippedrefs=1, bitmaps=0;
 static int cidblank=0, cidmultiple=1, advancewidth=0, vadvancewidth=0;
 static int irrelevantcp=1, missingglyph=0, missinglookuptag=0, DFLTscript=0;
 static int badsubs=1, toomanypoints=1, pointsmax = 1500;
+static int multuni=1, multname=1;
 static int toomanyhints=1, hintsmax=96, toodeeprefs=1, refdepthmax=9;
 static int stem3=0, showexactstem3=0;
 static real near=3, xval=0, yval=0, widthval=50, advancewidthval=0, vadvancewidthval=0;
@@ -111,7 +118,8 @@ static real irrelevantfactor = .005;
 #define CID_SetAll		2005
 
 #define CID_OpenPaths		1001
-#define CID_PointsTooClose	1002
+#define CID_IntersectingPaths	1002
+#define CID_PointsTooClose	1003
 /*#define CID_MissingExtrema	1003*/
 #define CID_XNear		1004
 #define CID_YNear		1005
@@ -149,6 +157,8 @@ static real irrelevantfactor = .005;
 #define CID_TooDeepRefs		1037
 #define CID_RefDepthMax		1038
 #define CID_DFLTScript		1039
+#define CID_MultUni		1040
+#define CID_MultName		1041
 
 
 static void FixIt(struct problems *p) {
@@ -222,11 +232,13 @@ return;
 
 /* I do not handle:
     _STR_ProbOpenPath
+    _STR_ProbIntersectingPaths
     _STR_ProbPointsTooClose
     _STR_ProbLineItal, _STR_ProbAboveItal, _STR_ProbBelowItal, _STR_ProbRightItal, _STR_ProbLeftItal
     _STR_ProbAboveOdd, _STR_ProbBelowOdd, _STR_ProbRightOdd, _STR_ProbLeftOdd
     _STR_ProbHintControl
     _STR_ProbHint3*
+    _STR_ProbMultUni, STR_ProbMultName
 */
 
     SCPreserveState(p->sc,false);
@@ -471,6 +483,14 @@ return;
 	u_snprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),
 		GStringGetResource(_STR_ProbBadSubs2,NULL), p->badsubsname,
 		(p->badsubstag>>24),(p->badsubstag>>16)&0xff,(p->badsubstag>>8)&0xff,p->badsubstag&0xff);
+    } else if ( explain==_STR_ProbMultiUni ) {
+	u_snprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),
+		GStringGetResource(_STR_ProbMultiUni2,NULL),
+		p->glyphname );
+    } else if ( explain==_STR_ProbMultiName ) {
+	u_snprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),
+		GStringGetResource(_STR_ProbMultiName2,NULL),
+		p->glyphenc );
     } else if ( found==expected )
 	ubuf[0]='\0';
     else {
@@ -831,8 +851,8 @@ return( cnt );
 }
 
 static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
-    SplineSet *spl, *test;
-    Spline *spline, *first;
+    SplineSet *spl, *test, *test2;
+    Spline *spline, *first, *spline2, *first2;
     SplinePoint *sp, *nsp;
     int needsupdate=false, changed=false;
     StemInfo *h;
@@ -875,6 +895,45 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		}
 		if ( missing(p,test,NULL))
       goto restart;
+	    }
+	}
+    }
+
+    if ( p->intersectingpaths && !p->finish ) {
+	BasePoint pts[9];
+	double t1s[10], t2s[10];
+	int found = false;
+	for ( test=spl; test!=NULL ; test=test->next ) {
+	    first = NULL;
+	    for ( spline = test->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
+		if ( first==NULL ) first = spline;
+		for ( test2=test; test2!=NULL; test2=test2->next ) {
+		    first2 = test2==test && first!=spline ? first : NULL;
+		    for ( spline2=(test2==test)?spline : test2->first->next;
+			    spline2!=NULL && spline2!=first2; spline2 = spline2->to->next ) {
+			if ( first2==NULL ) first2 = spline2;
+			if ( SplinesIntersect(spline,spline2,pts,t1s,t2s)) {
+			    found = true;
+		    break;
+			}
+		    }
+		    if ( found )
+		break;
+		}
+		if ( found )
+	    break;
+	    }
+	    if ( found )
+	break;
+	}
+	if ( found ) {
+	    changed = true;
+	    spline->from->selected = true; spline->to->selected = true;
+	    spline2->from->selected = true; spline2->to->selected = true;
+	    ExplainIt(p,sc,_STR_ProbIntersectingPaths,0,0);
+	    if ( p->ignorethis ) {
+		p->intersectingpaths = false;
+    /* break; */
 	    }
 	}
     }
@@ -1443,6 +1502,38 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		}
 		if ( !p->badsubs )
 	    break;
+	    }
+	}
+    }
+
+    if ( p->multuni && !p->finish && strcmp(sc->name,".notdef")!=0 && sc->unicodeenc!=-1 ) {
+	SplineFont *sf = sc->parent;
+	int i;
+	for ( i=0; i<sf->charcnt; ++i )
+		if ( sf->chars[i]!=NULL && sf->chars[i]!=sc &&
+			SCDuplicate(sf->chars[i])==sf->chars[i]) {
+	    if ( sf->chars[i]->unicodeenc == sc->unicodeenc ) {
+		changed = true;
+		p->glyphname = sf->chars[i]->name;
+		ExplainIt(p,sc,_STR_ProbMultiUni,0,0);
+		if ( p->ignorethis )
+		    p->multuni = false;
+	    }
+	}
+    }
+
+    if ( p->multname && !p->finish && strcmp(sc->name,".notdef")!=0 ) {
+	SplineFont *sf = sc->parent;
+	int i;
+	for ( i=0; i<sf->charcnt; ++i )
+		if ( sf->chars[i]!=NULL && sf->chars[i]!=sc &&
+			SCDuplicate(sf->chars[i])==sf->chars[i]) {
+	    if ( strcmp(sf->chars[i]->name, sc->name)==0 ) {
+		changed = true;
+		p->glyphenc = i;
+		ExplainIt(p,sc,_STR_ProbMultiName,0,0);
+		if ( p->ignorethis )
+		    p->multname = false;
 	    }
 	}
     }
@@ -2178,13 +2269,15 @@ static int Prob_DoAll(GGadget *g, GEvent *e) {
 	struct problems *p = GDrawGetUserData(GGadgetGetWindow(g));
 	int set = GGadgetGetCid(g)==CID_SetAll;
 	GWindow gw = GGadgetGetWindow(g);
-	static int cbs[] = { CID_OpenPaths, CID_PointsTooClose, CID_XNear,
+	static int cbs[] = { CID_OpenPaths, CID_IntersectingPaths,
+	    CID_PointsTooClose, CID_XNear,
 	    CID_YNear, CID_YNearStd, CID_HintNoPt, CID_PtNearHint,
 	    CID_HintWidthNear, CID_LineStd, CID_Direction, CID_CpStd,
 	    CID_CpOdd, CID_FlippedRefs, CID_Bitmaps, CID_AdvanceWidth,
 	    CID_BadSubs, CID_MissingGlyph, CID_MissingLookupTag,
 	    CID_Stem3, CID_IrrelevantCP, CID_TooManyPoints,
 	    CID_TooManyHints, CID_TooDeepRefs, CID_DFLTScript,
+	    CID_MultUni, CID_MultName,
 	    0 };
 	int i;
 	if ( p->fv->cidmaster!=NULL ) {
@@ -2206,6 +2299,7 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	int errs = false;
 
 	openpaths = p->openpaths = GGadgetIsChecked(GWidgetGetControl(gw,CID_OpenPaths));
+	intersectingpaths = p->intersectingpaths = GGadgetIsChecked(GWidgetGetControl(gw,CID_IntersectingPaths));
 	pointstooclose = p->pointstooclose = GGadgetIsChecked(GWidgetGetControl(gw,CID_PointsTooClose));
 	/*missing = p->missingextrema = GGadgetIsChecked(GWidgetGetControl(gw,CID_MissingExtrema))*/;
 	doxnear = p->xnearval = GGadgetIsChecked(GWidgetGetControl(gw,CID_XNear));
@@ -2222,6 +2316,8 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	bitmaps = p->bitmaps = GGadgetIsChecked(GWidgetGetControl(gw,CID_Bitmaps));
 	advancewidth = p->advancewidth = GGadgetIsChecked(GWidgetGetControl(gw,CID_AdvanceWidth));
 	irrelevantcp = p->irrelevantcontrolpoints = GGadgetIsChecked(GWidgetGetControl(gw,CID_IrrelevantCP));
+	multuni = p->multuni = GGadgetIsChecked(GWidgetGetControl(gw,CID_MultUni));
+	multname = p->multname = GGadgetIsChecked(GWidgetGetControl(gw,CID_MultName));
 	badsubs = p->badsubs = GGadgetIsChecked(GWidgetGetControl(gw,CID_BadSubs));
 	missingglyph = p->missingglyph = GGadgetIsChecked(GWidgetGetControl(gw,CID_MissingGlyph));
 	missinglookuptag = p->missinglookuptag = GGadgetIsChecked(GWidgetGetControl(gw,CID_MissingLookupTag));
@@ -2230,6 +2326,8 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	toomanyhints = p->toomanyhints = GGadgetIsChecked(GWidgetGetControl(gw,CID_TooManyHints));
 	toodeeprefs = p->toodeeprefs = GGadgetIsChecked(GWidgetGetControl(gw,CID_TooDeepRefs));
 	stem3 = p->stem3 = GGadgetIsChecked(GWidgetGetControl(gw,CID_Stem3));
+	multuni = p->multuni = GGadgetIsChecked(GWidgetGetControl(gw,CID_MultUni));
+	multname = p->multname = GGadgetIsChecked(GWidgetGetControl(gw,CID_MultName));
 	if ( stem3 )
 	    showexactstem3 = p->showexactstem3 = GGadgetIsChecked(GWidgetGetControl(gw,CID_ShowExactStem3));
 	if ( p->fv->cidmaster!=NULL ) {
@@ -2265,13 +2363,13 @@ return( true );
 	if ( doynearstd )
 	    FigureStandardHeights(p);
 	GDrawSetVisible(gw,false);
-	if ( openpaths || pointstooclose /*|| missing*/ || doxnear || doynear ||
+	if ( openpaths || intersectingpaths || pointstooclose  || doxnear || doynear ||
 		doynearstd || linestd || hintnopt || ptnearhint || hintwidth ||
 		direction || p->cidmultiple || p->cidblank || p->flippedrefs ||
 		p->bitmaps || p->advancewidth || p->vadvancewidth || p->stem3 ||
 		p->irrelevantcontrolpoints || p->badsubs || p->missingglyph ||
 		p->missinglookuptag || p->toomanypoints || p->toomanyhints ||
-		p->toodeeprefs || p->DFLTscript ) {
+		p->toodeeprefs || p->DFLTscript || multuni || multname ) {
 	    DoProbs(p);
 	}
 	p->done = true;
@@ -2314,8 +2412,8 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData pgcd[13], pagcd[7], hgcd[9], rgcd[7], cgcd[5], mgcd[11], agcd[6], rfgcd[5];
-    GTextInfo plabel[13], palabel[7], hlabel[9], rlabel[7], clabel[5], mlabel[10], alabel[6], rflabel[5];
+    GGadgetCreateData pgcd[13], pagcd[8], hgcd[9], rgcd[9], cgcd[5], mgcd[11], agcd[6], rfgcd[5];
+    GTextInfo plabel[13], palabel[8], hlabel[9], rlabel[9], clabel[5], mlabel[10], alabel[6], rflabel[5];
     GTabInfo aspects[8];
     struct problems p;
     char xnbuf[20], ynbuf[20], widthbuf[20], nearbuf[20], awidthbuf[20],
@@ -2486,49 +2584,60 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pagcd[0].gd.cid = CID_OpenPaths;
     pagcd[0].creator = GCheckBoxCreate;
 
-    palabel[1].text = (unichar_t *) (fv->sf->italicangle==0?_STR_LineStd:_STR_LineStd2);
+    palabel[1].text = (unichar_t *) _STR_IntersectingPaths;
     palabel[1].text_in_resource = true;
     pagcd[1].gd.label = &palabel[1];
     pagcd[1].gd.mnemonic = 'E';
     pagcd[1].gd.pos.x = 3; pagcd[1].gd.pos.y = pagcd[0].gd.pos.y+17; 
     pagcd[1].gd.flags = gg_visible | gg_enabled;
-    if ( linestd ) pagcd[1].gd.flags |= gg_cb_on;
-    pagcd[1].gd.popup_msg = GStringGetResource(_STR_LineStdPopup,NULL);
-    pagcd[1].gd.cid = CID_LineStd;
+    if ( intersectingpaths ) pagcd[1].gd.flags |= gg_cb_on;
+    pagcd[1].gd.popup_msg = GStringGetResource(_STR_IntersectingPathsPopup,NULL);
+    pagcd[1].gd.cid = CID_IntersectingPaths;
     pagcd[1].creator = GCheckBoxCreate;
 
-    palabel[2].text = (unichar_t *) _STR_CheckDirection;
+    palabel[2].text = (unichar_t *) (fv->sf->italicangle==0?_STR_LineStd:_STR_LineStd2);
     palabel[2].text_in_resource = true;
     pagcd[2].gd.label = &palabel[2];
-    pagcd[2].gd.mnemonic = 'S';
+    pagcd[2].gd.mnemonic = 'E';
     pagcd[2].gd.pos.x = 3; pagcd[2].gd.pos.y = pagcd[1].gd.pos.y+17; 
     pagcd[2].gd.flags = gg_visible | gg_enabled;
-    if ( direction ) pagcd[2].gd.flags |= gg_cb_on;
-    pagcd[2].gd.popup_msg = GStringGetResource(_STR_CheckDirectionPopup,NULL);
-    pagcd[2].gd.cid = CID_Direction;
+    if ( linestd ) pagcd[2].gd.flags |= gg_cb_on;
+    pagcd[2].gd.popup_msg = GStringGetResource(_STR_LineStdPopup,NULL);
+    pagcd[2].gd.cid = CID_LineStd;
     pagcd[2].creator = GCheckBoxCreate;
 
-    palabel[3].text = (unichar_t *) _STR_MorePointsThan;
+    palabel[3].text = (unichar_t *) _STR_CheckDirection;
     palabel[3].text_in_resource = true;
     pagcd[3].gd.label = &palabel[3];
-    pagcd[3].gd.mnemonic = 'r';
-    pagcd[3].gd.pos.x = 3; pagcd[3].gd.pos.y = pagcd[2].gd.pos.y+21; 
+    pagcd[3].gd.mnemonic = 'S';
+    pagcd[3].gd.pos.x = 3; pagcd[3].gd.pos.y = pagcd[2].gd.pos.y+17; 
     pagcd[3].gd.flags = gg_visible | gg_enabled;
-    if ( toomanypoints ) pagcd[3].gd.flags |= gg_cb_on;
-    pagcd[3].gd.popup_msg = GStringGetResource(_STR_MorePointsThanPopup,NULL);
-    pagcd[3].gd.cid = CID_TooManyPoints;
+    if ( direction ) pagcd[3].gd.flags |= gg_cb_on;
+    pagcd[3].gd.popup_msg = GStringGetResource(_STR_CheckDirectionPopup,NULL);
+    pagcd[3].gd.cid = CID_Direction;
     pagcd[3].creator = GCheckBoxCreate;
 
-    sprintf( pmax, "%d", pointsmax );
-    palabel[4].text = (unichar_t *) pmax;
-    palabel[4].text_is_1byte = true;
+    palabel[4].text = (unichar_t *) _STR_MorePointsThan;
+    palabel[4].text_in_resource = true;
     pagcd[4].gd.label = &palabel[4];
-    pagcd[4].gd.pos.x = 105; pagcd[4].gd.pos.y = pagcd[3].gd.pos.y-3;
-    pagcd[4].gd.pos.width = 50; 
+    pagcd[4].gd.mnemonic = 'r';
+    pagcd[4].gd.pos.x = 3; pagcd[4].gd.pos.y = pagcd[3].gd.pos.y+21; 
     pagcd[4].gd.flags = gg_visible | gg_enabled;
+    if ( toomanypoints ) pagcd[4].gd.flags |= gg_cb_on;
     pagcd[4].gd.popup_msg = GStringGetResource(_STR_MorePointsThanPopup,NULL);
-    pagcd[4].gd.cid = CID_PointsMax;
-    pagcd[4].creator = GTextFieldCreate;
+    pagcd[4].gd.cid = CID_TooManyPoints;
+    pagcd[4].creator = GCheckBoxCreate;
+
+    sprintf( pmax, "%d", pointsmax );
+    palabel[5].text = (unichar_t *) pmax;
+    palabel[5].text_is_1byte = true;
+    pagcd[5].gd.label = &palabel[5];
+    pagcd[5].gd.pos.x = 105; pagcd[5].gd.pos.y = pagcd[4].gd.pos.y-3;
+    pagcd[5].gd.pos.width = 50; 
+    pagcd[5].gd.flags = gg_visible | gg_enabled;
+    pagcd[5].gd.popup_msg = GStringGetResource(_STR_MorePointsThanPopup,NULL);
+    pagcd[5].gd.cid = CID_PointsMax;
+    pagcd[5].creator = GTextFieldCreate;
 
 /* ************************************************************************** */
 
@@ -2738,6 +2847,26 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rgcd[5].gd.popup_msg = GStringGetResource(_STR_SubsToEmptyCharPopup,NULL);
     rgcd[5].gd.cid = CID_BadSubs;
     rgcd[5].creator = GCheckBoxCreate;
+
+    rlabel[6].text = (unichar_t *) _STR_MultipleUnicode;
+    rlabel[6].text_in_resource = true;
+    rgcd[6].gd.label = &rlabel[6];
+    rgcd[6].gd.pos.x = 3; rgcd[6].gd.pos.y = rgcd[5].gd.pos.y+17; 
+    rgcd[6].gd.flags = gg_visible | gg_enabled;
+    if ( multuni ) rgcd[6].gd.flags |= gg_cb_on;
+    rgcd[6].gd.popup_msg = GStringGetResource(_STR_MultipleUnicode,NULL);
+    rgcd[6].gd.cid = CID_MultUni;
+    rgcd[6].creator = GCheckBoxCreate;
+
+    rlabel[7].text = (unichar_t *) _STR_MultipleName;
+    rlabel[7].text_in_resource = true;
+    rgcd[7].gd.label = &rlabel[7];
+    rgcd[7].gd.pos.x = 3; rgcd[7].gd.pos.y = rgcd[6].gd.pos.y+17; 
+    rgcd[7].gd.flags = gg_visible | gg_enabled;
+    if ( multname ) rgcd[7].gd.flags |= gg_cb_on;
+    rgcd[7].gd.popup_msg = GStringGetResource(_STR_MultipleNamePopup,NULL);
+    rgcd[7].gd.cid = CID_MultName;
+    rgcd[7].creator = GCheckBoxCreate;
 
 /* ************************************************************************** */
 

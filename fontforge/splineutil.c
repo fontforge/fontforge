@@ -2777,7 +2777,7 @@ int Spline2DFindExtrema(Spline *sp, double extrema[4] ) {
     SplineFindExtrema(&sp->splines[1],&extrema[2],&extrema[3]);
 
     for ( i=0; i<3; ++i ) for ( j=i+1; j<4; ++j ) {
-	if ( (extrema[i]==-1 && extrema[j]!=-1) || extrema[i]>extrema[j] ) {
+	if ( (extrema[i]==-1 && extrema[j]!=-1) || (extrema[i]>extrema[j] && extrema[j]!=-1) ) {
 	    double temp = extrema[i];
 	    extrema[i] = extrema[j];
 	    extrema[j] = temp;
@@ -2963,10 +2963,22 @@ static double ISolveWithin(Spline1D *sp,double val,double tlow, double thigh) {
 	for ( i=0; i<3; ++i )
 	    if ( ts[i]>=tlow && ts[i]<=thigh )
 return( ts[i] );
+	for ( i=0; i<3; ++i ) {
+	    if ( ts[i]>=tlow-1./1024. && ts[i]<=tlow )
+return( tlow );
+	    if ( ts[i]>=thigh && ts[i]<=thigh+1./1024 )
+return( thigh );
+	}
     } else {
 	for ( i=0; i<3; ++i )
 	    if ( ts[i]>=thigh && ts[i]<=tlow )
 return( ts[i] );
+	for ( i=0; i<3; ++i ) {
+	    if ( ts[i]>=thigh-1./1024. && ts[i]<=thigh )
+return( thigh );
+	    if ( ts[i]>=tlow && ts[i]<=tlow+1./1024 )
+return( tlow );
+	}
     }
 return( -1 );
 }
@@ -3044,6 +3056,8 @@ return( 0 );
     t1min = ISolveWithin(&s1->splines[major],(&min.x)[major],lowt1,hight1);
     t2max = ISolveWithin(&s2->splines[major],(&max.x)[major],lowt2,hight2);
     t2min = ISolveWithin(&s2->splines[major],(&min.x)[major],lowt2,hight2);
+    if ( t1max==-1 || t1min==-1 || t2max==-1 || t1min==-1 )
+return( 0 );
     t1diff = (t1max-t1min)/64.0;
     if ( t1diff==0 )
 return( 0 );
@@ -3096,7 +3110,9 @@ int SplinesIntersect(Spline *s1, Spline *s2, BasePoint pts[9],
     double extrema1[6], extrema2[6];
     int ecnt1, ecnt2;
 
-    if ( s1->splines[0].a == s2->splines[0].a &&
+    if ( s1==s2 && !s1->knownlinear && !s1->isquadratic )
+	/* Special case see if it doubles back on itself anywhere */;
+    else if ( s1->splines[0].a == s2->splines[0].a &&
 	    s1->splines[0].b == s2->splines[0].b &&
 	    s1->splines[0].c == s2->splines[0].c &&
 	    s1->splines[0].d == s2->splines[0].d &&
@@ -3268,7 +3284,7 @@ return( soln!=0 );
 		s1->splines[1].c)*extrema1[i+1]+s1->splines[1].d;
 	if ( max1.x<min1.x ) { double temp = max1.x; max1.x = min1.x; min1.x = temp; }
 	if ( max1.y<min1.y ) { double temp = max1.y; max1.y = min1.y; min1.y = temp; }
-	for ( j=0; j<ecnt2; ++j ) {
+	for ( j=(s1==s2)?i+1:0; j<ecnt2; ++j ) {
 	    min2.x = ((s2->splines[0].a*extrema2[j]+s2->splines[0].b)*extrema2[j]+
 		    s2->splines[0].c)*extrema2[j]+s2->splines[0].d;
 	    min2.y = ((s2->splines[1].a*extrema2[j]+s2->splines[1].b)*extrema2[j]+
@@ -3281,10 +3297,27 @@ return( soln!=0 );
 	    if ( max2.y<min2.y ) { double temp = max2.y; max2.y = min2.y; min2.y = temp; }
 	    if ( min1.x>max2.x || min2.x>max1.x || min1.y>max2.y || min2.y>max1.y )
 		/* No possible intersection */;
-	    else
+	    else if ( s1!=s2 )
 		found += CubicsIntersect(s1,extrema1[i],extrema1[i+1],&min1,&max1,
 				    s2,extrema2[j],extrema2[j+1],&min2,&max2,
 				    &pts[found],&t1s[found],&t2s[found]);
+	    else {
+		int k,l;
+		int cnt = CubicsIntersect(s1,extrema1[i],extrema1[i+1],&min1,&max1,
+				    s2,extrema2[j],extrema2[j+1],&min2,&max2,
+				    &pts[found],&t1s[found],&t2s[found]);
+		for ( k=0; k<cnt; ++k ) {
+		    if ( RealNear(t1s[found+k],t2s[found+k]) ) {
+			for ( l=k+1; l<cnt; ++l ) {
+			    pts[found+l-1] = pts[found+l];
+			    t1s[found+l-1] = t1s[found+l];
+			    t2s[found+l-1] = t2s[found+l];
+			}
+			--cnt; --k;
+		    }
+		}
+		found += cnt;
+	    }
 	}
     }
     t1s[found] = t2s[found] = -1;
