@@ -3397,10 +3397,12 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 	/* info->chars[i] can be null in some TTC files */
 	if ( info->chars[i]==NULL || info->chars[i]->name!=NULL )
     continue;
-	if ( info->chars[i]->enc!=0 )
-	    sprintf(buffer, "nounicode_%x", info->chars[i]->enc );
+	if ( info->ordering!=NULL )
+	    sprintf(buffer, "%.20s-%d", info->ordering, i );
+	else if ( info->chars[i]->enc!=0 )
+	    sprintf(buffer, "nounicode-%x", info->chars[i]->enc );
 	else
-	    sprintf( buffer, "unencoded_%d", i );
+	    sprintf( buffer, "glyph%d", i );
 	info->chars[i]->name = copy(buffer);
 	GProgressNext();
     }
