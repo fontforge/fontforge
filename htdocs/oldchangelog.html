@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 16-Sep-2001 -->
-  <!-- AP: Last modified: 4-Jan-2002 -->
+  <!-- AP: Last modified: 28-Jan-2002 -->
   <TITLE>Older changes to PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,129 @@
 <A HREF="index.html#change-log">Current changes</A>
 <P>
 <UL>
+  <LI>
+    15-Dec-2001
+    <UL>
+      <LI>
+	Copying a background image caused a crash at some indeterminate future time
+      <LI>
+	Made the Help browser configurable
+      <LI>
+	Changed greek accent processing so that it uses more of the greek accents.
+	For reasons known best to themselves, unicode tends to map greek varia to
+	grave, oxia to accute, etc.
+      <LI>
+	More work to make sure the screen fonts are readable
+      <LI>
+	tabbing into a text field selects all of it.
+      <LI>
+	autotrace 2.8 has changed its argument conventions. new versions of pfaedit
+	will no longer work with autotrace2.7.
+      <LI>
+	If a menu doesn't fit in its window there is now a way to get at the menu
+	items which are offscreen
+      <LI>
+	Cleaned up the panose (fontinfo) window
+      <LI>
+	Added names to the private use area of unicode for greek small caps (starting
+	at 0xf500)
+      <LI>
+	Fixed a couple of autohint problems
+      <LI>
+	Manual hint addition might refuse to add a hint if it didn't like it. It
+	should now realize that the user is in charge...
+    </UL>
+  <LI>
+    14-Dec-2001
+    <UL>
+      <LI>
+	Oops Edward Lee points out that I was missing some colons in my eps file
+	generation.
+      <LI>
+	Hot key added for Unlink Reference
+      <LI>
+	Werner found two more bugs when reading in cid keyed fonts without a
+	corresponding cidmap file.
+    </UL>
+  <LI>
+    11-Dec-2001
+    <UL>
+      <LI>
+	Fixed a crash if there were no .cidmap files and PfaEdit was not installed
+	in a directory named bin.
+      <LI>
+	Cleaned up the distribution a bit per Werner's requests
+      <LI>
+	Added a ScreenWidthCentimeters resource
+      <LI>
+	PfaEdit will no longer ask the X (Font) Server to scale bitmap fonts. It
+	will only used unscaled bitmaps or outline fonts.
+    </UL>
+  <LI>
+    10-Dec-2001
+    <UL>
+      <LI>
+	Fixed a crash when adding (manually) a minimum distance hint to the width.
+      <LI>
+	Fixed a bug in the configure script which caused it to fail on solaris
+    </UL>
+  <LI>
+    9-Dec-2001
+    <UL>
+      <LI>
+	Added proper names for Hangul Syllables
+      <LI>
+	The Greek fixup wasn't working as it should (sometimes would generate two
+	characters named "Delta" in pfb files). Should be fixed. Should also be
+	controlable by Preference item (ie. you can turn it off if you want to)
+      <LI>
+	The metrics view did not display changes
+      <LI>
+	The metrics view's cursor sometimes got stuck in the wrong shape
+    </UL>
+  <LI>
+    3-Dec-2001
+    <UL>
+      <LI>
+	Merge Kern Info dlg crashed if you cancelled it.
+      <LI>
+	The encoding tables in the cmap are supposed to be ordered by platform and
+	mine were not.
+      <LI>
+	PfaEdit would crash when writing out very large copyright notices
+	<UL>
+	  <LI>
+	    I lifted the 2000 character restriction on copyright strings.
+	</UL>
+      <LI>
+	If there were more than 2 lines of tabs in a TabSet then clicking on a tab
+	would often cause the wrong pane to appear.
+      <LI>
+	Cleaned up Font Info a bit so it looks better with the Russian translations.
+      <LI>
+	Fixed a memory leak when generating a truetype font with an encoding other
+	than unicode.
+      <LI>
+	Fixed a crash when generating a truetype font which referenced characters
+	with encodings bigger than 65535.
+      <LI>
+	Added a patch from Ulrich, PfaEdit now reads class based kerning from the
+	GPOS table.
+    </UL>
+  <LI>
+    1-Dec-2001
+    <UL>
+      <LI>
+	Figured out the format of mac .dfont files
+      <LI>
+	The mac Command (Apple, Cloverleaf) modifier key is now treated as if it
+	were the Control key (So users may exit PfaEdit with Command-Q as they expect).
+      <LI>
+	Another bug reading in flex hints from OTF. Fixed by Ulrich Klauer.
+      <LI>
+	PfaEdit had problems with drawing images when there was an endian mismatch
+	between the X server and the machine running pfaedit.
+    </UL>
   <LI>
     27-Nov-2001
     <UL>

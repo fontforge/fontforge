@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 10-Dec-2000 -->
-  <!-- AP: Last modified: 22-Jan-2002 -->
+  <!-- AP: Last modified: 28-Jan-2002 -->
   <TITLE>The File Menu</TITLE>
 </HEAD>
 <BODY>
@@ -42,6 +42,8 @@
     <A HREF="#Print">Print...</A>
   <LI>
     <A HREF="#Execute">Execute Script...</A>
+  <LI>
+    <A HREF="#ScriptMenu">Script Menu</A>
   <LI>
     <A HREF="#prefs">Preferences...</A>
   <LI>
@@ -340,8 +342,16 @@
   <DT>
     <A NAME="Execute">Execute</A> Script...
   <DD>
-    Brings up a dlg and allows you to enter a <A HREF="scripting.html">script</A>
-    (which could be just calling a prewritten script file).
+    Only in the font view. Brings up a dlg and allows you to enter a
+    <A HREF="scripting.html">script</A> (which could be just calling a prewritten
+    script file).
+  <DT>
+    <A NAME="ScriptMenu">Script Menu</A>
+  <DD>
+    Only in the font view. You may define up to 10 scripts that you want to execute
+    frequently and place them in this menu. The scripts may also be invoked by
+    short cut with the first one being invoked by Control-Meta(Alt)-1, the second
+    Control-Meta-2, and the tenth by Control-Meta-0.
   <DT>
     <A NAME="prefs">Preferences...</A>
   <DD>
@@ -375,6 +385,25 @@
 	end of this string (which should consist of a set of numbers separated by
 	spaces). Whenever a postscript font is generated then this last number will
 	be incremented by 1.
+      <LI>
+	Whether constrained motion in the character view should allow motion parallel
+	to the italic angle as well as horizontal and vertical.
+      <LI>
+	The amount of space (as a percentage of the em-square) that should be placed
+	between an accent and the character below it by the Build Accented Character
+	command.
+      <LI>
+	Whether to accept Adobe's naming conventions for greek letters, or to make
+	them a bit more expected.
+      <LI>
+	The number of em-units an arrow key will move a selected point in the character
+	view.
+      <LI>
+	The maximum distance at which pointer motion in the character view will be
+	snapped to an interesting object (ie. a point, baseline, width line, etc.)
+      <LI>
+	The menu names and associated script filenames used to build up the Script
+	Menu in the font view.
     </UL>
     <P>
     A number of things that might be controlled from a preference window are

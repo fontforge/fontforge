@@ -3724,8 +3724,6 @@ return;
 static void CVMenuCreateHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
-    if ( cv->sc->hstem==NULL && cv->sc->vstem==NULL )
-return;
     CVCreateHint(cv,mi->mid==MID_CreateHHint);
 }
 

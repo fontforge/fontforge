@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 25-Jan-2002 -->
+  <!-- AP: Last modified: 28-Jan-2002 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -15,7 +15,9 @@ PfaEdit includes an interpreter so you can write scripts to modify fonts.
 If you start pfaedit with a script on the command line it will not put up
 any windows and it will exit when the script is done.
 <P>
-You can also start a script from within PfaEdit with File-&gt;Execute Script.
+You can also start a script from within PfaEdit with File-&gt;Execute Script,
+and you can use the Preference Dlg to define a set of frequently used scripts
+which can be invoked directly by menu.
 <P>
 The scripting language provides access to much of the functionality found
 in the font view's menus. It does not currently (and probably never will)
@@ -266,6 +268,15 @@ names.
     This corresponds to no menu item. It will print all of its arguments to stdout.
     It can execute with no current font.
   <DT>
+    Error(str)
+  <DD>
+    Prints out str as an error message and aborts the current script
+  <DT>
+    AskUser(question[,default-answer])
+  <DD>
+    Asks the user the question and returns an answer. A default-answer may be
+    specified too.
+  <DT>
     Array(size)
   <DD>
     Allocates an array of the indicated size.
@@ -310,7 +321,18 @@ a[4][0] = "Nested array";
     Strcasecmp(str1,str2)
   <DD>
     Compares the two strings ignoring case, returns zero if the two are equal,
-    a negative number if str1&lt;str2 and a positive number if str1&gt;str2 
+    a negative number if str1&lt;str2 and a positive number if str1&gt;str2
+  <DT>
+    Strtol(str[,base])
+  <DD>
+    Parses as much of str as possible and returns the integer value it represents.
+    A second argument may be used to specify the base of the conversion (it defaults
+    to 10). Behavior is as for strtol(3).
+  <DT>
+    Strskipint(str[,base])
+  <DD>
+    Parses as much of str as possible and returns the offset to the first character
+    that could not be parsed. 
       <HR>
   <DT>
     Open(filename)
