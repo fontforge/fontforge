@@ -38,6 +38,7 @@ struct gfi_data {
     int private_aspect, ttfv_aspect, panose_aspect, tn_aspect;
     int old_sel, old_aspect, old_lang, old_strid;
     int ttf_set, names_set;
+    int human_matches;		/* the human name matches the family name + modifiers and should update whenever one of those changes */
     struct psdict *private;
     struct ttflangname *names;
     struct ttflangname def;
@@ -1455,19 +1456,56 @@ static int GFI_Make(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static int HumanNameMatches(GWindow gw) {
+    const unichar_t *ufamily = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Family));
+    const unichar_t *umods = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Modifiers));
+    const unichar_t *human = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Human));
+    const unichar_t *pt, *hpt;
+
+    hpt = human; pt = ufamily;
+    while ( *hpt==*pt && *hpt!='\0' ) {
+	++hpt; ++pt;
+    }
+    if ( *pt!='\0' )
+return(false);
+    pt = umods;
+    if ( *pt!='\0' && *pt!='-' ) {
+	if ( *hpt==' ' )
+	    ++hpt;
+    }
+    while ( *hpt==*pt && *hpt!='\0' ) {
+	++hpt; ++pt;
+    }
+return( *hpt=='\0' && *pt=='\0' );
+}
+
 static int GFI_NameChange(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
 	GWindow gw = GGadgetGetWindow(g);
+	struct gfi_data *gfi = GDrawGetUserData(gw);
 	const unichar_t *ufamily = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Family));
 	const unichar_t *umods = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Modifiers));
-	unichar_t *uhum = galloc((u_strlen(ufamily)+u_strlen(umods)+2)*sizeof(unichar_t));
-	u_strcpy(uhum,ufamily);
-	if ( *umods!='\0' ) {
-	    uc_strcat(uhum," ");
-	    u_strcat(uhum,umods);
+	if ( gfi->human_matches ) {
+	    unichar_t *uhum = galloc((u_strlen(ufamily)+u_strlen(umods)+2)*sizeof(unichar_t));
+	    u_strcpy(uhum,ufamily);
+	    if ( *umods!='\0' ) {
+		if ( *umods!='-' )
+		    uc_strcat(uhum," ");
+		u_strcat(uhum,umods);
+	    }
+	    GGadgetSetTitle(GWidgetGetControl(gw,CID_Human),uhum);
+	    free(uhum);
 	}
-	GGadgetSetTitle(GWidgetGetControl(gw,CID_Human),uhum);
-	free(uhum);
+	gfi->human_matches = HumanNameMatches(gw);
+    }
+return( true );
+}
+
+static int GFI_HumanChange(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
+	GWindow gw = GGadgetGetWindow(g);
+	struct gfi_data *gfi = GDrawGetUserData(gw);
+	gfi->human_matches = HumanNameMatches(gw);
     }
 return( true );
 }
@@ -1521,14 +1559,21 @@ static void BadFamily() {
     GWidgetErrorR(_STR_Badfamily,_STR_Badfamilyn);
 }
 
-char *SFGetModifiers(SplineFont *sf) {
+static char *_GetModifiers(char *fontname, char *familyname) {
     char *pt, *fpt;
 
-    fpt = sf->familyname;
-    if ( sf->familyname==NULL )
+    /* URW fontnames don't match the familyname */
+    /* "NimbusSanL-Regu" vs "Nimbus Sans L" (note "San" vs "Sans") */
+    /* so look for a '-' if there is one and use that as the break point... */
+
+    if ( (pt=strchr(fontname,'-'))!=NULL )
+return( pt );
+
+    fpt = familyname;
+    if ( familyname==NULL )
 return( "" );
 
-    for ( pt = sf->fontname; *fpt!='\0' && *pt!='\0'; ) {
+    for ( pt = fontname; *fpt!='\0' && *pt!='\0'; ) {
 	if ( *fpt == *pt ) {
 	    ++fpt; ++pt;
 	} else if ( *fpt==' ' )
@@ -1539,6 +1584,10 @@ return( "" );
 return( pt );
     }
 return ( pt );
+}
+
+char *SFGetModifiers(SplineFont *sf) {
+return( _GetModifiers(sf->fontname,sf->familyname));
 }
 
 void SFSetFontName(SplineFont *sf, char *family, char *mods,char *full) {
@@ -1566,48 +1615,66 @@ void SFSetFontName(SplineFont *sf, char *family, char *mods,char *full) {
     }
     *tpt = '\0';
 #endif
-    free(sf->fontname); sf->fontname = n;
-    free(sf->fullname); sf->fullname = copy(full);
-    free(sf->familyname); sf->familyname = copy(family);
-    free(sf->weight); sf->weight = NULL;
-    if ( strstrmatch(mods,"extralight")!=NULL || strstrmatch(mods,"extra-light")!=NULL )
-	sf->weight = copy("ExtraLight");
-    else if ( strstrmatch(mods,"demilight")!=NULL || strstrmatch(mods,"demi-light")!=NULL )
-	sf->weight = copy("DemiLight");
-    else if ( strstrmatch(mods,"demibold")!=NULL || strstrmatch(mods,"demi-bold")!=NULL )
-	sf->weight = copy("DemiBold");
-    else if ( strstrmatch(mods,"semibold")!=NULL || strstrmatch(mods,"semi-bold")!=NULL )
-	sf->weight = copy("SemiBold");
-    else if ( strstrmatch(mods,"demiblack")!=NULL || strstrmatch(mods,"demi-black")!=NULL )
-	sf->weight = copy("DemiBlack");
-    else if ( strstrmatch(mods,"extrabold")!=NULL || strstrmatch(mods,"extra-bold")!=NULL )
-	sf->weight = copy("ExtraBold");
-    else if ( strstrmatch(mods,"extrablack")!=NULL || strstrmatch(mods,"extra-black")!=NULL )
-	sf->weight = copy("ExtraBlack");
-    else if ( strstrmatch(mods,"book")!=NULL )
-	sf->weight = copy("Book");
-    else if ( strstrmatch(mods,"regular")!=NULL )
-	sf->weight = copy("Regular");
-    else if ( strstrmatch(mods,"roman")!=NULL )
-	sf->weight = copy("Roman");
-    else if ( strstrmatch(mods,"normal")!=NULL )
-	sf->weight = copy("Normal");
-    else if ( strstrmatch(mods,"demi")!=NULL )
-	sf->weight = copy("Demi");
-    else if ( strstrmatch(mods,"medium")!=NULL )
-	sf->weight = copy("Medium");
-    else if ( strstrmatch(mods,"bold")!=NULL )
-	sf->weight = copy("Bold");
-    else if ( strstrmatch(mods,"heavy")!=NULL )
-	sf->weight = copy("Heavy");
-    else if ( strstrmatch(mods,"black")!=NULL )
-	sf->weight = copy("Black");
-    else if ( strstrmatch(mods,"Nord")!=NULL )
-	sf->weight = copy("Nord");
-    else
-	sf->weight = copy("Medium");
 
-    if ( sf->fv!=NULL ) {
+    free(sf->fullname); sf->fullname = copy(full);
+
+    /* In the URW world fontnames aren't just a simple concatenation of */
+    /*  family name and modifiers, so neither the family name nor the modifiers */
+    /*  changed, then don't change the font name */
+    if ( strcmp(family,sf->familyname)==0 &&
+	    strcmp(SFGetModifiers(sf),_GetModifiers(n,family))==0 )
+	/* Don't change the fontname */;
+	/* or anything else */
+    else {
+	free(sf->fontname); sf->fontname = n;
+	free(sf->familyname); sf->familyname = copy(family);
+	free(sf->weight); sf->weight = NULL;
+	if ( strstrmatch(mods,"extralight")!=NULL || strstrmatch(mods,"extra-light")!=NULL )
+	    sf->weight = copy("ExtraLight");
+	else if ( strstrmatch(mods,"demilight")!=NULL || strstrmatch(mods,"demi-light")!=NULL )
+	    sf->weight = copy("DemiLight");
+	else if ( strstrmatch(mods,"demibold")!=NULL || strstrmatch(mods,"demi-bold")!=NULL )
+	    sf->weight = copy("DemiBold");
+	else if ( strstrmatch(mods,"semibold")!=NULL || strstrmatch(mods,"semi-bold")!=NULL )
+	    sf->weight = copy("SemiBold");
+	else if ( strstrmatch(mods,"demiblack")!=NULL || strstrmatch(mods,"demi-black")!=NULL )
+	    sf->weight = copy("DemiBlack");
+	else if ( strstrmatch(mods,"extrabold")!=NULL || strstrmatch(mods,"extra-bold")!=NULL )
+	    sf->weight = copy("ExtraBold");
+	else if ( strstrmatch(mods,"extrablack")!=NULL || strstrmatch(mods,"extra-black")!=NULL )
+	    sf->weight = copy("ExtraBlack");
+	else if ( strstrmatch(mods,"book")!=NULL )
+	    sf->weight = copy("Book");
+	else if ( strstrmatch(mods,"regular")!=NULL )
+	    sf->weight = copy("Regular");
+	else if ( strstrmatch(mods,"roman")!=NULL )
+	    sf->weight = copy("Roman");
+	else if ( strstrmatch(mods,"normal")!=NULL )
+	    sf->weight = copy("Normal");
+	else if ( strstrmatch(mods,"demi")!=NULL )
+	    sf->weight = copy("Demi");
+	else if ( strstrmatch(mods,"medium")!=NULL )
+	    sf->weight = copy("Medium");
+	else if ( strstrmatch(mods,"bold")!=NULL )
+	    sf->weight = copy("Bold");
+	else if ( strstrmatch(mods,"heavy")!=NULL )
+	    sf->weight = copy("Heavy");
+	else if ( strstrmatch(mods,"black")!=NULL )
+	    sf->weight = copy("Black");
+	else if ( strstrmatch(mods,"Nord")!=NULL )
+	    sf->weight = copy("Nord");
+/* Sigh. URW uses 4 letter abreviations... */
+	else if ( strstrmatch(mods,"Regu")!=NULL )
+	    sf->weight = copy("Regular");
+	else if ( strstrmatch(mods,"Medi")!=NULL )
+	    sf->weight = copy("Medium");
+	else if ( strstrmatch(mods,"blac")!=NULL )
+	    sf->weight = copy("Black");
+	else
+	    sf->weight = copy("Medium");
+    }
+
+    if ( sf->fv!=NULL && sf->fv->gw!=NULL ) {
 	GDrawSetWindowTitles(sf->fv->gw,temp = uc_copy(sf->fontname),NULL);
 	free(temp);
 	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->views!=NULL ) {
@@ -2306,6 +2373,7 @@ void FontInfo(SplineFont *sf) {
     nlabel[5].text_is_1byte = true;
     ngcd[5].gd.label = &nlabel[5];
     ngcd[5].gd.cid = CID_Human;
+    ngcd[5].gd.handle_controlevent = GFI_HumanChange;
     ngcd[5].creator = GTextFieldCreate;
 
     ngcd[8].gd.pos.x = 12; ngcd[8].gd.pos.y = ngcd[5].gd.pos.y+26+6;
@@ -3096,6 +3164,7 @@ void FontInfo(SplineFont *sf) {
 	GGadgetResize(mgcd[3].ret,GDrawPointsToPixels(NULL,mgcd[3].gd.pos.width),
 		GDrawPointsToPixels(NULL,mgcd[3].gd.pos.height)+offset);
     }
+    d.human_matches = HumanNameMatches(gw);
     GWidgetIndicateFocusGadget(ngcd[1].ret);
     ProcessListSel(&d);
     /*GTextFieldSelect(gcd[1].ret,0,-1);*/
@@ -3115,7 +3184,7 @@ void FontInfo(SplineFont *sf) {
 	free(sf->fv->selected);
 	sf->fv->selected = gcalloc(sf->charcnt,sizeof(char));
     }
-    if ( sf->fv!=NULL )
+    if ( sf->fv!=NULL && sf->fv->v!=NULL )
 	GDrawRequestExpose(sf->fv->v,NULL,false);
 }
 
