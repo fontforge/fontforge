@@ -5607,7 +5607,7 @@ static void dumppost(struct alltabs *at, SplineFont *sf, enum fontformat format)
 	putshort(at->post,0);		/* glyph 0 is named .notdef */
 	putshort(at->post,1);		/* glyphs 1&2 are tab and cr */
 	putshort(at->post,2);		/* or something */
-	for ( i=pos=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 ) {
+	for ( i=1, pos=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 ) {
 	    if ( sf->chars[i]->unicodeenc<128 && sf->chars[i]->unicodeenc!=-1 )
 		putshort(at->post,sf->chars[i]->unicodeenc-32+3);
 	    else if ( strcmp(sf->chars[i]->name,".notdef")==0 )
@@ -5620,7 +5620,7 @@ static void dumppost(struct alltabs *at, SplineFont *sf, enum fontformat format)
 		    putshort(at->post,j);
 		else {
 		    putshort(at->post,pos+258);
-		    /*pos += strlen( sf->chars[i]->name)+1*/ ++pos;
+		    ++pos;
 		}
 	    }
 	}
