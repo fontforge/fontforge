@@ -5813,8 +5813,10 @@ void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf) {
     if ( dummy->names[ttf_fullname]==NULL || *dummy->names[ttf_fullname]=='\0' )
 	dummy->names[ttf_fullname] = uc_copy(sf->fullname);
     if ( dummy->names[ttf_version]==NULL || *dummy->names[ttf_version]=='\0' ) {
-	if ( sf->version!=NULL )
-	    sprintf(buffer,"Version %s ", sf->version);
+	if ( sf->subfontcnt!=0 )
+	    sprintf( buffer, "Version %f ", sf->cidversion );
+	else if ( sf->version!=NULL )
+	    sprintf(buffer,"Version %.20s ", sf->version);
 	else
 	    strcpy(buffer,"Version 1.0" );
 	dummy->names[ttf_version] = uc_copy(buffer);
