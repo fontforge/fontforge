@@ -71,7 +71,7 @@ AC_CHECK_LIB(jpeg, jpeg_CreateDecompress, :  ,AC_DEFINE(_NO_LIBJPEG))
 AC_CHECK_LIB(tiff, TIFFOpen, : , AC_DEFINE(_NO_LIBTIFF), -lm )
 
 gww_hasbytecode="no"
-AC_CHECK_LIB(freetype, FT_New_Face, [
+AC_CHECK_LIB(freetype, FT_New_Memory_Face, [
  echo checking for bytecode interpreter in freetype...
  AC_CHECK_LIB(freetype, TT_RunIns, gww_hasbytecode="yes", : )])
 if test "$gww_hasbytecode" = "yes" ; then

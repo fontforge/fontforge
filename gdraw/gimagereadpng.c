@@ -25,22 +25,12 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* Under Mac OSX, if we want to deal with dynamic libraries we must include */
-/*  #include <mach-o/dyld.h> */
-/*  And call NSAddLibrary(path), this returns true or false */
-/*	the mac doesn't yet support returning a handle (according to apache) */
-/*  And call NSLookupAndBindSymbol(symbol) to get a routine address */
-/*  We may need to call NSInstallLinkEditErrorHandlers(...), apache does */
-/* see http://cvs.apache.org/viewcvs/jakarta-tomcat-4.0/service/native/dso-dyld.c */
-/* At the moment I shan't bother to implement because MacOSX doesn't ship with*/
-/*  libpng, so it is best just to compile it in (set NODYNAMIC) */
-
 #ifdef _NO_LIBPNG
 static void *a_file_must_define_something=(void *) &a_file_must_define_something;
 		/* ANSI says so */
 #else
 # if !defined(_STATIC_LIBPNG) && !defined(NODYNAMIC)	/* I don't know how to deal with dynamic libs on mac OS/X, hence this */
-#  include <dlfcn.h>
+#  include <dynamic.h>
 # endif
 # include <png.h>
 
@@ -54,7 +44,7 @@ static void *a_file_must_define_something=(void *) &a_file_must_define_something
 # include "gdraw.h"
 
 # if !defined(_STATIC_LIBPNG) && !defined(NODYNAMIC)
-static void *libpng=NULL;
+static DL_CONST void *libpng=NULL;
 static png_structp (*_png_create_read_struct)(char *, png_voidp, png_error_ptr, png_error_ptr);
 static png_infop (*_png_create_info_struct)(png_structp);
 static void (*_png_destroy_read_struct)(png_structpp, png_infopp, png_infopp);
@@ -69,9 +59,9 @@ static void (*_png_read_end)(png_structp,png_infop);
 
 static int loadpng() {
 #  if !defined(_LIBPNG12)
-    libpng = dlopen("libpng.so",RTLD_LAZY);
+    libpng = dlopen("libpng" SO_EXT,RTLD_LAZY);
 #  else		/* After version 1.2.1 (I think) dynamic libpng is called libpng12 */
-    libpng = dlopen("libpng12.so",RTLD_LAZY);
+    libpng = dlopen("libpng12" SO_EXT,RTLD_LAZY);
 #  endif
     if ( libpng==NULL ) {
 	GDrawIError("%s", dlerror());

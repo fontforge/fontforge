@@ -28,7 +28,7 @@
 #ifdef _NO_LIBPNG
 static int a_file_must_define_something=0;	/* ANSI says so */
 #elif !defined(_STATIC_LIBPNG) && !defined(NODYNAMIC) /* I don't know how to deal with dynamic libs on mac OS/X, hence this */
-#include <dlfcn.h>
+#include <dynamic.h>
 #include <png.h>
 
 #define int32 _int32
@@ -40,7 +40,7 @@ static int a_file_must_define_something=0;	/* ANSI says so */
 
 #include "gdraw.h"
 
-static void *libpng=NULL;
+static DL_CONST void *libpng=NULL;
 static png_structp (*_png_create_write_struct)(char *, png_voidp, png_error_ptr, png_error_ptr);
 static png_infop (*_png_create_info_struct)(png_structp);
 static void (*_png_destroy_write_struct)(png_structpp, png_infopp);
@@ -52,7 +52,11 @@ static void (*_png_write_image)(png_structp,png_bytep*);
 static void (*_png_write_end)(png_structp,png_infop);
 
 static int loadpng() {
-    libpng = dlopen("libpng.so",RTLD_LAZY);
+#  if !defined(_LIBPNG12)
+    libpng = dlopen("libpng" SO_EXT,RTLD_LAZY);
+#  else		/* After version 1.2.1 (I think) dynamic libpng is called libpng12 */
+    libpng = dlopen("libpng12" SO_EXT,RTLD_LAZY);
+#  endif
     if ( libpng==NULL ) {
 	GDrawIError("%s", dlerror());
 return( 0 );

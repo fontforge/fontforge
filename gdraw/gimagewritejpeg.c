@@ -28,7 +28,7 @@
 #ifdef _NO_LIBJPEG
 static int a_file_must_define_something=0;	/* ANSI says so */
 #elif !defined(_STATIC_LIBJPEG) && !defined(NODYNAMIC)	/* I don't know how to deal with dynamic libs on mac OS/X, hence this */
-#include <dlfcn.h>
+#include <dynamic.h>
 
 #include <sys/types.h>
 #include <stdio.h>
@@ -39,7 +39,7 @@ static int a_file_must_define_something=0;	/* ANSI says so */
 
 #include "gdraw.h"
 
-static void *libjpeg=NULL;
+static DL_CONST void *libjpeg=NULL;
 static struct jpeg_error_mgr *(*_jpeg_std_error)(struct jpeg_error_mgr *);
 static void (*_jpeg_destroy_compress)(j_compress_ptr);
 static void (*_jpeg_create_compress)(j_compress_ptr,int,size_t);
@@ -55,7 +55,7 @@ static void (*_jpeg_stdio_dest)(j_compress_ptr, FILE *);
 static int loadjpeg() {
     char *err;
 
-    libjpeg = dlopen("libjpeg.so",RTLD_LAZY);
+    libjpeg = dlopen("libjpeg" SO_EXT,RTLD_LAZY);
     if ( libjpeg==NULL ) {
 	GDrawIError("%s", dlerror());
 return( 0 );

@@ -33,7 +33,7 @@
 #include <unistd.h>
 #include <ustring.h>
 #if !defined(_NO_LIBUNINAMESLIST) && !defined(_STATIC_LIBUNINAMESLIST) && !defined(NODYNAMIC)
-#  include <dlfcn.h>
+#  include <dynamic.h>
 #endif
 
 unsigned short unicode_from_adobestd[256];
@@ -68,10 +68,10 @@ static void inituninameannot(void) {
 #else
     void *libuninames=NULL;
 # ifdef LIBDIR
-    libuninames = dlopen( LIBDIR "/libuninameslist.so",RTLD_LAZY);
+    libuninames = dlopen( LIBDIR "/libuninameslist" SO_EXT,RTLD_LAZY);
 # endif
     if ( libuninames==NULL )
-	libuninames = dlopen( "libuninameslist.so",RTLD_LAZY);
+	libuninames = dlopen( "libuninameslist" SO_EXT,RTLD_LAZY);
     if ( libuninames!=NULL )
 	_UnicodeNameAnnot = dlsym(libuninames,"UnicodeNameAnnot");
 #endif

@@ -11,12 +11,14 @@ AC_PROG_LIBTOOL
 
 gww_nodynamic="no"
 gww_needsstatic="no"
+gww_needsstaticimages="no"
 case "$host" in
-*-apple-darwin*) AC_DEFINE(NODYNAMIC)
-#echo I cant get libtool to behave on my mac, so proceding with a static configure
-#exec configure.static $orig_args
+*-apple-darwin*)
+gww_needsstaticimages="yes"
+dnl Mac doesn't ship with image libraries, so my builds should include
+dnl static versions, else users won't have them. Used just to set NODYNAMIC
+dnl but I've figured out the dynamic loader now.
 
-gww_nodynamic="yes"
 AC_DEFINE(_CursorsMustBe16x16)
 AC_DEFINE(_Keyboard,1)
 AC_DEFINE(__Mac,1)
@@ -78,7 +80,7 @@ AC_CHECK_LIB(jpeg, jpeg_CreateDecompress, :  ,AC_DEFINE(_NO_LIBJPEG))
 AC_CHECK_LIB(tiff, TIFFOpen, : , AC_DEFINE(_NO_LIBTIFF), -lm )
 
 gww_hasbytecode="no"
-AC_CHECK_LIB(freetype, FT_New_Face, [
+AC_CHECK_LIB(freetype, FT_New_Memory_Face, [
  echo checking for bytecode interpreter in freetype...
  AC_CHECK_LIB(freetype, TT_RunIns, gww_hasbytecode="yes", : )])
 if test "$gww_hasbytecode" = "yes" ; then
@@ -180,12 +182,37 @@ if test "$gww_nodynamic" = "yes"; then
  if test "$ac_cv_lib_jpeg_jpeg_CreateDecompress" = "yes"; then
   STATIC_LIBS="$STATIC_LIBS -ljpeg"
  fi
- if test "$ac_cv_lib_freetype_FT_New_Face" = "yes"; then
+ if test "$ac_cv_lib_freetype_FT_New_Memory_Face" = "yes"; then
   STATIC_LIBS="$STATIC_LIBS -lfreetype"
  fi
  AC_CHECK_LIB(uninameslist, UnicodeNameAnnot, [
    STATIC_LIBS="$STATIC_LIBS -luninameslist"
    AC_DEFINE(_STATIC_LIBUNINAMESLIST) ] , AC_DEFINE(_NO_LIBUNINAMESLIST))
+fi
+if test "$gww_needsstaticimages" = "yes"; then
+ if test "$gww_needsstatic" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -static"
+ fi
+ if test "$ac_cv_lib_ungif_DGifOpenFileName" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -lungif"
+  AC_DEFINE(_STATIC_LIBUNGIF)
+ fi
+ if test "$ac_cv_lib_png_png_create_read_struct" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -lpng -lz"
+  AC_DEFINE(_STATIC_LIBPNG)
+ fi
+ if test "$ac_cv_lib_png12_png_create_read_struct" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -lpng12 -lz"
+  AC_DEFINE(_STATIC_LIBPNG)
+ fi
+ if test "$ac_cv_lib_tiff_TIFFOpen" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -ltiff"
+  AC_DEFINE(_STATIC_LIBTIFF)
+ fi
+ if test "$ac_cv_lib_jpeg_jpeg_CreateDecompress" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -ljpeg"
+  AC_DEFINE(_STATIC_LIBJPEG)
+ fi
 fi
 
 test -d libs || mkdir libs

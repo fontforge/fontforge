@@ -33,14 +33,14 @@
 #ifdef _NO_LIBUNGIF
 static int a_file_must_define_something=0;	/* ANSI says so */
 #elif !defined(_STATIC_LIBUNGIF) && !defined(NODYNAMIC)	/* I don't know how to deal with dynamic libs on mac OS/X, hence this */
-#include <dlfcn.h>
+#include <dynamic.h>
 #include <string.h>
 
 #include "gdraw.h"
 
 #include <gif_lib.h>
 
-static void *libgif=NULL;
+static DL_CONST void *libgif=NULL;
 static GifFileType *(*_DGifOpenFileName)(char *);
 static int (*_DGifSlurp)(GifFileType *);
 static int (*_DGifCloseFile)(GifFileType *);
@@ -48,9 +48,9 @@ static int (*_DGifCloseFile)(GifFileType *);
 static int loadgif() {
     char *err;
 
-    libgif = dlopen("libungif.so",RTLD_LAZY);
+    libgif = dlopen("libungif" SO_EXT,RTLD_LAZY);
     if ( libgif==NULL )
-	libgif = dlopen("libgif.so",RTLD_LAZY);
+	libgif = dlopen("libgif" SO_EXT,RTLD_LAZY);
     if ( libgif==NULL ) {
 	GDrawIError("%s", dlerror());
 return( 0 );

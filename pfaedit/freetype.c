@@ -85,7 +85,6 @@ static FT_Library context;
 # if defined(_STATIC_LIBFREETYPE) || defined(NODYNAMIC)
 
 #define _FT_Init_FreeType FT_Init_FreeType
-#define _FT_New_Face FT_New_Face
 #define _FT_New_Memory_Face FT_New_Memory_Face
 #define _FT_Set_Pixel_Sizes FT_Set_Pixel_Sizes
 #define _FT_Set_Char_Size FT_Set_Char_Size
@@ -108,13 +107,12 @@ static int freetype_init_base() {
 return( true );
 }
 # else
-#include <dlfcn.h>
-#include <unistd.h>
-#include <sys/mman.h>
+#  include <dynamic.h>
+#  include <unistd.h>
+#  include <sys/mman.h>
 
-static void *libfreetype;
+static DL_CONST void *libfreetype;
 static FT_Error (*_FT_Init_FreeType)( FT_Library  * );
-static FT_Error (*_FT_New_Face)( FT_Library, const char *, int, FT_Face * );
 static FT_Error (*_FT_New_Memory_Face)( FT_Library, const FT_Byte *, int, int, FT_Face * );
 static FT_Error (*_FT_Done_Face)( FT_Face );
 static FT_Error (*_FT_Set_Pixel_Sizes)( FT_Face, int, int);
@@ -134,12 +132,11 @@ static FT_Error (*_FT_Done_FreeType)( FT_Library );
 # endif
 
 static int freetype_init_base() {
-    libfreetype = dlopen("libfreetype.so",RTLD_LAZY);
+    libfreetype = dlopen("libfreetype" SO_EXT,RTLD_LAZY);
     if ( libfreetype==NULL )
 return( false );
 
     _FT_Init_FreeType = (FT_Error (*)(FT_Library *)) dlsym(libfreetype,"FT_Init_FreeType");
-    _FT_New_Face = (FT_Error (*)(FT_Library, const char *, int, FT_Face * )) dlsym(libfreetype,"FT_New_Face");
     _FT_New_Memory_Face = (FT_Error (*)(FT_Library, const FT_Byte *, int, int, FT_Face * )) dlsym(libfreetype,"FT_New_Memory_Face");
     _FT_Set_Pixel_Sizes = (FT_Error (*)(FT_Face, int, int)) dlsym(libfreetype,"FT_Set_Pixel_Sizes");
     _FT_Set_Char_Size = (FT_Error (*)(FT_Face, int, int, int, int)) dlsym(libfreetype,"FT_Set_Char_Size");
@@ -1036,19 +1033,23 @@ uint8 *DebuggerGetWatches(struct debugger_context *dc, int *n) {
     *n = dc->n_points;
 return( dc->watch );
 }
+
+int DebuggingFpgm(struct debugger_context *dc) {
+return( dc->debug_fpgm );
+}
 #else
 
 void DebuggerTerminate(struct debugger_context *dc) {
 }
 
-void DebuggerReset(struct debugger_context *dc,real pointsize,int dpi) {
+void DebuggerReset(struct debugger_context *dc,real ptsize,int dpi,int dbg_fpgm) {
 }
 
-struct debugger_context *DebuggerCreate(SplineChar *sc,real pointsize,int dpi) {
+struct debugger_context *DebuggerCreate(SplineChar *sc,real pointsize,int dpi, int dbg_fpgm) {
 return( NULL );
 }
 
-void DebuggerGo(struct debugger_context *dc,enum debug_gotype) {
+void DebuggerGo(struct debugger_context *dc,enum debug_gotype go) {
 }
 
 struct TT_ExecContextRec_ *DebuggerGetEContext(struct debugger_context *dc) {
@@ -1061,5 +1062,9 @@ void DebuggerSetWatches(struct debugger_context *dc,int n, uint8 *w) {
 uint8 *DebuggerGetWatches(struct debugger_context *dc, int *n) {
     *n = 0;
 return( NULL );
+}
+
+int DebuggingFpgm(struct debugger_context *dc) {
+return( false );
 }
 #endif

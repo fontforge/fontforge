@@ -28,7 +28,7 @@
 #ifdef _NO_LIBTIFF
 static int a_file_must_define_something=0;	/* ANSI says so */
 #elif !defined(_STATIC_LIBTIFF) && !defined(NODYNAMIC)	/* I don't know how to deal with dynamic libs on mac OS/X, hence this */
-#include <dlfcn.h>
+#include <dynamic.h>
 #include <tiffio.h>
 
 #define int32 _int32
@@ -40,14 +40,14 @@ static int a_file_must_define_something=0;	/* ANSI says so */
 
 #include "gdraw.h"
 
-static void *libtiff=NULL;
+static DL_CONST void *libtiff=NULL;
 static TIFF *(*_TIFFOpen)(char *, char *);
 static void (*_TIFFGetField)(TIFF *, int, uint32 *);
 static int (*_TIFFReadRGBAImage)(TIFF *, uint32, uint32, uint32 *, int);
 static int (*_TIFFClose)(TIFF *);
 
 static int loadtiff() {
-    libtiff = dlopen("libtiff.so",RTLD_LAZY);
+    libtiff = dlopen("libtiff" SO_EXT,RTLD_LAZY);
     if ( libtiff==NULL ) {
 	GDrawIError("%s", dlerror());
 return( 0 );
