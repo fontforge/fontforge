@@ -113,7 +113,7 @@ static uint32 scripts[][15] = {
 /* Latin */	{ CHR('l','a','t','n'), 0x0041, 0x005a, 0x0061, 0x007a,
 	0x00c0, 0x02af, 0x1d00, 0x1eff, 0xfb00, 0xfb0f, 0xff00, 0xff5f, 0, 0 },
 /* Lao */	{ CHR('l','a','o',' '), 0x0e80, 0x0eff },
-/* Limbu */	{ CHR('l','i','m','b'), 0x1900, 0x194f },	/* Not in ISO 15924 !!!!!, just guessing */
+/* Limbu */	{ CHR('l','i','m','b'), 0x1900, 0x194f },
 /* Linear A */	{ CHR('l','i','n','a'), 0x10180, 0x102cf },
 /* Linear B */	{ CHR('l','i','n','b'), 0x10000, 0x100fa },
 /* Malayalam */	{ CHR('m','l','y','m'), 0x0d00, 0x0d7f },
@@ -130,14 +130,14 @@ static uint32 scripts[][15] = {
 /* Syriac */	{ CHR('s','y','r','c'), 0x0700, 0x074f },
 /* Tagalog */	{ CHR('t','a','g','l'), 0x1700, 0x1714 },
 /* Tagbanwa */	{ CHR('t','a','g','b'), 0x1760, 0x1773 },
-/* Tai Le */	{ CHR('t','a','i','l'), 0x1950, 0x1974 },
+/* Tai Le */	{ CHR('t','a','l','e'), 0x1950, 0x1974 },
 /* Tamil */	{ CHR('t','a','m','l'), 0x0b80, 0x0bff },
 /* Telugu */	{ CHR('t','e','l','u'), 0x0c00, 0x0c7f },
 /* Tengwar */	{ CHR('t','e','n','g'), 0x12000, 0x1207f },
 /* Thaana */	{ CHR('t','h','a','a'), 0x0780, 0x07bf },
 /* Thai */	{ CHR('t','h','a','i'), 0x0e00, 0x0e7f },
 /* Tibetan */	{ CHR('t','i','b','t'), 0x0f00, 0x0fff },
-/* Ugaritic */	{ CHR('u','g','r','t'), 0x10380, 0x1039d },
+/* Ugaritic */	{ CHR('u','g','a','r'), 0x10380, 0x1039d },
 /* Yi */	{ CHR('y','i',' ',' '), 0xa000, 0xa73f },
 		{ 0 }
 };
