@@ -638,12 +638,22 @@ return;
     GDrawSetDashedLine(pixmap,0,0,0);
 }
 
+static void dtou(unichar_t *ubuf,real val) {
+    char buffer[8], *pt;
+    sprintf( buffer,"%.1f", val);
+    pt = buffer+strlen(buffer);
+    if ( pt[-1]=='0' && pt[-2]=='.' ) pt[-2] = '\0';
+    uc_strcpy(ubuf,buffer);
+}
+
 static void CVDrawBlues(CharView *cv,GWindow pixmap,char *bluevals,char *others,
 	Color col) {
     double blues[24];
     char *pt, *end;
     int i=0, bcnt=0;
     GRect r;
+    unichar_t ubuf[8];
+    int len,len2;
 
     if ( bluevals!=NULL ) {
 	for ( pt = bluevals; isspace( *pt ) || *pt=='['; ++pt);
@@ -675,9 +685,10 @@ return;
 
     r.x = 0; r.width = cv->width;
     for ( i=0; i<bcnt; i += 2 ) {
-	int other;
-	r.y = -cv->yoff + cv->height - rint(blues[i]*cv->scale);
+	int first, other;
+	first = -cv->yoff + cv->height - rint(blues[i]*cv->scale);
 	other = -cv->yoff + cv->height - rint(blues[i+1]*cv->scale);
+	r.y = first;
 	if ( ( r.y<0 && other<0 ) || (r.y>cv->height && other>cv->height))
     continue;
 	if ( r.y<0 ) r.y = 0;
@@ -692,6 +703,18 @@ return;
 	GDrawSetStippled(pixmap,2, 0,0);
 	GDrawFillRect(pixmap,&r,col);
 	GDrawSetStippled(pixmap,0, 0,0);
+
+	if ( first>-20 && first<cv->height+20 ) {
+	    dtou( ubuf, blues[i]);
+	    len = GDrawGetTextWidth(pixmap,ubuf,-1,NULL);
+	    GDrawDrawText(pixmap,cv->width-len-5,first-3,ubuf,-1,NULL,0x00ffff);
+	} else
+	    len = 0;
+	if ( other>-20 && other<cv->height+20 ) {
+	    dtou( ubuf, blues[i+1]-blues[i]);
+	    len2 = GDrawGetTextWidth(pixmap,ubuf,-1,NULL);
+	    GDrawDrawText(pixmap,cv->width-len-5-len2-5,other+cv->sas-3,ubuf,-1,NULL,0x00ffff);
+	}
     }
 }
 
@@ -705,7 +728,10 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
     MinimumDistance *md;
     char *blues, *others;
     struct psdict *private = cv->sc->parent->private;
+    unichar_t ubuf[8];
+    int len, len2;
 
+    GDrawSetFont(pixmap,cv->small);
     blues = PSDictHasEntry(private,"BlueValues"); others = PSDictHasEntry(private,"OtherBlues");
     if ( cv->showblues && (blues!=NULL || others!=NULL))
 	CVDrawBlues(cv,pixmap,blues,others,0x8080ff);
@@ -750,6 +776,22 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
 		GDrawDrawLine(pixmap,0,r.y,cv->width,r.y,col);
 	    if ( r.y+r.height>=0 && r.y+r.height<=cv->width )
 		GDrawDrawLine(pixmap,0,r.y+r.height-1,cv->width,r.y+r.height-1,col);
+
+	    r.y = -cv->yoff + cv->height - rint(hint->start*cv->scale);
+	    r.y += ( hint->width>0 ) ? -3 : cv->sas+3;
+	    if ( r.y>-20 && r.y<cv->height+20 ) {
+		dtou( ubuf, hint->start);
+		len = GDrawGetTextWidth(pixmap,ubuf,-1,NULL);
+		GDrawDrawText(pixmap,cv->width-len-5,r.y,ubuf,-1,NULL,0x00ffff);
+	    } else
+		len = 0;
+	    r.y = -cv->yoff + cv->height - rint((hint->start+hint->width)*cv->scale);
+	    r.y += ( hint->width>0 ) ? cv->sas+3 : -3;
+	    if ( r.y>-20 && r.y<cv->height+20 ) {
+		dtou( ubuf, hint->width);
+		len2 = GDrawGetTextWidth(pixmap,ubuf,-1,NULL);
+		GDrawDrawText(pixmap,cv->width-len-5-len2-5,r.y,ubuf,-1,NULL,0x00ffff);
+	    }
 	}
     }
     if ( cv->showvhints && cv->sc->vstem!=NULL ) {
@@ -784,6 +826,21 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
 		GDrawDrawLine(pixmap,r.x,0,r.x,cv->height,col);
 	    if ( r.x+r.width>=0 && r.x+r.width<=cv->width )
 		GDrawDrawLine(pixmap,r.x+r.width-1,0,r.x+r.width-1,cv->height,col);
+
+	    r.x = cv->xoff + rint(hint->start*cv->scale);
+	    if ( r.x>-60 && r.x<cv->width+20 ) {
+		dtou( ubuf, hint->start);
+		len = GDrawGetTextWidth(pixmap,ubuf,-1,NULL);
+		r.x += ( hint->width>0 ) ? 3 : -len-3;
+		GDrawDrawText(pixmap,r.x,cv->sas+3,ubuf,-1,NULL,0x00ffff);
+	    }
+	    r.x = cv->xoff + rint((hint->start+hint->width)*cv->scale);
+	    if ( r.x>-60 && r.x<cv->width+20 ) {
+		dtou( ubuf, hint->width);
+		len = GDrawGetTextWidth(pixmap,ubuf,-1,NULL);
+		r.x += ( hint->width>0 ) ? -len-3 : 3;
+		GDrawDrawText(pixmap,r.x,cv->sas+cv->sfh+3,ubuf,-1,NULL,0x00ffff);
+	    }
 	}
     }
     GDrawSetDashedLine(pixmap,0,0,0);
@@ -2508,6 +2565,16 @@ static void CVHScroll(CharView *cv,struct sbevent *sb) {
 	cv->back_img_out_of_date = true;
 	GScrollBarSetPos(cv->hsb,-newpos);
 	GDrawScroll(cv->v,NULL,diff,0);
+	if (( cv->showhhints && cv->sc->hstem!=NULL ) || cv->showblues ) {
+	    GRect r;
+	    r.y = 0; r.height = cv->height;
+	    r.width = 6*cv->sfh+10;
+	    if ( diff>0 )
+		r.x = cv->width-r.width;
+	    else
+		r.x = cv->width+diff-r.width;
+	    GDrawRequestExpose(cv->v,&r,false);
+	}
 	if ( cv->showrulers ) {
 	    GRect r;
 	    r.y = cv->infoh+cv->mbh; r.height = cv->rulerh; r.x = 0; r.width = cv->rulerh+cv->width;
@@ -2558,6 +2625,16 @@ static void CVVScroll(CharView *cv,struct sbevent *sb) {
 	cv->back_img_out_of_date = true;
 	GScrollBarSetPos(cv->vsb,newpos);
 	GDrawScroll(cv->v,NULL,0,diff);
+	if ( cv->showvhints && cv->sc->vstem!=NULL ) {
+	    GRect r;
+	    r.x = 0; r.width = cv->width;
+	    r.height = 2*cv->sfh+6;
+	    if ( diff>0 )
+		r.y = 0;
+	    else
+		r.y = -diff;
+	    GDrawRequestExpose(cv->v,&r,false);
+	}
 	if ( cv->showrulers ) {
 	    GRect r;
 	    r.x = 0; r.width = cv->rulerh; r.y = cv->infoh+cv->mbh; r.height = cv->rulerh+cv->height;
