@@ -58,7 +58,7 @@ static void GScrollBarChanged(GScrollBar *gsb, enum sb sbtype, int32 pos) {
 	e.u.control.u.sb.pos = gsb->sb_min;
 
     if ( gsb->g.handle_controlevent!=NULL )
-	(gsb->g.handle_controlevent)(gsb->g.data,&e);
+	(gsb->g.handle_controlevent)(&gsb->g,&e);
     else
 	GDrawPostEvent(&e);
 }

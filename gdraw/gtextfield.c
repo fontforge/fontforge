@@ -1709,8 +1709,10 @@ static void gtextfield_setenabled(GGadget *g, int enabled ) {
 
 static int gtextfield_vscroll(GGadget *g, GEvent *event) {
     enum sb sbt = event->u.control.u.sb.type;
-    GTextField *gt = (GTextField *) g;
+    GTextField *gt = (GTextField *) (g->data);
     int loff = gt->loff_top;
+
+    g = (GGadget *) gt;
 
     if ( sbt==et_sb_top )
 	loff = 0;
@@ -1748,8 +1750,10 @@ return( true );
 
 static int gtextfield_hscroll(GGadget *g, GEvent *event) {
     enum sb sbt = event->u.control.u.sb.type;
-    GTextField *gt = (GTextField *) g;
+    GTextField *gt = (GTextField *) (g->data);
     int xoff = gt->xoff_left;
+
+    g = (GGadget *) gt;
 
     if ( sbt==et_sb_top )
 	xoff = 0;

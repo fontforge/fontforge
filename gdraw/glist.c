@@ -1,5 +1,4 @@
 /* Copyright (C) 2000-2002 by George Williams */
-/* Copyright (C) 2000,2001 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -711,7 +710,9 @@ return( false );
 static int glist_scroll(GGadget *g, GEvent *event) {
     int loff = 0;
     enum sb sbt = event->u.control.u.sb.type;
-    GList *gl = (GList *) g;
+    GList *gl = (GList *) (g->data);
+
+    g = (GGadget *) gl;
 
     if ( sbt==et_sb_top )
 	loff = -gl->loff;

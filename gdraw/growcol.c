@@ -437,8 +437,9 @@ return( false );
 return( true );
 }
 
-static void growcol_scroll_selbymouse(GRowCol *grc, GEvent *event) {
+static void growcol_scroll_selbymouse(GGadget *g, GEvent *event) {
     int loff=0, xoff=0, pos;
+    GRowCol *grc = (GRowCol *) (g->data);
 
     if ( event->u.mouse.y<grc->g.inner.y ) {
 	if ( grc->loff>0 ) loff = -1;
