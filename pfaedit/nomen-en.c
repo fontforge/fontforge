@@ -694,6 +694,9 @@ static char str_NewIndic = "New Indic Rearrangement";
 static char str_EditIndic = "Edit Indic Rearrangement";
 static char str_NewInsert = "New Contextual Glyph Insertion";
 static char str_EditInsert = "Edit Contextual Glyph Insertion";
+static char str_Underline = "Underline";
+static char str_Italic = "Italic";
+static char str_MacStyleSet = "Mac Style Set:";
 
  /* Names of otf tags for GPOS features for anchor */
 static char *str_abvm = "Above Base Mark";

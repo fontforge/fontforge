@@ -114,6 +114,15 @@ GTextInfo interpretations[] = {
     { (unichar_t *) _STR_MacSimplifiedChinese, NULL, 0, 0, (void *) ui_simp_chinese, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_MacKorean, NULL, 0, 0, (void *) ui_korean, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { NULL }};
+GTextInfo macstyles[] = {
+    { (unichar_t *) _STR_Bold, NULL, 0, 0, (void *) sf_bold, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Italic, NULL, 0, 0, (void *) sf_italic, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Condense, NULL, 0, 0, (void *) sf_condense, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Expand, NULL, 0, 0, (void *) sf_extend, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Underline, NULL, 0, 0, (void *) sf_underline, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Outline, NULL, 0, 0, (void *) sf_outline, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Shadow, NULL, 0, 0, (void *) sf_shadow, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { NULL }};
 static GTextInfo widthclass[] = {
     { (unichar_t *) _STR_UltraCondensed, NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_ExtraCondensed, NULL, 0, 0, (void *) 2, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -665,6 +674,9 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_SMNew		9012
 #define CID_SMDel		9013
 #define CID_SMEdit		9014
+
+#define CID_MacAutomatic	16000
+#define CID_MacStyles		16001
 
 struct psdict *PSDictCopy(struct psdict *dict) {
     struct psdict *ret;
@@ -3907,10 +3919,12 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	int force_enc=0;
 	real ia, cidversion;
 	const unichar_t *txt; unichar_t *end;
-	int i,j;
+	int i,j, mcs;
 	int vmetrics, vorigin, namechange, order2;
 	int xuidchanged = false;
 	GTextInfo *pfmfam, *fstype;
+	int32 len;
+	GTextInfo **ti;
 
 	if ( !CheckNames(d))
 return( true );
@@ -4002,6 +4016,17 @@ return(true);
 	    free(sf->xuid);
 	    sf->xuid = *txt=='\0'?NULL:cu_copy(txt);
 	}
+
+	mcs = -1;
+	if ( !GGadgetIsChecked(GWidgetGetControl(d->gw,CID_MacAutomatic)) ) {
+	    mcs = 0;
+	    ti = GGadgetGetList(GWidgetGetControl(d->gw,CID_MacStyles),&len);
+	    for ( i=0; i<len; ++i )
+		if ( ti[i]->selected )
+		    mcs |= (int) (intpt) ti[i]->userdata;
+	}
+	sf->macstyle = mcs;
+
 	txt = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Notice));
 	free(sf->copyright); sf->copyright = cu_copy(txt);
 	txt = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Comment));
@@ -4429,6 +4454,15 @@ static void DefaultTeX(struct gfi_data *d) {
     }
 }
 
+static int GFI_MacAutomatic(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+	int autom = GGadgetIsChecked(GWidgetGetControl(d->gw,CID_MacAutomatic));
+	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_MacStyles),!autom);
+    }
+return( true );
+}
+
 static int GFI_AspectChange(GGadget *g, GEvent *e) {
     if ( e==NULL || (e->type==et_controlevent && e->u.control.subtype == et_radiochanged )) {
 	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
@@ -4488,15 +4522,16 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
     GGadgetCreateData mgcd[10], ngcd[13], egcd[14], psgcd[23], tngcd[7],
 	pgcd[8], vgcd[16], pangcd[22], comgcd[3], atgcd[7], txgcd[23],
 	congcd[3], csubgcd[fpst_max-pst_contextpos][6], smgcd[3], smsubgcd[4][6],
-	mfgcd[8], ogcd[8];
+	mfgcd[8], mcgcd[8];
     GTextInfo mlabel[10], nlabel[13], elabel[14], pslabel[23], tnlabel[7],
 	plabel[8], vlabel[16], panlabel[22], comlabel[3], atlabel[7], txlabel[23],
 	csublabel[fpst_max-pst_contextpos][6], smsublabel[4][6],
-	mflabel[8], olabel[8], *list;
+	mflabel[8], mclabel[8], *list;
     struct gfi_data *d;
     char iabuf[20], upbuf[20], uwbuf[20], asbuf[20], dsbuf[20], ncbuf[20],
 	    vbuf[20], uibuf[12], regbuf[100], vorig[20], embuf[20];
     int i,k;
+    int mcs;
     Encoding *item;
     FontView *fvs;
     unichar_t title[130];
@@ -5622,8 +5657,41 @@ return;
     congcd[0].creator = GTabSetCreate;
 
 /******************************************************************************/
-    memset(&ogcd,0,sizeof(ogcd));
-    memset(&olabel,'\0',sizeof(olabel));
+    memset(&mcgcd,0,sizeof(mcgcd));
+    memset(&mclabel,'\0',sizeof(mclabel));
+
+    k=0;
+    mclabel[k].text = (unichar_t *) _STR_MacStyleSet;
+    mclabel[k].text_in_resource = true;
+    mcgcd[k].gd.label = &mclabel[k];
+    mcgcd[k].gd.pos.x = 10; mcgcd[k].gd.pos.y = 7;
+    mcgcd[k].gd.flags = gg_visible | gg_enabled;
+    mcgcd[k++].creator = GLabelCreate;
+
+    mclabel[k].text = (unichar_t *) _STR_Automatic;
+    mclabel[k].text_in_resource = true;
+    mcgcd[k].gd.label = &mclabel[k];
+    mcgcd[k].gd.pos.x = 10; mcgcd[k].gd.pos.y = 20;
+    mcgcd[k].gd.flags = (sf->macstyle==-1) ? (gg_visible | gg_enabled | gg_cb_on) : (gg_visible | gg_enabled);
+    mcgcd[k].gd.cid = CID_MacAutomatic;
+    mcgcd[k].gd.handle_controlevent = GFI_MacAutomatic;
+    mcgcd[k++].creator = GRadioCreate;
+
+    mcgcd[k].gd.pos.x = 90; mcgcd[k].gd.pos.y = 20;
+    mcgcd[k].gd.flags = (sf->macstyle!=-1) ? (gg_visible | gg_enabled | gg_cb_on) : (gg_visible | gg_enabled);
+    mcgcd[k].gd.handle_controlevent = GFI_MacAutomatic;
+    mcgcd[k++].creator = GRadioCreate;
+
+    mcgcd[k].gd.pos.x = 110; mcgcd[k].gd.pos.y = 20;
+    mcgcd[k].gd.pos.width = 120; mcgcd[k].gd.pos.height = 7*12+10;
+    mcgcd[k].gd.flags = (sf->macstyle==-1) ? (gg_visible | gg_list_multiplesel) : (gg_visible | gg_enabled | gg_list_multiplesel);
+    mcgcd[k].gd.cid = CID_MacStyles;
+    mcgcd[k].gd.u.list = macstyles;
+    mcgcd[k++].creator = GListCreate;
+
+    mcs = MacStyleCode(sf,NULL);
+    for ( i=0; macstyles[i].text!=NULL; ++i )
+	macstyles[i].selected = (mcs&(int) (intpt) macstyles[i].userdata)? 1 : 0;
 
 /******************************************************************************/
     memset(&smsublabel,0,sizeof(smsublabel));
@@ -5760,9 +5828,9 @@ return;
     aspects[i].text_in_resource = true;
     aspects[i++].gcd = congcd;
 
-    aspects[i].text = (unichar_t *) _STR_Order;
+    aspects[i].text = (unichar_t *) _STR_Mac;
     aspects[i].text_in_resource = true;
-    aspects[i++].gcd = ogcd;
+    aspects[i++].gcd = mcgcd;
 
     aspects[i].text = (unichar_t *) _STR_MacFeatures;
     aspects[i].text_in_resource = true;
