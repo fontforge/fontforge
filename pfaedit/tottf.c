@@ -3783,7 +3783,7 @@ static void dumpcfftopdict(SplineFont *sf,struct alltabs *at) {
     putshort(cfff,0);		/* placeholder for final position (final offset in index points beyond last element) */
     dumpsid(cfff,at,sf->version,0);
     dumpsid(cfff,at,sf->copyright,1);
-    dumpsid(cfff,at,sf->fullname,2);
+    dumpsid(cfff,at,sf->fullname?sf->fullname:sf->fontname,2);
     dumpsid(cfff,at,sf->familyname,3);
     dumpsid(cfff,at,sf->weight,4);
     if ( SFOneWidth(sf)!=-1 ) dumpintoper(cfff,1,(12<<8)|1);
@@ -3891,7 +3891,7 @@ static void dumpcffcidtopdict(SplineFont *sf,struct alltabs *at) {
     dumpintoper(cfff, sf->uniqueid?sf->uniqueid:4000000 + (rand()&0x3ffff), (12<<8)|35 );
 
     dumpsid(cfff,at,sf->copyright,1);
-    dumpsid(cfff,at,sf->fullname,2);
+    dumpsid(cfff,at,sf->fullname?sf->fullname:sf->fontname,2);
     dumpsid(cfff,at,sf->familyname,3);
     dumpsid(cfff,at,sf->weight,4);
     /* FontMatrix  (identity here, real ones in sub fonts)*/
@@ -4617,7 +4617,8 @@ static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *_sf,
     os2->yStrikeoutSize = 102*(sf->ascent+sf->descent)/2048;
     os2->yStrikeoutPos = 530*(sf->ascent+sf->descent)/2048;
     os2->fsSel = (at->head.macstyle&1?32:0)|(at->head.macstyle&2?1:0);
-    if ( strstrmatch(sf->fullname,"outline")!=NULL ) os2->fsSel |= 8;
+    if ( sf->fullname!=NULL && strstrmatch(sf->fullname,"outline")!=NULL )
+	os2->fsSel |= 8;
     if ( os2->fsSel==0 ) os2->fsSel = 64;		/* Regular */
     os2->ascender = os2->winascent = at->head.ymax;
     os2->descender = at->head.ymin;
@@ -5654,7 +5655,8 @@ void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf) {
 	time(&now);
 	tm = localtime(&now);
 	sprintf( buffer, "%s : %s : %d-%d-%d", BDFFoundry?BDFFoundry:"PfaEdit 1.0",
-		sf->fullname, tm->tm_mday, tm->tm_mon, tm->tm_year+1970 );
+		sf->fullname!=NULL?sf->fullname:sf->fontname,
+		tm->tm_mday, tm->tm_mon, tm->tm_year+1970 );
 	dummy->names[3] = uc_copy(buffer);
     }
     if ( dummy->names[4]==NULL ) dummy->names[4] = uc_copy(sf->fullname);

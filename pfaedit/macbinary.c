@@ -541,14 +541,18 @@ uint16 MacStyleCode( SplineFont *sf ) {
     unsigned short stylecode= 0;
     char *styles = SFGetModifiers(sf);
 
+    if ( sf->cidmaster!=NULL )
+	sf = sf->cidmaster;
+
     if ( strstrmatch( styles, "Bold" ) || strstrmatch(styles,"Demi") ||
 	    strstrmatch( styles,"Heav") || strstrmatch(styles,"Blac") ||
 /* A few fonts have German/French styles in their names */
 	    strstrmatch( styles,"Fett") || strstrmatch(styles,"Gras") ) {
 	stylecode = sf_bold;
-    } else if ( strstrmatch( sf->weight, "Bold" ) || strstrmatch(sf->weight,"Demi") ||
-	    strstrmatch( sf->weight,"Heav") || strstrmatch(sf->weight,"Blac") ||
-	    strstrmatch( sf->weight,"Fett") || strstrmatch(sf->weight,"Gras") ) {
+    } else if ( sf->weight!=NULL &&
+	    (strstrmatch( sf->weight, "Bold" ) || strstrmatch(sf->weight,"Demi") ||
+	     strstrmatch( sf->weight,"Heav") || strstrmatch(sf->weight,"Blac") ||
+	     strstrmatch( sf->weight,"Fett") || strstrmatch(sf->weight,"Gras")) ) {
 	stylecode = sf_bold;
     }
     /* URW uses four leter abbreviations of Italic and Oblique */
