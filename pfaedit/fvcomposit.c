@@ -1767,7 +1767,7 @@ static void SCBuildHangul(SplineFont *sf,SplineChar *sc, const unichar_t *pt, in
 int SCMakeDotless(SplineFont *sf, SplineChar *dotless, int copybmp, int doit) {
     SplineChar *sc, *xsc;
     BlueData bd;
-    SplineSet *head, *last=NULL, *test, *cur;
+    SplineSet *head, *last=NULL, *test, *cur, *next;
     DBounds b;
     BDFFont *bdf;
     BDFChar *bc;
@@ -1784,7 +1784,9 @@ return( 0 );
     if ( bd.xheight==0 )
 return( 0 );
     for ( test=sc->splines; test!=NULL; test=test->next ) {
+	next = test->next; test->next = NULL;
 	SplineSetQuickBounds(test,&b);
+	test->next = next;
 	if ( b.miny < bd.xheight ) {
 	    if ( !doit )
 return( true );
