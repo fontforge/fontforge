@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 19-May-2004 -->
+  <!-- AP: Last modified: 31-May-2004 -->
   <TITLE>Frequently Asked Questions</TITLE>
 </HEAD>
 <BODY>
@@ -692,8 +692,8 @@ $ xset fp+ `pwd`
       <LI>
 	Run it. It will ask you what components of cygwin you wish to install
       <LI>
-	You will need the base components and the X window system (NOTE: These are
-	separate packages)
+	You will need the base components, the X window system, xorg-x11-base, and
+	xterm (NOTE: These are separate packages)
       <LI>
 	Once you have cygwin installed, start it. This should give you a terminal
 	window running bash (a unix shell)
@@ -703,11 +703,13 @@ $ xset fp+ `pwd`
 	(<CODE>/usr/local/bin</CODE> is a reasonable choice)
 	<BLOCKQUOTE>
 	  <PRE>$ mkdir -p /usr/local/share/fontforge /usr/local/bin /usr/local/share/man
-$ cd /usr/local/bin
+$ cd /tmp
 $ gunzip fontforge_cygwin*.tgz
 $ tar xfv fontforge_cygwin*.tar
+$ cd fontforge
 $ mv *.ui /usr/local/share/fontforge
 $ mv fontforge.1 /usr/local/share/man/man1
+$ mv fontforge.exe /usr/local/bin
 </PRE>
 	</BLOCKQUOTE>
 	<P>

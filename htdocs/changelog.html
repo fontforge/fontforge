@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 29-May-2004 -->
+  <!-- AP: Last modified: 18-Jun-2004 -->
   <TITLE>Change log for FontForge</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,48 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    18-June-2004
+    <UL>
+      <LI>
+	Point types were not set properly after conversion from quadratic to cubic
+	splines.
+      <LI>
+	Several preference items were not being saved and were not accessable from
+	scripts.
+      <LI>
+	Scripts could not set the resolution for bdf fonts
+      <LI>
+	Still having problems with references to references in type1 subroutines.
+      <LI>
+	AutoTrace had problems with multi-layered mode.
+      <LI>
+	Enhance "ItalicConstrained" in the Character View to allow vertical constrains
+	as well as those parallel to the italic angle.
+      <LI>
+	Build Accented Characters had problems when there were bitmap characters
+	involved.
+      <LI>
+	Can no longer blindly rotate splinesets in type2 fonts to avoid an initial
+	flex.
+      <LI>
+	Add three new problems to Find Problems
+	<UL>
+	  <LI>
+	    Check for intersecting contours
+	  <LI>
+	    Check for mulitple glyphs with same unicode code point
+	  <LI>
+	    Check for multiple glyphs with same name
+	</UL>
+    </UL>
+  <LI>
+    31-May-2004
+    <UL>
+      <LI>
+	In the 19-May build I introduced a bug which could generate NaN values for
+	control points.
+    </UL>
   <LI>
     29-May-2004
     <UL>

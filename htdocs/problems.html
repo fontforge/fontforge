@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 28-Jun-2001 -->
-  <!-- AP: Last modified: 16-Apr-2004 -->
+  <!-- AP: Last modified: 18-Jun-2004 -->
   <TITLE>Finding common font problems automagically</TITLE>
 </HEAD>
 <BODY>
@@ -132,6 +132,11 @@ path, and instead of joining it to the first, you just put it near the first.
 If FontForge detects any open paths it will select the entire path, and stop
 to let you fix things up.
 <P>
+<STRONG><BIG>Intersecting Paths</BIG></STRONG>
+<P>
+Both PostScript and TrueType discourage you from having intersecting paths
+in a font.
+<P>
 <STRONG><BIG>Edges near horizontal/vertical/italic</BIG></STRONG>
 <P>
 It is very easy to create a line which is almost, but not quite, vertical.
@@ -255,6 +260,17 @@ Look through the associated bitmap fonts, and find if there is a bitmap font
 which is missing versions of characters present in the outline font. Conversely
 look for bitmap fonts with characters which are not present in the outline
 font.
+<P>
+<STRONG><BIG>Multiple Unicode</BIG></STRONG>
+<P>
+Check that you do not have two glyphs assigned to the same unicode code point.
+(The unicode encoding is used to determine which glyph will appear in the
+truetype/opentype 'cmap' table. If you have two glyphs with the same code
+point, there is no guarantee which will be used.)
+<P>
+<STRONG><BIG>Multiple Name</BIG></STRONG>
+<P>
+Check that you do not have two glyphs with the same name. 
 <P>
 <STRONG><BIG><A NAME="Advance">Check Advance</A></BIG></STRONG>
 <P>
