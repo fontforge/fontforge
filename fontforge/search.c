@@ -640,6 +640,32 @@ return;
     }
 }
 
+static int HeuristiclyBadMatch(SplineChar *sc,SearchView *s) {
+    /* Consider the case of a closed circle and an open circle, where the */
+    /*  open circle looks just like the closed except that the open circle */
+    /*  has an internal counter-clockwise contour. We don't want to match here*/
+    /*  we'd get a reference and a counter-clockwise contour which would make */
+    /*  no sense. */
+    /* so if, after removing matched contours we are left with a single counter*/
+    /*  clockwise contour, don't accept the match */
+    int contour_cnt, i;
+    SplineSet *spl;
+
+    contour_cnt=0;
+    for ( spl=sc->layers[ly_fore].splines, i=0; spl!=NULL; spl=spl->next, ++i ) {
+	if ( !(s->matched_ss&(1<<i))) {
+	    if ( SplinePointListIsClockwise(spl) )
+return( false );
+	    ++contour_cnt;
+	}
+    }
+    if ( contour_cnt==0 )
+return( false );		/* Exact match */
+
+    /* Everything remaining is counter-clockwise */
+return( true );
+}
+
 static void DoReplaceFull(SplineChar *sc,SearchView *s) {
     int i;
     RefChar *r, *rnext, *new;
@@ -760,6 +786,10 @@ static void DoRpl(SearchView *sv) {
 	if ( SCDependsOnSC(r->sc,sv->curchar))
 return;
     }
+
+    if ( sv->replaceall && !sv->subpatternsearch &&
+	    HeuristiclyBadMatch(sv->curchar,sv))
+return;
 
     SCPreserveState(sv->curchar,false);
     if ( sv->subpatternsearch )
@@ -1357,6 +1387,7 @@ static SearchView *SVFillup(SearchView *sv, FontView *fv) {
     sv->dummy_sf.ascent = fv->sf->ascent;
     sv->dummy_sf.descent = fv->sf->descent;
     sv->dummy_sf.order2 = fv->sf->order2;
+    sv->dummy_sf.anchor = fv->sf->anchor;
     sv->sc_srch.width = sv->sc_srch.vwidth = sv->sc_rpl.vwidth = sv->sc_rpl.width =
 	    sv->dummy_sf.ascent + sv->dummy_sf.descent;
     sv->sc_srch.parent = sv->sc_rpl.parent = &sv->dummy_sf;
