@@ -419,8 +419,21 @@ static void svg_scdump(FILE *file, SplineChar *sc,int defwid) {
 	    else
 		fprintf(file,"&#x%x;",univals[i]);
 	fputs("\" ",file);
-    } else if ( sc->unicodeenc!=-1 ) {
-	if ( sc->unicodeenc>=32 && sc->unicodeenc<127 &&
+    } else if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x110000 ) {
+	if ( sc->unicodeenc!=0x9 &&
+		sc->unicodeenc!=0xa &&
+		sc->unicodeenc!=0xd &&
+		!(sc->unicodeenc>=0x20 && sc->unicodeenc<=0xd7ff) &&
+		!(sc->unicodeenc>=0xe000 && sc->unicodeenc<=0xfffd) &&
+		!(sc->unicodeenc>=0x10000 && sc->unicodeenc<=0x10ffff) )
+	    /* Not allowed in XML */;
+	else if ( (sc->unicodeenc>=0x7f && sc->unicodeenc<=0x84) ||
+		  (sc->unicodeenc>=0x86 && sc->unicodeenc<=0x9f) ||
+		  (sc->unicodeenc>=0xfdd0 && sc->unicodeenc<=0xfddf) ||
+		  (sc->unicodeenc&0xffff)==0xfffe ||
+		  (sc->unicodeenc&0xffff)==0xffff )
+	    /* Not recommended in XML */;
+	else if ( sc->unicodeenc>=32 && sc->unicodeenc<127 &&
 		sc->unicodeenc!='"' && sc->unicodeenc!='&' &&
 		sc->unicodeenc!='<' && sc->unicodeenc!='>' )
 	    fprintf( file, "unicode=\"%c\" ", sc->unicodeenc);
