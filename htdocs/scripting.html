@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 5-Feb-2004 -->
+  <!-- AP: Last modified: 10-Feb-2004 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -1489,6 +1489,26 @@ ApplySubstitution("*","*","vrt2")
   <DT>
     ClearHints()
   <DD>
+  <DT>
+    AddHint(is_horizontal_flag,start,width)
+  <DD>
+    Adds either a horizontal or vertical stem hint to any selected characters.
+    The hint starts at location "start" and is width wide. A hint will be added
+    to all selected characters.
+  <DT>
+    ReplaceCounterMasks(array)
+  <DD>
+    This requires that there be exactly one character selected. It will create
+    a set of counter masks for that character. The single argument must be an
+    array of twelve element arrays of integers (in c this would be "int
+    array[][12]"). This is the format of a type2 counter mask. The number of
+    elements in the top level array is the number of counter groups to be specified.
+    The nested array thus corresponds to a counter mask, and is treated as an
+    array of bytes. Each bit in the byte specifies whether the corresponding
+    hint is active in this counter. (there are at most 96 hints, so at most 12
+    bytes). Array[i][0]&amp;0x80 corresponds to the first horizontal stem hint,
+    Array[i][0]&amp;0x40 corresponds to the second, Array[i][1]&amp;0x80 corresponds
+    to the eighth hint, etc.
   <DT>
     ClearPrivateEntry(key)
   <DD>

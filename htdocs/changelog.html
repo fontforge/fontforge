@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 8-Feb-2004 -->
+  <!-- AP: Last modified: 10-Feb-2004 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -11,7 +11,7 @@
 </H1>
 <UL>
   <LI>
-    ???
+    10-Feb-2004
     <UL>
       <LI>
 	PfaEdit could produce bad tfm files.
@@ -29,7 +29,28 @@
       <LI>
 	Added support for the PostScript "for" loop.
       <LI>
-	PfaEdit seems to support creating simple Multiple Master fonts now.
+	I have created a simple (1 axis) Multiple Master Type1 font with PfaEdit.
+	It works with both ghostview and freetype.
+      <LI>
+	PfaEdit would crash when generating a ttf file from an sfd file which contain
+	an invalid script/lang index. Put in code to warn user about this, and in
+	some cases to correct it.
+      <LI>
+	PfaEdit had problems reading sfd files in the old point count format, this
+	meant we still got bad point count errors.
+      <LI>
+	PfaEdit wrote bad sfd files if there were countermasks (all the countours
+	of the glyph would be lost)
+      <LI>
+	I finally figured out why PfaEdit kept crashing when palettes were docked
+	and an outline view was closed.
+      <LI>
+	Fixed various crashes in Interpolate fonts
+      <LI>
+	PfaEdit had problems with using subroutines to express references in PostScript
+	(introduced 30-Jan)
+      <LI>
+	Added a new scripting commands AddHint and ReplaceCounterMasks.
     </UL>
   <LI>
     4-Feb-2004

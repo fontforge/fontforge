@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 15-Jan-2004 -->
+  <!-- AP: Last modified: 9-Feb-2004 -->
   <TITLE>Spline Font Database File Format</TITLE>
 </HEAD>
 <BODY>
@@ -11,7 +11,7 @@
 </H1>
 <P>
 <FONT COLOR="Red"><STRONG>This page is often grievously out of date. It was
-a fair approximation to reality on 15 Jan 2004.</STRONG></FONT> Even if out
+a fair approximation to reality on 2 Feb 2004.</STRONG></FONT> Even if out
 of date it should be helpful, but if you really need to know the current
 format look at
 <A HREF="http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/pfaedit/pfaedit/pfaedit/sfd.c">sfd.c</A>
@@ -36,7 +36,24 @@ for each bitmap font.
   <LI>
     <A HREF="sfdformat.html#CID-keyed-fonts">CID keyed fonts</A>
   <LI>
+    <A HREF="sfdformat.html#Multiple-Master-fonts">Multiple Master fonts</A>
+  <LI>
     <A HREF="sfdformat.html#Autosave-Format">AutoSave Format</A>
+</UL>
+<P>
+<FONT COLOR="Red"><STRONG><BIG>WARNING: </BIG></STRONG></FONT>It is tempting
+to cut and paste information from one sfd file to another. This is usually
+ok, but there are a couple of cases than need to be avoided:
+<UL>
+  <LI>
+    If you copy a glyph with truetype instructions, those instructions may call
+    subroutines defined in the old font but not the new. Unexpected things may
+    happen when the glyph is grid fit (including system crashes)
+  <LI>
+    If you copy a substitution (ligature, kern, contextual chaining, ...) item
+    from one font to another, the substitution contains an index into a table
+    of script/languages maintained by the font. Bad things (PfaEdit crashes)
+    can happen if these table do not match.
 </UL>
 <H3>
   <A NAME="Font-Header">Font Header</A>
@@ -789,6 +806,61 @@ of which contains slots for 8318 characters (again some of these may not
 be defined). This will be followed by a list of the subfonts (dumped out
 just like normal fonts) and their characters. Only the top level font will
 contain any bitmap characters, anchor classes, etc.
+<H3>
+  <A NAME="Multiple-Master-fonts">Multiple Master fonts</A>
+</H3>
+<P>
+Multiple master fonts start with a different style of file header, and are
+followed by a set of sub fonts. If the mm font has 4 instances then there
+will be 5 subfonts (one for each instance, and one for the blended font).
+The font header looks like:
+<BLOCKQUOTE>
+  <PRE>SplineFontDB: 1.0
+MMCounts: 4 2
+MMAxis: Weight Width
+MMPositions: 0 0 1 0 0 1 1 1
+MMWeights: 0.31502 0.13499 0.38499 0.16499
+MMAxisMap: 0 2 0=&gt;50 1=&gt;1450
+MMAxisMap: 1 2 0=&gt;50 1=&gt;1450
+MMCDV:
+{
+1 index 1 2 index sub mul 3 1 roll 
+1 2 index sub 1 index mul 3 1 roll 
+1 index 1 index mul 3 1 roll 
+pop pop
+0 1 1 3 {index add} for 1 exch sub 4 1 roll
+}
+EndMMSubroutine
+MMNDV:
+{
+exch 50 sub 1400 div
+exch 50 sub 1400 div
+}
+EndMMSubroutine
+BeginMMFonts: 5 0
+</PRE>
+</BLOCKQUOTE>
+<P>
+The "MMCounts" line gives the number of instances (4) and the number of axes
+(2) in this font. The "MMAxis" line gives the names of the axes. The MMPositions
+line is an array of real numbers (with instance_count*axis_count elements)
+describing the coordinates of each instance along each axis. The MMWeights
+line provides the weights (blends) of the instance fonts to which, when
+interpolated, yield the default font. There will be one AxisMap line for
+each axis, it provides the mapping from design space to normalized space.
+The first line
+<BLOCKQUOTE>
+  <PRE>MMAxisMap: 0 2 0=&gt;50 1=&gt;1450
+</PRE>
+</BLOCKQUOTE>
+<P>
+says that axis 0 has two mapping points. One is at normalized position 0
+and corresponds to design position 50, the other is at normalized position
+1 and corresponds to design position 1450. There are two subroutines stored
+here, both are simple postscript. The first is the /NormalizeDesignVector
+routine and the second is the /ConvertDesignVector routine.
+<P>
+Finally we have the actual instance fonts.
 <H2>
   <A NAME="Autosave-Format">Autosave Format</A>
 </H2>
