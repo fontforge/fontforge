@@ -4104,6 +4104,72 @@ static int ParseTeX(struct gfi_data *d) {
 return( !err );
 }
 
+static int ttfuniqueidmatch(SplineFont *sf,struct gfi_data *d) {
+    struct ttflangname *tln, *dtln;
+
+    if ( sf->names==NULL )
+return( false );
+
+    if ( !d->names_set ) {
+	for ( tln = sf->names; tln!=NULL; tln=tln->next )
+	    if ( tln->names[ttf_uniqueid]!=NULL )
+return( true );
+    } else {
+	for ( tln = sf->names; tln!=NULL; tln=tln->next ) {
+	    if ( tln->names[ttf_uniqueid]==NULL )
+	continue;		/* Not set, so if it has been given a new value */
+				/*  that's a change, and if it hasn't that's ok */
+	    for ( dtln = d->names; dtln!=NULL && dtln->lang!=tln->lang; dtln = dtln->next );
+	    if ( dtln==NULL || dtln->names[ttf_uniqueid]==NULL )
+	continue;		/* removed. That's a change */
+	    if ( u_strcmp(tln->names[ttf_uniqueid],dtln->names[ttf_uniqueid])==0 )
+return( true );		/* name unchanged */
+	}
+    }
+return( false );
+}
+
+static void ttfuniqueidfixup(SplineFont *sf,struct gfi_data *d) {
+    struct ttflangname *tln, *dtln;
+    unichar_t *changed = NULL;
+
+    if ( sf->names==NULL )
+return;
+
+    if ( !d->names_set ) {
+	for ( tln = sf->names; tln!=NULL; tln=tln->next ) {
+	    free( tln->names[ttf_uniqueid]);
+	    tln->names[ttf_uniqueid] = NULL;
+	}
+    } else {
+	/* see if any instances of the name have changed */
+	for ( tln = sf->names; tln!=NULL; tln=tln->next ) {
+	    if ( tln->names[ttf_uniqueid]==NULL )
+	continue;
+	    for ( dtln = d->names; dtln!=NULL && dtln->lang!=tln->lang; dtln = dtln->next );
+	    if ( dtln==NULL || dtln->names[ttf_uniqueid]==NULL )
+	continue;
+	    if ( u_strcmp(tln->names[ttf_uniqueid],dtln->names[ttf_uniqueid])!=0 ) {
+		changed = u_copy(dtln->names[ttf_uniqueid]);
+	break;
+	    }
+	}
+	for ( tln = sf->names; tln!=NULL; tln=tln->next ) {
+	    if ( tln->names[ttf_uniqueid]==NULL )
+	continue;
+	    for ( dtln = d->names; dtln!=NULL && dtln->lang!=tln->lang; dtln = dtln->next );
+	    if ( dtln==NULL || dtln->names[ttf_uniqueid]==NULL )
+	continue;
+	    if ( u_strcmp(tln->names[ttf_uniqueid],dtln->names[ttf_uniqueid])==0 ) {
+		free(dtln->names[ttf_uniqueid]);
+		dtln->names[ttf_uniqueid] = changed!=NULL
+			? u_copy( changed )
+			: NULL;
+	    }
+	}
+    }
+}
+
 static int GFI_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	GWindow gw = GGadgetGetWindow(g);
@@ -4234,9 +4300,10 @@ return( true );
 	txt = _GGadgetGetTitle(GWidgetGetControl(gw,CID_XUID));
 	xuidchanged = (sf->xuid==NULL && *txt!='\0') ||
 			(sf->xuid!=NULL && uc_strcmp(txt,sf->xuid)==0);
-	if ( namechange && sf->filename!=NULL &&
+	if ( namechange &&
 		((uniqueid!=0 && uniqueid==sf->uniqueid) ||
-		 (sf->xuid!=NULL && uc_strcmp(txt,sf->xuid)==0)) ) {
+		 (sf->xuid!=NULL && uc_strcmp(txt,sf->xuid)==0) ||
+		 ttfuniqueidmatch(sf,d)) ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	    static int buts[] = { _STR_Change, _STR_Retain, _STR_Cancel, 0 };
 	    int ans = GWidgetAskR(_STR_UniqueIDTitle,buts,0,2,_STR_UniqueIDChange);
@@ -4260,6 +4327,8 @@ return(true);
 		    xuidchanged = true;
 		}
 	    }
+	    if ( ttfuniqueidmatch(sf,d))
+		ttfuniqueidfixup(sf,d);
 	} else {
 	    free(sf->xuid);
 	    sf->xuid = *txt=='\0'?NULL:cu_copy(txt);
