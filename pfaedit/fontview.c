@@ -3249,387 +3249,249 @@ static void FVChar(FontView *fv,GEvent *event) {
 	FVChangeChar(fv,i);
     }
 }
+
+struct unicoderange {
+    char *name;		/* The range's name */
+    int first, last, defined;
+    			/* The first codepoint, last codepoint in the range */
+			/*  and a codepoint which actually has a character */
+			/*  associated with it */
+} unicoderange[] = {
+    /* { "Unicode", 0, 0x7fffffff, ' ' }, */
+    { "Unicode Basic Multilingual Plane", 0, 0xffff, ' ' },
+    { "Basic Multilingual Plane", 0, 0xffff, ' ' },
+    { "Alphabetic", 0, 0x1fff, ' ' },
+    { "Control Character", 0, ' '-1, 0 },
+    { "Basic Latin", ' ', 0x7e, 'A' },
+    { "Delete Character", 0x7f, 0x7f, 0x7f },
+    { "C1 Control Characters", 0x80, 0x9f, 0x80 },
+    { "Latin-1 Supplement", 0xa0, 0xff, 0xc0 },
+    { "Latin Extended-A", 0x100, 0x17f, 0x100 },
+    { "Latin Extended-B", 0x180, 0x24f, 0x180 },
+    { "IPA Extensions", 0x250, 0x2af, 0x250 },
+    { "Spacing Modifier Letters", 0x2b0, 0x2ff, 0x2b0 },
+    { "Combining Diacritical Marks", 0x300, 0x36f, 0x300 },
+    { "Greek", 0x370, 0x3ff, 0x391 },
+    { "Cyrillic", 0x400, 0x4ff, 0x410 },
+    { "Cyrillic Supplement", 0x500, 0x52f, 0x500 },
+    { "Armenian", 0x530, 0x58f, 0x531 },
+    { "Hebrew", 0x290, 0x5ff, 0x5d0 },
+    { "Arabic", 0x600, 0x6ff, 0x627 },
+    { "Syriac", 0x700, 0x74f, -1 },	/* Don't know defined point */
+    { "N'ko", 0x750, 0x77f, -1 },
+    { "Thaana", 0x780, 0x7bf, -1 },
+    { "Avestan", 0x7c0, 0x7ff, -1 },
+    { "Phoenician", 0x800, 0x81f, -1 },
+    { "Aramaic", 0x820, 0x83f, -1 },
+    { "Pahlavi", 0x840, 0x87f, -1 },
+    { "Tifinagh", 0x880, 0x8af, -1 },
+    { "Samaritan", 0x8b0, 0x8cf, -1 },
+    { "Mandaic", 0x8d0, 0x8ff, -1 },
+    { "Devangari", 0x900, 0x97f, 0x905 },
+    { "Bengali", 0x980, 0x9ff, 0x985 },
+    { "Gurmukhi", 0xa00, 0xa7f, 0xa05 },
+    { "Gujarati", 0xa80, 0xaff, 0xa85 },
+    { "Oriya", 0xb00, 0xb7f, 0xb05 },
+    { "Tamil", 0xb80, 0xbff, 0xb85 },
+    { "Telugu", 0xc00, 0xc7f, 0xc05 },
+    { "Kannada", 0xc80, 0xcff, 0xc85 },
+    { "Malayalam", 0xd00, 0xd7f, 0xd05 },
+    { "Sinhala", 0xd80, 0xdff, 0xd85 },
+    { "Thai", 0xe00, 0xe7f, 0xe01 },
+    { "Lao", 0xe80, 0xeff, 0xe81 },
+    { "Tibetan", 0xf00, 0xfff, 0xf00 },
+    { "Myanmar", 0x1000, 0x109f, -1 },
+    { "Georgian", 0x10a0, 0x10ff, 0x10d0 },
+    { "Hangul Jamo, Choseong", 0x1100, 0x115f, 0x1100 },
+    { "Hangul Jamo, Jungseong", 0x1160, 0x11a7, 0x1161 },
+    { "Hangul Jamo, Jongseong", 0x11a8, 0x11ff, 0x11a8 },
+    { "Ethiopic", 0x1200, 0x137f, -1 },
+    { "Ethiopic Extended", 0x1380, 0x139f, -1 },
+    { "Cherokee", 0x13a0, 0x13ff, 0x13a0 },
+    { "Unified Canadian Aboriginal Syllabics", 0x1400, 0x167f, -1 },
+    { "Ogham", 0x1680, 0x139f, 0x1680 },
+    { "Runic", 0x16a0, 0x13ff, 0x16a0 },
+    { "Tagalog", 0x1700, 0x171f, -1 },
+    { "Hanunóo", 0x1720, 0x173f, -1 },
+    { "Buhid", 0x1740, 0x175f, -1 },
+    { "Tagbanwa", 0x1760, 0x177f, -1 },
+    { "Khmer", 0x1780, 0x17af, -1 },
+    { "Mongolian", 0x17b0, 0x17ff, -1 },
+    { "Cham", 0x1800, 0x18ff, -1 },
+    { "Limbu", 0x1900, 0x194f, -1 },
+    { "Tai Le", 0x1950, 0x197f, -1 },
+    { "Viêt Thái", 0x1980, 0x19cf, -1 },
+    { "New Tai Lu", 0x1a00, 0x1a5f, -1 },
+    { "Lanna", 0x1a80, 0x1adf, -1 },
+    { "Batak", 0x1b00, 0x1b3f, -1 },
+    { "Buginese", 0x1b40, 0x1b5f, -1 },
+    { "Javanese", 0x1b80, 0x1bcf, -1 },
+    { "Meithei/Manipuri", 0x1c00, 0x1c5f, -1 },
+    { "Lepcha", 0x1c80, 0x1cbf, -1 },
+    { "Kayah Li", 0x1cc0, 0x1cff, -1 },
+    { "Latin Extended-C", 0x1d00, 0x1dff, -1 },
+    { "Latin Extended Additional", 0x1e00, 0x1eff, 0x1e00 },
+    { "Greek Extended", 0x1f00, 0x1fff, 0x1f00 },
+    { "Symbols", 0x2000, 0x2bff, 0x2000 },
+    { "General Puntuation", 0x2000, 0x206f, 0x2000 },
+    { "Super and Sub scripts", 0x2070, 0x209f, 0x2070 },
+    { "Currency Symbols", 0x20a0, 0x20cf, 0x20ac },
+    { "Combining marks for Symbols", 0x20d0, 0x20ff, 0x20d0 },
+    { "Letterlike Symbols", 0x2100, 0x214f, 0x2100 },
+    { "Number Forms", 0x2150, 0x218f, 0x2153 },
+    { "Arrows", 0x2190, 0x21ff, 0x2190 },
+    { "Mathematical Symbols", 0x2200, 0x22ff, 0x2200 },
+    { "Technical Symbols", 0x2300, 0x23ff, 0x2300 },
+    { "Control Pictures", 0x2400, 0x243f, 0x2400 },
+    { "OCR", 0x2440, 0x245f, 0x2440 },
+    { "Enclosed Alphanumerics", 0x2460, 0x24ff, 0x2460 },
+    { "Box Drawing", 0x2500, 0x257f, 0x2500 },
+    { "Block Elements", 0x2580, 0x259f, 0x2580 },
+    { "Geometric Shapes", 0x25a0, 0x25ff, 0x25a0 },
+    { "Miscellaneous Symbols", 0x2600, 0x267f, 0x2600 },
+    { "Dingbats", 0x2700, 0x27bf, 0x2701 },
+    {  "Zapf Dingbats", 0x2700, 0x27bf, 0x2701 },		/* Synonem */
+    { "Miscellaneous Math Symbols-A", 0x27c0, 0x27df, -1 },
+    {  "Math Miscellaneous Symbols-A", 0x27c0, 0x27df, -1 },
+    { "Supplemental Arrows-A", 0x27e0, 0x27ff, -1 },
+    {  "Arrows Supplemental-A", 0x27e0, 0x27ff, -1 },
+    { "Braille Patterns", 0x2800, 0x28ff, 0x2800 },
+    { "Supplemental Arrows-B", 0x2900, 0x297f, -1 },
+    {  "Arrows Supplemental-B", 0x2900, 0x297f, -1 },
+    { "Miscellaneous Math Symbols-B", 0x2980, 0x29ff, -1 },
+    {  "Math Miscellaneous Symbols-B", 0x2980, 0x29ff, -1 },
+    { "Supplemental Math Operators", 0x2a00, 0x2aff, -1 },
+    {  "Math Supplemental Operators", 0x2a00, 0x2aff, -1 },
+    { "Supplemental Symbols", 0x2b00, 0x2bff, -1 },
+    {  "Symbols Supplemental", 0x2b00, 0x2bff, -1 },
+    { "Alphabetic Extended", 0x2c00, 0x2fff, -1 },
+    { "Coptic", 0x2c00, 0x2c3f, -1 },
+    { "Hungarian Runic", 0x2c40, 0x2c6f, -1 },
+    {  "Runic Hungarian", 0x2c40, 0x2c6f, -1 },
+    { "Glagolitic", 0x2c80, 0x2cdf, -1 },
+    { "Ethiopic Extended", 0x2d00, 0x2d5f, -1 },
+    { "Ol Cemet'", 0x2d80, 0x2daf, -1 },
+    { "Sorang Sng.", 0x2db0, 0x2ddf, -1 },
+    { "Siloti Nagri", 0x2e00, 0x2e3f, -1 },
+    { "Varang Kshiti", 0x2e40, 0x2e7f, -1 },
+    { "CJK Radicals", 0x2e80, 0x2eff, -1 },
+    { "Kanqxi Radicals", 0x2f00, 0x2fdf, -1 },
+    { "IDC", 0x2fe0, 0x2fef, -1 },
+    { "CJK Phonetics and Symbols", 0x3000, 0x33ff, 0x3000 },
+    { "CJK Symbols and Punctuation", 0x3000, 0x303f, 0x3000 },
+    { "Hiragana", 0x3040, 0x309f, 0x3041 },
+    { "Katakana", 0x30a0, 0x30ff, 0x30a1 },
+    { "Bopomofo", 0x3100, 0x312f, 0x3105 },
+    { "Hangul Compatibility Jamo", 0x3130, 0x318f, 0x3131 },
+    { "Kanbun", 0x3190, 0x319f, 0x3190 },
+    { "Enclosed CJK Letters and Months", 0x3200, 0x32ff, 0x3200 },
+    {  "CJK Enclosed Letters and Months", 0x3200, 0x32ff, 0x3200 },
+    { "CJK Compatibility", 0x3300, 0x33ff, 0x3300 },
+    { "CJK Unified Ideographs Extension A", 0x3400, 0x4dff, -1 },
+    { "Yijing Hexagram Symbols", 0x4db0, 0x4dff, -1 },
+    { "CJK Unified Ideographs", 0x4e00, 0x9fff, 0x4e00 },
+    { "Yi", 0xa000, 0xabff, -1 },
+    { "Yi Radicals", 0xa490, 0xa4af, -1 },
+    { "Yi Extensions", 0xa500, 0xa93f, -1 },
+    { "Pahawh Hmong", 0xa900, 0xa93f, -1 },
+    { "Chakma", 0xa980, 0xa9cf, -1 },
+    { "Newari", 0xaa00, 0xaa5f, -1 },
+    { "Siddham", 0xaa80, 0xaacf, -1 },
+    { "Phags-pa", 0xab00, 0xab5f, -1 },
+    { "Hangul Syllable", 0xac00, 0xd7a3, 0xac00 },
+    { "High Surrogate", 0xd800, 0xdbff, -1 },		/* No characters defined */
+    {  "Surrogate High", 0xd800, 0xdbff, -1 },
+    { "Surrogate High, Non Private Use", 0xd800, 0xdb7f, -1 },
+    { "Surrogate High, Private Use", 0xdb80, 0xdbff, -1 },
+    { "Low Surrogate", 0xdc00, 0xdfff, -1 },
+    { "Private/Corporate Use", 0xe000, 0xf8ff, 0xe000 },
+    { "Private Use", 0xe000, 0xe0ff, 0xe000 },
+	/* Boundary between private and corporate use is not fixed */
+	/*  these should be safe... */
+    { "Corporate Use", 0xf500, 0xf8ff, 0xf730 },
+    { "CJK Compatibility Ideographs", 0xf900, 0xfaff, 0xf900 },
+    { "Alphabetic Presentation Forms", 0xfb00, 0xfb4f, 0xfb00 },
+    { "Latin Ligatures", 0xfb00, 0xfb05, 0xfb00 },
+    { "Armenian Ligatures", 0xfb13, 0xfb17, 0xfb13 },
+    { "Hebrew Ligatures/Pointed Letters", 0xfb1e, 0xfb4f, 0xfb2a },
+    { "Arabic Presentation Forms A", 0xfb50, 0xfdff, 0xfb50 },
+    { "Combining half marks", 0xfe20, 0xfe2f, 0xfe20 },
+    { "CJK Compatibility Forms", 0xfe30, 0xfe4f, 0xfe30 },
+    { "Small Form Variants", 0xfe50, 0xfe6f, 0xfe50 },
+    { "Arabic Presentation Forms B", 0xfe70, 0xfefe, 0xfe70 },
+    { "Byte Order Mark", 0xfeff, 0xfeff, 0xfeff },
+    { "Half and Full Width Forms", 0xff00, 0xffef, 0xff01 },
+    { "Specials", 0xfff0, 0xfffd, 0xfffd },
+    { "Not a Unicode Character", 0xfffe, 0xfffe, 0xfffe },
+    { "Signature Mark", 0xffff, 0xffff, 0xffff },
+/* End of BMP, Start of SMP */
+    { "Unicode Supplementary Multilingual Plane", 0x10000, 0x1ffff, -1 },
+    { "Supplementary Multilingual Plane", 0x10000, 0x1ffff, -1 },
+    { "Aegean scripts", 0x10000, 0x102ff, 0x10000 },
+    { "Linear B Syllabary", 0x10000, 0x1007f, 0x10000 },
+    { "Linear B Ideograms", 0x10080, 0x100df, 0x10080 },
+    { "Aegean numbers", 0x10100, 0x1003f, 0x10100 },
+    { "Linear A", 0x10180, 0x102cf, 0x10180 },
+    { "Alphabetic and syllabic LTR scripts", 0x10300, 0x107ff, -1 },
+    { "Old Italic", 0x10300, 0x1032f, 0x10300 },
+    { "Gothic", 0x10330, 0x1034f, 0x10330 },
+    { "Old Permic", 0x10350, 0x1037f, 0x10350 },
+    { "Ugaritic", 0x10380, 0x1039f, -1 },
+    { "Alphabetic and syllabic RTL scripts", 0x10800, 0x10fff, -1 },
+    { "Cypriot", 0x10800, 0x1083f, 0x10800 },
+    { "Meriotic", 0x10840, 0x1085f, 0x10840 },
+    { "Balti", 0x10860, 0x1087f, -1 },
+    { "Brahmic scripts", 0x11000, 0x117ff, -1 },
+    { "African and other syllabic scripts", 0x11800, 0x11fff, -1 },
+    { "Scripts for invented languages", 0x12000, 0x127ff, -1 },
+    { "Tengwar (Tolkien Elvish)", 0x12000, 0x1207f, 0x12000 },
+    { "Cirth (Tolkien Runic)", 0x12080, 0x120ff, 0x12080 },
+    { "Blissymbols", 0x12200, 0x124ff, -1 },
+    { "Cuneiform and other Near Eastern Scripts", 0x12800, 0x12fff, -1 },
+    { "Undeciphered scripts", 0x13000, 0x137ff, -1 },
+    { "North American ideographs and pictograms", 0x13800, 0x13fff, -1 },
+    { "Egyptian and Mayan hieroglyphs", 0x14000, 0x16bff, -1 },
+    { "Sumerian pictograms", 0x16c00, 0x16fff, -1 },
+    { "Large Asian Scripts", 0x17000, 0x1b5ff, -1 },
+    { "Notational systems", 0x1d000, 0x1ffd, -1 },
+/* End of SMP, Start of SIP */
+    { "Unicode Supplementary Ideographic Plane", 0x20000, 0x2ffff, -1 },
+    { "Supplementary Ideographic Plane", 0x20000, 0x2ffff, -1 },
+    { "CJK Unified Ideographs Extension B", 0x20000, 0x2a6ff, -1 },
+    { "CJK Compatibility Ideographs Supplement", 0x2f800, 0x2fa1f, -1 },
+/* End of SIP, Start of SSP */
+    { "Unicode Supplementary Special-purpose Plane", 0xe0000, 0xeffff, -1 },
+    { "Supplementary Special-purpose Plane", 0xe0000, 0xeffff, -1 },
+    { "Tag characters", 0xe0000, 0xe007f, -1 },
+    { "Variation Selectors", 0xe0110, 0xe01ff, -1 },
+/* End of SSP */
+    { "Private/Corporate Use Area B", 0xf0000, 0x10ffff, -1 },
+    { NULL }
+};
+    
 const char *UnicodeRange(int unienc) {
     char *ret;
+    struct unicoderange *best=NULL;
+    int i;
 
     ret = "Unencoded Unicode";
     if ( unienc<0 )
-	/* Done */;
-    else if ( unienc<0x10000 ) {
-	ret = "Unencoded BMP Unicode";
-	if ( unienc<0x2000 ) {
-	    ret = "Unencoded Alphabetic";
-	    if ( unienc<32 )
-		ret = "Control Character";
-	    else if ( unienc<0x7f )
-		ret = "Basic Latin";
-	    else if ( unienc==0x7f )
-		ret = "Delete Character";
-	    else if ( unienc<0xa0 )
-		ret = "C1 Control Characters";
-	    else if ( unienc<0x100 )
-		ret = "Latin-1 Supplement";
-	    else if ( unienc<0x180 )
-		ret = "Latin Extended-A";
-	    else if ( unienc<0x250 )
-		ret = "Latin Extended-B";
-	    else if ( unienc<0x2b0 )
-		ret = "IPA Extensions";
-	    else if ( unienc<0x300 )
-		ret = "Spacing Modifier Letters";
-	    else if ( unienc<0x370 )
-		ret = "Combining Diacritical Marks";
-	    else if ( unienc<0x400 )
-		ret = "Greek";
-	    else if ( unienc<0x500 )
-		ret = "Cyrillic";
-	    else if ( unienc<0x530 )
-		ret = "Cyrillic Supplement";
-	    else if ( unienc<0x590 )
-		ret = "Armenian";
-	    else if ( unienc<0x600 )
-		ret = "Hebrew";
-	    else if ( unienc<0x700 )
-		ret = "Arabic";
-	    else if ( unienc<0x750 )
-		ret = "Syriac";
-	    else if ( unienc<0x780 )
-		ret = "N'ko";
-	    else if ( unienc<0x7c0 )
-		ret = "Thaana";
-	    else if ( unienc<0x800 )
-		ret = "Avestan";
-	    else if ( unienc<0x820 )
-		ret = "Phoenician";
-	    else if ( unienc<0x840 )
-		ret = "Aramaic";
-	    else if ( unienc<0x880 )
-		ret = "Pahlavi";
-	    else if ( unienc<0x8b0 )
-		ret = "Tifinagh";
-	    else if ( unienc<0x8d0 )
-		ret = "Samaritan";
-	    else if ( unienc<0x900 )
-		ret = "Mandaic";
-	    else if ( unienc<0x980 )
-		ret = "Devangari";
-	    else if ( unienc<0xa00 )
-		ret = "Bengali";
-	    else if ( unienc<0xa80 )
-		ret = "Gurmukhi";
-	    else if ( unienc<0xb00 )
-		ret = "Gujarati";
-	    else if ( unienc<0xb80 )
-		ret = "Oriya";
-	    else if ( unienc<0xc00 )
-		ret = "Tamil";
-	    else if ( unienc<0xc80 )
-		ret = "Telugu";
-	    else if ( unienc<0xd00 )
-		ret = "Kannada";
-	    else if ( unienc<0xd80 )
-		ret = "Malayalam";
-	    else if ( unienc<0xe00 )
-		ret = "Sinhala";
-	    else if ( unienc<0xe80 )
-		ret = "Thai";
-	    else if ( unienc<0xf00 )
-		ret = "Lao";
-	    else if ( unienc<0x1000 )
-		ret = "Tibetan";
-	    else if ( unienc<0x10a0 )
-		ret = "Myanmar";
-	    else if ( unienc<0x1100 )
-		ret = "Georgian";
-	    else if ( unienc<0x1160 )
-		ret = "Hangul Jamo, Choseong";
-	    else if ( unienc<0x11a8 )
-		ret = "Hangul Jamo, Jungseong";
-	    else if ( unienc<0x1200 )
-		ret = "Hangul Jamo, Jongseong";
-	    else if ( unienc<0x1380 )
-		ret = "Ethiopic";
-	    else if ( unienc<0x13a0 )
-		ret = "Ethiopic Extended";
-	    else if ( unienc<0x1400 )
-		ret = "Cherokee";
-	    else if ( unienc<0x1680 )
-		ret = "Unified Canadian Aboriginal Syllabics";
-	    else if ( unienc<0x16a0 )
-		ret = "Ogham";
-	    else if ( unienc<0x1700 )
-		ret = "Runic";
-	    else if ( unienc<0x1720 )
-		ret = "Tagalog";
-	    else if ( unienc<0x1740 )
-		ret = "Hanunóo";
-	    else if ( unienc<0x1760 )
-		ret = "Buhid";
-	    else if ( unienc<0x1780 )
-		ret = "Tagbanwa";
-	    else if ( unienc<0x1800 )
-		ret = "Khmer";
-	    else if ( unienc<0x18b0 )
-		ret = "Mongolian";
-	    else if ( unienc<0x1900 )
-		ret = "Cham";
-	    else if ( unienc<0x1950 )
-		ret = "Limbu";
-	    else if ( unienc<0x1980 )
-		ret = "Tai Le";
-	    else if ( unienc<0x19d0 )
-		ret = "Viêt Thái";
-	    else if ( unienc<0x1a00 )
-		/* Not defined */;
-	    else if ( unienc<0x1a60 )
-		ret = "New Tai Lu";
-	    else if ( unienc<0x1a80 )
-		/* Not defined */;
-	    else if ( unienc<0x1ae0 )
-		ret = "Lanna";
-	    else if ( unienc<0x1b00 )
-		/* Not defined */;
-	    else if ( unienc<0x1b40 )
-		ret = "Batak";
-	    else if ( unienc<0x1b60 )
-		ret = "Buginese";
-	    else if ( unienc<0x1b80 )
-		/* Not defined */;
-	    else if ( unienc<0x1bd0 )
-		ret = "Javanese";
-	    else if ( unienc<0x1c00 )
-		/* Not Defined */;
-	    else if ( unienc<0x1c60 )
-		ret = "Meithei/Manipuri";
-	    else if ( unienc<0x1c80 )
-		/* Not defined */;
-	    else if ( unienc<0x1cc0 )
-		ret = "Lepcha";
-	    else if ( unienc<0x1d00 )
-		ret = "Kayah Li";
-	    else if ( unienc<0x1e00 )
-		ret = "Latin Extended-C";
-	    else if ( unienc<0x1f00 )
-		ret = "Latin Extended Additional";
-	    else
-		ret = "Greek Extended";
-	} else if ( unienc<0x3000 ) {
-	    ret = "Unencoded Symbolic";
-	    if ( unienc<0x2070 )
-		ret = "General Puntuation";
-	    else if ( unienc<0x20a0 )
-		ret = "Super and Sub scripts";
-	    else if ( unienc<0x20d0 )
-		ret = "Currency Symbols";
-	    else if ( unienc<0x2100 )
-		ret = "Combining marks for Symbols";
-	    else if ( unienc<0x2150 )
-		ret = "Letterlike Symbols";
-	    else if ( unienc<0x2190 )
-		ret = "Number Forms";
-	    else if ( unienc<0x2200 )
-		ret = "Arrows";
-	    else if ( unienc<0x2300 )
-		ret = "Mathematical Symbols";
-	    else if ( unienc<0x2400 )
-		ret = "Technical Symbols";
-	    else if ( unienc<0x2440 )
-		ret = "Control Pictures";
-	    else if ( unienc<0x2460 )
-		ret = "OCR";
-	    else if ( unienc<0x2500 )
-		ret = "Enclosed Alphanumerics";
-	    else if ( unienc<0x2580 )
-		ret = "Box Drawing";
-	    else if ( unienc<0x25a0 )
-		ret = "Block Elements";
-	    else if ( unienc<0x2600 )
-		ret = "Geometric Shapes";
-	    else if ( unienc<0x2700 )
-		ret = "Miscellaneous Symbols";
-	    else if ( unienc<0x27c0 )
-		ret = "Zapf Dingbats";
-	    else if ( unienc<0x27e0 )
-		ret = "Miscellaneous Math Symbols-A";
-	    else if ( unienc<0x2800 )
-		ret = "Supplemental Arrows-A";
-	    else if ( unienc<0x2900 )
-		ret = "Braille Patterns";
-	    else if ( unienc<0x2980 )
-		ret = "Supplemental Arrows-B";
-	    else if ( unienc<0x2a00 )
-		ret = "Miscellaneous Math Symbols-B";
-	    else if ( unienc<0x2b00 )
-		ret = "Supplemental Math Operators";
-	    else if ( unienc<0x2c00 )
-		ret = "Supplemental Symbols";
-	    else if ( unienc<0x2c40 )
-		ret = "Coptic";
-	    else if ( unienc<0x2c70 )
-		ret = "Hungarian Runic";
-	    else if ( unienc<0x2c80 )
-		/* Not defined */;
-	    else if ( unienc<0x2ce0 )
-		ret = "Glagolitic";
-	    else if ( unienc<0x2d00 )
-		/* Not Defined */;
-	    else if ( unienc<0x2d60 )
-		ret = "Ethiopic Extended";
-	    else if ( unienc<0x2d80 )
-		/* Not defined */;
-	    else if ( unienc<0x2db0 )
-		ret = "Ol Cemet'";
-	    else if ( unienc<0x2de0 )
-		ret = "Sorang Sng.";
-	    else if ( unienc<0x2e00 )
-		/* Not defined */;
-	    else if ( unienc<0x2e40 )
-		ret = "Siloti Nagri";
-	    else if ( unienc<0x2e80 )
-		ret = "Varang Kshiti";
-	    else if ( unienc<0x2f00 )
-		ret = "CJK Radicals";
-	    else if ( unienc<0x2fe0 )
-		ret = "Kanqxi Radicals";
-	    else if ( unienc>0x2ff0 )
-		ret = "IDC";
-	} else if ( unienc<0x3400 ) {
-	    ret = "CJK Phonetics and Symbols";
-	    if ( unienc<0x3040 )
-		ret = "CJK Symbols and Punctuation";
-	    else if ( unienc<0x30a0 )
-		ret = "Hiragana";
-	    else if ( unienc<0x3100 )
-		ret = "Katakana";
-	    else if ( unienc<0x3130 )
-		ret = "Bopomofo";
-	    else if ( unienc<0x3190 )
-		ret = "Hangul Compatibility Jamo";
-	    else if ( unienc<0x31a0 )
-		ret = "Kanbun";
-	    else if ( unienc<0x3200 )
-		/* Not Defined */;
-	    else if ( unienc<0x3300 )
-		ret = "Enclosed CJK Letters and Months";
-	    else if ( unienc<0x3400 )
-		ret = "CJK Compatibility";
-	} else if ( unienc<0x4e00 ) {
-	    ret = "CJK Unified Ideographs Extension A";
-	    if ( unienc>=0x4db0 )
-		ret = "Yijing Hexagram Symbols";
-	} else if ( unienc<0xa000 ) {
-	    ret = "CJK Unified Ideographs";
-	} else if ( unienc<0xac00 ) {
-	    ret = "Yi";
-	    if ( unienc>=0xa490 && unienc<0xa4b0 )
-		ret = "Yi Radicals";
-	    else if ( unienc>=0xa500 && unienc<0xa730 )
-		ret = "Yi Extensions";
-	    else if ( unienc>=0xa900 && unienc<0xa940 )
-		ret = "Pahawh Hmong";
-	    else if ( unienc>=0xa980 && unienc<0xa9d0 )
-		ret = "Chakma";
-	    else if ( unienc>=0xaa00 && unienc<0xaa60 )
-		ret = "Newari";
-	    else if ( unienc>=0xaa80 && unienc<0xaad0 )
-		ret = "Siddham";
-	    else if ( unienc>=0xab00 && unienc<0xab60 )
-		ret = "'Phags-pa";
-	} else if ( unienc<0xd7a3 ) {
-	    ret = "Hangul Syllable";
-	} else if ( unienc<0xd800 ) {
-	} else if ( unienc<0xdc00 ) {
-	    ret = "High Surrogate";
-	    if ( unienc<0xdb80 )
-		ret = "Non Private Use High Surrogate";
-	    else
-		ret = "Private Use High Surrogate";
-	} else if ( unienc<0xe000 ) {
-	    ret = "Low Surrogate";
-	} else if ( unienc<0xf900 ) {
-	    ret = "Private/Corporate Use";
-	    if ( unienc>0xf500 )
-		ret = "Corporate Use";
-	    else if ( unienc<0xe500 )
-		ret = "Private Use";
-	} else if ( unienc<0xfb00 ) {
-	    ret = "CJK Compatibility Ideographs";
-	} else if ( unienc<0xfb50 ) {
-	    ret = "Alphabetic Presentation Forms";
-	    if ( unienc<0xfb06 )
-		ret = "Latin Ligatures";
-	    else if ( unienc>=0xfb13 && unienc<=0xfb17 )
-		ret = "Armenian ligatures";
-	    else if ( unienc>=0xfb1e )
-		ret = "Hebrew Ligatures/Pointed Letters";
-	} else if ( unienc<0xfe00 ) {
-	    ret = "Arabic Presentation Forms A";
-	} else if ( unienc<0xfe20 ) {
-	} else if ( unienc<0xfe30 ) {
-	    ret = "Combining half marks";
-	} else if ( unienc<0xfe50 ) {
-	    ret = "CJK Compatibility Forms";
-	} else if ( unienc<0xfe70 ) {
-	    ret = "Small Form Variants";
-	} else if ( unienc<0xff00 ) {
-	    ret = "Arabic Presentation Forms B";
-	} else if ( unienc<0xffef ) {
-	    ret = "Half and Full Width Forms";
-	} else if ( unienc<0xfffe ) {
-	    ret = "Specials";
-	} else if ( unienc==0xfffe )
-	    ret = "Not a Unicode Character";
-	else
-	    ret = "Signature Mark";
-    } else if ( unienc<0x20000 ) {
-	ret = "Supplementary Multilingual Plane";
-	if ( unienc<0x10300 ) {
-	    ret = "Aegean scripts";
-	} else if ( unienc<0x10800 ) {
-	    ret = "Alphabetic and syllabic LTR scripts";
-	} else if ( unienc<0x11000 ) {
-	    ret = "Alphabetic and syllabic RTL scripts";
-	} else if ( unienc<0x11800 ) {
-	    ret = "Brahmic scripts";
-	} else if ( unienc<0x12000 ) {
-	    ret = "African and other syllabic scripts";
-	} else if ( unienc<0x12800 ) {
-	    ret = "Scripts for invented languages";
-	    if ( unienc<0x12080 )
-		ret = "Tengwar (Tolkien Elvish)";
-	    else if ( unienc<0x12100 )
-		ret = "Cirth (Tolkien Runic)";
-	    else if ( unienc>=0x12200 && unienc<0x12500 )
-		ret = "Blissymbols";
-	} else if ( unienc<0x13000 ) {
-	    ret = "Cuneiform and other Near Eastern Scripts";
-	} else if ( unienc<0x13800 ) {
-	    ret = "Undeciphered scripts";
-	} else if ( unienc<0x14000 ) {
-	    ret = "North American ideographs and pictograms";
-	} else if ( unienc<0x16c00 ) {
-	    ret = "Egyptian and Mayan hieroglyphs";
-	} else if ( unienc<0x17000 ) {
-	    ret = "Sumerian pictograms";
-	} else if ( unienc<0x1b600 ) {
-	    ret = "Large Asian Scripts";
-	} else if ( unienc>=0x1d000 && unienc<=0x1ffd )
-	    ret = "Notational systems";
-    } else if ( unienc<0x30000 ) {
-	ret = "Supplimental Ideographic Plane";
-	if ( unienc<0x2a700 )
-	    ret = "CJK Unified Ideographs Extension B";
-	else if ( unienc>=0x2f800 && unienc<0x2fa20 )
-	    ret = "CJK Compatibility Ideographs Supplement";
-    } else if ( unienc>=0xe0000 && unienc<0xf0000 ) {
-	ret = "Supplementary Special-purpose Plane";
-	if ( unienc<0xe0080 )
-	    ret = "Tag characters";
-	else if ( unienc>= 0xe0110 && unienc<0xe01ff )
-	    ret = "Variation Selectors";
-    } else if ( unienc>=0x210000 && unienc<0x310000 ) {
-	ret = "Private Use Area-B";
+return( ret );
+
+    for ( i=0; unicoderange[i].name!=NULL; ++i ) {
+	if ( unienc>=unicoderange[i].first && unienc<=unicoderange[i].last ) {
+	    if ( best==NULL )
+		best = &unicoderange[i];
+	    else if (( unicoderange[i].first>best->first &&
+			unicoderange[i].last<=best->last ) ||
+		     ( unicoderange[i].first>=best->first &&
+			unicoderange[i].last<best->last ))
+		best = &unicoderange[i];
+	}
     }
+    if ( best!=NULL )
+return(best->name);
+
 return( ret );
 }
 
@@ -3676,7 +3538,7 @@ return;
 		jongsung[(upos-0xAC00)%28] );
 	uc_strcpy(space,cspace);
     } else {
-	sprintf( cspace, "%d U+%04x \"%.25s\" %.30s", sc->enc, upos, sc->name==NULL?"":sc->name,
+	sprintf( cspace, "%d U+%04x \"%.25s\" %.50s", sc->enc, upos, sc->name==NULL?"":sc->name,
 	    upos=='\0'				? "Null":
 	    upos=='\t'				? "Tab":
 	    upos=='\r'				? "Return":
