@@ -1702,6 +1702,7 @@ void putfixed(FILE *file,real dval);
 int ttfcopyfile(FILE *ttf, FILE *other, int pos);
 
 extern void SCCopyFgToBg(SplineChar *sc,int show);
+extern void SCCopyBgToFg(SplineChar *sc,int show);
 
 extern int hasFreeType(void);
 extern int hasFreeTypeDebugger(void);
