@@ -69,7 +69,7 @@ return;
     r.y = mv->topend; r.height = mv->displayend-mv->topend;
     GDrawPushClip(pixmap,&r,&old2);
     if ( mv->bdf==NULL && mv->showgrid ) {
-	x = mv->perchar[0].dx;
+	x = mv->perchar[0].dx-mv->xoff;
 	if ( mv->right_to_left )
 	    x = mv->width - x - mv->perchar[0].dwidth - mv->perchar[0].kernafter;
 	GDrawDrawLine(pixmap,x,mv->topend,x,mv->displayend,0x808080);
@@ -77,7 +77,7 @@ return;
     si = -1;
     for ( i=0; i<mv->charcnt; ++i ) {
 	if ( mv->perchar[i].selected ) si = i;
-	x = mv->perchar[i].dx;
+	x = mv->perchar[i].dx-mv->xoff;
 	if ( mv->right_to_left )
 	    x = mv->width - x - mv->perchar[i].dwidth - mv->perchar[i].kernafter;
 	if ( mv->bdf==NULL && mv->showgrid ) {
@@ -116,7 +116,7 @@ return;
 	}
     }
     if ( si!=-1 && mv->bdf==NULL && mv->showgrid ) {
-	x = mv->perchar[si].dx;
+	x = mv->perchar[si].dx-mv->xoff;
 	if ( mv->right_to_left )
 	    x = mv->width - x;
 	if ( si!=0 )
@@ -145,7 +145,7 @@ return;
     if ( mv->perchar[i].selected )
 	off = mv->activeoff;
     r.y = mv->topend; r.height = mv->displayend-mv->topend;
-    r.x = mv->perchar[i].dx; r.width = mv->perchar[i].dwidth+mv->perchar[i].kernafter;
+    r.x = mv->perchar[i].dx-mv->xoff; r.width = mv->perchar[i].dwidth+mv->perchar[i].kernafter;
     bdfc = mv->bdf==NULL ? mv->perchar[i].show :
 			   mv->bdf->chars[mv->perchar[i].sc->enc];
     if ( bdfc==NULL )
@@ -557,7 +557,7 @@ static void MVCreateFields(MetricsView *mv,int i) {
     memset(&label,'\0',sizeof(label));
     label.text = nullstr;
     label.font = mv->font;
-    mv->perchar[i].mx = gd.pos.x = mv->mbase+(i+1)*mv->mwidth+2;
+    mv->perchar[i].mx = gd.pos.x = mv->mbase+(i+1-mv->coff)*mv->mwidth+2;
     mv->perchar[i].mwidth = gd.pos.width = mv->mwidth-4;
     gd.pos.y = mv->displayend+2;
     gd.pos.height = mv->fh;
@@ -659,6 +659,116 @@ return( true );
 return( false );
 }
 
+static void MVMoveFieldsBy(MetricsView *mv,int diff) {
+    int i;
+    int y,x;
+
+    for ( i=0; i<mv->max && mv->perchar[i].width!=NULL; ++i ) {
+	y = mv->displayend+2;
+	x = mv->perchar[i].mx-diff;
+	if ( x<mv->mbase+mv->mwidth ) x = -2*mv->mwidth;
+	GGadgetMove(mv->perchar[i].name,x,y);
+	y += mv->fh+4;
+	GGadgetMove(mv->perchar[i].width,x,y);
+	y += mv->fh+4;
+	GGadgetMove(mv->perchar[i].lbearing,x,y);
+	y += mv->fh+4;
+	GGadgetMove(mv->perchar[i].rbearing,x,y);
+	y += mv->fh+4;
+	if ( i!=0 )
+	    GGadgetMove(mv->perchar[i].kern,x-mv->mwidth/2,y);
+    }
+}
+
+static int MVDisplayedCnt(MetricsView *mv) {
+    int i, wid = mv->mbase;
+
+    for ( i=mv->coff; i<mv->charcnt; ++i ) {
+	wid += mv->perchar[i].dwidth;
+	if ( wid>mv->width )
+return( i-mv->coff );
+    }
+return( i-mv->coff );		/* There's extra room. don't know exactly how much but allow for some */
+}
+
+static void MVSetSb(MetricsView *mv) {
+    int cnt = (mv->width-mv->mbase-mv->mwidth)/mv->mwidth;
+    int dcnt = MVDisplayedCnt(mv);
+
+    if ( cnt>dcnt ) cnt = dcnt;
+    if ( cnt==0 ) cnt = 1;
+
+    GScrollBarSetBounds(mv->hsb,0,mv->charcnt,cnt);
+    GScrollBarSetPos(mv->hsb,mv->coff);
+#if 0
+    /* No, the scroll bar will go the same way, just as the fields do. */
+    /* the text will scroll reverse. Confusing as hell */
+    if ( !mv->right_to_left ) {
+    } else {
+	GScrollBarSetBounds(mv->hsb,-mv->charcnt,0,cnt);
+	GScrollBarSetPos(mv->hsb,-mv->coff);
+    }
+#endif
+}
+
+static void MVScroll(MetricsView *mv,struct sbevent *sb) {
+    int newpos = mv->coff;
+    int cnt = (mv->width-mv->mbase-mv->mwidth)/mv->mwidth;
+    int dcnt = MVDisplayedCnt(mv);
+
+    if ( cnt>dcnt ) cnt = dcnt;
+    if ( cnt==0 ) cnt = 1;
+
+    switch( sb->type ) {
+      case et_sb_top:
+        newpos = 0;
+      break;
+      case et_sb_uppage:
+        newpos -= cnt;
+      break;
+      case et_sb_up:
+        --newpos;
+      break;
+      case et_sb_down:
+        ++newpos;
+      break;
+      case et_sb_downpage:
+        newpos += cnt;
+      break;
+      case et_sb_bottom:
+        newpos = mv->charcnt-cnt;
+      break;
+      case et_sb_thumb:
+      case et_sb_thumbrelease:
+        newpos = sb->pos;
+      break;
+    }
+    if ( newpos>mv->charcnt-cnt )
+        newpos = mv->charcnt-cnt;
+    if ( newpos<0 ) newpos =0;
+    if ( newpos!=mv->coff ) {
+	int old = mv->coff;
+	int diff = newpos-mv->coff;
+	int charsize = mv->perchar[newpos].dx-mv->perchar[old].dx;
+	GRect fieldrect, charrect;
+
+	mv->coff = newpos;
+	charrect.x = 0; charrect.width = mv->width;
+	charrect.y = mv->topend; charrect.height = mv->displayend-mv->topend;
+	fieldrect.x = mv->mbase+mv->mwidth; fieldrect.width = mv->width-mv->mbase;
+	fieldrect.y = mv->displayend; fieldrect.height = mv->height-mv->sbh-mv->displayend;
+	GScrollBarSetBounds(mv->hsb,0,mv->charcnt,cnt);
+	GScrollBarSetPos(mv->hsb,mv->coff);
+	MVMoveFieldsBy(mv,newpos*mv->mwidth);
+	GDrawScroll(mv->gw,&fieldrect,-diff*mv->mwidth,0);
+	mv->xoff = mv->perchar[newpos].dx-mv->perchar[0].dx;
+	if ( mv->right_to_left ) {
+	    charsize = -charsize;
+	}
+	GDrawScroll(mv->gw,&charrect,-charsize,0);
+    }
+}
+
 static void MVTextChanged(MetricsView *mv) {
     const unichar_t *ret, *pt, *ept, *tpt;
     int i,ei, j;
@@ -739,6 +849,7 @@ return;					/* Nothing changed */
     r.x -= mv->xoff;
     mv->charcnt = u_strlen(ret)-missing;
     GDrawRequestExpose(mv->gw,&r,false);
+    MVSetSb(mv);
 }
 
 static int MV_TextChanged(GGadget *g, GEvent *e) {
@@ -1105,46 +1216,6 @@ static GMenuItem mblist[] = {
     { NULL }
 };
 
-static void MVScroll(MetricsView *fv,struct sbevent *sb) {
-#if 0
-    int newpos = fv->rowoff;
-
-    switch( sb->type ) {
-      case et_sb_top:
-        newpos = 0;
-      break;
-      case et_sb_uppage:
-        newpos -= fv->rowcnt;
-      break;
-      case et_sb_up:
-        --newpos;
-      break;
-      case et_sb_down:
-        ++newpos;
-      break;
-      case et_sb_downpage:
-        newpos += fv->rowcnt;
-      break;
-      case et_sb_bottom:
-        newpos = fv->rowltot-fv->rowcnt;
-      break;
-      case et_sb_thumb:
-      case et_sb_thumbrelease:
-        newpos = sb->pos;
-      break;
-    }
-    if ( newpos>fv->rowltot-fv->rowcnt )
-        newpos = fv->rowltot-fv->rowcnt;
-    if ( newpos<0 ) newpos =0;
-    if ( newpos!=fv->rowoff ) {
-	int diff = newpos-fv->rowoff;
-	fv->rowoff = newpos;
-	GScrollBarSetPos(fv->vsb,fv->rowoff);
-	GDrawScroll(fv->v,NULL,0,diff*fv->cbh);
-    }
-#endif
-}
-
 static void MVResize(MetricsView *mv,GEvent *event) {
     GRect pos;
     int i;
@@ -1217,7 +1288,9 @@ static void MVMouse(MetricsView *mv,GEvent *event) {
 
     GGadgetEndPopup();
     if ( event->u.mouse.y< mv->topend || event->u.mouse.y >= mv->displayend ) {
-	if ( event->u.mouse.y >= mv->displayend ) {
+	if ( event->u.mouse.y >= mv->displayend &&
+		event->u.mouse.y<mv->height-mv->sbh ) {
+	    event->u.mouse.x += (mv->coff*mv->mwidth);
 	    for ( i=0; i<mv->charcnt; ++i ) {
 		if ( event->u.mouse.x >= mv->perchar[i].mx &&
 			event->u.mouse.x < mv->perchar[i].mx+mv->perchar[i].mwidth )
@@ -1229,6 +1302,7 @@ static void MVMouse(MetricsView *mv,GEvent *event) {
 return;
     }
 
+    event->u.mouse.x += mv->xoff;
     ybase = mv->topend + 2 + (mv->pixelsize * mv->fv->sf->ascent /
 	    (mv->fv->sf->ascent+mv->fv->sf->descent));
     within = -1;
@@ -1488,7 +1562,7 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     GWindowAttrs wattrs;
     GGadgetData gd;
     GRect gsize;
-    MetricsView *mv = calloc(1,sizeof(FontView));
+    MetricsView *mv = calloc(1,sizeof(MetricsView));
     FontRequest rq;
     static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a', '\0' };
     static GWindow icon = NULL;
@@ -1528,12 +1602,12 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     mv->mbh = gsize.height;
 
     gd.pos.height = GDrawPointsToPixels(gw,_GScrollBar_Width);
-    gd.pos.y = pos.height/*-gd.pos.height*/;
+    gd.pos.y = pos.height-gd.pos.height;
     gd.pos.x = 0; gd.pos.width = pos.width;
     gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
     mv->hsb = GScrollBarCreate(gw,&gd,mv);
     GGadgetGetSize(mv->hsb,&gsize);
-    mv->sbh = /*gsize.height*/0;
+    mv->sbh = gsize.height;
 
     memset(&rq,0,sizeof(rq));
     rq.family_name = helv;
@@ -1585,6 +1659,7 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
 	    }
 	}
     }
+    MVSetSb(mv);
 
     GDrawSetVisible(gw,true);
     /*GWidgetHidePalettes();*/

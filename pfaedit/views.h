@@ -207,7 +207,7 @@ typedef struct metricsview {
     int16 charcnt, max;
     int16 pressed_x;
     int16 activeoff;
-    int xoff;
+    int xoff, coff;
     struct metricsview *next;
     unsigned int right_to_left: 1;
     unsigned int pressed: 1;
