@@ -848,7 +848,7 @@ void SplineCharMerge(SplineChar *sc,SplineSet **head,int type) {
 		*head = next;
 	    else
 		prev->next = next;
-	    free(spl);
+	    chunkfree(spl,sizeof(*spl));
 	} else
 	    prev = spl;
     }
