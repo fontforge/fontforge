@@ -750,6 +750,8 @@ static char *XProtocalCodes[] = {
     "X_NoOperation"
 };
 
+static char *lastfontrequest;
+
 static int myerrorhandler(Display *disp, XErrorEvent *err) {
     /* Under twm I get a bad match, under kde a bad window? */
     char buffer[200], *majorcode;
@@ -760,7 +762,9 @@ static int myerrorhandler(Display *disp, XErrorEvent *err) {
 	majorcode = "XInputExtension";
     else
 	majorcode = "";
-    if ( err->request_code==146 && err->minor_code==3 )
+    if ( err->request_code==45 && lastfontrequest!=NULL )
+	fprintf( stderr, "Error attempting to load font:\n  %s\nThe X Server clained the font existed, but when I asked for it,\nI got this error instead:\n\n", lastfontrequest );
+    else if ( err->request_code==146 && err->minor_code==3 )
 	fprintf( stderr, "Error connecting to wacom tablet. Sometimes linux fails to configure\n it properly. Try typing\n$ su\n# insmod wacom\n" );
     XGetErrorText(disp,err->error_code,buffer,sizeof(buffer));
     fprintf( stderr, "X Error of failed request: %s\n", buffer );
@@ -2019,7 +2023,9 @@ static void *GXDrawLoadFontMetrics(GDisplay *gdisp, struct font_data *fd) {
     XFontStruct *fs;
 
  /*printf( "Loading metrics for: %s\n", fd->localname );*/
+    lastfontrequest = fd->localname;
     fd->info = fs = XLoadQueryFont(((GXDisplay *) gdisp)->display,fd->localname);
+    lastfontrequest = NULL;
     if ( fs==NULL ) {
 	fprintf( stderr, "Help! Server claimed font\n\t%s\n existed in the font list, but when I asked for it there was nothing.\n I think I'll crash soon.\n",
 		fd->localname );
