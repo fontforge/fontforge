@@ -401,6 +401,8 @@ static int NameToEncoding(SplineFont *sf,const unichar_t *name) {
 		}
 	    }
 	}
+	if ( enc>=sf->charcnt || enc<0 )
+	    enc = -1;
 	if ( enc==-1 && uni!=-1 )
 	    enc = SFFindChar(sf,uni,NULL);
 	if ( enc!=-1 && uni==-1 ) {
