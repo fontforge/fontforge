@@ -520,20 +520,45 @@ static void FlushFilter(struct psfilter *ps) {
     (ps->dumpchar)('\n',ps->data);
 }
 
+static void RunLengthFilter(struct psfilter *ps,uint8 *pt, int len ) {
+    uint8 *end = pt+len, *test;
+
+    while ( pt<end ) {
+	for ( test=pt; *test==*pt && test<pt+128 && test<end; ++test );
+	if ( test>pt+1 ) {
+	    int len = test-pt;
+	    Filter(ps,257-len);
+	    Filter(ps,*pt);
+	    pt = test;
+    continue;
+	}
+	for ( test=pt; test<pt+128 && test<end; ++test ) {
+	    if ( test+2<end && *test==test[1] && *test==test[2] )
+	break;
+	    if ( test+1<end && test-pt>64 && *test==test[1] )
+	break;
+	}
+	if ( test!=pt ) {
+	    Filter(ps,test-pt-1);
+	    while ( pt<test )
+		Filter(ps,*pt++);
+	}
+    }
+}
+
 static void PSBuildImageMonoString(void (*dumpchar)(int ch,void *data), void *data,
 	struct _GImage *base) {
-    register int j;
     int i;
-    register uint8 *pt;
     struct psfilter ps;
 
     InitFilter(&ps,dumpchar,data);
-    for ( i=0; i<base->height; ++i ) {
-	pt = (uint8 *) (base->data + i*base->bytes_per_line);
-	for ( j=(base->width+7)/8-1; j>=0; --j ) {
-	    Filter(&ps,*pt++);
-	}
+    if ( base->bytes_per_line==(base->width+7)/8 )
+	RunLengthFilter(&ps,(uint8 *) base->data, base->height*base->bytes_per_line);
+    else for ( i=0; i<base->height; ++i ) {
+	RunLengthFilter(&ps,(uint8 *) (base->data + i*base->bytes_per_line),
+		(base->width+7)/8);
     }
+    Filter(&ps,0x80);		/* EOD mark */
     FlushFilter(&ps);
 }
 
@@ -557,7 +582,7 @@ static void PSDrawMonoImg(void (*dumpchar)(int ch,void *data), void *data,
 	dumpf(dumpchar,data, "  /Decode [0 1]\n" );
     }
     dumpf(dumpchar,data, "  /Interpolate true\n" );
-    dumpf(dumpchar,data, "  /DataSource currentfile /ASCII85Decode filter\n" );
+    dumpf(dumpchar,data, "  /DataSource currentfile /ASCII85Decode filter /RunLengthDecode filter\n" );
     dumpf(dumpchar,data, ">> %s\n",
 	    use_imagemask?"imagemask":"image" );
     PSBuildImageMonoString(dumpchar,data,base);
@@ -577,22 +602,22 @@ static void PSSetIndexColors(void (*dumpchar)(int ch,void *data), void *data,
 
 static void PSBuildImageIndexString(void (*dumpchar)(int ch,void *data), void *data,
 	struct _GImage *base) {
-    register int i,val;
+    register int i;
     register uint8 *pt, *end;
     int clut_len = base->clut->clut_len;
     struct psfilter ps;
 
+    for ( pt=base->data, end = pt+base->height*base->bytes_per_line; pt<end; )
+	if ( *pt>=clut_len ) *pt = clut_len-1;
+
     InitFilter(&ps,dumpchar,data);
-    for ( i=0; i<base->height; ++i ) {
-	pt = (uint8 *) (base->data + i*base->bytes_per_line);
-	end = pt + base->width;
-	while ( pt<end ) {
-	    val = *pt++;
-	    if ( val>=clut_len )
-		val = clut_len-1;
-	    Filter(&ps,val);
-	}
+    if ( base->bytes_per_line==base->width )
+	RunLengthFilter(&ps,(uint8 *) base->data, base->height*base->bytes_per_line);
+    else for ( i=0; i<base->height; ++i ) {
+	RunLengthFilter(&ps,(uint8 *) (base->data + i*base->bytes_per_line),
+		base->width);
     }
+    Filter(&ps,0x80);		/* EOD mark */
     FlushFilter(&ps);
 }
 
