@@ -607,10 +607,10 @@ static void BuildNestedFormSubs(SplineFont *sf,SplineChar **glyphs,
 		    glyphs[i]->possub = AddSubs(glyphs[i]->possub,tags[j],forms[j][i]->name,
 			    flags,SLI_NESTED,NULL);
 		if ( j==2 && forms[1][i]!=NULL )	/* Final must be prepared to convert both base chars and medial chars */
-		    forms[i][1]->possub = AddSubs(forms[1][i]->possub,tags[j],forms[j][i]->name,flags,
+		    forms[1][i]->possub = AddSubs(forms[1][i]->possub,tags[j],forms[j][i]->name,flags,
 			    SLI_NESTED,NULL);
 		else if ( j==3 && forms[0][i]!=NULL )	/* Isolated must convert both base and initial chars */
-		    forms[i][0]->possub = AddSubs(forms[0][i]->possub,tags[j],forms[j][i]->name,flags,
+		    forms[0][i]->possub = AddSubs(forms[0][i]->possub,tags[j],forms[j][i]->name,flags,
 			    SLI_NESTED,NULL);
 	    }
 	}
@@ -1950,7 +1950,7 @@ static int SMD_Next(GGadget *g, GEvent *e) {
 	const unichar_t *ret = _GGadgetGetTitle(GWidgetGetControl(smd->gw,CID_GlyphList));
 	GGadget *list = GWidgetGetControl( smd->gw, CID_Classes );
 
-	if ( CCD_NameListCheck(smd->sf,ret,true,_STR_BadClass) ||
+	if ( !CCD_NameListCheck(smd->sf,ret,true,_STR_BadClass) ||
 		CCD_InvalidClassList(ret,list,smd->isedit))
 return( true );
 
