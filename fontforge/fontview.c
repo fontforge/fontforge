@@ -7026,7 +7026,7 @@ return( NULL );
 	pixmap = GDrawCreateBitmap(NULL,2*fv->lab_height,2*fv->lab_height,NULL);
 	if ( pixmap==NULL )
 return( NULL );
-	GDrawSetFont(pixmap,sf->fv->header);
+	GDrawSetFont(pixmap,sf->fv->fontset[0]);
     }
     r.x = r.y = 0;
     r.width = r.height = 2*fv->lab_height;
@@ -7050,7 +7050,7 @@ static int Use2ByteEnc(FontView *fv,SplineChar *sc, unichar_t *buf,FontMods *mod
  retry:
     switch ( enc ) {
       case em_big5: case em_big5hkscs:
-	if ( !GDrawFontHasCharset(fv->header,em_big5))
+	if ( !GDrawFontHasCharset(fv->fontset[0],em_big5))
 return( false);
 	if ( ch1<0xa1 || ch1>0xf9 || ch2<0x40 || ch2>0xfe || sc->enc> 0xf9fe )
 return( false );
@@ -7060,7 +7060,7 @@ return( false );
 return( true );
       break;
       case em_sjis:
-	if ( !GDrawFontHasCharset(fv->header,em_jis208))
+	if ( !GDrawFontHasCharset(fv->fontset[0],em_jis208))
 return( false);
 	if ( ch1>=129 && ch1<=159 )
 	    ch1-=112;
@@ -7086,7 +7086,7 @@ return( false );
 return( true );
       break;
       case em_wansung:
-	if ( !GDrawFontHasCharset(fv->header,em_ksc5601))
+	if ( !GDrawFontHasCharset(fv->fontset[0],em_ksc5601))
 return( false);
 	if ( ch1<0xa1 || ch1>0xfd || ch2<0xa1 || ch2>0xfe || sc->enc > 0xfdfe )
 return( false );
@@ -7096,7 +7096,7 @@ return( false );
 return( true );
       break;
       case em_jisgb:
-	if ( !GDrawFontHasCharset(fv->header,em_gb2312))
+	if ( !GDrawFontHasCharset(fv->fontset[0],em_gb2312))
 return( false);
 	if ( ch1<0xa1 || ch1>0xfd || ch2<0xa1 || ch2>0xfe || sc->enc > 0xfdfe )
 return( false );
@@ -7106,7 +7106,7 @@ return( false );
 return( true );
       break;
       case em_ksc5601: case em_jis208: case em_jis212: case em_gb2312:
-	if ( !GDrawFontHasCharset(fv->header,enc))
+	if ( !GDrawFontHasCharset(fv->fontset[0],enc))
 return( false);
 	if ( ch1<0x21 || ch1>0x7e || ch2<0x21 || ch2>0x7e )
 return( false );
@@ -7125,14 +7125,14 @@ return( true );
 		    (subtable = jis_from_unicode.table[ch1-jis_from_unicode.first])!=NULL &&
 		    (newch = subtable[ch2])!=0 ) {
 		if ( newch&0x8000 ) {
-		    if ( GDrawFontHasCharset(fv->header,em_jis212)) {
+		    if ( GDrawFontHasCharset(fv->fontset[0],em_jis212)) {
 			enc = em_jis212;
 			newch &= ~0x8000;
 			ch1 = newch>>8; ch2 = newch&0xff;
 		    } else
 return( false );
 		} else {
-		    if ( GDrawFontHasCharset(fv->header,em_jis208)) {
+		    if ( GDrawFontHasCharset(fv->fontset[0],em_jis208)) {
 			enc = em_jis208;
 			ch1 = newch>>8; ch2 = newch&0xff;
 		    } else
@@ -7150,7 +7150,7 @@ return( false );
 	    if ( ch1>=big5hkscs_from_unicode.first && ch1<=big5hkscs_from_unicode.last &&
 		    (subtable = big5hkscs_from_unicode.table[ch1-big5hkscs_from_unicode.first])!=NULL &&
 		    (newch = subtable[ch2])!=0 &&
-		    GDrawFontHasCharset(fv->header,em_big5)) {
+		    GDrawFontHasCharset(fv->fontset[0],em_big5)) {
 		enc = em_big5hkscs;
 		ch1 = newch>>8; ch2 = newch&0xff;
 	    } else
@@ -7160,7 +7160,7 @@ return( false );
 	    if ( ch1>=gb2312_from_unicode.first && ch1<=gb2312_from_unicode.last &&
 		    (subtable = gb2312_from_unicode.table[ch1-gb2312_from_unicode.first])!=NULL &&
 		    (newch = subtable[ch2])!=0 &&
-		    GDrawFontHasCharset(fv->header,em_gb2312)) {
+		    GDrawFontHasCharset(fv->fontset[0],em_gb2312)) {
 		enc = em_gb2312;
 		ch1 = newch>>8; ch2 = newch&0xff;
 	    } else
@@ -7173,6 +7173,103 @@ return( false );
     }
 }
 
+/* Mathmatical Alphanumeric Symbols in the 1d400-1d7ff range are styled */
+/*  variants on latin, greek, and digits				*/
+#define _uni_bold	0x1
+#define _uni_italic	0x2
+#define _uni_script	(1<<2)
+#define _uni_fraktur	(2<<2)
+#define _uni_doublestruck	(3<<2)
+#define _uni_sans	(4<<2)
+#define _uni_mono	(5<<2)
+#define _uni_fontmax	(6<<2)
+#define _uni_latin	0
+#define _uni_greek	1
+#define _uni_digit	2
+
+static int latinmap[] = {
+    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O',
+    'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
+    'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+    '\0'
+};
+static int greekmap[] = {
+    0x391, 0x392, 0x393, 0x394, 0x395, 0x396, 0x397, 0x398, 0x399, 0x39a,
+    0x39b, 0x39c, 0x39d, 0x39e, 0x39f, 0x3a0, 0x3a1, 0x3f4, 0x3a3, 0x3a4,
+    0x3a5, 0x3a6, 0x3a7, 0x3a8, 0x3a9, 0x2207,
+    0x3b1, 0x3b2, 0x3b3, 0x3b4, 0x3b5, 0x3b6, 0x3b7, 0x3b8, 0x3b9, 0x3ba,
+    0x3bb, 0x3bc, 0x3bd, 0x3be, 0x3bf, 0x3c0, 0x3c1, 0x3c2, 0x3c3, 0x3c4,
+    0x3c5, 0x3c6, 0x3c7, 0x3c8, 0x3c9,
+    0x2202, 0x3f5, 0x3d1, 0x3f0, 0x3d5, 0x3f1, 0x3d6,
+    0
+};
+static int digitmap[] = { '0', '1', '2', '3', '4', '5', '6','7','8','9', '\0' };
+static int *maps[] = { latinmap, greekmap, digitmap };
+
+static struct { int start, last; int styles; int charset; } mathmap[] = {
+    { 0x1d400, 0x1d433, _uni_bold,		_uni_latin },
+    { 0x1d434, 0x1d467, _uni_italic,		_uni_latin },
+    { 0x1d468, 0x1d49b, _uni_bold|_uni_italic,	_uni_latin },
+    { 0x1d49c, 0x1d4cf, _uni_script,		_uni_latin },
+    { 0x1d4d0, 0x1d503, _uni_script|_uni_bold,	_uni_latin },
+    { 0x1d504, 0x1d537, _uni_fraktur,		_uni_latin },
+    { 0x1d538, 0x1d56b, _uni_doublestruck,	_uni_latin },
+    { 0x1d56c, 0x1d59f, _uni_fraktur|_uni_bold,	_uni_latin },
+    { 0x1d5a0, 0x1d5d3, _uni_sans,		_uni_latin },
+    { 0x1d5d4, 0x1d607, _uni_sans|_uni_bold,	_uni_latin },
+    { 0x1d608, 0x1d63b, _uni_sans|_uni_italic,	_uni_latin },
+    { 0x1d63c, 0x1d66f, _uni_sans|_uni_bold|_uni_italic,	_uni_latin },
+    { 0x1d670, 0x1d6a3, _uni_mono,		_uni_latin },
+    { 0x1d6a8, 0x1d6e1, _uni_bold,		_uni_greek },
+    { 0x1d6e2, 0x1d71b, _uni_italic,		_uni_greek },
+    { 0x1d71c, 0x1d755, _uni_bold|_uni_italic,	_uni_greek },
+    { 0x1d756, 0x1d78f, _uni_sans|_uni_bold,	_uni_greek },
+    { 0x1d790, 0x1d7c9, _uni_sans|_uni_bold|_uni_italic,	_uni_greek },
+    { 0x1d7ce, 0x1d7d7, _uni_bold,		_uni_digit },
+    { 0x1d7d8, 0x1d7e1, _uni_doublestruck,	_uni_digit },
+    { 0x1d7e2, 0x1d7eb, _uni_sans,		_uni_digit },
+    { 0x1d7ec, 0x1d7f5, _uni_sans|_uni_bold,	_uni_digit },
+    { 0x1d7f6, 0x1d7ff, _uni_mono,		_uni_digit },
+    { 0, 0 }
+};
+    
+static GFont *FVCheckFont(FontView *fv,int type) {
+    FontRequest rq;
+    int family = type>>2;
+    char *fontnames;
+    unichar_t *ufontnames;
+
+    static char *resourcenames[] = { "FontView.SerifFamily", "FontView.ScriptFamily",
+	    "FontView.FrakturFamily", "FontView.DoubleStruckFamily",
+	    "FontView.SansFamily", "FontView.MonoFamily", NULL };
+    static char *defaultfontnames[] = {
+	    "times,serif,caslon,clearlyu,unifont",
+	    "script,formalscript,clearlyu,unifont",
+	    "fraktur,clearlyu,unifont",
+	    "doublestruck,clearlyu,unifont",
+	    "helvetica,caliban,sansserif,sans,clearlyu,unifont",
+	    "courier,monospace,caslon,clearlyu,unifont",
+	    NULL
+	};
+
+    if ( fv->fontset[type]==NULL ) {
+	fontnames = GResourceFindString(resourcenames[family]);
+	if ( fontnames==NULL )
+	    fontnames = defaultfontnames[family];
+	ufontnames = uc_copy(fontnames);
+
+	memset(&rq,0,sizeof(rq));
+	rq.family_name = ufontnames;
+	rq.point_size = -13;
+	rq.weight = (type&_uni_bold) ? 700:400;
+	rq.style = (type&_uni_italic) ? fs_italic : 0;
+	fv->fontset[type] = GDrawInstanciateFont(GDrawGetDisplayOfWindow(fv->v),&rq);
+    }
+return( fv->fontset[type] );
+}
+    
+
 static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
     int i, j, width;
     int changed;
@@ -7181,7 +7278,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
     struct _GImage base;
     GImage gi;
     SplineChar dummy;
-    int italic, wasitalic=0;
+    int styles, laststyles=0;
     GImage *rotated=NULL;
     int em = fv->sf->ascent+fv->sf->descent;
     int yorg = fv->magnify*(fv->show->ascent-fv->sf->vertical_origin*fv->show->pixelsize/em);
@@ -7205,7 +7302,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 	clut.clut[0] = GDrawGetDefaultBackground(NULL);
     }
 
-    GDrawSetFont(pixmap,fv->header);
+    GDrawSetFont(pixmap,fv->fontset[0]);
     GDrawSetLineWidth(pixmap,0);
     GDrawPushClip(pixmap,&event->u.expose.rect,&old);
     GDrawFillRect(pixmap,NULL,GDrawGetDefaultBackground(NULL));
@@ -7219,7 +7316,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 	    (event->u.expose.rect.y+event->u.expose.rect.height+fv->cbh-1)/fv->cbh; ++i ) for ( j=0; j<fv->colcnt; ++j ) {
 	int index = (i+fv->rowoff)*fv->colcnt+j;
 	int feat_index;
-	italic = false;
+	styles = 0;
 	if ( fv->mapping!=NULL ) {
 	    if ( index>=fv->mapcnt ) index = fv->sf->charcnt;
 	    else
@@ -7239,17 +7336,25 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		mods = &for_charset;
 	    else if ( sc->unicodeenc!=-1 && sc->unicodeenc<65536 )
 		buf[0] = sc->unicodeenc;
+	    else if ( sc->unicodeenc>=0x1d400 && sc->unicodeenc<=0x1d7ff ) {
+		int i;
+		for ( i=0; mathmap[i].start!=0; ++i ) {
+		    if ( sc->unicodeenc<=mathmap[i].last ) {
+			buf[0] = maps[mathmap[i].charset][sc->unicodeenc-mathmap[i].start];
+			styles = mathmap[i].styles;
+		break;
+		    }
+		}
 #if HANYANG
-	    else if ( sc->compositionunit ) {
+	    } else if ( sc->compositionunit ) {
 		if ( sc->jamo<19 )
 		    buf[0] = 0x1100+sc->jamo;
 		else if ( sc->jamo<19+21 )
 		    buf[0] = 0x1161 + sc->jamo-19;
 		else	/* Leave a hole for the blank char */
 		    buf[0] = 0x11a8 + sc->jamo-(19+21+1);
-	    }
 #endif
-	    else {
+	    } else {
 		char *pt = strchr(sc->name,'.');
 		buf[0] = '?';
 		fg = 0xff0000;
@@ -7280,7 +7385,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		    if ( buf[0]!='?' ) {
 			fg = 0;
 			if ( strstr(pt,".italic")!=NULL )
-			    italic = true;
+			    styles = _uni_italic|_uni_mono;
 		    }
 		} else if ( strncmp(sc->name,"hwuni",5)==0 ) {
 		    int uni=-1;
@@ -7289,7 +7394,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		} else if ( strncmp(sc->name,"italicuni",9)==0 ) {
 		    int uni=-1;
 		    sscanf(sc->name,"italicuni%x", (unsigned *) &uni );
-		    if ( uni!=-1 ) { buf[0] = uni; italic=true; }
+		    if ( uni!=-1 ) { buf[0] = uni; styles=_uni_italic|_uni_mono; }
 		    fg = 0x000000;
 		} else if ( strncmp(sc->name,"vertcid_",8)==0 ||
 			strncmp(sc->name,"vertuni",7)==0 ) {
@@ -7314,11 +7419,11 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		GImageDestroy(rotated);
 		rotated = NULL;
 	    } else {
-		if ( italic!=wasitalic ) GDrawSetFont(pixmap,italic?fv->iheader:fv->header);
+		if ( styles!=laststyles ) GDrawSetFont(pixmap,FVCheckFont(fv,styles));
 		width = GDrawGetTextWidth(pixmap,buf,1,mods);
 		if ( sc->unicodeenc<0x80 || sc->unicodeenc>=0xa0 )
 		    GDrawDrawText(pixmap,j*fv->cbw+(fv->cbw-1-width)/2,i*fv->cbh+fv->lab_height-2,buf,1,mods,fg);
-		wasitalic = italic;
+		laststyles = styles;
 	    }
 	    changed = sc->changed;
 	    if ( fv->sf->onlybitmaps )
@@ -7465,7 +7570,7 @@ static void FVDrawInfo(FontView *fv,GWindow pixmap,GEvent *event) {
     if ( event->u.expose.rect.y+event->u.expose.rect.height<=fv->mbh )
 return;
 
-    GDrawSetFont(pixmap,fv->header);
+    GDrawSetFont(pixmap,fv->fontset[0]);
     GDrawPushClip(pixmap,&event->u.expose.rect,&old);
 
     r.x = 0; r.width = fv->width; r.y = fv->mbh; r.height = fv->infoh;
@@ -8472,14 +8577,13 @@ FontView *FontViewCreate(SplineFont *sf) {
 	if ( fontnames==NULL )
 	    fontnames = monospace;
     }
+    fv->fontset = gcalloc(_uni_fontmax,sizeof(GFont *));
     memset(&rq,0,sizeof(rq));
     rq.family_name = fontnames;
     rq.point_size = -13;
     rq.weight = 400;
-    fv->header = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
-    rq.style = fs_italic;
-    fv->iheader = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
-    GDrawSetFont(fv->v,fv->header);
+    fv->fontset[0] = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+    GDrawSetFont(fv->v,fv->fontset[0]);
 #endif
     fv->showhmetrics = default_fv_showhmetrics;
     fv->showvmetrics = default_fv_showvmetrics && sf->hasvmetrics;
@@ -8961,6 +9065,7 @@ void FontViewFree(FontView *fv) {
     DictionaryFree(fv->fontvars);
     free(fv->fontvars);
     free(fv->selected);
+    free(fv->fontset);
     free(fv);
 }
 
