@@ -3364,7 +3364,7 @@ return;					/* No anchor positioning, no ligature carets */
 		sc = NULL;
 		do {
 		    sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[l];
-		    if ( l<sf->charcnt && sf->chars[i]!=NULL ) {
+		    if ( i<sf->charcnt && sf->chars[i]!=NULL ) {
 			sc = sf->chars[i];
 		break;
 		    }
@@ -3378,7 +3378,7 @@ return;					/* No anchor positioning, no ligature carets */
 			sc = NULL;
 			do {
 			    sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[l];
-			    if ( l<sf->charcnt && sf->chars[i]!=NULL ) {
+			    if ( i<sf->charcnt && sf->chars[i]!=NULL ) {
 				sc = sf->chars[i];
 			break;
 			    }
