@@ -1,0 +1,7 @@
+#!/usr/local/bin/pfaedit
+#Needs: fonts/OverlapBugs.sfd
+#Make sure remove overlap sort of works...
+
+Open("fonts/OverlapBugs.sfd")
+SelectAll();
+RemoveOverlap();

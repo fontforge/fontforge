@@ -1,0 +1,8 @@
+#!/usr/local/bin/pfaedit
+#Needs: fonts/FormalScript.sfd
+# Test that contextual chaining tables do not cause crashes.
+
+Open("fonts/FormalScript.sfd");
+Generate("results/FormalScript.otf","ttf",0x80);
+Open("results/FormalScript.otf");
+Quit()

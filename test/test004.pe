@@ -1,0 +1,14 @@
+#!/usr/local/bin/pfaedit
+#Needs: fonts/mingliu.ttc
+# but any other ttc file would do (gulim works just fine).
+
+#Yes, mingliu doesn't work without the ttf instructions, but that is irrelevant
+#here. I'm just looking for the smallest ttc file I've got.
+
+Print( "...It's ok to get errors about 'Attempt to encode missing glyphs'")
+Open("fonts/mingliu.ttc(PMingLiU)");
+Print( "...Read mingliu.ttc(PMingLiU)")
+Generate("results/pmingliu.ttf","bdf");
+Print( "...Generated ttf")
+Close();
+Quit()

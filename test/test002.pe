@@ -1,0 +1,12 @@
+#!/usr/local/bin/pfaedit
+#Needs: fonts/HanSans-Bold.otf
+# but any other otf cid font would do.
+
+Open("fonts/HanSans-Bold.otf");
+Print( "...Read HanSans-Bold.otf")
+Generate("results/HansSansBold.otf");
+Print( "...Generated otf (cid)")
+Generate("results/HansSansBold.cid");
+Print( "...Generated ps cid")
+Close();
+Quit()
