@@ -236,7 +236,7 @@ typedef struct generic_fpst {
     struct fpst_rule {
 	union {
 	    struct { char *names, *back, *fore; } glyph;
-	    struct { int ncnt, bcnt, fcnt; uint16 *nclasses, *bclasses, *fclasses; } class;
+	    struct { int ncnt, bcnt, fcnt; uint16 *nclasses, *bclasses, *fclasses, *allclasses; } class;
 	    struct { int ncnt, bcnt, fcnt; char **ncovers, **bcovers, **fcovers; } coverage;
 	    struct { int always1, bcnt, fcnt; char **ncovers, **bcovers, **fcovers; char *replacements; } rcoverage;
 	} u;

@@ -509,6 +509,29 @@ struct subhead { uint16 first, cnt, delta, rangeoff; };	/* a sub header in 8/16 
 
 enum touchflags { tf_x=1, tf_y=2, tf_d=4, tf_endcontour=0x80, tf_startcontour=0x40 };
 
+struct contexttree {
+    int depth;
+    int branch_cnt;	/* count of subbranches of this node */
+    struct ct_branch {
+	uint16 classnum;
+	uint8 markme;
+	struct contexttree *branch;
+    } *branches;
+    struct fpst_rule *ends_here;
+    int rule_cnt;	/* count of rules which are active here */
+    struct ct_subs {
+	struct fpst_rule *rule;
+	struct contexttree *branch;/* if the rule ends here this will be null */
+	uint16 thisclassnum;
+    } *rules;
+    uint32 applymarkedsubs;
+    uint32 applycursubs;
+    uint16 marked_index, cur_index;
+    int state, next_state;
+    struct contexttree *parent;
+};
+
+
     /* Open type Advanced Typography Tables */
 extern void otf_orderlangs(SplineFont *sf);
 extern void otf_dumpgpos(struct alltabs *at, SplineFont *sf);

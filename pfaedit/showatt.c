@@ -604,17 +604,14 @@ static void BuildMorxScript(struct node *node,struct att_dlg *att) {
 	    if ( sr[l].script!=0 ) {
 		for ( m=0; sr[l].langs[m]!=0 && sr[l].langs[m]!=lang; ++m );
 		if ( sr[l].langs[m]!=0 ) {
-		    for ( l=0; l<tot && feats[l]!=fpst->tag; ++l );
-		    if ( l>=tot ) {
-			if ( fpsts==NULL )
-			    fpsts = gcalloc(max,sizeof(FPST *));
-			if ( tot>=max ) {
-			    feats = grealloc(feats,(max+=30)*sizeof(uint32));
-			    fpsts = grealloc(fpsts,max*sizeof(FPST *));
-			}
-			fpsts[tot] = fpst;
-			feats[tot++] = fpst->tag;
+		    if ( fpsts==NULL )
+			fpsts = gcalloc(max,sizeof(FPST *));
+		    if ( tot>=max ) {
+			feats = grealloc(feats,(max+=30)*sizeof(uint32));
+			fpsts = grealloc(fpsts,max*sizeof(FPST *));
 		    }
+		    fpsts[tot] = fpst;
+		    feats[tot++] = fpst->tag;
 		}
 	    }
 	}
@@ -762,7 +759,7 @@ static void BuildFPSTRule(struct node *node,struct att_dlg *att) {
 		space = pt = galloc(100+7*r->u.class.ncnt);
 		strcpy(space, r->u.class.ncnt==1 ? "Class: " : "Classes: " );
 		pt += strlen(space);
-		for ( j=0; j<=r->u.class.ncnt; ++j ) {
+		for ( j=0; j<r->u.class.ncnt; ++j ) {
 		    sprintf( pt, "%d ", r->u.class.nclasses[j] );
 		    pt += strlen( pt );
 		    lines[len].label = uc_copy(space);
@@ -776,7 +773,7 @@ static void BuildFPSTRule(struct node *node,struct att_dlg *att) {
 		    space = pt = galloc(100+7*r->u.class.fcnt);
 		    strcpy(space, r->u.class.fcnt==1 ? "Lookahead class: " : "Lookahead classes: " );
 		    pt += strlen(space);
-		    for ( j=0; j<=r->u.class.fcnt; ++j ) {
+		    for ( j=0; j<r->u.class.fcnt; ++j ) {
 			sprintf( pt, "%d ", r->u.class.fclasses[j] );
 			pt += strlen( pt );
 			lines[len].label = uc_copy(space);

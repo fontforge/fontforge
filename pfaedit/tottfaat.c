@@ -1051,9 +1051,207 @@ return( false );
 return( any );
 }
 
+static void TreeFree(struct contexttree *tree) {
+    int i;
+    for ( i=0; i<tree->branch_cnt; ++i )
+	TreeFree(tree->branches[i].branch);
+
+    free( tree->branches );
+    free( tree->rules );
+    chunkfree( tree,sizeof(*tree) );
+}
+
+static int TreeLabelState(struct contexttree *tree, int snum) {
+    int i;
+
+    tree->state = snum++;
+    for ( i=0; i<tree->branch_cnt; ++i )
+	snum = TreeLabelState(tree->branches[i].branch,snum);
+    tree->next_state = snum;
+
+return( snum );
+}
+
+static uint32 RuleHasSubsHere(struct fpst_rule *rule,int depth) {
+    int i,j;
+
+    if ( depth<rule->u.class.bcnt )
+return( 0 );
+    depth -= rule->u.class.bcnt;
+    if ( depth>=rule->u.class.ncnt )
+return( 0 );
+    for ( i=0; i<rule->lookup_cnt; ++i ) {
+	if ( rule->lookups[i].seq==depth ) {
+	    /* It is possible to have two substitutions applied at the same */
+	    /*  location. I can't deal with that here */
+	    for ( j=i+1; j<rule->lookup_cnt; ++j ) {
+		if ( rule->lookups[j].seq==depth )
+return( 0xffffffff );
+	    }
+return( rule->lookups[i].lookup_tag );
+	}
+    }
+
+return( 0 );
+}
+
+static uint32 RulesAllSameSubsAt(struct contexttree *me,int pos) {
+    int i;
+    uint32 tag=0x01, newtag;	/* Can't use 0 as an "unused" flag because it is perfectly valid for there to be no substititution. But then all rules must have no subs */
+
+    for ( i=0; i<me->rule_cnt; ++i ) {
+	newtag = RuleHasSubsHere(me->rules[i].rule,pos);
+	if ( tag==0x01 )
+	    tag=newtag;
+	else if ( newtag!=tag )
+return( 0xffffffff );
+    }
+return( tag );
+}
+
+static int TreeFollowBranches(SplineFont *sf,struct contexttree *me,int pending_pos) {
+    int i, j;
+
+    if ( me->ends_here!=NULL ) {
+	/* If any rule ends here then we have to be able to apply all current */
+	/*  and pending substitutions */
+	if ( pending_pos!=-1 ) {
+	    me->applymarkedsubs = RulesAllSameSubsAt(me,pending_pos);
+	    if ( me->applymarkedsubs==0xffffffff )
+return( false );
+	    if ( !ValidSubs(sf,me->applymarkedsubs))
+return( false );
+	}
+	me->applycursubs = RulesAllSameSubsAt(me,me->depth);
+	if ( me->applycursubs==0xffffffff )
+return( false );
+	if ( me->applycursubs!=0 && !ValidSubs(sf,me->applycursubs))
+return( false );
+	for ( i=0; i<me->branch_cnt; ++i ) {
+	    if ( !TreeFollowBranches(sf,me->branches[i].branch,-1))
+return( false );
+	}
+    } else {
+	for ( i=0; i<me->branch_cnt; ++i ) {
+	    for ( j=0; j<me->rule_cnt; ++j )
+		if ( me->rules[j].branch==me->branches[i].branch &&
+			RuleHasSubsHere(me->rules[j].rule,me->depth))
+	    break;
+	    if ( j<me->rule_cnt ) {
+		if ( pending_pos==-1 ) {
+		    pending_pos = me->depth;
+		    me->branches[i].markme = true;
+		} else
+return( false );
+	    }
+	    if ( !TreeFollowBranches(sf,me->branches[i].branch,pending_pos))
+return( false );
+	}
+    }
+
+return( true );
+}
+
+static struct contexttree *_FPST2Tree(FPST *fpst,struct contexttree *parent,int class) {
+    struct contexttree *me = chunkalloc(sizeof(struct contexttree));
+    int i, rcnt, ccnt, k, thisclass;
+    uint16 *classes;
+
+    if ( fpst!=NULL ) {
+	me->depth = 0;
+	me->rule_cnt = fpst->rule_cnt;
+	me->rules = gcalloc(me->rule_cnt,sizeof(struct ct_subs));
+	for ( i=0; i<me->rule_cnt; ++i )
+	    me->rules[i].rule = &fpst->rules[i];
+	me->parent = NULL;
+    } else {
+	me->depth = parent->depth+1;
+	for ( i=rcnt=0; i<parent->rule_cnt; ++i )
+	    if ( parent->rules[i].rule->u.class.allclasses[parent->depth] == class )
+		++rcnt;
+	me->rule_cnt = rcnt;
+	me->rules = gcalloc(me->rule_cnt,sizeof(struct ct_subs));
+	for ( i=rcnt=0; i<parent->rule_cnt; ++i )
+	    if ( parent->rules[i].rule->u.class.allclasses[parent->depth] == class )
+		me->rules[rcnt++].rule = parent->rules[i].rule;
+	me->parent = parent;
+    }
+    classes = galloc(me->rule_cnt*sizeof(uint16));
+    for ( i=ccnt=0; i<me->rule_cnt; ++i ) {
+	thisclass = me->rules[i].thisclassnum = me->rules[i].rule->u.class.allclasses[me->depth];
+	if ( thisclass==0xffff ) {
+	    if ( me->ends_here==NULL )
+		me->ends_here = me->rules[i].rule;
+	} else {
+	    for ( k=0; k<ccnt; ++k )
+		if ( classes[k] == thisclass )
+	    break;
+	    if ( k==ccnt )
+		classes[ccnt++] = thisclass;
+	}
+    }
+    me->branch_cnt = ccnt;
+    me->branches = gcalloc(ccnt,sizeof(struct ct_branch));
+    for ( i=0; i<ccnt; ++i )
+	me->branches[i].classnum = classes[i];
+    for ( i=0; i<ccnt; ++i ) {
+	me->branches[i].branch = _FPST2Tree(NULL,me,classes[i]);
+	for ( k=0; k<me->rule_cnt; ++k )
+	    if ( classes[i]==me->rules[k].thisclassnum )
+		me->rules[k].branch = me->branches[i].branch;
+    }
+    free(classes );
+return( me );
+}
+
+static struct contexttree *FPST2Tree(SplineFont *sf,FPST *fpst) {
+    struct contexttree *ret;
+    int i,j,off;
+
+    if ( fpst->format != pst_class )
+return( NULL );
+
+    /* I could check for subclasses rather than ClassesMatch, but then I'd have */
+    /* to make sure that class 0 was used (if at all) consistently */
+    if ( (fpst->bccnt!=0 && !ClassesMatch(fpst->bccnt,fpst->bclass,fpst->nccnt,fpst->nclass)) ||
+	    (fpst->fccnt!=0 && !ClassesMatch(fpst->fccnt,fpst->fclass,fpst->nccnt,fpst->nclass)))
+return( NULL );
+
+    for ( i=0; i<fpst->rule_cnt; ++i ) {
+	fpst->rules[i].u.class.allclasses = galloc((fpst->rules[i].u.class.bcnt+
+						    fpst->rules[i].u.class.ncnt+
+			                            fpst->rules[i].u.class.fcnt+
+			                            1)*sizeof(uint16));
+	off = fpst->rules[i].u.class.bcnt;
+	for ( j=0; j<off; ++j )
+	    fpst->rules[i].u.class.allclasses[j] = fpst->rules[i].u.class.bclasses[off-1-j];
+	for ( j=0; j<fpst->rules[i].u.class.ncnt; ++j )
+	    fpst->rules[i].u.class.allclasses[off+j] = fpst->rules[i].u.class.nclasses[j];
+	off += j;
+	for ( j=0; j<fpst->rules[i].u.class.fcnt; ++j )
+	    fpst->rules[i].u.class.allclasses[off+j] = fpst->rules[i].u.class.fclasses[j];
+	fpst->rules[i].u.class.allclasses[off+j] = 0xffff;	/* End of rule marker */
+    }
+	
+    ret = _FPST2Tree(fpst,NULL,0);
+
+    if ( !TreeFollowBranches(sf,ret,-1) ) {
+	TreeFree(ret);
+	ret = NULL;
+    }
+
+    for ( i=0; i<fpst->rule_cnt; ++i )
+	free( fpst->rules[i].u.class.allclasses );
+
+    TreeLabelState(ret,1);	/* actually, it's states 0&1, but this will do */
+
+return( ret );
+}
+
 int FPSTisMacable(SplineFont *sf, FPST *fpst) {
     int i;
     int featureType, featureSetting;
+    struct contexttree *ret;
 
     if ( fpst->type!=pst_contextsub && fpst->type!=pst_chainsub )
 return( false );
@@ -1062,7 +1260,17 @@ return( false );
     if ( !OTTagToMacFeature(fpst->tag,&featureType,&featureSetting) )
 return( false );
 
-    if ( fpst->format != pst_coverage )
+    if ( fpst->format == pst_glyphs ) {
+	FPST *tempfpst = FPSTGlyphToClass(fpst);
+	ret = FPST2Tree(sf, tempfpst);
+	FPSTFree(tempfpst);
+	TreeFree(ret);
+return( ret!=NULL );
+    } else if ( fpst->format == pst_class ) {
+	ret = FPST2Tree(sf, fpst);
+	TreeFree(ret);
+return( ret!=NULL );
+    } else if ( fpst->format != pst_coverage )
 return( false );
 
     for ( i=0; i<fpst->rule_cnt; ++i ) {
@@ -1129,6 +1337,226 @@ static void morx_dumpnestedsubs(FILE *temp,SplineFont *sf,uint32 tag) {
     free(map);
 }
 
+static struct contexttree *TreeNext(struct contexttree *cur) {
+    struct contexttree *p;
+    int i;
+
+    if ( cur->branch_cnt!=0 )
+return( cur->branches[0].branch );
+    else {
+	forever {
+	    p = cur->parent;
+	    if ( p==NULL )
+return( NULL );
+	    for ( i=0; i<p->branch_cnt; ++i ) {
+		if ( p->branches[i].branch==cur ) {
+		    ++i;
+	    break;
+		}
+	    }
+	    if ( i<p->branch_cnt )
+return( p->branches[i].branch );
+	    cur = p;
+	}
+    }
+}
+
+struct transitions2 {
+    uint16 next_state, markit, mark_index, cur_index;
+};
+
+static int Transition2(int state,int mark, int mindex,int cindex,
+	struct transitions2 *transitions,int *tcur) {
+    struct transitions2 *t = &transitions[*tcur];
+
+    t->next_state = state;
+    t->markit = mark;
+    t->mark_index = mindex;
+    t->cur_index = cindex;
+return( *tcur++ );
+}
+
+static int Transition2Find(struct contexttree *cur,int classnum,
+	struct transitions2 *transitions,int *tcur) {
+    /* if this tree has a rule on what to do with the classnum then make a */
+    /*  transition which follows that rule. Otherwise use transition 0 */
+    /*  (return to start state) */
+    int i;
+
+    for ( i=0; i<cur->branch_cnt; ++i ) {
+	if ( cur->branches[i].classnum==classnum )
+return( Transition2(cur->branches[i].branch->state,
+		cur->branches[i].markme,
+		cur->marked_index,
+		cur->cur_index,
+		transitions, tcur));
+    }
+return( 0 );
+}
+
+static int morx_dumpContGlyphFeatureFromClass(FILE *temp,FPST *fpst,
+	struct contexttree *tree,
+	struct alltabs *at, SplineFont *sf ) {
+    int i, class_cnt, gcnt, ch, first;
+    char *pt, *end;
+    uint16 *map, *tlist;
+    SplineChar **glyphs, *sc;
+    struct contexttree *cur;
+    int tmax, tcur;
+    struct transitions2 *transitions;
+    int stcnt;
+    uint32 *substags;
+    uint32 start, here, substable_pos;
+
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
+	sf->chars[i]->lsidebearing = 0;
+
+    /* Figure classes. Just use those in the fpst->nclass */
+    gcnt = 0;
+    for ( i=1; i<fpst->nccnt; ++i ) {
+	for ( pt = fpst->nclass[i]; ; pt=end ) {
+	    while ( *pt==' ' ) ++pt;
+	    if ( *pt=='\0' )
+	break;
+	    for ( end=pt; *end!='\0' && *end!=' '; ++end );
+	    ch = *end; *end = '\0';
+	    sc = SFGetCharDup(sf,-1,pt);
+	    *end = ch;
+	    if ( sc!=NULL ) {
+		sc->lsidebearing = i+3;		/* there are four built in classes, but built in class 1 maps to our class 0, (so we don't count class 1) */
+		++gcnt;
+	    }
+	}
+    }
+    class_cnt = fpst->nccnt-1+4;		/* -1 for class 0. +4 for the four built in classes */
+    if ( fpst->flags & pst_ignorecombiningmarks ) {
+	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1) {
+	    if ( sf->chars[i]->lsidebearing==0 && IsMarkChar(sf->chars[i])) {
+		sf->chars[i]->lsidebearing = class_cnt;
+		++gcnt;
+	    }
+	}
+	++class_cnt;			/* Add a class for the marks so we can ignore them */
+    }
+    glyphs = galloc((gcnt+1)*sizeof(SplineChar *));
+    map = galloc((gcnt+1)*sizeof(uint16));
+    gcnt = 0;
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->lsidebearing!=0 ) {
+	glyphs[gcnt] = sf->chars[i];
+	map[gcnt++] = sf->chars[i]->lsidebearing;
+    }
+    glyphs[gcnt] = NULL;
+
+
+    /* Give each subs tab an index into the mac's substitution lookups */
+    substags = galloc(2*tree->next_state*sizeof(uint32));
+    stcnt = 0;
+    for ( cur = tree; cur!=NULL; cur = TreeNext(cur)) {
+	cur->marked_index = cur->cur_index = 0xffff;
+	if ( cur->applymarkedsubs!=0 ) {
+	    for ( i=0; i<stcnt; ++i )
+		if ( substags[i]==cur->applymarkedsubs )
+	    break;
+	    if ( i==stcnt )
+		substags[stcnt++] = cur->applymarkedsubs;
+	    cur->marked_index = i;
+	}
+	if ( cur->applycursubs!=0 ) {
+	    for ( i=0; i<stcnt; ++i )
+		if ( substags[i]==cur->applycursubs )
+	    break;
+	    if ( i==stcnt )
+		substags[stcnt++] = cur->applycursubs;
+	    cur->cur_index = i;
+	}
+    }
+
+
+    /* Output the header */
+    start = ftell(temp);
+    putlong(temp,class_cnt);		/* # my classes+ 4 standard ones */
+    putlong(temp,5*sizeof(uint32));	/* class offset */
+    putlong(temp,0);			/* state offset */
+    putlong(temp,0);			/* transition entry offset */
+    putlong(temp,0);			/* substitution table offset */
+    morx_lookupmap(temp,glyphs,map,gcnt);/* dump the class lookup table */
+    free(glyphs); free(map);
+
+
+    here = ftell(temp);
+    fseek(temp,start+2*sizeof(uint32),SEEK_SET);
+    putlong(temp,here-start);			/* Point to start of state arrays */
+    fseek(temp,0,SEEK_END);
+
+    /* Now build the state machine */
+    /* Except for initial state, each state has only two entry points:	*/
+    /*		from its parent						*/
+    /*		from itself (deleted glyph/mark)			*/
+    /* => should need at most 2*#states transitions + 1 for error return to initial */
+    tmax = 3*tree->next_state+4;		/* but give ourselves some slop */
+    transitions = galloc(tmax*sizeof(struct transitions2));
+    /* transition 0 is used on failure. Goes back to initial state */
+    transitions[0].next_state = 1; transitions[0].markit = false;
+	transitions[0].mark_index = transitions[0].cur_index = 0xffff;
+    tcur = 1;
+    first = true;
+    tlist = galloc(class_cnt*sizeof(uint16));
+    for ( cur = tree; cur!=NULL; cur = TreeNext(cur)) {
+	tlist[0] = 0;						/* end of text */
+	tlist[1] = Transition2Find(cur,0,transitions,&tcur);	/* out of bounds */
+	tlist[2] = Transition2(cur->state,0,0xffff,0xffff,transitions,&tcur);	/* stay here, deleted glyph */
+	tlist[3] = 0;						/* End of line */
+	for ( i=1; i<fpst->nccnt; ++i )
+	    tlist[3+i] = Transition2Find(cur,i,transitions,&tcur);
+	if ( fpst->flags & pst_ignorecombiningmarks )
+	    tlist[3+i] = tlist[2];				/* marks get ignored like delete chars */
+	for ( i=0; i<class_cnt; ++i )
+	    putshort(temp,i);
+	if ( first ) {
+	    /* classes 0 and 1 should look the same as far as I'm concerned */
+	    for ( i=0; i<class_cnt; ++i )
+		putshort(temp,i);
+	    first = false;
+	}
+    }
+    free(tlist);
+    if ( tcur>tmax ) GDrawIError("Too many transitions in morx_dumpContGlyphFeatureFromClass" );
+
+
+    here = ftell(temp);
+    fseek(temp,start+2*sizeof(uint32),SEEK_SET);
+    putlong(temp,here-start);			/* Point to start of state arrays */
+    fseek(temp,0,SEEK_END);
+
+    /* Now the transitions */
+    for ( i=0; i<tcur; ++i ) {
+	putshort(temp,transitions[0].next_state);
+	putshort(temp,transitions[0].markit ? 0x8000 : 0 );
+	putshort(temp,transitions[0].mark_index );
+	putshort(temp,transitions[0].cur_index );
+    }
+    free(transitions);
+
+
+    substable_pos = ftell(temp);
+    fseek(temp,start+4*sizeof(uint32),SEEK_SET);
+    putlong(temp,substable_pos-start);		/* Point to start of substitution lookup offsets */
+    fseek(temp,0,SEEK_END);
+
+    /* And finally the substitutions */
+    for ( i=0; i<stcnt; ++i )
+	putlong(temp,0);	/* offsets to the substitutions */
+    for ( i=0; i<stcnt; ++i ) {
+	here = ftell(temp);
+	fseek(temp,substable_pos+i*sizeof(uint32),SEEK_SET);
+	putlong(temp,here-substable_pos);
+	fseek(temp,0,SEEK_END);
+	morx_dumpnestedsubs(temp,sf,substags[i]);
+    }
+    free(substags);
+return( true );
+}
+
 static SplineChar **morx_cg_FigureClasses(SplineChar ***tables,int match_len,
 	struct alltabs *at, int ***classes, int *cc, uint16 **mp, int *gc,
 	FPST *fpst,SplineFont *sf) {
@@ -1150,7 +1578,7 @@ return( NULL );
 	for ( k=0; tables[i][k]!=NULL; ++k );
 	if ( k>max ) max=k;
     }
-    next = gcalloc(match_len,sizeof(int));
+    next = gcalloc(1<<match_len,sizeof(int));
     temp = galloc((1<<match_len)*sizeof(SplineChar **));
 
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
@@ -1186,9 +1614,11 @@ return( NULL );
 	}
     }
     if ( fpst->flags & pst_ignorecombiningmarks ) {
-	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	    if ( sf->chars[i]->lsidebearing==0 && IsMarkChar(sf->chars[i]))
+	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 ) {
+	    if ( sf->chars[i]->lsidebearing==0 && IsMarkChar(sf->chars[i])) {
 		sf->chars[i]->lsidebearing = class_cnt;
+		++gcnt;
+	    }
 	}
 	++class_cnt;			/* Add a class for the marks so we can ignore them */
     }
@@ -1343,7 +1773,7 @@ return( false );
     morx_dumpnestedsubs(temp,sf,substag);
     if ( hasfinal ) {
 	here = ftell(temp);
-	fseek(temp,start+4*sizeof(uint32),SEEK_SET);
+	fseek(temp,substable_pos+4*sizeof(uint32),SEEK_SET);
 	putlong(temp,here-substable_pos);
 	fseek(temp,0,SEEK_END);
 	morx_dumpnestedsubs(temp,sf,finaltag);
@@ -1353,17 +1783,25 @@ return( true );
 
 static struct feature *aat_dumpmorx_contextchainsubs(struct alltabs *at, SplineFont *sf,
 	FILE *temp, struct feature *features) {
-    FPST *fpst;
+    FPST *fpst, *tempfpst;
+    struct contexttree *tree;
     struct feature *cur;
     int chrs;
 
     for ( fpst = sf->possub; fpst!=NULL; fpst=fpst->next ) {
-	if ( FPSTisMacable(sf,fpst) &&
-		(cur = featureFromTag(fpst->tag))!=NULL ) {
-	    cur->r2l = fpst->flags&pst_r2l ? 1 : 0;
+	tempfpst = fpst;
+	tree = NULL;
+	if ( fpst->format==pst_glyphs )
+	    tempfpst = FPSTGlyphToClass( fpst );
+	if ( tempfpst->format==pst_class )
+	    tree = FPST2Tree(sf, tempfpst);
+	if ( (tree!=NULL || FPSTisMacable(sf,tempfpst)) &&
+		(cur = featureFromTag(tempfpst->tag))!=NULL ) {
+	    cur->r2l = tempfpst->flags&pst_r2l ? 1 : 0;
 	    cur->subtable_type = 1;		/* contextual glyph subs */
 	    cur->feature_start = ftell(temp);
-	    if ( morx_dumpContGlyphFeatureFromCoverage(temp,fpst,at,sf)) {
+	    if ( (tempfpst->format==pst_coverage && morx_dumpContGlyphFeatureFromCoverage(temp,tempfpst,at,sf)) ||
+		    (tempfpst->format==pst_class && morx_dumpContGlyphFeatureFromClass(temp,tempfpst,tree,at,sf))) {
 		cur->next = features;
 		features = cur;
 		if ( (ftell(temp)-cur->feature_start)&1 )
@@ -1379,6 +1817,10 @@ static struct feature *aat_dumpmorx_contextchainsubs(struct alltabs *at, SplineF
 	    } else
 		chunkfree(cur,sizeof(struct feature));
 	}
+	if ( tempfpst!=fpst )
+	    FPSTFree(tempfpst);
+	if ( tree!=NULL )
+	    TreeFree(tree);
     }
 return( features);
 }
