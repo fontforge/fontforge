@@ -426,13 +426,13 @@ static void FVReattachCVs(SplineFont *old,SplineFont *new) {
     for ( i=0; i<old->charcnt; ++i ) {
 	if ( old->chars[i]!=NULL && old->chars[i]->views!=NULL ) {
 	    if ( new->subfontcnt==0 ) {
-		enc = SFFindChar(new,old->chars[i]->unicodeenc,old->chars[i]->name);
+		enc = SFFindExistingChar(new,old->chars[i]->unicodeenc,old->chars[i]->name);
 		sub = new;
 	    } else {
 		enc = -1;
 		for ( j=0; j<new->subfontcnt && enc==-1 ; ++j ) {
 		    sub = new->subfonts[j];
-		    enc = SFFindChar(sub,old->chars[i]->unicodeenc,old->chars[i]->name);
+		    enc = SFFindExistingChar(sub,old->chars[i]->unicodeenc,old->chars[i]->name);
 		}
 	    }
 	    if ( enc==-1 ) {

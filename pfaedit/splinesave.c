@@ -1440,8 +1440,8 @@ static int AddGreekDuplicates(struct pschars *chrs,SplineFont *sf,int cnt,
     if ( !greekfixup )
 return( cnt );
 
-    i1 = SFFindChar(sf,c1,NULL);
-    i2 = SFFindChar(sf,c2,NULL);
+    i1 = SFFindExistingChar(sf,c1,NULL);
+    i2 = SFFindExistingChar(sf,c2,NULL);
     if ( i1 == -1 && i2 == -1 )
 return(cnt);
     if ( i1!=-1 && *sf->chars[i1]->name!='u' )
