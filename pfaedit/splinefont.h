@@ -588,6 +588,8 @@ extern void SplineFontFindBounds(SplineFont *sf,DBounds *bounds);
 extern void CIDFindBounds(SplineFont *sf,DBounds *bounds);
 extern void SplineSetQuickBounds(SplineSet *ss,DBounds *b);
 extern void SplineCharQuickBounds(SplineChar *sc, DBounds *b);
+extern void SplineSetQuickConservativeBounds(SplineSet *ss,DBounds *b);
+extern void SplineCharQuickConservativeBounds(SplineChar *sc, DBounds *b);
 extern void SplinePointCatagorize(SplinePoint *sp);
 extern int SplinePointIsACorner(SplinePoint *sp);
 extern void SCCatagorizePoints(SplineChar *sc);
