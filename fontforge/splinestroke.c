@@ -262,8 +262,13 @@ static int Intersect_Lines(BasePoint *inter,BasePoint *p1,real sx1, real sy1,
     }
     if ( t1>1000 || t1<-1000 ) {
 	denom = sqrt(sx1*sx1 + sy1*sy1)/radius;
-	inter->x = (p1->x+p2->x)/2 + sx1/denom;
-	inter->y = (p1->y+p2->y)/2 + sy1/denom;
+	if ( denom==0 ) {
+	    inter->x = (p1->x+p2->x)/2;
+	    inter->y = (p1->y+p2->y)/2;
+	} else {
+	    inter->x = (p1->x+p2->x)/2 + sx1/denom;
+	    inter->y = (p1->y+p2->y)/2 + sy1/denom;
+	}
 return( -1 );
     } else {
 	inter->x = p1->x + t1*sx1;
