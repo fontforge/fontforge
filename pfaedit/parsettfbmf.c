@@ -55,7 +55,7 @@ struct bdfcharlist {
 static void ttfreadbmfglyph(FILE *ttf,struct ttfinfo *info,
 	int32 offset, int32 len, struct bigmetrics *metrics, int imageformat,
 	int enc, BDFFont *bdf) {
-    BDFChar *bdfc = chunkalloc(sizeof(BDFChar));
+    BDFChar *bdfc;
     struct bigmetrics big;
     int i,j,ch,l,p, num;
 
@@ -116,6 +116,7 @@ return;
 	}
 return;
     }
+    bdfc = chunkalloc(sizeof(BDFChar));
     if ( info->chars!=NULL ) {
 	if ( info->chars[enc]==NULL ) {
 	    info->chars[enc] = SplineCharCreate();
@@ -305,11 +306,11 @@ static void readttfbitmapfont(FILE *ttf,struct ttfinfo *info,
 	    }
 	    if ( num&1 )
 		getushort(ttf);		/* padding */
-	    for ( i=first, g=0; i<=last; ++i ) {
+	    for ( i=first, g=0; i<=last; ++i, ++g ) {
 		if ( (info->inuse==NULL || info->inuse[i+first]) && g<num )
 		    ttfreadbmfglyph(ttf,info,offset,
 			    size,&big,
-			    imageformat,glyphs[g++],bdf);
+			    imageformat,glyphs[g],bdf);
 		offset = -1;
 	    }
 	    free(glyphs);
