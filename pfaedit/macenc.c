@@ -1341,6 +1341,7 @@ return( s->setname );
 
 return( NULL );
 }
+
 static struct macname fs_names[] = {
 	{ &fs_names[146], 0, 0, "All Typographic Features" },
 	{ &fs_names[147], 0, 0, "All Type Features" },
