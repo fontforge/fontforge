@@ -2031,6 +2031,7 @@ SplineSet *SplineCharSimplify(SplineChar *sc,SplineSet *head,
 		prev = spl;
 	}
     }
+    SplineSetsRemoveAnnoyingExtrema(head,.3);
 return( head );
 }
 
