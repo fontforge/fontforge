@@ -122,7 +122,7 @@ DEPENDENCIES
  system. If they are not then you can find them at:
      http://www.libpng.org/pub/png/libpng.html
 	 http://www.gzip.org/zlib/
-     ttp://prtr-13.ucsc.edu/~badger/software/libungif/index.shtml
+     http://prtr-13.ucsc.edu/~badger/software/libungif/index.shtml
 
  FontForge also makes use of libuninameslist to be found at:
      http://libuninameslist.sf.net/
@@ -141,6 +141,8 @@ DEPENDENCIES
 
  Finally, if you want to do autotracing you should install
      http://sourceforge.net/projects/autotrace/
+ or
+     http://potrace.sf.net/
 
 RUNNING
 $ fontforge -new
@@ -157,3 +159,5 @@ DOCUMENTATION
 
 Please report any bugs to
 	fontforge-devel@lists.sourceforge.net
+(if you wish to send large testcases, example fonts, etc. please use
+	fontforge-testcases@lists.sourceforge.net
