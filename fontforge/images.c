@@ -1006,7 +1006,7 @@ static struct _GImage perspective0_base = {
     15420,24,24,24,
     (uint8 *) perspective0_data,
     &rotate0_clut,
-    0xffffffff
+    0
 };
 
 
