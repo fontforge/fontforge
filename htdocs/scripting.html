@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 4-Mar-2003 -->
+  <!-- AP: Last modified: 13-Mar-2003 -->
   <TITLE>Writing scripts to change fonts in PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -307,6 +307,8 @@ to (some) already existing ones)
   <LI>
     <CODE>$filename </CODE>the name of the file containing the font.
   <LI>
+    <CODE>$fontversion</CODE> the string containing the font's version
+  <LI>
     <CODE>$cidfontname </CODE>returns the fontname of the top-level cid-keyed
     font (or the empty string if there is none)<BR>
     Can be used to detect if this is a cid keyed font.
@@ -364,14 +366,20 @@ menu items with the same names.
     This corresponds to no menu item. It will print all of its arguments to stdout.
     It can execute with no current font.
   <DT>
+    PostNotice(str)
+  <DD>
+    When run from the UI will put up a window displaying the string (the window
+    will not block the program and will disappear after a minute or so). When
+    run from the command line will write the string to stderr.
+  <DT>
     Error(str)
   <DD>
     Prints out str as an error message and aborts the current script
   <DT>
     AskUser(question[,default-answer])
   <DD>
-    Asks the user the question and returns an answer. A default-answer may be
-    specified too.
+    Asks the user the question and returns an answer (a string). A default-answer
+    may be specified too.
   <DT>
     Array(size)
   <DD>
@@ -829,7 +837,7 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
   <DD>
     Sets the number of characters in the font.
   <DT>
-    SetFontNames(fontname[,family[,fullname[,weight[,copyright-notice]]]])
+    SetFontNames(fontname[,family[,fullname[,weight[,copyright-notice[,fontversion]]]]])
   <DD>
     Sets various postscript names associated with a font. If a name is omitted
     (or is the empty string) it will not be changed.

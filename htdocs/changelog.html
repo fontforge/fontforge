@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 10-Mar-2003 -->
+  <!-- AP: Last modified: 13-Mar-2003 -->
   <TITLE>Change log for PfaEdit</TITLE>
 </HEAD>
 <BODY>
@@ -10,6 +10,39 @@
   <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL>
 </H1>
 <UL>
+  <LI>
+    13-Mar-2003
+    <UL>
+      <LI>
+	Add a preference item to control the number of undoes saved per character
+      <LI>
+	Turn off saving undoes when in a script started from the command line
+      <LI>
+	Added a preference item to control the undo depth from the UI.
+      <LI>
+	Try to do better about scaling my chunk allocator to machines with 8 bit
+	pointers
+      <LI>
+	Was doing 32 bit arithmetic when reading GSUB simple substitution lookups
+	when I should have done 16 bit.
+      <LI>
+	Tracked down a lot of memory leaks with valgrind (and some uninitialized
+	variables too)
+      <LI>
+	Added access to a font's version from scripting
+      <LI>
+	Added PostNotice scripting command
+      <LI>
+	When reading a ttf/otf font with a GSUB table pfaedit will try to guess
+	reasonable names for unnamed glyphs by looking them up in the GSUB table.
+	Thus an unnamed vertical varient for "A" might be named "A.vrt2".
+      <LI>
+	PfaEdit would crash when outputting ttf files with no 'cvt' table (bug introduced
+	around 27-Feb)
+      <LI>
+	the configure script did not respect the argument --with-freetype-src as
+	it should have.
+    </UL>
   <LI>
     10-Mar-2003
     <UL>
