@@ -32,8 +32,20 @@
 #include <unistd.h>
 #include <errno.h>
 #include <stdlib.h>
-#include <pwd.h>
 #include <dirent.h>
+
+#ifdef FONTFORGE_CONFIG_GTK
+# include <gtk/gtk.h>
+
+static char *gethomedir(void) {
+    static char *dir=NULL;
+
+    if ( dir!=NULL )
+return( dir );
+return( dir = g_get_home_dir());
+}
+#else 
+# include <pwd.h>
 
 static char *gethomedir(void) {
     static char *dir=NULL;
@@ -42,7 +54,7 @@ static char *gethomedir(void) {
 
     if ( dir!=NULL )
 return( dir );
-
+    
     if ( (dir=getenv("HOME"))!=NULL )
 return( (dir=copy(dir)) );
 
@@ -57,6 +69,7 @@ return( dir );
     endpwent();
 return( NULL );
 }
+#endif
 
 char *getPfaEditDir(char *buffer) {
     static char *dir=NULL;

@@ -28,7 +28,10 @@
 #define _SPLINEFONT_H
 
 #include "basics.h"
-#include "charset.h"
+#include "configure-pfaedit.h"
+#ifndef FONTFORGE_CONFIG_GTK
+# include "charset.h"
+#endif
 
 #ifdef USE_DOUBLE
 # define real	double
@@ -191,7 +194,11 @@ enum pst_flags { pst_r2l=1, pst_ignorebaseglyphs=2, pst_ignoreligatures=4,
 	pst_ignorecombiningmarks=8 };
 enum anchorclass_type { act_mark, /* act_mklg, */act_mkmk, act_curs };
 typedef struct anchorclass {
+#ifdef FONTFORGE_CONFIG_GTK
+    char *name;			/* in utf8 */
+#else
     unichar_t *name;
+#endif
     uint32 feature_tag;
     uint16 script_lang_index;
     uint16 flags;
@@ -379,7 +386,11 @@ typedef struct undoes {
 	    int16 lbearingchange;
 	    int unicodeenc;			/* only for ut_statename */
 	    char *charname;			/* only for ut_statename */
+#ifdef FONTFORGE_CONFIG_GTK
+	    char *comment;			/* in utf8 */
+#else
 	    unichar_t *comment;			/* only for ut_statename */
+#endif
 	    PST *possub;			/* only for ut_statename */
 	    struct splinepointlist *splines;
 	    struct refchar *refs;
@@ -456,7 +467,11 @@ typedef struct bdffont {
     int16 ascent, descent;
     unsigned int piecemeal: 1;
     unsigned int bbsized: 1;
+#ifdef FONTFORGE_CONFIG_GTK
+    char *encoding_name;
+#else
     enum charset encoding_name;
+#endif
     struct bdffont *next;
     struct clut *clut;
     char *foundry;
@@ -766,7 +781,11 @@ typedef struct splinechar {
 				/*  It may also contain a bunch of other stuff now */
     LigList *ligofme;		/* If this is the first character of a ligature then this gives us the list of possible ones */
 				/*  this field must be regenerated before the font is saved */
+#ifdef FONTFORGE_CONFIG_GTK
+    char *comment;			/* in utf8 */
+#else
     unichar_t *comment;
+#endif
     uint32 /*Color*/ color;
     AnchorPoint *anchor;
     uint8 *ttf_instrs;
@@ -782,7 +801,11 @@ enum ttfnames { ttf_copyright=0, ttf_family, ttf_subfamily, ttf_uniqueid,
     ttf_prefmodifiers, ttf_compatfull, ttf_sampletext, ttf_namemax };
 struct ttflangname {
     int lang;
+#ifdef FONTFORGE_CONFIG_GTK
+    char *names[ttf_namemax];			/* in utf8 */
+#else
     unichar_t *names[ttf_namemax];
+#endif
     struct ttflangname *next;
 };
 
@@ -821,7 +844,11 @@ typedef struct splinefont {
 						/*  I leave it in so as to avoid cluttering up code with #ifdefs */
     unsigned int new: 1;			/* A new and unsaved font */
     struct fontview *fv;
+#ifdef FONTFORGE_CONFIG_GTK
+    char *encoding_name, *old_encname;
+#else
     enum charset encoding_name, old_encname;
+#endif
     enum uni_interp uni_interp;
     Layer grid;
     BDFFont *bitmaps;
@@ -990,7 +1017,6 @@ struct fontdict;
 struct pschars;
 struct findsel;
 struct charprocs;
-enum charset;
 struct enc;
 
 extern void *chunkalloc(int size);
@@ -1059,11 +1085,20 @@ extern int SLIContainsR2L(SplineFont *sf,int sli);
 extern void SFFindNearTop(SplineFont *);
 extern void SFRestoreNearTop(SplineFont *);
 extern int SFAddDelChars(SplineFont *sf, int nchars);
+#ifdef FONTFORGE_CONFIG_GTK
+extern int SFForceEncoding(SplineFont *sf,char *new_map);
+extern int SFReencodeFont(SplineFont *sf,char *new_map);
+#else
 extern int SFForceEncoding(SplineFont *sf,enum charset new_map);
 extern int SFReencodeFont(SplineFont *sf,enum charset new_map);
+#endif
 extern int SFCompactFont(SplineFont *sf);
 extern int SFUncompactFont(SplineFont *sf);
+#ifdef FONTFORGE_CONFIG_GTK
+extern int CountOfEncoding(char *encoding_name);
+#else
 extern int CountOfEncoding(enum charset encoding_name);
+#endif
 extern int SFMatchEncoding(SplineFont *sf,SplineFont *target);
 extern char *_GetModifiers(char *fontname, char *familyname,char *weight);
 extern char *SFGetModifiers(SplineFont *sf);
@@ -1352,17 +1387,30 @@ extern KernClass *SFFindKernClass(SplineFont *sf,SplineChar *first,SplineChar *l
 	int *index,int allow_zero);
 extern KernClass *SFFindVKernClass(SplineFont *sf,SplineChar *first,SplineChar *last,
 	int *index,int allow_zero);
+#ifdef FONTFORGE_CONFIG_GTK
+extern int SCSetMetaData(SplineChar *sc,char *name,int unienc,
+	const char *comment);
+#else
 extern int SCSetMetaData(SplineChar *sc,char *name,int unienc,const unichar_t *comment);
+#endif
 
+#ifdef FONTFORGE_CONFIG_GTK
+enum uni_interp interp_from_encoding(char *enc,enum uni_interp interp);
+#else
 enum uni_interp interp_from_encoding(enum charset enc,enum uni_interp interp);
 extern const char *EncName(int encname);
+#endif
 extern void SFDDumpMacFeat(FILE *sfd,MacFeat *mf);
 extern MacFeat *SFDParseMacFeatures(FILE *sfd, char *tok);
 extern int SFDWrite(char *filename,SplineFont *sf);
 extern int SFDWriteBak(SplineFont *sf);
 extern SplineFont *SFDRead(char *filename);
 extern SplineChar *SFDReadOneChar(char *filename,const char *name);
+#ifdef FONTFORGE_CONFIG_GTK
+extern char *TTFGetFontName(FILE *ttf,int32 offset,int32 off2);
+#else
 extern unichar_t *TTFGetFontName(FILE *ttf,int32 offset,int32 off2);
+#endif
 extern void TTFLoadBitmaps(FILE *ttf,struct ttfinfo *info, int onlyone);
 enum ttfflags { ttf_onlystrikes=1, ttf_onlyonestrike=2, ttf_onlykerns=4, ttf_onlynames=8 };
 extern SplineFont *_SFReadTTF(FILE *ttf,int flags,char *filename);
@@ -1413,7 +1461,11 @@ extern int SFIsRotatable(SplineFont *sf,SplineChar *sc);
 extern int SCMakeDotless(SplineFont *sf, SplineChar *dotless, int copybmp, int doit);
 extern void SCBuildComposit(SplineFont *sf, SplineChar *sc, int copybmp,
 	struct fontview *fv);
+#ifdef FONTFORGE_CONFIG_GTK
+extern const char *SFGetAlternate(SplineFont *sf, int base,SplineChar *sc,int nocheck);
+#else
 extern const unichar_t *SFGetAlternate(SplineFont *sf, int base,SplineChar *sc,int nocheck);
+#endif
 
 extern int getAdobeEnc(char *name);
 
@@ -1435,7 +1487,11 @@ extern SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext
 	struct pschars *subrs, struct pschars *gsubrs, const char *name);
 extern void MatMultiply(real m1[6], real m2[6], real to[6]);
 
+#ifdef FONTFORGE_CONFIG_GTK
+extern int NameToEncoding(SplineFont *sf,const char *uname);
+#else
 extern int NameToEncoding(SplineFont *sf,const unichar_t *uname);
+#endif
 extern void GlyphHashFree(SplineFont *sf);
 extern int SFFindChar(SplineFont *sf, int unienc, const char *name );
 extern int SFCIDFindChar(SplineFont *sf, int unienc, const char *name );
@@ -1471,7 +1527,11 @@ extern void SFFigureGrid(SplineFont *sf);
 #endif
 extern int FVWinInfo(struct fontview *,int *cc,int *rc);
 
+#ifdef FONTFORGE_CONFIG_GTK
+extern struct script_record *SRParse(const char *line);
+#else
 extern struct script_record *SRParse(const unichar_t *line);
+#endif
 extern int SFFindScriptLangRecord(SplineFont *sf,struct script_record *sr);
 extern int SFAddScriptLangRecord(SplineFont *sf,struct script_record *sr);
 extern int SFAddScriptLangIndex(SplineFont *sf,uint32 script,uint32 lang);
@@ -1522,11 +1582,19 @@ extern struct freetype_raster *FreeType_GetRaster(void *single_glyph_context,
 extern void FreeType_FreeRaster(struct freetype_raster *raster);
 
 extern int UniFromName(const char *name);
+#ifdef FONTFORGE_CONFIG_GTK
+#define uUniFromName UniFromName
+#else
 extern int uUniFromName(const unichar_t *name);
+#endif
 
 extern void doversion(void);
 
+#ifdef FONTFORGE_CONFIG_GTK
+extern AnchorPos *AnchorPositioning(SplineChar *sc,char *ustr,SplineChar **sstr );
+#else
 extern AnchorPos *AnchorPositioning(SplineChar *sc,unichar_t *ustr,SplineChar **sstr );
+#endif
 extern void AnchorPosFree(AnchorPos *apos);
 
 extern int SFCloseAllInstrs(SplineFont *sf);
@@ -1555,21 +1623,36 @@ extern ASM *ASMFromFPST(SplineFont *sf,FPST *fpst,int ordered);
 extern struct sliflag { uint16 sli, flags; } *SFGetFormsList(SplineFont *sf,int test_dflt);
 extern int SFAnyConvertableSM(SplineFont *sf);
 
+#ifdef FONTFORGE_CONFIG_GTK
+extern char *MacStrToUnicode(const char *str,int macenc,int maclang);
+extern char *UnicodeToMacStr(const char *ustr,int macenc,int maclang);
+#else
 extern unichar_t *MacStrToUnicode(const char *str,int macenc,int maclang);
 extern char *UnicodeToMacStr(const unichar_t *ustr,int macenc,int maclang);
+#endif
 extern uint8 MacEncFromMacLang(int maclang);
 extern uint16 WinLangFromMac(int maclang);
 extern uint16 WinLangToMac(int winlang);
 extern int CanEncodingWinLangAsMac(int winlang);
 extern int MacLangFromLocale(void);
+#ifdef FONTFORGE_CONFIG_GTK
+extern char *FindEnglishNameInMacName(struct macname *mn);
+extern char *PickNameFromMacName(struct macname *mn);
+#else
 extern unichar_t *FindEnglishNameInMacName(struct macname *mn);
 extern unichar_t *PickNameFromMacName(struct macname *mn);
+#endif
 extern MacFeat *FindMacFeature(SplineFont *sf, int feat,MacFeat **secondary);
 extern struct macsetting *FindMacSetting(SplineFont *sf, int feat, int set,struct macsetting **secondary);
 extern struct macname *FindMacSettingName(SplineFont *sf, int feat, int set);
 
+#ifdef FONTFORGE_CONFIG_GTK
+extern int32 UniFromEnc(int enc, char *encname);
+extern int32 EncFromUni(int32 uni, char *encname);
+#else
 extern int32 UniFromEnc(int enc, enum charset encname);
 extern int32 EncFromUni(int32 uni, enum charset encname);
+#endif
 extern int32 EncFromSF(int32 uni, SplineFont *sf);
 
 extern void MatInverse(real into[6], real orig[6]);

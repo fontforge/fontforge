@@ -26,13 +26,15 @@
  */
 #include "pfaeditui.h"
 #include "psfont.h"
+#ifndef FONTFORGE_CONFIG_GTK
 #include <ustring.h>
 #include <gkeysym.h>
 #include <utype.h>
 #include <gfile.h>
 #include <chardata.h>
-#include <math.h>
 #include <gresource.h>
+#endif
+#include <math.h>
 #include <unistd.h>
 
 int onlycopydisplayed = 0;
@@ -41,6 +43,8 @@ int copymetadata = 0;
 #define XOR_COLOR	0x505050
 #define	FV_LAB_HEIGHT	15
 
+#ifdef FONTFORGE_CONFIG_GDRAW
+/* GTK window icons are set by glade */
 #ifdef BIGICONS
 #define fontview_width 32
 #define fontview_height 32
@@ -66,6 +70,7 @@ static unsigned char fontview2_bits[] = {
 #endif
 
 extern int _GScrollBar_Width;
+#endif
 
 int default_fv_font_size = 24, default_fv_antialias=true,
 	default_fv_bbsized=true,
@@ -75,7 +80,15 @@ int default_fv_font_size = 24, default_fv_antialias=true,
 #define METRICS_ADVANCE	 0x008000
 FontView *fv_list=NULL;
 
+#if defined(FONTFORGE_CONFIG_GTK)
+# define FV_From_MI(menuitem)	\
+	(FontView *) g_object_get_data( \
+		G_OBJECT( gtk_widget_get_toplevel( GTK_WIDGET( menuitem ))),\
+		"data" )
+#endif
+
 void FVToggleCharChanged(SplineChar *sc) {
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     int i, j;
     int pos;
     FontView *fv;
@@ -105,6 +118,7 @@ return;
  /*  fit our expectations (maximized view) and we must be prepared for half */
  /*  lines */
 	if ( i>=0 && i<=fv->rowcnt ) {
+# ifdef FONTFORGE_CONFIG_GDRAW
 	    GRect r;
 	    Color bg;
 	    r.x = j*fv->cbw+1; r.width = fv->cbw-1;
@@ -119,13 +133,26 @@ return;
 	    GDrawSetXORMode(fv->v);
 	    GDrawFillRect(fv->v,&r,0x000000);
 	    GDrawSetCopyMode(fv->v);
+# elif defined(FONTFORGE_CONFIG_GTK)
+	    GdkGC *gc = fv->v->style->fg_gc[fv->v->state];
+	    GdkGCValues values;
+	    gdk_gc_get_values(gc,&values);
+	    gdk_gc_set_function(gc,GDK_XOR);
+	    gdk_gc_set_foreground(gc, &values.background);
+	    gdk_draw_rectangle(fv->v->window, gc, TRUE,
+		    j*fv->cbw+1, i*fv->cbh+1,  fv->cbw-1, fv->lab_height);
+	    gdk_gc_set_values(gc,&values,
+		    GDK_GC_FOREGROUND | GDK_GC_FUNCTION );
+# endif
 	}
     }
+#endif
 }
 
 static void FVToggleCharSelected(FontView *fv,int enc) {
     int i, j;
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( fv->v==NULL || fv->colcnt==0 )	/* Can happen in scripts */
 return;
 
@@ -137,14 +164,27 @@ return;
  /*  fit our expectations (maximized view) and we must be prepared for half */
  /*  lines */
     if ( i>=0 && i<=fv->rowcnt ) {
+# ifdef FONTFORGE_CONFIG_GDRAW
 	GRect r;
 	r.x = j*fv->cbw+1; r.width = fv->cbw-1;
-	r.y = i*fv->cbh+FV_LAB_HEIGHT+1; r.height = fv->cbw;
+	r.y = i*fv->cbh+fv->lab_height+1; r.height = fv->cbw;
 	GDrawSetXORBase(fv->v,GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(fv->v)));
 	GDrawSetXORMode(fv->v);
 	GDrawFillRect(fv->v,&r,XOR_COLOR);
 	GDrawSetCopyMode(fv->v);
+# elif defined(FONTFORGE_CONFIG_GTK)
+	GdkGC *gc = fv->v->style->fg_gc[fv->v->state];
+	GdkGCValues values;
+	gdk_gc_get_values(gc,&values);
+	gdk_gc_set_function(gc,GDK_XOR);
+	gdk_gc_set_foreground(gc, &values.background);
+	gdk_draw_rectangle(fv->v->window, gc, TRUE,
+		j*fv->cbw+1, i*fv->cbh+fv->lab_height+1,  fv->cbw-1, fv->cbw);
+	gdk_gc_set_values(gc,&values,
+		GDK_GC_FOREGROUND | GDK_GC_FUNCTION );
+# endif
     }
+#endif
 }
 
 void FVDeselectAll(FontView *fv) {
@@ -256,8 +296,14 @@ static void _SplineFontSetUnChanged(SplineFont *sf) {
     for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next )
 	for ( i=0; i<bdf->charcnt; ++i ) if ( bdf->chars[i]!=NULL )
 	    bdf->chars[i]->changed = false;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( was && sf->fv!=NULL && sf->fv->v!=NULL )
+# ifdef FONTFORGE_CONFIG_GDRAW
 	GDrawRequestExpose(sf->fv->v,NULL,false);
+# elif defined(FONTFORGE_CONFIG_GTK)
+	gtk_widget_queue_draw(sf->fv->v);
+# endif
+#endif
     for ( i=0; i<sf->subfontcnt; ++i )
 	_SplineFontSetUnChanged(sf->subfonts[i]);
 }
@@ -319,6 +365,8 @@ int _FVMenuGenerate(FontView *fv,int family) {
 return( SFGenerateFont(fv->sf,family) );
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+# ifdef FONTFORGE_CONFIG_GDRAW
 static void FVMenuGenerate(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 
@@ -330,6 +378,20 @@ static void FVMenuGenerateFamily(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     _FVMenuGenerate(fv,true);
 }
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_Generate(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+
+    _FVMenuGenerate(fv,false);
+}
+
+void FontViewMenu_GenerateFamily(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+
+    _FVMenuGenerate(fv,true);
+}
+# endif
+#endif
 
 int _FVMenuSaveAs(FontView *fv) {
     unichar_t *temp;
@@ -390,11 +452,21 @@ return( 0 );
 return( ok );
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+# ifdef FONTFORGE_CONFIG_GDRAW
 static void FVMenuSaveAs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 
     _FVMenuSaveAs(fv);
 }
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_SaveAs(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+
+    _FVMenuSaveAs(fv);
+}
+# endif
+#endif
 
 int _FVMenuSave(FontView *fv) {
     int ret = 0;
@@ -426,10 +498,20 @@ int _FVMenuSave(FontView *fv) {
 return( ret );
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+# ifdef FONTFORGE_CONFIG_GDRAW
 static void FVMenuSave(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     _FVMenuSave(fv);
 }
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_Save(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+
+    _FVMenuSave(fv);
+}
+# endif
+#endif
 
 void _FVCloseWindows(FontView *fv) {
     int i, j;
@@ -537,6 +619,8 @@ return(false);
 return( true );
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+# ifdef FONTFORGE_CONFIG_GDRAW
 void MenuNew(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontNew();
 }
@@ -546,6 +630,25 @@ static void FVMenuClose(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     DelayEvent((void (*)(void *)) _FVMenuClose, fv);
 }
+# elif defined(FONTFORGE_CONFIG_GTK)
+void Menu_New(GtkMenuItem *menuitem, gpointer user_data) {
+    FontNew();
+}
+
+void FontViewMenu_Close(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+
+    _FVMenuClose(fv);
+}
+
+gboolean FontView_RequestClose(GtkWidget *widget, GdkEvent *event,
+	gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+
+    _FVMenuClose(fv);
+}
+# endif
+#endif
 
 static void FVReattachCVs(SplineFont *old,SplineFont *new) {
     int i, j, enc;
@@ -2544,13 +2647,19 @@ return;
 
 static void FVChangeDisplayFont(FontView *fv,BDFFont *bdf) {
     int samesize=0;
+    int rcnt, ccnt;
+    int oldr, oldc;
+    int first_time = fv->show==NULL;
 
     if ( fv->v==NULL )			/* Can happen in scripts */
 return;
 
     if ( fv->show!=bdf ) {
-	if ( fv->show!=NULL && fv->cbw == bdf->pixelsize+1 )
+	if ( !first_time && fv->cbw == bdf->pixelsize+1 )
 	    samesize = true;
+	oldc = fv->cbw*fv->colcnt;
+	oldr = fv->cbh*fv->rowcnt;
+
 	fv->show = bdf;
 	if ( bdf->pixelsize<20 ) {
 	    if ( bdf->pixelsize<=9 )
@@ -2561,26 +2670,50 @@ return;
 	} else
 	    fv->magnify = 1;
 	fv->cbw = (bdf->pixelsize*fv->magnify)+1;
-	fv->cbh = (bdf->pixelsize*fv->magnify)+1+FV_LAB_HEIGHT+1;
+	fv->cbh = (bdf->pixelsize*fv->magnify)+1+fv->lab_height+1;
 	fv->resize_expected = !samesize;
-	if ( samesize ) {
-	    GDrawRequestExpose(fv->v,NULL,false);
-	} else if ((( bdf->pixelsize<=fv->sf->display_size || bdf->pixelsize<=-fv->sf->display_size ) &&
+	ccnt = fv->sf->desired_col_cnt;
+	rcnt = fv->sf->desired_row_cnt;
+	if ((( bdf->pixelsize<=fv->sf->display_size || bdf->pixelsize<=-fv->sf->display_size ) &&
 		 fv->sf->top_enc!=-1 /* Not defaulting */ ) ||
 		bdf->pixelsize<=48 ) {
-	    GDrawResize(fv->gw,
-		    fv->sf->desired_col_cnt*fv->cbw+1+GDrawPointsToPixels(fv->gw,_GScrollBar_Width),
-		    fv->sf->desired_row_cnt*fv->cbh+1+fv->mbh+fv->infoh);
-	} else if ( bdf->pixelsize<96 ) {
-	    GDrawResize(fv->gw,
-		    8*fv->cbw+1+GDrawPointsToPixels(fv->gw,_GScrollBar_Width),
-		    2*fv->cbh+1+fv->mbh+fv->infoh);
+	    /* use the desired sizes */
+	} else {
+	    if ( bdf->pixelsize>48 ) {
+		ccnt = 8;
+		rcnt = 2;
+	    } else if ( bdf->pixelsize>=96 ) {
+		ccnt = 4;
+		rcnt = 1;
+	    }
+	    if ( !first_time ) {
+		if ( ccnt < oldc/fv->cbw )
+		    ccnt = oldc/fv->cbw;
+		if ( rcnt < oldr/fv->cbh )
+		    rcnt = oldr/fv->cbh;
+	    }
+	}
+#if defined(FONTFORGE_CONFIG_GTK)
+	if ( samesize ) {
+	    gtk_widget_queue_draw(fv->v);
+	} else {
+	    gtk_widget_set_size_request(fv->v,ccnt*fv->cbw+1,rcnt*fv->cbh+1);
+	    /* If we try to make the window smaller, we must force a resize */
+	    /*  of the whole system, else the size will remain the same */
+	    /* Also when we get a resize event we must set the widget size */
+	    /*  to be minimal so that the user can resize */
+	    if (( ccnt*fv->cbw < oldc || rcnt*fv->cbh < oldr ) && !first_time )
+		gtk_window_resize( GTK_WINDOW(widget), 1,1 );
+	}
+#elif defined(FONTFORGE_CONFIG_GDRAW)
+	if ( samesize ) {
+	    GDrawRequestExpose(fv->v,NULL,false);
 	} else {
 	    GDrawResize(fv->gw,
-		    4*fv->cbw+1+GDrawPointsToPixels(fv->gw,_GScrollBar_Width),
-		    fv->cbh+1+fv->mbh+fv->infoh);
+		    ccnt*fv->cbw+1+GDrawPointsToPixels(fv->gw,_GScrollBar_Width),
+		    rcnt*fv->cbh+1+fv->mbh+fv->infoh);
 	}
-	/* colcnt, rowcnt, etc. will be set by the resize handler */
+#endif
     }
 }
 
@@ -3471,8 +3604,13 @@ return;
     MMWizard(mm);
 }
 
+# ifdef FONTFORGE_CONFIG_GDRAW
 static void FVMenuChangeMMBlend(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_ChangeDefWeights(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
     MMSet *mm = fv->sf->mm;
 
     if ( mm==NULL || mm->apple )
@@ -3480,8 +3618,13 @@ return;
     MMChangeBlend(mm,fv,false);
 }
 
+# ifdef FONTFORGE_CONFIG_GDRAW
 static void FVMenuBlendToNew(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_Blend(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
     MMSet *mm = fv->sf->mm;
 
     if ( mm==NULL )
@@ -3489,6 +3632,7 @@ return;
     MMChangeBlend(mm,fv,true);
 }
 
+# ifdef FONTFORGE_CONFIG_GDRAW
 static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     int anychars = FVAnyCharSelected(fv);
@@ -3540,7 +3684,7 @@ static void fllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = fv->sf->origname==NULL;
 	  break;
 	  case MID_RevertGlyph:
-	    mi->ti.disabled = fv->sf->filename==NULL || anychars==-1;
+	    mi->ti.disabled = fv->sf->origname==NULL || anychars==-1;
 	  break;
 	  case MID_Recent:
 	    mi->ti.disabled = !RecentFilesAny();
@@ -4274,6 +4418,579 @@ static GMenuItem mblist[] = {
     { { (unichar_t *) _STR_Help, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, 0, 0, helplist, NULL },
     { NULL }
 };
+# elif defined(FONTFORGE_CONFIG_GTK)
+struct fv_any {
+    FontView *fv;
+    int anychars;
+    void (*callback)(GtkWidget *w,gpointer user_data);
+};
+
+static void activate_file_items(GtkWidget *w, gpointer user_data) {
+    struct fv_any *fv_any = (struct fv_any *) user_data;
+    G_CONST_RETURN gchar *name = gtk_widget_get_name( GTK_WIDGET(w));
+
+    if ( strcmp(name,"open_outline_window1")==0 )
+	gtk_widget_set_sensitive(w,fv_any->anychars!=-1);
+    else if ( strcmp(name,"open_bitmap_window1")==0 )
+	gtk_widget_set_sensitive(w,fv_any->anychars!=-1 && fv_any->fv->sf->bitmaps!=NULL);
+    else if ( strcmp(name,"revert_file1")==0 )
+	gtk_widget_set_sensitive(w,fv_any->fv->sf->origname!=NULL);
+    else if ( strcmp(name,"revert_glyph1")==0 )
+	gtk_widget_set_sensitive(w,fv_any->anychars!=-1 && fv_any->fv->sf->origname!=NULL);
+    else if ( strcmp(name,"recent1")==0 )
+	gtk_widget_set_sensitive(w,RecentFilesAny());
+    else if ( strcmp(name,"script_menu1")==0 )
+	gtk_widget_set_sensitive(w,script_menu_names[0]!=NULL);
+    else if ( strcmp(name,"print2")==0 )
+	gtk_widget_set_sensitive(w,!fv_any->fv->onlybitmaps);
+    else if ( strcmp(name,"display1")==0 )
+	gtk_widget_set_sensitive(w,!((fv->sf->onlybitmaps && fv->sf->bitmaps==NULL) ||
+			fv->sf->multilayer));
+}
+
+void FontViewMenu_ActivateFile(GtkMenuItem *menuitem, gpointer user_data) {
+    struct fv_any data;
+
+    data.fv = FV_From_MI(menuitem);
+    data.anychars = FVAnyCharSelected(data.fv);
+
+    gtk_container_foreach( GTK_CONTAINER( gtk_menu_item_get_submenu(menuitem )),
+	    activate_file_items, &data );
+}
+
+void FontViewMenu_ActivateCopyFrom(GtkMenuItem *menuitem, gpointer user_data) {
+    GtkWidget *w;
+
+    w = lookup_widget( menuitem, "all_fonts1" );
+    gtk_widget_set_sensitive(w,!onlycopydisplayed);
+
+    w = lookup_widget( menuitem, "displayed_fonts1" );
+    gtk_widget_set_sensitive(w,onlycopydisplayed);
+
+    w = lookup_widget( menuitem, "char_metadata1" );
+    gtk_widget_set_sensitive(w,copymetadata);
+}
+
+void FontViewMenu_ActivateEdit(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+    int pos = FVAnyCharSelected(fv), i;
+    /* I can only determine the contents of the clipboard asyncronously */
+    /*  hence I can't check to see if it contains something that is pastable */
+    /*  So all I can do with paste is check that something is selected */
+#if 0
+    int not_pasteable = pos==-1 ||
+		    (!CopyContainsSomething() &&
+		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/png") &&
+		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/bmp") &&
+		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/eps"));
+#endif
+    RefChar *base = CopyContainsRef(fv->sf);
+    GtkWidget *w;
+    static char *poslist[] = { "cut2", "copy2", "copy_reference1", "copy_width1",
+	    "copy_lbearing1", "copy_rbearing1", "paste2", "paste_into1",
+	    "paste_after1", "same_glyph_as1", "clear2", "clear_background1",
+	    "copy_fg_to_bg1", "join1", "replace_with_reference1",
+	    "unlink_reference1", "remove_undoes1", NULL };
+
+    w = lookup_widget( menuitem, "undo2" );
+    for ( i=0; i<fv->sf->charcnt; ++i )
+	if ( fv->selected[i] && fv->sf->chars[i]!=NULL )
+	    if ( fv->sf->chars[i]->layers[ly_fore].undoes!=NULL )
+    break;
+    gtk_widget_set_sensitive(w,i!=fv->sf->charcnt);
+
+    w = lookup_widget( menuitem, "redo2" );
+    for ( i=0; i<fv->sf->charcnt; ++i )
+	if ( fv->selected[i] && fv->sf->chars[i]!=NULL )
+	    if ( fv->sf->chars[i]->layers[ly_fore].redoes!=NULL )
+    break;
+    gtk_widget_set_sensitive(w,i!=fv->sf->charcnt);
+
+    for ( i=0; poslist[i]!=NULL; ++i ) {
+	w = lookup_widget( menuitem, poslist[i] );
+	if ( w!=NULL )
+	    gtk_widget_set_sensitive(w,pos!=-1);
+    }
+
+    w = lookup_widget( menuitem, "copy_vwidth1" );
+    if ( w!=NULL )
+	gtk_widget_set_sensitive(w,pos!=-1 && fv->sf->hasvmetrics);
+
+#ifndef FONTFORGE_CONFIG_PASTEAFTER
+    w = lookup_widget( menuitem, "paste_after1" );
+    gtk_widget_hide(w);
+#endif
+}
+
+void FontViewMenu_ActivateDependents(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+static void delistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    int anychars = FVAnyCharSelected(fv);
+
+    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
+	switch ( mi->mid ) {
+	  case MID_ShowDependentRefs:
+	    mi->ti.disabled = anychars<0 || fv->sf->chars[anychars]==NULL ||
+		    fv->sf->chars[anychars]->dependents == NULL;
+	  break;
+	  case MID_ShowDependentSubs:
+	    mi->ti.disabled = anychars<0 || fv->sf->chars[anychars]==NULL ||
+		    !SCUsedBySubs(fv->sf->chars[anychars]);
+	  break;
+	}
+    }
+}
+
+void FontViewMenu_ActivateAAT(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+    FontView *ofv;
+    int anychars = FVAnyCharSelected(fv);
+
+    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
+	switch ( mi->mid ) {
+	  case MID_DefaultATT:
+	    mi->ti.disabled = anychars==-1;
+	  break;
+	  case MID_CopyFeatureToFont:
+	    for ( ofv=fv_list; ofv!=NULL && ofv->sf==fv->sf; ofv = ofv->next );
+	    mi->ti.disabled = ofv==NULL;
+	  break;
+	}
+    }
+}
+
+void FontViewMenu_ActivateBuild(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+
+    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
+        if ( mi->mid==MID_BuildAccent || mi->mid==MID_BuildComposite ) {
+	    int anybuildable = false;
+	    int onlyaccents = mi->mid==MID_BuildAccent;
+	    int i;
+	    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] ) {
+		SplineChar *sc, dummy;
+		sc = fv->sf->chars[i];
+		if ( sc==NULL )
+		    sc = SCBuildDummy(&dummy,fv->sf,i);
+		if ( SFIsSomethingBuildable(fv->sf,sc,onlyaccents)) {
+		    anybuildable = true;
+	    break;
+		}
+	    }
+	    mi->ti.disabled = !anybuildable;
+	}
+    }
+}
+
+void FontViewMenu_ActivateElement(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+    int anychars = FVAnyCharSelected(fv);
+    int anybuildable, anytraceable;
+    int order2 = fv->sf->order2;
+
+    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
+	switch ( mi->mid ) {
+	  case MID_CharInfo:
+	    mi->ti.disabled = anychars<0 ||
+		    (fv->cidmaster!=NULL && fv->sf->chars[anychars]==NULL);
+	  break;
+	  case MID_FindProblems:
+	    mi->ti.disabled = anychars==-1;
+	  break;
+	  case MID_Transform: case MID_NLTransform:
+	    mi->ti.disabled = anychars==-1;
+	    /* some Transformations make sense on bitmaps now */
+	  break;
+	  case MID_AddExtrema:
+	    mi->ti.disabled = anychars==-1 || fv->sf->onlybitmaps;
+	  break;
+	  case MID_Simplify:
+	    mi->ti.disabled = anychars==-1 || fv->sf->onlybitmaps;
+	  break;
+	  case MID_MetaFont: case MID_Stroke:
+	  case MID_RmOverlap: case MID_Effects:
+	    mi->ti.disabled = anychars==-1 || fv->sf->onlybitmaps || order2;
+	  break;
+	  case MID_Round: case MID_Correct:
+	    mi->ti.disabled = anychars==-1 || fv->sf->onlybitmaps;
+	  break;
+#ifdef FONTFORGE_CONFIG_TILEPATH
+	  case MID_TilePath:
+	    mi->ti.disabled = anychars==-1 || fv->sf->onlybitmaps || ClipBoardToSplineSet()==NULL || order2;
+	  break;
+#endif
+	  case MID_AvailBitmaps:
+	    mi->ti.disabled = fv->sf->mm!=NULL;
+	  break;
+	  case MID_RegenBitmaps:
+	    mi->ti.disabled = fv->sf->bitmaps==NULL || fv->sf->onlybitmaps ||
+		    fv->sf->mm!=NULL;
+	  break;
+	  case MID_BuildAccent:
+	    anybuildable = false;
+	    if ( anychars!=-1 ) {
+		int i;
+		for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] ) {
+		    SplineChar *sc, dummy;
+		    sc = fv->sf->chars[i];
+		    if ( sc==NULL )
+			sc = SCBuildDummy(&dummy,fv->sf,i);
+		    if ( SFIsSomethingBuildable(fv->sf,sc,false)) {
+			anybuildable = true;
+		break;
+		    }
+		}
+	    }
+	    mi->ti.disabled = !anybuildable;
+	  break;
+	  case MID_Autotrace:
+	    anytraceable = false;
+	    if ( FindAutoTraceName()!=NULL && anychars!=-1 ) {
+		int i;
+		for ( i=0; i<fv->sf->charcnt; ++i )
+		    if ( fv->selected[i] && fv->sf->chars[i]!=NULL &&
+			    fv->sf->chars[i]->layers[ly_back].images!=NULL ) {
+			anytraceable = true;
+		break;
+		    }
+	    }
+	    mi->ti.disabled = !anytraceable;
+	  break;
+	  case MID_MergeFonts:
+	    mi->ti.disabled = fv->sf->bitmaps!=NULL && fv->sf->onlybitmaps;
+	  break;
+	  case MID_InterpolateFonts:
+	    mi->ti.disabled = fv->sf->onlybitmaps;
+	  break;
+	}
+    }
+
+#ifndef FONTFORGE_CONFIG_NONLINEAR
+    w = lookup_widget( menuitem, "non_linear_transform1" );
+    gtk_widget_hide(w);
+#endif
+#ifndef FONTFORGE_CONFIG_TILEPATH
+    w = lookup_widget( menuitem, "tilepath1" );
+    gtk_widget_hide(w);
+#endif
+}
+
+void FontViewMenu_ActivateHints(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+    int anychars = FVAnyCharSelected(fv);
+    int removeOverlap;
+    int multilayer = fv->sf->multilayer;
+
+    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
+	switch ( mi->mid ) {
+	  case MID_AutoHint:
+	    mi->ti.disabled = anychars==-1 || multilayer;
+	    removeOverlap = e==NULL || !(e->u.mouse.state&ksm_shift);
+	    free(mi->ti.text);
+	    mi->ti.text = u_copy(GStringGetResource(removeOverlap?_STR_Autohint:_STR_FullAutohint,NULL));
+	  break;
+	  case MID_HintSubsPt:
+	    mi->ti.disabled = fv->sf->order2 || anychars==-1 || multilayer;
+	    if ( fv->sf->mm!=NULL && fv->sf->mm->apple )
+		mi->ti.disabled = true;
+	  break;
+	  case MID_AutoCounter: case MID_DontAutoHint:
+	    mi->ti.disabled = fv->sf->order2 || anychars==-1 || multilayer;
+	  break;
+	  case MID_AutoInstr: case MID_EditInstructions:
+	    mi->ti.disabled = !fv->sf->order2 || anychars==-1 || multilayer;
+	  break;
+	  case MID_Editfpgm: case MID_Editprep: case MID_Editcvt:
+	    mi->ti.disabled = !fv->sf->order2 || multilayer;
+	  break;
+	  case MID_ClearHints: case MID_ClearWidthMD: case MID_ClearInstrs:
+	    mi->ti.disabled = anychars==-1;
+	  break;
+	}
+    }
+}
+
+/* Builds up a menu containing all the anchor classes */
+void FontViewMenu_ActivateAnchoredPairs(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+    extern void GMenuItemArrayFree(GMenuItem *mi);
+
+    if ( mi->sub!=dummyall ) {
+	GMenuItemArrayFree(mi->sub);
+	mi->sub = NULL;
+    }
+
+    _aplistbuild(mi,fv->sf,FVMenuAnchorPairs);
+}
+
+void FontViewMenu_ActivateCombinations(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+    SplineFont *sf = fv->sf;
+    int i, anyligs=0, anykerns=0;
+    PST *pst;
+
+    if ( sf->kerns ) anykerns=true;
+    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	for ( pst=sf->chars[i]->possub; pst!=NULL; pst=pst->next ) {
+	    if ( pst->type==pst_ligature ) {
+		anyligs = true;
+		if ( anykerns )
+    break;
+	    }
+	}
+	if ( sf->chars[i]->kerns!=NULL ) {
+	    anykerns = true;
+	    if ( anyligs )
+    break;
+	}
+    }
+
+    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
+	switch ( mi->mid ) {
+	  case MID_Ligatures:
+	    mi->ti.disabled = !anyligs;
+	  break;
+	  case MID_KernPairs:
+	    mi->ti.disabled = !anykerns;
+	  break;
+	  case MID_AnchorPairs:
+	    mi->ti.disabled = sf->anchor==NULL;
+	  break;
+	}
+    }
+}
+
+void FontViewMenu_ActivateView(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+    int anychars = FVAnyCharSelected(fv);
+    int i, base;
+    BDFFont *bdf;
+    unichar_t buffer[50];
+    extern void GMenuItemArrayFree(GMenuItem *mi);
+    extern GMenuItem *GMenuItemArrayCopy(GMenuItem *mi, uint16 *cnt);
+    int pos;
+    SplineFont *sf = fv->sf;
+
+    for ( i=0; vwlist[i].ti.text!=(unichar_t *) _STR_FitToEm; ++i );
+    base = i+2;
+    for ( i=base; vwlist[i].ti.text!=NULL; ++i ) {
+	free( vwlist[i].ti.text);
+	vwlist[i].ti.text = NULL;
+    }
+
+    vwlist[base-1].ti.fg = vwlist[base-1].ti.bg = COLOR_DEFAULT;
+    if ( fv->sf->bitmaps==NULL ) {
+	vwlist[base-1].ti.line = false;
+    } else {
+	vwlist[base-1].ti.line = true;
+	for ( bdf = fv->sf->bitmaps, i=base;
+		i<sizeof(vwlist)/sizeof(vwlist[0])-1 && bdf!=NULL;
+		++i, bdf = bdf->next ) {
+	    if ( BDFDepth(bdf)==1 )
+		u_sprintf( buffer, GStringGetResource(_STR_DPixelBitmap,NULL), bdf->pixelsize );
+	    else
+		u_sprintf( buffer, GStringGetResource(_STR_DdPixelBitmap,NULL),
+			bdf->pixelsize, BDFDepth(bdf) );
+	    vwlist[i].ti.text = u_copy(buffer);
+	    vwlist[i].ti.checkable = true;
+	    vwlist[i].ti.checked = bdf==fv->show;
+	    vwlist[i].ti.userdata = bdf;
+	    vwlist[i].invoke = FVMenuShowBitmap;
+	    vwlist[i].ti.fg = vwlist[i].ti.bg = COLOR_DEFAULT;
+	}
+    }
+    GMenuItemArrayFree(mi->sub);
+    mi->sub = GMenuItemArrayCopy(vwlist,NULL);
+
+    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
+	switch ( mi->mid ) {
+	  case MID_Next: case MID_Prev:
+	    mi->ti.disabled = anychars<0;
+	  break;
+	  case MID_NextDef:
+	    if ( anychars<0 ) pos = sf->charcnt;
+	    else for ( pos = anychars+1; pos<sf->charcnt && sf->chars[pos]==NULL; ++pos );
+	    mi->ti.disabled = pos==sf->charcnt;
+	  break;
+	  case MID_PrevDef:
+	    for ( pos = anychars-1; pos>=0 && sf->chars[pos]==NULL; --pos );
+	    mi->ti.disabled = pos<0;
+	  break;
+	  case MID_EncodedView:
+	    mi->ti.checked = !fv->sf->compacted;
+	  break;
+	  case MID_CompactedView:
+	    mi->ti.checked = fv->sf->compacted;
+	  break;
+	  case MID_ShowHMetrics:
+	    /*mi->ti.checked = fv->showhmetrics;*/
+	  break;
+	  case MID_ShowVMetrics:
+	    /*mi->ti.checked = fv->showvmetrics;*/
+	    mi->ti.disabled = !fv->sf->hasvmetrics;
+	  break;
+	  case MID_24:
+	    mi->ti.checked = (fv->show!=NULL && fv->show==fv->filled && fv->show->pixelsize==24);
+	    mi->ti.disabled = fv->sf->onlybitmaps && fv->show!=fv->filled;
+	  break;
+	  case MID_36:
+	    mi->ti.checked = (fv->show!=NULL && fv->show==fv->filled && fv->show->pixelsize==36);
+	    mi->ti.disabled = fv->sf->onlybitmaps && fv->show!=fv->filled;
+	  break;
+	  case MID_48:
+	    mi->ti.checked = (fv->show!=NULL && fv->show==fv->filled && fv->show->pixelsize==48);
+	    mi->ti.disabled = fv->sf->onlybitmaps && fv->show!=fv->filled;
+	  break;
+	  case MID_72:
+	    mi->ti.checked = (fv->show!=NULL && fv->show==fv->filled && fv->show->pixelsize==72);
+	    mi->ti.disabled = fv->sf->onlybitmaps && fv->show!=fv->filled;
+	  break;
+	  case MID_96:
+	    mi->ti.checked = (fv->show!=NULL && fv->show==fv->filled && fv->show->pixelsize==96);
+	    mi->ti.disabled = fv->sf->onlybitmaps && fv->show!=fv->filled;
+	  break;
+	  case MID_AntiAlias:
+	    mi->ti.checked = (fv->show!=NULL && fv->show->clut!=NULL);
+	    mi->ti.disabled = fv->sf->onlybitmaps && fv->show!=fv->filled;
+	  break;
+	  case MID_FitToEm:
+	    mi->ti.checked = (fv->show!=NULL && !fv->show->bbsized);
+	    mi->ti.disabled = fv->sf->onlybitmaps && fv->show!=fv->filled;
+	  break;
+	}
+    }
+}
+
+void FontViewMenu_ActivateMetrics(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+    int anychars = FVAnyCharSelected(fv);
+
+    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
+	switch ( mi->mid ) {
+	  case MID_Center: case MID_Thirds: case MID_SetWidth: 
+	  case MID_SetLBearing: case MID_SetRBearing:
+	    mi->ti.disabled = anychars==-1;
+	  break;
+	  case MID_SetVWidth:
+	    mi->ti.disabled = anychars==-1 || !fv->sf->hasvmetrics;
+	  break;
+	  case MID_VKernByClass:
+	  case MID_VKernFromH:
+	  case MID_RmVKern:
+	    mi->ti.disabled = !fv->sf->hasvmetrics;
+	  break;
+	}
+    }
+}
+
+void FontViewMenu_ActivateCID(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+    int i, base, j;
+    extern void GMenuItemArrayFree(GMenuItem *mi);
+    extern GMenuItem *GMenuItemArrayCopy(GMenuItem *mi, uint16 *cnt);
+    SplineFont *sub, *cidmaster = fv->cidmaster;
+
+    for ( i=0; cdlist[i].mid!=MID_CIDFontInfo; ++i );
+    base = i+2;
+    for ( i=base; cdlist[i].ti.text!=NULL; ++i ) {
+	free( cdlist[i].ti.text);
+	cdlist[i].ti.text = NULL;
+    }
+
+    cdlist[base-1].ti.fg = cdlist[base-1].ti.bg = COLOR_DEFAULT;
+    if ( cidmaster==NULL ) {
+	cdlist[base-1].ti.line = false;
+    } else {
+	cdlist[base-1].ti.line = true;
+	for ( j = 0, i=base; 
+		i<sizeof(cdlist)/sizeof(cdlist[0])-1 && j<cidmaster->subfontcnt;
+		++i, ++j ) {
+	    sub = cidmaster->subfonts[j];
+	    cdlist[i].ti.text = uc_copy(sub->fontname);
+	    cdlist[i].ti.checkable = true;
+	    cdlist[i].ti.checked = sub==fv->sf;
+	    cdlist[i].ti.userdata = sub;
+	    cdlist[i].invoke = FVMenuShowSubFont;
+	    cdlist[i].ti.fg = cdlist[i].ti.bg = COLOR_DEFAULT;
+	}
+    }
+    GMenuItemArrayFree(mi->sub);
+    mi->sub = GMenuItemArrayCopy(cdlist,NULL);
+
+    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
+	switch ( mi->mid ) {
+	  case MID_Convert2CID: case MID_ConvertByCMap:
+	    mi->ti.disabled = cidmaster!=NULL || fv->sf->mm!=NULL;
+	  break;
+	  case MID_InsertFont: case MID_InsertBlank:
+	    /* OpenType allows at most 255 subfonts (PS allows more, but why go to the effort to make safe font check that? */
+	    mi->ti.disabled = cidmaster==NULL || cidmaster->subfontcnt>=255;
+	  break;
+	  case MID_RemoveFromCID:
+	    mi->ti.disabled = cidmaster==NULL || cidmaster->subfontcnt<=1;
+	  break;
+	  case MID_Flatten: case MID_FlattenByCMap: case MID_CIDFontInfo:
+	    mi->ti.disabled = cidmaster==NULL;
+	  break;
+	}
+    }
+}
+
+void FontViewMenu_ActivateMM(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+    int i, base, j;
+    extern void GMenuItemArrayFree(GMenuItem *mi);
+    extern GMenuItem *GMenuItemArrayCopy(GMenuItem *mi, uint16 *cnt);
+    MMSet *mm = fv->sf->mm;
+    SplineFont *sub;
+    GMenuItem *mml;
+
+    for ( i=0; mmlist[i].mid!=MID_ChangeMMBlend; ++i );
+    base = i+2;
+    if ( mm==NULL )
+	mml = mmlist;
+    else {
+	mml = gcalloc(base+mm->instance_count+2,sizeof(GMenuItem));
+	memcpy(mml,mmlist,sizeof(mmlist));
+	mml[base-1].ti.fg = mml[base-1].ti.bg = COLOR_DEFAULT;
+	mml[base-1].ti.line = true;
+	for ( j = 0, i=base; j<mm->instance_count+1; ++i, ++j ) {
+	    if ( j==0 )
+		sub = mm->normal;
+	    else
+		sub = mm->instances[j-1];
+	    mml[i].ti.text = uc_copy(sub->fontname);
+	    mml[i].ti.checkable = true;
+	    mml[i].ti.checked = sub==fv->sf;
+	    mml[i].ti.userdata = sub;
+	    mml[i].invoke = FVMenuShowSubFont;
+	    mml[i].ti.fg = mml[i].ti.bg = COLOR_DEFAULT;
+	}
+    }
+    GMenuItemArrayFree(mi->sub);
+    mi->sub = GMenuItemArrayCopy(mml,NULL);
+    if ( mml!=mmlist ) {
+	for ( i=base; mml[i].ti.text!=NULL; ++i )
+	    free( mml[i].ti.text);
+	free(mml);
+    }
+
+    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
+	switch ( mi->mid ) {
+	  case MID_CreateMM:
+	    mi->ti.disabled = false;
+	  break;
+	  case MID_MMInfo: case MID_MMValid: case MID_BlendToNew:
+	    mi->ti.disabled = mm==NULL;
+	  break;
+	  case MID_ChangeMMBlend:
+	    mi->ti.disabled = mm==NULL || mm->apple;
+	  break;
+	}
+    }
+}
+#endif
 
 void FVRefreshChar(FontView *fv,BDFFont *bdf,int enc) {
     BDFChar *bdfc = bdf->chars[enc];
@@ -4323,18 +5040,18 @@ return;
 	    base.width = bdfc->xmax-bdfc->xmin+1;
 	    base.height = bdfc->ymax-bdfc->ymin+1;
 	    box.x = j*fv->cbw+1; box.width = fv->cbw-1;
-	    box.y = i*fv->cbh+FV_LAB_HEIGHT+1; box.height = fv->cbw;
+	    box.y = i*fv->cbh+fv->lab_height+1; box.height = fv->cbw;
 	    GDrawPushClip(fv->v,&box,&old);
 	    GDrawFillRect(fv->v,&box,GDrawGetDefaultBackground(NULL));
 	    if ( fv->magnify>1 ) {
 		GDrawDrawImageMagnified(fv->v,&gi,NULL,
 			j*fv->cbw+(fv->cbw-1-fv->magnify*base.width)/2,
-			i*fv->cbh+FV_LAB_HEIGHT+1+fv->magnify*(fv->show->ascent-bdfc->ymax),
+			i*fv->cbh+fv->lab_height+1+fv->magnify*(fv->show->ascent-bdfc->ymax),
 			fv->magnify*base.width,fv->magnify*base.height);
 	    } else
 		GDrawDrawImage(fv->v,&gi,NULL,
 			j*fv->cbw+(fv->cbw-1-base.width)/2,
-			i*fv->cbh+FV_LAB_HEIGHT+1+fv->show->ascent-bdfc->ymax);
+			i*fv->cbh+fv->lab_height+1+fv->show->ascent-bdfc->ymax);
 	    GDrawPopClip(fv->v,&old);
 	    if ( fv->selected[enc] ) {
 		GDrawSetXORBase(fv->v,GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(fv->v)));
@@ -4809,7 +5526,8 @@ return( NULL );
 return( rot );
 }
 
-static GImage *UniGetRotatedGlyph(SplineFont *sf, SplineChar *sc,int uni) {
+static GImage *UniGetRotatedGlyph(FontView *fv, SplineChar *sc,int uni) {
+    SplineFont *sf = fv->sf;
     int cid=-1;
     static GWindow pixmap=NULL;
     GRect r;
@@ -4834,16 +5552,16 @@ static GImage *UniGetRotatedGlyph(SplineFont *sf, SplineChar *sc,int uni) {
 return( NULL );
 
     if ( pixmap==NULL ) {
-	pixmap = GDrawCreateBitmap(NULL,2*FV_LAB_HEIGHT,2*FV_LAB_HEIGHT,NULL);
+	pixmap = GDrawCreateBitmap(NULL,2*fv->lab_height,2*fv->lab_height,NULL);
 	if ( pixmap==NULL )
 return( NULL );
 	GDrawSetFont(pixmap,sf->fv->header);
     }
     r.x = r.y = 0;
-    r.width = r.height = 2*FV_LAB_HEIGHT;
+    r.width = r.height = 2*fv->lab_height;
     GDrawFillRect(pixmap,&r,1);
     buf[0] = uni; buf[1] = 0;
-    GDrawDrawText(pixmap,2,FV_LAB_HEIGHT,buf,1,NULL,0);
+    GDrawDrawText(pixmap,2,fv->lab_height,buf,1,NULL,0);
     unrot = GDrawCopyScreenToImage(pixmap,&r);
     if ( unrot==NULL )
 return( NULL );
@@ -5022,7 +5740,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
     GDrawFillRect(pixmap,NULL,GDrawGetDefaultBackground(NULL));
     for ( i=0; i<=fv->rowcnt; ++i ) {
 	GDrawDrawLine(pixmap,0,i*fv->cbh,fv->width,i*fv->cbh,0);
-	GDrawDrawLine(pixmap,0,i*fv->cbh+FV_LAB_HEIGHT,fv->width,i*fv->cbh+FV_LAB_HEIGHT,0x808080);
+	GDrawDrawLine(pixmap,0,i*fv->cbh+fv->lab_height,fv->width,i*fv->cbh+fv->lab_height,0x808080);
     }
     for ( i=0; i<=fv->colcnt; ++i )
 	GDrawDrawLine(pixmap,i*fv->cbw,0,i*fv->cbw,fv->height,0);
@@ -5087,7 +5805,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		    break;
 			}
 		    if ( strstr(pt,".vert")!=NULL )
-			rotated = UniGetRotatedGlyph(fv->sf,sc,buf[0]!='?'?buf[0]:-1);
+			rotated = UniGetRotatedGlyph(fv,sc,buf[0]!='?'?buf[0]:-1);
 		    if ( buf[0]!='?' ) {
 			fg = 0;
 			if ( strstr(pt,".italic")!=NULL )
@@ -5104,21 +5822,21 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		    fg = 0x000000;
 		} else if ( strncmp(sc->name,"vertcid_",8)==0 ||
 			strncmp(sc->name,"vertuni",7)==0 ) {
-		    rotated = UniGetRotatedGlyph(fv->sf,sc,-1);
+		    rotated = UniGetRotatedGlyph(fv,sc,-1);
 		}
 	    }
 	    bg = COLOR_DEFAULT;
 	    if ( sc->layers[ly_back].splines!=NULL || sc->layers[ly_back].images!=NULL || sc->color!=COLOR_DEFAULT ) {
 		GRect r;
 		r.x = j*fv->cbw+1; r.width = fv->cbw-1;
-		r.y = i*fv->cbh+1; r.height = FV_LAB_HEIGHT-1;
+		r.y = i*fv->cbh+1; r.height = fv->lab_height-1;
 		bg = sc->color!=COLOR_DEFAULT?sc->color:0x808080;
 		GDrawFillRect(pixmap,&r,bg);
 	    }
 	    if ( rotated!=NULL ) {
 		GRect r;
 		r.x = j*fv->cbw+1; r.width = fv->cbw-1;
-		r.y = i*fv->cbh+1; r.height = FV_LAB_HEIGHT-1;
+		r.y = i*fv->cbh+1; r.height = fv->lab_height-1;
 		GDrawPushClip(pixmap,&r,&old2);
 		GDrawDrawImage(pixmap,rotated,NULL,j*fv->cbw+2,i*fv->cbh+2);
 		GDrawPopClip(pixmap,&old2);
@@ -5128,7 +5846,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		if ( italic!=wasitalic ) GDrawSetFont(pixmap,italic?fv->iheader:fv->header);
 		width = GDrawGetTextWidth(pixmap,buf,1,mods);
 		if ( sc->unicodeenc<0x80 || sc->unicodeenc>=0xa0 )
-		    GDrawDrawText(pixmap,j*fv->cbw+(fv->cbw-1-width)/2,i*fv->cbh+FV_LAB_HEIGHT-2,buf,1,mods,fg);
+		    GDrawDrawText(pixmap,j*fv->cbw+(fv->cbw-1-width)/2,i*fv->cbh+fv->lab_height-2,buf,1,mods,fg);
 		wasitalic = italic;
 	    }
 	    changed = sc->changed;
@@ -5137,7 +5855,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 	    if ( changed ) {
 		GRect r;
 		r.x = j*fv->cbw+1; r.width = fv->cbw-1;
-		r.y = i*fv->cbh+1; r.height = FV_LAB_HEIGHT-1;
+		r.y = i*fv->cbh+1; r.height = fv->lab_height-1;
 		if ( bg == COLOR_DEFAULT )
 		    bg = GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(fv->v));
 		GDrawSetXORBase(pixmap,bg);
@@ -5194,21 +5912,21 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		if ( fv->magnify>1 ) {
 		    GDrawDrawImageMagnified(pixmap,&gi,NULL,
 			    j*fv->cbw+(fv->cbw-1-fv->magnify*base.width)/2,
-			    i*fv->cbh+FV_LAB_HEIGHT+1+fv->magnify*(fv->show->ascent-bdfc->ymax),
+			    i*fv->cbh+fv->lab_height+1+fv->magnify*(fv->show->ascent-bdfc->ymax),
 			    fv->magnify*base.width,fv->magnify*base.height);
 		} else
 		    GDrawDrawImage(pixmap,&gi,NULL,
 			    j*fv->cbw+(fv->cbw-1-base.width)/2,
-			    i*fv->cbh+FV_LAB_HEIGHT+1+fv->show->ascent-bdfc->ymax);
+			    i*fv->cbh+fv->lab_height+1+fv->show->ascent-bdfc->ymax);
 		if ( fv->showhmetrics ) {
 		    int x1, x0 = j*fv->cbw+(fv->cbw-1-fv->magnify*base.width)/2- bdfc->xmin*fv->magnify;
 		    /* Draw advance width & horizontal origin */
 		    if ( fv->showhmetrics&fvm_origin )
-			GDrawDrawLine(pixmap,x0,i*fv->cbh+FV_LAB_HEIGHT+yorg-3,x0,
-				i*fv->cbh+FV_LAB_HEIGHT+yorg+2,METRICS_ORIGIN);
+			GDrawDrawLine(pixmap,x0,i*fv->cbh+fv->lab_height+yorg-3,x0,
+				i*fv->cbh+fv->lab_height+yorg+2,METRICS_ORIGIN);
 		    x1 = x0 + bdfc->width;
 		    if ( fv->showhmetrics&fvm_advanceat )
-			GDrawDrawLine(pixmap,x1,i*fv->cbh+FV_LAB_HEIGHT+1,x1,
+			GDrawDrawLine(pixmap,x1,i*fv->cbh+fv->lab_height+1,x1,
 				(i+1)*fv->cbh-1,METRICS_ADVANCE);
 		    if ( fv->showhmetrics&fvm_advanceto )
 			GDrawDrawLine(pixmap,x0,(i+1)*fv->cbh-2,x1,
@@ -5217,10 +5935,10 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		if ( fv->showvmetrics ) {
 		    int x0 = j*fv->cbw+(fv->cbw-1-fv->magnify*base.width)/2- bdfc->xmin*fv->magnify
 			    + fv->magnify*fv->show->pixelsize/2;
-		    int y0 = i*fv->cbh+FV_LAB_HEIGHT+yorg;
+		    int y0 = i*fv->cbh+fv->lab_height+yorg;
 		    int yvw = y0 + fv->magnify*sc->vwidth*fv->show->pixelsize/em;
 		    if ( fv->showvmetrics&fvm_baseline )
-			GDrawDrawLine(pixmap,x0,i*fv->cbh+FV_LAB_HEIGHT+1,x0,
+			GDrawDrawLine(pixmap,x0,i*fv->cbh+fv->lab_height+1,x0,
 				(i+1)*fv->cbh-1,METRICS_BASELINE);
 		    if ( fv->showvmetrics&fvm_advanceat )
 			GDrawDrawLine(pixmap,j*fv->cbw,yvw,(j+1)*fv->cbw,
@@ -5229,13 +5947,13 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 			GDrawDrawLine(pixmap,j*fv->cbw+2,y0,j*fv->cbw+2,
 				yvw,METRICS_ADVANCE);
 		    if ( fv->showvmetrics&fvm_origin )
-			GDrawDrawLine(pixmap,x0-3,i*fv->cbh+FV_LAB_HEIGHT+yorg,x0+2,i*fv->cbh+FV_LAB_HEIGHT+yorg,METRICS_ORIGIN);
+			GDrawDrawLine(pixmap,x0-3,i*fv->cbh+fv->lab_height+yorg,x0+2,i*fv->cbh+fv->lab_height+yorg,METRICS_ORIGIN);
 		}
 		GDrawPopClip(pixmap,&old2);
 	    }
 	    if ( fv->selected[index] ) {
 		box.x = j*fv->cbw+1; box.width = fv->cbw-1;
-		box.y = i*fv->cbh+FV_LAB_HEIGHT+1; box.height = fv->cbw;
+		box.y = i*fv->cbh+fv->lab_height+1; box.height = fv->cbw;
 		GDrawSetXORMode(pixmap);
 		GDrawSetXORBase(pixmap,GDrawGetDefaultBackground(NULL));
 		GDrawFillRect(pixmap,&box,XOR_COLOR);
@@ -5246,7 +5964,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
     if ( fv->showhmetrics&fvm_baseline ) {
 	int baseline = (fv->sf->ascent*fv->magnify*fv->show->pixelsize)/em+1;
 	for ( i=0; i<=fv->rowcnt; ++i )
-	    GDrawDrawLine(pixmap,0,i*fv->cbh+FV_LAB_HEIGHT+baseline,fv->width,i*fv->cbh+FV_LAB_HEIGHT+baseline,METRICS_BASELINE);
+	    GDrawDrawLine(pixmap,0,i*fv->cbh+fv->lab_height+baseline,fv->width,i*fv->cbh+fv->lab_height+baseline,METRICS_BASELINE);
     }
     GDrawPopClip(pixmap,&old);
     GDrawSetDither(NULL, true);
@@ -5779,6 +6497,27 @@ static void FVMouse(FontView *fv,GEvent *event) {
 	SVAttachFV(fv,2);
 }
 
+#if defined(FONTFORGE_CONFIG_GTK)
+gboolean FontView_ViewportResize(GtkWidget *widget, GdkEventConfigure *event,
+	gpointer user_data) {
+    int cc, rc;
+    FontView *fv = (FontView *) g_object_get_data( widget, "data" );
+
+    cc = (event->width-1)/fv->cbw; rc = (event->height-1)/fv->cbh;
+    if ( cc==0 ) cc = 1; if ( rc==0 ) rc = 1;
+
+    if ( event->width==fv->width || event->height==fv->height )
+	/* Ok, the window manager didn't change the size. */
+    else if ( event->width!=cc*fv->cbw+1 || event->height!=rc*fv->cbh+1 ) {
+	gtk_widget_set_size_request( widget, cc*fv->cbw+1, rc*fv->cbh+1);
+return TRUE;
+    }
+    gtk_widget_set_size_request( lookup_widget(widget,"view"), 1, 1 );
+    fv->width = width; fv->height = height;
+
+return TRUE;
+}
+#elif defined(FONTFORGE_CONFIG_GDRAW)
 static void FVResize(FontView *fv,GEvent *event) {
     GRect pos,screensize;
     int topchar;
@@ -5841,6 +6580,7 @@ static void FVResize(FontView *fv,GEvent *event) {
     GDrawRequestExpose(fv->gw,NULL,true);
     GDrawRequestExpose(fv->v,NULL,true);
 }
+#endif
 
 static void FVTimer(FontView *fv,GEvent *event) {
 
@@ -6130,19 +6870,50 @@ FontView *_FontViewCreate(SplineFont *sf) {
     fv->selected = gcalloc(sf->charcnt,sizeof(char));
     fv->magnify = (ps<=9)? 3 : (ps<20) ? 2 : 1;
     fv->cbw = (ps*fv->magnify)+1;
-    fv->cbh = (ps*fv->magnify)+1+FV_LAB_HEIGHT+1;
+    fv->cbh = (ps*fv->magnify)+1+fv->lab_height+1;
     fv->antialias = sf->display_antialias;
     fv->bbsized = sf->display_bbsized;
+
+    fv->end_pos = -1;
 return( fv );
 }
 
 FontView *FontViewCreate(SplineFont *sf) {
+    FontView *fv = _FontViewCreate(sf);
+#if defined(FONTFORGE_CONFIG_GTK)
+    GtkWidget *status;
+    PangoContext *context;
+    PangoFont *font;
+    PangoFontMetrics *fm;
+    int as, ds;
+
+    fv->gw = create_FontView();
+    g_object_set_data (G_OBJECT (fv->gw), "data", fv );
+    fv->v = lookup_widget( fv->gw,"view" );
+    status = lookup_widget( fv->gw,"status" );
+    context = gtk_widget_get_pango_context( status );
+    font = pango_context_load_font( context, pango_context_get_font_description(context));
+    fm = pango_font_get_metrics(font,NULL);
+    as = pango_font_metrics_get_ascent(fm);
+    ds = pango_font_metrics_get_descent(fm);
+    fv->infoh = (as+ds)/1024;
+    gtk_widget_set_size_request(status,0,fv->infoh);
+
+    context = gtk_widget_get_pango_context( fv->v );
+    font = pango_context_load_font( context, pango_context_get_font_description(context));
+    fm = pango_font_get_metrics(font,NULL);
+    as = pango_font_metrics_get_ascent(fm);
+    ds = pango_font_metrics_get_descent(fm);
+    fv->lab_height = (as+ds)/1024;
+
+    g_object_set_data( fv->gw, "data", fv );
+    g_object_set_data( fv->v , "data", fv );
+#elif defined(FONTFORGE_CONFIG_GDRAW)
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
     GGadgetData gd;
     GGadget *sb;
-    FontView *fv = _FontViewCreate(sf);
     GRect gsize;
     FontRequest rq;
     /* sadly, clearlyu is too big for the space I've got */
@@ -6183,7 +6954,7 @@ FontView *FontViewCreate(SplineFont *sf) {
     GGadgetGetSize(fv->mb,&gsize);
     fv->mbh = gsize.height;
     fv->infoh = 14/*GDrawPointsToPixels(fv->gw,14)*/;
-    fv->end_pos = -1;
+    fv->lab_height = FV_LAB_HEIGHT;
 
     gd.pos.y = fv->mbh+fv->infoh; gd.pos.height = pos.height;
     gd.pos.width = GDrawPointsToPixels(gw,_GScrollBar_Width);
@@ -6212,6 +6983,7 @@ FontView *FontViewCreate(SplineFont *sf) {
     rq.style = fs_italic;
     fv->iheader = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
     GDrawSetFont(fv->v,fv->header);
+#endif
     fv->showhmetrics = default_fv_showhmetrics;
     fv->showvmetrics = default_fv_showvmetrics && sf->hasvmetrics;
     if ( fv->nextsame!=NULL ) {
@@ -6234,9 +7006,13 @@ FontView *FontViewCreate(SplineFont *sf) {
     fv->cbw = -1;
     FVChangeDisplayFont(fv,bdf);
 
+#if defined(FONTFORGE_CONFIG_GTK)
+    gtk_widget_show(fv->gw);
+#elif defined(FONTFORGE_CONFIG_GDRAW)
     /*GWidgetHidePalettes();*/
     GDrawSetVisible(gw,true);
     FontViewOpenKids(fv);
+#endif
 return( fv );
 }
 

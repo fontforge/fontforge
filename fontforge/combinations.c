@@ -30,7 +30,6 @@
 #include <gkeysym.h>
 #include <utype.h>
 #include <unistd.h>
-#include "nomen.h"
 
 
 GTextInfo sizes[] = {

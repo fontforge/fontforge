@@ -38,6 +38,7 @@
 #include <setjmp.h>
 
 static int verbose = -1;
+int no_windowing_ui = false;
 
 struct dictentry {
     char *name;
@@ -757,7 +758,11 @@ static void bOpen(Context *c) {
 	errors(c, "Failed to open", c->a.vals[1].u.sval);
     if ( sf->fv!=NULL )
 	/* All done */;
+#ifdef FONTFORGE_CONFIG_GDRAW
     else if ( screen_display!=NULL )
+#elif defined(FONTFORGE_CONFIG_GTK)
+    else if (
+#endif
 	FontViewCreate(sf);
     else
 	FVAppend(_FontViewCreate(sf));
@@ -5001,6 +5006,8 @@ static void ProcessScript(int argc, char *argv[], FILE *script) {
     Context c;
     enum token_type tok;
 
+    no_windowing_ui = true;
+
     VerboseCheck();
 
     i=1;
@@ -5077,7 +5084,7 @@ return;
 	ProcessScript(argc, argv,stdin);
 }
 
-#ifdef X_DISPLAY_MISSING
+#if defined(FONTFORGE_CONFIG_NO_WINDOWING_UI) || defined(X_DISPLAY_MISSING)
 static void _doscriptusage(void) {
     printf( "fontforge [options]\n" );
     printf( "\t-usage\t\t\t (displays this message, and exits)\n" );
@@ -5111,7 +5118,7 @@ exit(0);
 
 void CheckIsScript(int argc, char *argv[]) {
     _CheckIsScript(argc, argv);
-#ifdef X_DISPLAY_MISSING
+#if defined( FONTFORGE_CONFIG_NO_WINDOWING_UI ) || defined( X_DISPLAY_MISSING )
     if ( argc==2 ) {
 	char *pt = argv[1];
 	if ( *pt=='-' && pt[1]=='-' ) ++pt;
@@ -5161,6 +5168,7 @@ return;				/* Error return */
     }
 }
 
+#ifdef FONTFORGE_CONFIG_GDRAW
 struct sd_data {
     int done;
     FontView *fv;
@@ -5289,8 +5297,12 @@ return( false );
     }
 return( true );
 }
+#endif
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 void ScriptDlg(FontView *fv) {
+# if defined(FONTFORGE_CONFIG_GTK)
+# elif defined( FONTFORGE_CONFIG_GDRAW )
     GRect pos;
     static GWindow gw;
     GWindowAttrs wattrs;
@@ -5376,4 +5388,6 @@ void ScriptDlg(FontView *fv) {
     /* Selection may be out of date, force a refresh */
     for ( list = fv_list; list!=NULL; list=list->next )
 	GDrawRequestExpose(list->v,NULL,false);
+#endif
 }
+#endif

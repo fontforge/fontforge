@@ -25,7 +25,6 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
-#include "nomen.h"
 #include <gkeysym.h>
 #include <string.h>
 #include <ustring.h>

@@ -25,13 +25,18 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
-#include "gfile.h"
-#include "gresource.h"
+#include <gfile.h>
+#ifdef FONTFORGE_CONFIG_GDRAW
+# include <gresource.h>
+# include <ustring.h>
+#elif defined( FONTFORGE_CONFIG_GTK )
+# include "interface.h"
+# include "support.h"
+#endif
 #include <time.h>
 #include <sys/time.h>
 #include <locale.h>
 #include <unistd.h>
-#include <ustring.h>
 #if !defined(_NO_LIBUNINAMESLIST) && !defined(_STATIC_LIBUNINAMESLIST) && !defined(NODYNAMIC)
 #  include <dynamic.h>
 #endif
@@ -75,7 +80,7 @@ static void inituninameannot(void) {
 
 void doversion(void) {
     extern const char *source_version_str;
-    printf( "pfaedit %s\n", source_version_str );
+    printf( "fontforge %s\n", source_version_str );
 exit(0);
 }
 
@@ -86,13 +91,17 @@ static void _dousage(void) {
     printf( "\t-newkorean\t\t (creates a new korean font)\n" );
 #endif
     printf( "\t-recover none|auto|clean (control error recovery)\n" );
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     printf( "\t-nosplash\t\t (no splash screen)\n" );
+#endif
     printf( "\t-display display-name\t (sets the X display)\n" );
+#ifdef FONTFORGE_CONFIG_GDRAW
     printf( "\t-depth val\t\t (sets the display depth if possible)\n" );
     printf( "\t-vc val\t\t\t (sets the visual class if possible)\n" );
     printf( "\t-cmap current|copy|private\t (sets the type of colormap)\n" );
     printf( "\t-sync\t\t\t (syncs the display, debugging)\n" );
     printf( "\t-keyboard ibm|mac|sun|ppc  (generates appropriate hotkeys in menus)\n" );
+#endif
 #if MyMemory
     printf( "\t-memory\t\t\t (turns on memory checks, debugging)\n" );
 #endif
@@ -135,6 +144,141 @@ static void initrand(void) {
     srand(tv.tv_usec);
 }
 
+struct delayed_event {
+    void *data;
+    void (*func)(void *);
+};
+
+#ifdef FONTFORGE_CONFIG_GTK
+
+static guint autosave_timer;
+
+static void splash_window_tooltip_fun( GtkWidget *splashw ) {
+    static char *foolishness[] = {
+	"A free press discriminates\nagainst the illiterate.",
+	"A free press discriminates\nagainst the illiterate.",
+	"Gaudeamus Ligature!",
+	"Gaudeamus Ligature!",
+	"In the beginning was the letter..."
+    };
+    GtkTooltips *tips;
+
+    tips = gtk_tooltips_new();
+    gtk_tooltips_set_tip( tips, splashw, foolishness[rand()%(sizeof(foolishness)/sizeof(foolishness[0]))], NULL );
+}
+
+void ShowAboutScreen(void) {
+    GtkWidget *splashw, *version;
+    char buffer[200];
+    extern const char *source_modtime_str;
+    extern const char *source_version_str;
+
+    splashw = create_FontForgeSplash ();
+    splash_window_tooltip_fun( splashw );
+    version = lookup_widget(FontView,"Version");
+    if ( version!=NULL ) {
+	sprintf( buffer, "Version: %s (%s)", source_modtime_str, source_version_str);
+	gtk_label_set_text(GTK_LABEL( version ),buffer);
+    }
+    gtk_widget_show (splashw);
+}
+
+static int DoDelayedEvents(gpointer data) {
+    struct delayed_event *info = (struct delayed_event *) data;
+
+    if ( info!=NULL ) {
+	(info->func)(info->data);
+	chunkfree(info);
+    }
+return( FALSE );		/* cancel timer */
+}
+
+void DelayEvent(void (*func)(void *), void *data) {
+    struct delayed_event *info = chunkalloc(sizeof(struct delayed_event));
+
+    info->data = data;
+    info->func = func;
+    
+    gtk_timeout_add(100,DoDelayedEvents,info);
+}
+
+static int _DoAutoSaves( gpointer ignored ) {
+    DoAutoSaves();
+return( TRUE );			/* Continue timer */
+}
+
+struct argcontext {
+    int argc;
+    char **argv;
+    int recover;
+};
+
+static int ParseArgs( gpointer data ) {
+    struct argcontext *args = data;
+    int argc = args->argc;
+    char **argv = args->argv;
+    int recover = args->recover;
+    int any, i;
+    int next_recent = 0;
+
+    any = 0;
+    if ( recover==-1 )
+	CleanAutoRecovery();
+    else if ( recover )
+	any = DoAutoRecovery();
+
+    for ( i=1; i<argc; ++i ) {
+	char buffer[1025];
+	char *pt = argv[i];
+
+	if ( pt[0]=='-' && pt[1]=='-' )
+	    ++pt;
+	if ( strcmp(pt,"-new")==0 ) {
+	    FontNew();
+	    any = 1;
+#if HANYANG
+	} else if ( strcmp(pt,"-newkorean")==0 ) {
+	    MenuNewComposition(NULL,NULL,NULL);
+	    any = 1;
+#endif
+	} else if ( strcmp(pt,"-last")==0 ) {
+	    if ( next_recent<RECENT_MAX && RecentFiles[next_recent]!=NULL )
+		if ( ViewPostscriptFont(RecentFiles[next_recent++]))
+		    any = 1;
+	} else if ( strcmp(pt,"-sync")==0 || strcmp(pt,"-memory")==0 ||
+		strcmp(pt,"-nosplash")==0 || strcmp(pt,"-recover=none")==0 ||
+		strcmp(pt,"-recover=clean")==0 || strcmp(pt,"-recover=auto")==0 )
+	    /* Already done, needed to be before display opened */;
+	else if ( (strcmp(pt,"-depth")==0 || strcmp(pt,"-vc")==0 ||
+		    strcmp(pt,"-cmap")==0 || strcmp(pt,"-colormap")==0 || 
+		    strcmp(pt,"-keyboard")==0 || 
+		    strcmp(pt,"-display")==0 || strcmp(pt,"-recover")==0 ) &&
+		i<argc-1 )
+	    ++i; /* Already done, needed to be before display opened */
+	else {
+	    GFileGetAbsoluteName(argv[i],buffer,sizeof(buffer));
+	    if ( GFileIsDir(buffer)) {
+		char *fname;
+		if ( buffer[strlen(buffer)-1]!='/' ) {
+		    /* If dirname doesn't end in "/" we'll be looking in parent dir */
+		    buffer[strlen(buffer)+1]='\0';
+		    buffer[strlen(buffer)] = '/';
+		}
+		fname = GetPostscriptFontName(buffer,false);
+		if ( fname!=NULL )
+		    ViewPostscriptFont(fname);
+		any = 1;	/* Even if we didn't get a font, don't bring up dlg again */
+		free(fname);
+	    } else if ( ViewPostscriptFont(buffer)!=0 )
+		any = 1;
+	}
+    }
+    if ( !any )
+	MenuOpen(NULL,NULL,NULL);
+return( FALSE );	/* Cancel timer */
+}
+
+#elif defined( FONTFORGE_CONFIG_GDRAW )
 static void BuildCharHook(GDisplay *gd) {
     GWidgetCreateInsChar();
 }
@@ -150,11 +294,6 @@ static GFont *splash_font, *splash_italic;
 static int as,fh, linecnt;
 static unichar_t msg[350];
 static unichar_t *lines[20], *is, *ie;
-
-struct delayed_event {
-    void *data;
-    void (*func)(void *);
-};
 
 void ShowAboutScreen(void) {
     static int first=1;
@@ -295,20 +434,33 @@ static void AddR(char *prog, char *name, char *val ) {
     strcat(full,val);
     GResourceAddResourceString(full,prog);
 }
+#endif
 
 int main( int argc, char **argv ) {
     int i;
-    GRect pos;
-    GWindowAttrs wattrs;
     extern const char *source_modtime_str;
     int splash = 1;
-    int any;
-    char *display = NULL;
     int recover=1;
+#ifdef FONTFORGE_CONFIG_GDRAW
+    int any;
+    int next_recent=0;
+    GRect pos;
+    GWindowAttrs wattrs;
+    char *display = NULL;
     FontRequest rq;
     static unichar_t times[] = { 't', 'i', 'm', 'e', 's',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t', '\0' };
     int ds, ld;
-    int next_recent=0;
+#elif defined( FONTFORGE_CONFIG_GTK )
+    GtkWidget *splashw;
+    GtkWidget *notices;
+    gchar *home_dir, *rc_path;
+    struct argcontext args;
+#elif defined( FONTFORGE_CONFIG_NO_WINDOWING_UI )
+#else
+# error FontForge has not been properly configured.
+/* One of FONTFORGE_CONFIG_GDRAW, FONTFORGE_CONFIG_GTK, FONTFORGE_CONFIG_NO_WINDOWING_UI */
+/*  must be set */
+#endif
 
     fprintf( stderr, "Copyright (c) 2000-2004 by George Williams.\n Executable based on sources from %s.\n",
 	    source_modtime_str );
@@ -318,23 +470,39 @@ int main( int argc, char **argv ) {
     coord_sep = ",";
     if ( *localeinfo.decimal_point=='.' ) coord_sep=",";
     else if ( *localeinfo.decimal_point!='.' ) coord_sep=" ";
+#ifdef FONTFORGE_CONFIG_GDRAW
     GResourceAddResourceString(NULL,argv[0]);
+#elif defined( FONTFORGE_CONFIG_GTK )
+    gtk_set_locale ();
+
+    home_dir = (gchar*) g_get_home_dir();
+    rc_path = g_strdup_printf("%s/.fontforgerc", home_dir);
+    gtk_rc_add_default_file(rc_path);
+    g_free(rc_path);
+
+    gtk_init (&argc, &argv);
+
+    add_pixmap_directory (PACKAGE_DATA_DIR "/" PACKAGE "/pixmaps");
+#endif
     LoadPrefs();
     initadobeenc();
     inituninameannot();
     initrand();
     CheckIsScript(argc,argv);		/* Will run the script and exit if it is a script */
-
+					/* If there is no UI, there is always a script */
+			                /*  and we will never return from the above */
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     for ( i=1; i<argc; ++i ) {
 	char *pt = argv[i];
 	if ( pt[0]=='-' && pt[1]=='-' )
 	    ++pt;
 	if ( strcmp(pt,"-sync")==0 )
 	    GResourceAddResourceString("Gdraw.Synchronize: true",argv[0]);
-#if MyMemory
+# if MyMemory
 	else if ( strcmp(pt,"-memory")==0 )
 	    __malloc_debug(5);
-#endif
+# endif
+# ifdef FONTFORGE_CONFIG_GDRAW
 	else if ( strcmp(pt,"-depth")==0 && i<argc-1 )
 	    AddR(argv[0],"Gdraw.Depth", argv[++i]);
 	else if ( strcmp(pt,"-vc")==0 && i<argc-1 )
@@ -343,6 +511,7 @@ int main( int argc, char **argv ) {
 	    AddR(argv[0],"Gdraw.Colormap", argv[++i]);
 	else if ( strcmp(pt,"-keyboard")==0 && i<argc-1 )
 	    AddR(argv[0],"Gdraw.Keyboard", argv[++i]);
+# endif
 	else if ( strcmp(pt,"-nosplash")==0 )
 	    splash = 0;
 	else if ( strcmp(pt,"-display")==0 && i<argc-1 )
@@ -372,9 +541,29 @@ int main( int argc, char **argv ) {
 	    doversion();
     }
 
+# ifdef FONTFORGE_CONFIG_GDRAW
     GDrawCreateDisplays(display,argv[0]);
+# endif
     InitCursors();
 
+# ifdef FONTFORGE_CONFIG_GTK
+    if ( splash ) {
+	splashw = create_FontForgeSplash ();
+	splash_window_tooltip_fun( splashw );
+	notices = lookup_widget(FontView,"Notices");
+	if ( notices!=NULL )
+	    gtk_widget_hide(notices);
+	gtk_widget_show (splashw);
+    }
+
+    gtk_timeout_add(30*1000,_DoAutoSaves,NULL);		/* Check for autosave every 30 seconds */
+
+    args.argc = argc; args.argv = argv; args.recover = recover;
+    gtk_timeout_add(30*1000,_DoAutoSaves,&args);
+	/* Parse arguments within the main loop */
+
+    gtk_main ();
+# else	/* Gdraw */
     /* the splash screen used not to have a title bar (wam_nodecor) */
     /*  but I found I needed to know how much the window manager moved */
     /*  the window around, which I can determine if I have a positioned */
@@ -431,11 +620,11 @@ int main( int argc, char **argv ) {
 	if ( strcmp(pt,"-new")==0 ) {
 	    FontNew();
 	    any = 1;
-#if HANYANG
+#  if HANYANG
 	} else if ( strcmp(pt,"-newkorean")==0 ) {
 	    MenuNewComposition(NULL,NULL,NULL);
 	    any = 1;
-#endif
+#  endif
 	} else if ( strcmp(pt,"-last")==0 ) {
 	    if ( next_recent<RECENT_MAX && RecentFiles[next_recent]!=NULL )
 		if ( ViewPostscriptFont(RecentFiles[next_recent++]))
@@ -471,5 +660,7 @@ int main( int argc, char **argv ) {
     if ( !any )
 	MenuOpen(NULL,NULL,NULL);
     GDrawEventLoop(NULL);
+# endif
+#endif
 return( 0 );
 }

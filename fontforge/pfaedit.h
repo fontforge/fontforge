@@ -28,12 +28,18 @@
 #define _PFAEDIT_H_
 
 #include "basics.h"
+#include "configure-pfaedit.h"
 #include <stdio.h>
 #include <string.h>
-#include <gprogress.h>
+#if defined( FONTFORGE_CONFIG_GTK )
+# include <gtk/gtk.h>
+#elif defined( FONTFORGE_CONFIG_GDRAW )
+# include <gprogress.h>
+#endif
 #include "splinefont.h"
-#include "nomen.h"
-#include "configure-pfaedit.h"
+#if !defined( FONTFORGE_CONFIG_GTK )
+# include "nomen.h"
+#endif
 
 typedef struct enc {
     int enc_num;
@@ -91,6 +97,7 @@ extern int autohint_before_rasterize;
 extern int autohint_before_generate;
 extern int seperate_hint_controls;
 extern int ItalicConstrained;
+extern int no_windowing_ui;
 
 extern int new_em_size;
 extern int new_fonts_are_order2;
