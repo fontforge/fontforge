@@ -1431,6 +1431,7 @@ int hascomposing(SplineFont *sf,int u,SplineChar *sc) {
     if ( upt!=NULL ) {
 	while ( *upt ) {
 	    if ( iscombining(*upt) || *upt==0xb7 ||	/* b7, centered dot is used as a combining accent for Ldot */
+		    *upt==0x0385 ||	/* dieresis/tonos */
 		    *upt==0x1ffe || *upt==0x1fbf || *upt==0x1fcf || *upt==0x1fdf ||
 		    *upt==0x1fbd || *upt==0x1fef || *upt==0x1fc0 || *upt==0x1fc1 ||
 		    *upt==0x1fee || *upt==0x1ffd || *upt==0x1fbe ||

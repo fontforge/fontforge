@@ -571,7 +571,7 @@ return( greekalts );
     } else if ( base>=0x380 && base<=0x3ff && upt!=NULL ) {
 	/* Use precombined accents when possible */
 	if ( base==0x390 || base==0x3b0 ) {
-	    greekalts[0] = base==0x390?0x3b1:0x3c5;
+	    greekalts[0] = base==0x390?0x3b9:0x3c5;
 	    greekalts[1] = 0x385;
 	    greekalts[2] = '\0';
 	    if ( haschar(sf,greekalts[1]))
