@@ -45,10 +45,12 @@ static SearchView *searcher=NULL;
 #define CID_Cancel	1009
 
 static int CoordMatches(real real_off, real search_off, SearchView *s) {
+    real fudge;
     if ( real_off >= search_off-s->fudge && real_off <= search_off+s->fudge )
 return( true );
-    if ( real_off >= search_off-s->fudge_percent*search_off &&
-	    real_off <= search_off+s->fudge_percent*search_off )
+    fudge = s->fudge_percent*search_off;
+    if ( fudge<0 ) fudge = -fudge;
+    if ( real_off >= search_off-fudge && real_off <= search_off+fudge )
 return( true );
 return( false );
 }
@@ -146,57 +148,58 @@ return( true );
     }
 
     if ( s->tryrotate || s->tryscale ) {
-	p_sp = path->first;
-	np_sp = p_sp->next->to;	/* if p_sp->next were NULL, we'd have returned by now */
-	sc_sp = sp;
-	if ( sc_sp->next==NULL )
-return( false );
-	nsc_sp = sc_sp->next->to;
-	if ( p_sp->me.x==np_sp->me.x && p_sp->me.y==np_sp->me.y )
-return( false );
-	if ( sc_sp->me.x==nsc_sp->me.x && sc_sp->me.y==nsc_sp->me.y )
-return( false );
-	if ( !s->tryrotate ) {
-	    if ( p_sp->me.x==np_sp->me.x )
-		scale = (np_sp->me.y-p_sp->me.y) / (nsc_sp->me.y-sc_sp->me.y);
-	    else if ( p_sp->me.y==np_sp->me.y )
-		scale = (np_sp->me.x-p_sp->me.x) / (nsc_sp->me.x-sc_sp->me.x);
-	    else {
-		real yscale = (np_sp->me.y-p_sp->me.y) / (nsc_sp->me.y-sc_sp->me.y);
-		scale = (np_sp->me.x-p_sp->me.x) / (nsc_sp->me.x-sc_sp->me.x);
-		if ( scale<.99*yscale || scale>1.01*yscale )
-return( false );
-	    }
-	    rot = 0;
-	} else {
-	    rot = atan2(nsc_sp->me.y-sc_sp->me.y,nsc_sp->me.x-sc_sp->me.x) -
-		    atan2(np_sp->me.y-p_sp->me.y,np_sp->me.x-p_sp->me.x);
-	    if ( !s->tryscale )
-		scale = 1;
-	    else
-		scale = sqrt(  ((np_sp->me.y-p_sp->me.y)*(np_sp->me.y-p_sp->me.y) +
-				(np_sp->me.x-p_sp->me.x)*(np_sp->me.x-p_sp->me.x))/
-			       ((nsc_sp->me.y-sc_sp->me.y)*(nsc_sp->me.y-sc_sp->me.y) +
-				(nsc_sp->me.x-sc_sp->me.x)*(nsc_sp->me.x-sc_sp->me.x))  );
-	}
-	if ( scale>-.00001 && scale<.00001 )
-return( false );
-	if ( rot==0 )
-	    s->matched_co=1,s->matched_si=0;
-	else if ( rot>3.14159 && rot<3.141595 )
-	    s->matched_co=-1,s->matched_si=0;
-	else if ( rot>1.570793 && rot<1.570799 )
-	    s->matched_co=0,s->matched_si=1;
-	else if ( (rot>4.712386 && rot<4.712392 ) ||
-		  (rot<-1.570793 && rot>-1.570799 ) )
-	    s->matched_co=0,s->matched_si=-1;
-	else
-	    s->matched_co = cos(s->matched_rot), s->matched_si = sin(s->matched_rot);
 	if ( s->tryflips )
 	    flipmax = flip_xy;
 	else
 	    flipmax = flip_none;
-	for ( flip=flip_none ; flip<flipmax; ++flip ) {
+	for ( flip=flip_none ; flip<flipmax; ++flip ) {	p_sp = path->first;
+	    np_sp = p_sp->next->to;	/* if p_sp->next were NULL, we'd have returned by now */
+	    sc_sp = sp;
+	    if ( sc_sp->next==NULL )
+return( false );
+	    nsc_sp = sc_sp->next->to;
+	    if ( p_sp->me.x==np_sp->me.x && p_sp->me.y==np_sp->me.y )
+return( false );
+	    if ( sc_sp->me.x==nsc_sp->me.x && sc_sp->me.y==nsc_sp->me.y )
+return( false );
+	    if ( !s->tryrotate ) {
+		if ( p_sp->me.x==np_sp->me.x )
+		    scale = (np_sp->me.y-p_sp->me.y) / (nsc_sp->me.y-sc_sp->me.y);
+		else if ( p_sp->me.y==np_sp->me.y )
+		    scale = (np_sp->me.x-p_sp->me.x) / (nsc_sp->me.x-sc_sp->me.x);
+		else {
+		    real yscale = (np_sp->me.y-p_sp->me.y) / (nsc_sp->me.y-sc_sp->me.y);
+		    scale = (np_sp->me.x-p_sp->me.x) / (nsc_sp->me.x-sc_sp->me.x);
+		    if ( scale<.99*yscale || scale>1.01*yscale )
+    return( false );
+		}
+		rot = 0;
+	    } else {
+		int xsign = (flip&1)?-1:1, ysign=(flip&2)?-1:1;
+		rot = atan2(xsign*(nsc_sp->me.y-sc_sp->me.y),ysign*(nsc_sp->me.x-sc_sp->me.x)) -
+			atan2(np_sp->me.y-p_sp->me.y,np_sp->me.x-p_sp->me.x);
+		if ( !s->tryscale )
+		    scale = 1;
+		else
+		    scale = sqrt(  ((np_sp->me.y-p_sp->me.y)*(np_sp->me.y-p_sp->me.y) +
+				    (np_sp->me.x-p_sp->me.x)*(np_sp->me.x-p_sp->me.x))/
+				   ((nsc_sp->me.y-sc_sp->me.y)*(nsc_sp->me.y-sc_sp->me.y) +
+				    (nsc_sp->me.x-sc_sp->me.x)*(nsc_sp->me.x-sc_sp->me.x))  );
+	    }
+	    if ( scale>-.00001 && scale<.00001 )
+return( false );
+	    s->matched_rot = rot;
+	    if ( rot==0 )
+		s->matched_co=1,s->matched_si=0;
+	    else if ( rot>3.14159 && rot<3.141595 )
+		s->matched_co=-1,s->matched_si=0;
+	    else if ( rot>1.570793 && rot<1.570799 )
+		s->matched_co=0,s->matched_si=1;
+	    else if ( (rot>4.712386 && rot<4.712392 ) ||
+		      (rot<-1.570793 && rot>-1.570799 ) )
+		s->matched_co=0,s->matched_si=-1;
+	    else
+		s->matched_co = cos(rot), s->matched_si = sin(rot);
 	    for (sc_sp=sp, p_sp=path->first; ; ) {
 		if ( p_sp->next==NULL ) {
 		    if ( substring || sc_sp->next==NULL ) {
@@ -313,9 +316,9 @@ static void SVBuildTrans(SearchView *s,real transform[6]) {
 	transform[3] = -1;
     transform[0] *= s->matched_scale;
     transform[3] *= s->matched_scale;
-    transform[1] = transform[0]*s->matched_si;
+    transform[1] = -transform[0]*s->matched_si;
     transform[0] *= s->matched_co;
-    transform[2] = -transform[3]*s->matched_si;
+    transform[2] = transform[3]*s->matched_si;
     transform[3] *= s->matched_co;
     transform[4] = s->matched_x;
     transform[5] = s->matched_y;
@@ -459,8 +462,8 @@ static void AdjustBP(BasePoint *changeme,BasePoint *rel,
 	yoff =-yoff;
     xoff *= s->matched_scale;
     yoff *= s->matched_scale;
-    changeme->x = xoff*s->matched_co + yoff*s->matched_si + fudge->x  + rel->x;
-    changeme->y = yoff*s->matched_co - xoff*s->matched_si + fudge->y  + rel->y;
+    changeme->x = xoff*s->matched_co - yoff*s->matched_si + fudge->x  + rel->x;
+    changeme->y = yoff*s->matched_co + xoff*s->matched_si + fudge->y  + rel->y;
 }
 
 static void AdjustAll(SplinePoint *change,BasePoint *rel,
@@ -510,7 +513,7 @@ static void FudgeFigure(SplineChar *sc,SearchView *s,SplineSet *path,BasePoint *
     if ( path->first->prev!=NULL )		/* closed path, should end where it began */
 return;						/*  => no fudge */
 
-    foundrel = s->matched_sp; searchrel=path->first;
+    foundrel = s->matched_sp; searchrel = path->first;
     for ( found=foundrel, search=searchrel ; ; ) {
 	if ( found->next==NULL || search->next==NULL )
     break;
@@ -552,8 +555,8 @@ static void DoReplaceIncomplete(SplineChar *sc,SearchView *s) {
 	yoff =-yoff;
     xoff *= s->matched_scale;
     yoff *= s->matched_scale;
-    temp = xoff*s->matched_co + yoff*s->matched_si;
-    yoff = yoff*s->matched_co - xoff*s->matched_si;
+    temp = xoff*s->matched_co - yoff*s->matched_si;
+    yoff = yoff*s->matched_co + xoff*s->matched_si;
     xoff = temp;
 
     /* Total "fudge" amount should be spread evenly over each point */
@@ -799,8 +802,8 @@ static void SVParseDlg(SearchView *sv) {
 	    sv->rpointcnt = i;
 	}
     }
-    sv->fudge = .001;
-    sv->fudge_percent = .001;
+    sv->fudge = sv->tryrotate ? .01 : .001;
+    sv->fudge_percent = sv->tryrotate ? .01 : .001;
 }
 
 static int SearchChar(SearchView *sv, int enc,int startafter) {
