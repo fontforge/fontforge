@@ -1440,9 +1440,9 @@ static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
 	gi->lasthwidth = 3;
 	gi->hfullcnt = 3;
     }
-    if ( !has1 )
+    if ( !has1 )	/* Apple says glyph 1 is nul */
 	dumpblankglyph(gi,sf,fixed);	/* I'm not sure exactly why but there seem */
-    if ( !has2 )
+    if ( !has2 )	/* Apple says glyph 2 is tab,cr, etc. */
 	dumpblankglyph(gi,sf,fixed);	/* to be a couple of blank glyphs at the start*/
     /* One is for NUL and one for CR I think... but why? */
     for ( cnt=0; i<sf->charcnt; ++i ) {
@@ -4215,7 +4215,7 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
     }
     if ( SCWorthOutputting(sf->chars[0]) && !SCIsNotdef(sf->chars[0],at->gi.fixed_width))
 	anyglyphs = true;
-    if ( !anyglyphs ) {
+    if ( sf->subfontcnt==0 && !anyglyphs ) {
 #if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("No Encoded Glyphs"),_("This font contains no glyphs at all."));
 #else
@@ -4263,6 +4263,8 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
 	nonmarkingreturn.unicodeenc = 13;
 	nonmarkingreturn.name = "nonmarkingreturn";
 	nonmarkingreturn.parent = sf;
+	nonmarkingreturn.unicodeenc = 13;
+	nonmarkingreturn.enc = 13;
 	nonmarkingreturn.ttf_glyph = 2;
 	nonmarkingreturn.layer_cnt = 2;
 #ifdef FONTFORGE_CONFIG_TYPE3
@@ -4279,17 +4281,17 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
     /*  appropriate as they are for 2byte encodings, but Apple uses them */
     /*  for one byte ones too */
     memset(table,'\0',sizeof(table));
+    table[29] = table[8] = table[0] = 1;
+    table[9] = table[13] = 2;
     for ( i=0; i<256 ; ++i ) {
 	sc = SCDuplicate(SFFindExistingCharMac(sf,unicode_from_mac[i]));
 	if ( sc!=NULL && sc->ttf_glyph!=-1 )
 	    table[i] = sc->ttf_glyph;
     }
-    table[0] = table[8] = table[13] = table[29] = 1;
-    table[9] = table[32]==0 ? 1 : table[32];
+    if ( table[0]==0 ) table[0] = 1;
 
     if ( format==ff_ttfsym ) {
 	int acnt=0, pcnt=0;
-	int space = table[9];
 	for ( i=0; i<sf->charcnt; ++i ) {
 	    if ( sf->chars[i]!=&notdef && sf->chars[i]!=&nonmarkingreturn &&
 		    sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 &&
@@ -4302,6 +4304,8 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
 	}
 	alreadyprivate = acnt>pcnt;
 	memset(table,'\0',sizeof(table));
+	table[29] = table[8] = table[0] = 1;
+	table[9] = table[13] = 2;
 	if ( !alreadyprivate ) {
 	    for ( i=0; i<sf->charcnt && i<256; ++i ) {
 		sc = SCDuplicate(sf->chars[i]);
@@ -4316,8 +4320,7 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
 		    table[sf->chars[i]->enc-0xf000] = sc->ttf_glyph;
 	    }
 	}
-	table[0] = table[8] = table[13] = table[29] = 1;
-	table[9] = space;
+	if ( table[0]==0 ) table[0] = 1;
 	/* if the user has read in a ttf symbol file then it will already have */
 	/*  the right private use encoding, and we don't want to mess it up. */
 	/*  The alreadyprivate flag should detect this case */
