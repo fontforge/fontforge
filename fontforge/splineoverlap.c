@@ -1595,6 +1595,155 @@ static SplineSet *SSRemoveTiny(SplineSet *base) {
 return( head );
 }
 
+static void RemoveNextSP(SplinePoint *psp,SplinePoint *sp,SplinePoint *nsp,
+	SplineSet *base) {
+    if ( psp==nsp ) {
+	SplineFree(psp->next);
+	psp->next = psp->prev;
+	psp->next->from = psp;
+	SplinePointFree(sp);
+	SplineRefigure(psp->prev);
+    } else {
+	psp->next = nsp->next;
+	psp->next->from = psp;
+	psp->nextcp = nsp->nextcp;
+	psp->nonextcp = nsp->nonextcp;
+	psp->nextcpdef = nsp->nextcpdef;
+	SplineFree(sp->prev);
+	SplineFree(sp->next);
+	SplinePointFree(sp);
+	SplinePointFree(nsp);
+	SplineRefigure(psp->next);
+    }
+    if ( base->first==sp || base->first==nsp )
+	base->first = psp;
+    if ( base->last==sp || base->last==nsp )
+	base->last = psp;
+}
+
+static void RemovePrevSP(SplinePoint *psp,SplinePoint *sp,SplinePoint *nsp,
+	SplineSet *base) {
+    if ( psp==nsp ) {
+	SplineFree(nsp->prev);
+	nsp->prev = nsp->next;
+	nsp->prev->to = nsp;
+	SplinePointFree(sp);
+	SplineRefigure(nsp->next);
+    } else {
+	nsp->prev = psp->prev;
+	nsp->prev->to = nsp;
+	nsp->prevcp = nsp->me;
+	nsp->noprevcp = true;
+	nsp->prevcpdef = psp->prevcpdef;
+	SplineFree(sp->prev);
+	SplineFree(sp->next);
+	SplinePointFree(sp);
+	SplinePointFree(psp);
+	SplineRefigure(nsp->prev);
+    }
+    if ( base->first==sp || base->first==psp )
+	base->first = nsp;
+    if ( base->last==sp || base->last==psp )
+	base->last = nsp;
+}
+
+static SplinePoint *SameLine(SplinePoint *psp, SplinePoint *sp, SplinePoint *nsp) {
+    BasePoint noff, poff;
+    real nlen, plen, normal;
+
+    noff.x = nsp->me.x-sp->me.x; noff.y = nsp->me.y-sp->me.y;
+    poff.x = psp->me.x-sp->me.x; poff.y = psp->me.y-sp->me.y;
+    nlen = sqrt(noff.x*noff.x + noff.y*noff.y);
+    plen = sqrt(poff.x*poff.x + poff.y*poff.y);
+    if ( nlen==0 )
+return( nsp );
+    if ( plen==0 )
+return( psp );
+    normal = (noff.x*poff.y - noff.y*poff.x)/nlen/plen;
+    if ( normal<-.0001 || normal>.0001 )
+return( NULL );
+
+    if ( noff.x*poff.x < 0 || noff.y*poff.y < 0 )
+return( NULL );		/* Same line, but different directions */
+    if ( (noff.x>0 && noff.x>poff.x) ||
+	    (noff.x<0 && noff.x<poff.x) ||
+	    (noff.y>0 && noff.y>poff.y) ||
+	    (noff.y<0 && noff.y<poff.y))
+return( nsp );
+
+return( psp );
+}
+
+/* If we have a contour with no width, say a line from A to B and then from B */
+/*  to A, then it will be ambiguous, depending on how we hit the contour, as  */
+/*  to whether it is needed or not. Which will cause us to complain. Since    */
+/*  they contain no area, they achieve nothing, so we might as well say they  */
+/*  overlap themselves and remove them here */
+static SplineSet *SSRemoveReversals(SplineSet *base) {
+    SplineSet *head = base, *prev=NULL, *next;
+    SplinePoint *sp;
+    int changed;
+
+    while ( base!=NULL ) {
+	next = base->next;
+	changed = true;
+	while ( changed ) {
+	    changed = false;
+	    if ( base->first->next==NULL ||
+		    (base->first->next->to==base->first &&
+		     base->first->nextcp.x==base->first->prevcp.x &&
+		     base->first->nextcp.y==base->first->prevcp.y)) {
+		/* remove single points */
+		if ( prev==NULL )
+		    head = next;
+		else
+		    prev->next = next;
+		base->next = NULL;
+		SplinePointListFree(base);
+		base = prev;
+	break;
+	    }
+	    for ( sp=base->first; ; ) {
+		if ( sp->next!=NULL && sp->prev!=NULL &&
+			sp->nextcp.x==sp->prevcp.x && sp->nextcp.y==sp->prevcp.y ) {
+		    SplinePoint *nsp = sp->next->to, *psp = sp->prev->from, *isp;
+		    if ( psp->me.x==nsp->me.x && psp->me.y==nsp->me.y &&
+			    psp->nextcp.x==nsp->prevcp.x && psp->nextcp.y==nsp->prevcp.y ) {
+			/* We wish to remove sp, sp->next, sp->prev & one of nsp/psp */
+			RemoveNextSP(psp,sp,nsp,base);
+			changed = true;
+	    break;
+		    } else if ( sp->nonextcp /* which implies sp->noprevcp */ &&
+			    psp->nonextcp && nsp->noprevcp &&
+			    (isp = SameLine(psp,sp,nsp))!=NULL ) {
+			/* We have a line that backtracks, but doesn't cover */
+			/*  the entire spline, so we intersect */
+			/* We want to remove sp, the shorter of sp->next, sp->prev */
+			/*  and a bit of the other one. Also reomve one of nsp,psp */
+			if ( isp==psp ) {
+			    RemoveNextSP(psp,sp,nsp,base);
+			    psp->nextcp = psp->me;
+			    psp->nonextcp = true;
+			} else {
+			    RemovePrevSP(psp,sp,nsp,base);
+			}
+			changed = true;
+	    break;
+		    }
+		}
+		if ( sp->next==NULL )
+	    break;
+		sp = sp->next->to;
+		if ( sp==base->first )
+	    break;
+	    }
+	}
+	prev = base;
+	base = next;
+    }
+return( head );
+}
+
 SplineSet *SplineSetRemoveOverlap(SplineChar *sc, SplineSet *base,enum overlap_type ot) {
     Monotonic *ms;
     Intersection *ilist;
@@ -1605,6 +1754,7 @@ SplineSet *SplineSetRemoveOverlap(SplineChar *sc, SplineSet *base,enum overlap_t
 
     base = SSRemoveTiny(base);
     SSRemoveStupidControlPoints(base);
+    base = SSRemoveReversals(base);
     ms = SSsToMContours(base,ot);
     ilist = FindIntersections(ms,ot);
     Validate(ms,ilist);
