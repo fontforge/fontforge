@@ -917,7 +917,8 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 		fprintf( sfd, "%c%c%c%c ",
 			an->feature_tag>>24, (an->feature_tag>>16)&0xff,
 			(an->feature_tag>>8)&0xff, an->feature_tag&0xff );
-	    fprintf( sfd, "%d %d %d ", an->flags, an->script_lang_index, an->merge_with );
+	    fprintf( sfd, "%d %d %d %d ", an->flags, an->script_lang_index,
+		    an->merge_with, an->type );
 	}
 	putc('\n',sfd);
     }
@@ -2498,6 +2499,20 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 		    an->merge_with = temp;
 		} else
 		    an->merge_with = 0xffff;			/* Will be fixed up later */
+		while ( (ch=getc(sfd))==' ' || ch=='\t' );
+		ungetc(ch,sfd);
+		if ( isdigit(ch)) {
+		    int temp;
+		    getint(sfd,&temp);
+		    an->type = temp;
+		} else {
+		    if ( an->feature_tag==CHR('c','u','r','s'))
+			an->type = act_curs;
+		    else if ( an->feature_tag==CHR('m','k','m','k'))
+			an->type = act_mkmk;
+		    else
+			an->type = act_mark;
+		}
 		if ( lastan==NULL )
 		    sf->anchor = an;
 		else
