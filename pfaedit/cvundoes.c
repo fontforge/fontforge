@@ -1056,7 +1056,9 @@ static void PasteNonExistantRefCheck(SplineChar *sc,Undoes *paster,RefChar *ref,
     } else {
 	if ( !(*refstate&0x3) ) {
 	    static int buts[] = { _STR_Yes, _STR_YesToAll, _STR_NoToAll, _STR_No, 0 };
+	    GProgressPauseTimer();
 	    yes = GWidgetAskCenteredR(_STR_BadReference,buts,0,3,_STR_FontNoRef,rsc->name,sc->name);
+	    GProgressResumeTimer();
 	    if ( yes==1 )
 		*refstate |= 1;
 	    else if ( yes==2 )

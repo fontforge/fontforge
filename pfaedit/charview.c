@@ -3887,14 +3887,8 @@ static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 	    }
 	  break;
 	  case MID_BuildAccent:
-	    mi->ti.disabled = !SFIsSomethingBuildable(cv->fv->sf,cv->sc);
 	    onlyaccents = e==NULL || !(e->u.mouse.state&ksm_shift);
-	    if ( onlyaccents ) {
-		if ( SFIsRotatable(cv->fv->sf,cv->sc))
-		    /* It's ok */;
-		else if ( !hascomposing(cv->fv->sf,cv->sc->unicodeenc,cv->sc))
-		    mi->ti.disabled = true;
-	    }
+	    mi->ti.disabled = !SFIsSomethingBuildable(cv->fv->sf,cv->sc,onlyaccents);
 	    free(mi->ti.text);
 	    mi->ti.text = u_copy(GStringGetResource(onlyaccents?_STR_Buildaccent:_STR_Buildcomposit,NULL));
 	  break;

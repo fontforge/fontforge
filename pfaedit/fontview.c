@@ -1482,32 +1482,6 @@ static void FVMenuAutotrace(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FVAutoTrace(fv,e!=NULL && (e->u.mouse.state&ksm_shift));
 }
 
-int hascomposing(SplineFont *sf,int u,SplineChar *sc) {
-    const unichar_t *upt = SFGetAlternate(sf,u,sc,false);
-
-    if ( upt!=NULL ) {
-	while ( *upt ) {
-	    if ( iscombining(*upt) || *upt==0xb7 ||	/* b7, centered dot is used as a combining accent for Ldot */
-		    *upt==0x0385 ||	/* dieresis/tonos */
-		    *upt==0x1ffe || *upt==0x1fbf || *upt==0x1fcf || *upt==0x1fdf ||
-		    *upt==0x1fbd || *upt==0x1fef || *upt==0x1fc0 || *upt==0x1fc1 ||
-		    *upt==0x1fee || *upt==0x1ffd || *upt==0x1fbe ||
-		    *upt==0x1fcd || *upt==0x1fdd || *upt==0x1fce || *upt==0x1fde )	/* Special greek accents */
-return( true );
-	    /* Only build Jongsung out of chosung when doing a build composit */
-	    /*  not when doing a build accented (that's what the upt[1]!='\0' */
-	    /*  means */
-	    if ( *upt>=0x1100 && *upt<0x11c7 && upt[1]!='\0' )
-return( true );
-	    ++upt;
-	}
-
-	if ( u>=0x1f70 && u<0x1f80 )
-return( true );			/* Yes. they do work, I don't care what it looks like */
-    }
-return( false );
-}
-
 void FVBuildAccent(FontView *fv,int onlyaccents) {
     int i, cnt=0;
     SplineChar dummy;
@@ -1526,10 +1500,7 @@ void FVBuildAccent(FontView *fv,int onlyaccents) {
 	    if ( GWidgetAskR(_STR_Replacearing,buts,0,1,_STR_Areyousurearing)==1 )
     continue;
 	}
-	if ( SFIsRotatable(fv->sf,sc) ||
-		(SCMakeDotless(fv->sf,sc,false,false) && !onlyaccents) ||
-		(SFIsCompositBuildable(fv->sf,sc->unicodeenc,sc) &&
-		 (!onlyaccents || hascomposing(fv->sf,sc->unicodeenc,sc)))) {
+	if ( SFIsSomethingBuildable(fv->sf,sc,onlyaccents) ) {
 	    sc = SFMakeChar(fv->sf,i);
 	    SCBuildComposit(fv->sf,sc,!onlycopydisplayed,fv);
 	}
@@ -1814,10 +1785,7 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 		    sc = fv->sf->chars[i];
 		    if ( sc==NULL )
 			sc = SCBuildDummy(&dummy,fv->sf,i);
-		    if ( SFIsRotatable(fv->sf,sc) ||
-			    (SCMakeDotless(fv->sf,sc,false,false) && !onlyaccents) ||
-			    (SFIsCompositBuildable(fv->sf,sc->unicodeenc,sc) &&
-			     (!onlyaccents || hascomposing(fv->sf,sc->unicodeenc,sc))) ) {
+		    if ( SFIsSomethingBuildable(fv->sf,sc,onlyaccents)) {
 			anybuildable = true;
 		break;
 		    }
@@ -3863,7 +3831,7 @@ return( true );
 }
 
 static void FVResize(FontView *fv,GEvent *event) {
-    GRect pos;
+    GRect pos,screensize;
     int topchar;
 
     if ( fv->colcnt!=0 )
@@ -3884,6 +3852,11 @@ static void FVResize(FontView *fv,GEvent *event) {
 	int rc = (event->u.resize.size.height-fv->mbh-fv->infoh-1)/fv->cbh;
 	if ( cc<=0 ) cc = 1;
 	if ( rc<=0 ) rc = 1;
+	GDrawGetSize(GDrawGetRoot(NULL),&screensize);
+	if ( cc*fv->cbw+GDrawPointsToPixels(fv->gw,_GScrollBar_Width)+10>screensize.width )
+	    --cc;
+	if ( rc*fv->cbh+fv->mbh+fv->infoh+20>screensize.height )
+	    --rc;
 	GDrawResize(fv->gw,
 		cc*fv->cbw+1+GDrawPointsToPixels(fv->gw,_GScrollBar_Width),
 		rc*fv->cbh+1+fv->mbh+fv->infoh);

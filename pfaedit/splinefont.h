@@ -732,7 +732,7 @@ extern void BCDoRedo(BDFChar *bc,struct fontview *fv);
 extern void BCDoUndo(BDFChar *bc,struct fontview *fv);
 
 extern int SFIsCompositBuildable(SplineFont *sf,int unicodeenc,SplineChar *sc);
-extern int SFIsSomethingBuildable(SplineFont *sf,SplineChar *sc);
+extern int SFIsSomethingBuildable(SplineFont *sf,SplineChar *sc,int onlyaccents);
 extern int SFIsRotatable(SplineFont *sf,SplineChar *sc);
 extern int SCMakeDotless(SplineFont *sf, SplineChar *dotless, int copybmp, int doit);
 extern void SCBuildComposit(SplineFont *sf, SplineChar *sc, int copybmp,

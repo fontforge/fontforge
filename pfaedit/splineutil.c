@@ -1203,7 +1203,8 @@ static void InstanciateReference(SplineFont *sf, RefChar *topref, RefChar *refs,
 	    refs->local_enc = rsc->enc;
 	    SCMakeDependent(dsc,rsc);
 	} else {
-	    fprintf( stderr, "Couldn't find referenced character \"%s\"\n", AdobeStandardEncoding[refs->adobe_enc]);
+	    fprintf( stderr, "Couldn't find referenced character \"%s\" in %s\n",
+		    AdobeStandardEncoding[refs->adobe_enc], dsc->name);
 return;
 	}
     } else if ( refs->sc->ticked )
@@ -1376,7 +1377,7 @@ static void CleanupGreekNames(FontDict *fd) {
 
 static void SplineFontFromType1(SplineFont *sf, FontDict *fd) {
     int i;
-    RefChar *refs, *next;
+    RefChar *refs, *next, *pr;
     char **encoding;
     int istype2 = fd->fonttype==2;		/* Easy enough to deal with even though it will never happen... */
 
@@ -1445,11 +1446,23 @@ static void SplineFontFromType1(SplineFont *sf, FontDict *fd) {
 	sf->chars[i]->lig = SCLigDefault(sf->chars[i]);		/* Should read from AFM file, but that's way too much work */
 	GProgressNext();
     }
-    for ( i=0; i<sf->charcnt; ++i ) for ( refs = sf->chars[i]->refs; refs!=NULL; refs=refs->next ) {
+    for ( i=0; i<sf->charcnt; ++i ) for ( pr=NULL, refs = sf->chars[i]->refs; refs!=NULL; refs=next ) {
+	next = refs->next;
 	sf->chars[i]->ticked = true;
 	InstanciateReference(sf, refs, refs, refs->transform,sf->chars[i]);
-	SplineSetFindBounds(refs->splines,&refs->bb);
-	sf->chars[i]->ticked = false;
+	if ( refs->sc!=NULL ) {
+	    SplineSetFindBounds(refs->splines,&refs->bb);
+	    sf->chars[i]->ticked = false;
+	    pr = refs;
+	} else {
+	    /* In some mal-formed postscript fonts we can have a reference */
+	    /*  to a character that is not actually in the font. I even */
+	    /*  generated one by mistake once... */
+	    if ( pr==NULL )
+		sf->chars[i]->refs = next;
+	    else
+		pr->next = next;
+	}
     }
     for ( i=0; i<sf->charcnt; ++i ) for ( refs = sf->chars[i]->refs; refs!=NULL; refs=next ) {
 	next = refs->next;
