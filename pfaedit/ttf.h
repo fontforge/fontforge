@@ -426,6 +426,7 @@ struct alltabs {
     unsigned int sidlongoffset: 1;
     unsigned int cfflongoffset: 1;
     unsigned int msbitmaps: 1;
+    unsigned int isotf: 1;
     unsigned int error: 1;
     struct glyphinfo gi;
     int isfixed;

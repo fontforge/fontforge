@@ -3555,7 +3555,7 @@ static void dumpcffcharset(SplineFont *sf,struct alltabs *at) {
 
     /* First element must be ".notdef" and is omitted */
     /* So if glyph 0 isn't notdef do something special */
-    if ( SCIsNotdef(sf->chars[0],-1) )
+    if ( !SCIsNotdef(sf->chars[0],-1) )
 	putshort(at->charset,storesid(at,sf->chars[0]->name));
 
     for ( i=1; i<sf->charcnt; ++i )
@@ -6379,7 +6379,7 @@ static void dumpcmap(struct alltabs *at, SplineFont *_sf,enum fontformat format)
 	notdef.parent = sf;
 	sf->chars[0] = &notdef;
     }
-    if ( sf->subfontcnt==0 && sf->chars[13]==NULL ) {	/* Encode the default notdef char at 0 */
+    if ( sf->subfontcnt==0 && sf->chars[13]==NULL && !at->isotf ) {	/* Encode the default notdef char at 0 */
 	memset(&nonmarkingreturn,0,sizeof(notdef));
 	nonmarkingreturn.unicodeenc = 13;
 	nonmarkingreturn.name = "nonmarkingreturn";
@@ -6796,6 +6796,7 @@ static int initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
     memset(at,'\0',sizeof(struct alltabs));
     at->msbitmaps = bf==bf_ttf_ms;
     at->gi.flags = flags;
+    at->isotf = format==ff_otf || format==ff_otfcid;
     if ( bf!=bf_ttf_ms && bf!=bf_ttf_apple && bf!=bf_sfnt_dfont)
 	bsizes = NULL;
     if ( bsizes!=NULL ) {
