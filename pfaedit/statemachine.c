@@ -1794,8 +1794,7 @@ return( true );
 	    smd->edit_done = true;
 return( true );
 	} else if ( event->u.chr.chars[0] == '\r' ) {
-	    smd->edit_done = true;
-	    smd->edit_ok = true;
+	    smd->edit_done = SMD_DoChange(smd);
 return( true );
 	}
 return( false );
