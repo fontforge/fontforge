@@ -357,6 +357,7 @@ static int SLIMatches(SplineFont *sf, int sli, uint32 script, uint32 lang) {
 return( false );
     if ( sli==SLI_NESTED )
 return( script=='*' );
+    if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
 
     sr = sf->script_lang[sli];
     for ( l=0; sr[l].script!=0 && sr[l].script!=script; ++l );
@@ -503,7 +504,7 @@ static void BuildFeatures(struct node *node,struct att_dlg *att,
 	    sc = NULL;
 	    do {
 		sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[k];
-		if ( sf->chars[i]!=NULL ) {
+		if ( i<sf->charcnt && sf->chars[i]!=NULL ) {
 		    sc = sf->chars[i];
 	    break;
 		}
