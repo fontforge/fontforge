@@ -877,6 +877,7 @@ static char *str_PrefsPopupGF[] = "Adobe has assigned the names Delta, Omega and
 static char *str_PrefsPopupSD[] = "When the mouse pointer is within this many pixels\nof one of the various interesting features (baseline,\nwidth, grid splines, etc.) the pointer will snap\nto that feature.";
 static char *str_PrefsPopupBR[] = "When generating a set of BDF fonts ask the user\nto specify the screen resolution of the fonts\notherwise PfaEdit will guess depending on the pixel size.";
 static char *str_Generic[] = "Generic";
+static char *str_PrefsFontInfo[] = "Font Info";
 static char *str_ScriptMenu[] = "Script Menu";
 static char *str_MenuName[] = "Menu Name";
 static char *str_ScriptMenuPopup[] = "You may create a script menu containing up to 10 frequently used scripts\nEach entry in the menu needs both a name to display in the menu and\na script file to execute. The menu name may contain any unicode characters.\nThe button labeled \"...\" will allow you to browse for a script file.";
