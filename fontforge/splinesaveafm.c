@@ -2293,7 +2293,7 @@ return( mf_amfm );
 		    ((buffer[16]<<8)|buffer[17]) +
 		    ((buffer[18]<<8)|buffer[19]) +
 		    ((buffer[20]<<8)|buffer[21]) +
-		    ((buffer[21]<<8)|buffer[23]) )
+		    ((buffer[22]<<8)|buffer[23]) )
 return( mf_tfm );
 
     if ( len>= 6 && buffer[0]==0 && buffer[1]==1 &&
